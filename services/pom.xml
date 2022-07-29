@@ -5,18 +5,17 @@
 
     <parent>
         <groupId>com.fit2cloud</groupId>
-        <artifactId>service</artifactId>
+        <artifactId>cloudexplorer</artifactId>
         <version>${revision}</version>
     </parent>
 
     <packaging>pom</packaging>
-    <artifactId>management-center-parent</artifactId>
+    <artifactId>services</artifactId>
     <version>${revision}</version>
-    <description>CE framework</description>
+    <description>CE services</description>
 
     <modules>
-        <module>frontend</module>
-        <module>backend</module>
+        <module>management-center</module>
     </modules>
 
 </project>

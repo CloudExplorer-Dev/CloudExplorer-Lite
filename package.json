@@ -5,7 +5,7 @@
   "private": true,
   "workspaces": [
     "framework/**",
-    "service/**",
+    "services/**",
     "extends/**"
   ],
   "scripts": {
