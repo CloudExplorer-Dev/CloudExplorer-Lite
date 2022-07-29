@@ -1,0 +1,28 @@
+{
+  "name": "ce-base",
+  "version": "0.0.0",
+  "main": "./lib/frontend-public.umd.js",
+  "module": "./lib/frontend-public.es.js",
+  "types": "./lib/common/frontend-public/packages/index.d.ts",
+  "files": [
+    "lib",
+    "src"
+  ],
+  "scripts": {
+    "dev": "vite --mode development",
+    "build": "run-p type-check build-only",
+    "build-lib": "vite build --mode lib",
+    "preview": "vite preview --port 4173",
+    "test:unit": "vitest --environment jsdom",
+    "build-only": "vite build",
+    "type-check": "vue-tsc --noEmit -p tsconfig.vitest.json --composite false",
+    "lint": "eslint . --ext .vue,.js,.jsx,.cjs,.mjs,.ts,.tsx,.cts,.mts --fix --ignore-path .gitignore"
+  },
+  "dependencies": {
+    "@micro-zoe/micro-app": "^1.0.0-alpha.3",
+    "mitt": "^3.0.0"
+  },
+  "devDependencies": {
+    "vite-plugin-dts": "^1.4.0"
+  }
+}
