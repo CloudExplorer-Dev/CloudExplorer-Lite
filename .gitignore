@@ -46,8 +46,12 @@ build/
 .pnp.*
 
 yarn.lock
+package-lock.json
 
 node_modules/
 node/
+
+### Spring flatten ###
+.flattened-pom.xml
 
 
