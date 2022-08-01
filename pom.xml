@@ -7,7 +7,7 @@
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
         <version>2.7.2</version>
-        <relativePath/> <!-- lookup parent from repository -->
+        <relativePath/>
     </parent>
 
 
@@ -19,6 +19,12 @@
     <description>CloudExplorer4</description>
 
     <properties>
+        <!-- ce 基本配置变量 start -->
+        <ce.config.dir>/opt/cloudexplorer/conf</ce.config.dir>
+        <ce.config.file>/opt/cloudexplorer/conf/cloudexplorer.properties</ce.config.file>
+        <ce.log.base.dir>/opt/cloudexplorer/logs</ce.log.base.dir>
+        <!-- ce 基本配置变量 end -->
+
         <revision>4.0.0</revision>
         <java.version>17</java.version>
         <spring-cloud.version>2021.0.3</spring-cloud.version>
@@ -60,6 +66,17 @@
     </dependencyManagement>
 
     <build>
+        <resources>
+            <resource>
+                <filtering>true</filtering>  <!-- 加上filter会过滤该资源路径中的文件 -->
+                <directory>${project.basedir}/src/main/resources</directory>
+                <includes>
+                    <include>application.yml</include>
+                    <include>logback-spring.xml</include>
+                </includes>
+            </resource>
+        </resources>
+
         <plugins>
             <plugin>
                 <groupId>org.springframework.boot</groupId>

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<configuration debug="true">
-    <property resource="application.properties"/>
-    <property file="/opt/fit2cloud/conf/fit2cloud.properties"/>
+<configuration debug="true" scan="true">
+    <springProperty scope="context" name="logging.file.path" source="logging.file.path"/>
+    <property file="@ce.config.file@"/>
     <appender name="console" class="ch.qos.logback.core.ConsoleAppender">
         <encoder>
             <pattern>%d %5p %40.40c:%4L - %m%n</pattern>
