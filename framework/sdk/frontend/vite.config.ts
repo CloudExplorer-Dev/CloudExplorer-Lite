@@ -34,9 +34,9 @@ const commonBuild = {
       },
     },
     lib: {
-      entry: fileURLToPath(new URL("./packages/index.ts", import.meta.url)),
-      name: "frontendPublic",
-      fileName: (format: string) => `frontend-public.${format}.js`,
+      entry: fileURLToPath(new URL("./commons/index.ts", import.meta.url)),
+      name: "ceBase",
+      fileName: (format: string) => `ce-base.${format}.js`,
     },
   },
 };
@@ -64,20 +64,7 @@ const thisBuild = {
   server: {
     host: "0.0.0.0",
     port: 5502,
-    proxy: {
-      "/login": {
-        target: "http://127.0.0.1:6611", //实际请求地址
-        changeOrigin: true,
-      },
-      "/api/module/runing": {
-        target: "http://127.0.0.1:6611", //实际请求地址
-        changeOrigin: true,
-      },
-      "/api/module/current": {
-        target: "http://127.0.0.1:6611", //实际请求地址
-        changeOrigin: true,
-      },
-    },
+    proxy: {},
   },
 };
 

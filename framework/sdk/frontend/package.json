@@ -1,9 +1,9 @@
 {
   "name": "ce-base",
   "version": "0.0.0",
-  "main": "./lib/frontend-public.umd.js",
-  "module": "./lib/frontend-public.es.js",
-  "types": "./lib/common/frontend-public/packages/index.d.ts",
+  "main": "./lib/ce-base.umd.js",
+  "module": "./lib/ce-base.es.js",
+  "types": "./lib/common/ce-base/packages/index.d.ts",
   "files": [
     "lib",
     "src"
