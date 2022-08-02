@@ -4,8 +4,9 @@ import * as ElementPlusIcons from "@element-plus/icons-vue";
 import "element-plus/dist/index.css";
 import { createPinia } from "pinia";
 import App from "./App.vue";
-import "./assets/reset.css";
-
+import theme from "../commons/index";
+import { Route } from "../commons/index";
+import { createWebHistory } from "vue-router";
 const app = createApp(App);
 // 注册elementIcone
 for (const [key, component] of Object.entries(ElementPlusIcons)) {
@@ -14,5 +15,7 @@ for (const [key, component] of Object.entries(ElementPlusIcons)) {
 // 将elementIcone放到全局
 app.use(ElementPlus);
 app.use(createPinia());
-
+console.log(theme);
+app.use(theme);
+app.use(new Route(createWebHistory(), import.meta.glob("@/views/*/*.vue")));
 app.mount("#app");
