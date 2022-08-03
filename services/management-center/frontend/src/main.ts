@@ -4,7 +4,6 @@ import * as ElementPlusIcons from "@element-plus/icons-vue";
 import "element-plus/dist/index.css";
 import { createPinia } from "pinia";
 import App from "./App.vue";
-import "./assets/reset.css";
 
 const app = createApp(App);
 // 注册elementIcone

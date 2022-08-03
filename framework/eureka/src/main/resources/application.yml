@@ -30,6 +30,8 @@ eureka:
 #    serviceUrl:
 #      defaultZone: http://${eureka.instance.hostname}:${server.port}/eureka/   #如果要启动集群，需要通过环境变量修改, eg. eureka.client.serviceUrl.defaultZone=https://peer1/eureka/,http://peer2/eureka/,http://peer3/eureka/
 
+
+
 logging:
   file:
     path: @ce.log.base.dir@/${spring.application.name}

@@ -20,9 +20,10 @@
 
     <properties>
         <!-- ce 基本配置变量 start -->
-        <ce.config.dir>/opt/cloudexplorer/conf</ce.config.dir>
-        <ce.config.file>/opt/cloudexplorer/conf/cloudexplorer.properties</ce.config.file>
-        <ce.log.base.dir>/opt/cloudexplorer/logs</ce.log.base.dir>
+        <ce.base.dir>/opt/cloudexplorer</ce.base.dir>
+        <ce.config.dir>${ce.base.dir}/conf</ce.config.dir>
+        <ce.config.file>${ce.config.dir}/cloudexplorer.properties</ce.config.file>
+        <ce.log.base.dir>${ce.base.dir}/logs</ce.log.base.dir>
         <!-- ce 基本配置变量 end -->
 
         <revision>4.0.0</revision>
@@ -31,6 +32,7 @@
 
         <skipAntRunForJenkins>false</skipAntRunForJenkins>
         <flatten.version>1.2.7</flatten.version>
+        <jjwt.version>0.11.5</jjwt.version>
     </properties>
 
     <dependencies>
@@ -39,15 +41,37 @@
             <artifactId>spring-cloud-starter</artifactId>
         </dependency>
         <dependency>
+            <!--注解处理器, 给自定义的配置类生成元数据信息-->
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-configuration-processor</artifactId>
+            <optional>true</optional>
+        </dependency>
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <optional>true</optional>
+        </dependency>
+
+
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-devtools</artifactId>
+            <scope>runtime</scope>
+        </dependency>
+        <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-test</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>
-            <!--注解处理器, 给自定义的配置类生成元数据信息-->
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-configuration-processor</artifactId>
-            <optional>true</optional>
+            <groupId>io.projectreactor</groupId>
+            <artifactId>reactor-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.security</groupId>
+            <artifactId>spring-security-test</artifactId>
+            <scope>test</scope>
         </dependency>
 
     </dependencies>
@@ -78,18 +102,6 @@
         </resources>
 
         <plugins>
-            <plugin>
-                <groupId>org.springframework.boot</groupId>
-                <artifactId>spring-boot-maven-plugin</artifactId>
-                <configuration>
-                    <excludes>
-                        <exclude>
-                            <groupId>org.projectlombok</groupId>
-                            <artifactId>lombok</artifactId>
-                        </exclude>
-                    </excludes>
-                </configuration>
-            </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>

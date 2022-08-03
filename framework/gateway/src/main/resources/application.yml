@@ -1,6 +1,33 @@
 spring:
   application:
     name: gateway
+  cloud:
+    gateway:
+      discovery:
+        locator:
+          #euerka服务自动注册进router
+          enabled: true
+          #服务名路径小写
+          lowerCaseServiceId: true
+          predicates:
+            #这是原来默认的断言
+            - name: Path
+              args:
+                pattern: "'/'+serviceId+'/**'"
+          filters:
+            #这是原来默认的替换路径filter
+#            - name: RewritePath
+#              args:
+#                regexp: "'/' + serviceId + '/?(?<remaining>.*)'"
+#                replacement: "'/${remaining}'"
+            #我们子模块都自带basePath，走路由需要删除模块的第一个'/'前缀
+            - name: StripPrefix
+              args:
+                parts: 1
+            #路径增加模块名为前缀
+            - name: PrefixPath
+              args:
+                prefix: "'/' + serviceId"
 
 server:
   port: 9000
@@ -8,17 +35,34 @@ server:
 #监控，访问路径 {ip}:{port}/actuator
 management:
   server:
+    #    base-path: /${spring.application.name}/actuator
     port: 9900
   endpoints:
     web:
       exposure:
         include:
+          - gateway
           - health
           - metrics
+          - info
 #          - env
 #          - heapdump
 
 
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:8761/eureka/
+    healthcheck:
+      enabled: true
+  instance:
+    lease-renewal-interval-in-seconds: 2
+    lease-expiration-duration-in-seconds: 10
+
 logging:
   file:
     path: @ce.log.base.dir@/${spring.application.name}
+
+ce:
+  config:
+    file: file:@ce.config.file@
