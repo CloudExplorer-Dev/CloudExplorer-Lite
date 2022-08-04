@@ -57,15 +57,15 @@ export const setLanguage = (lang) => {
 };
 
 // 组合翻译，例如 key 为'请输入{0}'，keys 为 login.username，则自动将 keys 翻译并替换到 {0} {1}...
-export const $tm = (key: string, ...keys: string[]) => {
-  const values: string[] = [];
+export const $tv = (key: string, ...keys: string[]) => {
+  const values = [];
   for (const k of keys) {
     values.push(i18n.global.t(k));
   }
   return i18n.global.t(key, values);
 };
 
-// 忽略警告，即：不存在Key直接返回Key
+// 忽略警告，即：不存在 Key 直接返回 Key
 export const $tk = (key) => {
   const hasKey = i18n.global.te(key);
   if (hasKey) {
@@ -74,16 +74,14 @@ export const $tk = (key) => {
   return key;
 };
 
-// export const $t = (key, value) => {
-//   return i18n.global.t(key, value);
-// };
-
-export default {
-  install:(app:APP) =>{
-    app.use(i18n)
-    // app.config.globalProperties.$t = $t;
-    // app.config.globalProperties.$tm = $tm;
-    // app.config.globalProperties.$tk = $tk;
-}
+export const $t = (key, value) => {
+  return i18n.global.t(key, value);
 };
 
+export default {
+  install: (app: APP): void => {
+    app.use(i18n);
+    app.config.globalProperties.$tv = $tv;
+    app.config.globalProperties.$tk = $tk;
+  },
+};

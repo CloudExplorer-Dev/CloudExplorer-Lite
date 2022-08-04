@@ -1,5 +1,5 @@
 import elementEnLocale from "element-plus/lib/locale/lang/en";
-import fit2cloudEnLocale from "fit2cloud-ui-plus/src/locale/lang/en.js";
+import fit2cloudEnLocale from "fit2cloud-ui-plus/src/locale/lang/en";
 import subModuleEnLocale  from  "@/locales/lang/en";
 
 const message = {
