@@ -18,4 +18,6 @@ app.use(createPinia());
 console.log(theme);
 app.use(theme);
 app.use(new Route(createWebHistory(), import.meta.glob("@/views/*/*.vue")));
+console.log("111111",app);
+console.log("333",app.config);
 app.mount("#app");
