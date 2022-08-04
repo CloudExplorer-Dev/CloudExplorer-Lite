@@ -4,7 +4,7 @@ import { defineConfig, loadEnv } from "vite";
 import type { ConfigEnv } from "vite";
 import vue from "@vitejs/plugin-vue";
 import vueSetupExtend from "vite-plugin-vue-setup-extend";
-
+import { viteMockServe } from "vite-plugin-mock";
 import dts from "vite-plugin-dts"; //生成d.ts
 
 /**
@@ -30,13 +30,16 @@ const commonBuild = {
           "@/config/modules.config": "@/config/modules.config",
           "element-plus": "element-plus",
           "@/config/basePathConfig": "@/config/basePathConfig",
+          "@/locales/lang/zh-cn": "@/locales/lang/zh-cn",
+          "@/locales/lang/zh-tw": "@/locales/lang/zh-tw",
+          "@/locales/lang/en": "@/locales/lang/en",
         },
       },
     },
     lib: {
-      entry: fileURLToPath(new URL("./packages/index.ts", import.meta.url)),
-      name: "frontendPublic",
-      fileName: (format: string) => `frontend-public.${format}.js`,
+      entry: fileURLToPath(new URL("./commons/index.ts", import.meta.url)),
+      name: "ceBase",
+      fileName: (format: string) => `ce-base.${format}.js`,
     },
   },
 };
@@ -55,6 +58,17 @@ const thisBuild = {
     }),
     DefineOptions(),
     vueSetupExtend(),
+    viteMockServe({
+      supportTs: true,
+      // 设置模拟.ts文件的存储文件夹
+      mockPath: "./src/mock",
+      localEnabled: true, // 开发环境设为true，
+      prodEnabled: false, // 生产环境设为true，也可以根据官方文档格式
+      //这样可以控制关闭mock的时候不让mock打包到最终代码内
+      injectCode: `import { setupMock } from "./mock";
+      setupMock();`,
+      watchFiles: true, // 监听文件内容变更
+    }),
   ],
   resolve: {
     alias: {
@@ -64,23 +78,9 @@ const thisBuild = {
   server: {
     host: "0.0.0.0",
     port: 5502,
-    proxy: {
-      "/login": {
-        target: "http://127.0.0.1:6611", //实际请求地址
-        changeOrigin: true,
-      },
-      "/api/module/runing": {
-        target: "http://127.0.0.1:6611", //实际请求地址
-        changeOrigin: true,
-      },
-      "/api/module/current": {
-        target: "http://127.0.0.1:6611", //实际请求地址
-        changeOrigin: true,
-      },
-    },
+    proxy: {},
   },
 };
-
 // 根据mode 判断打包依赖包还是当前项目
 export default defineConfig(({ mode }: ConfigEnv) => {
   const env = loadEnv(mode, "./env");
