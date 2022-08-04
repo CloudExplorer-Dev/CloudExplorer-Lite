@@ -4,7 +4,7 @@ import { defineConfig, loadEnv } from "vite";
 import type { ConfigEnv } from "vite";
 import vue from "@vitejs/plugin-vue";
 import vueSetupExtend from "vite-plugin-vue-setup-extend";
-
+import { viteMockServe } from "vite-plugin-mock";
 import dts from "vite-plugin-dts"; //生成d.ts
 
 /**
@@ -55,6 +55,17 @@ const thisBuild = {
     }),
     DefineOptions(),
     vueSetupExtend(),
+    viteMockServe({
+      supportTs: true,
+      // 设置模拟.ts文件的存储文件夹
+      mockPath: "./src/mock",
+      localEnabled: true, // 开发环境设为true，
+      prodEnabled: false, // 生产环境设为true，也可以根据官方文档格式
+      //这样可以控制关闭mock的时候不让mock打包到最终代码内
+      injectCode: `import { setupMock } from "./mock";
+      setupMock();`,
+      watchFiles: true, // 监听文件内容变更
+    }),
   ],
   resolve: {
     alias: {
@@ -67,7 +78,6 @@ const thisBuild = {
     proxy: {},
   },
 };
-
 // 根据mode 判断打包依赖包还是当前项目
 export default defineConfig(({ mode }: ConfigEnv) => {
   const env = loadEnv(mode, "./env");

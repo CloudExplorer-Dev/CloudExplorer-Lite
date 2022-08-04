@@ -14,12 +14,12 @@
     "lib": ["esnext", "dom"],
     "skipLibCheck": true,
     "paths": {
-      "@/*": ["packages/*","example/*"],
+      "@/*": ["commons/*","example/*"],
     },
     "types": ["unplugin-vue-define-options","element-plus/global"],
     "allowJs": true
   },
-  "include": ["examples/**/*", "packages/**/*", "plugins/*"],
+  "include": ["examples/**/*", "commons/**/*", "plugins/*"],
     // ts 排除的文件
     "exclude": [
       "node_modules"

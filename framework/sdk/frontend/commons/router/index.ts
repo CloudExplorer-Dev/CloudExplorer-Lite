@@ -27,11 +27,11 @@ interface RouteItem {
   [propName: string]: Array<RouteRecordRaw>;
 }
 
-interface routeComponents {
+interface RouteComponents {
   /**
    *如果key是rootRoute,则是添加root级别路由,如果是其他,如home 则是给home路由添加子路由
    */
-  [propName: string]: never;
+  [propName: string]: any;
 }
 const rootRouteName = "rootRoute";
 
@@ -49,10 +49,10 @@ class RouteObj {
    */
   moveRouteItem: () => RouteItem | Promise<RouteItem>;
   install: (app: App) => void;
-  routeComponent: routeComponents;
+  routeComponent: RouteComponents;
   constructor(
     history: RouterHistory,
-    routeComponent: routeComponents,
+    routeComponent: RouteComponents,
     baseRoute?: Array<RouteRecordRaw>,
     moveRouteItem?: () => RouteItem | Promise<RouteItem>,
     beforeEach?: (
@@ -74,7 +74,7 @@ class RouteObj {
     this.history = history;
     this.moveRouteItem = moveRouteItem
       ? moveRouteItem
-      : this.defaulyMoveRouteItem;
+      : this.defaultMoveRouteItem;
     this.router = createRouter({ history, routes: [] });
     this.initBaseRoute(
       this.router,
@@ -139,10 +139,14 @@ class RouteObj {
     });
     // 添加路由
     routeItemKeys.forEach((key: string) => {
-      const routeRecordRaws: Array<RouteRecordRaw> = routeItem[key];
+      const routeRecordRaws: Array<RouteRecordRaw | any> = routeItem[key];
       routeRecordRaws.forEach((routeRecordRaw) => {
         if (routeRecordRaw.name && !router.hasRoute(routeRecordRaw.name)) {
           isResetRoute = true;
+          if (!routeRecordRaw.component) {
+            routeRecordRaw.component =
+              this.routeComponent[routeRecordRaw.componentPath];
+          }
           if (key === rootRouteName) {
             router.addRoute(routeRecordRaw);
           } else {
@@ -151,21 +155,21 @@ class RouteObj {
         }
       });
     });
-    console.log(isResetRoute);
     return isResetRoute;
   };
 
-  defaulyMoveRouteItem: () => RouteItem | Promise<RouteItem> = () => {
-    return {
-      home: [
-        {
-          name: "test",
-          path: "/test",
-          component: this.routeComponent["/src/views/Test/index.vue"],
-        },
-      ],
+  defaultMoveRouteItem: () => RouteItem | any | Promise<RouteItem | any> =
+    () => {
+      return {
+        home: [
+          {
+            name: "test",
+            path: "/test",
+            componentPath: "/src/views/Test/index.vue",
+          },
+        ],
+      };
     };
-  };
   /**
    * 默认路由
    * @returns

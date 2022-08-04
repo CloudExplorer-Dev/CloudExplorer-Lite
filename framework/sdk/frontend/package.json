@@ -23,6 +23,7 @@
     "mitt": "^3.0.0"
   },
   "devDependencies": {
+    "@types/nprogress": "^0",
     "vite-plugin-dts": "^1.4.0"
   }
 }

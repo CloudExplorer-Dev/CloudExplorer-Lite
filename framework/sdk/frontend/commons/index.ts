@@ -3,7 +3,8 @@ import Route from "./router/index";
 const business = import.meta.globEager("./base-*/index.ts");
 const install = (app: App) => {
   Object.keys(business).forEach((key: string) => {
-    app.use(business[key].default);
+    const plugin: any = business[key];
+    app.use(plugin.default);
   });
 };
 export default { install };
