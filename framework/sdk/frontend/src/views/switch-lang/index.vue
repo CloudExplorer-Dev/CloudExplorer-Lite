@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { useI18n } from "vue-i18n";
-import {$t,$tm} from "ce-base/commons/base-locales";
+import { $t, $tm } from "ce-base/commons/base-locales";
 import { ElMessage } from "element-plus";
 import { computed } from "vue";
 // import { useUserStore } from "@/stores/user";
@@ -19,10 +19,10 @@ const languageMap = {
 function handleSwitchLanguage(lang) {
   // TODO 此处通过状态管理设置用户语言和浏览器缓存之类
   // user.setLanguage(lang).then(() => {
-    ElMessage({
-      message: $t("commons.btn.switch_lang") + $t("commons.msg.success"),
-      type: "success",
-    });
+  ElMessage({
+    message: $t("commons.btn.switch_lang") + $t("commons.msg.success"),
+    type: "success",
+  });
   // });
 }
 </script>

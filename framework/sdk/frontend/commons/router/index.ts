@@ -84,7 +84,6 @@ class RouteObj {
       onError ? onError : this.defaultOnError
     );
     this.install = this.router.install;
-    console.log(routeComponent);
     this.routeComponent = routeComponent;
   }
   /**

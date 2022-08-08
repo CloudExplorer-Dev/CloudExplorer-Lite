@@ -7,6 +7,13 @@ import App from "./App.vue";
 import ceBase from "ce-base";
 import { Route } from "ce-base";
 import { createWebHashHistory } from "vue-router";
+import "ce-base/lib/style.css";
+import "ce-base/commons/styles/common.scss";
+import { setupMock } from "ce-base/commons/mock"; //mock
+if (import.meta.env.MODE === "development") {
+  //dev环境开启mock
+  setupMock(import.meta.globEager("@/mock/*/index.ts"));
+}
 const app = createApp(App);
 // 注册elementIcone
 for (const [key, component] of Object.entries(ElementPlusIcons)) {

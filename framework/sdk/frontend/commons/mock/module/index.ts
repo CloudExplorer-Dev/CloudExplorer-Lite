@@ -9,4 +9,15 @@ export default [
       return Result.success(modules);
     },
   },
+  {
+    url: "/api/getCurrentModule",
+    method: "get",
+    response: ({ query }: any) => {
+      return Result.success(
+        modules.find((m) => {
+          return m.name === "management-center";
+        })
+      );
+    },
+  },
 ] as MockMethod[];

@@ -1,8 +1,13 @@
 <script setup lang="ts"></script>
 
 <template>
-  Hello Gateway
   <router-view></router-view>
 </template>
 
-<style></style>
+<style scoped lang="scss">
+html,
+body {
+  height: 100%;
+  width: 100%;
+}
+</style>

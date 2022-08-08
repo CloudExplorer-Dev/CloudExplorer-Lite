@@ -2,17 +2,19 @@ import axios from "axios";
 import { ElMessage } from "element-plus";
 import packageJSON from "@/../package.json";
 import nProgress from "nprogress";
+import type { Ref } from "vue";
 import type { NProgress } from "nprogress";
 import type { Result } from "./Result";
 declare global {
   interface ImportMeta {
     env: {
-      MODE: string;
+      DEV: boolean;
     };
   }
 }
+console.log("xx", import.meta.env);
 const instance = axios.create({
-  baseURL: import.meta.env.MODE === "development" ? "" : "/" + packageJSON.name,
+  baseURL: import.meta.env.DEV ? "" : "/" + packageJSON.name,
   withCredentials: true,
   timeout: 60000,
 });
@@ -20,7 +22,6 @@ const instance = axios.create({
 // 设置请求拦截器
 instance.interceptors.request.use(
   (config: any) => {
-    console.log("xss");
     config.headers["Authorization"] = localStorage.getItem("token");
     return config;
   },
@@ -52,10 +53,15 @@ export const request = instance;
 /* 简化请求方法，统一处理返回结果，并增加loading处理，这里以{success,data,message}格式的返回值为例，具体项目根据实际需求修改 */
 const promise: (
   request: Promise<any>,
-  loading?: NProgress
+  loading?: NProgress | Ref<boolean>
 ) => Promise<Result<any>> = (request, loading = nProgress) => {
   return new Promise((resolve, reject) => {
-    loading.start();
+    if ((loading as NProgress).start) {
+      console.log("存在");
+      (loading as NProgress).start();
+    } else {
+      (loading as Ref).value = true;
+    }
     request
       .then((response) => {
         if (response.data.code === 200) {
@@ -63,11 +69,19 @@ const promise: (
         } else {
           reject(response.data);
         }
-        loading.done();
+        if ((loading as NProgress).start) {
+          (loading as NProgress).done();
+        } else {
+          (loading as Ref).value = false;
+        }
       })
       .catch((error) => {
         reject(error);
-        loading.done();
+        if ((loading as NProgress).start) {
+          (loading as NProgress).done();
+        } else {
+          (loading as Ref).value = false;
+        }
       });
   });
 };
@@ -82,11 +96,11 @@ const promise: (
 export const get: (
   url: string,
   params?: unknown,
-  loading?: NProgress
+  loading?: NProgress | Ref<boolean>
 ) => Promise<Result<any>> = (
   url: string,
   params: unknown,
-  loading?: NProgress
+  loading?: NProgress | Ref<boolean>
 ) => {
   return promise(request({ url: url, method: "get", params }), loading);
 };
@@ -103,7 +117,7 @@ export const post: (
   url: string,
   params?: unknown,
   data?: unknown,
-  loading?: NProgress
+  loading?: NProgress | Ref<boolean>
 ) => Promise<Result<any> | any> = (url, params, data, loading) => {
   return promise(request({ url: url, method: "post", data, params }), loading);
 };
@@ -120,7 +134,7 @@ export const put: (
   url: string,
   params?: unknown,
   data?: unknown,
-  loading?: NProgress
+  loading?: NProgress | Ref<boolean>
 ) => Promise<Result<any>> = (url, params, data, loading) => {
   return promise(request({ url: url, method: "put", data, params }), loading);
 };
@@ -135,7 +149,7 @@ export const put: (
 export const del: (
   url: string,
   params: unknown,
-  loading: NProgress
+  loading: NProgress | Ref<boolean>
 ) => Promise<Result<any>> = (url, params, loading) => {
   return promise(request({ url: url, method: "delete", params }), loading);
 };
