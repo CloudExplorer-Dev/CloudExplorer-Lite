@@ -5,10 +5,10 @@ import "element-plus/dist/index.css";
 import { createPinia } from "pinia";
 import App from "./App.vue";
 import common from "../commons/index";
-import { createI18n } from "vue-i18n";
 import "nprogress/nprogress.css";
 import "../commons/styles/common.scss";
 import route from "./router";
+
 const app = createApp(App);
 import { setupMock } from "../commons/mock"; //mock
 if (import.meta.env.MODE === "development") {
@@ -24,6 +24,7 @@ const ElementPlusIconsVue: object = ElementPlusIcons;
 // 将elementIcone放到全局
 app.config.globalProperties.$antIcons = ElementPlusIconsVue;
 // 将elementIcone放到全局
+
 app.use(ElementPlus);
 app.use(createPinia());
 console.log(common);

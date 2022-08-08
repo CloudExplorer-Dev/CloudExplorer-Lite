@@ -22,6 +22,9 @@ const commonBuild = {
         "element-plus",
         "@/config/basePathConfig",
         "@/../package.json",
+        "@/locales/lang/zh-cn",
+        "@/locales/lang/zh-tw",
+        "@/locales/lang/en",
       ],
       output: {
         globals: {
