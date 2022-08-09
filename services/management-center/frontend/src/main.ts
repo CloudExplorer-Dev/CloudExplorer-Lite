@@ -2,7 +2,8 @@ import { createApp } from "vue";
 import ElementPlus from "element-plus";
 import * as ElementPlusIcons from "@element-plus/icons-vue";
 import "element-plus/dist/index.css";
-import { createPinia } from "pinia";
+import pinia from "@/stores";
+import { moduleStore } from "ce-base/commons/stores/module";
 import App from "./App.vue";
 import ceBase from "ce-base";
 import { Route } from "ce-base";
@@ -20,9 +21,19 @@ for (const [key, component] of Object.entries(ElementPlusIcons)) {
   app.component(key, component);
 }
 app.use(ceBase);
-app.use(new Route(createWebHashHistory(), import.meta.glob("@/views/*/*.vue")));
+app.use(
+  new Route(
+    createWebHashHistory(),
+    import.meta.glob("@/views/*/*.vue"),
+    null,
+    async () => {
+      const a = await moduleStore(pinia).getRoute();
+      return a;
+    }
+  ).router
+);
 // 将elementIcone放到全局
 app.use(ElementPlus);
-app.use(createPinia());
+app.use(pinia);
 
 app.mount("#app");

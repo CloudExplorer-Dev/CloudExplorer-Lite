@@ -1,23 +1,10 @@
 <script setup lang="ts">
-import { ref, onMounted } from "vue";
-import { getMenuByModule } from "../../../api/menu";
-import { getCurrentModule } from "../../../api/module";
-import { Menu } from "../../../api/menu/type";
-import { Module } from "../../../api/module/type";
 import SubMenu from "./SubMenu.vue";
-const menus = ref<Array<Menu>>();
-const currentModule = ref<Module>();
-onMounted(() => {
-  getMenuByModule("management-center").then((ok) => {
-    menus.value = ok.data;
-  });
-  getCurrentModule().then((ok) => {
-    currentModule.value = ok.data;
-  });
-});
+import { moduleStore } from "../../../stores/module";
+const { menus, currentModule } = moduleStore();
 </script>
 <template>
-  <el-menu class="menuContainer" :collapse="false" :router="true">
+  <el-menu class="menuContainer" :router="true">
     <div class="title">
       <h1>
         {{ currentModule?.title }}

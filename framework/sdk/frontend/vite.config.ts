@@ -25,6 +25,7 @@ const commonBuild = {
         "@/locales/lang/zh-cn",
         "@/locales/lang/zh-tw",
         "@/locales/lang/en",
+        "@/stores",
       ],
       output: {
         globals: {
@@ -38,6 +39,7 @@ const commonBuild = {
           "@/locales/lang/zh-tw": "@/locales/lang/zh-tw",
           "@/locales/lang/en": "@/locales/lang/en",
           "@/../package.json": "@/../package.json",
+          "@/stores": "@/stores",
         },
       },
     },
@@ -89,7 +91,6 @@ const thisBuild = {
 // 根据mode 判断打包依赖包还是当前项目
 export default defineConfig(({ mode }: ConfigEnv) => {
   const env = loadEnv(mode, "./env");
-  console.log(env);
   if (mode === "lib") {
     const config = { ...thisBuild, ...commonBuild };
     //生成d.ts

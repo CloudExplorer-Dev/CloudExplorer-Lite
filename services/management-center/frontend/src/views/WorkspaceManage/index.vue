@@ -1,6 +1,6 @@
 <script setup lang="ts"></script>
 <template>
-  <div>Test</div>
+  <div>工作空间管理</div>
 </template>
 
-<style></style>
+<style lang=""></style>

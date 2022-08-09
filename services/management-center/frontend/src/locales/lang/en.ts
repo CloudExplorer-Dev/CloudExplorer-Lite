@@ -1,4 +1,6 @@
-const message = {};
+const message = {
+
+};
 
 export default {
   ...message,

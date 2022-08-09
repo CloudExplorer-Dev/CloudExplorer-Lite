@@ -2,13 +2,12 @@ import { createApp } from "vue";
 import ElementPlus from "element-plus";
 import * as ElementPlusIcons from "@element-plus/icons-vue";
 import "element-plus/dist/index.css";
-import { createPinia } from "pinia";
+import pinia from "@/stores";
 import App from "./App.vue";
 import common from "../commons/index";
 import "nprogress/nprogress.css";
 import "../commons/styles/common.scss";
 import route from "./router";
-
 const app = createApp(App);
 import { setupMock } from "../commons/mock"; //mock
 if (import.meta.env.MODE === "development") {
@@ -26,7 +25,7 @@ app.config.globalProperties.$antIcons = ElementPlusIconsVue;
 // 将elementIcone放到全局
 
 app.use(ElementPlus);
-app.use(createPinia());
+app.use(pinia);
 console.log(common);
-app.use(route);
+app.use(route.router);
 app.mount("#app");

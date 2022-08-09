@@ -6,6 +6,55 @@
   "description": "",
   "glyphs": [
     {
+      "icon_id": "16921549",
+      "name": "关于",
+      "font_class": "guanyu",
+      "unicode": "e7e8",
+      "unicode_decimal": 59368
+    },
+    {
+      "icon_id": "3456457",
+      "name": "设置",
+      "font_class": "shezhi",
+      "unicode": "e70f",
+      "unicode_decimal": 59151
+    },
+    {
+      "icon_id": "6965101",
+      "name": "系统模块",
+      "font_class": "xitongmokuai",
+      "unicode": "e619",
+      "unicode_decimal": 58905
+    },
+    {
+      "icon_id": "7318486",
+      "name": "日志",
+      "font_class": "zhuanxierizhi",
+      "unicode": "e609",
+      "unicode_decimal": 58889
+    },
+    {
+      "icon_id": "8400530",
+      "name": "显示",
+      "font_class": "xianshi",
+      "unicode": "e62a",
+      "unicode_decimal": 58922
+    },
+    {
+      "icon_id": "16041683",
+      "name": "折叠5",
+      "font_class": "zhedie5",
+      "unicode": "e649",
+      "unicode_decimal": 58953
+    },
+    {
+      "icon_id": "16041685",
+      "name": "折叠6",
+      "font_class": "zhedie6",
+      "unicode": "e64b",
+      "unicode_decimal": 58955
+    },
+    {
       "icon_id": "1680709",
       "name": "角色管理",
       "font_class": "jiaoseguanli",

@@ -8,7 +8,7 @@ import type { Ref } from "vue";
  *获取所有正在运行的模块
  * @returns
  */
-export const listRuningModules = (loading: Ref<boolean>) => {
+export const listRuningModules = (loading?: Ref<boolean>) => {
   const modules: Promise<Result<Array<Module>>> = get(
     "/api/list/modules",
     {},
@@ -26,3 +26,4 @@ export const getCurrentModule = () => {
   });
   return currentModule;
 };
+export type { Module };
