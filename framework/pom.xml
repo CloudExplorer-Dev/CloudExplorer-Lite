@@ -16,6 +16,7 @@
 
     <modules>
         <module>sdk</module>
+        <module>eureka</module>
         <module>gateway</module>
     </modules>
 

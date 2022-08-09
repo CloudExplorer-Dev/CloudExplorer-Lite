@@ -65,4 +65,5 @@ logging:
 
 ce:
   config:
+    dir: @ce.config.dir@
     file: file:@ce.config.file@
