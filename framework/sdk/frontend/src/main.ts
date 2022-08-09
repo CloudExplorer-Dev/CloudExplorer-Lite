@@ -6,7 +6,7 @@ import pinia from "@/stores";
 import App from "./App.vue";
 import common from "../commons/index";
 import "nprogress/nprogress.css";
-import "../commons/styles/common.scss";
+import "../commons/styles/index.scss";
 import route from "./router";
 const app = createApp(App);
 import { setupMock } from "../commons/mock"; //mock
@@ -15,17 +15,17 @@ if (import.meta.env.MODE === "development") {
   setupMock(import.meta.globEager("@/mock/*/index.ts"));
 }
 
-// 注册elementIcone
+// 注册elementIcon
 for (const [key, component] of Object.entries(ElementPlusIcons)) {
   app.component(key, component);
 }
 const ElementPlusIconsVue: object = ElementPlusIcons;
-// 将elementIcone放到全局
+// 将elementIcon放到全局
 app.config.globalProperties.$antIcons = ElementPlusIconsVue;
-// 将elementIcone放到全局
+// 将elementIcon放到全局
 
 app.use(ElementPlus);
 app.use(pinia);
-console.log(common);
+app.use(common);
 app.use(route.router);
 app.mount("#app");

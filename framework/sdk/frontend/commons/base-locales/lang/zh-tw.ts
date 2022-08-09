@@ -1,6 +1,6 @@
 import elementZhTwLocale from "element-plus/lib/locale/lang/zh-tw";
 import fit2cloudZhTwLocale from "fit2cloud-ui-plus/src/locale/lang/zh-tw";
-import subModuleTwLocale  from  "@/locales/lang/zh-tw";
+import subModuleTwLocale from "@/locales/lang/zh-tw";
 
 const message = {
   commons: {
@@ -109,7 +109,7 @@ const message = {
     login: {
       username: "用戶名",
       password: "密碼",
-      title: "登錄 FIT2CLOUD",
+      title: "CloudExplorer 雲服務平臺",
       welcome: "歡迎回來，請輸入用戶名和密碼登錄",
       expires: "認證信息已過期，請重新登錄",
     },

@@ -1,6 +1,6 @@
 import elementZhLocale from "element-plus/lib/locale/lang/zh-cn";
 import fit2cloudZhLocale from "fit2cloud-ui-plus/src/locale/lang/zh-cn";// 加载 fit2cloud 的国际化文件
-import subModuleZhLocale  from  "@/locales/lang/zh-cn";// 加载子模块自定义的国际化文件
+import subModuleZhLocale from "@/locales/lang/zh-cn";// 加载子模块自定义的国际化文件
 
 const message = {
   commons: {
@@ -109,7 +109,7 @@ const message = {
     login: {
       username: "用户名",
       password: "密码",
-      title: "登录 FIT2CLOUD",
+      title: "CloudExplorer 云服务平台",
       welcome: "欢迎回来，请输入用户名和密码登录",
       expires: "认证信息已过期，请重新登录",
     },
