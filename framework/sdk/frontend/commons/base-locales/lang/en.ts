@@ -1,6 +1,6 @@
 import elementEnLocale from "element-plus/lib/locale/lang/en";
 import fit2cloudEnLocale from "fit2cloud-ui-plus/src/locale/lang/en";
-import subModuleEnLocale  from  "@/locales/lang/en";
+import subModuleEnLocale from "@/locales/lang/en";
 
 const message = {
   commons: {
@@ -109,7 +109,7 @@ const message = {
     login: {
       username: "Username",
       password: "Password",
-      title: "Login FIT2CLOUD",
+      title: "CloudExplorer Cloud Service Platform",
       welcome: "Welcome Back, Please Enter Your User Name And Password To Login",
       expires: "The Authentication Information Has Expired, Please Login Again",
     },
