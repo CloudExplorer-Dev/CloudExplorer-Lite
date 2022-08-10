@@ -12,6 +12,10 @@ const props = defineProps<{
    */
   hoverHander?: () => void;
   /**
+   * 鼠标移出回掉函数
+   */
+  leaveHander?: () => void;
+  /**
    * 是否是服务目录
    */
   rootItem?: boolean;
@@ -23,7 +27,8 @@ const props = defineProps<{
     :style="{
       height: props.rootItem ? '50px' : 'var(--ce-star-menu-item-height)',
     }"
-    @click="props.hoverHander ? props.hoverHander() : () => {}"
+    @mouseenter="props.hoverHander ? props.hoverHander() : null"
+    @mouseleave="props.leaveHander ? props.leaveHander() : null"
   >
     <div class="icon">
       <CeIcon :code="props.starMenuItem.icon"></CeIcon>

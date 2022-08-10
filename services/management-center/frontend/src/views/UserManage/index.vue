@@ -1,4 +1,10 @@
-<script setup lang="ts"></script>
+<script setup lang="ts">
+import { getPermission } from "ce-base/commons/api/permission";
+import { onMounted } from "vue";
+onMounted(() => {
+  getPermission();
+});
+</script>
 <template lang="">
   <div class="contentContainer">
     <div class="routeList">
@@ -10,7 +16,12 @@
         </el-breadcrumb>
       </div>
     </div>
-    <div class="content"></div>
+    <div class="content">
+      <div v-hasPermission="'USER_MENU_VIEW'">权限单个写法</div>
+      <div v-hasPermission="['USER_MENU_VIEW']">权限数组写法</div>
+      <br />
+      <div v-hasPermission="'TEST'">没权限</div>
+    </div>
   </div>
 </template>
 

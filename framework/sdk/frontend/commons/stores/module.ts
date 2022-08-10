@@ -1,7 +1,11 @@
 import { defineStore } from "pinia";
 import packageJson from "@/../package.json";
 import { listRuningModules, Module } from "../api/module";
-import { getMenuByModule, Menu } from "../api/menu";
+import { getMenuByModule, Menu, RequiredPermissions } from "../api/menu";
+import { getPermission } from "../api/permission";
+import { getCurrentRole } from "../api/role";
+import type { Role } from "../api/role";
+import type { Permission } from "../api/permission";
 interface RouteItem {
   /**
    *路由名称
@@ -21,6 +25,12 @@ interface Route {
   [propName: string]: Array<RouteItem>;
 }
 /**
+ * 扁平化后菜单
+ */
+interface fMenu extends Menu {
+  parentName: string;
+}
+/**
  * 扁平化菜单转换为路由
  * @param menus 菜单
  * @param newArr 空数组
@@ -29,17 +39,63 @@ interface Route {
  */
 const flatMenuToRoute = (
   menus: Array<Menu>,
-  newArr: Array<RouteItem>,
-  prentPath: string
+  prentPath: string,
+  currentRole: Role,
+  permissions: Array<Permission>
 ) => {
-  return flatMenu(menus, [], prentPath).map((menu) => {
-    const newRoute: RouteItem = {
-      path: menu.path,
-      name: menu.name,
-      componentPath: menu.componentPath,
-    };
-    return newRoute;
+  return flatMenu(menus, [], prentPath)
+    .filter((menu) => {
+      return hasPermission(menu, currentRole, permissions);
+    })
+    .map((menu) => {
+      const newRoute: RouteItem = {
+        path: menu.path,
+        name: menu.name,
+        componentPath: menu.componentPath,
+      };
+      return newRoute;
+    });
+};
+
+const hasPermission = (
+  menu: Menu,
+  currentRole: Role,
+  permissions: Array<Permission>
+) => {
+  const requiredPermissions: Array<RequiredPermissions> =
+    menu.requiredPermissions;
+  if (!menu.requiredPermissions || requiredPermissions.length === 0) {
+    return true;
+  }
+  for (let i = 0; i < requiredPermissions.length; i++) {
+    const roleOk = requiredPermissions[i].role === currentRole.id;
+    const permissionOk = permissions.some((item) => {
+      if (
+        requiredPermissions[i].permissions ||
+        requiredPermissions[i].permissions.length > 0
+      ) {
+        return requiredPermissions[i].permissions.includes(item.id);
+      }
+      return true;
+    });
+    if (requiredPermissions[i].logical === "OR") {
+      return roleOk || permissionOk;
+    } else {
+      return roleOk && permissionOk;
+    }
+  }
+};
+
+const filterMenu = (
+  menus: Array<Menu>,
+  currentRole: Role,
+  permissions: Array<Permission>
+) => {
+  const flatMenus = flatMenu(menus, [], "");
+  const filterMenu = flatMenus.filter((item) => {
+    return hasPermission(item, currentRole, permissions);
   });
+  return revertMenu(filterMenu);
 };
 /**
  * 扁平化菜单
@@ -50,17 +106,59 @@ const flatMenuToRoute = (
  */
 const flatMenu = (
   menus: Array<Menu>,
-  newMenus: Array<Menu>,
-  prentPath: string
+  newMenus: Array<fMenu>,
+  prentPath: string,
+  prentName = "rootPrentName"
 ) => {
   menus.forEach((item) => {
-    const newMenu: Menu = { ...item, path: prentPath + item.path };
+    const newMenu: fMenu = {
+      ...item,
+      path: prentPath + item.path,
+      parentName: prentName,
+      children: [],
+    };
     newMenus.push(newMenu);
     if (item.children != null && item.children.length > 0) {
-      flatMenu(item.children, newMenus, newMenu.path);
+      flatMenu(item.children, newMenus, newMenu.path, item.name);
     }
   });
   return newMenus;
+};
+
+/**
+ * 将菜单对象转换回去
+ * @param flatMenus
+ * @returns
+ */
+const revertMenu = (flatMenus: Array<fMenu>) => {
+  const menus: Array<Menu> = [];
+  flatMenus = JSON.parse(JSON.stringify(flatMenus));
+  flatMenus.sort((s1) => {
+    if (s1.parentName === "rootPrentName") {
+      return -1;
+    }
+    return 1;
+  });
+
+  flatMenus.forEach((item) => {
+    if (item.parentName === "rootPrentName") {
+      menus.push(item);
+      menus.sort((s1, s2) => {
+        return s1.order - s2.order;
+      });
+    } else {
+      const parentMenu = flatMenus.find((menu) => {
+        return menu.name === item.parentName;
+      });
+      if (parentMenu) {
+        parentMenu.children?.push(item);
+        parentMenu.children?.sort((s1, s2) => {
+          return s1.order - s2.order;
+        });
+      }
+    }
+  });
+  return menus;
 };
 
 const resetMenuPath = (menus: Array<Menu>, prentPath: string) => {
@@ -72,6 +170,7 @@ const resetMenuPath = (menus: Array<Menu>, prentPath: string) => {
   });
   return menus;
 };
+
 export const moduleStore = defineStore({
   id: "module",
   state: () => ({
@@ -87,15 +186,39 @@ export const moduleStore = defineStore({
      *当前模块菜单
      */
     currentMenus: <Array<Menu>>[],
+    /**
+     *当前角色
+     */
+    currentRole: <Role>{},
+    /**
+     *权限
+     */
+    permissions: <Array<Permission>>[],
+    /**
+     *是否初始化过状态
+     */
+    initState: <boolean>false,
   }),
   getters: {
+    modules(state: any) {
+      if (!this.initModule) {
+        state.initModule();
+        return [];
+      }
+      return state.runingModules;
+    },
     route(state: any) {
       if (!this.currentMenus || this.currentMenus.length === 0) {
         state.initModule();
         return [];
       } else {
         const route: Route = {
-          home: flatMenuToRoute(this.currentMenus, [], ""),
+          home: flatMenuToRoute(
+            this.currentMenus,
+            "",
+            this.currentRole,
+            this.permissions
+          ),
         };
         return route;
       }
@@ -105,9 +228,7 @@ export const moduleStore = defineStore({
         state.initModule();
         return [];
       } else {
-        const a = resetMenuPath(this.currentMenus, "");
-        console.log(a);
-        return a;
+        return resetMenuPath(this.currentMenus, "");
       }
     },
   },
@@ -115,32 +236,63 @@ export const moduleStore = defineStore({
     async initModule() {
       // 运行模块
       this.runingModules = (await listRuningModules()).data;
+      // 获取当前角色
+      this.currentRole = (await getCurrentRole()).data;
+      // 权限
+      this.permissions = (await getPermission()).data;
       // 当前模块
       this.currentModule = this.runingModules.find((m: Module) => {
         return packageJson.name === m.name;
       });
       // 获取当前模块菜单
-      this.currentMenus = (await getMenuByModule()).data;
+      const currentMenus = (await getMenuByModule()).data;
+      this.currentMenus = filterMenu(
+        currentMenus,
+        this.currentRole,
+        this.permissions
+      );
+      this.initState = true;
     },
     async getRoute() {
-      if (!this.currentMenus || this.currentMenus.length === 0) {
+      if (!this.initState) {
         await this.initModule();
       }
       if (this.currentMenus) {
         const route: Route = {
-          home: flatMenuToRoute(this.currentMenus, [], ""),
+          home: flatMenuToRoute(
+            this.currentMenus,
+            "",
+            this.currentRole,
+            this.permissions
+          ),
         };
         return route;
       }
       return [];
     },
     async getMenu() {
-      if (!this.currentMenus || this.currentMenus.length === 0) {
+      if (!this.initState) {
         await this.initModule();
       }
-      const a = flatMenu(this.currentMenus, [], "");
-      console.log(a);
-      return a;
+      return flatMenu(this.currentMenus, [], "");
+    },
+    async getRuningModule() {
+      if (!this.initState) {
+        await this.initModule();
+      }
+      return this.runingModules;
+    },
+    async getCurrentRole() {
+      if (!this.initState) {
+        await this.initModule();
+      }
+      return this.currentRole;
+    },
+    async getPermission() {
+      if (!this.initState) {
+        await this.initModule();
+      }
+      return this.permissions;
     },
   },
 });

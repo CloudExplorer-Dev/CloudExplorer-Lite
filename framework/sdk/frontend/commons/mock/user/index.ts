@@ -15,7 +15,10 @@ export default [
       if (u.password !== password) {
         return Result.error("密码错误", 1002);
       }
-      return Result.success({ token: "textToken", userInfo: u });
+      return Result.success({
+        token: JSON.stringify({ username: u.userName }),
+        userInfo: u,
+      });
     },
   },
   {

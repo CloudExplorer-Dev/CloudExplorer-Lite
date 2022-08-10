@@ -1,7 +1,23 @@
 /**
- * 菜单对象
+ * 当前菜单的权限与角色
  */
-interface Menu {
+interface RequiredPermissions {
+  /**
+   *角色
+   */
+  role: string;
+  /**
+   * 关系
+   */
+  logical: string;
+
+  /**
+   *权限
+   */
+  permissions: Array<string>;
+}
+
+interface MenuItem {
   /**
    * 标题
    */
@@ -19,6 +35,16 @@ interface Menu {
    */
   icon: string;
   /**
+   *排序
+   */
+  order: number;
+}
+
+/**
+ * 菜单对象
+ */
+interface Menu extends MenuItem {
+  /**
    * 组建Path
    */
   componentPath: string;
@@ -26,7 +52,12 @@ interface Menu {
    * 子菜单
    */
   children?: Array<Menu>;
+  /**
+   *当前菜单所属权限
+   */
+  requiredPermissions: Array<RequiredPermissions>;
 }
+
 /**
  * 获取菜单的请求参数
  */
@@ -36,4 +67,4 @@ interface MenuRequest {
    */
   moduleName: string;
 }
-export type { Menu, MenuRequest };
+export type { Menu, MenuRequest, MenuItem, RequiredPermissions };

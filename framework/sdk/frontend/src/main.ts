@@ -8,6 +8,7 @@ import common from "../commons/index";
 import "nprogress/nprogress.css";
 import "../commons/styles/index.scss";
 import route from "./router";
+import "../commons/font/iconfont.css";
 const app = createApp(App);
 import { setupMock } from "../commons/mock"; //mock
 if (import.meta.env.MODE === "development") {
