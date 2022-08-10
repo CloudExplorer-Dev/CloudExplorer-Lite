@@ -1,6 +1,7 @@
 package com.fit2cloud.autoconfigure;
 
 import com.fit2cloud.common.utils.JwtTokenUtils;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.redisson.api.RBucket;
 import org.redisson.api.RLock;
@@ -11,6 +12,7 @@ import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
 import java.util.concurrent.TimeUnit;
 
+@Slf4j
 public class JwtInitConfig {
 
     @Resource
@@ -39,7 +41,7 @@ public class JwtInitConfig {
             JwtTokenUtils.setJwtKey(jwtKey); //key 保存在内存里
             JwtTokenUtils.setJwtExpireMinutes(JWT_EXPIRE_MINUTES); //保存jwt的超时时间
 
-            System.out.println("load jwt key: " + jwtKey);
+            log.info("load jwt key: {}", jwtKey);
 
         } catch (Exception e) {
             e.printStackTrace();

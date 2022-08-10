@@ -47,8 +47,8 @@ public class LoginController {
     @GetMapping("api/menus")
     public Mono<String> menus() throws Exception {
         //
-
-        return Mono.just("test");
+        throw new RuntimeException("adsfasfaf");
+        //return Mono.just("test");
     }
 
 

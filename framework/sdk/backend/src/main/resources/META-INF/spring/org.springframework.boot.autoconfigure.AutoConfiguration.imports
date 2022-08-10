@@ -1,1 +1,2 @@
 com.fit2cloud.autoconfigure.JwtInitConfig
+com.fit2cloud.autoconfigure.SecurityConfig

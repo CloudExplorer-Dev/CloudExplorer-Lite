@@ -1,1 +1,2 @@
-org.springframework.boot.autoconfigure.EnableAutoConfiguration=com.fit2cloud.autoconfigure.JwtInitConfig
+org.springframework.boot.autoconfigure.EnableAutoConfiguration=com.fit2cloud.autoconfigure.JwtInitConfig,\
+  com.fit2cloud.autoconfigure.SecurityConfig

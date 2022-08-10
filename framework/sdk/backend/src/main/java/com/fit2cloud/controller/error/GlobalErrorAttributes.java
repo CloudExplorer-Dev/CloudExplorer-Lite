@@ -1,18 +1,21 @@
-package com.fit2cloud.gateway.config;
+package com.fit2cloud.controller.error;
 
+import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication;
 import org.springframework.boot.web.error.ErrorAttributeOptions;
-import org.springframework.boot.web.reactive.error.DefaultErrorAttributes;
+import org.springframework.boot.web.servlet.error.DefaultErrorAttributes;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
-import org.springframework.web.reactive.function.server.ServerRequest;
+import org.springframework.web.context.request.WebRequest;
 
 import java.util.Map;
 
+
+@ConditionalOnWebApplication(type = ConditionalOnWebApplication.Type.SERVLET)
 @Component
 public class GlobalErrorAttributes extends DefaultErrorAttributes {
 
     @Override
-    public Map<String, Object> getErrorAttributes(ServerRequest request, ErrorAttributeOptions options) {
+    public Map<String, Object> getErrorAttributes(WebRequest request, ErrorAttributeOptions options) {
         Throwable error = super.getError(request);
 
         Map<String, Object> map = super.getErrorAttributes(request, options);
