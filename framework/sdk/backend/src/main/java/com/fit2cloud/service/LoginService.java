@@ -1,4 +1,4 @@
-package com.fit2cloud.gateway.service;
+package com.fit2cloud.service;
 
 import com.fit2cloud.common.utils.JwtTokenUtils;
 import com.fit2cloud.dto.User;

@@ -2,8 +2,8 @@ package com.fit2cloud.gateway.controller;
 
 import com.fit2cloud.common.utils.JwtTokenUtils;
 import com.fit2cloud.controller.handler.ResultHolder;
-import com.fit2cloud.gateway.service.LoginService;
 import com.fit2cloud.request.LoginRequest;
+import com.fit2cloud.service.LoginService;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;

@@ -23,6 +23,7 @@ public class LoginController {
     public ResultHolder<Object> login(@RequestBody LoginRequest loginRequest, HttpServletResponse httpResponse) {
         String token = loginService.login(loginRequest);
 
+        //认证成功在header中添加token返回
         httpResponse.setHeader(JwtTokenUtils.TOKEN_NAME, token);
 
         return ResultHolder.success(null).message("登录成功");
