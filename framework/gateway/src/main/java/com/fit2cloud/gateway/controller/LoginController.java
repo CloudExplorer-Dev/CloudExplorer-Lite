@@ -2,11 +2,10 @@ package com.fit2cloud.gateway.controller;
 
 import com.fit2cloud.common.utils.JwtTokenUtils;
 import com.fit2cloud.controller.handler.ResultHolder;
-import com.fit2cloud.gateway.request.LoginRequest;
 import com.fit2cloud.gateway.service.LoginService;
+import com.fit2cloud.request.LoginRequest;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Mono;
 
@@ -20,8 +19,8 @@ public class LoginController {
     private LoginService loginService;
 
     @PostMapping("login")
-    public Mono<ResponseEntity<ResultHolder<Object>>> login(@RequestBody LoginRequest loginRequest, ServerHttpRequest httpRequest) {
-        String token = loginService.login(loginRequest, httpRequest);
+    public Mono<ResponseEntity<ResultHolder<Object>>> login(@RequestBody LoginRequest loginRequest) {
+        String token = loginService.login(loginRequest);
         return Mono.just(
                 ResponseEntity.ok()
                         .header(JwtTokenUtils.TOKEN_NAME, token)

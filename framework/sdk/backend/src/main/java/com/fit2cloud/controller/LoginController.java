@@ -1,23 +1,33 @@
 package com.fit2cloud.controller;
 
-import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.GetMapping;
+import com.fit2cloud.common.utils.JwtTokenUtils;
+import com.fit2cloud.controller.handler.ResultHolder;
+import com.fit2cloud.request.LoginRequest;
+import com.fit2cloud.service.LoginService;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
+import javax.annotation.Resource;
+import javax.servlet.http.HttpServletResponse;
+
+@RestController
+@RequestMapping
 public class LoginController {
-    @Controller
-    @RequestMapping
-    public static class IndexController {
 
-        @GetMapping(value = "/")
-        public String index() {
-            return "index.html";
-        }
+    @Resource
+    private LoginService loginService;
 
-        @GetMapping(value = "/login")
-        public String login() {
-            return "index.html";
-        }
+    @PostMapping("login")
+    public ResultHolder<Object> login(@RequestBody LoginRequest loginRequest, HttpServletResponse httpResponse) {
+        String token = loginService.login(loginRequest);
+
+        httpResponse.setHeader(JwtTokenUtils.TOKEN_NAME, token);
+
+        return ResultHolder.success(null).message("登录成功");
 
     }
+
+
 }
