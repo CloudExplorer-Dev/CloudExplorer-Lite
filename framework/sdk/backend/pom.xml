@@ -84,6 +84,13 @@
     <build>
         <resources>
             <resource>
+                <filtering>true</filtering>  <!-- 加上filter会过滤该资源路径中的文件 -->
+                <directory>src/main/resources</directory>
+                <includes>
+                    <include>commons.properties</include>
+                </includes>
+            </resource>
+            <resource>
                 <directory>src/main/java</directory>
                 <includes>
                     <include>**/*.properties</include>
@@ -99,6 +106,9 @@
                 <includes>
                     <include>**/*</include>
                 </includes>
+                <excludes>
+                    <exclude>commons.properties</exclude>
+                </excludes>
                 <filtering>false</filtering>
             </resource>
         </resources>

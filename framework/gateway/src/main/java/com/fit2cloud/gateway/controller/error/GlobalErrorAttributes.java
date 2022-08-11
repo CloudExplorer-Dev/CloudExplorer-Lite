@@ -1,4 +1,4 @@
-package com.fit2cloud.gateway.config;
+package com.fit2cloud.gateway.controller.error;
 
 import org.springframework.boot.web.error.ErrorAttributeOptions;
 import org.springframework.boot.web.reactive.error.DefaultErrorAttributes;

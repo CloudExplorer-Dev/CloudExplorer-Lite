@@ -1,8 +1,8 @@
 spring:
   application:
     name: management-center
-  webflux:
-    base-path: /${spring.application.name}
+#  webflux:
+#    base-path: /${spring.application.name}
 
 server:
   port: 9010
@@ -16,32 +16,7 @@ management:
   server:
     port: 9910
 
-  endpoints:
-    web:
-#      base-path: /${spring.application.name}/actuator
-      exposure:
-        include:
-          - health
-          - metrics
-          - info
-#          - env
-#          - heapdump
-
-
-eureka:
-  client:
-    service-url:
-      defaultZone: http://localhost:8761/eureka/
-    healthcheck:
-      enabled: true
-  instance:
-    lease-renewal-interval-in-seconds: 2
-    lease-expiration-duration-in-seconds: 10
-
 logging:
   file:
     path: @ce.log.base.dir@/${spring.application.name}
 
-ce:
-  config:
-    file: file:@ce.config.file@

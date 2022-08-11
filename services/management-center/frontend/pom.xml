@@ -25,7 +25,7 @@
       <plugin>
         <!-- optional -->
         <configuration>
-          <workingDirectory>../../</workingDirectory>
+          <workingDirectory>../../../</workingDirectory>
         </configuration>
         <groupId>com.github.eirslett</groupId>
         <artifactId>frontend-maven-plugin</artifactId>

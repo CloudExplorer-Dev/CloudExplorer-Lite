@@ -1,6 +1,5 @@
-package com.fit2cloud.gateway.config.handler;
+package com.fit2cloud.gateway.controller.error;
 
-import com.fit2cloud.gateway.config.GlobalErrorAttributes;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.web.WebProperties;

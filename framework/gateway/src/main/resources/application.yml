@@ -37,33 +37,8 @@ management:
   server:
     #    base-path: /${spring.application.name}/actuator
     port: 9900
-  endpoints:
-    web:
-      exposure:
-        include:
-          - gateway
-          - health
-          - metrics
-          - info
-#          - env
-#          - heapdump
 
-
-eureka:
-  client:
-    service-url:
-      defaultZone: http://localhost:8761/eureka/
-    healthcheck:
-      enabled: true
-  instance:
-    lease-renewal-interval-in-seconds: 2
-    lease-expiration-duration-in-seconds: 10
 
 logging:
   file:
     path: @ce.log.base.dir@/${spring.application.name}
-
-ce:
-  config:
-    dir: @ce.config.dir@
-    file: file:@ce.config.file@

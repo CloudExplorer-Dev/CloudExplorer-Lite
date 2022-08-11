@@ -20,7 +20,7 @@ import org.springframework.context.annotation.PropertySource;
 @EnableDiscoveryClient
 @PropertySource(value = {
         "classpath:commons.properties",
-        "${ce.config.file}"
+        "file:${ce.config.file}"
 }, encoding = "UTF-8", ignoreResourceNotFound = true)
 public class GatewayApplication {
 
