@@ -5,6 +5,7 @@ import nProgress from "nprogress";
 import type { Ref } from "vue";
 import type { NProgress } from "nprogress";
 import type { Result } from "./Result";
+import { getToken } from "../utils/auth";
 declare global {
   interface ImportMeta {
     env: {
@@ -22,7 +23,7 @@ const instance = axios.create({
 // 设置请求拦截器
 instance.interceptors.request.use(
   (config: any) => {
-    config.headers["Authorization"] = localStorage.getItem("token");
+    config.headers["Authorization"] = getToken();
     return config;
   },
   (err: any) => {

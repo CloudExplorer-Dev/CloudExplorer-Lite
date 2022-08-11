@@ -9,7 +9,7 @@ import ceBase from "ce-base";
 import { Route } from "ce-base";
 import { createWebHashHistory } from "vue-router";
 import "ce-base/lib/style.css";
-import "ce-base/commons/styles/common.scss";
+import "ce-base/commons/styles/index.scss";
 import { setupMock } from "ce-base/commons/mock"; //mock
 if (import.meta.env.MODE === "development") {
   //dev环境开启mock
@@ -27,8 +27,8 @@ app.use(
     import.meta.glob("@/views/*/*.vue"),
     null,
     async () => {
-      const a = await moduleStore(pinia).getRoute();
-      return a;
+      const routes = await moduleStore(pinia).getRoute();
+      return routes;
     }
   ).router
 );

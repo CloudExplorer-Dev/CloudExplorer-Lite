@@ -10,6 +10,7 @@ import type {
 } from "vue-router";
 import Layout from "../business/app-layout/index.vue";
 import Login from "../business/login/index.vue";
+import { getToken } from "../utils/auth";
 import type { App } from "vue";
 declare global {
   interface Window {
@@ -196,6 +197,15 @@ class RouteObj {
     from: RouteLocationNormalized,
     next: NavigationGuardNext
   ) => {
+    if (!getToken()) {
+      if (to.name !== "login") {
+        next({ name: "login" });
+      } else {
+        next();
+      }
+      return;
+    }
+
     const routeItem = await this.moveRouteItem();
     // 如果路由被重置则需要重制路由
     if (this.resetRoute(this.router, routeItem)) {

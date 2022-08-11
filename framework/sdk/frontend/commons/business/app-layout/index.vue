@@ -28,7 +28,7 @@ const collapse = ref<boolean>(true);
   </el-container>
 </template>
 
-<style scoped lang="scss">
+<style lang="scss" scoped>
 .rootContainer {
   height: 100vh;
   width: 100vw;
