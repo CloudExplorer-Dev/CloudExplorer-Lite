@@ -2,7 +2,9 @@ package com.fit2cloud.dto;
 
 
 import lombok.Data;
+import lombok.experimental.Accessors;
 
+@Accessors(chain = true)
 @Data
 public class User {
 

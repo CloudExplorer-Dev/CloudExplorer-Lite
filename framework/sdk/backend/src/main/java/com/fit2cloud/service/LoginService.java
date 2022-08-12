@@ -44,17 +44,18 @@ public class LoginService {
     //todo
     public User getUserById(String userId) {
 
-        if(!userId.equals("admin")){
+        if (!userId.equals("admin")) {
             return null;
         }
-        User user = new User();
-        user.setId(userId);
-        user.setUsername("admin");
-        user.setEmail("admin@email.com");
-        //user.setPassword("password");
-        user.setPassword("5f4dcc3b5aa765d61d8327deb882cf99");
-        user.setPhone("11111111111");
-        user.setEnabled(true);
+        User user = new User()
+                .setId(userId)
+                .setUsername("admin")
+                .setEmail("admin@email.com")
+                //.setPassword("password")
+                .setPassword("5f4dcc3b5aa765d61d8327deb882cf99")
+                .setPhone("11111111111")
+                .setEnabled(true);
+
         return user;
     }
 
