@@ -4,6 +4,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.boot.autoconfigure.web.servlet.error.AbstractErrorController;
 import org.springframework.boot.web.error.ErrorAttributeOptions;
 import org.springframework.boot.web.servlet.error.ErrorAttributes;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -31,8 +32,12 @@ public class GlobalErrorController extends AbstractErrorController {
         }
         Map<String, Object> errorPropertiesMap = getErrorAttributes(request, getErrorAttributeOptions(request, MediaType.ALL));
 
-        //针对非api接口，要把url路径交给前端去路由
-        if (HttpStatus.NOT_FOUND.equals(HttpStatus.valueOf((Integer) errorPropertiesMap.get("status"))) && !StringUtils.contains((String) errorPropertiesMap.get("path"), "/api/") || StringUtils.equals((String) errorPropertiesMap.get("path"), "/login")) {
+        //针对非api接口，要把url路径交给前端去路由 (获取页面都是GET方法)
+        if (HttpMethod.GET.matches(request.getMethod()) &&
+                (HttpStatus.NOT_FOUND.equals(HttpStatus.valueOf((Integer) errorPropertiesMap.get("status")))
+                        && !StringUtils.startsWith((String) errorPropertiesMap.get("path"), "/api/")
+                        && !StringUtils.equals((String) errorPropertiesMap.get("path"), "/api")
+                        || StringUtils.equals((String) errorPropertiesMap.get("path"), "/login"))) {
             response.setStatus(HttpStatus.OK.value());
             return "index.html";
         }

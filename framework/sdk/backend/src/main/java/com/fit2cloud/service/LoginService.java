@@ -19,10 +19,7 @@ public class LoginService {
             throw new RuntimeException("密码为空");
         }
 
-        User user = getUserById(loginRequest.getUsername());
-        if (user == null) {
-            user = getUserByEmail(loginRequest.getUsername());
-        }
+        User user = getUserByIdOrEmail(loginRequest.getUsername());
         if (user == null) {
             throw new RuntimeException("用户不存在");
         }
@@ -34,15 +31,30 @@ public class LoginService {
         return JwtTokenUtils.createJwtToken(user);
     }
 
+    public User getUserByIdOrEmail(String username) {
+        User user = getUserById(username);
+        if (user == null) {
+            user = getUserByEmail(username);
+        }
+
+        return user;
+    }
+
 
     //todo
     public User getUserById(String userId) {
+
+        if(!userId.equals("admin")){
+            return null;
+        }
         User user = new User();
-        user.setId("admin");
-        user.setUsername("管理员");
+        user.setId(userId);
+        user.setUsername("admin");
         user.setEmail("admin@email.com");
         //user.setPassword("password");
+        user.setPassword("5f4dcc3b5aa765d61d8327deb882cf99");
         user.setPhone("11111111111");
+        user.setEnabled(true);
         return user;
     }
 
