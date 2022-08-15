@@ -1,6 +1,7 @@
 package com.fit2cloud.service;
 
 import com.fit2cloud.common.utils.JwtTokenUtils;
+import com.fit2cloud.common.utils.MD5Util;
 import com.fit2cloud.dto.User;
 import com.fit2cloud.request.LoginRequest;
 import org.apache.commons.lang.StringUtils;
@@ -66,8 +67,7 @@ public class LoginService {
 
     //todo
     public boolean checkPassword(User user, String password) {
-
-        return true;
+        return user.getPassword().equals(MD5Util.md5(password));
     }
 
 }

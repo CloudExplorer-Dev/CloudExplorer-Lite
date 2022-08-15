@@ -54,11 +54,11 @@ public class TwtTokenAuthFilter  implements WebFilter {
                 }
             }
             if (userFromToken == null) {
-                return writeErrorMessage(request, response, HttpStatus.UNAUTHORIZED, null);
+                return writeErrorMessage(request, response, HttpStatus.FORBIDDEN, null);
             } else {
                 //todo 校验？
                 if (false) {
-                    return writeErrorMessage(request, response, HttpStatus.UNAUTHORIZED, null);
+                    return writeErrorMessage(request, response, HttpStatus.FORBIDDEN, null);
                 }
 
                 //将token放到上下文中
