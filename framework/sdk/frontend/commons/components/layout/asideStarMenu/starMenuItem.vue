@@ -31,7 +31,7 @@ const props = defineProps<{
     @mouseleave="props.leaveHander ? props.leaveHander() : null"
   >
     <div class="icon">
-      <CeIcon :code="props.starMenuItem.icon"></CeIcon>
+      <CeIcon size="28px" :code="props.starMenuItem.icon"></CeIcon>
     </div>
     <div class="text">{{ props.starMenuItem.title }}</div>
     <div class="handle">

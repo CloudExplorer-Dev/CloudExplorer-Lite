@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { defineProps } from "vue";
 import ceIcone from "../ce-icon/index.vue";
 const props = defineProps({
   collapse: {
@@ -15,9 +16,8 @@ const props = defineProps({
   <div class="collapseContainer">
     <div class="openBtn" @click="props.changeCollapse()">
       <ceIcone
-        :code="
-          collapse ? 'shangyiyehoutuifanhui' : 'xiayiyeqianjinchakangengduo'
-        "
+        :type="'svg'"
+        :code="collapse ? 'xiangzuojiantou' : 'xiangyoujiantou'"
       ></ceIcone>
     </div>
   </div>

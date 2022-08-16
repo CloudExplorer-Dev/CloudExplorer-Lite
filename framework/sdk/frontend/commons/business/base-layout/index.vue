@@ -29,6 +29,8 @@ import asideStartMenu from "../../components/layout/asideStarMenu/index.vue";
     background-color: var(--ce-star-menu-bg-color);
     border-right: 1px solid var(--ce-star-menu-border-color);
     height: calc(100vh - var(--ce-header-height));
+    overflow: hidden;
+    z-index: 1002;
   }
 }
 </style>

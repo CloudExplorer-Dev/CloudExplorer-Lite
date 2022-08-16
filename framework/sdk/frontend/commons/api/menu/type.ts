@@ -53,6 +53,10 @@ interface Menu extends MenuItem {
    */
   children?: Array<Menu>;
   /**
+   * 重定向
+   */
+  redirect?: string;
+  /**
    *当前菜单所属权限
    */
   requiredPermissions: Array<RequiredPermissions>;
@@ -67,4 +71,7 @@ interface MenuRequest {
    */
   moduleName: string;
 }
-export type { Menu, MenuRequest, MenuItem, RequiredPermissions };
+interface ModuleMenu {
+  [propName: string]: Array<Menu>;
+}
+export type { Menu, MenuRequest, MenuItem, RequiredPermissions, ModuleMenu };

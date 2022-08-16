@@ -28,4 +28,11 @@ export default [
       return Result.success(permissionsData);
     },
   },
+  {
+    url: "/api/runingPermission", // 注意，这里只能是string格式
+    method: "get",
+    response: () => {
+      return Result.success({});
+    },
+  },
 ] as MockMethod[];

@@ -16,4 +16,8 @@ interface Permission {
    */
   parentRoles: Array<string>;
 }
-export type { Permission };
+interface ModulePermission {
+  [propName: string]: Permission;
+}
+
+export type { Permission, ModulePermission };

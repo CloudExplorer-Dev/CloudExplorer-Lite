@@ -11,14 +11,15 @@ const props = defineProps({
   },
   cssPrefixText: {
     type: String,
-    default: "ali-icon",
+    default: "ali-icon-",
   },
   type: {
     type: String,
-    default: "svg",
+    default: "code",
   },
   size: {
     type: String,
+    default: "25px",
   },
 });
 /**
@@ -42,7 +43,12 @@ const getCode = computed(() => {
       v-else-if="Object.keys(components).includes(props.code)"
       :is="$antIcons[props.code]"
     ></component>
-    <span v-else class="icon iconfont" :class="getCode"></span>
+    <span
+      :style="{ fontSize: props.size }"
+      v-else
+      class="icon iconfont"
+      :class="getCode"
+    ></span>
   </el-icon>
 </template>
 

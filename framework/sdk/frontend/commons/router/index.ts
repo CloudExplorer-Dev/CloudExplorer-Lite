@@ -25,7 +25,7 @@ interface RouteItem {
   /**
    *如果key是rootRoute,则是添加root级别路由,如果是其他,如home 则是给home路由添加子路由
    */
-  [propName: string]: Array<RouteRecordRaw>;
+  [propName: string]: Array<RouteRecordRaw | any>;
 }
 
 interface RouteComponents {
@@ -49,13 +49,33 @@ class RouteObj {
    * 获取动态路由函数
    */
   moveRouteItem: () => RouteItem | Promise<RouteItem>;
+  beforeEachAppend?: (
+    to: RouteLocationNormalized,
+    from: RouteLocationNormalized,
+    next: NavigationGuardNext
+  ) => void;
   install: (app: App) => void;
   routeComponent: RouteComponents;
+  afterEachAppend?: (
+    to: RouteLocationNormalized,
+    from: RouteLocationNormalized,
+    failure?: NavigationFailure | void
+  ) => void;
   constructor(
     history: RouterHistory,
     routeComponent: RouteComponents,
     baseRoute?: Array<RouteRecordRaw>,
     moveRouteItem?: () => RouteItem | Promise<RouteItem>,
+    beforeEachAppend?: (
+      to: RouteLocationNormalized,
+      from: RouteLocationNormalized,
+      next: NavigationGuardNext
+    ) => void,
+    afterEachAppend?: (
+      to: RouteLocationNormalized,
+      from: RouteLocationNormalized,
+      failure?: NavigationFailure | void
+    ) => void,
     beforeEach?: (
       to: RouteLocationNormalized,
       from: RouteLocationNormalized,
@@ -77,10 +97,12 @@ class RouteObj {
       ? moveRouteItem
       : this.defaultMoveRouteItem;
     this.router = createRouter({ history, routes: [] });
+    this.beforeEachAppend = beforeEachAppend;
+    this.afterEachAppend = afterEachAppend;
     this.initBaseRoute(
       this.router,
       baseRoute ? baseRoute : this.defaultBaseRoute(),
-      beforeEach ? beforeEach : this.defaultBeforeEach,
+      beforeEach ? beforeEach.bind(this) : this.defaultBeforeEach,
       afterEach ? afterEach : this.defaultAfterEach,
       onError ? onError : this.defaultOnError
     );
@@ -205,7 +227,9 @@ class RouteObj {
       }
       return;
     }
-
+    if (this.beforeEachAppend) {
+      await this.beforeEachAppend(to, from, next);
+    }
     const routeItem = await this.moveRouteItem();
     // 如果路由被重置则需要重制路由
     if (this.resetRoute(this.router, routeItem)) {
@@ -222,7 +246,7 @@ class RouteObj {
     from: RouteLocationNormalized,
     failure?: NavigationFailure | void
   ) => {
-    console.log("defaultAfterEach", to, from, failure);
+    console.log(to, from);
   };
   /**
    * 默认的错误处理器
@@ -236,3 +260,4 @@ class RouteObj {
   };
 }
 export default RouteObj;
+export type { RouteItem };

@@ -1,5 +1,5 @@
 import { get } from "../../request";
-import { Permission } from "./type";
+import { Permission, ModulePermission } from "./type";
 import Result from "../../request/Result";
 /**
  * 获取当前权限
@@ -10,4 +10,13 @@ export const getPermission = () => {
     get("/api/permission");
   return permissions;
 };
-export type { Permission };
+/**
+ *
+ * @returns
+ */
+export const getRuningPermissions: () => Promise<
+  Result<ModulePermission>
+> = () => {
+  return get("/api/runingPermission");
+};
+export type { Permission, ModulePermission };

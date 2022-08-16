@@ -15,17 +15,8 @@ export default defineConfig(({ mode }) => {
   const ENV = loadEnv(mode, envDir);
   return {
     server: {
+      host: "0.0.0.0",
       port: Number(ENV.VITE_APP_PORT),
-      proxy: {
-        "/api": {
-          target: "http://127.0.0.1:6611", //实际请求地址
-          changeOrigin: true,
-        },
-        "/login": {
-          target: "http://127.0.0.1:6611", //实际请求地址
-          changeOrigin: true,
-        },
-      },
     },
     base: ENV.VITE_BASE_PATH,
     envDir: envDir,
