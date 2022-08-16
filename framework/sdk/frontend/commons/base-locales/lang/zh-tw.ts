@@ -42,6 +42,7 @@ const message = {
       no: "否",
       ok: "確定",
       add: "添加",
+      create: "創建",
       delete: "刪除",
       edit: "編輯",
       save: "保存",
@@ -79,6 +80,7 @@ const message = {
       limit: "長度在 {0} 到 {1} 個字符",
       input: "請輸入{0}",
       select: "請選擇{0}",
+      confirm_pwd: "兩次輸入的密碼不壹致",
     },
     personal: {
       personal_info: "個人信息",

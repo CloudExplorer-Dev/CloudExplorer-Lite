@@ -6,6 +6,7 @@ export default [
     portrait: "/src/assets/admin.jpeg",
   },
   {
+    id: "user",
     userName: "user",
     password: "fit2cloud",
     email: "111",

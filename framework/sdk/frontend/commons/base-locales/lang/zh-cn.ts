@@ -1,6 +1,6 @@
 import elementZhLocale from "element-plus/lib/locale/lang/zh-cn";
-import fit2cloudZhLocale from "fit2cloud-ui-plus/src/locale/lang/zh-cn";// 加载 fit2cloud 的国际化文件
-import subModuleZhLocale from "@/locales/lang/zh-cn";// 加载子模块自定义的国际化文件
+import fit2cloudZhLocale from "fit2cloud-ui-plus/src/locale/lang/zh-cn"; // 加载 fit2cloud 的国际化文件
+import subModuleZhLocale from "@/locales/lang/zh-cn"; // 加载子模块自定义的国际化文件
 
 const message = {
   commons: {
@@ -42,6 +42,7 @@ const message = {
       no: "否",
       ok: "确定",
       add: "添加",
+      create: "创建",
       delete: "删除",
       edit: "编辑",
       save: "保存",
@@ -79,6 +80,7 @@ const message = {
       limit: "长度在 {0} 到 {1} 个字符",
       input: "请输入{0}",
       select: "请选择{0}",
+      confirm_pwd: "两次输入的密码不一致",
     },
     personal: {
       personal_info: "个人信息",

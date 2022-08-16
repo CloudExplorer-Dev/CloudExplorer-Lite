@@ -3,7 +3,7 @@ import { reactive, ref, watch, onBeforeMount, onUnmounted } from "vue";
 import { LocationQuery, useRoute, useRouter } from "vue-router";
 import { useUserStore } from "../../stores/user";
 import { $tv } from "../../base-locales";
-import type { ElForm, FormInstance, FormRules } from "element-plus";
+import type { FormInstance, FormRules } from "element-plus";
 import { LoginRequest } from "../../api/user/type";
 
 const user = useUserStore();

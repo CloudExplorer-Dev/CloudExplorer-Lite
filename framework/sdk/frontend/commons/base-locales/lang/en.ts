@@ -42,6 +42,7 @@ const message = {
       no: "No",
       ok: "OK",
       add: "Add",
+      create: "Create",
       delete: "Delete",
       edit: "Edit",
       save: "Save",
@@ -79,6 +80,7 @@ const message = {
       limit: "Length Is Between {0} 到 {1}",
       input: "Please Input{0}",
       select: "Please Select{0}",
+      confirm_pwd: "The Two Passwords You Entered Were Inconsistent",
     },
     personal: {
       personal_info: "Personal Detail",
@@ -104,13 +106,14 @@ const message = {
       start_date_time: "Start Date Time",
       end_date_time: "End Date Time",
       range_separator: "To",
-      date_time_error: "Start Time Can not Be Greater Than End Time",
+      date_time_error: "Start Time Can Not Be Greater Than End Time",
     },
     login: {
       username: "Username",
       password: "Password",
       title: "CloudExplorer Cloud Service Platform",
-      welcome: "Welcome Back, Please Enter Your User Name And Password To Login",
+      welcome:
+        "Welcome Back, Please Enter Your User Name and Password to Login",
       expires: "The Authentication Information Has Expired, Please Login Again",
     },
   },

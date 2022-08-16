@@ -2,12 +2,13 @@
 import asideStartMenu from "../../components/layout/asideStarMenu/index.vue";
 import asideMenu from "../../components/layout/asideMenu/index.vue";
 import collapseVue from "../../components/collapse/index.vue";
+import TopBar from "../../components/layout/topBar/index.vue";
 import { ref } from "vue";
 const collapse = ref<boolean>(true);
 </script>
 <template>
   <el-container class="rootContainer">
-    <el-header class="handlerContainer">Header</el-header>
+    <el-header class="handlerContainer"><TopBar/></el-header>
     <el-container>
       <el-aside class="starMenuContainer"
         ><asideStartMenu></asideStartMenu
