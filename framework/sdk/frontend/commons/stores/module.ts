@@ -1,7 +1,6 @@
 import { defineStore } from "pinia";
-import packageJson from "@/../package.json";
-import { listRuningModules, Module } from "../api/module";
-import { getMenuByModule, Menu, RequiredPermissions } from "../api/menu";
+import { getCurrentModule, Module } from "../api/module";
+import { getCurrentMenus, Menu, RequiredPermissions } from "../api/menu";
 import { getPermission } from "../api/permission";
 import { getCurrentRole } from "../api/role";
 import type { Role } from "../api/role";
@@ -19,6 +18,10 @@ interface RouteItem {
    * 组建路径
    */
   componentPath: string;
+  /**
+   *重定向
+   */
+  redirect?: string | any;
 }
 
 interface Route {
@@ -52,12 +55,14 @@ const flatMenuToRoute = (
         path: menu.path,
         name: menu.name,
         componentPath: menu.componentPath,
+        redirect: menu.redirect ? { name: menu.redirect } : undefined,
       };
+
       return newRoute;
     });
 };
 
-const hasPermission = (
+export const hasPermission = (
   menu: Menu,
   currentRole: Role,
   permissions: Array<Permission>
@@ -86,12 +91,19 @@ const hasPermission = (
   }
 };
 
+/**
+ * 过来有权限的菜单
+ * @param menus       需要过滤的菜单
+ * @param currentRole 当前角色
+ * @param permissions 当前权限
+ * @returns
+ */
 const filterMenu = (
   menus: Array<Menu>,
   currentRole: Role,
   permissions: Array<Permission>
 ) => {
-  const flatMenus = flatMenu(menus, [], "");
+  const flatMenus = flatMenu(menus, []);
   const filterMenu = flatMenus.filter((item) => {
     return hasPermission(item, currentRole, permissions);
   });
@@ -104,22 +116,32 @@ const filterMenu = (
  * @param prentPath
  * @returns
  */
-const flatMenu = (
+export const flatMenu = (
   menus: Array<Menu>,
   newMenus: Array<fMenu>,
-  prentPath: string,
+  prentPath?: string,
   prentName = "rootPrentName"
 ) => {
   menus.forEach((item) => {
     const newMenu: fMenu = {
       ...item,
-      path: prentPath + item.path,
       parentName: prentName,
       children: [],
+      path:
+        prentPath === undefined || prentPath === null
+          ? item.path
+          : prentPath + item.path,
     };
     newMenus.push(newMenu);
     if (item.children != null && item.children.length > 0) {
-      flatMenu(item.children, newMenus, newMenu.path, item.name);
+      flatMenu(
+        item.children,
+        newMenus,
+        prentPath === undefined || prentPath === null
+          ? prentPath
+          : newMenu.path,
+        item.name
+      );
     }
   });
   return newMenus;
@@ -161,6 +183,12 @@ const revertMenu = (flatMenus: Array<fMenu>) => {
   return menus;
 };
 
+/**
+ * 重写菜单Path
+ * @param menus     菜单
+ * @param prentPath 父菜单path
+ * @returns         将子菜单path与父亲菜单拼接
+ */
 const resetMenuPath = (menus: Array<Menu>, prentPath: string) => {
   menus.forEach((menu) => {
     menu.path = prentPath + menu.path;
@@ -178,10 +206,6 @@ export const moduleStore = defineStore({
      *当前模块信息
      */
     currentModule: <Module | undefined>{},
-    /**
-     *运行的所有模块
-     */
-    runingModules: <Array<Module>>[],
     /**
      *当前模块菜单
      */
@@ -234,18 +258,15 @@ export const moduleStore = defineStore({
   },
   actions: {
     async initModule() {
-      // 运行模块
-      this.runingModules = (await listRuningModules()).data;
       // 获取当前角色
       this.currentRole = (await getCurrentRole()).data;
+      // 运行模块
+      this.currentModule = (await getCurrentModule()).data;
       // 权限
       this.permissions = (await getPermission()).data;
-      // 当前模块
-      this.currentModule = this.runingModules.find((m: Module) => {
-        return packageJson.name === m.name;
-      });
       // 获取当前模块菜单
-      const currentMenus = (await getMenuByModule()).data;
+      const currentMenus = (await getCurrentMenus()).data;
+      // 根据权限过滤菜单
       this.currentMenus = filterMenu(
         currentMenus,
         this.currentRole,
@@ -270,22 +291,21 @@ export const moduleStore = defineStore({
       }
       return [];
     },
+    /**
+     * 获取菜单
+     * @returns
+     */
     async getMenu() {
       if (!this.initState) {
         await this.initModule();
       }
       return flatMenu(this.currentMenus, [], "");
     },
-    async getRuningModule() {
-      if (!this.initState) {
-        await this.initModule();
-      }
-      return this.runingModules;
-    },
     async getCurrentRole() {
       if (!this.initState) {
-        await this.initModule();
+        this.currentRole = (await getCurrentRole()).data;
       }
+
       return this.currentRole;
     },
     async getPermission() {

@@ -17,6 +17,10 @@ interface Module {
    * 服务排序
    */
   order: number;
+  /**
+   *服务地址
+   */
+  url: string;
 }
 
 interface ServerInfo {

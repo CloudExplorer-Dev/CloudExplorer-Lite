@@ -1,23 +1,28 @@
 package com.fit2cloud.controller;
 
-import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.GetMapping;
+import com.fit2cloud.service.LoginService;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
+import javax.annotation.Resource;
+
+@RestController
+@RequestMapping
 public class LoginController {
-    @Controller
-    @RequestMapping
-    public static class IndexController {
 
-        @GetMapping(value = "/")
-        public String index() {
-            return "index.html";
-        }
+    @Resource
+    private LoginService loginService;
 
-        @GetMapping(value = "/login")
-        public String login() {
-            return "index.html";
-        }
+    /*@PostMapping("login")
+    public ResultHolder<Object> login(@RequestBody LoginRequest loginRequest, HttpServletResponse httpResponse) {
+        String token = loginService.login(loginRequest);
 
-    }
+        //认证成功在header中添加token返回
+        httpResponse.setHeader(JwtTokenUtils.TOKEN_NAME, token);
+
+        return ResultHolder.success(null).message("登录成功");
+
+    }*/
+
+
 }

@@ -1,4 +1,4 @@
-package com.fit2cloud.gateway.request;
+package com.fit2cloud.request;
 
 import lombok.Data;
 

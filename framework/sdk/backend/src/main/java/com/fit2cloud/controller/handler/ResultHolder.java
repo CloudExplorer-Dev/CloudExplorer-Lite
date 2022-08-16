@@ -1,8 +1,10 @@
 package com.fit2cloud.controller.handler;
 
 import lombok.Data;
+import lombok.experimental.Accessors;
 import org.springframework.http.HttpStatus;
 
+@Accessors(chain = true)
 @Data
 public class ResultHolder<T> {
 

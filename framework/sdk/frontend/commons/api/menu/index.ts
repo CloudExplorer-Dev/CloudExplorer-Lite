@@ -1,10 +1,26 @@
 import { get } from "../../request";
-import type { Menu, MenuRequest, RequiredPermissions } from "./type";
+import type {
+  Menu,
+  MenuRequest,
+  RequiredPermissions,
+  ModuleMenu,
+} from "./type";
 import Result from "../../request/Result";
 import packageJson from "@/../package.json";
-export const getMenuByModule = () => {
+/**
+ * 获取当前模块的菜单
+ * @returns
+ */
+export const getCurrentMenus: () => Promise<Result<Array<Menu>>> = () => {
   const moduleRequest: MenuRequest = { moduleName: packageJson.name };
-  const modules: Promise<Result<Array<Menu>>> = get("/api/menu", moduleRequest);
-  return modules;
+  return get("/api/menu", moduleRequest);
 };
-export type { Menu, RequiredPermissions };
+
+/**
+ * 获取正在运行的所有模块
+ */
+export const getRuningModuleMenu: () => Promise<Result<ModuleMenu>> = () => {
+  return get("/api/runingModulesMenu");
+};
+
+export type { Menu, RequiredPermissions, ModuleMenu };

@@ -58,7 +58,6 @@ const promise: (
 ) => Promise<Result<any>> = (request, loading = nProgress) => {
   return new Promise((resolve, reject) => {
     if ((loading as NProgress).start) {
-      console.log("存在");
       (loading as NProgress).start();
     } else {
       (loading as Ref).value = true;

@@ -22,7 +22,7 @@ public class GlobalErrorAttributes extends DefaultErrorAttributes {
 
         map.putIfAbsent("status", HttpStatus.INTERNAL_SERVER_ERROR);
         //自定义全局错误message内容
-        map.put("message", error == null ? null : error.getMessage());
+        map.put("message", error == null ? map.get("message") : error.getMessage());
 
         return map;
     }

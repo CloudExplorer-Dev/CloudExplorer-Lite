@@ -1,10 +1,16 @@
 <script setup lang="ts">
 import SubMenu from "./SubMenu.vue";
 import { moduleStore } from "../../../stores/module";
+import { useRouter } from "vue-router";
 const { menus, currentModule } = moduleStore();
+const currentRoute = useRouter().currentRoute;
 </script>
 <template>
-  <el-menu class="menuContainer" :router="true">
+  <el-menu
+    class="menuContainer"
+    :router="true"
+    :default-active="currentRoute.path"
+  >
     <div class="title">
       <h1>
         {{ currentModule?.title }}
