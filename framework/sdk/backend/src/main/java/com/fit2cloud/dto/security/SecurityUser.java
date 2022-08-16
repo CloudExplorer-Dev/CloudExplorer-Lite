@@ -1,6 +1,6 @@
 package com.fit2cloud.dto.security;
 
-import com.fit2cloud.dto.User;
+import com.fit2cloud.dto.UserDto;
 import lombok.Data;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -13,7 +13,7 @@ import java.util.List;
 @Data
 public class SecurityUser implements UserDetails {
     //当前登录用户
-    private transient User currentUserInfo;
+    private transient UserDto currentUserInfoDto;
 
     //当前权限
     private List<String> permissionValueList;
@@ -21,9 +21,9 @@ public class SecurityUser implements UserDetails {
     public SecurityUser() {
     }
 
-    public SecurityUser(User user) {
-        if (user != null) {
-            this.currentUserInfo = user;
+    public SecurityUser(UserDto userDto) {
+        if (userDto != null) {
+            this.currentUserInfoDto = userDto;
         }
     }
 
@@ -36,12 +36,12 @@ public class SecurityUser implements UserDetails {
 
     @Override
     public String getPassword() {
-        return currentUserInfo.getPassword();
+        return currentUserInfoDto.getPassword();
     }
 
     @Override
     public String getUsername() {
-        return currentUserInfo.getUsername();
+        return currentUserInfoDto.getUsername();
     }
 
     @Override
@@ -61,6 +61,6 @@ public class SecurityUser implements UserDetails {
 
     @Override
     public boolean isEnabled() {
-        return currentUserInfo.isEnabled();
+        return currentUserInfoDto.getEnabled();
     }
 }

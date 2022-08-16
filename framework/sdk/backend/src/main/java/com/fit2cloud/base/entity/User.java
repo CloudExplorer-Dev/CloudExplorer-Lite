@@ -1,0 +1,45 @@
+package com.fit2cloud.base.entity;
+
+import com.baomidou.mybatisplus.annotation.TableField;
+import com.baomidou.mybatisplus.annotation.TableId;
+import com.baomidou.mybatisplus.annotation.TableName;
+import java.io.Serializable;
+import lombok.Getter;
+import lombok.Setter;
+
+/**
+ * <p>
+ * 
+ * </p>
+ *
+ * @author fit2cloud
+ * @since 2022-08-16
+ */
+@Getter
+@Setter
+@TableName("user")
+public class User implements Serializable {
+
+    private static final long serialVersionUID = 1L;
+
+    @TableId("id")
+    private String id;
+
+    @TableField("username")
+    private String username;
+
+    @TableField("_name")
+    private String name;
+
+    @TableField("enabled")
+    private Boolean enabled;
+
+    @TableField("email")
+    private String email;
+
+    @TableField("phone")
+    private String phone;
+
+    @TableField("password")
+    private String password;
+}

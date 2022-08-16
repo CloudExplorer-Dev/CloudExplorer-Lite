@@ -2,12 +2,14 @@ package com.fit2cloud.gateway.controller;
 
 import com.fit2cloud.common.utils.JwtTokenUtils;
 import com.fit2cloud.controller.handler.ResultHolder;
+import com.fit2cloud.dto.UserDto;
 import com.fit2cloud.request.LoginRequest;
 import com.fit2cloud.service.LoginService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Mono;
 
 import javax.annotation.Resource;
@@ -56,10 +58,12 @@ public class LoginController {
 
 
     @GetMapping("api/menus")
-    public Mono<String> menus() throws Exception {
+    public Mono<String> menus(ServerWebExchange exchange) throws Exception {
+        System.out.println(exchange.getRequest().getHeaders().getFirst(JwtTokenUtils.TOKEN_NAME));
+        System.out.println(((UserDto)exchange.getAttributes().get("user")).getUsername());
         //
         throw new RuntimeException("adsfasfaf");
-        //return Mono.just("test");
+        //return Mono.just("test " + testMapper.select1());
     }
 
 
