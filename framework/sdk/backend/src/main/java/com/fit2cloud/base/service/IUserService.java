@@ -2,6 +2,8 @@ package com.fit2cloud.base.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.fit2cloud.base.entity.User;
+import com.fit2cloud.dto.UserDto;
+import com.fit2cloud.request.LoginRequest;
 
 /**
  * <p>
@@ -12,5 +14,11 @@ import com.fit2cloud.base.entity.User;
  * @since 
  */
 public interface IUserService extends IService<User> {
+
+    String login(LoginRequest loginRequest);
+
+    UserDto getUserByIdOrEmail(String username);
+
+    boolean checkPassword(User user, String password);
 
 }
