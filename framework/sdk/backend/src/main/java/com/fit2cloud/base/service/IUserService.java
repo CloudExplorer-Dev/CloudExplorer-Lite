@@ -1,15 +1,15 @@
 package com.fit2cloud.base.service;
 
-import com.fit2cloud.base.entity.User;
 import com.baomidou.mybatisplus.extension.service.IService;
+import com.fit2cloud.base.entity.User;
 
 /**
  * <p>
- *  服务类
+ * 用户 服务类
  * </p>
  *
  * @author fit2cloud
- * @since 2022-08-16
+ * @since 
  */
 public interface IUserService extends IService<User> {
 

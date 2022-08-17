@@ -3,20 +3,23 @@ package com.fit2cloud.base.entity;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
-import java.io.Serializable;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.experimental.Accessors;
+
+import java.io.Serializable;
 
 /**
  * <p>
- * 
+ * 用户
  * </p>
  *
  * @author fit2cloud
- * @since 2022-08-16
+ * @since 
  */
 @Getter
 @Setter
+@Accessors(chain = true)
 @TableName("user")
 public class User implements Serializable {
 

@@ -71,7 +71,6 @@ public class LoginService {
     public boolean checkPassword(User user, String password) {
         UserMapper userMapper = (UserMapper) userService.getBaseMapper();
         return userMapper.checkPassword(user.getUsername(), MD5Util.md5(password));
-        //return user.getPassword().equals(MD5Util.md5(password));
     }
 
 }

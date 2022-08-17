@@ -1,17 +1,17 @@
 package com.fit2cloud.base.mapper;
 
-import com.fit2cloud.base.entity.User;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+import com.fit2cloud.base.entity.User;
 import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.Select;
 
 /**
  * <p>
- * Mapper 接口
+ * 用户 Mapper 接口
  * </p>
  *
  * @author fit2cloud
- * @since 2022-08-16
+ * @since 
  */
 public interface UserMapper extends BaseMapper<User> {
 
