@@ -1,2 +1,5 @@
 com.fit2cloud.autoconfigure.JwtInitConfig
 com.fit2cloud.autoconfigure.SecurityConfig
+com.fit2cloud.autoconfigure.DatabaseConfig
+com.fit2cloud.autoconfigure.QuartzConfig
+

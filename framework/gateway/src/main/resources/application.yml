@@ -42,3 +42,15 @@ management:
 logging:
   file:
     path: @ce.log.base.dir@/${spring.application.name}
+
+
+ce:
+  datasource:
+    hikari:
+      #修改数据库连接池线程数
+      maximum-pool-size: 10
+
+
+quartz:
+  enabled: false
+  scheduler-name: gatewayScheduler

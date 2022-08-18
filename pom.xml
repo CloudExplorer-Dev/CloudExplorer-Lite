@@ -37,6 +37,8 @@
         <jjwt.version>0.11.5</jjwt.version>
         <junit.version>5.9.0</junit.version>
         <redisson.version>3.17.5</redisson.version>
+        <mybatis-plus.version>3.5.2</mybatis-plus.version>
+        <mybatis-plus-generator.version>3.5.3</mybatis-plus-generator.version>
 
     </properties>
 
