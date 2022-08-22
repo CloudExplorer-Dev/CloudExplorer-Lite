@@ -35,6 +35,7 @@ const message = {
       alert: "警告",
       confirm: "確認",
       prompt: "提示",
+      confirm_delete: "確認删除",
     },
     btn: {
       login: "登錄",
@@ -56,6 +57,7 @@ const message = {
       display: "顯示",
       enable: "啟用",
       disable: "禁用",
+      copy: "複制",
       sync: "同步",
       view_api: "查看 API",
       prev: "上一步",
@@ -75,6 +77,7 @@ const message = {
       op_success: "操作成功",
       save_success: "保存成功",
       delete_success: "刪除成功",
+      fail: "{0}失敗",
     },
     validate: {
       limit: "長度在 {0} 到 {1} 個字符",

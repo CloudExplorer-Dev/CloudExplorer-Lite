@@ -36,6 +36,7 @@ const message = {
       alert: "Alert",
       confirm: "Confirm",
       prompt: "Prompt",
+      confirm_delete: "Confirm Delete",
     },
     btn: {
       login: "Login",
@@ -57,6 +58,7 @@ const message = {
       display: "Display",
       enable: "Enable",
       disable: "Disable",
+      copy: "copy",
       sync: "Synchronize",
       view_api: "View API",
       prev: "Previous",
@@ -76,6 +78,7 @@ const message = {
       op_success: "Success",
       save_success: "Save Success",
       delete_success: "Delete Success",
+      fail: "{0} Failed",
     },
     validate: {
       limit: "Length Is Between {0} 到 {1}",

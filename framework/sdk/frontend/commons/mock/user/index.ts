@@ -1,5 +1,7 @@
 import type { MockMethod } from "vite-plugin-mock";
 import users from "./data";
+import apiKeys from "../apiKey/data";
+
 import Result from "../../request/Result";
 export default [
   {
@@ -83,6 +85,62 @@ export default [
         u.password = newPassword;
         return Result.success({});
       }
+    },
+  },
+  {
+    url: "/api/key",
+    method: "get",
+    response: () => {
+      const userId = "admin";
+      const result: any = [];
+      apiKeys.forEach((key) => {
+        if (key.userId === userId) {
+          result.push(key);
+        }
+      });
+      return Result.success({
+        apiKeys: result,
+      });
+    },
+  },
+  {
+    url: "/api/key/create",
+    method: "post",
+    response: () => {
+      const userId = "admin";
+      apiKeys.push({
+        id: "3",
+        userId: userId,
+        accessKey: "aadfdfdf",
+        secretKey: "dfdfddf",
+        createTime: "1654583606127",
+        status: "active",
+      });
+      return Result.success({});
+    },
+  },
+  {
+    url: "/api/key/delete",
+    method: "post",
+    response: ({ body: { id } }: any) => {
+      apiKeys.forEach((key, idx) => {
+        if (key.id === id) {
+          delete apiKeys[idx];
+        }
+      });
+      return Result.success({});
+    },
+  },
+  {
+    url: "/api/key/update",
+    method: "post",
+    response: ({ body: { id } }: any) => {
+      apiKeys.forEach((key, idx) => {
+        if (key.id === id) {
+          key.status === "active" ? "disabled" : "active";
+        }
+      });
+      return Result.success({});
     },
   },
 ] as MockMethod[];

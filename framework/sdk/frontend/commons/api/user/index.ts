@@ -22,3 +22,19 @@ export const saveUser = (data: UserInfo) => {
 export const updateUserPwd = (data: any) => {
   return post("/api/user-pwd-update", null, data);
 };
+
+export const getApiKeys = () => {
+  return get("/api/key");
+};
+
+export const createApiKeys = () => {
+  return post("/api/key/create");
+};
+
+export const deleteApiKeys = (data: any) => {
+  return post("/api/key/delete", null, data);
+};
+
+export const updateApiKeys = (data: any) => {
+  return post("/api/key/update", null, data);
+};

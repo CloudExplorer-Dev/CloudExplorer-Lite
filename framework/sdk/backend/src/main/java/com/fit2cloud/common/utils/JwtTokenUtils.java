@@ -2,7 +2,7 @@ package com.fit2cloud.common.utils;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fit2cloud.dto.User;
+import com.fit2cloud.dto.UserDto;
 import io.jsonwebtoken.CompressionCodecs;
 import io.jsonwebtoken.JwtBuilder;
 import io.jsonwebtoken.Jwts;
@@ -51,14 +51,14 @@ public class JwtTokenUtils {
     }
 
 
-    public static String createJwtToken(User user) {
+    public static String createJwtToken(UserDto userDto) {
 
         Date now = new Date();
         Date expirationDate = DateUtils.addMinutes(now, JWT_EXPIRE_MINUTES);
 
         Map<String, Object> claims = new HashMap<>();
         try {
-            claims.put(KEY_CLAIMS, objectMapper.writeValueAsString(user));
+            claims.put(KEY_CLAIMS, objectMapper.writeValueAsString(userDto));
         } catch (JsonProcessingException e) {
             throw new RuntimeException(e);
         }
@@ -75,7 +75,7 @@ public class JwtTokenUtils {
         return builder.compact();
     }
 
-    public static User parseJwtToken(String token) {
+    public static UserDto parseJwtToken(String token) {
 
         String userStr = (String) Jwts.parserBuilder()
                 .setSigningKey(JWT_KEY)
@@ -85,7 +85,7 @@ public class JwtTokenUtils {
                 .getBody()
                 .get(KEY_CLAIMS);
         try {
-            return objectMapper.readValue(userStr, User.class);
+            return objectMapper.readValue(userStr, UserDto.class);
         } catch (JsonProcessingException e) {
             e.printStackTrace();
         }

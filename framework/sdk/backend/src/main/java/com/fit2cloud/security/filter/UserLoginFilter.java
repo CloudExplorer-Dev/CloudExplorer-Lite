@@ -3,7 +3,7 @@ package com.fit2cloud.security.filter;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fit2cloud.common.utils.JwtTokenUtils;
 import com.fit2cloud.controller.handler.ResultHolder;
-import com.fit2cloud.dto.User;
+import com.fit2cloud.dto.UserDto;
 import com.fit2cloud.dto.security.SecurityUser;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -35,13 +35,13 @@ public class UserLoginFilter extends UsernamePasswordAuthenticationFilter {
     @Override
     public Authentication attemptAuthentication(HttpServletRequest request, HttpServletResponse response) throws AuthenticationException {
         //return super.attemptAuthentication(request, response);
-        User user = null;
+        UserDto userDto = null;
         try {
-            user = new ObjectMapper().readValue(request.getInputStream(), User.class);
+            userDto = new ObjectMapper().readValue(request.getInputStream(), UserDto.class);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-        return getAuthenticationManager().authenticate(new UsernamePasswordAuthenticationToken(user.getUsername(), user.getPassword(), new ArrayList<>()));
+        return getAuthenticationManager().authenticate(new UsernamePasswordAuthenticationToken(userDto.getUsername(), userDto.getPassword(), new ArrayList<>()));
     }
 
     /**
@@ -51,7 +51,7 @@ public class UserLoginFilter extends UsernamePasswordAuthenticationFilter {
     protected void successfulAuthentication(HttpServletRequest request, HttpServletResponse response, FilterChain chain, Authentication authResult) throws IOException, ServletException {
         SecurityUser securityUser = (SecurityUser) authResult.getPrincipal();
 
-        String token = JwtTokenUtils.createJwtToken(securityUser.getCurrentUserInfo());
+        String token = JwtTokenUtils.createJwtToken(securityUser.getCurrentUserInfoDto());
 
         //将token放入header
         response.setHeader(JwtTokenUtils.TOKEN_NAME, token);

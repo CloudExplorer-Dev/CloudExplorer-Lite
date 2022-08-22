@@ -1,6 +1,7 @@
 package com.fit2cloud.controller.error;
 
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.web.servlet.error.AbstractErrorController;
 import org.springframework.boot.web.error.ErrorAttributeOptions;
 import org.springframework.boot.web.servlet.error.ErrorAttributes;
@@ -19,6 +20,8 @@ import java.util.Map;
 @RequestMapping({"${server.error.path:${error.path:/error}}"})
 public class GlobalErrorController extends AbstractErrorController {
 
+    @Value("${spring.application.name}")
+    private String appName;
 
     public GlobalErrorController(ErrorAttributes errorAttributes) {
         super(errorAttributes);
@@ -35,9 +38,9 @@ public class GlobalErrorController extends AbstractErrorController {
         //针对非api接口，要把url路径交给前端去路由 (获取页面都是GET方法)
         if (HttpMethod.GET.matches(request.getMethod()) &&
                 (HttpStatus.NOT_FOUND.equals(HttpStatus.valueOf((Integer) errorPropertiesMap.get("status")))
-                        && !StringUtils.startsWith((String) errorPropertiesMap.get("path"), "/api/")
-                        && !StringUtils.equals((String) errorPropertiesMap.get("path"), "/api")
-                        || StringUtils.equals((String) errorPropertiesMap.get("path"), "/login"))) {
+                        && !StringUtils.startsWith((String) errorPropertiesMap.get("path"), "/" + appName + "/api/")
+                        && !StringUtils.equals((String) errorPropertiesMap.get("path"), "/" + appName + "/api")
+                        || StringUtils.equals((String) errorPropertiesMap.get("path"), "/" + appName + "/login"))) {
             response.setStatus(HttpStatus.OK.value());
             return "index.html";
         }

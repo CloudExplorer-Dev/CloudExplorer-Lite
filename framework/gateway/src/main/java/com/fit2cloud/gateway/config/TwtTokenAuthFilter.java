@@ -3,7 +3,7 @@ package com.fit2cloud.gateway.config;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fit2cloud.common.utils.JwtTokenUtils;
-import com.fit2cloud.dto.User;
+import com.fit2cloud.dto.UserDto;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.core.annotation.Order;
 import org.springframework.core.io.buffer.DataBuffer;
@@ -44,16 +44,16 @@ public class TwtTokenAuthFilter  implements WebFilter {
         String path = request.getPath().value();
         //针对网关，只有部分接口需要认证，其余都交给子模块
         if (path.startsWith("/api/")) {
-            User userFromToken = null;
+            UserDto userDtoFromToken = null;
             String token = request.getHeaders().getFirst(JwtTokenUtils.TOKEN_NAME);
             if (StringUtils.isNotBlank(token)) {
                 try {
-                    userFromToken = JwtTokenUtils.parseJwtToken(token);
+                    userDtoFromToken = JwtTokenUtils.parseJwtToken(token);
                 } catch (Exception e) {
                     //e.printStackTrace();
                 }
             }
-            if (userFromToken == null) {
+            if (userDtoFromToken == null) {
                 return writeErrorMessage(request, response, HttpStatus.FORBIDDEN, null);
             } else {
                 //todo 校验？
@@ -63,7 +63,7 @@ public class TwtTokenAuthFilter  implements WebFilter {
 
                 //将token放到上下文中
                 try {
-                    exchange.getAttributes().put("user", userFromToken);
+                    exchange.getAttributes().put("user", userDtoFromToken);
                 } catch (Exception e) {
                     return this.writeErrorMessage(request, response, HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage());
                 }
