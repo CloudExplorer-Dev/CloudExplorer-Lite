@@ -1,10 +1,10 @@
 <script lang="ts" setup>
-import TopBar from "../../components/layout/topBar/index.vue";
-import asideStartMenu from "../../components/layout/asideStarMenu/index.vue";
+import TopBar from "../../components/layout/top-bar/index.vue";
+import asideStartMenu from "../../components/layout/aside-star-menu/index.vue";
 </script>
 <template>
   <el-container class="rootContainer">
-    <el-header class="handlerContainer"><TopBar/></el-header>
+    <el-header class="handlerContainer"><TopBar /></el-header>
     <el-container>
       <el-aside class="starMenuContainer"
         ><asideStartMenu></asideStartMenu

@@ -60,6 +60,10 @@ interface Menu extends MenuItem {
    *当前菜单所属权限
    */
   requiredPermissions: Array<RequiredPermissions>;
+  /**
+   *子菜单路由
+   */
+  operations?: Array<Menu>;
 }
 
 /**

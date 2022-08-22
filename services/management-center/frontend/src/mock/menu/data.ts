@@ -13,6 +13,17 @@ export default [
         icon: "yonghuguanli_huaban",
         path: "/user",
         componentPath: "/src/views/UserManage/index.vue",
+        operations: [
+          {
+            name: "create",
+            title: "创建",
+            path: "/create",
+            componentPath: "/src/views/UserManage/create.vue",
+            requiredPermissions: [
+              { role: "ADMIN", logical: "OR", permissions: ["USER_MENU_VIEW"] },
+            ],
+          },
+        ],
         requiredPermissions: [
           { role: "ADMIN", logical: "OR", permissions: ["USER_MENU_VIEW"] },
         ],
@@ -35,6 +46,26 @@ export default [
         icon: "zuzhijiagou",
         path: "/org",
         componentPath: "/src/views/OrgManage/index.vue",
+        operations: [
+          {
+            name: "orgCreate",
+            title: "创建",
+            path: "/create",
+            componentPath: "/src/views/OrgManage/create.vue",
+            requiredPermissions: [
+              { role: "ADMIN", logical: "OR", permissions: ["ORG_MENU_VIEW"] },
+            ],
+          },
+          {
+            name: "orgUpdate",
+            title: "创建",
+            path: "/update",
+            componentPath: "/src/views/OrgManage/update.vue",
+            requiredPermissions: [
+              { role: "ADMIN", logical: "OR", permissions: ["ORG_MENU_VIEW"] },
+            ],
+          },
+        ],
         requiredPermissions: [
           { role: "ADMIN", logical: "OR", permissions: ["ORG_MENU_VIEW"] },
         ],

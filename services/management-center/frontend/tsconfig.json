@@ -14,26 +14,11 @@
     "lib": ["esnext", "dom"],
     "skipLibCheck": true,
     "paths": {
-      "@/*": ["packages/*","example/*"],
+      "@/*": ["src/*"],
     },
-    "types": ["unplugin-vue-define-options","element-plus/global"],
+    "types": ["unplugin-vue-define-options", "vite/client"],
     "allowJs": true
   },
-  "include": ["examples/**/*", "packages/**/*", "plugins/*"],
-    // ts 排除的文件
-    "exclude": [
-      "node_modules"
-    ],
-  "files": [],
-  "references": [
-    {
-      "path": "./tsconfig.config.json"
-    },
-    {
-      "path": "./tsconfig.app.json"
-    },
-    {
-      "path": "./tsconfig.vitest.json"
-    }
-  ]
+  "include": [ "src/**/*", "plugins/*"],
+  "references": [{ "path": "./tsconfig.app.json" }],
 }

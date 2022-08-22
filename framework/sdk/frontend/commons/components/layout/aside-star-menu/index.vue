@@ -7,7 +7,7 @@ import { ref, onMounted } from "vue";
 import { Role } from "../../../api/role";
 import { servicesStore } from "../../../stores/services";
 import { moduleStore } from "../../../stores/module";
-import collectMenu from "../collectMenu/index.vue";
+import collectMenu from "../collect-menu/index.vue";
 import { useRouter } from "vue-router";
 const router = useRouter();
 const service = servicesStore();
@@ -18,7 +18,7 @@ const { currentModule } = storeToRefs(module);
 const currentRole = ref<Role | any>({});
 
 onMounted(() => {
-  module.getCurrentRole().then((data) => {
+  module.getCurrentRole().then((data: Role) => {
     currentRole.value = data;
   });
   service.init();

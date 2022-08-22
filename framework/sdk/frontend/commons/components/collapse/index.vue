@@ -25,6 +25,7 @@ const props = defineProps({
 
 <style lang="scss" scoped>
 .collapseContainer {
+  z-index: 101;
   height: calc(100vh - var(--ce-header-height));
   display: flex;
   align-items: center;

@@ -2,7 +2,7 @@
 import { defineProps, onMounted, ref, watch } from "vue";
 import { ModuleMenu, Menu } from "../../../api/menu";
 import { Module } from "../../../api/module";
-import { flatMenu, hasPermission } from "../../../stores/module";
+import { flatMenu, hasRolePermission } from "../../../router";
 import { Role } from "../../../api/role";
 import type { ModulePermission, Permission } from "../../../api/permission";
 import { Search } from "@element-plus/icons-vue";
@@ -92,7 +92,7 @@ const hasShowMenu = (
   currentRole: Role,
   permissions: Array<Permission>
 ) => {
-  if (!hasPermission(menu, currentRole, permissions)) {
+  if (!hasRolePermission(menu, currentRole.id, permissions)) {
     return false;
   }
   if (!menu.componentPath) {

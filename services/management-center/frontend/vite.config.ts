@@ -1,5 +1,5 @@
 import { fileURLToPath, URL } from "node:url";
-
+import DefineOptions from "unplugin-vue-define-options/vite";
 import { defineConfig, loadEnv } from "vite";
 import type { OutputOptions, OutputBundle, OutputChunk } from "rollup";
 import vue from "@vitejs/plugin-vue";
@@ -22,6 +22,7 @@ export default defineConfig(({ mode }) => {
     envDir: envDir,
     plugins: [
       vue(),
+      DefineOptions(),
       createHtmlPlugin({
         minify: true,
         inject: {

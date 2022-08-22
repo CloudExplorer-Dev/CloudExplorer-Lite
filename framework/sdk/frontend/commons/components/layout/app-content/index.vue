@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref } from "vue";
-import asideMenu from "../asideMenu/index.vue";
+import asideMenu from "../aside-menu/index.vue";
 import collapseView from "../../collapse/index.vue";
 const collapse = ref<boolean>(true);
 </script>
@@ -36,10 +36,12 @@ const collapse = ref<boolean>(true);
     overflow-x: hidden;
   }
 }
+
 .contentContainer {
-  z-index: 100;
+  height: calc(100vh - var(--ce-header-height));
   padding: 0;
   overflow: hidden;
+  background-color: #f2f2f2;
 }
 .collapseView {
   z-index: 1001;

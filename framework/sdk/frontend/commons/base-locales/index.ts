@@ -30,7 +30,7 @@ export function loadLanguages() {
   return languages;
 }
 
-const i18n = createI18n({
+export const i18n = createI18n({
   legacy: false, // set `false`, to use Composition API
   locale: getLanguage(),
   messages: loadLanguages(),

@@ -42,7 +42,7 @@ class AppMicroapp {
    * @param data 数据
    */
   sendBaseData(data: any) {
-    window[`${config.MICRO_APP_EVENTCENTER_PREFIX}${this.appName}`].dispatch(
+    window[`${config.MICRO_APP_EVENTCENTER_PREFIX}${this.appName}`]?.dispatch(
       data
     );
   }
@@ -54,7 +54,7 @@ class AppMicroapp {
   addDataListener(listener: (data: Record<string, unknown>) => void) {
     window[
       `${config.MICRO_APP_EVENTCENTER_PREFIX}${this.appName}`
-    ].addDataListener(listener);
+    ]?.addDataListener(listener);
   }
 
   install(app: App) {

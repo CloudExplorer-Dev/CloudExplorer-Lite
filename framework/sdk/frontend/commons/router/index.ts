@@ -12,6 +12,9 @@ import Layout from "../business/app-layout/index.vue";
 import Login from "../business/login/index.vue";
 import { getToken } from "../utils/auth";
 import type { App } from "vue";
+import { Menu, RequiredPermissions } from "../api/menu";
+import type { RolePermission, Permission } from "../api/permission/type";
+import notPromissions from "../business/err-page/notPromissions.vue";
 declare global {
   interface Window {
     eventCenterForAppNameVite: any;
@@ -35,7 +38,69 @@ interface RouteComponents {
   [propName: string]: any;
 }
 const rootRouteName = "rootRoute";
-
+/**
+ * 扁平化菜单
+ * @param menus
+ * @param newMenus
+ * @param prentPath
+ * @returns 扁平化后的菜单
+ */
+export const flatMenu = (
+  menus: Array<Menu>,
+  newMenus: Array<Menu>,
+  prentPath?: string
+) => {
+  menus.forEach((item) => {
+    const newMenu: Menu = {
+      ...item,
+      children: [],
+      path: prentPath ? prentPath + item.path : item.path,
+    };
+    newMenus.push(newMenu);
+    if (item.children != null && item.children.length > 0) {
+      flatMenu(item.children, newMenus, prentPath ? item.path : prentPath);
+    }
+    if (item.operations != null && item.operations.length > 0) {
+      flatMenu(item.operations, newMenus, prentPath ? item.path : prentPath);
+    }
+  });
+  return newMenus;
+};
+/**
+ * 判断是否有角色或者权限
+ * @param menu         菜单
+ * @param role         角色
+ * @param permissions  权限
+ * @returns
+ */
+export const hasRolePermission = (
+  menu: Menu,
+  role: string,
+  permissions: Array<Permission>
+) => {
+  const requiredPermissions: Array<RequiredPermissions> =
+    menu.requiredPermissions;
+  if (!menu.requiredPermissions || requiredPermissions.length === 0) {
+    return true;
+  }
+  for (let i = 0; i < requiredPermissions.length; i++) {
+    const roleOk = requiredPermissions[i].role === role;
+    const permissionOk = permissions.some((item) => {
+      if (
+        requiredPermissions[i].permissions ||
+        requiredPermissions[i].permissions.length > 0
+      ) {
+        return requiredPermissions[i].permissions.includes(item.id);
+      }
+      return true;
+    });
+    if (requiredPermissions[i].logical === "OR") {
+      return roleOk || permissionOk;
+    } else {
+      return roleOk && permissionOk;
+    }
+  }
+};
 class RouteObj {
   /**
    * 路由模式
@@ -48,7 +113,12 @@ class RouteObj {
   /**
    * 获取动态路由函数
    */
-  moveRouteItem: () => RouteItem | Promise<RouteItem>;
+  dynamicRoute: () =>
+    | RouteItem
+    | Promise<RouteItem>
+    | Array<Menu>
+    | Promise<Array<Menu>>;
+  getPermissions?: () => RolePermission | Promise<RolePermission>;
   beforeEachAppend?: (
     to: RouteLocationNormalized,
     from: RouteLocationNormalized,
@@ -65,7 +135,12 @@ class RouteObj {
     history: RouterHistory,
     routeComponent: RouteComponents,
     baseRoute?: Array<RouteRecordRaw>,
-    moveRouteItem?: () => RouteItem | Promise<RouteItem>,
+    dynamicRoute?: () =>
+      | RouteItem
+      | Promise<RouteItem>
+      | Array<Menu>
+      | Promise<Array<Menu>>,
+    getPermissions?: () => RolePermission | Promise<RolePermission>,
     beforeEachAppend?: (
       to: RouteLocationNormalized,
       from: RouteLocationNormalized,
@@ -93,12 +168,11 @@ class RouteObj {
     ) => void
   ) {
     this.history = history;
-    this.moveRouteItem = moveRouteItem
-      ? moveRouteItem
-      : this.defaultMoveRouteItem;
+    this.dynamicRoute = dynamicRoute ? dynamicRoute : this.defaultDynamicRoute;
     this.router = createRouter({ history, routes: [] });
     this.beforeEachAppend = beforeEachAppend;
     this.afterEachAppend = afterEachAppend;
+    this.getPermissions = getPermissions;
     this.initBaseRoute(
       this.router,
       baseRoute ? baseRoute : this.defaultBaseRoute(),
@@ -180,7 +254,7 @@ class RouteObj {
     return isResetRoute;
   };
 
-  defaultMoveRouteItem: () => RouteItem | any | Promise<RouteItem | any> =
+  defaultDynamicRoute: () => RouteItem | any | Promise<RouteItem | any> =
     () => {
       return {
         home: [
@@ -202,6 +276,13 @@ class RouteObj {
         path: "/",
         name: "home",
         component: Layout,
+        children: [
+          {
+            path: "/notPermission",
+            name: "notPermission",
+            component: notPromissions,
+          },
+        ],
       },
       {
         path: "/login",
@@ -230,14 +311,83 @@ class RouteObj {
     if (this.beforeEachAppend) {
       await this.beforeEachAppend(to, from, next);
     }
-    const routeItem = await this.moveRouteItem();
-    // 如果路由被重置则需要重制路由
-    if (this.resetRoute(this.router, routeItem)) {
-      next({ ...to, replace: true });
+    /**
+     * 获取动态路由
+     */
+    let dynamicRoute = await this.dynamicRoute();
+    /**
+     * 菜单信息,主要用于判断路由权限
+     */
+    let flatMenuData: Array<Menu> = [];
+    if (dynamicRoute instanceof Array) {
+      flatMenuData = flatMenu(JSON.parse(JSON.stringify(dynamicRoute)), [], "");
+      console.log("flatMenu", flatMenu);
+      dynamicRoute = { home: flatMenuData.map(this.menuToRouteItem) };
+    }
+    // 判断是否有权限
+    if (await this.routeHasRolePermission(flatMenuData, to.path)) {
+      // 如果路由被重置则需要重制路由
+      if (this.resetRoute(this.router, dynamicRoute as RouteItem)) {
+        next({ ...to, replace: true });
+      } else {
+        next();
+      }
     } else {
-      next();
+      // 没有权限 路由到没权限页面
+      next({ name: "notPermission" });
     }
   };
+
+  /**
+   * 判断路由是否有权限
+   * @param flatMenu 菜单
+   * @param to       路由next
+   * @returns        是否有角色或者权限
+   */
+  routeHasRolePermission = async (flatMenu: Array<Menu>, toPath: string) => {
+    if (this.getPermissions) {
+      const rolePermission: RolePermission = await this.getPermissions();
+      const menu = flatMenu.find((menu) => {
+        return menu.path === toPath;
+      });
+      if (menu) {
+        const a = hasRolePermission(
+          menu,
+          rolePermission.role,
+          rolePermission.permissions
+        );
+        console.log(
+          "是否有权限",
+          menu,
+          rolePermission.role,
+          rolePermission.permissions,
+          a
+        );
+        return a;
+      } else {
+        return true;
+      }
+    }
+    return true;
+  };
+
+  /**
+   * 菜单转换为路由对象
+   * @param menu 菜单对象
+   * @returns    路由对象
+   */
+  menuToRouteItem: (menu: Menu) => RouteRecordRaw = (menu: Menu) => {
+    if (menu.redirect) {
+      return { name: menu.name, path: menu.path, redirect: menu.redirect };
+    } else {
+      return {
+        name: menu.name,
+        path: menu.path,
+        component: this.routeComponent[menu.componentPath],
+      };
+    }
+  };
+
   /**
    * 默认的路由后置守卫
    */

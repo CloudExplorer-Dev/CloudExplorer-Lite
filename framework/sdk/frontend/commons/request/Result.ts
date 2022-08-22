@@ -15,5 +15,27 @@ class Result<T> {
     return new Result(message, code, null);
   }
 }
-export type { Result };
+interface Page<T> {
+  /**
+   *分页数据
+   */
+  records: Array<T>;
+  /**
+   *当前页
+   */
+  current: number;
+  /**
+   * 每页展示size
+   */
+  size: number;
+  /**
+   *总数
+   */
+  total: number;
+  /**
+   *是否有下一页
+   */
+  hasNext: boolean;
+}
+export type { Result, Page };
 export default Result;

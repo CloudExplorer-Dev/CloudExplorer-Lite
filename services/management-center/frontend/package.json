@@ -12,5 +12,11 @@
   },
   "dependencies": {
     "ce-base": "^0.0.0"
+  },
+  "devDependencies": {
+    "@typescript-eslint/eslint-plugin": "^5.33.1",
+    "@typescript-eslint/parser": "^5.33.1",
+    "eslint": "^8.22.0",
+    "eslint-plugin-vue": "^9.3.0"
   }
 }

@@ -20,7 +20,7 @@
     "@element-plus/icons-vue": "^2.0.6",
     "axios": "^0.27.2",
     "element-plus": "^2.2.12",
-    "fit2cloud-ui-plus": "0.0.1-beta.10",
+    "fit2cloud-ui-plus": "0.0.1-beta.15",
     "lodash": "^4.17.21",
     "normalize.css": "^8.0.1",
     "nprogress": "^0.2.0",

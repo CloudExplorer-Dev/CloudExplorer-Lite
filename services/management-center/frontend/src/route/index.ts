@@ -21,7 +21,13 @@ export default new Route(
   import.meta.glob("@/views/*/*.vue"),
   baseRoute,
   async () => {
-    const routes = await moduleStore(pinia).getRoute();
+    const routes = await moduleStore(pinia).getMenu();
     return routes;
+  },
+  async () => {
+    return {
+      permissions: await moduleStore(pinia).getPermission(),
+      role: (await moduleStore(pinia).getCurrentRole()).id,
+    };
   }
 );

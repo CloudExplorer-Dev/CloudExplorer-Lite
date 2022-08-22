@@ -10,3 +10,14 @@ interface ImportMetaEnv {
   readonly VITE_APP_TITLE: string;
   // 更多环境变量...
 }
+
+declare module "*.vue" {
+  import { defineComponent } from "vue";
+  const Component: ReturnType<typeof defineComponent>;
+  export default Component;
+}
+
+declare module "*.md" {
+  const content: string;
+  export default content;
+}

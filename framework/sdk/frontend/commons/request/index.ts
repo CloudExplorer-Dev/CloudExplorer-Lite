@@ -13,7 +13,6 @@ declare global {
     };
   }
 }
-console.log("xx", import.meta.env);
 const instance = axios.create({
   baseURL: import.meta.env.DEV ? "" : "/" + packageJSON.name,
   withCredentials: true,

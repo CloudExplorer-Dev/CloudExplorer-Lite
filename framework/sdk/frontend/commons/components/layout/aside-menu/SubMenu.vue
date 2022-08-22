@@ -16,7 +16,11 @@ defineProps({
     >
     <template v-for="item in menuInfo.children" :key="item.name">
       <template v-if="!item.children || item.children.length === 0">
-        <el-menu-item :index="item.path" :key="item.name">
+        <el-menu-item
+          v-hasPermission="item.requiredPermissions"
+          :index="item.path"
+          :key="item.name"
+        >
           <CeIcon :code="item.icon"></CeIcon>
           {{ item.title }}
         </el-menu-item>

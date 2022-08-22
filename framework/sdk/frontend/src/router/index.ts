@@ -23,6 +23,7 @@ const route = new Route(
     const routes = servicesStore(pinia).getRouters();
     return routes;
   },
+  undefined,
   async () => {
     await window.rootMicroapp.updateModule();
   }

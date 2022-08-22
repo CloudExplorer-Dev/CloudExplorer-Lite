@@ -1,4 +1,5 @@
 import elementEnLocale from "element-plus/lib/locale/lang/en";
+console.log("xxa", elementEnLocale);
 import fit2cloudEnLocale from "fit2cloud-ui-plus/src/locale/lang/en";
 import subModuleEnLocale from "@/locales/lang/en";
 
