@@ -25,8 +25,8 @@ interface Organization {
    */
   level: number;
 }
+
 interface ListOrganizationRequest {
-  condition: Array<Condition | string>;
   /**
    *每页显示多少
    */

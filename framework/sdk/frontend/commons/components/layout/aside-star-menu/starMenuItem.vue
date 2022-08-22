@@ -31,7 +31,10 @@ const props = defineProps<{
     @mouseleave="props.leaveHander ? props.leaveHander() : null"
   >
     <div class="icon">
-      <CeIcon size="28px" :code="props.starMenuItem.icon"></CeIcon>
+      <CeIcon
+        size="var(--ce-star-menu-icon-width,18px)"
+        :code="props.starMenuItem.icon"
+      ></CeIcon>
     </div>
     <div class="text">{{ props.starMenuItem.title }}</div>
     <div class="handle">

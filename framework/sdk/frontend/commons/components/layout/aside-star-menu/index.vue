@@ -66,7 +66,10 @@ const test = (moduleName: string) => {
         :class="item.name === currentModule.name ? 'active' : ''"
       >
         <div class="move">
-          <CeIcon size="20px" code="yidongshu"></CeIcon>
+          <CeIcon
+            size="var(--ce-star-menu-icon-width,18px)"
+            code="yidongshu"
+          ></CeIcon>
         </div>
       </StarItem>
     </div>

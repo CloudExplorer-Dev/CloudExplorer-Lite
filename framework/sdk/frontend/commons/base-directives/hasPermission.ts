@@ -44,7 +44,7 @@ const hasPermission = async (el: any, binding: any) => {
   }
   if (binding.value instanceof Array && binding.value) {
     let isPermission = false;
-    if (binding.value instanceof String) {
+    if (typeof binding.value[0] === "string") {
       isPermission = permissions.some((item) => {
         return binding.value.includes(item.id);
       });

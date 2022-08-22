@@ -232,11 +232,9 @@ class Condition {
   }
 
   static toSearchObj(condition: Condition) {
-    console.log(condition.value);
-    console.log(condition.value.value);
     const field = condition.field;
     const value = condition.value;
-    return { [field]: value };
+    return { [field]: JSON.parse(JSON.stringify(value)) };
   }
 }
 

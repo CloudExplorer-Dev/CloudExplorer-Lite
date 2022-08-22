@@ -1,9 +1,13 @@
 <template>
-  <div>修改</div>
+  <breadcrumb
+    :breadcrumbs="[
+      { to: { name: 'org' }, title: '组织管理' },
+      { to: {}, title: '修改' },
+    ]"
+  ></breadcrumb>
 </template>
 <script setup lang="ts">
 import { useRouter } from "vue-router";
 const route = useRouter();
-console.log(route.currentRoute.value);
 </script>
-<style lang=""></style>
+<style lang="scss"></style>

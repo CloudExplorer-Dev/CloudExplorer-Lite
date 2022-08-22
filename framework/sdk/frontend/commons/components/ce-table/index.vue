@@ -127,9 +127,11 @@ const search = (conditions: Conditions) => {
 .complex-table {
   background-color: var(--ce-table-bg-color, #fff);
   padding: var(--ce-table-padding, 30px);
-  margin: var(--ce-table-margin, 30px);
+  margin: var(--ce-table-margin-top, 10px) var(--ce-table-margin-right, 30px)
+    var(--ce-table-margin-bottom, 30px) var(--ce-table-margin-left, 30px);
   height: calc(
-    100% - var(--ce-table-margin, 30px) * 2 - var(--ce-table-padding, 30px) * 2
+    100% - var(--ce-table-margin-top, 10px) -
+      var(--ce-table-margin-bottom, 30px) - var(--ce-table-padding, 30px) * 2
   );
   width: calc(
     100% - var(--ce-table-margin, 30px) * 2 - var(--ce-table-padding, 30px) * 2

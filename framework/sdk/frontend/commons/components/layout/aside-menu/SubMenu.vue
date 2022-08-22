@@ -11,7 +11,11 @@ defineProps({
 <template>
   <el-sub-menu :index="menuInfo.path" :key="menuInfo.name">
     <template #title>
-      <CeIcon :code="menuInfo.icon"></CeIcon>
+      <CeIcon
+        class="icon"
+        :code="menuInfo.icon"
+        :size="'var(--ce-menu-icon-size,14px)'"
+      ></CeIcon>
       <span>{{ menuInfo.title }}</span></template
     >
     <template v-for="item in menuInfo.children" :key="item.name">
@@ -21,8 +25,12 @@ defineProps({
           :index="item.path"
           :key="item.name"
         >
-          <CeIcon :code="item.icon"></CeIcon>
-          {{ item.title }}
+          <CeIcon
+            class="icon"
+            :code="item.icon"
+            :size="'var(--ce-menu-icon-size,14px)'"
+          ></CeIcon>
+          <span>{{ item.title }}</span>
         </el-menu-item>
       </template>
       <template v-else-if="item.children.length > 0">
@@ -31,3 +39,8 @@ defineProps({
     </template>
   </el-sub-menu>
 </template>
+<style lang="scss" scoped>
+.icon {
+  width: var(--ce-menu-icon-width, 30px);
+}
+</style>

@@ -21,14 +21,13 @@ export default [
     method: "get",
     response: ({ query }: any) => {
       console.log(query);
-      const newArr = org
-        .filter((item) => {
-          return item.pid === null;
-        })
-        .splice(
-          query.currentPage * query.pageSize,
-          Number.parseInt(query.pageSize)
-        );
+      const rootOrg = org.filter((item) => {
+        return item.pid === null;
+      });
+      const newArr = rootOrg.splice(
+        query.currentPage * query.pageSize,
+        Number.parseInt(query.pageSize)
+      );
       const childrenData: Array<Organization> = [];
       newArr.forEach((root) => {
         searchChildData(childrenData, root);
@@ -40,7 +39,7 @@ export default [
         records: newArr,
         current: Number.parseInt(query.currentPage),
         size: Number.parseInt(query.pageSize),
-        total: org.length,
+        total: rootOrg.length,
         hasNext: true,
       };
       return Result.success(pageData);
