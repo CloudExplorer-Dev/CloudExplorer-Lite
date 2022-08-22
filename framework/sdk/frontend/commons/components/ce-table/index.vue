@@ -24,7 +24,11 @@
     </template>
 
     <div class="complex-table__body">
-      <fu-table v-bind="$attrs" header-cell-class-name="table-handler">
+      <fu-table
+        v-bind="$attrs"
+        header-cell-class-name="table-handler"
+        @sort-change="sortChange"
+      >
         <slot></slot>
       </fu-table>
     </div>
@@ -46,23 +50,47 @@
 </template>
 <script setup lang="ts">
 import { ref, defineProps } from "vue";
-import { TableConfig, Condition } from "./index";
+import {
+  TableConfig,
+  Conditions,
+  Order,
+  TableSearch,
+  OrderDesc,
+  OrderAsc,
+} from "./index";
 const props = defineProps<{
   header?: string;
   tableConfig: TableConfig;
 }>();
-const condition = ref<Array<Condition | string>>([]);
-console.log(props.tableConfig.tableOperations);
+const condition = ref<Conditions>({});
+
+const order = ref<Order | undefined>();
+
+const sortChange = (sortObj: any) => {
+  if (sortObj.order) {
+    order.value = {
+      field: sortObj.prop,
+      order: sortObj.order === "ascending" ? OrderAsc : OrderDesc,
+    };
+  } else {
+    order.value = undefined;
+  }
+  props.tableConfig.searchConfig?.search(
+    new TableSearch(condition.value, order.value)
+  );
+};
 /**
  * 更新PageSize
  */
 const updatePageSize = (pageSize: number) => {
-  console.log("pageSize", pageSize);
   props.tableConfig.paginationConfig?.setPageSize(
     pageSize,
     props.tableConfig.paginationConfig
   );
-  props.tableConfig.searchConfig?.search(condition.value);
+
+  props.tableConfig.searchConfig?.search(
+    new TableSearch(condition.value, order.value)
+  );
 };
 
 /**
@@ -73,17 +101,21 @@ const updateCurrentPage = (currentPage: number) => {
     currentPage,
     props.tableConfig.paginationConfig
   );
-  props.tableConfig.searchConfig?.search(condition.value);
+  props.tableConfig.searchConfig?.search(
+    new TableSearch(condition.value, order.value)
+  );
 };
 
 /**
  * 查询函数
  */
-const search = (conditions: Array<Condition | string>) => {
+const search = (conditions: Conditions) => {
   if (conditions) {
     condition.value = conditions;
   }
-  props.tableConfig.searchConfig?.search(conditions);
+  props.tableConfig.searchConfig?.search(
+    new TableSearch(condition.value, order.value)
+  );
 };
 </script>
 

@@ -30,14 +30,14 @@ import {
   SearchConfig,
   TableConfig,
   TableOperations,
-  Condition,
-} from "ce-base/commons/components/ce-table";
+  TableSearch,
+} from "ce-base/commons/components/ce-table/index";
 const useRoute = useRouter();
 const columns = ref([]);
 const tableData = ref<Array<OrganizationTree>>();
 
 onMounted(() => {
-  search([]);
+  search(new TableSearch());
 });
 
 interface OrganizationTree extends Organization {
@@ -68,11 +68,12 @@ const resetData = (organizations: Array<Organization>) => {
   return result;
 };
 
-const search = (condition: Array<Condition | string>) => {
+const search = (condition: TableSearch) => {
+  const params = TableSearch.toSearchParams(condition);
   listOrganization({
     currentPage: tableConfig.value.paginationConfig.currentPage,
     pageSize: tableConfig.value.paginationConfig.pageSize,
-    condition,
+    params,
   }).then((ok) => {
     // 扁平化数据
     console.log(ok);

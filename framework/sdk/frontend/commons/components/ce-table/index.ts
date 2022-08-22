@@ -1,4 +1,6 @@
 import type { Ref } from "vue";
+export const OrderDesc = "desc";
+export const OrderAsc = "asc";
 class PaginationConfig {
   constructor(
     currentPage?: number,
@@ -199,7 +201,7 @@ class DateTimeComponent extends ComponnetParent {
   }
 }
 
-interface Condition {
+class Condition {
   /**
    *字段
    */
@@ -216,7 +218,28 @@ interface Condition {
    *值label
    */
   valueLabel: string;
+
+  constructor(
+    field: string,
+    label: string,
+    value: Ref<any>,
+    valueLabel: string
+  ) {
+    this.field = field;
+    this.label = label;
+    this.value = value;
+    this.valueLabel = valueLabel;
+  }
+
+  static toSearchObj(condition: Condition) {
+    console.log(condition.value);
+    console.log(condition.value.value);
+    const field = condition.field;
+    const value = condition.value;
+    return { [field]: value };
+  }
 }
+
 /**
  * 搜索配置
  */
@@ -224,7 +247,7 @@ class SearchConfig {
   /**
    *查询回掉函数
    */
-  search: (condition: Array<Condition | string>) => void;
+  search: (condition: TableSearch) => void;
   /**
    * 搜索框提示
    */
@@ -236,7 +259,7 @@ class SearchConfig {
     DateTimeComponent | DateComponent | SelectComponnet | ComponnetParent
   > = [];
   constructor(
-    search: (condition: Array<string | Condition>) => void,
+    search: (condition: TableSearch) => void,
     quickPlaceholder: string,
     components: Array<
       DateTimeComponent | DateComponent | SelectComponnet | ComponnetParent
@@ -377,5 +400,67 @@ class TableConfig {
   }
 }
 
-export { PaginationConfig, SearchConfig, TableConfig, TableOperations };
-export type { Condition };
+class Order {
+  /**
+   *排序字段
+   */
+  field: string;
+  /**
+   *
+   */
+  order: string;
+  constructor(field: string, order: string) {
+    this.field = field;
+    this.order = order;
+  }
+}
+
+class Conditions {
+  [propName: string]: Condition | string;
+}
+
+class TableSearch {
+  /**
+   *查询条件
+   */
+  conditions: Conditions = {};
+  /**
+   *排序对象
+   */
+  order?: Order;
+
+  constructor(conditions: Conditions = {}, order?: Order) {
+    this.conditions = conditions;
+    this.order = order;
+  }
+  /**
+   * 返回查询对象
+   */
+  static toSearchParams(tableSearch: TableSearch) {
+    const order = tableSearch.order ? tableSearch.order : {};
+    return Object.keys(tableSearch.conditions)
+      .map((key: string) => {
+        const value: Condition | string = tableSearch.conditions[key];
+        if (typeof value === "string") {
+          return { [key]: value };
+        } else {
+          return Condition.toSearchObj(value);
+        }
+      })
+      .reduce(
+        (pre: any, next: any) => {
+          return { ...pre, ...next };
+        },
+        { order }
+      );
+  }
+}
+export {
+  PaginationConfig,
+  SearchConfig,
+  TableConfig,
+  TableOperations,
+  TableSearch,
+  Order,
+};
+export type { Conditions };

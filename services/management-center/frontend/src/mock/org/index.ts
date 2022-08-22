@@ -20,6 +20,7 @@ export default [
     url: "/api/list/org", // 注意，这里只能是string格式
     method: "get",
     response: ({ query }: any) => {
+      console.log(query);
       const newArr = org
         .filter((item) => {
           return item.pid === null;
@@ -28,7 +29,6 @@ export default [
           query.currentPage * query.pageSize,
           Number.parseInt(query.pageSize)
         );
-
       const childrenData: Array<Organization> = [];
       newArr.forEach((root) => {
         searchChildData(childrenData, root);
