@@ -67,7 +67,7 @@ public class UserRoleServiceImpl extends ServiceImpl<UserRoleMapper, UserRole> i
         RLock lock = redissonClient.getLock(LOCK_ROLE_KEY + userId);
         try {
             lock.lock(5, TimeUnit.SECONDS);
-            bucket.set(map, JwtTokenUtils.JWT_EXPIRE_MINUTES, TimeUnit.MINUTES);
+            bucket.set(map, JwtTokenUtils.JWT_EXPIRE_MINUTES, TimeUnit.MINUTES); //与jwt token失效时间保持一致
         } catch (Exception ignore) {
         } finally {
             lock.unlock();

@@ -23,7 +23,7 @@ public class CeSecurityExpressionRoot extends SecurityExpressionRoot {
 
     /**
      * 判断是否有当前模块内权限
-     * // @PreAuthorize("hasCePermission('group','operate')")
+     * // @PreAuthorize("hasCePermission('group:operate')")
      */
     public boolean hasCePermission(String permission) {
         Set<String> authorities = getCurrentModulePermissions();
@@ -32,7 +32,7 @@ public class CeSecurityExpressionRoot extends SecurityExpressionRoot {
 
     /**
      * 判断是否有当前模块内权限
-     * // @PreAuthorize("hasCePermission('group:operate')")
+     * // @PreAuthorize("hasCePermission('group','operate')")
      */
     public boolean hasCePermission(String group, String operate) {
         return hasCePermission(group + ":" + operate);
