@@ -1,4 +1,3 @@
-import { Condition } from "@/components/complex-table";
 interface Organization {
   /**
    *主键id

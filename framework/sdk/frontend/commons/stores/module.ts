@@ -21,6 +21,9 @@ const resetMenuPath = (menus: Array<Menu>, prentPath: string) => {
     if (menu.operations != null && menu.operations.length > 0) {
       resetMenuPath(menu.operations, menu.path);
     }
+    if (menu.childOperations != null && menu.childOperations.length > 0) {
+      resetMenuPath(menu.childOperations, menu.path);
+    }
   });
   return menus;
 };

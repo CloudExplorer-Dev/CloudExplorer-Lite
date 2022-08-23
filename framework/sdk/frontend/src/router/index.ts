@@ -25,6 +25,7 @@ const route = new Route(
   },
   undefined,
   async () => {
+    // 处理新模块上来后,对模块的import路径进行重写,去掉项目名称
     await window.rootMicroapp.updateModule();
   }
 );
