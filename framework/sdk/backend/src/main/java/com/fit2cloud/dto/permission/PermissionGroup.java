@@ -6,12 +6,15 @@ import com.fit2cloud.common.constants.RoleConstants;
 import lombok.Getter;
 import org.jetbrains.annotations.NotNull;
 
+import java.io.Serial;
 import java.util.ArrayList;
 import java.util.List;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class PermissionGroup extends PermissionBase {
 
+    @Serial
+    private static final long serialVersionUID = -8540444956359825987L;
     @Getter
     private String id;
     @Getter

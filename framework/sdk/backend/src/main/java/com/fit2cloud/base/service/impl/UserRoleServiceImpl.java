@@ -8,13 +8,18 @@ import com.fit2cloud.base.mapper.UserRoleMapper;
 import com.fit2cloud.base.service.IRoleService;
 import com.fit2cloud.base.service.IUserRoleService;
 import com.fit2cloud.common.constants.RoleConstants;
+import com.fit2cloud.common.utils.JwtTokenUtils;
 import com.fit2cloud.dto.UserRoleDto;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.redisson.api.RBucket;
+import org.redisson.api.RLock;
+import org.redisson.api.RedissonClient;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 /**
@@ -29,12 +34,51 @@ import java.util.stream.Collectors;
 public class UserRoleServiceImpl extends ServiceImpl<UserRoleMapper, UserRole> implements IUserRoleService {
 
     @Resource
+    private RedissonClient redissonClient;
+    @Resource
     private IRoleService roleService;
 
-    @Override
-    public Map<String, List<UserRoleDto>> getUserRoleMap(String userId) {
+    private static final String USER_ROLE_KEY = "USER_ROLE_MAP:";
+    private static final String LOCK_ROLE_KEY = "LOCK_USER_ROLE_MAP:";
 
-        Map<String, List<UserRoleDto>> result = new HashMap<>();
+    @Override
+    public Map<RoleConstants.ROLE, List<UserRoleDto>> getCachedUserRoleMap(String userId) {
+        RBucket<Map<RoleConstants.ROLE, List<UserRoleDto>>> bucket = redissonClient.getBucket(USER_ROLE_KEY + userId);
+        Map<RoleConstants.ROLE, List<UserRoleDto>> map = null;
+        RLock lock = redissonClient.getLock(LOCK_ROLE_KEY + userId);
+        try {
+            lock.lock(5, TimeUnit.SECONDS);
+            map = bucket.get();
+        } catch (Exception ignore) {
+        } finally {
+            lock.unlock();
+        }
+        if (map == null || map.isEmpty()) {
+            return saveCachedUserRoleMap(userId);
+        } else {
+            return map;
+        }
+    }
+
+    @Override
+    public Map<RoleConstants.ROLE, List<UserRoleDto>> saveCachedUserRoleMap(String userId) {
+        Map<RoleConstants.ROLE, List<UserRoleDto>> map = getUserRoleMap(userId);
+        RBucket<Map<RoleConstants.ROLE, List<UserRoleDto>>> bucket = redissonClient.getBucket(USER_ROLE_KEY + userId);
+        RLock lock = redissonClient.getLock(LOCK_ROLE_KEY + userId);
+        try {
+            lock.lock(5, TimeUnit.SECONDS);
+            bucket.set(map, JwtTokenUtils.JWT_EXPIRE_MINUTES, TimeUnit.MINUTES);
+        } catch (Exception ignore) {
+        } finally {
+            lock.unlock();
+        }
+        return map;
+    }
+
+    @Override
+    public Map<RoleConstants.ROLE, List<UserRoleDto>> getUserRoleMap(String userId) {
+
+        Map<RoleConstants.ROLE, List<UserRoleDto>> result = new HashMap<>();
 
         Map<String, Role> roleMap = roleService.list().stream().collect(Collectors.toMap(Role::getRole, role -> role));
 
@@ -67,7 +111,7 @@ public class UserRoleServiceImpl extends ServiceImpl<UserRoleMapper, UserRole> i
                     .setRoles(adminRoles)
                     .setParentRole(RoleConstants.ROLE.ADMIN)
                     .sortRoles();
-            result.put(RoleConstants.ROLE.ADMIN.name(), Collections.singletonList(dto));
+            result.put(RoleConstants.ROLE.ADMIN, Collections.singletonList(dto));
         }
 
         if (!sourceRolesMap.isEmpty()) {
@@ -82,8 +126,8 @@ public class UserRoleServiceImpl extends ServiceImpl<UserRoleMapper, UserRole> i
                 } else {
                     dto.setParentRole(RoleConstants.ROLE.valueOf(roleList.get(0).getParentRole()));
                 }
-                result.computeIfAbsent(dto.getParentRole().name(), k -> new ArrayList<>());
-                result.get(dto.getParentRole().name()).add(dto);
+                result.computeIfAbsent(dto.getParentRole(), k -> new ArrayList<>());
+                result.get(dto.getParentRole()).add(dto);
             });
 
         }

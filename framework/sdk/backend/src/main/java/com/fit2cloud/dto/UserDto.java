@@ -21,7 +21,7 @@ public class UserDto extends User {
 
     private RoleConstants.ROLE currentRole = RoleConstants.ROLE.ANONYMOUS; //不是给前端用的
 
-    private Map<String, List<UserRoleDto>> roleMap;
+    private Map<RoleConstants.ROLE, List<UserRoleDto>> roleMap;
 
     private String currentSource;
 

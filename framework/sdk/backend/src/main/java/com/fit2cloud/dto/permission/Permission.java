@@ -7,6 +7,7 @@ import lombok.Getter;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 
+import java.io.Serial;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
@@ -14,6 +15,8 @@ import java.util.Set;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class Permission extends PermissionBase {
 
+    @Serial
+    private static final long serialVersionUID = 4530372509768915230L;
     @Getter
     private String groupId;
     @Getter

@@ -23,7 +23,7 @@ public class JwtTokenUtils {
 
     public static final String TOKEN_NAME = "CE-TOKEN";
 
-    private static int JWT_EXPIRE_MINUTES;
+    public static int JWT_EXPIRE_MINUTES;
 
     public static void setJwtExpireMinutes(int jwtExpireMinutes) {
         if (jwtExpireMinutes <= 10) {

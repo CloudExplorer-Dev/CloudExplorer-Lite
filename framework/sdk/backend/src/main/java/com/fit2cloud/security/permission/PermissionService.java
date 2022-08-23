@@ -33,7 +33,7 @@ public class PermissionService {
         PermissionService.module = module;
     }
 
-    private static final String PERMISSION_MAP = "PERMISSION_MAP_";
+    private static final String PERMISSION_MAP = "PERMISSION_MAP:";
 
     //启动后推送到redis, role -- module -- permissions
     public void init(String module, ModulePermission modulePermission) {
@@ -78,7 +78,7 @@ public class PermissionService {
         }
     }
 
-    public List<CeGrantedAuthority> readPermissionFromRedis(List<String> roles) {
+    public List<CeGrantedAuthority> readPermissionFromRedis(Set<String> roles) {
 
         Set<CeGrantedAuthority> authorities = new HashSet<>();
 

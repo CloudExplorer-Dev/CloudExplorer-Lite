@@ -4,12 +4,15 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.Getter;
 import org.jetbrains.annotations.NotNull;
 
+import java.io.Serial;
 import java.util.ArrayList;
 import java.util.List;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class ModulePermission extends PermissionBase {
 
+    @Serial
+    private static final long serialVersionUID = -2139932042065786160L;
     @Getter
     private List<PermissionGroup> groups;
 

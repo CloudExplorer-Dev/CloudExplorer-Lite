@@ -50,6 +50,9 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
             throw new RuntimeException("密码错误");
         }
 
+        //将当前用户的授权角色更新到redis
+        userRoleService.saveCachedUserRoleMap(user.getId());
+
         return JwtTokenUtils.createJwtToken(user);
     }
 
@@ -62,7 +65,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
 
         UserDto dto = new UserDto();
         BeanUtils.copyProperties(user, dto);
-        dto.setRoleMap(userRoleService.getUserRoleMap(dto.getId()));
+        //dto.setRoleMap(userRoleService.getUserRoleMap(dto.getId()));
         return dto;
     }
 

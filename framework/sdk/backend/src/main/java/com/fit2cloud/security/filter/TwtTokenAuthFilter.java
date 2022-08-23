@@ -1,6 +1,7 @@
 package com.fit2cloud.security.filter;
 
 import com.fit2cloud.base.entity.Role;
+import com.fit2cloud.base.service.IUserRoleService;
 import com.fit2cloud.common.constants.OrganizationConstants;
 import com.fit2cloud.common.constants.RoleConstants;
 import com.fit2cloud.common.constants.WorkspaceConstants;
@@ -22,15 +23,22 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 public class TwtTokenAuthFilter extends BasicAuthenticationFilter {
 
     private final PermissionService permissionService;
 
-    public TwtTokenAuthFilter(AuthenticationManager authenticationManager, PermissionService permissionService) {
+    private final IUserRoleService userRoleService;
+
+    private final static String CE_SOURCE_TOKEN = "CE_SOURCE";
+
+    public TwtTokenAuthFilter(AuthenticationManager authenticationManager, PermissionService permissionService, IUserRoleService userRoleService) {
         super(authenticationManager);
         this.permissionService = permissionService;
+        this.userRoleService = userRoleService;
     }
 
     @Override
@@ -53,16 +61,22 @@ public class TwtTokenAuthFilter extends BasicAuthenticationFilter {
             //获取角色
             userDtoFromToken.setCurrentRole(role);
 
-            List<String> rolesForSearchAuthority = new ArrayList<>();
+            Set<String> rolesForSearchAuthority = new HashSet<>();
 
             //信任jwt，直接从jwt内取授权的角色
-            List<UserRoleDto> userRoleDtos = userDtoFromToken.getRoleMap().getOrDefault(userDtoFromToken.getCurrentRole().name(), new ArrayList<>());
+            //List<UserRoleDto> userRoleDtos = userDtoFromToken.getRoleMap().getOrDefault(userDtoFromToken.getCurrentRole(), new ArrayList<>());
+
+            //为了防止用户编辑后与token中角色不同，从redis读取授权的角色
+            List<UserRoleDto> userRoleDtos = userRoleService.getCachedUserRoleMap(userDtoFromToken.getId()).getOrDefault(userDtoFromToken.getCurrentRole(), new ArrayList<>());
 
             String source = null;
             if (RoleConstants.ROLE.USER.equals(userDtoFromToken.getCurrentRole())) {
                 source = request.getHeader(WorkspaceConstants.WORKSPACE_TOKEN);
             } else if (RoleConstants.ROLE.ORGADMIN.equals(userDtoFromToken.getCurrentRole())) {
                 source = request.getHeader(OrganizationConstants.ORGANIZATION_TOKEN);
+            }
+            if (StringUtils.isBlank(source)) {
+                source = request.getHeader(CE_SOURCE_TOKEN);
             }
             userDtoFromToken.setCurrentSource(source);
 
