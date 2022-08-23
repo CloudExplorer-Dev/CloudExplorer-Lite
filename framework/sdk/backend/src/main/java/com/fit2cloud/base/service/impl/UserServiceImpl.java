@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.fit2cloud.base.entity.User;
 import com.fit2cloud.base.mapper.UserMapper;
+import com.fit2cloud.base.service.IUserRoleService;
 import com.fit2cloud.base.service.IUserService;
 import com.fit2cloud.common.utils.JwtTokenUtils;
 import com.fit2cloud.common.utils.MD5Util;
@@ -12,6 +13,8 @@ import com.fit2cloud.request.LoginRequest;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
+
+import javax.annotation.Resource;
 
 /**
  * <p>
@@ -23,6 +26,9 @@ import org.springframework.stereotype.Service;
  */
 @Service
 public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IUserService {
+
+    @Resource
+    private IUserRoleService userRoleService;
 
     @Override
     public String login(LoginRequest loginRequest) {
@@ -49,13 +55,14 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
 
     @Override
     public UserDto getUserByIdOrEmail(String username) {
-        User user = getUserById(username);
+        User user = getUserByUserName(username);
         if (user == null) {
             user = getUserByEmail(username);
         }
 
         UserDto dto = new UserDto();
         BeanUtils.copyProperties(user, dto);
+        dto.setRoleMap(userRoleService.getUserRoleMap(dto.getId()));
         return dto;
     }
 
@@ -63,7 +70,14 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
     public User getUserById(String userId) {
         return this.getOne(
                 new LambdaQueryWrapper<User>()
-                        .eq(User::getUsername, userId)
+                        .eq(User::getId, userId)
+        );
+    }
+
+    public User getUserByUserName(String username) {
+        return this.getOne(
+                new LambdaQueryWrapper<User>()
+                        .eq(User::getUsername, username)
         );
     }
 

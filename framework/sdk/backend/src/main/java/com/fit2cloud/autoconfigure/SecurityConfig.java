@@ -2,17 +2,29 @@ package com.fit2cloud.autoconfigure;
 
 import com.fit2cloud.security.MD5PasswordEncoder;
 import com.fit2cloud.security.UserAuthDetailsService;
+import com.fit2cloud.security.permission.CeMethodSecurityExpressionHandler;
+import com.fit2cloud.security.permission.PermissionService;
 import org.springframework.context.annotation.Bean;
+import org.springframework.security.access.expression.method.MethodSecurityExpressionHandler;
+import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
+import org.springframework.security.config.annotation.method.configuration.GlobalMethodSecurityConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
 
+import javax.annotation.Resource;
+
 import static com.fit2cloud.security.SecurityDSL.securityDSL;
 
 
 @EnableWebSecurity //可以不添加，spring boot的WebSecurityEnablerConfiguration已经引入了该注解
-public class SecurityConfig {
+//@EnableMethodSecurity
+@EnableGlobalMethodSecurity(prePostEnabled = true)
+public class SecurityConfig extends GlobalMethodSecurityConfiguration {
+
+    @Resource
+    private PermissionService permissionService;
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
@@ -38,7 +50,7 @@ public class SecurityConfig {
                 //logout url
                 .logout(logout -> logout.logoutUrl("/logout"));
 
-        http.apply(securityDSL());
+        http.apply(securityDSL(permissionService));
 
         return http.build();
     }
@@ -53,5 +65,9 @@ public class SecurityConfig {
         return new UserAuthDetailsService();
     }
 
+    @Override
+    protected MethodSecurityExpressionHandler createExpressionHandler() {
+        return new CeMethodSecurityExpressionHandler();
+    }
 
 }

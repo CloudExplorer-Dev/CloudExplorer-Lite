@@ -27,7 +27,8 @@ public class UserAuthDetailsService implements UserDetailsService {
 
         SecurityUser securityUser = new SecurityUser();
         securityUser.setCurrentUserInfoDto(userDto);
-        //todo 设置权限
+
+        //无session模式，登录接口没必要返回权限，交给jwt token认证即可
         securityUser.setPermissionValueList(new ArrayList<>());
 
         return securityUser;
