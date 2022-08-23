@@ -41,6 +41,7 @@ public class UserLoginFilter extends UsernamePasswordAuthenticationFilter {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
+        //无session模式，登录接口没必要返回权限，交给jwt token认证即可
         return getAuthenticationManager().authenticate(new UsernamePasswordAuthenticationToken(userDto.getUsername(), userDto.getPassword(), new ArrayList<>()));
     }
 

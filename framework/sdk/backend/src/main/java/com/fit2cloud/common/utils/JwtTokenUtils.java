@@ -2,6 +2,7 @@ package com.fit2cloud.common.utils;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fit2cloud.common.constants.RoleConstants;
 import com.fit2cloud.dto.UserDto;
 import io.jsonwebtoken.CompressionCodecs;
 import io.jsonwebtoken.JwtBuilder;
@@ -22,7 +23,7 @@ public class JwtTokenUtils {
 
     public static final String TOKEN_NAME = "CE-TOKEN";
 
-    private static int JWT_EXPIRE_MINUTES;
+    public static int JWT_EXPIRE_MINUTES;
 
     public static void setJwtExpireMinutes(int jwtExpireMinutes) {
         if (jwtExpireMinutes <= 10) {
@@ -57,6 +58,11 @@ public class JwtTokenUtils {
         Date expirationDate = DateUtils.addMinutes(now, JWT_EXPIRE_MINUTES);
 
         Map<String, Object> claims = new HashMap<>();
+
+        //jwt内不考虑user的角色，获取角色有单独header
+        userDto.setCurrentRole(RoleConstants.ROLE.ANONYMOUS);
+        userDto.setCurrentSource(null);
+
         try {
             claims.put(KEY_CLAIMS, objectMapper.writeValueAsString(userDto));
         } catch (JsonProcessingException e) {

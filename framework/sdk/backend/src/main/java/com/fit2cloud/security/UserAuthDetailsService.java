@@ -1,5 +1,6 @@
 package com.fit2cloud.security;
 
+import com.fit2cloud.base.service.IUserRoleService;
 import com.fit2cloud.base.service.IUserService;
 import com.fit2cloud.dto.UserDto;
 import com.fit2cloud.dto.security.SecurityUser;
@@ -15,6 +16,8 @@ public class UserAuthDetailsService implements UserDetailsService {
 
     @Resource
     private IUserService loginService;
+    @Resource
+    private IUserRoleService userRoleService;
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
@@ -27,7 +30,11 @@ public class UserAuthDetailsService implements UserDetailsService {
 
         SecurityUser securityUser = new SecurityUser();
         securityUser.setCurrentUserInfoDto(userDto);
-        //todo 设置权限
+
+        //将当前用户的授权角色更新到redis
+        userRoleService.saveCachedUserRoleMap(userDto.getId());
+
+        //无session模式，登录接口没必要返回权限，交给jwt token认证即可
         securityUser.setPermissionValueList(new ArrayList<>());
 
         return securityUser;

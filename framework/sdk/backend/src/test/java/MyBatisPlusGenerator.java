@@ -19,7 +19,7 @@ public class MyBatisPlusGenerator {
     /**
      * 传入需要生成代码的表名
      */
-    private static final List<String> TABLES = Arrays.asList("user");
+    private static final List<String> TABLES = Arrays.asList("user_role");
 
     @Value("${ce.datasource.url}")
     private String datasource;
