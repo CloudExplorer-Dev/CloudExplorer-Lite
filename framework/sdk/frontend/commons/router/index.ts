@@ -321,8 +321,22 @@ class RouteObj {
     let flatMenuData: Array<Menu> = [];
     if (dynamicRoute instanceof Array) {
       flatMenuData = flatMenu(JSON.parse(JSON.stringify(dynamicRoute)), [], "");
-      console.log("flatMenu", flatMenu);
-      dynamicRoute = { home: flatMenuData.map(this.menuToRouteItem) };
+      const childrenRoute = flatMenuData
+        .map((item) => {
+          if (item.childOperations) {
+            return {
+              [item.name]: item.childOperations.map(this.menuToRouteItem),
+            };
+          }
+          return {};
+        })
+        .reduce((pre, next) => {
+          return { ...pre, ...next };
+        }, {});
+      dynamicRoute = {
+        home: flatMenuData.map(this.menuToRouteItem),
+        ...childrenRoute,
+      };
     }
     // 判断是否有权限
     if (await this.routeHasRolePermission(flatMenuData, to.path)) {
@@ -351,19 +365,11 @@ class RouteObj {
         return menu.path === toPath;
       });
       if (menu) {
-        const a = hasRolePermission(
+        return hasRolePermission(
           menu,
           rolePermission.role,
           rolePermission.permissions
         );
-        console.log(
-          "是否有权限",
-          menu,
-          rolePermission.role,
-          rolePermission.permissions,
-          a
-        );
-        return a;
       } else {
         return true;
       }

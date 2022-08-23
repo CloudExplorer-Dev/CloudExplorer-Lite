@@ -1,6 +1,8 @@
 <template>
-  <breadcrumb :breadcrumbs="[{ to: {}, title: '组织管理' }]"></breadcrumb>
-  <div class="table-container">
+  <layout-content>
+    <template #breadcrumb>
+      <breadcrumb :breadcrumbs="[{ to: {}, title: '组织管理' }]"></breadcrumb>
+    </template>
     <ce-table
       :columns="columns"
       :data="tableData"
@@ -8,7 +10,7 @@
       row-key="id"
     >
       <template #toolbar>
-        <el-button @click="create">创建</el-button>
+        <el-button type="primary" @click="create">创建</el-button>
         <el-button @click="deleteOrg">删除</el-button>
       </template>
       <el-table-column type="selection" />
@@ -20,7 +22,7 @@
         <fu-table-column-select type="icon" :columns="columns" size="small" />
       </template>
     </ce-table>
-  </div>
+  </layout-content>
 </template>
 
 <script setup lang="ts">
@@ -78,7 +80,6 @@ const search = (condition: TableSearch) => {
     ...params,
   }).then((ok) => {
     // 扁平化数据
-    console.log(ok);
     tableData.value = resetData(ok.data.records);
     tableConfig.value.paginationConfig?.setTotal(
       ok.data.total,
@@ -140,10 +141,6 @@ const tableConfig = ref<TableConfig>({
 </script>
 
 <style lang="scss" scoped>
-.table-container {
-  height: calc(100% - 50px);
-  width: 100%;
-}
 :deep(.el-table__body) {
   .el-table__placeholder {
     display: none;

@@ -2,7 +2,7 @@ import Mock from "mockjs";
 const Random = Mock.Random;
 const getMockData = (num: number) => {
   const data = [];
-  for (let i = 0; i < 10000; i++) {
+  for (let i = 0; i < 100; i++) {
     const org: any = {
       id: Random.id(), // 随机id
       name: Random.cname(), //随机生成中文名字

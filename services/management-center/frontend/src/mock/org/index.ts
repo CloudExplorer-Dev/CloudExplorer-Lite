@@ -20,7 +20,6 @@ export default [
     url: "/api/list/org", // 注意，这里只能是string格式
     method: "get",
     response: ({ query }: any) => {
-      console.log(query);
       const rootOrg = org.filter((item) => {
         return item.pid === null;
       });
@@ -43,6 +42,13 @@ export default [
         hasNext: true,
       };
       return Result.success(pageData);
+    },
+  },
+  {
+    url: "/api/listAll/org", // 注意，这里只能是string格式
+    method: "get",
+    response: ({ query }: any) => {
+      return Result.success(org);
     },
   },
 ] as MockMethod[];

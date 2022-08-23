@@ -7,4 +7,9 @@ export const listOrganization: (
 ) => Promise<Result<Page<Organization>>> = (req) => {
   return get("/api/list/org", req);
 };
+export const listAllOrganization: () => Promise<
+  Result<Array<Organization>>
+> = () => {
+  return get("/api/listAll/org");
+};
 export type { Organization };

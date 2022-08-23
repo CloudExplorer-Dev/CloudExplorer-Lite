@@ -1,5 +1,5 @@
 <template>
-  <el-breadcrumb separator="/" class="breadcrumb">
+  <el-breadcrumb separator="/">
     <el-breadcrumb-item
       :to="breadcrumb.to"
       v-for="(breadcrumb, index) in breadcrumbs"
@@ -16,11 +16,4 @@ defineProps<{
   breadcrumbs: Array<Breadcrumb>;
 }>();
 </script>
-<style lang="scss">
-.breadcrumb {
-  height: 50px;
-  width: 100%;
-  display: flex;
-  margin-left: 30px;
-}
-</style>
+<style lang="scss"></style>

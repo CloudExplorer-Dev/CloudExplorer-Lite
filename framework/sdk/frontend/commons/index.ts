@@ -13,9 +13,9 @@ const install = (app: App) => {
     const plugin: any = business[key];
     app.use(plugin.default);
   });
+
   Object.keys(components).forEach((key: string) => {
     const replaceKey = key.replace("/index.vue", "");
-
     app.component(
       replaceKey.substring(replaceKey.lastIndexOf("/") + 1, replaceKey.length),
       components[key].default

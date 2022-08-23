@@ -61,9 +61,13 @@ interface Menu extends MenuItem {
    */
   requiredPermissions: Array<RequiredPermissions>;
   /**
-   *子菜单路由
+   *子菜单路由 当前路由在home下面 与当前menu在同一级别
    */
   operations?: Array<Menu>;
+  /**
+   *子菜单路由 属于当前路由的字路由
+   */
+  childOperations?: Array<Menu>;
 }
 
 /**
