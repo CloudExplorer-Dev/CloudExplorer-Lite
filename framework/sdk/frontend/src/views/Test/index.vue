@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { login } from "../../../commons/api/user";
+import {login} from "@commons/api/user";
+
 login("/api/login", { username: "admin", password: "fit2cloud" }).then((ok) => {
   console.log(ok);
 });

@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { defineProps } from "vue";
-import ceIcone from "../ce-icon/index.vue";
+import {defineProps} from "vue";
+
 const props = defineProps({
   collapse: {
     type: Boolean,

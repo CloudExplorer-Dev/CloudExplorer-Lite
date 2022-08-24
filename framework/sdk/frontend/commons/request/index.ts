@@ -1,11 +1,11 @@
 import axios from "axios";
-import { ElMessage } from "element-plus";
-import packageJSON from "@/../package.json";
+import {ElMessage} from "element-plus";
+import type {NProgress} from "nprogress";
 import nProgress from "nprogress";
-import type { Ref } from "vue";
-import type { NProgress } from "nprogress";
-import type { Result } from "./Result";
-import { getToken } from "../utils/auth";
+import type {Ref} from "vue";
+import type {Result} from "@commons/request/Result";
+import {getToken} from "@commons/utils/auth";
+
 declare global {
   interface ImportMeta {
     env: {
@@ -14,7 +14,7 @@ declare global {
   }
 }
 const instance = axios.create({
-  baseURL: import.meta.env.DEV ? "" : "/" + packageJSON.name,
+  baseURL: import.meta.env.VITE_BASE_PATH,
   withCredentials: true,
   timeout: 60000,
 });
@@ -165,7 +165,8 @@ export const socket = (url: string) => {
   }
   let uri = protocol + window.location.host + url;
   if (import.meta.env.MODE !== "development") {
-    uri = protocol + window.location.host + "/" + packageJSON.name + url;
+    uri =
+      protocol + window.location.host + import.meta.env.VITE_BASE_PATH + url;
   }
   return new WebSocket(uri);
 };

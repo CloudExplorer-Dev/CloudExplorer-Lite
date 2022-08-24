@@ -1,8 +1,9 @@
-import type { APP } from "vue";
+import type {App} from "vue";
 import pinia from "@/stores";
-import { moduleStore } from "../stores/module";
-import { Permission } from "../api/permission";
-import { RequiredPermissions } from "../api/menu";
+import {moduleStore} from "@commons/stores/module";
+import type {Permission} from "@commons/api/permission";
+import type {RequiredPermissions} from "@commons/api/menu";
+
 const moduleStoreObj = moduleStore(pinia);
 
 const hasRolePermission = (
@@ -61,7 +62,7 @@ const hasPermission = async (el: any, binding: any) => {
   }
 };
 export default {
-  install: (app: APP) => {
+  install: (app: App) => {
     app.directive("hasPermission", {
       async created(el: any, binding: any) {
         hasPermission(el, binding);

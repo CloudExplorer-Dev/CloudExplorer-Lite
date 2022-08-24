@@ -1,7 +1,6 @@
 <script setup lang="ts">
-import { ref } from "vue";
-import asideMenu from "../aside-menu/index.vue";
-import collapseView from "../../collapse/index.vue";
+import {ref} from "vue";
+
 const collapse = ref<boolean>(true);
 </script>
 <template>

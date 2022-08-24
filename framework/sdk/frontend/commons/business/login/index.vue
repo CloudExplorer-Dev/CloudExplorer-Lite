@@ -1,10 +1,11 @@
 <script setup lang="ts">
-import { reactive, ref, watch, onBeforeMount, onUnmounted } from "vue";
-import { LocationQuery, useRoute, useRouter } from "vue-router";
-import { useUserStore } from "../../stores/user";
-import { $tv } from "../../base-locales";
-import type { FormInstance, FormRules } from "element-plus";
-import { LoginRequest } from "../../api/user/type";
+import {onBeforeMount, onUnmounted, reactive, ref, watch} from "vue";
+import type {LocationQuery} from "vue-router";
+import {useRoute, useRouter} from "vue-router";
+import {useUserStore} from "@commons/stores/user";
+import {$tv} from "@commons/base-locales";
+import type {FormInstance, FormRules} from "element-plus";
+import type {LoginRequest} from "@commons/api/user/type";
 
 const user = useUserStore();
 const route = useRoute();

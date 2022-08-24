@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import CeIcon from "../../ce-icon/index.vue";
-import type { StarMenuItem } from "./type";
-import { ref } from "vue";
+import type {StarMenuItem} from "./type";
+
 const props = defineProps<{
   /**
    * 数据

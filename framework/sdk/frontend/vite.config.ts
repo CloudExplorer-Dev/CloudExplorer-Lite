@@ -1,10 +1,10 @@
-import { fileURLToPath, URL } from "node:url";
+import {fileURLToPath, URL} from "node:url";
 import DefineOptions from "unplugin-vue-define-options/vite";
-import { defineConfig, loadEnv } from "vite";
-import type { ConfigEnv } from "vite";
+import type {ConfigEnv} from "vite";
+import {defineConfig, loadEnv} from "vite";
 import vue from "@vitejs/plugin-vue";
 import vueSetupExtend from "vite-plugin-vue-setup-extend";
-import { viteMockServe } from "vite-plugin-mock";
+import {viteMockServe} from "vite-plugin-mock";
 import dts from "vite-plugin-dts"; //生成d.ts
 
 /**
@@ -20,7 +20,6 @@ const commonBuild = {
         "vue-router",
         "@/config/modules.config",
         "@/config/basePathConfig",
-        "@/../package.json",
         "@/locales/lang/zh-cn",
         "@/locales/lang/zh-tw",
         "@/locales/lang/en",
@@ -36,7 +35,6 @@ const commonBuild = {
           "@/locales/lang/zh-cn": "@/locales/lang/zh-cn",
           "@/locales/lang/zh-tw": "@/locales/lang/zh-tw",
           "@/locales/lang/en": "@/locales/lang/en",
-          "@/../package.json": "@/../package.json",
           "@/stores": "@/stores",
         },
       },
@@ -78,6 +76,7 @@ const thisBuild = {
   resolve: {
     alias: {
       "@": fileURLToPath(new URL("./src", import.meta.url)),
+      "@commons": fileURLToPath(new URL("./commons", import.meta.url)),
     },
   },
   server: {

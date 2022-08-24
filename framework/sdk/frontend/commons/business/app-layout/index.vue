@@ -1,9 +1,7 @@
 <script lang="ts" setup>
-import asideStartMenu from "../../components/layout/aside-star-menu/index.vue";
-import asideMenu from "../../components/layout/aside-menu/index.vue";
-import TopBar from "../../components/layout/top-bar/index.vue";
-import collapseView from "../../components/collapse/index.vue";
-import { ref } from "vue";
+import TopBar from "@commons/components/layout/top-bar/index.vue";
+import {ref} from "vue";
+
 const collapse = ref<boolean>(true);
 </script>
 <template>

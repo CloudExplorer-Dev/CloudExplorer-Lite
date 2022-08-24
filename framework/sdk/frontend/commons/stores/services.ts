@@ -1,9 +1,13 @@
-import { listRuningModules, Module } from "../api/module";
-import { defineStore } from "pinia";
-import { ModuleMenu, getRuningModuleMenu } from "../api/menu";
-import { ModulePermission, getRuningPermissions } from "../api/permission";
-import { RouteItem } from "../router";
-import { getCurrentRole } from "../api/role";
+import type {Module} from "@commons/api/module";
+import {listRuningModules} from "@commons/api/module";
+import {defineStore} from "pinia";
+import type {ModuleMenu} from "@commons/api/menu";
+import {getRuningModuleMenu} from "@commons/api/menu";
+import type {ModulePermission} from "@commons/api/permission";
+import {getRuningPermissions} from "@commons/api/permission";
+import type {RouteItem} from "@commons/router";
+import {getCurrentRole} from "@commons/api/role";
+
 interface RouteModule {
   /**
    *路由名称

@@ -1,8 +1,8 @@
-import { get } from "../../request";
-import { Module } from "./type";
-import Result from "../../request/Result";
+import {get} from "@commons/request";
+import type {Module} from "./type";
+import type Result from "@commons/request/Result";
 import packageJson from "@/../package.json";
-import type { Ref } from "vue";
+import type {Ref} from "vue";
 
 /**
  *获取所有正在运行的模块

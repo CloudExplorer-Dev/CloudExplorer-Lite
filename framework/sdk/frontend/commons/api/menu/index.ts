@@ -1,12 +1,8 @@
-import { get } from "../../request";
-import type {
-  Menu,
-  MenuRequest,
-  RequiredPermissions,
-  ModuleMenu,
-} from "./type";
-import Result from "../../request/Result";
+import {get} from "../../request";
+import type {Menu, MenuRequest, ModuleMenu, RequiredPermissions,} from "./type";
+import type {Result} from "../../request/Result";
 import packageJson from "@/../package.json";
+
 /**
  * 获取当前模块的菜单
  * @returns

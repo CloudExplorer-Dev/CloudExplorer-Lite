@@ -1,6 +1,6 @@
-import { get, post } from "../../request";
-import { LoginResponse, LoginRequest, UserInfo } from "./type";
-import type { Result } from "../../request/Result";
+import {get, post} from "@commons/request";
+import type {LoginRequest, LoginResponse, UserInfo} from "./type";
+import type {Result} from "@commons/request/Result";
 
 export const login = (data: LoginRequest) => {
   const loginResult: Promise<Result<LoginResponse>> = post(
