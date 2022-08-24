@@ -78,12 +78,14 @@ const message = {
       save_success: "保存成功",
       delete_success: "删除成功",
       fail: "{0}失败",
+      delete_canceled: "已取消删除",
     },
     validate: {
       limit: "长度在 {0} 到 {1} 个字符",
       input: "请输入{0}",
       select: "请选择{0}",
       confirm_pwd: "两次输入的密码不一致",
+      pwd: "有效密码：8-30位，英文大小写字母+数字+特殊字符",
     },
     personal: {
       personal_info: "个人信息",
