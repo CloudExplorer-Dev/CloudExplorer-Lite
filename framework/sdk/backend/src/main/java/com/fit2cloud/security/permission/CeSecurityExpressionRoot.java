@@ -43,9 +43,6 @@ public class CeSecurityExpressionRoot extends SecurityExpressionRoot {
      * // @PreAuthorize("hasAnyCePermission('group1:operate1', 'group2:operate2')")
      */
     public boolean hasAnyCePermission(String... permissions) {
-
-        String module = getModuleName();
-
         Set<String> authorities = getCurrentModulePermissions();
 
         for (String permission : permissions) {
