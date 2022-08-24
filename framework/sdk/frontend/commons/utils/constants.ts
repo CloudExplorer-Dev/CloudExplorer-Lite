@@ -11,4 +11,11 @@ const config = {
   MICRO_APP_EVENTCENTER_PREFIX: "eventCenterForApp-",
 };
 
-export default config;
+// 角色类型常量
+const roleConst = {
+  admin: "ADMIN",
+  orgAdmin: "ORGADMIN",
+  user: "USER",
+};
+
+export default { config, roleConst };
