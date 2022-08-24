@@ -1,5 +1,4 @@
 import elementEnLocale from "element-plus/lib/locale/lang/en";
-console.log("xxa", elementEnLocale);
 import fit2cloudEnLocale from "fit2cloud-ui-plus/src/locale/lang/en";
 import subModuleEnLocale from "@/locales/lang/en";
 
@@ -79,12 +78,14 @@ const message = {
       save_success: "Save Success",
       delete_success: "Delete Success",
       fail: "{0} Failed",
+      delete_canceled: "Delete Canceled",
     },
     validate: {
       limit: "Length Is Between {0} 到 {1}",
       input: "Please Input{0}",
       select: "Please Select{0}",
       confirm_pwd: "The Two Passwords You Entered Were Inconsistent",
+      pwd: "Valid password: 8-30 digits, English upper and lower case letters + numbers + special characters",
     },
     personal: {
       personal_info: "Personal Detail",
