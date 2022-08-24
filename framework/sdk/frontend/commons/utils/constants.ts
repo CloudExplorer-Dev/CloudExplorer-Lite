@@ -12,10 +12,10 @@ const config = {
 };
 
 // 角色类型常量
-const roleConst = {
+export const roleConst = {
   admin: "ADMIN",
   orgAdmin: "ORGADMIN",
   user: "USER",
 };
 
-export default { config, roleConst };
+export default config;
