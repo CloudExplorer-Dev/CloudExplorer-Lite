@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref } from "vue";
-import { useUserStore } from "@commons/stores/user";
+import { useUserStore } from "@/../commons/stores/user";
 import ModifyPassword from "./ModifyPassword.vue";
 import PersonInfo from "./PersonInfo.vue";
 import ApiKey from "./Ukey.vue";

@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, getCurrentInstance } from "vue";
-import "@commons/font/iconfont";
+import "@/../commons/font/iconfont";
 
 const components: any = getCurrentInstance()?.appContext.components;
 const $antIcons: any =

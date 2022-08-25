@@ -1,6 +1,6 @@
-import { get } from "@commons/request";
+import { get } from "@/../commons/request";
 import type { ModulePermission, Permission } from "./type";
-import type Result from "@commons/request/Result";
+import type Result from "@/../commons/request/Result";
 
 /**
  * 获取当前权限

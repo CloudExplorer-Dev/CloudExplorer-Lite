@@ -1,7 +1,6 @@
-import { get } from "@commons/request";
+import { get } from "@/../commons/request";
 import type { Module } from "./type";
-import type Result from "@commons/request/Result";
-import packageJson from "@/../package.json";
+import type Result from "@/../commons/request/Result";
 import type { Ref } from "vue";
 
 /**
@@ -22,7 +21,7 @@ export const listRuningModules = (loading?: Ref<boolean>) => {
  */
 export const getCurrentModule = () => {
   const currentModule: Promise<Result<Module>> = get("/api/getCurrentModule", {
-    moduleName: packageJson.name,
+    moduleName: import.meta.env.VITE_APP_NAME, //todo 这里其实不需要，url中basePath有名字了
   });
   return currentModule;
 };

@@ -1,6 +1,6 @@
 import type { Role } from "./type";
-import { get } from "@commons/request";
-import type Result from "@commons/request/Result";
+import { get } from "@/../commons/request";
+import type Result from "@/../commons/request/Result";
 
 /**
  * 获取当前的角色

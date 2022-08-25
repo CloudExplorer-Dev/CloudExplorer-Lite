@@ -1,4 +1,4 @@
-import Config from "@commons/utils/constants";
+import Config from "@/../commons/utils/constants";
 
 const TokenKey = Config.TOKEN_KEY;
 

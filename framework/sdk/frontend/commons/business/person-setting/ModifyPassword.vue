@@ -2,9 +2,9 @@
 import { reactive, ref } from "vue";
 import type { FormInstance, FormRules } from "element-plus";
 import { ElMessage } from "element-plus";
-import { $tv } from "@commons/base-locales";
+import { $tv } from "@/../commons/base-locales";
 import { useI18n } from "vue-i18n";
-import { updateUserPwd } from "@commons/api/user";
+import { updateUserPwd } from "@/../commons/api/user";
 
 const { t } = useI18n();
 

@@ -3,7 +3,7 @@
   "version": "0.0.0",
   "main": "./lib/ce-base.umd.js",
   "module": "./lib/ce-base.es.js",
-  "types": "./lib/common/ce-base/packages/index.d.ts",
+  "types": "./lib/framework/sdk/frontend/commons/index.d.ts",
   "files": [
     "lib",
     "src"

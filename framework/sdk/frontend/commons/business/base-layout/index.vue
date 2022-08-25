@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import TopBar from "@commons/components/layout/top-bar/index.vue";
+import TopBar from "@/../commons/components/layout/top-bar/index.vue";
 </script>
 <template>
   <el-container class="rootContainer">

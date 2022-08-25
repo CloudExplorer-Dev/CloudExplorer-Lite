@@ -4,9 +4,9 @@ import StarItem from "./starMenuItem.vue";
 import type { StarMenuItem } from "./type";
 import CeIcon from "../../ce-icon/index.vue";
 import { onMounted, ref } from "vue";
-import type { Role } from "@commons//api/role";
-import { servicesStore } from "@commons/stores/services";
-import { moduleStore } from "@commons/stores/module";
+import type { Role } from "@/../commons//api/role";
+import { servicesStore } from "@/../commons/stores/services";
+import { moduleStore } from "@/../commons/stores/module";
 import { useRouter } from "vue-router";
 
 const router = useRouter();

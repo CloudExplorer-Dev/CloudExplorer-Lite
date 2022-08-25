@@ -3,16 +3,8 @@ import { ElMessage } from "element-plus";
 import type { NProgress } from "nprogress";
 import nProgress from "nprogress";
 import type { Ref } from "vue";
-import type { Result } from "@commons/request/Result";
-import { getToken } from "@commons/utils/auth";
-
-declare global {
-  interface ImportMeta {
-    env: {
-      DEV: boolean;
-    };
-  }
-}
+import type { Result } from "@/../commons/request/Result";
+import { getToken } from "@/../commons/utils/auth";
 
 const instance = axios.create({
   baseURL: import.meta.env.VITE_BASE_PATH,
@@ -33,16 +25,16 @@ instance.interceptors.request.use(
 
 //设置响应拦截器
 instance.interceptors.response.use(
-  (responce: any) => {
-    if (responce.data) {
-      if (responce.data.code !== 200) {
-        ElMessage.error(responce.data.message);
+  (response: any) => {
+    if (response.data) {
+      if (response.data.code !== 200) {
+        ElMessage.error(response.data.message);
       }
     }
-    if (responce.headers["content-type"] === "application/octet-stream") {
-      return responce;
+    if (response.headers["content-type"] === "application/octet-stream") {
+      return response;
     }
-    return responce;
+    return response;
   },
   (err: any) => {
     return Promise.reject(err);

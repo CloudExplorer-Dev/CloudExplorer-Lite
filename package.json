@@ -12,8 +12,8 @@
     "dev": "yarn workspaces foreach -pvi run dev",
     "build-lib": "yarn workspaces foreach -ptvi run build-lib",
     "build": "yarn workspaces foreach -ptvi run build",
-    "dev:base": "yarn workspace frontend-public run dev",
-    "dev:manage": "yarn workspace manage run dev",
+    "dev:base": "yarn workspace ce-base run dev",
+    "dev:manage": "yarn workspace management-center run dev",
     "dev:server": "yarn workspace server-frontend run dev"
   },
   "dependencies": {
@@ -33,6 +33,7 @@
     "vue-router": "^4.1.2"
   },
   "devDependencies": {
+    "@rollup/plugin-alias": "^3.1.9",
     "@rushstack/eslint-patch": "^1.1.0",
     "@types/jsdom": "^16.2.14",
     "@types/lodash": "^4",
