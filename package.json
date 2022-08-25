@@ -13,7 +13,9 @@
     "build-lib": "yarn workspaces foreach -ptvi run build-lib",
     "build": "yarn workspaces foreach -ptvi run build",
     "dev:base": "yarn workspace ce-base run dev",
+    "lint:base": "yarn workspace ce-base run lint",
     "dev:manage": "yarn workspace management-center run dev",
+    "lint:manage": "yarn workspace management-center run lint",
     "dev:server": "yarn workspace server-frontend run dev"
   },
   "dependencies": {

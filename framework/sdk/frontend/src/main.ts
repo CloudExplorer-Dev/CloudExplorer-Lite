@@ -2,6 +2,7 @@ import { createApp } from "vue";
 import ElementPlus from "element-plus";
 import * as ElementPlusIcons from "@element-plus/icons-vue";
 import "element-plus/dist/index.css";
+import "fit2cloud-ui-plus/src/styles/index.scss";
 import route from "./router";
 import pinia from "@/stores";
 import App from "./App.vue";
