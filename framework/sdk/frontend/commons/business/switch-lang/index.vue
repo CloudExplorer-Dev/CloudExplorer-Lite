@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import {computed} from "vue";
-import {useUserStore} from "@commons/stores/user";
+import { computed } from "vue";
+import { useUserStore } from "@commons/stores/user";
 
 const user = useUserStore();
 const currentLanguage = computed<string>(() => user.language);

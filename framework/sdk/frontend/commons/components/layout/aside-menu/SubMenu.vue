@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import {defineProps} from "vue";
+import { defineProps } from "vue";
 import CeIcon from "@commons/components/ce-icon/index.vue";
 
 defineProps({

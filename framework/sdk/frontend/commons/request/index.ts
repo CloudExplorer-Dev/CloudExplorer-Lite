@@ -1,10 +1,10 @@
 import axios from "axios";
-import {ElMessage} from "element-plus";
-import type {NProgress} from "nprogress";
+import { ElMessage } from "element-plus";
+import type { NProgress } from "nprogress";
 import nProgress from "nprogress";
-import type {Ref} from "vue";
-import type {Result} from "@commons/request/Result";
-import {getToken} from "@commons/utils/auth";
+import type { Ref } from "vue";
+import type { Result } from "@commons/request/Result";
+import { getToken } from "@commons/utils/auth";
 
 declare global {
   interface ImportMeta {

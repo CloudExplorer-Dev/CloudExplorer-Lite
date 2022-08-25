@@ -1,8 +1,8 @@
 <script setup lang="ts">
-import {getUser, saveUser} from "@commons/api/user";
-import {onMounted, ref} from "vue";
-import {ElMessage} from "element-plus";
-import {useI18n} from "vue-i18n";
+import { getUser, saveUser } from "@commons/api/user";
+import { onMounted, ref } from "vue";
+import { ElMessage } from "element-plus";
+import { useI18n } from "vue-i18n";
 
 const { t } = useI18n();
 

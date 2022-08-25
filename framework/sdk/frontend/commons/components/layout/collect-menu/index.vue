@@ -1,11 +1,11 @@
 <script setup lang="ts">
-import {defineProps, onMounted, ref, watch} from "vue";
-import type {Menu, ModuleMenu} from "@commons/api/menu";
-import type {Module} from "@commons/api/module";
-import {flatMenu, hasRolePermission} from "@commons/router";
-import type {Role} from "@commons/api/role";
-import type {ModulePermission, Permission} from "@commons/api/permission";
-import {Search} from "@element-plus/icons-vue";
+import { defineProps, onMounted, ref, watch } from "vue";
+import type { Menu, ModuleMenu } from "@commons/api/menu";
+import type { Module } from "@commons/api/module";
+import { flatMenu, hasRolePermission } from "@commons/router";
+import type { Role } from "@commons/api/role";
+import type { ModulePermission, Permission } from "@commons/api/permission";
+import { Search } from "@element-plus/icons-vue";
 import CeIcon from "../../ce-icon/index.vue";
 
 interface ModuleContainer extends Module {

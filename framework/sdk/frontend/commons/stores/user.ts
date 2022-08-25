@@ -1,10 +1,10 @@
-import {login} from "@commons/api/user";
-import type {LoginRequest, LoginResponse} from "@commons/api/user/type";
-import {defineStore} from "pinia";
-import type {Result} from "@commons/request/Result";
-import {getToken, removeToken, setToken} from "@commons/utils/auth";
-import {getLanguage, setLanguage} from "@commons/base-locales";
-import {useRouter} from "vue-router";
+import { login } from "@commons/api/user";
+import type { LoginRequest, LoginResponse } from "@commons/api/user/type";
+import { defineStore } from "pinia";
+import type { Result } from "@commons/request/Result";
+import { getToken, removeToken, setToken } from "@commons/utils/auth";
+import { getLanguage, setLanguage } from "@commons/base-locales";
+import { useRouter } from "vue-router";
 
 export const useUserStore = defineStore({
   id: "user",

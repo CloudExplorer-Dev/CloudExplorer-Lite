@@ -1,7 +1,7 @@
-import type {Module} from "@commons/api/module";
-import {endsWith, trimEnd, trimStart} from "lodash";
-import type {MicroApp} from "@micro-zoe/micro-app";
-import type {App} from "vue";
+import type { Module } from "@commons/api/module";
+import { endsWith, trimEnd, trimStart } from "lodash";
+import type { MicroApp } from "@micro-zoe/micro-app";
+import type { App } from "vue";
 
 declare global {
   interface Window {

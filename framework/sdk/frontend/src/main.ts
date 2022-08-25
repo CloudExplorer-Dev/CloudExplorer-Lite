@@ -1,4 +1,4 @@
-import {createApp} from "vue";
+import { createApp } from "vue";
 import ElementPlus from "element-plus";
 import * as ElementPlusIcons from "@element-plus/icons-vue";
 import "element-plus/dist/index.css";
@@ -11,9 +11,9 @@ import "@commons/styles/index.scss";
 import "@commons/font/iconfont.css";
 import mitt from "mitt";
 import microApp from "@micro-zoe/micro-app";
-import {setupMock} from "@commons/mock"; //mock
-import {servicesStore} from "@commons/stores/services";
-import {RootMicroapp} from "./microapp";
+import { setupMock } from "@commons/mock"; //mock
+import { servicesStore } from "@commons/stores/services";
+import { RootMicroapp } from "./microapp";
 
 if (import.meta.env.MODE === "development") {
   //dev环境开启mock

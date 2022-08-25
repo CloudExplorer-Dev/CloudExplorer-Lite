@@ -1,8 +1,8 @@
-import type {App} from "vue";
+import type { App } from "vue";
 import pinia from "@/stores";
-import {moduleStore} from "@commons/stores/module";
-import type {Permission} from "@commons/api/permission";
-import type {RequiredPermissions} from "@commons/api/menu";
+import { moduleStore } from "@commons/stores/module";
+import type { Permission } from "@commons/api/permission";
+import type { RequiredPermissions } from "@commons/api/menu";
 
 const moduleStoreObj = moduleStore(pinia);
 

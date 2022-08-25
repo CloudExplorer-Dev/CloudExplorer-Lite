@@ -1,6 +1,6 @@
 <script lang="ts" setup>
-import {getCurrentInstance, onMounted, ref} from "vue";
-import {EventCenterForMicroApp} from "@micro-zoe/micro-app";
+import { getCurrentInstance, onMounted, ref } from "vue";
+import { EventCenterForMicroApp } from "@micro-zoe/micro-app";
 import config from "@commons/utils/constants";
 
 const options = defineProps<{

@@ -2,7 +2,8 @@
 import SwitchLang from "@commons/business/switch-lang/index.vue";
 import PersonSetting from "@commons/business/person-setting/index.vue";
 import ToDo from "@commons/business/to-do/index.vue";
-import Notification from "@commons/business/notification/index.vue";</script>
+import Notification from "@commons/business/notification/index.vue";
+</script>
 
 <template>
   <div class="top-nav">

@@ -1,5 +1,5 @@
-import type {Role} from "./type";
-import {get} from "@commons/request";
+import type { Role } from "./type";
+import { get } from "@commons/request";
 import type Result from "@commons/request/Result";
 
 /**

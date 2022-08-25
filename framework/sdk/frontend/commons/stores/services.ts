@@ -1,12 +1,12 @@
-import type {Module} from "@commons/api/module";
-import {listRuningModules} from "@commons/api/module";
-import {defineStore} from "pinia";
-import type {ModuleMenu} from "@commons/api/menu";
-import {getRuningModuleMenu} from "@commons/api/menu";
-import type {ModulePermission} from "@commons/api/permission";
-import {getRuningPermissions} from "@commons/api/permission";
-import type {RouteItem} from "@commons/router";
-import {getCurrentRole} from "@commons/api/role";
+import type { Module } from "@commons/api/module";
+import { listRuningModules } from "@commons/api/module";
+import { defineStore } from "pinia";
+import type { ModuleMenu } from "@commons/api/menu";
+import { getRuningModuleMenu } from "@commons/api/menu";
+import type { ModulePermission } from "@commons/api/permission";
+import { getRuningPermissions } from "@commons/api/permission";
+import type { RouteItem } from "@commons/router";
+import { getCurrentRole } from "@commons/api/role";
 
 interface RouteModule {
   /**

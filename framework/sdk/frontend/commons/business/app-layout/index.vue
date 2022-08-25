@@ -1,6 +1,6 @@
 <script lang="ts" setup>
 import TopBar from "@commons/components/layout/top-bar/index.vue";
-import {ref} from "vue";
+import { ref } from "vue";
 
 const collapse = ref<boolean>(true);
 </script>

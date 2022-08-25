@@ -1,4 +1,4 @@
-import type {Ref} from "vue";
+import type { Ref } from "vue";
 
 export const OrderDesc = "desc";
 export const OrderAsc = "asc";

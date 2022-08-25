@@ -1,5 +1,5 @@
-import {get} from "@commons/request";
-import type {ModulePermission, Permission} from "./type";
+import { get } from "@commons/request";
+import type { ModulePermission, Permission } from "./type";
 import type Result from "@commons/request/Result";
 
 /**

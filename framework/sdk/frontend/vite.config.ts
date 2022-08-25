@@ -1,10 +1,10 @@
-import {fileURLToPath, URL} from "node:url";
+import { fileURLToPath, URL } from "node:url";
 import DefineOptions from "unplugin-vue-define-options/vite";
-import type {ConfigEnv} from "vite";
-import {defineConfig, loadEnv} from "vite";
+import type { ConfigEnv } from "vite";
+import { defineConfig, loadEnv } from "vite";
 import vue from "@vitejs/plugin-vue";
 import vueSetupExtend from "vite-plugin-vue-setup-extend";
-import {viteMockServe} from "vite-plugin-mock";
+import { viteMockServe } from "vite-plugin-mock";
 import dts from "vite-plugin-dts"; //生成d.ts
 
 /**
