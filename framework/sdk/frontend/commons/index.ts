@@ -4,9 +4,11 @@ import appContent from "@commons/components/layout/app-content/index.vue";
 import login from "@commons/business/login/index.vue";
 import { i18n } from "./base-locales/index";
 
-const components = import.meta.globEager("./components/**/index.vue");
+const components = import.meta.glob("./components/**/index.vue", {
+  eager: true,
+});
 
-const business = import.meta.globEager("./base-*/index.ts");
+const business = import.meta.glob("./base-*/index.ts", { eager: true });
 
 const install = (app: App) => {
   Object.keys(business).forEach((key: string) => {

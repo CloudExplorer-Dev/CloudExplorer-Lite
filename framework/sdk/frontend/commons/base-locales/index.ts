@@ -19,7 +19,7 @@ export const getLanguage = () => {
 };
 
 export function loadLanguages() {
-  const context = import.meta.globEager("./lang/*.ts");
+  const context = import.meta.glob("./lang/*.ts", { eager: true });
   const languages: any = {};
   const langs = Object.keys(context);
   for (const key of langs) {

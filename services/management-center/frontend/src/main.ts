@@ -18,7 +18,7 @@ import route from "./route";
 import { setupMock } from "ce-base/commons/mock"; //mock
 if (import.meta.env.MODE === "development") {
   //dev环境开启mock
-  setupMock(import.meta.globEager("@/mock/*/index.ts"));
+  setupMock(import.meta.glob("@/mock/*/index.ts", { eager: true }));
 }
 const app = createApp(App);
 const mount = () => {
