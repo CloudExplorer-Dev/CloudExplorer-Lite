@@ -30,7 +30,7 @@ const handleSwitchLanguage = (lang: string) => {
         <el-dropdown-item
           v-for="(value, key) in languages"
           :key="key"
-          :disabled="currentLanguage == key"
+          :disabled="currentLanguage === key"
           ><span @click="handleSwitchLanguage(key as string)">{{
             value
           }}</span></el-dropdown-item

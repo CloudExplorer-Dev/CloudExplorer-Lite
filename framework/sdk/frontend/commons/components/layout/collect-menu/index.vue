@@ -6,7 +6,7 @@ import { flatMenu, hasRolePermission } from "@commons/router";
 import type { Role } from "@commons/api/role";
 import type { ModulePermission, Permission } from "@commons/api/permission";
 import { Search } from "@element-plus/icons-vue";
-import CeIcon from "../../ce-icon/index.vue";
+import CeIcon from "@commons/components/ce-icon/index.vue";
 
 interface ModuleContainer extends Module {
   /**

@@ -1,5 +1,9 @@
 <script lang="ts" setup>
 import TopBar from "@commons/components/layout/top-bar/index.vue";
+import AsideStartMenu from "@commons/components/layout/aside-start-menu/index.vue";
+import AsideMenu from "@commons/components/layout/aside-menu/index.vue";
+import CollapseView from "@commons/components/collapse/index.vue";
+
 import { ref } from "vue";
 
 const collapse = ref<boolean>(true);
@@ -8,17 +12,17 @@ const collapse = ref<boolean>(true);
   <el-container class="rootContainer">
     <el-header class="handlerContainer"><TopBar /></el-header>
     <el-container>
-      <el-aside class="starMenuContainer"
-        ><asideStartMenu></asideStartMenu
-      ></el-aside>
+      <el-aside class="starMenuContainer">
+        <AsideStartMenu></AsideStartMenu>
+      </el-aside>
       <el-container>
         <el-aside class="menuContainer" v-show="collapse">
-          <asideMenu></asideMenu>
+          <AsideMenu></AsideMenu>
         </el-aside>
-        <collapseView
+        <CollapseView
           :collapse="collapse"
           :changeCollapse="() => (collapse = !collapse)"
-        ></collapseView>
+        ></CollapseView>
         <el-main class="contentContainer">
           <router-view></router-view>
         </el-main>

@@ -1,18 +1,20 @@
 <script setup lang="ts">
 import { ref } from "vue";
+import AsideMenu from "@commons/components/layout/aside-menu/index.vue";
+import CollapseView from "@commons/components/collapse/index.vue";
 
 const collapse = ref<boolean>(true);
 </script>
 <template>
   <el-container class="contentNav">
     <el-aside class="menuContainer" v-show="collapse">
-      <asideMenu></asideMenu>
+      <AsideMenu></AsideMenu>
     </el-aside>
-    <collapseView
+    <CollapseView
       class="collapseView"
       :collapse="collapse"
       :changeCollapse="() => (collapse = !collapse)"
-    ></collapseView>
+    ></CollapseView>
     <el-main class="contentContainer">
       <router-view></router-view>
     </el-main>

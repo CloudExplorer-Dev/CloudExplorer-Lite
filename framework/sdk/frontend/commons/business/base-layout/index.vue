@@ -1,13 +1,15 @@
 <script lang="ts" setup>
 import TopBar from "@commons/components/layout/top-bar/index.vue";
+import AsideStartMenu from "@commons/components/layout/aside-start-menu/index.vue";
+
 </script>
 <template>
   <el-container class="rootContainer">
     <el-header class="handlerContainer"><TopBar /></el-header>
     <el-container>
-      <el-aside class="starMenuContainer"
-        ><asideStartMenu></asideStartMenu
-      ></el-aside>
+      <el-aside class="starMenuContainer">
+        <AsideStartMenu></AsideStartMenu>
+      </el-aside>
       <el-container>
         <router-view></router-view>
       </el-container>
