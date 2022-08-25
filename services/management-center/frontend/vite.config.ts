@@ -77,6 +77,9 @@ export default defineConfig(({ mode }) => {
     resolve: {
       alias: {
         "@": fileURLToPath(new URL("./src", import.meta.url)),
+        "@commons": fileURLToPath(
+          new URL("../../../framework/sdk/frontend/commons", import.meta.url)
+        ),
       },
     },
   };

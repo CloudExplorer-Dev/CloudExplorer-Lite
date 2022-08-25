@@ -2,10 +2,10 @@
 import { onBeforeMount, onUnmounted, reactive, ref, watch } from "vue";
 import type { LocationQuery } from "vue-router";
 import { useRoute, useRouter } from "vue-router";
-import { useUserStore } from "@/../commons/stores/user";
-import { $tv } from "@/../commons/base-locales";
+import { useUserStore } from "@commons/stores/user";
+import { $tv } from "@commons/base-locales";
 import type { FormInstance, FormRules } from "element-plus";
-import type { LoginRequest } from "@/../commons/api/user/type";
+import type { LoginRequest } from "@commons/api/user/type";
 
 const user = useUserStore();
 const route = useRoute();

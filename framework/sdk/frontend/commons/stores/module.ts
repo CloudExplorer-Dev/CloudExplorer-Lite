@@ -1,8 +1,8 @@
 import { defineStore } from "pinia";
-import type { Module } from "@/../commons/api/module";
-import { getCurrentModule } from "@/../commons/api/module";
-import type { Menu } from "@/../commons/api/menu";
-import { getCurrentMenus } from "@/../commons/api/menu";
+import type { Module } from "@commons/api/module";
+import { getCurrentModule } from "@commons/api/module";
+import type { Menu } from "@commons/api/menu";
+import { getCurrentMenus } from "@commons/api/menu";
 import type { Permission } from "../api/permission";
 import { getPermission } from "../api/permission";
 import type { Role } from "../api/role";

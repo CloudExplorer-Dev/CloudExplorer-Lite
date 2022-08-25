@@ -1,14 +1,14 @@
 <script setup lang="ts">
-import SwitchLang from "@/../commons/business/switch-lang/index.vue";
-import PersonSetting from "@/../commons/business/person-setting/index.vue";
-import ToDo from "@/../commons/business/to-do/index.vue";
-import Notification from "@/../commons/business/notification/index.vue";
+import SwitchLang from "@commons/business/switch-lang/index.vue";
+import PersonSetting from "@commons/business/person-setting/index.vue";
+import ToDo from "@commons/business/to-do/index.vue";
+import Notification from "@commons/business/notification/index.vue";
 </script>
 
 <template>
   <div class="top-nav">
     <div class="logo">
-      <img class="img" src="@/../commons/assets/white-logo.png" alt="" />
+      <img class="img" src="@commons/assets/white-logo.png" alt="" />
     </div>
     <h2>云服务平台</h2>
     <div class="role">系统管理员</div>

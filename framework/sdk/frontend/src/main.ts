@@ -7,12 +7,12 @@ import pinia from "@/stores";
 import App from "./App.vue";
 import common from "../commons/index";
 import "nprogress/nprogress.css";
-import "@/../commons/styles/index.scss";
-import "@/../commons/font/iconfont.css";
+import "@commons/styles/index.scss";
+import "@commons/font/iconfont.css";
 import mitt from "mitt";
 import microApp from "@micro-zoe/micro-app";
-import { setupMock } from "@/../commons/mock"; //mock
-import { servicesStore } from "@/../commons/stores/services";
+import { setupMock } from "@commons/mock"; //mock
+import { servicesStore } from "@commons/stores/services";
 import { RootMicroapp } from "./microapp";
 
 if (import.meta.env.MODE === "development") {

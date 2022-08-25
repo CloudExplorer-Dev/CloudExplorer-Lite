@@ -8,16 +8,13 @@ import type {
   RouterHistory,
 } from "vue-router";
 import { createRouter } from "vue-router";
-import Layout from "@/../commons/business/app-layout/index.vue";
-import Login from "@/../commons/business/login/index.vue";
-import { getToken } from "@/../commons/utils/auth";
+import Layout from "@commons/business/app-layout/index.vue";
+import Login from "@commons/business/login/index.vue";
+import { getToken } from "@commons/utils/auth";
 import type { App } from "vue";
-import type { Menu, RequiredPermissions } from "@/../commons/api/menu";
-import type {
-  Permission,
-  RolePermission,
-} from "@/../commons/api/permission/type";
-import noPermissions from "@/../commons/business/err-page/noPermissions.vue";
+import type { Menu, RequiredPermissions } from "@commons/api/menu";
+import type { Permission, RolePermission } from "@commons/api/permission/type";
+import noPermissions from "@commons/business/err-page/noPermissions.vue";
 
 declare global {
   interface Window {

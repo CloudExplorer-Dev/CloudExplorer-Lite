@@ -3,8 +3,8 @@ import { ElMessage } from "element-plus";
 import type { NProgress } from "nprogress";
 import nProgress from "nprogress";
 import type { Ref } from "vue";
-import type { Result } from "@/../commons/request/Result";
-import { getToken } from "@/../commons/utils/auth";
+import type { Result } from "@commons/request/Result";
+import { getToken } from "@commons/utils/auth";
 
 const instance = axios.create({
   baseURL: import.meta.env.VITE_BASE_PATH,

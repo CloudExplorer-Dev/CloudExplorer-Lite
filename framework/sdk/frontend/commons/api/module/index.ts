@@ -1,6 +1,6 @@
-import { get } from "@/../commons/request";
+import { get } from "@commons/request";
 import type { Module } from "./type";
-import type Result from "@/../commons/request/Result";
+import type Result from "@commons/request/Result";
 import type { Ref } from "vue";
 
 /**

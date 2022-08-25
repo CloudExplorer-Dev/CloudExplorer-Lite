@@ -1,8 +1,8 @@
-import { Route } from "@/../commons/index";
+import { Route } from "@commons/index";
 import { createWebHistory } from "vue-router";
-import baseLayout from "@/../commons/business/base-layout/index.vue";
-import Login from "@/../commons/business/login/index.vue";
-import { servicesStore } from "@/../commons/stores/services";
+import baseLayout from "@commons/business/base-layout/index.vue";
+import Login from "@commons/business/login/index.vue";
+import { servicesStore } from "@commons/stores/services";
 import pinia from "@/stores";
 
 const route = new Route(
