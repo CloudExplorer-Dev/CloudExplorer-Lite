@@ -60,7 +60,7 @@ public class LoginController {
     @GetMapping("api/menus")
     public Mono<String> menus(ServerWebExchange exchange) throws Exception {
         System.out.println(exchange.getRequest().getHeaders().getFirst(JwtTokenUtils.TOKEN_NAME));
-        System.out.println(((UserDto)exchange.getAttributes().get("user")).getUsername());
+        System.out.println(((UserDto) exchange.getAttributes().get("user")).getUsername());
         //
         throw new RuntimeException("adsfasfaf");
         //return Mono.just("test " + testMapper.select1());
