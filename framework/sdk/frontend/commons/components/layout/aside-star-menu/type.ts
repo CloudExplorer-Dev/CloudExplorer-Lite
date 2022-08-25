@@ -12,4 +12,5 @@ interface StarMenuItem {
    */
   order: number;
 }
+
 export type { StarMenuItem };

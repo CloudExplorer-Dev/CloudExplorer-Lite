@@ -1,8 +1,8 @@
 <script lang="ts" setup>
-import { ref, getCurrentInstance, onUnmounted, onMounted } from "vue";
+import { getCurrentInstance, onMounted, ref } from "vue";
 import { EventCenterForMicroApp } from "@micro-zoe/micro-app";
-import { useRouter } from "vue-router";
-import config from "../../../commons/utils/constants";
+import config from "@commons/utils/constants";
+
 const options = defineProps<{
   url: string;
   baseroute: string;

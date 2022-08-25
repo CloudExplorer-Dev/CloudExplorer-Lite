@@ -1,6 +1,8 @@
 import type { Ref } from "vue";
+
 export const OrderDesc = "desc";
 export const OrderAsc = "asc";
+
 class PaginationConfig {
   constructor(
     currentPage?: number,

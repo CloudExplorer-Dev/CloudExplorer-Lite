@@ -9,6 +9,7 @@ import pinia from "@/stores";
 import App from "./App.vue";
 import ceBase from "ce-base";
 import { i18n } from "ce-base";
+
 console.log("abcd", i18n);
 import "ce-base/lib/style.css";
 import "ce-base/commons/styles/index.scss";

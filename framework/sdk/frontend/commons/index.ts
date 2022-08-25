@@ -1,7 +1,7 @@
 import type { App } from "vue";
-import Route from "./router/index";
-import appContent from "./components/layout/app-content/index.vue";
-import login from "./business/login/index.vue";
+import Route from "@commons/router/index";
+import appContent from "@commons/components/layout/app-content/index.vue";
+import login from "@commons/business/login/index.vue";
 import { i18n } from "./base-locales/index";
 
 const components = import.meta.globEager("./components/**/index.vue");

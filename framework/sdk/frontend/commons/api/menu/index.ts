@@ -2,17 +2,19 @@ import { get } from "../../request";
 import type {
   Menu,
   MenuRequest,
-  RequiredPermissions,
   ModuleMenu,
+  RequiredPermissions,
 } from "./type";
-import Result from "../../request/Result";
-import packageJson from "@/../package.json";
+import type { Result } from "../../request/Result";
+
 /**
  * 获取当前模块的菜单
  * @returns
  */
 export const getCurrentMenus: () => Promise<Result<Array<Menu>>> = () => {
-  const moduleRequest: MenuRequest = { moduleName: packageJson.name };
+  const moduleRequest: MenuRequest = {
+    moduleName: import.meta.env.VITE_APP_NAME, //todo 这里其实不需要，url中basePath有名字了
+  };
   return get("/api/menu", moduleRequest);
 };
 

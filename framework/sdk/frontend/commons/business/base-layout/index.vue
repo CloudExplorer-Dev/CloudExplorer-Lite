@@ -1,6 +1,5 @@
 <script lang="ts" setup>
-import TopBar from "../../components/layout/top-bar/index.vue";
-import asideStartMenu from "../../components/layout/aside-star-menu/index.vue";
+import TopBar from "@commons/components/layout/top-bar/index.vue";
 </script>
 <template>
   <el-container class="rootContainer">

@@ -1,15 +1,15 @@
 <script setup lang="ts">
 import { onMounted, ref } from "vue";
 import {
-  updateApiKeys,
-  deleteApiKeys,
   createApiKeys,
+  deleteApiKeys,
   getApiKeys,
-} from "../../api/user";
+  updateApiKeys,
+} from "@commons/api/user";
 import { useClipboard, useDateFormat } from "@vueuse/core";
-import { ElMessageBox, ElMessage } from "element-plus";
+import { ElMessage, ElMessageBox } from "element-plus";
 import { useI18n } from "vue-i18n";
-import { $tv } from "../../base-locales";
+import { $tv } from "@commons/base-locales";
 
 const { t } = useI18n();
 const { copy } = useClipboard();

@@ -15,6 +15,7 @@ class Result<T> {
     return new Result(message, code, null);
   }
 }
+
 interface Page<T> {
   /**
    *分页数据

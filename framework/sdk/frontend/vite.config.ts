@@ -1,10 +1,12 @@
 import { fileURLToPath, URL } from "node:url";
 import DefineOptions from "unplugin-vue-define-options/vite";
-import { defineConfig, loadEnv } from "vite";
 import type { ConfigEnv } from "vite";
+import { defineConfig, loadEnv } from "vite";
 import vue from "@vitejs/plugin-vue";
 import vueSetupExtend from "vite-plugin-vue-setup-extend";
 import { viteMockServe } from "vite-plugin-mock";
+import alias from "@rollup/plugin-alias";
+
 import dts from "vite-plugin-dts"; //生成d.ts
 
 /**
@@ -20,7 +22,6 @@ const commonBuild = {
         "vue-router",
         "@/config/modules.config",
         "@/config/basePathConfig",
-        "@/../package.json",
         "@/locales/lang/zh-cn",
         "@/locales/lang/zh-tw",
         "@/locales/lang/en",
@@ -36,7 +37,6 @@ const commonBuild = {
           "@/locales/lang/zh-cn": "@/locales/lang/zh-cn",
           "@/locales/lang/zh-tw": "@/locales/lang/zh-tw",
           "@/locales/lang/en": "@/locales/lang/en",
-          "@/../package.json": "@/../package.json",
           "@/stores": "@/stores",
         },
       },
@@ -53,6 +53,7 @@ const commonBuild = {
  */
 const thisBuild = {
   plugins: [
+    //alias(),
     vue({
       template: {
         // 添加以下内容
@@ -78,19 +79,18 @@ const thisBuild = {
   resolve: {
     alias: {
       "@": fileURLToPath(new URL("./src", import.meta.url)),
+      "@commons": fileURLToPath(new URL("./commons", import.meta.url)),
     },
   },
-  server: {
-    host: "0.0.0.0",
-    port: 5502,
-    proxy: {},
-  },
+  server: {},
 };
+
+const envDir = "./env";
 // 根据mode 判断打包依赖包还是当前项目
 export default defineConfig(({ mode }: ConfigEnv) => {
-  const env = loadEnv(mode, "./env");
+  const ENV = loadEnv(mode, envDir);
+  const config = { ...thisBuild, ...commonBuild };
   if (mode === "lib") {
-    const config = { ...thisBuild, ...commonBuild };
     //生成d.ts
     config.plugins.push(
       dts({
@@ -98,7 +98,12 @@ export default defineConfig(({ mode }: ConfigEnv) => {
         tsConfigFilePath: "./tsconfig.json",
       })
     );
-    return config;
   }
-  return { ...thisBuild, ...env };
+
+  config.server = {
+    host: "0.0.0.0",
+    port: Number(ENV.VITE_APP_PORT),
+  };
+
+  return config;
 });

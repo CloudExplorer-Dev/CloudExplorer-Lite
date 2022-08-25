@@ -1,21 +1,16 @@
 <script setup lang="ts">
 import { reactive, ref } from "vue";
-import type { FormInstance, FormRules } from "element-plus";
-import { ElMessage } from "element-plus";
-import { $tv } from "@commons/base-locales";
+import { FormInstance, FormRules } from "element-plus";
+import { $tv } from "ce-base/commons/base-locales";
 import { useI18n } from "vue-i18n";
-import { updateUserPwd } from "@commons/api/user";
 
 const { t } = useI18n();
-
 const dialogVisible = ref(false);
 defineExpose({
-  dialogVisible, //允许父组件操作此变量
+  dialogVisible,
 });
-
 const formRef = ref<FormInstance | undefined>();
 const form = reactive({
-  oldPassword: "",
   newPassword: "",
   confirmPassword: "",
 });
@@ -28,15 +23,7 @@ const confirmPwdValidator = (rule: any, value: any, callback: any) => {
   }
 };
 
-// 表单校验规则
 const rules: FormRules = {
-  oldPassword: [
-    {
-      required: true,
-      message: $tv("commons.validate.input", "commons.personal.old_password"),
-      trigger: "blur",
-    },
-  ],
   newPassword: [
     {
       required: true,
@@ -44,9 +31,8 @@ const rules: FormRules = {
       trigger: "blur",
     },
     {
-      min: 6,
-      max: 30,
-      message: $tv("commons.validate.limit", "6", "30"),
+      pattern: /^(?!.*\s)(?=.*[A-Z])(?=.*[a-z])(?=.*[0-9])(?=.*[\W_]).{8,30}$/,
+      message: t("commons.validate.pwd"),
       trigger: "blur",
     },
   ],
@@ -63,19 +49,20 @@ const rules: FormRules = {
   ],
 };
 
-const submitForm = (formEl: FormInstance | undefined) => {
+const handleCancel = (formEl: FormInstance) => {
+  dialogVisible.value = false;
+  formEl.resetFields();
+};
+
+const handleSave = (formEl: FormInstance) => {
   if (!formEl) return;
   formEl.validate((valid) => {
     if (valid) {
       const param = {
-        password: form.oldPassword,
-        newPassword: form.newPassword,
+        userId: "",
+        password: form.newPassword,
       };
-      updateUserPwd(param).then(() => {
-        dialogVisible.value = false;
-        ElMessage.success(t("commons.msg.save_success"));
-        // TODO 退出登录？
-      });
+      //TODO 更新用户密码
     } else {
       return false;
     }
@@ -87,7 +74,7 @@ const submitForm = (formEl: FormInstance | undefined) => {
   <el-dialog
     v-model="dialogVisible"
     :title="$t('commons.personal.edit_pwd')"
-    width="35%"
+    width="25%"
     destroy-on-close
   >
     <el-form
@@ -98,24 +85,13 @@ const submitForm = (formEl: FormInstance | undefined) => {
       label-position="right"
     >
       <el-form-item
-        :label="$t('commons.personal.old_password')"
-        prop="oldPassword"
-      >
-        <el-input
-          v-model="form.oldPassword"
-          type="password"
-          show-password
-          autocomplete="new-password"
-          autofocus
-        />
-      </el-form-item>
-      <el-form-item
         :label="$t('commons.personal.new_password')"
         prop="newPassword"
       >
         <el-input
           v-model="form.newPassword"
           type="password"
+          clearable
           show-password
           autocomplete="new-password"
         />
@@ -127,21 +103,23 @@ const submitForm = (formEl: FormInstance | undefined) => {
         <el-input
           v-model="form.confirmPassword"
           type="password"
+          clearable
           show-password
           autocomplete="new-password"
         />
       </el-form-item>
     </el-form>
-
     <template #footer>
-      <span class="dialog-footer">
-        <el-button @click="dialogVisible = false">{{
+      <div style="flex: auto">
+        <el-button @click="handleCancel(formRef)">{{
           $t("commons.btn.cancel")
         }}</el-button>
-        <el-button type="primary" @click="submitForm(formRef)">{{
+        <el-button type="primary" @click="handleSave(formRef)">{{
           $t("commons.btn.save")
         }}</el-button>
-      </span>
+      </div>
     </template>
   </el-dialog>
 </template>
+
+<style lang="scss"></style>

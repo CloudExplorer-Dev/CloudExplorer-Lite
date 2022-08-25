@@ -1,20 +1,21 @@
-import { createRouter } from "vue-router";
 import type {
-  Router,
-  RouterHistory,
-  RouteRecordRaw,
+  NavigationFailure,
+  NavigationGuardNext,
   RouteLocationNormalized,
   RouteLocationNormalizedLoaded,
-  NavigationGuardNext,
-  NavigationFailure,
+  Router,
+  RouteRecordRaw,
+  RouterHistory,
 } from "vue-router";
-import Layout from "../business/app-layout/index.vue";
-import Login from "../business/login/index.vue";
-import { getToken } from "../utils/auth";
+import { createRouter } from "vue-router";
+import Layout from "@commons/business/app-layout/index.vue";
+import Login from "@commons/business/login/index.vue";
+import { getToken } from "@commons/utils/auth";
 import type { App } from "vue";
-import { Menu, RequiredPermissions } from "../api/menu";
-import type { RolePermission, Permission } from "../api/permission/type";
-import notPromissions from "../business/err-page/notPromissions.vue";
+import type { Menu, RequiredPermissions } from "@commons/api/menu";
+import type { Permission, RolePermission } from "@commons/api/permission/type";
+import noPermissions from "@commons/business/err-page/noPermissions.vue";
+
 declare global {
   interface Window {
     eventCenterForAppNameVite: any;
@@ -278,9 +279,9 @@ class RouteObj {
         component: Layout,
         children: [
           {
-            path: "/notPermission",
-            name: "notPermission",
-            component: notPromissions,
+            path: "/noPermission",
+            name: "noPermission",
+            component: noPermissions,
           },
         ],
       },
@@ -348,7 +349,7 @@ class RouteObj {
       }
     } else {
       // 没有权限 路由到没权限页面
-      next({ name: "notPermission" });
+      next({ name: "noPermission" });
     }
   };
 

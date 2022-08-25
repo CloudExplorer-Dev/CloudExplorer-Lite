@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed, getCurrentInstance } from "vue";
-import "../../font/iconfont";
+import "@commons/font/iconfont";
+
 const components: any = getCurrentInstance()?.appContext.components;
 const $antIcons: any =
   getCurrentInstance()?.appContext.config.globalProperties.$antIcons;
@@ -22,6 +23,7 @@ const props = defineProps({
     default: "25px",
   },
 });
+
 /**
  * 拼接样式
  */

@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { defineProps } from "vue";
-import CeIcon from "../../ce-icon/index.vue";
+import CeIcon from "@commons/components/ce-icon/index.vue";
+
 defineProps({
   menuInfo: {
     type: Object,
