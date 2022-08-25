@@ -1,6 +1,8 @@
+package com.fit2cloud;
+
+
 import com.baomidou.mybatisplus.generator.AutoGenerator;
 import com.baomidou.mybatisplus.generator.config.*;
-import com.fit2cloud.BaseTestApplication;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -9,7 +11,7 @@ import org.springframework.test.context.TestPropertySource;
 import java.util.Arrays;
 import java.util.List;
 
-@SpringBootTest(classes = BaseTestApplication.class)
+@SpringBootTest(classes = ManagementApplication.class)
 @TestPropertySource(locations = {
         "classpath:commons.properties",
         "file:${ce.config.file}"
@@ -54,7 +56,7 @@ public class MyBatisPlusGenerator {
             .build();
 
     private static final PackageConfig PACKAGE_CONFIG = new PackageConfig.Builder()
-            .parent("com.fit2cloud.base")
+            .parent("com.fit2cloud.dao")
             .entity("entity")
             .mapper("mapper")
             .xml("mapper")

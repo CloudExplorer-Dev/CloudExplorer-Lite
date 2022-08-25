@@ -101,7 +101,7 @@ public class TwtTokenAuthFilter extends BasicAuthenticationFilter {
             List<CeGrantedAuthority> authority = permissionService.readPermissionFromRedis(rolesForSearchAuthority);
 
             //将认证信息存到上下文
-            CeUsernamePasswordAuthenticationToken authenticationToken = new CeUsernamePasswordAuthenticationToken(PermissionService.module, userDtoFromToken.getUsername(), token, authority);
+            CeUsernamePasswordAuthenticationToken authenticationToken = new CeUsernamePasswordAuthenticationToken(PermissionService.module, userDtoFromToken, token, authority);
 
             SecurityContextHolder.getContext().setAuthentication(authenticationToken);
 

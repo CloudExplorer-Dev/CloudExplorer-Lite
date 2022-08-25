@@ -42,4 +42,10 @@ public class ResultHolder<T> {
                 .data(data);
     }
 
+    public static <T> ResultHolder<T> error(String message){
+        return new ResultHolder<T>()
+                .code(HttpStatus.INTERNAL_SERVER_ERROR.value())
+                .message(message);
+    }
+
 }

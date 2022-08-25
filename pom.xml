@@ -29,7 +29,7 @@
         <revision>4.0.0</revision>
         <java.version>17</java.version>
         <spring-cloud.version>2021.0.3</spring-cloud.version>
-
+        <swagger.version>2.9.2</swagger.version>
         <skipAntRunForJenkins>false</skipAntRunForJenkins>
         <flatten.version>1.2.7</flatten.version>
         <common-lang3.version>3.12.0</common-lang3.version>
@@ -92,6 +92,33 @@
         <dependency>
             <groupId>org.springframework.security</groupId>
             <artifactId>spring-security-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <!--swagger 文档-->
+        <dependency>
+            <groupId>io.springfox</groupId>
+            <artifactId>springfox-swagger2</artifactId>
+            <version>${swagger.version}</version>
+        </dependency>
+
+        <!--swagger ui -->
+        <dependency>
+            <groupId>io.springfox</groupId>
+            <artifactId>springfox-swagger-ui</artifactId>
+            <version>${swagger.version}</version>
+        </dependency>
+
+
+        <dependency>
+            <groupId>com.baomidou</groupId>
+            <artifactId>mybatis-plus-generator</artifactId>
+            <version>${mybatis-plus-generator.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.velocity</groupId>
+            <artifactId>velocity-engine-core</artifactId>
+            <version>2.3</version>
             <scope>test</scope>
         </dependency>
 
