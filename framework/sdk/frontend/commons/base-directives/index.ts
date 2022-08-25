@@ -1,3 +1,5 @@
+import type {App} from "vue";
+
 const directives = import.meta.globEager("./*.ts");
 const install = (app: App) => {
   Object.keys(directives)

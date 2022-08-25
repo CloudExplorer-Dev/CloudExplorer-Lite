@@ -13,6 +13,7 @@ declare global {
     };
   }
 }
+
 const instance = axios.create({
   baseURL: import.meta.env.VITE_BASE_PATH,
   withCredentials: true,
