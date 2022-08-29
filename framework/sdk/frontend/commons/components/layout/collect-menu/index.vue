@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { defineProps, onMounted, ref, watch } from "vue";
+import { onMounted, ref, watch } from "vue";
 import type { Menu, ModuleMenu } from "@commons/api/menu";
 import type { Module } from "@commons/api/module";
 import { flatMenu, hasRolePermission } from "@commons/router";

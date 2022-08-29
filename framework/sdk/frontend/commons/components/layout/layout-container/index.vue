@@ -14,7 +14,6 @@
   </div>
 </template>
 <script setup lang="ts">
-import { defineProps } from "vue";
 defineProps({
   border: {
     type: Boolean,
