@@ -496,5 +496,7 @@ export {
   TableOperations,
   TableSearch,
   Order,
+  Conditions,
+  Condition,
+  SearchOption,
 };
-export type { Conditions, Condition, SearchOption };

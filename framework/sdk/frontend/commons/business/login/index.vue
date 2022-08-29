@@ -85,15 +85,13 @@ const submitForm = (formEl: FormInstance | undefined) => {
   if (!formEl) return;
   formEl.validate((valid: boolean) => {
     if (valid) {
-      loading.value = true;
       user
-        .login(form)
+        .login(form, loading)
         .then(() => {
           router.push({
             path: redirect.value || "/",
             query: otherQuery.value,
           });
-          loading.value = false;
         })
         .catch((error: any) => {
           console.log(error);

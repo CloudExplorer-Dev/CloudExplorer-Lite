@@ -1,21 +1,54 @@
 import axios from "axios";
+import type { AxiosRequestConfig } from "axios";
 import { ElMessage } from "element-plus";
 import type { NProgress } from "nprogress";
 import nProgress from "nprogress";
 import type { Ref } from "vue";
 import type { Result } from "@commons/request/Result";
 import { getToken } from "@commons/utils/auth";
+import { split } from "lodash";
+import Config from "@commons/utils/constants";
+import { setToken } from "@commons/utils/auth";
 
-const instance = axios.create({
-  baseURL: import.meta.env.VITE_BASE_PATH,
-  withCredentials: true,
+function getBaseURL() {
+  /*if (import.meta.env.DEV) {
+    const urls = split(window.location.host, ":");
+    if (urls.length > 1) {
+      //有端口
+      return (
+        window.location.protocol +
+        "//" +
+        urls[0] +
+        ":" +
+        import.meta.env.VITE_BASE_API_PORT +
+        import.meta.env.VITE_BASE_PATH
+      );
+    }
+  }*/
+  return import.meta.env.VITE_BASE_PATH;
+}
+
+const API_BASE_URL = getBaseURL();
+
+const axiosConfig = {
+  baseURL: API_BASE_URL,
+  withCredentials: false,
   timeout: 60000,
-});
+  // headers: {},
+};
+
+if (import.meta.env.DEV) {
+  // axiosConfig.headers = { "Access-Control-Allow-Origin": "*" };
+}
+
+const instance = axios.create(axiosConfig);
 
 // 设置请求拦截器
 instance.interceptors.request.use(
   (config: any) => {
-    config.headers["Authorization"] = getToken();
+    config.headers[Config.CE_TOKEN_KEY] = getToken();
+    config.headers[Config.CE_ROLE_KEY] = getToken();
+    config.headers[Config.CE_SOURCE_KEY] = getToken();
     return config;
   },
   (err: any) => {
@@ -29,6 +62,12 @@ instance.interceptors.response.use(
     if (response.data) {
       if (response.data.code !== 200) {
         ElMessage.error(response.data.message);
+      } else {
+        //取出header中返回的token
+        const token = response.headers[Config.CE_TOKEN_KEY];
+        if (token != null && token.length > 0) {
+          setToken(token);
+        }
       }
     }
     if (response.headers["content-type"] === "application/octet-stream") {
@@ -157,7 +196,7 @@ export const socket = (url: string) => {
     protocol = "wss://";
   }
   let uri = protocol + window.location.host + url;
-  if (import.meta.env.MODE !== "development") {
+  if (!import.meta.env.DEV) {
     uri =
       protocol + window.location.host + import.meta.env.VITE_BASE_PATH + url;
   }

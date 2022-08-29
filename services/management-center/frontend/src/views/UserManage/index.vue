@@ -8,7 +8,7 @@ import {
   TableConfig,
   TableOperations,
   TableSearch,
-} from "ce-base/commons/components/ce-table";
+} from "@commons/components/ce-table";
 import ModifyPwd from "@/views/UserManage/ModifyPwd.vue";
 import MsgConfig from "@/views/UserManage/MsgConfig.vue";
 import { useI18n } from "vue-i18n";

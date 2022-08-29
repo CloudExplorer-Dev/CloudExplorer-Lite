@@ -284,8 +284,8 @@ class RouteObj {
         ],
       },
       {
-        path: "/login",
-        name: "login",
+        path: "/signin",
+        name: "signin",
         component: Login,
       },
     ];
@@ -300,8 +300,8 @@ class RouteObj {
     next: NavigationGuardNext
   ) => {
     if (!getToken()) {
-      if (to.name !== "login") {
-        next({ name: "login" });
+      if (to.name !== "signin") {
+        next({ name: "signin" });
       } else {
         next();
       }

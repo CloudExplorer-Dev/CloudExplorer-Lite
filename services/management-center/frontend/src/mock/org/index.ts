@@ -1,8 +1,8 @@
 import type { MockMethod } from "vite-plugin-mock";
 import org from "./data";
-import Result from "ce-base/commons/request/Result";
-import { Page } from "ce-base/commons/request/Result";
-import { Organization } from "@/api/organization/type";
+import Result from "@commons/request/Result";
+import type { Page } from "@commons/request/Result";
+import type { Organization } from "@/api/organization/type";
 const searchChildData = (
   rootDatas: Array<Organization>,
   rootData: Organization

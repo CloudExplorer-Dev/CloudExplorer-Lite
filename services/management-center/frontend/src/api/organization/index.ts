@@ -1,7 +1,7 @@
-import { get } from "ce-base/commons/request";
-import Result from "ce-base/commons/request/Result";
-import { Page } from "ce-base/commons/request/Result";
-import { Organization, ListOrganizationRequest } from "./type";
+import { get } from "@commons/request";
+import type Result from "@commons/request/Result";
+import type { Page } from "@commons/request/Result";
+import type { Organization, ListOrganizationRequest } from "./type";
 export const listOrganization: (
   req: ListOrganizationRequest
 ) => Promise<Result<Page<Organization>>> = (req) => {

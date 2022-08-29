@@ -1,7 +1,7 @@
 import { fileURLToPath, URL } from "node:url";
 import DefineOptions from "unplugin-vue-define-options/vite";
 import { defineConfig, loadEnv } from "vite";
-import type { OutputOptions, OutputBundle, OutputChunk } from "rollup";
+import type { ProxyOptions } from "vite";
 import vue from "@vitejs/plugin-vue";
 import { join } from "path";
 import { writeFileSync } from "fs";
@@ -13,16 +13,19 @@ const envDir = "./env";
 // https://vitejs.dev/config/
 export default defineConfig(({ mode }) => {
   const ENV = loadEnv(mode, envDir);
+  const proxyConf: Record<string, string | ProxyOptions> = {};
+  proxyConf[ENV.VITE_BASE_PATH + "api"] =
+    "http://localhost:" + Number(ENV.VITE_BASE_API_PORT);
+  proxyConf[ENV.VITE_BASE_PATH + "login"] =
+    "http://localhost:" + Number(ENV.VITE_BASE_API_PORT);
+
   return {
     server: {
+      cors: true,
       host: "0.0.0.0",
       port: Number(ENV.VITE_APP_PORT),
-      proxy: {
-        "/management-center/organization": {
-          target: "http://localhost:9010",
-          changeOrigin: true,
-        },
-      },
+      strictPort: true,
+      proxy: proxyConf,
     },
     base: ENV.VITE_BASE_PATH,
     envDir: envDir,

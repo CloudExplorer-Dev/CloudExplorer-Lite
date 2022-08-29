@@ -1,24 +1,17 @@
 {
+  "extends": "@vue/tsconfig/tsconfig.web.json",
+  "include": ["env.d.ts", "src/**/*", "src/**/*.vue", "../../../framework/sdk/frontend/commons/**/*", "../../../framework/sdk/frontend/commons/**/*.vue"],
   "compilerOptions": {
     "baseUrl": ".",
-    "target": "esnext",
-    "useDefineForClassFields": true,
-    "module": "esnext",
-    "moduleResolution": "node",
-    "strict": true,
-    "jsx": "preserve",
-    "sourceMap": true,
-    "resolveJsonModule": true,
-    "isolatedModules": true,
-    "esModuleInterop": true,
-    "lib": ["esnext", "dom"],
-    "skipLibCheck": true,
     "paths": {
-      "@/*": ["src/*"],
-    },
-    "types": ["unplugin-vue-define-options", "vite/client"],
-    "allowJs": true
+      "@/*": ["./src/*"],
+      "@commons/*": ["../../../framework/sdk/frontend/commons/*"]
+    }
   },
-  "include": [ "src/**/*", "plugins/*"],
-  "references": [{ "path": "./tsconfig.app.json" }],
+
+  "references": [
+    {
+      "path": "./tsconfig.config.json"
+    }
+  ]
 }

@@ -1,12 +1,14 @@
 import { get, post } from "@commons/request";
 import type { LoginRequest, LoginResponse, UserInfo } from "./type";
 import type { Result } from "@commons/request/Result";
+import type { Ref } from "vue";
 
-export const login = (data: LoginRequest) => {
+export const login = (data: LoginRequest, loading?: Ref<boolean>) => {
   const loginResult: Promise<Result<LoginResponse>> = post(
-    "/api/login",
+    "/login",
     null,
-    data
+    data,
+    loading
   );
   return loginResult;
 };

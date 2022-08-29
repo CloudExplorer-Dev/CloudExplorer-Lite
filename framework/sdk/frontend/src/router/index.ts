@@ -15,8 +15,8 @@ const route = new Route(
       component: baseLayout,
     },
     {
-      path: "/login",
-      name: "login",
+      path: "/signin",
+      name: "signin",
       component: Login,
     },
   ],

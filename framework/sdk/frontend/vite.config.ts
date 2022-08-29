@@ -2,10 +2,10 @@ import { fileURLToPath, URL } from "node:url";
 import DefineOptions from "unplugin-vue-define-options/vite";
 import type { ConfigEnv } from "vite";
 import { defineConfig, loadEnv } from "vite";
+import type { ProxyOptions } from "vite";
 import vue from "@vitejs/plugin-vue";
 import vueSetupExtend from "vite-plugin-vue-setup-extend";
 import { viteMockServe } from "vite-plugin-mock";
-import alias from "@rollup/plugin-alias";
 
 import dts from "vite-plugin-dts"; //生成d.ts
 
@@ -48,6 +48,9 @@ const commonBuild = {
     },
   },
 };
+
+const envDir = "./env";
+
 /**
  * 当前模块打包
  */
@@ -82,10 +85,10 @@ const thisBuild = {
       "@commons": fileURLToPath(new URL("./commons", import.meta.url)),
     },
   },
+  envDir: envDir,
   server: {},
 };
 
-const envDir = "./env";
 // 根据mode 判断打包依赖包还是当前项目
 export default defineConfig(({ mode }: ConfigEnv) => {
   const ENV = loadEnv(mode, envDir);
@@ -100,9 +103,19 @@ export default defineConfig(({ mode }: ConfigEnv) => {
     );
   }
 
+  const proxyConf: Record<string, string | ProxyOptions> = {};
+  proxyConf[ENV.VITE_BASE_PATH + "api"] =
+    "http://localhost:" + Number(ENV.VITE_BASE_API_PORT);
+  proxyConf[ENV.VITE_BASE_PATH + "login"] =
+    "http://localhost:" + Number(ENV.VITE_BASE_API_PORT);
+
+  //https://cn.vitejs.dev/config/server-options.html#server-host
   config.server = {
+    cors: true,
     host: "0.0.0.0",
     port: Number(ENV.VITE_APP_PORT),
+    strictPort: true,
+    proxy: proxyConf,
   };
 
   return config;

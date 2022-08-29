@@ -1,6 +1,6 @@
-import { post } from "ce-base/commons/request";
-import Result from "ce-base/commons/request/Result";
-import { Page } from "ce-base/commons/request/Result";
+import { post } from "@commons/request";
+import Result from "@commons/request/Result";
+import { Page } from "@commons/request/Result";
 import { User, ListUserRequest } from "./type";
 
 export const listUser: (req: ListUserRequest) => Promise<Result<Page<User>>> = (

@@ -1,6 +1,6 @@
-import { Route, appContent, login } from "ce-base";
+import { Route, appContent, login } from "@commons/index";
 import { createWebHashHistory } from "vue-router";
-import { moduleStore } from "ce-base/commons/stores/module";
+import { moduleStore } from "@commons/stores/module";
 import pinia from "@/stores";
 const baseRoute = window.__MICRO_APP_BASE_APPLICATION__
   ? [
@@ -10,8 +10,8 @@ const baseRoute = window.__MICRO_APP_BASE_APPLICATION__
         component: appContent,
       },
       {
-        path: "/login",
-        name: "login",
+        path: "/signin",
+        name: "signin",
         component: login,
       },
     ]

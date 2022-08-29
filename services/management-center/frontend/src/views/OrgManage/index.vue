@@ -36,7 +36,7 @@ import {
   TableConfig,
   TableOperations,
   TableSearch,
-} from "ce-base/commons/components/ce-table/index";
+} from "@commons/components/ce-table/index";
 const useRoute = useRouter();
 const columns = ref([]);
 const tableData = ref<Array<OrganizationTree>>();

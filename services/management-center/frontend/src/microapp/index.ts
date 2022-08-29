@@ -1,6 +1,6 @@
 import type { App } from "vue";
-import config from "ce-base/commons/utils/constants";
-import type { Route } from "ce-base";
+import config from "@commons/utils/constants";
+import type { Route } from "@commons/index";
 declare global {
   interface Window {
     [index: string]: any;

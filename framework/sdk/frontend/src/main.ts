@@ -6,7 +6,7 @@ import "fit2cloud-ui-plus/src/styles/index.scss";
 import route from "./router";
 import pinia from "@/stores";
 import App from "./App.vue";
-import common from "../commons/index";
+import common from "@commons/index";
 import "nprogress/nprogress.css";
 import "@commons/styles/index.scss";
 import "@commons/font/iconfont.css";
@@ -16,10 +16,10 @@ import { setupMock } from "@commons/mock"; //mock
 import { servicesStore } from "@commons/stores/services";
 import { RootMicroapp } from "./microapp";
 
-if (import.meta.env.MODE === "development") {
+/*if (import.meta.env.DEV) {
   //dev环境开启mock
-  setupMock(import.meta.glob("@/mock/*/index.ts", { eager: true }));
-}
+  setupMock(import.meta.glob("@/mock/!*!/index.ts", { eager: true }));
+}*/
 const app = createApp(App);
 
 app.use(

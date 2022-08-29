@@ -7,7 +7,7 @@ import type Result from "@commons/request/Result";
  * @returns
  */
 export const getCurrentRole = () => {
-  const roleData: Promise<Result<Role>> = get("/api/currentRole");
+  const roleData: Promise<Result<Role>> = get("/api/currentUser");
   return roleData;
 };
 
