@@ -7,16 +7,27 @@ import com.fit2cloud.base.service.IOrganizationService;
 import com.fit2cloud.common.validator.annnotaion.CustomValidated;
 import com.fit2cloud.common.validator.group.ValidationGroup;
 import com.fit2cloud.common.validator.handler.ExistHandler;
+import com.fit2cloud.controller.editor.OrderEditor;
 import com.fit2cloud.controller.handler.ResultHolder;
 import com.fit2cloud.request.OrganizationRequest;
 import com.fit2cloud.request.PageOrganizationRequest;
+import com.fit2cloud.request.pub.OrderRequest;
 import io.swagger.annotations.*;
 import org.springframework.beans.BeanUtils;
+import org.springframework.beans.propertyeditors.CustomDateEditor;
 import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.ServletRequestDataBinder;
+import org.springframework.web.bind.WebDataBinder;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
+import javax.servlet.http.HttpServletRequest;
 import javax.validation.constraints.NotNull;
+import java.beans.PropertyEditorSupport;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.List;
 
 /**
  * @Author:张少虎
@@ -25,7 +36,7 @@ import javax.validation.constraints.NotNull;
  * @注释: 组织对应接口
  */
 @RestController
-@RequestMapping("/api/organization")
+@RequestMapping("/organization")
 @Api("组织相关接口")
 @Validated
 public class OrganizationController {
@@ -62,4 +73,15 @@ public class OrganizationController {
         boolean b = organizationService.removeById(id);
         return ResultHolder.success(b);
     }
+    /**
+     * 控制器初始化时调用
+     * SpringMVC 使用WebDataBinder处理<请求消息,方法入参>的绑定工作
+     * @param binder
+     */
+    @InitBinder
+    public void initBinder(WebDataBinder binder){
+        binder.registerCustomEditor(OrderRequest.class, new OrderEditor());
+        //binder.setValidator(this.validator);  //
+    }
+
 }

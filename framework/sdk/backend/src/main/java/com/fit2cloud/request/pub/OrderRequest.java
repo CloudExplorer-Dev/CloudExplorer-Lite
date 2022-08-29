@@ -1,6 +1,8 @@
 package com.fit2cloud.request.pub;
 
+import com.baomidou.mybatisplus.core.metadata.OrderItem;
 import io.swagger.annotations.ApiModelProperty;
+import lombok.Data;
 
 /**
  * @Author:张少虎
@@ -8,16 +10,18 @@ import io.swagger.annotations.ApiModelProperty;
  * @Version 1.0
  * @注释:
  */
-public class OrderRequest {
+@Data
+public class OrderRequest extends OrderItem {
     /**
      * 排序字段
      */
     @ApiModelProperty("排序字段")
-    private String field;
+    private String column;
     /**
      * asc
      * desc
      */
-    @ApiModelProperty("排序类型 asc desc")
-    private String sort;
+    @ApiModelProperty("asc 是否顺序")
+    private boolean asc;
+
 }

@@ -16,6 +16,7 @@ interface Permission {
    */
   parentRoles: Array<string>;
 }
+
 interface ModulePermission {
   [propName: string]: Array<Permission>;
 }

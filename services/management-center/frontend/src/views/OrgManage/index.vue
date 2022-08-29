@@ -4,6 +4,7 @@
       <breadcrumb :breadcrumbs="[{ to: {}, title: '组织管理' }]"></breadcrumb>
     </template>
     <ce-table
+      :expand-row-keys="expandRowKeys"
       :columns="columns"
       :data="tableData"
       :tableConfig="tableConfig"
@@ -39,7 +40,8 @@ import {
 const useRoute = useRouter();
 const columns = ref([]);
 const tableData = ref<Array<OrganizationTree>>();
-
+const expandRowKeys = ref<Array<string>>();
+expandRowKeys.value = ["01"];
 onMounted(() => {
   search(new TableSearch());
 });
@@ -119,14 +121,21 @@ const edit = (row: any) => {
  */
 const tableConfig = ref<TableConfig>({
   searchConfig: {
+    showEmpty: false,
+    // 查询函数
     search: search,
-    quickPlaceholder: "按照名称搜索",
+    quickPlaceholder: "搜索",
     components: [
       SearchConfig.buildComponent().DateComponent.newInstance(
         "createTime",
         "创建时间"
       ),
+      SearchConfig.buildComponent().DateComponent.newInstance(
+        "updateTime",
+        "修改时间"
+      ),
     ],
+    searchOptions: [{ label: "组织", value: "name" }],
   },
   paginationConfig: new PaginationConfig(),
   tableOperations: new TableOperations([

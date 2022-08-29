@@ -15,11 +15,11 @@ const baseRoute = window.__MICRO_APP_BASE_APPLICATION__
         component: login,
       },
     ]
-  : null;
+  : undefined;
 export default new Route(
   createWebHashHistory(),
   import.meta.glob("@/views/*/*.vue"),
-  baseRoute,
+  baseRoute ? baseRoute : undefined,
   async () => {
     const routes = await moduleStore(pinia).getMenu();
     return routes;

@@ -17,6 +17,12 @@ export default defineConfig(({ mode }) => {
     server: {
       host: "0.0.0.0",
       port: Number(ENV.VITE_APP_PORT),
+      proxy: {
+        "/management-center/organization": {
+          target: "http://localhost:9010",
+          changeOrigin: true,
+        },
+      },
     },
     base: ENV.VITE_BASE_PATH,
     envDir: envDir,

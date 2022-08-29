@@ -5,7 +5,7 @@ import { Organization, ListOrganizationRequest } from "./type";
 export const listOrganization: (
   req: ListOrganizationRequest
 ) => Promise<Result<Page<Organization>>> = (req) => {
-  return get("/api/list/org", req);
+  return get("organization/page", req);
 };
 export const listAllOrganization: () => Promise<
   Result<Array<Organization>>

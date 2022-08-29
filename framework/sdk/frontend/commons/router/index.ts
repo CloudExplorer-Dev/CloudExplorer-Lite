@@ -75,13 +75,11 @@ export const flatMenu = (
  * @returns
  */
 export const hasRolePermission = (
-  menu: Menu,
   role: string,
-  permissions: Array<Permission>
+  permissions: Array<Permission>,
+  requiredPermissions?: Array<RequiredPermissions>
 ) => {
-  const requiredPermissions: Array<RequiredPermissions> =
-    menu.requiredPermissions;
-  if (!menu.requiredPermissions || requiredPermissions.length === 0) {
+  if (!requiredPermissions || requiredPermissions.length === 0) {
     return true;
   }
   for (let i = 0; i < requiredPermissions.length; i++) {
@@ -312,6 +310,7 @@ class RouteObj {
     if (this.beforeEachAppend) {
       await this.beforeEachAppend(to, from, next);
     }
+
     /**
      * 获取动态路由
      */
@@ -339,8 +338,14 @@ class RouteObj {
         ...childrenRoute,
       };
     }
+    console.log(to.meta.requiredPermissions);
+
+    const requiredPermissions: Array<RequiredPermissions> =
+      to.meta.requiredPermissions instanceof Array<RequiredPermissions>
+        ? to.meta.requiredPermissions
+        : [];
     // 判断是否有权限
-    if (await this.routeHasRolePermission(flatMenuData, to.path)) {
+    if (await this.routeHasRolePermission(requiredPermissions)) {
       // 如果路由被重置则需要重制路由
       if (this.resetRoute(this.router, dynamicRoute as RouteItem)) {
         next({ ...to, replace: true });
@@ -359,21 +364,16 @@ class RouteObj {
    * @param to       路由next
    * @returns        是否有角色或者权限
    */
-  routeHasRolePermission = async (flatMenu: Array<Menu>, toPath: string) => {
+  routeHasRolePermission = async (
+    requiredPermissions: Array<RequiredPermissions>
+  ) => {
     if (this.getPermissions) {
       const rolePermission: RolePermission = await this.getPermissions();
-      const menu = flatMenu.find((menu) => {
-        return menu.path === toPath;
-      });
-      if (menu) {
-        return hasRolePermission(
-          menu,
-          rolePermission.role,
-          rolePermission.permissions
-        );
-      } else {
-        return true;
-      }
+      return hasRolePermission(
+        rolePermission.role,
+        rolePermission.permissions,
+        requiredPermissions
+      );
     }
     return true;
   };
@@ -391,6 +391,9 @@ class RouteObj {
         name: menu.name,
         path: menu.path,
         component: this.routeComponent[menu.componentPath],
+        meta: {
+          requiredPermissions: menu.requiredPermissions,
+        },
       };
     }
   };

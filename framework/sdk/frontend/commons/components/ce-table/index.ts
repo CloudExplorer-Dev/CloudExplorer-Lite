@@ -1,8 +1,5 @@
 import type { Ref } from "vue";
 
-export const OrderDesc = "desc";
-export const OrderAsc = "asc";
-
 class PaginationConfig {
   constructor(
     currentPage?: number,
@@ -80,6 +77,24 @@ class ComponnetParent {
    * 组建名称
    */
   component: string;
+}
+
+/**
+ * 查询
+ */
+class SearchOption {
+  /**
+   *选项 提示
+   */
+  label = "";
+  /**
+   *选项 值
+   */
+  value = "";
+  constructor(label: string, value: string) {
+    this.label = label;
+    this.value = value;
+  }
 }
 
 /**
@@ -233,7 +248,10 @@ class Condition {
     this.valueLabel = valueLabel;
   }
 
-  static toSearchObj(condition: Condition) {
+  static toSearchObj(condition?: Condition) {
+    if (!condition) {
+      return {};
+    }
     const field = condition.field;
     const value = condition.value;
     return { [field]: JSON.parse(JSON.stringify(value)) };
@@ -244,6 +262,7 @@ class Condition {
  * 搜索配置
  */
 class SearchConfig {
+  showEmpty = false;
   /**
    *查询回掉函数
    */
@@ -252,22 +271,30 @@ class SearchConfig {
    * 搜索框提示
    */
   quickPlaceholder = "";
+
+  /**
+   *查询options
+   */
+  searchOptions: Array<SearchOption> = [];
   /**
    *筛选组建
    */
   components: Array<
     DateTimeComponent | DateComponent | SelectComponnet | ComponnetParent
   > = [];
+
   constructor(
     search: (condition: TableSearch) => void,
     quickPlaceholder: string,
     components: Array<
       DateTimeComponent | DateComponent | SelectComponnet | ComponnetParent
-    >
+    >,
+    searchOptions: Array<SearchOption>
   ) {
     this.search = search;
     this.quickPlaceholder = quickPlaceholder;
     this.components = components;
+    this.searchOptions = searchOptions;
   }
   /**
    * 获取筛选组建对象
@@ -402,16 +429,16 @@ class TableConfig {
 
 class Order {
   /**
-   *排序字段
+   *需要进行排序的字段
    */
-  field: string;
+  column: string;
   /**
-   *
+   *是否正序排列，默认 true
    */
-  order: string;
-  constructor(field: string, order: string) {
-    this.field = field;
-    this.order = order;
+  asc: boolean;
+  constructor(column: string, asc: boolean) {
+    this.column = column;
+    this.asc = asc;
   }
 }
 
@@ -429,15 +456,22 @@ class TableSearch {
    */
   order?: Order;
 
-  constructor(conditions: Conditions = {}, order?: Order) {
+  /**
+   *查询相关接口
+   */
+  search?: Condition;
+
+  constructor(conditions: Conditions = {}, order?: Order, search?: Condition) {
     this.conditions = conditions;
     this.order = order;
+    this.search = search;
   }
   /**
    * 返回查询对象
    */
   static toSearchParams(tableSearch: TableSearch) {
-    const order = tableSearch.order ? tableSearch.order : {};
+    const order = tableSearch.order ? tableSearch.order : undefined;
+    const searchObj: any = Condition.toSearchObj(tableSearch.search);
     return Object.keys(tableSearch.conditions)
       .map((key: string) => {
         const value: Condition | string = tableSearch.conditions[key];
@@ -451,7 +485,7 @@ class TableSearch {
         (pre: any, next: any) => {
           return { ...pre, ...next };
         },
-        { order }
+        { order, ...searchObj }
       );
   }
 }
@@ -463,4 +497,4 @@ export {
   TableSearch,
   Order,
 };
-export type { Conditions };
+export type { Conditions, Condition, SearchOption };

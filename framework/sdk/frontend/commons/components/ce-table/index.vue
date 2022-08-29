@@ -11,6 +11,12 @@
     </div>
     <template v-if="tableConfig.searchConfig">
       <fu-filter-bar v-bind="tableConfig.searchConfig" @exec="search">
+        <template #tr>
+          <ce-filter-input
+            @change="inputSearch"
+            :searchOptions="tableConfig.searchConfig.searchOptions"
+          ></ce-filter-input
+        ></template>
         <template #tl>
           <slot name="toolbar"></slot>
         </template>
@@ -50,27 +56,28 @@
 </template>
 <script setup lang="ts">
 import { ref, defineProps } from "vue";
+import CeFilterInput from "./CeFilterInput.vue";
 import {
   TableConfig,
   Conditions,
+  Condition,
   Order,
   TableSearch,
-  OrderDesc,
-  OrderAsc,
-} from "./index";
+} from "@commons/components/ce-table/index";
 const props = defineProps<{
   header?: string;
   tableConfig: TableConfig;
 }>();
+
 const condition = ref<Conditions>({});
 
-const order = ref<Order | undefined>();
+const order = ref<Order | undefined>(undefined);
 
 const sortChange = (sortObj: any) => {
   if (sortObj.order) {
     order.value = {
-      field: sortObj.prop,
-      order: sortObj.order === "ascending" ? OrderAsc : OrderDesc,
+      column: sortObj.prop,
+      asc: sortObj.order === "ascending" ? true : false,
     };
   } else {
     order.value = undefined;
@@ -106,6 +113,11 @@ const updateCurrentPage = (currentPage: number) => {
   );
 };
 
+const inputSearch = (search: Condition) => {
+  props.tableConfig.searchConfig?.search(
+    new TableSearch(condition.value, order.value, search)
+  );
+};
 /**
  * 查询函数
  */
@@ -123,6 +135,9 @@ const search = (conditions: Conditions) => {
 @use "../../styles/mixins.scss" as *;
 .table-handler {
   height: var(--ce-table-header-height, 56px);
+}
+.fu-filter-bar__bottom {
+  padding: 10px 0;
 }
 .complex-table {
   height: 100%;
