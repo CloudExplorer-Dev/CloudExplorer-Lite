@@ -142,9 +142,6 @@ defineExpose({
 .table-handler {
   height: var(--ce-table-header-height, 56px);
 }
-.fu-filter-bar__bottom {
-  padding: 10px 0;
-}
 .complex-table {
   height: 100%;
   width: 100%;
@@ -156,12 +153,11 @@ defineExpose({
     font-size: 18px;
   }
   .complex-table__body {
-    max-height: calc(100% - 120px);
-    height: calc(100% - 120px);
+    height: calc(100% - 140px);
     width: 100%;
   }
   .fu-filter-bar {
-    height: 60px;
+    height: 80px;
   }
 
   .complex-table__toolbar {

@@ -7,8 +7,8 @@ package com.fit2cloud.common.constants;
  * @注释:
  */
 public enum GlobalErrorCodeConstants {
-    ORGANIZATION_CANNOT_DELETE(10010,"不能删除一个父级组织,请先删除子组织"),
-    ORGANIZATION_ID_AND_NAME_REQUIRED(100011,"组织和名称必须传一个");
+    LOGIN_TIME_OUT(9000,"登录超时");
+
     /**
      * 提示
      */

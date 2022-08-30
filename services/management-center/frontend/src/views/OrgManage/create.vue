@@ -77,11 +77,14 @@
   </layout-content>
 </template>
 <script setup lang="ts">
+import { ElMessage } from "element-plus";
 import { ref, onMounted, reactive } from "vue";
 import { tree, OrganizationTree, batch } from "@/api/organization";
 import { useRouter } from "vue-router";
 import type { FormInstance, FormRules } from "element-plus";
 import type { CreateOrgFrom } from "./type";
+import { useI18n } from "vue-i18n";
+const { t } = useI18n();
 const router = useRouter();
 const ruleFormRef = ref<FormInstance>();
 
@@ -115,11 +118,10 @@ const rules = reactive<FormRules>({
 const submitForm = (formEl: FormInstance | undefined) => {
   formEl?.validate((valid, fields) => {
     if (valid) {
-      batch(from.value).then((ok) => {
+      batch(from.value).then(() => {
         router.push({ name: "org" });
+        ElMessage.success(t("commons.msg.save_success"));
       });
-    } else {
-      console.log("error submit!", fields);
     }
   });
 };
@@ -136,7 +138,6 @@ const deleteOrgItem = (
   org: { name: string; description: string },
   index: number
 ) => {
-  console.log("ccc");
   from.value.orgDetails.splice(index, 1);
 };
 /**

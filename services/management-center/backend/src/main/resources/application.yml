@@ -6,6 +6,7 @@ spring:
   mvc:
     pathmatch:
        matching-strategy: ANT_PATH_MATCHER
+
 server:
   port: 9010
   servlet:
@@ -16,7 +17,6 @@ server:
 mybatis-plus:
   configuration:
     log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
-
 #监控，访问路径 {ip}:{port}/actuator
 management:
   server:

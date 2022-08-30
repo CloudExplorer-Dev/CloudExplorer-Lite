@@ -8,6 +8,9 @@ import org.springframework.boot.web.servlet.ServletComponentScan;
 import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
 import org.springframework.context.annotation.PropertySource;
 
+import java.time.ZoneId;
+import java.util.TimeZone;
+
 @SpringBootApplication()
 @EnableDiscoveryClient
 @PropertySource(value = {
@@ -18,6 +21,7 @@ import org.springframework.context.annotation.PropertySource;
 public class ManagementApplication {
 
     public static void main(String[] args) {
+        TimeZone.setDefault(TimeZone.getTimeZone(ZoneId.SHORT_IDS.get("CTT")));
         SpringApplication.run(ManagementApplication.class, args);
     }
 
