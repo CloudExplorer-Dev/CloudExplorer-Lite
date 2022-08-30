@@ -1,7 +1,7 @@
 package com.fit2cloud.security.filter;
 
 import com.fit2cloud.base.entity.Role;
-import com.fit2cloud.base.service.IUserRoleService;
+import com.fit2cloud.base.service.IBaseUserRoleService;
 import com.fit2cloud.common.constants.OrganizationConstants;
 import com.fit2cloud.common.constants.RoleConstants;
 import com.fit2cloud.common.constants.WorkspaceConstants;
@@ -31,11 +31,11 @@ public class TwtTokenAuthFilter extends BasicAuthenticationFilter {
 
     private final PermissionService permissionService;
 
-    private final IUserRoleService userRoleService;
+    private final IBaseUserRoleService userRoleService;
 
     private final static String CE_SOURCE_TOKEN = "CE_SOURCE";
 
-    public TwtTokenAuthFilter(AuthenticationManager authenticationManager, PermissionService permissionService, IUserRoleService userRoleService) {
+    public TwtTokenAuthFilter(AuthenticationManager authenticationManager, PermissionService permissionService, IBaseUserRoleService userRoleService) {
         super(authenticationManager);
         this.permissionService = permissionService;
         this.userRoleService = userRoleService;

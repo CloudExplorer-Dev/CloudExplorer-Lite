@@ -1,6 +1,6 @@
 package com.fit2cloud.security;
 
-import com.fit2cloud.base.service.IUserRoleService;
+import com.fit2cloud.base.service.IBaseUserRoleService;
 import com.fit2cloud.security.filter.TwtTokenAuthFilter;
 import com.fit2cloud.security.filter.UserLoginFilter;
 import com.fit2cloud.security.permission.PermissionService;
@@ -12,7 +12,7 @@ public class SecurityDSL extends AbstractHttpConfigurer<SecurityDSL, HttpSecurit
 
     private static PermissionService permissionService;
 
-    private static IUserRoleService userRoleService;
+    private static IBaseUserRoleService userRoleService;
 
     @Override
     public void configure(HttpSecurity http) throws Exception {
@@ -22,7 +22,7 @@ public class SecurityDSL extends AbstractHttpConfigurer<SecurityDSL, HttpSecurit
         http.addFilter(new TwtTokenAuthFilter(authenticationManager, permissionService, userRoleService));
     }
 
-    public static SecurityDSL securityDSL(PermissionService permissionService, IUserRoleService userRoleService) {
+    public static SecurityDSL securityDSL(PermissionService permissionService, IBaseUserRoleService userRoleService) {
         SecurityDSL dsl = new SecurityDSL();
         SecurityDSL.permissionService = permissionService;
         SecurityDSL.userRoleService = userRoleService;

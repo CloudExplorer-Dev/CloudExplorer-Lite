@@ -16,7 +16,7 @@ import java.util.Map;
  * @author fit2cloud
  * @since
  */
-public interface IUserRoleService extends IService<UserRole> {
+public interface IBaseUserRoleService extends IService<UserRole> {
 
     Map<RoleConstants.ROLE, List<UserRoleDto>> getUserRoleMap(String userId);
 

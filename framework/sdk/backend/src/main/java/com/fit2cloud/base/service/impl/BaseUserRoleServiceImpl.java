@@ -4,9 +4,9 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.fit2cloud.base.entity.Role;
 import com.fit2cloud.base.entity.UserRole;
-import com.fit2cloud.base.mapper.UserRoleMapper;
-import com.fit2cloud.base.service.IRoleService;
-import com.fit2cloud.base.service.IUserRoleService;
+import com.fit2cloud.base.mapper.BaseUserRoleMapper;
+import com.fit2cloud.base.service.IBaseRoleService;
+import com.fit2cloud.base.service.IBaseUserRoleService;
 import com.fit2cloud.common.constants.RoleConstants;
 import com.fit2cloud.common.utils.JwtTokenUtils;
 import com.fit2cloud.dto.UserRoleDto;
@@ -31,12 +31,12 @@ import java.util.stream.Collectors;
  * @since
  */
 @Service
-public class UserRoleServiceImpl extends ServiceImpl<UserRoleMapper, UserRole> implements IUserRoleService {
+public class BaseUserRoleServiceImpl extends ServiceImpl<BaseUserRoleMapper, UserRole> implements IBaseUserRoleService {
 
     @Resource
     private RedissonClient redissonClient;
     @Resource
-    private IRoleService roleService;
+    private IBaseRoleService roleService;
 
     private static final String USER_ROLE_KEY = "USER_ROLE_MAP:";
     private static final String LOCK_ROLE_KEY = "LOCK_USER_ROLE_MAP:";
@@ -80,7 +80,7 @@ public class UserRoleServiceImpl extends ServiceImpl<UserRoleMapper, UserRole> i
 
         Map<RoleConstants.ROLE, List<UserRoleDto>> result = new HashMap<>();
 
-        Map<String, Role> roleMap = roleService.list().stream().collect(Collectors.toMap(Role::getRole, role -> role));
+        Map<String, Role> roleMap = roleService.list().stream().collect(Collectors.toMap(Role::getId, role -> role));
 
         List<UserRole> userRoles = this.list(new LambdaQueryWrapper<UserRole>()
                         .eq(UserRole::getUserId, userId)
@@ -122,9 +122,9 @@ public class UserRoleServiceImpl extends ServiceImpl<UserRoleMapper, UserRole> i
                         .setRoles(roleList)
                         .sortRoles();
                 if (RoleConstants.Type.origin.equals(RoleConstants.Type.valueOf(roleList.get(0).getType()))) {
-                    dto.setParentRole(RoleConstants.ROLE.valueOf(roleList.get(0).getRole()));
+                    dto.setParentRole(RoleConstants.ROLE.valueOf(roleList.get(0).getId()));
                 } else {
-                    dto.setParentRole(RoleConstants.ROLE.valueOf(roleList.get(0).getParentRole()));
+                    dto.setParentRole(RoleConstants.ROLE.valueOf(roleList.get(0).getParentRoleId()));
                 }
                 result.computeIfAbsent(dto.getParentRole(), k -> new ArrayList<>());
                 result.get(dto.getParentRole()).add(dto);

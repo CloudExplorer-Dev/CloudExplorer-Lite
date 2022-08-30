@@ -11,6 +11,6 @@ import com.fit2cloud.base.entity.Role;
  * @author fit2cloud
  * @since 
  */
-public interface IRoleService extends IService<Role> {
+public interface IBaseRoleService extends IService<Role> {
 
 }

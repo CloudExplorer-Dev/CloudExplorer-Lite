@@ -1,6 +1,6 @@
 package com.fit2cloud.gateway.controller;
 
-import com.fit2cloud.base.service.IUserService;
+import com.fit2cloud.base.service.IBaseUserService;
 import com.fit2cloud.common.utils.JwtTokenUtils;
 import com.fit2cloud.controller.handler.ResultHolder;
 import com.fit2cloud.dto.UserDto;
@@ -19,7 +19,7 @@ import javax.annotation.Resource;
 public class LoginController {
 
     @Resource
-    private IUserService loginService;
+    private IBaseUserService loginService;
 
     @PostMapping("login")
     public Mono<ResponseEntity<ResultHolder<Object>>> login(@RequestBody LoginRequest loginRequest) {

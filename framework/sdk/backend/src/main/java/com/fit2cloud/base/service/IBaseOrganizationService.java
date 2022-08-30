@@ -3,13 +3,10 @@ package com.fit2cloud.base.service;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.fit2cloud.base.entity.Organization;
 import com.baomidou.mybatisplus.extension.service.IService;
-import com.fit2cloud.controller.handler.ResultHolder;
 import com.fit2cloud.request.OrganizationBatchRequest;
 import com.fit2cloud.request.PageOrganizationRequest;
 import com.fit2cloud.response.OrganizationTree;
 
-import java.lang.reflect.Array;
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -20,7 +17,7 @@ import java.util.List;
  * @author fit2cloud
  * @since 
  */
-public interface IOrganizationService extends IService<Organization> {
+public interface IBaseOrganizationService extends IService<Organization> {
    /**
     * 分页查询到组织
     * @param request 查询请求对象

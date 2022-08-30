@@ -1,7 +1,7 @@
 package com.fit2cloud.security;
 
-import com.fit2cloud.base.service.IUserRoleService;
-import com.fit2cloud.base.service.IUserService;
+import com.fit2cloud.base.service.IBaseUserRoleService;
+import com.fit2cloud.base.service.IBaseUserService;
 import com.fit2cloud.dto.UserDto;
 import com.fit2cloud.dto.security.SecurityUser;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -15,9 +15,9 @@ import java.util.ArrayList;
 public class UserAuthDetailsService implements UserDetailsService {
 
     @Resource
-    private IUserService loginService;
+    private IBaseUserService loginService;
     @Resource
-    private IUserRoleService userRoleService;
+    private IBaseUserRoleService userRoleService;
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {

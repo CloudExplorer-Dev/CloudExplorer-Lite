@@ -1,6 +1,6 @@
 package com.fit2cloud.request;
 
-import com.fit2cloud.base.mapper.OrganizationMapper;
+import com.fit2cloud.base.mapper.BaseOrganizationMapper;
 
 import com.fit2cloud.common.validator.annnotaion.CustomValidated;
 import com.fit2cloud.common.validator.group.ValidationGroup;
@@ -23,7 +23,7 @@ public class OrganizationRequest {
     @ApiModelProperty("主键id,修改的时候必填")
     @NotNull(groups = ValidationGroup.UPDATE.class, message = "id不能为null")
     @Null(groups = ValidationGroup.SAVE.class, message = "id必须为null")
-    @CustomValidated(groups = {ValidationGroup.UPDATE.class },mapper = OrganizationMapper.class,handler = ExistHandler.class,message = "组织id不存在",exist = false)
+    @CustomValidated(groups = {ValidationGroup.UPDATE.class },mapper = BaseOrganizationMapper.class,handler = ExistHandler.class,message = "组织id不存在",exist = false)
     private String id;
 
     @ApiModelProperty(value = "组织名称", required = true)
