@@ -56,10 +56,11 @@ public class MyBatisPlusGenerator {
             .build();
 
     private static final PackageConfig PACKAGE_CONFIG = new PackageConfig.Builder()
-            .parent("com.fit2cloud.dao")
-            .entity("entity")
-            .mapper("mapper")
-            .xml("mapper")
+            .parent("com.fit2cloud")
+            .entity("dao.entity")
+            .mapper("dao.mapper")
+            .xml("dao.mapper")
+            .service("service")
             .build();
 
     private static final TemplateConfig TEMPLATE_CONFIG = new TemplateConfig.Builder()
@@ -77,7 +78,7 @@ public class MyBatisPlusGenerator {
                 new DataSourceConfig
                         .Builder(datasource, username, password).build()
         );
-
+       // 生成dao层
         generator
                 .strategy(STRATEGY_CONFIG)
                 .global(GLOBAL_CONFIG)

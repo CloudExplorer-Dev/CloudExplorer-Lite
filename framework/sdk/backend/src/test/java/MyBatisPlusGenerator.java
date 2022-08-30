@@ -43,8 +43,8 @@ public class MyBatisPlusGenerator {
             .addInclude(TABLES) //需要生成的表名
             //mapper
             .mapperBuilder()
-            .formatMapperFileName("%sMapper")
-            .formatMapperFileName("%sMapper")
+            .formatMapperFileName("Base%sMapper")
+            .formatMapperFileName("Base%sMapper")
             //entity
             .entityBuilder().enableFileOverride() //仅覆盖entity覆盖文件
             .enableLombok()

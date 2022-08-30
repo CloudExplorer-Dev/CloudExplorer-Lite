@@ -1,7 +1,7 @@
 package com.fit2cloud.base.mapper;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
-import com.fit2cloud.base.entity.Role;
+import com.fit2cloud.base.entity.UserRole;
 
 /**
  * <p>
@@ -11,6 +11,6 @@ import com.fit2cloud.base.entity.Role;
  * @author fit2cloud
  * @since 
  */
-public interface RoleMapper extends BaseMapper<Role> {
+public interface BaseUserRoleMapper extends BaseMapper<UserRole> {
 
 }

@@ -1,6 +1,6 @@
 package com.fit2cloud.request;
 
-import com.fit2cloud.base.mapper.OrganizationMapper;
+import com.fit2cloud.base.mapper.BaseOrganizationMapper;
 import com.fit2cloud.common.validator.annnotaion.CustomValidated;
 import com.fit2cloud.common.validator.group.ValidationGroup;
 import com.fit2cloud.common.validator.handler.ExistHandler;
@@ -19,7 +19,7 @@ import java.util.List;
 @Data
 public class OrganizationBatchRequest {
     @ApiModelProperty("所属组织id")
-    @CustomValidated(groups = {ValidationGroup.UPDATE.class },mapper = OrganizationMapper.class,handler = ExistHandler.class,message = "组织id不存在",exist = false)
+    @CustomValidated(groups = {ValidationGroup.UPDATE.class },mapper = BaseOrganizationMapper.class,handler = ExistHandler.class,message = "组织id不存在",exist = false)
     private String pid;
 
     @Size(min = 1,message = "最少添加一个组织")

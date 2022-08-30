@@ -13,7 +13,7 @@ import org.apache.ibatis.annotations.Select;
  * @author fit2cloud
  * @since 
  */
-public interface UserMapper extends BaseMapper<User> {
+public interface BaseUserMapper extends BaseMapper<User> {
 
     @Select("select if((select password from user where username = #{username}) = #{password}, 1, 0)")
     boolean checkPassword(@Param("username") String userId, @Param("password") String password);

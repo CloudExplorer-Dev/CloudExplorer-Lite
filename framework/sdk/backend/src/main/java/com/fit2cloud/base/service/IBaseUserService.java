@@ -13,7 +13,7 @@ import com.fit2cloud.request.LoginRequest;
  * @author fit2cloud
  * @since 
  */
-public interface IUserService extends IService<User> {
+public interface IBaseUserService extends IService<User> {
 
     String login(LoginRequest loginRequest);
 

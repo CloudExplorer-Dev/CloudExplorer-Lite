@@ -1,7 +1,7 @@
 package com.fit2cloud.security.permission;
 
 import com.fit2cloud.base.entity.Role;
-import com.fit2cloud.base.service.IRoleService;
+import com.fit2cloud.base.service.IBaseRoleService;
 import com.fit2cloud.common.constants.RoleConstants;
 import com.fit2cloud.dto.permission.ModulePermission;
 import com.fit2cloud.dto.permission.Permission;
@@ -24,7 +24,7 @@ public class PermissionService {
     private RedissonClient redissonClient;
 
     @Resource
-    private IRoleService roleService;
+    private IBaseRoleService roleService;
 
     public static String module;
 

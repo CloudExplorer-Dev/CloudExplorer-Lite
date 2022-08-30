@@ -3,9 +3,9 @@ package com.fit2cloud.base.service.impl;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.fit2cloud.base.entity.User;
-import com.fit2cloud.base.mapper.UserMapper;
-import com.fit2cloud.base.service.IUserRoleService;
-import com.fit2cloud.base.service.IUserService;
+import com.fit2cloud.base.mapper.BaseUserMapper;
+import com.fit2cloud.base.service.IBaseUserRoleService;
+import com.fit2cloud.base.service.IBaseUserService;
 import com.fit2cloud.common.utils.JwtTokenUtils;
 import com.fit2cloud.common.utils.MD5Util;
 import com.fit2cloud.dto.UserDto;
@@ -25,10 +25,10 @@ import javax.annotation.Resource;
  * @since
  */
 @Service
-public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IUserService {
+public class BaseUserServiceImpl extends ServiceImpl<BaseUserMapper, User> implements IBaseUserService {
 
     @Resource
-    private IUserRoleService userRoleService;
+    private IBaseUserRoleService userRoleService;
 
     @Override
     public String login(LoginRequest loginRequest) {
@@ -93,7 +93,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
 
     @Override
     public boolean checkPassword(User user, String password) {
-        UserMapper userMapper = this.getBaseMapper();
+        BaseUserMapper userMapper = this.getBaseMapper();
         return userMapper.checkPassword(user.getUsername(), MD5Util.md5(password));
     }
 }

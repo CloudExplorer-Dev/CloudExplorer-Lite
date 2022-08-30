@@ -2,8 +2,8 @@ package com.fit2cloud.controller;
 
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.fit2cloud.base.entity.Organization;
-import com.fit2cloud.base.mapper.OrganizationMapper;
-import com.fit2cloud.base.service.IOrganizationService;
+import com.fit2cloud.base.mapper.BaseOrganizationMapper;
+import com.fit2cloud.base.service.IBaseOrganizationService;
 import com.fit2cloud.common.validator.annnotaion.CustomValidated;
 import com.fit2cloud.common.validator.group.ValidationGroup;
 import com.fit2cloud.common.validator.handler.ExistHandler;
@@ -15,23 +15,15 @@ import com.fit2cloud.request.PageOrganizationRequest;
 import com.fit2cloud.request.pub.OrderRequest;
 import com.fit2cloud.response.OrganizationTree;
 import io.swagger.annotations.*;
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
-import org.springframework.beans.propertyeditors.CustomDateEditor;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.ServletRequestDataBinder;
 import org.springframework.web.bind.WebDataBinder;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
-import javax.servlet.http.HttpServletRequest;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
-import java.beans.PropertyEditorSupport;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 
 /**
@@ -42,11 +34,11 @@ import java.util.List;
  */
 @RestController
 @RequestMapping("/organization")
-@Api("组织相关接口")
+@Api("公共组织相关接口")
 @Validated
 public class OrganizationController {
     @Resource
-    private IOrganizationService organizationService;
+    private IBaseOrganizationService organizationService;
 
     @GetMapping("/tree")
     @ApiOperation(value="获取组织树",notes = "获取组织树")
@@ -92,7 +84,7 @@ public class OrganizationController {
 
     @ApiOperation(value = "删除组织", notes = "删除组织")
     @DeleteMapping("/{organizationId}")
-    public ResultHolder<Boolean> delete( @ApiParam("组织id") @NotNull(message = "组织id不能为null") @CustomValidated(mapper = OrganizationMapper.class,handler = ExistHandler.class,message = "组织id不存在",exist = false)  @PathVariable("organizationId")   String id) {
+    public ResultHolder<Boolean> delete( @ApiParam("组织id") @NotNull(message = "组织id不能为null") @CustomValidated(mapper = BaseOrganizationMapper.class,handler = ExistHandler.class,message = "组织id不存在",exist = false)  @PathVariable("organizationId")   String id) {
         boolean b = organizationService.removeTreeById(id);
         return ResultHolder.success(b);
     }

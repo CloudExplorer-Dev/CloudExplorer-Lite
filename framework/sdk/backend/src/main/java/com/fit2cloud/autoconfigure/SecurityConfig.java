@@ -1,6 +1,6 @@
 package com.fit2cloud.autoconfigure;
 
-import com.fit2cloud.base.service.IUserRoleService;
+import com.fit2cloud.base.service.IBaseUserRoleService;
 import com.fit2cloud.security.MD5PasswordEncoder;
 import com.fit2cloud.security.UserAuthDetailsService;
 import com.fit2cloud.security.permission.CeMethodSecurityExpressionHandler;
@@ -27,7 +27,7 @@ public class SecurityConfig extends GlobalMethodSecurityConfiguration {
     @Resource
     private PermissionService permissionService;
     @Resource
-    private IUserRoleService userRoleService;
+    private IBaseUserRoleService userRoleService;
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
