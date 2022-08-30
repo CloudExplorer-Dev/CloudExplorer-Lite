@@ -5,6 +5,7 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.core.toolkit.Constants;
 import com.fit2cloud.base.entity.Organization;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.Select;
 
@@ -19,7 +20,7 @@ import java.util.List;
  * @since 
  */
 public interface OrganizationMapper extends BaseMapper<Organization> {
-   IPage<Organization> pageOrganization(IPage<Organization> page, @Param(Constants.WRAPPER) Wrapper<Organization> wrapper);
+   List<Organization> pageOrganization(@Param(Constants.WRAPPER) Wrapper<Organization> wrapper);
 
    @Select("SELECT DISTINCT GET_ROOT_ORG_ID (id) AS id FROM organization ${ew.customSqlSegment}")
    List<String> listRootOrganizationIds( @Param(Constants.WRAPPER) Wrapper<Organization> wrapper);

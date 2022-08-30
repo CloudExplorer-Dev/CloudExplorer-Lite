@@ -1,5 +1,6 @@
 package com.fit2cloud.common.validator;
 
+import com.fit2cloud.common.exception.Fit2cloudException;
 import com.fit2cloud.controller.handler.ResultHolder;
 import io.reactivex.rxjava3.core.Maybe;
 import org.apache.commons.lang3.concurrent.ConcurrentException;
@@ -53,6 +54,17 @@ public class ParameterCalibration {
             return ResultHolder.error(defaultMessage);
         }
         return ResultHolder.error(exception.getMessage());
+    }
+
+    @ExceptionHandler({ Fit2cloudException.class})
+    @ResponseStatus(HttpStatus.OK)
+    @ResponseBody
+    public ResultHolder fit2cloudException(Exception exception) {
+       if (exception instanceof Fit2cloudException){
+           Fit2cloudException fit2cloudException = (Fit2cloudException) exception;
+           return ResultHolder.error(fit2cloudException.getCode(),fit2cloudException.getMessage());
+       }
+       return ResultHolder.error("未知错误");
     }
 
 

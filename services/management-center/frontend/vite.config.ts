@@ -3,8 +3,6 @@ import DefineOptions from "unplugin-vue-define-options/vite";
 import { defineConfig, loadEnv } from "vite";
 import type { OutputOptions, OutputBundle, OutputChunk } from "rollup";
 import vue from "@vitejs/plugin-vue";
-import { join } from "path";
-import { writeFileSync } from "fs";
 
 import { createHtmlPlugin } from "vite-plugin-html";
 

@@ -249,7 +249,7 @@ class Condition {
   }
 
   static toSearchObj(condition?: Condition) {
-    if (!condition) {
+    if (!condition || !condition.value) {
       return {};
     }
     const field = condition.field;

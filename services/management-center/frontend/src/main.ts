@@ -26,6 +26,8 @@ const mount = () => {
   for (const [key, component] of Object.entries(ElementPlusIcons)) {
     app.component(key, component);
   }
+  // 将elementIcon放到全局
+  app.config.globalProperties.$antIcons = ElementPlusIcons;
   // 将elementIcone放到全局
   app.use(ElementPlus, {
     locale: i18n.global.messages.value[i18n.global.locale.value],

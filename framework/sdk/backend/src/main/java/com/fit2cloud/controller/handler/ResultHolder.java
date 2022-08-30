@@ -47,5 +47,10 @@ public class ResultHolder<T> {
                 .code(HttpStatus.INTERNAL_SERVER_ERROR.value())
                 .message(message);
     }
+    public static <T> ResultHolder<T> error(Integer code,String message){
+        return new ResultHolder<T>()
+                .code(code)
+                .message(message);
+    }
 
 }

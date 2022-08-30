@@ -8,24 +8,44 @@
         ]"
       ></breadcrumb>
     </template>
-    <el-form
-      :model="from"
-      :inline="true"
-      :rules="rules"
-      ref="ruleFormRef"
-      status-icon
-    >
+    <el-form :model="from" :inline="true" ref="ruleFormRef" status-icon>
       <layout-container :border="false">
         <template #content>
           <layout-container>
             <template #header><h4>基本信息</h4></template>
             <template #content>
-              <el-form-item label="名称" prop="name" style="width: 40%">
-                <el-input v-model="from.name" />
-              </el-form-item>
-              <el-form-item label="描述" prop="description" style="width: 40%">
-                <el-input v-model="from.description" />
-              </el-form-item>
+              <div v-for="(org, index) in from.orgDetails" :key="index">
+                <el-form-item
+                  label="名称"
+                  :prop="'orgDetails[' + index + '].name'"
+                  style="width: 40%"
+                  :rules="rules.name"
+                >
+                  <el-input v-model="org.name" />
+                </el-form-item>
+                <el-form-item
+                  label="描述"
+                  :prop="'orgDetails[' + index + '].description'"
+                  style="width: 40%"
+                  :rules="rules.description"
+                >
+                  <el-input v-model="org.description" />
+                </el-form-item>
+                <el-form-item v-if="index === from.orgDetails.length - 1">
+                  <ce-icon
+                    style="cursor: pointer; height: 20px; width: 20px"
+                    code="Plus"
+                    @click="addOrgItem(ruleFormRef)"
+                  ></ce-icon>
+                </el-form-item>
+                <el-form-item v-if="from.orgDetails.length > 1">
+                  <ce-icon
+                    style="cursor: pointer; height: 20px; width: 20px"
+                    code="Minus"
+                    @click="deleteOrgItem(ruleFormRef, org, index)"
+                  ></ce-icon>
+                </el-form-item>
+              </div>
             </template>
           </layout-container>
           <layout-container>
@@ -35,8 +55,8 @@
                 <el-tree-select
                   :props="{ label: 'name' }"
                   node-key="id"
-                  v-model="from.org"
-                  :data="tableData"
+                  v-model="from.pid"
+                  :data="orientationData"
                   show-checkbox
                   style="width: 100%"
                   check-strictly
@@ -58,58 +78,77 @@
 </template>
 <script setup lang="ts">
 import { ref, onMounted, reactive } from "vue";
-import { listAllOrganization, Organization } from "@/api/organization";
+import { tree, OrganizationTree, batch } from "@/api/organization";
+import { useRouter } from "vue-router";
 import type { FormInstance, FormRules } from "element-plus";
+import type { CreateOrgFrom } from "./type";
+const router = useRouter();
 const ruleFormRef = ref<FormInstance>();
 
-interface OrganizationTree extends Organization {
-  children: Array<OrganizationTree>;
-}
-const tableData = ref<Array<OrganizationTree>>();
-/**
- * 将数据转换为树状
- * @param organizations
- */
-const resetData = (organizations: Array<Organization>) => {
-  const newOrganizations: Array<OrganizationTree> = organizations.map((org) => {
-    return { ...org, children: [] };
-  });
-  const result: Array<OrganizationTree> = [];
-  newOrganizations.forEach((item) => {
-    if (item.pid) {
-      const parentOrganization = newOrganizations.find((org) => {
-        return org.id === item.pid;
-      });
-      if (parentOrganization) {
-        parentOrganization.children.push(item);
-      }
-    } else {
-      result.push(item);
-    }
-  });
-  return result;
-};
+const orientationData = ref<Array<OrganizationTree>>();
 
 onMounted(() => {
-  listAllOrganization().then((data) => {
-    tableData.value = resetData(data.data);
+  tree().then((data) => {
+    orientationData.value = data.data;
   });
 });
 
 const rules = reactive<FormRules>({
-  name: [{ message: "组织名称不为空", trigger: "blur", required: true }],
-  description: [{ message: "组织描述不为空", trigger: "blur", required: true }],
+  name: [
+    {
+      message: "组织名称不为空",
+      trigger: "blur",
+      type: "string",
+      required: true,
+    },
+  ],
+  description: [
+    {
+      message: "组织描述不为空",
+      trigger: "blur",
+      type: "string",
+      required: true,
+    },
+  ],
 });
 
 const submitForm = (formEl: FormInstance | undefined) => {
   formEl?.validate((valid, fields) => {
     if (valid) {
-      console.log("submit!");
+      batch(from.value).then((ok) => {
+        router.push({ name: "org" });
+      });
     } else {
       console.log("error submit!", fields);
     }
   });
 };
-const from = ref({ name: null, org: null, description: null });
+const from = ref<CreateOrgFrom>({
+  pid: undefined,
+  orgDetails: [{ name: "", description: "" }],
+});
+
+/**
+ *删除一个组织详情对象
+ */
+const deleteOrgItem = (
+  formEl: FormInstance | undefined,
+  org: { name: string; description: string },
+  index: number
+) => {
+  console.log("ccc");
+  from.value.orgDetails.splice(index, 1);
+};
+/**
+ * 添加一个组织详情对象
+ */
+const addOrgItem = (formEl: FormInstance | undefined) => {
+  formEl?.validate((valid, fields) => {
+    console.log(valid, fields);
+    if (valid) {
+      from.value.orgDetails.push({ name: "", description: "" });
+    }
+  });
+};
 </script>
 <style lang="scss"></style>

@@ -10,6 +10,7 @@ import java.util.Date;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.ToString;
 import lombok.experimental.Accessors;
 import org.springframework.format.annotation.DateTimeFormat;
 
@@ -25,6 +26,7 @@ import org.springframework.format.annotation.DateTimeFormat;
 @Setter
 @Accessors(chain = true)
 @TableName("organization")
+@ToString
 public class Organization implements Serializable {
 
     private static final long serialVersionUID = 1L;
