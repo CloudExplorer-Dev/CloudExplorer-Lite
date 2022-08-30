@@ -36,4 +36,8 @@ interface ListOrganizationRequest {
   currentPage: number;
 }
 
-export type { Organization, ListOrganizationRequest };
+interface OrganizationTree {
+  children: Array<OrganizationTree>;
+}
+
+export type { Organization, ListOrganizationRequest, OrganizationTree };

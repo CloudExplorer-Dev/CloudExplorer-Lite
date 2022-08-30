@@ -179,10 +179,14 @@ export const put: (
  */
 export const del: (
   url: string,
-  params: unknown,
-  loading: NProgress | Ref<boolean>
-) => Promise<Result<any>> = (url, params, loading) => {
-  return promise(request({ url: url, method: "delete", params }), loading);
+  params?: unknown,
+  data?: unknown,
+  loading?: NProgress | Ref<boolean>
+) => Promise<Result<any>> = (url, params, data, loading) => {
+  return promise(
+    request({ url: url, method: "delete", data, params }),
+    loading
+  );
 };
 
 /**

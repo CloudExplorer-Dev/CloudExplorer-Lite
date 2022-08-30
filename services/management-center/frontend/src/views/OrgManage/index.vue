@@ -4,15 +4,18 @@
       <breadcrumb :breadcrumbs="[{ to: {}, title: '组织管理' }]"></breadcrumb>
     </template>
     <ce-table
+      height="100%"
+      ref="table"
       :expand-row-keys="expandRowKeys"
       :columns="columns"
       :data="tableData"
       :tableConfig="tableConfig"
+      @selection-change="handleSelectionChange"
       row-key="id"
     >
       <template #toolbar>
         <el-button type="primary" @click="create">创建</el-button>
-        <el-button @click="deleteOrg">删除</el-button>
+        <el-button @click="batchDelete">删除</el-button>
       </template>
       <el-table-column type="selection" />
       <el-table-column prop="name" label="组织" sortable />
@@ -28,7 +31,12 @@
 
 <script setup lang="ts">
 import { ref, onMounted } from "vue";
-import { listOrganization, Organization } from "@/api/organization";
+import {
+  listOrganization,
+  Organization,
+  deleteOrg,
+  deleteBatchOrg,
+} from "@/api/organization";
 import { useRouter } from "vue-router";
 import {
   PaginationConfig,
@@ -42,6 +50,11 @@ const columns = ref([]);
 const tableData = ref<Array<OrganizationTree>>();
 const expandRowKeys = ref<Array<string>>();
 expandRowKeys.value = ["01"];
+/**
+ * 选中的
+ */
+const multipleSelection = ref<Array<Organization>>();
+const table: any = ref(null);
 onMounted(() => {
   search(new TableSearch());
 });
@@ -103,8 +116,16 @@ const create = () => {
 /**
  *删除组织
  */
-const deleteOrg = () => {
-  console.log("delete");
+const batchDelete = () => {
+  deleteBatchOrg(multipleSelection.value ? multipleSelection.value : []).then(
+    (ok) => {
+      table.value?.search();
+    }
+  );
+};
+
+const handleSelectionChange = (val: Organization[]) => {
+  multipleSelection.value = val;
 };
 /**
  *修改
@@ -113,6 +134,13 @@ const edit = (row: any) => {
   useRoute.push({
     path: useRoute.currentRoute.value.path + "/update",
     query: { id: row.id },
+  });
+};
+const deleteItem = (row: any) => {
+  deleteOrg(row.id).then((ok) => {
+    if (table.value) {
+      table.value?.search();
+    }
   });
 };
 
@@ -144,6 +172,12 @@ const tableConfig = ref<TableConfig>({
       "primary",
       edit,
       "EditPen"
+    ),
+    TableOperations.buildButtons().newInstance(
+      "删除",
+      "primary",
+      deleteItem,
+      "Delete"
     ),
   ]),
 });

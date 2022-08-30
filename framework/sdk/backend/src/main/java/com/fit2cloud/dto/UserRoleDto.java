@@ -40,14 +40,14 @@ public class UserRoleDto implements Serializable {
             if (!t1.equals(t2)) {
                 return t1.ordinal() - t2.ordinal();
             }
-            if (StringUtils.isNotBlank(role1.getParentRole()) && StringUtils.isNotBlank(role2.getParentRole())) {
-                RoleConstants.ROLE p1 = RoleConstants.ROLE.valueOf(role1.getParentRole());
-                RoleConstants.ROLE p2 = RoleConstants.ROLE.valueOf(role2.getParentRole());
+            if (StringUtils.isNotBlank(role1.getParentRoleId()) && StringUtils.isNotBlank(role2.getParentRoleId())) {
+                RoleConstants.ROLE p1 = RoleConstants.ROLE.valueOf(role1.getParentRoleId());
+                RoleConstants.ROLE p2 = RoleConstants.ROLE.valueOf(role2.getParentRoleId());
                 if (!p1.equals(p2)) {
                     return p1.ordinal() - p2.ordinal();
                 }
             }
-            return role1.getRole().compareTo(role2.getRole());
+            return role1.getId().compareTo(role2.getId());
         })).collect(Collectors.toList());
         return this;
     }

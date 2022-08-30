@@ -3,8 +3,6 @@ import DefineOptions from "unplugin-vue-define-options/vite";
 import { defineConfig, loadEnv } from "vite";
 import type { ProxyOptions } from "vite";
 import vue from "@vitejs/plugin-vue";
-import { join } from "path";
-import { writeFileSync } from "fs";
 
 import { createHtmlPlugin } from "vite-plugin-html";
 

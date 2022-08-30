@@ -55,7 +55,7 @@
   </div>
 </template>
 <script setup lang="ts">
-import { ref } from "vue";
+import { ref, defineProps, defineExpose } from "vue";
 import CeFilterInput from "./CeFilterInput.vue";
 import {
   TableConfig,
@@ -71,6 +71,8 @@ const props = defineProps<{
 
 const condition = ref<Conditions>({});
 
+const searchCondition = ref<Condition>({});
+
 const order = ref<Order | undefined>(undefined);
 
 const sortChange = (sortObj: any) => {
@@ -83,7 +85,7 @@ const sortChange = (sortObj: any) => {
     order.value = undefined;
   }
   props.tableConfig.searchConfig?.search(
-    new TableSearch(condition.value, order.value)
+    new TableSearch(condition.value, order.value, searchCondition.value)
   );
 };
 /**
@@ -94,9 +96,8 @@ const updatePageSize = (pageSize: number) => {
     pageSize,
     props.tableConfig.paginationConfig
   );
-
   props.tableConfig.searchConfig?.search(
-    new TableSearch(condition.value, order.value)
+    new TableSearch(condition.value, order.value, searchCondition.value)
   );
 };
 
@@ -109,11 +110,12 @@ const updateCurrentPage = (currentPage: number) => {
     props.tableConfig.paginationConfig
   );
   props.tableConfig.searchConfig?.search(
-    new TableSearch(condition.value, order.value)
+    new TableSearch(condition.value, order.value, searchCondition.value)
   );
 };
 
 const inputSearch = (search: Condition) => {
+  searchCondition.value = search;
   props.tableConfig.searchConfig?.search(
     new TableSearch(condition.value, order.value, search)
   );
@@ -126,9 +128,13 @@ const search = (conditions: Conditions) => {
     condition.value = conditions;
   }
   props.tableConfig.searchConfig?.search(
-    new TableSearch(condition.value, order.value)
+    new TableSearch(condition.value, order.value, searchCondition.value)
   );
 };
+
+defineExpose({
+  search,
+});
 </script>
 
 <style lang="scss">
@@ -142,12 +148,20 @@ const search = (conditions: Conditions) => {
 .complex-table {
   height: 100%;
   width: 100%;
-  overflow-y: auto;
+  overflow-y: hidden;
   overflow-x: hidden;
   .complex-table__header {
     @include flex-row(flex-start, center);
     line-height: 60px;
     font-size: 18px;
+  }
+  .complex-table__body {
+    max-height: calc(100% - 120px);
+    height: calc(100% - 120px);
+    width: 100%;
+  }
+  .fu-filter-bar {
+    height: 60px;
   }
 
   .complex-table__toolbar {
@@ -161,6 +175,13 @@ const search = (conditions: Conditions) => {
   .complex-table__pagination {
     margin-top: 20px;
     @include flex-row(flex-end);
+  }
+}
+
+:deep(.el-table__body-wrapper) {
+  &::-webkit-scrollbar {
+    /* 滚动条整体样式 */
+    width: 6px !important; /* 高宽分别对应横竖滚动条的尺寸 */
   }
 }
 </style>
