@@ -83,13 +83,13 @@ public class TwtTokenAuthFilter extends BasicAuthenticationFilter {
             //判断是否存在传入的role和source
             if (RoleConstants.ROLE.ADMIN.equals(userDtoFromToken.getCurrentRole())) {
                 if (CollectionUtils.isNotEmpty(userRoleDtos)) {
-                    rolesForSearchAuthority.addAll(userRoleDtos.get(0).getRoles().stream().map(Role::getRole).toList());
+                    rolesForSearchAuthority.addAll(userRoleDtos.get(0).getRoles().stream().map(Role::getId).toList());
                 }
             } else if (source != null) {
                 for (UserRoleDto userRoleDto : userRoleDtos) {
                     if (StringUtils.equals(source, userRoleDto.getSource())) {
                         if (userDtoFromToken.getCurrentRole().equals(userRoleDto.getParentRole())) {
-                            rolesForSearchAuthority.addAll(userRoleDto.getRoles().stream().map(Role::getRole).toList());
+                            rolesForSearchAuthority.addAll(userRoleDto.getRoles().stream().map(Role::getId).toList());
                         }
                         break;
                     }

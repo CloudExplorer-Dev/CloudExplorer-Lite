@@ -40,7 +40,7 @@ public class PermissionService {
 
         Map<String, List<CeGrantedAuthority>> rolePermissions = new HashMap<>();
 
-        List<String> roles = roleService.list().stream().map(Role::getRole).toList();
+        List<String> roles = roleService.list().stream().map(Role::getId).toList();
 
         for (String role : roles) {
             rolePermissions.computeIfAbsent(role, k -> new ArrayList<>());
