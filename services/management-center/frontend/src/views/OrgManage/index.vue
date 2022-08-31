@@ -53,11 +53,10 @@ const useRoute = useRouter();
 const columns = ref([]);
 const tableData = ref<Array<OrganizationTree>>();
 const organizations = ref<Array<Organization>>();
-const searCondition = ref<Condition>();
 const expandRowKeys = ref<Array<string>>();
 
 /**
- * 选中的
+ * 选中的组织对象
  */
 const multipleSelection = ref<Array<Organization>>();
 const table: any = ref(null);
@@ -74,7 +73,6 @@ const findOpenTree = (
   field: string,
   value: string
 ) => {
-  console.log(organizations, field, value);
   const expandKeys = new Set<string>();
   const filterOrganizations = organizations.filter((item: any) => {
     return item[field].indexOf(value) >= 0;

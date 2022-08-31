@@ -53,6 +53,8 @@
             <template #content>
               <el-form-item label="组织" style="width: 80%">
                 <el-tree-select
+                  filterable
+                  :filter-method="filterMethod"
                   :props="{ label: 'name' }"
                   node-key="id"
                   v-model="from.pid"
@@ -87,12 +89,18 @@ import { useI18n } from "vue-i18n";
 const { t } = useI18n();
 const router = useRouter();
 const ruleFormRef = ref<FormInstance>();
-
+/**
+ *组织树数据
+ */
 const orientationData = ref<Array<OrganizationTree>>();
-
+/**
+ *元数据
+ */
+const sourceData = ref<Array<OrganizationTree>>();
 onMounted(() => {
   tree().then((data) => {
     orientationData.value = data.data;
+    sourceData.value = [...orientationData.value];
   });
 });
 
@@ -145,11 +153,17 @@ const deleteOrgItem = (
  */
 const addOrgItem = (formEl: FormInstance | undefined) => {
   formEl?.validate((valid, fields) => {
-    console.log(valid, fields);
     if (valid) {
       from.value.orgDetails.push({ name: "", description: "" });
     }
   });
+};
+const filterMethod = (value: string) => {
+  if (orientationData.value) {
+    orientationData.value = sourceData.value?.filter((item) => {
+      return item.name.includes(value);
+    });
+  }
 };
 </script>
 <style lang="scss"></style>

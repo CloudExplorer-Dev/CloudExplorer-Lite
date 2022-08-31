@@ -38,6 +38,8 @@
             <template #content>
               <el-form-item label="组织" style="width: 80%">
                 <el-tree-select
+                  filterable
+                  :filter-method="filterMethod"
                   :props="{ label: 'name' }"
                   node-key="id"
                   v-model="from.pid"
@@ -79,7 +81,14 @@ const route = useRouter();
 interface OrganizationTreeDisabled extends OrganizationTree {
   disabled?: boolean;
 }
+/**
+ *组织数据
+ */
 const orientationData = ref<Array<OrganizationTreeDisabled>>();
+/**
+ *元数据
+ */
+const sourceData = ref<Array<OrganizationTreeDisabled>>();
 onMounted(() => {
   const id: unknown = route.currentRoute.value.query.id;
   getOrgById(id as string).then((data) => {
@@ -87,8 +96,10 @@ onMounted(() => {
   });
   tree().then((data) => {
     orientationData.value = resetData(data.data, id as string, false);
+    sourceData.value = [...orientationData.value];
   });
 });
+
 /**
  *添加 disabled
  * 修改的时候不能修改到
@@ -133,14 +144,15 @@ const rules = reactive<FormRules>({
     },
   ],
 });
+
 const from = ref<UpdateForm>({
   pid: undefined,
   name: "",
   id: "",
   description: "",
 });
+
 const submitForm = (formEl: FormInstance | undefined) => {
-  console.log(formEl);
   formEl?.validate((valid) => {
     if (valid) {
       updateOrg(from.value).then((ok) => {
@@ -149,6 +161,14 @@ const submitForm = (formEl: FormInstance | undefined) => {
       });
     }
   });
+};
+
+const filterMethod = (value: string) => {
+  if (orientationData.value) {
+    orientationData.value = sourceData.value?.filter((item) => {
+      return item.name.includes(value);
+    });
+  }
 };
 </script>
 <style lang="scss"></style>
