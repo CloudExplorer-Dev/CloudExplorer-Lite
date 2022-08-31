@@ -1,4 +1,4 @@
-import { get, post, del } from "ce-base/commons/request";
+import { get, post, del, put } from "ce-base/commons/request";
 import Result from "ce-base/commons/request/Result";
 import { Page } from "ce-base/commons/request/Result";
 import { CreateOrgFrom } from "@/views/OrgManage/type";
@@ -7,7 +7,6 @@ import {
   ListOrganizationRequest,
   OrganizationTree,
 } from "./type";
-import { da } from "element-plus/es/locale";
 export const listOrganization: (
   req: ListOrganizationRequest
 ) => Promise<Result<Page<Organization>>> = (req) => {
@@ -20,7 +19,7 @@ export const listAllOrganization: () => Promise<
 };
 
 export const tree: () => Promise<Result<Array<OrganizationTree>>> = () => {
-  return get("/organization/tree");
+  return get("/base/organization/tree");
 };
 export const batch = (data: CreateOrgFrom) => {
   return post("/organization/batch", null, data);
@@ -31,5 +30,11 @@ export const deleteOrg = (id: string) => {
 
 export const deleteBatchOrg = (organizations: Array<Organization>) => {
   return del("/organization", undefined, organizations);
+};
+export const getOrgById = (id: string) => {
+  return get("/organization/one", { id: id, name: "" });
+};
+export const updateOrg = (organization: Organization) => {
+  return put("organization", undefined, organization);
 };
 export type { Organization, OrganizationTree };

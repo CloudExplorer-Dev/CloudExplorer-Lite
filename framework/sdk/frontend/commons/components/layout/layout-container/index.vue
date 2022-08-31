@@ -28,7 +28,7 @@ defineProps({
   border: 1px solid var(--el-border-color);
   overflow-y: auto;
   overflow-x: hidden;
-  border-radius: 10px;
+  border-radius: 5px;
   .header {
     height: 50px;
     padding-left: 10px;
@@ -40,7 +40,6 @@ defineProps({
   }
   .line {
     height: 1px;
-
     background-color: var(--el-border-color);
   }
   .content {

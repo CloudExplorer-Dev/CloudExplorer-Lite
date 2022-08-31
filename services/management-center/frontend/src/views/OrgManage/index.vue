@@ -41,17 +41,22 @@ import { useRouter } from "vue-router";
 import {
   PaginationConfig,
   SearchConfig,
+  Condition,
   TableConfig,
   TableOperations,
   TableSearch,
 } from "ce-base/commons/components/ce-table/index";
+import { ElMessage, ElMessageBox } from "element-plus";
+import { useI18n } from "vue-i18n";
+const { t } = useI18n();
 const useRoute = useRouter();
 const columns = ref([]);
 const tableData = ref<Array<OrganizationTree>>();
+const organizations = ref<Array<Organization>>();
 const expandRowKeys = ref<Array<string>>();
-expandRowKeys.value = ["01"];
+
 /**
- * 选中的
+ * 选中的组织对象
  */
 const multipleSelection = ref<Array<Organization>>();
 const table: any = ref(null);
@@ -63,6 +68,38 @@ interface OrganizationTree extends Organization {
   children: Array<OrganizationTree>;
 }
 
+const findOpenTree = (
+  organizations: Array<Organization>,
+  field: string,
+  value: string
+) => {
+  const expandKeys = new Set<string>();
+  const filterOrganizations = organizations.filter((item: any) => {
+    return item[field].indexOf(value) >= 0;
+  });
+  filterOrganizations.forEach((filterItem) => {
+    findUpOrgTree(organizations, [], filterItem.pid).forEach((id: string) => {
+      expandKeys.add(id);
+    });
+  });
+  expandRowKeys.value = [...expandKeys];
+};
+const findUpOrgTree = (
+  organizations: Array<Organization>,
+  result: Array<string>,
+  pid?: string
+) => {
+  if (pid) {
+    const pOrg = organizations.find((org) => {
+      return org.id === pid;
+    });
+    if (pOrg) {
+      result.push(pOrg.id);
+      findUpOrgTree(organizations, result, pOrg.pid);
+    }
+  }
+  return result;
+};
 /**
  * 将数据转换为树状
  * @param organizations
@@ -94,8 +131,18 @@ const search = (condition: TableSearch) => {
     pageSize: tableConfig.value.paginationConfig.pageSize,
     ...params,
   }).then((ok) => {
+    organizations.value = ok.data.records;
     // 扁平化数据
     tableData.value = resetData(ok.data.records);
+    if (condition.search) {
+      const searchValue: unknown = condition.search.value;
+      findOpenTree(
+        ok.data.records,
+        condition.search.field,
+        searchValue as string
+      );
+    }
+
     tableConfig.value.paginationConfig?.setTotal(
       ok.data.total,
       tableConfig.value.paginationConfig
@@ -117,16 +164,31 @@ const create = () => {
  *删除组织
  */
 const batchDelete = () => {
-  deleteBatchOrg(multipleSelection.value ? multipleSelection.value : []).then(
-    (ok) => {
-      table.value?.search();
+  ElMessageBox.confirm(
+    t("commons.message_box.confirm_delete"),
+    t("commons.message_box.prompt"),
+    {
+      confirmButtonText: t("commons.btn.delete"),
+      cancelButtonText: t("commons.btn.cancel"),
+      type: "warning",
     }
-  );
+  ).then(() => {
+    deleteBatchOrg(multipleSelection.value ? multipleSelection.value : []).then(
+      () => {
+        table.value?.search();
+      }
+    );
+  });
 };
 
-const handleSelectionChange = (val: Organization[]) => {
+/**
+ * 选中
+ * @param val
+ */
+const handleSelectionChange = (val: OrganizationTree[]) => {
   multipleSelection.value = val;
 };
+
 /**
  *修改
  */
@@ -136,11 +198,23 @@ const edit = (row: any) => {
     query: { id: row.id },
   });
 };
+
 const deleteItem = (row: any) => {
-  deleteOrg(row.id).then((ok) => {
-    if (table.value) {
-      table.value?.search();
+  ElMessageBox.confirm(
+    t("commons.message_box.confirm_delete"),
+    t("commons.message_box.prompt"),
+    {
+      confirmButtonText: t("commons.btn.delete"),
+      cancelButtonText: t("commons.btn.cancel"),
+      type: "warning",
     }
+  ).then(() => {
+    deleteOrg(row.id).then((ok) => {
+      if (table.value) {
+        table.value?.search();
+        ElMessage.success(t("commons.msg.delete_success"));
+      }
+    });
   });
 };
 
