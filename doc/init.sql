@@ -8,8 +8,8 @@ CREATE TABLE IF NOT EXISTS `user`
     `phone`       varchar(50)  DEFAULT NULL,
     `password`    varchar(512) DEFAULT NULL,
     `source`      varchar(50)  NOT NULL COMMENT '用户来源:本地/第三方',
-    `create_time` datetime     NOT NULL COMMENT '创建时间',
-    `update_time` datetime     NOT NULL COMMENT '更新时间',
+    `create_time` datetime    DEFAULT CURRENT_TIMESTAMP,
+    `update_time` datetime    DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     PRIMARY KEY (`id`)
 );
 
@@ -20,8 +20,8 @@ CREATE TABLE IF NOT EXISTS `role`
     `_name`          varchar(64)               NOT NULL,
     `_description`   varchar(255) DEFAULT NULL,
     `parent_role_id` varchar(64)  DEFAULT NULL COMMENT '父角色ID',
-    `create_time`    datetime     DEFAULT NULL COMMENT '创建时间',
-    `update_time`    datetime     DEFAULT NULL COMMENT '更新时间',
+    `create_time` datetime    DEFAULT CURRENT_TIMESTAMP,
+    `update_time` datetime    DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     PRIMARY KEY (`id`)
 );
 
@@ -32,13 +32,15 @@ VALUES ('ORGADMIN', 'origin', '组织管理员', null, null);
 INSERT INTO role (id, _type, _name, _description, parent_role_id)
 VALUES ('USER', 'origin', '普通用户', null, null);
 
-create table user_role
+CREATE TABLE `user_role`
 (
-    id      varchar(64)  not null
-        primary key,
-    user_id varchar(128) not null,
-    role_id varchar(64)  not null,
-    _source varchar(64)  null
-);
+    `id`          varchar(64)  NOT NULL,
+    `user_id`     varchar(128) NOT NULL,
+    `role_id`     varchar(64)  NOT NULL,
+    `_source`   varchar(64) DEFAULT NULL,
+    `create_time` datetime    DEFAULT CURRENT_TIMESTAMP,
+    `update_time` datetime    DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    PRIMARY KEY (`id`)
+)
 
 
