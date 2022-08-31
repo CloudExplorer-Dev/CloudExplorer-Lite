@@ -34,17 +34,13 @@
                     <include>logback-spring.xml</include>
                 </includes>
             </resource>
-            <!--<resource>
+            <resource>
                 <directory>src/main/java</directory>
                 <includes>
-                    <include>**/*.properties</include>
                     <include>**/*.xml</include>
-                    <include>**/*.json</include>
-                    <include>**/*.tpl</include>
-                    <include>**/*.js</include>
                 </includes>
                 <filtering>false</filtering>
-            </resource>-->
+            </resource>
             <resource>
                 <directory>src/main/resources</directory>
                 <includes>

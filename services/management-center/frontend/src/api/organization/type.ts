@@ -12,17 +12,9 @@ interface Organization {
    */
   description?: string;
   /**
-   * 创建时间
-   */
-  createTime: number;
-  /**
    *父id
    */
   pid?: string;
-  /**
-   *级别
-   */
-  level: number;
 }
 
 interface ListOrganizationRequest {
@@ -36,7 +28,7 @@ interface ListOrganizationRequest {
   currentPage: number;
 }
 
-interface OrganizationTree {
+interface OrganizationTree extends Organization {
   children: Array<OrganizationTree>;
 }
 

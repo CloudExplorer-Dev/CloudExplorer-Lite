@@ -1,5 +1,41 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.fit2cloud.dao.mapper.OrganizationMapper">
+    <resultMap id="BaseResultMap" type="com.fit2cloud.dao.entity.Organization">
+        <id column="id" jdbcType="VARCHAR" property="id" />
+        <result column="name" jdbcType="VARCHAR" property="name" />
+        <result column="description" jdbcType="VARCHAR" property="description" />
+        <result column="pid" jdbcType="VARCHAR" property="pid"/>
+        <result column="create_time" jdbcType="DATE" property="createTime" />
+        <result column="update_time" jdbcType="DATE" property="updateTime" />
+    </resultMap>
 
+    <select id="pageOrganization" resultMap="BaseResultMap">
+        SELECT
+            id,
+            `name`,
+            description,
+            create_time,
+            update_time,
+            pid
+        FROM
+            organization
+                INNER JOIN (
+                SELECT
+                    GROUP_CONCAT(
+                            GET_CHILDREN_ID ( id )) AS ids
+                FROM
+                    (
+                        SELECT DISTINCT
+                            GET_ROOT_ORG_ID ( id ) AS id
+                        FROM
+                            organization
+                                ${ew.customSqlSegment}
+                    ) t1
+            ) t2
+        WHERE
+            FIND_IN_SET(
+                    id,
+                    t2.ids)
+    </select>
 </mapper>

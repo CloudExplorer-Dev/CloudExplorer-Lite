@@ -12,4 +12,22 @@ interface CreateOrgFrom {
    */
   orgDetails: Array<OrgDetails>;
 }
-export type { CreateOrgFrom, OrgDetails };
+interface UpdateForm {
+  /**
+   *主键id
+   */
+  id: string;
+  /**
+   * 父id
+   */
+  pid?: string;
+  /**
+   *组织名称
+   */
+  name: string;
+  /**
+   *描述
+   */
+  description: string;
+}
+export type { CreateOrgFrom, OrgDetails, UpdateForm };
