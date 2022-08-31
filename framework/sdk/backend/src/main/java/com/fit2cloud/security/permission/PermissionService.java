@@ -88,7 +88,7 @@ public class PermissionService {
             Map<String, List<CeGrantedAuthority>> results = new HashMap<>();
             try {
                 lock.readLock().lock(10, TimeUnit.SECONDS);
-                results = map.getAll(map.keySet());
+                results = map.readAllMap();
             } catch (Exception e) {
                 e.printStackTrace();
             } finally {

@@ -67,7 +67,8 @@ public class TwtTokenAuthFilter extends BasicAuthenticationFilter {
             //List<UserRoleDto> userRoleDtos = userDtoFromToken.getRoleMap().getOrDefault(userDtoFromToken.getCurrentRole(), new ArrayList<>());
 
             //为了防止用户编辑后与token中角色不同，从redis读取授权的角色
-            List<UserRoleDto> userRoleDtos = userRoleService.getCachedUserRoleMap(userDtoFromToken.getId()).getOrDefault(userDtoFromToken.getCurrentRole(), new ArrayList<>());
+            userDtoFromToken.setRoleMap(userRoleService.getCachedUserRoleMap(userDtoFromToken.getId()));
+            List<UserRoleDto> userRoleDtos = userDtoFromToken.getRoleMap().getOrDefault(userDtoFromToken.getCurrentRole(), new ArrayList<>());
 
             String source = null;
             if (RoleConstants.ROLE.USER.equals(userDtoFromToken.getCurrentRole())) {

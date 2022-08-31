@@ -1,4 +1,4 @@
-package com.fit2cloud.dto.permission;
+package com.fit2cloud.dto;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.Getter;
@@ -8,7 +8,7 @@ import java.io.Serial;
 import java.io.Serializable;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class PermissionBase implements Serializable {
+public class CeBaseObject implements Serializable {
 
     @Serial
     private static final long serialVersionUID = -178376305901134099L;
