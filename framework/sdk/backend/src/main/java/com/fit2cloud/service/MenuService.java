@@ -47,6 +47,7 @@ public class MenuService {
 
     public Map<String, List<Menu>> getAvailableMenus() {
         List<String> ids = discoveryClient.getServices();
+        ids.add(module);
         //排除网关
         return readMenusFromRedis(
                 ids.stream().filter(id -> !StringUtils.equalsIgnoreCase(id, "gateway")).collect(Collectors.toList())

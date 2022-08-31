@@ -1,17 +1,14 @@
 package com.fit2cloud.security.filter;
 
-import com.fit2cloud.base.entity.Role;
 import com.fit2cloud.base.service.IBaseUserRoleService;
 import com.fit2cloud.common.constants.OrganizationConstants;
 import com.fit2cloud.common.constants.RoleConstants;
 import com.fit2cloud.common.constants.WorkspaceConstants;
 import com.fit2cloud.common.utils.JwtTokenUtils;
 import com.fit2cloud.dto.UserDto;
-import com.fit2cloud.dto.UserRoleDto;
 import com.fit2cloud.security.CeGrantedAuthority;
 import com.fit2cloud.security.CeUsernamePasswordAuthenticationToken;
-import com.fit2cloud.security.permission.PermissionService;
-import org.apache.commons.collections4.CollectionUtils;
+import com.fit2cloud.service.PermissionService;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -22,8 +19,6 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -61,14 +56,11 @@ public class TwtTokenAuthFilter extends BasicAuthenticationFilter {
             //获取角色
             userDtoFromToken.setCurrentRole(role);
 
-            Set<String> rolesForSearchAuthority = new HashSet<>();
-
             //信任jwt，直接从jwt内取授权的角色
             //List<UserRoleDto> userRoleDtos = userDtoFromToken.getRoleMap().getOrDefault(userDtoFromToken.getCurrentRole(), new ArrayList<>());
 
             //为了防止用户编辑后与token中角色不同，从redis读取授权的角色
             userDtoFromToken.setRoleMap(userRoleService.getCachedUserRoleMap(userDtoFromToken.getId()));
-            List<UserRoleDto> userRoleDtos = userDtoFromToken.getRoleMap().getOrDefault(userDtoFromToken.getCurrentRole(), new ArrayList<>());
 
             String source = null;
             if (RoleConstants.ROLE.USER.equals(userDtoFromToken.getCurrentRole())) {
@@ -81,23 +73,7 @@ public class TwtTokenAuthFilter extends BasicAuthenticationFilter {
             }
             userDtoFromToken.setCurrentSource(source);
 
-            //判断是否存在传入的role和source
-            if (RoleConstants.ROLE.ADMIN.equals(userDtoFromToken.getCurrentRole())) {
-                if (CollectionUtils.isNotEmpty(userRoleDtos)) {
-                    rolesForSearchAuthority.addAll(userRoleDtos.get(0).getRoles().stream().map(Role::getId).toList());
-                }
-            } else if (source != null) {
-                for (UserRoleDto userRoleDto : userRoleDtos) {
-                    if (StringUtils.equals(source, userRoleDto.getSource())) {
-                        if (userDtoFromToken.getCurrentRole().equals(userRoleDto.getParentRole())) {
-                            rolesForSearchAuthority.addAll(userRoleDto.getRoles().stream().map(Role::getId).toList());
-                        }
-                        break;
-                    }
-                }
-            }
-
-            rolesForSearchAuthority.add(RoleConstants.ROLE.ANONYMOUS.name()); //默认有匿名用户权限
+            Set<String> rolesForSearchAuthority = permissionService.rolesForSearchAuthority(userDtoFromToken.getRoleMap(), userDtoFromToken.getCurrentRole(), source);
 
             List<CeGrantedAuthority> authority = permissionService.readPermissionFromRedis(rolesForSearchAuthority);
 

@@ -4,7 +4,7 @@ import com.fit2cloud.common.constants.RoleConstants;
 import com.fit2cloud.dto.permission.ModulePermission;
 import com.fit2cloud.dto.permission.Permission;
 import com.fit2cloud.dto.permission.PermissionGroup;
-import com.fit2cloud.security.permission.PermissionService;
+import com.fit2cloud.service.PermissionService;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 

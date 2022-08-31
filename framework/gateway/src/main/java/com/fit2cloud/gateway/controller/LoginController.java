@@ -9,6 +9,7 @@ import com.fit2cloud.dto.module.Module;
 import com.fit2cloud.request.LoginRequest;
 import com.fit2cloud.service.CommonService;
 import com.fit2cloud.service.MenuService;
+import com.fit2cloud.service.PermissionService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -19,6 +20,7 @@ import reactor.core.publisher.Mono;
 import javax.annotation.Resource;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 @RestController
 @RequestMapping
@@ -26,12 +28,12 @@ public class LoginController {
 
     @Resource
     private IBaseUserService loginService;
-
     @Resource
     private CommonService commonService;
     @Resource
     private MenuService menuService;
-
+    @Resource
+    private PermissionService permissionService;
 
     @PostMapping("login")
     public Mono<ResponseEntity<ResultHolder<Object>>> login(@RequestBody LoginRequest loginRequest) {
@@ -74,6 +76,12 @@ public class LoginController {
     @GetMapping("api/menus")
     public Mono<ResultHolder<Map<String, List<Menu>>>> menus(ServerWebExchange exchange) {
         return Mono.just(ResultHolder.success(menuService.getAvailableMenus()));
+    }
+
+    @GetMapping("api/permission/current")
+    public Mono<ResultHolder<Set<String>>> getCurrentUserPermissionSet(ServerWebExchange exchange) {
+        UserDto user = (UserDto) exchange.getAttributes().get("user");
+        return Mono.just(ResultHolder.success(permissionService.getPlainPermissions(user.getId(), user.getCurrentRole(), user.getCurrentSource())));
     }
 
 
