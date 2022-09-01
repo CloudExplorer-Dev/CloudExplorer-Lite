@@ -26,11 +26,11 @@ CREATE TABLE IF NOT EXISTS `role`
 );
 
 INSERT INTO role (id, _type, _name, _description, parent_role_id)
-VALUES ('ADMIN', 'origin', '管理员', null, null);
+VALUES ('ADMIN', 'origin', '系统管理员', '系统管理员', 'ADMIN');
 INSERT INTO role (id, _type, _name, _description, parent_role_id)
-VALUES ('ORGADMIN', 'origin', '组织管理员', null, null);
+VALUES ('ORGADMIN', 'origin', '组织管理员', '组织管理员', 'ORGADMIN');
 INSERT INTO role (id, _type, _name, _description, parent_role_id)
-VALUES ('USER', 'origin', '普通用户', null, null);
+VALUES ('USER', 'origin', '普通用户', '工作空间用户', 'USER');
 
 CREATE TABLE `user_role`
 (

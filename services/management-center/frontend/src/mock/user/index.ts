@@ -20,8 +20,6 @@ export default [
         total: user.length,
         hasNext: true,
       };
-
-      console.log("dfdfdfdfdfdf", pageData);
       return Result.success(pageData);
     },
   },

@@ -28,6 +28,14 @@ export default defineConfig(({ mode }) => {
           target: "http://localhost:9010",
           changeOrigin: true,
         },
+        "/management-center/user": {
+          target: "http://localhost:9010",
+          changeOrigin: true,
+        },
+        "/management-center/role": {
+          target: "http://localhost:9010",
+          changeOrigin: true,
+        },
       },
     },
     base: ENV.VITE_BASE_PATH,

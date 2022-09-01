@@ -34,7 +34,7 @@ public class UserRole implements Serializable {
     @TableField("role_id")
     private String roleId;
 
-    @TableField("source")
+    @TableField("_source")
     private String source;
 
     @TableField("create_time")

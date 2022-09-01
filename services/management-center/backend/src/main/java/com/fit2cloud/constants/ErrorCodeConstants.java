@@ -12,6 +12,9 @@ package com.fit2cloud.constants;
  * 管理中心-租户与用户-用户管理-查询错误 100100101
  */
 public enum ErrorCodeConstants {
+    USER_CAN_NOT_DELETE(100100101,"不能删除当前登录用户"),
+    USER_NOT_EXIST(100100102,"用户不存在"),
+
     ORGANIZATION_CANNOT_DELETE(10010, "i18n.organization.cannot.delete.have.parent"),
     ORGANIZATION_ID_AND_NAME_REQUIRED(100011, "i18n.organization.id.or.name.required"),
     ORGANIZATION_NAME_REPEAT(100012, "i18n.organization.name.not.repeat"),
