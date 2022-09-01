@@ -7,11 +7,10 @@ package com.fit2cloud.constants;
  * @注释:
  */
 public enum ErrorCodeConstants {
-    ORGANIZATION_CANNOT_DELETE(10010, "不能删除一个父级组织,请先删除子组织"),
-    ORGANIZATION_ID_AND_NAME_REQUIRED(100011, "组织和名称必须传一个"),
-    ORGANIZATION_NAME_REPEAT(100012, "组织名称不能重复"),
-
-    ORGANIZATION_UPDATE_NOT_THIS_CHILD(100013,"组织修改不能修改到自己到子组织");
+    ORGANIZATION_CANNOT_DELETE(10010, "i18n.organization.cannot.delete.have.parent"),
+    ORGANIZATION_ID_AND_NAME_REQUIRED(100011, "i18n.organization.id.or.name.required"),
+    ORGANIZATION_NAME_REPEAT(100012, "i18n.organization.name.not.repeat"),
+    ORGANIZATION_UPDATE_NOT_THIS_CHILD(100013,"i18m.organization.pid.not.mv.to.this_child");
 
     /**
      * 提示

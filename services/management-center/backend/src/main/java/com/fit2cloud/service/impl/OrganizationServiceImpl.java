@@ -4,30 +4,29 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.json.JsonMapper;
-import com.fit2cloud.common.constants.GlobalErrorCodeConstants;
 import com.fit2cloud.common.exception.Fit2cloudException;
 import com.fit2cloud.common.utils.JsonUtil;
 import com.fit2cloud.common.utils.OrganizationUtil;
 import com.fit2cloud.constants.ErrorCodeConstants;
+import com.fit2cloud.controller.request.OrganizationBatchRequest;
+import com.fit2cloud.controller.request.OrganizationRequest;
+import com.fit2cloud.controller.request.PageOrganizationRequest;
 import com.fit2cloud.dao.entity.Organization;
 import com.fit2cloud.dao.mapper.OrganizationMapper;
-import com.fit2cloud.request.OrganizationBatchRequest;
-import com.fit2cloud.request.OrganizationRequest;
-import com.fit2cloud.request.PageOrganizationRequest;
 import com.fit2cloud.response.OrganizationTree;
 import com.fit2cloud.service.IOrganizationService;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
+import org.springframework.context.MessageSource;
+import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.stereotype.Service;
 
+import javax.annotation.Resource;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 /**
@@ -40,12 +39,16 @@ import java.util.stream.Collectors;
  */
 @Service
 public class OrganizationServiceImpl extends ServiceImpl<OrganizationMapper, Organization> implements IOrganizationService {
+
+    @Resource
+    private MessageSource messageSource;
     SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
     @Override
     public IPage<Organization> pageOrganization(PageOrganizationRequest request) {
         // 用户信息
 //        UserDto credentials = (UserDto)SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+
         Page<Organization> page = new Page<>(request.getCurrentPage(), request.getPageSize(), false);
         QueryWrapper<Organization> wrapper = new QueryWrapper<>();
         if (StringUtils.isNotEmpty(request.getName())) {
@@ -75,8 +78,8 @@ public class OrganizationServiceImpl extends ServiceImpl<OrganizationMapper, Org
         List<String> names = request.getOrgDetails().stream().map(OrganizationBatchRequest.OriginDetails::getName).toList();
         List<Organization> list = list(new LambdaQueryWrapper<Organization>().in(Organization::getName, names));
         if (CollectionUtils.isNotEmpty(list)) {
-            throw new Fit2cloudException(ErrorCodeConstants.ORGANIZATION_NAME_REPEAT.getCode(), ErrorCodeConstants.ORGANIZATION_NAME_REPEAT.getMessage() +
-                    JsonUtil.toJSONString(list.stream().map(Organization::getName).collect(Collectors.toList())));
+            throw new Fit2cloudException(ErrorCodeConstants.ORGANIZATION_NAME_REPEAT.getCode(), messageSource.getMessage(ErrorCodeConstants.ORGANIZATION_NAME_REPEAT.getMessage(),
+                    new Object[]{JsonUtil.toJSONString(list.stream().map(Organization::getName).collect(Collectors.toList()))}, LocaleContextHolder.getLocale()));
         }
         List<Organization> organizations = request.getOrgDetails().stream().map(originDetails -> {
             Organization organization = new Organization();
@@ -120,7 +123,7 @@ public class OrganizationServiceImpl extends ServiceImpl<OrganizationMapper, Org
     public boolean removeTreeById(String id) {
         long count = count(new LambdaQueryWrapper<Organization>().eq(Organization::getPid, id));
         if (count > 0) {
-            throw new Fit2cloudException(ErrorCodeConstants.ORGANIZATION_CANNOT_DELETE.getCode(), ErrorCodeConstants.ORGANIZATION_CANNOT_DELETE.getMessage());
+            throw new Fit2cloudException(ErrorCodeConstants.ORGANIZATION_CANNOT_DELETE.getCode(),  messageSource.getMessage(ErrorCodeConstants.ORGANIZATION_CANNOT_DELETE.getMessage(),null,LocaleContextHolder.getLocale()));
         }
         return removeById(id);
     }
@@ -128,7 +131,7 @@ public class OrganizationServiceImpl extends ServiceImpl<OrganizationMapper, Org
     @Override
     public Organization getOne(String id, String name) {
         if (StringUtils.isEmpty(id) && StringUtils.isEmpty(name)) {
-            throw new Fit2cloudException(ErrorCodeConstants.ORGANIZATION_ID_AND_NAME_REQUIRED.getCode(), ErrorCodeConstants.ORGANIZATION_ID_AND_NAME_REQUIRED.getMessage());
+            throw new Fit2cloudException(ErrorCodeConstants.ORGANIZATION_ID_AND_NAME_REQUIRED.getCode(), messageSource.getMessage(ErrorCodeConstants.ORGANIZATION_ID_AND_NAME_REQUIRED.getMessage(),null,LocaleContextHolder.getLocale()));
         }
         LambdaQueryWrapper<Organization> wrapper = new LambdaQueryWrapper<>();
         if (StringUtils.isNotEmpty(id)) {
@@ -147,7 +150,7 @@ public class OrganizationServiceImpl extends ServiceImpl<OrganizationMapper, Org
         if (bottomOrganization.stream().filter(item -> {
             return item.getId().equals(request.getPid());
         }).findFirst().isPresent()||request.getId().equals(request.getPid())) {
-            throw new Fit2cloudException(ErrorCodeConstants.ORGANIZATION_UPDATE_NOT_THIS_CHILD.getCode(), ErrorCodeConstants.ORGANIZATION_UPDATE_NOT_THIS_CHILD.getMessage());
+            throw new Fit2cloudException(ErrorCodeConstants.ORGANIZATION_UPDATE_NOT_THIS_CHILD.getCode(), messageSource.getMessage(ErrorCodeConstants.ORGANIZATION_UPDATE_NOT_THIS_CHILD.getMessage(),null,LocaleContextHolder.getLocale()));
         }
         BeanUtils.copyProperties(request,organization);
         return updateById(organization);

@@ -16,12 +16,12 @@ import javax.validation.constraints.NotNull;
 public class PageRequest {
 
     @ApiModelProperty(value = "当前页",required = true)
-    @Min(value = 0,message = "当前页不能小于0")
-    @NotNull(message = "当前页不能为null")
+    @Min(value = 0,message = "{i18n.page.current_page.min}")
+    @NotNull(message = "{i18n.page.current_page.is.not.empty}")
     private Integer currentPage;
 
     @ApiModelProperty(value = "每页大小",required = true)
-    @Min(value =0,message = "每页大小不能小于0")
-    @NotNull(message = "每页大小不能为null")
+    @Min(value =0,message = "{i18n.page.page.size.min}")
+    @NotNull(message = "{i18n.page.page.size.is.not.empty}")
     private Integer pageSize;
 }

@@ -1,7 +1,6 @@
-package com.fit2cloud.request;
+package com.fit2cloud.controller.request;
 
 import com.fit2cloud.base.mapper.BaseOrganizationMapper;
-
 import com.fit2cloud.common.validator.annnotaion.CustomValidated;
 import com.fit2cloud.common.validator.group.ValidationGroup;
 import com.fit2cloud.common.validator.handler.ExistHandler;
@@ -21,13 +20,13 @@ import javax.validation.constraints.Null;
 public class OrganizationRequest {
 
     @ApiModelProperty("主键id,修改的时候必填")
-    @NotNull(groups = ValidationGroup.UPDATE.class, message = "id不能为null")
-    @Null(groups = ValidationGroup.SAVE.class, message = "id必须为null")
-    @CustomValidated(groups = {ValidationGroup.UPDATE.class },mapper = BaseOrganizationMapper.class,handler = ExistHandler.class,message = "组织id不存在",exist = false)
+    @NotNull(groups = ValidationGroup.UPDATE.class, message = "{i18n.organization.id.is.not.empty}")
+    @Null(groups = ValidationGroup.SAVE.class, message = "{i18n.organization.id.is.null}")
+    @CustomValidated(groups = {ValidationGroup.UPDATE.class },mapper = BaseOrganizationMapper.class,handler = ExistHandler.class,message = "{i18n.organization.id.is.not.existent}",exist = false)
     private String id;
 
     @ApiModelProperty(value = "组织名称", required = true)
-    @NotNull(groups = ValidationGroup.SAVE.class, message = "组织名称不能为null")
+    @NotNull(groups = ValidationGroup.SAVE.class, message = "{i18n.organization.name.is.not.empty}")
     private String name;
 
     @ApiModelProperty(value = "组织描述", required = true)
