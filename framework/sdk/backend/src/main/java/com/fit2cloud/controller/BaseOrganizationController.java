@@ -24,9 +24,9 @@ public class BaseOrganizationController {
     @Resource
     private IBaseOrganizationService organizationService;
 
-    @GetMapping("/tree")
+    @GetMapping("/tree/{type}")
     @ApiOperation(value = "获取组织树", notes = "获取组织树")
-    public ResultHolder<List<OrganizationTree>> tree() {
-        return ResultHolder.success(organizationService.tree());
+    public ResultHolder<List<OrganizationTree>> tree(@ApiParam(value = "组织类型",example = "ORGANIZATION,WORKSPACE,ORGANIZATION_AND_WORKSPACE")@PathVariable("type") String type) {
+        return ResultHolder.success(organizationService.tree(type));
     }
 }

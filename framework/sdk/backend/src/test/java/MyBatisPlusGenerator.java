@@ -1,5 +1,6 @@
 import com.baomidou.mybatisplus.generator.AutoGenerator;
 import com.baomidou.mybatisplus.generator.config.*;
+import com.baomidou.mybatisplus.generator.function.ConverterFileName;
 import com.fit2cloud.BaseTestApplication;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Value;
@@ -19,7 +20,7 @@ public class MyBatisPlusGenerator {
     /**
      * 传入需要生成代码的表名
      */
-    private static final List<String> TABLES = Arrays.asList("role");
+    private static final List<String> TABLES = Arrays.asList("workspace");
 
     @Value("${ce.datasource.url}")
     private String datasource;
@@ -44,7 +45,10 @@ public class MyBatisPlusGenerator {
             //mapper
             .mapperBuilder()
             .formatMapperFileName("Base%sMapper")
-            .formatMapperFileName("Base%sMapper")
+            .formatXmlFileName("Base%sMapper")
+            .serviceBuilder()
+            .formatServiceFileName("IBase%sService")
+            .formatServiceImplFileName("IBase%sServiceImpl")
             //entity
             .entityBuilder().enableFileOverride() //仅覆盖entity覆盖文件
             .enableLombok()

@@ -22,4 +22,11 @@ public interface IBaseOrganizationService extends IService<Organization> {
      * @return
      */
     List<OrganizationTree> tree();
+
+    /**
+     * 根据类型获取树形结构
+     * @param type
+     * @return
+     */
+    List<OrganizationTree> tree(String type);
 }
