@@ -43,4 +43,15 @@ CREATE TABLE `user_role`
     PRIMARY KEY (`id`)
 )
 
-
+/**工作空间**/
+CREATE TABLE IF NOT EXISTS `workspace`
+(
+    `id` varchar(64) NOT NULL,
+    `_name` varchar(128) NOT NULL,
+    `_description` varchar(255) DEFAULT NULL,
+    `organization_id` varchar(64) NOT NULL,
+    `create_time` datetime NOT NULL COMMENT '创建时间',
+    `update_time` datetime NOT NULL COMMENT '更新时间',
+    PRIMARY KEY (`id`)
+)
+/**工作空间**/
