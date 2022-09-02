@@ -80,7 +80,7 @@ export const useUserStore = defineStore({
     },
     currentLang(state: any): string {
       if (state.lang === "none") {
-        state.changeLang("zh-cn");
+        state.changeLang(authStorage.getLang());
       }
       return state.lang;
     },
