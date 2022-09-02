@@ -1,7 +1,8 @@
 <script setup lang="ts">
 import { ref, onMounted } from "vue";
-import { deleteUserById, listUser, User } from "@/api/user";
+import { deleteUserById, listUser } from "@/api/user";
 import { useRouter } from "vue-router";
+import type { User } from "@commons/api/user/type";
 import {
   PaginationConfig,
   SearchConfig,

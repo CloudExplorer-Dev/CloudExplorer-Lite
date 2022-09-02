@@ -10,11 +10,15 @@ import type {
 import { createRouter } from "vue-router";
 import Layout from "@commons/business/app-layout/index.vue";
 import Login from "@commons/business/login/index.vue";
-import { getToken } from "@commons/utils/auth";
+import { getToken } from "@commons/utils/authStorage";
 import type { App } from "vue";
 import type { Menu, RequiredPermissions } from "@commons/api/menu";
-import type { Permission, RolePermission } from "@commons/api/permission/type";
+import type { RolePermission } from "@commons/api/permission/type";
 import noPermissions from "@commons/business/err-page/noPermissions.vue";
+import { useUserStore } from "@commons/stores/modules/user";
+import { store } from "@commons/stores";
+import { usePermissionStore } from "@commons/stores/modules/permission";
+import { hasRolePermission } from "@commons/base-directives/hasPermission";
 
 declare global {
   interface Window {
@@ -38,6 +42,7 @@ interface RouteComponents {
    */
   [propName: string]: any;
 }
+
 const rootRouteName = "rootRoute";
 /**
  * 扁平化菜单
@@ -47,59 +52,25 @@ const rootRouteName = "rootRoute";
  * @returns 扁平化后的菜单
  */
 export const flatMenu = (
-  menus: Array<Menu>,
-  newMenus: Array<Menu>,
-  prentPath?: string
+  menus: Array<Menu> | undefined,
+  newMenus: Array<Menu>
 ) => {
-  menus.forEach((item) => {
+  menus?.forEach((item) => {
     const newMenu: Menu = {
       ...item,
       children: [],
-      path: prentPath ? prentPath + item.path : item.path,
     };
     newMenus.push(newMenu);
     if (item.children != null && item.children.length > 0) {
-      flatMenu(item.children, newMenus, prentPath ? item.path : prentPath);
+      flatMenu(item.children, newMenus);
     }
     if (item.operations != null && item.operations.length > 0) {
-      flatMenu(item.operations, newMenus, prentPath ? item.path : prentPath);
+      flatMenu(item.operations, newMenus);
     }
   });
   return newMenus;
 };
-/**
- * 判断是否有角色或者权限
- * @param menu         菜单
- * @param role         角色
- * @param permissions  权限
- * @returns
- */
-export const hasRolePermission = (
-  role: string,
-  permissions: Array<Permission>,
-  requiredPermissions?: Array<RequiredPermissions>
-) => {
-  if (!requiredPermissions || requiredPermissions.length === 0) {
-    return true;
-  }
-  for (let i = 0; i < requiredPermissions.length; i++) {
-    const roleOk = requiredPermissions[i].role === role;
-    const permissionOk = permissions.some((item) => {
-      if (
-        requiredPermissions[i].permissions ||
-        requiredPermissions[i].permissions.length > 0
-      ) {
-        return requiredPermissions[i].permissions.includes(item.id);
-      }
-      return true;
-    });
-    if (requiredPermissions[i].logical === "OR") {
-      return roleOk || permissionOk;
-    } else {
-      return roleOk && permissionOk;
-    }
-  }
-};
+
 class RouteObj {
   /**
    * 路由模式
@@ -130,6 +101,7 @@ class RouteObj {
     from: RouteLocationNormalized,
     failure?: NavigationFailure | void
   ) => void;
+
   constructor(
     history: RouterHistory,
     routeComponent: RouteComponents,
@@ -182,10 +154,14 @@ class RouteObj {
     this.install = this.router.install;
     this.routeComponent = routeComponent;
   }
+
   /**
    * 初始化基本路由
    * @param router
    * @param baseRoute
+   * @param beforeEach
+   * @param afterEach
+   * @param onError
    */
   initBaseRoute = (
     router: Router,
@@ -207,7 +183,7 @@ class RouteObj {
     ) => void
   ) => {
     // 初始化基本路由
-    this.resetRoute(router, { [rootRouteName]: baseRoute });
+    this.resetRoute(router, { [rootRouteName]: baseRoute } as RouteItem);
     // 初始化前置守卫
     this.router.beforeEach(beforeEach);
     // 初始化后置守卫
@@ -219,7 +195,7 @@ class RouteObj {
   /**
    *
    * @param router        vue 路由对象
-   * @param getRouteItem  获取路由对象的函数
+   * @param routeItem     路由对象
    * @returns             是否重写了路由
    */
   resetRoute = (router: Router, routeItem: RouteItem) => {
@@ -236,6 +212,7 @@ class RouteObj {
     routeItemKeys.forEach((key: string) => {
       const routeRecordRaws: Array<RouteRecordRaw | any> = routeItem[key];
       routeRecordRaws.forEach((routeRecordRaw) => {
+        console.log(routeRecordRaw);
         if (routeRecordRaw.name && !router.hasRoute(routeRecordRaw.name)) {
           isResetRoute = true;
           if (!routeRecordRaw.component) {
@@ -320,7 +297,7 @@ class RouteObj {
      */
     let flatMenuData: Array<Menu> = [];
     if (dynamicRoute instanceof Array) {
-      flatMenuData = flatMenu(JSON.parse(JSON.stringify(dynamicRoute)), [], "");
+      flatMenuData = flatMenu(dynamicRoute, []);
       const childrenRoute = flatMenuData
         .map((item) => {
           if (item.childOperations) {
@@ -360,22 +337,27 @@ class RouteObj {
 
   /**
    * 判断路由是否有权限
-   * @param flatMenu 菜单
-   * @param to       路由next
+   * @param requiredPermissions
    * @returns        是否有角色或者权限
    */
   routeHasRolePermission = async (
     requiredPermissions: Array<RequiredPermissions>
   ) => {
-    if (this.getPermissions) {
-      const rolePermission: RolePermission = await this.getPermissions();
-      return hasRolePermission(
-        rolePermission.role,
-        rolePermission.permissions,
-        requiredPermissions
-      );
+    const userStore = useUserStore(store);
+    const permissionStore = usePermissionStore(store);
+    if (!userStore.isLogin || !userStore.currentUser) {
+      await userStore.getCurrentUser();
     }
-    return true;
+    const hasPermission = hasRolePermission(
+      userStore.currentRole,
+      permissionStore.userPermissions,
+      requiredPermissions
+    );
+
+    console.log(requiredPermissions);
+    console.log(hasPermission);
+
+    return hasPermission;
   };
 
   /**
@@ -419,5 +401,6 @@ class RouteObj {
     console.log("defaultOnError", error, to, from);
   };
 }
+
 export default RouteObj;
 export type { RouteItem };

@@ -33,10 +33,19 @@ public class Menu extends CeBaseObject {
     private int order;
 
     @Getter
+    private String redirect;
+
+    @Getter
     private List<MenuPermission> requiredPermissions;
 
     @Getter
     private List<Menu> children;
+
+    @Getter
+    private List<Menu> operations;
+
+    @Getter
+    private List<Menu> childOperations;
 
     @JsonIgnore
     private Menu parent;
@@ -46,6 +55,16 @@ public class Menu extends CeBaseObject {
         setModule(module);
         if (this.children != null) {
             for (Menu menu : this.children) {
+                menu.module(module);
+            }
+        }
+        if (this.operations != null) {
+            for (Menu menu : this.operations) {
+                menu.module(module);
+            }
+        }
+        if (this.childOperations != null) {
+            for (Menu menu : this.childOperations) {
                 menu.module(module);
             }
         }
@@ -76,6 +95,16 @@ public class Menu extends CeBaseObject {
             this.menu.setModule(module);
             if (this.menu.children != null) {
                 for (Menu menu : this.menu.children) {
+                    menu.module(module);
+                }
+            }
+            if (this.menu.operations != null) {
+                for (Menu menu : this.menu.operations) {
+                    menu.module(module);
+                }
+            }
+            if (this.menu.childOperations != null) {
+                for (Menu menu : this.menu.childOperations) {
                     menu.module(module);
                 }
             }
@@ -117,6 +146,16 @@ public class Menu extends CeBaseObject {
             return this;
         }
 
+        public Builder redirect(String redirect) {
+            this.menu.redirect = redirect;
+            return this;
+        }
+
+        private Builder parent(Menu.Builder menuBuilder) {
+            this.menu.parent = menuBuilder.build();
+            return this;
+        }
+
         public Builder requiredPermission(MenuPermission.Builder menuPermissionBuilder) {
             if (this.menu.requiredPermissions == null) {
                 this.menu.requiredPermissions = new ArrayList<>();
@@ -126,16 +165,27 @@ public class Menu extends CeBaseObject {
             return this;
         }
 
-        private Builder parent(Menu.Builder menuBuilder) {
-            this.menu.parent = menuBuilder.build();
-            return this;
-        }
-
         public Builder childMenu(Menu.Builder menuBuilder) {
             if (this.menu.children == null) {
                 this.menu.children = new ArrayList<>();
             }
             this.menu.children.add(menuBuilder.parent(this).build());
+            return this;
+        }
+
+        public Builder operationRoute(Menu.Builder menuBuilder) {
+            if (this.menu.operations == null) {
+                this.menu.operations = new ArrayList<>();
+            }
+            this.menu.operations.add(menuBuilder.parent(this).build());
+            return this;
+        }
+
+        public Builder childOperationRoute(Menu.Builder menuBuilder) {
+            if (this.menu.childOperations == null) {
+                this.menu.childOperations = new ArrayList<>();
+            }
+            this.menu.childOperations.add(menuBuilder.parent(this).build());
             return this;
         }
 

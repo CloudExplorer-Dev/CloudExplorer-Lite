@@ -21,7 +21,7 @@ export const listAllOrganization: () => Promise<
 export const tree: (
   treeType?: string
 ) => Promise<Result<Array<OrganizationTree>>> = (treeType) => {
-  const type:string = treeType === undefined ? 'ORGANIZATION':treeType;
+  const type: string = treeType === undefined ? "ORGANIZATION" : treeType;
   return get("/base/organization/tree/" + type);
 };
 

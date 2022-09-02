@@ -132,7 +132,6 @@ public class PermissionService {
             if (CollectionUtils.isNotEmpty(userRoleDtos)) {
                 rolesForSearchAuthority.addAll(userRoleDtos.get(0).getRoles().stream().map(Role::getId).toList());
             }
-            source = null;
         } else if (source != null) {
             for (UserRoleDto userRoleDto : userRoleDtos) {
                 if (StringUtils.equals(source, userRoleDto.getSource())) {

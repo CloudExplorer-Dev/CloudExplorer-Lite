@@ -1,36 +1,27 @@
 import { createApp } from "vue";
-import type { App as AppInstance } from "vue";
 import ElementPlus from "element-plus";
 import * as ElementPlusIcons from "@element-plus/icons-vue";
 import "element-plus/dist/index.css";
 import Fit2CloudPlus from "fit2cloud-ui-plus";
 import "fit2cloud-ui-plus/src/styles/index.scss";
-import pinia from "@/stores";
+import { setupStore } from "@commons/stores";
 import App from "./App.vue";
-//import ceBase from "ce-base";
 import common from "@commons/index";
 import { i18n } from "@commons/index";
 
-console.log("abcd", i18n);
-//import "ce-base/lib/style.css";
 import "@commons/styles/index.scss";
-import { AppMicroapp } from "./microapp";
+import { AppMicroApp } from "./microapp";
 import route from "./route";
-import { setupMock } from "@commons/mock"; //mock
-/*if (import.meta.env.DEV) {
-  //dev环境开启mock
-  setupMock(import.meta.glob("@/mock/!*!/index.ts", { eager: true }));
-}*/
 
 const app = createApp(App);
 const mount = () => {
-  // 注册elementIcone
+  // 注册elementIcon
   for (const [key, component] of Object.entries(ElementPlusIcons)) {
     app.component(key, component);
   }
   // 将elementIcon放到全局
   app.config.globalProperties.$antIcons = ElementPlusIcons;
-  // 将elementIcone放到全局
+  // 将elementIcon放到全局
   app.use(ElementPlus, {
     locale: i18n.global.messages.value[i18n.global.locale.value],
   });
@@ -38,9 +29,12 @@ const mount = () => {
   app.use(route.router);
 
   app.use(Fit2CloudPlus);
-  app.use(pinia);
+
+  //全局启用 pinia store
+  setupStore(app);
+
   app.mount(`#${import.meta.env.VITE_APP_NAME}`);
   return app;
 };
 
-app.use(new AppMicroapp(mount, import.meta.env.VITE_APP_NAME, route.history));
+app.use(new AppMicroApp(mount, import.meta.env.VITE_APP_NAME, route));

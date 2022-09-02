@@ -7,16 +7,15 @@ import type Result from "@commons/request/Result";
  * @returns
  */
 export const getCurrentRole = () => {
-  const roleData: Promise<Result<Role>> = get("/api/currentUser");
+  const roleData: Promise<Result<Role>> = get("/api/currentRole");
   return roleData;
 };
 
 /**
- * 获取用户下所有角色
+ * 获取所有角色
  * @returns
  */
-export const listRole = () => {
-  const roleData: Promise<Result<Array<Role>>> = get("/api/listRoles");
+export const listAllRole = () => {
+  const roleData: Promise<Result<Array<Role>>> = get("/api/role/list");
   return roleData;
 };
-export type { Role };

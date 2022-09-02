@@ -1,5 +1,5 @@
 import { get, post } from "@commons/request";
-import type { LoginRequest, LoginResponse, UserInfo } from "./type";
+import type { LoginRequest, LoginResponse, User } from "./type";
 import type { Result } from "@commons/request/Result";
 import type { Ref } from "vue";
 
@@ -13,11 +13,16 @@ export const login = (data: LoginRequest, loading?: Ref<boolean>) => {
   return loginResult;
 };
 
+export function fetchCurrentUser() {
+  const currentUser: Promise<Result<User>> = get("/api/user/current");
+  return currentUser;
+}
+
 export const getUser = () => {
   return get("/api/user/detail");
 };
 
-export const saveUser = (data: UserInfo) => {
+export const saveUser = (data: User) => {
   return post("/api/user-save", null, data);
 };
 

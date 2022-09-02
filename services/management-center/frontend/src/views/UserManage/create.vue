@@ -5,7 +5,7 @@ import type { FormRules } from "element-plus";
 import type { FormInstance } from "element-plus/es";
 import { useI18n } from "vue-i18n";
 import { RoleInfo, Role } from "@/api/user/type";
-import { createUser, listRole,workspaceTree } from "@/api/user";
+import { createUser, listRole, workspaceTree } from "@/api/user";
 import { useRouter } from "vue-router";
 import { ElMessage } from "element-plus/es";
 import { OrganizationTree, tree } from "@/api/organization";

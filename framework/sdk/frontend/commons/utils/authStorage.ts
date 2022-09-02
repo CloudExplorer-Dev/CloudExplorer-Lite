@@ -39,3 +39,17 @@ export function setSource(source: string) {
 export function removeSource() {
   localStorage.removeItem(SourceKey);
 }
+
+const authStorage = {
+  getToken,
+  setToken,
+  removeToken,
+  getRole,
+  setRole,
+  removeRole,
+  getSource,
+  setSource,
+  removeSource,
+};
+
+export default authStorage;

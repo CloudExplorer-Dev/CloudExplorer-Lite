@@ -1,5 +1,6 @@
 package com.fit2cloud.security.filter;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fit2cloud.base.service.IBaseUserRoleService;
 import com.fit2cloud.common.constants.OrganizationConstants;
 import com.fit2cloud.common.constants.RoleConstants;
@@ -10,6 +11,8 @@ import com.fit2cloud.security.CeGrantedAuthority;
 import com.fit2cloud.security.CeUsernamePasswordAuthenticationToken;
 import com.fit2cloud.service.PermissionService;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.authentication.www.BasicAuthenticationFilter;
@@ -19,10 +22,12 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.util.List;
-import java.util.Set;
+import java.io.PrintWriter;
+import java.util.*;
 
 public class TwtTokenAuthFilter extends BasicAuthenticationFilter {
+
+    private static final ObjectMapper objectMapper = new ObjectMapper();
 
     private final PermissionService permissionService;
 
@@ -88,9 +93,37 @@ public class TwtTokenAuthFilter extends BasicAuthenticationFilter {
                 response.setHeader(JwtTokenUtils.TOKEN_NAME, token);
             }
 
+        } else {
+            SecurityContextHolder.clearContext();
+            //throw new BadCredentialsException(HttpStatus.UNAUTHORIZED.getReasonPhrase());
+            if (request.getServletPath().startsWith("/api/") || request.getServletPath().equals("/api")) {
+                try {
+                    writeErrorMessage(request, response, HttpStatus.UNAUTHORIZED, null);
+                    return;
+                } catch (Exception e) {
+                    throw new RuntimeException(e);
+                }
+            }
         }
 
         chain.doFilter(request, response);
 
     }
+
+
+    private void writeErrorMessage(HttpServletRequest request, HttpServletResponse response, HttpStatus status, String message) throws Exception {
+        response.setContentType(MediaType.APPLICATION_JSON_VALUE);
+        response.setStatus(status.value());
+
+        Map<String, Object> errorAttributes = new LinkedHashMap<>();
+        errorAttributes.put("timestamp", new Date());
+        errorAttributes.put("path", request.getServletPath());
+        errorAttributes.put("status", status.value());
+        errorAttributes.put("error", status.getReasonPhrase());
+        errorAttributes.put("message", message);
+
+        PrintWriter writer = response.getWriter();
+        objectMapper.writeValue(writer, errorAttributes);
+    }
+
 }

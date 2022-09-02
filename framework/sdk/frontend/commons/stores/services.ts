@@ -8,39 +8,6 @@ import { getRuningPermissions } from "@commons/api/permission";
 import type { RouteItem } from "@commons/router";
 import { getCurrentRole } from "@commons/api/role";
 
-interface RouteModule {
-  /**
-   *路由名称
-   */
-  name: string;
-  /**
-   *路由path
-   */
-  path: string;
-  /**
-   * 组建path
-   */
-  componentPath: string;
-  props: {
-    /**
-     * 模块名称
-     */
-    moduleName: string;
-    /**
-     * 模块名称
-     */
-    name: string;
-    /**
-     * 模块地址
-     */
-    url: string;
-    /**
-     * 模块路由地址
-     */
-    baseRoute: string;
-  };
-}
-
 export const servicesStore = defineStore({
   id: "services",
   state: () => ({
@@ -77,7 +44,7 @@ export const servicesStore = defineStore({
           props: {
             moduleName: module.name,
             name: module.name,
-            url: module.url + module.name,
+            url: module.basePath + module.name,
             baseRoute: "/",
           },
         };

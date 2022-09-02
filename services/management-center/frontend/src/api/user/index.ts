@@ -1,7 +1,8 @@
 import { get, post, del } from "@commons/request";
 import type Result from "@commons/request/Result";
 import type { Page } from "@commons/request/Result";
-import type { User, ListUserRequest, CreateUserRequest } from "./type";
+import type { ListUserRequest, CreateUserRequest } from "./type";
+import type { User } from "@commons/api/user/type";
 
 export const listUser: (req: ListUserRequest) => Promise<Result<Page<User>>> = (
   req
@@ -24,5 +25,3 @@ export const listRole = () => {
 export const workspaceTree = (): Promise<Result<Array<any>>> => {
   return get("/base/workspace/tree");
 };
-
-export type { User };

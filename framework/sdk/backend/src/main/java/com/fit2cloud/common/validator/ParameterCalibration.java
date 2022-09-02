@@ -6,6 +6,7 @@ import io.reactivex.rxjava3.core.Maybe;
 import org.apache.commons.lang3.concurrent.ConcurrentException;
 import org.springframework.core.Constants;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.validation.BindException;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.FieldError;

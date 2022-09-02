@@ -3,6 +3,15 @@ import type { Module } from "./type";
 import type Result from "@commons/request/Result";
 import type { Ref } from "vue";
 
+export const listModules = (loading?: Ref<boolean>) => {
+  const modules: Promise<Result<Array<Module>>> = get(
+    "/api/modules",
+    {},
+    loading
+  );
+  return modules;
+};
+
 /**
  *获取所有正在运行的模块
  * @returns
