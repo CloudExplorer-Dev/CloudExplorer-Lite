@@ -6,6 +6,10 @@ spring:
   mvc:
     pathmatch:
        matching-strategy: ANT_PATH_MATCHER
+  #       国际化配置
+  messages:
+    basename: i18n.messages,i18n.commons
+    encoding: UTF-8
 
 server:
   port: 9010

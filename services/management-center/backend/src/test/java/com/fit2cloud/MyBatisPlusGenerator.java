@@ -4,8 +4,10 @@ package com.fit2cloud;
 import com.baomidou.mybatisplus.generator.AutoGenerator;
 import com.baomidou.mybatisplus.generator.config.*;
 import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.context.MessageSource;
 import org.springframework.test.context.TestPropertySource;
 
 import java.util.Arrays;
@@ -21,8 +23,9 @@ public class MyBatisPlusGenerator {
     /**
      * 传入需要生成代码的表名
      */
-    private static final List<String> TABLES = Arrays.asList("organization");
-
+    private static final List<String> TABLES = Arrays.asList("cloud_account");
+    @Autowired
+    private MessageSource messageSource;
     @Value("${ce.datasource.url}")
     private String datasource;
 

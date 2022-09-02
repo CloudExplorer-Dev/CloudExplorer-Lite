@@ -1,31 +1,27 @@
 package com.fit2cloud.request;
 
-import com.baomidou.mybatisplus.core.metadata.OrderItem;
-import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fit2cloud.request.pub.OrderRequest;
 import com.fit2cloud.request.pub.PageRequest;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
-import org.hibernate.validator.constraints.Length;
-import org.springframework.web.bind.WebDataBinder;
-import org.springframework.web.bind.annotation.InitBinder;
+import lombok.Getter;
+import lombok.Setter;
 
-import javax.validation.constraints.Min;
 import javax.validation.constraints.Size;
-import java.beans.PropertyEditorSupport;
-import java.util.Date;
 import java.util.List;
 
 /**
- * @Author:张少虎
- * @Date: 2022/8/24  1:54 PM
- * @Version 1.0
- * @注释:
- */
+ * @author jianneng
+ * @date 2022/8/30 16:24
+ **/
 @Data
-public class PageOrganizationRequest extends PageRequest {
-    @ApiModelProperty("组织名称")
+public class PageWorkspaceRequest extends PageRequest {
+
+    @ApiModelProperty("工作空间名称")
     private String name;
+
+    @ApiModelProperty("组织")
+    private String organizationId;
 
     @Size(min = 2,max = 2,message = "创建时间只能是开始和结束")
     @ApiModelProperty(value="创建时间",example ="createTime[]=2121&createTime[]=21212")

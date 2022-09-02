@@ -1,11 +1,11 @@
 package com.fit2cloud.service;
 
 import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.fit2cloud.controller.request.OrganizationBatchRequest;
+import com.fit2cloud.controller.request.OrganizationRequest;
+import com.fit2cloud.controller.request.PageOrganizationRequest;
 import com.fit2cloud.dao.entity.Organization;
 import com.baomidou.mybatisplus.extension.service.IService;
-import com.fit2cloud.request.OrganizationBatchRequest;
-import com.fit2cloud.request.OrganizationRequest;
-import com.fit2cloud.request.PageOrganizationRequest;
 
 import java.util.List;
 

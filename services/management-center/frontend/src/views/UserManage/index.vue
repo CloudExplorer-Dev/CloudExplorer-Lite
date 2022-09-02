@@ -18,6 +18,7 @@ const { t } = useI18n();
 const useRoute = useRouter();
 const columns = ref([]);
 const tableData = ref<Array<User>>();
+const table: any = ref(null);
 
 onMounted(() => {
   search(new TableSearch());
@@ -60,9 +61,12 @@ const deleteUser = (row: User) => {
     type: "warning",
   })
     .then(() => {
-      deleteUserById(row.userId);
-      ElMessage.success(t("commons.msg.delete_success"));
-      search;
+      deleteUserById(row.id).then(() => {
+        if (table.value) {
+          table.value?.search();
+          ElMessage.success(t("commons.msg.delete_success"));
+        }
+      });
     })
     .catch(() => {
       ElMessage.info(t("commons.msg.delete_canceled"));
@@ -71,6 +75,16 @@ const deleteUser = (row: User) => {
 
 const addRole = () => {
   console.log("addRole");
+};
+
+const showUserRoleDetails = (row: User) => {
+  alert("用户角色树");
+  //TODO 展示用户角色树
+};
+
+const handleSwitchStatus = (row: User) => {
+  alert("切换用户状态");
+  //TODO 切换用户状态
 };
 
 const msgConfigRef = ref();
@@ -83,15 +97,11 @@ const showPwdDialog = () => {
   modifyPwdRef.value.dialogVisible = true;
 };
 
-const handleSwitchStatus = (row: User) => {
-  //TODO 切换用户状态
-};
-
 const sourceFilter = (userSource: string) => {
-  if (userSource === "local") {
+  if (userSource.toLowerCase() === "local") {
     return t("本地创建");
   }
-  if (userSource === "extra") {
+  if (userSource.toLowerCase() === "extra") {
     return t("第三方");
   }
   return userSource;
@@ -99,13 +109,20 @@ const sourceFilter = (userSource: string) => {
 
 const tableConfig = ref<TableConfig>({
   searchConfig: {
+    showEmpty: false,
     search: search,
-    quickPlaceholder: "按照名称搜索",
+    quickPlaceholder: "搜索",
     components: [
       SearchConfig.buildComponent().DateComponent.newInstance(
         "createTime",
         "创建时间"
       ),
+    ],
+    searchOptions: [
+      { label: "ID", value: "username" },
+      { label: "姓名", value: "name" },
+      { label: "角色", value: "role_id" },
+      { label: "Email", value: "email" },
     ],
   },
   paginationConfig: new PaginationConfig(),
@@ -139,36 +156,53 @@ const tableConfig = ref<TableConfig>({
       <breadcrumb :breadcrumbs="[{ to: {}, title: '用户管理' }]"></breadcrumb>
     </template>
     <ce-table
+      ref="table"
+      :expand-row-keys="expandRowKeys"
       :columns="columns"
       :data="tableData"
       :tableConfig="tableConfig"
+      @selection-change="handleSelectionChange"
       row-key="id"
     >
       <template #toolbar>
         <el-button @click="create" type="primary">创建</el-button>
-        <el-button @click="deleteUser">删除</el-button>
         <el-button @click="addRole">添加角色</el-button>
       </template>
       <el-table-column type="selection" />
-      <el-table-column prop="id" label="ID" />
+      <el-table-column prop="username" label="ID" />
       <el-table-column prop="name" label="姓名" />
       <el-table-column prop="email" label="邮箱" />
-      <el-table-column prop="role" label="角色" />
+      <el-table-column prop="roles" label="角色">
+        <template #default="scope">
+          <div
+            v-for="role in scope.row.roles"
+            @click="showUserRoleDetails(scope.row)"
+            tyle="cursor:pointer"
+          >
+            <a style="color: var(--el-color-primary)">{{ role.name }}<br /></a>
+          </div>
+        </template>
+      </el-table-column>
       <el-table-column prop="source" label="来源" sortable>
         <template #default="scope">
           <span>{{ sourceFilter(scope.row.source) }}</span>
         </template>
       </el-table-column>
-      <el-table-column prop="active" label="状态" sortable>
+      <el-table-column prop="enabled" label="状态" sortable>
         <template #default="scope">
           <el-switch
-            v-model="scope.row.active"
+            v-model="scope.row.enabled"
             @change="handleSwitchStatus(scope.row)"
           />
         </template>
       </el-table-column>
       <el-table-column prop="phone" label="手机号码" />
-      <el-table-column prop="createTime" label="创建时间" sortable />
+      <el-table-column
+        prop="createTime"
+        label="创建时间"
+        min-width="120"
+        sortable
+      />
       <fu-table-operations v-bind="tableConfig.tableOperations" fix />
       <template #buttons>
         <fu-table-column-select type="icon" :columns="columns" size="small" />

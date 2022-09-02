@@ -3,11 +3,11 @@ package com.fit2cloud.base.entity;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
+import java.io.Serializable;
+import java.time.LocalDateTime;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.Accessors;
-
-import java.io.Serializable;
 
 /**
  * <p>
@@ -36,4 +36,10 @@ public class UserRole implements Serializable {
 
     @TableField("_source")
     private String source;
+
+    @TableField("create_time")
+    private LocalDateTime createTime;
+
+    @TableField("update_time")
+    private LocalDateTime updateTime;
 }

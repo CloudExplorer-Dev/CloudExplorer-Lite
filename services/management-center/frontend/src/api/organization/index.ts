@@ -18,9 +18,13 @@ export const listAllOrganization: () => Promise<
   return get("/api/listAll/org");
 };
 
-export const tree: () => Promise<Result<Array<OrganizationTree>>> = () => {
-  return get("/base/organization/tree");
+export const tree: (
+  treeType?: string
+) => Promise<Result<Array<OrganizationTree>>> = (treeType) => {
+  const type:string = treeType === undefined ? 'ORGANIZATION':treeType;
+  return get("/base/organization/tree/" + type);
 };
+
 export const batch = (data: CreateOrgFrom) => {
   return post("/organization/batch", null, data);
 };

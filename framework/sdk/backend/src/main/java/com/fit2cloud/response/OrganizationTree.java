@@ -1,6 +1,7 @@
 package com.fit2cloud.response;
 
 import com.fit2cloud.base.entity.Organization;
+import com.fit2cloud.base.entity.Workspace;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 import lombok.ToString;
@@ -21,4 +22,9 @@ public class OrganizationTree extends Organization {
      */
     @ApiModelProperty(value = "子组织",notes = "子组织")
     private List<OrganizationTree> children;
+    /**
+     * 工作空间
+     */
+    @ApiModelProperty(value = "当前组织下的工作空间",notes = "当前组织下的工作空间")
+    private List<Workspace> workspaces;
 }

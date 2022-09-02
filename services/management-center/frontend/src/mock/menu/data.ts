@@ -76,7 +76,24 @@ export default [
         title: "工作空间",
         icon: "project_space",
         path: "/workspace",
+        props: true,
         componentPath: "/src/views/WorkspaceManage/index.vue",
+        operations: [
+          {
+            name: "worksapceCreate",
+            title: "创建",
+            path: "/create",
+            componentPath: "/src/views/WorkspaceManage/Create.vue",
+            props: true,
+            requiredPermissions: [
+              {
+                role: "ADMIN",
+                logical: "OR",
+                permissions: ["WORKSPACE_MENU_VIEW"],
+              },
+            ],
+          },
+        ],
         requiredPermissions: [
           {
             role: "ADMIN",

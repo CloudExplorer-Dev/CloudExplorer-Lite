@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.fit2cloud.dao.mapper.UserMapper">
+    <resultMap id="BaseResultMap" type="com.fit2cloud.base.entity.User">
+        <id column="id" jdbcType="VARCHAR" property="id"/>
+        <result column="username" jdbcType="VARCHAR" property="username"/>
+        <result column="_name" jdbcType="VARCHAR" property="name"/>
+        <result column="email" jdbcType="VARCHAR" property="email"/>
+        <result column="enabled" jdbcType="BIT" property="enabled"/>
+        <result column="phone" jdbcType="VARCHAR" property="phone"/>
+        <result column="source" jdbcType="VARCHAR" property="source"/>
+        <result column="create_time" jdbcType="BIGINT" property="createTime"/>
+    </resultMap>
+
+    <select id="pageUser" resultMap="BaseResultMap">
+        SELECT
+            user.*,
+            sum( case role.parent_role_id when 'ADMIN' then 100000 when 'ORGADMIN' then 500 when 'USER' then 1 else 0 end ) as roleSortNum,
+            role.parent_role_id AS parentRoleId
+        FROM
+            user LEFT JOIN user_role ON user.id = user_role.user_id
+            LEFT JOIN role ON role.id = user_role.role_id
+        ${ew.customSqlSegment}
+        GROUP BY
+            user.id
+        ORDER BY
+            roleSortNum desc,user.create_time desc,user._name
+    </select>
+
+</mapper>
