@@ -6,7 +6,7 @@ import { FormRules } from "element-plus";
 import { FormInstance } from "element-plus/es";
 import { useI18n } from "vue-i18n";
 import { RoleInfo, Role } from "@/api/user/type";
-import { createUser, listRole,workspaceTree } from "@/api/user";
+import { createUser, listRole, workspaceTree } from "@/api/user";
 import { useRouter } from "vue-router";
 import { ElMessage } from "element-plus/es";
 import { OrganizationTree, tree } from "@/api/organization";
@@ -33,101 +33,79 @@ const confirmPwdValidator = (rule: any, value: any, callback: any) => {
   }
 };
 
-const rule: FormRules = {};
-
-// const rule: FormRules = {
-//   username: [
-//     {
-//       required: true,
-//       message: "ID必填",
-//       trigger: "blur",
-//     },
-//     {
-//       min: 1,
-//       max: 30,
-//       message: "长度1-30",
-//       trigger: "blur",
-//     },
-//   ],
-//   name: [
-//     {
-//       required: true,
-//       message: "姓名必填",
-//       trigger: "blur",
-//     },
-//     {
-//       min: 2,
-//       max: 30,
-//       message: "2-30个字符",
-//       trigger: "blur",
-//     },
-//   ],
-//   phone: [
-//     {
-//       pattern: /^1[3|4|5|7|8][0-9]{9}$/,
-//       message: "手机号码格式不正确",
-//       trigger: "blur",
-//     },
-//   ],
-//   email: [
-//     {
-//       required: true,
-//       message: "邮箱必填",
-//       trigger: "blur",
-//     },
-//     {
-//       required: true,
-//       pattern: /^[a-zA-Z0-9_._-]+@[a-zA-Z0-9_-]+(\.[a-zA-Z0-9_-]+)+$/,
-//       message: "邮箱格式不正确",
-//       trigger: "blur",
-//     },
-//   ],
-//   password: [
-//     {
-//       required: true,
-//       message: "密码必填",
-//       trigger: "blur",
-//     },
-//     {
-//       required: true,
-//       pattern: /^(?!.*\s)(?=.*[A-Z])(?=.*[a-z])(?=.*[0-9])(?=.*[\W_]).{8,30}$/,
-//       message: t("commons.validate.pwd"),
-//       trigger: "blur",
-//     },
-//   ],
-//   confirmPassword: [
-//     {
-//       required: true,
-//       message: $tv(
-//         "commons.validate.input",
-//         "commons.personal.confirm_password"
-//       ),
-//       trigger: "blur",
-//     },
-//     { validator: confirmPwdValidator, trigger: "blur" },
-//   ],
-// };
-
-// const roles = ref<Array<Role>>([
-//   {
-//     id: roleConst.admin,
-//     name: "系统管理员",
-//     type: "original",
-//     parentRoleId: "",
-//   },
-//   {
-//     id: roleConst.orgAdmin,
-//     name: "组织管理员",
-//     type: "original",
-//     parentRoleId: "",
-//   },
-//   {
-//     id: roleConst.user,
-//     name: "工作空间用户",
-//     type: "original",
-//     parentRoleId: "",
-//   },
-// ])
+// 表单校验规则
+const rule: FormRules = {
+  username: [
+    {
+      required: true,
+      message: $tv("commons.validate.required", "ID"),
+      trigger: "blur",
+    },
+    {
+      min: 1,
+      max: 30,
+      message: $tv("commons.validate.limit", "1", "30"),
+      trigger: "blur",
+    },
+  ],
+  name: [
+    {
+      required: true,
+      message: $tv("commons.validate.required", "user.name"),
+      trigger: "blur",
+    },
+    {
+      min: 2,
+      max: 30,
+      message: $tv("commons.validate.limit", "2", "30"),
+      trigger: "blur",
+    },
+  ],
+  phone: [
+    {
+      pattern: /^1[3|4|5|7|8][0-9]{9}$/,
+      message: t("user.validate.phone_format"),
+      trigger: "blur",
+    },
+  ],
+  email: [
+    {
+      required: true,
+      message: $tv("commons.validate.required", "user.email"),
+      trigger: "blur",
+    },
+    {
+      required: true,
+      pattern: /^[a-zA-Z0-9_._-]+@[a-zA-Z0-9_-]+(\.[a-zA-Z0-9_-]+)+$/,
+      message: t("user.validate.email_format"),
+      trigger: "blur",
+    },
+  ],
+  password: [
+    {
+      required: true,
+      message: $tv("commons.validate.required", "user.password"),
+      trigger: "blur",
+    },
+    {
+      required: true,
+      pattern: /^(?!.*\s)(?=.*[A-Z])(?=.*[a-z])(?=.*[0-9])(?=.*[\W_]).{8,30}$/,
+      message: t("commons.validate.pwd"),
+      trigger: "blur",
+    },
+  ],
+  confirmPassword: [
+    {
+      required: true,
+      message: $tv(
+        "commons.validate.input",
+        "commons.personal.confirm_password"
+      ),
+      trigger: "blur",
+    },
+    { validator: confirmPwdValidator, trigger: "blur" },
+  ],
+};
 
 const roles = ref<Role[]>();
 const orgTreeData = ref<OrganizationTree[]>();
@@ -136,7 +114,7 @@ const isAddLineAble = ref(true);
 
 // 添加用户类型选项
 const addLine = () => {
-  const roleInfo: any = {
+  const roleInfo: RoleInfo = {
     roleId: "",
     roleType: "",
     organizationIds: [],
@@ -163,9 +141,9 @@ const subtractLine = (roleInfo: RoleInfo) => {
     isAddLineAble.value = true;
   }
 };
+
 const filterRole = (role: Role, roleInfo: RoleInfo) => {
   if (!roleInfo.selects) return;
-
   let value = true;
   if (roleInfo.selects.length === 0) {
     value = true;
@@ -192,7 +170,7 @@ const handleCreate = (formEl: FormInstance) => {
       param.source = "local";
       createUser(param)
         .then(() => {
-          ElMessage.success("用户创建成功");
+          ElMessage.success(t("commons.btn.save_success"));
           backToUserList();
         })
         .catch((err) => {
@@ -231,8 +209,8 @@ onMounted(() => {
       <template #breadcrumb>
         <breadcrumb
           :breadcrumbs="[
-            { to: { name: 'user' }, title: '用户管理' },
-            { to: {}, title: '创建' },
+            { to: { name: 'user' }, title: $t('user.manage') },
+            { to: {}, title: $t('commons.btn.create') },
           ]"
         ></breadcrumb>
       </template>
@@ -245,7 +223,7 @@ onMounted(() => {
       >
         <layout-container>
           <template #header>
-            <span>基本信息</span>
+            <span>{{ $t("commons.basic_info") }}</span>
           </template>
           <template #content>
             <el-row>
@@ -253,7 +231,6 @@ onMounted(() => {
                 <el-form-item label="ID" prop="username">
                   <el-input
                     v-model="form.username"
-                    :placeholder="$t('请输入ID')"
                     type="text"
                     maxlength="30"
                     show-word-limit
@@ -264,7 +241,6 @@ onMounted(() => {
                 <el-form-item :label="$t('user.name')" prop="name">
                   <el-input
                     v-model="form.name"
-                    :placeholder="$t('请输入姓名')"
                     type="text"
                     maxlength="30"
                     show-word-limit
@@ -277,7 +253,6 @@ onMounted(() => {
                 <el-form-item label="Email" prop="email">
                   <el-input
                     v-model="form.email"
-                    :placeholder="$t('请输入邮箱')"
                     type="text"
                     maxlength="50"
                     show-word-limit
@@ -289,19 +264,15 @@ onMounted(() => {
                   :label="$t('commons.personal.phone')"
                   prop="phone"
                 >
-                  <el-input
-                    v-model="form.phone"
-                    :placeholder="$t('请输入手机号')"
-                  />
+                  <el-input v-model="form.phone" />
                 </el-form-item>
               </el-col>
             </el-row>
             <el-row>
               <el-col :span="10">
-                <el-form-item :label="$t('密码')" prop="password">
+                <el-form-item :label="$t('user.password')" prop="password">
                   <el-input
                     v-model="form.password"
-                    :placeholder="$t('请输入密码')"
                     type="password"
                     clearable
                     show-password
@@ -316,7 +287,6 @@ onMounted(() => {
                 >
                   <el-input
                     v-model="form.confirmPassword"
-                    :placeholder="$t('请确认密码')"
                     type="password"
                     clearable
                     show-password
@@ -330,17 +300,17 @@ onMounted(() => {
 
         <layout-container>
           <template #header>
-            <span>设置角色</span>
+            <span>{{ $t("user.set_role") }}</span>
           </template>
           <template #content>
             <div v-for="(roleInfo, index) in form.roleInfoList" :key="index">
               <!-- 用户类型 -->
               <el-row>
                 <el-col :span="20">
-                  <el-form-item label="用户类型">
+                  <el-form-item :label="$t('user.type')">
                     <el-select
                       v-model="roleInfo.roleId"
-                      placeholder="用户类型"
+                      :placeholder="$t('user.type')"
                       style="width: 100%"
                     >
                       <el-option
@@ -357,7 +327,7 @@ onMounted(() => {
                   <el-tooltip
                     class="box-item"
                     effect="dark"
-                    content="删除角色"
+                    :content="$t('user.delete_role')"
                     placement="bottom"
                   >
                     <el-button
@@ -374,7 +344,7 @@ onMounted(() => {
               <!-- 选择组织 -->
               <el-row v-if="roleInfo.roleId === roleConst.orgAdmin">
                 <el-col :span="20">
-                  <el-form-item label="添加组织">
+                  <el-form-item :label="$t('user.add_org')">
                     <el-tree-select
                       v-model="roleInfo.organizationIds"
                       node-key="id"
@@ -394,7 +364,7 @@ onMounted(() => {
               <!-- 选择工作空间 -->
               <el-row v-if="roleInfo.roleId === roleConst.user">
                 <el-col :span="20">
-                  <el-form-item label="添加工作空间">
+                  <el-form-item :label="$t('user.add_workspace')">
                     <el-tree-select
                       v-model="roleInfo.workspaceIds"
                       node-key="id"
@@ -415,7 +385,7 @@ onMounted(() => {
               <el-tooltip
                 class="box-item"
                 effect="dark"
-                content="添加角色"
+                :content="$t('user.add_role')"
                 placement="bottom"
               >
                 <el-button
