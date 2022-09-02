@@ -28,10 +28,16 @@ export class LoginResponse {
 export class UserStoreObjectWithLoginStatus {
   userStoreObject?: UserStoreObject | null;
   login: boolean;
+  lang: string;
 
-  constructor(userStoreObject: UserStoreObject | null, login: boolean) {
+  constructor(
+    userStoreObject: UserStoreObject | null,
+    login: boolean,
+    lang: string
+  ) {
     this.userStoreObject = userStoreObject;
     this.login = login;
+    this.lang = lang;
   }
 }
 

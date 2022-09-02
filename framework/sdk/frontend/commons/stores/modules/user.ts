@@ -12,12 +12,20 @@ import type {
 import { find, flatMap, has, join } from "lodash";
 import type { Role } from "@commons/api/role/type";
 import { usePermissionStore } from "@commons/stores/modules/permission";
+import type { SimpleMap } from "@commons/api/base/type";
+
+export const languages: SimpleMap<string> = {
+  "zh-cn": "中文(简体)",
+  "zh-tw": "中文(繁體)",
+  en: "English",
+};
 
 export const useUserStore = defineStore({
   id: "user",
   state: (): UserStoreObjectWithLoginStatus => ({
     userStoreObject: {},
     login: false,
+    lang: "none",
   }),
   getters: {
     currentUser(state: any): User | undefined {
@@ -69,6 +77,12 @@ export const useUserStore = defineStore({
         flatMap(roles, (o) => o.name),
         ", "
       );
+    },
+    currentLang(state: any): string {
+      if (state.lang === "none") {
+        state.changeLang("zh-cn");
+      }
+      return state.lang;
     },
   },
   actions: {
@@ -165,6 +179,13 @@ export const useUserStore = defineStore({
       } else {
         authStorage.removeSource();
       }
+    },
+    changeLang(lang: string) {
+      if (!has(languages, lang)) {
+        lang = "zh-cn";
+      }
+      this.lang = lang;
+      authStorage.setLang(lang);
     },
   },
 });
