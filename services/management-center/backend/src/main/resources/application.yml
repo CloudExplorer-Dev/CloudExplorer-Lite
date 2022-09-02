@@ -30,3 +30,12 @@ logging:
   file:
     path: @ce.log.base.dir@/${spring.application.name}
 
+eureka:
+  instance:
+    metadata-map:
+      order: 1
+      name_zh-cn: 管理中心
+      name_zh-tw: 管理中心
+      name_en: Management Center
+      basePath: ${server.servlet.context-path}/
+      icon: shouye3

@@ -1,3 +1,4 @@
+/*
 import type { MockMethod } from "vite-plugin-mock";
 import users from "./data";
 import apiKeys from "../apiKey/data";
@@ -144,3 +145,4 @@ export default [
     },
   },
 ] as MockMethod[];
+*/

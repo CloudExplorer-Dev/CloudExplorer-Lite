@@ -1,12 +1,16 @@
-package com.fit2cloud.security.permission;
+package com.fit2cloud.service;
 
 import com.fit2cloud.base.entity.Role;
 import com.fit2cloud.base.service.IBaseRoleService;
+import com.fit2cloud.base.service.IBaseUserRoleService;
 import com.fit2cloud.common.constants.RoleConstants;
+import com.fit2cloud.dto.UserRoleDto;
 import com.fit2cloud.dto.permission.ModulePermission;
 import com.fit2cloud.dto.permission.Permission;
 import com.fit2cloud.dto.permission.PermissionGroup;
 import com.fit2cloud.security.CeGrantedAuthority;
+import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.redisson.api.RMap;
 import org.redisson.api.RReadWriteLock;
 import org.redisson.api.RedissonClient;
@@ -25,6 +29,9 @@ public class PermissionService {
 
     @Resource
     private IBaseRoleService roleService;
+
+    @Resource
+    private IBaseUserRoleService userRoleService;
 
     public static String module;
 
@@ -88,7 +95,7 @@ public class PermissionService {
             Map<String, List<CeGrantedAuthority>> results = new HashMap<>();
             try {
                 lock.readLock().lock(10, TimeUnit.SECONDS);
-                results = map.getAll(map.keySet());
+                results = map.readAllMap();
             } catch (Exception e) {
                 e.printStackTrace();
             } finally {
@@ -102,6 +109,43 @@ public class PermissionService {
         }
 
         return new ArrayList<>(authorities);
+    }
+
+    public Set<String> getPlainPermissions(String userId, RoleConstants.ROLE role, String source) {
+        Map<RoleConstants.ROLE, List<UserRoleDto>> map = userRoleService.getCachedUserRoleMap(userId);
+        List<CeGrantedAuthority> authority = readPermissionFromRedis(rolesForSearchAuthority(map, role, source));
+        Set<String> plainPermissions = new HashSet<>();
+        for (CeGrantedAuthority ceGrantedAuthority : authority) {
+            //将完整权限id和simpleId都放进去
+            plainPermissions.add(ceGrantedAuthority.getAuthority());
+            plainPermissions.add(ceGrantedAuthority.getCurrentModulePermission());
+        }
+        return plainPermissions;
+    }
+
+    public Set<String> rolesForSearchAuthority(Map<RoleConstants.ROLE, List<UserRoleDto>> map, RoleConstants.ROLE role, String source) {
+        Set<String> rolesForSearchAuthority = new HashSet<>();
+
+        List<UserRoleDto> userRoleDtos = map.getOrDefault(role, new ArrayList<>());
+
+        if (RoleConstants.ROLE.ADMIN.equals(role)) {
+            if (CollectionUtils.isNotEmpty(userRoleDtos)) {
+                rolesForSearchAuthority.addAll(userRoleDtos.get(0).getRoles().stream().map(Role::getId).toList());
+            }
+        } else if (source != null) {
+            for (UserRoleDto userRoleDto : userRoleDtos) {
+                if (StringUtils.equals(source, userRoleDto.getSource())) {
+                    if (role.equals(userRoleDto.getParentRole())) {
+                        rolesForSearchAuthority.addAll(userRoleDto.getRoles().stream().map(Role::getId).toList());
+                    }
+                    break;
+                }
+            }
+        }
+
+        rolesForSearchAuthority.add(RoleConstants.ROLE.ANONYMOUS.name()); //默认有匿名用户权限
+
+        return rolesForSearchAuthority;
     }
 
 

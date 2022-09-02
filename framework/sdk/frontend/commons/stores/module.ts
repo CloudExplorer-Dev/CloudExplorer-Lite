@@ -5,7 +5,7 @@ import type { Menu } from "@commons/api/menu";
 import { getCurrentMenus } from "@commons/api/menu";
 import type { Permission } from "../api/permission";
 import { getPermission } from "../api/permission";
-import type { Role } from "../api/role";
+import type { Role } from "../api/role/type";
 import { getCurrentRole } from "../api/role";
 
 /**
@@ -31,7 +31,7 @@ const resetMenuPath = (menus: Array<Menu>, prentPath: string) => {
 };
 
 export const moduleStore = defineStore({
-  id: "module",
+  id: "module1",
   state: () => ({
     /**
      *当前模块信息

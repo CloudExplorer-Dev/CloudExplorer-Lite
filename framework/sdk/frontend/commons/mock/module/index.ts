@@ -1,3 +1,4 @@
+/*
 import type { MockMethod } from "vite-plugin-mock";
 import modules from "./data";
 import Result from "../../request/Result";
@@ -22,3 +23,4 @@ export default [
     },
   },
 ] as MockMethod[];
+*/

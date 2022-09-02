@@ -6,6 +6,17 @@ import type {
   RequiredPermissions,
 } from "./type";
 import type { Result } from "../../request/Result";
+import type { Ref } from "vue";
+import type { SimpleMap } from "@commons/api/base/type";
+
+export const listMenus = (loading?: Ref<boolean>) => {
+  const modules: Promise<Result<SimpleMap<Array<Menu>>>> = get(
+    "/api/menus",
+    {},
+    loading
+  );
+  return modules;
+};
 
 /**
  * 获取当前模块的菜单

@@ -1,7 +1,7 @@
 import type { MockMethod } from "vite-plugin-mock";
 import { userRoles, roles } from "./data";
-import Result from "ce-base/commons/request/Result";
-import { authMockHander } from "ce-base/commons/mock/utils/mock";
+import Result from "@commons/request/Result";
+import { authMockHander } from "@commons/mock/utils/mock";
 /**
  *获取当前用户的所有角色
  * @param username 用户名

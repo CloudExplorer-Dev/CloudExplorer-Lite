@@ -12,11 +12,10 @@ export const getCurrentRole = () => {
 };
 
 /**
- * 获取用户下所有角色
+ * 获取所有角色
  * @returns
  */
-export const listRole = () => {
-  const roleData: Promise<Result<Array<Role>>> = get("/api/listRoles");
+export const listAllRole = () => {
+  const roleData: Promise<Result<Array<Role>>> = get("/api/role/list");
   return roleData;
 };
-export type { Role };

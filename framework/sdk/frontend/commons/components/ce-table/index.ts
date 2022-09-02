@@ -59,7 +59,7 @@ class PaginationConfig {
 /**
  *过滤器
  */
-class ComponnetParent {
+class ComponentParent {
   constructor(field: string, label: string, component: string) {
     this.field = field;
     this.label = label;
@@ -100,7 +100,7 @@ class SearchOption {
 /**
  * 选项过滤器配置
  */
-class SelectComponnet extends ComponnetParent {
+class SelectComponent extends ComponentParent {
   /**
    * 选项
    */
@@ -173,7 +173,7 @@ class SelectComponnet extends ComponnetParent {
     clearable = true,
     filterable = true
   ) {
-    return new SelectComponnet(
+    return new SelectComponent(
       field,
       label,
       component,
@@ -189,7 +189,7 @@ class SelectComponnet extends ComponnetParent {
 /**
  *日期过滤器
  */
-class DateComponent extends ComponnetParent {
+class DateComponent extends ComponentParent {
   constructor(field: string, label: string, component = "FuFilterDate") {
     super(field, label, component);
   }
@@ -205,7 +205,7 @@ class DateComponent extends ComponnetParent {
 /**
  *时间过滤器 秒
  */
-class DateTimeComponent extends ComponnetParent {
+class DateTimeComponent extends ComponentParent {
   constructor(field: string, label: string, component = "FuFilterDateTime") {
     super(field, label, component);
   }
@@ -280,14 +280,14 @@ class SearchConfig {
    *筛选组建
    */
   components: Array<
-    DateTimeComponent | DateComponent | SelectComponnet | ComponnetParent
+    DateTimeComponent | DateComponent | SelectComponent | ComponentParent
   > = [];
 
   constructor(
     search: (condition: TableSearch) => void,
     quickPlaceholder: string,
     components: Array<
-      DateTimeComponent | DateComponent | SelectComponnet | ComponnetParent
+      DateTimeComponent | DateComponent | SelectComponent | ComponentParent
     >,
     searchOptions: Array<SearchOption>
   ) {
@@ -304,7 +304,7 @@ class SearchConfig {
     return {
       DateTimeComponent,
       DateComponent,
-      SelectComponnet,
+      SelectComponnet: SelectComponent,
     };
   }
 }
@@ -496,5 +496,7 @@ export {
   TableOperations,
   TableSearch,
   Order,
+  Conditions,
+  Condition,
+  SearchOption,
 };
-export type { Conditions, Condition, SearchOption };

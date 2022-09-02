@@ -45,7 +45,7 @@ import {
   TableConfig,
   TableOperations,
   TableSearch,
-} from "ce-base/commons/components/ce-table/index";
+} from "@commons/components/ce-table/index";
 import { ElMessage, ElMessageBox } from "element-plus";
 import { useI18n } from "vue-i18n";
 const { t } = useI18n();

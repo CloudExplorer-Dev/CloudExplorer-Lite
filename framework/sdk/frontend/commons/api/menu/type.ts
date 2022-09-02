@@ -7,14 +7,13 @@ interface RequiredPermissions {
    */
   role: string;
   /**
-   * 关系
-   */
-  logical: string;
-
-  /**
    *权限
    */
-  permissions: Array<string>;
+  permissions: Array<MenuPermissionItem>;
+}
+
+interface MenuPermissionItem {
+  simpleId: string;
 }
 
 interface MenuItem {

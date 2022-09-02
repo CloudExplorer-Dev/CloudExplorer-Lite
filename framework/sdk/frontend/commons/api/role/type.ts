@@ -1,23 +1,21 @@
-interface Role {
-  /**
-   * 角色主键id
-   */
+export class Role {
   id: string;
-  /**
-   * 角色名称
-   */
-  name: string;
-  /**
-   *描述
-   */
-  description: string;
-  /**
-   *角色类型
-   */
   type: string;
-  /**
-   *角色父id
-   */
-  parentId: string | null | undefined;
+  name: string;
+  description?: string;
+  parentRoleId?: string;
+
+  constructor(
+    id: string,
+    type: string,
+    name: string,
+    description: string,
+    parentRoleId: string
+  ) {
+    this.id = id;
+    this.type = type;
+    this.name = name;
+    this.description = description;
+    this.parentRoleId = parentRoleId;
+  }
 }
-export type { Role };

@@ -1,20 +1,20 @@
 <script setup lang="ts">
 import CeIcon from "../../ce-icon/index.vue";
-import type { StarMenuItem } from "./type";
+import type { Module } from "@commons/api/module";
 
 const props = defineProps<{
   /**
    * 数据
    */
-  starMenuItem: StarMenuItem;
+  startMenuItem: Module;
   /**
    * 鼠标移入回掉函数
    */
-  hoverHander?: () => void;
+  hoverHandler?: () => void;
   /**
    * 鼠标移出回掉函数
    */
-  leaveHander?: () => void;
+  leaveHandler?: () => void;
   /**
    * 是否是服务目录
    */
@@ -27,16 +27,16 @@ const props = defineProps<{
     :style="{
       height: props.rootItem ? '50px' : 'var(--ce-star-menu-item-height)',
     }"
-    @mouseenter="props.hoverHander ? props.hoverHander() : null"
-    @mouseleave="props.leaveHander ? props.leaveHander() : null"
+    @mouseenter="props.hoverHandler ? props.hoverHandler() : null"
+    @mouseleave="props.leaveHandler ? props.leaveHandler() : null"
   >
     <div class="icon">
       <CeIcon
         size="var(--ce-star-menu-icon-width,18px)"
-        :code="props.starMenuItem.icon"
+        :code="props.startMenuItem.icon"
       ></CeIcon>
     </div>
-    <div class="text">{{ props.starMenuItem.title }}</div>
+    <div class="text">{{ props.startMenuItem.name }}</div>
     <div class="handle">
       <slot></slot>
     </div>

@@ -1,6 +1,7 @@
 package com.fit2cloud.dto.permission;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fit2cloud.dto.CeBaseObject;
 import lombok.Getter;
 import org.jetbrains.annotations.NotNull;
 
@@ -9,7 +10,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class ModulePermission extends PermissionBase {
+public class ModulePermission extends CeBaseObject {
 
     @Serial
     private static final long serialVersionUID = -2139932042065786160L;

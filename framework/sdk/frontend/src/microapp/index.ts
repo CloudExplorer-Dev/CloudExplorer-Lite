@@ -2,14 +2,17 @@ import type { Module } from "@commons/api/module";
 import { endsWith, trimEnd, trimStart } from "lodash";
 import type { MicroApp } from "@micro-zoe/micro-app";
 import type { App } from "vue";
+import { store } from "@commons/stores";
+import microApp from "@micro-zoe/micro-app";
+import { useModuleStore } from "@commons/stores/modules/module";
 
 declare global {
   interface Window {
-    rootMicroapp: RootMicroapp;
+    rootMicroApp: RootMicroApp;
     [index: string]: any;
   }
 }
-class RootMicroapp {
+class RootMicroApp {
   /**
    *获取模块信息
    */
@@ -29,7 +32,7 @@ class RootMicroapp {
   ) {
     this.getModules = getModules;
     this.microApp = microApp;
-    window.rootMicroapp = this;
+    window.rootMicroApp = this;
   }
   /**
    *解决microApp路径携带子模块名称问题
@@ -87,7 +90,7 @@ class RootMicroapp {
       this.modules[baseName] = [
         {
           loader(code: string) {
-            return _self.resetCode(code, baseName, module.url);
+            return _self.resetCode(code, baseName, module.basePath);
           },
         },
       ];
@@ -95,4 +98,13 @@ class RootMicroapp {
   }
 }
 
-export { RootMicroapp };
+export function setupMicroApp(app: App<Element>) {
+  const moduleStore = useModuleStore(store);
+  app.use(
+    new RootMicroApp(async () => {
+      await moduleStore.refreshModules();
+      console.log(moduleStore.runningModules);
+      return moduleStore.runningModules;
+    }, microApp)
+  );
+}

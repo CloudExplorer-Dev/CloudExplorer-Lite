@@ -1,6 +1,8 @@
 const config = {
   TITLE: "CloudExplorer 云服务平台",
-  TOKEN_KEY: "Authorization",
+  CE_TOKEN_KEY: "ce-token",
+  CE_ROLE_KEY: "CE-ROLE",
+  CE_SOURCE_KEY: "CE-SOURCE",
   /**
    * microAPP在window对象上的属性名称前缀
    */

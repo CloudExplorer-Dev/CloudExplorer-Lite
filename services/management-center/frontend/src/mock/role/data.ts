@@ -1,4 +1,4 @@
-import type { Role } from "ce-base/commons/api/role";
+import type { Role } from "@commons/api/role";
 // 角色数据
 const roles: Array<Role> = [
   {

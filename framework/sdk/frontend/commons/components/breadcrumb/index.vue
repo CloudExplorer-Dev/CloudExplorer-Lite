@@ -10,7 +10,6 @@
   </el-breadcrumb>
 </template>
 <script setup lang="ts">
-import { defineProps } from "vue";
 import type { Breadcrumb } from "./type";
 defineProps<{
   breadcrumbs: Array<Breadcrumb>;

@@ -51,7 +51,7 @@ public class GlobalErrorWebExceptionHandler extends
                 (HttpStatus.NOT_FOUND.equals(HttpStatus.valueOf((Integer) errorPropertiesMap.get("status")))
                         && !StringUtils.startsWith((String) errorPropertiesMap.get("path"), "/api/")
                         && !StringUtils.equals((String) errorPropertiesMap.get("path"), "/api")
-                        || StringUtils.equals((String) errorPropertiesMap.get("path"), "/login"))) {
+                        || StringUtils.equals((String) errorPropertiesMap.get("path"), "/signin"))) {
             return ServerResponse.ok().contentType(MediaType.TEXT_HTML).bodyValue(html);
         }
 

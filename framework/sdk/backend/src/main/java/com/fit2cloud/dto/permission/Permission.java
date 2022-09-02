@@ -3,6 +3,7 @@ package com.fit2cloud.dto.permission;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fit2cloud.common.constants.RoleConstants;
+import com.fit2cloud.dto.CeBaseObject;
 import lombok.Getter;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
@@ -13,7 +14,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class Permission extends PermissionBase {
+public class Permission extends CeBaseObject {
 
     @Serial
     private static final long serialVersionUID = 4530372509768915230L;

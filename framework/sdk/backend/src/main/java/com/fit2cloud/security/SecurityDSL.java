@@ -3,7 +3,7 @@ package com.fit2cloud.security;
 import com.fit2cloud.base.service.IBaseUserRoleService;
 import com.fit2cloud.security.filter.TwtTokenAuthFilter;
 import com.fit2cloud.security.filter.UserLoginFilter;
-import com.fit2cloud.security.permission.PermissionService;
+import com.fit2cloud.service.PermissionService;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;

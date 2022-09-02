@@ -2,6 +2,10 @@ package com.fit2cloud.gateway.config;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fit2cloud.base.service.IBaseUserRoleService;
+import com.fit2cloud.common.constants.OrganizationConstants;
+import com.fit2cloud.common.constants.RoleConstants;
+import com.fit2cloud.common.constants.WorkspaceConstants;
 import com.fit2cloud.common.utils.JwtTokenUtils;
 import com.fit2cloud.dto.UserDto;
 import org.apache.commons.lang3.StringUtils;
@@ -17,6 +21,7 @@ import org.springframework.web.server.WebFilter;
 import org.springframework.web.server.WebFilterChain;
 import reactor.core.publisher.Mono;
 
+import javax.annotation.Resource;
 import java.nio.charset.StandardCharsets;
 import java.util.Date;
 import java.util.LinkedHashMap;
@@ -26,8 +31,11 @@ import java.util.Map;
 @Order(1)
 public class TwtTokenAuthFilter  implements WebFilter {
 
-
+    @Resource
+    private IBaseUserRoleService userRoleService;
     private static final ObjectMapper objectMapper = new ObjectMapper();
+
+    private final static String CE_SOURCE_TOKEN = "CE_SOURCE";
 
     /**
      * 针对网关webflux逻辑有些区别
@@ -46,20 +54,43 @@ public class TwtTokenAuthFilter  implements WebFilter {
         if (path.startsWith("/api/")) {
             UserDto userDtoFromToken = null;
             String token = request.getHeaders().getFirst(JwtTokenUtils.TOKEN_NAME);
+            RoleConstants.ROLE role = RoleConstants.ROLE.ANONYMOUS;
+            try {
+                role = RoleConstants.ROLE.valueOf(request.getHeaders().getFirst(RoleConstants.ROLE_TOKEN));
+            } catch (Exception ignore) {
+            }
             if (StringUtils.isNotBlank(token)) {
                 try {
                     userDtoFromToken = JwtTokenUtils.parseJwtToken(token);
-                } catch (Exception e) {
-                    //e.printStackTrace();
+                } catch (Exception ignore) {
                 }
             }
             if (userDtoFromToken == null) {
-                return writeErrorMessage(request, response, HttpStatus.FORBIDDEN, null);
+                return writeErrorMessage(request, response, HttpStatus.UNAUTHORIZED, null);
             } else {
-                //todo 校验？
-                if (false) {
-                    return writeErrorMessage(request, response, HttpStatus.FORBIDDEN, null);
+                //获取角色
+                userDtoFromToken.setCurrentRole(role);
+
+                //信任jwt，直接从jwt内取授权的角色
+                //List<UserRoleDto> userRoleDtos = userDtoFromToken.getRoleMap().getOrDefault(userDtoFromToken.getCurrentRole(), new ArrayList<>());
+
+                //为了防止用户编辑后与token中角色不同，从redis读取授权的角色
+                userDtoFromToken.setRoleMap(userRoleService.getCachedUserRoleMap(userDtoFromToken.getId()));
+                //List<UserRoleDto> userRoleDtos = userDtoFromToken.getRoleMap().getOrDefault(userDtoFromToken.getCurrentRole(), new ArrayList<>());
+
+                String source = null;
+                if (RoleConstants.ROLE.USER.equals(userDtoFromToken.getCurrentRole())) {
+                    source = request.getHeaders().getFirst(WorkspaceConstants.WORKSPACE_TOKEN);
+                } else if (RoleConstants.ROLE.ORGADMIN.equals(userDtoFromToken.getCurrentRole())) {
+                    source = request.getHeaders().getFirst(OrganizationConstants.ORGANIZATION_TOKEN);
                 }
+                if (StringUtils.isBlank(source)) {
+                    source = request.getHeaders().getFirst(CE_SOURCE_TOKEN);
+                }
+                userDtoFromToken.setCurrentSource(source);
+
+                //todo 过滤？
+
 
                 //将token放到上下文中
                 try {

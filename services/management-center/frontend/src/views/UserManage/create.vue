@@ -1,16 +1,15 @@
 <script setup lang="ts">
 import { onMounted, reactive, ref } from "vue";
-import { roleConst } from "ce-base/commons/utils/constants";
 import _ from "lodash";
-import { FormRules } from "element-plus";
-import { FormInstance } from "element-plus/es";
+import type { FormRules } from "element-plus";
+import type { FormInstance } from "element-plus/es";
 import { useI18n } from "vue-i18n";
 import { RoleInfo, Role } from "@/api/user/type";
 import { createUser, listRole, workspaceTree } from "@/api/user";
 import { useRouter } from "vue-router";
 import { ElMessage } from "element-plus/es";
 import { OrganizationTree, tree } from "@/api/organization";
-import { $tv } from "ce-base/commons/base-locales";
+import { $tv } from "@commons/base-locales";
 
 const router = useRouter();
 const { t } = useI18n();

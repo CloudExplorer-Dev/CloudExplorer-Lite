@@ -40,7 +40,7 @@ public class GlobalErrorController extends AbstractErrorController {
                 (HttpStatus.NOT_FOUND.equals(HttpStatus.valueOf((Integer) errorPropertiesMap.get("status")))
                         && !StringUtils.startsWith((String) errorPropertiesMap.get("path"), "/" + appName + "/api/")
                         && !StringUtils.equals((String) errorPropertiesMap.get("path"), "/" + appName + "/api")
-                        || StringUtils.equals((String) errorPropertiesMap.get("path"), "/" + appName + "/login"))) {
+                        || StringUtils.equals((String) errorPropertiesMap.get("path"), "/" + appName + "/signin"))) {
             response.setStatus(HttpStatus.OK.value());
             return "index.html";
         }

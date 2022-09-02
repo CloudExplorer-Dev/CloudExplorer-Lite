@@ -4,6 +4,11 @@ import { onMounted, ref } from "vue";
 import { ElMessage } from "element-plus";
 import { useI18n } from "vue-i18n";
 
+import { useUserStore } from "@commons/stores/modules/user";
+import { User } from "@commons/api/user/type";
+
+const userStore = useUserStore();
+
 const { t } = useI18n();
 
 const dialogVisible = ref(false);
@@ -11,19 +16,9 @@ defineExpose({
   dialogVisible,
 });
 
-const form = ref({
-  id: "",
-  username: "",
-  email: "",
-  phone: "",
-  weChat: "",
-});
+const defaultUser: User = new User("", "", "", "");
 
-const getUserInfo = () => {
-  getUser().then((res) => {
-    form.value = res.data.userInfo;
-  });
-};
+const form = ref(defaultUser);
 
 const saveUserInfo = (userInfo: any) => {
   saveUser(userInfo).then(() => {
@@ -33,7 +28,10 @@ const saveUserInfo = (userInfo: any) => {
 };
 
 onMounted(() => {
-  getUserInfo();
+  //通过store拿，顺便能刷新权限
+  userStore.getCurrentUser().then((result: User | null) => {
+    form.value = result ? result : defaultUser;
+  });
 });
 </script>
 
@@ -66,9 +64,6 @@ onMounted(() => {
       </el-form-item>
       <el-form-item :label="$t('commons.personal.phone')">
         <el-input v-model="form.phone" />
-      </el-form-item>
-      <el-form-item :label="$t('commons.personal.wechat')">
-        <el-input v-model="form.weChat" />
       </el-form-item>
     </el-form>
 
