@@ -3,11 +3,10 @@ package com.fit2cloud;
 
 import com.baomidou.mybatisplus.generator.AutoGenerator;
 import com.baomidou.mybatisplus.generator.config.*;
+import com.baomidou.mybatisplus.generator.engine.FreemarkerTemplateEngine;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.context.MessageSource;
 import org.springframework.test.context.TestPropertySource;
 
 import java.util.Arrays;
@@ -23,9 +22,8 @@ public class MyBatisPlusGenerator {
     /**
      * 传入需要生成代码的表名
      */
-    private static final List<String> TABLES = Arrays.asList("cloud_account");
-    @Autowired
-    private MessageSource messageSource;
+    private static final List<String> TABLES = Arrays.asList("user");
+
     @Value("${ce.datasource.url}")
     private String datasource;
 
@@ -68,6 +66,7 @@ public class MyBatisPlusGenerator {
 
     private static final TemplateConfig TEMPLATE_CONFIG = new TemplateConfig.Builder()
             .disable(TemplateType.CONTROLLER)
+            .entity("/template/entity.java")
             .build();
 
 
@@ -81,13 +80,13 @@ public class MyBatisPlusGenerator {
                 new DataSourceConfig
                         .Builder(datasource, username, password).build()
         );
-       // 生成dao层
+        // 生成dao层
         generator
                 .strategy(STRATEGY_CONFIG)
                 .global(GLOBAL_CONFIG)
                 .packageInfo(PACKAGE_CONFIG)
                 .template(TEMPLATE_CONFIG)
-                .execute();
+                .execute(new FreemarkerTemplateEngine());
 
     }
 

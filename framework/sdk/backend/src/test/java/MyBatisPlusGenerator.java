@@ -1,7 +1,6 @@
 import com.baomidou.mybatisplus.generator.AutoGenerator;
 import com.baomidou.mybatisplus.generator.config.*;
-import com.baomidou.mybatisplus.generator.config.rules.DateType;
-import com.baomidou.mybatisplus.generator.function.ConverterFileName;
+import com.baomidou.mybatisplus.generator.engine.FreemarkerTemplateEngine;
 import com.fit2cloud.BaseTestApplication;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Value;
@@ -21,7 +20,7 @@ public class MyBatisPlusGenerator {
     /**
      * 传入需要生成代码的表名
      */
-    private static final List<String> TABLES = Arrays.asList("User");
+    private static final List<String> TABLES = Arrays.asList("user");
 
     @Value("${ce.datasource.url}")
     private String datasource;
@@ -68,6 +67,7 @@ public class MyBatisPlusGenerator {
 
     private static final TemplateConfig TEMPLATE_CONFIG = new TemplateConfig.Builder()
             .disable(TemplateType.CONTROLLER)
+            .entity("/template/entity.java")
             .build();
 
 
@@ -87,7 +87,7 @@ public class MyBatisPlusGenerator {
                 .global(GLOBAL_CONFIG)
                 .packageInfo(PACKAGE_CONFIG)
                 .template(TEMPLATE_CONFIG)
-                .execute();
+                .execute(new FreemarkerTemplateEngine());
 
     }
 
