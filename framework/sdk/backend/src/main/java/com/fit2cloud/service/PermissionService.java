@@ -14,7 +14,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.redisson.api.RMap;
 import org.redisson.api.RReadWriteLock;
 import org.redisson.api.RedissonClient;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
@@ -32,13 +31,6 @@ public class PermissionService {
 
     @Resource
     private IBaseUserRoleService userRoleService;
-
-    public static String module;
-
-    @Value("${spring.application.name}")
-    public void setModule(String module) {
-        PermissionService.module = module;
-    }
 
     private static final String PERMISSION_MAP = "PERMISSION_MAP:";
 
