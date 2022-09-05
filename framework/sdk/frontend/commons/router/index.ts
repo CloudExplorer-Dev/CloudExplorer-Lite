@@ -31,7 +31,8 @@ declare global {
  */
 export const flatMenu = (
   menus: Array<Menu> | undefined,
-  newMenus: Array<Menu>
+  newMenus: Array<Menu>,
+  autoOperations = true
 ) => {
   menus?.forEach((item) => {
     const newMenu: Menu = {
@@ -40,10 +41,14 @@ export const flatMenu = (
     };
     newMenus.push(newMenu);
     if (item.children != null && item.children.length > 0) {
-      flatMenu(item.children, newMenus);
+      flatMenu(item.children, newMenus, autoOperations);
     }
-    if (item.operations != null && item.operations.length > 0) {
-      flatMenu(item.operations, newMenus);
+    if (
+      item.operations != null &&
+      item.operations.length > 0 &&
+      autoOperations
+    ) {
+      flatMenu(item.operations, newMenus, autoOperations);
     }
   });
   return newMenus;

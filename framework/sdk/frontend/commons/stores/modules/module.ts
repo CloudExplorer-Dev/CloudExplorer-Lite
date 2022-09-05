@@ -58,7 +58,7 @@ export const useModuleStore = defineStore({
       const menus = (await listMenus()).data;
       if (menus) {
         this.menus = menus;
-        console.log(this.menus);
+        console.log("zhangsaho", this.menus);
       }
     },
   },

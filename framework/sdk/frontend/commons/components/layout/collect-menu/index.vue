@@ -73,7 +73,7 @@ const flatMapMenus = (
     console.log(module);
     console.log(runningModuleMenus);
     console.log(runningModuleMenus[module.id]);
-    const newMenu = flatMenu(runningModuleMenus[module.id], []);
+    const newMenu = flatMenu(runningModuleMenus[module.id], [], false);
     const moduleContainer: ModuleContainer = {
       ...module,
       childrenMenu: newMenu,

@@ -36,6 +36,9 @@ public class CloudAccountServiceImpl extends ServiceImpl<CloudAccountMapper, Clo
             }});
         }
         LambdaQueryWrapper<CloudAccount> wrapper = new LambdaQueryWrapper<>();
+        if (StringUtils.isNotEmpty(cloudAccountRequest.getName())) {
+            wrapper.eq(CloudAccount::getName, cloudAccountRequest.getName());
+        }
         if (CollectionUtils.isNotEmpty(cloudAccountRequest.getPlatform())) {
             wrapper.in(CloudAccount::getPlatform, cloudAccountRequest.getPlatform());
         }

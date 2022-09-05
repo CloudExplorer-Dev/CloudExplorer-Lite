@@ -1,3 +1,5 @@
+import type Result from "@commons/request/Result";
+import type { Page } from "@commons/request/Result";
 import type { Ref } from "vue";
 
 class PaginationConfig {

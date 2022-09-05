@@ -337,7 +337,16 @@ export class RouteObj {
    */
   menuToRouteItem: (menu: Menu) => RouteRecordRaw = (menu: Menu) => {
     if (menu.redirect) {
-      return { name: menu.name, path: menu.path, redirect: menu.redirect };
+      return {
+        name: menu.name,
+        path: menu.path,
+        component: this.routeComponent[menu.componentPath],
+        redirect: menu.redirect,
+        meta: {
+          requiredPermissions: menu.requiredPermissions,
+          title: menu.title,
+        },
+      };
     } else {
       return {
         name: menu.name,
@@ -345,6 +354,7 @@ export class RouteObj {
         component: this.routeComponent[menu.componentPath],
         meta: {
           requiredPermissions: menu.requiredPermissions,
+          title: menu.title,
         },
       };
     }

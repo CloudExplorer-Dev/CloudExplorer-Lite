@@ -1,8 +1,8 @@
 import { get, post, del, put } from "@commons/request";
-import Result from "@commons/request/Result";
-import { Page } from "@commons/request/Result";
-import { CreateOrgFrom } from "@/views/OrgManage/type";
-import {
+import type Result from "@commons/request/Result";
+import type { Page } from "@commons/request/Result";
+import type { CreateOrgFrom } from "@/views/OrgManage/type";
+import type {
   Organization,
   ListOrganizationRequest,
   OrganizationTree,
@@ -10,7 +10,7 @@ import {
 export const listOrganization: (
   req: ListOrganizationRequest
 ) => Promise<Result<Page<Organization>>> = (req) => {
-  return get("organization/page", req);
+  return get("/api/organization/page", req);
 };
 export const listAllOrganization: () => Promise<
   Result<Array<Organization>>
@@ -22,23 +22,23 @@ export const tree: (
   treeType?: string
 ) => Promise<Result<Array<OrganizationTree>>> = (treeType) => {
   const type: string = treeType === undefined ? "ORGANIZATION" : treeType;
-  return get("/base/organization/tree/" + type);
+  return get("/api/base/organization/tree/" + type);
 };
 
 export const batch = (data: CreateOrgFrom) => {
-  return post("/organization/batch", null, data);
+  return post("/api/organization/batch", null, data);
 };
 export const deleteOrg = (id: string) => {
-  return del("/organization/" + id);
+  return del("/api/organization/" + id);
 };
 
 export const deleteBatchOrg = (organizations: Array<Organization>) => {
-  return del("/organization", undefined, organizations);
+  return del("/api/organization", undefined, organizations);
 };
 export const getOrgById = (id: string) => {
-  return get("/organization/one", { id: id, name: "" });
+  return get("/api/organization/one", { id: id, name: "" });
 };
 export const updateOrg = (organization: Organization) => {
-  return put("organization", undefined, organization);
+  return put("/api/organization", undefined, organization);
 };
 export type { Organization, OrganizationTree };

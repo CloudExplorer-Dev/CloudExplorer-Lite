@@ -33,7 +33,7 @@ import java.util.ArrayList;
  * @注释:
  */
 @RestController
-@RequestMapping("/organization")
+@RequestMapping("/api/organization")
 @Api("组织相关接口")
 @Validated
 public class OrganizationController {

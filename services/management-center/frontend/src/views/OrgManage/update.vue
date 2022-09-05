@@ -1,76 +1,66 @@
 <template>
-  <layout-content>
-    <template #breadcrumb>
-      <breadcrumb
-        :breadcrumbs="[
-          { to: { name: 'org' }, title: '组织管理' },
-          { to: {}, title: '修改' },
-        ]"
-      ></breadcrumb>
-    </template>
-    <el-form
-      :rules="rules"
-      :model="from"
-      :inline="true"
-      ref="ruleFormRef"
-      status-icon
-    >
-      <layout-container :border="false">
-        <template #content>
-          <layout-container>
-            <template #header><h4>基本信息</h4></template>
-            <template #content>
-              <el-form-item label="名称" :prop="'name'" style="width: 40%">
-                <el-input v-model="from.name" />
-              </el-form-item>
-              <el-form-item
-                label="描述"
-                :prop="'description'"
-                style="width: 40%"
-                :rules="rules.description"
-              >
-                <el-input v-model="from.description" />
-              </el-form-item>
-            </template>
-          </layout-container>
-          <layout-container>
-            <template #header><h4>所属组织</h4></template>
-            <template #content>
-              <el-form-item label="组织" style="width: 80%">
-                <el-tree-select
-                  filterable
-                  :filter-method="filterMethod"
-                  :props="{ label: 'name' }"
-                  node-key="id"
-                  v-model="from.pid"
-                  :data="orientationData"
-                  show-checkbox
-                  style="width: 100%"
-                  check-strictly
-                  :render-after-expand="false"
-                />
-              </el-form-item>
-            </template>
-          </layout-container>
-          <layout-container>
-            <el-button>取消</el-button>
-            <el-button type="primary" @click="submitForm(ruleFormRef)"
-              >保存</el-button
-            ></layout-container
-          >
-        </template>
-      </layout-container>
-    </el-form>
-  </layout-content>
+  <el-form
+    :rules="rules"
+    :model="from"
+    :inline="true"
+    ref="ruleFormRef"
+    status-icon
+  >
+    <layout-container :border="false">
+      <template #content>
+        <layout-container>
+          <template #header><h4>基本信息</h4></template>
+          <template #content>
+            <el-form-item label="名称" :prop="'name'" style="width: 40%">
+              <el-input v-model="from.name" />
+            </el-form-item>
+            <el-form-item
+              label="描述"
+              :prop="'description'"
+              style="width: 40%"
+              :rules="rules.description"
+            >
+              <el-input v-model="from.description" />
+            </el-form-item>
+          </template>
+        </layout-container>
+        <layout-container>
+          <template #header><h4>所属组织</h4></template>
+          <template #content>
+            <el-form-item label="组织" style="width: 80%">
+              <el-tree-select
+                filterable
+                :filter-method="filterMethod"
+                :props="{ label: 'name' }"
+                node-key="id"
+                v-model="from.pid"
+                :data="orientationData"
+                show-checkbox
+                style="width: 100%"
+                check-strictly
+                :render-after-expand="false"
+              />
+            </el-form-item>
+          </template>
+        </layout-container>
+        <layout-container>
+          <el-button>取消</el-button>
+          <el-button type="primary" @click="submitForm(ruleFormRef)"
+            >保存</el-button
+          ></layout-container
+        >
+      </template>
+    </layout-container>
+  </el-form>
 </template>
 <script setup lang="ts">
 import { onMounted, reactive, ref } from "vue";
 import { useRouter } from "vue-router";
-import { FormRules, FormInstance, ElMessage } from "element-plus";
+import type { FormRules, FormInstance, ElMessage } from "element-plus";
 import type { UpdateForm } from "./type";
 import {
   tree,
-  OrganizationTree,
+  type OrganizationTree,
   getOrgById,
   updateOrg,
 } from "@/api/organization";

@@ -1,19 +1,20 @@
 <script setup lang="ts">
 import SubMenu from "./SubMenu.vue";
-
+import { computed } from "vue";
 import { useRouter } from "vue-router";
 import { useModuleStore } from "@commons/stores/modules/module";
 
 const moduleStore = useModuleStore();
-
-const currentRoute = useRouter().currentRoute;
+const currentRoute = useRouter().currentRoute.value;
+const activeMenu = computed(() => {
+  if (currentRoute.matched.length > 2) {
+    return currentRoute.matched[currentRoute.matched.length - 2].path;
+  }
+  return currentRoute.path;
+});
 </script>
 <template>
-  <el-menu
-    class="menuContainer"
-    :router="true"
-    :default-active="currentRoute.path"
-  >
+  <el-menu class="menuContainer" :router="true" :default-active="activeMenu">
     <div class="title">
       <h1>
         {{ moduleStore.currentModule?.name }}

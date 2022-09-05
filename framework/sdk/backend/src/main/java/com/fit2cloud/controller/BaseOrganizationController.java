@@ -17,7 +17,7 @@ import java.util.List;
  * @注释: 组织对应接口
  */
 @RestController
-@RequestMapping("/base/organization")
+@RequestMapping("/api/base/organization")
 @Api("公共组织相关接口")
 @Validated
 public class BaseOrganizationController {

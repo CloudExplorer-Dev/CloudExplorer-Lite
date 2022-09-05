@@ -16,6 +16,8 @@ import java.util.List;
  */
 @Data
 public class CloudAccountRequest extends PageRequest {
+    @ApiModelProperty(value = "云账号名称",notes = "云账号名称")
+    private String name;
     @ApiModelProperty(value = "供应商",notes = "供应商")
     @Size(min = 1,message = "{i18n.cloud_account_platform_size}")
     private List<String> platform;

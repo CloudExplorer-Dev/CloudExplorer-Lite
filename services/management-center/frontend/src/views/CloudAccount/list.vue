@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { platformIcon } from "@/utils/platform";
-import { ref, onMounted, defineProps } from "vue";
+import { ref, onMounted } from "vue";
 import {
   PaginationConfig,
   SearchConfig,
@@ -10,18 +10,17 @@ import {
 } from "ce-base/commons/components/ce-table/index";
 import cloudAccountApi from "@/api/cloud_account/index";
 import type { CloudAccount } from "@/api/cloud_account/type";
+import { useRouter } from "vue-router";
+const router = useRouter();
 const clouAccountList = ref<Array<CloudAccount>>();
 const tableSearch = ref<TableSearch>();
-const props = defineProps({
-  addBreadcrumbs: Function,
-  deleteBreadcrumbs: Function,
-});
 
 // 获得云平台过滤数据
 const platformFilters = Object.keys(platformIcon).map((platform: string) => {
   return { text: platformIcon[platform].name, value: platform };
 });
 const edit = () => {
+  router.push({ name: "cloud_account_update" });
   console.log("修改");
 };
 const deleteItem = () => {
@@ -35,6 +34,7 @@ const sync = () => {
   console.log("同步");
 };
 const create = () => {
+  router.push({ name: "cloud_account_create" });
   console.log("create");
 };
 const handleSelectionChange = () => {
@@ -67,6 +67,7 @@ const search = (condition: TableSearch) => {
       );
     });
 };
+
 onMounted(() => {
   search(new TableSearch());
 });

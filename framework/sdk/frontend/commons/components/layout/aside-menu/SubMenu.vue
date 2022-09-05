@@ -10,9 +10,10 @@ defineProps({
 </script>
 <template>
   <el-sub-menu
+    v-if="menuInfo.children"
+    v-hasPermission="menuInfo.requiredPermissions"
     :index="menuInfo.path"
     :key="menuInfo.name"
-    v-if="menuInfo.children"
   >
     <template #title>
       <CeIcon

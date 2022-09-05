@@ -13,6 +13,7 @@ import com.fit2cloud.controller.request.OrganizationRequest;
 import com.fit2cloud.controller.request.PageOrganizationRequest;
 import com.fit2cloud.dao.entity.Organization;
 import com.fit2cloud.dao.mapper.OrganizationMapper;
+import com.fit2cloud.dto.UserDto;
 import com.fit2cloud.response.OrganizationTree;
 import com.fit2cloud.service.IOrganizationService;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
@@ -21,6 +22,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.context.MessageSource;
 import org.springframework.context.i18n.LocaleContextHolder;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
@@ -47,7 +49,7 @@ public class OrganizationServiceImpl extends ServiceImpl<OrganizationMapper, Org
     @Override
     public IPage<Organization> pageOrganization(PageOrganizationRequest request) {
         // 用户信息
-//        UserDto credentials = (UserDto)SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+       //UserDto credentials = (UserDto) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 
         Page<Organization> page = new Page<>(request.getCurrentPage(), request.getPageSize(), false);
         QueryWrapper<Organization> wrapper = new QueryWrapper<>();

@@ -25,6 +25,9 @@ public class PermissionConstants {
     public static class GROUP {
         public static final String USER = "USER";
         public static final String ROLE = "ROLE";
+
+        public static final String CLOUD_ACCOUNT = "CLOUD_ACCOUNT";
+        public static final String ORGANIZATION = "ORGANIZATION";
         public static final String SYSTEM_SETTING = "SYSTEM_SETTING";
         //...
     }
@@ -107,6 +110,44 @@ public class PermissionConstants {
                                             .role(RoleConstants.ROLE.ADMIN)
                                             .role(RoleConstants.ROLE.ORGADMIN)
                             )
+            )
+            // 组织相关权限配置
+            .group(
+                    new PermissionGroup.Builder()
+                            .id(GROUP.ORGANIZATION)
+                            .name("i18n_permission_organization")
+                            .permission(new Permission.Builder()
+                                    .operate(OPERATE.READ)
+                                    .name("i18n_permission_organization_red")
+                                    .role(RoleConstants.ROLE.ADMIN)
+                                    .role(RoleConstants.ROLE.ORGADMIN))
+                            .permission(new Permission.Builder()
+                                    .operate(OPERATE.EDIT)
+                                    .name("i18n_permission_organization_edit")
+                                    .role(RoleConstants.ROLE.ADMIN)
+                                    .role(RoleConstants.ROLE.ORGADMIN))
+                            .permission(new Permission.Builder()
+                                    .operate(OPERATE.CREATE)
+                                    .name("i18n_permission_organization_create")
+                                    .role(RoleConstants.ROLE.ADMIN)
+                                    .role(RoleConstants.ROLE.ORGADMIN)))
+            // 云账号相关权限
+            .group(
+                    new PermissionGroup.Builder()
+                            .id(GROUP.CLOUD_ACCOUNT)
+                            .name("i18n_permission_cloud_account")
+                            .permission(new Permission.Builder()
+                                    .operate(OPERATE.READ).name("i18n_permission_cloud_account_red")
+                                    .role(RoleConstants.ROLE.ADMIN)
+                                    .role(RoleConstants.ROLE.ORGADMIN))
+                            .permission(new Permission.Builder()
+                                    .operate(OPERATE.EDIT).name("i18n_permission_cloud_account_edit")
+                                    .role(RoleConstants.ROLE.ADMIN)
+                                    .role(RoleConstants.ROLE.ORGADMIN))
+                            .permission(new Permission.Builder()
+                                    .operate(OPERATE.CREATE).name("i18n_permission_cloud_account_create")
+                                    .role(RoleConstants.ROLE.ADMIN)
+                                    .role(RoleConstants.ROLE.ORGADMIN))
             )
             //...
             ;

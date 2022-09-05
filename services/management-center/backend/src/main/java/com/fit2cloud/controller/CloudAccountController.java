@@ -25,7 +25,7 @@ import java.util.Locale;
  * @注释: 云账号相关接口
  */
 @RestController
-@RequestMapping("cloud_account")
+@RequestMapping("/api/cloud_account")
 public class CloudAccountController {
     @Resource
     private MessageSource messageSource;
