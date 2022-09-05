@@ -1,5 +1,6 @@
 import com.baomidou.mybatisplus.generator.AutoGenerator;
 import com.baomidou.mybatisplus.generator.config.*;
+import com.baomidou.mybatisplus.generator.config.rules.DateType;
 import com.baomidou.mybatisplus.generator.function.ConverterFileName;
 import com.fit2cloud.BaseTestApplication;
 import org.junit.jupiter.api.Test;
@@ -20,7 +21,7 @@ public class MyBatisPlusGenerator {
     /**
      * 传入需要生成代码的表名
      */
-    private static final List<String> TABLES = Arrays.asList("workspace");
+    private static final List<String> TABLES = Arrays.asList("User");
 
     @Value("${ce.datasource.url}")
     private String datasource;
@@ -38,6 +39,7 @@ public class MyBatisPlusGenerator {
             //.enableSwagger()
             .disableOpenDir()
             .commentDate("") //避免生成的表仅有注释中日期变化
+            //.dateType(DateType.ONLY_DATE) //默认生成Date类，而不是LocalDateTime
             .build();
 
     private static final StrategyConfig STRATEGY_CONFIG = new StrategyConfig.Builder()
@@ -48,7 +50,7 @@ public class MyBatisPlusGenerator {
             .formatXmlFileName("Base%sMapper")
             .serviceBuilder()
             .formatServiceFileName("IBase%sService")
-            .formatServiceImplFileName("IBase%sServiceImpl")
+            .formatServiceImplFileName("Base%sServiceImpl")
             //entity
             .entityBuilder().enableFileOverride() //仅覆盖entity覆盖文件
             .enableLombok()
