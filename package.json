@@ -14,6 +14,7 @@
     "build": "yarn workspaces foreach -ptvi run build",
     "dev:base": "yarn workspace ce-base run dev",
     "lint:base": "yarn workspace ce-base run lint",
+    "build:base": "yarn workspace ce-base run build-only",
     "dev:manage": "yarn workspace management-center run dev",
     "lint:manage": "yarn workspace management-center run lint",
     "build:manage": "yarn workspace management-center run build-only",

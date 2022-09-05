@@ -201,4 +201,9 @@
         </plugins>
     </build>
 
+    <modules>
+        <module>framework</module>
+        <module>services</module>
+    </modules>
+
 </project>

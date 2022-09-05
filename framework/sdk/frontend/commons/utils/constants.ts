@@ -3,6 +3,7 @@ const config = {
   CE_TOKEN_KEY: "ce-token",
   CE_ROLE_KEY: "CE-ROLE",
   CE_SOURCE_KEY: "CE-SOURCE",
+  CE_LANG_KEY: "LANG",
   /**
    * microAPP在window对象上的属性名称前缀
    */

@@ -1,5 +1,6 @@
 package com.fit2cloud.service;
 
+import com.fit2cloud.autoconfigure.ServerInfo;
 import com.fit2cloud.dto.module.Menu;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -27,9 +28,6 @@ public class MenuService {
     @Resource
     private DiscoveryClient discoveryClient;
 
-    @Value("${spring.application.name}")
-    private String module;
-
     private static final String MENUS_MAP = "MENUS_MAP";
 
     public void init(String module, List<Menu> menus) {
@@ -47,7 +45,7 @@ public class MenuService {
 
     public Map<String, List<Menu>> getAvailableMenus() {
         List<String> ids = discoveryClient.getServices();
-        ids.add(module);
+        ids.add(ServerInfo.module);
         //排除网关
         return readMenusFromRedis(
                 ids.stream().filter(id -> !StringUtils.equalsIgnoreCase(id, "gateway")).collect(Collectors.toList())

@@ -1,6 +1,7 @@
 package com.fit2cloud.security.filter;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fit2cloud.autoconfigure.ServerInfo;
 import com.fit2cloud.base.service.IBaseUserRoleService;
 import com.fit2cloud.common.constants.OrganizationConstants;
 import com.fit2cloud.common.constants.RoleConstants;
@@ -83,7 +84,7 @@ public class TwtTokenAuthFilter extends BasicAuthenticationFilter {
             List<CeGrantedAuthority> authority = permissionService.readPermissionFromRedis(rolesForSearchAuthority);
 
             //将认证信息存到上下文
-            CeUsernamePasswordAuthenticationToken authenticationToken = new CeUsernamePasswordAuthenticationToken(PermissionService.module, userDtoFromToken, token, authority);
+            CeUsernamePasswordAuthenticationToken authenticationToken = new CeUsernamePasswordAuthenticationToken(ServerInfo.module, userDtoFromToken, token, authority);
 
             SecurityContextHolder.getContext().setAuthentication(authenticationToken);
 
