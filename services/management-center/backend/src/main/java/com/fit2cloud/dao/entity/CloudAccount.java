@@ -44,7 +44,19 @@ public class CloudAccount implements Serializable {
     private String platform;
 
     /**
-     * 状态(0:同步成功,1:同步失败,2:同步中)
+     * 凭证字段
+     */
+    @TableField("credential")
+    private String credential;
+
+    /**
+     * 云账号状态
+     */
+    @TableField("state")
+    private Boolean state;
+
+    /**
+     * 同步状态(0:同步成功,1:同步失败,2:同步中)
      */
     @TableField("status")
     private Integer status;

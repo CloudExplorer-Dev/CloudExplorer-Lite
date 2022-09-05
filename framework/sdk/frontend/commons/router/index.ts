@@ -385,7 +385,12 @@ class RouteObj {
    */
   menuToRouteItem: (menu: Menu) => RouteRecordRaw = (menu: Menu) => {
     if (menu.redirect) {
-      return { name: menu.name, path: menu.path, redirect: menu.redirect };
+      return {
+        name: menu.name,
+        path: menu.path,
+        component: this.routeComponent[menu.componentPath],
+        redirect: menu.redirect,
+      };
     } else {
       return {
         name: menu.name,

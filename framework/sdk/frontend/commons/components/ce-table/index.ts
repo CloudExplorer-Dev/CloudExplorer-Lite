@@ -1,3 +1,4 @@
+import { ta } from "element-plus/es/locale";
 import type { Ref } from "vue";
 
 class PaginationConfig {
@@ -460,18 +461,45 @@ class TableSearch {
    *查询相关接口
    */
   search?: Condition;
+  /**
+   *表头筛选
+   */
+  tableFilter?: Conditions = {};
 
-  constructor(conditions: Conditions = {}, order?: Order, search?: Condition) {
+  constructor(
+    conditions: Conditions = {},
+    order?: Order,
+    search?: Condition,
+    tableFilter?: Conditions
+  ) {
     this.conditions = conditions;
     this.order = order;
     this.search = search;
+    this.tableFilter = tableFilter;
   }
   /**
    * 返回查询对象
    */
   static toSearchParams(tableSearch: TableSearch) {
+    // 表头筛选
+    const tableHeaderFilter = (
+      tableSearch.tableFilter ? Object.keys(tableSearch.tableFilter) : []
+    )
+      .map((key: string) => {
+        return Condition.toSearchObj(
+          tableSearch.tableFilter
+            ? (tableSearch.tableFilter[key] as Condition)
+            : undefined
+        );
+      })
+      .reduce((pre: any, next: any) => {
+        return { ...pre, ...next };
+      }, {});
+    // 排序
     const order = tableSearch.order ? tableSearch.order : undefined;
+    // 搜索框
     const searchObj: any = Condition.toSearchObj(tableSearch.search);
+    // 所有查询
     return Object.keys(tableSearch.conditions)
       .map((key: string) => {
         const value: Condition | string = tableSearch.conditions[key];
@@ -485,7 +513,11 @@ class TableSearch {
         (pre: any, next: any) => {
           return { ...pre, ...next };
         },
-        { order, ...searchObj }
+        {
+          order,
+          ...searchObj,
+          ...tableHeaderFilter,
+        }
       );
   }
 }

@@ -10,7 +10,6 @@ spring:
   messages:
     basename: i18n.messages,i18n.commons
     encoding: UTF-8
-
 server:
   port: 9010
   servlet:
@@ -21,6 +20,7 @@ server:
 mybatis-plus:
   configuration:
     log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+  type-handlers-package: com.fit2cloud.dao.handler
 #监控，访问路径 {ip}:{port}/actuator
 management:
   server:

@@ -10,7 +10,11 @@ defineProps({
 });
 </script>
 <template>
-  <el-sub-menu :index="menuInfo.path" :key="menuInfo.name">
+  <el-sub-menu
+    :index="menuInfo.path"
+    :key="menuInfo.name"
+    v-if="menuInfo.children"
+  >
     <template #title>
       <CeIcon
         class="icon"
@@ -39,6 +43,18 @@ defineProps({
       </template>
     </template>
   </el-sub-menu>
+  <el-menu-item
+    v-else
+    v-hasPermission="menuInfo.requiredPermissions"
+    :index="menuInfo.path"
+  >
+    <CeIcon
+      class="icon"
+      :code="menuInfo.icon"
+      :size="'var(--ce-menu-icon-size,14px)'"
+    ></CeIcon>
+    <span>{{ menuInfo.title }}</span>
+  </el-menu-item>
 </template>
 <style lang="scss" scoped>
 .icon {

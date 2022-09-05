@@ -106,11 +106,31 @@ export default [
     ],
   },
   {
+    name: "cloud_account",
+    title: "云账号",
+    componentPath: "/src/views/CloudAccount/index.vue",
+    path: "/cloud_account",
+    icon: "yonghuguanli_huaban",
+    order: 2,
+    redirect: "/cloud_account/list",
+    childOperations: [
+      {
+        name: "cloud_account_list",
+        title: "创建",
+        path: "/list",
+        componentPath: "/src/views/CloudAccount/list.vue",
+        requiredPermissions: [
+          { role: "ADMIN", logical: "OR", permissions: ["USER_MENU_VIEW"] },
+        ],
+      },
+    ],
+  },
+  {
     title: "系统设置",
     icon: "xitongshezhi",
     name: "system_setting",
     path: "/system_setting",
-    order: 2,
+    order: 3,
     children: [
       {
         title: "系统设置",

@@ -18,9 +18,22 @@
         <el-button @click="batchDelete">删除</el-button>
       </template>
       <el-table-column type="selection" />
-      <el-table-column prop="name" label="组织" sortable />
-      <el-table-column prop="description" label="描述" sortable />
-      <el-table-column prop="createTime" label="创建时间" sortable />
+      <el-table-column prop="name" label="名称" sortable />
+      <el-table-column prop="platform" label="云平台" sortable />
+      <el-table-column prop="status" label="账号状态" sortable>
+        <template #default="scope">
+          <div style="display: flex; align-items: center">
+            <span>{{
+              scope.row.status === 0
+                ? "同步成功"
+                : scope.row.status === 1
+                ? "同步失败"
+                : "同步中"
+            }}</span>
+          </div>
+        </template>
+      </el-table-column>
+      <el-table-column prop="updateTime" label="最近同步时间" sortable />
       <fu-table-operations v-bind="tableConfig.tableOperations" fix />
       <template #buttons>
         <fu-table-column-select type="icon" :columns="columns" size="small" />
@@ -41,7 +54,6 @@ import { useRouter } from "vue-router";
 import {
   PaginationConfig,
   SearchConfig,
-  Condition,
   TableConfig,
   TableOperations,
   TableSearch,

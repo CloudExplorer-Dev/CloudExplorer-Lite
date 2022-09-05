@@ -34,6 +34,7 @@
         v-bind="$attrs"
         header-cell-class-name="table-handler"
         @sort-change="sortChange"
+        @filter-change="filterChange"
       >
         <slot></slot>
       </fu-table>
@@ -75,6 +76,8 @@ const searchCondition = ref<Condition>({});
 
 const order = ref<Order | undefined>(undefined);
 
+const tableHeaderFilter = ref<Conditions>({});
+
 const sortChange = (sortObj: any) => {
   if (sortObj.order) {
     order.value = {
@@ -85,7 +88,37 @@ const sortChange = (sortObj: any) => {
     order.value = undefined;
   }
   props.tableConfig.searchConfig?.search(
-    new TableSearch(condition.value, order.value, searchCondition.value)
+    new TableSearch(
+      condition.value,
+      order.value,
+      searchCondition.value,
+      tableHeaderFilter.value
+    )
+  );
+};
+
+const filterChange = (filterObj: any) => {
+  Object.keys(filterObj).forEach((key: string) => {
+    const value = filterObj[key];
+    if (value.length > 0) {
+      const filter: Condition = {
+        field: key,
+        label: key,
+        value: value,
+        valueLabel: value,
+      };
+      tableHeaderFilter.value[key] = filter;
+    } else {
+      delete tableHeaderFilter.value[key];
+    }
+  });
+  props.tableConfig.searchConfig?.search(
+    new TableSearch(
+      condition.value,
+      order.value,
+      searchCondition.value,
+      tableHeaderFilter.value
+    )
   );
 };
 /**
@@ -97,7 +130,12 @@ const updatePageSize = (pageSize: number) => {
     props.tableConfig.paginationConfig
   );
   props.tableConfig.searchConfig?.search(
-    new TableSearch(condition.value, order.value, searchCondition.value)
+    new TableSearch(
+      condition.value,
+      order.value,
+      searchCondition.value,
+      tableHeaderFilter.value
+    )
   );
 };
 
@@ -110,14 +148,24 @@ const updateCurrentPage = (currentPage: number) => {
     props.tableConfig.paginationConfig
   );
   props.tableConfig.searchConfig?.search(
-    new TableSearch(condition.value, order.value, searchCondition.value)
+    new TableSearch(
+      condition.value,
+      order.value,
+      searchCondition.value,
+      tableHeaderFilter.value
+    )
   );
 };
 
 const inputSearch = (search: Condition) => {
   searchCondition.value = search;
   props.tableConfig.searchConfig?.search(
-    new TableSearch(condition.value, order.value, search)
+    new TableSearch(
+      condition.value,
+      order.value,
+      search,
+      tableHeaderFilter.value
+    )
   );
 };
 /**
@@ -128,7 +176,12 @@ const search = (conditions: Conditions) => {
     condition.value = conditions;
   }
   props.tableConfig.searchConfig?.search(
-    new TableSearch(condition.value, order.value, searchCondition.value)
+    new TableSearch(
+      condition.value,
+      order.value,
+      searchCondition.value,
+      tableHeaderFilter.value
+    )
   );
 };
 
