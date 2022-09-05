@@ -50,13 +50,13 @@ const create = () => {
 
 const edit = (row: User) => {
   useRoute.push({
-    path: useRoute.currentRoute.value.path + "/update",
+    path: useRoute.currentRoute.value.path + "/create",
     query: { id: row.id },
   });
 };
 
 const deleteUser = (row: User) => {
-  ElMessageBox.confirm(t("确认删除用户"), {
+  ElMessageBox.confirm(t("user.delete_confirm"), {
     confirmButtonText: t("commons.message_box.confirm"),
     cancelButtonText: t("commons.btn.cancel"),
     type: "warning",
@@ -100,10 +100,10 @@ const showPwdDialog = () => {
 
 const sourceFilter = (userSource: string) => {
   if (userSource.toLowerCase() === "local") {
-    return t("本地创建");
+    return t("user.local");
   }
   if (userSource.toLowerCase() === "extra") {
-    return t("第三方");
+    return t("user.extra");
   }
   return userSource;
 };
@@ -116,33 +116,38 @@ const tableConfig = ref<TableConfig>({
     components: [
       SearchConfig.buildComponent().DateComponent.newInstance(
         "createTime",
-        "创建时间"
+        t("commons.create_time")
       ),
     ],
     searchOptions: [
       { label: "ID", value: "username" },
-      { label: "姓名", value: "name" },
-      { label: "角色", value: "role_id" },
+      { label: t("user.name"), value: "name" },
+      { label: t("user.role"), value: "role_id" },
       { label: "Email", value: "email" },
     ],
   },
   paginationConfig: new PaginationConfig(),
   tableOperations: new TableOperations([
-    TableOperations.buildButtons().newInstance("编辑", "primary", edit, "Edit"),
     TableOperations.buildButtons().newInstance(
-      "删除",
+      t("commons.btn.edit"),
+      "primary",
+      edit,
+      "Edit"
+    ),
+    TableOperations.buildButtons().newInstance(
+      t("commons.btn.delete"),
       "danger",
       deleteUser,
       "Delete"
     ),
     TableOperations.buildButtons().newInstance(
-      "修改密码",
+      t("commons.personal.edit_pwd"),
       "primary",
       showPwdDialog,
       "EditPen"
     ),
     TableOperations.buildButtons().newInstance(
-      "通知设置",
+      t("user.notify_setting"),
       "primary",
       showMsgConfigDialog,
       "Bell"
@@ -154,7 +159,9 @@ const tableConfig = ref<TableConfig>({
 <template>
   <layout-content>
     <template #breadcrumb>
-      <breadcrumb :breadcrumbs="[{ to: {}, title: '用户管理' }]"></breadcrumb>
+      <breadcrumb
+        :breadcrumbs="[{ to: {}, title: $t('user.manage') }]"
+      ></breadcrumb>
     </template>
     <ce-table
       ref="table"
@@ -166,14 +173,16 @@ const tableConfig = ref<TableConfig>({
       row-key="id"
     >
       <template #toolbar>
-        <el-button @click="create" type="primary">创建</el-button>
-        <el-button @click="addRole">添加角色</el-button>
+        <el-button @click="create" type="primary">{{
+          $t("commons.btn.create")
+        }}</el-button>
+        <el-button @click="addRole">{{ $t("user.add_role") }}</el-button>
       </template>
       <el-table-column type="selection" />
       <el-table-column prop="username" label="ID" />
-      <el-table-column prop="name" label="姓名" />
-      <el-table-column prop="email" label="邮箱" />
-      <el-table-column prop="roles" label="角色">
+      <el-table-column prop="name" :label="$t('user.name')" />
+      <el-table-column prop="email" :label="$t('user.email')" />
+      <el-table-column prop="roles" :label="$t('user.role')">
         <template #default="scope">
           <div
             v-for="role in scope.row.roles"
@@ -184,12 +193,12 @@ const tableConfig = ref<TableConfig>({
           </div>
         </template>
       </el-table-column>
-      <el-table-column prop="source" label="来源" sortable>
+      <el-table-column prop="source" :label="$t('user.source')" sortable>
         <template #default="scope">
           <span>{{ sourceFilter(scope.row.source) }}</span>
         </template>
       </el-table-column>
-      <el-table-column prop="enabled" label="状态" sortable>
+      <el-table-column prop="enabled" :label="$t('user.status')" sortable>
         <template #default="scope">
           <el-switch
             v-model="scope.row.enabled"
@@ -197,10 +206,10 @@ const tableConfig = ref<TableConfig>({
           />
         </template>
       </el-table-column>
-      <el-table-column prop="phone" label="手机号码" />
+      <el-table-column prop="phone" :label="$t('commons.personal.phone')" />
       <el-table-column
         prop="createTime"
-        label="创建时间"
+        :label="$t('commons.create_time')"
         min-width="120"
         sortable
       />
