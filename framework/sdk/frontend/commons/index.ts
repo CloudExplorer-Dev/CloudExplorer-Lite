@@ -1,9 +1,13 @@
 import type { App } from "vue";
 import { i18n } from "./base-locales/index";
+import type { SimpleMap } from "@commons/api/base/type";
 
-const components = import.meta.glob("./components/**/index.vue", {
-  eager: true,
-});
+const components: SimpleMap<any> = import.meta.glob(
+  "./components/**/index.vue",
+  {
+    eager: true,
+  }
+);
 
 const business = import.meta.glob("./base-*/index.ts", { eager: true });
 

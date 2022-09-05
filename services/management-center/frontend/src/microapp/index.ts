@@ -1,6 +1,6 @@
 import type { App } from "vue";
 import config from "@commons/utils/constants";
-import type { Route } from "@commons/index";
+import type { RouteObj } from "@commons/router/type";
 
 declare global {
   interface Window {
@@ -10,10 +10,10 @@ declare global {
 class AppMicroApp {
   appMount: () => App;
   appName: string;
-  route: Route;
+  route: RouteObj;
   app?: App;
 
-  constructor(appMount: () => App, appName: string, route: Route) {
+  constructor(appMount: () => App, appName: string, route: RouteObj) {
     this.appName = appName;
     this.appMount = appMount;
     this.route = route;

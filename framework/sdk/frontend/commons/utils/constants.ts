@@ -1,4 +1,4 @@
-const config = {
+export const Config = {
   TITLE: "CloudExplorer 云服务平台",
   CE_TOKEN_KEY: "ce-token",
   CE_ROLE_KEY: "CE-ROLE",
@@ -21,4 +21,4 @@ export const roleConst = {
   user: "USER",
 };
 
-export default config;
+export default Config;

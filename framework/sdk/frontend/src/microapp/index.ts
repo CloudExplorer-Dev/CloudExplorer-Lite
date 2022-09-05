@@ -90,7 +90,11 @@ class RootMicroApp {
       this.modules[baseName] = [
         {
           loader(code: string) {
-            return _self.resetCode(code, baseName, module.basePath);
+            return _self.resetCode(
+              code,
+              baseName,
+              module.basePath ? module.basePath : ""
+            );
           },
         },
       ];
