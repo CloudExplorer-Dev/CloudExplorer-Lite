@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.fit2cloud.dao.mapper.RoleMapper">
+
+    <resultMap id="BaseResultMap" type="com.fit2cloud.base.entity.Role">
+        <id column="id" jdbcType="VARCHAR" property="id" />
+        <result column="_name" jdbcType="VARCHAR" property="name" />
+        <result column="description" jdbcType="VARCHAR" property="description" />
+        <result column="type" jdbcType="VARCHAR" property="type" />
+        <result column="parent_role_id" jdbcType="VARCHAR" property="parentRoleId" />
+    </resultMap>
+
+    <select id="getRolesByResourceIds" resultMap="com.fit2cloud.dao.mapper.RoleMapper.BaseResultMap">
+        SELECT DISTINCT role.* FROM role LEFT JOIN user_role ON role.id = user_role.role_id
+        WHERE user_role.user_id = #{userId}
+
+        <!-- resourceIds 为组织ID或工作空间ID的集合，代表用户有哪些组织或工作空间的权限  -->
+        <if test="resourceIds!=null and resourceIds.size>0">
+            and user_role._source in
+            <foreach collection="resourceIds" item="resourceId" index="index" open="(" close=")" separator=",">
+                #{resourceId}
+            </foreach>
+        </if>
+        order by role._name
+    </select>
+</mapper>

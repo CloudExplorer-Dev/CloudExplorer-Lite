@@ -4,18 +4,27 @@ import type { NProgress } from "nprogress";
 import nProgress from "nprogress";
 import type { Ref } from "vue";
 import type { Result } from "@commons/request/Result";
-import { getToken } from "@commons/utils/auth";
+import { store } from "@commons/stores";
+import { useUserStore } from "@commons/stores/modules/user";
+import Config from "@commons/utils/constants";
+import { setToken } from "@commons/utils/authStorage";
 
-const instance = axios.create({
+const axiosConfig = {
   baseURL: import.meta.env.VITE_BASE_PATH,
-  withCredentials: true,
+  withCredentials: false,
   timeout: 60000,
-});
+  // headers: {},
+};
+
+const instance = axios.create(axiosConfig);
 
 // 设置请求拦截器
 instance.interceptors.request.use(
   (config: any) => {
-    config.headers["Authorization"] = getToken();
+    const userStore = useUserStore(store);
+    config.headers[Config.CE_TOKEN_KEY] = userStore.currentToken;
+    config.headers[Config.CE_ROLE_KEY] = userStore.currentRole;
+    config.headers[Config.CE_SOURCE_KEY] = userStore.currentSource;
     return config;
   },
   (err: any) => {
@@ -29,6 +38,12 @@ instance.interceptors.response.use(
     if (response.data) {
       if (response.data.code !== 200) {
         ElMessage.error(response.data.message);
+      } else {
+        //取出header中返回的token
+        const token = response.headers[Config.CE_TOKEN_KEY];
+        if (token != null && token.length > 0) {
+          setToken(token);
+        }
       }
     }
     if (response.headers["content-type"] === "application/octet-stream") {
@@ -37,6 +52,11 @@ instance.interceptors.response.use(
     return response;
   },
   (err: any) => {
+    if (err.response?.status === 401) {
+      //401时清空token
+      const userStore = useUserStore(store);
+      userStore.doLogout();
+    }
     return Promise.reject(err);
   }
 );
@@ -161,7 +181,7 @@ export const socket = (url: string) => {
     protocol = "wss://";
   }
   let uri = protocol + window.location.host + url;
-  if (import.meta.env.MODE !== "development") {
+  if (!import.meta.env.DEV) {
     uri =
       protocol + window.location.host + import.meta.env.VITE_BASE_PATH + url;
   }

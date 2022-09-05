@@ -1,37 +1,40 @@
 <script setup lang="ts">
-import { storeToRefs } from "pinia";
-import StarItem from "./starMenuItem.vue";
-import type { StarMenuItem } from "./type";
+import StartMenuItem from "./StartMenuItem.vue";
 import CeIcon from "@commons/components/ce-icon/index.vue";
 import { onMounted, ref } from "vue";
-import type { Role } from "@commons//api/role";
-import { servicesStore } from "@commons/stores/services";
-import { moduleStore } from "@commons/stores/module";
+import { useUserStore } from "@commons/stores/modules/user";
+import { useModuleStore } from "@commons/stores/modules/module";
+import { usePermissionStore } from "@commons/stores/modules/permission";
 import { useRouter } from "vue-router";
 import CollectMenu from "@commons/components/layout/collect-menu/index.vue";
+import type { Module } from "@commons/api/module";
 
 const router = useRouter();
-const service = servicesStore();
-const module = moduleStore();
-const { runingModules, runingModuleMenus, runingModulePermissions } =
-  storeToRefs(service);
-const { currentModule } = storeToRefs(module);
-const currentRole = ref<Role | any>({});
+
+const moduleStore = useModuleStore();
+const permissionStore = usePermissionStore();
+const userStore = useUserStore();
+
+const currentModule = ref(import.meta.env.VITE_APP_NAME);
+
+//const currentRole = ref<Role | any>({});
 
 onMounted(() => {
-  module.getCurrentRole().then((data: Role) => {
+  /*module.getCurrentRole().then((data: Role) => {
     currentRole.value = data;
-  });
-  service.init();
+  });*/
+  //service.init();
 });
 
 const collapse = ref<boolean>(false);
-const root = ref<StarMenuItem>({
-  title: "服务列表",
+
+const root = ref<Module>({
+  id: "",
+  name: "服务列表",
   icon: "caidan2",
   order: 0,
 });
-const hoverHander = () => {
+const hoverHandler = () => {
   collapse.value = true;
 };
 const test = (moduleName: string) => {
@@ -41,30 +44,30 @@ const test = (moduleName: string) => {
 <template>
   <div class="startMenu">
     <div class="serviceList">
-      <StarItem
-        :starMenuItem="root"
-        :hoverHander="hoverHander"
-        :leave-hander="() => (collapse = false)"
+      <StartMenuItem
+        :start-menu-item="root"
+        :hover-handler="hoverHandler"
+        :leave-handler="() => (collapse = false)"
         :rootItem="true"
       >
         <CollectMenu
           :collapse="collapse"
-          :runingModules="runingModules"
-          :runingModuleMenus="runingModuleMenus"
-          :runingModulePermissions="runingModulePermissions"
-          :currentRole="currentRole"
+          :runningModules="moduleStore.runningModules"
+          :runningModuleMenus="moduleStore.runningMenus"
+          :runningModulePermissions="permissionStore.userPermissions"
+          :currentRole="userStore.currentRole"
         />
-      </StarItem>
+      </StartMenuItem>
     </div>
     <div class="starMenuLine"></div>
     <div class="runingModule">
-      <StarItem
-        @click="test(item.name)"
-        :star-menu-item="item"
+      <StartMenuItem
+        @click="test(item.id)"
+        :start-menu-item="item"
         :root-item="false"
-        v-for="item in runingModules"
-        :key="item.name"
-        :class="item.name === currentModule.name ? 'active' : ''"
+        v-for="item in moduleStore.runningModules"
+        :key="item.id"
+        :class="item.id === currentModule ? 'active' : ''"
       >
         <div class="move">
           <CeIcon
@@ -72,7 +75,7 @@ const test = (moduleName: string) => {
             code="yidongshu"
           ></CeIcon>
         </div>
-      </StarItem>
+      </StartMenuItem>
     </div>
   </div>
 </template>
@@ -129,7 +132,7 @@ const test = (moduleName: string) => {
     background-color: var(--ce-star-menu-active-bg-color);
   }
   .starMenuLineMenu {
-    margin-top: 8px 0;
+    margin-top: 8px;
     height: 1px;
     background-color: var(--ce-star-menu-active-bg-color);
   }

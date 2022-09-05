@@ -1,8 +1,8 @@
 import type { MockMethod } from "vite-plugin-mock";
 import user from "./data";
-import Result from "ce-base/commons/request/Result";
-import { Page } from "ce-base/commons/request/Result";
-import { User } from "@/api/user/type";
+import Result from "@commons/request/Result";
+import type { Page } from "@commons/request/Result";
+import type { User } from "@/api/user/type";
 
 export default [
   {
@@ -20,8 +20,6 @@ export default [
         total: user.length,
         hasNext: true,
       };
-
-      console.log("dfdfdfdfdfdf", pageData);
       return Result.success(pageData);
     },
   },

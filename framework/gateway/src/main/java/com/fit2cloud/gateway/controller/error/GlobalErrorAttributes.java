@@ -17,7 +17,7 @@ public class GlobalErrorAttributes extends DefaultErrorAttributes {
 
         Map<String, Object> map = super.getErrorAttributes(request, options);
 
-        map.putIfAbsent("status", HttpStatus.INTERNAL_SERVER_ERROR);
+        map.putIfAbsent("status", HttpStatus.INTERNAL_SERVER_ERROR.value());
         //自定义全局错误message内容
         map.put("message", error == null ? map.get("message") : error.getMessage());
 

@@ -2,12 +2,12 @@
 import { onBeforeMount, onUnmounted, reactive, ref, watch } from "vue";
 import type { LocationQuery } from "vue-router";
 import { useRoute, useRouter } from "vue-router";
-import { useUserStore } from "@commons/stores/user";
+import { useUserStore } from "@commons/stores/modules/user";
 import { $tv } from "@commons/base-locales";
 import type { FormInstance, FormRules } from "element-plus";
 import type { LoginRequest } from "@commons/api/user/type";
 
-const user = useUserStore();
+const userStore = useUserStore();
 const route = useRoute();
 const router = useRouter();
 
@@ -85,15 +85,13 @@ const submitForm = (formEl: FormInstance | undefined) => {
   if (!formEl) return;
   formEl.validate((valid: boolean) => {
     if (valid) {
-      loading.value = true;
-      user
-        .login(form)
+      userStore
+        .doLogin(form, loading)
         .then(() => {
           router.push({
             path: redirect.value || "/",
             query: otherQuery.value,
           });
-          loading.value = false;
         })
         .catch((error: any) => {
           console.log(error);

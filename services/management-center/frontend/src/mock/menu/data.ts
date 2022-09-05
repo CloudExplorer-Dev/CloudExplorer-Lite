@@ -13,6 +13,7 @@ export default [
         icon: "yonghuguanli_huaban",
         path: "/user",
         componentPath: "/src/views/UserManage/index.vue",
+
         operations: [
           {
             name: "create",

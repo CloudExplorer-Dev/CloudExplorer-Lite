@@ -4,11 +4,14 @@ import com.fit2cloud.common.constants.RoleConstants;
 import com.fit2cloud.dto.permission.ModulePermission;
 import com.fit2cloud.dto.permission.Permission;
 import com.fit2cloud.dto.permission.PermissionGroup;
-import com.fit2cloud.security.permission.PermissionService;
+import com.fit2cloud.service.PermissionService;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
+import java.util.Collection;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * 模块内权限
@@ -22,6 +25,7 @@ public class PermissionConstants {
     public static class GROUP {
         public static final String USER = "USER";
         public static final String ROLE = "ROLE";
+        public static final String SYSTEM_SETTING = "SYSTEM_SETTING";
         //...
     }
 
@@ -34,6 +38,11 @@ public class PermissionConstants {
 
     public static ModulePermission MODULE_PERMISSION;
 
+    /**
+     * 可以通过id找到对应权限
+     */
+    public static Map<String, Permission> PERMISSION_MAP = null;
+
     @Resource
     private PermissionService permissionService;
 
@@ -42,6 +51,13 @@ public class PermissionConstants {
         PermissionConstants.MODULE_PERMISSION = MODULE_PERMISSION_BUILDER
                 .module(module)
                 .build();
+
+        PERMISSION_MAP = PermissionConstants.MODULE_PERMISSION.getGroups().stream()
+                .map(PermissionGroup::getPermissions)
+                .flatMap(Collection::stream)
+                .collect(Collectors.toMap(Permission::getId, permission -> permission));
+
+        //推送到redis
         permissionService.init(module, PermissionConstants.MODULE_PERMISSION);
     }
 

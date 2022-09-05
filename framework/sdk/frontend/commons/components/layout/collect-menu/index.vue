@@ -1,12 +1,12 @@
 <script setup lang="ts">
-import { defineProps, onMounted, ref, watch } from "vue";
-import type { Menu, ModuleMenu } from "@commons/api/menu";
+import { onMounted, ref, watch } from "vue";
+import type { Menu } from "@commons/api/menu";
 import type { Module } from "@commons/api/module";
-import { flatMenu, hasRolePermission } from "@commons/router";
-import type { Role } from "@commons/api/role";
-import type { ModulePermission, Permission } from "@commons/api/permission";
+import { flatMenu } from "@commons/router";
+import { hasRolePermission } from "@commons/base-directives/hasPermission";
 import { Search } from "@element-plus/icons-vue";
 import CeIcon from "@commons/components/ce-icon/index.vue";
+import type { SimpleMap } from "@commons/api/base/type";
 
 interface ModuleContainer extends Module {
   /**
@@ -16,20 +16,20 @@ interface ModuleContainer extends Module {
   /**
    *权限
    */
-  permissions: Array<Permission>;
+  permissions: Array<string>;
 }
 
 const props = defineProps<{
   // 是否展开
   collapse: boolean;
   // 运行中的模块菜单
-  runingModuleMenus: ModuleMenu;
+  runningModuleMenus: SimpleMap<Array<Menu>>;
   // 运行中的所有模块
-  runingModules: Array<Module>;
+  runningModules: Array<Module>;
   // 当前角色
-  currentRole: Role;
+  currentRole: string;
   // 运行模块的权限
-  runingModulePermissions: ModulePermission;
+  runningModulePermissions: Array<string>;
 }>();
 // 搜索内容
 const searchText = ref<string>("");
@@ -45,10 +45,11 @@ onMounted(() => {
  */
 const resetMenus = () => {
   const moduleContainers: Array<ModuleContainer> = flatMapMenus(
-    props.runingModuleMenus,
-    props.runingModules,
-    props.runingModulePermissions
+    props.runningModuleMenus,
+    props.runningModules,
+    props.runningModulePermissions
   );
+  console.log(moduleContainers);
   const filterModuleContainer: Array<ModuleContainer> = filterMenu(
     searchText.value,
     moduleContainers,
@@ -59,23 +60,24 @@ const resetMenus = () => {
 
 /**
  * 扁平化并映射数据
- * @param runingModuleMenus       运行中模块菜单
- * @param runingModules           运行中的模块
- * @param runingModulePermissions 运行中模块的权限
+ * @param runningModuleMenus       运行中模块菜单
+ * @param runningModules           运行中的模块
+ * @param runningModulePermissions 运行中模块的权限
  */
 const flatMapMenus = (
-  runingModuleMenus: ModuleMenu,
-  runingModules: Array<Module>,
-  runingModulePermissions: ModulePermission
+  runningModuleMenus: SimpleMap<Array<Menu>>,
+  runningModules: Array<Module>,
+  runningModulePermissions: Array<string>
 ) => {
-  return runingModules.map((module) => {
-    const newMenu = flatMenu(runingModuleMenus[module.name], [], "");
+  return runningModules.map((module) => {
+    console.log(module);
+    console.log(runningModuleMenus);
+    console.log(runningModuleMenus[module.id]);
+    const newMenu = flatMenu(runningModuleMenus[module.id], []);
     const moduleContainer: ModuleContainer = {
       ...module,
       childrenMenu: newMenu,
-      permissions: runingModulePermissions[module.name]
-        ? runingModulePermissions[module.name]
-        : [],
+      permissions: runningModulePermissions ? runningModulePermissions : [],
     };
     return moduleContainer;
   });
@@ -90,10 +92,10 @@ const flatMapMenus = (
 const hasShowMenu = (
   searchText: string,
   menu: Menu,
-  currentRole: Role,
-  permissions: Array<Permission>
+  currentRole: string,
+  permissions: Array<string>
 ) => {
-  if (!hasRolePermission(menu, currentRole.id, permissions)) {
+  if (!hasRolePermission(currentRole, permissions)) {
     return false;
   }
   if (!menu.componentPath) {
@@ -128,14 +130,14 @@ const splitMenu = (
  * @param currentRole 当前角色
  */
 const filterMenu = (
-  searchText: string,
+  searchText: string | null,
   services: Array<ModuleContainer>,
-  currentRole: Role
+  currentRole: string
 ) => {
   return services.filter((service) => {
     service.childrenMenu = service.childrenMenu.filter((serviceMenu) => {
       return hasShowMenu(
-        searchText,
+        searchText ? searchText : "",
         serviceMenu,
         currentRole,
         service.permissions
@@ -188,7 +190,7 @@ watch(
             :key="moduleItem.name"
           >
             <div class="moduleTitle">
-              <span>{{ moduleItem.title }}</span>
+              <span>{{ moduleItem.name }}</span>
             </div>
             <div
               class="menuItem"

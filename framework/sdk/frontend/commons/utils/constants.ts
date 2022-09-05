@@ -1,6 +1,9 @@
-const config = {
+export const Config = {
   TITLE: "CloudExplorer 云服务平台",
-  TOKEN_KEY: "Authorization",
+  CE_TOKEN_KEY: "ce-token",
+  CE_ROLE_KEY: "CE-ROLE",
+  CE_SOURCE_KEY: "CE-SOURCE",
+  CE_LANG_KEY: "LANG",
   /**
    * microAPP在window对象上的属性名称前缀
    */
@@ -18,4 +21,4 @@ export const roleConst = {
   user: "USER",
 };
 
-export default config;
+export default Config;

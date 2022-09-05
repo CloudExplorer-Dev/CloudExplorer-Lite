@@ -1,8 +1,11 @@
 <script setup lang="ts">
 import SubMenu from "./SubMenu.vue";
-import { moduleStore } from "../../../stores/module";
+
 import { useRouter } from "vue-router";
-const { menus, currentModule } = moduleStore();
+import { useModuleStore } from "@commons/stores/modules/module";
+
+const moduleStore = useModuleStore();
+
 const currentRoute = useRouter().currentRoute;
 </script>
 <template>
@@ -13,11 +16,11 @@ const currentRoute = useRouter().currentRoute;
   >
     <div class="title">
       <h1>
-        {{ currentModule?.title }}
+        {{ moduleStore.currentModule?.name }}
       </h1>
     </div>
     <div class="splitLine"></div>
-    <template v-for="item in menus" :key="item.name">
+    <template v-for="item in moduleStore.currentModuleMenu" :key="item.name">
       <SubMenu :menuInfo="item" />
     </template>
   </el-menu>

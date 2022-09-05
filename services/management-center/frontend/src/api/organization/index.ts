@@ -1,6 +1,6 @@
-import { get, post, del, put } from "ce-base/commons/request";
-import Result from "ce-base/commons/request/Result";
-import { Page } from "ce-base/commons/request/Result";
+import { get, post, del, put } from "@commons/request";
+import Result from "@commons/request/Result";
+import { Page } from "@commons/request/Result";
 import { CreateOrgFrom } from "@/views/OrgManage/type";
 import {
   Organization,
@@ -18,9 +18,13 @@ export const listAllOrganization: () => Promise<
   return get("/api/listAll/org");
 };
 
-export const tree: () => Promise<Result<Array<OrganizationTree>>> = () => {
-  return get("/base/organization/tree");
+export const tree: (
+  treeType?: string
+) => Promise<Result<Array<OrganizationTree>>> = (treeType) => {
+  const type: string = treeType === undefined ? "ORGANIZATION" : treeType;
+  return get("/base/organization/tree/" + type);
 };
+
 export const batch = (data: CreateOrgFrom) => {
   return post("/organization/batch", null, data);
 };

@@ -120,6 +120,7 @@
                     <include>**/*.json</include>
                     <include>**/*.tpl</include>
                     <include>**/*.js</include>
+                    <include>**/*.ftl</include>
                 </includes>
                 <filtering>false</filtering>
             </resource>

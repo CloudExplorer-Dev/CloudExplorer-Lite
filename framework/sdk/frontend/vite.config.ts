@@ -2,10 +2,9 @@ import { fileURLToPath, URL } from "node:url";
 import DefineOptions from "unplugin-vue-define-options/vite";
 import type { ConfigEnv } from "vite";
 import { defineConfig, loadEnv } from "vite";
+import type { ProxyOptions } from "vite";
 import vue from "@vitejs/plugin-vue";
 import vueSetupExtend from "vite-plugin-vue-setup-extend";
-import { viteMockServe } from "vite-plugin-mock";
-import alias from "@rollup/plugin-alias";
 
 import dts from "vite-plugin-dts"; //生成d.ts
 
@@ -48,6 +47,9 @@ const commonBuild = {
     },
   },
 };
+
+const envDir = "./env";
+
 /**
  * 当前模块打包
  */
@@ -64,17 +66,6 @@ const thisBuild = {
     }),
     DefineOptions(),
     vueSetupExtend(),
-    viteMockServe({
-      supportTs: true,
-      // 设置模拟.ts文件的存储文件夹
-      mockPath: "./src/mock",
-      localEnabled: true, // 开发环境设为true，
-      prodEnabled: false, // 生产环境设为true，也可以根据官方文档格式
-      //这样可以控制关闭mock的时候不让mock打包到最终代码内
-      injectCode: `import { setupMock } from "./mock";
-      setupMock();`,
-      watchFiles: true, // 监听文件内容变更
-    }),
   ],
   resolve: {
     alias: {
@@ -82,10 +73,10 @@ const thisBuild = {
       "@commons": fileURLToPath(new URL("./commons", import.meta.url)),
     },
   },
+  envDir: envDir,
   server: {},
 };
 
-const envDir = "./env";
 // 根据mode 判断打包依赖包还是当前项目
 export default defineConfig(({ mode }: ConfigEnv) => {
   const ENV = loadEnv(mode, envDir);
@@ -100,9 +91,20 @@ export default defineConfig(({ mode }: ConfigEnv) => {
     );
   }
 
+  const proxyConf: Record<string, string | ProxyOptions> = {};
+  proxyConf[ENV.VITE_BASE_PATH + "api"] =
+    "http://localhost:" + Number(ENV.VITE_BASE_API_PORT);
+  proxyConf[ENV.VITE_BASE_PATH + "login"] =
+    "http://localhost:" + Number(ENV.VITE_BASE_API_PORT);
+  proxyConf[ENV.VITE_BASE_PATH + "management-center"] = "http://localhost:5001";
+
+  //https://cn.vitejs.dev/config/server-options.html#server-host
   config.server = {
+    cors: true,
     host: "0.0.0.0",
     port: Number(ENV.VITE_APP_PORT),
+    strictPort: true,
+    proxy: proxyConf,
   };
 
   return config;

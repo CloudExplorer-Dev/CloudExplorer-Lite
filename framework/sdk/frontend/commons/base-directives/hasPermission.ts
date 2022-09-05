@@ -1,41 +1,48 @@
 import type { App } from "vue";
-import pinia from "@/stores";
-import { moduleStore } from "@commons/stores/module";
-import type { Permission } from "@commons/api/permission";
+import { store } from "@commons/stores";
 import type { RequiredPermissions } from "@commons/api/menu";
+import { usePermissionStore } from "@commons/stores/modules/permission";
+import { useUserStore } from "@commons/stores/modules/user";
 
-const moduleStoreObj = moduleStore(pinia);
-
-const hasRolePermission = (
-  requiredPermissions: Array<RequiredPermissions>,
+/**
+ * 判断是否有角色和权限
+ * @param role         角色
+ * @param permissions  权限
+ * @param requiredPermissions  权限
+ * @returns
+ */
+export const hasRolePermission = (
   role: string,
-  permissions: Array<Permission>
-) => {
+  permissions: Array<string>,
+  requiredPermissions?: Array<RequiredPermissions>
+): boolean => {
   if (!requiredPermissions || requiredPermissions.length === 0) {
     return true;
   }
-  for (let i = 0; i < requiredPermissions.length; i++) {
-    const roleOk = requiredPermissions[i].role === role;
-    const permissionOk = permissions.some((item) => {
-      if (requiredPermissions[i].permissions) {
-        return requiredPermissions[i].permissions.includes(item.id);
-      }
-      return true;
-    });
-    if (requiredPermissions[i].logical === "OR") {
-      return roleOk || permissionOk;
-    } else {
-      return roleOk && permissionOk;
-    }
+  //找到对应角色的权限
+  const rolePermission = requiredPermissions.find(
+    (permission) => permission.role === role
+  );
+  if (rolePermission) {
+    //只要菜单中需要权限有任意一个存在，则表示有权限访问
+    return rolePermission.permissions.some((permissionItem) =>
+      permissions.some((permission) => permission === permissionItem.simpleId)
+    );
   }
+  return false;
 };
 
 const hasPermission = async (el: any, binding: any) => {
-  const permissions: Array<Permission> = await moduleStoreObj.getPermission();
-  const role: string = (await moduleStoreObj.getCurrentRole()).id;
+  const permissionStore = usePermissionStore(store);
+  if (permissionStore.userPermissions?.length === 0) {
+    await permissionStore.refreshPermissions();
+  }
+  const permissions: Array<string> = permissionStore.userPermissions;
+  const role: string = useUserStore(store).currentRole;
+
   if (typeof binding.value === "string") {
     const hasPermission = permissions.some((item) => {
-      return item.id === binding.value;
+      return item === binding.value;
     });
     if (!hasPermission) {
       el.style.display = "none";
@@ -47,10 +54,10 @@ const hasPermission = async (el: any, binding: any) => {
     let isPermission = false;
     if (typeof binding.value[0] === "string") {
       isPermission = permissions.some((item) => {
-        return binding.value.includes(item.id);
+        return binding.value.includes(item);
       });
     } else {
-      if (hasRolePermission(binding.value, role, permissions)) {
+      if (hasRolePermission(role, permissions, binding.value)) {
         isPermission = true;
       }
     }
@@ -61,6 +68,7 @@ const hasPermission = async (el: any, binding: any) => {
     }
   }
 };
+
 export default {
   install: (app: App) => {
     app.directive("hasPermission", {

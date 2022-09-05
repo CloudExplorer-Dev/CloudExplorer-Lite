@@ -1,39 +1,17 @@
 {
+  "extends": "@vue/tsconfig/tsconfig.web.json",
+  "include": ["env.d.ts", "src/**/*", "src/**/*.vue", "commons/**/*", "commons/**/*.vue"],
   "compilerOptions": {
     "baseUrl": ".",
-    "target": "esnext",
-    "useDefineForClassFields": true,
-    "module": "esnext",
-    "moduleResolution": "node",
-    "strict": true,
-    "jsx": "preserve",
-    "sourceMap": true,
-    "resolveJsonModule": true,
-    "isolatedModules": true,
-    "esModuleInterop": true,
-    "lib": ["esnext", "dom"],
-    "skipLibCheck": true,
     "paths": {
-      "@/*": ["commons/*","example/*"],
-    },
-    "types": ["unplugin-vue-define-options","element-plus/global"],
-    "allowJs": true
+      "@/*": ["./src/*"],
+      "@commons/*": ["./commons/*"]
+    }
   },
-  "include": ["examples/**/*", "commons/**/*", "plugins/*"],
-    // ts 排除的文件
-    "exclude": [
-      "node_modules"
-    ],
-  "files": [],
+
   "references": [
     {
       "path": "./tsconfig.config.json"
-    },
-    {
-      "path": "./tsconfig.app.json"
-    },
-    {
-      "path": "./tsconfig.vitest.json"
     }
   ]
 }

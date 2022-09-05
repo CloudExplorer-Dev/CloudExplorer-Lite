@@ -29,7 +29,7 @@
 </template>
 <script setup lang="ts">
 import { ref, computed, onMounted } from "vue";
-import { SearchOption, Condition } from "./index";
+import type { SearchOption, Condition } from "./index";
 
 const emit = defineEmits(["update:modelValue", "change"]);
 

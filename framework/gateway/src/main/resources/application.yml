@@ -54,3 +54,13 @@ ce:
 quartz:
   enabled: false
   scheduler-name: gatewayScheduler
+
+eureka:
+  instance:
+    metadata-map:
+      order: 0
+      name_zh-cn: 网关
+      name_zh-tw: 網關
+      name_en: Gateway
+      basePath: /
+      icon: gateway

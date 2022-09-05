@@ -1,7 +1,7 @@
 <script lang="ts" setup>
 import { getCurrentInstance, onMounted, ref } from "vue";
 import { EventCenterForMicroApp } from "@micro-zoe/micro-app";
-import config from "@commons/utils/constants";
+import Config from "@commons/utils/constants";
 
 const options = defineProps<{
   url: string;
@@ -27,7 +27,7 @@ const handleBeforeMount = (): void => {
   // eslint-disable-next-line @typescript-eslint/ban-ts-comment
   // @ts-ignore 因为vite子应用关闭了沙箱，我们需要为子应用appname-vite创建EventCenterForMicroApp对象来实现数据通信
   //window.eventCenterForAppNameVite = new EventCenterForMicroApp(options.name);
-  window[`${config.MICRO_APP_EVENTCENTER_PREFIX}${options.name}`] =
+  window[`${Config.MICRO_APP_EVENTCENTER_PREFIX}${options.name}`] =
     new EventCenterForMicroApp(options.name);
 };
 

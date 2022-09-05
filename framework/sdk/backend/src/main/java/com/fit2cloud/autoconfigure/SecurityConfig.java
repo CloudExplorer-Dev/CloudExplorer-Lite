@@ -4,7 +4,7 @@ import com.fit2cloud.base.service.IBaseUserRoleService;
 import com.fit2cloud.security.MD5PasswordEncoder;
 import com.fit2cloud.security.UserAuthDetailsService;
 import com.fit2cloud.security.permission.CeMethodSecurityExpressionHandler;
-import com.fit2cloud.security.permission.PermissionService;
+import com.fit2cloud.service.PermissionService;
 import org.springframework.context.annotation.Bean;
 import org.springframework.security.access.expression.method.MethodSecurityExpressionHandler;
 import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;

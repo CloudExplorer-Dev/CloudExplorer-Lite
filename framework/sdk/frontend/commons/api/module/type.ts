@@ -1,26 +1,59 @@
-import { Menu } from "../menu/type";
-import { Permission } from "../permission/type";
-interface Module {
+import type { Menu } from "../menu/type";
+import type { Permission } from "../permission/type";
+
+export interface RouteModule {
   /**
-   * 标题
-   */
-  title: string;
-  /**
-   * 服务名称
+   *路由名称
    */
   name: string;
   /**
-   * 服务图标
+   *路由path
    */
+  path: string;
+  /**
+   * 组建path
+   */
+  componentPath: string;
+  props: {
+    /**
+     * 模块名称
+     */
+    moduleName: string;
+    /**
+     * 模块名称
+     */
+    name: string;
+    /**
+     * 模块地址
+     */
+    url: string;
+    /**
+     * 模块路由地址
+     */
+    baseRoute: string;
+  };
+}
+
+export class Module {
+  id: string;
+  name: string;
   icon: string;
-  /**
-   * 服务排序
-   */
   order: number;
-  /**
-   *服务地址
-   */
-  url: string;
+  basePath?: string;
+
+  constructor(
+    id: string,
+    name: string,
+    icon: string,
+    order: number,
+    basePath: string
+  ) {
+    this.id = id;
+    this.name = name;
+    this.icon = icon;
+    this.order = order;
+    this.basePath = basePath;
+  }
 }
 
 interface ServerInfo {
@@ -38,4 +71,4 @@ interface ServerInfo {
   permissions: Array<Permission>;
 }
 
-export type { Module, ServerInfo };
+export type { ServerInfo };

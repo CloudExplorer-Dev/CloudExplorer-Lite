@@ -1,4 +1,4 @@
-class Result<T> {
+export class Result<T> {
   message: string;
   code: number;
   data: T;
@@ -38,5 +38,5 @@ interface Page<T> {
    */
   hasNext: boolean;
 }
-export type { Result, Page };
+export type { Page };
 export default Result;

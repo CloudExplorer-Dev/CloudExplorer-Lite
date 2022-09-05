@@ -1,14 +1,15 @@
 <script setup lang="ts">
 import { ref, onMounted } from "vue";
-import { deleteUserById, listUser, User } from "@/api/user";
+import { deleteUserById, listUser } from "@/api/user";
 import { useRouter } from "vue-router";
+import type { User } from "@commons/api/user/type";
 import {
   PaginationConfig,
   SearchConfig,
   TableConfig,
   TableOperations,
   TableSearch,
-} from "ce-base/commons/components/ce-table";
+} from "@commons/components/ce-table";
 import ModifyPwd from "@/views/UserManage/ModifyPwd.vue";
 import MsgConfig from "@/views/UserManage/MsgConfig.vue";
 import { useI18n } from "vue-i18n";
@@ -18,6 +19,7 @@ const { t } = useI18n();
 const useRoute = useRouter();
 const columns = ref([]);
 const tableData = ref<Array<User>>();
+const table: any = ref(null);
 
 onMounted(() => {
   search(new TableSearch());
@@ -48,21 +50,24 @@ const create = () => {
 
 const edit = (row: User) => {
   useRoute.push({
-    path: useRoute.currentRoute.value.path + "/update",
+    path: useRoute.currentRoute.value.path + "/create",
     query: { id: row.id },
   });
 };
 
 const deleteUser = (row: User) => {
-  ElMessageBox.confirm(t("确认删除用户"), {
+  ElMessageBox.confirm(t("user.delete_confirm"), {
     confirmButtonText: t("commons.message_box.confirm"),
     cancelButtonText: t("commons.btn.cancel"),
     type: "warning",
   })
     .then(() => {
-      deleteUserById(row.userId);
-      ElMessage.success(t("commons.msg.delete_success"));
-      search;
+      deleteUserById(row.id).then(() => {
+        if (table.value) {
+          table.value?.search();
+          ElMessage.success(t("commons.msg.delete_success"));
+        }
+      });
     })
     .catch(() => {
       ElMessage.info(t("commons.msg.delete_canceled"));
@@ -71,6 +76,16 @@ const deleteUser = (row: User) => {
 
 const addRole = () => {
   console.log("addRole");
+};
+
+const showUserRoleDetails = (row: User) => {
+  alert("用户角色树");
+  //TODO 展示用户角色树
+};
+
+const handleSwitchStatus = (row: User) => {
+  alert("切换用户状态");
+  //TODO 切换用户状态
 };
 
 const msgConfigRef = ref();
@@ -83,48 +98,56 @@ const showPwdDialog = () => {
   modifyPwdRef.value.dialogVisible = true;
 };
 
-const handleSwitchStatus = (row: User) => {
-  //TODO 切换用户状态
-};
-
 const sourceFilter = (userSource: string) => {
-  if (userSource === "local") {
-    return t("本地创建");
+  if (userSource.toLowerCase() === "local") {
+    return t("user.local");
   }
-  if (userSource === "extra") {
-    return t("第三方");
+  if (userSource.toLowerCase() === "extra") {
+    return t("user.extra");
   }
   return userSource;
 };
 
 const tableConfig = ref<TableConfig>({
   searchConfig: {
+    showEmpty: false,
     search: search,
-    quickPlaceholder: "按照名称搜索",
+    quickPlaceholder: "搜索",
     components: [
       SearchConfig.buildComponent().DateComponent.newInstance(
         "createTime",
-        "创建时间"
+        t("commons.create_time")
       ),
+    ],
+    searchOptions: [
+      { label: "ID", value: "username" },
+      { label: t("user.name"), value: "name" },
+      { label: t("user.role"), value: "role_id" },
+      { label: "Email", value: "email" },
     ],
   },
   paginationConfig: new PaginationConfig(),
   tableOperations: new TableOperations([
-    TableOperations.buildButtons().newInstance("编辑", "primary", edit, "Edit"),
     TableOperations.buildButtons().newInstance(
-      "删除",
+      t("commons.btn.edit"),
+      "primary",
+      edit,
+      "Edit"
+    ),
+    TableOperations.buildButtons().newInstance(
+      t("commons.btn.delete"),
       "danger",
       deleteUser,
       "Delete"
     ),
     TableOperations.buildButtons().newInstance(
-      "修改密码",
+      t("commons.personal.edit_pwd"),
       "primary",
       showPwdDialog,
       "EditPen"
     ),
     TableOperations.buildButtons().newInstance(
-      "通知设置",
+      t("user.notify_setting"),
       "primary",
       showMsgConfigDialog,
       "Bell"
@@ -136,39 +159,60 @@ const tableConfig = ref<TableConfig>({
 <template>
   <layout-content>
     <template #breadcrumb>
-      <breadcrumb :breadcrumbs="[{ to: {}, title: '用户管理' }]"></breadcrumb>
+      <breadcrumb
+        :breadcrumbs="[{ to: {}, title: $t('user.manage') }]"
+      ></breadcrumb>
     </template>
     <ce-table
+      ref="table"
+      :expand-row-keys="expandRowKeys"
       :columns="columns"
       :data="tableData"
       :tableConfig="tableConfig"
+      @selection-change="handleSelectionChange"
       row-key="id"
     >
       <template #toolbar>
-        <el-button @click="create" type="primary">创建</el-button>
-        <el-button @click="deleteUser">删除</el-button>
-        <el-button @click="addRole">添加角色</el-button>
+        <el-button @click="create" type="primary">{{
+          $t("commons.btn.create")
+        }}</el-button>
+        <el-button @click="addRole">{{ $t("user.add_role") }}</el-button>
       </template>
       <el-table-column type="selection" />
-      <el-table-column prop="id" label="ID" />
-      <el-table-column prop="name" label="姓名" />
-      <el-table-column prop="email" label="邮箱" />
-      <el-table-column prop="role" label="角色" />
-      <el-table-column prop="source" label="来源" sortable>
+      <el-table-column prop="username" label="ID" />
+      <el-table-column prop="name" :label="$t('user.name')" />
+      <el-table-column prop="email" :label="$t('user.email')" />
+      <el-table-column prop="roles" :label="$t('user.role')">
+        <template #default="scope">
+          <div
+            v-for="role in scope.row.roles"
+            @click="showUserRoleDetails(scope.row)"
+            tyle="cursor:pointer"
+          >
+            <a style="color: var(--el-color-primary)">{{ role.name }}<br /></a>
+          </div>
+        </template>
+      </el-table-column>
+      <el-table-column prop="source" :label="$t('user.source')" sortable>
         <template #default="scope">
           <span>{{ sourceFilter(scope.row.source) }}</span>
         </template>
       </el-table-column>
-      <el-table-column prop="active" label="状态" sortable>
+      <el-table-column prop="enabled" :label="$t('user.status')" sortable>
         <template #default="scope">
           <el-switch
-            v-model="scope.row.active"
+            v-model="scope.row.enabled"
             @change="handleSwitchStatus(scope.row)"
           />
         </template>
       </el-table-column>
-      <el-table-column prop="phone" label="手机号码" />
-      <el-table-column prop="createTime" label="创建时间" sortable />
+      <el-table-column prop="phone" :label="$t('commons.personal.phone')" />
+      <el-table-column
+        prop="createTime"
+        :label="$t('commons.create_time')"
+        min-width="120"
+        sortable
+      />
       <fu-table-operations v-bind="tableConfig.tableOperations" fix />
       <template #buttons>
         <fu-table-column-select type="icon" :columns="columns" size="small" />

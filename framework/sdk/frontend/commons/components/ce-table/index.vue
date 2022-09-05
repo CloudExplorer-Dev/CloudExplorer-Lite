@@ -56,7 +56,7 @@
   </div>
 </template>
 <script setup lang="ts">
-import { ref, defineProps, defineExpose } from "vue";
+import { ref } from "vue";
 import CeFilterInput from "./CeFilterInput.vue";
 import {
   TableConfig,

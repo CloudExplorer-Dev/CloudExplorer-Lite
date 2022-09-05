@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { reactive, ref } from "vue";
-import { FormInstance, FormRules } from "element-plus";
-import { $tv } from "ce-base/commons/base-locales";
+import type { FormInstance, FormRules } from "element-plus";
+import { $tv } from "@commons/base-locales";
 import { useI18n } from "vue-i18n";
 
 const { t } = useI18n();

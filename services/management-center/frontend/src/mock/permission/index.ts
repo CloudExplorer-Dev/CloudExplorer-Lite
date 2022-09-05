@@ -1,7 +1,7 @@
 import type { MockMethod } from "vite-plugin-mock";
 import { rolePermissions, permissions } from "./data";
-import Result from "ce-base/commons/request/Result";
-import { authMockHander } from "ce-base/commons/mock/utils/mock";
+import Result from "@commons/request/Result";
+import { authMockHander } from "@commons/mock/utils/mock";
 export default [
   {
     url: "/api/permission", // 注意，这里只能是string格式
