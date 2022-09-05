@@ -11,7 +11,7 @@ import { i18n } from "@commons/index";
 
 import "@commons/styles/index.scss";
 import { AppMicroApp } from "./microapp";
-import route from "./route";
+import route from "@commons/router";
 
 const app = createApp(App);
 const mount = () => {
@@ -26,6 +26,9 @@ const mount = () => {
     locale: i18n.global.messages.value[i18n.global.locale.value],
   });
   app.use(common);
+
+  //设置router
+  route.setRouteComponent(import.meta.glob("@/views/*/*.vue"));
   app.use(route.router);
 
   app.use(Fit2CloudPlus);

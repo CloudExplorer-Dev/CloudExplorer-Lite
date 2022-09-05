@@ -3,7 +3,7 @@ import ElementPlus from "element-plus";
 import * as ElementPlusIcons from "@element-plus/icons-vue";
 import "element-plus/dist/index.css";
 import "fit2cloud-ui-plus/src/styles/index.scss";
-import route from "./router";
+import route from "@commons/router";
 import { setupStore } from "@commons/stores";
 import App from "./App.vue";
 import common from "@commons/index";
@@ -32,6 +32,9 @@ app.config.globalProperties.$bus = mitt();
 app.use(ElementPlus);
 
 app.use(common);
+
+//设置router
+route.setRouteComponent(import.meta.glob("@/views/*/*.vue"));
 app.use(route.router);
 
 app.mount("#app");

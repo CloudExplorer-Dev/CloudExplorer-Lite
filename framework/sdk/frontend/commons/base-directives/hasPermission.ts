@@ -1,13 +1,8 @@
 import type { App } from "vue";
 import { store } from "@commons/stores";
-import type { Permission } from "@commons/api/permission";
 import type { RequiredPermissions } from "@commons/api/menu";
-import { useModuleStore } from "@commons/stores/modules/module";
 import { usePermissionStore } from "@commons/stores/modules/permission";
 import { useUserStore } from "@commons/stores/modules/user";
-
-const permissionStore = usePermissionStore(store);
-const userStore = useUserStore(store);
 
 /**
  * 判断是否有角色和权限
@@ -38,11 +33,12 @@ export const hasRolePermission = (
 };
 
 const hasPermission = async (el: any, binding: any) => {
+  const permissionStore = usePermissionStore(store);
   if (permissionStore.userPermissions?.length === 0) {
     await permissionStore.refreshPermissions();
   }
   const permissions: Array<string> = permissionStore.userPermissions;
-  const role: string = userStore.currentRole;
+  const role: string = useUserStore(store).currentRole;
 
   if (typeof binding.value === "string") {
     const hasPermission = permissions.some((item) => {

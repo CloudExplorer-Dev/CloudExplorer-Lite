@@ -96,6 +96,7 @@ export default defineConfig(({ mode }: ConfigEnv) => {
     "http://localhost:" + Number(ENV.VITE_BASE_API_PORT);
   proxyConf[ENV.VITE_BASE_PATH + "login"] =
     "http://localhost:" + Number(ENV.VITE_BASE_API_PORT);
+  proxyConf[ENV.VITE_BASE_PATH + "management-center"] = "http://localhost:5001";
 
   //https://cn.vitejs.dev/config/server-options.html#server-host
   config.server = {

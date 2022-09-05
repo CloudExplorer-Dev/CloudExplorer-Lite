@@ -1,7 +1,4 @@
 import type { App } from "vue";
-import Route from "@commons/router/index";
-import appContent from "@commons/components/layout/app-content/index.vue";
-import login from "@commons/business/login/index.vue";
 import { i18n } from "./base-locales/index";
 
 const components = import.meta.glob("./components/**/index.vue", {
@@ -25,4 +22,4 @@ const install = (app: App) => {
   });
 };
 export default { install };
-export { Route, appContent, login, i18n };
+export { i18n };
