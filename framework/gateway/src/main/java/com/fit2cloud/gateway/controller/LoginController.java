@@ -63,7 +63,7 @@ public class LoginController {
         return Mono.just("test");
     }
 
-    @GetMapping("api/user/current")
+    @GetMapping("api/user_current")
     public Mono<ResultHolder<UserDto>> currentUser(ServerWebExchange exchange) {
         return Mono.just(ResultHolder.success((UserDto) exchange.getAttributes().get("user")));
     }

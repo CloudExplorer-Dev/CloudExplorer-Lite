@@ -1,12 +1,12 @@
 import { createWebHashHistory, createWebHistory } from "vue-router";
 import Login from "@commons/business/login/index.vue";
 import type { UnwrapRef } from "vue";
-import type { Menu } from "@commons/api/menu";
+import type { Menu } from "@commons/api/menu/type";
 import { useUserStore } from "@commons/stores/modules/user";
 import { store } from "@commons/stores";
 import BaseLayout from "@commons/business/base-layout/index.vue";
 import { useModuleStore } from "@commons/stores/modules/module";
-import type { Module } from "@commons/api/module";
+import type { Module } from "@commons/api/module/type";
 import type { RouteModule } from "@commons/api/module/type";
 import type { RouteItem } from "@commons/router/type";
 import { RouteObj } from "@commons/router/type";

@@ -9,10 +9,10 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/api/user")
+@RequestMapping("/api")
 public class BaseUserController {
 
-    @GetMapping("current")
+    @GetMapping("user_current")
     public ResultHolder<UserDto> currentUser() {
         return ResultHolder.success((UserDto) SecurityContextHolder.getContext().getAuthentication().getPrincipal());
     }

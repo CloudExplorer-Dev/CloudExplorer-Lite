@@ -3,24 +3,22 @@ import type { LoginRequest, LoginResponse, User } from "./type";
 import type { Result } from "@commons/request/Result";
 import type { Ref } from "vue";
 
-export const login = (data: LoginRequest, loading?: Ref<boolean>) => {
-  const loginResult: Promise<Result<LoginResponse>> = post(
-    "/login",
-    null,
-    data,
-    loading
-  );
-  return loginResult;
-};
-
-export function fetchCurrentUser() {
-  const currentUser: Promise<Result<User>> = get("/api/user/current");
-  return currentUser;
+export function login(
+  data: LoginRequest,
+  loading?: Ref<boolean>
+): Promise<Result<LoginResponse>> {
+  return post("/login", null, data, loading);
 }
 
-export const getUser = () => {
-  return get("/api/user/detail");
-};
+export function fetchCurrentUser(
+  loading?: Ref<boolean>
+): Promise<Result<User>> {
+  return get("/api/user_current", null, loading);
+}
+
+export function getUser(id: string): Promise<Result<User>> {
+  return get(`/api/user/${id}`);
+}
 
 export const saveUser = (data: User) => {
   return post("/api/user-save", null, data);
