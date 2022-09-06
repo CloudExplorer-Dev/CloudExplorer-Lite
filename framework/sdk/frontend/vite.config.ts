@@ -80,8 +80,9 @@ const thisBuild = {
 // 根据mode 判断打包依赖包还是当前项目
 export default defineConfig(({ mode }: ConfigEnv) => {
   const ENV = loadEnv(mode, envDir);
-  const config = { ...thisBuild, ...commonBuild };
+  let config = { ...thisBuild };
   if (mode === "lib") {
+    config = { ...config, ...commonBuild };
     //生成d.ts
     config.plugins.push(
       dts({
