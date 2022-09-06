@@ -35,8 +35,8 @@ public class UserRoleDto implements Serializable {
             return this;
         }
         this.roles = this.roles.stream().sorted(Comparator.comparing(role -> role, (role1, role2) -> {
-            RoleConstants.Type t1 = RoleConstants.Type.valueOf(role1.getType());
-            RoleConstants.Type t2 = RoleConstants.Type.valueOf(role2.getType());
+            RoleConstants.Type t1 = role1.getType();
+            RoleConstants.Type t2 = role2.getType();
             if (!t1.equals(t2)) {
                 return t1.ordinal() - t2.ordinal();
             }

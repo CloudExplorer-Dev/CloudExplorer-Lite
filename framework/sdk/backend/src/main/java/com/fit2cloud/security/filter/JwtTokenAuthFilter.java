@@ -26,7 +26,7 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.*;
 
-public class TwtTokenAuthFilter extends BasicAuthenticationFilter {
+public class JwtTokenAuthFilter extends BasicAuthenticationFilter {
 
     private static final ObjectMapper objectMapper = new ObjectMapper();
 
@@ -36,7 +36,7 @@ public class TwtTokenAuthFilter extends BasicAuthenticationFilter {
 
     private final static String CE_SOURCE_TOKEN = "CE_SOURCE";
 
-    public TwtTokenAuthFilter(AuthenticationManager authenticationManager, PermissionService permissionService, IBaseUserRoleService userRoleService) {
+    public JwtTokenAuthFilter(AuthenticationManager authenticationManager, PermissionService permissionService, IBaseUserRoleService userRoleService) {
         super(authenticationManager);
         this.permissionService = permissionService;
         this.userRoleService = userRoleService;

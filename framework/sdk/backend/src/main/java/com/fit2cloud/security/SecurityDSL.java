@@ -1,7 +1,7 @@
 package com.fit2cloud.security;
 
 import com.fit2cloud.base.service.IBaseUserRoleService;
-import com.fit2cloud.security.filter.TwtTokenAuthFilter;
+import com.fit2cloud.security.filter.JwtTokenAuthFilter;
 import com.fit2cloud.security.filter.UserLoginFilter;
 import com.fit2cloud.service.PermissionService;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -19,7 +19,7 @@ public class SecurityDSL extends AbstractHttpConfigurer<SecurityDSL, HttpSecurit
         //只能在这获取AuthenticationManager
         AuthenticationManager authenticationManager = http.getSharedObject(AuthenticationManager.class);
         http.addFilter(new UserLoginFilter(authenticationManager));
-        http.addFilter(new TwtTokenAuthFilter(authenticationManager, permissionService, userRoleService));
+        http.addFilter(new JwtTokenAuthFilter(authenticationManager, permissionService, userRoleService));
     }
 
     public static SecurityDSL securityDSL(PermissionService permissionService, IBaseUserRoleService userRoleService) {

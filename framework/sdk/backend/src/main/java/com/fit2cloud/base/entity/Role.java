@@ -16,6 +16,7 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.fasterxml.jackson.datatype.jsr310.deser.LocalDateTimeDeserializer;
 import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateTimeSerializer;
+import com.fit2cloud.common.constants.RoleConstants;
 
 /**
  * <p>
@@ -43,7 +44,7 @@ public class Role implements Serializable {
      * 角色分类：系统内置角色、继承角色
      */
     @TableField("_type")
-    private String type;
+    private RoleConstants.Type type;
 
     @TableField("_name")
     private String name;

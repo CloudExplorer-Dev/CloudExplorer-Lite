@@ -97,7 +97,7 @@ public class BaseUserRoleServiceImpl extends ServiceImpl<BaseUserRoleMapper, Use
                 sourceRolesMap.get(userRole.getSource()).add(role);
                 continue;
             }
-            if (RoleConstants.Type.origin.equals(RoleConstants.Type.valueOf(role.getType()))) { //系统管理员
+            if (RoleConstants.Type.origin.equals(role.getType())) { //系统管理员
                 if (adminRoles == null) {
                     adminRoles = new ArrayList<>();
                 }
@@ -121,7 +121,7 @@ public class BaseUserRoleServiceImpl extends ServiceImpl<BaseUserRoleMapper, Use
                         .setParentSource(null) //todo
                         .setRoles(roleList)
                         .sortRoles();
-                if (RoleConstants.Type.origin.equals(RoleConstants.Type.valueOf(roleList.get(0).getType()))) {
+                if (RoleConstants.Type.origin.equals(roleList.get(0).getType())) {
                     dto.setParentRole(RoleConstants.ROLE.valueOf(roleList.get(0).getId()));
                 } else {
                     dto.setParentRole(RoleConstants.ROLE.valueOf(roleList.get(0).getParentRoleId()));

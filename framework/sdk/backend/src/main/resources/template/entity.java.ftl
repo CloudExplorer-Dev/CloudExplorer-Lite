@@ -29,6 +29,9 @@ import com.fasterxml.jackson.datatype.jsr310.deser.LocalDateTimeDeserializer;
 import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateTimeSerializer;
 </#if><#if x == 1><#break></#if>
 </#list>
+<#if useEnum && useEnumMap[table.name]??>
+import ${useEnumMap[table.name].enumClass};
+</#if>
 
 /**
  * <p>
@@ -116,7 +119,7 @@ public class ${entity} {
     @JsonSerialize(using = LocalDateTimeSerializer.class)
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
     </#if>
-    private ${field.propertyType} ${field.propertyName};
+    private <#if useEnum && useEnumMap[table.name]?? && field.annotationColumnName == useEnumMap[table.name].enumField>${useEnumMap[table.name].enumClassName}<#else>${field.propertyType}</#if> ${field.propertyName};
 </#list>
 <#------------  END 字段循环遍历  ---------->
 <#if !entityLombokModel>

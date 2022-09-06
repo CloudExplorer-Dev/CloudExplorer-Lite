@@ -5,13 +5,17 @@ import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.generator.AutoGenerator;
 import com.baomidou.mybatisplus.generator.config.*;
 import com.baomidou.mybatisplus.generator.engine.FreemarkerTemplateEngine;
+import lombok.Data;
+import lombok.experimental.Accessors;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.TestPropertySource;
 
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @SpringBootTest(classes = ManagementApplication.class)
 @TestPropertySource(locations = {
@@ -23,7 +27,18 @@ public class MyBatisPlusGenerator {
     /**
      * 传入需要生成代码的表名
      */
-    private static final List<String> TABLES = Arrays.asList("user");
+    private static final List<String> TABLES = Arrays.asList("cloud_account");
+
+    private static final Map<String, Object> CUSTOM_MAP = new HashMap<>();
+
+    static {
+        Map<String, Map<String, Object>> map = new HashMap<>();
+        //指定需要生成enum的字段（Enum类需要自己生成）
+        map.put("cloud_account", new EnumCreator().setEnumField("status").setEnumClassName("CloudAccountConstants.Status").setEnumClass("com.fit2cloud.constants.CloudAccountConstants").getMap());
+
+        CUSTOM_MAP.put("useEnum", true);
+        CUSTOM_MAP.put("useEnumMap", map);
+    }
 
     @Value("${ce.datasource.url}")
     private String datasource;
@@ -71,6 +86,10 @@ public class MyBatisPlusGenerator {
             .entity("/template/entity.java")
             .build();
 
+    private static final InjectionConfig INJECTION_CONFIG = new InjectionConfig.Builder()
+            .customMap(CUSTOM_MAP)
+            .build();
+
 
     @Test
     public void run() {
@@ -88,9 +107,24 @@ public class MyBatisPlusGenerator {
                 .global(GLOBAL_CONFIG)
                 .packageInfo(PACKAGE_CONFIG)
                 .template(TEMPLATE_CONFIG)
+                .injection(INJECTION_CONFIG)
                 .execute(new FreemarkerTemplateEngine());
 
     }
 
+    @Data
+    @Accessors(chain = true)
+    private static class EnumCreator{
+        private String enumField;
+        private String enumClassName;
+        private String enumClass;
 
+        public Map<String, Object> getMap(){
+            Map<String, Object> map = new HashMap<>();
+            map.put("enumField", enumField);
+            map.put("enumClassName",enumClassName);
+            map.put("enumClass",enumClass);
+            return map;
+        }
+    }
 }
