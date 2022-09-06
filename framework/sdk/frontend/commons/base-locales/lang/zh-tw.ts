@@ -6,7 +6,7 @@ const message = {
   commons: {
     home: "首頁",
     notice: "通知",
-    to_do_list: "代辦列表",
+    to_do_list: "待辦清單",
     view_all: "查看全部",
     operation: "操作",
     name: "名稱",
@@ -18,6 +18,7 @@ const message = {
     status: "狀態",
     create_time: "創建時間",
     update_time: "更新時間",
+    description: "描述",
     basic_info: "基本信息",
     cloud_account: {
       native: "雲賬號",

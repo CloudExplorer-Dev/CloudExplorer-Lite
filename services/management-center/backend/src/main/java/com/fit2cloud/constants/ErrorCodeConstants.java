@@ -20,9 +20,12 @@ public enum ErrorCodeConstants {
     ORGANIZATION_NAME_REPEAT(100012, "i18n.organization.name.not.repeat"),
     ORGANIZATION_UPDATE_NOT_THIS_CHILD(100013,"i18m.organization.pid.not.mv.to.this_child"),
 
-    WORKSPACE_ID_AND_NAME_REQUIRED(100100401, "工作空间ID和名称必须传一个"),
-    WORKSPACE_NAME_REPEAT(100100402, "工作空间名称不能重复"),
-    WORKSPACE_IS_NOT_EXIST(100100403, "工作空间不存在");
+    WORKSPACE_ID_AND_NAME_REQUIRED(100100401, "i18n.workspace.id.or.name.required"),
+
+    WORKSPACE_NAME_REPEAT(100100402, "i18n.workspace.name.not.repeat"),
+
+    WORKSPACE_IS_NOT_EXIST(100100403, "i18n.workspace.is.not.empty");
+
     /**
      * 提示
      */

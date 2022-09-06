@@ -26,6 +26,8 @@ public class PermissionConstants {
         public static final String USER = "USER";
         public static final String ROLE = "ROLE";
 
+        public static final String WORKSPACE = "WORKSPACE";
+
         public static final String CLOUD_ACCOUNT = "CLOUD_ACCOUNT";
         public static final String ORGANIZATION = "ORGANIZATION";
         public static final String SYSTEM_SETTING = "SYSTEM_SETTING";
@@ -131,6 +133,39 @@ public class PermissionConstants {
                                     .name("i18n_permission_organization_create")
                                     .role(RoleConstants.ROLE.ADMIN)
                                     .role(RoleConstants.ROLE.ORGADMIN)))
+            //工作空间
+            .group(
+                    new PermissionGroup.Builder()
+                            .id(GROUP.WORKSPACE)
+                            .name("i18n_permission_workspace")
+                            .permission(
+                                    //查看工作空间
+                                    new Permission.Builder()
+                                            .operate(OPERATE.READ)
+                                            .name("i18n_permission_workspace_read")
+                                            .role(RoleConstants.ROLE.ADMIN)
+                                            .role(RoleConstants.ROLE.ORGADMIN)
+                            )
+                            .permission(
+                                    //新建工作空间
+                                    new Permission.Builder()
+                                            .require(OPERATE.READ)
+                                            .operate(OPERATE.CREATE)
+                                            .name("i18n_permission_workspace_create")
+                                            .role(RoleConstants.ROLE.ADMIN)
+                                            .role(RoleConstants.ROLE.ORGADMIN)
+                            )
+                            .permission(
+                                    //编辑工作空间
+                                    new Permission.Builder()
+                                            .require(OPERATE.READ)
+                                            .operate(OPERATE.EDIT)
+                                            .name("i18n_permission_workspace_edit")
+                                            .role(RoleConstants.ROLE.ADMIN)
+                                            .role(RoleConstants.ROLE.USER)
+                            )
+                    //...
+            )
             // 云账号相关权限
             .group(
                     new PermissionGroup.Builder()

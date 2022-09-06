@@ -22,6 +22,9 @@ const message = {
       email_format: "邮箱格式错误",
     },
   },
+  workspace: {
+    user_count: "用户数",
+  },
 };
 export default {
   ...message,

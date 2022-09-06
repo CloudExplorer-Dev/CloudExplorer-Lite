@@ -6,7 +6,7 @@ const message = {
   commons: {
     home: "首页",
     notice: "通知",
-    to_do_list: "代办列表",
+    to_do_list: "待办列表",
     view_all: "查看全部",
     operation: "操作",
     name: "名称",
@@ -19,6 +19,7 @@ const message = {
     create_time: "创建时间",
     update_time: "更新时间",
     basic_info: "基本信息",
+    description: "描述",
     cloud_account: {
       native: "云账号",
       name: "云账号名称",
