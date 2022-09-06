@@ -51,36 +51,13 @@
               <arguments>install</arguments>
             </configuration>
           </execution>
-        </executions>
-      </plugin>
-
-      <plugin>
-        <configuration>
-          <workingDirectory>./</workingDirectory>
-        </configuration>
-        <!-- optional -->
-        <groupId>com.github.eirslett</groupId>
-        <artifactId>frontend-maven-plugin</artifactId>
-        <version>${frontend-maven-plugin.version}</version>
-        <executions>
           <execution>
-            <id>install node and npm</id>
+            <id>yarn build:base</id>
             <goals>
-              <goal>install-node-and-npm</goal>
+              <goal>yarn</goal>
             </goals>
             <configuration>
-              <!-- See https://nodejs.org/en/download/ for latest node and npm (lts) versions -->
-              <nodeVersion>v16.16.0</nodeVersion>
-              <npmVersion>7.6.3</npmVersion>
-            </configuration>
-          </execution>
-          <execution>
-            <id>npm build</id>
-            <goals>
-              <goal>npm</goal>
-            </goals>
-            <configuration>
-              <arguments>run build</arguments>
+              <arguments>build:manage</arguments>
             </configuration>
           </execution>
         </executions>
