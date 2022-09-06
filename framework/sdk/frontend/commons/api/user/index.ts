@@ -13,7 +13,7 @@ export function login(
 export function fetchCurrentUser(
   loading?: Ref<boolean>
 ): Promise<Result<User>> {
-  return get("/api/user_current", null, loading);
+  return get("/api/user/current", null, loading);
 }
 
 export function getUser(id: string): Promise<Result<User>> {

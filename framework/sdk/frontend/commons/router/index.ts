@@ -13,20 +13,11 @@ import { RouteObj } from "@commons/router/type";
 import AppContent from "@commons/components/layout/app-content/index.vue";
 import { usePermissionStore } from "@commons/stores/modules/permission";
 
-declare global {
-  interface Window {
-    eventCenterForAppNameVite: any;
-    __MICRO_APP_NAME__: string;
-    __MICRO_APP_ENVIRONMENT__: string;
-    __MICRO_APP_BASE_APPLICATION__: string;
-  }
-}
-
 /**
  * 扁平化菜单
  * @param menus
  * @param newMenus
- * @param prentPath
+ * @param autoOperations
  * @returns 扁平化后的菜单
  */
 export const flatMenu = (

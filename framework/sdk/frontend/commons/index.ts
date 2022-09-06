@@ -1,6 +1,18 @@
 import type { App } from "vue";
 import { i18n } from "./base-locales/index";
 import type { SimpleMap } from "@commons/api/base/type";
+import type { RootMicroApp } from "@/microapp";
+
+declare global {
+  interface Window {
+    eventCenterForAppNameVite: any;
+    __MICRO_APP_NAME__: string;
+    __MICRO_APP_ENVIRONMENT__: string;
+    __MICRO_APP_BASE_APPLICATION__: string;
+    rootMicroApp: RootMicroApp;
+    [index: string]: any;
+  }
+}
 
 const components: SimpleMap<any> = import.meta.glob(
   "./components/**/index.vue",

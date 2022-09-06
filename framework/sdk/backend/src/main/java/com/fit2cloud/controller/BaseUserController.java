@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/api")
 public class BaseUserController {
 
-    @GetMapping("user_current")
+    @GetMapping("user/current")
     public ResultHolder<UserDto> currentUser() {
         return ResultHolder.success((UserDto) SecurityContextHolder.getContext().getAuthentication().getPrincipal());
     }
