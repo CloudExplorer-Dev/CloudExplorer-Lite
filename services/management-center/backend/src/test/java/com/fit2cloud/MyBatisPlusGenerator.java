@@ -1,6 +1,7 @@
 package com.fit2cloud;
 
 
+import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.generator.AutoGenerator;
 import com.baomidou.mybatisplus.generator.config.*;
 import com.baomidou.mybatisplus.generator.engine.FreemarkerTemplateEngine;
@@ -54,6 +55,7 @@ public class MyBatisPlusGenerator {
             .enableChainModel() //开启链式模型
             .enableTableFieldAnnotation() //开启生成实体时生成字段注解
             //.enableColumnConstant() //开启生成字段常量(就是把表内字段在类里生成常量)
+            .idType(IdType.ASSIGN_UUID) //自动分配怒UUID
             .build();
 
     private static final PackageConfig PACKAGE_CONFIG = new PackageConfig.Builder()

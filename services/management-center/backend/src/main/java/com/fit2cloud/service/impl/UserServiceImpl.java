@@ -13,6 +13,8 @@ import com.fit2cloud.base.entity.UserRole;
 import com.fit2cloud.common.constants.RoleConstants;
 import com.fit2cloud.common.constants.SystemUserConstants;
 import com.fit2cloud.common.exception.Fit2cloudException;
+import com.fit2cloud.common.utils.CurrentUserUtils;
+import com.fit2cloud.common.utils.MD5Util;
 import com.fit2cloud.constants.ErrorCodeConstants;
 import com.fit2cloud.dao.mapper.UserMapper;
 import com.fit2cloud.dto.RoleInfo;
@@ -22,6 +24,8 @@ import com.fit2cloud.dto.UserRoleDto;
 import com.fit2cloud.request.CreateUserRequest;
 import com.fit2cloud.request.PageUserRequest;
 import com.fit2cloud.service.IUserService;
+import com.fit2cloud.service.OrganizationCommonService;
+import com.fit2cloud.service.WorkspaceCommonService;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
@@ -44,13 +48,16 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
     RoleServiceImpl roleServiceImpl;
 
     @Resource
-    OrganizationServiceImpl organizationServiceImpl;
-
-    @Resource
     BaseMapper<UserRole> userRoleMapper;
 
     @Resource
     BaseMapper<Role> roleMapper;
+
+    @Resource
+    OrganizationCommonService organizationCommonService;
+
+    @Resource
+    WorkspaceCommonService workspaceCommonService;
 
 
     @Override
@@ -158,6 +165,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
         if (StringUtils.isBlank(user.getId())) {
             user.setId(UUID.randomUUID().toString());
         }
+        user.setPassword(MD5Util.md5(user.getPassword()));
         baseMapper.insert(user);
         if (CollectionUtils.isNotEmpty(user.getRoleInfoList())) {
             insertUserRoleInfo(user);
@@ -184,6 +192,18 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
         }
     }
 
+    public List<RoleInfo> roleInfo(String userId) {
+        Map<String, Object> param = new HashMap<>();
+        param.put("userId", userId);
+        if (CurrentUserUtils.isOrgAdmin()) {
+            List<String> orgIds = organizationCommonService.getOrgIdsByPid(CurrentUserUtils.getOrganizationId());
+            List<String> resourceIds = workspaceCommonService.getWorkspaceIdsByOrgIds(orgIds);
+            resourceIds.addAll(orgIds);
+            param.put("resourceIds", resourceIds);
+        }
+        List<RoleInfo> roleInfos = baseMapper.roleInfo(param);
+        return roleInfos;
+    }
 
     private void insertUserRoleInfo(UserRole userRole, String sourceId) {
         userRole.setId(UUID.randomUUID().toString());

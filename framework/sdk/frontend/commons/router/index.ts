@@ -1,32 +1,23 @@
 import { createWebHashHistory, createWebHistory } from "vue-router";
 import Login from "@commons/business/login/index.vue";
 import type { UnwrapRef } from "vue";
-import type { Menu } from "@commons/api/menu";
+import type { Menu } from "@commons/api/menu/type";
 import { useUserStore } from "@commons/stores/modules/user";
 import { store } from "@commons/stores";
 import BaseLayout from "@commons/business/base-layout/index.vue";
 import { useModuleStore } from "@commons/stores/modules/module";
-import type { Module } from "@commons/api/module";
+import type { Module } from "@commons/api/module/type";
 import type { RouteModule } from "@commons/api/module/type";
 import type { RouteItem } from "@commons/router/type";
 import { RouteObj } from "@commons/router/type";
 import AppContent from "@commons/components/layout/app-content/index.vue";
 import { usePermissionStore } from "@commons/stores/modules/permission";
 
-declare global {
-  interface Window {
-    eventCenterForAppNameVite: any;
-    __MICRO_APP_NAME__: string;
-    __MICRO_APP_ENVIRONMENT__: string;
-    __MICRO_APP_BASE_APPLICATION__: string;
-  }
-}
-
 /**
  * 扁平化菜单
  * @param menus
  * @param newMenus
- * @param prentPath
+ * @param autoOperations
  * @returns 扁平化后的菜单
  */
 export const flatMenu = (

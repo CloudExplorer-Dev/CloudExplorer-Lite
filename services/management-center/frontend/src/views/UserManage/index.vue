@@ -2,7 +2,7 @@
 import { ref, onMounted } from "vue";
 import { deleteUserById, listUser } from "@/api/user";
 import { useRouter } from "vue-router";
-import type { User } from "@commons/api/user/type";
+import type { User } from "@/api/user/type";
 import {
   PaginationConfig,
   SearchConfig,
@@ -187,7 +187,7 @@ const tableConfig = ref<TableConfig>({
           <div
             v-for="role in scope.row.roles"
             @click="showUserRoleDetails(scope.row)"
-            tyle="cursor:pointer"
+            style="cursor: pointer"
           >
             <a style="color: var(--el-color-primary)">{{ role.name }}<br /></a>
           </div>

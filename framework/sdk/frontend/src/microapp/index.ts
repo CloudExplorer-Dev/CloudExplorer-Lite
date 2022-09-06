@@ -1,4 +1,4 @@
-import type { Module } from "@commons/api/module";
+import type { Module } from "@commons/api/module/type";
 import { endsWith, trimEnd, trimStart } from "lodash";
 import type { MicroApp } from "@micro-zoe/micro-app";
 import type { App } from "vue";
@@ -6,13 +6,7 @@ import { store } from "@commons/stores";
 import microApp from "@micro-zoe/micro-app";
 import { useModuleStore } from "@commons/stores/modules/module";
 
-declare global {
-  interface Window {
-    rootMicroApp: RootMicroApp;
-    [index: string]: any;
-  }
-}
-class RootMicroApp {
+export class RootMicroApp {
   /**
    *获取模块信息
    */

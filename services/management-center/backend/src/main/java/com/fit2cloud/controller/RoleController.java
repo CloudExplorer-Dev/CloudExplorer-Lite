@@ -17,7 +17,7 @@ import java.util.List;
  * Date: 2022/9/1 10:25 AM
  */
 @RestController
-@RequestMapping("/role")
+@RequestMapping("/api/role")
 @Api("角色相关接口")
 public class RoleController {
 

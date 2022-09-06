@@ -18,6 +18,7 @@ const message = {
     status: "状态",
     create_time: "创建时间",
     update_time: "更新时间",
+    basic_info: "基本信息",
     description: "描述",
     cloud_account: {
       native: "云账号",
@@ -82,6 +83,7 @@ const message = {
       delete_canceled: "已取消删除",
     },
     validate: {
+      required: "{0}必填",
       limit: "长度在 {0} 到 {1} 个字符",
       input: "请输入{0}",
       select: "请选择{0}",

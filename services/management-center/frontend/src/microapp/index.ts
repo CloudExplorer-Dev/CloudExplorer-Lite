@@ -2,11 +2,6 @@ import type { App } from "vue";
 import config from "@commons/utils/constants";
 import type { RouteObj } from "@commons/router/type";
 
-declare global {
-  interface Window {
-    [index: string]: any;
-  }
-}
 class AppMicroApp {
   appMount: () => App;
   appName: string;

@@ -12,6 +12,16 @@
         <result column="create_time" jdbcType="BIGINT" property="createTime"/>
     </resultMap>
 
+    <resultMap id="RoleInfoMap" type="com.fit2cloud.dto.RoleInfo">
+        <result column="roleId" jdbcType="VARCHAR" property="roleId"/>
+        <collection property="organizationIds" ofType="java.lang.String" javaType="java.util.List">
+            <result column="organizationId"/>
+        </collection>
+        <collection property="workspaceIds" ofType="java.lang.String" javaType="java.util.List">
+            <result column="workspaceId"/>
+        </collection>
+    </resultMap>
+
     <select id="pageUser" resultMap="BaseResultMap">
         SELECT
             user.*,
@@ -27,4 +37,21 @@
             roleSortNum desc,user.create_time desc,user._name
     </select>
 
+    <select id="roleInfo" resultMap="RoleInfoMap">
+        select role.id as roleId,
+            IF(role._type = 'System', IF(role.id = 'ORGADMIN', user_role._source, null),
+            IF(role.parent_role_id = 'ORGADMIN', user_role._source, null)) as organizationId,
+            IF(role._type = 'System', IF(role.id = 'USER', user_role._source, null),
+            IF(role.parent_role_id = 'USER', user_role._source, null)) as workspaceId
+        from user_role join role
+        where
+            user_role.role_id = role.id
+        and user_role.user_id = #{userId}
+        <if test="resourceIds != null">
+            AND user_role.source_id in
+            <foreach collection="resourceIds" open="(" close=")" separator="," index="index" item="item">
+                #{item}
+            </foreach>
+        </if>
+    </select>
 </mapper>

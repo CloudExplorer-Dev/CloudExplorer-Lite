@@ -1,20 +1,12 @@
 {
   "eslint.enable": true,
-  "stylelint.enable": true,
   "editor.codeActionsOnSave": {
-    "source.fixAll.eslint": true,
-    "source.fixAll.stylelint": true
+    "source.fixAll.eslint": true
   },
   "eslint.validate": [
     "javascript",
     "vue",
     "html",
     "typescript"
-  ],
-  "stylelint.validate": [
-    "css",
-    "scss",
-    "vue",
-    "html"
   ]
 }
