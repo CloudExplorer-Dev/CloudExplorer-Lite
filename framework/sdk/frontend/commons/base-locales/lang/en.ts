@@ -18,6 +18,7 @@ const message = {
     status: "Status",
     create_time: "Create Time",
     update_time: "Update Time",
+    basic_info: "Basic Information",
     cloud_account: {
       native: "Cloud Account",
       name: "Cloud Account Name",
@@ -81,6 +82,7 @@ const message = {
       delete_canceled: "Delete Canceled",
     },
     validate: {
+      required: "{0} Required",
       limit: "Length Is Between {0} 到 {1}",
       input: "Please Input{0}",
       select: "Please Select{0}",

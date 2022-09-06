@@ -4,15 +4,18 @@ import _ from "lodash";
 import type { FormRules } from "element-plus";
 import type { FormInstance } from "element-plus/es";
 import { useI18n } from "vue-i18n";
-import { RoleInfo, Role } from "@/api/user/type";
-import { createUser, listRole, workspaceTree } from "@/api/user";
+import type { RoleInfo, Role } from "@/api/user/type";
+import {createUser, getRoleInfo, listRole, workspaceTree} from "@/api/user";
 import { useRouter } from "vue-router";
 import { ElMessage } from "element-plus/es";
-import { OrganizationTree, tree } from "@/api/organization";
+import { tree } from "@/api/organization";
+import type { OrganizationTree } from "@/api/organization/type";
 import { $tv } from "@commons/base-locales";
+import { roleConst } from "@commons/utils/constants";
 
 const router = useRouter();
 const { t } = useI18n();
+const subTitle = ref(t("commons.btn.create"));
 const formRef = ref<FormInstance | undefined>();
 const form = reactive<any>({
   username: "", // 用户ID
@@ -121,7 +124,9 @@ const addLine = () => {
     selects: [],
   };
   form.roleInfoList.forEach((item: RoleInfo) => {
-    roleInfo.selects.push(item.roleId);
+    if(roleInfo.selects){
+      roleInfo.selects.push(item.roleId);
+    }
   });
   form.roleInfoList.push(roleInfo);
   if (form.roleInfoList && roles) {
@@ -169,7 +174,7 @@ const handleCreate = (formEl: FormInstance) => {
       param.source = "local";
       createUser(param)
         .then(() => {
-          ElMessage.success(t("commons.btn.save_success"));
+          ElMessage.success(t("commons.msg.save_success"));
           backToUserList();
         })
         .catch((err) => {
@@ -198,6 +203,14 @@ onMounted(() => {
     roles.value = res.data;
   });
 
+  const userId = router.currentRoute.value.query.id;
+  if (userId) {
+    subTitle.value = t("commons.btn.edit");
+  }
+
+  getRoleInfo(userId as string).then((res) => {
+    console.log(res.data);
+  });
   addLine();
 });
 </script>
@@ -209,7 +222,7 @@ onMounted(() => {
         <breadcrumb
           :breadcrumbs="[
             { to: { name: 'user' }, title: $t('user.manage') },
-            { to: {}, title: $t('commons.btn.create') },
+            { to: {}, title: subTitle },
           ]"
         ></breadcrumb>
       </template>

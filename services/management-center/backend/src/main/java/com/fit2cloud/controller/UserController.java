@@ -3,6 +3,7 @@ package com.fit2cloud.controller;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.fit2cloud.controller.editor.OrderEditor;
 import com.fit2cloud.controller.handler.ResultHolder;
+import com.fit2cloud.dto.RoleInfo;
 import com.fit2cloud.dto.UserDto;
 import com.fit2cloud.request.CreateUserRequest;
 import com.fit2cloud.request.PageUserRequest;
@@ -17,13 +18,14 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
 import javax.validation.constraints.NotNull;
+import java.util.List;
 
 /**
  * Author: LiuDi
  * Date: 2022/8/26 2:32 PM
  */
 @RestController
-@RequestMapping("/user")
+@RequestMapping("/api/user")
 @Api("用户相关接口")
 @Validated
 public class UserController {
@@ -47,6 +49,12 @@ public class UserController {
     @DeleteMapping("/{userId}")
     public ResultHolder<Boolean> delete(@ApiParam("用户id") @NotNull(message = "用户id不能为null") @PathVariable("userId") String userId) {
         return ResultHolder.success(userService.deleteUser(userId));
+    }
+
+    @ApiOperation(value = "根据用户ID查询用户角色信息")
+    @GetMapping(value = "/role/info/{userId}")
+    public ResultHolder<List<RoleInfo>> roleInfo(@PathVariable String userId) {
+        return ResultHolder.success(userService.roleInfo(userId));
     }
 
     /**

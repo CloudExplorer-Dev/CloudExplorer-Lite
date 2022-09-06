@@ -1,27 +1,30 @@
 import { get, post, del } from "@commons/request";
 import type Result from "@commons/request/Result";
 import type { Page } from "@commons/request/Result";
-import type { ListUserRequest, CreateUserRequest } from "./type";
-import type { User } from "@commons/api/user/type";
+import type { ListUserRequest, CreateUserRequest, User } from "./type";
 
 export const listUser: (req: ListUserRequest) => Promise<Result<Page<User>>> = (
   req
 ) => {
-  return get("/user/page", req);
+  return get("/api/user/page", req);
 };
 
 export const createUser = (req: CreateUserRequest) => {
-  return post("/user/add", "", req);
+  return post("/api/user/add", "", req);
 };
 
 export const deleteUserById = (userId: string) => {
-  return del("/user/" + userId);
+  return del("/api/user/" + userId);
 };
 
 export const listRole = () => {
-  return get("/role");
+  return get("/api/role");
+};
+
+export const getRoleInfo= (userId: string) => {
+  return get("/api/user/role/info/"+userId);
 };
 
 export const workspaceTree = (): Promise<Result<Array<any>>> => {
-  return get("/base/workspace/tree");
+  return get("/api/base/workspace/tree");
 };

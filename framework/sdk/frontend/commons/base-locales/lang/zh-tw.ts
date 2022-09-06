@@ -18,6 +18,7 @@ const message = {
     status: "狀態",
     create_time: "創建時間",
     update_time: "更新時間",
+    basic_info: "基本信息",
     cloud_account: {
       native: "雲賬號",
       name: "雲賬號名稱",
@@ -81,6 +82,7 @@ const message = {
       delete_canceled: "已取消刪除",
     },
     validate: {
+      required: "{0}必填",
       limit: "長度在 {0} 到 {1} 個字符",
       input: "請輸入{0}",
       select: "請選擇{0}",

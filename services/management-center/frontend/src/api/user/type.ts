@@ -23,7 +23,7 @@ interface RoleInfo {
   roleType: string;
   organizationIds: [];
   workspaceIds: [];
-  selects?: [] | undefined;
+  selects?: string[] | undefined;
 }
 
 interface ListUserRequest {
