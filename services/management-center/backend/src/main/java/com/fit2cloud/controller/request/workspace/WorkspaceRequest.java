@@ -1,13 +1,8 @@
-package com.fit2cloud.request;
+package com.fit2cloud.controller.request.workspace;
 
-import com.fit2cloud.base.mapper.BaseOrganizationMapper;
-import com.fit2cloud.common.validator.annnotaion.CustomValidated;
 import com.fit2cloud.common.validator.group.ValidationGroup;
-import com.fit2cloud.common.validator.handler.ExistHandler;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
-import lombok.Getter;
-import lombok.Setter;
 
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Null;
@@ -21,18 +16,19 @@ import javax.validation.constraints.Null;
 public class WorkspaceRequest {
 
     @ApiModelProperty("主键id,修改的时候必填")
-    @NotNull(groups = ValidationGroup.UPDATE.class, message = "id不能为null")
-    @Null(groups = ValidationGroup.SAVE.class, message = "id必须为null")
+    @NotNull(groups = ValidationGroup.UPDATE.class, message = "{i18n.workspace.id.is.not.empty}")
+    @Null(groups = ValidationGroup.SAVE.class, message = "{i18n.workspace.id.is.null}")
     private String id;
 
     @ApiModelProperty(value = "工作空间名称", required = true)
-    @NotNull(groups = ValidationGroup.SAVE.class, message = "工作空间名称不能为空")
+    @NotNull(groups = {ValidationGroup.SAVE.class,ValidationGroup.UPDATE.class}, message = "{i18n.workspace.name.is.not.empty}")
     private String name;
 
     @ApiModelProperty(value = "工作空间描述", required = false)
     private String description;
 
-    @ApiModelProperty(value = "父级组织ID",required = false)
+    @ApiModelProperty(value = "父级组织ID",required = true)
+    @NotNull(groups = {ValidationGroup.SAVE.class,ValidationGroup.UPDATE.class}, message = "{i18n.workspace.organization.is.not.empty}")
     private String organizationId;
 
 }

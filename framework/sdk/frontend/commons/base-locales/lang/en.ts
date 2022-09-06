@@ -18,6 +18,7 @@ const message = {
     status: "Status",
     create_time: "Create Time",
     update_time: "Update Time",
+    description: "Description",
     cloud_account: {
       native: "Cloud Account",
       name: "Cloud Account Name",

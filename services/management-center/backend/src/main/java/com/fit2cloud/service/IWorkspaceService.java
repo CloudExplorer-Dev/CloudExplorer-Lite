@@ -2,11 +2,11 @@ package com.fit2cloud.service;
 
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.service.IService;
-import com.fit2cloud.dao.entity.Organization;
+import com.fit2cloud.controller.request.workspace.PageWorkspaceRequest;
+import com.fit2cloud.controller.request.workspace.WorkspaceBatchCreateRequest;
+import com.fit2cloud.controller.request.workspace.WorkspaceRequest;
 import com.fit2cloud.dao.entity.Workspace;
 import com.fit2cloud.dto.WorkspaceDTO;
-import com.fit2cloud.request.PageWorkspaceRequest;
-import com.fit2cloud.request.WorkspaceRequest;
 
 import java.util.List;
 
@@ -29,5 +29,7 @@ public interface IWorkspaceService extends IService<Workspace> {
     WorkspaceDTO getOne(String id, String name);
 
     Boolean batchDelete(List<Workspace> workspaces);
+
+    Boolean batch(WorkspaceBatchCreateRequest request);
 
 }
