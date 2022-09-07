@@ -1,5 +1,7 @@
 package com.fit2cloud.common.constants;
 
+import com.baomidou.mybatisplus.annotation.EnumValue;
+
 public class RoleConstants {
 
     public static final String ROLE_TOKEN = "CE-ROLE";
@@ -10,7 +12,14 @@ public class RoleConstants {
     }
 
     public enum Type {
-        origin, inherit
+        origin(0), inherit(1);
+
+        Type(int index) {
+            this.index = index;
+        }
+
+        @EnumValue
+        private final int index;
     }
 
 }

@@ -41,7 +41,7 @@ public class Role implements Serializable {
     private String id;
 
     /**
-     * 角色分类：系统内置角色、继承角色
+     * 角色分类：(0)系统内置角色、(1)继承角色
      */
     @TableField("_type")
     private RoleConstants.Type type;
@@ -75,4 +75,7 @@ public class Role implements Serializable {
     @JsonSerialize(using = LocalDateTimeSerializer.class)
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
     private LocalDateTime updateTime;
+
+    @TableField("_sort")
+    private Integer sort;
 }
