@@ -37,7 +37,7 @@ public class CurrentUserUtils {
      */
     public static boolean isAdmin() {
         try {
-            return RoleConstants.ROLE.ADMIN.name().equals(CurrentUserUtils.getUser());
+            return RoleConstants.ROLE.ADMIN.name().equals(CurrentUserUtils.getUser().getCurrentRole().name());
         } catch (Exception e) {
             return false;
         }
@@ -50,7 +50,7 @@ public class CurrentUserUtils {
      */
     public static boolean isOrgAdmin() {
         try {
-            return RoleConstants.ROLE.ORGADMIN.name().equals(CurrentUserUtils.getUser());
+            return RoleConstants.ROLE.ORGADMIN.name().equals(CurrentUserUtils.getUser().getCurrentRole().name());
         } catch (Exception e) {
             return false;
         }
@@ -63,7 +63,7 @@ public class CurrentUserUtils {
      */
     public static boolean isUser() {
         try {
-            return RoleConstants.ROLE.USER.name().equals(CurrentUserUtils.getUser());
+            return RoleConstants.ROLE.USER.name().equals(CurrentUserUtils.getUser().getCurrentRole().name());
         } catch (Exception e) {
             return false;
         }

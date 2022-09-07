@@ -5,7 +5,7 @@ import type { FormRules } from "element-plus";
 import type { FormInstance } from "element-plus/es";
 import { useI18n } from "vue-i18n";
 import type { RoleInfo, Role } from "@/api/user/type";
-import {createUser, getRoleInfo, listRole, workspaceTree} from "@/api/user";
+import {createUser,updateUser, getRoleInfo, listRole, workspaceTree} from "@/api/user";
 import { useRouter } from "vue-router";
 import { ElMessage } from "element-plus/es";
 import { tree } from "@/api/organization";
@@ -15,9 +15,11 @@ import { roleConst } from "@commons/utils/constants";
 
 const router = useRouter();
 const { t } = useI18n();
-const subTitle = ref(t("commons.btn.create"));
+const operationType = ref<string>("create");
+const subTitle = ref<string>(t("commons.btn.create"));
 const formRef = ref<FormInstance | undefined>();
 const form = reactive<any>({
+  id: null, // id
   username: "", // 用户ID
   name: "", // 姓名
   email: "",
@@ -36,80 +38,80 @@ const confirmPwdValidator = (rule: any, value: any, callback: any) => {
 };
 
 // 表单校验规则
-const rule: FormRules = {
-  username: [
-    {
-      required: true,
-      message: $tv("commons.validate.required", "ID"),
-      trigger: "blur",
-    },
-    {
-      min: 1,
-      max: 30,
-      message: $tv("commons.validate.limit", "1", "30"),
-      trigger: "blur",
-    },
-  ],
-  name: [
-    {
-      required: true,
-      message: $tv("commons.validate.required", "user.name"),
-      trigger: "blur",
-    },
-    {
-      min: 2,
-      max: 30,
-      message: $tv("commons.validate.limit", "2", "30"),
-      trigger: "blur",
-    },
-  ],
-  phone: [
-    {
-      pattern: /^1[3|4|5|7|8][0-9]{9}$/,
-      message: t("user.validate.phone_format"),
-      trigger: "blur",
-    },
-  ],
-  email: [
-    {
-      required: true,
-      message: $tv("commons.validate.required", "user.email"),
-      trigger: "blur",
-    },
-    {
-      required: true,
-      pattern: /^[a-zA-Z0-9_._-]+@[a-zA-Z0-9_-]+(\.[a-zA-Z0-9_-]+)+$/,
-      message: t("user.validate.email_format"),
-      trigger: "blur",
-    },
-  ],
-  password: [
-    {
-      required: true,
-      message: $tv("commons.validate.required", "user.password"),
-      trigger: "blur",
-    },
-    {
-      required: true,
-      pattern: /^(?!.*\s)(?=.*[A-Z])(?=.*[a-z])(?=.*[0-9])(?=.*[\W_]).{8,30}$/,
-      message: t("commons.validate.pwd"),
-      trigger: "blur",
-    },
-  ],
-  confirmPassword: [
-    {
-      required: true,
-      message: $tv(
-        "commons.validate.input",
-        "commons.personal.confirm_password"
-      ),
-      trigger: "blur",
-    },
-    { validator: confirmPwdValidator, trigger: "blur" },
-  ],
-};
+const rule = reactive<FormRules>({
+    username: [
+      {
+        required: true,
+        message: $tv("commons.validate.required", "ID"),
+        trigger: "blur",
+      },
+      {
+        min: 1,
+        max: 30,
+        message: $tv("commons.validate.limit", "1", "30"),
+        trigger: "blur",
+      },
+    ],
+    name: [
+      {
+        required: true,
+        message: $tv("commons.validate.required", "user.name"),
+        trigger: "blur",
+      },
+      {
+        min: 2,
+        max: 30,
+        message: $tv("commons.validate.limit", "2", "30"),
+        trigger: "blur",
+      },
+    ],
+    phone: [
+      {
+        pattern: /^1[3|4|5|7|8][0-9]{9}$/,
+        message: t("user.validate.phone_format"),
+        trigger: "blur",
+      },
+    ],
+    email: [
+      {
+        required: true,
+        message: $tv("commons.validate.required", "user.email"),
+        trigger: "blur",
+      },
+      {
+        required: true,
+        pattern: /^[a-zA-Z0-9_._-]+@[a-zA-Z0-9_-]+(\.[a-zA-Z0-9_-]+)+$/,
+        message: t("user.validate.email_format"),
+        trigger: "blur",
+      },
+    ],
+    password: [
+      {
+        required: true,
+        message: $tv("commons.validate.required", "user.password"),
+        trigger: "blur",
+      },
+      {
+        required: true,
+        pattern: /^(?!.*\s)(?=.*[A-Z])(?=.*[a-z])(?=.*[0-9])(?=.*[\W_]).{8,30}$/,
+        message: t("commons.validate.pwd"),
+        trigger: "blur",
+      },
+    ],
+    confirmPassword: [
+      {
+        required: true,
+        message: $tv(
+            "commons.validate.input",
+            "commons.personal.confirm_password"
+        ),
+        trigger: "blur",
+      },
+      { validator: confirmPwdValidator, trigger: "blur" },
+    ],
+  });
 
-const roles = ref<Role[]>();
+const roles = ref<Role[]>([]);
 const orgTreeData = ref<OrganizationTree[]>();
 const workspaceTreeData = ref<OrganizationTree[]>();
 const isAddLineAble = ref(true);
@@ -121,16 +123,16 @@ const addLine = () => {
     roleType: "",
     organizationIds: [],
     workspaceIds: [],
-    selects: [],
+    selectedRoleIds: [],
   };
   form.roleInfoList.forEach((item: RoleInfo) => {
-    if(roleInfo.selects){
-      roleInfo.selects.push(item.roleId);
+    if(roleInfo.selectedRoleIds){
+      roleInfo.selectedRoleIds.push(item.roleId);
     }
   });
   form.roleInfoList.push(roleInfo);
   if (form.roleInfoList && roles) {
-    if (roles.value && form.roleInfoList.length === roles.value.length) {
+    if (form.roleInfoList.length === roles.value.length) {
       isAddLineAble.value = false;
     }
   }
@@ -141,24 +143,28 @@ const subtractLine = (roleInfo: RoleInfo) => {
   _.remove(form.roleInfoList, (item) => {
     return item === roleInfo;
   });
-  if (roles.value && form.roleInfoList.length !== roles.value.length) {
+  if (form.roleInfoList.length !== roles.value.length) {
     isAddLineAble.value = true;
   }
 };
 
 const filterRole = (role: Role, roleInfo: RoleInfo) => {
-  if (!roleInfo.selects) return;
+  if (!roleInfo.selectedRoleIds) return;
   let value = true;
-  if (roleInfo.selects.length === 0) {
+  if (roleInfo.selectedRoleIds.length === 0) {
     value = true;
   } else {
-    roleInfo.selects.forEach((roleId) => {
+    roleInfo.selectedRoleIds.forEach((roleId) => {
       if (role.id === roleId) {
         value = false;
       }
     });
   }
   return value;
+};
+
+const setRoleType = (roleInfo:RoleInfo, roleId:string) => {
+  roleInfo.roleType = getParentRoleId(roleId);
 };
 
 const handleCancel = (formEl: FormInstance) => {
@@ -170,9 +176,10 @@ const handleCreate = (formEl: FormInstance) => {
   if (!formEl) return;
   formEl.validate((valid) => {
     if (valid) {
+      const requestMethod =  operationType.value === "edit"?updateUser:createUser;
       const param = form;
       param.source = "local";
-      createUser(param)
+      requestMethod(param)
         .then(() => {
           ElMessage.success(t("commons.msg.save_success"));
           backToUserList();
@@ -190,28 +197,56 @@ const backToUserList = () => {
   router.push({ name: "user" });
 };
 
+const getParentRoleId = (roleId:string) => {
+  let parentRoleId = null;
+  roles.value.forEach((role:Role)=>{
+    if (role.id === roleId) {
+      parentRoleId = role.parentRoleId;
+    }
+  })
+  return parentRoleId;
+};
+
 onMounted(() => {
-  tree().then((res) => {
+  const getOrgTree = tree().then((res) => {
     orgTreeData.value = res.data;
   });
 
-  workspaceTree().then((res) => {
+  const getWsTree = workspaceTree().then((res) => {
     workspaceTreeData.value = res.data;
   });
 
-  listRole().then((res) => {
+  const getRoles = listRole().then((res) => {
     roles.value = res.data;
   });
 
   const userId = router.currentRoute.value.query.id;
   if (userId) {
+    operationType.value = "edit";
     subTitle.value = t("commons.btn.edit");
+    Promise.all([getOrgTree, getWsTree, getRoles]).then(() => {
+      getRoleInfo(userId as string).then((res) => {
+        form.username = res.data.username;
+        form.name =  res.data.name;
+        form.email = res.data.email;
+        form.phone = res.data.phone;
+        form.id = userId;
+        res.data.roleInfoList.forEach((roleInfo:RoleInfo)=>{
+          roleInfo.roleType = getParentRoleId(roleInfo.roleId)
+          roleInfo.selectedRoleIds = [];
+          form.roleInfoList.push(roleInfo)
+        });
+        if (form.roleInfoList.length === roles.value.length) {
+          isAddLineAble.value = false;
+        }
+        rule.password[0].required = false
+        rule.password[1].required = false
+        rule.confirmPassword[0].required = false
+      });
+    });
+  } else {
+    addLine();
   }
-
-  getRoleInfo(userId as string).then((res) => {
-    console.log(res.data);
-  });
-  addLine();
 });
 </script>
 
@@ -246,6 +281,7 @@ onMounted(() => {
                     type="text"
                     maxlength="30"
                     show-word-limit
+                    :disabled="operationType === 'edit'"
                   />
                 </el-form-item>
               </el-col>
@@ -280,7 +316,7 @@ onMounted(() => {
                 </el-form-item>
               </el-col>
             </el-row>
-            <el-row>
+            <el-row v-show="operationType === 'create'">
               <el-col :span="10">
                 <el-form-item :label="$t('user.password')" prop="password">
                   <el-input
@@ -322,6 +358,7 @@ onMounted(() => {
                   <el-form-item :label="$t('user.type')">
                     <el-select
                       v-model="roleInfo.roleId"
+                      @change="setRoleType(roleInfo,roleInfo.roleId)"
                       :placeholder="$t('user.type')"
                       style="width: 100%"
                     >
@@ -354,7 +391,7 @@ onMounted(() => {
               </el-row>
 
               <!-- 选择组织 -->
-              <el-row v-if="roleInfo.roleId === roleConst.orgAdmin">
+              <el-row v-if="roleInfo.roleType === roleConst.orgAdmin">
                 <el-col :span="20">
                   <el-form-item :label="$t('user.add_org')">
                     <el-tree-select
@@ -374,7 +411,7 @@ onMounted(() => {
               </el-row>
 
               <!-- 选择工作空间 -->
-              <el-row v-if="roleInfo.roleId === roleConst.user">
+              <el-row v-if="roleInfo.roleType === roleConst.user">
                 <el-col :span="20">
                   <el-form-item :label="$t('user.add_workspace')">
                     <el-tree-select
@@ -416,7 +453,7 @@ onMounted(() => {
             $t("commons.btn.cancel")
           }}</el-button>
           <el-button type="primary" @click="handleCreate(formRef)">{{
-            $t("commons.btn.create")
+            $t("commons.btn.save")
           }}</el-button>
         </layout-container>
       </el-form>

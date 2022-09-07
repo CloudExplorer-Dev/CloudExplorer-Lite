@@ -1,10 +1,11 @@
 package com.fit2cloud.controller;
 
 import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.fit2cloud.base.entity.User;
 import com.fit2cloud.controller.editor.OrderEditor;
 import com.fit2cloud.controller.handler.ResultHolder;
-import com.fit2cloud.dto.RoleInfo;
 import com.fit2cloud.dto.UserDto;
+import com.fit2cloud.dto.UserOperateDto;
 import com.fit2cloud.request.CreateUserRequest;
 import com.fit2cloud.request.PageUserRequest;
 import com.fit2cloud.request.pub.OrderRequest;
@@ -18,7 +19,6 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
 import javax.validation.constraints.NotNull;
-import java.util.List;
 
 /**
  * Author: LiuDi
@@ -45,6 +45,18 @@ public class UserController {
         return ResultHolder.success(userService.createUser(request));
     }
 
+    @ApiOperation(value = "更新用户")
+    @PostMapping("/update")
+    public ResultHolder<Boolean> updateUser(@RequestBody CreateUserRequest request) {
+        return ResultHolder.success(userService.updateUser(request));
+    }
+
+    @ApiOperation(value = "更新密码")
+    @PostMapping("/updatePwd")
+    public ResultHolder<Boolean> updatePwd(@RequestBody User user) {
+        return ResultHolder.success(userService.updatePwd(user));
+    }
+
     @ApiOperation(value = "删除用户")
     @DeleteMapping("/{userId}")
     public ResultHolder<Boolean> delete(@ApiParam("用户id") @NotNull(message = "用户id不能为null") @PathVariable("userId") String userId) {
@@ -53,8 +65,8 @@ public class UserController {
 
     @ApiOperation(value = "根据用户ID查询用户角色信息")
     @GetMapping(value = "/role/info/{userId}")
-    public ResultHolder<List<RoleInfo>> roleInfo(@PathVariable String userId) {
-        return ResultHolder.success(userService.roleInfo(userId));
+    public ResultHolder<UserOperateDto> roleInfo(@PathVariable String userId) {
+        return ResultHolder.success(userService.userRoleInfo(userId));
     }
 
     /**

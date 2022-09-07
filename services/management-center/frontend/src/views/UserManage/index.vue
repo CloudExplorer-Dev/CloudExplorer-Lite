@@ -21,6 +21,8 @@ const columns = ref([]);
 const tableData = ref<Array<User>>();
 const table: any = ref(null);
 
+const activeUserId = ref<String>();
+
 onMounted(() => {
   search(new TableSearch());
 });
@@ -94,7 +96,8 @@ const showMsgConfigDialog = () => {
 };
 
 const modifyPwdRef = ref();
-const showPwdDialog = () => {
+const showPwdDialog = (row: User) => {
+  activeUserId.value = row.id
   modifyPwdRef.value.dialogVisible = true;
 };
 
@@ -221,7 +224,7 @@ const tableConfig = ref<TableConfig>({
   </layout-content>
 
   <!-- 修改密码弹出框 -->
-  <ModifyPwd ref="modifyPwdRef" />
+  <ModifyPwd ref="modifyPwdRef" :userId="activeUserId" />
 
   <!-- 通知设置弹出框 -->
   <MsgConfig ref="msgConfigRef" />

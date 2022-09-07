@@ -13,6 +13,14 @@ export const createUser = (req: CreateUserRequest) => {
   return post("/api/user/add", "", req);
 };
 
+export const updateUser = (req: CreateUserRequest) => {
+  return post("/api/user/update", "", req);
+};
+
+export const updatePwd = (req: any) => {
+  return post("/api/user/updatePwd", "", req);
+};
+
 export const deleteUserById = (userId: string) => {
   return del("/api/user/" + userId);
 };
