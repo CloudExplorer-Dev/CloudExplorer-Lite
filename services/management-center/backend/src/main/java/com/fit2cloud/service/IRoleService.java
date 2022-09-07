@@ -23,5 +23,5 @@ public interface IRoleService extends IService<Role> {
      */
     List<Role> getRolesByResourceIds(Map<String, Object> param);
 
-    List<Role> roles();
+    List<Role> currentUserRoles();
 }

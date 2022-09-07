@@ -30,7 +30,7 @@ public class RoleServiceImpl extends ServiceImpl<RoleMapper, Role> implements IR
         return baseMapper.getRolesByResourceIds(param);
     }
 
-    public List<Role> roles() {
+    public List<Role> currentUserRoles() {
         //TODO 获取当前登录用户的角色
         String parentRoleId = "ADMIN";
 

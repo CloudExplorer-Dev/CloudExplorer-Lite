@@ -25,12 +25,12 @@ export const deleteUserById = (userId: string) => {
   return del("/api/user/" + userId);
 };
 
-export const listRole = () => {
-  return get("/api/role");
+export const listCurrentUserRole = () => {
+  return get("/api/role/current");
 };
 
-export const getRoleInfo= (userId: string) => {
-  return get("/api/user/role/info/"+userId);
+export const getRoleInfo = (userId: string) => {
+  return get("/api/user/role/info/" + userId);
 };
 
 export const workspaceTree = (): Promise<Result<Array<any>>> => {

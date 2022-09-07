@@ -124,7 +124,7 @@ public class BaseUserRoleServiceImpl extends ServiceImpl<BaseUserRoleMapper, Use
                 if (RoleConstants.Type.origin.equals(roleList.get(0).getType())) {
                     dto.setParentRole(RoleConstants.ROLE.valueOf(roleList.get(0).getId()));
                 } else {
-                    dto.setParentRole(RoleConstants.ROLE.valueOf(roleList.get(0).getParentRoleId()));
+                    dto.setParentRole(roleList.get(0).getParentRoleId());
                 }
                 result.computeIfAbsent(dto.getParentRole(), k -> new ArrayList<>());
                 result.get(dto.getParentRole()).add(dto);

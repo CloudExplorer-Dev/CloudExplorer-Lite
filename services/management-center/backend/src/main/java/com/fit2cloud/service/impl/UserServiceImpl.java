@@ -226,14 +226,14 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
             userRole.setRoleId(roleInfo.getRoleId());
             userRole.setUserId(user.getId());
 
-            String parentRoleId = getParentRoleId(roleInfo.getRoleId());
-            if (StringUtils.equalsIgnoreCase(parentRoleId, RoleConstants.ROLE.USER.name())) {
+            RoleConstants.ROLE parentRoleId = getParentRoleId(roleInfo.getRoleId());
+            if (RoleConstants.ROLE.USER.equals(parentRoleId)) {
                 roleInfo.getWorkspaceIds().forEach(workspaceId -> insertUserRoleInfo(userRole, workspaceId));
             }
-            if (StringUtils.equalsIgnoreCase(parentRoleId, RoleConstants.ROLE.ORGADMIN.name())) {
+            if (RoleConstants.ROLE.ORGADMIN.equals(parentRoleId)) {
                 roleInfo.getOrganizationIds().forEach(organizationId -> insertUserRoleInfo(userRole, organizationId));
             }
-            if (StringUtils.equals(parentRoleId, RoleConstants.ROLE.ADMIN.name())) {
+            if (RoleConstants.ROLE.ADMIN.equals(parentRoleId)) {
                 insertUserRoleInfo(userRole, null);
             }
         }
@@ -273,21 +273,11 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
         userRoleMapper.insert(userRole);
     }
 
-    public String getParentRoleId(String roleId) {
+    public RoleConstants.ROLE getParentRoleId(String roleId) {
         Role role = roleMapper.selectById(roleId);
-        return getParentRoleId(role);
+        return role.getParentRoleId();
     }
 
-    private String getParentRoleId(Role role) {
-        if (role == null) {
-            return null;
-        }
-        if (role.getParentRoleId() != null) {
-            return role.getParentRoleId();
-        } else {
-            return role.getId();
-        }
-    }
 
     /**
      * 校验用户参数

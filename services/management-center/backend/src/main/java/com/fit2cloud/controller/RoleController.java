@@ -25,8 +25,10 @@ public class RoleController {
     IRoleService roleService;
 
     @ApiOperation(value = "查询所有角色")
-    @GetMapping
-    public ResultHolder<List<Role>> roles() {
-        return ResultHolder.success(roleService.roles());
+    @GetMapping("/current")
+    public ResultHolder<List<Role>> currentUserRoles() {
+        return ResultHolder.success(roleService.currentUserRoles());
     }
+
+
 }
