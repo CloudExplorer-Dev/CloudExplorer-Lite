@@ -56,7 +56,7 @@ public class Role implements Serializable {
      * 父角色ID
      */
     @TableField("parent_role_id")
-    private String parentRoleId;
+    private RoleConstants.ROLE parentRoleId;
 
     /**
      * 创建时间

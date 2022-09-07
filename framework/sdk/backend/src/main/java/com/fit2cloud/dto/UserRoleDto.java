@@ -6,7 +6,6 @@ import com.fit2cloud.common.constants.RoleConstants;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.Accessors;
-import org.apache.commons.lang3.StringUtils;
 
 import java.io.Serial;
 import java.io.Serializable;
@@ -40,9 +39,9 @@ public class UserRoleDto implements Serializable {
             if (!t1.equals(t2)) {
                 return t1.ordinal() - t2.ordinal();
             }
-            if (StringUtils.isNotBlank(role1.getParentRoleId()) && StringUtils.isNotBlank(role2.getParentRoleId())) {
-                RoleConstants.ROLE p1 = RoleConstants.ROLE.valueOf(role1.getParentRoleId());
-                RoleConstants.ROLE p2 = RoleConstants.ROLE.valueOf(role2.getParentRoleId());
+            if (role1.getParentRoleId() != null && role2.getParentRoleId() != null) {
+                RoleConstants.ROLE p1 = role1.getParentRoleId();
+                RoleConstants.ROLE p2 = role2.getParentRoleId();
                 if (!p1.equals(p2)) {
                     return p1.ordinal() - p2.ordinal();
                 }
