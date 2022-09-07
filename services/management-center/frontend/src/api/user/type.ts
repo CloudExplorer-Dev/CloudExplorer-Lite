@@ -42,4 +42,22 @@ interface CreateUserRequest {
   roleInfoList: RoleInfo[];
 }
 
-export type { User, Role, RoleInfo, ListUserRequest, CreateUserRequest };
+interface UpdateUserPwdRequest {
+  id: string;
+  password: string;
+}
+
+interface UpdateUserStatusRequest {
+  id: string;
+  enabled: boolean;
+}
+
+export type {
+  User,
+  Role,
+  RoleInfo,
+  ListUserRequest,
+  CreateUserRequest,
+  UpdateUserPwdRequest,
+  UpdateUserStatusRequest,
+};

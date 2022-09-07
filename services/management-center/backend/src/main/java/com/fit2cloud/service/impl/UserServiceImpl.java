@@ -28,6 +28,8 @@ import com.fit2cloud.service.OrganizationCommonService;
 import com.fit2cloud.service.WorkspaceCommonService;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
+import org.springframework.context.MessageSource;
+import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -60,6 +62,8 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
     @Resource
     WorkspaceCommonService workspaceCommonService;
 
+    @Resource
+    private MessageSource messageSource;
 
     @Override
     public IPage<UserDto> pageUser(PageUserRequest pageUserRequest) {
@@ -95,6 +99,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
         });
     }
 
+    @Override
     public boolean deleteUser(String userId) {
         //TODO 获取当前登录用户ID,用户角色
         String currentLoginUserId = "admin";
@@ -154,6 +159,23 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
         return true;
     }
 
+    public boolean changeUserStatus(UserDto userDto) {
+        User userUpdate = new User();
+        userUpdate.setId(userDto.getId());
+        userUpdate.setEnabled(userDto.getEnabled());
+        if (userDto.getRoles().stream().map(Role::getId).anyMatch(s -> s.equals(RoleConstants.ROLE.ADMIN.name())) && !userDto.getEnabled()) {
+            Long countAdmin = baseMapper.countActiveUsers(RoleConstants.ROLE.ADMIN.name());
+            if (countAdmin > 1) {
+                baseMapper.updateById(userUpdate);
+            } else {
+                throw new Fit2cloudException(ErrorCodeConstants.USER_KEEP_ONE_ADMIN.getCode(),  ErrorCodeConstants.USER_KEEP_ONE_ADMIN.getMessage());
+            }
+        } else {
+            baseMapper.updateById(userUpdate);
+        }
+        return true;
+    }
+
     public boolean createUser(CreateUserRequest request) {
         validateUserParam(request);
         UserOperateDto user = new UserOperateDto();
@@ -200,7 +222,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
     public boolean updatePwd(User user) {
         // 非本地创建用户不允许修改密码
         if (!"local".equalsIgnoreCase(CurrentUserUtils.getUser().getSource())) {
-            throw new Fit2cloudException(ErrorCodeConstants.EXTRA_USER_CAN_NOT_EDIT_PASSWORD.getCode(), ErrorCodeConstants.EXTRA_USER_CAN_NOT_EDIT_PASSWORD.getMessage());
+            throw new Fit2cloudException(ErrorCodeConstants.USER_KEEP_ONE_ADMIN.getCode(), ErrorCodeConstants.USER_KEEP_ONE_ADMIN.getMessage());
         }
         User updateUser = new User();
         updateUser.setId(user.getId());

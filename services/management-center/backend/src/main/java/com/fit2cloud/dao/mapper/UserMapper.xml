@@ -37,6 +37,15 @@
             roleSortNum desc,user.create_time desc,user._name
     </select>
 
+    <select id="countActiveUsers" resultType="java.lang.Long">
+        select count(user.id)
+        from user
+        join user_role
+        where user.id = user_role.user_id
+        and user.enabled = true
+        and user_role.role_id = #{roleId}
+    </select>
+
     <select id="roleInfo" resultMap="RoleInfoMap">
         select role.id as roleId,
             IF(role._type = 'System', IF(role.id = 'ORGADMIN', user_role._source, null),

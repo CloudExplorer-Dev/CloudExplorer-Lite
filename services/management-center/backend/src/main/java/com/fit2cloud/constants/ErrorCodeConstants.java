@@ -14,7 +14,8 @@ package com.fit2cloud.constants;
 public enum ErrorCodeConstants {
     USER_CAN_NOT_DELETE(100100101,"不能删除当前登录用户"),
     USER_NOT_EXIST(100100102,"用户不存在"),
-    EXTRA_USER_CAN_NOT_EDIT_PASSWORD(100100103,"非本地用户不能修改密码"),
+    USER_NOT_LOCAL_CAN_NOT_EDIT_PASSWORD(100100103,"非本地用户不能修改密码"),
+    USER_KEEP_ONE_ADMIN(100100104,"至少保留一个系统管理员用户"),
 
     ORGANIZATION_CANNOT_DELETE(10010, "i18n.organization.cannot.delete.have.parent"),
     ORGANIZATION_ID_AND_NAME_REQUIRED(100011, "i18n.organization.id.or.name.required"),

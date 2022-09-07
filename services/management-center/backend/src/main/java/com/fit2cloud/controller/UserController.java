@@ -69,6 +69,12 @@ public class UserController {
         return ResultHolder.success(userService.userRoleInfo(userId));
     }
 
+    @ApiOperation(value = "启停用户")
+    @PostMapping(value = "/changeStatus")
+    public ResultHolder<Boolean> changeStatus(@RequestBody UserDto user) {
+        return ResultHolder.success(userService.changeUserStatus(user));
+    }
+
     /**
      * 控制器初始化时调用
      * SpringMVC 使用WebDataBinder处理<请求消息,方法入参>的绑定工作

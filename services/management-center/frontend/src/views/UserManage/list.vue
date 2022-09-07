@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref, onMounted } from "vue";
-import { deleteUserById, listUser } from "@/api/user";
+import { deleteUserById, listUser, changeUserStatus } from "@/api/user";
 import { useRouter } from "vue-router";
 import type { User } from "@/api/user/type";
 import {
@@ -82,9 +82,18 @@ const addRole = () => {
   console.log("addRole");
 };
 
+/**
+ * 启停用户
+ * @param row
+ */
 const handleSwitchStatus = (row: User) => {
-  alert("切换用户状态");
-  //TODO 切换用户状态
+  changeUserStatus(row)
+    .then(() => {
+      ElMessage.success(t("commons.msg.op_success"));
+    })
+    .catch(() => {
+      table.value.search();
+    });
 };
 
 const msgConfigRef = ref();
@@ -159,11 +168,9 @@ const tableConfig = ref<TableConfig>({
 <template>
   <ce-table
     ref="table"
-    :expand-row-keys="expandRowKeys"
     :columns="columns"
     :data="tableData"
     :tableConfig="tableConfig"
-    @selection-change="handleSelectionChange"
     row-key="id"
   >
     <template #toolbar>

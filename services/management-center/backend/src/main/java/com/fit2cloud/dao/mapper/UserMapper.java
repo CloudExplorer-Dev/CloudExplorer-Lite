@@ -24,4 +24,6 @@ public interface UserMapper extends BaseMapper<User> {
     IPage<User> pageUser(IPage<User> page, @Param(Constants.WRAPPER) Wrapper<User> wrapper);
 
     List<RoleInfo> roleInfo(Map<String, Object> param);
+
+    Long countActiveUsers(@Param("roleId") String roleId);
 }

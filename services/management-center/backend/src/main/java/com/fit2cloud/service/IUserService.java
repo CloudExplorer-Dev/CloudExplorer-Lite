@@ -19,6 +19,8 @@ public interface IUserService extends IService<User> {
 
     boolean deleteUser(String id);
 
+    boolean changeUserStatus(UserDto userDto);
+
     UserOperateDto userRoleInfo(String userId);
 
     }
