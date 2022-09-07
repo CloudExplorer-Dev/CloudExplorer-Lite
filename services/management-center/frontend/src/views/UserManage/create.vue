@@ -255,214 +255,199 @@ onMounted(() => {
 </script>
 
 <template>
-  <div style="height: 100%">
-    <layout-content>
-      <template #breadcrumb>
-        <breadcrumb
-          :breadcrumbs="[
-            { to: { name: 'user' }, title: $t('user.manage') },
-            { to: {}, title: subTitle },
-          ]"
-        ></breadcrumb>
+  <el-form
+    :model="form"
+    :rules="rule"
+    ref="formRef"
+    label-width="100px"
+    label-position="right"
+  >
+    <layout-container>
+      <template #header>
+        <span>{{ $t("commons.basic_info") }}</span>
       </template>
-      <el-form
-        :model="form"
-        :rules="rule"
-        ref="formRef"
-        label-width="100px"
-        label-position="right"
-      >
-        <layout-container>
-          <template #header>
-            <span>{{ $t("commons.basic_info") }}</span>
-          </template>
-          <template #content>
-            <el-row>
-              <el-col :span="10">
-                <el-form-item label="ID" prop="username">
-                  <el-input
-                    v-model="form.username"
-                    type="text"
-                    maxlength="30"
-                    show-word-limit
-                    :disabled="operationType === 'edit'"
-                  />
-                </el-form-item>
-              </el-col>
-              <el-col :span="10">
-                <el-form-item :label="$t('user.name')" prop="name">
-                  <el-input
-                    v-model="form.name"
-                    type="text"
-                    maxlength="30"
-                    show-word-limit
-                  />
-                </el-form-item>
-              </el-col>
-            </el-row>
-            <el-row>
-              <el-col :span="10">
-                <el-form-item label="Email" prop="email">
-                  <el-input
-                    v-model="form.email"
-                    type="text"
-                    maxlength="50"
-                    show-word-limit
-                  />
-                </el-form-item>
-              </el-col>
-              <el-col :span="10">
-                <el-form-item
-                  :label="$t('commons.personal.phone')"
-                  prop="phone"
+      <template #content>
+        <el-row>
+          <el-col :span="10">
+            <el-form-item label="ID" prop="username">
+              <el-input
+                v-model="form.username"
+                type="text"
+                maxlength="30"
+                show-word-limit
+                :disabled="operationType === 'edit'"
+              />
+            </el-form-item>
+          </el-col>
+          <el-col :span="10">
+            <el-form-item :label="$t('user.name')" prop="name">
+              <el-input
+                v-model="form.name"
+                type="text"
+                maxlength="30"
+                show-word-limit
+              />
+            </el-form-item>
+          </el-col>
+        </el-row>
+        <el-row>
+          <el-col :span="10">
+            <el-form-item label="Email" prop="email">
+              <el-input
+                v-model="form.email"
+                type="text"
+                maxlength="50"
+                show-word-limit
+              />
+            </el-form-item>
+          </el-col>
+          <el-col :span="10">
+            <el-form-item :label="$t('commons.personal.phone')" prop="phone">
+              <el-input v-model="form.phone" />
+            </el-form-item>
+          </el-col>
+        </el-row>
+        <el-row v-if="operationType === 'create'">
+          <el-col :span="10">
+            <el-form-item :label="$t('user.password')" prop="password">
+              <el-input
+                v-model="form.password"
+                type="password"
+                clearable
+                show-password
+                autocomplete="new-password"
+              />
+            </el-form-item>
+          </el-col>
+          <el-col :span="10">
+            <el-form-item
+              :label="$t('commons.personal.confirm_password')"
+              prop="confirmPassword"
+            >
+              <el-input
+                v-model="form.confirmPassword"
+                type="password"
+                clearable
+                show-password
+                autocomplete="new-password"
+              />
+            </el-form-item>
+          </el-col>
+        </el-row>
+      </template>
+    </layout-container>
+
+    <layout-container>
+      <template #header>
+        <span>{{ $t("user.set_role") }}</span>
+      </template>
+      <template #content>
+        <div v-for="(roleInfo, index) in form.roleInfoList" :key="index">
+          <!-- 用户类型 -->
+          <el-row>
+            <el-col :span="20">
+              <el-form-item :label="$t('user.type')">
+                <el-select
+                  v-model="roleInfo.roleId"
+                  @change="setRoleType(roleInfo, roleInfo.roleId)"
+                  :placeholder="$t('user.type')"
+                  style="width: 100%"
                 >
-                  <el-input v-model="form.phone" />
-                </el-form-item>
-              </el-col>
-            </el-row>
-            <el-row v-if="operationType === 'create'">
-              <el-col :span="10">
-                <el-form-item :label="$t('user.password')" prop="password">
-                  <el-input
-                    v-model="form.password"
-                    type="password"
-                    clearable
-                    show-password
-                    autocomplete="new-password"
+                  <el-option
+                    v-for="role in roles"
+                    :key="role.id"
+                    :label="role.name"
+                    :value="role.id"
+                    v-show="filterRole(role, roleInfo)"
                   />
-                </el-form-item>
-              </el-col>
-              <el-col :span="10">
-                <el-form-item
-                  :label="$t('commons.personal.confirm_password')"
-                  prop="confirmPassword"
-                >
-                  <el-input
-                    v-model="form.confirmPassword"
-                    type="password"
-                    clearable
-                    show-password
-                    autocomplete="new-password"
-                  />
-                </el-form-item>
-              </el-col>
-            </el-row>
-          </template>
-        </layout-container>
-
-        <layout-container>
-          <template #header>
-            <span>{{ $t("user.set_role") }}</span>
-          </template>
-          <template #content>
-            <div v-for="(roleInfo, index) in form.roleInfoList" :key="index">
-              <!-- 用户类型 -->
-              <el-row>
-                <el-col :span="20">
-                  <el-form-item :label="$t('user.type')">
-                    <el-select
-                      v-model="roleInfo.roleId"
-                      @change="setRoleType(roleInfo, roleInfo.roleId)"
-                      :placeholder="$t('user.type')"
-                      style="width: 100%"
-                    >
-                      <el-option
-                        v-for="role in roles"
-                        :key="role.id"
-                        :label="role.name"
-                        :value="role.id"
-                        v-show="filterRole(role, roleInfo)"
-                      />
-                    </el-select>
-                  </el-form-item>
-                </el-col>
-                <el-col :span="2" style="padding-left: 60px">
-                  <el-tooltip
-                    class="box-item"
-                    effect="dark"
-                    :content="$t('user.delete_role')"
-                    placement="bottom"
-                  >
-                    <el-button
-                      v-if="form.roleInfoList.length > 1"
-                      @click="subtractLine(roleInfo)"
-                      type="danger"
-                      icon="minus"
-                      circle
-                    ></el-button>
-                  </el-tooltip>
-                </el-col>
-              </el-row>
-
-              <!-- 选择组织 -->
-              <el-row v-if="roleInfo.roleType === roleConst.orgAdmin">
-                <el-col :span="20">
-                  <el-form-item :label="$t('user.add_org')">
-                    <el-tree-select
-                      v-model="roleInfo.organizationIds"
-                      node-key="id"
-                      :props="{ label: 'name' }"
-                      :data="orgTreeData"
-                      :render-after-expand="false"
-                      filterable
-                      multiple
-                      show-checkbox
-                      check-strictly
-                      style="width: 100%"
-                    />
-                  </el-form-item>
-                </el-col>
-              </el-row>
-
-              <!-- 选择工作空间 -->
-              <el-row v-if="roleInfo.roleType === roleConst.user">
-                <el-col :span="20">
-                  <el-form-item :label="$t('user.add_workspace')">
-                    <el-tree-select
-                      v-model="roleInfo.workspaceIds"
-                      node-key="id"
-                      :props="{ label: 'name' }"
-                      :data="workspaceTreeData"
-                      :render-after-expand="false"
-                      filterable
-                      multiple
-                      show-checkbox
-                      style="width: 100%"
-                    />
-                  </el-form-item>
-                </el-col>
-              </el-row>
-            </div>
-
-            <div style="text-align: center">
+                </el-select>
+              </el-form-item>
+            </el-col>
+            <el-col :span="2" style="padding-left: 60px">
               <el-tooltip
                 class="box-item"
                 effect="dark"
-                :content="$t('user.add_role')"
+                :content="$t('user.delete_role')"
                 placement="bottom"
               >
                 <el-button
-                  @click="addLine"
-                  :disabled="!isAddLineAble"
-                  type="primary"
-                  icon="plus"
+                  v-if="form.roleInfoList.length > 1"
+                  @click="subtractLine(roleInfo)"
+                  type="danger"
+                  icon="minus"
                   circle
                 ></el-button>
               </el-tooltip>
-            </div>
-          </template>
-        </layout-container>
-        <layout-container>
-          <el-button @click="handleCancel(formRef)">{{
-            $t("commons.btn.cancel")
-          }}</el-button>
-          <el-button type="primary" @click="handleCreate(formRef)">{{
-            $t("commons.btn.save")
-          }}</el-button>
-        </layout-container>
-      </el-form>
-    </layout-content>
-  </div>
+            </el-col>
+          </el-row>
+
+          <!-- 选择组织 -->
+          <el-row v-if="roleInfo.roleType === roleConst.orgAdmin">
+            <el-col :span="20">
+              <el-form-item :label="$t('user.add_org')">
+                <el-tree-select
+                  v-model="roleInfo.organizationIds"
+                  node-key="id"
+                  :props="{ label: 'name' }"
+                  :data="orgTreeData"
+                  :render-after-expand="false"
+                  filterable
+                  multiple
+                  show-checkbox
+                  check-strictly
+                  style="width: 100%"
+                />
+              </el-form-item>
+            </el-col>
+          </el-row>
+
+          <!-- 选择工作空间 -->
+          <el-row v-if="roleInfo.roleType === roleConst.user">
+            <el-col :span="20">
+              <el-form-item :label="$t('user.add_workspace')">
+                <el-tree-select
+                  v-model="roleInfo.workspaceIds"
+                  node-key="id"
+                  :props="{ label: 'name' }"
+                  :data="workspaceTreeData"
+                  :render-after-expand="false"
+                  filterable
+                  multiple
+                  show-checkbox
+                  style="width: 100%"
+                />
+              </el-form-item>
+            </el-col>
+          </el-row>
+        </div>
+
+        <div style="text-align: center">
+          <el-tooltip
+            class="box-item"
+            effect="dark"
+            :content="$t('user.add_role')"
+            placement="bottom"
+          >
+            <el-button
+              @click="addLine"
+              :disabled="!isAddLineAble"
+              type="primary"
+              icon="plus"
+              circle
+            ></el-button>
+          </el-tooltip>
+        </div>
+      </template>
+    </layout-container>
+    <layout-container>
+      <el-button @click="handleCancel(formRef)">{{
+        $t("commons.btn.cancel")
+      }}</el-button>
+      <el-button type="primary" @click="handleCreate(formRef)">{{
+        $t("commons.btn.save")
+      }}</el-button>
+    </layout-container>
+  </el-form>
 </template>
 
 <style lang="scss"></style>
