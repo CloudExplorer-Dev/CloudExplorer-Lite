@@ -155,7 +155,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
     }
 
     public boolean createUser(CreateUserRequest request) {
-        validateUserParam(request, "create");
+        validateUserParam(request);
         UserOperateDto user = new UserOperateDto();
         BeanUtils.copyProperties(request, user);
         insertUser(user);
@@ -164,7 +164,8 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
 
     @Transactional
     public boolean updateUser(CreateUserRequest request) {
-        validateUserParam(request,"update");
+        // 校验用户邮箱是否已存在
+        validateUserDataExist("email", request.getEmail(), "邮箱","update",request.getId());
 
         UserOperateDto user = new UserOperateDto();
         BeanUtils.copyProperties(request, user);
@@ -202,6 +203,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
             throw new Fit2cloudException(ErrorCodeConstants.EXTRA_USER_CAN_NOT_EDIT_PASSWORD.getCode(), ErrorCodeConstants.EXTRA_USER_CAN_NOT_EDIT_PASSWORD.getMessage());
         }
         User updateUser = new User();
+        updateUser.setId(user.getId());
         updateUser.setPassword(MD5Util.md5(user.getPassword()));
         baseMapper.updateById(updateUser);
         return true;
@@ -278,40 +280,37 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
         return role.getParentRoleId();
     }
 
-
     /**
      * 校验用户参数
      *
      * @param request
      */
-    private void validateUserParam(CreateUserRequest request, String operationType) {
-        if ("create".equalsIgnoreCase(operationType)) {
-            if (StringUtils.isBlank(request.getUsername())) {
-                throw new RuntimeException("用户ID不能为空");
-            }
+    private void validateUserParam(CreateUserRequest request) {
+        if (StringUtils.isBlank(request.getUsername())) {
+            throw new RuntimeException("用户ID不能为空");
+        }
 
-            if (StringUtils.isBlank(request.getName())) {
-                throw new RuntimeException("用户名不能为空");
-            }
+        if (StringUtils.isBlank(request.getName())) {
+            throw new RuntimeException("用户名不能为空");
+        }
 
-            if (StringUtils.isBlank(request.getPassword())) {
-                throw new RuntimeException("密码不能为空");
-            }
-
-            if (SystemUserConstants.getUserName().equalsIgnoreCase(request.getUsername())) {
-                throw new RuntimeException("用户ID不能为system");
-            }
-
-            // 校验用户ID是否已存在
-            validateUserDataExist("username", request.getUsername(), "用户ID");
+        if (StringUtils.isBlank(request.getPassword())) {
+            throw new RuntimeException("密码不能为空");
         }
 
         if (StringUtils.isBlank(request.getEmail())) {
             throw new RuntimeException("邮箱不能为空");
         }
 
+        if (SystemUserConstants.getUserName().equalsIgnoreCase(request.getUsername())) {
+            throw new RuntimeException("用户ID不能为system");
+        }
+
+        // 校验用户ID是否已存在
+        validateUserDataExist("username", request.getUsername(), "用户ID","create",null);
+
         // 校验用户邮箱是否已存在
-        validateUserDataExist("email", request.getEmail(), "邮箱");
+        validateUserDataExist("email", request.getEmail(), "邮箱","create",null);
     }
 
     /**
@@ -321,11 +320,17 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
      * @param colValue
      * @param colDisplayName
      */
-    private void validateUserDataExist(String colName, String colValue, String colDisplayName) {
+    private void validateUserDataExist(String colName, String colValue, String colDisplayName,String optType,String id) {
         QueryWrapper<User> wrapper = Wrappers.query();
         wrapper.eq(true, colName, colValue);
-        if (baseMapper.selectCount(wrapper) > 0) {
+        if ("created".equals(optType) && baseMapper.selectCount(wrapper) > 0) {
             throw new RuntimeException(colDisplayName + "已存在");
+        }
+        if ("update".equals(optType)) {
+            wrapper.ne(true, "id", id);
+            if (baseMapper.selectCount(wrapper) > 0) {
+                throw new RuntimeException(colDisplayName + "已存在");
+            }
         }
     }
 }

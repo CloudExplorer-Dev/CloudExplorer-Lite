@@ -5,7 +5,13 @@ import type { FormRules } from "element-plus";
 import type { FormInstance } from "element-plus/es";
 import { useI18n } from "vue-i18n";
 import type { RoleInfo, Role } from "@/api/user/type";
-import {createUser,updateUser, getRoleInfo, listRole, workspaceTree} from "@/api/user";
+import {
+  createUser,
+  updateUser,
+  getRoleInfo,
+  listCurrentUserRole,
+  workspaceTree,
+} from "@/api/user";
 import { useRouter } from "vue-router";
 import { ElMessage } from "element-plus/es";
 import { tree } from "@/api/organization";
@@ -39,77 +45,77 @@ const confirmPwdValidator = (rule: any, value: any, callback: any) => {
 
 // 表单校验规则
 const rule = reactive<FormRules>({
-    username: [
-      {
-        required: true,
-        message: $tv("commons.validate.required", "ID"),
-        trigger: "blur",
-      },
-      {
-        min: 1,
-        max: 30,
-        message: $tv("commons.validate.limit", "1", "30"),
-        trigger: "blur",
-      },
-    ],
-    name: [
-      {
-        required: true,
-        message: $tv("commons.validate.required", "user.name"),
-        trigger: "blur",
-      },
-      {
-        min: 2,
-        max: 30,
-        message: $tv("commons.validate.limit", "2", "30"),
-        trigger: "blur",
-      },
-    ],
-    phone: [
-      {
-        pattern: /^1[3|4|5|7|8][0-9]{9}$/,
-        message: t("user.validate.phone_format"),
-        trigger: "blur",
-      },
-    ],
-    email: [
-      {
-        required: true,
-        message: $tv("commons.validate.required", "user.email"),
-        trigger: "blur",
-      },
-      {
-        required: true,
-        pattern: /^[a-zA-Z0-9_._-]+@[a-zA-Z0-9_-]+(\.[a-zA-Z0-9_-]+)+$/,
-        message: t("user.validate.email_format"),
-        trigger: "blur",
-      },
-    ],
-    password: [
-      {
-        required: true,
-        message: $tv("commons.validate.required", "user.password"),
-        trigger: "blur",
-      },
-      {
-        required: true,
-        pattern: /^(?!.*\s)(?=.*[A-Z])(?=.*[a-z])(?=.*[0-9])(?=.*[\W_]).{8,30}$/,
-        message: t("commons.validate.pwd"),
-        trigger: "blur",
-      },
-    ],
-    confirmPassword: [
-      {
-        required: true,
-        message: $tv(
-            "commons.validate.input",
-            "commons.personal.confirm_password"
-        ),
-        trigger: "blur",
-      },
-      { validator: confirmPwdValidator, trigger: "blur" },
-    ],
-  });
+  username: [
+    {
+      required: true,
+      message: $tv("commons.validate.required", "ID"),
+      trigger: "blur",
+    },
+    {
+      min: 1,
+      max: 30,
+      message: $tv("commons.validate.limit", "1", "30"),
+      trigger: "blur",
+    },
+  ],
+  name: [
+    {
+      required: true,
+      message: $tv("commons.validate.required", "user.name"),
+      trigger: "blur",
+    },
+    {
+      min: 2,
+      max: 30,
+      message: $tv("commons.validate.limit", "2", "30"),
+      trigger: "blur",
+    },
+  ],
+  phone: [
+    {
+      pattern: /^1[3|4|5|7|8][0-9]{9}$/,
+      message: t("user.validate.phone_format"),
+      trigger: "blur",
+    },
+  ],
+  email: [
+    {
+      required: true,
+      message: $tv("commons.validate.required", "user.email"),
+      trigger: "blur",
+    },
+    {
+      required: true,
+      pattern: /^[a-zA-Z0-9_._-]+@[a-zA-Z0-9_-]+(\.[a-zA-Z0-9_-]+)+$/,
+      message: t("user.validate.email_format"),
+      trigger: "blur",
+    },
+  ],
+  password: [
+    {
+      required: true,
+      message: $tv("commons.validate.required", "user.password"),
+      trigger: "blur",
+    },
+    {
+      required: true,
+      pattern: /^(?!.*\s)(?=.*[A-Z])(?=.*[a-z])(?=.*[0-9])(?=.*[\W_]).{8,30}$/,
+      message: t("commons.validate.pwd"),
+      trigger: "blur",
+    },
+  ],
+  confirmPassword: [
+    {
+      required: true,
+      message: $tv(
+        "commons.validate.input",
+        "commons.personal.confirm_password"
+      ),
+      trigger: "blur",
+    },
+    { validator: confirmPwdValidator, trigger: "blur" },
+  ],
+});
 
 const roles = ref<Role[]>([]);
 const orgTreeData = ref<OrganizationTree[]>();
@@ -126,7 +132,7 @@ const addLine = () => {
     selectedRoleIds: [],
   };
   form.roleInfoList.forEach((item: RoleInfo) => {
-    if(roleInfo.selectedRoleIds){
+    if (roleInfo.selectedRoleIds) {
       roleInfo.selectedRoleIds.push(item.roleId);
     }
   });
@@ -163,7 +169,7 @@ const filterRole = (role: Role, roleInfo: RoleInfo) => {
   return value;
 };
 
-const setRoleType = (roleInfo:RoleInfo, roleId:string) => {
+const setRoleType = (roleInfo: RoleInfo, roleId: string) => {
   roleInfo.roleType = getParentRoleId(roleId);
 };
 
@@ -176,7 +182,8 @@ const handleCreate = (formEl: FormInstance) => {
   if (!formEl) return;
   formEl.validate((valid) => {
     if (valid) {
-      const requestMethod =  operationType.value === "edit"?updateUser:createUser;
+      const requestMethod =
+        operationType.value === "edit" ? updateUser : createUser;
       const param = form;
       param.source = "local";
       requestMethod(param)
@@ -197,13 +204,13 @@ const backToUserList = () => {
   router.push({ name: "user" });
 };
 
-const getParentRoleId = (roleId:string) => {
+const getParentRoleId = (roleId: string) => {
   let parentRoleId = null;
-  roles.value.forEach((role:Role)=>{
+  roles.value.forEach((role: Role) => {
     if (role.id === roleId) {
       parentRoleId = role.parentRoleId;
     }
-  })
+  });
   return parentRoleId;
 };
 
@@ -216,7 +223,7 @@ onMounted(() => {
     workspaceTreeData.value = res.data;
   });
 
-  const getRoles = listRole().then((res) => {
+  const getRoles = listCurrentUserRole().then((res) => {
     roles.value = res.data;
   });
 
@@ -227,21 +234,18 @@ onMounted(() => {
     Promise.all([getOrgTree, getWsTree, getRoles]).then(() => {
       getRoleInfo(userId as string).then((res) => {
         form.username = res.data.username;
-        form.name =  res.data.name;
+        form.name = res.data.name;
         form.email = res.data.email;
         form.phone = res.data.phone;
         form.id = userId;
-        res.data.roleInfoList.forEach((roleInfo:RoleInfo)=>{
-          roleInfo.roleType = getParentRoleId(roleInfo.roleId)
+        res.data.roleInfoList.forEach((roleInfo: RoleInfo) => {
+          roleInfo.roleType = getParentRoleId(roleInfo.roleId);
           roleInfo.selectedRoleIds = [];
-          form.roleInfoList.push(roleInfo)
+          form.roleInfoList.push(roleInfo);
         });
         if (form.roleInfoList.length === roles.value.length) {
           isAddLineAble.value = false;
         }
-        rule.password[0].required = false
-        rule.password[1].required = false
-        rule.confirmPassword[0].required = false
       });
     });
   } else {
@@ -316,7 +320,7 @@ onMounted(() => {
                 </el-form-item>
               </el-col>
             </el-row>
-            <el-row v-show="operationType === 'create'">
+            <el-row v-if="operationType === 'create'">
               <el-col :span="10">
                 <el-form-item :label="$t('user.password')" prop="password">
                   <el-input
@@ -358,7 +362,7 @@ onMounted(() => {
                   <el-form-item :label="$t('user.type')">
                     <el-select
                       v-model="roleInfo.roleId"
-                      @change="setRoleType(roleInfo,roleInfo.roleId)"
+                      @change="setRoleType(roleInfo, roleInfo.roleId)"
                       :placeholder="$t('user.type')"
                       style="width: 100%"
                     >

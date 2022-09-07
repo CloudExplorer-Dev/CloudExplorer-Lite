@@ -21,7 +21,7 @@ const columns = ref([]);
 const tableData = ref<Array<User>>();
 const table: any = ref(null);
 
-const activeUserId = ref<String>();
+const activeUserId = ref<string>();
 
 onMounted(() => {
   search(new TableSearch());
@@ -80,11 +80,6 @@ const addRole = () => {
   console.log("addRole");
 };
 
-const showUserRoleDetails = (row: User) => {
-  alert("用户角色树");
-  //TODO 展示用户角色树
-};
-
 const handleSwitchStatus = (row: User) => {
   alert("切换用户状态");
   //TODO 切换用户状态
@@ -97,7 +92,7 @@ const showMsgConfigDialog = () => {
 
 const modifyPwdRef = ref();
 const showPwdDialog = (row: User) => {
-  activeUserId.value = row.id
+  activeUserId.value = row.id;
   modifyPwdRef.value.dialogVisible = true;
 };
 
@@ -187,12 +182,10 @@ const tableConfig = ref<TableConfig>({
       <el-table-column prop="email" :label="$t('user.email')" />
       <el-table-column prop="roles" :label="$t('user.role')">
         <template #default="scope">
-          <div
-            v-for="role in scope.row.roles"
-            @click="showUserRoleDetails(scope.row)"
-            style="cursor: pointer"
-          >
-            <a style="color: var(--el-color-primary)">{{ role.name }}<br /></a>
+          <div v-for="role in scope.row.roles" :key="role.id">
+            <span style="color: var(--el-color-primary)"
+              >{{ role.name }}<br
+            /></span>
           </div>
         </template>
       </el-table-column>
