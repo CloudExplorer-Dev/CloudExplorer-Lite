@@ -1,8 +1,6 @@
-import type Result from "@commons/request/Result";
-import type { Page } from "@commons/request/Result";
 import type { Ref } from "vue";
 
-class PaginationConfig {
+export class PaginationConfig {
   constructor(
     currentPage?: number,
     pageSize?: number,
@@ -84,7 +82,7 @@ class ComponentParent {
 /**
  * 查询
  */
-class SearchOption {
+export class SearchOption {
   /**
    *选项 提示
    */
@@ -220,7 +218,7 @@ class DateTimeComponent extends ComponentParent {
   }
 }
 
-class Condition {
+export class Condition {
   /**
    *字段
    */
@@ -263,7 +261,7 @@ class Condition {
 /**
  * 搜索配置
  */
-class SearchConfig {
+export class SearchConfig {
   showEmpty = false;
   /**
    *查询回掉函数
@@ -306,7 +304,7 @@ class SearchConfig {
     return {
       DateTimeComponent,
       DateComponent,
-      SelectComponnet: SelectComponent,
+      SelectComponent,
     };
   }
 }
@@ -366,7 +364,7 @@ class Button {
   }
 }
 
-class TableOperations {
+export class TableOperations {
   /**
    * icon
    * label
@@ -403,7 +401,7 @@ class TableOperations {
 /**
  *表格配置
  */
-class TableConfig {
+export class TableConfig {
   /**
    *操作按钮配置
    */
@@ -429,7 +427,7 @@ class TableConfig {
   }
 }
 
-class Order {
+export class Order {
   /**
    *需要进行排序的字段
    */
@@ -444,11 +442,11 @@ class Order {
   }
 }
 
-class Conditions {
+export class Conditions {
   [propName: string]: Condition | string;
 }
 
-class TableSearch {
+export class TableSearch {
   /**
    *查询条件
    */
@@ -481,7 +479,7 @@ class TableSearch {
   /**
    * 返回查询对象
    */
-  static toSearchParams(tableSearch: TableSearch) {
+  static toSearchParams(tableSearch: TableSearch): any {
     // 表头筛选
     const tableHeaderFilter = (
       tableSearch.tableFilter ? Object.keys(tableSearch.tableFilter) : []
@@ -522,14 +520,3 @@ class TableSearch {
       );
   }
 }
-export {
-  PaginationConfig,
-  SearchConfig,
-  TableConfig,
-  TableOperations,
-  TableSearch,
-  Order,
-  Conditions,
-  Condition,
-  SearchOption,
-};

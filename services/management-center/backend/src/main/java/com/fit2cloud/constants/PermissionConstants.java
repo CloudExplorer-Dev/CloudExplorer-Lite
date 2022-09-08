@@ -38,6 +38,7 @@ public class PermissionConstants {
         public static final String READ = "READ";
         public static final String EDIT = "EDIT";
         public static final String CREATE = "CREATE";
+        public static final String DELETE = "DELETE";
         //...
     }
 
@@ -111,6 +112,27 @@ public class PermissionConstants {
                                             .name("i18n_permission_role_read")
                                             .role(RoleConstants.ROLE.ADMIN)
                                             .role(RoleConstants.ROLE.ORGADMIN)
+                            )
+                            .permission(
+                                    new Permission.Builder()
+                                            .require(OPERATE.READ)
+                                            .operate(OPERATE.EDIT)
+                                            .name("i18n_permission_role_edit")
+                                            .role(RoleConstants.ROLE.ADMIN)
+                            )
+                            .permission(
+                                    new Permission.Builder()
+                                            .require(OPERATE.READ)
+                                            .operate(OPERATE.CREATE)
+                                            .name("i18n_permission_role_create")
+                                            .role(RoleConstants.ROLE.ADMIN)
+                            )
+                            .permission(
+                                    new Permission.Builder()
+                                            .require(OPERATE.READ)
+                                            .operate(OPERATE.DELETE)
+                                            .name("i18n_permission_role_delete")
+                                            .role(RoleConstants.ROLE.ADMIN)
                             )
             )
             // 组织相关权限配置

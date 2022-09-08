@@ -64,7 +64,7 @@ import {
   Condition,
   Order,
   TableSearch,
-} from "@commons/components/ce-table/index";
+} from "@commons/components/ce-table/type";
 const props = defineProps<{
   header?: string;
   tableConfig: TableConfig;
@@ -82,7 +82,7 @@ const sortChange = (sortObj: any) => {
   if (sortObj.order) {
     order.value = {
       column: sortObj.prop,
-      asc: sortObj.order === "ascending" ? true : false,
+      asc: sortObj.order === "ascending",
     };
   } else {
     order.value = undefined;

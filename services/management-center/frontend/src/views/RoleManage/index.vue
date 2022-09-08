@@ -1,8 +1,11 @@
 <script setup lang="ts"></script>
-<template lang="">
-  <div>角色管理</div>
-
-  <div></div>
+<template>
+  <layout-content>
+    <template #breadcrumb>
+      <breadcrumb :auto="true"></breadcrumb>
+    </template>
+    <router-view></router-view>
+  </layout-content>
 </template>
 
-<style lang=""></style>
+<style lang="scss"></style>
