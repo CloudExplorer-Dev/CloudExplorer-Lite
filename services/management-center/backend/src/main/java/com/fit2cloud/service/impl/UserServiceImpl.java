@@ -16,24 +16,23 @@ import com.fit2cloud.common.exception.Fit2cloudException;
 import com.fit2cloud.common.utils.CurrentUserUtils;
 import com.fit2cloud.common.utils.MD5Util;
 import com.fit2cloud.constants.ErrorCodeConstants;
+import com.fit2cloud.dao.entity.UserNotificationSetting;
 import com.fit2cloud.dao.mapper.UserMapper;
-import com.fit2cloud.dto.RoleInfo;
-import com.fit2cloud.dto.UserDto;
-import com.fit2cloud.dto.UserOperateDto;
-import com.fit2cloud.dto.UserRoleDto;
+import com.fit2cloud.dto.*;
 import com.fit2cloud.request.CreateUserRequest;
 import com.fit2cloud.request.PageUserRequest;
+import com.fit2cloud.request.UserBatchAddRoleRequest;
 import com.fit2cloud.service.IUserService;
 import com.fit2cloud.service.OrganizationCommonService;
 import com.fit2cloud.service.WorkspaceCommonService;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.context.MessageSource;
-import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
+import javax.management.Query;
 import java.util.*;
 
 /**
@@ -57,13 +56,13 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
     BaseMapper<Role> roleMapper;
 
     @Resource
+    BaseMapper<UserNotificationSetting> userNotificationSettingMapper;
+
+    @Resource
     OrganizationCommonService organizationCommonService;
 
     @Resource
     WorkspaceCommonService workspaceCommonService;
-
-    @Resource
-    private MessageSource messageSource;
 
     @Override
     public IPage<UserDto> pageUser(PageUserRequest pageUserRequest) {
@@ -197,6 +196,8 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
 
         if (CollectionUtils.isNotEmpty(user.getRoleInfoList())) {
             if (CurrentUserUtils.isAdmin()) {
+                // TODO 校验系统是否还有系统管理员的角色，如果没有不允许本次修改
+
                 // 删除要编辑的用户在 user_role 的信息，然后 reinsert
                 userRoleMapper.delete(wrapper);
             }
@@ -354,5 +355,89 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
                 throw new RuntimeException(colDisplayName + "已存在");
             }
         }
+    }
+
+    public boolean updateUserNotification(UserNotifySettingDTO userNotificationSetting) {
+        // 更新用户表的邮箱和手机号
+        User user = baseMapper.selectById(userNotificationSetting.getId());
+        user.setEmail(userNotificationSetting.getEmail());
+        user.setPhone(userNotificationSetting.getPhone());
+        baseMapper.updateById(user);
+
+        // 删除企业微信账号记录
+        userNotificationSettingMapper.deleteById(userNotificationSetting.getId());
+
+        // 重新插入企业微信账号记录
+        UserNotificationSetting notificationSetting = new UserNotificationSetting();
+        notificationSetting.setUserId(userNotificationSetting.getId());
+        notificationSetting.setWechatAccount(userNotificationSetting.getWechatAccount());
+        userNotificationSettingMapper.insert(notificationSetting);
+        return true;
+    }
+
+    public UserNotifySettingDTO findUserNotification(String userId){
+        UserNotifySettingDTO notificationDTO = new UserNotifySettingDTO();
+        User user = baseMapper.selectById(userId);
+        UserNotificationSetting userNotificationSetting = userNotificationSettingMapper.selectById(userId);
+        notificationDTO.setId(userId);
+        notificationDTO.setEmail(user.getEmail());
+        notificationDTO.setPhone(user.getPhone());
+        if(userNotificationSetting!=null){
+            notificationDTO.setWechatAccount(userNotificationSetting.getWechatAccount());
+        }
+        return notificationDTO;
+    }
+
+    @Transactional
+    public Boolean addUserRole(UserBatchAddRoleRequest userBatchAddRoleRequest){
+        userBatchAddRoleRequest.getUserIdList().forEach(userId -> {
+            userBatchAddRoleRequest.getRoleInfoList().forEach(roleInfo -> {
+                UserRole userRole = new UserRole();
+                userRole.setRoleId(roleInfo.getRoleId());
+                userRole.setUserId(userId);
+                RoleConstants.ROLE parentRoleId = getParentRoleId(roleInfo.getRoleId());
+                if (RoleConstants.ROLE.USER.equals(parentRoleId)) {
+                    roleInfo.getWorkspaceIds().forEach(workspaceId -> {
+                                if (!hasUserRole(userId, roleInfo.getRoleId(), workspaceId)) {
+                                    insertUserRoleInfo(userRole, workspaceId);
+                                }
+                            }
+                    );
+                }
+                if (RoleConstants.ROLE.ORGADMIN.equals(parentRoleId)) {
+                    roleInfo.getOrganizationIds().forEach(organizationId -> {
+                                if (!hasUserRole(userId, roleInfo.getRoleId(), organizationId)) {
+                                    insertUserRoleInfo(userRole, organizationId);
+                                }
+                            }
+                    );
+                }
+                if (RoleConstants.ROLE.ADMIN.equals(parentRoleId)) {
+                    if (!hasUserRole(userId, roleInfo.getRoleId(), null)) {
+                        insertUserRoleInfo(userRole, null);
+                    }
+                }
+            });
+        });
+        return true;
+    }
+
+    /**
+     * 判断用户是否已有某个角色
+     * @param userId
+     * @param roleId
+     * @param sourceId
+     * @return
+     */
+    private boolean hasUserRole(String userId, String roleId, String sourceId) {
+        QueryWrapper<UserRole> userRoleQueryWrapper = Wrappers.query();
+        userRoleQueryWrapper.lambda().eq(UserRole::getUserId,userId);
+        userRoleQueryWrapper.lambda().eq(UserRole::getRoleId,roleId);
+        if (!StringUtils.isBlank(sourceId)) {
+            userRoleQueryWrapper.lambda().eq(UserRole::getSource,sourceId);
+        }
+        List<UserRole> userRoleList = userRoleMapper.selectList(userRoleQueryWrapper);
+
+        return !CollectionUtils.isEmpty(userRoleList);
     }
 }

@@ -53,3 +53,19 @@ export const workspaceTree = (): Promise<Result<Array<any>>> => {
 export const changeUserStatus = (req: UpdateUserStatusRequest) => {
   return post("/api/user/changeStatus", "", req);
 };
+
+/**
+ * 设置用户通知信息
+ * @param req
+ */
+export const userNotificationSetting = (req: any) => {
+  return post("/api/user/notificationSetting", "", req);
+};
+
+export const findUserNotification = (userId: string) => {
+  return get("/api/user/findUserNotification/" + userId);
+};
+
+export const userAddRole = (req: any) => {
+  return post("/api/user/addRole", "", req);
+};

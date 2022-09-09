@@ -9,8 +9,9 @@ import {
   TableConfig,
   TableOperations,
   TableSearch,
-} from "@commons/components/ce-table";
+} from "@commons/components/ce-table/type";
 import ModifyPwd from "@/views/UserManage/ModifyPwd.vue";
+import AddRole from "@/views/UserManage/AddRole.vue";
 import MsgConfig from "@/views/UserManage/MsgConfig.vue";
 import { useI18n } from "vue-i18n";
 import { ElMessageBox, ElMessage } from "element-plus/es";
@@ -19,13 +20,21 @@ const { t } = useI18n();
 const useRoute = useRouter();
 const columns = ref([]);
 const tableData = ref<Array<User>>();
-const table: any = ref(null);
-
+const table = ref();
+const selectedUsers = ref<Array<User>>([]); // checkbox选中的用户数据
+const selectedUserIds: string[] = [];
 const activeUserId = ref<string>();
+const batchAddRoleDialogVisible = ref<boolean>(false);
+const msgConfigDialogVisible = ref<boolean>(false);
 
 onMounted(() => {
   search(new TableSearch());
 });
+
+// 刷新列表
+const refresh = () => {
+  table.value.search();
+};
 
 const search = (condition: TableSearch) => {
   const params = TableSearch.toSearchParams(condition);
@@ -44,6 +53,11 @@ const search = (condition: TableSearch) => {
       tableConfig.value.paginationConfig
     );
   });
+};
+
+// 选中
+const handleSelectionChange = (val: User[]) => {
+  selectedUsers.value = val;
 };
 
 const create = () => {
@@ -67,10 +81,8 @@ const deleteUser = (row: User) => {
   })
     .then(() => {
       deleteUserById(row.id).then(() => {
-        if (table.value) {
-          table.value?.search();
-          ElMessage.success(t("commons.msg.delete_success"));
-        }
+        refresh();
+        ElMessage.success(t("commons.msg.delete_success"));
       });
     })
     .catch(() => {
@@ -79,7 +91,14 @@ const deleteUser = (row: User) => {
 };
 
 const addRole = () => {
-  console.log("addRole");
+  if (!(selectedUsers.value.length > 0)) {
+    ElMessage.error(t("user.validate.selected"));
+    return;
+  }
+  selectedUsers.value.forEach((user: User) => {
+    selectedUserIds.push(user.id);
+  });
+  batchAddRoleDialogVisible.value = true;
 };
 
 /**
@@ -92,13 +111,13 @@ const handleSwitchStatus = (row: User) => {
       ElMessage.success(t("commons.msg.op_success"));
     })
     .catch(() => {
-      table.value.search();
+      refresh();
     });
 };
 
-const msgConfigRef = ref();
-const showMsgConfigDialog = () => {
-  msgConfigRef.value.dialogVisible = true;
+const showMsgConfigDialog = (row: User) => {
+  activeUserId.value = row.id;
+  msgConfigDialogVisible.value = true;
 };
 
 const modifyPwdRef = ref();
@@ -171,6 +190,7 @@ const tableConfig = ref<TableConfig>({
     :columns="columns"
     :data="tableData"
     :tableConfig="tableConfig"
+    @selection-change="handleSelectionChange"
     row-key="id"
   >
     <template #toolbar>
@@ -222,7 +242,31 @@ const tableConfig = ref<TableConfig>({
   <ModifyPwd ref="modifyPwdRef" :userId="activeUserId" />
 
   <!-- 通知设置弹出框 -->
-  <MsgConfig ref="msgConfigRef" />
+  <el-dialog
+    v-model="msgConfigDialogVisible"
+    :title="$t('user.notify_setting')"
+    width="25%"
+    destroy-on-close
+  >
+    <MsgConfig
+      :userId="activeUserId"
+      v-model:visible="msgConfigDialogVisible"
+    />
+  </el-dialog>
+
+  <!-- 添加角色弹出框 -->
+  <el-dialog
+    v-model="batchAddRoleDialogVisible"
+    :title="$t('user.add_role')"
+    width="40%"
+    destroy-on-close
+  >
+    <AddRole
+      :userIds="selectedUserIds"
+      v-model:visible="batchAddRoleDialogVisible"
+      @refresh="refresh"
+    />
+  </el-dialog>
 </template>
 
 <style lang="scss" scoped>

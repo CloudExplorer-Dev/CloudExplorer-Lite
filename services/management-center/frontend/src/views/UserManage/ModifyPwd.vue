@@ -5,6 +5,7 @@ import { $tv } from "@commons/base-locales";
 import { useI18n } from "vue-i18n";
 import { ElMessage } from "element-plus/es";
 import { updatePwd } from "@/api/user";
+import type { InternalRuleItem } from "async-validator/dist-types/interface";
 
 const props = defineProps({
   userId: {
@@ -24,7 +25,11 @@ const form = reactive({
   confirmPassword: "",
 });
 
-const confirmPwdValidator = (rule: any, value: any, callback: any) => {
+const confirmPwdValidator = (
+  rule: InternalRuleItem,
+  value: string,
+  callback: (error?: string | Error) => void
+) => {
   if (value !== form.newPassword) {
     callback(new Error(t("commons.validate.confirm_pwd")));
   } else {

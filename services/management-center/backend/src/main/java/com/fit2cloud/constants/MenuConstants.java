@@ -33,7 +33,7 @@ public class MenuConstants {
 
     private static final Menus.Builder MENUS_BUILDER = new Menus.Builder()
             .menu(new Menu.Builder()
-                    .name("user_manage")
+                    .name("user_tenant")
                     .title("用户与租户")
                     .path("/user_tenant")
                     .icon("yonghuguanli_huaban")
@@ -44,7 +44,7 @@ public class MenuConstants {
                             .path("/user")
                             .icon("yonghuguanli_huaban")
                             .componentPath("/src/views/UserManage/index.vue")
-                            .redirect("/user_manage/user/list")
+                            .redirect("/user_tenant/user/list")
                             .order(1)
                             .requiredPermission(new MenuPermission.Builder()
                                     .role(RoleConstants.ROLE.ADMIN)

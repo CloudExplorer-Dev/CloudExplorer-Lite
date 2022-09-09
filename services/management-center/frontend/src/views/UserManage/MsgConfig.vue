@@ -1,18 +1,29 @@
 <script setup lang="ts">
-import { reactive, ref } from "vue";
+import { onMounted, reactive, ref } from "vue";
 import type { FormInstance, FormRules } from "element-plus";
 import { useI18n } from "vue-i18n";
+import { userNotificationSetting, findUserNotification } from "@/api/user";
+import { ElMessage } from "element-plus";
+
+const props = defineProps({
+  visible: {
+    type: Boolean,
+    required: true,
+  },
+  userId: {
+    type: String,
+    required: true,
+  },
+});
+const emits = defineEmits(["update:visible"]);
 
 const { t } = useI18n();
-const dialogVisible = ref(false);
-defineExpose({
-  dialogVisible,
-});
 const formRef = ref<FormInstance | undefined>();
 const form = reactive({
+  id: null,
   email: "",
   phone: "",
-  wechat: "",
+  wechatAccount: "",
 });
 
 const rules: FormRules = {
@@ -33,8 +44,19 @@ const rules: FormRules = {
 };
 
 const handleCancel = (formEl: FormInstance) => {
-  dialogVisible.value = false;
+  emits("update:visible", false);
   formEl.resetFields();
+};
+
+const getUserNotification = () => {
+  if (props.userId) {
+    findUserNotification(props.userId).then((res) => {
+      form.id = res.data.id;
+      form.email = res.data.email;
+      form.phone = res.data.phone;
+      form.wechatAccount = res.data.wechatAccount;
+    });
+  }
 };
 
 const handleSave = (formEl: FormInstance) => {
@@ -42,25 +64,32 @@ const handleSave = (formEl: FormInstance) => {
   formEl.validate((valid) => {
     if (valid) {
       const param = {
+        id: props.userId,
         email: form.email,
         phone: form.phone,
-        wechat: form.wechat,
+        wechatAccount: form.wechatAccount,
       };
-      //TODO 更新通知设置
+      userNotificationSetting(param)
+        .then(() => {
+          emits("update:visible", false);
+          ElMessage.success(t("commons.msg.save_success"));
+        })
+        .catch((err) => {
+          ElMessage.error(err.response.data.message);
+        });
     } else {
       return false;
     }
   });
 };
+
+onMounted(() => {
+  getUserNotification();
+});
 </script>
 
 <template>
-  <el-dialog
-    v-model="dialogVisible"
-    :title="$t('通知设置')"
-    width="25%"
-    destroy-on-close
-  >
+  <div>
     <el-form
       :model="form"
       :rules="rules"
@@ -71,11 +100,11 @@ const handleSave = (formEl: FormInstance) => {
       <el-form-item label="Email" prop="email">
         <el-input v-model="form.email" clearable />
       </el-form-item>
-      <el-form-item :label="$t('手机号码')" prop="phone">
+      <el-form-item :label="$t('user.phone')" prop="phone">
         <el-input v-model="form.phone" clearable />
       </el-form-item>
-      <el-form-item :label="$t('企业微信账号')" prop="wechat">
-        <el-input v-model="form.wechat" clearable />
+      <el-form-item :label="$t('user.wechatAccount')" prop="wechatAccount">
+        <el-input v-model="form.wechatAccount" clearable />
       </el-form-item>
     </el-form>
 
@@ -84,7 +113,7 @@ const handleSave = (formEl: FormInstance) => {
         <el-icon>
           <InfoFilled />
         </el-icon>
-        邮箱、手机号设置后将与用户基本信息关联。手机号将做为钉钉平台推送标识。企业微信账号参考:<a
+          {{$t("user.notify_tips")}}:<a
           href="https://work.weixin.qq.com/api/doc/90000/90135/90665"
           target="_blank"
           style="color: var(--el-color-primary)"
@@ -94,17 +123,15 @@ const handleSave = (formEl: FormInstance) => {
       >
     </div>
 
-    <template #footer>
-      <div style="flex: auto">
-        <el-button @click="handleCancel(formRef)">{{
-          $t("commons.btn.cancel")
-        }}</el-button>
-        <el-button type="primary" @click="handleSave(formRef)">{{
-          $t("commons.btn.save")
-        }}</el-button>
-      </div>
-    </template>
-  </el-dialog>
+    <div class="dialog_footer">
+      <el-button @click="handleCancel(formRef)">{{
+        $t("commons.btn.cancel")
+      }}</el-button>
+      <el-button type="primary" @click="handleSave(formRef)">{{
+        $t("commons.btn.save")
+      }}</el-button>
+    </div>
+  </div>
 </template>
 
 <style lang="scss">
@@ -112,5 +139,9 @@ const handleSave = (formEl: FormInstance) => {
   border-radius: 4px;
   background: #dcdfe6;
   padding: 5px;
+}
+.dialog_footer {
+  text-align: right;
+  padding-top: 30px;
 }
 </style>

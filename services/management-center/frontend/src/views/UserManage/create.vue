@@ -18,6 +18,7 @@ import { tree } from "@/api/organization";
 import type { OrganizationTree } from "@/api/organization/type";
 import { $tv } from "@commons/base-locales";
 import { roleConst } from "@commons/utils/constants";
+import type { InternalRuleItem } from "async-validator/dist-types/interface";
 
 const router = useRouter();
 const { t } = useI18n();
@@ -35,7 +36,11 @@ const form = reactive<any>({
   roleInfoList: [],
 });
 
-const confirmPwdValidator = (rule: any, value: any, callback: any) => {
+const confirmPwdValidator = (
+  rule: InternalRuleItem,
+  value: string,
+  callback: (error?: string | Error) => void
+) => {
   if (value !== form.password) {
     callback(new Error(t("commons.validate.confirm_pwd")));
   } else {

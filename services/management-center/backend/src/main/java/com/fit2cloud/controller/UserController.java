@@ -5,9 +5,11 @@ import com.fit2cloud.base.entity.User;
 import com.fit2cloud.controller.editor.OrderEditor;
 import com.fit2cloud.controller.handler.ResultHolder;
 import com.fit2cloud.dto.UserDto;
+import com.fit2cloud.dto.UserNotifySettingDTO;
 import com.fit2cloud.dto.UserOperateDto;
 import com.fit2cloud.request.CreateUserRequest;
 import com.fit2cloud.request.PageUserRequest;
+import com.fit2cloud.request.UserBatchAddRoleRequest;
 import com.fit2cloud.request.pub.OrderRequest;
 import com.fit2cloud.service.IUserService;
 import io.swagger.annotations.Api;
@@ -73,6 +75,24 @@ public class UserController {
     @PostMapping(value = "/changeStatus")
     public ResultHolder<Boolean> changeStatus(@RequestBody UserDto user) {
         return ResultHolder.success(userService.changeUserStatus(user));
+    }
+
+    @ApiOperation(value = "设置通知信息")
+    @PostMapping(value = "/notificationSetting")
+    public ResultHolder<Boolean> userNotificationSetting(@RequestBody UserNotifySettingDTO userNotificationSetting) {
+        return ResultHolder.success(userService.updateUserNotification(userNotificationSetting));
+    }
+
+    @ApiOperation(value = "查找用户通知信息")
+    @GetMapping(value = "/findUserNotification/{userId}")
+    public ResultHolder<UserNotifySettingDTO> findUserNotification(@PathVariable String userId) {
+        return ResultHolder.success(userService.findUserNotification(userId));
+    }
+
+    @ApiOperation(value = "批量添加用户角色")
+    @PostMapping(value = "/addRole")
+    public ResultHolder<Boolean> addUserRole(@Validated @RequestBody UserBatchAddRoleRequest userBatchAddRoleRequest) {
+        return ResultHolder.success(userService.addUserRole(userBatchAddRoleRequest));
     }
 
     /**

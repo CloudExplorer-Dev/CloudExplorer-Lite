@@ -4,9 +4,11 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.fit2cloud.base.entity.User;
 import com.fit2cloud.dto.UserDto;
+import com.fit2cloud.dto.UserNotifySettingDTO;
 import com.fit2cloud.dto.UserOperateDto;
 import com.fit2cloud.request.CreateUserRequest;
 import com.fit2cloud.request.PageUserRequest;
+import com.fit2cloud.request.UserBatchAddRoleRequest;
 
 public interface IUserService extends IService<User> {
     IPage<UserDto> pageUser(PageUserRequest pageUserRequest);
@@ -22,5 +24,11 @@ public interface IUserService extends IService<User> {
     boolean changeUserStatus(UserDto userDto);
 
     UserOperateDto userRoleInfo(String userId);
+
+    boolean updateUserNotification(UserNotifySettingDTO userNotificationSetting);
+
+    UserNotifySettingDTO findUserNotification(String userId);
+
+    Boolean addUserRole(UserBatchAddRoleRequest userBatchAddRoleRequest);
 
     }
