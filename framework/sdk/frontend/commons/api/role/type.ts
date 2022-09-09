@@ -34,19 +34,22 @@ export class RoleRequest {
   type?: string;
   parentRoleId?: string;
   order?: OrderObject;
+  baseRole?: string;
 
   constructor(
     id?: string,
     name?: string,
     type?: string,
     parentRoleId?: string,
-    order?: OrderObject
+    order?: OrderObject,
+    baseRole?: string
   ) {
     this.id = id;
     this.name = name;
     this.type = type;
     this.parentRoleId = parentRoleId;
     this.order = order;
+    this.baseRole = baseRole;
   }
 }
 

@@ -5,13 +5,9 @@ import type { FormRules } from "element-plus";
 import type { FormInstance } from "element-plus/es";
 import { useI18n } from "vue-i18n";
 import type { RoleInfo, Role } from "@/api/user/type";
-import {
-  createUser,
-  updateUser,
-  getRoleInfo,
-  listCurrentUserRole,
-  workspaceTree,
-} from "@/api/user";
+import { createUser, updateUser, getRoleInfo, workspaceTree } from "@/api/user";
+import { listRoles } from "@commons/api/role";
+import { useUserStore } from "@commons/stores/modules/user";
 import { useRouter } from "vue-router";
 import { ElMessage } from "element-plus/es";
 import { tree } from "@/api/organization";
@@ -228,9 +224,11 @@ onMounted(() => {
     workspaceTreeData.value = res.data;
   });
 
-  const getRoles = listCurrentUserRole().then((res) => {
-    roles.value = res.data;
-  });
+  const getRoles = listRoles({ baseRole: useUserStore().currentRole }).then(
+    (res) => {
+      roles.value = res.data;
+    }
+  );
 
   const userId = router.currentRoute.value.query.id;
   if (userId) {

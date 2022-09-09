@@ -1,4 +1,4 @@
-package com.fit2cloud.request;
+package com.fit2cloud.controller.request.user;
 
 import com.fit2cloud.request.pub.OrderRequest;
 import com.fit2cloud.request.pub.PageRequest;
@@ -19,6 +19,6 @@ public class PageUserRequest extends PageRequest {
     @ApiModelProperty("角色ID，精确匹配")
     private String roleId;
 
-    @ApiModelProperty(value = "排序",example = " {\"column\":\"createTime\",\"asc\":false}")
+    @ApiModelProperty(value = "排序", example = " {\"column\":\"createTime\",\"asc\":false}")
     private OrderRequest order;
 }

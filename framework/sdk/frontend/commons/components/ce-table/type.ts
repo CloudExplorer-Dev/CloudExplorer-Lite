@@ -325,7 +325,7 @@ class Button {
   /**
    * 是否禁用
    */
-  disabled?: boolean;
+  disabled?: ((row: any) => boolean) | boolean;
   /**
    *图标,只能使用element的按钮
    */
@@ -333,14 +333,14 @@ class Button {
   /**
    *是否展示
    */
-  show?: (row: any) => boolean | boolean;
+  show?: ((row: any) => boolean) | boolean;
   constructor(
     label: string,
     type: string,
     click: (row: any) => void,
     icon?: string,
-    disabled?: boolean,
-    show?: (row: any) => boolean | boolean
+    disabled?: ((row: any) => boolean) | boolean,
+    show?: ((row: any) => boolean) | boolean
   ) {
     this.label = label;
     this.type = type;
@@ -355,10 +355,8 @@ class Button {
     type: string,
     click: (row: any) => void,
     icon?: string,
-    disabled = false,
-    show: (row: any) => boolean | boolean = () => {
-      return true;
-    }
+    disabled: ((row: any) => boolean) | boolean = false,
+    show: ((row: any) => boolean) | boolean = true
   ) {
     return new Button(label, type, click, icon, disabled, show);
   }

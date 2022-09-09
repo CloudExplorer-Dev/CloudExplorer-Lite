@@ -9,12 +9,10 @@ import com.fit2cloud.controller.handler.ResultHolder;
 import com.fit2cloud.request.pub.OrderRequest;
 import com.fit2cloud.request.role.RolePageRequest;
 import com.fit2cloud.request.role.RoleRequest;
+import io.swagger.annotations.ApiParam;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.WebDataBinder;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.InitBinder;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
 import java.util.List;
@@ -25,6 +23,15 @@ public class BaseRoleController {
 
     @Resource
     private IBaseRoleService roleService;
+
+    @GetMapping("role")
+    public ResultHolder<Role> role(
+            @ApiParam("角色ID")
+            @RequestParam("id")
+            String id
+    ) {
+        return ResultHolder.success(roleService.getById(id));
+    }
 
     @GetMapping("roles")
     public ResultHolder<List<Role>> roles(@Validated RoleRequest roleRequest) {

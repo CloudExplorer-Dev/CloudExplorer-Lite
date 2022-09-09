@@ -1,4 +1,4 @@
-package com.fit2cloud.request;
+package com.fit2cloud.controller.request.user;
 
 import com.fit2cloud.dto.RoleInfo;
 import io.swagger.annotations.ApiModelProperty;

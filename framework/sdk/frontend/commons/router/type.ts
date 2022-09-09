@@ -8,7 +8,7 @@ import type {
   Router,
   RouterHistory,
 } from "vue-router";
-import type { Menu, RequiredPermissions } from "@commons/api/menu";
+import type { Menu, RequiredPermissions } from "@commons/api/menu/type";
 import type { RolePermission } from "@commons/api/permission/type";
 import type { App } from "vue";
 import Layout from "@commons/business/app-layout/index.vue";
@@ -182,7 +182,7 @@ export class RouteObj {
     routeItemKeys.forEach((key: string) => {
       const routeRecordRaws: Array<RouteRecordRaw | any> = routeItem[key];
       routeRecordRaws.forEach((routeRecordRaw) => {
-        console.log(routeRecordRaw);
+        //console.log(routeRecordRaw);
         if (routeRecordRaw.name && !router.hasRoute(routeRecordRaw.name)) {
           isResetRoute = true;
           if (!routeRecordRaw.component) {
@@ -285,7 +285,7 @@ export class RouteObj {
         ...childrenRoute,
       };
     }
-    console.log(to.meta.requiredPermissions);
+    //console.log(to.meta.requiredPermissions);
 
     const requiredPermissions: Array<RequiredPermissions> =
       to.meta.requiredPermissions instanceof Array<RequiredPermissions>
@@ -324,8 +324,8 @@ export class RouteObj {
       requiredPermissions
     );
 
-    console.log(requiredPermissions);
-    console.log(hasPermission);
+    //console.log(requiredPermissions);
+    //console.log(hasPermission);
 
     return hasPermission;
   };
@@ -356,6 +356,7 @@ export class RouteObj {
           requiredPermissions: menu.requiredPermissions,
           title: menu.title,
         },
+        props: true,
       };
     }
   };

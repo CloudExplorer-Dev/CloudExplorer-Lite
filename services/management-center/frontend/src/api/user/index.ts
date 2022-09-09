@@ -31,13 +31,6 @@ export const deleteUserById = (userId: string) => {
   return del("/api/user/" + userId);
 };
 
-/**
- * 获取所有角色
- */
-export const listCurrentUserRole = () => {
-  return get("/api/role/current");
-};
-
 export const getRoleInfo = (userId: string) => {
   return get("/api/user/role/info/" + userId);
 };

@@ -56,7 +56,8 @@
 <script setup lang="ts">
 import { onMounted, reactive, ref } from "vue";
 import { useRouter } from "vue-router";
-import type { FormRules, FormInstance, ElMessage } from "element-plus";
+import type { FormRules, FormInstance } from "element-plus";
+import { ElMessage } from "element-plus";
 import type { UpdateForm } from "./type";
 import {
   tree,

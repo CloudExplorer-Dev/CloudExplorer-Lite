@@ -3,12 +3,12 @@ package com.fit2cloud.service;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.fit2cloud.base.entity.User;
+import com.fit2cloud.controller.request.user.CreateUserRequest;
+import com.fit2cloud.controller.request.user.PageUserRequest;
+import com.fit2cloud.controller.request.user.UserBatchAddRoleRequest;
 import com.fit2cloud.dto.UserDto;
 import com.fit2cloud.dto.UserNotifySettingDTO;
 import com.fit2cloud.dto.UserOperateDto;
-import com.fit2cloud.request.CreateUserRequest;
-import com.fit2cloud.request.PageUserRequest;
-import com.fit2cloud.request.UserBatchAddRoleRequest;
 
 public interface IUserService extends IService<User> {
     IPage<UserDto> pageUser(PageUserRequest pageUserRequest);
@@ -31,4 +31,4 @@ public interface IUserService extends IService<User> {
 
     Boolean addUserRole(UserBatchAddRoleRequest userBatchAddRoleRequest);
 
-    }
+}

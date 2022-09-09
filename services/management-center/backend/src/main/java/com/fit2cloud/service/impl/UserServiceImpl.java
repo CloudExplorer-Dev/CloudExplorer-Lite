@@ -16,23 +16,21 @@ import com.fit2cloud.common.exception.Fit2cloudException;
 import com.fit2cloud.common.utils.CurrentUserUtils;
 import com.fit2cloud.common.utils.MD5Util;
 import com.fit2cloud.constants.ErrorCodeConstants;
+import com.fit2cloud.controller.request.user.CreateUserRequest;
+import com.fit2cloud.controller.request.user.PageUserRequest;
+import com.fit2cloud.controller.request.user.UserBatchAddRoleRequest;
 import com.fit2cloud.dao.entity.UserNotificationSetting;
 import com.fit2cloud.dao.mapper.UserMapper;
 import com.fit2cloud.dto.*;
-import com.fit2cloud.request.CreateUserRequest;
-import com.fit2cloud.request.PageUserRequest;
-import com.fit2cloud.request.UserBatchAddRoleRequest;
 import com.fit2cloud.service.IUserService;
 import com.fit2cloud.service.OrganizationCommonService;
 import com.fit2cloud.service.WorkspaceCommonService;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
-import org.springframework.context.MessageSource;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
-import javax.management.Query;
 import java.util.*;
 
 /**
@@ -167,7 +165,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
             if (countAdmin > 1) {
                 baseMapper.updateById(userUpdate);
             } else {
-                throw new Fit2cloudException(ErrorCodeConstants.USER_KEEP_ONE_ADMIN.getCode(),  ErrorCodeConstants.USER_KEEP_ONE_ADMIN.getMessage());
+                throw new Fit2cloudException(ErrorCodeConstants.USER_KEEP_ONE_ADMIN.getCode(), ErrorCodeConstants.USER_KEEP_ONE_ADMIN.getMessage());
             }
         } else {
             baseMapper.updateById(userUpdate);
@@ -186,7 +184,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
     @Transactional
     public boolean updateUser(CreateUserRequest request) {
         // 校验用户邮箱是否已存在
-        validateUserDataExist("email", request.getEmail(), "邮箱","update",request.getId());
+        validateUserDataExist("email", request.getEmail(), "邮箱", "update", request.getId());
 
         UserOperateDto user = new UserOperateDto();
         BeanUtils.copyProperties(request, user);
@@ -330,10 +328,10 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
         }
 
         // 校验用户ID是否已存在
-        validateUserDataExist("username", request.getUsername(), "用户ID","create",null);
+        validateUserDataExist("username", request.getUsername(), "用户ID", "create", null);
 
         // 校验用户邮箱是否已存在
-        validateUserDataExist("email", request.getEmail(), "邮箱","create",null);
+        validateUserDataExist("email", request.getEmail(), "邮箱", "create", null);
     }
 
     /**
@@ -343,7 +341,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
      * @param colValue
      * @param colDisplayName
      */
-    private void validateUserDataExist(String colName, String colValue, String colDisplayName,String optType,String id) {
+    private void validateUserDataExist(String colName, String colValue, String colDisplayName, String optType, String id) {
         QueryWrapper<User> wrapper = Wrappers.query();
         wrapper.eq(true, colName, colValue);
         if ("created".equals(optType) && baseMapper.selectCount(wrapper) > 0) {
@@ -375,21 +373,21 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
         return true;
     }
 
-    public UserNotifySettingDTO findUserNotification(String userId){
+    public UserNotifySettingDTO findUserNotification(String userId) {
         UserNotifySettingDTO notificationDTO = new UserNotifySettingDTO();
         User user = baseMapper.selectById(userId);
         UserNotificationSetting userNotificationSetting = userNotificationSettingMapper.selectById(userId);
         notificationDTO.setId(userId);
         notificationDTO.setEmail(user.getEmail());
         notificationDTO.setPhone(user.getPhone());
-        if(userNotificationSetting!=null){
+        if (userNotificationSetting != null) {
             notificationDTO.setWechatAccount(userNotificationSetting.getWechatAccount());
         }
         return notificationDTO;
     }
 
     @Transactional
-    public Boolean addUserRole(UserBatchAddRoleRequest userBatchAddRoleRequest){
+    public Boolean addUserRole(UserBatchAddRoleRequest userBatchAddRoleRequest) {
         userBatchAddRoleRequest.getUserIdList().forEach(userId -> {
             userBatchAddRoleRequest.getRoleInfoList().forEach(roleInfo -> {
                 UserRole userRole = new UserRole();
@@ -424,6 +422,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
 
     /**
      * 判断用户是否已有某个角色
+     *
      * @param userId
      * @param roleId
      * @param sourceId
@@ -431,10 +430,10 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
      */
     private boolean hasUserRole(String userId, String roleId, String sourceId) {
         QueryWrapper<UserRole> userRoleQueryWrapper = Wrappers.query();
-        userRoleQueryWrapper.lambda().eq(UserRole::getUserId,userId);
-        userRoleQueryWrapper.lambda().eq(UserRole::getRoleId,roleId);
+        userRoleQueryWrapper.lambda().eq(UserRole::getUserId, userId);
+        userRoleQueryWrapper.lambda().eq(UserRole::getRoleId, roleId);
         if (!StringUtils.isBlank(sourceId)) {
-            userRoleQueryWrapper.lambda().eq(UserRole::getSource,sourceId);
+            userRoleQueryWrapper.lambda().eq(UserRole::getSource, sourceId);
         }
         List<UserRole> userRoleList = userRoleMapper.selectList(userRoleQueryWrapper);
 
