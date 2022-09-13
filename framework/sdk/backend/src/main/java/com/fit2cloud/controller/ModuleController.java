@@ -1,8 +1,10 @@
 package com.fit2cloud.controller;
 
 
+import com.fit2cloud.autoconfigure.SettingJobConfig;
 import com.fit2cloud.controller.handler.ResultHolder;
 import com.fit2cloud.dto.module.Module;
+import com.fit2cloud.dto.module.ModuleJobInfo;
 import com.fit2cloud.service.CommonService;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -23,4 +25,9 @@ public class ModuleController {
         return ResultHolder.success(commonService.getModules());
     }
 
+    @GetMapping("moduleJobs")
+    public ResultHolder<List<ModuleJobInfo>> moduleJobs() {
+        List<ModuleJobInfo> moduleJobs = commonService.getModuleJobs();
+        return ResultHolder.success(moduleJobs);
+    }
 }

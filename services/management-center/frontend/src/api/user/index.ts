@@ -21,8 +21,8 @@ export const listRole = () => {
   return get("/api/role");
 };
 
-export const getRoleInfo= (userId: string) => {
-  return get("/api/user/role/info/"+userId);
+export const getRoleInfo = (userId: string) => {
+  return get("/api/user/role/info/" + userId);
 };
 
 export const workspaceTree = (): Promise<Result<Array<any>>> => {

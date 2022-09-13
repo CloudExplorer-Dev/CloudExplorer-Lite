@@ -195,6 +195,7 @@ watch(
             <div
               class="menuItem"
               v-for="menuItem in moduleItem.childrenMenu"
+              v-hasPermission="menuItem.requiredPermissions"
               :key="menuItem.name"
             >
               <div class="icon">
@@ -267,7 +268,7 @@ watch(
           display: flex;
           align-items: center;
           align-content: center;
-          margin: 0px 0 0px 5px;
+          margin: 0 0 0 5px;
           .title {
             margin-left: 8px;
             cursor: pointer;

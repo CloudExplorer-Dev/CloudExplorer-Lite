@@ -5,7 +5,7 @@ import type { FormRules } from "element-plus";
 import type { FormInstance } from "element-plus/es";
 import { useI18n } from "vue-i18n";
 import type { RoleInfo, Role } from "@/api/user/type";
-import {createUser, getRoleInfo, listRole, workspaceTree} from "@/api/user";
+import { createUser, getRoleInfo, listRole, workspaceTree } from "@/api/user";
 import { useRouter } from "vue-router";
 import { ElMessage } from "element-plus/es";
 import { tree } from "@/api/organization";
@@ -124,7 +124,7 @@ const addLine = () => {
     selects: [],
   };
   form.roleInfoList.forEach((item: RoleInfo) => {
-    if(roleInfo.selects){
+    if (roleInfo.selects) {
       roleInfo.selects.push(item.roleId);
     }
   });
@@ -191,18 +191,6 @@ const backToUserList = () => {
 };
 
 onMounted(() => {
-  tree().then((res) => {
-    orgTreeData.value = res.data;
-  });
-
-  workspaceTree().then((res) => {
-    workspaceTreeData.value = res.data;
-  });
-
-  listRole().then((res) => {
-    roles.value = res.data;
-  });
-
   const userId = router.currentRoute.value.query.id;
   if (userId) {
     subTitle.value = t("commons.btn.edit");

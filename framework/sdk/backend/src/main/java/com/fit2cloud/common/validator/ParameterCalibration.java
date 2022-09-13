@@ -26,7 +26,7 @@ import java.util.Set;
  * @Author:张少虎
  * @Date: 2022/8/25  10:38 AM
  * @Version 1.0
- * @注释:    处理校验返回值
+ * @注释: 处理校验返回值
  */
 @RestControllerAdvice
 public class ParameterCalibration {
@@ -35,11 +35,11 @@ public class ParameterCalibration {
     @ResponseBody
     public ResultHolder handleMethodArgumentNotValidException(Exception exception) {
         if (exception instanceof ValidationException) {
-            if (exception instanceof ConstraintViolationException){
-                ConstraintViolationException constraintViolationException=  (ConstraintViolationException)exception;
+            if (exception instanceof ConstraintViolationException) {
+                ConstraintViolationException constraintViolationException = (ConstraintViolationException) exception;
                 Set<ConstraintViolation<?>> constraintViolations = constraintViolationException.getConstraintViolations();
                 Optional<ConstraintViolation<?>> first = constraintViolations.stream().findFirst();
-                if (first.isPresent()){
+                if (first.isPresent()) {
                     String message = first.get().getMessage();
                     return ResultHolder.error(message);
                 }
@@ -57,15 +57,31 @@ public class ParameterCalibration {
         return ResultHolder.error(exception.getMessage());
     }
 
-    @ExceptionHandler({ Fit2cloudException.class})
+    @ExceptionHandler({Fit2cloudException.class})
     @ResponseStatus(HttpStatus.OK)
     @ResponseBody
     public ResultHolder fit2cloudException(Exception exception) {
-       if (exception instanceof Fit2cloudException){
-           Fit2cloudException fit2cloudException = (Fit2cloudException) exception;
-           return ResultHolder.error(fit2cloudException.getCode(),fit2cloudException.getMessage());
-       }
-       return ResultHolder.error("未知错误");
+        if (exception instanceof Fit2cloudException) {
+            Fit2cloudException fit2cloudException = (Fit2cloudException) exception;
+            return ResultHolder.error(fit2cloudException.getCode(), fit2cloudException.getMessage());
+        }
+        Throwable fit2cloudThrowable = getFit2cloudException(exception.getCause());
+        if (fit2cloudThrowable instanceof Fit2cloudException) {
+            Fit2cloudException fit2cloudException = (Fit2cloudException) fit2cloudThrowable;
+            return ResultHolder.error(fit2cloudException.getCode(), fit2cloudException.getMessage());
+        }
+        return ResultHolder.error("未知错误");
+    }
+
+    private Throwable getFit2cloudException(Throwable e) {
+        if (e == null) {
+            return e;
+        }
+        if (e instanceof Fit2cloudException) {
+            return (Fit2cloudException) e;
+        } else {
+            return getFit2cloudException(e.getCause());
+        }
     }
 
 

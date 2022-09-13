@@ -25,6 +25,10 @@ const message = {
   workspace: {
     user_count: "用户数",
   },
+  cloud_account: {
+    base_setting: "基本设置",
+    sync_setting: "同步设置",
+  },
 };
 export default {
   ...message,

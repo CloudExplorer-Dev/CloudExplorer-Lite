@@ -10,38 +10,107 @@ import {
 } from "ce-base/commons/components/ce-table/index";
 import cloudAccountApi from "@/api/cloud_account/index";
 import type { CloudAccount } from "@/api/cloud_account/type";
+import { ElMessage, ElMessageBox } from "element-plus";
 import { useRouter } from "vue-router";
+import { useI18n } from "vue-i18n";
+const { t } = useI18n();
 const router = useRouter();
-const clouAccountList = ref<Array<CloudAccount>>();
+const clouAccountList = ref<Array<CloudAccount>>([]);
 const tableSearch = ref<TableSearch>();
-
+const table: any = ref(null);
+const multipleSelectionIds = ref<Array<string>>();
 // 获得云平台过滤数据
 const platformFilters = Object.keys(platformIcon).map((platform: string) => {
   return { text: platformIcon[platform].name, value: platform };
 });
-const edit = () => {
-  router.push({ name: "cloud_account_update" });
-  console.log("修改");
+/**
+ * 去修改页面
+ * @param row 当前这一行数据
+ */
+const edit = (row: any) => {
+  router.push({ name: "cloud_account_update", params: { id: row.id } });
 };
-const deleteItem = () => {
-  console.log("删除");
+/**
+ * 删除这一行数据,根据id
+ * @param row 当前这一行数据
+ */
+const deleteItem = (row: any) => {
+  ElMessageBox.confirm(
+    t("commons.message_box.confirm_delete"),
+    t("commons.message_box.prompt"),
+    {
+      confirmButtonText: t("commons.btn.delete"),
+      cancelButtonText: t("commons.btn.cancel"),
+      type: "warning",
+    }
+  ).then(() => {
+    cloudAccountApi.deleteCloudAccount(row.id).then(() => {
+      ElMessage.success("删除成功");
+      table.value?.search();
+    });
+  });
+};
+/**
+ * 校验云账号是否有效
+ * @param row 当前这一行数据
+ */
+const check = (row: any) => {
+  cloudAccountApi.verificationCloudAccount(row.id).then((ok) => {
+    ElMessage.success("云账号有效");
+    table.value?.search();
+  });
+};
+/**
+ * 去编辑定时任务页面
+ * @param row 当前这一行数据
+ */
+const updateJob = (row: any) => {
+  router.push({ name: "cloud_account_sync_job", params: { id: row.id } });
 };
 
-const check = () => {
-  console.log("校验");
-};
 const sync = () => {
   console.log("同步");
 };
+/**
+ * 去创建云账号页面
+ */
 const create = () => {
   router.push({ name: "cloud_account_create" });
-  console.log("create");
 };
-const handleSelectionChange = () => {
-  console.log("handleSelectionChange");
+
+/**
+ * 全选
+ * @param val 全选数据
+ */
+const handleSelectionChange = (val: CloudAccount[]) => {
+  multipleSelectionIds.value = val.map((item) => item.id);
 };
+
+/**
+ * 批量删除数据
+ */
 const batchDelete = () => {
-  console.log("batchDelete");
+  if (!multipleSelectionIds.value) {
+    ElMessage.error("最少选择一个云账号id");
+    return;
+  }
+  ElMessageBox.confirm(
+    t("commons.message_box.confirm_delete"),
+    t("commons.message_box.prompt"),
+    {
+      confirmButtonText: t("commons.btn.delete"),
+      cancelButtonText: t("commons.btn.cancel"),
+      type: "warning",
+    }
+  ).then(() => {
+    if (multipleSelectionIds.value) {
+      cloudAccountApi
+        .batchDeleteCloudAccount(multipleSelectionIds.value)
+        .then(() => {
+          table.value?.search();
+        });
+    }
+  });
 };
 
 const columns = ref([]);
@@ -113,6 +182,12 @@ const tableConfig = ref<TableConfig>({
       "Refresh"
     ),
     TableOperations.buildButtons().newInstance(
+      "编辑定时任务",
+      "primary",
+      updateJob,
+      "Document"
+    ),
+    TableOperations.buildButtons().newInstance(
       "删除",
       "primary",
       deleteItem,
@@ -165,7 +240,10 @@ const tableConfig = ref<TableConfig>({
       ]"
     >
       <template #default="scope">
-        <div style="display: flex; align-items: center">
+        <div
+          style="display: flex; align-items: center"
+          :style="{ color: scope.row.state ? '' : 'red' }"
+        >
           <span>{{ scope.row.state ? "有效" : "无效" }}</span>
         </div>
       </template>
@@ -175,21 +253,29 @@ const tableConfig = ref<TableConfig>({
       prop="status"
       label="同步状态"
       :filters="[
-        { text: '同步成功', value: 0 },
-        { text: '同步失败', value: 1 },
-        { text: '同步中', value: 2 },
+        { text: '初始化', value: 'INIT' },
+        { text: '同步成功', value: 'SUCCESS' },
+        { text: '同步失败', value: 'FAILED' },
+        { text: '同步中', value: 'SYNCING' },
       ]"
       sortable
     >
       <template #default="scope">
         <div style="display: flex; align-items: center">
-          <span :style="{ color: scope.row.status === 1 ? 'red' : '' }">{{
-            scope.row.status === 0
-              ? "同步成功"
-              : scope.row.status === 1
-              ? "同步失败"
-              : "同步中"
-          }}</span>
+          <span
+            :style="{ color: scope.row.status === 'FAILED' ? 'red' : '' }"
+            >{{
+              scope.row.status === "FAILED"
+                ? "同步失败"
+                : scope.row.status === "INIT"
+                ? "初始化"
+                : scope.row.status === "SUCCESS"
+                ? "同步成功"
+                : scope.row.status === "SYNCING"
+                ? "同步中"
+                : "未知"
+            }}</span
+          >
         </div>
       </template>
     </el-table-column>

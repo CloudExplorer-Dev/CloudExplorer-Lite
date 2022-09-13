@@ -1,17 +1,19 @@
 package com.fit2cloud.service;
 
 import com.fit2cloud.autoconfigure.ServerInfo;
+import com.fit2cloud.autoconfigure.SettingJobConfig;
+import com.fit2cloud.common.utils.JsonUtil;
 import com.fit2cloud.dto.module.Module;
+import com.fit2cloud.dto.module.ModuleJobInfo;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.BeanUtils;
 import org.springframework.cloud.client.ServiceInstance;
 import org.springframework.cloud.client.discovery.DiscoveryClient;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 public class CommonService {
@@ -51,4 +53,28 @@ public class CommonService {
         return modules;
     }
 
+    public List<ModuleJobInfo> getModuleJobs() {
+        Set<String> ids = new HashSet<>(discoveryClient.getServices());
+        ids.add(ServerInfo.module);
+        return ids.stream().map(this::getModuleJobByModuleId).filter(Objects::nonNull).toList();
+    }
+
+
+    /**
+     * @param moduleId 模块id
+     * @return 模块定时任务信息
+     */
+    public ModuleJobInfo getModuleJobByModuleId(String moduleId) {
+        if (StringUtils.equalsIgnoreCase("gateway", moduleId)) {
+            return null;
+        }
+        if (StringUtils.equals(moduleId, ServerInfo.module)) {
+            return SettingJobConfig.getModuleJobInfo();
+        } else {
+            ServiceInstance instance = discoveryClient.getInstances(moduleId).get(0);
+            Map<String, String> metadata = instance.getMetadata();
+            String jsonString = JsonUtil.toJSONString(metadata);
+            return JsonUtil.parseObject(jsonString, ModuleJobInfo.class);
+        }
+    }
 }
