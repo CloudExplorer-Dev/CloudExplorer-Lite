@@ -31,6 +31,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
+import java.text.SimpleDateFormat;
 import java.util.*;
 
 /**
@@ -70,6 +71,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
         }});
 
         QueryWrapper<User> wrapper = new QueryWrapper<>();
+        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
         if (StringUtils.isNotEmpty(pageUserRequest.getUsername())) {
             wrapper.like(true, "username", pageUserRequest.getUsername());
@@ -82,6 +84,15 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
         }
         if (StringUtils.isNotEmpty(pageUserRequest.getRoleId())) {
             wrapper.eq(true, "role_id", pageUserRequest.getRoleId());
+        }
+        if (StringUtils.isNotEmpty(pageUserRequest.getRoleName())) {
+            wrapper.like(true, "role._name", pageUserRequest.getRoleName());
+        }
+        if (org.apache.commons.collections4.CollectionUtils.isNotEmpty(pageUserRequest.getUpdateTime())) {
+            wrapper.between("user.update_time", simpleDateFormat.format(pageUserRequest.getUpdateTime().get(0)), simpleDateFormat.format(pageUserRequest.getUpdateTime().get(1)));
+        }
+        if (org.apache.commons.collections4.CollectionUtils.isNotEmpty(pageUserRequest.getCreateTime())) {
+            wrapper.between("user.create_time", simpleDateFormat.format(pageUserRequest.getCreateTime().get(0)), simpleDateFormat.format(pageUserRequest.getCreateTime().get(1)));
         }
 
         IPage<User> userIPage = baseMapper.pageUser(page, wrapper);

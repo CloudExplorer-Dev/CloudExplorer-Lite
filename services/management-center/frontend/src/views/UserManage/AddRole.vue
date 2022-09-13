@@ -4,7 +4,9 @@ import _ from "lodash";
 import type { FormInstance } from "element-plus/es";
 import { useI18n } from "vue-i18n";
 import type { RoleInfo, Role } from "@/api/user/type";
-import { userAddRole, listCurrentUserRole, workspaceTree } from "@/api/user";
+import { userAddRole, workspaceTree } from "@/api/user";
+import { listRoles } from "@commons/api/role";
+import { useUserStore } from "@commons/stores/modules/user";
 import { ElMessage } from "element-plus/es";
 import { tree } from "@/api/organization";
 import type { OrganizationTree } from "@/api/organization/type";
@@ -131,9 +133,11 @@ onMounted(() => {
     workspaceTreeData.value = res.data;
   });
 
-  const getRoles = listCurrentUserRole().then((res) => {
-    roles.value = res.data;
-  });
+  const getRoles = listRoles({ baseRole: useUserStore().currentRole }).then(
+    (res) => {
+      roles.value = res.data;
+    }
+  );
 
   Promise.all([getOrgTree, getWsTree, getRoles]).then(() => {
     addLine();

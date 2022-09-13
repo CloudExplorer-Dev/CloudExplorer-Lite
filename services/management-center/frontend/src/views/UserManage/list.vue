@@ -150,8 +150,8 @@ const tableConfig = ref<TableConfig>({
     searchOptions: [
       { label: "ID", value: "username" },
       { label: t("user.name"), value: "name" },
-      { label: t("user.role"), value: "role_id" },
-      { label: "Email", value: "email" },
+      { label: t("user.role"), value: "roleName" },
+      { label: t("user.email"), value: "email" },
     ],
   },
   paginationConfig: new PaginationConfig(),

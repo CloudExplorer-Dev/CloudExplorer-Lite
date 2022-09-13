@@ -113,7 +113,7 @@ onMounted(() => {
         <el-icon>
           <InfoFilled />
         </el-icon>
-          {{$t("user.notify_tips")}}:<a
+        {{ $t("user.notify_tips") }}:<a
           href="https://work.weixin.qq.com/api/doc/90000/90135/90665"
           target="_blank"
           style="color: var(--el-color-primary)"
