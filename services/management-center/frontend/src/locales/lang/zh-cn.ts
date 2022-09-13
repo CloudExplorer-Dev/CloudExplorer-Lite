@@ -3,6 +3,8 @@ const message = {
     type: "用户类型",
     name: "姓名",
     email: "邮箱",
+    phone: "手机号码",
+    wechatAccount: "企业微信账号",
     role: "角色",
     password: "密码",
     local: "本地创建",
@@ -17,9 +19,11 @@ const message = {
     add_workspace: "添加工作空间",
     delete_confirm: "确认删除用户",
     notify_setting: "通知设置",
+    notify_tips:"邮箱、手机号设置后将与用户基本信息关联。手机号将做为钉钉平台推送标识。企业微信账号参考",
     validate: {
       phone_format: "手机号码格式错误",
       email_format: "邮箱格式错误",
+      selected: "请选择用户",
     },
   },
   workspace: {

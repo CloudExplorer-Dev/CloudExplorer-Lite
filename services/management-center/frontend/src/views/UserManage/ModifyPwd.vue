@@ -3,19 +3,33 @@ import { reactive, ref } from "vue";
 import type { FormInstance, FormRules } from "element-plus";
 import { $tv } from "@commons/base-locales";
 import { useI18n } from "vue-i18n";
+import { ElMessage } from "element-plus/es";
+import { updatePwd } from "@/api/user";
+import type { InternalRuleItem } from "async-validator/dist-types/interface";
 
-const { t } = useI18n();
+const props = defineProps({
+  userId: {
+    type: String,
+    required: true,
+  },
+});
 const dialogVisible = ref(false);
 defineExpose({
   dialogVisible,
 });
+
+const { t } = useI18n();
 const formRef = ref<FormInstance | undefined>();
 const form = reactive({
   newPassword: "",
   confirmPassword: "",
 });
 
-const confirmPwdValidator = (rule: any, value: any, callback: any) => {
+const confirmPwdValidator = (
+  rule: InternalRuleItem,
+  value: string,
+  callback: (error?: string | Error) => void
+) => {
   if (value !== form.newPassword) {
     callback(new Error(t("commons.validate.confirm_pwd")));
   } else {
@@ -59,10 +73,17 @@ const handleSave = (formEl: FormInstance) => {
   formEl.validate((valid) => {
     if (valid) {
       const param = {
-        userId: "",
+        id: props.userId,
         password: form.newPassword,
       };
-      //TODO 更新用户密码
+      updatePwd(param)
+        .then(() => {
+          ElMessage.success(t("commons.msg.save_success"));
+          handleCancel(formEl);
+        })
+        .catch((err) => {
+          ElMessage.error(err.response.data.message);
+        });
     } else {
       return false;
     }

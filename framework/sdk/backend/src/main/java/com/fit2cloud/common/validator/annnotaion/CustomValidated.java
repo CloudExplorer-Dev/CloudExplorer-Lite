@@ -33,21 +33,26 @@ public @interface CustomValidated {
     String message();
 
     /**
-     * 是否存在
+     * 是否存在, true必须存在，false必须不存在
+     *
      * @return
      */
     boolean exist();
+
     /**
      * mapper
+     *
      * @return
      */
     Class<? extends BaseMapper> mapper();
 
     /**
      * 自定义处理器
+     *
      * @return 自定义处理器
      */
     Class<? extends ValidatorFunction<Object, ConstraintValidatorContext, CustomValidated, Boolean>> handler();
+
     /**
      * 分组
      *
@@ -63,4 +68,6 @@ public @interface CustomValidated {
      * @return method's name
      */
     String method() default "ordinal";
+
+    String field() default "";
 }

@@ -7,7 +7,7 @@ import {
   TableConfig,
   TableOperations,
   TableSearch,
-} from "ce-base/commons/components/ce-table/index";
+} from "@commons/components/ce-table/type";
 import cloudAccountApi from "@/api/cloud_account/index";
 import type { CloudAccount } from "@/api/cloud_account/type";
 import { ElMessage, ElMessageBox } from "element-plus";

@@ -32,9 +32,11 @@ public class MyBatisPlusGenerator {
     private static final Map<String, Object> CUSTOM_MAP = new HashMap<>();
 
     static {
-        Map<String, Map<String, Object>> map = new HashMap<>();
+        Map<String, Map<String, Map<String, Object>>> map = new HashMap<>();
         //指定需要生成enum的字段（Enum类需要自己生成）
-        map.put("cloud_account", new EnumCreator().setEnumField("status").setEnumClassName("CloudAccountConstants.Status").setEnumClass("com.fit2cloud.constants.CloudAccountConstants").getMap());
+        map.put("cloud_account", convert(Arrays.asList(
+                new EnumCreator().setEnumField("status").setEnumClassName("CloudAccountConstants.Status").setEnumClass("com.fit2cloud.constants.CloudAccountConstants")
+        )));
 
         CUSTOM_MAP.put("useEnum", true);
         CUSTOM_MAP.put("useEnumMap", map);
@@ -114,17 +116,25 @@ public class MyBatisPlusGenerator {
 
     @Data
     @Accessors(chain = true)
-    private static class EnumCreator{
+    private static class EnumCreator {
         private String enumField;
         private String enumClassName;
         private String enumClass;
 
-        public Map<String, Object> getMap(){
+        public Map<String, Object> getMap() {
             Map<String, Object> map = new HashMap<>();
             map.put("enumField", enumField);
-            map.put("enumClassName",enumClassName);
-            map.put("enumClass",enumClass);
+            map.put("enumClassName", enumClassName);
+            map.put("enumClass", enumClass);
             return map;
         }
+    }
+
+    private static Map<String, Map<String, Object>> convert(List<EnumCreator> list) {
+        Map<String, Map<String, Object>> map = new HashMap<>();
+        for (EnumCreator enumCreator : list) {
+            map.put(enumCreator.getEnumField(), enumCreator.getMap());
+        }
+        return map;
     }
 }

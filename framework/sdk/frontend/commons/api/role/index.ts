@@ -1,21 +1,33 @@
-import type { Role } from "./type";
+import type { Role, RoleRequest, RolePageRequest } from "./type";
 import { get } from "@commons/request";
-import type Result from "@commons/request/Result";
+import type { Ref } from "vue";
+import type { Result, Page } from "@commons/request/Result";
 
-/**
- * 获取当前的角色
- * @returns
- */
-export const getCurrentRole = () => {
-  const roleData: Promise<Result<Role>> = get("/api/currentRole");
-  return roleData;
+export function listRoles(
+  request?: RoleRequest,
+  loading?: Ref<boolean>
+): Promise<Result<Array<Role>>> {
+  return get("/api/roles", request, loading);
+}
+
+export function pageRoles(
+  request: RolePageRequest,
+  loading?: Ref<boolean>
+): Promise<Result<Page<Role>>> {
+  return get("/api/role/pages", request, loading);
+}
+
+export function getRoleById(
+  id: string,
+  loading?: Ref<boolean>
+): Promise<Result<Role>> {
+  return get("/api/role", { id: id }, loading);
+}
+
+const BaseRoleApi = {
+  listRoles,
+  pageRoles,
+  getRoleById,
 };
 
-/**
- * 获取所有角色
- * @returns
- */
-export const listAllRole = () => {
-  const roleData: Promise<Result<Array<Role>>> = get("/api/role/list");
-  return roleData;
-};
+export default BaseRoleApi;

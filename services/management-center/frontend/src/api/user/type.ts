@@ -20,10 +20,10 @@ interface Role {
 
 interface RoleInfo {
   roleId: string;
-  roleType: string;
+  roleType: string | null; //角色类型：系统管理员、组织管理员、工作空间用户
   organizationIds: [];
   workspaceIds: [];
-  selects?: string[] | undefined;
+  selectedRoleIds?: string[] | undefined; // 已选择的角色ID集合
 }
 
 interface ListUserRequest {
@@ -42,4 +42,22 @@ interface CreateUserRequest {
   roleInfoList: RoleInfo[];
 }
 
-export type { User, Role, RoleInfo, ListUserRequest, CreateUserRequest };
+interface UpdateUserPwdRequest {
+  id: string;
+  password: string;
+}
+
+interface UpdateUserStatusRequest {
+  id: string;
+  enabled: boolean;
+}
+
+export type {
+  User,
+  Role,
+  RoleInfo,
+  ListUserRequest,
+  CreateUserRequest,
+  UpdateUserPwdRequest,
+  UpdateUserStatusRequest,
+};

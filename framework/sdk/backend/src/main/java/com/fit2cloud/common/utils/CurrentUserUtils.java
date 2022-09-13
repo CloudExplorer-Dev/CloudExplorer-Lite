@@ -16,6 +16,7 @@ public class CurrentUserUtils {
 
     /**
      * 当前用户所在工作空间
+     *
      * @return
      */
     public static String getWorkspaceId() {
@@ -24,6 +25,7 @@ public class CurrentUserUtils {
 
     /**
      * 当前用户所在组织
+     *
      * @return
      */
     public static String getOrganizationId() {
@@ -37,7 +39,7 @@ public class CurrentUserUtils {
      */
     public static boolean isAdmin() {
         try {
-            return RoleConstants.ROLE.ADMIN.name().equals(CurrentUserUtils.getUser());
+            return RoleConstants.ROLE.ADMIN.equals(CurrentUserUtils.getUser().getCurrentRole());
         } catch (Exception e) {
             return false;
         }
@@ -50,7 +52,7 @@ public class CurrentUserUtils {
      */
     public static boolean isOrgAdmin() {
         try {
-            return RoleConstants.ROLE.ORGADMIN.name().equals(CurrentUserUtils.getUser());
+            return RoleConstants.ROLE.ORGADMIN.equals(CurrentUserUtils.getUser().getCurrentRole());
         } catch (Exception e) {
             return false;
         }
@@ -63,7 +65,7 @@ public class CurrentUserUtils {
      */
     public static boolean isUser() {
         try {
-            return RoleConstants.ROLE.USER.name().equals(CurrentUserUtils.getUser());
+            return RoleConstants.ROLE.USER.equals(CurrentUserUtils.getUser().getCurrentRole());
         } catch (Exception e) {
             return false;
         }

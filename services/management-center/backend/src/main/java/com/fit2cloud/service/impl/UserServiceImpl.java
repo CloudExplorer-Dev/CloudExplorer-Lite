@@ -16,19 +16,19 @@ import com.fit2cloud.common.exception.Fit2cloudException;
 import com.fit2cloud.common.utils.CurrentUserUtils;
 import com.fit2cloud.common.utils.MD5Util;
 import com.fit2cloud.constants.ErrorCodeConstants;
+import com.fit2cloud.controller.request.user.CreateUserRequest;
+import com.fit2cloud.controller.request.user.PageUserRequest;
+import com.fit2cloud.controller.request.user.UserBatchAddRoleRequest;
+import com.fit2cloud.dao.entity.UserNotificationSetting;
 import com.fit2cloud.dao.mapper.UserMapper;
-import com.fit2cloud.dto.RoleInfo;
-import com.fit2cloud.dto.UserDto;
-import com.fit2cloud.dto.UserOperateDto;
-import com.fit2cloud.dto.UserRoleDto;
-import com.fit2cloud.request.CreateUserRequest;
-import com.fit2cloud.request.PageUserRequest;
+import com.fit2cloud.dto.*;
 import com.fit2cloud.service.IUserService;
 import com.fit2cloud.service.OrganizationCommonService;
 import com.fit2cloud.service.WorkspaceCommonService;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import java.util.*;
@@ -54,11 +54,13 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
     BaseMapper<Role> roleMapper;
 
     @Resource
+    BaseMapper<UserNotificationSetting> userNotificationSettingMapper;
+
+    @Resource
     OrganizationCommonService organizationCommonService;
 
     @Resource
     WorkspaceCommonService workspaceCommonService;
-
 
     @Override
     public IPage<UserDto> pageUser(PageUserRequest pageUserRequest) {
@@ -94,6 +96,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
         });
     }
 
+    @Override
     public boolean deleteUser(String userId) {
         //TODO 获取当前登录用户ID,用户角色
         String currentLoginUserId = "admin";
@@ -109,7 +112,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
         }
 
         // TODO 增加删除用户的操作日志
-        System.out.println(user.getUsername()+"is deleted by" + currentLoginUserId);
+        System.out.println(user.getUsername() + "is deleted by" + currentLoginUserId);
 
         // 当前登录用户以组织管理员的角色删除用户
         if (currentLoginUserRole.equalsIgnoreCase(RoleConstants.ROLE.ORGADMIN.name())) {
@@ -153,14 +156,81 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
         return true;
     }
 
+    public boolean changeUserStatus(UserDto userDto) {
+        User userUpdate = new User();
+        userUpdate.setId(userDto.getId());
+        userUpdate.setEnabled(userDto.getEnabled());
+        if (userDto.getRoles().stream().map(Role::getId).anyMatch(s -> s.equals(RoleConstants.ROLE.ADMIN.name())) && !userDto.getEnabled()) {
+            Long countAdmin = baseMapper.countActiveUsers(RoleConstants.ROLE.ADMIN.name());
+            if (countAdmin > 1) {
+                baseMapper.updateById(userUpdate);
+            } else {
+                throw new Fit2cloudException(ErrorCodeConstants.USER_KEEP_ONE_ADMIN.getCode(), ErrorCodeConstants.USER_KEEP_ONE_ADMIN.getMessage());
+            }
+        } else {
+            baseMapper.updateById(userUpdate);
+        }
+        return true;
+    }
+
     public boolean createUser(CreateUserRequest request) {
-        validateCreateUserParam(request);
+        validateUserParam(request);
         UserOperateDto user = new UserOperateDto();
         BeanUtils.copyProperties(request, user);
         insertUser(user);
         return true;
     }
 
+    @Transactional
+    public boolean updateUser(CreateUserRequest request) {
+        // 校验用户邮箱是否已存在
+        validateUserDataExist("email", request.getEmail(), "邮箱", "update", request.getId());
+
+        UserOperateDto user = new UserOperateDto();
+        BeanUtils.copyProperties(request, user);
+        baseMapper.updateById(user);
+        QueryWrapper<UserRole> wrapper = Wrappers.query();
+        wrapper.lambda().eq(true, UserRole::getUserId, request.getId());
+
+        if (CollectionUtils.isNotEmpty(user.getRoleInfoList())) {
+            if (CurrentUserUtils.isAdmin()) {
+                // TODO 校验系统是否还有系统管理员的角色，如果没有不允许本次修改
+
+                // 删除要编辑的用户在 user_role 的信息，然后 reinsert
+                userRoleMapper.delete(wrapper);
+            }
+
+            if (CurrentUserUtils.isOrgAdmin()) {
+                // 删除要编辑的用户在当前组织下的 user_role 的信息，然后 reinsert
+                List<String> list = new ArrayList<>();
+                List<String> orgIds = organizationCommonService.getOrgIdsByPid(CurrentUserUtils.getOrganizationId());
+                list.addAll(orgIds);
+                List<String> workspaceIds = workspaceCommonService.getWorkspaceIdsByOrgIds(list);
+                if (CollectionUtils.isNotEmpty(workspaceIds)) {
+                    list.addAll(workspaceIds);
+                }
+                wrapper.lambda().in(true, UserRole::getSource, list);
+                userRoleMapper.delete(wrapper);
+            }
+
+            insertUserRoleInfo(user);
+        }
+        return true;
+    }
+
+    public boolean updatePwd(User user) {
+        // 非本地创建用户不允许修改密码
+        if (!"local".equalsIgnoreCase(CurrentUserUtils.getUser().getSource())) {
+            throw new Fit2cloudException(ErrorCodeConstants.USER_KEEP_ONE_ADMIN.getCode(), ErrorCodeConstants.USER_KEEP_ONE_ADMIN.getMessage());
+        }
+        User updateUser = new User();
+        updateUser.setId(user.getId());
+        updateUser.setPassword(MD5Util.md5(user.getPassword()));
+        baseMapper.updateById(updateUser);
+        return true;
+    }
+
+    @Transactional
     public boolean insertUser(UserOperateDto user) {
         if (StringUtils.isBlank(user.getId())) {
             user.setId(UUID.randomUUID().toString());
@@ -179,17 +249,33 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
             userRole.setRoleId(roleInfo.getRoleId());
             userRole.setUserId(user.getId());
 
-            String parentRoleId = getParentRoleId(roleInfo.getRoleId());
-            if (StringUtils.equalsIgnoreCase(parentRoleId, RoleConstants.ROLE.USER.name())) {
+            RoleConstants.ROLE parentRoleId = getParentRoleId(roleInfo.getRoleId());
+            if (RoleConstants.ROLE.USER.equals(parentRoleId)) {
                 roleInfo.getWorkspaceIds().forEach(workspaceId -> insertUserRoleInfo(userRole, workspaceId));
             }
-            if (StringUtils.equalsIgnoreCase(parentRoleId, RoleConstants.ROLE.ORGADMIN.name())) {
+            if (RoleConstants.ROLE.ORGADMIN.equals(parentRoleId)) {
                 roleInfo.getOrganizationIds().forEach(organizationId -> insertUserRoleInfo(userRole, organizationId));
             }
-            if (StringUtils.equals(parentRoleId, RoleConstants.ROLE.ADMIN.name())) {
+            if (RoleConstants.ROLE.ADMIN.equals(parentRoleId)) {
                 insertUserRoleInfo(userRole, null);
             }
         }
+    }
+
+    public UserOperateDto userRoleInfo(String userId) {
+        // 查询角色信息
+        List roleInfos = roleInfo(userId);
+
+        // 查询用户信息
+        User user = baseMapper.selectById(userId);
+        UserOperateDto userOperateDto = new UserOperateDto();
+
+        // 组合数据
+        BeanUtils.copyProperties(user, userOperateDto);
+        userOperateDto.setPassword("");
+        userOperateDto.setRoleInfoList(roleInfos);
+
+        return userOperateDto;
     }
 
     public List<RoleInfo> roleInfo(String userId) {
@@ -201,8 +287,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
             resourceIds.addAll(orgIds);
             param.put("resourceIds", resourceIds);
         }
-        List<RoleInfo> roleInfos = baseMapper.roleInfo(param);
-        return roleInfos;
+        return baseMapper.roleInfo(param);
     }
 
     private void insertUserRoleInfo(UserRole userRole, String sourceId) {
@@ -211,34 +296,19 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
         userRoleMapper.insert(userRole);
     }
 
-    public String getParentRoleId(String roleId) {
+    public RoleConstants.ROLE getParentRoleId(String roleId) {
         Role role = roleMapper.selectById(roleId);
-        return getParentRoleId(role);
-    }
-
-    private String getParentRoleId(Role role) {
-        if (role == null) {
-            return null;
-        }
-        if (role.getParentRoleId() != null) {
-            return role.getParentRoleId();
-        } else {
-            return role.getId();
-        }
+        return role.getParentRoleId();
     }
 
     /**
-     * 校验创建用户参数
+     * 校验用户参数
      *
      * @param request
      */
-    private void validateCreateUserParam(CreateUserRequest request) {
+    private void validateUserParam(CreateUserRequest request) {
         if (StringUtils.isBlank(request.getUsername())) {
             throw new RuntimeException("用户ID不能为空");
-        }
-
-        if (SystemUserConstants.getUserName().equalsIgnoreCase(request.getUsername())) {
-            throw new RuntimeException("用户ID不能为system");
         }
 
         if (StringUtils.isBlank(request.getName())) {
@@ -249,22 +319,124 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
             throw new RuntimeException("密码不能为空");
         }
 
-        validateUserExist("username", request.getUsername(), "用户ID");
-        validateUserExist("email", request.getEmail(), "邮箱");
+        if (StringUtils.isBlank(request.getEmail())) {
+            throw new RuntimeException("邮箱不能为空");
+        }
+
+        if (SystemUserConstants.getUserName().equalsIgnoreCase(request.getUsername())) {
+            throw new RuntimeException("用户ID不能为system");
+        }
+
+        // 校验用户ID是否已存在
+        validateUserDataExist("username", request.getUsername(), "用户ID", "create", null);
+
+        // 校验用户邮箱是否已存在
+        validateUserDataExist("email", request.getEmail(), "邮箱", "create", null);
     }
 
     /**
-     * 校验用户参数是否已存在
+     * 校验用户某属性值是否已存在
      *
      * @param colName
      * @param colValue
      * @param colDisplayName
      */
-    private void validateUserExist(String colName, String colValue, String colDisplayName) {
+    private void validateUserDataExist(String colName, String colValue, String colDisplayName, String optType, String id) {
         QueryWrapper<User> wrapper = Wrappers.query();
         wrapper.eq(true, colName, colValue);
-        if (baseMapper.selectCount(wrapper) > 0) {
+        if ("created".equals(optType) && baseMapper.selectCount(wrapper) > 0) {
             throw new RuntimeException(colDisplayName + "已存在");
         }
+        if ("update".equals(optType)) {
+            wrapper.ne(true, "id", id);
+            if (baseMapper.selectCount(wrapper) > 0) {
+                throw new RuntimeException(colDisplayName + "已存在");
+            }
+        }
+    }
+
+    public boolean updateUserNotification(UserNotifySettingDTO userNotificationSetting) {
+        // 更新用户表的邮箱和手机号
+        User user = baseMapper.selectById(userNotificationSetting.getId());
+        user.setEmail(userNotificationSetting.getEmail());
+        user.setPhone(userNotificationSetting.getPhone());
+        baseMapper.updateById(user);
+
+        // 删除企业微信账号记录
+        userNotificationSettingMapper.deleteById(userNotificationSetting.getId());
+
+        // 重新插入企业微信账号记录
+        UserNotificationSetting notificationSetting = new UserNotificationSetting();
+        notificationSetting.setUserId(userNotificationSetting.getId());
+        notificationSetting.setWechatAccount(userNotificationSetting.getWechatAccount());
+        userNotificationSettingMapper.insert(notificationSetting);
+        return true;
+    }
+
+    public UserNotifySettingDTO findUserNotification(String userId) {
+        UserNotifySettingDTO notificationDTO = new UserNotifySettingDTO();
+        User user = baseMapper.selectById(userId);
+        UserNotificationSetting userNotificationSetting = userNotificationSettingMapper.selectById(userId);
+        notificationDTO.setId(userId);
+        notificationDTO.setEmail(user.getEmail());
+        notificationDTO.setPhone(user.getPhone());
+        if (userNotificationSetting != null) {
+            notificationDTO.setWechatAccount(userNotificationSetting.getWechatAccount());
+        }
+        return notificationDTO;
+    }
+
+    @Transactional
+    public Boolean addUserRole(UserBatchAddRoleRequest userBatchAddRoleRequest) {
+        userBatchAddRoleRequest.getUserIdList().forEach(userId -> {
+            userBatchAddRoleRequest.getRoleInfoList().forEach(roleInfo -> {
+                UserRole userRole = new UserRole();
+                userRole.setRoleId(roleInfo.getRoleId());
+                userRole.setUserId(userId);
+                RoleConstants.ROLE parentRoleId = getParentRoleId(roleInfo.getRoleId());
+                if (RoleConstants.ROLE.USER.equals(parentRoleId)) {
+                    roleInfo.getWorkspaceIds().forEach(workspaceId -> {
+                                if (!hasUserRole(userId, roleInfo.getRoleId(), workspaceId)) {
+                                    insertUserRoleInfo(userRole, workspaceId);
+                                }
+                            }
+                    );
+                }
+                if (RoleConstants.ROLE.ORGADMIN.equals(parentRoleId)) {
+                    roleInfo.getOrganizationIds().forEach(organizationId -> {
+                                if (!hasUserRole(userId, roleInfo.getRoleId(), organizationId)) {
+                                    insertUserRoleInfo(userRole, organizationId);
+                                }
+                            }
+                    );
+                }
+                if (RoleConstants.ROLE.ADMIN.equals(parentRoleId)) {
+                    if (!hasUserRole(userId, roleInfo.getRoleId(), null)) {
+                        insertUserRoleInfo(userRole, null);
+                    }
+                }
+            });
+        });
+        return true;
+    }
+
+    /**
+     * 判断用户是否已有某个角色
+     *
+     * @param userId
+     * @param roleId
+     * @param sourceId
+     * @return
+     */
+    private boolean hasUserRole(String userId, String roleId, String sourceId) {
+        QueryWrapper<UserRole> userRoleQueryWrapper = Wrappers.query();
+        userRoleQueryWrapper.lambda().eq(UserRole::getUserId, userId);
+        userRoleQueryWrapper.lambda().eq(UserRole::getRoleId, roleId);
+        if (!StringUtils.isBlank(sourceId)) {
+            userRoleQueryWrapper.lambda().eq(UserRole::getSource, sourceId);
+        }
+        List<UserRole> userRoleList = userRoleMapper.selectList(userRoleQueryWrapper);
+
+        return !CollectionUtils.isEmpty(userRoleList);
     }
 }

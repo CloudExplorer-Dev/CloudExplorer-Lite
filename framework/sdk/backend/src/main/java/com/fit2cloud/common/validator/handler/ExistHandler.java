@@ -27,9 +27,10 @@ public class ExistHandler implements ValidatorFunction<Object, ConstraintValidat
             if (context.getConstraintViolationCreationContexts().size() == 1) {
                 ConstraintViolationCreationContext next = context.getConstraintViolationCreationContexts().listIterator().next();
                 NodeImpl leafNode = next.getPath().getLeafNode();
-                if (leafNode.getKind().equals(ElementKind.PROPERTY)||leafNode.getKind().equals(ElementKind.PARAMETER)) {
+                String field = customValidated.field().length() == 0 ? leafNode.asString() : customValidated.field();
+                if (leafNode.getKind().equals(ElementKind.PROPERTY) || leafNode.getKind().equals(ElementKind.PARAMETER)) {
                     QueryWrapper queryWrapper = new QueryWrapper();
-                    queryWrapper.eq(leafNode.asString(), value);
+                    queryWrapper.eq(field, value);
                     if (customValidated.exist()) {
                         return !bean.exists(queryWrapper);
                     }

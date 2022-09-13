@@ -3,20 +3,32 @@ package com.fit2cloud.service;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.fit2cloud.base.entity.User;
-import com.fit2cloud.dto.RoleInfo;
+import com.fit2cloud.controller.request.user.CreateUserRequest;
+import com.fit2cloud.controller.request.user.PageUserRequest;
+import com.fit2cloud.controller.request.user.UserBatchAddRoleRequest;
 import com.fit2cloud.dto.UserDto;
-import com.fit2cloud.request.CreateUserRequest;
-import com.fit2cloud.request.PageUserRequest;
-
-import java.util.List;
+import com.fit2cloud.dto.UserNotifySettingDTO;
+import com.fit2cloud.dto.UserOperateDto;
 
 public interface IUserService extends IService<User> {
     IPage<UserDto> pageUser(PageUserRequest pageUserRequest);
 
     boolean createUser(CreateUserRequest request);
 
+    boolean updateUser(CreateUserRequest request);
+
+    boolean updatePwd(User user);
+
     boolean deleteUser(String id);
 
-    public List<RoleInfo> roleInfo(String userId);
+    boolean changeUserStatus(UserDto userDto);
 
-    }
+    UserOperateDto userRoleInfo(String userId);
+
+    boolean updateUserNotification(UserNotifySettingDTO userNotificationSetting);
+
+    UserNotifySettingDTO findUserNotification(String userId);
+
+    Boolean addUserRole(UserBatchAddRoleRequest userBatchAddRoleRequest);
+
+}

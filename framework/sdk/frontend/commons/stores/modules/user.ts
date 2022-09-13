@@ -1,5 +1,4 @@
 import { defineStore } from "pinia";
-import { useRouter } from "vue-router";
 import route from "@commons/router";
 import authStorage from "@commons/utils/authStorage";
 import type { Ref } from "vue";
@@ -163,7 +162,7 @@ export const useUserStore = defineStore({
 
         //刷新权限
         await permissionStore.refreshPermissions();
-        console.log(permissionStore.userPermissions);
+        //console.log(permissionStore.userPermissions);
 
         return this.currentUser;
       } catch (err) {
