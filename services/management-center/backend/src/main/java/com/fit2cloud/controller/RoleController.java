@@ -13,12 +13,15 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import org.springframework.beans.BeanUtils;
+import org.springframework.context.MessageSource;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
 import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Size;
+import java.util.List;
 
 
 @RestController
@@ -28,6 +31,8 @@ public class RoleController {
 
     @Resource
     IRoleService roleService;
+    @Resource
+    MessageSource messageSource;
 
     @ApiOperation(value = "添加角色", notes = "添加角色")
     @PreAuthorize("hasAnyCePermission('ROLE:CREATE')")
@@ -59,6 +64,17 @@ public class RoleController {
             @RequestParam("id")
             String id) {
         return ResultHolder.success(roleService.deleteRoleById(id));
+    }
+
+    @ApiOperation(value = "批量删除组织", notes = "批量删除组织")
+    @PreAuthorize("hasAnyCePermission('ROLE:DELETE')")
+    @DeleteMapping("batch")
+    public ResultHolder<Boolean> batchRemoveRole(
+            @ApiParam("角色ID列表")
+            @Size(min = 1, message = "至少需要一个角色ID")
+            @RequestBody
+            List<String> ids) {
+        return ResultHolder.success(roleService.deleteRolesByIds(ids));
     }
 
 

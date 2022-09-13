@@ -26,4 +26,6 @@ public interface IRoleService extends IService<Role> {
 
     boolean deleteRoleById(String id);
 
+    boolean deleteRolesByIds(List<String> ids);
+
 }

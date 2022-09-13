@@ -41,5 +41,12 @@ public class RoleServiceImpl extends ServiceImpl<RoleMapper, Role> implements IR
         return removeById(id);
     }
 
+    public boolean deleteRolesByIds(List<String> ids) {
+        if (Arrays.stream(RoleConstants.ROLE.values()).map(Enum::name).anyMatch(ids::contains)) {
+            throw new Fit2cloudException(ErrorCodeConstants.BASE_ROLE_CANNOT_DELETE.getCode(), messageSource.getMessage(ErrorCodeConstants.BASE_ROLE_CANNOT_DELETE.getMessage(), null, LocaleContextHolder.getLocale()));
+        }
+        return removeByIds(ids);
+    }
+
 
 }

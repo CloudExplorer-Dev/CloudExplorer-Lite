@@ -27,7 +27,9 @@ public enum ErrorCodeConstants {
 
     WORKSPACE_IS_NOT_EXIST(100100403, "i18n.workspace.is.not.empty"),
 
-    BASE_ROLE_CANNOT_DELETE(100100404, "i18n.role.base.warn.cannot.delete");
+    BASE_ROLE_CANNOT_DELETE(100100404, "i18n.role.base.warn.cannot.delete"),
+
+    ROLE_ID_CANNOT_BE_NULL(100100405, "i18n.role.id.warn.cannot.null");
 
 
     /**
