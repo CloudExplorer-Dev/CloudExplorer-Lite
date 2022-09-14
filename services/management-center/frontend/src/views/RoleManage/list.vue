@@ -12,7 +12,7 @@ import {
   TableOperations,
   TableSearch,
 } from "@commons/components/ce-table/type";
-import { ElMessage, ElMessageBox } from "element-plus";
+import { ElMessage, ElMessageBox, type MessageBoxData } from "element-plus";
 import { useI18n } from "vue-i18n";
 
 import type { Role } from "@commons/api/role/type";
@@ -24,12 +24,14 @@ const columns = ref([]);
 
 const table = ref<any>(null);
 const tableData = ref<Array<Role>>();
+const selectedRowData = ref<Array<Role>>();
 
 const originRoles = ref<Array<Role>>();
 const originRoleNameMap = ref<Array<SimpleMap<string>>>([]);
 
 const tableLoading = ref<boolean>(false);
 
+//todo 改成国际化
 const typeMap = ref<Array<SimpleMap<string>>>([
   { text: "系统", value: "origin" },
   { text: "自定义", value: "inherit" },
@@ -43,24 +45,36 @@ onMounted(() => {
 function initMaps() {
   RoleApi.listRoles({ type: "origin" }).then((ok) => {
     originRoles.value = ok.data;
-
     originRoleNameMap.value = [];
     for (const role of originRoles.value) {
       originRoleNameMap.value.push({ text: role.name, value: role.id });
     }
-
-    //console.log(originRoleNameMap);
   });
 }
 
-const handleSelectionChange = () => {
-  console.log("handleSelectionChange");
+/**
+ * 选中的数据
+ */
+const handleSelectionChange = (list: Array<Role>) => {
+  selectedRowData.value = list;
 };
 
+/**
+ * 是否可选
+ * @param row
+ * @param index
+ */
 const selectable = (row: Role, index: number) => {
   return row.type !== "origin";
 };
 
+/**
+ * 格式化展示类型字段
+ * @param row
+ * @param column
+ * @param cellValue
+ * @param index
+ */
 const formatterType = (
   row: Role,
   column: any,
@@ -71,6 +85,13 @@ const formatterType = (
   return tempObj ? tempObj.text : cellValue;
 };
 
+/**
+ * 格式化展示继承角色字段
+ * @param row
+ * @param column
+ * @param cellValue
+ * @param index
+ */
 const formatterParentRole = (
   row: Role,
   column: any,
@@ -105,30 +126,22 @@ const search = (condition: TableSearch) => {
 };
 
 const openDetail = (row: Role) => {
-  console.log(row);
   useRoute.push({
     path: useRoute.currentRoute.value.path.replace(
       "/list",
       `/detail/${row.id}`
     ),
   });
-  /*useRoute.push({
-    path: useRoute.currentRoute.value.path.replace("/list", "/detail"),
-    query: { id: row.id },
-  });*/
 };
 
 const create = () => {
   useRoute.push({ name: "role_create" });
 };
 
-const editRole = (row: Role) => {
-  useRoute.push({
-    path: useRoute.currentRoute.value.path.replace("/list", `/edit/${row.id}`),
-  });
-  console.log(row);
-};
-
+/**
+ * 删除
+ * @param row
+ */
 const deleteRole = (row: Role) => {
   ElMessageBox.confirm(
     t("commons.message_box.confirm_delete"),
@@ -138,19 +151,61 @@ const deleteRole = (row: Role) => {
       cancelButtonText: t("commons.btn.cancel"),
       type: "warning",
     }
-  ).then(() => {
-    RoleApi.deleteRole(row.id, tableLoading)
-      .then((response) => {
-        console.log(response);
-        ElMessage.success(t("commons.msg.delete_success"));
-      })
-      .catch((err) => {
-        console.log(err);
-      })
-      .finally(() => {
-        table.value?.search();
-      });
-  });
+  ).then(
+    (value: MessageBoxData) => {
+      console.log(value);
+      RoleApi.deleteRole(row.id, tableLoading)
+        .then((response) => {
+          console.log(response);
+          ElMessage.success(t("commons.msg.delete_success"));
+        })
+        .catch((err) => {
+          console.log(err);
+        })
+        .finally(() => {
+          table.value?.search();
+        });
+    },
+    (reason: any) => {
+      console.log(reason);
+    }
+  );
+};
+
+/**
+ * 批量删除
+ */
+const batchDelete = () => {
+  if (!(selectedRowData.value && selectedRowData.value.length > 0)) {
+    return;
+  }
+  ElMessageBox.confirm(
+    t("commons.message_box.confirm_delete"),
+    t("commons.message_box.prompt"),
+    {
+      confirmButtonText: t("commons.btn.delete"),
+      cancelButtonText: t("commons.btn.cancel"),
+      type: "warning",
+    }
+  ).then(
+    (value: MessageBoxData) => {
+      console.log(value);
+      RoleApi.batchDeleteRoles(_.map(selectedRowData.value, "id"), tableLoading)
+        .then((response) => {
+          console.log(response);
+          ElMessage.success(t("commons.msg.delete_success"));
+        })
+        .catch((err) => {
+          console.log(err);
+        })
+        .finally(() => {
+          table.value?.search();
+        });
+    },
+    (reason: any) => {
+      console.log(reason);
+    }
+  );
 };
 
 /**

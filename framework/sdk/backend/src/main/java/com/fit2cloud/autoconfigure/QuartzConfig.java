@@ -8,6 +8,7 @@ import org.springframework.boot.autoconfigure.quartz.QuartzDataSource;
 import org.springframework.boot.autoconfigure.quartz.SchedulerFactoryBeanCustomizer;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Bean;
+import org.springframework.core.io.ClassPathResource;
 
 @ConfigurationProperties(
         prefix = "quartz",
@@ -39,6 +40,9 @@ public class QuartzConfig {
     @Bean
     public SchedulerFactoryBeanCustomizer schedulerFactoryBeanCustomizer() {
         return schedulerFactoryBean -> {
+            schedulerFactoryBean.setStartupDelay(2);
+            schedulerFactoryBean.setAutoStartup(true);
+            schedulerFactoryBean.setOverwriteExistingJobs(true);
             schedulerFactoryBean.setBeanName(schedulerName);
         };
     }

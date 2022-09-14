@@ -26,11 +26,19 @@ export function deleteRole(
   return del("/api/role", { id: id }, undefined, loading);
 }
 
+export function batchDeleteRoles(
+  ids: Array<string>,
+  loading?: Ref<boolean>
+): Promise<Result<boolean>> {
+  return del("/api/role/batch", null, ids, loading);
+}
+
 const RoleApi = {
   ...BaseRoleApi,
   addRole,
   updateRole,
   deleteRole,
+  batchDeleteRoles,
 };
 
 export default RoleApi;

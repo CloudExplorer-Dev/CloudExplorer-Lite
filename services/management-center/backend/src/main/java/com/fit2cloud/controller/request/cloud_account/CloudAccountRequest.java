@@ -18,15 +18,19 @@ import java.util.List;
 public class CloudAccountRequest extends PageRequest {
     @ApiModelProperty(value = "云账号名称",notes = "云账号名称")
     private String name;
+
     @ApiModelProperty(value = "供应商",notes = "供应商")
     @Size(min = 1,message = "{i18n.cloud_account_platform_size}")
     private List<String> platform;
+
     @ApiModelProperty(value = "同步状态",notes = "同步状态")
     @Size(min = 1,message = "{i18n.cloud_account.status.size}")
     private List<String> status;
+
     @ApiModelProperty(value = "云账号状态",notes = "云账号状态")
     @Size(min = 1,message = "{i18n.cloud_account.state.size}")
     private List<Boolean> state;
+
     @Size(min = 2,max = 2,message = "{i18n.request.date.message}")
     @ApiModelProperty(value="创建时间",example ="createTime[]=2121&createTime[]=21212")
     private List<Long> createTime;

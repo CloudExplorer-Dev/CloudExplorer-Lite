@@ -1,14 +1,20 @@
 package com.fit2cloud;
 
+import com.fit2cloud.common.scheduler.SchedulerService;
 import com.fit2cloud.dao.entity.CloudAccount;
 import com.fit2cloud.service.ICloudAccountService;
 import org.junit.jupiter.api.Test;
+import org.quartz.*;
+import org.quartz.ee.jmx.jboss.QuartzService;
+import org.quartz.impl.QuartzServer;
+import org.quartz.impl.matchers.GroupMatcher;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.TestPropertySource;
 
 import javax.annotation.Resource;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
+import java.util.Calendar;
 
 /**
  * @Author:张少虎
@@ -22,10 +28,13 @@ import java.util.UUID;
         "file:${ce.config.file}"
 })
 public class CloudAccountTest {
+
+
     @Resource
     private ICloudAccountService cloudAccountService;
+
     @Test
-    public void save(){
+    public void save() {
         CloudAccount cloudAccount = new CloudAccount();
         cloudAccount.setId(UUID.randomUUID().toString());
         cloudAccount.setName("超时");
@@ -33,9 +42,5 @@ public class CloudAccountTest {
         cloudAccount.setCredential("xxsda");
         cloudAccountService.save(cloudAccount);
     }
-    @Test
-    public void select(){
-        List<CloudAccount> list = cloudAccountService.list();
-        System.out.println(list);
-    }
+
 }

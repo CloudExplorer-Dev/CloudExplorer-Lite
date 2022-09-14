@@ -17,8 +17,8 @@ const router = useRouter();
 const AutoBreadcrumbs = ref<Array<Breadcrumb>>();
 
 const props = defineProps<{
-  breadcrumbs: Array<Breadcrumb>;
-  auto: false;
+  breadcrumbs?: Array<Breadcrumb>;
+  auto?: false;
 }>();
 if (props.auto) {
   AutoBreadcrumbs.value = router.currentRoute.value.matched

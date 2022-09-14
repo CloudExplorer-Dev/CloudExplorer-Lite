@@ -15,7 +15,6 @@ import type { OrganizationTree } from "@/api/organization/type";
 import { $tv } from "@commons/base-locales";
 import { roleConst } from "@commons/utils/constants";
 import type { InternalRuleItem } from "async-validator/dist-types/interface";
-
 const router = useRouter();
 const { t } = useI18n();
 const operationType = ref<string>("create");
@@ -31,7 +30,6 @@ const form = reactive<any>({
   confirmPassword: "",
   roleInfoList: [],
 });
-
 const confirmPwdValidator = (
   rule: InternalRuleItem,
   value: string,
@@ -43,7 +41,6 @@ const confirmPwdValidator = (
     callback();
   }
 };
-
 // 表单校验规则
 const rule = reactive<FormRules>({
   username: [
@@ -117,12 +114,10 @@ const rule = reactive<FormRules>({
     { validator: confirmPwdValidator, trigger: "blur" },
   ],
 });
-
 const roles = ref<Role[]>([]);
 const orgTreeData = ref<OrganizationTree[]>();
 const workspaceTreeData = ref<OrganizationTree[]>();
 const isAddLineAble = ref(true);
-
 // 添加用户类型选项
 const addLine = () => {
   const roleInfo: RoleInfo = {
@@ -144,7 +139,6 @@ const addLine = () => {
     }
   }
 };
-
 // 清除用户类型选项
 const subtractLine = (roleInfo: RoleInfo) => {
   _.remove(form.roleInfoList, (item) => {
@@ -154,7 +148,6 @@ const subtractLine = (roleInfo: RoleInfo) => {
     isAddLineAble.value = true;
   }
 };
-
 const filterRole = (role: Role, roleInfo: RoleInfo) => {
   if (!roleInfo.selectedRoleIds) return;
   let value = true;
@@ -169,16 +162,13 @@ const filterRole = (role: Role, roleInfo: RoleInfo) => {
   }
   return value;
 };
-
 const setRoleType = (roleInfo: RoleInfo, roleId: string) => {
   roleInfo.roleType = getParentRoleId(roleId);
 };
-
 const handleCancel = (formEl: FormInstance) => {
   formEl.resetFields();
   backToUserList();
 };
-
 const handleCreate = (formEl: FormInstance) => {
   if (!formEl) return;
   formEl.validate((valid) => {
@@ -200,11 +190,9 @@ const handleCreate = (formEl: FormInstance) => {
     }
   });
 };
-
 const backToUserList = () => {
   router.push({ name: "user" });
 };
-
 const getParentRoleId = (roleId: string) => {
   let parentRoleId = null;
   roles.value.forEach((role: Role) => {
@@ -214,22 +202,18 @@ const getParentRoleId = (roleId: string) => {
   });
   return parentRoleId;
 };
-
 onMounted(() => {
   const getOrgTree = tree().then((res) => {
     orgTreeData.value = res.data;
   });
-
   const getWsTree = workspaceTree().then((res) => {
     workspaceTreeData.value = res.data;
   });
-
   const getRoles = listRoles({ baseRole: useUserStore().currentRole }).then(
     (res) => {
       roles.value = res.data;
     }
   );
-
   const userId = router.currentRoute.value.query.id;
   if (userId) {
     operationType.value = "edit";

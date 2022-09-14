@@ -15,7 +15,6 @@ import AddRole from "@/views/UserManage/AddRole.vue";
 import MsgConfig from "@/views/UserManage/MsgConfig.vue";
 import { useI18n } from "vue-i18n";
 import { ElMessageBox, ElMessage } from "element-plus/es";
-
 const { t } = useI18n();
 const useRoute = useRouter();
 const columns = ref([]);
@@ -26,16 +25,13 @@ const selectedUserIds: string[] = [];
 const activeUserId = ref<string>();
 const batchAddRoleDialogVisible = ref<boolean>(false);
 const msgConfigDialogVisible = ref<boolean>(false);
-
 onMounted(() => {
   search(new TableSearch());
 });
-
 // 刷新列表
 const refresh = () => {
   table.value.search();
 };
-
 const search = (condition: TableSearch) => {
   const params = TableSearch.toSearchParams(condition);
   listUser({
@@ -54,25 +50,21 @@ const search = (condition: TableSearch) => {
     );
   });
 };
-
 // 选中
 const handleSelectionChange = (val: User[]) => {
   selectedUsers.value = val;
 };
-
 const create = () => {
   useRoute.push({
     path: useRoute.currentRoute.value.path.replace("/list", "/create"),
   });
 };
-
 const edit = (row: User) => {
   useRoute.push({
     path: useRoute.currentRoute.value.path.replace("/list", "/update"),
     query: { id: row.id },
   });
 };
-
 const deleteUser = (row: User) => {
   ElMessageBox.confirm(t("user.delete_confirm"), {
     confirmButtonText: t("commons.message_box.confirm"),
@@ -89,7 +81,6 @@ const deleteUser = (row: User) => {
       ElMessage.info(t("commons.msg.delete_canceled"));
     });
 };
-
 const addRole = () => {
   if (!(selectedUsers.value.length > 0)) {
     ElMessage.error(t("user.validate.selected"));
@@ -100,7 +91,6 @@ const addRole = () => {
   });
   batchAddRoleDialogVisible.value = true;
 };
-
 /**
  * 启停用户
  * @param row
@@ -114,18 +104,15 @@ const handleSwitchStatus = (row: User) => {
       refresh();
     });
 };
-
 const showMsgConfigDialog = (row: User) => {
   activeUserId.value = row.id;
   msgConfigDialogVisible.value = true;
 };
-
 const modifyPwdRef = ref();
 const showPwdDialog = (row: User) => {
   activeUserId.value = row.id;
   modifyPwdRef.value.dialogVisible = true;
 };
-
 const sourceFilter = (userSource: string) => {
   if (userSource.toLowerCase() === "local") {
     return t("user.local");
@@ -135,7 +122,6 @@ const sourceFilter = (userSource: string) => {
   }
   return userSource;
 };
-
 const tableConfig = ref<TableConfig>({
   searchConfig: {
     showEmpty: false,

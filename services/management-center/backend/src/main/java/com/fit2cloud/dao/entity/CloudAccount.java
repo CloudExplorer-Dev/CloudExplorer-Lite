@@ -4,8 +4,12 @@ import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
+
 import java.io.Serializable;
 import java.time.LocalDateTime;
+
+import com.baomidou.mybatisplus.core.handlers.MybatisEnumTypeHandler;
+import com.fit2cloud.dao.handler.CredentialTypeHandler;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.Accessors;
@@ -20,15 +24,16 @@ import com.fit2cloud.constants.CloudAccountConstants;
 
 /**
  * <p>
- * 
+ *
  * </p>
  *
- *
+ * @author fit2cloud
+ * @since
  */
 @Getter
 @Setter
 @Accessors(chain = true)
-@TableName("cloud_account")
+@TableName(value = "cloud_account",resultMap = "BaseResultMap")
 public class CloudAccount implements Serializable {
 
     @Serial
@@ -55,7 +60,7 @@ public class CloudAccount implements Serializable {
     /**
      * 凭证字段
      */
-    @TableField("credential")
+    @TableField(value = "credential", typeHandler = CredentialTypeHandler.class)
     private String credential;
 
     /**
@@ -67,7 +72,7 @@ public class CloudAccount implements Serializable {
     /**
      * 同步状态(0:同步成功,1:同步失败,2:同步中)
      */
-    @TableField("status")
+    @TableField(value = "status",typeHandler = MybatisEnumTypeHandler.class)
     private CloudAccountConstants.Status status;
 
     /**
