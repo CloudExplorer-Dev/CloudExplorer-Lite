@@ -109,9 +109,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
 
     @Override
     public boolean deleteUser(String userId) {
-        //TODO 获取当前登录用户ID,用户角色
-        String currentLoginUserId = "admin";
-        String currentLoginUserRole = "ADMIN";
+        String currentLoginUserId = CurrentUserUtils.getUser().getId();
 
         User user = baseMapper.selectById(userId);
         if (user == null) {
@@ -126,7 +124,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
         System.out.println(user.getUsername() + "is deleted by" + currentLoginUserId);
 
         // 当前登录用户以组织管理员的角色删除用户
-        if (currentLoginUserRole.equalsIgnoreCase(RoleConstants.ROLE.ORGADMIN.name())) {
+        if (CurrentUserUtils.isOrgAdmin()) {
             // 当为组织管理员时，删除当前组织及其子组织下的工作空间（解绑关系user_role）
             List<String> sourceList = new ArrayList<>();
 
@@ -136,26 +134,26 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
                 sourceList.addAll(subOrgIds);
             }
 
-            // TODO 查询当前组织及其子组织下的工作空间
-            List<String> workspaceIds = new ArrayList<>();
+            // 查询当前组织及其子组织下的工作空间
+            List<String> workspaceIds = workspaceCommonService.getWorkspaceIdsByOrgIds(subOrgIds);
             if (CollectionUtils.isNotEmpty(workspaceIds)) {
                 sourceList.addAll(workspaceIds);
             }
 
-            //TODO 根据sourceList，删除用户角色记录
+            // 根据sourceList，删除用户角色记录
             QueryWrapper<UserRole> userRoleWrapper = Wrappers.query();
-            userRoleWrapper.eq(true, "id", userId).in(true, "_source", sourceList);
+            userRoleWrapper.lambda().eq(true, UserRole::getId, userId).in(true, UserRole::getSource, sourceList);
             userRoleMapper.delete(userRoleWrapper);
 
-            //TODO 查询该用户具有的所有角色，如果为空，则删除用户
-            List<UserRoleDto> userRoleDtoList = new ArrayList<>();
-            if (CollectionUtils.isEmpty(userRoleDtoList)) {
+            // 查询该用户具有的所有角色，如果为空，则删除用户
+            List<RoleInfo> userRoleList = roleInfo(currentLoginUserId, false);
+            if (CollectionUtils.isEmpty(userRoleList)) {
                 baseMapper.deleteById(userId);
             }
         }
 
         // 当前登录用户以系统管理员的角色删除用户
-        if (currentLoginUserRole.equalsIgnoreCase(RoleConstants.ROLE.ADMIN.name())) {
+        if (CurrentUserUtils.isAdmin()) {
             // 删除用户
             baseMapper.deleteById(userId);
 
@@ -205,8 +203,8 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
 
         if (CollectionUtils.isNotEmpty(user.getRoleInfoList())) {
             if (CurrentUserUtils.isAdmin()) {
-                // TODO 校验系统是否还有系统管理员的角色，如果没有不允许本次修改
-
+                // 校验系统是否还有系统管理员的角色，如果没有不允许本次修改
+                checkSystemAdmin(user);
                 // 删除要编辑的用户在 user_role 的信息，然后 reinsert
                 userRoleMapper.delete(wrapper);
             }
@@ -275,7 +273,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
 
     public UserOperateDto userRoleInfo(String userId) {
         // 查询角色信息
-        List roleInfos = roleInfo(userId);
+        List roleInfos = roleInfo(userId, true);
 
         // 查询用户信息
         User user = baseMapper.selectById(userId);
@@ -283,16 +281,23 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
 
         // 组合数据
         BeanUtils.copyProperties(user, userOperateDto);
-        userOperateDto.setPassword("");
+        userOperateDto.setPassword(null);
         userOperateDto.setRoleInfoList(roleInfos);
 
         return userOperateDto;
     }
 
-    public List<RoleInfo> roleInfo(String userId) {
+    /**
+     * 根据用户ID及过滤条件查询用户角色
+     *
+     * @param userId
+     * @param addCondition
+     * @return
+     */
+    public List<RoleInfo> roleInfo(String userId, Boolean addCondition) {
         Map<String, Object> param = new HashMap<>();
         param.put("userId", userId);
-        if (CurrentUserUtils.isOrgAdmin()) {
+        if (CurrentUserUtils.isOrgAdmin() && addCondition) {
             List<String> orgIds = organizationCommonService.getOrgIdsByPid(CurrentUserUtils.getOrganizationId());
             List<String> resourceIds = workspaceCommonService.getWorkspaceIdsByOrgIds(orgIds);
             resourceIds.addAll(orgIds);
@@ -319,23 +324,23 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
      */
     private void validateUserParam(CreateUserRequest request) {
         if (StringUtils.isBlank(request.getUsername())) {
-            throw new RuntimeException("用户ID不能为空");
+            throw new Fit2cloudException(ErrorCodeConstants.USER_ID_CANNOT_BE_NULL.getCode(), ErrorCodeConstants.USER_ID_CANNOT_BE_NULL.getMessage());
         }
 
         if (StringUtils.isBlank(request.getName())) {
-            throw new RuntimeException("用户名不能为空");
+            throw new Fit2cloudException(ErrorCodeConstants.USER_NAME_CANNOT_BE_NULL.getCode(), ErrorCodeConstants.USER_NAME_CANNOT_BE_NULL.getMessage());
         }
 
         if (StringUtils.isBlank(request.getPassword())) {
-            throw new RuntimeException("密码不能为空");
+            throw new Fit2cloudException(ErrorCodeConstants.USER_PWD_CANNOT_BE_NULL.getCode(), ErrorCodeConstants.USER_PWD_CANNOT_BE_NULL.getMessage());
         }
 
         if (StringUtils.isBlank(request.getEmail())) {
-            throw new RuntimeException("邮箱不能为空");
+            throw new Fit2cloudException(ErrorCodeConstants.USER_EMAIL_CANNOT_BE_NULL.getCode(), ErrorCodeConstants.USER_EMAIL_CANNOT_BE_NULL.getMessage());
         }
 
         if (SystemUserConstants.getUserName().equalsIgnoreCase(request.getUsername())) {
-            throw new RuntimeException("用户ID不能为system");
+            throw new Fit2cloudException(ErrorCodeConstants.USER_ID_CANNOT_BE_SYSTEM.getCode(), ErrorCodeConstants.USER_ID_CANNOT_BE_SYSTEM.getMessage());
         }
 
         // 校验用户ID是否已存在
@@ -449,5 +454,25 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
         List<UserRole> userRoleList = userRoleMapper.selectList(userRoleQueryWrapper);
 
         return !CollectionUtils.isEmpty(userRoleList);
+    }
+
+    /**
+     * 判断是否还有用户具有系统管理员角色
+     *
+     * @param userOperate
+     */
+    private void checkSystemAdmin(UserOperateDto userOperate) {
+        // 查看默认系统管理员的个数，即 roleId 为 ADMIN
+        QueryWrapper<UserRole> userRoleQueryWrapper = Wrappers.query();
+        userRoleQueryWrapper.lambda().eq(UserRole::getRoleId, RoleConstants.ROLE.ADMIN.name());
+        long countAdmin = userRoleMapper.selectCount(userRoleQueryWrapper);
+        if (countAdmin < 2) {
+            List<UserRole> userRoles = userRoleMapper.selectList(userRoleQueryWrapper);
+            boolean anyMatch = userRoles.stream().anyMatch(userRole -> userRole.getUserId().equals(userOperate.getId()));
+            boolean isContainAdmin = userOperate.getRoleInfoList().stream().anyMatch(roleInfo -> StringUtils.equals(roleInfo.getRoleId(), RoleConstants.ROLE.ADMIN.name()));
+            if (anyMatch && !isContainAdmin) {
+                throw new Fit2cloudException(ErrorCodeConstants.SYSTEM_NOT_HAVE_ADMIN.getCode(), ErrorCodeConstants.SYSTEM_NOT_HAVE_ADMIN.getMessage());
+            }
+        }
     }
 }

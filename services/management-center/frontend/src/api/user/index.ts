@@ -7,6 +7,7 @@ import type {
   User,
   UpdateUserPwdRequest,
   UpdateUserStatusRequest,
+  UpdateUserRequest,
 } from "./type";
 
 export const listUser: (req: ListUserRequest) => Promise<Result<Page<User>>> = (
@@ -19,7 +20,7 @@ export const createUser = (req: CreateUserRequest) => {
   return post("/api/user/add", "", req);
 };
 
-export const updateUser = (req: CreateUserRequest) => {
+export const updateUser = (req: UpdateUserRequest) => {
   return post("/api/user/update", "", req);
 };
 

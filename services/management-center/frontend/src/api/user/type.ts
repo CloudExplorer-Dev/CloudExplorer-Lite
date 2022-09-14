@@ -42,6 +42,14 @@ interface CreateUserRequest {
   roleInfoList: RoleInfo[];
 }
 
+interface UpdateUserRequest {
+  id: string; // ID
+  name: string; // 姓名
+  email: string;
+  phone?: string;
+  roleInfoList?: RoleInfo[];
+}
+
 interface UpdateUserPwdRequest {
   id: string;
   password: string;
@@ -60,4 +68,5 @@ export type {
   CreateUserRequest,
   UpdateUserPwdRequest,
   UpdateUserStatusRequest,
+  UpdateUserRequest,
 };

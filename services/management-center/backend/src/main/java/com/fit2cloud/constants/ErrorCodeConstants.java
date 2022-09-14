@@ -15,6 +15,12 @@ public enum ErrorCodeConstants {
     USER_NOT_EXIST(100100102, "用户不存在"),
     USER_NOT_LOCAL_CAN_NOT_EDIT_PASSWORD(100100103, "非本地用户不能修改密码"),
     USER_KEEP_ONE_ADMIN(100100104, "至少保留一个系统管理员用户"),
+    SYSTEM_NOT_HAVE_ADMIN(100100105, "更改此用户角色，系统将无默认系统管理员"),
+    USER_ID_CANNOT_BE_NULL(100100106, "用户ID不能为空"),
+    USER_NAME_CANNOT_BE_NULL(100100107, "用户姓名不能为空"),
+    USER_PWD_CANNOT_BE_NULL(100100108, "密码不能为空"),
+    USER_EMAIL_CANNOT_BE_NULL(100100109, "邮箱不能为空"),
+    USER_ID_CANNOT_BE_SYSTEM(100100109, "用户ID不能为system"),
 
     ORGANIZATION_CANNOT_DELETE(10010, "i18n.organization.cannot.delete.have.parent"),
     ORGANIZATION_ID_AND_NAME_REQUIRED(100011, "i18n.organization.id.or.name.required"),
