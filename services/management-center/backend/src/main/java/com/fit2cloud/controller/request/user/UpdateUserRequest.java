@@ -21,7 +21,7 @@ import java.util.List;
 public class UpdateUserRequest {
 
     @ApiModelProperty(value = "主键ID",required = true)
-    @NotNull(message = "{i18n.user.id.cannot.null}")
+    @NotNull(message = "{i18n.user.id.cannot.be.null}")
     @CustomValidated(groups = {ValidationGroup.UPDATE.class },mapper = BaseUserMapper.class,handler = ExistHandler.class,message = "{i18n.primary.key.not.exist}",exist = false)
     private String id;
 

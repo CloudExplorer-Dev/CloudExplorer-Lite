@@ -19,7 +19,7 @@ public class CreateUserRequest{
     private String id;
 
     @ApiModelProperty(value = "用户ID",required = true)
-    @NotEmpty(message = "{i18n.user.id.cannot.null}")
+    @NotEmpty(message = "{i18n.user.id.cannot.be.null}")
     private String username;
 
     @ApiModelProperty(value = "姓名",required = true)
