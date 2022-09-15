@@ -35,7 +35,7 @@ public class TencentCredential implements Credential<TencentCredential> {
     /**
      * 密钥
      */
-    @From(inputType = InputType.text, label = "secretKey", description = "访问密钥")
+    @From(inputType = InputType.password, label = "secretKey", description = "访问密钥")
     private String secretKey;
 
     @Override

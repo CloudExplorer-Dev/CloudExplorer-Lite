@@ -15,6 +15,10 @@ public enum InputType {
      */
     number(InputNumberForm.class),
     /**
+     * 密码输入框
+     */
+    password(PasswordForm.class),
+    /**
      * 文本
      */
     text(InputTextForm.class),

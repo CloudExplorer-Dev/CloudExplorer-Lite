@@ -203,7 +203,11 @@ const clear = () => {
                 },
               ]"
             >
-              <el-input v-model="from.credential[item.field]"></el-input>
+              <el-input
+                v-model="from.credential[item.field]"
+                :type="item.inputType"
+                :show-password="item.inputType === 'password' ? true : false"
+              ></el-input>
             </el-form-item>
           </template>
         </layout-container>

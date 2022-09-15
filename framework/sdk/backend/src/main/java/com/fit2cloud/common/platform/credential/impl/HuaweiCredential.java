@@ -36,7 +36,7 @@ public class HuaweiCredential implements Credential<HuaweiCredential> {
     /**
      * SecretKey 密钥Key
      */
-    @From(inputType = InputType.text, label = "SecretKey", description = "访问密钥")
+    @From(inputType = InputType.password, label = "SecretKey", description = "访问密钥")
     private String sk;
 
     @Override

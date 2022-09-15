@@ -32,7 +32,7 @@ public class AliCredential implements Credential<AliCredential> {
     /**
      * 访问密钥
      */
-    @From(inputType = InputType.text, label = "AccessKeySecret", description = "访问令牌")
+    @From(inputType = InputType.password, label = "AccessKeySecret", description = "访问令牌")
     private String accessKeySecret;
 
     @Override
