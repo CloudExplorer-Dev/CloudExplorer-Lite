@@ -1,6 +1,7 @@
 package com.fit2cloud.controller;
 
 import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.fit2cloud.base.mapper.BaseOrganizationMapper;
 import com.fit2cloud.common.platform.credential.Credential;
 import com.fit2cloud.common.validator.annnotaion.CustomValidated;
 import com.fit2cloud.common.validator.handler.ExistHandler;
@@ -16,8 +17,11 @@ import com.fit2cloud.dao.entity.Organization;
 import com.fit2cloud.dao.mapper.CloudAccountMapper;
 import com.fit2cloud.request.pub.OrderRequest;
 import com.fit2cloud.service.ICloudAccountService;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import org.springframework.context.MessageSource;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.WebDataBinder;
 import org.springframework.web.bind.annotation.*;
@@ -37,96 +41,108 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/cloud_account")
 @Validated
+@Api("云账号相关接口")
 public class CloudAccountController {
     @Resource
     private ICloudAccountService cloudAccountService;
 
     @GetMapping("page")
+    @ApiOperation(value = "分页查询云账号", notes = "分页查询云账号")
+    @PreAuthorize("hasAnyCePermission('CLOUD_ACCOUNT:READ')")
     public ResultHolder<IPage<CloudAccount>> page(@Validated CloudAccountRequest cloudAccountRequest) {
         return ResultHolder.success(cloudAccountService.page(cloudAccountRequest));
     }
 
     @GetMapping("/{id}")
-    public ResultHolder<CloudAccount> findCloudAccount(@ApiParam(value = "云账号id", required = true) @CustomValidated(mapper = CloudAccountMapper.class, handler = ExistHandler.class, message = "{i18n.cloud_account_id_not_existent}", exist = false) @PathVariable("id") String id) {
+    @ApiOperation(value = "根据id查询云账号", notes = "根据id查询云账号")
+    @PreAuthorize("hasAnyCePermission('CLOUD_ACCOUNT:READ')")
+    public ResultHolder<CloudAccount> findCloudAccount(@ApiParam(value = "云账号id", required = true)
+                                                       @CustomValidated(mapper = CloudAccountMapper.class, handler = ExistHandler.class, message = "{i18n.cloud_account_id_not_existent}", exist = false)
+                                                       @PathVariable("id") String id) {
         return ResultHolder.success(cloudAccountService.getById(id));
     }
 
     @GetMapping("/platform")
+    @ApiOperation(value = "获取当前云平台所有供应商", notes = "获取当前云平台所有供应商")
+    @PreAuthorize("hasAnyCePermission('CLOUD_ACCOUNT:READ')")
     public ResultHolder<List<PlatformResponse>> getPlatform() {
         List<PlatformResponse> platformResponses = cloudAccountService.getPlatforms();
         return ResultHolder.success(platformResponses);
     }
 
     @PostMapping
+    @ApiOperation(value = "插入云账号", notes = "插入云账号")
+    @PreAuthorize("hasAnyCePermission('CLOUD_ACCOUNT:CREATE')")
     public ResultHolder<CloudAccount> save(@RequestBody AddCloudAccountRequest addCloudAccountRequest) {
         CloudAccount cloudAccount = cloudAccountService.save(addCloudAccountRequest);
         return ResultHolder.success(cloudAccount);
     }
 
     @PutMapping
+    @ApiOperation(value = "更新云账号", notes = "更新云账号")
+    @PreAuthorize("hasAnyCePermission('CLOUD_ACCOUNT:EDIT')")
     public ResultHolder<CloudAccount> update(@RequestBody UpdateCloudAccountRequest updateCloudAccountRequest) {
         CloudAccount cloudAccount = cloudAccountService.update(updateCloudAccountRequest);
         return ResultHolder.success(cloudAccount);
     }
 
     @DeleteMapping("/{cloud_account_id}")
-    public ResultHolder<Boolean> delete(@ApiParam("云账号id") @PathVariable("cloud_account_id") String accountId) {
+    @ApiOperation(value = "删除云账号", notes = "删除云账号")
+    @PreAuthorize("hasAnyCePermission('CLOUD_ACCOUNT:DELETE')")
+    public ResultHolder<Boolean> delete(@ApiParam("云账号id")
+                                        @PathVariable("cloud_account_id")
+                                        @CustomValidated(mapper = CloudAccountMapper.class, field = "id", handler = ExistHandler.class, message = "{i18n.cloud_account.id.is.not.existent}", exist = false)
+                                        String accountId) {
         return ResultHolder.success(cloudAccountService.delete(accountId));
     }
 
     @DeleteMapping
-    public ResultHolder<Boolean> deleteBatch(@ApiParam("批量删除组织") @Size(min = 1, message = "最少传入一个云账号id") @RequestBody ArrayList<String> cloudAccountIds) {
+    @ApiOperation(value = "批量删除云账号", notes = "批量删除云账号")
+    @PreAuthorize("hasAnyCePermission('CLOUD_ACCOUNT:DELETE')")
+    public ResultHolder<Boolean> deleteBatch(@ApiParam("批量删除组织")
+                                             @Size(min = 1, message = "{i18n.i18n.cloud_account.id.is.not.empty}")
+                                             @RequestBody ArrayList<String> cloudAccountIds) {
         boolean delete = cloudAccountService.delete(cloudAccountIds);
         return ResultHolder.success(delete);
     }
 
     @GetMapping("/region/{cloud_account_id}")
-    public ResultHolder<List<Credential.Region>> region(@ApiParam("云账号id") @PathVariable("cloud_account_id") String accountId) {
+    @ApiOperation(value = "获取当前云账号的区域信息", notes = "获取当前云账号的区域信息")
+    @PreAuthorize("hasAnyCePermission('CLOUD_ACCOUNT:READ')")
+    public ResultHolder<List<Credential.Region>> region(@ApiParam("云账号id")
+                                                        @PathVariable("cloud_account_id")
+                                                        @NotNull(message = "{i18n.cloud_account.id.is.not.empty}")
+                                                        @CustomValidated(mapper = CloudAccountMapper.class, field = "id", handler = ExistHandler.class, message = "{i18n.cloud_account.id.is.not.existent}", exist = false)
+                                                        String accountId) {
         List<Credential.Region> regions = cloudAccountService.listRegions(accountId);
         return ResultHolder.success(regions);
     }
 
     @GetMapping("/verification/{cloud_account_id}")
-    public ResultHolder<CloudAccount> verification(@ApiParam("云账号id") @NotNull(message = "云账号id不能为空")  @PathVariable("cloud_account_id") String accountId) {
-        CloudAccount cloudAccount = new CloudAccount() {{
-            setId(accountId);
-            setState(true);
-        }};
-        try {
-            cloudAccountService.listRegions(accountId);
-        } catch (Exception e) {
-            cloudAccount.setState(false);
-            cloudAccountService.updateById(cloudAccount);
-            throw e;
-        }
-        cloudAccountService.updateById(cloudAccount);
-        // 校验成功更新数据
-        return ResultHolder.success(cloudAccountService.getById(accountId));
+    @ApiOperation(value = "校验云账号信息", notes = "校验云账号信息")
+    @PreAuthorize("hasAnyCePermission('CLOUD_ACCOUNT:READ')")
+    public ResultHolder<CloudAccount> verification(@ApiParam("云账号id")
+                                                   @NotNull(message = "{i18n.cloud_account.id.is.not.empty}")
+                                                   @CustomValidated(mapper = CloudAccountMapper.class, field = "id", handler = ExistHandler.class, message = "{i18n.cloud_account.id.is.not.existent}", exist = false)
+                                                   @PathVariable("cloud_account_id") String accountId) {
+        CloudAccount cloudAccount = cloudAccountService.verification(accountId);
+        return ResultHolder.success(cloudAccount);
     }
 
     @GetMapping("/jobs/{cloud_account_id}")
-    public ResultHolder<CloudAccountJobDetailsResponse> jobs(@ApiParam("云账号id") @PathVariable("cloud_account_id") String accountId) {
+    @ApiOperation(value = "获取云账号的定时任务", notes = "获取云账号的定时任务")
+    @PreAuthorize("hasAnyCePermission('CLOUD_ACCOUNT:READ')")
+    public ResultHolder<CloudAccountJobDetailsResponse> jobs(@ApiParam("云账号id")
+                                                             @NotNull(message = "{i18n.cloud_account.id.is.not.empty}")
+                                                             @CustomValidated(mapper = CloudAccountMapper.class, field = "id", handler = ExistHandler.class, message = "{i18n.cloud_account.id.is.not.existent}", exist = false)
+                                                             @PathVariable("cloud_account_id") String accountId) {
         return ResultHolder.success(cloudAccountService.jobs(accountId));
     }
 
     @PutMapping("/jobs")
+    @ApiOperation(value = "修改云账号定时任务", notes = "修改云账号定时任务")
+    @PreAuthorize("hasAnyCePermission('CLOUD_ACCOUNT:EDIT')")
     public ResultHolder<CloudAccountJobDetailsResponse> updateJobs(@RequestBody UpdateJobsRequest updateJobsRequest) {
         return ResultHolder.success(cloudAccountService.updateJob(updateJobsRequest));
     }
-
-
-    /**
-     * 控制器初始化时调用
-     * SpringMVC 使用WebDataBinder处理<请求消息,方法入参>的绑定工作
-     *
-     * @param binder
-     */
-    @InitBinder
-    public void initBinder(WebDataBinder binder) {
-        binder.registerCustomEditor(OrderRequest.class, new OrderEditor());
-        binder.registerCustomEditor(CloudAccountCredentialRequest.class, new CredentialEditor());
-        binder.registerCustomEditor(Credential.class, new CredentialEditor());
-    }
-
-
 }

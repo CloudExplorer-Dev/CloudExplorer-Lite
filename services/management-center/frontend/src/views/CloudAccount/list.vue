@@ -14,33 +14,42 @@ import { ElMessage, ElMessageBox } from "element-plus";
 import { useRouter } from "vue-router";
 import { useI18n } from "vue-i18n";
 const { t } = useI18n();
+// 路由实例对象
 const router = useRouter();
+// 表格数据
 const clouAccountList = ref<Array<CloudAccount>>([]);
+// 查询数据
 const tableSearch = ref<TableSearch>();
+// table组建实例
 const table: any = ref(null);
+// 选中的云账号id
 const multipleSelectionIds = ref<Array<string>>();
+// 列表字段数据
+const columns = ref([]);
 // 获得云平台过滤数据
 const platformFilters = Object.keys(platformIcon).map((platform: string) => {
   return { text: platformIcon[platform].name, value: platform };
 });
+
 /**
  * 去修改页面
  * @param row 当前这一行数据
  */
-const edit = (row: any) => {
+const edit = (row: CloudAccount) => {
   router.push({ name: "cloud_account_update", params: { id: row.id } });
 };
+
 /**
  * 删除这一行数据,根据id
  * @param row 当前这一行数据
  */
-const deleteItem = (row: any) => {
+const deleteItem = (row: CloudAccount) => {
   ElMessageBox.confirm(
-    t("commons.message_box.confirm_delete"),
-    t("commons.message_box.prompt"),
+    t("commons.message_box.confirm_delete", "确认删除"),
+    t("commons.message_box.prompt", "提示"),
     {
-      confirmButtonText: t("commons.btn.delete"),
-      cancelButtonText: t("commons.btn.cancel"),
+      confirmButtonText: t("commons.btn.delete", "删除"),
+      cancelButtonText: t("commons.btn.cancel", "取消"),
       type: "warning",
     }
   ).then(() => {
@@ -54,9 +63,9 @@ const deleteItem = (row: any) => {
  * 校验云账号是否有效
  * @param row 当前这一行数据
  */
-const check = (row: any) => {
-  cloudAccountApi.verificationCloudAccount(row.id).then((ok) => {
-    ElMessage.success("云账号有效");
+const check = (row: CloudAccount) => {
+  cloudAccountApi.verificationCloudAccount(row.id).then(() => {
+    ElMessage.success(t("native_state_valid_message", "云账号有效"));
     table.value?.search();
   });
 };
@@ -64,7 +73,7 @@ const check = (row: any) => {
  * 去编辑定时任务页面
  * @param row 当前这一行数据
  */
-const updateJob = (row: any) => {
+const updateJob = (row: CloudAccount) => {
   router.push({ name: "cloud_account_sync_job", params: { id: row.id } });
 };
 
@@ -91,15 +100,17 @@ const handleSelectionChange = (val: CloudAccount[]) => {
  */
 const batchDelete = () => {
   if (!multipleSelectionIds.value) {
-    ElMessage.error("最少选择一个云账号id");
+    ElMessage.error(
+      t("cloud_account.cloud_account_size", "云账号必须选择一条")
+    );
     return;
   }
   ElMessageBox.confirm(
-    t("commons.message_box.confirm_delete"),
-    t("commons.message_box.prompt"),
+    t("commons.message_box.confirm_delete", "确认删除"),
+    t("commons.message_box.prompt", "提交"),
     {
-      confirmButtonText: t("commons.btn.delete"),
-      cancelButtonText: t("commons.btn.cancel"),
+      confirmButtonText: t("commons.btn.delete", "删除"),
+      cancelButtonText: t("commons.btn.cancel", "取消"),
       type: "warning",
     }
   ).then(() => {
@@ -112,8 +123,6 @@ const batchDelete = () => {
     }
   });
 };
-
-const columns = ref([]);
 
 const search = (condition: TableSearch) => {
   tableSearch.value = condition;
@@ -140,6 +149,7 @@ const search = (condition: TableSearch) => {
 onMounted(() => {
   search(new TableSearch());
 });
+
 /**
  * 表单配置
  */
@@ -152,43 +162,43 @@ const tableConfig = ref<TableConfig>({
     components: [
       SearchConfig.buildComponent().DateComponent.newInstance(
         "createTime",
-        "创建时间"
+        t("commons.create_time", "创建时间")
       ),
       SearchConfig.buildComponent().DateComponent.newInstance(
         "updateTime",
-        "修改时间"
+        t("commons.update_time", "修改时间")
       ),
     ],
-    searchOptions: [{ label: "名称", value: "name" }],
+    searchOptions: [{ label: t("commons.name", "名称"), value: "name" }],
   },
   paginationConfig: new PaginationConfig(),
   tableOperations: new TableOperations([
     TableOperations.buildButtons().newInstance(
-      "编辑",
+      t("commons.btn.edit", "编辑"),
       "primary",
       edit,
       "EditPen"
     ),
     TableOperations.buildButtons().newInstance(
-      "校验",
+      t("cloud_account.verification", "校验"),
       "primary",
       check,
       "Search"
     ),
     TableOperations.buildButtons().newInstance(
-      "同步",
+      t("cloud_account.sync", "同步"),
       "primary",
       sync,
       "Refresh"
     ),
     TableOperations.buildButtons().newInstance(
-      "编辑定时任务",
+      t("cloud_account.edit_job_message", "编辑定时任务"),
       "primary",
       updateJob,
       "Document"
     ),
     TableOperations.buildButtons().newInstance(
-      "删除",
+      t("commons.btn.delete", "删除"),
       "primary",
       deleteItem,
       "Delete"
@@ -207,16 +217,20 @@ const tableConfig = ref<TableConfig>({
     row-key="id"
   >
     <template #toolbar>
-      <el-button type="primary" @click="create">创建</el-button>
-      <el-button @click="batchDelete">删除</el-button>
+      <el-button type="primary" @click="create">{{
+        t("commons.btn.create", "创建")
+      }}</el-button>
+      <el-button @click="batchDelete">{{
+        t("commons.btn.delete", "删除")
+      }}</el-button>
     </template>
     <el-table-column type="selection" />
-    <el-table-column prop="name" label="名称" sortable />
+    <el-table-column prop="name" :label="t('commons.name', '名称')" sortable />
     <el-table-column
       column-key="platform"
       :filters="platformFilters"
       prop="platform"
-      label="云平台"
+      :label="t('cloud_account.platform', '云平台')"
       sortable
     >
       <template #default="scope">
@@ -231,12 +245,12 @@ const tableConfig = ref<TableConfig>({
     </el-table-column>
     <el-table-column
       prop="state"
-      label="云账号状态"
+      :label="t('cloud_account.native_state', '云账号状态')"
       column-key="state"
       sortable
       :filters="[
-        { text: '有效', value: true },
-        { text: '无效', value: false },
+        { text: t('cloud_account.native_state_valid', '有效'), value: true },
+        { text: t('cloud_account.native_state_invalid', '无效'), value: false },
       ]"
     >
       <template #default="scope">
@@ -244,19 +258,32 @@ const tableConfig = ref<TableConfig>({
           style="display: flex; align-items: center"
           :style="{ color: scope.row.state ? '' : 'red' }"
         >
-          <span>{{ scope.row.state ? "有效" : "无效" }}</span>
+          <span>{{
+            scope.row.state
+              ? t("cloud_account.native_state_valid", "有效")
+              : t("cloud_account.native_state_invalid", "无效")
+          }}</span>
         </div>
       </template>
     </el-table-column>
     <el-table-column
       column-key="status"
       prop="status"
-      label="同步状态"
+      :label="t('cloud_account.native_sync_status', '同步状态')"
       :filters="[
-        { text: '初始化', value: 'INIT' },
-        { text: '同步成功', value: 'SUCCESS' },
-        { text: '同步失败', value: 'FAILED' },
-        { text: '同步中', value: 'SYNCING' },
+        { text: t('cloud_account.native_sync.init', '初始化'), value: 'INIT' },
+        {
+          text: t('cloud_account.native_sync.success', '同步成功'),
+          value: 'SUCCESS',
+        },
+        {
+          text: t('cloud_account.native_sync.failed', '同步失败'),
+          value: 'FAILED',
+        },
+        {
+          text: t('cloud_account.native_sync.syncing', '同步中'),
+          value: 'SYNCING',
+        },
       ]"
       sortable
     >
@@ -266,21 +293,29 @@ const tableConfig = ref<TableConfig>({
             :style="{ color: scope.row.status === 'FAILED' ? 'red' : '' }"
             >{{
               scope.row.status === "FAILED"
-                ? "同步失败"
+                ? t("cloud_account.native_sync.failed", "同步失败")
                 : scope.row.status === "INIT"
-                ? "初始化"
+                ? t("cloud_account.native_sync.init", "初始化")
                 : scope.row.status === "SUCCESS"
-                ? "同步成功"
+                ? t("cloud_account.native_sync.success", "同步成功")
                 : scope.row.status === "SYNCING"
-                ? "同步中"
-                : "未知"
+                ? t("cloud_account.native_sync.syncing", "同步中")
+                : t("cloud_account.native_sync.unknown", "未知")
             }}</span
           >
         </div>
       </template>
     </el-table-column>
-    <el-table-column prop="updateTime" label="最近同步时间" sortable />
-    <el-table-column prop="createTime" label="创建时间" sortable />
+    <el-table-column
+      prop="updateTime"
+      :label="t('cloud_account.last_sync_time', '最近同步时间')"
+      sortable
+    />
+    <el-table-column
+      prop="createTime"
+      :label="t('commons.create_time', '创建时间')"
+      sortable
+    />
     <fu-table-operations v-bind="tableConfig.tableOperations" fix />
     <template #buttons>
       <fu-table-column-select type="icon" :columns="columns" size="small" />

@@ -205,6 +205,10 @@ public class PermissionConstants {
                                     .operate(OPERATE.CREATE).name("i18n_permission_cloud_account_create")
                                     .role(RoleConstants.ROLE.ADMIN)
                                     .role(RoleConstants.ROLE.ORGADMIN))
+                            .permission(new Permission.Builder()
+                                    .operate(OPERATE.DELETE).name("i18n_permission_cloud_account_delete")
+                                    .role(RoleConstants.ROLE.ADMIN)
+                                    .role(RoleConstants.ROLE.ORGADMIN))
             )
             //...
             ;

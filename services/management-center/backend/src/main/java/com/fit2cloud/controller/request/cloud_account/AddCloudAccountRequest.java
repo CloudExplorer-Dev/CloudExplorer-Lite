@@ -10,6 +10,9 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fit2cloud.common.constants.PlatformConstants;
 import com.fit2cloud.common.exception.Fit2cloudException;
 import com.fit2cloud.common.platform.credential.Credential;
+import com.fit2cloud.common.validator.annnotaion.CustomValidated;
+import com.fit2cloud.common.validator.handler.ExistHandler;
+import com.fit2cloud.dao.mapper.CloudAccountMapper;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
@@ -29,6 +32,7 @@ public class AddCloudAccountRequest extends CloudAccountCredentialRequest {
 
     @ApiModelProperty(value = "云账号名称", notes = "云账号名称")
     @NotNull(message = "云账号名称不能为null")
+    @CustomValidated(mapper = CloudAccountMapper.class, field = "name", handler = ExistHandler.class, message = "{i18n.cloud_account.name.not.repeat}", exist = false)
     private String name;
 
 

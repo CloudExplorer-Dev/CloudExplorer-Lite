@@ -33,6 +33,7 @@ public interface ICloudAccountService extends IService<CloudAccount> {
 
     /**
      * 获取云账号供应商数据
+     *
      * @return 所有的云账号供应商数据
      */
     List<PlatformResponse> getPlatforms();
@@ -56,6 +57,7 @@ public interface ICloudAccountService extends IService<CloudAccount> {
 
     /**
      * 查询到当前云账号任务信息
+     *
      * @param accountId 云账号id
      * @return 云账号任务信息
      */
@@ -63,6 +65,7 @@ public interface ICloudAccountService extends IService<CloudAccount> {
 
     /**
      * 更新云账号
+     *
      * @param updateJobsRequest 云账号任务参数
      * @return 更新后云账号定时任务数据
      */
@@ -71,17 +74,33 @@ public interface ICloudAccountService extends IService<CloudAccount> {
 
     /**
      * 更新云账号信息
+     *
      * @param updateCloudAccountRequest 云账号信息相关参数
-     * @return    更新后的云账号信息
+     * @return 更新后的云账号信息
      */
     CloudAccount update(UpdateCloudAccountRequest updateCloudAccountRequest);
 
     /**
      * 删除云账号
+     *
      * @param accountId 删除云账号
      * @return 删除
      */
     boolean delete(String accountId);
 
+    /**
+     * 删除云账号根据家云账号id
+     *
+     * @param cloudAccountIds 云账号id
+     * @return 是否删除成功
+     */
     boolean delete(ArrayList<String> cloudAccountIds);
+
+    /**
+     * 校验云账号是否有效
+     *
+     * @param accountId 需要校验的云账号
+     * @return 云账号对象
+     */
+    CloudAccount verification(String accountId);
 }

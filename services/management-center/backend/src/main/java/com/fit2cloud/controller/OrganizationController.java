@@ -46,56 +46,56 @@ public class OrganizationController {
         return ResultHolder.success(organizationService.pageOrganization(pageOrganizationRequest));
     }
 
-    @GetMapping("/one")
-    @ApiOperation(value = "查询到一个组织", notes = "查询到一个组织")
-    public ResultHolder<Organization> getOrganization(@ApiParam("组织主键id") @RequestParam("id") String id, @ApiParam("组织名称") @RequestParam("name") String name) {
-        return ResultHolder.success(organizationService.getOne(id, name));
+    @GetMapping("/{organizationId}")
+    @ApiOperation(value = "根据组织id查询组织", notes = "根据组织id查询组织")
+    public ResultHolder<Organization> getOrganization(@ApiParam("组织id")
+                                                      @NotNull(message = "{i18n.organization.name.is.not.empty}")
+                                                      @CustomValidated(mapper = BaseOrganizationMapper.class, handler = ExistHandler.class, message = "{i18n.organization.id.is.not.existent}", exist = false)
+                                                      @PathVariable("organizationId") String id) {
+        return ResultHolder.success(organizationService.getOne(id, null));
     }
 
     @ApiOperation(value = "添加组织", notes = "添加组织")
     @PostMapping
-    public ResultHolder<Boolean> save(@RequestBody @Validated(ValidationGroup.SAVE.class) OrganizationRequest request) {
+    public ResultHolder<Organization> save(@RequestBody
+                                           @Validated(ValidationGroup.SAVE.class) OrganizationRequest request) {
         Organization organization = new Organization();
         BeanUtils.copyProperties(request, organization);
-        boolean save = organizationService.save(organization);
-        return ResultHolder.success(save);
+        organizationService.save(organization);
+        return ResultHolder.success(organizationService.getById(organization.getId()));
     }
 
     @ApiOperation(value = "批量添加组织", notes = "批量添加组织")
     @PostMapping("/batch")
-    public ResultHolder<Boolean> batch(@RequestBody @Validated(ValidationGroup.SAVE.class) OrganizationBatchRequest request) {
+    public ResultHolder<Boolean> batch(@RequestBody
+                                       @Validated(ValidationGroup.SAVE.class) OrganizationBatchRequest request) {
         Boolean batch = organizationService.batch(request);
         return ResultHolder.success(batch);
     }
 
     @ApiOperation(value = "修改组织", notes = "修改组织")
     @PutMapping
-    public ResultHolder<Boolean> update(@RequestBody @Validated(ValidationGroup.UPDATE.class) OrganizationRequest request) {
-        boolean b=organizationService.update(request);
-        return ResultHolder.success(b);
+    public ResultHolder<Organization> update(@RequestBody
+                                             @Validated(ValidationGroup.UPDATE.class) OrganizationRequest request) {
+        organizationService.update(request);
+        return ResultHolder.success(organizationService.getById(request.getId()));
     }
 
     @ApiOperation(value = "删除组织", notes = "删除组织")
     @DeleteMapping("/{organizationId}")
-    public ResultHolder<Boolean> delete(@ApiParam("组织id") @NotNull(message = "组织id不能为null") @CustomValidated(mapper = BaseOrganizationMapper.class, handler = ExistHandler.class, message = "组织id不存在", exist = false) @PathVariable("organizationId") String id) {
-        boolean b = organizationService.removeTreeById(id);
-        return ResultHolder.success(b);
+    public ResultHolder<Boolean> delete(@ApiParam("组织id")
+                                        @NotNull(message = "{i18n.organization.name.is.not.empty}")
+                                        @CustomValidated(mapper = BaseOrganizationMapper.class, handler = ExistHandler.class, message = "{i18n.organization.id.is.not.existent}", exist = false)
+                                        @PathVariable("organizationId") String id) {
+        return ResultHolder.success(organizationService.removeTreeById(id));
     }
 
     @ApiOperation(value = "批量删除组织", notes = "批量删除组织")
     @DeleteMapping
-    public ResultHolder<Boolean> deleteBatch(@ApiParam("批量删除组织") @Size(min = 1, message = "必须传入一个组织id") @RequestBody ArrayList<Organization> organizationIds) {
+    public ResultHolder<Boolean> deleteBatch(@ApiParam("批量删除组织")
+                                             @Size(min = 1, message = "{i18n.organization.id.size.gt.one}")
+                                             @NotNull(message = "{i18n.organization.id.is.not.empty}")
+                                             @RequestBody ArrayList<Organization> organizationIds) {
         return ResultHolder.success(organizationService.removeBatchTreeByIds(organizationIds));
-    }
-
-    /**
-     * 控制器初始化时调用
-     * SpringMVC 使用WebDataBinder处理<请求消息,方法入参>的绑定工作
-     *
-     * @param binder
-     */
-    @InitBinder
-    public void initBinder(WebDataBinder binder) {
-        binder.registerCustomEditor(OrderRequest.class, new OrderEditor());
     }
 }

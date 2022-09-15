@@ -1,6 +1,7 @@
 package com.fit2cloud.controller.request.cloud_account;
 
 import com.fit2cloud.request.pub.OrderRequest;
+import com.fit2cloud.request.pub.PageOrderRequest;
 import com.fit2cloud.request.pub.PageRequest;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
@@ -15,7 +16,7 @@ import java.util.List;
  * @注释:
  */
 @Data
-public class CloudAccountRequest extends PageRequest {
+public class CloudAccountRequest extends PageOrderRequest {
     @ApiModelProperty(value = "云账号名称",notes = "云账号名称")
     private String name;
 
@@ -38,7 +39,4 @@ public class CloudAccountRequest extends PageRequest {
     @Size(min = 2,max = 2,message = "{i18n.request.date.message}")
     @ApiModelProperty(value = "修改时间",example ="updateTime[]=2121&updateTime[]=21212" )
     private List<Long> updateTime;
-
-    @ApiModelProperty(value = "排序",example = " {\"column\":\"createTime\",\"asc\":false}")
-    private OrderRequest order;
 }

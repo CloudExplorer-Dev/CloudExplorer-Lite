@@ -94,15 +94,4 @@ public class UserController {
     public ResultHolder<Boolean> addUserRole(@Validated @RequestBody UserBatchAddRoleRequest userBatchAddRoleRequest) {
         return ResultHolder.success(userService.addUserRole(userBatchAddRoleRequest));
     }
-
-    /**
-     * 控制器初始化时调用
-     * SpringMVC 使用WebDataBinder处理<请求消息,方法入参>的绑定工作
-     *
-     * @param binder
-     */
-    @InitBinder
-    public void initBinder(WebDataBinder binder) {
-        binder.registerCustomEditor(OrderRequest.class, new OrderEditor());
-    }
 }

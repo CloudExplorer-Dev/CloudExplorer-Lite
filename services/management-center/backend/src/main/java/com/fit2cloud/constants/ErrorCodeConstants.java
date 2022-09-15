@@ -1,5 +1,10 @@
 package com.fit2cloud.constants;
 
+import com.fit2cloud.common.utils.LocaleUtil;
+import org.springframework.lang.Nullable;
+
+import java.util.List;
+
 /**
  * @Author:张少虎
  * @Date: 2022/8/30  2:36 PM
@@ -19,7 +24,11 @@ public enum ErrorCodeConstants {
     ORGANIZATION_CANNOT_DELETE(10010, "i18n.organization.cannot.delete.have.parent"),
     ORGANIZATION_ID_AND_NAME_REQUIRED(100011, "i18n.organization.id.or.name.required"),
     ORGANIZATION_NAME_REPEAT(100012, "i18n.organization.name.not.repeat"),
-    ORGANIZATION_UPDATE_NOT_THIS_CHILD(100013, "i18m.organization.pid.not.mv.to.this_child"),
+    ORGANIZATION_UPDATE_NOT_THIS_CHILD(100013, "i18n.organization.pid.not.mv.to.this_child"),
+
+    CLOUD_ACCOUNT_NOT_SUPPORT_PLATFORM(100100, "i18n.cloud_account.not_support.platform"),
+
+    CLOUD_ACCOUNT_JOB_IS_NOT_EXISTENT(100101, "i18n.cloud_account.job.is.not.existent"),
 
     WORKSPACE_ID_AND_NAME_REQUIRED(100100401, "i18n.workspace.id.or.name.required"),
 
@@ -35,21 +44,41 @@ public enum ErrorCodeConstants {
     /**
      * 提示
      */
-    private String message;
+    private final String message;
     /**
      * 状态吗
      */
-    private Integer code;
+    private final Integer code;
 
     ErrorCodeConstants(Integer code, String message) {
         this.code = code;
         this.message = message;
     }
 
+    /**
+     * 获取错误提示
+     *
+     * @return 错误提示文本
+     */
     public String getMessage() {
-        return message;
+        return LocaleUtil.getMessage(message, message);
     }
 
+    /**
+     * 获取错误提示
+     *
+     * @param args 错误提示参数
+     * @return 错误提示文本
+     */
+    public String getMessage(Object[] args) {
+        return LocaleUtil.getMessage(message, args, message);
+    }
+
+    /**
+     * 获取错误code
+     *
+     * @return 错误code
+     */
     public Integer getCode() {
         return code;
     }

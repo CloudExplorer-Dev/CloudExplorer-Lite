@@ -33,8 +33,8 @@ const submitForm = () => {
       router.currentRoute.value.params.id as string
     );
     cloudAccountApi.updateJobs(data, loading).then(() => {
-      ElMessage.success("保存定时任务成功");
       router.push({ name: "cloud_account_list" });
+      ElMessage.success(t("commons.msg.op_success", "操作成功"));
     });
   }
 };
@@ -157,11 +157,41 @@ const clear = () => {
                   >
                     <el-option
                       v-for="item in [
-                        { value: 'MILLISECOND', label: '毫秒' },
-                        { value: 'SECOND', label: '秒' },
-                        { value: 'MINUTE', label: '分钟' },
-                        { value: 'HOUR', label: '小时' },
-                        { value: 'DAY', label: '天' },
+                        {
+                          value: 'MILLISECOND',
+                          label: t(
+                            'cloud_account.sync.interval_time_unit.millisecond',
+                            '毫秒'
+                          ),
+                        },
+                        {
+                          value: 'SECOND',
+                          label: t(
+                            'cloud_account.sync.interval_time_unit.second',
+                            '秒'
+                          ),
+                        },
+                        {
+                          value: 'MINUTE',
+                          label: t(
+                            'cloud_account.sync.interval_time_unit.minute',
+                            '分钟'
+                          ),
+                        },
+                        {
+                          value: 'HOUR',
+                          label: t(
+                            'cloud_account.sync.interval_time_unit.hour',
+                            '小时'
+                          ),
+                        },
+                        {
+                          value: 'DAY',
+                          label: t(
+                            'cloud_account.sync.interval_time_unit.hour',
+                            '天'
+                          ),
+                        },
                       ]"
                       :key="item.value"
                       :label="item.label"
@@ -175,10 +205,12 @@ const clear = () => {
           </template>
         </layout-container>
         <layout-container>
-          <el-button type="primary" @click="clear">取消</el-button>
-          <el-button type="primary" @click="submitForm"
-            >保存</el-button
-          ></layout-container
+          <el-button type="primary" @click="clear">{{
+            t("commons.btn.cancel", "取消")
+          }}</el-button>
+          <el-button type="primary" @click="submitForm">{{
+            t("commons.btn.save", "保存")
+          }}</el-button></layout-container
         >
       </template>
     </layout-container>

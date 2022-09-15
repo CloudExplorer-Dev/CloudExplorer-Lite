@@ -1,6 +1,7 @@
 package com.fit2cloud.common.scheduler.impl;
 
 import com.fit2cloud.common.exception.Fit2cloudException;
+import com.fit2cloud.common.scheduler.constants.JobErrorCodeConstants;
 import com.fit2cloud.common.scheduler.impl.entity.QuzrtzJobDetail;
 import com.fit2cloud.common.scheduler.SchedulerService;
 import jdk.jfr.Name;
@@ -31,14 +32,9 @@ public class QuartzSchedulerServiceImpl implements SchedulerService {
 
     @Override
     public void addJob(Class<? extends Job> jobHandler, String jobName, String groupName, String description, String cronExp, Map<String, Object> param) {
-        try {
-            //表达式调度构建器(即任务执行的时间)
-            CronScheduleBuilder scheduleBuilder = CronScheduleBuilder.cronSchedule(cronExp);
-            addJob(jobHandler, jobName, groupName, description, scheduleBuilder, param);
-        } catch (Exception e) {
-            throw new Fit2cloudException(01111, "定时任务创建失败");
-        }
-
+        //表达式调度构建器(即任务执行的时间)
+        CronScheduleBuilder scheduleBuilder = CronScheduleBuilder.cronSchedule(cronExp);
+        addJob(jobHandler, jobName, groupName, description, scheduleBuilder, param);
     }
 
     @Override
@@ -94,7 +90,7 @@ public class QuartzSchedulerServiceImpl implements SchedulerService {
             }
             scheduler.scheduleJob(jobDetail, trigger);
         } catch (SchedulerException e) {
-            throw new Fit2cloudException(01111, "定时任务创建失败");
+            throw new Fit2cloudException(JobErrorCodeConstants.ADD_JOB_FAIL.getCode(), JobErrorCodeConstants.ADD_JOB_FAIL.getMessage());
         }
 
     }
@@ -130,7 +126,7 @@ public class QuartzSchedulerServiceImpl implements SchedulerService {
                 return true;
             }
         } catch (SchedulerException e) {
-            throw new RuntimeException(e);
+            throw new Fit2cloudException(JobErrorCodeConstants.GET_JOB_DETAILS_FAIL.getCode(), JobErrorCodeConstants.GET_JOB_DETAILS_FAIL.getMessage());
         }
         return false;
     }
@@ -149,7 +145,7 @@ public class QuartzSchedulerServiceImpl implements SchedulerService {
             JobDetail jobDetail = scheduler.getJobDetail(trigger.getJobKey());
             return mapQuzrtzJobDetail(trigger, jobDetail, triggerState);
         } catch (SchedulerException e) {
-            throw new Fit2cloudException(100000, e.getMessage());
+            throw new Fit2cloudException(JobErrorCodeConstants.GET_JOB_DETAILS_FAIL.getCode(), JobErrorCodeConstants.GET_JOB_DETAILS_FAIL.getMessage());
         }
     }
 
@@ -165,7 +161,7 @@ public class QuartzSchedulerServiceImpl implements SchedulerService {
     private QuzrtzJobDetail mapQuzrtzJobDetail(Trigger trigger, JobDetail jobDetail, Trigger.TriggerState triggerState) {
         Class<? extends Job> jobClass = jobDetail.getJobClass();
         String className = jobClass.getName();
-        String nickName = "";
+        String nickName;
         try {
             Name annotation = jobClass.getAnnotation(Name.class);
             nickName = annotation.value();
@@ -175,23 +171,19 @@ public class QuartzSchedulerServiceImpl implements SchedulerService {
         DateBuilder.IntervalUnit unit = null;
         Long repeatInterval = null;
         String cronEx = null;
-        if (trigger instanceof SimpleTriggerImpl) {
-            SimpleTriggerImpl simpleTrigger = (SimpleTriggerImpl) trigger;
+        if (trigger instanceof SimpleTriggerImpl simpleTrigger) {
             repeatInterval = simpleTrigger.getRepeatInterval();
             unit = DateBuilder.IntervalUnit.MILLISECOND;
         }
-        if (trigger instanceof CalendarIntervalTriggerImpl) {
-            CalendarIntervalTriggerImpl calendarIntervalTrigger = (CalendarIntervalTriggerImpl) trigger;
+        if (trigger instanceof CalendarIntervalTriggerImpl calendarIntervalTrigger) {
             unit = calendarIntervalTrigger.getRepeatIntervalUnit();
             repeatInterval = (long) calendarIntervalTrigger.getRepeatInterval();
         }
-        if (trigger instanceof DailyTimeIntervalTriggerImpl) {
-            DailyTimeIntervalTriggerImpl dailyTimeIntervalTrigger = (DailyTimeIntervalTriggerImpl) trigger;
+        if (trigger instanceof DailyTimeIntervalTriggerImpl dailyTimeIntervalTrigger) {
             unit = dailyTimeIntervalTrigger.getRepeatIntervalUnit();
             repeatInterval = (long) dailyTimeIntervalTrigger.getRepeatInterval();
         }
-        if (trigger instanceof CronTriggerImpl) {
-            CronTriggerImpl cronTrigger = (CronTriggerImpl) trigger;
+        if (trigger instanceof CronTriggerImpl cronTrigger) {
             cronEx = cronTrigger.getCronExpression();
         }
         return new QuzrtzJobDetail(trigger.getJobKey().getName(), trigger.getJobKey().getGroup(), trigger.getJobDataMap().getWrappedMap(), trigger.getDescription(), trigger.getNextFireTime(), trigger.getPreviousFireTime(), triggerState, className, nickName, cronEx, unit, repeatInterval);
@@ -201,10 +193,9 @@ public class QuartzSchedulerServiceImpl implements SchedulerService {
     public List<QuzrtzJobDetail> list() {
         try {
             Set<TriggerKey> triggerKeys = scheduler.getTriggerKeys(GroupMatcher.anyGroup());
-            List<QuzrtzJobDetail> quzrtzJobDetails = triggerKeys.stream().map(this::getJobDetails).toList();
-            return quzrtzJobDetails;
+            return triggerKeys.stream().map(this::getJobDetails).toList();
         } catch (Exception e) {
-            throw new Fit2cloudException(011111, e.getMessage());
+            throw new Fit2cloudException(JobErrorCodeConstants.LIST_JOB_DETAILS_FAIL.getCode(), JobErrorCodeConstants.LIST_JOB_DETAILS_FAIL.getMessage());
         }
 
     }
@@ -215,7 +206,7 @@ public class QuartzSchedulerServiceImpl implements SchedulerService {
         try {
             scheduler.pauseJob(JobKey.jobKey(jobName, groupName));
         } catch (SchedulerException e) {
-            throw new Fit2cloudException(11111, "暂停任务失败");
+            throw new Fit2cloudException(JobErrorCodeConstants.STOP_JOB_FAIL.getCode(), JobErrorCodeConstants.STOP_JOB_FAIL.getMessage());
         }
     }
 
@@ -224,7 +215,7 @@ public class QuartzSchedulerServiceImpl implements SchedulerService {
         try {
             scheduler.resumeJob(JobKey.jobKey(jobName, groupName));
         } catch (SchedulerException e) {
-            throw new Fit2cloudException(11111, "恢复任务失败");
+            throw new Fit2cloudException(JobErrorCodeConstants.RESUME_JOB_FAIL.getCode(), JobErrorCodeConstants.RESUME_JOB_FAIL.getMessage());
         }
     }
 
@@ -237,7 +228,7 @@ public class QuartzSchedulerServiceImpl implements SchedulerService {
             scheduler.unscheduleJob(TriggerKey.triggerKey(jobName, groupName));
             scheduler.deleteJob(JobKey.jobKey(jobName, groupName));
         } catch (Exception e) {
-            throw new Fit2cloudException(10000, e.getMessage());
+            throw new Fit2cloudException(JobErrorCodeConstants.DELETE_JOB_FAIL.getCode(), JobErrorCodeConstants.DELETE_JOB_FAIL.getMessage());
         }
     }
 
@@ -247,7 +238,7 @@ public class QuartzSchedulerServiceImpl implements SchedulerService {
         try {
             scheduler.start();
         } catch (SchedulerException e) {
-            throw new Fit2cloudException(10000, "开启所有的任务失败");
+            throw new Fit2cloudException(JobErrorCodeConstants.START_ALL_JOB_FAIL.getCode(), JobErrorCodeConstants.START_ALL_JOB_FAIL.getMessage());
         }
     }
 
@@ -257,7 +248,7 @@ public class QuartzSchedulerServiceImpl implements SchedulerService {
         try {
             scheduler.pauseAll();
         } catch (SchedulerException e) {
-            throw new Fit2cloudException(10000, "暂停所有任务失败");
+            throw new Fit2cloudException(JobErrorCodeConstants.STOP_ALL_JOB_FAIL.getCode(), JobErrorCodeConstants.STOP_ALL_JOB_FAIL.getMessage());
         }
     }
 
@@ -266,7 +257,7 @@ public class QuartzSchedulerServiceImpl implements SchedulerService {
         try {
             scheduler.resumeAll();
         } catch (SchedulerException e) {
-            throw new Fit2cloudException(10000, "恢复所有任务失败");
+            throw new Fit2cloudException(JobErrorCodeConstants.RESUME_ALL_JOB_FAIL.getCode(), JobErrorCodeConstants.RESUME_ALL_JOB_FAIL.getMessage());
         }
     }
 
@@ -277,7 +268,7 @@ public class QuartzSchedulerServiceImpl implements SchedulerService {
             // scheduler生命周期结束，无法再 start() 启动scheduler
             scheduler.shutdown(true);
         } catch (SchedulerException e) {
-            throw new Fit2cloudException(10000, "关闭所有的任务失败");
+            throw new Fit2cloudException(JobErrorCodeConstants.SHUTDOWN_ALL_JOBS.getCode(), JobErrorCodeConstants.SHUTDOWN_ALL_JOBS.getMessage());
         }
     }
 }

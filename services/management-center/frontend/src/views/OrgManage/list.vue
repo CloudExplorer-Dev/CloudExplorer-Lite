@@ -1,11 +1,7 @@
 <script setup lang="ts">
 import { ref, onMounted } from "vue";
-import {
-  listOrganization,
-  type Organization,
-  deleteOrg,
-  deleteBatchOrg,
-} from "@/api/organization";
+import organizationApi from "@/api/organization";
+import type { Organization } from "@/api/organization/type";
 import { useRouter } from "vue-router";
 import {
   PaginationConfig,
@@ -16,31 +12,46 @@ import {
 } from "@commons/components/ce-table/type";
 import { ElMessage, ElMessageBox } from "element-plus";
 import { useI18n } from "vue-i18n";
-const { t } = useI18n();
-const useRoute = useRouter();
-const columns = ref([]);
-const tableData = ref<Array<OrganizationTree>>();
-const organizations = ref<Array<Organization>>();
-const expandRowKeys = ref<Array<string>>();
 
-/**
- * 选中的组织对象
- */
-const multipleSelection = ref<Array<Organization>>();
-const table: any = ref(null);
-onMounted(() => {
-  search(new TableSearch());
-});
-
+// 树形组织对象
 interface OrganizationTree extends Organization {
   children: Array<OrganizationTree>;
 }
 
+// 初始化国际化函数对象
+const { t } = useI18n();
+// 获取路由对象
+const router = useRouter();
+// 表格所需字段
+const columns = ref([]);
+// 表格数据
+const tableData = ref<Array<OrganizationTree>>();
+// 组织数据
+const organizations = ref<Array<Organization>>();
+// 需要展开的列表id
+const expandRowKeys = ref<Array<string>>();
+//选中的组织对象
+const multipleSelection = ref<Array<Organization>>();
+// table组建
+const table: any = ref(null);
+
+onMounted(() => {
+  search(new TableSearch());
+});
+/**
+ * 查找需要展开的组织
+ * @param organizations 组织数据
+ * @param field         字段
+ * @param value         字段值
+ */
 const findOpenTree = (
   organizations: Array<Organization>,
   field: string,
   value: string
 ) => {
+  if (!field && !value) {
+    return;
+  }
   const expandKeys = new Set<string>();
   const filterOrganizations = organizations.filter((item: any) => {
     return item[field].indexOf(value) >= 0;
@@ -52,6 +63,13 @@ const findOpenTree = (
   });
   expandRowKeys.value = [...expandKeys];
 };
+
+/**
+ * 查找当前树上所有的组织树
+ * @param organizations 需要查找的组织s
+ * @param result        结果
+ * @param pid           父id
+ */
 const findUpOrgTree = (
   organizations: Array<Organization>,
   result: Array<string>,
@@ -92,42 +110,48 @@ const resetData = (organizations: Array<Organization>) => {
   return result;
 };
 
+/**
+ * 查询
+ * @param condition 查询条件
+ */
 const search = (condition: TableSearch) => {
   const params = TableSearch.toSearchParams(condition);
-  listOrganization({
-    currentPage: tableConfig.value.paginationConfig.currentPage,
-    pageSize: tableConfig.value.paginationConfig.pageSize,
-    ...params,
-  }).then((ok) => {
-    organizations.value = ok.data.records;
-    // 扁平化数据
-    tableData.value = resetData(ok.data.records);
-    if (condition.search) {
-      const searchValue: unknown = condition.search.value;
-      findOpenTree(
-        ok.data.records,
-        condition.search.field,
-        searchValue as string
-      );
-    }
+  organizationApi
+    .pageOrganization({
+      currentPage: tableConfig.value.paginationConfig.currentPage,
+      pageSize: tableConfig.value.paginationConfig.pageSize,
+      ...params,
+    })
+    .then((ok) => {
+      organizations.value = ok.data.records;
+      // 扁平化数据
+      tableData.value = resetData(ok.data.records);
+      if (condition.search) {
+        const searchValue: unknown = condition.search.value;
+        findOpenTree(
+          ok.data.records,
+          condition.search.field,
+          searchValue as string
+        );
+      }
 
-    tableConfig.value.paginationConfig?.setTotal(
-      ok.data.total,
-      tableConfig.value.paginationConfig
-    );
-    tableConfig.value.paginationConfig?.setCurrentPage(
-      ok.data.current,
-      tableConfig.value.paginationConfig
-    );
-  });
+      tableConfig.value.paginationConfig?.setTotal(
+        ok.data.total,
+        tableConfig.value.paginationConfig
+      );
+      tableConfig.value.paginationConfig?.setCurrentPage(
+        ok.data.current,
+        tableConfig.value.paginationConfig
+      );
+    });
 };
 
 /**
  * 创建
  */
 const create = () => {
-  useRoute.push({
-    path: useRoute.currentRoute.value.path.replace("/list", "/create"),
+  router.push({
+    path: router.currentRoute.value.path.replace("/list", "/create"),
   });
 };
 /**
@@ -135,19 +159,19 @@ const create = () => {
  */
 const batchDelete = () => {
   ElMessageBox.confirm(
-    t("commons.message_box.confirm_delete"),
-    t("commons.message_box.prompt"),
+    t("commons.message_box.confirm_delete", "确认删除"),
+    t("commons.message_box.prompt", "提交"),
     {
-      confirmButtonText: t("commons.btn.delete"),
-      cancelButtonText: t("commons.btn.cancel"),
+      confirmButtonText: t("commons.btn.delete", "删除"),
+      cancelButtonText: t("commons.btn.cancel", "取消"),
       type: "warning",
     }
   ).then(() => {
-    deleteBatchOrg(multipleSelection.value ? multipleSelection.value : []).then(
-      () => {
+    organizationApi
+      .deleteBatchOrg(multipleSelection.value ? multipleSelection.value : [])
+      .then(() => {
         table.value?.search();
-      }
-    );
+      });
   });
 };
 
@@ -162,27 +186,31 @@ const handleSelectionChange = (val: OrganizationTree[]) => {
 /**
  *修改
  */
-const edit = (row: any) => {
-  useRoute.push({
-    path: useRoute.currentRoute.value.path.replace("/list", "/update"),
+const edit = (row: Organization) => {
+  router.push({
+    path: router.currentRoute.value.path.replace("/list", "/update"),
     query: { id: row.id },
   });
 };
 
-const deleteItem = (row: any) => {
+/**
+ * 删除一个组织
+ * @param row
+ */
+const deleteItem = (row: Organization) => {
   ElMessageBox.confirm(
-    t("commons.message_box.confirm_delete"),
-    t("commons.message_box.prompt"),
+    t("commons.message_box.confirm_delete", "确认删除"),
+    t("commons.message_box.prompt", "提示"),
     {
-      confirmButtonText: t("commons.btn.delete"),
-      cancelButtonText: t("commons.btn.cancel"),
+      confirmButtonText: t("commons.btn.delete", "删除"),
+      cancelButtonText: t("commons.btn.cancel", "取消"),
       type: "warning",
     }
   ).then(() => {
-    deleteOrg(row.id).then((ok) => {
+    organizationApi.deleteOrg(row.id).then(() => {
       if (table.value) {
         table.value?.search();
-        ElMessage.success(t("commons.msg.delete_success"));
+        ElMessage.success(t("commons.msg.delete_success", "删除成功"));
       }
     });
   });
@@ -200,11 +228,11 @@ const tableConfig = ref<TableConfig>({
     components: [
       SearchConfig.buildComponent().DateComponent.newInstance(
         "createTime",
-        "创建时间"
+        t("commons.create_time", "创建时间")
       ),
       SearchConfig.buildComponent().DateComponent.newInstance(
         "updateTime",
-        "修改时间"
+        t("commons.update_time", "修改时间")
       ),
     ],
     searchOptions: [{ label: "组织", value: "name" }],
@@ -212,13 +240,13 @@ const tableConfig = ref<TableConfig>({
   paginationConfig: new PaginationConfig(),
   tableOperations: new TableOperations([
     TableOperations.buildButtons().newInstance(
-      "编辑",
+      t("commons.btn.edit", "编辑"),
       "primary",
       edit,
       "EditPen"
     ),
     TableOperations.buildButtons().newInstance(
-      "删除",
+      t("commons.btn.delete", "删除"),
       "primary",
       deleteItem,
       "Delete"
@@ -238,14 +266,34 @@ const tableConfig = ref<TableConfig>({
     row-key="id"
   >
     <template #toolbar>
-      <el-button type="primary" @click="create">创建</el-button>
-      <el-button @click="batchDelete">删除</el-button>
+      <el-button type="primary" @click="create">{{
+        t("commons.btn.create", "创建")
+      }}</el-button>
+      <el-button @click="batchDelete">{{
+        t("commons.btn.delete", "删除")
+      }}</el-button>
     </template>
     <el-table-column type="selection" />
-    <el-table-column prop="name" label="组织" sortable />
-    <el-table-column prop="description" label="描述" sortable />
-    <el-table-column prop="updateTime" label="修改时间" sortable />
-    <el-table-column prop="createTime" label="创建时间" sortable />
+    <el-table-column
+      prop="name"
+      :label="t('org_manage.org', '组织')"
+      sortable
+    />
+    <el-table-column
+      prop="description"
+      :label="t('org_manage.description', '描述')"
+      sortable
+    />
+    <el-table-column
+      prop="updateTime"
+      :label="t('commons.update_time', '修改时间')"
+      sortable
+    />
+    <el-table-column
+      prop="createTime"
+      :label="t('commons.create_time', '创建时间')"
+      sortable
+    />
     <fu-table-operations v-bind="tableConfig.tableOperations" fix />
     <template #buttons>
       <fu-table-column-select type="icon" :columns="columns" size="small" />

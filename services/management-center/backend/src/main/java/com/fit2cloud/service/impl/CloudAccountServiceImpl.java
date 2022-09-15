@@ -1,15 +1,22 @@
 package com.fit2cloud.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.core.metadata.OrderItem;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.fit2cloud.autoconfigure.SettingJobConfig;
+import com.fit2cloud.base.entity.Role;
 import com.fit2cloud.common.constants.PlatformConstants;
+import com.fit2cloud.common.exception.Fit2cloudException;
 import com.fit2cloud.common.form.vo.Form;
 import com.fit2cloud.common.platform.credential.Credential;
 import com.fit2cloud.common.scheduler.impl.entity.QuzrtzJobDetail;
 import com.fit2cloud.common.scheduler.SchedulerService;
+import com.fit2cloud.common.utils.PageUtil;
 import com.fit2cloud.constants.CloudAccountConstants;
+import com.fit2cloud.constants.ErrorCodeConstants;
+import com.fit2cloud.controller.handler.ResultHolder;
 import com.fit2cloud.controller.request.cloud_account.AddCloudAccountRequest;
 import com.fit2cloud.controller.request.cloud_account.CloudAccountRequest;
 import com.fit2cloud.controller.request.cloud_account.UpdateCloudAccountRequest;
@@ -26,6 +33,7 @@ import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
+import org.quartz.DateBuilder;
 import org.quartz.Trigger;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
@@ -53,32 +61,15 @@ public class CloudAccountServiceImpl extends ServiceImpl<CloudAccountMapper, Clo
 
     @Override
     public IPage<CloudAccount> page(CloudAccountRequest cloudAccountRequest) {
-        Page<CloudAccount> page = Page.of(cloudAccountRequest.getCurrentPage(), cloudAccountRequest.getPageSize());
-        if (cloudAccountRequest.getOrder() != null) {
-            page.setOrders(new ArrayList<>() {{
-                add(cloudAccountRequest.getOrder());
-            }});
-        }
+        Page<CloudAccount> cloudAccountPage = PageUtil.of(cloudAccountRequest, CloudAccount.class, new OrderItem("create_time", true));
         LambdaQueryWrapper<CloudAccount> wrapper = new LambdaQueryWrapper<>();
-        if (StringUtils.isNotEmpty(cloudAccountRequest.getName())) {
-            wrapper.eq(CloudAccount::getName, cloudAccountRequest.getName());
-        }
-        if (CollectionUtils.isNotEmpty(cloudAccountRequest.getPlatform())) {
-            wrapper.in(CloudAccount::getPlatform, cloudAccountRequest.getPlatform());
-        }
-        if (CollectionUtils.isNotEmpty(cloudAccountRequest.getState())) {
-            wrapper.in(CloudAccount::getState, cloudAccountRequest.getState());
-        }
-        if (CollectionUtils.isNotEmpty(cloudAccountRequest.getStatus())) {
-            wrapper.in(CloudAccount::getStatus, cloudAccountRequest.getStatus());
-        }
-        if (CollectionUtils.isNotEmpty(cloudAccountRequest.getUpdateTime())) {
-            wrapper.between(CloudAccount::getUpdateTime, simpleDateFormat.format(cloudAccountRequest.getUpdateTime().get(0)), simpleDateFormat.format(cloudAccountRequest.getUpdateTime().get(1)));
-        }
-        if (CollectionUtils.isNotEmpty(cloudAccountRequest.getCreateTime())) {
-            wrapper.between(CloudAccount::getCreateTime, simpleDateFormat.format(cloudAccountRequest.getCreateTime().get(0)), simpleDateFormat.format(cloudAccountRequest.getCreateTime().get(1)));
-        }
-        return page(page, wrapper);
+        wrapper.like(StringUtils.isNotEmpty(cloudAccountRequest.getName()), CloudAccount::getName, cloudAccountRequest.getName())
+                .in(CollectionUtils.isNotEmpty(cloudAccountRequest.getPlatform()), CloudAccount::getPlatform, cloudAccountRequest.getPlatform())
+                .in(CollectionUtils.isNotEmpty(cloudAccountRequest.getState()), CloudAccount::getState, cloudAccountRequest.getState())
+                .in(CollectionUtils.isNotEmpty(cloudAccountRequest.getStatus()), CloudAccount::getStatus, cloudAccountRequest.getStatus())
+                .between(CollectionUtils.isNotEmpty(cloudAccountRequest.getUpdateTime()), CloudAccount::getUpdateTime, CollectionUtils.isNotEmpty(cloudAccountRequest.getUpdateTime()) ? simpleDateFormat.format(cloudAccountRequest.getUpdateTime().get(0)) : "", CollectionUtils.isNotEmpty(cloudAccountRequest.getUpdateTime()) ? simpleDateFormat.format(cloudAccountRequest.getUpdateTime().get(1)) : "")
+                .between(CollectionUtils.isNotEmpty(cloudAccountRequest.getCreateTime()), CloudAccount::getCreateTime, CollectionUtils.isNotEmpty(cloudAccountRequest.getCreateTime()) ? simpleDateFormat.format(cloudAccountRequest.getCreateTime().get(0)) : "", CollectionUtils.isNotEmpty(cloudAccountRequest.getCreateTime()) ? simpleDateFormat.format(cloudAccountRequest.getCreateTime().get(1)) : "");
+        return page(cloudAccountPage, wrapper);
     }
 
     @Override
@@ -103,6 +94,7 @@ public class CloudAccountServiceImpl extends ServiceImpl<CloudAccountMapper, Clo
     @Override
     public CloudAccount save(AddCloudAccountRequest addCloudAccountRequest) {
         CloudAccount cloudAccount = new CloudAccount();
+        // 获取区域信息
         List<Credential.Region> regions = addCloudAccountRequest.getCredential().regions();
         cloudAccount.setCredential(addCloudAccountRequest.getCredential().enCode());
         cloudAccount.setPlatform(addCloudAccountRequest.getPlatform());
@@ -148,7 +140,6 @@ public class CloudAccountServiceImpl extends ServiceImpl<CloudAccountMapper, Clo
                             jobParams.putAll(jobDetails.getParams());
                         }
                         schedulerService.addJob(jobDetails.getJobHandler(), jobName, jobDetails.getJobGroup(), jobDetails.getDescription(), jobParams, jobDetails.getStartTimeDay(), jobDetails.getEndTimeDay(), jobDetails.getDefaultTimeInterval(), jobDetails.getDefaultUnit(), jobDetails.getRepeatCount(), jobDetails.getWeeks());
-
                     }
                 }
             }
@@ -185,8 +176,11 @@ public class CloudAccountServiceImpl extends ServiceImpl<CloudAccountMapper, Clo
                     List<Credential.Region> regions = (List<Credential.Region>) quzrtzJobDetail.getParams().get("region");
                     cloudAccountJobDetailsResponse.setSelectRegion(regions);
                     return getJobItem(quzrtzJobDetail);
+                } else {
+                    // 添加定时任务
+                    schedulerService.addJob(jobDetails.getJobHandler(), jobName, jobDetails.getJobGroup(), jobDetails.getDescription(), getJobParams(new ArrayList<>(), accountId), jobDetails.getStartTimeDay(), jobDetails.getEndTimeDay(), jobDetails.getDefaultTimeInterval(), jobDetails.getDefaultUnit(), jobDetails.getRepeatCount(), jobDetails.getWeeks());
+                    return getDefaultModuleJob(jobDetails, accountId);
                 }
-                return null;
             }).filter(Objects::nonNull).toList();
             CloudAccountJobDetailsResponse.ModuleJob moduleJob = new CloudAccountJobDetailsResponse.ModuleJob();
             BeanUtils.copyProperties(moduleJobInfo, moduleJob);
@@ -195,6 +189,25 @@ public class CloudAccountServiceImpl extends ServiceImpl<CloudAccountMapper, Clo
         }
         cloudAccountJobDetailsResponse.setCloudAccountSyncJobs(moduleJobsList);
         return cloudAccountJobDetailsResponse;
+    }
+
+    /**
+     * 获取默认的任务
+     *
+     * @param jobDetails 任务详情
+     * @param accountId  账号信息
+     * @return 默认定时任务
+     */
+    private CloudAccountJobDetailsResponse.JobItem getDefaultModuleJob(SettingJobConfig.JobDetails jobDetails, String accountId) {
+        CloudAccountJobDetailsResponse.JobItem jobItem = new CloudAccountJobDetailsResponse.JobItem();
+        String jobName = getJobName(jobDetails.getJobName(), accountId);
+        jobItem.setActive(true);
+        jobItem.setJobGroup(jobDetails.getJobGroup());
+        jobItem.setJobName(jobName);
+        jobItem.setTimeInterval(60l);
+        jobItem.setUnit(DateBuilder.IntervalUnit.MINUTE);
+        jobItem.setDescription(jobDetails.getDescription());
+        return jobItem;
     }
 
     @Override
@@ -207,7 +220,11 @@ public class CloudAccountServiceImpl extends ServiceImpl<CloudAccountMapper, Clo
         for (CloudAccountJobDetailsResponse.ModuleJob cloudAccountSyncJob : updateJobsRequest.getCloudAccountSyncJobs()) {
             List<CloudAccountJobDetailsResponse.JobItem> jobDetailsList = cloudAccountSyncJob.getJobDetailsList();
             for (CloudAccountJobDetailsResponse.JobItem jobItem : jobDetailsList) {
-                schedulerService.updateJob(jobItem.getJobName(), jobItem.getJobGroup(), jobItem.getDescription(), params, null, null, jobItem.getTimeInterval().intValue(), jobItem.getUnit(), -1, jobItem.isActive() ? Trigger.TriggerState.NORMAL : Trigger.TriggerState.PAUSED, null);
+                if (schedulerService.inclusionJobDetails(jobItem.getJobName(), jobItem.getJobGroup())) {
+                    schedulerService.updateJob(jobItem.getJobName(), jobItem.getJobGroup(), jobItem.getDescription(), params, null, null, jobItem.getTimeInterval().intValue(), jobItem.getUnit(), -1, jobItem.isActive() ? Trigger.TriggerState.NORMAL : Trigger.TriggerState.PAUSED, null);
+                } else {
+                    throw new Fit2cloudException(ErrorCodeConstants.CLOUD_ACCOUNT_JOB_IS_NOT_EXISTENT.getCode(), ErrorCodeConstants.CLOUD_ACCOUNT_JOB_IS_NOT_EXISTENT.getMessage());
+                }
             }
         }
         CloudAccountJobDetailsResponse cloudAccountJobDetailsResponse = new CloudAccountJobDetailsResponse();
@@ -220,7 +237,7 @@ public class CloudAccountServiceImpl extends ServiceImpl<CloudAccountMapper, Clo
     public CloudAccount update(UpdateCloudAccountRequest updateCloudAccountRequest) {
         CloudAccount cloudAccount = new CloudAccount();
         // 校验ak sk
-        updateCloudAccountRequest.getCredential().verification();
+        updateCloudAccountRequest.getCredential().regions();
         cloudAccount.setCredential(updateCloudAccountRequest.getCredential().enCode());
         cloudAccount.setPlatform(updateCloudAccountRequest.getPlatform());
         cloudAccount.setName(updateCloudAccountRequest.getName());
@@ -247,6 +264,24 @@ public class CloudAccountServiceImpl extends ServiceImpl<CloudAccountMapper, Clo
             delete(cloudAccountId);
         }
         return true;
+    }
+
+    @Override
+    public CloudAccount verification(String accountId) {
+        CloudAccount cloudAccount = new CloudAccount() {{
+            setId(accountId);
+            setState(true);
+        }};
+        try {
+            listRegions(accountId);
+        } catch (Exception e) {
+            cloudAccount.setState(false);
+            updateById(cloudAccount);
+            throw e;
+        }
+        updateById(cloudAccount);
+        // 校验成功更新数据
+        return getById(accountId);
     }
 
 
