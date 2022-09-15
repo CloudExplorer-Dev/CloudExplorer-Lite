@@ -1,9 +1,11 @@
 package com.fit2cloud.service;
 
 import com.fit2cloud.base.entity.Role;
+import com.fit2cloud.base.service.IBaseRolePermissionService;
 import com.fit2cloud.base.service.IBaseRoleService;
 import com.fit2cloud.base.service.IBaseUserRoleService;
 import com.fit2cloud.common.constants.RoleConstants;
+import com.fit2cloud.common.utils.JsonUtil;
 import com.fit2cloud.dto.UserRoleDto;
 import com.fit2cloud.dto.permission.ModulePermission;
 import com.fit2cloud.dto.permission.Permission;
@@ -19,9 +21,10 @@ import org.springframework.stereotype.Service;
 import javax.annotation.Resource;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 @Service
-public class PermissionService {
+public class BasePermissionService {
 
     @Resource
     private RedissonClient redissonClient;
@@ -32,35 +35,90 @@ public class PermissionService {
     @Resource
     private IBaseUserRoleService userRoleService;
 
-    private static final String PERMISSION_MAP = "PERMISSION_MAP:";
+    @Resource
+    private IBaseRolePermissionService rolePermissionService;
 
-    //启动后推送到redis, role -- module -- permissions
+    private static final String PERMISSION_MAP = "PERMISSION_MAP:";
+    public static final String MODULE_PERMISSION = "MODULE_PERMISSION:";
+
+    /**
+     * 启动后推送到redis, role -- module -- permissions
+     *
+     * @param module
+     * @param modulePermission
+     */
     public void init(String module, ModulePermission modulePermission) {
 
         Map<String, List<CeGrantedAuthority>> rolePermissions = new HashMap<>();
 
-        List<String> roles = roleService.list().stream().map(Role::getId).toList();
+        List<Role> roles = roleService.list();
+        List<String> baseRoles = Arrays.stream(RoleConstants.ROLE.values()).map(Enum::name).toList();
 
-        for (String role : roles) {
-            rolePermissions.computeIfAbsent(role, k -> new ArrayList<>());
+        //从数据库获取当前模块自定义角色权限
+        Map<String, List<CeGrantedAuthority>> customsRolePermissionMap = rolePermissionService.getCurrentModulePermissionMap(roles.stream().map(Role::getId).collect(Collectors.toList()));
+
+        //系统内置权限
+        for (RoleConstants.ROLE baseRole : RoleConstants.ROLE.values()) {
+            putModulePermission(module, baseRole, modulePermission);
         }
 
-        //todo 自定义role permissions, 只处理本模块，其他模块在redis中为空就直接放进redis?
-
-
+        //系统内置角色权限
         for (PermissionGroup group : modulePermission.getGroups()) {
             for (Permission permission : group.getPermissions()) {
                 for (RoleConstants.ROLE role : permission.getRoles()) {
+                    rolePermissions.computeIfAbsent(role.name(), k -> new ArrayList<>());
                     rolePermissions.get(role.name()).add(new CeGrantedAuthority(permission.getId(), permission.getSimpleId()));
                 }
             }
         }
-
-
-        for (String role : roles) {
-            putPermission(module, role, rolePermissions);
+        //系统内置角色权限ID列表
+        Map<String, List<String>> originRolePermissionIdsMap = new HashMap<>();
+        for (String baseRole : baseRoles) {
+            originRolePermissionIdsMap.put(baseRole, rolePermissions.getOrDefault(baseRole, new ArrayList<>()).stream().map(CeGrantedAuthority::getAuthority).collect(Collectors.toList()));
         }
 
+        for (Role role : roles) {
+            if (baseRoles.contains(role.getId())) { //系统默认的角色已经根据程序初始化了
+                continue;
+            }
+            rolePermissions.computeIfAbsent(role.getId(), k -> new ArrayList<>());
+
+            //根据系统默认角色权限过滤一下可能会有无效的权限
+            List<CeGrantedAuthority> customPermissionList = customsRolePermissionMap.getOrDefault(role.getId(), new ArrayList<>());
+            customPermissionList = customPermissionList.stream().filter(ceGrantedAuthority -> originRolePermissionIdsMap.get(role.getParentRoleId().name()).contains(ceGrantedAuthority.getAuthority())).collect(Collectors.toList());
+
+            rolePermissions.put(role.getId(), customPermissionList);
+        }
+
+        for (Role role : roles) {
+            putPermission(module, role.getId(), rolePermissions);
+        }
+
+    }
+
+    /**
+     * 为了方便权限列表编辑，把整个ModulePermission对象也存到redis中
+     */
+    private void putModulePermission(String module, RoleConstants.ROLE role, ModulePermission modulePermission) {
+        ModulePermission allPermission = JsonUtil.parseObject(JsonUtil.toJSONString(modulePermission), ModulePermission.class);
+        for (PermissionGroup group : allPermission.getGroups()) {
+            group.setPermissions(group.getPermissions().stream().filter(permission -> permission.getRoles().contains(role)).collect(Collectors.toList()));
+        }
+        allPermission.setGroups(allPermission.getGroups().stream().filter(group -> CollectionUtils.isNotEmpty(group.getPermissions())).collect(Collectors.toList()));
+
+        String key = MODULE_PERMISSION + role;
+
+        RMap<String, ModulePermission> map = redissonClient.getMap(key);
+        RReadWriteLock lock = map.getReadWriteLock(key);
+
+        try {
+            lock.writeLock().lock(10, TimeUnit.SECONDS);
+            map.put(module, allPermission);
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            lock.writeLock().unlock();
+        }
     }
 
     private void putPermission(String module, String role, Map<String, List<CeGrantedAuthority>> rolePermissions) {
@@ -69,7 +127,7 @@ public class PermissionService {
 
         try {
             lock.writeLock().lock(10, TimeUnit.SECONDS);
-            map.put(module, rolePermissions.get(role));
+            map.put(module, rolePermissions.getOrDefault(role, new ArrayList<>()));
         } catch (Exception e) {
             e.printStackTrace();
         } finally {
