@@ -10,7 +10,7 @@ import com.fit2cloud.common.utils.JwtTokenUtils;
 import com.fit2cloud.dto.UserDto;
 import com.fit2cloud.security.CeGrantedAuthority;
 import com.fit2cloud.security.CeUsernamePasswordAuthenticationToken;
-import com.fit2cloud.service.PermissionService;
+import com.fit2cloud.service.BasePermissionService;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -30,15 +30,15 @@ public class JwtTokenAuthFilter extends BasicAuthenticationFilter {
 
     private static final ObjectMapper objectMapper = new ObjectMapper();
 
-    private final PermissionService permissionService;
+    private final BasePermissionService basePermissionService;
 
     private final IBaseUserRoleService userRoleService;
 
     private final static String CE_SOURCE_TOKEN = "CE_SOURCE";
 
-    public JwtTokenAuthFilter(AuthenticationManager authenticationManager, PermissionService permissionService, IBaseUserRoleService userRoleService) {
+    public JwtTokenAuthFilter(AuthenticationManager authenticationManager, BasePermissionService basePermissionService, IBaseUserRoleService userRoleService) {
         super(authenticationManager);
-        this.permissionService = permissionService;
+        this.basePermissionService = basePermissionService;
         this.userRoleService = userRoleService;
     }
 
@@ -79,9 +79,9 @@ public class JwtTokenAuthFilter extends BasicAuthenticationFilter {
             }
             userDtoFromToken.setCurrentSource(source);
 
-            Set<String> rolesForSearchAuthority = permissionService.rolesForSearchAuthority(userDtoFromToken.getRoleMap(), userDtoFromToken.getCurrentRole(), source);
+            Set<String> rolesForSearchAuthority = basePermissionService.rolesForSearchAuthority(userDtoFromToken.getRoleMap(), userDtoFromToken.getCurrentRole(), source);
 
-            List<CeGrantedAuthority> authority = permissionService.readPermissionFromRedis(rolesForSearchAuthority);
+            List<CeGrantedAuthority> authority = basePermissionService.readPermissionFromRedis(rolesForSearchAuthority);
 
             //将认证信息存到上下文
             CeUsernamePasswordAuthenticationToken authenticationToken = new CeUsernamePasswordAuthenticationToken(ServerInfo.module, userDtoFromToken, token, authority);
