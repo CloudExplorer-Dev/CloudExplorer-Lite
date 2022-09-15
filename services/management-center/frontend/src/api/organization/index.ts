@@ -29,9 +29,9 @@ const listAllOrganization: (
   return get("/api/listAll/org", null, loading);
 };
 
-const tree: (treeType?: string) => Promise<Result<Array<OrganizationTree>>> = (
-  treeType
-) => {
+export const tree: (
+  treeType?: string
+) => Promise<Result<Array<OrganizationTree>>> = (treeType) => {
   const type: string = treeType === undefined ? "ORGANIZATION" : treeType;
   return get("/api/base/organization/tree/" + type);
 };

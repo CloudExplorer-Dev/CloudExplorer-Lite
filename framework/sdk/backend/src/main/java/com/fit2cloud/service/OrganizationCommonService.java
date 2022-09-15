@@ -22,11 +22,11 @@ public class OrganizationCommonService {
     @Resource
     BaseMapper<Organization> organizationMapper;
 
-    public List<String> getOrgIdsByPid(String orgId){
+    public List<String> getOrgIdsByPid(String orgId) {
         List<String> results = new ArrayList<>();
         results.add(orgId);
 
-        QueryWrapper<Organization> wrapper =Wrappers.query();
+        QueryWrapper<Organization> wrapper = Wrappers.query();
         wrapper.lambda().isNotNull(Organization::getPid);
 
         List<Organization> organizations = organizationMapper.selectList(wrapper);
@@ -34,7 +34,7 @@ public class OrganizationCommonService {
         return results;
     }
 
-    private void getOrgIds(List<Organization> organizations, String pid, List<String> results){
+    private void getOrgIds(List<Organization> organizations, String pid, List<String> results) {
         List<String> collect = organizations.stream().filter(org -> StringUtils.equals(pid, org.getPid())).map(org -> {
             String newPid = org.getId();
             getOrgIds(organizations, newPid, results);

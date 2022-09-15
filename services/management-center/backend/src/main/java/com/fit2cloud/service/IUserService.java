@@ -5,6 +5,7 @@ import com.baomidou.mybatisplus.extension.service.IService;
 import com.fit2cloud.base.entity.User;
 import com.fit2cloud.controller.request.user.CreateUserRequest;
 import com.fit2cloud.controller.request.user.PageUserRequest;
+import com.fit2cloud.controller.request.user.UpdateUserRequest;
 import com.fit2cloud.controller.request.user.UserBatchAddRoleRequest;
 import com.fit2cloud.dto.UserDto;
 import com.fit2cloud.dto.UserNotifySettingDTO;
@@ -15,7 +16,7 @@ public interface IUserService extends IService<User> {
 
     boolean createUser(CreateUserRequest request);
 
-    boolean updateUser(CreateUserRequest request);
+    boolean updateUser(UpdateUserRequest request);
 
     boolean updatePwd(User user);
 

@@ -2,21 +2,20 @@ package com.fit2cloud.controller;
 
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.fit2cloud.base.entity.User;
-import com.fit2cloud.controller.editor.OrderEditor;
+import com.fit2cloud.common.validator.group.ValidationGroup;
 import com.fit2cloud.controller.handler.ResultHolder;
 import com.fit2cloud.controller.request.user.CreateUserRequest;
 import com.fit2cloud.controller.request.user.PageUserRequest;
+import com.fit2cloud.controller.request.user.UpdateUserRequest;
 import com.fit2cloud.controller.request.user.UserBatchAddRoleRequest;
 import com.fit2cloud.dto.UserDto;
 import com.fit2cloud.dto.UserNotifySettingDTO;
 import com.fit2cloud.dto.UserOperateDto;
-import com.fit2cloud.request.pub.OrderRequest;
 import com.fit2cloud.service.IUserService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.WebDataBinder;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
@@ -40,16 +39,15 @@ public class UserController {
         return ResultHolder.success(userService.pageUser(pageUserRequest));
     }
 
-
     @ApiOperation(value = "添加用户")
     @PostMapping("/add")
-    public ResultHolder<Boolean> createUser(@RequestBody CreateUserRequest request) {
+    public ResultHolder<Boolean> createUser(@RequestBody @Validated CreateUserRequest request) {
         return ResultHolder.success(userService.createUser(request));
     }
 
     @ApiOperation(value = "更新用户")
     @PostMapping("/update")
-    public ResultHolder<Boolean> updateUser(@RequestBody CreateUserRequest request) {
+    public ResultHolder<Boolean> updateUser(@RequestBody @Validated(ValidationGroup.UPDATE.class) UpdateUserRequest request) {
         return ResultHolder.success(userService.updateUser(request));
     }
 
