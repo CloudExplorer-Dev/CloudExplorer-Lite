@@ -4,11 +4,14 @@ import _ from "lodash";
 import type { FormInstance } from "element-plus/es";
 import { useI18n } from "vue-i18n";
 import type { RoleInfo, Role } from "@/api/user/type";
-import { userAddRole, listCurrentUserRole, workspaceTree } from "@/api/user";
+import { userAddRole, workspaceTree } from "@/api/user";
+import { listRoles } from "@commons/api/role";
+import { useUserStore } from "@commons/stores/modules/user";
 import { ElMessage } from "element-plus/es";
 import { tree } from "@/api/organization";
 import type { OrganizationTree } from "@/api/organization/type";
 import { roleConst } from "@commons/utils/constants";
+
 const props = defineProps({
   visible: {
     type: Boolean,
@@ -20,15 +23,18 @@ const props = defineProps({
   },
 });
 const emits = defineEmits(["update:visible", "refresh"]);
+
 const { t } = useI18n();
 const formRef = ref<FormInstance | undefined>();
 const form = reactive<Record<string, RoleInfo[]>>({
   roleInfoList: [],
 });
+
 const roles = ref<Role[]>([]);
 const orgTreeData = ref<OrganizationTree[]>();
 const workspaceTreeData = ref<OrganizationTree[]>();
 const isAddLineAble = ref(true);
+
 // 添加用户类型选项
 const addLine = () => {
   const roleInfo: RoleInfo = {
@@ -50,6 +56,7 @@ const addLine = () => {
     }
   }
 };
+
 // 清除用户类型选项
 const subtractLine = (roleInfo: RoleInfo) => {
   _.remove(form.roleInfoList, (item) => {
@@ -59,6 +66,7 @@ const subtractLine = (roleInfo: RoleInfo) => {
     isAddLineAble.value = true;
   }
 };
+
 const filterRole = (role: Role, roleInfo: RoleInfo) => {
   if (!roleInfo.selectedRoleIds) return;
   let value = true;
@@ -73,13 +81,16 @@ const filterRole = (role: Role, roleInfo: RoleInfo) => {
   }
   return value;
 };
+
 const setRoleType = (roleInfo: RoleInfo, roleId: string) => {
   roleInfo.roleType = getParentRoleId(roleId);
 };
+
 const handleCancel = (formEl: FormInstance) => {
   emits("update:visible", false);
   formEl.resetFields();
 };
+
 const handleCreate = (formEl: FormInstance) => {
   if (!formEl) return;
   formEl.validate((valid) => {
@@ -102,6 +113,7 @@ const handleCreate = (formEl: FormInstance) => {
     }
   });
 };
+
 const getParentRoleId = (roleId: string) => {
   let parentRoleId = null;
   roles.value.forEach((role: Role) => {
@@ -111,16 +123,22 @@ const getParentRoleId = (roleId: string) => {
   });
   return parentRoleId;
 };
+
 onMounted(() => {
   const getOrgTree = tree().then((res) => {
     orgTreeData.value = res.data;
   });
+
   const getWsTree = workspaceTree().then((res) => {
     workspaceTreeData.value = res.data;
   });
-  const getRoles = listCurrentUserRole().then((res) => {
-    roles.value = res.data;
-  });
+
+  const getRoles = listRoles({ baseRole: useUserStore().currentRole }).then(
+    (res) => {
+      roles.value = res.data;
+    }
+  );
+
   Promise.all([getOrgTree, getWsTree, getRoles]).then(() => {
     addLine();
   });

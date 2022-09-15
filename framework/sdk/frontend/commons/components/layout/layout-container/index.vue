@@ -1,7 +1,13 @@
 <template>
   <div class="layout-container" :style="{ border: border ? '' : 'none' }">
-    <div class="header" v-if="$slots.header">
-      <slot name="header"></slot>
+    <div class="header">
+      <div class="title" v-if="$slots.header">
+        <slot name="header"></slot>
+      </div>
+      <div class="auto"></div>
+      <div class="btn" v-if="$slots.btn">
+        <slot name="btn"></slot>
+      </div>
     </div>
     <div class="line" v-if="$slots.header && $slots.content && border"></div>
     <div class="content" v-if="$slots.content">
@@ -30,12 +36,22 @@ defineProps({
   border-radius: 5px;
   .header {
     height: 50px;
-    padding-left: 10px;
     display: flex;
     align-items: center;
     font-size: 15px;
-    color: var(--el-text-color-regular);
     font-weight: normal;
+    .title{
+      padding-left: 10px;
+      color: var(--el-text-color-regular);
+    }
+    .auto{
+      flex: 1 1 auto;
+    }
+    .btn{
+      padding-right: 20px;
+      color: var(--el-color-primary);
+      cursor:pointer;
+    }
   }
   .line {
     height: 1px;

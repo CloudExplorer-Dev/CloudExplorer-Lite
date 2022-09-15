@@ -15,6 +15,7 @@ const message = {
     delete_role: "删除角色",
     add_role: "添加角色",
     set_role: "设置角色",
+    has_role: "拥有角色",
     add_org: "添加组织",
     add_workspace: "添加工作空间",
     delete_confirm: "确认删除用户",
@@ -25,6 +26,8 @@ const message = {
       phone_format: "手机号码格式错误",
       email_format: "邮箱格式错误",
       selected: "请选择用户",
+      role_empty: "角色信息不能为空",
+      param: "参数不合法",
     },
   },
   workspace: {
