@@ -4,7 +4,7 @@ import com.fit2cloud.common.constants.RoleConstants;
 import com.fit2cloud.dto.permission.ModulePermission;
 import com.fit2cloud.dto.permission.Permission;
 import com.fit2cloud.dto.permission.PermissionGroup;
-import com.fit2cloud.service.PermissionService;
+import com.fit2cloud.service.BasePermissionService;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
@@ -50,7 +50,7 @@ public class PermissionConstants {
     public static Map<String, Permission> PERMISSION_MAP = null;
 
     @Resource
-    private PermissionService permissionService;
+    private BasePermissionService basePermissionService;
 
     @Value("${spring.application.name}")
     public void setModule(String module) {
@@ -64,7 +64,7 @@ public class PermissionConstants {
                 .collect(Collectors.toMap(Permission::getId, permission -> permission));
 
         //推送到redis
-        permissionService.init(module, PermissionConstants.MODULE_PERMISSION);
+        basePermissionService.init(module, PermissionConstants.MODULE_PERMISSION);
     }
 
     private static final ModulePermission.Builder MODULE_PERMISSION_BUILDER = new ModulePermission.Builder()

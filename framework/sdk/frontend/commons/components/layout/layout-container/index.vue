@@ -1,10 +1,10 @@
 <template>
   <div class="layout-container" :style="{ border: border ? '' : 'none' }">
-    <div class="header">
+    <div class="header" v-if="$slots.header || $slots.btn">
       <div class="title" v-if="$slots.header">
         <slot name="header"></slot>
       </div>
-      <div class="auto"></div>
+      <div class="auto" v-if="$slots.btn"></div>
       <div class="btn" v-if="$slots.btn">
         <slot name="btn"></slot>
       </div>
@@ -40,17 +40,17 @@ defineProps({
     align-items: center;
     font-size: 15px;
     font-weight: normal;
-    .title{
+    .title {
       padding-left: 10px;
       color: var(--el-text-color-regular);
     }
-    .auto{
+    .auto {
       flex: 1 1 auto;
     }
-    .btn{
+    .btn {
       padding-right: 20px;
       color: var(--el-color-primary);
-      cursor:pointer;
+      cursor: pointer;
     }
   }
   .line {

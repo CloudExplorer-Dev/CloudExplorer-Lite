@@ -33,12 +33,28 @@ export function batchDeleteRoles(
   return del("/api/role/batch", null, ids, loading);
 }
 
+export function getModulePermissions(
+  role: string,
+  loading?: Ref<boolean>
+): Promise<Result<any>> {
+  return get("/api/role/module-permission", { role: role }, loading);
+}
+
+export function getRolePermissions(
+  roleId: string,
+  loading?: Ref<boolean>
+): Promise<Result<any>> {
+  return get("/api/role/permission", { id: roleId }, loading);
+}
+
 const RoleApi = {
   ...BaseRoleApi,
   addRole,
   updateRole,
   deleteRole,
   batchDeleteRoles,
+  getModulePermissions,
+  getRolePermissions,
 };
 
 export default RoleApi;

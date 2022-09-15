@@ -6,7 +6,6 @@ import com.fit2cloud.common.utils.JsonUtil;
 import com.fit2cloud.dto.module.Module;
 import com.fit2cloud.dto.module.ModuleJobInfo;
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.beans.BeanUtils;
 import org.springframework.cloud.client.ServiceInstance;
 import org.springframework.cloud.client.discovery.DiscoveryClient;
 import org.springframework.stereotype.Service;
@@ -50,7 +49,8 @@ public class CommonService {
             }
             modules.add(module);
         }
-        return modules;
+
+        return modules.stream().sorted(Comparator.comparing(Module::getOrder)).collect(Collectors.toList());
     }
 
     public List<ModuleJobInfo> getModuleJobs() {

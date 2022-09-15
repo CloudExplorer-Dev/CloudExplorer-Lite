@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fit2cloud.common.constants.RoleConstants;
 import com.fit2cloud.dto.CeBaseObject;
 import lombok.Getter;
+import lombok.Setter;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.Serial;
@@ -22,6 +23,7 @@ public class PermissionGroup extends CeBaseObject {
     private String name;
 
     @Getter
+    @Setter
     private List<Permission> permissions;
 
     private PermissionGroup() {
