@@ -1,67 +1,137 @@
 <template>
   <layout-container :border="false">
     <template #content>
-      <layout-container>
-        <template #header><h4>基本信息</h4></template>
+      <layout-container v-loading="loading">
+        <template #header>
+          <h4>基本信息</h4>
+        </template>
+        <template #btn>
+          <el-button
+            key="edit"
+            type="primary"
+            text
+            @click="changeToEditInfo"
+            v-if="showEditInfoButton"
+          >
+            修改
+          </el-button>
+        </template>
         <template #content>
           <el-form
             :rules="rules"
             label-position="right"
             :model="roleFormData"
             :inline="false"
-            ref="ruleFormRef"
+            ref="roleFormRef"
             status-icon
-            v-loading="loading"
           >
             <el-form-item label="名称" label-width="100px" prop="name">
-              <el-col :span="11">
-                <el-input v-model="roleFormData.name" />
+              <el-col :span="14">
+                <el-input v-model="roleFormData.name" v-if="editInfo" />
+                <span v-if="!editInfo">{{ roleData.name }}</span>
               </el-col>
             </el-form-item>
-            <el-form-item
-              label="描述"
-              label-width="100px"
-              prop="description"
-              :rules="rules.description"
-            >
-              <el-input v-model="roleFormData.description" />
+
+            <el-form-item label="描述" label-width="100px" prop="description">
+              <el-col :span="14">
+                <el-input v-model="roleFormData.description" v-if="editInfo" />
+                <span v-if="!editInfo">{{ roleData.description }}</span>
+              </el-col>
             </el-form-item>
 
             <el-form-item
               label="继承角色"
               label-width="100px"
               prop="parentRoleId"
-              :rules="rules.description"
             >
+              <el-radio-group v-model="roleData.parentRoleId">
+                <el-radio-button
+                  v-for="baseRole in originRoles"
+                  :key="baseRole.id"
+                  :label="baseRole.id"
+                  :disabled="baseRole.id !== roleData.parentRoleId"
+                >
+                  {{ baseRole.name }}
+                </el-radio-button>
+              </el-radio-group>
             </el-form-item>
           </el-form>
+        </template>
 
-          <el-radio-group v-model="roleData.parentRoleId">
-            <el-radio-button
-              v-for="baseRole in originRoles"
-              :key="baseRole.id"
-              :label="baseRole.id"
-            >
-              {{ baseRole.name }}
-            </el-radio-button>
-          </el-radio-group>
+        <template #default v-if="editInfo">
+          <el-button @click="cancelEditInfo">取消</el-button>
+          <el-button type="primary" @click="submitRoleForm(roleFormRef)">
+            保存
+          </el-button>
         </template>
       </layout-container>
 
-      <layout-container>
-        <template #header><h4>角色权限</h4></template>
-        <template #content> </template>
+      <layout-container v-loading="loadingPermission">
+        <template #header>
+          <h4>角色权限</h4>
+        </template>
+        <template #btn>
+          <el-button
+            key="edit"
+            type="primary"
+            text
+            @click="changeToEditPermission"
+            v-if="showEditPermissionButton"
+          >
+            修改
+          </el-button>
+        </template>
+        <template #content>
+          <el-container class="permission-container">
+            <el-aside width="182px" class="module-selector">
+              <el-cascader-panel
+                :options="modulesPanels"
+                v-model="defaultSelectedModule"
+                style="width: 180px; height: 99%; padding: 0"
+                @change="onModuleSelect"
+              />
+            </el-aside>
+            <el-main style="padding: 4px">
+              <el-table :data="permissionTableData" style="width: 100%">
+                <el-table-column
+                  label="操作对象"
+                  prop="name"
+                  min-width="100px"
+                />
+                <el-table-column label="权限" min-width="300px">
+                  <template #default="scope">
+                    <el-checkbox-group v-model="permissionData">
+                      <el-checkbox
+                        v-for="p in scope.row.permissions"
+                        :key="p.id"
+                        :label="p.id"
+                      >
+                        {{ p.name }}
+                      </el-checkbox>
+                    </el-checkbox-group>
+                  </template>
+                </el-table-column>
+
+                <el-table-column label="全选" align="right" width="100px">
+                  <template #header>
+                    <el-checkbox v-model="checkedAll" :label="true">
+                      全选
+                    </el-checkbox>
+                  </template>
+                  <template #default="scope">
+                    <el-checkbox v-model="scope.row.checked" :label="true">
+                      全选
+                    </el-checkbox>
+                  </template>
+                </el-table-column>
+              </el-table>
+            </el-main>
+          </el-container>
+        </template>
       </layout-container>
 
-      <layout-container v-if="!edit">
+      <layout-container v-if="!editInfo && !editPermission">
         <el-button @click="back">返回</el-button>
-        <el-button type="primary" @click="toEdit">编辑</el-button>
-      </layout-container>
-      <layout-container v-if="edit">
-        <el-button @click="back">取消</el-button>
-        <el-button type="primary" @click="submitForm(ruleFormRef)">
-          保存
-        </el-button>
       </layout-container>
     </template>
   </layout-container>
@@ -71,17 +141,20 @@ const props = defineProps<{
   id: string;
 }>();
 
-import { computed, onMounted, reactive, ref, watch } from "vue";
+import { computed, onMounted, reactive, ref } from "vue";
 import { useRouter } from "vue-router";
-import { endsWith } from "lodash";
+import _ from "lodash";
 import type { FormRules, FormInstance } from "element-plus";
 import { ElMessage } from "element-plus";
 import RoleApi from "@/api/role";
+import { listModules } from "@commons/api/module";
+import type { Module } from "@commons/api/module/type";
 import { Role } from "@commons/api/role/type";
 import { UpdateRoleRequest } from "@/api/role/type";
 import { useI18n } from "vue-i18n";
+
 const { t } = useI18n();
-const ruleFormRef = ref<FormInstance>();
+const roleFormRef = ref<FormInstance>();
 const route = useRouter();
 
 const roleData = ref<Role>(new Role(props.id, "", "", ""));
@@ -89,22 +162,107 @@ const originRoles = ref<Array<Role>>([]);
 
 const roleFormData = ref<UpdateRoleRequest>(new UpdateRoleRequest(props.id));
 
-const edit = computed(() => {
-  return endsWith(route.currentRoute.value.path, `/edit/${props.id}`);
+const permissionData = ref<any>([]);
+const permissionFormData = ref<any>();
+const originPermissions = ref<any>();
+const modules = ref<Array<Module>>([]);
+const modulesPanels = computed(() => {
+  return _.map(modules.value, (m: Module) => {
+    return { value: m.id, label: m.name };
+  });
 });
 
+const editInfo = ref<boolean>(false);
+
+const showEditInfoButton = computed(() => {
+  return roleData.value
+    ? !editInfo.value && roleData.value.type !== "origin"
+    : false;
+});
+const showEditPermissionButton = computed(() => {
+  return permissionData.value && roleData.value
+    ? !editPermission.value && roleData.value.type !== "origin"
+    : false;
+});
+
+const editPermission = ref<boolean>(false);
+
 const loading = ref<boolean>(false);
+const loadingPermission = ref<boolean>(false);
+const defaultSelectedModule = ref<string>();
+
+const permissionTableData = computed(() => {
+  const result =
+    originPermissions.value && defaultSelectedModule.value
+      ? originPermissions.value[defaultSelectedModule.value].groups
+      : [];
+
+  //每组权限展示处理
+  for (const resultElement of result) {
+    const groupPermissionIds = _.map(resultElement.permissions, (p) => {
+      return p.id;
+    });
+
+    resultElement.checked = computed<boolean>({
+      get() {
+        //每组的全选按钮展示
+        return _.every(
+          groupPermissionIds,
+          (v) => permissionData.value.indexOf(v) >= 0
+        );
+      },
+      set(value: boolean) {
+        //设置每组的全选按钮
+        if (value) {
+          permissionData.value = _.union(
+            permissionData.value,
+            groupPermissionIds
+          );
+        } else {
+          permissionData.value = _.pullAll(
+            permissionData.value,
+            groupPermissionIds
+          );
+        }
+      },
+    });
+  }
+
+  return result;
+});
+
+const checkedAll = computed<boolean>({
+  get() {
+    return _.every(permissionTableData.value, (row) => row.checked);
+  },
+  set(value: boolean) {
+    //设置最上级全选按钮
+    const currentModulePermissions = _.flatMap(
+      permissionTableData.value,
+      (group) => {
+        return _.map(group.permissions, (p) => p.id);
+      }
+    );
+    if (value) {
+      permissionData.value = _.union(
+        permissionData.value,
+        currentModulePermissions
+      );
+    } else {
+      permissionData.value = _.pullAll(
+        permissionData.value,
+        currentModulePermissions
+      );
+    }
+  },
+});
 
 onMounted(() => {
   init();
 });
 
-watch(edit, () => {
-  init();
-});
-
 const init = () => {
-  console.log(props.id);
+  //console.log(props.id);
 
   RoleApi.listRoles({ type: "origin" }, loading).then((ok) => {
     originRoles.value = ok.data;
@@ -112,22 +270,51 @@ const init = () => {
   //角色
   RoleApi.getRoleById(props.id, loading).then((ok) => {
     roleData.value = ok.data;
-    roleFormData.value = ok.data;
+    //模块权限
+    RoleApi.getModulePermissions(
+      roleData.value.parentRoleId,
+      loadingPermission
+    ).then((ok) => {
+      originPermissions.value = ok.data;
+      console.log(originPermissions.value);
+    });
   });
   //权限
+  RoleApi.getRolePermissions(props.id, loadingPermission).then((ok) => {
+    permissionData.value = ok.data;
+    console.log(permissionData.value);
+  });
+  //模块
+  listModules(loadingPermission).then((ok) => {
+    modules.value = ok.data;
+    defaultSelectedModule.value = modules.value[0].id;
+  });
 };
 
 const back = () => {
   route.push({ name: "role_list" });
 };
 
-const toEdit = () => {
-  route.push({
-    path: route.currentRoute.value.path.replace(
-      `/detail/${props.id}`,
-      `/edit/${props.id}`
-    ),
-  });
+const changeToEditInfo = () => {
+  editInfo.value = true;
+  roleFormData.value = JSON.parse(JSON.stringify(roleData.value));
+};
+
+const cancelEditInfo = () => {
+  editInfo.value = false;
+};
+
+const changeToEditPermission = () => {
+  editPermission.value = true;
+  permissionFormData.value = JSON.parse(JSON.stringify(permissionData.value));
+};
+
+const cancelPermissionButton = () => {
+  editPermission.value = false;
+};
+
+const onModuleSelect = (index: any) => {
+  console.log(index);
 };
 
 const rules = reactive<FormRules>({
@@ -141,15 +328,31 @@ const rules = reactive<FormRules>({
   ],
 });
 
-const submitForm = (formEl: FormInstance | undefined) => {
+const submitRoleForm = (formEl: FormInstance | undefined) => {
   formEl?.validate((valid) => {
     if (valid && roleFormData.value) {
-      RoleApi.updateRole(roleFormData.value).then((ok) => {
-        back();
+      RoleApi.updateRole(
+        UpdateRoleRequest.newInstance(roleFormData.value)
+      ).then((ok) => {
+        init();
+        cancelEditInfo();
         ElMessage.success(t("commons.msg.save_success"));
       });
     }
   });
 };
 </script>
-<style lang="scss"></style>
+<style lang="scss">
+.edit-button-container {
+  text-align: center;
+  line-height: 50px;
+  align-items: center;
+}
+
+.permission-container {
+  width: 100%;
+  min-height: 100px;
+  .module-selector {
+  }
+}
+</style>

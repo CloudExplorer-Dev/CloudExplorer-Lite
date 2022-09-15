@@ -3,7 +3,7 @@ package com.fit2cloud.controller;
 
 import com.fit2cloud.controller.handler.ResultHolder;
 import com.fit2cloud.dto.UserDto;
-import com.fit2cloud.service.PermissionService;
+import com.fit2cloud.service.BasePermissionService;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -17,12 +17,12 @@ import java.util.Set;
 public class PermissionController {
 
     @Resource
-    private PermissionService permissionService;
+    private BasePermissionService basePermissionService;
 
     @GetMapping("permission/current")
     public ResultHolder<Set<String>> getCurrentUserPermissionSet() {
         UserDto user = (UserDto) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        return ResultHolder.success(permissionService.getPlainPermissions(user.getId(), user.getCurrentRole(), user.getCurrentSource()));
+        return ResultHolder.success(basePermissionService.getPlainPermissions(user.getId(), user.getCurrentRole(), user.getCurrentSource()));
     }
 
 }

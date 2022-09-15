@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fit2cloud.common.constants.RoleConstants;
 import com.fit2cloud.dto.CeBaseObject;
 import lombok.Getter;
+import lombok.Setter;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 
@@ -27,6 +28,7 @@ public class Permission extends CeBaseObject {
     @Getter
     private String name;
     @Getter
+    @Setter
     private Set<RoleConstants.ROLE> roles;
 
     public String getId() {

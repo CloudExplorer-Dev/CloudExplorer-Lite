@@ -2,12 +2,15 @@ package com.fit2cloud.controller;
 
 import com.fit2cloud.base.entity.Role;
 import com.fit2cloud.base.mapper.BaseRoleMapper;
+import com.fit2cloud.common.constants.RoleConstants;
 import com.fit2cloud.common.validator.annnotaion.CustomValidated;
 import com.fit2cloud.common.validator.group.ValidationGroup;
 import com.fit2cloud.common.validator.handler.ExistHandler;
 import com.fit2cloud.controller.handler.ResultHolder;
 import com.fit2cloud.controller.request.role.CreateRoleRequest;
 import com.fit2cloud.controller.request.role.UpdateRoleRequest;
+import com.fit2cloud.dto.permission.ModulePermission;
+import com.fit2cloud.service.IRolePermissionService;
 import com.fit2cloud.service.IRoleService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -22,6 +25,7 @@ import javax.annotation.Resource;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 import java.util.List;
+import java.util.Map;
 
 
 @RestController
@@ -33,6 +37,8 @@ public class RoleController {
     IRoleService roleService;
     @Resource
     MessageSource messageSource;
+    @Resource
+    IRolePermissionService rolePermissionService;
 
     @ApiOperation(value = "添加角色", notes = "添加角色")
     @PreAuthorize("hasAnyCePermission('ROLE:CREATE')")
@@ -75,6 +81,18 @@ public class RoleController {
             @RequestBody
             List<String> ids) {
         return ResultHolder.success(roleService.deleteRolesByIds(ids));
+    }
+
+    @ApiOperation(value = "查看模块权限", notes = "查看模块权限")
+    @PreAuthorize("hasAnyCePermission('ROLE:READ')")
+    @GetMapping("module-permission")
+    public ResultHolder<Map<String, ModulePermission>> listModulePermissionByRole(
+            @ApiParam("角色")
+            @NotNull(message = "角色不能为空")
+            @RequestParam("role")
+            RoleConstants.ROLE role
+    ) {
+        return ResultHolder.success(rolePermissionService.getAllModulePermission(role));
     }
 
 
