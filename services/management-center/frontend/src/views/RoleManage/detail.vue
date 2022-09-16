@@ -92,6 +92,8 @@
               />
             </el-aside>
             <el-main style="padding: 4px">
+              {{ permissionData }}
+
               <el-table :data="permissionTableData" style="width: 100%">
                 <el-table-column
                   label="操作对象"
@@ -105,6 +107,7 @@
                         v-for="p in scope.row.permissions"
                         :key="p.id"
                         :label="p.id"
+                        @change="onPermissionChecked(p, scope.row.permissions)"
                       >
                         {{ p.name }}
                       </el-checkbox>
@@ -162,7 +165,7 @@ const originRoles = ref<Array<Role>>([]);
 
 const roleFormData = ref<UpdateRoleRequest>(new UpdateRoleRequest(props.id));
 
-const permissionData = ref<any>([]);
+const permissionData = ref<Array<string>>([]);
 const permissionFormData = ref<any>();
 const originPermissions = ref<any>();
 const modules = ref<Array<Module>>([]);
@@ -256,6 +259,38 @@ const checkedAll = computed<boolean>({
     }
   },
 });
+
+/**
+ * 处理连带的权限选中状态
+ * @param permission
+ * @param groupPermissions
+ */
+const onPermissionChecked = (permission, groupPermissions) => {
+  const checked = _.includes(permissionData.value, permission.id); //这里触发的时候 permissionData的数据还没有更新，所以取反
+  if (checked) {
+    //当前操作为选中
+    if (permission.require) {
+      //如果有require权限，则需要把require加到列表中
+      //从permissions中找到require
+      const requiredId = _.find(
+        groupPermissions,
+        (p) => permission.require === p.operate
+      )?.id;
+      console.log(requiredId);
+      if (requiredId) {
+        permissionData.value = _.union(permissionData.value, [requiredId]);
+      }
+    }
+  } else {
+    //当前操作为取消选中
+    //找到子id列表
+    const ids = _.map(
+      _.filter(groupPermissions, (p) => p.require === permission.operate),
+      (v) => v.id
+    );
+    permissionData.value = _.pullAll(permissionData.value, ids);
+  }
+};
 
 onMounted(() => {
   init();
