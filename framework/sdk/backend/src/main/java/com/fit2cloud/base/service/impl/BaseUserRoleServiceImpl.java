@@ -97,7 +97,7 @@ public class BaseUserRoleServiceImpl extends ServiceImpl<BaseUserRoleMapper, Use
                 sourceRolesMap.get(userRole.getSource()).add(role);
                 continue;
             }
-            if (RoleConstants.Type.origin.equals(role.getType())) { //系统管理员
+            if (role.getParentRoleId().equals(RoleConstants.ROLE.ADMIN)) { //系统管理员
                 if (adminRoles == null) {
                     adminRoles = new ArrayList<>();
                 }

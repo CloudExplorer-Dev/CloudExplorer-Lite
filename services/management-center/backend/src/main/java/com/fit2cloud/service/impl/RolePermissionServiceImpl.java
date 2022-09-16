@@ -2,13 +2,16 @@ package com.fit2cloud.service.impl;
 
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.fit2cloud.autoconfigure.ServerInfo;
+import com.fit2cloud.base.entity.Role;
 import com.fit2cloud.base.entity.RolePermission;
 import com.fit2cloud.common.constants.RoleConstants;
+import com.fit2cloud.dao.mapper.RoleMapper;
 import com.fit2cloud.dao.mapper.RolePermissionMapper;
 import com.fit2cloud.dto.permission.ModulePermission;
 import com.fit2cloud.security.CeGrantedAuthority;
 import com.fit2cloud.service.BasePermissionService;
 import com.fit2cloud.service.IRolePermissionService;
+import org.apache.commons.collections4.CollectionUtils;
 import org.redisson.api.RMap;
 import org.redisson.api.RReadWriteLock;
 import org.redisson.api.RedissonClient;
@@ -35,6 +38,9 @@ public class RolePermissionServiceImpl extends ServiceImpl<RolePermissionMapper,
     private BasePermissionService basePermissionService;
 
     @Resource
+    private RoleMapper roleMapper;
+
+    @Resource
     private RedissonClient redissonClient;
 
     @Resource
@@ -47,16 +53,44 @@ public class RolePermissionServiceImpl extends ServiceImpl<RolePermissionMapper,
 
     @Override
     public void savePermissionsByRole(String roleId, List<String> permissionIds) {
+        Role role = roleMapper.selectById(roleId);
 
+        Map<String, Set<CeGrantedAuthority>> authorities = new HashMap<>();
+
+        //找到基础权限
+        if (CollectionUtils.isNotEmpty(permissionIds)) {
+            Map<String, ModulePermission> modulePermissionMap = getAllModulePermission(role.getParentRoleId());
+            modulePermissionMap.forEach((module, modulePermission) -> {
+                authorities.putIfAbsent(module, new HashSet<>());
+                modulePermission.getGroups().forEach(permissionGroup -> {
+                    permissionGroup.getPermissions().forEach(permission -> {
+                        if (permissionIds.contains(permission.getId())) {
+                            authorities.get(module).add(new CeGrantedAuthority(permission.getId(), permission.getSimpleId()));
+                        }
+                    });
+                });
+            });
+        }
+
+        //保存数据库
+        RolePermission rolePermission = new RolePermission()
+                .setRoleId(roleId)
+                .setPermissions(authorities.values().stream().flatMap(Collection::stream).collect(Collectors.toList()));
+        this.saveOrUpdate(rolePermission);
+
+        //缓存到redis
+        authorities.forEach((module, list) -> {
+            basePermissionService.putPermission(module, roleId, new ArrayList<>(list));
+        });
     }
 
     @Override
     public void deletePermissionsByRole(String roleId) {
-        //删除数据库
+        //数据库删除
+        this.removeById(roleId);
 
         //清理redis
-
-
+        basePermissionService.removePermission(roleId);
     }
 
     @Override

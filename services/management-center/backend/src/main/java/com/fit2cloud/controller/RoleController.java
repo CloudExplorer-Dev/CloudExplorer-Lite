@@ -16,7 +16,6 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import org.springframework.beans.BeanUtils;
-import org.springframework.context.MessageSource;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -35,8 +34,6 @@ public class RoleController {
 
     @Resource
     IRoleService roleService;
-    @Resource
-    MessageSource messageSource;
     @Resource
     IRolePermissionService rolePermissionService;
 
@@ -60,7 +57,7 @@ public class RoleController {
         return ResultHolder.success(roleService.getById(role.getId()));
     }
 
-    @ApiOperation(value = "删除组织", notes = "删除组织")
+    @ApiOperation(value = "删除角色", notes = "删除角色")
     @PreAuthorize("hasAnyCePermission('ROLE:DELETE')")
     @DeleteMapping
     public ResultHolder<Boolean> removeRole(
@@ -72,7 +69,7 @@ public class RoleController {
         return ResultHolder.success(roleService.deleteRoleById(id));
     }
 
-    @ApiOperation(value = "批量删除组织", notes = "批量删除组织")
+    @ApiOperation(value = "批量删除角色", notes = "批量删除角色")
     @PreAuthorize("hasAnyCePermission('ROLE:DELETE')")
     @DeleteMapping("batch")
     public ResultHolder<Boolean> batchRemoveRole(
@@ -93,6 +90,34 @@ public class RoleController {
             RoleConstants.ROLE role
     ) {
         return ResultHolder.success(rolePermissionService.getAllModulePermission(role));
+    }
+
+    @ApiOperation(value = "查看角色权限", notes = "查看角色权限")
+    @PreAuthorize("hasAnyCePermission('ROLE:READ')")
+    @GetMapping("permission")
+    public ResultHolder<List<String>> listRolePermissionByRole(
+            @ApiParam("角色ID")
+            @NotNull(message = "角色ID不能为空")
+            @RequestParam("id")
+            String id
+    ) {
+        return ResultHolder.success(rolePermissionService.getCachedRolePermissionsByRole(id));
+    }
+
+    @ApiOperation(value = "更新角色权限", notes = "更新角色权限")
+    @PreAuthorize("hasAnyCePermission('ROLE:EDIT')")
+    @PostMapping("permission")
+    public ResultHolder<List<String>> updateRolePermissionByRole(
+            @ApiParam("角色ID")
+            @NotNull(message = "角色ID不能为空")
+            @CustomValidated(mapper = BaseRoleMapper.class, handler = ExistHandler.class, message = "角色ID不存在", exist = false)
+            @RequestParam("id")
+            String id,
+            @RequestBody
+            List<String> permissionIds
+    ) {
+        rolePermissionService.savePermissionsByRole(id, permissionIds);
+        return ResultHolder.success(rolePermissionService.getCachedRolePermissionsByRole(id));
     }
 
 

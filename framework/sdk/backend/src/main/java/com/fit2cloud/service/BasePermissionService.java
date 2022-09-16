@@ -55,7 +55,7 @@ public class BasePermissionService {
         List<String> baseRoles = Arrays.stream(RoleConstants.ROLE.values()).map(Enum::name).toList();
 
         //从数据库获取当前模块自定义角色权限
-        Map<String, List<CeGrantedAuthority>> customsRolePermissionMap = rolePermissionService.getCurrentModulePermissionMap(roles.stream().map(Role::getId).collect(Collectors.toList()));
+        Map<String, List<CeGrantedAuthority>> customsRolePermissionMap = rolePermissionService.getCurrentModulePermissionMap(module, roles.stream().map(Role::getId).collect(Collectors.toList()));
 
         //系统内置权限
         for (RoleConstants.ROLE baseRole : RoleConstants.ROLE.values()) {
@@ -91,7 +91,7 @@ public class BasePermissionService {
         }
 
         for (Role role : roles) {
-            putPermission(module, role.getId(), rolePermissions);
+            putPermission(module, role.getId(), rolePermissions.getOrDefault(role.getId(), new ArrayList<>()));
         }
 
     }
@@ -121,13 +121,27 @@ public class BasePermissionService {
         }
     }
 
-    private void putPermission(String module, String role, Map<String, List<CeGrantedAuthority>> rolePermissions) {
+    public void putPermission(String module, String role, List<CeGrantedAuthority> rolePermissions) {
         RMap<String, List<CeGrantedAuthority>> map = redissonClient.getMap(PERMISSION_MAP + role);
         RReadWriteLock lock = map.getReadWriteLock(PERMISSION_MAP + role);
 
         try {
             lock.writeLock().lock(10, TimeUnit.SECONDS);
-            map.put(module, rolePermissions.getOrDefault(role, new ArrayList<>()));
+            map.put(module, rolePermissions);
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            lock.writeLock().unlock();
+        }
+    }
+
+    public void removePermission(String role) {
+        RMap<String, List<CeGrantedAuthority>> map = redissonClient.getMap(PERMISSION_MAP + role);
+        RReadWriteLock lock = map.getReadWriteLock(PERMISSION_MAP + role);
+
+        try {
+            lock.writeLock().lock(10, TimeUnit.SECONDS);
+            map.readAllMap();
         } catch (Exception e) {
             e.printStackTrace();
         } finally {

@@ -6,6 +6,7 @@ import com.fit2cloud.common.constants.RoleConstants;
 import com.fit2cloud.common.exception.Fit2cloudException;
 import com.fit2cloud.constants.ErrorCodeConstants;
 import com.fit2cloud.dao.mapper.RoleMapper;
+import com.fit2cloud.service.IRolePermissionService;
 import com.fit2cloud.service.IRoleService;
 import org.springframework.context.MessageSource;
 import org.springframework.context.i18n.LocaleContextHolder;
@@ -29,6 +30,8 @@ public class RoleServiceImpl extends ServiceImpl<RoleMapper, Role> implements IR
 
     @Resource
     private MessageSource messageSource;
+    @Resource
+    private IRolePermissionService rolePermissionService;
 
     public List<Role> getRolesByResourceIds(Map<String, Object> param) {
         return baseMapper.getRolesByResourceIds(param);
@@ -38,14 +41,18 @@ public class RoleServiceImpl extends ServiceImpl<RoleMapper, Role> implements IR
         if (Arrays.stream(RoleConstants.ROLE.values()).map(Enum::name).toList().contains(id)) {
             throw new Fit2cloudException(ErrorCodeConstants.BASE_ROLE_CANNOT_DELETE.getCode(), messageSource.getMessage(ErrorCodeConstants.BASE_ROLE_CANNOT_DELETE.getMessage(), null, LocaleContextHolder.getLocale()));
         }
-        return removeById(id);
+        boolean success = removeById(id);
+        rolePermissionService.deletePermissionsByRole(id);
+        return success;
     }
 
     public boolean deleteRolesByIds(List<String> ids) {
         if (Arrays.stream(RoleConstants.ROLE.values()).map(Enum::name).anyMatch(ids::contains)) {
             throw new Fit2cloudException(ErrorCodeConstants.BASE_ROLE_CANNOT_DELETE.getCode(), messageSource.getMessage(ErrorCodeConstants.BASE_ROLE_CANNOT_DELETE.getMessage(), null, LocaleContextHolder.getLocale()));
         }
-        return removeByIds(ids);
+        boolean success = removeByIds(ids);
+        ids.forEach(id -> rolePermissionService.deletePermissionsByRole(id));
+        return success;
     }
 
 

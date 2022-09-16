@@ -15,6 +15,15 @@
           >
             修改
           </el-button>
+
+          <el-button v-if="editInfo" @click="cancelEditInfo"> 取消 </el-button>
+          <el-button
+            type="primary"
+            v-if="editInfo"
+            @click="submitRoleForm(roleFormRef)"
+          >
+            保存
+          </el-button>
         </template>
         <template #content>
           <el-form
@@ -57,13 +66,6 @@
             </el-form-item>
           </el-form>
         </template>
-
-        <template #default v-if="editInfo">
-          <el-button @click="cancelEditInfo">取消</el-button>
-          <el-button type="primary" @click="submitRoleForm(roleFormRef)">
-            保存
-          </el-button>
-        </template>
       </layout-container>
 
       <layout-container v-loading="loadingPermission">
@@ -80,6 +82,17 @@
           >
             修改
           </el-button>
+
+          <el-button v-if="editPermission" @click="cancelEditPermission">
+            取消
+          </el-button>
+          <el-button
+            type="primary"
+            v-if="editPermission"
+            @click="submitRolePermission(permissionData)"
+          >
+            保存
+          </el-button>
         </template>
         <template #content>
           <el-container class="permission-container">
@@ -92,8 +105,6 @@
               />
             </el-aside>
             <el-main style="padding: 4px">
-              {{ permissionData }}
-
               <el-table :data="permissionTableData" style="width: 100%">
                 <el-table-column
                   label="操作对象"
@@ -102,7 +113,10 @@
                 />
                 <el-table-column label="权限" min-width="300px">
                   <template #default="scope">
-                    <el-checkbox-group v-model="permissionData">
+                    <el-checkbox-group
+                      v-model="permissionData"
+                      :disabled="!editPermission"
+                    >
                       <el-checkbox
                         v-for="p in scope.row.permissions"
                         :key="p.id"
@@ -117,12 +131,20 @@
 
                 <el-table-column label="全选" align="right" width="100px">
                   <template #header>
-                    <el-checkbox v-model="checkedAll" :label="true">
+                    <el-checkbox
+                      v-model="checkedAll"
+                      :label="true"
+                      :disabled="!editPermission"
+                    >
                       全选
                     </el-checkbox>
                   </template>
                   <template #default="scope">
-                    <el-checkbox v-model="scope.row.checked" :label="true">
+                    <el-checkbox
+                      v-model="scope.row.checked"
+                      :label="true"
+                      :disabled="!editPermission"
+                    >
                       全选
                     </el-checkbox>
                   </template>
@@ -166,7 +188,7 @@ const originRoles = ref<Array<Role>>([]);
 const roleFormData = ref<UpdateRoleRequest>(new UpdateRoleRequest(props.id));
 
 const permissionData = ref<Array<string>>([]);
-const permissionFormData = ref<any>();
+let permissionFormData: Array<string> = [];
 const originPermissions = ref<any>();
 const modules = ref<Array<Module>>([]);
 const modulesPanels = computed(() => {
@@ -317,7 +339,7 @@ const init = () => {
   //权限
   RoleApi.getRolePermissions(props.id, loadingPermission).then((ok) => {
     permissionData.value = ok.data;
-    console.log(permissionData.value);
+    permissionFormData = ok.data;
   });
   //模块
   listModules(loadingPermission).then((ok) => {
@@ -341,11 +363,11 @@ const cancelEditInfo = () => {
 
 const changeToEditPermission = () => {
   editPermission.value = true;
-  permissionFormData.value = JSON.parse(JSON.stringify(permissionData.value));
 };
 
-const cancelPermissionButton = () => {
+const cancelEditPermission = () => {
   editPermission.value = false;
+  permissionData.value = JSON.parse(JSON.stringify(permissionFormData));
 };
 
 const onModuleSelect = (index: any) => {
@@ -367,13 +389,28 @@ const submitRoleForm = (formEl: FormInstance | undefined) => {
   formEl?.validate((valid) => {
     if (valid && roleFormData.value) {
       RoleApi.updateRole(
-        UpdateRoleRequest.newInstance(roleFormData.value)
+        UpdateRoleRequest.newInstance(roleFormData.value),
+        loading
       ).then((ok) => {
         init();
         cancelEditInfo();
         ElMessage.success(t("commons.msg.save_success"));
       });
     }
+  });
+};
+
+const submitRolePermission = (permissionIds: Array<string>) => {
+  console.log(permissionIds);
+  RoleApi.updateRolePermissions(
+    props.id,
+    permissionIds,
+    loadingPermission
+  ).then((ok) => {
+    permissionData.value = ok.data;
+    permissionFormData = ok.data;
+    cancelEditPermission();
+    ElMessage.success(t("commons.msg.save_success"));
   });
 };
 </script>

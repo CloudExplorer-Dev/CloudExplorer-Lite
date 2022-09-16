@@ -23,6 +23,6 @@ public interface IBaseRolePermissionService extends IService<RolePermission> {
      * @param roleIds
      * @return
      */
-    Map<String, List<CeGrantedAuthority>> getCurrentModulePermissionMap(List<String> roleIds);
+    Map<String, List<CeGrantedAuthority>> getCurrentModulePermissionMap(String module, List<String> roleIds);
 
 }
