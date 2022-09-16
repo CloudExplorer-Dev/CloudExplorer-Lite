@@ -18,6 +18,7 @@ import com.fit2cloud.common.utils.MD5Util;
 import com.fit2cloud.constants.ErrorCodeConstants;
 import com.fit2cloud.controller.request.user.CreateUserRequest;
 import com.fit2cloud.controller.request.user.PageUserRequest;
+import com.fit2cloud.controller.request.user.UpdateUserRequest;
 import com.fit2cloud.controller.request.user.UserBatchAddRoleRequest;
 import com.fit2cloud.dao.entity.UserNotificationSetting;
 import com.fit2cloud.dao.mapper.UserMapper;
@@ -128,8 +129,8 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
             // 当为组织管理员时，删除当前组织及其子组织下的工作空间（解绑关系user_role）
             List<String> sourceList = new ArrayList<>();
 
-            // TODO 获取当前组织及其所有子组织
-            List<String> subOrgIds = new ArrayList<>();
+            // 获取当前组织及其所有子组织ID
+            List<String> subOrgIds = organizationCommonService.getOrgIdsByPid(CurrentUserUtils.getOrganizationId());
             if (CollectionUtils.isNotEmpty(subOrgIds)) {
                 sourceList.addAll(subOrgIds);
             }
@@ -182,16 +183,32 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
         return true;
     }
 
+    @Transactional
     public boolean createUser(CreateUserRequest request) {
-        validateUserParam(request);
+        validateUserID(request.getUsername());
+        validateUserDataExist("username",request.getUsername(),"用户ID","create", request.getId());
+        validateUserDataExist("email",request.getEmail(),"用户邮箱","create", request.getId());
+
         UserOperateDto user = new UserOperateDto();
         BeanUtils.copyProperties(request, user);
-        insertUser(user);
+
+        if (StringUtils.isBlank(user.getId())) {
+            user.setId(UUID.randomUUID().toString());
+        }
+        if (StringUtils.isBlank(user.getSource())) {
+            user.setSource("unknown");
+        }
+        user.setPassword(MD5Util.md5(user.getPassword()));
+        baseMapper.insert(user);
+
+        if (CollectionUtils.isNotEmpty(user.getRoleInfoList())) {
+            insertUserRoleInfo(user);
+        }
         return true;
     }
 
     @Transactional
-    public boolean updateUser(CreateUserRequest request) {
+    public boolean updateUser(UpdateUserRequest request) {
         // 校验用户邮箱是否已存在
         validateUserDataExist("email", request.getEmail(), "邮箱", "update", request.getId());
 
@@ -230,25 +247,12 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
     public boolean updatePwd(User user) {
         // 非本地创建用户不允许修改密码
         if (!"local".equalsIgnoreCase(CurrentUserUtils.getUser().getSource())) {
-            throw new Fit2cloudException(ErrorCodeConstants.USER_KEEP_ONE_ADMIN.getCode(), ErrorCodeConstants.USER_KEEP_ONE_ADMIN.getMessage());
+            throw new Fit2cloudException(ErrorCodeConstants.USER_NOT_LOCAL_CAN_NOT_EDIT_PASSWORD.getCode(), ErrorCodeConstants.USER_NOT_LOCAL_CAN_NOT_EDIT_PASSWORD.getMessage());
         }
         User updateUser = new User();
         updateUser.setId(user.getId());
         updateUser.setPassword(MD5Util.md5(user.getPassword()));
         baseMapper.updateById(updateUser);
-        return true;
-    }
-
-    @Transactional
-    public boolean insertUser(UserOperateDto user) {
-        if (StringUtils.isBlank(user.getId())) {
-            user.setId(UUID.randomUUID().toString());
-        }
-        user.setPassword(MD5Util.md5(user.getPassword()));
-        baseMapper.insert(user);
-        if (CollectionUtils.isNotEmpty(user.getRoleInfoList())) {
-            insertUserRoleInfo(user);
-        }
         return true;
     }
 
@@ -318,49 +322,19 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
     }
 
     /**
-     * 校验用户参数
-     *
-     * @param request
+     * 校验用户ID
+     * @param userID
      */
-    private void validateUserParam(CreateUserRequest request) {
-        if (StringUtils.isBlank(request.getUsername())) {
-            throw new Fit2cloudException(ErrorCodeConstants.USER_ID_CANNOT_BE_NULL.getCode(), ErrorCodeConstants.USER_ID_CANNOT_BE_NULL.getMessage());
-        }
-
-        if (StringUtils.isBlank(request.getName())) {
-            throw new Fit2cloudException(ErrorCodeConstants.USER_NAME_CANNOT_BE_NULL.getCode(), ErrorCodeConstants.USER_NAME_CANNOT_BE_NULL.getMessage());
-        }
-
-        if (StringUtils.isBlank(request.getPassword())) {
-            throw new Fit2cloudException(ErrorCodeConstants.USER_PWD_CANNOT_BE_NULL.getCode(), ErrorCodeConstants.USER_PWD_CANNOT_BE_NULL.getMessage());
-        }
-
-        if (StringUtils.isBlank(request.getEmail())) {
-            throw new Fit2cloudException(ErrorCodeConstants.USER_EMAIL_CANNOT_BE_NULL.getCode(), ErrorCodeConstants.USER_EMAIL_CANNOT_BE_NULL.getMessage());
-        }
-
-        if (SystemUserConstants.getUserName().equalsIgnoreCase(request.getUsername())) {
+    private void validateUserID(String userID) {
+        if (SystemUserConstants.getUserName().equalsIgnoreCase(userID)) {
             throw new Fit2cloudException(ErrorCodeConstants.USER_ID_CANNOT_BE_SYSTEM.getCode(), ErrorCodeConstants.USER_ID_CANNOT_BE_SYSTEM.getMessage());
         }
-
-        // 校验用户ID是否已存在
-        validateUserDataExist("username", request.getUsername(), "用户ID", "create", null);
-
-        // 校验用户邮箱是否已存在
-        validateUserDataExist("email", request.getEmail(), "邮箱", "create", null);
     }
 
-    /**
-     * 校验用户某属性值是否已存在
-     *
-     * @param colName
-     * @param colValue
-     * @param colDisplayName
-     */
     private void validateUserDataExist(String colName, String colValue, String colDisplayName, String optType, String id) {
         QueryWrapper<User> wrapper = Wrappers.query();
         wrapper.eq(true, colName, colValue);
-        if ("created".equals(optType) && baseMapper.selectCount(wrapper) > 0) {
+        if ("create".equals(optType) && baseMapper.selectCount(wrapper) > 0) {
             throw new RuntimeException(colDisplayName + "已存在");
         }
         if ("update".equals(optType)) {

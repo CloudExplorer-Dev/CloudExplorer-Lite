@@ -41,6 +41,7 @@ const confirmPwdValidator = (
     callback();
   }
 };
+
 // 表单校验规则
 const rule = reactive<FormRules>({
   username: [
@@ -112,6 +113,27 @@ const rule = reactive<FormRules>({
       trigger: "blur",
     },
     { validator: confirmPwdValidator, trigger: "blur" },
+  ],
+  roleId: [
+    {
+      required: true,
+      message: t("user.validate.user_type_empty"),
+      trigger: "change",
+    },
+  ],
+  org: [
+    {
+      required: true,
+      message: t("user.validate.org"),
+      trigger: "change",
+    },
+  ],
+  workspace: [
+    {
+      required: true,
+      message: t("user.validate.workspace"),
+      trigger: "change",
+    },
   ],
 });
 const roles = ref<Role[]>([]);
@@ -333,7 +355,11 @@ onMounted(() => {
           <!-- 用户类型 -->
           <el-row>
             <el-col :span="20">
-              <el-form-item :label="$t('user.type')">
+              <el-form-item
+                :label="$t('user.type')"
+                :prop="`roleInfoList.${index}.roleId`"
+                :rules="rule.roleId"
+              >
                 <el-select
                   v-model="roleInfo.roleId"
                   @change="setRoleType(roleInfo, roleInfo.roleId)"
@@ -356,9 +382,9 @@ onMounted(() => {
                 effect="dark"
                 :content="$t('user.delete_role')"
                 placement="bottom"
+                v-if="form.roleInfoList.length > 1"
               >
                 <el-button
-                  v-if="form.roleInfoList.length > 1"
                   @click="subtractLine(roleInfo)"
                   type="danger"
                   icon="minus"
@@ -371,7 +397,11 @@ onMounted(() => {
           <!-- 选择组织 -->
           <el-row v-if="roleInfo.roleType === roleConst.orgAdmin">
             <el-col :span="20">
-              <el-form-item :label="$t('user.add_org')">
+              <el-form-item
+                :label="$t('user.add_org')"
+                :prop="`roleInfoList.${index}.organizationIds`"
+                :rules="rule.org"
+              >
                 <el-tree-select
                   v-model="roleInfo.organizationIds"
                   node-key="id"
@@ -391,7 +421,11 @@ onMounted(() => {
           <!-- 选择工作空间 -->
           <el-row v-if="roleInfo.roleType === roleConst.user">
             <el-col :span="20">
-              <el-form-item :label="$t('user.add_workspace')">
+              <el-form-item
+                :label="$t('user.add_workspace')"
+                :prop="`roleInfoList.${index}.workspaceIds`"
+                :rules="rule.workspace"
+              >
                 <el-tree-select
                   v-model="roleInfo.workspaceIds"
                   node-key="id"

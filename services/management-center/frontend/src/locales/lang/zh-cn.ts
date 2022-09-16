@@ -28,6 +28,9 @@ const message = {
       selected: "请选择用户",
       role_empty: "角色信息不能为空",
       param: "参数不合法",
+      user_type_empty: "用户类型不能为空",
+      org: "请选择组织",
+      workspace: "请选择工作空间",
     },
   },
   workspace: {

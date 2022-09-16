@@ -43,14 +43,35 @@ const form = ref<UpdateUserForm>({
   roleInfoList: [],
 });
 
-// 校验用户角色
+// 校验用户角色信息;
 const validateRoleInfoList = (): boolean => {
+  let result = true;
   if (!form.value.roleInfoList || form.value.roleInfoList.length < 1) {
     ElMessage.error(t("user.validate.role_empty"));
-    return false;
+    result = false;
   } else {
-    return true;
+    form.value.roleInfoList.forEach((roleInfo: RoleInfo) => {
+      if (roleInfo.roleId === "") {
+        ElMessage.error(t("user.validate.user_type_empty"));
+        result = false;
+      }
+      if (
+        roleInfo.roleType === roleConst.orgAdmin &&
+        roleInfo.organizationIds.length < 1
+      ) {
+        ElMessage.error(t("user.validate.org"));
+        result = false;
+      }
+      if (
+        roleInfo.roleType === roleConst.user &&
+        roleInfo.workspaceIds.length < 1
+      ) {
+        ElMessage.error(t("user.validate.workspace"));
+        result = false;
+      }
+    });
   }
+  return result;
 };
 
 // 表单校验规则
@@ -140,6 +161,7 @@ const cancel = (resource: string, formEl: FormInstance) => {
     // 还原数据
     form.value = JSON.parse(JSON.stringify(originUserBasicData.value));
     basicEditable.value = false;
+    formEl.validate();
   } else {
     // 还原数据
     if (originUserRoleData.value) {
@@ -149,7 +171,6 @@ const cancel = (resource: string, formEl: FormInstance) => {
     }
     roleEditable.value = false;
   }
-  formEl.validate();
 };
 
 const getParentRoleId = (roleId: string) => {
@@ -406,9 +427,9 @@ onMounted(() => {
                 effect="dark"
                 :content="$t('user.delete_role')"
                 placement="bottom"
+                v-if="form.roleInfoList.length > 1 && roleEditable"
               >
                 <el-button
-                  v-if="form.roleInfoList.length > 1 && roleEditable"
                   @click="subtractLine(roleInfo)"
                   type="danger"
                   icon="minus"
@@ -466,10 +487,10 @@ onMounted(() => {
             effect="dark"
             :content="$t('user.add_role')"
             placement="bottom"
+            v-if="roleEditable"
           >
             <el-button
               @click="addLine"
-              v-if="roleEditable"
               :disabled="!isAddLineAble"
               type="primary"
               icon="plus"
