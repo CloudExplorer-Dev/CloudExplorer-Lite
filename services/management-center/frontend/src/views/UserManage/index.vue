@@ -19,6 +19,7 @@ onMounted(() => {
 });
 
 onBeforeRouteUpdate((to) => {
+  isShowReturnBtn.value = false;
   if (showReturnBtnPath === to.path) {
     isShowReturnBtn.value = true;
   }
