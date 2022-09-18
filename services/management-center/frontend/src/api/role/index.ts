@@ -47,6 +47,14 @@ export function getRolePermissions(
   return get("/api/role/permission", { id: roleId }, loading);
 }
 
+export function updateRolePermissions(
+  roleId: string,
+  permissionIds: Array<string>,
+  loading?: Ref<boolean>
+): Promise<Result<any>> {
+  return post("/api/role/permission", { id: roleId }, permissionIds, loading);
+}
+
 const RoleApi = {
   ...BaseRoleApi,
   addRole,
@@ -55,6 +63,7 @@ const RoleApi = {
   batchDeleteRoles,
   getModulePermissions,
   getRolePermissions,
+  updateRolePermissions,
 };
 
 export default RoleApi;

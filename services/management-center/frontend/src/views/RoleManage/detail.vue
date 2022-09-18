@@ -15,6 +15,15 @@
           >
             修改
           </el-button>
+
+          <el-button v-if="editInfo" @click="cancelEditInfo"> 取消 </el-button>
+          <el-button
+            type="primary"
+            v-if="editInfo"
+            @click="submitRoleForm(roleFormRef)"
+          >
+            保存
+          </el-button>
         </template>
         <template #content>
           <el-form
@@ -57,13 +66,6 @@
             </el-form-item>
           </el-form>
         </template>
-
-        <template #default v-if="editInfo">
-          <el-button @click="cancelEditInfo">取消</el-button>
-          <el-button type="primary" @click="submitRoleForm(roleFormRef)">
-            保存
-          </el-button>
-        </template>
       </layout-container>
 
       <layout-container v-loading="loadingPermission">
@@ -79,6 +81,17 @@
             v-if="showEditPermissionButton"
           >
             修改
+          </el-button>
+
+          <el-button v-if="editPermission" @click="cancelEditPermission">
+            取消
+          </el-button>
+          <el-button
+            type="primary"
+            v-if="editPermission"
+            @click="submitRolePermission(permissionData)"
+          >
+            保存
           </el-button>
         </template>
         <template #content>
@@ -100,11 +113,15 @@
                 />
                 <el-table-column label="权限" min-width="300px">
                   <template #default="scope">
-                    <el-checkbox-group v-model="permissionData">
+                    <el-checkbox-group
+                      v-model="permissionData"
+                      :disabled="!editPermission"
+                    >
                       <el-checkbox
                         v-for="p in scope.row.permissions"
                         :key="p.id"
                         :label="p.id"
+                        @change="onPermissionChecked(p, scope.row.permissions)"
                       >
                         {{ p.name }}
                       </el-checkbox>
@@ -114,12 +131,20 @@
 
                 <el-table-column label="全选" align="right" width="100px">
                   <template #header>
-                    <el-checkbox v-model="checkedAll" :label="true">
+                    <el-checkbox
+                      v-model="checkedAll"
+                      :label="true"
+                      :disabled="!editPermission"
+                    >
                       全选
                     </el-checkbox>
                   </template>
                   <template #default="scope">
-                    <el-checkbox v-model="scope.row.checked" :label="true">
+                    <el-checkbox
+                      v-model="scope.row.checked"
+                      :label="true"
+                      :disabled="!editPermission"
+                    >
                       全选
                     </el-checkbox>
                   </template>
@@ -162,8 +187,8 @@ const originRoles = ref<Array<Role>>([]);
 
 const roleFormData = ref<UpdateRoleRequest>(new UpdateRoleRequest(props.id));
 
-const permissionData = ref<any>([]);
-const permissionFormData = ref<any>();
+const permissionData = ref<Array<string>>([]);
+let permissionFormData: Array<string> = [];
 const originPermissions = ref<any>();
 const modules = ref<Array<Module>>([]);
 const modulesPanels = computed(() => {
@@ -257,6 +282,38 @@ const checkedAll = computed<boolean>({
   },
 });
 
+/**
+ * 处理连带的权限选中状态
+ * @param permission
+ * @param groupPermissions
+ */
+const onPermissionChecked = (permission, groupPermissions) => {
+  const checked = _.includes(permissionData.value, permission.id); //这里触发的时候 permissionData的数据还没有更新，所以取反
+  if (checked) {
+    //当前操作为选中
+    if (permission.require) {
+      //如果有require权限，则需要把require加到列表中
+      //从permissions中找到require
+      const requiredId = _.find(
+        groupPermissions,
+        (p) => permission.require === p.operate
+      )?.id;
+      console.log(requiredId);
+      if (requiredId) {
+        permissionData.value = _.union(permissionData.value, [requiredId]);
+      }
+    }
+  } else {
+    //当前操作为取消选中
+    //找到子id列表
+    const ids = _.map(
+      _.filter(groupPermissions, (p) => p.require === permission.operate),
+      (v) => v.id
+    );
+    permissionData.value = _.pullAll(permissionData.value, ids);
+  }
+};
+
 onMounted(() => {
   init();
 });
@@ -282,7 +339,7 @@ const init = () => {
   //权限
   RoleApi.getRolePermissions(props.id, loadingPermission).then((ok) => {
     permissionData.value = ok.data;
-    console.log(permissionData.value);
+    permissionFormData = ok.data;
   });
   //模块
   listModules(loadingPermission).then((ok) => {
@@ -306,11 +363,11 @@ const cancelEditInfo = () => {
 
 const changeToEditPermission = () => {
   editPermission.value = true;
-  permissionFormData.value = JSON.parse(JSON.stringify(permissionData.value));
 };
 
-const cancelPermissionButton = () => {
+const cancelEditPermission = () => {
   editPermission.value = false;
+  permissionData.value = JSON.parse(JSON.stringify(permissionFormData));
 };
 
 const onModuleSelect = (index: any) => {
@@ -332,13 +389,28 @@ const submitRoleForm = (formEl: FormInstance | undefined) => {
   formEl?.validate((valid) => {
     if (valid && roleFormData.value) {
       RoleApi.updateRole(
-        UpdateRoleRequest.newInstance(roleFormData.value)
+        UpdateRoleRequest.newInstance(roleFormData.value),
+        loading
       ).then((ok) => {
         init();
         cancelEditInfo();
         ElMessage.success(t("commons.msg.save_success"));
       });
     }
+  });
+};
+
+const submitRolePermission = (permissionIds: Array<string>) => {
+  console.log(permissionIds);
+  RoleApi.updateRolePermissions(
+    props.id,
+    permissionIds,
+    loadingPermission
+  ).then((ok) => {
+    permissionData.value = ok.data;
+    permissionFormData = ok.data;
+    cancelEditPermission();
+    ElMessage.success(t("commons.msg.save_success"));
   });
 };
 </script>

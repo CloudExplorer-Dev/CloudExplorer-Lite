@@ -1,7 +1,6 @@
 package com.fit2cloud.base.service.impl;
 
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import com.fit2cloud.autoconfigure.ServerInfo;
 import com.fit2cloud.base.entity.RolePermission;
 import com.fit2cloud.base.mapper.BaseRolePermissionMapper;
 import com.fit2cloud.base.service.IBaseRolePermissionService;
@@ -28,8 +27,7 @@ public class BaseRolePermissionServiceImpl extends ServiceImpl<BaseRolePermissio
 
 
     @Override
-    public Map<String, List<CeGrantedAuthority>> getCurrentModulePermissionMap(List<String> roleIds) {
-        String module = ServerInfo.getModule();
+    public Map<String, List<CeGrantedAuthority>> getCurrentModulePermissionMap(String module, List<String> roleIds) {
         if (StringUtils.isBlank(module) || StringUtils.equals("gateway", module)) {
             return new HashMap<>();
         }

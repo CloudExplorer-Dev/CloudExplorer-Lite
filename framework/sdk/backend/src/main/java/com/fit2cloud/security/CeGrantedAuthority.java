@@ -15,11 +15,13 @@ public class CeGrantedAuthority implements GrantedAuthority {
     @Serial
     private static final long serialVersionUID = SpringSecurityCoreVersion.SERIAL_VERSION_UID;
 
-    private final String role;
+    private String role;
 
     @Getter
-    private final String currentModulePermission;
+    private String currentModulePermission;
 
+    public CeGrantedAuthority() {
+    }
 
     public CeGrantedAuthority(String role, String currentModulePermission) {
         Assert.hasText(role, "A granted authority textual representation is required");
@@ -30,6 +32,10 @@ public class CeGrantedAuthority implements GrantedAuthority {
     @Override
     public String getAuthority() {
         return this.role;
+    }
+
+    private void setAuthority(String authority) {
+        this.role = authority;
     }
 
     @Override
