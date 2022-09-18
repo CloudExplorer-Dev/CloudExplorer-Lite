@@ -1,7 +1,7 @@
-package com.fit2cloud.dto.module;
+package com.fit2cloud.dto.job;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fit2cloud.autoconfigure.SettingJobConfig;
+import com.fit2cloud.dto.module.ModuleInfo;
 import lombok.Data;
 
 import java.io.Serializable;
@@ -15,9 +15,11 @@ import java.util.List;
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
 @Data
-public class ModuleJobInfo extends ModuleInfo implements Serializable {
+public class JobModuleInfo extends ModuleInfo implements Serializable {
+
+    private String module;
     /**
      * 模块定时任务
      */
-    private List<SettingJobConfig.JobDetails> jobDetailsList;
+    private List<JobInitSettingDto> jobDetails;
 }

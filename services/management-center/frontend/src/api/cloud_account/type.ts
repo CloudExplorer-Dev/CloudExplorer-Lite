@@ -120,7 +120,7 @@ interface CloudAccountJobDetailsResponse {
   /**
    * 模块任务
    */
-  cloudAccountSyncJobs: Array<ModuleJob>;
+  cloudAccountModuleJobs: Array<ModuleJob>;
   /**
    *选中的区域
    */
@@ -130,6 +130,10 @@ interface CloudAccountJobDetailsResponse {
  * 模块定时任务信息
  */
 interface ModuleJob {
+  /**
+   * 模块
+   */
+  module;
   /**
    * 模块名称
    */
@@ -187,6 +191,10 @@ interface JobDetails {
    * 是否活跃
    */
   active: string;
+  /**
+   * 区域
+   */
+  regions: Array<Region>;
 }
 interface UpdateJobsRequest extends CloudAccountJobDetailsResponse {
   cloudAccountId: string;

@@ -22,15 +22,15 @@ import java.util.stream.Collectors;
  * @Version 1.0
  * @注释:
  */
-public interface Credential<T> {
+public interface Credential {
     /**
      * 将json字符串解析为凭证对象
      *
      * @return 凭证对象
      */
 
-    default T deCode(String credential) {
-        return (T) JsonUtil.parseObject(credential, this.getClass());
+    default Credential deCode(String credential) {
+        return JsonUtil.parseObject(credential, this.getClass());
     }
 
     /**

@@ -28,7 +28,7 @@ import java.util.stream.Collectors;
 @Service
 public class QuartzSchedulerServiceImpl implements SchedulerService {
     @Resource
-    private Scheduler scheduler;
+    protected Scheduler scheduler;
 
     @Override
     public void addJob(Class<? extends Job> jobHandler, String jobName, String groupName, String description, String cronExp, Map<String, Object> param) {
@@ -92,7 +92,6 @@ public class QuartzSchedulerServiceImpl implements SchedulerService {
         } catch (SchedulerException e) {
             throw new Fit2cloudException(JobErrorCodeConstants.ADD_JOB_FAIL.getCode(), JobErrorCodeConstants.ADD_JOB_FAIL.getMessage());
         }
-
     }
 
 
@@ -186,7 +185,7 @@ public class QuartzSchedulerServiceImpl implements SchedulerService {
         if (trigger instanceof CronTriggerImpl cronTrigger) {
             cronEx = cronTrigger.getCronExpression();
         }
-        return new QuzrtzJobDetail(trigger.getJobKey().getName(), trigger.getJobKey().getGroup(), trigger.getJobDataMap().getWrappedMap(), trigger.getDescription(), trigger.getNextFireTime(), trigger.getPreviousFireTime(), triggerState, className, nickName, cronEx, unit, repeatInterval);
+        return new QuzrtzJobDetail(trigger.getJobKey().getName(), trigger.getJobKey().getGroup(), trigger.getDescription(), unit, repeatInterval, trigger.getJobDataMap().getWrappedMap(), trigger.getNextFireTime(), trigger.getPreviousFireTime(), triggerState, className, nickName, cronEx);
     }
 
     @Override
@@ -200,6 +199,15 @@ public class QuartzSchedulerServiceImpl implements SchedulerService {
 
     }
 
+    @Override
+    public List<QuzrtzJobDetail> list(String groupName) {
+        try {
+            Set<TriggerKey> triggerKeys = scheduler.getTriggerKeys(GroupMatcher.groupEquals(groupName));
+            return triggerKeys.stream().map(this::getJobDetails).toList();
+        } catch (Exception e) {
+            throw new Fit2cloudException(JobErrorCodeConstants.LIST_JOB_DETAILS_FAIL.getCode(), JobErrorCodeConstants.LIST_JOB_DETAILS_FAIL.getMessage());
+        }
+    }
 
     @Override
     public void pauseJob(String jobName, String groupName) {

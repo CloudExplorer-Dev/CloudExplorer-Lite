@@ -27,7 +27,7 @@ import java.util.List;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class HuaweiCredential implements Credential<HuaweiCredential> {
+public class HuaweiCredential implements Credential {
     /**
      * AccessKey 访问令牌
      */

@@ -5,6 +5,7 @@ import com.fit2cloud.common.validator.annnotaion.CustomValidated;
 import com.fit2cloud.common.validator.handler.ExistHandler;
 import com.fit2cloud.controller.response.cloud_account.CloudAccountJobDetailsResponse;
 import com.fit2cloud.dao.mapper.CloudAccountMapper;
+import com.fit2cloud.request.cloud_account.CloudAccountModuleJob;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
@@ -31,8 +32,8 @@ public class UpdateJobsRequest {
     /**
      * 云账号同步定时任务
      */
-    @Size(min = 1,message = "{i18n.cloud_acoount.update.job.size.ge.one}")
-    private List<CloudAccountJobDetailsResponse.ModuleJob> cloudAccountSyncJobs;
+    @Size(min = 1, message = "{i18n.cloud_acoount.update.job.size.ge.one}")
+    private List<CloudAccountModuleJob> cloudAccountModuleJobs;
     /**
      * 选中的区域
      */

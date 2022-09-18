@@ -26,7 +26,7 @@ import java.util.List;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class TencentCredential implements Credential<TencentCredential> {
+public class TencentCredential implements Credential {
     /**
      * 密钥id
      */

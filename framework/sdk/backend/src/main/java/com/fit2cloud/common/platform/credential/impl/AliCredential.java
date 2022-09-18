@@ -12,7 +12,11 @@ import com.fit2cloud.common.platform.credential.Credential;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.springframework.context.i18n.LocaleContext;
+import org.springframework.context.i18n.LocaleContextHolder;
+
 import java.util.List;
+import java.util.Locale;
 
 /**
  * @Author:张少虎
@@ -23,7 +27,7 @@ import java.util.List;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class AliCredential implements Credential<AliCredential> {
+public class AliCredential implements Credential {
     /**
      * 访问令牌
      */

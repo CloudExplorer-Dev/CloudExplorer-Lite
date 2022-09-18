@@ -3,7 +3,6 @@ package com.fit2cloud;
 import com.fit2cloud.common.platform.credential.Credential;
 import com.fit2cloud.common.scheduler.impl.entity.QuzrtzJobDetail;
 import com.fit2cloud.common.scheduler.SchedulerService;
-import com.fit2cloud.quartz.TestJob;
 import org.junit.jupiter.api.Test;
 import org.quartz.*;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -42,8 +41,7 @@ public class SchedulerTest {
         regions.add(new Credential.Region("beijin", "北京"));
         HashMap<String, Object> params = new HashMap<>();
         params.put("region", regions);
-//        schedulerService.addJob(TestJob.class, jobName, groupName, "主要用于测试", "0/1 * * * * ? ", params);
-        schedulerService.addJob(TestJob.class, jobName, groupName, "主要用于测试", params, null, null, 1, DateBuilder.IntervalUnit.SECOND, -1, null);
+//        schedulerService.addJob(TestJob.class, jobName, groupName, "主要用于测试", "0/1 * * * * ? ", params);//  schedulerService.addJob(TestJob.class, jobName, groupName, "主要用于测试", params, null, null, 1, DateBuilder.IntervalUnit.SECOND, -1, null);
     }
 
     @Test

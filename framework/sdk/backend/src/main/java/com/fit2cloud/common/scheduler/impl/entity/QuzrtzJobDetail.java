@@ -1,5 +1,6 @@
 package com.fit2cloud.common.scheduler.impl.entity;
 
+import io.swagger.annotations.ApiModelProperty;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -16,25 +17,38 @@ import java.util.Map;
  * @注释:
  */
 @Data
-@AllArgsConstructor
 @NoArgsConstructor
+@AllArgsConstructor
 public class QuzrtzJobDetail {
+
     /**
-     * 定时任务时间
+     * 定时任务名称
      */
     private String name;
     /**
-     * 定时任务分组
+     * 定时任务组
      */
     private String group;
+    /**
+     * 定时任务描述
+     */
+    private String description;
+
+    /**
+     * 定时任务间隔时间单位
+     */
+    private DateBuilder.IntervalUnit unit;
+
+    /**
+     * 定时任务间隔时间
+     */
+    private Long repeatInterval;
+
     /**
      * 定时任务执行参数
      */
     private Map<String, Object> params;
-    /**
-     * 描述
-     */
-    private String description;
+
     /**
      * 下一次执行时间
      */
@@ -42,8 +56,7 @@ public class QuzrtzJobDetail {
     /**
      * 上一次触发时间
      */
-    private Date PreviousFireTime;
-
+    private Date previousFireTime;
     /**
      * 任务状态
      * NONE      无状态
@@ -67,15 +80,5 @@ public class QuzrtzJobDetail {
      * cron 表达式
      */
     private String cronE;
-
-    /**
-     * 间隔时间单位
-     */
-    private DateBuilder.IntervalUnit unit;
-
-    /**
-     * 重复间隔
-     */
-    private Long repeatInterval;
 
 }

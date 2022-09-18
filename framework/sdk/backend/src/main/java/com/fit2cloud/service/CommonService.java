@@ -1,11 +1,11 @@
 package com.fit2cloud.service;
 
 import com.fit2cloud.autoconfigure.ServerInfo;
-import com.fit2cloud.autoconfigure.SettingJobConfig;
-import com.fit2cloud.common.utils.JsonUtil;
+import com.fit2cloud.autoconfigure.JobSettingConfig;
 import com.fit2cloud.dto.module.Module;
-import com.fit2cloud.dto.module.ModuleJobInfo;
+import com.fit2cloud.dto.job.JobModuleInfo;
 import org.apache.commons.lang3.StringUtils;
+import org.redisson.api.RedissonClient;
 import org.springframework.cloud.client.ServiceInstance;
 import org.springframework.cloud.client.discovery.DiscoveryClient;
 import org.springframework.stereotype.Service;
@@ -19,6 +19,8 @@ public class CommonService {
 
     @Resource
     private DiscoveryClient discoveryClient;
+    @Resource
+    private RedissonClient redissonClient;
 
     public List<Module> getModules() {
         List<Module> modules = new ArrayList<>();
@@ -53,7 +55,7 @@ public class CommonService {
         return modules.stream().sorted(Comparator.comparing(Module::getOrder)).collect(Collectors.toList());
     }
 
-    public List<ModuleJobInfo> getModuleJobs() {
+    public List<JobModuleInfo> getModuleJobs() {
         Set<String> ids = new HashSet<>(discoveryClient.getServices());
         ids.add(ServerInfo.module);
         return ids.stream().map(this::getModuleJobByModuleId).filter(Objects::nonNull).toList();
@@ -64,17 +66,14 @@ public class CommonService {
      * @param moduleId 模块id
      * @return 模块定时任务信息
      */
-    public ModuleJobInfo getModuleJobByModuleId(String moduleId) {
+    public JobModuleInfo getModuleJobByModuleId(String moduleId) {
         if (StringUtils.equalsIgnoreCase("gateway", moduleId)) {
             return null;
         }
         if (StringUtils.equals(moduleId, ServerInfo.module)) {
-            return SettingJobConfig.getModuleJobInfo();
+            return JobSettingConfig.getModuleJobInfo();
         } else {
-            ServiceInstance instance = discoveryClient.getInstances(moduleId).get(0);
-            Map<String, String> metadata = instance.getMetadata();
-            String jsonString = JsonUtil.toJSONString(metadata);
-            return JsonUtil.parseObject(jsonString, ModuleJobInfo.class);
+            return null;
         }
     }
 }

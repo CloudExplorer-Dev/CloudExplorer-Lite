@@ -22,7 +22,7 @@ public class MyBatisPlusGenerator {
     /**
      * 传入需要生成代码的表名
      */
-    private static final List<String> TABLES = Arrays.asList("user", "role", "user_role", "workspace", "organization");
+    private static final List<String> TABLES = Arrays.asList("cloud_account");
 
     private static final Map<String, Object> CUSTOM_MAP = new HashMap<>();
 

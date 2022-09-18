@@ -121,6 +121,14 @@ public interface SchedulerService {
     List<QuzrtzJobDetail> list();
 
     /**
+     * 根据任务组 获取定时任务
+     *
+     * @param groupName 任务组名称
+     * @return 任务
+     */
+    List<QuzrtzJobDetail> list(String groupName);
+
+    /**
      * 暂停任务
      *
      * @param jobName   任务名称
