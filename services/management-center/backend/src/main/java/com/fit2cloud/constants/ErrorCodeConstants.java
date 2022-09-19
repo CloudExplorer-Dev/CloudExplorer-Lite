@@ -1,9 +1,6 @@
 package com.fit2cloud.constants;
 
 import com.fit2cloud.common.utils.LocaleUtil;
-import org.springframework.lang.Nullable;
-
-import java.util.List;
 
 /**
  * @Author:张少虎
@@ -22,6 +19,8 @@ public enum ErrorCodeConstants {
     USER_KEEP_ONE_ADMIN(100100104, "i18n.user.at.least.has.admin"),
     SYSTEM_NOT_HAVE_ADMIN(100100105, "i18n.system.not.has.admin"),
     USER_ID_CANNOT_BE_SYSTEM(100100109, "i18n.user.id.cannot.be.system"),
+
+    USER_EMAIL_WARN_DUPLICATED(100100110, "i18n.user.email.warn.duplicated"),
 
     ORGANIZATION_CANNOT_DELETE(10010, "i18n.organization.cannot.delete.have.parent"),
     ORGANIZATION_ID_AND_NAME_REQUIRED(100011, "i18n.organization.id.or.name.required"),

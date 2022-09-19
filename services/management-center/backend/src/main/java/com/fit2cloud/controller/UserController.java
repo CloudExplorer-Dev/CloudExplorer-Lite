@@ -44,7 +44,7 @@ public class UserController {
 
     @ApiOperation(value = "添加用户")
     @PostMapping("/add")
-    public ResultHolder<Boolean> createUser(@RequestBody @Validated CreateUserRequest request) {
+    public ResultHolder<Boolean> createUser(@RequestBody @Validated(ValidationGroup.SAVE.class) CreateUserRequest request) {
         return ResultHolder.success(userService.createUser(request));
     }
 
@@ -72,9 +72,9 @@ public class UserController {
     @ApiOperation(value = "根据用户ID查询用户角色信息")
     @GetMapping(value = "/role/info/{id}")
     public ResultHolder<UserOperateDto> roleInfo(@ApiParam("主键 ID") @NotNull(message = "{i18n.user.id.cannot.be.null}")
-                                                     @NotNull(message = "{i18n.user.id.cannot.be.null}")
-                                                     @CustomValidated(mapper = BaseUserMapper.class, handler = ExistHandler.class, message = "{i18n.primary.key.not.exist}", exist = false)
-                                                     @PathVariable("id") String id) {
+                                                 @NotNull(message = "{i18n.user.id.cannot.be.null}")
+                                                 @CustomValidated(mapper = BaseUserMapper.class, handler = ExistHandler.class, message = "{i18n.primary.key.not.exist}", exist = false)
+                                                 @PathVariable("id") String id) {
         return ResultHolder.success(userService.userRoleInfo(id));
     }
 

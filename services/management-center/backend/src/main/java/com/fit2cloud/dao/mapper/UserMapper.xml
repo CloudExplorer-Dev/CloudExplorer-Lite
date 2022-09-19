@@ -23,38 +23,42 @@
     </resultMap>
 
     <select id="pageUser" resultMap="BaseResultMap">
-        SELECT
-            user.*,
-            sum( case role.parent_role_id when 'ADMIN' then 100000 when 'ORGADMIN' then 500 when 'USER' then 1 else 0 end ) as roleSortNum,
-            role.parent_role_id AS parentRoleId
-        FROM
-            user LEFT JOIN user_role ON user.id = user_role.user_id
-            LEFT JOIN role ON role.id = user_role.role_id
-        ${ew.customSqlSegment}
+        SELECT user.*,
+               sum(case role.parent_role_id
+                       when 'ADMIN' then 100000
+                       when 'ORGADMIN' then 500
+                       when 'USER' then 1
+                       else 0 end) as roleSortNum,
+               role.parent_role_id AS parentRoleId
+        FROM user
+                 LEFT JOIN user_role ON user.id = user_role.user_id
+                 LEFT JOIN role ON role.id = user_role.role_id
+            ${ew.customSqlSegment}
         GROUP BY
             user.id
         ORDER BY
-            roleSortNum desc,user.create_time desc,user._name
+            roleSortNum
+        desc, user.create_time desc, user._name
     </select>
 
     <select id="countActiveUsers" resultType="java.lang.Long">
         select count(user.id)
         from user
-        join user_role
+                 join user_role
         where user.id = user_role.user_id
-        and user.enabled = true
-        and user_role.role_id = #{roleId}
+          and user.enabled = true
+          and user_role.role_id = #{roleId}
     </select>
 
     <select id="roleInfo" resultMap="RoleInfoMap">
         select role.id as roleId,
-            IF(role._type = 'System', IF(role.id = 'ORGADMIN', user_role._source, null),
-            IF(role.parent_role_id = 'ORGADMIN', user_role._source, null)) as organizationId,
-            IF(role._type = 'System', IF(role.id = 'USER', user_role._source, null),
-            IF(role.parent_role_id = 'USER', user_role._source, null)) as workspaceId
+        IF(role._type = 'System', IF(role.id = 'ORGADMIN', user_role._source, null),
+        IF(role.parent_role_id = 'ORGADMIN', user_role._source, null)) as organizationId,
+        IF(role._type = 'System', IF(role.id = 'USER', user_role._source, null),
+        IF(role.parent_role_id = 'USER', user_role._source, null)) as workspaceId
         from user_role join role
         where
-            user_role.role_id = role.id
+        user_role.role_id = role.id
         and user_role.user_id = #{userId}
         <if test="resourceIds != null">
             AND user_role.source_id in
