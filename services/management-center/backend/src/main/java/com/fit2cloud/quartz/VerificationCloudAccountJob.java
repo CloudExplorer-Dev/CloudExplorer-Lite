@@ -1,6 +1,7 @@
 package com.fit2cloud.quartz;
 
 import com.fit2cloud.common.constants.PlatformConstants;
+import com.fit2cloud.common.scheduler.handler.AsyncJob;
 import com.fit2cloud.dao.entity.CloudAccount;
 import com.fit2cloud.service.ICloudAccountService;
 import jdk.jfr.Name;
@@ -12,6 +13,8 @@ import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ThreadPoolExecutor;
 
 /**
  * @Author:张少虎
@@ -21,13 +24,13 @@ import java.util.List;
  */
 @Component
 @Name("校验云账号定时任务")
-public class VerificationCloudAccount implements Job {
+public class VerificationCloudAccountJob extends AsyncJob implements Job {
     @Resource
     private ICloudAccountService cloudAccountService;
 
-    @SneakyThrows
     @Override
-    public void execute(JobExecutionContext context) throws JobExecutionException {
+    @SneakyThrows
+    protected void run(JobExecutionContext context) {
         List<CloudAccount> list = cloudAccountService.list();
         for (CloudAccount cloudAccount : list) {
             PlatformConstants platformConstants = PlatformConstants.valueOf(cloudAccount.getPlatform());

@@ -2,7 +2,7 @@ package com.fit2cloud.constants;
 
 import com.fit2cloud.autoconfigure.JobSettingConfig;
 import com.fit2cloud.dto.job.JobInitSettingDto;
-import com.fit2cloud.quartz.CloudAccountSyncJobs;
+import com.fit2cloud.quartz.CloudAccountSyncJob;
 import org.quartz.DateBuilder;
 
 import java.util.List;
@@ -39,23 +39,29 @@ public class JobConstants implements JobSettingConfig.JobConfig {
     @Override
     public List<JobInitSettingDto> listJobInitSetting() {
         // 使用全参构造器
-        JobInitSettingDto syncVirtual = new JobInitSettingDto(CloudAccountSyncJobs.SyncVirtualMachineJob.class, SYNC_VIRTUAL_MACHINE, com.fit2cloud.common.constants.JobConstants.Group.CLOUD_ACCOUNT_RESOURCE_SYNC_GROUP.name(), null, null, -1, null, "同步网络", 60, DateBuilder.IntervalUnit.MINUTE, null);
+        JobInitSettingDto syncVirtual = new JobInitSettingDto(CloudAccountSyncJob.SyncVirtualMachineJob.class, SYNC_VIRTUAL_MACHINE, com.fit2cloud.common.constants.JobConstants.Group.CLOUD_ACCOUNT_RESOURCE_SYNC_GROUP.name(), null, null, -1, null, "同步网络", 60, DateBuilder.IntervalUnit.MINUTE, null);
         // 使用build函数
         JobInitSettingDto syncDisk = JobInitSettingDto.builder()
-                .jobHandler(CloudAccountSyncJobs.SyncDiskJob.class)
+                .jobHandler(CloudAccountSyncJob.SyncDiskJob.class)
                 .jobName(SYNC_DISK)
                 .jobGroup(com.fit2cloud.common.constants.JobConstants.Group.CLOUD_ACCOUNT_RESOURCE_SYNC_GROUP.name())
                 .repeatCount(-1)
+                .timeInterval(60)
+                .unit(DateBuilder.IntervalUnit.MINUTE)
                 .description("同步磁盘").build();
         JobInitSettingDto syncNetwork = JobInitSettingDto.builder()
-                .jobHandler(CloudAccountSyncJobs.SyncNetworkJob.class)
+                .jobHandler(CloudAccountSyncJob.SyncNetworkJob.class)
                 .jobName(SYNC_NETWORK)
                 .repeatCount(-1)
+                .timeInterval(60)
+                .unit(DateBuilder.IntervalUnit.MINUTE)
                 .jobGroup(com.fit2cloud.common.constants.JobConstants.Group.CLOUD_ACCOUNT_RESOURCE_SYNC_GROUP.name())
                 .description("同步网络").build();
         JobInitSettingDto syncImage = JobInitSettingDto.builder()
-                .jobHandler(CloudAccountSyncJobs.SyncImageJob.class)
+                .jobHandler(CloudAccountSyncJob.SyncImageJob.class)
                 .repeatCount(-1)
+                .timeInterval(60)
+                .unit(DateBuilder.IntervalUnit.MINUTE)
                 .jobName(SYNC_IMAGE).jobGroup(com.fit2cloud.common.constants.JobConstants.Group.CLOUD_ACCOUNT_RESOURCE_SYNC_GROUP.name())
                 .description("同步镜像").build();
         return List.of(syncDisk, syncNetwork, syncVirtual, syncImage);

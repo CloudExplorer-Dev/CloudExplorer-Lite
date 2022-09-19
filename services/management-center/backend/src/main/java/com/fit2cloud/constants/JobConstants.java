@@ -2,7 +2,7 @@ package com.fit2cloud.constants;
 
 import com.fit2cloud.autoconfigure.JobSettingConfig;
 import com.fit2cloud.dto.job.JobInitSettingDto;
-import com.fit2cloud.quartz.VerificationCloudAccount;
+import com.fit2cloud.quartz.VerificationCloudAccountJob;
 import org.quartz.DateBuilder;
 
 import java.util.List;
@@ -19,7 +19,7 @@ public class JobConstants implements JobSettingConfig.JobConfig {
 
     @Override
     public List<JobInitSettingDto> listJobInitSetting() {
-        JobInitSettingDto verificationCloudAccountJob = JobInitSettingDto.builder().jobHandler(VerificationCloudAccount.class)
+        JobInitSettingDto verificationCloudAccountJob = JobInitSettingDto.builder().jobHandler(VerificationCloudAccountJob.class)
                 .jobName(VERIFICATION_CLOUDACCOUNT)
                 .jobGroup(com.fit2cloud.common.constants.JobConstants.Group.SYSTEM_GROUP.name())
                 .description("校验云账号")
