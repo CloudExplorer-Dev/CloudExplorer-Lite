@@ -39,7 +39,7 @@ public class JobConstants implements JobSettingConfig.JobConfig {
     @Override
     public List<JobInitSettingDto> listJobInitSetting() {
         // 使用全参构造器
-        JobInitSettingDto syncVirtual = new JobInitSettingDto(CloudAccountSyncJob.SyncVirtualMachineJob.class, SYNC_VIRTUAL_MACHINE, com.fit2cloud.common.constants.JobConstants.Group.CLOUD_ACCOUNT_RESOURCE_SYNC_GROUP.name(), null, null, -1, null, "同步网络", 60, DateBuilder.IntervalUnit.MINUTE, null);
+        JobInitSettingDto syncVirtual = new JobInitSettingDto(CloudAccountSyncJob.SyncVirtualMachineJob.class, SYNC_VIRTUAL_MACHINE, com.fit2cloud.common.constants.JobConstants.Group.CLOUD_ACCOUNT_RESOURCE_SYNC_GROUP.name(), null, null, -1, null, "同步虚拟机", 60, DateBuilder.IntervalUnit.MINUTE, null);
         // 使用build函数
         JobInitSettingDto syncDisk = JobInitSettingDto.builder()
                 .jobHandler(CloudAccountSyncJob.SyncDiskJob.class)

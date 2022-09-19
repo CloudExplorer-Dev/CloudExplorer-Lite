@@ -40,6 +40,7 @@ import org.springframework.core.ResolvableType;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.concurrent.DelegatingSecurityContextExecutor;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
@@ -48,6 +49,8 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Type;
 import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ThreadPoolExecutor;
 import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
 
@@ -61,6 +64,8 @@ import java.util.function.BiFunction;
  */
 @Service
 public class CloudAccountServiceImpl extends ServiceImpl<CloudAccountMapper, CloudAccount> implements ICloudAccountService {
+    @Resource(name = "securityContextWorkThreadPool")
+    private DelegatingSecurityContextExecutor securityContextWorkThreadPool;
     @Resource
     private RestTemplate restTemplate;
     SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
@@ -152,9 +157,7 @@ public class CloudAccountServiceImpl extends ServiceImpl<CloudAccountMapper, Clo
     private void initCloudJob(String accountId) {
         HashSet<String> ids = new HashSet<>(discoveryClient.getServices());
         ids.add(ServerInfo.getModule());
-        for (String id : ids) {
-            initCLoudModuleJob(accountId, id);
-        }
+        ids.stream().map(server -> CompletableFuture.runAsync(() -> this.initCLoudModuleJob(accountId, server), securityContextWorkThreadPool)).map(CompletableFuture::join).toList();
     }
 
     @Override
@@ -173,7 +176,7 @@ public class CloudAccountServiceImpl extends ServiceImpl<CloudAccountMapper, Clo
         CloudAccountJobDetailsResponse cloudAccountJobDetailsResponse = new CloudAccountJobDetailsResponse();
         HashSet<String> ids = new HashSet<>(discoveryClient.getServices());
         ids.add(ServerInfo.getModule());
-        List<CloudAccountModuleJob> cloudAccountModuleJobs = ids.stream().map(moduleName -> this.getCloudModuleJob(accountId, moduleName)).filter(Objects::nonNull).toList();
+        List<CloudAccountModuleJob> cloudAccountModuleJobs = ids.stream().map(moduleName -> CompletableFuture.supplyAsync(() -> this.getCloudModuleJob(accountId, moduleName), securityContextWorkThreadPool)).map(CompletableFuture::join).filter(Objects::nonNull).toList();
         cloudAccountJobDetailsResponse.setCloudAccountModuleJobs(cloudAccountModuleJobs);
         return cloudAccountJobDetailsResponse;
     }

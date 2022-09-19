@@ -12,6 +12,7 @@ import org.springframework.security.config.annotation.method.configuration.Globa
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.SecurityFilterChain;
 
 import javax.annotation.Resource;
@@ -31,7 +32,8 @@ public class SecurityConfig extends GlobalMethodSecurityConfiguration {
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-
+        // 设置上下文存储为InheritableThreadLocal 这样子线程也可以拿到上下文数据
+        SecurityContextHolder.setStrategyName(SecurityContextHolder.MODE_INHERITABLETHREADLOCAL);
         http
                 //禁用csrf
                 .csrf().disable()

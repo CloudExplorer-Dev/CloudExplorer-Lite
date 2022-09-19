@@ -75,7 +75,7 @@ public class BaseCloudAccountServiceImpl extends ServiceImpl<BaseCloudAccountMap
         JobModuleInfo moduleJobInfo = JobSettingConfig.getModuleJobInfo();
         CloudAccountModuleJob moduleJob = new CloudAccountModuleJob();
         BeanUtils.copyProperties(moduleJobInfo, moduleJob);
-        // 定时任务数据
+        //todo 定时任务数据  获取定时任务比较耗费时间,后期优化
         List<QuzrtzJobDetail> quzrtzJobDetails = schedulerService.list(JobConstants.Group.CLOUD_ACCOUNT_RESOURCE_SYNC_GROUP.name());
         List<JobInitSettingDto> jobDetails = moduleJobInfo.getJobDetails().stream().filter(job -> job.getJobGroup().equals(JobConstants.Group.CLOUD_ACCOUNT_RESOURCE_SYNC_GROUP.name())).toList();
         if (CollectionUtils.isEmpty(jobDetails)) {
@@ -104,7 +104,7 @@ public class BaseCloudAccountServiceImpl extends ServiceImpl<BaseCloudAccountMap
         for (CloudAccountJobItem jobItem : moduleJob.getJobDetailsList()) {
             Map<String, Object> params = JobConstants.CloudAccount.getCloudAccountJobParams(accountId, jobItem.getRegions());
             if (schedulerService.inclusionJobDetails(jobItem.getJobName(), jobItem.getJobGroup())) {
-                schedulerService.updateJob(jobItem.getJobName(), jobItem.getJobGroup(), jobItem.getDescription(), params, null, null, jobItem.getTimeInterval().intValue(), jobItem.getUnit(), -1, jobItem.isActive() ? Trigger.TriggerState.NORMAL : Trigger.TriggerState.PAUSED,  null);
+                schedulerService.updateJob(jobItem.getJobName(), jobItem.getJobGroup(), jobItem.getDescription(), params, null, null, jobItem.getTimeInterval().intValue(), jobItem.getUnit(), -1, jobItem.isActive() ? Trigger.TriggerState.NORMAL : Trigger.TriggerState.PAUSED, null);
             } else {
                 throw new Fit2cloudException(1, "");
             }
