@@ -25,8 +25,6 @@ import java.util.Locale;
  * @注释:
  */
 @Data
-@AllArgsConstructor
-@NoArgsConstructor
 public class AliCredential implements Credential {
     /**
      * 访问令牌
