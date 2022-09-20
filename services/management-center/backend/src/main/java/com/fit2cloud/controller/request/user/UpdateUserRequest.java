@@ -21,17 +21,17 @@ import java.util.List;
 public class UpdateUserRequest {
 
     @ApiModelProperty(value = "主键ID", required = true)
-    @NotNull(message = "{i18n.user.id.cannot.be.null}")
+    @NotNull(groups = {ValidationGroup.UPDATE.class}, message = "{i18n.user.id.cannot.be.null}")
     @CustomValidated(groups = {ValidationGroup.UPDATE.class}, mapper = BaseUserMapper.class, handler = ExistHandler.class, message = "{i18n.primary.key.not.exist}", exist = false)
     private String id;
 
     @ApiModelProperty("姓名")
-    @Length(min = 1, message = "{i18n.user.displayname.cannot.null}")
+    @Length(groups = {ValidationGroup.UPDATE.class}, min = 1, message = "{i18n.user.displayname.cannot.null}")
     private String name;
 
     @ApiModelProperty("邮箱")
-    @Length(min = 1, message = "{i18n.user.email.cannot.null}")
-    @Email(message = "{i18n.user.email.format.error}")
+    @Length(groups = {ValidationGroup.UPDATE.class}, min = 1, message = "{i18n.user.email.cannot.null}")
+    @Email(groups = {ValidationGroup.UPDATE.class}, message = "{i18n.user.email.format.error}")
     private String email;
 
     @ApiModelProperty("手机号")
