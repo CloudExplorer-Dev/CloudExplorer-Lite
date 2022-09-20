@@ -15,4 +15,6 @@ public class ListInstanceTypesRequest extends DescribeInstanceTypesRequest {
      * 认证信息
      */
     private String credential;
+
+
 }
