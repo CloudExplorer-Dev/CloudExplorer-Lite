@@ -48,6 +48,7 @@
               <goal>yarn</goal>
             </goals>
             <configuration>
+              <yarnInheritsProxyConfigFromMaven>false</yarnInheritsProxyConfigFromMaven>
               <arguments>install</arguments>
             </configuration>
           </execution>
@@ -57,7 +58,8 @@
               <goal>yarn</goal>
             </goals>
             <configuration>
-              <arguments>build:manage</arguments>
+              <yarnInheritsProxyConfigFromMaven>false</yarnInheritsProxyConfigFromMaven>
+              <arguments>build:vm</arguments>
             </configuration>
           </execution>
         </executions>
@@ -69,6 +71,20 @@
           <filesets>
             <fileset>
               <directory>dist</directory>
+              <includes>
+                <include>**</include>
+              </includes>
+              <followSymlinks>false</followSymlinks>
+            </fileset>
+            <fileset>
+              <directory>node</directory>
+              <includes>
+                <include>**</include>
+              </includes>
+              <followSymlinks>false</followSymlinks>
+            </fileset>
+            <fileset>
+              <directory>node_modules</directory>
               <includes>
                 <include>**</include>
               </includes>

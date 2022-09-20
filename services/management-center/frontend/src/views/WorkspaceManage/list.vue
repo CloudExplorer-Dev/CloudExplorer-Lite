@@ -85,7 +85,7 @@ import {
   TableConfig,
   TableOperations,
   TableSearch,
-} from "ce-base/commons/components/ce-table/index";
+} from "@commons/components/ce-table/type";
 import { useI18n } from "vue-i18n";
 const { t } = useI18n();
 const useRoute = useRouter();
