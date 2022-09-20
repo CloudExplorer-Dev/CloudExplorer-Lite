@@ -21,12 +21,12 @@ import java.util.List;
 public class CreateUserRequest {
 
     @ApiModelProperty(value = "主键ID")
-    @CustomValidated(groups = {ValidationGroup.SAVE.class}, field = "_name", mapper = BaseUserMapper.class, handler = ExistHandler.class, message = "{i18n.user.id.warn.duplicated}", exist = true, ifNullPass = true)
+    @CustomValidated(groups = {ValidationGroup.SAVE.class}, field = "id", mapper = BaseUserMapper.class, handler = ExistHandler.class, message = "{i18n.user.id.warn.duplicated}", exist = true, ifNullPass = true)
     private String id;
 
     @ApiModelProperty(value = "用户ID", required = true)
     @NotNull(groups = ValidationGroup.SAVE.class, message = "{i18n.user.name.cannot.be.null}")
-    @CustomValidated(groups = {ValidationGroup.SAVE.class}, field = "_name", mapper = BaseUserMapper.class, handler = ExistHandler.class, message = "{i18n.user.name.warn.duplicated}", exist = true)
+    @CustomValidated(groups = {ValidationGroup.SAVE.class}, field = "username", mapper = BaseUserMapper.class, handler = ExistHandler.class, message = "{i18n.user.name.warn.duplicated}", exist = true)
     private String username;
 
     @ApiModelProperty(value = "姓名", required = true)
@@ -37,16 +37,16 @@ public class CreateUserRequest {
     private Boolean enabled;
 
     @ApiModelProperty(value = "邮箱", required = true)
-    @Email(message = "{i18n.user.email.format.error}")
+    @Email(groups = ValidationGroup.SAVE.class, message = "{i18n.user.email.format.error}")
     @NotNull(groups = ValidationGroup.SAVE.class, message = "{i18n.user.email.cannot.null}")
-    @CustomValidated(groups = {ValidationGroup.SAVE.class}, field = "_name", mapper = BaseUserMapper.class, handler = ExistHandler.class, message = "{i18n.user.email.warn.duplicated}", exist = true)
+    @CustomValidated(groups = {ValidationGroup.SAVE.class}, field = "email", mapper = BaseUserMapper.class, handler = ExistHandler.class, message = "{i18n.user.email.warn.duplicated}", exist = true)
     private String email;
 
     @ApiModelProperty(value = "手机号码")
     private String phone;
 
     @ApiModelProperty(value = "密码")
-    @NotEmpty(message = "{i18n.user.pwd.cannot.null}")
+    //@NotEmpty(message = "{i18n.user.pwd.cannot.null}")
     private String password;
 
     @ApiModelProperty(value = "用户来源", required = true)

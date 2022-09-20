@@ -1,8 +1,8 @@
-import aliyun from "ce-base/commons/assets/img/cloud-vendor-icon/aliyun.ico";
-import huawei from "ce-base/commons/assets/img/cloud-vendor-icon/fusion.ico";
-import aws from "ce-base/commons/assets/img/cloud-vendor-icon/aws.ico";
-import vmware from "ce-base/commons/assets/img/cloud-vendor-icon/vmware.ico";
-import qcloud from "ce-base/commons/assets/img/cloud-vendor-icon/qcloud.ico";
+import aliyun from "@commons/assets/img/cloud-vendor-icon/aliyun.ico";
+import huawei from "@commons/assets/img/cloud-vendor-icon/fusion.ico";
+import aws from "@commons/assets/img/cloud-vendor-icon/aws.ico";
+import vmware from "@commons/assets/img/cloud-vendor-icon/vmware.ico";
+import qcloud from "@commons/assets/img/cloud-vendor-icon/qcloud.ico";
 export const platformIcon: any = {
   fit2cloud_ali_platform: { icon: aliyun, name: "阿里云" },
   fit2cloud_huawei_platform: { icon: huawei, name: "华为云" },

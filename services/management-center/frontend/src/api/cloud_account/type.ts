@@ -133,7 +133,7 @@ interface ModuleJob {
   /**
    * 模块
    */
-  module;
+  module: any;
   /**
    * 模块名称
    */

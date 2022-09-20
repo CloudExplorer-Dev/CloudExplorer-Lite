@@ -77,10 +77,6 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
 
     @Override
     public IPage<UserDto> pageUser(PageUserRequest pageUserRequest) {
-        /*Page<User> page = new Page<>(pageUserRequest.getCurrentPage(), pageUserRequest.getPageSize());
-        page.setOrders(new ArrayList<>() {{
-            add(pageUserRequest.getOrder());
-        }});*/
 
         Page<User> page = PageUtil.of(pageUserRequest, User.class, true);
 
@@ -117,9 +113,11 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
 
         User user = baseMapper.selectById(userId);
         if (user == null) {
+            //其实在controller那边就拦截了
             throw new Fit2cloudException(ErrorCodeConstants.USER_NOT_EXIST.getCode(), ErrorCodeConstants.USER_CAN_NOT_DELETE.getMessage());
         }
 
+        //不能删除自己
         if (StringUtils.equalsIgnoreCase(user.getUsername(), currentLoginUserId)) {
             throw new Fit2cloudException(ErrorCodeConstants.USER_CAN_NOT_DELETE.getCode(), ErrorCodeConstants.USER_CAN_NOT_DELETE.getMessage());
         }
@@ -155,6 +153,9 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
             List<RoleInfo> userRoleList = roleInfo(currentLoginUserId, false);
             if (CollectionUtils.isEmpty(userRoleList)) {
                 removeById(userId);
+                //删除redis中缓存
+            }else{
+                //更新redis中缓存
             }
         }
 
@@ -168,6 +169,8 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
             userRoleWrapper.lambda()
                     .eq(true, UserRole::getUserId, userId);
             userRoleService.remove(userRoleWrapper);
+
+            //删除redis中缓存
         }
         return true;
     }
@@ -179,12 +182,12 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
         if (userDto.getRoles().stream().map(Role::getId).anyMatch(s -> s.equals(RoleConstants.ROLE.ADMIN.name())) && !userDto.getEnabled()) {
             Long countAdmin = baseMapper.countActiveUsers(RoleConstants.ROLE.ADMIN.name());
             if (countAdmin > 1) {
-                baseMapper.updateById(userUpdate);
+                this.updateById(userUpdate);
             } else {
                 throw new Fit2cloudException(ErrorCodeConstants.USER_KEEP_ONE_ADMIN.getCode(), ErrorCodeConstants.USER_KEEP_ONE_ADMIN.getMessage());
             }
         } else {
-            baseMapper.updateById(userUpdate);
+            this.updateById(userUpdate);
         }
         return true;
     }
