@@ -10,7 +10,6 @@ import org.springframework.stereotype.Service;
 import javax.annotation.Resource;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 /**
  * Author: LiuDi
@@ -22,7 +21,7 @@ public class OrganizationCommonService {
     @Resource
     BaseMapper<Organization> organizationMapper;
 
-    public List<String> getOrgIdsByPid(String orgId) {
+    public List<String> getOrgIdsByParentId(String orgId) {
         List<String> results = new ArrayList<>();
         results.add(orgId);
 
@@ -39,7 +38,7 @@ public class OrganizationCommonService {
             String newPid = org.getId();
             getOrgIds(organizations, newPid, results);
             return newPid;
-        }).collect(Collectors.toList());
+        }).toList();
         results.addAll(collect);
     }
 }

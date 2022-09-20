@@ -21,11 +21,11 @@ public class CustomValidator implements ConstraintValidator<CustomValidated, Obj
     @Override
     public boolean isValid(Object value, ConstraintValidatorContext context) {
         ValidatorFunction<Object, ConstraintValidatorContext, CustomValidated, Boolean> validatorFunction = customValidated.handler().getDeclaredConstructor().newInstance();
-        return validatorFunction.apply(value,context,customValidated);
+        return validatorFunction.apply(value, context, customValidated);
     }
 
     @Override
     public void initialize(CustomValidated constraintAnnotation) {
-        this.customValidated=constraintAnnotation;
+        this.customValidated = constraintAnnotation;
     }
 }

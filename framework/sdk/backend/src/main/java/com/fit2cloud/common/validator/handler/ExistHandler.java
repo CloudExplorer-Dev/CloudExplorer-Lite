@@ -21,6 +21,9 @@ import javax.validation.ElementKind;
 public class ExistHandler implements ValidatorFunction<Object, ConstraintValidatorContext, CustomValidated, Boolean> {
     @Override
     public Boolean apply(Object value, ConstraintValidatorContext constraintValidatorContext, CustomValidated customValidated) {
+        if (value == null && customValidated.ifNullPass()) {
+            return true;
+        }
         BaseMapper bean = SpringUtil.getBean(customValidated.mapper());
         if (constraintValidatorContext instanceof ConstraintValidatorContextImpl) {
             ConstraintValidatorContextImpl context = (ConstraintValidatorContextImpl) constraintValidatorContext;

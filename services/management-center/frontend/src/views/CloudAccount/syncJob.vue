@@ -81,7 +81,7 @@ onMounted(() => {
  * 初始化定时任务数据
  */
 const init = (cloud_account_id: string) => {
-  cloudAccountApi.getResgions(cloud_account_id, regionloading).then((ok) => {
+  cloudAccountApi.getRegions(cloud_account_id, regionloading).then((ok) => {
     regions.value = ok.data;
   });
   cloudAccountApi.getJobs(cloud_account_id, jobLoading).then((ok) => {

@@ -1,7 +1,7 @@
-import { get, post, del, put } from "ce-base/commons/request";
+import { get, post, del, put } from "@commons/request";
 import type { Ref } from "vue";
-import type Result from "ce-base/commons/request/Result";
-import type { Page } from "ce-base/commons/request/Result";
+import type Result from "@commons/request/Result";
+import type { Page } from "@commons/request/Result";
 import type {
   ListOrganizationRequest,
   CloudAccount,
@@ -117,7 +117,7 @@ const batchDeleteCloudAccount: (
  * @param loading   login
  * @returns
  */
-const getResgions: (
+const getRegions: (
   accountId: string,
   loading?: Ref<boolean>
 ) => Promise<Result<Array<Region>>> = (accountId, loading) => {
@@ -154,7 +154,7 @@ export default {
   page,
   getPlatformAll,
   save,
-  getResgions,
+  getRegions,
   getJobs,
   updateJobs,
   getCloudAccount,

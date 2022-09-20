@@ -97,7 +97,7 @@
 </template>
 <script setup lang="ts">
 import { ref, onMounted, reactive, nextTick } from "vue";
-import type { OrganizationTree } from "@/api/organization";
+import type { OrganizationTree } from "@/api/organization/type";
 import { tree } from "@/api/organization";
 import { batch, update, getWorksapceById } from "@/api/workspace";
 import type { FormInstance, FormRules } from "element-plus";

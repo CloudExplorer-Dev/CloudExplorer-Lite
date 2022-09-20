@@ -2,7 +2,7 @@
 <template>
   <el-form :model="formData" label-width="120px">
     <div v-for="item in formData" :key="item.cloud_account_id">
-      <el-row style="flex-wrap: wrap; flex-direction: ro">
+      <el-row style="flex-wrap: wrap; flex-direction: row">
         <el-col span="8" class="cloud-project-box">
           <el-image :src="item.cloud_account_icon_url"></el-image>
         </el-col>
@@ -29,8 +29,12 @@
 </template>
 
 <script setup lang="ts">
-import { CloudAccount, CloudAccountProject } from "@/api/cloud-account";
+import { CloudAccount } from "@/api/cloud_account/type";
 import { ref, reactive, onMounted, defineEmits } from "vue";
+
+interface CloudAccountProject {
+  [key: string]: any;
+}
 
 //定义自定义事件
 const emits = defineEmits<{

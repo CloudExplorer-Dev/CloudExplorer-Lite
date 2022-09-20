@@ -33,7 +33,7 @@ public @interface CustomValidated {
     String message();
 
     /**
-     * 是否存在, true必须存在，false必须不存在
+     * 判断报错的条件，true：存在就报错，false：不存在就报错
      *
      * @return
      */
@@ -70,4 +70,13 @@ public @interface CustomValidated {
     String method() default "ordinal";
 
     String field() default "";
+
+    /**
+     * 值为空时，是否跳过判断
+     * true 跳过判断
+     * false 进入判断（默认）
+     *
+     * @return
+     */
+    boolean ifNullPass() default false;
 }

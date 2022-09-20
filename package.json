@@ -18,7 +18,9 @@
     "dev:manage": "yarn workspace management-center run dev",
     "lint:manage": "yarn workspace management-center run lint",
     "build:manage": "yarn workspace management-center run build-only",
-    "dev:server": "yarn workspace server-frontend run dev"
+    "dev:vm": "yarn workspace vm-service run dev",
+    "lint:vm": "yarn workspace vm-service run lint",
+    "build:vm": "yarn workspace vm-service run build-only"
   },
   "dependencies": {
     "@element-plus/icons-vue": "^2.0.6",

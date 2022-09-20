@@ -1,16 +1,23 @@
 package com.fit2cloud.common.constants;
 
 import com.fit2cloud.base.entity.User;
-public class SystemUserConstants extends User {
+import org.apache.commons.lang3.StringUtils;
 
-    private static User user = new User();
+public class SystemUserConstants {
 
-    static {
-        user.setUsername("system");
-        user.setName("SYSTEM");
-    }
+    public static final User user = new User()
+            .setUsername("system")
+            .setName("SYSTEM");
 
     public static String getUserName() {
         return user.getUsername();
+    }
+
+    public static boolean isSystemUser(String username) {
+        return StringUtils.equals(user.getUsername(), username);
+    }
+
+    public static boolean isSystemUser(User user) {
+        return isSystemUser(user.getUsername());
     }
 }
