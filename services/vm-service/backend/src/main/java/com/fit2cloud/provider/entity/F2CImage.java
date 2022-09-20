@@ -1,0 +1,45 @@
+package com.fit2cloud.provider.entity;
+
+import lombok.Data;
+
+/**
+ * @Author:张少虎
+ * @Date: 2022/9/20  10:39 AM
+ * @Version 1.0
+ * @注释:
+ */
+@Data
+public class F2CImage {
+    /**
+     * 镜像id
+     */
+    private String id;
+    /**
+     * 镜像名称
+     */
+    private String name;
+    /**
+     * 镜像描述
+     */
+    private String description;
+    /**
+     * 镜像系统
+     */
+    private String os;
+    /**
+     * 镜像区域
+     */
+    private String region;
+    /**
+     * 镜像区域名称
+     */
+    private String regionName;
+    /**
+     * 创建时间
+     */
+    private Long created;
+    /**
+     * 磁盘大小
+     */
+    private Long diskSize;
+}
