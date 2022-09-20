@@ -1,4 +1,4 @@
-package com.fit2cloud.provider.impl.constants;
+package com.fit2cloud.provider.constants;
 
 /**
  * @Author:张少虎

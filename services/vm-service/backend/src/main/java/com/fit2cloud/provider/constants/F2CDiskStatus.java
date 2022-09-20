@@ -1,4 +1,4 @@
-package com.fit2cloud.provider.impl.constants;//
+package com.fit2cloud.provider.constants;//
 // Source code recreated from a .class file by IntelliJ IDEA
 // (powered by FernFlower decompiler)
 //
