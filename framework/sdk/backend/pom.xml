@@ -44,6 +44,30 @@
             <version>3.1.588</version>
         </dependency>
         <!--     腾讯云 end      -->
+
+        <!-- vmware start-->
+        <dependency>
+            <groupId>com.toastcoders</groupId>
+            <artifactId>yavijava</artifactId>
+            <version>6.0.05</version>
+            <exclusions>
+                <exclusion>
+                    <artifactId>commons-codec</artifactId>
+                    <groupId>commons-codec</groupId>
+                </exclusion>
+                <exclusion>
+                    <artifactId>commons-logging</artifactId>
+                    <groupId>commons-logging</groupId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>com.vmware</groupId>
+            <artifactId>vsphere-samples-nodeps</artifactId>
+            <version>6.7.0</version>
+        </dependency>
+        <!-- vmware end-->
+
         <dependency>
             <groupId>org.springframework.cloud</groupId>
             <artifactId>spring-cloud-starter-netflix-eureka-client</artifactId>
@@ -172,11 +196,32 @@
         </plugins>
     </build>
     <repositories>
-
         <repository>
             <id>tencent</id>
             <name>tencent maven mirror</name>
             <url>https://mirrors.tencent.com/nexus/repository/maven-public/</url>
+        </repository>
+        <repository>
+            <id>fit2cloud-enterprise-release</id>
+            <name>Fit2Cloud Enterprise Release</name>
+            <url>https://repository.fit2cloud.com/content/repositories/fit2cloud-enterprise-release/</url>
+            <releases>
+                <enabled>true</enabled>
+            </releases>
+            <snapshots>
+                <enabled>true</enabled>
+            </snapshots>
+        </repository>
+        <repository>
+            <id>fit2cloud</id>
+            <name>fit2cloud</name>
+            <url>https://repository.fit2cloud.com/content/groups/public/</url>
+            <releases>
+                <enabled>true</enabled>
+            </releases>
+            <snapshots>
+                <enabled>true</enabled>
+            </snapshots>
         </repository>
     </repositories>
 </project>

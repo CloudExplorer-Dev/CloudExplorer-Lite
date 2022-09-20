@@ -74,7 +74,7 @@ public interface Credential {
     boolean verification();
 
     /**
-     * 获取区域
+     * 获取区域/数据中心
      *
      * @return 区域
      */
@@ -85,11 +85,11 @@ public interface Credential {
     @NoArgsConstructor
     class Region implements Serializable {
         /**
-         * 区域id
+         * 区域id/数据中心id
          */
         private String regionId;
         /**
-         * 区域名称
+         * 区域名称/数据中心名称
          */
         private String name;
     }

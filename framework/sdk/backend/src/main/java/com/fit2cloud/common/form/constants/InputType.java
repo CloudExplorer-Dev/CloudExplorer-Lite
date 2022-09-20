@@ -1,6 +1,5 @@
 package com.fit2cloud.common.form.constants;
 
-import com.fit2cloud.common.form.annotaion.From;
 import com.fit2cloud.common.form.vo.*;
 
 /**
@@ -37,7 +36,13 @@ public enum InputType {
     /**
      * 下拉多选
      */
-    multi_select(MultiSelectForm.class);
+    multi_select(MultiSelectForm.class),
+
+    /**
+     * 开关
+     */
+    switchBtn(SwitchForm.class);
+
     /**
      * 表单类型对应的实体类
      */

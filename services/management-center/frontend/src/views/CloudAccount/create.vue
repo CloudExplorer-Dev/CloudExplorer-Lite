@@ -128,7 +128,7 @@ const clear = () => {
     :model="from"
     :inline="true"
     status-icon
-    label-width="120px"
+    label-width="130px"
     label-suffix=":"
     label-position="left"
   >
@@ -198,7 +198,6 @@ const clear = () => {
                     item.label +
                     t('cloud_account.field_is_not_null', '字段不能为null'),
                   trigger: 'blur',
-                  type: 'string',
                   required: item.required,
                 },
               ]"
@@ -207,7 +206,11 @@ const clear = () => {
                 v-model="from.credential[item.field]"
                 :type="item.inputType"
                 :show-password="item.inputType === 'password' ? true : false"
+                v-if="item.inputType != 'switchBtn'"
               ></el-input>
+
+              <el-switch v-model="from.credential[item.field]" v-if="item.inputType === 'switchBtn'">
+              </el-switch>
             </el-form-item>
           </template>
         </layout-container>

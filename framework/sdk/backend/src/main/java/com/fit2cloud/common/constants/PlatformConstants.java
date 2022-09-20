@@ -4,6 +4,7 @@ import com.fit2cloud.common.platform.credential.impl.AliCredential;
 import com.fit2cloud.common.platform.credential.Credential;
 import com.fit2cloud.common.platform.credential.impl.HuaweiCredential;
 import com.fit2cloud.common.platform.credential.impl.TencentCredential;
+import com.fit2cloud.common.platform.credential.impl.VSphereCredential;
 
 /**
  * @Author:张少虎
@@ -23,7 +24,12 @@ public enum PlatformConstants {
     /**
      * 腾讯云平台
      */
-    fit2cloud_tencent_platform("腾讯云", TencentCredential.class);
+    fit2cloud_tencent_platform("腾讯云", TencentCredential.class),
+
+    /**
+     * VMWARE 平台
+     */
+    fit2cloud_vsphere_platform("VMWare vSphere", VSphereCredential.class);
 
     private String message;
 
