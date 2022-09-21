@@ -77,7 +77,7 @@ public class AliyunMappingUtil {
         if (StringUtils.isEmpty(instance.getInstanceName())) {
             f2CVirtualMachine.setName(instance.getInstanceId());
         }
-        f2CVirtualMachine.setOs(instance.getOSName());
+        f2CVirtualMachine.setOsInfo(instance.getOSName());
         f2CVirtualMachine.setZone(instance.getZoneId());
 
         instance.setCreationTime(null);
@@ -137,7 +137,7 @@ public class AliyunMappingUtil {
      * @return 云管镜像
      */
     public static F2CImage toF2CImage(DescribeImagesResponseBody.DescribeImagesResponseBodyImagesImage image, String region) {
-        return new F2CImage(image.getImageId(), image.getImageName(), image.getDescription(), image.getOSName(), region, getUTCTime(image.getCreationTime()));
+        return new F2CImage(image.getImageId(), image.getImageName(), image.getDescription(), image.getOSName(), region, image.getSize().longValue(),getUTCTime(image.getCreationTime()));
     }
 
     /**

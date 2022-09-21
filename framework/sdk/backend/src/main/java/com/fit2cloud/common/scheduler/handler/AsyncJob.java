@@ -1,8 +1,13 @@
 package com.fit2cloud.common.scheduler.handler;
 
+import com.fit2cloud.common.platform.credential.Credential;
 import org.quartz.Job;
+import org.quartz.JobDataMap;
 import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
+
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.*;
 
 /**

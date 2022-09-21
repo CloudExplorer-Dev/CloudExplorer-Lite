@@ -45,7 +45,7 @@ public class F2CImage {
      */
     private Long diskSize;
 
-    public F2CImage(String id, String name, String description, String os, String region, Long created) {
+    public F2CImage(String id, String name, String description, String os, String region, Long diskSize, Long created) {
         this.id = id;
         this.name = name;
         this.description = description;
@@ -53,6 +53,7 @@ public class F2CImage {
         this.region = region;
         this.regionName = region;
         this.created = created;
+        this.diskSize = diskSize;
     }
 
 }

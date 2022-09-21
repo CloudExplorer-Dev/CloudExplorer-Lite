@@ -26,6 +26,7 @@ public class ReTryException extends RuntimeException {
         //	Ecs	Throttling	Request was denied due to request throttling, please try again after 5 minutes.	您当前的请求被流控，请5分钟后重试。
         //	Ecs	RequestTimeout	The request encounters an upstream server timeout.	上游服务器超时，请求被拒绝。
         if (e instanceof TeaException teaException) {
+            System.out.println(e.getMessage());
             if (teaException.getCode().equals("Throttling") || teaException.getCode().equals("RequestTimeout")) {
                 throw new ReTryException(1000, "重试");
             }

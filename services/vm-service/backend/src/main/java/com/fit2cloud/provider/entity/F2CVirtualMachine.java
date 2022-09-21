@@ -24,7 +24,7 @@ public class F2CVirtualMachine {
     /**
      * 操作系统
      */
-    private String os;
+    private String osInfo;
     /**
      * 实例id
      */
@@ -108,7 +108,7 @@ public class F2CVirtualMachine {
     /**
      * 磁盘
      */
-    private long disk;
+    private int disk;
     /**
      * cpu使用
      */
@@ -120,7 +120,7 @@ public class F2CVirtualMachine {
     /**
      * 磁盘使用
      */
-    private long diskUsed;
+    private int diskUsed;
     /**
      * 实例uuid
      */

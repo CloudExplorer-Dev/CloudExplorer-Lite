@@ -1,6 +1,7 @@
 package com.fit2cloud.provider.util;
 
 import com.fit2cloud.provider.exception.ReTryException;
+import com.fit2cloud.provider.exception.SkipPageException;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -68,9 +69,12 @@ public class PageUtil {
                 } catch (InterruptedException ignored) {
                 }
                 page(request, exec, getList, hasNext, next, reTry - 1, collector);
+            } else if (e instanceof SkipPageException) {
+                return collector;
             } else {
                 throw e;
             }
+
         }
         if (response != null) {
             List<T> responseList = getList.apply(response);

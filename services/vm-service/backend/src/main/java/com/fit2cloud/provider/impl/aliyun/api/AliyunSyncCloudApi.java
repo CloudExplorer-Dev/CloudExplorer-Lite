@@ -9,6 +9,7 @@ import com.fit2cloud.provider.entity.F2CDisk;
 import com.fit2cloud.provider.entity.F2CImage;
 import com.fit2cloud.provider.entity.F2CVirtualMachine;
 import com.fit2cloud.provider.exception.ReTryException;
+import com.fit2cloud.provider.exception.SkipPageException;
 import com.fit2cloud.provider.impl.aliyun.entity.credential.AliyunVmCredential;
 import com.fit2cloud.provider.impl.aliyun.entity.request.ListDisksRequest;
 import com.fit2cloud.provider.impl.aliyun.entity.request.ListImageRequest;
@@ -121,6 +122,7 @@ public class AliyunSyncCloudApi {
         try {
             return client.describeDisksWithOptions(req, new RuntimeOptions());
         } catch (Exception e) {
+            SkipPageException.throwReTry(e);
             ReTryException.throwReTry(e);
             throw new Fit2cloudException(1002, "获取磁盘异常" + e.getMessage());
         }
@@ -137,6 +139,7 @@ public class AliyunSyncCloudApi {
         try {
             return client.describeImagesWithOptions(req, new RuntimeOptions());
         } catch (Exception e) {
+            SkipPageException.throwReTry(e);
             ReTryException.throwReTry(e);
             throw new Fit2cloudException(1002, "获取磁盘异常" + e.getMessage());
         }
@@ -155,6 +158,7 @@ public class AliyunSyncCloudApi {
             return client.describeInstancesWithOptions(request, runtime);
         } catch (Exception e) {
             ReTryException.throwReTry(e);
+            SkipPageException.throwReTry(e);
             throw new Fit2cloudException(10002, "获取阿里云虚拟机列表失败" + e.getMessage());
         }
     }
@@ -173,7 +177,7 @@ public class AliyunSyncCloudApi {
         listDescribeDisksRequest.setRegionId(f2CVirtualMachine.getRegion());
         List<F2CDisk> f2CDisks = listDisk(listDescribeDisksRequest);
         LongSummaryStatistics collect = f2CDisks.stream().collect(Collectors.summarizingLong(F2CDisk::getSize));
-        f2CVirtualMachine.setDisk(collect.getSum());
+        f2CVirtualMachine.setDisk((int) collect.getSum());
         return f2CVirtualMachine;
     }
 
