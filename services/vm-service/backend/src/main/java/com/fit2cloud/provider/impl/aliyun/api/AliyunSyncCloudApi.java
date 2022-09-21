@@ -38,16 +38,16 @@ public class AliyunSyncCloudApi {
      * @return 虚拟机对象
      */
     public static List<F2CVirtualMachine> listVirtualMachine(ListVirtualMachineRequest listVirtualMachineRequest) {
+        if (StringUtils.isEmpty(listVirtualMachineRequest.getRegionId())) {
+            throw new Fit2cloudException(10002, "区域为必填参数");
+        }
         if (StringUtils.isNotEmpty(listVirtualMachineRequest.getCredential())) {
             AliyunVmCredential credential = JsonUtil.parseObject(listVirtualMachineRequest.getCredential(), AliyunVmCredential.class);
             listVirtualMachineRequest.setPageNumber(PageUtil.DefaultCurrentPage);
             listVirtualMachineRequest.setPageSize(PageUtil.DefaultPageSize);
             Client client = credential.getClient();
             // 分页查询虚拟机列表
-            List<DescribeInstancesResponseBody.DescribeInstancesResponseBodyInstancesInstance> instance = PageUtil.page(listVirtualMachineRequest,
-                    req -> describeInstancesWithOptions(client, req), res -> res.getBody().getInstances().instance,
-                    (req, res) -> res.getBody().getPageSize() <= res.getBody().getInstances().instance.size(),
-                    req -> req.setPageNumber(req.getPageNumber() + 1));
+            List<DescribeInstancesResponseBody.DescribeInstancesResponseBodyInstancesInstance> instance = PageUtil.page(listVirtualMachineRequest, req -> describeInstancesWithOptions(client, req), res -> res.getBody().getInstances().instance, (req, res) -> res.getBody().getPageSize() <= res.getBody().getInstances().instance.size(), req -> req.setPageNumber(req.getPageNumber() + 1));
             return instance.stream().map(AliyunMappingUtil::toF2CVirtualMachine).map(f2CVirtualMachine -> appendDisk(listVirtualMachineRequest.getCredential(), f2CVirtualMachine)).map(f2CVirtualMachine -> appendInstanceType(listVirtualMachineRequest.getCredential(), f2CVirtualMachine)).toList();
         }
         return new ArrayList<>();
@@ -60,15 +60,35 @@ public class AliyunSyncCloudApi {
      * @return 磁盘数据
      */
     public static List<F2CDisk> listDisk(ListDisksRequest listDescribeDisksRequest) {
+        if (StringUtils.isEmpty(listDescribeDisksRequest.getRegionId())) {
+            throw new Fit2cloudException(10002, "区域为必填参数");
+        }
         if (StringUtils.isNotEmpty(listDescribeDisksRequest.getCredential())) {
             Client client = JsonUtil.parseObject(listDescribeDisksRequest.getCredential(), AliyunVmCredential.class).getClient();
             listDescribeDisksRequest.setPageSize(PageUtil.DefaultPageSize);
             listDescribeDisksRequest.setPageNumber(PageUtil.DefaultCurrentPage);
-            List<DescribeDisksResponseBody.DescribeDisksResponseBodyDisksDisk> disk = PageUtil.page(listDescribeDisksRequest, req -> describeDisksWithOptions(client, req),
-                    res -> res.getBody().getDisks().disk,
-                    (req, res) -> res.getBody().getPageSize() <= res.getBody().disks.disk.size(),
-                    req -> req.setPageNumber(req.getPageNumber() + 1));
+            List<DescribeDisksResponseBody.DescribeDisksResponseBodyDisksDisk> disk = PageUtil.page(listDescribeDisksRequest, req -> describeDisksWithOptions(client, req), res -> res.getBody().getDisks().disk, (req, res) -> res.getBody().getPageSize() <= res.getBody().disks.disk.size(), req -> req.setPageNumber(req.getPageNumber() + 1));
             return disk.stream().map(AliyunMappingUtil::toF2CDisk).toList();
+        }
+        throw new Fit2cloudException(10001, "认证信息不存在");
+    }
+
+    /**
+     * 获取镜像数据
+     *
+     * @param listImageRequest 请求对象
+     * @return 镜像数据
+     */
+    public static List<F2CImage> listImage(ListImageRequest listImageRequest) {
+        if (StringUtils.isEmpty(listImageRequest.getRegionId())) {
+            throw new Fit2cloudException(10002, "区域为必填参数");
+        }
+        if (StringUtils.isNotEmpty(listImageRequest.getCredential())) {
+            Client client = JsonUtil.parseObject(listImageRequest.getCredential(), AliyunVmCredential.class).getClient();
+            listImageRequest.setPageSize(PageUtil.DefaultPageSize);
+            listImageRequest.setPageNumber(PageUtil.DefaultCurrentPage);
+            List<DescribeImagesResponseBody.DescribeImagesResponseBodyImagesImage> images = PageUtil.page(listImageRequest, req -> describeImagesWithOptions(client, req), res -> res.getBody().images.image, (req, res) -> res.getBody().getPageSize() <= res.getBody().images.image.size(), req -> req.setPageNumber(req.getPageNumber() + 1));
+            return images.stream().map(image -> AliyunMappingUtil.toF2CImage(image, listImageRequest.regionId)).toList();
         }
         throw new Fit2cloudException(10001, "认证信息不存在");
     }
@@ -100,6 +120,22 @@ public class AliyunSyncCloudApi {
     public static DescribeDisksResponse describeDisksWithOptions(Client client, ListDisksRequest req) {
         try {
             return client.describeDisksWithOptions(req, new RuntimeOptions());
+        } catch (Exception e) {
+            ReTryException.throwReTry(e);
+            throw new Fit2cloudException(1002, "获取磁盘异常" + e.getMessage());
+        }
+    }
+
+    /**
+     * 获取镜像数据
+     *
+     * @param client 客户端
+     * @param req    请求参数
+     * @return 镜像数据返回值
+     */
+    public static DescribeImagesResponse describeImagesWithOptions(Client client, ListImageRequest req) {
+        try {
+            return client.describeImagesWithOptions(req, new RuntimeOptions());
         } catch (Exception e) {
             ReTryException.throwReTry(e);
             throw new Fit2cloudException(1002, "获取磁盘异常" + e.getMessage());

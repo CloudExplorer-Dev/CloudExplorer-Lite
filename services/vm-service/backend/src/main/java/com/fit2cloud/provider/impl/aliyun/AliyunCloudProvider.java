@@ -46,7 +46,7 @@ public class AliyunCloudProvider extends AbstractCloudProvider<AliyunVmCredentia
 
     @Override
     public List<F2CImage> listImage(String req) {
-        return new ArrayList<>();
+        return AliyunSyncCloudApi.listImage(JsonUtil.parseObject(req, ListImageRequest.class));
     }
 
     @Override

@@ -1,10 +1,12 @@
 package com.fit2cloud.provider.impl.aliyun.util;
 
 import com.aliyun.ecs20140526.models.DescribeDisksResponseBody;
+import com.aliyun.ecs20140526.models.DescribeImagesResponseBody;
 import com.aliyun.ecs20140526.models.DescribeInstancesResponseBody;
 import com.fit2cloud.provider.constants.DeleteWithInstance;
 import com.fit2cloud.provider.constants.F2CDiskStatus;
 import com.fit2cloud.provider.entity.F2CDisk;
+import com.fit2cloud.provider.entity.F2CImage;
 import com.fit2cloud.provider.entity.F2CVirtualMachine;
 import com.google.gson.Gson;
 import org.apache.commons.collections4.CollectionUtils;
@@ -126,6 +128,16 @@ public class AliyunMappingUtil {
             f2cDisk.setDeleteWithInstance(DeleteWithInstance.NO.name());
         }
         return f2cDisk;
+    }
+
+    /**
+     * 将阿里云镜像对象转化为云管镜像
+     *
+     * @param image 阿里云镜像信息
+     * @return 云管镜像
+     */
+    public static F2CImage toF2CImage(DescribeImagesResponseBody.DescribeImagesResponseBodyImagesImage image, String region) {
+        return new F2CImage(image.getImageId(), image.getImageName(), image.getDescription(), image.getOSName(), region, getUTCTime(image.getCreationTime()));
     }
 
     /**
