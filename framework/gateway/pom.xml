@@ -25,6 +25,32 @@
                     <groupId>org.springframework.boot</groupId>
                     <artifactId>spring-boot-starter-jetty</artifactId>
                 </exclusion>
+
+                <exclusion>
+                    <artifactId>vapi-authentication</artifactId>
+                    <groupId>com.vmware.vapi</groupId>
+                </exclusion>
+                <exclusion>
+                    <artifactId>vapi-runtime</artifactId>
+                    <groupId>com.vmware.vapi</groupId>
+                </exclusion>
+                <exclusion>
+                    <artifactId>vapi-samltoken</artifactId>
+                    <groupId>com.vmware.vapi</groupId>
+                </exclusion>
+                <exclusion>
+                    <artifactId>vim25</artifactId>
+                    <groupId>com.vmware.vim25</groupId>
+                </exclusion>
+                <exclusion>
+                    <artifactId>vsphereautomation-client-sdk</artifactId>
+                    <groupId>com.vmware</groupId>
+                </exclusion>
+                <exclusion>
+                    <artifactId>tencentcloud-sdk-java-cvm</artifactId>
+                    <groupId>com.tencentcloudapi</groupId>
+                </exclusion>
+
             </exclusions>
         </dependency>
 

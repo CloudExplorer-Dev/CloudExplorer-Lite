@@ -1,14 +1,14 @@
 FROM registry.fit2cloud.com/cloudexplorer4/alpine-openjdk17
 
-ARG IMAGE_TAG
+ARG CE_JAR_VERSION
 
 MAINTAINER FIT2CLOUD <support@fit2cloud.com>
 
 RUN mkdir -p /opt/apps
 
-ADD backend/target/management-center-$IMAGE_TAG.jar /opt/apps
+ADD backend/target/management-center-$CE_JAR_VERSION.jar /opt/apps
 
-ENV JAVA_APP_JAR=/opt/apps/management-center-$IMAGE_TAG.jar
+ENV JAVA_APP_JAR=/opt/apps/management-center-$CE_JAR_VERSION.jar
 
 ENV AB_OFF=true
 
