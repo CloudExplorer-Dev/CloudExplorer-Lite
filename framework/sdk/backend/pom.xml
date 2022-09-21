@@ -52,19 +52,41 @@
             <version>6.0.05</version>
             <exclusions>
                 <exclusion>
-                    <artifactId>commons-codec</artifactId>
                     <groupId>commons-codec</groupId>
+                    <artifactId>commons-codec</artifactId>
                 </exclusion>
                 <exclusion>
-                    <artifactId>commons-logging</artifactId>
                     <groupId>commons-logging</groupId>
+                    <artifactId>commons-logging</artifactId>
                 </exclusion>
             </exclusions>
         </dependency>
+
+        <dependency>
+            <groupId>com.vmware.vapi</groupId>
+            <artifactId>vapi-runtime</artifactId>
+            <version>${vapi.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.vmware.vapi</groupId>
+            <artifactId>vapi-authentication</artifactId>
+            <version>${vapi.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.vmware.vapi</groupId>
+            <artifactId>vapi-samltoken</artifactId>
+            <version>${vapi.version}</version>
+        </dependency>
         <dependency>
             <groupId>com.vmware</groupId>
-            <artifactId>vsphere-samples-nodeps</artifactId>
-            <version>6.7.0</version>
+            <artifactId>vsphereautomation-client-sdk</artifactId>
+            <version>${vsphereautomationsdk.version}</version>
+        </dependency>
+        <dependency>
+            <!-- 不一定有用 -->
+            <groupId>com.vmware.vim25</groupId>
+            <artifactId>vim25</artifactId>
+            <version>${vspherewssdk.version}</version>
         </dependency>
         <!-- vmware end-->
 
@@ -192,6 +214,83 @@
                 <configuration>
                     <release>${java.version}</release>
                 </configuration>
+            </plugin>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-install-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>install-vapi-runtime</id>
+                        <phase>initialize</phase>
+                        <goals>
+                            <goal>install-file</goal>
+                        </goals>
+                        <configuration>
+                            <packaging>jar</packaging>
+                            <groupId>com.vmware.vapi</groupId>
+                            <artifactId>vapi-runtime</artifactId>
+                            <version>${vapi.version}</version>
+                            <file>../../../lib/vapi-runtime-${vapi.version}.jar</file>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>install-vapi-authentication</id>
+                        <phase>initialize</phase>
+                        <goals>
+                            <goal>install-file</goal>
+                        </goals>
+                        <configuration>
+                            <packaging>jar</packaging>
+                            <groupId>com.vmware.vapi</groupId>
+                            <artifactId>vapi-authentication</artifactId>
+                            <version>${vapi.version}</version>
+                            <file>../../../lib/vapi-authentication-${vapi.version}.jar</file>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>install-vapi-samltoken</id>
+                        <phase>initialize</phase>
+                        <goals>
+                            <goal>install-file</goal>
+                        </goals>
+                        <configuration>
+                            <packaging>jar</packaging>
+                            <groupId>com.vmware.vapi</groupId>
+                            <artifactId>vapi-samltoken</artifactId>
+                            <version>${vapi.version}</version>
+                            <file>../../../lib/vapi-samltoken-${vapi.version}.jar</file>
+                        </configuration>
+                    </execution>
+                    <!--<execution>
+                        <id>install-vim25</id>
+                        <phase>initialize</phase>
+                        <goals>
+                            <goal>install-file</goal>
+                        </goals>
+                        <configuration>
+                            <packaging>jar</packaging>
+                            <groupId>com.vmware.vim25</groupId>
+                            <artifactId>vim25</artifactId>
+                            <version>${vspherewssdk.version}</version>
+                            <file>../../../lib/vim25.jar</file>
+                        </configuration>
+                    </execution>-->
+                    <execution>
+                        <id>install-vsphere-bindings</id>
+                        <phase>initialize</phase>
+                        <goals>
+                            <goal>install-file</goal>
+                        </goals>
+                        <configuration>
+                            <packaging>jar</packaging>
+                            <groupId>com.vmware</groupId>
+                            <artifactId>vsphereautomation-client-sdk</artifactId>
+                            <version>${vsphereautomationsdk.version}</version>
+                            <file>../../../lib/vsphereautomation-client-sdk-${vsphereautomationsdk.version}.jar</file>
+                        </configuration>
+                    </execution>
+                </executions>
             </plugin>
         </plugins>
     </build>

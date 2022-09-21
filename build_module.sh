@@ -1,6 +1,8 @@
 #bash
 #单个模块打包
 function buildModule() {
+
+  mvn initialize
   # 进入目录
   echo "开始构建模块[$build_module_name]:"
   cd $f2c_modules["$build_module_name"]
@@ -13,11 +15,22 @@ function buildModule() {
   fi
 
   #2. 打包镜像
-  local _imageName="registry.fit2cloud.com/cloudexplorer4/"${build_module_name}":${version}"
-  docker build --build-arg IMAGE_TAG=$version -t ${_imageName} .
+  local _imageName=${image_registry_base_path}${build_module_name}":${image_tag}"
+  docker build --build-arg CE_JAR_VERSION=$version -t ${_imageName} .
   if [ $? -ne 0 ]; then
     cd $project_base_path
     exit 0
+  fi
+
+  #3. 上传镜像
+  if [ $upload_image -ne 0 ]; then
+    echo "开始上传镜像: "${_imageName}
+    docker push ${_imageName}
+    echo "镜像上传成功"
+    if [ $? -ne 0 ]; then
+        cd $project_base_path
+        exit 0
+      fi
   fi
 
   # 回到当前目录
@@ -28,7 +41,27 @@ function buildModule() {
 #获取版本号
 version=`awk '/<revision>[^<]+<\/revision>/{gsub(/<revision>|<\/revision>/,"",$1);print $1;exit;}' pom.xml`
 
-build_module_name=$1
+
+declare image_tag=$version
+declare build_module_name
+declare image_registry_base_path="registry.fit2cloud.com/cloudexplorer4/"
+declare -i upload_image=0
+
+while getopts P:n:t:u option
+do
+  case "${option}"
+  in
+  P)
+   image_registry_base_path=${OPTARG};;
+  n)
+    build_module_name=${OPTARG};;
+  t)
+    image_tag=${OPTARG};;
+  u)
+    upload_image=1;;
+  esac
+done
+
 
 #当前路径
 declare project_base_path=$(pwd)

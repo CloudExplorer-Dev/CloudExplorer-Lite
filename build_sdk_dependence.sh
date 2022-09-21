@@ -1,5 +1,6 @@
 #bash
 #为了单独打包模块，需要先install sdk到maven本地仓库
+mvn initialize
 
 #当前路径
 declare project_base_path=$(pwd)
