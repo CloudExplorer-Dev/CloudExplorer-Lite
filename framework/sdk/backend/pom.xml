@@ -82,12 +82,11 @@
             <artifactId>vsphereautomation-client-sdk</artifactId>
             <version>${vsphereautomationsdk.version}</version>
         </dependency>
-        <dependency>
-            <!-- 不一定有用 -->
+        <!--<dependency>
             <groupId>com.vmware.vim25</groupId>
             <artifactId>vim25</artifactId>
             <version>${vspherewssdk.version}</version>
-        </dependency>
+        </dependency>-->
         <!-- vmware end-->
 
         <dependency>

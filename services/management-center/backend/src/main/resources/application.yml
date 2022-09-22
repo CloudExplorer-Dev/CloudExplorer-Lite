@@ -11,9 +11,6 @@ spring:
     basename: i18n.messages,i18n.commons
     encoding: UTF-8
   quartz:
-    jdbc:
-      initialize-schema: always
-      schema: classpath:/quartz/tables.sql
     properties:
       org:
         quartz:

@@ -43,7 +43,6 @@
         <!--vmware start-->
         <vsphereautomationsdk.version>3.9.0</vsphereautomationsdk.version>
         <vapi.version>2.34.0</vapi.version>
-        <vspherewssdk.version>6.7.3</vspherewssdk.version>
         <!--vmware end-->
 
     </properties>

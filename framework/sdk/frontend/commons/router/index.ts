@@ -10,7 +10,7 @@ import type { Module } from "@commons/api/module/type";
 import type { RouteModule } from "@commons/api/module/type";
 import type { RouteItem } from "@commons/router/type";
 import { RouteObj } from "@commons/router/type";
-import AppContent from "@commons/components/layout/app-content/index.vue";
+//import AppContent from "@commons/components/layout/app-content/index.vue";
 import { usePermissionStore } from "@commons/stores/modules/permission";
 
 /**
@@ -45,105 +45,124 @@ export const flatMenu = (
   return newMenus;
 };
 
-let route: RouteObj;
+let route: RouteObj | null = null;
 
-if (import.meta.env.VITE_APP_NAME === "base") {
-  /**
-   * base route
-   */
-  route = new RouteObj(
-    createWebHistory(),
-    {},
-    [
-      {
-        path: "/",
-        name: "home",
-        component: BaseLayout,
-      },
-      {
-        path: "/signin",
-        name: "signin",
-        component: Login,
-      },
-    ],
-    () => {
-      const moduleStore = useModuleStore(store);
-      const userStore = useUserStore(store);
-
-      console.log(userStore.isLogin);
-      console.log(moduleStore.runningModules);
-
-      const routers = moduleStore.runningModules.map(
-        (module: UnwrapRef<Module>) => {
-          const routeModule: RouteModule = {
-            path: "/" + module.id,
-            name: module.id,
-            componentPath: "/src/views/MicroAppRouteView/index.vue",
-            props: {
-              moduleName: module.id,
-              name: module.id,
-              url: (module.basePath ? module.basePath : "") + "/",
-              baseRoute: "/",
-            },
-          };
-          return routeModule;
-        }
-      );
-      console.log(routers);
-      const route: RouteItem = { home: routers };
-      return route;
-    },
-    undefined,
-    async () => {
-      // 处理新模块上来后,对模块的import路径进行重写,去掉项目名称
-      await window.rootMicroApp.updateModule();
-    }
-  );
-} else {
-  /**
-   * service route
-   *
-   */
-
-  const baseRoute = window.__MICRO_APP_BASE_APPLICATION__
-    ? [
+export async function initRouteObj(): Promise<RouteObj> {
+  if (import.meta.env.VITE_APP_NAME === "base") {
+    /**
+     * base route
+     */
+    route = new RouteObj(
+      createWebHistory(),
+      {},
+      [
         {
           path: "/",
           name: "home",
-          component: AppContent,
+          component: BaseLayout,
         },
         {
           path: "/signin",
           name: "signin",
           component: Login,
         },
-      ]
-    : undefined;
+      ],
+      () => {
+        const moduleStore = useModuleStore(store);
 
-  route = new RouteObj(
-    createWebHashHistory(),
-    {},
-    baseRoute ? baseRoute : undefined,
-    async () => {
-      const moduleStore = useModuleStore(store);
+        const routers = moduleStore.runningModules.map(
+          (module: UnwrapRef<Module>) => {
+            const routeModule: RouteModule = {
+              path: "/" + module.id,
+              name: module.id,
+              componentPath: "/src/views/MicroAppRouteView/index.vue",
+              props: {
+                moduleName: module.id,
+                name: module.id,
+                url:
+                  window.location.protocol +
+                  "//" +
+                  window.location.host +
+                  (module.basePath ? module.basePath : ""),
+                baseRoute: "/",
+              },
+            };
+            return routeModule;
+          }
+        );
+        console.log(routers);
+        const route: RouteItem = { home: routers };
+        return route;
+      },
+      undefined,
+      async () => {
+        // 处理新模块上来后,对模块的import路径进行重写,去掉项目名称
+        await window.rootMicroApp.updateModule();
+      }
+    );
+  } else {
+    /**
+     * service route
+     *
+     */
 
-      await moduleStore.refreshModules();
-      console.log(moduleStore.currentModuleMenu);
+    //需要按需加载，不然会找不到
+    const AppContent = () =>
+      import("@commons/components/layout/app-content/index.vue");
 
-      return moduleStore.currentModuleMenu;
-    },
-    async () => {
-      const userStore = useUserStore(store);
-      const permissionStore = usePermissionStore(store);
-      await permissionStore.refreshPermissions();
-      console.log(userStore.isLogin);
-      console.log(permissionStore.userPermissions);
-      return {
-        permissions: permissionStore.userPermissions,
-        role: userStore.currentRole,
-      };
-    }
-  );
+    route = new RouteObj(
+      createWebHashHistory(),
+      {},
+      window.__MICRO_APP_BASE_APPLICATION__
+        ? [
+            {
+              path: "/",
+              name: "home",
+              component: AppContent,
+            },
+            {
+              path: "/signin",
+              name: "signin",
+              component: Login,
+            },
+          ]
+        : undefined,
+      async () => {
+        const moduleStore = useModuleStore(store);
+
+        await moduleStore.refreshModules();
+        console.log(moduleStore.currentModuleMenu);
+
+        return moduleStore.currentModuleMenu;
+      },
+      async () => {
+        const userStore = useUserStore(store);
+        const permissionStore = usePermissionStore(store);
+        await permissionStore.refreshPermissions();
+        console.log(userStore.isLogin);
+        console.log(permissionStore.userPermissions);
+        return {
+          permissions: permissionStore.userPermissions,
+          role: userStore.currentRole,
+        };
+      }
+    );
+  }
+  return route;
 }
 
-export default route;
+export function clearRoute() {
+  route = null;
+}
+
+export function getRoute() {
+  return route;
+}
+
+const routeObj = {
+  initRouteObj,
+  clearRoute,
+  getRoute,
+};
+
+export default routeObj;

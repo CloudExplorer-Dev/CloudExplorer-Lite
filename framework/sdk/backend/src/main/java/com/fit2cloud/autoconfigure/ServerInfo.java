@@ -1,23 +1,18 @@
 package com.fit2cloud.autoconfigure;
 
 import com.fit2cloud.dto.module.ModuleInfo;
-import lombok.Getter;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cloud.netflix.eureka.EurekaInstanceConfigBean;
-import org.springframework.context.annotation.Configuration;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
 
-@Configuration
 @Component
 public class ServerInfo {
 
-    @Getter
     public static String module;
 
-    @Getter
     public static ModuleInfo moduleInfo;
 
     @Resource
@@ -26,6 +21,14 @@ public class ServerInfo {
     @Value("${spring.application.name}")
     public void setModuleName(String name) {
         ServerInfo.module = name;
+    }
+
+    public String getModule() {
+        return ServerInfo.module;
+    }
+
+    public ModuleInfo getModuleInfo() {
+        return ServerInfo.moduleInfo;
     }
 
     @PostConstruct

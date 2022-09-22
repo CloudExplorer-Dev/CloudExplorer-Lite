@@ -48,7 +48,6 @@ export class RootMicroApp {
       const result = all.replace("/" + baseName + "/", totalUrl);
       return result;
     });
-    console.log(newCode);
     return newCode;
   }
 

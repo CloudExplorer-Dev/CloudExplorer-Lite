@@ -1,18 +1,15 @@
 package com.fit2cloud.gateway.config;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fit2cloud.base.service.IBaseUserRoleService;
 import com.fit2cloud.common.constants.OrganizationConstants;
 import com.fit2cloud.common.constants.RoleConstants;
 import com.fit2cloud.common.constants.WorkspaceConstants;
 import com.fit2cloud.common.utils.JwtTokenUtils;
 import com.fit2cloud.dto.UserDto;
+import com.fit2cloud.gateway.utils.WriteMessageUtil;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.core.annotation.Order;
-import org.springframework.core.io.buffer.DataBuffer;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.http.server.reactive.ServerHttpResponse;
 import org.springframework.stereotype.Component;
@@ -22,18 +19,14 @@ import org.springframework.web.server.WebFilterChain;
 import reactor.core.publisher.Mono;
 
 import javax.annotation.Resource;
-import java.nio.charset.StandardCharsets;
-import java.util.Date;
-import java.util.LinkedHashMap;
-import java.util.Map;
 
 @Component
 @Order(1)
-public class TwtTokenAuthFilter  implements WebFilter {
+public class TwtTokenAuthFilter implements WebFilter {
 
     @Resource
     private IBaseUserRoleService userRoleService;
-    private static final ObjectMapper objectMapper = new ObjectMapper();
+
 
     private final static String CE_SOURCE_TOKEN = "CE_SOURCE";
 
@@ -66,7 +59,7 @@ public class TwtTokenAuthFilter  implements WebFilter {
                 }
             }
             if (userDtoFromToken == null) {
-                return writeErrorMessage(request, response, HttpStatus.UNAUTHORIZED, null);
+                return WriteMessageUtil.writeErrorMessage(request, response, HttpStatus.UNAUTHORIZED, null);
             } else {
                 //获取角色
                 userDtoFromToken.setCurrentRole(role);
@@ -96,7 +89,7 @@ public class TwtTokenAuthFilter  implements WebFilter {
                 try {
                     exchange.getAttributes().put("user", userDtoFromToken);
                 } catch (Exception e) {
-                    return this.writeErrorMessage(request, response, HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage());
+                    return WriteMessageUtil.writeErrorMessage(request, response, HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage());
                 }
 
                 //todo token续期？
@@ -110,24 +103,4 @@ public class TwtTokenAuthFilter  implements WebFilter {
         return chain.filter(exchange);
     }
 
-    private Mono<Void> writeErrorMessage(ServerHttpRequest request, ServerHttpResponse response, HttpStatus status, String message) {
-        response.getHeaders().setContentType(MediaType.APPLICATION_JSON);
-        response.setStatusCode(status);
-
-        Map<String, Object> errorAttributes = new LinkedHashMap<>();
-        errorAttributes.put("timestamp", new Date());
-        errorAttributes.put("path", request.getPath().value());
-        errorAttributes.put("status", status.value());
-        errorAttributes.put("error", status.getReasonPhrase());
-        errorAttributes.put("message", message);
-
-        String body;
-        try {
-            body = objectMapper.writeValueAsString(errorAttributes);
-        } catch (JsonProcessingException e) {
-            throw new RuntimeException(e);
-        }
-        DataBuffer dataBuffer = response.bufferFactory().wrap(body.getBytes(StandardCharsets.UTF_8));
-        return response.writeWith(Mono.just(dataBuffer));
-    }
 }

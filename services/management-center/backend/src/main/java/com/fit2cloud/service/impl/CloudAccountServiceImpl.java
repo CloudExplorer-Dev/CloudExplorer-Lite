@@ -4,15 +4,13 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.core.metadata.OrderItem;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import com.fasterxml.jackson.databind.JavaType;
+import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.fit2cloud.autoconfigure.ServerInfo;
-import com.fit2cloud.autoconfigure.JobSettingConfig;
 import com.fit2cloud.base.service.IBaseCloudAccountService;
 import com.fit2cloud.common.constants.PlatformConstants;
 import com.fit2cloud.common.exception.Fit2cloudException;
 import com.fit2cloud.common.form.vo.Form;
 import com.fit2cloud.common.platform.credential.Credential;
-import com.fit2cloud.common.scheduler.SchedulerService;
 import com.fit2cloud.common.utils.PageUtil;
 import com.fit2cloud.constants.CloudAccountConstants;
 import com.fit2cloud.controller.handler.ResultHolder;
@@ -24,19 +22,12 @@ import com.fit2cloud.controller.response.cloud_account.CloudAccountJobDetailsRes
 import com.fit2cloud.controller.response.cloud_account.PlatformResponse;
 import com.fit2cloud.dao.entity.CloudAccount;
 import com.fit2cloud.dao.mapper.CloudAccountMapper;
-import com.fit2cloud.dto.job.JobModuleInfo;
 import com.fit2cloud.request.cloud_account.CloudAccountModuleJob;
-import com.fit2cloud.service.CommonService;
 import com.fit2cloud.service.ICloudAccountService;
-import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import com.google.common.reflect.TypeToken;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.reflect.TypeUtils;
-import org.apache.ibatis.type.TypeReference;
 import org.springframework.cloud.client.discovery.DiscoveryClient;
 import org.springframework.core.ParameterizedTypeReference;
-import org.springframework.core.ResolvableType;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
@@ -46,11 +37,9 @@ import org.springframework.web.client.RestTemplate;
 
 import javax.annotation.Resource;
 import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Type;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ThreadPoolExecutor;
 import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
 
@@ -156,7 +145,7 @@ public class CloudAccountServiceImpl extends ServiceImpl<CloudAccountMapper, Clo
      */
     private void initCloudJob(String accountId) {
         HashSet<String> ids = new HashSet<>(discoveryClient.getServices());
-        ids.add(ServerInfo.getModule());
+        ids.add(ServerInfo.module);
         ids.stream().map(server -> CompletableFuture.runAsync(() -> this.initCLoudModuleJob(accountId, server), securityContextWorkThreadPool)).map(CompletableFuture::join).toList();
     }
 
@@ -175,7 +164,7 @@ public class CloudAccountServiceImpl extends ServiceImpl<CloudAccountMapper, Clo
     public CloudAccountJobDetailsResponse jobs(String accountId) {
         CloudAccountJobDetailsResponse cloudAccountJobDetailsResponse = new CloudAccountJobDetailsResponse();
         HashSet<String> ids = new HashSet<>(discoveryClient.getServices());
-        ids.add(ServerInfo.getModule());
+        ids.add(ServerInfo.module);
         List<CloudAccountModuleJob> cloudAccountModuleJobs = ids.stream().map(moduleName -> CompletableFuture.supplyAsync(() -> this.getCloudModuleJob(accountId, moduleName), securityContextWorkThreadPool)).map(CompletableFuture::join).filter(Objects::nonNull).toList();
         cloudAccountJobDetailsResponse.setCloudAccountModuleJobs(cloudAccountModuleJobs);
         return cloudAccountJobDetailsResponse;
@@ -191,7 +180,7 @@ public class CloudAccountServiceImpl extends ServiceImpl<CloudAccountMapper, Clo
      */
     private CloudAccountModuleJob getCloudModuleJob(String acloudAccountId, String moduleName) {
         // 如果是当前模块,直接获取
-        if (moduleName.equals(ServerInfo.getModule())) {
+        if (moduleName.equals(ServerInfo.module)) {
             return baseCloudAccountService.getCloudAccountJob(acloudAccountId);
         } else {
             ResultHolder<CloudAccountModuleJob> apply = getCloudAccountJobApi.apply(moduleName, acloudAccountId);
@@ -202,16 +191,16 @@ public class CloudAccountServiceImpl extends ServiceImpl<CloudAccountMapper, Clo
         }
     }
 
-    private void initCLoudModuleJob(String acloudAccountId, String moduleName) {
-        if (moduleName.equals(ServerInfo.getModule())) {
-            baseCloudAccountService.initCloudAccountJob(acloudAccountId);
+    private void initCLoudModuleJob(String cloudAccountId, String moduleName) {
+        if (moduleName.equals(ServerInfo.module)) {
+            baseCloudAccountService.initCloudAccountJob(cloudAccountId);
         } else {
-            initCloudAccountModuleJob.accept(moduleName, acloudAccountId);
+            initCloudAccountModuleJob.accept(moduleName, cloudAccountId);
         }
     }
 
     private CloudAccountModuleJob updateCloudModuleJob(CloudAccountModuleJob cloudAccountModuleJob, String acloudAccountId, String moduleName) {
-        if (moduleName.equals(ServerInfo.getModule())) {
+        if (moduleName.equals(ServerInfo.module)) {
             return baseCloudAccountService.updateJob(cloudAccountModuleJob, acloudAccountId);
         } else {
             return updateJob.apply(cloudAccountModuleJob, acloudAccountId);
@@ -222,7 +211,7 @@ public class CloudAccountServiceImpl extends ServiceImpl<CloudAccountMapper, Clo
     @Override
     public CloudAccountJobDetailsResponse updateJob(UpdateJobsRequest updateJobsRequest) {
         HashSet<String> ids = new HashSet<>(discoveryClient.getServices());
-        ids.add(ServerInfo.getModule());
+        ids.add(ServerInfo.module);
         List<CloudAccountModuleJob> cloudAccountModuleJobs = ids.stream().map(module -> {
             Optional<CloudAccountModuleJob> first = updateJobsRequest.getCloudAccountModuleJobs().stream().filter(moduleJob -> moduleJob.getModule().equals(module)).findFirst();
             return first.map(cloudAccountModuleJob -> this.updateCloudModuleJob(cloudAccountModuleJob, updateJobsRequest.getCloudAccountId(), module)).orElse(null);

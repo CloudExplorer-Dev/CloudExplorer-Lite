@@ -1,8 +1,8 @@
 import { defineStore } from "pinia";
 import { useUserStore } from "./user";
-import type { Module } from "@commons/api/module";
+import type { Module } from "@commons/api/module/type";
 import { listModules } from "@commons/api/module";
-import type { Menu } from "@commons/api/menu";
+import type { Menu } from "@commons/api/menu/type";
 import { listMenus } from "@commons/api/menu";
 import type { SimpleMap } from "@commons/api/base/type";
 
@@ -40,7 +40,6 @@ export const useModuleStore = defineStore({
       const userStore = useUserStore();
       await userStore.getCurrentUser();
 
-      console.log(userStore.isLogin);
       if (!userStore.isLogin) {
         return;
       }
@@ -58,7 +57,6 @@ export const useModuleStore = defineStore({
       const menus = (await listMenus()).data;
       if (menus) {
         this.menus = menus;
-        console.log("zhangsaho", this.menus);
       }
     },
   },

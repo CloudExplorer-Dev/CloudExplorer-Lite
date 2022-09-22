@@ -10,11 +10,13 @@ import common from "@commons/index";
 import { i18n } from "@commons/index";
 
 import "@commons/styles/index.scss";
-import { AppMicroApp } from "./microapp";
-import route from "@commons/router";
+import { AppMicroApp } from "@commons/microapp";
+import { initRouteObj, getRoute } from "@commons/router";
 
-const app = createApp(App);
-const mount = () => {
+let app = null;
+
+const mount = async () => {
+  app = createApp(App);
   // 注册elementIcon
   for (const [key, component] of Object.entries(ElementPlusIcons)) {
     app.component(key, component);
@@ -28,8 +30,12 @@ const mount = () => {
   app.use(common);
 
   //设置router
-  route.setRouteComponent(import.meta.glob("@/views/*/*.vue"));
-  app.use(route.router);
+  await initRouteObj();
+  const route = getRoute();
+  if (route) {
+    route.setRouteComponent(import.meta.glob("@/views/*/*.vue"));
+    app.use(route.router);
+  }
 
   app.use(Fit2CloudPlus);
 
@@ -40,4 +46,4 @@ const mount = () => {
   return app;
 };
 
-app.use(new AppMicroApp(mount, import.meta.env.VITE_APP_NAME, route));
+new AppMicroApp(mount, import.meta.env.VITE_APP_NAME).install();

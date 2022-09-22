@@ -3,7 +3,7 @@ import ElementPlus from "element-plus";
 import * as ElementPlusIcons from "@element-plus/icons-vue";
 import "element-plus/dist/index.css";
 import "fit2cloud-ui-plus/src/styles/index.scss";
-import route from "@commons/router";
+import { initRouteObj } from "@commons/router";
 import { setupStore } from "@commons/stores";
 import App from "./App.vue";
 import common from "@commons/index";
@@ -12,6 +12,7 @@ import "@commons/styles/index.scss";
 import "@commons/font/iconfont.css";
 import mitt from "mitt";
 import { setupMicroApp } from "@/microapp";
+import type { RouteObj } from "@commons/router/type";
 
 const app = createApp(App);
 
@@ -34,7 +35,16 @@ app.use(ElementPlus);
 app.use(common);
 
 //设置router
-route.setRouteComponent(import.meta.glob("@/views/*/*.vue"));
-app.use(route.router);
 
-app.mount("#app");
+let route: RouteObj | null;
+
+initRouteObj().then((result) => {
+  route = result;
+
+  if (route) {
+    route.setRouteComponent(import.meta.glob("@/views/*/*.vue"));
+    app.use(route.router);
+  }
+
+  app.mount("#app");
+});

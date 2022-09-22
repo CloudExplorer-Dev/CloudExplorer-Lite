@@ -9,6 +9,9 @@ const options = defineProps<{
   name: string;
   moduleName: string;
 }>();
+
+const lastName = ref<string>();
+
 const data = ref({ path: "" });
 const $bus = getCurrentInstance()?.appContext.config.globalProperties.$bus;
 onMounted(() => {
@@ -19,6 +22,8 @@ onMounted(() => {
 });
 
 const handleCreate = (): void => {
+  console.log(`child-vite [${options.name}] url: ${options.url}`);
+  lastName.value = options.name;
   console.log(`child-vite [${options.name}]  创建了`);
 };
 
@@ -37,7 +42,7 @@ const handleMount = (): void => {
 };
 
 const handleUnmount = (): void => {
-  console.log(`child-vite [${options.name}] 卸载了`);
+  console.log(`child-vite [${lastName.value}] 卸载了`);
 };
 
 const handleError = (): void => {

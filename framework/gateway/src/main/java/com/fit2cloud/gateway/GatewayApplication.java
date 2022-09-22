@@ -1,6 +1,9 @@
 package com.fit2cloud.gateway;
 
+import com.fit2cloud.autoconfigure.JobSettingConfig;
+import com.fit2cloud.autoconfigure.LocaleConfig;
 import com.fit2cloud.autoconfigure.SecurityConfig;
+import com.fit2cloud.autoconfigure.SwaggerConfig;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.web.servlet.ServletWebServerFactoryAutoConfiguration;
@@ -8,13 +11,11 @@ import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
 import org.springframework.context.annotation.PropertySource;
 
 @SpringBootApplication(exclude = {
-        /*ShiroConfig.class,
-        CommonsDatabaseConfig.class,
-        RsaConfig.class,
-        SessionConfig.class,
-        WebSocketConfig.class,*/
         SecurityConfig.class,
-        ServletWebServerFactoryAutoConfiguration.class
+        ServletWebServerFactoryAutoConfiguration.class,
+        JobSettingConfig.class,
+        LocaleConfig.class,
+        SwaggerConfig.class
 })
 @EnableDiscoveryClient
 @PropertySource(value = {

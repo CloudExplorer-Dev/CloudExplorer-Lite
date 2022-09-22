@@ -28,7 +28,6 @@ import java.util.List;
  * @Version 1.0
  * @注释:
  */
-@Configuration
 public class RestTemplateConfig {
 
     @Bean

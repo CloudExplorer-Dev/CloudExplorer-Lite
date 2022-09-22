@@ -1,21 +1,23 @@
 package com.fit2cloud.autoconfigure;
 
-import com.fit2cloud.common.scheduler.SchedulerService;
 import com.fit2cloud.common.constants.JobConstants;
+import com.fit2cloud.common.scheduler.SchedulerService;
 import com.fit2cloud.common.utils.ClassScanUtil;
 import com.fit2cloud.dto.job.JobInitSettingDto;
-import com.fit2cloud.dto.module.ModuleInfo;
 import com.fit2cloud.dto.job.JobModuleInfo;
+import com.fit2cloud.dto.module.ModuleInfo;
 import org.apache.commons.collections4.MapUtils;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
-import org.springframework.context.annotation.Configuration;
 
 import javax.annotation.Resource;
-import java.util.*;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 
 /**
  * @Author:张少虎
@@ -23,7 +25,6 @@ import java.util.*;
  * @Version 1.0
  * @注释:
  */
-@Configuration
 public class JobSettingConfig implements ApplicationContextAware {
     @Resource
     private ServerInfo serverInfo;
@@ -97,9 +98,9 @@ public class JobSettingConfig implements ApplicationContextAware {
      * @param moduleJobs 模块任务
      */
     private void initModuleJob(List<JobInitSettingDto> moduleJobs) {
-        ModuleInfo moduleInfo = ServerInfo.moduleInfo;
+        ModuleInfo moduleInfo = serverInfo.getModuleInfo();
         BeanUtils.copyProperties(moduleInfo, jobModuleInfo);
-        jobModuleInfo.setModule(ServerInfo.getModule());
+        jobModuleInfo.setModule(serverInfo.getModule());
         jobModuleInfo.setJobDetails(moduleJobs);
     }
 

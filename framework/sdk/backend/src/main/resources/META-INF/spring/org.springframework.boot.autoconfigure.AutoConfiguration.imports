@@ -2,5 +2,10 @@ com.fit2cloud.autoconfigure.ServerInfo
 com.fit2cloud.autoconfigure.JwtInitConfig
 com.fit2cloud.autoconfigure.SecurityConfig
 com.fit2cloud.autoconfigure.DatabaseConfig
+com.fit2cloud.autoconfigure.JobSettingConfig
 com.fit2cloud.autoconfigure.QuartzConfig
+com.fit2cloud.autoconfigure.RestTemplateConfig
+com.fit2cloud.autoconfigure.LocaleConfig
+com.fit2cloud.autoconfigure.SwaggerConfig
+com.fit2cloud.autoconfigure.ThreadPoolConfig
 

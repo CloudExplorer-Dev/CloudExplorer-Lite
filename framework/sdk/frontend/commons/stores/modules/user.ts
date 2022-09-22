@@ -96,7 +96,7 @@ export const useUserStore = defineStore({
     },
     doLogout() {
       this.clear();
-      route.router.push({ name: "signin" });
+      route.getRoute()?.router.push({ name: "signin" });
     },
     clear() {
       this.login = false;
