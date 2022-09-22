@@ -108,7 +108,7 @@ public class F2CVirtualMachine {
     /**
      * 磁盘
      */
-    private int disk;
+    private long disk;
     /**
      * cpu使用
      */
@@ -120,7 +120,7 @@ public class F2CVirtualMachine {
     /**
      * 磁盘使用
      */
-    private int diskUsed;
+    private long diskUsed;
     /**
      * 实例uuid
      */

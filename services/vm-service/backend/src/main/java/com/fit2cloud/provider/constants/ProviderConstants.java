@@ -1,13 +1,10 @@
 package com.fit2cloud.provider.constants;
 
-import com.fit2cloud.common.platform.credential.Credential;
-import com.fit2cloud.common.platform.credential.impl.AliCredential;
-import com.fit2cloud.common.platform.credential.impl.HuaweiCredential;
-import com.fit2cloud.common.platform.credential.impl.TencentCredential;
 import com.fit2cloud.provider.ICloudProvider;
 import com.fit2cloud.provider.impl.aliyun.AliyunCloudProvider;
 import com.fit2cloud.provider.impl.huawei.HuaweiCloudProvider;
 import com.fit2cloud.provider.impl.tencent.TencentCloudProvider;
+import com.fit2cloud.provider.impl.vsphere.VsphereCloudProvider;
 
 /**
  * @Author:张少虎
@@ -27,7 +24,11 @@ public enum ProviderConstants {
     /**
      * 腾讯云平台
      */
-    fit2cloud_tencent_platform("腾讯云", TencentCloudProvider.class);
+    fit2cloud_tencent_platform("腾讯云", TencentCloudProvider.class),
+    /**
+     * VMWARE 平台
+     */
+    fit2cloud_vsphere_platform("VMWare vSphere",VsphereCloudProvider.class);
 
     private String message;
 

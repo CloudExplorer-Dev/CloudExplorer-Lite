@@ -28,9 +28,9 @@ import java.util.List;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class VSphereCredential implements Credential {
+public class VsphereCredential implements Credential {
 
-    private static Logger logger = LoggerFactory.getLogger(VSphereCredential.class);
+    private static Logger logger = LoggerFactory.getLogger(VsphereCredential.class);
 
     /**
      * 用户名
@@ -63,8 +63,7 @@ public class VSphereCredential implements Credential {
             serviceInstance = initServiceInstance();
             return true;
         } catch (Exception e) {
-            //TODO 通过日志框架记录云账号校验失败的详细信息
-            System.out.println(e.getMessage());
+            logger.error("Cloud Account Verification failed!" + e.getMessage(), e);
             throw new Fit2cloudException(100001, "云账号校验失败!");
         } finally {
             closeConnection(serviceInstance);
@@ -86,8 +85,7 @@ public class VSphereCredential implements Credential {
             }
             return datacenters.stream().map(this::toRegion).toList();
         } catch (Exception e) {
-            //TODO 通过日志框架记录云账号校验失败的详细信息
-            System.out.println(e.getMessage());
+            logger.error("Failed to Get Regions!" + e.getMessage(), e);
             throw new Fit2cloudException(100001, "云账号校验失败!");
         } finally {
             closeConnection(serviceInstance);
