@@ -85,13 +85,10 @@ public class VmCloudImage implements Serializable {
     private Long diskSize;
 
     /**
-     * 上次同步时间
+     * 磁盘状态,normal:正常，delete:删除
      */
-    @TableField("update_time")
-    @JsonDeserialize(using = LocalDateTimeDeserializer.class)
-    @JsonSerialize(using = LocalDateTimeSerializer.class)
-    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
-    private LocalDateTime updateTime;
+    @TableField("status")
+    private String status;
 
     /**
      * 工作空间 ID
@@ -107,4 +104,13 @@ public class VmCloudImage implements Serializable {
     @JsonSerialize(using = LocalDateTimeSerializer.class)
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
     private LocalDateTime createTime;
+
+    /**
+     * 上次同步时间
+     */
+    @TableField("update_time")
+    @JsonDeserialize(using = LocalDateTimeDeserializer.class)
+    @JsonSerialize(using = LocalDateTimeSerializer.class)
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
+    private LocalDateTime updateTime;
 }

@@ -3,6 +3,9 @@ package com.fit2cloud.service.impl;
 import com.baomidou.mybatisplus.core.conditions.Wrapper;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
+import com.baomidou.mybatisplus.extension.service.IService;
 import com.fit2cloud.base.entity.CloudAccount;
 import com.fit2cloud.base.service.IBaseCloudAccountService;
 import com.fit2cloud.common.constants.JobConstants;
@@ -12,6 +15,8 @@ import com.fit2cloud.dao.entity.VmCloudDisk;
 import com.fit2cloud.dao.entity.VmCloudImage;
 import com.fit2cloud.dao.entity.VmCloudServer;
 import com.fit2cloud.provider.ICloudProvider;
+import com.fit2cloud.provider.constants.F2CDiskStatus;
+import com.fit2cloud.provider.constants.F2CImageStatus;
 import com.fit2cloud.provider.constants.ProviderConstants;
 import com.fit2cloud.provider.entity.F2CDisk;
 import com.fit2cloud.provider.entity.F2CImage;
@@ -26,12 +31,11 @@ import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
 import java.lang.reflect.InvocationTargetException;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.time.LocalDateTime;
+import java.util.*;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
+import java.util.function.Function;
 
 /**
  * @Author:张少虎
@@ -53,14 +57,19 @@ public class SyncProviderServiceImpl implements ISyncProviderService {
     @Override
     public void syncCloudServer(String cloudAccountId, List<Credential.Region> regions) {
         CloudAccount cloudAccount = cloudAccountService.getById(cloudAccountId);
+        LocalDateTime updateTime = LocalDateTime.now();
         Arrays.stream(ProviderConstants.values()).filter(providerConstants -> providerConstants.name().equals(cloudAccount.getPlatform())).findFirst().ifPresent(providerConstants -> {
             Class<? extends ICloudProvider> cloudProvider = ProviderConstants.valueOf(cloudAccount.getPlatform()).getCloudProvider();
             for (Credential.Region region : regions) {
                 List<F2CVirtualMachine> f2CVirtualMachines = exec(cloudProvider, getParams(cloudAccount.getCredential(), region.getRegionId()), ICloudProvider::listVirtualMachine);
-                List<VmCloudServer> vmCloudServers = f2CVirtualMachines.stream().map(f2CVirtualMachine -> toVmCloudServer(f2CVirtualMachine, cloudAccountId)).toList();
-                for (VmCloudServer vmCloudServer : vmCloudServers) {
-                    vmCloudServerService.saveOrUpdate(vmCloudServer, new LambdaQueryWrapper<VmCloudServer>().eq(VmCloudServer::getAccountId, vmCloudServer.getAccountId()).eq(VmCloudServer::getInstanceId, vmCloudServer.getInstanceId()));
-                }
+                List<VmCloudServer> vmCloudServers = f2CVirtualMachines.stream().map(f2CVirtualMachine -> toVmCloudServer(f2CVirtualMachine, cloudAccountId, updateTime)).toList();
+                LambdaUpdateWrapper<VmCloudServer> updateWrapper = new LambdaUpdateWrapper<VmCloudServer>()
+                        .eq(VmCloudServer::getAccountId, cloudAccountId)
+                        .eq(VmCloudServer::getRegion, region.getRegionId())
+                        .le(VmCloudServer::getUpdateTime, updateTime)
+                        .set(VmCloudServer::getInstanceStatus, "Deleted");
+                saveBatchOrUpdate(vmCloudServerService, vmCloudServers, vmCloudServer -> new LambdaQueryWrapper<VmCloudServer>().eq(VmCloudServer::getAccountId, vmCloudServer.getAccountId()).eq(VmCloudServer::getInstanceId, vmCloudServer.getInstanceId()).eq(VmCloudServer::getRegion, region.getRegionId()), updateWrapper);
+
             }
         });
     }
@@ -79,14 +88,19 @@ public class SyncProviderServiceImpl implements ISyncProviderService {
     @Override
     public void syncCloudImage(String cloudAccountId, List<Credential.Region> regions) {
         CloudAccount cloudAccount = cloudAccountService.getById(cloudAccountId);
+        LocalDateTime updateTime = LocalDateTime.now();
         Arrays.stream(ProviderConstants.values()).filter(providerConstants -> providerConstants.name().equals(cloudAccount.getPlatform())).findFirst().ifPresent(providerConstants -> {
             Class<? extends ICloudProvider> cloudProvider = ProviderConstants.valueOf(cloudAccount.getPlatform()).getCloudProvider();
             for (Credential.Region region : regions) {
                 List<F2CImage> images = exec(cloudProvider, getParams(cloudAccount.getCredential(), region.getRegionId()), ICloudProvider::listImage);
-                List<VmCloudImage> vmCloudImages = images.stream().map(img -> toVmImage(img, region, cloudAccountId)).toList();
-                for (VmCloudImage vmCloudImage : vmCloudImages) {
-                    vmCloudImageService.saveOrUpdate(vmCloudImage, new LambdaQueryWrapper<VmCloudImage>().eq(VmCloudImage::getAccountId, vmCloudImage.getAccountId()).eq(VmCloudImage::getImageId, vmCloudImage.getImageId()));
-                }
+                List<VmCloudImage> vmCloudImages = images.stream().map(img -> toVmImage(img, region, cloudAccountId, updateTime)).toList();
+                LambdaUpdateWrapper<VmCloudImage> updateWrapper = new LambdaUpdateWrapper<VmCloudImage>()
+                        .eq(VmCloudImage::getAccountId, cloudAccountId)
+                        .eq(VmCloudImage::getRegion, region.getRegionId())
+                        .le(VmCloudImage::getUpdateTime, updateTime)
+                        .set(VmCloudImage::getStatus, F2CImageStatus.deleted);
+                saveBatchOrUpdate(vmCloudImageService, vmCloudImages, vmCloudImage -> new LambdaQueryWrapper<VmCloudImage>().eq(VmCloudImage::getAccountId, vmCloudImage.getAccountId()).eq(VmCloudImage::getImageId, vmCloudImage.getImageId()).eq(VmCloudImage::getRegion, region.getRegionId()), updateWrapper)
+                ;
             }
         });
     }
@@ -104,14 +118,18 @@ public class SyncProviderServiceImpl implements ISyncProviderService {
     @Override
     public void syncCloudDisk(String cloudAccountId, List<Credential.Region> regions) {
         CloudAccount cloudAccount = cloudAccountService.getById(cloudAccountId);
+        LocalDateTime updateTime = LocalDateTime.now();
         Arrays.stream(ProviderConstants.values()).filter(providerConstants -> providerConstants.name().equals(cloudAccount.getPlatform())).findFirst().ifPresent(providerConstants -> {
             Class<? extends ICloudProvider> cloudProvider = ProviderConstants.valueOf(cloudAccount.getPlatform()).getCloudProvider();
             for (Credential.Region region : regions) {
                 List<F2CDisk> disks = exec(cloudProvider, getParams(cloudAccount.getCredential(), region.getRegionId()), ICloudProvider::listDisk);
-                List<VmCloudDisk> vmCloudDisks = disks.stream().map(img -> toVmDisk(img, region, cloudAccountId)).toList();
-                for (VmCloudDisk vmCloudDisk : vmCloudDisks) {
-                    vmCloudDiskService.saveOrUpdate(vmCloudDisk, new LambdaQueryWrapper<VmCloudDisk>().eq(VmCloudDisk::getAccountId, vmCloudDisk.getAccountId()).eq(VmCloudDisk::getDiskId, vmCloudDisk.getImageId()));
-                }
+                List<VmCloudDisk> vmCloudDisks = disks.stream().map(img -> toVmDisk(img, region, cloudAccountId, updateTime)).toList();
+                LambdaUpdateWrapper<VmCloudDisk> updateWrapper = new LambdaUpdateWrapper<VmCloudDisk>()
+                        .eq(VmCloudDisk::getAccountId, cloudAccountId)
+                        .eq(VmCloudDisk::getRegion, region.getRegionId())
+                        .le(VmCloudDisk::getUpdateTime, updateTime)
+                        .set(VmCloudDisk::getStatus, F2CDiskStatus.DELETED);
+                saveBatchOrUpdate(vmCloudDiskService, vmCloudDisks, vmCloudDisk -> new LambdaQueryWrapper<VmCloudDisk>().eq(VmCloudDisk::getAccountId, vmCloudDisk.getAccountId()).eq(VmCloudDisk::getDiskId, vmCloudDisk.getDiskId()).eq(VmCloudDisk::getRegion, region.getRegionId()), updateWrapper);
             }
         });
     }
@@ -144,6 +162,25 @@ public class SyncProviderServiceImpl implements ISyncProviderService {
             throw new RuntimeException(e);
         }
 
+    }
+
+    /**
+     * 批量插入并且逻辑删除
+     *
+     * @param service             服务
+     * @param dataList            需要插入的数据
+     * @param getUpdateWrapper    获取更新的mapper
+     * @param updateDeleteWarpper 删除mapper
+     * @param <T>                 数据泛型
+     */
+    private <T> void saveBatchOrUpdate(IService<T> service, List<T> dataList, Function<T, Wrapper<T>> getUpdateWrapper, Wrapper<T> updateDeleteWarpper) {
+        for (T entity : dataList) {
+            Wrapper<T> updateWrapper = getUpdateWrapper.apply(entity);
+            // 插入或者更新数据
+            service.saveOrUpdate(entity, updateWrapper);
+        }
+        // 删除数据,因为是逻辑删除所以更新status字段
+        service.update(updateDeleteWarpper);
     }
 
     /**
@@ -189,13 +226,14 @@ public class SyncProviderServiceImpl implements ISyncProviderService {
      * @param cloudAccountId    实体对象
      * @return 实体对象
      */
-    private VmCloudServer toVmCloudServer(F2CVirtualMachine f2CVirtualMachine, String cloudAccountId) {
+    private VmCloudServer toVmCloudServer(F2CVirtualMachine f2CVirtualMachine, String cloudAccountId, LocalDateTime updateTime) {
         VmCloudServer vmCloudServer = new VmCloudServer();
         BeanUtils.copyProperties(f2CVirtualMachine, vmCloudServer);
         vmCloudServer.setAccountId(cloudAccountId);
         vmCloudServer.setInstanceUuid(f2CVirtualMachine.getInstanceUUID());
         vmCloudServer.setInstanceName(f2CVirtualMachine.getName());
         vmCloudServer.setRemoteIp(f2CVirtualMachine.getRemoteIP());
+        vmCloudServer.setUpdateTime(updateTime);
         vmCloudServer.setIpArray(JsonUtil.toJSONString(f2CVirtualMachine.getIpArray()));
         return vmCloudServer;
     }
@@ -208,7 +246,7 @@ public class SyncProviderServiceImpl implements ISyncProviderService {
      * @param cloudAccountId 云账号
      * @return 实体对象
      */
-    private VmCloudDisk toVmDisk(F2CDisk disk, Credential.Region region, String cloudAccountId) {
+    private VmCloudDisk toVmDisk(F2CDisk disk, Credential.Region region, String cloudAccountId, LocalDateTime updateTime) {
         VmCloudDisk vmCloudDisk = new VmCloudDisk();
         vmCloudDisk.setAccountId(cloudAccountId);
         vmCloudDisk.setDescription(disk.getDescription());
@@ -227,6 +265,7 @@ public class SyncProviderServiceImpl implements ISyncProviderService {
         vmCloudDisk.setStatus(disk.getStatus());
         vmCloudDisk.setDiskChargeType(disk.getDiskChargeType());
         vmCloudDisk.setZone(disk.getZone());
+        vmCloudDisk.setUpdateTime(updateTime);
         return vmCloudDisk;
     }
 
@@ -239,7 +278,7 @@ public class SyncProviderServiceImpl implements ISyncProviderService {
      * @return 实例对象
      */
 
-    private VmCloudImage toVmImage(F2CImage image, Credential.Region region, String cloudAccountId) {
+    private VmCloudImage toVmImage(F2CImage image, Credential.Region region, String cloudAccountId, LocalDateTime updateTime) {
         VmCloudImage vmCloudImage = new VmCloudImage();
         vmCloudImage.setRegion(region.getRegionId());
         vmCloudImage.setRegionName(region.getName());
@@ -249,6 +288,8 @@ public class SyncProviderServiceImpl implements ISyncProviderService {
         vmCloudImage.setImageName(image.getName());
         vmCloudImage.setAccountId(cloudAccountId);
         vmCloudImage.setOs(image.getOs());
+        vmCloudImage.setStatus(F2CImageStatus.normal);
+        vmCloudImage.setUpdateTime(updateTime);
         return vmCloudImage;
     }
 
