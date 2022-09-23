@@ -6,6 +6,7 @@ import com.fit2cloud.provider.constants.F2CDiskStatus;
 import com.fit2cloud.provider.constants.F2CInstanceStatus;
 import com.fit2cloud.provider.entity.F2CDisk;
 import com.fit2cloud.provider.entity.F2CVirtualMachine;
+import com.fit2cloud.provider.impl.vsphere.entity.F2CVsphereDiskType;
 import com.fit2cloud.provider.impl.vsphere.entity.F2CVsphereDatastore;
 import com.fit2cloud.provider.impl.vsphere.entity.F2CVsphereHost;
 import com.vmware.vim25.*;
@@ -26,36 +27,44 @@ public class VsphereUtil {
         return toF2CInstance(vm, client, null);
     }
 
+    /**
+     * 将 vsphere 虚拟机对象转换为 F2C 云管虚拟机对象
+     * @param vm
+     * @param client
+     * @param hostCache
+     * @return
+     */
     public static F2CVirtualMachine toF2CInstance(VirtualMachine vm, VsphereVmClient client, Map<String, F2CVsphereHost> hostCache) {
         if (vm == null) {
             return null;
         }
+
         VirtualMachineConfigInfo vmConfig = vm.getConfig();
-        if (vmConfig == null) {
-            throw new RuntimeException("Virtual Machine config not exists, vmName: " + vm.getName());
-        }
+        Optional.ofNullable(vmConfig).orElseThrow(() -> new RuntimeException("Virtual Machine config not exists, vmName: " + vm.getName()));
+
         F2CVirtualMachine instance = new F2CVirtualMachine();
         ManagedObjectReference mor = vm.getMOR();
         VirtualMachineRuntimeInfo runtime = vm.getRuntime();
         Date date = client.getVmCreateDate(mor, runtime);
-        if (date != null) {
-            instance.setCreated(date);
-            instance.setCreateTime(date.getTime());
-        }
-        if (runtime != null) {
-            instance.setInstanceStatus(getStatus(runtime.getPowerState().name()).name());
-        }
-        String annotation = null;
+        Optional.ofNullable(date).ifPresent(theDate -> {
+            instance.setCreated(theDate);
+            instance.setCreateTime(theDate.getTime());
+        });
+        Optional.ofNullable(runtime).ifPresent(theRuntime -> {
+            instance.setInstanceStatus(getStatus(theRuntime.getPowerState().name()).name());
+        });
+
         try {
-            annotation = vmConfig.getAnnotation();
+            String annotation = vmConfig.getAnnotation();
+            if (annotation != null && annotation.startsWith("Created-by-FIT2CLOUD-from-template:")) {
+                instance.setImageId(annotation.substring("Created-by-FIT2CLOUD-from-template:".length()));
+            } else {
+                instance.setImageId("");
+            }
         } catch (Exception e) {
             logger.error(ExceptionUtils.getStackTrace(e));
         }
-        if (annotation != null && annotation.startsWith("Created-by-FIT2CLOUD-from-template:")) {
-            instance.setImageId(annotation.substring("Created-by-FIT2CLOUD-from-template:".length()));
-        } else {
-            instance.setImageId("");
-        }
+
         String vmName = vm.getName();
         instance.setInstanceId(vmName);
         VirtualMachineSummary vmSummary = vm.getSummary();
@@ -119,18 +128,15 @@ public class VsphereUtil {
         }
         instance.setDiskUsed(getDiskUsed(vmSummary));
         try {
-            Datastore[] dsList = vm.getDatastores();
-            if (dsList != null && dsList.length > 0) {
-                instance.setDatastoreName(dsList[0].getName());
-                instance.setDatastoreType(dsList[0].getSummary().getType());
+            Datastore[] dataStores = vm.getDatastores();
+            if (dataStores != null && dataStores.length > 0) {
+                instance.setDatastoreName(dataStores[0].getName());
+                instance.setDatastoreType(dataStores[0].getSummary().getType());
             }
         } catch (Exception e1) {
         }
         instance.setRemark(getVmRemark(vmConfig));
-        String name = vmName;
-        if (StringUtils.isEmpty(vmName)) {
-            name = "";
-        }
+        String name = StringUtils.isEmpty(vmName) ? "" : vmName;
         if (name.length() > 64) {
             name = name.substring(0, 61) + "...";
         }
@@ -162,6 +168,16 @@ public class VsphereUtil {
         return instance;
     }
 
+    /**
+     * 将 vsphere 磁盘对象转为 F2C 云管磁盘对象
+     * @param vm
+     * @param disk
+     * @param hostSystemMorVal
+     * @param hostCache
+     * @param datastoreCache
+     * @return
+     * @throws Exception
+     */
     public static F2CDisk toF2CDisk(VirtualMachine vm, VirtualDisk disk, String hostSystemMorVal, Map<String, F2CVsphereHost> hostCache, Map<String, F2CVsphereDatastore> datastoreCache) throws Exception {
         F2CDisk d = new F2CDisk();
         String tmpDiskId = vm.getMOR().getVal() + "-" + (disk.getKey());
@@ -174,14 +190,7 @@ public class VsphereUtil {
         F2CVsphereHost hostFromCache = hostCache.get(hostSystemMorVal);
         VirtualMachineConfigInfo config = vm.getConfig();
         d.setInstanceUuid(config.getInstanceUuid());
-        if (hostFromCache.getDataCenterName() == null) {
-            d.setRegion("N/A");
-        } else {
-            d.setRegion(hostFromCache.getDataCenterName());
-        }
-
-
-
+        d.setRegion(Optional.ofNullable(hostFromCache.getDataCenterName()).orElse("N/A"));
         d.setSize(disk.getCapacityInKB() / MB);
         d.setStatus(F2CDiskStatus.IN_USE);
 
@@ -208,24 +217,30 @@ public class VsphereUtil {
         return d;
     }
 
+    /**
+     * 设置磁盘类型
+     *
+     * @param d
+     * @param backing
+     */
     private static void convertDiskType(F2CDisk d, VirtualDeviceBackingInfo backing) {
         if (backing instanceof VirtualDiskFlatVer2BackingInfo) {
             VirtualDiskFlatVer2BackingInfo virtualDiskFlatVer2BackingInfo = (VirtualDiskFlatVer2BackingInfo) backing;
-            if (Boolean.TRUE.equals(virtualDiskFlatVer2BackingInfo.getThinProvisioned())) {
-                d.setDiskType("THIN");
-            } else if (Boolean.TRUE.equals(virtualDiskFlatVer2BackingInfo.getEagerlyScrub())) {
-                d.setDiskType("THICK");
-            } else {
-                d.setDiskType("THICK_LAZY_ZEROED");
+            if (Boolean.TRUE.equals(virtualDiskFlatVer2BackingInfo.getThinProvisioned())) {// 精简置备
+                d.setDiskType(F2CVsphereDiskType.THIN.name());
+            } else if (Boolean.TRUE.equals(virtualDiskFlatVer2BackingInfo.getEagerlyScrub())) {// 后置备（快速）置零
+                d.setDiskType(F2CVsphereDiskType.THICK_EAGER_ZEROED.name());
+            } else { // 后置备延迟置零
+                d.setDiskType(F2CVsphereDiskType.THICK_LAZY_ZEROED.name());
             }
             d.setDevice(virtualDiskFlatVer2BackingInfo.getFileName());
             d.setDiskMode(virtualDiskFlatVer2BackingInfo.getDiskMode());
         } else if (backing instanceof VirtualDiskSparseVer2BackingInfo) {
-            d.setDiskType("SPARSE");
+            d.setDiskType(F2CVsphereDiskType.SPARSE.name());
             d.setDevice(((VirtualDiskSparseVer2BackingInfo) backing).getFileName());
             d.setDiskMode(((VirtualDiskSparseVer2BackingInfo) backing).getDiskMode());
         } else {
-            d.setDiskType("NA");
+            d.setDiskType(F2CVsphereDiskType.DEFAULT.name());
         }
     }
 
@@ -234,6 +249,13 @@ public class VsphereUtil {
         return transferHostSystem2F2CVsphereHost(client, host);
     }
 
+    /**
+     * 将 vsphere 宿主机对象转为 F2C 云管宿主机对象
+     *
+     * @param client
+     * @param hostSystem
+     * @return
+     */
     private static F2CVsphereHost transferHostSystem2F2CVsphereHost(VsphereClient client, HostSystem hostSystem) {
         F2CVsphereHost host = new F2CVsphereHost();
         host.setHostMorVal(hostSystem.getMOR().getVal());
@@ -251,6 +273,12 @@ public class VsphereUtil {
         return host;
     }
 
+    /**
+     * 将 vsphere 存储器对象转为 F2C 云管存储器对象
+     *
+     * @param datastore
+     * @return
+     */
     private static F2CVsphereDatastore transferDatastore2F2CVsphereDatastore(Datastore datastore) {
         F2CVsphereDatastore f2CVsphereDatastore = new F2CVsphereDatastore();
         f2CVsphereDatastore.setDatastoreName(datastore.getName());
@@ -258,6 +286,12 @@ public class VsphereUtil {
         return f2CVsphereDatastore;
     }
 
+    /**
+     * 宿主机数据缓存
+     *
+     * @param client
+     * @return
+     */
     public static Map<String, F2CVsphereHost> generateHostCache(VsphereClient client) {
         Map<String, F2CVsphereHost> hostSystemCache = new HashMap<>();
         List<HostSystem> hostSystemList = client.listHostsFromAll();
@@ -268,6 +302,12 @@ public class VsphereUtil {
         return hostSystemCache;
     }
 
+    /**
+     * 存储器数据缓存
+     *
+     * @param client
+     * @return
+     */
     public static Map<String, F2CVsphereDatastore> generateDatastoreCache(VsphereClient client) {
         Map<String, F2CVsphereDatastore> datastoreCache = new HashMap<>();
         List<Datastore> datastoreList = client.listDataStores();

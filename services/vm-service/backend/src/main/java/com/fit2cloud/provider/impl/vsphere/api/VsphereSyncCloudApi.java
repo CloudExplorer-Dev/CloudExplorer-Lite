@@ -82,7 +82,7 @@ public class VsphereSyncCloudApi {
                 String id = vm.getName();
                 Datacenter dataCenter = client.getDataCenter(vm);
                 String dataCenterName = dataCenter == null ? null : dataCenter.getName();
-                f2CImageList.add(new F2CImage(id, name, desc, os, dataCenterName, null, VsphereUtil.getTemplateDiskSizeInGB(client, name)));
+                f2CImageList.add(new F2CImage(id, name, desc, os, dataCenterName,  VsphereUtil.getTemplateDiskSizeInGB(client, name),null));
             }
 
             f2CImageList.addAll(getContentLibrariesImages(req));
