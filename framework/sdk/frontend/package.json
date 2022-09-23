@@ -19,7 +19,7 @@
     "lint": "eslint . --ext .vue,.js,.jsx,.cjs,.mjs,.ts,.tsx,.cts,.mts --fix --ignore-path .gitignore"
   },
   "dependencies": {
-    "@micro-zoe/micro-app": "^1.0.0-alpha.7"
+    "@micro-zoe/micro-app": "^1.0.0-alpha.9"
   },
   "devDependencies": {
     "vite-plugin-dts": "^1.4.0"
