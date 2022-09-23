@@ -60,7 +60,20 @@ export class RootMicroApp {
     if (getModules instanceof Array<Module>) {
       this.setModules(getModules);
     }
-    this.microApp.start({ plugins: { modules: this.modules } });
+    this.microApp.start({
+      plugins: { modules: this.modules },
+      /*自定义fetch*/
+      fetch(url, options, appName) {
+        const config = {
+          headers: {
+            "ce-micro-app": "micro-app-" + appName,
+          },
+        };
+        return window.fetch(url, Object.assign(options, config)).then((res) => {
+          return res.text();
+        });
+      },
+    });
   }
 
   /**
