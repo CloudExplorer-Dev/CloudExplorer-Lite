@@ -13,6 +13,13 @@ import java.util.Map;
  */
 public interface ISyncProviderService {
     /**
+     * 云账号id
+     *
+     * @param cloudAccountId 云账号id
+     */
+    void syncCloudServer(String cloudAccountId);
+
+    /**
      * 同步虚拟机
      *
      * @param cloudAccountId 云账号id
@@ -31,6 +38,13 @@ public interface ISyncProviderService {
      * 同步镜像
      *
      * @param cloudAccountId 云账号id
+     */
+    void syncCloudImage(String cloudAccountId);
+
+    /**
+     * 同步镜像
+     *
+     * @param cloudAccountId 云账号id
      * @param regions        同步区域
      */
     void syncCloudImage(String cloudAccountId, List<Credential.Region> regions);
@@ -41,6 +55,13 @@ public interface ISyncProviderService {
      * @param params 同步镜像所需参数
      */
     void syncCloudImage(Map<String, Object> params);
+
+    /**
+     * 同步磁盘
+     *
+     * @param cloudAccountId 云账号id
+     */
+    void syncCloudDisk(String cloudAccountId);
 
     /**
      * 同步磁盘

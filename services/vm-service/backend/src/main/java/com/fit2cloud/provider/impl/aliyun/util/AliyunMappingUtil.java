@@ -8,6 +8,7 @@ import com.fit2cloud.provider.constants.F2CDiskStatus;
 import com.fit2cloud.provider.entity.F2CDisk;
 import com.fit2cloud.provider.entity.F2CImage;
 import com.fit2cloud.provider.entity.F2CVirtualMachine;
+import com.fit2cloud.provider.util.CommonUtil;
 import com.google.gson.Gson;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -137,7 +138,7 @@ public class AliyunMappingUtil {
      * @return 云管镜像
      */
     public static F2CImage toF2CImage(DescribeImagesResponseBody.DescribeImagesResponseBodyImagesImage image, String region) {
-        return new F2CImage(image.getImageId(), image.getImageName(), image.getDescription(), image.getOSName(), region, image.getSize().longValue(),getUTCTime(image.getCreationTime()));
+        return new F2CImage(image.getImageId(), image.getImageName(), image.getDescription(), image.getOSName(), region, image.getSize().longValue(), getUTCTime(image.getCreationTime()));
     }
 
     /**
@@ -171,18 +172,10 @@ public class AliyunMappingUtil {
      * @return 转化后的时间戳
      */
     private static long getUTCTime(String dateStr) {
-        try {
-            Calendar cal = Calendar.getInstance();
-            int zoneOffset = cal.get(java.util.Calendar.ZONE_OFFSET);
-            int dstOffset = cal.get(java.util.Calendar.DST_OFFSET);
-            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'");
-            Date date = sdf.parse(dateStr);
-            return date.getTime() + (zoneOffset + dstOffset);
-        } catch (ParseException e) {
-            e.printStackTrace();
-        }
-        return 0;
+        return CommonUtil.getUTCTime(dateStr, "yyyy-MM-dd'T'HH:mm:ss'Z'");
     }
+
+
 
 
     /**

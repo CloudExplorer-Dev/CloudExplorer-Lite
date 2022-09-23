@@ -122,7 +122,7 @@ public class AliyunSyncCloudApi {
         try {
             return client.describeDisksWithOptions(req, new RuntimeOptions());
         } catch (Exception e) {
-            SkipPageException.throwReTry(e);
+            SkipPageException.throwSkip(e);
             ReTryException.throwReTry(e);
             throw new Fit2cloudException(1002, "获取磁盘异常" + e.getMessage());
         }
@@ -139,7 +139,7 @@ public class AliyunSyncCloudApi {
         try {
             return client.describeImagesWithOptions(req, new RuntimeOptions());
         } catch (Exception e) {
-            SkipPageException.throwReTry(e);
+            SkipPageException.throwSkip(e);
             ReTryException.throwReTry(e);
             throw new Fit2cloudException(1002, "获取磁盘异常" + e.getMessage());
         }
@@ -158,7 +158,7 @@ public class AliyunSyncCloudApi {
             return client.describeInstancesWithOptions(request, runtime);
         } catch (Exception e) {
             ReTryException.throwReTry(e);
-            SkipPageException.throwReTry(e);
+            SkipPageException.throwSkip(e);
             throw new Fit2cloudException(10002, "获取阿里云虚拟机列表失败" + e.getMessage());
         }
     }

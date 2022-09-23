@@ -1,11 +1,17 @@
 package com.fit2cloud.provider.impl.huawei;
 
 import com.fit2cloud.common.platform.credential.impl.HuaweiCredential;
+import com.fit2cloud.common.utils.JsonUtil;
 import com.fit2cloud.provider.AbstractCloudProvider;
 import com.fit2cloud.provider.ICloudProvider;
 import com.fit2cloud.provider.entity.F2CDisk;
 import com.fit2cloud.provider.entity.F2CImage;
 import com.fit2cloud.provider.entity.F2CVirtualMachine;
+import com.fit2cloud.provider.impl.huawei.api.HuaweiSyncCloudApi;
+import com.fit2cloud.provider.impl.huawei.entity.credential.HuaweiVmCredential;
+import com.fit2cloud.provider.impl.huawei.entity.request.ListDisksRequest;
+import com.fit2cloud.provider.impl.huawei.entity.request.ListImageRequest;
+import com.fit2cloud.provider.impl.huawei.entity.request.ListVirtualMachineRequest;
 
 import java.util.List;
 
@@ -15,19 +21,19 @@ import java.util.List;
  * @Version 1.0
  * @注释:
  */
-public class HuaweiCloudProvider extends AbstractCloudProvider<HuaweiCredential> implements ICloudProvider {
+public class HuaweiCloudProvider extends AbstractCloudProvider<HuaweiVmCredential> implements ICloudProvider {
     @Override
     public List<F2CVirtualMachine> listVirtualMachine(String req) {
-        return null;
+        return HuaweiSyncCloudApi.listVirtualMachine(JsonUtil.parseObject(req, ListVirtualMachineRequest.class));
     }
 
     @Override
     public List<F2CImage> listImage(String req) {
-        return null;
+        return HuaweiSyncCloudApi.lisImages(JsonUtil.parseObject(req, ListImageRequest.class));
     }
 
     @Override
     public List<F2CDisk> listDisk(String req) {
-        return null;
+        return HuaweiSyncCloudApi.listDisk(JsonUtil.parseObject(req, ListDisksRequest.class));
     }
 }

@@ -22,9 +22,18 @@ public class SkipPageException extends RuntimeException {
      *
      * @param e 异常信息
      */
-    public static void throwReTry(Exception e) {
+    public static void throwSkip(Exception e) {
         if (e instanceof TeaException teaException) {
             if (teaException.getCode().equals("InvalidOperation.NotSupportedEndpoint")) {
+                throw new SkipPageException(1001, "跳过");
+            }
+        }
+    }
+
+    public static void throwHuaweiSkip(Exception e) {
+        if (e instanceof IllegalArgumentException illegalArgumentException) {
+            //Unexpected regionId: af-south-1
+            if (illegalArgumentException.getMessage().startsWith("Unexpected regionId")) {
                 throw new SkipPageException(1001, "跳过");
             }
         }
