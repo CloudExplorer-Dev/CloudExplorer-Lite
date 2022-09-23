@@ -1,12 +1,13 @@
 package com.fit2cloud.autoconfigure;
 
 import org.springframework.context.annotation.Bean;
-import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.security.concurrent.DelegatingSecurityContextExecutor;
-import org.springframework.security.task.DelegatingSecurityContextAsyncTaskExecutor;
 import org.springframework.stereotype.Component;
 
-import java.util.concurrent.*;
+import java.util.concurrent.Executors;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
 /**
  * @Author:张少虎
@@ -15,7 +16,7 @@ import java.util.concurrent.*;
  * @注释:
  */
 @Component
-public class ThreadpoolConfig {
+public class ThreadPoolConfig {
 
     /**
      * 工作线程池
