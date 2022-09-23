@@ -6,7 +6,8 @@ import type { ProxyOptions } from "vite";
 import vue from "@vitejs/plugin-vue";
 import vueSetupExtend from "vite-plugin-vue-setup-extend";
 
-import dts from "vite-plugin-dts"; //生成d.ts
+//import dts from "vite-plugin-dts"; //生成d.ts
+import { createHtmlPlugin } from "vite-plugin-html";
 
 /**
  * 公共模块打包配置
@@ -53,43 +54,52 @@ const envDir = "./env";
 /**
  * 当前模块打包
  */
-const thisBuild = {
-  plugins: [
-    //alias(),
-    vue({
-      template: {
-        // 添加以下内容
-        compilerOptions: {
-          isCustomElement: (tag) => /^micro-app/.test(tag), //排除<micro-app>标签
-        },
-      },
-    }),
-    DefineOptions(),
-    vueSetupExtend(),
-  ],
-  resolve: {
-    alias: {
-      "@": fileURLToPath(new URL("./src", import.meta.url)),
-      "@commons": fileURLToPath(new URL("./commons", import.meta.url)),
-    },
-  },
-  envDir: envDir,
-  server: {},
-};
-
 // 根据mode 判断打包依赖包还是当前项目
 export default defineConfig(({ mode }: ConfigEnv) => {
   const ENV = loadEnv(mode, envDir);
-  let config = { ...thisBuild };
+  let config = {
+    plugins: [
+      //alias(),
+      vue({
+        template: {
+          // 添加以下内容
+          compilerOptions: {
+            isCustomElement: (tag) => /^micro-app/.test(tag), //排除<micro-app>标签
+          },
+        },
+      }),
+      DefineOptions(),
+      createHtmlPlugin({
+        minify: true,
+        inject: {
+          data: {
+            //将环境变量 VITE_APP_TITLE 赋值给 title 方便 html页面使用 title 获取系统标题
+            VITE_APP_TITLE: ENV.VITE_APP_TITLE,
+            VITE_APP_NAME: ENV.VITE_APP_NAME,
+          },
+        },
+      }),
+      vueSetupExtend(),
+    ],
+    resolve: {
+      alias: {
+        "@": fileURLToPath(new URL("./src", import.meta.url)),
+        "@commons": fileURLToPath(new URL("./commons", import.meta.url)),
+      },
+    },
+    envDir: envDir,
+    server: {},
+  };
+
   if (mode === "lib") {
     config = { ...config, ...commonBuild };
     //生成d.ts
-    config.plugins.push(
+    /*config.plugins.push(
       dts({
         outputDir: fileURLToPath(new URL("./lib", import.meta.url)),
         tsConfigFilePath: "./tsconfig.json",
       })
-    );
+    );*/
   }
 
   const proxyConf: Record<string, string | ProxyOptions> = {};

@@ -73,6 +73,10 @@ export class RootMicroApp {
           return res.text();
         });
       },
+      /*关闭虚拟路由系统*/
+      "disable-memory-router": true,
+      /*关闭对子应用请求的拦截*/
+      "disable-patch-request": true,
     });
   }
 
