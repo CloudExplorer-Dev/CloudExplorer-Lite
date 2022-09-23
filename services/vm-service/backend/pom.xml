@@ -47,6 +47,16 @@
             <artifactId>huaweicloud-sdk-vpc</artifactId>
             <version>3.1.2</version>
         </dependency>
+        <dependency>
+            <groupId>com.tencentcloudapi</groupId>
+            <artifactId>tencentcloud-sdk-java-cvm</artifactId>
+            <version>3.1.600</version>
+        </dependency>
+        <dependency>
+            <groupId>com.tencentcloudapi</groupId>
+            <artifactId>tencentcloud-sdk-java-cbs</artifactId>
+            <version>3.1.600</version>
+        </dependency>
     </dependencies>
 
     <build>

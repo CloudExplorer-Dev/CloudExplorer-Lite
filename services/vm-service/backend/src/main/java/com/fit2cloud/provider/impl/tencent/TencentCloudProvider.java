@@ -1,11 +1,17 @@
 package com.fit2cloud.provider.impl.tencent;
 
 import com.fit2cloud.common.platform.credential.impl.TencentCredential;
+import com.fit2cloud.common.utils.JsonUtil;
 import com.fit2cloud.provider.AbstractCloudProvider;
 import com.fit2cloud.provider.ICloudProvider;
 import com.fit2cloud.provider.entity.F2CDisk;
 import com.fit2cloud.provider.entity.F2CImage;
 import com.fit2cloud.provider.entity.F2CVirtualMachine;
+import com.fit2cloud.provider.impl.tencent.api.TencetSyncCloudApi;
+import com.fit2cloud.provider.impl.tencent.entity.request.ListDiskRequest;
+import com.fit2cloud.provider.impl.tencent.entity.request.ListImageRequest;
+import com.fit2cloud.provider.impl.tencent.entity.request.ListVirtualMachineRequest;
+import com.fit2cloud.provider.impl.tencent.util.TencentMappingUtil;
 
 import java.util.List;
 
@@ -18,16 +24,16 @@ import java.util.List;
 public class TencentCloudProvider extends AbstractCloudProvider<TencentCredential> implements ICloudProvider {
     @Override
     public List<F2CVirtualMachine> listVirtualMachine(String req) {
-        return null;
+        return TencetSyncCloudApi.listVirtualMachine(JsonUtil.parseObject(req, ListVirtualMachineRequest.class));
     }
 
     @Override
     public List<F2CImage> listImage(String req) {
-        return null;
+        return TencetSyncCloudApi.listImage(JsonUtil.parseObject(req, ListImageRequest.class));
     }
 
     @Override
     public List<F2CDisk> listDisk(String req) {
-        return null;
+        return TencetSyncCloudApi.listDisk(JsonUtil.parseObject(req, ListDiskRequest.class));
     }
 }

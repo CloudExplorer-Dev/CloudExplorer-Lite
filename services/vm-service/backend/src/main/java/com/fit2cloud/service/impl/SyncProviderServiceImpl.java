@@ -212,7 +212,7 @@ public class SyncProviderServiceImpl implements ISyncProviderService {
         CloudAccount cloudAccount = cloudAccountService.getById(accountId);
         return Arrays.stream(PlatformConstants.values()).filter(platformConstants -> platformConstants.name().equals(cloudAccount.getPlatform())).findFirst().map(platformConstants -> {
             try {
-                return platformConstants.getCredentialClass().getConstructor().newInstance().regions();
+                return platformConstants.getCredentialClass().getConstructor().newInstance().deCode(cloudAccount.getCredential()).regions();
             } catch (InstantiationException | IllegalAccessException | InvocationTargetException |
                      NoSuchMethodException e) {
                 throw new Fit2cloudException(10001, "获取区域错误");
