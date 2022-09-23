@@ -6,10 +6,7 @@ import com.fit2cloud.common.platform.vsphere.utils.VsphereClient;
 import com.vmware.vim25.*;
 import com.vmware.vim25.mo.VirtualMachine;
 
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 
 /**
  * Author: LiuDi
@@ -18,7 +15,7 @@ import java.util.List;
 public class VsphereVmClient extends VsphereClient {
 
     public VsphereVmClient(VsphereCredential credential, String regionId, Language lang) {
-        super(credential.getVCenterIp(), credential.getVUserName(), credential.getVPassword(), regionId, lang);
+        super(credential.getVCenterIp(), credential.getVUserName(), credential.getVPassword(), regionId, Optional.ofNullable(lang).orElse(Language.zh_CN));
     }
 
     /**
@@ -28,7 +25,7 @@ public class VsphereVmClient extends VsphereClient {
      */
     public List<VirtualMachine> listVirtualMachines() {
         List<VirtualMachine> list = listResources(VirtualMachine.class);
-        List<VirtualMachine> vmList = new ArrayList<VirtualMachine>();
+        List<VirtualMachine> vmList = new ArrayList<>();
         for (VirtualMachine vm : list) {
             VirtualMachineConfigInfo cfg = vm.getConfig();
             if (cfg == null || !cfg.isTemplate()) {
