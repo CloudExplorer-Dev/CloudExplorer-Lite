@@ -8,6 +8,7 @@ import org.springframework.http.HttpStatus;
 @Data
 public class ResultHolder<T> {
 
+    private String requestId;
     private Integer code;
 
     private String message;

@@ -31,6 +31,10 @@ public class PermissionConstants {
         public static final String CLOUD_ACCOUNT = "CLOUD_ACCOUNT";
         public static final String ORGANIZATION = "ORGANIZATION";
         public static final String SYSTEM_SETTING = "SYSTEM_SETTING";
+
+        public static final String SYS_LOG = "SYSLOG";
+
+        public static final String OPERATED_LOG = "OPERATED_LOG";
         //...
     }
 
@@ -185,6 +189,32 @@ public class PermissionConstants {
                                             .name("i18n_permission_workspace_edit")
                                             .role(RoleConstants.ROLE.ADMIN)
                                             .role(RoleConstants.ROLE.USER)
+                            )
+                    //...
+            ).group(
+                    new PermissionGroup.Builder()
+                            .id(GROUP.SYS_LOG)
+                            .name("i18n_permission_sys_log")
+                            .permission(
+                                    //查看工作空间
+                                    new Permission.Builder()
+                                            .operate(OPERATE.READ)
+                                            .name("i18n_permission_sys_log_read")
+                                            .role(RoleConstants.ROLE.ADMIN)
+                                            .role(RoleConstants.ROLE.ORGADMIN)
+                            )
+                    //...
+            ).group(
+                    new PermissionGroup.Builder()
+                            .id(GROUP.OPERATED_LOG)
+                            .name("i18n_permission_operated_log")
+                            .permission(
+                                    //查看工作空间
+                                    new Permission.Builder()
+                                            .operate(OPERATE.READ)
+                                            .name("i18n_permission_operated_log_read")
+                                            .role(RoleConstants.ROLE.ADMIN)
+                                            .role(RoleConstants.ROLE.ORGADMIN)
                             )
                     //...
             )

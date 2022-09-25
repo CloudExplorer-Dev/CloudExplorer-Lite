@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<included>
+    <springProperty scope="context" name="application.name" source="spring.application.name"/>
+    <!--  系统调用日志输出到指定文件  -->
+    <appender name="backendApiAppender"
+              class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
+            <level>INFO</level>
+        </filter>
+        <File>${logging.file.path}/api/info.log</File>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <FileNamePattern>${logging.file.path}/history/api/info.%d{yyyyMMdd}-%i.log
+            </FileNamePattern>
+            <maxHistory>${logger.max.history:-30}</maxHistory>
+            <TimeBasedFileNamingAndTriggeringPolicy
+                    class="ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP">
+                <maxFileSize>50MB</maxFileSize>
+            </TimeBasedFileNamingAndTriggeringPolicy>
+        </rollingPolicy>
+        <encoder class="net.logstash.logback.encoder.LoggingEventCompositeJsonEncoder">
+            <!--中文乱码-->
+            <jsonFactoryDecorator class="net.logstash.logback.decorate.CharacterEscapesJsonFactoryDecorator">
+                <escape>
+                    <targetCharacterCode>10</targetCharacterCode>
+                    <escapeSequence>\u2028</escapeSequence>
+                </escape>
+            </jsonFactoryDecorator>
+            <providers class="net.logstash.logback.composite.loggingevent.LoggingEventJsonProviders">
+                <pattern>
+                    <pattern>
+                        {
+                        "requestId":"%X{requestId}",
+                        "level":"%level",
+                        "date":"%d",
+                        "method":"%X{method}",
+                        "url":"%X{url}",
+                        "time":"%X{time}",
+                        "module":"%X{module}",
+                        "sourceIp":"%X{sourceIp}",
+                        "user":"%X{user}",
+                        "userId":"%X{userId}",
+                        "operated":"%X{operated}",
+                        "operatedName":"%X{operatedName}",
+                        "resourceId":"%X{resourceId}",
+                        "resourceType":"%X{resourceType}",
+                        "status":"%X{status}",
+                        "code":"%X{code}",
+                        "content":"%X{content}",
+                        "params":"%X{params}",
+                        "response":"%X{response}",
+                        "msg":"%msg"
+                        }
+                    </pattern>
+                </pattern>
+            </providers>
+        </encoder>
+    </appender>
+
+    <logger name="com.fit2cloud.common.log.aspect.OperatedLogAspect" additivity="false" >
+        <level value="${logger.level:INFO}"/>
+        <appender-ref ref="backendApiAppender"/>
+    </logger>
+
+</included>

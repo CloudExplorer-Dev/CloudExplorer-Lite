@@ -27,7 +27,7 @@
         </rollingPolicy>
         <encoder>
             <charset>UTF-8</charset>
-            <Pattern>%d [%thread] %-5level %logger{36} %line - %msg%n</Pattern>
+            <Pattern>[${PID:- }] [${application.name}] %d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger#%method:%L -%msg%n</Pattern>
         </encoder>
     </appender>
 
@@ -48,7 +48,7 @@
         </rollingPolicy>
         <encoder>
             <charset>UTF-8</charset>
-            <Pattern>%d [%thread] %-5level %logger{36} %line - %msg%n</Pattern>
+            <Pattern>[${PID:- }] [${application.name}] %d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger#%method:%L -%msg%n</Pattern>
         </encoder>
     </appender>
 
@@ -72,7 +72,7 @@
         </rollingPolicy>
         <encoder>
             <charset>UTF-8</charset>
-            <Pattern>%d [%thread] %-5level %logger{36} %line - %msg%n</Pattern>
+            <Pattern>[${PID:- }] [${application.name}] %d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger#%method:%L -%msg%n</Pattern>
         </encoder>
     </appender>
 
@@ -95,7 +95,7 @@
         </rollingPolicy>
         <encoder>
             <charset>UTF-8</charset>
-            <Pattern>%d [%thread] %-5level %logger{36} %line - %msg%n</Pattern>
+            <Pattern>[${PID:- }] [${application.name}] %d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger#%method:%L -%msg%n</Pattern>
         </encoder>
     </appender>
 
@@ -141,8 +141,8 @@
         <appender-ref ref="warnAppender"/>
     </appender>
 
-    <!--  系统调用日志输出到指定文件  -->
-    <appender name="backendApiAppender"
+    <!--  登录日志输出到指定文件  -->
+    <appender name="loginAppender"
               class="ch.qos.logback.core.rolling.RollingFileAppender">
         <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
             <level>INFO</level>
@@ -157,92 +157,49 @@
                 <maxFileSize>50MB</maxFileSize>
             </TimeBasedFileNamingAndTriggeringPolicy>
         </rollingPolicy>
-        <encoder>
-            <charset>UTF-8</charset>
-            <Pattern>%d [%thread] %-5level %logger{36} %line - %msg%n</Pattern>
+        <encoder class="net.logstash.logback.encoder.LoggingEventCompositeJsonEncoder">
+            <!--中文乱码-->
+            <jsonFactoryDecorator class="net.logstash.logback.decorate.CharacterEscapesJsonFactoryDecorator">
+                <escape>
+                    <targetCharacterCode>10</targetCharacterCode>
+                    <escapeSequence>\u2028</escapeSequence>
+                </escape>
+            </jsonFactoryDecorator>
+            <providers class="net.logstash.logback.composite.loggingevent.LoggingEventJsonProviders">
+                <pattern>
+                    <pattern>
+                        {
+                        "requestId":"%X{requestId}",
+                        "level":"%level",
+                        "date":"%d",
+                        "method":"%X{method}",
+                        "url":"%X{url}",
+                        "time":"%X{time}",
+                        "module":"%X{module}",
+                        "sourceIp":"%X{sourceIp}",
+                        "user":"%X{user}",
+                        "userId":"%X{userId}",
+                        "operated":"%X{operated}",
+                        "operatedName":"%X{operatedName}",
+                        "resourceId":"%X{resourceId}",
+                        "resourceType":"%X{resourceType}",
+                        "status":"%X{status}",
+                        "code":"%X{code}",
+                        "content":"%X{content}",
+                        "params":"%X{params}",
+                        "response":"%X{response}",
+                        "msg":"%msg"
+                        }
+                    </pattern>
+                </pattern>
+            </providers>
         </encoder>
     </appender>
-    <appender name="backendApiAsyncAppender" class="ch.qos.logback.classic.AsyncAppender">
-        <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
-            <level>INFO</level>
-        </filter>
-        <queueSize>10000</queueSize>
-        <appender-ref ref="backendApiAppender"/>
-    </appender>
-    <logger name="com.fit2cloud.controller.handler.WebLogAspect" additivity="false">
+
+    <logger name="com.fit2cloud.gateway.config.LoginLogAspect" additivity="false" >
         <level value="${logger.level:INFO}"/>
-        <appender-ref ref="backendApiAsyncAppender"/>
+        <appender-ref ref="loginAppender"/>
     </logger>
-
-    <!-- 自定义测试计划执行的日志	-->
-    <appender name="infoTestPlanAppender"
-              class="ch.qos.logback.core.rolling.RollingFileAppender">
-        <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
-            <level>INFO</level>
-        </filter>
-        <File>${logging.file.path}/testPlan/info.log</File>
-        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
-            <FileNamePattern>${logging.file.path}/history/testPlan/info.%d{yyyyMMdd}-%i.log
-            </FileNamePattern>
-            <maxHistory>${logger.max.history:-30}</maxHistory>
-            <TimeBasedFileNamingAndTriggeringPolicy
-                    class="ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP">
-                <maxFileSize>50MB</maxFileSize>
-            </TimeBasedFileNamingAndTriggeringPolicy>
-        </rollingPolicy>
-        <encoder>
-            <charset>UTF-8</charset>
-            <Pattern>%d [%thread] %-5level %logger{36} %line - %msg%n</Pattern>
-        </encoder>
-    </appender>
-    <appender name="infoTestPlanAsyncAppender" class="ch.qos.logback.classic.AsyncAppender">
-        <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
-            <level>INFO</level>
-        </filter>
-        <queueSize>10000</queueSize>
-        <appender-ref ref="infoTestPlanAppender"/>
-    </appender>
-    <logger name="testPlanExecuteLog" additivity="false">
-        <level value="${logger.level:INFO}"/>
-        <appender-ref ref="infoTestPlanAsyncAppender"/>
-    </logger>
-
-    <!-- 自定义执行过程日志 -->
-    <appender name="apiRunLogAppender"
-              class="ch.qos.logback.core.rolling.RollingFileAppender">
-        <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
-            <level>INFO</level>
-        </filter>
-        <File>${logging.file.path}/ms-jmeter-run-log.log</File>
-        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
-            <FileNamePattern>${logging.file.path}/history/ms-jmeter-run-log.%d{yyyyMMdd}-%i.log
-            </FileNamePattern>
-            <maxHistory>${logger.max.history:-30}</maxHistory>
-            <TimeBasedFileNamingAndTriggeringPolicy
-                    class="ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP">
-                <maxFileSize>50MB</maxFileSize>
-            </TimeBasedFileNamingAndTriggeringPolicy>
-        </rollingPolicy>
-        <encoder>
-            <charset>UTF-8</charset>
-            <Pattern>%d [%thread] %-5level %logger{36} %line - %msg%n</Pattern>
-        </encoder>
-    </appender>
-    <appender name="runLogAppender" class="ch.qos.logback.classic.AsyncAppender">
-        <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
-            <level>INFO</level>
-        </filter>
-        <queueSize>10000</queueSize>
-        <appender-ref ref="apiRunLogAppender"/>
-    </appender>
-    <logger name="ms-jmeter-run-log" additivity="false">
-        <level value="${logger.level:INFO}"/>
-        <appender-ref ref="runLogAppender"/>
-    </logger>
-
-
-    <!-- 自定义JMETER输出日志 -->
-
 
     <root level="INFO">
         <appender-ref ref="infoAsyncAppender"/>
@@ -254,20 +211,7 @@
         <appender-ref ref="infoAsyncAppender"/>
         <appender-ref ref="warnAsyncAppender"/>
         <appender-ref ref="errorAsyncAppender"/>
+        <appender-ref ref="debugAsyncAppender"/>
     </logger>
-
-    <!--<logger name="com.fit2cloud.base.mapper" level="${logger.sql.level}">
-        <appender-ref ref="console"/>
-    </logger>-->
-    <!--	<logger name="com.fit2cloud.xpack.mapper" level="${logger.sql.level}">-->
-    <!--		<appender-ref ref="console"/>-->
-    <!--	</logger>-->
-
-    <!--<logger name="com.fit2cloud.Application" additivity="false" level="${logger.level:INFO}">
-        <appender-ref ref="infoAsyncAppender"/>
-    </logger>-->
-
-    <!--	<logger name="com.alibaba.nacos.naming.client.listener" additivity="false" level="ERROR"/>-->
-    <!--	<logger name="org.apache.dubbo" additivity="false" level="ERROR"/>-->
 
 </configuration>

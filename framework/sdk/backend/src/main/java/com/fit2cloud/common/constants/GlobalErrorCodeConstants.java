@@ -7,7 +7,10 @@ package com.fit2cloud.common.constants;
  * @注释:
  */
 public enum GlobalErrorCodeConstants {
-    LOGIN_TIME_OUT(9000,"登录超时");
+    LOGIN_TIME_OUT(9000,"登录超时"),
+    SYSTEM_ERROR(5000,"系统异常"),
+    OPERATE_FAILED(9001,"请勿频繁操作"),
+    BUSINESS_ERROR(5001,"业务处理异常");
 
     /**
      * 提示

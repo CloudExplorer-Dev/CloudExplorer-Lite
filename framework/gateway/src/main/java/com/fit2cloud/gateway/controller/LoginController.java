@@ -1,6 +1,9 @@
 package com.fit2cloud.gateway.controller;
 
 import com.fit2cloud.base.service.IBaseUserService;
+import com.fit2cloud.common.log.annotation.OperatedLog;
+import com.fit2cloud.common.log.constants.OperatedTypeEnum;
+import com.fit2cloud.common.log.constants.ResourceTypeEnum;
 import com.fit2cloud.common.utils.JwtTokenUtils;
 import com.fit2cloud.controller.handler.ResultHolder;
 import com.fit2cloud.dto.UserDto;
@@ -36,6 +39,7 @@ public class LoginController {
     private BasePermissionService basePermissionService;
 
     @PostMapping("login")
+    @OperatedLog(resourceType = ResourceTypeEnum.SYSTEM,operated = OperatedTypeEnum.LOGIN)
     public Mono<ResponseEntity<ResultHolder<Object>>> login(@RequestBody LoginRequest loginRequest) {
         String token = null;
         try {
@@ -59,6 +63,7 @@ public class LoginController {
     }
 
     @GetMapping("logout")
+    @OperatedLog(resourceType = ResourceTypeEnum.SYSTEM,operated = OperatedTypeEnum.LOGOUT)
     public Mono<String> logout() {
         return Mono.just("test");
     }

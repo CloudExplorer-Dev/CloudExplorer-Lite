@@ -44,6 +44,12 @@
         <vsphereautomationsdk.version>3.9.0</vsphereautomationsdk.version>
         <vapi.version>2.34.0</vapi.version>
         <!--vmware end-->
+        <!--日志-->
+        <jakarta-json.version>2.0.1</jakarta-json.version>
+        <logback-classic.version>1.2.11</logback-classic.version>
+        <logstash-logback-encoder>5.2</logstash-logback-encoder>
+        <elasticsearch-java>7.16.2</elasticsearch-java>
+        <!--日志-->
 
     </properties>
 
