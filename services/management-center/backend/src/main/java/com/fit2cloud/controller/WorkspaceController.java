@@ -72,6 +72,7 @@ public class WorkspaceController {
     @GetMapping("/one")
     @OperatedLog(resourceType=ResourceTypeEnum.WORKSPACE,operated = OperatedTypeEnum.SEARCH,
             content = "'通过ID为:'+#id+',名称为:'+#name+'查询了工作空间'",
+            resourceId = "#id",
             param = "#id+#name")
     public ResultHolder<WorkspaceDTO> one(
             @ApiParam("工作空间ID")
@@ -84,7 +85,7 @@ public class WorkspaceController {
     @ApiOperation(value = "删除一个工作空间",notes = "删除一个工作空间")
     @DeleteMapping("/{workspaceId}")
     @OperatedLog(resourceType=ResourceTypeEnum.WORKSPACE,operated = OperatedTypeEnum.DELETE,
-            resourceId = "#workspaceRequest.id",
+            resourceId = "#workspaceId",
             param = "#workspaceId")
     public ResultHolder<Boolean> delete(
             @ApiParam("工作空间ID")

@@ -26,6 +26,7 @@ import org.springframework.stereotype.Component;
 
 import java.lang.reflect.Method;
 import java.util.Date;
+import java.util.Optional;
 import java.util.UUID;
 
 /**
@@ -119,11 +120,14 @@ public class LoginLogAspect {
         logVO.setTime(time);
         logVO.setStatus(errorResult.getCode()==200?1:0);
         logVO.setCode(errorResult.getCode());
-        if(StringUtils.equalsIgnoreCase(annotation.operated().getOperate(),OperatedTypeEnum.LOGIN.getOperate())||
-        StringUtils.equalsIgnoreCase(annotation.operated().getOperate(),OperatedTypeEnum.LOGOUT.getOperate())){
-            LoginRequest loginRequest = JsonUtil.parseObject(JsonUtil.toJSONString(args[0]),LoginRequest.class);
-            logVO.setUser(loginRequest.getUsername());
-        }else{
+        if(annotation!=null){
+            if(StringUtils.equalsIgnoreCase(annotation.operated().getOperate(),OperatedTypeEnum.LOGIN.getOperate())||
+                    StringUtils.equalsIgnoreCase(annotation.operated().getOperate(),OperatedTypeEnum.LOGOUT.getOperate())){
+                LoginRequest loginRequest = JsonUtil.parseObject(JsonUtil.toJSONString(args[0]),LoginRequest.class);
+                logVO.setUser(loginRequest.getUsername());
+            }
+        }
+        if(StringUtils.isEmpty(logVO.getUser()) && Optional.ofNullable(CurrentUserUtils.getUser()).isPresent()){
             UserDto userDto = CurrentUserUtils.getUser();
             logVO.setUser(userDto.getUsername());
             logVO.setUserId(userDto.getId());

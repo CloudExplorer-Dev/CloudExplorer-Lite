@@ -196,7 +196,7 @@ public class PermissionConstants {
                             .id(GROUP.SYS_LOG)
                             .name("i18n_permission_sys_log")
                             .permission(
-                                    //查看工作空间
+                                    //查看系统日志
                                     new Permission.Builder()
                                             .operate(OPERATE.READ)
                                             .name("i18n_permission_sys_log_read")
@@ -209,7 +209,7 @@ public class PermissionConstants {
                             .id(GROUP.OPERATED_LOG)
                             .name("i18n_permission_operated_log")
                             .permission(
-                                    //查看工作空间
+                                    //查看操作日志
                                     new Permission.Builder()
                                             .operate(OPERATE.READ)
                                             .name("i18n_permission_operated_log_read")
