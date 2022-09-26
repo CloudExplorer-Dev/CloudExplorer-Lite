@@ -123,7 +123,7 @@ public class LogServiceImpl implements ILogService {
             builder.sort(sort.build());
         }
         builder.query(query.build());
-       return provide.searchByQuery(CE_FILE_API_LOGS,builder, OperatedLogVO.class,page);
+           return provide.searchByQuery(CE_FILE_API_LOGS,builder, OperatedLogVO.class,page);
     }
 
 }

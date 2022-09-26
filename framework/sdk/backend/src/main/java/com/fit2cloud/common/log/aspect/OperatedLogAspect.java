@@ -90,9 +90,10 @@ public class OperatedLogAspect {
             OperatedLog annotation = method.getAnnotation(OperatedLog.class);
             ApiOperation apiOperation = method.getAnnotation(ApiOperation.class);
             if(annotation != null || apiOperation !=null){
-                OperatedLogVO logVO = createLog(time, errorResult,annotation,args);
-                // 操作内容描述
-                logVO.setContent(apiOperation.notes());
+                OperatedLogVO logVO = createLog(time, errorResult,args);
+                if(apiOperation!=null){
+                    logVO.setContent(apiOperation.notes());
+                }
                 String paramStr = "";
                 // 日志注解内容
                 if(annotation!=null){
@@ -120,7 +121,7 @@ public class OperatedLogAspect {
                 extractRequestInfo(response, errorResult, logVO, paramStr);
                 // 上下文设置
                 setMDC(logVO);
-                LogUtil.info(">>>>>>>>>>"+logVO);
+                LogUtil.info(logVO);
             }
         } catch (Exception e) {
             LogUtil.error(e.getMessage());
@@ -155,22 +156,16 @@ public class OperatedLogAspect {
     }
 
     @NotNull
-    private OperatedLogVO createLog(Long time, ResultHolder errorResult,OperatedLog annotation,Object[] args) {
+    private OperatedLogVO createLog(Long time, ResultHolder errorResult,Object[] args) {
         OperatedLogVO logVO = new OperatedLogVO();
         logVO.setModule(ServerInfo.module);
         logVO.setRequestTime(new Date().getTime());
         logVO.setTime(time);
         logVO.setStatus(errorResult.getCode()==200?1:0);
         logVO.setCode(errorResult.getCode());
-        if(StringUtils.equalsIgnoreCase(annotation.operated().getOperate(),OperatedTypeEnum.LOGIN.getOperate())||
-        StringUtils.equalsIgnoreCase(annotation.operated().getOperate(),OperatedTypeEnum.LOGOUT.getOperate())){
-            LoginRequest loginRequest = JsonUtil.parseObject(JsonUtil.toJSONString(args),LoginRequest.class);
-            logVO.setUser(loginRequest.getUsername());
-        }else{
-            UserDto userDto = CurrentUserUtils.getUser();
-            logVO.setUser(userDto.getUsername());
-            logVO.setUserId(userDto.getId());
-        }
+        UserDto userDto = CurrentUserUtils.getUser();
+        logVO.setUser(userDto.getUsername());
+        logVO.setUserId(userDto.getId());
         return logVO;
     }
 
