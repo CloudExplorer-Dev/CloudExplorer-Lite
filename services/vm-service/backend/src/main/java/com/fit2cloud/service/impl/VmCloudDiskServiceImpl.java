@@ -1,7 +1,7 @@
 package com.fit2cloud.service.impl;
 
-import com.fit2cloud.dao.entity.VmCloudDisk;
-import com.fit2cloud.dao.mapper.VmCloudDiskMapper;
+import com.fit2cloud.base.entity.VmCloudDisk;
+import com.fit2cloud.base.mapper.BaseVmCloudDiskMapper;
 import com.fit2cloud.service.IVmCloudDiskService;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.springframework.stereotype.Service;
@@ -15,6 +15,6 @@ import org.springframework.stereotype.Service;
  * @since 
  */
 @Service
-public class VmCloudDiskServiceImpl extends ServiceImpl<VmCloudDiskMapper, VmCloudDisk> implements IVmCloudDiskService {
+public class VmCloudDiskServiceImpl extends ServiceImpl<BaseVmCloudDiskMapper, VmCloudDisk> implements IVmCloudDiskService {
 
 }

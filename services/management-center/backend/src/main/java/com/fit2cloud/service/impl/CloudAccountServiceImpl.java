@@ -42,6 +42,8 @@ import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * <p>
@@ -69,7 +71,7 @@ public class CloudAccountServiceImpl extends ServiceImpl<CloudAccountMapper, Clo
      */
     private final BiFunction<String, String, ResultHolder<CloudAccountModuleJob>> getCloudAccountJobApi = (String moduleName, String accountId) -> {
         final String url = httpPrefix + moduleName + "/" + moduleName + "/api/base/cloud_account/job/" + accountId;
-        ResponseEntity<ResultHolder<CloudAccountModuleJob>> cloudAccountJob = restTemplate.exchange(url, HttpMethod.GET, null, new ParameterizedTypeReference<ResultHolder<CloudAccountModuleJob>>() {
+        ResponseEntity<ResultHolder<CloudAccountModuleJob>> cloudAccountJob = restTemplate.exchange(url, HttpMethod.GET, HttpEntity.EMPTY, new ParameterizedTypeReference<ResultHolder<CloudAccountModuleJob>>() {
         });
         return cloudAccountJob.getBody();
     };

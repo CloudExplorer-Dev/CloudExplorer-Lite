@@ -1,7 +1,7 @@
 package com.fit2cloud.service.impl;
 
-import com.fit2cloud.dao.entity.VmCloudImage;
-import com.fit2cloud.dao.mapper.VmCloudImageMapper;
+import com.fit2cloud.base.entity.VmCloudImage;
+import com.fit2cloud.base.mapper.BaseVmCloudImageMapper;
 import com.fit2cloud.service.IVmCloudImageService;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.springframework.stereotype.Service;
@@ -15,6 +15,6 @@ import org.springframework.stereotype.Service;
  * @since 
  */
 @Service
-public class VmCloudImageServiceImpl extends ServiceImpl<VmCloudImageMapper, VmCloudImage> implements IVmCloudImageService {
+public class VmCloudImageServiceImpl extends ServiceImpl<BaseVmCloudImageMapper, VmCloudImage> implements IVmCloudImageService {
 
 }

@@ -1,7 +1,7 @@
 package com.fit2cloud.service;
 
-import com.fit2cloud.dao.entity.VmCloudServer;
 import com.baomidou.mybatisplus.extension.service.IService;
+import com.fit2cloud.base.entity.VmCloudServer;
 
 /**
  * <p>
