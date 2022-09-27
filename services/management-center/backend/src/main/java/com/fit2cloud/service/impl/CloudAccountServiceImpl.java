@@ -26,6 +26,7 @@ import com.fit2cloud.request.cloud_account.CloudAccountModuleJob;
 import com.fit2cloud.service.ICloudAccountService;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.cloud.client.ServiceInstance;
 import org.springframework.cloud.client.discovery.DiscoveryClient;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpEntity;
@@ -70,6 +71,8 @@ public class CloudAccountServiceImpl extends ServiceImpl<CloudAccountMapper, Clo
      * 获取模块云账号任务
      */
     private final BiFunction<String, String, ResultHolder<CloudAccountModuleJob>> getCloudAccountJobApi = (String moduleName, String accountId) -> {
+        List<ServiceInstance> instances = discoveryClient.getInstances(moduleName);
+        ServiceInstance serviceInstance = instances.stream().findAny().get();
         final String url = httpPrefix + moduleName + "/" + moduleName + "/api/base/cloud_account/job/" + accountId;
         ResponseEntity<ResultHolder<CloudAccountModuleJob>> cloudAccountJob = restTemplate.exchange(url, HttpMethod.GET, HttpEntity.EMPTY, new ParameterizedTypeReference<ResultHolder<CloudAccountModuleJob>>() {
         });

@@ -1,11 +1,15 @@
 package com.fit2cloud.common.scheduler.impl;
 
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.fit2cloud.common.exception.Fit2cloudException;
 import com.fit2cloud.common.scheduler.constants.JobErrorCodeConstants;
-import com.fit2cloud.common.scheduler.impl.entity.QuzrtzJobDetail;
 import com.fit2cloud.common.scheduler.SchedulerService;
+import com.fit2cloud.common.scheduler.entity.QuzrtzJobDetail;
+import com.fit2cloud.common.scheduler.mapper.QuzrtzMapper;
 import jdk.jfr.Name;
+import lombok.SneakyThrows;
 import org.apache.commons.collections4.MapUtils;
+import org.apache.ibatis.session.SqlSessionFactory;
 import org.quartz.*;
 import org.quartz.impl.matchers.GroupMatcher;
 import org.quartz.impl.triggers.CalendarIntervalTriggerImpl;
@@ -29,6 +33,8 @@ import java.util.stream.Collectors;
 public class QuartzSchedulerServiceImpl implements SchedulerService {
     @Resource
     protected Scheduler scheduler;
+    @Resource(name = "quartzSqlSessionFactory")
+    protected SqlSessionFactory quartzSqlSessionFactory;
 
     @Override
     public void addJob(Class<? extends Job> jobHandler, String jobName, String groupName, String description, String cronExp, Map<String, Object> param) {
@@ -112,9 +118,16 @@ public class QuartzSchedulerServiceImpl implements SchedulerService {
 
     }
 
+    @SneakyThrows
     @Override
     public QuzrtzJobDetail getJobDetails(String jobName, String groupName) {
-        return getJobDetails(TriggerKey.triggerKey(jobName, groupName));
+        QuzrtzMapper quzrtzMapper = quartzSqlSessionFactory.openSession().getMapper(QuzrtzMapper.class);
+        QueryWrapper<QuzrtzJobDetail> wrapper = new QueryWrapper<>();
+        QueryWrapper<QuzrtzJobDetail> eq = wrapper.eq("qt.SCHED_NAME", scheduler.getSchedulerName())
+                .eq("qt.TRIGGER_NAME", jobName)
+                .eq("qt.TRIGGER_GROUP", groupName);
+        Optional<QuzrtzJobDetail> any = quzrtzMapper.list(eq).stream().findAny();
+        return any.orElse(null);
     }
 
     @Override
@@ -130,83 +143,21 @@ public class QuartzSchedulerServiceImpl implements SchedulerService {
         return false;
     }
 
-    /**
-     * 获取job详细信息
-     *
-     * @param triggerKey TriggerKey对象
-     * @return job详细信息
-     */
-    public QuzrtzJobDetail getJobDetails(TriggerKey triggerKey) {
-        try {
-            Trigger trigger = scheduler.getTrigger(triggerKey);
-            if (trigger == null) return null;
-            Trigger.TriggerState triggerState = scheduler.getTriggerState(triggerKey);
-            JobDetail jobDetail = scheduler.getJobDetail(trigger.getJobKey());
-            return mapQuzrtzJobDetail(trigger, jobDetail, triggerState);
-        } catch (SchedulerException e) {
-            throw new Fit2cloudException(JobErrorCodeConstants.GET_JOB_DETAILS_FAIL.getCode(), JobErrorCodeConstants.GET_JOB_DETAILS_FAIL.getMessage());
-        }
-    }
 
-
-    /**
-     * 将对象转换为任务详细信息
-     *
-     * @param trigger      trigger信息
-     * @param jobDetail    任务详情信息
-     * @param triggerState 任务状态
-     * @return 任务详细信息
-     */
-    private QuzrtzJobDetail mapQuzrtzJobDetail(Trigger trigger, JobDetail jobDetail, Trigger.TriggerState triggerState) {
-        Class<? extends Job> jobClass = jobDetail.getJobClass();
-        String className = jobClass.getName();
-        String nickName;
-        try {
-            Name annotation = jobClass.getAnnotation(Name.class);
-            nickName = annotation.value();
-        } catch (Exception e) {
-            nickName = jobClass.getName();
-        }
-        DateBuilder.IntervalUnit unit = null;
-        Long repeatInterval = null;
-        String cronEx = null;
-        if (trigger instanceof SimpleTriggerImpl simpleTrigger) {
-            repeatInterval = simpleTrigger.getRepeatInterval();
-            unit = DateBuilder.IntervalUnit.MILLISECOND;
-        }
-        if (trigger instanceof CalendarIntervalTriggerImpl calendarIntervalTrigger) {
-            unit = calendarIntervalTrigger.getRepeatIntervalUnit();
-            repeatInterval = (long) calendarIntervalTrigger.getRepeatInterval();
-        }
-        if (trigger instanceof DailyTimeIntervalTriggerImpl dailyTimeIntervalTrigger) {
-            unit = dailyTimeIntervalTrigger.getRepeatIntervalUnit();
-            repeatInterval = (long) dailyTimeIntervalTrigger.getRepeatInterval();
-        }
-        if (trigger instanceof CronTriggerImpl cronTrigger) {
-            cronEx = cronTrigger.getCronExpression();
-        }
-        return new QuzrtzJobDetail(trigger.getJobKey().getName(), trigger.getJobKey().getGroup(), trigger.getDescription(), unit, repeatInterval, trigger.getJobDataMap().getWrappedMap(), trigger.getNextFireTime(), trigger.getPreviousFireTime(), triggerState, className, nickName, cronEx);
-    }
-
+    @SneakyThrows
     @Override
     public List<QuzrtzJobDetail> list() {
-        try {
-            Set<TriggerKey> triggerKeys = scheduler.getTriggerKeys(GroupMatcher.anyGroup());
-            return triggerKeys.stream().map(this::getJobDetails).toList();
-        } catch (Exception e) {
-            throw new Fit2cloudException(JobErrorCodeConstants.LIST_JOB_DETAILS_FAIL.getCode(), JobErrorCodeConstants.LIST_JOB_DETAILS_FAIL.getMessage());
-        }
-
+        QuzrtzMapper quzrtzMapper = quartzSqlSessionFactory.openSession().getMapper(QuzrtzMapper.class);
+        QueryWrapper<QuzrtzJobDetail> eq = new QueryWrapper<QuzrtzJobDetail>().eq("qt.SCHED_NAME", scheduler.getSchedulerName());
+        return quzrtzMapper.list(eq);
     }
 
+    @SneakyThrows
     @Override
     public List<QuzrtzJobDetail> list(String groupName) {
-        try {
-            Set<TriggerKey> triggerKeys = scheduler.getTriggerKeys(GroupMatcher.groupEquals(groupName));
-            return triggerKeys.stream().map(this::getJobDetails).toList();
-        } catch (Exception e) {
-            throw new Fit2cloudException(JobErrorCodeConstants.LIST_JOB_DETAILS_FAIL.getCode(), JobErrorCodeConstants.LIST_JOB_DETAILS_FAIL.getMessage());
-        }
+        QuzrtzMapper quzrtzMapper = quartzSqlSessionFactory.openSession().getMapper(QuzrtzMapper.class);
+        QueryWrapper<QuzrtzJobDetail> eq = new QueryWrapper<QuzrtzJobDetail>().eq("qt.SCHED_NAME", scheduler.getSchedulerName()).eq("qt.TRIGGER_GROUP", groupName);
+        return quzrtzMapper.list(eq);
     }
 
     @Override
