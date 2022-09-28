@@ -43,6 +43,7 @@ interface MenuItem {
  * 菜单对象
  */
 interface Menu extends MenuItem {
+  sourceMenu?: string;
   /**
    * 组建Path
    */

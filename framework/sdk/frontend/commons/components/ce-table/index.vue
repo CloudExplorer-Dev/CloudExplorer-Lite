@@ -195,6 +195,11 @@ defineExpose({
 .table-handler {
   height: var(--ce-table-header-height, 56px);
 }
+.fu-table-header {
+  th {
+    background-color: var(--el-color-primary-light-9) !important;
+  }
+}
 .complex-table {
   height: 100%;
   width: 100%;

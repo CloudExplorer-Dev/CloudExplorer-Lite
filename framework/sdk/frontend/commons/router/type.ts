@@ -345,6 +345,7 @@ export class RouteObj {
         meta: {
           requiredPermissions: menu.requiredPermissions,
           title: menu.title,
+          sourceMenu: menu.sourceMenu,
         },
       };
     } else {

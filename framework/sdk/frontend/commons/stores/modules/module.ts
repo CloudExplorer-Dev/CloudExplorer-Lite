@@ -7,14 +7,14 @@ import { listMenus } from "@commons/api/menu";
 import type { SimpleMap } from "@commons/api/base/type";
 
 interface ModuleStoreObject {
-  modules: Array<Module>;
+  modules?: Array<Module>;
   menus: SimpleMap<Array<Menu>>;
 }
 
 export const useModuleStore = defineStore({
   id: "module",
   state: (): ModuleStoreObject => ({
-    modules: [],
+    modules: undefined,
     menus: <SimpleMap<Array<Menu>>>{},
   }),
   getters: {
@@ -42,6 +42,12 @@ export const useModuleStore = defineStore({
 
       if (!userStore.isLogin) {
         return;
+      }
+      if(!!this.modules){
+        console.log('ok')
+        return;
+      }else{
+        console.log('init')
       }
       const modules = (await listModules()).data;
       if (modules) {

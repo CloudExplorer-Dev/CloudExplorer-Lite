@@ -159,7 +159,6 @@ export const useUserStore = defineStore({
         this.changeRole(storedRole, storedSource);
 
         const permissionStore = usePermissionStore();
-
         //刷新权限
         await permissionStore.refreshPermissions();
         //console.log(permissionStore.userPermissions);

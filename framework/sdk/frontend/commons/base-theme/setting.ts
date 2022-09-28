@@ -4,7 +4,7 @@ const setting: ThemeSetting = {
   division: "-",
   startDivision: "--",
   colorInferSetting: {
-    light: [3, 5, 7, 8, 9],
+    light: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11],
     dark: [2],
     type: "color",
   },

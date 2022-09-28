@@ -55,6 +55,7 @@ class Theme {
     this.isFirstWriteStyle = true;
     this.colorWhite = "#ffffff";
     this.colorBlack = "#000000";
+    this.initDefaultTheme();
   }
 
   /**

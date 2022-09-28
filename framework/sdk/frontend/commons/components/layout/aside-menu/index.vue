@@ -1,17 +1,18 @@
 <script setup lang="ts">
 import SubMenu from "./SubMenu.vue";
-import { computed } from "vue";
+import { ref, watch } from "vue";
 import { useRouter } from "vue-router";
 import { useModuleStore } from "@commons/stores/modules/module";
-
+const router = useRouter();
 const moduleStore = useModuleStore();
-const currentRoute = useRouter().currentRoute.value;
-const activeMenu = computed(() => {
-  if (currentRoute.matched.length > 2) {
-    return currentRoute.matched[currentRoute.matched.length - 2].path;
-  }
-  return currentRoute.path;
-});
+const activeMenu = ref<string>();
+watch(
+  router.currentRoute,
+  (pre) => {
+    activeMenu.value = pre.meta.sourceMenu as string;
+  },
+  { immediate: true }
+);
 </script>
 <template>
   <el-menu class="menuContainer" :router="true" :default-active="activeMenu">
@@ -45,5 +46,14 @@ const activeMenu = computed(() => {
     width: 100%;
     background-color: rgb(204, 204, 204);
   }
+}
+
+.el-menu-item.is-active {
+  color: var(--el-menu-active-color);
+  background-color: var(--el-menu-hover-bg-color);
+}
+
+.fu-table-header {
+  background-color: rebeccapurple;
 }
 </style>

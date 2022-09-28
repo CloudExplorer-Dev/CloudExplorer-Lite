@@ -12,7 +12,6 @@ import type { RouteItem } from "@commons/router/type";
 import { RouteObj } from "@commons/router/type";
 //import AppContent from "@commons/components/layout/app-content/index.vue";
 import { usePermissionStore } from "@commons/stores/modules/permission";
-
 /**
  * 扁平化菜单
  * @param menus
@@ -23,11 +22,13 @@ import { usePermissionStore } from "@commons/stores/modules/permission";
 export const flatMenu = (
   menus: Array<Menu> | undefined,
   newMenus: Array<Menu>,
-  autoOperations = true
+  autoOperations = true,
+  sourceMenu?: string
 ) => {
   menus?.forEach((item) => {
     const newMenu: Menu = {
       ...item,
+      sourceMenu: sourceMenu ? sourceMenu : item.path,
       children: [],
     };
     newMenus.push(newMenu);
@@ -39,7 +40,7 @@ export const flatMenu = (
       item.operations.length > 0 &&
       autoOperations
     ) {
-      flatMenu(item.operations, newMenus, autoOperations);
+      flatMenu(item.operations, newMenus, autoOperations, item.path);
     }
   });
   return newMenus;
@@ -129,9 +130,9 @@ export async function initRouteObj(): Promise<RouteObj> {
         : undefined,
       async () => {
         const moduleStore = useModuleStore(store);
-
-        await moduleStore.refreshModules();
-        console.log(moduleStore.currentModuleMenu);
+        if (!moduleStore.modules) {
+          await moduleStore.refreshModules();
+        }
 
         return moduleStore.currentModuleMenu;
       },
@@ -139,8 +140,6 @@ export async function initRouteObj(): Promise<RouteObj> {
         const userStore = useUserStore(store);
         const permissionStore = usePermissionStore(store);
         await permissionStore.refreshPermissions();
-        console.log(userStore.isLogin);
-        console.log(permissionStore.userPermissions);
         return {
           permissions: permissionStore.userPermissions,
           role: userStore.currentRole,

@@ -3,13 +3,13 @@ import { useUserStore } from "./user";
 import { getCurrentUserPlainPermissions } from "@commons/api/permission";
 
 interface PermissionObject {
-  permissions: Array<string>;
+  permissions?: Array<string>;
 }
 
 export const usePermissionStore = defineStore({
   id: "permission",
   state: (): PermissionObject => ({
-    permissions: [],
+    permissions: undefined,
   }),
   getters: {
     userPermissions(state: any): Array<string> {
@@ -18,6 +18,7 @@ export const usePermissionStore = defineStore({
   },
   actions: {
     async refreshPermissions() {
+      console.log("调用");
       const userStore = useUserStore();
       if (!userStore.isLogin) {
         return;
