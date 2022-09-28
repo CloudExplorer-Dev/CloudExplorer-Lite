@@ -14,16 +14,25 @@ import com.fit2cloud.common.log.constants.ResourceTypeEnum;
 import com.fit2cloud.common.log.entity.OperatedLogVO;
 import com.fit2cloud.common.log.entity.SystemLogVO;
 import com.fit2cloud.common.utils.JsonUtil;
+import com.fit2cloud.common.utils.QueryUtil;
 import com.fit2cloud.controller.request.es.PageOperatedLogRequest;
 import com.fit2cloud.controller.request.es.PageSystemLogRequest;
 import com.fit2cloud.request.pub.OrderRequest;
 import com.fit2cloud.service.ILogService;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.elasticsearch.client.elc.NativeQueryBuilder;
+import org.springframework.data.elasticsearch.core.query.FetchSourceFilter;
+import org.springframework.data.elasticsearch.core.query.SourceFilter;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
+import java.lang.reflect.Array;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Iterator;
-import java.util.Optional;
+import java.util.List;
 
 /**
  * @author jianneng
@@ -41,89 +50,74 @@ public class LogServiceImpl implements ILogService {
     @Override
     public IPage<SystemLogVO> systemLogs(PageSystemLogRequest request) {
         Page<SystemLogVO> page = new Page<>(request.getCurrentPage(), request.getPageSize(), false);
-        SearchRequest.Builder builder = provide.requestBuilder(CE_FILE_SYSTEM_LOGS);
-        //分页
-        builder.from(request.getCurrentPage()).size(request.getPageSize());
-        //条件
-        Query.Builder query = addQuery(JsonUtil.toJSONString(request));
-        builder.query(query.build());
-        //排序
-        if(Optional.ofNullable(request.getOrder()).isPresent()){
-            SortOptions.Builder sort = addSort(request.getOrder());
-            builder.sort(sort.build());
+        return provide.searchByQuery(CE_FILE_SYSTEM_LOGS, getSearchQuery(request.getCurrentPage(), request.getPageSize(), JsonUtil.toJSONString(request), request.getOrder()), SystemLogVO.class, page);
+    }
+
+
+    @Override
+    public IPage<OperatedLogVO> operatedLogs(PageOperatedLogRequest request) {
+        Page<OperatedLogVO> page = new Page<>(request.getCurrentPage(), request.getPageSize(), false);
+        if (StringUtils.equalsIgnoreCase("loginLog", request.getType())) {
+            request.setType(null);
+            request.setResourceType(ResourceTypeEnum.SYSTEM.getDescription());
         }
-        return provide.searchByQuery(CE_FILE_SYSTEM_LOGS,builder, SystemLogVO.class,page);
+        if (StringUtils.equalsIgnoreCase("vmOperateLog", request.getType())) {
+            request.setType(null);
+            request.setResourceType(ResourceTypeEnum.VIRTUAL_MACHINE.getDescription());
+        }
+        if (StringUtils.equalsIgnoreCase("diskOperateLog", request.getType())) {
+            request.setType(null);
+            request.setResourceType(ResourceTypeEnum.DISK.getDescription());
+        }
+        if (StringUtils.equalsIgnoreCase("allLog", request.getType())) {
+            request.setType(null);
+            //request.setResourceType(ResourceTypeEnum.DISK.getDescription());
+        }
+        return provide.searchByQuery(CE_FILE_API_LOGS, getSearchQuery(request.getCurrentPage(), request.getPageSize(), JsonUtil.toJSONString(request), request.getOrder()), OperatedLogVO.class, page);
+    }
+
+
+    /**
+     * 构建复合查询对象
+     *
+     * @param currentPage 当前页
+     * @param pageSize    每个大小
+     * @param request     请求对象
+     * @param order       排序
+     * @return 复合查询对象
+     */
+    private org.springframework.data.elasticsearch.core.query.Query getSearchQuery(Integer currentPage, Integer pageSize, String request, OrderRequest order) {
+        NativeQueryBuilder query = new NativeQueryBuilder()
+                .withPageable(PageRequest.of(currentPage, pageSize))
+                .withQuery(buildQuery(request))
+                .withSourceFilter(new FetchSourceFilter(new String[]{}, new String[]{"@version", "@timestamp", "host", "tags"}));
+        if (order != null && StringUtils.isNotEmpty(order.getColumn())) {
+            query.withSort(Sort.by(order.isAsc() ? Sort.Order.asc(order.getColumn()) : Sort.Order.desc(order.getColumn())));
+        }
+        return query.build();
     }
 
     /**
-     * TODO 暂时都按照es排序，其他自定义字段无法排序
-     * @param orderRequest
-     * @return
+     * 构建查询对象
+     *
+     * @param paramsJson 查询对象json
+     * @return 查询对象
      */
-    private SortOptions.Builder addSort(OrderRequest orderRequest) {
-        SortOptions.Builder sort = new SortOptions.Builder();
-        String columnName = orderRequest.getColumn();
-        String orderValue = orderRequest.isAsc()?"Asc":"Desc";
-        SortOrder s = SortOrder.valueOf(orderValue);
-        //排序
-        sort.field(k->k.field("@timestamp").order(s));
-        return sort;
-    }
-
-    private Query.Builder addQuery(String paramsJson) {
-        Query.Builder query = new Query.Builder();
-        //query.matchAll(m->m);
+    private Query buildQuery(String paramsJson) {
+        List<QueryUtil.QueryCondition> queryConditions = new ArrayList<>();
         ObjectNode params = JsonUtil.parseObject(paramsJson);
         Iterator<String> fieldNames = params.fieldNames();
-        BoolQuery.Builder boolQuery = new BoolQuery.Builder();
-        //只接收tags是multiline的数据
-        //boolQuery.must(m->m.match(k->k.field("tags").query(v->v.stringValue("multiline"))));
-        while (fieldNames.hasNext()){
+        while (fieldNames.hasNext()) {
             String name = fieldNames.next();
-            if(StringUtils.equalsIgnoreCase("currentPage",name) || StringUtils.equalsIgnoreCase("pageSize",name)){
+            if (StringUtils.equalsIgnoreCase("currentPage", name) || StringUtils.equalsIgnoreCase("pageSize", name) || StringUtils.equalsIgnoreCase("order", name)) {
                 continue;
             }
             JsonNode jsonNode = params.get(name);
             String value = jsonNode.asText();
-            if(StringUtils.isNotEmpty(value) && !StringUtils.equalsIgnoreCase("null",value)){
-                boolQuery.must(m -> m.match(u -> u.field(name).query(v->v.stringValue(value))));
-            }
+            QueryUtil.QueryCondition condition = new QueryUtil.QueryCondition(StringUtils.isNotEmpty(value) && !StringUtils.equalsIgnoreCase("null", value), name, value, QueryUtil.CompareType.LIKE);
+            queryConditions.add(condition);
         }
-        query.bool(boolQuery.build());
-        return  query;
+        BoolQuery.Builder query = QueryUtil.getQuery(queryConditions);
+        return new Query.Builder().bool(query.build()).build();
     }
-
-    @Override
-    public IPage<OperatedLogVO> operatedLogs(PageOperatedLogRequest request) {
-        Page<SystemLogVO> page = new Page<>(request.getCurrentPage(), request.getPageSize(), false);
-        SearchRequest.Builder builder = provide.requestBuilder(CE_FILE_API_LOGS);
-        //分页
-        builder.from(request.getCurrentPage()).size(request.getPageSize());
-        if(StringUtils.equalsIgnoreCase("loginLog",request.getType())){
-            request.setType(null);
-            request.setResourceType(ResourceTypeEnum.SYSTEM.getDescription());
-        }
-        if(StringUtils.equalsIgnoreCase("vmOperateLog",request.getType())){
-            request.setType(null);
-            request.setResourceType(ResourceTypeEnum.VIRTUAL_MACHINE.getDescription());
-        }
-        if(StringUtils.equalsIgnoreCase("diskOperateLog",request.getType())){
-            request.setType(null);
-            request.setResourceType(ResourceTypeEnum.DISK.getDescription());
-        }
-        if(StringUtils.equalsIgnoreCase("allLog",request.getType())){
-            request.setType(null);
-            //request.setResourceType(ResourceTypeEnum.DISK.getDescription());
-        }
-        //条件
-        Query.Builder query = addQuery(JsonUtil.toJSONString(request));
-        //排序
-        if(Optional.ofNullable(request.getOrder()).isPresent()){
-            SortOptions.Builder sort = addSort(request.getOrder());
-            builder.sort(sort.build());
-        }
-        builder.query(query.build());
-           return provide.searchByQuery(CE_FILE_API_LOGS,builder, OperatedLogVO.class,page);
-    }
-
 }

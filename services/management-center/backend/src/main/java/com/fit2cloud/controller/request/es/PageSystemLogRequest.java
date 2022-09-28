@@ -14,7 +14,7 @@ public class PageSystemLogRequest extends PageRequest {
      * 详细信息
      */
     @ApiModelProperty("详细信息")
-    private String msg;
+    private String message;
 
     /**
      * 模块
