@@ -1,6 +1,6 @@
 package com.fit2cloud.provider.impl.vsphere;
 
-import com.fit2cloud.common.platform.credential.impl.VsphereCredential;
+import com.fit2cloud.common.provider.impl.vsphere.entity.credential.VsphereCredential;
 import com.fit2cloud.common.utils.JsonUtil;
 import com.fit2cloud.provider.AbstractCloudProvider;
 import com.fit2cloud.provider.ICloudProvider;

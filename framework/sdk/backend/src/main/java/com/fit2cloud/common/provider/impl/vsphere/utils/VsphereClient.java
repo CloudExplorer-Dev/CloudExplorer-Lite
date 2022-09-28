@@ -1,4 +1,4 @@
-package com.fit2cloud.common.platform.vsphere.utils;
+package com.fit2cloud.common.provider.impl.vsphere.utils;
 
 import com.fit2cloud.common.constants.Language;
 import com.vmware.vim25.InvalidProperty;

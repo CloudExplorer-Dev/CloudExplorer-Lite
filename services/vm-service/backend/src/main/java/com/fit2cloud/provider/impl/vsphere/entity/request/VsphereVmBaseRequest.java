@@ -1,7 +1,7 @@
 package com.fit2cloud.provider.impl.vsphere.entity.request;
 
-import com.fit2cloud.common.platform.credential.impl.VsphereCredential;
-import com.fit2cloud.common.platform.vsphere.request.VsphereBaseRequest;
+import com.fit2cloud.common.provider.impl.vsphere.entity.credential.VsphereCredential;
+import com.fit2cloud.common.provider.impl.vsphere.entity.request.VsphereBaseRequest;
 import com.fit2cloud.provider.impl.vsphere.util.VsphereVmClient;
 
 /**
