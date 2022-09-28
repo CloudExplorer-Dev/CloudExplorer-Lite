@@ -2,6 +2,7 @@ package com.fit2cloud.service.impl;
 
 import co.elastic.clients.elasticsearch._types.SortOptions;
 import co.elastic.clients.elasticsearch._types.SortOrder;
+import co.elastic.clients.elasticsearch._types.aggregations.*;
 import co.elastic.clients.elasticsearch._types.query_dsl.BoolQuery;
 import co.elastic.clients.elasticsearch._types.query_dsl.Query;
 import co.elastic.clients.elasticsearch.core.SearchRequest;
@@ -87,10 +88,12 @@ public class LogServiceImpl implements ILogService {
      * @return 复合查询对象
      */
     private org.springframework.data.elasticsearch.core.query.Query getSearchQuery(Integer currentPage, Integer pageSize, String request, OrderRequest order) {
+
         NativeQueryBuilder query = new NativeQueryBuilder()
                 .withPageable(PageRequest.of(currentPage, pageSize))
                 .withQuery(buildQuery(request))
-                .withSourceFilter(new FetchSourceFilter(new String[]{}, new String[]{"@version", "@timestamp", "host", "tags"}));
+                .withSourceFilter(new FetchSourceFilter(new String[]{}, new String[]{"@version", "@timestamp", "host", "tags"}))
+                .withAggregation("count", new Aggregation.Builder().valueCount(new ValueCountAggregation.Builder().field("_id").build()).build());
         if (order != null && StringUtils.isNotEmpty(order.getColumn())) {
             query.withSort(Sort.by(order.isAsc() ? Sort.Order.asc(order.getColumn()) : Sort.Order.desc(order.getColumn())));
         }
