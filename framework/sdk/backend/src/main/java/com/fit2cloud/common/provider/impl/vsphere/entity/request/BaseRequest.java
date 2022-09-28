@@ -1,4 +1,4 @@
-package com.fit2cloud.common.platform.vsphere.request;
+package com.fit2cloud.common.provider.impl.vsphere.entity.request;
 
 import com.fit2cloud.common.constants.Language;
 import lombok.Data;

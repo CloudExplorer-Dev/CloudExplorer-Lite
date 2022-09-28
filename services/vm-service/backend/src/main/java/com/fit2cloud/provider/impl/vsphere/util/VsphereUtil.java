@@ -1,6 +1,6 @@
 package com.fit2cloud.provider.impl.vsphere.util;
 
-import com.fit2cloud.common.platform.vsphere.utils.VsphereClient;
+import com.fit2cloud.common.provider.impl.vsphere.utils.VsphereClient;
 import com.fit2cloud.provider.constants.DeleteWithInstance;
 import com.fit2cloud.provider.constants.F2CDiskStatus;
 import com.fit2cloud.provider.constants.F2CInstanceStatus;

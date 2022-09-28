@@ -1,4 +1,4 @@
-package com.fit2cloud.common.platform.credential.impl;
+package com.fit2cloud.common.provider.impl.vsphere.entity.credential;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fit2cloud.common.exception.Fit2cloudException;
