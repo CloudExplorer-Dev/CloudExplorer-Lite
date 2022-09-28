@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.fit2cloud.common.scheduler.mapper.QuzrtzMapper">
+    <resultMap id="BaseResultMap" type="com.fit2cloud.common.scheduler.entity.QuzrtzJobDetail">
+        <result column="sched_name" property="schedName"/>
+        <result column="trigger_name" property="triggerName"/>
+        <result column="trigger_group" property="triggerGroup"/>
+        <result column="job_name" property="jobName"/>
+        <result column="job_group" property="jobGroup"/>
+        <result column="description" property="description"/>
+        <result column="next_fire_time" property="nextFireTime"/>
+        <result column="prev_fire_time" property="prevFireTime"/>
+        <result column="priority" property="priority"/>
+        <result column="trigger_state" property="triggerState"/>
+        <result column="trigger_type" property="triggerType"/>
+        <result column="end_time" property="endTime"/>
+        <result column="calendar_name" property="calendarName"/>
+        <result column="misfire_instr" property="misfireInstr"/>
+        <result column="trigger_job_data" property="triggerJobData"
+                typeHandler="com.fit2cloud.common.scheduler.handler.ByteTypeHandler"/>
+        <result column="is_durable" property="isDurable"/>
+        <result column="is_nonconcurrent" property="isNonconcurrent"/>
+        <result column="requests_recovery" property="requestsRecovery"/>
+        <result column="job_details_job_data" property="jobDetailsJobData"
+                typeHandler="com.fit2cloud.common.scheduler.handler.ByteTypeHandler"/>
+        <result column="unit" property="unit"/>
+        <result column="days_of_week" property="days_of_week"/>
+        <result column="start_time_of_day_andend_time_of_day" property="startTimeOfDayAndEndTimeOfDay"/>
+        <result column="interval" property="interval"/>
+        <result column="repeat_count" property="repeatCount"/>
+        <result column="misfire_instruction" property="misfireInstruction"/>
+        <result column="cron_time_zone" property="cronTimeZone"/>
+        <result column="cron_expressopn" property="cronExpressopn"/>
+    </resultMap>
+    <select id="list" resultMap="BaseResultMap">
+        SELECT qt.SCHED_NAME as sched_name,
+        qt.TRIGGER_NAME as trigger_name,
+        qt.TRIGGER_GROUP as trigger_group,
+        qt.JOB_NAME as job_name,
+        qt.JOB_GROUP as job_group,
+        qt.DESCRIPTION as description,
+        qt.NEXT_FIRE_TIME as next_fire_time,
+        qt.PREV_FIRE_TIME as prev_fire_time,
+        qt.PRIORITY as priority,
+        qt.TRIGGER_STATE as trigger_state,
+        qt.TRIGGER_TYPE as trigger_type,
+        qt.END_TIME as end_time,
+        qt.CALENDAR_NAME as calendar_name,
+        qt.MISFIRE_INSTR as misfire_instr,
+        qt.JOB_DATA as trigger_job_data,
+        qjd.JOB_CLASS_NAME as job_calss_name,
+        qjd.IS_DURABLE as is_durable,
+        qjd.IS_NONCONCURRENT as is_nonconcurrent,
+        qjd.IS_UPDATE_DATA as is_update_data,
+        qjd.REQUESTS_RECOVERY as requests_recovery,
+        qjd.JOB_DATA as job_details_job_data,
+        qst.STR_PROP_1 as unit,
+        qst.STR_PROP_2 as days_of_week,
+        qst.STR_PROP_3 as start_time_of_day_andend_time_of_day,
+        qst.INT_PROP_1 as `interval`,
+        qst.LONG_PROP_1 as repeat_count,
+        qst.LONG_PROP_2 as misfire_instruction,
+        qct.TIME_ZONE_ID as cron_time_zone,
+        qct.CRON_EXPRESSION as cron_expressopn
+        FROM quartz.qrtz_triggers qt
+        LEFT JOIN qrtz_job_details qjd ON qt.SCHED_NAME = qjd.SCHED_NAME
+        AND qt.JOB_NAME = qjd.JOB_NAME AND qt.JOB_GROUP = qjd.JOB_GROUP
+        LEFT JOIN qrtz_simprop_triggers qst ON qt.SCHED_NAME = qst.SCHED_NAME
+        AND qt.TRIGGER_NAME = qst.TRIGGER_NAME
+        AND qt.TRIGGER_GROUP = qst.TRIGGER_GROUP
+        LEFT JOIN qrtz_cron_triggers qct ON qt.SCHED_NAME = qct.SCHED_NAME
+        AND qt.TRIGGER_NAME = qct.TRIGGER_NAME
+        AND qt.TRIGGER_GROUP = qct.TRIGGER_GROUP
+        <if test="ew!=null">
+            ${ew.customSqlSegment}
+        </if>
+    </select>
+    <update id="updateJob">
+
+
+    </update>
+</mapper>

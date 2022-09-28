@@ -1,6 +1,6 @@
 package com.fit2cloud.common.scheduler;
 
-import com.fit2cloud.common.scheduler.impl.entity.QuzrtzJobDetail;
+import com.fit2cloud.common.scheduler.entity.QuzrtzJobDetail;
 import org.quartz.*;
 
 import java.util.List;

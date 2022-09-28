@@ -10,7 +10,7 @@ import com.fit2cloud.common.exception.Fit2cloudException;
 import com.fit2cloud.common.platform.credential.Credential;
 import com.fit2cloud.common.scheduler.SchedulerService;
 import com.fit2cloud.common.constants.JobConstants;
-import com.fit2cloud.common.scheduler.impl.entity.QuzrtzJobDetail;
+import com.fit2cloud.common.scheduler.entity.QuzrtzJobDetail;
 import com.fit2cloud.dto.job.JobInitSettingDto;
 import com.fit2cloud.dto.job.JobModuleInfo;
 import com.fit2cloud.request.cloud_account.CloudAccountJobItem;
@@ -18,6 +18,7 @@ import com.fit2cloud.request.cloud_account.CloudAccountModuleJob;
 import lombok.SneakyThrows;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
+import org.quartz.DateBuilder;
 import org.quartz.Trigger;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
@@ -75,7 +76,6 @@ public class BaseCloudAccountServiceImpl extends ServiceImpl<BaseCloudAccountMap
         JobModuleInfo moduleJobInfo = JobSettingConfig.getModuleJobInfo();
         CloudAccountModuleJob moduleJob = new CloudAccountModuleJob();
         BeanUtils.copyProperties(moduleJobInfo, moduleJob);
-        //todo 定时任务数据  获取定时任务比较耗费时间,后期优化
         List<QuzrtzJobDetail> quzrtzJobDetails = schedulerService.list(JobConstants.Group.CLOUD_ACCOUNT_RESOURCE_SYNC_GROUP.name());
         List<JobInitSettingDto> jobDetails = moduleJobInfo.getJobDetails().stream().filter(job -> job.getJobGroup().equals(JobConstants.Group.CLOUD_ACCOUNT_RESOURCE_SYNC_GROUP.name())).toList();
         if (CollectionUtils.isEmpty(jobDetails)) {
@@ -84,7 +84,7 @@ public class BaseCloudAccountServiceImpl extends ServiceImpl<BaseCloudAccountMap
         Map<String, Object> defaultCloudAccountJobParams = new HashMap<>();
         List<CloudAccountJobItem> jobItems = jobDetails.stream().map(job -> {
             String cloudAccountJobName = JobConstants.CloudAccount.getCloudAccountJobName(job.getJobName(), accountId);
-            Optional<QuzrtzJobDetail> jobDetail = quzrtzJobDetails.stream().filter(j -> j.getName().equals(cloudAccountJobName)).findFirst();
+            Optional<QuzrtzJobDetail> jobDetail = quzrtzJobDetails.stream().filter(j -> j.getTriggerName().equals(cloudAccountJobName)).findFirst();
             if (jobDetail.isPresent()) {
                 return getJobItem(jobDetail.get());
             } else {
@@ -98,6 +98,7 @@ public class BaseCloudAccountServiceImpl extends ServiceImpl<BaseCloudAccountMap
         moduleJob.setJobDetailsList(jobItems);
         return moduleJob;
     }
+
 
     @Override
     public CloudAccountModuleJob updateJob(CloudAccountModuleJob moduleJob, String accountId) {
@@ -128,13 +129,13 @@ public class BaseCloudAccountServiceImpl extends ServiceImpl<BaseCloudAccountMap
      */
     public CloudAccountJobItem getJobItem(QuzrtzJobDetail quzrtzJobDetail) {
         CloudAccountJobItem jobItem = new CloudAccountJobItem();
-        jobItem.setJobGroup(quzrtzJobDetail.getGroup());
-        jobItem.setJobName(quzrtzJobDetail.getName());
+        jobItem.setJobGroup(quzrtzJobDetail.getTriggerGroup());
+        jobItem.setJobName(quzrtzJobDetail.getTriggerName());
         jobItem.setActive(!quzrtzJobDetail.getTriggerState().equals(Trigger.TriggerState.PAUSED));
-        jobItem.setTimeInterval(quzrtzJobDetail.getRepeatInterval());
+        jobItem.setTimeInterval(quzrtzJobDetail.getInterval().longValue());
         jobItem.setDescription(quzrtzJobDetail.getDescription());
-        jobItem.setUnit(quzrtzJobDetail.getUnit());
-        Object region = quzrtzJobDetail.getParams().get(JobConstants.CloudAccount.REGIONS.name());
+        jobItem.setUnit(DateBuilder.IntervalUnit.valueOf(quzrtzJobDetail.getUnit()));
+        Object region = quzrtzJobDetail.getTriggerJobData().get(JobConstants.CloudAccount.REGIONS.name());
         jobItem.setRegions((List<Credential.Region>) region);
         return jobItem;
     }
@@ -150,6 +151,7 @@ public class BaseCloudAccountServiceImpl extends ServiceImpl<BaseCloudAccountMap
         String cloudAccountJobName = JobConstants.CloudAccount.getCloudAccountJobName(jobInitSettingDto.getJobName(), cloudAccountId);
         jobItem.setJobGroup(jobInitSettingDto.getJobGroup());
         jobItem.setJobName(cloudAccountJobName);
+        jobItem.setDescription(jobInitSettingDto.getDescription());
         jobItem.setActive(true);
         jobItem.setTimeInterval((long) jobInitSettingDto.getTimeInterval());
         jobItem.setUnit(jobInitSettingDto.getUnit());

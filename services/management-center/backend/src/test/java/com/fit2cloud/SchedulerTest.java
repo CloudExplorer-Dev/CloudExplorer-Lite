@@ -1,15 +1,16 @@
 package com.fit2cloud;
 
 import com.fit2cloud.common.platform.credential.Credential;
-import com.fit2cloud.common.scheduler.impl.entity.QuzrtzJobDetail;
 import com.fit2cloud.common.scheduler.SchedulerService;
 import org.junit.jupiter.api.Test;
-import org.quartz.*;
+import org.quartz.Scheduler;
+import org.quartz.SchedulerException;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.TestPropertySource;
 
 import javax.annotation.Resource;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
 
 /**
  * @Author:张少虎
@@ -32,7 +33,6 @@ public class SchedulerTest {
     private String groupName = "组1";
 
 
-
     @Test
     public void createJob() {
         ArrayList<Credential.Region> regions = new ArrayList<>();
@@ -44,11 +44,6 @@ public class SchedulerTest {
 //        schedulerService.addJob(TestJob.class, jobName, groupName, "主要用于测试", "0/1 * * * * ? ", params);//  schedulerService.addJob(TestJob.class, jobName, groupName, "主要用于测试", params, null, null, 1, DateBuilder.IntervalUnit.SECOND, -1, null);
     }
 
-    @Test
-    public void selectJob() {
-        QuzrtzJobDetail jobDetails = schedulerService.getJobDetails(jobName, groupName);
-        System.out.println(jobDetails);
-    }
 
     @Test
     public void deleteJob() throws SchedulerException {
