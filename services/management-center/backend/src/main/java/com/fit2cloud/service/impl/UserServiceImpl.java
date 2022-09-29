@@ -110,15 +110,10 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
     @Override
     public boolean deleteUser(String userId) {
         String currentLoginUserId = CurrentUserUtils.getUser().getId();
-
         User user = baseMapper.selectById(userId);
-        if (user == null) {
-            //其实在controller那边就拦截了
-            throw new Fit2cloudException(ErrorCodeConstants.USER_NOT_EXIST.getCode(), ErrorCodeConstants.USER_CAN_NOT_DELETE.getMessage());
-        }
 
-        //不能删除自己
-        if (StringUtils.equalsIgnoreCase(user.getUsername(), currentLoginUserId)) {
+        // 不能删除自己
+        if (StringUtils.equalsIgnoreCase(user.getId(), currentLoginUserId)) {
             throw new Fit2cloudException(ErrorCodeConstants.USER_CAN_NOT_DELETE.getCode(), ErrorCodeConstants.USER_CAN_NOT_DELETE.getMessage());
         }
 
