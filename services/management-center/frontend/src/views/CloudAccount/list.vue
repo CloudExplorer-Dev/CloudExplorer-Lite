@@ -234,10 +234,16 @@ const tableConfig = ref<TableConfig>({
       sortable
     >
       <template #default="scope">
-        <div style="display: flex; align-items: center">
+        <div
+          style="
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+          "
+        >
           <span>{{ platformIcon[scope.row.platform].name }}</span>
           <el-image
-            style="margin-left: 20px; display: flex"
+            style="margin-right: 20%; display: flex"
             :src="platformIcon[scope.row.platform].icon"
           ></el-image>
         </div>

@@ -70,8 +70,8 @@ const message = {
       once: "同步一次",
       region: "区域",
       range: "同步范围",
-      timing: "定时同步",
-      interval: "间隔",
+      timing: "资源同步频率",
+      interval: "每隔",
       interval_time_unit: {
         millisecond: "毫秒",
         second: "秒",
