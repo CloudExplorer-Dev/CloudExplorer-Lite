@@ -11,6 +11,8 @@ import type {
   CloudAccountJobDetailsResponse,
   UpdateJobsRequest,
   UpdateAccount,
+  UpdateAccountName,
+  ResourceCount,
 } from "./type";
 /**
  * 分页查询云账号
@@ -150,6 +152,46 @@ const updateJobs: (
   return put("/api/cloud_account/jobs", null, data, loading);
 };
 
+/**
+ * 查询云账户余额
+ * @param cloudAccountId
+ * @param loading
+ */
+const getAccountBalance: (
+  cloudAccountId: string,
+  loading?: Ref<boolean>
+) => Promise<Result<number | string>> = (cloudAccountId, loading) => {
+  return get("/api/cloud_account/balance/" + cloudAccountId, null, loading);
+};
+
+/**
+ * 更新云账号名称
+ * @param data
+ * @param loading
+ */
+const updateAccountName: (
+  data: UpdateAccountName,
+  loading?: Ref<boolean>
+) => Promise<Result<number | string>> = (data, loading) => {
+  return put("/api/cloud_account/updateName", null, data, loading);
+};
+
+/**
+ * 查询云账户余额
+ * @param cloudAccountId
+ * @param loading
+ */
+const getResourceCount: (
+  cloudAccountId: string,
+  loading?: Ref<boolean>
+) => Promise<Result<Array<ResourceCount>>> = (cloudAccountId, loading) => {
+  return get(
+    "/api/cloud_account/resourceCount/" + cloudAccountId,
+    null,
+    loading
+  );
+};
+
 export default {
   page,
   getPlatformAll,
@@ -162,4 +204,7 @@ export default {
   deleteCloudAccount,
   batchDeleteCloudAccount,
   verificationCloudAccount,
+  getAccountBalance,
+  updateAccountName,
+  getResourceCount,
 };

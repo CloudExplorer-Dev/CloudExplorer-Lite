@@ -40,6 +40,14 @@ const edit = (row: CloudAccount) => {
 };
 
 /**
+ * 展示云账号详情
+ * @param row
+ */
+const showAccountDetail = (row: CloudAccount) => {
+  router.push({ name: "cloud_account_detail", params: { id: row.id } });
+};
+
+/**
  * 删除这一行数据,根据id
  * @param row 当前这一行数据
  */
@@ -225,7 +233,16 @@ const tableConfig = ref<TableConfig>({
       }}</el-button>
     </template>
     <el-table-column type="selection" />
-    <el-table-column prop="name" :label="t('commons.name', '名称')" sortable />
+    <el-table-column prop="name" :label="t('commons.name', '名称')" sortable>
+      <template #default="scope">
+        <span
+          style="cursor: pointer; color: var(--el-color-primary)"
+          @click="showAccountDetail(scope.row)"
+        >
+          {{ scope.row.name }}</span
+        >
+      </template>
+    </el-table-column>
     <el-table-column
       column-key="platform"
       :filters="platformFilters"

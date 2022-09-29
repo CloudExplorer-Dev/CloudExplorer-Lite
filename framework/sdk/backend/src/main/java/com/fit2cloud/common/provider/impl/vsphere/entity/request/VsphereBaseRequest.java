@@ -1,6 +1,6 @@
 package com.fit2cloud.common.provider.impl.vsphere.entity.request;
 
-import com.fit2cloud.common.provider.impl.vsphere.entity.credential.VsphereCredential;
+import com.fit2cloud.common.platform.credential.impl.VsphereCredential;
 import com.google.gson.Gson;
 
 public class VsphereBaseRequest extends BaseRequest {

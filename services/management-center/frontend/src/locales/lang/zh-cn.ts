@@ -66,7 +66,14 @@ const message = {
     field_is_not_null: "字段不能为空",
     name_is_not_empty: "云账号名称不能为空",
     platform_is_not_empty: "云平台不能为空",
+    balance: {
+      money: "账户余额",
+      unit: "元",
+    },
+    resource: "我的资源",
     sync: {
+      resource: "同步资源",
+      setting: "定时同步设置",
       once: "同步一次",
       region: "区域",
       range: "同步范围",

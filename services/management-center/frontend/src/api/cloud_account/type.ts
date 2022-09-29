@@ -200,6 +200,38 @@ interface UpdateJobsRequest extends CloudAccountJobDetailsResponse {
   cloudAccountId: string;
 }
 
+/**
+ * 更新云账号名称所需要的参数
+ */
+interface UpdateAccountName {
+  /**
+   * 云账号id
+   */
+  id: string;
+  /**
+   * 云账号Name
+   */
+  name: string;
+}
+
+/**
+ * 资源计数
+ */
+interface ResourceCount {
+  /**
+   * 资源图标
+   */
+  icon: string;
+  /**
+   * 资源名称
+   */
+  name: string;
+  /**
+   * 资源计数
+   */
+  count: number;
+}
+
 export type {
   ListOrganizationRequest,
   CloudAccount,
@@ -211,4 +243,6 @@ export type {
   ModuleJob,
   UpdateJobsRequest,
   UpdateAccount,
+  UpdateAccountName,
+  ResourceCount,
 };

@@ -2,12 +2,10 @@ package com.fit2cloud.service;
 
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.fit2cloud.common.platform.credential.Credential;
-import com.fit2cloud.controller.request.cloud_account.AddCloudAccountRequest;
-import com.fit2cloud.controller.request.cloud_account.CloudAccountRequest;
-import com.fit2cloud.controller.request.cloud_account.UpdateCloudAccountRequest;
-import com.fit2cloud.controller.request.cloud_account.UpdateJobsRequest;
+import com.fit2cloud.controller.request.cloud_account.*;
 import com.fit2cloud.controller.response.cloud_account.CloudAccountJobDetailsResponse;
 import com.fit2cloud.controller.response.cloud_account.PlatformResponse;
+import com.fit2cloud.controller.response.cloud_account.ResourceCountResponse;
 import com.fit2cloud.dao.entity.CloudAccount;
 import com.baomidou.mybatisplus.extension.service.IService;
 
@@ -103,4 +101,25 @@ public interface ICloudAccountService extends IService<CloudAccount> {
      * @return 云账号对象
      */
     CloudAccount verification(String accountId);
+
+    /**
+     * 获取云账户余额
+     * @param accountId
+     * @return 未获取到余额将返回--
+     */
+    Object getAccountBalance(String accountId);
+
+    /**
+     * 更新云账号名称
+     * @param updateAccountNameRequest
+     * @return
+     */
+    Boolean updateAccountName(UpdateAccountNameRequest updateAccountNameRequest);
+
+    /**
+     * 获取云账号资源计数
+     * @param accountId
+     * @return
+     */
+    List<ResourceCountResponse> resourceCount(String accountId);
 }

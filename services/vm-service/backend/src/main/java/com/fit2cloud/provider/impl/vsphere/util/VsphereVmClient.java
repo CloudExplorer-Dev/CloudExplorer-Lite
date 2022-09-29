@@ -1,7 +1,7 @@
 package com.fit2cloud.provider.impl.vsphere.util;
 
 import com.fit2cloud.common.constants.Language;
-import com.fit2cloud.common.provider.impl.vsphere.entity.credential.VsphereCredential;
+import com.fit2cloud.common.platform.credential.impl.VsphereCredential;
 import com.fit2cloud.common.provider.impl.vsphere.utils.VsphereClient;
 import com.vmware.vim25.*;
 import com.vmware.vim25.mo.VirtualMachine;

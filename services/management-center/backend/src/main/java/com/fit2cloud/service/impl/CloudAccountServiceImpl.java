@@ -1,29 +1,37 @@
 package com.fit2cloud.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.core.metadata.OrderItem;
+import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.fit2cloud.autoconfigure.ServerInfo;
+import com.fit2cloud.base.entity.VmCloudDisk;
+import com.fit2cloud.base.entity.VmCloudImage;
+import com.fit2cloud.base.entity.VmCloudServer;
 import com.fit2cloud.base.service.IBaseCloudAccountService;
+import com.fit2cloud.base.service.IBaseVmCloudDiskService;
+import com.fit2cloud.base.service.IBaseVmCloudImageService;
+import com.fit2cloud.base.service.IBaseVmCloudServerService;
 import com.fit2cloud.common.constants.PlatformConstants;
 import com.fit2cloud.common.exception.Fit2cloudException;
 import com.fit2cloud.common.form.vo.Form;
 import com.fit2cloud.common.platform.credential.Credential;
+import com.fit2cloud.common.provider.entity.F2CBalance;
 import com.fit2cloud.common.utils.PageUtil;
 import com.fit2cloud.constants.CloudAccountConstants;
 import com.fit2cloud.controller.handler.ResultHolder;
-import com.fit2cloud.controller.request.cloud_account.AddCloudAccountRequest;
-import com.fit2cloud.controller.request.cloud_account.CloudAccountRequest;
-import com.fit2cloud.controller.request.cloud_account.UpdateCloudAccountRequest;
-import com.fit2cloud.controller.request.cloud_account.UpdateJobsRequest;
+import com.fit2cloud.controller.request.cloud_account.*;
 import com.fit2cloud.controller.response.cloud_account.CloudAccountJobDetailsResponse;
 import com.fit2cloud.controller.response.cloud_account.PlatformResponse;
+import com.fit2cloud.controller.response.cloud_account.ResourceCountResponse;
 import com.fit2cloud.dao.entity.CloudAccount;
 import com.fit2cloud.dao.mapper.CloudAccountMapper;
 import com.fit2cloud.request.cloud_account.CloudAccountModuleJob;
 import com.fit2cloud.service.ICloudAccountService;
+import com.fit2cloud.service.IProviderService;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.cloud.client.ServiceInstance;
@@ -43,8 +51,6 @@ import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 /**
  * <p>
@@ -65,6 +71,14 @@ public class CloudAccountServiceImpl extends ServiceImpl<CloudAccountMapper, Clo
     private DiscoveryClient discoveryClient;
     @Resource
     private IBaseCloudAccountService baseCloudAccountService;
+    @Resource
+    private IProviderService providerService;
+    @Resource
+    IBaseVmCloudServerService cloudServerService;
+    @Resource
+    IBaseVmCloudDiskService cloudDiskService;
+    @Resource
+    IBaseVmCloudImageService cloudImageService;
 
     private final static String httpPrefix = "https://";
     /**
@@ -272,5 +286,41 @@ public class CloudAccountServiceImpl extends ServiceImpl<CloudAccountMapper, Clo
         return getById(accountId);
     }
 
+    public Object getAccountBalance(String accountId) {
+        Object result = "--";
+        F2CBalance f2CBalance = providerService.getAccountBalance(accountId);
+        if (f2CBalance != null) {
+            result = f2CBalance.getAmount();
+        }
+        return result;
+    }
 
+    public Boolean updateAccountName(UpdateAccountNameRequest updateAccountNameRequest) {
+        CloudAccount cloudAccount = new CloudAccount();
+        cloudAccount.setId(updateAccountNameRequest.getId());
+        cloudAccount.setName(updateAccountNameRequest.getName());
+        updateById(cloudAccount);
+        return true;
+    }
+
+    public List<ResourceCountResponse> resourceCount(String accountId) {
+        // TODO 先静态统计资源数据，后期待改造成动态加载各个模块的统计数据；
+        List<ResourceCountResponse> list = new ArrayList<>();
+        // 虚拟机
+        QueryWrapper<VmCloudServer> vmQueryWrapper = Wrappers.query();
+        vmQueryWrapper.lambda().ne(VmCloudServer::getInstanceStatus, "deleted").eq(VmCloudServer::getAccountId,accountId);
+        ResourceCountResponse vm = new ResourceCountResponse("xuniyunzhuji", "虚拟机", cloudServerService.count(vmQueryWrapper));
+        list.add(vm);
+        // 磁盘
+        QueryWrapper<VmCloudDisk> diskQueryWrapper = Wrappers.query();
+        diskQueryWrapper.lambda().ne(VmCloudDisk::getStatus, "deleted").eq(VmCloudDisk::getAccountId,accountId);;
+        ResourceCountResponse disk = new ResourceCountResponse("yuncunchu", "磁盘", cloudDiskService.count(diskQueryWrapper));
+        list.add(disk);
+        // 镜像
+        QueryWrapper<VmCloudImage> imageQueryWrapper = Wrappers.query();
+        imageQueryWrapper.lambda().ne(VmCloudImage::getStatus, "deleted").eq(VmCloudImage::getAccountId,accountId);;
+        ResourceCountResponse image = new ResourceCountResponse("jingxiang", "镜像", cloudImageService.count(imageQueryWrapper));
+        list.add(image);
+        return list;
+    }
 }
