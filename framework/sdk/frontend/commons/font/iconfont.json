@@ -6,6 +6,104 @@
   "description": "",
   "glyphs": [
     {
+      "icon_id": "169944",
+      "name": "内网",
+      "font_class": "neiwang",
+      "unicode": "e6a6",
+      "unicode_decimal": 59046
+    },
+    {
+      "icon_id": "375372",
+      "name": "安全组",
+      "font_class": "anquanzu",
+      "unicode": "e680",
+      "unicode_decimal": 59008
+    },
+    {
+      "icon_id": "763154",
+      "name": "公网IP",
+      "font_class": "gongwangip39",
+      "unicode": "e72b",
+      "unicode_decimal": 59179
+    },
+    {
+      "icon_id": "857657",
+      "name": "子网",
+      "font_class": "wangluo1-copy",
+      "unicode": "e746",
+      "unicode_decimal": 59206
+    },
+    {
+      "icon_id": "1305097",
+      "name": "IP",
+      "font_class": "IP",
+      "unicode": "e643",
+      "unicode_decimal": 58947
+    },
+    {
+      "icon_id": "7133137",
+      "name": "弹性IP",
+      "font_class": "danxingIP",
+      "unicode": "e66d",
+      "unicode_decimal": 58989
+    },
+    {
+      "icon_id": "10055626",
+      "name": "虚拟私有网络VPC",
+      "font_class": "xunisiyouwangluoVPC",
+      "unicode": "e7d5",
+      "unicode_decimal": 59349
+    },
+    {
+      "icon_id": "14227058",
+      "name": "内网",
+      "font_class": "neiwang1",
+      "unicode": "e6a7",
+      "unicode_decimal": 59047
+    },
+    {
+      "icon_id": "14227083",
+      "name": "弹性IP",
+      "font_class": "danxingIP1",
+      "unicode": "e6ad",
+      "unicode_decimal": 59053
+    },
+    {
+      "icon_id": "14878996",
+      "name": "弹性公网IP",
+      "font_class": "danxinggongwangIP",
+      "unicode": "e6c9",
+      "unicode_decimal": 59081
+    },
+    {
+      "icon_id": "6241687",
+      "name": "系统日志",
+      "font_class": "xitongrizhi",
+      "unicode": "e640",
+      "unicode_decimal": 58944
+    },
+    {
+      "icon_id": "6965109",
+      "name": "云存储",
+      "font_class": "yuncunchu",
+      "unicode": "e624",
+      "unicode_decimal": 58916
+    },
+    {
+      "icon_id": "10651902",
+      "name": "镜像",
+      "font_class": "jingxiang",
+      "unicode": "e670",
+      "unicode_decimal": 58992
+    },
+    {
+      "icon_id": "7318486",
+      "name": "日志",
+      "font_class": "zhuanxierizhi",
+      "unicode": "e623",
+      "unicode_decimal": 58915
+    },
+    {
       "icon_id": "630094",
       "name": "向右箭头",
       "font_class": "xiangyoujiantou",
@@ -508,6 +606,13 @@
       "font_class": "shuaxin1",
       "unicode": "e650",
       "unicode_decimal": 58960
+    },
+    {
+      "icon_id": "742135",
+      "name": "虚拟机",
+      "font_class": "xuniji",
+      "unicode": "ea6b",
+      "unicode_decimal": 60011
     },
     {
       "icon_id": "765558",
