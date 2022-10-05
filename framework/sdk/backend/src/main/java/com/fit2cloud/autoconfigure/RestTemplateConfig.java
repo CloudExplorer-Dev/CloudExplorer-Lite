@@ -1,16 +1,14 @@
 package com.fit2cloud.autoconfigure;
 
 import com.fit2cloud.common.constants.RoleConstants;
+import com.fit2cloud.common.utils.JsonUtil;
 import com.fit2cloud.common.utils.JwtTokenUtils;
 import com.fit2cloud.dto.UserDto;
 import com.fit2cloud.security.filter.JwtTokenAuthFilter;
-import org.apache.http.HttpResponse;
-import org.apache.http.client.config.RequestConfig;
 import org.apache.http.conn.ConnectionKeepAliveStrategy;
 import org.apache.http.conn.ssl.NoopHostnameVerifier;
 import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
 import org.apache.http.conn.ssl.TrustStrategy;
-import org.apache.http.entity.ContentType;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.DefaultHttpRequestRetryHandler;
 import org.apache.http.impl.client.HttpClientBuilder;
@@ -20,10 +18,12 @@ import org.apache.http.protocol.HttpContext;
 import org.apache.http.ssl.SSLContexts;
 import org.springframework.cloud.client.loadbalancer.LoadBalanced;
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpRequest;
 import org.springframework.http.MediaType;
-import org.springframework.http.client.*;
+import org.springframework.http.client.ClientHttpRequestExecution;
+import org.springframework.http.client.ClientHttpRequestInterceptor;
+import org.springframework.http.client.ClientHttpResponse;
+import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.springframework.http.converter.StringHttpMessageConverter;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.client.RestTemplate;
@@ -74,6 +74,7 @@ public class RestTemplateConfig {
             httpClientBuilder.setSSLSocketFactory(connectionSocketFactory);
             CloseableHttpClient httpClient = httpClientBuilder.build();
             HttpComponentsClientHttpRequestFactory factory = new HttpComponentsClientHttpRequestFactory();
+            factory.setBufferRequestBody(false);
             factory.setHttpClient(httpClient);
             factory.setConnectTimeout(60 * 1000);
             factory.setReadTimeout(60 * 1000);
@@ -103,6 +104,9 @@ public class RestTemplateConfig {
             request.getHeaders().add("content-type", "application/json;charset=utf-8");
             request.getHeaders().add("Connection", "close");
             request.getHeaders().add("Accept", "application/json");
+            request.getHeaders().add("Transfer-Encoding", "chunked");
+            request.getHeaders().remove("Content-Length");
+            System.out.println(JsonUtil.toJSONString(request.getHeaders()));
             return execution.execute(request, body);
         }
 

@@ -1,30 +1,38 @@
 package com.fit2cloud.base.service.impl;
 
+import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.fit2cloud.autoconfigure.JobSettingConfig;
 import com.fit2cloud.base.entity.CloudAccount;
 import com.fit2cloud.base.mapper.BaseCloudAccountMapper;
 import com.fit2cloud.base.service.IBaseCloudAccountService;
-import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.fit2cloud.common.constants.JobConstants;
 import com.fit2cloud.common.constants.PlatformConstants;
 import com.fit2cloud.common.exception.Fit2cloudException;
 import com.fit2cloud.common.platform.credential.Credential;
 import com.fit2cloud.common.scheduler.SchedulerService;
-import com.fit2cloud.common.constants.JobConstants;
 import com.fit2cloud.common.scheduler.entity.QuzrtzJobDetail;
+import com.fit2cloud.common.scheduler.handler.AsyncJob;
 import com.fit2cloud.dto.job.JobInitSettingDto;
 import com.fit2cloud.dto.job.JobModuleInfo;
 import com.fit2cloud.request.cloud_account.CloudAccountJobItem;
 import com.fit2cloud.request.cloud_account.CloudAccountModuleJob;
+import com.fit2cloud.request.cloud_account.SyncRequest;
+import com.fit2cloud.response.cloud_account.SyncResource;
 import lombok.SneakyThrows;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.quartz.DateBuilder;
+import org.quartz.Job;
 import org.quartz.Trigger;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
-import java.util.*;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 
 /**
  * <p>
@@ -121,6 +129,39 @@ public class BaseCloudAccountServiceImpl extends ServiceImpl<BaseCloudAccountMap
             schedulerService.deleteJob(jobName, jobDetail.getJobGroup());
         }
         return true;
+    }
+
+    @Override
+    public List<SyncResource> getModuleResourceJob() {
+        JobModuleInfo moduleJobInfo = JobSettingConfig.getModuleJobInfo();
+        return moduleJobInfo.getJobDetails().stream().filter(item -> item.getJobGroup().equals(JobConstants.Group.CLOUD_ACCOUNT_RESOURCE_SYNC_GROUP.name())).map(item -> {
+            SyncResource syncResource = new SyncResource();
+            syncResource.setResourceDesc(item.getDescription());
+            syncResource.setJobName(item.getJobName());
+            syncResource.setModule(moduleJobInfo.getModule());
+            return syncResource;
+        }).toList();
+    }
+
+    @Override
+    public void sync(SyncRequest syncRequest) {
+        JobModuleInfo moduleJobInfo = JobSettingConfig.getModuleJobInfo();
+        for (SyncRequest.Job job : syncRequest.getSyncJob()) {
+            moduleJobInfo.getJobDetails().stream().filter(j -> StringUtils.equals(job.getJobName(), j.getJobName()) && StringUtils.equals(j.getJobGroup(),JobConstants.Group.CLOUD_ACCOUNT_RESOURCE_SYNC_GROUP.name())).findAny().ifPresent(j -> {
+                exec(syncRequest, j);
+            });
+        }
+    }
+
+    @SneakyThrows
+    private void exec(SyncRequest syncRequest, JobInitSettingDto j) {
+        Job jobHandler = j.getJobHandler().getConstructor().newInstance();
+        if (jobHandler instanceof AsyncJob) {
+            HashMap<String, Object> params = new HashMap<>();
+            params.put(JobConstants.CloudAccount.CLOUD_ACCOUNT_ID.name(), syncRequest.getCloudAccountId());
+            params.put(JobConstants.CloudAccount.REGIONS.name(), syncRequest.getRegions());
+            ((AsyncJob) jobHandler).exec(params);
+        }
     }
 
     /**

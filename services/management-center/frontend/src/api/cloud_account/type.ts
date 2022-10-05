@@ -200,6 +200,40 @@ interface UpdateJobsRequest extends CloudAccountJobDetailsResponse {
   cloudAccountId: string;
 }
 
+interface ResourceSync {
+  /**
+   * 模块
+   */
+  module: string;
+  /**
+   * 任务名称
+   */
+  jobName: string;
+  /**
+   * 资源描述
+   */
+  resourceDesc: string;
+  /**
+   * 是否选中
+   */
+  active?: boolean;
+}
+
+interface SyncRequest{
+  /**
+   * 云账号id
+   */
+  cloudAccountId:string
+  /**
+   * 同步任务
+   */
+  syncJob:Array<{module:string,jobName:string}>,
+  /**
+   * 区域
+   */
+  regions:Array<Region>;
+}
+
 export type {
   ListOrganizationRequest,
   CloudAccount,
@@ -211,4 +245,6 @@ export type {
   ModuleJob,
   UpdateJobsRequest,
   UpdateAccount,
+  ResourceSync,
+  SyncRequest
 };

@@ -1,29 +1,26 @@
 package com.fit2cloud.controller;
 
 import com.baomidou.mybatisplus.core.metadata.IPage;
-import com.fit2cloud.base.mapper.BaseOrganizationMapper;
 import com.fit2cloud.common.platform.credential.Credential;
 import com.fit2cloud.common.validator.annnotaion.CustomValidated;
 import com.fit2cloud.common.validator.handler.ExistHandler;
-import com.fit2cloud.constants.CloudAccountConstants;
-import com.fit2cloud.controller.editor.CredentialEditor;
-import com.fit2cloud.controller.editor.OrderEditor;
 import com.fit2cloud.controller.handler.ResultHolder;
-import com.fit2cloud.controller.request.cloud_account.*;
+import com.fit2cloud.controller.request.cloud_account.AddCloudAccountRequest;
+import com.fit2cloud.controller.request.cloud_account.CloudAccountRequest;
+import com.fit2cloud.controller.request.cloud_account.UpdateCloudAccountRequest;
+import com.fit2cloud.controller.request.cloud_account.UpdateJobsRequest;
 import com.fit2cloud.controller.response.cloud_account.CloudAccountJobDetailsResponse;
 import com.fit2cloud.controller.response.cloud_account.PlatformResponse;
 import com.fit2cloud.dao.entity.CloudAccount;
-import com.fit2cloud.dao.entity.Organization;
 import com.fit2cloud.dao.mapper.CloudAccountMapper;
-import com.fit2cloud.request.pub.OrderRequest;
+import com.fit2cloud.request.cloud_account.SyncRequest;
+import com.fit2cloud.response.cloud_account.SyncResource;
 import com.fit2cloud.service.ICloudAccountService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
-import org.springframework.context.MessageSource;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.WebDataBinder;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
@@ -144,5 +141,18 @@ public class CloudAccountController {
     @PreAuthorize("hasAnyCePermission('CLOUD_ACCOUNT:EDIT')")
     public ResultHolder<CloudAccountJobDetailsResponse> updateJobs(@RequestBody UpdateJobsRequest updateJobsRequest) {
         return ResultHolder.success(cloudAccountService.updateJob(updateJobsRequest));
+    }
+
+    @GetMapping("/jobs/resource")
+    public ResultHolder<List<SyncResource>> getResourceJobs() {
+        List<SyncResource> moduleResourceJob = cloudAccountService.getModuleResourceJob();
+        return ResultHolder.success(moduleResourceJob);
+    }
+
+    @PostMapping("/sync")
+    @ApiOperation(value = "同步", notes = "同步")
+    public ResultHolder<Boolean> sync(@RequestBody SyncRequest request) {
+        cloudAccountService.sync(request);
+        return ResultHolder.success(true);
     }
 }

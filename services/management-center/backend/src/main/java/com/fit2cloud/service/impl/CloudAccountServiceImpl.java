@@ -23,6 +23,8 @@ import com.fit2cloud.controller.response.cloud_account.PlatformResponse;
 import com.fit2cloud.dao.entity.CloudAccount;
 import com.fit2cloud.dao.mapper.CloudAccountMapper;
 import com.fit2cloud.request.cloud_account.CloudAccountModuleJob;
+import com.fit2cloud.request.cloud_account.SyncRequest;
+import com.fit2cloud.response.cloud_account.SyncResource;
 import com.fit2cloud.service.ICloudAccountService;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -43,8 +45,7 @@ import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+import java.util.function.Function;
 
 /**
  * <p>
@@ -91,10 +92,41 @@ public class CloudAccountServiceImpl extends ServiceImpl<CloudAccountMapper, Clo
         }
     };
 
+    /**
+     * 修改定时任务
+     */
     private final BiFunction<CloudAccountModuleJob, String, CloudAccountModuleJob> updateJob = (CloudAccountModuleJob cloudAccountModuleJob, String accountId) -> {
         final String url = httpPrefix + cloudAccountModuleJob.getModule() + "/" + cloudAccountModuleJob.getModule() + "/api/base/cloud_account/job/" + accountId;
         HttpEntity<CloudAccountModuleJob> cloudAccountModuleJobHttpEntity = new HttpEntity<>(cloudAccountModuleJob);
         ResponseEntity<ResultHolder<CloudAccountModuleJob>> exchange = restTemplate.exchange(url, HttpMethod.PUT, cloudAccountModuleJobHttpEntity, new ParameterizedTypeReference<ResultHolder<CloudAccountModuleJob>>() {
+        });
+        if (!Objects.requireNonNull(exchange.getBody()).getCode().equals(200)) {
+            throw new Fit2cloudException(exchange.getBody().getCode(), exchange.getBody().getMessage());
+        }
+        return exchange.getBody().getData();
+    };
+
+    /**
+     * 获取同步任务资源
+     */
+    private final Function<String, List<SyncResource>> getResourceJob = (String module) -> {
+        final String url = httpPrefix + module + "/" + module + "/api/base/cloud_account/job/resource";
+
+        ResponseEntity<ResultHolder<List<SyncResource>>> exchange = restTemplate.exchange(url, HttpMethod.GET, HttpEntity.EMPTY, new ParameterizedTypeReference<ResultHolder<List<SyncResource>>>() {
+        });
+        if (!Objects.requireNonNull(exchange.getBody()).getCode().equals(200)) {
+            throw new Fit2cloudException(exchange.getBody().getCode(), exchange.getBody().getMessage());
+        }
+        return exchange.getBody().getData();
+    };
+
+    /**
+     * 发送请求给各个模块触发同步任务
+     */
+    private final BiFunction<String, SyncRequest, Boolean> sync = (String module, SyncRequest request) -> {
+        final String url = httpPrefix + module + "/" + module + "/api/base/cloud_account/sync";
+        HttpEntity<SyncRequest> requestHttpEntity = new HttpEntity<>(request);
+        ResponseEntity<ResultHolder<Boolean>> exchange = restTemplate.exchange(url, HttpMethod.POST, requestHttpEntity, new ParameterizedTypeReference<ResultHolder<Boolean>>() {
         });
         if (!Objects.requireNonNull(exchange.getBody()).getCode().equals(200)) {
             throw new Fit2cloudException(exchange.getBody().getCode(), exchange.getBody().getMessage());
@@ -270,6 +302,50 @@ public class CloudAccountServiceImpl extends ServiceImpl<CloudAccountMapper, Clo
         updateById(cloudAccount);
         // 校验成功更新数据
         return getById(accountId);
+    }
+
+    @Override
+    public List<SyncResource> getModuleResourceJob() {
+        HashSet<String> ids = new HashSet<>(discoveryClient.getServices());
+        ids.add(ServerInfo.module);
+        return ids.stream().map(this::getSyncResource).flatMap(Collection::stream).filter(Objects::nonNull).toList();
+    }
+
+    @Override
+    public void sync(SyncRequest syncRequest) {
+        HashSet<String> ids = new HashSet<>(discoveryClient.getServices());
+        ids.add(ServerInfo.module);
+        ids.stream().map(moduleId -> CompletableFuture.runAsync(() -> sync(moduleId, syncRequest), securityContextWorkThreadPool)).map(CompletableFuture::join).toList();
+    }
+
+    private void sync(String moduleId, SyncRequest syncRequest) {
+        Optional.of(syncRequest).map(sync -> {
+            List<SyncRequest.Job> jobs = sync.getSyncJob().stream().filter(j -> j.getModule().equals(moduleId)).toList();
+            if (CollectionUtils.isNotEmpty(jobs)) {
+                SyncRequest r = new SyncRequest();
+                r.setCloudAccountId(syncRequest.getCloudAccountId());
+                r.setSyncJob(jobs);
+                r.setRegions(syncRequest.getRegions());
+                return r;
+            } else {
+                return null;
+            }
+        }).ifPresent(moduleSyncRequest -> sync.apply(moduleId, moduleSyncRequest));
+
+    }
+
+    /**
+     * 获取同步数据
+     *
+     * @param module 模块名称
+     * @return 模块的任务
+     */
+    public List<SyncResource> getSyncResource(String module) {
+        if (module.equals(ServerInfo.module)) {
+            return baseCloudAccountService.getModuleResourceJob();
+        } else {
+            return getResourceJob.apply(module);
+        }
     }
 
 

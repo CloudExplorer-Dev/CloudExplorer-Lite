@@ -1,8 +1,12 @@
 package com.fit2cloud.base.service;
 
-import com.fit2cloud.base.entity.CloudAccount;
 import com.baomidou.mybatisplus.extension.service.IService;
+import com.fit2cloud.base.entity.CloudAccount;
 import com.fit2cloud.request.cloud_account.CloudAccountModuleJob;
+import com.fit2cloud.request.cloud_account.SyncRequest;
+import com.fit2cloud.response.cloud_account.SyncResource;
+
+import java.util.List;
 
 /**
  * <p>
@@ -45,4 +49,13 @@ public interface IBaseCloudAccountService extends IService<CloudAccount> {
      * @return 是否删除成功
      */
     boolean deleteJobByCloudAccountId(String cloudAccountId);
+
+    /**
+     * 获取当前模块资源同步任务
+     *
+     * @return 同步任务
+     */
+    List<SyncResource> getModuleResourceJob();
+
+    void sync(SyncRequest syncRequest);
 }

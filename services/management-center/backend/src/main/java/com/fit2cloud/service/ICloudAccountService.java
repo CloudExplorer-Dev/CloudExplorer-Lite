@@ -1,6 +1,7 @@
 package com.fit2cloud.service;
 
 import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.service.IService;
 import com.fit2cloud.common.platform.credential.Credential;
 import com.fit2cloud.controller.request.cloud_account.AddCloudAccountRequest;
 import com.fit2cloud.controller.request.cloud_account.CloudAccountRequest;
@@ -9,7 +10,8 @@ import com.fit2cloud.controller.request.cloud_account.UpdateJobsRequest;
 import com.fit2cloud.controller.response.cloud_account.CloudAccountJobDetailsResponse;
 import com.fit2cloud.controller.response.cloud_account.PlatformResponse;
 import com.fit2cloud.dao.entity.CloudAccount;
-import com.baomidou.mybatisplus.extension.service.IService;
+import com.fit2cloud.request.cloud_account.SyncRequest;
+import com.fit2cloud.response.cloud_account.SyncResource;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -103,4 +105,18 @@ public interface ICloudAccountService extends IService<CloudAccount> {
      * @return 云账号对象
      */
     CloudAccount verification(String accountId);
+
+    /**
+     * 获取所有模块的云账号同步任务资源
+     *
+     * @return 所有的模块定时任务
+     */
+    List<SyncResource> getModuleResourceJob();
+
+    /**
+     * 同步任务
+     *
+     * @param syncRequest 同步任务所需参数
+     */
+    void sync(SyncRequest syncRequest);
 }
