@@ -4,7 +4,7 @@ import com.fit2cloud.common.platform.credential.impl.AliCredential;
 import com.fit2cloud.common.platform.credential.Credential;
 import com.fit2cloud.common.platform.credential.impl.HuaweiCredential;
 import com.fit2cloud.common.platform.credential.impl.TencentCredential;
-import com.fit2cloud.common.provider.impl.vsphere.entity.credential.VsphereCredential;
+import com.fit2cloud.common.platform.credential.impl.VsphereCredential;
 
 /**
  * @Author:张少虎

@@ -5,12 +5,10 @@ import com.fit2cloud.common.platform.credential.Credential;
 import com.fit2cloud.common.validator.annnotaion.CustomValidated;
 import com.fit2cloud.common.validator.handler.ExistHandler;
 import com.fit2cloud.controller.handler.ResultHolder;
-import com.fit2cloud.controller.request.cloud_account.AddCloudAccountRequest;
-import com.fit2cloud.controller.request.cloud_account.CloudAccountRequest;
-import com.fit2cloud.controller.request.cloud_account.UpdateCloudAccountRequest;
-import com.fit2cloud.controller.request.cloud_account.UpdateJobsRequest;
+import com.fit2cloud.controller.request.cloud_account.*;
 import com.fit2cloud.controller.response.cloud_account.CloudAccountJobDetailsResponse;
 import com.fit2cloud.controller.response.cloud_account.PlatformResponse;
+import com.fit2cloud.controller.response.cloud_account.ResourceCountResponse;
 import com.fit2cloud.dao.entity.CloudAccount;
 import com.fit2cloud.dao.mapper.CloudAccountMapper;
 import com.fit2cloud.request.cloud_account.SyncRequest;
@@ -22,7 +20,6 @@ import io.swagger.annotations.ApiParam;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
-
 import javax.annotation.Resource;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
@@ -154,5 +151,32 @@ public class CloudAccountController {
     public ResultHolder<Boolean> sync(@RequestBody SyncRequest request) {
         cloudAccountService.sync(request);
         return ResultHolder.success(true);
+    }
+
+    @GetMapping("/balance/{id}")
+    @ApiOperation(value = "获取云账号余额")
+    @PreAuthorize("hasAnyCePermission('CLOUD_ACCOUNT:EDIT')")
+    public ResultHolder<Object> getAccountBalance(@ApiParam(value = "云账号id", required = true)
+                                                  @CustomValidated(mapper = CloudAccountMapper.class, handler = ExistHandler.class, message = "{i18n.cloud_account_id_not_existent}", exist = false)
+                                                  @PathVariable("id") String id) {
+        return ResultHolder.success(cloudAccountService.getAccountBalance(id));
+    }
+
+
+    @PutMapping("/updateName")
+    @ApiOperation(value = "修改云账号名称")
+    @PreAuthorize("hasAnyCePermission('CLOUD_ACCOUNT:EDIT')")
+    public ResultHolder<Boolean> updateAccountName(@RequestBody UpdateAccountNameRequest updateAccountNameRequest) {
+        return ResultHolder.success(cloudAccountService.updateAccountName(updateAccountNameRequest));
+    }
+
+    @GetMapping("/resourceCount/{cloud_account_id}")
+    @ApiOperation(value = "获取云账号资源计数")
+    @PreAuthorize("hasAnyCePermission('CLOUD_ACCOUNT:EDIT')")
+    public ResultHolder<List<ResourceCountResponse>> resourceCount(@ApiParam("云账号id")
+                                                  @NotNull(message = "{i18n.cloud_account.id.is.not.empty}")
+                                                  @CustomValidated(mapper = CloudAccountMapper.class, field = "id", handler = ExistHandler.class, message = "{i18n.cloud_account.id.is.not.existent}", exist = false)
+                                                  @PathVariable("cloud_account_id") String accountId) {
+        return ResultHolder.success(cloudAccountService.resourceCount(accountId));
     }
 }

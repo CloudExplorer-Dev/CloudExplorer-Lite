@@ -1,6 +1,6 @@
 package com.fit2cloud.provider.impl.vsphere.api;
 
-import com.fit2cloud.common.provider.impl.vsphere.entity.credential.VsphereCredential;
+import com.fit2cloud.common.platform.credential.impl.VsphereCredential;
 import com.fit2cloud.common.provider.impl.vsphere.utils.VsphereClient;
 import com.fit2cloud.provider.entity.F2CDisk;
 import com.fit2cloud.provider.entity.F2CImage;

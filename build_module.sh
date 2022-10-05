@@ -16,7 +16,7 @@ function buildModule() {
 
   #2. 打包镜像
   local _imageName=${image_registry_base_path}${build_module_name}":${image_tag}"
-  docker build --build-arg CE_JAR_VERSION=$version -t ${_imageName} .
+  docker build --build-arg CE_JAR_VERSION=$version --platform ${build_with_platform} -t ${_imageName} .
   if [ $? -ne 0 ]; then
     cd $project_base_path
     exit 0
@@ -46,20 +46,56 @@ declare image_tag=$version
 declare build_module_name
 declare image_registry_base_path="registry.fit2cloud.com/cloudexplorer4/"
 declare -i upload_image=0
+declare build_with_platform=""
 
-while getopts P:n:t:u option
-do
-  case "${option}"
-  in
-  P)
-   image_registry_base_path=${OPTARG};;
-  n)
-    build_module_name=${OPTARG};;
-  t)
-    image_tag=${OPTARG};;
-  u)
-    upload_image=1;;
-  esac
+#while getopts P:n:t:u option
+#do
+#  case "${option}"
+#  in
+#  P)
+#   image_registry_base_path=${OPTARG};;
+#  n)
+#    build_module_name=${OPTARG};;
+#  t)
+#    image_tag=${OPTARG};;
+#  u)
+#    upload_image=1;;
+#  esac
+#done
+
+TEMP=`getopt -o um::t:P: --long upload,module::,tag:,path:,platform: -- "$@"`
+while true ; do
+    case "$1" in
+        -u|--upload)
+          echo "$1: Push image: true"
+          upload_image=1;
+          shift ;;
+        -P|--path)
+          echo "$1: Image Registry Base Path: '$2'" ;
+          image_registry_base_path=$2;
+          shift 2 ;;
+        -t|--tag)
+          echo "$1: Tag ID: '$2'" ;
+          image_tag=$2;
+          shift 2 ;;
+        -m|--module)
+            case "$2" in
+                "")
+                  echo "$1: Need Select Module";
+                  shift ;;
+                *)
+                  echo "$1: Get module name: '$2'";
+                  build_module_name=$2;
+                  shift 2 ;;
+            esac ;;
+        --platform)
+           echo "$1: Use Platform: '$2'" ;
+                    build_with_platform=$2;
+                    shift 2 ;;
+        --) shift ; break ;;
+        "") break ;;
+        *) echo "Internal error! Unknown param: $1" ; exit 1 ;;
+    esac
 done
 
 

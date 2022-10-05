@@ -8,12 +8,10 @@ import lombok.Data;
  */
 @Data
 public class F2CBalance {
-
     /**
      * 余额
      */
     Double amount;
-
     /**
      * 欠款
      */
