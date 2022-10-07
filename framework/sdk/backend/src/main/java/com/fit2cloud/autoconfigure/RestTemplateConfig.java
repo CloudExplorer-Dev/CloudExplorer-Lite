@@ -32,6 +32,7 @@ import javax.net.ssl.SSLContext;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
@@ -52,7 +53,11 @@ public class RestTemplateConfig {
         return restTemplate;
     }
 
-
+    /**
+     * 获取客户端工厂
+     *
+     * @return httprest客户端工厂
+     */
     public HttpComponentsClientHttpRequestFactory generateHttpsRequestFactory() {
         PoolingHttpClientConnectionManager connectionManager =
                 new PoolingHttpClientConnectionManager(30, TimeUnit.SECONDS);
@@ -84,31 +89,20 @@ public class RestTemplateConfig {
         }
     }
 
+    /**
+     * 请求前置处理器
+     */
     public static class TokenRequestInterceptor implements ClientHttpRequestInterceptor {
         @Override
         public ClientHttpResponse intercept(HttpRequest request, byte[] body, ClientHttpRequestExecution execution) throws IOException {
-            List<MediaType> mediaTypes = new ArrayList<>();
-            for (MediaType mediaType : request.getHeaders().getAccept()) {
-                if (!mediaType.equals(MediaType.APPLICATION_XML) && !mediaType.equals(MediaType.TEXT_XML)) {
-                    mediaTypes.add(mediaType);
-                }
-            }
-            request.getHeaders().setAccept(mediaTypes);
-
+            request.getHeaders().setAccept(List.of(MediaType.APPLICATION_JSON));
             if (SecurityContextHolder.getContext() != null && SecurityContextHolder.getContext().getAuthentication() != null && SecurityContextHolder.getContext().getAuthentication().getCredentials() != null) {
                 UserDto userDto = (UserDto) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
                 request.getHeaders().add(JwtTokenUtils.TOKEN_NAME, SecurityContextHolder.getContext().getAuthentication().getCredentials().toString());
                 request.getHeaders().add(RoleConstants.ROLE_TOKEN, userDto.getCurrentRole().name());
                 request.getHeaders().add(JwtTokenAuthFilter.CE_SOURCE_TOKEN, userDto.getCurrentSource());
             }
-            request.getHeaders().add("content-type", "application/json;charset=utf-8");
-            request.getHeaders().add("Connection", "close");
-            request.getHeaders().add("Accept", "application/json");
-            request.getHeaders().add("Transfer-Encoding", "chunked");
-            request.getHeaders().remove("Content-Length");
-            System.out.println(JsonUtil.toJSONString(request.getHeaders()));
             return execution.execute(request, body);
         }
-
     }
 }

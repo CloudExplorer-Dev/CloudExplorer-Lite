@@ -233,6 +233,7 @@ interface SyncRequest{
    * 区域
    */
   regions:Array<Region>;
+}
 /**
  * 更新云账号名称所需要的参数
  */
@@ -276,11 +277,8 @@ export type {
   ModuleJob,
   UpdateJobsRequest,
   UpdateAccount,
-<<<<<<< HEAD
   ResourceSync,
-  SyncRequest
-=======
+  SyncRequest,
   UpdateAccountName,
   ResourceCount,
->>>>>>> be8dd22bffc96e70ce80e90a239e5343cdb991fe
 };
