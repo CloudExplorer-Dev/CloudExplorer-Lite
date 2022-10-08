@@ -11,6 +11,7 @@ import type {
   CloudAccountJobDetailsResponse,
   UpdateJobsRequest,
   UpdateAccount,
+  SyncRequest,
   UpdateAccountName,
   ResourceCount,
 } from "./type";
@@ -153,6 +154,19 @@ const updateJobs: (
 };
 
 /**
+ * 获取定时任务
+ * @param loading 加载器
+ * @returns 获取同步资源
+ */
+const getResourceSync = (loading?: Ref<boolean>) => {
+  return get("api/cloud_account/jobs/resource");
+};
+
+const syncJob=(data:SyncRequest,loading?: Ref<boolean>)=>{
+  return post("/api/cloud_account/sync",null,data,loading);
+}
+
+/*
  * 查询云账户余额
  * @param cloudAccountId
  * @param loading
@@ -204,6 +218,8 @@ export default {
   deleteCloudAccount,
   batchDeleteCloudAccount,
   verificationCloudAccount,
+  getResourceSync,
+  syncJob,
   getAccountBalance,
   updateAccountName,
   getResourceCount,

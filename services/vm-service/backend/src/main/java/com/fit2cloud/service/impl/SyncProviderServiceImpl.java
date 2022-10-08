@@ -34,7 +34,10 @@ import javax.annotation.Resource;
 import java.lang.reflect.InvocationTargetException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.*;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.function.Function;
 
 /**
@@ -56,117 +59,138 @@ public class SyncProviderServiceImpl implements ISyncProviderService {
 
     @Override
     public void syncCloudServer(String cloudAccountId) {
-        List<Credential.Region> regions = getRegions(cloudAccountId);
-        syncCloudServer(cloudAccountId, regions);
+        proxy(() -> {
+            List<Credential.Region> regions = getRegions(cloudAccountId);
+            syncCloudServer(cloudAccountId, regions);
+        }, cloudAccountId, () -> vmCloudServerService.remove(new LambdaUpdateWrapper<VmCloudServer>().eq(VmCloudServer::getAccountId, cloudAccountId)));
     }
 
     @Override
     public void syncCloudServer(String cloudAccountId, List<Credential.Region> regions) {
-        CloudAccount cloudAccount = cloudAccountService.getById(cloudAccountId);
-        LocalDateTime updateTime = getUpdateTime();
-        Arrays.stream(ProviderConstants.values()).filter(providerConstants -> providerConstants.name().equals(cloudAccount.getPlatform())).findFirst().ifPresent(providerConstants -> {
-            Class<? extends ICloudProvider> cloudProvider = ProviderConstants.valueOf(cloudAccount.getPlatform()).getCloudProvider();
-            for (Credential.Region region : regions) {
-                try {
-                    List<F2CVirtualMachine> f2CVirtualMachines = exec(cloudProvider, getParams(cloudAccount.getCredential(), region.getRegionId()), ICloudProvider::listVirtualMachine);
-                    List<VmCloudServer> vmCloudServers = f2CVirtualMachines.stream().map(f2CVirtualMachine -> toVmCloudServer(f2CVirtualMachine, cloudAccountId, updateTime)).toList();
-                    LambdaUpdateWrapper<VmCloudServer> updateWrapper = new LambdaUpdateWrapper<VmCloudServer>()
-                            .eq(VmCloudServer::getAccountId, cloudAccountId)
-                            .eq(VmCloudServer::getRegion, region.getRegionId())
-                            .lt(VmCloudServer::getUpdateTime, updateTime)
-                            .set(VmCloudServer::getInstanceStatus, "Deleted");
-                    saveBatchOrUpdate(vmCloudServerService, vmCloudServers, vmCloudServer -> new LambdaQueryWrapper<VmCloudServer>().eq(VmCloudServer::getAccountId, vmCloudServer.getAccountId()).eq(VmCloudServer::getInstanceId, vmCloudServer.getInstanceId()).eq(VmCloudServer::getRegion, region.getRegionId()), updateWrapper);
-                } catch (SkipPageException ignored) { // 如果发生跳过异常,那么就不同步当前区域
+        proxy(() -> {
+            CloudAccount cloudAccount = cloudAccountService.getById(cloudAccountId);
+            LocalDateTime updateTime = getUpdateTime();
+            Arrays.stream(ProviderConstants.values()).filter(providerConstants -> providerConstants.name().equals(cloudAccount.getPlatform())).findFirst().ifPresent(providerConstants -> {
+                Class<? extends ICloudProvider> cloudProvider = ProviderConstants.valueOf(cloudAccount.getPlatform()).getCloudProvider();
+                for (Credential.Region region : regions) {
+                    try {
+                        List<F2CVirtualMachine> f2CVirtualMachines = exec(cloudProvider, getParams(cloudAccount.getCredential(), region.getRegionId()), ICloudProvider::listVirtualMachine);
+                        List<VmCloudServer> vmCloudServers = f2CVirtualMachines.stream().map(f2CVirtualMachine -> toVmCloudServer(f2CVirtualMachine, cloudAccountId, updateTime)).toList();
+                        LambdaUpdateWrapper<VmCloudServer> updateWrapper = new LambdaUpdateWrapper<VmCloudServer>()
+                                .eq(VmCloudServer::getAccountId, cloudAccountId)
+                                .eq(VmCloudServer::getRegion, region.getRegionId())
+                                .lt(VmCloudServer::getUpdateTime, updateTime)
+                                .set(VmCloudServer::getInstanceStatus, "Deleted");
+                        saveBatchOrUpdate(vmCloudServerService, vmCloudServers, vmCloudServer -> new LambdaQueryWrapper<VmCloudServer>().eq(VmCloudServer::getAccountId, vmCloudServer.getAccountId()).eq(VmCloudServer::getInstanceId, vmCloudServer.getInstanceId()).eq(VmCloudServer::getRegion, region.getRegionId()), updateWrapper);
+                    } catch (SkipPageException ignored) { // 如果发生跳过异常,那么就不同步当前区域
+                    }
                 }
-            }
-        });
+            });
+        }, cloudAccountId, () -> vmCloudServerService.remove(new LambdaUpdateWrapper<VmCloudServer>().eq(VmCloudServer::getAccountId, cloudAccountId)));
     }
 
 
     @Override
     public void syncCloudServer(Map<String, Object> params) {
         String cloudAccountId = getCloudAccountId(params);
-        List<Credential.Region> regions = getRegions(params);
-        if (params.containsKey(JobConstants.CloudAccount.CLOUD_ACCOUNT_ID.name()) && params.containsKey(JobConstants.CloudAccount.REGIONS.name())) {
-            syncCloudServer(cloudAccountId, regions);
-        }
+        proxy(() -> {
+            List<Credential.Region> regions = getRegions(params);
+            if (params.containsKey(JobConstants.CloudAccount.CLOUD_ACCOUNT_ID.name()) && params.containsKey(JobConstants.CloudAccount.REGIONS.name())) {
+                syncCloudServer(cloudAccountId, regions);
+            }
+        }, cloudAccountId, () -> vmCloudServerService.remove(new LambdaUpdateWrapper<VmCloudServer>().eq(VmCloudServer::getAccountId, cloudAccountId)));
     }
 
     @Override
     public void syncCloudImage(String cloudAccountId) {
-        List<Credential.Region> regions = getRegions(cloudAccountId);
-        syncCloudImage(cloudAccountId, regions);
+        proxy(() -> {
+            List<Credential.Region> regions = getRegions(cloudAccountId);
+            syncCloudImage(cloudAccountId, regions);
+        }, cloudAccountId, () -> vmCloudImageService.remove(new LambdaUpdateWrapper<VmCloudImage>().eq(VmCloudImage::getAccountId, cloudAccountId)));
     }
 
 
     @Override
     public void syncCloudImage(String cloudAccountId, List<Credential.Region> regions) {
-        CloudAccount cloudAccount = cloudAccountService.getById(cloudAccountId);
-        LocalDateTime updateTime = getUpdateTime();
-        Arrays.stream(ProviderConstants.values()).filter(providerConstants -> providerConstants.name().equals(cloudAccount.getPlatform())).findFirst().ifPresent(providerConstants -> {
-            Class<? extends ICloudProvider> cloudProvider = ProviderConstants.valueOf(cloudAccount.getPlatform()).getCloudProvider();
-            for (Credential.Region region : regions) {
-                try {
-                    List<F2CImage> images = exec(cloudProvider, getParams(cloudAccount.getCredential(), region.getRegionId()), ICloudProvider::listImage);
-                    List<VmCloudImage> vmCloudImages = images.stream().map(img -> toVmImage(img, region, cloudAccountId, updateTime)).toList();
-                    LambdaUpdateWrapper<VmCloudImage> updateWrapper = new LambdaUpdateWrapper<VmCloudImage>()
-                            .eq(VmCloudImage::getAccountId, cloudAccountId)
-                            .eq(VmCloudImage::getRegion, region.getRegionId())
-                            .lt(VmCloudImage::getUpdateTime, updateTime)
-                            .set(VmCloudImage::getStatus, F2CImageStatus.deleted);
-                    saveBatchOrUpdate(vmCloudImageService, vmCloudImages, vmCloudImage -> new LambdaQueryWrapper<VmCloudImage>().eq(VmCloudImage::getAccountId, vmCloudImage.getAccountId()).eq(VmCloudImage::getImageId, vmCloudImage.getImageId()).eq(VmCloudImage::getRegion, region.getRegionId()), updateWrapper);
-                } catch (SkipPageException ignored) { // 如果发生跳过异常,那么就不同步当前区域
+        proxy(() -> {
+            CloudAccount cloudAccount = cloudAccountService.getById(cloudAccountId);
+            LocalDateTime updateTime = getUpdateTime();
+            Arrays.stream(ProviderConstants.values()).filter(providerConstants -> providerConstants.name().equals(cloudAccount.getPlatform())).findFirst().ifPresent(providerConstants -> {
+                Class<? extends ICloudProvider> cloudProvider = ProviderConstants.valueOf(cloudAccount.getPlatform()).getCloudProvider();
+                for (Credential.Region region : regions) {
+                    try {
+                        List<F2CImage> images = exec(cloudProvider, getParams(cloudAccount.getCredential(), region.getRegionId()), ICloudProvider::listImage);
+                        List<VmCloudImage> vmCloudImages = images.stream().map(img -> toVmImage(img, region, cloudAccountId, updateTime)).toList();
+                        LambdaUpdateWrapper<VmCloudImage> updateWrapper = new LambdaUpdateWrapper<VmCloudImage>()
+                                .eq(VmCloudImage::getAccountId, cloudAccountId)
+                                .eq(VmCloudImage::getRegion, region.getRegionId())
+                                .lt(VmCloudImage::getUpdateTime, updateTime)
+                                .set(VmCloudImage::getStatus, F2CImageStatus.deleted);
+                        saveBatchOrUpdate(vmCloudImageService, vmCloudImages, vmCloudImage -> new LambdaQueryWrapper<VmCloudImage>().eq(VmCloudImage::getAccountId, vmCloudImage.getAccountId()).eq(VmCloudImage::getImageId, vmCloudImage.getImageId()).eq(VmCloudImage::getRegion, region.getRegionId()), updateWrapper);
+                    } catch (SkipPageException ignored) { // 如果发生跳过异常,那么就不同步当前区域
+                    }
                 }
-            }
-        });
+            });
+        }, cloudAccountId, () -> vmCloudImageService.remove(new LambdaUpdateWrapper<VmCloudImage>().eq(VmCloudImage::getAccountId, cloudAccountId)));
+
+
     }
 
     @Override
     public void syncCloudImage(Map<String, Object> params) {
         String cloudAccountId = getCloudAccountId(params);
-        List<Credential.Region> regions = getRegions(params);
-        if (params.containsKey(JobConstants.CloudAccount.CLOUD_ACCOUNT_ID.name()) && params.containsKey(JobConstants.CloudAccount.REGIONS.name())) {
-            syncCloudImage(cloudAccountId, regions);
-        }
+        proxy(() -> {
+            List<Credential.Region> regions = getRegions(params);
+            if (params.containsKey(JobConstants.CloudAccount.CLOUD_ACCOUNT_ID.name()) && params.containsKey(JobConstants.CloudAccount.REGIONS.name())) {
+                syncCloudImage(cloudAccountId, regions);
+            }
+        }, cloudAccountId, () -> vmCloudImageService.remove(new LambdaUpdateWrapper<VmCloudImage>().eq(VmCloudImage::getAccountId, cloudAccountId)));
     }
 
     @Override
     public void syncCloudDisk(String cloudAccountId) {
-        List<Credential.Region> regions = getRegions(cloudAccountId);
-        syncCloudDisk(cloudAccountId, regions);
+        proxy(() -> {
+            List<Credential.Region> regions = getRegions(cloudAccountId);
+            syncCloudDisk(cloudAccountId, regions);
+        }, cloudAccountId, () -> vmCloudDiskService.remove(new LambdaUpdateWrapper<VmCloudDisk>().eq(VmCloudDisk::getAccountId, cloudAccountId)));
+
     }
 
 
     @Override
     public void syncCloudDisk(String cloudAccountId, List<Credential.Region> regions) {
-        CloudAccount cloudAccount = cloudAccountService.getById(cloudAccountId);
-        LocalDateTime updateTime = getUpdateTime();
-        Arrays.stream(ProviderConstants.values()).filter(providerConstants -> providerConstants.name().equals(cloudAccount.getPlatform())).findFirst().ifPresent(providerConstants -> {
-            Class<? extends ICloudProvider> cloudProvider = ProviderConstants.valueOf(cloudAccount.getPlatform()).getCloudProvider();
-            for (Credential.Region region : regions) {
-                try {
-                    List<F2CDisk> disks = exec(cloudProvider, getParams(cloudAccount.getCredential(), region.getRegionId()), ICloudProvider::listDisk);
-                    List<VmCloudDisk> vmCloudDisks = disks.stream().map(img -> toVmDisk(img, region, cloudAccountId, updateTime)).toList();
-                    LambdaUpdateWrapper<VmCloudDisk> updateWrapper = new LambdaUpdateWrapper<VmCloudDisk>()
-                            .eq(VmCloudDisk::getAccountId, cloudAccountId)
-                            .eq(VmCloudDisk::getRegion, region.getRegionId())
-                            .lt(VmCloudDisk::getUpdateTime, updateTime)
-                            .set(VmCloudDisk::getStatus, F2CDiskStatus.DELETED);
-                    saveBatchOrUpdate(vmCloudDiskService, vmCloudDisks, vmCloudDisk -> new LambdaQueryWrapper<VmCloudDisk>().eq(VmCloudDisk::getAccountId, vmCloudDisk.getAccountId()).eq(VmCloudDisk::getDiskId, vmCloudDisk.getDiskId()).eq(VmCloudDisk::getRegion, region.getRegionId()), updateWrapper);
-                } catch (SkipPageException ignored) { // 如果发生跳过异常,那么就不同步当前区域
+        proxy(() -> {
+            CloudAccount cloudAccount = cloudAccountService.getById(cloudAccountId);
+            LocalDateTime updateTime = getUpdateTime();
+            Arrays.stream(ProviderConstants.values()).filter(providerConstants -> providerConstants.name().equals(cloudAccount.getPlatform())).findFirst().ifPresent(providerConstants -> {
+                Class<? extends ICloudProvider> cloudProvider = ProviderConstants.valueOf(cloudAccount.getPlatform()).getCloudProvider();
+                for (Credential.Region region : regions) {
+                    try {
+                        List<F2CDisk> disks = exec(cloudProvider, getParams(cloudAccount.getCredential(), region.getRegionId()), ICloudProvider::listDisk);
+                        List<VmCloudDisk> vmCloudDisks = disks.stream().map(img -> toVmDisk(img, region, cloudAccountId, updateTime)).toList();
+                        LambdaUpdateWrapper<VmCloudDisk> updateWrapper = new LambdaUpdateWrapper<VmCloudDisk>()
+                                .eq(VmCloudDisk::getAccountId, cloudAccountId)
+                                .eq(VmCloudDisk::getRegion, region.getRegionId())
+                                .lt(VmCloudDisk::getUpdateTime, updateTime)
+                                .set(VmCloudDisk::getStatus, F2CDiskStatus.DELETED);
+                        saveBatchOrUpdate(vmCloudDiskService, vmCloudDisks, vmCloudDisk -> new LambdaQueryWrapper<VmCloudDisk>().eq(VmCloudDisk::getAccountId, vmCloudDisk.getAccountId()).eq(VmCloudDisk::getDiskId, vmCloudDisk.getDiskId()).eq(VmCloudDisk::getRegion, region.getRegionId()), updateWrapper);
+                    } catch (SkipPageException ignored) { // 如果发生跳过异常,那么就不同步当前区域
+                    }
                 }
-            }
-        });
+            });
+        }, cloudAccountId, () -> vmCloudDiskService.remove(new LambdaUpdateWrapper<VmCloudDisk>().eq(VmCloudDisk::getAccountId, cloudAccountId)));
     }
 
 
     @Override
     public void syncCloudDisk(Map<String, Object> params) {
         String cloudAccountId = getCloudAccountId(params);
-        List<Credential.Region> regions = getRegions(params);
-        if (params.containsKey(JobConstants.CloudAccount.CLOUD_ACCOUNT_ID.name()) && params.containsKey(JobConstants.CloudAccount.REGIONS.name())) {
-            syncCloudDisk(cloudAccountId, regions);
-        }
+        proxy(() -> {
+            List<Credential.Region> regions = getRegions(params);
+            if (params.containsKey(JobConstants.CloudAccount.CLOUD_ACCOUNT_ID.name()) && params.containsKey(JobConstants.CloudAccount.REGIONS.name())) {
+                syncCloudDisk(cloudAccountId, regions);
+            }
+        }, cloudAccountId, () -> vmCloudDiskService.remove(new LambdaUpdateWrapper<VmCloudDisk>().eq(VmCloudDisk::getAccountId, cloudAccountId)));
     }
 
     /**
@@ -188,6 +212,33 @@ public class SyncProviderServiceImpl implements ISyncProviderService {
             } else {
                 throw new RuntimeException(e);
             }
+        }
+
+    }
+
+    /**
+     * 代理同步
+     *
+     * @param runnable       同步执行函数
+     * @param cloudAccountId 云账号id
+     * @param remote         删除函数
+     */
+    private void proxy(Runnable runnable, String cloudAccountId, Runnable remote) {
+        if (cloudAccountService.count(new LambdaQueryWrapper<CloudAccount>().eq(CloudAccount::getId, cloudAccountId)) > 0) {
+            // 修改云账号同步状态 为同步中
+            cloudAccountService.update(new LambdaUpdateWrapper<CloudAccount>().eq(CloudAccount::getId, cloudAccountId).set(CloudAccount::getStatus, 2));
+            try {
+                runnable.run();
+            } catch (Exception e) {
+                // 同步失败
+                cloudAccountService.update(new LambdaUpdateWrapper<CloudAccount>().eq(CloudAccount::getId, cloudAccountId).set(CloudAccount::getStatus, 1));
+                return;
+            }
+            // 同步成功
+            cloudAccountService.update(new LambdaUpdateWrapper<CloudAccount>().eq(CloudAccount::getId, cloudAccountId).set(CloudAccount::getStatus, 0));
+        } else {
+            // 删除相关的资源
+            remote.run();
         }
 
     }
@@ -351,7 +402,6 @@ public class SyncProviderServiceImpl implements ISyncProviderService {
     private LocalDateTime getUpdateTime() {
         LocalDateTime now = LocalDateTime.now();
         DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
-        LocalDateTime parse = LocalDateTime.parse(now.format(dateTimeFormatter), dateTimeFormatter);
-        return parse;
+        return LocalDateTime.parse(now.format(dateTimeFormatter), dateTimeFormatter);
     }
 }

@@ -7,11 +7,11 @@ import com.fit2cloud.service.ICloudAccountService;
 import jdk.jfr.Name;
 import lombok.SneakyThrows;
 import org.quartz.Job;
-import org.quartz.JobExecutionContext;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
 import java.util.List;
+import java.util.Map;
 
 /**
  * @Author:张少虎
@@ -27,7 +27,7 @@ public class VerificationCloudAccountJob extends AsyncJob implements Job {
 
     @Override
     @SneakyThrows
-    protected void run(JobExecutionContext context) {
+    protected void run(Map<String, Object> map) {
         List<CloudAccount> list = cloudAccountService.list();
         for (CloudAccount cloudAccount : list) {
             PlatformConstants platformConstants = PlatformConstants.valueOf(cloudAccount.getPlatform());

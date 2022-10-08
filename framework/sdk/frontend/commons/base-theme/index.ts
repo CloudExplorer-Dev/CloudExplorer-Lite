@@ -223,6 +223,9 @@ class Theme {
       const style = document.createElement("style");
       style.innerText = elNewStyle;
       document.head.appendChild(style);
+      if(window.__MICRO_APP_BASE_APPLICATION__&&document.getElementsByTagName("micro-app-head").length>0){
+        document.getElementsByTagName("micro-app-head")[0].appendChild(style);
+      }
       this.isFirstWriteStyle = false;
     } else {
       if (document.head.lastChild) {

@@ -1,13 +1,15 @@
 package com.fit2cloud.service;
 
 import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.service.IService;
 import com.fit2cloud.common.platform.credential.Credential;
 import com.fit2cloud.controller.request.cloud_account.*;
 import com.fit2cloud.controller.response.cloud_account.CloudAccountJobDetailsResponse;
 import com.fit2cloud.controller.response.cloud_account.PlatformResponse;
 import com.fit2cloud.controller.response.cloud_account.ResourceCountResponse;
 import com.fit2cloud.dao.entity.CloudAccount;
-import com.baomidou.mybatisplus.extension.service.IService;
+import com.fit2cloud.request.cloud_account.SyncRequest;
+import com.fit2cloud.response.cloud_account.SyncResource;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -103,6 +105,20 @@ public interface ICloudAccountService extends IService<CloudAccount> {
     CloudAccount verification(String accountId);
 
     /**
+     * 获取所有模块的云账号同步任务资源
+     *
+     * @return 所有的模块定时任务
+     */
+    List<SyncResource> getModuleResourceJob();
+
+    /**
+     * 同步任务
+     *
+     * @param syncRequest 同步任务所需参数
+     */
+    void sync(SyncRequest syncRequest);
+
+    /*
      * 获取云账户余额
      * @param accountId
      * @return 未获取到余额将返回--
@@ -111,6 +127,7 @@ public interface ICloudAccountService extends IService<CloudAccount> {
 
     /**
      * 更新云账号名称
+     *
      * @param updateAccountNameRequest
      * @return
      */
@@ -118,6 +135,7 @@ public interface ICloudAccountService extends IService<CloudAccount> {
 
     /**
      * 获取云账号资源计数
+     *
      * @param accountId
      * @return
      */

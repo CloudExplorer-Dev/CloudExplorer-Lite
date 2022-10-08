@@ -8,6 +8,7 @@ interface ListOrganizationRequest {
    */
   currentPage: number;
 }
+
 interface CloudAccount {
   /**
    * 主键id
@@ -200,6 +201,39 @@ interface UpdateJobsRequest extends CloudAccountJobDetailsResponse {
   cloudAccountId: string;
 }
 
+interface ResourceSync {
+  /**
+   * 模块
+   */
+  module: string;
+  /**
+   * 任务名称
+   */
+  jobName: string;
+  /**
+   * 资源描述
+   */
+  resourceDesc: string;
+  /**
+   * 是否选中
+   */
+  active?: boolean;
+}
+
+interface SyncRequest{
+  /**
+   * 云账号id
+   */
+  cloudAccountId:string
+  /**
+   * 同步任务
+   */
+  syncJob:Array<{module:string,jobName:string}>,
+  /**
+   * 区域
+   */
+  regions:Array<Region>;
+}
 /**
  * 更新云账号名称所需要的参数
  */
@@ -243,6 +277,8 @@ export type {
   ModuleJob,
   UpdateJobsRequest,
   UpdateAccount,
+  ResourceSync,
+  SyncRequest,
   UpdateAccountName,
   ResourceCount,
 };

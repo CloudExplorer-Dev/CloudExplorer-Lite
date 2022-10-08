@@ -17,6 +17,7 @@ let app = null;
 
 const mount = async () => {
   app = createApp(App);
+  app.use(common);
   // 注册elementIcon
   for (const [key, component] of Object.entries(ElementPlusIcons)) {
     app.component(key, component);
@@ -27,8 +28,6 @@ const mount = async () => {
   app.use(ElementPlus, {
     locale: i18n.global.messages.value[i18n.global.locale.value],
   });
-  app.use(common);
-
   //设置router
   await initRouteObj();
   const route = getRoute();

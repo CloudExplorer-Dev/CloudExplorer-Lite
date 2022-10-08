@@ -31,6 +31,15 @@ public class PermissionConstants {
         public static final String CLOUD_ACCOUNT = "CLOUD_ACCOUNT";
         public static final String ORGANIZATION = "ORGANIZATION";
         public static final String SYSTEM_SETTING = "SYSTEM_SETTING";
+
+        public static final String CLOUD_SERVER = "CLOUD_SERVER";
+
+        public static final String CLOUD_DISK = "CLOUD_DISK";
+
+        public static final String CLOUD_IMAGE = "CLOUD_IMAGE";
+
+        public static final String INSTANCE_TYPE = "INSTANCE_TYPE";
+
         //...
     }
 
@@ -207,6 +216,50 @@ public class PermissionConstants {
                                     .role(RoleConstants.ROLE.ORGADMIN))
                             .permission(new Permission.Builder()
                                     .operate(OPERATE.DELETE).name("i18n_permission_cloud_account_delete")
+                                    .role(RoleConstants.ROLE.ADMIN)
+                                    .role(RoleConstants.ROLE.ORGADMIN))
+            )
+            .group(
+                    new PermissionGroup.Builder()
+                            .id(GROUP.CLOUD_SERVER)
+                            .name("i18n_permission_cloud_server")
+                            .permission(new Permission.Builder()
+                                    .operate(OPERATE.READ).name("i18n_permission_cloud_server_red")
+                                    .role(RoleConstants.ROLE.ADMIN)
+                                    .role(RoleConstants.ROLE.ORGADMIN))
+            )
+            .group(
+                    new PermissionGroup.Builder()
+                            .id(GROUP.CLOUD_DISK)
+                            .name("i18n_permission_cloud_disk")
+                            .permission(new Permission.Builder()
+                                    .operate(OPERATE.READ).name("i18n_permission_cloud_disk_red")
+                                    .role(RoleConstants.ROLE.ADMIN)
+                                    .role(RoleConstants.ROLE.ORGADMIN))
+            )
+            .group(
+                    new PermissionGroup.Builder()
+                            .id(GROUP.CLOUD_IMAGE)
+                            .name("i18n_permission_cloud_images")
+                            .permission(new Permission.Builder()
+                                    .operate(OPERATE.READ).name("i18n_permission_cloud_images_red")
+                                    .role(RoleConstants.ROLE.ADMIN)
+                                    .role(RoleConstants.ROLE.ORGADMIN))
+            )
+            .group(
+                    new PermissionGroup.Builder()
+                            .id(GROUP.INSTANCE_TYPE)
+                            .name("i18n_permission_instance_type")
+                            .permission(new Permission.Builder()
+                                    .operate(OPERATE.READ).name("i18n_permission_instance_type_red")
+                                    .role(RoleConstants.ROLE.ADMIN)
+                                    .role(RoleConstants.ROLE.ORGADMIN))
+            ).group(
+                    new PermissionGroup.Builder()
+                            .id(GROUP.SYSTEM_SETTING)
+                            .name("i18n_permission_system_setting")
+                            .permission(new Permission.Builder()
+                                    .operate(OPERATE.READ).name("i18n_permission_system_setting_red")
                                     .role(RoleConstants.ROLE.ADMIN)
                                     .role(RoleConstants.ROLE.ORGADMIN))
             )

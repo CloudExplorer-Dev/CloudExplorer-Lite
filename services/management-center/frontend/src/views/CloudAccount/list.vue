@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { platformIcon } from "@/utils/platform";
-import { ref, onMounted } from "vue";
+import { ref, onMounted, computed } from "vue";
 import {
   PaginationConfig,
   SearchConfig,
@@ -9,10 +9,16 @@ import {
   TableSearch,
 } from "@commons/components/ce-table/type";
 import cloudAccountApi from "@/api/cloud_account/index";
-import type { CloudAccount } from "@/api/cloud_account/type";
+import type {
+  CloudAccount,
+  Region,
+  ResourceSync,
+  SyncRequest
+} from "@/api/cloud_account/type";
 import { ElMessage, ElMessageBox } from "element-plus";
 import { useRouter } from "vue-router";
 import { useI18n } from "vue-i18n";
+import type { FormInstance, FormRules } from 'element-plus'
 const { t } = useI18n();
 // 路由实例对象
 const router = useRouter();
@@ -85,16 +91,6 @@ const updateJob = (row: CloudAccount) => {
   router.push({ name: "cloud_account_sync_job", params: { id: row.id } });
 };
 
-const sync = () => {
-  console.log("同步");
-};
-/**
- * 去创建云账号页面
- */
-const create = () => {
-  router.push({ name: "cloud_account_create" });
-};
-
 /**
  * 全选
  * @param val 全选数据
@@ -158,10 +154,168 @@ onMounted(() => {
   search(new TableSearch());
 });
 
+const resources = ref<Array<ResourceSync>>([]);
+
+/**
+ * 同步云账号
+ */
+const syncCloudAccountId=ref<string>('');
+/**
+ * 区域加载器
+ */
+const regionsLoading=ref<boolean>(false);
+/**
+ * 同步资源加载器
+ */
+const resourceLoading=ref<boolean>(false);
+/**
+ * 打开同步弹出框
+ */
+const openSync = (row: CloudAccount) => {
+  // 打开弹出框
+  syncVisible.value = true;
+  // 同步云账号
+  syncCloudAccountId.value=row.id;
+  // 获取当前云账号区域
+  cloudAccountApi.getRegions(row.id,regionsLoading).then((ok) => {
+    regions.value = ok.data;
+    syncForm.value.checkedRegions=ok.data.map(r=>r.regionId);
+  });
+  // 获取同步的资源
+  cloudAccountApi.getResourceSync(resourceLoading).then((ok) => {
+    resources.value = ok.data;
+    syncForm.value.checkedResources=ok.data.map((r:any)=>r.jobName);
+  });
+};
+
+
+//------------------------ 点击按钮同步 START-------------------
+const syncVisible = ref<boolean>(false);
+/**
+ * 区域
+ */
+const regions = ref<Array<Region>>([]);
+
+/**
+ * 去创建云账号页面
+ */
+const create = () => {
+  router.push({ name: "cloud_account_create" });
+};
+
+
+/**
+ * 资源是否全选
+ */
+const resourcescheckedAll = computed(() => {
+  return  syncForm.value.checkedResources.length === resources.value.length;
+});
+
+/**
+ * 同步任务发布
+ */
+const sync=(formEl: FormInstance | undefined)=>{
+  if (!formEl) return
+  formEl.validate((valid) => {
+    if (valid) {
+      // 关闭弹出框
+  syncVisible.value=false;
+  // 构建同步对象
+   const syncSubmit:SyncRequest={cloudAccountId:syncCloudAccountId.value,regions:regions.value.filter(r=>syncForm.value.checkedRegions .includes(r.regionId)),syncJob: resources.value.filter(r=>syncForm.value.checkedResources.includes(r.jobName)).map(source=>{return{module:source.module,jobName:source.jobName}})};
+   // 发送同步任务
+   cloudAccountApi.syncJob(syncSubmit).then(ok=>{
+    ElMessage.success("发送同步任务成功");
+   });
+    }
+  })
+ 
+}
+/**
+ * 是否全选
+ */
+const checkAll = computed(() => {
+  return syncForm.value.checkedRegions.length === regions.value.length;
+});
+
+/**
+ * 全选资源
+ * @param val true 全选,false 全不选
+ */
+const handleCheckAllResource = (val: boolean) => {
+  if (val) {
+    syncForm.value.checkedResources = resources.value.map((region) => region.jobName);
+  } else {
+    syncForm.value.checkedResources = [];
+  }
+};
+
+/**
+ *
+ * @param selectResources 资源
+ */
+const changeResource = (selectResources: Array<string>) => {
+  syncForm.value.checkedResources = selectResources;
+};
+/**
+ * 同步表单
+ */
+const syncForm=ref<{
+  /**
+   * 选中的资源
+   */
+  checkedResources:Array<string>,
+   /**
+    * 选中的区域
+    */ 
+  checkedRegions:Array<string>  
+}>({
+  checkedResources:[],
+  checkedRegions:[]
+});
+// 校验规则
+const ruleFormRef = ref<FormInstance>()
+// 校验规则
+const syncRules=ref<FormRules>(
+  {checkedResources: [
+    {
+      required: true,
+      message: '同步资源必须选择',
+      trigger: "change",
+    },
+  ],
+  checkedRegions: [
+    {
+      required: true,
+      message: '同步区域必须选择',
+      trigger: "change",
+    },
+  ]
+}
+);
+/**
+ * 全选改变触发函数
+ * @param val 改变的值
+ */
+const handleCheckAllChange = (val: boolean) => {
+  if (val) {
+    syncForm.value.checkedRegions = regions.value.map((region) => region.regionId);
+  } else {
+    syncForm.value.checkedRegions = [];
+  }
+};
+
+/**
+ * 区域选中和取消的时候触发
+ * @param selectRegion 
+ */
+const change = (selectRegion: Array<string>) => {
+  syncForm.value.checkedRegions = selectRegion;
+};
+//-------------------------------点击按钮同步 END----------------
 /**
  * 表单配置
  */
-const tableConfig = ref<TableConfig>({
+ const tableConfig = ref<TableConfig>({
   searchConfig: {
     showEmpty: false,
     // 查询函数
@@ -196,7 +350,7 @@ const tableConfig = ref<TableConfig>({
     TableOperations.buildButtons().newInstance(
       t("cloud_account.sync", "同步"),
       "primary",
-      sync,
+      openSync,
       "Refresh"
     ),
     TableOperations.buildButtons().newInstance(
@@ -344,6 +498,84 @@ const tableConfig = ref<TableConfig>({
       <fu-table-column-select type="icon" :columns="columns" size="small" />
     </template>
   </ce-table>
+  <el-dialog v-model="syncVisible" title="同步" width="50%">
+    <el-form  ref="ruleFormRef" :rules="syncRules" :model="syncForm">
+    <layout-container :border="false">
+      <template #header
+        ><h4>
+          {{ t("cloud_account.sync.range", "同步范围") }}
+        </h4></template
+      ><template #content>
+        <el-checkbox
+          style="margin-bottom: 10px"
+          v-model="checkAll"
+          @change="handleCheckAllChange"
+          >全选</el-checkbox
+        >
+        <el-form-item  prop="checkedRegions" >
+          <el-checkbox-group  v-loading="regionsLoading" @change="change"  v-model="syncForm.checkedRegions">
+          <el-checkbox
+            :title="region.name"
+            v-for="region in regions"
+            :key="region.regionId"
+            :label="region.regionId"
+            size="large"
+            ><span
+              style="
+                display: inline-block;
+                width: 120px;
+                overflow: hidden;
+                text-overflow: ellipsis;
+              "
+            >
+              {{ region.name }}
+            </span>
+          </el-checkbox>
+        </el-checkbox-group>
+        </el-form-item>
+       
+      </template>
+    </layout-container>
+    <layout-container :border="false">
+      <template #header>资源</template>
+      <template #content>
+        <el-checkbox
+          style="margin-bottom: 10px"
+          v-model="resourcescheckedAll"
+          @change="handleCheckAllResource"
+          >全选</el-checkbox
+        >
+        <el-form-item  prop="checkedResources" >
+        <el-checkbox-group v-loading="resourceLoading" @change="changeResource" v-model="syncForm.checkedResources">
+          <el-checkbox
+            :title="resource.resourceDesc"
+            v-for="resource in resources"
+            :key="resource.jobName"
+            :label="resource.jobName"
+            size="large"
+            ><span
+              style="
+                display: inline-block;
+                width: 120px;
+                overflow: hidden;
+                text-overflow: ellipsis;
+              "
+            >
+              {{ resource.resourceDesc }}
+            </span>
+          </el-checkbox>
+        </el-checkbox-group>
+        </el-form-item>
+      </template>
+    </layout-container>
+  </el-form>
+    <template #footer>
+      <span class="dialog-footer">
+        <el-button @click="syncVisible = false">取消</el-button>
+        <el-button type="primary" @click="sync(ruleFormRef)">同步</el-button>
+      </span>
+    </template>
+  </el-dialog>
 </template>
 
 <style lang="scss"></style>

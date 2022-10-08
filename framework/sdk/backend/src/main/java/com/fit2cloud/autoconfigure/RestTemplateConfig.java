@@ -1,16 +1,14 @@
 package com.fit2cloud.autoconfigure;
 
 import com.fit2cloud.common.constants.RoleConstants;
+import com.fit2cloud.common.utils.JsonUtil;
 import com.fit2cloud.common.utils.JwtTokenUtils;
 import com.fit2cloud.dto.UserDto;
 import com.fit2cloud.security.filter.JwtTokenAuthFilter;
-import org.apache.http.HttpResponse;
-import org.apache.http.client.config.RequestConfig;
 import org.apache.http.conn.ConnectionKeepAliveStrategy;
 import org.apache.http.conn.ssl.NoopHostnameVerifier;
 import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
 import org.apache.http.conn.ssl.TrustStrategy;
-import org.apache.http.entity.ContentType;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.DefaultHttpRequestRetryHandler;
 import org.apache.http.impl.client.HttpClientBuilder;
@@ -20,10 +18,12 @@ import org.apache.http.protocol.HttpContext;
 import org.apache.http.ssl.SSLContexts;
 import org.springframework.cloud.client.loadbalancer.LoadBalanced;
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpRequest;
 import org.springframework.http.MediaType;
-import org.springframework.http.client.*;
+import org.springframework.http.client.ClientHttpRequestExecution;
+import org.springframework.http.client.ClientHttpRequestInterceptor;
+import org.springframework.http.client.ClientHttpResponse;
+import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.springframework.http.converter.StringHttpMessageConverter;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.client.RestTemplate;
@@ -32,6 +32,7 @@ import javax.net.ssl.SSLContext;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
@@ -52,7 +53,11 @@ public class RestTemplateConfig {
         return restTemplate;
     }
 
-
+    /**
+     * 获取客户端工厂
+     *
+     * @return httprest客户端工厂
+     */
     public HttpComponentsClientHttpRequestFactory generateHttpsRequestFactory() {
         PoolingHttpClientConnectionManager connectionManager =
                 new PoolingHttpClientConnectionManager(30, TimeUnit.SECONDS);
@@ -74,6 +79,7 @@ public class RestTemplateConfig {
             httpClientBuilder.setSSLSocketFactory(connectionSocketFactory);
             CloseableHttpClient httpClient = httpClientBuilder.build();
             HttpComponentsClientHttpRequestFactory factory = new HttpComponentsClientHttpRequestFactory();
+            factory.setBufferRequestBody(false);
             factory.setHttpClient(httpClient);
             factory.setConnectTimeout(60 * 1000);
             factory.setReadTimeout(60 * 1000);
@@ -83,28 +89,20 @@ public class RestTemplateConfig {
         }
     }
 
+    /**
+     * 请求前置处理器
+     */
     public static class TokenRequestInterceptor implements ClientHttpRequestInterceptor {
         @Override
         public ClientHttpResponse intercept(HttpRequest request, byte[] body, ClientHttpRequestExecution execution) throws IOException {
-            List<MediaType> mediaTypes = new ArrayList<>();
-            for (MediaType mediaType : request.getHeaders().getAccept()) {
-                if (!mediaType.equals(MediaType.APPLICATION_XML) && !mediaType.equals(MediaType.TEXT_XML)) {
-                    mediaTypes.add(mediaType);
-                }
-            }
-            request.getHeaders().setAccept(mediaTypes);
-
+            request.getHeaders().setAccept(List.of(MediaType.APPLICATION_JSON));
             if (SecurityContextHolder.getContext() != null && SecurityContextHolder.getContext().getAuthentication() != null && SecurityContextHolder.getContext().getAuthentication().getCredentials() != null) {
                 UserDto userDto = (UserDto) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
                 request.getHeaders().add(JwtTokenUtils.TOKEN_NAME, SecurityContextHolder.getContext().getAuthentication().getCredentials().toString());
                 request.getHeaders().add(RoleConstants.ROLE_TOKEN, userDto.getCurrentRole().name());
                 request.getHeaders().add(JwtTokenAuthFilter.CE_SOURCE_TOKEN, userDto.getCurrentSource());
             }
-            request.getHeaders().add("content-type", "application/json;charset=utf-8");
-            request.getHeaders().add("Connection", "close");
-            request.getHeaders().add("Accept", "application/json");
             return execution.execute(request, body);
         }
-
     }
 }

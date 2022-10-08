@@ -21,11 +21,6 @@ public class JobConstants implements JobSettingConfig.JobConfig {
     private static final String SYNC_DISK = "SYNC_DISK";
 
     /**
-     * 同步网络
-     */
-    private static final String SYNC_NETWORK = "SYNC_NETWORK";
-
-    /**
      * 同步虚拟机
      */
     private static final String SYNC_VIRTUAL_MACHINE = "SYNC_VIRTUAL_MACHINE";
@@ -49,14 +44,6 @@ public class JobConstants implements JobSettingConfig.JobConfig {
                 .timeInterval(60)
                 .unit(DateBuilder.IntervalUnit.MINUTE)
                 .description("同步磁盘").build();
-        JobInitSettingDto syncNetwork = JobInitSettingDto.builder()
-                .jobHandler(CloudAccountSyncJob.SyncNetworkJob.class)
-                .jobName(SYNC_NETWORK)
-                .repeatCount(-1)
-                .timeInterval(60)
-                .unit(DateBuilder.IntervalUnit.MINUTE)
-                .jobGroup(com.fit2cloud.common.constants.JobConstants.Group.CLOUD_ACCOUNT_RESOURCE_SYNC_GROUP.name())
-                .description("同步网络").build();
         JobInitSettingDto syncImage = JobInitSettingDto.builder()
                 .jobHandler(CloudAccountSyncJob.SyncImageJob.class)
                 .repeatCount(-1)
@@ -64,6 +51,6 @@ public class JobConstants implements JobSettingConfig.JobConfig {
                 .unit(DateBuilder.IntervalUnit.MINUTE)
                 .jobName(SYNC_IMAGE).jobGroup(com.fit2cloud.common.constants.JobConstants.Group.CLOUD_ACCOUNT_RESOURCE_SYNC_GROUP.name())
                 .description("同步镜像").build();
-        return List.of(syncDisk, syncNetwork, syncVirtual, syncImage);
+        return List.of(syncDisk, syncVirtual, syncImage);
     }
 }

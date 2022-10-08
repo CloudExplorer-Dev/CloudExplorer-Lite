@@ -1,12 +1,12 @@
 package com.fit2cloud.common.scheduler.handler;
 
-import com.fit2cloud.common.platform.credential.Credential;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fit2cloud.common.utils.JsonUtil;
 import org.quartz.Job;
-import org.quartz.JobDataMap;
 import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
 
-import java.util.List;
 import java.util.Map;
 import java.util.concurrent.*;
 
@@ -21,13 +21,30 @@ public abstract class AsyncJob implements Job {
 
     @Override
     public void execute(JobExecutionContext context) throws JobExecutionException {
-        CompletableFuture.runAsync(() -> this.run(context), jobThreadPool);
+        Map<String, Object> wrappedMap = context.getMergedJobDataMap().getWrappedMap();
+        TypeReference<Map<String, Object>> typeReference = new TypeReference<>() {
+        };
+        try {
+            Map<String, Object> params = JsonUtil.mapper.readValue(JsonUtil.toJSONString(wrappedMap), typeReference);
+            CompletableFuture.runAsync(() -> run(params), jobThreadPool);
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     /**
      * 异步同步执行函数
      *
-     * @param context 异步同步上下文
+     * @param map 执行任务所需要的参数
      */
-    protected abstract void run(JobExecutionContext context);
+    protected abstract void run(Map<String, Object> map);
+
+    /**
+     * 异步执行函数
+     *
+     * @param params 执行函数所需参数
+     */
+    public void exec(Map<String, Object> params) {
+        CompletableFuture.runAsync(() -> run(params), jobThreadPool);
+    }
 }

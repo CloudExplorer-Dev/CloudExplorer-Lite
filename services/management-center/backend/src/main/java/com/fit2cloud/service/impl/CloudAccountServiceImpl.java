@@ -22,6 +22,7 @@ import com.fit2cloud.common.form.vo.Form;
 import com.fit2cloud.common.platform.credential.Credential;
 import com.fit2cloud.common.provider.entity.F2CBalance;
 import com.fit2cloud.common.utils.PageUtil;
+import com.fit2cloud.common.utils.ServiceUtil;
 import com.fit2cloud.constants.CloudAccountConstants;
 import com.fit2cloud.controller.handler.ResultHolder;
 import com.fit2cloud.controller.request.cloud_account.*;
@@ -32,12 +33,13 @@ import com.fit2cloud.dao.entity.CloudAccount;
 import com.fit2cloud.dao.mapper.CloudAccountMapper;
 import com.fit2cloud.redis.RedisService;
 import com.fit2cloud.request.cloud_account.CloudAccountModuleJob;
+import com.fit2cloud.request.cloud_account.SyncRequest;
+import com.fit2cloud.response.cloud_account.SyncResource;
 import com.fit2cloud.service.ICloudAccountService;
 import com.fit2cloud.service.IProviderService;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.cloud.client.ServiceInstance;
-import org.springframework.cloud.client.discovery.DiscoveryClient;
+import org.jetbrains.annotations.Nullable;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpMethod;
@@ -53,6 +55,8 @@ import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
+import java.util.function.Function;
+
 
 /**
  * <p>
@@ -70,8 +74,6 @@ public class CloudAccountServiceImpl extends ServiceImpl<CloudAccountMapper, Clo
     private RestTemplate restTemplate;
     SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
     @Resource
-    private DiscoveryClient discoveryClient;
-    @Resource
     private IBaseCloudAccountService baseCloudAccountService;
     @Resource
     private IProviderService providerService;
@@ -84,15 +86,12 @@ public class CloudAccountServiceImpl extends ServiceImpl<CloudAccountMapper, Clo
     @Resource
     private RedisService redisService;
 
-    private final static String httpPrefix = "https://";
     /**
      * 获取模块云账号任务
      */
     private final BiFunction<String, String, ResultHolder<CloudAccountModuleJob>> getCloudAccountJobApi = (String moduleName, String accountId) -> {
-        List<ServiceInstance> instances = discoveryClient.getInstances(moduleName);
-        ServiceInstance serviceInstance = instances.stream().findAny().get();
-        final String url = httpPrefix + moduleName + "/" + moduleName + "/api/base/cloud_account/job/" + accountId;
-        ResponseEntity<ResultHolder<CloudAccountModuleJob>> cloudAccountJob = restTemplate.exchange(url, HttpMethod.GET, HttpEntity.EMPTY, new ParameterizedTypeReference<ResultHolder<CloudAccountModuleJob>>() {
+        String httpUrl = ServiceUtil.getHttpUrl(moduleName, "/api/base/cloud_account/job/" + accountId);
+        ResponseEntity<ResultHolder<CloudAccountModuleJob>> cloudAccountJob = restTemplate.exchange(httpUrl, HttpMethod.GET, HttpEntity.EMPTY, new ParameterizedTypeReference<ResultHolder<CloudAccountModuleJob>>() {
         });
         return cloudAccountJob.getBody();
     };
@@ -101,18 +100,48 @@ public class CloudAccountServiceImpl extends ServiceImpl<CloudAccountMapper, Clo
      * 初始化指定模块云账号定时任务
      */
     private final BiConsumer<String, String> initCloudAccountModuleJob = (String moduleName, String accountId) -> {
-        final String url = httpPrefix + moduleName + "/" + moduleName + "/api/base/cloud_account/job_init/" + accountId;
-        ResponseEntity<ResultHolder<Object>> exchange = restTemplate.exchange(url, HttpMethod.POST, HttpEntity.EMPTY, new ParameterizedTypeReference<ResultHolder<Object>>() {
+        String httpUrl = ServiceUtil.getHttpUrl(moduleName, "/api/base/cloud_account/job_init/" + accountId);
+        ResponseEntity<ResultHolder<Object>> exchange = restTemplate.exchange(httpUrl, HttpMethod.POST, HttpEntity.EMPTY, new ParameterizedTypeReference<ResultHolder<Object>>() {
         });
         if (!Objects.requireNonNull(exchange.getBody()).getCode().equals(200)) {
             throw new Fit2cloudException(exchange.getBody().getCode(), exchange.getBody().getMessage());
         }
     };
 
+    /**
+     * 修改定时任务
+     */
     private final BiFunction<CloudAccountModuleJob, String, CloudAccountModuleJob> updateJob = (CloudAccountModuleJob cloudAccountModuleJob, String accountId) -> {
-        final String url = httpPrefix + cloudAccountModuleJob.getModule() + "/" + cloudAccountModuleJob.getModule() + "/api/base/cloud_account/job/" + accountId;
+        String httpUrl = ServiceUtil.getHttpUrl(cloudAccountModuleJob.getModule(), "/api/base/cloud_account/job/" + accountId);
         HttpEntity<CloudAccountModuleJob> cloudAccountModuleJobHttpEntity = new HttpEntity<>(cloudAccountModuleJob);
-        ResponseEntity<ResultHolder<CloudAccountModuleJob>> exchange = restTemplate.exchange(url, HttpMethod.PUT, cloudAccountModuleJobHttpEntity, new ParameterizedTypeReference<ResultHolder<CloudAccountModuleJob>>() {
+        ResponseEntity<ResultHolder<CloudAccountModuleJob>> exchange = restTemplate.exchange(httpUrl, HttpMethod.PUT, cloudAccountModuleJobHttpEntity, new ParameterizedTypeReference<ResultHolder<CloudAccountModuleJob>>() {
+        });
+        if (!Objects.requireNonNull(exchange.getBody()).getCode().equals(200)) {
+            throw new Fit2cloudException(exchange.getBody().getCode(), exchange.getBody().getMessage());
+        }
+        return exchange.getBody().getData();
+    };
+
+    /**
+     * 获取同步任务资源
+     */
+    private final Function<String, List<SyncResource>> getResourceJob = (String module) -> {
+        String httpUrl = ServiceUtil.getHttpUrl(module, "/api/base/cloud_account/job/resource");
+        ResponseEntity<ResultHolder<List<SyncResource>>> exchange = restTemplate.exchange(httpUrl, HttpMethod.GET, HttpEntity.EMPTY, new ParameterizedTypeReference<ResultHolder<List<SyncResource>>>() {
+        });
+        if (!Objects.requireNonNull(exchange.getBody()).getCode().equals(200)) {
+            throw new Fit2cloudException(exchange.getBody().getCode(), exchange.getBody().getMessage());
+        }
+        return exchange.getBody().getData();
+    };
+
+    /**
+     * 发送请求给各个模块触发同步任务
+     */
+    private final BiFunction<String, SyncRequest, Boolean> sync = (String module, SyncRequest request) -> {
+        String httpUrl = ServiceUtil.getHttpUrl(module, "/api/base/cloud_account/sync");
+        HttpEntity<SyncRequest> requestHttpEntity = new HttpEntity<>(request);
+        ResponseEntity<ResultHolder<Boolean>> exchange = restTemplate.exchange(httpUrl, HttpMethod.POST, requestHttpEntity, new ParameterizedTypeReference<ResultHolder<Boolean>>() {
         });
         if (!Objects.requireNonNull(exchange.getBody()).getCode().equals(200)) {
             throw new Fit2cloudException(exchange.getBody().getCode(), exchange.getBody().getMessage());
@@ -121,7 +150,6 @@ public class CloudAccountServiceImpl extends ServiceImpl<CloudAccountMapper, Clo
     };
 
     @Override
-
     public IPage<CloudAccount> page(CloudAccountRequest cloudAccountRequest) {
         Page<CloudAccount> cloudAccountPage = PageUtil.of(cloudAccountRequest, CloudAccount.class, new OrderItem("create_time", true));
         LambdaQueryWrapper<CloudAccount> wrapper = new LambdaQueryWrapper<>();
@@ -168,9 +196,11 @@ public class CloudAccountServiceImpl extends ServiceImpl<CloudAccountMapper, Clo
      * 启动定时任务
      */
     private void initCloudJob(String accountId) {
-        HashSet<String> ids = new HashSet<>(discoveryClient.getServices());
-        ids.add(ServerInfo.module);
-        ids.stream().map(server -> CompletableFuture.runAsync(() -> this.initCLoudModuleJob(accountId, server), securityContextWorkThreadPool)).map(CompletableFuture::join).toList();
+        ServiceUtil.getServicesExcludeGatewayAndIncludeSelf(ServerInfo.module)
+                .stream()
+                .map(server -> CompletableFuture.runAsync(() -> this.initCLoudModuleJob(accountId, server), securityContextWorkThreadPool))
+                .map(CompletableFuture::join)
+                .toList();
     }
 
     @Override
@@ -187,9 +217,12 @@ public class CloudAccountServiceImpl extends ServiceImpl<CloudAccountMapper, Clo
     @Override
     public CloudAccountJobDetailsResponse jobs(String accountId) {
         CloudAccountJobDetailsResponse cloudAccountJobDetailsResponse = new CloudAccountJobDetailsResponse();
-        HashSet<String> ids = new HashSet<>(discoveryClient.getServices());
-        ids.add(ServerInfo.module);
-        List<CloudAccountModuleJob> cloudAccountModuleJobs = ids.stream().map(moduleName -> CompletableFuture.supplyAsync(() -> this.getCloudModuleJob(accountId, moduleName), securityContextWorkThreadPool)).map(CompletableFuture::join).filter(Objects::nonNull).toList();
+        List<CloudAccountModuleJob> cloudAccountModuleJobs = ServiceUtil.getServicesExcludeGatewayAndIncludeSelf(ServerInfo.module)
+                .stream()
+                .map(moduleName -> CompletableFuture.supplyAsync(() -> this.getCloudModuleJob(accountId, moduleName), securityContextWorkThreadPool))
+                .map(CompletableFuture::join)
+                .filter(Objects::nonNull)
+                .toList();
         cloudAccountJobDetailsResponse.setCloudAccountModuleJobs(cloudAccountModuleJobs);
         return cloudAccountJobDetailsResponse;
     }
@@ -231,18 +264,23 @@ public class CloudAccountServiceImpl extends ServiceImpl<CloudAccountMapper, Clo
         }
     }
 
-
     @Override
     public CloudAccountJobDetailsResponse updateJob(UpdateJobsRequest updateJobsRequest) {
-        HashSet<String> ids = new HashSet<>(discoveryClient.getServices());
-        ids.add(ServerInfo.module);
-        List<CloudAccountModuleJob> cloudAccountModuleJobs = ids.stream().map(module -> {
-            Optional<CloudAccountModuleJob> first = updateJobsRequest.getCloudAccountModuleJobs().stream().filter(moduleJob -> moduleJob.getModule().equals(module)).findFirst();
-            return first.map(cloudAccountModuleJob -> this.updateCloudModuleJob(cloudAccountModuleJob, updateJobsRequest.getCloudAccountId(), module)).orElse(null);
-        }).filter(Objects::nonNull).toList();
+        List<CloudAccountModuleJob> cloudAccountModuleJobs = ServiceUtil.getServicesExcludeGatewayAndIncludeSelf(ServerInfo.module)
+                .stream()
+                .map(module -> CompletableFuture.supplyAsync(() -> getCloudAccountModuleJob(updateJobsRequest, module), securityContextWorkThreadPool))
+                .map(CompletableFuture::join)
+                .filter(Objects::nonNull)
+                .toList();
         CloudAccountJobDetailsResponse cloudAccountJobDetailsResponse = new CloudAccountJobDetailsResponse();
         cloudAccountJobDetailsResponse.setCloudAccountModuleJobs(cloudAccountModuleJobs);
         return cloudAccountJobDetailsResponse;
+    }
+
+    @Nullable
+    private CloudAccountModuleJob getCloudAccountModuleJob(UpdateJobsRequest updateJobsRequest, String module) {
+        Optional<CloudAccountModuleJob> first = updateJobsRequest.getCloudAccountModuleJobs().stream().filter(moduleJob -> moduleJob.getModule().equals(module)).findFirst();
+        return first.map(cloudAccountModuleJob -> this.updateCloudModuleJob(cloudAccountModuleJob, updateJobsRequest.getCloudAccountId(), module)).orElse(null);
     }
 
 
@@ -292,6 +330,57 @@ public class CloudAccountServiceImpl extends ServiceImpl<CloudAccountMapper, Clo
         return getById(accountId);
     }
 
+    @Override
+    public List<SyncResource> getModuleResourceJob() {
+        return ServiceUtil.getServicesExcludeGatewayAndIncludeSelf(ServerInfo.module)
+                .stream()
+                .map(moduleId -> CompletableFuture.supplyAsync(() -> getSyncResource(moduleId), securityContextWorkThreadPool))
+                .map(CompletableFuture::join)
+                .flatMap(Collection::stream)
+                .filter(Objects::nonNull)
+                .toList();
+    }
+
+    @Override
+    public void sync(SyncRequest syncRequest) {
+        ServiceUtil.getServicesExcludeGatewayAndIncludeSelf(ServerInfo.module).forEach(moduleId -> CompletableFuture.runAsync(() -> sync(moduleId, syncRequest), securityContextWorkThreadPool));
+    }
+
+    /**
+     * 同步函数
+     *
+     * @param moduleId    模块id
+     * @param syncRequest 同步请求参数
+     */
+    private void sync(String moduleId, SyncRequest syncRequest) {
+        Optional.of(syncRequest).map(sync -> {
+            List<SyncRequest.Job> jobs = sync.getSyncJob().stream().filter(j -> j.getModule().equals(moduleId)).toList();
+            if (CollectionUtils.isNotEmpty(jobs)) {
+                SyncRequest r = new SyncRequest();
+                r.setCloudAccountId(syncRequest.getCloudAccountId());
+                r.setSyncJob(jobs);
+                r.setRegions(syncRequest.getRegions());
+                return r;
+            } else {
+                return null;
+            }
+        }).ifPresent(moduleSyncRequest -> sync.apply(moduleId, moduleSyncRequest));
+    }
+
+    /**
+     * 获取同步数据
+     *
+     * @param module 模块名称
+     * @return 模块的任务
+     */
+    public List<SyncResource> getSyncResource(String module) {
+        if (module.equals(ServerInfo.module)) {
+            return baseCloudAccountService.getModuleResourceJob();
+        } else {
+            return getResourceJob.apply(module);
+        }
+    }
+
     public Object getAccountBalance(String accountId) {
         Object result = "--";
         F2CBalance f2CBalance = providerService.getAccountBalance(accountId);
@@ -314,17 +403,18 @@ public class CloudAccountServiceImpl extends ServiceImpl<CloudAccountMapper, Clo
         List<ResourceCountResponse> list = new ArrayList<>();
         // 虚拟机
         QueryWrapper<VmCloudServer> vmQueryWrapper = Wrappers.query();
-        vmQueryWrapper.lambda().ne(VmCloudServer::getInstanceStatus, "deleted").eq(VmCloudServer::getAccountId,accountId);
+        vmQueryWrapper.lambda().ne(VmCloudServer::getInstanceStatus, "deleted").eq(VmCloudServer::getAccountId, accountId);
         ResourceCountResponse vm = new ResourceCountResponse("xuniyunzhuji", "虚拟机", cloudServerService.count(vmQueryWrapper));
         list.add(vm);
         // 磁盘
         QueryWrapper<VmCloudDisk> diskQueryWrapper = Wrappers.query();
-        diskQueryWrapper.lambda().ne(VmCloudDisk::getStatus, "deleted").eq(VmCloudDisk::getAccountId,accountId);;
+        diskQueryWrapper.lambda().ne(VmCloudDisk::getStatus, "deleted").eq(VmCloudDisk::getAccountId, accountId);
         ResourceCountResponse disk = new ResourceCountResponse("yuncunchu", "磁盘", cloudDiskService.count(diskQueryWrapper));
         list.add(disk);
         // 镜像
         QueryWrapper<VmCloudImage> imageQueryWrapper = Wrappers.query();
-        imageQueryWrapper.lambda().ne(VmCloudImage::getStatus, "deleted").eq(VmCloudImage::getAccountId,accountId);;
+        imageQueryWrapper.lambda().ne(VmCloudImage::getStatus, "deleted").eq(VmCloudImage::getAccountId, accountId);
+        ;
         ResourceCountResponse image = new ResourceCountResponse("jingxiang", "镜像", cloudImageService.count(imageQueryWrapper));
         list.add(image);
         return list;
