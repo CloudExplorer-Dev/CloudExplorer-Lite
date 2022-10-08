@@ -16,6 +16,7 @@ import com.fit2cloud.base.service.IBaseVmCloudDiskService;
 import com.fit2cloud.base.service.IBaseVmCloudImageService;
 import com.fit2cloud.base.service.IBaseVmCloudServerService;
 import com.fit2cloud.common.constants.PlatformConstants;
+import com.fit2cloud.common.constants.RedisConstants;
 import com.fit2cloud.common.exception.Fit2cloudException;
 import com.fit2cloud.common.form.vo.Form;
 import com.fit2cloud.common.platform.credential.Credential;
@@ -29,6 +30,7 @@ import com.fit2cloud.controller.response.cloud_account.PlatformResponse;
 import com.fit2cloud.controller.response.cloud_account.ResourceCountResponse;
 import com.fit2cloud.dao.entity.CloudAccount;
 import com.fit2cloud.dao.mapper.CloudAccountMapper;
+import com.fit2cloud.redis.RedisService;
 import com.fit2cloud.request.cloud_account.CloudAccountModuleJob;
 import com.fit2cloud.service.ICloudAccountService;
 import com.fit2cloud.service.IProviderService;
@@ -79,6 +81,8 @@ public class CloudAccountServiceImpl extends ServiceImpl<CloudAccountMapper, Clo
     IBaseVmCloudDiskService cloudDiskService;
     @Resource
     IBaseVmCloudImageService cloudImageService;
+    @Resource
+    private RedisService redisService;
 
     private final static String httpPrefix = "https://";
     /**
@@ -152,6 +156,7 @@ public class CloudAccountServiceImpl extends ServiceImpl<CloudAccountMapper, Clo
         cloudAccount.setPlatform(addCloudAccountRequest.getPlatform());
         cloudAccount.setName(addCloudAccountRequest.getName());
         cloudAccount.setState(addCloudAccountRequest.getCredential().verification());
+        //???????
         cloudAccount.setStatus(CloudAccountConstants.Status.INIT);
         save(cloudAccount);
         initCloudJob(cloudAccount.getId());
@@ -257,6 +262,7 @@ public class CloudAccountServiceImpl extends ServiceImpl<CloudAccountMapper, Clo
 
     @Override
     public boolean delete(String accountId) {
+        redisService.publish(RedisConstants.Topic.CLOUD_ACCOUNT_DELETE,accountId);
         return removeById(accountId);
     }
 
