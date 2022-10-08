@@ -157,7 +157,6 @@ onMounted(() => {
                 <el-form-item
                   :label="t('cloud_account.name', '云账号名称') + ':'"
                   prop="name"
-                  style="width: 80%"
                 >
                   <el-input
                     v-model="accountForm.name"
@@ -180,7 +179,7 @@ onMounted(() => {
                     {{ platformIcon[accountForm.platform].name }}</span
                   >
                   <el-image
-                    style="margin-left: 20px; display: flex"
+                    style="margin-left: 10px; display: flex"
                     :src="platformIcon[accountForm.platform].icon"
                     v-if="accountForm.platform"
                   ></el-image>
@@ -192,17 +191,27 @@ onMounted(() => {
                   :label="t('commons.status', '状态') + ':'"
                   prop="state"
                 >
-                  <div v-if="accountForm.state">
+                  <div
+                    v-if="accountForm.state"
+                    style="display: flex; align-items: center"
+                  >
                     <span>{{
                       t("cloud_account.native_state_valid", "有效")
                     }}</span>
-                    <el-icon color="green"><SuccessFilled /></el-icon>
+                    <el-icon color="green" style="margin-left: 5px"
+                      ><SuccessFilled
+                    /></el-icon>
                   </div>
-                  <div v-if="!accountForm.state">
+                  <div
+                    v-if="!accountForm.state"
+                    style="display: flex; align-items: center"
+                  >
                     <span>{{
                       t("cloud_account.native_state_invalid", "无效")
                     }}</span>
-                    <el-icon color="red"><CircleCloseFilled /></el-icon>
+                    <el-icon color="red" style="margin-left: 5px"
+                      ><CircleCloseFilled
+                    /></el-icon>
                   </div>
                 </el-form-item>
               </el-col>
@@ -227,7 +236,10 @@ onMounted(() => {
           <span>{{ $t("cloud_account.balance.money", "账户余额") }}</span>
         </template>
         <template #content>
-          <span style="line-height: 30px;padding-left: 20px; font-size:26px">{{ accountBalance }}</span>
+          <span
+            style="line-height: 30px; padding-left: 20px; font-size: 26px"
+            >{{ accountBalance }}</span
+          >
           <span style="padding-left: 10px" v-if="accountBalance != '--'">{{
             $t("cloud_account.balance.unit", "元")
           }}</span>
@@ -242,19 +254,19 @@ onMounted(() => {
     </template>
     <template #content>
       <div class="resourceContainer">
-        <div class="item"
+        <div
+          class="item"
           v-for="resourceCount in resourceCountArray"
           :key="resourceCount.icon"
         >
           <div>
             <ce-icon
-                class="iconStyle"
+              class="iconStyle"
               :code="resourceCount.icon"
               size="60px"
             ></ce-icon>
           </div>
-          <div class = "right"
-          >
+          <div class="right">
             <div id="name" class="content">{{ resourceCount.name }}</div>
             <div id="count" class="content">{{ resourceCount.count }}</div>
           </div>
@@ -294,29 +306,28 @@ onMounted(() => {
 </template>
 
 <style lang="scss">
-.resourceContainer{
+.resourceContainer {
   display: flex;
   padding: 20px;
   .item {
     width: 200px;
     display: flex;
-    .iconStyle{
+    .iconStyle {
       cursor: pointer;
       height: 60px;
       width: 50%;
-      color: gray
+      color: gray;
     }
-    .right{
+    .right {
       width: 50%;
       display: flex;
       flex-wrap: wrap;
       align-content: center;
-      .content{
+      .content {
         width: 100%;
         padding: 5px;
       }
     }
   }
 }
-
 </style>
