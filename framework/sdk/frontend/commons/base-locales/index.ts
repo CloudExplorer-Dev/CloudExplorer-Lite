@@ -19,11 +19,14 @@ export const getLanguage = () => {
 };
 
 export function loadLanguages() {
-  const context = import.meta.glob("./lang/*.ts", { eager: true });
-  const languages: any = {};
+  const context = import.meta.glob("./lang/*.ts", {
+    eager: true,
+    import: "default",
+  });
+  const languages: Record<string, any> = {};
   const langs = Object.keys(context);
   for (const key of langs) {
-    const lang = context[key].default;
+    const lang = context[key];
     const name = key.replace(/(\.\/lang\/|\.ts)/g, "");
     languages[name] = lang;
   }
@@ -53,28 +56,8 @@ export const setLanguage = (lang: string) => {
   }
 };
 
-// 组合翻译，例如 key 为'请输入{0}'，keys 为 login.username，则自动将 keys 翻译并替换到 {0} {1}...
-export const $tv = (key: string, ...keys: Array<string>) => {
-  const values = [];
-  for (const k of keys) {
-    values.push($tk(k));
-  }
-  return i18n.global.t(key, values);
-};
-
-// 忽略警告，即：不存在 Key 直接返回 Key
-export const $tk = (key: string) => {
-  const hasKey = i18n.global.te(key);
-  if (hasKey) {
-    return i18n.global.t(key);
-  }
-  return key;
-};
-
 export default {
   install: (app: App) => {
     app.use(i18n);
-    app.config.globalProperties.$tv = $tv;
-    app.config.globalProperties.$tk = $tk;
   },
 };

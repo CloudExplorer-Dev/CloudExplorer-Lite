@@ -18,7 +18,7 @@ import java.util.List;
  * @Author:张少虎
  * @Date: 2022/8/24  11:39 PM
  * @Version 1.0
- * @注释:    操作spring ioc 工具类
+ * @注释: 操作spring ioc 工具类
  */
 
 
@@ -71,6 +71,22 @@ public class SpringUtil implements ApplicationContextAware, BeanFactoryAware {
     @SuppressWarnings("unchecked")
     public static <T> T getBean(Class<T> clz) throws BeansException {
         return (T) applicationContext.getBean(clz);
+    }
+
+    /**
+     * 根据Class从ioc容器中获取bean
+     *
+     * @param clz beanClass
+     * @param <T>
+     * @return bean实例，没有实例则返回null
+     */
+    @SuppressWarnings("unchecked")
+    public static <T> T getBeanWithoutException(Class<T> clz) {
+        try {
+            return getBean(clz);
+        } catch (Exception e) {
+            return null;
+        }
     }
 
     @SuppressWarnings("unchecked")

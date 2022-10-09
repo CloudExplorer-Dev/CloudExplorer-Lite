@@ -323,7 +323,6 @@ const syncRules = ref<FormRules>({
     },
   ],
 });
-
 const getStatusByAccountId = (cloudAccountId: string) => {
   const list = cloudAccountJobRecord.value[cloudAccountId];
   if (list) {

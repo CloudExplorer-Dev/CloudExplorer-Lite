@@ -43,11 +43,11 @@ export const useModuleStore = defineStore({
       if (!userStore.isLogin) {
         return;
       }
-      if(!!this.modules){
-        console.log('ok')
+      if (this.modules) {
+        console.log("ok");
         return;
-      }else{
-        console.log('init')
+      } else {
+        console.log("init");
       }
       const modules = (await listModules()).data;
       if (modules) {

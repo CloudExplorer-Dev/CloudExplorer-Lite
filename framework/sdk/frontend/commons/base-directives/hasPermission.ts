@@ -1,6 +1,6 @@
 import type { App } from "vue";
 import { store } from "@commons/stores";
-import type { RequiredPermissions } from "@commons/api/menu";
+import type { RequiredPermissions } from "@commons/api/menu/type";
 import { usePermissionStore } from "@commons/stores/modules/permission";
 import { useUserStore } from "@commons/stores/modules/user";
 

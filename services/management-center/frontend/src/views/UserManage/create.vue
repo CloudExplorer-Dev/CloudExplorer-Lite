@@ -12,7 +12,6 @@ import { useRouter } from "vue-router";
 import { ElMessage } from "element-plus/es";
 import { tree } from "@/api/organization";
 import type { OrganizationTree } from "@/api/organization/type";
-import { $tv } from "@commons/base-locales";
 import { roleConst } from "@commons/utils/constants";
 import type { InternalRuleItem } from "async-validator/dist-types/interface";
 const router = useRouter();
@@ -47,26 +46,26 @@ const rule = reactive<FormRules>({
   username: [
     {
       required: true,
-      message: $tv("commons.validate.required", "ID"),
+      message: t("commons.validate.input", ["ID"]),
       trigger: "blur",
     },
     {
       min: 1,
       max: 30,
-      message: $tv("commons.validate.limit", "1", "30"),
+      message: t("commons.validate.limit", ["1", "30"]),
       trigger: "blur",
     },
   ],
   name: [
     {
       required: true,
-      message: $tv("commons.validate.required", "user.name"),
+      message: t("commons.validate.required", [t("user.name")]),
       trigger: "blur",
     },
     {
       min: 2,
       max: 30,
-      message: $tv("commons.validate.limit", "2", "30"),
+      message: t("commons.validate.limit", ["2", "30"]),
       trigger: "blur",
     },
   ],
@@ -80,7 +79,7 @@ const rule = reactive<FormRules>({
   email: [
     {
       required: true,
-      message: $tv("commons.validate.required", "user.email"),
+      message: t("commons.validate.required", [t("user.email")]),
       trigger: "blur",
     },
     {
@@ -93,7 +92,7 @@ const rule = reactive<FormRules>({
   password: [
     {
       required: true,
-      message: $tv("commons.validate.required", "user.password"),
+      message: t("commons.validate.required", [t("user.password")]),
       trigger: "blur",
     },
     {
@@ -106,10 +105,9 @@ const rule = reactive<FormRules>({
   confirmPassword: [
     {
       required: true,
-      message: $tv(
-        "commons.validate.input",
-        "commons.personal.confirm_password"
-      ),
+      message: t("commons.validate.input", [
+        t("commons.personal.confirm_password"),
+      ]),
       trigger: "blur",
     },
     { validator: confirmPwdValidator, trigger: "blur" },

@@ -12,6 +12,7 @@ import com.fit2cloud.base.entity.*;
 import com.fit2cloud.base.mapper.BaseAccountJobMapper;
 import com.fit2cloud.base.service.*;
 import com.fit2cloud.common.constants.PlatformConstants;
+import com.fit2cloud.common.constants.RedisConstants;
 import com.fit2cloud.common.exception.Fit2cloudException;
 import com.fit2cloud.common.form.vo.Form;
 import com.fit2cloud.common.platform.credential.Credential;
@@ -26,12 +27,13 @@ import com.fit2cloud.controller.request.cloud_account.*;
 import com.fit2cloud.controller.response.cloud_account.CloudAccountJobDetailsResponse;
 import com.fit2cloud.controller.response.cloud_account.CloudAccountResponse;
 import com.fit2cloud.controller.response.cloud_account.PlatformResponse;
-import com.fit2cloud.controller.response.cloud_account.ResourceCountResponse;
 import com.fit2cloud.dao.entity.CloudAccount;
 import com.fit2cloud.dao.mapper.CloudAccountMapper;
+import com.fit2cloud.redis.RedisService;
 import com.fit2cloud.request.cloud_account.CloudAccountModuleJob;
 import com.fit2cloud.request.cloud_account.SyncRequest;
 import com.fit2cloud.response.cloud_account.AccountJobRecordResponse;
+import com.fit2cloud.response.cloud_account.ResourceCountResponse;
 import com.fit2cloud.response.cloud_account.SyncResource;
 import com.fit2cloud.service.ICloudAccountService;
 import com.fit2cloud.service.IProviderService;
@@ -84,7 +86,8 @@ public class CloudAccountServiceImpl extends ServiceImpl<CloudAccountMapper, Clo
     IBaseVmCloudImageService cloudImageService;
     @Resource
     private BaseAccountJobMapper baseAccountJobMapper;
-
+    @Resource
+    private RedisService redisService;
 
     /**
      * 获取模块云账号任务
@@ -305,6 +308,7 @@ public class CloudAccountServiceImpl extends ServiceImpl<CloudAccountMapper, Clo
 
     @Override
     public boolean delete(String accountId) {
+        redisService.publish(RedisConstants.Topic.CLOUD_ACCOUNT_DELETE,accountId);
         return removeById(accountId);
     }
 
@@ -402,8 +406,12 @@ public class CloudAccountServiceImpl extends ServiceImpl<CloudAccountMapper, Clo
         return true;
     }
 
+    /**
+     * 资源计数（静态获取）
+     * @param accountId
+     * @return
+     */
     public List<ResourceCountResponse> resourceCount(String accountId) {
-        // TODO 先静态统计资源数据，后期待改造成动态加载各个模块的统计数据；
         List<ResourceCountResponse> list = new ArrayList<>();
         // 虚拟机
         QueryWrapper<VmCloudServer> vmQueryWrapper = Wrappers.query();
@@ -418,7 +426,6 @@ public class CloudAccountServiceImpl extends ServiceImpl<CloudAccountMapper, Clo
         // 镜像
         QueryWrapper<VmCloudImage> imageQueryWrapper = Wrappers.query();
         imageQueryWrapper.lambda().ne(VmCloudImage::getStatus, "deleted").eq(VmCloudImage::getAccountId, accountId);
-        ;
         ResourceCountResponse image = new ResourceCountResponse("jingxiang", "镜像", cloudImageService.count(imageQueryWrapper));
         list.add(image);
         return list;
@@ -451,4 +458,43 @@ public class CloudAccountServiceImpl extends ServiceImpl<CloudAccountMapper, Clo
         syncRequest.setSyncJob(moduleResourceJob.stream().map(r -> new SyncRequest.Job(r.getModule(), r.getJobName())).toList());
         sync(syncRequest);
     }
+    /**
+     * 资源计数（动态获取）
+     * @return
+     */
+    public List<ResourceCountResponse> getModuleResourceCount(String accountId) {
+        return ServiceUtil.getServicesExcludeGatewayAndIncludeSelf(ServerInfo.module)
+                .stream()
+                .map(moduleId -> CompletableFuture.supplyAsync(() -> getResourceCount(moduleId,accountId), securityContextWorkThreadPool))
+                .map(CompletableFuture::join)
+                .flatMap(Collection::stream)
+                .filter(Objects::nonNull)
+                .toList();
+    }
+
+    /**
+     * 获取资源计数
+     * @param module
+     * @return
+     */
+    public List<ResourceCountResponse> getResourceCount(String module,String accountId) {
+        if (module.equals(ServerInfo.module)) {
+            return baseCloudAccountService.getModuleResourceCount(accountId);
+        } else {
+            return getResourceCount.apply(module,accountId);
+        }
+    }
+
+    /**
+     * 获取资源计数
+     */
+    private final BiFunction<String,String, List<ResourceCountResponse>> getResourceCount = (String module, String accountId) -> {
+        String httpUrl = ServiceUtil.getHttpUrl(module, "/api/base/cloud_account/count/resource/"+accountId);
+        ResponseEntity<ResultHolder<List<ResourceCountResponse>>> exchange = restTemplate.exchange(httpUrl, HttpMethod.GET, HttpEntity.EMPTY, new ParameterizedTypeReference<ResultHolder<List<ResourceCountResponse>>>() {
+        });
+        if (!Objects.requireNonNull(exchange.getBody()).getCode().equals(200)) {
+            throw new Fit2cloudException(exchange.getBody().getCode(), exchange.getBody().getMessage());
+        }
+        return exchange.getBody().getData();
+    };
 }

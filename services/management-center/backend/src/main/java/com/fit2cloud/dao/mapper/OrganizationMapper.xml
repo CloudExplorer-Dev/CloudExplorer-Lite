@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.fit2cloud.dao.mapper.OrganizationMapper">
-    <resultMap id="BaseResultMap" type="com.fit2cloud.dao.entity.Organization">
+    <resultMap id="BaseResultMap" type="com.fit2cloud.base.entity.Organization">
         <id column="id" jdbcType="VARCHAR" property="id" />
         <result column="name" jdbcType="VARCHAR" property="name" />
         <result column="description" jdbcType="VARCHAR" property="description" />

@@ -12,12 +12,15 @@ import com.fit2cloud.common.platform.credential.Credential;
 import com.fit2cloud.common.scheduler.SchedulerService;
 import com.fit2cloud.common.scheduler.entity.QuzrtzJobDetail;
 import com.fit2cloud.common.scheduler.handler.AsyncJob;
+import com.fit2cloud.common.utils.SpringUtil;
 import com.fit2cloud.dto.job.JobInitSettingDto;
 import com.fit2cloud.dto.job.JobModuleInfo;
 import com.fit2cloud.request.cloud_account.CloudAccountJobItem;
 import com.fit2cloud.request.cloud_account.CloudAccountModuleJob;
 import com.fit2cloud.request.cloud_account.SyncRequest;
+import com.fit2cloud.response.cloud_account.ResourceCountResponse;
 import com.fit2cloud.response.cloud_account.SyncResource;
+import com.fit2cloud.service.IResourceCountService;
 import lombok.SneakyThrows;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
@@ -29,10 +32,7 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 
 /**
  * <p>
@@ -202,5 +202,14 @@ public class BaseCloudAccountServiceImpl extends ServiceImpl<BaseCloudAccountMap
         jobItem.setRegions((List<Credential.Region>) region);
         return jobItem;
 
+    }
+
+    public List<ResourceCountResponse> getModuleResourceCount(String accountId) {
+        IResourceCountService t = SpringUtil.getBeanWithoutException(IResourceCountService.class);
+        if (Objects.isNull(t)) {
+            return new ArrayList<>();
+        } else {
+            return t.count(accountId);
+        }
     }
 }

@@ -4,46 +4,28 @@
       <layout-container>
         <template #header><h4>基本信息</h4></template>
         <template #content>
-          <el-form
-            :rules="rules"
-            label-position="right"
-            :model="roleFormData"
-            :inline="false"
-            ref="ruleFormRef"
-            status-icon
-            v-loading="loading"
-          >
-            <el-form-item label="名称" label-width="100px" prop="name">
-              <el-col :span="11">
-                <el-input v-model="roleFormData.name" />
-              </el-col>
-            </el-form-item>
-            <el-form-item
-              label="描述"
-              label-width="100px"
-              prop="description"
-              :rules="rules.description"
-            >
-              <el-input v-model="roleFormData.description" />
-            </el-form-item>
+          <RoleInfoTable
+            :id="id"
+            :loading="loading"
+            :edit-info="true"
+            v-model:role-data="roleFormData"
+            v-model:role-form-data="roleFormData"
+            v-model:rule-form-ref="ruleFormRef"
+            :create-new="!id"
+          />
+        </template>
+      </layout-container>
 
-            <el-form-item
-              label="继承角色"
-              label-width="100px"
-              prop="parentRoleId"
-              :rules="rules.description"
-            >
-              <el-radio-group v-model="roleFormData.parentRoleId">
-                <el-radio-button
-                  v-for="baseRole in originRoles"
-                  :key="baseRole.id"
-                  :label="baseRole.id"
-                >
-                  {{ baseRole.name }}
-                </el-radio-button>
-              </el-radio-group>
-            </el-form-item>
-          </el-form>
+      <layout-container>
+        <template #header><h4>角色权限</h4></template>
+        <template #content>
+          <RolePermissionTable
+            :id="id"
+            :loading="loading"
+            :parent-role-id="currentParentRoleId"
+            :edit-permission="true"
+            v-model:permission-data="permissionData"
+          />
         </template>
       </layout-container>
 
@@ -57,65 +39,88 @@
   </layout-container>
 </template>
 <script setup lang="ts">
-import { computed, onMounted, reactive, ref, watch } from "vue";
-import type { Role } from "@commons/api/role/type";
-import type { CreateRoleRequest } from "@/api/role/type";
+const props = defineProps<{
+  id?: string;
+}>();
+
+import { computed, type Ref, ref, watch } from "vue";
+import { Role } from "@commons/api/role/type";
+import { CreateRoleRequest, UpdateRoleRequest } from "@/api/role/type";
 import { useRouter } from "vue-router";
-import { endsWith } from "lodash";
-import type { FormRules, FormInstance } from "element-plus";
-import { ElMessage } from "element-plus";
+import { type FormInstance, ElMessage } from "element-plus";
 import RoleApi from "@/api/role";
 import { useI18n } from "vue-i18n";
+import RoleInfoTable from "./RoleInfoTable.vue";
+import RolePermissionTable from "./RolePermissionTable.vue";
 
 const { t } = useI18n();
 
 const route = useRouter();
 
-const roleFormData = ref<CreateRoleRequest>({});
-
 //表单校验
 const ruleFormRef = ref<FormInstance>();
+const roleFormData = ref<Role>(new Role("", "", "", ""));
 
-const loading = ref<boolean>(false);
+const permissionData = ref<Array<string>>([]);
 
-const originRoles = ref<Array<Role>>([]);
+const loading: Ref<boolean> | undefined = ref<boolean>(false);
 
-onMounted(() => {
-  RoleApi.listRoles({ type: "origin" }, loading).then((ok) => {
-    originRoles.value = ok.data;
-    roleFormData.value.parentRoleId = originRoles.value[0]?.parentRoleId;
-  });
+const currentParentRoleId = computed(() => {
+  return roleFormData.value.parentRoleId;
 });
+
+watch(
+  currentParentRoleId,
+  (parentRoleId) => {
+    if (!props.id && parentRoleId) {
+      //恢复表单内输入框值
+      permissionData.value = [];
+    }
+  },
+  { immediate: true }
+);
 
 const back = () => {
   route.push({ name: "role_list" });
 };
 
-const toEdit = (id: string) => {
-  route.push({
-    path: route.currentRoute.value.path.replace("/create", `/detail/${id}`),
-    params: { edit: "permissions" },
-  });
-};
-
-const rules = reactive<FormRules>({
-  name: [
-    {
-      message: "角色名称不为空",
-      trigger: "blur",
-      type: "string",
-      required: true,
-    },
-  ],
-});
-
 const submitForm = (formEl: FormInstance | undefined) => {
   formEl?.validate((valid) => {
     if (valid) {
-      RoleApi.addRole(roleFormData.value, loading).then((response) => {
-        toEdit(response.data.id);
-        ElMessage.success(t("commons.msg.save_success"));
-      });
+      if (!props.id) {
+        RoleApi.addRole(
+          CreateRoleRequest.newInstance(
+            roleFormData.value,
+            permissionData.value
+          ),
+          loading
+        ).then((response) => {
+          route.push({
+            path: route.currentRoute.value.path.replace(
+              "/create",
+              `/detail/${response.data.id}`
+            ),
+          });
+          ElMessage.success(t("commons.msg.save_success"));
+        });
+      } else {
+        RoleApi.updateRole(
+          UpdateRoleRequest.newInstance(
+            roleFormData.value,
+            permissionData.value
+          ),
+          loading
+        ).then((response) => {
+          /*route.push({
+            path: route.currentRoute.value.path.replace(
+              `/edit/${response.data.id}`,
+              `/detail/${response.data.id}`
+            ),
+          });*/
+          route.push({ name: "role_list" });
+          ElMessage.success(t("commons.msg.save_success"));
+        });
+      }
     }
   });
 };

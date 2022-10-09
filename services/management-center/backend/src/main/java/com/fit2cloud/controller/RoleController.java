@@ -15,6 +15,7 @@ import com.fit2cloud.service.IRoleService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
+import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
@@ -44,6 +45,9 @@ public class RoleController {
         Role role = new Role();
         BeanUtils.copyProperties(request, role);
         roleService.save(role);
+        if (CollectionUtils.isNotEmpty(request.getPermissions())) {
+            rolePermissionService.savePermissionsByRole(role.getId(), request.getPermissions());
+        }
         return ResultHolder.success(roleService.getById(role.getId()));
     }
 
@@ -53,7 +57,10 @@ public class RoleController {
     public ResultHolder<Role> update(@RequestBody @Validated(ValidationGroup.UPDATE.class) UpdateRoleRequest request) {
         Role role = new Role();
         BeanUtils.copyProperties(request, role);
-        roleService.updateById(role);
+        roleService.updateRole(role);
+        if(request.getPermissions() !=null) {
+            rolePermissionService.savePermissionsByRole(role.getId(), request.getPermissions());
+        }
         return ResultHolder.success(roleService.getById(role.getId()));
     }
 

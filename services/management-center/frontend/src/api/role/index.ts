@@ -4,6 +4,8 @@ import BaseRoleApi from "@commons/api/role";
 import { get, put, post, del } from "@commons/request";
 import type { Ref } from "vue";
 import type { Result } from "@commons/request/Result";
+import type { ModulePermission } from "./type";
+import type { SimpleMap } from "@commons/api/base/type";
 
 export function addRole(
   role: CreateRoleRequest,
@@ -15,7 +17,7 @@ export function addRole(
 export function updateRole(
   role: UpdateRoleRequest,
   loading?: Ref<boolean>
-): Promise<Result<boolean>> {
+): Promise<Result<Role>> {
   return put("/api/role", undefined, role, loading);
 }
 
@@ -36,7 +38,7 @@ export function batchDeleteRoles(
 export function getModulePermissions(
   role: string,
   loading?: Ref<boolean>
-): Promise<Result<any>> {
+): Promise<Result<SimpleMap<ModulePermission>>> {
   return get("/api/role/module-permission", { role: role }, loading);
 }
 

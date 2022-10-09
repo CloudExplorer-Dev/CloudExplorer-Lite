@@ -59,7 +59,7 @@ const handleCheckAllChange = (val: boolean) => {
 /**
  * 提交定时任务
  */
- const submitForm:(isRouter:Boolean)=>void = (isRouter = true) => {
+const submitForm: (isRouter: boolean) => void = (isRouter = true) => {
   if (props.accountId) {
     const data = getUpdateJobParams(props.accountId);
     cloudAccountApi.updateJobs(data, jobLoading).then(() => {

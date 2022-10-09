@@ -2,16 +2,15 @@ package com.fit2cloud.service;
 
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.service.IService;
-import com.fit2cloud.base.entity.JobRecord;
 import com.fit2cloud.common.platform.credential.Credential;
 import com.fit2cloud.controller.request.cloud_account.*;
 import com.fit2cloud.controller.response.cloud_account.CloudAccountJobDetailsResponse;
 import com.fit2cloud.controller.response.cloud_account.CloudAccountResponse;
 import com.fit2cloud.controller.response.cloud_account.PlatformResponse;
-import com.fit2cloud.controller.response.cloud_account.ResourceCountResponse;
 import com.fit2cloud.dao.entity.CloudAccount;
 import com.fit2cloud.request.cloud_account.SyncRequest;
 import com.fit2cloud.response.cloud_account.AccountJobRecordResponse;
+import com.fit2cloud.response.cloud_account.ResourceCountResponse;
 import com.fit2cloud.response.cloud_account.SyncResource;
 
 import java.util.ArrayList;
@@ -137,7 +136,7 @@ public interface ICloudAccountService extends IService<CloudAccount> {
     Boolean updateAccountName(UpdateAccountNameRequest updateAccountNameRequest);
 
     /**
-     * 获取云账号资源计数
+     * 获取云账号资源计数（静态）
      *
      * @param accountId
      * @return
@@ -153,4 +152,12 @@ public interface ICloudAccountService extends IService<CloudAccount> {
     List<AccountJobRecordResponse> findCloudAcoountSyncStatus(List<String> cloudAccountIds);
 
     void sync(ArrayList<String> cloudAccountIds);
+
+    /*
+     * 获取云账号资源计数（动态）
+     *
+     * @param accountId
+     * @return
+     */
+    List<ResourceCountResponse> getModuleResourceCount(String accountId);
 }

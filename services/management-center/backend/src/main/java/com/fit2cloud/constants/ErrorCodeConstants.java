@@ -39,7 +39,9 @@ public enum ErrorCodeConstants {
 
     BASE_ROLE_CANNOT_DELETE(100100404, "i18n.role.base.warn.cannot.delete"),
 
-    ROLE_ID_CANNOT_BE_NULL(100100405, "i18n.role.id.warn.cannot.null");
+    ROLE_ID_CANNOT_BE_NULL(100100405, "i18n.role.id.warn.cannot.null"),
+
+    ROLE_NAME_CANNOT_DUPLICATED(100100406, "i18n.role.name.warn.not.duplicated");
 
 
     /**

@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { useRouter } from "vue-router";
 import { useI18n } from "vue-i18n";
-import { $tv } from "@commons/base-locales";
 import { onMounted, reactive, ref } from "vue";
 import { tree } from "@/api/organization";
 import type { OrganizationTree } from "@/api/organization/type";
@@ -79,13 +78,13 @@ const rule = reactive<FormRules>({
   name: [
     {
       required: true,
-      message: $tv("commons.validate.required", "user.name"),
+      message: t("commons.validate.required", [t("user.name")]),
       trigger: "blur",
     },
     {
       min: 2,
       max: 30,
-      message: $tv("commons.validate.limit", "2", "30"),
+      message: t("commons.validate.limit", ["2", "30"]),
       trigger: "blur",
     },
   ],
@@ -99,7 +98,7 @@ const rule = reactive<FormRules>({
   email: [
     {
       required: true,
-      message: $tv("commons.validate.required", "user.email"),
+      message: t("commons.validate.required", [t("user.email")]),
       trigger: "blur",
     },
     {

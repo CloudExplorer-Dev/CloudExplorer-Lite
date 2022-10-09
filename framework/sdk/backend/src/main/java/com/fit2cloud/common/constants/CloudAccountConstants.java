@@ -3,7 +3,9 @@ package com.fit2cloud.common.constants;
 import com.baomidou.mybatisplus.annotation.EnumValue;
 
 public class CloudAccountConstants {
-
+    /**
+     * 同步状态
+     */
     public enum Status {
         INIT(-1),
         SUCCESS(0),
@@ -17,5 +19,4 @@ public class CloudAccountConstants {
             this.code = code;
         }
     }
-
 }

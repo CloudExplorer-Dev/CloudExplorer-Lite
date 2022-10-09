@@ -13,7 +13,7 @@ import com.fit2cloud.constants.ErrorCodeConstants;
 import com.fit2cloud.controller.request.OrganizationBatchRequest;
 import com.fit2cloud.controller.request.OrganizationRequest;
 import com.fit2cloud.controller.request.PageOrganizationRequest;
-import com.fit2cloud.dao.entity.Organization;
+import com.fit2cloud.base.entity.Organization;
 import com.fit2cloud.dao.mapper.OrganizationMapper;
 import com.fit2cloud.response.OrganizationTree;
 import com.fit2cloud.service.IOrganizationService;

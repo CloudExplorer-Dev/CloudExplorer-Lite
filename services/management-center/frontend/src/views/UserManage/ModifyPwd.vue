@@ -1,18 +1,15 @@
 <script setup lang="ts">
 import { reactive, ref } from "vue";
 import type { FormInstance, FormRules } from "element-plus";
-import { $tv } from "@commons/base-locales";
 import { useI18n } from "vue-i18n";
 import { ElMessage } from "element-plus/es";
 import { updatePwd } from "@/api/user";
 import type { InternalRuleItem } from "async-validator/dist-types/interface";
 
-const props = defineProps({
-  userId: {
-    type: String,
-    required: true,
-  },
-});
+const props = defineProps<{
+  userId?: string;
+}>();
+
 const dialogVisible = ref(false);
 defineExpose({
   dialogVisible,
@@ -41,7 +38,9 @@ const rules: FormRules = {
   newPassword: [
     {
       required: true,
-      message: $tv("commons.validate.input", "commons.personal.new_password"),
+      message: t("commons.validate.input", [
+        t("commons.personal.new_password"),
+      ]),
       trigger: "blur",
     },
     {
@@ -53,10 +52,9 @@ const rules: FormRules = {
   confirmPassword: [
     {
       required: true,
-      message: $tv(
-        "commons.validate.input",
-        "commons.personal.confirm_password"
-      ),
+      message: t("commons.validate.input", [
+        t("commons.personal.confirm_password"),
+      ]),
       trigger: "blur",
     },
     { validator: confirmPwdValidator, trigger: "blur" },
@@ -71,7 +69,7 @@ const handleCancel = (formEl: FormInstance) => {
 const handleSave = (formEl: FormInstance) => {
   if (!formEl) return;
   formEl.validate((valid) => {
-    if (valid) {
+    if (valid && props.userId) {
       const param = {
         id: props.userId,
         password: form.newPassword,

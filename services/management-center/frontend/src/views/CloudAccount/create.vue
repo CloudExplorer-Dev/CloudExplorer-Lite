@@ -209,7 +209,10 @@ const clear = () => {
                 v-if="item.inputType != 'switchBtn'"
               ></el-input>
 
-              <el-switch v-model="from.credential[item.field]" v-if="item.inputType === 'switchBtn'">
+              <el-switch
+                v-model="from.credential[item.field]"
+                v-if="item.inputType === 'switchBtn'"
+              >
               </el-switch>
             </el-form-item>
           </template>
