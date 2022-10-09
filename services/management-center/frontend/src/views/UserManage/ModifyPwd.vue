@@ -7,12 +7,10 @@ import { ElMessage } from "element-plus/es";
 import { updatePwd } from "@/api/user";
 import type { InternalRuleItem } from "async-validator/dist-types/interface";
 
-const props = defineProps({
-  userId: {
-    type: String,
-    required: true,
-  },
-});
+const props = defineProps<{
+  userId?: string;
+}>();
+
 const dialogVisible = ref(false);
 defineExpose({
   dialogVisible,
@@ -71,7 +69,7 @@ const handleCancel = (formEl: FormInstance) => {
 const handleSave = (formEl: FormInstance) => {
   if (!formEl) return;
   formEl.validate((valid) => {
-    if (valid) {
+    if (valid && props.userId) {
       const param = {
         id: props.userId,
         password: form.newPassword,

@@ -148,9 +148,6 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
             List<RoleInfo> userRoleList = roleInfo(currentLoginUserId, false);
             if (CollectionUtils.isEmpty(userRoleList)) {
                 removeById(userId);
-                //删除redis中缓存
-            }else{
-                //更新redis中缓存
             }
         }
 
@@ -164,9 +161,11 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
             userRoleWrapper.lambda()
                     .eq(true, UserRole::getUserId, userId);
             userRoleService.remove(userRoleWrapper);
-
-            //删除redis中缓存
         }
+
+        //更新redis
+        userRoleService.saveCachedUserRoleMap(user.getId());
+
         return true;
     }
 
@@ -217,7 +216,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
         BeanUtils.copyProperties(request, user);
         baseMapper.updateById(user);
         QueryWrapper<UserRole> wrapper = Wrappers.query();
-        wrapper.lambda().eq(true, UserRole::getUserId, request.getId());
+        wrapper.lambda().eq(UserRole::getUserId, request.getId());
 
         if (CollectionUtils.isNotEmpty(user.getRoleInfoList())) {
             if (CurrentUserUtils.isAdmin()) {
@@ -238,6 +237,10 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
 
             insertUserRoleInfo(user);
         }
+
+        //更新redis中该用户的角色
+        userRoleService.saveCachedUserRoleMap(user.getId());
+
         return true;
     }
 
@@ -393,6 +396,12 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
                 }
             });
         });
+
+        //更新完数据库后再更新redis
+        userBatchAddRoleRequest.getUserIdList().forEach(userId -> {
+            userRoleService.saveCachedUserRoleMap(userId);
+        });
+
         return true;
     }
 
