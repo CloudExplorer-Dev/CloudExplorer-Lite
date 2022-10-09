@@ -30,7 +30,7 @@ public enum ErrorCodeConstants {
     CLOUD_ACCOUNT_NOT_SUPPORT_PLATFORM(100100, "i18n.cloud_account.not_support.platform"),
 
     CLOUD_ACCOUNT_JOB_IS_NOT_EXISTENT(100101, "i18n.cloud_account.job.is.not.existent"),
-
+    CLOUD_ACCOUNT_INVALID_UNABLE_SYNC(100102,"i18n.cloud_account.invalid.unable.sync"),
     WORKSPACE_ID_AND_NAME_REQUIRED(100100401, "i18n.workspace.id.or.name.required"),
 
     WORKSPACE_NAME_REPEAT(100100402, "i18n.workspace.name.not.repeat"),

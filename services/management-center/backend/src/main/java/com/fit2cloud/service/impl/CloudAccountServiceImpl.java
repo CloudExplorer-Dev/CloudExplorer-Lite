@@ -8,30 +8,30 @@ import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.fit2cloud.autoconfigure.ServerInfo;
-import com.fit2cloud.base.entity.VmCloudDisk;
-import com.fit2cloud.base.entity.VmCloudImage;
-import com.fit2cloud.base.entity.VmCloudServer;
-import com.fit2cloud.base.service.IBaseCloudAccountService;
-import com.fit2cloud.base.service.IBaseVmCloudDiskService;
-import com.fit2cloud.base.service.IBaseVmCloudImageService;
-import com.fit2cloud.base.service.IBaseVmCloudServerService;
+import com.fit2cloud.base.entity.*;
+import com.fit2cloud.base.mapper.BaseAccountJobMapper;
+import com.fit2cloud.base.service.*;
 import com.fit2cloud.common.constants.PlatformConstants;
 import com.fit2cloud.common.exception.Fit2cloudException;
 import com.fit2cloud.common.form.vo.Form;
 import com.fit2cloud.common.platform.credential.Credential;
 import com.fit2cloud.common.provider.entity.F2CBalance;
+import com.fit2cloud.common.utils.ColumnNameUtil;
 import com.fit2cloud.common.utils.PageUtil;
 import com.fit2cloud.common.utils.ServiceUtil;
-import com.fit2cloud.constants.CloudAccountConstants;
+import com.fit2cloud.common.constants.CloudAccountConstants;
+import com.fit2cloud.constants.ErrorCodeConstants;
 import com.fit2cloud.controller.handler.ResultHolder;
 import com.fit2cloud.controller.request.cloud_account.*;
 import com.fit2cloud.controller.response.cloud_account.CloudAccountJobDetailsResponse;
+import com.fit2cloud.controller.response.cloud_account.CloudAccountResponse;
 import com.fit2cloud.controller.response.cloud_account.PlatformResponse;
 import com.fit2cloud.controller.response.cloud_account.ResourceCountResponse;
 import com.fit2cloud.dao.entity.CloudAccount;
 import com.fit2cloud.dao.mapper.CloudAccountMapper;
 import com.fit2cloud.request.cloud_account.CloudAccountModuleJob;
 import com.fit2cloud.request.cloud_account.SyncRequest;
+import com.fit2cloud.response.cloud_account.AccountJobRecordResponse;
 import com.fit2cloud.response.cloud_account.SyncResource;
 import com.fit2cloud.service.ICloudAccountService;
 import com.fit2cloud.service.IProviderService;
@@ -54,6 +54,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
 
 /**
@@ -81,6 +82,9 @@ public class CloudAccountServiceImpl extends ServiceImpl<CloudAccountMapper, Clo
     IBaseVmCloudDiskService cloudDiskService;
     @Resource
     IBaseVmCloudImageService cloudImageService;
+    @Resource
+    private BaseAccountJobMapper baseAccountJobMapper;
+
 
     /**
      * 获取模块云账号任务
@@ -146,11 +150,17 @@ public class CloudAccountServiceImpl extends ServiceImpl<CloudAccountMapper, Clo
     };
 
     @Override
-    public IPage<CloudAccount> page(CloudAccountRequest cloudAccountRequest) {
-        Page<CloudAccount> cloudAccountPage = PageUtil.of(cloudAccountRequest, CloudAccount.class, new OrderItem("create_time", true));
-        LambdaQueryWrapper<CloudAccount> wrapper = new LambdaQueryWrapper<>();
-        wrapper.like(StringUtils.isNotEmpty(cloudAccountRequest.getName()), CloudAccount::getName, cloudAccountRequest.getName()).in(CollectionUtils.isNotEmpty(cloudAccountRequest.getPlatform()), CloudAccount::getPlatform, cloudAccountRequest.getPlatform()).in(CollectionUtils.isNotEmpty(cloudAccountRequest.getState()), CloudAccount::getState, cloudAccountRequest.getState()).in(CollectionUtils.isNotEmpty(cloudAccountRequest.getStatus()), CloudAccount::getStatus, cloudAccountRequest.getStatus()).between(CollectionUtils.isNotEmpty(cloudAccountRequest.getUpdateTime()), CloudAccount::getUpdateTime, CollectionUtils.isNotEmpty(cloudAccountRequest.getUpdateTime()) ? simpleDateFormat.format(cloudAccountRequest.getUpdateTime().get(0)) : "", CollectionUtils.isNotEmpty(cloudAccountRequest.getUpdateTime()) ? simpleDateFormat.format(cloudAccountRequest.getUpdateTime().get(1)) : "").between(CollectionUtils.isNotEmpty(cloudAccountRequest.getCreateTime()), CloudAccount::getCreateTime, CollectionUtils.isNotEmpty(cloudAccountRequest.getCreateTime()) ? simpleDateFormat.format(cloudAccountRequest.getCreateTime().get(0)) : "", CollectionUtils.isNotEmpty(cloudAccountRequest.getCreateTime()) ? simpleDateFormat.format(cloudAccountRequest.getCreateTime().get(1)) : "");
-        return page(cloudAccountPage, wrapper);
+    public IPage<CloudAccountResponse> page(CloudAccountRequest cloudAccountRequest) {
+        Page<CloudAccountResponse> cloudAccountPage = PageUtil.of(cloudAccountRequest, CloudAccountResponse.class, new OrderItem("create_time", true));
+        QueryWrapper<CloudAccountResponse> wrapper = new QueryWrapper<>();
+        wrapper.like(StringUtils.isNotEmpty(cloudAccountRequest.getName()), ColumnNameUtil.getColumnName(CloudAccount::getName, false), cloudAccountRequest.getName())
+                .in(CollectionUtils.isNotEmpty(cloudAccountRequest.getPlatform()), ColumnNameUtil.getColumnName(CloudAccount::getPlatform, false), cloudAccountRequest.getPlatform())
+                .in(CollectionUtils.isNotEmpty(cloudAccountRequest.getState()), ColumnNameUtil.getColumnName(CloudAccount::getState, false), cloudAccountRequest.getState())
+                .in(CollectionUtils.isNotEmpty(cloudAccountRequest.getStatus()), ColumnNameUtil.getColumnName(CloudAccountResponse::getStatus, false), CollectionUtils.isNotEmpty(cloudAccountRequest.getStatus()) ? cloudAccountRequest.getStatus().stream().map(CloudAccountConstants.Status::valueOf).collect(Collectors.toSet()) : new ArrayList<>())
+                .between(CollectionUtils.isNotEmpty(cloudAccountRequest.getUpdateTime()), ColumnNameUtil.getColumnName(CloudAccount::getUpdateTime, false), CollectionUtils.isNotEmpty(cloudAccountRequest.getUpdateTime()) ? simpleDateFormat.format(cloudAccountRequest.getUpdateTime().get(0)) : "", CollectionUtils.isNotEmpty(cloudAccountRequest.getUpdateTime()) ? simpleDateFormat.format(cloudAccountRequest.getUpdateTime().get(1)) : "")
+                .between(CollectionUtils.isNotEmpty(cloudAccountRequest.getCreateTime()), ColumnNameUtil.getColumnName(CloudAccount::getCreateTime, false), CollectionUtils.isNotEmpty(cloudAccountRequest.getCreateTime()) ? simpleDateFormat.format(cloudAccountRequest.getCreateTime().get(0)) : "", CollectionUtils.isNotEmpty(cloudAccountRequest.getCreateTime()) ? simpleDateFormat.format(cloudAccountRequest.getCreateTime().get(1)) : "");
+        return baseMapper.pageCloudAccount(cloudAccountPage, wrapper);
+
     }
 
     @Override
@@ -180,9 +190,9 @@ public class CloudAccountServiceImpl extends ServiceImpl<CloudAccountMapper, Clo
         cloudAccount.setPlatform(addCloudAccountRequest.getPlatform());
         cloudAccount.setName(addCloudAccountRequest.getName());
         cloudAccount.setState(addCloudAccountRequest.getCredential().verification());
-        cloudAccount.setStatus(CloudAccountConstants.Status.INIT);
         save(cloudAccount);
         initCloudJob(cloudAccount.getId());
+        syncByCloudAccountId(cloudAccount.getId());
         return getById(cloudAccount.getId());
     }
 
@@ -412,5 +422,33 @@ public class CloudAccountServiceImpl extends ServiceImpl<CloudAccountMapper, Clo
         ResourceCountResponse image = new ResourceCountResponse("jingxiang", "镜像", cloudImageService.count(imageQueryWrapper));
         list.add(image);
         return list;
+    }
+
+    @Override
+    public List<AccountJobRecordResponse> findCloudAcoountSyncStatus(List<String> cloudAccountIds) {
+        return baseAccountJobMapper.findLastAccountJobRecord(cloudAccountIds);
+    }
+
+    @Override
+    public void sync(ArrayList<String> cloudAccountIds) {
+        List<CloudAccount> cloudAccounts = listByIds(cloudAccountIds).stream().filter(c -> !c.getState()).toList();
+        if (CollectionUtils.isNotEmpty(cloudAccounts)) {
+            throw new Fit2cloudException(ErrorCodeConstants.CLOUD_ACCOUNT_INVALID_UNABLE_SYNC.getCode(), ErrorCodeConstants.CLOUD_ACCOUNT_INVALID_UNABLE_SYNC.getMessage() + cloudAccounts.stream().map(CloudAccount::getName).toList());
+        }
+        for (String cloudAccountId : cloudAccountIds) {
+            syncByCloudAccountId(cloudAccountId);
+        }
+    }
+
+    private void syncByCloudAccountId(String cloudAccountId){
+        SyncRequest syncRequest = new SyncRequest();
+        // 获取同步资源
+        List<SyncResource> moduleResourceJob = getModuleResourceJob();
+        // 获取区域
+        List<Credential.Region> regionByAccountId = listRegions(cloudAccountId);
+        syncRequest.setRegions(regionByAccountId);
+        syncRequest.setCloudAccountId(cloudAccountId);
+        syncRequest.setSyncJob(moduleResourceJob.stream().map(r -> new SyncRequest.Job(r.getModule(), r.getJobName())).toList());
+        sync(syncRequest);
     }
 }

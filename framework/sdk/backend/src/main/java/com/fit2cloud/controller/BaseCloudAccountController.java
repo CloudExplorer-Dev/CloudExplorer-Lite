@@ -51,7 +51,7 @@ public class BaseCloudAccountController {
     }
 
     @GetMapping("/job/resource")
-    @ApiOperation(value = "获取所有模块的定时任务", notes = "获取所有模块的定时任务")
+    @ApiOperation(value = "获取单个模块的定时任务", notes = "获取单个模块的定时任务")
     public ResultHolder<List<SyncResource>> getModuleResourceJob() {
         return ResultHolder.success(cloudAccountService.getModuleResourceJob());
     }

@@ -220,19 +220,19 @@ interface ResourceSync {
   active?: boolean;
 }
 
-interface SyncRequest{
+interface SyncRequest {
   /**
    * 云账号id
    */
-  cloudAccountId:string
+  cloudAccountId: string;
   /**
    * 同步任务
    */
-  syncJob:Array<{module:string,jobName:string}>,
+  syncJob: Array<{ module: string; jobName: string }>;
   /**
    * 区域
    */
-  regions:Array<Region>;
+  regions: Array<Region>;
 }
 /**
  * 更新云账号名称所需要的参数
@@ -265,6 +265,39 @@ interface ResourceCount {
    */
   count: number;
 }
+/**
+ *云账户任务记录
+ */
+interface AccountJobRecord {
+  /**
+   *云账户id
+   */
+  accountId: string;
+  /**
+   *任务记录id
+   */
+  jobRecordId: string;
+  /**
+   *任务记录类型
+   */
+  type: string;
+  /**
+   * 任务状态
+   */
+  status: string;
+  /**
+   * 任务描述
+   */
+  description: string;
+  /**
+   * 创建时间
+   */
+  createTime: string;
+  /**
+   *任务参数
+   */
+  params: Array<{ size: number; region: string }>;
+}
 
 export type {
   ListOrganizationRequest,
@@ -281,4 +314,5 @@ export type {
   SyncRequest,
   UpdateAccountName,
   ResourceCount,
+  AccountJobRecord,
 };

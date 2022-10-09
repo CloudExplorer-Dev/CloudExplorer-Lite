@@ -2,13 +2,16 @@ package com.fit2cloud.service;
 
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.service.IService;
+import com.fit2cloud.base.entity.JobRecord;
 import com.fit2cloud.common.platform.credential.Credential;
 import com.fit2cloud.controller.request.cloud_account.*;
 import com.fit2cloud.controller.response.cloud_account.CloudAccountJobDetailsResponse;
+import com.fit2cloud.controller.response.cloud_account.CloudAccountResponse;
 import com.fit2cloud.controller.response.cloud_account.PlatformResponse;
 import com.fit2cloud.controller.response.cloud_account.ResourceCountResponse;
 import com.fit2cloud.dao.entity.CloudAccount;
 import com.fit2cloud.request.cloud_account.SyncRequest;
+import com.fit2cloud.response.cloud_account.AccountJobRecordResponse;
 import com.fit2cloud.response.cloud_account.SyncResource;
 
 import java.util.ArrayList;
@@ -29,7 +32,7 @@ public interface ICloudAccountService extends IService<CloudAccount> {
      * @param cloudAccountRequest 云账号请求对象
      * @return 分页对象
      */
-    IPage<CloudAccount> page(CloudAccountRequest cloudAccountRequest);
+    IPage<CloudAccountResponse> page(CloudAccountRequest cloudAccountRequest);
 
     /**
      * 获取云账号供应商数据
@@ -140,4 +143,14 @@ public interface ICloudAccountService extends IService<CloudAccount> {
      * @return
      */
     List<ResourceCountResponse> resourceCount(String accountId);
+
+    /**
+     * 根据云账户查询
+     *
+     * @param cloudAccountIds
+     * @return
+     */
+    List<AccountJobRecordResponse> findCloudAcoountSyncStatus(List<String> cloudAccountIds);
+
+    void sync(ArrayList<String> cloudAccountIds);
 }

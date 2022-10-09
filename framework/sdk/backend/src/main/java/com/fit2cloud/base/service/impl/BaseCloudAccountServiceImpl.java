@@ -147,11 +147,13 @@ public class BaseCloudAccountServiceImpl extends ServiceImpl<BaseCloudAccountMap
     public void sync(SyncRequest syncRequest) {
         JobModuleInfo moduleJobInfo = JobSettingConfig.getModuleJobInfo();
         for (SyncRequest.Job job : syncRequest.getSyncJob()) {
-            moduleJobInfo.getJobDetails().stream().filter(j -> StringUtils.equals(job.getJobName(), j.getJobName()) && StringUtils.equals(j.getJobGroup(),JobConstants.Group.CLOUD_ACCOUNT_RESOURCE_SYNC_GROUP.name())).findAny().ifPresent(j -> {
+            moduleJobInfo.getJobDetails().stream().filter(j -> StringUtils.equals(job.getJobName(), j.getJobName()) && StringUtils.equals(j.getJobGroup(), JobConstants.Group.CLOUD_ACCOUNT_RESOURCE_SYNC_GROUP.name())).findAny().ifPresent(j -> {
                 exec(syncRequest, j);
             });
         }
     }
+
+
 
     @SneakyThrows
     private void exec(SyncRequest syncRequest, JobInitSettingDto j) {

@@ -17,7 +17,7 @@ import java.util.concurrent.*;
  * @注释:
  */
 public abstract class AsyncJob implements Job {
-    private static final ThreadPoolExecutor jobThreadPool = new ThreadPoolExecutor(2, 8, 30, TimeUnit.SECONDS, new LinkedBlockingQueue(200), Executors.defaultThreadFactory(), new ThreadPoolExecutor.AbortPolicy());
+    private static final ThreadPoolExecutor jobThreadPool = new ThreadPoolExecutor(8, 16, 30, TimeUnit.SECONDS, new LinkedBlockingQueue(200), Executors.defaultThreadFactory(), new ThreadPoolExecutor.AbortPolicy());
 
     @Override
     public void execute(JobExecutionContext context) throws JobExecutionException {

@@ -35,7 +35,7 @@ public class MyBatisPlusGenerator {
         Map<String, Map<String, Map<String, Object>>> map = new HashMap<>();
         //指定需要生成enum的字段（Enum类需要自己生成）
         map.put("cloud_account", convert(Arrays.asList(
-                new EnumCreator().setEnumField("status").setEnumClassName("CloudAccountConstants.Status").setEnumClass("com.fit2cloud.constants.CloudAccountConstants")
+                new EnumCreator().setEnumField("status").setEnumClassName("CloudAccountConstants.Status").setEnumClass("com.fit2cloud.common.constants.CloudAccountConstants")
         )));
 
         CUSTOM_MAP.put("useEnum", true);

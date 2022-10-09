@@ -1,4 +1,4 @@
-package com.fit2cloud.constants;
+package com.fit2cloud.common.constants;
 
 import com.baomidou.mybatisplus.annotation.EnumValue;
 

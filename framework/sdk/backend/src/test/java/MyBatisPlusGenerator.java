@@ -22,7 +22,7 @@ public class MyBatisPlusGenerator {
     /**
      * 传入需要生成代码的表名
      */
-    private static final List<String> TABLES = Arrays.asList("cloud_account");
+    private static final List<String> TABLES = Arrays.asList("account_job", "job_record");
 
     private static final Map<String, Object> CUSTOM_MAP = new HashMap<>();
 
@@ -33,7 +33,11 @@ public class MyBatisPlusGenerator {
                 new EnumCreator().setEnumField("_type").setEnumClassName("RoleConstants.Type").setEnumClass("com.fit2cloud.common.constants.RoleConstants"),
                 new EnumCreator().setEnumField("parent_role_id").setEnumClassName("RoleConstants.ROLE").setEnumClass("com.fit2cloud.common.constants.RoleConstants")
         )));
-
+        //指定需要生成enum的字段（Enum类需要自己生成）
+        map.put("job_record", convert(Arrays.asList(
+                new EnumCreator().setEnumField("type").setEnumClassName("JobTypeConstants").setEnumClass("com.fit2cloud.common.constants.JobTypeConstants"),
+                new EnumCreator().setEnumField("status").setEnumClassName("JobStatusConstants").setEnumClass("com.fit2cloud.common.constants.JobStatusConstants")
+        )));
         CUSTOM_MAP.put("useEnum", true);
         CUSTOM_MAP.put("useEnumMap", map);
     }
@@ -130,7 +134,7 @@ public class MyBatisPlusGenerator {
         }
     }
 
-    private static Map<String, Map<String, Object>> convert(List<EnumCreator> list){
+    private static Map<String, Map<String, Object>> convert(List<EnumCreator> list) {
         Map<String, Map<String, Object>> map = new HashMap<>();
         for (EnumCreator enumCreator : list) {
             map.put(enumCreator.getEnumField(), enumCreator.getMap());

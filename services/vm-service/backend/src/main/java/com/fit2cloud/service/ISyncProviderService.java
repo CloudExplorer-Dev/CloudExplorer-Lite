@@ -77,4 +77,5 @@ public interface ISyncProviderService {
      * @param params 同步磁盘所需参数
      */
     void syncCloudDisk(Map<String, Object> params);
+
 }

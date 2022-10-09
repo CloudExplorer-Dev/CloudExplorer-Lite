@@ -58,4 +58,5 @@ public interface IBaseCloudAccountService extends IService<CloudAccount> {
     List<SyncResource> getModuleResourceJob();
 
     void sync(SyncRequest syncRequest);
+
 }

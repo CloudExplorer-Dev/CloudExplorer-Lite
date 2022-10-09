@@ -20,7 +20,7 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.fasterxml.jackson.datatype.jsr310.deser.LocalDateTimeDeserializer;
 import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateTimeSerializer;
-import com.fit2cloud.constants.CloudAccountConstants;
+import com.fit2cloud.common.constants.CloudAccountConstants;
 
 /**
  * <p>
@@ -68,12 +68,6 @@ public class CloudAccount implements Serializable {
      */
     @TableField("state")
     private Boolean state;
-
-    /**
-     * 同步状态(0:同步成功,1:同步失败,2:同步中)
-     */
-    @TableField(value = "status",typeHandler = MybatisEnumTypeHandler.class)
-    private CloudAccountConstants.Status status;
 
     /**
      * 创建时间

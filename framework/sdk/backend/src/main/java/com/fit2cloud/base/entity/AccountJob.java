@@ -4,17 +4,11 @@ import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
-
 import java.io.Serializable;
 import java.time.LocalDateTime;
-
-import com.baomidou.mybatisplus.core.handlers.MybatisEnumTypeHandler;
-import com.fit2cloud.base.handler.CredentialTypeHandler;
-import com.fit2cloud.common.constants.CloudAccountConstants;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.Accessors;
-
 import java.io.Serial;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
@@ -25,14 +19,16 @@ import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateTimeSerializer;
 
 /**
  * <p>
- *
+ * 
  * </p>
+ *
+ *
  */
 @Getter
 @Setter
 @Accessors(chain = true)
-@TableName(value = "cloud_account", resultMap = "BaseResultMap")
-public class CloudAccount implements Serializable {
+@TableName("account_job")
+public class AccountJob implements Serializable {
 
     @Serial
     private static final long serialVersionUID = 1L;
@@ -44,31 +40,16 @@ public class CloudAccount implements Serializable {
     private String id;
 
     /**
-     * 云账号名称
+     * 云账户id
      */
-    @TableField("name")
-    private String name;
+    @TableField("account_id")
+    private String accountId;
 
     /**
-     * 云平台
+     * 定时任务记录id
      */
-    @TableField("platform")
-    private String platform;
-
-    /**
-     * 凭证字段
-     */
-    /**
-     * 凭证字段
-     */
-    @TableField(value = "credential", typeHandler = CredentialTypeHandler.class)
-    private String credential;
-
-    /**
-     * 云账号状态
-     */
-    @TableField("state")
-    private Boolean state;
+    @TableField("job_record_id")
+    private String jobRecordId;
 
     /**
      * 创建时间
@@ -80,7 +61,7 @@ public class CloudAccount implements Serializable {
     private LocalDateTime createTime;
 
     /**
-     * 修改时间
+     * 更新时间
      */
     @TableField("update_time")
     @JsonDeserialize(using = LocalDateTimeDeserializer.class)

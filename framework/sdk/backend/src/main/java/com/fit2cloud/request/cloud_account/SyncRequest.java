@@ -2,7 +2,9 @@ package com.fit2cloud.request.cloud_account;
 
 import com.fit2cloud.common.platform.credential.Credential;
 import io.swagger.annotations.ApiModelProperty;
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.util.List;
 
@@ -31,6 +33,8 @@ public class SyncRequest {
     private List<Credential.Region> regions;
 
     @Data
+    @AllArgsConstructor
+    @NoArgsConstructor
     public static class Job {
         /**
          * 模块名称

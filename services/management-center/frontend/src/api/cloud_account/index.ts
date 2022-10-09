@@ -162,9 +162,9 @@ const getResourceSync = (loading?: Ref<boolean>) => {
   return get("api/cloud_account/jobs/resource");
 };
 
-const syncJob=(data:SyncRequest,loading?: Ref<boolean>)=>{
-  return post("/api/cloud_account/sync",null,data,loading);
-}
+const syncJob = (data: SyncRequest, loading?: Ref<boolean>) => {
+  return post("/api/cloud_account/sync", null, data, loading);
+};
 
 /*
  * 查询云账户余额
@@ -205,6 +205,31 @@ const getResourceCount: (
     loading
   );
 };
+/**
+ * 获取云账户最新同步账号
+ * @param cloudAccountIds 云账号id
+ * @param loading         加载器
+ * @returns               云账号任务记录
+ */
+const getAccountJobRecord = (
+  cloudAccountIds: Array<string>,
+  loading?: Ref<boolean>
+) => {
+  return get(
+    "/api/cloud_account/sync/job_record",
+    { cloudAccountIds: cloudAccountIds },
+    loading
+  );
+};
+/**
+ * 同步云账号
+ * @param cloudAccountIds 云账号id
+ * @param loading 加载器
+ * @returns
+ */
+const syncAll = (cloudAccountIds: Array<string>, loading?: Ref<boolean>) => {
+  return put("/api/cloud_account/sync", null, cloudAccountIds, loading);
+};
 
 export default {
   page,
@@ -223,4 +248,6 @@ export default {
   getAccountBalance,
   updateAccountName,
   getResourceCount,
+  getAccountJobRecord,
+  syncAll,
 };

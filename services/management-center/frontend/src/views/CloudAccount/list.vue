@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { platformIcon } from "@/utils/platform";
-import { ref, onMounted, computed } from "vue";
+import { ref, onMounted, computed, onBeforeUnmount } from "vue";
 import {
   PaginationConfig,
   SearchConfig,
@@ -13,12 +13,15 @@ import type {
   CloudAccount,
   Region,
   ResourceSync,
-  SyncRequest
+  SyncRequest,
+  AccountJobRecord,
 } from "@/api/cloud_account/type";
 import { ElMessage, ElMessageBox } from "element-plus";
 import { useRouter } from "vue-router";
 import { useI18n } from "vue-i18n";
-import type { FormInstance, FormRules } from 'element-plus'
+import type { FormInstance, FormRules } from "element-plus";
+import type { SimpleMap } from "@commons/api/base/type";
+import type Color from "element-plus/es/components/color-picker/src/color";
 const { t } = useI18n();
 // 路由实例对象
 const router = useRouter();
@@ -29,7 +32,7 @@ const tableSearch = ref<TableSearch>();
 // table组建实例
 const table: any = ref(null);
 // 选中的云账号id
-const multipleSelectionIds = ref<Array<string>>();
+const multipleSelectionIds = ref<Array<string>>([]);
 // 列表字段数据
 const columns = ref([]);
 // 获得云平台过滤数据
@@ -138,6 +141,11 @@ const search = (condition: TableSearch) => {
       ...params,
     })
     .then((ok) => {
+      cloudAccountApi
+        .getAccountJobRecord(ok.data.records.map((r) => r.id))
+        .then((data) => {
+          cloudAccountJobRecord.value = data.data;
+        });
       clouAccountList.value = ok.data.records;
       tableConfig.value.paginationConfig?.setTotal(
         ok.data.total,
@@ -149,9 +157,24 @@ const search = (condition: TableSearch) => {
       );
     });
 };
+let cloudAccountInterval: any;
 
+const cloudAccountJobRecord = ref<SimpleMap<Array<AccountJobRecord>>>({});
 onMounted(() => {
   search(new TableSearch());
+  cloudAccountInterval = setInterval(() => {
+    cloudAccountApi
+      .getAccountJobRecord(clouAccountList.value.map((r) => r.id))
+      .then((data) => {
+        cloudAccountJobRecord.value = data.data;
+      });
+  }, 6000);
+});
+
+onBeforeUnmount(() => {
+  if (cloudAccountInterval) {
+    clearInterval(cloudAccountInterval);
+  }
 });
 
 const resources = ref<Array<ResourceSync>>([]);
@@ -159,15 +182,15 @@ const resources = ref<Array<ResourceSync>>([]);
 /**
  * 同步云账号
  */
-const syncCloudAccountId=ref<string>('');
+const syncCloudAccountId = ref<string>("");
 /**
  * 区域加载器
  */
-const regionsLoading=ref<boolean>(false);
+const regionsLoading = ref<boolean>(false);
 /**
  * 同步资源加载器
  */
-const resourceLoading=ref<boolean>(false);
+const resourceLoading = ref<boolean>(false);
 /**
  * 打开同步弹出框
  */
@@ -175,19 +198,18 @@ const openSync = (row: CloudAccount) => {
   // 打开弹出框
   syncVisible.value = true;
   // 同步云账号
-  syncCloudAccountId.value=row.id;
+  syncCloudAccountId.value = row.id;
   // 获取当前云账号区域
-  cloudAccountApi.getRegions(row.id,regionsLoading).then((ok) => {
+  cloudAccountApi.getRegions(row.id, regionsLoading).then((ok) => {
     regions.value = ok.data;
-    syncForm.value.checkedRegions=ok.data.map(r=>r.regionId);
+    syncForm.value.checkedRegions = ok.data.map((r) => r.regionId);
   });
   // 获取同步的资源
   cloudAccountApi.getResourceSync(resourceLoading).then((ok) => {
     resources.value = ok.data;
-    syncForm.value.checkedResources=ok.data.map((r:any)=>r.jobName);
+    syncForm.value.checkedResources = ok.data.map((r: any) => r.jobName);
   });
 };
-
 
 //------------------------ 点击按钮同步 START-------------------
 const syncVisible = ref<boolean>(false);
@@ -203,33 +225,41 @@ const create = () => {
   router.push({ name: "cloud_account_create" });
 };
 
-
 /**
  * 资源是否全选
  */
 const resourcescheckedAll = computed(() => {
-  return  syncForm.value.checkedResources.length === resources.value.length;
+  return syncForm.value.checkedResources.length === resources.value.length;
 });
 
 /**
  * 同步任务发布
  */
-const sync=(formEl: FormInstance | undefined)=>{
-  if (!formEl) return
+const sync = (formEl: FormInstance | undefined) => {
+  if (!formEl) return;
   formEl.validate((valid) => {
     if (valid) {
       // 关闭弹出框
-  syncVisible.value=false;
-  // 构建同步对象
-   const syncSubmit:SyncRequest={cloudAccountId:syncCloudAccountId.value,regions:regions.value.filter(r=>syncForm.value.checkedRegions .includes(r.regionId)),syncJob: resources.value.filter(r=>syncForm.value.checkedResources.includes(r.jobName)).map(source=>{return{module:source.module,jobName:source.jobName}})};
-   // 发送同步任务
-   cloudAccountApi.syncJob(syncSubmit).then(ok=>{
-    ElMessage.success("发送同步任务成功");
-   });
+      syncVisible.value = false;
+      // 构建同步对象
+      const syncSubmit: SyncRequest = {
+        cloudAccountId: syncCloudAccountId.value,
+        regions: regions.value.filter((r) =>
+          syncForm.value.checkedRegions.includes(r.regionId)
+        ),
+        syncJob: resources.value
+          .filter((r) => syncForm.value.checkedResources.includes(r.jobName))
+          .map((source) => {
+            return { module: source.module, jobName: source.jobName };
+          }),
+      };
+      // 发送同步任务
+      cloudAccountApi.syncJob(syncSubmit).then((ok) => {
+        ElMessage.success("发送同步任务成功");
+      });
     }
-  })
- 
-}
+  });
+};
 /**
  * 是否全选
  */
@@ -243,7 +273,9 @@ const checkAll = computed(() => {
  */
 const handleCheckAllResource = (val: boolean) => {
   if (val) {
-    syncForm.value.checkedResources = resources.value.map((region) => region.jobName);
+    syncForm.value.checkedResources = resources.value.map(
+      (region) => region.jobName
+    );
   } else {
     syncForm.value.checkedResources = [];
   }
@@ -259,46 +291,97 @@ const changeResource = (selectResources: Array<string>) => {
 /**
  * 同步表单
  */
-const syncForm=ref<{
+const syncForm = ref<{
   /**
    * 选中的资源
    */
-  checkedResources:Array<string>,
-   /**
-    * 选中的区域
-    */ 
-  checkedRegions:Array<string>  
+  checkedResources: Array<string>;
+  /**
+   * 选中的区域
+   */
+  checkedRegions: Array<string>;
 }>({
-  checkedResources:[],
-  checkedRegions:[]
+  checkedResources: [],
+  checkedRegions: [],
 });
 // 校验规则
-const ruleFormRef = ref<FormInstance>()
+const ruleFormRef = ref<FormInstance>();
 // 校验规则
-const syncRules=ref<FormRules>(
-  {checkedResources: [
+const syncRules = ref<FormRules>({
+  checkedResources: [
     {
       required: true,
-      message: '同步资源必须选择',
+      message: "同步资源必须选择",
       trigger: "change",
     },
   ],
   checkedRegions: [
     {
       required: true,
-      message: '同步区域必须选择',
+      message: "同步区域必须选择",
       trigger: "change",
     },
-  ]
-}
-);
+  ],
+});
+
+const getStatusByAccountId = (cloudAccountId: string) => {
+  const list = cloudAccountJobRecord.value[cloudAccountId];
+  if (list) {
+    if (list.some((job) => job.status === "FAILED")) {
+      return "FAILED";
+    }
+    if (list.every((job) => job.status === "SUCCESS")) {
+      return "SUCCESS";
+    }
+    return "SYNCING";
+  }
+  return "INIT";
+};
+
+const getStatusIcone = (status: string) => {
+  return status === "FAILED"
+    ? "Warning"
+    : status === "INIT"
+    ? "Sunrise"
+    : status === "SUCCESS"
+    ? "CircleCheck"
+    : status === "SYNCING"
+    ? "Loading"
+    : "InfoFilled";
+};
+
+const mapStatus = (status: string) => {
+  return status === "FAILED"
+    ? t("cloud_account.native_sync.failed", "同步失败")
+    : status === "INIT"
+    ? t("cloud_account.native_sync.init", "初始化")
+    : status === "SUCCESS"
+    ? t("cloud_account.native_sync.success", "同步成功")
+    : status === "SYNCING"
+    ? t("cloud_account.native_sync.syncing", "同步中")
+    : t("cloud_account.native_sync.unknown", "未知");
+};
+
+const getColorByAccountStatus = (status: string) => {
+  return status === "FAILED"
+    ? "var(--el-color-error)"
+    : status === "INIT"
+    ? "var(--el-color-warning)"
+    : status === "SUCCESS"
+    ? "var(--el-color-success)"
+    : status === "SYNCING"
+    ? "var(--el-color-primary)"
+    : "var(--el-color-info)";
+};
 /**
  * 全选改变触发函数
  * @param val 改变的值
  */
 const handleCheckAllChange = (val: boolean) => {
   if (val) {
-    syncForm.value.checkedRegions = regions.value.map((region) => region.regionId);
+    syncForm.value.checkedRegions = regions.value.map(
+      (region) => region.regionId
+    );
   } else {
     syncForm.value.checkedRegions = [];
   }
@@ -306,7 +389,7 @@ const handleCheckAllChange = (val: boolean) => {
 
 /**
  * 区域选中和取消的时候触发
- * @param selectRegion 
+ * @param selectRegion
  */
 const change = (selectRegion: Array<string>) => {
   syncForm.value.checkedRegions = selectRegion;
@@ -315,7 +398,7 @@ const change = (selectRegion: Array<string>) => {
 /**
  * 表单配置
  */
- const tableConfig = ref<TableConfig>({
+const tableConfig = ref<TableConfig>({
   searchConfig: {
     showEmpty: false,
     // 查询函数
@@ -367,6 +450,19 @@ const change = (selectRegion: Array<string>) => {
     ),
   ]),
 });
+const syncAll = () => {
+  if (
+    clouAccountList.value
+      .filter((a) => multipleSelectionIds.value.includes(a.id))
+      .every((a) => a.state)
+  ) {
+    cloudAccountApi.syncAll(multipleSelectionIds.value).then((ok) => {
+      ElMessage.success("发送同步任务成功");
+    });
+  } else {
+    ElMessage.success("请选择有效的定时任务进行同步");
+  }
+};
 </script>
 <template>
   <ce-table
@@ -384,6 +480,9 @@ const change = (selectRegion: Array<string>) => {
       }}</el-button>
       <el-button @click="batchDelete">{{
         t("commons.btn.delete", "删除")
+      }}</el-button>
+      <el-button @click="syncAll">{{
+        t("commons.btn.sync", "同步")
       }}</el-button>
     </template>
     <el-table-column type="selection" />
@@ -405,18 +504,12 @@ const change = (selectRegion: Array<string>) => {
       sortable
     >
       <template #default="scope">
-        <div
-          style="
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-          "
-        >
-          <span>{{ platformIcon[scope.row.platform].name }}</span>
+        <div style="display: flex; align-items: center">
           <el-image
             style="margin-right: 20%; display: flex"
             :src="platformIcon[scope.row.platform].icon"
           ></el-image>
+          <span>{{ platformIcon[scope.row.platform].name }}</span>
         </div>
       </template>
     </el-table-column>
@@ -466,20 +559,42 @@ const change = (selectRegion: Array<string>) => {
     >
       <template #default="scope">
         <div style="display: flex; align-items: center">
-          <span
-            :style="{ color: scope.row.status === 'FAILED' ? 'red' : '' }"
-            >{{
-              scope.row.status === "FAILED"
-                ? t("cloud_account.native_sync.failed", "同步失败")
-                : scope.row.status === "INIT"
-                ? t("cloud_account.native_sync.init", "初始化")
-                : scope.row.status === "SUCCESS"
-                ? t("cloud_account.native_sync.success", "同步成功")
-                : scope.row.status === "SYNCING"
-                ? t("cloud_account.native_sync.syncing", "同步中")
-                : t("cloud_account.native_sync.unknown", "未知")
-            }}</span
-          >
+          <el-tooltip class="box-item" effect="dark" placement="top-start">
+            <template #content>
+              <div
+                v-for="j in cloudAccountJobRecord[scope.row.id] || []"
+                :key="j.jobRecordId"
+                style="
+                  display: flex;
+                  justify-content: space-between;
+                  width: 300px;
+                "
+              >
+                <div style="width: 80px">{{ j.description }}</div>
+                <div>{{ mapStatus(j.status) }}</div>
+                <div>{{ j.createTime }}</div>
+              </div>
+            </template>
+            <div
+              style="display: flex; width: 60%; justify-content: space-between"
+              :style="{
+                color: getColorByAccountStatus(
+                  getStatusByAccountId(scope.row.id)
+                ),
+              }"
+            >
+              <span>{{ mapStatus(getStatusByAccountId(scope.row.id)) }}</span>
+              <ce-icon
+                style="cursor: pointer; font-size: 20px"
+                :code="getStatusIcone(getStatusByAccountId(scope.row.id))"
+                :class="
+                  getStatusByAccountId(scope.row.id) === 'SYNCING'
+                    ? 'is-loading'
+                    : ''
+                "
+              ></ce-icon>
+            </div>
+          </el-tooltip>
         </div>
       </template>
     </el-table-column>
@@ -499,76 +614,83 @@ const change = (selectRegion: Array<string>) => {
     </template>
   </ce-table>
   <el-dialog v-model="syncVisible" title="同步" width="50%">
-    <el-form  ref="ruleFormRef" :rules="syncRules" :model="syncForm">
-    <layout-container :border="false">
-      <template #header
-        ><h4>
-          {{ t("cloud_account.sync.range", "同步范围") }}
-        </h4></template
-      ><template #content>
-        <el-checkbox
-          style="margin-bottom: 10px"
-          v-model="checkAll"
-          @change="handleCheckAllChange"
-          >全选</el-checkbox
-        >
-        <el-form-item  prop="checkedRegions" >
-          <el-checkbox-group  v-loading="regionsLoading" @change="change"  v-model="syncForm.checkedRegions">
+    <el-form ref="ruleFormRef" :rules="syncRules" :model="syncForm">
+      <layout-container :border="false">
+        <template #header
+          ><h4>
+            {{ t("cloud_account.sync.range", "同步范围") }}
+          </h4></template
+        ><template #content>
           <el-checkbox
-            :title="region.name"
-            v-for="region in regions"
-            :key="region.regionId"
-            :label="region.regionId"
-            size="large"
-            ><span
-              style="
-                display: inline-block;
-                width: 120px;
-                overflow: hidden;
-                text-overflow: ellipsis;
-              "
+            style="margin-bottom: 10px"
+            v-model="checkAll"
+            @change="handleCheckAllChange"
+            >全选</el-checkbox
+          >
+          <el-form-item prop="checkedRegions">
+            <el-checkbox-group
+              v-loading="regionsLoading"
+              @change="change"
+              v-model="syncForm.checkedRegions"
             >
-              {{ region.name }}
-            </span>
-          </el-checkbox>
-        </el-checkbox-group>
-        </el-form-item>
-       
-      </template>
-    </layout-container>
-    <layout-container :border="false">
-      <template #header>资源</template>
-      <template #content>
-        <el-checkbox
-          style="margin-bottom: 10px"
-          v-model="resourcescheckedAll"
-          @change="handleCheckAllResource"
-          >全选</el-checkbox
-        >
-        <el-form-item  prop="checkedResources" >
-        <el-checkbox-group v-loading="resourceLoading" @change="changeResource" v-model="syncForm.checkedResources">
+              <el-checkbox
+                :title="region.name"
+                v-for="region in regions"
+                :key="region.regionId"
+                :label="region.regionId"
+                size="large"
+                ><span
+                  style="
+                    display: inline-block;
+                    width: 120px;
+                    overflow: hidden;
+                    text-overflow: ellipsis;
+                  "
+                >
+                  {{ region.name }}
+                </span>
+              </el-checkbox>
+            </el-checkbox-group>
+          </el-form-item>
+        </template>
+      </layout-container>
+      <layout-container :border="false">
+        <template #header>资源</template>
+        <template #content>
           <el-checkbox
-            :title="resource.resourceDesc"
-            v-for="resource in resources"
-            :key="resource.jobName"
-            :label="resource.jobName"
-            size="large"
-            ><span
-              style="
-                display: inline-block;
-                width: 120px;
-                overflow: hidden;
-                text-overflow: ellipsis;
-              "
+            style="margin-bottom: 10px"
+            v-model="resourcescheckedAll"
+            @change="handleCheckAllResource"
+            >全选</el-checkbox
+          >
+          <el-form-item prop="checkedResources">
+            <el-checkbox-group
+              v-loading="resourceLoading"
+              @change="changeResource"
+              v-model="syncForm.checkedResources"
             >
-              {{ resource.resourceDesc }}
-            </span>
-          </el-checkbox>
-        </el-checkbox-group>
-        </el-form-item>
-      </template>
-    </layout-container>
-  </el-form>
+              <el-checkbox
+                :title="resource.resourceDesc"
+                v-for="resource in resources"
+                :key="resource.jobName"
+                :label="resource.jobName"
+                size="large"
+                ><span
+                  style="
+                    display: inline-block;
+                    width: 120px;
+                    overflow: hidden;
+                    text-overflow: ellipsis;
+                  "
+                >
+                  {{ resource.resourceDesc }}
+                </span>
+              </el-checkbox>
+            </el-checkbox-group>
+          </el-form-item>
+        </template>
+      </layout-container>
+    </el-form>
     <template #footer>
       <span class="dialog-footer">
         <el-button @click="syncVisible = false">取消</el-button>

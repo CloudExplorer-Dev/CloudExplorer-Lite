@@ -8,20 +8,22 @@ import com.baomidou.mybatisplus.annotation.TableName;
 import java.io.Serializable;
 import java.time.LocalDateTime;
 
-import com.baomidou.mybatisplus.core.handlers.MybatisEnumTypeHandler;
-import com.fit2cloud.base.handler.CredentialTypeHandler;
-import com.fit2cloud.common.constants.CloudAccountConstants;
+import com.baomidou.mybatisplus.extension.handlers.JacksonTypeHandler;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.Accessors;
 
 import java.io.Serial;
+import java.util.List;
+import java.util.Map;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.fasterxml.jackson.datatype.jsr310.deser.LocalDateTimeDeserializer;
 import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateTimeSerializer;
+import com.fit2cloud.common.constants.JobTypeConstants;
+import com.fit2cloud.common.constants.JobStatusConstants;
 
 /**
  * <p>
@@ -31,8 +33,8 @@ import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateTimeSerializer;
 @Getter
 @Setter
 @Accessors(chain = true)
-@TableName(value = "cloud_account", resultMap = "BaseResultMap")
-public class CloudAccount implements Serializable {
+@TableName("job_record")
+public class JobRecord implements Serializable {
 
     @Serial
     private static final long serialVersionUID = 1L;
@@ -44,31 +46,28 @@ public class CloudAccount implements Serializable {
     private String id;
 
     /**
-     * 云账号名称
+     * 任务类型
      */
-    @TableField("name")
-    private String name;
+    @TableField("type")
+    private JobTypeConstants type;
 
     /**
-     * 云平台
+     * 任务状态
      */
-    @TableField("platform")
-    private String platform;
+    @TableField("status")
+    private JobStatusConstants status;
 
     /**
-     * 凭证字段
+     * 任务描述
      */
-    /**
-     * 凭证字段
-     */
-    @TableField(value = "credential", typeHandler = CredentialTypeHandler.class)
-    private String credential;
+    @TableField("description")
+    private String description;
 
     /**
-     * 云账号状态
+     * 任务参数
      */
-    @TableField("state")
-    private Boolean state;
+    @TableField(value = "params", typeHandler = JacksonTypeHandler.class)
+    private List<Map<String, Object>> params;
 
     /**
      * 创建时间
@@ -80,7 +79,7 @@ public class CloudAccount implements Serializable {
     private LocalDateTime createTime;
 
     /**
-     * 修改时间
+     * 更新时间
      */
     @TableField("update_time")
     @JsonDeserialize(using = LocalDateTimeDeserializer.class)
