@@ -72,16 +72,22 @@ public class RolePermissionServiceImpl extends ServiceImpl<RolePermissionMapper,
             });
         }
 
+        List<CeGrantedAuthority> permissions = authorities.values().stream().flatMap(Collection::stream).collect(Collectors.toList());
+
         //保存数据库
         RolePermission rolePermission = new RolePermission()
                 .setRoleId(roleId)
-                .setPermissions(authorities.values().stream().flatMap(Collection::stream).collect(Collectors.toList()));
+                .setPermissions(permissions);
         this.saveOrUpdate(rolePermission);
 
-        //缓存到redis
-        authorities.forEach((module, list) -> {
-            basePermissionService.putPermission(module, roleId, new ArrayList<>(list));
-        });
+        if (CollectionUtils.isNotEmpty(permissions)) {
+            //缓存到redis
+            authorities.forEach((module, list) -> {
+                basePermissionService.putPermission(module, roleId, new ArrayList<>(list));
+            });
+        } else {
+            basePermissionService.removePermission(roleId);
+        }
     }
 
     @Override

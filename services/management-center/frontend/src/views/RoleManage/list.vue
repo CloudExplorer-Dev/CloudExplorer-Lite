@@ -134,6 +134,12 @@ const openDetail = (row: Role) => {
   });
 };
 
+const editRole = (row: Role) => {
+  useRoute.push({
+    path: useRoute.currentRoute.value.path.replace("/list", `/edit/${row.id}`),
+  });
+};
+
 const create = () => {
   useRoute.push({ name: "role_create" });
 };
@@ -231,15 +237,15 @@ const tableConfig = ref<TableConfig>({
   },
   paginationConfig: new PaginationConfig(),
   tableOperations: new TableOperations([
-    TableOperations.buildButtons().newInstance(
+    /*TableOperations.buildButtons().newInstance(
       "详情",
       "primary",
       openDetail,
       "Document",
       false,
       true
-    ),
-    /*TableOperations.buildButtons().newInstance(
+    ),*/
+    TableOperations.buildButtons().newInstance(
       "编辑",
       "primary",
       editRole,
@@ -247,7 +253,7 @@ const tableConfig = ref<TableConfig>({
       (row: Role) => {
         return row.type === "origin";
       }
-    ),*/
+    ),
     TableOperations.buildButtons().newInstance(
       "删除",
       "danger",
@@ -276,7 +282,17 @@ const tableConfig = ref<TableConfig>({
       <el-button @click="batchDelete">删除</el-button>
     </template>
     <el-table-column type="selection" :selectable="selectable" />
-    <el-table-column prop="name" label="角色" sortable />
+    <!--    <el-table-column prop="name" label="角色" sortable />-->
+    <el-table-column prop="name" label="角色" sortable>
+      <template #default="scope">
+        <span
+          style="cursor: pointer; color: var(--el-color-primary)"
+          @click="openDetail(scope.row)"
+        >
+          {{ scope.row.name }}
+        </span>
+      </template>
+    </el-table-column>
     <el-table-column
       prop="type"
       column-key="type"

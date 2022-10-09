@@ -4,7 +4,7 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.fit2cloud.controller.request.OrganizationBatchRequest;
 import com.fit2cloud.controller.request.OrganizationRequest;
 import com.fit2cloud.controller.request.PageOrganizationRequest;
-import com.fit2cloud.dao.entity.Organization;
+import com.fit2cloud.base.entity.Organization;
 import com.baomidou.mybatisplus.extension.service.IService;
 
 import java.util.List;

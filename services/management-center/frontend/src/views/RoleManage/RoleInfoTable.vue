@@ -4,7 +4,7 @@
     label-position="right"
     :model="_roleFormData"
     :inline="false"
-    ref="_roleFormRef"
+    ref="_ruleFormRef"
     status-icon
   >
     <el-form-item label="名称" label-width="100px" prop="name">
@@ -27,7 +27,7 @@
           v-for="baseRole in originRoles"
           :key="baseRole.id"
           :label="baseRole.id"
-          :disabled="baseRole.id !== _roleData.parentRoleId"
+          :disabled="!createNew && baseRole.id !== _roleData.parentRoleId"
         >
           {{ baseRole.name }}
         </el-radio-button>
@@ -39,17 +39,18 @@
 import RoleApi from "@/api/role";
 
 const props = defineProps<{
-  id: string;
+  id?: string;
   loading: boolean;
   editInfo: boolean;
   roleData: Role;
   roleFormData: UpdateRoleRequest;
-  roleFormRef: FormInstance;
+  ruleFormRef: FormInstance;
+  createNew?: boolean;
 }>();
 
 const emit = defineEmits([
   "update:roleFormData",
-  "update:roleFormRef",
+  "update:ruleFormRef",
   "update:roleData",
   "update:loading",
 ]);
@@ -84,12 +85,12 @@ const _roleFormData = computed({
   },
 });
 
-const _roleFormRef = computed({
+const _ruleFormRef = computed({
   get() {
-    return props.roleFormRef;
+    return props.ruleFormRef;
   },
   set(value) {
-    emit("update:roleFormRef", value);
+    emit("update:ruleFormRef", value);
   },
 });
 
@@ -128,11 +129,19 @@ onMounted(() => {
 function init() {
   RoleApi.listRoles({ type: "origin" }, _loading).then((ok) => {
     originRoles.value = ok.data;
+    if (props.createNew) {
+      console.log("create new");
+      //新建时默认值
+      _roleData.value.parentRoleId = originRoles.value[0]?.parentRoleId;
+    }
   });
-  //角色
-  RoleApi.getRoleById(props.id, _loading).then((ok) => {
-    _roleData.value = ok.data;
-  });
+
+  //当前角色
+  if (props.id) {
+    RoleApi.getRoleById(props.id, _loading).then((ok) => {
+      _roleData.value = ok.data;
+    });
+  }
 }
 </script>
 <style lang="scss"></style>

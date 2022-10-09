@@ -10,7 +10,7 @@ import com.fit2cloud.controller.handler.ResultHolder;
 import com.fit2cloud.controller.request.OrganizationBatchRequest;
 import com.fit2cloud.controller.request.OrganizationRequest;
 import com.fit2cloud.controller.request.PageOrganizationRequest;
-import com.fit2cloud.dao.entity.Organization;
+import com.fit2cloud.base.entity.Organization;
 import com.fit2cloud.request.pub.OrderRequest;
 import com.fit2cloud.service.IOrganizationService;
 import io.swagger.annotations.Api;

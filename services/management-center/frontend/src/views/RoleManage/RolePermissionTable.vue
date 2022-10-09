@@ -54,11 +54,14 @@
   </el-container>
 </template>
 <script setup lang="ts">
+import type { SimpleMap } from "@commons/api/base/type";
+import { GroupPermission, ModulePermission, Permission } from "@/api/role/type";
+
 const props = defineProps<{
-  id: string;
+  id?: string;
   loading: boolean;
   editPermission: boolean;
-  parentRoleId: string;
+  parentRoleId?: string;
   permissionData: Array<string>;
 }>();
 
@@ -84,7 +87,7 @@ const _permissionData = computed({
   },
 });
 
-const originPermissions = ref<any>();
+const originPermissions = ref<SimpleMap<ModulePermission>>();
 const modules = ref<Array<Module>>([]);
 
 const modulesPanels = computed(() => {
@@ -95,7 +98,7 @@ const modulesPanels = computed(() => {
 
 const defaultSelectedModule = ref<string>();
 
-const permissionTableData = computed(() => {
+const permissionTableData = computed<Array<GroupPermission>>(() => {
   const result =
     originPermissions.value && defaultSelectedModule.value
       ? originPermissions.value[defaultSelectedModule.value].groups
@@ -166,7 +169,10 @@ const checkedAll = computed<boolean>({
  * @param permission
  * @param groupPermissions
  */
-const onPermissionChecked = (permission, groupPermissions) => {
+const onPermissionChecked = (
+  permission: Permission,
+  groupPermissions: Array<Permission>
+) => {
   const checked = _.includes(_permissionData.value, permission.id);
   if (checked) {
     //当前操作为选中
@@ -230,9 +236,11 @@ watch(
 
 const init = () => {
   //权限
-  RoleApi.getRolePermissions(props.id, _loading).then((ok) => {
-    _permissionData.value = ok.data;
-  });
+  if (props.id) {
+    RoleApi.getRolePermissions(props.id, _loading).then((ok) => {
+      _permissionData.value = ok.data;
+    });
+  }
   //模块
   listModules(_loading).then((ok) => {
     modules.value = ok.data;

@@ -12,6 +12,7 @@ import lombok.experimental.Accessors;
 import javax.validation.constraints.NotNull;
 import java.io.Serial;
 import java.io.Serializable;
+import java.util.List;
 
 @Accessors(chain = true)
 @Data
@@ -31,5 +32,8 @@ public class CreateRoleRequest implements Serializable {
 
     @ApiModelProperty("描述")
     private String description;
+
+    @ApiModelProperty("权限")
+    private List<String> permissions;
 
 }

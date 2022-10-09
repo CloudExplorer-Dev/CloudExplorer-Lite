@@ -136,6 +136,17 @@ public class MenuConstants {
                                                             .permission(GROUP.ROLE, OPERATE.READ)
                                                             .permission(GROUP.ROLE, OPERATE.EDIT)
                                                     )
+                                    ).childOperationRoute(
+                                            new Menu.Builder()
+                                                    .name("role_edit")
+                                                    .title("编辑角色")
+                                                    .path("/edit/:id")
+                                                    .componentPath("/src/views/RoleManage/create.vue")
+                                                    .requiredPermission(new MenuPermission.Builder()
+                                                            .role(RoleConstants.ROLE.ADMIN)
+                                                            .permission(GROUP.ROLE, OPERATE.READ)
+                                                            .permission(GROUP.ROLE, OPERATE.EDIT)
+                                                    )
                                     )
                             // 工作空间相关菜单
                     ).childMenu(new Menu.Builder()

@@ -20,7 +20,7 @@
           <el-button
             type="primary"
             v-if="editInfo"
-            @click="submitRoleForm(roleFormRef)"
+            @click="submitRoleForm(ruleFormRef)"
           >
             保存
           </el-button>
@@ -32,7 +32,7 @@
             :edit-info="editInfo"
             v-model:role-data="roleData"
             v-model:role-form-data="roleFormData"
-            v-model:role-form-ref="roleFormRef"
+            v-model:rule-form-ref="ruleFormRef"
           />
         </template>
       </layout-container>
@@ -99,7 +99,7 @@ import RolePermissionTable from "./RolePermissionTable.vue";
 const { t } = useI18n();
 const route = useRouter();
 
-const roleFormRef = ref<FormInstance>();
+const ruleFormRef = ref<FormInstance>();
 
 const roleData = ref<Role>(new Role(props.id, "", "", ""));
 const roleFormData = ref<UpdateRoleRequest>(new UpdateRoleRequest(props.id));
@@ -155,6 +155,7 @@ const submitRoleForm = (formEl: FormInstance | undefined) => {
         UpdateRoleRequest.newInstance(roleFormData.value),
         loading
       ).then((ok) => {
+        roleData.value = ok.data;
         cancelEditInfo();
         ElMessage.success(t("commons.msg.save_success"));
       });
