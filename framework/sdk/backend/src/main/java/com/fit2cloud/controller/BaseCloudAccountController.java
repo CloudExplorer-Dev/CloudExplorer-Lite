@@ -7,6 +7,7 @@ import com.fit2cloud.common.validator.handler.ExistHandler;
 import com.fit2cloud.controller.handler.ResultHolder;
 import com.fit2cloud.request.cloud_account.CloudAccountModuleJob;
 import com.fit2cloud.request.cloud_account.SyncRequest;
+import com.fit2cloud.response.cloud_account.ResourceCountResponse;
 import com.fit2cloud.response.cloud_account.SyncResource;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
@@ -61,5 +62,11 @@ public class BaseCloudAccountController {
     public ResultHolder<Boolean> sync(@RequestBody SyncRequest syncRequest) {
         cloudAccountService.sync(syncRequest);
         return ResultHolder.success(true);
+    }
+
+    @GetMapping("/count/resource/{cloud_account_id}")
+    @ApiOperation(value = "根据云账号ID获取各个模块的云资源计数", notes = "根据云账号ID获取各个模块的云资源计数")
+    public ResultHolder<List<ResourceCountResponse>> getModuleResourceCount(@PathVariable("cloud_account_id") String accountId) {
+        return ResultHolder.success(cloudAccountService.getModuleResourceCount(accountId));
     }
 }

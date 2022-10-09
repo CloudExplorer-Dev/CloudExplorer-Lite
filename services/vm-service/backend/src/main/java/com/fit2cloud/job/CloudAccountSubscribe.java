@@ -57,15 +57,14 @@ public class CloudAccountSubscribe {
     }
 
     private void cloudAccountDelete(String accountId) {
-        System.out.println("delete-subscribe-vm-service-" + accountId);
-        // 删除云账号同步下来的资源
+        // 删除本模块云账号同步下来的资源
         QueryWrapper wrapper = Wrappers.query();
         wrapper.eq("account_id", accountId);
         cloudImageService.remove(wrapper);
         cloudDiskService.remove(wrapper);
         cloudServerService.remove(wrapper);
 
-        //TODO 删除云账号相关的定时任务
+        // 删除本模块云账号相关的定时任务
         cloudAccountService.deleteJobByCloudAccountId(accountId);
     }
 }

@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.extension.service.IService;
 import com.fit2cloud.base.entity.CloudAccount;
 import com.fit2cloud.request.cloud_account.CloudAccountModuleJob;
 import com.fit2cloud.request.cloud_account.SyncRequest;
+import com.fit2cloud.response.cloud_account.ResourceCountResponse;
 import com.fit2cloud.response.cloud_account.SyncResource;
 
 import java.util.List;
@@ -58,4 +59,11 @@ public interface IBaseCloudAccountService extends IService<CloudAccount> {
     List<SyncResource> getModuleResourceJob();
 
     void sync(SyncRequest syncRequest);
+
+    /**
+     * 获取当前模块的资源计数
+     * @param accountId
+     * @return
+     */
+    List<ResourceCountResponse> getModuleResourceCount(String accountId);
 }

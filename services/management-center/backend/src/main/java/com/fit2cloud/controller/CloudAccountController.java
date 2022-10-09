@@ -8,10 +8,10 @@ import com.fit2cloud.controller.handler.ResultHolder;
 import com.fit2cloud.controller.request.cloud_account.*;
 import com.fit2cloud.controller.response.cloud_account.CloudAccountJobDetailsResponse;
 import com.fit2cloud.controller.response.cloud_account.PlatformResponse;
-import com.fit2cloud.controller.response.cloud_account.ResourceCountResponse;
 import com.fit2cloud.dao.entity.CloudAccount;
 import com.fit2cloud.dao.mapper.CloudAccountMapper;
 import com.fit2cloud.request.cloud_account.SyncRequest;
+import com.fit2cloud.response.cloud_account.ResourceCountResponse;
 import com.fit2cloud.response.cloud_account.SyncResource;
 import com.fit2cloud.service.ICloudAccountService;
 import io.swagger.annotations.Api;
@@ -177,6 +177,6 @@ public class CloudAccountController {
                                                   @NotNull(message = "{i18n.cloud_account.id.is.not.empty}")
                                                   @CustomValidated(mapper = CloudAccountMapper.class, field = "id", handler = ExistHandler.class, message = "{i18n.cloud_account.id.is.not.existent}", exist = false)
                                                   @PathVariable("cloud_account_id") String accountId) {
-        return ResultHolder.success(cloudAccountService.resourceCount(accountId));
+        return ResultHolder.success(cloudAccountService.getModuleResourceCount(accountId));
     }
 }
