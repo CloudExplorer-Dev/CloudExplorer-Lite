@@ -10,7 +10,7 @@ defineExpose({
 });
 </script>
 <style scoped>
-.detail-class{
+.detail-class {
   height: 300px;
   overflow: auto;
 }

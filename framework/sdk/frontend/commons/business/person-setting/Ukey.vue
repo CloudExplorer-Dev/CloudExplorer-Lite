@@ -9,7 +9,6 @@ import {
 import { useClipboard, useDateFormat } from "@vueuse/core";
 import { ElMessage, ElMessageBox } from "element-plus";
 import { useI18n } from "vue-i18n";
-import { $tv } from "@commons/base-locales";
 
 const { t } = useI18n();
 const { copy } = useClipboard();
@@ -74,10 +73,10 @@ const handleView = () => {
 const handleCopy = (data: any) => {
   copy(data)
     .then(() => {
-      ElMessage.success($tv("commons.msg.success", "commons.btn.copy"));
+      ElMessage.success(t("commons.msg.success", [t("commons.btn.copy")]));
     })
     .catch(() => {
-      ElMessage.error($tv("commons.msg.fail", "commons.btn.copy"));
+      ElMessage.error(t("commons.msg.fail", [t("commons.btn.copy")]));
     });
 };
 

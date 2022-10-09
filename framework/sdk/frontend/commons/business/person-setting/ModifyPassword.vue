@@ -2,7 +2,6 @@
 import { reactive, ref } from "vue";
 import type { FormInstance, FormRules } from "element-plus";
 import { ElMessage } from "element-plus";
-import { $tv } from "@commons/base-locales";
 import { useI18n } from "vue-i18n";
 import { updateUserPwd } from "@commons/api/user";
 
@@ -33,30 +32,33 @@ const rules: FormRules = {
   oldPassword: [
     {
       required: true,
-      message: $tv("commons.validate.input", "commons.personal.old_password"),
+      message: t("commons.validate.input", [
+        t("commons.personal.old_password"),
+      ]),
       trigger: "blur",
     },
   ],
   newPassword: [
     {
       required: true,
-      message: $tv("commons.validate.input", "commons.personal.new_password"),
+      message: t("commons.validate.input", [
+        t("commons.personal.new_password"),
+      ]),
       trigger: "blur",
     },
     {
       min: 6,
       max: 30,
-      message: $tv("commons.validate.limit", "6", "30"),
+      message: t("commons.validate.input", ["6", "30"]),
       trigger: "blur",
     },
   ],
   confirmPassword: [
     {
       required: true,
-      message: $tv(
-        "commons.validate.input",
-        "commons.personal.confirm_password"
-      ),
+      message: t("commons.validate.input", [
+        t("commons.personal.confirm_password"),
+      ]),
       trigger: "blur",
     },
     { validator: confirmPwdValidator, trigger: "blur" },

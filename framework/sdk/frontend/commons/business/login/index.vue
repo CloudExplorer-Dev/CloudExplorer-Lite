@@ -3,9 +3,11 @@ import { onBeforeMount, onUnmounted, reactive, ref, watch } from "vue";
 import type { LocationQuery } from "vue-router";
 import { useRoute, useRouter } from "vue-router";
 import { useUserStore } from "@commons/stores/modules/user";
-import { $tv } from "@commons/base-locales";
 import type { FormInstance, FormRules } from "element-plus";
 import type { LoginRequest } from "@commons/api/user/type";
+import { useI18n } from "vue-i18n";
+
+const { t } = useI18n();
 
 const userStore = useUserStore();
 const route = useRoute();
@@ -23,20 +25,20 @@ const rules: FormRules = {
   username: [
     {
       required: true,
-      message: $tv("commons.validate.input", "commons.login.username"),
+      message: t("commons.validate.input", [t("commons.login.username")]),
       trigger: "blur",
     },
   ],
   password: [
     {
       required: true,
-      message: $tv("commons.validate.input", "commons.login.password"),
+      message: t("commons.validate.input", [t("commons.login.password")]),
       trigger: "blur",
     },
     {
       min: 6,
       max: 30,
-      message: $tv("commons.validate.limit", "6", "30"),
+      message: t("commons.validate.limit", ["6", "30"]),
       trigger: "blur",
     },
   ],

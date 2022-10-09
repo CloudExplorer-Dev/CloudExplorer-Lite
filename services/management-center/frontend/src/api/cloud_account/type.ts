@@ -220,19 +220,19 @@ interface ResourceSync {
   active?: boolean;
 }
 
-interface SyncRequest{
+interface SyncRequest {
   /**
    * 云账号id
    */
-  cloudAccountId:string
+  cloudAccountId: string;
   /**
    * 同步任务
    */
-  syncJob:Array<{module:string,jobName:string}>,
+  syncJob: Array<{ module: string; jobName: string }>;
   /**
    * 区域
    */
-  regions:Array<Region>;
+  regions: Array<Region>;
 }
 /**
  * 更新云账号名称所需要的参数

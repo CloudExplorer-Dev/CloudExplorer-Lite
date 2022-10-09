@@ -162,9 +162,9 @@ const getResourceSync = (loading?: Ref<boolean>) => {
   return get("api/cloud_account/jobs/resource");
 };
 
-const syncJob=(data:SyncRequest,loading?: Ref<boolean>)=>{
-  return post("/api/cloud_account/sync",null,data,loading);
-}
+const syncJob = (data: SyncRequest, loading?: Ref<boolean>) => {
+  return post("/api/cloud_account/sync", null, data, loading);
+};
 
 /*
  * 查询云账户余额

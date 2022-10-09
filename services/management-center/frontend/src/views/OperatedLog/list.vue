@@ -10,26 +10,29 @@
   </el-tabs>
 </template>
 <script lang="ts" setup>
-import {ref, markRaw, onMounted} from "vue";
+import { ref, markRaw, onMounted } from "vue";
 import LoginLogList from "./LoginLogList.vue";
 import VmOperatedLogList from "./VmOperatedLogList.vue";
 import DiskOperatedLogList from "./DiskOperatedLogList.vue";
 import AllOperatedLogList from "./AllOperatedLogList.vue";
 const activeName = ref("LoginLogList");
-const currentCom = ref()
-onMounted(()=>{
-  currentCom.value = markRaw(LoginLogList)
-})
+const currentCom = ref();
+onMounted(() => {
+  currentCom.value = markRaw(LoginLogList);
+});
 const handleTab = (name: string) => {
-  debugger;
   const lookup: {
     // 为了ts不报错，声明一个索引签名
-    [name: string]: any
-  } =
-      { LoginLogList, VmOperatedLogList, DiskOperatedLogList, AllOperatedLogList}
+    [name: string]: any;
+  } = {
+    LoginLogList,
+    VmOperatedLogList,
+    DiskOperatedLogList,
+    AllOperatedLogList,
+  };
 
   currentCom.value = markRaw(lookup[name["paneName"]]);
-}
+};
 </script>
 <style>
 .tabs-box {
