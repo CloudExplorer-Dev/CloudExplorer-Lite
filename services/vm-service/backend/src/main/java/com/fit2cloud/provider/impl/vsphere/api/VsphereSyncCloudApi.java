@@ -1,5 +1,6 @@
 package com.fit2cloud.provider.impl.vsphere.api;
 
+import com.fit2cloud.common.log.utils.LogUtil;
 import com.fit2cloud.common.platform.credential.impl.VsphereCredential;
 import com.fit2cloud.common.provider.impl.vsphere.utils.VsphereClient;
 import com.fit2cloud.provider.entity.F2CDisk;
@@ -8,6 +9,7 @@ import com.fit2cloud.provider.entity.F2CVirtualMachine;
 import com.fit2cloud.provider.impl.vsphere.entity.F2CVsphereDatastore;
 import com.fit2cloud.provider.impl.vsphere.entity.F2CVsphereHost;
 import com.fit2cloud.provider.impl.vsphere.entity.request.VsphereVmBaseRequest;
+import com.fit2cloud.provider.impl.vsphere.entity.request.VsphereVmPowerRequest;
 import com.fit2cloud.provider.impl.vsphere.util.ContentLibraryUtil;
 import com.fit2cloud.provider.impl.vsphere.util.VsphereUtil;
 import com.fit2cloud.provider.impl.vsphere.util.VsphereVmClient;
@@ -178,6 +180,84 @@ public class VsphereSyncCloudApi {
     private static void closeConnection(VsphereClient client) {
         if (client != null) {
             client.closeConnection();
+        }
+    }
+
+    public static boolean powerOff(VsphereVmPowerRequest req){
+        VsphereVmClient client = null;
+        try {
+            client = req.getVsphereVmClient();
+            return client.powerOff(req.getUuid());
+        }catch (Exception e){
+            logger.error(e.getMessage());
+            throw new RuntimeException(e.getMessage());
+        } finally {
+            if (client != null) {
+                client.closeConnection();
+            }
+        }
+    }
+
+    public static boolean powerOn(VsphereVmPowerRequest req){
+        VsphereVmClient client = null;
+        try {
+            client = req.getVsphereVmClient();
+            return client.powerOn(req.getUuid());
+        }catch (Exception e){
+            LogUtil.error(e.getMessage());
+            throw new RuntimeException(e.getMessage());
+        } finally {
+            if (client != null) {
+                client.closeConnection();
+            }
+        }
+    }
+
+    public static boolean shutdownInstance(VsphereVmPowerRequest req){
+        VsphereVmClient client = null;
+        try {
+            client = req.getVsphereVmClient();
+            client.shutdownInstance(req.getUuid());
+            return true;
+        }catch (Exception e){
+            LogUtil.error(e.getMessage());
+            throw new RuntimeException(e.getMessage());
+        } finally {
+            if (client != null) {
+                client.closeConnection();
+            }
+        }
+    }
+
+    public static boolean reboot(VsphereVmPowerRequest req){
+        VsphereVmClient client = null;
+        try {
+            client = req.getVsphereVmClient();
+            client.reboot(req.getUuid());
+            return true;
+        }catch (Exception e){
+            LogUtil.error(e.getMessage());
+            throw new RuntimeException(e.getMessage());
+        } finally {
+            if (client != null) {
+                client.closeConnection();
+            }
+        }
+    }
+
+    public static boolean deleteInstance(VsphereVmPowerRequest req){
+        VsphereVmClient client = null;
+        try {
+            client = req.getVsphereVmClient();
+            client.deleteInstance(req.getUuid());
+            return true;
+        }catch (Exception e){
+            LogUtil.error(e.getMessage());
+            throw new RuntimeException(e.getMessage());
+        } finally {
+            if (client != null) {
+                client.closeConnection();
+            }
         }
     }
 }

@@ -14,7 +14,14 @@ public enum OperatedTypeEnum {
     MODIFY("MODIFY","更新"),
     DELETE("DELETE","删除"),
     BATCH_DELETE("BATCH_DELETE","批量删除"),
-    SEARCH("SEARCH","搜索");
+    SEARCH("SEARCH","搜索"),
+
+    POWER_ON("POWER_ON","开机"),
+    POWER_OFF("POWER_OFF","关闭电源"),
+    SHUTDOWN("SHUTDOWN","关机"),
+    REBOOT("REBOOT","重启"),
+
+    BATCH_OPERATE_VM("BATCH_OPERATE_VM","批量操作虚拟机");
 
     private String operate;
     private String description;

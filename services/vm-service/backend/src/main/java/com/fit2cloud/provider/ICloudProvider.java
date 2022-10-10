@@ -37,4 +37,39 @@ public interface ICloudProvider {
      * @return 云平台磁盘
      */
     List<F2CDisk> listDisk(String req);
+
+    /**
+     * 虚拟机关闭电源
+     * @param req
+     * @return
+     */
+    boolean powerOff(String req);
+
+    /**
+     * 虚拟机打开电源
+     * @param req
+     * @return
+     */
+    boolean powerOn(String req);
+
+    /**
+     * 虚拟机关机
+     * @param req
+     */
+    boolean shutdownInstance(String req);
+
+    /**
+     * 虚拟机重启
+     * @param req
+     * @return
+     */
+    boolean rebootInstance(String req);
+
+    /**
+     * 删除虚拟机
+     * @param req
+     * @return
+     */
+    boolean deleteInstance(String req);
+
 }

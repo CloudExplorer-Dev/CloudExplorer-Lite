@@ -82,7 +82,7 @@ public class OperatedLogAspect {
 
     private void saveLog(ProceedingJoinPoint pjd, Object res, Long time ,ResultHolder errorResult){
         try {
-            String response = JsonUtil.toJSONString(res);
+            String response = res==null?"":JsonUtil.toJSONString(res);
             MethodSignature methodSignature = (MethodSignature) pjd.getSignature();
             Method method = methodSignature.getMethod();
             Object[] args = pjd.getArgs();
@@ -148,8 +148,10 @@ public class OperatedLogAspect {
         // 请求结果
         ObjectNode reqObj = new ObjectNode(null);
         if(errorResult.getCode()==200){
-            reqObj = Objects.nonNull(JsonUtil.parseObject(response)) ? JsonUtil.parseObject(response) : new ObjectNode(null);
-            logVO.setResponse(reqObj.toString());
+            if(StringUtils.isNotEmpty(response)){
+                reqObj = Objects.nonNull(JsonUtil.parseObject(response)) ? JsonUtil.parseObject(response) : new ObjectNode(null);
+                logVO.setResponse(reqObj.toString());
+            }
         }else{
             logVO.setResponse(errorResult.getMessage());
         }

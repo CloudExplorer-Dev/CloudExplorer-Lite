@@ -29,8 +29,8 @@
 </template>
 
 <script setup lang="ts">
-import { CloudAccount } from "@/api/cloud_account/type";
-import { ref, reactive, onMounted, defineEmits } from "vue";
+import type { CloudAccount } from "@/api/cloud_account/type";
+import { ref, onMounted, defineEmits } from "vue";
 
 interface CloudAccountProject {
   [key: string]: any;
@@ -49,10 +49,10 @@ interface FormPerson {
   cloud_projects: Array<CloudAccountProject>;
 }
 //表单数据
-const formData = reactive(Array<FormPerson>());
+const formData = ref<Array<FormPerson>>();
 
 //所有云账号数据
-const cloudAccountData = ref(Array<CloudAccount>());
+const cloudAccountData = ref<Array<CloudAccount>>();
 
 // 改变下拉框
 const changeProject = () => {
@@ -66,69 +66,7 @@ onMounted(() => {
   //   cloudAccountData.value = data.data;
   // });
   //测试数据
-  const cloudTmpData = reactive([
-    {
-      id: "aliyun123",
-      name: "南区阿里云账号",
-      description: "测试账号",
-      createTime: "2022-08-29 10:20:30",
-      cloud_icon_url:
-        "https://img.alicdn.com/tfs/TB1_ZXuNcfpK1RjSZFOXXa6nFXa-32-32.ico",
-      projects: [
-        {
-          id: "123",
-          uuid: "dfasdfasd23",
-          name: "默认项目",
-          cloud_account_id: "aliyun123",
-        },
-        {
-          id: "1234",
-          uuid: "dfasdfasd234",
-          name: "企业项目",
-          cloud_account_id: "aliyun123",
-        },
-      ],
-    },
-    {
-      id: "huawei123",
-      name: "南区华为账号",
-      description: "测试账号",
-      createTime: "2022-08-29 10:20:30",
-      cloud_icon_url: "/management-center/src/assets/img/huawei.ico",
-      projects: [
-        {
-          id: "123",
-          uuid: "dfasdfasd23",
-          name: "默认项目",
-          cloud_account_id: "aliyun123",
-        },
-        {
-          id: "1234",
-          uuid: "dfasdfasd234",
-          name: "企业项目",
-          cloud_account_id: "aliyun123",
-        },
-      ],
-    },
-  ]);
-  cloudAccountData.value = cloudTmpData;
-
-  //转换成表单数据
-  let cloudAccount;
-  for (cloudAccount of cloudAccountData.value) {
-    const projects = ref(Array<CloudAccountProject>());
-    if (cloudAccount.projects && cloudAccount.projects.length > 0) {
-      projects.value = cloudAccount.projects;
-    }
-    const fdp: any = {
-      cloud_account_icon_url: cloudAccount.cloud_icon_url,
-      loud_account_id: cloudAccount.id,
-      cloud_account_name: cloudAccount.name,
-      project_id: projects.value[0].id,
-      cloud_projects: projects,
-    };
-    formData.push(fdp);
-  }
+  cloudAccountData.value = [];
 });
 </script>
 <style lang="scss" scoped>

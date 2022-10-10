@@ -1,3 +1,114 @@
+<script setup lang="ts">
+import { ref, onMounted } from "vue";
+import VmCloudDiskApi from "@/api/vm_cloud_disk";
+import type { VmCloudDiskVO } from "@/api/vm_cloud_disk/type";
+import { useRouter } from "vue-router";
+import {
+  PaginationConfig,
+  TableConfig,
+  SearchConfig,
+  TableOperations,
+  TableSearch,
+} from "@commons/components/ce-table/type";
+import { useI18n } from "vue-i18n";
+import {ElMessage} from "element-plus";
+import type { SimpleMap } from "@commons/api/base/type";
+const { t } = useI18n();
+const useRoute = useRouter();
+const columns = ref([]);
+const tableData = ref<Array<VmCloudDiskVO>>();
+//硬盘状态
+const diskStatus = ref<Array<SimpleMap<string>>>([
+  { text: 'deleted', value: 'deleted' },
+  { text: 'in_use', value: 'in_use' },
+  { text: 'available', value: 'available' },
+  { text: 'attaching', value: 'attaching' },
+  { text: 'detaching', value: 'detaching' },
+  { text: 'creating', value: 'creating' },
+  { text: 'reiniting', value: 'reiniting' },
+  { text: 'unknown', value: 'unknown' },
+  { text: 'error', value: 'error' },
+]);
+//硬盘类型
+const diskTypes = ref<Array<SimpleMap<string>>>([
+  { text: 'cloud_efficiency', value: 'cloud_efficiency' },
+  { text: 'cloud_essd', value: 'cloud_essd' },
+  { text: 'GPSSD', value: 'GPSSD' },
+  { text: 'cloud_auto', value: 'cloud_auto' },
+]);
+/**
+ * 查询
+ * @param condition
+ */
+const search = (condition: TableSearch) => {
+  debugger;
+  const params = TableSearch.toSearchParams(condition);
+  VmCloudDiskApi.listVmCloudDisk({
+    currentPage: tableConfig.value.paginationConfig.currentPage,
+    pageSize: tableConfig.value.paginationConfig.pageSize,
+    ...params,
+  }).then((res) => {
+    tableData.value = res.data.records;
+    tableConfig.value.paginationConfig?.setTotal(
+        res.data.total,
+        tableConfig.value.paginationConfig
+    );
+    tableConfig.value.paginationConfig?.setCurrentPage(
+        res.data.current,
+        tableConfig.value.paginationConfig
+    );
+  });
+};
+/**
+ * 页面挂载
+ */
+onMounted(() => {
+  search(new TableSearch());
+});
+/**
+ * 表单配置
+ */
+const tableConfig = ref<TableConfig>({
+  searchConfig: {
+    showEmpty: false,
+    // 查询函数
+    search: search,
+    quickPlaceholder: t("commons.btn.search"),
+    components: [],
+    searchOptions: [
+      { label: "名称", value: "diskName" },
+      { label: "云账号", value: "accountName" },
+      { label: "所属虚拟机", value: "vmInstanceName" }
+    ],
+  },
+  paginationConfig: new PaginationConfig(),
+  tableOperations: new TableOperations([]),
+});
+
+/**
+ * 操作按钮
+ */
+const buttons = ref([
+  {
+    label: "卸载", icon: "", click: (row:VmCloudDiskVO) => {
+    }, show: true,disabled: (row: { status: string; }) => {
+      return row.status !== "in_use"
+    }
+  }, {
+    label: "挂载", icon: "", click: (row:VmCloudDiskVO) => {
+    }, show: true,disabled: (row: { status: string; }) => {
+      return row.status !== "available"
+    }
+  },
+  {
+    label: "删除", icon: "", click: (row:VmCloudDiskVO) => {
+    }, show: true,disabled: (row: { status: string; }) => {
+      return row.status !== "available"
+    }
+  }
+]);
+
+</script>
 <template>
   <ce-table
     :columns="columns"
@@ -98,119 +209,6 @@
     </template>
   </ce-table>
 </template>
-
-<script setup lang="ts">
-import { ref, onMounted } from "vue";
-import { ListVmCloudDisk } from "@/api/vm_cloud_disk";
-import type { VmCloudDiskVO } from "@/api/vm_cloud_disk";
-import { useRouter } from "vue-router";
-import {
-  PaginationConfig,
-  TableConfig,
-  SearchConfig,
-  TableOperations,
-  TableSearch,
-} from "@commons/components/ce-table/type";
-import { useI18n } from "vue-i18n";
-import {ElMessage} from "element-plus";
-import type { SimpleMap } from "@commons/api/base/type";
-const { t } = useI18n();
-const useRoute = useRouter();
-const columns = ref([]);
-const tableData = ref<Array<VmCloudDiskVO>>();
-//硬盘状态
-const diskStatus = ref<Array<SimpleMap<string>>>([
-  { text: 'deleted', value: 'deleted' },
-  { text: 'in_use', value: 'in_use' },
-  { text: 'available', value: 'available' },
-  { text: 'attaching', value: 'attaching' },
-  { text: 'detaching', value: 'detaching' },
-  { text: 'creating', value: 'creating' },
-  { text: 'reiniting', value: 'reiniting' },
-  { text: 'unknown', value: 'unknown' },
-  { text: 'error', value: 'error' },
-]);
-//硬盘类型
-const diskTypes = ref<Array<SimpleMap<string>>>([
-  { text: 'cloud_efficiency', value: 'cloud_efficiency' },
-  { text: 'cloud_essd', value: 'cloud_essd' },
-  { text: 'GPSSD', value: 'GPSSD' },
-  { text: 'cloud_auto', value: 'cloud_auto' },
-]);
-/**
- * 查询
- * @param condition
- */
-const search = (condition: TableSearch) => {
-  debugger;
-  const params = TableSearch.toSearchParams(condition);
-  ListVmCloudDisk({
-    currentPage: tableConfig.value.paginationConfig.currentPage,
-    pageSize: tableConfig.value.paginationConfig.pageSize,
-    ...params,
-  }).then((res) => {
-    tableData.value = res.data.records;
-    tableConfig.value.paginationConfig?.setTotal(
-      res.data.total,
-      tableConfig.value.paginationConfig
-    );
-    tableConfig.value.paginationConfig?.setCurrentPage(
-      res.data.current,
-      tableConfig.value.paginationConfig
-    );
-  });
-};
-/**
- * 页面挂载
- */
-onMounted(() => {
-  search(new TableSearch());
-});
-/**
- * 表单配置
- */
-const tableConfig = ref<TableConfig>({
-  searchConfig: {
-    showEmpty: false,
-    // 查询函数
-    search: search,
-    quickPlaceholder: t("commons.btn.search"),
-    components: [],
-    searchOptions: [
-      { label: "名称", value: "diskName" },
-      { label: "云账号", value: "accountName" },
-      { label: "所属虚拟机", value: "vmInstanceName" }
-    ],
-  },
-  paginationConfig: new PaginationConfig(),
-  tableOperations: new TableOperations([]),
-});
-
-/**
- * 操作按钮
- */
-const buttons = ref([
-  {
-    label: "卸载", icon: "", click: (row:VmCloudDiskVO) => {
-    }, show: true,disabled: (row: { status: string; }) => {
-      return row.status !== "in_use"
-    }
-  }, {
-    label: "挂载", icon: "", click: (row:VmCloudDiskVO) => {
-    }, show: true,disabled: (row: { status: string; }) => {
-      return row.status !== "available"
-    }
-  },
-  {
-    label: "删除", icon: "", click: (row:VmCloudDiskVO) => {
-    }, show: true,disabled: (row: { status: string; }) => {
-  return row.status !== "available"
-    }
-  }
-]);
-
-</script>
-
 <style lang="scss" scoped>
 .text-overflow {
   max-width: 100px;

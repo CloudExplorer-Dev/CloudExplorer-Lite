@@ -4,7 +4,10 @@ import com.fit2cloud.common.constants.Language;
 import com.fit2cloud.common.platform.credential.impl.VsphereCredential;
 import com.fit2cloud.common.provider.impl.vsphere.utils.VsphereClient;
 import com.vmware.vim25.*;
+import com.vmware.vim25.mo.HostSystem;
+import com.vmware.vim25.mo.Task;
 import com.vmware.vim25.mo.VirtualMachine;
+import org.apache.commons.lang3.StringUtils;
 
 import java.util.*;
 
@@ -124,4 +127,109 @@ public class VsphereVmClient extends VsphereClient {
         }
         return disks;
     }
+
+    /**
+     * 关闭电源
+     * @param uuid
+     * @return
+     */
+    public boolean powerOff(String uuid){
+        VirtualMachine virtualMachine = getVirtualMachineByUuId(uuid);
+        //电源已是关闭状态
+        if(StringUtils.equalsIgnoreCase(VirtualMachinePowerState.poweredOff.name(),virtualMachine.getRuntime().getPowerState().name())){
+            throw new RuntimeException("The current state of the virtual machine is power off!");
+        }
+        try {
+            Task task = virtualMachine.powerOffVM_Task();
+            String result = task.waitForTask();
+            if(!StringUtils.equalsIgnoreCase(TaskInfoState.success.name(),result)){
+                throw new RuntimeException("TaskInfo - "+task.getTaskInfo());
+            }
+            return true;
+        } catch (Exception e) {
+            throw new RuntimeException(e.getMessage());
+        }
+    }
+
+    /**
+     * 开机
+     * @param uuid
+     * @return
+     */
+    public boolean powerOn(String uuid){
+        VirtualMachine virtualMachine = getVirtualMachineByUuId(uuid);
+        if(StringUtils.equalsIgnoreCase(VirtualMachinePowerState.poweredOn.name(),virtualMachine.getRuntime().getPowerState().name())){
+            throw new RuntimeException("The current state of the virtual machine is power on!");
+        }
+        try {
+            HostSystem hostSystem = getHost(virtualMachine);
+            Task task = virtualMachine.powerOnVM_Task(hostSystem);
+            String result = task.waitForTask();
+            if(!StringUtils.equalsIgnoreCase(TaskInfoState.success.name(),result)){
+                throw new RuntimeException("TaskInfo - "+task.getTaskInfo());
+            }
+            return true;
+        } catch (Exception e) {
+            throw new RuntimeException(e.getMessage());
+        }
+    }
+
+    /**
+     * 关机
+     * @param uuid
+     * @return
+     */
+    public boolean shutdownInstance(String uuid){
+        VirtualMachine virtualMachine = getVirtualMachineByUuId(uuid);
+        if(StringUtils.equalsIgnoreCase(VirtualMachinePowerState.poweredOff.name(),virtualMachine.getRuntime().getPowerState().name())){
+            throw new RuntimeException("The current state of the virtual machine is shutdown!");
+        }
+        try {
+            virtualMachine.shutdownGuest();
+            return true;
+        } catch (Exception e) {
+            throw new RuntimeException(e.getMessage());
+        }
+    }
+
+    /**
+     * 重启
+     * @param uuid
+     * @return
+     */
+    public boolean reboot(String uuid){
+        VirtualMachine virtualMachine = getVirtualMachineByUuId(uuid);
+        if(StringUtils.equalsIgnoreCase(VirtualMachinePowerState.poweredOff.name(),virtualMachine.getRuntime().getPowerState().name())){
+            throw new RuntimeException("The current state of the virtual machine is shutdown!");
+        }
+        try {
+            virtualMachine.rebootGuest();
+            return true;
+        } catch (Exception e) {
+            throw new RuntimeException(e.getMessage());
+        }
+    }
+
+    /**
+     * 删除
+     * @param uuid
+     * @return
+     */
+    public boolean deleteInstance(String uuid){
+        VirtualMachine virtualMachine = getVirtualMachineByUuId(uuid);
+        if(StringUtils.equalsIgnoreCase(VirtualMachinePowerState.poweredOff.name(),virtualMachine.getRuntime().getPowerState().name())){
+            throw new RuntimeException("The current state of the virtual machine is running!");
+        }
+        try {
+            Task task = virtualMachine.destroy_Task();
+            String result = task.waitForTask();
+            if(!StringUtils.equalsIgnoreCase(TaskInfoState.success.name(),result)){
+                throw new RuntimeException("TaskInfo - "+task.getTaskInfo());
+            }
+            return true;
+        } catch (Exception e) {
+            throw new RuntimeException(e.getMessage());
+        }
+    }
+
 }

@@ -4,11 +4,18 @@ import type { Page } from "@commons/request/Result";
 import type { VmCloudImageVO, ListVmCloudImageRequest } from "./type";
 import type { Ref } from "vue";
 
-export const ListVmCloudImage: (
-  req: ListVmCloudImageRequest,
-  loading?: Ref<boolean>
-) => Promise<Result<Page<VmCloudImageVO>>> = (req) => {
-  return get("api/image/page", req);
-};
-
-export type { VmCloudImageVO, ListVmCloudImageRequest };
+/**
+ * 镜像列表
+ * @param req
+ * @param loading
+ */
+export function listVmCloudImage(
+    req:ListVmCloudImageRequest,
+    loading?:Ref<boolean>
+):Promise<Result<Page<VmCloudImageVO>>>{
+  return get("api/image/page", req,loading);
+}
+const VmCloudImageApi = {
+  listVmCloudImage,
+}
+export default VmCloudImageApi;

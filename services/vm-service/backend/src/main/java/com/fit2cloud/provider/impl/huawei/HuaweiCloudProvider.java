@@ -1,6 +1,5 @@
 package com.fit2cloud.provider.impl.huawei;
 
-import com.fit2cloud.common.platform.credential.impl.HuaweiCredential;
 import com.fit2cloud.common.utils.JsonUtil;
 import com.fit2cloud.provider.AbstractCloudProvider;
 import com.fit2cloud.provider.ICloudProvider;
@@ -35,5 +34,30 @@ public class HuaweiCloudProvider extends AbstractCloudProvider<HuaweiVmCredentia
     @Override
     public List<F2CDisk> listDisk(String req) {
         return HuaweiSyncCloudApi.listDisk(JsonUtil.parseObject(req, ListDisksRequest.class));
+    }
+
+    @Override
+    public boolean powerOff(String req) {
+        return false;
+    }
+
+    @Override
+    public boolean powerOn(String req) {
+        return false;
+    }
+
+    @Override
+    public boolean shutdownInstance(String req){
+        return false;
+    }
+
+    @Override
+    public boolean rebootInstance(String req){
+        return false;
+    }
+
+    @Override
+    public boolean deleteInstance(String req){
+        return false;
     }
 }

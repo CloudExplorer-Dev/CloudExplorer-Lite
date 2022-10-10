@@ -11,7 +11,6 @@ import com.fit2cloud.provider.impl.tencent.api.TencetSyncCloudApi;
 import com.fit2cloud.provider.impl.tencent.entity.request.ListDiskRequest;
 import com.fit2cloud.provider.impl.tencent.entity.request.ListImageRequest;
 import com.fit2cloud.provider.impl.tencent.entity.request.ListVirtualMachineRequest;
-import com.fit2cloud.provider.impl.tencent.util.TencentMappingUtil;
 
 import java.util.List;
 
@@ -35,5 +34,30 @@ public class TencentCloudProvider extends AbstractCloudProvider<TencentCredentia
     @Override
     public List<F2CDisk> listDisk(String req) {
         return TencetSyncCloudApi.listDisk(JsonUtil.parseObject(req, ListDiskRequest.class));
+    }
+
+    @Override
+    public boolean powerOff(String req) {
+        return false;
+    }
+
+    @Override
+    public boolean powerOn(String req) {
+        return false;
+    }
+
+    @Override
+    public boolean shutdownInstance(String req){
+        return false;
+    }
+
+    @Override
+    public boolean rebootInstance(String req){
+        return false;
+    }
+
+    @Override
+    public boolean deleteInstance(String req){
+        return false;
     }
 }

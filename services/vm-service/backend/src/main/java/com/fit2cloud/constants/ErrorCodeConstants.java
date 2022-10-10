@@ -44,7 +44,12 @@ public enum ErrorCodeConstants {
 
     BASE_ROLE_CANNOT_DELETE(100100404, "i18n.role.base.warn.cannot.delete"),
 
-    ROLE_ID_CANNOT_BE_NULL(100100405, "i18n.role.id.warn.cannot.null");
+    ROLE_ID_CANNOT_BE_NULL(100100405, "i18n.role.id.warn.cannot.null"),
+
+    VM_NOT_EXIST(200100101, "虚拟机不存在"),
+    VM_OPERATE_FAIL(200100102, "虚拟机操作失败"),
+    SELECT_AT_LEAST_ONE_VM(200100103,"至少选择一个虚拟机");
+
 
 
     /**

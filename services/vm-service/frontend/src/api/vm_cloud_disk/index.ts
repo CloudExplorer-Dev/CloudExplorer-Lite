@@ -4,11 +4,19 @@ import type { Page } from "@commons/request/Result";
 import type { VmCloudDiskVO, ListVmCloudDiskRequest } from "./type";
 import type { Ref } from "vue";
 
-export const ListVmCloudDisk: (
-  req: ListVmCloudDiskRequest,
-  loading?: Ref<boolean>
-) => Promise<Result<Page<VmCloudDiskVO>>> = (req) => {
-  return get("api/disk/page", req);
-};
+/**
+ * 磁盘列表
+ * @param req
+ * @param loading
+ */
+export function listVmCloudDisk(
+    req:ListVmCloudDiskRequest,
+    loading?:Ref<boolean>
+):Promise<Result<Page<VmCloudDiskVO>>>{
+  return get("api/disk/page", req,loading);
+}
 
-export type { VmCloudDiskVO, ListVmCloudDiskRequest };
+const VmCloudDiskApi = {
+  listVmCloudDisk
+}
+export default VmCloudDiskApi;

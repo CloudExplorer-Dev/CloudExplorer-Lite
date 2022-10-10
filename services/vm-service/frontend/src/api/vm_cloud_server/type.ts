@@ -1,4 +1,4 @@
-interface VmCloudServerVO {
+export interface VmCloudServerVO {
    id?: string;
    instanceUuid?: string;
    workspaceId?: string;
@@ -37,8 +37,18 @@ interface VmCloudServerVO {
    createTime?: string;
    updateTime?: string;
 }
-interface ListVmCloudServerRequest {
+export interface ListVmCloudServerRequest {
   pageSize: number;
   currentPage: number;
 }
-export type { VmCloudServerVO, ListVmCloudServerRequest };
+
+/**
+ * 操作枚举
+ */
+export enum InstanceOperateEnum{
+   POWER_ON = <any> "开机",
+   POWER_OFF = <any> "关闭电源",
+   SHUTDOWN = <any> "关机",
+   REBOOT = <any> "重启",
+   DELETE = <any> "删除",
+}

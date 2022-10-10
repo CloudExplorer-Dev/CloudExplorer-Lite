@@ -3,6 +3,8 @@ package com.fit2cloud.common.provider.impl.vsphere.utils;
 import com.fit2cloud.common.constants.Language;
 import com.vmware.vim25.InvalidProperty;
 import com.vmware.vim25.ManagedObjectReference;
+import com.vmware.vim25.ServiceContent;
+import com.vmware.vim25.VimPortType;
 import com.vmware.vim25.mo.*;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.slf4j.Logger;
@@ -254,4 +256,24 @@ public class VsphereClient {
         }
         return cr;
     }
+
+    /**
+     * 根据UUID查询资源
+     * @param instanceUuid
+     * @return
+     */
+    public VirtualMachine getVirtualMachineByUuId(String instanceUuid){
+        VimPortType vimService = si.getServerConnection().getVimService();
+        ServiceContent serviceContent = si.getServiceContent();
+        try {
+            ManagedObjectReference vmMor = vimService.findByUuid(serviceContent.getSearchIndex(), null, instanceUuid, true, true);
+            if(vmMor==null){
+                throw new RuntimeException("No such machine found! - "+instanceUuid);
+            }
+            return new VirtualMachine(si.getServerConnection(), vmMor);
+        } catch (RemoteException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
 }

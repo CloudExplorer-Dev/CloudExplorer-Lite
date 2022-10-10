@@ -1,40 +1,7 @@
-<template>
-  <ce-table
-    :columns="columns"
-    :data="tableData"
-    :tableConfig="tableConfig"
-    row-key="id"
-    height="100%"
-    ref="table"
-  >
-    <el-table-column prop="imageName" label="镜像名称">
-      <template #default="scope">
-        <el-tooltip
-            class="item"
-            effect="dark"
-            :content="scope.row.imageName"
-            placement="top"
-        >
-          <p class="text-overflow">
-            {{ scope.row.imageName }}
-          </p>
-        </el-tooltip>
-      </template>
-    </el-table-column>
-    <el-table-column prop="imageId" label="镜像ID"></el-table-column>
-    <el-table-column prop="accountName" label="云账号"></el-table-column>
-    <el-table-column prop="region" label="数据中心"></el-table-column>
-    <el-table-column prop="os" label="操作系统"></el-table-column>
-    <el-table-column prop="osVersion" label="操作系统版本"></el-table-column>
-    <fu-table-operations v-bind="tableConfig.tableOperations" fix />
-  </ce-table>
-  <ManageInfo ref="manageInfoRef"></ManageInfo>
-</template>
-
 <script setup lang="ts">
 import { ref, onMounted } from "vue";
-import { ListVmCloudImage } from "@/api/vm_cloud_image";
-import type { VmCloudImageVO } from "@/api/vm_cloud_image";
+import VmCloudImageApi from "@/api/vm_cloud_image";
+import type { VmCloudImageVO } from "@/api/vm_cloud_image/type";
 import { useRouter } from "vue-router";
 import {
   PaginationConfig,
@@ -66,19 +33,19 @@ const showManageInfoDialog = (v: VmCloudImageVO) => {
  */
 const search = (condition: TableSearch) => {
   const params = TableSearch.toSearchParams(condition);
-  ListVmCloudImage({
+  VmCloudImageApi.listVmCloudImage({
     currentPage: tableConfig.value.paginationConfig.currentPage,
     pageSize: tableConfig.value.paginationConfig.pageSize,
     ...params,
   }).then((res) => {
     tableData.value = res.data.records;
     tableConfig.value.paginationConfig?.setTotal(
-      res.data.total,
-      tableConfig.value.paginationConfig
+        res.data.total,
+        tableConfig.value.paginationConfig
     );
     tableConfig.value.paginationConfig?.setCurrentPage(
-      res.data.current,
-      tableConfig.value.paginationConfig
+        res.data.current,
+        tableConfig.value.paginationConfig
     );
   });
 };
@@ -112,7 +79,38 @@ const tableConfig = ref<TableConfig>({
   ),]),
 });
 </script>
-
+<template>
+  <ce-table
+    :columns="columns"
+    :data="tableData"
+    :tableConfig="tableConfig"
+    row-key="id"
+    height="100%"
+    ref="table"
+  >
+    <el-table-column prop="imageName" label="镜像名称">
+      <template #default="scope">
+        <el-tooltip
+            class="item"
+            effect="dark"
+            :content="scope.row.imageName"
+            placement="top"
+        >
+          <p class="text-overflow">
+            {{ scope.row.imageName }}
+          </p>
+        </el-tooltip>
+      </template>
+    </el-table-column>
+    <el-table-column prop="imageId" label="镜像ID"></el-table-column>
+    <el-table-column prop="accountName" label="云账号"></el-table-column>
+    <el-table-column prop="region" label="数据中心"></el-table-column>
+    <el-table-column prop="os" label="操作系统"></el-table-column>
+    <el-table-column prop="osVersion" label="操作系统版本"></el-table-column>
+    <fu-table-operations v-bind="tableConfig.tableOperations" fix />
+  </ce-table>
+  <ManageInfo ref="manageInfoRef"></ManageInfo>
+</template>
 <style lang="scss" scoped>
 .text-overflow {
   max-width: 100px;
