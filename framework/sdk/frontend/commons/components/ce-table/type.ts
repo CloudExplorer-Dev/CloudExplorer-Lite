@@ -7,7 +7,7 @@ export class PaginationConfig {
     pageSizes?: Array<number>
   ) {
     this.currentPage = currentPage ? currentPage : 1;
-    this.pageSize = pageSize ? pageSize : 5;
+    this.pageSize = pageSize ? pageSize : 10;
     this.pageSizes = pageSizes ? pageSizes : [5, 10, 20, 50, 100];
   }
   /**
@@ -17,7 +17,7 @@ export class PaginationConfig {
   /**
    *每页多少
    */
-  pageSize = 5;
+  pageSize = 10;
   /**
    *总数据
    */
