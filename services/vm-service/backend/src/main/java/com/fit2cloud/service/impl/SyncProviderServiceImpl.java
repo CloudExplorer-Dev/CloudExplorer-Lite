@@ -98,7 +98,7 @@ public class SyncProviderServiceImpl implements ISyncProviderService {
     private void cloudServerSaveOrUpdate(SaveBatchOrUpdateParams<F2CVirtualMachine> saveBatchOrUpdateParams) {
         List<VmCloudServer> vmCloudServers = saveBatchOrUpdateParams.syncRecord.stream().map(f2CVirtualMachine -> toVmCloudServer(f2CVirtualMachine, saveBatchOrUpdateParams.cloudAccountId, saveBatchOrUpdateParams.syncTime)).toList();
         LambdaUpdateWrapper<VmCloudServer> updateWrapper = new LambdaUpdateWrapper<VmCloudServer>().eq(VmCloudServer::getAccountId, saveBatchOrUpdateParams.cloudAccountId).eq(VmCloudServer::getRegion, saveBatchOrUpdateParams.region.getRegionId()).lt(VmCloudServer::getUpdateTime, saveBatchOrUpdateParams.syncTime).set(VmCloudServer::getInstanceStatus, "Deleted");
-        saveBatchOrUpdate(vmCloudServerService, vmCloudServers, vmCloudServer -> new LambdaQueryWrapper<VmCloudServer>().eq(VmCloudServer::getAccountId, vmCloudServer.getAccountId()).eq(VmCloudServer::getInstanceId, vmCloudServer.getInstanceId()).eq(VmCloudServer::getRegion, saveBatchOrUpdateParams.region.getRegionId()), updateWrapper);
+        saveBatchOrUpdate(vmCloudServerService, vmCloudServers, vmCloudServer -> new LambdaQueryWrapper<VmCloudServer>().eq(VmCloudServer::getAccountId, vmCloudServer.getAccountId()).eq(VmCloudServer::getInstanceUuid, vmCloudServer.getInstanceUuid()).eq(VmCloudServer::getRegion, saveBatchOrUpdateParams.region.getRegionId()), updateWrapper);
     }
 
     /**
@@ -215,12 +215,7 @@ public class SyncProviderServiceImpl implements ISyncProviderService {
      * @param remote            删除不存在的云账户函数
      * @param <T>               同步对象类型
      */
-    private <T> void proxy(String cloudAccountId, List<Credential.Region> regions,
-                           String jobDescription,
-                           BiFunction<ICloudProvider, String, List<T>> execMethod,
-                           Consumer<SaveBatchOrUpdateParams<T>> saveBatchOrUpdate,
-                           Consumer<SaveBatchOrUpdateParams<T>> writeJobRecord,
-                           Runnable remote) {
+    private <T> void proxy(String cloudAccountId, List<Credential.Region> regions, String jobDescription, BiFunction<ICloudProvider, String, List<T>> execMethod, Consumer<SaveBatchOrUpdateParams<T>> saveBatchOrUpdate, Consumer<SaveBatchOrUpdateParams<T>> writeJobRecord, Runnable remote) {
         RLock lock = redissonClient.getLock(cloudAccountId + jobDescription);
         try {
             if (lock.tryLock()) {
@@ -252,6 +247,7 @@ public class SyncProviderServiceImpl implements ISyncProviderService {
                             // 修改同步状态为成功
                             baseJobRecordService.update(new LambdaUpdateWrapper<JobRecord>().eq(JobRecord::getId, jobRecord.getId()).set(JobRecord::getStatus, JobStatusConstants.SUCCESS));
                         } catch (Throwable e) {
+                            e.printStackTrace();
                             baseJobRecordService.update(new LambdaUpdateWrapper<JobRecord>().eq(JobRecord::getId, jobRecord.getId()).set(JobRecord::getStatus, JobStatusConstants.FAILED));
                         }
 
