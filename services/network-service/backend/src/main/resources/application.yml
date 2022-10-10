@@ -1,0 +1,49 @@
+spring:
+  application:
+    name: network-service
+  mvc:
+    pathmatch:
+       matching-strategy: ANT_PATH_MATCHER
+  #       国际化配置
+  messages:
+    basename: i18n.messages,i18n.commons
+    encoding: UTF-8
+  quartz:
+    jdbc:
+      initialize-schema: always
+      schema: classpath:/quartz/tables.sql
+    properties:
+      org:
+        quartz:
+          scheduler:
+            instanceName: ${spring.application.name}
+            instanceId: ${spring.application.name}
+server:
+  port: 9012
+  servlet:
+    context-path: /${spring.application.name}
+  web:
+    resources:
+      static-locations: classpath:/static/,classpath:/templates/
+mybatis-plus:
+  configuration:
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+  type-handlers-package: com.fit2cloud.dao.handler
+#监控，访问路径 {ip}:{port}/actuator
+management:
+  server:
+    port: 9912
+
+logging:
+  file:
+    path: @ce.log.base.dir@/${spring.application.name}
+
+eureka:
+  instance:
+    metadata-map:
+      order: 2
+      name_zh-cn: 网络服务
+      name_zh-tw: 网络服务
+      name_en: Network Service
+      basePath: ${server.servlet.context-path}/
+      icon: xunisiyouwangluoVPC

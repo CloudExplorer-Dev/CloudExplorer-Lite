@@ -452,7 +452,6 @@ public class SyncProviderServiceImpl implements ISyncProviderService {
      * @param cloudAccountId 云账号id
      * @return 实例对象
      */
-
     private VmCloudImage toVmImage(F2CImage image, Credential.Region region, String cloudAccountId, LocalDateTime updateTime) {
         VmCloudImage vmCloudImage = new VmCloudImage();
         vmCloudImage.setRegion(region.getRegionId());

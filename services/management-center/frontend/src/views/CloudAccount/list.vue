@@ -21,7 +21,6 @@ import { useRouter } from "vue-router";
 import { useI18n } from "vue-i18n";
 import type { FormInstance, FormRules } from "element-plus";
 import type { SimpleMap } from "@commons/api/base/type";
-import type Color from "element-plus/es/components/color-picker/src/color";
 const { t } = useI18n();
 // 路由实例对象
 const router = useRouter();
