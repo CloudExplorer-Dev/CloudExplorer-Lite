@@ -65,11 +65,11 @@ public class VmCloudServerServiceImpl extends ServiceImpl<BaseVmCloudServerMappe
         // 构建查询参数
         QueryWrapper<VmCloudServerDTO> wrapper = addQuery(request);
         Page<VmCloudServerDTO> page = new Page<>(request.getCurrentPage(), request.getPageSize(), true);
-        IPage<VmCloudServerDTO> result = vmCloudServerMapper.pageList(page,wrapper);
+        IPage<VmCloudServerDTO> result = vmCloudServerMapper.pageList(page, wrapper);
         return result;
     }
 
-    private QueryWrapper<VmCloudServerDTO> addQuery(PageVmCloudServerRequest request){
+    private QueryWrapper<VmCloudServerDTO> addQuery(PageVmCloudServerRequest request) {
         QueryWrapper<VmCloudServerDTO> wrapper = new QueryWrapper<>();
         //排序
         if (request.getOrder() != null && StringUtils.isNotEmpty(request.getOrder().getColumn())) {
@@ -77,76 +77,76 @@ public class VmCloudServerServiceImpl extends ServiceImpl<BaseVmCloudServerMappe
         } else {
             wrapper.orderBy(true, false, "vm_cloud_server.update_time");
         }
-        wrapper.like(StringUtils.isNotBlank(request.getWorkspaceId()),"vm_cloud_disk.workspace_id",request.getWorkspaceId());
+        wrapper.like(StringUtils.isNotBlank(request.getWorkspaceId()), "vm_cloud_disk.workspace_id", request.getWorkspaceId());
         //wrapper.in(CollectionUtils.isNotEmpty(request.getOrganizationIds()),"vm_cloud_disk.organization_id",request.getOrganizationIds());
-        wrapper.like(StringUtils.isNotBlank(request.getInstanceName()),"vm_cloud_server.instance_name",request.getInstanceName());
-        wrapper.like(StringUtils.isNotBlank(request.getAccountName()),"cloud_account.name",request.getAccountName());
-        wrapper.like(StringUtils.isNotBlank(request.getIpArray()),"vm_cloud_server.ip_array",request.getIpArray());
+        wrapper.like(StringUtils.isNotBlank(request.getInstanceName()), "vm_cloud_server.instance_name", request.getInstanceName());
+        wrapper.like(StringUtils.isNotBlank(request.getAccountName()), "cloud_account.name", request.getAccountName());
+        wrapper.like(StringUtils.isNotBlank(request.getIpArray()), "vm_cloud_server.ip_array", request.getIpArray());
 
-        wrapper.in(CollectionUtils.isNotEmpty(request.getInstanceStatus()),"vm_cloud_server.instance_status",request.getInstanceStatus());
+        wrapper.in(CollectionUtils.isNotEmpty(request.getInstanceStatus()), "vm_cloud_server.instance_status", request.getInstanceStatus());
         return wrapper;
     }
 
     @Override
     public boolean powerOff(String vmId) {
-        return operateInstance(vmId,OperatedTypeEnum.POWER_OFF);
+        return operateInstance(vmId, OperatedTypeEnum.POWER_OFF);
     }
 
     @Override
     public boolean powerOn(String vmId) {
-        return operateInstance(vmId,OperatedTypeEnum.POWER_ON);
+        return operateInstance(vmId, OperatedTypeEnum.POWER_ON);
     }
 
     @Override
     public boolean shutdownInstance(String vmId) {
-        return operateInstance(vmId,OperatedTypeEnum.SHUTDOWN);
+        return operateInstance(vmId, OperatedTypeEnum.SHUTDOWN);
     }
 
     @Override
     public boolean rebootInstance(String vmId) {
-        return operateInstance(vmId,OperatedTypeEnum.REBOOT);
+        return operateInstance(vmId, OperatedTypeEnum.REBOOT);
     }
 
     @Override
     public boolean deleteInstance(String vmId) {
-        return operateInstance(vmId,OperatedTypeEnum.DELETE);
+        return operateInstance(vmId, OperatedTypeEnum.DELETE);
     }
 
     @Override
-    public boolean batchOperate(BatchOperateVmRequest request){
-        if(request.getInstanceIds().size()==0){
+    public boolean batchOperate(BatchOperateVmRequest request) {
+        if (request.getInstanceIds().size() == 0) {
             throw new Fit2cloudException(ErrorCodeConstants.SELECT_AT_LEAST_ONE_VM.getCode(), ErrorCodeConstants.SELECT_AT_LEAST_ONE_VM.getMessage());
         }
-        LogUtil.debug("批量操作虚拟机:{}",request.getInstanceIds().size());
+        LogUtil.debug("批量操作虚拟机:{}", request.getInstanceIds().size());
         AtomicReference<Long> doneCount = new AtomicReference<>(0L);
-        request.getInstanceIds().stream().forEach(instanceId->{
+        request.getInstanceIds().stream().forEach(instanceId -> {
             try {
-                operateInstance(instanceId,OperatedTypeEnum.valueOf(request.getOperate()));
+                operateInstance(instanceId, OperatedTypeEnum.valueOf(request.getOperate()));
                 doneCount.getAndSet(doneCount.get() + 1);
-            }catch (Exception e){
-                LogUtil.error("error - {} - {}",instanceId,e.getMessage());
+            } catch (Exception e) {
+                LogUtil.error("error - {} - {}", instanceId, e.getMessage());
                 throw e;
             }
         });
-        LogUtil.debug("批量操作虚拟机成功:{}",doneCount);
+        LogUtil.debug("批量操作虚拟机成功:{}", doneCount);
         return false;
     }
 
-    private boolean operateInstance(String vmId, OperatedTypeEnum operatedType){
+    private boolean operateInstance(String vmId, OperatedTypeEnum operatedType) {
         boolean result = false;
         QueryWrapper<VmCloudServer> wrapper = new QueryWrapper<VmCloudServer>()
-                .eq(ColumnNameUtil.getColumnName(VmCloudServer::getId, true),vmId);
+                .eq(ColumnNameUtil.getColumnName(VmCloudServer::getId, true), vmId);
         VmCloudServer vmCloudServer = baseMapper.selectOne(wrapper);
-        if(vmCloudServer==null){
+        if (vmCloudServer == null) {
             throw new Fit2cloudException(ErrorCodeConstants.VM_NOT_EXIST.getCode(), ErrorCodeConstants.VM_NOT_EXIST.getMessage());
         }
         CloudAccount cloudAccount = cloudAccountService.getById(vmCloudServer.getAccountId());
         F2CInstanceStatus resultStatus = F2CInstanceStatus.valueOf(vmCloudServer.getInstanceStatus());
         Class<? extends ICloudProvider> cloudProvider = ProviderConstants.valueOf(cloudAccount.getPlatform()).getCloudProvider();
         try {
-            HashMap<String, String> params = CommonUtil.getParams(cloudAccount.getCredential(),vmCloudServer.getRegion());
-            params.put("uuid",vmCloudServer.getInstanceUuid());
-            switch (operatedType){
+            HashMap<String, String> params = CommonUtil.getParams(cloudAccount.getCredential(), vmCloudServer.getRegion());
+            params.put("uuid", vmCloudServer.getInstanceUuid());
+            switch (operatedType) {
                 case POWER_ON:
                     result = CommonUtil.exec(cloudProvider, JsonUtil.toJSONString(params), ICloudProvider::powerOn);
                     resultStatus = F2CInstanceStatus.Running;
@@ -169,13 +169,13 @@ public class VmCloudServerServiceImpl extends ServiceImpl<BaseVmCloudServerMappe
                     break;
                 default:
             }
-            if(result){
+            if (result) {
                 vmCloudServer.setInstanceStatus(resultStatus.name());
-                baseMapper.update(vmCloudServer,wrapper);
+                baseMapper.update(vmCloudServer, wrapper);
                 return true;
             }
-        }catch (Exception e){
-            LogUtil.error("ERROR CODE:{}-{}",ErrorCodeConstants.VM_OPERATE_FAIL.getCode(),e.getMessage());
+        } catch (Exception e) {
+            LogUtil.error("ERROR CODE:{}-{}", ErrorCodeConstants.VM_OPERATE_FAIL.getCode(), e.getMessage());
             throw new Fit2cloudException(ErrorCodeConstants.VM_OPERATE_FAIL.getCode(), e.getMessage());
         }
         return false;

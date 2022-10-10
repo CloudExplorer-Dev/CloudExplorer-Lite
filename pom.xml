@@ -40,10 +40,6 @@
         <mybatis-plus.version>3.5.2</mybatis-plus.version>
         <mybatis-plus-generator.version>3.5.3</mybatis-plus-generator.version>
         <freemarker.version>2.3.31</freemarker.version>
-        <!--vmware start-->
-        <vsphereautomationsdk.version>3.9.0</vsphereautomationsdk.version>
-        <vapi.version>2.34.0</vapi.version>
-        <!--vmware end-->
         <!--日志-->
         <jakarta-json.version>2.0.1</jakarta-json.version>
         <logback-classic.version>1.2.11</logback-classic.version>

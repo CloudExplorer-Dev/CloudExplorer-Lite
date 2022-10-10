@@ -12,13 +12,16 @@ yarn build:base
 #1. install parent cloudexplorer
 mvn install -N
 #2. install parent framework
-cd framework
+cd $project_base_path/framework
 mvn install -N
-#3. install parent sdk
-cd sdk
+#3. install providers
+cd $project_base_path/framework/provider
+mvn clean install -Dmaven.test.skip=true
+#4. install parent sdk
+cd $project_base_path/framework/sdk
 mvn install -N
-#3. install sdk
-cd backend
+#5. install sdk
+cd $project_base_path/framework/sdk/backend
 mvn clean install -Dmaven.test.skip=true
 
 #构建完成回到当前目录

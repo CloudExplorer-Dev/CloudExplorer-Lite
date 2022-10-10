@@ -18,91 +18,11 @@
     </properties>
 
     <dependencies>
-        <!--        阿里云 start-->
         <dependency>
-            <groupId>com.aliyun</groupId>
-            <artifactId>tea-openapi</artifactId>
-            <version>0.2.2</version>
+            <groupId>com.fit2cloud</groupId>
+            <artifactId>provider</artifactId>
+            <version>${revision}</version>
         </dependency>
-        <dependency>
-            <groupId>com.aliyun</groupId>
-            <artifactId>ecs20140526</artifactId>
-            <version>2.1.3</version>
-        </dependency>
-        <dependency>
-            <groupId>com.aliyun</groupId>
-            <artifactId>bssopenapi20171214</artifactId>
-            <version>1.7.17</version>
-        </dependency>
-        <!--        阿里云end-->
-        <!--   华为云  start  -->
-        <dependency>
-            <groupId>com.huaweicloud.sdk</groupId>
-            <artifactId>huaweicloud-sdk-iam</artifactId>
-            <version>3.0.108</version>
-        </dependency>
-        <dependency>
-            <groupId>com.huaweicloud.sdk</groupId>
-            <artifactId>huaweicloud-sdk-bss</artifactId>
-            <version>3.1.3</version>
-        </dependency>
-        <!--    华为云 end  -->
-        <!--     腾讯云 start   -->
-        <dependency>
-            <groupId>com.tencentcloudapi</groupId>
-            <artifactId>tencentcloud-sdk-java-cvm</artifactId>
-            <version>3.1.588</version>
-        </dependency>
-        <dependency>
-            <groupId>com.tencentcloudapi</groupId>
-            <artifactId>tencentcloud-sdk-java-billing</artifactId>
-            <version>3.1.600</version>
-        </dependency>
-        <!--     腾讯云 end      -->
-
-        <!-- vmware start-->
-        <dependency>
-            <groupId>com.toastcoders</groupId>
-            <artifactId>yavijava</artifactId>
-            <version>6.0.05</version>
-            <exclusions>
-                <exclusion>
-                    <groupId>commons-codec</groupId>
-                    <artifactId>commons-codec</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>commons-logging</groupId>
-                    <artifactId>commons-logging</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
-
-        <dependency>
-            <groupId>com.vmware.vapi</groupId>
-            <artifactId>vapi-runtime</artifactId>
-            <version>${vapi.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>com.vmware.vapi</groupId>
-            <artifactId>vapi-authentication</artifactId>
-            <version>${vapi.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>com.vmware.vapi</groupId>
-            <artifactId>vapi-samltoken</artifactId>
-            <version>${vapi.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>com.vmware</groupId>
-            <artifactId>vsphereautomation-client-sdk</artifactId>
-            <version>${vsphereautomationsdk.version}</version>
-        </dependency>
-        <!--<dependency>
-            <groupId>com.vmware.vim25</groupId>
-            <artifactId>vim25</artifactId>
-            <version>${vspherewssdk.version}</version>
-        </dependency>-->
-        <!-- vmware end-->
 
         <dependency>
             <groupId>org.springframework.cloud</groupId>
@@ -248,83 +168,6 @@
                 <configuration>
                     <release>${java.version}</release>
                 </configuration>
-            </plugin>
-
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-install-plugin</artifactId>
-                <executions>
-                    <execution>
-                        <id>install-vapi-runtime</id>
-                        <phase>initialize</phase>
-                        <goals>
-                            <goal>install-file</goal>
-                        </goals>
-                        <configuration>
-                            <packaging>jar</packaging>
-                            <groupId>com.vmware.vapi</groupId>
-                            <artifactId>vapi-runtime</artifactId>
-                            <version>${vapi.version}</version>
-                            <file>../../../lib/vapi-runtime-${vapi.version}.jar</file>
-                        </configuration>
-                    </execution>
-                    <execution>
-                        <id>install-vapi-authentication</id>
-                        <phase>initialize</phase>
-                        <goals>
-                            <goal>install-file</goal>
-                        </goals>
-                        <configuration>
-                            <packaging>jar</packaging>
-                            <groupId>com.vmware.vapi</groupId>
-                            <artifactId>vapi-authentication</artifactId>
-                            <version>${vapi.version}</version>
-                            <file>../../../lib/vapi-authentication-${vapi.version}.jar</file>
-                        </configuration>
-                    </execution>
-                    <execution>
-                        <id>install-vapi-samltoken</id>
-                        <phase>initialize</phase>
-                        <goals>
-                            <goal>install-file</goal>
-                        </goals>
-                        <configuration>
-                            <packaging>jar</packaging>
-                            <groupId>com.vmware.vapi</groupId>
-                            <artifactId>vapi-samltoken</artifactId>
-                            <version>${vapi.version}</version>
-                            <file>../../../lib/vapi-samltoken-${vapi.version}.jar</file>
-                        </configuration>
-                    </execution>
-                    <!--<execution>
-                        <id>install-vim25</id>
-                        <phase>initialize</phase>
-                        <goals>
-                            <goal>install-file</goal>
-                        </goals>
-                        <configuration>
-                            <packaging>jar</packaging>
-                            <groupId>com.vmware.vim25</groupId>
-                            <artifactId>vim25</artifactId>
-                            <version>${vspherewssdk.version}</version>
-                            <file>../../../lib/vim25.jar</file>
-                        </configuration>
-                    </execution>-->
-                    <execution>
-                        <id>install-vsphere-bindings</id>
-                        <phase>initialize</phase>
-                        <goals>
-                            <goal>install-file</goal>
-                        </goals>
-                        <configuration>
-                            <packaging>jar</packaging>
-                            <groupId>com.vmware</groupId>
-                            <artifactId>vsphereautomation-client-sdk</artifactId>
-                            <version>${vsphereautomationsdk.version}</version>
-                            <file>../../../lib/vsphereautomation-client-sdk-${vsphereautomationsdk.version}.jar</file>
-                        </configuration>
-                    </execution>
-                </executions>
             </plugin>
         </plugins>
     </build>

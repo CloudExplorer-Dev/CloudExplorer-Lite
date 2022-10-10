@@ -5,20 +5,17 @@
 
     <parent>
         <groupId>com.fit2cloud</groupId>
-        <artifactId>cloudexplorer</artifactId>
+        <artifactId>framework</artifactId>
         <version>${revision}</version>
     </parent>
 
     <packaging>pom</packaging>
-    <artifactId>framework</artifactId>
+    <artifactId>provider-parent</artifactId>
     <version>${revision}</version>
-    <description>CE framework</description>
+    <description>provider parent</description>
 
     <modules>
-        <module>provider</module>
-        <module>sdk</module>
-        <module>eureka</module>
-        <module>gateway</module>
+        <module>core</module>
     </modules>
 
 </project>

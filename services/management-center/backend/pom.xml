@@ -22,11 +22,7 @@
             <artifactId>sdk</artifactId>
             <version>${revision}</version>
         </dependency>
-        <dependency>
-            <groupId>com.aliyun</groupId>
-            <artifactId>ecs20140526</artifactId>
-            <version>2.1.5</version>
-        </dependency>
+
     </dependencies>
 
     <build>
