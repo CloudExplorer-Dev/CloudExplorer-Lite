@@ -10,9 +10,10 @@ function buildModules() {
   fi
 
   #2. 打包镜像
-  for build_module_name in $f2c_moduleNames
+  for build_module_name in ${f2c_moduleNames[@]}
   do
-    cd $f2c_modules["$build_module_name"]
+#    echo ${f2c_modules["$build_module_name"]}
+    cd ${f2c_modules["$build_module_name"]}
     local _imageName=${image_registry_base_path}${build_module_name}":${image_tag}"
     docker build --build-arg CE_JAR_VERSION=$version --platform ${build_with_platform} -t ${_imageName} .
     if [ $? -ne 0 ]; then
@@ -44,19 +45,6 @@ declare image_tag=$version
 declare image_registry_base_path="registry.fit2cloud.com/cloudexplorer4/"
 declare -i upload_image=0
 declare build_with_platform=""
-
-#while getopts P:t:u: option
-#do
-#  case "${option}"
-#  in
-#  P)
-#    image_registry_base_path=${OPTARG};;
-#  t)
-#    image_tag=${OPTARG};;
-#  u)
-#    upload_image=1;;
-#  esac
-#done
 
 TEMP=`getopt -o ut:P: --long upload,tag:,path:,platform: -- "$@"`
 while true ; do
