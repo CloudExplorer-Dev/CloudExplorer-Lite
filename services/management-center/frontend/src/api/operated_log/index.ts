@@ -4,11 +4,15 @@ import type { Page } from "@commons/request/Result";
 import type { OperatedLogVO, ListOperatedLogRequest } from "./type";
 import type { Ref } from "vue";
 
-export const ListOperatedLog: (
+export function listOperatedLog(
   req: ListOperatedLogRequest,
   loading?: Ref<boolean>
-) => Promise<Result<Page<OperatedLogVO>>> = (req) => {
-  return get("api/log/operated/list", req);
+): Promise<Result<Page<OperatedLogVO>>> {
+  return get("api/log/operated/list", req,loading);
 };
 
-export type { OperatedLogVO, ListOperatedLogRequest };
+const OperatedLogApi = {
+  listOperatedLog
+}
+
+export default OperatedLogApi;

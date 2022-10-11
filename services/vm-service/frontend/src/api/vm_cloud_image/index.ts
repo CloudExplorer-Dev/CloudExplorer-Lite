@@ -10,12 +10,12 @@ import type { Ref } from "vue";
  * @param loading
  */
 export function listVmCloudImage(
-    req:ListVmCloudImageRequest,
-    loading?:Ref<boolean>
-):Promise<Result<Page<VmCloudImageVO>>>{
-  return get("api/image/page", req,loading);
+  req: ListVmCloudImageRequest,
+  loading?: Ref<boolean>
+): Promise<Result<Page<VmCloudImageVO>>> {
+  return get("api/image/page", req, loading);
 }
 const VmCloudImageApi = {
   listVmCloudImage,
-}
+};
 export default VmCloudImageApi;

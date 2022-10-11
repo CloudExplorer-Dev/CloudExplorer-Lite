@@ -35,6 +35,11 @@ const message = {
   },
   workspace: {
     user_count: "用户数",
+    workspace_name: "工作空间名称",
+    org: "父级组织",
+    validate: {
+      repeat: "{0}重复",
+    },
   },
   // 云账号相关国际化
   cloud_account: {
@@ -94,6 +99,24 @@ const message = {
     organization_name_is_not_empty: "组织名称不能为空",
     organization_description_is_not_empty: "组织描述不能为空",
   },
+  log_manage: {
+    "login": "登录日志",
+    "vm": "虚拟机操作日志",
+    "disk": "磁盘操作日志",
+    "platform": "平台管理日志",
+    "operator": "操作人",
+    "module": "模块",
+    "menu": "菜单",
+    "type": "操作类型",
+    "resource": "操作对象",
+    "ip": "操作IP",
+    "status": "操作状态",
+    "view_details": "查看详情",
+    "belong_vm": "所属虚拟机",
+    btn: {
+      "clear_policy": "清空策略"
+    }
+  }
 };
 export default {
   ...message,

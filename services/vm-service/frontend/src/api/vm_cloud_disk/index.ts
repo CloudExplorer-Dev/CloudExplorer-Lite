@@ -10,13 +10,13 @@ import type { Ref } from "vue";
  * @param loading
  */
 export function listVmCloudDisk(
-    req:ListVmCloudDiskRequest,
-    loading?:Ref<boolean>
-):Promise<Result<Page<VmCloudDiskVO>>>{
-  return get("api/disk/page", req,loading);
+  req: ListVmCloudDiskRequest,
+  loading?: Ref<boolean>
+): Promise<Result<Page<VmCloudDiskVO>>> {
+  return get("api/disk/page", req, loading);
 }
 
 const VmCloudDiskApi = {
-  listVmCloudDisk
-}
+  listVmCloudDisk,
+};
 export default VmCloudDiskApi;
