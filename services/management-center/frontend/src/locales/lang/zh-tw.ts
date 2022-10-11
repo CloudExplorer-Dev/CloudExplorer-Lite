@@ -35,6 +35,11 @@ const message = {
   },
   workspace: {
     user_count: "用戶數",
+    workspace_name: "工作空間名稱",
+    org: "父級組織",
+    validate: {
+      repeat: "{0}重複",
+    },
   },
   // 雲賬號相關國際化
   cloud_account: {
@@ -94,6 +99,24 @@ const message = {
     organization_name_is_not_empty: "組織名稱不能為空",
     organization_description_is_not_empty: "組織描述不能為空",
   },
+  log_manage: {
+    "login": "登入日誌",
+    "vm": "虛擬機器操作日誌",
+    "disk": "磁片操作日誌",
+    "platform": "平臺管理日誌",
+    "operator": "操作人",
+    "module": "模塊",
+    "menu": "選單",
+    "type": "操作類型",
+    "resource": "操作對象",
+    "ip": "操作IP",
+    "status": "操作狀態",
+    "view_details": "查看詳情",
+    "belong_vm": "所屬虛擬機器",
+    btn: {
+      "clear_policy": "清空策略"
+    }
+  }
 };
 
 export default {

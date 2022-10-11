@@ -34,7 +34,6 @@ const defaultCheckedKeys = ref();
 onMounted(() => {
   //查询组织树
   tree().then((data) => {
-    console.log("org 数据:", data.data);
     orgSelectData.value = data.data;
     sourceData.value = [...orgSelectData.value];
   });
@@ -64,7 +63,7 @@ onMounted(() => {
           });
         })
         .catch((err) => {
-          console.log("请求失败:", err);
+          console.log( err);
         });
   }
 });
@@ -72,10 +71,10 @@ onMounted(() => {
 //表单验证
 const rules = reactive<FormRules>({
   name: [
-    { message: "工作空间名称不为空", trigger: "blur", required: true },
+    { message: t("commons.validate.required",[t("workspace.workspace_name")]), trigger: "blur", required: true },
     {
       pattern: /^.{2,128}$/,
-      message: "长度限制为2～128个字符",
+      message: t("commons.validate.limit",["2","128"]),
       trigger: "blur",
     },
     {
@@ -88,7 +87,7 @@ const rules = reactive<FormRules>({
           }
         });
         if (repetition > 1) {
-          callback(new Error("名称重复"));
+          callback(new Error(t('workspace.validate.repeat',[t("workspace.workspace_name")])));
         } else {
           callback();
         }
@@ -99,7 +98,7 @@ const rules = reactive<FormRules>({
   description: [
     {
       pattern: /^.{2,128}$/,
-      message: "长度限制为2～128个字符",
+      message: t("commons.validate.limit",["2","128"]),
       trigger: "blur",
     },
   ],
@@ -109,7 +108,7 @@ const rules = reactive<FormRules>({
         // 在此获取选中的树形数据
         const arr = workspaceOrgSelectTree.value.getCheckedKeys();
         if (arr.length == 0 || !arr) {
-          callback(new Error("请选择父级组织"));
+          callback(new Error(t("commons.validate.select",[t("workspace.org")])));
         } else {
           callback();
         }
@@ -202,11 +201,11 @@ const filterMethod = (value: string) => {
     <layout-container :border="false">
       <template #content>
         <layout-container>
-          <template #header><h4>基本信息</h4></template>
+          <template #header><h4>{{t("commons.basic_info","基本信息")}}</h4></template>
           <template #content>
             <div v-for="(item, index) in form.workspaceDetails" :key="index">
               <el-form-item
-                label="名称"
+                :label="$t('common.name')"
                 :prop="'workspaceDetails[' + index + '].name'"
                 style="width: 40%"
                 :rules="rules.name"
@@ -214,7 +213,7 @@ const filterMethod = (value: string) => {
                 <el-input v-model="item.name" />
               </el-form-item>
               <el-form-item
-                label="描述"
+                :label="$t('commons.description')"
                 :prop="'workspaceDetails[' + index + '].description'"
                 style="width: 40%"
                 :rules="rules.description"
@@ -244,9 +243,9 @@ const filterMethod = (value: string) => {
           </template>
         </layout-container>
         <layout-container>
-          <template #header><h4>所属组织</h4></template>
+          <template #header><h4>{{t("workspace.org")}}</h4></template>
           <template #content>
-            <el-form-item label="组织" prop="org" style="width: 80%">
+            <el-form-item :label="$t('commons.org')" prop="org" style="width: 80%">
               <el-tree-select
                 :props="{ label: 'name' }"
                 node-key="id"
@@ -276,9 +275,9 @@ const filterMethod = (value: string) => {
           </layout-container> -->
         <!--先屏蔽云租户映射-->
         <layout-container>
-          <el-button @click="route.back">取消</el-button>
+          <el-button @click="route.back">{{t("commons.btn.cancel")}}</el-button>
           <el-button type="primary" @click="submitForm(ruleFormRef)"
-            >保存</el-button
+            >{{t("commons.btn.save")}}</el-button
           ></layout-container
         >
       </template>

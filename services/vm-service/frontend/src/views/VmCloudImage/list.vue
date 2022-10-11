@@ -6,13 +6,10 @@ import { useRouter } from "vue-router";
 import {
   PaginationConfig,
   TableConfig,
-  SearchConfig,
   TableOperations,
   TableSearch,
 } from "@commons/components/ce-table/type";
 import { useI18n } from "vue-i18n";
-import {ElMessage} from "element-plus";
-import type { SimpleMap } from "@commons/api/base/type";
 import ManageInfo from "@/views/VmCloudImage/ManageInfo.vue";
 const { t } = useI18n();
 const useRoute = useRouter();
@@ -66,13 +63,13 @@ const tableConfig = ref<TableConfig>({
     quickPlaceholder: t("commons.btn.search"),
     components: [],
     searchOptions: [
-      { label: "名称", value: "imageName" },
-      { label: "云账号", value: "accountName" },
+      { label: t("commons.name","名称"), value: "imageName" },
+      { label: t("commons.cloud_account.name", "云账号名称"), value: "accountName" },
     ],
   },
   paginationConfig: new PaginationConfig(),
   tableOperations: new TableOperations([TableOperations.buildButtons().newInstance(
-      "设置管理信息",
+      t("vm_cloud_image.btn.set_management_info","设置管理信息"),
       "primary",
       showManageInfoDialog,
       "InfoFilled"
@@ -88,7 +85,7 @@ const tableConfig = ref<TableConfig>({
     height="100%"
     ref="table"
   >
-    <el-table-column prop="imageName" label="镜像名称">
+    <el-table-column prop="imageName" :label="$t('vm_cloud_image.image_name')">
       <template #default="scope">
         <el-tooltip
             class="item"
@@ -102,11 +99,11 @@ const tableConfig = ref<TableConfig>({
         </el-tooltip>
       </template>
     </el-table-column>
-    <el-table-column prop="imageId" label="镜像ID"></el-table-column>
-    <el-table-column prop="accountName" label="云账号"></el-table-column>
-    <el-table-column prop="region" label="数据中心"></el-table-column>
-    <el-table-column prop="os" label="操作系统"></el-table-column>
-    <el-table-column prop="osVersion" label="操作系统版本"></el-table-column>
+    <el-table-column prop="imageId" :label="$t('vm_cloud_image.image_id')"></el-table-column>
+    <el-table-column prop="accountName" :label="$t('commons.cloud_account.native')"></el-table-column>
+    <el-table-column prop="region" :label="$t('commons.cloud_account.data_center')"></el-table-column>
+    <el-table-column prop="os" :label="$t('commons.os')"></el-table-column>
+    <el-table-column prop="osVersion" :label="$t('commons.os_version')"></el-table-column>
     <fu-table-operations v-bind="tableConfig.tableOperations" fix />
   </ce-table>
   <ManageInfo ref="manageInfoRef"></ManageInfo>

@@ -33,6 +33,11 @@ const message = {
       vm: "虛擬機",
       image: "鏡像",
     },
+    cloud_server:{
+      instance_type: "實例規格",
+      applicant: "申請人",
+      more: "更多",
+    },
     message_box: {
       alert: "警告",
       confirm: "確認",
@@ -73,6 +78,7 @@ const message = {
       export: "導出",
       upload: "上傳",
       download: "下載",
+      more_actions: "更多操作"
     },
     msg: {
       success: "{0}成功",
