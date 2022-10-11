@@ -28,7 +28,7 @@ const message = {
       selected: "Please Select User",
       role_empty: "Role information cannot be empty",
       param: "Parameter Invalid",
-      user_type_empty: "用户类型不能为空",
+      user_type_empty: "User type cannot be empty",
       org: "Please Select Organization",
       workspace: "Please Select Workspace",
     },
@@ -66,7 +66,14 @@ const message = {
     field_is_not_null: "Field cannot be empty",
     name_is_not_empty: "The cloud account name cannot be empty",
     platform_is_not_empty: "Cloud platform cannot be empty",
+    balance: {
+      money: "Account Balance",
+      unit: "yuan",
+    },
+    resource: "My resource",
     sync: {
+      resource: "Synchronize Resources",
+      setting: "Timing synchronization settings",
       once: "Synchronize once",
       region: "region",
       range: "Synchronization range",
