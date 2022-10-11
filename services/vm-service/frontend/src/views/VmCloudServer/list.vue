@@ -27,12 +27,13 @@ const instanceStatus = ref<Array<SimpleMap<string>>>([
   { text: "Stopped", value: "Stopped" },
 ]);
 //操作枚举
+//TODO 想要处理国际化
 enum InstanceOperateEnum {
-  POWER_ON = <any> t("vm_cloud_server.btn.power_on","开机"),
-  POWER_OFF = <any> t("vm_cloud_server.btn.power_off","关闭电源"),
-  SHUTDOWN = <any> t("vm_cloud_server.btn.shutdown","关机"),
-  REBOOT = <any> t("vm_cloud_server.btn.reboot","重启"),
-  DELETE = <any> t("commons.btn.delete","删除"),
+  POWER_ON = <any> "开机",
+  POWER_OFF = <any>"关闭电源",
+  SHUTDOWN = <any> "关机",
+  REBOOT = <any> "重启",
+  DELETE = <any> "删除",
 }
 
 /**
