@@ -259,21 +259,30 @@ public class VsphereClient {
 
     /**
      * 根据UUID查询资源
+     *
      * @param instanceUuid
      * @return
      */
-    public VirtualMachine getVirtualMachineByUuId(String instanceUuid){
+    public VirtualMachine getVirtualMachineByUuId(String instanceUuid) {
         VimPortType vimService = si.getServerConnection().getVimService();
         ServiceContent serviceContent = si.getServiceContent();
         try {
             ManagedObjectReference vmMor = vimService.findByUuid(serviceContent.getSearchIndex(), null, instanceUuid, true, true);
-            if(vmMor==null){
-                throw new RuntimeException("No such machine found! - "+instanceUuid);
+            if (vmMor == null) {
+                throw new RuntimeException("No such machine found! - " + instanceUuid);
             }
             return new VirtualMachine(si.getServerConnection(), vmMor);
         } catch (RemoteException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    public ClusterComputeResource getCluster(String name) {
+        return getResource(ClusterComputeResource.class, name);
+    }
+
+    public HostSystem getHost(String hostName) {
+        return getResource(HostSystem.class, hostName);
     }
 
 }
