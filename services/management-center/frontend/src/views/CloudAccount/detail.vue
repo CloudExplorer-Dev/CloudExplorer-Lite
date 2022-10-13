@@ -398,6 +398,8 @@ onMounted(() => {
             class="content"
             v-infinite-scroll="load"
             :infinite-scroll-disabled="scrollDisabled"
+            infinite-scroll-immediate="false"
+            infinite-scroll-distance="1"
           >
             <div class="container">
               <span class="label">{{
