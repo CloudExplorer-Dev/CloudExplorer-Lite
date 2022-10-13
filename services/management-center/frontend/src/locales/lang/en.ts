@@ -77,7 +77,17 @@ const message = {
     },
     resource: "My resource",
     sync: {
-      resource: "Synchronize Resources",
+      unit: "piece",
+      detail: "Detail",
+      noDetail: "No Detail",
+      start: "Start To Synchronize",
+      end: "End To Synchronize",
+      area: "DataCenter/Region",
+      finishArea: "Synchronized DataCenter/Region",
+      record: "Synchronization Record",
+      time: "Synchronization Time",
+      status: "Synchronization Status",
+      resource: "Synchronization Resources",
       setting: "Timing synchronization settings",
       once: "Synchronize once",
       region: "region",
@@ -101,23 +111,23 @@ const message = {
       "Organization description cannot be empty",
   },
   log_manage: {
-    "login": "Login Log",
-    "vm": "Virtual machine operation log",
-    "disk": "Disk Operation Log",
-    "platform": "Platform Management Log",
-    "operator": "Operator",
-    "module": "Module",
-    "menu": "Menu",
-    "type": "Operation Type",
-    "resource": "Operation object",
-    "ip": "Operation IP",
-    "status": "Operation status",
-    "view_details": "View details",
-    "belong_vm": "Virtual machine",
+    login: "Login Log",
+    vm: "Virtual machine operation log",
+    disk: "Disk Operation Log",
+    platform: "Platform Management Log",
+    operator: "Operator",
+    module: "Module",
+    menu: "Menu",
+    type: "Operation Type",
+    resource: "Operation object",
+    ip: "Operation IP",
+    status: "Operation status",
+    view_details: "View details",
+    belong_vm: "Virtual machine",
     btn: {
-      "clear_policy": "Clear Policy"
-    }
-  }
+      clear_policy: "Clear Policy",
+    },
+  },
 };
 
 export default {

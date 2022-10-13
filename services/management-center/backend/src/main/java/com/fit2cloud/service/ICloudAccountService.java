@@ -153,11 +153,18 @@ public interface ICloudAccountService extends IService<CloudAccount> {
 
     void sync(ArrayList<String> cloudAccountIds);
 
-    /*
+    /**
      * 获取云账号资源计数（动态）
-     *
      * @param accountId
      * @return
      */
     List<ResourceCountResponse> getModuleResourceCount(String accountId);
+
+    /**
+     * 获取云账号同步记录
+     * @param syncRecordRequest
+     * @return
+     */
+    IPage<AccountJobRecordResponse> pageSyncRecord(SyncRecordRequest syncRecordRequest);
+
 }

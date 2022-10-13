@@ -9,6 +9,19 @@
        <result column="create_time" property="createTime"  />
        <result column="update_time" property="updateTime"  />
    </resultMap>
+
+    <resultMap id="AccountJobRecordMap" type="com.fit2cloud.response.cloud_account.AccountJobRecordResponse">
+        <result column="account_id" jdbcType="VARCHAR" property="accountId"/>
+        <result column="job_record_id" jdbcType="VARCHAR" property="jobRecordId"/>
+        <result column="type" jdbcType="INTEGER" property="type"/>
+        <result column="status" jdbcType="INTEGER" property="status" />
+        <result column="description" jdbcType="VARCHAR" property="description"/>
+        <result column="params" jdbcType="VARCHAR" property="params"
+                typeHandler="com.baomidou.mybatisplus.extension.handlers.JacksonTypeHandler"/>
+        <result column="create_time" jdbcType="DATE" property="createTime"/>
+        <result column="update_time" jdbcType="DATE" property="updateTime"/>
+    </resultMap>
+
     <select id="pageCloudAccount" resultType="com.fit2cloud.controller.response.cloud_account.CloudAccountResponse">
         SELECT
             *
@@ -67,5 +80,26 @@
                     ) t1 ON t1.account_id = a.id
             ) a
             ${ew.customSqlSegment}
+    </select>
+
+    <select id="pageSyncRecord" resultMap="AccountJobRecordMap">
+        SELECT * FROM (
+            SELECT
+                account_job.account_id,
+                account_job.job_record_id,
+                job_record.type,
+                job_record.`status`,
+                job_record.description,
+                job_record.params,
+                job_record.create_time,
+                job_record.update_time
+            FROM
+                account_job,
+                job_record
+            WHERE
+                account_job.job_record_id = job_record.id
+            ORDER BY create_time desc,description)
+        job_record_info
+        ${ew.customSqlSegment}
     </select>
 </mapper>
