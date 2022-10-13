@@ -1,12 +1,15 @@
 package com.fit2cloud.common.form.annotaion;
 
 import com.fit2cloud.common.form.constants.InputType;
+import com.fit2cloud.common.provider.IBaseCloudProvider;
 import com.fit2cloud.common.validator.CustomValidator;
 
 import javax.validation.Constraint;
 import java.lang.annotation.Documented;
 import java.lang.annotation.Retention;
 import java.lang.annotation.Target;
+import java.util.ArrayList;
+import java.util.List;
 
 import static java.lang.annotation.ElementType.*;
 import static java.lang.annotation.ElementType.TYPE_USE;
@@ -74,9 +77,31 @@ public @interface From {
     String textField() default "";
 
     /**
+     * 执行函数所属类
+     * @return 必填
+     */
+    Class<?> clazz() default IBaseCloudProvider.class;
+    /**
      * 执行函数,用于获取单选,多选框的options
      *
      * @return 执行函数名称
      */
     String method() default "";
+
+
+    /**
+     * 那些按钮发生变化的时候,调用接口获取数据
+     *
+     * @return 需要插入的树属性
+     */
+    String[] relationTrigger() default {};
+
+    /**
+     * 那些数据有值的时候,显示当前节点
+     *
+     * @return 那些数据为true, 或者有值的时候, 展示当前节点
+     */
+    String[] relationShows() default {};
+
+
 }

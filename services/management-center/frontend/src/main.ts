@@ -8,7 +8,7 @@ import { setupStore } from "@commons/stores";
 import App from "./App.vue";
 import common from "@commons/index";
 import { i18n } from "@commons/index";
-
+import form from "@/components/form/index";
 import "@commons/styles/index.scss";
 import { AppMicroApp } from "@commons/microapp";
 import { initRouteObj, getRoute } from "@commons/router";
@@ -18,6 +18,7 @@ let app = null;
 const mount = async () => {
   app = createApp(App);
   app.use(common);
+  app.use(form);
   // 注册elementIcon
   for (const [key, component] of Object.entries(ElementPlusIcons)) {
     app.component(key, component);

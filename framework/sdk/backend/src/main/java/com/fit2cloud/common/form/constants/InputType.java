@@ -12,36 +12,36 @@ public enum InputType {
     /**
      * 数字类型
      */
-    number(InputNumberForm.class),
+    Number(InputNumberForm.class),
     /**
      * 密码输入框
      */
-    password(PasswordForm.class),
+    Password(PasswordForm.class),
     /**
      * 文本
      */
-    text(InputTextForm.class),
+    Text(InputTextForm.class),
     /**
      * 单选框
      */
-    radio(RadioForm.class),
+    Radio(RadioForm.class),
     /**
      * 多选框
      */
-    combobox(ComboboxForm.class),
+    Combobox(ComboboxForm.class),
     /**
      * 下拉单选
      */
-    single_select(SingleSelectForm.class),
+    SingleSelect(SingleSelectForm.class),
     /**
      * 下拉多选
      */
-    multi_select(MultiSelectForm.class),
+    MultiSelect(MultiSelectForm.class),
 
     /**
      * 开关
      */
-    switchBtn(SwitchForm.class);
+    SwitchBtn(SwitchForm.class);
 
     /**
      * 表单类型对应的实体类

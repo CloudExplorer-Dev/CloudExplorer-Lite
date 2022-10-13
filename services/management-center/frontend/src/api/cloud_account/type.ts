@@ -35,6 +35,10 @@ interface CloudAccount {
    */
   status: number;
   /**
+   * 账单设置
+   */
+  billSetting?: any;
+  /**
    *创建时间
    */
   createTime: string;

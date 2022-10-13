@@ -8,10 +8,14 @@ import com.fit2cloud.base.service.IBaseCloudAccountService;
 import com.fit2cloud.common.constants.JobConstants;
 import com.fit2cloud.common.constants.PlatformConstants;
 import com.fit2cloud.common.exception.Fit2cloudException;
+import com.fit2cloud.common.form.util.FormUtil;
+import com.fit2cloud.common.form.vo.Form;
+import com.fit2cloud.common.platform.bill.Bill;
 import com.fit2cloud.common.platform.credential.Credential;
 import com.fit2cloud.common.scheduler.SchedulerService;
 import com.fit2cloud.common.scheduler.entity.QuzrtzJobDetail;
 import com.fit2cloud.common.scheduler.handler.AsyncJob;
+import com.fit2cloud.common.utils.JsonUtil;
 import com.fit2cloud.common.utils.SpringUtil;
 import com.fit2cloud.dto.job.JobInitSettingDto;
 import com.fit2cloud.dto.job.JobModuleInfo;
@@ -25,6 +29,7 @@ import lombok.SneakyThrows;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.eclipse.jetty.util.ajax.JSON;
 import org.quartz.DateBuilder;
 import org.quartz.Job;
 import org.quartz.Trigger;
@@ -154,7 +159,6 @@ public class BaseCloudAccountServiceImpl extends ServiceImpl<BaseCloudAccountMap
     }
 
 
-
     @SneakyThrows
     private void exec(SyncRequest syncRequest, JobInitSettingDto j) {
         Job jobHandler = j.getJobHandler().getConstructor().newInstance();
@@ -211,5 +215,31 @@ public class BaseCloudAccountServiceImpl extends ServiceImpl<BaseCloudAccountMap
         } else {
             return t.count(accountId);
         }
+    }
+
+    @Override
+    public List<Form> getBillSettingFormByPlatform(String platform) {
+        if (Arrays.stream(PlatformConstants.values()).anyMatch(p -> p.name().equals(platform))) {
+            PlatformConstants platformConstants = PlatformConstants.valueOf(platform);
+            return FormUtil.toForm(platformConstants.getBillClass());
+        } else {
+            throw new Fit2cloudException(2000, "非法参数");
+        }
+
+
+    }
+
+    @Override
+    public CloudAccount saveOrUpdateBillSetting(String cloudAccountId, Map params) {
+        CloudAccount cloudAccount = getById(cloudAccountId);
+        PlatformConstants platformConstants = PlatformConstants.valueOf(cloudAccount.getPlatform());
+        if (platformConstants.getBillClass() == null) {
+            throw new Fit2cloudException(1003, "不支持的云平台");
+        }
+        Bill bill = JsonUtil.parseObject(JsonUtil.toJSONString(params), platformConstants.getBillClass());
+        bill.verification();
+        cloudAccount.setBillSetting(params);
+        saveOrUpdate(cloudAccount);
+        return cloudAccount;
     }
 }

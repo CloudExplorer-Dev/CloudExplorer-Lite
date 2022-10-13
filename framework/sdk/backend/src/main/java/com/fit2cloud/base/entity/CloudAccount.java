@@ -8,14 +8,14 @@ import com.baomidou.mybatisplus.annotation.TableName;
 import java.io.Serializable;
 import java.time.LocalDateTime;
 
-import com.baomidou.mybatisplus.core.handlers.MybatisEnumTypeHandler;
+import com.baomidou.mybatisplus.extension.handlers.JacksonTypeHandler;
 import com.fit2cloud.base.handler.CredentialTypeHandler;
-import com.fit2cloud.common.constants.CloudAccountConstants;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.Accessors;
 
 import java.io.Serial;
+import java.util.Map;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
@@ -58,9 +58,6 @@ public class CloudAccount implements Serializable {
     /**
      * 凭证字段
      */
-    /**
-     * 凭证字段
-     */
     @TableField(value = "credential", typeHandler = CredentialTypeHandler.class)
     private String credential;
 
@@ -69,6 +66,12 @@ public class CloudAccount implements Serializable {
      */
     @TableField("state")
     private Boolean state;
+
+    /**
+     * 账单设置
+     */
+    @TableField(value = "bill_setting", typeHandler = JacksonTypeHandler.class)
+    private Map<String, Object> billSetting;
 
     /**
      * 创建时间

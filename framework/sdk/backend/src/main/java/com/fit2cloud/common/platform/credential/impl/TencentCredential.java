@@ -30,12 +30,12 @@ public class TencentCredential implements Credential {
     /**
      * 密钥id
      */
-    @From(inputType = InputType.text, label = "secretId", description = "访问令牌")
+    @From(inputType = InputType.Text, label = "secretId", description = "访问令牌")
     private String secretId;
     /**
      * 密钥
      */
-    @From(inputType = InputType.password, label = "secretKey", description = "访问密钥")
+    @From(inputType = InputType.Password, label = "secretKey", description = "访问密钥")
     private String secretKey;
 
     @Override

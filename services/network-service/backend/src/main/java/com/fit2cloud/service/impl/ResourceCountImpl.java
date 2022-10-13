@@ -34,24 +34,6 @@ public class ResourceCountImpl implements IResourceCountService {
     @Override
     public List<ResourceCountResponse> count(String accountId) {
         List<ResourceCountResponse> list = new ArrayList<>();
-        // 虚拟机
-        QueryWrapper<VmCloudServer> vmQueryWrapper = Wrappers.query();
-        vmQueryWrapper.lambda().ne(VmCloudServer::getInstanceStatus, "deleted").eq(VmCloudServer::getAccountId, accountId);
-        ResourceCountResponse vm = new ResourceCountResponse("xuniyunzhuji", LocaleUtil.getMessage("i18n.resource.vm","虚拟机"), cloudServerService.count(vmQueryWrapper));
-        list.add(vm);
-
-        // 磁盘
-        QueryWrapper<VmCloudDisk> diskQueryWrapper = Wrappers.query();
-        diskQueryWrapper.lambda().ne(VmCloudDisk::getStatus, "deleted").eq(VmCloudDisk::getAccountId, accountId);
-        ResourceCountResponse disk = new ResourceCountResponse("yuncunchu", LocaleUtil.getMessage("i18n.resource.disk","磁盘"), cloudDiskService.count(diskQueryWrapper));
-        list.add(disk);
-
-        // 镜像
-        QueryWrapper<VmCloudImage> imageQueryWrapper = Wrappers.query();
-        imageQueryWrapper.lambda().ne(VmCloudImage::getStatus, "deleted").eq(VmCloudImage::getAccountId, accountId);
-        ResourceCountResponse image = new ResourceCountResponse("jingxiang", LocaleUtil.getMessage("i18n.resource.image","镜像"), cloudImageService.count(imageQueryWrapper));
-        list.add(image);
-
         return list;
     }
 }

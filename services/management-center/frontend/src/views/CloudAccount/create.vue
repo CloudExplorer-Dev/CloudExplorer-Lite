@@ -204,14 +204,16 @@ const clear = () => {
             >
               <el-input
                 v-model="from.credential[item.field]"
-                :type="item.inputType"
-                :show-password="item.inputType === 'password' ? true : false"
-                v-if="item.inputType != 'switchBtn'"
+                :type="item.inputType === 'Text' ? 'text' : ''"
+                :show-password="item.inputType === 'Password' ? true : false"
+                v-if="
+                  item.inputType === 'Text' || item.inputType === 'Password'
+                "
               ></el-input>
 
               <el-switch
                 v-model="from.credential[item.field]"
-                v-if="item.inputType === 'switchBtn'"
+                v-if="item.inputType === 'SwitchBtn'"
               >
               </el-switch>
             </el-form-item>

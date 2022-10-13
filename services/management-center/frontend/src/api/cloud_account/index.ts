@@ -231,6 +231,36 @@ const syncAll = (cloudAccountIds: Array<string>, loading?: Ref<boolean>) => {
   return put("/api/cloud_account/sync", null, cloudAccountIds, loading);
 };
 
+/**
+ * 获取账单表单数据
+ * @param platform 账单
+ * @param loading 加载器
+ * @returns
+ */
+const getBillFormByPlatform = (platform: string, loading?: Ref<boolean>) => {
+  return get("/api/base/cloud_account/bill/form", { platform }, loading);
+};
+
+/**
+ * 插入或者更改账单设置
+ * @param cloudAccountId 云账号id
+ * @param params        参数
+ * @param loading       加载器
+ * @returns
+ */
+const saveOrUpdateBillSetting = (
+  cloudAccountId: string,
+  data: unknown,
+  loading?: Ref<boolean>
+) => {
+  return put(
+    "/api/base/cloud_account/bill/" + cloudAccountId,
+    undefined,
+    data,
+    loading
+  );
+};
+
 export default {
   page,
   getPlatformAll,
@@ -250,4 +280,6 @@ export default {
   getResourceCount,
   getAccountJobRecord,
   syncAll,
+  getBillFormByPlatform,
+  saveOrUpdateBillSetting,
 };
