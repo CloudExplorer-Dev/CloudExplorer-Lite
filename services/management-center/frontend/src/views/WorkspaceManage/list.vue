@@ -70,7 +70,7 @@ const batchDelete = () => {
           search(new TableSearch());
         })
         .catch((err) => {
-          console.log("删除失败", err);
+          console.log(err);
         });
   });
 };
@@ -92,7 +92,7 @@ const deleteOne = (row: Workspace) => {
           search(new TableSearch());
         })
         .catch((err) => {
-          console.log("删除失败", err);
+          console.log(err);
         });
   });
 };

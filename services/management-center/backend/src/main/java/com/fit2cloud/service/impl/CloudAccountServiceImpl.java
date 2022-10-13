@@ -1,6 +1,5 @@
 package com.fit2cloud.service.impl;
 
-import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.core.metadata.OrderItem;
@@ -458,6 +457,7 @@ public class CloudAccountServiceImpl extends ServiceImpl<CloudAccountMapper, Clo
         syncRequest.setSyncJob(moduleResourceJob.stream().map(r -> new SyncRequest.Job(r.getModule(), r.getJobName())).toList());
         sync(syncRequest);
     }
+
     /**
      * 资源计数（动态获取）
      * @return
@@ -477,7 +477,7 @@ public class CloudAccountServiceImpl extends ServiceImpl<CloudAccountMapper, Clo
      * @param module
      * @return
      */
-    public List<ResourceCountResponse> getResourceCount(String module,String accountId) {
+    private List<ResourceCountResponse> getResourceCount(String module,String accountId) {
         if (module.equals(ServerInfo.module)) {
             return baseCloudAccountService.getModuleResourceCount(accountId);
         } else {
@@ -497,4 +497,11 @@ public class CloudAccountServiceImpl extends ServiceImpl<CloudAccountMapper, Clo
         }
         return exchange.getBody().getData();
     };
+
+    public IPage<AccountJobRecordResponse> pageSyncRecord(SyncRecordRequest syncRecordRequest) {
+        Page<AccountJobRecordResponse> syncRecordPage = PageUtil.of(syncRecordRequest, AccountJobRecordResponse.class, new OrderItem("create_time", true));
+        QueryWrapper wrapper = Wrappers.query();
+        wrapper.eq("account_id",syncRecordRequest.getCloudAccountId());
+        return baseMapper.pageSyncRecord(syncRecordPage, wrapper);
+    }
 }

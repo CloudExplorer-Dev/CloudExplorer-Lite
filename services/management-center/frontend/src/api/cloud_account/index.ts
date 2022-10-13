@@ -14,6 +14,8 @@ import type {
   SyncRequest,
   UpdateAccountName,
   ResourceCount,
+  ListSyncRecordRequest,
+  AccountJobRecord,
 } from "./type";
 /**
  * 分页查询云账号
@@ -205,6 +207,18 @@ const getResourceCount: (
     loading
   );
 };
+
+/**
+ * 分页查询云账号同步记录
+ * @param request 分页查询所需参数
+ * @returns
+ */
+const pageSyncRecord: (
+  request: ListSyncRecordRequest
+) => Promise<Result<Page<AccountJobRecord>>> = (request) => {
+  return get("/api/cloud_account/pageSyncRecord", request);
+};
+
 /**
  * 获取云账户最新同步账号
  * @param cloudAccountIds 云账号id
@@ -282,4 +296,5 @@ export default {
   syncAll,
   getBillFormByPlatform,
   saveOrUpdateBillSetting,
+  pageSyncRecord,
 };

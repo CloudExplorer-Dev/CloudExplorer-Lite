@@ -33,6 +33,11 @@ const message = {
       vm: "Virtual Machine",
       image: "Image",
     },
+    cloud_server:{
+      instance_type: "Instance Type",
+      applicant: "Applicant",
+      more: "More",
+    },
     message_box: {
       alert: "Alert",
       confirm: "Confirm",
@@ -73,6 +78,7 @@ const message = {
       export: "Export",
       upload: "Upload",
       download: "Download",
+      more_actions: "More Actions"
     },
     msg: {
       success: "{0}Success",

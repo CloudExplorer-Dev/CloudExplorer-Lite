@@ -28,13 +28,18 @@ const message = {
       selected: "Please Select User",
       role_empty: "Role information cannot be empty",
       param: "Parameter Invalid",
-      user_type_empty: "用户类型不能为空",
+      user_type_empty: "User type cannot be empty",
       org: "Please Select Organization",
       workspace: "Please Select Workspace",
     },
   },
   workspace: {
     user_count: "Number of users",
+    workspace_name: "Workspace Name",
+    org: "Parent Organization",
+    validate: {
+      repeat: "{0} duplicate",
+    },
   },
   // 云账号相关国际化
   cloud_account: {
@@ -66,7 +71,24 @@ const message = {
     field_is_not_null: "Field cannot be empty",
     name_is_not_empty: "The cloud account name cannot be empty",
     platform_is_not_empty: "Cloud platform cannot be empty",
+    balance: {
+      money: "Account Balance",
+      unit: "yuan",
+    },
+    resource: "My resource",
     sync: {
+      unit: "piece",
+      detail: "Detail",
+      noDetail: "No Detail",
+      start: "Start To Synchronize",
+      end: "End To Synchronize",
+      area: "DataCenter/Region",
+      finishArea: "Synchronized DataCenter/Region",
+      record: "Synchronization Record",
+      time: "Synchronization Time",
+      status: "Synchronization Status",
+      resource: "Synchronization Resources",
+      setting: "Timing synchronization settings",
       once: "Synchronize once",
       region: "region",
       range: "Synchronization range",
@@ -87,6 +109,24 @@ const message = {
     organization_name_is_not_empty: "Organization name cannot be empty",
     organization_description_is_not_empty:
       "Organization description cannot be empty",
+  },
+  log_manage: {
+    login: "Login Log",
+    vm: "Virtual machine operation log",
+    disk: "Disk Operation Log",
+    platform: "Platform Management Log",
+    operator: "Operator",
+    module: "Module",
+    menu: "Menu",
+    type: "Operation Type",
+    resource: "Operation object",
+    ip: "Operation IP",
+    status: "Operation status",
+    view_details: "View details",
+    belong_vm: "Virtual machine",
+    btn: {
+      clear_policy: "Clear Policy",
+    },
   },
 };
 

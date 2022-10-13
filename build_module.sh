@@ -5,7 +5,8 @@ function buildModule() {
   mvn initialize
   # 进入目录
   echo "开始构建模块[$build_module_name]:"
-  cd $f2c_modules["$build_module_name"]
+#    echo ${f2c_modules["$build_module_name"]}
+  cd ${f2c_modules["$build_module_name"]}
 
   #1. 打包jar
   mvn clean package -Dmaven.test.skip=true
@@ -48,20 +49,6 @@ declare image_registry_base_path="registry.fit2cloud.com/cloudexplorer4/"
 declare -i upload_image=0
 declare build_with_platform=""
 
-#while getopts P:n:t:u option
-#do
-#  case "${option}"
-#  in
-#  P)
-#   image_registry_base_path=${OPTARG};;
-#  n)
-#    build_module_name=${OPTARG};;
-#  t)
-#    image_tag=${OPTARG};;
-#  u)
-#    upload_image=1;;
-#  esac
-#done
 
 TEMP=`getopt -o um::t:P: --long upload,module::,tag:,path:,platform: -- "$@"`
 while true ; do
@@ -135,7 +122,7 @@ if [ -z $build_module_name ]
 then
   echo '请选择一个模块进行构建:'
   #选择模块
-  select _selectedItem in $f2c_moduleNames; do
+  select _selectedItem in ${f2c_moduleNames[@]}; do
      build_module_name=$_selectedItem
      if [ -z $_selectedItem ]
      then

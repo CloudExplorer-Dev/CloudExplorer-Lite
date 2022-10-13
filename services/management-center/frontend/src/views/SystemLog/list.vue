@@ -1,11 +1,12 @@
 <!--系统日志列表-->
 <template>
-  <ce-table
+  <ce-table v-loading="tableLoading"
     :columns="columns"
     :data="tableData"
     :tableConfig="tableConfig"
     row-key="id"
     table-layout="auto"
+    height="100%"
   >
     <template #toolbar>
       <el-button type="primary" @click="clearPolicy">清空策略</el-button>
@@ -53,8 +54,8 @@
 
 <script setup lang="ts">
 import { ref, onMounted } from "vue";
-import { ListSystemLog } from "@/api/sys_log";
-import type { SystemLogVO } from "@/api/sys_log";
+import SysLogApi  from "@/api/sys_log/index";
+import type { SystemLogVO } from "@/api/sys_log/type";
 import { useRouter } from "vue-router";
 import { ElMessage } from "element-plus/es";
 import {
@@ -68,16 +69,17 @@ const { t } = useI18n();
 const useRoute = useRouter();
 const columns = ref([]);
 const tableData = ref<Array<SystemLogVO>>();
+const tableLoading = ref<boolean>(false);
 onMounted(() => {
   search(new TableSearch());
 });
 const search = (condition: TableSearch) => {
   const params = TableSearch.toSearchParams(condition);
-  ListSystemLog({
+  SysLogApi.listSystemLog({
     currentPage: tableConfig.value.paginationConfig.currentPage,
     pageSize: tableConfig.value.paginationConfig.pageSize,
     ...params,
-  }).then((res) => {
+  },tableLoading).then((res) => {
     tableData.value = res.data.records;
     tableConfig.value.paginationConfig?.setTotal(
       res.data.total,

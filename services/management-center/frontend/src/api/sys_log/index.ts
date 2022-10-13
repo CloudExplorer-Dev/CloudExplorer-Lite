@@ -1,14 +1,18 @@
-import { post, del, get, put } from "@commons/request";
+import { get } from "@commons/request";
 import type Result from "@commons/request/Result";
 import type { Page } from "@commons/request/Result";
 import type { SystemLogVO, ListSystemLogRequest } from "./type";
 import type { Ref } from "vue";
 
-export const ListSystemLog: (
+export function listSystemLog(
   req: ListSystemLogRequest,
   loading?: Ref<boolean>
-) => Promise<Result<Page<SystemLogVO>>> = (req) => {
-  return get("api/log/system/list", req);
+): Promise<Result<Page<SystemLogVO>>> {
+  return get("api/log/system/list", req,loading);
 };
 
-export type { SystemLogVO };
+const SysLogApi = {
+  listSystemLog
+}
+
+export default SysLogApi;
