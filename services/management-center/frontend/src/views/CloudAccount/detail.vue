@@ -64,6 +64,7 @@ const init = () => {
       .then((ok) => {
         syncRecords.value = _.cloneDeep(ok.data.records);
         syncRecordTotal.value = _.cloneDeep(ok.data.total);
+        syncRecordConfig.currentPage = syncRecordConfig.currentPage + 1;
         if (syncRecords.value.length > 0) {
           showSyncRecordDetail(syncRecords.value[0]);
         }
