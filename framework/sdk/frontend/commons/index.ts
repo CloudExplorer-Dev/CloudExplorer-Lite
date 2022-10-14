@@ -21,6 +21,13 @@ const components: SimpleMap<any> = import.meta.glob(
   }
 );
 
+const componentsUses: SimpleMap<any> = import.meta.glob(
+  "./components/**/index.ts",
+  {
+    eager: true,
+  }
+);
+
 const business = import.meta.glob("./base-*/index.ts", { eager: true });
 
 const install = (app: App) => {
@@ -35,6 +42,10 @@ const install = (app: App) => {
       replaceKey.substring(replaceKey.lastIndexOf("/") + 1, replaceKey.length),
       components[key].default
     );
+  });
+  Object.keys(componentsUses).forEach((key: string) => {
+    const component: any = componentsUses[key];
+    app.use(component.default);
   });
 };
 export default { install };

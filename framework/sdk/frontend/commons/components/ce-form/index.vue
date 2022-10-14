@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import { ref, onMounted, watch } from "vue";
-import type { FormView } from "@/components/form/type";
-import formApi from "@/api/form_resource_api/index";
+import { ref, watch } from "vue";
+import type { FormView } from "@commons/components/ce-form/type";
+import formApi from "@commons/api/form_resource_api/index";
 import type { FormInstance } from "element-plus";
 // 表单数据
 const formData = ref<any>({});
