@@ -5,6 +5,9 @@ import { listModules } from "@commons/api/module";
 import type { Menu } from "@commons/api/menu/type";
 import { listMenus } from "@commons/api/menu";
 import type { SimpleMap } from "@commons/api/base/type";
+import type { RouteModule } from "@commons/api/module/type";
+import type { UnwrapRef } from "vue";
+import _ from "lodash";
 
 interface ModuleStoreObject {
   modules?: Array<Module>;
@@ -19,20 +22,51 @@ export const useModuleStore = defineStore({
   }),
   getters: {
     runningModules(state: any): Array<Module> {
-      return state.modules;
+      return _.map(state.modules, (module: Module) => {
+        return {
+          ...module,
+          requiredPermissions: _.flatMap(
+            _.get(state.menus, module.id, []),
+            (menu: Menu) => {
+              return menu.requiredPermissions;
+            }
+          ),
+        };
+      });
+      //return state.modules;
     },
     runningMenus(state: any): SimpleMap<Array<Menu>> {
       return state.menus;
     },
+    routeModules(state: any): Array<RouteModule> {
+      return _.map(state.runningModules, (module: UnwrapRef<Module>) => {
+        const routeModule: RouteModule = {
+          path: "/" + module.id,
+          name: module.id,
+          componentPath: "/src/views/MicroAppRouteView/index.vue",
+          props: {
+            moduleName: module.id,
+            name: module.id,
+            url:
+              window.location.protocol +
+              "//" +
+              window.location.host +
+              (module.basePath ? module.basePath : ""),
+            baseRoute: "/",
+          },
+          requiredPermissions: module.requiredPermissions,
+        };
+        return routeModule;
+      });
+    },
     currentModule(state: any): Module | undefined {
-      return state.modules.find(
+      return _.find(
+        state.modules,
         (module: Module) => module.id === import.meta.env.VITE_APP_NAME
       );
     },
     currentModuleMenu(state: any): Array<Menu> {
-      return state.menus[import.meta.env.VITE_APP_NAME]
-        ? state.menus[import.meta.env.VITE_APP_NAME]
-        : [];
+      return _.get(state.menus, import.meta.env.VITE_APP_NAME, []);
     },
   },
   actions: {
