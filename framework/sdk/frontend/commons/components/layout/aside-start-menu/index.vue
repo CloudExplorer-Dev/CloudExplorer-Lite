@@ -7,7 +7,7 @@ import { useModuleStore } from "@commons/stores/modules/module";
 import { usePermissionStore } from "@commons/stores/modules/permission";
 import { useRouter } from "vue-router";
 import CollectMenu from "@commons/components/layout/collect-menu/index.vue";
-import type { Module } from "@commons/api/module";
+import type { Module } from "@commons/api/module/type";
 
 const router = useRouter();
 
@@ -60,13 +60,14 @@ const test = (moduleName: string) => {
       </StartMenuItem>
     </div>
     <div class="starMenuLine"></div>
-    <div class="runingModule">
+    <div class="runningModule">
       <StartMenuItem
+        v-for="item in moduleStore.runningModules"
+        :key="item.id"
         @click="test(item.id)"
         :start-menu-item="item"
         :root-item="false"
-        v-for="item in moduleStore.runningModules"
-        :key="item.id"
+        v-hasPermission="item.requiredPermissions"
         :class="item.id === currentModule ? 'active' : ''"
       >
         <div class="move">

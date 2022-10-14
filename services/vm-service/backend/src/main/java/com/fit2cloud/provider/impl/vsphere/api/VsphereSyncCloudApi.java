@@ -341,11 +341,14 @@ public class VsphereSyncCloudApi {
                     }
                 }
             }
-            if (!network.getMOR().getType().toLowerCase().equals("network")) {
-                desc = "(dvSwitch)";
+            if (!StringUtils.equalsIgnoreCase(network.getMOR().getType(), "network")) {
+                desc = "dvSwitch";
             }
             if (!uplinkPortgroup) {
-                networks.add(new F2CVsphereNetwork().setName(network.getName()).setDescription(desc).setId(network.getMOR().getVal()));
+                networks.add(new F2CVsphereNetwork()
+                        .setName(network.getName())
+                        .setDescription(desc)
+                        .setId(network.getMOR().getVal()));
             }
         }
         return networks;

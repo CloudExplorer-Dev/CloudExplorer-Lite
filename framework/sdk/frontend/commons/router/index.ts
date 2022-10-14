@@ -68,34 +68,25 @@ export async function initRouteObj(): Promise<RouteObj> {
           component: Login,
         },
       ],
-      () => {
+      async () => {
         const moduleStore = useModuleStore(store);
-
-        const routers = moduleStore.runningModules.map(
-          (module: UnwrapRef<Module>) => {
-            const routeModule: RouteModule = {
-              path: "/" + module.id,
-              name: module.id,
-              componentPath: "/src/views/MicroAppRouteView/index.vue",
-              props: {
-                moduleName: module.id,
-                name: module.id,
-                url:
-                  window.location.protocol +
-                  "//" +
-                  window.location.host +
-                  (module.basePath ? module.basePath : ""),
-                baseRoute: "/",
-              },
-            };
-            return routeModule;
-          }
-        );
-        console.log(routers);
-        const route: RouteItem = { home: routers };
+        if (!moduleStore.modules) {
+          await moduleStore.refreshModules();
+        }
+        const route: RouteItem = { home: moduleStore.routeModules };
         return route;
       },
-      undefined,
+      async () => {
+        const userStore = useUserStore(store);
+        const permissionStore = usePermissionStore(store);
+        if (!permissionStore.permissions) {
+          await permissionStore.refreshPermissions();
+        }
+        return {
+          permissions: permissionStore.userPermissions,
+          role: userStore.currentRole,
+        };
+      },
       async () => {
         // 处理新模块上来后,对模块的import路径进行重写,去掉项目名称
         await window.rootMicroApp.updateModule();
@@ -139,7 +130,9 @@ export async function initRouteObj(): Promise<RouteObj> {
       async () => {
         const userStore = useUserStore(store);
         const permissionStore = usePermissionStore(store);
-        await permissionStore.refreshPermissions();
+        if (!permissionStore.permissions) {
+          await permissionStore.refreshPermissions();
+        }
         return {
           permissions: permissionStore.userPermissions,
           role: userStore.currentRole,
