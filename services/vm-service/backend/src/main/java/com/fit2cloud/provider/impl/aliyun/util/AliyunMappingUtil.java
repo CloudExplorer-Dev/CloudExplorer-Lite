@@ -3,21 +3,17 @@ package com.fit2cloud.provider.impl.aliyun.util;
 import com.aliyun.ecs20140526.models.DescribeDisksResponseBody;
 import com.aliyun.ecs20140526.models.DescribeImagesResponseBody;
 import com.aliyun.ecs20140526.models.DescribeInstancesResponseBody;
+import com.fit2cloud.common.provider.util.CommonUtil;
 import com.fit2cloud.provider.constants.DeleteWithInstance;
 import com.fit2cloud.provider.constants.F2CDiskStatus;
 import com.fit2cloud.provider.entity.F2CDisk;
 import com.fit2cloud.provider.entity.F2CImage;
 import com.fit2cloud.provider.entity.F2CVirtualMachine;
-import com.fit2cloud.provider.util.CommonUtil;
 import com.google.gson.Gson;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Date;
 import java.util.List;
 
 /**

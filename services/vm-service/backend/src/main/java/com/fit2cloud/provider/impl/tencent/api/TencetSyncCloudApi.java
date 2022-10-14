@@ -1,16 +1,15 @@
 package com.fit2cloud.provider.impl.tencent.api;
 
+import com.fit2cloud.common.provider.util.PageUtil;
 import com.fit2cloud.common.utils.JsonUtil;
 import com.fit2cloud.provider.entity.F2CDisk;
 import com.fit2cloud.provider.entity.F2CImage;
 import com.fit2cloud.provider.entity.F2CVirtualMachine;
-import com.fit2cloud.provider.impl.huawei.util.HuaweiMappingUtil;
 import com.fit2cloud.provider.impl.tencent.entity.credential.TencentVmCredential;
 import com.fit2cloud.provider.impl.tencent.entity.request.ListDiskRequest;
 import com.fit2cloud.provider.impl.tencent.entity.request.ListImageRequest;
 import com.fit2cloud.provider.impl.tencent.entity.request.ListVirtualMachineRequest;
 import com.fit2cloud.provider.impl.tencent.util.TencentMappingUtil;
-import com.fit2cloud.provider.util.PageUtil;
 import com.tencentcloudapi.cbs.v20170312.CbsClient;
 import com.tencentcloudapi.cbs.v20170312.models.DescribeDisksRequest;
 import com.tencentcloudapi.cbs.v20170312.models.DescribeDisksResponse;
