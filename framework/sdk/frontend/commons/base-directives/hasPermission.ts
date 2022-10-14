@@ -1,4 +1,5 @@
 import type { App } from "vue";
+import _ from "lodash";
 import { store } from "@commons/stores";
 import type { RequiredPermissions } from "@commons/api/menu/type";
 import { usePermissionStore } from "@commons/stores/modules/permission";
@@ -20,13 +21,19 @@ export const hasRolePermission = (
     return true;
   }
   //找到对应角色的权限
-  const rolePermission = requiredPermissions.find(
-    (permission) => permission.role === role
-  );
+  const rolePermission = _.find(requiredPermissions, (permission) => {
+    if (permission == null) {
+      return false;
+    }
+    return permission.role === role;
+  });
   if (rolePermission) {
     //只要菜单中需要权限有任意一个存在，则表示有权限访问
-    return rolePermission.permissions.some((permissionItem) =>
-      permissions.some((permission) => permission === permissionItem.simpleId)
+    return _.some(rolePermission.permissions, (permissionItem) =>
+      _.some(
+        permissions,
+        (permission) => permission === permissionItem.simpleId
+      )
     );
   }
   return false;
@@ -39,7 +46,6 @@ const hasPermission = async (el: any, binding: any) => {
   }
   const permissions: Array<string> = permissionStore.userPermissions;
   const role: string = useUserStore(store).currentRole;
-
   if (typeof binding.value === "string") {
     const hasPermission = permissions.some((item) => {
       return item === binding.value;

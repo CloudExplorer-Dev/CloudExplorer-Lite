@@ -168,7 +168,7 @@ const syncJob = (data: SyncRequest, loading?: Ref<boolean>) => {
   return post("/api/cloud_account/sync", null, data, loading);
 };
 
-/*
+/**
  * 查询云账户余额
  * @param cloudAccountId
  * @param loading
@@ -193,7 +193,7 @@ const updateAccountName: (
 };
 
 /**
- * 查询云账户余额
+ * 查询云资源计数
  * @param cloudAccountId
  * @param loading
  */

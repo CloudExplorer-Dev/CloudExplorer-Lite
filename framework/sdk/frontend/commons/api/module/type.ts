@@ -1,4 +1,4 @@
-import type { Menu } from "../menu/type";
+import type { Menu, RequiredPermissions } from "../menu/type";
 import type { Permission } from "../permission/type";
 
 export interface RouteModule {
@@ -32,6 +32,8 @@ export interface RouteModule {
      */
     baseRoute: string;
   };
+
+  requiredPermissions?: Array<RequiredPermissions>;
 }
 
 export class Module {
@@ -41,18 +43,24 @@ export class Module {
   order: number;
   basePath?: string;
 
+  requiredPermissions?: Array<RequiredPermissions>;
+
   constructor(
     id: string,
     name: string,
     icon: string,
     order: number,
-    basePath: string
+    basePath: string,
+
+    requiredPermissions?: Array<RequiredPermissions>
   ) {
     this.id = id;
     this.name = name;
     this.icon = icon;
     this.order = order;
     this.basePath = basePath;
+
+    this.requiredPermissions = requiredPermissions;
   }
 }
 

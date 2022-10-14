@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import CeIcon from "../../ce-icon/index.vue";
-import type { Module } from "@commons/api/module";
+import type { Module } from "@commons/api/module/type";
 
 const props = defineProps<{
   /**

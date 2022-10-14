@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onMounted, reactive, ref } from "vue";
+import { computed, onMounted, onBeforeUnmount, reactive, ref } from "vue";
 import type { FormRules, FormInstance } from "element-plus";
 import { useI18n } from "vue-i18n";
 import cloudAccountApi from "@/api/cloud_account";
@@ -29,8 +29,6 @@ const syncRecords = ref<Array<AccountJobRecord>>([]); // 同步记录列表
 const syncRecordTotal = ref(0); // 同步记录总数
 const selectedSyncRecord = ref<AccountJobRecord>(); // 同步记录详情
 const syncRecordConfig = new PaginationConfig(1, 10); // 同步记录列表分页查询配置
-const recordRegionDescription = ref<number | string>();
-const recordResourceDescription = ref<string>();
 
 const init = () => {
   if (router.currentRoute.value.params.id) {
@@ -73,23 +71,53 @@ const init = () => {
   }
 };
 
+// 已同步多少区域
+const recordRegionDescription = computed(() => {
+  let regionNum = 0;
+  if (selectedSyncRecord.value) {
+    regionNum = selectedSyncRecord.value.params.length;
+  }
+  return (
+    t("cloud_account.sync.finishArea", "已同步区域") +
+    regionNum +
+    t("cloud_account.sync.unit", "个")
+  );
+});
+
+// 已同步多少资源
+const recordResourceDescription = computed(() => {
+  let resourceCount = 0;
+  let description = t("cloud_account.sync.resource", "同步资源");
+  if (selectedSyncRecord.value) {
+    selectedSyncRecord.value.params.forEach((item) => {
+      resourceCount = resourceCount + item.size;
+    });
+    description = selectedSyncRecord.value.description;
+  }
+  return (
+    "已" + description + resourceCount + t("cloud_account.sync.unit", "个")
+  );
+});
+
 // 是否还有同步记录需要加载
 const noMoreSyncRecord = computed(
-    () => syncRecords.value.length >= syncRecordTotal.value
+  () => syncRecords.value.length >= syncRecordTotal.value
 );
+
 // 是否允许继续滚动加载
 const scrollDisabled = computed(
-    () => loadingSyncRecord.value || noMoreSyncRecord.value
+  () => loadingSyncRecord.value || noMoreSyncRecord.value
 );
+
 const statusFilter = (status: string) => {
   if (status.toUpperCase() === "SUCCESS") {
-    return t("cloud_account.native_sync.success","同步成功");
+    return t("cloud_account.native_sync.success", "同步成功");
   }
   if (status.toUpperCase() === "FAILED") {
-    return t("cloud_account.native_sync.failed","同步失败");
+    return t("cloud_account.native_sync.failed", "同步失败");
   }
   if (status.toUpperCase() === "SYNCING") {
-    return t("cloud_account.native_sync.syncing","同步中");
+    return t("cloud_account.native_sync.syncing", "同步中");
   }
   return status;
 };
@@ -101,16 +129,16 @@ const load = () => {
   loadingSyncRecord.value = true;
   // 分页获取云账号同步日志
   cloudAccountApi
-      .pageSyncRecord({
-        currentPage: syncRecordConfig.currentPage,
-        pageSize: syncRecordConfig.pageSize,
-        cloudAccountId: cloudAccountId.value,
-      })
-      .then((ok) => {
-        syncRecordConfig.currentPage = ok.data.current + 1;
-        syncRecords.value = [...syncRecords.value, ...ok.data.records];
-        loadingSyncRecord.value = false;
-      });
+    .pageSyncRecord({
+      currentPage: syncRecordConfig.currentPage,
+      pageSize: syncRecordConfig.pageSize,
+      cloudAccountId: cloudAccountId.value,
+    })
+    .then((ok) => {
+      syncRecordConfig.currentPage = ok.data.current + 1;
+      syncRecords.value = [...syncRecords.value, ...ok.data.records];
+      loadingSyncRecord.value = false;
+    });
 };
 
 /**
@@ -118,19 +146,6 @@ const load = () => {
  */
 const showSyncRecordDetail = (syncRecord: AccountJobRecord) => {
   selectedSyncRecord.value = syncRecord;
-  let resourceCount = 0;
-  selectedSyncRecord.value.params.forEach((item) => {
-    resourceCount = resourceCount + item.size;
-  });
-  recordRegionDescription.value =
-      t("cloud_account.sync.finishArea", "已同步区域") +
-      selectedSyncRecord.value.params.length +
-      t("cloud_account.sync.unit", "个");
-  recordResourceDescription.value =
-      "已" +
-      selectedSyncRecord.value.description +
-      resourceCount +
-      t("cloud_account.sync.unit", "个");
 };
 
 // 资源分类：基本信息/定时同步设置
@@ -200,8 +215,43 @@ const save = (resource: string, formEl: FormInstance) => {
   }
 };
 
+/**
+ * 关闭定时任务
+ */
+const closeInterval = () => {
+  if (timer) clearInterval(timer);
+};
+
+let timer: any;
 onMounted(() => {
   init();
+  timer = setInterval(() => {
+    if (syncRecords.value.some((s) => s.status === "SYNCING")) {
+      // 分页获取云账号同步日志
+      cloudAccountApi
+        .pageSyncRecord({
+          currentPage: 0,
+          pageSize: syncRecordConfig.pageSize,
+          cloudAccountId: cloudAccountId.value,
+        })
+        .then((ok) => {
+          syncRecords.value.forEach((item) => {
+            const find = ok.data.records.find(
+              (o) => o.jobRecordId === item.jobRecordId
+            );
+            if (find) {
+              item.status = find.status;
+              item.params = find.params;
+              item.updateTime = find.updateTime;
+            }
+          });
+        });
+    }
+  }, 6000);
+});
+
+onBeforeUnmount(() => {
+  closeInterval();
 });
 </script>
 
@@ -425,10 +475,24 @@ onMounted(() => {
             >
               <span class="label">{{ item.createTime }}</span>
               <span class="label">{{ item.description }}</span>
-              <span class="label">{{ statusFilter(item.status)}}
-                <el-icon v-if="item.status === 'SUCCESS' " color="green" style="margin-left: 5px"><SuccessFilled/></el-icon>
-                <el-icon v-if="item.status === 'FAILED'" color="red" style="margin-left: 5px"><CircleCloseFilled/></el-icon>
-                <el-icon v-if="item.status === 'SYNCING'" color="gray" style="margin-left: 5px"><Loading/></el-icon>
+              <span class="label"
+                >{{ statusFilter(item.status) }}
+                <el-icon
+                  v-if="item.status === 'SUCCESS'"
+                  style="margin-left: 5px; color: green"
+                  ><SuccessFilled
+                /></el-icon>
+                <el-icon
+                  v-if="item.status === 'FAILED'"
+                  style="margin-left: 5px; color: red"
+                  ><CircleCloseFilled
+                /></el-icon>
+                <ce-icon
+                  v-if="item.status === 'SYNCING'"
+                  code="Loading"
+                  class="is-loading"
+                  style="margin-left: 5px; color: var(--el-color-primary)"
+                ></ce-icon>
               </span>
             </div>
             <p v-if="loadingSyncRecord" style="text-align: center">
@@ -473,7 +537,19 @@ onMounted(() => {
                 </div>
               </div>
 
-              <div class="end">
+              <div
+                v-if="selectedSyncRecord.status === 'SYNCING'"
+                style="display: flex; color: var(--el-color-primary)"
+              >
+                <div class="split-left">
+                  {{ $t("cloud_account.sync.synchronizing", "同步中") }}
+                </div>
+                <div style="margin-left: 5px">
+                  <ce-icon code="Loading" class="is-loading"></ce-icon>
+                </div>
+              </div>
+
+              <div class="end" v-if="selectedSyncRecord.status !== 'SYNCING'">
                 <div class="split-left">
                   {{ selectedSyncRecord.updateTime }}：
                 </div>
@@ -568,10 +644,6 @@ onMounted(() => {
           .layout {
             display: flex;
             width: 100%;
-            .split-left {
-              min-width: 150px;
-              text-align: right;
-            }
           }
         }
         .end {
@@ -582,7 +654,10 @@ onMounted(() => {
     }
   }
 }
-
+.split-left {
+  min-width: 150px;
+  text-align: right;
+}
 .container-details {
   &:hover {
     background-color: var(--el-menu-hover-bg-color);
@@ -590,7 +665,6 @@ onMounted(() => {
     color: inherit;
   }
 }
-
 .container-details-active {
   background-color: var(--el-menu-hover-bg-color);
 }
