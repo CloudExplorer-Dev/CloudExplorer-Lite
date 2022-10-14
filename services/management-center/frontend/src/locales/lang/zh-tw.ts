@@ -77,6 +77,7 @@ const message = {
     },
     resource: "我的資源",
     sync: {
+      synchronizing: "同步中",
       unit: "個",
       detail: "詳情",
       noDetail: "沒有同步信息",

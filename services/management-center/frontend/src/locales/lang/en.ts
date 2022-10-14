@@ -77,7 +77,8 @@ const message = {
     },
     resource: "My resource",
     sync: {
-      unit: "piece",
+      synchronizing: "Synchronizing",
+      unit: "Piece",
       detail: "Detail",
       noDetail: "No Detail",
       start: "Start To Synchronize",
