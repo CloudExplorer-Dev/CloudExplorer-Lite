@@ -8,11 +8,16 @@ import com.fit2cloud.provider.entity.F2CImage;
 import com.fit2cloud.provider.entity.F2CVirtualMachine;
 import com.fit2cloud.provider.impl.vsphere.entity.F2CVsphereDatastore;
 import com.fit2cloud.provider.impl.vsphere.entity.F2CVsphereHost;
+import com.fit2cloud.provider.impl.vsphere.entity.F2CVsphereNetwork;
+import com.fit2cloud.provider.impl.vsphere.entity.request.VsphereNetworkRequest;
 import com.fit2cloud.provider.impl.vsphere.entity.request.VsphereVmBaseRequest;
 import com.fit2cloud.provider.impl.vsphere.entity.request.VsphereVmPowerRequest;
 import com.fit2cloud.provider.impl.vsphere.util.ContentLibraryUtil;
+import com.fit2cloud.provider.impl.vsphere.util.ResourceConstants;
 import com.fit2cloud.provider.impl.vsphere.util.VsphereUtil;
 import com.fit2cloud.provider.impl.vsphere.util.VsphereVmClient;
+import com.vmware.vim25.ConfigTarget;
+import com.vmware.vim25.DistributedVirtualPortgroupInfo;
 import com.vmware.vim25.VirtualDisk;
 import com.vmware.vim25.VirtualMachineConfigInfo;
 import com.vmware.vim25.mo.Datacenter;
@@ -86,7 +91,7 @@ public class VsphereSyncCloudApi {
                 String id = vm.getName();
                 Datacenter dataCenter = client.getDataCenter(vm);
                 String dataCenterName = dataCenter == null ? null : dataCenter.getName();
-                f2CImageList.add(new F2CImage(id, name, desc, os, dataCenterName,  VsphereUtil.getTemplateDiskSizeInGB(client, name),null));
+                f2CImageList.add(new F2CImage(id, name, desc, os, dataCenterName, VsphereUtil.getTemplateDiskSizeInGB(client, name), null));
             }
 
             f2CImageList.addAll(getContentLibrariesImages(req));
@@ -228,4 +233,95 @@ public class VsphereSyncCloudApi {
     }
 
 
+
+    public static List<F2CVsphereNetwork> getNetworks(VsphereNetworkRequest req) {
+
+        VsphereVmClient client = null;
+        try {
+            client = req.getVsphereVmClient();
+
+            List<F2CVsphereNetwork> networks = new ArrayList<>();
+            networks.add(new F2CVsphereNetwork().setName("Template default").setId(ResourceConstants.DEFAULT_TEMPLATE_NETWORK));
+
+            String location = req.getLocation();
+            List<String> locationValues = req.getHosts();
+            String cluster = req.getCluster();
+            ClusterComputeResource clusterComputeResource = null;
+            if (cluster != null && cluster.trim().length() > 0) {
+                clusterComputeResource = client.getCluster(cluster);
+            }
+            if (CollectionUtils.isEmpty(locationValues)) {
+                networks.addAll(getClusterNetworks(clusterComputeResource));
+            } else {
+                if (StringUtils.equals("host", location)) {
+                    if (locationValues.contains(ResourceConstants.DRS) || locationValues.contains(ResourceConstants.ALL_COMPUTE_RESOURCE)) {
+                        networks.addAll(getClusterNetworks(clusterComputeResource));
+                    } else {
+                        for (String host : locationValues) {
+                            HostSystem hostSystem = client.getHost(host);
+                            if (hostSystem != null) {
+                                networks.addAll(convertToVsphereNetworks(hostSystem));
+                            }
+                        }
+                    }
+                } else {
+                    networks.addAll(getClusterNetworks(clusterComputeResource));
+                }
+            }
+            Set<F2CVsphereNetwork> temp = new HashSet<>(networks);
+            return new ArrayList<>(temp);
+
+        } catch (Exception e) {
+            LogUtil.error(e.getMessage());
+            throw new RuntimeException(e.getMessage());
+        } finally {
+            if (client != null) {
+                client.closeConnection();
+            }
+        }
+
+    }
+
+    private static List<F2CVsphereNetwork> getClusterNetworks(ClusterComputeResource clusterComputeResource) throws Exception {
+        List<F2CVsphereNetwork> networks = new ArrayList<>();
+        if (clusterComputeResource != null) {
+            HostSystem[] hosts = clusterComputeResource.getHosts();
+            if (hosts != null) {
+                for (HostSystem host : hosts) {
+                    networks.addAll(convertToVsphereNetworks(host));
+                }
+            }
+        }
+        return networks;
+    }
+
+    private static List<F2CVsphereNetwork> convertToVsphereNetworks(HostSystem hostSystem) throws Exception {
+        Network[] hostSystemNetworks = hostSystem.getNetworks();
+        ComputeResource cr = (ComputeResource) hostSystem.getParent();
+        ConfigTarget configTarget = cr.getEnvironmentBrowser().queryConfigTarget(hostSystem);
+        DistributedVirtualPortgroupInfo[] distributedVirtualPortgroups = configTarget.getDistributedVirtualPortgroup();
+        List<F2CVsphereNetwork> networks = new ArrayList<>();
+        for (Network network : hostSystemNetworks) {
+            String desc = "";
+            boolean uplinkPortgroup = false;
+            if (distributedVirtualPortgroups != null) {
+                for (DistributedVirtualPortgroupInfo info : distributedVirtualPortgroups) {
+                    if (info.uplinkPortgroup && StringUtils.equals(info.getPortgroupName(), network.getName())) {
+                        uplinkPortgroup = true;
+                        break;
+                    }
+                }
+            }
+            if (!StringUtils.equalsIgnoreCase(network.getMOR().getType(), "network")) {
+                desc = "dvSwitch";
+            }
+            if (!uplinkPortgroup) {
+                networks.add(new F2CVsphereNetwork()
+                        .setName(network.getName())
+                        .setDescription(desc)
+                        .setId(network.getMOR().getVal()));
+            }
+        }
+        return networks;
+    }
 }

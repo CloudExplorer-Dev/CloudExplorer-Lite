@@ -77,6 +77,17 @@ const message = {
     },
     resource: "我的資源",
     sync: {
+      synchronizing: "同步中",
+      unit: "個",
+      detail: "詳情",
+      noDetail: "沒有同步信息",
+      start: "開始同步",
+      end: "結束同步",
+      area: "數據中心/區域",
+      finishArea: "已同步數據中心/區域",
+      record: "同步記錄",
+      time: "同步時間",
+      status: "同步狀態",
       resource: "同步資源",
       setting: "定時同步設置",
       once: "同步一次",
@@ -100,23 +111,23 @@ const message = {
     organization_description_is_not_empty: "組織描述不能為空",
   },
   log_manage: {
-    "login": "登入日誌",
-    "vm": "虛擬機器操作日誌",
-    "disk": "磁片操作日誌",
-    "platform": "平臺管理日誌",
-    "operator": "操作人",
-    "module": "模塊",
-    "menu": "選單",
-    "type": "操作類型",
-    "resource": "操作對象",
-    "ip": "操作IP",
-    "status": "操作狀態",
-    "view_details": "查看詳情",
-    "belong_vm": "所屬虛擬機器",
+    login: "登入日誌",
+    vm: "虛擬機器操作日誌",
+    disk: "磁片操作日誌",
+    platform: "平臺管理日誌",
+    operator: "操作人",
+    module: "模塊",
+    menu: "選單",
+    type: "操作類型",
+    resource: "操作對象",
+    ip: "操作IP",
+    status: "操作狀態",
+    view_details: "查看詳情",
+    belong_vm: "所屬虛擬機器",
     btn: {
-      "clear_policy": "清空策略"
-    }
-  }
+      clear_policy: "清空策略",
+    },
+  },
 };
 
 export default {

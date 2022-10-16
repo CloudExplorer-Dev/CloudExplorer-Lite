@@ -9,6 +9,21 @@ interface ListOrganizationRequest {
   currentPage: number;
 }
 
+interface ListSyncRecordRequest {
+  /**
+   * 云账号id
+   */
+  cloudAccountId: string;
+  /**
+   *每页显示多少
+   */
+  pageSize: number;
+  /**
+   *当前页
+   */
+  currentPage: number;
+}
+
 interface CloudAccount {
   /**
    * 主键id
@@ -34,6 +49,10 @@ interface CloudAccount {
    * 状态(0:同步成功,1:同步失败,2:同步中)
    */
   status: number;
+  /**
+   * 账单设置
+   */
+  billSetting?: any;
   /**
    *创建时间
    */
@@ -294,6 +313,10 @@ interface AccountJobRecord {
    */
   createTime: string;
   /**
+   * 更新时间
+   */
+  updateTime: string;
+  /**
    *任务参数
    */
   params: Array<{ size: number; region: string }>;
@@ -301,6 +324,7 @@ interface AccountJobRecord {
 
 export type {
   ListOrganizationRequest,
+  ListSyncRecordRequest,
   CloudAccount,
   Platform,
   Form,

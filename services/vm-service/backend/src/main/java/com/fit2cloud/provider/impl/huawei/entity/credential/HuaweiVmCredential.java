@@ -2,7 +2,7 @@ package com.fit2cloud.provider.impl.huawei.entity.credential;
 
 import com.fit2cloud.common.platform.credential.Credential;
 import com.fit2cloud.common.platform.credential.impl.HuaweiCredential;
-import com.fit2cloud.provider.exception.SkipPageException;
+import com.fit2cloud.common.provider.exception.SkipPageException;
 import com.huaweicloud.sdk.core.auth.BasicCredentials;
 import com.huaweicloud.sdk.core.auth.ICredential;
 import com.huaweicloud.sdk.ecs.v2.EcsClient;

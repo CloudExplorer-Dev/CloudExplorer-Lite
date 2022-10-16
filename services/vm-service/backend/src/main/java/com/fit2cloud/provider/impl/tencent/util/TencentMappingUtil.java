@@ -1,19 +1,22 @@
 package com.fit2cloud.provider.impl.tencent.util;
 
+import com.fit2cloud.common.provider.util.CommonUtil;
 import com.fit2cloud.provider.constants.DeleteWithInstance;
 import com.fit2cloud.provider.constants.F2CDiskStatus;
 import com.fit2cloud.provider.constants.F2CInstanceStatus;
 import com.fit2cloud.provider.entity.F2CDisk;
 import com.fit2cloud.provider.entity.F2CImage;
 import com.fit2cloud.provider.entity.F2CVirtualMachine;
-import com.fit2cloud.provider.util.CommonUtil;
 import com.tencentcloudapi.cbs.v20170312.models.Disk;
 import com.tencentcloudapi.cvm.v20170312.models.DataDisk;
 import com.tencentcloudapi.cvm.v20170312.models.Image;
 import com.tencentcloudapi.cvm.v20170312.models.Instance;
 import org.apache.commons.lang3.StringUtils;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Date;
+import java.util.List;
 
 /**
  * @Author:张少虎

@@ -21,6 +21,7 @@ import { useRouter } from "vue-router";
 import { useI18n } from "vue-i18n";
 import type { FormInstance, FormRules } from "element-plus";
 import type { SimpleMap } from "@commons/api/base/type";
+import type { FormView } from "@/components/form/type";
 const { t } = useI18n();
 // 路由实例对象
 const router = useRouter();
@@ -392,7 +393,44 @@ const handleCheckAllChange = (val: boolean) => {
 const change = (selectRegion: Array<string>) => {
   syncForm.value.checkedRegions = selectRegion;
 };
+const BillFrom = ref<Array<FormView>>([]);
 //-------------------------------点击按钮同步 END----------------
+const currentAccount = ref<CloudAccount>();
+const showBillSetting = (row: CloudAccount) => {
+  BillFrom.value = [];
+  currentAccount.value = row;
+  ceform.value?.clearData();
+  cloudAccountApi.getBillFormByPlatform(row.platform).then((ok) => {
+    BillFrom.value = ok.data;
+    if (row.billSetting) {
+      ceform.value.setData(row.billSetting, ok.data);
+    }
+  });
+  billSettingVisible.value = true;
+};
+
+// 是否展示账单设置
+const billSettingVisible = ref<boolean>(false);
+
+/**
+ * 需要展示账单设置的row
+ * @param row 当前row
+ */
+const showBillBtn = (row: CloudAccount) => {
+  const showsPlatform = [
+    "fit2cloud_huawei_platform",
+    "fit2cloud_tencent_platform",
+    "fit2cloud_ali_platform",
+  ];
+  return showsPlatform.includes(row.platform);
+};
+
+// 清除表单数据,关闭表单
+const clearBillForm = () => {
+  ceform.value.clearData();
+  BillFrom.value = [];
+  billSettingVisible.value = false;
+};
 /**
  * 表单配置
  */
@@ -441,6 +479,14 @@ const tableConfig = ref<TableConfig>({
       "Document"
     ),
     TableOperations.buildButtons().newInstance(
+      "编辑账单设置",
+      "primary",
+      showBillSetting,
+      "Document",
+      undefined,
+      showBillBtn
+    ),
+    TableOperations.buildButtons().newInstance(
       t("commons.btn.delete", "删除"),
       "primary",
       deleteItem,
@@ -448,6 +494,7 @@ const tableConfig = ref<TableConfig>({
     ),
   ]),
 });
+
 const syncAll = () => {
   if (
     clouAccountList.value
@@ -460,6 +507,21 @@ const syncAll = () => {
   } else {
     ElMessage.success("请选择有效的定时任务进行同步");
   }
+};
+const ceform = ref<any>(null);
+const saveBillSetting = () => {
+  ceform.value.submit((formData: any) => {
+    cloudAccountApi
+      .saveOrUpdateBillSetting(
+        currentAccount.value ? currentAccount.value.id : "",
+        formData
+      )
+      .then((ok) => {
+        table.value?.search();
+        clearBillForm();
+        ElMessage.success("修改账单设置成功");
+      });
+  });
 };
 </script>
 <template>
@@ -693,6 +755,23 @@ const syncAll = () => {
       <span class="dialog-footer">
         <el-button @click="syncVisible = false">取消</el-button>
         <el-button type="primary" @click="sync(ruleFormRef)">同步</el-button>
+      </span>
+    </template>
+  </el-dialog>
+  <el-dialog v-model="billSettingVisible" title="账单设置" width="50%">
+    <layout-container :border="false">
+      <template #content>
+        <CeForm
+          :formViewData="BillFrom"
+          ref="ceform"
+          :otherParams="currentAccount"
+        ></CeForm>
+      </template>
+    </layout-container>
+    <template #footer>
+      <span class="dialog-footer">
+        <el-button @click="clearBillForm()">取消</el-button>
+        <el-button type="primary" @click="saveBillSetting()">保存</el-button>
       </span>
     </template>
   </el-dialog>

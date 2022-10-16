@@ -31,12 +31,12 @@ public class HuaweiCredential implements Credential {
     /**
      * AccessKey 访问令牌
      */
-    @From(inputType = InputType.text, label = "AccessKey", description = "访问令牌")
+    @From(inputType = InputType.Text, label = "AccessKey", description = "访问令牌")
     private String ak;
     /**
      * SecretKey 密钥Key
      */
-    @From(inputType = InputType.password, label = "SecretKey", description = "访问密钥")
+    @From(inputType = InputType.Password, label = "SecretKey", description = "访问密钥")
     private String sk;
 
     @Override

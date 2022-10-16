@@ -1,6 +1,5 @@
 package com.fit2cloud.service.impl;
 
-import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.core.metadata.OrderItem;
@@ -8,9 +7,15 @@ import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.fit2cloud.autoconfigure.ServerInfo;
-import com.fit2cloud.base.entity.*;
+import com.fit2cloud.base.entity.VmCloudDisk;
+import com.fit2cloud.base.entity.VmCloudImage;
+import com.fit2cloud.base.entity.VmCloudServer;
 import com.fit2cloud.base.mapper.BaseAccountJobMapper;
-import com.fit2cloud.base.service.*;
+import com.fit2cloud.base.service.IBaseCloudAccountService;
+import com.fit2cloud.base.service.IBaseVmCloudDiskService;
+import com.fit2cloud.base.service.IBaseVmCloudImageService;
+import com.fit2cloud.base.service.IBaseVmCloudServerService;
+import com.fit2cloud.common.constants.CloudAccountConstants;
 import com.fit2cloud.common.constants.PlatformConstants;
 import com.fit2cloud.common.constants.RedisConstants;
 import com.fit2cloud.common.exception.Fit2cloudException;
@@ -20,7 +25,6 @@ import com.fit2cloud.common.provider.entity.F2CBalance;
 import com.fit2cloud.common.utils.ColumnNameUtil;
 import com.fit2cloud.common.utils.PageUtil;
 import com.fit2cloud.common.utils.ServiceUtil;
-import com.fit2cloud.common.constants.CloudAccountConstants;
 import com.fit2cloud.constants.ErrorCodeConstants;
 import com.fit2cloud.controller.handler.ResultHolder;
 import com.fit2cloud.controller.request.cloud_account.*;
@@ -308,7 +312,7 @@ public class CloudAccountServiceImpl extends ServiceImpl<CloudAccountMapper, Clo
 
     @Override
     public boolean delete(String accountId) {
-        redisService.publish(RedisConstants.Topic.CLOUD_ACCOUNT_DELETE,accountId);
+        redisService.publish(RedisConstants.Topic.CLOUD_ACCOUNT_DELETE, accountId);
         return removeById(accountId);
     }
 
@@ -408,6 +412,7 @@ public class CloudAccountServiceImpl extends ServiceImpl<CloudAccountMapper, Clo
 
     /**
      * 资源计数（静态获取）
+     *
      * @param accountId
      * @return
      */
@@ -447,7 +452,7 @@ public class CloudAccountServiceImpl extends ServiceImpl<CloudAccountMapper, Clo
         }
     }
 
-    private void syncByCloudAccountId(String cloudAccountId){
+    private void syncByCloudAccountId(String cloudAccountId) {
         SyncRequest syncRequest = new SyncRequest();
         // 获取同步资源
         List<SyncResource> moduleResourceJob = getModuleResourceJob();
@@ -458,14 +463,16 @@ public class CloudAccountServiceImpl extends ServiceImpl<CloudAccountMapper, Clo
         syncRequest.setSyncJob(moduleResourceJob.stream().map(r -> new SyncRequest.Job(r.getModule(), r.getJobName())).toList());
         sync(syncRequest);
     }
+
     /**
      * 资源计数（动态获取）
+     *
      * @return
      */
     public List<ResourceCountResponse> getModuleResourceCount(String accountId) {
         return ServiceUtil.getServicesExcludeGatewayAndIncludeSelf(ServerInfo.module)
                 .stream()
-                .map(moduleId -> CompletableFuture.supplyAsync(() -> getResourceCount(moduleId,accountId), securityContextWorkThreadPool))
+                .map(moduleId -> CompletableFuture.supplyAsync(() -> getResourceCount(moduleId, accountId), securityContextWorkThreadPool))
                 .map(CompletableFuture::join)
                 .flatMap(Collection::stream)
                 .filter(Objects::nonNull)
@@ -474,22 +481,23 @@ public class CloudAccountServiceImpl extends ServiceImpl<CloudAccountMapper, Clo
 
     /**
      * 获取资源计数
+     *
      * @param module
      * @return
      */
-    public List<ResourceCountResponse> getResourceCount(String module,String accountId) {
+    private List<ResourceCountResponse> getResourceCount(String module, String accountId) {
         if (module.equals(ServerInfo.module)) {
             return baseCloudAccountService.getModuleResourceCount(accountId);
         } else {
-            return getResourceCount.apply(module,accountId);
+            return getResourceCount.apply(module, accountId);
         }
     }
 
     /**
      * 获取资源计数
      */
-    private final BiFunction<String,String, List<ResourceCountResponse>> getResourceCount = (String module, String accountId) -> {
-        String httpUrl = ServiceUtil.getHttpUrl(module, "/api/base/cloud_account/count/resource/"+accountId);
+    private final BiFunction<String, String, List<ResourceCountResponse>> getResourceCount = (String module, String accountId) -> {
+        String httpUrl = ServiceUtil.getHttpUrl(module, "/api/base/cloud_account/count/resource/" + accountId);
         ResponseEntity<ResultHolder<List<ResourceCountResponse>>> exchange = restTemplate.exchange(httpUrl, HttpMethod.GET, HttpEntity.EMPTY, new ParameterizedTypeReference<ResultHolder<List<ResourceCountResponse>>>() {
         });
         if (!Objects.requireNonNull(exchange.getBody()).getCode().equals(200)) {
@@ -497,4 +505,11 @@ public class CloudAccountServiceImpl extends ServiceImpl<CloudAccountMapper, Clo
         }
         return exchange.getBody().getData();
     };
+
+    public IPage<AccountJobRecordResponse> pageSyncRecord(SyncRecordRequest syncRecordRequest) {
+        Page<AccountJobRecordResponse> syncRecordPage = PageUtil.of(syncRecordRequest, AccountJobRecordResponse.class, new OrderItem("create_time", true));
+        QueryWrapper wrapper = Wrappers.query();
+        wrapper.eq("account_id", syncRecordRequest.getCloudAccountId());
+        return baseMapper.pageSyncRecord(syncRecordPage, wrapper);
+    }
 }

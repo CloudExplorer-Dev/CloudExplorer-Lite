@@ -1,6 +1,7 @@
 package com.fit2cloud.common.platform.credential;
 
 import com.fit2cloud.common.form.annotaion.From;
+import com.fit2cloud.common.form.util.FormUtil;
 import com.fit2cloud.common.form.vo.Form;
 import com.fit2cloud.common.utils.JsonUtil;
 import lombok.AllArgsConstructor;
@@ -48,24 +49,7 @@ public interface Credential {
      * @return form表单
      */
     default List<Form> toForm() {
-        Field[] fieldsWithAnnotation = FieldUtils.getFieldsWithAnnotation(this.getClass(), From.class);
-        List<Form> forms = Arrays.stream(fieldsWithAnnotation).map(field -> {
-            field.setAccessible(true);
-            From annotation = field.getAnnotation(From.class);
-            Map<String, Object> map = new HashMap<>();
-            map.put("defaultValue", annotation.defaultValue());
-            map.put("inputType", annotation.inputType());
-            map.put("label", annotation.label());
-            map.put("required", annotation.required());
-            map.put("description", annotation.description());
-            map.put("valueField", annotation.valueField());
-            map.put("textField", annotation.textField());
-            map.put("method", annotation.method());
-            map.put("field", field.getName());
-            String jsonString = JsonUtil.toJSONString(map);
-            return JsonUtil.parseObject(jsonString, annotation.inputType().getFormClass());
-        }).collect(Collectors.toList());
-        return forms;
+        return FormUtil.toForm(this.getClass());
     }
 
     /**

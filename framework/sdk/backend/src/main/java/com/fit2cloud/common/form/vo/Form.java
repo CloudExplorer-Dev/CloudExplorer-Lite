@@ -3,6 +3,8 @@ package com.fit2cloud.common.form.vo;
 import com.fit2cloud.common.form.constants.InputType;
 import lombok.*;
 
+import java.util.List;
+
 /**
  * @Author:张少虎
  * @Date: 2022/9/7  9:08 AM
@@ -39,5 +41,20 @@ public class Form {
      * 描述
      */
     private String description;
+    /**
+     *
+     */
+    private List<String> relationShows;
+
+    private List<String> relationTrigger;
+
+    /**
+     * 执行类
+     */
+    private String clazz;
+    /**
+     * 执行函数
+     */
+    private String method;
 
 }

@@ -35,25 +35,25 @@ public class VsphereCredential implements Credential {
     /**
      * 用户名
      */
-    @From(inputType = InputType.text, label = "用户名")
+    @From(inputType = InputType.Text, label = "用户名")
     @JsonProperty("vUserName")
     private String vUserName;
     /**
      * 密码
      */
-    @From(inputType = InputType.password, label = "密码")
+    @From(inputType = InputType.Password, label = "密码")
     @JsonProperty("vPassword")
     private String vPassword;
     /**
      * vCenter服务器IP
      */
-    @From(inputType = InputType.text, label = "vCenter服务器IP")
+    @From(inputType = InputType.Text, label = "vCenter服务器IP")
     @JsonProperty("vCenterIp")
     private String vCenterIp;
     /**
      * 是否启用内容库镜像
      */
-    @From(inputType = InputType.switchBtn, label = "是否启用内容", defaultValue = "false", required = false)
+    @From(inputType = InputType.SwitchBtn, label = "是否启用内容", defaultValue = "false", required = false)
     private boolean useContentLibrary = false;
 
     @Override

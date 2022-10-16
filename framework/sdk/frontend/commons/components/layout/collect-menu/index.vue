@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { onMounted, ref, watch } from "vue";
-import type { Menu } from "@commons/api/menu";
-import type { Module } from "@commons/api/module";
+import type { Menu } from "@commons/api/menu/type";
+import type { Module } from "@commons/api/module/type";
 import { flatMenu } from "@commons/router";
 import { hasRolePermission } from "@commons/base-directives/hasPermission";
 import { Search } from "@element-plus/icons-vue";
@@ -187,6 +187,7 @@ watch(
           <div
             class="moduleItem"
             v-for="moduleItem in moduleSplitItem"
+            v-hasPermission="moduleItem.requiredPermissions"
             :key="moduleItem.name"
           >
             <div class="moduleTitle">

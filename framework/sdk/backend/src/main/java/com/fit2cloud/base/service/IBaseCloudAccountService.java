@@ -2,12 +2,14 @@ package com.fit2cloud.base.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.fit2cloud.base.entity.CloudAccount;
+import com.fit2cloud.common.form.vo.Form;
 import com.fit2cloud.request.cloud_account.CloudAccountModuleJob;
 import com.fit2cloud.request.cloud_account.SyncRequest;
 import com.fit2cloud.response.cloud_account.ResourceCountResponse;
 import com.fit2cloud.response.cloud_account.SyncResource;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * <p>
@@ -62,8 +64,13 @@ public interface IBaseCloudAccountService extends IService<CloudAccount> {
 
     /**
      * 获取当前模块的资源计数
+     *
      * @param accountId
      * @return
      */
     List<ResourceCountResponse> getModuleResourceCount(String accountId);
+
+    List<Form> getBillSettingFormByPlatform(String platform);
+
+    CloudAccount saveOrUpdateBillSetting(String cloudAccountId, Map params);
 }

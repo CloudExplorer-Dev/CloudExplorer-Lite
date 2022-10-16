@@ -1,7 +1,9 @@
 package com.fit2cloud.controller;
 
+import com.fit2cloud.base.entity.CloudAccount;
 import com.fit2cloud.base.mapper.BaseCloudAccountMapper;
 import com.fit2cloud.base.service.IBaseCloudAccountService;
+import com.fit2cloud.common.form.vo.Form;
 import com.fit2cloud.common.validator.annnotaion.CustomValidated;
 import com.fit2cloud.common.validator.handler.ExistHandler;
 import com.fit2cloud.controller.handler.ResultHolder;
@@ -16,6 +18,7 @@ import org.springframework.web.bind.annotation.*;
 import javax.annotation.Resource;
 import javax.validation.constraints.NotNull;
 import java.util.List;
+import java.util.Map;
 
 /**
  * @Author:张少虎
@@ -69,4 +72,19 @@ public class BaseCloudAccountController {
     public ResultHolder<List<ResourceCountResponse>> getModuleResourceCount(@PathVariable("cloud_account_id") String accountId) {
         return ResultHolder.success(cloudAccountService.getModuleResourceCount(accountId));
     }
+
+    @GetMapping("/bill/form")
+    @ApiOperation(value = "获取账单设置form表单", notes = "获取账单设置form表单")
+    public ResultHolder<List<Form>> getBillSettingFormByPlatform(@RequestParam("platform") String platform) {
+        List<Form> forms = cloudAccountService.getBillSettingFormByPlatform(platform);
+        return ResultHolder.success(forms);
+    }
+
+    @PutMapping("/bill/{cloudAccountId}")
+    public ResultHolder<CloudAccount> saveOrUpdateBillSetting(@PathVariable("cloudAccountId") String cloudAccountId,
+                                                              @RequestBody Map params) {
+        return ResultHolder.success(cloudAccountService.saveOrUpdateBillSetting(cloudAccountId, params));
+    }
+
+
 }

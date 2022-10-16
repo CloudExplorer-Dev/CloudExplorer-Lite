@@ -14,6 +14,8 @@ import type {
   SyncRequest,
   UpdateAccountName,
   ResourceCount,
+  ListSyncRecordRequest,
+  AccountJobRecord,
 } from "./type";
 /**
  * 分页查询云账号
@@ -166,7 +168,7 @@ const syncJob = (data: SyncRequest, loading?: Ref<boolean>) => {
   return post("/api/cloud_account/sync", null, data, loading);
 };
 
-/*
+/**
  * 查询云账户余额
  * @param cloudAccountId
  * @param loading
@@ -191,7 +193,7 @@ const updateAccountName: (
 };
 
 /**
- * 查询云账户余额
+ * 查询云资源计数
  * @param cloudAccountId
  * @param loading
  */
@@ -205,6 +207,18 @@ const getResourceCount: (
     loading
   );
 };
+
+/**
+ * 分页查询云账号同步记录
+ * @param request 分页查询所需参数
+ * @returns
+ */
+const pageSyncRecord: (
+  request: ListSyncRecordRequest
+) => Promise<Result<Page<AccountJobRecord>>> = (request) => {
+  return get("/api/cloud_account/pageSyncRecord", request);
+};
+
 /**
  * 获取云账户最新同步账号
  * @param cloudAccountIds 云账号id
@@ -231,6 +245,36 @@ const syncAll = (cloudAccountIds: Array<string>, loading?: Ref<boolean>) => {
   return put("/api/cloud_account/sync", null, cloudAccountIds, loading);
 };
 
+/**
+ * 获取账单表单数据
+ * @param platform 账单
+ * @param loading 加载器
+ * @returns
+ */
+const getBillFormByPlatform = (platform: string, loading?: Ref<boolean>) => {
+  return get("/api/base/cloud_account/bill/form", { platform }, loading);
+};
+
+/**
+ * 插入或者更改账单设置
+ * @param cloudAccountId 云账号id
+ * @param params        参数
+ * @param loading       加载器
+ * @returns
+ */
+const saveOrUpdateBillSetting = (
+  cloudAccountId: string,
+  data: unknown,
+  loading?: Ref<boolean>
+) => {
+  return put(
+    "/api/base/cloud_account/bill/" + cloudAccountId,
+    undefined,
+    data,
+    loading
+  );
+};
+
 export default {
   page,
   getPlatformAll,
@@ -250,4 +294,7 @@ export default {
   getResourceCount,
   getAccountJobRecord,
   syncAll,
+  getBillFormByPlatform,
+  saveOrUpdateBillSetting,
+  pageSyncRecord,
 };

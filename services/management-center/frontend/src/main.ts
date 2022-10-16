@@ -8,7 +8,6 @@ import { setupStore } from "@commons/stores";
 import App from "./App.vue";
 import common from "@commons/index";
 import { i18n } from "@commons/index";
-
 import "@commons/styles/index.scss";
 import { AppMicroApp } from "@commons/microapp";
 import { initRouteObj, getRoute } from "@commons/router";

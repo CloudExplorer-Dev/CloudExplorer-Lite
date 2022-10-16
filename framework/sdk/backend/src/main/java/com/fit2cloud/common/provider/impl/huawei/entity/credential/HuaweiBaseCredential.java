@@ -6,6 +6,8 @@ import com.huaweicloud.sdk.bss.v2.BssClient;
 import com.huaweicloud.sdk.bss.v2.region.BssRegion;
 import com.huaweicloud.sdk.core.auth.BasicCredentials;
 import com.huaweicloud.sdk.core.auth.GlobalCredentials;
+import com.huaweicloud.sdk.core.auth.ICredential;
+import com.obs.services.ObsClient;
 
 public class HuaweiBaseCredential extends HuaweiCredential implements Credential {
     /**
@@ -34,8 +36,10 @@ public class HuaweiBaseCredential extends HuaweiCredential implements Credential
         }
     }
 
+
     /**
      * 获取 BssClient
+     *
      * @param region
      * @return
      */
@@ -45,5 +49,9 @@ public class HuaweiBaseCredential extends HuaweiCredential implements Credential
         } catch (Exception e) {
             throw e;
         }
+    }
+
+    public ObsClient getObsClient() {
+        return new ObsClient(this.getAk(), this.getSk(), "https://obs.cn-east-3.myhuaweicloud.com");
     }
 }

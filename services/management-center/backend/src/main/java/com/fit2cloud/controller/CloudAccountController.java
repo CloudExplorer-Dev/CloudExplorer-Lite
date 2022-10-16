@@ -201,4 +201,11 @@ public class CloudAccountController {
                                                                    @PathVariable("cloud_account_id") String accountId) {
         return ResultHolder.success(cloudAccountService.getModuleResourceCount(accountId));
     }
+
+    @GetMapping("/pageSyncRecord")
+    @ApiOperation(value = "获取同步记录")
+    @PreAuthorize("hasAnyCePermission('CLOUD_ACCOUNT:EDIT')")
+    public ResultHolder<IPage<AccountJobRecordResponse>> pageSyncRecord(@Validated SyncRecordRequest syncRecordRequest) {
+        return ResultHolder.success(cloudAccountService.pageSyncRecord(syncRecordRequest));
+    }
 }

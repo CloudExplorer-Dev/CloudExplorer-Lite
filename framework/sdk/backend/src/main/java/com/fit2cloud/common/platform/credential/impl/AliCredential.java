@@ -29,12 +29,12 @@ public class AliCredential implements Credential {
     /**
      * 访问令牌
      */
-    @From(inputType = InputType.text, label = "AccessKeyId", description = "访问令牌")
+    @From(inputType = InputType.Text, label = "AccessKeyId", description = "访问令牌")
     private String accessKeyId;
     /**
      * 访问密钥
      */
-    @From(inputType = InputType.password, label = "AccessKeySecret", description = "访问令牌")
+    @From(inputType = InputType.Password, label = "AccessKeySecret", description = "访问令牌")
     private String accessKeySecret;
 
     @Override

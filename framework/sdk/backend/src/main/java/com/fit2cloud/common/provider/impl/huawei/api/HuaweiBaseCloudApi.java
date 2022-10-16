@@ -1,13 +1,18 @@
 package com.fit2cloud.common.provider.impl.huawei.api;
 
+import com.fit2cloud.common.platform.credential.Credential;
 import com.fit2cloud.common.provider.entity.F2CBalance;
 import com.fit2cloud.common.provider.impl.huawei.entity.credential.HuaweiBaseCredential;
 import com.fit2cloud.common.provider.impl.huawei.entity.request.GetAccountBalanceRequest;
+import com.fit2cloud.common.provider.impl.huawei.entity.request.GetRegionsRequest;
 import com.fit2cloud.common.utils.JsonUtil;
 import com.huaweicloud.sdk.bss.v2.BssClient;
 import com.huaweicloud.sdk.bss.v2.model.AccountBalanceV3;
 import com.huaweicloud.sdk.bss.v2.model.ShowCustomerAccountBalancesResponse;
 import org.apache.commons.lang3.StringUtils;
+
+import java.util.ArrayList;
+import java.util.List;
 
 
 public class HuaweiBaseCloudApi {
