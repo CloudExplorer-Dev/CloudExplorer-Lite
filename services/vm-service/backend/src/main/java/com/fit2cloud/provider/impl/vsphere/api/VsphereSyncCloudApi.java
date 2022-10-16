@@ -20,17 +20,14 @@ import com.vmware.vim25.ConfigTarget;
 import com.vmware.vim25.DistributedVirtualPortgroupInfo;
 import com.vmware.vim25.VirtualDisk;
 import com.vmware.vim25.VirtualMachineConfigInfo;
-import com.vmware.vim25.mo.Datacenter;
-import com.vmware.vim25.mo.HostSystem;
-import com.vmware.vim25.mo.VirtualMachine;
+import com.vmware.vim25.mo.*;
 import io.reactivex.rxjava3.functions.Consumer;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.util.CollectionUtils;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.function.Function;
 
 /**
