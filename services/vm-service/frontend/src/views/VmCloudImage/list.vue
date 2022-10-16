@@ -37,12 +37,12 @@ const search = (condition: TableSearch) => {
   }).then((res) => {
     tableData.value = res.data.records;
     tableConfig.value.paginationConfig?.setTotal(
-        res.data.total,
-        tableConfig.value.paginationConfig
+      res.data.total,
+      tableConfig.value.paginationConfig
     );
     tableConfig.value.paginationConfig?.setCurrentPage(
-        res.data.current,
-        tableConfig.value.paginationConfig
+      res.data.current,
+      tableConfig.value.paginationConfig
     );
   });
 };
@@ -63,17 +63,22 @@ const tableConfig = ref<TableConfig>({
     quickPlaceholder: t("commons.btn.search"),
     components: [],
     searchOptions: [
-      { label: t("commons.name","名称"), value: "imageName" },
-      { label: t("commons.cloud_account.name", "云账号名称"), value: "accountName" },
+      { label: t("commons.name", "名称"), value: "imageName" },
+      {
+        label: t("commons.cloud_account.name", "云账号名称"),
+        value: "accountName",
+      },
     ],
   },
   paginationConfig: new PaginationConfig(),
-  tableOperations: new TableOperations([TableOperations.buildButtons().newInstance(
-      t("vm_cloud_image.btn.set_management_info","设置管理信息"),
+  tableOperations: new TableOperations([
+    TableOperations.buildButtons().newInstance(
+      t("vm_cloud_image.btn.set_management_info", "设置管理信息"),
       "primary",
       showManageInfoDialog,
       "InfoFilled"
-  ),]),
+    ),
+  ]),
 });
 </script>
 <template>
@@ -85,13 +90,16 @@ const tableConfig = ref<TableConfig>({
     height="100%"
     ref="table"
   >
-    <el-table-column prop="imageName" :label="$t('vm_cloud_image.label.image_name')">
+    <el-table-column
+      prop="imageName"
+      :label="$t('vm_cloud_image.label.image_name')"
+    >
       <template #default="scope">
         <el-tooltip
-            class="item"
-            effect="dark"
-            :content="scope.row.imageName"
-            placement="top"
+          class="item"
+          effect="dark"
+          :content="scope.row.imageName"
+          placement="top"
         >
           <p class="text-overflow">
             {{ scope.row.imageName }}
@@ -99,11 +107,23 @@ const tableConfig = ref<TableConfig>({
         </el-tooltip>
       </template>
     </el-table-column>
-    <el-table-column prop="imageId" :label="$t('vm_cloud_image.label.image_id')"></el-table-column>
-    <el-table-column prop="accountName" :label="$t('commons.cloud_account.native')"></el-table-column>
-    <el-table-column prop="region" :label="$t('commons.cloud_account.data_center')"></el-table-column>
+    <el-table-column
+      prop="imageId"
+      :label="$t('vm_cloud_image.label.image_id')"
+    ></el-table-column>
+    <el-table-column
+      prop="accountName"
+      :label="$t('commons.cloud_account.native')"
+    ></el-table-column>
+    <el-table-column
+      prop="region"
+      :label="$t('commons.cloud_account.data_center')"
+    ></el-table-column>
     <el-table-column prop="os" :label="$t('commons.os')"></el-table-column>
-    <el-table-column prop="osVersion" :label="$t('commons.os_version')"></el-table-column>
+    <el-table-column
+      prop="osVersion"
+      :label="$t('commons.os_version')"
+    ></el-table-column>
     <fu-table-operations v-bind="tableConfig.tableOperations" fix />
   </ce-table>
   <ManageInfo ref="manageInfoRef"></ManageInfo>

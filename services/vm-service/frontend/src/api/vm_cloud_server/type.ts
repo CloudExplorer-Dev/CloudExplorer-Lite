@@ -36,15 +36,12 @@ interface VmCloudServerVO {
   snapShot?: number;
   createTime?: string;
   updateTime?: string;
-  platform?:string;
-  vmToolsStatus?:boolean;
+  platform?: string;
+  vmToolsStatus?: boolean;
 }
 interface ListVmCloudServerRequest {
   pageSize: number;
   currentPage: number;
 }
 
-export type {
-  VmCloudServerVO,
-  ListVmCloudServerRequest
-}
+export type { VmCloudServerVO, ListVmCloudServerRequest };

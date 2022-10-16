@@ -198,7 +198,6 @@ const powerOn = (row: VmCloudServerVO) => {
     VmCloudServerApi.powerOn(row.id as string, tableLoading)
       .then((res) => {
         console.log("-----"+res)
-        debugger;
         ElMessage.success(t("commons.msg.op_success"));
       })
       .catch((err) => {
@@ -331,7 +330,6 @@ const batchOperate = (operate: string) => {
       tableLoading
     )
       .then(() => {
-        debugger;
         ElMessage.success(t("commons.msg.op_success"));
       })
       .catch((err) => {

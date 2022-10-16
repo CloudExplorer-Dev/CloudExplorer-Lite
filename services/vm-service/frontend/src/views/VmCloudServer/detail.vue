@@ -6,21 +6,18 @@
           <h4>基本信息</h4>
         </template>
 
-        <template #content>
-
-        </template>
+        <template #content> </template>
       </layout-container>
-      <layout-container >
+      <layout-container>
         <el-button @click="useRoute.back">返回</el-button>
       </layout-container>
     </template>
   </layout-container>
 </template>
 <script setup lang="ts">
-import {useRouter} from "vue-router";
-import {ref} from "vue";
+import { useRouter } from "vue-router";
+import { ref } from "vue";
 const loading = ref<boolean>(false);
-const loadingPermission = ref<boolean>(false);
 const useRoute = useRouter();
 </script>
 <style lang="scss">
@@ -33,7 +30,5 @@ const useRoute = useRouter();
 .permission-container {
   width: 100%;
   min-height: 100px;
-  .module-selector {
-  }
 }
 </style>

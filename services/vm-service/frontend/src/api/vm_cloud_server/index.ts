@@ -23,7 +23,7 @@ export function listVmCloudServer(
  */
 export function shutdownInstance(
   instanceId: string,
-  powerOff:boolean,
+  powerOff: boolean,
   loading?: Ref<boolean>
 ): Promise<Result<boolean>> {
   return post("api/server/shutdown/" + instanceId, powerOff, null, loading);
@@ -88,7 +88,6 @@ export function batchOperate(
   operate: string,
   loading?: Ref<boolean>
 ): Promise<Result<null>> {
-  debugger;
   return post(
     "api/server/batchOperate",
     null,
