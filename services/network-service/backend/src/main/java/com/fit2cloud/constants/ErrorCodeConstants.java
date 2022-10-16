@@ -48,7 +48,8 @@ public enum ErrorCodeConstants {
 
     VM_NOT_EXIST(200100101, "虚拟机不存在"),
     VM_OPERATE_FAIL(200100102, "虚拟机操作失败"),
-    SELECT_AT_LEAST_ONE_VM(200100103,"至少选择一个虚拟机");
+    VM_BATCH_OPERATE_FAIL(200100103, "虚拟机批量操作失败"),
+    SELECT_AT_LEAST_ONE_VM(200100104,"至少选择一个虚拟机");
 
 
 

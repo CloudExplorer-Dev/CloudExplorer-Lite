@@ -36,6 +36,8 @@ interface VmCloudServerVO {
   snapShot?: number;
   createTime?: string;
   updateTime?: string;
+  platform?:string;
+  vmToolsStatus?:boolean;
 }
 interface ListVmCloudServerRequest {
   pageSize: number;

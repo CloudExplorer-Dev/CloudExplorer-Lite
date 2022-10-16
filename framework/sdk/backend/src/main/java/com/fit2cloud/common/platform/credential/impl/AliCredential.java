@@ -61,6 +61,7 @@ public class AliCredential implements Credential {
                 Region result = new Region();
                 result.setRegionId(region.regionId);
                 result.setName(region.localName);
+                result.setEndpoint(region.getRegionEndpoint());
                 return result;
             }).toList();
         } catch (Exception e) {

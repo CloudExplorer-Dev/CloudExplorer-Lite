@@ -12,7 +12,15 @@ public enum JobTypeConstants {
     /**
      * 云账户同步任务
      */
-    CLOUD_ACCOUNT_SYNC_JOB(0);
+    CLOUD_ACCOUNT_SYNC_JOB(0),
+    /**
+     * 虚拟机操作任务
+     */
+    CLOUD_SERVER_OPERATE_JOB(1),
+    /**
+     * 虚拟机批量操作任务
+     */
+    CLOUD_SERVER_BATCH_OPERATE_JOB(2);
     @EnumValue
     private final int code;
 

@@ -92,5 +92,10 @@ public interface Credential {
          * 区域名称/数据中心名称
          */
         private String name;
+
+        /**
+         * 访问域名
+         */
+        private String endpoint;
     }
 }

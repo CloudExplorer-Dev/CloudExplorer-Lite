@@ -4,37 +4,31 @@ import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
-
 import java.io.Serializable;
 import java.time.LocalDateTime;
-
-import com.baomidou.mybatisplus.extension.handlers.JacksonTypeHandler;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.Accessors;
-
 import java.io.Serial;
-import java.util.List;
-import java.util.Map;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.fasterxml.jackson.datatype.jsr310.deser.LocalDateTimeDeserializer;
 import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateTimeSerializer;
-import com.fit2cloud.common.constants.JobTypeConstants;
-import com.fit2cloud.common.constants.JobStatusConstants;
 
 /**
  * <p>
- *
+ * 
  * </p>
+ *
+ *
  */
 @Getter
 @Setter
 @Accessors(chain = true)
-@TableName("job_record")
-public class JobRecord implements Serializable {
+@TableName("job_record_resource_mapping")
+public class JobRecordResourceMapping implements Serializable {
 
     @Serial
     private static final long serialVersionUID = 1L;
@@ -46,28 +40,22 @@ public class JobRecord implements Serializable {
     private String id;
 
     /**
-     * 任务类型
+     * 资源ID
      */
-    @TableField("type")
-    private JobTypeConstants type;
+    @TableField("resource_id")
+    private String resourceId;
 
     /**
-     * 任务状态
+     * 资源类型
      */
-    @TableField("status")
-    private JobStatusConstants status;
+    @TableField("resource_type")
+    private String resourceType;
 
     /**
-     * 任务描述
+     * 任务记录id
      */
-    @TableField("description")
-    private String description;
-
-    /**
-     * 任务参数
-     */
-    @TableField(value = "params", typeHandler = JacksonTypeHandler.class)
-    private List<Map<String, Object>> params;
+    @TableField("job_record_id")
+    private String jobRecordId;
 
     /**
      * 创建时间
@@ -86,10 +74,4 @@ public class JobRecord implements Serializable {
     @JsonSerialize(using = LocalDateTimeSerializer.class)
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
     private LocalDateTime updateTime;
-
-    /**
-     * 任务结果
-     */
-    @TableField("result")
-    private String result;
 }

@@ -60,4 +60,14 @@ public class HuaweiCloudProvider extends AbstractCloudProvider<HuaweiVmCredentia
     public boolean deleteInstance(String req){
         return false;
     }
+
+    @Override
+    public boolean hardShutdownInstance(String req) {
+        return false;
+    }
+
+    @Override
+    public boolean hardRebootInstance(String req) {
+        return false;
+    }
 }

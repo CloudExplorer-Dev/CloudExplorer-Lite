@@ -85,7 +85,7 @@ const tableConfig = ref<TableConfig>({
     height="100%"
     ref="table"
   >
-    <el-table-column prop="imageName" :label="$t('vm_cloud_image.image_name')">
+    <el-table-column prop="imageName" :label="$t('vm_cloud_image.label.image_name')">
       <template #default="scope">
         <el-tooltip
             class="item"
@@ -99,7 +99,7 @@ const tableConfig = ref<TableConfig>({
         </el-tooltip>
       </template>
     </el-table-column>
-    <el-table-column prop="imageId" :label="$t('vm_cloud_image.image_id')"></el-table-column>
+    <el-table-column prop="imageId" :label="$t('vm_cloud_image.label.image_id')"></el-table-column>
     <el-table-column prop="accountName" :label="$t('commons.cloud_account.native')"></el-table-column>
     <el-table-column prop="region" :label="$t('commons.cloud_account.data_center')"></el-table-column>
     <el-table-column prop="os" :label="$t('commons.os')"></el-table-column>

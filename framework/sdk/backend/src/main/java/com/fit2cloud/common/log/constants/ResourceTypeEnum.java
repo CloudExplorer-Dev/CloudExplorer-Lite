@@ -14,40 +14,40 @@ public enum ResourceTypeEnum {
     USER("USER","用户"),
     ROLE("ROLE","角色"),
     CLOUD_ACCOUNT("CLOUD_ACCOUNT","云账号"),
-    VIRTUAL_MACHINE("VIRTUAL_MACHINE","虚拟机"),
+    CLOUD_SERVER("CLOUD_SERVER","云主机"),
     CLOUD_DISK("CLOUD_DISK","云磁盘"),
     DISK("DISK","磁盘");
 
-    private String operate;
-    private String description;
+    private String code;
+    private String name;
 
-    ResourceTypeEnum(String operate, String description){
-        this.operate = operate;
-        this.description = description;
+    ResourceTypeEnum(String code, String name){
+        this.code = code;
+        this.name = name;
     }
 
-    public static String getDescriptionByOperate(String operate) {
+    public static String getNameByCode(String code) {
         for (ResourceTypeEnum typeEnum : values()) {
-            if(typeEnum.getOperate().equals(operate)){
-                return typeEnum.getDescription();
+            if(typeEnum.getCode().equals(code)){
+                return typeEnum.getName();
             }
         }
         return "";
     }
 
-    public String getOperate() {
-        return operate;
+    public String getCode() {
+        return code;
     }
 
-    public void setOperate(String operate) {
-        this.operate = operate;
+    public void setCode(String code) {
+        this.code = code;
     }
 
-    public String getDescription() {
-        return description;
+    public String getName() {
+        return name;
     }
 
-    public void setDescription(String description) {
-        this.description = description;
+    public void setName(String name) {
+        this.name = name;
     }
 }

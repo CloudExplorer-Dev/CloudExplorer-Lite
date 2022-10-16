@@ -20,7 +20,11 @@ public enum JobStatusConstants {
     /**
      * 同步中
      */
-    SYNCING(2);
+    SYNCING(2),
+    /**
+     * 执行中
+     */
+    EXECUTION_ING(3);
 
     @EnumValue
     private final int code;

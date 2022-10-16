@@ -60,15 +60,15 @@ public class LogServiceImpl implements ILogService {
         Page<OperatedLogVO> page = new Page<>(request.getCurrentPage(), request.getPageSize(), false);
         if (StringUtils.equalsIgnoreCase("loginLog", request.getType())) {
             request.setType(null);
-            request.setResourceType(ResourceTypeEnum.SYSTEM.getDescription());
+            request.setResourceType(ResourceTypeEnum.SYSTEM.getCode());
         }
         if (StringUtils.equalsIgnoreCase("vmOperateLog", request.getType())) {
             request.setType(null);
-            request.setResourceType(ResourceTypeEnum.VIRTUAL_MACHINE.getDescription());
+            request.setResourceType(ResourceTypeEnum.CLOUD_SERVER.getCode());
         }
         if (StringUtils.equalsIgnoreCase("diskOperateLog", request.getType())) {
             request.setType(null);
-            request.setResourceType(ResourceTypeEnum.DISK.getDescription());
+            request.setResourceType(ResourceTypeEnum.CLOUD_DISK.getCode());
         }
         if (StringUtils.equalsIgnoreCase("allLog", request.getType())) {
             request.setType(null);

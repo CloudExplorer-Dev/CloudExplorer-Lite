@@ -170,6 +170,17 @@ const buttons = ref([
     },
   },
 ]);
+
+/**
+ * 验证VMTools状态
+ * @param vm
+ */
+const checkVmToolsStatus = (vm:VmCloudServerVO) => {
+  if(vm.platform==="fit2cloud_vsphere_platform"){
+    return vm.vmToolsStatus;
+  }
+  return true;
+}
 /**
  * 开机
  * @param row
@@ -185,8 +196,10 @@ const powerOn = (row: VmCloudServerVO) => {
     }
   ).then(() => {
     VmCloudServerApi.powerOn(row.id as string, tableLoading)
-      .then(() => {
-        //
+      .then((res) => {
+        console.log("-----"+res)
+        debugger;
+        ElMessage.success(t("commons.msg.op_success"));
       })
       .catch((err) => {
         console.log(err);
@@ -198,8 +211,14 @@ const powerOn = (row: VmCloudServerVO) => {
 };
 //关机
 const shutdown = (row: VmCloudServerVO) => {
+  let label = t("vm_cloud_server.message_box.confirm_shutdown", "确认关机");
+  let powerOff = false;
+  if(!checkVmToolsStatus(row)){
+    label = t("vm_cloud_server.message_box.confirm_shutdown", "当前虚拟机未安装VMtools，无法软关机，若继续操作则关闭电源，是否继续？");
+    powerOff = true;
+  }
   ElMessageBox.confirm(
-    t("vm_cloud_server.message_box.confirm_shutdown", "确认关机"),
+      label,
     t("commons.message_box.prompt", "提示"),
     {
       confirmButtonText: t("commons.message_box.confirm", "确认"),
@@ -207,9 +226,9 @@ const shutdown = (row: VmCloudServerVO) => {
       type: "warning",
     }
   ).then(() => {
-    VmCloudServerApi.shutdownInstance(row.id as string, tableLoading)
+    VmCloudServerApi.shutdownInstance(row.id as string,powerOff, tableLoading)
       .then(() => {
-        //
+        ElMessage.success(t("commons.msg.op_success"));
       })
       .catch((err) => {
         console.log(err);
@@ -232,7 +251,7 @@ const powerOff = (row: VmCloudServerVO) => {
   ).then(() => {
     VmCloudServerApi.powerOff(row.id as string, tableLoading)
       .then(() => {
-        //
+        ElMessage.success(t("commons.msg.op_success"));
       })
       .catch((err) => {
         console.log(err);
@@ -255,7 +274,7 @@ const reboot = (row: VmCloudServerVO) => {
   ).then(() => {
     VmCloudServerApi.reboot(row.id as string, tableLoading)
       .then(() => {
-        //
+        ElMessage.success(t("commons.msg.op_success"));
       })
       .catch((err) => {
         console.log(err);
@@ -279,7 +298,7 @@ const deleteInstance = (row: VmCloudServerVO) => {
   ).then(() => {
     VmCloudServerApi.deleteInstance(row.id as string, tableLoading)
       .then(() => {
-        //
+        ElMessage.success(t("commons.msg.op_success"));
       })
       .catch((err) => {
         console.log(err);
@@ -312,7 +331,8 @@ const batchOperate = (operate: string) => {
       tableLoading
     )
       .then(() => {
-        //
+        debugger;
+        ElMessage.success(t("commons.msg.op_success"));
       })
       .catch((err) => {
         console.log(err);
@@ -422,7 +442,7 @@ const handleAction = (actionObj: any) => {
       prop="instanceTypeDescription"
       :label="$t('commons.cloud_server.instance_type')"
     ></el-table-column>
-    <el-table-column prop="ipArray" :label="$t('vm_server_cloud.label.ip_address')">
+    <el-table-column prop="ipArray" :label="$t('vm_cloud_server.label.ip_address')">
       <template #default="scope">
         <span v-show="scope.row.ipArray.length > 2">{{
           JSON.parse(scope.row.ipArray)[0]
