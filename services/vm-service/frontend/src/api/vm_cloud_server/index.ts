@@ -84,7 +84,7 @@ export function deleteInstance(
  * @param loading
  */
 export function batchOperate(
-  instanceIds: any,
+  instanceIds: Array<string>,
   operate: string,
   loading?: Ref<boolean>
 ): Promise<Result<null>> {

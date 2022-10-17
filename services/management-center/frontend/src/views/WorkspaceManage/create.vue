@@ -7,7 +7,7 @@ import WorkspaceApi from "@/api/workspace";
 import type { FormInstance, FormRules } from "element-plus";
 import { useRouter } from "vue-router";
 import { useI18n } from "vue-i18n";
-import type {CreateWorkspaceForm, WorkspaceDetails} from "./type";
+import type { CreateWorkspaceForm, WorkspaceDetails } from "./type";
 const { t } = useI18n();
 const route = useRouter();
 const loading = ref<boolean>(false);
@@ -41,40 +41,44 @@ onMounted(() => {
   const workspaceId = route.currentRoute.value.query.id;
   if (workspaceId) {
     //查询工作空间信息
-    WorkspaceApi.getWorkspaceById(workspaceId as string,loading)
-        .then((res) => {
-          //置空只保留要编辑的工作空间
-          form.value.workspaceDetails = [];
-          //请求成功给form设置数据
-          form.value.workspaceDetails.push({
-            id: res.data.id,
-            name: res.data.name,
-            organizationId: res.data.organizationId,
-            description: res.data.description,
-          });
-          form.value.organizationId = res.data.organizationId;
-          //设置默认选中组织
-          defaultCheckedKeys.value.push(form.value.organizationId);
-          nextTick(() => {
-            workspaceOrgSelectTree.value.setCheckedKeys(
-                defaultCheckedKeys.value,
-                true
-            );
-          });
-        })
-        .catch((err) => {
-          console.log( err);
+    WorkspaceApi.getWorkspaceById(workspaceId as string, loading)
+      .then((res) => {
+        //置空只保留要编辑的工作空间
+        form.value.workspaceDetails = [];
+        //请求成功给form设置数据
+        form.value.workspaceDetails.push({
+          id: res.data.id,
+          name: res.data.name,
+          organizationId: res.data.organizationId,
+          description: res.data.description,
         });
+        form.value.organizationId = res.data.organizationId;
+        //设置默认选中组织
+        defaultCheckedKeys.value.push(form.value.organizationId);
+        nextTick(() => {
+          workspaceOrgSelectTree.value.setCheckedKeys(
+            defaultCheckedKeys.value,
+            true
+          );
+        });
+      })
+      .catch((err) => {
+        console.log(err);
+      });
   }
 });
 
 //表单验证
 const rules = reactive<FormRules>({
   name: [
-    { message: t("commons.validate.required",[t("workspace.workspace_name")]), trigger: "blur", required: true },
+    {
+      message: t("commons.validate.required", [t("workspace.workspace_name")]),
+      trigger: "blur",
+      required: true,
+    },
     {
       pattern: /^.{2,128}$/,
-      message: t("commons.validate.limit",["2","128"]),
+      message: t("commons.validate.limit", ["2", "128"]),
       trigger: "blur",
     },
     {
@@ -87,7 +91,11 @@ const rules = reactive<FormRules>({
           }
         });
         if (repetition > 1) {
-          callback(new Error(t('workspace.validate.repeat',[t("workspace.workspace_name")])));
+          callback(
+            new Error(
+              t("workspace.validate.repeat", [t("workspace.workspace_name")])
+            )
+          );
         } else {
           callback();
         }
@@ -98,7 +106,7 @@ const rules = reactive<FormRules>({
   description: [
     {
       pattern: /^.{2,128}$/,
-      message: t("commons.validate.limit",["2","128"]),
+      message: t("commons.validate.limit", ["2", "128"]),
       trigger: "blur",
     },
   ],
@@ -108,7 +116,9 @@ const rules = reactive<FormRules>({
         // 在此获取选中的树形数据
         const arr = workspaceOrgSelectTree.value.getCheckedKeys();
         if (arr.length == 0 || !arr) {
-          callback(new Error(t("commons.validate.select",[t("workspace.org")])));
+          callback(
+            new Error(t("commons.validate.select", [t("workspace.org")]))
+          );
         } else {
           callback();
         }
@@ -129,24 +139,24 @@ const submitForm = (formEl: FormInstance | undefined) => {
       if (form.value.workspaceDetails[0].id) {
         //修改了父级组织
         form.value.workspaceDetails[0].organizationId =
-            form.value.organizationId;
-        WorkspaceApi.update(form.value.workspaceDetails[0],loading)
-            .then((res) => {
-              console.log("编辑成功", res);
-              route.push({ name: "workspace" });
-            })
-            .catch((err) => {
-              console.log("编辑失败:", err);
-            });
+          form.value.organizationId;
+        WorkspaceApi.update(form.value.workspaceDetails[0], loading)
+          .then((res) => {
+            console.log("编辑成功", res);
+            route.push({ name: "workspace" });
+          })
+          .catch((err) => {
+            console.log("编辑失败:", err);
+          });
       } else {
-        WorkspaceApi.batch(form.value,loading)
-            .then((res) => {
-              console.log("保存成功", res);
-              route.push({ name: "workspace" });
-            })
-            .catch((err) => {
-              console.log("保存成功:", err);
-            });
+        WorkspaceApi.batch(form.value, loading)
+          .then((res) => {
+            console.log("保存成功", res);
+            route.push({ name: "workspace" });
+          })
+          .catch((err) => {
+            console.log("保存成功:", err);
+          });
       }
     } else {
       console.log("error submit!", fields);
@@ -158,9 +168,9 @@ const submitForm = (formEl: FormInstance | undefined) => {
  *删除一个详情对象
  */
 const deleteItem = (
-    formEl: FormInstance | undefined,
-    org: { name: string; description: string },
-    index: number
+  formEl: FormInstance | undefined,
+  org: { name: string; description: string },
+  index: number
 ) => {
   form.value.workspaceDetails.splice(index, 1);
 };
@@ -201,7 +211,9 @@ const filterMethod = (value: string) => {
     <layout-container :border="false">
       <template #content>
         <layout-container>
-          <template #header><h4>{{t("commons.basic_info","基本信息")}}</h4></template>
+          <template #header
+            ><h4>{{ t("commons.basic_info", "基本信息") }}</h4></template
+          >
           <template #content>
             <div v-for="(item, index) in form.workspaceDetails" :key="index">
               <el-form-item
@@ -243,9 +255,15 @@ const filterMethod = (value: string) => {
           </template>
         </layout-container>
         <layout-container>
-          <template #header><h4>{{t("workspace.org")}}</h4></template>
+          <template #header
+            ><h4>{{ t("workspace.org") }}</h4></template
+          >
           <template #content>
-            <el-form-item :label="$t('commons.org')" prop="org" style="width: 80%">
+            <el-form-item
+              :label="$t('commons.org')"
+              prop="org"
+              style="width: 80%"
+            >
               <el-tree-select
                 :props="{ label: 'name' }"
                 node-key="id"
@@ -275,10 +293,12 @@ const filterMethod = (value: string) => {
           </layout-container> -->
         <!--先屏蔽云租户映射-->
         <layout-container>
-          <el-button @click="route.back">{{t("commons.btn.cancel")}}</el-button>
-          <el-button type="primary" @click="submitForm(ruleFormRef)"
-            >{{t("commons.btn.save")}}</el-button
-          ></layout-container
+          <el-button @click="route.back">{{
+            t("commons.btn.cancel")
+          }}</el-button>
+          <el-button type="primary" @click="submitForm(ruleFormRef)">{{
+            t("commons.btn.save")
+          }}</el-button></layout-container
         >
       </template>
     </layout-container>

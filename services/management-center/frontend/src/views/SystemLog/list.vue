@@ -1,6 +1,7 @@
 <!--系统日志列表-->
 <template>
-  <ce-table v-loading="tableLoading"
+  <ce-table
+    v-loading="tableLoading"
     :columns="columns"
     :data="tableData"
     :tableConfig="tableConfig"
@@ -54,7 +55,7 @@
 
 <script setup lang="ts">
 import { ref, onMounted } from "vue";
-import SysLogApi  from "@/api/sys_log/index";
+import SysLogApi from "@/api/sys_log/index";
 import type { SystemLogVO } from "@/api/sys_log/type";
 import { useRouter } from "vue-router";
 import { ElMessage } from "element-plus/es";
@@ -75,11 +76,14 @@ onMounted(() => {
 });
 const search = (condition: TableSearch) => {
   const params = TableSearch.toSearchParams(condition);
-  SysLogApi.listSystemLog({
-    currentPage: tableConfig.value.paginationConfig.currentPage,
-    pageSize: tableConfig.value.paginationConfig.pageSize,
-    ...params,
-  },tableLoading).then((res) => {
+  SysLogApi.listSystemLog(
+    {
+      currentPage: tableConfig.value.paginationConfig.currentPage,
+      pageSize: tableConfig.value.paginationConfig.pageSize,
+      ...params,
+    },
+    tableLoading
+  ).then((res) => {
     tableData.value = res.data.records;
     tableConfig.value.paginationConfig?.setTotal(
       res.data.total,

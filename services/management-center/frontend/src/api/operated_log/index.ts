@@ -8,11 +8,11 @@ export function listOperatedLog(
   req: ListOperatedLogRequest,
   loading?: Ref<boolean>
 ): Promise<Result<Page<OperatedLogVO>>> {
-  return get("api/log/operated/list", req,loading);
-};
+  return get("api/log/operated/list", req, loading);
+}
 
 const OperatedLogApi = {
-  listOperatedLog
-}
+  listOperatedLog,
+};
 
 export default OperatedLogApi;

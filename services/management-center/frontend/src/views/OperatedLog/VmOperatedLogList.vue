@@ -1,6 +1,7 @@
 <!--操作日志列表-->
 <template>
-  <ce-table v-loading="tableLoading"
+  <ce-table
+    v-loading="tableLoading"
     :columns="columns"
     :data="tableData"
     :tableConfig="tableConfig"
@@ -11,18 +12,42 @@
     <template #toolbar>
       <!-- <el-button type="primary" @click="clearPolicy">清空策略</el-button> -->
     </template>
-    <el-table-column prop="user" :label="$t('log_manage.operator')"></el-table-column>
-    <el-table-column prop="operatedName" :label="$t('log_manage.type')"></el-table-column>
-    <el-table-column prop="resourceId" :label="$t('log_manage.resource')"></el-table-column>
-    <el-table-column prop="sourceIp" :label="$t('log_manage.ip')"></el-table-column>
-    <el-table-column prop="date" :label="$t('commons.create_time')" sortable="desc" />
-    <el-table-column prop="status" :label="$t('log_manage.status')" column-key="status">
+    <el-table-column
+      prop="user"
+      :label="$t('log_manage.operator')"
+    ></el-table-column>
+    <el-table-column
+      prop="operatedName"
+      :label="$t('log_manage.type')"
+    ></el-table-column>
+    <el-table-column
+      prop="resourceId"
+      :label="$t('log_manage.resource')"
+    ></el-table-column>
+    <el-table-column
+      prop="sourceIp"
+      :label="$t('log_manage.ip')"
+    ></el-table-column>
+    <el-table-column
+      prop="date"
+      :label="$t('commons.create_time')"
+      sortable="desc"
+    />
+    <el-table-column
+      prop="status"
+      :label="$t('log_manage.status')"
+      column-key="status"
+    >
       <template #default="scope">
         <div
           style="display: flex; align-items: center"
           :style="{ color: scope.row.status === 1 ? '' : 'red' }"
         >
-          <span>{{ scope.row.status === 1 ? t("commons.msg.success",[""]) : t("commons.msg.fail",[""]) }}</span>
+          <span>{{
+            scope.row.status === 1
+              ? t("commons.msg.success", [""])
+              : t("commons.msg.fail", [""])
+          }}</span>
         </div>
       </template></el-table-column
     >
@@ -61,11 +86,14 @@ onMounted(() => {
 const search = (condition: TableSearch) => {
   const params = TableSearch.toSearchParams(condition);
   params.type = "vmOperateLog";
-  OperatedLogApi.listOperatedLog({
-    currentPage: tableConfig.value.paginationConfig.currentPage,
-    pageSize: tableConfig.value.paginationConfig.pageSize,
-    ...params,
-  },tableLoading).then((res) => {
+  OperatedLogApi.listOperatedLog(
+    {
+      currentPage: tableConfig.value.paginationConfig.currentPage,
+      pageSize: tableConfig.value.paginationConfig.pageSize,
+      ...params,
+    },
+    tableLoading
+  ).then((res) => {
     tableData.value = res.data.records;
     tableConfig.value.paginationConfig?.setTotal(
       res.data.total,
@@ -88,12 +116,14 @@ const tableConfig = ref<TableConfig>({
     search: search,
     quickPlaceholder: t("commons.btn.search"),
     components: [],
-    searchOptions: [{ label: t("log_manage.operator","操作人"), value: "user" }],
+    searchOptions: [
+      { label: t("log_manage.operator", "操作人"), value: "user" },
+    ],
   },
   paginationConfig: new PaginationConfig(),
   tableOperations: new TableOperations([
     TableOperations.buildButtons().newInstance(
-        t("log_manage.view_details","查看详情"),
+      t("log_manage.view_details", "查看详情"),
       "primary",
       showLogInfoDialog,
       "InfoFilled"
