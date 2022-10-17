@@ -72,4 +72,39 @@ public interface ICloudProvider {
      */
     boolean deleteInstance(String req);
 
+    /**
+     * 创建磁盘
+     * @param req
+     * @return
+     */
+    List<F2CDisk>  createDisks(String req);
+
+    /**
+     * 删除磁盘
+     * @param req
+     * @return
+     */
+    boolean deleteDisk(String req);
+
+    /**
+     * 挂载磁盘
+     * @param req
+     * @return
+     */
+    boolean attachDisk(String req);
+
+    /**
+     * 卸载磁盘
+     * @param req
+     * @return
+     */
+    boolean detachDisk(String req);
+
+    /**
+     * 扩容磁盘
+     * @param req
+     * @return
+     */
+    boolean enlargeDisk(String req);
+
 }
