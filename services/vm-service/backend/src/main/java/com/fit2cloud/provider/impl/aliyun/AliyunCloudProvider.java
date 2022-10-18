@@ -8,6 +8,7 @@ import com.fit2cloud.provider.entity.F2CImage;
 import com.fit2cloud.provider.entity.F2CVirtualMachine;
 import com.fit2cloud.provider.impl.aliyun.api.AliyunSyncCloudApi;
 import com.fit2cloud.provider.impl.aliyun.entity.credential.AliyunVmCredential;
+import com.fit2cloud.provider.impl.aliyun.entity.request.AliyunInstanceRequest;
 import com.fit2cloud.provider.impl.aliyun.entity.request.ListDisksRequest;
 import com.fit2cloud.provider.impl.aliyun.entity.request.ListImageRequest;
 import com.fit2cloud.provider.impl.aliyun.entity.request.ListVirtualMachineRequest;
@@ -39,12 +40,12 @@ public class AliyunCloudProvider extends AbstractCloudProvider<AliyunVmCredentia
 
     @Override
     public boolean powerOff(String req) {
-        return false;
+        return AliyunSyncCloudApi.powerOff(JsonUtil.parseObject(req, AliyunInstanceRequest.class));
     }
 
     @Override
     public boolean powerOn(String req) {
-        return false;
+        return AliyunSyncCloudApi.powerOn(JsonUtil.parseObject(req, AliyunInstanceRequest.class));
     }
 
     @Override
@@ -54,11 +55,21 @@ public class AliyunCloudProvider extends AbstractCloudProvider<AliyunVmCredentia
 
     @Override
     public boolean rebootInstance(String req){
-        return false;
+        return AliyunSyncCloudApi.rebootInstance(JsonUtil.parseObject(req, AliyunInstanceRequest.class));
     }
 
     @Override
     public boolean deleteInstance(String req){
+        return AliyunSyncCloudApi.deleteInstance(JsonUtil.parseObject(req, AliyunInstanceRequest.class));
+    }
+
+    @Override
+    public boolean hardShutdownInstance(String req) {
+        return false;
+    }
+
+    @Override
+    public boolean hardRebootInstance(String req) {
         return false;
     }
 

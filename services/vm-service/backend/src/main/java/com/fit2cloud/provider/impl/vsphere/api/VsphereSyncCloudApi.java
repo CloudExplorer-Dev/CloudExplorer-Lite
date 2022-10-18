@@ -21,12 +21,14 @@ import com.vmware.vim25.DistributedVirtualPortgroupInfo;
 import com.vmware.vim25.VirtualDisk;
 import com.vmware.vim25.VirtualMachineConfigInfo;
 import com.vmware.vim25.mo.*;
+import io.reactivex.rxjava3.functions.Consumer;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.util.CollectionUtils;
 
 import java.util.*;
+import java.util.function.Function;
 
 /**
  * Author: LiuDi
@@ -185,83 +187,49 @@ public class VsphereSyncCloudApi {
         }
     }
 
-    public static boolean powerOff(VsphereVmPowerRequest req) {
-        VsphereVmClient client = null;
-        try {
-            client = req.getVsphereVmClient();
-            return client.powerOff(req.getUuid());
-        } catch (Exception e) {
-            logger.error(e.getMessage());
-            throw new RuntimeException(e.getMessage());
-        } finally {
-            if (client != null) {
-                client.closeConnection();
-            }
-        }
+    public static boolean powerOff(VsphereVmPowerRequest req){
+        VsphereVmClient client = req.getVsphereVmClient();
+        return operate(req.getUuid(),client::powerOff,client::closeConnection);
     }
 
-    public static boolean powerOn(VsphereVmPowerRequest req) {
-        VsphereVmClient client = null;
-        try {
-            client = req.getVsphereVmClient();
-            return client.powerOn(req.getUuid());
-        } catch (Exception e) {
-            LogUtil.error(e.getMessage());
-            throw new RuntimeException(e.getMessage());
-        } finally {
-            if (client != null) {
-                client.closeConnection();
-            }
-        }
+    public static boolean powerOn(VsphereVmPowerRequest req){
+        VsphereVmClient client = req.getVsphereVmClient();
+        return operate(req.getUuid(),client::powerOn,client::closeConnection);
     }
 
-    public static boolean shutdownInstance(VsphereVmPowerRequest req) {
-        VsphereVmClient client = null;
-        try {
-            client = req.getVsphereVmClient();
-            client.shutdownInstance(req.getUuid());
-            return true;
-        } catch (Exception e) {
-            LogUtil.error(e.getMessage());
-            throw new RuntimeException(e.getMessage());
-        } finally {
-            if (client != null) {
-                client.closeConnection();
-            }
-        }
+    public static boolean shutdownInstance(VsphereVmPowerRequest req){
+        VsphereVmClient client = req.getVsphereVmClient();
+        return operate(req.getUuid(),client::shutdownInstance,client::closeConnection);
     }
 
-    public static boolean reboot(VsphereVmPowerRequest req) {
-        VsphereVmClient client = null;
-        try {
-            client = req.getVsphereVmClient();
-            client.reboot(req.getUuid());
-            return true;
-        } catch (Exception e) {
-            LogUtil.error(e.getMessage());
-            throw new RuntimeException(e.getMessage());
-        } finally {
-            if (client != null) {
-                client.closeConnection();
-            }
-        }
+    public static boolean reboot(VsphereVmPowerRequest req){
+        VsphereVmClient client = req.getVsphereVmClient();
+        return operate(req.getUuid(),client::reboot,client::closeConnection);
     }
 
-    public static boolean deleteInstance(VsphereVmPowerRequest req) {
-        VsphereVmClient client = null;
-        try {
-            client = req.getVsphereVmClient();
-            client.deleteInstance(req.getUuid());
-            return true;
-        } catch (Exception e) {
-            LogUtil.error(e.getMessage());
-            throw new RuntimeException(e.getMessage());
-        } finally {
-            if (client != null) {
-                client.closeConnection();
-            }
-        }
+    public static boolean deleteInstance(VsphereVmPowerRequest req){
+        VsphereVmClient client = req.getVsphereVmClient();
+        return operate(req.getUuid(),client::deleteInstance,client::closeConnection);
     }
+
+    public static boolean hardReboot(VsphereVmPowerRequest req){
+        VsphereVmClient client = req.getVsphereVmClient();
+        return operate(req.getUuid(),client::hardReboot,client::closeConnection);
+    }
+
+    private static boolean operate(String uuId, Function<String, Boolean> execMethod,Runnable closeConnection) {
+        try{
+            return execMethod.apply(uuId);
+        }catch (Exception e){
+            e.printStackTrace();
+            logger.error("[Failed to operate virtual machine]", e);
+        }finally {
+            closeConnection.run();
+        }
+        return false;
+    }
+
+
 
     public static List<F2CVsphereNetwork> getNetworks(VsphereNetworkRequest req) {
 

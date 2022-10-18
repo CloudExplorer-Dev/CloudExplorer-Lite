@@ -8,11 +8,11 @@ export function listSystemLog(
   req: ListSystemLogRequest,
   loading?: Ref<boolean>
 ): Promise<Result<Page<SystemLogVO>>> {
-  return get("api/log/system/list", req,loading);
-};
+  return get("api/log/system/list", req, loading);
+}
 
 const SysLogApi = {
-  listSystemLog
-}
+  listSystemLog,
+};
 
 export default SysLogApi;

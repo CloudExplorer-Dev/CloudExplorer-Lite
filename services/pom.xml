@@ -17,7 +17,7 @@
     <modules>
         <module>management-center</module>
         <module>vm-service</module>
-        <module>network-service</module>
+        <module>bill-service</module>
     </modules>
 
 </project>

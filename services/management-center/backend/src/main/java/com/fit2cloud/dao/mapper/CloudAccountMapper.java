@@ -6,7 +6,7 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.core.toolkit.Constants;
 import com.fit2cloud.controller.response.cloud_account.CloudAccountResponse;
 import com.fit2cloud.dao.entity.CloudAccount;
-import com.fit2cloud.response.cloud_account.AccountJobRecordResponse;
+import com.fit2cloud.response.JobRecordResourceResponse;
 import org.apache.ibatis.annotations.Param;
 
 /**
@@ -21,6 +21,6 @@ public interface CloudAccountMapper extends BaseMapper<CloudAccount> {
 
     IPage<CloudAccountResponse> pageCloudAccount(IPage<CloudAccountResponse> cloudAccountPage, @Param(Constants.WRAPPER) Wrapper<CloudAccountResponse> wrapper);
 
-    IPage<AccountJobRecordResponse> pageSyncRecord(IPage<AccountJobRecordResponse> syncRecordPage, @Param(Constants.WRAPPER) Wrapper wrapper);
+    IPage<JobRecordResourceResponse> pageSyncRecord(IPage<JobRecordResourceResponse> syncRecordPage, @Param(Constants.WRAPPER) Wrapper wrapper);
 
 }

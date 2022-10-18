@@ -25,23 +25,23 @@ const message = {
       image_id: "镜像ID",
     },
     btn: {
-      set_management_info: "设置管理信息"
-    }
+      set_management_info: "设置管理信息",
+    },
   },
   vm_cloud_disk: {
     label: {
-      "vm": "所属虚拟机",
-      "size": "大小",
-      "disk_category": "磁盘种类",
-      "disk_type": "磁盘类型",
-      "mount_info": "挂载信息",
-      "delete_with_instance": "随实例删除"
+      vm: "所属虚拟机",
+      size: "大小",
+      disk_category: "磁盘种类",
+      disk_type: "磁盘类型",
+      mount_info: "挂载信息",
+      delete_with_instance: "随实例删除",
     },
     btn: {
       uninstall: "卸载",
-      mount: "挂载"
-    }
-  }
+      mount: "挂载",
+    },
+  },
 };
 export default {
   ...message,

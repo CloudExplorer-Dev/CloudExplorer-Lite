@@ -19,4 +19,6 @@ public class VmCloudServerDTO extends VmCloudServer {
     private String accountName;
     @ApiModelProperty("企业项目")
     private String cloudProjectName;
+    @ApiModelProperty("云平台")
+    private String platform;
 }

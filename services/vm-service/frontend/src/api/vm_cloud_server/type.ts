@@ -1,5 +1,5 @@
 interface VmCloudServerVO {
-  id?: string;
+  id: string;
   instanceUuid?: string;
   workspaceId?: string;
   projectId?: string;
@@ -36,13 +36,21 @@ interface VmCloudServerVO {
   snapShot?: number;
   createTime?: string;
   updateTime?: string;
+  platform?: string;
+  vmToolsStatus?: boolean;
 }
 interface ListVmCloudServerRequest {
   pageSize: number;
   currentPage: number;
 }
-
-export type {
-  VmCloudServerVO,
-  ListVmCloudServerRequest
+//操作枚举
+//TODO 想要处理国际化
+export enum InstanceOperateEnum {
+  POWER_ON = <any>"开机",
+  POWER_OFF = <any>"关闭电源",
+  SHUTDOWN = <any>"关机",
+  REBOOT = <any>"重启",
+  DELETE = <any>"删除",
 }
+
+export type { VmCloudServerVO, ListVmCloudServerRequest };

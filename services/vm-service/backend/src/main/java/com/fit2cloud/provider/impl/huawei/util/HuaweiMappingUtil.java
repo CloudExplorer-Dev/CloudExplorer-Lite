@@ -1,12 +1,14 @@
 package com.fit2cloud.provider.impl.huawei.util;
 
 import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
+import com.fit2cloud.common.provider.util.CommonUtil;
 import com.fit2cloud.provider.constants.DeleteWithInstance;
 import com.fit2cloud.provider.entity.F2CDisk;
 import com.fit2cloud.provider.entity.F2CImage;
 import com.fit2cloud.provider.entity.F2CVirtualMachine;
-import com.fit2cloud.provider.util.CommonUtil;
-import com.huaweicloud.sdk.ecs.v2.model.*;
+import com.huaweicloud.sdk.ecs.v2.model.ServerAddress;
+import com.huaweicloud.sdk.ecs.v2.model.ServerDetail;
+import com.huaweicloud.sdk.ecs.v2.model.ServerFlavor;
 import com.huaweicloud.sdk.evs.v2.model.VolumeDetail;
 import com.huaweicloud.sdk.ims.v2.model.ImageInfo;
 import com.huaweicloud.sdk.vpc.v2.model.Port;

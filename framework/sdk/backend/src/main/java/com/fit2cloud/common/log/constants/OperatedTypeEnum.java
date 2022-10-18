@@ -19,9 +19,11 @@ public enum OperatedTypeEnum {
     POWER_ON("POWER_ON","开机"),
     POWER_OFF("POWER_OFF","关闭电源"),
     SHUTDOWN("SHUTDOWN","关机"),
+    HARD_SHUTDOWN("HARD_SHUTDOWN","硬关机"),
     REBOOT("REBOOT","重启"),
+    HARD_REBOOT("HARD_REBOOT","硬重启"),
 
-    BATCH_OPERATE_VM("BATCH_OPERATE_VM","批量操作虚拟机");
+    BATCH_OPERATE("BATCH_OPERATE","批量操作");
 
     private String operate;
     private String description;
@@ -38,6 +40,15 @@ public enum OperatedTypeEnum {
             }
         }
         return "";
+    }
+
+    public static OperatedTypeEnum getByDescription(String description) {
+        for (OperatedTypeEnum typeEnum : values()) {
+            if(typeEnum.getDescription().equals(description)){
+                return typeEnum;
+            }
+        }
+        return null;
     }
 
     public String getOperate() {

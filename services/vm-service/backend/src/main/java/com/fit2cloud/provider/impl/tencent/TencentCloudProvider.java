@@ -60,4 +60,14 @@ public class TencentCloudProvider extends AbstractCloudProvider<TencentCredentia
     public boolean deleteInstance(String req){
         return false;
     }
+
+    @Override
+    public boolean hardShutdownInstance(String req) {
+        return false;
+    }
+
+    @Override
+    public boolean hardRebootInstance(String req) {
+        return false;
+    }
 }
