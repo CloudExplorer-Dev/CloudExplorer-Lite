@@ -42,6 +42,7 @@ public class JobRecordCommonService {
         jobRecordResourceMapping.setResourceId(initJobRecordDTO.getResourceId());
         jobRecordResourceMapping.setResourceType(initJobRecordDTO.getResourceType().getCode());
         jobRecordResourceMapping.setCreateTime(initJobRecordDTO.getCreateTime());
+        jobRecordResourceMapping.setJobRecordId(jobRecord.getId());
         jobRecordResourceMappingService.save(jobRecordResourceMapping);
         return jobRecord;
     }

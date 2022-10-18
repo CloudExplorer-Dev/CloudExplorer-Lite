@@ -1,5 +1,53 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.fit2cloud.base.mapper.BaseJobRecordResourceMappingMapper">
+        <resultMap id="ResourceJobRecordMap" type="com.fit2cloud.response.JobRecordResourceResponse">
+            <result column="resource_id" jdbcType="VARCHAR" property="resourceId"/>
+            <result column="job_record_id" jdbcType="VARCHAR" property="jobRecordId"/>
+            <result column="type" jdbcType="INTEGER" property="type"/>
+            <result column="status" jdbcType="INTEGER" property="status" />
+            <result column="description" jdbcType="VARCHAR" property="description"/>
+            <result column="result" jdbcType="LONGVARCHAR" property="result"/>
+            <result column="params" jdbcType="VARCHAR" property="params"
+                    typeHandler="com.baomidou.mybatisplus.extension.handlers.JacksonTypeHandler"/>
+            <result column="create_time" jdbcType="DATE" property="createTime"/>
+        </resultMap>
 
+        <select id="findLastResourceJobRecord"
+                resultMap="ResourceJobRecordMap">
+            SELECT
+            a.resource_id,
+            a.create_time,
+            a.job_record_id,
+            j.type,
+            j.`status`,
+            j.description,
+            j.params,
+            j.result
+            FROM
+            job_record_resource_mapping a
+            LEFT JOIN job_record j ON a.job_record_id = j.id
+            RIGHT JOIN (
+            SELECT
+            MAX( aj.create_time ) AS create_time,
+            resource_id,
+            description
+            FROM
+            job_record_resource_mapping aj
+            LEFT JOIN job_record jr ON aj.job_record_id = jr.id
+            WHERE
+            aj.resource_id IN
+            <foreach collection="resourceIds" index="index" item="id" separator="," close=")" open="(">
+                #{id}
+            </foreach>
+            GROUP BY
+            aj.resource_id,
+            jr.description
+            ) t1 ON t1.resource_id = a.resource_id
+            AND t1.create_time = a.create_time
+            AND t1.description = j.description
+            AND t1.resource_id = a.resource_id
+            ORDER BY
+            j.description;
+        </select>
 </mapper>

@@ -217,7 +217,7 @@ const filterMethod = (value: string) => {
           <template #content>
             <div v-for="(item, index) in form.workspaceDetails" :key="index">
               <el-form-item
-                :label="$t('common.name')"
+                :label="$t('commons.name')"
                 :prop="'workspaceDetails[' + index + '].name'"
                 style="width: 40%"
                 :rules="rules.name"

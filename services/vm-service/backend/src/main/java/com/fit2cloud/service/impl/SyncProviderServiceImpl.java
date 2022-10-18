@@ -13,9 +13,11 @@ import com.fit2cloud.common.constants.JobStatusConstants;
 import com.fit2cloud.common.constants.JobTypeConstants;
 import com.fit2cloud.common.constants.PlatformConstants;
 import com.fit2cloud.common.exception.Fit2cloudException;
+import com.fit2cloud.common.log.constants.ResourceTypeEnum;
 import com.fit2cloud.common.platform.credential.Credential;
 import com.fit2cloud.common.provider.exception.SkipPageException;
 import com.fit2cloud.common.utils.JsonUtil;
+import com.fit2cloud.dto.InitJobRecordDTO;
 import com.fit2cloud.provider.ICloudProvider;
 import com.fit2cloud.provider.constants.F2CDiskStatus;
 import com.fit2cloud.provider.constants.F2CImageStatus;
@@ -23,10 +25,7 @@ import com.fit2cloud.provider.constants.ProviderConstants;
 import com.fit2cloud.provider.entity.F2CDisk;
 import com.fit2cloud.provider.entity.F2CImage;
 import com.fit2cloud.provider.entity.F2CVirtualMachine;
-import com.fit2cloud.service.ISyncProviderService;
-import com.fit2cloud.service.IVmCloudDiskService;
-import com.fit2cloud.service.IVmCloudImageService;
-import com.fit2cloud.service.IVmCloudServerService;
+import com.fit2cloud.service.*;
 import io.reactivex.rxjava3.functions.BiFunction;
 import io.reactivex.rxjava3.functions.Consumer;
 import lombok.AllArgsConstructor;
@@ -68,6 +67,8 @@ public class SyncProviderServiceImpl implements ISyncProviderService {
     private IBaseCloudAccountService baseCloudAccountService;
     @Resource
     private RedissonClient redissonClient;
+    @Resource
+    private JobRecordCommonService jobRecordCommonService;
 
     @Override
     public void syncCloudServer(String cloudAccountId) {
@@ -223,7 +224,15 @@ public class SyncProviderServiceImpl implements ISyncProviderService {
                 if (Objects.nonNull(cloudAccount)) {
                     LocalDateTime syncTime = getSyncTime();
                     // 初始化一条定时任务记录
-                    JobRecord jobRecord = initJobRecord(jobDescription, syncTime, cloudAccountId);
+                    //JobRecord jobRecord = initJobRecord(jobDescription, syncTime, cloudAccountId);
+                    JobRecord jobRecord = jobRecordCommonService.initJobRecord(InitJobRecordDTO.builder()
+                            .resourceType(ResourceTypeEnum.CLOUD_ACCOUNT)
+                            .resourceId(cloudAccountId)
+                            .jobType(JobTypeConstants.CLOUD_ACCOUNT_SYNC_JOB)
+                            .jobStatus(JobStatusConstants.SYNCING)
+                            .jobDescription(jobDescription)
+                            .createTime(syncTime)
+                            .build());
                     Arrays.stream(ProviderConstants.values()).filter(providerConstants -> providerConstants.name().equals(cloudAccount.getPlatform())).findFirst().ifPresent(providerConstants -> {
                         Class<? extends ICloudProvider> cloudProvider = ProviderConstants.valueOf(cloudAccount.getPlatform()).getCloudProvider();
                         try {
@@ -238,9 +247,17 @@ public class SyncProviderServiceImpl implements ISyncProviderService {
                                     writeJobRecord.accept(tSaveBatchOrUpdateParams);
                                 } catch (SkipPageException ignored) { // 如果发生跳过异常,那么就不同步当前区域
                                     try {
+                                        jobRecord.setResult(ignored.getMessage());
                                         writeJobRecord.accept(new SaveBatchOrUpdateParams<>(cloudAccountId, syncTime, region, new ArrayList<>(), jobRecord));
                                     } catch (Throwable e) {
                                         throw new RuntimeException(e);
+                                    }
+                                } catch (RuntimeException e){
+                                    try {
+                                        jobRecord.setResult(e.getMessage()+" - "+region);
+                                        writeJobRecord.accept(new SaveBatchOrUpdateParams<>(cloudAccountId, syncTime, region, new ArrayList<>(), jobRecord));
+                                    } catch (Throwable _e) {
+                                        throw new RuntimeException(_e);
                                     }
                                 }
                             }
