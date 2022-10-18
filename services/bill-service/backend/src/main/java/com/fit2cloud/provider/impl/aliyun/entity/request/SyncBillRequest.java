@@ -1,5 +1,7 @@
 package com.fit2cloud.provider.impl.aliyun.entity.request;
 
+import com.aliyun.bssopenapi20171214.models.DescribeInstanceBillRequest;
+import com.aliyun.bssopenapi20171214.models.QueryBillOverviewRequest;
 import com.fit2cloud.common.platform.bill.impl.AliBill;
 import com.fit2cloud.provider.impl.aliyun.entity.credential.AliyunBillCredential;
 import lombok.Data;
@@ -11,7 +13,7 @@ import lombok.Data;
  * {@code @注释: }
  */
 @Data
-public class SyncBillRequest {
+public class SyncBillRequest extends DescribeInstanceBillRequest {
     /**
      * 认证信息
      */
@@ -20,4 +22,9 @@ public class SyncBillRequest {
      * 账单信息
      */
     private AliBill bill;
+
+
+    public DescribeInstanceBillRequest setMonth(String month) {
+        return super.setBillingCycle(month);
+    }
 }

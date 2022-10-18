@@ -4,9 +4,10 @@ import io.reactivex.rxjava3.functions.BiFunction;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.HashMap;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.ZoneOffset;
+import java.util.*;
 
 /**
  * @Author:张少虎
@@ -28,12 +29,18 @@ public class CommonUtil {
             int zoneOffset = cal.get(Calendar.ZONE_OFFSET);
             int dstOffset = cal.get(Calendar.DST_OFFSET);
             SimpleDateFormat sdf = new SimpleDateFormat(format);
+            sdf.setTimeZone(TimeZone.getTimeZone(ZoneId.SHORT_IDS.get("CTT")));
             Date date = sdf.parse(dateStr);
             return date.getTime() + (zoneOffset + dstOffset);
         } catch (ParseException e) {
             e.printStackTrace();
         }
         return 0;
+    }
+
+
+    public static LocalDateTime getLocalDateTime(String dateStr, String format) {
+        return LocalDateTime.ofEpochSecond(getUTCTime(dateStr, format) / 1000, 0, ZoneOffset.ofHours(0));
     }
 
     /**

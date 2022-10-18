@@ -4,6 +4,7 @@ import com.fit2cloud.common.platform.bill.impl.AliBill;
 import com.fit2cloud.common.platform.bill.impl.TencentBill;
 import com.fit2cloud.provider.impl.aliyun.entity.credential.AliyunBillCredential;
 import com.fit2cloud.provider.impl.tencent.entity.credential.TencentBillCredential;
+import com.tencentcloudapi.billing.v20180709.models.DescribeBillDetailRequest;
 import lombok.Data;
 
 /**
@@ -13,7 +14,7 @@ import lombok.Data;
  * {@code @注释: }
  */
 @Data
-public class SyncBillRequest {
+public class SyncBillRequest extends DescribeBillDetailRequest {
     /**
      * 认证信息
      */
@@ -22,4 +23,9 @@ public class SyncBillRequest {
      * 账单信息
      */
     private TencentBill bill;
+
+    @Override
+    public void setMonth(String Month) {
+        super.setMonth(Month);
+    }
 }

@@ -23,10 +23,7 @@ import com.fit2cloud.provider.constants.ProviderConstants;
 import com.fit2cloud.provider.entity.F2CDisk;
 import com.fit2cloud.provider.entity.F2CImage;
 import com.fit2cloud.provider.entity.F2CVirtualMachine;
-import com.fit2cloud.service.ISyncProviderService;
-import com.fit2cloud.service.IVmCloudDiskService;
-import com.fit2cloud.service.IVmCloudImageService;
-import com.fit2cloud.service.IVmCloudServerService;
+import com.fit2cloud.service.*;
 import io.reactivex.rxjava3.functions.BiFunction;
 import io.reactivex.rxjava3.functions.Consumer;
 import lombok.AllArgsConstructor;
@@ -51,9 +48,7 @@ import java.util.function.Function;
  * @注释:
  */
 @Service
-public class SyncProviderServiceImpl implements ISyncProviderService {
-    @Resource
-    private IBaseCloudAccountService cloudAccountService;
+public class SyncProviderServiceImpl extends BaseSyncService implements ISyncProviderService {
     @Resource
     private IVmCloudServerService vmCloudServerService;
     @Resource
@@ -62,12 +57,6 @@ public class SyncProviderServiceImpl implements ISyncProviderService {
     private IVmCloudDiskService vmCloudDiskService;
     @Resource
     private IBaseAccountJobService baseAccountJobService;
-    @Resource
-    private IBaseJobRecordService baseJobRecordService;
-    @Resource
-    private IBaseCloudAccountService baseCloudAccountService;
-    @Resource
-    private RedissonClient redissonClient;
 
     @Override
     public void syncCloudServer(String cloudAccountId) {
@@ -96,9 +85,9 @@ public class SyncProviderServiceImpl implements ISyncProviderService {
      * @param saveBatchOrUpdateParams 插入更新数据所需要的参数
      */
     private void cloudServerSaveOrUpdate(SaveBatchOrUpdateParams<F2CVirtualMachine> saveBatchOrUpdateParams) {
-        List<VmCloudServer> vmCloudServers = saveBatchOrUpdateParams.syncRecord.stream().map(f2CVirtualMachine -> toVmCloudServer(f2CVirtualMachine, saveBatchOrUpdateParams.cloudAccountId, saveBatchOrUpdateParams.syncTime)).toList();
-        LambdaUpdateWrapper<VmCloudServer> updateWrapper = new LambdaUpdateWrapper<VmCloudServer>().eq(VmCloudServer::getAccountId, saveBatchOrUpdateParams.cloudAccountId).eq(VmCloudServer::getRegion, saveBatchOrUpdateParams.region.getRegionId()).lt(VmCloudServer::getUpdateTime, saveBatchOrUpdateParams.syncTime).set(VmCloudServer::getInstanceStatus, "Deleted");
-        saveBatchOrUpdate(vmCloudServerService, vmCloudServers, vmCloudServer -> new LambdaQueryWrapper<VmCloudServer>().eq(VmCloudServer::getAccountId, vmCloudServer.getAccountId()).eq(VmCloudServer::getInstanceUuid, vmCloudServer.getInstanceUuid()).eq(VmCloudServer::getRegion, saveBatchOrUpdateParams.region.getRegionId()), updateWrapper);
+        List<VmCloudServer> vmCloudServers = saveBatchOrUpdateParams.getSyncRecord().stream().map(f2CVirtualMachine -> toVmCloudServer(f2CVirtualMachine, saveBatchOrUpdateParams.getCloudAccountId(), saveBatchOrUpdateParams.getSyncTime())).toList();
+        LambdaUpdateWrapper<VmCloudServer> updateWrapper = new LambdaUpdateWrapper<VmCloudServer>().eq(VmCloudServer::getAccountId, saveBatchOrUpdateParams.getCloudAccountId()).eq(VmCloudServer::getRegion, saveBatchOrUpdateParams.getRegion().getRegionId()).lt(VmCloudServer::getUpdateTime, saveBatchOrUpdateParams.getSyncTime()).set(VmCloudServer::getInstanceStatus, "Deleted");
+        saveBatchOrUpdate(vmCloudServerService, vmCloudServers, vmCloudServer -> new LambdaQueryWrapper<VmCloudServer>().eq(VmCloudServer::getAccountId, vmCloudServer.getAccountId()).eq(VmCloudServer::getInstanceUuid, vmCloudServer.getInstanceUuid()).eq(VmCloudServer::getRegion, saveBatchOrUpdateParams.getRegion().getRegionId()), updateWrapper);
     }
 
     /**
@@ -107,9 +96,9 @@ public class SyncProviderServiceImpl implements ISyncProviderService {
      * @param saveBatchOrUpdateParams 插入更新数据所需要的参数
      */
     private void imageSaveOrUpdate(SaveBatchOrUpdateParams<F2CImage> saveBatchOrUpdateParams) {
-        List<VmCloudImage> vmCloudImages = saveBatchOrUpdateParams.syncRecord.stream().map(img -> toVmImage(img, saveBatchOrUpdateParams.region, saveBatchOrUpdateParams.cloudAccountId, saveBatchOrUpdateParams.syncTime)).toList();
-        LambdaUpdateWrapper<VmCloudImage> updateWrapper = new LambdaUpdateWrapper<VmCloudImage>().eq(VmCloudImage::getAccountId, saveBatchOrUpdateParams.cloudAccountId).eq(VmCloudImage::getRegion, saveBatchOrUpdateParams.region.getRegionId()).lt(VmCloudImage::getUpdateTime, saveBatchOrUpdateParams.syncTime).set(VmCloudImage::getStatus, F2CImageStatus.deleted);
-        saveBatchOrUpdate(vmCloudImageService, vmCloudImages, vmCloudImage -> new LambdaQueryWrapper<VmCloudImage>().eq(VmCloudImage::getAccountId, vmCloudImage.getAccountId()).eq(VmCloudImage::getImageId, vmCloudImage.getImageId()).eq(VmCloudImage::getRegion, saveBatchOrUpdateParams.region.getRegionId()), updateWrapper);
+        List<VmCloudImage> vmCloudImages = saveBatchOrUpdateParams.getSyncRecord().stream().map(img -> toVmImage(img, saveBatchOrUpdateParams.getRegion(), saveBatchOrUpdateParams.getCloudAccountId(), saveBatchOrUpdateParams.getSyncTime())).toList();
+        LambdaUpdateWrapper<VmCloudImage> updateWrapper = new LambdaUpdateWrapper<VmCloudImage>().eq(VmCloudImage::getAccountId, saveBatchOrUpdateParams.getCloudAccountId()).eq(VmCloudImage::getRegion, saveBatchOrUpdateParams.getRegion().getRegionId()).lt(VmCloudImage::getUpdateTime, saveBatchOrUpdateParams.getSyncTime()).set(VmCloudImage::getStatus, F2CImageStatus.deleted);
+        saveBatchOrUpdate(vmCloudImageService, vmCloudImages, vmCloudImage -> new LambdaQueryWrapper<VmCloudImage>().eq(VmCloudImage::getAccountId, vmCloudImage.getAccountId()).eq(VmCloudImage::getImageId, vmCloudImage.getImageId()).eq(VmCloudImage::getRegion, saveBatchOrUpdateParams.getRegion().getRegionId()), updateWrapper);
     }
 
     /**
@@ -118,9 +107,9 @@ public class SyncProviderServiceImpl implements ISyncProviderService {
      * @param saveBatchOrUpdateParams 插入更新数据所需要的参数
      */
     private void diskSaveOrUpdate(SaveBatchOrUpdateParams<F2CDisk> saveBatchOrUpdateParams) {
-        List<VmCloudDisk> vmCloudDisks = saveBatchOrUpdateParams.syncRecord.stream().map(img -> toVmDisk(img, saveBatchOrUpdateParams.region, saveBatchOrUpdateParams.cloudAccountId, saveBatchOrUpdateParams.syncTime)).toList();
-        LambdaUpdateWrapper<VmCloudDisk> updateWrapper = new LambdaUpdateWrapper<VmCloudDisk>().eq(VmCloudDisk::getAccountId, saveBatchOrUpdateParams.cloudAccountId).eq(VmCloudDisk::getRegion, saveBatchOrUpdateParams.region.getRegionId()).lt(VmCloudDisk::getUpdateTime, saveBatchOrUpdateParams.syncTime).set(VmCloudDisk::getStatus, F2CDiskStatus.DELETED);
-        saveBatchOrUpdate(vmCloudDiskService, vmCloudDisks, vmCloudDisk -> new LambdaQueryWrapper<VmCloudDisk>().eq(VmCloudDisk::getAccountId, vmCloudDisk.getAccountId()).eq(VmCloudDisk::getDiskId, vmCloudDisk.getDiskId()).eq(VmCloudDisk::getRegion, saveBatchOrUpdateParams.region.getRegionId()), updateWrapper);
+        List<VmCloudDisk> vmCloudDisks = saveBatchOrUpdateParams.getSyncRecord().stream().map(img -> toVmDisk(img, saveBatchOrUpdateParams.getRegion(), saveBatchOrUpdateParams.getCloudAccountId(), saveBatchOrUpdateParams.getSyncTime())).toList();
+        LambdaUpdateWrapper<VmCloudDisk> updateWrapper = new LambdaUpdateWrapper<VmCloudDisk>().eq(VmCloudDisk::getAccountId, saveBatchOrUpdateParams.getCloudAccountId()).eq(VmCloudDisk::getRegion, saveBatchOrUpdateParams.getRegion().getRegionId()).lt(VmCloudDisk::getUpdateTime, saveBatchOrUpdateParams.getSyncTime()).set(VmCloudDisk::getStatus, F2CDiskStatus.DELETED);
+        saveBatchOrUpdate(vmCloudDiskService, vmCloudDisks, vmCloudDisk -> new LambdaQueryWrapper<VmCloudDisk>().eq(VmCloudDisk::getAccountId, vmCloudDisk.getAccountId()).eq(VmCloudDisk::getDiskId, vmCloudDisk.getDiskId()).eq(VmCloudDisk::getRegion, saveBatchOrUpdateParams.getRegion().getRegionId()), updateWrapper);
     }
 
 
@@ -131,10 +120,10 @@ public class SyncProviderServiceImpl implements ISyncProviderService {
      */
     private void writeJobRecord(SaveBatchOrUpdateParams<?> saveBatchOrUpdateParams) {
         HashMap<String, Object> params = new HashMap<>();
-        params.put("region", saveBatchOrUpdateParams.region);
-        params.put("size", saveBatchOrUpdateParams.syncRecord.size());
-        saveBatchOrUpdateParams.jobRecord.getParams().add(params);
-        baseJobRecordService.updateById(saveBatchOrUpdateParams.jobRecord);
+        params.put("region", saveBatchOrUpdateParams.getRegion());
+        params.put("size", saveBatchOrUpdateParams.getSyncRecord().size());
+        saveBatchOrUpdateParams.getJobRecord().getParams().add(params);
+        baseJobRecordService.updateById(saveBatchOrUpdateParams.getJobRecord());
     }
 
 
@@ -180,30 +169,6 @@ public class SyncProviderServiceImpl implements ISyncProviderService {
     }
 
     /**
-     * 执行函数
-     *
-     * @param providerClass 执行处理器
-     * @param req           请求参数画
-     * @param exec          执行函数
-     * @param <T>           执行函数返回对象
-     * @return 执行函数返回对象泛型
-     */
-    private <T> List<T> exec(Class<? extends ICloudProvider> providerClass, String req, BiFunction<ICloudProvider, String, List<T>> exec) {
-        try {
-            ICloudProvider iCloudProvider = providerClass.getConstructor().newInstance();
-            return exec.apply(iCloudProvider, req);
-        } catch (Throwable e) {
-            if (e instanceof RuntimeException) {
-                throw (RuntimeException) e;
-            } else {
-                throw new RuntimeException(e);
-            }
-        }
-
-    }
-
-
-    /**
      * 代理执行同步动作
      *
      * @param cloudAccountId    云账号id
@@ -215,56 +180,19 @@ public class SyncProviderServiceImpl implements ISyncProviderService {
      * @param remote            删除不存在的云账户函数
      * @param <T>               同步对象类型
      */
-    private <T> void proxy(String cloudAccountId, List<Credential.Region> regions, String jobDescription, BiFunction<ICloudProvider, String, List<T>> execMethod, Consumer<SaveBatchOrUpdateParams<T>> saveBatchOrUpdate, Consumer<SaveBatchOrUpdateParams<T>> writeJobRecord, Runnable remote) {
-        RLock lock = redissonClient.getLock(cloudAccountId + jobDescription);
-        try {
-            if (lock.tryLock()) {
-                CloudAccount cloudAccount = cloudAccountService.getById(cloudAccountId);
-                if (Objects.nonNull(cloudAccount)) {
-                    LocalDateTime syncTime = getSyncTime();
-                    // 初始化一条定时任务记录
-                    JobRecord jobRecord = initJobRecord(jobDescription, syncTime, cloudAccountId);
-                    Arrays.stream(ProviderConstants.values()).filter(providerConstants -> providerConstants.name().equals(cloudAccount.getPlatform())).findFirst().ifPresent(providerConstants -> {
-                        Class<? extends ICloudProvider> cloudProvider = ProviderConstants.valueOf(cloudAccount.getPlatform()).getCloudProvider();
-                        try {
-                            for (Credential.Region region : regions) {
-                                try {
-                                    // 同步数据
-                                    List<T> syncRecord = exec(cloudProvider, getParams(cloudAccount.getCredential(), region.getRegionId()), execMethod);
-                                    SaveBatchOrUpdateParams<T> tSaveBatchOrUpdateParams = new SaveBatchOrUpdateParams<>(cloudAccountId, syncTime, region, syncRecord, jobRecord);
-                                    // 插入并且更新数据
-                                    saveBatchOrUpdate.accept(tSaveBatchOrUpdateParams);
-                                    // 记录同步日志
-                                    writeJobRecord.accept(tSaveBatchOrUpdateParams);
-                                } catch (SkipPageException ignored) { // 如果发生跳过异常,那么就不同步当前区域
-                                    try {
-                                        writeJobRecord.accept(new SaveBatchOrUpdateParams<>(cloudAccountId, syncTime, region, new ArrayList<>(), jobRecord));
-                                    } catch (Throwable e) {
-                                        throw new RuntimeException(e);
-                                    }
-                                }
-                            }
-                            // 修改同步状态为成功
-                            baseJobRecordService.update(new LambdaUpdateWrapper<JobRecord>().eq(JobRecord::getId, jobRecord.getId()).set(JobRecord::getStatus, JobStatusConstants.SUCCESS));
-                        } catch (Throwable e) {
-                            e.printStackTrace();
-                            baseJobRecordService.update(new LambdaUpdateWrapper<JobRecord>().eq(JobRecord::getId, jobRecord.getId()).set(JobRecord::getStatus, JobStatusConstants.FAILED));
-                        }
-
-                    });
-                } else {
-                    // 删除云账号相关的资源
-                    remote.run();
-                    // 删除定时任务
-                    baseCloudAccountService.deleteJobByCloudAccountId(cloudAccountId);
-                }
-            }
-        } finally {
-            if (lock.isLocked()) {
-                lock.unlock();
-            }
-        }
-
+    private <T> void proxy(String cloudAccountId, List<Credential.Region> regions, String jobDescription,
+                           BiFunction<ICloudProvider, String, List<T>> execMethod,
+                           Consumer<SaveBatchOrUpdateParams<T>> saveBatchOrUpdate,
+                           Consumer<SaveBatchOrUpdateParams<T>> writeJobRecord,
+                           Runnable remote) {
+        proxy(cloudAccountId, regions, jobDescription,
+                s -> ProviderConstants.valueOf(s).getCloudProvider(),
+                syncTime -> initJobRecord(jobDescription, syncTime, cloudAccountId),
+                execMethod,
+                (account, region) -> getParams(account.getCredential(), region.getRegionId()),
+                saveBatchOrUpdate,
+                writeJobRecord,
+                remote);
     }
 
     /**
@@ -290,71 +218,6 @@ public class SyncProviderServiceImpl implements ISyncProviderService {
         accountJob.setJobRecordId(jobRecord.getId());
         baseAccountJobService.save(accountJob);
         return jobRecord;
-    }
-
-
-    @Data
-    @AllArgsConstructor
-    @NoArgsConstructor
-    private static class SaveBatchOrUpdateParams<T> {
-        /**
-         * 云账户id
-         */
-        private String cloudAccountId;
-        /**
-         * 更新时间
-         */
-        private LocalDateTime syncTime;
-        /**
-         * 区域
-         */
-        private Credential.Region region;
-        /**
-         * 数据
-         */
-        private List<T> syncRecord;
-        /**
-         * 任务记录
-         */
-        private JobRecord jobRecord;
-    }
-
-    /**
-     * 根据云账号获取区域
-     *
-     * @param accountId 云账号id
-     * @return 云账号区域
-     */
-    private List<Credential.Region> getRegions(String accountId) {
-        CloudAccount cloudAccount = cloudAccountService.getById(accountId);
-        return Arrays.stream(PlatformConstants.values()).filter(platformConstants -> platformConstants.name().equals(cloudAccount.getPlatform())).findFirst().map(platformConstants -> {
-            try {
-                return platformConstants.getCredentialClass().getConstructor().newInstance().deCode(cloudAccount.getCredential()).regions();
-            } catch (InstantiationException | IllegalAccessException | InvocationTargetException |
-                     NoSuchMethodException e) {
-                throw new Fit2cloudException(10001, "获取区域错误");
-            }
-        }).orElseThrow(() -> new Fit2cloudException(10001, "获取区域错误"));
-    }
-
-
-    /**
-     * 批量插入并且逻辑删除
-     *
-     * @param service             服务
-     * @param dataList            需要插入的数据
-     * @param getUpdateWrapper    获取更新的mapper
-     * @param updateDeleteWarpper 删除mapper
-     * @param <T>                 数据泛型
-     */
-    private <T> void saveBatchOrUpdate(IService<T> service, List<T> dataList, Function<T, Wrapper<T>> getUpdateWrapper, Wrapper<T> updateDeleteWarpper) {
-        for (T entity : dataList) {
-            Wrapper<T> updateWrapper = getUpdateWrapper.apply(entity);
-            // 插入或者更新数据
-            service.saveOrUpdate(entity, updateWrapper);
-        }
-        // 删除数据,因为是逻辑删除所以更新status字段
-        service.update(updateDeleteWarpper);
     }
 
     /**
@@ -465,17 +328,5 @@ public class SyncProviderServiceImpl implements ISyncProviderService {
         vmCloudImage.setStatus(F2CImageStatus.normal);
         vmCloudImage.setUpdateTime(updateTime);
         return vmCloudImage;
-    }
-
-
-    /**
-     * 更新的时候精确到秒 因为数据插入也是精确到秒
-     *
-     * @return 更新时间
-     */
-    private LocalDateTime getSyncTime() {
-        LocalDateTime now = LocalDateTime.now();
-        DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
-        return LocalDateTime.parse(now.format(dateTimeFormatter), dateTimeFormatter);
     }
 }

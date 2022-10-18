@@ -12,7 +12,11 @@ public enum JobTypeConstants {
     /**
      * 云账户同步任务
      */
-    CLOUD_ACCOUNT_SYNC_JOB(0);
+    CLOUD_ACCOUNT_SYNC_JOB(0),
+    /**
+     * 云账号账单同步任务
+     */
+    CLOUD_ACCOUNT_SYNC_BILL_JOB(1);
     @EnumValue
     private final int code;
 

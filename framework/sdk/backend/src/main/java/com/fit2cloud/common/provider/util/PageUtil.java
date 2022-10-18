@@ -46,6 +46,39 @@ public class PageUtil {
         return page(request, exec, getList, hasNext, (req, res) -> next.accept(req), DefaultReTry, collector);
     }
 
+    /**
+     * @param request     请求参数
+     * @param exec        执行函数
+     * @param getList     获取数据
+     * @param hasNext     是否有下一条
+     * @param next        下一条
+     * @param reTryNumber 重试次数
+     * @param <T>         返回值类型
+     * @param <Request>   请求对象类型
+     * @param <Response>  接口返回类型
+     * @return 分页查询到到全量数据
+     */
+    public static <T, Request, Response> List<T> page(Request request, Function<Request, Response> exec, Function<Response, List<T>> getList, BiFunction<Request, Response, Boolean> hasNext, Consumer<Request> next, Integer reTryNumber) {
+        ArrayList<T> collector = new ArrayList<>();
+        return page(request, exec, getList, hasNext, (req, res) -> next.accept(req), reTryNumber, collector);
+    }
+
+    /**
+     * @param request     请求参数
+     * @param exec        执行函数
+     * @param getList     获取数据
+     * @param hasNext     是否有下一条
+     * @param next        下一条
+     * @param reTryNumber 重试次数
+     * @param <T>         返回值类型
+     * @param <Request>   请求对象类型
+     * @param <Response>  接口返回类型
+     * @return 分页查询到到全量数据
+     */
+    public static <T, Request, Response> List<T> page(Request request, Function<Request, Response> exec, Function<Response, List<T>> getList, BiFunction<Request, Response, Boolean> hasNext, BiConsumer<Request, Response> next, Integer reTryNumber) {
+        ArrayList<T> collector = new ArrayList<>();
+        return page(request, exec, getList, hasNext, next, reTryNumber, collector);
+    }
 
     /**
      * @param request    请求参数

@@ -1,6 +1,10 @@
 package com.fit2cloud.provider;
 
 
+import com.fit2cloud.es.entity.CloudBill;
+
+import java.util.List;
+
 /**
  * @Author:张少虎
  * @Date: 2022/9/20  10:34 AM
@@ -8,5 +12,5 @@ package com.fit2cloud.provider;
  * @注释:
  */
 public interface ICloudProvider {
-    void syncBill(String request);
+    List<CloudBill> syncBill(String request);
 }
