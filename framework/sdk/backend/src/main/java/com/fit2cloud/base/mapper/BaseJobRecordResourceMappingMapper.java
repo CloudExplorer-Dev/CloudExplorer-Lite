@@ -17,6 +17,6 @@ import java.util.List;
  */
 public interface BaseJobRecordResourceMappingMapper extends BaseMapper<JobRecordResourceMapping> {
 
-    List<JobRecordResourceResponse> findLastResourceJobRecord(@Param("resourceIds") List<String> resourceIds, String resourceType);
+    List<JobRecordResourceResponse> findLastResourceJobRecord(@Param("resourceIds") List<String> resourceIds,@Param("jobType") Integer jobType);
 
 }

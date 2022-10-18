@@ -16,6 +16,7 @@ import com.fit2cloud.base.service.IBaseVmCloudDiskService;
 import com.fit2cloud.base.service.IBaseVmCloudImageService;
 import com.fit2cloud.base.service.IBaseVmCloudServerService;
 import com.fit2cloud.common.constants.CloudAccountConstants;
+import com.fit2cloud.common.constants.JobTypeConstants;
 import com.fit2cloud.common.constants.PlatformConstants;
 import com.fit2cloud.common.constants.RedisConstants;
 import com.fit2cloud.common.exception.Fit2cloudException;
@@ -439,7 +440,7 @@ public class CloudAccountServiceImpl extends ServiceImpl<CloudAccountMapper, Clo
 
     @Override
     public List<JobRecordResourceResponse> findCloudAccountSyncStatus(List<String> cloudAccountIds) {
-        return baseJobRecordResourceMappingMapper.findLastResourceJobRecord(cloudAccountIds, ResourceTypeEnum.CLOUD_ACCOUNT.getCode());
+        return baseJobRecordResourceMappingMapper.findLastResourceJobRecord(cloudAccountIds, JobTypeConstants.CLOUD_ACCOUNT_SYNC_JOB.getCode());
     }
 
     @Override

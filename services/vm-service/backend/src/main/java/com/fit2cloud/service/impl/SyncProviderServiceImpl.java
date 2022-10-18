@@ -3,7 +3,7 @@ package com.fit2cloud.service.impl;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.fit2cloud.base.entity.*;
-import com.fit2cloud.base.service.IBaseAccountJobService;
+import com.fit2cloud.base.service.IBaseJobRecordResourceMappingService;
 import com.fit2cloud.common.constants.JobConstants;
 import com.fit2cloud.common.constants.JobStatusConstants;
 import com.fit2cloud.common.constants.JobTypeConstants;
@@ -24,10 +24,7 @@ import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * @Author:张少虎
@@ -44,7 +41,7 @@ public class SyncProviderServiceImpl extends BaseSyncService implements ISyncPro
     @Resource
     private IVmCloudDiskService vmCloudDiskService;
     @Resource
-    private IBaseAccountJobService baseAccountJobService;
+    private IBaseJobRecordResourceMappingService jobRecordResourceMappingService;
 
     @Override
     public void syncCloudServer(String cloudAccountId) {
@@ -110,7 +107,15 @@ public class SyncProviderServiceImpl extends BaseSyncService implements ISyncPro
         HashMap<String, Object> params = new HashMap<>();
         params.put("region", saveBatchOrUpdateParams.getRegion());
         params.put("size", saveBatchOrUpdateParams.getSyncRecord().size());
-        saveBatchOrUpdateParams.getJobRecord().getParams().add(params);
+        Map<String, Object> jobParams = saveBatchOrUpdateParams.getJobRecord().getParams();
+        if (Objects.isNull(jobParams.get(JobTypeConstants.CLOUD_ACCOUNT_SYNC_JOB.name()))) {
+            List<HashMap<String, Object>> resourceJobParams = new ArrayList<>();
+            resourceJobParams.add(params);
+            jobParams.put(JobTypeConstants.CLOUD_ACCOUNT_SYNC_JOB.name(), resourceJobParams);
+        } else {
+            List<HashMap<String, Object>> resourceJobParams = (List<HashMap<String, Object>>) jobParams.get(JobTypeConstants.CLOUD_ACCOUNT_SYNC_JOB.name());
+            resourceJobParams.add(params);
+        }
         baseJobRecordService.updateById(saveBatchOrUpdateParams.getJobRecord());
     }
 
@@ -195,16 +200,17 @@ public class SyncProviderServiceImpl extends BaseSyncService implements ISyncPro
         JobRecord jobRecord = new JobRecord();
         jobRecord.setDescription(jobDescription);
         jobRecord.setStatus(JobStatusConstants.SYNCING);
-        jobRecord.setParams(new ArrayList<>());
+        jobRecord.setParams(new HashMap<>());
         jobRecord.setType(JobTypeConstants.CLOUD_ACCOUNT_SYNC_JOB);
         jobRecord.setCreateTime(syncTime);
         // 插入任务数据
         baseJobRecordService.save(jobRecord);
         // 插入关联关系
-        AccountJob accountJob = new AccountJob();
-        accountJob.setAccountId(cloudAccountId);
-        accountJob.setJobRecordId(jobRecord.getId());
-        baseAccountJobService.save(accountJob);
+        JobRecordResourceMapping jobRecordResourceMapping = new JobRecordResourceMapping();
+        jobRecordResourceMapping.setResourceId(cloudAccountId);
+        jobRecordResourceMapping.setJobType(JobTypeConstants.CLOUD_ACCOUNT_SYNC_JOB);
+        jobRecordResourceMapping.setJobRecordId(jobRecord.getId());
+        jobRecordResourceMappingService.save(jobRecordResourceMapping);
         return jobRecord;
     }
 

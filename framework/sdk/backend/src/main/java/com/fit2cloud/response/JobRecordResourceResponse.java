@@ -39,7 +39,7 @@ public class JobRecordResourceResponse {
     private String result;
 
     @ApiModelProperty(value = "任务参数", notes = "任务参数")
-    private List<Map<String, Object>> params;
+    private Map<String, Object> params;
 
     @JsonDeserialize(using = LocalDateTimeDeserializer.class)
     @JsonSerialize(using = LocalDateTimeSerializer.class)

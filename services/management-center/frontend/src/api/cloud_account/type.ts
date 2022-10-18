@@ -1,3 +1,5 @@
+import type { SimpleMap } from "@commons/api/base/type";
+
 interface ListOrganizationRequest {
   /**
    *每页显示多少
@@ -319,7 +321,7 @@ interface AccountJobRecord {
   /**
    *任务参数
    */
-  params: Array<{ size: number; region: string }>;
+  params: SimpleMap<Array<{ size: number; region: string } | any>>;
 }
 
 export type {

@@ -18,7 +18,7 @@ public enum JobTypeConstants {
      */
     CLOUD_ACCOUNT_SYNC_BILL_JOB(3),
 
-    /*
+    /**
      * 虚拟机操作任务
      */
     CLOUD_SERVER_OPERATE_JOB(1),
@@ -33,5 +33,9 @@ public enum JobTypeConstants {
 
     JobTypeConstants(int code) {
         this.code = code;
+    }
+
+    public int getCode() {
+        return code;
     }
 }

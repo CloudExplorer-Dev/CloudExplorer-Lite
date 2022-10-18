@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
 import java.util.ArrayList;
+import java.util.HashMap;
 
 /**
  * @author jianneng
@@ -32,7 +33,7 @@ public class JobRecordCommonService {
         JobRecord jobRecord = new JobRecord();
         jobRecord.setDescription(initJobRecordDTO.getJobDescription());
         jobRecord.setStatus(initJobRecordDTO.getJobStatus());
-        jobRecord.setParams(new ArrayList<>());
+        jobRecord.setParams(new HashMap<>());
         jobRecord.setType(initJobRecordDTO.getJobType());
         jobRecord.setCreateTime(initJobRecordDTO.getCreateTime());
         // 插入任务数据
@@ -40,7 +41,7 @@ public class JobRecordCommonService {
         // 插入关联关系
         JobRecordResourceMapping jobRecordResourceMapping = new JobRecordResourceMapping();
         jobRecordResourceMapping.setResourceId(initJobRecordDTO.getResourceId());
-        jobRecordResourceMapping.setResourceType(initJobRecordDTO.getResourceType().getCode());
+        jobRecordResourceMapping.setJobType(initJobRecordDTO.getJobType());
         jobRecordResourceMapping.setCreateTime(initJobRecordDTO.getCreateTime());
         jobRecordResourceMapping.setJobRecordId(jobRecord.getId());
         jobRecordResourceMappingService.save(jobRecordResourceMapping);

@@ -16,6 +16,7 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.fasterxml.jackson.datatype.jsr310.deser.LocalDateTimeDeserializer;
 import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateTimeSerializer;
+import com.fit2cloud.common.constants.JobTypeConstants;
 
 /**
  * <p>
@@ -48,8 +49,8 @@ public class JobRecordResourceMapping implements Serializable {
     /**
      * 资源类型
      */
-    @TableField("resource_type")
-    private String resourceType;
+    @TableField("job_type")
+    private JobTypeConstants jobType;
 
     /**
      * 任务记录id

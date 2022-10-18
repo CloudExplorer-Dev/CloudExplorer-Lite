@@ -36,7 +36,7 @@
             job_record_resource_mapping aj
             LEFT JOIN job_record jr ON aj.job_record_id = jr.id
             WHERE
-            aj.resource_id IN
+            aj.job_type = #{jobType} and aj.resource_id IN
             <foreach collection="resourceIds" index="index" item="id" separator="," close=")" open="(">
                 #{id}
             </foreach>
