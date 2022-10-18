@@ -2,6 +2,7 @@
 import { ref, onMounted } from "vue";
 import VmCloudServerApi from "@/api/vm_cloud_server";
 import type { VmCloudServerVO } from "@/api/vm_cloud_server/type";
+import { InstanceOperateEnum } from "@/api/vm_cloud_server/type";
 import { useRouter } from "vue-router";
 import {
   PaginationConfig,
@@ -26,15 +27,6 @@ const instanceStatus = ref<Array<SimpleMap<string>>>([
   { text: "Deleted", value: "Deleted" },
   { text: "Stopped", value: "Stopped" },
 ]);
-//操作枚举
-//TODO 想要处理国际化
-enum InstanceOperateEnum {
-  POWER_ON = <any> "开机",
-  POWER_OFF = <any>"关闭电源",
-  SHUTDOWN = <any> "关机",
-  REBOOT = <any> "重启",
-  DELETE = <any> "删除",
-}
 
 /**
  * 查询
@@ -81,7 +73,7 @@ const tableConfig = ref<TableConfig>({
     showEmpty: false,
     // 查询函数
     search: search,
-    quickPlaceholder: t("commons.btn.search","查找"),
+    quickPlaceholder: t("commons.btn.search", "查找"),
     components: [],
     searchOptions: [
       {
@@ -107,7 +99,7 @@ const tableConfig = ref<TableConfig>({
 const showDetail = (row: VmCloudServerVO) => {
   useRoute.push({
     path: useRoute.currentRoute.value.path.replace("/list", "/detail"),
-    query: { id: row.id},
+    query: { id: row.id },
   });
 };
 /**
@@ -170,6 +162,17 @@ const buttons = ref([
     },
   },
 ]);
+
+/**
+ * 验证VMTools状态
+ * @param vm
+ */
+const checkVmToolsStatus = (vm: VmCloudServerVO) => {
+  if (vm.platform === "fit2cloud_vsphere_platform") {
+    return vm.vmToolsStatus;
+  }
+  return true;
+};
 /**
  * 开机
  * @param row
@@ -185,8 +188,9 @@ const powerOn = (row: VmCloudServerVO) => {
     }
   ).then(() => {
     VmCloudServerApi.powerOn(row.id as string, tableLoading)
-      .then(() => {
-        //
+      .then((res) => {
+        console.log("-----" + res);
+        ElMessage.success(t("commons.msg.op_success"));
       })
       .catch((err) => {
         console.log(err);
@@ -198,18 +202,23 @@ const powerOn = (row: VmCloudServerVO) => {
 };
 //关机
 const shutdown = (row: VmCloudServerVO) => {
-  ElMessageBox.confirm(
-    t("vm_cloud_server.message_box.confirm_shutdown", "确认关机"),
-    t("commons.message_box.prompt", "提示"),
-    {
-      confirmButtonText: t("commons.message_box.confirm", "确认"),
-      cancelButtonText: t("commons.btn.cancel", "取消"),
-      type: "warning",
-    }
-  ).then(() => {
-    VmCloudServerApi.shutdownInstance(row.id as string, tableLoading)
+  let label = t("vm_cloud_server.message_box.confirm_shutdown", "确认关机");
+  let powerOff = false;
+  if (!checkVmToolsStatus(row)) {
+    label = t(
+      "vm_cloud_server.message_box.confirm_shutdown",
+      "当前虚拟机未安装VMtools，无法软关机，若继续操作则关闭电源，是否继续？"
+    );
+    powerOff = true;
+  }
+  ElMessageBox.confirm(label, t("commons.message_box.prompt", "提示"), {
+    confirmButtonText: t("commons.message_box.confirm", "确认"),
+    cancelButtonText: t("commons.btn.cancel", "取消"),
+    type: "warning",
+  }).then(() => {
+    VmCloudServerApi.shutdownInstance(row.id as string, powerOff, tableLoading)
       .then(() => {
-        //
+        ElMessage.success(t("commons.msg.op_success"));
       })
       .catch((err) => {
         console.log(err);
@@ -232,7 +241,7 @@ const powerOff = (row: VmCloudServerVO) => {
   ).then(() => {
     VmCloudServerApi.powerOff(row.id as string, tableLoading)
       .then(() => {
-        //
+        ElMessage.success(t("commons.msg.op_success"));
       })
       .catch((err) => {
         console.log(err);
@@ -255,7 +264,7 @@ const reboot = (row: VmCloudServerVO) => {
   ).then(() => {
     VmCloudServerApi.reboot(row.id as string, tableLoading)
       .then(() => {
-        //
+        ElMessage.success(t("commons.msg.op_success"));
       })
       .catch((err) => {
         console.log(err);
@@ -279,7 +288,7 @@ const deleteInstance = (row: VmCloudServerVO) => {
   ).then(() => {
     VmCloudServerApi.deleteInstance(row.id as string, tableLoading)
       .then(() => {
-        //
+        ElMessage.success(t("commons.msg.op_success"));
       })
       .catch((err) => {
         console.log(err);
@@ -298,7 +307,9 @@ const batchOperate = (operate: string) => {
     return;
   }
   ElMessageBox.confirm(
-    t("vm_cloud_server.message_box.confirm_batch_operate", [InstanceOperateEnum[operate as any]]),
+    t("vm_cloud_server.message_box.confirm_batch_operate", [
+      InstanceOperateEnum[operate as any],
+    ]),
     t("commons.message_box.prompt", "提示"),
     {
       confirmButtonText: t("commons.message_box.confirm", "确认"),
@@ -312,7 +323,7 @@ const batchOperate = (operate: string) => {
       tableLoading
     )
       .then(() => {
-        //
+        ElMessage.success(t("commons.msg.op_success"));
       })
       .catch((err) => {
         console.log(err);
@@ -334,8 +345,8 @@ const deleteBatch = () => {
   batchOperate("DELETE");
 };
 const moreActions = ref([
-  { text: t("commons.btn.grant","授权"), arg: "", fn: authorizeBatch },
-  { text: t("commons.btn.delete","删除"), arg: "", fn: deleteBatch },
+  { text: t("commons.btn.grant", "授权"), arg: "", fn: authorizeBatch },
+  { text: t("commons.btn.delete", "删除"), arg: "", fn: deleteBatch },
 ]);
 //触发事件
 const handleAction = (actionObj: any) => {
@@ -357,17 +368,26 @@ const handleAction = (actionObj: any) => {
     ref="table"
   >
     <template #toolbar>
-      <el-button type="primary">{{t("commons.btn.create","创建")}}</el-button>
-      <el-button @click="batchOperate('POWER_ON')">{{t("vm_cloud_server.btn.power_on","启动")}}</el-button>
-      <el-button @click="batchOperate('SHUTDOWN')">{{t("vm_cloud_server.btn.shutdown","关机")}}</el-button>
-      <el-button @click="batchOperate('REBOOT')">{{t("vm_cloud_server.btn.reboot","重启")}}</el-button>
+      <el-button type="primary">{{
+        t("commons.btn.create", "创建")
+      }}</el-button>
+      <el-button @click="batchOperate('POWER_ON')">{{
+        t("vm_cloud_server.btn.power_on", "启动")
+      }}</el-button>
+      <el-button @click="batchOperate('SHUTDOWN')">{{
+        t("vm_cloud_server.btn.shutdown", "关机")
+      }}</el-button>
+      <el-button @click="batchOperate('REBOOT')">{{
+        t("vm_cloud_server.btn.reboot", "重启")
+      }}</el-button>
       <el-dropdown
         @command="handleAction"
         trigger="click"
         style="margin-left: 12px"
       >
         <el-button>
-          {{t("commons.btn.more_actions","更多操作")}}<el-icon class="el-icon--right"><arrow-down /></el-icon>
+          {{ t("commons.btn.more_actions", "更多操作")
+          }}<el-icon class="el-icon--right"><arrow-down /></el-icon>
         </el-button>
         <template #dropdown>
           <el-dropdown-menu>
@@ -398,9 +418,18 @@ const handleAction = (actionObj: any) => {
         </el-tooltip>
       </template>
     </el-table-column>
-    <el-table-column prop="organizationName" :label="$t('commons.org')"></el-table-column>
-    <el-table-column prop="workspaceName" :label="$t('commons.workspace')"></el-table-column>
-    <el-table-column prop="accountName" :label="$t('commons.cloud_account.native')"></el-table-column>
+    <el-table-column
+      prop="organizationName"
+      :label="$t('commons.org')"
+    ></el-table-column>
+    <el-table-column
+      prop="workspaceName"
+      :label="$t('commons.workspace')"
+    ></el-table-column>
+    <el-table-column
+      prop="accountName"
+      :label="$t('commons.cloud_account.native')"
+    ></el-table-column>
     <el-table-column
       prop="instanceStatus"
       column-key="instanceStatus"
@@ -422,7 +451,10 @@ const handleAction = (actionObj: any) => {
       prop="instanceTypeDescription"
       :label="$t('commons.cloud_server.instance_type')"
     ></el-table-column>
-    <el-table-column prop="ipArray" :label="$t('vm_server_cloud.label.ip_address')">
+    <el-table-column
+      prop="ipArray"
+      :label="$t('vm_cloud_server.label.ip_address')"
+    >
       <template #default="scope">
         <span v-show="scope.row.ipArray.length > 2">{{
           JSON.parse(scope.row.ipArray)[0]
@@ -434,7 +466,8 @@ const handleAction = (actionObj: any) => {
           max-height="100px"
         >
           <span>
-            {{t("commons.cloud_server.more","更多")}}<el-icon class="el-icon--right"><arrow-down /></el-icon>
+            {{ t("commons.cloud_server.more", "更多")
+            }}<el-icon class="el-icon--right"><arrow-down /></el-icon>
           </span>
           <template #dropdown>
             <el-dropdown-menu>
@@ -453,7 +486,10 @@ const handleAction = (actionObj: any) => {
       :label="$t('commons.cloud_server.applicant')"
       :show="false"
     ></el-table-column>
-    <el-table-column prop="createTime" :label="$t('commons.create_time')"></el-table-column>
+    <el-table-column
+      prop="createTime"
+      :label="$t('commons.create_time')"
+    ></el-table-column>
     <fu-table-operations
       :ellipsis="2"
       :columns="columns"

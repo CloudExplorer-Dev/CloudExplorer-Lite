@@ -26,19 +26,22 @@ onMounted(() => {
 });
 const search = (condition: TableSearch) => {
   const params = TableSearch.toSearchParams(condition);
-  WorkspaceApi.listWorkspace({
-    currentPage: tableConfig.value.paginationConfig.currentPage,
-    pageSize: tableConfig.value.paginationConfig.pageSize,
-    ...params,
-  },tableLoading).then((res) => {
+  WorkspaceApi.listWorkspace(
+    {
+      currentPage: tableConfig.value.paginationConfig.currentPage,
+      pageSize: tableConfig.value.paginationConfig.pageSize,
+      ...params,
+    },
+    tableLoading
+  ).then((res) => {
     tableData.value = res.data.records;
     tableConfig.value.paginationConfig?.setTotal(
-        res.data.total,
-        tableConfig.value.paginationConfig
+      res.data.total,
+      tableConfig.value.paginationConfig
     );
     tableConfig.value.paginationConfig?.setCurrentPage(
-        res.data.current,
-        tableConfig.value.paginationConfig
+      res.data.current,
+      tableConfig.value.paginationConfig
     );
   });
 };
@@ -55,45 +58,48 @@ const batchDelete = () => {
   //   return;
   // }
   ElMessageBox.confirm(
-      t("commons.message_box.confirm_delete"),
-      t("commons.message_box.prompt"),
-      {
-        confirmButtonText: t("commons.btn.delete"),
-        cancelButtonText: t("commons.btn.cancel"),
-        type: "warning",
-      }
+    t("commons.message_box.confirm_delete"),
+    t("commons.message_box.prompt"),
+    {
+      confirmButtonText: t("commons.btn.delete"),
+      cancelButtonText: t("commons.btn.cancel"),
+      type: "warning",
+    }
   ).then(() => {
     //执行删除操作
-    WorkspaceApi.deleteBatch(multipleSelection.value ? multipleSelection.value : [],tableLoading)
-        .then(() => {
-          t("commons.msg.delete_success");
-          search(new TableSearch());
-        })
-        .catch((err) => {
-          console.log(err);
-        });
+    WorkspaceApi.deleteBatch(
+      multipleSelection.value ? multipleSelection.value : [],
+      tableLoading
+    )
+      .then(() => {
+        t("commons.msg.delete_success");
+        search(new TableSearch());
+      })
+      .catch((err) => {
+        console.log(err);
+      });
   });
 };
 //单个删除
 const deleteOne = (row: Workspace) => {
   ElMessageBox.confirm(
-      t("commons.message_box.confirm_delete"),
-      t("commons.message_box.prompt"),
-      {
-        confirmButtonText: t("commons.btn.delete"),
-        cancelButtonText: t("commons.btn.cancel"),
-        type: "warning",
-      }
+    t("commons.message_box.confirm_delete"),
+    t("commons.message_box.prompt"),
+    {
+      confirmButtonText: t("commons.btn.delete"),
+      cancelButtonText: t("commons.btn.cancel"),
+      type: "warning",
+    }
   ).then(() => {
     //执行删除操作
-    WorkspaceApi.deleteWorkspaceById(row.id,tableLoading)
-        .then(() => {
-          t("commons.msg.delete_success");
-          search(new TableSearch());
-        })
-        .catch((err) => {
-          console.log(err);
-        });
+    WorkspaceApi.deleteWorkspaceById(row.id, tableLoading)
+      .then(() => {
+        t("commons.msg.delete_success");
+        search(new TableSearch());
+      })
+      .catch((err) => {
+        console.log(err);
+      });
   });
 };
 
@@ -124,12 +130,12 @@ const tableConfig = ref<TableConfig>({
     quickPlaceholder: t("commons.btn.search"),
     components: [
       SearchConfig.buildComponent().DateComponent.newInstance(
-          "createTime",
-          t("commons.create_time")
+        "createTime",
+        t("commons.create_time")
       ),
       SearchConfig.buildComponent().DateComponent.newInstance(
-          "updateTime",
-          t("commons.update_time")
+        "updateTime",
+        t("commons.update_time")
       ),
     ],
     searchOptions: [
@@ -140,22 +146,23 @@ const tableConfig = ref<TableConfig>({
   paginationConfig: new PaginationConfig(),
   tableOperations: new TableOperations([
     TableOperations.buildButtons().newInstance(
-        t("commons.btn.edit"),
-        "primary",
-        edit,
-        "EditPen"
+      t("commons.btn.edit"),
+      "primary",
+      edit,
+      "EditPen"
     ),
     TableOperations.buildButtons().newInstance(
-        t("commons.btn.delete"),
-        "primary",
-        deleteOne,
-        "Delete"
+      t("commons.btn.delete"),
+      "primary",
+      deleteOne,
+      "Delete"
     ),
   ]),
 });
 </script>
 <template>
-  <ce-table v-loading="tableLoading"
+  <ce-table
+    v-loading="tableLoading"
     :columns="columns"
     :data="tableData"
     :tableConfig="tableConfig"

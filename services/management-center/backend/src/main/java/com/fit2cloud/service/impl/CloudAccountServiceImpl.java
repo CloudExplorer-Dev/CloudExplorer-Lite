@@ -10,7 +10,7 @@ import com.fit2cloud.autoconfigure.ServerInfo;
 import com.fit2cloud.base.entity.VmCloudDisk;
 import com.fit2cloud.base.entity.VmCloudImage;
 import com.fit2cloud.base.entity.VmCloudServer;
-import com.fit2cloud.base.mapper.BaseAccountJobMapper;
+import com.fit2cloud.base.mapper.BaseJobRecordResourceMappingMapper;
 import com.fit2cloud.base.service.IBaseCloudAccountService;
 import com.fit2cloud.base.service.IBaseVmCloudDiskService;
 import com.fit2cloud.base.service.IBaseVmCloudImageService;
@@ -20,6 +20,7 @@ import com.fit2cloud.common.constants.PlatformConstants;
 import com.fit2cloud.common.constants.RedisConstants;
 import com.fit2cloud.common.exception.Fit2cloudException;
 import com.fit2cloud.common.form.vo.Form;
+import com.fit2cloud.common.log.constants.ResourceTypeEnum;
 import com.fit2cloud.common.platform.credential.Credential;
 import com.fit2cloud.common.provider.entity.F2CBalance;
 import com.fit2cloud.common.utils.ColumnNameUtil;
@@ -36,7 +37,7 @@ import com.fit2cloud.dao.mapper.CloudAccountMapper;
 import com.fit2cloud.redis.RedisService;
 import com.fit2cloud.request.cloud_account.CloudAccountModuleJob;
 import com.fit2cloud.request.cloud_account.SyncRequest;
-import com.fit2cloud.response.cloud_account.AccountJobRecordResponse;
+import com.fit2cloud.response.JobRecordResourceResponse;
 import com.fit2cloud.response.cloud_account.ResourceCountResponse;
 import com.fit2cloud.response.cloud_account.SyncResource;
 import com.fit2cloud.service.ICloudAccountService;
@@ -89,7 +90,7 @@ public class CloudAccountServiceImpl extends ServiceImpl<CloudAccountMapper, Clo
     @Resource
     IBaseVmCloudImageService cloudImageService;
     @Resource
-    private BaseAccountJobMapper baseAccountJobMapper;
+    private BaseJobRecordResourceMappingMapper baseJobRecordResourceMappingMapper;
     @Resource
     private RedisService redisService;
 
@@ -437,8 +438,8 @@ public class CloudAccountServiceImpl extends ServiceImpl<CloudAccountMapper, Clo
     }
 
     @Override
-    public List<AccountJobRecordResponse> findCloudAcoountSyncStatus(List<String> cloudAccountIds) {
-        return baseAccountJobMapper.findLastAccountJobRecord(cloudAccountIds);
+    public List<JobRecordResourceResponse> findCloudAccountSyncStatus(List<String> cloudAccountIds) {
+        return baseJobRecordResourceMappingMapper.findLastResourceJobRecord(cloudAccountIds, ResourceTypeEnum.CLOUD_ACCOUNT.getCode());
     }
 
     @Override
@@ -506,10 +507,10 @@ public class CloudAccountServiceImpl extends ServiceImpl<CloudAccountMapper, Clo
         return exchange.getBody().getData();
     };
 
-    public IPage<AccountJobRecordResponse> pageSyncRecord(SyncRecordRequest syncRecordRequest) {
-        Page<AccountJobRecordResponse> syncRecordPage = PageUtil.of(syncRecordRequest, AccountJobRecordResponse.class, new OrderItem("create_time", true));
+    public IPage<JobRecordResourceResponse> pageSyncRecord(SyncRecordRequest syncRecordRequest) {
+        Page<JobRecordResourceResponse> syncRecordPage = PageUtil.of(syncRecordRequest, JobRecordResourceResponse.class, new OrderItem("create_time", true));
         QueryWrapper wrapper = Wrappers.query();
-        wrapper.eq("account_id", syncRecordRequest.getCloudAccountId());
+        wrapper.eq("resource_id", syncRecordRequest.getCloudAccountId());
         return baseMapper.pageSyncRecord(syncRecordPage, wrapper);
     }
 }

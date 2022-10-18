@@ -72,4 +72,17 @@ public interface ICloudProvider {
      */
     boolean deleteInstance(String req);
 
+    /**
+     * 虚拟机关机
+     * @param req
+     */
+    boolean hardShutdownInstance(String req);
+
+    /**
+     * 虚拟机重启
+     * @param req
+     * @return
+     */
+    boolean hardRebootInstance(String req);
+
 }

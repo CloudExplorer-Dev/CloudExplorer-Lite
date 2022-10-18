@@ -25,23 +25,23 @@ const message = {
       image_id: "鏡像ID",
     },
     btn: {
-      set_management_info: "設定管理資訊"
-    }
+      set_management_info: "設定管理資訊",
+    },
   },
   vm_cloud_disk: {
     label: {
-      "vm": "所屬虛擬機器",
-      "size": "大小",
-      "disk_category": "磁片種類",
-      "disk_type": "磁片類型",
-      "mount_info": "掛載資訊",
-      "delete_with_instance": "隨實例删除"
+      vm: "所屬虛擬機器",
+      size: "大小",
+      disk_category: "磁片種類",
+      disk_type: "磁片類型",
+      mount_info: "掛載資訊",
+      delete_with_instance: "隨實例删除",
     },
     btn: {
       uninstall: "卸載",
-      mount: "掛載"
-    }
-  }
+      mount: "掛載",
+    },
+  },
 };
 export default {
   ...message,

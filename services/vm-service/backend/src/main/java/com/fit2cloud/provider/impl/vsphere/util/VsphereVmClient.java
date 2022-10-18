@@ -143,7 +143,7 @@ public class VsphereVmClient extends VsphereClient {
             Task task = virtualMachine.powerOffVM_Task();
             String result = task.waitForTask();
             if(!StringUtils.equalsIgnoreCase(TaskInfoState.success.name(),result)){
-                throw new RuntimeException("TaskInfo - "+task.getTaskInfo());
+                throw new RuntimeException("TaskInfo - "+task.getTaskInfo().getDescription());
             }
             return true;
         } catch (Exception e) {
@@ -166,7 +166,7 @@ public class VsphereVmClient extends VsphereClient {
             Task task = virtualMachine.powerOnVM_Task(hostSystem);
             String result = task.waitForTask();
             if(!StringUtils.equalsIgnoreCase(TaskInfoState.success.name(),result)){
-                throw new RuntimeException("TaskInfo - "+task.getTaskInfo());
+                throw new RuntimeException("TaskInfo - "+task.getTaskInfo().getDescription());
             }
             return true;
         } catch (Exception e) {
@@ -224,7 +224,36 @@ public class VsphereVmClient extends VsphereClient {
             Task task = virtualMachine.destroy_Task();
             String result = task.waitForTask();
             if(!StringUtils.equalsIgnoreCase(TaskInfoState.success.name(),result)){
-                throw new RuntimeException("TaskInfo - "+task.getTaskInfo());
+                throw new RuntimeException("TaskInfo - "+task.getTaskInfo().getDescription());
+            }
+            return true;
+        } catch (Exception e) {
+            throw new RuntimeException(e.getMessage());
+        }
+    }
+
+    /**
+     * 硬重启
+     * 先关闭电源再打开
+     * @param uuid
+     * @return
+     */
+    public boolean hardReboot(String uuid){
+        VirtualMachine virtualMachine = getVirtualMachineByUuId(uuid);
+        if(StringUtils.equalsIgnoreCase(VirtualMachinePowerState.poweredOff.name(),virtualMachine.getRuntime().getPowerState().name())){
+            throw new RuntimeException("The current state of the virtual machine is shutdown!");
+        }
+        try {
+            Task powerOffTask = virtualMachine.powerOffVM_Task();
+            String powerOffResult = powerOffTask.waitForTask();
+            if(!StringUtils.equalsIgnoreCase(TaskInfoState.success.name(),powerOffResult)){
+                throw new RuntimeException("hardReboot  powerOffTaskInfo - "+powerOffTask.getTaskInfo().getDescription());
+            }
+            HostSystem hostSystem = getHost(virtualMachine);
+            Task powerOnTask = virtualMachine.powerOnVM_Task(hostSystem);
+            String powerOnResult = powerOnTask.waitForTask();
+            if(!StringUtils.equalsIgnoreCase(TaskInfoState.success.name(),powerOnResult)){
+                throw new RuntimeException("hardReboot  powerOnTaskInfo - "+powerOnTask.getTaskInfo().getDescription());
             }
             return true;
         } catch (Exception e) {

@@ -92,6 +92,9 @@ public class ElasticsearchProvide {
         } catch (ElasticsearchException e) {
             LogUtil.error("[ elasticsearch ]CODE[{}] >>{}", EsErrorCodeConstants.SEARCH_FAILED.getCode(), e.getMessage() + " " + e.getMessage());
             throw new Fit2cloudException(e.status(), e.getMessage());
+        } catch (Exception e){
+            LogUtil.error("[ elasticsearch ]CODE[{}] >>{}", EsErrorCodeConstants.SEARCH_FAILED.getCode(), e.getMessage() + " " + e.getMessage());
+            throw new Fit2cloudException(100010, e.getMessage());
         }
     }
 

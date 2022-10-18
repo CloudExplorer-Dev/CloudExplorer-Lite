@@ -12,6 +12,9 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import javax.validation.constraints.NotNull;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
 
 /**
  * @Author:张少虎
@@ -21,6 +24,8 @@ import javax.validation.constraints.NotNull;
  */
 @Data
 public class AliyunVmCredential extends AliCredential implements Credential {
+
+    private static Map<String, Region> regionCache = new ConcurrentHashMap<String, Region>();
     public Client getClient() {
         Config config = new Config()
                 .setAccessKeyId(getAccessKeyId())
@@ -33,4 +38,27 @@ public class AliyunVmCredential extends AliCredential implements Credential {
             throw new Fit2cloudException(1000, "获取客户端失败");
         }
     }
+
+    /**
+     * 根据区域获取客户端
+     * @param regionId
+     * @return
+     */
+    public Client getClientByRegion(String regionId) {
+        if(regionCache.size()==0){
+            regionCache = this.regions().stream().collect(Collectors.toMap(Region::getRegionId,v->v,(k1,k2)->k1));
+        }
+        String endpoint = regionCache.get(regionId)==null?"ecs.aliyuncs.com":regionCache.get(regionId).getEndpoint();
+        Config config = new Config()
+                .setAccessKeyId(getAccessKeyId())
+                .setAccessKeySecret(getAccessKeySecret())
+                .setEndpoint(endpoint);
+        try {
+            Client client = new Client(config);
+            return client;
+        } catch (Exception e) {
+            throw new Fit2cloudException(1000, "获取客户端失败");
+        }
+    }
+
 }

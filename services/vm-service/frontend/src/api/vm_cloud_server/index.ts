@@ -23,9 +23,10 @@ export function listVmCloudServer(
  */
 export function shutdownInstance(
   instanceId: string,
+  powerOff: boolean,
   loading?: Ref<boolean>
 ): Promise<Result<boolean>> {
-  return post("api/server/shutdown/" + instanceId, null, null, loading);
+  return post("api/server/shutdown/" + instanceId, powerOff, null, loading);
 }
 
 /**
@@ -36,7 +37,7 @@ export function shutdownInstance(
 export function powerOn(
   instanceId: string,
   loading?: Ref<boolean>
-): Promise<Result<boolean>> {
+): Promise<Result<null>> {
   return post("api/server/powerOn/" + instanceId, null, null, loading);
 }
 
@@ -83,10 +84,10 @@ export function deleteInstance(
  * @param loading
  */
 export function batchOperate(
-  instanceIds: any,
+  instanceIds: Array<string>,
   operate: string,
   loading?: Ref<boolean>
-): Promise<Result<boolean>> {
+): Promise<Result<null>> {
   return post(
     "api/server/batchOperate",
     null,

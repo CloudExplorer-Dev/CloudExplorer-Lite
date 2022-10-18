@@ -23,7 +23,7 @@ public interface IVmCloudServerService extends IService<VmCloudServer> {
 
     boolean powerOn(String vmId);
 
-    boolean shutdownInstance(String vmId);
+    boolean shutdownInstance(String vmId,Boolean powerOff);
 
     boolean rebootInstance(String vmId);
 

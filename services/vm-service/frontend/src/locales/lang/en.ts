@@ -25,23 +25,23 @@ const message = {
       image_id: "Image ID",
     },
     btn: {
-      set_management_info: "Set management information"
-    }
+      set_management_info: "Set management information",
+    },
   },
   vm_cloud_disk: {
     label: {
-      "vm": "Virtual machine",
-      "size": "Size",
-      "disk_category": "Disk category",
-      "disk_type": "Disk Type",
-      "mount_info": "Mounting information",
-      "delete_with_instance": "Delete with Instance"
+      vm: "Virtual machine",
+      size: "Size",
+      disk_category: "Disk category",
+      disk_type: "Disk Type",
+      mount_info: "Mounting information",
+      delete_with_instance: "Delete with Instance",
     },
     btn: {
       uninstall: "Uninstall",
-      mount: "Mount"
-    }
-  }
+      mount: "Mount",
+    },
+  },
 };
 export default {
   ...message,
