@@ -64,13 +64,14 @@ public abstract class BaseSyncService {
      */
     protected <T, P> void proxy(String cloudAccountId,
                                 String jobDescription,
+                                List<String> months,
                                 Function<String, Class<? extends P>> getCloudProvider,
                                 Function<LocalDateTime, JobRecord> initJobRecord,
                                 BiFunction<P, String, List<T>> execMethod,
-                                Function<CloudAccount, String> getExecMethodArgs,
-                                Consumer<SaveBatchOrUpdateParams<T>> saveBatchOrUpdate,
-                                Consumer<SaveBatchOrUpdateParams<T>> writeJobRecord,
-                                Runnable remote) {
+                                BiFunction<CloudAccount, String, String> getExecMethodArgs,
+                                Consumer<BiSaveBatchOrUpdateParams<T>> saveBatchOrUpdate,
+                                Consumer<BiSaveBatchOrUpdateParams<T>> writeJobRecord,
+                                Consumer<String> remote) {
         RLock lock = redissonClient.getLock(cloudAccountId + jobDescription);
         try {
             if (lock.tryLock()) {
@@ -81,13 +82,20 @@ public abstract class BaseSyncService {
                     JobRecord jobRecord = initJobRecord.apply(syncTime);
                     Class<? extends P> cloudProvider = getCloudProvider.apply(cloudAccount.getPlatform());
                     try {
-                        // 同步数据
-                        List<T> syncRecord = CommonUtil.exec(cloudProvider, getExecMethodArgs.apply(cloudAccount), execMethod);
-                        SaveBatchOrUpdateParams<T> tSaveBatchOrUpdateParams = new SaveBatchOrUpdateParams<>(cloudAccountId, syncTime, null, syncRecord, jobRecord);
-                        // 插入并且更新数据
-                        saveBatchOrUpdate.accept(tSaveBatchOrUpdateParams);
-                        // 记录同步日志
-                        writeJobRecord.accept(tSaveBatchOrUpdateParams);
+                        for (String month : months) {
+                            String params = getExecMethodArgs.apply(cloudAccount, month);
+                            try {
+                                // 同步数据
+                                List<T> syncRecord = CommonUtil.exec(cloudProvider, params, execMethod);
+                                BiSaveBatchOrUpdateParams<T> tSaveBillBatchOrUpdateParams = new BiSaveBatchOrUpdateParams<>(cloudAccount, syncTime, params, syncRecord, jobRecord);
+                                // 插入并且更新数据
+                                saveBatchOrUpdate.accept(tSaveBillBatchOrUpdateParams);
+                                // 记录同步日志
+                                writeJobRecord.accept(tSaveBillBatchOrUpdateParams);
+                            } catch (SkipPageException ignored) {
+                                writeJobRecord.accept(new BiSaveBatchOrUpdateParams<>(cloudAccount, syncTime, params, new ArrayList<>(), jobRecord));
+                            }
+                        }
                         // 修改同步状态为成功
                         baseJobRecordService.update(new LambdaUpdateWrapper<JobRecord>().eq(JobRecord::getId, jobRecord.getId()).set(JobRecord::getStatus, JobStatusConstants.SUCCESS));
                     } catch (Throwable e) {
@@ -96,7 +104,11 @@ public abstract class BaseSyncService {
                     }
                 } else {
                     // 删除云账号相关的资源
-                    remote.run();
+                    try {
+                        remote.accept(cloudAccountId);
+                    } catch (Throwable e) {
+                        throw new RuntimeException(e);
+                    }
                     // 删除定时任务
                     cloudAccountService.deleteJobByCloudAccountId(cloudAccountId);
                 }
@@ -152,11 +164,7 @@ public abstract class BaseSyncService {
                                 // 记录同步日志
                                 writeJobRecord.accept(tSaveBatchOrUpdateParams);
                             } catch (SkipPageException ignored) { // 如果发生跳过异常,那么就不同步当前区域
-                                try {
-                                    writeJobRecord.accept(new SaveBatchOrUpdateParams<>(cloudAccountId, syncTime, region, new ArrayList<>(), jobRecord));
-                                } catch (Throwable e) {
-                                    throw new RuntimeException(e);
-                                }
+                                writeJobRecord.accept(new SaveBatchOrUpdateParams<>(cloudAccountId, syncTime, region, new ArrayList<>(), jobRecord));
                             }
                         }
                         // 修改同步状态为成功
@@ -241,6 +249,33 @@ public abstract class BaseSyncService {
          * 任务记录
          */
         private JobRecord jobRecord;
+    }
+
+    @Data
+    @AllArgsConstructor
+    @NoArgsConstructor
+    public static class BiSaveBatchOrUpdateParams<T> {
+        /**
+         * 云账号数据
+         */
+        private CloudAccount cloudAccount;
+        /**
+         * 同步时间
+         */
+        private LocalDateTime syncTime;
+        /**
+         * 参数
+         */
+        private String requestParams;
+        /**
+         * 数据
+         */
+        private List<T> syncRecord;
+        /**
+         * 任务记录
+         */
+        private JobRecord jobRecord;
+
     }
 
     /**

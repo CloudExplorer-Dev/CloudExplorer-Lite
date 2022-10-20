@@ -11,6 +11,7 @@ import java.math.BigDecimal;
 import java.util.Arrays;
 import java.util.DoubleSummaryStatistics;
 import java.util.List;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 /**
@@ -20,11 +21,19 @@ import java.util.stream.Collectors;
  * {@code @注释: }
  */
 public class TencentMappingUtil {
+    /**
+     * 将腾讯云账单对象转换为系统账单对象
+     *
+     * @param item 腾讯云账单对象
+     * @return 系统账单对象
+     */
     public static CloudBill toCloudBill(BillDetail item) {
         CloudBill cloudBill = new CloudBill();
+        cloudBill.setId(UUID.randomUUID().toString().replace("-", ""));
         cloudBill.setProjectId(item.getProjectId().toString());
         cloudBill.setProjectName(item.getProjectName());
-        cloudBill.setRegion(item.getRegionId());
+        cloudBill.setRegionId(item.getRegionId());
+        cloudBill.setRegionName(item.getRegionName());
         cloudBill.setZone(item.getZoneName());
         cloudBill.setReousrceId(item.getResourceId());
         cloudBill.setResourceName(item.getResourceName());
@@ -36,7 +45,7 @@ public class TencentMappingUtil {
         cloudBill.setPayAccountId(item.getPayerUin());
         cloudBill.setProductName(item.getProductCodeName());
         cloudBill.setProductId(item.getProductCode());
-        cloudBill.setProvider(PlatformConstants.fit2cloud_huawei_platform.name());
+        cloudBill.setProvider(PlatformConstants.fit2cloud_tencent_platform.name());
         BillDetailComponent[] componentSet = item.getComponentSet();
         DoubleSummaryStatistics cost = Arrays.stream(componentSet).collect(Collectors.summarizingDouble(c -> Double.parseDouble(c.getCost())));
         DoubleSummaryStatistics realTotalCost = Arrays.stream(componentSet).collect(Collectors.summarizingDouble(c -> Double.parseDouble(c.getRealCost())));
