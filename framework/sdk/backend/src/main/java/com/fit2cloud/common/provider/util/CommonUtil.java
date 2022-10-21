@@ -8,6 +8,7 @@ import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.ZoneOffset;
 import java.util.*;
+import java.util.function.Function;
 
 /**
  * @Author:张少虎
@@ -48,7 +49,7 @@ public class CommonUtil {
      * 有返回值
      *
      * @param providerClass 执行处理器
-     * @param req           请求参数画
+     * @param req           请求参数
      * @param exec          执行函数
      * @param <T>           执行函数返回对象
      * @return 执行函数返回对象泛型
@@ -68,14 +69,30 @@ public class CommonUtil {
     }
 
     /**
+     * 执行函数
+     *
+     * @param platform         供应商
+     * @param getCloudProvider 获取处理器
+     * @param req              请求参数
+     * @param exec             执行函数
+     * @param <T>              执行函数返回对象
+     * @param <P>              执行器对象
+     * @return 执行函数返回对象泛型
+     */
+    public static <T, P> T exec(String platform, Function<String, Class<? extends P>> getCloudProvider, String req, BiFunction<P, String, T> exec) {
+        Class<? extends P> providerClass = getCloudProvider.apply(platform);
+        return exec(providerClass, req, exec);
+    }
+
+    /**
      * 获取请求参数
      *
      * @param credential
      * @param regionId
      * @return
      */
-    public static HashMap<String, String> getParams(String credential, String regionId) {
-        HashMap<String, String> params = new HashMap<>();
+    public static HashMap<String, Object> getParams(String credential, String regionId) {
+        HashMap<String, Object> params = new HashMap<>();
         params.put("credential", credential);
         params.put("regionId", regionId);
         return params;

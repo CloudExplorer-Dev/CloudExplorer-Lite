@@ -225,7 +225,7 @@ public class VmCloudServerServiceImpl extends ServiceImpl<BaseVmCloudServerMappe
                 modifyResource.accept(vmCloudServer);
                 CloudAccount cloudAccount = cloudAccountService.getById(vmCloudServer.getAccountId());
                 Class<? extends ICloudProvider> cloudProvider = ProviderConstants.valueOf(cloudAccount.getPlatform()).getCloudProvider();
-                HashMap<String, String> params = CommonUtil.getParams(cloudAccount.getCredential(), vmCloudServer.getRegion());
+                HashMap<String, Object> params = CommonUtil.getParams(cloudAccount.getCredential(), vmCloudServer.getRegion());
                 params.put("uuid", vmCloudServer.getInstanceUuid());
                 OperatedTypeEnum operatedType = OperatedTypeEnum.getByDescription(jobDescription);
                 try{

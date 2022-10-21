@@ -14,6 +14,7 @@ import { useI18n } from "vue-i18n";
 import { ElMessage, ElMessageBox } from "element-plus";
 import type { SimpleMap } from "@commons/api/base/type";
 import _ from "lodash";
+
 const { t } = useI18n();
 const useRoute = useRouter();
 const table = ref<any>(null);
@@ -102,6 +103,15 @@ const showDetail = (row: VmCloudServerVO) => {
     query: { id: row.id },
   });
 };
+
+/**
+ * 添加磁盘
+ * @param row
+ */
+const createDisk = (row: VmCloudServerVO) => {
+  useRoute.push({ name: "add_disk", params: { id: row.id } });
+};
+
 /**
  * 操作按钮
  */
@@ -156,6 +166,15 @@ const buttons = ref([
     click: (row: VmCloudServerVO) => {
       deleteInstance(row);
     },
+    show: true,
+    disabled: (row: { instanceStatus: string }) => {
+      return row.instanceStatus === "Deleted";
+    },
+  },
+  {
+    label: t("vm_cloud_disk.btn.create", "添加磁盘"),
+    icon: "",
+    click: createDisk,
     show: true,
     disabled: (row: { instanceStatus: string }) => {
       return row.instanceStatus === "Deleted";

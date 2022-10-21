@@ -35,5 +35,5 @@ public interface VmCloudDiskMapper extends BaseMapper<VmCloudDiskDTO> {
             " ${ew.customSqlSegment} ")
     IPage<VmCloudDiskDTO> pageList(Page page, @Param("ew") Wrapper queryWrapper);
 
-
+    VmCloudDiskDTO selectDiskDetailById(@Param("id") String id);
 }
