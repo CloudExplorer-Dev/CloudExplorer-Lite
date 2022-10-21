@@ -6,6 +6,7 @@ import com.aliyun.bssopenapi20171214.models.DescribeInstanceBillResponse;
 import com.aliyun.bssopenapi20171214.models.DescribeInstanceBillResponseBody;
 import com.aliyun.teautil.models.RuntimeOptions;
 import com.fit2cloud.common.platform.bill.Bill;
+import com.fit2cloud.common.platform.credential.Credential;
 import com.fit2cloud.common.provider.exception.ReTryException;
 import com.fit2cloud.common.provider.util.PageUtil;
 import com.fit2cloud.es.entity.CloudBill;
@@ -25,8 +26,8 @@ public class AliyunBillApi {
     /**
      * 获取阿里云数据
      *
-     * @param syncBillRequest
-     * @return
+     * @param syncBillRequest 同步账单
+     * @return 账单数据
      */
     public static List<CloudBill> listBill(SyncBillRequest syncBillRequest) {
         // 每次查询300条
@@ -36,7 +37,8 @@ public class AliyunBillApi {
                 req -> describeInstanceBillWithOptions(client, req),
                 res -> res.body.getData().getItems(), (req, res) -> req.getMaxResults() <= res.getBody().getData().getItems().size(),
                 (req, res) -> req.setNextToken(res.getBody().getData().getNextToken()));
-        return list.stream().map(dataItem -> AliyunMappingUtil.toCloudBill(dataItem, syncBillRequest)).toList();
+        List<Credential.Region> regions = syncBillRequest.getCredential().regions();
+        return list.stream().map(dataItem -> AliyunMappingUtil.toCloudBill(dataItem, syncBillRequest, regions)).toList();
     }
 
     /**
