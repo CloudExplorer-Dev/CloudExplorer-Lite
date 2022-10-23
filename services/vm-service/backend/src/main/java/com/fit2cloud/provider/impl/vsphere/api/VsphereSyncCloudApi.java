@@ -39,10 +39,10 @@ public class VsphereSyncCloudApi {
     private static Logger logger = LoggerFactory.getLogger(VsphereSyncCloudApi.class);
 
     /**
-     * 获取虚拟机
+     * 获取云主机
      *
      * @param req
-     * @return 虚拟机列表
+     * @return 云主机列表
      */
     public static List<F2CVirtualMachine> listVirtualMachine(VsphereVmBaseRequest req) {
         List<F2CVirtualMachine> list = new ArrayList<>();

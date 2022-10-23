@@ -6,7 +6,9 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.fit2cloud.base.entity.CloudAccount;
 import com.fit2cloud.base.entity.JobRecord;
+import com.fit2cloud.base.entity.User;
 import com.fit2cloud.base.entity.VmCloudServer;
+import com.fit2cloud.base.mapper.BaseJobRecordResourceMappingMapper;
 import com.fit2cloud.base.mapper.BaseVmCloudServerMapper;
 import com.fit2cloud.base.service.IBaseCloudAccountService;
 import com.fit2cloud.common.constants.JobStatusConstants;
@@ -26,6 +28,7 @@ import com.fit2cloud.dto.VmCloudServerDTO;
 import com.fit2cloud.provider.ICloudProvider;
 import com.fit2cloud.provider.constants.F2CInstanceStatus;
 import com.fit2cloud.provider.constants.ProviderConstants;
+import com.fit2cloud.response.JobRecordResourceResponse;
 import com.fit2cloud.service.IVmCloudServerService;
 import com.fit2cloud.service.JobRecordCommonService;
 import com.fit2cloud.service.OrganizationCommonService;
@@ -40,6 +43,7 @@ import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
 import java.time.LocalDateTime;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -64,8 +68,11 @@ public class VmCloudServerServiceImpl extends ServiceImpl<BaseVmCloudServerMappe
     @Resource
     private JobRecordCommonService jobRecordCommonService;
 
+    @Resource
+    private BaseJobRecordResourceMappingMapper baseJobRecordResourceMappingMapper;
+
     /**
-     * 虚拟机批量操作
+     * 云主机批量操作
      */
     private Map<OperatedTypeEnum, Consumer<String>> batchOperationMap;
     @PostConstruct
@@ -74,6 +81,7 @@ public class VmCloudServerServiceImpl extends ServiceImpl<BaseVmCloudServerMappe
         batchOperationMap.put(OperatedTypeEnum.POWER_ON,this::powerOn);
         batchOperationMap.put(OperatedTypeEnum.HARD_REBOOT,this::hardRebootInstance);
         batchOperationMap.put(OperatedTypeEnum.HARD_SHUTDOWN,this::hardShutdownInstance);
+        batchOperationMap.put(OperatedTypeEnum.BATCH_DELETE,this::deleteInstance);
     }
     @Override
     public IPage<VmCloudServerDTO> pageVmCloudServer(PageVmCloudServerRequest request) {
@@ -178,17 +186,31 @@ public class VmCloudServerServiceImpl extends ServiceImpl<BaseVmCloudServerMappe
         if (request.getInstanceIds().size() == 0) {
             throw new Fit2cloudException(ErrorCodeConstants.SELECT_AT_LEAST_ONE_VM.getCode(), ErrorCodeConstants.SELECT_AT_LEAST_ONE_VM.getMessage());
         }
-        if(batchOperationMap.get(OperatedTypeEnum.valueOf(request.getOperate()))==null){
+        OperatedTypeEnum operatedType = OperatedTypeEnum.valueOf(request.getOperate());
+        if(batchOperationMap.get(operatedType)==null){
             throw new Fit2cloudException(ErrorCodeConstants.NOT_SUPPORTED_TEMPORARILY.getCode(), ErrorCodeConstants.NOT_SUPPORTED_TEMPORARILY.getMessage()+" - "+request.getOperate());
         }
         request.getInstanceIds().stream().forEach(instanceId -> {
             try {
-                batchOperationMap.get(OperatedTypeEnum.valueOf(request.getOperate())).accept(instanceId);
+                batchOperationMap.get(operatedType).accept(instanceId);
             } catch (Throwable e) {
                 throw new Fit2cloudException(ErrorCodeConstants.VM_BATCH_OPERATE_FAIL.getCode(), e.getMessage());
             }
         });
         return true;
+    }
+
+    @Override
+    public List<JobRecordResourceResponse> findCloudServerOperateStatus(List<String> vmIds) {
+        return baseJobRecordResourceMappingMapper.findLastResourceJobRecord(vmIds,JobTypeConstants.CLOUD_SERVER_OPERATE_JOB.getCode());
+    }
+
+    @Override
+    public VmCloudServerDTO getById(String vmId) {
+        QueryWrapper<VmCloudServerDTO> wrapper = new QueryWrapper<>();
+        wrapper.eq("vm_cloud_server.id",vmId);
+        VmCloudServerDTO vo = vmCloudServerMapper.getById(wrapper);
+        return vo;
     }
 
 
@@ -226,30 +248,35 @@ public class VmCloudServerServiceImpl extends ServiceImpl<BaseVmCloudServerMappe
                 CloudAccount cloudAccount = cloudAccountService.getById(vmCloudServer.getAccountId());
                 Class<? extends ICloudProvider> cloudProvider = ProviderConstants.valueOf(cloudAccount.getPlatform()).getCloudProvider();
                 HashMap<String, String> params = CommonUtil.getParams(cloudAccount.getCredential(), vmCloudServer.getRegion());
-                params.put("uuid", vmCloudServer.getInstanceUuid());
+                params.put("uuId", vmCloudServer.getInstanceUuid());
                 OperatedTypeEnum operatedType = OperatedTypeEnum.getByDescription(jobDescription);
                 try{
-                    CommonUtil.exec(cloudProvider,JsonUtil.toJSONString(params),execMethod);
-                    vmCloudServer.setInstanceStatus(afterStatus);
-                    jobRecord.setStatus(JobStatusConstants.SUCCESS);
-                    switch (operatedType){
-                        case POWER_OFF:
-                        case HARD_SHUTDOWN:
-                            vmCloudServer.setLastShutdownTime(DateUtil.getSyncTime());
-                        case POWER_ON:
-                            vmCloudServer.setLastShutdownTime(null);
-                        default:
+                    boolean result = CommonUtil.exec(cloudProvider,JsonUtil.toJSONString(params),execMethod);
+                    if(result){
+                        vmCloudServer.setInstanceStatus(afterStatus);
+                        jobRecord.setStatus(JobStatusConstants.SUCCESS);
+                        switch (operatedType){
+                            case POWER_OFF:
+                            case SHUTDOWN:
+                            case HARD_SHUTDOWN:
+                                vmCloudServer.setLastShutdownTime(DateUtil.getSyncTime());
+                            case POWER_ON:
+                                vmCloudServer.setLastShutdownTime(null);
+                            default:
+                        }
                     }
                 }catch (Exception e){
                     vmCloudServer.setInstanceStatus(instanceStatus);
                     jobRecord.setStatus(JobStatusConstants.FAILED);
                     jobRecord.setResult(e.getMessage());
                     LogUtil.error("Cloud server exec operate fail - {}",e.getMessage());
+                    e.printStackTrace();
                 }
                 modifyResource.accept(vmCloudServer);
                 modifyJobRecord.accept(jobRecord);
             } catch (Throwable e) {
                 LogUtil.error("Cloud server operate fail - {}",e.getMessage());
+                e.printStackTrace();
                 throw new RuntimeException(e);
             }
         });

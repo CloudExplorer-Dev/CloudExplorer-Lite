@@ -22,9 +22,9 @@ public class VsphereVmClient extends VsphereClient {
     }
 
     /**
-     * 获取虚拟机
+     * 获取云主机
      *
-     * @return 虚拟机列表
+     * @return 云主机列表
      */
     public List<VirtualMachine> listVirtualMachines() {
         List<VirtualMachine> list = listResources(VirtualMachine.class);
@@ -56,7 +56,7 @@ public class VsphereVmClient extends VsphereClient {
     }
 
     /**
-     * 获取虚拟机创建时间
+     * 获取云主机创建时间
      *
      * @param mor
      * @param runtime
@@ -106,10 +106,10 @@ public class VsphereVmClient extends VsphereClient {
     }
 
     /**
-     * 获取虚拟机具有的磁盘
+     * 获取云主机具有的磁盘
      *
-     * @param vm 虚拟机实例
-     * @return 虚拟机的磁盘列表
+     * @param vm 云主机实例
+     * @return 云主机的磁盘列表
      */
     public List<VirtualDisk> getVirtualDisks(VirtualMachine vm) {
         List<VirtualDisk> disks = new ArrayList<>();

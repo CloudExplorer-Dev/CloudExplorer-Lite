@@ -28,7 +28,7 @@ public class VsphereUtil {
     }
 
     /**
-     * 将 vsphere 虚拟机对象转换为 F2C 云管虚拟机对象
+     * 将 vsphere 云主机对象转换为 F2C 云管云主机对象
      * @param vm
      * @param client
      * @param hostCache
@@ -114,6 +114,7 @@ public class VsphereUtil {
                 }
             }
             instance.setVmtoolsVersion(vmGuest.getToolsVersion());
+            instance.setVmtoolsStatus(vmGuest.getToolsRunningStatus());
             instance.setHostname(vmGuest.hostName);
         }
         instance.setIpArray(ipArray);
@@ -201,7 +202,7 @@ public class VsphereUtil {
             ManagedObjectReference datastoreMor = ((VirtualDeviceFileBackingInfo) backing).getDatastore();
             String datastoreMorVal = datastoreMor.getVal();
             F2CVsphereDatastore datastore = datastoreCache.get(datastoreMorVal);
-            // vc 账号权限不够导致虚拟机关联的存储器无法获取
+            // vc 账号权限不够导致云主机关联的存储器无法获取
             if (datastore == null) {
                 String errorMessage = "Cannot get vm[" + vm.getName() + "]'s datastore";
                 throw new Exception(errorMessage);
@@ -319,9 +320,9 @@ public class VsphereUtil {
     }
 
     /**
-     * 获取虚拟机备注信息
+     * 获取云主机备注信息
      *
-     * @param vmConfig 虚拟机信息
+     * @param vmConfig 云主机信息
      * @return 备注信息
      */
     private static String getVmRemark(VirtualMachineConfigInfo vmConfig) {
@@ -333,7 +334,7 @@ public class VsphereUtil {
     }
 
     /**
-     * 获取虚拟机状态
+     * 获取云主机状态
      *
      * @param powerState
      * @return
@@ -350,7 +351,7 @@ public class VsphereUtil {
     }
 
     /**
-     * 计算虚拟机磁盘大小
+     * 计算云主机磁盘大小
      *
      * @param vmConfig
      * @return 单位（GB）

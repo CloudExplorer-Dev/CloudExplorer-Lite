@@ -34,10 +34,10 @@ public class ResourceCountImpl implements IResourceCountService {
     @Override
     public List<ResourceCountResponse> count(String accountId) {
         List<ResourceCountResponse> list = new ArrayList<>();
-        // 虚拟机
+        // 云主机
         QueryWrapper<VmCloudServer> vmQueryWrapper = Wrappers.query();
         vmQueryWrapper.lambda().ne(VmCloudServer::getInstanceStatus, "deleted").eq(VmCloudServer::getAccountId, accountId);
-        ResourceCountResponse vm = new ResourceCountResponse("xuniyunzhuji", LocaleUtil.getMessage("i18n.resource.vm","虚拟机"), cloudServerService.count(vmQueryWrapper));
+        ResourceCountResponse vm = new ResourceCountResponse("xuniyunzhuji", LocaleUtil.getMessage("i18n.resource.vm","云主机"), cloudServerService.count(vmQueryWrapper));
         list.add(vm);
 
         // 磁盘

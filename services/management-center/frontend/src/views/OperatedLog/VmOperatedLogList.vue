@@ -60,18 +60,19 @@
 import { ref, onMounted } from "vue";
 import OperatedLogApi from "@/api/operated_log/index";
 import type { OperatedLogVO } from "@/api/operated_log/type";
-import { useRouter } from "vue-router";
+
 import { ElMessage } from "element-plus/es";
 import {
   PaginationConfig,
   TableConfig,
   TableOperations,
   TableSearch,
+  Order,
 } from "@commons/components/ce-table/type";
 import LogDetail from "./LogDetail.vue";
 import { useI18n } from "vue-i18n";
 const { t } = useI18n();
-const useRoute = useRouter();
+
 const columns = ref([]);
 const logInfoRef = ref();
 const tableLoading = ref<boolean>(false);
@@ -81,7 +82,9 @@ const showLogInfoDialog = (v: OperatedLogVO) => {
 };
 const tableData = ref<Array<OperatedLogVO>>();
 onMounted(() => {
-  search(new TableSearch());
+  const defaultCondition = new TableSearch();
+  defaultCondition.order = new Order("date", false);
+  search(defaultCondition);
 });
 const search = (condition: TableSearch) => {
   const params = TableSearch.toSearchParams(condition);

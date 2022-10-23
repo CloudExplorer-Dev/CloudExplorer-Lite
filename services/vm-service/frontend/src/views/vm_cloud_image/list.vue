@@ -10,7 +10,7 @@ import {
   TableSearch,
 } from "@commons/components/ce-table/type";
 import { useI18n } from "vue-i18n";
-import ManageInfo from "@/views/VmCloudImage/ManageInfo.vue";
+import ManageInfo from "@/views/vm_cloud_image/ManageInfo.vue";
 const { t } = useI18n();
 const useRoute = useRouter();
 const columns = ref([]);

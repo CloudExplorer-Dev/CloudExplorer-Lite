@@ -1,8 +1,10 @@
 <script setup lang="ts">
-import { ref, onMounted } from "vue";
+import { ref, onMounted, onBeforeUnmount } from "vue";
 import VmCloudServerApi from "@/api/vm_cloud_server";
-import type { VmCloudServerVO } from "@/api/vm_cloud_server/type";
-import { InstanceOperateEnum } from "@/api/vm_cloud_server/type";
+import type {
+  VmCloudServerVO,
+  CloudServerJobRecord,
+} from "@/api/vm_cloud_server/type";
 import { useRouter } from "vue-router";
 import {
   PaginationConfig,
@@ -12,22 +14,47 @@ import {
 } from "@commons/components/ce-table/type";
 import { useI18n } from "vue-i18n";
 import { ElMessage, ElMessageBox } from "element-plus";
-import type { SimpleMap } from "@commons/api/base/type";
 import _ from "lodash";
+import type { SimpleMap } from "@commons/api/base/type";
+import variables_server from "../../styles/vm_cloud_server/server.module.scss";
+import { platformIcon } from "@/utils/platform";
+
 const { t } = useI18n();
 const useRoute = useRouter();
 const table = ref<any>(null);
 const columns = ref([]);
-const tableData = ref<Array<VmCloudServerVO>>();
+const tableData = ref<Array<VmCloudServerVO>>([]);
 const selectedRowData = ref<Array<VmCloudServerVO>>();
 const tableLoading = ref<boolean>(false);
+//批量操作
+const instanceOperateMap: Map<string, string> = new Map();
+instanceOperateMap.set("POWER_ON", t("", "启动"));
+instanceOperateMap.set("HARD_SHUTDOWN", t("", "关机"));
+instanceOperateMap.set("HARD_REBOOT", t("", "重启"));
+instanceOperateMap.set("DELETE", t("", "删除"));
 //状态
-const instanceStatus = ref<Array<SimpleMap<string>>>([
-  { text: "Running", value: "Running" },
-  { text: "Deleted", value: "Deleted" },
-  { text: "Stopped", value: "Stopped" },
+const InstanceStatus = ref<Array<SimpleMap<string>>>([
+  { text: t("", "运行中"), value: "Running" },
+  { text: "已删除", value: "Deleted" },
+  { text: "已关机", value: "Stopped" },
+  { text: "启动中", value: "Starting" },
+  { text: "关机中", value: "Stopping" },
+  { text: "重启中", value: "Rebooting" },
+  { text: "删除中", value: "Deleting" },
+  { text: "创建中", value: "Createding" },
+  { text: "未知", value: "Unknown" },
 ]);
 
+const filterInstanceStatus = (value: string) => {
+  let status = "";
+  InstanceStatus.value.forEach((v) => {
+    if (v.value == value) {
+      status = v.text;
+      return;
+    }
+  });
+  return status;
+};
 /**
  * 查询
  * @param condition
@@ -53,12 +80,70 @@ const search = (condition: TableSearch) => {
     );
   });
 };
+
 /**
  * 页面挂载
  */
 onMounted(() => {
   search(new TableSearch());
 });
+
+//启动定时器
+const startOperateInterval = (list: Array<VmCloudServerVO>) => {
+  for (const vm of list) {
+    VmCloudServerApi.getVmCloudServerById(vm.id).then((res) => {
+      vm.instanceStatus = res.data.instanceStatus;
+    });
+  }
+  let cloudServerInterval: any;
+  const isOk = ref<boolean>(false);
+  cloudServerInterval = setInterval(() => {
+    console.log("初始化定时器：" + cloudServerInterval);
+    VmCloudServerApi.getServerJobRecord(list.map((r) => r.id))
+      .then((serverJobs) => {
+        for (const vm of list) {
+          const jobs = serverJobs.data[vm.id];
+          if (jobs) {
+            if (
+              jobs.some((job) => job.status === "FAILED") ||
+              jobs.every((job) => job.status === "SUCCESS")
+            ) {
+              VmCloudServerApi.getVmCloudServerById(vm.id).then((res) => {
+                vm.instanceStatus = res.data.instanceStatus;
+                isOk.value = true;
+                console.log(":" + vm.instanceStatus);
+              });
+            }
+          }
+        }
+        if (isOk.value) {
+          stopOperateInterval(cloudServerInterval);
+        }
+      })
+      .catch((err) => {
+        console.log("出错了");
+        updateInstanceStatus(list);
+        stopOperateInterval(cloudServerInterval);
+        console.log(err);
+      });
+  }, 6000);
+};
+//停止定时器
+const stopOperateInterval = (cloudServerInterval: any) => {
+  if (cloudServerInterval) {
+    console.log("关闭定时器：" + cloudServerInterval);
+    clearInterval(cloudServerInterval);
+  }
+};
+
+const updateInstanceStatus = (list: Array<VmCloudServerVO>) => {
+  for (const vm of list) {
+    VmCloudServerApi.getVmCloudServerById(vm.id).then((res) => {
+      vm.instanceStatus = res.data.instanceStatus;
+    });
+  }
+};
+
 /**
  * 选中的数据
  */
@@ -169,7 +254,7 @@ const buttons = ref([
  */
 const checkVmToolsStatus = (vm: VmCloudServerVO) => {
   if (vm.platform === "fit2cloud_vsphere_platform") {
-    return vm.vmToolsStatus;
+    return vm.vmToolsStatus == "guestToolsRunning";
   }
   return true;
 };
@@ -187,8 +272,9 @@ const powerOn = (row: VmCloudServerVO) => {
       type: "warning",
     }
   ).then(() => {
-    VmCloudServerApi.powerOn(row.id as string, tableLoading)
+    VmCloudServerApi.powerOn(row.id as string)
       .then((res) => {
+        startOperateInterval([row]);
         console.log("-----" + res);
         ElMessage.success(t("commons.msg.op_success"));
       })
@@ -196,7 +282,7 @@ const powerOn = (row: VmCloudServerVO) => {
         console.log(err);
       })
       .finally(() => {
-        table.value?.search();
+        //table.value?.search();
       });
   });
 };
@@ -206,8 +292,8 @@ const shutdown = (row: VmCloudServerVO) => {
   let powerOff = false;
   if (!checkVmToolsStatus(row)) {
     label = t(
-      "vm_cloud_server.message_box.confirm_shutdown",
-      "当前虚拟机未安装VMtools，无法软关机，若继续操作则关闭电源，是否继续？"
+      "vm_cloud_server.message_box.check_vm_tools_status_confirm_shutdown",
+      "当前虚拟机未安装VmTools或VmTools未运行，无法软关机，若继续操作则关闭电源，是否继续？"
     );
     powerOff = true;
   }
@@ -216,15 +302,17 @@ const shutdown = (row: VmCloudServerVO) => {
     cancelButtonText: t("commons.btn.cancel", "取消"),
     type: "warning",
   }).then(() => {
-    VmCloudServerApi.shutdownInstance(row.id as string, powerOff, tableLoading)
-      .then(() => {
+    VmCloudServerApi.shutdownInstance(row.id as string)
+      .then((res) => {
+        startOperateInterval([row]);
+        console.log("-----" + res);
         ElMessage.success(t("commons.msg.op_success"));
       })
       .catch((err) => {
         console.log(err);
       })
       .finally(() => {
-        table.value?.search();
+        //table.value?.search();
       });
   });
 };
@@ -239,16 +327,15 @@ const powerOff = (row: VmCloudServerVO) => {
       type: "warning",
     }
   ).then(() => {
-    VmCloudServerApi.powerOff(row.id as string, tableLoading)
+    VmCloudServerApi.powerOff(row.id as string)
       .then(() => {
+        startOperateInterval([row]);
         ElMessage.success(t("commons.msg.op_success"));
       })
       .catch((err) => {
         console.log(err);
       })
-      .finally(() => {
-        table.value?.search();
-      });
+      .finally(() => {});
   });
 };
 //重启
@@ -262,16 +349,15 @@ const reboot = (row: VmCloudServerVO) => {
       type: "warning",
     }
   ).then(() => {
-    VmCloudServerApi.reboot(row.id as string, tableLoading)
+    VmCloudServerApi.reboot(row.id as string)
       .then(() => {
+        startOperateInterval([row]);
         ElMessage.success(t("commons.msg.op_success"));
       })
       .catch((err) => {
         console.log(err);
       })
-      .finally(() => {
-        table.value?.search();
-      });
+      .finally(() => {});
   });
 };
 
@@ -286,16 +372,15 @@ const deleteInstance = (row: VmCloudServerVO) => {
       type: "warning",
     }
   ).then(() => {
-    VmCloudServerApi.deleteInstance(row.id as string, tableLoading)
+    VmCloudServerApi.deleteInstance(row.id as string)
       .then(() => {
+        startOperateInterval([row]);
         ElMessage.success(t("commons.msg.op_success"));
       })
       .catch((err) => {
         console.log(err);
       })
-      .finally(() => {
-        table.value?.search();
-      });
+      .finally(() => {});
   });
 };
 
@@ -308,7 +393,7 @@ const batchOperate = (operate: string) => {
   }
   ElMessageBox.confirm(
     t("vm_cloud_server.message_box.confirm_batch_operate", [
-      InstanceOperateEnum[operate as any],
+      instanceOperateMap.get(operate),
     ]),
     t("commons.message_box.prompt", "提示"),
     {
@@ -317,20 +402,15 @@ const batchOperate = (operate: string) => {
       type: "warning",
     }
   ).then(() => {
-    VmCloudServerApi.batchOperate(
-      _.map(selectedRowData.value, "id"),
-      operate,
-      tableLoading
-    )
+    VmCloudServerApi.batchOperate(_.map(selectedRowData.value, "id"), operate)
       .then(() => {
+        startOperateInterval(selectedRowData.value as Array<VmCloudServerVO>);
         ElMessage.success(t("commons.msg.op_success"));
       })
       .catch((err) => {
         console.log(err);
       })
-      .finally(() => {
-        table.value?.search();
-      });
+      .finally(() => {});
   });
 };
 /**
@@ -374,10 +454,10 @@ const handleAction = (actionObj: any) => {
       <el-button @click="batchOperate('POWER_ON')">{{
         t("vm_cloud_server.btn.power_on", "启动")
       }}</el-button>
-      <el-button @click="batchOperate('SHUTDOWN')">{{
+      <el-button @click="batchOperate('HARD_SHUTDOWN')">{{
         t("vm_cloud_server.btn.shutdown", "关机")
       }}</el-button>
-      <el-button @click="batchOperate('REBOOT')">{{
+      <el-button @click="batchOperate('HARD_REBOOT')">{{
         t("vm_cloud_server.btn.reboot", "重启")
       }}</el-button>
       <el-dropdown
@@ -402,20 +482,17 @@ const handleAction = (actionObj: any) => {
       </el-dropdown>
     </template>
     <el-table-column type="selection" />
-    <el-table-column prop="instanceName" :label="$t('commons.name')">
+    <el-table-column
+      :show-overflow-tooltip="true"
+      prop="instanceName"
+      :label="$t('commons.name')"
+    >
       <template #default="scope">
-        <el-tooltip
-          class="item"
-          effect="dark"
-          :content="scope.row.instanceName"
-          placement="top"
-        >
-          <el-link type="primary" @click="showDetail(scope.row)">
-            <span class="text-overflow">
-              {{ scope.row.instanceName }}
-            </span>
-          </el-link>
-        </el-tooltip>
+        <el-link type="primary" @click="showDetail(scope.row)">
+          <span>
+            {{ scope.row.instanceName }}
+          </span>
+        </el-link>
       </template>
     </el-table-column>
     <el-table-column
@@ -429,21 +506,46 @@ const handleAction = (actionObj: any) => {
     <el-table-column
       prop="accountName"
       :label="$t('commons.cloud_account.native')"
-    ></el-table-column>
+    >
+      <template #default="scope">
+        <div style="display: flex">
+          <el-image
+            style="margin-top: 3px; width: 16px; height: 16px"
+            :src="platformIcon[scope.row.platform].icon"
+            v-if="scope.row.platform"
+          ></el-image>
+          <span style="margin-left: 10px">{{ scope.row.accountName }}</span>
+        </div>
+      </template>
+    </el-table-column>
     <el-table-column
       prop="instanceStatus"
       column-key="instanceStatus"
       :label="$t('commons.status')"
-      :filters="instanceStatus"
+      :filters="InstanceStatus"
     >
       <template #default="scope">
         <div style="display: flex; align-items: center">
           <span
             :style="{
-              color: scope.row.instanceStatus === 'Delete' ? 'red' : '',
+              color: variables_server[scope.row.instanceStatus],
             }"
-            >{{ scope.row.instanceStatus }}</span
-          >
+            >{{ filterInstanceStatus(scope.row.instanceStatus) }}
+          </span>
+          <el-icon
+            v-show="
+              scope.row.instanceStatus === 'Starting' ||
+              scope.row.instanceStatus === 'Stopping' ||
+              scope.row.instanceStatus === 'Rebooting' ||
+              scope.row.instanceStatus === 'Deleting' ||
+              scope.row.instanceStatus === 'Createding'
+            "
+            class="is-loading"
+            :style="{
+              color: variables_server[scope.row.instanceStatus],
+            }"
+            ><Loading
+          /></el-icon>
         </div>
       </template>
     </el-table-column>
@@ -460,7 +562,7 @@ const handleAction = (actionObj: any) => {
           JSON.parse(scope.row.ipArray)[0]
         }}</span>
         <el-dropdown
-          class="dropdown-box"
+          :class="variables_server.dropdown_box"
           :hide-on-click="false"
           v-if="scope.row.ipArray.length > 2"
           max-height="100px"
@@ -502,15 +604,4 @@ const handleAction = (actionObj: any) => {
     </template>
   </ce-table>
 </template>
-<style lang="scss" scoped>
-.text-overflow {
-  max-width: 120px;
-  overflow: hidden;
-  white-space: nowrap;
-  text-overflow: ellipsis;
-}
-.dropdown-box {
-  margin-left: 10px;
-  margin-top: 2px;
-}
-</style>
+<style lang="scss" scoped></style>

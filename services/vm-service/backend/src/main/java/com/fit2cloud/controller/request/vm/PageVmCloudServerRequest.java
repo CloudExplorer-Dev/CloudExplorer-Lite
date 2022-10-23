@@ -14,13 +14,13 @@ import java.util.List;
  **/
 @Data
 public class PageVmCloudServerRequest extends PageRequest {
-    @ApiModelProperty(value = "虚拟机状态", allowableValues = "Running,Stopped,Deleted")
+    @ApiModelProperty(value = "云主机状态", allowableValues = "Running,Stopped,Deleted")
     private List<String> instanceStatus;
-    @ApiModelProperty("虚拟机名称")
+    @ApiModelProperty("云主机名称")
     private String instanceName;
     @ApiModelProperty("云账号IDs")
     private List<String>accountIds;
-    @ApiModelProperty("虚拟机ID")
+    @ApiModelProperty("云主机ID")
     private String cloudServerId;
     @ApiModelProperty("云账号名称")
     private String accountName;
@@ -48,7 +48,7 @@ public class PageVmCloudServerRequest extends PageRequest {
     private String os;
     @ApiModelProperty("操作系统版本")
     private List<String> osVersion;
-    @ApiModelProperty("虚拟机ID")
+    @ApiModelProperty("云主机ID")
     private List<String> ids;
     @ApiModelProperty(hidden = true)
     private String sort;
