@@ -9,9 +9,7 @@ import com.fit2cloud.provider.entity.F2CDisk;
 import com.fit2cloud.provider.entity.F2CImage;
 import com.fit2cloud.provider.entity.F2CVirtualMachine;
 import com.fit2cloud.provider.impl.tencent.api.TencetSyncCloudApi;
-import com.fit2cloud.provider.impl.tencent.entity.request.ListDiskRequest;
-import com.fit2cloud.provider.impl.tencent.entity.request.ListImageRequest;
-import com.fit2cloud.provider.impl.tencent.entity.request.ListVirtualMachineRequest;
+import com.fit2cloud.provider.impl.tencent.entity.request.*;
 
 import java.util.List;
 
@@ -70,5 +68,29 @@ public class TencentCloudProvider extends AbstractCloudProvider<TencentCredentia
     @Override
     public boolean hardRebootInstance(String req) {
         throw new Fit2cloudException(20001,"Not implemented");
+    }
+
+    @Override
+    public List<F2CDisk> createDisks(String req) {
+        return TencetSyncCloudApi.createDisks(JsonUtil.parseObject(req, TencentCreateDiskRequest.class));
+    }
+
+    @Override
+    public boolean enlargeDisk(String req) {
+        return TencetSyncCloudApi.enlargeDisk(JsonUtil.parseObject(req, TencentResizeDiskRequest.class));
+    }
+
+    @Override
+    public boolean attachDisk(String req) {
+        return TencetSyncCloudApi.attachDisk(JsonUtil.parseObject(req, TencentAttachDiskRequest.class));
+    }
+
+    public boolean detachDisk(String req) {
+        return TencetSyncCloudApi.detachDisk(JsonUtil.parseObject(req, TencentDetachDiskRequest.class));
+    }
+
+    @Override
+    public boolean deleteDisk(String req) {
+        return TencetSyncCloudApi.deleteDisk(JsonUtil.parseObject(req, TencentDeleteDiskRequest.class));
     }
 }

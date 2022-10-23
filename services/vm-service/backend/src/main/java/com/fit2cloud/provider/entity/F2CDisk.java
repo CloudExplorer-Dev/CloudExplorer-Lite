@@ -94,4 +94,12 @@ public class F2CDisk {
      * 删除时是否删除实例
      */
     private String deleteWithInstance;
+    /**
+     * 磁盘挂载点
+     */
+    private String mountPoint;
+    /**
+     * 文件系统类型ext4、xfs
+     */
+    private String fileSystemType;
 }

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted, onBeforeUnmount } from "vue";
+import { ref, onMounted } from "vue";
 import VmCloudServerApi from "@/api/vm_cloud_server";
 import type {
   VmCloudServerVO,
@@ -187,6 +187,15 @@ const showDetail = (row: VmCloudServerVO) => {
     query: { id: row.id },
   });
 };
+
+/**
+ * 添加磁盘
+ * @param row
+ */
+const createDisk = (row: VmCloudServerVO) => {
+  useRoute.push({ name: "add_disk", params: { id: row.id } });
+};
+
 /**
  * 操作按钮
  */
@@ -241,6 +250,15 @@ const buttons = ref([
     click: (row: VmCloudServerVO) => {
       deleteInstance(row);
     },
+    show: true,
+    disabled: (row: { instanceStatus: string }) => {
+      return row.instanceStatus === "Deleted";
+    },
+  },
+  {
+    label: t("vm_cloud_disk.btn.create", "添加磁盘"),
+    icon: "",
+    click: createDisk,
     show: true,
     disabled: (row: { instanceStatus: string }) => {
       return row.instanceStatus === "Deleted";

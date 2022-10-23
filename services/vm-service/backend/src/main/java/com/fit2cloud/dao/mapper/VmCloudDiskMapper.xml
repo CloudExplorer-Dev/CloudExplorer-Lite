@@ -2,4 +2,31 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.fit2cloud.dao.mapper.VmCloudDiskMapper">
 
+    <resultMap id="diskResultMap" type="com.fit2cloud.dto.VmCloudDiskDTO">
+        <id column="id" jdbcType="VARCHAR" property="id"/>
+        <result column="instance_uuid" jdbcType="VARCHAR" property="instanceUuid"/>
+        <result column="instance_name" jdbcType="VARCHAR" property="vmInstanceName"/>
+        <result column="workspace_id" jdbcType="VARCHAR" property="workspaceId"/>
+        <result column="workspace_name" jdbcType="VARCHAR" property="workspaceName"/>
+        <result column="account_name" jdbcType="VARCHAR" property="accountName"/>
+        <result column="platform" jdbcType="VARCHAR" property="platform"/>
+    </resultMap>
+
+    <select id="selectDiskDetailById" resultMap="diskResultMap">
+        SELECT
+            vm_cloud_disk.*,
+            vm_cloud_server.instance_name,
+            cloud_account.`name` AS account_name,
+            cloud_account.platform,
+            workspace._name AS workspace_name
+        FROM
+            vm_cloud_disk
+            LEFT JOIN vm_cloud_server ON vm_cloud_disk.instance_uuid = vm_cloud_server.instance_uuid
+            AND vm_cloud_disk.account_id = vm_cloud_server.account_id
+            AND vm_cloud_server.instance_status != 'Deleted'
+            LEFT JOIN cloud_account ON vm_cloud_disk.account_id = cloud_account.id
+            LEFT JOIN workspace ON vm_cloud_disk.workspace_id = workspace.id
+        WHERE
+            vm_cloud_disk.id = #{id}
+    </select>
 </mapper>

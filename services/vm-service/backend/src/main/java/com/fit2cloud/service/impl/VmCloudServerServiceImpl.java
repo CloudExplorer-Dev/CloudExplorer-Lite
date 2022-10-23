@@ -39,7 +39,7 @@ import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
-import javax.annotation.PostConstruct;
+import javax.annotationø.PostConstruct;
 import javax.annotation.Resource;
 import java.time.LocalDateTime;
 import java.util.HashMap;

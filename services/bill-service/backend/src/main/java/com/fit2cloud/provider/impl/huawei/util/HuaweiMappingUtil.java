@@ -1,22 +1,16 @@
 package com.fit2cloud.provider.impl.huawei.util;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.fit2cloud.common.constants.PlatformConstants;
 import com.fit2cloud.common.provider.util.CommonUtil;
-import com.fit2cloud.common.utils.JsonUtil;
 import com.fit2cloud.es.entity.CloudBill;
-import com.fit2cloud.provider.impl.aliyun.entity.request.SyncBillRequest;
-import com.huaweicloud.sdk.bss.v2.model.MonthlyBillRecord;
 import com.huaweicloud.sdk.bss.v2.model.ResFeeRecordV2;
 import org.apache.commons.lang3.StringUtils;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
 import java.math.BigDecimal;
-import java.nio.charset.Charset;
-import java.util.*;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 /**
@@ -28,10 +22,18 @@ import java.util.stream.Collectors;
 public class HuaweiMappingUtil {
 
 
+    /**
+     * 将华为云账单对象转换为系统账单对象
+     *
+     * @param item 华为云账单对象
+     * @return 系统账单对象
+     */
     public static CloudBill toCloudBill(ResFeeRecordV2 item) {
         CloudBill cloudBill = new CloudBill();
+        cloudBill.setId(UUID.randomUUID().toString().replace("-", ""));
         cloudBill.setProvider(PlatformConstants.fit2cloud_huawei_platform.name());
-        cloudBill.setRegion(item.getRegion());
+        cloudBill.setRegionId(item.getRegion());
+        cloudBill.setRegionName(item.getRegionName());
         cloudBill.setProjectId(item.getEnterpriseProjectId());
         cloudBill.setProjectName(item.getEnterpriseProjectName());
         cloudBill.setBillMode(item.getChargeMode());

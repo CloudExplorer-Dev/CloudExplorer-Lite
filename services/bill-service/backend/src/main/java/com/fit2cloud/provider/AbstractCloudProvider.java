@@ -6,6 +6,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.fit2cloud.common.exception.Fit2cloudException;
 import com.fit2cloud.common.platform.credential.Credential;
 import com.fit2cloud.common.utils.JsonUtil;
+import com.fit2cloud.es.entity.CloudBill;
 
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;

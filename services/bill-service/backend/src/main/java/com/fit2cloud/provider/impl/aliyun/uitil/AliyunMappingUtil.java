@@ -2,18 +2,14 @@ package com.fit2cloud.provider.impl.aliyun.uitil;
 
 import com.aliyun.bssopenapi20171214.models.DescribeInstanceBillResponseBody;
 import com.fit2cloud.common.constants.PlatformConstants;
+import com.fit2cloud.common.platform.credential.Credential;
 import com.fit2cloud.common.provider.util.CommonUtil;
 import com.fit2cloud.es.entity.CloudBill;
 import com.fit2cloud.provider.impl.aliyun.entity.request.SyncBillRequest;
 import org.apache.commons.lang3.StringUtils;
-import org.joda.time.LocalDate;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -24,11 +20,21 @@ import java.util.stream.Collectors;
  */
 public class AliyunMappingUtil {
 
-    public static CloudBill toCloudBill(DescribeInstanceBillResponseBody.DescribeInstanceBillResponseBodyDataItems item, SyncBillRequest syncBillRequest) {
+    /**
+     * 将阿里云账单对象转化为系统账单对象
+     *
+     * @param item            阿里云账单对象
+     * @param syncBillRequest 获取阿里云账单请求对象
+     * @param regions         区域
+     * @return 系统账单对象
+     */
+    public static CloudBill toCloudBill(DescribeInstanceBillResponseBody.DescribeInstanceBillResponseBodyDataItems item, SyncBillRequest syncBillRequest, List<Credential.Region> regions) {
         CloudBill cloudBill = new CloudBill();
+        cloudBill.setId(UUID.randomUUID().toString().replace("-", ""));
         String subscriptionType = item.getSubscriptionType();
         cloudBill.setBillMode(subscriptionType);
-        cloudBill.setRegion(item.getRegion());
+        cloudBill.setRegionName(item.getRegion());
+        regions.stream().filter(region -> region.getName().equals(item.getRegion())).findFirst().ifPresent(region -> cloudBill.setRegionId(region.getRegionId()));
         cloudBill.setZone(item.getZone());
         cloudBill.setTags(toTagsMap(item.getTag()));
         cloudBill.setProjectId(item.getCostUnit());
@@ -65,11 +71,17 @@ public class AliyunMappingUtil {
             String[] split = tags.split(";");
             return Arrays.stream(split).flatMap(item -> {
                 String[] s = item.split(" ");
-                String key = s[0].replace("key:", "").trim();
-                String value = s[1].replace("value:", "").trim();
-                return new HashMap<String, Object>() {{
-                    put(key, value);
-                }}.entrySet().stream();
+                HashMap<String, Object> paramsTags = new HashMap<>();
+                if (s.length == 1) {
+                    String key = s[0].replace("key:", "").trim();
+                    paramsTags.put(key, "");
+                }
+                if (s.length == 2) {
+                    String key = s[0].replace("key:", "").trim();
+                    String value = s[1].replace("value:", "").trim();
+                    paramsTags.put(key, value);
+                }
+                return paramsTags.entrySet().stream();
             }).collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
         } else {
             return new HashMap<>();

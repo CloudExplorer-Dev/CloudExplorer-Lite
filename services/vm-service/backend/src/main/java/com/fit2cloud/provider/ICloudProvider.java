@@ -1,10 +1,11 @@
 package com.fit2cloud.provider;
 
-
+import com.fit2cloud.provider.constants.ProviderConstants;
 import com.fit2cloud.provider.entity.F2CDisk;
 import com.fit2cloud.provider.entity.F2CImage;
 import com.fit2cloud.provider.entity.F2CVirtualMachine;
 
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -14,6 +15,17 @@ import java.util.List;
  * @注释:
  */
 public interface ICloudProvider {
+
+    /**
+     * 根据供应商获取对应云平台处理器
+     *
+     * @param platform 供应商
+     * @return 处理器
+     */
+    static Class<? extends ICloudProvider> of(String platform) {
+        return Arrays.stream(ProviderConstants.values()).filter(providerConstants -> providerConstants.name().equals(platform)).findFirst().orElseThrow(() -> new RuntimeException("不支持的云平台")).getCloudProvider();
+    }
+
     /**
      * 获取云平台云主机
      *

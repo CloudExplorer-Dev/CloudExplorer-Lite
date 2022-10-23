@@ -8,6 +8,7 @@ import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.ZoneOffset;
 import java.util.*;
+import java.util.function.Function;
 
 /**
  * @Author:张少虎
@@ -48,7 +49,7 @@ public class CommonUtil {
      * 有返回值
      *
      * @param providerClass 执行处理器
-     * @param req           请求参数画
+     * @param req           请求参数
      * @param exec          执行函数
      * @param <T>           执行函数返回对象
      * @return 执行函数返回对象泛型
@@ -64,7 +65,22 @@ public class CommonUtil {
                 throw new RuntimeException(e);
             }
         }
+    }
 
+    /**
+     * 执行函数
+     *
+     * @param platform         供应商
+     * @param getCloudProvider 获取处理器
+     * @param req              请求参数
+     * @param exec             执行函数
+     * @param <T>              执行函数返回对象
+     * @param <P>              执行器对象
+     * @return 执行函数返回对象泛型
+     */
+    public static <T, P> T exec(String platform, Function<String, Class<? extends P>> getCloudProvider, String req, BiFunction<P, String, T> exec) {
+        Class<? extends P> providerClass = getCloudProvider.apply(platform);
+        return exec(providerClass, req, exec);
     }
 
     /**
@@ -74,11 +90,40 @@ public class CommonUtil {
      * @param regionId
      * @return
      */
-    public static HashMap<String, String> getParams(String credential, String regionId) {
-        HashMap<String, String> params = new HashMap<>();
+    public static HashMap<String, Object> getParams(String credential, String regionId) {
+        HashMap<String, Object> params = new HashMap<>();
         params.put("credential", credential);
         params.put("regionId", regionId);
         return params;
     }
 
+    /**
+     * 将源List按照指定元素数量拆分为多个List
+     *
+     * @param source       源List
+     * @param splitItemNum 每个List中元素数量
+     */
+    public static <T> List<List<T>> averageAssign(List<T> source, int splitItemNum) {
+        List<List<T>> result = new ArrayList<>();
+        if (source != null && source.size() > 0 && splitItemNum > 0) {
+            if (source.size() <= splitItemNum) {
+                // 源List元素数量小于等于目标分组数量
+                result.add(source);
+            } else {
+                // 计算拆分后list数量
+                int splitNum = (source.size() % splitItemNum == 0) ? (source.size() / splitItemNum) : (source.size() / splitItemNum + 1);
+                List<T> value = null;
+                for (int i = 0; i < splitNum; i++) {
+                    if (i < splitNum - 1) {
+                        value = source.subList(i * splitItemNum, (i + 1) * splitItemNum);
+                    } else {
+                        // 最后一组
+                        value = source.subList(i * splitItemNum, source.size());
+                    }
+                    result.add(value);
+                }
+            }
+        }
+        return result;
+    }
 }

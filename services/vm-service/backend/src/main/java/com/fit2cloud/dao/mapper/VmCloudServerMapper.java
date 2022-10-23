@@ -8,6 +8,8 @@ import com.fit2cloud.dto.VmCloudServerDTO;
 import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.Select;
 
+import java.util.List;
+
 /**
  * <p>
  * Mapper 接口
@@ -33,6 +35,18 @@ public interface VmCloudServerMapper extends BaseMapper<VmCloudServerDTO> {
             " ${ew.customSqlSegment} ")
     IPage<VmCloudServerDTO> pageList(Page page, @Param("ew") Wrapper queryWrapper);
 
+    /**
+     * 根据云账号ID查询云主机列表
+     * @param accountId
+     * @return
+     */
+    List<VmCloudServerDTO> selectListByAccountId(@Param("accountId") String accountId);
+
+    /**
+     * 根据ID查询云主机
+     * @param queryWrapper
+     * @return
+     */
     @Select("SELECT " +
             "vm_cloud_server.*, " +
             "cloud_account.NAME AS account_name, " +
