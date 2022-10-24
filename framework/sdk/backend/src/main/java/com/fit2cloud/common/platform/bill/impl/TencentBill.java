@@ -9,6 +9,9 @@ import com.fit2cloud.common.provider.impl.tencent.TencentBaseCloudProvider;
 import lombok.Data;
 import org.apache.commons.lang3.StringUtils;
 
+import java.util.HashMap;
+import java.util.Map;
+
 /**
  * {@code @Author:张少虎}
  * {@code @Date: 2022/10/12  6:06 PM}
@@ -36,5 +39,12 @@ public class TencentBill implements Bill {
                 throw new Fit2cloudException(1002, "获取数据使用桶后, 区域id和桶id为必填参数");
             }
         }
+    }
+
+    @Override
+    public Map<String, Object> getDefaultParams() {
+        HashMap<String, Object> params = new HashMap<>();
+        params.put("useBucket",false);
+        return params;
     }
 }

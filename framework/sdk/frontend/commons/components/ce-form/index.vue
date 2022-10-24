@@ -8,12 +8,17 @@ const formData = ref<any>({});
 // 校验实例对象
 const ruleFormRef = ref<FormInstance>();
 
-const props = defineProps<{
-  // 页面渲染数据
-  formViewData: Array<FormView>;
-  // 调用接口所需要的其他参数
-  otherParams: any;
-}>();
+const props = withDefaults(
+  defineProps<{
+    // 页面渲染数据
+    formViewData: Array<FormView>;
+    // 调用接口所需要的其他参数
+    otherParams: any;
+    // 是否只读
+    readOnly: boolean;
+  }>(),
+  { readOnly: false }
+);
 
 // 发生变化
 const change = (formItem: FormView) => {
@@ -98,6 +103,11 @@ const submit = (exec: (formData: any) => void) => {
   });
 };
 
+const validate = () => {
+  if (!ruleFormRef.value) return;
+  return ruleFormRef.value.validate();
+};
+
 // 监控formViewData 用于初始化数据
 watch(
   () => props.formViewData,
@@ -149,10 +159,12 @@ defineExpose({
   clearData,
   initDefaultData,
   setData,
+  validate,
 });
 </script>
 <template>
   <el-form
+    style="width: 100%"
     ref="ruleFormRef"
     label-width="130px"
     label-suffix=":"
@@ -160,8 +172,9 @@ defineExpose({
     :model="formData"
     v-loading="resourceLoading"
   >
-    <div v-for="item in formViewData" :key="item.field">
+    <div v-for="item in formViewData" :key="item.field" style="width: 100%">
       <el-form-item
+        style="width: 100%"
         v-if="item.relationShows.every((i:string) => formData[i])"
         :label="item.label"
         :prop="item.field"
@@ -172,6 +185,7 @@ defineExpose({
         }"
       >
         <component
+          :disabled="readOnly"
           style="width: 75%"
           @change="change(item)"
           v-model="formData[item.field]"

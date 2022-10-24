@@ -21,7 +21,10 @@ public enum JobConstants {
          * 云账号资源同步定时任务
          */
         CLOUD_ACCOUNT_RESOURCE_SYNC_GROUP,
-
+        /**
+         * 云账单同步分组
+         */
+        CLOUD_ACCOUNT_BILL_SYNC_GROUP,
         /**
          * 系统定时任务
          */
@@ -37,7 +40,11 @@ public enum JobConstants {
         /**
          * 区域数据
          */
-        REGIONS;
+        REGIONS,
+        /**
+         * 账单设置
+         */
+        BILL_SETTING;
 
         /**
          * 获取云账号定时任务参数
@@ -50,6 +57,13 @@ public enum JobConstants {
             Map<java.lang.String, java.lang.Object> params = new HashMap<>();
             params.put(CLOUD_ACCOUNT_ID.name(), accountId);
             params.put(REGIONS.name(), regionList);
+            return params;
+        }
+
+        public static Map<String, Object> getCloudAccountBillSettingarams(java.lang.String accountId, Map<String, Object> billSetting) {
+            Map<java.lang.String, java.lang.Object> params = new HashMap<>();
+            params.put(CLOUD_ACCOUNT_ID.name(), accountId);
+            params.put(BILL_SETTING.name(), billSetting);
             return params;
         }
 

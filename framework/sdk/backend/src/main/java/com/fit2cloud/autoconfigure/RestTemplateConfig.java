@@ -1,7 +1,8 @@
 package com.fit2cloud.autoconfigure;
 
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fit2cloud.common.constants.RoleConstants;
-import com.fit2cloud.common.utils.JsonUtil;
 import com.fit2cloud.common.utils.JwtTokenUtils;
 import com.fit2cloud.dto.UserDto;
 import com.fit2cloud.security.filter.JwtTokenAuthFilter;
@@ -25,14 +26,13 @@ import org.springframework.http.client.ClientHttpRequestInterceptor;
 import org.springframework.http.client.ClientHttpResponse;
 import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.springframework.http.converter.StringHttpMessageConverter;
+import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.client.RestTemplate;
 
 import javax.net.ssl.SSLContext;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
@@ -48,6 +48,12 @@ public class RestTemplateConfig {
     @LoadBalanced
     public RestTemplate restTemplate() {
         RestTemplate restTemplate = new RestTemplate(generateHttpsRequestFactory());
+        MappingJackson2HttpMessageConverter mappingJackson2HttpMessageConverter = new MappingJackson2HttpMessageConverter();
+        ObjectMapper mapper = new ObjectMapper();
+        // 如果json中有新增的字段并且是实体类类中不存在的，不报错
+        mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+        mappingJackson2HttpMessageConverter.setObjectMapper(mapper);
+        restTemplate.getMessageConverters().add(0, mappingJackson2HttpMessageConverter);
         restTemplate.getMessageConverters().set(1, new StringHttpMessageConverter(StandardCharsets.UTF_8));
         restTemplate.getInterceptors().add(new TokenRequestInterceptor());
         return restTemplate;

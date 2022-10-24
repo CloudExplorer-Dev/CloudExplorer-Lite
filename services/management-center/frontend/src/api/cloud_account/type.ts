@@ -143,10 +143,6 @@ interface CloudAccountJobDetailsResponse {
    * 模块任务
    */
   cloudAccountModuleJobs: Array<ModuleJob>;
-  /**
-   *选中的区域
-   */
-  selectRegion: Array<Region>;
 }
 /**
  * 模块定时任务信息
@@ -213,10 +209,19 @@ interface JobDetails {
    * 是否活跃
    */
   active: string;
+
   /**
-   * 区域
+   * 任务参数
    */
-  regions: Array<Region>;
+  params: SimpleMap<any>;
+  /**
+   * 每天那几个小时执行
+   */
+  hoursOfDay: Array<number>;
+  /**
+   *定时任务类型
+   */
+  jobType: string;
 }
 interface UpdateJobsRequest extends CloudAccountJobDetailsResponse {
   cloudAccountId: string;
@@ -341,4 +346,5 @@ export type {
   UpdateAccountName,
   ResourceCount,
   AccountJobRecord,
+  JobDetails,
 };

@@ -7,7 +7,7 @@ import { useRouter } from "vue-router";
 import { platformIcon } from "@/utils/platform";
 import { ElMessage } from "element-plus";
 import _ from "lodash";
-import Job from "./job.vue";
+import Job from "@/componnets/job/Job.vue";
 import type { AccountJobRecord, ResourceCount } from "@/api/cloud_account/type";
 import { PaginationConfig } from "@commons/components/ce-table/type";
 
