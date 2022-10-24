@@ -198,7 +198,9 @@ const tableConfig = ref<TableConfig>({
       sortable
     >
       <template #default="scope">
-        <router-link :to="{ name: 'user', query: { workspaceId: scope.row.id } }">
+        <router-link
+          :to="{ name: 'user', query: { workspaceId: scope.row.id } }"
+        >
           <a style="color: blue">{{ scope.row.userCount }}</a>
         </router-link>
       </template>

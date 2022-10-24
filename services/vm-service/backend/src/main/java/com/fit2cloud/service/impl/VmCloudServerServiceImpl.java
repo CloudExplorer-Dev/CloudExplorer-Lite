@@ -1,5 +1,6 @@
 package com.fit2cloud.service.impl;
 
+import co.elastic.clients.elasticsearch.ml.Job;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -39,10 +40,10 @@ import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
-
 import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
 import java.time.LocalDateTime;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -203,7 +204,7 @@ public class VmCloudServerServiceImpl extends ServiceImpl<BaseVmCloudServerMappe
 
     @Override
     public List<JobRecordResourceResponse> findCloudServerOperateStatus(List<String> vmIds) {
-        return baseJobRecordResourceMappingMapper.findLastResourceJobRecord(vmIds,JobTypeConstants.CLOUD_SERVER_OPERATE_JOB.getCode());
+        return baseJobRecordResourceMappingMapper.findLastResourceJobRecord(vmIds, Collections.singletonList(JobTypeConstants.CLOUD_SERVER_OPERATE_JOB.getCode()));
     }
 
     @Override

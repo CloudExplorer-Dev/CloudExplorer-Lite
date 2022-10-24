@@ -5,7 +5,6 @@
         <id column="id" property="id" />
         <result column="name" property="name"/>
         <result column="credential" property="credential" typeHandler="com.fit2cloud.base.handler.CredentialTypeHandler"/>
-        <result column="status" property="status"  />
         <result column="platform" property="platform"  />
         <result column="create_time" property="createTime"  />
         <result column="update_time" property="updateTime"  />

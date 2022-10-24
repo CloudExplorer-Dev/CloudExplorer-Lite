@@ -9,6 +9,7 @@ import com.fit2cloud.provider.entity.F2CVirtualMachine;
 import com.fit2cloud.provider.impl.vsphere.entity.F2CVsphereDiskType;
 import com.fit2cloud.provider.impl.vsphere.entity.F2CVsphereDatastore;
 import com.fit2cloud.provider.impl.vsphere.entity.F2CVsphereHost;
+import com.fit2cloud.provider.impl.vsphere.entity.request.VsphereDiskRequest;
 import com.vmware.vim25.*;
 import com.vmware.vim25.mo.*;
 import org.apache.commons.lang3.StringUtils;
@@ -412,5 +413,55 @@ public class VsphereUtil {
 
         }
         return diskSum;
+    }
+
+    public static List<F2CDisk> getVmDisks(VsphereClient client, VsphereDiskRequest request) {
+        VirtualMachine vm = client.getVirtualMachineByUuId(request.getInstanceUuid());
+        if (vm == null) {
+            return null;
+        }
+        List<VirtualDisk> diskList = client.getVirtualDisks(vm);
+        List<F2CDisk> disks = new ArrayList<F2CDisk>();
+        ServerConnection serverConnection = client.getSi().getServerConnection();
+        if (diskList != null && diskList.size() > 0) {
+            for (VirtualDisk disk : diskList) {
+                F2CDisk d = new F2CDisk();
+                String tmpDiskId = vm.getMOR().getVal() + "-" + Integer.toString(disk.getKey());
+                d.setDiskId(tmpDiskId);
+                Description info = disk.getDeviceInfo();
+                if (info != null) {
+                    d.setDiskName(info.getLabel());
+                }
+
+                VirtualMachineConfigInfo config = vm.getConfig();
+                d.setInstanceUuid(config.getInstanceUuid());
+                d.setInstanceName(vm.getName());
+                if (client.getDataCenter(vm) == null) {
+                    d.setRegion("N/A");
+                } else {
+                    d.setRegion(client.getDataCenter(vm).getName());
+                }
+                d.setSize(disk.getCapacityInKB() / MB);
+                d.setStatus(F2CDiskStatus.IN_USE);
+
+                VirtualDeviceBackingInfo backing = disk.backing;
+                convertDiskType(d, backing);
+
+                if (backing instanceof VirtualDeviceFileBackingInfo) {
+                    ManagedObjectReference datastoreMor = ((VirtualDeviceFileBackingInfo) backing).getDatastore();
+                    Datastore datastore = new Datastore(serverConnection, datastoreMor);
+                    d.setDatastoreName(datastore.getName());
+                    d.setDatastoreUniqueId(datastoreMor.getVal());
+                }
+
+                HostSystem host = client.getHost(vm);
+                if (host != null) {
+                    d.setZone(host.getName());
+                }
+                d.setDeleteWithInstance(DeleteWithInstance.YES.name());
+                disks.add(d);
+            }
+        }
+        return disks;
     }
 }

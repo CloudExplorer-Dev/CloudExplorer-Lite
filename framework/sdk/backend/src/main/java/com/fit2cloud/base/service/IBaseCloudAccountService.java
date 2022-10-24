@@ -71,6 +71,4 @@ public interface IBaseCloudAccountService extends IService<CloudAccount> {
     List<ResourceCountResponse> getModuleResourceCount(String accountId);
 
     List<? extends Form> getBillSettingFormByPlatform(String platform);
-
-    CloudAccount saveOrUpdateBillSetting(String cloudAccountId, Map params);
 }

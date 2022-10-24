@@ -30,7 +30,6 @@
         <result column="platform" property="platform"  />
         <result column="state" property="state"  />
         <result column="status" property="status"  />
-        <result column="bill_setting" property="billSetting" typeHandler="com.baomidou.mybatisplus.extension.handlers.JacksonTypeHandler"></result>
         <result column="create_time" property="createTime"  />
         <result column="update_time" property="updateTime"  />
     </resultMap>
