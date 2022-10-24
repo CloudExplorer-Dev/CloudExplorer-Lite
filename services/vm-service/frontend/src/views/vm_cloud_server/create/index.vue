@@ -90,7 +90,7 @@ const props = defineProps<{
 }>();
 
 import CatalogApi from "@/api/catalog";
-import BaseCloudAccountApi from "@commons/api/cloud_account/index";
+import BaseCloudAccountApi from "@commons/api/cloud_account";
 import _ from "lodash";
 import type { SimpleMap } from "@commons/api/base/type";
 import type {

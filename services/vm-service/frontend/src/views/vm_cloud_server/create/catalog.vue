@@ -24,7 +24,7 @@
 </template>
 
 <script setup lang="ts">
-import BaseCloudAccountApi from "@commons/api/cloud_account/index";
+import BaseCloudAccountApi from "@commons/api/cloud_account";
 import { platformIcon } from "@commons/utils/platform";
 import { type CloudAccount } from "@commons/api/cloud_account/type";
 import { onMounted, ref } from "vue";

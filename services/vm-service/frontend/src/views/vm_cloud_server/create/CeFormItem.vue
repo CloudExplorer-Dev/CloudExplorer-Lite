@@ -44,7 +44,7 @@ const emit = defineEmits(["update:data", "update:formViewData"]);
 import _ from "lodash";
 import { computed, onMounted, ref, watch } from "vue";
 import type { FormView } from "@commons/components/ce-form/type";
-import formApi from "@commons/api/form_resource_api/index";
+import formApi from "@commons/api/form_resource_api";
 import type { FormInstance } from "element-plus";
 import type { SimpleMap } from "@commons/api/base/type";
 

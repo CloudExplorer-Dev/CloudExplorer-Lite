@@ -39,7 +39,8 @@ import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
-import javax.annotationø.PostConstruct;
+
+import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
 import java.time.LocalDateTime;
 import java.util.HashMap;
@@ -247,7 +248,7 @@ public class VmCloudServerServiceImpl extends ServiceImpl<BaseVmCloudServerMappe
                 modifyResource.accept(vmCloudServer);
                 CloudAccount cloudAccount = cloudAccountService.getById(vmCloudServer.getAccountId());
                 Class<? extends ICloudProvider> cloudProvider = ProviderConstants.valueOf(cloudAccount.getPlatform()).getCloudProvider();
-                HashMap<String, String> params = CommonUtil.getParams(cloudAccount.getCredential(), vmCloudServer.getRegion());
+                HashMap<String, Object> params = CommonUtil.getParams(cloudAccount.getCredential(), vmCloudServer.getRegion());
                 params.put("uuId", vmCloudServer.getInstanceUuid());
                 OperatedTypeEnum operatedType = OperatedTypeEnum.getByDescription(jobDescription);
                 try{
