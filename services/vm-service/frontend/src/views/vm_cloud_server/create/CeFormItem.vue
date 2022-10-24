@@ -1,4 +1,6 @@
 <template>
+  {{ allData }}
+  {{ _data }}
   <el-form
     ref="ruleFormRef"
     label-width="130px"
@@ -17,7 +19,6 @@
           required: item.required,
         }"
       >
-        {{ item }}
         <component
           style="width: 75%"
           @change="change(item)"
@@ -35,14 +36,22 @@
 const props = defineProps<{
   // 页面渲染
   formViewData: Array<FormView>;
+  allFormViewData: Array<FormView>;
   otherParams: any;
   // 数据
   data: SimpleMap<any>;
+  allData: any;
+  groupId: string;
 }>();
-const emit = defineEmits(["update:data", "update:formViewData"]);
+const emit = defineEmits([
+  "update:data",
+  "update:formViewData",
+  "update:allFormViewData",
+  "optionListRefresh",
+]);
 
 import _ from "lodash";
-import { computed, onMounted, ref, watch } from "vue";
+import { computed, onMounted, ref } from "vue";
 import type { FormView } from "@commons/components/ce-form/type";
 import formApi from "@commons/api/form_resource_api";
 import type { FormInstance } from "element-plus";
@@ -79,23 +88,49 @@ function getDefaultValue(formItem: FormView): any {
  * @param formItem
  * @param data
  */
-function initOptionList(formItem: FormView, data: any): void {
-  if (
-    formItem.clazz &&
-    formItem.method &&
-    formItem.relationTrigger.every((r) => _data.value[r])
-  ) {
-    formApi
-      .getResourceMyMethod(
-        formItem.clazz,
-        formItem.method,
-        _.assign({}, data, props.otherParams),
-        _loading
-      )
-      .then((ok) => {
-        formItem.optionList = ok.data;
-      });
+function initOptionList(formItem: FormView | undefined, data: any): void {
+  if (formItem && formItem.clazz && formItem.method) {
+    const _temp = _.assignWith(
+      {},
+      data,
+      props.otherParams,
+      props.allData,
+      (objValue, srcValue) => {
+        return _.isUndefined(objValue) ? srcValue : objValue;
+      }
+    );
+    console.log(_temp, formItem?.relationTrigger);
+    if (
+      //关联对象有值
+      _.every(formItem?.relationTrigger, (trigger) => {
+        return _.has(_temp, trigger);
+      })
+    ) {
+      if (formItem.group?.toFixed() === props.groupId) {
+        console.log(props.groupId, formItem.field);
+        formApi
+          .getResourceMyMethod(formItem.clazz, formItem.method, _temp, _loading)
+          .then((ok) => {
+            formItem.optionList = ok.data;
+          });
+      } else {
+        //交给其他的组内去调用，可以解决loading不生效的问题
+        emit("optionListRefresh", formItem.field);
+      }
+    }
   }
+}
+
+/**
+ * 根据field字段刷新optionList
+ * @param field
+ */
+function optionListRefresh(field: string): void {
+  console.log(field, props.groupId);
+  initOptionList(
+    _.find(props.formViewData, (form) => form.field === field),
+    { ..._data.value }
+  );
 }
 
 /**
@@ -123,7 +158,7 @@ function initForms(): void {
  */
 const change = (formItem: FormView) => {
   console.log(formItem.field);
-  _.forEach(props.formViewData, (item) => {
+  _.forEach(props.allFormViewData, (item) => {
     if (_.includes(item.relationTrigger, formItem.field)) {
       console.log(item);
       //设置空值
@@ -155,7 +190,10 @@ onMounted(() => {
 });
 
 // 暴露获取当前表单数据函数
-defineExpose({});
+defineExpose({
+  optionListRefresh,
+  groupId: props.groupId,
+});
 </script>
 
 <style lang="scss"></style>
