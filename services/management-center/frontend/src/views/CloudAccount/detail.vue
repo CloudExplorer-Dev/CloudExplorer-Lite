@@ -90,6 +90,52 @@ const recordRegionDescription = computed(() => {
   );
 });
 
+/**
+ * 账单设置详情描述
+ */
+const recordBillDescriptionTemplate = _.template(
+  "已同步" +
+    "<%= monthNum %>" +
+    "个月账单" +
+    "," +
+    "共 " +
+    "<%= recordCount %> " +
+    t("cloud_account.sync.unit", "个") +
+    "数据" +
+    ";" +
+    "累计:" +
+    "<%= sum %>" +
+    "元" +
+    ";"
+);
+/**
+ * 账单设置详情描述
+ */
+const recordBillDescription = computed(() => {
+  if (
+    selectedSyncRecord.value &&
+    selectedSyncRecord.value.params &&
+    selectedSyncRecord.value.params[selectedSyncRecord.value.type]
+  ) {
+    return recordBillDescriptionTemplate({
+      monthNum:
+        selectedSyncRecord.value.params[selectedSyncRecord.value.type].length,
+      recordCount: _.sumBy(
+        selectedSyncRecord.value.params[selectedSyncRecord.value.type],
+        "size"
+      ),
+      sum:
+        Math.floor(
+          _.sumBy(
+            selectedSyncRecord.value.params[selectedSyncRecord.value.type],
+            "sum"
+          ) * 100
+        ) / 100,
+    });
+  }
+  return recordBillDescriptionTemplate({ monthNum: 0, recordCount: 0, sum: 0 });
+});
+
 // 已同步多少资源
 const recordResourceDescription = computed(() => {
   let resourceCount = 0;
@@ -530,22 +576,33 @@ onBeforeUnmount(() => {
             <p v-if="noMoreSyncRecord" style="text-align: center">No more</p>
           </div>
         </div>
-        <div class="record-right">
-          <div class="header" v-if="selectedSyncRecord">
+        <div class="record-right" v-if="selectedSyncRecord">
+          <div
+            class="header"
+            v-if="
+              selectedSyncRecord &&
+              selectedSyncRecord.type === 'CLOUD_ACCOUNT_SYNC_JOB'
+            "
+          >
             <span>{{ selectedSyncRecord.createTime }}</span>
             <span>{{ $t("cloud_account.sync.detail", "详情") }}：</span>
             <span>{{ recordRegionDescription }}；</span>
             <span>{{ recordResourceDescription }}；</span>
           </div>
+          <div
+            class="header"
+            v-if="
+              selectedSyncRecord &&
+              selectedSyncRecord.type === 'CLOUD_ACCOUNT_SYNC_BILL_JOB'
+            "
+          >
+            <span>{{ selectedSyncRecord.createTime }}</span>
+            <span>{{ $t("cloud_account.sync.detail", "详情") }}：</span>
+            <span>{{ recordBillDescription }}</span>
+          </div>
           <div class="line"></div>
           <div class="content">
-            <div
-              class="container"
-              v-if="
-                selectedSyncRecord &&
-                selectedSyncRecord.type === 'CLOUD_ACCOUNT_SYNC_JOB'
-              "
-            >
+            <div class="container">
               <div class="start">
                 <div class="split-left">
                   {{ selectedSyncRecord.createTime }}：
@@ -560,20 +617,43 @@ onBeforeUnmount(() => {
                 ]"
                 :key="index"
               >
-                <div class="layout">
-                  <div class="split-left">
-                    {{ $t("cloud_account.sync.area", "数据中心/区域") }}：
+                <template
+                  v-if="selectedSyncRecord.type === 'CLOUD_ACCOUNT_SYNC_JOB'"
+                >
+                  <div class="layout">
+                    <div class="split-left">
+                      {{ $t("cloud_account.sync.area", "数据中心/区域") }}：
+                    </div>
+                    <div>{{ item.region.name }}</div>
                   </div>
-                  <div>{{ item.region.name }}</div>
-                </div>
-                <div class="layout">
-                  <div class="split-left">
-                    已{{ selectedSyncRecord.description }}：
+                  <div class="layout">
+                    <div class="split-left">
+                      已{{ selectedSyncRecord.description }}：
+                    </div>
+                    <div>{{ item.size }} 个</div>
                   </div>
-                  <div>{{ item.size }} 个</div>
-                </div>
+                </template>
+                <template
+                  v-if="
+                    selectedSyncRecord.type === 'CLOUD_ACCOUNT_SYNC_BILL_JOB'
+                  "
+                >
+                  <div class="layout">
+                    <div class="split-left">月份：</div>
+                    <div>{{ JSON.parse(item.month) }}</div>
+                  </div>
+                  <div class="layout">
+                    <div class="split-left">
+                      已{{ selectedSyncRecord.description }}：
+                    </div>
+                    <div>{{ item.size }} 个</div>
+                  </div>
+                  <div class="layout">
+                    <div class="split-left">累计：</div>
+                    <div>{{ item.sum }}元</div>
+                  </div>
+                </template>
               </div>
-
               <div
                 v-if="selectedSyncRecord.status === 'SYNCING'"
                 style="display: flex; color: var(--el-color-primary)"
@@ -585,7 +665,6 @@ onBeforeUnmount(() => {
                   <ce-icon code="Loading" class="is-loading"></ce-icon>
                 </div>
               </div>
-
               <div class="end" v-if="selectedSyncRecord.status !== 'SYNCING'">
                 <div class="split-left">
                   {{ selectedSyncRecord.updateTime }}：
@@ -593,7 +672,7 @@ onBeforeUnmount(() => {
                 <div>{{ $t("cloud_account.sync.end", "结束同步") }}</div>
               </div>
             </div>
-            <span v-else>{{
+            <span v-if="!selectedSyncRecord">{{
               $t("cloud_account.sync.noDetail", "没有同步信息")
             }}</span>
           </div>

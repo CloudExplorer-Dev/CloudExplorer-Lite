@@ -68,12 +68,6 @@ public class CloudAccount implements Serializable {
     private Boolean state;
 
     /**
-     * 账单设置
-     */
-    @TableField(value = "bill_setting", typeHandler = JacksonTypeHandler.class)
-    private Map<String, Object> billSetting;
-
-    /**
      * 创建时间
      */
     @TableField("create_time")

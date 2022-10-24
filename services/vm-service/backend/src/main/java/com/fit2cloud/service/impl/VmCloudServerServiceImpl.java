@@ -203,7 +203,7 @@ public class VmCloudServerServiceImpl extends ServiceImpl<BaseVmCloudServerMappe
 
     @Override
     public List<JobRecordResourceResponse> findCloudServerOperateStatus(List<String> vmIds) {
-        return baseJobRecordResourceMappingMapper.findLastResourceJobRecord(vmIds,JobTypeConstants.CLOUD_SERVER_OPERATE_JOB.getCode());
+        return baseJobRecordResourceMappingMapper.findLastResourceJobRecord(vmIds,List.of(JobTypeConstants.CLOUD_SERVER_OPERATE_JOB.getCode()));
     }
 
     @Override

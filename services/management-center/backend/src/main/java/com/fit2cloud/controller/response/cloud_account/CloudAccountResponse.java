@@ -43,9 +43,6 @@ public class CloudAccountResponse {
     @ApiModelProperty(value = "同步状态", notes = "同步状态")
     private CloudAccountConstants.Status status;
 
-    @ApiModelProperty(value = "账单设置", notes = "账单设置")
-    private Map<String, Object> billSetting;
-
     @TableField("create_time")
     @ApiModelProperty(value = "创建时间", notes = "创建时间")
     @JsonDeserialize(using = LocalDateTimeDeserializer.class)

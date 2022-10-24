@@ -444,7 +444,7 @@ public class CloudAccountServiceImpl extends ServiceImpl<CloudAccountMapper, Clo
 
     @Override
     public List<JobRecordResourceResponse> findCloudAccountSyncStatus(List<String> cloudAccountIds) {
-        return baseJobRecordResourceMappingMapper.findLastResourceJobRecord(cloudAccountIds, JobTypeConstants.CLOUD_ACCOUNT_SYNC_JOB.getCode());
+        return baseJobRecordResourceMappingMapper.findLastResourceJobRecord(cloudAccountIds, List.of(JobTypeConstants.CLOUD_ACCOUNT_SYNC_JOB.getCode(),JobTypeConstants.CLOUD_ACCOUNT_SYNC_BILL_JOB.getCode()));
     }
 
     @Override

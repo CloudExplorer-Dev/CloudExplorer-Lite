@@ -95,11 +95,5 @@ public class BaseCloudAccountController {
         return ResultHolder.success(forms);
     }
 
-    @PutMapping("/bill/{cloudAccountId}")
-    public ResultHolder<CloudAccount> saveOrUpdateBillSetting(@PathVariable("cloudAccountId") String cloudAccountId,
-                                                              @RequestBody Map params) {
-        return ResultHolder.success(cloudAccountService.saveOrUpdateBillSetting(cloudAccountId, params));
-    }
-
 
 }

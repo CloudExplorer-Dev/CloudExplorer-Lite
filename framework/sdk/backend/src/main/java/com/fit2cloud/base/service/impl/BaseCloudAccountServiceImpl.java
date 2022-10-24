@@ -302,18 +302,4 @@ public class BaseCloudAccountServiceImpl extends ServiceImpl<BaseCloudAccountMap
 
 
     }
-
-    @Override
-    public CloudAccount saveOrUpdateBillSetting(String cloudAccountId, Map params) {
-        CloudAccount cloudAccount = getById(cloudAccountId);
-        PlatformConstants platformConstants = PlatformConstants.valueOf(cloudAccount.getPlatform());
-        if (platformConstants.getBillClass() == null) {
-            throw new Fit2cloudException(1003, "不支持的云平台");
-        }
-        Bill bill = JsonUtil.parseObject(JsonUtil.toJSONString(params), platformConstants.getBillClass());
-        bill.verification();
-        cloudAccount.setBillSetting(params);
-        saveOrUpdate(cloudAccount);
-        return cloudAccount;
-    }
 }
