@@ -48,7 +48,7 @@
     <el-table-column
       prop="createTime"
       :label="$t('commons.create_time')"
-      sortable="desc"
+      sortable
     />
   </ce-table>
 </template>
@@ -57,22 +57,25 @@
 import { ref, onMounted } from "vue";
 import SysLogApi from "@/api/sys_log/index";
 import type { SystemLogVO } from "@/api/sys_log/type";
-import { useRouter } from "vue-router";
+
 import { ElMessage } from "element-plus/es";
 import {
   PaginationConfig,
   TableConfig,
   TableOperations,
   TableSearch,
+  Order,
 } from "@commons/components/ce-table/type";
 import { useI18n } from "vue-i18n";
 const { t } = useI18n();
-const useRoute = useRouter();
+
 const columns = ref([]);
 const tableData = ref<Array<SystemLogVO>>();
 const tableLoading = ref<boolean>(false);
 onMounted(() => {
-  search(new TableSearch());
+  const defaultCondition = new TableSearch();
+  defaultCondition.order = new Order("createTime", false);
+  search(defaultCondition);
 });
 const search = (condition: TableSearch) => {
   const params = TableSearch.toSearchParams(condition);

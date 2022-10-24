@@ -51,7 +51,7 @@ public class SyncProviderServiceImpl extends BaseSyncService implements ISyncPro
 
     @Override
     public void syncCloudServer(String cloudAccountId, List<Credential.Region> regions) {
-        proxy(cloudAccountId, regions, "同步虚拟机", ICloudProvider::listVirtualMachine, this::cloudServerSaveOrUpdate, this::writeJobRecord, () -> vmCloudServerService.remove(new LambdaUpdateWrapper<VmCloudServer>().eq(VmCloudServer::getAccountId, cloudAccountId)));
+        proxy(cloudAccountId, regions, "同步云主机", ICloudProvider::listVirtualMachine, this::cloudServerSaveOrUpdate, this::writeJobRecord, () -> vmCloudServerService.remove(new LambdaUpdateWrapper<VmCloudServer>().eq(VmCloudServer::getAccountId, cloudAccountId)));
     }
 
     @Override
@@ -65,7 +65,7 @@ public class SyncProviderServiceImpl extends BaseSyncService implements ISyncPro
     }
 
     /**
-     * 虚拟机插入并且更新数据
+     * 云主机插入并且更新数据
      *
      * @param saveBatchOrUpdateParams 插入更新数据所需要的参数
      */
@@ -251,7 +251,7 @@ public class SyncProviderServiceImpl extends BaseSyncService implements ISyncPro
     }
 
     /**
-     * 将虚拟机同步对象转换为实体对
+     * 将云主机同步对象转换为实体对
      *
      * @param f2CVirtualMachine 同步对象
      * @param cloudAccountId    实体对象
@@ -271,7 +271,7 @@ public class SyncProviderServiceImpl extends BaseSyncService implements ISyncPro
     }
 
     /**
-     * 将虚拟机磁盘对象转换实体对象
+     * 将云主机磁盘对象转换实体对象
      *
      * @param disk           磁盘对象
      * @param region         区域对象

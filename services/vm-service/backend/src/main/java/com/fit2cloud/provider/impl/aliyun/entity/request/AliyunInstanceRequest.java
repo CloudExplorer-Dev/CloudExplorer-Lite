@@ -14,6 +14,6 @@ public class AliyunInstanceRequest extends AliyunBaseRequest {
     /**
      * 强制执行
      */
-    private Boolean force;
+    private Boolean force = false;
 
 }

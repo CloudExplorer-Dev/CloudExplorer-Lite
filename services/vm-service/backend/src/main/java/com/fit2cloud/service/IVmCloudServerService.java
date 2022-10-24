@@ -6,6 +6,9 @@ import com.fit2cloud.base.entity.VmCloudServer;
 import com.fit2cloud.controller.request.vm.BatchOperateVmRequest;
 import com.fit2cloud.controller.request.vm.PageVmCloudServerRequest;
 import com.fit2cloud.dto.VmCloudServerDTO;
+import com.fit2cloud.response.JobRecordResourceResponse;
+
+import java.util.List;
 
 /**
  * <p>
@@ -30,5 +33,9 @@ public interface IVmCloudServerService extends IService<VmCloudServer> {
     boolean deleteInstance(String vmId);
 
     boolean batchOperate(BatchOperateVmRequest request);
+
+    List<JobRecordResourceResponse> findCloudServerOperateStatus(List<String> vmIds);
+
+    VmCloudServerDTO getById(String vmId);
 
 }

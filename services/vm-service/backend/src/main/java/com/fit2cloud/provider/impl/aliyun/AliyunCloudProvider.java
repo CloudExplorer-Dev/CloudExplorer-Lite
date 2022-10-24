@@ -28,6 +28,7 @@ public class AliyunCloudProvider extends AbstractCloudProvider<AliyunVmCredentia
     public List<F2CVirtualMachine> listVirtualMachine(String req) {
         return AliyunSyncCloudApi.listVirtualMachine(JsonUtil.parseObject(req, ListVirtualMachineRequest.class));
     }
+
     @Override
     public List<F2CImage> listImage(String req) {
         return AliyunSyncCloudApi.listImage(JsonUtil.parseObject(req, ListImageRequest.class));
@@ -50,7 +51,7 @@ public class AliyunCloudProvider extends AbstractCloudProvider<AliyunVmCredentia
 
     @Override
     public boolean shutdownInstance(String req){
-        return false;
+        return AliyunSyncCloudApi.powerOff(JsonUtil.parseObject(req, AliyunInstanceRequest.class));
     }
 
     @Override
@@ -60,17 +61,23 @@ public class AliyunCloudProvider extends AbstractCloudProvider<AliyunVmCredentia
 
     @Override
     public boolean deleteInstance(String req){
-        return AliyunSyncCloudApi.deleteInstance(JsonUtil.parseObject(req, AliyunInstanceRequest.class));
+        AliyunInstanceRequest request = JsonUtil.parseObject(req, AliyunInstanceRequest.class);
+        request.setForce(true);
+        return AliyunSyncCloudApi.deleteInstance(request);
     }
 
     @Override
     public boolean hardShutdownInstance(String req) {
-        return false;
+        AliyunInstanceRequest request = JsonUtil.parseObject(req, AliyunInstanceRequest.class);
+        request.setForce(true);
+        return AliyunSyncCloudApi.powerOff(request);
     }
 
     @Override
     public boolean hardRebootInstance(String req) {
-        return false;
+        AliyunInstanceRequest request = JsonUtil.parseObject(req, AliyunInstanceRequest.class);
+        request.setForce(true);
+        return AliyunSyncCloudApi.rebootInstance(request);
     }
 
 }

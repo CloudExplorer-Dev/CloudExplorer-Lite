@@ -18,7 +18,7 @@ public class VmCloudDiskDTO extends VmCloudDisk {
     private String workspaceName;
     @ApiModelProperty("云账号名称")
     private String accountName;
-    @ApiModelProperty("所属虚拟机")
+    @ApiModelProperty("所属云主机")
     private String vmInstanceName;
     @ApiModelProperty("所属云平台")
     private String platform;

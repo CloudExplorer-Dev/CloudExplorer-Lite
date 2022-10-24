@@ -4,7 +4,7 @@ import { ref, onMounted } from "vue";
 import WorkspaceApi from "@/api/workspace/index";
 import type { Workspace } from "@/api/workspace/type";
 import { useRouter } from "vue-router";
-import { ElMessageBox } from "element-plus/es";
+import { ElMessageBox, ElMessage } from "element-plus/es";
 import {
   PaginationConfig,
   SearchConfig,
@@ -53,10 +53,10 @@ const handleSelectionChange = (val: Workspace[]) => {
 
 //批量删除
 const batchDelete = () => {
-  // if (!multipleSelection.value) {
-  //   ElMessage.info("至少选择一个工作空间");
-  //   return;
-  // }
+  if (!multipleSelection.value) {
+    ElMessage.info("至少选择一个工作空间");
+    return;
+  }
   ElMessageBox.confirm(
     t("commons.message_box.confirm_delete"),
     t("commons.message_box.prompt"),
@@ -198,7 +198,7 @@ const tableConfig = ref<TableConfig>({
       sortable
     >
       <template #default="scope">
-        <router-link :to="{ name: 'user', query: { id: scope.row.id } }">
+        <router-link :to="{ name: 'user', query: { workspaceId: scope.row.id } }">
           <a style="color: blue">{{ scope.row.userCount }}</a>
         </router-link>
       </template>

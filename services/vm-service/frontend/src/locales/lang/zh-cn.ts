@@ -16,6 +16,7 @@ const message = {
       confirm_reboot: "确认重启",
       confirm_delete: "确认删除",
       confirm_batch_operate: "确认执行批量{0}操作",
+      check_vm_tools_status_confirm_shutdown: "当前虚拟机未安装VmTools或VmTools未运行，无法软关机，若继续操作则关闭电源，是否继续？",
     },
   },
   vm_cloud_image: {

@@ -8,13 +8,18 @@ import com.fit2cloud.controller.handler.ResultHolder;
 import com.fit2cloud.controller.request.vm.BatchOperateVmRequest;
 import com.fit2cloud.controller.request.vm.PageVmCloudServerRequest;
 import com.fit2cloud.dto.VmCloudServerDTO;
+import com.fit2cloud.response.JobRecordResourceResponse;
 import com.fit2cloud.service.IVmCloudServerService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * @author jianneng
@@ -23,18 +28,18 @@ import javax.annotation.Resource;
 @RestController
 @RequestMapping("/api/server")
 @Validated
-@Api("虚拟机相关接口")
+@Api("云主机相关接口")
 public class VmCloudServerController {
     @Resource
     private IVmCloudServerService iVmCloudServerService;
 
-    @ApiOperation(value = "分页查询虚拟机", notes = "分页查询虚拟机")
+    @ApiOperation(value = "分页查询云主机", notes = "分页查询云主机")
     @GetMapping("/page")
     public ResultHolder<IPage<VmCloudServerDTO>> list(@Validated PageVmCloudServerRequest pageVmCloudServerRequest) {
         return ResultHolder.success(iVmCloudServerService.pageVmCloudServer(pageVmCloudServerRequest));
     }
 
-    @ApiOperation(value = "开机",notes = "启动虚拟机操作系统")
+    @ApiOperation(value = "开机",notes = "启动云主机操作系统")
     @PostMapping("powerOn/{serverId}")
     @OperatedLog(resourceType= ResourceTypeEnum.CLOUD_SERVER,operated = OperatedTypeEnum.POWER_ON,
             resourceId = "#serverId",
@@ -43,7 +48,7 @@ public class VmCloudServerController {
         return ResultHolder.success(iVmCloudServerService.powerOn(serverId));
     }
 
-    @ApiOperation(value = "重启",notes = "重启虚拟机操作系统")
+    @ApiOperation(value = "重启",notes = "重启云主机操作系统")
     @PostMapping("reboot/{serverId}")
     @OperatedLog(resourceType= ResourceTypeEnum.CLOUD_SERVER,operated = OperatedTypeEnum.REBOOT,
             resourceId = "#serverId",
@@ -52,7 +57,7 @@ public class VmCloudServerController {
         return ResultHolder.success(iVmCloudServerService.rebootInstance(serverId));
     }
 
-    @ApiOperation(value = "关机",notes = "关闭虚拟机操作系统")
+    @ApiOperation(value = "关机",notes = "关闭云主机操作系统")
     @PostMapping("shutdown/{serverId}/{powerOff}")
     @OperatedLog(resourceType= ResourceTypeEnum.CLOUD_SERVER,operated = OperatedTypeEnum.SHUTDOWN,
             resourceId = "#serverId",
@@ -61,7 +66,7 @@ public class VmCloudServerController {
         return ResultHolder.success(iVmCloudServerService.shutdownInstance(serverId,powerOff));
     }
 
-    @ApiOperation(value = "关闭电源",notes = "关闭虚拟机电源")
+    @ApiOperation(value = "关闭电源",notes = "关闭云主机电源")
     @PostMapping("powerOff/{serverId}")
     @OperatedLog(resourceType= ResourceTypeEnum.CLOUD_SERVER,operated = OperatedTypeEnum.SHUTDOWN,
             resourceId = "#serverId",
@@ -70,7 +75,7 @@ public class VmCloudServerController {
         return ResultHolder.success(iVmCloudServerService.powerOff(serverId));
     }
 
-    @ApiOperation(value = "删除",notes = "删除虚拟机")
+    @ApiOperation(value = "删除",notes = "删除云主机")
     @PostMapping("delete/{serverId}")
     @OperatedLog(resourceType= ResourceTypeEnum.CLOUD_SERVER,operated = OperatedTypeEnum.SHUTDOWN,
             resourceId = "#serverId",
@@ -79,11 +84,26 @@ public class VmCloudServerController {
         return ResultHolder.success(iVmCloudServerService.deleteInstance(serverId));
     }
 
-    @ApiOperation(value = "批量操作",notes = "批量操作虚拟机")
+    @ApiOperation(value = "批量操作",notes = "批量操作云主机")
     @PostMapping("batchOperate")
     @OperatedLog(resourceType= ResourceTypeEnum.CLOUD_SERVER,operated = OperatedTypeEnum.BATCH_OPERATE)
     public ResultHolder<Boolean> batchOperate(@RequestBody BatchOperateVmRequest request) {
         return ResultHolder.success(iVmCloudServerService.batchOperate(request));
     }
+
+    @GetMapping("/{id}")
+    @ApiOperation(value = "根据id查询云主机", notes = "根据id查询云主机")
+    public ResultHolder<VmCloudServerDTO> findCloudServer(@ApiParam(value = "云主机id", required = true)
+                                                       @PathVariable("id") String id) {
+        return ResultHolder.success(iVmCloudServerService.getById(id));
+    }
+
+    @GetMapping("/operate/job_record")
+    @ApiOperation(value = "查询云主机最新的操作记录", notes = "查询云主机最新的操作记录")
+    public ResultHolder<Map<String, List<JobRecordResourceResponse>>> findCloudServerOperateStatus(@ApiParam("需要查询的云主机id") @RequestParam("cloudServerIds[]") List<String> cloudServerIds) {
+        return ResultHolder.success(iVmCloudServerService.findCloudServerOperateStatus(cloudServerIds).stream().collect(Collectors.groupingBy(JobRecordResourceResponse::getResourceId)));
+    }
+
+
 
 }

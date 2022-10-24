@@ -279,6 +279,10 @@ public class VsphereClient {
         return getResource(ClusterComputeResource.class, name);
     }
 
+    public List<ClusterComputeResource> listClusters() {
+        return listResources(ClusterComputeResource.class);
+    }
+
     public HostSystem getHost(String hostName) {
         return getResource(HostSystem.class, hostName);
     }
@@ -303,4 +307,9 @@ public class VsphereClient {
         }
         return disks;
     }
+    public boolean hasVmTools(VirtualMachine vm) {
+        GuestInfo guest = vm.getGuest();
+        return guest != null;
+    }
+
 }

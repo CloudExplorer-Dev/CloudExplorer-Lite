@@ -19,5 +19,5 @@ public class PlatformResponse {
     @ApiModelProperty(value = "云平台对应的code", notes = "云平台对应的code")
     private String field;
     @ApiModelProperty(value = "凭证表单", notes = "凭证表单")
-    private List<Form> credentialFrom;
+    private List<? extends Form> credentialFrom;
 }

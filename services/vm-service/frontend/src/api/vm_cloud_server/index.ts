@@ -1,8 +1,13 @@
 import { get, post } from "@commons/request";
 import type Result from "@commons/request/Result";
 import type { Page } from "@commons/request/Result";
-import type { VmCloudServerVO, ListVmCloudServerRequest } from "./type";
+import type {
+  VmCloudServerVO,
+  ListVmCloudServerRequest,
+  CloudServerJobRecord,
+} from "./type";
 import type { Ref } from "vue";
+import type { SimpleMap } from "@commons/api/base/type";
 
 /**
  * 虚拟机列表
@@ -26,7 +31,12 @@ export function shutdownInstance(
   powerOff: boolean,
   loading?: Ref<boolean>
 ): Promise<Result<boolean>> {
-  return post("api/server/shutdown/" + instanceId, powerOff, null, loading);
+  return post(
+    "api/server/shutdown/" + instanceId + "/" + powerOff,
+    null,
+    null,
+    loading
+  );
 }
 
 /**
@@ -96,6 +106,35 @@ export function batchOperate(
   );
 }
 
+/**
+ * 根据ID查询
+ * @param id
+ * @param loading
+ */
+export function getVmCloudServerById(
+  id: string,
+  loading?: Ref<boolean>
+): Promise<Result<VmCloudServerVO>> {
+  return get("api/server/" + id, null, loading);
+}
+
+/**
+ * 获取云主机最新任务状态
+ * @param cloudServerIds id
+ * @param loading         加载器
+ * @returns               云主机任务记录
+ */
+export function getServerJobRecord(
+  cloudServerIds: Array<string>,
+  loading?: Ref<boolean>
+): Promise<Result<SimpleMap<Array<CloudServerJobRecord>>>> {
+  return get(
+    "/api/server/operate/job_record",
+    { cloudServerIds: cloudServerIds },
+    loading
+  );
+}
+
 const VmCloudServerApi = {
   listVmCloudServer,
   shutdownInstance,
@@ -104,6 +143,8 @@ const VmCloudServerApi = {
   powerOff,
   deleteInstance,
   batchOperate,
+  getVmCloudServerById,
+  getServerJobRecord,
 };
 
 export default VmCloudServerApi;

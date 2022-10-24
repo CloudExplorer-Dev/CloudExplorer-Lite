@@ -36,10 +36,10 @@ import static com.fit2cloud.provider.impl.tencent.util.TencentMappingUtil.toF2cD
 public class TencetSyncCloudApi {
 
     /**
-     * 获取虚拟机数据
+     * 获取云主机数据
      *
-     * @param listVirtualMachineRequest 虚拟机请求参数
-     * @return 虚拟机数据
+     * @param listVirtualMachineRequest 云主机请求参数
+     * @return 云主机数据
      */
     public static List<F2CVirtualMachine> listVirtualMachine(ListVirtualMachineRequest listVirtualMachineRequest) {
         if (StringUtils.isNotEmpty(listVirtualMachineRequest.getRegionId()) && StringUtils.isNotEmpty(listVirtualMachineRequest.getCredential())) {

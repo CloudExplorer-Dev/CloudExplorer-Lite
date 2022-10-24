@@ -1,10 +1,15 @@
 <template>
   <div class="layout-container" :style="{ border: border ? '' : 'none' }">
-    <div class="header" v-if="$slots.header || $slots.btn">
+    <div
+      class="header"
+      v-if="$slots.header || $slots.btn || $slots.header_content"
+    >
       <div class="title" v-if="$slots.header">
         <slot name="header"></slot>
       </div>
-      <div class="auto" v-if="$slots.btn"></div>
+      <div class="auto" v-if="$slots.btn || $slots.header_content">
+        <slot name="header_content"></slot>
+      </div>
       <div class="btn" v-if="$slots.btn">
         <slot name="btn"></slot>
       </div>

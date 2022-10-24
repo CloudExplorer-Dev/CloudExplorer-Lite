@@ -1,8 +1,12 @@
-interface FormView {
+import type { SimpleMap } from "@commons/api/base/type";
+
+export interface FormView {
   /**
    *输入类型
    */
   inputType: string;
+
+  attrs: string;
   /**
    * 字段名称
    */
@@ -22,7 +26,9 @@ interface FormView {
   /**
    * 默认值
    */
-  defaultValue: unknown;
+  defaultValue: string;
+
+  defaultJsonValue: boolean;
   /**
    *描述
    */
@@ -35,6 +41,10 @@ interface FormView {
    * 文本字段
    */
   textField?: string;
+  /**
+   * 格式化文本字段
+   */
+  formatTextField?: boolean;
   /**
    * 关联显示
    */
@@ -51,10 +61,32 @@ interface FormView {
    * 执行函数
    */
   method?: string | null;
+
+  group?: number | null;
+
+  step?: number | null;
+
+  index: number;
   /**
    * 其他字段
    */
   [propName: string]: any;
 }
 
-export type { FormView };
+export interface GroupAnnotation {
+  group: number;
+  name: string;
+  description: string;
+}
+
+export interface StepAnnotation {
+  step: number;
+  name: string;
+  description: string;
+}
+
+export interface FormViewObject {
+  forms: Array<FormView>;
+  groupAnnotationMap?: SimpleMap<GroupAnnotation>;
+  stepAnnotationMap?: SimpleMap<StepAnnotation>;
+}

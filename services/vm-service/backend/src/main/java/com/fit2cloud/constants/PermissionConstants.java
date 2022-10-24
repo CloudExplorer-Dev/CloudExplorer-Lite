@@ -79,7 +79,16 @@ public class PermissionConstants {
                                     .operate(OPERATE.READ)
                                     .name("i18n_permission_cloud_server_red")
                                     .role(RoleConstants.ROLE.ADMIN)
-                                    .role(RoleConstants.ROLE.ORGADMIN))
+                                    .role(RoleConstants.ROLE.ORGADMIN)
+                                    .role(RoleConstants.ROLE.USER))
+                            .permission(new Permission.Builder()
+                                    .require(OPERATE.READ)
+                                    .operate(OPERATE.CREATE)
+                                    .name("i18n_permission_cloud_server_create")
+                                    .role(RoleConstants.ROLE.ADMIN)
+                                    .role(RoleConstants.ROLE.ORGADMIN)
+                                    .role(RoleConstants.ROLE.USER))
+
             )
             .group(
                     new PermissionGroup.Builder()

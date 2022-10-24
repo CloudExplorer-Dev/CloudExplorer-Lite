@@ -1,0 +1,33 @@
+//云主机状态
+$Running: #1e7323;
+$Deleted: #fa022e;
+$Stopped: #fa8f02;
+$Starting: #ad4c1f;
+$Stopping: #ad4c1f;
+$Rebooting: #ad4c1f;
+$Deleting: #ad4c1f;
+$Createding: #ad4c1f;
+
+:export {
+  Running: $Running;
+  Deleted: $Deleted;
+  Stopped: $Stopped;
+  Starting: $Starting;
+  Stopping: $Stopping;
+  Rebooting: $Rebooting;
+  Deleteding: $Deleting;
+  Createding: $Createding;
+}
+
+//文字长度限制
+.text_overflow {
+  max-width: 120px;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+//更多IP
+.dropdown_box {
+  margin-left: 10px;
+  margin-top: 2px;
+}

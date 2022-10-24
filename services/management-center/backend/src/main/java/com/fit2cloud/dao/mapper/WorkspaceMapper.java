@@ -22,13 +22,13 @@ import java.util.Map;
  */
 public interface WorkspaceMapper extends BaseMapper<Workspace> {
 
-    String querySql = "SELECT\n" +
-            "\ta.*,\n" +
-            "\t( SELECT count( DISTINCT user_role.user_id ) FROM user_role WHERE user_role._source = a.id ) AS userCount,\n" +
-            "\tb.NAME AS organizationName \n" +
-            "FROM\n" +
-            "\tworkspace AS a\n" +
-            "\tLEFT JOIN organization AS b ON b.id = a.organization_id ";
+    String querySql = "SELECT " +
+            "a.*, " +
+            "( SELECT count( DISTINCT user_role.user_id ) FROM user_role WHERE user_role._source = a.id ) AS userCount, " +
+            "b.NAME AS organizationName  " +
+            "FROM " +
+            "workspace AS a " +
+            "LEFT JOIN organization AS b ON b.id = a.organization_id ";
     String wrapperSql = "SELECT * from ( " + querySql + " ) AS q ${ew.customSqlSegment}";
 
     @Select(wrapperSql)

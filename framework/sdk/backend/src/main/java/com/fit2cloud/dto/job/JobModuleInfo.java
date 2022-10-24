@@ -21,5 +21,5 @@ public class JobModuleInfo extends ModuleInfo implements Serializable {
     /**
      * 模块定时任务
      */
-    private List<JobInitSettingDto> jobDetails;
+    private List<JobSettingParent> jobDetails;
 }

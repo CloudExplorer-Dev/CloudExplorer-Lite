@@ -2,6 +2,7 @@ import { get, post, del, put } from "@commons/request";
 import type { Ref } from "vue";
 import type Result from "@commons/request/Result";
 import type { Page } from "@commons/request/Result";
+import BaseCloudAccountApi from "@commons/api/cloud_account/index";
 import type {
   ListOrganizationRequest,
   CloudAccount,
@@ -65,18 +66,6 @@ const save: (
   loading?: Ref<boolean>
 ) => Promise<Result<CloudAccount>> = (createAccount, loading) => {
   return post("/api/cloud_account", null, createAccount, loading);
-};
-/**
- * 根据云账号id查询到云账号对象
- * @param cloudAccountId 云账号id
- * @param loading        加载器
- * @returns 云账号对象
- */
-const getCloudAccount: (
-  cloudAccountId: string,
-  loading?: Ref<boolean>
-) => Promise<Result<CloudAccount>> = (cloudAccountId, loading) => {
-  return get("/api/cloud_account/" + cloudAccountId, null, loading);
 };
 
 /**
@@ -275,14 +264,14 @@ const saveOrUpdateBillSetting = (
   );
 };
 
-export default {
+const CloudAccountApi = {
+  ...BaseCloudAccountApi,
   page,
   getPlatformAll,
   save,
   getRegions,
   getJobs,
   updateJobs,
-  getCloudAccount,
   updateCloudAccount,
   deleteCloudAccount,
   batchDeleteCloudAccount,
@@ -298,3 +287,5 @@ export default {
   saveOrUpdateBillSetting,
   pageSyncRecord,
 };
+
+export default CloudAccountApi;

@@ -16,6 +16,7 @@ const message = {
       confirm_reboot: "Confirm restart",
       confirm_delete: "confirm deletion",
       confirm_batch_operate: "Confirm to execute batch {0} operation",
+      check_vm_tools_status_confirm_shutdown: "The current virtual machine is not installed with VmTools or VmTools is not running and cannot be soft shut down. If you continue, turn off the power. Do you want to continue?",
     },
   },
   vm_cloud_image: {

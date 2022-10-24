@@ -4,8 +4,8 @@ import com.fit2cloud.common.platform.bill.Bill;
 import com.fit2cloud.common.platform.bill.impl.AliBill;
 import com.fit2cloud.common.platform.bill.impl.HuaweiBill;
 import com.fit2cloud.common.platform.bill.impl.TencentBill;
-import com.fit2cloud.common.platform.credential.impl.AliCredential;
 import com.fit2cloud.common.platform.credential.Credential;
+import com.fit2cloud.common.platform.credential.impl.AliCredential;
 import com.fit2cloud.common.platform.credential.impl.HuaweiCredential;
 import com.fit2cloud.common.platform.credential.impl.TencentCredential;
 import com.fit2cloud.common.platform.credential.impl.VsphereCredential;
@@ -41,10 +41,10 @@ public enum PlatformConstants {
 
     private Class<? extends Bill> billClass;
 
-    PlatformConstants(String message, Class<? extends Credential> credentialClass, Class<? extends Bill> billclass) {
+    PlatformConstants(String message, Class<? extends Credential> credentialClass, Class<? extends Bill> billClass) {
         this.message = message;
         this.credentialClass = credentialClass;
-        this.billClass = billclass;
+        this.billClass = billClass;
     }
 
     public Class<? extends Credential> getCredentialClass() {

@@ -30,7 +30,7 @@ public class TencentMappingUtil {
      * 将腾讯云对象转换为系统实例对象
      *
      * @param instance 腾讯云实例对象
-     * @return 系统虚拟机实例对象
+     * @return 系统云主机实例对象
      */
     public static F2CVirtualMachine toF2CVirtualMachine(Instance instance) {
         F2CVirtualMachine f2CInstance = new F2CVirtualMachine();
@@ -152,7 +152,7 @@ public class TencentMappingUtil {
     }
 
     /**
-     * 将腾讯云虚拟机实例状态转换为系统实例状态
+     * 将腾讯云云主机实例状态转换为系统实例状态
      *
      * @param qcloudStatus 腾讯云实例状态
      * @return 系统实例状态
