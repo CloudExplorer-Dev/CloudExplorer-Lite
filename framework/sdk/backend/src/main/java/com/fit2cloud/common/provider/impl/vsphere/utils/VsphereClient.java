@@ -1,10 +1,7 @@
 package com.fit2cloud.common.provider.impl.vsphere.utils;
 
 import com.fit2cloud.common.constants.Language;
-import com.vmware.vim25.InvalidProperty;
-import com.vmware.vim25.ManagedObjectReference;
-import com.vmware.vim25.ServiceContent;
-import com.vmware.vim25.VimPortType;
+import com.vmware.vim25.*;
 import com.vmware.vim25.mo.*;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.slf4j.Logger;
@@ -281,8 +278,17 @@ public class VsphereClient {
         return getResource(ClusterComputeResource.class, name);
     }
 
+    public List<ClusterComputeResource> listClusters() {
+        return listResources(ClusterComputeResource.class);
+    }
+
     public HostSystem getHost(String hostName) {
         return getResource(HostSystem.class, hostName);
+    }
+
+    public boolean hasVmTools(VirtualMachine vm) {
+        GuestInfo guest = vm.getGuest();
+        return guest != null;
     }
 
 }

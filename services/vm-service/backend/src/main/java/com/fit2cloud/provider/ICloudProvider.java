@@ -1,6 +1,7 @@
 package com.fit2cloud.provider;
 
 
+import com.fit2cloud.common.form.vo.FormObject;
 import com.fit2cloud.provider.entity.F2CDisk;
 import com.fit2cloud.provider.entity.F2CImage;
 import com.fit2cloud.provider.entity.F2CVirtualMachine;
@@ -14,6 +15,14 @@ import java.util.List;
  * @注释:
  */
 public interface ICloudProvider {
+
+    /**
+     * 获取创建云主机的表单数据
+     *
+     * @return
+     */
+    FormObject getCreateServerForm();
+
     /**
      * 获取云平台虚拟机
      *
@@ -40,6 +49,7 @@ public interface ICloudProvider {
 
     /**
      * 虚拟机关闭电源
+     *
      * @param req
      * @return
      */
@@ -47,6 +57,7 @@ public interface ICloudProvider {
 
     /**
      * 虚拟机打开电源
+     *
      * @param req
      * @return
      */
@@ -54,12 +65,14 @@ public interface ICloudProvider {
 
     /**
      * 虚拟机关机
+     *
      * @param req
      */
     boolean shutdownInstance(String req);
 
     /**
      * 虚拟机重启
+     *
      * @param req
      * @return
      */
@@ -67,6 +80,7 @@ public interface ICloudProvider {
 
     /**
      * 删除虚拟机
+     *
      * @param req
      * @return
      */

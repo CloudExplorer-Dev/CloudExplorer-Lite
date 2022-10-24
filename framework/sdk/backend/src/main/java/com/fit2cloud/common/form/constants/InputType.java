@@ -41,7 +41,14 @@ public enum InputType {
     /**
      * 开关
      */
-    SwitchBtn(SwitchForm.class);
+    SwitchBtn(SwitchForm.class),
+
+
+    VsphereDiskConfigForm(com.fit2cloud.common.form.vo.vsphere.DiskConfigForm.class),
+    VsphereComputeConfigForm(com.fit2cloud.common.form.vo.vsphere.ComputeConfigForm.class),
+    VsphereDatastoreForm(com.fit2cloud.common.form.vo.vsphere.DatastoreForm.class),
+    VsphereNetworkAdapterForm(com.fit2cloud.common.form.vo.vsphere.NetworkAdapterForm.class),
+    VsphereServerInfoForm(com.fit2cloud.common.form.vo.vsphere.ServerInfoForm.class);
 
     /**
      * 表单类型对应的实体类

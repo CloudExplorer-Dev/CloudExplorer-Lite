@@ -5,7 +5,7 @@ import com.fit2cloud.common.platform.credential.impl.TencentCredential;
 import com.fit2cloud.common.provider.AbstractBaseCloudProvider;
 import com.fit2cloud.common.provider.entity.F2CBalance;
 import com.fit2cloud.common.provider.impl.tencent.api.TencentBaseCloudApi;
-import com.fit2cloud.common.provider.impl.tencent.entity.credential.TencentBaseMethodApi;
+import com.fit2cloud.common.provider.impl.tencent.api.TencentBaseMethodApi;
 import com.fit2cloud.common.provider.impl.tencent.entity.request.GetAccountBalanceRequest;
 import com.fit2cloud.common.provider.impl.tencent.entity.request.GetBucketsRequest;
 import com.fit2cloud.common.provider.impl.tencent.entity.request.GetRegionsRequest;

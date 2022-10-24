@@ -47,17 +47,17 @@ public class HuaweiCloudProvider extends AbstractCloudProvider<HuaweiVmCredentia
     }
 
     @Override
-    public boolean shutdownInstance(String req){
+    public boolean shutdownInstance(String req) {
         return false;
     }
 
     @Override
-    public boolean rebootInstance(String req){
+    public boolean rebootInstance(String req) {
         return false;
     }
 
     @Override
-    public boolean deleteInstance(String req){
+    public boolean deleteInstance(String req) {
         return false;
     }
 }

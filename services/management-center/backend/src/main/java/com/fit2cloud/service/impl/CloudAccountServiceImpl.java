@@ -178,7 +178,7 @@ public class CloudAccountServiceImpl extends ServiceImpl<CloudAccountMapper, Clo
             platformResponse.setLabel(platform.getMessage());
             platformResponse.setField(platform.name());
             try {
-                List<Form> form = credentialClass.getConstructor().newInstance().toForm();
+                List<? extends Form> form = credentialClass.getConstructor().newInstance().toForm();
                 platformResponse.setCredentialFrom(form);
             } catch (NoSuchMethodException | InvocationTargetException | InstantiationException |
                      IllegalAccessException e) {

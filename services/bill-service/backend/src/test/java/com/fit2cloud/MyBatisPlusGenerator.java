@@ -17,7 +17,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-@SpringBootTest(classes = NetworkServiceApplication.class)
+@SpringBootTest(classes = BillServiceApplication.class)
 @TestPropertySource(locations = {
         "classpath:commons.properties",
         "file:${ce.config.file}"

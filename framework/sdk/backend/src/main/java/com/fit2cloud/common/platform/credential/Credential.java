@@ -1,21 +1,15 @@
 package com.fit2cloud.common.platform.credential;
 
-import com.fit2cloud.common.form.annotaion.From;
 import com.fit2cloud.common.form.util.FormUtil;
 import com.fit2cloud.common.form.vo.Form;
+import com.fit2cloud.common.form.vo.FormObject;
 import com.fit2cloud.common.utils.JsonUtil;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.apache.commons.lang3.reflect.FieldUtils;
 
 import java.io.Serializable;
-import java.lang.reflect.Field;
-import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
 
 /**
  * @Author:张少虎
@@ -48,8 +42,9 @@ public interface Credential {
      *
      * @return form表单
      */
-    default List<Form> toForm() {
-        return FormUtil.toForm(this.getClass());
+    default List<? extends Form> toForm() {
+        FormObject formObject = FormUtil.toForm(this.getClass());
+        return formObject == null ? null: formObject.getForms();
     }
 
     /**

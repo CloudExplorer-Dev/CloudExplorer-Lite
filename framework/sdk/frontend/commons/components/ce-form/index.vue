@@ -3,8 +3,9 @@ import { ref, watch } from "vue";
 import type { FormView } from "@commons/components/ce-form/type";
 import formApi from "@commons/api/form_resource_api/index";
 import type { FormInstance } from "element-plus";
+import type { SimpleMap } from "@commons/api/base/type";
 // 表单数据
-const formData = ref<any>({});
+const formData = ref<SimpleMap<any>>({});
 // 校验实例对象
 const ruleFormRef = ref<FormInstance>();
 
@@ -83,7 +84,11 @@ const initDefaultData = () => {
   // 初始化默认值 defaultValue后端只能传入string,所以只能是string
   props.formViewData.forEach((item) => {
     if (item.defaultValue && !formData.value[item.field]) {
-      formData.value[item.field] = JSON.parse(item.defaultValue as string);
+      if (item.defaultJsonValue) {
+        formData.value[item.field] = JSON.parse(item.defaultValue);
+      } else {
+        formData.value[item.field] = item.defaultValue;
+      }
     }
   });
 };

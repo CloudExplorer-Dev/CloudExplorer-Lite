@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { platformIcon } from "@/utils/platform";
+import { platformIcon } from "@commons/utils/platform";
 import { ref, onMounted, computed, onBeforeUnmount } from "vue";
 import {
   PaginationConfig,
@@ -21,12 +21,14 @@ import { useRouter } from "vue-router";
 import { useI18n } from "vue-i18n";
 import type { FormInstance, FormRules } from "element-plus";
 import type { SimpleMap } from "@commons/api/base/type";
-import type { FormView } from "@/components/form/type";
+import type { FormView } from "@commons/components/ce-form/type";
+import CeForm from "@commons/components/ce-form/index.vue";
+
 const { t } = useI18n();
 // 路由实例对象
 const router = useRouter();
 // 表格数据
-const clouAccountList = ref<Array<CloudAccount>>([]);
+const cloudAccountList = ref<Array<CloudAccount>>([]);
 // 查询数据
 const tableSearch = ref<TableSearch>();
 // table组建实例
@@ -146,7 +148,7 @@ const search = (condition: TableSearch) => {
         .then((data) => {
           cloudAccountJobRecord.value = data.data;
         });
-      clouAccountList.value = ok.data.records;
+      cloudAccountList.value = ok.data.records;
       tableConfig.value.paginationConfig?.setTotal(
         ok.data.total,
         tableConfig.value.paginationConfig
@@ -164,7 +166,7 @@ onMounted(() => {
   search(new TableSearch());
   cloudAccountInterval = setInterval(() => {
     cloudAccountApi
-      .getAccountJobRecord(clouAccountList.value.map((r) => r.id))
+      .getAccountJobRecord(cloudAccountList.value.map((r) => r.id))
       .then((data) => {
         cloudAccountJobRecord.value = data.data;
       });
@@ -228,7 +230,7 @@ const create = () => {
 /**
  * 资源是否全选
  */
-const resourcescheckedAll = computed(() => {
+const resourcesCheckedAll = computed(() => {
   return syncForm.value.checkedResources.length === resources.value.length;
 });
 
@@ -396,6 +398,7 @@ const change = (selectRegion: Array<string>) => {
 const BillFrom = ref<Array<FormView>>([]);
 //-------------------------------点击按钮同步 END----------------
 const currentAccount = ref<CloudAccount>();
+
 const showBillSetting = (row: CloudAccount) => {
   BillFrom.value = [];
   currentAccount.value = row;
@@ -497,7 +500,7 @@ const tableConfig = ref<TableConfig>({
 
 const syncAll = () => {
   if (
-    clouAccountList.value
+    cloudAccountList.value
       .filter((a) => multipleSelectionIds.value.includes(a.id))
       .every((a) => a.state)
   ) {
@@ -508,9 +511,10 @@ const syncAll = () => {
     ElMessage.success("请选择有效的定时任务进行同步");
   }
 };
-const ceform = ref<any>(null);
+const ceform = ref<InstanceType<typeof CeForm> | null>(null);
+
 const saveBillSetting = () => {
-  ceform.value.submit((formData: any) => {
+  ceform.value?.submit((formData: any) => {
     cloudAccountApi
       .saveOrUpdateBillSetting(
         currentAccount.value ? currentAccount.value.id : "",
@@ -529,7 +533,7 @@ const saveBillSetting = () => {
     height="100%"
     ref="table"
     :columns="columns"
-    :data="clouAccountList"
+    :data="cloudAccountList"
     :tableConfig="tableConfig"
     @selection-change="handleSelectionChange"
     row-key="id"
@@ -719,21 +723,21 @@ const saveBillSetting = () => {
         <template #content>
           <el-checkbox
             style="margin-bottom: 10px"
-            v-model="resourcescheckedAll"
+            v-model="resourcesCheckedAll"
             @change="handleCheckAllResource"
             >全选</el-checkbox
           >
           <el-form-item prop="checkedResources">
             <el-checkbox-group
+              v-model="syncForm.checkedResources"
               v-loading="resourceLoading"
               @change="changeResource"
-              v-model="syncForm.checkedResources"
             >
               <el-checkbox
-                :title="resource.resourceDesc"
                 v-for="resource in resources"
                 :key="resource.jobName"
                 :label="resource.jobName"
+                :title="resource.resourceDesc"
                 size="large"
                 ><span
                   style="
@@ -762,8 +766,8 @@ const saveBillSetting = () => {
     <layout-container :border="false">
       <template #content>
         <CeForm
-          :formViewData="BillFrom"
           ref="ceform"
+          :formViewData="BillFrom"
           :otherParams="currentAccount"
         ></CeForm>
       </template>

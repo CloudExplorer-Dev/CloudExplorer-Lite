@@ -1,7 +1,7 @@
 package com.fit2cloud.common.form.vo;
 
 import com.fit2cloud.common.form.constants.InputType;
-import lombok.*;
+import lombok.Data;
 
 import java.util.List;
 
@@ -17,6 +17,8 @@ public class Form {
      * 输入类型
      */
     private InputType inputType;
+
+    private String attrs;
     /**
      * 字段名称
      */
@@ -37,6 +39,7 @@ public class Form {
      * 默认值
      */
     private Object defaultValue;
+    private boolean defaultJsonValue;
     /**
      * 描述
      */
@@ -56,5 +59,15 @@ public class Form {
      * 执行函数
      */
     private String method;
+
+
+    private Integer group;
+
+    private Integer step;
+
+    /**
+     * 排序
+     */
+    private Integer index;
 
 }

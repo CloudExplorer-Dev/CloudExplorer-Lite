@@ -27,6 +27,7 @@ public class AliyunCloudProvider extends AbstractCloudProvider<AliyunVmCredentia
     public List<F2CVirtualMachine> listVirtualMachine(String req) {
         return AliyunSyncCloudApi.listVirtualMachine(JsonUtil.parseObject(req, ListVirtualMachineRequest.class));
     }
+
     @Override
     public List<F2CImage> listImage(String req) {
         return AliyunSyncCloudApi.listImage(JsonUtil.parseObject(req, ListImageRequest.class));
@@ -48,17 +49,17 @@ public class AliyunCloudProvider extends AbstractCloudProvider<AliyunVmCredentia
     }
 
     @Override
-    public boolean shutdownInstance(String req){
+    public boolean shutdownInstance(String req) {
         return false;
     }
 
     @Override
-    public boolean rebootInstance(String req){
+    public boolean rebootInstance(String req) {
         return false;
     }
 
     @Override
-    public boolean deleteInstance(String req){
+    public boolean deleteInstance(String req) {
         return false;
     }
 

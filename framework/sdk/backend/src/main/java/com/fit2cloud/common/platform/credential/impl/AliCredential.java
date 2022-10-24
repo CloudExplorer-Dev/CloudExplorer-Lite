@@ -6,17 +6,12 @@ import com.aliyun.ecs20140526.models.DescribeRegionsResponse;
 import com.aliyun.ecs20140526.models.DescribeRegionsResponseBody;
 import com.aliyun.teaopenapi.models.Config;
 import com.fit2cloud.common.exception.Fit2cloudException;
-import com.fit2cloud.common.form.annotaion.From;
+import com.fit2cloud.common.form.annotaion.Form;
 import com.fit2cloud.common.form.constants.InputType;
 import com.fit2cloud.common.platform.credential.Credential;
-import lombok.AllArgsConstructor;
 import lombok.Data;
-import lombok.NoArgsConstructor;
-import org.springframework.context.i18n.LocaleContext;
-import org.springframework.context.i18n.LocaleContextHolder;
 
 import java.util.List;
-import java.util.Locale;
 
 /**
  * @Author:张少虎
@@ -29,12 +24,12 @@ public class AliCredential implements Credential {
     /**
      * 访问令牌
      */
-    @From(inputType = InputType.Text, label = "AccessKeyId", description = "访问令牌")
+    @Form(inputType = InputType.Text, label = "AccessKeyId", description = "访问令牌")
     private String accessKeyId;
     /**
      * 访问密钥
      */
-    @From(inputType = InputType.Password, label = "AccessKeySecret", description = "访问令牌")
+    @Form(inputType = InputType.Password, label = "AccessKeySecret", description = "访问令牌")
     private String accessKeySecret;
 
     @Override
