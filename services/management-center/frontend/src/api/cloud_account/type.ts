@@ -1,4 +1,5 @@
 import type { SimpleMap } from "@commons/api/base/type";
+import type { CloudAccount } from "@commons/api/cloud_account/type";
 
 interface ListOrganizationRequest {
   /**
@@ -26,44 +27,6 @@ interface ListSyncRecordRequest {
   currentPage: number;
 }
 
-interface CloudAccount {
-  /**
-   * 主键id
-   */
-  id: string;
-  /**
-   * 云账号名称
-   */
-  name: string;
-  /**
-   * 云平台
-   */
-  platform: string;
-  /**
-   * 云账号状态 true有效 false无效
-   */
-  state: boolean;
-  /**
-   * 凭证信息
-   */
-  credential: string;
-  /**
-   * 状态(0:同步成功,1:同步失败,2:同步中)
-   */
-  status: number;
-  /**
-   * 账单设置
-   */
-  billSetting?: any;
-  /**
-   *创建时间
-   */
-  createTime: string;
-  /**
-   *修改时间
-   */
-  updateTime: string;
-}
 interface Form {
   /**
    * 输入类型
@@ -143,10 +106,6 @@ interface CloudAccountJobDetailsResponse {
    * 模块任务
    */
   cloudAccountModuleJobs: Array<ModuleJob>;
-  /**
-   *选中的区域
-   */
-  selectRegion: Array<Region>;
 }
 /**
  * 模块定时任务信息
@@ -213,10 +172,19 @@ interface JobDetails {
    * 是否活跃
    */
   active: string;
+
   /**
-   * 区域
+   * 任务参数
    */
-  regions: Array<Region>;
+  params: SimpleMap<any>;
+  /**
+   * 每天那几个小时执行
+   */
+  hoursOfDay: Array<number>;
+  /**
+   *定时任务类型
+   */
+  jobType: string;
 }
 interface UpdateJobsRequest extends CloudAccountJobDetailsResponse {
   cloudAccountId: string;
@@ -341,4 +309,5 @@ export type {
   UpdateAccountName,
   ResourceCount,
   AccountJobRecord,
+  JobDetails,
 };

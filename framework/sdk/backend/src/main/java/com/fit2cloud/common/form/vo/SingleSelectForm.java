@@ -18,6 +18,8 @@ public class SingleSelectForm extends Form {
      * label 提示
      */
     private String textField;
+
+    private boolean formatTextField;
     /**
      * 获取options数据
      */

@@ -11,6 +11,7 @@ import com.fit2cloud.base.entity.JobRecordResourceMapping;
 import com.fit2cloud.base.service.IBaseJobRecordResourceMappingService;
 import com.fit2cloud.common.constants.JobStatusConstants;
 import com.fit2cloud.common.constants.JobTypeConstants;
+import com.fit2cloud.common.constants.PlatformConstants;
 import com.fit2cloud.common.provider.util.CommonUtil;
 import com.fit2cloud.common.utils.JsonUtil;
 import com.fit2cloud.es.entity.CloudBill;
@@ -27,6 +28,7 @@ import org.springframework.data.elasticsearch.core.mapping.IndexCoordinates;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
+import java.lang.reflect.InvocationTargetException;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -128,9 +130,15 @@ public class SyncServiceImpl extends BaseSyncService implements SyncService {
      * @return 执行函数参数
      */
     private String getExecMethodArgs(CloudAccount cloudAccount, String month) {
+        Map<String, Object> defaultParams = null;
+        try {
+            defaultParams = PlatformConstants.valueOf(cloudAccount.getPlatform()).getBillClass().getConstructor().newInstance().getDefaultParams();
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
         HashMap<String, Object> params = new HashMap<>();
         params.put("credential", JsonUtil.parseObject(cloudAccount.getCredential()));
-        params.put("bill", cloudAccount.getBillSetting());
+        params.put("bill", defaultParams);
         params.put("month", month);
         return JsonUtil.toJSONString(params);
     }

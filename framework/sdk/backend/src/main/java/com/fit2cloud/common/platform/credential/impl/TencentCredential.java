@@ -1,7 +1,7 @@
 package com.fit2cloud.common.platform.credential.impl;
 
 import com.fit2cloud.common.exception.Fit2cloudException;
-import com.fit2cloud.common.form.annotaion.From;
+import com.fit2cloud.common.form.annotaion.Form;
 import com.fit2cloud.common.form.constants.InputType;
 import com.fit2cloud.common.platform.credential.Credential;
 import com.tencentcloudapi.common.profile.ClientProfile;
@@ -30,12 +30,12 @@ public class TencentCredential implements Credential {
     /**
      * 密钥id
      */
-    @From(inputType = InputType.Text, label = "secretId", description = "访问令牌")
+    @Form(inputType = InputType.Text, label = "secretId", description = "访问令牌")
     private String secretId;
     /**
      * 密钥
      */
-    @From(inputType = InputType.Password, label = "secretKey", description = "访问密钥")
+    @Form(inputType = InputType.Password, label = "secretKey", description = "访问密钥")
     private String secretKey;
 
     @Override

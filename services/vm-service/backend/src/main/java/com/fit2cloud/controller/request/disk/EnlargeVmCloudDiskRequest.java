@@ -8,6 +8,10 @@ import lombok.Data;
  */
 @Data
 public class EnlargeVmCloudDiskRequest {
+    /**
+     * vm_cloud_disk表主键
+     */
     private String id;
+    private String instanceUuid;
     private long newDiskSize;
 }

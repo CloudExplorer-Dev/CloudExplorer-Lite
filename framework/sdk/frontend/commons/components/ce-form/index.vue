@@ -3,17 +3,23 @@ import { ref, watch } from "vue";
 import type { FormView } from "@commons/components/ce-form/type";
 import formApi from "@commons/api/form_resource_api/index";
 import type { FormInstance } from "element-plus";
+import type { SimpleMap } from "@commons/api/base/type";
 // 表单数据
-const formData = ref<any>({});
+const formData = ref<SimpleMap<any>>({});
 // 校验实例对象
 const ruleFormRef = ref<FormInstance>();
 
-const props = defineProps<{
-  // 页面渲染数据
-  formViewData: Array<FormView>;
-  // 调用接口所需要的其他参数
-  otherParams: any;
-}>();
+const props = withDefaults(
+  defineProps<{
+    // 页面渲染数据
+    formViewData: Array<FormView>;
+    // 调用接口所需要的其他参数
+    otherParams: any;
+    // 是否只读
+    readOnly: boolean;
+  }>(),
+  { readOnly: false }
+);
 
 // 发生变化
 const change = (formItem: FormView) => {
@@ -83,7 +89,11 @@ const initDefaultData = () => {
   // 初始化默认值 defaultValue后端只能传入string,所以只能是string
   props.formViewData.forEach((item) => {
     if (item.defaultValue && !formData.value[item.field]) {
-      formData.value[item.field] = JSON.parse(item.defaultValue as string);
+      if (item.defaultJsonValue) {
+        formData.value[item.field] = JSON.parse(item.defaultValue);
+      } else {
+        formData.value[item.field] = item.defaultValue;
+      }
     }
   });
 };
@@ -96,6 +106,11 @@ const submit = (exec: (formData: any) => void) => {
       exec(formData.value);
     }
   });
+};
+
+const validate = () => {
+  if (!ruleFormRef.value) return;
+  return ruleFormRef.value.validate();
 };
 
 // 监控formViewData 用于初始化数据
@@ -149,10 +164,12 @@ defineExpose({
   clearData,
   initDefaultData,
   setData,
+  validate,
 });
 </script>
 <template>
   <el-form
+    style="width: 100%"
     ref="ruleFormRef"
     label-width="130px"
     label-suffix=":"
@@ -160,8 +177,9 @@ defineExpose({
     :model="formData"
     v-loading="resourceLoading"
   >
-    <div v-for="item in formViewData" :key="item.field">
+    <div v-for="item in formViewData" :key="item.field" style="width: 100%">
       <el-form-item
+        style="width: 100%"
         v-if="item.relationShows.every((i:string) => formData[i])"
         :label="item.label"
         :prop="item.field"
@@ -172,6 +190,7 @@ defineExpose({
         }"
       >
         <component
+          :disabled="readOnly"
           style="width: 75%"
           @change="change(item)"
           v-model="formData[item.field]"

@@ -187,6 +187,11 @@ const showDetail = (row: VmCloudServerVO) => {
     query: { id: row.id },
   });
 };
+const gotoCatalog = () => {
+  useRoute.push({
+    path: useRoute.currentRoute.value.path.replace("/list", "/catalog"),
+  });
+};
 
 /**
  * 添加磁盘
@@ -466,7 +471,7 @@ const handleAction = (actionObj: any) => {
     ref="table"
   >
     <template #toolbar>
-      <el-button type="primary">{{
+      <el-button @click="gotoCatalog()" type="primary">{{
         t("commons.btn.create", "创建")
       }}</el-button>
       <el-button @click="batchOperate('POWER_ON')">{{

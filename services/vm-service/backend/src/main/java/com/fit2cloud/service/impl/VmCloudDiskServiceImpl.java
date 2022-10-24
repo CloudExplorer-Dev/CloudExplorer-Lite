@@ -106,6 +106,7 @@ public class VmCloudDiskServiceImpl extends ServiceImpl<BaseVmCloudDiskMapper, V
             HashMap<String, Object> params = CommonUtil.getParams(cloudAccount.getCredential(), vmCloudDisk.getRegion());
             params.put("diskId", vmCloudDisk.getDiskId());
             params.put("newDiskSize", newDiskSize);
+            params.put("instanceUuid", vmCloudDisk.getInstanceUuid());// For Vmware
             Boolean result = CommonUtil.exec(cloudAccount.getPlatform(), ICloudProvider::of, JsonUtil.toJSONString(params), ICloudProvider::enlargeDisk);
 
             if (result) {

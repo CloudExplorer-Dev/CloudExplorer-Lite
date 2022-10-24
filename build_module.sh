@@ -47,7 +47,7 @@ declare image_tag=$version
 declare build_module_name
 declare image_registry_base_path="registry.fit2cloud.com/cloudexplorer4/"
 declare -i upload_image=0
-declare build_with_platform=""
+declare build_with_platform="linux/amd64"
 
 
 TEMP=`getopt -o um::t:P: --long upload,module::,tag:,path:,platform: -- "$@"`

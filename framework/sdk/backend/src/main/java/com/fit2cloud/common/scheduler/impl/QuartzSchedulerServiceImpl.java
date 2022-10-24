@@ -11,6 +11,7 @@ import org.apache.commons.collections4.MapUtils;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.quartz.*;
+import org.quartz.DateBuilder.IntervalUnit;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
@@ -48,12 +49,12 @@ public class QuartzSchedulerServiceImpl implements SchedulerService {
     }
 
     @Override
-    public void addJob(Class<? extends Job> jobHandler, String jobName, String groupName, String description, Map<String, Object> param, TimeOfDay startTimeDay, TimeOfDay endTimeDay, int timeInterval, DateBuilder.IntervalUnit unit, int repeatCount, Integer... weeks) {
+    public void addJob(Class<? extends Job> jobHandler, String jobName, String groupName, String description, Map<String, Object> param, TimeOfDay startTimeDay, TimeOfDay endTimeDay, int timeInterval, IntervalUnit unit, int repeatCount, Integer... weeks) {
         DailyTimeIntervalScheduleBuilder dailyTimeIntervalScheduleBuilder = getDailyTimeIntervalScheduleBuilder(startTimeDay, endTimeDay, timeInterval, unit, repeatCount, weeks);
         addJob(jobHandler, jobName, groupName, description, dailyTimeIntervalScheduleBuilder, param);
     }
 
-    private DailyTimeIntervalScheduleBuilder getDailyTimeIntervalScheduleBuilder(TimeOfDay startTimeDay, TimeOfDay endTimeDay, int timeInterval, DateBuilder.IntervalUnit unit, int repeatCount, Integer... weeks) {
+    private static DailyTimeIntervalScheduleBuilder getDailyTimeIntervalScheduleBuilder(TimeOfDay startTimeDay, TimeOfDay endTimeDay, int timeInterval, IntervalUnit unit, int repeatCount, Integer... weeks) {
         DailyTimeIntervalScheduleBuilder dailyTimeIntervalScheduleBuilder = DailyTimeIntervalScheduleBuilder.dailyTimeIntervalSchedule();
         if (startTimeDay != null) dailyTimeIntervalScheduleBuilder.startingDailyAt(startTimeDay);
         if (endTimeDay != null) dailyTimeIntervalScheduleBuilder.endingDailyAt(endTimeDay);
@@ -67,7 +68,7 @@ public class QuartzSchedulerServiceImpl implements SchedulerService {
     }
 
     @Override
-    public void addJob(Class<? extends Job> jobHandler, String jobName, String groupName, String description, Map<String, Object> param, int timeInterval, DateBuilder.IntervalUnit unit) {
+    public void addJob(Class<? extends Job> jobHandler, String jobName, String groupName, String description, Map<String, Object> param, int timeInterval, IntervalUnit unit) {
         CalendarIntervalScheduleBuilder calendarIntervalScheduleBuilder = CalendarIntervalScheduleBuilder.calendarIntervalSchedule().withInterval(timeInterval, unit);
         addJob(jobHandler, jobName, groupName, description, calendarIntervalScheduleBuilder, param);
     }
@@ -96,7 +97,7 @@ public class QuartzSchedulerServiceImpl implements SchedulerService {
     }
 
 
-    public void updateJob(String jobName, String groupName, String description, Map<String, Object> param, TimeOfDay startTimeDay, TimeOfDay endTimeDay, int timeInterval, DateBuilder.IntervalUnit unit, int repeatCount, Trigger.TriggerState triggerState, Integer... weeks) {
+    public void updateJob(String jobName, String groupName, String description, Map<String, Object> param, TimeOfDay startTimeDay, TimeOfDay endTimeDay, int timeInterval, IntervalUnit unit, int repeatCount, Trigger.TriggerState triggerState, Integer... weeks) {
         DailyTimeIntervalScheduleBuilder dailyTimeIntervalScheduleBuilder = getDailyTimeIntervalScheduleBuilder(startTimeDay, endTimeDay, timeInterval, unit, repeatCount, weeks);
         DailyTimeIntervalTrigger trigger = TriggerBuilder.newTrigger().withSchedule(dailyTimeIntervalScheduleBuilder).withIdentity(jobName, groupName).withDescription(description).build();
         if (MapUtils.isNotEmpty(param)) {
@@ -110,7 +111,24 @@ public class QuartzSchedulerServiceImpl implements SchedulerService {
         } catch (SchedulerException e) {
             throw new RuntimeException(e);
         }
+    }
 
+    @Override
+    public void updateJob(String jobName, String groupName, String description, Map<String, Object> param, String cronExp, Trigger.TriggerState triggerState) {
+        //表达式调度构建器(即任务执行的时间)
+        CronScheduleBuilder scheduleBuilder = CronScheduleBuilder.cronSchedule(cronExp);
+        CronTrigger cronTrigger = TriggerBuilder.newTrigger().withSchedule(scheduleBuilder).withIdentity(jobName, groupName).withDescription(description).build();
+        if (MapUtils.isNotEmpty(param)) {
+            cronTrigger.getJobDataMap().putAll(param);
+        }
+        try {
+            scheduler.rescheduleJob(TriggerKey.triggerKey(jobName, groupName), cronTrigger);
+            if (triggerState.equals(Trigger.TriggerState.PAUSED)) {
+                pauseJob(jobName, groupName);
+            }
+        } catch (SchedulerException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     @SneakyThrows
@@ -125,7 +143,7 @@ public class QuartzSchedulerServiceImpl implements SchedulerService {
                     .eq("qt.TRIGGER_GROUP", groupName);
             Optional<QuzrtzJobDetail> any = quzrtzMapper.list(eq).stream().findAny();
             return any.orElse(null);
-        }finally {
+        } finally {
             sqlSession.close();
         }
     }
@@ -152,7 +170,7 @@ public class QuartzSchedulerServiceImpl implements SchedulerService {
             QuzrtzMapper quzrtzMapper = sqlSession.getMapper(QuzrtzMapper.class);
             QueryWrapper<QuzrtzJobDetail> eq = new QueryWrapper<QuzrtzJobDetail>().eq("qt.SCHED_NAME", scheduler.getSchedulerName());
             return quzrtzMapper.list(eq);
-        }finally {
+        } finally {
             sqlSession.close();
         }
 
@@ -166,7 +184,7 @@ public class QuartzSchedulerServiceImpl implements SchedulerService {
             QuzrtzMapper quzrtzMapper = sqlSession.getMapper(QuzrtzMapper.class);
             QueryWrapper<QuzrtzJobDetail> eq = new QueryWrapper<QuzrtzJobDetail>().eq("qt.SCHED_NAME", scheduler.getSchedulerName()).eq("qt.TRIGGER_GROUP", groupName);
             return quzrtzMapper.list(eq);
-        }finally {
+        } finally {
             sqlSession.close();
         }
 

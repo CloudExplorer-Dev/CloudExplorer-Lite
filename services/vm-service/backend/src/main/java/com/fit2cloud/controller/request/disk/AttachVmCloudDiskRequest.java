@@ -8,6 +8,9 @@ import lombok.Data;
  */
 @Data
 public class AttachVmCloudDiskRequest {
+    /**
+     * vm_cloud_disk表主键
+     */
     private String id;
     private String instanceUuid;
     private Boolean deleteWithInstance;

@@ -2,29 +2,19 @@ package com.fit2cloud.common.form.annotaion;
 
 import com.fit2cloud.common.form.constants.InputType;
 import com.fit2cloud.common.provider.IBaseCloudProvider;
-import com.fit2cloud.common.validator.CustomValidator;
 
-import javax.validation.Constraint;
 import java.lang.annotation.Documented;
 import java.lang.annotation.Retention;
 import java.lang.annotation.Target;
-import java.util.ArrayList;
-import java.util.List;
 
-import static java.lang.annotation.ElementType.*;
-import static java.lang.annotation.ElementType.TYPE_USE;
+import static java.lang.annotation.ElementType.FIELD;
 import static java.lang.annotation.RetentionPolicy.RUNTIME;
 
-/**
- * @Author:张少虎
- * @Date: 2022/9/7  10:04 AM
- * @Version 1.0
- * @注释:
- */
+
 @Documented
 @Target({FIELD})
 @Retention(RUNTIME)
-public @interface From {
+public @interface Form {
 
     /**
      * 表单类型
@@ -34,12 +24,22 @@ public @interface From {
     InputType inputType();
 
 
+    String attrs() default "{}";
+
+
     /**
      * 表单提示
      *
      * @return 表单提示
      */
-    String label();
+    String label() default "";
+
+    /**
+     * 单位
+     *
+     * @return
+     */
+    String unit() default "";
 
     /**
      * 是否必填
@@ -54,6 +54,13 @@ public @interface From {
      * @return 默认值
      */
     String defaultValue() default "";
+
+    /**
+     * 默认值是否需要json解析给前端用
+     *
+     * @return
+     */
+    boolean defaultJsonValue() default false;
 
     /**
      * 描述
@@ -76,11 +83,15 @@ public @interface From {
      */
     String textField() default "";
 
+    boolean formatTextField() default false;
+
     /**
      * 执行函数所属类
+     *
      * @return 必填
      */
     Class<?> clazz() default IBaseCloudProvider.class;
+
     /**
      * 执行函数,用于获取单选,多选框的options
      *
@@ -102,6 +113,20 @@ public @interface From {
      * @return 那些数据为true, 或者有值的时候, 展示当前节点
      */
     String[] relationShows() default {};
+
+    /**
+     * container分组
+     *
+     * @return
+     */
+    int group() default 0;
+
+    /**
+     * 分页步骤
+     *
+     * @return
+     */
+    int step() default 0;
 
 
 }

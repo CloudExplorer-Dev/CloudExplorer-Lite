@@ -2,6 +2,7 @@ package com.fit2cloud.constants;
 
 import com.fit2cloud.autoconfigure.JobSettingConfig;
 import com.fit2cloud.dto.job.JobInitSettingDto;
+import com.fit2cloud.dto.job.JobSettingParent;
 import com.fit2cloud.quartz.VerificationCloudAccountJob;
 import org.quartz.DateBuilder;
 
@@ -18,14 +19,8 @@ public class JobConstants implements JobSettingConfig.JobConfig {
 
 
     @Override
-    public List<JobInitSettingDto> listJobInitSetting() {
-        JobInitSettingDto verificationCloudAccountJob = JobInitSettingDto.builder().jobHandler(VerificationCloudAccountJob.class)
-                .jobName(VERIFICATION_CLOUDACCOUNT)
-                .jobGroup(com.fit2cloud.common.constants.JobConstants.Group.SYSTEM_GROUP.name())
-                .description("校验云账号")
-                .timeInterval(3)
-                .repeatCount(-1)
-                .unit(DateBuilder.IntervalUnit.HOUR).build();
+    public List<JobSettingParent> listJobInitSetting() {
+        JobInitSettingDto verificationCloudAccountJob = new JobInitSettingDto(VerificationCloudAccountJob.class, VERIFICATION_CLOUDACCOUNT, com.fit2cloud.common.constants.JobConstants.Group.SYSTEM_GROUP.name(), "校验云账号", null, s -> false, 3, DateBuilder.IntervalUnit.HOUR);
         return List.of(verificationCloudAccountJob);
     }
 }

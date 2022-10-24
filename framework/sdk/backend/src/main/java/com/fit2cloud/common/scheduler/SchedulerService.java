@@ -55,7 +55,6 @@ public interface SchedulerService {
      */
     void addJob(Class<? extends Job> jobHandler, String jobName, String groupName, String description, Map<String, Object> param, TimeOfDay startTimeDay, TimeOfDay endTimeDay, int timeInterval, DateBuilder.IntervalUnit unit, int repeatCount, Integer... weeks);
 
-
     /**
      * 间隔时间可设置,年 月 日 时 分 秒 不需要计算闰年 问题
      *
@@ -94,6 +93,18 @@ public interface SchedulerService {
      * @param weeks        每周那几天
      */
     void updateJob(String jobName, String groupName, String description, Map<String, Object> param, TimeOfDay startTimeDay, TimeOfDay endTimeDay, int timeInterval, DateBuilder.IntervalUnit unit, int repeatCount, Trigger.TriggerState triggerState, Integer... weeks);
+
+
+    /**
+     * 更新定时任务
+     * @param jobName      任务名称
+     * @param groupName    分组名称
+     * @param description  描述
+     * @param param        参数
+     * @param cronExp      表达式
+     * @param triggerState 触发器状态
+     */
+    void updateJob(String jobName, String groupName, String description, Map<String, Object> param, String cronExp, Trigger.TriggerState triggerState);
 
     /**
      * 获取任务详情

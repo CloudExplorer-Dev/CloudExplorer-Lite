@@ -28,6 +28,7 @@ public class AliyunCloudProvider extends AbstractCloudProvider<AliyunVmCredentia
     public List<F2CVirtualMachine> listVirtualMachine(String req) {
         return AliyunSyncCloudApi.listVirtualMachine(JsonUtil.parseObject(req, ListVirtualMachineRequest.class));
     }
+
     @Override
     public List<F2CImage> listImage(String req) {
         return AliyunSyncCloudApi.listImage(JsonUtil.parseObject(req, ListImageRequest.class));
