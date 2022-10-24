@@ -6,7 +6,7 @@ package com.fit2cloud.provider.impl.vsphere.entity;
  */
 public enum F2CVsphereDiskType {
     /**
-     * 与源格式相同（用于基于镜像创建虚拟机时使用）
+     * 与源格式相同（用于基于镜像创建云主机时使用）
      */
     DEFAULT,
     /**

@@ -23,7 +23,13 @@ public enum OperatedTypeEnum {
     REBOOT("REBOOT","重启"),
     HARD_REBOOT("HARD_REBOOT","硬重启"),
 
-    BATCH_OPERATE("BATCH_OPERATE","批量操作");
+    BATCH_OPERATE("BATCH_OPERATE","批量操作"),
+
+    CREATE_DISK("CREATE_DISK","新增磁盘"),
+    ENLARGE_DISK("ENLARGE_DISK","扩容磁盘"),
+    ATTACH_DISK("ATTACH_DISK","挂载磁盘"),
+    DETACH_DISK("DETACH_DISK","卸载磁盘"),
+    DELETE_DISK("DELETE_DISK","删除磁盘");
 
     private String operate;
     private String description;

@@ -44,7 +44,7 @@ version=`awk '/<revision>[^<]+<\/revision>/{gsub(/<revision>|<\/revision>/,"",$1
 declare image_tag=$version
 declare image_registry_base_path="registry.fit2cloud.com/cloudexplorer4/"
 declare -i upload_image=0
-declare build_with_platform=""
+declare build_with_platform="linux/amd64"
 
 TEMP=`getopt -o ut:P: --long upload,tag:,path:,platform: -- "$@"`
 while true ; do

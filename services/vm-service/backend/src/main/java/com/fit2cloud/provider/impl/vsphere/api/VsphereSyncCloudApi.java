@@ -6,9 +6,7 @@ import com.fit2cloud.common.provider.impl.vsphere.utils.VsphereClient;
 import com.fit2cloud.provider.entity.F2CDisk;
 import com.fit2cloud.provider.entity.F2CImage;
 import com.fit2cloud.provider.entity.F2CVirtualMachine;
-import com.fit2cloud.provider.impl.vsphere.entity.F2CVsphereDatastore;
-import com.fit2cloud.provider.impl.vsphere.entity.F2CVsphereHost;
-import com.fit2cloud.provider.impl.vsphere.entity.F2CVsphereNetwork;
+import com.fit2cloud.provider.impl.vsphere.entity.*;
 import com.fit2cloud.provider.impl.vsphere.entity.request.VsphereNetworkRequest;
 import com.fit2cloud.provider.impl.vsphere.entity.request.VsphereVmBaseRequest;
 import com.fit2cloud.provider.impl.vsphere.entity.request.VsphereVmPowerRequest;
@@ -16,10 +14,7 @@ import com.fit2cloud.provider.impl.vsphere.util.ContentLibraryUtil;
 import com.fit2cloud.provider.impl.vsphere.util.ResourceConstants;
 import com.fit2cloud.provider.impl.vsphere.util.VsphereUtil;
 import com.fit2cloud.provider.impl.vsphere.util.VsphereVmClient;
-import com.vmware.vim25.ConfigTarget;
-import com.vmware.vim25.DistributedVirtualPortgroupInfo;
-import com.vmware.vim25.VirtualDisk;
-import com.vmware.vim25.VirtualMachineConfigInfo;
+import com.vmware.vim25.*;
 import com.vmware.vim25.mo.*;
 import io.reactivex.rxjava3.functions.Consumer;
 import org.apache.commons.lang3.StringUtils;
@@ -39,10 +34,10 @@ public class VsphereSyncCloudApi {
     private static Logger logger = LoggerFactory.getLogger(VsphereSyncCloudApi.class);
 
     /**
-     * 获取虚拟机
+     * 获取云主机
      *
      * @param req
-     * @return 虚拟机列表
+     * @return 云主机列表
      */
     public static List<F2CVirtualMachine> listVirtualMachine(VsphereVmBaseRequest req) {
         List<F2CVirtualMachine> list = new ArrayList<>();
@@ -107,6 +102,49 @@ public class VsphereSyncCloudApi {
             closeConnection(client);
         }
         return f2CImageList;
+    }
+
+    public static List<VsphereTemplate> getTemplates(VsphereVmBaseRequest req) {
+        VsphereVmClient client = null;
+        try {
+            List<VsphereTemplate> templates = new ArrayList<>();
+
+            //req.setRegionId(null);
+            client = req.getVsphereVmClient();
+
+            List<VirtualMachine> list = client.listTemplates();
+            for (VirtualMachine vm : list) {
+                int tmpDiskSize = 0;
+                VirtualMachineConfigInfo conf = vm.getConfig();
+                if (conf != null) {
+                    VirtualDevice[] devices = conf.getHardware().getDevice();
+                    for (VirtualDevice device : devices) {
+                        if (device instanceof VirtualDisk) {
+                            VirtualDisk vd = (VirtualDisk) device;
+                            tmpDiskSize += Math.round(vd.getCapacityInKB() / (1024 * 1024.0));
+                        }
+                    }
+                }
+                templates.add(new VsphereTemplate(vm.getName(), client.hasVmTools(vm), tmpDiskSize));
+            }
+
+            templates.sort((o1, o2) -> {
+                if (o1 == null) {
+                    return -1;
+                }
+                if (o2 == null) {
+                    return 1;
+                }
+                return o1.getName().compareTo(o2.getName());
+            });
+            return templates;
+        } catch (Exception e) {
+            throw new RuntimeException(e.getMessage(), e);
+        } finally {
+            if (client != null) {
+                client.closeConnection();
+            }
+        }
     }
 
     /**
@@ -229,6 +267,46 @@ public class VsphereSyncCloudApi {
         return false;
     }
 
+
+
+    public static List<F2CVsphereCluster> getClusters(VsphereVmBaseRequest req) {
+        VsphereClient client = null;
+        try {
+            client = req.getVsphereVmClient();
+            List<ClusterComputeResource> list = client.listClusters();
+            List<F2CVsphereCluster> clusters = new ArrayList<>();
+            for (ClusterComputeResource ccr : list) {
+                ClusterDrsConfigInfo drsCfg = ccr.getConfiguration().getDrsConfig();
+                StringBuilder sb = new StringBuilder();
+                if (drsCfg.getEnabled()) {
+                    sb.append("DRS已开启");
+                    String defaultVmBehavior = drsCfg.getDefaultVmBehavior().name();
+                    switch (defaultVmBehavior) {
+                        case "partiallyAutomated":
+                            sb.append("[半自动]");
+                            break;
+                        case "fullyAutomated":
+                            sb.append("[全自动]");
+                            break;
+                        case "manual":
+                            sb.append("[手动]");
+                            break;
+                    }
+                } else {
+                    sb.append("DRS已关闭");
+                }
+                clusters.add(new F2CVsphereCluster(ccr.getName(), sb.toString(), ccr.getName()));
+            }
+            return clusters;
+        } catch (Exception e) {
+            LogUtil.error(e.getMessage());
+            throw new RuntimeException(e.getMessage());
+        } finally {
+            if (client != null) {
+                client.closeConnection();
+            }
+        }
+    }
 
 
     public static List<F2CVsphereNetwork> getNetworks(VsphereNetworkRequest req) {

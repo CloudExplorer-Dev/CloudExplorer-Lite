@@ -1,11 +1,9 @@
 package com.fit2cloud.service.impl;
 
-import co.elastic.clients.elasticsearch._types.SortOptions;
-import co.elastic.clients.elasticsearch._types.SortOrder;
-import co.elastic.clients.elasticsearch._types.aggregations.*;
+import co.elastic.clients.elasticsearch._types.aggregations.Aggregation;
+import co.elastic.clients.elasticsearch._types.aggregations.ValueCountAggregation;
 import co.elastic.clients.elasticsearch._types.query_dsl.BoolQuery;
 import co.elastic.clients.elasticsearch._types.query_dsl.Query;
-import co.elastic.clients.elasticsearch.core.SearchRequest;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -25,13 +23,10 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.elasticsearch.client.elc.NativeQueryBuilder;
 import org.springframework.data.elasticsearch.core.query.FetchSourceFilter;
-import org.springframework.data.elasticsearch.core.query.SourceFilter;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
-import java.lang.reflect.Array;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 
@@ -88,14 +83,17 @@ public class LogServiceImpl implements ILogService {
      * @return 复合查询对象
      */
     private org.springframework.data.elasticsearch.core.query.Query getSearchQuery(Integer currentPage, Integer pageSize, String request, OrderRequest order) {
-
         NativeQueryBuilder query = new NativeQueryBuilder()
-                .withPageable(PageRequest.of(currentPage, pageSize))
+                .withPageable(PageRequest.of(currentPage-1, pageSize))
                 .withQuery(buildQuery(request))
                 .withSourceFilter(new FetchSourceFilter(new String[]{}, new String[]{"@version", "@timestamp", "host", "tags"}))
                 .withAggregation("count", new Aggregation.Builder().valueCount(new ValueCountAggregation.Builder().field("_id").build()).build());
         if (order != null && StringUtils.isNotEmpty(order.getColumn())) {
-            query.withSort(Sort.by(order.isAsc() ? Sort.Order.asc(order.getColumn()) : Sort.Order.desc(order.getColumn())));
+            if(StringUtils.equalsIgnoreCase(order.getColumn(),"createTime") || StringUtils.equalsIgnoreCase(order.getColumn(),"date")){
+                query.withSort(Sort.by(order.isAsc() ? Sort.Order.asc("@timestamp") : Sort.Order.desc("@timestamp")));
+            }else{
+                query.withSort(Sort.by(order.isAsc() ? Sort.Order.asc(order.getColumn()) : Sort.Order.desc(order.getColumn())));
+            }
         }
         return query.build();
     }
@@ -120,6 +118,8 @@ public class LogServiceImpl implements ILogService {
             QueryUtil.QueryCondition condition = new QueryUtil.QueryCondition(StringUtils.isNotEmpty(value) && !StringUtils.equalsIgnoreCase("null", value), name, value, QueryUtil.CompareType.LIKE);
             queryConditions.add(condition);
         }
+        //不查询没有等级的数据
+        queryConditions.add(new QueryUtil.QueryCondition(true, "level", null, QueryUtil.CompareType.NOT_EXIST));
         BoolQuery.Builder query = QueryUtil.getQuery(queryConditions);
         return new Query.Builder().bool(query.build()).build();
     }

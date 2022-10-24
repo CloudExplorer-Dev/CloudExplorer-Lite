@@ -20,7 +20,7 @@ public interface ISyncProviderService {
     void syncCloudServer(String cloudAccountId);
 
     /**
-     * 同步虚拟机
+     * 同步云主机
      *
      * @param cloudAccountId 云账号id
      * @param regions        同步区域
@@ -28,9 +28,9 @@ public interface ISyncProviderService {
     void syncCloudServer(String cloudAccountId, List<Credential.Region> regions);
 
     /**
-     * 同步虚拟机
+     * 同步云主机
      *
-     * @param params 同步虚拟机所需参数
+     * @param params 同步云主机所需参数
      */
     void syncCloudServer(Map<String, Object> params);
 

@@ -33,7 +33,8 @@ const mount = async () => {
   await initRouteObj();
   const route = getRoute();
   if (route) {
-    route.setRouteComponent(import.meta.glob("@/views/*/*.vue"));
+    route.setRouteComponent(import.meta.glob("@/views/**/**.vue"));
+
     app.use(route.router);
   }
 

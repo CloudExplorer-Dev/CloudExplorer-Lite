@@ -1,10 +1,8 @@
 package com.fit2cloud.common.platform.credential.impl;
 
 import com.fit2cloud.common.exception.Fit2cloudException;
-import com.fit2cloud.common.form.annotaion.From;
+import com.fit2cloud.common.form.annotaion.Form;
 import com.fit2cloud.common.form.constants.InputType;
-import com.fit2cloud.common.form.vo.Form;
-import com.fit2cloud.common.form.vo.InputTextForm;
 import com.fit2cloud.common.platform.credential.Credential;
 import com.huaweicloud.sdk.core.auth.GlobalCredentials;
 import com.huaweicloud.sdk.core.auth.ICredential;
@@ -15,7 +13,6 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -31,12 +28,12 @@ public class HuaweiCredential implements Credential {
     /**
      * AccessKey 访问令牌
      */
-    @From(inputType = InputType.Text, label = "AccessKey", description = "访问令牌")
+    @Form(inputType = InputType.Text, label = "AccessKey", description = "访问令牌")
     private String ak;
     /**
      * SecretKey 密钥Key
      */
-    @From(inputType = InputType.Password, label = "SecretKey", description = "访问密钥")
+    @Form(inputType = InputType.Password, label = "SecretKey", description = "访问密钥")
     private String sk;
 
     @Override

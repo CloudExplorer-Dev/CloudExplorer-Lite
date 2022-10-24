@@ -10,6 +10,7 @@ import com.fit2cloud.common.constants.PlatformConstants;
 import com.fit2cloud.common.exception.Fit2cloudException;
 import com.fit2cloud.common.form.util.FormUtil;
 import com.fit2cloud.common.form.vo.Form;
+import com.fit2cloud.common.form.vo.FormObject;
 import com.fit2cloud.common.platform.bill.Bill;
 import com.fit2cloud.common.platform.credential.Credential;
 import com.fit2cloud.common.scheduler.SchedulerService;
@@ -32,7 +33,6 @@ import lombok.SneakyThrows;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.eclipse.jetty.util.ajax.JSON;
 import org.quartz.DateBuilder;
 import org.quartz.Job;
 import org.quartz.Trigger;
@@ -291,10 +291,11 @@ public class BaseCloudAccountServiceImpl extends ServiceImpl<BaseCloudAccountMap
     }
 
     @Override
-    public List<Form> getBillSettingFormByPlatform(String platform) {
+    public List<? extends Form> getBillSettingFormByPlatform(String platform) {
         if (Arrays.stream(PlatformConstants.values()).anyMatch(p -> p.name().equals(platform))) {
             PlatformConstants platformConstants = PlatformConstants.valueOf(platform);
-            return FormUtil.toForm(platformConstants.getBillClass());
+            FormObject formObject = FormUtil.toForm(platformConstants.getBillClass());
+            return formObject == null ? null : formObject.getForms();
         } else {
             throw new Fit2cloudException(2000, "非法参数");
         }

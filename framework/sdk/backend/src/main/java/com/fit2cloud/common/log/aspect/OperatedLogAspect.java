@@ -144,7 +144,7 @@ public class OperatedLogAspect {
         logVO.setUrl(request.getRequestURL().toString());
         logVO.setMethod(request.getMethod());
         logVO.setParams(paramStr);
-        logVO.setSourceIp(IpUtil.getIpAdrress(request));
+        logVO.setSourceIp(IpUtil.getIpAddress(request));
         // 请求结果
         ObjectNode reqObj = new ObjectNode(null);
         if(errorResult.getCode()==200){

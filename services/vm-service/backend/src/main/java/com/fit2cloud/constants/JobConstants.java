@@ -21,7 +21,7 @@ public class JobConstants implements JobSettingConfig.JobConfig {
     private static final String SYNC_DISK = "SYNC_DISK";
 
     /**
-     * 同步虚拟机
+     * 同步云主机
      */
     private static final String SYNC_VIRTUAL_MACHINE = "SYNC_VIRTUAL_MACHINE";
 

@@ -2,21 +2,24 @@
 import { ref, onMounted } from "vue";
 import VmCloudDiskApi from "@/api/vm_cloud_disk";
 import type { VmCloudDiskVO } from "@/api/vm_cloud_disk/type";
-import { useRouter } from "vue-router";
 import {
   PaginationConfig,
   TableConfig,
-  SearchConfig,
   TableOperations,
   TableSearch,
 } from "@commons/components/ce-table/type";
 import { useI18n } from "vue-i18n";
-import { ElMessage } from "element-plus";
 import type { SimpleMap } from "@commons/api/base/type";
+import { ElMessage, ElMessageBox } from "element-plus";
+import Attach from "@/views/VmCloudDisk/attach.vue";
+import { useRouter } from "vue-router";
+
 const { t } = useI18n();
-const useRoute = useRouter();
 const columns = ref([]);
 const tableData = ref<Array<VmCloudDiskVO>>();
+const table = ref();
+const router = useRouter();
+
 //硬盘状态
 const diskStatus = ref<Array<SimpleMap<string>>>([
   { text: "deleted", value: "deleted" },
@@ -64,6 +67,12 @@ const search = (condition: TableSearch) => {
 onMounted(() => {
   search(new TableSearch());
 });
+
+// 刷新列表
+const refresh = () => {
+  table.value.search();
+};
+
 /**
  * 表单配置
  */
@@ -91,37 +100,126 @@ const tableConfig = ref<TableConfig>({
 });
 
 /**
+ * 扩容磁盘
+ * @param row
+ */
+const handleEnlarge = (row: VmCloudDiskVO) => {
+  router.push({ name: "enlarge", params: { id: row.id } });
+};
+
+/**
+ * 挂载磁盘
+ * @param row
+ */
+const selectedDiskId = ref();
+const attachWindowVisible = ref(false);
+const accountId = ref();
+const handleAttach = (row: VmCloudDiskVO) => {
+  selectedDiskId.value = row.id;
+  accountId.value = row.accountId;
+  attachWindowVisible.value = true;
+};
+
+/**
+ * 卸载磁盘
+ * @param row
+ */
+const handleDetach = (row: VmCloudDiskVO) => {
+  ElMessageBox.confirm(
+    t("vm_cloud_disk.confirm.detach", [
+      "【" + row.diskName + "】",
+      "【" + row.vmInstanceName + "】",
+    ]) + "？",
+    t("commons.message_box.prompt", "提示"),
+    {
+      confirmButtonText: t("commons.message_box.confirm"),
+      cancelButtonText: t("commons.btn.cancel"),
+      type: "warning",
+    }
+  )
+    .then(() => {
+      VmCloudDiskApi.detach(row.id).then(() => {
+        ElMessage.success("操作成功!");
+        refresh();
+      });
+    })
+    .catch(() => {
+      ElMessage.info(
+        t("vm_cloud_disk.msg.canceled", [
+          t("vm_cloud_disk.btn.uninstall"),
+          "已取消卸载",
+        ])
+      );
+    });
+};
+
+/**
+ * 删除磁盘
+ * @param row
+ */
+const handleDelete = (row: VmCloudDiskVO) => {
+  ElMessageBox.confirm(
+    t("vm_cloud_disk.confirm.delete", ["【" + row.diskName + "】"]) + "？",
+    t("commons.message_box.prompt", "提示"),
+    {
+      confirmButtonText: t("commons.message_box.confirm"),
+      cancelButtonText: t("commons.btn.cancel"),
+      type: "warning",
+    }
+  )
+    .then(() => {
+      VmCloudDiskApi.deleteDisk(row.id).then(() => {
+        ElMessage.success(
+          t("commons.msg.success", [t("vm_cloud_disk.btn.uninstall")])
+        );
+        refresh();
+      });
+    })
+    .catch(() => {
+      ElMessage.info(
+        t("vm_cloud_disk.msg.canceled", [
+          t("vm_cloud_disk.btn.delete"),
+          "已取消删除",
+        ])
+      );
+    });
+};
+
+/**
  * 操作按钮
  */
 const buttons = ref([
   {
-    label: t("vm_cloud_disk.btn.uninstall", "卸载"),
+    label: t("vm_cloud_disk.btn.enlarge", "扩容"),
     icon: "",
-    click: (row: VmCloudDiskVO) => {
-      //
-    },
+    click: handleEnlarge,
     show: true,
     disabled: (row: { status: string }) => {
-      return row.status !== "in_use";
+      return row.status == "deleted";
     },
   },
   {
     label: t("vm_cloud_disk.btn.mount", "挂载"),
     icon: "",
-    click: (row: VmCloudDiskVO) => {
-      //
-    },
+    click: handleAttach,
     show: true,
     disabled: (row: { status: string }) => {
       return row.status !== "available";
     },
   },
   {
+    label: t("vm_cloud_disk.btn.uninstall", "卸载"),
+    icon: "",
+    click: handleDetach,
+    show: true,
+    disabled: (row: { status: string }) => {
+      return row.status !== "in_use";
+    },
+  },
+  {
     label: t("commons.btn.delete", "删除"),
     icon: "",
-    click: (row: VmCloudDiskVO) => {
-      //
-    },
+    click: handleDelete,
     show: true,
     disabled: (row: { status: string }) => {
       return row.status !== "available";
@@ -280,6 +378,20 @@ const buttons = ref([
       <fu-table-column-select type="icon" :columns="columns" size="small" />
     </template>
   </ce-table>
+
+  <!-- 挂载磁盘弹出框 -->
+  <el-dialog
+    v-model="attachWindowVisible"
+    :title="$t('vm_cloud_disk.label.select_vm')"
+    width="25%"
+    destroy-on-close
+  >
+    <Attach
+      :id="selectedDiskId"
+      :accountId="accountId"
+      v-model:visible="attachWindowVisible"
+    />
+  </el-dialog>
 </template>
 <style lang="scss" scoped>
 .text-overflow {

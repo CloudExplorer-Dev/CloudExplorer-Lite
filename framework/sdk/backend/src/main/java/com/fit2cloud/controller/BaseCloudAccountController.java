@@ -13,6 +13,7 @@ import com.fit2cloud.response.cloud_account.ResourceCountResponse;
 import com.fit2cloud.response.cloud_account.SyncResource;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
@@ -31,6 +32,20 @@ import java.util.Map;
 public class BaseCloudAccountController {
     @Resource
     private IBaseCloudAccountService cloudAccountService;
+
+    @GetMapping("/list")
+    public ResultHolder<List<CloudAccount>> list() {
+        return ResultHolder.success(cloudAccountService.list());
+    }
+
+    @GetMapping("/{id}")
+    @ApiOperation(value = "根据id查询云账号", notes = "根据id查询云账号")
+    @PreAuthorize("hasAuthority('[management-center]CLOUD_ACCOUNT:READ')")
+    public ResultHolder<CloudAccount> findCloudAccount(@ApiParam(value = "云账号id", required = true)
+                                                       @CustomValidated(mapper = BaseCloudAccountMapper.class, handler = ExistHandler.class, message = "{i18n.cloud_account_id_not_existent}", exist = false)
+                                                       @PathVariable("id") String id) {
+        return ResultHolder.success(cloudAccountService.getById(id));
+    }
 
     @PostMapping("/job_init/{cloud_account_id}")
     @ApiOperation(value = "初始化云账号定时任务", notes = "初始化云账号定时任务")
@@ -75,8 +90,8 @@ public class BaseCloudAccountController {
 
     @GetMapping("/bill/form")
     @ApiOperation(value = "获取账单设置form表单", notes = "获取账单设置form表单")
-    public ResultHolder<List<Form>> getBillSettingFormByPlatform(@RequestParam("platform") String platform) {
-        List<Form> forms = cloudAccountService.getBillSettingFormByPlatform(platform);
+    public ResultHolder<List<? extends Form>> getBillSettingFormByPlatform(@RequestParam("platform") String platform) {
+        List<? extends Form> forms = cloudAccountService.getBillSettingFormByPlatform(platform);
         return ResultHolder.success(forms);
     }
 

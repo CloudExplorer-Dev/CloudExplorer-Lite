@@ -2,7 +2,7 @@ package com.fit2cloud.common.platform.credential.impl;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fit2cloud.common.exception.Fit2cloudException;
-import com.fit2cloud.common.form.annotaion.From;
+import com.fit2cloud.common.form.annotaion.Form;
 import com.fit2cloud.common.form.constants.InputType;
 import com.fit2cloud.common.platform.credential.Credential;
 import com.vmware.vim25.mo.Datacenter;
@@ -35,25 +35,25 @@ public class VsphereCredential implements Credential {
     /**
      * 用户名
      */
-    @From(inputType = InputType.Text, label = "用户名")
+    @Form(inputType = InputType.Text, label = "用户名")
     @JsonProperty("vUserName")
     private String vUserName;
     /**
      * 密码
      */
-    @From(inputType = InputType.Password, label = "密码")
+    @Form(inputType = InputType.Password, label = "密码")
     @JsonProperty("vPassword")
     private String vPassword;
     /**
      * vCenter服务器IP
      */
-    @From(inputType = InputType.Text, label = "vCenter服务器IP")
+    @Form(inputType = InputType.Text, label = "vCenter服务器IP")
     @JsonProperty("vCenterIp")
     private String vCenterIp;
     /**
      * 是否启用内容库镜像
      */
-    @From(inputType = InputType.SwitchBtn, label = "是否启用内容", defaultValue = "false", required = false)
+    @Form(inputType = InputType.SwitchBtn, label = "是否启用内容", defaultValue = "false", defaultJsonValue = true)
     private boolean useContentLibrary = false;
 
     @Override

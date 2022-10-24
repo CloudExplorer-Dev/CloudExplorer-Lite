@@ -11,7 +11,7 @@
   "scripts": {
     "dev": "yarn workspaces foreach -pvi run dev",
     "build-lib": "yarn workspaces foreach -ptvi run build-lib",
-    "build": "yarn workspaces foreach -ptvi run build",
+    "build": "yarn workspaces foreach -ptvi run build-only",
     "dev:base": "yarn workspace ce-base run dev",
     "lint:base": "yarn workspace ce-base run lint",
     "build:base": "yarn workspace ce-base run build-only",

@@ -33,10 +33,10 @@ import java.util.stream.Collectors;
  */
 public class AliyunSyncCloudApi {
     /**
-     * 获取阿里云虚拟机数据
+     * 获取阿里云云主机数据
      *
-     * @param listVirtualMachineRequest 获取阿里云虚拟机请求对象
-     * @return 虚拟机对象
+     * @param listVirtualMachineRequest 获取阿里云云主机请求对象
+     * @return 云主机对象
      */
     public static List<F2CVirtualMachine> listVirtualMachine(ListVirtualMachineRequest listVirtualMachineRequest) {
         if (StringUtils.isEmpty(listVirtualMachineRequest.getRegionId())) {
@@ -47,7 +47,7 @@ public class AliyunSyncCloudApi {
             listVirtualMachineRequest.setPageNumber(PageUtil.DefaultCurrentPage);
             listVirtualMachineRequest.setPageSize(PageUtil.DefaultPageSize);
             Client client = credential.getClientByRegion(listVirtualMachineRequest.getRegionId());
-            // 分页查询虚拟机列表
+            // 分页查询云主机列表
             List<DescribeInstancesResponseBody.DescribeInstancesResponseBodyInstancesInstance> instance = PageUtil.page(listVirtualMachineRequest, req -> describeInstancesWithOptions(client, req), res -> res.getBody().getInstances().instance, (req, res) -> res.getBody().getPageSize() <= res.getBody().getInstances().instance.size(), req -> req.setPageNumber(req.getPageNumber() + 1));
             return instance.stream().map(AliyunMappingUtil::toF2CVirtualMachine).map(f2CVirtualMachine -> appendDisk(listVirtualMachineRequest.getCredential(), f2CVirtualMachine)).map(f2CVirtualMachine -> appendInstanceType(listVirtualMachineRequest.getCredential(), f2CVirtualMachine)).toList();
         }
@@ -164,7 +164,7 @@ public class AliyunSyncCloudApi {
         } catch (Exception e) {
             ReTryException.throwReTry(e);
             SkipPageException.throwSkip(e);
-            throw new Fit2cloudException(10002, "获取阿里云虚拟机列表失败" + e.getMessage());
+            throw new Fit2cloudException(10002, "获取阿里云云主机列表失败" + e.getMessage());
         }
     }
 
@@ -218,7 +218,7 @@ public class AliyunSyncCloudApi {
             Client client = credential.getClientByRegion(aliyunInstanceRequest.getRegionId());
             com.aliyun.ecs20140526.models.StopInstancesRequest stopInstancesRequest = new com.aliyun.ecs20140526.models.StopInstancesRequest();
             stopInstancesRequest.setRegionId(aliyunInstanceRequest.getRegionId());
-            stopInstancesRequest.setForceStop(aliyunInstanceRequest.getForce()==null?true:false);
+            stopInstancesRequest.setForceStop(aliyunInstanceRequest.getForce());
             stopInstancesRequest.setInstanceId(Arrays.asList(aliyunInstanceRequest.getUuId()));
             try {
                 client.stopInstancesWithOptions(stopInstancesRequest, new RuntimeOptions());
@@ -272,7 +272,7 @@ public class AliyunSyncCloudApi {
             RebootInstancesRequest rebootInstancesRequest = new RebootInstancesRequest();
             rebootInstancesRequest.setRegionId(aliyunInstanceRequest.getRegionId());
             // TODO 强制重启
-            rebootInstancesRequest.setForceReboot(aliyunInstanceRequest.getForce()==null?true:false);
+            rebootInstancesRequest.setForceReboot(aliyunInstanceRequest.getForce());
             rebootInstancesRequest.setInstanceId(Arrays.asList(aliyunInstanceRequest.getUuId()));
             try {
                 client.rebootInstances(rebootInstancesRequest);
@@ -300,7 +300,7 @@ public class AliyunSyncCloudApi {
             DeleteInstancesRequest deleteInstancesRequest = new DeleteInstancesRequest();
             deleteInstancesRequest.setRegionId(aliyunInstanceRequest.getRegionId());
             // TODO 强制删除
-            deleteInstancesRequest.setForce(aliyunInstanceRequest.getForce()==null?true:false);
+            deleteInstancesRequest.setForce(aliyunInstanceRequest.getForce());
             deleteInstancesRequest.setInstanceId(Arrays.asList(aliyunInstanceRequest.getUuId()));
             try {
                 DeleteInstancesResponse response = client.deleteInstances(deleteInstancesRequest);
