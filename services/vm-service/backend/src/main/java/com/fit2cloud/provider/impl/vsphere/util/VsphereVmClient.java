@@ -22,9 +22,9 @@ public class VsphereVmClient extends VsphereClient {
     }
 
     /**
-     * 获取虚拟机
+     * 获取云主机
      *
-     * @return 虚拟机列表
+     * @return 云主机列表
      */
     public List<VirtualMachine> listVirtualMachines() {
         List<VirtualMachine> list = listResources(VirtualMachine.class);
@@ -56,7 +56,7 @@ public class VsphereVmClient extends VsphereClient {
     }
 
     /**
-     * 获取虚拟机创建时间
+     * 获取云主机创建时间
      *
      * @param mor
      * @param runtime
@@ -106,10 +106,10 @@ public class VsphereVmClient extends VsphereClient {
     }
 
     /**
-     * 获取虚拟机具有的磁盘
+     * 获取云主机具有的磁盘
      *
-     * @param vm 虚拟机实例
-     * @return 虚拟机的磁盘列表
+     * @param vm 云主机实例
+     * @return 云主机的磁盘列表
      */
     public List<VirtualDisk> getVirtualDisks(VirtualMachine vm) {
         List<VirtualDisk> disks = new ArrayList<>();
@@ -143,7 +143,7 @@ public class VsphereVmClient extends VsphereClient {
             Task task = virtualMachine.powerOffVM_Task();
             String result = task.waitForTask();
             if(!StringUtils.equalsIgnoreCase(TaskInfoState.success.name(),result)){
-                throw new RuntimeException("TaskInfo - "+task.getTaskInfo());
+                throw new RuntimeException("TaskInfo - "+task.getTaskInfo().getDescription());
             }
             return true;
         } catch (Exception e) {
@@ -166,7 +166,7 @@ public class VsphereVmClient extends VsphereClient {
             Task task = virtualMachine.powerOnVM_Task(hostSystem);
             String result = task.waitForTask();
             if(!StringUtils.equalsIgnoreCase(TaskInfoState.success.name(),result)){
-                throw new RuntimeException("TaskInfo - "+task.getTaskInfo());
+                throw new RuntimeException("TaskInfo - "+task.getTaskInfo().getDescription());
             }
             return true;
         } catch (Exception e) {
@@ -224,7 +224,36 @@ public class VsphereVmClient extends VsphereClient {
             Task task = virtualMachine.destroy_Task();
             String result = task.waitForTask();
             if(!StringUtils.equalsIgnoreCase(TaskInfoState.success.name(),result)){
-                throw new RuntimeException("TaskInfo - "+task.getTaskInfo());
+                throw new RuntimeException("TaskInfo - "+task.getTaskInfo().getDescription());
+            }
+            return true;
+        } catch (Exception e) {
+            throw new RuntimeException(e.getMessage());
+        }
+    }
+
+    /**
+     * 硬重启
+     * 先关闭电源再打开
+     * @param uuid
+     * @return
+     */
+    public boolean hardReboot(String uuid){
+        VirtualMachine virtualMachine = getVirtualMachineByUuId(uuid);
+        if(StringUtils.equalsIgnoreCase(VirtualMachinePowerState.poweredOff.name(),virtualMachine.getRuntime().getPowerState().name())){
+            throw new RuntimeException("The current state of the virtual machine is shutdown!");
+        }
+        try {
+            Task powerOffTask = virtualMachine.powerOffVM_Task();
+            String powerOffResult = powerOffTask.waitForTask();
+            if(!StringUtils.equalsIgnoreCase(TaskInfoState.success.name(),powerOffResult)){
+                throw new RuntimeException("hardReboot  powerOffTaskInfo - "+powerOffTask.getTaskInfo().getDescription());
+            }
+            HostSystem hostSystem = getHost(virtualMachine);
+            Task powerOnTask = virtualMachine.powerOnVM_Task(hostSystem);
+            String powerOnResult = powerOnTask.waitForTask();
+            if(!StringUtils.equalsIgnoreCase(TaskInfoState.success.name(),powerOnResult)){
+                throw new RuntimeException("hardReboot  powerOnTaskInfo - "+powerOnTask.getTaskInfo().getDescription());
             }
             return true;
         } catch (Exception e) {

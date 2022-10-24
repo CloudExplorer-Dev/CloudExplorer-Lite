@@ -12,7 +12,7 @@ import com.fit2cloud.controller.response.cloud_account.PlatformResponse;
 import com.fit2cloud.dao.entity.CloudAccount;
 import com.fit2cloud.dao.mapper.CloudAccountMapper;
 import com.fit2cloud.request.cloud_account.SyncRequest;
-import com.fit2cloud.response.cloud_account.AccountJobRecordResponse;
+import com.fit2cloud.response.JobRecordResourceResponse;
 import com.fit2cloud.response.cloud_account.ResourceCountResponse;
 import com.fit2cloud.response.cloud_account.SyncResource;
 import com.fit2cloud.service.ICloudAccountService;
@@ -129,8 +129,8 @@ public class CloudAccountController {
 
     @GetMapping("/sync/job_record")
     @ApiOperation(value = "查询云账号最新的同步记录", notes = "查询云账号最新的同步记录")
-    public ResultHolder<Map<String, List<AccountJobRecordResponse>>> findCloudAcoountSyncStatus(@ApiParam("需要查询的云账户id") @RequestParam("cloudAccountIds[]") List<String> cloudAccountIds) {
-        return ResultHolder.success(cloudAccountService.findCloudAcoountSyncStatus(cloudAccountIds).stream().collect(Collectors.groupingBy(AccountJobRecordResponse::getAccountId)));
+    public ResultHolder<Map<String, List<JobRecordResourceResponse>>> findCloudAcoountSyncStatus(@ApiParam("需要查询的云账户id") @RequestParam("cloudAccountIds[]") List<String> cloudAccountIds) {
+        return ResultHolder.success(cloudAccountService.findCloudAccountSyncStatus(cloudAccountIds).stream().collect(Collectors.groupingBy(JobRecordResourceResponse::getResourceId)));
     }
 
     @GetMapping("/verification/{cloud_account_id}")
@@ -205,7 +205,7 @@ public class CloudAccountController {
     @GetMapping("/pageSyncRecord")
     @ApiOperation(value = "获取同步记录")
     @PreAuthorize("hasAnyCePermission('CLOUD_ACCOUNT:EDIT')")
-    public ResultHolder<IPage<AccountJobRecordResponse>> pageSyncRecord(@Validated SyncRecordRequest syncRecordRequest) {
+    public ResultHolder<IPage<JobRecordResourceResponse>> pageSyncRecord(@Validated SyncRecordRequest syncRecordRequest) {
         return ResultHolder.success(cloudAccountService.pageSyncRecord(syncRecordRequest));
     }
 }

@@ -23,7 +23,7 @@ import java.util.List;
 public class QueryUtil {
 
     public enum CompareType {
-        LT, LTE, GT, GTE, EQ, NOT_EQ, IN, NOT_IN, LIKE
+        LT, LTE, GT, GTE, EQ, NOT_EQ, IN, NOT_IN, LIKE,NOT_EXIST
     }
 
     @Data
@@ -146,6 +146,9 @@ public class QueryUtil {
                         break;
                     case NOT_IN:
                         boolQueryBuilder.mustNot(new Query.Builder().terms(new TermsQuery.Builder().field(queryCondition.field).terms(getTermsQueryField(queryCondition.value)).build()).build());
+                        break;
+                    case NOT_EXIST:
+                        boolQueryBuilder.must(new Query.Builder().exists(new ExistsQuery.Builder().field(queryCondition.field).build()).build());
                         break;
                 }
             }

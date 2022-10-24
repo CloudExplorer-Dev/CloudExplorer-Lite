@@ -2,6 +2,7 @@
 <configuration debug="true" scan="true">
     <springProperty scope="context" name="logging.file.path" source="logging.file.path"/>
     <property file="@ce.config.file@"/>
+    <include resource="logback-aop.xml"></include>
     <appender name="console" class="ch.qos.logback.core.ConsoleAppender">
         <encoder>
             <pattern>%d %5p %40.40c:%4L - %m%n</pattern>
@@ -27,7 +28,7 @@
         </rollingPolicy>
         <encoder>
             <charset>UTF-8</charset>
-            <Pattern>%d [%thread] %-5level %logger{36} %line - %msg%n</Pattern>
+            <Pattern>[${PID:- }] [${application.name}] %d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger#%method:%L -%msg%n</Pattern>
         </encoder>
     </appender>
 
@@ -48,7 +49,7 @@
         </rollingPolicy>
         <encoder>
             <charset>UTF-8</charset>
-            <Pattern>%d [%thread] %-5level %logger{36} %line - %msg%n</Pattern>
+            <Pattern>[${PID:- }] [${application.name}] %d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger#%method:%L -%msg%n</Pattern>
         </encoder>
     </appender>
 
@@ -72,7 +73,7 @@
         </rollingPolicy>
         <encoder>
             <charset>UTF-8</charset>
-            <Pattern>%d [%thread] %-5level %logger{36} %line - %msg%n</Pattern>
+            <Pattern>[${PID:- }] [${application.name}] %d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger#%method:%L -%msg%n</Pattern>
         </encoder>
     </appender>
 
@@ -95,7 +96,7 @@
         </rollingPolicy>
         <encoder>
             <charset>UTF-8</charset>
-            <Pattern>%d [%thread] %-5level %logger{36} %line - %msg%n</Pattern>
+            <Pattern>[${PID:- }] [${application.name}] %d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger#%method:%L -%msg%n</Pattern>
         </encoder>
     </appender>
 
@@ -141,109 +142,6 @@
         <appender-ref ref="warnAppender"/>
     </appender>
 
-    <!--  系统调用日志输出到指定文件  -->
-    <appender name="backendApiAppender"
-              class="ch.qos.logback.core.rolling.RollingFileAppender">
-        <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
-            <level>INFO</level>
-        </filter>
-        <File>${logging.file.path}/api/info.log</File>
-        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
-            <FileNamePattern>${logging.file.path}/history/api/info.%d{yyyyMMdd}-%i.log
-            </FileNamePattern>
-            <maxHistory>${logger.max.history:-30}</maxHistory>
-            <TimeBasedFileNamingAndTriggeringPolicy
-                    class="ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP">
-                <maxFileSize>50MB</maxFileSize>
-            </TimeBasedFileNamingAndTriggeringPolicy>
-        </rollingPolicy>
-        <encoder>
-            <charset>UTF-8</charset>
-            <Pattern>%d [%thread] %-5level %logger{36} %line - %msg%n</Pattern>
-        </encoder>
-    </appender>
-    <appender name="backendApiAsyncAppender" class="ch.qos.logback.classic.AsyncAppender">
-        <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
-            <level>INFO</level>
-        </filter>
-        <queueSize>10000</queueSize>
-        <appender-ref ref="backendApiAppender"/>
-    </appender>
-    <logger name="com.fit2cloud.controller.handler.WebLogAspect" additivity="false">
-        <level value="${logger.level:INFO}"/>
-        <appender-ref ref="backendApiAsyncAppender"/>
-    </logger>
-
-    <!-- 自定义测试计划执行的日志	-->
-    <appender name="infoTestPlanAppender"
-              class="ch.qos.logback.core.rolling.RollingFileAppender">
-        <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
-            <level>INFO</level>
-        </filter>
-        <File>${logging.file.path}/testPlan/info.log</File>
-        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
-            <FileNamePattern>${logging.file.path}/history/testPlan/info.%d{yyyyMMdd}-%i.log
-            </FileNamePattern>
-            <maxHistory>${logger.max.history:-30}</maxHistory>
-            <TimeBasedFileNamingAndTriggeringPolicy
-                    class="ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP">
-                <maxFileSize>50MB</maxFileSize>
-            </TimeBasedFileNamingAndTriggeringPolicy>
-        </rollingPolicy>
-        <encoder>
-            <charset>UTF-8</charset>
-            <Pattern>%d [%thread] %-5level %logger{36} %line - %msg%n</Pattern>
-        </encoder>
-    </appender>
-    <appender name="infoTestPlanAsyncAppender" class="ch.qos.logback.classic.AsyncAppender">
-        <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
-            <level>INFO</level>
-        </filter>
-        <queueSize>10000</queueSize>
-        <appender-ref ref="infoTestPlanAppender"/>
-    </appender>
-    <logger name="testPlanExecuteLog" additivity="false">
-        <level value="${logger.level:INFO}"/>
-        <appender-ref ref="infoTestPlanAsyncAppender"/>
-    </logger>
-
-    <!-- 自定义执行过程日志 -->
-    <appender name="apiRunLogAppender"
-              class="ch.qos.logback.core.rolling.RollingFileAppender">
-        <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
-            <level>INFO</level>
-        </filter>
-        <File>${logging.file.path}/ms-jmeter-run-log.log</File>
-        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
-            <FileNamePattern>${logging.file.path}/history/ms-jmeter-run-log.%d{yyyyMMdd}-%i.log
-            </FileNamePattern>
-            <maxHistory>${logger.max.history:-30}</maxHistory>
-            <TimeBasedFileNamingAndTriggeringPolicy
-                    class="ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP">
-                <maxFileSize>50MB</maxFileSize>
-            </TimeBasedFileNamingAndTriggeringPolicy>
-        </rollingPolicy>
-        <encoder>
-            <charset>UTF-8</charset>
-            <Pattern>%d [%thread] %-5level %logger{36} %line - %msg%n</Pattern>
-        </encoder>
-    </appender>
-    <appender name="runLogAppender" class="ch.qos.logback.classic.AsyncAppender">
-        <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
-            <level>INFO</level>
-        </filter>
-        <queueSize>10000</queueSize>
-        <appender-ref ref="apiRunLogAppender"/>
-    </appender>
-    <logger name="ms-jmeter-run-log" additivity="false">
-        <level value="${logger.level:INFO}"/>
-        <appender-ref ref="runLogAppender"/>
-    </logger>
-
-
-    <!-- 自定义JMETER输出日志 -->
-
-
     <root level="INFO">
         <appender-ref ref="infoAsyncAppender"/>
         <appender-ref ref="console"/>
@@ -254,20 +152,7 @@
         <appender-ref ref="infoAsyncAppender"/>
         <appender-ref ref="warnAsyncAppender"/>
         <appender-ref ref="errorAsyncAppender"/>
+        <appender-ref ref="debugAsyncAppender"/>
     </logger>
-
-    <!--<logger name="com.fit2cloud.base.mapper" level="${logger.sql.level}">
-        <appender-ref ref="console"/>
-    </logger>-->
-    <!--	<logger name="com.fit2cloud.xpack.mapper" level="${logger.sql.level}">-->
-    <!--		<appender-ref ref="console"/>-->
-    <!--	</logger>-->
-
-    <!--<logger name="com.fit2cloud.Application" additivity="false" level="${logger.level:INFO}">
-        <appender-ref ref="infoAsyncAppender"/>
-    </logger>-->
-
-    <!--	<logger name="com.alibaba.nacos.naming.client.listener" additivity="false" level="ERROR"/>-->
-    <!--	<logger name="org.apache.dubbo" additivity="false" level="ERROR"/>-->
 
 </configuration>

@@ -67,7 +67,7 @@ public class JobRecord implements Serializable {
      * 任务参数
      */
     @TableField(value = "params", typeHandler = JacksonTypeHandler.class)
-    private List<Map<String, Object>> params;
+    private Map<String, Object> params;
 
     /**
      * 创建时间
@@ -86,4 +86,10 @@ public class JobRecord implements Serializable {
     @JsonSerialize(using = LocalDateTimeSerializer.class)
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
     private LocalDateTime updateTime;
+
+    /**
+     * 任务结果
+     */
+    @TableField("result")
+    private String result;
 }

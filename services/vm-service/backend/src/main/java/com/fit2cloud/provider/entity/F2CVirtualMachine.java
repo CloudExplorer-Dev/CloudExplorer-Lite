@@ -14,7 +14,7 @@ import java.util.List;
 @Data
 public class F2CVirtualMachine {
     /**
-     * 虚拟机名称
+     * 云主机名称
      */
     private String name;
     /**
@@ -153,6 +153,10 @@ public class F2CVirtualMachine {
      * vmtools版本
      */
     private String vmtoolsVersion;
+    /**
+     * vmtools状态
+     */
+    private String vmtoolsStatus;
     /**
      * 键密码
      */

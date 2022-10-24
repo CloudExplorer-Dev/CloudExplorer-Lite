@@ -94,7 +94,7 @@ public class LoginLogAspect {
                     logVO.setOperated(annotation.operated().getOperate());
                     logVO.setOperatedName(OperatedTypeEnum.getDescriptionByOperate(logVO.getOperated()));
                     // 资源类型
-                    logVO.setResourceType(annotation.resourceType().getDescription());
+                    logVO.setResourceType(annotation.resourceType().getCode());
                 }else{
                     logVO.setOperated(apiOperation.value());
                     logVO.setOperatedName(apiOperation.value());

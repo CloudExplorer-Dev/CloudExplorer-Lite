@@ -17,4 +17,5 @@ public class VsphereVmBaseRequest extends VsphereBaseRequest {
         }
         return new VsphereVmClient(vCredential,getRegionId(),getLanguage());
     }
+
 }

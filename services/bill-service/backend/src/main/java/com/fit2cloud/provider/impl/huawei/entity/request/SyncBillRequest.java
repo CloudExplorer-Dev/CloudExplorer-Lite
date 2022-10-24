@@ -1,8 +1,8 @@
 package com.fit2cloud.provider.impl.huawei.entity.request;
 
-import com.fit2cloud.common.platform.bill.impl.AliBill;
 import com.fit2cloud.common.platform.bill.impl.HuaweiBill;
 import com.fit2cloud.provider.impl.huawei.entity.credential.HuaweiBillCredential;
+import com.huaweicloud.sdk.bss.v2.model.ListCustomerselfResourceRecordsRequest;
 import lombok.Data;
 
 /**
@@ -12,7 +12,7 @@ import lombok.Data;
  * {@code @注释: }
  */
 @Data
-public class SyncBillRequest {
+public class SyncBillRequest extends ListCustomerselfResourceRecordsRequest {
     /**
      * 认证数据
      */
@@ -21,4 +21,9 @@ public class SyncBillRequest {
      * 账单信息
      */
     private HuaweiBill bill;
+
+
+    public void setMonth(String month) {
+        super.setCycle(month);
+    }
 }

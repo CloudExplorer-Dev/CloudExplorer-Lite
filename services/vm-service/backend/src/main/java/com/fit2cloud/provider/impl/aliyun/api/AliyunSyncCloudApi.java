@@ -2,6 +2,7 @@ package com.fit2cloud.provider.impl.aliyun.api;
 
 import com.aliyun.ecs20140526.Client;
 import com.aliyun.ecs20140526.models.*;
+import com.aliyun.tea.TeaException;
 import com.aliyun.teautil.models.RuntimeOptions;
 import com.fit2cloud.common.exception.Fit2cloudException;
 import com.fit2cloud.common.provider.exception.ReTryException;
@@ -12,16 +13,15 @@ import com.fit2cloud.provider.entity.F2CDisk;
 import com.fit2cloud.provider.entity.F2CImage;
 import com.fit2cloud.provider.entity.F2CVirtualMachine;
 import com.fit2cloud.provider.impl.aliyun.entity.credential.AliyunVmCredential;
-import com.fit2cloud.provider.impl.aliyun.entity.request.ListDisksRequest;
-import com.fit2cloud.provider.impl.aliyun.entity.request.ListImageRequest;
-import com.fit2cloud.provider.impl.aliyun.entity.request.ListInstanceTypesRequest;
-import com.fit2cloud.provider.impl.aliyun.entity.request.ListVirtualMachineRequest;
+import com.fit2cloud.provider.impl.aliyun.entity.request.*;
 import com.fit2cloud.provider.impl.aliyun.util.AliyunMappingUtil;
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.LongSummaryStatistics;
+import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
 
@@ -33,10 +33,10 @@ import java.util.stream.Collectors;
  */
 public class AliyunSyncCloudApi {
     /**
-     * 获取阿里云虚拟机数据
+     * 获取阿里云云主机数据
      *
-     * @param listVirtualMachineRequest 获取阿里云虚拟机请求对象
-     * @return 虚拟机对象
+     * @param listVirtualMachineRequest 获取阿里云云主机请求对象
+     * @return 云主机对象
      */
     public static List<F2CVirtualMachine> listVirtualMachine(ListVirtualMachineRequest listVirtualMachineRequest) {
         if (StringUtils.isEmpty(listVirtualMachineRequest.getRegionId())) {
@@ -46,8 +46,8 @@ public class AliyunSyncCloudApi {
             AliyunVmCredential credential = JsonUtil.parseObject(listVirtualMachineRequest.getCredential(), AliyunVmCredential.class);
             listVirtualMachineRequest.setPageNumber(PageUtil.DefaultCurrentPage);
             listVirtualMachineRequest.setPageSize(PageUtil.DefaultPageSize);
-            Client client = credential.getClient();
-            // 分页查询虚拟机列表
+            Client client = credential.getClientByRegion(listVirtualMachineRequest.getRegionId());
+            // 分页查询云主机列表
             List<DescribeInstancesResponseBody.DescribeInstancesResponseBodyInstancesInstance> instance = PageUtil.page(listVirtualMachineRequest, req -> describeInstancesWithOptions(client, req), res -> res.getBody().getInstances().instance, (req, res) -> res.getBody().getPageSize() <= res.getBody().getInstances().instance.size(), req -> req.setPageNumber(req.getPageNumber() + 1));
             return instance.stream().map(AliyunMappingUtil::toF2CVirtualMachine).map(f2CVirtualMachine -> appendDisk(listVirtualMachineRequest.getCredential(), f2CVirtualMachine)).map(f2CVirtualMachine -> appendInstanceType(listVirtualMachineRequest.getCredential(), f2CVirtualMachine)).toList();
         }
@@ -65,10 +65,15 @@ public class AliyunSyncCloudApi {
             throw new Fit2cloudException(10002, "区域为必填参数");
         }
         if (StringUtils.isNotEmpty(listDescribeDisksRequest.getCredential())) {
-            Client client = JsonUtil.parseObject(listDescribeDisksRequest.getCredential(), AliyunVmCredential.class).getClient();
+            Client client = JsonUtil.parseObject(listDescribeDisksRequest.getCredential(), AliyunVmCredential.class).getClientByRegion(listDescribeDisksRequest.getRegionId());
             listDescribeDisksRequest.setPageSize(PageUtil.DefaultPageSize);
             listDescribeDisksRequest.setPageNumber(PageUtil.DefaultCurrentPage);
-            List<DescribeDisksResponseBody.DescribeDisksResponseBodyDisksDisk> disk = PageUtil.page(listDescribeDisksRequest, req -> describeDisksWithOptions(client, req), res -> res.getBody().getDisks().disk, (req, res) -> res.getBody().getPageSize() <= res.getBody().disks.disk.size(), req -> req.setPageNumber(req.getPageNumber() + 1));
+            List<DescribeDisksResponseBody.DescribeDisksResponseBodyDisksDisk> disk = PageUtil.page(
+                    listDescribeDisksRequest,
+                    req -> describeDisksWithOptions(client, req),
+                    res -> res.getBody().getDisks().disk,
+                    (req, res) -> res.getBody().getPageSize() <= res.getBody().disks.disk.size(),
+                    req -> req.setPageNumber(req.getPageNumber() + 1));
             return disk.stream().map(AliyunMappingUtil::toF2CDisk).toList();
         }
         throw new Fit2cloudException(10001, "认证信息不存在");
@@ -85,7 +90,7 @@ public class AliyunSyncCloudApi {
             throw new Fit2cloudException(10002, "区域为必填参数");
         }
         if (StringUtils.isNotEmpty(listImageRequest.getCredential())) {
-            Client client = JsonUtil.parseObject(listImageRequest.getCredential(), AliyunVmCredential.class).getClient();
+            Client client = JsonUtil.parseObject(listImageRequest.getCredential(), AliyunVmCredential.class).getClientByRegion(listImageRequest.getRegionId());
             listImageRequest.setPageSize(PageUtil.DefaultPageSize);
             listImageRequest.setPageNumber(PageUtil.DefaultCurrentPage);
             List<DescribeImagesResponseBody.DescribeImagesResponseBodyImagesImage> images = PageUtil.page(listImageRequest, req -> describeImagesWithOptions(client, req), res -> res.getBody().images.image, (req, res) -> res.getBody().getPageSize() <= res.getBody().images.image.size(), req -> req.setPageNumber(req.getPageNumber() + 1));
@@ -159,7 +164,7 @@ public class AliyunSyncCloudApi {
         } catch (Exception e) {
             ReTryException.throwReTry(e);
             SkipPageException.throwSkip(e);
-            throw new Fit2cloudException(10002, "获取阿里云虚拟机列表失败" + e.getMessage());
+            throw new Fit2cloudException(10002, "获取阿里云云主机列表失败" + e.getMessage());
         }
     }
 
@@ -202,6 +207,130 @@ public class AliyunSyncCloudApi {
             f2CVirtualMachine.setInstanceTypeDescription(instanceType.getCpuCoreCount() + "vCPU " + memory + "GB");
         });
         return f2CVirtualMachine;
+    }
+
+    public static boolean powerOff(AliyunInstanceRequest aliyunInstanceRequest) {
+        if (StringUtils.isEmpty(aliyunInstanceRequest.getRegionId())) {
+            throw new Fit2cloudException(10002, "区域为必填参数");
+        }
+        if (StringUtils.isNotEmpty(aliyunInstanceRequest.getCredential())) {
+            AliyunVmCredential credential = JsonUtil.parseObject(aliyunInstanceRequest.getCredential(), AliyunVmCredential.class);
+            Client client = credential.getClientByRegion(aliyunInstanceRequest.getRegionId());
+            com.aliyun.ecs20140526.models.StopInstancesRequest stopInstancesRequest = new com.aliyun.ecs20140526.models.StopInstancesRequest();
+            stopInstancesRequest.setRegionId(aliyunInstanceRequest.getRegionId());
+            stopInstancesRequest.setForceStop(aliyunInstanceRequest.getForce());
+            stopInstancesRequest.setInstanceId(Arrays.asList(aliyunInstanceRequest.getUuId()));
+            try {
+                client.stopInstancesWithOptions(stopInstancesRequest, new RuntimeOptions());
+                DescribeInstanceStatusRequest describeInstanceStatusRequest = new DescribeInstanceStatusRequest();
+                describeInstanceStatusRequest.setRegionId(aliyunInstanceRequest.getRegionId());
+                checkStatus(client,"Stopped",describeInstanceStatusRequest);
+                return true;
+            } catch (TeaException error) {
+                throw new Fit2cloudException(10002,error.getMessage());
+            } catch (Exception _error) {
+                TeaException error = new TeaException(_error.getMessage(), _error);
+                throw new Fit2cloudException(10002,error.getMessage());
+            }
+        }
+        return false;
+    }
+
+    public static boolean powerOn(AliyunInstanceRequest aliyunInstanceRequest) {
+        if (StringUtils.isEmpty(aliyunInstanceRequest.getRegionId())) {
+            throw new Fit2cloudException(10002, "区域为必填参数");
+        }
+        if (StringUtils.isNotEmpty(aliyunInstanceRequest.getCredential())) {
+            AliyunVmCredential credential = JsonUtil.parseObject(aliyunInstanceRequest.getCredential(), AliyunVmCredential.class);
+            Client client = credential.getClientByRegion(aliyunInstanceRequest.getRegionId());
+            StartInstancesRequest startInstancesRequest = new StartInstancesRequest();
+            startInstancesRequest.setRegionId(aliyunInstanceRequest.getRegionId());
+            startInstancesRequest.setInstanceId(Arrays.asList(aliyunInstanceRequest.getUuId()));
+            try {
+                client.startInstances(startInstancesRequest);
+                DescribeInstanceStatusRequest describeInstanceStatusRequest = new DescribeInstanceStatusRequest();
+                describeInstanceStatusRequest.setRegionId(aliyunInstanceRequest.getRegionId());
+                checkStatus(client,"Running",describeInstanceStatusRequest);
+                return true;
+            } catch (TeaException error) {
+                throw new Fit2cloudException(10003,error.getMessage());
+            } catch (Exception _error) {
+                TeaException error = new TeaException(_error.getMessage(), _error);
+                throw new Fit2cloudException(10003,error.getMessage());
+            }
+        }
+        return false;
+    }
+
+    public static boolean rebootInstance(AliyunInstanceRequest aliyunInstanceRequest) {
+        if (StringUtils.isEmpty(aliyunInstanceRequest.getRegionId())) {
+            throw new Fit2cloudException(10002, "区域为必填参数");
+        }
+        if (StringUtils.isNotEmpty(aliyunInstanceRequest.getCredential())) {
+            AliyunVmCredential credential = JsonUtil.parseObject(aliyunInstanceRequest.getCredential(), AliyunVmCredential.class);
+            Client client = credential.getClientByRegion(aliyunInstanceRequest.getRegionId());
+            RebootInstancesRequest rebootInstancesRequest = new RebootInstancesRequest();
+            rebootInstancesRequest.setRegionId(aliyunInstanceRequest.getRegionId());
+            // TODO 强制重启
+            rebootInstancesRequest.setForceReboot(aliyunInstanceRequest.getForce());
+            rebootInstancesRequest.setInstanceId(Arrays.asList(aliyunInstanceRequest.getUuId()));
+            try {
+                client.rebootInstances(rebootInstancesRequest);
+                DescribeInstanceStatusRequest describeInstanceStatusRequest = new DescribeInstanceStatusRequest();
+                describeInstanceStatusRequest.setRegionId(aliyunInstanceRequest.getRegionId());
+                checkStatus(client,"Running",describeInstanceStatusRequest);
+                return true;
+            } catch (TeaException error) {
+                throw new Fit2cloudException(10004,error.getMessage());
+            } catch (Exception _error) {
+                TeaException error = new TeaException(_error.getMessage(), _error);
+                throw new Fit2cloudException(10004,error.getMessage());
+            }
+        }
+        return false;
+    }
+
+    public static boolean deleteInstance(AliyunInstanceRequest aliyunInstanceRequest) {
+        if (StringUtils.isEmpty(aliyunInstanceRequest.getRegionId())) {
+            throw new Fit2cloudException(10002, "区域为必填参数");
+        }
+        if (StringUtils.isNotEmpty(aliyunInstanceRequest.getCredential())) {
+            AliyunVmCredential credential = JsonUtil.parseObject(aliyunInstanceRequest.getCredential(), AliyunVmCredential.class);
+            Client client = credential.getClientByRegion(aliyunInstanceRequest.getRegionId());
+            DeleteInstancesRequest deleteInstancesRequest = new DeleteInstancesRequest();
+            deleteInstancesRequest.setRegionId(aliyunInstanceRequest.getRegionId());
+            // TODO 强制删除
+            deleteInstancesRequest.setForce(aliyunInstanceRequest.getForce());
+            deleteInstancesRequest.setInstanceId(Arrays.asList(aliyunInstanceRequest.getUuId()));
+            try {
+                DeleteInstancesResponse response = client.deleteInstances(deleteInstancesRequest);
+                return true;
+            } catch (TeaException error) {
+                throw new Fit2cloudException(10005,error.getMessage());
+            } catch (Exception _error) {
+                TeaException error = new TeaException(_error.getMessage(), _error);
+                throw new Fit2cloudException(10005,error.getMessage());
+            }
+        }
+        return false;
+    }
+
+    private static void checkStatus(Client client,String status,DescribeInstanceStatusRequest describeInstanceStatusRequest) throws Exception {
+        int count = 0;
+        while (true){
+            DescribeInstanceStatusResponse response = client.describeInstanceStatus(describeInstanceStatusRequest);
+            if(StringUtils.equalsIgnoreCase(response.getBody().getInstanceStatuses().getInstanceStatus().get(0).getStatus(),status)){
+                break;
+            }
+            if (count < 40) {
+                try {
+                    Thread.sleep(5000);
+                } catch (InterruptedException e) {
+                }
+            } else {
+                break;
+            }
+        }
     }
 
 

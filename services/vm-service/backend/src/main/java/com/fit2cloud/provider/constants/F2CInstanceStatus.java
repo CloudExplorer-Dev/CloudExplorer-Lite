@@ -8,5 +8,10 @@ public enum F2CInstanceStatus {
     Running,
     Stopped,
     Deleted,
+    Starting,
+    Stopping,
+    Deleting,
+    Rebooting,
+    Createding,
     Unknown
 }

@@ -29,13 +29,13 @@ public class CloudAccountSyncJob {
         }
     }
 
-    @Name("同步虚拟机定时任务")
+    @Name("同步云主机定时任务")
     public static class SyncVirtualMachineJob extends AsyncJob implements Job {
         @Override
         protected void run(Map<String, Object> map) {
-            LogUtil.info("开始同步虚拟机: ", map);
+            LogUtil.info("开始同步云主机: ", map);
             SpringUtil.getBean(ISyncProviderService.class).syncCloudServer(map);
-            LogUtil.info("同步虚拟机结束: ", map);
+            LogUtil.info("同步云主机结束: ", map);
         }
     }
 

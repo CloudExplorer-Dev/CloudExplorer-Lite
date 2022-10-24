@@ -1,3 +1,4 @@
+import type { SimpleMap } from "@commons/api/base/type";
 import type { CloudAccount } from "@commons/api/cloud_account/type";
 
 interface ListOrganizationRequest {
@@ -283,7 +284,7 @@ interface AccountJobRecord {
   /**
    *任务参数
    */
-  params: Array<{ size: number; region: string }>;
+  params: SimpleMap<Array<{ size: number; region: string } | any>>;
 }
 
 export type {

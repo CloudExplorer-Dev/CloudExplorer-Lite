@@ -64,6 +64,7 @@ const init = () => {
       .then((ok) => {
         syncRecords.value = _.cloneDeep(ok.data.records);
         syncRecordTotal.value = _.cloneDeep(ok.data.total);
+        syncRecordConfig.currentPage = syncRecordConfig.currentPage + 1;
         if (syncRecords.value.length > 0) {
           showSyncRecordDetail(syncRecords.value[0]);
         }
@@ -74,8 +75,13 @@ const init = () => {
 // 已同步多少区域
 const recordRegionDescription = computed(() => {
   let regionNum = 0;
-  if (selectedSyncRecord.value) {
-    regionNum = selectedSyncRecord.value.params.length;
+  if (
+    selectedSyncRecord.value &&
+    selectedSyncRecord.value.params &&
+    selectedSyncRecord.value.params[selectedSyncRecord.value.type]
+  ) {
+    regionNum =
+      selectedSyncRecord.value.params[selectedSyncRecord.value.type].length;
   }
   return (
     t("cloud_account.sync.finishArea", "已同步区域") +
@@ -88,10 +94,16 @@ const recordRegionDescription = computed(() => {
 const recordResourceDescription = computed(() => {
   let resourceCount = 0;
   let description = t("cloud_account.sync.resource", "同步资源");
-  if (selectedSyncRecord.value) {
-    selectedSyncRecord.value.params.forEach((item) => {
-      resourceCount = resourceCount + item.size;
-    });
+  if (
+    selectedSyncRecord.value &&
+    selectedSyncRecord.value.params &&
+    selectedSyncRecord.value.params[selectedSyncRecord.value.type]
+  ) {
+    selectedSyncRecord.value.params[selectedSyncRecord.value.type].forEach(
+      (item) => {
+        resourceCount = resourceCount + item.size;
+      }
+    );
     description = selectedSyncRecord.value.description;
   }
   return (
@@ -100,9 +112,9 @@ const recordResourceDescription = computed(() => {
 });
 
 // 是否还有同步记录需要加载
-const noMoreSyncRecord = computed(
-  () => syncRecords.value.length >= syncRecordTotal.value
-);
+const noMoreSyncRecord = computed(() => {
+  return syncRecords.value.length >= syncRecordTotal.value;
+});
 
 // 是否允许继续滚动加载
 const scrollDisabled = computed(
@@ -136,7 +148,24 @@ const load = () => {
     })
     .then((ok) => {
       syncRecordConfig.currentPage = ok.data.current + 1;
-      syncRecords.value = [...syncRecords.value, ...ok.data.records];
+      syncRecords.value = [
+        ...new Set(
+          [...syncRecords.value, ...ok.data.records].map(
+            (record) => record.jobRecordId
+          )
+        ),
+      ]
+        .map(
+          (jobRecordId: string) =>
+            [...syncRecords.value, ...ok.data.records].find(
+              (record) => record.jobRecordId === jobRecordId
+            ) as AccountJobRecord
+        )
+        .filter((item) => item);
+
+      syncRecords.value.sort((s1, s2) =>
+        s2.createTime.localeCompare(s1.createTime)
+      );
       loadingSyncRecord.value = false;
     });
 };
@@ -193,7 +222,7 @@ const cancel = (resource: string) => {
   }
 };
 
-const save = (resource: string, formEl: FormInstance) => {
+const save = (resource: string, formEl: FormInstance | undefined) => {
   // 修改基本信息
   if (resource === resourceConst.basic) {
     if (!formEl) return;
@@ -421,7 +450,7 @@ onBeforeUnmount(() => {
       }}</span>
       <span
         v-if="syncEditable"
-        @click="save(resourceConst.sync, null)"
+        @click="save(resourceConst.sync, undefined)"
         style="padding-left: 20px"
         >{{ $t("commons.btn.save") }}</span
       >
@@ -465,13 +494,13 @@ onBeforeUnmount(() => {
             <div
               @click="showSyncRecordDetail(item)"
               :class="
-                item.jobRecordId === selectedSyncRecord.jobRecordId
+                item.jobRecordId === selectedSyncRecord?.jobRecordId
                   ? 'container-details-active'
                   : ''
               "
               class="container container-details"
-              v-for="item in syncRecords"
-              :key="item"
+              v-for="(item, index) in syncRecords"
+              :key="index"
             >
               <span class="label">{{ item.createTime }}</span>
               <span class="label">{{ item.description }}</span>
@@ -510,7 +539,13 @@ onBeforeUnmount(() => {
           </div>
           <div class="line"></div>
           <div class="content">
-            <div class="container" v-if="selectedSyncRecord">
+            <div
+              class="container"
+              v-if="
+                selectedSyncRecord &&
+                selectedSyncRecord.type === 'CLOUD_ACCOUNT_SYNC_JOB'
+              "
+            >
               <div class="start">
                 <div class="split-left">
                   {{ selectedSyncRecord.createTime }}：
@@ -520,8 +555,10 @@ onBeforeUnmount(() => {
 
               <div
                 class="middle"
-                v-for="item in selectedSyncRecord.params"
-                :key="item"
+                v-for="(item, index) in selectedSyncRecord.params[
+                  selectedSyncRecord.type
+                ]"
+                :key="index"
               >
                 <div class="layout">
                   <div class="split-left">

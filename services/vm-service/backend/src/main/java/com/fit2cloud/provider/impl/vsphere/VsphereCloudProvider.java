@@ -71,6 +71,16 @@ public class VsphereCloudProvider extends AbstractCloudProvider<VsphereCredentia
         return VsphereSyncCloudApi.deleteInstance(JsonUtil.parseObject(req, VsphereVmPowerRequest.class));
     }
 
+    @Override
+    public boolean hardShutdownInstance(String req) {
+        return VsphereSyncCloudApi.powerOff(JsonUtil.parseObject(req, VsphereVmPowerRequest.class));
+    }
+
+    @Override
+    public boolean hardRebootInstance(String req) {
+        return VsphereSyncCloudApi.hardReboot(JsonUtil.parseObject(req, VsphereVmPowerRequest.class));
+    }
+
     public List<F2CVsphereCluster> getClusters(String req) {
         VsphereVmCreateRequest request= JsonUtil.parseObject(req, VsphereVmCreateRequest.class);
         request.setRegionId(request.getRegion());

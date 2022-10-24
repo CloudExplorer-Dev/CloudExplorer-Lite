@@ -8,6 +8,7 @@ import com.fit2cloud.provider.entity.F2CImage;
 import com.fit2cloud.provider.entity.F2CVirtualMachine;
 import com.fit2cloud.provider.impl.aliyun.api.AliyunSyncCloudApi;
 import com.fit2cloud.provider.impl.aliyun.entity.credential.AliyunVmCredential;
+import com.fit2cloud.provider.impl.aliyun.entity.request.AliyunInstanceRequest;
 import com.fit2cloud.provider.impl.aliyun.entity.request.ListDisksRequest;
 import com.fit2cloud.provider.impl.aliyun.entity.request.ListImageRequest;
 import com.fit2cloud.provider.impl.aliyun.entity.request.ListVirtualMachineRequest;
@@ -40,27 +41,43 @@ public class AliyunCloudProvider extends AbstractCloudProvider<AliyunVmCredentia
 
     @Override
     public boolean powerOff(String req) {
-        return false;
+        return AliyunSyncCloudApi.powerOff(JsonUtil.parseObject(req, AliyunInstanceRequest.class));
     }
 
     @Override
     public boolean powerOn(String req) {
-        return false;
+        return AliyunSyncCloudApi.powerOn(JsonUtil.parseObject(req, AliyunInstanceRequest.class));
     }
 
     @Override
-    public boolean shutdownInstance(String req) {
-        return false;
+    public boolean shutdownInstance(String req){
+        return AliyunSyncCloudApi.powerOff(JsonUtil.parseObject(req, AliyunInstanceRequest.class));
     }
 
     @Override
-    public boolean rebootInstance(String req) {
-        return false;
+    public boolean rebootInstance(String req){
+        return AliyunSyncCloudApi.rebootInstance(JsonUtil.parseObject(req, AliyunInstanceRequest.class));
     }
 
     @Override
-    public boolean deleteInstance(String req) {
-        return false;
+    public boolean deleteInstance(String req){
+        AliyunInstanceRequest request = JsonUtil.parseObject(req, AliyunInstanceRequest.class);
+        request.setForce(true);
+        return AliyunSyncCloudApi.deleteInstance(request);
+    }
+
+    @Override
+    public boolean hardShutdownInstance(String req) {
+        AliyunInstanceRequest request = JsonUtil.parseObject(req, AliyunInstanceRequest.class);
+        request.setForce(true);
+        return AliyunSyncCloudApi.powerOff(request);
+    }
+
+    @Override
+    public boolean hardRebootInstance(String req) {
+        AliyunInstanceRequest request = JsonUtil.parseObject(req, AliyunInstanceRequest.class);
+        request.setForce(true);
+        return AliyunSyncCloudApi.rebootInstance(request);
     }
 
 }

@@ -38,6 +38,11 @@ const refresh = () => {
 
 const search = (condition: TableSearch) => {
   const params = TableSearch.toSearchParams(condition);
+  const workspaceId = useRoute.currentRoute.value.query.workspaceId;
+  if(workspaceId){
+    params["workspaceId"] = workspaceId;
+    useRoute.currentRoute.value.query.workspaceId = null;
+  }
   listUser({
     currentPage: tableConfig.value.paginationConfig.currentPage,
     pageSize: tableConfig.value.paginationConfig.pageSize,
@@ -160,6 +165,7 @@ const tableConfig = ref<TableConfig>({
       { label: t("user.name"), value: "name" },
       { label: t("user.role"), value: "roleName" },
       { label: t("user.email"), value: "email" },
+      { label: t("user.workspaceId","工作空间ID"), value: "workspaceId" },
     ],
   },
   paginationConfig: new PaginationConfig(),
@@ -200,6 +206,8 @@ const tableConfig = ref<TableConfig>({
     :tableConfig="tableConfig"
     @selection-change="handleSelectionChange"
     row-key="id"
+    height="100%"
+    table-layout="auto"
   >
     <template #toolbar>
       <el-button @click="create" type="primary">{{

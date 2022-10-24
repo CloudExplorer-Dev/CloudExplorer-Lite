@@ -109,7 +109,7 @@ public class OperatedLogAspect {
                     // 资源ID
                     logVO.setRequestId(annotation.resourceId());
                     // 资源类型
-                    logVO.setResourceType(annotation.resourceType().getDescription());
+                    logVO.setResourceType(annotation.resourceType().getCode());
                     // 关联资源ID
                     logVO.setJoinResourceId(annotation.joinResourceId());
                 }else{
@@ -144,7 +144,7 @@ public class OperatedLogAspect {
         logVO.setUrl(request.getRequestURL().toString());
         logVO.setMethod(request.getMethod());
         logVO.setParams(paramStr);
-        logVO.setSourceIp(IpUtil.getIpAdrress(request));
+        logVO.setSourceIp(IpUtil.getIpAddress(request));
         // 请求结果
         ObjectNode reqObj = new ObjectNode(null);
         if(errorResult.getCode()==200){

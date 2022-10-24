@@ -3,6 +3,7 @@ package com.fit2cloud.common.provider.impl.vsphere.utils;
 import com.fit2cloud.common.constants.Language;
 import com.vmware.vim25.*;
 import com.vmware.vim25.mo.*;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

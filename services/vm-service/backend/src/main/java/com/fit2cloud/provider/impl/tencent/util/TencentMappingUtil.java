@@ -7,6 +7,7 @@ import com.fit2cloud.provider.constants.F2CInstanceStatus;
 import com.fit2cloud.provider.entity.F2CDisk;
 import com.fit2cloud.provider.entity.F2CImage;
 import com.fit2cloud.provider.entity.F2CVirtualMachine;
+import com.fit2cloud.provider.impl.tencent.constants.TencentChargeType;
 import com.tencentcloudapi.cbs.v20170312.models.Disk;
 import com.tencentcloudapi.cvm.v20170312.models.DataDisk;
 import com.tencentcloudapi.cvm.v20170312.models.Image;
@@ -29,7 +30,7 @@ public class TencentMappingUtil {
      * 将腾讯云对象转换为系统实例对象
      *
      * @param instance 腾讯云实例对象
-     * @return 系统虚拟机实例对象
+     * @return 系统云主机实例对象
      */
     public static F2CVirtualMachine toF2CVirtualMachine(Instance instance) {
         F2CVirtualMachine f2CInstance = new F2CVirtualMachine();
@@ -151,7 +152,7 @@ public class TencentMappingUtil {
     }
 
     /**
-     * 将腾讯云虚拟机实例状态转换为系统实例状态
+     * 将腾讯云云主机实例状态转换为系统实例状态
      *
      * @param qcloudStatus 腾讯云实例状态
      * @return 系统实例状态
@@ -176,6 +177,27 @@ public class TencentMappingUtil {
                 return F2CInstanceStatus.Running.name();
             default:
                 return F2CInstanceStatus.Unknown.name();
+        }
+    }
+
+    /**
+     * 将云管系统付费方式转换为腾讯云付费方式
+     *
+     * @param f2cChargeType 系统标记付费方式
+     * @return 腾讯标记付费方式
+     */
+    public static String toTencentChargeType(String f2cChargeType) {
+        /**
+         * 云硬盘计费类型。
+         * PREPAID：预付费，即包年包月
+         * POSTPAID_BY_HOUR：按小时后付费
+         * CDCPAID：独享集群付费
+         */
+        switch (f2cChargeType) {
+            case "PrePaid":
+                return TencentChargeType.PREPAID;
+            default:
+                return TencentChargeType.POSTPAID_BY_HOUR;
         }
     }
 }

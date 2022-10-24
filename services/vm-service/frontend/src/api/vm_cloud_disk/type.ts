@@ -1,5 +1,5 @@
 interface VmCloudDiskVO {
-  id?: string;
+  id: string;
   region?: string;
   zone?: string;
   diskId?: string;
@@ -11,9 +11,10 @@ interface VmCloudDiskVO {
   description?: string;
   size?: number;
   device?: string;
-  accountId?: string;
+  accountId: string;
   datastoreId?: string;
-  instanceUuid?: string;
+  instanceUuid: string;
+  vmInstanceName?: string;
   workspaceId?: string;
   projectId?: string;
   bootable?: boolean;
@@ -21,9 +22,26 @@ interface VmCloudDiskVO {
   deleteWithInstance?: string;
   createTime?: string;
   updateTime?: string;
+  workspaceName?: string;
+  accountName?: string;
+  platform?: string;
 }
 interface ListVmCloudDiskRequest {
   pageSize: number;
   currentPage: number;
 }
-export type { VmCloudDiskVO, ListVmCloudDiskRequest };
+interface AttachDiskRequest {
+  id: string;
+  instanceUuid: string;
+  deleteWithInstance?: boolean;
+}
+interface EnlargeDiskRequest {
+  id: string;
+  newDiskSize: number;
+}
+export type {
+  VmCloudDiskVO,
+  ListVmCloudDiskRequest,
+  AttachDiskRequest,
+  EnlargeDiskRequest,
+};

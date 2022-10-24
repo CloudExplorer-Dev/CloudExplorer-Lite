@@ -46,9 +46,11 @@ public enum ErrorCodeConstants {
 
     ROLE_ID_CANNOT_BE_NULL(100100405, "i18n.role.id.warn.cannot.null"),
 
-    VM_NOT_EXIST(200100101, "虚拟机不存在"),
-    VM_OPERATE_FAIL(200100102, "虚拟机操作失败"),
-    SELECT_AT_LEAST_ONE_VM(200100103,"至少选择一个虚拟机");
+    VM_NOT_EXIST(200100101, "云主机不存在"),
+    VM_OPERATE_FAIL(200100102, "云主机操作失败"),
+    VM_BATCH_OPERATE_FAIL(200100103, "云主机批量操作失败"),
+    SELECT_AT_LEAST_ONE_VM(200100104,"至少选择一个云主机"),
+    NOT_SUPPORTED_TEMPORARILY(200100105, "暂不支持该操作"),;
 
 
 

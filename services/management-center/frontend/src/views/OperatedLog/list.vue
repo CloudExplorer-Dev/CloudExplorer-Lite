@@ -1,9 +1,27 @@
 <template>
-  <el-tabs v-model="activeName" class="tabs-box" @tab-click="handleTab"  height="100%">
-    <el-tab-pane :label="$t('log_manage.login')" name="LoginLogList"></el-tab-pane>
-    <el-tab-pane :label="$t('log_manage.vm')" name="VmOperatedLogList"></el-tab-pane>
-    <el-tab-pane :label="$t('log_manage.disk')" name="DiskOperatedLogList"></el-tab-pane>
-    <el-tab-pane :label="$t('log_manage.platform')" name="AllOperatedLogList"  height="100%"></el-tab-pane>
+  <el-tabs
+    v-model="activeName"
+    class="tabs-box"
+    @tab-click="handleTab"
+    height="100%"
+  >
+    <el-tab-pane
+      :label="$t('log_manage.login')"
+      name="LoginLogList"
+    ></el-tab-pane>
+    <el-tab-pane
+      :label="$t('log_manage.vm')"
+      name="VmOperatedLogList"
+    ></el-tab-pane>
+    <el-tab-pane
+      :label="$t('log_manage.disk')"
+      name="DiskOperatedLogList"
+    ></el-tab-pane>
+    <el-tab-pane
+      :label="$t('log_manage.platform')"
+      name="AllOperatedLogList"
+      height="100%"
+    ></el-tab-pane>
     <div>
       <component v-bind:is="currentCom"></component>
     </div>

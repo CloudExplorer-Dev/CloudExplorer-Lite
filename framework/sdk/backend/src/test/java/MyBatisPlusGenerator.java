@@ -22,7 +22,7 @@ public class MyBatisPlusGenerator {
     /**
      * 传入需要生成代码的表名
      */
-    private static final List<String> TABLES = Arrays.asList("account_job", "job_record");
+    private static final List<String> TABLES = Arrays.asList("job_record_resource_mapping");
 
     private static final Map<String, Object> CUSTOM_MAP = new HashMap<>();
 
@@ -38,6 +38,7 @@ public class MyBatisPlusGenerator {
                 new EnumCreator().setEnumField("type").setEnumClassName("JobTypeConstants").setEnumClass("com.fit2cloud.common.constants.JobTypeConstants"),
                 new EnumCreator().setEnumField("status").setEnumClassName("JobStatusConstants").setEnumClass("com.fit2cloud.common.constants.JobStatusConstants")
         )));
+        map.put("job_record_resource_mapping",convert( Arrays.asList( new EnumCreator().setEnumField("job_type").setEnumClassName("JobTypeConstants").setEnumClass("com.fit2cloud.common.constants.JobTypeConstants"))));
         CUSTOM_MAP.put("useEnum", true);
         CUSTOM_MAP.put("useEnumMap", map);
     }

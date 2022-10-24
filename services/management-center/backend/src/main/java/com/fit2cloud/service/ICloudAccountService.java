@@ -9,7 +9,7 @@ import com.fit2cloud.controller.response.cloud_account.CloudAccountResponse;
 import com.fit2cloud.controller.response.cloud_account.PlatformResponse;
 import com.fit2cloud.dao.entity.CloudAccount;
 import com.fit2cloud.request.cloud_account.SyncRequest;
-import com.fit2cloud.response.cloud_account.AccountJobRecordResponse;
+import com.fit2cloud.response.JobRecordResourceResponse;
 import com.fit2cloud.response.cloud_account.ResourceCountResponse;
 import com.fit2cloud.response.cloud_account.SyncResource;
 
@@ -149,7 +149,7 @@ public interface ICloudAccountService extends IService<CloudAccount> {
      * @param cloudAccountIds
      * @return
      */
-    List<AccountJobRecordResponse> findCloudAcoountSyncStatus(List<String> cloudAccountIds);
+    List<JobRecordResourceResponse> findCloudAccountSyncStatus(List<String> cloudAccountIds);
 
     void sync(ArrayList<String> cloudAccountIds);
 
@@ -165,6 +165,6 @@ public interface ICloudAccountService extends IService<CloudAccount> {
      * @param syncRecordRequest
      * @return
      */
-    IPage<AccountJobRecordResponse> pageSyncRecord(SyncRecordRequest syncRecordRequest);
+    IPage<JobRecordResourceResponse> pageSyncRecord(SyncRecordRequest syncRecordRequest);
 
 }

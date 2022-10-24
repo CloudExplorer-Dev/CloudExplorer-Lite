@@ -2,4 +2,24 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.fit2cloud.dao.mapper.VmCloudServerMapper">
 
+    <resultMap id="serverResultMap" type="com.fit2cloud.dto.VmCloudServerDTO">
+        <id column="id" jdbcType="VARCHAR" property="id"/>
+        <result column="instance_uuid" jdbcType="VARCHAR" property="instanceUuid"/>
+        <result column="instance_name" jdbcType="VARCHAR" property="instanceName"/>
+        <result column="workspace_id" jdbcType="VARCHAR" property="workspaceId"/>
+        <result column="workspace_name" jdbcType="VARCHAR" property="workspaceName"/>
+        <result column="create_time" jdbcType="BIGINT" property="createTime"/>
+    </resultMap>
+
+    <select id="selectListByAccountId" resultMap="serverResultMap">
+        SELECT
+            vm_cloud_server.*,
+            workspace._name as workspace_name
+        FROM
+            vm_cloud_server LEFT JOIN workspace
+            on vm_cloud_server.workspace_id = workspace.id
+        WHERE
+            vm_cloud_server.account_id = #{accountId}
+            AND instance_status != 'deleted'
+    </select>
 </mapper>

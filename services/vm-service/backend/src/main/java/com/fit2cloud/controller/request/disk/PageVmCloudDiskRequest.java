@@ -28,7 +28,7 @@ public class PageVmCloudDiskRequest extends PageRequest {
     private String workspaceName;
     @ApiModelProperty("云账号名称")
     private String accountName;
-    @ApiModelProperty("所属虚拟机")
+    @ApiModelProperty("所属云主机")
     private String vmInstanceName;
     @Size(min = 2, max = 2, message = "{i18n.request.date.message}")
     @ApiModelProperty(value = "创建时间", example = "createTime[]=2121&createTime[]=21212")

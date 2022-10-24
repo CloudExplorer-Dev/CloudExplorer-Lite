@@ -42,10 +42,10 @@ import java.util.Objects;
  */
 public class HuaweiSyncCloudApi {
     /**
-     * 获取华为云虚拟机数据
+     * 获取华为云云主机数据
      *
-     * @param listVirtualMachineRequest 获取华为云虚拟机请求对象
-     * @return 虚拟机对象
+     * @param listVirtualMachineRequest 获取华为云云主机请求对象
+     * @return 云主机对象
      */
     public static List<F2CVirtualMachine> listVirtualMachine(ListVirtualMachineRequest listVirtualMachineRequest) {
         if (StringUtils.isEmpty(listVirtualMachineRequest.getRegionId())) {
@@ -56,7 +56,7 @@ public class HuaweiSyncCloudApi {
             listVirtualMachineRequest.setLimit(PageUtil.DefaultPageSize);
             listVirtualMachineRequest.setOffset(PageUtil.DefaultCurrentPage);
             EcsClient ecsClient = credential.getEcsClient(listVirtualMachineRequest.getRegionId());
-            // 分页查询虚拟机列表
+            // 分页查询云主机列表
             List<ServerDetail> instances = PageUtil.page(listVirtualMachineRequest, req -> listServersDetails(ecsClient, req),
                     ListServersDetailsResponse::getServers,
                     (req, res) -> req.getLimit() <= res.getServers().size(),
@@ -109,12 +109,12 @@ public class HuaweiSyncCloudApi {
     }
 
     /**
-     * 给虚拟机添加磁盘数据
+     * 给云主机添加磁盘数据
      *
      * @param credential        认证信息
      * @param regionId          区域信息
-     * @param f2CVirtualMachine 虚拟机对象
-     * @return 虚拟机对象
+     * @param f2CVirtualMachine 云主机对象
+     * @return 云主机对象
      */
     private static F2CVirtualMachine appendDisk(String credential, String regionId, F2CVirtualMachine f2CVirtualMachine) {
         ListDisksRequest listDisksRequest = new ListDisksRequest();
