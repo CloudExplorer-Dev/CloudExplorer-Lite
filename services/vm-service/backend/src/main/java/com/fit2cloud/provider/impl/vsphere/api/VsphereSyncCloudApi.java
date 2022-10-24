@@ -6,29 +6,20 @@ import com.fit2cloud.common.provider.impl.vsphere.utils.VsphereClient;
 import com.fit2cloud.provider.entity.F2CDisk;
 import com.fit2cloud.provider.entity.F2CImage;
 import com.fit2cloud.provider.entity.F2CVirtualMachine;
-import com.fit2cloud.provider.impl.vsphere.entity.F2CVsphereDatastore;
-import com.fit2cloud.provider.impl.vsphere.entity.F2CVsphereHost;
-import com.fit2cloud.provider.impl.vsphere.entity.F2CVsphereNetwork;
-import com.fit2cloud.provider.impl.vsphere.entity.request.VsphereNetworkRequest;
-import com.fit2cloud.provider.impl.vsphere.entity.request.VsphereVmBaseRequest;
-import com.fit2cloud.provider.impl.vsphere.entity.request.VsphereVmPowerRequest;
-import com.fit2cloud.provider.impl.vsphere.util.ContentLibraryUtil;
-import com.fit2cloud.provider.impl.vsphere.util.ResourceConstants;
-import com.fit2cloud.provider.impl.vsphere.util.VsphereUtil;
-import com.fit2cloud.provider.impl.vsphere.util.VsphereVmClient;
-import com.vmware.vim25.ConfigTarget;
-import com.vmware.vim25.DistributedVirtualPortgroupInfo;
-import com.vmware.vim25.VirtualDisk;
-import com.vmware.vim25.VirtualMachineConfigInfo;
+import com.fit2cloud.provider.impl.vsphere.entity.*;
+import com.fit2cloud.provider.impl.vsphere.entity.request.*;
+import com.fit2cloud.provider.impl.vsphere.util.*;
+import com.vmware.vim25.*;
 import com.vmware.vim25.mo.*;
-import io.reactivex.rxjava3.functions.Consumer;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.BeanUtils;
 import org.springframework.util.CollectionUtils;
 
 import java.util.*;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
 /**
  * Author: LiuDi
@@ -169,9 +160,7 @@ public class VsphereSyncCloudApi {
         } catch (Exception e) {
             throw new RuntimeException(e.getMessage(), e);
         } finally {
-            if (client != null) {
-                client.closeConnection();
-            }
+            closeConnection(client);
         }
         return f2CDiskList;
     }
@@ -187,48 +176,47 @@ public class VsphereSyncCloudApi {
         }
     }
 
-    public static boolean powerOff(VsphereVmPowerRequest req){
+    public static boolean powerOff(VsphereVmPowerRequest req) {
         VsphereVmClient client = req.getVsphereVmClient();
-        return operate(req.getUuid(),client::powerOff,client::closeConnection);
+        return operate(req.getUuid(), client::powerOff, client::closeConnection);
     }
 
-    public static boolean powerOn(VsphereVmPowerRequest req){
+    public static boolean powerOn(VsphereVmPowerRequest req) {
         VsphereVmClient client = req.getVsphereVmClient();
-        return operate(req.getUuid(),client::powerOn,client::closeConnection);
+        return operate(req.getUuid(), client::powerOn, client::closeConnection);
     }
 
-    public static boolean shutdownInstance(VsphereVmPowerRequest req){
+    public static boolean shutdownInstance(VsphereVmPowerRequest req) {
         VsphereVmClient client = req.getVsphereVmClient();
-        return operate(req.getUuid(),client::shutdownInstance,client::closeConnection);
+        return operate(req.getUuid(), client::shutdownInstance, client::closeConnection);
     }
 
-    public static boolean reboot(VsphereVmPowerRequest req){
+    public static boolean reboot(VsphereVmPowerRequest req) {
         VsphereVmClient client = req.getVsphereVmClient();
-        return operate(req.getUuid(),client::reboot,client::closeConnection);
+        return operate(req.getUuid(), client::reboot, client::closeConnection);
     }
 
-    public static boolean deleteInstance(VsphereVmPowerRequest req){
+    public static boolean deleteInstance(VsphereVmPowerRequest req) {
         VsphereVmClient client = req.getVsphereVmClient();
-        return operate(req.getUuid(),client::deleteInstance,client::closeConnection);
+        return operate(req.getUuid(), client::deleteInstance, client::closeConnection);
     }
 
-    public static boolean hardReboot(VsphereVmPowerRequest req){
+    public static boolean hardReboot(VsphereVmPowerRequest req) {
         VsphereVmClient client = req.getVsphereVmClient();
-        return operate(req.getUuid(),client::hardReboot,client::closeConnection);
+        return operate(req.getUuid(), client::hardReboot, client::closeConnection);
     }
 
-    private static boolean operate(String uuId, Function<String, Boolean> execMethod,Runnable closeConnection) {
-        try{
+    private static boolean operate(String uuId, Function<String, Boolean> execMethod, Runnable closeConnection) {
+        try {
             return execMethod.apply(uuId);
-        }catch (Exception e){
+        } catch (Exception e) {
             e.printStackTrace();
             logger.error("[Failed to operate virtual machine]", e);
-        }finally {
+        } finally {
             closeConnection.run();
         }
         return false;
     }
-
 
 
     public static List<F2CVsphereNetwork> getNetworks(VsphereNetworkRequest req) {
@@ -320,5 +308,107 @@ public class VsphereSyncCloudApi {
             }
         }
         return networks;
+    }
+
+    public static List<F2CDisk> createDisks(VsphereCreateDiskRequest request) {
+        VsphereDiskRequest diskRequest = new VsphereDiskRequest();
+        BeanUtils.copyProperties(request, diskRequest);
+        VsphereClient client = null;
+        try {
+            List<String> f2CDiskIds = getVmF2CDisks(diskRequest).stream().map(F2CDisk::getDiskId).collect(Collectors.toList());
+            client = diskRequest.getVsphereVmClient();
+            editDisk(request, client);
+            List<F2CDisk> afterF2CDisks = getVmF2CDisks(diskRequest);
+            List<F2CDisk> createF2cDisks = new ArrayList();
+            for (F2CDisk afterF2CDisk : afterF2CDisks) {
+                if (!f2CDiskIds.contains(afterF2CDisk.getDiskId())) {
+                    createF2cDisks.add(afterF2CDisk);
+                }
+            }
+            return createF2cDisks;
+        } catch (Exception e) {
+            throw new RuntimeException("CreateDisks Error!" + e.getMessage(), e);
+        } finally {
+            closeConnection(client);
+        }
+    }
+
+    public static boolean enlargeDisk(VsphereResizeDiskRequest resizeDiskRequest) {
+        VsphereDiskRequest diskRequest = new VsphereDiskRequest();
+        BeanUtils.copyProperties(resizeDiskRequest, diskRequest);
+        List<F2CDisk> f2CDisks = getVmF2CDisks(diskRequest);
+        List<F2CDisk> toEnlargeDisks = new ArrayList<>();
+
+        for (F2CDisk f2CDisk : f2CDisks) {
+            if (resizeDiskRequest.getDiskId().equalsIgnoreCase(f2CDisk.getDiskId())) {
+                if (f2CDisk.getSize() > resizeDiskRequest.getNewDiskSize()) {
+                    throw new RuntimeException("Disk size can not be reduced!");
+                }
+                f2CDisk.setSize(resizeDiskRequest.getNewDiskSize());  // 扩容后的size
+                toEnlargeDisks.add(f2CDisk);
+            }
+        }
+
+        VsphereCreateDiskRequest createDiskRequest = new VsphereCreateDiskRequest();
+        BeanUtils.copyProperties(resizeDiskRequest, createDiskRequest);
+        createDiskRequest.setDisks(toEnlargeDisks);
+        VsphereClient client = createDiskRequest.getVsphereVmClient();
+        editDisk(createDiskRequest, client);
+        return true;
+    }
+
+    public static List<F2CDisk> getVmF2CDisks(VsphereDiskRequest request) {
+        VsphereVmClient client = null;
+        try {
+            client = request.getVsphereVmClient();
+            return VsphereUtil.getVmDisks(client, request);
+        } catch (Exception e) {
+            throw new RuntimeException("GetVmF2CDisks Error!Please check the request parameters.");
+        } finally {
+            closeConnection(client);
+        }
+    }
+
+    private static void editDisk(VsphereCreateDiskRequest createDiskRequest, VsphereClient client) {
+        try {
+            VirtualMachine virtualMachine;
+            try {
+                virtualMachine = client.getVirtualMachineByUuId(createDiskRequest.getInstanceUuid());
+            } catch (Exception e) {
+                throw new RuntimeException(e.getMessage(), e);
+            }
+            if (virtualMachine == null) {
+                throw new RuntimeException("Cannot find virtual machine: " + createDiskRequest.getInstanceUuid());
+            }
+
+            List<F2CDisk> disks = createDiskRequest.getDisks();
+            if (CollectionUtils.isEmpty(disks)) {
+                throw new RuntimeException("Parameter error, please specify at least one disk object");
+            }
+
+            try {
+                List<VsphereDisk> vsphereDisks = VsphereDiskUtil.toVsphereDisk(disks);
+                Map<String, Datastore> datastoreMap = new HashMap<>();
+                for (VsphereDisk disk : vsphereDisks) {
+                    Datastore datastore;
+                    if (disk.getDatastoreName() != null && !"".equals(disk.getDatastoreName()) && !VsphereClient.FLAG_FOR_NULL_VALUE.equals(disk.getDatastoreName())) {
+                        datastore = datastoreMap.get(disk.getDatastoreName()) == null ? client.getDatastore(disk.getDatastoreName(), client.getDataCenter(virtualMachine)) : datastoreMap.get(disk.getDatastoreName());
+                        if (datastore == null) {
+                            throw new RuntimeException("Datastore not found: " + disk.getDatastoreName());
+                        }
+                        disk.setDatastore(datastore);
+                        datastoreMap.put(disk.getDatastoreName(), datastore);
+                    } else if (!VsphereClient.FLAG_FOR_NULL_VALUE.equals(disk.getDatastoreName())) {
+                        throw new RuntimeException("Datastore not specified");
+                    }
+                }
+
+                VsphereDiskUtil.createDiskForServer(virtualMachine, vsphereDisks);
+            } catch (Exception e) {
+                throw new RuntimeException(String.format("Virtual machine: %s ", createDiskRequest.getInstanceUuid()) + " create disk error" + ", message:" + e.getMessage());
+            }
+        } finally {
+            closeConnection(client);
+        }
     }
 }

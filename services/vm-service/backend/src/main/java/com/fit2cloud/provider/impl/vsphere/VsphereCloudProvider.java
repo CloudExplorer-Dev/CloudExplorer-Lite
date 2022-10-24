@@ -9,9 +9,7 @@ import com.fit2cloud.provider.entity.F2CImage;
 import com.fit2cloud.provider.entity.F2CVirtualMachine;
 import com.fit2cloud.provider.impl.vsphere.api.VsphereSyncCloudApi;
 import com.fit2cloud.provider.impl.vsphere.entity.F2CVsphereNetwork;
-import com.fit2cloud.provider.impl.vsphere.entity.request.VsphereNetworkRequest;
-import com.fit2cloud.provider.impl.vsphere.entity.request.VsphereVmBaseRequest;
-import com.fit2cloud.provider.impl.vsphere.entity.request.VsphereVmPowerRequest;
+import com.fit2cloud.provider.impl.vsphere.entity.request.*;
 
 import java.util.List;
 
@@ -72,5 +70,15 @@ public class VsphereCloudProvider extends AbstractCloudProvider<VsphereCredentia
 
     public List<F2CVsphereNetwork> getNetworks(String req) {
         return VsphereSyncCloudApi.getNetworks(JsonUtil.parseObject(req, VsphereNetworkRequest.class));
+    }
+
+    @Override
+    public boolean enlargeDisk(String req) {
+        return VsphereSyncCloudApi.enlargeDisk(JsonUtil.parseObject(req, VsphereResizeDiskRequest.class));
+    }
+
+    @Override
+    public List<F2CDisk> createDisks(String req) {
+        return VsphereSyncCloudApi.createDisks(JsonUtil.parseObject(req, VsphereCreateDiskRequest.class));
     }
 }

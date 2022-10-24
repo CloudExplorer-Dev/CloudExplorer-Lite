@@ -3,7 +3,6 @@ package com.fit2cloud.common.provider.impl.vsphere.utils;
 import com.fit2cloud.common.constants.Language;
 import com.vmware.vim25.*;
 import com.vmware.vim25.mo.*;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -34,6 +33,7 @@ public class VsphereClient {
     private String vCenterVersion;
 
     private static final String CLUSTER_TYPE_NAME = "ClusterComputeResource";
+    public static String FLAG_FOR_NULL_VALUE = "only-a-flag";
 
     public ServiceInstance getSi() {
         return si;
@@ -283,4 +283,24 @@ public class VsphereClient {
         return getResource(HostSystem.class, hostName);
     }
 
+    public Datastore getDatastore(String name, Datacenter datacenter) throws RuntimeException {
+        return getResource(Datastore.class, name, datacenter);
+    }
+
+    public List<VirtualDisk> getVirtualDisks(VirtualMachine vm) {
+        List<VirtualDisk> disks = new ArrayList<VirtualDisk>();
+        VirtualMachineConfigInfo config = vm.getConfig();
+        if (config != null) {
+            VirtualHardware hardware = config.getHardware();
+            VirtualDevice[] devices = hardware.getDevice();
+            if (devices != null && devices.length > 0) {
+                for (VirtualDevice device : devices) {
+                    if (device instanceof VirtualDisk) {
+                        disks.add((VirtualDisk) device);
+                    }
+                }
+            }
+        }
+        return disks;
+    }
 }

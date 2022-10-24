@@ -9,4 +9,6 @@ public class ResourceConstants {
     public static final String ipv4 = "ipv4";
     public static final String ipv6 = "ipv6";
     public static final String DualStack = "DualStack";//双栈
+
+    public static final String NO_INSTANCE = "no_instance";
 }
