@@ -31,6 +31,9 @@ public class PageUserRequest extends PageRequest implements PageOrderRequestInte
     @ApiModelProperty("角色名称，模糊匹配")
     private String roleName;
 
+    @ApiModelProperty("工作空间ID，精确匹配")
+    private String workspaceId;
+
     @Size(min = 2, max = 2, message = "{i18n.request.date.message}")
     @ApiModelProperty(value = "创建时间", example = "createTime[]=2121&createTime[]=21212")
     private List<Long> createTime;

@@ -86,7 +86,8 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
                 .like(StringUtils.isNotBlank(pageUserRequest.getName()), ColumnNameUtil.getColumnName(User::getName, true), pageUserRequest.getName())
                 .like(StringUtils.isNotBlank(pageUserRequest.getEmail()), ColumnNameUtil.getColumnName(User::getEmail, true), pageUserRequest.getEmail())
                 .eq(StringUtils.isNotBlank(pageUserRequest.getRoleId()), ColumnNameUtil.getColumnName(UserRole::getRoleId, true), pageUserRequest.getRoleId())
-                .like(StringUtils.isNotBlank(pageUserRequest.getRoleName()), ColumnNameUtil.getColumnName(Role::getName, true), pageUserRequest.getRoleName());
+                .like(StringUtils.isNotBlank(pageUserRequest.getRoleName()), ColumnNameUtil.getColumnName(Role::getName, true), pageUserRequest.getRoleName())
+                .eq(StringUtils.isNotBlank(pageUserRequest.getWorkspaceId()),ColumnNameUtil.getColumnName(UserRole::getSource,true),pageUserRequest.getWorkspaceId());
 
         if (CollectionUtils.isNotEmpty(pageUserRequest.getUpdateTime())) {
             wrapper.between(ColumnNameUtil.getColumnName(User::getUpdateTime, true), simpleDateFormat.format(pageUserRequest.getUpdateTime().get(0)), simpleDateFormat.format(pageUserRequest.getUpdateTime().get(1)));

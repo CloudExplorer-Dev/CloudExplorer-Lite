@@ -178,11 +178,13 @@ const deleteItem = (
  * 添加一个详情对象
  */
 const addItem = (formEl: FormInstance | undefined) => {
-  formEl?.validate((valid) => {
-    if (valid) {
-      form.value.workspaceDetails.push({ name: "", description: "" });
-    }
-  });
+  //不验证直接添加
+  form.value.workspaceDetails.push({ name: "", description: "" });
+  // formEl?.validate((valid) => {
+  //   if (valid) {
+  //     form.value.workspaceDetails.push({ name: "", description: "" });
+  //   }
+  // });
 };
 
 /**
