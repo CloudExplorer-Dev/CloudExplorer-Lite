@@ -107,7 +107,7 @@ public class OperatedLogAspect {
                     logVO.setOperated(annotation.operated().getOperate());
                     logVO.setOperatedName(OperatedTypeEnum.getDescriptionByOperate(logVO.getOperated()));
                     // 资源ID
-                    logVO.setRequestId(annotation.resourceId());
+                    logVO.setResourceId(annotation.resourceId());
                     // 资源类型
                     logVO.setResourceType(annotation.resourceType().getCode());
                     // 关联资源ID

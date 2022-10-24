@@ -320,7 +320,7 @@ const shutdown = (row: VmCloudServerVO) => {
     cancelButtonText: t("commons.btn.cancel", "取消"),
     type: "warning",
   }).then(() => {
-    VmCloudServerApi.shutdownInstance(row.id as string)
+    VmCloudServerApi.shutdownInstance(row.id as string, powerOff)
       .then((res) => {
         startOperateInterval([row]);
         console.log("-----" + res);
