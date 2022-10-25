@@ -58,7 +58,7 @@
             </goals>
             <configuration>
               <yarnInheritsProxyConfigFromMaven>false</yarnInheritsProxyConfigFromMaven>
-              <arguments>build:netwrok</arguments>
+              <arguments>build:network</arguments>
             </configuration>
           </execution>
         </executions>

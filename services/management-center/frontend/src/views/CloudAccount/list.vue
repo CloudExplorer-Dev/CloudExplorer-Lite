@@ -571,13 +571,13 @@ const tableConfig = ref<TableConfig>({
       "Search"
     ),
     TableOperations.buildButtons().newInstance(
-      t("cloud_account.sync", "同步资源"),
+      t("cloud_account.sync.syncResource", "同步资源"),
       "primary",
       openSync,
       "Refresh"
     ),
     TableOperations.buildButtons().newInstance(
-      t("cloud_account.sync", "同步账单"),
+      t("cloud_account.sync.syncBill", "同步账单"),
       "primary",
       openBillSync,
       "Refresh",

@@ -48,7 +48,7 @@
         qt.CALENDAR_NAME as calendar_name,
         qt.MISFIRE_INSTR as misfire_instr,
         qt.JOB_DATA as trigger_job_data,
-        qjd.JOB_CLASS_NAME as job_calss_name,
+        qjd.JOB_CLASS_NAME as job_class_name,
         qjd.IS_DURABLE as is_durable,
         qjd.IS_NONCONCURRENT as is_nonconcurrent,
         qjd.IS_UPDATE_DATA as is_update_data,

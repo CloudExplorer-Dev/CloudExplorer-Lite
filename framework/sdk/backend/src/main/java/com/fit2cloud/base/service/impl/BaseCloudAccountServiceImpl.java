@@ -88,11 +88,11 @@ public class BaseCloudAccountServiceImpl extends ServiceImpl<BaseCloudAccountMap
      * 获取默认账单设置参数
      *
      * @param accountId 云账号id
-     * @param plaform   供应商
+     * @param platform  供应商
      * @return
      */
-    private Map<String, Object> getDefaultBillJobSettingParams(String accountId, String plaform) {
-        Map<String, Object> defaultParams = Bill.getDefaultParams(plaform);
+    private Map<String, Object> getDefaultBillJobSettingParams(String accountId, String platform) {
+        Map<String, Object> defaultParams = Bill.getDefaultParams(platform);
         return JobConstants.CloudAccount.getCloudAccountBillSettingarams(accountId, defaultParams);
     }
 

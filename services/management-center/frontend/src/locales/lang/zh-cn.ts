@@ -77,6 +77,8 @@ const message = {
     },
     resource: "我的资源",
     sync: {
+      syncBill: "同步账单",
+      syncResource: "同步资源",
       synchronizing: "同步中",
       unit: "个",
       detail: "详情",
