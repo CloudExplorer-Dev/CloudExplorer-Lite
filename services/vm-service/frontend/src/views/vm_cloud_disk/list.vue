@@ -11,7 +11,7 @@ import {
 import { useI18n } from "vue-i18n";
 import type { SimpleMap } from "@commons/api/base/type";
 import { ElMessage, ElMessageBox } from "element-plus";
-import Attach from "@/views/VmCloudDisk/attach.vue";
+import Attach from "@/views/vm_cloud_disk/attach.vue";
 import { useRouter } from "vue-router";
 
 const { t } = useI18n();

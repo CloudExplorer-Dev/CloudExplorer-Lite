@@ -197,7 +197,7 @@ public class MenuConstants {
                                             .name("enlarge")
                                             .title("扩容")
                                             .path("/enlarge/:id")
-                                            .componentPath("/src/views/VmCloudDisk/enlarge.vue")
+                                            .componentPath("/src/views/vm_cloud_disk/enlarge.vue")
                                             .requiredPermission(new MenuPermission.Builder()
                                                     .role(RoleConstants.ROLE.ADMIN)
                                                     .permission(GROUP.CLOUD_DISK, OPERATE.READ)
