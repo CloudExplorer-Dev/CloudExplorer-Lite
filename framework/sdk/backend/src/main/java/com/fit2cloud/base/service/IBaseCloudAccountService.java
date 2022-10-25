@@ -62,6 +62,8 @@ public interface IBaseCloudAccountService extends IService<CloudAccount> {
 
     void sync(SyncRequest syncRequest);
 
+    void sync(String jobName,String groupName,String cloudAccountId,Map<String,Object> params);
+
     /**
      * 获取当前模块的资源计数
      *

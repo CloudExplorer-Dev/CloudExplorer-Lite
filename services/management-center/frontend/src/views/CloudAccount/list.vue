@@ -21,8 +21,6 @@ import { useRouter } from "vue-router";
 import { useI18n } from "vue-i18n";
 import type { FormInstance, FormRules } from "element-plus";
 import type { SimpleMap } from "@commons/api/base/type";
-import type { FormView } from "@commons/components/ce-form/type";
-import CeForm from "@commons/components/ce-form/index.vue";
 const { t } = useI18n();
 // 路由实例对象
 const router = useRouter();
@@ -245,13 +243,19 @@ const sync = (formEl: FormInstance | undefined) => {
       // 构建同步对象
       const syncSubmit: SyncRequest = {
         cloudAccountId: syncCloudAccountId.value,
-        regions: regions.value.filter((r) =>
-          syncForm.value.checkedRegions.includes(r.regionId)
-        ),
+        params: {
+          REGIONS: regions.value.filter((r) =>
+            syncForm.value.checkedRegions.includes(r.regionId)
+          ),
+        },
         syncJob: resources.value
           .filter((r) => syncForm.value.checkedResources.includes(r.jobName))
           .map((source) => {
-            return { module: source.module, jobName: source.jobName };
+            return {
+              module: source.module,
+              jobName: source.jobName,
+              jobGroup: source.jobGroup,
+            };
           }),
       };
       // 发送同步任务
@@ -396,6 +400,141 @@ const change = (selectRegion: Array<string>) => {
 };
 //-------------------------------点击按钮同步 END----------------
 
+//-------------------------------同步账单    START--------------
+
+/**
+ *当前时间
+ */
+const currentDate = new Date();
+
+/**
+ *获取12个月之前到现在的月份
+ */
+const months = ref<Array<string>>(
+  Array.from({ length: 12 })
+    .map((item, index) => {
+      return index;
+    })
+    .map((num) => {
+      const date = new Date(
+        currentDate.getFullYear(),
+        currentDate.getMonth() - (num as number)
+      );
+      const month = date.getMonth() + 1;
+      return (
+        date.getFullYear().toString() +
+        "-" +
+        (month.toString().length === 1
+          ? "0" + month.toString()
+          : month.toString())
+      );
+    })
+);
+
+// 校验规则
+const ruleFormSyncBill = ref<FormInstance>();
+/**
+ * 账单同步表单
+ */
+const billSyncForm = ref<{ months: Array<string> }>({ months: months.value });
+
+/**
+ *账单是否展示
+ */
+const billSyncView = ref<boolean>(false);
+/**
+ *打开账单同步
+ */
+const openBillSync = (row: CloudAccount) => {
+  billSyncView.value = true;
+  syncCloudAccountId.value = row.id;
+  billSyncForm.value.months = months.value;
+  billMonthAll.value = months.value.length === billSyncForm.value.months.length;
+};
+
+/**
+ * 校验规则
+ */
+const billSyncRules = ref<FormRules>({
+  months: [
+    {
+      required: true,
+      message: "同步月份必须选择",
+      trigger: "change",
+    },
+  ],
+});
+
+/**
+ * 全选选中或者取消触发函数
+ * @param selected 选中还是取消
+ */
+const handleCheckAllBillMonthChange = (selected: boolean) => {
+  billSyncForm.value.months = selected ? months.value : [];
+};
+
+/**
+ * 账单月份全选
+ */
+const billMonthAll = ref<boolean>(
+  months.value.length === billSyncForm.value.months.length
+);
+
+/**
+ * 月份改变调用函数
+ * @param checkedMonths 选中的月份
+ */
+const changeMonths = (checkedMonths: Array<string>) => {
+  billSyncForm.value.months = checkedMonths;
+  billMonthAll.value = months.value.length === checkedMonths.length;
+};
+
+/**
+ * 账单同步是否显示
+ * @param row 云账号
+ */
+const billSyncShow = (row: CloudAccount) => {
+  const showPlatforms = [
+    "fit2cloud_ali_platform",
+    "fit2cloud_huawei_platform",
+    "fit2cloud_tencent_platform",
+  ];
+  return showPlatforms.includes(row.platform);
+};
+
+/**
+ * 同步
+ * @param formEl
+ */
+const syncBill = (formEl: FormInstance | undefined) => {
+  if (!formEl) return;
+  formEl.validate((v) => {
+    if (v) {
+      // 构建同步对象
+      const syncSubmit: SyncRequest = {
+        cloudAccountId: syncCloudAccountId.value,
+        params: {
+          MONTHS: billSyncForm.value.months,
+        },
+        syncJob: [
+          {
+            jobName: "SYNC_BILL",
+            jobGroup: "CLOUD_ACCOUNT_BILL_SYNC_GROUP",
+            module: "bill-service",
+          },
+        ],
+      };
+      // 发送同步任务
+      cloudAccountApi.syncJob(syncSubmit).then((ok) => {
+        ElMessage.success("发送同步任务成功");
+      });
+    }
+    billSyncView.value = false;
+  });
+};
+
+//-------------------------------同步账单    END--------------------
+
 /**
  * 表单配置
  */
@@ -432,10 +571,18 @@ const tableConfig = ref<TableConfig>({
       "Search"
     ),
     TableOperations.buildButtons().newInstance(
-      t("cloud_account.sync", "同步"),
+      t("cloud_account.sync", "同步资源"),
       "primary",
       openSync,
       "Refresh"
+    ),
+    TableOperations.buildButtons().newInstance(
+      t("cloud_account.sync", "同步账单"),
+      "primary",
+      openBillSync,
+      "Refresh",
+      undefined,
+      billSyncShow
     ),
     TableOperations.buildButtons().newInstance(
       t("cloud_account.edit_job_message", "编辑定时任务"),
@@ -615,6 +762,7 @@ const syncAll = () => {
       <fu-table-column-select type="icon" :columns="columns" size="small" />
     </template>
   </ce-table>
+  <!-- 同步资源  START -->
   <el-dialog v-model="syncVisible" title="同步" width="50%">
     <el-form ref="ruleFormRef" :rules="syncRules" :model="syncForm">
       <layout-container :border="false">
@@ -697,6 +845,58 @@ const syncAll = () => {
       <span class="dialog-footer">
         <el-button @click="syncVisible = false">取消</el-button>
         <el-button type="primary" @click="sync(ruleFormRef)">同步</el-button>
+      </span>
+    </template>
+  </el-dialog>
+  <!-- 同步资源 END -->
+  <el-dialog v-model="billSyncView" title="同步账单" width="50%">
+    <el-form
+      ref="ruleFormSyncBill"
+      :rules="billSyncRules"
+      :model="billSyncForm"
+    >
+      <layout-container :border="false">
+        <template #header><h4>同步月份</h4></template
+        ><template #content>
+          <el-checkbox
+            style="margin-bottom: 10px"
+            v-model="billMonthAll"
+            @change="handleCheckAllBillMonthChange"
+            >全选</el-checkbox
+          >
+          <el-form-item prop="months">
+            <el-checkbox-group
+              @change="changeMonths"
+              v-model="billSyncForm.months"
+            >
+              <el-checkbox
+                :title="month"
+                v-for="month in months"
+                :key="month"
+                :label="month"
+                size="large"
+                ><span
+                  style="
+                    display: inline-block;
+                    width: 120px;
+                    overflow: hidden;
+                    text-overflow: ellipsis;
+                  "
+                >
+                  {{ month }}
+                </span>
+              </el-checkbox>
+            </el-checkbox-group>
+          </el-form-item>
+        </template>
+      </layout-container>
+    </el-form>
+    <template #footer>
+      <span class="dialog-footer">
+        <el-button @click="billSyncView = false">取消</el-button>
+        <el-button type="primary" @click="syncBill(ruleFormSyncBill)"
+          >同步</el-button
+        >
       </span>
     </template>
   </el-dialog>

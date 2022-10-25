@@ -57,17 +57,17 @@ public class BaseCloudAccountServiceImpl extends ServiceImpl<BaseCloudAccountMap
 
     @Override
     public void initCloudAccountJob(String cloudAccountId) {
+        CloudAccount cloudAccount = getById(cloudAccountId);
         Map<String, Object> defaultCloudAccountJobParams = getDefaultCloudAccountJobParams(cloudAccountId);
+        Map<String, Object> defaultBillJobSettingParams = getDefaultBillJobSettingParams(cloudAccountId, cloudAccount.getPlatform());
         JobModuleInfo moduleJobInfo = JobSettingConfig.getModuleJobInfo();
         moduleJobInfo.getJobDetails().stream().filter(job -> job.getJobGroup().equals(JobConstants.Group.CLOUD_ACCOUNT_RESOURCE_SYNC_GROUP.name()) || job.getJobGroup().equals(JobConstants.Group.CLOUD_ACCOUNT_BILL_SYNC_GROUP.name())).forEach(job -> {
             String cloudAccountJobName = JobConstants.CloudAccount.getCloudAccountJobName(job.getJobName(), cloudAccountId);
             if (!schedulerService.inclusionJobDetails(cloudAccountJobName, job.getJobGroup())) {
-                if (job instanceof JobInitSettingDto) {
-                    JobInitSettingDto jobInitSettingDto = (JobInitSettingDto) job;
-                    schedulerService.addJob(jobInitSettingDto.getJobHandler(), cloudAccountJobName, jobInitSettingDto.getJobGroup(), jobInitSettingDto.getDescription(), defaultCloudAccountJobParams, jobInitSettingDto.getStartTimeDay(), jobInitSettingDto.getEndTimeDay(), jobInitSettingDto.getTimeInterval(), jobInitSettingDto.getUnit(), jobInitSettingDto.getRepeatCount(), jobInitSettingDto.getWeeks());
-                } else if (job instanceof JobCronSettingDto) {
-                    JobCronSettingDto jobCronSettingDto = (JobCronSettingDto) job;
-                    schedulerService.addJob(jobCronSettingDto.getJobHandler(), cloudAccountJobName, jobCronSettingDto.getJobGroup(), jobCronSettingDto.getDescription(), CronUtils.createHourOfDay(jobCronSettingDto.getHoursOfDay()), defaultCloudAccountJobParams);
+                if (job instanceof JobInitSettingDto jobInitSettingDto) {
+                    schedulerService.addJob(jobInitSettingDto.getJobHandler(), cloudAccountJobName, jobInitSettingDto.getJobGroup(), jobInitSettingDto.getDescription(), job.getJobGroup().equals(JobConstants.Group.CLOUD_ACCOUNT_BILL_SYNC_GROUP.name()) ? defaultBillJobSettingParams : defaultCloudAccountJobParams, jobInitSettingDto.getStartTimeDay(), jobInitSettingDto.getEndTimeDay(), jobInitSettingDto.getTimeInterval(), jobInitSettingDto.getUnit(), jobInitSettingDto.getRepeatCount(), jobInitSettingDto.getWeeks());
+                } else if (job instanceof JobCronSettingDto jobCronSettingDto) {
+                    schedulerService.addJob(jobCronSettingDto.getJobHandler(), cloudAccountJobName, jobCronSettingDto.getJobGroup(), jobCronSettingDto.getDescription(), CronUtils.createHourOfDay(jobCronSettingDto.getHoursOfDay()), job.getJobGroup().equals(JobConstants.Group.CLOUD_ACCOUNT_BILL_SYNC_GROUP.name()) ? defaultBillJobSettingParams : defaultCloudAccountJobParams);
                 }
             }
         });
@@ -182,6 +182,7 @@ public class BaseCloudAccountServiceImpl extends ServiceImpl<BaseCloudAccountMap
             SyncResource syncResource = new SyncResource();
             syncResource.setResourceDesc(item.getDescription());
             syncResource.setJobName(item.getJobName());
+            syncResource.setJobGroup(item.getJobGroup());
             syncResource.setModule(moduleJobInfo.getModule());
             return syncResource;
         }).toList();
@@ -191,10 +192,16 @@ public class BaseCloudAccountServiceImpl extends ServiceImpl<BaseCloudAccountMap
     public void sync(SyncRequest syncRequest) {
         JobModuleInfo moduleJobInfo = JobSettingConfig.getModuleJobInfo();
         for (SyncRequest.Job job : syncRequest.getSyncJob()) {
-            moduleJobInfo.getJobDetails().stream().filter(j -> StringUtils.equals(job.getJobName(), j.getJobName()) && StringUtils.equals(j.getJobGroup(), JobConstants.Group.CLOUD_ACCOUNT_RESOURCE_SYNC_GROUP.name())).findAny().ifPresent(j -> {
+            moduleJobInfo.getJobDetails().stream().filter(j -> StringUtils.equals(job.getJobName(), j.getJobName()) && (StringUtils.equals(j.getJobGroup(), JobConstants.Group.CLOUD_ACCOUNT_RESOURCE_SYNC_GROUP.name()) || StringUtils.equals(j.getJobGroup(), JobConstants.Group.CLOUD_ACCOUNT_BILL_SYNC_GROUP.name()))).findAny().ifPresent(j -> {
                 exec(syncRequest, j);
             });
         }
+    }
+
+    @Override
+    public void sync(String jobName, String groupName, String cloudAccountId, Map<String, Object> params) {
+        JobModuleInfo moduleJobInfo = JobSettingConfig.getModuleJobInfo();
+        moduleJobInfo.getJobDetails().stream().filter(jobSettingParent -> jobSettingParent.getJobName().equals(jobName) && groupName.equals(jobSettingParent.getJobGroup())).findFirst().ifPresent(jobSettingParent -> exec(params, jobSettingParent, cloudAccountId));
     }
 
 
@@ -202,9 +209,24 @@ public class BaseCloudAccountServiceImpl extends ServiceImpl<BaseCloudAccountMap
     private void exec(SyncRequest syncRequest, JobSettingParent j) {
         Job jobHandler = j.getJobHandler().getConstructor().newInstance();
         if (jobHandler instanceof AsyncJob) {
-            HashMap<String, Object> params = new HashMap<>();
+            QuzrtzJobDetail jobDetails = schedulerService.getJobDetails(JobConstants.CloudAccount.getCloudAccountJobName(j.getJobName(), syncRequest.getCloudAccountId()), j.getJobGroup());
+            if (Objects.isNull(jobDetails)) {
+                initCloudAccountJob(syncRequest.getCloudAccountId());
+                jobDetails = schedulerService.getJobDetails(JobConstants.CloudAccount.getCloudAccountJobName(j.getJobName(), syncRequest.getCloudAccountId()), j.getJobGroup());
+            }
+            Map<String, Object> params = jobDetails.getTriggerJobData();
             params.put(JobConstants.CloudAccount.CLOUD_ACCOUNT_ID.name(), syncRequest.getCloudAccountId());
-            params.put(JobConstants.CloudAccount.REGIONS.name(), syncRequest.getRegions());
+            params.putAll(syncRequest.getParams());
+            ((AsyncJob) jobHandler).exec(params);
+        }
+    }
+
+    @SneakyThrows
+    private void exec(Map<String, Object> params, JobSettingParent j, String accountId) {
+        Job jobHandler = j.getJobHandler().getConstructor().newInstance();
+        QuzrtzJobDetail jobDetails = schedulerService.getJobDetails(JobConstants.CloudAccount.getCloudAccountJobName(j.getJobName(), accountId), j.getJobGroup());
+        params.putAll(jobDetails.getTriggerJobData());
+        if (jobHandler instanceof AsyncJob) {
             ((AsyncJob) jobHandler).exec(params);
         }
     }

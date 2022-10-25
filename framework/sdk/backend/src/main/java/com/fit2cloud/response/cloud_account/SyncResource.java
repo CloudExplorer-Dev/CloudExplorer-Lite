@@ -19,6 +19,10 @@ public class SyncResource {
      */
     private String jobName;
     /**
+     * 定时任务分组
+     */
+    private String jobGroup;
+    /**
      * 资源类型描述
      */
     private String resourceDesc;
