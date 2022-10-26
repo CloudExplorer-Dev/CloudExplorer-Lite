@@ -1,5 +1,4 @@
 <template>
-  {{ allData }}
   {{ _data }}
   <el-form
     ref="ruleFormRef"
@@ -21,6 +20,7 @@
           }"
         >
           <component
+            ref="formItemRef"
             :is="item.inputType"
             v-model="_data[item.field]"
             :all-data="allData"
@@ -35,6 +35,7 @@
       </template>
       <template v-else>
         <component
+          ref="formItemRef"
           :is="item.inputType"
           v-model="_data[item.field]"
           :all-data="allData"
@@ -75,6 +76,8 @@ import type { FormInstance } from "element-plus";
 import type { SimpleMap } from "@commons/api/base/type";
 
 const _loading = ref<boolean>(false);
+
+const formItemRef = ref<InstanceType<any> | null>(null);
 
 /**
  * 子组件可以修改data
@@ -181,6 +184,7 @@ function initForms(): void {
  * @param formItem
  */
 const change = (formItem: FormView) => {
+  console.log(formItem.field);
   _.forEach(props.allFormViewData, (item) => {
     if (_.includes(item.relationTrigger, formItem.field)) {
       //设置空值
