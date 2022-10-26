@@ -274,14 +274,10 @@ const tableConfig = ref<TableConfig>({
       }}</el-button>
     </template>
     <el-table-column type="selection" />
-    <el-table-column
-      prop="name"
-      :label="t('org_manage.org', '组织')"
-      sortable
-    />
+    <el-table-column prop="name" :label="t('commons.org', '组织')" sortable />
     <el-table-column
       prop="description"
-      :label="t('org_manage.description', '描述')"
+      :label="t('commons.description', '描述')"
       sortable
     />
     <el-table-column

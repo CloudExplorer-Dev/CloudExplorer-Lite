@@ -204,6 +204,10 @@ interface ResourceSync {
    */
   resourceDesc: string;
   /**
+   * 任务组
+   */
+  jobGroup: string;
+  /**
    * 是否选中
    */
   active?: boolean;
@@ -217,11 +221,11 @@ interface SyncRequest {
   /**
    * 同步任务
    */
-  syncJob: Array<{ module: string; jobName: string }>;
+  syncJob: Array<{ module: string; jobName: string; jobGroup: string }>;
   /**
-   * 区域
+   *参数
    */
-  regions: Array<Region>;
+  params: SimpleMap<any>;
 }
 /**
  * 更新云账号名称所需要的参数

@@ -5,10 +5,14 @@ import co.elastic.clients.elasticsearch._types.query_dsl.Query;
 import co.elastic.clients.elasticsearch._types.query_dsl.ScriptQuery;
 import co.elastic.clients.elasticsearch._types.query_dsl.TermQuery;
 import co.elastic.clients.json.JsonData;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.JavaType;
 import com.fit2cloud.base.entity.CloudAccount;
 import com.fit2cloud.base.entity.JobRecord;
 import com.fit2cloud.base.entity.JobRecordResourceMapping;
 import com.fit2cloud.base.service.IBaseJobRecordResourceMappingService;
+import com.fit2cloud.common.constants.JobConstants;
 import com.fit2cloud.common.constants.JobStatusConstants;
 import com.fit2cloud.common.constants.JobTypeConstants;
 import com.fit2cloud.common.constants.PlatformConstants;
@@ -21,6 +25,7 @@ import com.fit2cloud.service.BaseSyncService;
 import com.fit2cloud.service.SyncService;
 import io.reactivex.rxjava3.functions.BiFunction;
 import io.reactivex.rxjava3.functions.Consumer;
+import org.apache.commons.collections4.MapUtils;
 import org.springframework.data.elasticsearch.annotations.Document;
 import org.springframework.data.elasticsearch.client.elc.ElasticsearchTemplate;
 import org.springframework.data.elasticsearch.client.elc.NativeQueryBuilder;
@@ -68,13 +73,42 @@ public class SyncServiceImpl extends BaseSyncService implements SyncService {
 
     @Override
     public void syncBill(String cloudAccountId, List<String> months) {
+        syncBill(cloudAccountId, months, null);
+    }
+
+    /**
+     * 同步账单
+     *
+     * @param cloudAccountId 云账号id
+     * @param months         月份
+     * @param billSetting    账单设置
+     */
+    private void syncBill(String cloudAccountId, List<String> months, Map<String, Object> billSetting) {
         proxy(cloudAccountId,
                 months,
                 (p, r) -> syncBill(p, r, cloudAccountId),
-                this::getExecMethodArgs,
+                (a, month) -> this.getExecMethodArgs(a, month, billSetting),
                 this::saveBatchOrUpdate,
                 this::writeJobRecord,
                 this::deleteDataSource);
+    }
+
+    @Override
+    public void syncBill(Map<String, Object> params) {
+        if (!params.containsKey(JobConstants.CloudAccount.CLOUD_ACCOUNT_ID.name())) {
+            throw new RuntimeException("必要参数云账号不存在");
+        }
+        // 云账号id
+        String cloudAccountId = params.get(JobConstants.CloudAccount.CLOUD_ACCOUNT_ID.name()).toString();
+        Map<String, Object> billSetting = null;
+        if (params.containsKey(JobConstants.CloudAccount.BILL_SETTING.name())) {
+            billSetting = JsonUtil.parseObject(JsonUtil.toJSONString(params.get(JobConstants.CloudAccount.BILL_SETTING.name())), Map.class);
+        }
+        List<String> months = getMonths(billDay);
+        if (params.containsKey("MONTHS")) {
+            months = JsonUtil.parseArray(JsonUtil.toJSONString(params.get("MONTHS")), String.class);
+        }
+        syncBill(cloudAccountId, months, billSetting);
     }
 
     /**
@@ -129,10 +163,12 @@ public class SyncServiceImpl extends BaseSyncService implements SyncService {
      * @param month        月份
      * @return 执行函数参数
      */
-    private String getExecMethodArgs(CloudAccount cloudAccount, String month) {
+    private String getExecMethodArgs(CloudAccount cloudAccount, String month, Map<String, Object> billSetting) {
         Map<String, Object> defaultParams = null;
         try {
-            defaultParams = PlatformConstants.valueOf(cloudAccount.getPlatform()).getBillClass().getConstructor().newInstance().getDefaultParams();
+            if (MapUtils.isEmpty(billSetting)) {
+                defaultParams = PlatformConstants.valueOf(cloudAccount.getPlatform()).getBillClass().getConstructor().newInstance().getDefaultParams();
+            }
         } catch (Exception e) {
             throw new RuntimeException(e);
         }

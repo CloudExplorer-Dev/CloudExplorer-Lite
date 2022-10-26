@@ -43,6 +43,8 @@ const message = {
   },
   // 云账号相关国际化
   cloud_account: {
+    syncBill: "Synchronize bills",
+    syncResource: "Synchronize resources",
     name: "Cloud account name",
     name_placeholder: "Please enter the name of your cloud account",
     base_setting: "Basic settings",

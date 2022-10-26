@@ -3,6 +3,7 @@ package com.fit2cloud.quartz;
 import com.fit2cloud.common.log.utils.LogUtil;
 import com.fit2cloud.common.scheduler.handler.AsyncJob;
 import com.fit2cloud.common.utils.SpringUtil;
+import com.fit2cloud.service.SyncService;
 import jdk.jfr.Name;
 import org.quartz.Job;
 import org.springframework.stereotype.Component;
@@ -23,6 +24,8 @@ public class CloudAccountSyncJob {
         @Override
         protected void run(Map<String, Object> map) {
             LogUtil.info("开始同步账单: ", map);
+            SyncService syncService = SpringUtil.getBean(SyncService.class);
+            syncService.syncBill(map);
             LogUtil.info("同步账单结束:", map);
         }
     }

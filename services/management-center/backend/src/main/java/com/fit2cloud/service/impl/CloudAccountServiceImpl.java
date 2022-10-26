@@ -16,10 +16,7 @@ import com.fit2cloud.base.service.IBaseCloudAccountService;
 import com.fit2cloud.base.service.IBaseVmCloudDiskService;
 import com.fit2cloud.base.service.IBaseVmCloudImageService;
 import com.fit2cloud.base.service.IBaseVmCloudServerService;
-import com.fit2cloud.common.constants.CloudAccountConstants;
-import com.fit2cloud.common.constants.JobTypeConstants;
-import com.fit2cloud.common.constants.PlatformConstants;
-import com.fit2cloud.common.constants.RedisConstants;
+import com.fit2cloud.common.constants.*;
 import com.fit2cloud.common.exception.Fit2cloudException;
 import com.fit2cloud.common.form.vo.Form;
 import com.fit2cloud.common.log.constants.ResourceTypeEnum;
@@ -377,7 +374,7 @@ public class CloudAccountServiceImpl extends ServiceImpl<CloudAccountMapper, Clo
                 SyncRequest r = new SyncRequest();
                 r.setCloudAccountId(syncRequest.getCloudAccountId());
                 r.setSyncJob(jobs);
-                r.setRegions(syncRequest.getRegions());
+                r.setParams(syncRequest.getParams());
                 return r;
             } else {
                 return null;
@@ -444,7 +441,7 @@ public class CloudAccountServiceImpl extends ServiceImpl<CloudAccountMapper, Clo
 
     @Override
     public List<JobRecordResourceResponse> findCloudAccountSyncStatus(List<String> cloudAccountIds) {
-        return baseJobRecordResourceMappingMapper.findLastResourceJobRecord(cloudAccountIds, List.of(JobTypeConstants.CLOUD_ACCOUNT_SYNC_JOB.getCode(),JobTypeConstants.CLOUD_ACCOUNT_SYNC_BILL_JOB.getCode()));
+        return baseJobRecordResourceMappingMapper.findLastResourceJobRecord(cloudAccountIds, List.of(JobTypeConstants.CLOUD_ACCOUNT_SYNC_JOB.getCode(), JobTypeConstants.CLOUD_ACCOUNT_SYNC_BILL_JOB.getCode()));
     }
 
     @Override
@@ -464,9 +461,11 @@ public class CloudAccountServiceImpl extends ServiceImpl<CloudAccountMapper, Clo
         List<SyncResource> moduleResourceJob = getModuleResourceJob();
         // 获取区域
         List<Credential.Region> regionByAccountId = listRegions(cloudAccountId);
-        syncRequest.setRegions(regionByAccountId);
+        syncRequest.setParams(new HashMap<>() {{
+            put(JobConstants.CloudAccount.REGIONS.name(), regionByAccountId);
+        }});
         syncRequest.setCloudAccountId(cloudAccountId);
-        syncRequest.setSyncJob(moduleResourceJob.stream().map(r -> new SyncRequest.Job(r.getModule(), r.getJobName())).toList());
+        syncRequest.setSyncJob(moduleResourceJob.stream().map(r -> new SyncRequest.Job(r.getModule(), r.getJobName(), JobConstants.Group.CLOUD_ACCOUNT_RESOURCE_SYNC_GROUP.name())).toList());
         sync(syncRequest);
     }
 

@@ -1,6 +1,7 @@
 package com.fit2cloud.service;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * {@code @Author:张少虎}
@@ -17,4 +18,11 @@ public interface SyncService {
     void syncBill(String cloudAccountId, String... months);
 
     void syncBill(String cloudAccountId, List<String> months);
+
+    /**
+     * 同步账单
+     *
+     * @param params 账单参数
+     */
+    void syncBill(Map<String, Object> params);
 }

@@ -7,7 +7,7 @@ import type {
 } from "./type";
 import tinycolor from "@ctrl/tinycolor";
 // 引入默认推断数据
-import inferDatas from "./defaultInferDatas";
+import inferData from "./defaultInferData";
 // 引入默认keyValue数据
 import keyValueData from "./defaultKeyValueData";
 // 引入设置对象
@@ -30,7 +30,7 @@ class Theme {
   /**
    * 外推数据
    */
-  inferDatas: Array<InferData>;
+  inferData: Array<InferData>;
   /**
    *是否是第一次初始化
    */
@@ -47,11 +47,11 @@ class Theme {
   constructor(
     themeSetting: ThemeSetting,
     keyValue: KeyValueData,
-    inferDatas: Array<InferData>
+    inferData: Array<InferData>
   ) {
     this.themeSetting = themeSetting;
     this.keyValue = keyValue;
-    this.inferDatas = inferDatas;
+    this.inferData = inferData;
     this.isFirstWriteStyle = true;
     this.colorWhite = "#ffffff";
     this.colorBlack = "#000000";
@@ -121,7 +121,7 @@ class Theme {
         .map((key: string) => {
           if (key === "light" || key === "dark") {
             return inferSetting[key]
-              .map((l) => {
+              .map((l: any) => {
                 const varName = this.getVarName(
                   setting,
                   inferSetting.type,
@@ -138,7 +138,7 @@ class Theme {
                     .toHexString(),
                 };
               })
-              .reduce((pre, next) => {
+              .reduce((pre: any, next: any) => {
                 return { ...pre, ...next };
               }, {});
           }
@@ -195,7 +195,7 @@ class Theme {
    */
   tokeyValueStyle = () => {
     return {
-      ...this.mapInferData(this.themeSetting, this.inferDatas),
+      ...this.mapInferData(this.themeSetting, this.inferData),
       ...this.mapKeyValue(this.themeSetting, this.keyValue),
     };
   };
@@ -275,13 +275,13 @@ class Theme {
    */
   updateInferData = (updateInferData: UpdateInferData) => {
     Object.keys(updateInferData).forEach((key) => {
-      const findInfer = this.inferDatas.find((itemInfer) => {
+      const findInfer = this.inferData.find((itemInfer) => {
         return itemInfer.key === key;
       });
       if (findInfer) {
         findInfer.value = updateInferData[key];
       } else {
-        this.inferDatas.push({ key, value: updateInferData[key] });
+        this.inferData.push({ key, value: updateInferData[key] });
       }
     });
   };
@@ -308,7 +308,7 @@ const install = (app: App) => {
   app.config.globalProperties.theme = new Theme(
     setting,
     keyValueData,
-    inferDatas
+    inferData
   );
 };
 export default { install };

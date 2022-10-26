@@ -7,6 +7,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * @Author:张少虎
@@ -28,9 +29,9 @@ public class SyncRequest {
     private List<Job> syncJob;
 
     /**
-     * 同步区域
+     * 同步参数
      */
-    private List<Credential.Region> regions;
+    private Map<String, Object> params;
 
     @Data
     @AllArgsConstructor
@@ -46,5 +47,8 @@ public class SyncRequest {
          */
         @ApiModelProperty(value = "任务名称", notes = "任务名称")
         private String jobName;
+
+        @ApiModelProperty(value = "任务组", notes = "任务组")
+        private String jobGroup;
     }
 }
