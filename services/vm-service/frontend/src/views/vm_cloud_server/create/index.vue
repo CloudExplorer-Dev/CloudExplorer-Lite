@@ -129,9 +129,24 @@ const formatData = computed(() => {
 const cloudAccount = ref<CloudAccount | null>(null);
 
 function next() {
-  if (active.value++ > steps.value.length - 2) {
-    active.value = steps.value.length - 2;
+  //todo validate
+  const promises = [];
+  _.forEach(ceForms.value, (formRef: InstanceType<typeof CeFormItem>) => {
+    promises.push(formRef.validate());
+  });
+  if (ceForms_0.value) {
+    promises.push(ceForms_0.value.validate());
   }
+
+  console.log(promises);
+  console.log(_.flatten(promises));
+
+  Promise.all(_.flatten(promises)).then((ok) => {
+    console.log(ok);
+    if (active.value++ > steps.value.length - 2) {
+      active.value = steps.value.length - 2;
+    }
+  });
 }
 
 function before() {

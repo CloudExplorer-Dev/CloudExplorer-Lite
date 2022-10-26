@@ -126,9 +126,11 @@ function remove(index: number) {
 function validate(): Promise<boolean> {
   return new Promise((resolve, reject) => {
     if (data.value.length === 0) {
-      return false;
+      return reject(false);
     }
-    return _.every(data.value, (disk) => disk.size > 0);
+    return _.every(data.value, (disk) => disk.size > 0)
+      ? resolve(true)
+      : reject(false);
   });
 }
 

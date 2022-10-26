@@ -198,14 +198,23 @@ const change = (formItem: FormView) => {
 // 校验实例对象
 const ruleFormRef = ref<FormInstance>();
 
-// 提交表单
-const submit = (exec: (formData: any) => void) => {
-  if (!ruleFormRef.value) return;
-  ruleFormRef.value.validate((valid) => {
-    if (exec && valid) {
+// validate
+function validate(): Array<Promise<boolean>> {
+  const list: Array<Promise<boolean>> = [];
+
+  //默认表单校验
+  if (ruleFormRef.value) {
+    list.push(ruleFormRef.value.validate());
+  }
+  //执行自定义的校验方法（需要组件实现validate方法并defineExpose暴露）
+  _.forEach(formItemRef.value, (formRef) => {
+    if (formRef?.validate) {
+      list.push(formRef.validate());
     }
   });
-};
+
+  return list;
+}
 
 onMounted(() => {
   console.log("init!!!");
@@ -214,6 +223,7 @@ onMounted(() => {
 
 // 暴露获取当前表单数据函数
 defineExpose({
+  validate,
   optionListRefresh,
   groupId: props.groupId,
 });
