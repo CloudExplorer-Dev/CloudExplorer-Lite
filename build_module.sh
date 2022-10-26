@@ -94,7 +94,7 @@ declare -A f2c_moduleNames
 
 function getServices() {
   _framework=("eureka" "gateway")
-  for _dir in $_framework
+  for _dir in ${_framework[@]}
   do
     f2c_moduleNames["$_dir"]=$_dir
     f2c_modules["$_dir"]=$project_base_path"/framework/"$_dir
