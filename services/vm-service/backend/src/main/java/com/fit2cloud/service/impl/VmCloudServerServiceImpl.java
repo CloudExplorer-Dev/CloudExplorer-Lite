@@ -1,13 +1,12 @@
 package com.fit2cloud.service.impl;
 
-import co.elastic.clients.elasticsearch.ml.Job;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.fit2cloud.autoconfigure.ThreadPoolConfig;
 import com.fit2cloud.base.entity.CloudAccount;
 import com.fit2cloud.base.entity.JobRecord;
-import com.fit2cloud.base.entity.User;
 import com.fit2cloud.base.entity.VmCloudServer;
 import com.fit2cloud.base.mapper.BaseJobRecordResourceMappingMapper;
 import com.fit2cloud.base.mapper.BaseVmCloudServerMapper;
@@ -19,7 +18,10 @@ import com.fit2cloud.common.log.constants.OperatedTypeEnum;
 import com.fit2cloud.common.log.constants.ResourceTypeEnum;
 import com.fit2cloud.common.log.utils.LogUtil;
 import com.fit2cloud.common.provider.util.CommonUtil;
-import com.fit2cloud.common.utils.*;
+import com.fit2cloud.common.utils.ColumnNameUtil;
+import com.fit2cloud.common.utils.CurrentUserUtils;
+import com.fit2cloud.common.utils.DateUtil;
+import com.fit2cloud.common.utils.JsonUtil;
 import com.fit2cloud.constants.ErrorCodeConstants;
 import com.fit2cloud.controller.request.vm.BatchOperateVmRequest;
 import com.fit2cloud.controller.request.vm.PageVmCloudServerRequest;
@@ -66,7 +68,7 @@ public class VmCloudServerServiceImpl extends ServiceImpl<BaseVmCloudServerMappe
     @Resource
     private IBaseCloudAccountService cloudAccountService;
     @Resource
-    private CommonThreadPool commonThreadPool;
+    private ThreadPoolConfig threadPoolConfig;
     @Resource
     private JobRecordCommonService jobRecordCommonService;
 
@@ -230,7 +232,7 @@ public class VmCloudServerServiceImpl extends ServiceImpl<BaseVmCloudServerMappe
     private void operate(String vmId,String jobDescription, BiFunction<ICloudProvider, String,Boolean> execMethod,
                           String beforeStatus, String afterStatus,Consumer<VmCloudServer> modifyResource,
                          Function<InitJobRecordDTO, JobRecord> iniJobMethod,Consumer<JobRecord> modifyJobRecord) {
-        commonThreadPool.addTask(()->{
+          threadPoolConfig.workThreadPool().execute(()->{
             try{
                 LocalDateTime createTime = DateUtil.getSyncTime();
                 QueryWrapper<VmCloudServer> wrapper = new QueryWrapper<VmCloudServer>()

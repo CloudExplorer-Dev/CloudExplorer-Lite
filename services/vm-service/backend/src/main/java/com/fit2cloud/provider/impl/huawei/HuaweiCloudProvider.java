@@ -1,6 +1,5 @@
 package com.fit2cloud.provider.impl.huawei;
 
-import com.fit2cloud.common.exception.Fit2cloudException;
 import com.fit2cloud.common.utils.JsonUtil;
 import com.fit2cloud.provider.AbstractCloudProvider;
 import com.fit2cloud.provider.ICloudProvider;
@@ -9,6 +8,7 @@ import com.fit2cloud.provider.entity.F2CImage;
 import com.fit2cloud.provider.entity.F2CVirtualMachine;
 import com.fit2cloud.provider.impl.huawei.api.HuaweiSyncCloudApi;
 import com.fit2cloud.provider.impl.huawei.entity.credential.HuaweiVmCredential;
+import com.fit2cloud.provider.impl.huawei.entity.request.HuaweiInstanceRequest;
 import com.fit2cloud.provider.impl.huawei.entity.request.ListDisksRequest;
 import com.fit2cloud.provider.impl.huawei.entity.request.ListImageRequest;
 import com.fit2cloud.provider.impl.huawei.entity.request.ListVirtualMachineRequest;
@@ -39,36 +39,42 @@ public class HuaweiCloudProvider extends AbstractCloudProvider<HuaweiVmCredentia
 
     @Override
     public boolean powerOff(String req) {
-        throw new Fit2cloudException(20001,"Not implemented");
+        HuaweiInstanceRequest request = JsonUtil.parseObject(req, HuaweiInstanceRequest.class);
+        request.setForce(true);
+        return HuaweiSyncCloudApi.powerOff(request);
     }
 
     @Override
     public boolean powerOn(String req) {
-        throw new Fit2cloudException(20001,"Not implemented");
+        return HuaweiSyncCloudApi.powerOn(JsonUtil.parseObject(req, HuaweiInstanceRequest.class));
     }
 
     @Override
     public boolean shutdownInstance(String req){
-        throw new Fit2cloudException(20001,"Not implemented");
+        return HuaweiSyncCloudApi.powerOff(JsonUtil.parseObject(req, HuaweiInstanceRequest.class));
     }
 
     @Override
     public boolean rebootInstance(String req){
-        throw new Fit2cloudException(20001,"Not implemented");
+        return HuaweiSyncCloudApi.rebootInstance(JsonUtil.parseObject(req, HuaweiInstanceRequest.class));
     }
 
     @Override
     public boolean deleteInstance(String req){
-        throw new Fit2cloudException(20001,"Not implemented");
+        return HuaweiSyncCloudApi.deleteInstance(JsonUtil.parseObject(req, HuaweiInstanceRequest.class));
     }
 
     @Override
     public boolean hardShutdownInstance(String req) {
-        throw new Fit2cloudException(20001,"Not implemented");
+        HuaweiInstanceRequest request = JsonUtil.parseObject(req, HuaweiInstanceRequest.class);
+        request.setForce(true);
+        return HuaweiSyncCloudApi.powerOff(request);
     }
 
     @Override
     public boolean hardRebootInstance(String req) {
-        throw new Fit2cloudException(20001,"Not implemented");
+        HuaweiInstanceRequest request = JsonUtil.parseObject(req, HuaweiInstanceRequest.class);
+        request.setForce(true);
+        return HuaweiSyncCloudApi.rebootInstance(request);
     }
 }
