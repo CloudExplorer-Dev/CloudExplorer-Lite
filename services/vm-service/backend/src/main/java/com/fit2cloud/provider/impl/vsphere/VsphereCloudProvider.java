@@ -88,12 +88,6 @@ public class VsphereCloudProvider extends AbstractCloudProvider<VsphereCredentia
         return VsphereSyncCloudApi.getClusters(request);
     }
 
-    public List<VsphereTemplate> getTemplates(String req) {
-        VsphereVmCreateRequest request= JsonUtil.parseObject(req, VsphereVmCreateRequest.class);
-        request.setRegionId(request.getRegion());
-        return VsphereSyncCloudApi.getTemplates(request);
-    }
-
     public List<F2CVsphereNetwork> getNetworks(String req) {
         return VsphereSyncCloudApi.getNetworks(JsonUtil.parseObject(req, VsphereNetworkRequest.class));
     }

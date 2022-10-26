@@ -22,7 +22,7 @@ public class MyBatisPlusGenerator {
     /**
      * 传入需要生成代码的表名
      */
-    private static final List<String> TABLES = Arrays.asList("job_record_resource_mapping");
+    private static final List<String> TABLES = Arrays.asList("vm_cloud_image");
 
     private static final Map<String, Object> CUSTOM_MAP = new HashMap<>();
 

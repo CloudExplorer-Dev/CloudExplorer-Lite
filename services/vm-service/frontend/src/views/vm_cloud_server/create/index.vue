@@ -3,7 +3,7 @@
     <el-header>
       <el-steps :active="active" finish-status="success">
         <el-step
-          v-for="step in _.filter(steps, (s) => s.step > 0)"
+          v-for="step in stepInfos"
           :key="step.step"
           :title="step.name"
         />
@@ -13,8 +13,6 @@
       <p class="description">{{ steps[active + 1]?.description }}</p>
 
       data: {{ data }}
-      <br />
-      formatData: {{ formatData }}
 
       <template v-if="steps[active + 1] && active !== steps.length - 2">
         <layout-container
@@ -30,10 +28,9 @@
             </p>
           </template>
           <template #content>
-            {{ group }}
             <CeFormItem
               ref="ceForms"
-              :other-params="cloudAccount"
+              :other-params="otherParams"
               :group-id="group.group.toFixed()"
               v-model:form-view-data="group.forms"
               v-model:all-form-view-data="formData.forms"
@@ -50,10 +47,10 @@
     <el-footer>
       <div class="footer">
         <div class="footer-form">
-          <template v-if="steps[0]?.groups[0]?.forms">
+          <template v-if="hasFooterForm">
             <CeFormItem
               ref="ceForms_0"
-              :other-params="cloudAccount"
+              :other-params="otherParams"
               group-id="0"
               v-model:form-view-data="steps[0].groups[0].forms"
               v-model:all-form-view-data="formData.forms"
@@ -212,6 +209,18 @@ const steps = computed<Array<StepObj>>(() => {
   return _.sortBy(tempSteps, (step) => step.step);
 });
 
+const stepInfos = computed<Array<StepObj>>(() => {
+  return _.filter(steps.value, (s) => s.step > 0);
+});
+
+const hasFooterForm = computed<boolean>(() => {
+  return steps.value[0]?.groups[0]?.forms !== undefined;
+});
+
+const otherParams = computed(() => {
+  return { ...cloudAccount.value, accountId: cloudAccount.value?.id };
+});
+
 /**
  * 接收子组件传递过来需要刷新optionList的field名
  * @param field
@@ -224,8 +233,6 @@ function optionListRefresh(field: string) {
   console.log(groupId);
   //调用子组件对应的刷新方法
   if (ceForms.value && groupId) {
-    console.log("in");
-
     if (groupId === "0") {
       ceForms_0.value?.optionListRefresh(field);
     } else {

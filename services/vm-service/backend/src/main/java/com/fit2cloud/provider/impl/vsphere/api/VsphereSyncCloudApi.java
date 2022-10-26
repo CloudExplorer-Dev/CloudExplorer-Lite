@@ -3,6 +3,7 @@ package com.fit2cloud.provider.impl.vsphere.api;
 import com.fit2cloud.common.log.utils.LogUtil;
 import com.fit2cloud.common.platform.credential.impl.VsphereCredential;
 import com.fit2cloud.common.provider.impl.vsphere.utils.VsphereClient;
+import com.fit2cloud.common.utils.JsonUtil;
 import com.fit2cloud.provider.entity.F2CDisk;
 import com.fit2cloud.provider.entity.F2CImage;
 import com.fit2cloud.provider.entity.F2CVirtualMachine;
@@ -88,7 +89,8 @@ public class VsphereSyncCloudApi {
                 String id = vm.getName();
                 Datacenter dataCenter = client.getDataCenter(vm);
                 String dataCenterName = dataCenter == null ? null : dataCenter.getName();
-                f2CImageList.add(new F2CImage(id, name, desc, os, dataCenterName, VsphereUtil.getTemplateDiskSizeInGB(client, name), null));
+                List<VirtualDisk> diskList = VsphereUtil.getTemplateDisks(client, name);
+                f2CImageList.add(new F2CImage(id, name, desc, os, dataCenterName, VsphereUtil.getTemplateDiskSizeInGB(diskList), null).setDiskInfos(JsonUtil.toJSONString(diskList)));
             }
 
             f2CImageList.addAll(getContentLibrariesImages(req));
@@ -107,49 +109,6 @@ public class VsphereSyncCloudApi {
             closeConnection(client);
         }
         return f2CImageList;
-    }
-
-    public static List<VsphereTemplate> getTemplates(VsphereVmBaseRequest req) {
-        VsphereVmClient client = null;
-        try {
-            List<VsphereTemplate> templates = new ArrayList<>();
-
-            //req.setRegionId(null);
-            client = req.getVsphereVmClient();
-
-            List<VirtualMachine> list = client.listTemplates();
-            for (VirtualMachine vm : list) {
-                int tmpDiskSize = 0;
-                VirtualMachineConfigInfo conf = vm.getConfig();
-                if (conf != null) {
-                    VirtualDevice[] devices = conf.getHardware().getDevice();
-                    for (VirtualDevice device : devices) {
-                        if (device instanceof VirtualDisk) {
-                            VirtualDisk vd = (VirtualDisk) device;
-                            tmpDiskSize += Math.round(vd.getCapacityInKB() / (1024 * 1024.0));
-                        }
-                    }
-                }
-                templates.add(new VsphereTemplate(vm.getName(), client.hasVmTools(vm), tmpDiskSize));
-            }
-
-            templates.sort((o1, o2) -> {
-                if (o1 == null) {
-                    return -1;
-                }
-                if (o2 == null) {
-                    return 1;
-                }
-                return o1.getName().compareTo(o2.getName());
-            });
-            return templates;
-        } catch (Exception e) {
-            throw new RuntimeException(e.getMessage(), e);
-        } finally {
-            if (client != null) {
-                client.closeConnection();
-            }
-        }
     }
 
     /**

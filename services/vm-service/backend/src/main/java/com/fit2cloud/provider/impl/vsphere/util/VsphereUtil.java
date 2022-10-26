@@ -30,6 +30,7 @@ public class VsphereUtil {
 
     /**
      * 将 vsphere 云主机对象转换为 F2C 云管云主机对象
+     *
      * @param vm
      * @param client
      * @param hostCache
@@ -172,6 +173,7 @@ public class VsphereUtil {
 
     /**
      * 将 vsphere 磁盘对象转为 F2C 云管磁盘对象
+     *
      * @param vm
      * @param disk
      * @param hostSystemMorVal
@@ -389,27 +391,33 @@ public class VsphereUtil {
         return 0;
     }
 
-    /**
-     * 计算模板磁盘大小
-     *
-     * @param client
-     * @param name
-     * @return 单位（GB）
-     */
-    public static long getTemplateDiskSizeInGB(VsphereVmClient client, String name) {
-        long diskSum = 0;
+    public static List<VirtualDisk> getTemplateDisks(VsphereVmClient client, String name) {
+        List<VirtualDisk> disks = new ArrayList<>();
         try {
             VirtualMachine template = client.getTemplateFromAll(name);
             VirtualMachineConfigInfo templateConfig = template.getConfig();
             VirtualDevice[] devices = templateConfig.getHardware().getDevice();
             for (VirtualDevice device : devices) {
                 if (device instanceof VirtualDisk) {
-                    VirtualDisk vd = (VirtualDisk) device;
-                    long capacityInKB = vd.getCapacityInKB();
-                    diskSum = diskSum + capacityInKB / MB;
+                    disks.add((VirtualDisk) device);
                 }
             }
         } catch (Exception ignored) {
+        }
+        return disks;
+    }
+
+
+    /**
+     * 计算模板磁盘大小
+     *
+     * @return 单位（GB）
+     */
+    public static long getTemplateDiskSizeInGB(List<VirtualDisk> devices) {
+        long diskSum = 0;
+        for (VirtualDisk device : devices) {
+            long capacityInKB = device.getCapacityInKB();
+            diskSum = diskSum + capacityInKB / MB;
 
         }
         return diskSum;

@@ -4,11 +4,14 @@ import com.fit2cloud.common.form.annotaion.FormGroupInfo;
 import com.fit2cloud.common.form.annotaion.FormStepInfo;
 import com.fit2cloud.common.form.vo.FormObject;
 import com.fit2cloud.common.utils.JsonUtil;
+import com.fit2cloud.common.utils.SpringUtil;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.reflect.FieldUtils;
 import org.apache.commons.lang3.reflect.MethodUtils;
+import org.springframework.util.ReflectionUtils;
 
 import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
@@ -71,6 +74,7 @@ public class FormUtil {
             if (StringUtils.isNotEmpty(annotation.method())) {
                 map.put("method", annotation.method());
                 map.put("clazz", annotation.clazz().getName());
+                map.put("serviceMethod", annotation.serviceMethod());
             }
             if (hasStep) {
                 map.put("step", stepAnnotationMap.get(annotation.step()) != null ? annotation.step() : 0);
@@ -101,9 +105,15 @@ public class FormUtil {
      * @param params 参数
      * @return 执行返回值
      */
-    public static Object exec(String clazz, String method, Map<String, Object> params) {
+    public static Object exec(String clazz, boolean serviceMethod, String method, Map<String, Object> params) {
         try {
-            return MethodUtils.invokeMethod(Class.forName(clazz).getConstructor().newInstance(), true, method, JsonUtil.toJSONString(params));
+            if (serviceMethod) {
+                return MethodUtils.invokeMethod(SpringUtil.getBean(Class.forName(clazz)), true, method, JsonUtil.toJSONString(params));
+            } else {
+                return MethodUtils.invokeMethod(Class.forName(clazz).getConstructor().newInstance(), true, method, JsonUtil.toJSONString(params));
+            }
+
+
         } catch (Exception e) {
             throw new RuntimeException(e);
         }

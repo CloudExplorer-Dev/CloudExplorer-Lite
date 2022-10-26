@@ -10,24 +10,36 @@
     v-loading="_loading"
   >
     <div v-for="item in formViewData" :key="item.field">
-      <el-form-item
-        :label="item.label"
-        :prop="item.field"
-        :rules="{
-          message: item.label + '不能为空',
-          trigger: 'blur',
-          required: item.required,
-        }"
-      >
+      <template v-if="item.label">
+        <el-form-item
+          :label="item.label"
+          :prop="item.field"
+          :rules="{
+            message: item.label + '不能为空',
+            trigger: 'blur',
+            required: item.required,
+          }"
+        >
+          <component
+            style="width: 75%"
+            @change="change(item)"
+            v-model="_data[item.field]"
+            :is="item.inputType"
+            :form-item="item"
+            v-bind="{ ...JSON.parse(item.attrs) }"
+          ></component>
+        </el-form-item>
+      </template>
+      <template v-else>
         <component
-          style="width: 75%"
-          @change="change(item)"
-          v-model="_data[item.field]"
           :is="item.inputType"
-          :formItem="item"
-          v-bind="{ ...JSON.parse(item.attrs) }"
+          :form-item="item"
+          :field="item.field"
+          :all-form-view-data="allFormViewData"
+          v-model:data="_data[item.field]"
+          :allData="allData"
         ></component>
-      </el-form-item>
+      </template>
     </div>
   </el-form>
 </template>
@@ -58,6 +70,7 @@ import type { FormInstance } from "element-plus";
 import type { SimpleMap } from "@commons/api/base/type";
 
 const _loading = ref<boolean>(false);
+
 /**
  * 子组件可以修改data
  */
@@ -109,7 +122,13 @@ function initOptionList(formItem: FormView | undefined, data: any): void {
       if (formItem.group?.toFixed() === props.groupId) {
         console.log(props.groupId, formItem.field);
         formApi
-          .getResourceMyMethod(formItem.clazz, formItem.method, _temp, _loading)
+          .getResourceMethod(
+            formItem.serviceMethod,
+            formItem.clazz,
+            formItem.method,
+            _temp,
+            _loading
+          )
           .then((ok) => {
             formItem.optionList = ok.data;
           });
@@ -157,17 +176,12 @@ function initForms(): void {
  * @param formItem
  */
 const change = (formItem: FormView) => {
-  console.log(formItem.field);
   _.forEach(props.allFormViewData, (item) => {
     if (_.includes(item.relationTrigger, formItem.field)) {
-      console.log(item);
       //设置空值
-      const temp = { ..._data.value };
-      _.set(temp, item.field, undefined);
-      console.log(temp);
-      _data.value = temp;
+      _.set(_data.value, item.field, undefined);
       //设置列表
-      initOptionList(item, temp);
+      initOptionList(item, _data.value);
     }
   });
 };

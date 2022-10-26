@@ -1,33 +1,34 @@
 package com.fit2cloud.service.impl;
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.fit2cloud.base.entity.VmCloudImage;
 import com.fit2cloud.base.mapper.BaseVmCloudImageMapper;
 import com.fit2cloud.common.utils.ColumnNameUtil;
 import com.fit2cloud.common.utils.CurrentUserUtils;
-import com.fit2cloud.controller.request.disk.PageVmCloudDiskRequest;
+import com.fit2cloud.common.utils.JsonUtil;
 import com.fit2cloud.controller.request.images.PageVmCloudImageRequest;
-import com.fit2cloud.dao.mapper.VmCloudDiskMapper;
+import com.fit2cloud.controller.request.images.VmCloudImageRequest;
 import com.fit2cloud.dao.mapper.VmCloudImageMapper;
-import com.fit2cloud.dto.VmCloudDiskDTO;
 import com.fit2cloud.dto.VmCloudImageDTO;
 import com.fit2cloud.service.IVmCloudImageService;
-import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.fit2cloud.service.OrganizationCommonService;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
+import java.util.List;
 
 /**
  * <p>
- *  服务实现类
+ * 服务实现类
  * </p>
  *
  * @author fit2cloud
- * @since 
+ * @since
  */
 @Service
 public class VmCloudImageServiceImpl extends ServiceImpl<BaseVmCloudImageMapper, VmCloudImage> implements IVmCloudImageService {
@@ -36,6 +37,7 @@ public class VmCloudImageServiceImpl extends ServiceImpl<BaseVmCloudImageMapper,
     private OrganizationCommonService organizationCommonService;
     @Resource
     private VmCloudImageMapper imageMapper;
+
     @Override
     public IPage<VmCloudImageDTO> pageVmCloudImage(PageVmCloudImageRequest request) {
         // 普通用户
@@ -50,11 +52,11 @@ public class VmCloudImageServiceImpl extends ServiceImpl<BaseVmCloudImageMapper,
         // 构建查询参数
         QueryWrapper<VmCloudImageDTO> wrapper = addQuery(request);
         Page<VmCloudImageDTO> page = new Page<>(request.getCurrentPage(), request.getPageSize(), true);
-        IPage<VmCloudImageDTO> result = imageMapper.pageList(page,wrapper);
+        IPage<VmCloudImageDTO> result = imageMapper.pageList(page, wrapper);
         return result;
     }
 
-    private QueryWrapper<VmCloudImageDTO> addQuery(PageVmCloudImageRequest request){
+    private QueryWrapper<VmCloudImageDTO> addQuery(PageVmCloudImageRequest request) {
         QueryWrapper<VmCloudImageDTO> wrapper = new QueryWrapper<>();
         //排序
         if (request.getOrder() != null && StringUtils.isNotEmpty(request.getOrder().getColumn())) {
@@ -62,9 +64,22 @@ public class VmCloudImageServiceImpl extends ServiceImpl<BaseVmCloudImageMapper,
         } else {
             wrapper.orderBy(true, false, "vm_cloud_image.update_time");
         }
-        wrapper.like(StringUtils.isNotBlank(request.getWorkspaceId()),"vm_cloud_image.workspace_id",request.getWorkspaceId());
-        wrapper.like(StringUtils.isNotBlank(request.getImageName()),"vm_cloud_image.image_name",request.getImageName());
-        wrapper.like(StringUtils.isNotBlank(request.getAccountName()),"cloud_account.name",request.getAccountName());
+        wrapper.like(StringUtils.isNotBlank(request.getWorkspaceId()), "vm_cloud_image.workspace_id", request.getWorkspaceId());
+        wrapper.like(StringUtils.isNotBlank(request.getImageName()), "vm_cloud_image.image_name", request.getImageName());
+        wrapper.like(StringUtils.isNotBlank(request.getAccountName()), "cloud_account.name", request.getAccountName());
         return wrapper;
+    }
+
+    @Override
+    public List<VmCloudImage> listVmCloudImage(String request) {
+        return listVmCloudImage(JsonUtil.parseObject(request, VmCloudImageRequest.class));
+    }
+
+    public List<VmCloudImage> listVmCloudImage(VmCloudImageRequest request) {
+        LambdaQueryWrapper<VmCloudImage> queryWrapper = new LambdaQueryWrapper<VmCloudImage>()
+                .eq(StringUtils.isNotBlank(request.getAccountId()), VmCloudImage::getAccountId, request.getAccountId())
+                .eq(StringUtils.isNotBlank(request.getRegion()), VmCloudImage::getRegion, request.getRegion());
+
+        return list(queryWrapper);
     }
 }
