@@ -1,6 +1,5 @@
 package com.fit2cloud.provider.impl.tencent;
 
-import com.fit2cloud.common.exception.Fit2cloudException;
 import com.fit2cloud.common.platform.credential.impl.TencentCredential;
 import com.fit2cloud.common.utils.JsonUtil;
 import com.fit2cloud.provider.AbstractCloudProvider;
@@ -37,37 +36,43 @@ public class TencentCloudProvider extends AbstractCloudProvider<TencentCredentia
 
     @Override
     public boolean powerOff(String req) {
-        throw new Fit2cloudException(20001,"Not implemented");
+        TencentInstanceRequest request = JsonUtil.parseObject(req,TencentInstanceRequest.class);
+        request.setForce(true);
+        return TencetSyncCloudApi.powerOff(request);
     }
 
     @Override
     public boolean powerOn(String req) {
-        throw new Fit2cloudException(20001,"Not implemented");
+        return TencetSyncCloudApi.powerOn(JsonUtil.parseObject(req,TencentInstanceRequest.class));
     }
 
     @Override
     public boolean shutdownInstance(String req){
-        throw new Fit2cloudException(20001,"Not implemented");
+        return TencetSyncCloudApi.powerOff(JsonUtil.parseObject(req,TencentInstanceRequest.class));
     }
 
     @Override
     public boolean rebootInstance(String req){
-        throw new Fit2cloudException(20001,"Not implemented");
+        return TencetSyncCloudApi.rebootInstance(JsonUtil.parseObject(req,TencentInstanceRequest.class));
     }
 
     @Override
     public boolean deleteInstance(String req){
-        throw new Fit2cloudException(20001,"Not implemented");
+        return TencetSyncCloudApi.deleteInstance(JsonUtil.parseObject(req,TencentInstanceRequest.class));
     }
 
     @Override
     public boolean hardShutdownInstance(String req) {
-        throw new Fit2cloudException(20001,"Not implemented");
+        TencentInstanceRequest request = JsonUtil.parseObject(req,TencentInstanceRequest.class);
+        request.setForce(true);
+        return TencetSyncCloudApi.powerOff(request);
     }
 
     @Override
     public boolean hardRebootInstance(String req) {
-        throw new Fit2cloudException(20001,"Not implemented");
+        TencentInstanceRequest request = JsonUtil.parseObject(req,TencentInstanceRequest.class);
+        request.setForce(true);
+        return TencetSyncCloudApi.rebootInstance(request);
     }
 
     @Override

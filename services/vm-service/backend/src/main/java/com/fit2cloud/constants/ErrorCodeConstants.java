@@ -50,7 +50,11 @@ public enum ErrorCodeConstants {
     VM_OPERATE_FAIL(200100102, "云主机操作失败"),
     VM_BATCH_OPERATE_FAIL(200100103, "云主机批量操作失败"),
     SELECT_AT_LEAST_ONE_VM(200100104,"至少选择一个云主机"),
-    NOT_SUPPORTED_TEMPORARILY(200100105, "暂不支持该操作"),;
+    NOT_SUPPORTED_TEMPORARILY(200100105, "暂不支持该操作"),
+    VM_POWER_ON_FAIL(200100106, "云主机开机失败"),
+    VM_POWER_OFF_FAIL(200100107, "云主机关机失败"),
+    VM_REBOOT_FAIL(200100108, "云主机重启失败"),
+    VM_DELETE_FAIL(200100109, "云主机删除失败");
 
 
 

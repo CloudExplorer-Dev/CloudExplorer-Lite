@@ -77,7 +77,7 @@ public class VmCloudServerController {
 
     @ApiOperation(value = "删除",notes = "删除云主机")
     @PostMapping("delete/{serverId}")
-    @OperatedLog(resourceType= ResourceTypeEnum.CLOUD_SERVER,operated = OperatedTypeEnum.SHUTDOWN,
+    @OperatedLog(resourceType= ResourceTypeEnum.CLOUD_SERVER,operated = OperatedTypeEnum.DELETE,
             resourceId = "#serverId",
             param = "#serverId")
     public ResultHolder<Boolean> deleteInstance(@PathVariable String serverId) {
@@ -86,7 +86,7 @@ public class VmCloudServerController {
 
     @ApiOperation(value = "批量操作",notes = "批量操作云主机")
     @PostMapping("batchOperate")
-    @OperatedLog(resourceType= ResourceTypeEnum.CLOUD_SERVER,operated = OperatedTypeEnum.BATCH_OPERATE)
+    @OperatedLog(resourceType= ResourceTypeEnum.CLOUD_SERVER,operated = OperatedTypeEnum.BATCH_OPERATE,content = "#request.getOperate()")
     public ResultHolder<Boolean> batchOperate(@RequestBody BatchOperateVmRequest request) {
         return ResultHolder.success(iVmCloudServerService.batchOperate(request));
     }
