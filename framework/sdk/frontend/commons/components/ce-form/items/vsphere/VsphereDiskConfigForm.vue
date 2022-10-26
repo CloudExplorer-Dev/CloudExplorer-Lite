@@ -1,5 +1,7 @@
-<template v-bind="$attrs">
+<template>
   VsphereDiskConfigForm.vue
+
+  {{ modelValue }}
 
   <div style="display: flex; flex-direction: row; flex-wrap: wrap">
     <div
@@ -38,14 +40,14 @@
 </template>
 <script setup lang="ts">
 const props = defineProps<{
-  formItem?: FormView;
+  modelValue: any;
+  allData?: any;
   allFormViewData?: Array<FormView>;
   field: string;
-  data?: any;
-  allData?: any;
+  formItem?: FormView;
 }>();
 
-const emit = defineEmits(["update:data", "change"]);
+const emit = defineEmits(["update:modelValue", "change"]);
 
 import { computed, onUpdated, useAttrs, ref, watch, onMounted } from "vue";
 import _ from "lodash";
@@ -53,12 +55,12 @@ import type { FormView } from "@commons/components/ce-form/type";
 
 const list = computed({
   get() {
-    return props.data ? props.data : [];
+    return props.modelValue ? props.modelValue : [];
   },
   set(value) {
     console.log(value);
-    _.set(props.data, props.field, value);
-    //emit("update:data", value);
+    //_.set(props.data, props.field, value);
+    emit("update:modelValue", value);
   },
 });
 //const list = ref([{}]);
@@ -79,24 +81,24 @@ function remove(index: number) {
 }
 
 onMounted(() => {
-  if (props.data == undefined) {
-    _.set(props.data, props.field, []);
-    //emit("update:data", []);
+  if (props.modelValue == undefined) {
+    //_.set(props.data, props.field, []);
+    emit("update:modelValue", []);
   }
 });
 
 /**
  * 监听模版变化，获取值
  */
-watch(
-  () => props.allData.template,
-  (data) => {
-    console.log(data);
-    _.set(props.data, props.field, []);
-    //emit("update:data", []);
-  },
-  { deep: true }
-);
+// watch(
+//   () => props.allData.template,
+//   (data) => {
+//     console.log(data);
+//     // _.set(props.data, props.field, []);
+//     emit("update:modelValue", []);
+//   },
+//   { deep: true }
+// );
 
 defineExpose({
   onChange,

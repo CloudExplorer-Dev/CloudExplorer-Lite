@@ -21,23 +21,28 @@
           }"
         >
           <component
-            style="width: 75%"
-            @change="change(item)"
-            v-model="_data[item.field]"
             :is="item.inputType"
+            v-model="_data[item.field]"
+            :all-data="allData"
+            :all-form-view-data="allFormViewData"
+            :field="item.field"
             :form-item="item"
+            style="width: 75%"
             v-bind="{ ...JSON.parse(item.attrs) }"
+            @change="change(item)"
           ></component>
         </el-form-item>
       </template>
       <template v-else>
         <component
           :is="item.inputType"
-          :form-item="item"
-          :field="item.field"
+          v-model="_data[item.field]"
+          :all-data="allData"
           :all-form-view-data="allFormViewData"
-          v-model:data="_data[item.field]"
-          :allData="allData"
+          :field="item.field"
+          :form-item="item"
+          v-bind="{ ...JSON.parse(item.attrs) }"
+          @change="change(item)"
         ></component>
       </template>
     </div>
