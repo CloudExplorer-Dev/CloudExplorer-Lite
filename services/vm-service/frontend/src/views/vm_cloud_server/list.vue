@@ -511,20 +511,20 @@ const handleAction = (actionObj: any) => {
       :label="$t('commons.name')"
     >
       <template #default="scope">
-        <el-link type="primary" @click="showDetail(scope.row)">
-          <span>
+          <span @click="showDetail(scope.row)" class="name-span-class">
             {{ scope.row.instanceName }}
           </span>
-        </el-link>
       </template>
     </el-table-column>
     <el-table-column
       prop="organizationName"
       :label="$t('commons.org')"
+      :show="false"
     ></el-table-column>
     <el-table-column
       prop="workspaceName"
       :label="$t('commons.workspace')"
+      :show="false"
     ></el-table-column>
     <el-table-column
       prop="accountName"
@@ -627,4 +627,12 @@ const handleAction = (actionObj: any) => {
     </template>
   </ce-table>
 </template>
-<style lang="scss" scoped></style>
+<style lang="scss" scoped>
+.name-span-class{
+  color:#4d809c;
+}
+.name-span-class:hover{
+  color: #79bbff;
+  cursor: pointer;
+}
+</style>

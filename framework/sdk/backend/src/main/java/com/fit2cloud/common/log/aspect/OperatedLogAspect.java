@@ -14,7 +14,6 @@ import com.fit2cloud.common.utils.CurrentUserUtils;
 import com.fit2cloud.common.utils.JsonUtil;
 import com.fit2cloud.controller.handler.ResultHolder;
 import com.fit2cloud.dto.UserDto;
-import com.fit2cloud.request.LoginRequest;
 import io.swagger.annotations.ApiOperation;
 import org.apache.commons.lang3.StringUtils;
 import org.aspectj.lang.ProceedingJoinPoint;
@@ -97,21 +96,29 @@ public class OperatedLogAspect {
                 String paramStr = "";
                 // 日志注解内容
                 if(annotation!=null){
-                    // 参数解析
-                    paramStr = JsonUtil.toJSONString(args);
-                    if(annotation.content()!=null){
-                        // 操作内容解析
-                        logVO.setContent(SpelUtil.getElValueByKey(pjd,annotation.content()));
-                    }
                     // 操作
                     logVO.setOperated(annotation.operated().getOperate());
-                    logVO.setOperatedName(OperatedTypeEnum.getDescriptionByOperate(logVO.getOperated()));
-                    // 资源ID
-                    logVO.setResourceId(annotation.resourceId());
+                    String operatedName = OperatedTypeEnum.getDescriptionByOperate(logVO.getOperated());
+                    // 参数解析
+                    paramStr = JsonUtil.toJSONString(args);
+                    if(StringUtils.isNotEmpty(annotation.content())){
+                        // 操作内容解析
+                        logVO.setContent(SpelUtil.getElValueByKey(pjd,annotation.content()));
+                        operatedName += "-"+OperatedTypeEnum.getDescriptionByOperate(logVO.getContent());
+                    }
+                    logVO.setOperatedName(operatedName);
+
                     // 资源类型
                     logVO.setResourceType(annotation.resourceType().getCode());
-                    // 关联资源ID
-                    logVO.setJoinResourceId(annotation.joinResourceId());
+                    if(StringUtils.isNotEmpty(annotation.resourceId())){
+                        // 资源ID
+                        logVO.setResourceId(SpelUtil.getElValueByKey(pjd,annotation.resourceId()));
+                    }
+                    if(StringUtils.isNotEmpty(annotation.joinResourceId())){
+                        // 关联资源ID
+                        logVO.setJoinResourceId(SpelUtil.getElValueByKey(pjd,annotation.joinResourceId()));
+                    }
+
                 }else{
                     logVO.setOperated(apiOperation.value());
                     logVO.setOperatedName(apiOperation.value());
