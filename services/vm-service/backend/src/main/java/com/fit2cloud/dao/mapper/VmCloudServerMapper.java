@@ -40,7 +40,7 @@ public interface VmCloudServerMapper extends BaseMapper<VmCloudServerDTO> {
      * @param accountId
      * @return
      */
-    List<VmCloudServerDTO> selectListByAccountId(@Param("accountId") String accountId);
+    List<VmCloudServerDTO> selectListByAccountId(@Param("accountId") String accountId,@Param("zone") String zone);
 
     /**
      * 根据ID查询云主机

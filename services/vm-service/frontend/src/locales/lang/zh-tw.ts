@@ -16,7 +16,8 @@ const message = {
       confirm_reboot: "確認重啓",
       confirm_delete: "確認删除",
       confirm_batch_operate: "確認執行批量{0}操作",
-      check_vm_tools_status_confirm_shutdown: "當前虛擬機器未安裝VmTools或VmTools未運行，無法軟關機，若繼續操作則關閉電源，是否繼續？",
+      check_vm_tools_status_confirm_shutdown:
+        "當前虛擬機器未安裝VmTools或VmTools未運行，無法軟關機，若繼續操作則關閉電源，是否繼續？",
     },
   },
   vm_cloud_image: {
@@ -48,7 +49,7 @@ const message = {
       disk_size: "磁盤大小",
     },
     btn: {
-      create:"添加磁盤",
+      create: "添加磁盤",
       enlarge: "擴容",
       uninstall: "卸載",
       mount: "掛載",
@@ -60,6 +61,7 @@ const message = {
     },
     msg: {
       canceled: "已取消{0}",
+      select_one: "至少選擇一條記錄",
     },
   },
 };

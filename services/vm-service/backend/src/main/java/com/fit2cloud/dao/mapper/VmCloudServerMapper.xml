@@ -14,12 +14,13 @@
     <select id="selectListByAccountId" resultMap="serverResultMap">
         SELECT
             vm_cloud_server.*,
-            workspace._name as workspace_name
+            workspace._name AS workspace_name
         FROM
-            vm_cloud_server LEFT JOIN workspace
-            on vm_cloud_server.workspace_id = workspace.id
+            vm_cloud_server
+            LEFT JOIN workspace ON vm_cloud_server.workspace_id = workspace.id
         WHERE
             vm_cloud_server.account_id = #{accountId}
+            AND vm_cloud_server.zone = #{zone}
             AND instance_status != 'deleted'
     </select>
 </mapper>

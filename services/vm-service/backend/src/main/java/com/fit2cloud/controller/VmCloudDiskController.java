@@ -8,9 +8,7 @@ import com.fit2cloud.common.log.constants.ResourceTypeEnum;
 import com.fit2cloud.common.validator.annnotaion.CustomValidated;
 import com.fit2cloud.common.validator.handler.ExistHandler;
 import com.fit2cloud.controller.handler.ResultHolder;
-import com.fit2cloud.controller.request.disk.AttachVmCloudDiskRequest;
-import com.fit2cloud.controller.request.disk.EnlargeVmCloudDiskRequest;
-import com.fit2cloud.controller.request.disk.PageVmCloudDiskRequest;
+import com.fit2cloud.controller.request.disk.*;
 import com.fit2cloud.dto.VmCloudDiskDTO;
 import com.fit2cloud.dto.VmCloudServerDTO;
 import com.fit2cloud.service.IVmCloudDiskService;
@@ -42,10 +40,10 @@ public class VmCloudDiskController {
         return ResultHolder.success(diskService.pageVmCloudDisk(pageVmCloudDiskRequest));
     }
 
-    @ApiOperation(value = "根据云账号查询虚拟机")
-    @GetMapping("/listVmByAccountId/{accountId}")
-    public ResultHolder<List<VmCloudServerDTO>> cloudServerlist(@PathVariable("accountId") String accountId) {
-        return ResultHolder.success(diskService.cloudServerList(accountId));
+    @ApiOperation(value = "查询可以挂载磁盘的虚拟机")
+    @GetMapping("/listVm")
+    public ResultHolder<List<VmCloudServerDTO>> cloudServerList(ListVmRequest req) {
+        return ResultHolder.success(diskService.cloudServerList(req));
     }
 
     @ApiOperation(value = "根据ID查询磁盘信息")
@@ -86,5 +84,26 @@ public class VmCloudDiskController {
                                         @CustomValidated(mapper = BaseVmCloudDiskMapper.class, handler = ExistHandler.class, message = "{i18n.primary.key.not.exist}", exist = false)
                                         @PathVariable("id") String id) {
         return ResultHolder.success(diskService.delete(id));
+    }
+
+    @ApiOperation(value = "批量挂载磁盘")
+    @PutMapping("batchAttach")
+    @OperatedLog(resourceType = ResourceTypeEnum.CLOUD_DISK, operated = OperatedTypeEnum.BATCH_ATTACH_DISK, param = "#{req}")
+    public ResultHolder<Boolean> batchAttach(@RequestBody BatchAttachVmCloudDiskRequest req) {
+        return ResultHolder.success(diskService.batchAttach(req.getIds(), req.getInstanceUuid(), req.getDeleteWithInstance()));
+    }
+
+    @ApiOperation(value = "批量卸载磁盘")
+    @PutMapping("batchDetach")
+    @OperatedLog(resourceType = ResourceTypeEnum.CLOUD_DISK, operated = OperatedTypeEnum.BATCH_DETACH_DISK, param = "#{ids}")
+    public ResultHolder<Boolean> batchDetach(@RequestBody String[] ids) {
+        return ResultHolder.success(diskService.batchDetach(ids));
+    }
+
+    @ApiOperation(value = "批量删除磁盘")
+    @DeleteMapping("batchDelete")
+    @OperatedLog(resourceType = ResourceTypeEnum.CLOUD_DISK, operated = OperatedTypeEnum.BATCH_DELETE_DISK, param = "#{ids}")
+    public ResultHolder<Boolean> batchDelete(@RequestBody String[] ids) {
+        return ResultHolder.success(diskService.batchDelete(ids));
     }
 }

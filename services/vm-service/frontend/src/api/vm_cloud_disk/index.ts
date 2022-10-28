@@ -6,6 +6,8 @@ import type {
   ListVmCloudDiskRequest,
   AttachDiskRequest,
   EnlargeDiskRequest,
+  BatchAttachDiskRequest,
+  ListVmRequest,
 } from "./type";
 import type { Ref } from "vue";
 import type { VmCloudServerVO } from "@/api/vm_cloud_server/type";
@@ -74,13 +76,49 @@ export function deleteDisk(
 }
 
 /**
- * 根据云账号获取虚拟机列表
+ * 批量挂载磁盘
+ * @param attachDiskRequest
+ * @param loading
  */
-export function listVmByAccountId(
-  accountId: string,
+export function batchAttach(
+  attachDiskRequest: BatchAttachDiskRequest,
+  loading?: Ref<boolean>
+): Promise<Result<boolean>> {
+  return put("api/disk/batchAttach", null, attachDiskRequest, loading);
+}
+
+/**
+ * 批量卸载磁盘
+ * @param ids
+ * @param loading
+ */
+export function batchDetach(
+  ids: string[],
+  loading?: Ref<boolean>
+): Promise<Result<boolean>> {
+  return put("api/disk/batchDetach", null, ids, loading);
+}
+
+/**
+ * 批量删除磁盘
+ * @param ids
+ * @param loading
+ */
+export function batchDeleteDisk(
+  ids: string[],
+  loading?: Ref<boolean>
+): Promise<Result<boolean>> {
+  return del("api/disk/batchDelete", null, ids, loading);
+}
+
+/**
+ * 查询可以挂载的虚拟机列表
+ */
+export function listVm(
+  req: ListVmRequest,
   loading?: Ref<boolean>
 ): Promise<Result<VmCloudServerVO[]>> {
-  return get("api/disk/listVmByAccountId/" + accountId, null, loading);
+  return get("api/disk/listVm", req, loading);
 }
 
 /**
@@ -99,7 +137,10 @@ const VmCloudDiskApi = {
   attach,
   detach,
   deleteDisk,
-  listVmByAccountId,
+  listVm,
   showCloudDiskById,
+  batchAttach,
+  batchDetach,
+  batchDeleteDisk,
 };
 export default VmCloudDiskApi;
