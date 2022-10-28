@@ -9,9 +9,7 @@ import com.fit2cloud.provider.entity.F2CImage;
 import com.fit2cloud.provider.entity.F2CVirtualMachine;
 import com.fit2cloud.provider.impl.huawei.api.HuaweiSyncCloudApi;
 import com.fit2cloud.provider.impl.huawei.entity.credential.HuaweiVmCredential;
-import com.fit2cloud.provider.impl.huawei.entity.request.ListDisksRequest;
-import com.fit2cloud.provider.impl.huawei.entity.request.ListImageRequest;
-import com.fit2cloud.provider.impl.huawei.entity.request.ListVirtualMachineRequest;
+import com.fit2cloud.provider.impl.huawei.entity.request.*;
 
 import java.util.List;
 
@@ -70,5 +68,30 @@ public class HuaweiCloudProvider extends AbstractCloudProvider<HuaweiVmCredentia
     @Override
     public boolean hardRebootInstance(String req) {
         throw new Fit2cloudException(20001,"Not implemented");
+    }
+
+    @Override
+    public List<F2CDisk> createDisks(String req) {
+        return HuaweiSyncCloudApi.createDisks(JsonUtil.parseObject(req, HuaweiCreateDiskRequest.class));
+    }
+
+    @Override
+    public boolean enlargeDisk(String req) {
+        return HuaweiSyncCloudApi.enlargeDisk(JsonUtil.parseObject(req, HuaweiResizeDiskRequest.class));
+    }
+
+    @Override
+    public boolean attachDisk(String req) {
+        return HuaweiSyncCloudApi.attachDisk(JsonUtil.parseObject(req, HuaweiAttachDiskRequest.class));
+    }
+
+    @Override
+    public boolean detachDisk(String req) {
+        return HuaweiSyncCloudApi.detachDisk(JsonUtil.parseObject(req, HuaweiDetachDiskRequest.class));
+    }
+
+    @Override
+    public boolean deleteDisk(String req) {
+        return HuaweiSyncCloudApi.deleteDisk(JsonUtil.parseObject(req, HuaweiDeleteDiskRequest.class));
     }
 }
