@@ -5,8 +5,6 @@ import com.fit2cloud.controller.handler.ResultHolder;
 import io.swagger.annotations.Api;
 import org.springframework.web.bind.annotation.*;
 
-import javax.annotation.Resource;
-import javax.servlet.http.HttpServletRequest;
 import java.util.Map;
 
 /**
@@ -16,14 +14,21 @@ import java.util.Map;
  * {@code @注释: }
  */
 @RestController
-@RequestMapping("/api/base/provider")
+@RequestMapping("/api/base")
 @Api("云平台资源获取")
 public class ProviderResourceController {
 
-    @GetMapping("/{clazz}/{method}")
+    @GetMapping("provider/{clazz}/{method}")
     private ResultHolder<Object> getProviderResourceByMethod(@PathVariable("clazz") String clazz,
                                                              @PathVariable("method") String method,
-                                                             @RequestParam Map params) {
-        return ResultHolder.success(FormUtil.exec(clazz, method, params));
+                                                             @RequestParam Map<String, Object> params) {
+        return ResultHolder.success(FormUtil.exec(clazz, false, method, params));
+    }
+
+    @GetMapping("service/{clazz}/{method}")
+    private ResultHolder<Object> getProviderResourceByServiceMethod(@PathVariable("clazz") String clazz,
+                                                                    @PathVariable("method") String method,
+                                                                    @RequestParam Map<String, Object> params) {
+        return ResultHolder.success(FormUtil.exec(clazz, true, method, params));
     }
 }

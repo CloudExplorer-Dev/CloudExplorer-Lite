@@ -1,9 +1,9 @@
-<template v-loading="loading">
-  <el-container class="catalog-container">
+<template>
+  <el-container class="catalog-container" v-loading="loading">
     <el-header>
       <el-steps :active="active" finish-status="success">
         <el-step
-          v-for="step in _.filter(steps, (s) => s.step > 0)"
+          v-for="step in stepInfos"
           :key="step.step"
           :title="step.name"
         />
@@ -13,8 +13,6 @@
       <p class="description">{{ steps[active + 1]?.description }}</p>
 
       data: {{ data }}
-      <br />
-      formatData: {{ _.assign({}, ..._.values(data)) }}
 
       <template v-if="steps[active + 1] && active !== steps.length - 2">
         <layout-container
@@ -30,34 +28,40 @@
             </p>
           </template>
           <template #content>
-            {{ group.forms }}
             <CeFormItem
-              :ref="ceForms[group.group.toFixed()]"
-              :other-params="cloudAccount"
+              ref="ceForms"
+              :other-params="otherParams"
+              :group-id="group.group.toFixed()"
               v-model:form-view-data="group.forms"
+              v-model:all-form-view-data="formData.forms"
               v-model:data="data[group.group.toFixed()]"
+              :all-data="formatData"
+              @optionListRefresh="optionListRefresh"
             ></CeFormItem>
           </template>
         </layout-container>
       </template>
 
-      <template v-if="active === steps.length - 2"> 确认页面 </template>
+      <template v-if="active === steps.length - 2"> 确认页面</template>
     </el-main>
     <el-footer>
       <div class="footer">
         <div class="footer-form">
-          <template v-if="steps[0]?.groups[0]?.forms">
+          <template v-if="hasFooterForm">
             <CeFormItem
-              :ref="ceForms['0']"
-              :other-params="cloudAccount"
+              ref="ceForms_0"
+              :other-params="otherParams"
+              group-id="0"
               v-model:form-view-data="steps[0].groups[0].forms"
+              v-model:all-form-view-data="formData.forms"
               v-model:data="data['0']"
+              :all-data="formatData"
             ></CeFormItem>
           </template>
         </div>
 
         <div class="footer-btn">
-          <el-button @click="cancel()"> 取消 </el-button>
+          <el-button @click="cancel()"> 取消</el-button>
           <el-button
             v-if="active + 1 < steps.length && active !== 0"
             @click="before()"
@@ -113,25 +117,48 @@ const formData = ref<FormViewObject>();
 
 const active = ref(0);
 
-const ceForms = ref<SimpleMap<InstanceType<typeof CeFormItem> | null>>({});
+const ceForms = ref<Array<InstanceType<typeof CeFormItem> | null>>([]);
+const ceForms_0 = ref<InstanceType<typeof CeFormItem> | null>(null);
 
 const data = ref({});
+
+const formatData = computed(() => {
+  return _.assign({}, ..._.values(data.value));
+});
 
 const cloudAccount = ref<CloudAccount | null>(null);
 
 function next() {
-  if (active.value++ > steps.value.length - 2) {
-    active.value = steps.value.length - 2;
+  //todo validate
+  const promises = [];
+  _.forEach(ceForms.value, (formRef: InstanceType<typeof CeFormItem>) => {
+    promises.push(formRef.validate());
+  });
+  if (ceForms_0.value) {
+    promises.push(ceForms_0.value.validate());
   }
+
+  console.log(promises);
+  console.log(_.flatten(promises));
+
+  Promise.all(_.flatten(promises)).then((ok) => {
+    console.log(ok);
+    if (active.value++ > steps.value.length - 2) {
+      active.value = steps.value.length - 2;
+    }
+  });
 }
+
 function before() {
   if (active.value-- < 0) {
     active.value = 0;
   }
 }
+
 function submit() {
   console.log(data.value);
 }
+
 function cancel() {
   useRoute.push({ name: "server_catalog" });
 }
@@ -197,6 +224,43 @@ const steps = computed<Array<StepObj>>(() => {
   return _.sortBy(tempSteps, (step) => step.step);
 });
 
+const stepInfos = computed<Array<StepObj>>(() => {
+  return _.filter(steps.value, (s) => s.step > 0);
+});
+
+const hasFooterForm = computed<boolean>(() => {
+  return steps.value[0]?.groups[0]?.forms !== undefined;
+});
+
+const otherParams = computed(() => {
+  return { ...cloudAccount.value, accountId: cloudAccount.value?.id };
+});
+
+/**
+ * 接收子组件传递过来需要刷新optionList的field名
+ * @param field
+ */
+function optionListRefresh(field: string) {
+  console.log(field);
+  //找到field对应的组
+  const form = _.find(formData.value?.forms, (view) => view.field === field);
+  const groupId = form?.group?.toFixed();
+  console.log(groupId);
+  //调用子组件对应的刷新方法
+  if (ceForms.value && groupId) {
+    if (groupId === "0") {
+      ceForms_0.value?.optionListRefresh(field);
+    } else {
+      (
+        _.find(ceForms.value, (ceForm: InstanceType<typeof CeFormItem>) => {
+          console.log(ceForm);
+          return ceForm.groupId === groupId;
+        }) as InstanceType<typeof CeFormItem>
+      )?.optionListRefresh(field);
+    }
+  }
+}
+
 interface StepObj extends StepAnnotation {
   groups: Array<GroupObj>;
 }
@@ -224,6 +288,7 @@ onMounted(() => {
 <style lang="scss" scoped>
 .catalog-container {
   height: 100%;
+
   .footer {
     border-top: 1px solid var(--el-border-color);
     padding-top: 10px;
@@ -233,9 +298,11 @@ onMounted(() => {
     flex-direction: row;
     align-items: center;
     flex-wrap: wrap;
+
     .footer-form {
       min-width: 400px;
     }
+
     .footer-btn {
       display: flex;
       flex-direction: row;
@@ -243,6 +310,7 @@ onMounted(() => {
       justify-content: flex-end;
     }
   }
+
   .description {
     padding-left: 15px;
     font-size: smaller;

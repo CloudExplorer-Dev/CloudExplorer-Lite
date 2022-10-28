@@ -1,5 +1,5 @@
 <template>
-  <el-switch></el-switch>
+  <el-switch v-bind="$attrs"></el-switch>
 </template>
 <script setup lang="ts"></script>
 <style lang="scss"></style>

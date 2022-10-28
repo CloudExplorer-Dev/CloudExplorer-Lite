@@ -4,6 +4,7 @@ import com.fit2cloud.common.platform.credential.impl.VsphereCredential;
 import com.fit2cloud.common.platform.vmware.ClsApiClient;
 import com.fit2cloud.common.platform.vmware.SslUtil;
 import com.fit2cloud.common.platform.vmware.VapiAuthenticationHelper;
+import com.fit2cloud.common.utils.JsonUtil;
 import com.fit2cloud.provider.entity.F2CImage;
 import com.fit2cloud.provider.impl.vsphere.entity.VsphereTemplate;
 import com.fit2cloud.provider.impl.vsphere.entity.request.VsphereVmBaseRequest;
@@ -11,6 +12,8 @@ import com.vmware.content.library.Item;
 import com.vmware.content.library.ItemModel;
 import com.vmware.vapi.bindings.StubConfiguration;
 import com.vmware.vapi.protocol.HttpConfiguration;
+import com.vmware.vim25.VirtualDevice;
+import com.vmware.vim25.VirtualDisk;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -45,7 +48,7 @@ public class ContentLibraryUtil {
             Item itemService = client.itemService();
             for (String lib : libs) {
                 List<String> items = itemService.list(lib);
-                if (items.size() <= 0) {
+                if (items.size() == 0) {
                     return null;
                 }
                 for (String itemId : items) {
@@ -54,8 +57,9 @@ public class ContentLibraryUtil {
                         String imageId = item.getLibraryId() + VsphereTemplate.SEPARATOR + item.getId();
                         String imageName = item.getName() + "[内容库]";
 
-                        F2CImage image = new F2CImage(imageId, imageName, item.getDescription(), null, "ContentLibraries", null, null);
-                        image.setDiskSize(VsphereUtil.getTemplateDiskSizeInGB(vsphereClient, item.getName()));
+                        List<VirtualDisk> diskList = VsphereUtil.getTemplateDisks(vsphereClient, item.getName());
+                        F2CImage image = new F2CImage(imageId, imageName, item.getDescription(), null, "ContentLibraries", VsphereUtil.getTemplateDiskSizeInGB(diskList), null)
+                                .setDiskInfos(JsonUtil.toJSONString(diskList));
                         images.add(image);
                     }
                 }

@@ -9,6 +9,7 @@ import com.fit2cloud.common.provider.exception.ReTryException;
 import com.fit2cloud.common.provider.exception.SkipPageException;
 import com.fit2cloud.common.provider.util.PageUtil;
 import com.fit2cloud.common.utils.JsonUtil;
+import com.fit2cloud.constants.ErrorCodeConstants;
 import com.fit2cloud.provider.constants.DeleteWithInstance;
 import com.fit2cloud.provider.constants.F2CDiskStatus;
 import com.fit2cloud.provider.entity.F2CDisk;
@@ -223,10 +224,10 @@ public class AliyunSyncCloudApi {
                 checkStatus(client, "Stopped", describeInstanceStatusRequest);
                 return true;
             } catch (TeaException error) {
-                throw new Fit2cloudException(10002, error.getMessage());
+                throw new Fit2cloudException(ErrorCodeConstants.VM_POWER_OFF_FAIL.getCode(),error.getMessage());
             } catch (Exception _error) {
                 TeaException error = new TeaException(_error.getMessage(), _error);
-                throw new Fit2cloudException(10002, error.getMessage());
+                throw new Fit2cloudException(ErrorCodeConstants.VM_POWER_OFF_FAIL.getCode(),error.getMessage());
             }
         }
         return false;
@@ -249,10 +250,10 @@ public class AliyunSyncCloudApi {
                 checkStatus(client, "Running", describeInstanceStatusRequest);
                 return true;
             } catch (TeaException error) {
-                throw new Fit2cloudException(10003, error.getMessage());
+                throw new Fit2cloudException(ErrorCodeConstants.VM_POWER_ON_FAIL.getCode(),error.getMessage());
             } catch (Exception _error) {
                 TeaException error = new TeaException(_error.getMessage(), _error);
-                throw new Fit2cloudException(10003, error.getMessage());
+                throw new Fit2cloudException(ErrorCodeConstants.VM_POWER_ON_FAIL.getCode(),error.getMessage());
             }
         }
         return false;
@@ -277,10 +278,10 @@ public class AliyunSyncCloudApi {
                 checkStatus(client, "Running", describeInstanceStatusRequest);
                 return true;
             } catch (TeaException error) {
-                throw new Fit2cloudException(10004, error.getMessage());
+                throw new Fit2cloudException(ErrorCodeConstants.VM_REBOOT_FAIL.getCode(),error.getMessage());
             } catch (Exception _error) {
                 TeaException error = new TeaException(_error.getMessage(), _error);
-                throw new Fit2cloudException(10004, error.getMessage());
+                throw new Fit2cloudException(ErrorCodeConstants.VM_REBOOT_FAIL.getCode(),error.getMessage());
             }
         }
         return false;
@@ -302,10 +303,10 @@ public class AliyunSyncCloudApi {
                 DeleteInstancesResponse response = client.deleteInstances(deleteInstancesRequest);
                 return true;
             } catch (TeaException error) {
-                throw new Fit2cloudException(10005, error.getMessage());
+                throw new Fit2cloudException(ErrorCodeConstants.VM_DELETE_FAIL.getCode(),error.getMessage());
             } catch (Exception _error) {
                 TeaException error = new TeaException(_error.getMessage(), _error);
-                throw new Fit2cloudException(10005, error.getMessage());
+                throw new Fit2cloudException(ErrorCodeConstants.VM_DELETE_FAIL.getCode(),error.getMessage());
             }
         }
         return false;

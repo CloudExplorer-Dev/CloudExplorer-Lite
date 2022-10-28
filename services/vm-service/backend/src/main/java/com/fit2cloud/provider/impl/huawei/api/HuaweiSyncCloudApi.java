@@ -1,14 +1,20 @@
 package com.fit2cloud.provider.impl.huawei.api;
 
+import com.aliyun.tea.TeaException;
 import com.fit2cloud.common.exception.Fit2cloudException;
 import com.fit2cloud.common.provider.exception.ReTryException;
 import com.fit2cloud.common.provider.util.PageUtil;
 import com.fit2cloud.common.utils.JsonUtil;
+import com.fit2cloud.constants.ErrorCodeConstants;
 import com.fit2cloud.provider.constants.F2CDiskStatus;
 import com.fit2cloud.provider.entity.F2CDisk;
 import com.fit2cloud.provider.entity.F2CImage;
 import com.fit2cloud.provider.entity.F2CVirtualMachine;
 import com.fit2cloud.provider.impl.huawei.entity.credential.HuaweiVmCredential;
+import com.fit2cloud.provider.impl.huawei.entity.request.HuaweiInstanceRequest;
+import com.fit2cloud.provider.impl.huawei.entity.request.ListDisksRequest;
+import com.fit2cloud.provider.impl.huawei.entity.request.ListImageRequest;
+import com.fit2cloud.provider.impl.huawei.entity.request.ListVirtualMachineRequest;
 import com.fit2cloud.provider.impl.huawei.entity.request.*;
 import com.fit2cloud.provider.impl.huawei.util.HuaweiMappingUtil;
 import com.google.gson.Gson;
@@ -29,6 +35,7 @@ import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -159,6 +166,130 @@ public class HuaweiSyncCloudApi {
         } catch (Exception e) {
             ReTryException.throwHuaweiReTry(e);
             throw new Fit2cloudException(10000, "获取数据失败" + e.getMessage());
+        }
+    }
+
+    public static boolean powerOff(HuaweiInstanceRequest request) {
+        if (StringUtils.isEmpty(request.getRegionId())) {
+            throw new Fit2cloudException(10002, "区域为必填参数");
+        }
+        if (StringUtils.isNotEmpty(request.getCredential())) {
+            HuaweiVmCredential credential = JsonUtil.parseObject(request.getCredential(), HuaweiVmCredential.class);
+            EcsClient client = credential.getEcsClient(request.getRegionId());
+            try {
+                BatchStopServersResponse batchStopServersResponse = client.batchStopServers(new BatchStopServersRequest()
+                        .withBody(new BatchStopServersRequestBody()
+                                .withOsStop(
+                                        new BatchStopServersOption()
+                                                .withServers(Arrays.asList(new ServerId().withId(request.getUuId())))
+                                                .withType(request.getForce()? BatchStopServersOption.TypeEnum.HARD: BatchStopServersOption.TypeEnum.SOFT))));
+
+                checkEcsJobStatus(client,batchStopServersResponse.getJobId());
+                return true;
+            } catch (TeaException error) {
+                throw new Fit2cloudException(ErrorCodeConstants.VM_POWER_OFF_FAIL.getCode(),error.getMessage());
+            } catch (Exception _error) {
+                TeaException error = new TeaException(_error.getMessage(), _error);
+                throw new Fit2cloudException(ErrorCodeConstants.VM_POWER_OFF_FAIL.getCode(),error.getMessage());
+            }
+        }
+        return false;
+    }
+
+    public static boolean powerOn(HuaweiInstanceRequest request) {
+        if (StringUtils.isEmpty(request.getRegionId())) {
+            throw new Fit2cloudException(10002, "区域为必填参数");
+        }
+        if (StringUtils.isNotEmpty(request.getCredential())) {
+            HuaweiVmCredential credential = JsonUtil.parseObject(request.getCredential(), HuaweiVmCredential.class);
+            EcsClient client = credential.getEcsClient(request.getRegionId());
+            try {
+                BatchStartServersResponse batchStartServersResponse = client.batchStartServers(new BatchStartServersRequest()
+                        .withBody(new BatchStartServersRequestBody()
+                                .withOsStart(
+                                        new BatchStartServersOption()
+                                                .withServers(Arrays.asList(new ServerId().withId(request.getUuId()))))));
+                checkEcsJobStatus(client,batchStartServersResponse.getJobId());
+                return true;
+            } catch (TeaException error) {
+                throw new Fit2cloudException(ErrorCodeConstants.VM_POWER_ON_FAIL.getCode(),error.getMessage());
+            } catch (Exception _error) {
+                TeaException error = new TeaException(_error.getMessage(), _error);
+                throw new Fit2cloudException(ErrorCodeConstants.VM_POWER_ON_FAIL.getCode(),error.getMessage());
+            }
+        }
+        return false;
+    }
+
+    public static boolean rebootInstance(HuaweiInstanceRequest request) {
+        if (StringUtils.isEmpty(request.getRegionId())) {
+            throw new Fit2cloudException(10002, "区域为必填参数");
+        }
+        if (StringUtils.isNotEmpty(request.getCredential())) {
+            HuaweiVmCredential credential = JsonUtil.parseObject(request.getCredential(), HuaweiVmCredential.class);
+            EcsClient client = credential.getEcsClient(request.getRegionId());
+            try {
+                BatchRebootServersResponse batchRebootServersResponse = client.batchRebootServers(new BatchRebootServersRequest()
+                        .withBody(new BatchRebootServersRequestBody()
+                                .withReboot(
+                                        new BatchRebootSeversOption()
+                                                .withServers(Arrays.asList(new ServerId().withId(request.getUuId())))
+                                                .withType(request.getForce()? BatchRebootSeversOption.TypeEnum.HARD: BatchRebootSeversOption.TypeEnum.SOFT))));
+                checkEcsJobStatus(client,batchRebootServersResponse.getJobId());
+                return true;
+            } catch (TeaException error) {
+                throw new Fit2cloudException(ErrorCodeConstants.VM_REBOOT_FAIL.getCode(),error.getMessage());
+            } catch (Exception _error) {
+                TeaException error = new TeaException(_error.getMessage(), _error);
+                throw new Fit2cloudException(ErrorCodeConstants.VM_REBOOT_FAIL.getCode(),error.getMessage());
+            }
+        }
+        return false;
+    }
+
+    public static boolean deleteInstance(HuaweiInstanceRequest request) {
+        if (StringUtils.isEmpty(request.getRegionId())) {
+            throw new Fit2cloudException(10002, "区域为必填参数");
+        }
+        if (StringUtils.isNotEmpty(request.getCredential())) {
+            HuaweiVmCredential credential = JsonUtil.parseObject(request.getCredential(), HuaweiVmCredential.class);
+            EcsClient client = credential.getEcsClient(request.getRegionId());
+            try {
+                DeleteServersResponse batchStartServersResponse = client.deleteServers(new DeleteServersRequest()
+                        .withBody(new DeleteServersRequestBody()
+                                .withServers(Arrays.asList(new ServerId().withId(request.getUuId())))));
+                checkEcsJobStatus(client,batchStartServersResponse.getJobId());
+                return true;
+            } catch (TeaException error) {
+                throw new Fit2cloudException(ErrorCodeConstants.VM_DELETE_FAIL.getCode(),error.getMessage());
+            } catch (Exception _error) {
+                TeaException error = new TeaException(_error.getMessage(), _error);
+                throw new Fit2cloudException(ErrorCodeConstants.VM_DELETE_FAIL.getCode(),error.getMessage());
+            }
+        }
+        return false;
+    }
+
+    private static void checkEcsJobStatus(EcsClient client,String jobId) throws Exception {
+        int count = 0;
+        while (true){
+            ShowJobResponse jobResponse = client.showJob(new ShowJobRequest().withJobId(jobId));
+            ShowJobResponse.StatusEnum status = jobResponse.getStatus();
+            if (ShowJobResponse.StatusEnum.SUCCESS.equals(status)) {
+                break;
+            }
+            if (ShowJobResponse.StatusEnum.FAIL.equals(status)) {
+                throw new RuntimeException(jobResponse.getFailReason());
+            }
+            if (count < 40) {
+                try {
+                    Thread.sleep(5000);
+                } catch (InterruptedException e) {
+                    throw new RuntimeException(e.getMessage());
+                }
+            } else {
+                break;
+            }
         }
     }
 

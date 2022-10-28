@@ -99,6 +99,12 @@ public @interface Form {
      */
     String method() default "";
 
+    /**
+     * 调用的类是否为spring的bean
+     * @return
+     */
+    boolean serviceMethod() default false;
+
 
     /**
      * 那些按钮发生变化的时候,调用接口获取数据

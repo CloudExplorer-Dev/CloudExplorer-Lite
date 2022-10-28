@@ -82,7 +82,7 @@ public class QuzrtzJobDetail {
     /**
      * 任务执行处理类
      */
-    private String jobCalssName;
+    private String jobClassName;
     /**
      * 是否持久化，把该属性设置为1，quartz会把job持久化到数据库中
      */

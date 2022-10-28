@@ -1,4 +1,5 @@
 <template>
+  <el-empty description="不存在定时任务" v-if="empty" />
   <el-tabs
     v-loading="jobLoading"
     v-model="activeModuleName"
@@ -50,6 +51,8 @@ const jobModule = ref<Array<InstanceType<typeof JobModuleItem>> | null>(null);
  */
 const jobLoading = ref<boolean>(false);
 
+const empty = ref<boolean>(false);
+
 /**
  * 选中的模块
  */
@@ -71,13 +74,10 @@ const submitForm: (isRouter: boolean) => void = (isRouter = true) => {
   if (jobModule.value) {
     Promise.all(jobModule.value.map((item) => item.validate())).then((ok) => {
       cloudAccountApi
-        .updateJobs(
-          {
-            cloudAccountModuleJobs: moduleJobs.value,
-            cloudAccountId: props.accountId as string,
-          },
-          jobLoading
-        )
+        .updateJobs({
+          cloudAccountModuleJobs: moduleJobs.value,
+          cloudAccountId: props.accountId as string,
+        })
         .then(() => {
           if (isRouter) {
             router.push({ name: "cloud_account_list" });
@@ -143,9 +143,14 @@ onMounted(() => {
  * 初始化定时任务数据
  */
 const init = (cloud_account_id: string) => {
+  jobLoading.value = true;
   // 获取所有模块的定时任务
-  cloudAccountApi.getJobs(cloud_account_id, jobLoading).then((ok) => {
+  const p1 = cloudAccountApi.getJobs(cloud_account_id).then((ok) => {
     moduleJobs.value = ok.data.cloudAccountModuleJobs;
+    empty.value =
+      !ok.data.cloudAccountModuleJobs ||
+      (ok.data.cloudAccountModuleJobs &&
+        ok.data.cloudAccountModuleJobs.length === 0);
     cloneModuleJobs.value = _.cloneDeep(ok.data.cloudAccountModuleJobs);
     if (moduleJobs.value.length > 0) {
       // 设置第一个为选中的
@@ -153,13 +158,14 @@ const init = (cloud_account_id: string) => {
     }
   });
   // 获取区域
-  cloudAccountApi.getRegions(cloud_account_id).then((ok) => {
+  const p2 = cloudAccountApi.getRegions(cloud_account_id).then((ok) => {
     regions.value = ok.data;
   });
 
-  cloudAccountApi.getCloudAccount(cloud_account_id).then((ok) => {
+  const p3 = cloudAccountApi.getCloudAccount(cloud_account_id).then((ok) => {
     cloudAccount.value = ok.data;
   });
+  Promise.all([p1, p2, p3]).then((ok) => (jobLoading.value = false));
 };
 defineExpose({
   rollBack,

@@ -62,6 +62,8 @@ export interface FormView {
    */
   method?: string | null;
 
+  serviceMethod?: boolean;
+
   group?: number | null;
 
   step?: number | null;

@@ -7,6 +7,8 @@ import com.fit2cloud.common.form.constants.InputType;
 import com.fit2cloud.common.provider.impl.vsphere.VsphereBaseCloudProvider;
 import com.fit2cloud.provider.ICreateServerRequest;
 import com.fit2cloud.provider.impl.vsphere.VsphereCloudProvider;
+import com.fit2cloud.service.IVmCloudImageService;
+import com.fit2cloud.service.impl.VmCloudImageServiceImpl;
 import lombok.Data;
 
 import java.util.List;
@@ -71,10 +73,11 @@ public class VsphereVmCreateRequest extends VsphereVmBaseRequest implements ICre
     //模版
     @Form(inputType = InputType.SingleSelect,
             label = "模版",
-            clazz = VsphereCloudProvider.class,
-            method = "getTemplates",
-            textField = "description",
-            valueField = "name",
+            clazz = VmCloudImageServiceImpl.class,
+            serviceMethod = true,
+            method = "listVmCloudImage",
+            textField = "imageName",
+            valueField = "imageId",
             relationTrigger = "region",
             group = 2,
             step = 1
@@ -85,7 +88,6 @@ public class VsphereVmCreateRequest extends VsphereVmBaseRequest implements ICre
     @Form(inputType = InputType.Number,
             label = "CPU",
             unit = "核",
-            relationTrigger = "template",
             group = 3,
             step = 1,
             defaultValue = "1",
@@ -98,7 +100,6 @@ public class VsphereVmCreateRequest extends VsphereVmBaseRequest implements ICre
     @Form(inputType = InputType.Number,
             label = "内存",
             unit = "GB",
-            relationTrigger = "template",
             group = 3,
             step = 1,
             defaultValue = "1",

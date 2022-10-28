@@ -38,7 +38,9 @@ public class AliyunCloudProvider extends AbstractCloudProvider<AliyunVmCredentia
 
     @Override
     public boolean powerOff(String req) {
-        return AliyunSyncCloudApi.powerOff(JsonUtil.parseObject(req, AliyunInstanceRequest.class));
+        AliyunInstanceRequest request = JsonUtil.parseObject(req, AliyunInstanceRequest.class);
+        request.setForce(true);
+        return AliyunSyncCloudApi.powerOff(request);
     }
 
     @Override

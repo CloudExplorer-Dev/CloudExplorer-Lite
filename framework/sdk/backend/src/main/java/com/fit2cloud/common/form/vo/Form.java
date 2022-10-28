@@ -60,6 +60,7 @@ public class Form {
      */
     private String method;
 
+    private boolean serviceMethod;
 
     private Integer group;
 

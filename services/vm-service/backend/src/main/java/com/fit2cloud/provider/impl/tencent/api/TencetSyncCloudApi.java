@@ -1,7 +1,10 @@
 package com.fit2cloud.provider.impl.tencent.api;
 
+import com.aliyun.tea.TeaException;
+import com.fit2cloud.common.exception.Fit2cloudException;
 import com.fit2cloud.common.provider.util.PageUtil;
 import com.fit2cloud.common.utils.JsonUtil;
+import com.fit2cloud.constants.ErrorCodeConstants;
 import com.fit2cloud.provider.constants.DeleteWithInstance;
 import com.fit2cloud.provider.entity.F2CDisk;
 import com.fit2cloud.provider.entity.F2CImage;
@@ -20,10 +23,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
 
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 
 import static com.fit2cloud.provider.impl.tencent.util.TencentMappingUtil.toF2cDiskStatus;
 
@@ -398,5 +398,125 @@ public class TencetSyncCloudApi {
             f2CDisk.setZone(placement.getZone());
         }
         return f2CDisk;
+    }
+
+    public static boolean powerOff(TencentInstanceRequest request) {
+        if (StringUtils.isEmpty(request.getRegionId())) {
+            throw new Fit2cloudException(10002, "区域为必填参数");
+        }
+        if (StringUtils.isNotEmpty(request.getCredential())) {
+            TencentVmCredential credential = JsonUtil.parseObject(request.getCredential(), TencentVmCredential.class);
+            CvmClient client = credential.getCvmClient(request.getRegionId());
+            try {
+                StopInstancesRequest stopInstancesRequest = new StopInstancesRequest();
+                stopInstancesRequest.setInstanceIds(new String[]{request.getUuId()});
+                stopInstancesRequest.setStopType(request.getForce()?"HARD":"SOFT");
+                StopInstancesResponse response = client.StopInstances(stopInstancesRequest);
+                checkStatus(client,response.getRequestId(), request.getUuId());
+                return true;
+            } catch (TeaException error) {
+                throw new Fit2cloudException(ErrorCodeConstants.VM_POWER_OFF_FAIL.getCode(),error.getMessage());
+            } catch (Exception _error) {
+                TeaException error = new TeaException(_error.getMessage(), _error);
+                throw new Fit2cloudException(ErrorCodeConstants.VM_POWER_OFF_FAIL.getCode(),error.getMessage());
+            }
+        }
+        return false;
+    }
+
+    public static boolean powerOn(TencentInstanceRequest request) {
+        if (StringUtils.isEmpty(request.getRegionId())) {
+            throw new Fit2cloudException(10002, "区域为必填参数");
+        }
+        if (StringUtils.isNotEmpty(request.getCredential())) {
+            TencentVmCredential credential = JsonUtil.parseObject(request.getCredential(), TencentVmCredential.class);
+            CvmClient client = credential.getCvmClient(request.getRegionId());
+            try {
+                StartInstancesRequest startInstancesRequest = new StartInstancesRequest();
+                startInstancesRequest.setInstanceIds(new String[]{request.getUuId()});
+                StartInstancesResponse response = client.StartInstances(startInstancesRequest);
+                checkStatus(client,response.getRequestId(), request.getUuId());
+                return true;
+            } catch (TeaException error) {
+                throw new Fit2cloudException(ErrorCodeConstants.VM_POWER_ON_FAIL.getCode(),error.getMessage());
+            } catch (Exception _error) {
+                TeaException error = new TeaException(_error.getMessage(), _error);
+                throw new Fit2cloudException(ErrorCodeConstants.VM_POWER_ON_FAIL.getCode(),error.getMessage());
+            }
+        }
+        return false;
+    }
+
+    public static boolean rebootInstance(TencentInstanceRequest request) {
+        if (StringUtils.isEmpty(request.getRegionId())) {
+            throw new Fit2cloudException(10002, "区域为必填参数");
+        }
+        if (StringUtils.isNotEmpty(request.getCredential())) {
+            TencentVmCredential credential = JsonUtil.parseObject(request.getCredential(), TencentVmCredential.class);
+            CvmClient client = credential.getCvmClient(request.getRegionId());
+            try {
+                RebootInstancesRequest rebootInstancesRequest = new RebootInstancesRequest();
+                rebootInstancesRequest.setInstanceIds(new String[]{request.getUuId()});
+                rebootInstancesRequest.setStopType(request.getForce()?"HARD":"SOFT");
+                RebootInstancesResponse response = client.RebootInstances(rebootInstancesRequest);
+                checkStatus(client,response.getRequestId(), request.getUuId());
+                return true;
+            } catch (TeaException error) {
+                throw new Fit2cloudException(ErrorCodeConstants.VM_REBOOT_FAIL.getCode(),error.getMessage());
+            } catch (Exception _error) {
+                TeaException error = new TeaException(_error.getMessage(), _error);
+                throw new Fit2cloudException(ErrorCodeConstants.VM_REBOOT_FAIL.getCode(),error.getMessage());
+            }
+        }
+        return false;
+    }
+
+    public static boolean deleteInstance(TencentInstanceRequest request) {
+        if (StringUtils.isEmpty(request.getRegionId())) {
+            throw new Fit2cloudException(10002, "区域为必填参数");
+        }
+        if (StringUtils.isNotEmpty(request.getCredential())) {
+            TencentVmCredential credential = JsonUtil.parseObject(request.getCredential(), TencentVmCredential.class);
+            CvmClient client = credential.getCvmClient(request.getRegionId());
+            try {
+                TerminateInstancesRequest terminateInstancesRequest = new TerminateInstancesRequest();
+                terminateInstancesRequest.setInstanceIds(new String[]{request.getUuId()});
+                client.TerminateInstances(terminateInstancesRequest);
+                return true;
+            } catch (TeaException error) {
+                throw new Fit2cloudException(ErrorCodeConstants.VM_DELETE_FAIL.getCode(),error.getMessage());
+            } catch (Exception _error) {
+                TeaException error = new TeaException(_error.getMessage(), _error);
+                throw new Fit2cloudException(ErrorCodeConstants.VM_DELETE_FAIL.getCode(),error.getMessage());
+            }
+        }
+        return false;
+    }
+
+    private static void checkStatus(CvmClient client,String requestId,String uuid) throws Exception {
+        DescribeInstancesRequest req = new DescribeInstancesRequest();
+        int count = 0;
+        while (true){
+            req.setInstanceIds(new String[]{uuid});
+            DescribeInstancesResponse resp = client.DescribeInstances(req);
+            if(resp.getInstanceSet().length==0){
+                throw new RuntimeException("Not found instance - " + uuid);
+            }
+            Instance instance = Arrays.stream(resp.getInstanceSet()).toList().get(0);
+            if(Optional.ofNullable(instance).isPresent()){
+                if(StringUtils.equalsIgnoreCase(instance.getLatestOperationRequestId(),requestId) && StringUtils.equalsIgnoreCase(instance.getLatestOperationState(),"SUCCESS")){
+                    break;
+                }
+            }
+            if (count < 40) {
+                try {
+                    Thread.sleep(5000);
+                } catch (Exception e) {
+                    throw new RuntimeException(e.getMessage());
+                }
+            } else {
+                break;
+            }
+        }
     }
 }
