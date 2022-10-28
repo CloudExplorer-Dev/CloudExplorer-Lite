@@ -8,10 +8,7 @@ import com.fit2cloud.provider.entity.F2CImage;
 import com.fit2cloud.provider.entity.F2CVirtualMachine;
 import com.fit2cloud.provider.impl.huawei.api.HuaweiSyncCloudApi;
 import com.fit2cloud.provider.impl.huawei.entity.credential.HuaweiVmCredential;
-import com.fit2cloud.provider.impl.huawei.entity.request.HuaweiInstanceRequest;
-import com.fit2cloud.provider.impl.huawei.entity.request.ListDisksRequest;
-import com.fit2cloud.provider.impl.huawei.entity.request.ListImageRequest;
-import com.fit2cloud.provider.impl.huawei.entity.request.ListVirtualMachineRequest;
+import com.fit2cloud.provider.impl.huawei.entity.request.*;
 
 import java.util.List;
 

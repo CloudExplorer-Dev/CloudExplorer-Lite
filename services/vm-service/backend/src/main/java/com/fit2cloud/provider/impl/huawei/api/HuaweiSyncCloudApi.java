@@ -273,8 +273,8 @@ public class HuaweiSyncCloudApi {
     private static void checkEcsJobStatus(EcsClient client,String jobId) throws Exception {
         int count = 0;
         while (true){
-            ShowJobResponse jobResponse = client.showJob(new ShowJobRequest().withJobId(jobId));
-            ShowJobResponse.StatusEnum status = jobResponse.getStatus();
+            com.huaweicloud.sdk.ecs.v2.model.ShowJobResponse jobResponse = client.showJob(new com.huaweicloud.sdk.ecs.v2.model.ShowJobRequest().withJobId(jobId));
+            com.huaweicloud.sdk.ecs.v2.model.ShowJobResponse.StatusEnum status = jobResponse.getStatus();
             if (ShowJobResponse.StatusEnum.SUCCESS.equals(status)) {
                 break;
             }
