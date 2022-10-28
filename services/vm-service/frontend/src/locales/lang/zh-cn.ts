@@ -47,6 +47,9 @@ const message = {
       current_config: "当前配置",
       after_config: "变更后配置",
       disk_size: "磁盘大小",
+      system_disk: "系统盘",
+      data_disk: "数据盘",
+      disk_id: "磁盘ID",
     },
     btn: {
       create: "添加磁盘",

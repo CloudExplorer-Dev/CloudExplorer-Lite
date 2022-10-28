@@ -224,7 +224,7 @@ const validateSelectedData = computed(() => {
 const selectedDiskIds = ref<string[]>([]);
 const batchAttach = () => {
   if (!validateSelectedData.value) {
-    ElMessage.warning(t("vm_cloud_disk.msg.select_one","至少选择一条数据"));
+    ElMessage.warning(t("vm_cloud_disk.msg.select_one", "至少选择一条数据"));
     return;
   } else {
     isBatchAttach.value = true;
@@ -243,7 +243,7 @@ const batchAttach = () => {
  */
 const batchDetach = () => {
   if (!validateSelectedData.value) {
-    ElMessage.warning(t("vm_cloud_disk.msg.select_one","至少选择一条数据"));
+    ElMessage.warning(t("vm_cloud_disk.msg.select_one", "至少选择一条数据"));
     return;
   } else {
     const ids: string[] = Array.from(
@@ -262,7 +262,7 @@ const batchDetach = () => {
  */
 const batchDelete = () => {
   if (!validateSelectedData.value) {
-    ElMessage.warning(t("vm_cloud_disk.msg.select_one","至少选择一条数据"));
+    ElMessage.warning(t("vm_cloud_disk.msg.select_one", "至少选择一条数据"));
     return;
   } else {
     const ids: string[] = Array.from(
@@ -322,6 +322,14 @@ const disableBatchDelete = computed(() => {
     );
   }
 });
+
+/**
+ * 展示磁盘详情
+ * @param row
+ */
+const showDiskDetail = (row: VmCloudDiskVO) => {
+  router.push({ name: "disk_detail", params: { id: row.id } });
+};
 
 /**
  * 操作按钮
@@ -387,20 +395,21 @@ const buttons = ref([
       }}</el-button>
     </template>
     <el-table-column type="selection" />
-    <el-table-column prop="diskName" :label="$t('commons.name')">
+    <el-table-column
+      prop="diskName"
+      :label="$t('commons.name')"
+      :show-overflow-tooltip="true"
+    >
       <template #default="scope">
-        <el-tooltip
-          class="item"
-          effect="dark"
-          :content="scope.row.diskName"
-          placement="top"
+        <span
+          @click="showDiskDetail(scope.row)"
+          style="cursor: pointer; color: var(--el-color-primary)"
         >
-          <p class="text-overflow">
-            {{ scope.row.diskName }}
-          </p>
-        </el-tooltip>
+          {{ scope.row.diskName }}
+        </span>
       </template>
     </el-table-column>
+
     <el-table-column
       prop="accountName"
       :label="$t('commons.cloud_account.native')"

@@ -47,6 +47,9 @@ const message = {
       current_config: "當前配置",
       after_config: "變更後配置",
       disk_size: "磁盤大小",
+      system_disk: "系統盤",
+      data_disk: "數據盤",
+      disk_id: "磁盤ID",
     },
     btn: {
       create: "添加磁盤",

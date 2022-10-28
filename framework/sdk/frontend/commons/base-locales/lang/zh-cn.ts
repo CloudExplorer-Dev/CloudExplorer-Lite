@@ -129,6 +129,11 @@ const message = {
       welcome: "欢迎回来，请输入用户名和密码登录",
       expires: "认证信息已过期，请重新登录",
     },
+    charge_type:{
+      native:"付费方式",
+      prepaid:"包年包月",
+      postpaid:"按需付费",
+    }
   },
 };
 

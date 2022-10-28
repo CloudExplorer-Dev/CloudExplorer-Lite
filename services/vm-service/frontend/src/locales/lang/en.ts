@@ -47,6 +47,9 @@ const message = {
       current_config: "Current Config",
       after_config: "Config after change",
       disk_size: "Disk Size",
+      system_disk: "System Disk",
+      data_disk: "Data Disk",
+      disk_id: "Disk ID",
     },
     btn: {
       create: "Add Disk",
