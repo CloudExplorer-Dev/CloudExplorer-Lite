@@ -129,7 +129,6 @@ const formatData = computed(() => {
 const cloudAccount = ref<CloudAccount | null>(null);
 
 function next() {
-  //todo validate
   const promises = [];
   _.forEach(ceForms.value, (formRef: InstanceType<typeof CeFormItem>) => {
     promises.push(formRef.validate());
@@ -139,7 +138,6 @@ function next() {
   }
 
   console.log(promises);
-  console.log(_.flatten(promises));
 
   Promise.all(_.flatten(promises)).then((ok) => {
     console.log(ok);

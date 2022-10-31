@@ -136,7 +136,8 @@ public class VsphereVmCreateRequest extends VsphereVmBaseRequest implements ICre
     @Form(inputType = InputType.VsphereDatastoreForm,
             label = "存储器",
             step = 2,
-            group = 6
+            group = 6,
+            relationTrigger = "computeConfig"
     )
     private String datastore;
 
@@ -176,8 +177,8 @@ public class VsphereVmCreateRequest extends VsphereVmBaseRequest implements ICre
         //计算资源类型
         private String location;
 
-        //主机
-        private List<String> hosts;
+        //主机/资源池的Mor
+        private String mor;
 
     }
 
