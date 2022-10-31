@@ -129,6 +129,11 @@ const message = {
       welcome: "歡迎回來，請輸入用戶名和密碼登錄",
       expires: "認證信息已過期，請重新登錄",
     },
+    charge_type:{
+      native:"付費方式",
+      prepaid:"包年包月",
+      postpaid:"按需付費",
+    }
   },
 };
 

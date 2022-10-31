@@ -183,9 +183,9 @@ public class MenuConstants {
                                     )
                             ).childOperationRoute(
                                     new Menu.Builder()
-                                            .name("detail")
+                                            .name("disk_detail")
                                             .title("详情")
-                                            .path("/detail")
+                                            .path("/detail/:id")
                                             .componentPath("/src/views/vm_cloud_disk/detail.vue")
                                             .requiredPermission(new MenuPermission.Builder()
                                                     .role(RoleConstants.ROLE.ADMIN)

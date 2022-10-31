@@ -29,7 +29,11 @@ public enum OperatedTypeEnum {
     ENLARGE_DISK("ENLARGE_DISK","扩容磁盘"),
     ATTACH_DISK("ATTACH_DISK","挂载磁盘"),
     DETACH_DISK("DETACH_DISK","卸载磁盘"),
-    DELETE_DISK("DELETE_DISK","删除磁盘");
+    DELETE_DISK("DELETE_DISK","删除磁盘"),
+
+    BATCH_ATTACH_DISK("BATCH_ATTACH_DISK","批量挂载磁盘"),
+    BATCH_DETACH_DISK("BATCH_DETACH_DISK","批量卸载磁盘"),
+    BATCH_DELETE_DISK("BATCH_DELETE_DISK","批量删除磁盘");
 
     private String operate;
     private String description;

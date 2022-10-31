@@ -6,7 +6,7 @@ interface VmCloudDiskVO {
   diskName?: string;
   diskType?: string;
   category?: string;
-  status?: string;
+  status: string;
   diskChargeType?: string;
   description?: string;
   size?: number;
@@ -35,13 +35,24 @@ interface AttachDiskRequest {
   instanceUuid: string;
   deleteWithInstance?: boolean;
 }
+interface BatchAttachDiskRequest {
+  ids: string[];
+  instanceUuid: string;
+  deleteWithInstance?: boolean;
+}
 interface EnlargeDiskRequest {
   id: string;
   newDiskSize: number;
+}
+interface ListVmRequest {
+  accountId: string;
+  zone: string;
 }
 export type {
   VmCloudDiskVO,
   ListVmCloudDiskRequest,
   AttachDiskRequest,
   EnlargeDiskRequest,
+  BatchAttachDiskRequest,
+  ListVmRequest,
 };

@@ -6,6 +6,7 @@ import com.fit2cloud.common.provider.exception.ReTryException;
 import com.fit2cloud.common.provider.util.PageUtil;
 import com.fit2cloud.common.utils.JsonUtil;
 import com.fit2cloud.constants.ErrorCodeConstants;
+import com.fit2cloud.provider.constants.F2CDiskStatus;
 import com.fit2cloud.provider.entity.F2CDisk;
 import com.fit2cloud.provider.entity.F2CImage;
 import com.fit2cloud.provider.entity.F2CVirtualMachine;
@@ -14,12 +15,15 @@ import com.fit2cloud.provider.impl.huawei.entity.request.HuaweiInstanceRequest;
 import com.fit2cloud.provider.impl.huawei.entity.request.ListDisksRequest;
 import com.fit2cloud.provider.impl.huawei.entity.request.ListImageRequest;
 import com.fit2cloud.provider.impl.huawei.entity.request.ListVirtualMachineRequest;
+import com.fit2cloud.provider.impl.huawei.entity.request.*;
 import com.fit2cloud.provider.impl.huawei.util.HuaweiMappingUtil;
+import com.google.gson.Gson;
 import com.huaweicloud.sdk.ecs.v2.EcsClient;
 import com.huaweicloud.sdk.ecs.v2.model.*;
 import com.huaweicloud.sdk.evs.v2.EvsClient;
-import com.huaweicloud.sdk.evs.v2.model.ListVolumesResponse;
-import com.huaweicloud.sdk.evs.v2.model.VolumeDetail;
+import com.huaweicloud.sdk.evs.v2.model.*;
+import com.huaweicloud.sdk.evs.v2.model.ShowJobRequest;
+import com.huaweicloud.sdk.evs.v2.model.ShowJobResponse;
 import com.huaweicloud.sdk.ims.v2.ImsClient;
 import com.huaweicloud.sdk.ims.v2.model.ImageInfo;
 import com.huaweicloud.sdk.ims.v2.model.ListImagesResponse;
@@ -34,6 +38,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 
 
 /**
@@ -43,6 +48,7 @@ import java.util.Objects;
  * @注释:
  */
 public class HuaweiSyncCloudApi {
+    private static final int WAIT_COUNT = 50;
 
     /**
      * 获取华为云云主机数据
@@ -267,8 +273,8 @@ public class HuaweiSyncCloudApi {
     private static void checkEcsJobStatus(EcsClient client,String jobId) throws Exception {
         int count = 0;
         while (true){
-            ShowJobResponse jobResponse = client.showJob(new ShowJobRequest().withJobId(jobId));
-            ShowJobResponse.StatusEnum status = jobResponse.getStatus();
+            com.huaweicloud.sdk.ecs.v2.model.ShowJobResponse jobResponse = client.showJob(new com.huaweicloud.sdk.ecs.v2.model.ShowJobRequest().withJobId(jobId));
+            com.huaweicloud.sdk.ecs.v2.model.ShowJobResponse.StatusEnum status = jobResponse.getStatus();
             if (ShowJobResponse.StatusEnum.SUCCESS.equals(status)) {
                 break;
             }
@@ -284,6 +290,185 @@ public class HuaweiSyncCloudApi {
             } else {
                 break;
             }
+        }
+    }
+
+    /**
+     * 创建磁盘
+     *
+     * @param request
+     * @return
+     */
+    public static List<F2CDisk> createDisks(HuaweiCreateDiskRequest request) {
+        List<F2CDisk> f2CDisks = new ArrayList<>();
+        HuaweiVmCredential huaweiVmCredential = JsonUtil.parseObject(request.getCredential(), HuaweiVmCredential.class);
+        EvsClient evsClient = huaweiVmCredential.getEvsClient(request.getRegionId());
+        try {
+            for (F2CDisk disk : request.getDisks()) {
+                CreateVolumeResponse response = evsClient.createVolume(request.toCreateVolumeRequest(disk));
+                ShowJobResponse showJobResponse = getJob(response.getJobId(), evsClient);
+                F2CDisk createdDisk = HuaweiMappingUtil.toF2CDisk(checkVolumeStatus(showJobResponse.getEntities().getVolumeId(), evsClient, F2CDiskStatus.AVAILABLE));
+                createdDisk.setDeleteWithInstance(disk.getDeleteWithInstance());
+                f2CDisks.add(createdDisk);
+            }
+            return f2CDisks;
+        } catch (Exception e) {
+            throw new RuntimeException(e.getMessage(), e);
+        }
+    }
+
+    /**
+     * 扩容磁盘
+     *
+     * @param request
+     * @return
+     */
+    public static boolean enlargeDisk(HuaweiResizeDiskRequest request) {
+        try {
+            HuaweiVmCredential huaweiVmCredential = JsonUtil.parseObject(request.getCredential(), HuaweiVmCredential.class);
+            EvsClient evsClient = huaweiVmCredential.getEvsClient(request.getRegionId());
+
+            String diskId = request.getDiskId();
+            ShowVolumeRequest showVolumeRequest = new ShowVolumeRequest();
+            showVolumeRequest.setVolumeId(diskId);
+            VolumeDetail volume = evsClient.showVolume(showVolumeRequest).getVolume();
+            if (volume == null) {
+                throw new RuntimeException("Can not find disk: " + request.getDiskId());
+            }
+            String status = volume.getStatus();
+            evsClient.resizeVolume(request.toResizeVolumeRequest());
+            if (status.equalsIgnoreCase("in-use") || status.equalsIgnoreCase(F2CDiskStatus.AVAILABLE)) {
+                checkVolumeStatus(diskId, evsClient, status);
+            }
+            return true;
+        } catch (Exception e) {
+            throw new RuntimeException(e.getMessage(), e);
+        }
+    }
+
+    /**
+     * 挂载磁盘
+     *
+     * @param request
+     * @return
+     */
+    public static boolean attachDisk(HuaweiAttachDiskRequest request) {
+        try {
+            HuaweiVmCredential huaweiVmCredential = JsonUtil.parseObject(request.getCredential(), HuaweiVmCredential.class);
+            EvsClient evsClient = huaweiVmCredential.getEvsClient(request.getRegionId());
+            EcsClient ecsClient = huaweiVmCredential.getEcsClient(request.getRegionId());
+            ecsClient.attachServerVolume(request.toAttachServerVolumeRequest());
+            checkVolumeStatus(request.getDiskId(), evsClient, "in-use");
+            return true;
+        } catch (Exception e) {
+            throw new RuntimeException(e.getMessage(), e);
+        }
+    }
+
+    /**
+     * 卸载磁盘
+     *
+     * @param request
+     * @return
+     */
+    public static boolean detachDisk(HuaweiDetachDiskRequest request) {
+        try {
+            HuaweiVmCredential huaweiVmCredential = JsonUtil.parseObject(request.getCredential(), HuaweiVmCredential.class);
+            EvsClient evsClient = huaweiVmCredential.getEvsClient(request.getRegionId());
+            EcsClient ecsClient = huaweiVmCredential.getEcsClient(request.getRegionId());
+
+            // 判断磁盘是否是系统盘
+            ShowVolumeRequest showVolumeRequest = new ShowVolumeRequest();
+            showVolumeRequest.setVolumeId(request.getDiskId());
+            VolumeDetail volume = evsClient.showVolume(showVolumeRequest).getVolume();
+            Optional.ofNullable(volume).orElseThrow(() -> new RuntimeException("Disk can not find!"));
+
+            if (Boolean.valueOf(volume.getBootable())) {
+                // 判断实例是否是关机状态
+                ShowServerResponse showServerResponse = ecsClient.showServer(new ShowServerRequest().withServerId(request.getInstanceUuid()));
+                ServerDetail server = showServerResponse.getServer();
+                Optional.ofNullable(server).orElseThrow(() -> new RuntimeException("Can not find server!"));
+
+                String serverStatus = server.getStatus();
+                if (!"stopped".equalsIgnoreCase(serverStatus)) {
+                    // 系统盘需要实例关机方可卸载
+                    throw new RuntimeException("Server status must be stopped!");
+                }
+            }
+
+            ecsClient.detachServerVolume(request.toDetachServerVolumeRequest());
+            checkVolumeStatus(request.getDiskId(), evsClient, F2CDiskStatus.AVAILABLE);
+            return true;
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to detach data disk!" + e.getMessage(), e);
+        }
+    }
+
+    /**
+     * 删除磁盘
+     *
+     * @param request
+     * @return
+     */
+    public static boolean deleteDisk(HuaweiDeleteDiskRequest request) {
+        try {
+            HuaweiVmCredential huaweiVmCredential = JsonUtil.parseObject(request.getCredential(), HuaweiVmCredential.class);
+            EvsClient evsClient = huaweiVmCredential.getEvsClient(request.getRegionId());
+            evsClient.deleteVolume(request.toDeleteVolumeRequest());
+            return true;
+        } catch (Exception e) {
+            throw new RuntimeException(e.getMessage(), e);
+        }
+    }
+
+    private static VolumeDetail checkVolumeStatus(String volumeId, EvsClient evsClient, String status) throws Exception {
+        try {
+            int count = 0;
+            VolumeDetail volume = null;
+            boolean b = true;
+            while (b) {
+                Thread.sleep(5000);
+                count++;
+                ShowVolumeRequest showVolumeRequest = new ShowVolumeRequest();
+                showVolumeRequest.setVolumeId(volumeId);
+                volume = evsClient.showVolume(showVolumeRequest).getVolume();
+
+                if (volume != null && status.equalsIgnoreCase(volume.getStatus())) {
+                    b = false;
+                }
+                if (count >= WAIT_COUNT) {
+                    throw new RuntimeException("Check cloud disk status timeout！");
+                }
+            }
+            return volume;
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new RuntimeException(e.getMessage(), e);
+        }
+    }
+
+    private static ShowJobResponse getJob(String jobId, EvsClient evsClient) {
+        com.huaweicloud.sdk.evs.v2.model.ShowJobRequest showJobRequest = new ShowJobRequest();
+        showJobRequest.setJobId(jobId);
+        try {
+            int count = 0;
+            ShowJobResponse showJobResponse = null;
+            while (true) {
+                Thread.sleep(2000);
+                count++;
+                showJobResponse = evsClient.showJob(showJobRequest);
+                if (showJobResponse.getStatus().getValue().equalsIgnoreCase("FAIL")) {
+                    throw new RuntimeException(new Gson().toJson(showJobResponse));
+                }
+                if (showJobResponse != null && showJobResponse.getStatus().getValue().equalsIgnoreCase("SUCCESS")) {
+                    return showJobResponse;
+                }
+                if (count >= WAIT_COUNT) {
+                    throw new RuntimeException("Check job status timeout！");
+                }
+            }
+        } catch (Exception e) {
+            throw new RuntimeException(e.getMessage(), e);
         }
     }
 }
