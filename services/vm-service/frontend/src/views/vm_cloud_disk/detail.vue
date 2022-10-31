@@ -8,8 +8,7 @@ const { t } = useI18n();
 const loading = ref<boolean>(false);
 const activeName = ref("BasicInfo");
 
-const handleClick = (tab: TabsPaneContext, event: Event) => {
-};
+const handleClick = (tab: TabsPaneContext, event: Event) => {};
 </script>
 
 <template>

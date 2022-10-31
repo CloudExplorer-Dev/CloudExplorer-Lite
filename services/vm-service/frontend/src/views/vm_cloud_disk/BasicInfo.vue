@@ -184,7 +184,16 @@ onMounted(() => {
     </template>
   </layout-container>
 </template>
-<style lang="scss">
+<style lang="scss" scoped>
+:deep(.el-descriptions__cell) {
+  border: 0px !important;
+}
+:deep(.is-bordered-label) {
+  background-color: transparent !important;
+}
+:deep(.el-descriptions__cell) {
+  font-size: 12px !important;
+}
 .content-class {
   min-width: 230px;
   width: 300px;
@@ -193,16 +202,5 @@ onMounted(() => {
 .label-class {
   width: 150px;
   min-width: 150px;
-}
-.el-descriptions__body
-  .el-descriptions__table.is-bordered
-  .el-descriptions__cell {
-  border: 0px;
-}
-.el-descriptions__label.el-descriptions__cell.is-bordered-label {
-  background-color: transparent;
-}
-.el-descriptions__body .el-descriptions__table .el-descriptions__cell {
-  font-size: 12px;
 }
 </style>
