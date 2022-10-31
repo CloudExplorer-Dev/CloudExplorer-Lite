@@ -109,10 +109,28 @@ public class VmCloudServer implements Serializable {
     private String zone;
 
     /**
+     * 宿主机ID
+     */
+    @TableField("host_id")
+    private String hostId;
+
+    /**
      * 宿主机
      */
     @TableField("host")
     private String host;
+
+    /**
+     * 资源池ID
+     */
+    @TableField("resource_pool_id")
+    private String resourcePoolId;
+
+    /**
+     * 资源池
+     */
+    @TableField("resource_pool")
+    private String resourcePool;
 
     /**
      * 公网 IP

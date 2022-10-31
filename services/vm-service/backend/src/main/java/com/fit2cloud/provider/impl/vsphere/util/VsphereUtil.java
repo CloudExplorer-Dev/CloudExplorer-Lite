@@ -6,8 +6,8 @@ import com.fit2cloud.provider.constants.F2CDiskStatus;
 import com.fit2cloud.provider.constants.F2CInstanceStatus;
 import com.fit2cloud.provider.entity.F2CDisk;
 import com.fit2cloud.provider.entity.F2CVirtualMachine;
-import com.fit2cloud.provider.impl.vsphere.entity.F2CVsphereDiskType;
 import com.fit2cloud.provider.impl.vsphere.entity.F2CVsphereDatastore;
+import com.fit2cloud.provider.impl.vsphere.entity.F2CVsphereDiskType;
 import com.fit2cloud.provider.impl.vsphere.entity.F2CVsphereHost;
 import com.fit2cloud.provider.impl.vsphere.entity.request.VsphereDiskRequest;
 import com.vmware.vim25.*;
@@ -152,13 +152,15 @@ public class VsphereUtil {
         instance.setOsInfo(os);
         try {
             F2CVsphereHost f2cVsphereHost;
+            String hostMorVal = null;
             if (hostCache == null) {
                 f2cVsphereHost = getF2CVsphereHost(client, vm);
             } else {
-                String hostMorVal = runtime.getHost().getVal();
+                hostMorVal = runtime.getHost().getVal();
                 f2cVsphereHost = hostCache.get(hostMorVal);
             }
             if (f2cVsphereHost != null) {
+                instance.setHostId(hostMorVal);
                 instance.setHost(f2cVsphereHost.getHostName());
                 instance.setDataCenter(f2cVsphereHost.getDataCenterName());
                 instance.setRegion(f2cVsphereHost.getDataCenterName());
@@ -168,6 +170,17 @@ public class VsphereUtil {
         } catch (Exception e) {
             logger.error(ExceptionUtils.getStackTrace(e));
         }
+
+        try {
+            ResourcePool pool = vm.getResourcePool();
+            if (pool != null) {
+                instance.setResourcePoolId(pool.getMOR().getVal());
+                instance.setResourcePool(pool.getName());
+            }
+        } catch (Exception e) {
+            logger.error(ExceptionUtils.getStackTrace(e));
+        }
+
         return instance;
     }
 

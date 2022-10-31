@@ -94,9 +94,21 @@ public class F2CVirtualMachine {
      */
     private String cluster;
     /**
-     * 主机
+     * 宿主机ID
+     */
+    private String hostId;
+    /**
+     * 宿主机
      */
     private String host;
+    /**
+     * 资源池ID
+     */
+    private String resourcePoolId;
+    /**
+     * 资源池
+     */
+    private String resourcePool;
     /**
      * cpu
      */
