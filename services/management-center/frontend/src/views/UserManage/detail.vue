@@ -332,7 +332,7 @@ onMounted(() => {
             </el-form-item>
           </el-col>
           <el-col :span="4">
-            <el-form-item :label="$t('user.source')" prop="enabled">
+            <el-form-item :label="$t('user.status')" prop="enabled">
               <el-switch v-model="form.enabled" v-if="basicEditable" />
               <span v-if="!basicEditable">{{
                 enabledFilter(form.enabled)
