@@ -4,14 +4,11 @@ import com.fit2cloud.common.log.utils.LogUtil;
 import com.fit2cloud.common.platform.credential.impl.VsphereCredential;
 import com.fit2cloud.common.provider.impl.vsphere.utils.VsphereClient;
 import com.fit2cloud.common.utils.JsonUtil;
-import com.fit2cloud.provider.entity.F2CDisk;
-import com.fit2cloud.provider.entity.F2CImage;
-import com.fit2cloud.provider.entity.F2CVirtualMachine;
+import com.fit2cloud.provider.entity.*;
 import com.fit2cloud.provider.impl.vsphere.entity.*;
 import com.fit2cloud.provider.impl.vsphere.entity.request.*;
 import com.fit2cloud.provider.impl.vsphere.util.*;
 import com.vmware.vim25.*;
-import com.fit2cloud.provider.impl.vsphere.entity.*;
 import com.fit2cloud.provider.impl.vsphere.entity.request.VsphereNetworkRequest;
 import com.fit2cloud.provider.impl.vsphere.entity.request.VsphereVmBaseRequest;
 import com.fit2cloud.provider.impl.vsphere.entity.request.VsphereVmPowerRequest;
@@ -19,9 +16,9 @@ import com.fit2cloud.provider.impl.vsphere.util.ContentLibraryUtil;
 import com.fit2cloud.provider.impl.vsphere.util.ResourceConstants;
 import com.fit2cloud.provider.impl.vsphere.util.VsphereUtil;
 import com.fit2cloud.provider.impl.vsphere.util.VsphereVmClient;
-import com.vmware.vim25.*;
 import com.vmware.vim25.mo.*;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
@@ -36,7 +33,8 @@ import java.util.stream.Collectors;
  * Date: 2022/9/21 2:39 PM
  */
 public class VsphereSyncCloudApi {
-
+    private static final long MB = 1024 * 1024;
+    private static final long GB = MB * 1024;
     private static Logger logger = LoggerFactory.getLogger(VsphereSyncCloudApi.class);
 
     /**
@@ -176,6 +174,90 @@ public class VsphereSyncCloudApi {
         return f2CDiskList;
     }
 
+    public static List<F2CHost> listHost(VsphereVmBaseRequest req) {
+        VsphereClient client = req.getVsphereVmClient();
+        List<F2CHost> list;
+        try {
+            List<HostSystem> hosts = client.listHostsFromAll();
+            list = new ArrayList<>();
+            for (HostSystem hs : hosts) {
+                list.add(VsphereUtil.toF2CHost(hs, client));
+            }
+        } catch (Exception e) {
+            logger.error(ExceptionUtils.getStackTrace(e));
+            throw new RuntimeException(e);
+        } finally {
+            closeConnection(client);
+        }
+        return list;
+    }
+
+    public static List<F2CDatastore> listDataStore(VsphereVmBaseRequest req) {
+        List<F2CDatastore> datastoreList = new ArrayList<>();
+        VsphereClient client = null;
+        try {
+            client = req.getVsphereVmClient();
+            List<ClusterComputeResource> clusterList = client.listClusters();
+            for (ClusterComputeResource cluster : clusterList) {
+                ComputeResource cr = client.getComputeResource(cluster.getName());
+                if (cr instanceof ClusterComputeResource) {
+                    Datastore[] list = cr.getDatastores();
+                    if (list != null && list.length > 0) {
+                        for (Datastore ds : list) {
+                            Datacenter dc = client.getDataCenter(ds);
+                            F2CDatastore f2cDs = new F2CDatastore();
+                            f2cDs.setDataCenterId(dc.getName());
+                            f2cDs.setDataCenterName(dc.getName());
+                            f2cDs.setClusterId(cluster.getName());
+                            f2cDs.setClusterName(cluster.getName());
+                            DatastoreSummary dsSummary = ds.getSummary();
+                            f2cDs.setCapacity(dsSummary.getCapacity() / GB);
+                            f2cDs.setDataStoreId(ds.getName());
+                            f2cDs.setDataStoreName(ds.getName());
+                            f2cDs.setFreeSpace(dsSummary.getFreeSpace() / GB);
+                            f2cDs.setType(dsSummary.getType());
+                            datastoreList.add(f2cDs);
+                        }
+                    }
+                }
+            }
+            List<Datastore> list = client.listDataStores();
+            for (Datastore ds : list) {
+                boolean exist = false;
+                for (F2CDatastore f2CDataStore : datastoreList) {
+                    if (StringUtils.equals(f2CDataStore.getDataStoreId(), ds.getName())) {
+                        exist = true;
+                        break;
+                    }
+                }
+                if (exist) {
+                    continue;
+                }
+                Datacenter dc = client.getDataCenter(ds);
+                DatastoreSummary summary = ds.getSummary();
+                DatastoreInfo info = ds.getInfo();
+                F2CDatastore f2cDs = new F2CDatastore();
+                f2cDs.setDataCenterId(dc.getName());
+                f2cDs.setDataCenterName(dc.getName());
+                f2cDs.setCapacity(summary.getCapacity() / GB);
+                f2cDs.setDataStoreId(ds.getName());
+                f2cDs.setDataStoreName(ds.getName());
+                f2cDs.setFreeSpace(summary.getFreeSpace() / GB);
+                f2cDs.setType(summary.getType());
+                Calendar updated = info.getTimestamp();
+                if (updated != null) {
+                    f2cDs.setLastUpdate(updated.getTimeInMillis() / 1000);
+                }
+                datastoreList.add(f2cDs);
+            }
+        } catch (Exception e) {
+            throw new RuntimeException(e.getMessage(), e);
+        } finally {
+            closeConnection(client);
+        }
+        return datastoreList;
+    }
+
     /**
      * 关闭连接
      *
@@ -228,7 +310,6 @@ public class VsphereSyncCloudApi {
         }
         return false;
     }
-
 
 
     public static List<F2CVsphereCluster> getClusters(VsphereVmBaseRequest req) {

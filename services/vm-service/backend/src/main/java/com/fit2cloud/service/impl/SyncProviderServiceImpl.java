@@ -4,6 +4,8 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.fit2cloud.base.entity.*;
 import com.fit2cloud.base.service.IBaseJobRecordResourceMappingService;
+import com.fit2cloud.base.service.IBaseVmCloudDatastoreService;
+import com.fit2cloud.base.service.IBaseVmCloudHostService;
 import com.fit2cloud.common.constants.JobConstants;
 import com.fit2cloud.common.constants.JobStatusConstants;
 import com.fit2cloud.common.constants.JobTypeConstants;
@@ -13,9 +15,7 @@ import com.fit2cloud.provider.ICloudProvider;
 import com.fit2cloud.provider.constants.F2CDiskStatus;
 import com.fit2cloud.provider.constants.F2CImageStatus;
 import com.fit2cloud.provider.constants.ProviderConstants;
-import com.fit2cloud.provider.entity.F2CDisk;
-import com.fit2cloud.provider.entity.F2CImage;
-import com.fit2cloud.provider.entity.F2CVirtualMachine;
+import com.fit2cloud.provider.entity.*;
 import com.fit2cloud.service.*;
 import io.reactivex.rxjava3.functions.BiFunction;
 import io.reactivex.rxjava3.functions.Consumer;
@@ -41,6 +41,10 @@ public class SyncProviderServiceImpl extends BaseSyncService implements ISyncPro
     @Resource
     private IVmCloudDiskService vmCloudDiskService;
     @Resource
+    private IBaseVmCloudHostService vmCloudHostService;
+    @Resource
+    private IBaseVmCloudDatastoreService vmCloudDatastoreService;
+    @Resource
     private IBaseJobRecordResourceMappingService jobRecordResourceMappingService;
 
     @Override
@@ -62,6 +66,16 @@ public class SyncProviderServiceImpl extends BaseSyncService implements ISyncPro
     @Override
     public void syncCloudDisk(String cloudAccountId, List<Credential.Region> regions) {
         proxy(cloudAccountId, regions, "同步磁盘", ICloudProvider::listDisk, this::diskSaveOrUpdate, this::writeJobRecord, () -> vmCloudDiskService.remove(new LambdaUpdateWrapper<VmCloudDisk>().eq(VmCloudDisk::getAccountId, cloudAccountId)));
+    }
+
+    @Override
+    public void syncCloudHost(String cloudAccountId, List<Credential.Region> regions) {
+        proxy(cloudAccountId, regions, "同步宿主机", ICloudProvider::listHost, this::hostSaveOrUpdate, this::writeJobRecord, () -> vmCloudHostService.remove(new LambdaUpdateWrapper<VmCloudHost>().eq(VmCloudHost::getAccountId, cloudAccountId)));
+    }
+
+    @Override
+    public void syncCloudDatastore(String cloudAccountId, List<Credential.Region> regions) {
+        proxy(cloudAccountId, regions, "同步存储器", ICloudProvider::listDataStore, this::dataStoreSaveOrUpdate, this::writeJobRecord, () -> vmCloudDatastoreService.remove(new LambdaUpdateWrapper<VmCloudDatastore>().eq(VmCloudDatastore::getAccountId, cloudAccountId)));
     }
 
     /**
@@ -97,6 +111,27 @@ public class SyncProviderServiceImpl extends BaseSyncService implements ISyncPro
         saveBatchOrUpdate(vmCloudDiskService, vmCloudDisks, vmCloudDisk -> new LambdaQueryWrapper<VmCloudDisk>().eq(VmCloudDisk::getAccountId, vmCloudDisk.getAccountId()).eq(VmCloudDisk::getDiskId, vmCloudDisk.getDiskId()).eq(VmCloudDisk::getRegion, saveBatchOrUpdateParams.getRegion().getRegionId()), updateWrapper);
     }
 
+    /**
+     * 宿主机插入并且更新数据
+     *
+     * @param saveBatchOrUpdateParams 插入更新数据所需要的参数
+     */
+    private void hostSaveOrUpdate(SaveBatchOrUpdateParams<F2CHost> saveBatchOrUpdateParams) {
+        List<VmCloudHost> vmCloudHosts = saveBatchOrUpdateParams.getSyncRecord().stream().map(host -> toVmHost(host, saveBatchOrUpdateParams.getCloudAccountId(), saveBatchOrUpdateParams.getSyncTime())).toList();
+        LambdaUpdateWrapper<VmCloudHost> updateWrapper = new LambdaUpdateWrapper<VmCloudHost>().eq(VmCloudHost::getAccountId, saveBatchOrUpdateParams.getCloudAccountId()).eq(VmCloudHost::getRegion, saveBatchOrUpdateParams.getRegion().getRegionId()).lt(VmCloudHost::getUpdateTime, saveBatchOrUpdateParams.getSyncTime()).set(VmCloudHost::getStatus,"Deleted");
+        saveBatchOrUpdate(vmCloudHostService, vmCloudHosts, vmCloudHost -> new LambdaQueryWrapper<VmCloudHost>().eq(VmCloudHost::getAccountId, vmCloudHost.getAccountId()).eq(VmCloudHost::getHostId, vmCloudHost.getHostId()).eq(VmCloudHost::getRegion, saveBatchOrUpdateParams.getRegion().getRegionId()), updateWrapper);
+    }
+
+    /**
+     * 存储器插入并且更新数据
+     *
+     * @param saveBatchOrUpdateParams 插入更新数据所需要的参数
+     */
+    private void dataStoreSaveOrUpdate(SaveBatchOrUpdateParams<F2CDatastore> saveBatchOrUpdateParams) {
+        List<VmCloudDatastore> vmCloudDatastores = saveBatchOrUpdateParams.getSyncRecord().stream().map(datastore -> toVmDatastore(datastore, saveBatchOrUpdateParams.getCloudAccountId(), saveBatchOrUpdateParams.getSyncTime())).toList();
+        LambdaUpdateWrapper<VmCloudDatastore> updateWrapper = new LambdaUpdateWrapper<VmCloudDatastore>().eq(VmCloudDatastore::getAccountId, saveBatchOrUpdateParams.getCloudAccountId()).eq(VmCloudDatastore::getRegion, saveBatchOrUpdateParams.getRegion().getRegionId()).lt(VmCloudDatastore::getUpdateTime, saveBatchOrUpdateParams.getSyncTime()).set(VmCloudDatastore::getStatus,"Deleted");
+        saveBatchOrUpdate(vmCloudDatastoreService, vmCloudDatastores, vmCloudDatastore -> new LambdaQueryWrapper<VmCloudDatastore>().eq(VmCloudDatastore::getAccountId, vmCloudDatastore.getAccountId()).eq(VmCloudDatastore::getDatastoreId, vmCloudDatastore.getDatastoreId()).eq(VmCloudDatastore::getRegion, saveBatchOrUpdateParams.getRegion().getRegionId()), updateWrapper);
+    }
 
     /**
      * 写入任务记录
@@ -158,6 +193,38 @@ public class SyncProviderServiceImpl extends BaseSyncService implements ISyncPro
         List<Credential.Region> regions = getRegions(params);
         if (params.containsKey(JobConstants.CloudAccount.CLOUD_ACCOUNT_ID.name()) && params.containsKey(JobConstants.CloudAccount.REGIONS.name())) {
             syncCloudDisk(cloudAccountId, regions);
+        }
+    }
+
+    @Override
+    public void syncCloudHost(String cloudAccountId) {
+        List<Credential.Region> regions = getRegions(cloudAccountId);
+        syncCloudHost(cloudAccountId, regions);
+    }
+
+
+    @Override
+    public void syncCloudHost(Map<String, Object> params) {
+        String cloudAccountId = getCloudAccountId(params);
+        List<Credential.Region> regions = getRegions(params);
+        if (params.containsKey(JobConstants.CloudAccount.CLOUD_ACCOUNT_ID.name()) && params.containsKey(JobConstants.CloudAccount.REGIONS.name())) {
+            syncCloudHost(cloudAccountId, regions);
+        }
+    }
+
+    @Override
+    public void syncCloudDatastore(String cloudAccountId) {
+        List<Credential.Region> regions = getRegions(cloudAccountId);
+        syncCloudDatastore(cloudAccountId, regions);
+    }
+
+
+    @Override
+    public void syncCloudDatastore(Map<String, Object> params) {
+        String cloudAccountId = getCloudAccountId(params);
+        List<Credential.Region> regions = getRegions(params);
+        if (params.containsKey(JobConstants.CloudAccount.CLOUD_ACCOUNT_ID.name()) && params.containsKey(JobConstants.CloudAccount.REGIONS.name())) {
+            syncCloudDatastore(cloudAccountId, regions);
         }
     }
 
@@ -323,5 +390,44 @@ public class SyncProviderServiceImpl extends BaseSyncService implements ISyncPro
         vmCloudImage.setStatus(F2CImageStatus.normal);
         vmCloudImage.setUpdateTime(updateTime);
         return vmCloudImage;
+    }
+
+    /**
+     * 将宿主机对象转换实体对象
+     *
+     * @param host           宿主机对象
+     * @param cloudAccountId 云账号
+     * @return 实体对象
+     */
+    private VmCloudHost toVmHost(F2CHost host, String cloudAccountId, LocalDateTime updateTime) {
+        VmCloudHost vmCloudHost = new VmCloudHost();
+        BeanUtils.copyProperties(host, vmCloudHost);
+        vmCloudHost.setAccountId(cloudAccountId);
+        vmCloudHost.setRegion(host.getDataCenterId());
+        vmCloudHost.setZone(host.getClusterId());
+        vmCloudHost.setCpuAllocated(host.getCpuMHzAllocated());
+        vmCloudHost.setCpuTotal(host.getCpuMHzTotal());
+        vmCloudHost.setCpuMhzPerOneCore(host.getCpuMHzPerOneCore());
+        vmCloudHost.setUpdateTime(updateTime);
+        return vmCloudHost;
+    }
+
+    /**
+     * 将存储器对象转换实体对象
+     *
+     * @param datastore      存储器对象
+     * @param cloudAccountId 云账号
+     * @return 实体对象
+     */
+    private VmCloudDatastore toVmDatastore(F2CDatastore datastore, String cloudAccountId, LocalDateTime updateTime) {
+        VmCloudDatastore vmCloudDatastore = new VmCloudDatastore();
+        BeanUtils.copyProperties(datastore, vmCloudDatastore);
+        vmCloudDatastore.setAccountId(cloudAccountId);
+        vmCloudDatastore.setRegion(datastore.getDataCenterId());
+        vmCloudDatastore.setZone(datastore.getClusterId());
+        vmCloudDatastore.setDatastoreId(datastore.getDataStoreId());
+        vmCloudDatastore.setDatastoreName(datastore.getDataStoreName());
+        vmCloudDatastore.setUpdateTime(updateTime);
+        return vmCloudDatastore;
     }
 }

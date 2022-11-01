@@ -151,7 +151,6 @@ public class VsphereClient {
         return listResources(Datacenter.class);
     }
 
-
     /**
      * 获取全部存储
      *
@@ -189,6 +188,22 @@ public class VsphereClient {
      */
     public Datacenter getDataCenter(HostSystem host) {
         return getDataCenter(host, HostSystem.class);
+    }
+
+    /**
+     * 根据存储器获取数据中心
+     * @param datastore 存储器实例
+     * @return 数据中心实例
+     */
+    public Datacenter getDataCenter(Datastore datastore) {
+        ManagedEntity parent = datastore.getParent();
+        while (parent != null) {
+            if (parent instanceof Datacenter) {
+                return (Datacenter) parent;
+            }
+            parent = parent.getParent();
+        }
+        return null;
     }
 
     /**
@@ -307,6 +322,7 @@ public class VsphereClient {
         }
         return disks;
     }
+
     public boolean hasVmTools(VirtualMachine vm) {
         GuestInfo guest = vm.getGuest();
         return guest != null;

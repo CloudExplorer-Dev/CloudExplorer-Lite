@@ -1,6 +1,7 @@
 package com.fit2cloud.constants;
 
 import com.fit2cloud.autoconfigure.JobSettingConfig;
+import com.fit2cloud.common.constants.PlatformConstants;
 import com.fit2cloud.dto.job.JobInitSettingDto;
 import com.fit2cloud.dto.job.JobSettingParent;
 import com.fit2cloud.quartz.CloudAccountSyncJob;
@@ -30,6 +31,16 @@ public class JobConstants implements JobSettingConfig.JobConfig {
      */
     private static final String SYNC_IMAGE = "SYNC_IMAGE";
 
+    /**
+     * 同步宿主机
+     */
+    private static final String SYNC_HOST = "SYNC_HOST";
+
+    /**
+     * 同步存储器
+     */
+    private static final String SYNC_DATASTORE = "SYNC_DATASTORE";
+
 
     @Override
     public List<JobSettingParent> listJobInitSetting() {
@@ -39,6 +50,10 @@ public class JobConstants implements JobSettingConfig.JobConfig {
         JobInitSettingDto syncDisk = new JobInitSettingDto(CloudAccountSyncJob.SyncDiskJob.class, SYNC_DISK, com.fit2cloud.common.constants.JobConstants.Group.CLOUD_ACCOUNT_RESOURCE_SYNC_GROUP.name(), "同步磁盘", null, p -> true);
         // 同步镜像
         JobInitSettingDto syncImage = new JobInitSettingDto(CloudAccountSyncJob.SyncImageJob.class, SYNC_IMAGE, com.fit2cloud.common.constants.JobConstants.Group.CLOUD_ACCOUNT_RESOURCE_SYNC_GROUP.name(), "同步镜像", null, p -> true);
-        return List.of(syncDisk, syncVirtual, syncImage);
+        // 同步宿主机
+        JobInitSettingDto syncHost = new JobInitSettingDto(CloudAccountSyncJob.SyncHostJob.class, SYNC_HOST, com.fit2cloud.common.constants.JobConstants.Group.CLOUD_ACCOUNT_RESOURCE_SYNC_GROUP.name(), "同步宿主机", null, p -> p.equals(PlatformConstants.fit2cloud_vsphere_platform.name()));
+        // 同步存储器
+        JobInitSettingDto syncDatastore = new JobInitSettingDto(CloudAccountSyncJob.SyncDatastoreJob.class, SYNC_DATASTORE, com.fit2cloud.common.constants.JobConstants.Group.CLOUD_ACCOUNT_RESOURCE_SYNC_GROUP.name(), "同步存储器", null, p -> p.equals(PlatformConstants.fit2cloud_vsphere_platform.name()));
+        return List.of(syncDisk, syncVirtual, syncImage, syncHost, syncDatastore);
     }
 }
