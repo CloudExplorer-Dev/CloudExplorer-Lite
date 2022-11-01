@@ -1,5 +1,7 @@
 <template>
-  {{ _data }}
+  data: {{ _data }}
+  <br />
+  allData: {{ allData }}
   <el-form
     ref="ruleFormRef"
     label-width="130px"
@@ -51,18 +53,23 @@
 </template>
 
 <script setup lang="ts">
-const props = defineProps<{
-  // 页面渲染
-  formViewData: Array<FormView>;
-  allFormViewData: Array<FormView>;
-  otherParams: any;
-  // 数据
-  data: SimpleMap<any>;
-  allData: any;
-  groupId: string;
-}>();
+const props = withDefaults(
+  defineProps<{
+    // 页面渲染
+    formViewData: Array<FormView>;
+    allFormViewData: Array<FormView>;
+    otherParams: any;
+    // 数据
+    modelValue: any;
+    allData: any;
+    groupId: string;
+  }>(),
+  {
+    modelValue: {},
+  }
+);
 const emit = defineEmits([
-  "update:data",
+  "update:modelValue",
   "update:formViewData",
   "update:allFormViewData",
   "optionListRefresh",
@@ -84,10 +91,10 @@ const formItemRef = ref<InstanceType<any> | null>(null);
  */
 const _data = computed({
   get() {
-    return props.data ? props.data : {};
+    return props.modelValue;
   },
   set(value) {
-    emit("update:data", value);
+    emit("update:modelValue", value);
   },
 });
 
@@ -108,14 +115,19 @@ function getDefaultValue(formItem: FormView): any {
  * 设置optionList
  * @param formItem
  * @param data
+ * @param allData
  */
-function initOptionList(formItem: FormView | undefined, data: any): void {
+function initOptionList(
+  formItem: FormView | undefined,
+  data: any,
+  allData?: any
+): void {
   if (formItem && formItem.clazz && formItem.method) {
     const _temp = _.assignWith(
       {},
       data,
       props.otherParams,
-      props.allData,
+      _.defaultTo(allData, props.allData),
       (objValue, srcValue) => {
         return _.isUndefined(objValue) ? srcValue : objValue;
       }
@@ -151,12 +163,13 @@ function initOptionList(formItem: FormView | undefined, data: any): void {
 /**
  * 根据field字段刷新optionList
  * @param field
+ * @param allData
  */
-function optionListRefresh(field: string): void {
-  console.log(field, props.groupId);
+function optionListRefresh(field: string, allData?: any): void {
   initOptionList(
     _.find(props.formViewData, (form) => form.field === field),
-    { ..._data.value }
+    { ..._data.value },
+    allData
   );
 }
 
