@@ -3,6 +3,7 @@ package com.fit2cloud.provider.impl.tencent.util;
 import com.fit2cloud.common.constants.PlatformConstants;
 import com.fit2cloud.common.provider.util.CommonUtil;
 import com.fit2cloud.es.entity.CloudBill;
+import com.fit2cloud.provider.constants.BillModeConstants;
 import com.tencentcloudapi.billing.v20180709.models.BillDetail;
 import com.tencentcloudapi.billing.v20180709.models.BillDetailComponent;
 import com.tencentcloudapi.billing.v20180709.models.BillTagInfo;
@@ -37,7 +38,7 @@ public class TencentMappingUtil {
         cloudBill.setZone(item.getZoneName());
         cloudBill.setReousrceId(item.getResourceId());
         cloudBill.setResourceName(item.getResourceName());
-        cloudBill.setBillMode(item.getPayModeName());
+        cloudBill.setBillMode(toBillMode(item.getPayModeName()));
         cloudBill.setBillingCycle(CommonUtil.getLocalDateTime(item.getPayTime(), "yyyy-MM-dd HH:mm:ss"));
         cloudBill.setUsageStartDate(CommonUtil.getLocalDateTime(item.getFeeBeginTime(), "yyyy-MM-dd HH:mm:ss"));
         cloudBill.setUsageEndDate(CommonUtil.getLocalDateTime(item.getFeeEndTime(), "yyyy-MM-dd HH:mm:ss"));
@@ -52,6 +53,27 @@ public class TencentMappingUtil {
         cloudBill.setTotalCost(BigDecimal.valueOf(cost.getSum()));
         cloudBill.setRealTotalCost(BigDecimal.valueOf(realTotalCost.getSum()));
         return cloudBill;
+    }
+
+    /**
+     * 计费模式。
+     * <p>
+     * 1：包年/包月
+     * 3：按需
+     * 10：预留实例
+     * 将华为云的计费模式转换为云管计费模式
+     *
+     * @param payModeName 华为云计费模式
+     * @return 云管计费模式
+     */
+    private static String toBillMode(String payModeName) {
+        if (payModeName.equals("包年包月")) {
+            return BillModeConstants.MONTHLY.name();
+        } else if (payModeName.equals("按量计费")) {
+            return BillModeConstants.ON_DEMAND.name();
+        } else {
+            return BillModeConstants.OTHER.name();
+        }
     }
 
 

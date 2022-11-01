@@ -1,5 +1,9 @@
 package com.fit2cloud.es.entity;
 
+import com.fit2cloud.common.annotaion.Group;
+import com.fit2cloud.common.conver.impl.BillModeConvert;
+import com.fit2cloud.common.conver.impl.CloudAccountConvert;
+import com.fit2cloud.common.conver.impl.ProviderConvert;
 import lombok.Data;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.elasticsearch.annotations.DateFormat;
@@ -41,6 +45,7 @@ public class CloudBill {
      * 资源名称
      */
     @Field(type = FieldType.Keyword)
+    @Group(label = "资源名称")
     private String resourceName;
     /**
      * 企业项目
@@ -51,6 +56,7 @@ public class CloudBill {
      * 企业项目名称
      */
     @Field(type = FieldType.Auto)
+    @Group(label = "企业项目名称")
     private String ProjectName;
     /**
      * 付款账号
@@ -76,6 +82,7 @@ public class CloudBill {
      * 供应商
      */
     @Field(type = FieldType.Keyword)
+    @Group(label = "供应商", conver = ProviderConvert.class)
     private String provider;
     /**
      * 产品id
@@ -86,11 +93,13 @@ public class CloudBill {
      * 产品名称
      */
     @Field(type = FieldType.Auto)
+    @Group(label = "产品名称")
     private String productName;
     /**
      * 计费模式
      */
     @Field(type = FieldType.Keyword)
+    @Group(label = "计费模式", conver = BillModeConvert.class)
     private String billMode;
     /**
      * 区域
@@ -101,6 +110,7 @@ public class CloudBill {
      * 区域名称
      */
     @Field(type = FieldType.Keyword)
+    @Group(label = "区域")
     private String regionName;
     /**
      * 可用区
@@ -121,6 +131,7 @@ public class CloudBill {
      * 云账号id
      */
     @Field(type = FieldType.Keyword)
+    @Group(label = "云账号", conver = CloudAccountConvert.class)
     private String cloudAccountId;
     /**
      * 标签
