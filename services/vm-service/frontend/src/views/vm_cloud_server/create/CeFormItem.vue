@@ -80,7 +80,6 @@ import { computed, onMounted, ref } from "vue";
 import type { FormView } from "@commons/components/ce-form/type";
 import formApi from "@commons/api/form_resource_api";
 import type { FormInstance } from "element-plus";
-import type { SimpleMap } from "@commons/api/base/type";
 
 const _loading = ref<boolean>(false);
 

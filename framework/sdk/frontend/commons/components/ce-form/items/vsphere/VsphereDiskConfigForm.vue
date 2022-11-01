@@ -60,7 +60,7 @@ const props = defineProps<{
 
 const emit = defineEmits(["update:modelValue", "change"]);
 
-import { computed, onUpdated, useAttrs, ref, watch, onMounted } from "vue";
+import { computed, watch, onMounted } from "vue";
 import _ from "lodash";
 import type { FormView } from "@commons/components/ce-form/type";
 import { CloseBold } from "@element-plus/icons-vue";
@@ -109,9 +109,18 @@ const data = computed<Array<any>>({
   },
   set(value) {
     emit("update:modelValue", value);
-    emit("change"); //没生效？
   },
 });
+/**
+ * 触发change事件
+ */
+watch(
+  () => data.value,
+  (data) => {
+    emit("change");
+  },
+  { deep: true }
+);
 
 function add() {
   data.value.push({ size: 1, deleteWithInstance: true });
