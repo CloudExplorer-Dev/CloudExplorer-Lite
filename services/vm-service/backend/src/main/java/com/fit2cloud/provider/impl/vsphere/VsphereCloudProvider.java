@@ -14,9 +14,12 @@ import com.fit2cloud.provider.impl.vsphere.entity.request.VsphereNetworkRequest;
 import com.fit2cloud.provider.impl.vsphere.entity.request.VsphereVmBaseRequest;
 import com.fit2cloud.provider.impl.vsphere.entity.request.VsphereVmCreateRequest;
 import com.fit2cloud.provider.impl.vsphere.entity.request.VsphereVmPowerRequest;
+import com.fit2cloud.provider.impl.vsphere.entity.VsphereHost;
+import com.fit2cloud.provider.impl.vsphere.entity.VsphereResourcePool;
 import com.fit2cloud.provider.impl.vsphere.entity.request.*;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * Author: LiuDi
@@ -90,13 +93,28 @@ public class VsphereCloudProvider extends AbstractCloudProvider<VsphereCredentia
     }
 
     public List<F2CVsphereCluster> getClusters(String req) {
-        VsphereVmCreateRequest request= JsonUtil.parseObject(req, VsphereVmCreateRequest.class);
+        VsphereVmCreateRequest request = JsonUtil.parseObject(req, VsphereVmCreateRequest.class);
         request.setRegionId(request.getRegion());
         return VsphereSyncCloudApi.getClusters(request);
     }
 
     public List<F2CVsphereNetwork> getNetworks(String req) {
         return VsphereSyncCloudApi.getNetworks(JsonUtil.parseObject(req, VsphereNetworkRequest.class));
+    }
+
+    public List<Map<String, String>> getLocations(String req) {
+        VsphereVmCreateRequest request = JsonUtil.parseObject(req, VsphereVmCreateRequest.class);
+        return VsphereSyncCloudApi.getLocations(request);
+    }
+
+    public List<VsphereHost> getHosts(String req) {
+        VsphereVmCreateRequest request = JsonUtil.parseObject(req, VsphereVmCreateRequest.class);
+        return VsphereSyncCloudApi.getHosts(request);
+    }
+
+    public List<VsphereResourcePool> geResourcePools(String req) {
+        VsphereVmCreateRequest request = JsonUtil.parseObject(req, VsphereVmCreateRequest.class);
+        return VsphereSyncCloudApi.geResourcePools(request);
     }
 
     @Override

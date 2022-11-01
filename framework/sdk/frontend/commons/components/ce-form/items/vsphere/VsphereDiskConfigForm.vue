@@ -1,4 +1,4 @@
-<template v-bind="$attrs">
+<template>
   <div style="display: flex; flex-direction: row; flex-wrap: wrap">
     <div v-for="(obj, index) in data" :key="index" class="vs-disk-config-card">
       <el-card
@@ -60,7 +60,7 @@ const props = defineProps<{
 
 const emit = defineEmits(["update:modelValue", "change"]);
 
-import { computed, onUpdated, useAttrs, ref, watch, onMounted } from "vue";
+import { computed, watch, onMounted } from "vue";
 import _ from "lodash";
 import type { FormView } from "@commons/components/ce-form/type";
 import { CloseBold } from "@element-plus/icons-vue";
@@ -109,12 +109,21 @@ const data = computed<Array<any>>({
   },
   set(value) {
     emit("update:modelValue", value);
-    emit("change"); //没生效？
   },
 });
+/**
+ * 触发change事件
+ */
+watch(
+  () => data.value,
+  (data) => {
+    emit("change");
+  },
+  { deep: true }
+);
 
 function add() {
-  data.value.push({ size: 1, deleteWithInstance: true });
+  data.value?.push({ size: 1, deleteWithInstance: true });
 }
 function remove(index: number) {
   _.remove(data.value, (n, i) => index === i);
@@ -135,21 +144,13 @@ function validate(): Promise<boolean> {
 }
 
 /**
- * 初始化数据
- */
-onMounted(() => {
-  if (props.modelValue == undefined) {
-    emit("update:modelValue", defaultDisks.value);
-  }
-});
-
-/**
  * 监听模版变化，获取值
  */
 watch(
   () => props.allData.template,
-  (data) => {
-    emit("update:modelValue", defaultDisks.value);
+  (_data) => {
+    //emit("update:modelValue", defaultDisks.value);
+    data.value = defaultDisks.value;
   }
 );
 

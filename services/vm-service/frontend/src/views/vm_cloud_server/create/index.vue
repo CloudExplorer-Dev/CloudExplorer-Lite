@@ -13,6 +13,9 @@
       <p class="description">{{ steps[active + 1]?.description }}</p>
 
       data: {{ data }}
+      <br />
+
+      formatData: {{ formatData }}
 
       <template v-if="steps[active + 1] && active !== steps.length - 2">
         <layout-container
@@ -34,7 +37,7 @@
               :group-id="group.group.toFixed()"
               v-model:form-view-data="group.forms"
               v-model:all-form-view-data="formData.forms"
-              v-model:data="data[group.group.toFixed()]"
+              v-model="data[group.group.toFixed()]"
               :all-data="formatData"
               @optionListRefresh="optionListRefresh"
             ></CeFormItem>
@@ -54,7 +57,7 @@
               group-id="0"
               v-model:form-view-data="steps[0].groups[0].forms"
               v-model:all-form-view-data="formData.forms"
-              v-model:data="data['0']"
+              v-model="data['0']"
               :all-data="formatData"
             ></CeFormItem>
           </template>
@@ -243,18 +246,18 @@ function optionListRefresh(field: string) {
   //找到field对应的组
   const form = _.find(formData.value?.forms, (view) => view.field === field);
   const groupId = form?.group?.toFixed();
-  console.log(groupId);
+
   //调用子组件对应的刷新方法
   if (ceForms.value && groupId) {
     if (groupId === "0") {
-      ceForms_0.value?.optionListRefresh(field);
+      ceForms_0.value?.optionListRefresh(field, formatData.value);
     } else {
       (
         _.find(ceForms.value, (ceForm: InstanceType<typeof CeFormItem>) => {
           console.log(ceForm);
           return ceForm.groupId === groupId;
         }) as InstanceType<typeof CeFormItem>
-      )?.optionListRefresh(field);
+      )?.optionListRefresh(field, formatData.value);
     }
   }
 }

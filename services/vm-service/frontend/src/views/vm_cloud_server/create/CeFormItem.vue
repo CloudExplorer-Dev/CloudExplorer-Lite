@@ -1,5 +1,6 @@
 <template>
-  {{ _data }}
+  data: {{ _data }}
+  <br />
   <el-form
     ref="ruleFormRef"
     label-width="130px"
@@ -27,6 +28,7 @@
             :all-form-view-data="allFormViewData"
             :field="item.field"
             :form-item="item"
+            :otherParams="otherParams"
             style="width: 75%"
             v-bind="{ ...JSON.parse(item.attrs) }"
             @change="change(item)"
@@ -42,6 +44,7 @@
           :all-form-view-data="allFormViewData"
           :field="item.field"
           :form-item="item"
+          :otherParams="otherParams"
           v-bind="{ ...JSON.parse(item.attrs) }"
           @change="change(item)"
         ></component>
@@ -51,18 +54,23 @@
 </template>
 
 <script setup lang="ts">
-const props = defineProps<{
-  // 页面渲染
-  formViewData: Array<FormView>;
-  allFormViewData: Array<FormView>;
-  otherParams: any;
-  // 数据
-  data: SimpleMap<any>;
-  allData: any;
-  groupId: string;
-}>();
+const props = withDefaults(
+  defineProps<{
+    // 页面渲染
+    formViewData: Array<FormView>;
+    allFormViewData: Array<FormView>;
+    otherParams: any;
+    // 数据
+    modelValue: any;
+    allData: any;
+    groupId: string;
+  }>(),
+  {
+    modelValue: {},
+  }
+);
 const emit = defineEmits([
-  "update:data",
+  "update:modelValue",
   "update:formViewData",
   "update:allFormViewData",
   "optionListRefresh",
@@ -73,7 +81,6 @@ import { computed, onMounted, ref } from "vue";
 import type { FormView } from "@commons/components/ce-form/type";
 import formApi from "@commons/api/form_resource_api";
 import type { FormInstance } from "element-plus";
-import type { SimpleMap } from "@commons/api/base/type";
 
 const _loading = ref<boolean>(false);
 
@@ -84,10 +91,10 @@ const formItemRef = ref<InstanceType<any> | null>(null);
  */
 const _data = computed({
   get() {
-    return props.data ? props.data : {};
+    return props.modelValue;
   },
   set(value) {
-    emit("update:data", value);
+    emit("update:modelValue", value);
   },
 });
 
@@ -108,18 +115,23 @@ function getDefaultValue(formItem: FormView): any {
  * 设置optionList
  * @param formItem
  * @param data
+ * @param allData
  */
-function initOptionList(formItem: FormView | undefined, data: any): void {
+function initOptionList(
+  formItem: FormView | undefined,
+  data: any,
+  allData?: any
+): void {
   if (formItem && formItem.clazz && formItem.method) {
     const _temp = _.assignWith(
       {},
-      data,
       props.otherParams,
-      props.allData,
+      _.defaultTo(allData, props.allData),
       (objValue, srcValue) => {
         return _.isUndefined(objValue) ? srcValue : objValue;
       }
     );
+    _.assign(_temp, data);
     console.log(_temp, formItem?.relationTrigger);
     if (
       //关联对象有值
@@ -151,12 +163,13 @@ function initOptionList(formItem: FormView | undefined, data: any): void {
 /**
  * 根据field字段刷新optionList
  * @param field
+ * @param allData
  */
-function optionListRefresh(field: string): void {
-  console.log(field, props.groupId);
+function optionListRefresh(field: string, allData?: any): void {
   initOptionList(
     _.find(props.formViewData, (form) => form.field === field),
-    { ..._data.value }
+    { ..._data.value },
+    allData
   );
 }
 

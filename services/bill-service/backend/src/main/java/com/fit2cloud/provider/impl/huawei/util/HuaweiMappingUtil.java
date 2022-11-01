@@ -3,6 +3,7 @@ package com.fit2cloud.provider.impl.huawei.util;
 import com.fit2cloud.common.constants.PlatformConstants;
 import com.fit2cloud.common.provider.util.CommonUtil;
 import com.fit2cloud.es.entity.CloudBill;
+import com.fit2cloud.provider.constants.BillModeConstants;
 import com.huaweicloud.sdk.bss.v2.model.ResFeeRecordV2;
 import org.apache.commons.lang3.StringUtils;
 
@@ -36,7 +37,7 @@ public class HuaweiMappingUtil {
         cloudBill.setRegionName(item.getRegionName());
         cloudBill.setProjectId(item.getEnterpriseProjectId());
         cloudBill.setProjectName(item.getEnterpriseProjectName());
-        cloudBill.setBillMode(item.getChargeMode());
+        cloudBill.setBillMode(toBillMode(item.getChargeMode()));
         cloudBill.setReousrceId(item.getResourceId());
         cloudBill.setResourceName(item.getResourceName());
         cloudBill.setProductId(item.getProductId());
@@ -53,7 +54,34 @@ public class HuaweiMappingUtil {
 
     }
 
-    public static Map<String, Object> toTags(String tag) {
+    /**
+     * 计费模式。
+     * <p>
+     * 1：包年/包月
+     * 3：按需
+     * 10：预留实例
+     * 将华为云的计费模式转换为云管计费模式
+     *
+     * @param chargeMode 华为云计费模式
+     * @return 云管计费模式
+     */
+    private static String toBillMode(String chargeMode) {
+        if (chargeMode.equals("1")) {
+            return BillModeConstants.MONTHLY.name();
+        } else if (chargeMode.equals("3")) {
+            return BillModeConstants.ON_DEMAND.name();
+        } else {
+            return BillModeConstants.OTHER.name();
+        }
+    }
+
+    /**
+     * 根据标签字符串获取标签
+     *
+     * @param tag 标签字符串
+     * @return 标签对象
+     */
+    private static Map<String, Object> toTags(String tag) {
         //"resource_tag":"billing:;"
         if (StringUtils.isEmpty(tag)) {
             return new HashMap<>();

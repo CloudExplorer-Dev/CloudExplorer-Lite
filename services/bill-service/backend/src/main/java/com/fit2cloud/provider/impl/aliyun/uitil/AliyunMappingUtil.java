@@ -5,6 +5,7 @@ import com.fit2cloud.common.constants.PlatformConstants;
 import com.fit2cloud.common.platform.credential.Credential;
 import com.fit2cloud.common.provider.util.CommonUtil;
 import com.fit2cloud.es.entity.CloudBill;
+import com.fit2cloud.provider.constants.BillModeConstants;
 import com.fit2cloud.provider.impl.aliyun.entity.request.SyncBillRequest;
 import org.apache.commons.lang3.StringUtils;
 
@@ -31,8 +32,7 @@ public class AliyunMappingUtil {
     public static CloudBill toCloudBill(DescribeInstanceBillResponseBody.DescribeInstanceBillResponseBodyDataItems item, SyncBillRequest syncBillRequest, List<Credential.Region> regions) {
         CloudBill cloudBill = new CloudBill();
         cloudBill.setId(UUID.randomUUID().toString().replace("-", ""));
-        String subscriptionType = item.getSubscriptionType();
-        cloudBill.setBillMode(subscriptionType);
+        cloudBill.setBillMode(toBillMode(item.getSubscriptionType()));
         cloudBill.setRegionName(item.getRegion());
         regions.stream().filter(region -> region.getName().equals(item.getRegion())).findFirst().ifPresent(region -> cloudBill.setRegionId(region.getRegionId()));
         cloudBill.setZone(item.getZone());
@@ -57,6 +57,25 @@ public class AliyunMappingUtil {
         cloudBill.setTotalCost(BigDecimal.valueOf(item.getPretaxGrossAmount()));
         cloudBill.setRealTotalCost(BigDecimal.valueOf(item.getCashAmount()));
         return cloudBill;
+    }
+
+    /**
+     * 订阅类型，取值：
+     * <p>
+     * Subscription：预付费。
+     * PayAsYouGo：后付费。
+     *
+     * @param subscriptionType 阿里云计费模式
+     * @return 云管计费模式
+     */
+    private static String toBillMode(String subscriptionType) {
+        if (subscriptionType.equals("Subscription")) {
+            return BillModeConstants.MONTHLY.name();
+        } else if (subscriptionType.equals("PayAsYouGo")) {
+            return BillModeConstants.ON_DEMAND.name();
+        } else {
+            return BillModeConstants.OTHER.name();
+        }
     }
 
     /**

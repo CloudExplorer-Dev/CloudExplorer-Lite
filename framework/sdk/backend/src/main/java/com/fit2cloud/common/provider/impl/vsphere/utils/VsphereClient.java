@@ -215,6 +215,10 @@ public class VsphereClient {
         return listResourcesFromAll(HostSystem.class);
     }
 
+    public List<HostSystem> listHosts() {
+        return listResources(HostSystem.class);
+    }
+
     /**
      * 根据虚拟机获取宿主机
      *
