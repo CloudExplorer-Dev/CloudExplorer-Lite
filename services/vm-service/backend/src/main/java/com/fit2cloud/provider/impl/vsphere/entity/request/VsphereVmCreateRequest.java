@@ -39,7 +39,7 @@ public class VsphereVmCreateRequest extends VsphereVmBaseRequest implements ICre
 
     //step 1
     //数据中心datacenter
-    @Form(inputType = InputType.SingleSelect,
+    @Form(inputType = InputType.Radio,
             label = "数据中心",
             clazz = VsphereBaseCloudProvider.class,
             method = "getRegions",
@@ -51,17 +51,21 @@ public class VsphereVmCreateRequest extends VsphereVmBaseRequest implements ICre
     private String region;
 
     //集群
-    @Form(inputType = InputType.SingleSelect,
+    @Form(inputType = InputType.Radio,
             label = "集群",
             clazz = VsphereCloudProvider.class,
             method = "getClusters",
-            textField = "${info} <span\n" +
-                    "        style=\"\n" +
-                    "          float: right;\n" +
-                    "          color: var(--el-text-color-secondary);\n" +
-                    "          font-size: 13px;\n" +
-                    "        \"\n" +
-                    "        >${description}</span>",
+//            textField = "${info} <span\n" +
+//                    "        style=\"\n" +
+//                    "          float: right;\n" +
+//                    "          color: var(--el-text-color-secondary);\n" +
+//                    "          font-size: 13px;\n" +
+//                    "        \"\n" +
+//                    "        >${description}</span>",
+            textField = "<div>${info}</div>\n" +
+                    "      <div style=\"color: var(--el-text-color-secondary); font-size: smaller\">\n" +
+                    "        ${description}\n" +
+                    "      </div>",
             formatTextField = true,
             valueField = "name",
             relationTrigger = "region",
