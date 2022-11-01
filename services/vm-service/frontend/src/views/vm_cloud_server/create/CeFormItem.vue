@@ -1,7 +1,6 @@
 <template>
   data: {{ _data }}
   <br />
-  allData: {{ allData }}
   <el-form
     ref="ruleFormRef"
     label-width="130px"
@@ -29,6 +28,7 @@
             :all-form-view-data="allFormViewData"
             :field="item.field"
             :form-item="item"
+            :otherParams="otherParams"
             style="width: 75%"
             v-bind="{ ...JSON.parse(item.attrs) }"
             @change="change(item)"
@@ -44,6 +44,7 @@
           :all-form-view-data="allFormViewData"
           :field="item.field"
           :form-item="item"
+          :otherParams="otherParams"
           v-bind="{ ...JSON.parse(item.attrs) }"
           @change="change(item)"
         ></component>
@@ -124,13 +125,13 @@ function initOptionList(
   if (formItem && formItem.clazz && formItem.method) {
     const _temp = _.assignWith(
       {},
-      data,
       props.otherParams,
       _.defaultTo(allData, props.allData),
       (objValue, srcValue) => {
         return _.isUndefined(objValue) ? srcValue : objValue;
       }
     );
+    _.assign(_temp, data);
     console.log(_temp, formItem?.relationTrigger);
     if (
       //关联对象有值

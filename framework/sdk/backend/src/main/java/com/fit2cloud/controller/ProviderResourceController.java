@@ -18,17 +18,17 @@ import java.util.Map;
 @Api("云平台资源获取")
 public class ProviderResourceController {
 
-    @GetMapping("provider/{clazz}/{method}")
+    @PostMapping("provider/{clazz}/{method}")
     private ResultHolder<Object> getProviderResourceByMethod(@PathVariable("clazz") String clazz,
                                                              @PathVariable("method") String method,
-                                                             @RequestParam Map<String, Object> params) {
+                                                             @RequestBody Map<String, Object> params) {
         return ResultHolder.success(FormUtil.exec(clazz, false, method, params));
     }
 
-    @GetMapping("service/{clazz}/{method}")
+    @PostMapping("service/{clazz}/{method}")
     private ResultHolder<Object> getProviderResourceByServiceMethod(@PathVariable("clazz") String clazz,
                                                                     @PathVariable("method") String method,
-                                                                    @RequestParam Map<String, Object> params) {
+                                                                    @RequestBody Map<String, Object> params) {
         return ResultHolder.success(FormUtil.exec(clazz, true, method, params));
     }
 }

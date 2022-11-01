@@ -1,4 +1,4 @@
-import { get } from "@commons/request";
+import { post } from "@commons/request";
 import type { Ref } from "vue";
 const getResourceMyMethod = (
   clazz: string,
@@ -6,7 +6,12 @@ const getResourceMyMethod = (
   params: unknown,
   loading?: Ref<boolean>
 ) => {
-  return get("/api/base/provider/" + clazz + "/" + method, params, loading);
+  return post(
+    "/api/base/provider/" + clazz + "/" + method,
+    undefined,
+    params,
+    loading
+  );
 };
 
 const getResourceMyServiceMethod = (
@@ -15,7 +20,12 @@ const getResourceMyServiceMethod = (
   params: unknown,
   loading?: Ref<boolean>
 ) => {
-  return get("/api/base/service/" + clazz + "/" + method, params, loading);
+  return post(
+    "/api/base/service/" + clazz + "/" + method,
+    undefined,
+    params,
+    loading
+  );
 };
 
 function getResourceMethod(

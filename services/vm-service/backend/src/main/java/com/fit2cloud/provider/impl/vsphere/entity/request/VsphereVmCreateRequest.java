@@ -124,7 +124,8 @@ public class VsphereVmCreateRequest extends VsphereVmBaseRequest implements ICre
     //step 2
     @Form(inputType = InputType.VsphereComputeConfigForm,
             step = 2,
-            group = 5
+            group = 5,
+            relationTrigger = "cluster"
     )
     private ComputeConfig computeConfig;
 
