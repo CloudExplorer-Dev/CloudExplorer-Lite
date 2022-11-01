@@ -314,6 +314,7 @@ public class SyncProviderServiceImpl extends BaseSyncService implements ISyncPro
         vmCloudImage.setRegion(region.getRegionId());
         vmCloudImage.setRegionName(region.getName());
         vmCloudImage.setImageId(image.getId());
+        vmCloudImage.setDiskInfos(image.getDiskInfos());
         vmCloudImage.setDiskSize(image.getDiskSize());
         vmCloudImage.setDescription(image.getDescription());
         vmCloudImage.setImageName(image.getName());

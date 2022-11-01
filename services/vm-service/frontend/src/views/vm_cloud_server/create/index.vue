@@ -3,7 +3,7 @@
     <el-header>
       <el-steps :active="active" finish-status="success">
         <el-step
-          v-for="step in _.filter(steps, (s) => s.step > 0)"
+          v-for="step in stepInfos"
           :key="step.step"
           :title="step.name"
         />
@@ -14,6 +14,7 @@
 
       data: {{ data }}
       <br />
+
       formatData: {{ formatData }}
 
       <template v-if="steps[active + 1] && active !== steps.length - 2">
@@ -30,14 +31,13 @@
             </p>
           </template>
           <template #content>
-            {{ group }}
             <CeFormItem
               ref="ceForms"
-              :other-params="cloudAccount"
+              :other-params="otherParams"
               :group-id="group.group.toFixed()"
               v-model:form-view-data="group.forms"
               v-model:all-form-view-data="formData.forms"
-              v-model:data="data[group.group.toFixed()]"
+              v-model="data[group.group.toFixed()]"
               :all-data="formatData"
               @optionListRefresh="optionListRefresh"
             ></CeFormItem>
@@ -50,14 +50,14 @@
     <el-footer>
       <div class="footer">
         <div class="footer-form">
-          <template v-if="steps[0]?.groups[0]?.forms">
+          <template v-if="hasFooterForm">
             <CeFormItem
               ref="ceForms_0"
-              :other-params="cloudAccount"
+              :other-params="otherParams"
               group-id="0"
               v-model:form-view-data="steps[0].groups[0].forms"
               v-model:all-form-view-data="formData.forms"
-              v-model:data="data['0']"
+              v-model="data['0']"
               :all-data="formatData"
             ></CeFormItem>
           </template>
@@ -132,9 +132,22 @@ const formatData = computed(() => {
 const cloudAccount = ref<CloudAccount | null>(null);
 
 function next() {
-  if (active.value++ > steps.value.length - 2) {
-    active.value = steps.value.length - 2;
+  const promises = [];
+  _.forEach(ceForms.value, (formRef: InstanceType<typeof CeFormItem>) => {
+    promises.push(formRef.validate());
+  });
+  if (ceForms_0.value) {
+    promises.push(ceForms_0.value.validate());
   }
+
+  console.log(promises);
+
+  Promise.all(_.flatten(promises)).then((ok) => {
+    console.log(ok);
+    if (active.value++ > steps.value.length - 2) {
+      active.value = steps.value.length - 2;
+    }
+  });
 }
 
 function before() {
@@ -212,6 +225,18 @@ const steps = computed<Array<StepObj>>(() => {
   return _.sortBy(tempSteps, (step) => step.step);
 });
 
+const stepInfos = computed<Array<StepObj>>(() => {
+  return _.filter(steps.value, (s) => s.step > 0);
+});
+
+const hasFooterForm = computed<boolean>(() => {
+  return steps.value[0]?.groups[0]?.forms !== undefined;
+});
+
+const otherParams = computed(() => {
+  return { ...cloudAccount.value, accountId: cloudAccount.value?.id };
+});
+
 /**
  * 接收子组件传递过来需要刷新optionList的field名
  * @param field
@@ -221,20 +246,18 @@ function optionListRefresh(field: string) {
   //找到field对应的组
   const form = _.find(formData.value?.forms, (view) => view.field === field);
   const groupId = form?.group?.toFixed();
-  console.log(groupId);
+
   //调用子组件对应的刷新方法
   if (ceForms.value && groupId) {
-    console.log("in");
-
     if (groupId === "0") {
-      ceForms_0.value?.optionListRefresh(field);
+      ceForms_0.value?.optionListRefresh(field, formatData.value);
     } else {
       (
         _.find(ceForms.value, (ceForm: InstanceType<typeof CeFormItem>) => {
           console.log(ceForm);
           return ceForm.groupId === groupId;
         }) as InstanceType<typeof CeFormItem>
-      )?.optionListRefresh(field);
+      )?.optionListRefresh(field, formatData.value);
     }
   }
 }

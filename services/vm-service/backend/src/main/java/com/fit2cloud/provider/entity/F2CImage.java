@@ -2,6 +2,7 @@ package com.fit2cloud.provider.entity;
 
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.experimental.Accessors;
 
 /**
  * @Author:张少虎
@@ -10,6 +11,7 @@ import lombok.NoArgsConstructor;
  * @注释:
  */
 @Data
+@Accessors(chain = true)
 @NoArgsConstructor
 public class F2CImage {
     /**
@@ -44,6 +46,8 @@ public class F2CImage {
      * 磁盘大小
      */
     private Long diskSize;
+
+    private String diskInfos;
 
     public F2CImage(String id, String name, String description, String os, String region, Long diskSize, Long created) {
         this.id = id;

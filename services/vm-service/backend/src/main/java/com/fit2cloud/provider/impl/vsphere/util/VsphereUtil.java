@@ -6,8 +6,8 @@ import com.fit2cloud.provider.constants.F2CDiskStatus;
 import com.fit2cloud.provider.constants.F2CInstanceStatus;
 import com.fit2cloud.provider.entity.F2CDisk;
 import com.fit2cloud.provider.entity.F2CVirtualMachine;
-import com.fit2cloud.provider.impl.vsphere.entity.F2CVsphereDiskType;
 import com.fit2cloud.provider.impl.vsphere.entity.F2CVsphereDatastore;
+import com.fit2cloud.provider.impl.vsphere.entity.F2CVsphereDiskType;
 import com.fit2cloud.provider.impl.vsphere.entity.F2CVsphereHost;
 import com.fit2cloud.provider.impl.vsphere.entity.request.VsphereDiskRequest;
 import com.vmware.vim25.*;
@@ -30,6 +30,7 @@ public class VsphereUtil {
 
     /**
      * 将 vsphere 云主机对象转换为 F2C 云管云主机对象
+     *
      * @param vm
      * @param client
      * @param hostCache
@@ -151,13 +152,15 @@ public class VsphereUtil {
         instance.setOsInfo(os);
         try {
             F2CVsphereHost f2cVsphereHost;
+            String hostMorVal = null;
             if (hostCache == null) {
                 f2cVsphereHost = getF2CVsphereHost(client, vm);
             } else {
-                String hostMorVal = runtime.getHost().getVal();
+                hostMorVal = runtime.getHost().getVal();
                 f2cVsphereHost = hostCache.get(hostMorVal);
             }
             if (f2cVsphereHost != null) {
+                instance.setHostId(hostMorVal);
                 instance.setHost(f2cVsphereHost.getHostName());
                 instance.setDataCenter(f2cVsphereHost.getDataCenterName());
                 instance.setRegion(f2cVsphereHost.getDataCenterName());
@@ -167,11 +170,23 @@ public class VsphereUtil {
         } catch (Exception e) {
             logger.error(ExceptionUtils.getStackTrace(e));
         }
+
+        try {
+            ResourcePool pool = vm.getResourcePool();
+            if (pool != null) {
+                instance.setResourcePoolId(pool.getMOR().getVal());
+                instance.setResourcePool(pool.getName());
+            }
+        } catch (Exception e) {
+            logger.error(ExceptionUtils.getStackTrace(e));
+        }
+
         return instance;
     }
 
     /**
      * 将 vsphere 磁盘对象转为 F2C 云管磁盘对象
+     *
      * @param vm
      * @param disk
      * @param hostSystemMorVal
@@ -389,27 +404,33 @@ public class VsphereUtil {
         return 0;
     }
 
-    /**
-     * 计算模板磁盘大小
-     *
-     * @param client
-     * @param name
-     * @return 单位（GB）
-     */
-    public static long getTemplateDiskSizeInGB(VsphereVmClient client, String name) {
-        long diskSum = 0;
+    public static List<VirtualDisk> getTemplateDisks(VsphereVmClient client, String name) {
+        List<VirtualDisk> disks = new ArrayList<>();
         try {
             VirtualMachine template = client.getTemplateFromAll(name);
             VirtualMachineConfigInfo templateConfig = template.getConfig();
             VirtualDevice[] devices = templateConfig.getHardware().getDevice();
             for (VirtualDevice device : devices) {
                 if (device instanceof VirtualDisk) {
-                    VirtualDisk vd = (VirtualDisk) device;
-                    long capacityInKB = vd.getCapacityInKB();
-                    diskSum = diskSum + capacityInKB / MB;
+                    disks.add((VirtualDisk) device);
                 }
             }
         } catch (Exception ignored) {
+        }
+        return disks;
+    }
+
+
+    /**
+     * 计算模板磁盘大小
+     *
+     * @return 单位（GB）
+     */
+    public static long getTemplateDiskSizeInGB(List<VirtualDisk> devices) {
+        long diskSum = 0;
+        for (VirtualDisk device : devices) {
+            long capacityInKB = device.getCapacityInKB();
+            diskSum = diskSum + capacityInKB / MB;
 
         }
         return diskSum;

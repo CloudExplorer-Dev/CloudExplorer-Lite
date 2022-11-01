@@ -84,6 +84,9 @@ public class VmCloudImage implements Serializable {
     @TableField("disk_size")
     private Long diskSize;
 
+    @TableField("disk_infos")
+    private String diskInfos;
+
     /**
      * 磁盘状态,normal:正常，delete:删除
      */

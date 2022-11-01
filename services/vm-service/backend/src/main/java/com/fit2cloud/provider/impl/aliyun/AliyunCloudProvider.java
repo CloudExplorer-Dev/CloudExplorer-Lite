@@ -8,10 +8,7 @@ import com.fit2cloud.provider.entity.F2CImage;
 import com.fit2cloud.provider.entity.F2CVirtualMachine;
 import com.fit2cloud.provider.impl.aliyun.api.AliyunSyncCloudApi;
 import com.fit2cloud.provider.impl.aliyun.entity.credential.AliyunVmCredential;
-import com.fit2cloud.provider.impl.aliyun.entity.request.AliyunInstanceRequest;
-import com.fit2cloud.provider.impl.aliyun.entity.request.ListDisksRequest;
-import com.fit2cloud.provider.impl.aliyun.entity.request.ListImageRequest;
-import com.fit2cloud.provider.impl.aliyun.entity.request.ListVirtualMachineRequest;
+import com.fit2cloud.provider.impl.aliyun.entity.request.*;
 
 import java.util.List;
 
@@ -41,7 +38,9 @@ public class AliyunCloudProvider extends AbstractCloudProvider<AliyunVmCredentia
 
     @Override
     public boolean powerOff(String req) {
-        return AliyunSyncCloudApi.powerOff(JsonUtil.parseObject(req, AliyunInstanceRequest.class));
+        AliyunInstanceRequest request = JsonUtil.parseObject(req, AliyunInstanceRequest.class);
+        request.setForce(true);
+        return AliyunSyncCloudApi.powerOff(request);
     }
 
     @Override
@@ -80,4 +79,29 @@ public class AliyunCloudProvider extends AbstractCloudProvider<AliyunVmCredentia
         return AliyunSyncCloudApi.rebootInstance(request);
     }
 
+    @Override
+    public List<F2CDisk>  createDisks(String req) {
+        return AliyunSyncCloudApi.createDisk(JsonUtil.parseObject(req, AliyunCreateDiskRequest.class));
+    }
+
+
+    @Override
+    public boolean enlargeDisk(String req) {
+        return AliyunSyncCloudApi.enlargeDisk(JsonUtil.parseObject(req, AliyunResizeDiskRequest.class));
+    }
+
+    @Override
+    public boolean attachDisk(String req) {
+        return AliyunSyncCloudApi.attachDisk(JsonUtil.parseObject(req, AliyunAttachDiskRequest.class));
+    }
+
+    @Override
+    public boolean detachDisk(String req) {
+        return AliyunSyncCloudApi.detachDisk(JsonUtil.parseObject(req, AliyunDetachDiskRequest.class));
+    }
+
+    @Override
+    public boolean deleteDisk(String req) {
+        return AliyunSyncCloudApi.deleteDisk(JsonUtil.parseObject(req, AliyunDeleteDiskRequest.class));
+    }
 }

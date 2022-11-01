@@ -7,6 +7,8 @@ import com.fit2cloud.common.form.constants.InputType;
 import com.fit2cloud.common.provider.impl.vsphere.VsphereBaseCloudProvider;
 import com.fit2cloud.provider.ICreateServerRequest;
 import com.fit2cloud.provider.impl.vsphere.VsphereCloudProvider;
+import com.fit2cloud.service.IVmCloudImageService;
+import com.fit2cloud.service.impl.VmCloudImageServiceImpl;
 import lombok.Data;
 
 import java.util.List;
@@ -37,7 +39,7 @@ public class VsphereVmCreateRequest extends VsphereVmBaseRequest implements ICre
 
     //step 1
     //数据中心datacenter
-    @Form(inputType = InputType.SingleSelect,
+    @Form(inputType = InputType.Radio,
             label = "数据中心",
             clazz = VsphereBaseCloudProvider.class,
             method = "getRegions",
@@ -49,17 +51,21 @@ public class VsphereVmCreateRequest extends VsphereVmBaseRequest implements ICre
     private String region;
 
     //集群
-    @Form(inputType = InputType.SingleSelect,
+    @Form(inputType = InputType.Radio,
             label = "集群",
             clazz = VsphereCloudProvider.class,
             method = "getClusters",
-            textField = "${info} <span\n" +
-                    "        style=\"\n" +
-                    "          float: right;\n" +
-                    "          color: var(--el-text-color-secondary);\n" +
-                    "          font-size: 13px;\n" +
-                    "        \"\n" +
-                    "        >${description}</span>",
+//            textField = "${info} <span\n" +
+//                    "        style=\"\n" +
+//                    "          float: right;\n" +
+//                    "          color: var(--el-text-color-secondary);\n" +
+//                    "          font-size: 13px;\n" +
+//                    "        \"\n" +
+//                    "        >${description}</span>",
+            textField = "<div>${info}</div>\n" +
+                    "      <div style=\"color: var(--el-text-color-secondary); font-size: smaller\">\n" +
+                    "        ${description}\n" +
+                    "      </div>",
             formatTextField = true,
             valueField = "name",
             relationTrigger = "region",
@@ -71,10 +77,11 @@ public class VsphereVmCreateRequest extends VsphereVmBaseRequest implements ICre
     //模版
     @Form(inputType = InputType.SingleSelect,
             label = "模版",
-            clazz = VsphereCloudProvider.class,
-            method = "getTemplates",
-            textField = "description",
-            valueField = "name",
+            clazz = VmCloudImageServiceImpl.class,
+            serviceMethod = true,
+            method = "listVmCloudImage",
+            textField = "imageName",
+            valueField = "imageId",
             relationTrigger = "region",
             group = 2,
             step = 1
@@ -85,7 +92,6 @@ public class VsphereVmCreateRequest extends VsphereVmBaseRequest implements ICre
     @Form(inputType = InputType.Number,
             label = "CPU",
             unit = "核",
-            relationTrigger = "template",
             group = 3,
             step = 1,
             defaultValue = "1",
@@ -98,7 +104,6 @@ public class VsphereVmCreateRequest extends VsphereVmBaseRequest implements ICre
     @Form(inputType = InputType.Number,
             label = "内存",
             unit = "GB",
-            relationTrigger = "template",
             group = 3,
             step = 1,
             defaultValue = "1",
@@ -119,7 +124,8 @@ public class VsphereVmCreateRequest extends VsphereVmBaseRequest implements ICre
     //step 2
     @Form(inputType = InputType.VsphereComputeConfigForm,
             step = 2,
-            group = 5
+            group = 5,
+            relationTrigger = "cluster"
     )
     private ComputeConfig computeConfig;
 
@@ -135,7 +141,8 @@ public class VsphereVmCreateRequest extends VsphereVmBaseRequest implements ICre
     @Form(inputType = InputType.VsphereDatastoreForm,
             label = "存储器",
             step = 2,
-            group = 6
+            group = 6,
+            relationTrigger = "computeConfig"
     )
     private String datastore;
 
@@ -175,8 +182,8 @@ public class VsphereVmCreateRequest extends VsphereVmBaseRequest implements ICre
         //计算资源类型
         private String location;
 
-        //主机
-        private List<String> hosts;
+        //主机/资源池的Mor
+        private String mor;
 
     }
 
