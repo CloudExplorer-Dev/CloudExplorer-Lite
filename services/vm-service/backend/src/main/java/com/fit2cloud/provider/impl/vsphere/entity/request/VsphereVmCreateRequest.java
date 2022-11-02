@@ -149,15 +149,15 @@ public class VsphereVmCreateRequest extends VsphereVmBaseRequest implements ICre
     //文件夹
     @Form(inputType = InputType.SingleSelect,
             label = "文件夹",
-            clazz = VsphereBaseCloudProvider.class,
+            clazz = VsphereCloudProvider.class,
             method = "getFolders",
             textField = "name",
-            valueField = "name",
+            valueField = "mor",
             relationTrigger = "cluster",
             group = 7,
             step = 2
     )
-    private String folderName;
+    private String folder;
 
 
     //step 3

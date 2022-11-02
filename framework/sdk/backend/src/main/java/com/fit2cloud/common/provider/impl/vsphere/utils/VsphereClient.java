@@ -7,10 +7,12 @@ import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.lang.reflect.Array;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.rmi.RemoteException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -34,6 +36,8 @@ public class VsphereClient {
 
     private static final String CLUSTER_TYPE_NAME = "ClusterComputeResource";
     public static String FLAG_FOR_NULL_VALUE = "only-a-flag";
+
+    public static final String FOLDER_ROOT = "ROOT";
 
     public ServiceInstance getSi() {
         return si;
@@ -192,6 +196,7 @@ public class VsphereClient {
 
     /**
      * 根据存储器获取数据中心
+     *
      * @param datastore 存储器实例
      * @return 数据中心实例
      */
@@ -332,4 +337,29 @@ public class VsphereClient {
         return guest != null;
     }
 
+    public List<Folder> listFolders() {
+        List<Folder> folderList = new ArrayList<>();
+        for (Folder f : listResources(Folder.class)) {
+            if (f.getParent() != null && f.getParent().getName().equalsIgnoreCase("vm")) {
+                folderList.add(f);
+            }
+        }
+        return folderList;
+    }
+
+    public <T> T[] getChildResource(Class<T> resClass, ManagedEntity parentEntity) {
+        try {
+            ManagedEntity[] entities = new InventoryNavigator(parentEntity).searchManagedEntities(resClass.getSimpleName());
+            if (entities != null && entities.length > 0) {
+                return Arrays.asList(entities).toArray((T[]) Array.newInstance(resClass, entities.length));
+            }
+        } catch (InvalidProperty e) {
+            logger.error(ExceptionUtils.getStackTrace(e));
+            throw new RuntimeException("invalid parameters!" + e.getLocalizedMessage(), e);
+        } catch (Exception e) {
+            logger.error(ExceptionUtils.getStackTrace(e));
+            throw new RuntimeException("Error getting resources!" + e.getLocalizedMessage(), e);
+        }
+        return null;
+    }
 }

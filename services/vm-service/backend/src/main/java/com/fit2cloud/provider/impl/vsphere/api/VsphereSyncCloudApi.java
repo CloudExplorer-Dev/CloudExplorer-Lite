@@ -652,8 +652,8 @@ public class VsphereSyncCloudApi {
         ResourcePoolResourceUsage cpu = runtime.getCpu();
         ResourcePoolResourceUsage memory = runtime.getMemory();
 
-        BigDecimal totalCpu = BigDecimal.valueOf(cpu.getReservationUsedForVm()).add(BigDecimal.valueOf(cpu.getUnreservedForVm())).divide(BigDecimal.valueOf(1000),2 ,RoundingMode.HALF_UP); //GHz
-        BigDecimal totalUsedCpu = BigDecimal.valueOf(cpu.getReservationUsedForVm()).divide(BigDecimal.valueOf(1000),2 ,RoundingMode.HALF_UP); //GHz
+        BigDecimal totalCpu = BigDecimal.valueOf(cpu.getReservationUsedForVm()).add(BigDecimal.valueOf(cpu.getUnreservedForVm())).divide(BigDecimal.valueOf(1000), 2, RoundingMode.HALF_UP); //GHz
+        BigDecimal totalUsedCpu = BigDecimal.valueOf(cpu.getReservationUsedForVm()).divide(BigDecimal.valueOf(1000), 2, RoundingMode.HALF_UP); //GHz
         BigDecimal totalMemory = (BigDecimal.valueOf(memory.getReservationUsedForVm()).add(BigDecimal.valueOf(memory.getUnreservedForVm()))).divide(BigDecimal.valueOf(GB), 2, RoundingMode.HALF_UP); //GB
         BigDecimal totalUsedMemory = BigDecimal.valueOf(memory.getReservationUsedForVm()).divide(BigDecimal.valueOf(GB), 2, RoundingMode.HALF_UP); //GB
 
@@ -674,4 +674,32 @@ public class VsphereSyncCloudApi {
         }
         return result;
     }
+
+    public static List<VsphereFolder> getFolders(VsphereVmCreateRequest request) {
+        VsphereClient client = null;
+        try {
+            client = request.getVsphereVmClient();
+            List<Folder> folders = client.listFolders();
+            List<VsphereFolder> list = new ArrayList<>();
+
+            if (folders != null && folders.size() > 0) {
+                for (Folder folder : folders) {
+                    List<VsphereFolder> childFolders = VsphereUtil.getChildFolders(client, folder, "");
+                    list.addAll(childFolders);
+                }
+            }
+            list.sort(Comparator.comparing(VsphereFolder::getName));
+
+            //根目录
+            VsphereFolder rootFolder = new VsphereFolder().setMor(VsphereClient.FOLDER_ROOT).setName(VsphereClient.FOLDER_ROOT);
+            list.add(0, rootFolder);
+
+            return list;
+        } catch (Exception e) {
+            throw new RuntimeException(e.getMessage(), e);
+        } finally {
+            closeConnection(client);
+        }
+    }
+
 }

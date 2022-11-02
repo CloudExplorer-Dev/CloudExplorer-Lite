@@ -8,14 +8,7 @@ import com.fit2cloud.provider.AbstractCloudProvider;
 import com.fit2cloud.provider.ICloudProvider;
 import com.fit2cloud.provider.entity.*;
 import com.fit2cloud.provider.impl.vsphere.api.VsphereSyncCloudApi;
-import com.fit2cloud.provider.impl.vsphere.entity.F2CVsphereCluster;
-import com.fit2cloud.provider.impl.vsphere.entity.F2CVsphereNetwork;
-import com.fit2cloud.provider.impl.vsphere.entity.request.VsphereNetworkRequest;
-import com.fit2cloud.provider.impl.vsphere.entity.request.VsphereVmBaseRequest;
-import com.fit2cloud.provider.impl.vsphere.entity.request.VsphereVmCreateRequest;
-import com.fit2cloud.provider.impl.vsphere.entity.request.VsphereVmPowerRequest;
-import com.fit2cloud.provider.impl.vsphere.entity.VsphereHost;
-import com.fit2cloud.provider.impl.vsphere.entity.VsphereResourcePool;
+import com.fit2cloud.provider.impl.vsphere.entity.*;
 import com.fit2cloud.provider.impl.vsphere.entity.request.*;
 
 import java.util.List;
@@ -115,6 +108,11 @@ public class VsphereCloudProvider extends AbstractCloudProvider<VsphereCredentia
     public List<VsphereResourcePool> geResourcePools(String req) {
         VsphereVmCreateRequest request = JsonUtil.parseObject(req, VsphereVmCreateRequest.class);
         return VsphereSyncCloudApi.geResourcePools(request);
+    }
+
+    public List<VsphereFolder> getFolders(String req) {
+        VsphereVmCreateRequest request = JsonUtil.parseObject(req, VsphereVmCreateRequest.class);
+        return VsphereSyncCloudApi.getFolders(request);
     }
 
     @Override

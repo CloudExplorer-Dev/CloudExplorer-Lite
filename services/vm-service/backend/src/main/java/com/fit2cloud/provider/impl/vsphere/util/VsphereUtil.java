@@ -10,6 +10,7 @@ import com.fit2cloud.provider.entity.F2CVirtualMachine;
 import com.fit2cloud.provider.impl.vsphere.entity.F2CVsphereDatastore;
 import com.fit2cloud.provider.impl.vsphere.entity.F2CVsphereDiskType;
 import com.fit2cloud.provider.impl.vsphere.entity.F2CVsphereHost;
+import com.fit2cloud.provider.impl.vsphere.entity.VsphereFolder;
 import com.fit2cloud.provider.impl.vsphere.entity.request.VsphereDiskRequest;
 import com.vmware.vim25.*;
 import com.vmware.vim25.mo.*;
@@ -604,5 +605,25 @@ public class VsphereUtil {
             }
         }
         return disks;
+    }
+
+    public static List<VsphereFolder> getChildFolders(VsphereClient client, Folder folder, String parent) {
+        List<VsphereFolder> result = new ArrayList<>();
+        Folder[] subFolders = client.getChildResource(Folder.class, folder);
+        if (!"".equals(parent)) {
+            parent = parent + "/";
+        }
+        VsphereFolder root = new VsphereFolder().setMor(folder.getMOR().getVal()).setName(parent + folder.getName());
+        result.add(root);
+        if (subFolders != null) {
+            for (Folder childFolder : subFolders) {
+                if (!StringUtils.equals(childFolder.getMOR().getVal(), folder.getMOR().getVal()) &&
+                        StringUtils.equals(childFolder.getParent().getMOR().getVal(), folder.getMOR().getVal())
+                ) {
+                    result.addAll(getChildFolders(client, childFolder, parent + folder.getName()));
+                }
+            }
+        }
+        return result;
     }
 }
