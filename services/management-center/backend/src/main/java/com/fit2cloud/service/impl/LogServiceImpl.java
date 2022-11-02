@@ -67,7 +67,6 @@ public class LogServiceImpl implements ILogService {
         }
         if (StringUtils.equalsIgnoreCase("allLog", request.getType())) {
             request.setType(null);
-            //request.setResourceType(ResourceTypeEnum.DISK.getDescription());
         }
         return provide.searchByQuery(CE_FILE_API_LOGS, getSearchQuery(request.getCurrentPage(), request.getPageSize(), JsonUtil.toJSONString(request), request.getOrder()), OperatedLogVO.class, page);
     }

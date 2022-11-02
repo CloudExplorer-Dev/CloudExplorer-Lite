@@ -48,4 +48,14 @@ public class CloudAccountSyncJob {
             LogUtil.info("同步镜像结束: ", map);
         }
     }
+
+    @Name("同步云主机监控数据任务")
+    public static class SyncCloudServerPerfMetricMonitor extends AsyncJob implements Job {
+        @Override
+        protected void run(Map<String, Object> map) {
+            LogUtil.info("开始同步云主机监控数据: ", map);
+            SpringUtil.getBean(ISyncProviderService.class).syncCloudServerPerfMetricMonitor(map);
+            LogUtil.info("同步云主机监控数据结束:", map);
+        }
+    }
 }

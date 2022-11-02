@@ -7,8 +7,11 @@ import com.fit2cloud.base.service.IBaseJobRecordResourceMappingService;
 import com.fit2cloud.common.constants.JobConstants;
 import com.fit2cloud.common.constants.JobStatusConstants;
 import com.fit2cloud.common.constants.JobTypeConstants;
+import com.fit2cloud.common.es.ElasticsearchProvide;
 import com.fit2cloud.common.platform.credential.Credential;
+import com.fit2cloud.common.provider.entity.F2CPerfMetricMonitorData;
 import com.fit2cloud.common.utils.JsonUtil;
+import com.fit2cloud.es.entity.PerfMetricMonitorData;
 import com.fit2cloud.provider.ICloudProvider;
 import com.fit2cloud.provider.constants.F2CDiskStatus;
 import com.fit2cloud.provider.constants.F2CImageStatus;
@@ -42,6 +45,8 @@ public class SyncProviderServiceImpl extends BaseSyncService implements ISyncPro
     private IVmCloudDiskService vmCloudDiskService;
     @Resource
     private IBaseJobRecordResourceMappingService jobRecordResourceMappingService;
+    @Resource
+    private ElasticsearchProvide elasticsearchProvide;
 
     @Override
     public void syncCloudServer(String cloudAccountId) {
@@ -159,6 +164,46 @@ public class SyncProviderServiceImpl extends BaseSyncService implements ISyncPro
         if (params.containsKey(JobConstants.CloudAccount.CLOUD_ACCOUNT_ID.name()) && params.containsKey(JobConstants.CloudAccount.REGIONS.name())) {
             syncCloudDisk(cloudAccountId, regions);
         }
+    }
+
+    /**
+     * 同步云主机监控数据
+     * @param params 同步云主机所需要的参数
+     */
+    @Override
+    public void syncCloudServerPerfMetricMonitor(Map<String, Object> params) {
+        try {
+            String cloudAccountId = getCloudAccountId(params);
+            List<Credential.Region> regions = getRegions(params);
+            if (params.containsKey(JobConstants.CloudAccount.CLOUD_ACCOUNT_ID.name()) && params.containsKey(JobConstants.CloudAccount.REGIONS.name())) {
+                proxy(
+                        cloudAccountId,
+                        regions,
+                        "同步云主机监控",
+                        ICloudProvider::getF2CPerfMetricMonitorData,
+                        this::perfMetricMonitorSaveOrUpdate,
+                        this::writeJobRecord,
+                        () ->{});
+            }
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+    }
+
+    /**
+     * 监控插入
+     *
+     * @param saveBatchOrUpdateParams 插入更新数据所需要的参数
+     */
+    private void perfMetricMonitorSaveOrUpdate(SaveBatchOrUpdateParams<F2CPerfMetricMonitorData> saveBatchOrUpdateParams) {
+        List<F2CPerfMetricMonitorData> vmCloudServers = saveBatchOrUpdateParams.getSyncRecord();
+        List<PerfMetricMonitorData> perfMetricMonitorDataList = new ArrayList<>();
+        vmCloudServers.forEach(v->{
+            PerfMetricMonitorData perfMetricMonitorData = new PerfMetricMonitorData();
+            BeanUtils.copyProperties(v,perfMetricMonitorData);
+            perfMetricMonitorDataList.add(perfMetricMonitorData);
+        });
+        elasticsearchProvide.bulkInsert(perfMetricMonitorDataList,"ce-perf-metric-monitor-data");
     }
 
     /**

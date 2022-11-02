@@ -67,6 +67,12 @@ public enum JobConstants {
             return params;
         }
 
+        public static Map<String, Object> getCloudAccountPerfMetricMonitorJobParams(java.lang.String accountId) {
+            Map<java.lang.String, java.lang.Object> params = new HashMap<>();
+            params.put(CLOUD_ACCOUNT_ID.name(), accountId);
+            return params;
+        }
+
         /**
          * 获取云账号定时任务名
          *

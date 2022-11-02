@@ -30,6 +30,11 @@ public class JobConstants implements JobSettingConfig.JobConfig {
      */
     private static final String SYNC_IMAGE = "SYNC_IMAGE";
 
+    /**
+     * 同步云主机性能监控数据
+     */
+    private static final String SYNC_VIRTUAL_MACHINE_PERF_METRIC_MONITOR = "SYNC_VIRTUAL_MACHINE_PERF_METRIC_MONITOR";
+
 
     @Override
     public List<JobSettingParent> listJobInitSetting() {
@@ -39,6 +44,8 @@ public class JobConstants implements JobSettingConfig.JobConfig {
         JobInitSettingDto syncDisk = new JobInitSettingDto(CloudAccountSyncJob.SyncDiskJob.class, SYNC_DISK, com.fit2cloud.common.constants.JobConstants.Group.CLOUD_ACCOUNT_RESOURCE_SYNC_GROUP.name(), "同步磁盘", null, p -> true);
         // 同步镜像
         JobInitSettingDto syncImage = new JobInitSettingDto(CloudAccountSyncJob.SyncImageJob.class, SYNC_IMAGE, com.fit2cloud.common.constants.JobConstants.Group.CLOUD_ACCOUNT_RESOURCE_SYNC_GROUP.name(), "同步镜像", null, p -> true);
-        return List.of(syncDisk, syncVirtual, syncImage);
+        // 同步监控数据
+        JobInitSettingDto syncPerfMetricMonitor = new JobInitSettingDto(CloudAccountSyncJob.SyncCloudServerPerfMetricMonitor.class, SYNC_VIRTUAL_MACHINE_PERF_METRIC_MONITOR, com.fit2cloud.common.constants.JobConstants.Group.CLOUD_ACCOUNT_RESOURCE_SYNC_GROUP.name(), "同步云主机监控数据", null, p -> true);
+        return List.of(syncDisk, syncVirtual, syncImage,syncPerfMetricMonitor);
     }
 }

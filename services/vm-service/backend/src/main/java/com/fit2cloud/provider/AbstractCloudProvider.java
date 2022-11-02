@@ -6,7 +6,9 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.fit2cloud.common.exception.Fit2cloudException;
 import com.fit2cloud.common.form.vo.FormObject;
 import com.fit2cloud.common.platform.credential.Credential;
+import com.fit2cloud.common.provider.entity.F2CPerfMetricMonitorData;
 import com.fit2cloud.common.utils.JsonUtil;
+import com.fit2cloud.constants.ErrorCodeConstants;
 import com.fit2cloud.provider.entity.F2CDisk;
 
 import java.lang.reflect.ParameterizedType;
@@ -80,5 +82,10 @@ public abstract class AbstractCloudProvider<C extends Credential> implements ICl
     @Override
     public List<F2CDisk> createDisks(String req) {
         return null;
+    }
+
+    @Override
+    public List<F2CPerfMetricMonitorData> getF2CPerfMetricMonitorData(String req){
+        throw new Fit2cloudException(ErrorCodeConstants.NOT_IMPLEMENTED.getCode(), ErrorCodeConstants.NOT_IMPLEMENTED.getMessage());
     }
 }

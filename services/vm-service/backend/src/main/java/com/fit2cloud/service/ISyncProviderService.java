@@ -78,4 +78,11 @@ public interface ISyncProviderService {
      */
     void syncCloudDisk(Map<String, Object> params);
 
+
+    /**
+     * 同步云主机性能监控数据
+     * @param params 同步云主机所需要的参数
+     */
+    void syncCloudServerPerfMetricMonitor(Map<String, Object> params);
+
 }

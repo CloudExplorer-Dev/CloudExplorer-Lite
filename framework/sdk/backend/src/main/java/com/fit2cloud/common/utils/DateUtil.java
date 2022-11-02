@@ -4,6 +4,7 @@ import org.apache.commons.lang3.time.DateUtils;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.Calendar;
 
 /**
  * @author jianneng
@@ -23,4 +24,16 @@ public class DateUtil extends DateUtils {
         DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern(YYYY_MM_DD_HH_MM_SS);
         return LocalDateTime.parse(now.format(dateTimeFormatter), dateTimeFormatter);
     }
+
+    /**
+     * 获取过去n个小时的时间戳
+     * @param n
+     * @return
+     */
+    public static Long getBeforeHourTime(int n) {
+        Calendar calendar = Calendar.getInstance();
+        calendar.set(Calendar.HOUR_OF_DAY, calendar.get(Calendar.HOUR_OF_DAY) - n);
+        return calendar.getTime().getTime();
+    }
+
 }

@@ -2,6 +2,7 @@ package com.fit2cloud.provider;
 
 
 import com.fit2cloud.common.form.vo.FormObject;
+import com.fit2cloud.common.provider.entity.F2CPerfMetricMonitorData;
 import com.fit2cloud.provider.constants.ProviderConstants;
 import com.fit2cloud.provider.entity.F2CDisk;
 import com.fit2cloud.provider.entity.F2CImage;
@@ -152,5 +153,13 @@ public interface ICloudProvider {
      * @return
      */
     boolean enlargeDisk(String req);
+
+    /**
+     * 监控信息
+     * @param req
+     * @return
+     */
+    List<F2CPerfMetricMonitorData> getF2CPerfMetricMonitorData(String req);
+
 
 }

@@ -54,7 +54,9 @@ public enum ErrorCodeConstants {
     VM_POWER_ON_FAIL(200100106, "云主机开机失败"),
     VM_POWER_OFF_FAIL(200100107, "云主机关机失败"),
     VM_REBOOT_FAIL(200100108, "云主机重启失败"),
-    VM_DELETE_FAIL(200100109, "云主机删除失败");
+    VM_DELETE_FAIL(200100109, "云主机删除失败"),
+
+    NOT_IMPLEMENTED(10001, "未实现");
 
 
 
