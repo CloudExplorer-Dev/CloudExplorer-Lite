@@ -135,6 +135,11 @@ public class VsphereCloudProvider extends AbstractCloudProvider<VsphereCredentia
         return diskTypes;
     }
 
+    public List<VsphereDatastore> getDatastoreList(String req) {
+        VsphereVmCreateRequest request = JsonUtil.parseObject(req, VsphereVmCreateRequest.class);
+        return VsphereSyncCloudApi.getDatastoreList(request);
+    }
+
     @Override
     public boolean enlargeDisk(String req) {
         return VsphereSyncCloudApi.enlargeDisk(JsonUtil.parseObject(req, VsphereResizeDiskRequest.class));

@@ -21,7 +21,7 @@
         @change="locationChange(_data.location)"
       >
         <el-radio-button
-          v-for="(item, index) in computeTypes"
+          v-for="(item, index) in formItem?.ext?.location?.optionList"
           :key="index"
           :label="item['value']"
         >
@@ -42,7 +42,7 @@
     >
       <el-table
         ref="singleTableRef"
-        :data="list"
+        :data="formItem?.ext?.mor?.optionList"
         highlight-current-row
         style="width: 100%"
         @current-change="handleCurrentChange"
@@ -59,12 +59,10 @@
         <el-table-column label="CPU使用量">
           <template #default="scope">
             <div class="usage-bar-top-text">
-              <span
-                >可用:
-                {{
-                  (scope.row.totalCpu - scope.row.usedCpu).toFixed(2)
-                }}GHz</span
-              >
+              <span>
+                可用:
+                {{ (scope.row.totalCpu - scope.row.usedCpu).toFixed(2) }}GHz
+              </span>
             </div>
             <el-progress
               :color="customColors"
@@ -77,13 +75,13 @@
               :text-inside="true"
             />
             <div class="usage-bar-bottom-text">
-              <span>已用: {{ scope.row.usedCpu }}GB</span>
-              <span>总量: {{ scope.row.totalCpu }}GB</span>
+              <span>已用: {{ scope.row.usedCpu }}GHz</span>
+              <span>总量: {{ scope.row.totalCpu }}GHz</span>
             </div>
           </template>
         </el-table-column>
-        <el-table-column label="内存使用量"
-          ><template #default="scope">
+        <el-table-column label="内存使用量">
+          <template #default="scope">
             <div class="usage-bar-top-text">
               <span
                 >可用:{{
@@ -142,7 +140,7 @@ const props = defineProps<{
   allFormViewData?: Array<FormView>;
   field: string;
   otherParams: any;
-  formItem?: FormView;
+  formItem: FormView;
 }>();
 
 const emit = defineEmits(["update:modelValue", "change"]);
@@ -175,7 +173,7 @@ const ruleFormRef = ref<FormInstance>();
 const currentRow = computed<HostOrResourcePool | undefined>({
   get() {
     return _.find(
-      list.value,
+      props.formItem?.ext?.mor?.optionList,
       (o: HostOrResourcePool) => o.mor === _data.value.mor
     );
   },
@@ -187,8 +185,8 @@ const currentRow = computed<HostOrResourcePool | undefined>({
 function handleCurrentChange(val: HostOrResourcePool | undefined) {
   currentRow.value = val;
 
-  _.forEach(list.value, (o) => {
-    o.checked = o.mor === _data.value.mor;
+  _.forEach(props.formItem?.ext?.mor?.optionList, (o) => {
+    o.checked = o.mor === currentRow.value?.mor;
   });
 }
 
@@ -205,10 +203,6 @@ const customColors = [
 
 const _loading = ref<boolean>(false);
 
-const computeTypes = ref([]);
-
-const list = ref<Array<HostOrResourcePool>>([]);
-
 const singleTableRef = ref<InstanceType<typeof ElTable>>();
 
 /**
@@ -218,7 +212,7 @@ const singleTableRef = ref<InstanceType<typeof ElTable>>();
 function locationChange(value?: string) {
   //清空
   _data.value.mor = undefined;
-  list.value = [];
+  _.set(props.formItem, "ext.mor.optionList", []);
   //重新获取主机/资源池列表
   getList();
 }
@@ -246,7 +240,7 @@ function getComputeTypes() {
       _loading
     )
     .then((ok) => {
-      computeTypes.value = ok.data;
+      _.set(props.formItem, "ext.location.optionList", ok.data);
     });
 }
 
@@ -261,20 +255,20 @@ function getList() {
     clazz = "com.fit2cloud.provider.impl.vsphere.VsphereCloudProvider";
     method = "geResourcePools";
   } else {
-    list.value = [];
+    _.set(props.formItem, "ext.mor.optionList", []);
     _data.value.mor = undefined;
     return;
   }
   formApi
     .getResourceMethod(false, clazz, method, _temp, _loading)
     .then((ok) => {
-      list.value = ok.data;
+      _.set(props.formItem, "ext.mor.optionList", ok.data);
       if (currentRow.value === undefined) {
         _data.value.mor = undefined;
       } else {
         //设置界面默认选中
         singleTableRef.value?.setCurrentRow(currentRow.value);
-        _.forEach(list.value, (o) => {
+        _.forEach(props.formItem?.ext?.mor?.optionList, (o) => {
           o.checked = o.mor === _data.value.mor;
         });
       }
@@ -285,11 +279,20 @@ function getList() {
  * 触发change事件
  */
 watch(
-  () => _data.value,
-  (data) => {
-    emit("change");
-  },
-  { deep: true }
+  () => _data.value.location,
+  (newLocation, oldLocation) => {
+    if ("drs-flag" === newLocation || "drs-flag" === oldLocation) {
+      emit("change");
+    }
+  }
+);
+watch(
+  () => _data.value.mor,
+  (value) => {
+    if (value !== undefined) {
+      emit("change");
+    }
+  }
 );
 
 onMounted(() => {
@@ -326,6 +329,7 @@ defineExpose({
   font-size: smaller;
   font-weight: bold;
 }
+
 .usage-bar-bottom-text {
   display: flex;
   flex-direction: row;

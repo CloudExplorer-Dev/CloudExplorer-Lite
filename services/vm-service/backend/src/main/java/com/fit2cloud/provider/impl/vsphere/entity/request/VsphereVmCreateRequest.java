@@ -145,6 +145,8 @@ public class VsphereVmCreateRequest extends VsphereVmBaseRequest implements ICre
     //存储器
     @Form(inputType = InputType.VsphereDatastoreForm,
             label = "存储器",
+            clazz = VsphereCloudProvider.class,
+            method = "getDatastoreList",
             step = 2,
             group = 6,
             relationTrigger = "computeConfig"
@@ -180,14 +182,14 @@ public class VsphereVmCreateRequest extends VsphereVmBaseRequest implements ICre
             step = 4,
             group = 9
     )
-    private String name;
+    private List<String> names;
     //username
     //password
     //hostname
 
 
     @Data
-    private static class DiskConfig {
+    public static class DiskConfig {
 
         private Integer size;
 
@@ -196,7 +198,7 @@ public class VsphereVmCreateRequest extends VsphereVmBaseRequest implements ICre
     }
 
     @Data
-    private static class ComputeConfig {
+    public static class ComputeConfig {
         //计算资源类型
         private String location;
 
@@ -206,7 +208,7 @@ public class VsphereVmCreateRequest extends VsphereVmBaseRequest implements ICre
     }
 
     @Data
-    private static class NetworkAdapter {
+    public static class NetworkAdapter {
 
         private String vlan;
 

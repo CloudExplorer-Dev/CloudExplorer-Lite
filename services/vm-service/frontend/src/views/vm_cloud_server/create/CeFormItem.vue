@@ -29,7 +29,6 @@
             :field="item.field"
             :form-item="item"
             :otherParams="otherParams"
-            style="width: 75%"
             v-bind="{ ...JSON.parse(item.attrs) }"
             @change="change(item)"
           ></component>
