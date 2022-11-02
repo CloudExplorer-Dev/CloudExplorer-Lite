@@ -40,6 +40,14 @@
         style="width: 100%"
         @current-change="handleCurrentChange"
       >
+        <el-table-column width="55">
+          <template #default="scope">
+            <el-checkbox
+              v-model="scope.row.checked"
+              @change="handleCurrentChange(scope.row)"
+            />
+          </template>
+        </el-table-column>
         <el-table-column property="name" :label="label" />
         <el-table-column label="CPU使用量">
           <template #default="scope">
@@ -102,7 +110,7 @@
 <script setup lang="ts">
 import type { FormView } from "@commons/components/ce-form/type";
 import formApi from "@commons/api/form_resource_api";
-import { computed, onMounted, ref } from "vue";
+import { computed, onMounted, ref, type Ref } from "vue";
 import _ from "lodash";
 import { ElTable } from "element-plus";
 
@@ -118,6 +126,7 @@ interface HostOrResourcePool {
   totalMemory: number;
   usedCpu: number;
   usedMemory: number;
+  checked?: boolean;
 }
 
 const props = defineProps<{
@@ -140,7 +149,7 @@ const _data = computed({
   },
 });
 
-const label = computed(() => {
+const label = computed<string | null>(() => {
   if (_data.value.location === "host") {
     return "主机";
   }
@@ -167,6 +176,10 @@ const currentRow = computed<HostOrResourcePool | undefined>({
 
 function handleCurrentChange(val: HostOrResourcePool | undefined) {
   currentRow.value = val;
+
+  _.forEach(list.value, (o) => {
+    o.checked = o.mor === _data.value.mor;
+  });
 }
 
 /**
@@ -251,6 +264,9 @@ function getList() {
       } else {
         //设置界面默认选中
         singleTableRef.value?.setCurrentRow(currentRow.value);
+        _.forEach(list.value, (o) => {
+          o.checked = o.mor === _data.value.mor;
+        });
       }
     });
 }
