@@ -6,12 +6,14 @@ import com.fit2cloud.common.platform.credential.impl.VsphereCredential;
 import com.fit2cloud.common.utils.JsonUtil;
 import com.fit2cloud.provider.AbstractCloudProvider;
 import com.fit2cloud.provider.ICloudProvider;
-import com.fit2cloud.provider.entity.F2CDisk;
-import com.fit2cloud.provider.entity.F2CImage;
-import com.fit2cloud.provider.entity.F2CVirtualMachine;
+import com.fit2cloud.provider.entity.*;
 import com.fit2cloud.provider.impl.vsphere.api.VsphereSyncCloudApi;
 import com.fit2cloud.provider.impl.vsphere.entity.F2CVsphereCluster;
 import com.fit2cloud.provider.impl.vsphere.entity.F2CVsphereNetwork;
+import com.fit2cloud.provider.impl.vsphere.entity.request.VsphereNetworkRequest;
+import com.fit2cloud.provider.impl.vsphere.entity.request.VsphereVmBaseRequest;
+import com.fit2cloud.provider.impl.vsphere.entity.request.VsphereVmCreateRequest;
+import com.fit2cloud.provider.impl.vsphere.entity.request.VsphereVmPowerRequest;
 import com.fit2cloud.provider.impl.vsphere.entity.VsphereHost;
 import com.fit2cloud.provider.impl.vsphere.entity.VsphereResourcePool;
 import com.fit2cloud.provider.impl.vsphere.entity.request.*;
@@ -43,6 +45,16 @@ public class VsphereCloudProvider extends AbstractCloudProvider<VsphereCredentia
     @Override
     public List<F2CDisk> listDisk(String req) {
         return VsphereSyncCloudApi.listDisk(JsonUtil.parseObject(req, VsphereVmBaseRequest.class));
+    }
+
+    @Override
+    public List<F2CHost> listHost(String req) {
+        return VsphereSyncCloudApi.listHost(JsonUtil.parseObject(req, VsphereVmBaseRequest.class));
+    }
+
+    @Override
+    public List<F2CDatastore> listDataStore(String req) {
+        return VsphereSyncCloudApi.listDataStore(JsonUtil.parseObject(req, VsphereVmBaseRequest.class));
     }
 
     @Override

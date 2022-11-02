@@ -3,9 +3,7 @@ package com.fit2cloud.provider;
 
 import com.fit2cloud.common.form.vo.FormObject;
 import com.fit2cloud.provider.constants.ProviderConstants;
-import com.fit2cloud.provider.entity.F2CDisk;
-import com.fit2cloud.provider.entity.F2CImage;
-import com.fit2cloud.provider.entity.F2CVirtualMachine;
+import com.fit2cloud.provider.entity.*;
 
 import java.util.Arrays;
 import java.util.List;
@@ -58,6 +56,21 @@ public interface ICloudProvider {
      * @return 云平台磁盘
      */
     List<F2CDisk> listDisk(String req);
+
+    /**
+     * 获取云平台宿主机
+     *
+     * @param req 请求参数
+     * @return 云平台宿主机
+     */
+    List<F2CHost> listHost(String req);
+
+    /**
+     * 获取存储器
+     * @param req 请求参数
+     * @return 云平台存储器
+     */
+    List<F2CDatastore> listDataStore(String req);
 
     /**
      * 云主机关闭电源

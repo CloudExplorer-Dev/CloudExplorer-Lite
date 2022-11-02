@@ -78,4 +78,48 @@ public interface ISyncProviderService {
      */
     void syncCloudDisk(Map<String, Object> params);
 
+    /**
+     * 同步宿主机
+     *
+     * @param cloudAccountId 云账号id
+     */
+    void syncCloudHost(String cloudAccountId);
+
+    /**
+     * 同步宿主机
+     *
+     * @param cloudAccountId 云账号id
+     * @param regions        同步区域
+     */
+    void syncCloudHost(String cloudAccountId, List<Credential.Region> regions);
+
+    /**
+     * 同步宿主机
+     *
+     * @param params 同步宿主机所需参数
+     */
+    void syncCloudHost(Map<String, Object> params);
+
+    /**
+     * 同步存储器
+     *
+     * @param cloudAccountId 云账号id
+     */
+    void syncCloudDatastore(String cloudAccountId);
+
+    /**
+     * 同步存储器
+     *
+     * @param cloudAccountId 云账号id
+     * @param regions        同步区域
+     */
+    void syncCloudDatastore(String cloudAccountId, List<Credential.Region> regions);
+
+    /**
+     * 同步存储器
+     *
+     * @param params 同步宿主机所需参数
+     */
+    void syncCloudDatastore(Map<String, Object> params);
+
 }
