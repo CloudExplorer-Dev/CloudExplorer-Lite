@@ -340,7 +340,7 @@ onMounted(() => {
     .then((ok) => {
       currentYearExpenses.value = Math.floor(ok.data * 100) / 100;
     });
-  historyTrend(6, "YEAR");
+  historyTrend(12, "YEAR");
   billRuleApi.listBillRules().then((ok) => {
     BillRules.value = ok.data;
     if (ok.data) {

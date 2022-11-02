@@ -59,15 +59,14 @@ public class BaseCloudAccountServiceImpl extends ServiceImpl<BaseCloudAccountMap
     public void initCloudAccountJob(String cloudAccountId) {
         CloudAccount cloudAccount = getById(cloudAccountId);
         Map<String, Object> defaultCloudAccountJobParams = getDefaultCloudAccountJobParams(cloudAccountId);
-        Map<String, Object> defaultBillJobSettingParams = getDefaultBillJobSettingParams(cloudAccountId, cloudAccount.getPlatform());
         JobModuleInfo moduleJobInfo = JobSettingConfig.getModuleJobInfo();
-        moduleJobInfo.getJobDetails().stream().filter(job -> job.getJobGroup().equals(JobConstants.Group.CLOUD_ACCOUNT_RESOURCE_SYNC_GROUP.name()) || job.getJobGroup().equals(JobConstants.Group.CLOUD_ACCOUNT_BILL_SYNC_GROUP.name())).forEach(job -> {
+        moduleJobInfo.getJobDetails().stream().filter(j -> j.getCloudAccountShow().test(cloudAccount.getPlatform())).filter(job -> job.getJobGroup().equals(JobConstants.Group.CLOUD_ACCOUNT_RESOURCE_SYNC_GROUP.name()) || job.getJobGroup().equals(JobConstants.Group.CLOUD_ACCOUNT_BILL_SYNC_GROUP.name())).forEach(job -> {
             String cloudAccountJobName = JobConstants.CloudAccount.getCloudAccountJobName(job.getJobName(), cloudAccountId);
             if (!schedulerService.inclusionJobDetails(cloudAccountJobName, job.getJobGroup())) {
                 if (job instanceof JobInitSettingDto jobInitSettingDto) {
-                    schedulerService.addJob(jobInitSettingDto.getJobHandler(), cloudAccountJobName, jobInitSettingDto.getJobGroup(), jobInitSettingDto.getDescription(), job.getJobGroup().equals(JobConstants.Group.CLOUD_ACCOUNT_BILL_SYNC_GROUP.name()) ? defaultBillJobSettingParams : defaultCloudAccountJobParams, jobInitSettingDto.getStartTimeDay(), jobInitSettingDto.getEndTimeDay(), jobInitSettingDto.getTimeInterval(), jobInitSettingDto.getUnit(), jobInitSettingDto.getRepeatCount(), jobInitSettingDto.getWeeks());
+                    schedulerService.addJob(jobInitSettingDto.getJobHandler(), cloudAccountJobName, jobInitSettingDto.getJobGroup(), jobInitSettingDto.getDescription(), job.getJobGroup().equals(JobConstants.Group.CLOUD_ACCOUNT_BILL_SYNC_GROUP.name()) ? getDefaultBillJobSettingParams(cloudAccountId, cloudAccount.getPlatform()) : defaultCloudAccountJobParams, jobInitSettingDto.getStartTimeDay(), jobInitSettingDto.getEndTimeDay(), jobInitSettingDto.getTimeInterval(), jobInitSettingDto.getUnit(), jobInitSettingDto.getRepeatCount(), jobInitSettingDto.getWeeks());
                 } else if (job instanceof JobCronSettingDto jobCronSettingDto) {
-                    schedulerService.addJob(jobCronSettingDto.getJobHandler(), cloudAccountJobName, jobCronSettingDto.getJobGroup(), jobCronSettingDto.getDescription(), CronUtils.createHourOfDay(jobCronSettingDto.getHoursOfDay()), job.getJobGroup().equals(JobConstants.Group.CLOUD_ACCOUNT_BILL_SYNC_GROUP.name()) ? defaultBillJobSettingParams : defaultCloudAccountJobParams);
+                    schedulerService.addJob(jobCronSettingDto.getJobHandler(), cloudAccountJobName, jobCronSettingDto.getJobGroup(), jobCronSettingDto.getDescription(), CronUtils.createHourOfDay(jobCronSettingDto.getHoursOfDay()), job.getJobGroup().equals(JobConstants.Group.CLOUD_ACCOUNT_BILL_SYNC_GROUP.name()) ? getDefaultBillJobSettingParams(cloudAccountId, cloudAccount.getPlatform()) : defaultCloudAccountJobParams);
                 }
             }
         });
@@ -94,6 +93,16 @@ public class BaseCloudAccountServiceImpl extends ServiceImpl<BaseCloudAccountMap
     private Map<String, Object> getDefaultBillJobSettingParams(String accountId, String platform) {
         Map<String, Object> defaultParams = Bill.getDefaultParams(platform);
         return JobConstants.CloudAccount.getCloudAccountBillSettingarams(accountId, defaultParams);
+    }
+
+    /**
+     * 获取同步云账号云主机监控数据参数
+     * @param accountId
+     * @return
+     */
+    private Map<String, Object> getDefaultCloudAccountPerfMetricMonitorParams(String accountId) {
+        //List<Credential.Region> regions = getRegionByAccountId(accountId);
+        return JobConstants.CloudAccount.getCloudAccountPerfMetricMonitorJobParams(accountId);
     }
 
     @SneakyThrows

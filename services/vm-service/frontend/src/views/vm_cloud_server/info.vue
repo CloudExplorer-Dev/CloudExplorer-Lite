@@ -8,66 +8,121 @@
         <template #content>
           <div ref="top">
             <el-descriptions :column="contentSpan" border class="small-text">
-              <el-descriptions-item :span="contentSpan+1"  label-class-name="label-class" class-name="content-class" label="名称:" colon="true">
+              <el-descriptions-item
+                :span="contentSpan + 1"
+                label-class-name="label-class"
+                class-name="content-class"
+                label="名称:"
+                colon="true"
+              >
                 {{ infoVmCloudServer.instanceName }}
                 <el-icon :size="15" style="margin-top: 5px">
                   <Edit />
                 </el-icon>
                 <el-tag
-                    style="margin-left: 20px"
-                    :style="{
-                  color: variables_server[infoVmCloudServer.instanceStatus],
-                }"
+                  style="margin-left: 20px"
+                  :style="{
+                    color: variables_server[infoVmCloudServer.instanceStatus],
+                  }"
                 >
                   {{ instanceStatusTagStyle(infoVmCloudServer.instanceStatus) }}
                   <el-icon
-                      v-show="
-                    infoVmCloudServer.instanceStatus === 'Starting' ||
-                    infoVmCloudServer.instanceStatus === 'Stopping' ||
-                    infoVmCloudServer.instanceStatus === 'Rebooting' ||
-                    infoVmCloudServer.instanceStatus === 'Deleting' ||
-                    infoVmCloudServer.instanceStatus === 'Createding'
-                  "
-                      class="is-loading"
-                  ><Loading
+                    v-show="
+                      infoVmCloudServer.instanceStatus === 'Starting' ||
+                      infoVmCloudServer.instanceStatus === 'Stopping' ||
+                      infoVmCloudServer.instanceStatus === 'Rebooting' ||
+                      infoVmCloudServer.instanceStatus === 'Deleting' ||
+                      infoVmCloudServer.instanceStatus === 'Createding'
+                    "
+                    class="is-loading"
+                    ><Loading
                   /></el-icon>
                 </el-tag>
               </el-descriptions-item>
-              <el-descriptions-item  label-class-name="label-class" class-name="content-class" label="云主机ID:">{{
-                  infoVmCloudServer.instanceUuid
-                }}</el-descriptions-item>
-              <el-descriptions-item  label-class-name="label-class" class-name="content-class" label="云账号:">
+              <el-descriptions-item
+                label-class-name="label-class"
+                class-name="content-class"
+                label="云主机ID:"
+                >{{ infoVmCloudServer.instanceUuid }}</el-descriptions-item
+              >
+              <el-descriptions-item
+                label-class-name="label-class"
+                class-name="content-class"
+                label="云账号:"
+              >
                 <div style="display: flex">
                   <el-image
-                      style="margin-top: 3px; width: 16px; height: 16px"
-                      :src="platformIcon[infoVmCloudServer.platform].icon"
-                      v-if="infoVmCloudServer.platform"
+                    style="margin-top: 3px; width: 16px; height: 16px"
+                    :src="platformIcon[infoVmCloudServer.platform].icon"
+                    v-if="infoVmCloudServer.platform"
                   ></el-image>
-                  <span style="margin-left: 10px">{{ infoVmCloudServer.accountName }}</span>
+                  <span style="margin-left: 10px">{{
+                    infoVmCloudServer.accountName
+                  }}</span>
                 </div>
               </el-descriptions-item>
-              <el-descriptions-item  label-class-name="label-class" class-name="content-class" label="工作空间:">{{
-                  infoVmCloudServer.workspaceName
-                }}</el-descriptions-item>
-              <el-descriptions-item  label-class-name="label-class" class-name="content-class" label="区域/数据中心:">{{
-                  infoVmCloudServer.region
-                }}</el-descriptions-item>
-              <el-descriptions-item  label-class-name="label-class" class-name="content-class" label="到期时间:">-</el-descriptions-item>
-              <el-descriptions-item  label-class-name="label-class" class-name="content-class" label="备注:">{{
-                  infoVmCloudServer.remark
-                }}</el-descriptions-item>
-              <el-descriptions-item  label-class-name="label-class" class-name="content-class" label="可用区/集群:">{{
-                  infoVmCloudServer.zone
-                }}</el-descriptions-item>
-              <el-descriptions-item  label-class-name="label-class" class-name="content-class" label="创建时间:">{{
-                  infoVmCloudServer.createTime
-                }}</el-descriptions-item>
-              <el-descriptions-item  label-class-name="label-class" class-name="content-class" label="实例规格:">{{
+              <el-descriptions-item
+                label-class-name="label-class"
+                class-name="content-class"
+                label="工作空间:"
+                >{{ infoVmCloudServer.workspaceName }}</el-descriptions-item
+              >
+              <el-descriptions-item
+                label-class-name="label-class"
+                class-name="content-class"
+                label="区域/数据中心:"
+                >{{ infoVmCloudServer.region }}</el-descriptions-item
+              >
+              <el-descriptions-item
+                label-class-name="label-class"
+                class-name="content-class"
+                label="到期时间:"
+                >-</el-descriptions-item
+              >
+              <el-descriptions-item
+                label-class-name="label-class"
+                class-name="content-class"
+                label="备注:"
+                >{{ infoVmCloudServer.remark }}</el-descriptions-item
+              >
+              <el-descriptions-item
+                label-class-name="label-class"
+                class-name="content-class"
+                label="可用区/集群:"
+                >{{ infoVmCloudServer.zone }}</el-descriptions-item
+              >
+              <el-descriptions-item
+                label-class-name="label-class"
+                class-name="content-class"
+                label="创建时间:"
+                >{{ infoVmCloudServer.createTime }}</el-descriptions-item
+              >
+              <el-descriptions-item
+                label-class-name="label-class"
+                class-name="content-class"
+                label="实例规格:"
+                >{{
                   infoVmCloudServer.instanceTypeDescription
-                }}</el-descriptions-item>
-              <el-descriptions-item  label-class-name="label-class" class-name="content-class" label="付费方式:">-</el-descriptions-item>
-              <el-descriptions-item  label-class-name="label-class" class-name="content-class" label="申请人:">-</el-descriptions-item>
-              <el-descriptions-item  label-class-name="label-class" class-name="content-class" label="镜像名称:">-</el-descriptions-item>
+                }}</el-descriptions-item
+              >
+              <el-descriptions-item
+                label-class-name="label-class"
+                class-name="content-class"
+                label="付费方式:"
+                >-</el-descriptions-item
+              >
+              <el-descriptions-item
+                label-class-name="label-class"
+                class-name="content-class"
+                label="申请人:"
+                >-</el-descriptions-item
+              >
+              <el-descriptions-item
+                label-class-name="label-class"
+                class-name="content-class"
+                label="镜像名称:"
+                >-</el-descriptions-item
+              >
             </el-descriptions>
           </div>
         </template>
@@ -78,22 +133,45 @@
         </template>
         <template #content>
           <el-descriptions :column="contentSpan" border class="small-text">
-            <el-descriptions-item  label-class-name="label-class" class-name="content-class" label="IP地址:">
-              <pre>{{
-                  filterIp(infoVmCloudServer.ipArray)
-                }}</pre>
+            <el-descriptions-item
+              label-class-name="label-class"
+              class-name="content-class"
+              label="IP地址:"
+            >
+              <pre>{{ filterIp(infoVmCloudServer.ipArray) }}</pre>
             </el-descriptions-item>
-            <el-descriptions-item  label-class-name="label-class" class-name="content-class" label="所属子网:">{{
-              infoVmCloudServer.subnetId
-            }}</el-descriptions-item>
-            <el-descriptions-item  label-class-name="label-class" class-name="content-class" label="安全组:">-</el-descriptions-item>
-            <el-descriptions-item  label-class-name="label-class" class-name="content-class" label="所属网络/VPC:"
+            <el-descriptions-item
+              label-class-name="label-class"
+              class-name="content-class"
+              label="所属子网:"
+              >{{ infoVmCloudServer.subnetId }}</el-descriptions-item
+            >
+            <el-descriptions-item
+              label-class-name="label-class"
+              class-name="content-class"
+              label="安全组:"
+              >-</el-descriptions-item
+            >
+            <el-descriptions-item
+              label-class-name="label-class"
+              class-name="content-class"
+              label="所属网络/VPC:"
               >{{ infoVmCloudServer.network }}/{{
                 infoVmCloudServer.vpcId
               }}</el-descriptions-item
             >
-            <el-descriptions-item  label-class-name="label-class" class-name="content-class" label="带宽计费类型:">-</el-descriptions-item>
-            <el-descriptions-item  label-class-name="label-class" class-name="content-class" label="带宽峰值:">-</el-descriptions-item>
+            <el-descriptions-item
+              label-class-name="label-class"
+              class-name="content-class"
+              label="带宽计费类型:"
+              >-</el-descriptions-item
+            >
+            <el-descriptions-item
+              label-class-name="label-class"
+              class-name="content-class"
+              label="带宽峰值:"
+              >-</el-descriptions-item
+            >
           </el-descriptions>
         </template>
       </layout-container>
@@ -102,12 +180,9 @@
 </template>
 <script setup lang="ts">
 import { ref, onMounted, onBeforeUnmount } from "vue";
-import VmCloudServerApi, { getVmCloudServerById } from "@/api/vm_cloud_server";
-import type { SimpleMap } from "@commons/api/base/type";
-import type { VmCloudServerVO } from "@/api/vm_cloud_server/type";
+import VmCloudServerApi from "@/api/vm_cloud_server";
 import { useI18n } from "vue-i18n";
-import { ElMessage, ElMessageBox } from "element-plus";
-import _ from "lodash";
+import _, { constant } from "lodash";
 import { useRouter } from "vue-router";
 import variables_server from "../../styles/vm_cloud_server/server.module.scss";
 import { platformIcon } from "@/utils/platform";
@@ -167,10 +242,10 @@ onMounted(() => {
       console.log(err);
     });
   window.onresize = () => {
-    if( top.value){
-      if(top.value.clientWidth<=600){
+    if (top.value) {
+      if (top.value.clientWidth <= 600) {
         contentSpan.value = 1;
-      } else if(top.value.clientWidth>=1000){
+      } else if (top.value.clientWidth >= 1000) {
         contentSpan.value = 3;
       } else {
         contentSpan.value = 2;
@@ -179,36 +254,35 @@ onMounted(() => {
       console.log(top.value.clientWidth);
     }
   };
-  });
+});
 
-const filterIp = (ipArray:any) =>{
+const filterIp = (ipArray: any) => {
   let ipText = "";
-  if(ipArray){
-    let ips = JSON.parse(ipArray);
+  if (ipArray) {
+    const ips = JSON.parse(ipArray);
     let i;
-    for( i in ips){
-      if(ipText===""){
+    for (i in ips) {
+      if (ipText === "") {
         ipText += ips[i];
-      }else{
-        ipText += "\n"+ips[i];
+      } else {
+        ipText += "\n" + ips[i];
       }
     }
   }
-  console.log("---"+ipText)
   return ipText;
-}
+};
 
 //启动定时器
 const startOperateInterval = (vm: any) => {
-  let cloudServerInterval: any;
-  cloudServerInterval = setInterval(() => {
-    console.log("info 初始化定时器：" + cloudServerInterval);
+  const cloudServerInterval = ref<any>();
+  cloudServerInterval.value = setInterval(() => {
+    console.log("info 初始化定时器：" + cloudServerInterval.value);
     VmCloudServerApi.getVmCloudServerById(vm.id).then((res) => {
       console.log("old:" + vm.instanceStatus);
       console.log("new:" + res.data.instanceStatus);
       if (vm.instanceStatus != res.data.instanceStatus) {
         vm.instanceStatus = res.data.instanceStatus;
-        stopOperateInterval(cloudServerInterval);
+        stopOperateInterval(cloudServerInterval.value);
       }
     });
   }, 6000);
@@ -221,10 +295,6 @@ const stopOperateInterval = (cloudServerInterval: any) => {
     clearInterval(cloudServerInterval);
   }
 };
-
-onBeforeUnmount(() => {
-  clearInterval();
-});
 </script>
 
 <style lang="scss">
@@ -234,24 +304,26 @@ onBeforeUnmount(() => {
   white-space: nowrap;
   text-overflow: ellipsis;
 }
-.content-class{
+.content-class {
   min-width: 230px;
   width: 300px;
   max-width: 300px;
 }
-.label-class{
+.label-class {
   width: 150px;
   min-width: 150px;
 }
-.el-descriptions__body .el-descriptions__table.is-bordered .el-descriptions__cell{
-  border: 0px;
+.el-descriptions__body
+  .el-descriptions__table.is-bordered
+  .el-descriptions__cell {
+  border: 0px !important;
 }
 
-.el-descriptions__label.el-descriptions__cell.is-bordered-label{
-  background-color:transparent;
+.el-descriptions__label.el-descriptions__cell.is-bordered-label {
+  background-color: transparent !important;
 }
 
-.el-descriptions__body .el-descriptions__table .el-descriptions__cell{
-  font-size: 12px;
+.el-descriptions__body .el-descriptions__table .el-descriptions__cell {
+  font-size: 12px !important;
 }
 </style>

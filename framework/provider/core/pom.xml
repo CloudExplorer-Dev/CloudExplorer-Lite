@@ -49,6 +49,11 @@
             <artifactId>bssopenapi20171214</artifactId>
             <version>1.7.17</version>
         </dependency>
+        <dependency>
+            <groupId>com.aliyun</groupId>
+            <artifactId>cms20190101</artifactId>
+            <version>7.0.46</version>
+        </dependency>
         <!--        阿里云end-->
         <!--   华为云  start  -->
         <dependency>

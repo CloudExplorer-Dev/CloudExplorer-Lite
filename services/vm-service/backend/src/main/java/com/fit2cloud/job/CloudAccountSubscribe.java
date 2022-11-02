@@ -8,6 +8,8 @@ package com.fit2cloud.job;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.fit2cloud.base.service.IBaseCloudAccountService;
+import com.fit2cloud.base.service.IBaseVmCloudDatastoreService;
+import com.fit2cloud.base.service.IBaseVmCloudHostService;
 import com.fit2cloud.common.constants.RedisConstants;
 import com.fit2cloud.common.log.utils.LogUtil;
 import com.fit2cloud.redis.RedisService;
@@ -39,6 +41,12 @@ public class CloudAccountSubscribe {
     IVmCloudServerService cloudServerService;
 
     @Resource
+    IBaseVmCloudHostService cloudHostService;
+
+    @Resource
+    IBaseVmCloudDatastoreService cloudDatastoreService;
+
+    @Resource
     IBaseCloudAccountService cloudAccountService;
 
     /**
@@ -63,6 +71,8 @@ public class CloudAccountSubscribe {
         cloudImageService.remove(wrapper);
         cloudDiskService.remove(wrapper);
         cloudServerService.remove(wrapper);
+        cloudHostService.remove(wrapper);
+        cloudDatastoreService.remove(wrapper);
 
         // 删除本模块云账号相关的定时任务
         cloudAccountService.deleteJobByCloudAccountId(accountId);

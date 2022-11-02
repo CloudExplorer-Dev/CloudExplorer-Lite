@@ -1,10 +1,7 @@
 <script setup lang="ts">
 import { ref, onMounted } from "vue";
 import VmCloudServerApi from "@/api/vm_cloud_server";
-import type {
-  VmCloudServerVO,
-  CloudServerJobRecord,
-} from "@/api/vm_cloud_server/type";
+import type { VmCloudServerVO } from "@/api/vm_cloud_server/type";
 import { useRouter } from "vue-router";
 import {
   PaginationConfig,
@@ -95,10 +92,10 @@ const startOperateInterval = (list: Array<VmCloudServerVO>) => {
       vm.instanceStatus = res.data.instanceStatus;
     });
   }
-  let cloudServerInterval: any;
+  const cloudServerInterval = ref<any>();
   const isOk = ref<boolean>(false);
-  cloudServerInterval = setInterval(() => {
-    console.log("初始化定时器：" + cloudServerInterval);
+  cloudServerInterval.value = setInterval(() => {
+    console.log("初始化定时器：" + cloudServerInterval.value);
     VmCloudServerApi.getServerJobRecord(list.map((r) => r.id))
       .then((serverJobs) => {
         for (const vm of list) {
@@ -117,7 +114,7 @@ const startOperateInterval = (list: Array<VmCloudServerVO>) => {
           }
         }
         if (isOk.value) {
-          stopOperateInterval(cloudServerInterval);
+          stopOperateInterval(cloudServerInterval.value);
         }
       })
       .catch((err) => {
@@ -184,7 +181,7 @@ const tableConfig = ref<TableConfig>({
 const showDetail = (row: VmCloudServerVO) => {
   useRoute.push({
     path: useRoute.currentRoute.value.path.replace("/list", "/detail"),
-    query: { id: row.id },
+    query: { id: row.id, uuid: row.instanceUuid },
   });
 };
 const gotoCatalog = () => {
@@ -357,8 +354,7 @@ const powerOff = (row: VmCloudServerVO) => {
       })
       .catch((err) => {
         console.log(err);
-      })
-      .finally(() => {});
+      });
   });
 };
 //重启
@@ -379,8 +375,7 @@ const reboot = (row: VmCloudServerVO) => {
       })
       .catch((err) => {
         console.log(err);
-      })
-      .finally(() => {});
+      });
   });
 };
 
@@ -402,8 +397,7 @@ const deleteInstance = (row: VmCloudServerVO) => {
       })
       .catch((err) => {
         console.log(err);
-      })
-      .finally(() => {});
+      });
   });
 };
 
@@ -432,8 +426,7 @@ const batchOperate = (operate: string) => {
       })
       .catch((err) => {
         console.log(err);
-      })
-      .finally(() => {});
+      });
   });
 };
 /**
@@ -511,9 +504,9 @@ const handleAction = (actionObj: any) => {
       :label="$t('commons.name')"
     >
       <template #default="scope">
-          <span @click="showDetail(scope.row)" class="name-span-class">
-            {{ scope.row.instanceName }}
-          </span>
+        <span @click="showDetail(scope.row)" class="name-span-class">
+          {{ scope.row.instanceName }}
+        </span>
       </template>
     </el-table-column>
     <el-table-column
@@ -628,10 +621,10 @@ const handleAction = (actionObj: any) => {
   </ce-table>
 </template>
 <style lang="scss" scoped>
-.name-span-class{
-  color:#4d809c;
+.name-span-class {
+  color: #4d809c;
 }
-.name-span-class:hover{
+.name-span-class:hover {
   color: #79bbff;
   cursor: pointer;
 }
