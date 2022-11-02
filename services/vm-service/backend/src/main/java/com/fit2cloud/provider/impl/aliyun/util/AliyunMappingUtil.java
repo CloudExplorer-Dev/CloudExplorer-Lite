@@ -3,6 +3,8 @@ package com.fit2cloud.provider.impl.aliyun.util;
 import com.aliyun.ecs20140526.models.DescribeDisksResponseBody;
 import com.aliyun.ecs20140526.models.DescribeImagesResponseBody;
 import com.aliyun.ecs20140526.models.DescribeInstancesResponseBody;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fit2cloud.common.provider.entity.F2CPerfMetricMonitorData;
 import com.fit2cloud.common.provider.util.CommonUtil;
 import com.fit2cloud.provider.constants.DeleteWithInstance;
 import com.fit2cloud.provider.constants.F2CDiskStatus;
@@ -14,6 +16,8 @@ import com.google.gson.Gson;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -136,6 +140,15 @@ public class AliyunMappingUtil {
      */
     public static F2CImage toF2CImage(DescribeImagesResponseBody.DescribeImagesResponseBodyImagesImage image, String region) {
         return new F2CImage(image.getImageId(), image.getImageName(), image.getDescription(), image.getOSName(), region, image.getSize().longValue(), getUTCTime(image.getCreationTime()));
+    }
+
+    public static F2CPerfMetricMonitorData toF2CPerfMetricMonitorData(JsonNode v) {
+        F2CPerfMetricMonitorData f2CEntityPerfMetric = new F2CPerfMetricMonitorData();
+        f2CEntityPerfMetric.setTimestamp(v.get("timestamp").longValue());
+        f2CEntityPerfMetric.setAverage(new BigDecimal(v.get("Average").doubleValue()).setScale(3, RoundingMode.HALF_UP));
+        f2CEntityPerfMetric.setMinimum(new BigDecimal(v.get("Minimum").doubleValue()).setScale(3, RoundingMode.HALF_UP));
+        f2CEntityPerfMetric.setMaximum(new BigDecimal(v.get("Maximum").doubleValue()).setScale(3, RoundingMode.HALF_UP));
+        return f2CEntityPerfMetric;
     }
 
     /**

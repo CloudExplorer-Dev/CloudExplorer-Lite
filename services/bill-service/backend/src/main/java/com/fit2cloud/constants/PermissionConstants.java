@@ -23,6 +23,12 @@ import java.util.stream.Collectors;
 public class PermissionConstants {
 
     public static class GROUP {
+        public static final String BILL_ViEW = "BILL_ViEW";
+        public static final String BILL_DETAILED = "BILL_DETAILED";
+
+        public static final String CUSTOM_BILL = "CUSTOM_BILL";
+
+        public static final String DIMENSION_SETTING = "DIMENSION_SETTING";
 
         //...
     }
@@ -61,7 +67,34 @@ public class PermissionConstants {
     }
 
     private static final ModulePermission.Builder MODULE_PERMISSION_BUILDER = new ModulePermission.Builder()
-            .group();
+            .group(new PermissionGroup.Builder().id(GROUP.BILL_ViEW)
+                    .permission(new Permission.Builder()
+                            .operate(OPERATE.READ)
+                            .name("i18n_permission_bill_view_red")
+                            .role(RoleConstants.ROLE.ADMIN)
+                            .role(RoleConstants.ROLE.ORGADMIN)
+                            .role(RoleConstants.ROLE.USER)))
+            .group(new PermissionGroup.Builder().id(GROUP.BILL_DETAILED)
+                    .permission(new Permission.Builder()
+                            .operate(OPERATE.READ)
+                            .name("i18n_permission_bill_detailed_red")
+                            .role(RoleConstants.ROLE.ADMIN)
+                            .role(RoleConstants.ROLE.ORGADMIN)
+                            .role(RoleConstants.ROLE.USER)))
+            .group(new PermissionGroup.Builder().id(GROUP.DIMENSION_SETTING)
+                    .permission(new Permission.Builder()
+                            .operate(OPERATE.READ)
+                            .name("i18n_permission_dimension_setting_red")
+                            .role(RoleConstants.ROLE.ADMIN)
+                            .role(RoleConstants.ROLE.ORGADMIN)
+                            .role(RoleConstants.ROLE.USER)))
+            .group(new PermissionGroup.Builder().id(GROUP.CUSTOM_BILL)
+                    .permission(new Permission.Builder()
+                            .operate(OPERATE.READ)
+                            .name("i18n_permission_custom_bill_red")
+                            .role(RoleConstants.ROLE.ADMIN)
+                            .role(RoleConstants.ROLE.ORGADMIN)
+                            .role(RoleConstants.ROLE.USER)));
 
 
 }

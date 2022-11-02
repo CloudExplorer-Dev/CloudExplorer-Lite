@@ -61,4 +61,26 @@ public class AliyunVmCredential extends AliCredential implements Credential {
         }
     }
 
+    /**
+     * 获取云监控客户端
+     * @param regionId
+     * @return
+     */
+    public com.aliyun.cms20190101.Client getCmsClientByRegion(String regionId) {
+        if(regionCache.size()==0){
+            regionCache = this.regions().stream().collect(Collectors.toMap(Region::getRegionId,v->v,(k1,k2)->k1));
+        }
+        String endpoint = regionCache.get(regionId)==null?"ecs.aliyuncs.com":regionCache.get(regionId).getEndpoint();
+        Config config = new Config()
+                .setAccessKeyId(getAccessKeyId())
+                .setAccessKeySecret(getAccessKeySecret())
+                .setEndpoint(endpoint.replaceAll("ecs","metrics"));
+        try {
+            com.aliyun.cms20190101.Client client = new com.aliyun.cms20190101.Client(config);
+            return client;
+        } catch (Exception e) {
+            throw new Fit2cloudException(1000, "获取客户端失败");
+        }
+    }
+
 }

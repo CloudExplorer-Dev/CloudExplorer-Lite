@@ -4,7 +4,7 @@ import type { Page } from "@commons/request/Result";
 import type {
   VmCloudServerVO,
   ListVmCloudServerRequest,
-  CloudServerJobRecord,
+  CloudServerJobRecord
 } from "./type";
 import type { Ref } from "vue";
 import type { SimpleMap } from "@commons/api/base/type";
@@ -135,6 +135,18 @@ export function getServerJobRecord(
   );
 }
 
+/**
+ * 查询监控数据
+ * @param req
+ * @param loading
+ */
+export function listPerfMetricMonitor(
+    req: any,
+    loading?: Ref<boolean>
+): Promise<Result<any>> {
+  return get("/api/base/monitor/list", req, loading);
+}
+
 const VmCloudServerApi = {
   listVmCloudServer,
   shutdownInstance,
@@ -145,6 +157,7 @@ const VmCloudServerApi = {
   batchOperate,
   getVmCloudServerById,
   getServerJobRecord,
+  listPerfMetricMonitor
 };
 
 export default VmCloudServerApi;
