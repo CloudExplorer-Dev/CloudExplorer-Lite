@@ -605,7 +605,7 @@ public class VsphereSyncCloudApi {
 
                 result.add(host);
             }
-
+            result.sort(Comparator.comparing(VsphereHost::getName));
             return result;
         } catch (Exception e) {
             throw new RuntimeException(e);
@@ -630,6 +630,7 @@ public class VsphereSyncCloudApi {
                     }
                 }
             }
+            list.sort(Comparator.comparing(VsphereResourcePool::getName));
             return list;
         } catch (Exception e) {
             throw new RuntimeException(e);

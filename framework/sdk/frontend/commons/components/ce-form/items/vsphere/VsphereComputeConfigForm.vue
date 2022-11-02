@@ -1,5 +1,12 @@
 <template>
-  <div v-loading="_loading">
+  <el-form
+    ref="ruleFormRef"
+    label-width="130px"
+    label-suffix=":"
+    label-position="left"
+    :model="_data"
+    v-loading="_loading"
+  >
     <el-form-item
       :rules="{
         message: '计算资源类型' + '不能为空',
@@ -105,14 +112,14 @@
         </el-table-column>
       </el-table>
     </el-form-item>
-  </div>
+  </el-form>
 </template>
 <script setup lang="ts">
 import type { FormView } from "@commons/components/ce-form/type";
 import formApi from "@commons/api/form_resource_api";
-import { computed, onMounted, ref, type Ref } from "vue";
+import { computed, onMounted, ref, watch } from "vue";
 import _ from "lodash";
-import { ElTable } from "element-plus";
+import { ElTable, type FormInstance } from "element-plus";
 
 interface ComputeConfig {
   location: string;
@@ -158,6 +165,9 @@ const label = computed<string | null>(() => {
   }
   return null;
 });
+
+// 校验实例对象
+const ruleFormRef = ref<FormInstance>();
 
 /**
  * 列表选中
@@ -271,14 +281,41 @@ function getList() {
     });
 }
 
+/**
+ * 触发change事件
+ */
+watch(
+  () => _data.value,
+  (data) => {
+    emit("change");
+  },
+  { deep: true }
+);
+
 onMounted(() => {
-  console.log(props.modelValue);
   if (props.modelValue == undefined) {
-    //emit("update:modelValue", { location: "host" });
     _data.value = { location: "host" };
   }
   getComputeTypes();
   getList();
+});
+
+/**
+ * 校验方法
+ */
+function validate(): Promise<boolean> {
+  if (ruleFormRef.value) {
+    return ruleFormRef.value.validate();
+  } else {
+    return new Promise((resolve, reject) => {
+      return reject(true);
+    });
+  }
+}
+
+defineExpose({
+  validate,
+  field: props.field,
 });
 </script>
 <style lang="scss">

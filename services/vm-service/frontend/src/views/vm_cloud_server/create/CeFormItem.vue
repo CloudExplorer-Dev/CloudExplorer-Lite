@@ -200,6 +200,7 @@ const change = (formItem: FormView) => {
   console.log(formItem.field);
   _.forEach(props.allFormViewData, (item) => {
     if (_.includes(item.relationTrigger, formItem.field)) {
+      console.log(formItem.field, "in", item.field);
       //设置空值
       _.set(_data.value, item.field, undefined);
       //设置列表
