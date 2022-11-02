@@ -21,6 +21,8 @@ import { useRouter } from "vue-router";
 import { useI18n } from "vue-i18n";
 import type { FormInstance, FormRules } from "element-plus";
 import type { SimpleMap } from "@commons/api/base/type";
+import { useModuleStore } from "@commons/stores/modules/module";
+const moduleStore = useModuleStore();
 const { t } = useI18n();
 // 路由实例对象
 const router = useRouter();
@@ -499,7 +501,10 @@ const billSyncShow = (row: CloudAccount) => {
     "fit2cloud_huawei_platform",
     "fit2cloud_tencent_platform",
   ];
-  return showPlatforms.includes(row.platform);
+  return (
+    showPlatforms.includes(row.platform) &&
+    moduleStore.runningModules?.some((m) => m.id === "bill-service")
+  );
 };
 
 /**
