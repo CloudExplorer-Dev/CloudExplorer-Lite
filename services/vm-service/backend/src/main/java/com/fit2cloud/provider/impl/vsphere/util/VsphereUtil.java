@@ -268,7 +268,7 @@ public class VsphereUtil {
         long vmStopped = 0;
         long vmTotal = 0;
         int vmCpuCores = 0;
-        if (vms != null) {
+        if (vms != null) { //todo 后面可以替换掉，不同步所有机器
             for (VirtualMachine vm : vms) {
                 VirtualMachineConfigInfo vmConfig = vm.getConfig();
                 if (vmConfig != null && vmConfig.isTemplate()) {
@@ -310,7 +310,7 @@ public class VsphereUtil {
         ComputeResource resource = client.getComputeResource(hs);
         if (resource instanceof ClusterComputeResource) {
             ClusterComputeResource cluster = (ClusterComputeResource) resource;
-            f2cHost.setClusterId(cluster.getName());
+            f2cHost.setClusterId(cluster.getMOR().getVal());
             f2cHost.setClusterName(cluster.getName());
         }
 
@@ -318,10 +318,10 @@ public class VsphereUtil {
         f2cHost.setCpuMHzTotal(totalCpu);
 
         Datacenter dc = client.getDataCenter(hs);
-        f2cHost.setDataCenterId(dc.getName());
+        f2cHost.setDataCenterId(dc.getMOR().getVal());
         f2cHost.setDataCenterName(dc.getName());
 
-        f2cHost.setHostId(hs.getName());
+        f2cHost.setHostId(hs.getMOR().getVal());
         f2cHost.setHostName(hs.getName());
 
         f2cHost.setMemoryAllocated(totalUsedMemory);

@@ -9,13 +9,6 @@ import com.fit2cloud.provider.impl.vsphere.entity.*;
 import com.fit2cloud.provider.impl.vsphere.entity.request.*;
 import com.fit2cloud.provider.impl.vsphere.util.*;
 import com.vmware.vim25.*;
-import com.fit2cloud.provider.impl.vsphere.entity.request.VsphereNetworkRequest;
-import com.fit2cloud.provider.impl.vsphere.entity.request.VsphereVmBaseRequest;
-import com.fit2cloud.provider.impl.vsphere.entity.request.VsphereVmPowerRequest;
-import com.fit2cloud.provider.impl.vsphere.util.ContentLibraryUtil;
-import com.fit2cloud.provider.impl.vsphere.util.ResourceConstants;
-import com.fit2cloud.provider.impl.vsphere.util.VsphereUtil;
-import com.fit2cloud.provider.impl.vsphere.util.VsphereVmClient;
 import com.vmware.vim25.mo.*;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -24,6 +17,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -206,13 +201,13 @@ public class VsphereSyncCloudApi {
                         for (Datastore ds : list) {
                             Datacenter dc = client.getDataCenter(ds);
                             F2CDatastore f2cDs = new F2CDatastore();
-                            f2cDs.setDataCenterId(dc.getName());
+                            f2cDs.setDataCenterId(dc.getMOR().getVal());
                             f2cDs.setDataCenterName(dc.getName());
-                            f2cDs.setClusterId(cluster.getName());
+                            f2cDs.setClusterId(cluster.getMOR().getVal());
                             f2cDs.setClusterName(cluster.getName());
                             DatastoreSummary dsSummary = ds.getSummary();
                             f2cDs.setCapacity(dsSummary.getCapacity() / GB);
-                            f2cDs.setDataStoreId(ds.getName());
+                            f2cDs.setDataStoreId(ds.getMOR().getVal());
                             f2cDs.setDataStoreName(ds.getName());
                             f2cDs.setFreeSpace(dsSummary.getFreeSpace() / GB);
                             f2cDs.setType(dsSummary.getType());
@@ -597,10 +592,11 @@ public class VsphereSyncCloudApi {
                 //使用情况
                 HostListSummary summary = hostSystem.getSummary();
                 HostHardwareSummary hostHw = summary.getHardware();
-                long totalMemory = hostHw.getMemorySize() / GB;
-                long totalCpu = (long) hostHw.getCpuMhz() * hostHw.getNumCpuCores();
-                long totalUsedCpu = summary.getQuickStats().getOverallCpuUsage();
-                long totalUsedMemory = summary.getQuickStats().getOverallMemoryUsage();
+
+                BigDecimal totalCpu = BigDecimal.valueOf(hostHw.getCpuMhz()).multiply(BigDecimal.valueOf(hostHw.getNumCpuCores())).divide(BigDecimal.valueOf(1000), 2, RoundingMode.HALF_UP); //GHz
+                BigDecimal totalUsedCpu = BigDecimal.valueOf(summary.getQuickStats().getOverallCpuUsage()).divide(BigDecimal.valueOf(1000), 2, RoundingMode.HALF_UP); //GHz
+                BigDecimal totalMemory = BigDecimal.valueOf(hostHw.getMemorySize()).divide(BigDecimal.valueOf(GB), 2, RoundingMode.HALF_UP);
+                BigDecimal totalUsedMemory = BigDecimal.valueOf(summary.getQuickStats().getOverallMemoryUsage()).divide(BigDecimal.valueOf(1024), 2, RoundingMode.HALF_UP); //直接拿到是MB还要再除1024
 
                 host.setTotalCpu(totalCpu)
                         .setTotalMemory(totalMemory)
@@ -655,10 +651,15 @@ public class VsphereSyncCloudApi {
         ResourcePoolResourceUsage cpu = runtime.getCpu();
         ResourcePoolResourceUsage memory = runtime.getMemory();
 
-        root.setTotalCpu(cpu.getReservationUsedForVm() + cpu.getUnreservedForVm())
-                .setUsedCpu(cpu.getReservationUsedForVm())
-                .setTotalMemory((memory.getReservationUsedForVm() + memory.getUnreservedForVm()) / GB)
-                .setUsedMemory(memory.getReservationUsedForVm() / GB);
+        BigDecimal totalCpu = BigDecimal.valueOf(cpu.getReservationUsedForVm()).add(BigDecimal.valueOf(cpu.getUnreservedForVm())).divide(BigDecimal.valueOf(1000),2 ,RoundingMode.HALF_UP); //GHz
+        BigDecimal totalUsedCpu = BigDecimal.valueOf(cpu.getReservationUsedForVm()).divide(BigDecimal.valueOf(1000),2 ,RoundingMode.HALF_UP); //GHz
+        BigDecimal totalMemory = (BigDecimal.valueOf(memory.getReservationUsedForVm()).add(BigDecimal.valueOf(memory.getUnreservedForVm()))).divide(BigDecimal.valueOf(GB), 2, RoundingMode.HALF_UP); //GB
+        BigDecimal totalUsedMemory = BigDecimal.valueOf(memory.getReservationUsedForVm()).divide(BigDecimal.valueOf(GB), 2, RoundingMode.HALF_UP); //GB
+
+        root.setTotalCpu(totalCpu)
+                .setUsedCpu(totalUsedCpu)
+                .setTotalMemory(totalMemory) //MB
+                .setUsedMemory(totalUsedMemory); //MB
 
         result.add(root);
         if (subPools != null) {

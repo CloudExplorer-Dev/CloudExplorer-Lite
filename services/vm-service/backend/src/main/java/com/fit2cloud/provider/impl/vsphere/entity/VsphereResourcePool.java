@@ -4,6 +4,8 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.experimental.Accessors;
 
+import java.math.BigDecimal;
+
 
 @Data
 @Accessors(chain = true)
@@ -12,11 +14,11 @@ public class VsphereResourcePool {
     private String mor;
     private String name;
 
-    private long totalCpu;
-    private long totalMemory;
+    private BigDecimal totalCpu; //GHz
+    private BigDecimal totalMemory; //GB
 
-    private long usedCpu;
-    private long usedMemory;
+    private BigDecimal usedCpu;
+    private BigDecimal usedMemory;
 
 
     public VsphereResourcePool(String mor, String name) {
