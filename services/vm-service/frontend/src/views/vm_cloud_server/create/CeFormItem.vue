@@ -1,6 +1,6 @@
 <template>
-  {{ allData }}
-  {{ _data }}
+  data: {{ _data }}
+  <br />
   <el-form
     ref="ruleFormRef"
     label-width="130px"
@@ -21,12 +21,14 @@
           }"
         >
           <component
+            ref="formItemRef"
             :is="item.inputType"
             v-model="_data[item.field]"
             :all-data="allData"
             :all-form-view-data="allFormViewData"
             :field="item.field"
             :form-item="item"
+            :otherParams="otherParams"
             style="width: 75%"
             v-bind="{ ...JSON.parse(item.attrs) }"
             @change="change(item)"
@@ -35,12 +37,14 @@
       </template>
       <template v-else>
         <component
+          ref="formItemRef"
           :is="item.inputType"
           v-model="_data[item.field]"
           :all-data="allData"
           :all-form-view-data="allFormViewData"
           :field="item.field"
           :form-item="item"
+          :otherParams="otherParams"
           v-bind="{ ...JSON.parse(item.attrs) }"
           @change="change(item)"
         ></component>
@@ -50,18 +54,23 @@
 </template>
 
 <script setup lang="ts">
-const props = defineProps<{
-  // 页面渲染
-  formViewData: Array<FormView>;
-  allFormViewData: Array<FormView>;
-  otherParams: any;
-  // 数据
-  data: SimpleMap<any>;
-  allData: any;
-  groupId: string;
-}>();
+const props = withDefaults(
+  defineProps<{
+    // 页面渲染
+    formViewData: Array<FormView>;
+    allFormViewData: Array<FormView>;
+    otherParams: any;
+    // 数据
+    modelValue: any;
+    allData: any;
+    groupId: string;
+  }>(),
+  {
+    modelValue: {},
+  }
+);
 const emit = defineEmits([
-  "update:data",
+  "update:modelValue",
   "update:formViewData",
   "update:allFormViewData",
   "optionListRefresh",
@@ -72,19 +81,20 @@ import { computed, onMounted, ref } from "vue";
 import type { FormView } from "@commons/components/ce-form/type";
 import formApi from "@commons/api/form_resource_api";
 import type { FormInstance } from "element-plus";
-import type { SimpleMap } from "@commons/api/base/type";
 
 const _loading = ref<boolean>(false);
+
+const formItemRef = ref<InstanceType<any> | null>(null);
 
 /**
  * 子组件可以修改data
  */
 const _data = computed({
   get() {
-    return props.data ? props.data : {};
+    return props.modelValue;
   },
   set(value) {
-    emit("update:data", value);
+    emit("update:modelValue", value);
   },
 });
 
@@ -105,18 +115,23 @@ function getDefaultValue(formItem: FormView): any {
  * 设置optionList
  * @param formItem
  * @param data
+ * @param allData
  */
-function initOptionList(formItem: FormView | undefined, data: any): void {
+function initOptionList(
+  formItem: FormView | undefined,
+  data: any,
+  allData?: any
+): void {
   if (formItem && formItem.clazz && formItem.method) {
     const _temp = _.assignWith(
       {},
-      data,
       props.otherParams,
-      props.allData,
+      _.defaultTo(allData, props.allData),
       (objValue, srcValue) => {
         return _.isUndefined(objValue) ? srcValue : objValue;
       }
     );
+    _.assign(_temp, data);
     console.log(_temp, formItem?.relationTrigger);
     if (
       //关联对象有值
@@ -148,12 +163,13 @@ function initOptionList(formItem: FormView | undefined, data: any): void {
 /**
  * 根据field字段刷新optionList
  * @param field
+ * @param allData
  */
-function optionListRefresh(field: string): void {
-  console.log(field, props.groupId);
+function optionListRefresh(field: string, allData?: any): void {
   initOptionList(
     _.find(props.formViewData, (form) => form.field === field),
-    { ..._data.value }
+    { ..._data.value },
+    allData
   );
 }
 
@@ -181,6 +197,7 @@ function initForms(): void {
  * @param formItem
  */
 const change = (formItem: FormView) => {
+  console.log(formItem.field);
   _.forEach(props.allFormViewData, (item) => {
     if (_.includes(item.relationTrigger, formItem.field)) {
       //设置空值
@@ -194,14 +211,23 @@ const change = (formItem: FormView) => {
 // 校验实例对象
 const ruleFormRef = ref<FormInstance>();
 
-// 提交表单
-const submit = (exec: (formData: any) => void) => {
-  if (!ruleFormRef.value) return;
-  ruleFormRef.value.validate((valid) => {
-    if (exec && valid) {
+// validate
+function validate(): Array<Promise<boolean>> {
+  const list: Array<Promise<boolean>> = [];
+
+  //默认表单校验
+  if (ruleFormRef.value) {
+    list.push(ruleFormRef.value.validate());
+  }
+  //执行自定义的校验方法（需要组件实现validate方法并defineExpose暴露）
+  _.forEach(formItemRef.value, (formRef) => {
+    if (formRef?.validate) {
+      list.push(formRef.validate());
     }
   });
-};
+
+  return list;
+}
 
 onMounted(() => {
   console.log("init!!!");
@@ -210,6 +236,7 @@ onMounted(() => {
 
 // 暴露获取当前表单数据函数
 defineExpose({
+  validate,
   optionListRefresh,
   groupId: props.groupId,
 });

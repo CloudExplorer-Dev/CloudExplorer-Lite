@@ -11,6 +11,7 @@ import com.fit2cloud.provider.constants.F2CDiskStatus;
 import com.fit2cloud.provider.entity.F2CDisk;
 import com.fit2cloud.provider.entity.F2CImage;
 import com.fit2cloud.provider.entity.F2CVirtualMachine;
+import com.fit2cloud.provider.impl.aliyun.constants.AliyunChargeType;
 import com.google.gson.Gson;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -184,9 +185,6 @@ public class AliyunMappingUtil {
         return CommonUtil.getUTCTime(dateStr, "yyyy-MM-dd'T'HH:mm:ss'Z'");
     }
 
-
-
-
     /**
      * 向ipArray 添加ip
      *
@@ -198,6 +196,27 @@ public class AliyunMappingUtil {
             if (ip.contains(".")) {
                 ipArray.add(ip);
             }
+        }
+    }
+
+    /**
+     * 将系统付费方式转换为阿里云云付费方式
+     *
+     * @param f2cChargeType 系统标记付费方式
+     * @return 腾讯标记付费方式
+     */
+    public static String toAliyunChargeType(String f2cChargeType) {
+        /**
+         *云硬盘计费类型。
+         *PrePaid：预付费，即包年包月
+         *PostPaid：按小时后付费
+         */
+
+        switch (f2cChargeType) {
+            case "PrePaid":
+                return AliyunChargeType.PREPAID;
+            default:
+                return AliyunChargeType.POSTPAID;
         }
     }
 }

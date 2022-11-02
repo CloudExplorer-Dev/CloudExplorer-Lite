@@ -26,7 +26,12 @@ public enum JobTypeConstants {
     /**
      * 虚拟机批量操作任务
      */
-    CLOUD_SERVER_BATCH_OPERATE_JOB(2);
+    CLOUD_SERVER_BATCH_OPERATE_JOB(2),
+
+    /**
+     * 磁盘操作任务
+     */
+    CLOUD_DISK_OPERATE_JOB(4);
 
     @EnumValue
     private final int code;

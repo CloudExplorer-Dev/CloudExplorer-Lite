@@ -130,6 +130,11 @@ const message = {
         "Welcome Back, Please Enter Your User Name and Password to Login",
       expires: "The Authentication Information Has Expired, Please Login Again",
     },
+    charge_type:{
+      native:"Charge Type",
+      prepaid:"Prepaid",
+      postpaid:"Postpaid",
+    }
   },
 };
 

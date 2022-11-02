@@ -5,9 +5,10 @@ import com.fit2cloud.provider.constants.DeleteWithInstance;
 import com.fit2cloud.provider.constants.F2CDiskStatus;
 import com.fit2cloud.provider.constants.F2CInstanceStatus;
 import com.fit2cloud.provider.entity.F2CDisk;
+import com.fit2cloud.provider.entity.F2CHost;
 import com.fit2cloud.provider.entity.F2CVirtualMachine;
-import com.fit2cloud.provider.impl.vsphere.entity.F2CVsphereDiskType;
 import com.fit2cloud.provider.impl.vsphere.entity.F2CVsphereDatastore;
+import com.fit2cloud.provider.impl.vsphere.entity.F2CVsphereDiskType;
 import com.fit2cloud.provider.impl.vsphere.entity.F2CVsphereHost;
 import com.fit2cloud.provider.impl.vsphere.entity.request.VsphereDiskRequest;
 import com.vmware.vim25.*;
@@ -152,13 +153,15 @@ public class VsphereUtil {
         instance.setOsInfo(os);
         try {
             F2CVsphereHost f2cVsphereHost;
+            String hostMorVal = null;
             if (hostCache == null) {
                 f2cVsphereHost = getF2CVsphereHost(client, vm);
             } else {
-                String hostMorVal = runtime.getHost().getVal();
+                hostMorVal = runtime.getHost().getVal();
                 f2cVsphereHost = hostCache.get(hostMorVal);
             }
             if (f2cVsphereHost != null) {
+                instance.setHostId(hostMorVal);
                 instance.setHost(f2cVsphereHost.getHostName());
                 instance.setDataCenter(f2cVsphereHost.getDataCenterName());
                 instance.setRegion(f2cVsphereHost.getDataCenterName());
@@ -168,6 +171,17 @@ public class VsphereUtil {
         } catch (Exception e) {
             logger.error(ExceptionUtils.getStackTrace(e));
         }
+
+        try {
+            ResourcePool pool = vm.getResourcePool();
+            if (pool != null) {
+                instance.setResourcePoolId(pool.getMOR().getVal());
+                instance.setResourcePool(pool.getName());
+            }
+        } catch (Exception e) {
+            logger.error(ExceptionUtils.getStackTrace(e));
+        }
+
         return instance;
     }
 
@@ -219,6 +233,125 @@ public class VsphereUtil {
         }
         d.setDeleteWithInstance(DeleteWithInstance.YES.name());
         return d;
+    }
+
+    /**
+     * 将 vsphere 宿主机对象转为 F2C 云管宿主机对象
+     *
+     * @param hs
+     * @param client
+     * @return
+     * @throws Exception
+     */
+    public static F2CHost toF2CHost(HostSystem hs, VsphereClient client) throws Exception {
+        HostSystemInfo hostSystemInfo = hs.getHardware().getSystemInfo();
+        String hostModel = hostSystemInfo.getModel();
+        String hostVendor = hostSystemInfo.getVendor();
+        HostListSummary summary = hs.getSummary();
+        HostHardwareSummary hostHw = summary.getHardware();
+        long totalMemory = hostHw.getMemorySize() / MB;
+        int cpuMHzOneCore = hostHw.getCpuMhz();
+        int numCpuCores = hostHw.getNumCpuCores();
+        String cpuModel = hostHw.getCpuModel();
+        long totalCpu = cpuMHzOneCore * numCpuCores;
+        long totalUsedCpu = 0;
+        long totalUsedMemory = 0;
+        try {
+            HostListSummaryQuickStats quickStats = summary.getQuickStats();
+            totalUsedCpu = quickStats.getOverallCpuUsage();
+            totalUsedMemory = quickStats.getOverallMemoryUsage();
+        } catch (Exception e) {
+            //unknown host
+        }
+        VirtualMachine[] vms = hs.getVms();
+        long vmRunning = 0;
+        long vmStopped = 0;
+        long vmTotal = 0;
+        int vmCpuCores = 0;
+        if (vms != null) {
+            for (VirtualMachine vm : vms) {
+                VirtualMachineConfigInfo vmConfig = vm.getConfig();
+                if (vmConfig != null && vmConfig.isTemplate()) {
+                    continue;
+                }
+                vmTotal++;
+                VirtualMachineRuntimeInfo vmRuntime = vm.getRuntime();
+                if (vmRuntime != null) {
+                    String vmStatus = VsphereUtil.getStatus(vmRuntime.getPowerState().name()).name();
+                    if ("running".equalsIgnoreCase(vmStatus)) {
+                        vmRunning++;
+                    } else {
+                        if ("stopped".equalsIgnoreCase(vmStatus)) {
+                            vmStopped++;
+                        }
+                        continue;
+                    }
+                }
+                VirtualMachineSummary vmSummary = vm.getSummary();
+                if (vmSummary != null) {
+                    VirtualMachineConfigSummary vmConf = vmSummary.getConfig();
+                    if (vmConf != null) {
+                        vmCpuCores += vmConf.getNumCpu();
+                    }
+                }
+            }
+        }
+        AboutInfo product = summary.getConfig().getProduct();
+        F2CHost f2cHost = new F2CHost();
+        f2cHost.setHypervisorType(product.getName());
+        f2cHost.setHypervisorVersion(product.getVersion());
+        f2cHost.setHostModel(hostModel);
+        f2cHost.setHostVendor(hostVendor);
+        f2cHost.setCpuModel(cpuModel);
+        f2cHost.setCpuMHzPerOneCore(cpuMHzOneCore);
+        f2cHost.setNumCpuCores(numCpuCores);
+        f2cHost.setVmCpuCores(vmCpuCores);
+
+        ComputeResource resource = client.getComputeResource(hs);
+        if (resource instanceof ClusterComputeResource) {
+            ClusterComputeResource cluster = (ClusterComputeResource) resource;
+            f2cHost.setClusterId(cluster.getName());
+            f2cHost.setClusterName(cluster.getName());
+        }
+
+        f2cHost.setCpuMHzAllocated(totalUsedCpu);
+        f2cHost.setCpuMHzTotal(totalCpu);
+
+        Datacenter dc = client.getDataCenter(hs);
+        f2cHost.setDataCenterId(dc.getName());
+        f2cHost.setDataCenterName(dc.getName());
+
+        f2cHost.setHostId(hs.getName());
+        f2cHost.setHostName(hs.getName());
+
+        f2cHost.setMemoryAllocated(totalUsedMemory);
+        f2cHost.setMemoryTotal(totalMemory);
+
+        f2cHost.setStatus(hs.getRuntime().getPowerState().name());
+        f2cHost.setVmRunning(vmRunning);
+        f2cHost.setVmStopped(vmStopped);
+        f2cHost.setVmTotal(vmTotal);
+
+        HostConfigInfo hsConfig = hs.getConfig();
+        if (hsConfig != null && hsConfig.getVirtualNicManagerInfo() != null) {
+            VirtualNicManagerNetConfig[] config = hsConfig.getVirtualNicManagerInfo().getNetConfig();
+            if (config != null) {
+                for (VirtualNicManagerNetConfig managerNetConfig : config) {
+                    if (managerNetConfig.getNicType() != null && StringUtils.equals("management", managerNetConfig.getNicType())) {
+                        String selectedVnic = managerNetConfig.getSelectedVnic()[0];
+                        HostVirtualNic[] hostVirtualNics = managerNetConfig.getCandidateVnic();
+                        for (HostVirtualNic vnic : hostVirtualNics) {
+                            HostVirtualNicSpec vnicSpec = vnic.getSpec();
+                            if (vnic.getKey().equalsIgnoreCase(selectedVnic) && vnicSpec != null
+                                    && vnicSpec.getIp() != null) {
+                                f2cHost.setHostIp(vnicSpec.getIp().getIpAddress());
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        return f2cHost;
     }
 
     /**

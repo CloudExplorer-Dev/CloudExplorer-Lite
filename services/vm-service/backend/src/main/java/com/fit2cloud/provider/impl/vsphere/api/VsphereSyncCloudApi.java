@@ -4,14 +4,11 @@ import com.fit2cloud.common.log.utils.LogUtil;
 import com.fit2cloud.common.platform.credential.impl.VsphereCredential;
 import com.fit2cloud.common.provider.impl.vsphere.utils.VsphereClient;
 import com.fit2cloud.common.utils.JsonUtil;
-import com.fit2cloud.provider.entity.F2CDisk;
-import com.fit2cloud.provider.entity.F2CImage;
-import com.fit2cloud.provider.entity.F2CVirtualMachine;
+import com.fit2cloud.provider.entity.*;
 import com.fit2cloud.provider.impl.vsphere.entity.*;
 import com.fit2cloud.provider.impl.vsphere.entity.request.*;
 import com.fit2cloud.provider.impl.vsphere.util.*;
 import com.vmware.vim25.*;
-import com.fit2cloud.provider.impl.vsphere.entity.*;
 import com.fit2cloud.provider.impl.vsphere.entity.request.VsphereNetworkRequest;
 import com.fit2cloud.provider.impl.vsphere.entity.request.VsphereVmBaseRequest;
 import com.fit2cloud.provider.impl.vsphere.entity.request.VsphereVmPowerRequest;
@@ -19,13 +16,13 @@ import com.fit2cloud.provider.impl.vsphere.util.ContentLibraryUtil;
 import com.fit2cloud.provider.impl.vsphere.util.ResourceConstants;
 import com.fit2cloud.provider.impl.vsphere.util.VsphereUtil;
 import com.fit2cloud.provider.impl.vsphere.util.VsphereVmClient;
-import com.vmware.vim25.*;
 import com.vmware.vim25.mo.*;
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
-import org.springframework.util.CollectionUtils;
 
 import java.util.*;
 import java.util.function.Function;
@@ -36,7 +33,8 @@ import java.util.stream.Collectors;
  * Date: 2022/9/21 2:39 PM
  */
 public class VsphereSyncCloudApi {
-
+    private static final long MB = 1024 * 1024;
+    private static final long GB = MB * 1024;
     private static Logger logger = LoggerFactory.getLogger(VsphereSyncCloudApi.class);
 
     /**
@@ -176,6 +174,90 @@ public class VsphereSyncCloudApi {
         return f2CDiskList;
     }
 
+    public static List<F2CHost> listHost(VsphereVmBaseRequest req) {
+        VsphereClient client = req.getVsphereVmClient();
+        List<F2CHost> list;
+        try {
+            List<HostSystem> hosts = client.listHostsFromAll();
+            list = new ArrayList<>();
+            for (HostSystem hs : hosts) {
+                list.add(VsphereUtil.toF2CHost(hs, client));
+            }
+        } catch (Exception e) {
+            logger.error(ExceptionUtils.getStackTrace(e));
+            throw new RuntimeException(e);
+        } finally {
+            closeConnection(client);
+        }
+        return list;
+    }
+
+    public static List<F2CDatastore> listDataStore(VsphereVmBaseRequest req) {
+        List<F2CDatastore> datastoreList = new ArrayList<>();
+        VsphereClient client = null;
+        try {
+            client = req.getVsphereVmClient();
+            List<ClusterComputeResource> clusterList = client.listClusters();
+            for (ClusterComputeResource cluster : clusterList) {
+                ComputeResource cr = client.getComputeResource(cluster.getName());
+                if (cr instanceof ClusterComputeResource) {
+                    Datastore[] list = cr.getDatastores();
+                    if (list != null && list.length > 0) {
+                        for (Datastore ds : list) {
+                            Datacenter dc = client.getDataCenter(ds);
+                            F2CDatastore f2cDs = new F2CDatastore();
+                            f2cDs.setDataCenterId(dc.getName());
+                            f2cDs.setDataCenterName(dc.getName());
+                            f2cDs.setClusterId(cluster.getName());
+                            f2cDs.setClusterName(cluster.getName());
+                            DatastoreSummary dsSummary = ds.getSummary();
+                            f2cDs.setCapacity(dsSummary.getCapacity() / GB);
+                            f2cDs.setDataStoreId(ds.getName());
+                            f2cDs.setDataStoreName(ds.getName());
+                            f2cDs.setFreeSpace(dsSummary.getFreeSpace() / GB);
+                            f2cDs.setType(dsSummary.getType());
+                            datastoreList.add(f2cDs);
+                        }
+                    }
+                }
+            }
+            List<Datastore> list = client.listDataStores();
+            for (Datastore ds : list) {
+                boolean exist = false;
+                for (F2CDatastore f2CDataStore : datastoreList) {
+                    if (StringUtils.equals(f2CDataStore.getDataStoreId(), ds.getName())) {
+                        exist = true;
+                        break;
+                    }
+                }
+                if (exist) {
+                    continue;
+                }
+                Datacenter dc = client.getDataCenter(ds);
+                DatastoreSummary summary = ds.getSummary();
+                DatastoreInfo info = ds.getInfo();
+                F2CDatastore f2cDs = new F2CDatastore();
+                f2cDs.setDataCenterId(dc.getName());
+                f2cDs.setDataCenterName(dc.getName());
+                f2cDs.setCapacity(summary.getCapacity() / GB);
+                f2cDs.setDataStoreId(ds.getName());
+                f2cDs.setDataStoreName(ds.getName());
+                f2cDs.setFreeSpace(summary.getFreeSpace() / GB);
+                f2cDs.setType(summary.getType());
+                Calendar updated = info.getTimestamp();
+                if (updated != null) {
+                    f2cDs.setLastUpdate(updated.getTimeInMillis() / 1000);
+                }
+                datastoreList.add(f2cDs);
+            }
+        } catch (Exception e) {
+            throw new RuntimeException(e.getMessage(), e);
+        } finally {
+            closeConnection(client);
+        }
+        return datastoreList;
+    }
+
     /**
      * 关闭连接
      *
@@ -229,7 +311,41 @@ public class VsphereSyncCloudApi {
         return false;
     }
 
+    public static List<Map<String, String>> getLocations(VsphereVmCreateRequest req) {
+        List<Map<String, String>> locations = new ArrayList<>();
+        Map<String, String> hostMap = new HashMap<>();
+        hostMap.put("name", "主机");
+        hostMap.put("value", "host");
+        locations.add(hostMap);
+        Map<String, String> poolMap = new HashMap<>();
+        poolMap.put("name", "资源池");
+        poolMap.put("value", "pool");
+        locations.add(poolMap);
+        if (isRds(req)) {
+            HashMap<String, String> drs = new HashMap<>();
+            drs.put("name", "Automatic selection");
+            drs.put("value", ResourceConstants.DRS);
+            locations.add(drs);
+        }
+        return locations;
+    }
 
+    private static boolean isRds(VsphereVmCreateRequest req) {
+        VsphereClient client = null;
+        try {
+            client = req.getVsphereVmClient();
+            String cluster = req.getCluster();
+            ClusterComputeResource c = client.getCluster(cluster.trim());
+            if (c != null) {
+                ClusterDrsConfigInfo drsCfg = c.getConfiguration().getDrsConfig();
+                return drsCfg.getEnabled();
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
 
     public static List<F2CVsphereCluster> getClusters(VsphereVmBaseRequest req) {
         VsphereClient client = null;
@@ -462,5 +578,98 @@ public class VsphereSyncCloudApi {
         } finally {
             closeConnection(client);
         }
+    }
+
+    public static List<VsphereHost> getHosts(VsphereVmCreateRequest request) {
+        VsphereVmClient client = null;
+        try {
+            List<VsphereHost> result = new ArrayList<>();
+            List<HostSystem> list;
+            client = request.getVsphereVmClient();
+            if (StringUtils.isNotBlank(request.getCluster())) {
+                ClusterComputeResource cluster = client.getCluster(request.getCluster().trim());
+                list = List.of(cluster.getHosts());
+            } else {
+                list = client.listHosts();
+            }
+            for (HostSystem hostSystem : list) {
+                VsphereHost host = new VsphereHost(hostSystem.getMOR().getVal(), hostSystem.getName());
+                //使用情况
+                HostListSummary summary = hostSystem.getSummary();
+                HostHardwareSummary hostHw = summary.getHardware();
+                long totalMemory = hostHw.getMemorySize() / GB;
+                long totalCpu = (long) hostHw.getCpuMhz() * hostHw.getNumCpuCores();
+                long totalUsedCpu = summary.getQuickStats().getOverallCpuUsage();
+                long totalUsedMemory = summary.getQuickStats().getOverallMemoryUsage();
+
+                host.setTotalCpu(totalCpu)
+                        .setTotalMemory(totalMemory)
+                        .setUsedCpu(totalUsedCpu)
+                        .setUsedMemory(totalUsedMemory);
+
+                result.add(host);
+            }
+
+            return result;
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        } finally {
+            closeConnection(client);
+        }
+    }
+
+    public static List<VsphereResourcePool> geResourcePools(VsphereVmCreateRequest request) {
+        VsphereVmClient client = null;
+        try {
+            List<VsphereResourcePool> list = new ArrayList<>();
+            client = request.getVsphereVmClient();
+            if (StringUtils.isNotBlank(request.getCluster())) {
+                ClusterComputeResource cluster = client.getCluster(request.getCluster().trim());
+                ResourcePool basePool = cluster.getResourcePool();
+                List<ResourcePool> pools = List.of(basePool.getResourcePools());
+                if (CollectionUtils.isNotEmpty(pools)) {
+                    for (ResourcePool pool : pools) {
+                        List<VsphereResourcePool> childResourcePools = getChildResourcePools(pool, "");
+                        list.addAll(childResourcePools);
+                    }
+                }
+            }
+            return list;
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        } finally {
+            closeConnection(client);
+        }
+    }
+
+    public static List<VsphereResourcePool> getChildResourcePools(ResourcePool pool, String parent) throws Exception {
+        List<VsphereResourcePool> result = new ArrayList<>();
+        ResourcePool[] subPools = pool.getResourcePools();
+        if (!"".equals(parent)) {
+            parent = parent + "/";
+        }
+        VsphereResourcePool root = new VsphereResourcePool(pool.getMOR().getVal(), parent + pool.getName());
+
+        //使用情况
+        ResourcePoolRuntimeInfo runtime = pool.getSummary().getRuntime();
+        ResourcePoolResourceUsage cpu = runtime.getCpu();
+        ResourcePoolResourceUsage memory = runtime.getMemory();
+
+        root.setTotalCpu(cpu.getReservationUsedForVm() + cpu.getUnreservedForVm())
+                .setUsedCpu(cpu.getReservationUsedForVm())
+                .setTotalMemory((memory.getReservationUsedForVm() + memory.getUnreservedForVm()) / GB)
+                .setUsedMemory(memory.getReservationUsedForVm() / GB);
+
+        result.add(root);
+        if (subPools != null) {
+            for (ResourcePool childPool : subPools) {
+                if (!StringUtils.equals(childPool.getMOR().getVal(), pool.getMOR().getVal()) &&
+                        StringUtils.equals(childPool.getParent().getMOR().getVal(), pool.getMOR().getVal())
+                ) {
+                    result.addAll(getChildResourcePools(childPool, parent + pool.getName()));
+                }
+            }
+        }
+        return result;
     }
 }

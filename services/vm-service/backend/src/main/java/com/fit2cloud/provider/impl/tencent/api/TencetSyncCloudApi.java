@@ -217,7 +217,17 @@ public class TencetSyncCloudApi {
             if (StringUtils.isNotEmpty(request.getRegionId()) && StringUtils.isNotEmpty(request.getCredential())) {
                 TencentVmCredential tencentVmCredential = JsonUtil.parseObject(request.getCredential(), TencentVmCredential.class);
                 CbsClient cbsClient = tencentVmCredential.getCbsClient(request.getRegionId());
-                cbsClient.DetachDisks(request.toDetachDisksRequest());
+
+                String instanceUuid = request.getInstanceUuid();
+                // 防止批量操作时失败
+                synchronized (instanceUuid.intern()) {
+                    cbsClient.DetachDisks(request.toDetachDisksRequest());
+
+                    //查看磁盘状态
+                    DescribeDisksRequest describeDisksRequest = new DescribeDisksRequest();
+                    describeDisksRequest.setDiskIds(new String[]{request.getDiskId()});
+                    checkDiskState(cbsClient, describeDisksRequest, Arrays.asList("UNATTACHED"));
+                }
                 return true;
             } else {
                 throw new RuntimeException("RegionId and credential can not be null");
@@ -238,15 +248,19 @@ public class TencetSyncCloudApi {
             if (StringUtils.isNotEmpty(request.getRegionId()) && StringUtils.isNotEmpty(request.getCredential())) {
                 TencentVmCredential tencentVmCredential = JsonUtil.parseObject(request.getCredential(), TencentVmCredential.class);
                 CbsClient cbsClient = tencentVmCredential.getCbsClient(request.getRegionId());
-                cbsClient.AttachDisks(request.toAttachDisksRequest());
 
-                //检查云盘状态
-                List<F2CDisk> result = new ArrayList<>();
-                DescribeDisksRequest describeDisksRequest = new DescribeDisksRequest();
-                describeDisksRequest.setDiskIds(new String[]{request.getDiskId()});
-                DescribeDisksResponse describeDisksResponse = checkDiskState(cbsClient, describeDisksRequest, Arrays.asList("ATTACHED"));
-                F2CDisk disk = trans2F2CDisk(request.getRegionId(), describeDisksResponse.getDiskSet()[0]);
-                disk.setInstanceUuid(request.getInstanceUuid());
+                String instanceUuid = request.getInstanceUuid();
+                // 防止批量操作时失败
+                synchronized (instanceUuid.intern()) {
+                    cbsClient.AttachDisks(request.toAttachDisksRequest());
+                    //检查云盘状态
+                    List<F2CDisk> result = new ArrayList<>();
+                    DescribeDisksRequest describeDisksRequest = new DescribeDisksRequest();
+                    describeDisksRequest.setDiskIds(new String[]{request.getDiskId()});
+                    DescribeDisksResponse describeDisksResponse = checkDiskState(cbsClient, describeDisksRequest, Arrays.asList("ATTACHED"));
+                    F2CDisk disk = trans2F2CDisk(request.getRegionId(), describeDisksResponse.getDiskSet()[0]);
+                    disk.setInstanceUuid(request.getInstanceUuid());
+                }
                 return true;
             } else {
                 throw new RuntimeException("RegionId or credential can not be null.");

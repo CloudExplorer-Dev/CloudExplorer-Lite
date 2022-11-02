@@ -18,12 +18,23 @@ const platforms = ref<Array<Platform>>([]);
 // 校验实例对象
 const ruleFormRef = ref<FormInstance>();
 // 选中的供应商
-const activePlatform = computed(() => {
-  return platforms.value.find(
+const activePlatform = ref<Platform>();
+
+const changePlatform = () => {
+  const p = platforms.value.find(
     (platform) => from.value.platform === platform.field
   );
-});
-
+  from.value.credential = {};
+  p?.credentialFrom.forEach((item) => {
+    if (item.inputType === "SwitchBtn" && item.defaultValue) {
+      // 设置默认值
+      from.value.credential[item.field] = JSON.parse(
+        item.defaultValue as string
+      );
+    }
+  });
+  activePlatform.value = p;
+};
 /**
  * 更新云账号
  */
@@ -148,6 +159,7 @@ const clear = () => {
               <el-select
                 style="width: 100%"
                 v-model="from.platform"
+                @change="changePlatform"
                 class="m-2"
                 :placeholder="
                   t(

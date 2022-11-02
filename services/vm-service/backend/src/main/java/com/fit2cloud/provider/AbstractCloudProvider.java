@@ -9,7 +9,9 @@ import com.fit2cloud.common.platform.credential.Credential;
 import com.fit2cloud.common.provider.entity.F2CPerfMetricMonitorData;
 import com.fit2cloud.common.utils.JsonUtil;
 import com.fit2cloud.constants.ErrorCodeConstants;
+import com.fit2cloud.provider.entity.F2CDatastore;
 import com.fit2cloud.provider.entity.F2CDisk;
+import com.fit2cloud.provider.entity.F2CHost;
 
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
@@ -59,17 +61,22 @@ public abstract class AbstractCloudProvider<C extends Credential> implements ICl
         throw new Fit2cloudException(1001, "不存在认证对象");
     }
 
-    @Override
+    public List<F2CHost> listHost(String req){
+        return null;
+    }
+
+    public List<F2CDatastore> listDataStore(String req){
+        return null;
+    }
+
     public boolean detachDisk(String req) {
         return false;
     }
 
-    @Override
     public boolean deleteDisk(String req) {
         return false;
     }
 
-    @Override
     public boolean enlargeDisk(String req) {
         return false;
     }

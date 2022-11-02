@@ -186,8 +186,9 @@ public class SyncServiceImpl extends BaseSyncService implements SyncService {
      */
     private void saveBatchOrUpdate(BiSaveBatchOrUpdateParams<CloudBill> saveBatchOrUpdateParams) {
         //todo 构建删除数据查询条件
-        ScriptQuery scriptQuery = new ScriptQuery.Builder().script(s -> s.inline(inlineScript -> inlineScript.lang("painless").source("doc['billingCycle'].value.monthValue==params.month&&doc['billingCycle'].value.year==params.year&&doc['provider'].value==params.platform")
-                .params(getQuertParams(saveBatchOrUpdateParams.getRequestParams(), saveBatchOrUpdateParams.getCloudAccount().getPlatform())))).build();
+        ScriptQuery scriptQuery = new ScriptQuery.Builder().script(s -> s.inline(inlineScript -> inlineScript.lang("painless")
+                .source("doc['billingCycle'].value.monthValue==params.month&&doc['billingCycle'].value.year==params.year&&doc['cloudAccountId'].value==params.cloudAccountId")
+                .params(getQuertParams(saveBatchOrUpdateParams.getRequestParams(), saveBatchOrUpdateParams.getCloudAccount().getId())))).build();
         // todo 删除数据
         elasticsearchTemplate.delete(new NativeQueryBuilder().withQuery(new Query.Builder().script(scriptQuery).build()).build(), CloudBill.class, IndexCoordinates.of(CloudBill.class.getAnnotation(Document.class).indexName()));
         //todo 插入数据

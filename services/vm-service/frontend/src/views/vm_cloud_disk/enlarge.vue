@@ -28,9 +28,7 @@ const handleSave = () => {
     };
     VmCloudDiskApi.enlarge(req).then(() => {
       backToDiskList();
-      ElMessage.success(
-        t("commons.msg.success", [t("vm_cloud_disk.btn.enlarge")])
-      );
+      ElMessage.success(t("commons.msg.op_success"));
     });
   }
 };

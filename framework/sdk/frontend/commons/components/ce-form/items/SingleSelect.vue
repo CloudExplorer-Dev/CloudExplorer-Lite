@@ -27,13 +27,12 @@ function baseTextField(formItem: FormView, item: any) {
 }
 
 function formatTextField(formItem: FormView, item: any) {
-  const str = baseTextField(formItem, item);
   if (formItem.formatTextField && formItem.textField) {
     let temp = _.replace(formItem.textField, /{/g, "{item['");
     temp = _.replace(temp, /}/g, "']}");
     return eval("`" + temp + "`");
   } else {
-    return str;
+    return baseTextField(formItem, item);
   }
 }
 </script>

@@ -8,11 +8,9 @@ import { setupStore } from "@commons/stores";
 import App from "./App.vue";
 import common from "@commons/index";
 import { i18n } from "@commons/index";
-
 import "@commons/styles/index.scss";
 import { AppMicroApp } from "@commons/microapp";
 import { initRouteObj, getRoute } from "@commons/router";
-
 let app = null;
 
 const mount = async () => {
@@ -28,7 +26,6 @@ const mount = async () => {
     locale: i18n.global.messages.value[i18n.global.locale.value],
   });
   app.use(common);
-
   //设置router
   await initRouteObj();
   const route = getRoute();

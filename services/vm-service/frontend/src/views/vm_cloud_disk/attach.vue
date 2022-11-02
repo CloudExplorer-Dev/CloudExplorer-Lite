@@ -9,13 +9,17 @@ import { ElMessage } from "element-plus";
 
 const props = defineProps<{
   id: string;
+  ids: string[];
   accountId: string;
+  zone: string;
   visible: boolean;
+  isBatch: boolean;
 }>();
-const emits = defineEmits(["update:visible"]);
+const emits = defineEmits(["update:visible", "refresh"]);
 const { t } = useI18n();
 const vmList = ref<VmCloudServerVO[]>([]);
 const formRef = ref<FormInstance>();
+const loading = ref(false);
 
 const form = reactive({
   instanceUuid: "",
@@ -41,17 +45,29 @@ const handleSave = (formEl: FormInstance) => {
   if (!formEl) return;
   formEl.validate((valid) => {
     if (valid) {
-      const data = {
-        id: props.id,
-        instanceUuid: form.instanceUuid,
-        deleteWithInstance: form.deleteWithInstance,
-      };
-      VmCloudDiskApi.attach(data).then(() => {
-        ElMessage.success(
-          t("commons.msg.success", [t("vm_cloud_disk.btn.mount")])
-        );
-        emits("update:visible", false);
-      });
+      if (props.isBatch) {
+        const data = {
+          ids: props.ids,
+          instanceUuid: form.instanceUuid,
+          deleteWithInstance: form.deleteWithInstance,
+        };
+        VmCloudDiskApi.batchAttach(data, loading).then(() => {
+          ElMessage.success(t("commons.msg.op_success"));
+          emits("update:visible", false);
+          emits("refresh");
+        });
+      } else {
+        const data = {
+          id: props.id,
+          instanceUuid: form.instanceUuid,
+          deleteWithInstance: form.deleteWithInstance,
+        };
+        VmCloudDiskApi.attach(data, loading).then(() => {
+          ElMessage.success(t("commons.msg.op_success"));
+          emits("update:visible", false);
+          emits("refresh");
+        });
+      }
     } else {
       return false;
     }
@@ -59,14 +75,18 @@ const handleSave = (formEl: FormInstance) => {
 };
 
 onMounted(() => {
-  VmCloudDiskApi.listVmByAccountId(props.accountId).then((res) => {
+  const params = {
+    accountId: props.accountId,
+    zone: props.zone,
+  };
+  VmCloudDiskApi.listVm(params).then((res) => {
     vmList.value = res.data;
   });
 });
 </script>
 
 <template>
-  <el-form :model="form" :rules="rules" ref="formRef">
+  <el-form :model="form" :rules="rules" ref="formRef" v-loading="loading">
     <div style="margin: 0 50px">
       <el-form-item
         :label="$t('vm_cloud_disk.label.cloudVm')"

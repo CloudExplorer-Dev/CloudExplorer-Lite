@@ -1,7 +1,3 @@
-<script setup lang="ts">
+<script setup lang="ts"></script>
 
-</script>
-
-<template>
-  开发中。。。
-</template>
+<template>开发中。。。</template>

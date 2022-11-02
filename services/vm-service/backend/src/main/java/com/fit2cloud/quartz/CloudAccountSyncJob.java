@@ -49,6 +49,26 @@ public class CloudAccountSyncJob {
         }
     }
 
+    @Name("同步宿主机定时任务")
+    public static class SyncHostJob extends AsyncJob implements Job {
+        @Override
+        protected void run(Map<String, Object> map) {
+            LogUtil.info("开始同步宿主机: ", map);
+            SpringUtil.getBean(ISyncProviderService.class).syncCloudHost(map);
+            LogUtil.info("同步宿主机结束: ", map);
+        }
+    }
+
+    @Name("同步存储器定时任务")
+    public static class SyncDatastoreJob extends AsyncJob implements Job {
+        @Override
+        protected void run(Map<String, Object> map) {
+            LogUtil.info("开始同步存储器: ", map);
+            SpringUtil.getBean(ISyncProviderService.class).syncCloudDatastore(map);
+            LogUtil.info("同步存储器结束: ", map);
+        }
+    }
+
     @Name("同步云主机监控数据任务")
     public static class SyncCloudServerPerfMetricMonitor extends AsyncJob implements Job {
         @Override
