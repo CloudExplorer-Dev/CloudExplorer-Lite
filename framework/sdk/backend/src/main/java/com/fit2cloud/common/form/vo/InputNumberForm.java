@@ -1,7 +1,6 @@
 package com.fit2cloud.common.form.vo;
 
-import com.fit2cloud.common.form.constants.InputType;
-import lombok.*;
+import lombok.Data;
 
 /**
  * @Author:张少虎
@@ -15,5 +14,7 @@ public class InputNumberForm extends Form {
      * 字段名称
      */
     private String field;
+
+    private String unit;
 
 }

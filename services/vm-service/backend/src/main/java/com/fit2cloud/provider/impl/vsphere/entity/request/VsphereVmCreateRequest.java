@@ -132,6 +132,11 @@ public class VsphereVmCreateRequest extends VsphereVmBaseRequest implements ICre
     //
     @Form(inputType = InputType.Radio,
             label = "磁盘格式",
+            clazz = VsphereCloudProvider.class,
+            method = "getDiskTypes",
+            textField = "info",
+            valueField = "value",
+            defaultValue = "DEFAULT",
             step = 2,
             group = 6
     )
