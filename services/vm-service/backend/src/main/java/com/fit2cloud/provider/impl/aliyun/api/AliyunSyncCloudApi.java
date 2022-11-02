@@ -458,19 +458,6 @@ public class AliyunSyncCloudApi {
         return 0;
     }
 
-    /**
-     * 扩容磁盘
-     *
-     * @return
-     */
-    public static boolean enlargeDisk(AliyunResizeDiskRequest request) {
-        try {
-            Client aliyunClient = JsonUtil.parseObject(request.getCredential(), AliyunVmCredential.class).getClient();
-            DescribeDisksResponse describeDisksResponse = aliyunClient.describeDisks(request.toDescribeDisksRequest());
-            if (describeDisksResponse.getBody().getDisks().getDisk().size() == 0) {
-                throw new RuntimeException("Disk not found！");
-            }
-            String diskStatus = describeDisksResponse.getBody().getDisks().getDisk().get(0).getStatus();
     public static List<F2CPerfMetricMonitorData> getF2CPerfMetricList(GetMetricsRequest getMetricsRequest){
         if (StringUtils.isEmpty(getMetricsRequest.getRegionId())) {
             throw new Fit2cloudException(10002, "区域为必填参数");
@@ -545,7 +532,19 @@ public class AliyunSyncCloudApi {
         });
         return result;
     }
-
+    /**
+     * 扩容磁盘
+     *
+     * @return
+     */
+    public static boolean enlargeDisk(AliyunResizeDiskRequest request) {
+        try {
+            Client aliyunClient = JsonUtil.parseObject(request.getCredential(), AliyunVmCredential.class).getClient();
+            DescribeDisksResponse describeDisksResponse = aliyunClient.describeDisks(request.toDescribeDisksRequest());
+            if (describeDisksResponse.getBody().getDisks().getDisk().size() == 0) {
+                throw new RuntimeException("Disk not found！");
+            }
+            String diskStatus = describeDisksResponse.getBody().getDisks().getDisk().get(0).getStatus();
             // 磁盘类型：系统盘（system） or 数据盘（data）
             String diskType = describeDisksResponse.getBody().getDisks().getDisk().get(0).getType();
             ResizeDiskRequest resizeDiskRequest = request.toResizeDiskRequest();
