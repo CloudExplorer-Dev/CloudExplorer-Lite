@@ -716,7 +716,7 @@ onBeforeUnmount(() => {
     width: 50%;
     border-right: 1px solid var(--el-border-color);
     .content {
-      height: 200px;
+      height: 400px;
       padding-top: 20px;
       overflow: auto;
       .container {
@@ -745,7 +745,7 @@ onBeforeUnmount(() => {
       background-color: var(--el-border-color);
     }
     .content {
-      height: 150px;
+      height: 400px;
       overflow: auto;
       .container {
         padding: 20px 0px 0px 20px;
