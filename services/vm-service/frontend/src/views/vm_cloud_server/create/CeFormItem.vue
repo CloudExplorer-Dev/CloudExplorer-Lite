@@ -29,10 +29,12 @@
             :field="item.field"
             :form-item="item"
             :otherParams="otherParams"
-            style="width: 75%"
             v-bind="{ ...JSON.parse(item.attrs) }"
             @change="change(item)"
           ></component>
+          <span v-if="item.unit" style="padding-left: 15px">{{
+            item.unit
+          }}</span>
         </el-form-item>
       </template>
       <template v-else>
@@ -200,6 +202,7 @@ const change = (formItem: FormView) => {
   console.log(formItem.field);
   _.forEach(props.allFormViewData, (item) => {
     if (_.includes(item.relationTrigger, formItem.field)) {
+      console.log(formItem.field, "in", item.field);
       //设置空值
       _.set(_data.value, item.field, undefined);
       //设置列表

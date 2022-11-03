@@ -29,6 +29,7 @@
     "@element-plus/icons-vue": "^2.0.6",
     "@vueuse/core": "^9.1.0",
     "axios": "^0.27.2",
+    "echarts": "^5.4.0",
     "element-plus": "^2.2.12",
     "fit2cloud-ui-plus": "0.0.1-beta.17",
     "jsencrypt": "^3.2.1",

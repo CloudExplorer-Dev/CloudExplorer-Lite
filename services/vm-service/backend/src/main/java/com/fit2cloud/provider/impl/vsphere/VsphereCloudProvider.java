@@ -8,16 +8,12 @@ import com.fit2cloud.provider.AbstractCloudProvider;
 import com.fit2cloud.provider.ICloudProvider;
 import com.fit2cloud.provider.entity.*;
 import com.fit2cloud.provider.impl.vsphere.api.VsphereSyncCloudApi;
-import com.fit2cloud.provider.impl.vsphere.entity.F2CVsphereCluster;
-import com.fit2cloud.provider.impl.vsphere.entity.F2CVsphereNetwork;
-import com.fit2cloud.provider.impl.vsphere.entity.request.VsphereNetworkRequest;
-import com.fit2cloud.provider.impl.vsphere.entity.request.VsphereVmBaseRequest;
-import com.fit2cloud.provider.impl.vsphere.entity.request.VsphereVmCreateRequest;
-import com.fit2cloud.provider.impl.vsphere.entity.request.VsphereVmPowerRequest;
-import com.fit2cloud.provider.impl.vsphere.entity.VsphereHost;
-import com.fit2cloud.provider.impl.vsphere.entity.VsphereResourcePool;
+import com.fit2cloud.provider.impl.vsphere.entity.*;
 import com.fit2cloud.provider.impl.vsphere.entity.request.*;
+import com.fit2cloud.provider.impl.vsphere.util.DiskType;
 
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -115,6 +111,33 @@ public class VsphereCloudProvider extends AbstractCloudProvider<VsphereCredentia
     public List<VsphereResourcePool> geResourcePools(String req) {
         VsphereVmCreateRequest request = JsonUtil.parseObject(req, VsphereVmCreateRequest.class);
         return VsphereSyncCloudApi.geResourcePools(request);
+    }
+
+    public List<VsphereFolder> getFolders(String req) {
+        VsphereVmCreateRequest request = JsonUtil.parseObject(req, VsphereVmCreateRequest.class);
+        return VsphereSyncCloudApi.getFolders(request);
+    }
+
+    public List<Map<String, String>> getDiskTypes(String req) {
+        List<Map<String, String>> diskTypes = new ArrayList<>();
+        Map<String, String> defaultMap = new HashMap<>();
+        defaultMap.put("info", "与源格式相同");
+        defaultMap.put("value", DiskType.DEFAULT);
+        diskTypes.add(defaultMap);
+        Map<String, String> thinMap = new HashMap<>();
+        thinMap.put("info", "精简置备");
+        thinMap.put("value", DiskType.THIN);
+        diskTypes.add(thinMap);
+        Map<String, String> Map = new HashMap<>();
+        Map.put("info", "厚置备置零");
+        Map.put("value", DiskType.EAGER_ZEROED);
+        diskTypes.add(Map);
+        return diskTypes;
+    }
+
+    public List<VsphereDatastore> getDatastoreList(String req) {
+        VsphereVmCreateRequest request = JsonUtil.parseObject(req, VsphereVmCreateRequest.class);
+        return VsphereSyncCloudApi.getDatastoreList(request);
     }
 
     @Override

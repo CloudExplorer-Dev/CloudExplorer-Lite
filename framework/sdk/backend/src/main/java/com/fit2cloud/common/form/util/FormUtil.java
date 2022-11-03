@@ -67,6 +67,7 @@ public class FormUtil {
             map.put("valueField", annotation.valueField());
             map.put("textField", annotation.textField());
             map.put("formatTextField", annotation.formatTextField());
+            map.put("unit", annotation.unit());
             map.put("field", field.getName());
             map.put("relationShows", annotation.relationShows());
             map.put("relationTrigger", annotation.relationTrigger());

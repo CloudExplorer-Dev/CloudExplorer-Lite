@@ -9,13 +9,6 @@ import com.fit2cloud.provider.impl.vsphere.entity.*;
 import com.fit2cloud.provider.impl.vsphere.entity.request.*;
 import com.fit2cloud.provider.impl.vsphere.util.*;
 import com.vmware.vim25.*;
-import com.fit2cloud.provider.impl.vsphere.entity.request.VsphereNetworkRequest;
-import com.fit2cloud.provider.impl.vsphere.entity.request.VsphereVmBaseRequest;
-import com.fit2cloud.provider.impl.vsphere.entity.request.VsphereVmPowerRequest;
-import com.fit2cloud.provider.impl.vsphere.util.ContentLibraryUtil;
-import com.fit2cloud.provider.impl.vsphere.util.ResourceConstants;
-import com.fit2cloud.provider.impl.vsphere.util.VsphereUtil;
-import com.fit2cloud.provider.impl.vsphere.util.VsphereVmClient;
 import com.vmware.vim25.mo.*;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -24,6 +17,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -206,13 +201,13 @@ public class VsphereSyncCloudApi {
                         for (Datastore ds : list) {
                             Datacenter dc = client.getDataCenter(ds);
                             F2CDatastore f2cDs = new F2CDatastore();
-                            f2cDs.setDataCenterId(dc.getName());
+                            f2cDs.setDataCenterId(dc.getMOR().getVal());
                             f2cDs.setDataCenterName(dc.getName());
-                            f2cDs.setClusterId(cluster.getName());
+                            f2cDs.setClusterId(cluster.getMOR().getVal());
                             f2cDs.setClusterName(cluster.getName());
                             DatastoreSummary dsSummary = ds.getSummary();
                             f2cDs.setCapacity(dsSummary.getCapacity() / GB);
-                            f2cDs.setDataStoreId(ds.getName());
+                            f2cDs.setDataStoreId(ds.getMOR().getVal());
                             f2cDs.setDataStoreName(ds.getName());
                             f2cDs.setFreeSpace(dsSummary.getFreeSpace() / GB);
                             f2cDs.setType(dsSummary.getType());
@@ -597,10 +592,11 @@ public class VsphereSyncCloudApi {
                 //使用情况
                 HostListSummary summary = hostSystem.getSummary();
                 HostHardwareSummary hostHw = summary.getHardware();
-                long totalMemory = hostHw.getMemorySize() / GB;
-                long totalCpu = (long) hostHw.getCpuMhz() * hostHw.getNumCpuCores();
-                long totalUsedCpu = summary.getQuickStats().getOverallCpuUsage();
-                long totalUsedMemory = summary.getQuickStats().getOverallMemoryUsage();
+
+                BigDecimal totalCpu = BigDecimal.valueOf(hostHw.getCpuMhz()).multiply(BigDecimal.valueOf(hostHw.getNumCpuCores())).divide(BigDecimal.valueOf(1000), 2, RoundingMode.HALF_UP); //GHz
+                BigDecimal totalUsedCpu = BigDecimal.valueOf(summary.getQuickStats().getOverallCpuUsage()).divide(BigDecimal.valueOf(1000), 2, RoundingMode.HALF_UP); //GHz
+                BigDecimal totalMemory = BigDecimal.valueOf(hostHw.getMemorySize()).divide(BigDecimal.valueOf(GB), 2, RoundingMode.HALF_UP);
+                BigDecimal totalUsedMemory = BigDecimal.valueOf(summary.getQuickStats().getOverallMemoryUsage()).divide(BigDecimal.valueOf(1024), 2, RoundingMode.HALF_UP); //直接拿到是MB还要再除1024
 
                 host.setTotalCpu(totalCpu)
                         .setTotalMemory(totalMemory)
@@ -609,7 +605,7 @@ public class VsphereSyncCloudApi {
 
                 result.add(host);
             }
-
+            result.sort(Comparator.comparing(VsphereHost::getName));
             return result;
         } catch (Exception e) {
             throw new RuntimeException(e);
@@ -634,6 +630,7 @@ public class VsphereSyncCloudApi {
                     }
                 }
             }
+            list.sort(Comparator.comparing(VsphereResourcePool::getName));
             return list;
         } catch (Exception e) {
             throw new RuntimeException(e);
@@ -655,10 +652,15 @@ public class VsphereSyncCloudApi {
         ResourcePoolResourceUsage cpu = runtime.getCpu();
         ResourcePoolResourceUsage memory = runtime.getMemory();
 
-        root.setTotalCpu(cpu.getReservationUsedForVm() + cpu.getUnreservedForVm())
-                .setUsedCpu(cpu.getReservationUsedForVm())
-                .setTotalMemory((memory.getReservationUsedForVm() + memory.getUnreservedForVm()) / GB)
-                .setUsedMemory(memory.getReservationUsedForVm() / GB);
+        BigDecimal totalCpu = BigDecimal.valueOf(cpu.getReservationUsedForVm()).add(BigDecimal.valueOf(cpu.getUnreservedForVm())).divide(BigDecimal.valueOf(1000), 2, RoundingMode.HALF_UP); //GHz
+        BigDecimal totalUsedCpu = BigDecimal.valueOf(cpu.getReservationUsedForVm()).divide(BigDecimal.valueOf(1000), 2, RoundingMode.HALF_UP); //GHz
+        BigDecimal totalMemory = (BigDecimal.valueOf(memory.getReservationUsedForVm()).add(BigDecimal.valueOf(memory.getUnreservedForVm()))).divide(BigDecimal.valueOf(GB), 2, RoundingMode.HALF_UP); //GB
+        BigDecimal totalUsedMemory = BigDecimal.valueOf(memory.getReservationUsedForVm()).divide(BigDecimal.valueOf(GB), 2, RoundingMode.HALF_UP); //GB
+
+        root.setTotalCpu(totalCpu)
+                .setUsedCpu(totalUsedCpu)
+                .setTotalMemory(totalMemory) //MB
+                .setUsedMemory(totalUsedMemory); //MB
 
         result.add(root);
         if (subPools != null) {
@@ -672,4 +674,130 @@ public class VsphereSyncCloudApi {
         }
         return result;
     }
+
+    public static List<VsphereFolder> getFolders(VsphereVmCreateRequest request) {
+        VsphereClient client = null;
+        try {
+            client = request.getVsphereVmClient();
+            List<Folder> folders = client.listFolders();
+            List<VsphereFolder> list = new ArrayList<>();
+
+            if (folders != null && folders.size() > 0) {
+                for (Folder folder : folders) {
+                    List<VsphereFolder> childFolders = VsphereUtil.getChildFolders(client, folder, "");
+                    list.addAll(childFolders);
+                }
+            }
+            list.sort(Comparator.comparing(VsphereFolder::getName));
+
+            //根目录
+            VsphereFolder rootFolder = new VsphereFolder().setMor(VsphereClient.FOLDER_ROOT).setName(VsphereClient.FOLDER_ROOT);
+            list.add(0, rootFolder);
+
+            return list;
+        } catch (Exception e) {
+            throw new RuntimeException(e.getMessage(), e);
+        } finally {
+            closeConnection(client);
+        }
+    }
+
+    public static List<VsphereDatastore> getDatastoreList(VsphereVmCreateRequest request) {
+        VsphereClient client = null;
+        List<VsphereDatastore> datastoreList = new ArrayList<>();
+        try {
+            if(request.getComputeConfig() == null){
+                return new ArrayList<>();
+            }
+            String location = request.getComputeConfig().getLocation();
+            String mor = request.getComputeConfig().getMor(); //宿主机或者资源池的mor
+
+            String cluster = request.getCluster();
+
+            if (StringUtils.isBlank(cluster)) {
+                return new ArrayList<>();
+            }
+            if ((!StringUtils.equals(ResourceConstants.DRS, location)) && StringUtils.isBlank(mor)) {
+                return new ArrayList<>();
+            }
+
+            client = request.getVsphereVmClient();
+            Map<String, Object> hasAddStorage = new HashMap<>();
+
+            ComputeResource cr = client.getComputeResource(cluster);
+            if (!StringUtils.equals("host", location)) {
+                if (cr instanceof ClusterComputeResource) {
+                    Datastore[] list = cr.getDatastores();
+
+                    if (list != null && list.length > 0) {
+                        for (Datastore ds : list) {
+                            ManagedEntity parent = ds.getParent();
+                            handleDataStoreCluster(datastoreList, hasAddStorage, ds, parent);
+                        }
+                    }
+                }
+            } else {
+                List<HostSystem> hss = Arrays.stream(cr.getHosts()).filter((host) -> StringUtils.equals(host.getMOR().getVal(), mor)).toList();
+                if (CollectionUtils.isEmpty(hss)) {
+                    return new ArrayList<>();
+                }
+                HostSystem hs = hss.get(0);
+                Datastore[] datastoreOfHost = hs.getDatastores();
+                if (datastoreOfHost != null && datastoreOfHost.length > 0) {
+                    for (Datastore ds : datastoreOfHost) {
+                        ManagedEntity parent = ds.getParent();
+                        handleDataStoreCluster(datastoreList, hasAddStorage, ds, parent);
+                    }
+                }
+            }
+
+            Set<VsphereDatastore> datastoreHashSet = new HashSet<>(datastoreList);
+            ArrayList<VsphereDatastore> results = new ArrayList<>(datastoreHashSet);
+
+            results.sort(Comparator.comparing(VsphereDatastore::getInfo));
+
+            return results;
+        } catch (Exception e) {
+            throw new RuntimeException(e.getMessage(), e);
+        } finally {
+            if (client != null) {
+                client.closeConnection();
+            }
+        }
+    }
+
+    private static void handleDataStoreCluster(List<VsphereDatastore> datastoreList, Map<String, Object> hasAddStorage, Datastore ds, ManagedEntity parent) {
+        if (parent instanceof StoragePod) {
+            if (hasAddStorage.get(parent.getMOR().getVal()) == null) {
+                StoragePod storagePod = (StoragePod) parent;
+                datastoreList.add(0, convertToVsphereDatastore(storagePod));
+                hasAddStorage.put(storagePod.getMOR().getVal(), new Object());
+            }
+        } else {
+            datastoreList.add(convertToVsphereDatastore(ds));
+        }
+    }
+
+    public static VsphereDatastore convertToVsphereDatastore(StoragePod storagePod) {
+        VsphereDatastore vsphereDatastore = new VsphereDatastore().setMor(storagePod.getMOR().getVal()).setName(storagePod.getName());
+        BigDecimal freeSpace = BigDecimal.valueOf(storagePod.getSummary().getFreeSpace()).divide(BigDecimal.valueOf(GB), 2, RoundingMode.HALF_UP);
+        BigDecimal totalSpace = BigDecimal.valueOf(storagePod.getSummary().getCapacity()).divide(BigDecimal.valueOf(GB), 2, RoundingMode.HALF_UP);
+        vsphereDatastore.setFreeDisk(freeSpace);
+        vsphereDatastore.setTotalDisk(totalSpace);
+
+        vsphereDatastore.setInfo("Storage Cluster:" + storagePod.getName());
+        return vsphereDatastore;
+    }
+
+    public static VsphereDatastore convertToVsphereDatastore(Datastore datastore) {
+        VsphereDatastore vsphereDatastore = new VsphereDatastore().setMor(datastore.getMOR().getVal()).setName(datastore.getName());
+        BigDecimal freeSpace = BigDecimal.valueOf(datastore.getSummary().getFreeSpace()).divide(BigDecimal.valueOf(GB), 2, RoundingMode.HALF_UP);
+        BigDecimal totalSpace = BigDecimal.valueOf(datastore.getSummary().getCapacity()).divide(BigDecimal.valueOf(GB), 2, RoundingMode.HALF_UP);
+        vsphereDatastore.setFreeDisk(freeSpace);
+        vsphereDatastore.setTotalDisk(totalSpace);
+
+        vsphereDatastore.setInfo(datastore.getName());
+        return vsphereDatastore;
+    }
+
 }

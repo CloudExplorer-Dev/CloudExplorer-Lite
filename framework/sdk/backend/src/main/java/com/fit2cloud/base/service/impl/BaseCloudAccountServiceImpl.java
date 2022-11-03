@@ -95,6 +95,16 @@ public class BaseCloudAccountServiceImpl extends ServiceImpl<BaseCloudAccountMap
         return JobConstants.CloudAccount.getCloudAccountBillSettingarams(accountId, defaultParams);
     }
 
+    /**
+     * 获取同步云账号云主机监控数据参数
+     * @param accountId
+     * @return
+     */
+    private Map<String, Object> getDefaultCloudAccountPerfMetricMonitorParams(String accountId) {
+        //List<Credential.Region> regions = getRegionByAccountId(accountId);
+        return JobConstants.CloudAccount.getCloudAccountPerfMetricMonitorJobParams(accountId);
+    }
+
     @SneakyThrows
     private List<Credential.Region> getRegionByAccountId(String accountId) {
         CloudAccount cloudAccount = getById(accountId);

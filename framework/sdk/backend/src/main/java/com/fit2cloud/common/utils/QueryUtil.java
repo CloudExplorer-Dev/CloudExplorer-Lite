@@ -132,6 +132,7 @@ public class QueryUtil {
                         break;
                     case GTE:
                         boolQueryBuilder.must(new Query.Builder().range(new RangeQuery.Builder().gte(JsonData.of(queryCondition.value)).field(queryCondition.field).build()).build());
+                        break;
                     case EQ:
                         boolQueryBuilder.must(new Query.Builder().term(new TermQuery.Builder().value(getFieldValue(queryCondition.value)).field(queryCondition.field).build()).build());
                         break;

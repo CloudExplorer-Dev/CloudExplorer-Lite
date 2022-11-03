@@ -7,7 +7,6 @@ import com.fit2cloud.common.form.constants.InputType;
 import com.fit2cloud.common.provider.impl.vsphere.VsphereBaseCloudProvider;
 import com.fit2cloud.provider.ICreateServerRequest;
 import com.fit2cloud.provider.impl.vsphere.VsphereCloudProvider;
-import com.fit2cloud.service.IVmCloudImageService;
 import com.fit2cloud.service.impl.VmCloudImageServiceImpl;
 import lombok.Data;
 
@@ -25,8 +24,9 @@ import java.util.List;
 @FormGroupInfo(group = 4, name = "磁盘配置")
 @FormGroupInfo(group = 5, name = "计算资源")
 @FormGroupInfo(group = 6, name = "存储资源", description = "配置该资源池可用的存储资源")
-@FormGroupInfo(group = 7, name = "网络")
-@FormGroupInfo(group = 8, name = "主机命名")
+@FormGroupInfo(group = 7, name = "主机存放位置")
+@FormGroupInfo(group = 8, name = "网络")
+@FormGroupInfo(group = 9, name = "主机命名")
 public class VsphereVmCreateRequest extends VsphereVmBaseRequest implements ICreateServerRequest {
 
     @Form(inputType = InputType.Number,
@@ -132,6 +132,11 @@ public class VsphereVmCreateRequest extends VsphereVmBaseRequest implements ICre
     //
     @Form(inputType = InputType.Radio,
             label = "磁盘格式",
+            clazz = VsphereCloudProvider.class,
+            method = "getDiskTypes",
+            textField = "info",
+            valueField = "value",
+            defaultValue = "DEFAULT",
             step = 2,
             group = 6
     )
@@ -140,18 +145,33 @@ public class VsphereVmCreateRequest extends VsphereVmBaseRequest implements ICre
     //存储器
     @Form(inputType = InputType.VsphereDatastoreForm,
             label = "存储器",
+            clazz = VsphereCloudProvider.class,
+            method = "getDatastoreList",
             step = 2,
             group = 6,
             relationTrigger = "computeConfig"
     )
     private String datastore;
 
+    //文件夹
+    @Form(inputType = InputType.SingleSelect,
+            label = "文件夹",
+            clazz = VsphereCloudProvider.class,
+            method = "getFolders",
+            textField = "name",
+            valueField = "mor",
+            relationTrigger = "cluster",
+            group = 7,
+            step = 2
+    )
+    private String folder;
+
 
     //step 3
     //网卡
     @Form(inputType = InputType.VsphereNetworkAdapterForm,
             step = 3,
-            group = 7
+            group = 8
     )
     private List<NetworkAdapter> networkAdapters;
 
@@ -160,16 +180,16 @@ public class VsphereVmCreateRequest extends VsphereVmBaseRequest implements ICre
     //云主机名称
     @Form(inputType = InputType.VsphereServerInfoForm,
             step = 4,
-            group = 8
+            group = 9
     )
-    private String name;
+    private List<String> names;
     //username
     //password
     //hostname
 
 
     @Data
-    private static class DiskConfig {
+    public static class DiskConfig {
 
         private Integer size;
 
@@ -178,7 +198,7 @@ public class VsphereVmCreateRequest extends VsphereVmBaseRequest implements ICre
     }
 
     @Data
-    private static class ComputeConfig {
+    public static class ComputeConfig {
         //计算资源类型
         private String location;
 
@@ -188,7 +208,7 @@ public class VsphereVmCreateRequest extends VsphereVmBaseRequest implements ICre
     }
 
     @Data
-    private static class NetworkAdapter {
+    public static class NetworkAdapter {
 
         private String vlan;
 
