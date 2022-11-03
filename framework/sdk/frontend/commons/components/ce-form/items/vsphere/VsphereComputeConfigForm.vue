@@ -40,75 +40,76 @@
       }"
       prop="mor"
     >
-      <el-table
-        ref="singleTableRef"
-        :data="formItem?.ext?.mor?.optionList"
-        highlight-current-row
-        style="width: 100%"
-        @current-change="handleCurrentChange"
-      >
-        <el-table-column width="55">
-          <template #default="scope">
-            <el-checkbox
-              v-model="scope.row.checked"
-              @change="handleCurrentChange(scope.row)"
-            />
-          </template>
-        </el-table-column>
-        <el-table-column property="name" :label="label" />
-        <el-table-column label="CPU使用量">
-          <template #default="scope">
-            <div class="usage-bar-top-text">
-              <span>
-                可用:
-                {{ (scope.row.totalCpu - scope.row.usedCpu).toFixed(2) }}GHz
-              </span>
-            </div>
-            <el-progress
-              :color="customColors"
-              :percentage="
-                parseFloat(
-                  ((scope.row.usedCpu / scope.row.totalCpu) * 100).toFixed(2)
-                )
-              "
-              :stroke-width="26"
-              :text-inside="true"
-            />
-            <div class="usage-bar-bottom-text">
-              <span>已用: {{ scope.row.usedCpu }}GHz</span>
-              <span>总量: {{ scope.row.totalCpu }}GHz</span>
-            </div>
-          </template>
-        </el-table-column>
-        <el-table-column label="内存使用量">
-          <template #default="scope">
-            <div class="usage-bar-top-text">
-              <span
-                >可用:{{
-                  (scope.row.totalMemory - scope.row.usedMemory).toFixed(2)
-                }}GB</span
-              >
-            </div>
-            <el-progress
-              :color="customColors"
-              :percentage="
-                parseFloat(
-                  (
-                    (scope.row.usedMemory / scope.row.totalMemory) *
-                    100
-                  ).toFixed(2)
-                )
-              "
-              :stroke-width="26"
-              :text-inside="true"
-            />
-            <div class="usage-bar-bottom-text">
-              <span>已用: {{ scope.row.usedMemory }}GB</span>
-              <span>总量: {{ scope.row.totalMemory }}GB</span>
-            </div>
-          </template>
-        </el-table-column>
-      </el-table>
+      <el-radio-group v-model="_data.mor" style="width: 100%">
+        <el-table
+          ref="singleTableRef"
+          :data="formItem?.ext?.mor?.optionList"
+          highlight-current-row
+          style="width: 100%"
+          @current-change="handleCurrentChange"
+        >
+          <el-table-column width="55">
+            <template #default="scope">
+              <el-radio :label="scope.row.mor">
+                <template #default>{{}}</template>
+              </el-radio>
+            </template>
+          </el-table-column>
+          <el-table-column property="name" :label="label" />
+          <el-table-column label="CPU使用量">
+            <template #default="scope">
+              <div class="usage-bar-top-text">
+                <span>
+                  可用:
+                  {{ (scope.row.totalCpu - scope.row.usedCpu).toFixed(2) }}GHz
+                </span>
+              </div>
+              <el-progress
+                :color="customColors"
+                :percentage="
+                  parseFloat(
+                    ((scope.row.usedCpu / scope.row.totalCpu) * 100).toFixed(2)
+                  )
+                "
+                :stroke-width="26"
+                :text-inside="true"
+              />
+              <div class="usage-bar-bottom-text">
+                <span>已用: {{ scope.row.usedCpu }}GHz</span>
+                <span>总量: {{ scope.row.totalCpu }}GHz</span>
+              </div>
+            </template>
+          </el-table-column>
+          <el-table-column label="内存使用量">
+            <template #default="scope">
+              <div class="usage-bar-top-text">
+                <span
+                  >可用:{{
+                    (scope.row.totalMemory - scope.row.usedMemory).toFixed(2)
+                  }}GB</span
+                >
+              </div>
+              <el-progress
+                :color="customColors"
+                :percentage="
+                  parseFloat(
+                    (
+                      (scope.row.usedMemory / scope.row.totalMemory) *
+                      100
+                    ).toFixed(2)
+                  )
+                "
+                :stroke-width="26"
+                :text-inside="true"
+              />
+              <div class="usage-bar-bottom-text">
+                <span>已用: {{ scope.row.usedMemory }}GB</span>
+                <span>总量: {{ scope.row.totalMemory }}GB</span>
+              </div>
+            </template>
+          </el-table-column>
+        </el-table>
+      </el-radio-group>
     </el-form-item>
   </el-form>
 </template>
@@ -131,7 +132,6 @@ interface HostOrResourcePool {
   totalMemory: number;
   usedCpu: number;
   usedMemory: number;
-  checked?: boolean;
 }
 
 const props = defineProps<{
@@ -184,10 +184,6 @@ const currentRow = computed<HostOrResourcePool | undefined>({
 
 function handleCurrentChange(val: HostOrResourcePool | undefined) {
   currentRow.value = val;
-
-  _.forEach(props.formItem?.ext?.mor?.optionList, (o) => {
-    o.checked = o.mor === currentRow.value?.mor;
-  });
 }
 
 /**
@@ -267,10 +263,7 @@ function getList() {
         _data.value.mor = undefined;
       } else {
         //设置界面默认选中
-        singleTableRef.value?.setCurrentRow(currentRow.value);
-        _.forEach(props.formItem?.ext?.mor?.optionList, (o) => {
-          o.checked = o.mor === _data.value.mor;
-        });
+        //singleTableRef.value?.setCurrentRow(currentRow.value);
       }
     });
 }
@@ -299,6 +292,9 @@ onMounted(() => {
   if (props.modelValue == undefined) {
     _data.value = { location: "host" };
   }
+  //设置界面默认选中
+  //singleTableRef.value?.setCurrentRow(currentRow.value);
+
   getComputeTypes();
   getList();
 });
