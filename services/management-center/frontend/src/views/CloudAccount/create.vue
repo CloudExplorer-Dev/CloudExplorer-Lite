@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted, computed, reactive } from "vue";
+import { ref, onMounted, computed, reactive, watch } from "vue";
 import { ElMessage } from "element-plus";
 import cloudAccountApi from "@/api/cloud_account";
 import type {
@@ -18,22 +18,33 @@ const platforms = ref<Array<Platform>>([]);
 // 校验实例对象
 const ruleFormRef = ref<FormInstance>();
 // 选中的供应商
-const activePlatform = ref<Platform>();
-
+const activePlatform = computed(() => {
+  return platforms.value.find(
+    (platform) => from.value.platform === platform.field
+  );
+});
+// watch 供应商选择
+watch(
+  () => activePlatform,
+  () => {
+    changePlatform();
+  }
+);
+// 该比那供应商时,初始化default数据
 const changePlatform = () => {
   const p = platforms.value.find(
     (platform) => from.value.platform === platform.field
   );
-  from.value.credential = {};
   p?.credentialFrom.forEach((item) => {
-    if (item.inputType === "SwitchBtn" && item.defaultValue) {
-      // 设置默认值
-      from.value.credential[item.field] = JSON.parse(
-        item.defaultValue as string
-      );
+    if (item.defaultValue && !from.value.credential[item.field]) {
+      try {
+        // 设置默认值
+        from.value.credential[item.field] = JSON.parse(
+          item.defaultValue as string
+        );
+      } catch (e) {}
     }
   });
-  activePlatform.value = p;
 };
 /**
  * 更新云账号
