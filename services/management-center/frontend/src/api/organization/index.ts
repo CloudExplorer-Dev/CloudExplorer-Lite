@@ -2,7 +2,7 @@ import { get, post, del, put } from "@commons/request";
 import type { Ref } from "vue";
 import type Result from "@commons/request/Result";
 import type { Page } from "@commons/request/Result";
-import type { CreateOrgFrom } from "@/views/OrgManage/type";
+import type { CreateOrgFrom } from "@/api/organization/type";
 import type {
   Organization,
   ListOrganizationRequest,
