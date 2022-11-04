@@ -35,7 +35,9 @@ public class VsphereVmCreateRequest extends VsphereVmBaseRequest implements ICre
             defaultJsonValue = true,
             attrs = "{\"min\":1,\"max\":10,\"step\":1}"
     )
-    private String count;
+    private int count;
+
+    private int index;
 
     //step 1
     //数据中心datacenter
@@ -125,6 +127,8 @@ public class VsphereVmCreateRequest extends VsphereVmBaseRequest implements ICre
     @Form(inputType = InputType.VsphereComputeConfigForm,
             step = 2,
             group = 5,
+            defaultValue = "{\"location\": \"host\"}",
+            defaultJsonValue = true,
             relationTrigger = "cluster"
     )
     private ComputeConfig computeConfig;
@@ -171,9 +175,28 @@ public class VsphereVmCreateRequest extends VsphereVmBaseRequest implements ICre
     //网卡
     @Form(inputType = InputType.VsphereNetworkAdapterForm,
             step = 3,
-            group = 8
+            group = 8,
+            defaultValue = "[]",
+            defaultJsonValue = true,
+            relationTrigger = {"cluster", "computeConfig"}
     )
-    private List<NetworkAdapter> networkAdapters;
+    private List<List<NetworkAdapter>> networkAdapters;
+
+    @Form(inputType = InputType.Text,
+            required = false,
+            label = "DNS1",
+            group = 8,
+            step = 3
+    )
+    private String dns1;
+
+    @Form(inputType = InputType.Text,
+            required = false,
+            label = "DNS2",
+            group = 8,
+            step = 3
+    )
+    private String dns2;
 
 
     //step 4

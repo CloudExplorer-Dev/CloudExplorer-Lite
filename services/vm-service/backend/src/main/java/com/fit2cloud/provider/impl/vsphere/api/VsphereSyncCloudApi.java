@@ -381,55 +381,6 @@ public class VsphereSyncCloudApi {
         }
     }
 
-
-    public static List<F2CVsphereNetwork> getNetworks(VsphereNetworkRequest req) {
-
-        VsphereVmClient client = null;
-        try {
-            client = req.getVsphereVmClient();
-
-            List<F2CVsphereNetwork> networks = new ArrayList<>();
-            networks.add(new F2CVsphereNetwork().setName("Template default").setId(ResourceConstants.DEFAULT_TEMPLATE_NETWORK));
-
-            String location = req.getLocation();
-            List<String> locationValues = req.getHosts();
-            String cluster = req.getCluster();
-            ClusterComputeResource clusterComputeResource = null;
-            if (cluster != null && cluster.trim().length() > 0) {
-                clusterComputeResource = client.getCluster(cluster);
-            }
-            if (CollectionUtils.isEmpty(locationValues)) {
-                networks.addAll(getClusterNetworks(clusterComputeResource));
-            } else {
-                if (StringUtils.equals("host", location)) {
-                    if (locationValues.contains(ResourceConstants.DRS) || locationValues.contains(ResourceConstants.ALL_COMPUTE_RESOURCE)) {
-                        networks.addAll(getClusterNetworks(clusterComputeResource));
-                    } else {
-                        for (String host : locationValues) {
-                            HostSystem hostSystem = client.getHost(host);
-                            if (hostSystem != null) {
-                                networks.addAll(convertToVsphereNetworks(hostSystem));
-                            }
-                        }
-                    }
-                } else {
-                    networks.addAll(getClusterNetworks(clusterComputeResource));
-                }
-            }
-            Set<F2CVsphereNetwork> temp = new HashSet<>(networks);
-            return new ArrayList<>(temp);
-
-        } catch (Exception e) {
-            LogUtil.error(e.getMessage());
-            throw new RuntimeException(e.getMessage());
-        } finally {
-            if (client != null) {
-                client.closeConnection();
-            }
-        }
-
-    }
-
     private static List<F2CVsphereNetwork> getClusterNetworks(ClusterComputeResource clusterComputeResource) throws Exception {
         List<F2CVsphereNetwork> networks = new ArrayList<>();
         if (clusterComputeResource != null) {
@@ -467,7 +418,7 @@ public class VsphereSyncCloudApi {
                 networks.add(new F2CVsphereNetwork()
                         .setName(network.getName())
                         .setDescription(desc)
-                        .setId(network.getMOR().getVal()));
+                        .setMor(network.getMOR().getVal()));
             }
         }
         return networks;
@@ -706,7 +657,7 @@ public class VsphereSyncCloudApi {
         VsphereClient client = null;
         List<VsphereDatastore> datastoreList = new ArrayList<>();
         try {
-            if(request.getComputeConfig() == null){
+            if (request.getComputeConfig() == null) {
                 return new ArrayList<>();
             }
             String location = request.getComputeConfig().getLocation();
@@ -737,11 +688,10 @@ public class VsphereSyncCloudApi {
                     }
                 }
             } else {
-                List<HostSystem> hss = Arrays.stream(cr.getHosts()).filter((host) -> StringUtils.equals(host.getMOR().getVal(), mor)).toList();
-                if (CollectionUtils.isEmpty(hss)) {
+                HostSystem hs = getHostSystemByHostMor(mor, cr);
+                if (hs == null) {
                     return new ArrayList<>();
                 }
-                HostSystem hs = hss.get(0);
                 Datastore[] datastoreOfHost = hs.getDatastores();
                 if (datastoreOfHost != null && datastoreOfHost.length > 0) {
                     for (Datastore ds : datastoreOfHost) {
@@ -760,10 +710,16 @@ public class VsphereSyncCloudApi {
         } catch (Exception e) {
             throw new RuntimeException(e.getMessage(), e);
         } finally {
-            if (client != null) {
-                client.closeConnection();
-            }
+            closeConnection(client);
         }
+    }
+
+    private static HostSystem getHostSystemByHostMor(String mor, ComputeResource cr) {
+        List<HostSystem> hss = Arrays.stream(cr.getHosts()).filter((host) -> StringUtils.equals(host.getMOR().getVal(), mor)).toList();
+        if (CollectionUtils.isEmpty(hss)) {
+            return null;
+        }
+        return hss.get(0);
     }
 
     private static void handleDataStoreCluster(List<VsphereDatastore> datastoreList, Map<String, Object> hasAddStorage, Datastore ds, ManagedEntity parent) {
@@ -778,7 +734,7 @@ public class VsphereSyncCloudApi {
         }
     }
 
-    public static VsphereDatastore convertToVsphereDatastore(StoragePod storagePod) {
+    private static VsphereDatastore convertToVsphereDatastore(StoragePod storagePod) {
         VsphereDatastore vsphereDatastore = new VsphereDatastore().setMor(storagePod.getMOR().getVal()).setName(storagePod.getName());
         BigDecimal freeSpace = BigDecimal.valueOf(storagePod.getSummary().getFreeSpace()).divide(BigDecimal.valueOf(GB), 2, RoundingMode.HALF_UP);
         BigDecimal totalSpace = BigDecimal.valueOf(storagePod.getSummary().getCapacity()).divide(BigDecimal.valueOf(GB), 2, RoundingMode.HALF_UP);
@@ -789,7 +745,7 @@ public class VsphereSyncCloudApi {
         return vsphereDatastore;
     }
 
-    public static VsphereDatastore convertToVsphereDatastore(Datastore datastore) {
+    private static VsphereDatastore convertToVsphereDatastore(Datastore datastore) {
         VsphereDatastore vsphereDatastore = new VsphereDatastore().setMor(datastore.getMOR().getVal()).setName(datastore.getName());
         BigDecimal freeSpace = BigDecimal.valueOf(datastore.getSummary().getFreeSpace()).divide(BigDecimal.valueOf(GB), 2, RoundingMode.HALF_UP);
         BigDecimal totalSpace = BigDecimal.valueOf(datastore.getSummary().getCapacity()).divide(BigDecimal.valueOf(GB), 2, RoundingMode.HALF_UP);
@@ -798,6 +754,50 @@ public class VsphereSyncCloudApi {
 
         vsphereDatastore.setInfo(datastore.getName());
         return vsphereDatastore;
+    }
+
+    public static List<F2CVsphereNetwork> getNetworks(VsphereVmCreateRequest request) {
+        VsphereClient client = null;
+        List<F2CVsphereNetwork> networks = new ArrayList<>();
+        try {
+            if (request.getComputeConfig() == null) {
+                return new ArrayList<>();
+            }
+            String location = request.getComputeConfig().getLocation();
+            String mor = request.getComputeConfig().getMor(); //宿主机或者资源池的mor
+
+            String cluster = request.getCluster();
+
+            if (StringUtils.isBlank(cluster)) {
+                return new ArrayList<>();
+            }
+            if ((!StringUtils.equals(ResourceConstants.DRS, location)) && StringUtils.isBlank(mor)) {
+                return new ArrayList<>();
+            }
+
+            client = request.getVsphereVmClient();
+
+            ComputeResource cr = client.getComputeResource(cluster);
+
+            if (!StringUtils.equals("host", location)) {
+                if (cr instanceof ClusterComputeResource) {
+                    networks.addAll(getClusterNetworks((ClusterComputeResource) cr));
+                }
+            } else {
+                HostSystem hs = getHostSystemByHostMor(mor, cr);
+                if (hs != null) {
+                    networks.addAll(convertToVsphereNetworks(hs));
+                }
+            }
+
+            Set<F2CVsphereNetwork> temp = new HashSet<>(networks);
+            return new ArrayList<>(temp);
+        } catch (Exception e) {
+            throw new RuntimeException(e.getMessage(), e);
+        } finally {
+            closeConnection(client);
+        }
+
     }
 
 }

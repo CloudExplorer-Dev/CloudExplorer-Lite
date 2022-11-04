@@ -289,12 +289,6 @@ watch(
 );
 
 onMounted(() => {
-  if (props.modelValue == undefined) {
-    _data.value = { location: "host" };
-  }
-  //设置界面默认选中
-  //singleTableRef.value?.setCurrentRow(currentRow.value);
-
   getComputeTypes();
   getList();
 });

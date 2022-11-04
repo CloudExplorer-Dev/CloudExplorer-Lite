@@ -9,7 +9,7 @@
         />
       </el-steps>
     </el-header>
-    <el-main>
+    <el-main ref="catalog_container">
       <p class="description">{{ steps[active + 1]?.description }}</p>
 
       data: {{ data }}
@@ -112,6 +112,8 @@ import type { CloudAccount } from "@commons/api/cloud_account/type";
 import { computed, onMounted, ref, type Ref } from "vue";
 import { useRouter } from "vue-router";
 
+const test: any = null;
+
 const useRoute = useRouter();
 
 const loading: Ref<boolean> | undefined = ref<boolean>(false);
@@ -122,6 +124,8 @@ const active = ref(0);
 
 const ceForms = ref<Array<InstanceType<typeof CeFormItem> | null>>([]);
 const ceForms_0 = ref<InstanceType<typeof CeFormItem> | null>(null);
+
+const catalog_container = ref<any>(null);
 
 const data = ref({});
 
@@ -144,16 +148,22 @@ function next() {
 
   Promise.all(_.flatten(promises)).then((ok) => {
     console.log(ok);
-    if (active.value++ > steps.value.length - 2) {
+    active.value++;
+    if (active.value > steps.value.length - 2) {
       active.value = steps.value.length - 2;
     }
+    //定位到最上面
+    catalog_container.value?.$el?.scrollTo(0, 0);
   });
 }
 
 function before() {
-  if (active.value-- < 0) {
+  active.value--;
+  if (active.value < 0) {
     active.value = 0;
   }
+  //定位到最上面
+  catalog_container.value?.$el?.scrollTo(0, 0);
 }
 
 function submit() {
