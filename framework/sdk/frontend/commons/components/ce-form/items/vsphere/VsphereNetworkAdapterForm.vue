@@ -38,7 +38,7 @@
                 required: true,
               }"
               label="网络"
-              :prop="'[' + index + '][' + i + '].network'"
+              :prop="'[' + index + '][' + i + '].vlan'"
             >
               <el-select class="m-2" filterable v-model="adapter.vlan">
                 <el-option
