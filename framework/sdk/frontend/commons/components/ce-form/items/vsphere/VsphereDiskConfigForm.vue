@@ -159,7 +159,7 @@ defineExpose({
   field: props.field,
 });
 </script>
-<style lang="scss">
+<style lang="scss" scoped>
 .vs-disk-config-card {
   height: 130px;
   width: 200px;

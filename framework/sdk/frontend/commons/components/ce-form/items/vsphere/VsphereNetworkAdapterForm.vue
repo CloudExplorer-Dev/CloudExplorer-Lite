@@ -254,7 +254,7 @@ defineExpose({
   field: props.field,
 });
 </script>
-<style lang="scss">
+<style lang="scss" scoped>
 .adapter-container {
   display: flex;
   flex-direction: row;

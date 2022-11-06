@@ -119,4 +119,4 @@ onMounted(() => {
   //singleTableRef.value?.setCurrentRow(currentRow.value);
 });
 </script>
-<style lang="scss"></style>
+<style lang="scss" scoped></style>

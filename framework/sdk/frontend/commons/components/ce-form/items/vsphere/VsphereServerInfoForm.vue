@@ -112,7 +112,7 @@ defineExpose({
   field: props.field,
 });
 </script>
-<style lang="scss">
+<style lang="scss" scoped>
 .add-button {
   margin: 10px;
 }

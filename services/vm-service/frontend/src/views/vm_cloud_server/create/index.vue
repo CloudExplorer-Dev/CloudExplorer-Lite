@@ -12,11 +12,6 @@
     <el-main ref="catalog_container">
       <p class="description">{{ steps[active + 1]?.description }}</p>
 
-      data: {{ data }}
-      <br />
-
-      formatData: {{ formatData }}
-
       <template v-if="steps[active + 1] && active !== steps.length - 2">
         <layout-container
           v-for="group in steps[active + 1]?.groups"
@@ -45,7 +40,12 @@
         </layout-container>
       </template>
 
-      <template v-if="active === steps.length - 2"> 确认页面</template>
+      <template v-if="active === steps.length - 2">
+        <CreateConfirmStep
+          :all-data="formatData"
+          :all-form-view-data="formData.forms"
+        />
+      </template>
     </el-main>
     <el-footer>
       <div class="footer">
@@ -107,6 +107,7 @@ import type {
   FormView,
 } from "@commons/components/ce-form/type";
 import CeFormItem from "./CeFormItem.vue";
+import CreateConfirmStep from "./CreateConfirmStep.vue";
 import type { CloudAccount } from "@commons/api/cloud_account/type";
 
 import { computed, onMounted, ref, type Ref } from "vue";

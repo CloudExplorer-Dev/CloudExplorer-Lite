@@ -311,7 +311,7 @@ defineExpose({
   field: props.field,
 });
 </script>
-<style lang="scss">
+<style lang="scss" scoped>
 .usage-bar-top-text {
   display: flex;
   flex-direction: row-reverse;
