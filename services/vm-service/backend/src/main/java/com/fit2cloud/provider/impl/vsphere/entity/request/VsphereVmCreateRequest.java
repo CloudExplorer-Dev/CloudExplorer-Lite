@@ -118,6 +118,8 @@ public class VsphereVmCreateRequest extends VsphereVmBaseRequest implements ICre
     @Form(inputType = InputType.VsphereDiskConfigForm,
             step = 1,
             group = 4,
+            defaultValue = "[]",
+            defaultJsonValue = true,
             relationTrigger = "template"
     )
     private List<DiskConfig> disks;
@@ -203,12 +205,11 @@ public class VsphereVmCreateRequest extends VsphereVmBaseRequest implements ICre
     //云主机名称
     @Form(inputType = InputType.VsphereServerInfoForm,
             step = 4,
-            group = 9
+            group = 9,
+            defaultValue = "[]",
+            defaultJsonValue = true
     )
-    private List<String> names;
-    //username
-    //password
-    //hostname
+    private List<ServerInfo> serverInfos;
 
 
     @Data
@@ -242,6 +243,17 @@ public class VsphereVmCreateRequest extends VsphereVmBaseRequest implements ICre
         private String gateway;
 
         private String netmask;
+
+    }
+
+    @Data
+    public static class ServerInfo {
+
+        private String name;
+
+        //username
+        //password
+        //hostname
 
     }
 

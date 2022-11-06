@@ -240,7 +240,10 @@ const stepInfos = computed<Array<StepObj>>(() => {
 });
 
 const hasFooterForm = computed<boolean>(() => {
-  return steps.value[0]?.groups[0]?.forms !== undefined;
+  return (
+    steps.value[0]?.groups[0]?.forms !== undefined &&
+    active.value !== steps.value?.length - 2
+  );
 });
 
 const otherParams = computed(() => {

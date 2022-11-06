@@ -202,13 +202,10 @@ function getList() {
 
 function setServers(count: number | undefined) {
   if (count !== undefined) {
-    console.log(_data.value.length, count);
     if (_data.value.length > count) {
-      console.log("d");
       _data.value = _.slice(_data.value, 0, count - _data.value.length);
     } else if (_data.value.length < count) {
       const addCount = count - _data.value.length;
-      console.log("a", addCount);
       for (let i = 0; i < addCount; i++) {
         const list = _.clone(_data.value);
         list.push([{ dhcp: true }]);
