@@ -292,8 +292,8 @@ public class VsphereVmClient extends VsphereClient {
             String folderName = request.getFolder();
             String locationType = request.getComputeConfig().getLocation();
 
-            long memory = request.getRam();
-            int cpu = request.getVCpu();
+            long memory = request.getRam() * 1024L;
+            int cpu = request.getCpu();
 
             String diskType = request.getDiskType();
             List<VsphereVmCreateRequest.DiskConfig> diskConfigs = request.getDisks();
@@ -323,7 +323,7 @@ public class VsphereVmClient extends VsphereClient {
                 resourcePool = getResourcePool(request.getComputeConfig().getName());
             }
 
-            Datastore datastore = getDatastore(request.getDatastore(), datacenter);
+            Datastore datastore = getDatastore(datastoreName, datacenter);
 
 
             VirtualMachine template = getTemplateFromAll(templateName);

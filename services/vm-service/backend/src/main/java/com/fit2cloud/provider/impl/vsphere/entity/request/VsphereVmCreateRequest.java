@@ -105,7 +105,7 @@ public class VsphereVmCreateRequest extends VsphereVmBaseRequest implements ICre
             defaultJsonValue = true,
             attrs = "{\"min\":1,\"max\":128,\"step\":1}"
     )
-    private int vCpu;
+    private int cpu;
 
     //内存GB
     @Form(inputType = InputType.Number,

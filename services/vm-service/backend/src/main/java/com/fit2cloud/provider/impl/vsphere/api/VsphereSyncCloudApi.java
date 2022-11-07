@@ -817,11 +817,11 @@ public class VsphereSyncCloudApi {
 
         try {
 
-            if (StringUtils.isNotBlank(request.getServerInfos().get(index).getName())) {
+            if (StringUtils.isBlank(request.getServerInfos().get(index).getName())) {
                 request.getServerInfos().get(index).setName("i-" + UUID.randomUUID().toString().substring(0, 8));
             }
 
-            if (StringUtils.isNotBlank(request.getServerInfos().get(index).getHostname())) {
+            if (StringUtils.isBlank(request.getServerInfos().get(index).getHostname())) {
                 request.getServerInfos().get(index).setHostname("i-" + UUID.randomUUID().toString().substring(0, 8));
             }
 
