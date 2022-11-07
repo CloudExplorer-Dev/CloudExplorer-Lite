@@ -3,6 +3,8 @@ package com.fit2cloud.common.provider.impl.vsphere.utils;
 import com.fit2cloud.common.constants.Language;
 import com.vmware.vim25.*;
 import com.vmware.vim25.mo.*;
+import org.apache.commons.lang3.ArrayUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -14,6 +16,7 @@ import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.StringTokenizer;
 
 /**
  * Author: LiuDi
@@ -307,6 +310,10 @@ public class VsphereClient {
         return listResources(ClusterComputeResource.class);
     }
 
+    public List<Network> listNetworks() {
+        return listResources(Network.class);
+    }
+
     public HostSystem getHost(String hostName) {
         return getResource(HostSystem.class, hostName);
     }
@@ -315,8 +322,71 @@ public class VsphereClient {
         return getResource(Datastore.class, name, datacenter);
     }
 
+    public VirtualMachine getVirtualMachine(String name) throws RuntimeException {
+        return getResource(VirtualMachine.class, name);
+    }
+
+
+    public StoragePod getStoragePod(String name) {
+        return getResource(StoragePod.class, name);
+    }
+
+    public Folder getFolder(String name) {
+        name = StringUtils.strip(name, "/");
+        if (!StringUtils.contains(name, "/")) {
+            return getResource(Folder.class, name);
+        }
+        String s = StringUtils.substringBefore(name, "/");
+        Folder root = getResource(Folder.class, s);
+
+        StringTokenizer stringTokenizer = new StringTokenizer(name, "/");
+        stringTokenizer.nextToken();
+        while (stringTokenizer.hasMoreTokens()) {
+            Folder resource = getResource(Folder.class, stringTokenizer.nextToken(), root);
+            if (resource == null) {
+                return null;
+            }
+            root = resource;
+        }
+        return root;
+    }
+
+    public ResourcePool getResourcePool(String name) {
+        name = StringUtils.strip(name, "/");
+        if (!StringUtils.contains(name, "/")) {
+            return getResource(ResourcePool.class, name);
+        }
+        String s = StringUtils.substringBefore(name, "/");
+        ResourcePool root = getResource(ResourcePool.class, s);
+
+        StringTokenizer stringTokenizer = new StringTokenizer(name, "/");
+        stringTokenizer.nextToken();
+        while (stringTokenizer.hasMoreTokens()) {
+            ResourcePool resource = getResource(ResourcePool.class, stringTokenizer.nextToken(), root);
+            if (resource == null) {
+                return null;
+            }
+            root = resource;
+        }
+        return root;
+    }
+
+    public VirtualMachine getVirtualMachineById(String instanceId) throws Exception {
+        // 正则判断虚拟机的ID是不是uuid
+        if (!instanceId.matches("([0-9a-f]{8}(-?[0-9a-f]{4}){3}-?[0-9a-f]{12}?)")) {
+            return getVirtualMachine(instanceId);
+        }
+        VimPortType vimService = this.getSi().getServerConnection().getVimService();
+        ServiceContent serviceContent = this.getSi().getServiceContent();
+        ManagedObjectReference vmMor = vimService.findByUuid(serviceContent.getSearchIndex(), null, instanceId, true, true);
+        if (vmMor == null) {
+            return null;
+        }
+        return new VirtualMachine(this.getSi().getServerConnection(), vmMor);
+    }
+
     public List<VirtualDisk> getVirtualDisks(VirtualMachine vm) {
-        List<VirtualDisk> disks = new ArrayList<VirtualDisk>();
+        List<VirtualDisk> disks = new ArrayList<>();
         VirtualMachineConfigInfo config = vm.getConfig();
         if (config != null) {
             VirtualHardware hardware = config.getHardware();
@@ -361,5 +431,35 @@ public class VsphereClient {
             throw new RuntimeException("Error getting resources!" + e.getLocalizedMessage(), e);
         }
         return null;
+    }
+
+    public String getVCenterVersion() {
+        return si.getAboutInfo().getVersion();
+    }
+
+    public Network getNetworkByMor(String networkMor) {
+        List<Network> nets = listNetworks();
+        if (nets != null) {
+            for (Network net : nets) {
+                if (net.getMOR().getVal().equals(networkMor)) {
+                    return net;
+                }
+            }
+        }
+        return null;
+    }
+
+    public double version() {
+        String[] split = StringUtils.split(vCenterVersion, ".");
+        ArrayUtils.reverse(split);
+        double versionNum = 0;
+        for (int i = 0, length = split.length; i < length; i++) {
+            versionNum += Double.valueOf(split[i]) * Math.pow(10, i);
+        }
+        return versionNum;
+    }
+
+    public boolean isUseCustomSpec() {
+        return version() >= 550;
     }
 }

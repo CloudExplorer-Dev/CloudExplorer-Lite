@@ -12,8 +12,8 @@ import com.vmware.vim25.mo.ServiceInstance;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
+
 
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -28,9 +28,8 @@ import java.util.List;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
+@Slf4j
 public class VsphereCredential implements Credential {
-
-    private static Logger logger = LoggerFactory.getLogger(VsphereCredential.class);
 
     /**
      * 用户名
@@ -63,7 +62,7 @@ public class VsphereCredential implements Credential {
             serviceInstance = initServiceInstance();
             return true;
         } catch (Exception e) {
-            logger.error("Cloud Account Verification failed!" + e.getMessage(), e);
+            log.error("Cloud Account Verification failed!" + e.getMessage(), e);
             throw new Fit2cloudException(100001, "云账号校验失败!");
         } finally {
             closeConnection(serviceInstance);
@@ -85,7 +84,7 @@ public class VsphereCredential implements Credential {
             }
             return datacenters.stream().map(this::toRegion).toList();
         } catch (Exception e) {
-            logger.error("Failed to Get Regions!" + e.getMessage(), e);
+            log.error("Failed to Get Regions!" + e.getMessage(), e);
             throw new Fit2cloudException(100001, "云账号校验失败!");
         } finally {
             closeConnection(serviceInstance);

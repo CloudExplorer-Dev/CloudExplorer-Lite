@@ -203,16 +203,16 @@ public class SyncServiceImpl extends BaseSyncService implements SyncService {
      * 获取脚本查询参数
      *
      * @param requestParams 调用同步查询的请求参数
-     * @param platform      云平台
+     * @param cloudAccountId      云平台
      * @return 查询数据
      */
-    private Map<String, JsonData> getQuertParams(String requestParams, String platform) {
+    private Map<String, JsonData> getQuertParams(String requestParams, String cloudAccountId) {
         String month = JsonUtil.parseObject(requestParams).get("month").asText();
         String[] split = month.split("-");
         return new HashMap<>() {{
             put("year", JsonData.of(Integer.parseInt(split[0])));
             put("month", JsonData.of(Integer.parseInt(split[1])));
-            put("platform", JsonData.of(platform));
+            put("cloudAccountId", JsonData.of(cloudAccountId));
         }};
     }
 

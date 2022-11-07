@@ -9,13 +9,8 @@
         />
       </el-steps>
     </el-header>
-    <el-main>
+    <el-main ref="catalog_container">
       <p class="description">{{ steps[active + 1]?.description }}</p>
-
-      data: {{ data }}
-      <br />
-
-      formatData: {{ formatData }}
 
       <template v-if="steps[active + 1] && active !== steps.length - 2">
         <layout-container
@@ -45,7 +40,12 @@
         </layout-container>
       </template>
 
-      <template v-if="active === steps.length - 2"> 确认页面</template>
+      <template v-if="active === steps.length - 2">
+        <CreateConfirmStep
+          :all-data="formatData"
+          :all-form-view-data="formData.forms"
+        />
+      </template>
     </el-main>
     <el-footer>
       <div class="footer">
@@ -107,10 +107,13 @@ import type {
   FormView,
 } from "@commons/components/ce-form/type";
 import CeFormItem from "./CeFormItem.vue";
+import CreateConfirmStep from "./CreateConfirmStep.vue";
 import type { CloudAccount } from "@commons/api/cloud_account/type";
 
 import { computed, onMounted, ref, type Ref } from "vue";
 import { useRouter } from "vue-router";
+
+const test: any = null;
 
 const useRoute = useRouter();
 
@@ -122,6 +125,8 @@ const active = ref(0);
 
 const ceForms = ref<Array<InstanceType<typeof CeFormItem> | null>>([]);
 const ceForms_0 = ref<InstanceType<typeof CeFormItem> | null>(null);
+
+const catalog_container = ref<any>(null);
 
 const data = ref({});
 
@@ -144,16 +149,22 @@ function next() {
 
   Promise.all(_.flatten(promises)).then((ok) => {
     console.log(ok);
-    if (active.value++ > steps.value.length - 2) {
+    active.value++;
+    if (active.value > steps.value.length - 2) {
       active.value = steps.value.length - 2;
     }
+    //定位到最上面
+    catalog_container.value?.$el?.scrollTo(0, 0);
   });
 }
 
 function before() {
-  if (active.value-- < 0) {
+  active.value--;
+  if (active.value < 0) {
     active.value = 0;
   }
+  //定位到最上面
+  catalog_container.value?.$el?.scrollTo(0, 0);
 }
 
 function submit() {
@@ -230,7 +241,10 @@ const stepInfos = computed<Array<StepObj>>(() => {
 });
 
 const hasFooterForm = computed<boolean>(() => {
-  return steps.value[0]?.groups[0]?.forms !== undefined;
+  return (
+    steps.value[0]?.groups[0]?.forms !== undefined &&
+    active.value !== steps.value?.length - 2
+  );
 });
 
 const otherParams = computed(() => {

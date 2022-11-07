@@ -11,7 +11,7 @@ public class F2CVsphereNetwork {
 
     private String name;
 
-    private String id;
+    private String mor;
 
     private String description;
 

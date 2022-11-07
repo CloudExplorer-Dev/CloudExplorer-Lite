@@ -1,5 +1,6 @@
 package com.fit2cloud.provider.impl.vsphere.entity.request;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fit2cloud.common.form.annotaion.Form;
 import com.fit2cloud.common.form.annotaion.FormGroupInfo;
 import com.fit2cloud.common.form.annotaion.FormStepInfo;
@@ -7,13 +8,17 @@ import com.fit2cloud.common.form.constants.InputType;
 import com.fit2cloud.common.provider.impl.vsphere.VsphereBaseCloudProvider;
 import com.fit2cloud.provider.ICreateServerRequest;
 import com.fit2cloud.provider.impl.vsphere.VsphereCloudProvider;
+import com.fit2cloud.provider.impl.vsphere.util.ResourceConstants;
 import com.fit2cloud.service.impl.VmCloudImageServiceImpl;
 import lombok.Data;
+import lombok.experimental.Accessors;
 
 import java.util.List;
 
 
 @Data
+@Accessors(chain = true)
+@JsonIgnoreProperties(ignoreUnknown = true)
 @FormStepInfo(step = 1, name = "基础配置")
 @FormStepInfo(step = 2, name = "选择资源")
 @FormStepInfo(step = 3, name = "网络配置")
@@ -35,7 +40,9 @@ public class VsphereVmCreateRequest extends VsphereVmBaseRequest implements ICre
             defaultJsonValue = true,
             attrs = "{\"min\":1,\"max\":10,\"step\":1}"
     )
-    private String count;
+    private int count;
+
+    private int index;
 
     //step 1
     //数据中心datacenter
@@ -81,7 +88,7 @@ public class VsphereVmCreateRequest extends VsphereVmBaseRequest implements ICre
             serviceMethod = true,
             method = "listVmCloudImage",
             textField = "imageName",
-            valueField = "imageId",
+            valueField = "imageName", //由于vc还是拿name作为快速索引，所以不用mor作为查询值
             relationTrigger = "region",
             group = 2,
             step = 1
@@ -116,6 +123,8 @@ public class VsphereVmCreateRequest extends VsphereVmBaseRequest implements ICre
     @Form(inputType = InputType.VsphereDiskConfigForm,
             step = 1,
             group = 4,
+            defaultValue = "[]",
+            defaultJsonValue = true,
             relationTrigger = "template"
     )
     private List<DiskConfig> disks;
@@ -125,6 +134,8 @@ public class VsphereVmCreateRequest extends VsphereVmBaseRequest implements ICre
     @Form(inputType = InputType.VsphereComputeConfigForm,
             step = 2,
             group = 5,
+            defaultValue = "{\"location\": \"host\"}",
+            defaultJsonValue = true,
             relationTrigger = "cluster"
     )
     private ComputeConfig computeConfig;
@@ -159,7 +170,7 @@ public class VsphereVmCreateRequest extends VsphereVmBaseRequest implements ICre
             clazz = VsphereCloudProvider.class,
             method = "getFolders",
             textField = "name",
-            valueField = "mor",
+            valueField = "name", //由于vc还是拿name作为快速索引，所以不用mor作为查询值
             relationTrigger = "cluster",
             group = 7,
             step = 2
@@ -171,24 +182,43 @@ public class VsphereVmCreateRequest extends VsphereVmBaseRequest implements ICre
     //网卡
     @Form(inputType = InputType.VsphereNetworkAdapterForm,
             step = 3,
-            group = 8
+            group = 8,
+            defaultValue = "[]",
+            defaultJsonValue = true,
+            relationTrigger = {"cluster", "computeConfig"}
     )
-    private List<NetworkAdapter> networkAdapters;
+    private List<List<NetworkAdapter>> networkAdapters;
+
+    @Form(inputType = InputType.Text,
+            required = false,
+            label = "DNS1",
+            group = 8,
+            step = 3
+    )
+    private String dns1;
+
+    @Form(inputType = InputType.Text,
+            required = false,
+            label = "DNS2",
+            group = 8,
+            step = 3
+    )
+    private String dns2;
 
 
     //step 4
     //云主机名称
     @Form(inputType = InputType.VsphereServerInfoForm,
             step = 4,
-            group = 9
+            group = 9,
+            defaultValue = "[]",
+            defaultJsonValue = true
     )
-    private List<String> names;
-    //username
-    //password
-    //hostname
+    private List<ServerInfo> serverInfos;
 
 
     @Data
+    @Accessors(chain = true)
     public static class DiskConfig {
 
         private Integer size;
@@ -198,17 +228,24 @@ public class VsphereVmCreateRequest extends VsphereVmBaseRequest implements ICre
     }
 
     @Data
+    @Accessors(chain = true)
     public static class ComputeConfig {
         //计算资源类型
         private String location;
 
         //主机/资源池的Mor
-        private String mor;
+        //private String mor; //由于vc还是拿name作为快速索引，所以不用mor作为查询值
+
+        //主机/资源池的名称
+        private String name;
 
     }
 
     @Data
+    @Accessors(chain = true)
     public static class NetworkAdapter {
+
+        private String ipType = ResourceConstants.ipv4;
 
         private String vlan;
 
@@ -219,6 +256,31 @@ public class VsphereVmCreateRequest extends VsphereVmBaseRequest implements ICre
         private String gateway;
 
         private String netmask;
+
+        private String ipAddrV6;
+
+        private String gatewayV6;
+
+        private String netmaskV6;
+
+    }
+
+    @Data
+    @Accessors(chain = true)
+    public static class ServerInfo {
+
+        private String name;
+
+        private String hostname;
+
+        //username
+        //password
+        //hostname
+
+        private boolean addDomain;
+        private String domain;
+        private String domainAdmin;
+        private String domainPassword;
 
     }
 
