@@ -1206,7 +1206,6 @@ public class VsphereVmClient extends VsphereClient {
 
             String gateway = networkConfig.getGateway();
             String ipAddress = networkConfig.getIpAddr();
-            String networkConfigIp = networkConfig.getIpAddr();
             String mask = networkConfig.getNetmask();
 
 

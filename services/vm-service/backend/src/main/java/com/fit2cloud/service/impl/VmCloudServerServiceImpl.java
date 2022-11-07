@@ -24,13 +24,17 @@ import com.fit2cloud.common.utils.DateUtil;
 import com.fit2cloud.common.utils.JsonUtil;
 import com.fit2cloud.constants.ErrorCodeConstants;
 import com.fit2cloud.controller.request.vm.BatchOperateVmRequest;
+import com.fit2cloud.controller.request.vm.CreateServerRequest;
 import com.fit2cloud.controller.request.vm.PageVmCloudServerRequest;
 import com.fit2cloud.dao.mapper.VmCloudServerMapper;
 import com.fit2cloud.dto.InitJobRecordDTO;
 import com.fit2cloud.dto.VmCloudServerDTO;
 import com.fit2cloud.provider.ICloudProvider;
+import com.fit2cloud.provider.ICreateServerRequest;
+import com.fit2cloud.provider.constants.CreateServerRequestConstants;
 import com.fit2cloud.provider.constants.F2CInstanceStatus;
 import com.fit2cloud.provider.constants.ProviderConstants;
+import com.fit2cloud.provider.entity.F2CVirtualMachine;
 import com.fit2cloud.response.JobRecordResourceResponse;
 import com.fit2cloud.service.IVmCloudServerService;
 import com.fit2cloud.service.JobRecordCommonService;
@@ -40,15 +44,13 @@ import io.reactivex.rxjava3.functions.Consumer;
 import io.reactivex.rxjava3.functions.Function;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
 import java.time.LocalDateTime;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * <p>
@@ -291,7 +293,103 @@ public class VmCloudServerServiceImpl extends ServiceImpl<BaseVmCloudServerMappe
     }
 
     private void modifyResource(VmCloudServer vmCloudServer) {
-        baseMapper.updateById(vmCloudServer);
+        this.updateById(vmCloudServer);
     }
 
+
+    @Override
+    public boolean createServer(CreateServerRequest request) {
+
+        CloudAccount cloudAccount = cloudAccountService.getById(request.getAccountId());
+
+        Class<? extends ICloudProvider> cloudProvider = ProviderConstants.valueOf(cloudAccount.getPlatform()).getCloudProvider();
+
+        Class<? extends ICreateServerRequest> createRequest = CreateServerRequestConstants.valueOf(cloudAccount.getPlatform()).getCreateRequest();
+
+        ICreateServerRequest requestObj = JsonUtil.parseObject(request.getCreateRequest(), createRequest);
+
+        int count = requestObj.getCount();
+
+        for (int i = 0; i < count; i++) {
+
+            //设置账号信息
+            requestObj.setCredential(cloudAccount.getCredential());
+            //设置index
+            requestObj.setIndex(i);
+
+            //提前设置uuid
+            String uuid = UUID.randomUUID().toString().replaceAll("-", "");
+            requestObj.setId(uuid);
+
+            //先插入数据库占位
+            F2CVirtualMachine tempData = CommonUtil.exec(cloudProvider, JsonUtil.toJSONString(requestObj), ICloudProvider::getSimpleServerByCreateRequest);
+
+            VmCloudServer vmCloudServer = new VmCloudServer();
+            BeanUtils.copyProperties(tempData, vmCloudServer);
+            vmCloudServer.setInstanceName(tempData.getName());
+            vmCloudServer.setAccountId(request.getAccountId());
+            vmCloudServer.setUpdateTime(DateUtil.getSyncTime());
+            vmCloudServer.setIpArray(JsonUtil.toJSONString(tempData.getIpArray()));
+            vmCloudServer.setInstanceStatus(F2CInstanceStatus.WaitCreating.name());
+
+            this.save(vmCloudServer);
+
+
+            //执行创建
+            //F2CVirtualMachine result = CommonUtil.exec(cloudProvider, JsonUtil.toJSONString(requestObj), ICloudProvider::createVirtualMachine);
+
+            createServerJob(vmCloudServer.getId(), JsonUtil.toJSONString(requestObj), OperatedTypeEnum.ADD.getDescription(), this::modifyResource, jobRecordCommonService::initJobRecord, jobRecordCommonService::modifyJobRecord);
+
+        }
+
+
+        return true;
+    }
+
+    private void createServerJob(String serverId, String request, String jobDescription, Consumer<VmCloudServer> modifyResource, Function<InitJobRecordDTO, JobRecord> iniJobMethod, Consumer<JobRecord> modifyJobRecord) {
+        threadPoolConfig.workThreadPool().execute(() -> {
+            try {
+                LocalDateTime createTime = DateUtil.getSyncTime();
+
+                VmCloudServer vmCloudServer = this.getById(serverId);
+                //初始化任务
+                JobRecord jobRecord = iniJobMethod.apply(
+                        InitJobRecordDTO.builder()
+                                .jobDescription(jobDescription)
+                                .jobStatus(JobStatusConstants.EXECUTION_ING)
+                                .jobType(JobTypeConstants.CLOUD_SERVER_CREATE_JOB)
+                                .resourceId(vmCloudServer.getId())
+                                .resourceType(ResourceTypeEnum.CLOUD_SERVER)
+                                .createTime(createTime)
+                                .build());
+                vmCloudServer.setInstanceStatus(F2CInstanceStatus.Creating.name());
+                modifyResource.accept(vmCloudServer);
+
+                CloudAccount cloudAccount = cloudAccountService.getById(vmCloudServer.getAccountId());
+                Class<? extends ICloudProvider> cloudProvider = ProviderConstants.valueOf(cloudAccount.getPlatform()).getCloudProvider();
+                HashMap<String, Object> params = CommonUtil.getParams(cloudAccount.getCredential(), vmCloudServer.getRegion());
+                params.put("id", vmCloudServer.getId());
+                try {
+                    F2CVirtualMachine result = CommonUtil.exec(cloudProvider, request, ICloudProvider::createVirtualMachine);
+
+                    vmCloudServer = SyncProviderServiceImpl.toVmCloudServer(result, vmCloudServer.getAccountId(), DateUtil.getSyncTime());
+                    jobRecord.setStatus(JobStatusConstants.SUCCESS);
+
+
+                } catch (Exception e) {
+                    vmCloudServer.setInstanceStatus(F2CInstanceStatus.Failed.name());
+                    jobRecord.setStatus(JobStatusConstants.FAILED);
+                    jobRecord.setResult(e.getMessage());
+                    LogUtil.error("Create Cloud server fail - {}", e.getMessage());
+                    e.printStackTrace();
+                }
+                modifyResource.accept(vmCloudServer);
+                modifyJobRecord.accept(jobRecord);
+            } catch (Throwable e) {
+                LogUtil.error("Create Cloud server fail - {}", e.getMessage());
+                e.printStackTrace();
+                throw new RuntimeException(e);
+            }
+        });
+    }
 }

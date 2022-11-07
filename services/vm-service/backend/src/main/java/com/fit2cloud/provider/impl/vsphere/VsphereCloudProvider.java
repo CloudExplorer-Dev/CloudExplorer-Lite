@@ -151,6 +151,11 @@ public class VsphereCloudProvider extends AbstractCloudProvider<VsphereCredentia
     }
 
     @Override
+    public F2CVirtualMachine getSimpleServerByCreateRequest(String req) {
+        return VsphereSyncCloudApi.getSimpleServerByCreateRequest(JsonUtil.parseObject(req, VsphereVmCreateRequest.class));
+    }
+
+    @Override
     public F2CVirtualMachine createVirtualMachine(String req) {
         return VsphereSyncCloudApi.createServer(JsonUtil.parseObject(req, VsphereVmCreateRequest.class));
     }

@@ -92,6 +92,8 @@
 </template>
 
 <script setup lang="ts">
+import { ElMessage } from "element-plus";
+
 const props = defineProps<{
   accountId: string;
 }>();
@@ -112,9 +114,11 @@ import type { CloudAccount } from "@commons/api/cloud_account/type";
 
 import { computed, onMounted, ref, type Ref } from "vue";
 import { useRouter } from "vue-router";
+import type { CreateServerRequest } from "@/api/vm_cloud_server/type";
+import { createServer } from "@/api/vm_cloud_server";
+import { useI18n } from "vue-i18n";
 
-const test: any = null;
-
+const { t } = useI18n();
 const useRoute = useRouter();
 
 const loading: Ref<boolean> | undefined = ref<boolean>(false);
@@ -169,6 +173,15 @@ function before() {
 
 function submit() {
   console.log(data.value);
+  const req: CreateServerRequest = {
+    accountId: props.accountId,
+    createRequest: JSON.stringify(formatData.value),
+    fromInfo: JSON.stringify(formData.value),
+  };
+  createServer(req, loading).then((ok) => {
+    ElMessage.success(t("commons.msg.op_success"));
+    useRoute.push({ name: "server_list" });
+  });
 }
 
 function cancel() {

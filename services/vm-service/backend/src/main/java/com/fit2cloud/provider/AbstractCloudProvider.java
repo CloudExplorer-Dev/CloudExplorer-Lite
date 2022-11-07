@@ -98,6 +98,11 @@ public abstract class AbstractCloudProvider<C extends Credential> implements ICl
     }
 
     @Override
+    public F2CVirtualMachine getSimpleServerByCreateRequest(String req) {
+        return null;
+    }
+
+    @Override
     public F2CVirtualMachine createVirtualMachine(String req) {
         return null;
     }

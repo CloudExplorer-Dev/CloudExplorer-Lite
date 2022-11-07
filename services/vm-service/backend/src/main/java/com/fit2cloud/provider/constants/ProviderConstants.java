@@ -28,7 +28,7 @@ public enum ProviderConstants {
     /**
      * VMWARE 平台
      */
-    fit2cloud_vsphere_platform("VMWare vSphere",VsphereCloudProvider.class);
+    fit2cloud_vsphere_platform("VMWare vSphere", VsphereCloudProvider.class);
 
     private String message;
 

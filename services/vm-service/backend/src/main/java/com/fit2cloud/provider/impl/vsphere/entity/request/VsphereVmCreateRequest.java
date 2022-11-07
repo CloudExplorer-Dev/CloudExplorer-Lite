@@ -17,7 +17,6 @@ import java.util.List;
 
 
 @Data
-@Accessors(chain = true)
 @JsonIgnoreProperties(ignoreUnknown = true)
 @FormStepInfo(step = 1, name = "基础配置")
 @FormStepInfo(step = 2, name = "选择资源")
@@ -43,6 +42,11 @@ public class VsphereVmCreateRequest extends VsphereVmBaseRequest implements ICre
     private int count;
 
     private int index;
+
+    /**
+     * 数据库中ID
+     */
+    private String id;
 
     //step 1
     //数据中心datacenter

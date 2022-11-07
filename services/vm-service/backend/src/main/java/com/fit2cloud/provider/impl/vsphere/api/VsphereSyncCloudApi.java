@@ -808,6 +808,25 @@ public class VsphereSyncCloudApi {
 
     }
 
+    public static F2CVirtualMachine getSimpleServerByCreateRequest(VsphereVmCreateRequest request) {
+        F2CVirtualMachine virtualMachine = new F2CVirtualMachine();
+
+        int index = request.getIndex();
+        String instanceType = request.getCpu() + "vCpu " + request.getRam() + "G";
+
+        virtualMachine
+                .setId(request.getId())
+                .setName(request.getServerInfos().get(index).getName())
+                .setCpu(request.getCpu())
+                .setMemory(request.getRam())
+                .setIpArray(new ArrayList<>())
+                .setInstanceType(instanceType)
+                .setInstanceTypeDescription(instanceType);
+
+        return virtualMachine;
+
+    }
+
     public static F2CVirtualMachine createServer(VsphereVmCreateRequest request) {
 
         F2CVirtualMachine f2CVirtualMachine = null;
@@ -932,6 +951,9 @@ public class VsphereSyncCloudApi {
             }
         } finally {
             closeConnection(client);
+        }
+        if (f2CVirtualMachine != null) {
+            f2CVirtualMachine.setId(request.getId());
         }
         return f2CVirtualMachine;
     }
