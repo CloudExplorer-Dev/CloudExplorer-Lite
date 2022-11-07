@@ -14,17 +14,16 @@ import com.fit2cloud.provider.impl.vsphere.entity.VsphereFolder;
 import com.fit2cloud.provider.impl.vsphere.entity.request.VsphereDiskRequest;
 import com.vmware.vim25.*;
 import com.vmware.vim25.mo.*;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.*;
 
+@Slf4j
 public class VsphereUtil {
     private static final long MB = 1024 * 1024;
     private static final long GB = MB * 1024;
-    private static Logger logger = LoggerFactory.getLogger(VsphereUtil.class);
 
     public static F2CVirtualMachine toF2CInstance(VirtualMachine vm, VsphereVmClient client) {
         return toF2CInstance(vm, client, null);
@@ -66,7 +65,7 @@ public class VsphereUtil {
                 instance.setImageId("");
             }
         } catch (Exception e) {
-            logger.error(ExceptionUtils.getStackTrace(e));
+            log.error(ExceptionUtils.getStackTrace(e));
         }
 
         String vmName = vm.getName();
@@ -83,7 +82,7 @@ public class VsphereUtil {
                 instance.setCpu(numCpu);
             }
         } catch (Exception e) {
-            logger.error(ExceptionUtils.getStackTrace(e));
+            log.error(ExceptionUtils.getStackTrace(e));
         }
         instance.setInstanceTypeDescription(instanceTypeDescription);
         instance.setInstanceType(instanceTypeDescription);
@@ -170,7 +169,7 @@ public class VsphereUtil {
                 instance.setZone(f2cVsphereHost.getClusterName());
             }
         } catch (Exception e) {
-            logger.error(ExceptionUtils.getStackTrace(e));
+            log.error(ExceptionUtils.getStackTrace(e));
         }
 
         try {
@@ -180,7 +179,7 @@ public class VsphereUtil {
                 instance.setResourcePool(pool.getName());
             }
         } catch (Exception e) {
-            logger.error(ExceptionUtils.getStackTrace(e));
+            log.error(ExceptionUtils.getStackTrace(e));
         }
 
         return instance;
@@ -625,5 +624,16 @@ public class VsphereUtil {
             }
         }
         return result;
+    }
+
+    public static List<VirtualEthernetCard> getVirtualEthernetCardsByVm(VirtualMachine virtualMachine) {
+        VirtualDevice[] virtualDevices = virtualMachine.getConfig().getHardware().getDevice();
+        List<VirtualEthernetCard> virtualEthernetCards = new ArrayList<>();
+        for (VirtualDevice virtualDevice : virtualDevices) {
+            if (virtualDevice instanceof VirtualEthernetCard) {
+                virtualEthernetCards.add((VirtualEthernetCard) virtualDevice);
+            }
+        }
+        return virtualEthernetCards;
     }
 }

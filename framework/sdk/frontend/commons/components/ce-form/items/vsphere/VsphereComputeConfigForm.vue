@@ -38,19 +38,19 @@
         trigger: 'blur',
         required: true,
       }"
-      prop="mor"
+      prop="name"
     >
-      <el-radio-group v-model="_data.mor" style="width: 100%">
+      <el-radio-group v-model="_data.name" style="width: 100%">
         <el-table
           ref="singleTableRef"
-          :data="formItem?.ext?.mor?.optionList"
+          :data="formItem?.ext?.name?.optionList"
           highlight-current-row
           style="width: 100%"
           @current-change="handleCurrentChange"
         >
           <el-table-column width="55">
             <template #default="scope">
-              <el-radio :label="scope.row.mor">
+              <el-radio :label="scope.row.name">
                 <template #default>{{}}</template>
               </el-radio>
             </template>
@@ -122,7 +122,8 @@ import { ElTable, type FormInstance } from "element-plus";
 
 interface ComputeConfig {
   location: string;
-  mor?: string;
+  //mor?: string;
+  name?: string; //由于vc还是拿name作为快速索引，所以不用mor作为查询值
 }
 
 interface HostOrResourcePool {
@@ -173,12 +174,12 @@ const ruleFormRef = ref<FormInstance>();
 const currentRow = computed<HostOrResourcePool | undefined>({
   get() {
     return _.find(
-      props.formItem?.ext?.mor?.optionList,
-      (o: HostOrResourcePool) => o.mor === _data.value.mor
+      props.formItem?.ext?.name?.optionList,
+      (o: HostOrResourcePool) => o.name === _data.value.name
     );
   },
   set(value) {
-    _data.value.mor = value?.mor;
+    _data.value.name = value?.name;
   },
 });
 
@@ -207,8 +208,8 @@ const singleTableRef = ref<InstanceType<typeof ElTable>>();
  */
 function locationChange(value?: string) {
   //清空
-  _data.value.mor = undefined;
-  _.set(props.formItem, "ext.mor.optionList", []);
+  _data.value.name = undefined;
+  _.set(props.formItem, "ext.name.optionList", []);
   //重新获取主机/资源池列表
   getList();
 }
@@ -251,16 +252,16 @@ function getList() {
     clazz = "com.fit2cloud.provider.impl.vsphere.VsphereCloudProvider";
     method = "geResourcePools";
   } else {
-    _.set(props.formItem, "ext.mor.optionList", []);
-    _data.value.mor = undefined;
+    _.set(props.formItem, "ext.name.optionList", []);
+    _data.value.name = undefined;
     return;
   }
   formApi
     .getResourceMethod(false, clazz, method, _temp, _loading)
     .then((ok) => {
-      _.set(props.formItem, "ext.mor.optionList", ok.data);
+      _.set(props.formItem, "ext.name.optionList", ok.data);
       if (currentRow.value === undefined) {
-        _data.value.mor = undefined;
+        _data.value.name = undefined;
       } else {
         //设置界面默认选中
         //singleTableRef.value?.setCurrentRow(currentRow.value);
@@ -280,7 +281,7 @@ watch(
   }
 );
 watch(
-  () => _data.value.mor,
+  () => _data.value.name,
   (value) => {
     if (value !== undefined) {
       emit("change");

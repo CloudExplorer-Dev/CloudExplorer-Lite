@@ -25,6 +25,18 @@
         >
           <el-input v-model="item.name" />
         </el-form-item>
+
+        <el-form-item
+          :rules="{
+            message: 'Hostname' + '不能为空',
+            trigger: 'blur',
+            required: true,
+          }"
+          label="Hostname"
+          :prop="'[' + index + '].hostname'"
+        >
+          <el-input v-model="item.hostname" />
+        </el-form-item>
       </el-tab-pane>
     </el-tabs>
   </el-form>
@@ -37,6 +49,7 @@ import type { FormView } from "@commons/components/ce-form/type";
 
 interface ServerInfo {
   name?: string;
+  hostname?: string;
 }
 
 const props = defineProps<{

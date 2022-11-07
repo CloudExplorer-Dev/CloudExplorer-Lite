@@ -9,7 +9,7 @@
     >
       <el-table-column width="55">
         <template #default="scope">
-          <el-radio :label="scope.row.mor">
+          <el-radio :label="scope.row.name">
             <template #default>{{}}</template>
           </el-radio>
         </template>
@@ -18,7 +18,6 @@
       <el-table-column label="存储使用量">
         <template #default="scope">
           <div class="usage-bar-top-text">
-            {{ scope.row.mor }}
             <span>可用:{{ scope.row.freeDisk }}GB</span>
           </div>
           <el-progress
@@ -91,11 +90,11 @@ const currentRow = computed<DataStore | undefined>({
   get() {
     return _.find(
       props.formItem?.optionList,
-      (o: DataStore) => o.mor === _data.value
+      (o: DataStore) => o.name === _data.value
     );
   },
   set(value) {
-    _data.value = value?.mor;
+    _data.value = value?.name;
   },
 });
 

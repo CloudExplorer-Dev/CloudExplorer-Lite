@@ -12,6 +12,7 @@ import com.fit2cloud.constants.ErrorCodeConstants;
 import com.fit2cloud.provider.entity.F2CDatastore;
 import com.fit2cloud.provider.entity.F2CDisk;
 import com.fit2cloud.provider.entity.F2CHost;
+import com.fit2cloud.provider.entity.F2CVirtualMachine;
 
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
@@ -61,11 +62,11 @@ public abstract class AbstractCloudProvider<C extends Credential> implements ICl
         throw new Fit2cloudException(1001, "不存在认证对象");
     }
 
-    public List<F2CHost> listHost(String req){
+    public List<F2CHost> listHost(String req) {
         return null;
     }
 
-    public List<F2CDatastore> listDataStore(String req){
+    public List<F2CDatastore> listDataStore(String req) {
         return null;
     }
 
@@ -92,7 +93,13 @@ public abstract class AbstractCloudProvider<C extends Credential> implements ICl
     }
 
     @Override
-    public List<F2CPerfMetricMonitorData> getF2CPerfMetricMonitorData(String req){
+    public List<F2CPerfMetricMonitorData> getF2CPerfMetricMonitorData(String req) {
         throw new Fit2cloudException(ErrorCodeConstants.NOT_IMPLEMENTED.getCode(), ErrorCodeConstants.NOT_IMPLEMENTED.getMessage());
     }
+
+    @Override
+    public F2CVirtualMachine createVirtualMachine(String req) {
+        return null;
+    }
+
 }

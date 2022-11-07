@@ -10,27 +10,31 @@ import com.fit2cloud.provider.impl.vsphere.entity.request.*;
 import com.fit2cloud.provider.impl.vsphere.util.*;
 import com.vmware.vim25.*;
 import com.vmware.vim25.mo.*;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.*;
 import java.util.function.Function;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 /**
  * Author: LiuDi
  * Date: 2022/9/21 2:39 PM
  */
+@Slf4j
 public class VsphereSyncCloudApi {
     private static final long MB = 1024 * 1024;
     private static final long GB = MB * 1024;
-    private static Logger logger = LoggerFactory.getLogger(VsphereSyncCloudApi.class);
+
+    public static String VALID_HOST_REGEX = "^(?=.{1,255}$)[0-9A-Za-z](?:(?:[0-9A-Za-z]|\\b-){0,61}[0-9A-Za-z])?(?:\\.[0-9A-Za-z](?:(?:[0-9A-Za-z]|\\b-){0,61}[0-9A-Za-z])?)*\\.?$";
+
 
     /**
      * 获取云主机
@@ -123,7 +127,7 @@ public class VsphereSyncCloudApi {
             }
             return templates;
         } catch (Exception e) {
-            logger.error("[Failed to Get Content Library Image]", e);
+            log.error("[Failed to Get Content Library Image]", e);
         }
         return templates;
     }
@@ -179,7 +183,7 @@ public class VsphereSyncCloudApi {
                 list.add(VsphereUtil.toF2CHost(hs, client));
             }
         } catch (Exception e) {
-            logger.error(ExceptionUtils.getStackTrace(e));
+            log.error(ExceptionUtils.getStackTrace(e));
             throw new RuntimeException(e);
         } finally {
             closeConnection(client);
@@ -299,7 +303,7 @@ public class VsphereSyncCloudApi {
             return execMethod.apply(uuId);
         } catch (Exception e) {
             e.printStackTrace();
-            logger.error("[Failed to operate virtual machine]", e);
+            log.error("[Failed to operate virtual machine]", e);
         } finally {
             closeConnection.run();
         }
@@ -627,7 +631,7 @@ public class VsphereSyncCloudApi {
     }
 
     public static List<VsphereFolder> getFolders(VsphereVmCreateRequest request) {
-        VsphereClient client = null;
+        VsphereVmClient client = null;
         try {
             client = request.getVsphereVmClient();
             List<Folder> folders = client.listFolders();
@@ -654,21 +658,22 @@ public class VsphereSyncCloudApi {
     }
 
     public static List<VsphereDatastore> getDatastoreList(VsphereVmCreateRequest request) {
-        VsphereClient client = null;
+        VsphereVmClient client = null;
         List<VsphereDatastore> datastoreList = new ArrayList<>();
         try {
             if (request.getComputeConfig() == null) {
                 return new ArrayList<>();
             }
             String location = request.getComputeConfig().getLocation();
-            String mor = request.getComputeConfig().getMor(); //宿主机或者资源池的mor
+            //String mor = request.getComputeConfig().getMor(); //宿主机或者资源池的mor
+            String name = request.getComputeConfig().getName(); //宿主机或者资源池的名称，api说vc是拿名称作为快速索引的
 
             String cluster = request.getCluster();
 
             if (StringUtils.isBlank(cluster)) {
                 return new ArrayList<>();
             }
-            if ((!StringUtils.equals(ResourceConstants.DRS, location)) && StringUtils.isBlank(mor)) {
+            if ((!StringUtils.equals(ResourceConstants.DRS, location)) && StringUtils.isBlank(name)) {
                 return new ArrayList<>();
             }
 
@@ -688,7 +693,8 @@ public class VsphereSyncCloudApi {
                     }
                 }
             } else {
-                HostSystem hs = getHostSystemByHostMor(mor, cr);
+                //HostSystem hs = getHostSystemByHostMor(mor, cr);
+                HostSystem hs = client.getHost(name);
                 if (hs == null) {
                     return new ArrayList<>();
                 }
@@ -764,14 +770,15 @@ public class VsphereSyncCloudApi {
                 return new ArrayList<>();
             }
             String location = request.getComputeConfig().getLocation();
-            String mor = request.getComputeConfig().getMor(); //宿主机或者资源池的mor
+            //String mor = request.getComputeConfig().getMor(); //宿主机或者资源池的mor
+            String name = request.getComputeConfig().getName(); //宿主机或者资源池的名称，api说vc是拿名称作为快速索引的
 
             String cluster = request.getCluster();
 
             if (StringUtils.isBlank(cluster)) {
                 return new ArrayList<>();
             }
-            if ((!StringUtils.equals(ResourceConstants.DRS, location)) && StringUtils.isBlank(mor)) {
+            if ((!StringUtils.equals(ResourceConstants.DRS, location)) && StringUtils.isBlank(name)) {
                 return new ArrayList<>();
             }
 
@@ -784,7 +791,8 @@ public class VsphereSyncCloudApi {
                     networks.addAll(getClusterNetworks((ClusterComputeResource) cr));
                 }
             } else {
-                HostSystem hs = getHostSystemByHostMor(mor, cr);
+                //HostSystem hs = getHostSystemByHostMor(mor, cr);
+                HostSystem hs = client.getHost(name);
                 if (hs != null) {
                     networks.addAll(convertToVsphereNetworks(hs));
                 }
@@ -798,6 +806,134 @@ public class VsphereSyncCloudApi {
             closeConnection(client);
         }
 
+    }
+
+    public static F2CVirtualMachine createServer(VsphereVmCreateRequest request) {
+
+        F2CVirtualMachine f2CVirtualMachine = null;
+
+        VsphereVmClient client = request.getVsphereVmClient();
+        int index = request.getIndex();
+
+        try {
+
+            if (StringUtils.isNotBlank(request.getServerInfos().get(index).getName())) {
+                request.getServerInfos().get(index).setName("i-" + UUID.randomUUID().toString().substring(0, 8));
+            }
+
+            if (StringUtils.isNotBlank(request.getServerInfos().get(index).getHostname())) {
+                request.getServerInfos().get(index).setHostname("i-" + UUID.randomUUID().toString().substring(0, 8));
+            }
+
+            Pattern pattern = Pattern.compile(VALID_HOST_REGEX, Pattern.CASE_INSENSITIVE);
+            Matcher matcher = pattern.matcher(request.getServerInfos().get(index).getHostname());
+            if (!matcher.find()) {
+                throw new RuntimeException("hostname cannot be empty");
+            }
+            if (CollectionUtils.isEmpty(request.getNetworkAdapters().get(index))) {
+                throw new RuntimeException("Network Adapter cannot be empty");
+            }
+            for (VsphereVmCreateRequest.NetworkAdapter networkAdapter : request.getNetworkAdapters().get(index)) {
+                if (StringUtils.isBlank(networkAdapter.getVlan())) {
+                    throw new RuntimeException("Vlan cannot be empty");
+                }
+                String ipType = StringUtils.defaultString(networkAdapter.getIpType(), ResourceConstants.ipv4);
+                boolean setIpv4 = ipType.equalsIgnoreCase(ResourceConstants.ipv4) || ipType.equalsIgnoreCase(ResourceConstants.DualStack);
+                boolean setIpv6 = ipType.equalsIgnoreCase(ResourceConstants.ipv6) || ipType.equalsIgnoreCase(ResourceConstants.DualStack);
+                if (!networkAdapter.isDhcp() && setIpv4) {
+                    if (StringUtils.isBlank(networkAdapter.getIpAddr())) {
+                        throw new RuntimeException("IP cannot be empty");
+                    }
+                    if (StringUtils.isBlank(networkAdapter.getNetmask())) {
+                        throw new RuntimeException("NetMask cannot be empty");
+                    }
+                    if (StringUtils.isBlank(networkAdapter.getGateway())) {
+                        throw new RuntimeException("Gateway cannot be empty");
+                    }
+                } else if (!networkAdapter.isDhcp() && setIpv6) {
+                    if (StringUtils.isBlank(networkAdapter.getIpAddrV6())) {
+                        throw new RuntimeException("IP cannot be empty");
+                    }
+                    if (StringUtils.isBlank(networkAdapter.getNetmaskV6())) {
+                        throw new RuntimeException("NetMask cannot be empty");
+                    }
+                    if (StringUtils.isBlank(networkAdapter.getGatewayV6())) {
+                        throw new RuntimeException("Gateway cannot be empty");
+                    }
+                }
+
+            }
+
+            VirtualMachine vm = client.createVm(request);
+
+            if (vm != null) {
+                f2CVirtualMachine = VsphereUtil.toF2CInstance(vm, client);
+
+                client.connectVirtualEthernetCard(vm);
+
+                if (f2CVirtualMachine != null) {
+                    int count = 0;
+                    while (count++ <= 60) {
+                        boolean flag = false; // 处理自定义规范返回了 169.254.x.x 等 IP，不是机器真正的 IP
+                        try {
+                            Thread.sleep(5000);
+                            vm = client.getVirtualMachineById(vm.getConfig().getInstanceUuid());
+                            f2CVirtualMachine = VsphereUtil.toF2CInstance(vm, client);
+                        } catch (Exception e) {
+                            continue;
+                        }
+
+                        GuestInfo guest = vm.getGuest();
+                        if (guest != null) {
+                            //todo 多网卡？ 现在只看了第一张网卡
+                            if (!request.getNetworkAdapters().get(index).get(0).isDhcp()) {
+                                if ("guestToolsRunning".equalsIgnoreCase(guest.getToolsRunningStatus())) {
+                                    break;
+                                }
+                            }
+                            // DHCP 的处理
+                            else {
+                                GuestNicInfo[] nets = guest.getNet();
+                                if (nets != null && nets.length > 0) {
+                                    List<String> ipArray = f2CVirtualMachine.getIpArray();
+                                    for (GuestNicInfo nicInfo : nets) {
+                                        String[] ips = nicInfo.getIpAddress();
+                                        if (ips != null && ips.length > 0) {
+                                            for (String ip : ips) {
+                                                if (ip.startsWith("169.254")) {
+                                                    flag = true;
+                                                    break;
+                                                }
+                                                if (ip.contains(".")) {
+                                                    f2CVirtualMachine.setLocalIP(ip);
+                                                    ipArray.add(ip);
+                                                }
+                                            }
+                                        }
+                                        if (flag) {
+                                            break;
+                                        }
+                                    }
+                                    // 查询到 169.254.x.x IP 继续查询
+                                    if (flag) {
+                                        continue;
+                                    }
+                                    if (ipArray.size() > 0) {
+                                        break;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    if (count > 60) {
+                        log.error("Get private IP timeout!");
+                    }
+                }
+            }
+        } finally {
+            closeConnection(client);
+        }
+        return f2CVirtualMachine;
     }
 
 }
