@@ -10,6 +10,8 @@
       </el-steps>
     </el-header>
     <el-main ref="catalog_container">
+      <!--      {{ data }}-->
+
       <p class="description">{{ steps[active + 1]?.description }}</p>
 
       <template v-if="steps[active + 1] && active !== steps.length - 2">
@@ -132,7 +134,7 @@ const ceForms_0 = ref<InstanceType<typeof CeFormItem> | null>(null);
 
 const catalog_container = ref<any>(null);
 
-const data = ref({});
+const data = ref<SimpleMap<any>>({});
 
 const formatData = computed(() => {
   return _.assign({}, ..._.values(data.value));
@@ -149,10 +151,10 @@ function next() {
     promises.push(ceForms_0.value.validate());
   }
 
-  console.log(promises);
+  //console.log(promises);
 
   Promise.all(_.flatten(promises)).then((ok) => {
-    console.log(ok);
+    //console.log(ok);
     active.value++;
     if (active.value > steps.value.length - 2) {
       active.value = steps.value.length - 2;
@@ -269,7 +271,7 @@ const otherParams = computed(() => {
  * @param field
  */
 function optionListRefresh(field: string) {
-  console.log(field);
+  //console.log(field);
   //找到field对应的组
   const form = _.find(formData.value?.forms, (view) => view.field === field);
   const groupId = form?.group?.toFixed();
@@ -281,7 +283,7 @@ function optionListRefresh(field: string) {
     } else {
       (
         _.find(ceForms.value, (ceForm: InstanceType<typeof CeFormItem>) => {
-          console.log(ceForm);
+          //console.log(ceForm);
           return ceForm.groupId === groupId;
         }) as InstanceType<typeof CeFormItem>
       )?.optionListRefresh(field, formatData.value);
@@ -304,8 +306,12 @@ onMounted(() => {
 
       CatalogApi.getCreateServerForm(props.accountId, loading).then(
         (result) => {
+          data.value["0"] = {};
+          _.forEach(result.data?.groupAnnotationMap, (g) => {
+            data.value[g.group.toFixed()] = {};
+          });
           formData.value = result.data;
-          console.log(result.data);
+          //console.log(result.data);
         }
       );
     }

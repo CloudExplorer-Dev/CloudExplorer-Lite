@@ -812,7 +812,7 @@ public class VsphereSyncCloudApi {
         F2CVirtualMachine virtualMachine = new F2CVirtualMachine();
 
         int index = request.getIndex();
-        String instanceType = request.getCpu() + "vCpu " + request.getRam() + "G";
+        String instanceType = request.getCpu() + "vCpu " + request.getRam() + "GB";
 
         virtualMachine
                 .setId(request.getId())
