@@ -10,6 +10,8 @@ public enum OperatedTypeEnum {
     LOGIN("LOGIN","登录"),
     LOGOUT("LOGOUT","登出"),
     ADD("ADD","创建"),
+
+    CREATE_SERVER("CREATE_SERVER","创建云主机"),
     BATCH_ADD("BATCH_ADD","批量创建"),
     MODIFY("MODIFY","更新"),
     DELETE("DELETE","删除"),

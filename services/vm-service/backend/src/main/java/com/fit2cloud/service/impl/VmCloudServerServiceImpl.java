@@ -338,7 +338,7 @@ public class VmCloudServerServiceImpl extends ServiceImpl<BaseVmCloudServerMappe
             //执行创建
             //F2CVirtualMachine result = CommonUtil.exec(cloudProvider, JsonUtil.toJSONString(requestObj), ICloudProvider::createVirtualMachine);
 
-            createServerJob(vmCloudServer.getId(), JsonUtil.toJSONString(requestObj), OperatedTypeEnum.ADD.getDescription(), this::modifyResource, jobRecordCommonService::initJobRecord, jobRecordCommonService::modifyJobRecord);
+            createServerJob(vmCloudServer.getId(), JsonUtil.toJSONString(requestObj), request, OperatedTypeEnum.CREATE_SERVER.getDescription(), this::modifyResource, jobRecordCommonService::initJobRecord, jobRecordCommonService::modifyJobRecord);
 
         }
 
@@ -346,15 +346,23 @@ public class VmCloudServerServiceImpl extends ServiceImpl<BaseVmCloudServerMappe
         return true;
     }
 
-    private void createServerJob(String serverId, String request, String jobDescription, Consumer<VmCloudServer> modifyResource, Function<InitJobRecordDTO, JobRecord> iniJobMethod, Consumer<JobRecord> modifyJobRecord) {
+    private void createServerJob(String serverId, String createRequest, CreateServerRequest request, String jobDescription, Consumer<VmCloudServer> modifyResource, Function<InitJobRecordDTO, JobRecord> iniJobMethod, Consumer<JobRecord> modifyJobRecord) {
         threadPoolConfig.workThreadPool().execute(() -> {
             try {
                 LocalDateTime createTime = DateUtil.getSyncTime();
 
                 VmCloudServer vmCloudServer = this.getById(serverId);
+
+                CreateServerRequest requestToSave = new CreateServerRequest();
+                BeanUtils.copyProperties(request, requestToSave);
+                requestToSave.setCreateRequest(createRequest);
+                Map<String, Object> jobParams = new HashMap<>();
+                jobParams.put("order", requestToSave);
+
                 //初始化任务
                 JobRecord jobRecord = iniJobMethod.apply(
                         InitJobRecordDTO.builder()
+                                .params(jobParams)
                                 .jobDescription(jobDescription)
                                 .jobStatus(JobStatusConstants.EXECUTION_ING)
                                 .jobType(JobTypeConstants.CLOUD_SERVER_CREATE_JOB)
@@ -370,7 +378,7 @@ public class VmCloudServerServiceImpl extends ServiceImpl<BaseVmCloudServerMappe
                 HashMap<String, Object> params = CommonUtil.getParams(cloudAccount.getCredential(), vmCloudServer.getRegion());
                 params.put("id", vmCloudServer.getId());
                 try {
-                    F2CVirtualMachine result = CommonUtil.exec(cloudProvider, request, ICloudProvider::createVirtualMachine);
+                    F2CVirtualMachine result = CommonUtil.exec(cloudProvider, createRequest, ICloudProvider::createVirtualMachine);
 
                     vmCloudServer = SyncProviderServiceImpl.toVmCloudServer(result, vmCloudServer.getAccountId(), DateUtil.getSyncTime());
                     jobRecord.setStatus(JobStatusConstants.SUCCESS);

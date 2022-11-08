@@ -8,7 +8,6 @@ import com.fit2cloud.dto.InitJobRecordDTO;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
-import java.util.ArrayList;
 import java.util.HashMap;
 
 /**
@@ -26,6 +25,7 @@ public class JobRecordCommonService {
 
     /**
      * 初始化任务
+     *
      * @param initJobRecordDTO 任务初始化
      * @return
      */
@@ -33,7 +33,7 @@ public class JobRecordCommonService {
         JobRecord jobRecord = new JobRecord();
         jobRecord.setDescription(initJobRecordDTO.getJobDescription());
         jobRecord.setStatus(initJobRecordDTO.getJobStatus());
-        jobRecord.setParams(new HashMap<>());
+        jobRecord.setParams(initJobRecordDTO.getParams() == null ? new HashMap<>() : initJobRecordDTO.getParams());
         jobRecord.setType(initJobRecordDTO.getJobType());
         jobRecord.setCreateTime(initJobRecordDTO.getCreateTime());
         // 插入任务数据
