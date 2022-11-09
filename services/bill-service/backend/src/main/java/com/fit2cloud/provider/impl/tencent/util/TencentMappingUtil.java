@@ -36,7 +36,7 @@ public class TencentMappingUtil {
         cloudBill.setRegionId(item.getRegionId());
         cloudBill.setRegionName(item.getRegionName());
         cloudBill.setZone(item.getZoneName());
-        cloudBill.setReousrceId(item.getResourceId());
+        cloudBill.setResourceId(item.getResourceId());
         cloudBill.setResourceName(item.getResourceName());
         cloudBill.setBillMode(toBillMode(item.getPayModeName()));
         cloudBill.setBillingCycle(CommonUtil.getLocalDateTime(item.getPayTime(), "yyyy-MM-dd HH:mm:ss"));

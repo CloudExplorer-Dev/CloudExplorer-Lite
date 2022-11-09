@@ -62,13 +62,27 @@ public class Form {
 
     private boolean serviceMethod;
 
+    /**
+     * 分组
+     */
     private Integer group;
 
+    /**
+     * 步骤
+     */
     private Integer step;
 
     /**
      * 排序
      */
     private Integer index;
+
+    private Integer confirmGroup;
+
+    private boolean confirmSpecial;
+
+    private Integer confirmItemSpan;
+
+    private String confirmPosition;
 
 }

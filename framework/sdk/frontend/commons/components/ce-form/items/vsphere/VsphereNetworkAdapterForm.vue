@@ -1,126 +1,171 @@
 <template v-loading="_loading">
-  <el-form
-    ref="ruleFormRef"
-    label-width="130px"
-    label-suffix=":"
-    label-position="left"
-    style="margin-bottom: 18px"
-    :model="_data"
-  >
-    <el-tabs v-model="activeTab" type="card">
-      <el-tab-pane
-        v-for="(item, index) in _data"
-        :key="index"
-        :label="'主机' + (index + 1)"
-        :name="index"
-      >
-        <el-button
-          class="el-button--primary add-button"
-          @click="addAdapter(item)"
+  <template v-if="!confirm">
+    <el-form
+      ref="ruleFormRef"
+      label-width="130px"
+      label-suffix=":"
+      label-position="left"
+      style="margin-bottom: 18px"
+      :model="_data"
+    >
+      <el-tabs v-model="activeTab" type="card">
+        <el-tab-pane
+          v-for="(item, index) in _data"
+          :key="index"
+          :label="'主机' + (index + 1)"
+          :name="index"
         >
-          添加网卡
-        </el-button>
-        <div class="adapter-container">
-          <el-card
-            :body-style="{ position: 'relative' }"
-            v-for="(adapter, i) in item"
-            :key="i"
-            class="card"
+          <el-button
+            class="el-button--primary add-button"
+            @click="addAdapter(item)"
           >
-            <div class="title">
-              {{ "网卡" + (i + 1) }}
-            </div>
-
-            <el-form-item
-              :rules="{
-                message: '网络' + '不能为空',
-                trigger: 'blur',
-                required: true,
-              }"
-              label="网络"
-              :prop="'[' + index + '][' + i + '].vlan'"
+            添加网卡
+          </el-button>
+          <div class="adapter-container">
+            <el-card
+              :body-style="{ position: 'relative' }"
+              v-for="(adapter, i) in item"
+              :key="i"
+              class="card"
             >
-              <el-select class="m-2" filterable v-model="adapter.vlan">
-                <el-option
-                  v-for="(o, j) in formItem?.ext?.network?.optionList"
-                  :key="j"
-                  :label="o.name"
-                  :value="o.mor"
-                />
-              </el-select>
-            </el-form-item>
-
-            <el-form-item
-              :rules="{
-                message: 'IP分配类型类型' + '不能为空',
-                trigger: 'blur',
-                required: true,
-              }"
-              label="IP分配类型类型"
-              :prop="'[' + index + '][' + i + '].dhcp'"
-            >
-              <el-radio-group
-                v-model="adapter.dhcp"
-                @change="dhcpChange(adapter, adapter.dhcp)"
-              >
-                <el-radio-button :label="true"> DHCP自动分配 </el-radio-button>
-                <el-radio-button :label="false"> 手动分配 </el-radio-button>
-              </el-radio-group>
-            </el-form-item>
-
-            <template v-if="!adapter.dhcp">
-              <!--   //todo ipv6           -->
+              <div class="title">
+                {{ "网卡" + (i + 1) }}
+              </div>
 
               <el-form-item
                 :rules="{
-                  message: 'IP地址' + '不能为空',
+                  message: '网络' + '不能为空',
                   trigger: 'blur',
                   required: true,
                 }"
-                label="IP地址"
-                :prop="'[' + index + '][' + i + '].ipAddr'"
+                label="网络"
+                :prop="'[' + index + '][' + i + '].vlan'"
               >
-                <el-input v-model="adapter.ipAddr" />
+                <el-select class="m-2" filterable v-model="adapter.vlan">
+                  <el-option
+                    v-for="(o, j) in formItem?.ext?.network?.optionList"
+                    :key="j"
+                    :label="o.name"
+                    :value="o.mor"
+                  />
+                </el-select>
               </el-form-item>
 
               <el-form-item
                 :rules="{
-                  message: '默认网关' + '不能为空',
+                  message: 'IP分配类型' + '不能为空',
                   trigger: 'blur',
                   required: true,
                 }"
-                label="默认网关"
-                :prop="'[' + index + '][' + i + '].gateway'"
+                label="IP分配类型"
+                :prop="'[' + index + '][' + i + '].dhcp'"
               >
-                <el-input v-model="adapter.gateway" />
+                <el-radio-group
+                  v-model="adapter.dhcp"
+                  @change="dhcpChange(adapter, adapter.dhcp)"
+                >
+                  <el-radio-button :label="true">
+                    DHCP自动分配
+                  </el-radio-button>
+                  <el-radio-button :label="false"> 手动分配 </el-radio-button>
+                </el-radio-group>
               </el-form-item>
 
-              <el-form-item
-                :rules="{
-                  message: '子网掩码' + '不能为空',
-                  trigger: 'blur',
-                  required: true,
-                }"
-                label="子网掩码"
-                :prop="'[' + index + '][' + i + '].netmask'"
-              >
-                <el-input v-model="adapter.netmask" />
-              </el-form-item>
-            </template>
+              <template v-if="!adapter.dhcp">
+                <!--   //todo ipv6           -->
 
-            <el-button
-              v-if="i > 0"
-              class="remove-button"
-              @click="removeAdapter(item, i)"
-              :icon="CloseBold"
-              type="info"
-              text
-            ></el-button>
+                <el-form-item
+                  :rules="{
+                    message: 'IP地址' + '不能为空',
+                    trigger: 'blur',
+                    required: true,
+                  }"
+                  label="IP地址"
+                  :prop="'[' + index + '][' + i + '].ipAddr'"
+                >
+                  <el-input v-model="adapter.ipAddr" />
+                </el-form-item>
+
+                <el-form-item
+                  :rules="{
+                    message: '默认网关' + '不能为空',
+                    trigger: 'blur',
+                    required: true,
+                  }"
+                  label="默认网关"
+                  :prop="'[' + index + '][' + i + '].gateway'"
+                >
+                  <el-input v-model="adapter.gateway" />
+                </el-form-item>
+
+                <el-form-item
+                  :rules="{
+                    message: '子网掩码' + '不能为空',
+                    trigger: 'blur',
+                    required: true,
+                  }"
+                  label="子网掩码"
+                  :prop="'[' + index + '][' + i + '].netmask'"
+                >
+                  <el-input v-model="adapter.netmask" />
+                </el-form-item>
+              </template>
+
+              <el-button
+                v-if="i > 0"
+                class="remove-button"
+                @click="removeAdapter(item, i)"
+                :icon="CloseBold"
+                type="info"
+                text
+              ></el-button>
+            </el-card>
+          </div>
+        </el-tab-pane>
+      </el-tabs>
+    </el-form>
+  </template>
+  <template v-else>
+    <div class="network-confirm-view">
+      <el-card v-for="(s, i) in modelValue" :key="i">
+        <div style="font-weight: bold; padding-bottom: 14px">
+          {{ "主机" + (i + 1) }}
+        </div>
+        <div class="card-container">
+          <el-card v-for="(p, j) in s" :key="j" class="card">
+            <el-descriptions :title="'网卡' + (j + 1)" :column="1">
+              <el-descriptions-item label="网络">
+                {{
+                  _.get(
+                    _.find(
+                      formItem?.ext?.network?.optionList,
+                      (o) => o.mor === p.vlan
+                    ),
+                    "mor",
+                    p.vlan
+                  )
+                }}
+              </el-descriptions-item>
+              <el-descriptions-item label="IP分配类型">
+                {{ p.dhcp ? "DHCP自动分配" : "手动分配" }}
+              </el-descriptions-item>
+              <template v-if="!p.dhcp">
+                <el-descriptions-item label="IP地址">
+                  {{ p.ipAddr }}
+                </el-descriptions-item>
+                <el-descriptions-item label="默认网关">
+                  {{ p.gateway }}
+                </el-descriptions-item>
+                <el-descriptions-item label="子网掩码">
+                  {{ p.netmask }}
+                </el-descriptions-item>
+              </template>
+            </el-descriptions>
           </el-card>
         </div>
-      </el-tab-pane>
-    </el-tabs>
-  </el-form>
+      </el-card>
+    </div>
+  </template>
 </template>
 <script setup lang="ts">
 import { computed, onMounted, ref, watch } from "vue";
@@ -149,6 +194,7 @@ const props = defineProps<{
   field: string;
   otherParams: any;
   formItem: FormView;
+  confirm?: boolean;
 }>();
 
 const emit = defineEmits(["update:modelValue", "change"]);
@@ -248,7 +294,9 @@ function validate(): Promise<boolean> {
 
 onMounted(() => {
   setServers(props.allData.count);
-  getList();
+  if (!props.confirm) {
+    getList();
+  }
 });
 
 defineExpose({
@@ -285,5 +333,20 @@ defineExpose({
 }
 .add-button {
   margin: 10px;
+}
+.network-confirm-view {
+  margin-bottom: 20px;
+  .card-container {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: stretch;
+    justify-content: flex-start;
+
+    .card {
+      width: 300px;
+      margin-right: 20px;
+    }
+  }
 }
 </style>

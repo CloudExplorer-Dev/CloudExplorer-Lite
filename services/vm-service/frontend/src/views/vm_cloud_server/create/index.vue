@@ -44,8 +44,9 @@
 
       <template v-if="active === steps.length - 2">
         <CreateConfirmStep
+          :cloud-account="cloudAccount"
           :all-data="formatData"
-          :all-form-view-data="formData.forms"
+          :all-form-view-data="formData"
         />
       </template>
     </el-main>

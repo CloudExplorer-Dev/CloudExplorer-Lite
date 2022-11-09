@@ -39,7 +39,7 @@ public class AliyunMappingUtil {
         cloudBill.setTags(toTagsMap(item.getTag()));
         cloudBill.setProjectId(item.getCostUnit());
         cloudBill.setProductName(item.getProductName());
-        cloudBill.setReousrceId(item.getInstanceID());
+        cloudBill.setResourceId(item.getInstanceID());
         cloudBill.setProjectName(item.getCostUnit());
         cloudBill.setProductId(item.getProductCode());
         cloudBill.setResourceName(item.getNickName());

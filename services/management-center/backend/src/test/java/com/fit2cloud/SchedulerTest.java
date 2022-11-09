@@ -33,18 +33,6 @@ public class SchedulerTest {
     private String groupName = "组1";
 
 
-//    @Test
-//    public void createJob() {
-//        ArrayList<Credential.Region> regions = new ArrayList<>();
-//        regions.add(new Credential.Region("shanghai", "上海"));
-//        regions.add(new Credential.Region("shenzen", "深圳"));
-//        regions.add(new Credential.Region("beijin", "北京"));
-//        HashMap<String, Object> params = new HashMap<>();
-//        params.put("region", regions);
-////        schedulerService.addJob(TestJob.class, jobName, groupName, "主要用于测试", "0/1 * * * * ? ", params);//  schedulerService.addJob(TestJob.class, jobName, groupName, "主要用于测试", params, null, null, 1, DateBuilder.IntervalUnit.SECOND, -1, null);
-//    }
-
-
     @Test
     public void deleteJob() throws SchedulerException {
         schedulerService.deleteJob(jobName, groupName);

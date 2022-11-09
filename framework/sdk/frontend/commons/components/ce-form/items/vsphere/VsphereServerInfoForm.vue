@@ -1,45 +1,59 @@
 <template v-loading="_loading">
-  <el-form
-    ref="ruleFormRef"
-    label-width="130px"
-    label-suffix=":"
-    label-position="left"
-    style="margin-bottom: 18px"
-    :model="_data"
-  >
-    <el-tabs v-model="activeTab" type="card">
-      <el-tab-pane
-        v-for="(item, index) in _data"
-        :key="index"
-        :label="'主机' + (index + 1)"
-        :name="index"
-      >
-        <el-form-item
-          :rules="{
-            message: '云主机名称' + '不能为空',
-            trigger: 'blur',
-            required: true,
-          }"
-          label="云主机名称"
-          :prop="'[' + index + '].name'"
+  <template v-if="!confirm">
+    <el-form
+      ref="ruleFormRef"
+      label-width="130px"
+      label-suffix=":"
+      label-position="left"
+      style="margin-bottom: 18px"
+      :model="_data"
+    >
+      <el-tabs v-model="activeTab" type="card">
+        <el-tab-pane
+          v-for="(item, index) in _data"
+          :key="index"
+          :label="'主机' + (index + 1)"
+          :name="index"
         >
-          <el-input v-model="item.name" />
-        </el-form-item>
+          <el-form-item
+            :rules="{
+              message: '云主机名称' + '不能为空',
+              trigger: 'blur',
+              required: true,
+            }"
+            label="云主机名称"
+            :prop="'[' + index + '].name'"
+          >
+            <el-input v-model="item.name" />
+          </el-form-item>
 
-        <el-form-item
-          :rules="{
-            message: 'Hostname' + '不能为空',
-            trigger: 'blur',
-            required: true,
-          }"
-          label="Hostname"
-          :prop="'[' + index + '].hostname'"
-        >
-          <el-input v-model="item.hostname" />
-        </el-form-item>
-      </el-tab-pane>
-    </el-tabs>
-  </el-form>
+          <el-form-item
+            :rules="{
+              message: 'Hostname' + '不能为空',
+              trigger: 'blur',
+              required: true,
+            }"
+            label="Hostname"
+            :prop="'[' + index + '].hostname'"
+          >
+            <el-input v-model="item.hostname" />
+          </el-form-item>
+        </el-tab-pane>
+      </el-tabs>
+    </el-form>
+  </template>
+  <template v-else>
+    <template v-for="(o, i) in modelValue" :key="i">
+      <el-descriptions :title="'主机' + (i + 1)">
+        <el-descriptions-item label="云主机名称">
+          {{ o.name }}
+        </el-descriptions-item>
+        <el-descriptions-item label="Hostname">
+          {{ o.hostname }}
+        </el-descriptions-item>
+      </el-descriptions>
+    </template>
+  </template>
 </template>
 <script setup lang="ts">
 import { computed, onMounted, ref, watch } from "vue";
@@ -59,6 +73,7 @@ const props = defineProps<{
   field: string;
   otherParams: any;
   formItem: FormView;
+  confirm?: boolean;
 }>();
 
 const emit = defineEmits(["update:modelValue", "change"]);

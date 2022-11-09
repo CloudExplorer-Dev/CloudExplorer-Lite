@@ -27,7 +27,7 @@ public class MyBatisPlusGenerator {
     /**
      * 传入需要生成代码的表名
      */
-    private static final List<String> TABLES = Arrays.asList("bill_rule");
+    private static final List<String> TABLES = Arrays.asList("bill_dimension_setting");
 
     private static final Map<String, Object> CUSTOM_MAP = new HashMap<>();
 

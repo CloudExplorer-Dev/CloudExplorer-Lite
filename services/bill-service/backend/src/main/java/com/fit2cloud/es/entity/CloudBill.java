@@ -1,15 +1,10 @@
 package com.fit2cloud.es.entity;
 
-import com.fit2cloud.common.annotaion.Group;
-import com.fit2cloud.common.conver.impl.BillModeConvert;
-import com.fit2cloud.common.conver.impl.CloudAccountConvert;
-import com.fit2cloud.common.conver.impl.ProviderConvert;
+import com.fit2cloud.common.annotaion.BillField;
+import com.fit2cloud.common.conver.impl.*;
 import lombok.Data;
 import org.springframework.data.annotation.Id;
-import org.springframework.data.elasticsearch.annotations.DateFormat;
-import org.springframework.data.elasticsearch.annotations.Document;
-import org.springframework.data.elasticsearch.annotations.Field;
-import org.springframework.data.elasticsearch.annotations.FieldType;
+import org.springframework.data.elasticsearch.annotations.*;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -26,116 +21,97 @@ import java.util.Map;
 public class CloudBill {
     @Id
     private String id;
-    /**
-     * 组织级别
-     */
+
+    @BillField(label = "组织级别")
     @Field(type = FieldType.Object)
     private Map<String, Object> orgLevel;
-    /**
-     * 工作空间id
-     */
+
+    @BillField(label = "工作空间id", group = true, conver = WorkSpaceConvert.class)
     @Field(type = FieldType.Keyword)
     private String workspaceId;
-    /**
-     * 资源id
-     */
+
+    @BillField(label = "组织id", group = true, conver = OrganizationConvert.class)
     @Field(type = FieldType.Keyword)
-    private String reousrceId;
-    /**
-     * 资源名称
-     */
+    private String organizationId;
+
+    @BillField(label = "资源id")
     @Field(type = FieldType.Keyword)
-    @Group(label = "资源名称")
+    private String resourceId;
+
+    @BillField(label = "资源名称", group = true)
+    @MultiField(mainField = @Field(type = FieldType.Text),
+            otherFields = @InnerField(suffix = "keyword", type = FieldType.Keyword))
     private String resourceName;
-    /**
-     * 企业项目
-     */
+
+    @BillField(label = "企业项目Id")
     @Field(type = FieldType.Keyword)
     private String projectId;
-    /**
-     * 企业项目名称
-     */
-    @Field(type = FieldType.Auto)
-    @Group(label = "企业项目名称")
+
+    @BillField(label = "企业项目", group = true, authorize = true)
+    @MultiField(mainField = @Field(type = FieldType.Text),
+            otherFields = @InnerField(suffix = "keyword", type = FieldType.Keyword))
     private String ProjectName;
-    /**
-     * 付款账号
-     */
+
+    @BillField(label = "付款账号")
     @Field(type = FieldType.Keyword)
     private String payAccountId;
-    /**
-     * 账期
-     */
+
+    @BillField(label = "账期")
     @Field(type = FieldType.Date, format = DateFormat.date_hour_minute_second)
     private LocalDateTime billingCycle;
-    /**
-     * 账单开始时间
-     */
+
+    @BillField(label = "账单开始时间")
     @Field(type = FieldType.Date, format = DateFormat.date_hour_minute_second)
     private LocalDateTime usageStartDate;
-    /**
-     * 账单结束时间
-     */
+
+    @BillField(label = "账单结束时间")
     @Field(type = FieldType.Date, format = DateFormat.date_hour_minute_second)
     private LocalDateTime usageEndDate;
-    /**
-     * 供应商
-     */
+
+    @BillField(label = "云平台", group = true, authorize = true, conver = ProviderConvert.class)
     @Field(type = FieldType.Keyword)
-    @Group(label = "供应商", conver = ProviderConvert.class)
     private String provider;
-    /**
-     * 产品id
-     */
+
+    @BillField(label = "产品id")
     @Field(type = FieldType.Keyword)
     private String productId;
-    /**
-     * 产品名称
-     */
-    @Field(type = FieldType.Auto)
-    @Group(label = "产品名称")
+
+    @BillField(label = "产品名称", group = true, authorize = true)
+    @MultiField(mainField = @Field(type = FieldType.Text),
+            otherFields = @InnerField(suffix = "keyword", type = FieldType.Keyword))
     private String productName;
-    /**
-     * 计费模式
-     */
+
+    @BillField(label = "计费模式", group = true, conver = BillModeConvert.class)
     @Field(type = FieldType.Keyword)
-    @Group(label = "计费模式", conver = BillModeConvert.class)
     private String billMode;
-    /**
-     * 区域
-     */
+
+
+    @BillField(label = "区域Id")
     @Field(type = FieldType.Keyword)
     private String regionId;
-    /**
-     * 区域名称
-     */
-    @Field(type = FieldType.Keyword)
-    @Group(label = "区域")
+
+    @BillField(label = "区域", group = true)
+    @MultiField(mainField = @Field(type = FieldType.Text),
+            otherFields = @InnerField(suffix = "keyword", type = FieldType.Keyword))
     private String regionName;
-    /**
-     * 可用区
-     */
+
+    @BillField(label = "可用区")
     @Field(type = FieldType.Keyword)
     private String zone;
-    /**
-     * 原价
-     */
-    @Field(type = FieldType.Double)
-    private BigDecimal totalCost;
-    /**
-     * 优惠后总价，单位为元
-     */
-    @Field(type = FieldType.Double)
-    private BigDecimal realTotalCost;
-    /**
-     * 云账号id
-     */
+
+    @BillField(label = "云账号", group = true, authorize = true, conver = CloudAccountConvert.class)
     @Field(type = FieldType.Keyword)
-    @Group(label = "云账号", conver = CloudAccountConvert.class)
     private String cloudAccountId;
-    /**
-     * 标签
-     */
+
+    @BillField(label = "标签", authorize = true)
     @Field(type = FieldType.Object)
     private Map<String, Object> tags;
+
+    @BillField(label = "原价")
+    @Field(type = FieldType.Double)
+    private BigDecimal totalCost;
+
+    @BillField(label = "优惠后总价")
+    @Field(type = FieldType.Double)
+    private BigDecimal realTotalCost;
 }

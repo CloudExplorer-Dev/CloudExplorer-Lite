@@ -85,7 +85,7 @@
           class="demo-tabs"
           v-model="activeName"
           @tab-change="tabChange"
-          style="width: 100%; margin-left: 20px"
+          style="width: calc(100% - 40px); margin-left: 20px"
         >
           <el-tab-pane
             v-for="rule in BillRules"
@@ -114,7 +114,7 @@
                 返回
               </div>
             </div>
-            <div style="height: 600px">
+            <div style="height: 500px; width: calc(100% - 30px)">
               <el-auto-resizer>
                 <template #default="{ height, width }">
                   <el-table-v2
@@ -347,9 +347,7 @@ onMounted(() => {
       activeName.value = ok.data[0].id;
     }
   });
-  //   init();
   window.onresize = function () {
-    // myChart.resize();
     char.value?.resize();
   };
 });
