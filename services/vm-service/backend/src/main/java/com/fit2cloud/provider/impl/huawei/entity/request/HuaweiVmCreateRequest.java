@@ -11,7 +11,13 @@ import java.util.List;
 
 
 @Data
-public class HuaweiVmCreateRequest implements ICreateServerRequest {
+public class HuaweiVmCreateRequest extends HuaweiBaseRequest implements ICreateServerRequest {
+
+    private int count;
+
+    private int index;
+
+    private String id;
 
     //step 1
     //数据中心datacenter

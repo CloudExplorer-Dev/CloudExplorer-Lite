@@ -17,6 +17,7 @@ import com.fit2cloud.es.entity.PerfMetricMonitorData;
 import com.fit2cloud.provider.ICloudProvider;
 import com.fit2cloud.provider.constants.F2CDiskStatus;
 import com.fit2cloud.provider.constants.F2CImageStatus;
+import com.fit2cloud.provider.constants.F2CInstanceStatus;
 import com.fit2cloud.provider.constants.ProviderConstants;
 import com.fit2cloud.provider.entity.*;
 import com.fit2cloud.service.*;
@@ -90,8 +91,17 @@ public class SyncProviderServiceImpl extends BaseSyncService implements ISyncPro
      */
     private void cloudServerSaveOrUpdate(SaveBatchOrUpdateParams<F2CVirtualMachine> saveBatchOrUpdateParams) {
         List<VmCloudServer> vmCloudServers = saveBatchOrUpdateParams.getSyncRecord().stream().map(f2CVirtualMachine -> toVmCloudServer(f2CVirtualMachine, saveBatchOrUpdateParams.getCloudAccountId(), saveBatchOrUpdateParams.getSyncTime())).toList();
-        LambdaUpdateWrapper<VmCloudServer> updateWrapper = new LambdaUpdateWrapper<VmCloudServer>().eq(VmCloudServer::getAccountId, saveBatchOrUpdateParams.getCloudAccountId()).eq(VmCloudServer::getRegion, saveBatchOrUpdateParams.getRegion().getRegionId()).lt(VmCloudServer::getUpdateTime, saveBatchOrUpdateParams.getSyncTime()).set(VmCloudServer::getInstanceStatus, "Deleted");
-        saveBatchOrUpdate(vmCloudServerService, vmCloudServers, vmCloudServer -> new LambdaQueryWrapper<VmCloudServer>().eq(VmCloudServer::getAccountId, vmCloudServer.getAccountId()).eq(VmCloudServer::getInstanceUuid, vmCloudServer.getInstanceUuid()).eq(VmCloudServer::getRegion, saveBatchOrUpdateParams.getRegion().getRegionId()), updateWrapper);
+        LambdaUpdateWrapper<VmCloudServer> updateWrapper = new LambdaUpdateWrapper<VmCloudServer>()
+                .eq(VmCloudServer::getAccountId, saveBatchOrUpdateParams.getCloudAccountId())
+                .eq(VmCloudServer::getRegion, saveBatchOrUpdateParams.getRegion().getRegionId())
+                .lt(VmCloudServer::getUpdateTime, saveBatchOrUpdateParams.getSyncTime())
+                .notIn(VmCloudServer::getInstanceStatus, Arrays.asList(F2CInstanceStatus.Creating.name(), F2CInstanceStatus.Failed.name(), F2CInstanceStatus.WaitCreating.name()))
+                .set(VmCloudServer::getInstanceStatus, F2CInstanceStatus.Deleted.name());
+        //todo 处理创建中的同步？
+        saveBatchOrUpdate(vmCloudServerService, vmCloudServers, vmCloudServer -> new LambdaQueryWrapper<VmCloudServer>()
+                .eq(VmCloudServer::getAccountId, vmCloudServer.getAccountId())
+                .eq(VmCloudServer::getInstanceUuid, vmCloudServer.getInstanceUuid())
+                .eq(VmCloudServer::getRegion, saveBatchOrUpdateParams.getRegion().getRegionId()), updateWrapper);
     }
 
     /**
@@ -123,7 +133,7 @@ public class SyncProviderServiceImpl extends BaseSyncService implements ISyncPro
      */
     private void hostSaveOrUpdate(SaveBatchOrUpdateParams<F2CHost> saveBatchOrUpdateParams) {
         List<VmCloudHost> vmCloudHosts = saveBatchOrUpdateParams.getSyncRecord().stream().map(host -> toVmHost(host, saveBatchOrUpdateParams.getCloudAccountId(), saveBatchOrUpdateParams.getSyncTime())).toList();
-        LambdaUpdateWrapper<VmCloudHost> updateWrapper = new LambdaUpdateWrapper<VmCloudHost>().eq(VmCloudHost::getAccountId, saveBatchOrUpdateParams.getCloudAccountId()).eq(VmCloudHost::getRegion, saveBatchOrUpdateParams.getRegion().getRegionId()).lt(VmCloudHost::getUpdateTime, saveBatchOrUpdateParams.getSyncTime()).set(VmCloudHost::getStatus,"Deleted");
+        LambdaUpdateWrapper<VmCloudHost> updateWrapper = new LambdaUpdateWrapper<VmCloudHost>().eq(VmCloudHost::getAccountId, saveBatchOrUpdateParams.getCloudAccountId()).eq(VmCloudHost::getRegion, saveBatchOrUpdateParams.getRegion().getRegionId()).lt(VmCloudHost::getUpdateTime, saveBatchOrUpdateParams.getSyncTime()).set(VmCloudHost::getStatus, "Deleted");
         saveBatchOrUpdate(vmCloudHostService, vmCloudHosts, vmCloudHost -> new LambdaQueryWrapper<VmCloudHost>().eq(VmCloudHost::getAccountId, vmCloudHost.getAccountId()).eq(VmCloudHost::getHostId, vmCloudHost.getHostId()).eq(VmCloudHost::getRegion, saveBatchOrUpdateParams.getRegion().getRegionId()), updateWrapper);
     }
 
@@ -134,7 +144,7 @@ public class SyncProviderServiceImpl extends BaseSyncService implements ISyncPro
      */
     private void dataStoreSaveOrUpdate(SaveBatchOrUpdateParams<F2CDatastore> saveBatchOrUpdateParams) {
         List<VmCloudDatastore> vmCloudDatastores = saveBatchOrUpdateParams.getSyncRecord().stream().map(datastore -> toVmDatastore(datastore, saveBatchOrUpdateParams.getCloudAccountId(), saveBatchOrUpdateParams.getSyncTime())).toList();
-        LambdaUpdateWrapper<VmCloudDatastore> updateWrapper = new LambdaUpdateWrapper<VmCloudDatastore>().eq(VmCloudDatastore::getAccountId, saveBatchOrUpdateParams.getCloudAccountId()).eq(VmCloudDatastore::getRegion, saveBatchOrUpdateParams.getRegion().getRegionId()).lt(VmCloudDatastore::getUpdateTime, saveBatchOrUpdateParams.getSyncTime()).set(VmCloudDatastore::getStatus,"Deleted");
+        LambdaUpdateWrapper<VmCloudDatastore> updateWrapper = new LambdaUpdateWrapper<VmCloudDatastore>().eq(VmCloudDatastore::getAccountId, saveBatchOrUpdateParams.getCloudAccountId()).eq(VmCloudDatastore::getRegion, saveBatchOrUpdateParams.getRegion().getRegionId()).lt(VmCloudDatastore::getUpdateTime, saveBatchOrUpdateParams.getSyncTime()).set(VmCloudDatastore::getStatus, "Deleted");
         saveBatchOrUpdate(vmCloudDatastoreService, vmCloudDatastores, vmCloudDatastore -> new LambdaQueryWrapper<VmCloudDatastore>().eq(VmCloudDatastore::getAccountId, vmCloudDatastore.getAccountId()).eq(VmCloudDatastore::getDatastoreId, vmCloudDatastore.getDatastoreId()).eq(VmCloudDatastore::getRegion, saveBatchOrUpdateParams.getRegion().getRegionId()), updateWrapper);
     }
 
@@ -235,6 +245,7 @@ public class SyncProviderServiceImpl extends BaseSyncService implements ISyncPro
 
     /**
      * 同步云主机监控数据
+     *
      * @param params 同步云主机所需要的参数
      */
     @Override
@@ -250,9 +261,10 @@ public class SyncProviderServiceImpl extends BaseSyncService implements ISyncPro
                         ICloudProvider::getF2CPerfMetricMonitorData,
                         this::perfMetricMonitorSaveOrUpdate,
                         this::writeJobRecord,
-                        () ->{});
+                        () -> {
+                        });
             }
-        }catch (Exception e){
+        } catch (Exception e) {
             e.printStackTrace();
         }
     }
@@ -265,12 +277,12 @@ public class SyncProviderServiceImpl extends BaseSyncService implements ISyncPro
     private void perfMetricMonitorSaveOrUpdate(SaveBatchOrUpdateParams<F2CPerfMetricMonitorData> saveBatchOrUpdateParams) {
         List<F2CPerfMetricMonitorData> vmCloudServers = saveBatchOrUpdateParams.getSyncRecord();
         List<PerfMetricMonitorData> perfMetricMonitorDataList = new ArrayList<>();
-        vmCloudServers.forEach(v->{
+        vmCloudServers.forEach(v -> {
             PerfMetricMonitorData perfMetricMonitorData = new PerfMetricMonitorData();
-            BeanUtils.copyProperties(v,perfMetricMonitorData);
+            BeanUtils.copyProperties(v, perfMetricMonitorData);
             perfMetricMonitorDataList.add(perfMetricMonitorData);
         });
-        elasticsearchProvide.bulkInsert(perfMetricMonitorDataList,"ce-perf-metric-monitor-data");
+        elasticsearchProvide.bulkInsert(perfMetricMonitorDataList, "ce-perf-metric-monitor-data");
     }
 
     /**
@@ -369,7 +381,7 @@ public class SyncProviderServiceImpl extends BaseSyncService implements ISyncPro
      * @param cloudAccountId    实体对象
      * @return 实体对象
      */
-    private VmCloudServer toVmCloudServer(F2CVirtualMachine f2CVirtualMachine, String cloudAccountId, LocalDateTime updateTime) {
+    public static VmCloudServer toVmCloudServer(F2CVirtualMachine f2CVirtualMachine, String cloudAccountId, LocalDateTime updateTime) {
         VmCloudServer vmCloudServer = new VmCloudServer();
         BeanUtils.copyProperties(f2CVirtualMachine, vmCloudServer);
         vmCloudServer.setAccountId(cloudAccountId);

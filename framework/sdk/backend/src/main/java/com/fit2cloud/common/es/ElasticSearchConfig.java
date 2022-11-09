@@ -73,6 +73,7 @@ public class ElasticSearchConfig extends ElasticsearchConfigurationSupport {
     public ElasticsearchTemplate elasticsearchTemplate(ElasticsearchClient elasticsearchClient, ElasticsearchConverter elasticsearchConverter) {
         return new ElasticsearchTemplate(elasticsearchClient, elasticsearchConverter);
     }
+
     /**
      * 连接地址,多个逗号分隔
      * 10.1.11.231:9200,10.1.11.232:9200

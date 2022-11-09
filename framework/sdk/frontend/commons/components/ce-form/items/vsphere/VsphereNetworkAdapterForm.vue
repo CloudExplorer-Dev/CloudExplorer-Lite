@@ -159,7 +159,7 @@ const _loading = ref<boolean>(false);
 
 const _data = computed({
   get() {
-    return props.modelValue ? props.modelValue : [];
+    return props.modelValue;
   },
   set(value) {
     emit("update:modelValue", value);
@@ -202,14 +202,16 @@ function getList() {
 
 function setServers(count: number | undefined) {
   if (count !== undefined) {
-    if (_data.value.length > count) {
-      _data.value = _.slice(_data.value, 0, count - _data.value.length);
-    } else if (_data.value.length < count) {
-      const addCount = count - _data.value.length;
-      for (let i = 0; i < addCount; i++) {
-        const list = _.clone(_data.value);
-        list.push([{ dhcp: true }]);
-        _data.value = list;
+    if (_data.value) {
+      if (_data.value.length > count) {
+        _data.value = _.slice(_data.value, 0, count - _data.value.length);
+      } else if (_data.value.length < count) {
+        const addCount = count - _data.value.length;
+        for (let i = 0; i < addCount; i++) {
+          const list: Array<Array<NetWorkAdapter>> = _.clone(_data.value);
+          list.push([{ dhcp: true }]);
+          _data.value = list;
+        }
       }
     }
   }

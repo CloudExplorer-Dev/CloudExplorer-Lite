@@ -39,6 +39,9 @@ const InstanceStatus = ref<Array<SimpleMap<string>>>([
   { text: "重启中", value: "Rebooting" },
   { text: "删除中", value: "Deleting" },
   { text: "创建中", value: "Createding" },
+  { text: "排队中", value: "WaitCreating" },
+  { text: "创建中", value: "Creating" },
+  { text: "失败", value: "Failed" },
   { text: "未知", value: "Unknown" },
 ]);
 
@@ -554,7 +557,8 @@ const handleAction = (actionObj: any) => {
               scope.row.instanceStatus === 'Stopping' ||
               scope.row.instanceStatus === 'Rebooting' ||
               scope.row.instanceStatus === 'Deleting' ||
-              scope.row.instanceStatus === 'Createding'
+              scope.row.instanceStatus === 'Createding' ||
+              scope.row.instanceStatus === 'Creating'
             "
             class="is-loading"
             :style="{
@@ -574,7 +578,7 @@ const handleAction = (actionObj: any) => {
       :label="$t('vm_cloud_server.label.ip_address')"
     >
       <template #default="scope">
-        <span v-show="scope.row.ipArray.length > 2">{{
+        <span v-show="scope.row.ipArray?.length > 2">{{
           JSON.parse(scope.row.ipArray)[0]
         }}</span>
         <el-dropdown

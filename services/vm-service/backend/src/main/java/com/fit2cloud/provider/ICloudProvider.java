@@ -208,6 +208,8 @@ public interface ICloudProvider {
     List<F2CPerfMetricMonitorData> getF2CPerfMetricMonitorData(String req);
 
 
+    F2CVirtualMachine getSimpleServerByCreateRequest(String req);
+
     F2CVirtualMachine createVirtualMachine(String req);
 
 

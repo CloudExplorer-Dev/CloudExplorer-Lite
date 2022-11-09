@@ -24,6 +24,11 @@ public enum JobTypeConstants {
     CLOUD_SERVER_OPERATE_JOB(1),
 
     /**
+     * 虚拟机创建任务
+     */
+    CLOUD_SERVER_CREATE_JOB(6),
+
+    /**
      * 虚拟机批量操作任务
      */
     CLOUD_SERVER_BATCH_OPERATE_JOB(2),

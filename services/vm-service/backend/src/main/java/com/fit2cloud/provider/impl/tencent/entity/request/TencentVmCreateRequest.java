@@ -11,7 +11,13 @@ import java.util.List;
 
 
 @Data
-public class TencentVmCreateRequest implements ICreateServerRequest {
+public class TencentVmCreateRequest extends TencentBaseRequest implements ICreateServerRequest {
+
+    private int count;
+
+    private int index;
+
+    private String id;
 
     //step 1
     //数据中心datacenter
