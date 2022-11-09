@@ -12,6 +12,7 @@ import com.fit2cloud.provider.entity.F2CVirtualMachine;
 import com.fit2cloud.provider.impl.tencent.entity.credential.TencentVmCredential;
 import com.fit2cloud.provider.impl.tencent.entity.request.*;
 import com.fit2cloud.provider.impl.tencent.util.TencentMappingUtil;
+import com.google.gson.Gson;
 import com.tencentcloudapi.cbs.v20170312.CbsClient;
 import com.tencentcloudapi.cbs.v20170312.models.Placement;
 import com.tencentcloudapi.cbs.v20170312.models.*;
@@ -165,20 +166,109 @@ public class TencetSyncCloudApi {
     }
 
     /**
-     * 删除磁盘
-     * https://console.cloud.tencent.com/api/explorer?Product=cbs&Version=2017-03-12&Action=TerminateDisks
+     * 创建磁盘
+     * api https://console.cloud.tencent.com/api/explorer?Product=cbs&Version=2017-03-12&Action=CreateDisks
      *
-     * @param request 删除磁盘请求参数
+     * @param request 创建磁盘请求参数
      */
-    public static boolean deleteDisk(TencentDeleteDiskRequest request) {
+    public static List<F2CDisk> createDisks(TencentCreateDisksRequest request) {
+        List<F2CDisk> result = new ArrayList<>();
         try {
             if (StringUtils.isNotEmpty(request.getRegionId()) && StringUtils.isNotEmpty(request.getCredential())) {
                 TencentVmCredential tencentVmCredential = JsonUtil.parseObject(request.getCredential(), TencentVmCredential.class);
                 CbsClient cbsClient = tencentVmCredential.getCbsClient(request.getRegionId());
-                cbsClient.TerminateDisks(request.toTerminateDisksRequest());
-                return true;
+                for (F2CDisk f2CDisk : request.getDisks()) {
+                    CreateDisksRequest createDisksRequest = toCreateDisksRequest(f2CDisk);
+                    CreateDisksResponse createDisksResponse = cbsClient.CreateDisks(createDisksRequest);
+                    DescribeDisksRequest describeDisksRequest = new DescribeDisksRequest();
+                    describeDisksRequest.setDiskIds(new String[]{createDisksResponse.getDiskIdSet()[0]});
+                    //检查云盘状态
+                    DescribeDisksResponse response = checkDiskState(cbsClient, describeDisksRequest, Arrays.asList("UNATTACHED", "ATTACHED"));
+                    if (response != null) {
+                        F2CDisk disk = trans2F2CDisk(request.getRegionId(), response.getDiskSet()[0]);
+                        disk.setInstanceUuid(f2CDisk.getInstanceUuid());
+                        disk.setDeleteWithInstance(f2CDisk.getDeleteWithInstance());
+                        result.add(disk);
+                    }
+                }
+                return result;
             } else {
                 throw new RuntimeException("regionId or credential can not be null");
+            }
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    /**
+     * 创建磁盘
+     *
+     * @param request 创建磁盘请求参数
+     */
+    public static F2CDisk createDisk(TencentCreateDiskRequest request) {
+        try {
+            if (StringUtils.isNotEmpty(request.getRegionId()) && StringUtils.isNotEmpty(request.getCredential())) {
+                TencentVmCredential tencentVmCredential = JsonUtil.parseObject(request.getCredential(), TencentVmCredential.class);
+                CbsClient cbsClient = tencentVmCredential.getCbsClient(request.getRegionId());
+
+                // 查询实例,获取 projectId
+                if (request.getInstanceUuid() != null && request.getProjectId() == null) {
+                    CvmClient cvmClient = tencentVmCredential.getCvmClient(request.getRegionId());
+                    ListVirtualMachineRequest req = new ListVirtualMachineRequest();
+                    BeanUtils.copyProperties(request, req);
+                    req.setInstanceIds(new String[]{request.getInstanceUuid()});
+                    DescribeInstancesResponse res = describeInstances(cvmClient, req);
+
+                    if (res.getInstanceSet().length == 0) {
+                        throw new RuntimeException("Not found instance - " + request.getInstanceUuid());
+                    }
+
+                    Instance instance = Arrays.stream(res.getInstanceSet()).toList().get(0);
+                    if (Optional.ofNullable(instance).isPresent()) {
+                        // 磁盘的项目由云主机定
+                        request.setProjectId(instance.getPlacement().getProjectId().toString());
+
+                        // 如果未设置付费类型，则使用云主机的付费类型
+                        if (request.getDiskChargeType() == null) {
+                            request.setDiskChargeType(instance.getInstanceChargeType());
+                        }
+
+                        // Windows 的机器不支持创建磁盘时初始化文件系统
+                        if (instance.getOsName().toUpperCase().indexOf("WIN") > 0) {
+                            request.setFileSystemType(null);
+                            request.setMountPoint(null);
+                        }
+
+                    }
+                }
+
+                CreateDisksRequest createDisksRequest = request.toCreateDisksRequest();
+                CreateDisksResponse createDisksResponse = cbsClient.CreateDisks(createDisksRequest);
+                DescribeDisksRequest describeDisksRequest = new DescribeDisksRequest();
+                describeDisksRequest.setDiskIds(new String[]{createDisksResponse.getDiskIdSet()[0]});
+
+                // 检查云盘状态
+                DescribeDisksResponse response = checkDiskState(cbsClient, describeDisksRequest, Arrays.asList("UNATTACHED", "ATTACHED"));
+                F2CDisk disk = new F2CDisk();
+                if (response != null) {
+                    disk = trans2F2CDisk(request.getRegionId(), response.getDiskSet()[0]);
+                    disk.setInstanceUuid(request.getInstanceUuid());
+                    disk.setDeleteWithInstance(request.getDeleteWithInstance());
+                }
+
+                // Windows 机器或者没填写文件系统的 Linux 机器，创建完磁盘手动挂载。
+                if (request.getIsAttached() && createDisksRequest.getAutoMountConfiguration() == null) {
+                    TencentAttachDiskRequest attachDiskRequest = new TencentAttachDiskRequest();
+
+                    BeanUtils.copyProperties(request,attachDiskRequest);
+                    attachDiskRequest.setDiskId(disk.getDiskId());
+                    attachDiskRequest.setInstanceUuid(disk.getInstanceUuid());
+                    attachDiskRequest.setDeleteWithInstance(disk.getDeleteWithInstance());
+                    attachDisk(attachDiskRequest);
+                }
+                return disk;
+            } else {
+                throw new RuntimeException("RegionId or credential can not be null.");
             }
         } catch (Exception e) {
             throw new RuntimeException(e);
@@ -203,6 +293,38 @@ public class TencetSyncCloudApi {
             }
         } catch (Exception e) {
             throw new RuntimeException(e);
+        }
+    }
+
+    /**
+     * 挂载磁盘
+     * https://console.cloud.tencent.com/api/explorer?Product=cbs&Version=2017-03-12&Action=AttachDisks
+     *
+     * @param request 挂载磁盘请求参数
+     */
+    public static boolean attachDisk(TencentAttachDiskRequest request) {
+        try {
+            if (StringUtils.isNotEmpty(request.getRegionId()) && StringUtils.isNotEmpty(request.getCredential())) {
+                TencentVmCredential tencentVmCredential = JsonUtil.parseObject(request.getCredential(), TencentVmCredential.class);
+                CbsClient cbsClient = tencentVmCredential.getCbsClient(request.getRegionId());
+
+                String instanceUuid = request.getInstanceUuid();
+                // 防止批量操作时失败
+                synchronized (instanceUuid.intern()) {
+                    cbsClient.AttachDisks(request.toAttachDisksRequest());
+                    // 检查云盘状态
+                    DescribeDisksRequest describeDisksRequest = new DescribeDisksRequest();
+                    describeDisksRequest.setDiskIds(new String[]{request.getDiskId()});
+                    DescribeDisksResponse describeDisksResponse = checkDiskState(cbsClient, describeDisksRequest, Arrays.asList("ATTACHED"));
+                    F2CDisk disk = trans2F2CDisk(request.getRegionId(), describeDisksResponse.getDiskSet()[0]);
+                    disk.setInstanceUuid(request.getInstanceUuid());
+                }
+                return true;
+            } else {
+                throw new RuntimeException("RegionId or credential can not be null.");
+            }
+        } catch (Exception e) {
+            throw new RuntimeException(e.getMessage(), e);
         }
     }
 
@@ -238,65 +360,18 @@ public class TencetSyncCloudApi {
     }
 
     /**
-     * 挂载磁盘
-     * https://console.cloud.tencent.com/api/explorer?Product=cbs&Version=2017-03-12&Action=AttachDisks
+     * 删除磁盘
+     * https://console.cloud.tencent.com/api/explorer?Product=cbs&Version=2017-03-12&Action=TerminateDisks
      *
-     * @param request 挂载磁盘请求参数
+     * @param request 删除磁盘请求参数
      */
-    public static boolean attachDisk(TencentAttachDiskRequest request) {
+    public static boolean deleteDisk(TencentDeleteDiskRequest request) {
         try {
             if (StringUtils.isNotEmpty(request.getRegionId()) && StringUtils.isNotEmpty(request.getCredential())) {
                 TencentVmCredential tencentVmCredential = JsonUtil.parseObject(request.getCredential(), TencentVmCredential.class);
                 CbsClient cbsClient = tencentVmCredential.getCbsClient(request.getRegionId());
-
-                String instanceUuid = request.getInstanceUuid();
-                // 防止批量操作时失败
-                synchronized (instanceUuid.intern()) {
-                    cbsClient.AttachDisks(request.toAttachDisksRequest());
-                    //检查云盘状态
-                    List<F2CDisk> result = new ArrayList<>();
-                    DescribeDisksRequest describeDisksRequest = new DescribeDisksRequest();
-                    describeDisksRequest.setDiskIds(new String[]{request.getDiskId()});
-                    DescribeDisksResponse describeDisksResponse = checkDiskState(cbsClient, describeDisksRequest, Arrays.asList("ATTACHED"));
-                    F2CDisk disk = trans2F2CDisk(request.getRegionId(), describeDisksResponse.getDiskSet()[0]);
-                    disk.setInstanceUuid(request.getInstanceUuid());
-                }
+                cbsClient.TerminateDisks(request.toTerminateDisksRequest());
                 return true;
-            } else {
-                throw new RuntimeException("RegionId or credential can not be null.");
-            }
-        } catch (Exception e) {
-            throw new RuntimeException(e.getMessage(), e);
-        }
-    }
-
-    /**
-     * 创建磁盘
-     * api https://console.cloud.tencent.com/api/explorer?Product=cbs&Version=2017-03-12&Action=CreateDisks
-     *
-     * @param request 创建磁盘请求参数
-     */
-    public static List<F2CDisk> createDisks(TencentCreateDiskRequest request) {
-        List<F2CDisk> result = new ArrayList<>();
-        try {
-            if (StringUtils.isNotEmpty(request.getRegionId()) && StringUtils.isNotEmpty(request.getCredential())) {
-                TencentVmCredential tencentVmCredential = JsonUtil.parseObject(request.getCredential(), TencentVmCredential.class);
-                CbsClient cbsClient = tencentVmCredential.getCbsClient(request.getRegionId());
-                for (F2CDisk f2CDisk : request.getDisks()) {
-                    CreateDisksRequest createDisksRequest = toCreateDisksRequest(f2CDisk);
-                    CreateDisksResponse createDisksResponse = cbsClient.CreateDisks(createDisksRequest);
-                    DescribeDisksRequest describeDisksRequest = new DescribeDisksRequest();
-                    describeDisksRequest.setDiskIds(new String[]{createDisksResponse.getDiskIdSet()[0]});
-                    //检查云盘状态
-                    DescribeDisksResponse response = checkDiskState(cbsClient, describeDisksRequest, Arrays.asList("UNATTACHED", "ATTACHED"));
-                    if (response != null) {
-                        F2CDisk disk = trans2F2CDisk(request.getRegionId(), response.getDiskSet()[0]);
-                        disk.setInstanceUuid(f2CDisk.getInstanceUuid());
-                        disk.setDeleteWithInstance(f2CDisk.getDeleteWithInstance());
-                        result.add(disk);
-                    }
-                }
-                return result;
             } else {
                 throw new RuntimeException("regionId or credential can not be null");
             }
@@ -318,14 +393,14 @@ public class TencetSyncCloudApi {
         createDisksRequest.setDiskSize(f2CDisk.getSize());
         createDisksRequest.setDiskCount(1l);
         createDisksRequest.setDiskChargeType(TencentMappingUtil.toTencentChargeType(f2CDisk.getDiskChargeType()));
-        //放置位置
+        // 放置位置
         Placement placement = new Placement();
         placement.setZone(f2CDisk.getZone());
         if (StringUtils.isNotEmpty(f2CDisk.getProjectId())) {
             placement.setProjectId(Long.valueOf(f2CDisk.getProjectId()));
         }
         createDisksRequest.setPlacement(placement);
-        //自动挂载
+        // 自动挂载
         if (f2CDisk.isBootable()) {
             AutoMountConfiguration autoMountConfiguration = new AutoMountConfiguration();
             autoMountConfiguration.setInstanceId(new String[]{f2CDisk.getInstanceUuid()});
@@ -410,15 +485,15 @@ public class TencetSyncCloudApi {
             try {
                 StopInstancesRequest stopInstancesRequest = new StopInstancesRequest();
                 stopInstancesRequest.setInstanceIds(new String[]{request.getUuId()});
-                stopInstancesRequest.setStopType(request.getForce()?"HARD":"SOFT");
+                stopInstancesRequest.setStopType(request.getForce() ? "HARD" : "SOFT");
                 StopInstancesResponse response = client.StopInstances(stopInstancesRequest);
-                checkStatus(client,response.getRequestId(), request.getUuId());
+                checkStatus(client, response.getRequestId(), request.getUuId());
                 return true;
             } catch (TeaException error) {
-                throw new Fit2cloudException(ErrorCodeConstants.VM_POWER_OFF_FAIL.getCode(),error.getMessage());
+                throw new Fit2cloudException(ErrorCodeConstants.VM_POWER_OFF_FAIL.getCode(), error.getMessage());
             } catch (Exception _error) {
                 TeaException error = new TeaException(_error.getMessage(), _error);
-                throw new Fit2cloudException(ErrorCodeConstants.VM_POWER_OFF_FAIL.getCode(),error.getMessage());
+                throw new Fit2cloudException(ErrorCodeConstants.VM_POWER_OFF_FAIL.getCode(), error.getMessage());
             }
         }
         return false;
@@ -435,13 +510,13 @@ public class TencetSyncCloudApi {
                 StartInstancesRequest startInstancesRequest = new StartInstancesRequest();
                 startInstancesRequest.setInstanceIds(new String[]{request.getUuId()});
                 StartInstancesResponse response = client.StartInstances(startInstancesRequest);
-                checkStatus(client,response.getRequestId(), request.getUuId());
+                checkStatus(client, response.getRequestId(), request.getUuId());
                 return true;
             } catch (TeaException error) {
-                throw new Fit2cloudException(ErrorCodeConstants.VM_POWER_ON_FAIL.getCode(),error.getMessage());
+                throw new Fit2cloudException(ErrorCodeConstants.VM_POWER_ON_FAIL.getCode(), error.getMessage());
             } catch (Exception _error) {
                 TeaException error = new TeaException(_error.getMessage(), _error);
-                throw new Fit2cloudException(ErrorCodeConstants.VM_POWER_ON_FAIL.getCode(),error.getMessage());
+                throw new Fit2cloudException(ErrorCodeConstants.VM_POWER_ON_FAIL.getCode(), error.getMessage());
             }
         }
         return false;
@@ -457,15 +532,15 @@ public class TencetSyncCloudApi {
             try {
                 RebootInstancesRequest rebootInstancesRequest = new RebootInstancesRequest();
                 rebootInstancesRequest.setInstanceIds(new String[]{request.getUuId()});
-                rebootInstancesRequest.setStopType(request.getForce()?"HARD":"SOFT");
+                rebootInstancesRequest.setStopType(request.getForce() ? "HARD" : "SOFT");
                 RebootInstancesResponse response = client.RebootInstances(rebootInstancesRequest);
-                checkStatus(client,response.getRequestId(), request.getUuId());
+                checkStatus(client, response.getRequestId(), request.getUuId());
                 return true;
             } catch (TeaException error) {
-                throw new Fit2cloudException(ErrorCodeConstants.VM_REBOOT_FAIL.getCode(),error.getMessage());
+                throw new Fit2cloudException(ErrorCodeConstants.VM_REBOOT_FAIL.getCode(), error.getMessage());
             } catch (Exception _error) {
                 TeaException error = new TeaException(_error.getMessage(), _error);
-                throw new Fit2cloudException(ErrorCodeConstants.VM_REBOOT_FAIL.getCode(),error.getMessage());
+                throw new Fit2cloudException(ErrorCodeConstants.VM_REBOOT_FAIL.getCode(), error.getMessage());
             }
         }
         return false;
@@ -484,27 +559,27 @@ public class TencetSyncCloudApi {
                 client.TerminateInstances(terminateInstancesRequest);
                 return true;
             } catch (TeaException error) {
-                throw new Fit2cloudException(ErrorCodeConstants.VM_DELETE_FAIL.getCode(),error.getMessage());
+                throw new Fit2cloudException(ErrorCodeConstants.VM_DELETE_FAIL.getCode(), error.getMessage());
             } catch (Exception _error) {
                 TeaException error = new TeaException(_error.getMessage(), _error);
-                throw new Fit2cloudException(ErrorCodeConstants.VM_DELETE_FAIL.getCode(),error.getMessage());
+                throw new Fit2cloudException(ErrorCodeConstants.VM_DELETE_FAIL.getCode(), error.getMessage());
             }
         }
         return false;
     }
 
-    private static void checkStatus(CvmClient client,String requestId,String uuid) throws Exception {
+    private static void checkStatus(CvmClient client, String requestId, String uuid) throws Exception {
         DescribeInstancesRequest req = new DescribeInstancesRequest();
         int count = 0;
-        while (true){
+        while (true) {
             req.setInstanceIds(new String[]{uuid});
             DescribeInstancesResponse resp = client.DescribeInstances(req);
-            if(resp.getInstanceSet().length==0){
+            if (resp.getInstanceSet().length == 0) {
                 throw new RuntimeException("Not found instance - " + uuid);
             }
             Instance instance = Arrays.stream(resp.getInstanceSet()).toList().get(0);
-            if(Optional.ofNullable(instance).isPresent()){
-                if(StringUtils.equalsIgnoreCase(instance.getLatestOperationRequestId(),requestId) && StringUtils.equalsIgnoreCase(instance.getLatestOperationState(),"SUCCESS")){
+            if (Optional.ofNullable(instance).isPresent()) {
+                if (StringUtils.equalsIgnoreCase(instance.getLatestOperationRequestId(), requestId) && StringUtils.equalsIgnoreCase(instance.getLatestOperationState(), "SUCCESS")) {
                     break;
                 }
             }
