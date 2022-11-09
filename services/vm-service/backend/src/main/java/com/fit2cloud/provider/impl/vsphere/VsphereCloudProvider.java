@@ -95,7 +95,7 @@ public class VsphereCloudProvider extends AbstractCloudProvider<VsphereCredentia
     }
 
     public List<F2CVsphereNetwork> getNetworks(String req) {
-        return VsphereSyncCloudApi.getNetworks(JsonUtil.parseObject(req, VsphereNetworkRequest.class));
+        return VsphereSyncCloudApi.getNetworks(JsonUtil.parseObject(req, VsphereVmCreateRequest.class));
     }
 
     public List<Map<String, String>> getLocations(String req) {
@@ -148,5 +148,15 @@ public class VsphereCloudProvider extends AbstractCloudProvider<VsphereCredentia
     @Override
     public List<F2CDisk> createDisks(String req) {
         return VsphereSyncCloudApi.createDisks(JsonUtil.parseObject(req, VsphereCreateDiskRequest.class));
+    }
+
+    @Override
+    public F2CVirtualMachine getSimpleServerByCreateRequest(String req) {
+        return VsphereSyncCloudApi.getSimpleServerByCreateRequest(JsonUtil.parseObject(req, VsphereVmCreateRequest.class));
+    }
+
+    @Override
+    public F2CVirtualMachine createVirtualMachine(String req) {
+        return VsphereSyncCloudApi.createServer(JsonUtil.parseObject(req, VsphereVmCreateRequest.class));
     }
 }

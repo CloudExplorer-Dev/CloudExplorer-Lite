@@ -4,6 +4,7 @@ import com.fit2cloud.common.form.annotaion.Form;
 import com.fit2cloud.common.form.constants.InputType;
 import com.fit2cloud.common.provider.impl.vsphere.VsphereBaseCloudProvider;
 import com.fit2cloud.provider.ICreateServerRequest;
+import com.fit2cloud.provider.entity.request.BaseDiskRequest;
 import com.fit2cloud.provider.impl.vsphere.VsphereCloudProvider;
 import lombok.Data;
 
@@ -11,7 +12,13 @@ import java.util.List;
 
 
 @Data
-public class AliyunVmCreateRequest implements ICreateServerRequest {
+public class AliyunVmCreateRequest extends BaseDiskRequest implements ICreateServerRequest {
+
+    private int count;
+
+    private int index;
+
+    private String id;
 
     //step 1
     //数据中心datacenter

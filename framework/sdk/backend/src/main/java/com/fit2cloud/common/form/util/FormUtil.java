@@ -1,5 +1,6 @@
 package com.fit2cloud.common.form.util;
 
+import com.fit2cloud.common.form.annotaion.FormConfirmInfo;
 import com.fit2cloud.common.form.annotaion.FormGroupInfo;
 import com.fit2cloud.common.form.annotaion.FormStepInfo;
 import com.fit2cloud.common.form.vo.FormObject;
@@ -8,10 +9,8 @@ import com.fit2cloud.common.utils.SpringUtil;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.reflect.FieldUtils;
 import org.apache.commons.lang3.reflect.MethodUtils;
-import org.springframework.util.ReflectionUtils;
 
 import java.lang.reflect.Field;
-import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
@@ -49,7 +48,18 @@ public class FormUtil {
                     return objectMap;
                 }));
 
-        boolean hasGroup = groupAnnotationMap.size() > 0, hasStep = stepAnnotationMap.size() > 0;
+        FormConfirmInfo[] confirmAnnotations = clazz.getAnnotationsByType(FormConfirmInfo.class);
+        Map<Integer, Map<String, Object>> confirmAnnotationMap = Arrays.stream(confirmAnnotations)
+                .collect(Collectors.toMap(FormConfirmInfo::group, annotation -> {
+                    Map<String, Object> objectMap = new HashMap<>();
+                    objectMap.put("group", annotation.group());
+                    objectMap.put("name", annotation.name());
+                    objectMap.put("description", annotation.description());
+                    objectMap.put("items", annotation.items());
+                    return objectMap;
+                }));
+
+        boolean hasGroup = groupAnnotationMap.size() > 0, hasStep = stepAnnotationMap.size() > 0, hasConfirm = confirmAnnotationMap.size() > 0;
 
         Field[] fieldsWithAnnotation = FieldUtils.getFieldsWithAnnotation(clazz, com.fit2cloud.common.form.annotaion.Form.class);
         AtomicInteger atomicInteger = new AtomicInteger(0);
@@ -83,6 +93,12 @@ public class FormUtil {
             if (hasGroup) {
                 map.put("group", groupAnnotationMap.get(annotation.group()) != null ? annotation.group() : 0);
             }
+            if (hasConfirm) {
+                map.put("confirmGroup", confirmAnnotationMap.get(annotation.confirmGroup()) != null ? annotation.confirmGroup() : -1);
+                map.put("confirmSpecial", annotation.confirmSpecial());
+                map.put("confirmPosition", annotation.confirmPosition());
+                map.put("confirmItemSpan", annotation.confirmItemSpan() > 0 ? annotation.confirmItemSpan() : 1);
+            }
 
             String jsonString = JsonUtil.toJSONString(map);
             return JsonUtil.parseObject(jsonString, annotation.inputType().getFormClass());
@@ -93,6 +109,9 @@ public class FormUtil {
         }
         if (hasGroup) {
             formObject.setGroupAnnotationMap(groupAnnotationMap);
+        }
+        if (hasConfirm) {
+            formObject.setConfirmAnnotationMap(confirmAnnotationMap);
         }
 
         return formObject;

@@ -1,8 +1,12 @@
 package com.fit2cloud.controller.request;
 
+import com.fit2cloud.base.entity.JobRecord;
 import com.fit2cloud.common.constants.JobTypeConstants;
 import com.fit2cloud.common.log.constants.OperatedTypeEnum;
 import com.fit2cloud.common.log.constants.ResourceTypeEnum;
+import com.fit2cloud.dto.InitJobRecordDTO;
+import io.reactivex.rxjava3.functions.Consumer;
+import io.reactivex.rxjava3.functions.Function;
 import lombok.Builder;
 import lombok.Data;
 
@@ -29,4 +33,12 @@ public class CreateJobRecordRequest {
      * 任务类型
      */
     private JobTypeConstants jobType;
+    /**
+     * 初始化任务记录的方法
+     */
+    Function<InitJobRecordDTO, JobRecord> initJobMethod;
+    /**
+     * 更新任务记录的方法
+     */
+    Consumer<JobRecord> updateJobRecord;
 }

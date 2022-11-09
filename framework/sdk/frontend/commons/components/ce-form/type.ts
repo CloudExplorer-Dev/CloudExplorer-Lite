@@ -68,6 +68,14 @@ export interface FormView {
 
   step?: number | null;
 
+  confirmGroup?: number | null;
+
+  confirmSpecial?: boolean;
+
+  confirmPosition?: string | null;
+
+  confirmItemSpan?: number | null;
+
   index: number;
   /**
    * 其他字段
@@ -87,8 +95,16 @@ export interface StepAnnotation {
   description: string;
 }
 
+export interface ConfirmAnnotation {
+  group: number;
+  name: string;
+  description: string;
+  items: number;
+}
+
 export interface FormViewObject {
   forms: Array<FormView>;
   groupAnnotationMap?: SimpleMap<GroupAnnotation>;
   stepAnnotationMap?: SimpleMap<StepAnnotation>;
+  confirmAnnotationMap?: SimpleMap<ConfirmAnnotation>;
 }

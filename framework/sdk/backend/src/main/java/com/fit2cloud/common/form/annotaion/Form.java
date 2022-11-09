@@ -101,6 +101,7 @@ public @interface Form {
 
     /**
      * 调用的类是否为spring的bean
+     *
      * @return
      */
     boolean serviceMethod() default false;
@@ -133,6 +134,34 @@ public @interface Form {
      * @return
      */
     int step() default 0;
+
+    /**
+     * 确认页面分组
+     * -1为不展示
+     *
+     * @return
+     */
+    int confirmGroup() default -1;
+
+    /**
+     * 是否特殊处理
+     *
+     * @return
+     */
+    boolean confirmSpecial() default false;
+
+    /**
+     * 在确认组中展示位置，仅在label为空情况下生效
+     *
+     * @return
+     */
+    Position confirmPosition() default Position.BOTTOM;
+
+    int confirmItemSpan() default 1;
+
+    enum Position {
+        TOP, BOTTOM
+    }
 
 
 }

@@ -13,5 +13,12 @@ public enum F2CInstanceStatus {
     Deleting,
     Rebooting,
     Createding,
-    Unknown
+    Unknown,
+
+    //创建中
+    Creating,
+
+    WaitCreating,
+    //创建失败
+    Failed
 }

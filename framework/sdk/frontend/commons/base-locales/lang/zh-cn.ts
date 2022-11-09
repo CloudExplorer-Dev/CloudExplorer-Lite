@@ -33,7 +33,7 @@ const message = {
       vm: "虚拟机",
       image: "镜像",
     },
-    cloud_server:{
+    cloud_server: {
       instance_type: "实例规格",
       applicant: "申请人",
       more: "更多",
@@ -78,7 +78,7 @@ const message = {
       export: "导出",
       upload: "上传",
       download: "下载",
-      more_actions: "更多操作"
+      more_actions: "更多操作",
     },
     msg: {
       success: "{0}成功",
@@ -129,11 +129,11 @@ const message = {
       welcome: "欢迎回来，请输入用户名和密码登录",
       expires: "认证信息已过期，请重新登录",
     },
-    charge_type:{
-      native:"付费方式",
-      prepaid:"包年包月",
-      postpaid:"按需付费",
-    }
+    charge_type: {
+      native: "付费方式",
+      prepaid: "包年包月",
+      postpaid: "按需付费",
+    },
   },
 };
 

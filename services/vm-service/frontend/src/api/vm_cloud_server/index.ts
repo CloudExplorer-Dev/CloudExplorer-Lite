@@ -4,7 +4,8 @@ import type { Page } from "@commons/request/Result";
 import type {
   VmCloudServerVO,
   ListVmCloudServerRequest,
-  CloudServerJobRecord
+  CloudServerJobRecord,
+  CreateServerRequest,
 } from "./type";
 import type { Ref } from "vue";
 import type { SimpleMap } from "@commons/api/base/type";
@@ -141,10 +142,17 @@ export function getServerJobRecord(
  * @param loading
  */
 export function listPerfMetricMonitor(
-    req: any,
-    loading?: Ref<boolean>
+  req: any,
+  loading?: Ref<boolean>
 ): Promise<Result<any>> {
   return get("/api/base/monitor/list", req, loading);
+}
+
+export function createServer(
+  req: CreateServerRequest,
+  loading?: Ref<boolean>
+): Promise<Result<boolean>> {
+  return post("api/server/create", null, req, loading);
 }
 
 const VmCloudServerApi = {
@@ -157,7 +165,8 @@ const VmCloudServerApi = {
   batchOperate,
   getVmCloudServerById,
   getServerJobRecord,
-  listPerfMetricMonitor
+  listPerfMetricMonitor,
+  createServer,
 };
 
 export default VmCloudServerApi;

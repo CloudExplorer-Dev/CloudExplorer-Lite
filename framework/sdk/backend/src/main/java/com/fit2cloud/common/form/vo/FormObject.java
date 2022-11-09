@@ -16,4 +16,6 @@ public class FormObject {
 
     Map<Integer, Map<String, Object>> groupAnnotationMap;
 
+    Map<Integer, Map<String, Object>> confirmAnnotationMap;
+
 }

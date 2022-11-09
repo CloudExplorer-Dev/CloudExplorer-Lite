@@ -1,4 +1,4 @@
-import { get, put, del } from "@commons/request";
+import { get, put, del, post } from "@commons/request";
 import type Result from "@commons/request/Result";
 import type { Page } from "@commons/request/Result";
 import type {
@@ -22,6 +22,28 @@ export function listVmCloudDisk(
   loading?: Ref<boolean>
 ): Promise<Result<Page<VmCloudDiskVO>>> {
   return get("api/disk/page", req, loading);
+}
+
+/**
+ * 根据云账号查询创建磁盘表单数据
+ * @param req
+ * @param loading
+ */
+export function getCreateDiskForm(
+  accountId: string,
+  loading?: Ref<boolean>
+): Promise<Result<any>> {
+  return get("/api/disk/createDiskForm/" + accountId, null, loading);
+}
+
+/**
+ * 创建磁盘
+ */
+export function createDisk(
+  dataInfo: any,
+  loading?: Ref<boolean>
+): Promise<Result<null>> {
+  return post("api/disk/createDisk", null, dataInfo, loading);
 }
 
 /**
@@ -133,6 +155,8 @@ export function showCloudDiskById(
 
 const VmCloudDiskApi = {
   listVmCloudDisk,
+  getCreateDiskForm,
+  createDisk,
   enlarge,
   attach,
   detach,

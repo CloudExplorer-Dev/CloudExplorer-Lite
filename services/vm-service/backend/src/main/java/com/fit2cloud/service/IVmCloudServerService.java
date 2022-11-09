@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.fit2cloud.base.entity.VmCloudServer;
 import com.fit2cloud.controller.request.vm.BatchOperateVmRequest;
+import com.fit2cloud.controller.request.vm.CreateServerRequest;
 import com.fit2cloud.controller.request.vm.PageVmCloudServerRequest;
 import com.fit2cloud.dto.VmCloudServerDTO;
 import com.fit2cloud.response.JobRecordResourceResponse;
@@ -12,11 +13,11 @@ import java.util.List;
 
 /**
  * <p>
- *  服务类
+ * 服务类
  * </p>
  *
  * @author fit2cloud
- * @since 
+ * @since
  */
 public interface IVmCloudServerService extends IService<VmCloudServer> {
 
@@ -26,7 +27,7 @@ public interface IVmCloudServerService extends IService<VmCloudServer> {
 
     boolean powerOn(String vmId);
 
-    boolean shutdownInstance(String vmId,Boolean powerOff);
+    boolean shutdownInstance(String vmId, Boolean powerOff);
 
     boolean rebootInstance(String vmId);
 
@@ -38,4 +39,5 @@ public interface IVmCloudServerService extends IService<VmCloudServer> {
 
     VmCloudServerDTO getById(String vmId);
 
+    boolean createServer(CreateServerRequest request);
 }

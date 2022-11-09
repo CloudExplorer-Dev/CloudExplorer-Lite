@@ -7,6 +7,9 @@ $Stopping: #ad4c1f;
 $Rebooting: #ad4c1f;
 $Deleting: #ad4c1f;
 $Createding: #ad4c1f;
+$Failed: #fa022e;
+$Creating: #80d363;
+$WaitCreating: #758d70;
 
 :export {
   Running: $Running;
@@ -17,6 +20,9 @@ $Createding: #ad4c1f;
   Rebooting: $Rebooting;
   Deleteding: $Deleting;
   Createding: $Createding;
+  Failed: $Failed;
+  Creating: $Creating;
+  WaitCreating: $WaitCreating;
 }
 
 //文字长度限制
