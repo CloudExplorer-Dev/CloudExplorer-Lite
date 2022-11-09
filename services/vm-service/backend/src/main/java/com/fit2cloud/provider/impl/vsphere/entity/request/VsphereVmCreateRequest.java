@@ -2,6 +2,7 @@ package com.fit2cloud.provider.impl.vsphere.entity.request;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fit2cloud.common.form.annotaion.Form;
+import com.fit2cloud.common.form.annotaion.FormConfirmInfo;
 import com.fit2cloud.common.form.annotaion.FormGroupInfo;
 import com.fit2cloud.common.form.annotaion.FormStepInfo;
 import com.fit2cloud.common.form.constants.InputType;
@@ -19,9 +20,14 @@ import java.util.List;
 @Data
 @JsonIgnoreProperties(ignoreUnknown = true)
 @FormStepInfo(step = 1, name = "基础配置")
-@FormStepInfo(step = 2, name = "选择资源")
+@FormStepInfo(step = 2, name = "资源配置")
 @FormStepInfo(step = 3, name = "网络配置")
 @FormStepInfo(step = 4, name = "系统配置")
+@FormConfirmInfo(group = 0, name = "云账号")
+@FormConfirmInfo(group = 1, name = "基础配置", items = 2)
+@FormConfirmInfo(group = 2, name = "资源配置")
+@FormConfirmInfo(group = 3, name = "网络配置")
+@FormConfirmInfo(group = 4, name = "系统配置")
 @FormGroupInfo(group = 1, name = "区域")
 @FormGroupInfo(group = 2, name = "操作系统")
 @FormGroupInfo(group = 3, name = "实例规格")
@@ -35,9 +41,12 @@ public class VsphereVmCreateRequest extends VsphereVmBaseRequest implements ICre
 
     @Form(inputType = InputType.Number,
             label = "购买数量",
+            unit = "台",
             defaultValue = "1",
             defaultJsonValue = true,
-            attrs = "{\"min\":1,\"max\":10,\"step\":1}"
+            attrs = "{\"min\":1,\"max\":10,\"step\":1}",
+            confirmGroup = 1
+
     )
     private int count;
 
@@ -57,7 +66,8 @@ public class VsphereVmCreateRequest extends VsphereVmBaseRequest implements ICre
             textField = "name",
             valueField = "regionId",
             group = 1,
-            step = 1
+            step = 1,
+            confirmGroup = 0
     )
     private String region;
 
@@ -81,7 +91,8 @@ public class VsphereVmCreateRequest extends VsphereVmBaseRequest implements ICre
             valueField = "name",
             relationTrigger = "region",
             group = 1,
-            step = 1
+            step = 1,
+            confirmGroup = 0
     )
     private String cluster;
 
@@ -95,7 +106,8 @@ public class VsphereVmCreateRequest extends VsphereVmBaseRequest implements ICre
             valueField = "imageName", //由于vc还是拿name作为快速索引，所以不用mor作为查询值
             relationTrigger = "region",
             group = 2,
-            step = 1
+            step = 1,
+            confirmGroup = 1
     )
     private String template;
 
@@ -107,7 +119,8 @@ public class VsphereVmCreateRequest extends VsphereVmBaseRequest implements ICre
             step = 1,
             defaultValue = "1",
             defaultJsonValue = true,
-            attrs = "{\"min\":1,\"max\":128,\"step\":1}"
+            attrs = "{\"min\":1,\"max\":128,\"step\":1}",
+            confirmGroup = 1
     )
     private int cpu;
 
@@ -119,7 +132,8 @@ public class VsphereVmCreateRequest extends VsphereVmBaseRequest implements ICre
             step = 1,
             defaultValue = "1",
             defaultJsonValue = true,
-            attrs = "{\"min\":1,\"max\":512,\"step\":1}"
+            attrs = "{\"min\":1,\"max\":512,\"step\":1}",
+            confirmGroup = 1
     )
     private int ram;
 
@@ -129,7 +143,9 @@ public class VsphereVmCreateRequest extends VsphereVmBaseRequest implements ICre
             group = 4,
             defaultValue = "[]",
             defaultJsonValue = true,
-            relationTrigger = "template"
+            relationTrigger = "template",
+            confirmGroup = 1,
+            confirmSpecial = true
     )
     private List<DiskConfig> disks;
 
@@ -140,7 +156,9 @@ public class VsphereVmCreateRequest extends VsphereVmBaseRequest implements ICre
             group = 5,
             defaultValue = "{\"location\": \"host\"}",
             defaultJsonValue = true,
-            relationTrigger = "cluster"
+            relationTrigger = "cluster",
+            confirmGroup = 2,
+            confirmSpecial = true
     )
     private ComputeConfig computeConfig;
 
@@ -153,7 +171,8 @@ public class VsphereVmCreateRequest extends VsphereVmBaseRequest implements ICre
             valueField = "value",
             defaultValue = "DEFAULT",
             step = 2,
-            group = 6
+            group = 6,
+            confirmGroup = 2
     )
     private String diskType;
 
@@ -164,7 +183,9 @@ public class VsphereVmCreateRequest extends VsphereVmBaseRequest implements ICre
             method = "getDatastoreList",
             step = 2,
             group = 6,
-            relationTrigger = "computeConfig"
+            relationTrigger = "computeConfig",
+            confirmGroup = 2,
+            confirmSpecial = true
     )
     private String datastore;
 
@@ -177,7 +198,8 @@ public class VsphereVmCreateRequest extends VsphereVmBaseRequest implements ICre
             valueField = "name", //由于vc还是拿name作为快速索引，所以不用mor作为查询值
             relationTrigger = "cluster",
             group = 7,
-            step = 2
+            step = 2,
+            confirmGroup = 2
     )
     private String folder;
 
@@ -189,7 +211,10 @@ public class VsphereVmCreateRequest extends VsphereVmBaseRequest implements ICre
             group = 8,
             defaultValue = "[]",
             defaultJsonValue = true,
-            relationTrigger = {"cluster", "computeConfig"}
+            relationTrigger = {"cluster", "computeConfig"},
+            confirmGroup = 3,
+            confirmSpecial = true,
+            confirmPosition = Form.Position.TOP
     )
     private List<List<NetworkAdapter>> networkAdapters;
 
@@ -197,7 +222,8 @@ public class VsphereVmCreateRequest extends VsphereVmBaseRequest implements ICre
             required = false,
             label = "DNS1",
             group = 8,
-            step = 3
+            step = 3,
+            confirmGroup = 3
     )
     private String dns1;
 
@@ -205,7 +231,8 @@ public class VsphereVmCreateRequest extends VsphereVmBaseRequest implements ICre
             required = false,
             label = "DNS2",
             group = 8,
-            step = 3
+            step = 3,
+            confirmGroup = 3
     )
     private String dns2;
 
@@ -216,7 +243,10 @@ public class VsphereVmCreateRequest extends VsphereVmBaseRequest implements ICre
             step = 4,
             group = 9,
             defaultValue = "[]",
-            defaultJsonValue = true
+            defaultJsonValue = true,
+            confirmGroup = 4,
+            confirmSpecial = true,
+            confirmPosition = Form.Position.TOP
     )
     private List<ServerInfo> serverInfos;
 
