@@ -62,7 +62,7 @@
         qst.LONG_PROP_2 as misfire_instruction,
         qct.TIME_ZONE_ID as cron_time_zone,
         qct.CRON_EXPRESSION as cron_expressopn
-        FROM quartz.qrtz_triggers qt
+        FROM qrtz_triggers qt
         LEFT JOIN qrtz_job_details qjd ON qt.SCHED_NAME = qjd.SCHED_NAME
         AND qt.JOB_NAME = qjd.JOB_NAME AND qt.JOB_GROUP = qjd.JOB_GROUP
         LEFT JOIN qrtz_simprop_triggers qst ON qt.SCHED_NAME = qst.SCHED_NAME
