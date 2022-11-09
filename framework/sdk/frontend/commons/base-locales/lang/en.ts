@@ -33,7 +33,7 @@ const message = {
       vm: "Virtual Machine",
       image: "Image",
     },
-    cloud_server:{
+    cloud_server: {
       instance_type: "Instance Type",
       applicant: "Applicant",
       more: "More",
@@ -78,7 +78,7 @@ const message = {
       export: "Export",
       upload: "Upload",
       download: "Download",
-      more_actions: "More Actions"
+      more_actions: "More Actions",
     },
     msg: {
       success: "{0}Success",
@@ -130,11 +130,11 @@ const message = {
         "Welcome Back, Please Enter Your User Name and Password to Login",
       expires: "The Authentication Information Has Expired, Please Login Again",
     },
-    charge_type:{
-      native:"Charge Type",
-      prepaid:"Prepaid",
-      postpaid:"Postpaid",
-    }
+    charge_type: {
+      native: "Charge Type",
+      prepaid: "Prepaid",
+      postpaid: "Postpaid",
+    },
   },
 };
 

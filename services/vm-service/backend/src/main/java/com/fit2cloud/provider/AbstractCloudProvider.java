@@ -17,6 +17,7 @@ import com.fit2cloud.provider.entity.F2CVirtualMachine;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.List;
+import java.util.Map;
 
 /**
  * @Author:张少虎
@@ -82,13 +83,27 @@ public abstract class AbstractCloudProvider<C extends Credential> implements ICl
         return false;
     }
 
-    @Override
     public boolean attachDisk(String req) {
         return false;
     }
 
-    @Override
     public List<F2CDisk> createDisks(String req) {
+        return null;
+    }
+
+    public F2CDisk createDisk(String req) {
+        return null;
+    }
+
+    public FormObject getCreateDiskForm() {
+        return null;
+    }
+
+    public List<Map<String, String>> getDiskTypes(String req) {
+        return null;
+    }
+
+    public List<Map<String, String>> getDeleteWithInstance(String req) {
         return null;
     }
 

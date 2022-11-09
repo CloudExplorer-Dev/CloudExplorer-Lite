@@ -95,6 +95,22 @@ const initDefaultData = () => {
         formData.value[item.field] = item.defaultValue;
       }
     }
+    props.formViewData.forEach((relationItem) => {
+      if (
+        relationItem.clazz &&
+        relationItem.method &&
+        relationItem.relationTrigger.every((r) => formData.value[r])
+      ) {
+        formApi
+          .getResourceMyMethod(relationItem.clazz, relationItem.method, {
+            ...formData.value,
+            ...props.otherParams,
+          })
+          .then((ok) => {
+            relationItem.optionList = ok.data;
+          });
+      }
+    });
   });
 };
 
@@ -117,7 +133,7 @@ const validate = () => {
 watch(
   () => props.formViewData,
   (pre) => {
-    if (formData.value && pre) {
+    if (pre) {
       initDefaultData();
       Object.keys(formData.value).forEach((key: string) => {
         const form = pre.find((f) => f.field === key);
@@ -126,6 +142,9 @@ watch(
         }
       });
     }
+  },
+  {
+    immediate: true,
   }
 );
 /**

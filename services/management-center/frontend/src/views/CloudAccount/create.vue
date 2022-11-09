@@ -35,6 +35,8 @@ const changePlatform = () => {
   const p = platforms.value.find(
     (platform) => from.value.platform === platform.field
   );
+  from.value.credential = {};
+  from.value.name = "";
   p?.credentialFrom.forEach((item) => {
     if (item.defaultValue && !from.value.credential[item.field]) {
       try {

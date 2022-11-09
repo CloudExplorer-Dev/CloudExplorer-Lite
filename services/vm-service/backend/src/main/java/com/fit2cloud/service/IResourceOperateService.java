@@ -3,7 +3,6 @@ package com.fit2cloud.service;
 import com.fit2cloud.controller.request.CreateJobRecordRequest;
 import com.fit2cloud.controller.request.ExecProviderMethodRequest;
 import com.fit2cloud.controller.request.ResourceState;
-import io.reactivex.rxjava3.functions.Consumer;
 
 /**
  * Author: LiuDi
@@ -16,9 +15,9 @@ public interface IResourceOperateService {
      * @param createJobRecordRequest
      * @param execProviderMethodRequest
      * @param resourceState
-     * @param updateResource
-     * @param <T>
+     * @param <T> 云管资源实体类型
+     * @param <V> 云平台方法返回实体类型
      */
-    <T> void operateWithJobRecord(CreateJobRecordRequest createJobRecordRequest, ExecProviderMethodRequest execProviderMethodRequest, ResourceState<T> resourceState, Consumer<T> updateResource);
+    <T,V> void operateWithJobRecord(CreateJobRecordRequest createJobRecordRequest, ExecProviderMethodRequest execProviderMethodRequest, ResourceState<T,V> resourceState);
 
 }
