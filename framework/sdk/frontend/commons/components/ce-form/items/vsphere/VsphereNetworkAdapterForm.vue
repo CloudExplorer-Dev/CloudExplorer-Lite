@@ -252,12 +252,11 @@ function setServers(count: number | undefined) {
       if (_data.value.length > count) {
         _data.value = _.slice(_data.value, 0, count - _data.value.length);
       } else if (_data.value.length < count) {
-        const addCount = count - _data.value.length;
-        for (let i = 0; i < addCount; i++) {
-          const list: Array<Array<NetWorkAdapter>> = _.clone(_data.value);
-          list.push([{ dhcp: true }]);
-          _data.value = list;
+        const temp = [];
+        for (let i = 0; i < count - _data.value.length; i++) {
+          temp.push([{ dhcp: true }]);
         }
+        _data.value = _.concat(_data.value, temp);
       }
     }
   }

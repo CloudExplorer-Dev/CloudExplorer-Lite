@@ -313,7 +313,7 @@ public class VsphereSyncCloudApi {
     public static List<Map<String, String>> getLocations(VsphereVmCreateRequest req) {
         List<Map<String, String>> locations = new ArrayList<>();
         Map<String, String> hostMap = new HashMap<>();
-        hostMap.put("name", "主机");
+        hostMap.put("name", "宿主机");
         hostMap.put("value", "host");
         locations.add(hostMap);
         Map<String, String> poolMap = new HashMap<>();
