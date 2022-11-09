@@ -38,7 +38,7 @@ public class HuaweiMappingUtil {
         cloudBill.setProjectId(item.getEnterpriseProjectId());
         cloudBill.setProjectName(item.getEnterpriseProjectName());
         cloudBill.setBillMode(toBillMode(item.getChargeMode()));
-        cloudBill.setReousrceId(item.getResourceId());
+        cloudBill.setResourceId(item.getResourceId());
         cloudBill.setResourceName(item.getResourceName());
         cloudBill.setProductId(item.getProductId());
         cloudBill.setProductName(item.getProductName());

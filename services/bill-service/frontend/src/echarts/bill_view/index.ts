@@ -95,7 +95,6 @@ const getBillViewOptions = (
           .map((i) => i.value)
           .reduce((p: number, n: number) => p + n, 0);
         const a = Math.floor(((dataItem?.value as number) / sum) * 10000) / 100;
-
         return `{oneone|${dataItem?.name}}  {twotwo|${
           Math.floor((dataItem ? dataItem.value : 0) * 100) / 100
         }元}   {threethree|${a}%}`;
@@ -103,7 +102,7 @@ const getBillViewOptions = (
     },
     tooltip: {
       trigger: "item",
-      formatter: "{b}:{c}:{d} ",
+      formatter: "{b}:{c} ",
     },
     series: [
       {
