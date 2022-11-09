@@ -12,11 +12,11 @@ import java.util.List;
 
 /**
  * <p>
- *  服务类
+ * 服务类
  * </p>
  *
  * @author fit2cloud
- * @since 
+ * @since
  */
 public interface IVmCloudServerService extends IService<VmCloudServer> {
 
@@ -26,7 +26,7 @@ public interface IVmCloudServerService extends IService<VmCloudServer> {
 
     boolean powerOn(String vmId);
 
-    boolean shutdownInstance(String vmId,Boolean powerOff);
+    boolean shutdownInstance(String vmId, Boolean powerOff);
 
     boolean rebootInstance(String vmId);
 

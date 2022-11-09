@@ -21,7 +21,7 @@ public class ExecProviderMethodRequest {
     /**
      * 执行方法
      */
-    BiFunction<ICloudProvider, String, Boolean> execMethod;
+    BiFunction<ICloudProvider, String, Object> execMethod;
     /**
      * 方法参数
      */

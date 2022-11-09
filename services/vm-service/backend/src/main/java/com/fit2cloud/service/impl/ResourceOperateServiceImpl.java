@@ -16,6 +16,7 @@ import com.fit2cloud.dto.InitJobRecordDTO;
 import com.fit2cloud.provider.ICloudProvider;
 import com.fit2cloud.service.IResourceOperateService;
 import com.fit2cloud.service.JobRecordCommonService;
+import io.reactivex.rxjava3.functions.BiConsumer;
 import io.reactivex.rxjava3.functions.Consumer;
 import io.reactivex.rxjava3.functions.Function;
 import org.springframework.stereotype.Service;
@@ -37,16 +38,18 @@ public class ResourceOperateServiceImpl implements IResourceOperateService {
     @Resource
     ThreadPoolExecutor workThreadPool;
 
-    public <T> void operateWithJobRecord(CreateJobRecordRequest createJobRecordRequest, ExecProviderMethodRequest execProviderMethodRequest, ResourceState<T> resourceState, Consumer<T> updateResource) {
-        operateWithJobRecord(createJobRecordRequest, execProviderMethodRequest, resourceState, updateResource, jobRecordCommonService::initJobRecord, jobRecordCommonService::modifyJobRecord);
-    }
-
-    private <T> void operateWithJobRecord(CreateJobRecordRequest createJobRecordRequest, ExecProviderMethodRequest execProviderMethodRequest, ResourceState<T> resourceState, Consumer<T> updateResource, Function<InitJobRecordDTO, JobRecord> initJobMethod, Consumer<JobRecord> updateJobRecord) {
-        CompletableFuture.runAsync(()->{
+    public <T, V> void operateWithJobRecord(CreateJobRecordRequest createJobRecordRequest, ExecProviderMethodRequest execProviderMethodRequest, ResourceState<T, V> resourceState) {
+        CompletableFuture.runAsync(() -> {
             JobTypeConstants jobType = createJobRecordRequest.getJobType();
             String resourceId = createJobRecordRequest.getResourceId();
             ResourceTypeEnum resourceType = createJobRecordRequest.getResourceType();
             OperatedTypeEnum resourceOperateType = createJobRecordRequest.getResourceOperateType();
+            Consumer<T> updateResourceMethod = resourceState.getUpdateResourceMethod();
+            Consumer<T> deleteResourceMethod = resourceState.getDeleteResourceMethod();
+            BiConsumer<T, V> saveResourceMethod = resourceState.getSaveResourceMethod();
+
+            Function<InitJobRecordDTO, JobRecord> initJobMethod = createJobRecordRequest.getInitJobMethod() == null ? jobRecordCommonService::initJobRecord : createJobRecordRequest.getInitJobMethod();
+            Consumer<JobRecord> updateJobRecordMethod = createJobRecordRequest.getUpdateJobRecord() == null ? jobRecordCommonService::modifyJobRecord : createJobRecordRequest.getUpdateJobRecord();
 
             LocalDateTime createTime = DateUtil.getSyncTime();
             try {
@@ -58,21 +61,32 @@ public class ResourceOperateServiceImpl implements IResourceOperateService {
                                 .build());
 
                 // 更新资源状态为操作中
-                updateResource.accept(resourceState.getProcessingResource());
+                updateResourceMethod.accept(resourceState.getProcessingResource());
 
+                Object result;
                 try {
                     // 执行资源操作方法
-                    boolean result = CommonUtil.exec(ICloudProvider.of(execProviderMethodRequest.getPlatform()), JsonUtil.toJSONString(execProviderMethodRequest.getMethodParams()), execProviderMethodRequest.getExecMethod());
-                    if (result) {
+                    result = CommonUtil.exec(ICloudProvider.of(execProviderMethodRequest.getPlatform()), JsonUtil.toJSONString(execProviderMethodRequest.getMethodParams()), execProviderMethodRequest.getExecMethod());
+                    if (result != null) {
                         // 更新资源为完成态
-                        updateResource.accept(resourceState.getAfterResource());
+                        updateResourceMethod.accept(resourceState.getAfterResource());
+
+                        // 如果是新增资源，则调用保存方法
+                        if (saveResourceMethod != null) {
+                            saveResourceMethod.accept(resourceState.getAfterResource(), (V) result);
+                        }
 
                         // 设置任务状态为成功
                         jobRecord.setStatus(JobStatusConstants.SUCCESS);
                     }
                 } catch (Exception e) {
                     // 还原资源状态
-                    updateResource.accept(resourceState.getBeforeResource());
+                    updateResourceMethod.accept(resourceState.getBeforeResource());
+
+                    // 如果删除资源的方法不为空，则删除调用删除资源的方法
+                    if (deleteResourceMethod != null) {
+                        deleteResourceMethod.accept(resourceState.getBeforeResource());
+                    }
 
                     // 设置任务状态为失败
                     jobRecord.setStatus(JobStatusConstants.FAILED);
@@ -81,10 +95,10 @@ public class ResourceOperateServiceImpl implements IResourceOperateService {
                 }
 
                 // 更新任务记录
-                updateJobRecord.accept(jobRecord);
+                updateJobRecordMethod.accept(jobRecord);
             } catch (Throwable e) {
                 LogUtil.error("OperateWithJobRecord failed - {}", e.getMessage());
             }
-        },workThreadPool);
+        }, workThreadPool);
     }
 }

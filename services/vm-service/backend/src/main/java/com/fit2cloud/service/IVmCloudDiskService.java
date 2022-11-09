@@ -3,6 +3,8 @@ package com.fit2cloud.service;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.fit2cloud.base.entity.VmCloudDisk;
+import com.fit2cloud.common.form.vo.FormObject;
+import com.fit2cloud.controller.request.disk.CreateVmCloudDiskRequest;
 import com.fit2cloud.controller.request.disk.ListVmRequest;
 import com.fit2cloud.controller.request.disk.PageVmCloudDiskRequest;
 import com.fit2cloud.dto.VmCloudDiskDTO;
@@ -37,6 +39,20 @@ public interface IVmCloudDiskService extends IService<VmCloudDisk> {
      */
     VmCloudDiskDTO cloudDisk(String id);
 
+    /**
+     * 根据云平台获取获取创建磁盘的表单数据
+     * @param platform
+     * @return
+     */
+    FormObject getCreateDiskForm(String platform);
+
+    /**
+     * 创建磁盘
+     *
+     * @param request
+     * @return
+     */
+    boolean createDisk(CreateVmCloudDiskRequest request);
 
     /**
      * 扩容磁盘

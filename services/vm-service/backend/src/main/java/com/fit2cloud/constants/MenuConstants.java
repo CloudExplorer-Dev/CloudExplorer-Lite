@@ -110,7 +110,7 @@ public class MenuConstants {
                                     new Menu.Builder()
                                             .name("add_disk")
                                             .title("添加磁盘")
-                                            .path("/add_disk:id")
+                                            .path("/add_disk/:id")
                                             .componentPath("/src/views/vm_cloud_server/AddDisk.vue")
                                             .requiredPermission(new MenuPermission.Builder()
                                                     .role(RoleConstants.ROLE.ADMIN)
