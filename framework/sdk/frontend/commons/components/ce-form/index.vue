@@ -215,6 +215,7 @@ defineExpose({
           v-model="formData[item.field]"
           :is="item.inputType"
           :formItem="item"
+          v-bind="{ ...JSON.parse(item.attrs) }"
         ></component>
       </el-form-item>
     </div>
