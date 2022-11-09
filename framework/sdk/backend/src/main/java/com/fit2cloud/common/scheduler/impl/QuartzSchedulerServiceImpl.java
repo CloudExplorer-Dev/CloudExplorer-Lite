@@ -35,7 +35,7 @@ public class QuartzSchedulerServiceImpl implements SchedulerService {
     @Override
     public void addJob(Class<? extends Job> jobHandler, String jobName, String groupName, String description, String cronExp, Map<String, Object> param) {
         //表达式调度构建器(即任务执行的时间)
-        CronScheduleBuilder scheduleBuilder = CronScheduleBuilder.cronSchedule(cronExp);
+        CronScheduleBuilder scheduleBuilder = CronScheduleBuilder.cronSchedule(cronExp).withMisfireHandlingInstructionIgnoreMisfires();
         addJob(jobHandler, jobName, groupName, description, scheduleBuilder, param);
     }
 
@@ -44,13 +44,13 @@ public class QuartzSchedulerServiceImpl implements SchedulerService {
         Calendar instance = Calendar.getInstance();
         instance.setTime(new Date(0));
         instance.add(unit, amount);
-        SimpleScheduleBuilder simpleScheduleBuilder = SimpleScheduleBuilder.simpleSchedule().withIntervalInMilliseconds(instance.getTimeInMillis()).repeatForever();
+        SimpleScheduleBuilder simpleScheduleBuilder = SimpleScheduleBuilder.simpleSchedule().withMisfireHandlingInstructionIgnoreMisfires().withIntervalInMilliseconds(instance.getTimeInMillis()).repeatForever();
         addJob(jobHandler, jobName, groupName, description, simpleScheduleBuilder, param);
     }
 
     @Override
     public void addJob(Class<? extends Job> jobHandler, String jobName, String groupName, String description, Map<String, Object> param, TimeOfDay startTimeDay, TimeOfDay endTimeDay, int timeInterval, IntervalUnit unit, int repeatCount, Integer... weeks) {
-        DailyTimeIntervalScheduleBuilder dailyTimeIntervalScheduleBuilder = getDailyTimeIntervalScheduleBuilder(startTimeDay, endTimeDay, timeInterval, unit, repeatCount, weeks);
+        DailyTimeIntervalScheduleBuilder dailyTimeIntervalScheduleBuilder = getDailyTimeIntervalScheduleBuilder(startTimeDay, endTimeDay, timeInterval, unit, repeatCount, weeks).withMisfireHandlingInstructionIgnoreMisfires();
         addJob(jobHandler, jobName, groupName, description, dailyTimeIntervalScheduleBuilder, param);
     }
 

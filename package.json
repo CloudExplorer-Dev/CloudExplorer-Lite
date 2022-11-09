@@ -35,6 +35,7 @@
     "jsencrypt": "^3.2.1",
     "lodash": "^4.17.21",
     "mitt": "^3.0.0",
+    "nanoid": "^4.0.0",
     "normalize.css": "^8.0.1",
     "nprogress": "^0.2.0",
     "pinia": "^2.0.16",

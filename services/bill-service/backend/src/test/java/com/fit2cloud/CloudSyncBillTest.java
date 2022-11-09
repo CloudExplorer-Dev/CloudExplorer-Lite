@@ -1,20 +1,28 @@
 package com.fit2cloud;
 
+import co.elastic.clients.elasticsearch._types.mapping.FieldType;
 import com.fit2cloud.controller.request.BillExpensesRequest;
 import com.fit2cloud.controller.request.HistoryTrendRequest;
 import com.fit2cloud.controller.response.BillView;
 import com.fit2cloud.controller.response.Trend;
+import com.fit2cloud.dao.entity.BillDimensionSetting;
 import com.fit2cloud.dao.entity.BillRule;
 import com.fit2cloud.dao.jentity.Group;
+import com.fit2cloud.es.entity.CloudBill;
 import com.fit2cloud.service.BillViewService;
+import com.fit2cloud.service.IBillDimensionSettingService;
 import com.fit2cloud.service.IBillRuleService;
 import com.fit2cloud.service.SyncService;
+import org.apache.commons.collections4.keyvalue.DefaultKeyValue;
+import org.apache.commons.lang3.StringUtils;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.data.elasticsearch.client.elc.ElasticsearchTemplate;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.test.context.TestPropertySource;
 
 import javax.annotation.Resource;
+import java.lang.reflect.Field;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
@@ -36,11 +44,17 @@ public class CloudSyncBillTest {
     @Resource
     private SyncService syncService;
     @Resource
+    private IBillDimensionSettingService billDimensionSettingService;
+    @Resource
     private BillViewService billViewService;
     @Resource
     private IBillRuleService billRuleService;
     @Resource
     private RedisTemplate<String, String> redisTemplate;
+    @Resource
+    private ElasticsearchTemplate elasticsearchTemplate;
+    @Resource
+    IBillDimensionSettingService iBillDimensionSettingService;
 
     @Test
     public void sync() {
@@ -54,6 +68,25 @@ public class CloudSyncBillTest {
             syncService.syncBill("e6867e8dfb2b19747117cdc698f58cbc", "2022-09", "2022-08", "2022-07", "2022-06", "2022-05", "2022-04", "2022-03");
         });
         CompletableFuture.allOf(jobal, jobhw, jobtx).join();
+    }
+
+    @Test
+    public void testas() {
+        BillDimensionSetting byId = iBillDimensionSettingService.getById("d9d7c901c03ddaf54a222f047953010a");
+        iBillDimensionSettingService.authorize();
+    }
+
+    @Test
+    public void authorizeValues() {
+        List<DefaultKeyValue<String, String>> group = billDimensionSettingService.authorizeValues("tags.kubernetes.do.not.delete");
+        System.out.println(group);
+    }
+
+
+    @Test
+    public void authorizeKeys() {
+        List<DefaultKeyValue<String, String>> group = billDimensionSettingService.authorizeKeys();
+        System.out.println(group);
     }
 
     @Test

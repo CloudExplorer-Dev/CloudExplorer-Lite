@@ -10,19 +10,34 @@ import java.lang.annotation.Target;
 
 /**
  * {@code @Author:张少虎}
- * {@code @Date: 2022/11/1  1:50 PM}
+ * {@code @Date: 2022/11/4  1:59 PM}
  * {@code @Version 1.0}
  * {@code @注释: }
  */
 @Target(value = ElementType.FIELD)
 @Retention(RetentionPolicy.RUNTIME)
-public @interface Group {
+public @interface BillField {
     /**
-     * 过滤字段Label
+     * 字段label
      *
      * @return label
      */
     String label();
+
+    /**
+     * @return 是否是分组字段
+     */
+    boolean group() default false;
+
+    /**
+     * @return 是否是过滤字段
+     */
+    boolean filter() default false;
+
+    /**
+     * @return 是否是授权字段
+     */
+    boolean authorize() default false;
 
     /**
      * 资源转换器  用于转换id 到 名称 如 工作空间id转换为工作空间名称
