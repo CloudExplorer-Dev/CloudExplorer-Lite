@@ -1,5 +1,7 @@
 package com.fit2cloud.provider.impl.tencent;
 
+import com.fit2cloud.common.form.util.FormUtil;
+import com.fit2cloud.common.form.vo.FormObject;
 import com.fit2cloud.common.platform.credential.impl.TencentCredential;
 import com.fit2cloud.common.utils.JsonUtil;
 import com.fit2cloud.provider.AbstractCloudProvider;
@@ -7,10 +9,17 @@ import com.fit2cloud.provider.ICloudProvider;
 import com.fit2cloud.provider.entity.F2CDisk;
 import com.fit2cloud.provider.entity.F2CImage;
 import com.fit2cloud.provider.entity.F2CVirtualMachine;
+import com.fit2cloud.provider.impl.aliyun.api.AliyunSyncCloudApi;
+import com.fit2cloud.provider.impl.aliyun.entity.request.AliyunCreateDiskForm;
+import com.fit2cloud.provider.impl.aliyun.entity.request.AliyunGetDiskTypeRequest;
 import com.fit2cloud.provider.impl.tencent.api.TencetSyncCloudApi;
+import com.fit2cloud.provider.impl.tencent.constants.TencentDiskType;
 import com.fit2cloud.provider.impl.tencent.entity.request.*;
 
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * @Author:张少虎
@@ -36,48 +45,98 @@ public class TencentCloudProvider extends AbstractCloudProvider<TencentCredentia
 
     @Override
     public boolean powerOff(String req) {
-        TencentInstanceRequest request = JsonUtil.parseObject(req,TencentInstanceRequest.class);
+        TencentInstanceRequest request = JsonUtil.parseObject(req, TencentInstanceRequest.class);
         request.setForce(true);
         return TencetSyncCloudApi.powerOff(request);
     }
 
     @Override
     public boolean powerOn(String req) {
-        return TencetSyncCloudApi.powerOn(JsonUtil.parseObject(req,TencentInstanceRequest.class));
+        return TencetSyncCloudApi.powerOn(JsonUtil.parseObject(req, TencentInstanceRequest.class));
     }
 
     @Override
-    public boolean shutdownInstance(String req){
-        return TencetSyncCloudApi.powerOff(JsonUtil.parseObject(req,TencentInstanceRequest.class));
+    public boolean shutdownInstance(String req) {
+        return TencetSyncCloudApi.powerOff(JsonUtil.parseObject(req, TencentInstanceRequest.class));
     }
 
     @Override
-    public boolean rebootInstance(String req){
-        return TencetSyncCloudApi.rebootInstance(JsonUtil.parseObject(req,TencentInstanceRequest.class));
+    public boolean rebootInstance(String req) {
+        return TencetSyncCloudApi.rebootInstance(JsonUtil.parseObject(req, TencentInstanceRequest.class));
     }
 
     @Override
-    public boolean deleteInstance(String req){
-        return TencetSyncCloudApi.deleteInstance(JsonUtil.parseObject(req,TencentInstanceRequest.class));
+    public boolean deleteInstance(String req) {
+        return TencetSyncCloudApi.deleteInstance(JsonUtil.parseObject(req, TencentInstanceRequest.class));
     }
 
     @Override
     public boolean hardShutdownInstance(String req) {
-        TencentInstanceRequest request = JsonUtil.parseObject(req,TencentInstanceRequest.class);
+        TencentInstanceRequest request = JsonUtil.parseObject(req, TencentInstanceRequest.class);
         request.setForce(true);
         return TencetSyncCloudApi.powerOff(request);
     }
 
     @Override
     public boolean hardRebootInstance(String req) {
-        TencentInstanceRequest request = JsonUtil.parseObject(req,TencentInstanceRequest.class);
+        TencentInstanceRequest request = JsonUtil.parseObject(req, TencentInstanceRequest.class);
         request.setForce(true);
         return TencetSyncCloudApi.rebootInstance(request);
     }
 
     @Override
+    public FormObject getCreateDiskForm() {
+        return FormUtil.toForm(TencentCreateDiskForm.class);
+    }
+
+    public List<Map<String, String>> getFileSystemType(String req){
+        List<Map<String, String>> types = new ArrayList<>();
+        Map<String, String> typeOne = new HashMap<>();
+        typeOne.put("id", "EXT4");
+        typeOne.put("name", "EXT4");
+        types.add(typeOne);
+
+        Map<String, String> typeTwo = new HashMap<>();
+        typeTwo.put("id", "XFS");
+        typeTwo.put("name", "XFS");
+        types.add(typeTwo);
+        return types;
+    }
+
+    public List<Map<String, String>> getDiskTypes(String req) {
+        List<Map<String, String>> types = new ArrayList<>();
+        for (TencentDiskType tencentDiskType : TencentDiskType.values()) {
+            Map<String, String> item = new HashMap<>();
+            item.put("id", tencentDiskType.getId());
+            item.put("name", tencentDiskType.getName());
+            types.add(item);
+        }
+        return types;
+    }
+
+    @Override
+    public List<Map<String, String>> getDeleteWithInstance(String req) {
+        List<Map<String, String>> deleteWithInstance = new ArrayList<>();
+        Map<String, String> no = new HashMap<>();
+        no.put("id", "NO");
+        no.put("name", "NO");
+        deleteWithInstance.add(no);
+
+        Map<String, String> yes = new HashMap<>();
+        yes.put("id", "YES");
+        yes.put("name", "YES");
+        deleteWithInstance.add(yes);
+        return deleteWithInstance;
+    }
+
+    @Override
     public List<F2CDisk> createDisks(String req) {
-        return TencetSyncCloudApi.createDisks(JsonUtil.parseObject(req, TencentCreateDiskRequest.class));
+        return TencetSyncCloudApi.createDisks(JsonUtil.parseObject(req, TencentCreateDisksRequest.class));
+    }
+
+    @Override
+    public F2CDisk createDisk(String req) {
+        return TencetSyncCloudApi.createDisk(JsonUtil.parseObject(req, TencentCreateDiskRequest.class));
     }
 
     @Override

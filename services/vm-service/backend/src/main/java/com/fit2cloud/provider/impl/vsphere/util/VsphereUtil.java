@@ -222,10 +222,11 @@ public class VsphereUtil {
             // vc 账号权限不够导致云主机关联的存储器无法获取
             if (datastore == null) {
                 String errorMessage = "Cannot get vm[" + vm.getName() + "]'s datastore";
-                throw new Exception(errorMessage);
+                log.error(errorMessage);
+            } else {
+                d.setDatastoreUniqueId(datastoreMorVal);
+                d.setDatastoreName(datastore.getDatastoreName());
             }
-            d.setDatastoreUniqueId(datastoreMorVal);
-            d.setDatastoreName(datastore.getDatastoreName());
         }
 
         if (hostFromCache.getClusterName() != null) {
