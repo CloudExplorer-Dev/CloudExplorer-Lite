@@ -10,6 +10,7 @@ import com.fit2cloud.provider.constants.F2CDiskStatus;
 import com.fit2cloud.provider.entity.F2CDisk;
 import com.fit2cloud.provider.entity.F2CImage;
 import com.fit2cloud.provider.entity.F2CVirtualMachine;
+import com.fit2cloud.provider.impl.huawei.constants.HuaweiDiskType;
 import com.fit2cloud.provider.impl.huawei.entity.credential.HuaweiVmCredential;
 import com.fit2cloud.provider.impl.huawei.entity.request.HuaweiInstanceRequest;
 import com.fit2cloud.provider.impl.huawei.entity.request.ListDisksRequest;
@@ -34,11 +35,7 @@ import com.huaweicloud.sdk.vpc.v2.model.Port;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 
 
 /**
@@ -182,15 +179,15 @@ public class HuaweiSyncCloudApi {
                                 .withOsStop(
                                         new BatchStopServersOption()
                                                 .withServers(Arrays.asList(new ServerId().withId(request.getUuId())))
-                                                .withType(request.getForce()? BatchStopServersOption.TypeEnum.HARD: BatchStopServersOption.TypeEnum.SOFT))));
+                                                .withType(request.getForce() ? BatchStopServersOption.TypeEnum.HARD : BatchStopServersOption.TypeEnum.SOFT))));
 
-                checkEcsJobStatus(client,batchStopServersResponse.getJobId());
+                checkEcsJobStatus(client, batchStopServersResponse.getJobId());
                 return true;
             } catch (TeaException error) {
-                throw new Fit2cloudException(ErrorCodeConstants.VM_POWER_OFF_FAIL.getCode(),error.getMessage());
+                throw new Fit2cloudException(ErrorCodeConstants.VM_POWER_OFF_FAIL.getCode(), error.getMessage());
             } catch (Exception _error) {
                 TeaException error = new TeaException(_error.getMessage(), _error);
-                throw new Fit2cloudException(ErrorCodeConstants.VM_POWER_OFF_FAIL.getCode(),error.getMessage());
+                throw new Fit2cloudException(ErrorCodeConstants.VM_POWER_OFF_FAIL.getCode(), error.getMessage());
             }
         }
         return false;
@@ -209,13 +206,13 @@ public class HuaweiSyncCloudApi {
                                 .withOsStart(
                                         new BatchStartServersOption()
                                                 .withServers(Arrays.asList(new ServerId().withId(request.getUuId()))))));
-                checkEcsJobStatus(client,batchStartServersResponse.getJobId());
+                checkEcsJobStatus(client, batchStartServersResponse.getJobId());
                 return true;
             } catch (TeaException error) {
-                throw new Fit2cloudException(ErrorCodeConstants.VM_POWER_ON_FAIL.getCode(),error.getMessage());
+                throw new Fit2cloudException(ErrorCodeConstants.VM_POWER_ON_FAIL.getCode(), error.getMessage());
             } catch (Exception _error) {
                 TeaException error = new TeaException(_error.getMessage(), _error);
-                throw new Fit2cloudException(ErrorCodeConstants.VM_POWER_ON_FAIL.getCode(),error.getMessage());
+                throw new Fit2cloudException(ErrorCodeConstants.VM_POWER_ON_FAIL.getCode(), error.getMessage());
             }
         }
         return false;
@@ -234,14 +231,14 @@ public class HuaweiSyncCloudApi {
                                 .withReboot(
                                         new BatchRebootSeversOption()
                                                 .withServers(Arrays.asList(new ServerId().withId(request.getUuId())))
-                                                .withType(request.getForce()? BatchRebootSeversOption.TypeEnum.HARD: BatchRebootSeversOption.TypeEnum.SOFT))));
-                checkEcsJobStatus(client,batchRebootServersResponse.getJobId());
+                                                .withType(request.getForce() ? BatchRebootSeversOption.TypeEnum.HARD : BatchRebootSeversOption.TypeEnum.SOFT))));
+                checkEcsJobStatus(client, batchRebootServersResponse.getJobId());
                 return true;
             } catch (TeaException error) {
-                throw new Fit2cloudException(ErrorCodeConstants.VM_REBOOT_FAIL.getCode(),error.getMessage());
+                throw new Fit2cloudException(ErrorCodeConstants.VM_REBOOT_FAIL.getCode(), error.getMessage());
             } catch (Exception _error) {
                 TeaException error = new TeaException(_error.getMessage(), _error);
-                throw new Fit2cloudException(ErrorCodeConstants.VM_REBOOT_FAIL.getCode(),error.getMessage());
+                throw new Fit2cloudException(ErrorCodeConstants.VM_REBOOT_FAIL.getCode(), error.getMessage());
             }
         }
         return false;
@@ -258,21 +255,21 @@ public class HuaweiSyncCloudApi {
                 DeleteServersResponse batchStartServersResponse = client.deleteServers(new DeleteServersRequest()
                         .withBody(new DeleteServersRequestBody()
                                 .withServers(Arrays.asList(new ServerId().withId(request.getUuId())))));
-                checkEcsJobStatus(client,batchStartServersResponse.getJobId());
+                checkEcsJobStatus(client, batchStartServersResponse.getJobId());
                 return true;
             } catch (TeaException error) {
-                throw new Fit2cloudException(ErrorCodeConstants.VM_DELETE_FAIL.getCode(),error.getMessage());
+                throw new Fit2cloudException(ErrorCodeConstants.VM_DELETE_FAIL.getCode(), error.getMessage());
             } catch (Exception _error) {
                 TeaException error = new TeaException(_error.getMessage(), _error);
-                throw new Fit2cloudException(ErrorCodeConstants.VM_DELETE_FAIL.getCode(),error.getMessage());
+                throw new Fit2cloudException(ErrorCodeConstants.VM_DELETE_FAIL.getCode(), error.getMessage());
             }
         }
         return false;
     }
 
-    private static void checkEcsJobStatus(EcsClient client,String jobId) throws Exception {
+    private static void checkEcsJobStatus(EcsClient client, String jobId) throws Exception {
         int count = 0;
-        while (true){
+        while (true) {
             com.huaweicloud.sdk.ecs.v2.model.ShowJobResponse jobResponse = client.showJob(new com.huaweicloud.sdk.ecs.v2.model.ShowJobRequest().withJobId(jobId));
             com.huaweicloud.sdk.ecs.v2.model.ShowJobResponse.StatusEnum status = jobResponse.getStatus();
             if (ShowJobResponse.StatusEnum.SUCCESS.equals(status)) {
@@ -294,12 +291,44 @@ public class HuaweiSyncCloudApi {
     }
 
     /**
+     * 根据可用区过滤磁盘种类
+     *
+     * @param request
+     * @return
+     */
+    public static List<Map<String, String>> getDiskTypes(HuaweiGetDiskTypeRequest request) {
+        HuaweiVmCredential huaweiVmCredential = JsonUtil.parseObject(request.getCredential(), HuaweiVmCredential.class);
+        EvsClient evsClient = huaweiVmCredential.getEvsClient(request.getRegionId());
+
+        CinderListVolumeTypesRequest cinderListVolumeTypesRequest = new CinderListVolumeTypesRequest();
+        try {
+            CinderListVolumeTypesResponse response = evsClient.cinderListVolumeTypes(cinderListVolumeTypesRequest);
+            List<Map<String, String>> mapList = new ArrayList<>();
+            response.getVolumeTypes().forEach(volumeType -> {
+                if (StringUtils.isNoneEmpty(request.getZone())
+                        && StringUtils.isNoneEmpty(volumeType.getExtraSpecs().getReSKEYAvailabilityZones())
+                        && volumeType.getExtraSpecs().getReSKEYAvailabilityZones().contains(request.getZone())
+                        && (StringUtils.isEmpty(volumeType.getExtraSpecs().getOsVendorExtendedSoldOutAvailabilityZones())
+                        || !volumeType.getExtraSpecs().getOsVendorExtendedSoldOutAvailabilityZones().contains(request.getZone())) && !volumeType.getName().startsWith("DESS_")) {
+                    Map<String, String> vol = new HashMap<>();
+                    vol.put("id", volumeType.getName());
+                    vol.put("name", HuaweiDiskType.getName(volumeType.getName()));
+                    mapList.add(vol);
+                }
+            });
+            return mapList;
+        } catch (Exception e) {
+            throw new RuntimeException(e.getMessage(), e);
+        }
+    }
+
+    /**
      * 创建磁盘
      *
      * @param request
      * @return
      */
-    public static List<F2CDisk> createDisks(HuaweiCreateDiskRequest request) {
+    public static List<F2CDisk> createDisks(HuaweiCreateDisksRequest request) {
         List<F2CDisk> f2CDisks = new ArrayList<>();
         HuaweiVmCredential huaweiVmCredential = JsonUtil.parseObject(request.getCredential(), HuaweiVmCredential.class);
         EvsClient evsClient = huaweiVmCredential.getEvsClient(request.getRegionId());
@@ -307,11 +336,34 @@ public class HuaweiSyncCloudApi {
             for (F2CDisk disk : request.getDisks()) {
                 CreateVolumeResponse response = evsClient.createVolume(request.toCreateVolumeRequest(disk));
                 ShowJobResponse showJobResponse = getJob(response.getJobId(), evsClient);
-                F2CDisk createdDisk = HuaweiMappingUtil.toF2CDisk(checkVolumeStatus(showJobResponse.getEntities().getVolumeId(), evsClient, F2CDiskStatus.AVAILABLE));
+                String status = request.getInstanceUuid() == null ? F2CDiskStatus.AVAILABLE : "in-use";
+                F2CDisk createdDisk = HuaweiMappingUtil.toF2CDisk(checkVolumeStatus(showJobResponse.getEntities().getVolumeId(), evsClient, status));
                 createdDisk.setDeleteWithInstance(disk.getDeleteWithInstance());
                 f2CDisks.add(createdDisk);
             }
             return f2CDisks;
+        } catch (Exception e) {
+            throw new RuntimeException(e.getMessage(), e);
+        }
+    }
+
+    /**
+     * 创建磁盘
+     *
+     * @param request
+     * @return
+     */
+    public static F2CDisk createDisk(HuaweiCreateDiskRequest request) {
+        F2CDisk f2CDisk = new F2CDisk();
+        HuaweiVmCredential huaweiVmCredential = JsonUtil.parseObject(request.getCredential(), HuaweiVmCredential.class);
+        EvsClient evsClient = huaweiVmCredential.getEvsClient(request.getRegionId());
+        try {
+            CreateVolumeResponse response = evsClient.createVolume(request.toCreateVolumeRequest());
+            ShowJobResponse showJobResponse = getJob(response.getJobId(), evsClient);
+            String status = request.getInstanceUuid() == null ? F2CDiskStatus.AVAILABLE : "in-use"; //华为云的 in-use 是中划线😭
+            F2CDisk createdDisk = HuaweiMappingUtil.toF2CDisk(checkVolumeStatus(showJobResponse.getEntities().getVolumeId(), evsClient, status));
+            createdDisk.setDeleteWithInstance(request.getDeleteWithInstance());
+            return f2CDisk;
         } catch (Exception e) {
             throw new RuntimeException(e.getMessage(), e);
         }

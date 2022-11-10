@@ -9,7 +9,6 @@ import com.fit2cloud.base.entity.CloudAccount;
 import com.fit2cloud.base.entity.VmCloudDisk;
 import com.fit2cloud.base.mapper.BaseVmCloudDiskMapper;
 import com.fit2cloud.base.service.IBaseCloudAccountService;
-import com.fit2cloud.base.service.IBaseVmCloudServerService;
 import com.fit2cloud.common.constants.JobTypeConstants;
 import com.fit2cloud.common.form.vo.FormObject;
 import com.fit2cloud.common.log.constants.OperatedTypeEnum;

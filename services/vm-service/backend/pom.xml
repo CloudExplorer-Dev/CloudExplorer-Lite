@@ -30,7 +30,7 @@
         <dependency>
             <groupId>com.huaweicloud.sdk</groupId>
             <artifactId>huaweicloud-sdk-evs</artifactId>
-            <version>3.1.2</version>
+            <version>3.1.9</version>
         </dependency>
         <dependency>
             <groupId>com.huaweicloud.sdk</groupId>

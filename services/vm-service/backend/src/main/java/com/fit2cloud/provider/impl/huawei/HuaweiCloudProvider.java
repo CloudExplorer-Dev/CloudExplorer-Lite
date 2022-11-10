@@ -1,5 +1,7 @@
 package com.fit2cloud.provider.impl.huawei;
 
+import com.fit2cloud.common.form.util.FormUtil;
+import com.fit2cloud.common.form.vo.FormObject;
 import com.fit2cloud.common.utils.JsonUtil;
 import com.fit2cloud.provider.AbstractCloudProvider;
 import com.fit2cloud.provider.ICloudProvider;
@@ -10,7 +12,10 @@ import com.fit2cloud.provider.impl.huawei.api.HuaweiSyncCloudApi;
 import com.fit2cloud.provider.impl.huawei.entity.credential.HuaweiVmCredential;
 import com.fit2cloud.provider.impl.huawei.entity.request.*;
 
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * @Author:张少虎
@@ -76,8 +81,37 @@ public class HuaweiCloudProvider extends AbstractCloudProvider<HuaweiVmCredentia
     }
 
     @Override
+    public FormObject getCreateDiskForm() {
+        return FormUtil.toForm(HuaweiCreateDiskForm.class);
+    }
+
+    public List<Map<String, String>> getDiskTypes(String req) {
+        return HuaweiSyncCloudApi.getDiskTypes(JsonUtil.parseObject(req, HuaweiGetDiskTypeRequest.class));
+    }
+
+    @Override
+    public List<Map<String, String>> getDeleteWithInstance(String req) {
+        List<Map<String, String>> deleteWithInstance = new ArrayList<>();
+        Map<String, String> no = new HashMap<>();
+        no.put("id", "NO");
+        no.put("name", "NO");
+        deleteWithInstance.add(no);
+
+        Map<String, String> yes = new HashMap<>();
+        yes.put("id", "YES");
+        yes.put("name", "YES");
+        deleteWithInstance.add(yes);
+        return deleteWithInstance;
+    }
+
+    @Override
     public List<F2CDisk> createDisks(String req) {
-        return HuaweiSyncCloudApi.createDisks(JsonUtil.parseObject(req, HuaweiCreateDiskRequest.class));
+        return HuaweiSyncCloudApi.createDisks(JsonUtil.parseObject(req, HuaweiCreateDisksRequest.class));
+    }
+
+    @Override
+    public F2CDisk createDisk(String req) {
+        return HuaweiSyncCloudApi.createDisk(JsonUtil.parseObject(req, HuaweiCreateDiskRequest.class));
     }
 
     @Override
