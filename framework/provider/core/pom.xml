@@ -72,6 +72,11 @@
             <artifactId>esdk-obs-java</artifactId>
             <version>3.22.3.1</version>
         </dependency>
+        <dependency>
+            <groupId>com.huaweicloud.sdk</groupId>
+            <artifactId>huaweicloud-sdk-ces</artifactId>
+            <version>3.1.6</version>
+        </dependency>
         <!--    华为云 end  -->
         <!--     腾讯云 start   -->
         <dependency>
@@ -94,6 +99,11 @@
                     <artifactId>slf4j-log4j12</artifactId>
                 </exclusion>
             </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>com.tencentcloudapi</groupId>
+            <artifactId>tencentcloud-sdk-java-monitor</artifactId>
+            <version>3.1.622</version>
         </dependency>
         <!--     腾讯云 end      -->
 

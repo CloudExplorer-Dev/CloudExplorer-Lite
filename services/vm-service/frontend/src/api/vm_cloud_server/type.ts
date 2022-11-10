@@ -85,8 +85,38 @@ interface CloudServerJobRecord {
    */
   params: SimpleMap<Array<{ size: number; region: string } | any>>;
 }
+
+/**
+ * 监控数据
+ */
+interface PerfMonitorData {
+  resourceId: string;
+  values: number[];
+  timestamps: number[];
+  metricName: string;
+  unit: string;
+}
+
+/**
+ * 查询监控参数
+ */
+interface GetPerfMonitorRequest {
+  cloudAccountId: string;
+  entityType: string;
+  instanceId: string;
+  metricName: string;
+  startTime: number;
+  endTime: number;
+}
+
 interface ListVmCloudServerRequest {
   pageSize: number;
   currentPage: number;
 }
-export type { VmCloudServerVO, ListVmCloudServerRequest, CloudServerJobRecord };
+export type {
+  VmCloudServerVO,
+  ListVmCloudServerRequest,
+  CloudServerJobRecord,
+  PerfMonitorData,
+  GetPerfMonitorRequest,
+};

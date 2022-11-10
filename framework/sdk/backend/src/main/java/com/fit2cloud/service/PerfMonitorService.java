@@ -8,6 +8,7 @@ import com.fit2cloud.common.utils.QueryUtil;
 import com.fit2cloud.dto.PerfMonitorEchartsDTO;
 import com.fit2cloud.es.entity.PerfMetricMonitorData;
 import com.fit2cloud.request.PerfMonitorRequest;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.elasticsearch.client.elc.NativeQueryBuilder;
 import org.springframework.data.elasticsearch.core.query.FetchSourceFilter;
@@ -23,6 +24,7 @@ import java.util.stream.Collectors;
  * @date 2022/10/30 20:29
  **/
 @Service
+@Lazy
 public class PerfMonitorService {
     private static final String CE_PERF_METRIC_MONITOR_DATA = "ce-perf-metric-monitor-data";
     @Resource
@@ -69,6 +71,8 @@ public class PerfMonitorService {
         queryConditions.add(instanceId);
         QueryUtil.QueryCondition metricName = new QueryUtil.QueryCondition(true, "metricName.keyword", request.getMetricName(), QueryUtil.CompareType.EQ);
         queryConditions.add(metricName);
+        QueryUtil.QueryCondition accountId = new QueryUtil.QueryCondition(true, "cloudAccountId.keyword", request.getCloudAccountId(), QueryUtil.CompareType.EQ);
+        queryConditions.add(accountId);
         BoolQuery.Builder boolQuery = QueryUtil.getQuery(queryConditions);
         ///TODO 这个地方到时候可能要改，ES一次只能查询10000条数据，如果查询一年的监控数据，这里可能需要调整
         NativeQueryBuilder query = new NativeQueryBuilder()

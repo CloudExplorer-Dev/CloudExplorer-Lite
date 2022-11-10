@@ -19,7 +19,7 @@ public class PageVmCloudServerRequest extends PageRequest {
     @ApiModelProperty("云主机名称")
     private String instanceName;
     @ApiModelProperty("云账号IDs")
-    private List<String>accountIds;
+    private List<String> accountIds;
     @ApiModelProperty("云主机ID")
     private String cloudServerId;
     @ApiModelProperty("云账号名称")

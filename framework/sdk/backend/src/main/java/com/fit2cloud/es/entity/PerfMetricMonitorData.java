@@ -20,6 +20,12 @@ public class PerfMetricMonitorData {
 
     @Id
     private String id;
+
+    /**
+     * 云账号ID
+     */
+    @Field(type = FieldType.Auto)
+    private String cloudAccountId;
     /**
      * 监控对象类型
      * F2CEntityType

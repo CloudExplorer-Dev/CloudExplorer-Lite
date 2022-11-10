@@ -1,7 +1,7 @@
 <template>
   <layout-container :border="false">
     <template #content>
-      <layout-container v-loading="loading">
+      <layout-container>
         <template #header>
           <h4>监控数据</h4>
         </template>
@@ -16,18 +16,31 @@
             @input="changeTimestamp"
           >
           </el-date-picker>
-          <div
-            v-for="item in states"
-            :key="item.seriesName"
-            style="width: 100%"
-          >
-            <Charts
-              :data="item.data"
-              chartsType="line"
-              :chartsTitle="item.title"
-              :chartsSeriesName="item.seriesName"
-              :yDataUnit="item.yDataUnit"
-            />
+          <div class="card-content">
+            <el-row :gutter="24">
+              <el-col
+                :xl="12"
+                :md="12"
+                :sm="48"
+                v-for="item in echartsData"
+                style="padding-top: 10px"
+                :key="item.metricName"
+              >
+                <div class="myChart">
+                  <Charts
+                    :ref="(el) => childRef(el, item.metricName)"
+                    :data="echartsData"
+                    :metricName="item.metricName"
+                    :y-unit="item.yUnit"
+                    :title="item.title"
+                    :legend="item.legend"
+                    :x-data="item.xData"
+                    :series="item.series"
+                    @vnode-mounted="loadingEchartsDone"
+                  />
+                </div>
+              </el-col>
+            </el-row>
           </div>
         </template>
       </layout-container>
@@ -35,91 +48,277 @@
   </layout-container>
 </template>
 <script setup lang="ts">
-import { useRouter } from "vue-router";
-import VmCloudServerApi from "@/api/vm_cloud_server";
+const props = defineProps<{
+  id: string;
+}>();
+import { ref, onMounted } from "vue";
 import {
   PerfMetricConst,
   PerfMetricEntityTypeConst,
 } from "@commons/utils/constants";
+import { useRouter } from "vue-router";
+import VmCloudServerApi from "@/api/vm_cloud_server";
 import Charts from "@commons/components/echart/Charts.vue";
-import { ref, reactive, onMounted, type Ref } from "vue";
-
+import _ from "lodash";
 const useRoute = useRouter();
-const vmUuid = ref<any>();
-const loading = ref<boolean>(false);
+//初始化图表数据，固定指标图表
+const echartsData = ref<Array<any>>([]);
+const request = ref<any>({});
+// 虚拟机CPU使用率、内存使用率、磁盘BPS、磁盘IOPS、磁盘使用率、内网带宽、外网带宽
+const echarts: Map<string, any> = new Map();
+// 所有图表集合
+const childRefMap: Map<string, any> = new Map();
+const childRef = (el: any, metricName: any) => {
+  childRefMap.set(metricName, el);
+};
+// 云主机详情
+const infoVmCloudServer = ref<any>({});
+// 等待所有图表初始化完成，再进行数据查询
+const loadingNumber = ref<number>(0);
+const loadingEchartsDone = () => {
+  loadingNumber.value++;
+  if (loadingNumber.value === echarts.size) {
+    getData();
+  }
+};
+/**
+ * 查询数据，统一查询所有指标
+ */
+const getData = () => {
+  Object.keys(PerfMetricConst).forEach(function (metricName) {
+    if (childRefMap.get(metricName)) {
+      childRefMap.get(metricName).echartsLoading();
+    }
+    request.value.metricName = PerfMetricConst[metricName].metricName;
+    VmCloudServerApi.listPerfMetricMonitor(request.value).then((res) => {
+      if (res.data.length > 0) {
+        const yData = res.data[0].values;
+        if (
+          metricName === PerfMetricConst.DISK_READ_BPS.metricName ||
+          metricName === PerfMetricConst.DISK_WRITE_BPS.metricName
+        ) {
+          const isInitMapMetricName =
+            metricName === PerfMetricConst.DISK_READ_BPS.metricName;
+          const metricNameParam = isInitMapMetricName
+            ? PerfMetricConst.DISK_READ_BPS.metricName
+            : PerfMetricConst.DISK_WRITE_BPS.metricName;
+          setXData(
+            PerfMetricConst.DISK_READ_BPS.metricName,
+            metricNameParam,
+            res.data[0].timestamps,
+            yData
+          );
+        } else if (
+          metricName === PerfMetricConst.DISK_READ_IOPS.metricName ||
+          metricName === PerfMetricConst.DISK_WRITE_IOPS.metricName
+        ) {
+          const isInitMapMetricName =
+            metricName === PerfMetricConst.DISK_READ_IOPS.metricName;
+          const metricNameParam = isInitMapMetricName
+            ? PerfMetricConst.DISK_READ_IOPS.metricName
+            : PerfMetricConst.DISK_WRITE_IOPS.metricName;
+          setXData(
+            PerfMetricConst.DISK_READ_IOPS.metricName,
+            metricNameParam,
+            res.data[0].timestamps,
+            yData
+          );
+        } else if (
+          metricName === PerfMetricConst.INTERNET_IN_RATE.metricName ||
+          metricName === PerfMetricConst.INTERNET_OUT_RATE.metricName
+        ) {
+          const isInitMapMetricName =
+            metricName === PerfMetricConst.INTERNET_IN_RATE.metricName;
+          const metricNameParam = isInitMapMetricName
+            ? PerfMetricConst.INTERNET_IN_RATE.metricName
+            : PerfMetricConst.INTERNET_OUT_RATE.metricName;
+          setXData(
+            PerfMetricConst.INTERNET_IN_RATE.metricName,
+            metricNameParam,
+            res.data[0].timestamps,
+            yData
+          );
+        } else if (
+          metricName === PerfMetricConst.INTRANET_IN_RATE.metricName ||
+          metricName === PerfMetricConst.INTRANET_OUT_RATE.metricName
+        ) {
+          const isInitMapMetricName =
+            metricName === PerfMetricConst.INTRANET_IN_RATE.metricName;
+          const metricNameParam = isInitMapMetricName
+            ? PerfMetricConst.INTRANET_IN_RATE.metricName
+            : PerfMetricConst.INTRANET_OUT_RATE.metricName;
+          setXData(
+            PerfMetricConst.INTRANET_IN_RATE.metricName,
+            metricNameParam,
+            res.data[0].timestamps,
+            yData
+          );
+        } else {
+          const d = echartsData.value.filter((i) => {
+            return metricName == i.metricName;
+          });
+          if (d[0]) {
+            d[0].xData = res.data[0].timestamps;
+            d[0].series[0].data = yData;
+          }
+        }
+      } else {
+        if (childRefMap.get(metricName)) {
+          childRefMap.get(metricName).hideEchartsLoading();
+        }
+      }
+    });
+  });
+};
+/**
+ * 设置图表x轴数据（时间）
+ * @param mapMetricName
+ * @param metricName
+ * @param res
+ * @param yData
+ */
+const setXData = (
+  mapMetricName: string,
+  metricName: string,
+  res: any,
+  yData: number[]
+) => {
+  const d = echartsData.value.filter((i) => {
+    return mapMetricName == i.metricName;
+  });
+  if (d[0]) {
+    d[0].xData = res;
+    d[0].series.forEach(function (s: any) {
+      if (s.name === PerfMetricConst[metricName].name) {
+        s.data = yData;
+      }
+    });
+  }
+};
+
+/**
+ * 默认时间当前时间过去一个小时
+ */
 const timestampData = ref<[Date, Date]>([
   new Date(new Date().getTime() - 1 * 60 * 60 * 1000),
   new Date(),
 ]);
-//echarts数据
-const states = reactive<any>([]);
-
+/**
+ * 时间调整
+ */
 const changeTimestamp = () => {
+  request.value.startTime = timestampData.value[0].getTime();
+  request.value.endTime = timestampData.value[1].getTime();
   getData();
 };
 
-const getData = () => {
+onMounted(() => {
+  VmCloudServerApi.getVmCloudServerById(props.id)
+      .then((res) => {
+        infoVmCloudServer.value = _.cloneDeep(res.data);
+        // 查监控数据参数
+        request.value.startTime = timestampData.value[0].getTime();
+        request.value.endTime = timestampData.value[1].getTime();
+        request.value.instanceId = infoVmCloudServer.value.instanceUuid;
+        request.value.cloudAccountId = infoVmCloudServer.value.accountId;
+        request.value.entityType = PerfMetricEntityTypeConst.VIRTUAL_MACHINE;
+        request.value.metricName = "";
+        initEchartsData();
+      })
+      .catch((err) => {
+        console.log(err);
+      });
+});
+/**
+ * 初始化图表数据
+ */
+const initEchartsData = () => {
+  //初始化echarts数据
+  const data = {
+    metricName: "",
+    yUnit: "",
+    title: "",
+    legend: [],
+    xData: [],
+    series: [],
+  };
+  echarts.set(
+    PerfMetricConst.CPU_USED_UTILIZATION.metricName,
+    _.cloneDeep(data)
+  );
+  echarts.set(
+    PerfMetricConst.MEMORY_USED_UTILIZATION.metricName,
+    _.cloneDeep(data)
+  );
+  //只需要一个就可以了，只是为了分组用
+  echarts.set(PerfMetricConst.DISK_READ_BPS.metricName, _.cloneDeep(data));
+  echarts.set(PerfMetricConst.DISK_READ_IOPS.metricName, _.cloneDeep(data));
+  echarts.set(PerfMetricConst.INTRANET_IN_RATE.metricName, _.cloneDeep(data));
+  echarts.set(PerfMetricConst.INTERNET_IN_RATE.metricName, _.cloneDeep(data));
+  echarts.set(
+    PerfMetricConst.DISK_USED_UTILIZATION.metricName,
+    _.cloneDeep(data)
+  );
+
   Object.keys(PerfMetricConst).forEach(function (perfMetric) {
-    const request = ref<any>({
-      metricName: perfMetric,
-      entityType: PerfMetricEntityTypeConst.VIRTUAL_MACHINE,
-      instanceId: vmUuid.value,
-      startTime: timestampData.value[0].getTime(),
-      endTime: timestampData.value[1].getTime(),
-    });
-    if (vmUuid.value) {
-      VmCloudServerApi.listPerfMetricMonitor(request.value, loading).then(
-        (res) => {
-          if (res.data.length > 0) {
-            states.forEach((state: any) => {
-              if (state.metricName === perfMetric) {
-                state.data.xData = res.data[0].timestamps;
-                state.data.yData = res.data[0].values;
-              }
-            });
-          }
-        }
-      );
+    const series = {
+      name: PerfMetricConst[perfMetric].name,
+      showSymbol: false,
+      symbol: "circle",
+      data: [],
+      type: "line",
+      smooth: false,
+    };
+    const metricName = PerfMetricConst[perfMetric].metricName;
+    const yUnit = PerfMetricConst[perfMetric].unit;
+    //多数据图表初始数据处理
+    if (metricName === PerfMetricConst.DISK_WRITE_BPS.metricName) {
+      const d = echarts.get(PerfMetricConst.DISK_READ_BPS.metricName);
+      d.yUnit = yUnit;
+      d.title = "磁盘读写BPS";
+      d.legend.push(PerfMetricConst[perfMetric].name);
+      d.series.push(series);
+    }
+    if (metricName === PerfMetricConst.DISK_WRITE_IOPS.metricName) {
+      const d = echarts.get(PerfMetricConst.DISK_READ_IOPS.metricName);
+      d.yUnit = yUnit;
+      d.title = "磁盘每秒读取次数IOPS";
+      d.legend.push(PerfMetricConst[perfMetric].name);
+      d.series.push(series);
+    }
+    if (metricName === PerfMetricConst.INTRANET_OUT_RATE.metricName) {
+      const d = echarts.get(PerfMetricConst.INTRANET_IN_RATE.metricName);
+      d.yUnit = yUnit;
+      d.title = "内网流入流出带宽";
+      d.legend.push(PerfMetricConst[perfMetric].name);
+      d.series.push(series);
+    }
+    if (metricName === PerfMetricConst.INTERNET_OUT_RATE.metricName) {
+      const d = echarts.get(PerfMetricConst.INTERNET_IN_RATE.metricName);
+      d.yUnit = yUnit;
+      d.title = "公网流入流出带宽";
+      d.legend.push(PerfMetricConst[perfMetric].name);
+      d.series.push(series);
+    }
+    // 单数据图表初始数据处理
+    if (echarts.get(perfMetric)) {
+      const d = echarts.get(perfMetric);
+      d.metricName = metricName;
+      d.yUnit = yUnit;
+      d.title = PerfMetricConst[perfMetric].description;
+      d.legend.push(PerfMetricConst[perfMetric].name);
+      d.series.push(series);
     }
   });
-};
-const loadingData = () => {
-  //查询所有指标
-  Object.keys(PerfMetricConst).forEach(function (perfMetric) {
-    const props = Object.keys(PerfMetricConst);
-    const keyValues = props.map((el: string) => {
-      return [el, el];
-    });
-    const keys: object = Object.fromEntries(keyValues);
-    const perfMetricObj = PerfMetricConst[perfMetric as keyof typeof keys];
-    const state = ref<any>({
-      title: perfMetricObj["description"],
-      seriesName: perfMetricObj["name"],
-      yDataUnit: perfMetricObj["unit"],
-      metricName: perfMetric,
-      data: {
-        xData: [],
-        yData: [],
-      },
-    });
-    states.push(state.value);
+  // 设置初始化数据
+  echarts.forEach((v) => {
+    echartsData.value.push(v);
   });
-  getData();
 };
-onMounted(() => {
-  //云主机UUID
-  vmUuid.value = useRoute.currentRoute.value.query.uuid;
-  loadingData();
-});
 </script>
 <style lang="scss">
-.edit-button-container {
-  text-align: center;
-  line-height: 50px;
-  align-items: center;
-}
-.permission-container {
+.myChart {
   width: 100%;
-  min-height: 100px;
+  border: 1px solid #e5e5e5;
 }
 </style>

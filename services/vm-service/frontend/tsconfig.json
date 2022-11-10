@@ -6,7 +6,9 @@
     "paths": {
       "@/*": ["./src/*"],
       "@commons/*": ["../../../framework/sdk/frontend/commons/*"]
-    }
+    },
+    // 支持使用[]获取对象属性值
+    "suppressImplicitAnyIndexErrors": true,
   },
 
   "references": [

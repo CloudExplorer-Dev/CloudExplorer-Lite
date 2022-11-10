@@ -1,5 +1,6 @@
 package com.fit2cloud.provider.impl.tencent.util;
 
+import com.fit2cloud.common.provider.entity.F2CPerfMetricMonitorData;
 import com.fit2cloud.common.provider.util.CommonUtil;
 import com.fit2cloud.provider.constants.DeleteWithInstance;
 import com.fit2cloud.provider.constants.F2CDiskStatus;
@@ -8,16 +9,16 @@ import com.fit2cloud.provider.entity.F2CDisk;
 import com.fit2cloud.provider.entity.F2CImage;
 import com.fit2cloud.provider.entity.F2CVirtualMachine;
 import com.fit2cloud.provider.impl.tencent.constants.TencentChargeType;
+import com.fit2cloud.provider.impl.tencent.constants.TencentPerfMetricConstants;
 import com.tencentcloudapi.cbs.v20170312.models.Disk;
 import com.tencentcloudapi.cvm.v20170312.models.DataDisk;
 import com.tencentcloudapi.cvm.v20170312.models.Image;
 import com.tencentcloudapi.cvm.v20170312.models.Instance;
 import org.apache.commons.lang3.StringUtils;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Date;
-import java.util.List;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
+import java.util.*;
 
 /**
  * @Author:张少虎
@@ -199,5 +200,18 @@ public class TencentMappingUtil {
             default:
                 return TencentChargeType.POSTPAID_BY_HOUR;
         }
+    }
+
+    public static F2CPerfMetricMonitorData toF2CPerfMetricMonitorData(Map<Long, BigDecimal> map,Long k,String unit) {
+        F2CPerfMetricMonitorData f2CEntityPerfMetric = new F2CPerfMetricMonitorData();
+        f2CEntityPerfMetric.setTimestamp(k);
+        //Mbps Byte 128
+        if(StringUtils.equalsIgnoreCase(TencentPerfMetricConstants.CloudServerPerfMetricEnum.INTERNET_IN_RATE.getUnit(),unit)){
+            f2CEntityPerfMetric.setAverage(map.get(k).multiply(new BigDecimal(1024/8)).setScale(3, RoundingMode.HALF_UP));
+        }else{
+            f2CEntityPerfMetric.setAverage(map.get(k).setScale(3, RoundingMode.HALF_UP));
+        }
+
+        return f2CEntityPerfMetric;
     }
 }

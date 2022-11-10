@@ -2,13 +2,18 @@ package com.fit2cloud.provider.impl.tencent.api;
 
 import com.aliyun.tea.TeaException;
 import com.fit2cloud.common.exception.Fit2cloudException;
+import com.fit2cloud.common.provider.entity.F2CEntityType;
+import com.fit2cloud.common.provider.entity.F2CPerfMetricMonitorData;
 import com.fit2cloud.common.provider.util.PageUtil;
+import com.fit2cloud.common.utils.DateUtil;
 import com.fit2cloud.common.utils.JsonUtil;
 import com.fit2cloud.constants.ErrorCodeConstants;
 import com.fit2cloud.provider.constants.DeleteWithInstance;
 import com.fit2cloud.provider.entity.F2CDisk;
 import com.fit2cloud.provider.entity.F2CImage;
 import com.fit2cloud.provider.entity.F2CVirtualMachine;
+import com.fit2cloud.provider.entity.request.GetMetricsRequest;
+import com.fit2cloud.provider.impl.tencent.constants.TencentPerfMetricConstants;
 import com.fit2cloud.provider.impl.tencent.entity.credential.TencentVmCredential;
 import com.fit2cloud.provider.impl.tencent.entity.request.*;
 import com.fit2cloud.provider.impl.tencent.util.TencentMappingUtil;
@@ -19,11 +24,19 @@ import com.tencentcloudapi.common.exception.TencentCloudSDKException;
 import com.tencentcloudapi.cvm.v20170312.CvmClient;
 import com.tencentcloudapi.cvm.v20170312.models.Image;
 import com.tencentcloudapi.cvm.v20170312.models.*;
+import com.tencentcloudapi.monitor.v20180724.MonitorClient;
+import com.tencentcloudapi.monitor.v20180724.models.DataPoint;
+import com.tencentcloudapi.monitor.v20180724.models.Dimension;
+import com.tencentcloudapi.monitor.v20180724.models.GetMonitorDataRequest;
+import com.tencentcloudapi.monitor.v20180724.models.GetMonitorDataResponse;
 import org.apache.commons.lang3.StringUtils;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.BeanUtils;
 
+import java.math.BigDecimal;
 import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.stream.Collectors;
 
 import static com.fit2cloud.provider.impl.tencent.util.TencentMappingUtil.toF2cDiskStatus;
 
@@ -519,4 +532,157 @@ public class TencetSyncCloudApi {
             }
         }
     }
+
+    public static List<F2CPerfMetricMonitorData> getF2CPerfMetricList(GetMetricsRequest getMetricsRequest) {
+        if (StringUtils.isEmpty(getMetricsRequest.getRegionId())) {
+            throw new Fit2cloudException(10002, "区域为必填参数");
+        }
+        List<F2CPerfMetricMonitorData> result = new ArrayList<>();
+        //设置时间，根据interval,默认一个小时
+        getMetricsRequest.setStartTime(String.valueOf(DateUtil.getBeforeHourTime(getMetricsRequest.getInterval())));
+        getMetricsRequest.setEndTime(String.valueOf(System.currentTimeMillis()));
+        System.out.println("开始时间：" + getMetricsRequest.getStartTime());
+        System.out.println("结束时间：" + getMetricsRequest.getEndTime());
+        try {
+            getMetricsRequest.setRegionId(getMetricsRequest.getRegionId());
+            TencentVmCredential credential = JsonUtil.parseObject(getMetricsRequest.getCredential(), TencentVmCredential.class);
+            GetMonitorDataRequest request = getShowMetricDataRequest(getMetricsRequest);
+            MonitorClient monitorClient = credential.getMonitorClient(getMetricsRequest.getRegionId());
+            ///TODO 由于我们只查询一个小时内的数据，时间间隔是60s,所以查询每台机器的监控数据的时候最多不过60条数据，所以不需要分页查询
+            result.addAll(getVmPerfMetric(monitorClient,request,getMetricsRequest));
+            result.addAll(getDiskPerfMetric(monitorClient,request,getMetricsRequest));
+        } catch (Exception e) {
+            throw new Fit2cloudException(100021, "获取监控数据失败-" + getMetricsRequest.getRegionId() + "-" + e.getMessage());
+        }
+        return result;
+    }
+
+    /**
+     * 获取虚拟机监控指标数据
+     *
+     * @param getMetricsRequest
+     * @return
+     */
+    private static List<F2CPerfMetricMonitorData> getVmPerfMetric(MonitorClient monitorClient,GetMonitorDataRequest req,GetMetricsRequest getMetricsRequest) {
+        List<F2CPerfMetricMonitorData> result = new ArrayList<>();
+        ListVirtualMachineRequest listVirtualMachineRequest = new ListVirtualMachineRequest();
+        listVirtualMachineRequest.setCredential(getMetricsRequest.getCredential());
+        listVirtualMachineRequest.setRegionId(getMetricsRequest.getRegionId());
+        List<String> ids = listVirtualMachine(listVirtualMachineRequest).stream().map(vm->vm.getInstanceUUID()).collect(Collectors.toList());
+        if (ids.size() == 0) {
+            return result;
+        }
+        req.setNamespace("QCE/CVM");
+        ids.forEach(id->{
+            Arrays.stream(TencentPerfMetricConstants.CloudServerPerfMetricEnum.values()).sorted().forEach(perfMetric -> {
+                req.setMetricName(perfMetric.getMetricName());
+                req.setInstances(getInstance("InstanceId",id));
+                Map<Long, BigDecimal> dataMap = getMonitorData(monitorClient,req);
+                System.out.println("结果："+JsonUtil.toJSONString(dataMap));
+                addMonitorData(result,dataMap,F2CEntityType.VIRTUAL_MACHINE.name(),perfMetric.getUnit(),getMetricsRequest.getPeriod(),perfMetric.name(),id);
+            });
+        });
+        return result;
+    }
+
+    /**
+     * 获取磁盘监控指标数据
+     *
+     * @param getMetricsRequest
+     * @return
+     */
+    private static List<F2CPerfMetricMonitorData> getDiskPerfMetric(MonitorClient monitorClient,GetMonitorDataRequest req,GetMetricsRequest getMetricsRequest) {
+        List<F2CPerfMetricMonitorData> result = new ArrayList<>();
+        ListDiskRequest listDiskRequest = new ListDiskRequest();
+        listDiskRequest.setCredential(getMetricsRequest.getCredential());
+        listDiskRequest.setRegionId(getMetricsRequest.getRegionId());
+        List<String> ids = listDisk(listDiskRequest).stream().map(disk->disk.getDiskId()).collect(Collectors.toList());
+        if (ids.size() == 0) {
+            return result;
+        }
+        req.setNamespace("QCE/BLOCK_STORAGE");
+        ids.forEach(id->{
+            Arrays.stream(TencentPerfMetricConstants.CloudDiskPerfMetricEnum.values()).sorted().forEach(perfMetric -> {
+                req.setMetricName(perfMetric.getMetricName());
+                req.setInstances(getInstance("diskId",id));
+                Map<Long, BigDecimal> dataMap = getMonitorData(monitorClient,req);
+                System.out.println("结果："+JsonUtil.toJSONString(dataMap));
+                addMonitorData(result,dataMap,F2CEntityType.DISK.name(),perfMetric.getUnit(),getMetricsRequest.getPeriod(),perfMetric.name(),id);
+            });
+        });
+        return result;
+    }
+
+    /**
+     * 获取查询对象
+     * @param dimensionId
+     * @param instanceId
+     * @return
+     */
+    private static com.tencentcloudapi.monitor.v20180724.models.Instance[] getInstance(String dimensionId,String instanceId){
+        com.tencentcloudapi.monitor.v20180724.models.Instance[] instances1 = new com.tencentcloudapi.monitor.v20180724.models.Instance[1];
+        com.tencentcloudapi.monitor.v20180724.models.Instance instance1 = new com.tencentcloudapi.monitor.v20180724.models.Instance();
+        Dimension[] dimensions1 = new Dimension[1];
+        Dimension dimension1 = new Dimension();
+        dimension1.setName(dimensionId);
+        dimension1.setValue(instanceId);
+        dimensions1[0] = dimension1;
+        instance1.setDimensions(dimensions1);
+        instances1[0] = instance1;
+        return instances1;
+    }
+
+    private static void addMonitorData(List<F2CPerfMetricMonitorData> result,Map<Long, BigDecimal> dataMap,String entityType,String unit,Integer period,String metricName,String instanceId){
+        dataMap.keySet().forEach(k->{
+                    F2CPerfMetricMonitorData f2CEntityPerfMetric = TencentMappingUtil.toF2CPerfMetricMonitorData(dataMap,k,unit);
+                    f2CEntityPerfMetric.setEntityType(entityType);
+                    f2CEntityPerfMetric.setMetricName(metricName);
+                    f2CEntityPerfMetric.setPeriod(period);
+                    f2CEntityPerfMetric.setInstanceId(instanceId);
+                    f2CEntityPerfMetric.setUnit(unit);
+                    result.add(f2CEntityPerfMetric);
+        });
+    }
+
+    /**
+     * 返回的时间戳不足13位，*1000
+     * @param monitorClient
+     * @param req
+     * @return
+     */
+    private static Map<Long, BigDecimal> getMonitorData(MonitorClient monitorClient,GetMonitorDataRequest req) {
+        Map<Long, BigDecimal> map = new LinkedHashMap<>();
+        try {
+            //查询监控指标数据
+            GetMonitorDataResponse response = monitorClient.GetMonitorData(req);
+            if (StringUtils.isEmpty(response.getMsg()) && response.getDataPoints().length>0) {
+                DataPoint[] dataPoints = response.getDataPoints();
+                Arrays.stream(dataPoints).toList().forEach(dataPoint->{
+                    Long[] timestamps = dataPoint.getTimestamps();
+                    Float[] values = dataPoint.getValues();
+                    for(int i=0;i<timestamps.length;i++){
+                        map.put(timestamps[i]*1000,new BigDecimal(values[i]));
+                    }
+                });
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return map;
+    }
+
+    /**
+     * 查询云主机监控数据参数
+     * @param getMetricsRequest
+     * @return
+     */
+    @NotNull
+    private static GetMonitorDataRequest getShowMetricDataRequest(GetMetricsRequest getMetricsRequest) {
+        GetMonitorDataRequest req = new GetMonitorDataRequest();
+        req.setPeriod(60L);
+        req.setStartTime(DateUtil.getISO8601TimestampFromDateStr(DateUtil.dateToString(Long.valueOf(getMetricsRequest.getStartTime()),null)));
+        req.setEndTime(DateUtil.getISO8601TimestampFromDateStr(DateUtil.dateToString(Long.valueOf(getMetricsRequest.getEndTime()),null)));
+        return req;
+    }
+
 }

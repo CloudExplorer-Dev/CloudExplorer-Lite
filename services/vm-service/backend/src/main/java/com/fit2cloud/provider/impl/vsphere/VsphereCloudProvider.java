@@ -3,17 +3,15 @@ package com.fit2cloud.provider.impl.vsphere;
 import com.fit2cloud.common.form.util.FormUtil;
 import com.fit2cloud.common.form.vo.FormObject;
 import com.fit2cloud.common.platform.credential.impl.VsphereCredential;
+import com.fit2cloud.common.provider.entity.F2CPerfMetricMonitorData;
 import com.fit2cloud.common.utils.JsonUtil;
 import com.fit2cloud.provider.AbstractCloudProvider;
 import com.fit2cloud.provider.ICloudProvider;
 import com.fit2cloud.provider.entity.*;
+import com.fit2cloud.provider.entity.request.GetMetricsRequest;
 import com.fit2cloud.provider.impl.vsphere.api.VsphereSyncCloudApi;
 import com.fit2cloud.provider.impl.vsphere.entity.F2CVsphereCluster;
 import com.fit2cloud.provider.impl.vsphere.entity.F2CVsphereNetwork;
-import com.fit2cloud.provider.impl.vsphere.entity.request.VsphereNetworkRequest;
-import com.fit2cloud.provider.impl.vsphere.entity.request.VsphereVmBaseRequest;
-import com.fit2cloud.provider.impl.vsphere.entity.request.VsphereVmCreateRequest;
-import com.fit2cloud.provider.impl.vsphere.entity.request.VsphereVmPowerRequest;
 import com.fit2cloud.provider.impl.vsphere.entity.VsphereHost;
 import com.fit2cloud.provider.impl.vsphere.entity.VsphereResourcePool;
 import com.fit2cloud.provider.impl.vsphere.entity.request.*;
@@ -125,5 +123,10 @@ public class VsphereCloudProvider extends AbstractCloudProvider<VsphereCredentia
     @Override
     public List<F2CDisk> createDisks(String req) {
         return VsphereSyncCloudApi.createDisks(JsonUtil.parseObject(req, VsphereCreateDiskRequest.class));
+    }
+
+    @Override
+    public List<F2CPerfMetricMonitorData> getF2CPerfMetricMonitorData(String req){
+        return VsphereSyncCloudApi.getF2CPerfMetricList(JsonUtil.parseObject(req, GetMetricsRequest.class));
     }
 }

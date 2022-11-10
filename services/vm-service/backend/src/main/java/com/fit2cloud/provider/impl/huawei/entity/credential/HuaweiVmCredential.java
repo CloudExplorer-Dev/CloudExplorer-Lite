@@ -3,6 +3,8 @@ package com.fit2cloud.provider.impl.huawei.entity.credential;
 import com.fit2cloud.common.platform.credential.Credential;
 import com.fit2cloud.common.platform.credential.impl.HuaweiCredential;
 import com.fit2cloud.common.provider.exception.SkipPageException;
+import com.huaweicloud.sdk.ces.v1.CesClient;
+import com.huaweicloud.sdk.ces.v1.region.CesRegion;
 import com.huaweicloud.sdk.core.auth.BasicCredentials;
 import com.huaweicloud.sdk.core.auth.ICredential;
 import com.huaweicloud.sdk.ecs.v2.EcsClient;
@@ -105,6 +107,21 @@ public class HuaweiVmCredential extends HuaweiCredential implements Credential {
     public ImsClient getImsClient(String region) {
         try {
             return ImsClient.newBuilder().withCredential(getAuth()).withRegion(ImsRegion.valueOf(region)).build();
+        } catch (Exception e) {
+            SkipPageException.throwHuaweiSkip(e);
+            throw e;
+        }
+    }
+
+    /**
+     * 获取CesClient
+     *
+     * @param region 区域
+     * @return CesClient
+     */
+    public CesClient getCesClient(String region) {
+        try {
+            return CesClient.newBuilder().withCredential(getAuth()).withRegion(CesRegion.valueOf(region)).build();
         } catch (Exception e) {
             SkipPageException.throwHuaweiSkip(e);
             throw e;

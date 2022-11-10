@@ -132,8 +132,10 @@ public class ElasticsearchProvide {
             List<IndexQuery> queries = new ArrayList<>();
             System.out.println("完成批量插入数据!");
             for (PerfMetricMonitorData perfMetricMonitorData : perfMetricMonitorDataList) {
-                //数据索引ID，使用资源类型+资源ID+指标+时间点做为索引
+                //数据索引ID，使用云账号ID+资源类型+资源ID+指标+时间点做为索引
                 StringBuffer idSB = new StringBuffer();
+                idSB.append(perfMetricMonitorData.getCloudAccountId());
+                idSB.append("-");
                 idSB.append(perfMetricMonitorData.getEntityType());
                 idSB.append("-");
                 idSB.append(perfMetricMonitorData.getInstanceId());

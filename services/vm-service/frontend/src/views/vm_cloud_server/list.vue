@@ -15,6 +15,7 @@ import _ from "lodash";
 import type { SimpleMap } from "@commons/api/base/type";
 import variables_server from "../../styles/vm_cloud_server/server.module.scss";
 import { platformIcon } from "@/utils/platform";
+import BaseCloudAccountApi from "@commons/api/cloud_account";
 
 const { t } = useI18n();
 const useRoute = useRouter();
@@ -23,6 +24,7 @@ const columns = ref([]);
 const tableData = ref<Array<VmCloudServerVO>>([]);
 const selectedRowData = ref<Array<VmCloudServerVO>>();
 const tableLoading = ref<boolean>(false);
+const cloudAccount = ref<Array<SimpleMap<string>>>([]);
 //批量操作
 const instanceOperateMap: Map<string, string> = new Map();
 instanceOperateMap.set("POWER_ON", t("", "启动"));
@@ -83,7 +85,19 @@ const search = (condition: TableSearch) => {
  */
 onMounted(() => {
   search(new TableSearch());
+  searchCloudAccount();
 });
+
+const searchCloudAccount = () => {
+  BaseCloudAccountApi.listAll().then((result) => {
+    if (result.data.length > 0) {
+      result.data.forEach(function (v) {
+        const ca = { text: v.name, value: v.id };
+        cloudAccount.value.push(ca);
+      });
+    }
+  });
+};
 
 //启动定时器
 const startOperateInterval = (list: Array<VmCloudServerVO>) => {
@@ -180,8 +194,7 @@ const tableConfig = ref<TableConfig>({
  */
 const showDetail = (row: VmCloudServerVO) => {
   useRoute.push({
-    path: useRoute.currentRoute.value.path.replace("/list", "/detail"),
-    query: { id: row.id, uuid: row.instanceUuid },
+    path: useRoute.currentRoute.value.path.replace("/list", `/detail/${row.id}`)
   });
 };
 const gotoCatalog = () => {
@@ -521,7 +534,9 @@ const handleAction = (actionObj: any) => {
     ></el-table-column>
     <el-table-column
       prop="accountName"
+      column-key="accountIds"
       :label="$t('commons.cloud_account.native')"
+      :filters="cloudAccount"
     >
       <template #default="scope">
         <div style="display: flex">

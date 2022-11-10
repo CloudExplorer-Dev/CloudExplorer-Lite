@@ -9,6 +9,8 @@ import lombok.Data;
  **/
 @Data
 public class PerfMonitorRequest {
+    @ApiModelProperty("云账号ID")
+    private String cloudAccountId;
     @ApiModelProperty("资源类型")
     private String entityType;
     @ApiModelProperty("资源ID")

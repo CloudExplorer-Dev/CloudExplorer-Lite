@@ -299,7 +299,7 @@ public class MenuConstants {
                             .childOperationRoute(new Menu.Builder()
                                     .name("workspace_update")
                                     .title("编辑")
-                                    .path("/update")
+                                    .path("/update/:id")
                                     .componentPath("/src/views/WorkspaceManage/create.vue")
                                     .requiredPermission(new MenuPermission.Builder()
                                             .role(RoleConstants.ROLE.ADMIN)
