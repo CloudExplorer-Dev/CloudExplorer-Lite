@@ -297,7 +297,7 @@ public class VsphereVmClient extends VsphereClient {
 
             String diskType = request.getDiskType();
             List<VsphereVmCreateRequest.DiskConfig> diskConfigs = request.getDisks();
-            List<VsphereVmCreateRequest.NetworkAdapter> networkAdapters = request.getNetworkAdapters().get(currentIndex);
+            List<VsphereVmCreateRequest.NetworkAdapter> networkAdapters = request.getNetworkConfigs().get(currentIndex).getAdapters();
 
 
             Datacenter datacenter = getDataCenter(request.getRegion());
@@ -1183,16 +1183,17 @@ public class VsphereVmClient extends VsphereClient {
             throw new RuntimeException("Custom specification cannot be empty");
         }
         int index = request.getIndex();
-        List<VsphereVmCreateRequest.NetworkAdapter> adapters = request.getNetworkAdapters().get(index);
+        VsphereVmCreateRequest.NetworkConfig config = request.getNetworkConfigs().get(index);
+        List<VsphereVmCreateRequest.NetworkAdapter> adapters = config.getAdapters();
 
         List<CustomizationAdapterMapping> nicList = new ArrayList<>();
         CustomizationGlobalIPSettings gIp = new CustomizationGlobalIPSettings();
         ArrayList<String> allDnsList = new ArrayList<>();
-        if (StringUtils.isNotBlank(request.getDns1())) {
-            allDnsList.add(request.getDns1());
+        if (StringUtils.isNotBlank(config.getDns1())) {
+            allDnsList.add(config.getDns1());
         }
-        if (StringUtils.isNotBlank(request.getDns2())) {
-            allDnsList.add(request.getDns2());
+        if (StringUtils.isNotBlank(config.getDns2())) {
+            allDnsList.add(config.getDns2());
         }
 
         for (VsphereVmCreateRequest.NetworkAdapter networkConfig : adapters) {
