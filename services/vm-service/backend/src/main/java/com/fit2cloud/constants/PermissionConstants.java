@@ -110,25 +110,6 @@ public class PermissionConstants {
                                     .role(RoleConstants.ROLE.ADMIN)
                                     .role(RoleConstants.ROLE.ORGADMIN))
             )
-            .group(
-                    new PermissionGroup.Builder()
-                            .id(GROUP.INSTANCE_TYPE)
-                            .name("i18n_permission_instance_type")
-                            .permission(new Permission.Builder()
-                                    .operate(OPERATE.READ)
-                                    .name("i18n_permission_instance_type_red")
-                                    .role(RoleConstants.ROLE.ADMIN)
-                                    .role(RoleConstants.ROLE.ORGADMIN))
-            ).group(
-                    new PermissionGroup.Builder()
-                            .id(GROUP.SYSTEM_SETTING)
-                            .name("i18n_permission_system_setting")
-                            .permission(new Permission.Builder()
-                                    .operate(OPERATE.READ)
-                                    .name("i18n_permission_system_setting_red")
-                                    .role(RoleConstants.ROLE.ADMIN)
-                                    .role(RoleConstants.ROLE.ORGADMIN))
-            )
             //...
             ;
 

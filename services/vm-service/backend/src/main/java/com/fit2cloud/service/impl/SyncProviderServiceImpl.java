@@ -23,6 +23,7 @@ import com.fit2cloud.provider.entity.*;
 import com.fit2cloud.service.*;
 import io.reactivex.rxjava3.functions.BiFunction;
 import io.reactivex.rxjava3.functions.Consumer;
+import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 
@@ -252,8 +253,8 @@ public class SyncProviderServiceImpl extends BaseSyncService implements ISyncPro
     public void syncCloudServerPerfMetricMonitor(Map<String, Object> params) {
         try {
             String cloudAccountId = getCloudAccountId(params);
-            List<Credential.Region> regions = getRegions(params);
-            if (params.containsKey(JobConstants.CloudAccount.CLOUD_ACCOUNT_ID.name()) && params.containsKey(JobConstants.CloudAccount.REGIONS.name())) {
+            List<Credential.Region> regions = getRegions(cloudAccountId);
+            if (params.containsKey(JobConstants.CloudAccount.CLOUD_ACCOUNT_ID.name()) && CollectionUtils.isNotEmpty(regions)) {
                 proxy(
                         cloudAccountId,
                         regions,
@@ -280,6 +281,7 @@ public class SyncProviderServiceImpl extends BaseSyncService implements ISyncPro
         vmCloudServers.forEach(v -> {
             PerfMetricMonitorData perfMetricMonitorData = new PerfMetricMonitorData();
             BeanUtils.copyProperties(v, perfMetricMonitorData);
+            perfMetricMonitorData.setCloudAccountId(saveBatchOrUpdateParams.getCloudAccountId());
             perfMetricMonitorDataList.add(perfMetricMonitorData);
         });
         elasticsearchProvide.bulkInsert(perfMetricMonitorDataList, "ce-perf-metric-monitor-data");

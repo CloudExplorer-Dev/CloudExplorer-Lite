@@ -4,8 +4,10 @@ import type { Page } from "@commons/request/Result";
 import type {
   VmCloudServerVO,
   ListVmCloudServerRequest,
-  CloudServerJobRecord,
   CreateServerRequest,
+  CloudServerJobRecord,
+  PerfMonitorData,
+  GetPerfMonitorRequest,
 } from "./type";
 import type { Ref } from "vue";
 import type { SimpleMap } from "@commons/api/base/type";
@@ -142,9 +144,9 @@ export function getServerJobRecord(
  * @param loading
  */
 export function listPerfMetricMonitor(
-  req: any,
+  req: Ref<GetPerfMonitorRequest | null>,
   loading?: Ref<boolean>
-): Promise<Result<any>> {
+): Promise<Result<Array<PerfMonitorData>>> {
   return get("/api/base/monitor/list", req, loading);
 }
 

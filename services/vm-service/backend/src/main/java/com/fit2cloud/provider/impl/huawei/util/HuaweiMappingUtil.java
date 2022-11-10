@@ -1,11 +1,13 @@
 package com.fit2cloud.provider.impl.huawei.util;
 
 import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
+import com.fit2cloud.common.provider.entity.F2CPerfMetricMonitorData;
 import com.fit2cloud.common.provider.util.CommonUtil;
 import com.fit2cloud.provider.constants.DeleteWithInstance;
 import com.fit2cloud.provider.entity.F2CDisk;
 import com.fit2cloud.provider.entity.F2CImage;
 import com.fit2cloud.provider.entity.F2CVirtualMachine;
+import com.huaweicloud.sdk.ces.v1.model.Datapoint;
 import com.huaweicloud.sdk.ecs.v2.model.ServerAddress;
 import com.huaweicloud.sdk.ecs.v2.model.ServerDetail;
 import com.huaweicloud.sdk.ecs.v2.model.ServerFlavor;
@@ -14,6 +16,8 @@ import com.huaweicloud.sdk.ims.v2.model.ImageInfo;
 import com.huaweicloud.sdk.vpc.v2.model.Port;
 import org.apache.commons.lang3.StringUtils;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -202,5 +206,19 @@ public class HuaweiMappingUtil {
             result.setDescription(image.getDescription());
         }
         return result;
+    }
+
+    /**
+     * 监控指标数据
+     * @param v
+     * @return
+     */
+    public static F2CPerfMetricMonitorData toF2CPerfMetricMonitorData(Datapoint v) {
+        F2CPerfMetricMonitorData f2CEntityPerfMetric = new F2CPerfMetricMonitorData();
+        f2CEntityPerfMetric.setTimestamp(v.getTimestamp());
+        f2CEntityPerfMetric.setAverage(new BigDecimal(v.getAverage()).setScale(3, RoundingMode.HALF_UP));
+        //f2CEntityPerfMetric.setMinimum(new BigDecimal(v.getMin()).setScale(3, RoundingMode.HALF_UP));
+        //f2CEntityPerfMetric.setMaximum(new BigDecimal(v.getMax()).setScale(3, RoundingMode.HALF_UP));
+        return f2CEntityPerfMetric;
     }
 }
