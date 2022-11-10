@@ -216,25 +216,7 @@ public class VsphereVmCreateRequest extends VsphereVmBaseRequest implements ICre
             confirmSpecial = true,
             confirmPosition = Form.Position.TOP
     )
-    private List<List<NetworkAdapter>> networkAdapters;
-
-    @Form(inputType = InputType.Text,
-            required = false,
-            label = "DNS1",
-            group = 8,
-            step = 3,
-            confirmGroup = 3
-    )
-    private String dns1;
-
-    @Form(inputType = InputType.Text,
-            required = false,
-            label = "DNS2",
-            group = 8,
-            step = 3,
-            confirmGroup = 3
-    )
-    private String dns2;
+    private List<NetworkConfig> networkConfigs;
 
 
     //step 4
@@ -272,6 +254,16 @@ public class VsphereVmCreateRequest extends VsphereVmBaseRequest implements ICre
 
         //主机/资源池的名称
         private String name;
+
+    }
+
+    @Data
+    @Accessors(chain = true)
+    public static class NetworkConfig {
+        private List<NetworkAdapter> adapters;
+
+        private String dns1;
+        private String dns2;
 
     }
 

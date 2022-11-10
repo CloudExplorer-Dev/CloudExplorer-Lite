@@ -849,10 +849,10 @@ public class VsphereSyncCloudApi {
             if (!matcher.find()) {
                 throw new RuntimeException("hostname cannot be empty");
             }
-            if (CollectionUtils.isEmpty(request.getNetworkAdapters().get(index))) {
+            if (CollectionUtils.isEmpty(request.getNetworkConfigs()) || CollectionUtils.isEmpty(request.getNetworkConfigs().get(index).getAdapters())) {
                 throw new RuntimeException("Network Adapter cannot be empty");
             }
-            for (VsphereVmCreateRequest.NetworkAdapter networkAdapter : request.getNetworkAdapters().get(index)) {
+            for (VsphereVmCreateRequest.NetworkAdapter networkAdapter : request.getNetworkConfigs().get(index).getAdapters()) {
                 if (StringUtils.isBlank(networkAdapter.getVlan())) {
                     throw new RuntimeException("Vlan cannot be empty");
                 }
@@ -905,7 +905,7 @@ public class VsphereSyncCloudApi {
                         GuestInfo guest = vm.getGuest();
                         if (guest != null) {
                             //todo 多网卡？ 现在只看了第一张网卡
-                            if (!request.getNetworkAdapters().get(index).get(0).isDhcp()) {
+                            if (!request.getNetworkConfigs().get(index).getAdapters().get(0).isDhcp()) {
                                 if ("guestToolsRunning".equalsIgnoreCase(guest.getToolsRunningStatus())) {
                                     break;
                                 }
