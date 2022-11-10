@@ -193,7 +193,7 @@ const _data = computed({
 
 const label = computed<string | null>(() => {
   if (_data.value.location === "host") {
-    return "主机";
+    return "宿主机";
   }
   if (_data.value.location === "pool") {
     return "资源池";
