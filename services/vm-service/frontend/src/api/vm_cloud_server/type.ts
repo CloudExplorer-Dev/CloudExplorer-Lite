@@ -1,4 +1,5 @@
 import type { SimpleMap } from "@commons/api/base/type";
+
 interface VmCloudServerVO {
   id: string;
   instanceUuid?: string;
@@ -44,6 +45,7 @@ interface VmCloudServerVO {
   organizationName?: string;
   showLoading?: boolean;
 }
+
 /**
  *任务记录
  */
@@ -112,6 +114,14 @@ interface GetPerfMonitorRequest {
 interface ListVmCloudServerRequest {
   pageSize: number;
   currentPage: number;
+}
+
+export interface CreateServerRequest {
+  accountId: string;
+
+  createRequest: string;
+
+  fromInfo: string;
 }
 export type {
   VmCloudServerVO,

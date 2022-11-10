@@ -2,15 +2,15 @@ package com.fit2cloud.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.fit2cloud.base.entity.CloudAccount;
 import com.fit2cloud.base.entity.VmCloudDisk;
-import com.fit2cloud.base.entity.VmCloudServer;
 import com.fit2cloud.base.mapper.BaseVmCloudDiskMapper;
 import com.fit2cloud.base.service.IBaseCloudAccountService;
-import com.fit2cloud.base.service.IBaseVmCloudServerService;
 import com.fit2cloud.common.constants.JobTypeConstants;
+import com.fit2cloud.common.form.vo.FormObject;
 import com.fit2cloud.common.log.constants.OperatedTypeEnum;
 import com.fit2cloud.common.log.constants.ResourceTypeEnum;
 import com.fit2cloud.common.provider.util.CommonUtil;
@@ -19,6 +19,7 @@ import com.fit2cloud.common.utils.CurrentUserUtils;
 import com.fit2cloud.controller.request.CreateJobRecordRequest;
 import com.fit2cloud.controller.request.ExecProviderMethodRequest;
 import com.fit2cloud.controller.request.ResourceState;
+import com.fit2cloud.controller.request.disk.CreateVmCloudDiskRequest;
 import com.fit2cloud.controller.request.disk.ListVmRequest;
 import com.fit2cloud.controller.request.disk.PageVmCloudDiskRequest;
 import com.fit2cloud.dao.mapper.VmCloudDiskMapper;
@@ -28,10 +29,13 @@ import com.fit2cloud.dto.VmCloudServerDTO;
 import com.fit2cloud.provider.ICloudProvider;
 import com.fit2cloud.provider.constants.DeleteWithInstance;
 import com.fit2cloud.provider.constants.F2CDiskStatus;
+import com.fit2cloud.provider.constants.ProviderConstants;
+import com.fit2cloud.provider.entity.F2CDisk;
 import com.fit2cloud.provider.impl.vsphere.util.ResourceConstants;
 import com.fit2cloud.service.IResourceOperateService;
 import com.fit2cloud.service.IVmCloudDiskService;
 import com.fit2cloud.service.OrganizationCommonService;
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
@@ -39,6 +43,7 @@ import org.springframework.stereotype.Service;
 import javax.annotation.Resource;
 import java.util.HashMap;
 import java.util.List;
+import java.util.UUID;
 
 /**
  * <p>
@@ -58,8 +63,6 @@ public class VmCloudDiskServiceImpl extends ServiceImpl<BaseVmCloudDiskMapper, V
     private VmCloudServerMapper serverMapper;
     @Resource
     private IBaseCloudAccountService cloudAccountService;
-    @Resource
-    private IBaseVmCloudServerService vmCloudServerService;
     @Resource
     private IResourceOperateService resourceOperateService;
 
@@ -98,11 +101,68 @@ public class VmCloudDiskServiceImpl extends ServiceImpl<BaseVmCloudDiskMapper, V
     }
 
     public List<VmCloudServerDTO> cloudServerList(ListVmRequest req) {
-        return serverMapper.selectListByAccountId(req.getAccountId(),req.getZone());
+        return serverMapper.selectListByAccountId(req.getAccountId(), req.getZone());
     }
 
     public VmCloudDiskDTO cloudDisk(String id) {
         return diskMapper.selectDiskDetailById(id);
+    }
+
+    public FormObject getCreateDiskForm(String platform) {
+        Class<? extends ICloudProvider> cloudProvider = ProviderConstants.valueOf(platform).getCloudProvider();
+        try {
+            return cloudProvider.getConstructor().newInstance().getCreateDiskForm();
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to get create disk form!" + e.getMessage(), e);
+        }
+    }
+
+    @Override
+    public boolean createDisk(CreateVmCloudDiskRequest request) {
+        try {
+            // 创建前:插入一条磁盘记录，状态为初始化
+            String id = UUID.randomUUID().toString();
+            VmCloudDisk initVmCloudDisk = request.toVmCloudDisk(id, F2CDiskStatus.INIT);
+            baseMapper.insert(initVmCloudDisk);
+
+            // 创建中实体状态
+            VmCloudDisk creatingVmCloudDisk = request.toVmCloudDisk(id, F2CDiskStatus.CREATING);
+
+            // 创建完成实体状态
+            VmCloudDisk finishedVmCloudDisk = request.toVmCloudDisk(id, F2CDiskStatus.IN_USE);
+
+            if (request.getInstanceUuid() != null) {
+                request.setIsAttached(true);
+            }
+
+            CloudAccount cloudAccount = cloudAccountService.getById(request.getAccountId());
+            String platform = cloudAccount.getPlatform();
+            HashMap<String, Object> params = CommonUtil.getParams(cloudAccount.getCredential(), request.getRegionId());
+            params.put("zone", request.getZone());
+            params.put("diskName", request.getDiskName());
+            params.put("size", request.getSize());
+            params.put("diskType", request.getDiskType());
+            params.put("description", request.getDescription());
+            params.put("instanceUuid", request.getInstanceUuid());
+            params.put("deleteWithInstance", request.getDeleteWithInstance());
+            params.put("isAttached", request.getIsAttached());
+
+            // 执行
+            ResourceState resourceState = ResourceState.<VmCloudDisk, F2CDisk>builder()
+                    .beforeResource(initVmCloudDisk)
+                    .processingResource(creatingVmCloudDisk)
+                    .afterResource(finishedVmCloudDisk)
+                    .updateResourceMethod(this::updateCloudDisk)
+                    .deleteResourceMethod(this::deleteCloudDisk)
+                    .saveResourceMethod(this::saveCloudDisk)
+                    .build();
+            ExecProviderMethodRequest execProviderMethod = ExecProviderMethodRequest.builder().execMethod(ICloudProvider::createDisk).methodParams(params).platform(platform).build();
+            CreateJobRecordRequest createJobRecordRequest = CreateJobRecordRequest.builder().resourceOperateType(OperatedTypeEnum.CREATE_DISK).resourceId(initVmCloudDisk.getId()).resourceType(ResourceTypeEnum.CLOUD_DISK).jobType(JobTypeConstants.CLOUD_DISK_OPERATE_JOB).build();
+            resourceOperateService.operateWithJobRecord(createJobRecordRequest, execProviderMethod, resourceState);
+            return true;
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to create cloud disk: " + e.getMessage());
+        }
     }
 
     public boolean enlarge(String id, long newDiskSize) {
@@ -133,10 +193,24 @@ public class VmCloudDiskServiceImpl extends ServiceImpl<BaseVmCloudDiskMapper, V
             params.put("instanceUuid", vmCloudDisk.getInstanceUuid());
 
             // 执行
-            ResourceState resourceState = ResourceState.builder().beforeResource(beforeAttach).processingResource(processingAttach).afterResource(afterAttach).build();
-            ExecProviderMethodRequest execProviderMethod = ExecProviderMethodRequest.builder().execMethod(ICloudProvider::enlargeDisk).methodParams(params).platform(platform).build();
-            CreateJobRecordRequest createJobRecordRequest = CreateJobRecordRequest.builder().resourceOperateType(OperatedTypeEnum.ENLARGE_DISK).resourceId(id).resourceType(ResourceTypeEnum.CLOUD_DISK).jobType(JobTypeConstants.CLOUD_DISK_OPERATE_JOB).build();
-            resourceOperateService.operateWithJobRecord(createJobRecordRequest, execProviderMethod, resourceState, this::updateCloudDisk);
+            ResourceState resourceState = ResourceState.<VmCloudDisk, Boolean>builder()
+                    .beforeResource(beforeAttach)
+                    .processingResource(processingAttach)
+                    .afterResource(afterAttach)
+                    .updateResourceMethod(this::updateCloudDisk)
+                    .build();
+            ExecProviderMethodRequest execProviderMethod = ExecProviderMethodRequest.builder().
+                    execMethod(ICloudProvider::enlargeDisk).
+                    methodParams(params).
+                    platform(platform)
+                    .build();
+            CreateJobRecordRequest createJobRecordRequest = CreateJobRecordRequest.builder().
+                    resourceOperateType(OperatedTypeEnum.ENLARGE_DISK).
+                    resourceId(id).
+                    resourceType(ResourceTypeEnum.CLOUD_DISK).
+                    jobType(JobTypeConstants.CLOUD_DISK_OPERATE_JOB)
+                    .build();
+            resourceOperateService.operateWithJobRecord(createJobRecordRequest, execProviderMethod, resourceState);
             return true;
         } catch (Exception e) {
             throw new RuntimeException("Failed to enlarge cloud disk: " + e.getMessage());
@@ -146,9 +220,6 @@ public class VmCloudDiskServiceImpl extends ServiceImpl<BaseVmCloudDiskMapper, V
     public boolean attach(String id, String instanceUuid, Boolean deleteWithInstance) {
         try {
             VmCloudDisk vmCloudDisk = baseMapper.selectById(id);
-            if (!isInstanceExist(instanceUuid)) {
-                throw new RuntimeException("Virtual Machine is not exist.");
-            }
 
             // 挂载前状态
             VmCloudDisk beforeAttach = new VmCloudDisk();
@@ -181,11 +252,24 @@ public class VmCloudDiskServiceImpl extends ServiceImpl<BaseVmCloudDiskMapper, V
             }
 
             // 执行
-            ResourceState resourceState = ResourceState.builder().beforeResource(beforeAttach).processingResource(processingAttach).afterResource(afterAttach).build();
-            ExecProviderMethodRequest execProviderMethod = ExecProviderMethodRequest.builder().execMethod(ICloudProvider::attachDisk).methodParams(params).platform(platform).build();
-            CreateJobRecordRequest createJobRecordRequest = CreateJobRecordRequest.builder().resourceOperateType(OperatedTypeEnum.ATTACH_DISK).resourceId(id).resourceType(ResourceTypeEnum.CLOUD_DISK).jobType(JobTypeConstants.CLOUD_DISK_OPERATE_JOB).build();
-            resourceOperateService.operateWithJobRecord(createJobRecordRequest, execProviderMethod, resourceState, this::updateCloudDisk);
-
+            ResourceState resourceState = ResourceState.<VmCloudDisk, Boolean>builder()
+                    .beforeResource(beforeAttach)
+                    .processingResource(processingAttach)
+                    .afterResource(afterAttach)
+                    .updateResourceMethod(this::updateCloudDisk)
+                    .build();
+            ExecProviderMethodRequest execProviderMethod = ExecProviderMethodRequest.builder()
+                    .execMethod(ICloudProvider::attachDisk)
+                    .methodParams(params)
+                    .platform(platform)
+                    .build();
+            CreateJobRecordRequest createJobRecordRequest = CreateJobRecordRequest.builder()
+                    .resourceOperateType(OperatedTypeEnum.ATTACH_DISK)
+                    .resourceId(id)
+                    .resourceType(ResourceTypeEnum.CLOUD_DISK)
+                    .jobType(JobTypeConstants.CLOUD_DISK_OPERATE_JOB)
+                    .build();
+            resourceOperateService.operateWithJobRecord(createJobRecordRequest, execProviderMethod, resourceState);
             return true;
         } catch (Exception e) {
             throw new RuntimeException("Failed to attach cloud disk: " + e.getMessage());
@@ -195,9 +279,6 @@ public class VmCloudDiskServiceImpl extends ServiceImpl<BaseVmCloudDiskMapper, V
     public boolean detach(String id) {
         try {
             VmCloudDisk vmCloudDisk = baseMapper.selectById(id);
-            if (!isInstanceExist(vmCloudDisk.getInstanceUuid())) {
-                throw new RuntimeException("Virtual Machine is not exist.");
-            }
 
             // 卸载前状态
             VmCloudDisk beforeDetach = new VmCloudDisk();
@@ -224,10 +305,23 @@ public class VmCloudDiskServiceImpl extends ServiceImpl<BaseVmCloudDiskMapper, V
             params.put("instanceUuid", beforeDetach.getInstanceUuid());
 
             // 执行
-            ResourceState resourceState = ResourceState.builder().beforeResource(beforeDetach).processingResource(processingDetach).afterResource(afterDetach).build();
-            ExecProviderMethodRequest execProviderMethod = ExecProviderMethodRequest.builder().execMethod(ICloudProvider::detachDisk).methodParams(params).platform(platform).build();
-            CreateJobRecordRequest createJobRecordRequest = CreateJobRecordRequest.builder().resourceOperateType(OperatedTypeEnum.DETACH_DISK).resourceId(id).resourceType(ResourceTypeEnum.CLOUD_DISK).jobType(JobTypeConstants.CLOUD_DISK_OPERATE_JOB).build();
-            resourceOperateService.operateWithJobRecord(createJobRecordRequest, execProviderMethod, resourceState, this::updateCloudDisk);
+            ResourceState resourceState = ResourceState.<VmCloudDisk, Boolean>builder()
+                    .beforeResource(beforeDetach)
+                    .processingResource(processingDetach)
+                    .afterResource(afterDetach)
+                    .updateResourceMethod(this::updateCloudDisk)
+                    .build();
+            ExecProviderMethodRequest execProviderMethod = ExecProviderMethodRequest.builder()
+                    .execMethod(ICloudProvider::detachDisk)
+                    .methodParams(params).
+                    platform(platform)
+                    .build();
+            CreateJobRecordRequest createJobRecordRequest = CreateJobRecordRequest.builder()
+                    .resourceOperateType(OperatedTypeEnum.DETACH_DISK)
+                    .resourceId(id).resourceType(ResourceTypeEnum.CLOUD_DISK)
+                    .jobType(JobTypeConstants.CLOUD_DISK_OPERATE_JOB)
+                    .build();
+            resourceOperateService.operateWithJobRecord(createJobRecordRequest, execProviderMethod, resourceState);
 
             return true;
         } catch (Exception e) {
@@ -260,10 +354,24 @@ public class VmCloudDiskServiceImpl extends ServiceImpl<BaseVmCloudDiskMapper, V
             params.put("diskId", vmCloudDisk.getDiskId());
 
             // 执行
-            ResourceState resourceState = ResourceState.builder().beforeResource(beforeDelete).processingResource(processingDelete).afterResource(afterDelete).build();
-            ExecProviderMethodRequest execProviderMethod = ExecProviderMethodRequest.builder().execMethod(ICloudProvider::deleteDisk).methodParams(params).platform(platform).build();
-            CreateJobRecordRequest createJobRecordRequest = CreateJobRecordRequest.builder().resourceOperateType(OperatedTypeEnum.DELETE_DISK).resourceId(id).resourceType(ResourceTypeEnum.CLOUD_DISK).jobType(JobTypeConstants.CLOUD_DISK_OPERATE_JOB).build();
-            resourceOperateService.operateWithJobRecord(createJobRecordRequest, execProviderMethod, resourceState, this::updateCloudDisk);
+            ResourceState resourceState = ResourceState.<VmCloudDisk, Boolean>builder()
+                    .beforeResource(beforeDelete)
+                    .processingResource(processingDelete)
+                    .afterResource(afterDelete)
+                    .updateResourceMethod(this::updateCloudDisk)
+                    .build();
+            ExecProviderMethodRequest execProviderMethod = ExecProviderMethodRequest.builder()
+                    .execMethod(ICloudProvider::deleteDisk)
+                    .methodParams(params)
+                    .platform(platform)
+                    .build();
+            CreateJobRecordRequest createJobRecordRequest = CreateJobRecordRequest.builder()
+                    .resourceOperateType(OperatedTypeEnum.DELETE_DISK)
+                    .resourceId(id)
+                    .resourceType(ResourceTypeEnum.CLOUD_DISK)
+                    .jobType(JobTypeConstants.CLOUD_DISK_OPERATE_JOB)
+                    .build();
+            resourceOperateService.operateWithJobRecord(createJobRecordRequest, execProviderMethod, resourceState);
 
             return true;
         } catch (Exception e) {
@@ -293,29 +401,52 @@ public class VmCloudDiskServiceImpl extends ServiceImpl<BaseVmCloudDiskMapper, V
     }
 
     /**
-     * 更新磁盘
+     * 更新磁盘 (磁盘挂载、卸载等操作命令执行后进行的操作)
      *
      * @param vmCloudDisk
+     * @param
      */
     private void updateCloudDisk(VmCloudDisk vmCloudDisk) {
         baseMapper.updateById(vmCloudDisk);
     }
 
     /**
-     * 判断虚拟机是否存在
+     * 删除磁盘
      *
-     * @param instanceUuid
-     * @return
+     * @param vmCloudDisk
+     * @param
      */
-    private boolean isInstanceExist(String instanceUuid) {
-        Boolean result = true;
-        QueryWrapper<VmCloudServer> wrapper = new QueryWrapper<VmCloudServer>()
-                .eq(ColumnNameUtil.getColumnName(VmCloudServer::getInstanceUuid, true), instanceUuid);
-        VmCloudServer vmCloudServer = vmCloudServerService.getOne(wrapper);
+    private void deleteCloudDisk(VmCloudDisk vmCloudDisk) {
+        baseMapper.deleteById(vmCloudDisk);
+    }
 
-        if (vmCloudServer == null) {
-            result = false;
+    /**
+     * 保存磁盘（创建磁盘成功后进行的操作）
+     *
+     * @param vmCloudDisk
+     * @param result      云平台方法返回类型
+     */
+    private void saveCloudDisk(VmCloudDisk vmCloudDisk, F2CDisk result) {
+        // 先删除预处理插入的数据
+        baseMapper.deleteById(vmCloudDisk.getId());
+
+        // 删除同步到的数据
+        QueryWrapper<VmCloudDisk> qw = Wrappers.query();
+        qw.lambda()
+                .eq(VmCloudDisk::getDiskId, vmCloudDisk.getDiskId())
+                .eq(VmCloudDisk::getRegion, vmCloudDisk.getRegion())
+                .eq(VmCloudDisk::getAccountId, vmCloudDisk.getAccountId());
+        List<VmCloudDisk> vmCloudDisks = baseMapper.selectList(qw);
+        boolean exist = CollectionUtils.isNotEmpty(vmCloudDisks);
+        if (exist) {
+            baseMapper.delete(qw);
         }
-        return result;
+
+        // 重新插入数据
+        vmCloudDisk.setDiskId(result.getDiskId());
+        vmCloudDisk.setDevice(result.getDevice());
+        vmCloudDisk.setDatastoreId(result.getDatastoreUniqueId());
+        vmCloudDisk.setDiskChargeType(result.getDiskChargeType());
+        baseMapper.insert(vmCloudDisk);
     }
 }

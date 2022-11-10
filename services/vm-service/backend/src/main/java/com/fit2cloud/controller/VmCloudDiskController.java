@@ -2,6 +2,7 @@ package com.fit2cloud.controller;
 
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.fit2cloud.base.mapper.BaseVmCloudDiskMapper;
+import com.fit2cloud.common.form.vo.FormObject;
 import com.fit2cloud.common.log.annotation.OperatedLog;
 import com.fit2cloud.common.log.constants.OperatedTypeEnum;
 import com.fit2cloud.common.log.constants.ResourceTypeEnum;
@@ -50,6 +51,18 @@ public class VmCloudDiskController {
     @GetMapping("/showCloudDiskById/{id}")
     public ResultHolder<VmCloudDiskDTO> cloudDisk(@PathVariable("id") String id) {
         return ResultHolder.success(diskService.cloudDisk(id));
+    }
+
+    @GetMapping("/createDiskForm/{platform}")
+    @ApiOperation(value = "根据云平台查询创建云磁盘的表单数据")
+    public  ResultHolder<FormObject> findCreateDiskForm(@PathVariable("platform") String platform) {
+        return ResultHolder.success(diskService.getCreateDiskForm(platform));
+    }
+
+    @ApiOperation(value = "创建磁盘")
+    @PostMapping("createDisk")
+    public ResultHolder<Boolean> createDisk(@RequestBody CreateVmCloudDiskRequest request) {
+        return ResultHolder.success(diskService.createDisk(request));
     }
 
     @ApiOperation(value = "扩容磁盘")

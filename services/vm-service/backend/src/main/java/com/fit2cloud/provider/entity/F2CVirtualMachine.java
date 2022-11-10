@@ -1,6 +1,7 @@
 package com.fit2cloud.provider.entity;
 
 import lombok.Data;
+import lombok.experimental.Accessors;
 
 import java.util.Date;
 import java.util.List;
@@ -12,7 +13,13 @@ import java.util.List;
  * @注释:
  */
 @Data
+@Accessors(chain = true)
 public class F2CVirtualMachine {
+
+    /**
+     * 数据库中ID
+     */
+    private String id;
     /**
      * 云主机名称
      */

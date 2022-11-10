@@ -15,6 +15,7 @@ import com.fit2cloud.provider.entity.F2CImage;
 import com.fit2cloud.provider.entity.F2CVirtualMachine;
 import com.fit2cloud.provider.entity.request.GetMetricsRequest;
 import com.fit2cloud.provider.impl.huawei.constants.HuaweiPerfMetricConstants;
+import com.fit2cloud.provider.impl.huawei.constants.HuaweiDiskType;
 import com.fit2cloud.provider.impl.huawei.entity.credential.HuaweiVmCredential;
 import com.fit2cloud.provider.impl.huawei.entity.request.*;
 import com.fit2cloud.provider.impl.huawei.util.HuaweiMappingUtil;
@@ -42,6 +43,7 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.*;
 
 
 /**
@@ -297,12 +299,44 @@ public class HuaweiSyncCloudApi {
     }
 
     /**
+     * 根据可用区过滤磁盘种类
+     *
+     * @param request
+     * @return
+     */
+    public static List<Map<String, String>> getDiskTypes(HuaweiGetDiskTypeRequest request) {
+        HuaweiVmCredential huaweiVmCredential = JsonUtil.parseObject(request.getCredential(), HuaweiVmCredential.class);
+        EvsClient evsClient = huaweiVmCredential.getEvsClient(request.getRegionId());
+
+        CinderListVolumeTypesRequest cinderListVolumeTypesRequest = new CinderListVolumeTypesRequest();
+        try {
+            CinderListVolumeTypesResponse response = evsClient.cinderListVolumeTypes(cinderListVolumeTypesRequest);
+            List<Map<String, String>> mapList = new ArrayList<>();
+            response.getVolumeTypes().forEach(volumeType -> {
+                if (StringUtils.isNoneEmpty(request.getZone())
+                        && StringUtils.isNoneEmpty(volumeType.getExtraSpecs().getReSKEYAvailabilityZones())
+                        && volumeType.getExtraSpecs().getReSKEYAvailabilityZones().contains(request.getZone())
+                        && (StringUtils.isEmpty(volumeType.getExtraSpecs().getOsVendorExtendedSoldOutAvailabilityZones())
+                        || !volumeType.getExtraSpecs().getOsVendorExtendedSoldOutAvailabilityZones().contains(request.getZone())) && !volumeType.getName().startsWith("DESS_")) {
+                    Map<String, String> vol = new HashMap<>();
+                    vol.put("id", volumeType.getName());
+                    vol.put("name", HuaweiDiskType.getName(volumeType.getName()));
+                    mapList.add(vol);
+                }
+            });
+            return mapList;
+        } catch (Exception e) {
+            throw new RuntimeException(e.getMessage(), e);
+        }
+    }
+
+    /**
      * 创建磁盘
      *
      * @param request
      * @return
      */
-    public static List<F2CDisk> createDisks(HuaweiCreateDiskRequest request) {
+    public static List<F2CDisk> createDisks(HuaweiCreateDisksRequest request) {
         List<F2CDisk> f2CDisks = new ArrayList<>();
         HuaweiVmCredential huaweiVmCredential = JsonUtil.parseObject(request.getCredential(), HuaweiVmCredential.class);
         EvsClient evsClient = huaweiVmCredential.getEvsClient(request.getRegionId());
@@ -310,11 +344,34 @@ public class HuaweiSyncCloudApi {
             for (F2CDisk disk : request.getDisks()) {
                 CreateVolumeResponse response = evsClient.createVolume(request.toCreateVolumeRequest(disk));
                 ShowJobResponse showJobResponse = getJob(response.getJobId(), evsClient);
-                F2CDisk createdDisk = HuaweiMappingUtil.toF2CDisk(checkVolumeStatus(showJobResponse.getEntities().getVolumeId(), evsClient, F2CDiskStatus.AVAILABLE));
+                String status = request.getInstanceUuid() == null ? F2CDiskStatus.AVAILABLE : "in-use";
+                F2CDisk createdDisk = HuaweiMappingUtil.toF2CDisk(checkVolumeStatus(showJobResponse.getEntities().getVolumeId(), evsClient, status));
                 createdDisk.setDeleteWithInstance(disk.getDeleteWithInstance());
                 f2CDisks.add(createdDisk);
             }
             return f2CDisks;
+        } catch (Exception e) {
+            throw new RuntimeException(e.getMessage(), e);
+        }
+    }
+
+    /**
+     * 创建磁盘
+     *
+     * @param request
+     * @return
+     */
+    public static F2CDisk createDisk(HuaweiCreateDiskRequest request) {
+        F2CDisk f2CDisk = new F2CDisk();
+        HuaweiVmCredential huaweiVmCredential = JsonUtil.parseObject(request.getCredential(), HuaweiVmCredential.class);
+        EvsClient evsClient = huaweiVmCredential.getEvsClient(request.getRegionId());
+        try {
+            CreateVolumeResponse response = evsClient.createVolume(request.toCreateVolumeRequest());
+            ShowJobResponse showJobResponse = getJob(response.getJobId(), evsClient);
+            String status = request.getInstanceUuid() == null ? F2CDiskStatus.AVAILABLE : "in-use"; //华为云的 in-use 是中划线😭
+            F2CDisk createdDisk = HuaweiMappingUtil.toF2CDisk(checkVolumeStatus(showJobResponse.getEntities().getVolumeId(), evsClient, status));
+            createdDisk.setDeleteWithInstance(request.getDeleteWithInstance());
+            return f2CDisk;
         } catch (Exception e) {
             throw new RuntimeException(e.getMessage(), e);
         }

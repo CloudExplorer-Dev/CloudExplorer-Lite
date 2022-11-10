@@ -1,7 +1,8 @@
 package com.fit2cloud.common.form.vo;
 
-import com.fit2cloud.common.form.constants.InputType;
-import lombok.*;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 /**
  * @Author:张少虎

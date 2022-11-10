@@ -30,10 +30,10 @@ public class PerfMonitorService {
     @Resource
     private ElasticsearchProvide elasticsearchProvide;
 
-    public List<PerfMonitorEchartsDTO> getPerfMonitorData(PerfMonitorRequest request){
+    public List<PerfMonitorEchartsDTO> getPerfMonitorData(PerfMonitorRequest request) {
         List<PerfMonitorEchartsDTO> result = new ArrayList<>();
         List<PerfMetricMonitorData> list = elasticsearchProvide.searchByQuery(CE_PERF_METRIC_MONITOR_DATA, getSearchQuery(request), PerfMetricMonitorData.class);
-        if(list.size()>0){
+        if (list.size() > 0) {
             PerfMonitorEchartsDTO perfMonitorEchartsDTO = new PerfMonitorEchartsDTO();
             perfMonitorEchartsDTO.setMetricName(request.getMetricName());
             perfMonitorEchartsDTO.setResourceId(request.getInstanceId());
@@ -56,7 +56,7 @@ public class PerfMonitorService {
     /**
      * 构建复合查询对象
      *
-     * @param request     请求对象
+     * @param request 请求对象
      * @return 复合查询对象
      */
     private org.springframework.data.elasticsearch.core.query.Query getSearchQuery(PerfMonitorRequest request) {
@@ -82,4 +82,4 @@ public class PerfMonitorService {
                 .withAggregation("count", new Aggregation.Builder().valueCount(new ValueCountAggregation.Builder().field("_id").build()).build());
         return query.build();
     }
- }
+}

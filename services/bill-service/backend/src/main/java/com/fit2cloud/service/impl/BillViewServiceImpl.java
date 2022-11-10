@@ -6,11 +6,9 @@ import co.elastic.clients.elasticsearch._types.query_dsl.Query;
 import co.elastic.clients.elasticsearch._types.query_dsl.ScriptQuery;
 import co.elastic.clients.json.JsonData;
 import co.elastic.clients.util.ObjectBuilder;
-import com.fit2cloud.common.conver.Convert;
 import com.fit2cloud.common.exception.Fit2cloudException;
-import com.fit2cloud.common.provider.util.CommonUtil;
+import com.fit2cloud.common.util.MappingUtil;
 import com.fit2cloud.common.utils.JsonUtil;
-import com.fit2cloud.constants.BillGroupConstants;
 import com.fit2cloud.controller.request.BillExpensesRequest;
 import com.fit2cloud.controller.request.HistoryTrendRequest;
 import com.fit2cloud.controller.response.BillView;
@@ -34,6 +32,8 @@ import javax.annotation.Resource;
 import java.math.BigDecimal;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -80,16 +80,21 @@ public class BillViewServiceImpl implements BillViewService {
         return BigDecimal.valueOf(0);
     }
 
+
     @Override
     public List<Trend> getTrend(String type, Integer historyNum, HistoryTrendRequest historyTrendRequest) {
-        Aggregation.Builder.ContainerBuilder aggregation = new Aggregation.Builder().terms(new TermsAggregation.Builder().script(s -> getTermsAggregationScript(s, type)).size(historyNum).build());
+        List<String> months = getHistoryMonth(LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM")), historyNum);
+        // todo 根据趋势月份构建查询条件
+        Query q = new Query.Builder().script(new ScriptQuery.Builder().script(s -> getTermsAggregationScript(s, months)).build()).build();
+        DateHistogramAggregation dateHistogramAggregation = new DateHistogramAggregation.Builder().field("billingCycle").format("yyyy-MM").calendarInterval(CalendarInterval.Month).build();
+        Aggregation.Builder.ContainerBuilder aggregation = new Aggregation.Builder().dateHistogram(dateHistogramAggregation);
         aggregation.aggregations("total", new Aggregation.Builder().sum(new SumAggregation.Builder().field("realTotalCost").build()).build());
-        NativeQuery query = new NativeQueryBuilder().withAggregation("group1", aggregation.build()).build();
+        NativeQuery query = new NativeQueryBuilder().withQuery(q).withAggregation("group1", aggregation.build()).build();
         SearchHits<CloudBill> response = elasticsearchTemplate.search(query, CloudBill.class);
         ElasticsearchAggregations aggregations = (ElasticsearchAggregations) response.getAggregations();
         assert aggregations != null;
-        StringTermsAggregate sterms = aggregations.aggregations().get(0).aggregation().getAggregate().sterms();
-        return sterms.buckets().array().stream().map(this::toTrend).toList();
+        DateHistogramAggregate dateHistogramAggregate = aggregations.aggregations().get(0).aggregation().getAggregate().dateHistogram();
+        return dateHistogramAggregate.buckets().array().stream().map(this::toTrend).toList();
     }
 
     @Override
@@ -147,12 +152,6 @@ public class BillViewServiceImpl implements BillViewService {
         return query.getAggregations().get("billView").aggregations().get("group");
     }
 
-    private String mapGroup(String field, String groupName) {
-        if (BillGroupConstants.BILL_GROUP.containsKey(field)) {
-            return CommonUtil.exec(BillGroupConstants.BILL_GROUP.get(field).conver(), groupName, Convert::conver);
-        }
-        return groupName;
-    }
 
     /**
      * @param billRule         账单规则
@@ -199,7 +198,7 @@ public class BillViewServiceImpl implements BillViewService {
             Aggregate groupAggregate = bu.aggregations().get("group" + groupIndex);
             DefaultKeyValue<String, String> keyValue = new DefaultKeyValue<>();
             keyValue.setKey("group" + groupIndex);
-            keyValue.setValue(mapGroup(aggregation.terms().field(), bu.key()));
+            keyValue.setValue(MappingUtil.mapping(aggregation.terms().field(), bu.key()));
             ArrayList<DefaultKeyValue<String, String>> defaultKeyValues = new ArrayList<>();
             if (groupAggregate != null) {
                 if (CollectionUtils.isNotEmpty(superGroups)) {
@@ -275,11 +274,10 @@ public class BillViewServiceImpl implements BillViewService {
      * @param bucket es StringTermsBucket桶对象
      * @return 系统趋势对象
      */
-    private Trend toTrend(StringTermsBucket bucket) {
-        String key = bucket.key();
+    private Trend toTrend(DateHistogramBucket bucket) {
         Trend trend = new Trend();
         double total = bucket.aggregations().get("total").sum().value();
-        trend.setLabel(key);
+        trend.setLabel(bucket.keyAsString());
         trend.setValue(total);
         return trend;
     }

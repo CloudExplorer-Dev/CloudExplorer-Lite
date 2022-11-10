@@ -22,6 +22,7 @@ import com.fit2cloud.es.entity.CloudBill;
 import com.fit2cloud.es.repository.CloudBillRepository;
 import com.fit2cloud.provider.ICloudProvider;
 import com.fit2cloud.service.BaseSyncService;
+import com.fit2cloud.service.IBillDimensionSettingService;
 import com.fit2cloud.service.SyncService;
 import io.reactivex.rxjava3.functions.BiFunction;
 import io.reactivex.rxjava3.functions.Consumer;
@@ -52,6 +53,8 @@ public class SyncServiceImpl extends BaseSyncService implements SyncService {
     private CloudBillRepository cloudBillRepository;
     @Resource
     private ElasticsearchTemplate elasticsearchTemplate;
+    @Resource
+    private IBillDimensionSettingService billDimensionSettingService;
     /**
      * 任务描述
      */
@@ -74,6 +77,8 @@ public class SyncServiceImpl extends BaseSyncService implements SyncService {
     @Override
     public void syncBill(String cloudAccountId, List<String> months) {
         syncBill(cloudAccountId, months, null);
+        // 授权
+        billDimensionSettingService.authorize();
     }
 
     /**
@@ -84,13 +89,7 @@ public class SyncServiceImpl extends BaseSyncService implements SyncService {
      * @param billSetting    账单设置
      */
     private void syncBill(String cloudAccountId, List<String> months, Map<String, Object> billSetting) {
-        proxy(cloudAccountId,
-                months,
-                (p, r) -> syncBill(p, r, cloudAccountId),
-                (a, month) -> this.getExecMethodArgs(a, month, billSetting),
-                this::saveBatchOrUpdate,
-                this::writeJobRecord,
-                this::deleteDataSource);
+        proxy(cloudAccountId, months, (p, r) -> syncBill(p, r, cloudAccountId), (a, month) -> this.getExecMethodArgs(a, month, billSetting), this::saveBatchOrUpdate, this::writeJobRecord, this::deleteDataSource);
     }
 
     @Override
@@ -186,9 +185,7 @@ public class SyncServiceImpl extends BaseSyncService implements SyncService {
      */
     private void saveBatchOrUpdate(BiSaveBatchOrUpdateParams<CloudBill> saveBatchOrUpdateParams) {
         //todo 构建删除数据查询条件
-        ScriptQuery scriptQuery = new ScriptQuery.Builder().script(s -> s.inline(inlineScript -> inlineScript.lang("painless")
-                .source("doc['billingCycle'].value.monthValue==params.month&&doc['billingCycle'].value.year==params.year&&doc['cloudAccountId'].value==params.cloudAccountId")
-                .params(getQuertParams(saveBatchOrUpdateParams.getRequestParams(), saveBatchOrUpdateParams.getCloudAccount().getId())))).build();
+        ScriptQuery scriptQuery = new ScriptQuery.Builder().script(s -> s.inline(inlineScript -> inlineScript.lang("painless").source("doc['billingCycle'].value.monthValue==params.month&&doc['billingCycle'].value.year==params.year&&doc['cloudAccountId'].value==params.cloudAccountId").params(getQuertParams(saveBatchOrUpdateParams.getRequestParams(), saveBatchOrUpdateParams.getCloudAccount().getId())))).build();
         // todo 删除数据
         elasticsearchTemplate.delete(new NativeQueryBuilder().withQuery(new Query.Builder().script(scriptQuery).build()).build(), CloudBill.class, IndexCoordinates.of(CloudBill.class.getAnnotation(Document.class).indexName()));
         //todo 插入数据
@@ -202,17 +199,17 @@ public class SyncServiceImpl extends BaseSyncService implements SyncService {
     /**
      * 获取脚本查询参数
      *
-     * @param requestParams 调用同步查询的请求参数
-     * @param platform      云平台
+     * @param requestParams  调用同步查询的请求参数
+     * @param cloudAccountId 云平台
      * @return 查询数据
      */
-    private Map<String, JsonData> getQuertParams(String requestParams, String platform) {
+    private Map<String, JsonData> getQuertParams(String requestParams, String cloudAccountId) {
         String month = JsonUtil.parseObject(requestParams).get("month").asText();
         String[] split = month.split("-");
         return new HashMap<>() {{
             put("year", JsonData.of(Integer.parseInt(split[0])));
             put("month", JsonData.of(Integer.parseInt(split[1])));
-            put("platform", JsonData.of(platform));
+            put("cloudAccountId", JsonData.of(cloudAccountId));
         }};
     }
 
@@ -281,13 +278,7 @@ public class SyncServiceImpl extends BaseSyncService implements SyncService {
      * @param remote            如果云账号不存在则删除
      * @param <T>               账单
      */
-    private <T> void proxy(String cloudAccountId,
-                           List<String> months,
-                           BiFunction<ICloudProvider, String, List<T>> execMethod,
-                           BiFunction<CloudAccount, String, String> getExecMethodArgs,
-                           Consumer<BiSaveBatchOrUpdateParams<T>> saveBatchOrUpdate,
-                           Consumer<BiSaveBatchOrUpdateParams<T>> writeJobRecord,
-                           Consumer<String> remote) {
+    private <T> void proxy(String cloudAccountId, List<String> months, BiFunction<ICloudProvider, String, List<T>> execMethod, BiFunction<CloudAccount, String, String> getExecMethodArgs, Consumer<BiSaveBatchOrUpdateParams<T>> saveBatchOrUpdate, Consumer<BiSaveBatchOrUpdateParams<T>> writeJobRecord, Consumer<String> remote) {
         proxy(cloudAccountId, jobDescription, months, ICloudProvider::of, syncTime -> initJobRecord(syncTime, cloudAccountId), execMethod, getExecMethodArgs, saveBatchOrUpdate, writeJobRecord, remote);
     }
 

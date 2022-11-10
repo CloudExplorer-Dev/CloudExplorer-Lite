@@ -14,8 +14,12 @@ import com.fit2cloud.provider.impl.vsphere.entity.F2CVsphereCluster;
 import com.fit2cloud.provider.impl.vsphere.entity.F2CVsphereNetwork;
 import com.fit2cloud.provider.impl.vsphere.entity.VsphereHost;
 import com.fit2cloud.provider.impl.vsphere.entity.VsphereResourcePool;
+import com.fit2cloud.provider.impl.vsphere.entity.*;
 import com.fit2cloud.provider.impl.vsphere.entity.request.*;
+import com.fit2cloud.provider.impl.vsphere.util.DiskType;
 
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -97,7 +101,7 @@ public class VsphereCloudProvider extends AbstractCloudProvider<VsphereCredentia
     }
 
     public List<F2CVsphereNetwork> getNetworks(String req) {
-        return VsphereSyncCloudApi.getNetworks(JsonUtil.parseObject(req, VsphereNetworkRequest.class));
+        return VsphereSyncCloudApi.getNetworks(JsonUtil.parseObject(req, VsphereVmCreateRequest.class));
     }
 
     public List<Map<String, String>> getLocations(String req) {
@@ -115,6 +119,33 @@ public class VsphereCloudProvider extends AbstractCloudProvider<VsphereCredentia
         return VsphereSyncCloudApi.geResourcePools(request);
     }
 
+    public List<VsphereFolder> getFolders(String req) {
+        VsphereVmCreateRequest request = JsonUtil.parseObject(req, VsphereVmCreateRequest.class);
+        return VsphereSyncCloudApi.getFolders(request);
+    }
+
+    public List<Map<String, String>> getDiskTypes(String req) {
+        List<Map<String, String>> diskTypes = new ArrayList<>();
+        Map<String, String> defaultMap = new HashMap<>();
+        defaultMap.put("info", "与源格式相同");
+        defaultMap.put("value", DiskType.DEFAULT);
+        diskTypes.add(defaultMap);
+        Map<String, String> thinMap = new HashMap<>();
+        thinMap.put("info", "精简置备");
+        thinMap.put("value", DiskType.THIN);
+        diskTypes.add(thinMap);
+        Map<String, String> Map = new HashMap<>();
+        Map.put("info", "厚置备置零");
+        Map.put("value", DiskType.EAGER_ZEROED);
+        diskTypes.add(Map);
+        return diskTypes;
+    }
+
+    public List<VsphereDatastore> getDatastoreList(String req) {
+        VsphereVmCreateRequest request = JsonUtil.parseObject(req, VsphereVmCreateRequest.class);
+        return VsphereSyncCloudApi.getDatastoreList(request);
+    }
+
     @Override
     public boolean enlargeDisk(String req) {
         return VsphereSyncCloudApi.enlargeDisk(JsonUtil.parseObject(req, VsphereResizeDiskRequest.class));
@@ -123,6 +154,16 @@ public class VsphereCloudProvider extends AbstractCloudProvider<VsphereCredentia
     @Override
     public List<F2CDisk> createDisks(String req) {
         return VsphereSyncCloudApi.createDisks(JsonUtil.parseObject(req, VsphereCreateDiskRequest.class));
+    }
+
+    @Override
+    public F2CVirtualMachine getSimpleServerByCreateRequest(String req) {
+        return VsphereSyncCloudApi.getSimpleServerByCreateRequest(JsonUtil.parseObject(req, VsphereVmCreateRequest.class));
+    }
+
+    @Override
+    public F2CVirtualMachine createVirtualMachine(String req) {
+        return VsphereSyncCloudApi.createServer(JsonUtil.parseObject(req, VsphereVmCreateRequest.class));
     }
 
     @Override

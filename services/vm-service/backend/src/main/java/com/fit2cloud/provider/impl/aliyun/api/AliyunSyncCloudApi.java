@@ -16,22 +16,20 @@ import com.fit2cloud.common.provider.util.PageUtil;
 import com.fit2cloud.common.utils.DateUtil;
 import com.fit2cloud.common.utils.JsonUtil;
 import com.fit2cloud.constants.ErrorCodeConstants;
-import com.fit2cloud.provider.constants.DeleteWithInstance;
 import com.fit2cloud.provider.constants.F2CDiskStatus;
 import com.fit2cloud.provider.entity.F2CDisk;
 import com.fit2cloud.provider.entity.F2CImage;
 import com.fit2cloud.provider.entity.F2CVirtualMachine;
 import com.fit2cloud.provider.entity.request.GetMetricsRequest;
+import com.fit2cloud.provider.impl.aliyun.constants.AliyunDiskType;
 import com.fit2cloud.provider.impl.aliyun.constants.AliyunPerfMetricConstants;
 import com.fit2cloud.provider.impl.aliyun.entity.credential.AliyunVmCredential;
 import com.fit2cloud.provider.impl.aliyun.entity.request.*;
 import com.fit2cloud.provider.impl.aliyun.util.AliyunMappingUtil;
 import org.apache.commons.lang3.StringUtils;
 import org.eclipse.jetty.util.ajax.JSON;
+import org.springframework.beans.BeanUtils;
 
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.*;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -233,10 +231,10 @@ public class AliyunSyncCloudApi {
                 checkStatus(client, "Stopped", describeInstanceStatusRequest);
                 return true;
             } catch (TeaException error) {
-                throw new Fit2cloudException(ErrorCodeConstants.VM_POWER_OFF_FAIL.getCode(),error.getMessage());
+                throw new Fit2cloudException(ErrorCodeConstants.VM_POWER_OFF_FAIL.getCode(), error.getMessage());
             } catch (Exception _error) {
                 TeaException error = new TeaException(_error.getMessage(), _error);
-                throw new Fit2cloudException(ErrorCodeConstants.VM_POWER_OFF_FAIL.getCode(),error.getMessage());
+                throw new Fit2cloudException(ErrorCodeConstants.VM_POWER_OFF_FAIL.getCode(), error.getMessage());
             }
         }
         return false;
@@ -259,10 +257,10 @@ public class AliyunSyncCloudApi {
                 checkStatus(client, "Running", describeInstanceStatusRequest);
                 return true;
             } catch (TeaException error) {
-                throw new Fit2cloudException(ErrorCodeConstants.VM_POWER_ON_FAIL.getCode(),error.getMessage());
+                throw new Fit2cloudException(ErrorCodeConstants.VM_POWER_ON_FAIL.getCode(), error.getMessage());
             } catch (Exception _error) {
                 TeaException error = new TeaException(_error.getMessage(), _error);
-                throw new Fit2cloudException(ErrorCodeConstants.VM_POWER_ON_FAIL.getCode(),error.getMessage());
+                throw new Fit2cloudException(ErrorCodeConstants.VM_POWER_ON_FAIL.getCode(), error.getMessage());
             }
         }
         return false;
@@ -287,10 +285,10 @@ public class AliyunSyncCloudApi {
                 checkStatus(client, "Running", describeInstanceStatusRequest);
                 return true;
             } catch (TeaException error) {
-                throw new Fit2cloudException(ErrorCodeConstants.VM_REBOOT_FAIL.getCode(),error.getMessage());
+                throw new Fit2cloudException(ErrorCodeConstants.VM_REBOOT_FAIL.getCode(), error.getMessage());
             } catch (Exception _error) {
                 TeaException error = new TeaException(_error.getMessage(), _error);
-                throw new Fit2cloudException(ErrorCodeConstants.VM_REBOOT_FAIL.getCode(),error.getMessage());
+                throw new Fit2cloudException(ErrorCodeConstants.VM_REBOOT_FAIL.getCode(), error.getMessage());
             }
         }
         return false;
@@ -312,10 +310,10 @@ public class AliyunSyncCloudApi {
                 client.deleteInstances(deleteInstancesRequest);
                 return true;
             } catch (TeaException error) {
-                throw new Fit2cloudException(ErrorCodeConstants.VM_DELETE_FAIL.getCode(),error.getMessage());
+                throw new Fit2cloudException(ErrorCodeConstants.VM_DELETE_FAIL.getCode(), error.getMessage());
             } catch (Exception _error) {
                 TeaException error = new TeaException(_error.getMessage(), _error);
-                throw new Fit2cloudException(ErrorCodeConstants.VM_DELETE_FAIL.getCode(),error.getMessage());
+                throw new Fit2cloudException(ErrorCodeConstants.VM_DELETE_FAIL.getCode(), error.getMessage());
             }
         }
         return false;
@@ -341,6 +339,79 @@ public class AliyunSyncCloudApi {
     }
 
     /**
+     * 查询可用区支持的磁盘类型
+     *
+     * @param req
+     * @return
+     */
+    public static List<Map<String, String>> getDiskTypes(AliyunGetDiskTypeRequest req) {
+        List<Map<String, String>> diskTypes = new ArrayList<>();
+        AliyunVmCredential credential = JsonUtil.parseObject(req.getCredential(), AliyunVmCredential.class);
+        Client client = credential.getClientByRegion(req.getRegionId());
+        DescribeZonesRequest describeZonesRequest = new DescribeZonesRequest();
+        describeZonesRequest.setRegionId(req.getRegionId());
+        describeZonesRequest.setVerbose(false); // 不展示详细信息
+
+        try {
+            List<DescribeZonesResponseBody.DescribeZonesResponseBodyZonesZone> zones = client.describeZones(describeZonesRequest).getBody().zones.zone;
+            for (DescribeZonesResponseBody.DescribeZonesResponseBodyZonesZone zone : zones) {
+                if (zone.getZoneId().equalsIgnoreCase(req.getZone())) {
+                    for (String availableDiskCategory : zone.availableDiskCategories.diskCategories) {
+                        Map<String, String> diskType = new HashMap<>();
+                        diskType.put("id", availableDiskCategory);
+                        diskType.put("name", AliyunDiskType.getName(availableDiskCategory));
+                        diskTypes.add(diskType);
+                    }
+                }
+            }
+            return diskTypes;
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to get disk type! " + e.getMessage(), e);
+        }
+    }
+
+    /**
+     * 创建单块磁盘
+     * 如果不挂载默认创建出来的都是后付费的，如果挂载到机器则该机型需要时预付费的，对应创建出来的磁盘也是预付费的，
+     * 后付费的机器，可以分为两步。1.先创建出来一块空盘 2.调用挂载接口
+     * 自动挂载(只有预付费的才能自动挂载，)
+     * https://next.api.aliyun.com/api/Ecs/2014-05-26/CreateDisk
+     *
+     * @param request 请求对象
+     * @return 镜像数据
+     */
+    public static F2CDisk createDisk(AliyunCreateDiskRequest request) {
+        try {
+            if (StringUtils.isNotEmpty(request.getRegionId()) && StringUtils.isNotEmpty(request.getCredential())) {
+                Client client = JsonUtil.parseObject(request.getCredential(), AliyunVmCredential.class).getClient();
+                String chargeType = null;
+                Boolean isAttached = request.getIsAttached();
+                if (isAttached) {
+                    DescribeInstancesResponse describeInstancesResponse = client.describeInstances(request.toDescribeInstancesRequest());
+                    if (describeInstancesResponse.getBody().getInstances().getInstance().size() == 0) {
+                        throw new RuntimeException("Instance not found！");
+                    }
+                    chargeType = describeInstancesResponse.getBody().getInstances().getInstance().get(0).getInstanceChargeType();
+                }
+                CreateDiskRequest createDiskRequest = request.toCreateDiskRequest(chargeType);
+                CreateDiskResponse createDiskResponse = client.createDisk(createDiskRequest);
+                F2CDisk createdDisk = checkDiskStatus(client, request.toDescribeDisksRequest(createDiskResponse.getBody().diskId), F2CDiskStatus.AVAILABLE);
+                if (isAttached && "PostPaid".equals(chargeType)) {
+                    AliyunAttachDiskRequest attachDiskRequest = new AliyunAttachDiskRequest();
+                    BeanUtils.copyProperties(request, attachDiskRequest);
+                    attachDiskRequest.setDiskId(createdDisk.getDiskId());
+                    attachDisk(attachDiskRequest);
+                }
+                return createdDisk;
+            } else {
+                throw new RuntimeException("RegionId or credential can not be null");
+            }
+        } catch (Exception e) {
+            throw new RuntimeException(e.getMessage(),e);
+        }
+    }
+
+    /**
      * 创建磁盘
      * 如果不挂载默认创建出来的都是后付费的，如果挂载到机器则该机型需要时预付费的，对应创建出来的磁盘也是预付费的，
      * 后付费的机器，可以分为两步。1.先创建出来一块空盘 2.调用挂载接口
@@ -350,7 +421,7 @@ public class AliyunSyncCloudApi {
      * @param request 请求对象
      * @return 镜像数据
      */
-    public static List<F2CDisk> createDisk(AliyunCreateDiskRequest request) {
+    public static List<F2CDisk> createDisks(AliyunCreateDisksRequest request) {
         List<F2CDisk> f2CDisks = new ArrayList<>();
         try {
             if (StringUtils.isNotEmpty(request.getRegionId()) && StringUtils.isNotEmpty(request.getCredential())) {
@@ -397,7 +468,7 @@ public class AliyunSyncCloudApi {
                 DescribeDisksResponse describeDisksResponse = client.describeDisks(describeDisksRequest);
                 List<DescribeDisksResponseBody.DescribeDisksResponseBodyDisksDisk> disks = describeDisksResponse.getBody().getDisks().getDisk();
                 if (disks.size() > 0 && disks.get(0).getStatus().equalsIgnoreCase(expectStatus)) {
-                    return transAliyunDisk2F2CDisk(disks.get(0));
+                    return AliyunMappingUtil.toF2CDisk(disks.get(0));
                 }
                 if (count >= 40) {
                     throw new Exception("Check cloud disk status timeout！");
@@ -406,59 +477,9 @@ public class AliyunSyncCloudApi {
         } catch (Exception e) {
             throw new RuntimeException(e.getMessage(), e);
         }
-
     }
 
-    private static F2CDisk transAliyunDisk2F2CDisk(DescribeDisksResponseBody.DescribeDisksResponseBodyDisksDisk disk) {
-        F2CDisk f2cDisk = new F2CDisk();
-        if (disk.getCategory() != null) {
-            f2cDisk.setCategory(disk.getCategory());
-            f2cDisk.setDiskType(disk.getCategory());
-        }
-        if (org.apache.commons.lang.StringUtils.isNotEmpty(disk.getType()) && disk.getType().equalsIgnoreCase("system")) {
-            f2cDisk.setBootable(true);
-        } else {
-            f2cDisk.setBootable(false);
-        }
-        f2cDisk.setCreateTime(getUTCTime(disk.getCreationTime()));
-        f2cDisk.setDescription(disk.getDescription());
-        f2cDisk.setDevice(disk.getDevice());
-        f2cDisk.setDiskChargeType(disk.getDiskChargeType());
-        f2cDisk.setDiskId(disk.getDiskId());
-        f2cDisk.setDiskName(disk.getDiskName());
-        f2cDisk.setInstanceUuid(disk.getInstanceId());
-        f2cDisk.setRegion(disk.getRegionId());
-        f2cDisk.setZone(disk.getZoneId());
-        f2cDisk.setSize(disk.getSize());
-        f2cDisk.setStatus(AliyunMappingUtil.toF2CDiskStatus(disk.getStatus()));
-        if (StringUtils.isEmpty(disk.getDiskName())) {
-            f2cDisk.setDiskName(disk.getDiskId());
-        }
-        if (disk.getDeleteWithInstance()) {
-            f2cDisk.setDeleteWithInstance(DeleteWithInstance.YES.name());
-        } else {
-            f2cDisk.setDeleteWithInstance(DeleteWithInstance.NO.name());
-        }
-        return f2cDisk;
-    }
-
-
-    private static long getUTCTime(String dateStr) {
-        try {
-            Calendar cal = Calendar.getInstance();
-            int zoneOffset = cal.get(java.util.Calendar.ZONE_OFFSET);
-            int dstOffset = cal.get(java.util.Calendar.DST_OFFSET);
-            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'");
-            Date date = sdf.parse(dateStr);
-            long time = date.getTime() + (zoneOffset + dstOffset);
-            return time;
-        } catch (ParseException e) {
-            e.printStackTrace();
-        }
-        return 0;
-    }
-
-    public static List<F2CPerfMetricMonitorData> getF2CPerfMetricList(GetMetricsRequest getMetricsRequest){
+    public static List<F2CPerfMetricMonitorData> getF2CPerfMetricList(GetMetricsRequest getMetricsRequest) {
         if (StringUtils.isEmpty(getMetricsRequest.getRegionId())) {
             throw new Fit2cloudException(10002, "区域为必填参数");
         }
@@ -466,23 +487,24 @@ public class AliyunSyncCloudApi {
         //设置时间，根据interval,默认一个小时
         getMetricsRequest.setStartTime(String.valueOf(DateUtil.getBeforeHourTime(getMetricsRequest.getInterval())));
         getMetricsRequest.setEndTime(String.valueOf(System.currentTimeMillis()));
-        System.out.println("开始时间："+getMetricsRequest.getStartTime());
-        System.out.println("结束时间："+getMetricsRequest.getEndTime());
-        try{
+        System.out.println("开始时间：" + getMetricsRequest.getStartTime());
+        System.out.println("结束时间：" + getMetricsRequest.getEndTime());
+        try {
             getMetricsRequest.setRegionId(getMetricsRequest.getRegionId());
             result.addAll(getVmPerfMetric(getMetricsRequest));
-        }catch (Exception e){
-            throw new Fit2cloudException(100021, "获取监控数据失败-"+getMetricsRequest.getRegionId()+"-" + e.getMessage());
+        } catch (Exception e) {
+            throw new Fit2cloudException(100021, "获取监控数据失败-" + getMetricsRequest.getRegionId() + "-" + e.getMessage());
         }
         return result;
     }
 
     /**
      * 获取虚拟机监控指标数据
+     *
      * @param getMetricsRequest
      * @return
      */
-    private static List<F2CPerfMetricMonitorData> getVmPerfMetric(GetMetricsRequest getMetricsRequest){
+    private static List<F2CPerfMetricMonitorData> getVmPerfMetric(GetMetricsRequest getMetricsRequest) {
         AliyunVmCredential credential = JsonUtil.parseObject(getMetricsRequest.getCredential(), AliyunVmCredential.class);
         List<F2CPerfMetricMonitorData> result = new ArrayList<>();
         //查询所有虚拟机
@@ -490,12 +512,12 @@ public class AliyunSyncCloudApi {
         listVirtualMachineRequest.setCredential(getMetricsRequest.getCredential());
         listVirtualMachineRequest.setRegion(getMetricsRequest.getRegionId());
         List<F2CVirtualMachine> vms = listVirtualMachine(listVirtualMachineRequest);
-        if(vms.size()==0){
+        if (vms.size() == 0) {
             return result;
         }
         //查询监控指标数据参数
         ///TODO 由于我们只查询一个小时内的数据，时间间隔是60s,所以查询每台机器的监控数据的时候最多不过60条数据，所以不需要分页查询
-        Map<String,String> dimension = new HashMap<>();
+        Map<String, String> dimension = new HashMap<>();
         DescribeMetricListRequest describeMetricListRequest = new DescribeMetricListRequest()
                 .setNamespace("acs_ecs_dashboard")
                 .setPeriod(String.valueOf(getMetricsRequest.getPeriod()))
@@ -504,17 +526,17 @@ public class AliyunSyncCloudApi {
                 .setRegionId(getMetricsRequest.getRegionId());
         com.aliyun.cms20190101.Client cmsClient = credential.getCmsClientByRegion(getMetricsRequest.getRegionId());
         vms.forEach(vm -> {
-            dimension.put("instanceId",vm.getInstanceUUID());
+            dimension.put("instanceId", vm.getInstanceUUID());
             //监控指标
-            Arrays.stream(AliyunPerfMetricConstants.CloudServerPerfMetricEnum.values()).sorted().collect(Collectors.toList()).forEach(perfMetric->{
+            Arrays.stream(AliyunPerfMetricConstants.CloudServerPerfMetricEnum.values()).sorted().collect(Collectors.toList()).forEach(perfMetric -> {
                 describeMetricListRequest.setDimensions(JsonUtil.toJSONString(Arrays.asList(dimension)));
                 describeMetricListRequest.setMetricName(perfMetric.getMetricName());
                 try {
                     //查询监控指标数据
                     DescribeMetricListResponse response = cmsClient.describeMetricListWithOptions(describeMetricListRequest, new RuntimeOptions());
-                    if(StringUtils.equalsIgnoreCase(response.getBody().getCode(),"200") && !StringUtils.isBlank(response.getBody().getDatapoints())){
+                    if (StringUtils.equalsIgnoreCase(response.getBody().getCode(), "200") && !StringUtils.isBlank(response.getBody().getDatapoints())) {
                         ArrayNode jsonArray = JsonUtil.parseArray(response.getBody().getDatapoints());
-                        jsonArray.forEach(v->{
+                        jsonArray.forEach(v -> {
                             F2CPerfMetricMonitorData f2CEntityPerfMetric = AliyunMappingUtil.toF2CPerfMetricMonitorData(v);
                             f2CEntityPerfMetric.setEntityType(F2CEntityType.VIRTUAL_MACHINE.name());
                             f2CEntityPerfMetric.setMetricName(perfMetric.name());
@@ -524,7 +546,7 @@ public class AliyunSyncCloudApi {
                             result.add(f2CEntityPerfMetric);
                         });
                     }
-                }catch (Exception e){
+                } catch (Exception e) {
                     e.printStackTrace();
                 }
             });
@@ -532,6 +554,7 @@ public class AliyunSyncCloudApi {
         });
         return result;
     }
+
     /**
      * 扩容磁盘
      *

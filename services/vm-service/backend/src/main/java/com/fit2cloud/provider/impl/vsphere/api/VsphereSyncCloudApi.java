@@ -15,27 +15,33 @@ import com.fit2cloud.provider.impl.vsphere.entity.request.*;
 import com.fit2cloud.provider.impl.vsphere.util.*;
 import com.vmware.vim25.*;
 import com.vmware.vim25.mo.*;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
 
 import java.math.BigDecimal;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.*;
 import java.util.function.Function;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 /**
  * Author: LiuDi
  * Date: 2022/9/21 2:39 PM
  */
+@Slf4j
 public class VsphereSyncCloudApi {
     private static final long MB = 1024 * 1024;
     private static final long GB = MB * 1024;
-    private static Logger logger = LoggerFactory.getLogger(VsphereSyncCloudApi.class);
+
+    public static String VALID_HOST_REGEX = "^(?=.{1,255}$)[0-9A-Za-z](?:(?:[0-9A-Za-z]|\\b-){0,61}[0-9A-Za-z])?(?:\\.[0-9A-Za-z](?:(?:[0-9A-Za-z]|\\b-){0,61}[0-9A-Za-z])?)*\\.?$";
+
 
     /**
      * 获取云主机
@@ -128,7 +134,7 @@ public class VsphereSyncCloudApi {
             }
             return templates;
         } catch (Exception e) {
-            logger.error("[Failed to Get Content Library Image]", e);
+            log.error("[Failed to Get Content Library Image]", e);
         }
         return templates;
     }
@@ -184,7 +190,7 @@ public class VsphereSyncCloudApi {
                 list.add(VsphereUtil.toF2CHost(hs, client));
             }
         } catch (Exception e) {
-            logger.error(ExceptionUtils.getStackTrace(e));
+            log.error(ExceptionUtils.getStackTrace(e));
             throw new RuntimeException(e);
         } finally {
             closeConnection(client);
@@ -206,13 +212,13 @@ public class VsphereSyncCloudApi {
                         for (Datastore ds : list) {
                             Datacenter dc = client.getDataCenter(ds);
                             F2CDatastore f2cDs = new F2CDatastore();
-                            f2cDs.setDataCenterId(dc.getName());
+                            f2cDs.setDataCenterId(dc.getMOR().getVal());
                             f2cDs.setDataCenterName(dc.getName());
-                            f2cDs.setClusterId(cluster.getName());
+                            f2cDs.setClusterId(cluster.getMOR().getVal());
                             f2cDs.setClusterName(cluster.getName());
                             DatastoreSummary dsSummary = ds.getSummary();
                             f2cDs.setCapacity(dsSummary.getCapacity() / GB);
-                            f2cDs.setDataStoreId(ds.getName());
+                            f2cDs.setDataStoreId(ds.getMOR().getVal());
                             f2cDs.setDataStoreName(ds.getName());
                             f2cDs.setFreeSpace(dsSummary.getFreeSpace() / GB);
                             f2cDs.setType(dsSummary.getType());
@@ -304,7 +310,7 @@ public class VsphereSyncCloudApi {
             return execMethod.apply(uuId);
         } catch (Exception e) {
             e.printStackTrace();
-            logger.error("[Failed to operate virtual machine]", e);
+            log.error("[Failed to operate virtual machine]", e);
         } finally {
             closeConnection.run();
         }
@@ -314,7 +320,7 @@ public class VsphereSyncCloudApi {
     public static List<Map<String, String>> getLocations(VsphereVmCreateRequest req) {
         List<Map<String, String>> locations = new ArrayList<>();
         Map<String, String> hostMap = new HashMap<>();
-        hostMap.put("name", "主机");
+        hostMap.put("name", "宿主机");
         hostMap.put("value", "host");
         locations.add(hostMap);
         Map<String, String> poolMap = new HashMap<>();
@@ -386,55 +392,6 @@ public class VsphereSyncCloudApi {
         }
     }
 
-
-    public static List<F2CVsphereNetwork> getNetworks(VsphereNetworkRequest req) {
-
-        VsphereVmClient client = null;
-        try {
-            client = req.getVsphereVmClient();
-
-            List<F2CVsphereNetwork> networks = new ArrayList<>();
-            networks.add(new F2CVsphereNetwork().setName("Template default").setId(ResourceConstants.DEFAULT_TEMPLATE_NETWORK));
-
-            String location = req.getLocation();
-            List<String> locationValues = req.getHosts();
-            String cluster = req.getCluster();
-            ClusterComputeResource clusterComputeResource = null;
-            if (cluster != null && cluster.trim().length() > 0) {
-                clusterComputeResource = client.getCluster(cluster);
-            }
-            if (CollectionUtils.isEmpty(locationValues)) {
-                networks.addAll(getClusterNetworks(clusterComputeResource));
-            } else {
-                if (StringUtils.equals("host", location)) {
-                    if (locationValues.contains(ResourceConstants.DRS) || locationValues.contains(ResourceConstants.ALL_COMPUTE_RESOURCE)) {
-                        networks.addAll(getClusterNetworks(clusterComputeResource));
-                    } else {
-                        for (String host : locationValues) {
-                            HostSystem hostSystem = client.getHost(host);
-                            if (hostSystem != null) {
-                                networks.addAll(convertToVsphereNetworks(hostSystem));
-                            }
-                        }
-                    }
-                } else {
-                    networks.addAll(getClusterNetworks(clusterComputeResource));
-                }
-            }
-            Set<F2CVsphereNetwork> temp = new HashSet<>(networks);
-            return new ArrayList<>(temp);
-
-        } catch (Exception e) {
-            LogUtil.error(e.getMessage());
-            throw new RuntimeException(e.getMessage());
-        } finally {
-            if (client != null) {
-                client.closeConnection();
-            }
-        }
-
-    }
-
     private static List<F2CVsphereNetwork> getClusterNetworks(ClusterComputeResource clusterComputeResource) throws Exception {
         List<F2CVsphereNetwork> networks = new ArrayList<>();
         if (clusterComputeResource != null) {
@@ -472,7 +429,7 @@ public class VsphereSyncCloudApi {
                 networks.add(new F2CVsphereNetwork()
                         .setName(network.getName())
                         .setDescription(desc)
-                        .setId(network.getMOR().getVal()));
+                        .setMor(network.getMOR().getVal()));
             }
         }
         return networks;
@@ -597,10 +554,11 @@ public class VsphereSyncCloudApi {
                 //使用情况
                 HostListSummary summary = hostSystem.getSummary();
                 HostHardwareSummary hostHw = summary.getHardware();
-                long totalMemory = hostHw.getMemorySize() / GB;
-                long totalCpu = (long) hostHw.getCpuMhz() * hostHw.getNumCpuCores();
-                long totalUsedCpu = summary.getQuickStats().getOverallCpuUsage();
-                long totalUsedMemory = summary.getQuickStats().getOverallMemoryUsage();
+
+                BigDecimal totalCpu = BigDecimal.valueOf(hostHw.getCpuMhz()).multiply(BigDecimal.valueOf(hostHw.getNumCpuCores())).divide(BigDecimal.valueOf(1000), 2, RoundingMode.HALF_UP); //GHz
+                BigDecimal totalUsedCpu = BigDecimal.valueOf(summary.getQuickStats().getOverallCpuUsage()).divide(BigDecimal.valueOf(1000), 2, RoundingMode.HALF_UP); //GHz
+                BigDecimal totalMemory = BigDecimal.valueOf(hostHw.getMemorySize()).divide(BigDecimal.valueOf(GB), 2, RoundingMode.HALF_UP);
+                BigDecimal totalUsedMemory = BigDecimal.valueOf(summary.getQuickStats().getOverallMemoryUsage()).divide(BigDecimal.valueOf(1024), 2, RoundingMode.HALF_UP); //直接拿到是MB还要再除1024
 
                 host.setTotalCpu(totalCpu)
                         .setTotalMemory(totalMemory)
@@ -609,7 +567,7 @@ public class VsphereSyncCloudApi {
 
                 result.add(host);
             }
-
+            result.sort(Comparator.comparing(VsphereHost::getName));
             return result;
         } catch (Exception e) {
             throw new RuntimeException(e);
@@ -634,6 +592,7 @@ public class VsphereSyncCloudApi {
                     }
                 }
             }
+            list.sort(Comparator.comparing(VsphereResourcePool::getName));
             return list;
         } catch (Exception e) {
             throw new RuntimeException(e);
@@ -655,10 +614,15 @@ public class VsphereSyncCloudApi {
         ResourcePoolResourceUsage cpu = runtime.getCpu();
         ResourcePoolResourceUsage memory = runtime.getMemory();
 
-        root.setTotalCpu(cpu.getReservationUsedForVm() + cpu.getUnreservedForVm())
-                .setUsedCpu(cpu.getReservationUsedForVm())
-                .setTotalMemory((memory.getReservationUsedForVm() + memory.getUnreservedForVm()) / GB)
-                .setUsedMemory(memory.getReservationUsedForVm() / GB);
+        BigDecimal totalCpu = BigDecimal.valueOf(cpu.getReservationUsedForVm()).add(BigDecimal.valueOf(cpu.getUnreservedForVm())).divide(BigDecimal.valueOf(1000), 2, RoundingMode.HALF_UP); //GHz
+        BigDecimal totalUsedCpu = BigDecimal.valueOf(cpu.getReservationUsedForVm()).divide(BigDecimal.valueOf(1000), 2, RoundingMode.HALF_UP); //GHz
+        BigDecimal totalMemory = (BigDecimal.valueOf(memory.getReservationUsedForVm()).add(BigDecimal.valueOf(memory.getUnreservedForVm()))).divide(BigDecimal.valueOf(GB), 2, RoundingMode.HALF_UP); //GB
+        BigDecimal totalUsedMemory = BigDecimal.valueOf(memory.getReservationUsedForVm()).divide(BigDecimal.valueOf(GB), 2, RoundingMode.HALF_UP); //GB
+
+        root.setTotalCpu(totalCpu)
+                .setUsedCpu(totalUsedCpu)
+                .setTotalMemory(totalMemory) //MB
+                .setUsedMemory(totalUsedMemory); //MB
 
         result.add(root);
         if (subPools != null) {
@@ -672,6 +636,335 @@ public class VsphereSyncCloudApi {
         }
         return result;
     }
+
+    public static List<VsphereFolder> getFolders(VsphereVmCreateRequest request) {
+        VsphereVmClient client = null;
+        try {
+            client = request.getVsphereVmClient();
+            List<Folder> folders = client.listFolders();
+            List<VsphereFolder> list = new ArrayList<>();
+
+            if (folders != null && folders.size() > 0) {
+                for (Folder folder : folders) {
+                    List<VsphereFolder> childFolders = VsphereUtil.getChildFolders(client, folder, "");
+                    list.addAll(childFolders);
+                }
+            }
+            list.sort(Comparator.comparing(VsphereFolder::getName));
+
+            //根目录
+            VsphereFolder rootFolder = new VsphereFolder().setMor(VsphereClient.FOLDER_ROOT).setName(VsphereClient.FOLDER_ROOT);
+            list.add(0, rootFolder);
+
+            return list;
+        } catch (Exception e) {
+            throw new RuntimeException(e.getMessage(), e);
+        } finally {
+            closeConnection(client);
+        }
+    }
+
+    public static List<VsphereDatastore> getDatastoreList(VsphereVmCreateRequest request) {
+        VsphereVmClient client = null;
+        List<VsphereDatastore> datastoreList = new ArrayList<>();
+        try {
+            if (request.getComputeConfig() == null) {
+                return new ArrayList<>();
+            }
+            String location = request.getComputeConfig().getLocation();
+            //String mor = request.getComputeConfig().getMor(); //宿主机或者资源池的mor
+            String name = request.getComputeConfig().getName(); //宿主机或者资源池的名称，api说vc是拿名称作为快速索引的
+
+            String cluster = request.getCluster();
+
+            if (StringUtils.isBlank(cluster)) {
+                return new ArrayList<>();
+            }
+            if ((!StringUtils.equals(ResourceConstants.DRS, location)) && StringUtils.isBlank(name)) {
+                return new ArrayList<>();
+            }
+
+            client = request.getVsphereVmClient();
+            Map<String, Object> hasAddStorage = new HashMap<>();
+
+            ComputeResource cr = client.getComputeResource(cluster);
+            if (!StringUtils.equals("host", location)) {
+                if (cr instanceof ClusterComputeResource) {
+                    Datastore[] list = cr.getDatastores();
+
+                    if (list != null && list.length > 0) {
+                        for (Datastore ds : list) {
+                            ManagedEntity parent = ds.getParent();
+                            handleDataStoreCluster(datastoreList, hasAddStorage, ds, parent);
+                        }
+                    }
+                }
+            } else {
+                //HostSystem hs = getHostSystemByHostMor(mor, cr);
+                HostSystem hs = client.getHost(name);
+                if (hs == null) {
+                    return new ArrayList<>();
+                }
+                Datastore[] datastoreOfHost = hs.getDatastores();
+                if (datastoreOfHost != null && datastoreOfHost.length > 0) {
+                    for (Datastore ds : datastoreOfHost) {
+                        ManagedEntity parent = ds.getParent();
+                        handleDataStoreCluster(datastoreList, hasAddStorage, ds, parent);
+                    }
+                }
+            }
+
+            Set<VsphereDatastore> datastoreHashSet = new HashSet<>(datastoreList);
+            ArrayList<VsphereDatastore> results = new ArrayList<>(datastoreHashSet);
+
+            results.sort(Comparator.comparing(VsphereDatastore::getInfo));
+
+            return results;
+        } catch (Exception e) {
+            throw new RuntimeException(e.getMessage(), e);
+        } finally {
+            closeConnection(client);
+        }
+    }
+
+    private static HostSystem getHostSystemByHostMor(String mor, ComputeResource cr) {
+        List<HostSystem> hss = Arrays.stream(cr.getHosts()).filter((host) -> StringUtils.equals(host.getMOR().getVal(), mor)).toList();
+        if (CollectionUtils.isEmpty(hss)) {
+            return null;
+        }
+        return hss.get(0);
+    }
+
+    private static void handleDataStoreCluster(List<VsphereDatastore> datastoreList, Map<String, Object> hasAddStorage, Datastore ds, ManagedEntity parent) {
+        if (parent instanceof StoragePod) {
+            if (hasAddStorage.get(parent.getMOR().getVal()) == null) {
+                StoragePod storagePod = (StoragePod) parent;
+                datastoreList.add(0, convertToVsphereDatastore(storagePod));
+                hasAddStorage.put(storagePod.getMOR().getVal(), new Object());
+            }
+        } else {
+            datastoreList.add(convertToVsphereDatastore(ds));
+        }
+    }
+
+    private static VsphereDatastore convertToVsphereDatastore(StoragePod storagePod) {
+        VsphereDatastore vsphereDatastore = new VsphereDatastore().setMor(storagePod.getMOR().getVal()).setName(storagePod.getName());
+        BigDecimal freeSpace = BigDecimal.valueOf(storagePod.getSummary().getFreeSpace()).divide(BigDecimal.valueOf(GB), 2, RoundingMode.HALF_UP);
+        BigDecimal totalSpace = BigDecimal.valueOf(storagePod.getSummary().getCapacity()).divide(BigDecimal.valueOf(GB), 2, RoundingMode.HALF_UP);
+        vsphereDatastore.setFreeDisk(freeSpace);
+        vsphereDatastore.setTotalDisk(totalSpace);
+
+        vsphereDatastore.setInfo("Storage Cluster:" + storagePod.getName());
+        return vsphereDatastore;
+    }
+
+    private static VsphereDatastore convertToVsphereDatastore(Datastore datastore) {
+        VsphereDatastore vsphereDatastore = new VsphereDatastore().setMor(datastore.getMOR().getVal()).setName(datastore.getName());
+        BigDecimal freeSpace = BigDecimal.valueOf(datastore.getSummary().getFreeSpace()).divide(BigDecimal.valueOf(GB), 2, RoundingMode.HALF_UP);
+        BigDecimal totalSpace = BigDecimal.valueOf(datastore.getSummary().getCapacity()).divide(BigDecimal.valueOf(GB), 2, RoundingMode.HALF_UP);
+        vsphereDatastore.setFreeDisk(freeSpace);
+        vsphereDatastore.setTotalDisk(totalSpace);
+
+        vsphereDatastore.setInfo(datastore.getName());
+        return vsphereDatastore;
+    }
+
+    public static List<F2CVsphereNetwork> getNetworks(VsphereVmCreateRequest request) {
+        VsphereClient client = null;
+        List<F2CVsphereNetwork> networks = new ArrayList<>();
+        try {
+            if (request.getComputeConfig() == null) {
+                return new ArrayList<>();
+            }
+            String location = request.getComputeConfig().getLocation();
+            //String mor = request.getComputeConfig().getMor(); //宿主机或者资源池的mor
+            String name = request.getComputeConfig().getName(); //宿主机或者资源池的名称，api说vc是拿名称作为快速索引的
+
+            String cluster = request.getCluster();
+
+            if (StringUtils.isBlank(cluster)) {
+                return new ArrayList<>();
+            }
+            if ((!StringUtils.equals(ResourceConstants.DRS, location)) && StringUtils.isBlank(name)) {
+                return new ArrayList<>();
+            }
+
+            client = request.getVsphereVmClient();
+
+            ComputeResource cr = client.getComputeResource(cluster);
+
+            if (!StringUtils.equals("host", location)) {
+                if (cr instanceof ClusterComputeResource) {
+                    networks.addAll(getClusterNetworks((ClusterComputeResource) cr));
+                }
+            } else {
+                //HostSystem hs = getHostSystemByHostMor(mor, cr);
+                HostSystem hs = client.getHost(name);
+                if (hs != null) {
+                    networks.addAll(convertToVsphereNetworks(hs));
+                }
+            }
+
+            Set<F2CVsphereNetwork> temp = new HashSet<>(networks);
+            return new ArrayList<>(temp);
+        } catch (Exception e) {
+            throw new RuntimeException(e.getMessage(), e);
+        } finally {
+            closeConnection(client);
+        }
+
+    }
+
+    public static F2CVirtualMachine getSimpleServerByCreateRequest(VsphereVmCreateRequest request) {
+        F2CVirtualMachine virtualMachine = new F2CVirtualMachine();
+
+        int index = request.getIndex();
+        String instanceType = request.getCpu() + "vCpu " + request.getRam() + "GB";
+
+        virtualMachine
+                .setId(request.getId())
+                .setName(request.getServerInfos().get(index).getName())
+                .setCpu(request.getCpu())
+                .setMemory(request.getRam())
+                .setIpArray(new ArrayList<>())
+                .setInstanceType(instanceType)
+                .setInstanceTypeDescription(instanceType);
+
+        return virtualMachine;
+
+    }
+
+    public static F2CVirtualMachine createServer(VsphereVmCreateRequest request) {
+
+        F2CVirtualMachine f2CVirtualMachine = null;
+
+        VsphereVmClient client = request.getVsphereVmClient();
+        int index = request.getIndex();
+
+        try {
+
+            if (StringUtils.isBlank(request.getServerInfos().get(index).getName())) {
+                request.getServerInfos().get(index).setName("i-" + UUID.randomUUID().toString().substring(0, 8));
+            }
+
+            if (StringUtils.isBlank(request.getServerInfos().get(index).getHostname())) {
+                request.getServerInfos().get(index).setHostname("i-" + UUID.randomUUID().toString().substring(0, 8));
+            }
+
+            Pattern pattern = Pattern.compile(VALID_HOST_REGEX, Pattern.CASE_INSENSITIVE);
+            Matcher matcher = pattern.matcher(request.getServerInfos().get(index).getHostname());
+            if (!matcher.find()) {
+                throw new RuntimeException("hostname cannot be empty");
+            }
+            if (CollectionUtils.isEmpty(request.getNetworkConfigs()) || CollectionUtils.isEmpty(request.getNetworkConfigs().get(index).getAdapters())) {
+                throw new RuntimeException("Network Adapter cannot be empty");
+            }
+            for (VsphereVmCreateRequest.NetworkAdapter networkAdapter : request.getNetworkConfigs().get(index).getAdapters()) {
+                if (StringUtils.isBlank(networkAdapter.getVlan())) {
+                    throw new RuntimeException("Vlan cannot be empty");
+                }
+                String ipType = StringUtils.defaultString(networkAdapter.getIpType(), ResourceConstants.ipv4);
+                boolean setIpv4 = ipType.equalsIgnoreCase(ResourceConstants.ipv4) || ipType.equalsIgnoreCase(ResourceConstants.DualStack);
+                boolean setIpv6 = ipType.equalsIgnoreCase(ResourceConstants.ipv6) || ipType.equalsIgnoreCase(ResourceConstants.DualStack);
+                if (!networkAdapter.isDhcp() && setIpv4) {
+                    if (StringUtils.isBlank(networkAdapter.getIpAddr())) {
+                        throw new RuntimeException("IP cannot be empty");
+                    }
+                    if (StringUtils.isBlank(networkAdapter.getNetmask())) {
+                        throw new RuntimeException("NetMask cannot be empty");
+                    }
+                    if (StringUtils.isBlank(networkAdapter.getGateway())) {
+                        throw new RuntimeException("Gateway cannot be empty");
+                    }
+                } else if (!networkAdapter.isDhcp() && setIpv6) {
+                    if (StringUtils.isBlank(networkAdapter.getIpAddrV6())) {
+                        throw new RuntimeException("IP cannot be empty");
+                    }
+                    if (StringUtils.isBlank(networkAdapter.getNetmaskV6())) {
+                        throw new RuntimeException("NetMask cannot be empty");
+                    }
+                    if (StringUtils.isBlank(networkAdapter.getGatewayV6())) {
+                        throw new RuntimeException("Gateway cannot be empty");
+                    }
+                }
+
+            }
+
+            VirtualMachine vm = client.createVm(request);
+
+            if (vm != null) {
+                f2CVirtualMachine = VsphereUtil.toF2CInstance(vm, client);
+
+                client.connectVirtualEthernetCard(vm);
+
+                if (f2CVirtualMachine != null) {
+                    int count = 0;
+                    while (count++ <= 60) {
+                        boolean flag = false; // 处理自定义规范返回了 169.254.x.x 等 IP，不是机器真正的 IP
+                        try {
+                            Thread.sleep(5000);
+                            vm = client.getVirtualMachineById(vm.getConfig().getInstanceUuid());
+                            f2CVirtualMachine = VsphereUtil.toF2CInstance(vm, client);
+                        } catch (Exception e) {
+                            continue;
+                        }
+
+                        GuestInfo guest = vm.getGuest();
+                        if (guest != null) {
+                            //todo 多网卡？ 现在只看了第一张网卡
+                            if (!request.getNetworkConfigs().get(index).getAdapters().get(0).isDhcp()) {
+                                if ("guestToolsRunning".equalsIgnoreCase(guest.getToolsRunningStatus())) {
+                                    break;
+                                }
+                            }
+                            // DHCP 的处理
+                            else {
+                                GuestNicInfo[] nets = guest.getNet();
+                                if (nets != null && nets.length > 0) {
+                                    List<String> ipArray = f2CVirtualMachine.getIpArray();
+                                    for (GuestNicInfo nicInfo : nets) {
+                                        String[] ips = nicInfo.getIpAddress();
+                                        if (ips != null && ips.length > 0) {
+                                            for (String ip : ips) {
+                                                if (ip.startsWith("169.254")) {
+                                                    flag = true;
+                                                    break;
+                                                }
+                                                if (ip.contains(".")) {
+                                                    f2CVirtualMachine.setLocalIP(ip);
+                                                    ipArray.add(ip);
+                                                }
+                                            }
+                                        }
+                                        if (flag) {
+                                            break;
+                                        }
+                                    }
+                                    // 查询到 169.254.x.x IP 继续查询
+                                    if (flag) {
+                                        continue;
+                                    }
+                                    if (ipArray.size() > 0) {
+                                        break;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    if (count > 60) {
+                        log.error("Get private IP timeout!");
+                    }
+                }
+            }
+        } finally {
+            closeConnection(client);
+        }
+        if (f2CVirtualMachine != null) {
+            f2CVirtualMachine.setId(request.getId());
+        }
+        return f2CVirtualMachine;
+    }
+
 
     public static List<F2CPerfMetricMonitorData> getF2CPerfMetricList(GetMetricsRequest getMetricsRequest){
         if (StringUtils.isEmpty(getMetricsRequest.getRegionId())) {
@@ -817,4 +1110,5 @@ public class VsphereSyncCloudApi {
         }
         return perfEntityMetric;
     }
+
 }

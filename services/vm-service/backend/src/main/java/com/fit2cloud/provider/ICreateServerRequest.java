@@ -8,4 +8,16 @@ public interface ICreateServerRequest {
     default FormObject toForm() {
         return FormUtil.toForm(this.getClass());
     }
+
+    int getCount();
+
+    int getIndex();
+
+    void setCredential(String credential);
+
+    void setIndex(int count);
+
+    void setId(String id);
+
+    String getId();
 }

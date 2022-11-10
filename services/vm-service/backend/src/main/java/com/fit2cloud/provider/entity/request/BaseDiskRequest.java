@@ -7,18 +7,7 @@ import lombok.Data;
  * Date: 2022/10/13 9:39 PM
  */
 @Data
-public class BaseDiskRequest {
-
-    /**
-     * 认证信息
-     */
-    private String credential;
-
-    /**
-     * 区域
-     */
-    private String regionId;
-
+public class BaseDiskRequest extends BaseRequest {
     /**
      * 磁盘IDS
      */

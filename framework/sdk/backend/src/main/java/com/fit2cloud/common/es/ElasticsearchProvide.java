@@ -92,7 +92,7 @@ public class ElasticsearchProvide {
         } catch (ElasticsearchException e) {
             LogUtil.error("[ elasticsearch ]CODE[{}] >>{}", EsErrorCodeConstants.SEARCH_FAILED.getCode(), e.getMessage() + " " + e.getMessage());
             throw new Fit2cloudException(e.status(), e.getMessage());
-        } catch (Exception e){
+        } catch (Exception e) {
             LogUtil.error("[ elasticsearch ]CODE[{}] >>{}", EsErrorCodeConstants.SEARCH_FAILED.getCode(), e.getMessage() + " " + e.getMessage());
             throw new Fit2cloudException(100010, e.getMessage());
         }
@@ -111,12 +111,12 @@ public class ElasticsearchProvide {
             SearchHits<T> response = elasticsearchTemplate.search(query, clazz, IndexCoordinates.of(index));
             List<SearchHit<T>> searchHits = response.getSearchHits();
             List<T> resultList = searchHits.stream().map(SearchHit::getContent).toList();
-           return resultList;
+            return resultList;
 
         } catch (ElasticsearchException e) {
             LogUtil.error("[ elasticsearch ]CODE[{}] >>{}", EsErrorCodeConstants.SEARCH_FAILED.getCode(), e.getMessage() + " " + e.getMessage());
             throw new Fit2cloudException(e.status(), e.getMessage());
-        } catch (Exception e){
+        } catch (Exception e) {
             LogUtil.error("[ elasticsearch ]CODE[{}] >>{}", EsErrorCodeConstants.SEARCH_FAILED.getCode(), e.getMessage() + " " + e.getMessage());
             throw new Fit2cloudException(100010, e.getMessage());
         }
@@ -124,9 +124,10 @@ public class ElasticsearchProvide {
 
     /**
      * 批量存储监控数据
+     *
      * @param perfMetricMonitorDataList
      */
-    public void bulkInsert(List<PerfMetricMonitorData> perfMetricMonitorDataList,String index) {
+    public void bulkInsert(List<PerfMetricMonitorData> perfMetricMonitorDataList, String index) {
         int counter = 0;
         try {
             List<IndexQuery> queries = new ArrayList<>();
@@ -150,17 +151,17 @@ public class ElasticsearchProvide {
                         .withIndex(index).build();
                 queries.add(indexQuery);
                 if (counter % 1000 == 0) {
-                    elasticsearchTemplate.bulkIndex(queries,PerfMetricMonitorData.class);
+                    elasticsearchTemplate.bulkIndex(queries, PerfMetricMonitorData.class);
                     queries.clear();
                 }
                 counter++;
             }
-            System.out.println("批次总计："+ counter);
+            System.out.println("批次总计：" + counter);
             if (queries.size() > 0) {
-                elasticsearchTemplate.bulkIndex(queries,PerfMetricMonitorData.class);
-                System.out.println("插入总计："+ queries.size());
-            }else{
-                System.out.println("插入总计："+ (counter*1000));
+                elasticsearchTemplate.bulkIndex(queries, PerfMetricMonitorData.class);
+                System.out.println("插入总计：" + queries.size());
+            } else {
+                System.out.println("插入总计：" + (counter * 1000));
             }
             System.out.println("完成批量插入数据!");
         } catch (Exception e) {

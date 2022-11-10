@@ -4,6 +4,7 @@ import type { Page } from "@commons/request/Result";
 import type {
   VmCloudServerVO,
   ListVmCloudServerRequest,
+  CreateServerRequest,
   CloudServerJobRecord,
   PerfMonitorData,
   GetPerfMonitorRequest,
@@ -149,6 +150,13 @@ export function listPerfMetricMonitor(
   return get("/api/base/monitor/list", req, loading);
 }
 
+export function createServer(
+  req: CreateServerRequest,
+  loading?: Ref<boolean>
+): Promise<Result<boolean>> {
+  return post("api/server/create", null, req, loading);
+}
+
 const VmCloudServerApi = {
   listVmCloudServer,
   shutdownInstance,
@@ -160,6 +168,7 @@ const VmCloudServerApi = {
   getVmCloudServerById,
   getServerJobRecord,
   listPerfMetricMonitor,
+  createServer,
 };
 
 export default VmCloudServerApi;

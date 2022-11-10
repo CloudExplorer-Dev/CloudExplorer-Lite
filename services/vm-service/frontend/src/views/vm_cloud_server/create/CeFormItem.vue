@@ -1,6 +1,6 @@
 <template>
-  data: {{ _data }}
-  <br />
+  <!--  data: {{ _data }}
+  <br />-->
   <el-form
     ref="ruleFormRef"
     label-width="130px"
@@ -8,6 +8,7 @@
     label-position="left"
     :model="_data"
     v-loading="_loading"
+    @submit.prevent
   >
     <div v-for="item in formViewData" :key="item.field">
       <template v-if="item.label">
@@ -29,10 +30,12 @@
             :field="item.field"
             :form-item="item"
             :otherParams="otherParams"
-            style="width: 75%"
             v-bind="{ ...JSON.parse(item.attrs) }"
             @change="change(item)"
           ></component>
+          <span v-if="item.unit" style="padding-left: 15px">{{
+            item.unit
+          }}</span>
         </el-form-item>
       </template>
       <template v-else>
@@ -77,7 +80,7 @@ const emit = defineEmits([
 ]);
 
 import _ from "lodash";
-import { computed, onMounted, ref } from "vue";
+import { computed, onBeforeMount, onMounted, ref } from "vue";
 import type { FormView } from "@commons/components/ce-form/type";
 import formApi from "@commons/api/form_resource_api";
 import type { FormInstance } from "element-plus";
@@ -132,7 +135,7 @@ function initOptionList(
       }
     );
     _.assign(_temp, data);
-    console.log(_temp, formItem?.relationTrigger);
+    //console.log(_temp, formItem?.relationTrigger);
     if (
       //关联对象有值
       _.every(formItem?.relationTrigger, (trigger) => {
@@ -140,7 +143,7 @@ function initOptionList(
       })
     ) {
       if (formItem.group?.toFixed() === props.groupId) {
-        console.log(props.groupId, formItem.field);
+        //console.log(props.groupId, formItem.field);
         formApi
           .getResourceMethod(
             formItem.serviceMethod,
@@ -197,9 +200,10 @@ function initForms(): void {
  * @param formItem
  */
 const change = (formItem: FormView) => {
-  console.log(formItem.field);
+  //console.log(formItem.field);
   _.forEach(props.allFormViewData, (item) => {
     if (_.includes(item.relationTrigger, formItem.field)) {
+      //console.log(formItem.field, "in", item.field);
       //设置空值
       _.set(_data.value, item.field, undefined);
       //设置列表
@@ -229,9 +233,15 @@ function validate(): Array<Promise<boolean>> {
   return list;
 }
 
-onMounted(() => {
-  console.log("init!!!");
+onBeforeMount(() => {
+  //console.log(_data.value);
+  //console.log(props.formViewData);
   initForms();
+});
+
+onMounted(() => {
+  //console.log("init!!!");
+  //initForms();
 });
 
 // 暴露获取当前表单数据函数

@@ -9,13 +9,10 @@
         />
       </el-steps>
     </el-header>
-    <el-main>
+    <el-main ref="catalog_container">
+      <!--      {{ data }}-->
+
       <p class="description">{{ steps[active + 1]?.description }}</p>
-
-      data: {{ data }}
-      <br />
-
-      formatData: {{ formatData }}
 
       <template v-if="steps[active + 1] && active !== steps.length - 2">
         <layout-container
@@ -45,7 +42,13 @@
         </layout-container>
       </template>
 
-      <template v-if="active === steps.length - 2"> 确认页面</template>
+      <template v-if="active === steps.length - 2">
+        <CreateConfirmStep
+          :cloud-account="cloudAccount"
+          :all-data="formatData"
+          :all-form-view-data="formData"
+        />
+      </template>
     </el-main>
     <el-footer>
       <div class="footer">
@@ -92,6 +95,8 @@
 </template>
 
 <script setup lang="ts">
+import { ElMessage } from "element-plus";
+
 const props = defineProps<{
   accountId: string;
 }>();
@@ -107,11 +112,16 @@ import type {
   FormView,
 } from "@commons/components/ce-form/type";
 import CeFormItem from "./CeFormItem.vue";
+import CreateConfirmStep from "./CreateConfirmStep.vue";
 import type { CloudAccount } from "@commons/api/cloud_account/type";
 
 import { computed, onMounted, ref, type Ref } from "vue";
 import { useRouter } from "vue-router";
+import type { CreateServerRequest } from "@/api/vm_cloud_server/type";
+import { createServer } from "@/api/vm_cloud_server";
+import { useI18n } from "vue-i18n";
 
+const { t } = useI18n();
 const useRoute = useRouter();
 
 const loading: Ref<boolean> | undefined = ref<boolean>(false);
@@ -123,7 +133,9 @@ const active = ref(0);
 const ceForms = ref<Array<InstanceType<typeof CeFormItem> | null>>([]);
 const ceForms_0 = ref<InstanceType<typeof CeFormItem> | null>(null);
 
-const data = ref({});
+const catalog_container = ref<any>(null);
+
+const data = ref<SimpleMap<any>>({});
 
 const formatData = computed(() => {
   return _.assign({}, ..._.values(data.value));
@@ -140,24 +152,39 @@ function next() {
     promises.push(ceForms_0.value.validate());
   }
 
-  console.log(promises);
+  //console.log(promises);
 
   Promise.all(_.flatten(promises)).then((ok) => {
-    console.log(ok);
-    if (active.value++ > steps.value.length - 2) {
+    //console.log(ok);
+    active.value++;
+    if (active.value > steps.value.length - 2) {
       active.value = steps.value.length - 2;
     }
+    //定位到最上面
+    catalog_container.value?.$el?.scrollTo(0, 0);
   });
 }
 
 function before() {
-  if (active.value-- < 0) {
+  active.value--;
+  if (active.value < 0) {
     active.value = 0;
   }
+  //定位到最上面
+  catalog_container.value?.$el?.scrollTo(0, 0);
 }
 
 function submit() {
   console.log(data.value);
+  const req: CreateServerRequest = {
+    accountId: props.accountId,
+    createRequest: JSON.stringify(formatData.value),
+    fromInfo: JSON.stringify(formData.value),
+  };
+  createServer(req, loading).then((ok) => {
+    ElMessage.success(t("commons.msg.op_success"));
+    useRoute.push({ name: "server_list" });
+  });
 }
 
 function cancel() {
@@ -230,7 +257,10 @@ const stepInfos = computed<Array<StepObj>>(() => {
 });
 
 const hasFooterForm = computed<boolean>(() => {
-  return steps.value[0]?.groups[0]?.forms !== undefined;
+  return (
+    steps.value[0]?.groups[0]?.forms !== undefined &&
+    active.value !== steps.value?.length - 2
+  );
 });
 
 const otherParams = computed(() => {
@@ -242,7 +272,7 @@ const otherParams = computed(() => {
  * @param field
  */
 function optionListRefresh(field: string) {
-  console.log(field);
+  //console.log(field);
   //找到field对应的组
   const form = _.find(formData.value?.forms, (view) => view.field === field);
   const groupId = form?.group?.toFixed();
@@ -254,7 +284,7 @@ function optionListRefresh(field: string) {
     } else {
       (
         _.find(ceForms.value, (ceForm: InstanceType<typeof CeFormItem>) => {
-          console.log(ceForm);
+          //console.log(ceForm);
           return ceForm.groupId === groupId;
         }) as InstanceType<typeof CeFormItem>
       )?.optionListRefresh(field, formatData.value);
@@ -277,8 +307,12 @@ onMounted(() => {
 
       CatalogApi.getCreateServerForm(props.accountId, loading).then(
         (result) => {
+          data.value["0"] = {};
+          _.forEach(result.data?.groupAnnotationMap, (g) => {
+            data.value[g.group.toFixed()] = {};
+          });
           formData.value = result.data;
-          console.log(result.data);
+          //console.log(result.data);
         }
       );
     }

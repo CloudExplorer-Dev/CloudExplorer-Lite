@@ -7,6 +7,7 @@ import lombok.Builder;
 import lombok.Data;
 
 import java.time.LocalDateTime;
+import java.util.Map;
 
 /**
  * 初始化任务实体
@@ -41,4 +42,6 @@ public class InitJobRecordDTO {
      * 任务类型
      */
     private JobTypeConstants jobType;
+
+    private Map<String, Object> params;
 }

@@ -1,7 +1,11 @@
 package com.fit2cloud.controller.request;
 
+import io.reactivex.rxjava3.functions.BiConsumer;
+import io.reactivex.rxjava3.functions.Consumer;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 /**
  * Author: LiuDi
@@ -9,7 +13,9 @@ import lombok.Data;
  */
 @Data
 @Builder
-public class ResourceState<T>  {
+@NoArgsConstructor
+@AllArgsConstructor
+public class ResourceState<T, V> {
     /**
      * 操作之前的资源实体记录
      */
@@ -22,4 +28,20 @@ public class ResourceState<T>  {
      * 操作后的资源实体记录
      */
     private T afterResource;
+
+    /**
+     * 更新资源方法
+     */
+    Consumer<T> updateResourceMethod;
+
+    /**
+     * 删除资源方法
+     */
+    Consumer<T> deleteResourceMethod;
+
+    /**
+     * 保存资源方法
+     */
+    BiConsumer<T, V> saveResourceMethod;
+
 }

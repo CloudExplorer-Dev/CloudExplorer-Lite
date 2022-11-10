@@ -194,8 +194,11 @@ public class TencentMappingUtil {
          * POSTPAID_BY_HOUR：按小时后付费
          * CDCPAID：独享集群付费
          */
-        switch (f2cChargeType) {
-            case "PrePaid":
+        if (f2cChargeType == null) {
+            return TencentChargeType.POSTPAID_BY_HOUR;
+        }
+        switch (f2cChargeType.toUpperCase()) {
+            case "PREPAID":
                 return TencentChargeType.PREPAID;
             default:
                 return TencentChargeType.POSTPAID_BY_HOUR;

@@ -10,20 +10,20 @@ import com.fit2cloud.provider.entity.F2CVirtualMachine;
 import com.fit2cloud.provider.impl.vsphere.entity.F2CVsphereDatastore;
 import com.fit2cloud.provider.impl.vsphere.entity.F2CVsphereDiskType;
 import com.fit2cloud.provider.impl.vsphere.entity.F2CVsphereHost;
+import com.fit2cloud.provider.impl.vsphere.entity.VsphereFolder;
 import com.fit2cloud.provider.impl.vsphere.entity.request.VsphereDiskRequest;
 import com.vmware.vim25.*;
 import com.vmware.vim25.mo.*;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.*;
 
+@Slf4j
 public class VsphereUtil {
     private static final long MB = 1024 * 1024;
     private static final long GB = MB * 1024;
-    private static Logger logger = LoggerFactory.getLogger(VsphereUtil.class);
 
     public static F2CVirtualMachine toF2CInstance(VirtualMachine vm, VsphereVmClient client) {
         return toF2CInstance(vm, client, null);
@@ -65,7 +65,7 @@ public class VsphereUtil {
                 instance.setImageId("");
             }
         } catch (Exception e) {
-            logger.error(ExceptionUtils.getStackTrace(e));
+            log.error(ExceptionUtils.getStackTrace(e));
         }
 
         String vmName = vm.getName();
@@ -82,7 +82,7 @@ public class VsphereUtil {
                 instance.setCpu(numCpu);
             }
         } catch (Exception e) {
-            logger.error(ExceptionUtils.getStackTrace(e));
+            log.error(ExceptionUtils.getStackTrace(e));
         }
         instance.setInstanceTypeDescription(instanceTypeDescription);
         instance.setInstanceType(instanceTypeDescription);
@@ -169,7 +169,7 @@ public class VsphereUtil {
                 instance.setZone(f2cVsphereHost.getClusterName());
             }
         } catch (Exception e) {
-            logger.error(ExceptionUtils.getStackTrace(e));
+            log.error(ExceptionUtils.getStackTrace(e));
         }
 
         try {
@@ -179,7 +179,7 @@ public class VsphereUtil {
                 instance.setResourcePool(pool.getName());
             }
         } catch (Exception e) {
-            logger.error(ExceptionUtils.getStackTrace(e));
+            log.error(ExceptionUtils.getStackTrace(e));
         }
 
         return instance;
@@ -222,10 +222,11 @@ public class VsphereUtil {
             // vc 账号权限不够导致云主机关联的存储器无法获取
             if (datastore == null) {
                 String errorMessage = "Cannot get vm[" + vm.getName() + "]'s datastore";
-                throw new Exception(errorMessage);
+                log.error(errorMessage);
+            } else {
+                d.setDatastoreUniqueId(datastoreMorVal);
+                d.setDatastoreName(datastore.getDatastoreName());
             }
-            d.setDatastoreUniqueId(datastoreMorVal);
-            d.setDatastoreName(datastore.getDatastoreName());
         }
 
         if (hostFromCache.getClusterName() != null) {
@@ -268,7 +269,7 @@ public class VsphereUtil {
         long vmStopped = 0;
         long vmTotal = 0;
         int vmCpuCores = 0;
-        if (vms != null) {
+        if (vms != null) { //todo 后面可以替换掉，不同步所有机器
             for (VirtualMachine vm : vms) {
                 VirtualMachineConfigInfo vmConfig = vm.getConfig();
                 if (vmConfig != null && vmConfig.isTemplate()) {
@@ -310,7 +311,7 @@ public class VsphereUtil {
         ComputeResource resource = client.getComputeResource(hs);
         if (resource instanceof ClusterComputeResource) {
             ClusterComputeResource cluster = (ClusterComputeResource) resource;
-            f2cHost.setClusterId(cluster.getName());
+            f2cHost.setClusterId(cluster.getMOR().getVal());
             f2cHost.setClusterName(cluster.getName());
         }
 
@@ -318,10 +319,10 @@ public class VsphereUtil {
         f2cHost.setCpuMHzTotal(totalCpu);
 
         Datacenter dc = client.getDataCenter(hs);
-        f2cHost.setDataCenterId(dc.getName());
+        f2cHost.setDataCenterId(dc.getMOR().getVal());
         f2cHost.setDataCenterName(dc.getName());
 
-        f2cHost.setHostId(hs.getName());
+        f2cHost.setHostId(hs.getMOR().getVal());
         f2cHost.setHostName(hs.getName());
 
         f2cHost.setMemoryAllocated(totalUsedMemory);
@@ -604,5 +605,36 @@ public class VsphereUtil {
             }
         }
         return disks;
+    }
+
+    public static List<VsphereFolder> getChildFolders(VsphereClient client, Folder folder, String parent) {
+        List<VsphereFolder> result = new ArrayList<>();
+        Folder[] subFolders = client.getChildResource(Folder.class, folder);
+        if (!"".equals(parent)) {
+            parent = parent + "/";
+        }
+        VsphereFolder root = new VsphereFolder().setMor(folder.getMOR().getVal()).setName(parent + folder.getName());
+        result.add(root);
+        if (subFolders != null) {
+            for (Folder childFolder : subFolders) {
+                if (!StringUtils.equals(childFolder.getMOR().getVal(), folder.getMOR().getVal()) &&
+                        StringUtils.equals(childFolder.getParent().getMOR().getVal(), folder.getMOR().getVal())
+                ) {
+                    result.addAll(getChildFolders(client, childFolder, parent + folder.getName()));
+                }
+            }
+        }
+        return result;
+    }
+
+    public static List<VirtualEthernetCard> getVirtualEthernetCardsByVm(VirtualMachine virtualMachine) {
+        VirtualDevice[] virtualDevices = virtualMachine.getConfig().getHardware().getDevice();
+        List<VirtualEthernetCard> virtualEthernetCards = new ArrayList<>();
+        for (VirtualDevice virtualDevice : virtualDevices) {
+            if (virtualDevice instanceof VirtualEthernetCard) {
+                virtualEthernetCards.add((VirtualEthernetCard) virtualDevice);
+            }
+        }
+        return virtualEthernetCards;
     }
 }

@@ -1,53 +1,73 @@
 <template>
-  <div style="display: flex; flex-direction: row; flex-wrap: wrap">
-    <div v-for="(obj, index) in data" :key="index" class="vs-disk-config-card">
-      <el-card
-        class="card"
-        :body-style="{
-          padding: 0,
-          'text-align': 'center',
-          display: 'flex',
-          'flex-direction': 'column',
-          'flex-wrap': 'nowrap',
-          'align-items': 'center',
-          'justify-content': 'space-evenly',
-          height: '100%',
-          position: 'relative',
-        }"
+  <template v-if="!confirm">
+    <div style="display: flex; flex-direction: row; flex-wrap: wrap">
+      <div
+        v-for="(obj, index) in data"
+        :key="index"
+        class="vs-disk-config-card"
       >
-        <span class="title">
-          {{ index === 0 ? "系统盘" : "数据盘 " + index }}
-        </span>
+        <el-card
+          class="card"
+          :body-style="{
+            padding: 0,
+            'text-align': 'center',
+            display: 'flex',
+            'flex-direction': 'column',
+            'flex-wrap': 'nowrap',
+            'align-items': 'center',
+            'justify-content': 'space-evenly',
+            height: '100%',
+            position: 'relative',
+          }"
+        >
+          <span class="title">
+            {{ index === 0 ? "系统盘" : "数据盘 " + index }}
+          </span>
 
-        <el-input-number
-          v-model="obj.size"
-          :min="_.defaultTo(defaultDisks[index]?.size, 1)"
-          :step="1"
-          required
-        />
+          <el-input-number
+            v-model="obj.size"
+            :min="_.defaultTo(defaultDisks[index]?.size, 1)"
+            :step="1"
+            required
+          />
 
-        <el-button
-          v-if="!defaultDisks[index]"
-          class="remove-button"
-          @click="remove(index)"
-          :icon="CloseBold"
-          type="info"
-          text
-        ></el-button>
-      </el-card>
+          <el-button
+            v-if="!defaultDisks[index]"
+            class="remove-button"
+            @click="remove(index)"
+            :icon="CloseBold"
+            type="info"
+            text
+          ></el-button>
+        </el-card>
 
-      <div style="width: 100%; height: 30px; text-align: center">
-        <el-checkbox v-model="obj.deleteWithInstance">随实例删除</el-checkbox>
+        <div style="width: 100%; height: 30px; text-align: center">
+          <el-checkbox v-model="obj.deleteWithInstance">随实例删除</el-checkbox>
+        </div>
+      </div>
+      <div class="vs-disk-config-card">
+        <el-card class="card add-card">
+          <el-button
+            style="margin: auto"
+            class="el-button--primary"
+            @click="add"
+            >添加磁盘</el-button
+          >
+        </el-card>
       </div>
     </div>
-    <div class="vs-disk-config-card">
-      <el-card class="card add-card">
-        <el-button style="margin: auto" class="el-button--primary" @click="add"
-          >添加磁盘</el-button
-        >
-      </el-card>
-    </div>
-  </div>
+  </template>
+  <template v-else>
+    <el-descriptions>
+      <el-descriptions-item
+        :label="i === 0 ? '系统盘' : '数据盘' + (i + 1)"
+        v-for="(disk, i) in modelValue"
+        :key="i"
+      >
+        {{ disk.size }}GB{{ disk.deleteWithInstance ? " (随实例删除)" : "" }}
+      </el-descriptions-item>
+    </el-descriptions>
+  </template>
 </template>
 <script setup lang="ts">
 const props = defineProps<{
@@ -56,6 +76,8 @@ const props = defineProps<{
   allFormViewData?: Array<FormView>;
   field: string;
   formItem?: FormView;
+  otherParams: any;
+  confirm?: boolean;
 }>();
 
 const emit = defineEmits(["update:modelValue", "change"]);
@@ -134,7 +156,7 @@ function remove(index: number) {
  */
 function validate(): Promise<boolean> {
   return new Promise((resolve, reject) => {
-    if (data.value.length === 0) {
+    if (props.confirm || data.value.length === 0) {
       return reject(false);
     }
     return _.every(data.value, (disk) => disk.size > 0)
@@ -146,20 +168,22 @@ function validate(): Promise<boolean> {
 /**
  * 监听模版变化，获取值
  */
-watch(
-  () => props.allData.template,
-  (_data) => {
-    //emit("update:modelValue", defaultDisks.value);
-    data.value = defaultDisks.value;
-  }
-);
+if (!props.confirm) {
+  watch(
+    () => props.allData.template,
+    (_data) => {
+      //emit("update:modelValue", defaultDisks.value);
+      data.value = defaultDisks.value;
+    }
+  );
+}
 
 defineExpose({
   validate,
   field: props.field,
 });
 </script>
-<style lang="scss">
+<style lang="scss" scoped>
 .vs-disk-config-card {
   height: 130px;
   width: 200px;

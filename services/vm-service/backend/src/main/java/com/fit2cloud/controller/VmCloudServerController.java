@@ -6,6 +6,7 @@ import com.fit2cloud.common.log.constants.OperatedTypeEnum;
 import com.fit2cloud.common.log.constants.ResourceTypeEnum;
 import com.fit2cloud.controller.handler.ResultHolder;
 import com.fit2cloud.controller.request.vm.BatchOperateVmRequest;
+import com.fit2cloud.controller.request.vm.CreateServerRequest;
 import com.fit2cloud.controller.request.vm.PageVmCloudServerRequest;
 import com.fit2cloud.dto.VmCloudServerDTO;
 import com.fit2cloud.response.JobRecordResourceResponse;
@@ -39,54 +40,54 @@ public class VmCloudServerController {
         return ResultHolder.success(iVmCloudServerService.pageVmCloudServer(pageVmCloudServerRequest));
     }
 
-    @ApiOperation(value = "开机",notes = "启动云主机操作系统")
+    @ApiOperation(value = "开机", notes = "启动云主机操作系统")
     @PostMapping("powerOn/{serverId}")
-    @OperatedLog(resourceType= ResourceTypeEnum.CLOUD_SERVER,operated = OperatedTypeEnum.POWER_ON,
+    @OperatedLog(resourceType = ResourceTypeEnum.CLOUD_SERVER, operated = OperatedTypeEnum.POWER_ON,
             resourceId = "#serverId",
             param = "#serverId")
     public ResultHolder<Boolean> powerOn(@PathVariable String serverId) {
         return ResultHolder.success(iVmCloudServerService.powerOn(serverId));
     }
 
-    @ApiOperation(value = "重启",notes = "重启云主机操作系统")
+    @ApiOperation(value = "重启", notes = "重启云主机操作系统")
     @PostMapping("reboot/{serverId}")
-    @OperatedLog(resourceType= ResourceTypeEnum.CLOUD_SERVER,operated = OperatedTypeEnum.REBOOT,
+    @OperatedLog(resourceType = ResourceTypeEnum.CLOUD_SERVER, operated = OperatedTypeEnum.REBOOT,
             resourceId = "#serverId",
             param = "#serverId")
     public ResultHolder<Boolean> reboot(@PathVariable String serverId) throws Exception {
         return ResultHolder.success(iVmCloudServerService.rebootInstance(serverId));
     }
 
-    @ApiOperation(value = "关机",notes = "关闭云主机操作系统")
+    @ApiOperation(value = "关机", notes = "关闭云主机操作系统")
     @PostMapping("shutdown/{serverId}/{powerOff}")
-    @OperatedLog(resourceType= ResourceTypeEnum.CLOUD_SERVER,operated = OperatedTypeEnum.SHUTDOWN,
+    @OperatedLog(resourceType = ResourceTypeEnum.CLOUD_SERVER, operated = OperatedTypeEnum.SHUTDOWN,
             resourceId = "#serverId",
             param = "#serverId")
-    public ResultHolder<Boolean> shutdown(@PathVariable String serverId,@PathVariable Boolean powerOff) throws Exception {
-        return ResultHolder.success(iVmCloudServerService.shutdownInstance(serverId,powerOff));
+    public ResultHolder<Boolean> shutdown(@PathVariable String serverId, @PathVariable Boolean powerOff) throws Exception {
+        return ResultHolder.success(iVmCloudServerService.shutdownInstance(serverId, powerOff));
     }
 
-    @ApiOperation(value = "关闭电源",notes = "关闭云主机电源")
+    @ApiOperation(value = "关闭电源", notes = "关闭云主机电源")
     @PostMapping("powerOff/{serverId}")
-    @OperatedLog(resourceType= ResourceTypeEnum.CLOUD_SERVER,operated = OperatedTypeEnum.SHUTDOWN,
+    @OperatedLog(resourceType = ResourceTypeEnum.CLOUD_SERVER, operated = OperatedTypeEnum.SHUTDOWN,
             resourceId = "#serverId",
             param = "#serverId")
     public ResultHolder<Boolean> powerOff(@PathVariable String serverId) throws Exception {
         return ResultHolder.success(iVmCloudServerService.powerOff(serverId));
     }
 
-    @ApiOperation(value = "删除",notes = "删除云主机")
+    @ApiOperation(value = "删除", notes = "删除云主机")
     @PostMapping("delete/{serverId}")
-    @OperatedLog(resourceType= ResourceTypeEnum.CLOUD_SERVER,operated = OperatedTypeEnum.DELETE,
+    @OperatedLog(resourceType = ResourceTypeEnum.CLOUD_SERVER, operated = OperatedTypeEnum.DELETE,
             resourceId = "#serverId",
             param = "#serverId")
     public ResultHolder<Boolean> deleteInstance(@PathVariable String serverId) {
         return ResultHolder.success(iVmCloudServerService.deleteInstance(serverId));
     }
 
-    @ApiOperation(value = "批量操作",notes = "批量操作云主机")
+    @ApiOperation(value = "批量操作", notes = "批量操作云主机")
     @PostMapping("batchOperate")
-    @OperatedLog(resourceType= ResourceTypeEnum.CLOUD_SERVER,operated = OperatedTypeEnum.BATCH_OPERATE,content = "#request.getOperate()")
+    @OperatedLog(resourceType = ResourceTypeEnum.CLOUD_SERVER, operated = OperatedTypeEnum.BATCH_OPERATE, content = "#request.getOperate()")
     public ResultHolder<Boolean> batchOperate(@RequestBody BatchOperateVmRequest request) {
         return ResultHolder.success(iVmCloudServerService.batchOperate(request));
     }
@@ -94,7 +95,7 @@ public class VmCloudServerController {
     @GetMapping("/{id}")
     @ApiOperation(value = "根据id查询云主机", notes = "根据id查询云主机")
     public ResultHolder<VmCloudServerDTO> findCloudServer(@ApiParam(value = "云主机id", required = true)
-                                                       @PathVariable("id") String id) {
+                                                          @PathVariable("id") String id) {
         return ResultHolder.success(iVmCloudServerService.getById(id));
     }
 
@@ -104,6 +105,11 @@ public class VmCloudServerController {
         return ResultHolder.success(iVmCloudServerService.findCloudServerOperateStatus(cloudServerIds).stream().collect(Collectors.groupingBy(JobRecordResourceResponse::getResourceId)));
     }
 
-
+    @ApiOperation(value = "新建云主机", notes = "新建云主机")
+    @PostMapping("create")
+    //@OperatedLog(resourceType = ResourceTypeEnum.CLOUD_SERVER, operated = OperatedTypeEnum.ADD, content = "#request.getOperate()")
+    public ResultHolder<Boolean> createServer(@RequestBody CreateServerRequest request) {
+        return ResultHolder.success(iVmCloudServerService.createServer(request));
+    }
 
 }
