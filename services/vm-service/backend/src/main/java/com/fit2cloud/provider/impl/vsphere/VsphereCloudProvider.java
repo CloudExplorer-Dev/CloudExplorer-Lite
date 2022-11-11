@@ -9,6 +9,7 @@ import com.fit2cloud.provider.AbstractCloudProvider;
 import com.fit2cloud.provider.ICloudProvider;
 import com.fit2cloud.provider.entity.*;
 import com.fit2cloud.provider.entity.request.GetMetricsRequest;
+import com.fit2cloud.provider.entity.result.CheckCreateServerResult;
 import com.fit2cloud.provider.impl.vsphere.api.VsphereSyncCloudApi;
 import com.fit2cloud.provider.impl.vsphere.entity.F2CVsphereCluster;
 import com.fit2cloud.provider.impl.vsphere.entity.F2CVsphereNetwork;
@@ -154,6 +155,11 @@ public class VsphereCloudProvider extends AbstractCloudProvider<VsphereCredentia
     @Override
     public List<F2CDisk> createDisks(String req) {
         return VsphereSyncCloudApi.createDisks(JsonUtil.parseObject(req, VsphereCreateDiskRequest.class));
+    }
+
+    @Override
+    public CheckCreateServerResult validateServerCreateRequest(String req) {
+        return VsphereSyncCloudApi.validateServerCreateRequest(JsonUtil.parseObject(req, VsphereVmCreateRequest.class));
     }
 
     @Override

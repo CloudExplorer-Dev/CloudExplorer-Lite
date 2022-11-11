@@ -65,14 +65,14 @@ function isValidMask(mask: string) {
 }
 
 const ruleIpIsValid = (rule: any, value: any, callback: any) => {
-  if (isValid(value)) {
+  if (value == undefined || value === "" || isValid(value)) {
     callback();
   } else {
     callback(new Error("格式不正确"));
   }
 };
 const ruleIpIsValidV6 = (rule: any, value: any, callback: any) => {
-  if (isValidV6(value)) {
+  if (value == undefined || value === "" || isValidV6(value)) {
     callback();
   } else {
     callback(new Error("格式不正确"));

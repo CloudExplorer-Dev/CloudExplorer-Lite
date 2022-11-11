@@ -637,4 +637,13 @@ public class VsphereUtil {
         }
         return virtualEthernetCards;
     }
+
+    public static boolean validateFolder(VsphereClient client, String folderName) {
+        if (StringUtils.isNotBlank(folderName)) {
+            folderName = StringUtils.strip(folderName, "/");
+            Folder folder = client.getFolder(folderName);
+            return folder != null;
+        }
+        return false;
+    }
 }
