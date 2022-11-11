@@ -22,12 +22,18 @@
         >
           <span class="title">
             {{ index === 0 ? "系统盘" : "数据盘 " + index }}
+            <span
+              style="font-size: smaller; color: var(--el-text-color-secondary)"
+            >
+              (GB)
+            </span>
           </span>
 
           <el-input-number
             v-model="obj.size"
             :min="_.defaultTo(defaultDisks[index]?.size, 1)"
             :step="1"
+            :disabled="obj.readonly"
             required
           />
 
@@ -116,7 +122,11 @@ const templateDisks = computed(() => {
 const defaultDisks = computed(() => {
   return _.defaultTo(
     _.map(templateDisks.value, (templateDisk) => {
-      return { size: templateDisk.sizeGB, deleteWithInstance: true };
+      return {
+        size: templateDisk.sizeGB,
+        deleteWithInstance: true,
+        readonly: true,
+      };
     }),
     []
   );
