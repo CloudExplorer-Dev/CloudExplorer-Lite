@@ -48,6 +48,7 @@
             highlight-current-row
             style="width: 100%"
             @current-change="handleCurrentChange"
+            height="340px"
           >
             <el-table-column width="55">
               <template #default="scope">
@@ -193,7 +194,7 @@ const _data = computed({
 
 const label = computed<string | null>(() => {
   if (_data.value.location === "host") {
-    return "主机";
+    return "宿主机";
   }
   if (_data.value.location === "pool") {
     return "资源池";

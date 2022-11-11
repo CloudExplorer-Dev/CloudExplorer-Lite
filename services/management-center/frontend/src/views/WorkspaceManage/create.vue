@@ -1,5 +1,8 @@
 <!--创建编辑工作空间-->
 <script setup lang="ts">
+const props = defineProps<{
+  id: string;
+}>();
 import { ref, onMounted, reactive, nextTick } from "vue";
 import type { OrganizationTree } from "@/api/organization/type";
 import { tree } from "@/api/organization";
@@ -38,7 +41,7 @@ onMounted(() => {
     sourceData.value = [...orgSelectData.value];
   });
   //工作空间ID
-  const workspaceId = route.currentRoute.value.query.id;
+  const workspaceId = props.id;
   if (workspaceId) {
     //查询工作空间信息
     WorkspaceApi.getWorkspaceById(workspaceId as string, loading)

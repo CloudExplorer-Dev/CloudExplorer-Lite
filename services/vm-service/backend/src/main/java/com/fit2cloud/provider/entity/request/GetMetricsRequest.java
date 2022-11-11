@@ -12,7 +12,6 @@ public class GetMetricsRequest extends BaseRequest{
 
     /**
      * 监控数据间隔 s
-     * 取值60-600-3600
      */
     private int period = 60;
     /**

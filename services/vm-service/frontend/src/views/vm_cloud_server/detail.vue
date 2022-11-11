@@ -8,11 +8,14 @@
     <el-tab-pane label="基本信息" name="Info"></el-tab-pane>
     <el-tab-pane label="监控" name="Monitor"></el-tab-pane>
     <div>
-      <component v-bind:is="currentCom"></component>
+      <component v-bind:is="currentCom" :id="props.id"></component>
     </div>
   </el-tabs>
 </template>
 <script lang="ts" setup>
+const props = defineProps<{
+  id: string;
+}>();
 import { ref, markRaw, onMounted } from "vue";
 import Info from "./info.vue";
 import Monitor from "./monitor.vue";

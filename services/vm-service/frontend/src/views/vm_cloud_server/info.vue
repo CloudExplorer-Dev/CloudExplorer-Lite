@@ -179,6 +179,9 @@
   </layout-container>
 </template>
 <script setup lang="ts">
+const props = defineProps<{
+  id: string;
+}>();
 import { ref, onMounted, onBeforeUnmount } from "vue";
 import VmCloudServerApi from "@/api/vm_cloud_server";
 import { useI18n } from "vue-i18n";
@@ -232,9 +235,7 @@ const instanceStatusTagStyle = (instanceStatus: string) => {
  * 页面挂载
  */
 onMounted(() => {
-  //云主机ID
-  const vmId = useRoute.currentRoute.value.query.id;
-  VmCloudServerApi.getVmCloudServerById(vmId as string, loading)
+  VmCloudServerApi.getVmCloudServerById(props.id, loading)
     .then((res) => {
       infoVmCloudServer.value = _.cloneDeep(res.data);
     })

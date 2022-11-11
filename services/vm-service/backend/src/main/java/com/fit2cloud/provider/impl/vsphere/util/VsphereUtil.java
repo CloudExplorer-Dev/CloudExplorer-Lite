@@ -222,10 +222,11 @@ public class VsphereUtil {
             // vc 账号权限不够导致云主机关联的存储器无法获取
             if (datastore == null) {
                 String errorMessage = "Cannot get vm[" + vm.getName() + "]'s datastore";
-                throw new Exception(errorMessage);
+                log.error(errorMessage);
+            } else {
+                d.setDatastoreUniqueId(datastoreMorVal);
+                d.setDatastoreName(datastore.getDatastoreName());
             }
-            d.setDatastoreUniqueId(datastoreMorVal);
-            d.setDatastoreName(datastore.getDatastoreName());
         }
 
         if (hostFromCache.getClusterName() != null) {
@@ -635,5 +636,14 @@ public class VsphereUtil {
             }
         }
         return virtualEthernetCards;
+    }
+
+    public static boolean validateFolder(VsphereClient client, String folderName) {
+        if (StringUtils.isNotBlank(folderName)) {
+            folderName = StringUtils.strip(folderName, "/");
+            Folder folder = client.getFolder(folderName);
+            return folder != null;
+        }
+        return false;
     }
 }
