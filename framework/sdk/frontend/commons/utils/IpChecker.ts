@@ -1,15 +1,15 @@
 import IpAddr from "ipaddr.js";
 import _ from "lodash";
 
-export const ipv4 =
+const ipv4 =
   /^(?:(?:[0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}(?:[0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])$/;
 
-export const cidrV4 =
+const cidrV4 =
   /^(?:(?:[0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}(?:[0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\/([1-9]|[1-2]\d|3[0-2])$/;
-export const cidrV6 =
+const cidrV6 =
   /^s*((([0-9A-Fa-f]{1,4}:){7}([0-9A-Fa-f]{1,4}|:))|(([0-9A-Fa-f]{1,4}:){6}(:[0-9A-Fa-f]{1,4}|((25[0-5]|2[0-4]d|1dd|[1-9]?d)(.(25[0-5]|2[0-4]d|1dd|[1-9]?d)){3})|:))|(([0-9A-Fa-f]{1,4}:){5}(((:[0-9A-Fa-f]{1,4}){1,2})|:((25[0-5]|2[0-4]d|1dd|[1-9]?d)(.(25[0-5]|2[0-4]d|1dd|[1-9]?d)){3})|:))|(([0-9A-Fa-f]{1,4}:){4}(((:[0-9A-Fa-f]{1,4}){1,3})|((:[0-9A-Fa-f]{1,4})?:((25[0-5]|2[0-4]d|1dd|[1-9]?d)(.(25[0-5]|2[0-4]d|1dd|[1-9]?d)){3}))|:))|(([0-9A-Fa-f]{1,4}:){3}(((:[0-9A-Fa-f]{1,4}){1,4})|((:[0-9A-Fa-f]{1,4}){0,2}:((25[0-5]|2[0-4]d|1dd|[1-9]?d)(.(25[0-5]|2[0-4]d|1dd|[1-9]?d)){3}))|:))|(([0-9A-Fa-f]{1,4}:){2}(((:[0-9A-Fa-f]{1,4}){1,5})|((:[0-9A-Fa-f]{1,4}){0,3}:((25[0-5]|2[0-4]d|1dd|[1-9]?d)(.(25[0-5]|2[0-4]d|1dd|[1-9]?d)){3}))|:))|(([0-9A-Fa-f]{1,4}:){1}(((:[0-9A-Fa-f]{1,4}){1,6})|((:[0-9A-Fa-f]{1,4}){0,4}:((25[0-5]|2[0-4]d|1dd|[1-9]?d)(.(25[0-5]|2[0-4]d|1dd|[1-9]?d)){3}))|:))|(:(((:[0-9A-Fa-f]{1,4}){1,7})|((:[0-9A-Fa-f]{1,4}){0,5}:((25[0-5]|2[0-4]d|1dd|[1-9]?d)(.(25[0-5]|2[0-4]d|1dd|[1-9]?d)){3}))|:)))(%.+)?s*(\/([0-9]|[1-9][0-9]|1[0-1][0-9]|12[0-8]))?$/;
 
-const netmasks = [
+const netmaskList = [
   "0.0.0.0",
   "128.0.0.0",
   "192.0.0.0",
@@ -49,6 +49,7 @@ const RegExpPatterns = {
   ipv4,
   cidrV4,
   cidrV6,
+  netmaskList,
 };
 
 function isValid(ipaddr: string): boolean {
@@ -57,6 +58,10 @@ function isValid(ipaddr: string): boolean {
 
 function isValidV6(ipaddr: string): boolean {
   return IpAddr.IPv6.isValid(ipaddr);
+}
+
+function isValidMask(mask: string) {
+  return _.indexOf(netmaskList, mask) >= 0;
 }
 
 const ruleIpIsValid = (rule: any, value: any, callback: any) => {
@@ -73,10 +78,6 @@ const ruleIpIsValidV6 = (rule: any, value: any, callback: any) => {
     callback(new Error("格式不正确"));
   }
 };
-
-function isValidMask(mask: string) {
-  return _.indexOf(netmasks, mask) >= 0;
-}
 
 const ruleMaskIsValidV6 = (rule: any, value: any, callback: any) => {
   if (isValidMask(value)) {
