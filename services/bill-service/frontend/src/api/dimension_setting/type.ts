@@ -1,3 +1,5 @@
+import type { SimpleMap } from "@commons/api/base/type";
+
 interface BillAuthorizeRuleCondition {
   /**
    * 唯一id
@@ -65,9 +67,76 @@ interface BillDimensionSetting {
   updateTime: string;
 }
 
+interface AuthorizeResourcesResponse {
+  /**
+   * 资源id
+   */
+  resourceId: string;
+  /**
+   * 资源名称
+   */
+  resourceName: string;
+  /**
+   * 企业项目id
+   */
+  projectId: string;
+  /**
+   * 企业项目名称
+   */
+  projectName: string;
+  /**
+   * 产品id
+   */
+  productId: string;
+  /**
+   * 产品名称
+   */
+  productName: string;
+  /**
+   * 标签
+   */
+  tags: SimpleMap<string>;
+  /**
+   * 云账号id
+   */
+  cloudAccountId: string;
+  /**
+   * 云账号名称
+   */
+  cloudAccountName: string;
+}
+interface AuthorizeResourcesRequest {
+  /**
+   * 授权对象id
+   */
+  authorizeId: string;
+  /**
+   * 授权对象类型
+   */
+  type: "WORKSPACE" | "ORGANIZATION";
+  /**
+   * 产品名称
+   */
+  productName?: string;
+  /**
+   * 资源名称
+   */
+  resourceName?: string;
+  /**
+   *企业项目名称
+   */
+  projectName?: string;
+  /**
+   * 云账号名称
+   */
+  cloudAccountName?: string;
+}
+
 export type {
   BillAuthorizeRuleCondition,
   BillAuthorizeRuleSettingGroup,
   BillDimensionSetting,
   BillAuthorizeRule,
+  AuthorizeResourcesResponse,
+  AuthorizeResourcesRequest,
 };

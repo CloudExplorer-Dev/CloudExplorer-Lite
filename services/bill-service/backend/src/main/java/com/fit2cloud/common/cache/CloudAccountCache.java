@@ -7,11 +7,13 @@ import com.fit2cloud.base.mapper.BaseOrganizationMapper;
 import com.fit2cloud.common.utils.SpringUtil;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.collections4.keyvalue.DefaultKeyValue;
+import org.apache.commons.lang3.StringUtils;
 
 import java.lang.ref.SoftReference;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 /**
@@ -56,5 +58,21 @@ public class CloudAccountCache {
     public synchronized static String getCache(String cloudAccountId) {
         Map<String, String> cloudAccountMap = cloudAccountCache.get();
         return MapUtils.isEmpty(cloudAccountMap) ? null : cloudAccountMap.get(cloudAccountId);
+    }
+
+    public synchronized static String getCacheOrUpdate(String cloudAccountId) {
+        String cache = getCache(cloudAccountId);
+        if (StringUtils.isEmpty(cache)) {
+            BaseCloudAccountMapper cloudAccountMapper = SpringUtil.getBean(BaseCloudAccountMapper.class);
+            CloudAccount cloudAccount = cloudAccountMapper.selectById(cloudAccountId);
+            if (Objects.nonNull(cloudAccount)) {
+                updateCache();
+                return cloudAccount.getName();
+            }
+            return cloudAccountId;
+        } else {
+            return cache;
+        }
+
     }
 }

@@ -1,5 +1,6 @@
 package com.fit2cloud.es.entity;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fit2cloud.common.annotaion.BillField;
 import com.fit2cloud.common.conver.impl.*;
 import lombok.Data;
@@ -50,7 +51,7 @@ public class CloudBill {
     @BillField(label = "企业项目", group = true, authorize = true)
     @MultiField(mainField = @Field(type = FieldType.Text),
             otherFields = @InnerField(suffix = "keyword", type = FieldType.Keyword))
-    private String ProjectName;
+    private String projectName;
 
     @BillField(label = "付款账号")
     @Field(type = FieldType.Keyword)
@@ -58,14 +59,17 @@ public class CloudBill {
 
     @BillField(label = "账期")
     @Field(type = FieldType.Date, format = DateFormat.date_hour_minute_second)
+    @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss", timezone = "GMT+8")
     private LocalDateTime billingCycle;
 
     @BillField(label = "账单开始时间")
     @Field(type = FieldType.Date, format = DateFormat.date_hour_minute_second)
+    @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss", timezone = "GMT+8")
     private LocalDateTime usageStartDate;
 
     @BillField(label = "账单结束时间")
     @Field(type = FieldType.Date, format = DateFormat.date_hour_minute_second)
+    @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss", timezone = "GMT+8")
     private LocalDateTime usageEndDate;
 
     @BillField(label = "云平台", group = true, authorize = true, conver = ProviderConvert.class)
