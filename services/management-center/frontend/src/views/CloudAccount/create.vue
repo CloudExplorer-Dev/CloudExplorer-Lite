@@ -10,6 +10,8 @@ import type {
 import { useRouter } from "vue-router";
 import { useI18n } from "vue-i18n";
 import type { FormInstance, FormRules } from "element-plus";
+import { constants } from "os";
+import errno = module;
 const router = useRouter();
 const { t } = useI18n();
 const loading = ref<boolean>(false);
@@ -44,7 +46,9 @@ const changePlatform = () => {
         from.value.credential[item.field] = JSON.parse(
           item.defaultValue as string
         );
-      } catch (e) {}
+      } catch (e) {
+        console.error(e);
+      }
     }
   });
 };

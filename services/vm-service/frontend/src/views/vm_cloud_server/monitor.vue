@@ -214,20 +214,20 @@ const changeTimestamp = () => {
 
 onMounted(() => {
   VmCloudServerApi.getVmCloudServerById(props.id)
-      .then((res) => {
-        infoVmCloudServer.value = _.cloneDeep(res.data);
-        // 查监控数据参数
-        request.value.startTime = timestampData.value[0].getTime();
-        request.value.endTime = timestampData.value[1].getTime();
-        request.value.instanceId = infoVmCloudServer.value.instanceUuid;
-        request.value.cloudAccountId = infoVmCloudServer.value.accountId;
-        request.value.entityType = PerfMetricEntityTypeConst.VIRTUAL_MACHINE;
-        request.value.metricName = "";
-        initEchartsData();
-      })
-      .catch((err) => {
-        console.log(err);
-      });
+    .then((res) => {
+      infoVmCloudServer.value = _.cloneDeep(res.data);
+      // 查监控数据参数
+      request.value.startTime = timestampData.value[0].getTime();
+      request.value.endTime = timestampData.value[1].getTime();
+      request.value.instanceId = infoVmCloudServer.value.instanceUuid;
+      request.value.cloudAccountId = infoVmCloudServer.value.accountId;
+      request.value.entityType = PerfMetricEntityTypeConst.VIRTUAL_MACHINE;
+      request.value.metricName = "";
+      initEchartsData();
+    })
+    .catch((err) => {
+      console.log(err);
+    });
 });
 /**
  * 初始化图表数据

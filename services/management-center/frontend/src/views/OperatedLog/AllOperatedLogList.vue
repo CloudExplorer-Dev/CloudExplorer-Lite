@@ -77,7 +77,7 @@ import {
   TableConfig,
   TableOperations,
   TableSearch,
-  Order
+  Order,
 } from "@commons/components/ce-table/type";
 import LogDetail from "./LogDetail.vue";
 import { useI18n } from "vue-i18n";

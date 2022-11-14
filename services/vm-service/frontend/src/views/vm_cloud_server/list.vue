@@ -197,7 +197,10 @@ const tableConfig = ref<TableConfig>({
  */
 const showDetail = (row: VmCloudServerVO) => {
   useRoute.push({
-    path: useRoute.currentRoute.value.path.replace("/list", `/detail/${row.id}`)
+    path: useRoute.currentRoute.value.path.replace(
+      "/list",
+      `/detail/${row.id}`
+    ),
   });
 };
 const gotoCatalog = () => {

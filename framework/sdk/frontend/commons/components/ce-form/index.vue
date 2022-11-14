@@ -142,9 +142,9 @@ watch(
       });
     }
   },
-{
-  immediate: true,
-}
+  {
+    immediate: true,
+  }
 );
 /**
  * 获取数据
