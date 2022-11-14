@@ -1,6 +1,7 @@
 import type { Ref } from "vue";
 import type { BillSummary, TrendData } from "@/echarts/bill_view/type";
 import type { SimpleMap } from "@commons/api/base/type";
+import _ from "lodash";
 /**
  * 重置数据
  * @param billData 数据
@@ -95,14 +96,18 @@ const getBillViewOptions = (
           .map((i) => i.value)
           .reduce((p: number, n: number) => p + n, 0);
         const a = Math.floor(((dataItem?.value as number) / sum) * 10000) / 100;
-        return `{oneone|${dataItem?.name}}  {twotwo|${
-          Math.floor((dataItem ? dataItem.value : 0) * 100) / 100
-        }元}   {threethree|${a}%}`;
+        return `{oneone|${dataItem?.name}}  {twotwo|${_.round(
+          dataItem ? dataItem.value : 0,
+          2
+        ).toFixed(2)}元}   {threethree|${a}%}`;
       },
     },
     tooltip: {
       trigger: "item",
-      formatter: "{b}:{c} ",
+
+      formatter: (p: any) => {
+        return `${p.name}:${_.round(p.value, 2).toFixed(2)}元`;
+      },
     },
     series: [
       {
@@ -128,7 +133,9 @@ const getBillViewOptions = (
                 .filter((d) => (selected as SimpleMap<boolean>)[d.name])
                 .map((a) => a.value)
                 .reduce((p, n) => p + n, 0);
-              return `{title|总费用}\r\n{value|${sum}元}`;
+              return `{title|总费用}\r\n{value|${_.round(sum, 2).toFixed(
+                2
+              )}元}`;
             },
             rich: {
               title: {
@@ -148,7 +155,9 @@ const getBillViewOptions = (
             show: true,
             width: 140,
             formatter: (a: any) => {
-              return `{title|${a.name}}\r\n{value|${a.value}元}`;
+              return `{title|${a.name}}\r\n{value|${_.round(a.value, 2).toFixed(
+                2
+              )}元}`;
             },
             fontWeight: "bold",
           },

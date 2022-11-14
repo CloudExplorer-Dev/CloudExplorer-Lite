@@ -118,6 +118,7 @@
               <el-auto-resizer>
                 <template #default="{ height, width }">
                   <el-table-v2
+                    :cache="5"
                     :columns="columns"
                     :sort-by="sortState"
                     :data="viewData"
@@ -321,15 +322,28 @@ const historyTrend = (historyNum: number, active: string) => {
         true,
         false
       );
+      option["yAxis"]["splitLine"] = {
+        show: false,
+      };
+      option["tooltip"] = {
+        trigger: "item",
+        formatter: (p) => {
+          return `<div>月份:${p.name}</div><div>金额:${_.round(
+            p.data,
+            2
+          ).toFixed(2)}</div>`;
+        },
+      };
       historyTrendChart.value.setOption(option);
     });
 };
 const BillRules = ref<Array<BillRule>>([]);
+
 onMounted(() => {
   billViewAPi
     .getExpenses("MONTH", currentMonth, currentMonthExpensesLoading)
     .then((ok) => {
-      currentMonthExpenses.value = Math.floor(ok.data * 100) / 100;
+      currentMonthExpenses.value = _.round(ok.data, 2).toFixed(2);
     });
   billViewAPi
     .getExpenses(
@@ -338,7 +352,7 @@ onMounted(() => {
       currentYearExpensesLoading
     )
     .then((ok) => {
-      currentYearExpenses.value = Math.floor(ok.data * 100) / 100;
+      currentYearExpenses.value = _.round(ok.data, 2).toFixed(2);
     });
   historyTrend(12, "YEAR");
   billRuleApi.listBillRules().then((ok) => {
@@ -425,6 +439,8 @@ const columns = computed(() => {
       width: 200,
       dataKey: "value",
       fixed: TableV2FixedDir.RIGHT,
+      cellRenderer: (cellData: any) =>
+        _.round(cellData.rowData.value, 2).toFixed(2) + "元",
       sortable: true,
     },
     {
