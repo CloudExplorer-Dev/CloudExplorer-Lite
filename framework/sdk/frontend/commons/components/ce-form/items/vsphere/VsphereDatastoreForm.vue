@@ -61,7 +61,7 @@
 import type { FormView } from "@commons/components/ce-form/type";
 import { computed, onMounted, ref } from "vue";
 import _ from "lodash";
-import { ElTable } from "element-plus";
+import type { ElTable } from "element-plus";
 
 interface DataStore {
   mor: string;

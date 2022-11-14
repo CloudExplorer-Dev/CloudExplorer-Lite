@@ -428,7 +428,7 @@ public class VsphereSyncCloudApi {
         return networks;
     }
 
-    public static List<F2CDisk> createDisks(VsphereCreateDiskRequest request) {
+    public static List<F2CDisk> createDisks(VsphereCreateDisksRequest request) {
         VsphereDiskRequest diskRequest = new VsphereDiskRequest();
         BeanUtils.copyProperties(request, diskRequest);
         VsphereClient client = null;
@@ -451,6 +451,15 @@ public class VsphereSyncCloudApi {
         }
     }
 
+    public static F2CDisk createDisk(VsphereCreateDiskRequest request) {
+        F2CDisk disk = new F2CDisk();
+        List<F2CDisk> disks = createDisks(request.toVsphereCreateDisksRequest());
+        if (CollectionUtils.isNotEmpty(disks)) {
+            disk = disks.get(0);
+        }
+        return disk;
+    }
+
     public static boolean enlargeDisk(VsphereResizeDiskRequest resizeDiskRequest) {
         VsphereDiskRequest diskRequest = new VsphereDiskRequest();
         BeanUtils.copyProperties(resizeDiskRequest, diskRequest);
@@ -467,7 +476,7 @@ public class VsphereSyncCloudApi {
             }
         }
 
-        VsphereCreateDiskRequest createDiskRequest = new VsphereCreateDiskRequest();
+        VsphereCreateDisksRequest createDiskRequest = new VsphereCreateDisksRequest();
         BeanUtils.copyProperties(resizeDiskRequest, createDiskRequest);
         createDiskRequest.setDisks(toEnlargeDisks);
         VsphereClient client = createDiskRequest.getVsphereVmClient();
@@ -487,7 +496,7 @@ public class VsphereSyncCloudApi {
         }
     }
 
-    private static void editDisk(VsphereCreateDiskRequest createDiskRequest, VsphereClient client) {
+    private static void editDisk(VsphereCreateDisksRequest createDiskRequest, VsphereClient client) {
         try {
             VirtualMachine virtualMachine;
             try {
@@ -655,6 +664,55 @@ public class VsphereSyncCloudApi {
         } finally {
             closeConnection(client);
         }
+    }
+
+    public static List<VsphereDatastore> getDatastoreListByVm(VsphereDiskRequest request) {
+        VsphereVmClient client = request.getVsphereVmClient();
+        List<VsphereDatastore> result;
+        try {
+            VirtualMachine virtualMachine;
+            try {
+                virtualMachine = client.getVirtualMachineById(request.getInstanceUuid());
+            } catch (Exception e) {
+                throw new RuntimeException(e.getMessage(), e);
+            }
+            if (virtualMachine == null) {
+                throw new RuntimeException(String.format("Virtual machine: %s ", request.getInstanceUuid()) + " The host storage failed, the virtual machine was not found.");
+            }
+            result = new ArrayList<>();
+            try {
+                if (request.getDiskId() != null) {
+                    Datastore datastore = null;
+                    VirtualDisk virtualMachineDisk = VsphereDiskUtil.getVirtualMachineDisk(virtualMachine,
+                            request.getDiskId());
+                    if (virtualMachineDisk == null) {
+                        throw new RuntimeException("Failed to get the disk, can't find the virtual machine:" + request.getInstanceUuid() + " disk: " + request.getDiskId());
+                    }
+                    VirtualDeviceBackingInfo backing = virtualMachineDisk.getBacking();
+                    if (backing instanceof VirtualDiskFlatVer2BackingInfo) {
+                        datastore = client.getDatastoreByMor(((VirtualDiskFlatVer2BackingInfo) backing).getDatastore().getVal());
+                    } else if (backing instanceof VirtualDiskSparseVer2BackingInfo) {
+                        datastore = client.getDatastoreByMor(((VirtualDiskSparseVer2BackingInfo) backing).getDatastore().getVal());
+                    }
+                    if (null == datastore) {
+                        throw new RuntimeException("Failed to get datastore, unable to find disk:" + request.getDiskId() + " where the store");
+                    }
+                    result.add(convertToVsphereDatastore(datastore));
+                } else {
+                    Datastore[] datastores = virtualMachine.getDatastores();
+                    if (datastores != null) {
+                        for (Datastore ds : datastores) {
+                            result.add(convertToVsphereDatastore(ds));
+                        }
+                    }
+                }
+            } catch (Exception e) {
+                throw new RuntimeException(String.format("Virtual machine: %s ", request.getInstanceUuid()) + " where the store" + "，message:" + e.getMessage());
+            }
+        } finally {
+            closeConnection(client);
+        }
+        return result;
     }
 
     public static List<VsphereDatastore> getDatastoreList(VsphereVmCreateRequest request) {

@@ -9,6 +9,8 @@ import com.fit2cloud.provider.ICloudProvider;
 import com.fit2cloud.provider.entity.*;
 import com.fit2cloud.provider.impl.vsphere.api.VsphereSyncCloudApi;
 import com.fit2cloud.provider.impl.vsphere.entity.*;
+import com.fit2cloud.provider.impl.vsphere.entity.constants.VsphereDiskMode;
+import com.fit2cloud.provider.impl.vsphere.entity.constants.VsphereDiskType;
 import com.fit2cloud.provider.impl.vsphere.entity.request.*;
 import com.fit2cloud.provider.impl.vsphere.util.DiskType;
 
@@ -135,19 +137,96 @@ public class VsphereCloudProvider extends AbstractCloudProvider<VsphereCredentia
         return diskTypes;
     }
 
-    public List<VsphereDatastore> getDatastoreList(String req) {
-        VsphereVmCreateRequest request = JsonUtil.parseObject(req, VsphereVmCreateRequest.class);
-        return VsphereSyncCloudApi.getDatastoreList(request);
-    }
-
     @Override
     public boolean enlargeDisk(String req) {
         return VsphereSyncCloudApi.enlargeDisk(JsonUtil.parseObject(req, VsphereResizeDiskRequest.class));
     }
 
+
+    @Override
+    public FormObject getCreateDiskForm() {
+        return FormUtil.toForm(VsphereCreateDiskForm.class);
+    }
+
+    /**
+     * 获取磁盘类型 （单独创建磁盘时使用）
+     * @param req
+     * @return
+     */
+    public List<Map<String, String>> getDiskTypesForCreateDisk(String req) {
+        List<Map<String, String>> diskTypes = new ArrayList<>();
+
+        Map<String, String> typeOne = new HashMap<>();
+        typeOne.put("id", VsphereDiskType.THIN.getId());
+        typeOne.put("name", VsphereDiskType.getName(VsphereDiskType.THIN.getId()));
+        diskTypes.add(typeOne);
+
+        Map<String, String> typeTwo = new HashMap<>();
+        typeTwo.put("id", VsphereDiskType.THICK_EAGER_ZEROED.getId());
+        typeTwo.put("name", VsphereDiskType.getName(VsphereDiskType.THICK_EAGER_ZEROED.getId()));
+        diskTypes.add(typeTwo);
+
+        Map<String, String> typeThree = new HashMap<>();
+        typeThree.put("id", VsphereDiskType.THICK_LAZY_ZEROED.getId());
+        typeThree.put("name", VsphereDiskType.getName(VsphereDiskType.THICK_LAZY_ZEROED.getId()));
+        diskTypes.add(typeThree);
+        return diskTypes;
+    }
+
+    /**
+     * 获取磁盘模式 （单独创建磁盘时使用）
+     * @param req
+     * @return
+     */
+    public List<Map<String, String>> getDiskModes(String req) {
+        List<Map<String, String>> result = new ArrayList<>();
+
+        Map<String, String> map = new HashMap<>();
+        map.put("id", VsphereDiskMode.independent_persistent.getId());
+        map.put("name", VsphereDiskMode.getName(VsphereDiskMode.independent_persistent.getId()));
+        result.add(map);
+        map = new HashMap<>();
+        map.put("id", VsphereDiskMode.independent_nonpersistent.getId());
+        map.put("name", VsphereDiskMode.getName(VsphereDiskMode.independent_nonpersistent.getId()));
+        result.add(map);
+        map = new HashMap<>();
+        map.put("id", VsphereDiskMode.persistent.getId());
+        map.put("name", VsphereDiskMode.getName(VsphereDiskMode.persistent.getId()));
+        result.add(map);
+
+        return result;
+    }
+
+    /**
+     * 获取存储类型 （单独创建磁盘时使用）
+     * @param req
+     * @return
+     */
+    public List<Map<String, String>> getDatastoreTypes(String req) {
+        List<Map<String, String>> result = new ArrayList<>();
+        Map<String, String> map = new HashMap<>();
+        map.put("id", "only-a-flag");
+        map.put("name", "与虚拟机同目录");
+        result.add(map);
+        map = new HashMap<>();
+        map.put("id", "customize");
+        map.put("name", "自定义");
+        result.add(map);
+        return result;
+    }
+
+    public List<VsphereDatastore> getDatastoreListByVm(String req) {
+        return VsphereSyncCloudApi.getDatastoreListByVm(JsonUtil.parseObject(req, VsphereDiskRequest.class));
+    }
+
     @Override
     public List<F2CDisk> createDisks(String req) {
-        return VsphereSyncCloudApi.createDisks(JsonUtil.parseObject(req, VsphereCreateDiskRequest.class));
+        return VsphereSyncCloudApi.createDisks(JsonUtil.parseObject(req, VsphereCreateDisksRequest.class));
+    }
+
+    @Override
+    public F2CDisk createDisk(String req) {
+        return VsphereSyncCloudApi.createDisk(JsonUtil.parseObject(req, VsphereCreateDiskRequest.class));
     }
 
     @Override

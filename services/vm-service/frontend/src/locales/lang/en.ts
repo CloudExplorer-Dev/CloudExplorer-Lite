@@ -65,6 +65,7 @@ const message = {
     msg: {
       canceled: "{0}Cancelled",
       select_one: "At least to select one record",
+      datastore_null: "Datastore can not be null",
     },
   },
 };

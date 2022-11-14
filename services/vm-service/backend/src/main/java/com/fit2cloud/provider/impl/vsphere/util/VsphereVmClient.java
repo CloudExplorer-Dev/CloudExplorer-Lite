@@ -785,6 +785,18 @@ public class VsphereVmClient extends VsphereClient {
         return null;
     }
 
+    public Datastore getDatastoreByMor(String datastoreMor) {
+        List<Datastore> datastores = listDataStores();
+        if (datastores != null) {
+            for (Datastore datastore : datastores) {
+                if (datastore.getMOR().getVal().equals(datastoreMor)) {
+                    return datastore;
+                }
+            }
+        }
+        return null;
+    }
+
     private boolean shutdownGuest(String instanceId) {
         try {
             VirtualMachine vm = getVirtualMachineById(instanceId);

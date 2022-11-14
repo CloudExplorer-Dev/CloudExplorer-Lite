@@ -65,6 +65,7 @@ const message = {
     msg: {
       canceled: "已取消{0}",
       select_one: "至少选择一条记录",
+      datastore_null: "存储器不能为空",
     },
   },
 };

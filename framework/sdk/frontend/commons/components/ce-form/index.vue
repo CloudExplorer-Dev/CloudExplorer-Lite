@@ -8,6 +8,7 @@ import type { SimpleMap } from "@commons/api/base/type";
 const formData = ref<SimpleMap<any>>({});
 // 校验实例对象
 const ruleFormRef = ref<FormInstance>();
+const resourceLoading = ref<boolean>(false);
 
 const props = withDefaults(
   defineProps<{
@@ -95,22 +96,20 @@ const initDefaultData = () => {
         formData.value[item.field] = item.defaultValue;
       }
     }
-    props.formViewData.forEach((relationItem) => {
-      if (
-        relationItem.clazz &&
-        relationItem.method &&
-        relationItem.relationTrigger.every((r) => formData.value[r])
-      ) {
-        formApi
-          .getResourceMyMethod(relationItem.clazz, relationItem.method, {
-            ...formData.value,
-            ...props.otherParams,
-          })
-          .then((ok) => {
-            relationItem.optionList = ok.data;
-          });
-      }
-    });
+    if (
+      item.clazz &&
+      item.method &&
+      item.relationTrigger.every((r) => formData.value[r])
+    ) {
+      formApi
+        .getResourceMyMethod(item.clazz, item.method, {
+          ...formData.value,
+          ...props.otherParams,
+        })
+        .then((ok) => {
+          item.optionList = ok.data;
+        });
+    }
   });
 };
 
@@ -143,9 +142,9 @@ watch(
       });
     }
   },
-  {
-    immediate: true,
-  }
+{
+  immediate: true,
+}
 );
 /**
  * 获取数据
@@ -175,7 +174,6 @@ const clearData = () => {
   formData.value = {};
 };
 
-const resourceLoading = ref<boolean>(false);
 // 暴露获取当前表单数据函数
 defineExpose({
   getFormData,
@@ -199,7 +197,7 @@ defineExpose({
     <div v-for="item in formViewData" :key="item.field" style="width: 100%">
       <el-form-item
         style="width: 100%"
-        v-if="item.relationShows.every((i:string) => formData[i])"
+        v-if="item.relationShowValues? item.relationShows.every((i:string) => item.relationShowValues.includes(formData[i])):item.relationShows.every((i:string) => formData[i])"
         :label="item.label"
         :prop="item.field"
         :rules="{
@@ -215,6 +213,7 @@ defineExpose({
           v-model="formData[item.field]"
           :is="item.inputType"
           :formItem="item"
+          :field="item.field"
           v-bind="{ ...JSON.parse(item.attrs) }"
         ></component>
       </el-form-item>

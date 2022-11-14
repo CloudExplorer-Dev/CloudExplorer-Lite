@@ -6,6 +6,9 @@ import BaseCloudAccountApi from "@commons/api/cloud_account";
 import { useRouter } from "vue-router";
 import type { VmCloudServerVO } from "@/api/vm_cloud_server/type";
 import type { CloudAccount } from "@commons/api/cloud_account/type";
+import { ElMessage } from "element-plus";
+import { useI18n } from "vue-i18n";
+const { t } = useI18n();
 
 const router = useRouter();
 const id = ref<string>(router.currentRoute.value.params.id as string);
@@ -19,6 +22,7 @@ const otherParams = computed(() => {
     ...cloudAccount.value,
     regionId: vmCloudServer.value?.region,
     zone: vmCloudServer.value?.zone,
+    instanceUuid: vmCloudServer.value?.instanceUuid,
   };
 });
 
@@ -52,16 +56,28 @@ const handleCancel = () => {
 };
 
 const handleCreate = () => {
-  ceFormRef.value.validate();
-  const dataInfo = {
-    regionId: vmCloudServer.value?.region,
-    ...vmCloudServer.value,
-    ...cloudAccount.value,
-    ...ceFormRef.value.getFormData(),
-  };
-  // 获取相应云平台创建磁盘表单数据
-  VmCloudDiskApi.createDisk(dataInfo, loading).then(() => {
-    router.push({ name: "vm_cloud_server" });
+  // 单独校验 vmware 存储器
+  if (
+    cloudAccount.value?.platform == "fit2cloud_vsphere_platform" &&
+    ceFormRef.value.getFormData().datastoreType !== "only-a-flag" &&
+    ceFormRef.value.getFormData().datastore == null
+  ) {
+    ElMessage.error(t("vm_cloud_disk.msg.vm", "存储器不能为空"));
+    return;
+  }
+
+  ceFormRef.value.validate().then(() => {
+    const dataInfo = {
+      regionId: vmCloudServer.value?.region,
+      ...vmCloudServer.value,
+      ...cloudAccount.value,
+      ...ceFormRef.value.getFormData(),
+    };
+
+    // 获取相应云平台创建磁盘表单数据
+    VmCloudDiskApi.createDisk(dataInfo, loading).then(() => {
+      router.push({ name: "vm_cloud_server" });
+    });
   });
 };
 </script>

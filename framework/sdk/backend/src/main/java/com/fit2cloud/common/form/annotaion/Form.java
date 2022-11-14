@@ -122,6 +122,12 @@ public @interface Form {
     String[] relationShows() default {};
 
     /**
+     * 选中 relationShows 中某个属性的某个固定值时，显示当前节点
+     * @return
+     */
+    String[] relationShowValues() default {};
+
+    /**
      * container分组
      *
      * @return
