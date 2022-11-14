@@ -114,8 +114,7 @@ const create = () => {
 //编辑
 const edit = (row: Workspace) => {
   useRoute.push({
-    path: useRoute.currentRoute.value.path.replace("/list", "/create"),
-    query: { id: row.id },
+    path: useRoute.currentRoute.value.path.replace("/list", `/update/${row.id}`)
   });
 };
 

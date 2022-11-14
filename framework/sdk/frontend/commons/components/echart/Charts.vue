@@ -1,55 +1,56 @@
-<script setup lang='ts'>
-import { defineProps, onMounted, watch, ref } from 'vue';
-import * as echarts from 'echarts';
+<script setup lang="ts">
+import { defineProps, onMounted, watch, ref } from "vue";
+import * as echarts from "echarts";
 
 const props = defineProps({
-  smooth: {
-    type: Boolean,
-    default: () => false
-  },
-  chartsType: {
-    type: String,
-    default: () => "line"
-  },
-  color: {
-    type: String,
-    default: () => "#3E80BD"
-  },
   data: {
     type: Object,
-    default: () => {}
   },
-  xConfig: {
-    type: Object,
-    default: () => {}
-  },
-  chartsTitle: {
+  metricName: {
     type: String,
-    default: () => ""
   },
-  chartsSeriesName: {
+  yUnit: {
     type: String,
-    default: () => ""
   },
-  yDataUnit: {
+  title: {
     type: String,
-    default: () => ""
-  }
-})
+  },
+  legend: {
+    type: Array,
+  },
+  xData: {
+    type: Array,
+  },
+  series: {
+    type: Array,
+  },
+});
 
 const guid = () => {
-  return (((1+Math.random())*0x10000)|0).toString(16).substring(1);
-}
+  return (((1 + Math.random()) * 0x10000) | 0).toString(16).substring(1);
+};
 
 const getUuid = (): string => {
-  const uuid = (guid()+guid()+"-"+guid()+"-"+guid()+"-"+guid()+"-"+guid()+guid()+guid());
+  const uuid =
+    guid() +
+    guid() +
+    "-" +
+    guid() +
+    "-" +
+    guid() +
+    "-" +
+    guid() +
+    "-" +
+    guid() +
+    guid() +
+    guid();
   return uuid;
-}
+};
 
-const uuid = getUuid()
+const uuid = getUuid();
 
 // chart实例
-let myChart: any
+let myChart: any;
 
 const initEcharts = (): void => {
   /**
@@ -57,87 +58,147 @@ const initEcharts = (): void => {
    */
   const chartDom = document.getElementById(`echarts-${uuid}`)!;
   myChart = echarts.init(chartDom);
-}
+};
 
+const echartsLoading = () => {
+  myChart.showLoading({
+    text: "loading",
+    //color: '#c23531',
+    textColor: "#000",
+    maskColor: "rgba(255, 255, 255, 0.8)",
+    zlevel: 0,
+    showSpinner: false,
+  });
+};
+const hideEchartsLoading = () => {
+  myChart.hideLoading();
+};
+defineExpose({
+  echartsLoading,
+  hideEchartsLoading,
+});
 
 onMounted(() => {
   initEcharts();
   setEchartsData();
-})
+  window.addEventListener("resize", () => {
+    myChart && myChart.resize();
+  });
+});
 
 const setEchartsData = () => {
+  myChart.hideLoading();
   myChart.setOption({
     xAxis: {
-      type: 'category',
-      data: props.data.xData,
-      axisLabel:{
-        formatter:function(timestamp:any) {
+      type: "category",
+      data: props.xData,
+      axisLabel: {
+        formatter: function (timestamp: any) {
           return timestampToTime(timestamp);
         },
-        rotate:0,
-        interval: 'auto'
+        rotate: 0,
+        interval: "auto",
+        textStyle: {
+          fontSize: 12,
+        },
       },
-      ...props.xConfig
     },
     yAxis: {
-      type: 'value',
-      axisLabel:{
-        formatter: function (val:any) {
+      type: "value",
+      axisLabel: {
+        formatter: function (val: any) {
           return yUnitConversion(val);
-        }
-      }
+        },
+        textStyle: {
+          fontSize: 12,
+        },
+      },
+    },
+    graphic: {
+      type: "text",
+      left: "center",
+      top: "middle",
+      silent: true,
+      invisible: props.series[0].data.length != 0, //是否可见，这里的意思是当没有数据时可见
+      style: {
+        fill: "black",
+        font: '12px "bold" ',
+        text: "暂无数据",
+      },
     },
     legend: {
-      data: [props.chartsSeriesName],
-      y:'bottom',
+      data: props.legend,
+      y: "bottom",
+      textStyle: {
+        fontSize: 12,
+      },
     },
     title: {
-      text: props.chartsTitle
+      text: props.title,
+      textStyle: {
+        fontSize: 12,
+      },
     },
     tooltip: {
       show: true,
-      trigger: 'axis',
-      formatter: function(params:any){
+      trigger: "axis",
+      formatter: function (params: any) {
         const unit = ref<string>();
-        if(props.yDataUnit === "Byte/s" || props.yDataUnit === "bit/s"){
-          unit.value = changeByte(params[0].value);
-          debugger;
-        } else {
-          unit.value = params[0].value + props.yDataUnit;
-        }
-        const tooltipText = timestampToTime(params[0].name)+"<br/>"+params[0].marker+" "+ params[0].seriesName+" "+unit.value;
+        const timeText = timestampToTime(params[0].name);
+        let tooltipText = timeText;
+        params.forEach(function (v: any) {
+          if (props.yUnit === "Byte/s" || props.yUnit === "bit/s") {
+            unit.value = changeByte(v.value);
+          } else {
+            unit.value = v.value + props.yUnit;
+          }
+          tooltipText += "<br/>";
+          tooltipText += v.marker + " " + v.seriesName + " " + unit.value;
+        });
         return tooltipText;
       },
       axisPointer: {
         lineStyle: {
-          type:"solid"
-        }
+          type: "solid",
+        },
+      },
+      textStyle: {
+        fontSize: 12,
       },
     },
-    series: [
-      {
-        name: props.chartsSeriesName,
-        showSymbol: false,
-        symbol: 'circle',
-        data: props.data.yData,
-        type: props.chartsType,
-        smooth: props.smooth
-      }
-    ],
-    color: [
-      props.color
-    ]
+    series: props.series,
   });
-}
+};
 
-const yUnitConversion = (val:any)=>{
-  if(props.yDataUnit === "Byte/s" || props.yDataUnit === "bit/s"){
+const yUnitConversion = (val: any) => {
+  if (props.yUnit === "Byte/s" || props.yUnit === "bit/s") {
     return changeByte(val);
-  } else{
-    return val + " "+ props.yDataUnit;
+  } else {
+    return val + " " + props.yUnit;
   }
+};
 
-}
+/**
+ * 时间戳转时间格式
+ * @param timestamp
+ */
+const timestampToTime = (timestamp: any) => {
+  const date = new Date(timestamp * 1);
+  const Y = date.getFullYear() + "-";
+  const M =
+    (date.getMonth() + 1 < 10
+      ? "0" + (date.getMonth() + 1)
+      : date.getMonth() + 1) + "-";
+  const D = (date.getDate() < 10 ? "0" + date.getDate() : date.getDate()) + " ";
+  const h =
+    (date.getHours() < 10 ? "0" + date.getHours() : date.getHours()) + ":";
+  const m =
+    (date.getMinutes() < 10 ? "0" + date.getMinutes() : date.getMinutes()) +
+    ":";
+  const s =
+    date.getSeconds() < 10 ? "0" + date.getSeconds() : date.getSeconds();
+  return Y + M + D + h + m + s;
+};
 
 const changeByte = (byte: number) => {
   let size = "";
@@ -163,27 +224,14 @@ const changeByte = (byte: number) => {
   return size;
 };
 
-/**
- * 时间戳转时间格式
- * @param timestamp
- */
-const timestampToTime = (timestamp:any) =>{
-  let date = new Date(timestamp * 1);
-  let Y = date.getFullYear() + '-';
-  let M = (date.getMonth()+1 < 10 ? '0'+(date.getMonth()+1) : date.getMonth()+1) + '-';
-  let D = (date.getDate() < 10 ? '0'+ date.getDate() : date.getDate()) + ' ';
-  let h = (date.getHours() < 10 ? '0'+ date.getHours() : date.getHours()) + ':';
-  let m = (date.getMinutes() < 10 ? '0'+ date.getMinutes() : date.getMinutes()) + ':';
-  let s = (date.getSeconds() < 10 ? '0'+ date.getSeconds() : date.getSeconds());
-  return Y+M+D+h+m+s;
-}
-
 //监听data变化
-watch( props.data, () => {
-  setEchartsData()
-})
-
+watch(props.data, () => {
+  setEchartsData();
+});
 </script>
 <template>
-  <div :id="`echarts-${uuid}`" style=" width: 100%; height: 15rem;padding-top:10px"></div>
+  <div
+    :id="`echarts-${uuid}`"
+    style="width: 100%; height: 15rem; padding-top: 10px"
+  ></div>
 </template>

@@ -3,11 +3,18 @@ package com.fit2cloud.provider.impl.vsphere;
 import com.fit2cloud.common.form.util.FormUtil;
 import com.fit2cloud.common.form.vo.FormObject;
 import com.fit2cloud.common.platform.credential.impl.VsphereCredential;
+import com.fit2cloud.common.provider.entity.F2CPerfMetricMonitorData;
 import com.fit2cloud.common.utils.JsonUtil;
 import com.fit2cloud.provider.AbstractCloudProvider;
 import com.fit2cloud.provider.ICloudProvider;
 import com.fit2cloud.provider.entity.*;
+import com.fit2cloud.provider.entity.request.GetMetricsRequest;
+import com.fit2cloud.provider.entity.result.CheckCreateServerResult;
 import com.fit2cloud.provider.impl.vsphere.api.VsphereSyncCloudApi;
+import com.fit2cloud.provider.impl.vsphere.entity.F2CVsphereCluster;
+import com.fit2cloud.provider.impl.vsphere.entity.F2CVsphereNetwork;
+import com.fit2cloud.provider.impl.vsphere.entity.VsphereHost;
+import com.fit2cloud.provider.impl.vsphere.entity.VsphereResourcePool;
 import com.fit2cloud.provider.impl.vsphere.entity.*;
 import com.fit2cloud.provider.impl.vsphere.entity.constants.VsphereDiskMode;
 import com.fit2cloud.provider.impl.vsphere.entity.constants.VsphereDiskType;
@@ -230,6 +237,11 @@ public class VsphereCloudProvider extends AbstractCloudProvider<VsphereCredentia
     }
 
     @Override
+    public CheckCreateServerResult validateServerCreateRequest(String req) {
+        return VsphereSyncCloudApi.validateServerCreateRequest(JsonUtil.parseObject(req, VsphereVmCreateRequest.class));
+    }
+
+    @Override
     public F2CVirtualMachine getSimpleServerByCreateRequest(String req) {
         return VsphereSyncCloudApi.getSimpleServerByCreateRequest(JsonUtil.parseObject(req, VsphereVmCreateRequest.class));
     }
@@ -237,5 +249,10 @@ public class VsphereCloudProvider extends AbstractCloudProvider<VsphereCredentia
     @Override
     public F2CVirtualMachine createVirtualMachine(String req) {
         return VsphereSyncCloudApi.createServer(JsonUtil.parseObject(req, VsphereVmCreateRequest.class));
+    }
+
+    @Override
+    public List<F2CPerfMetricMonitorData> getF2CPerfMetricMonitorData(String req){
+        return VsphereSyncCloudApi.getF2CPerfMetricList(JsonUtil.parseObject(req, GetMetricsRequest.class));
     }
 }

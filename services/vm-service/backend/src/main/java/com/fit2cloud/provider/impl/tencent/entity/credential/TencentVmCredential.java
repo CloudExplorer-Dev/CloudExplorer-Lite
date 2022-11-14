@@ -6,6 +6,7 @@ import com.tencentcloudapi.common.Credential;
 import com.tencentcloudapi.common.profile.ClientProfile;
 import com.tencentcloudapi.common.profile.HttpProfile;
 import com.tencentcloudapi.cvm.v20170312.CvmClient;
+import com.tencentcloudapi.monitor.v20180724.MonitorClient;
 
 /**
  * @Author:张少虎
@@ -30,5 +31,14 @@ public class TencentVmCredential extends TencentCredential implements com.fit2cl
         ClientProfile clientProfile = new ClientProfile();
         clientProfile.setHttpProfile(httpProfile);
         return new CbsClient(cred, region, clientProfile);
+    }
+
+    public MonitorClient getMonitorClient(String region){
+        Credential cred = new Credential(getSecretId(), getSecretKey());
+        HttpProfile httpProfile = new HttpProfile();
+        httpProfile.setEndpoint("monitor.tencentcloudapi.com");
+        ClientProfile clientProfile = new ClientProfile();
+        clientProfile.setHttpProfile(httpProfile);
+        return new MonitorClient(cred, region, clientProfile);
     }
 }

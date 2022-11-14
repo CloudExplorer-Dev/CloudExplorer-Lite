@@ -77,8 +77,6 @@ public class SyncServiceImpl extends BaseSyncService implements SyncService {
     @Override
     public void syncBill(String cloudAccountId, List<String> months) {
         syncBill(cloudAccountId, months, null);
-        // 授权
-        billDimensionSettingService.authorize();
     }
 
     /**
@@ -280,6 +278,8 @@ public class SyncServiceImpl extends BaseSyncService implements SyncService {
      */
     private <T> void proxy(String cloudAccountId, List<String> months, BiFunction<ICloudProvider, String, List<T>> execMethod, BiFunction<CloudAccount, String, String> getExecMethodArgs, Consumer<BiSaveBatchOrUpdateParams<T>> saveBatchOrUpdate, Consumer<BiSaveBatchOrUpdateParams<T>> writeJobRecord, Consumer<String> remote) {
         proxy(cloudAccountId, jobDescription, months, ICloudProvider::of, syncTime -> initJobRecord(syncTime, cloudAccountId), execMethod, getExecMethodArgs, saveBatchOrUpdate, writeJobRecord, remote);
+        // 授权
+        billDimensionSettingService.authorize();
     }
 
     /**

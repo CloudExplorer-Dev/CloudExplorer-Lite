@@ -2,29 +2,34 @@ package com.fit2cloud.provider.impl.huawei.api;
 
 import com.aliyun.tea.TeaException;
 import com.fit2cloud.common.exception.Fit2cloudException;
+import com.fit2cloud.common.provider.entity.F2CEntityType;
+import com.fit2cloud.common.provider.entity.F2CPerfMetricMonitorData;
 import com.fit2cloud.common.provider.exception.ReTryException;
 import com.fit2cloud.common.provider.util.PageUtil;
+import com.fit2cloud.common.utils.DateUtil;
 import com.fit2cloud.common.utils.JsonUtil;
 import com.fit2cloud.constants.ErrorCodeConstants;
 import com.fit2cloud.provider.constants.F2CDiskStatus;
 import com.fit2cloud.provider.entity.F2CDisk;
 import com.fit2cloud.provider.entity.F2CImage;
 import com.fit2cloud.provider.entity.F2CVirtualMachine;
+import com.fit2cloud.provider.entity.request.GetMetricsRequest;
+import com.fit2cloud.provider.impl.huawei.constants.HuaweiPerfMetricConstants;
 import com.fit2cloud.provider.impl.huawei.constants.HuaweiDiskType;
 import com.fit2cloud.provider.impl.huawei.entity.credential.HuaweiVmCredential;
-import com.fit2cloud.provider.impl.huawei.entity.request.HuaweiInstanceRequest;
-import com.fit2cloud.provider.impl.huawei.entity.request.ListDisksRequest;
-import com.fit2cloud.provider.impl.huawei.entity.request.ListImageRequest;
-import com.fit2cloud.provider.impl.huawei.entity.request.ListVirtualMachineRequest;
 import com.fit2cloud.provider.impl.huawei.entity.request.*;
 import com.fit2cloud.provider.impl.huawei.util.HuaweiMappingUtil;
 import com.google.gson.Gson;
+import com.huaweicloud.sdk.ces.v1.CesClient;
+import com.huaweicloud.sdk.ces.v1.model.Datapoint;
+import com.huaweicloud.sdk.ces.v1.model.ShowMetricDataRequest;
+import com.huaweicloud.sdk.ces.v1.model.ShowMetricDataResponse;
 import com.huaweicloud.sdk.ecs.v2.EcsClient;
 import com.huaweicloud.sdk.ecs.v2.model.*;
 import com.huaweicloud.sdk.evs.v2.EvsClient;
-import com.huaweicloud.sdk.evs.v2.model.*;
 import com.huaweicloud.sdk.evs.v2.model.ShowJobRequest;
 import com.huaweicloud.sdk.evs.v2.model.ShowJobResponse;
+import com.huaweicloud.sdk.evs.v2.model.*;
 import com.huaweicloud.sdk.ims.v2.ImsClient;
 import com.huaweicloud.sdk.ims.v2.model.ImageInfo;
 import com.huaweicloud.sdk.ims.v2.model.ListImagesResponse;
@@ -34,7 +39,10 @@ import com.huaweicloud.sdk.vpc.v2.model.ListPortsResponse;
 import com.huaweicloud.sdk.vpc.v2.model.Port;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.jetbrains.annotations.NotNull;
 
+import java.util.*;
+import java.util.stream.Collectors;
 import java.util.*;
 
 
@@ -523,4 +531,100 @@ public class HuaweiSyncCloudApi {
             throw new RuntimeException(e.getMessage(), e);
         }
     }
+
+    public static List<F2CPerfMetricMonitorData> getF2CPerfMetricList(GetMetricsRequest getMetricsRequest) {
+        if (StringUtils.isEmpty(getMetricsRequest.getRegionId())) {
+            throw new Fit2cloudException(10002, "区域为必填参数");
+        }
+        List<F2CPerfMetricMonitorData> result = new ArrayList<>();
+        //设置时间，根据interval,默认一个小时
+        getMetricsRequest.setStartTime(String.valueOf(DateUtil.getBeforeHourTime(getMetricsRequest.getInterval())));
+        getMetricsRequest.setEndTime(String.valueOf(System.currentTimeMillis()));
+        System.out.println("开始时间：" + getMetricsRequest.getStartTime());
+        System.out.println("结束时间：" + getMetricsRequest.getEndTime());
+        System.out.println("区域：" + getMetricsRequest.getRegionId());
+        try {
+            getMetricsRequest.setRegionId(getMetricsRequest.getRegionId());
+            result.addAll(getVmPerfMetric(getMetricsRequest));
+        } catch (Exception e) {
+            //throw new Fit2cloudException(100021, "获取监控数据失败-" + getMetricsRequest.getRegionId() + "-" + e.getMessage());
+            e.printStackTrace();
+        }
+        return result;
+    }
+
+    /**
+     * 获取虚拟机监控指标数据
+     *
+     * @param getMetricsRequest
+     * @return
+     */
+    private static List<F2CPerfMetricMonitorData> getVmPerfMetric(GetMetricsRequest getMetricsRequest) {
+        HuaweiVmCredential credential = JsonUtil.parseObject(getMetricsRequest.getCredential(), HuaweiVmCredential.class);
+        List<F2CPerfMetricMonitorData> result = new ArrayList<>();
+        List<F2CVirtualMachine> vms = listVirtualMachine(getListVmRequest(getMetricsRequest));
+        if (vms.size() == 0) {
+            return result;
+        }
+        //查询监控指标数据参数
+        ///TODO 由于我们只查询一个小时内的数据，时间间隔是5m,所以查询每台机器的监控数据的时候最多不过12条数据，所以不需要分页查询
+        ShowMetricDataRequest request = getShowMetricDataRequest(getMetricsRequest);
+        CesClient cesClient = credential.getCesClient(getMetricsRequest.getRegionId());
+        vms.forEach(vm -> {
+            request.setDim0("instance_id," + vm.getInstanceUUID());
+            //监控指标
+            Arrays.stream(HuaweiPerfMetricConstants.CloudServerPerfMetricEnum.values()).sorted().collect(Collectors.toList()).forEach(perfMetric -> {
+                request.setMetricName(perfMetric.getMetricName());
+                try {
+                    //查询监控指标数据
+                    ShowMetricDataResponse response = cesClient.showMetricData(request);
+                    if (response.getHttpStatusCode() == 200 && CollectionUtils.isNotEmpty(response.getDatapoints())) {
+                        List<Datapoint> list = response.getDatapoints();
+                        list.forEach(v -> {
+                            F2CPerfMetricMonitorData f2CEntityPerfMetric = HuaweiMappingUtil.toF2CPerfMetricMonitorData(v);
+                            f2CEntityPerfMetric.setEntityType(F2CEntityType.VIRTUAL_MACHINE.name());
+                            f2CEntityPerfMetric.setMetricName(perfMetric.name());
+                            f2CEntityPerfMetric.setPeriod(getMetricsRequest.getPeriod());
+                            f2CEntityPerfMetric.setInstanceId(vm.getInstanceUUID());
+                            f2CEntityPerfMetric.setUnit(perfMetric.getUnit());
+                            result.add(f2CEntityPerfMetric);
+                        });
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            });
+
+        });
+        return result;
+    }
+
+    /**
+     * 查询云主机监控数据参数
+     * @param getMetricsRequest
+     * @return
+     */
+    @NotNull
+    private static ShowMetricDataRequest getShowMetricDataRequest(GetMetricsRequest getMetricsRequest) {
+        ShowMetricDataRequest request = new ShowMetricDataRequest();
+        request.setNamespace("SYS.ECS");
+        request.withFilter(ShowMetricDataRequest.FilterEnum.fromValue("average"));
+        request.withPeriod(300);
+        request.withFrom(Long.valueOf(getMetricsRequest.getStartTime()));
+        request.withTo(Long.valueOf(getMetricsRequest.getEndTime()));
+        return request;
+    }
+
+    /**
+     * 查询所有虚拟机参数
+     * @param getMetricsRequest
+     * @return
+     */
+    public static ListVirtualMachineRequest getListVmRequest(GetMetricsRequest getMetricsRequest){
+        ListVirtualMachineRequest listVirtualMachineRequest = new ListVirtualMachineRequest();
+        listVirtualMachineRequest.setCredential(getMetricsRequest.getCredential());
+        listVirtualMachineRequest.setRegionId(getMetricsRequest.getRegionId());
+        return listVirtualMachineRequest;
+    }
+
 }

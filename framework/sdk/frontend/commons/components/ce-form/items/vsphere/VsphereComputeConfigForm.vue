@@ -48,6 +48,7 @@
             highlight-current-row
             style="width: 100%"
             @current-change="handleCurrentChange"
+            height="340px"
           >
             <el-table-column width="55">
               <template #default="scope">

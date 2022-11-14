@@ -32,6 +32,7 @@
     "echarts": "^5.4.0",
     "element-plus": "^2.2.12",
     "fit2cloud-ui-plus": "0.0.1-beta.17",
+    "ipaddr.js": "^2.0.1",
     "jsencrypt": "^3.2.1",
     "lodash": "^4.17.21",
     "mitt": "^3.0.0",

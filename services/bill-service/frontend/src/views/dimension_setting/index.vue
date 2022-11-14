@@ -32,12 +32,11 @@
           </div>
           <el-tree
             ref="treeRef"
-            :data="data"
+            :data="organizationWorkspaceTreeData"
             :props="defaultProps"
             node-key="id"
             :accordion="true"
             :expand-on-click-node="false"
-            :default-checked-keys="currentNodeKey"
             @node-click="handleNodeClick"
             :filter-node-method="filterNode"
             :highlight-current="true"
@@ -78,8 +77,44 @@
                 ></BillRuleItemVue>
               </el-tab-pane>
               <el-tab-pane label="已分账资源" name="allocated"
-                >已分账资源</el-tab-pane
-              >
+                ><ce-table
+                  v-loading="resourceLoading"
+                  height="100%"
+                  ref="table"
+                  :columns="columns"
+                  :data="dataList"
+                  :tableConfig="tableConfig"
+                  row-key="id"
+                >
+                  <el-table-column type="selection" />
+                  <el-table-column prop="resourceName" label="资源名称">
+                    <template #default="scope">
+                      <span>
+                        {{ scope.row.resourceId }} /
+                        {{ scope.row.resourceName }}</span
+                      >
+                    </template>
+                  </el-table-column>
+                  <el-table-column prop="cloudAccountName" label="云账号" />
+                  <el-table-column prop="productName" label="产品" />
+                  <el-table-column prop="tags" label="标签">
+                    <template #default="scope">
+                      <span>
+                        {{
+                          scope.row.tags
+                            ? Object.values(scope.row.tags).length > 0
+                              ? Object.values(scope.row.tags).join(",")
+                              : "-"
+                            : "-"
+                        }}
+                      </span>
+                    </template>
+                  </el-table-column>
+                  <el-table-column
+                    prop="projectName"
+                    label="企业项目"
+                  /> </ce-table
+              ></el-tab-pane>
             </el-tabs>
           </div>
         </div>
@@ -97,27 +132,31 @@ import dimensionSettingApi from "@/api/dimension_setting";
 import { onMounted, ref, watch, nextTick } from "vue";
 import { ElTree } from "element-plus";
 import type { TabsPaneContext } from "element-plus";
-import type { SimpleMap } from "@commons/api/base/type";
 import BillRuleItemVue from "@/components/split_bill_rule_group/index.vue";
-
-const rukeKey = ref<string>();
-
+import type { AuthorizeResourcesResponse } from "@/api/dimension_setting/type";
+import {
+  PaginationConfig,
+  TableConfig,
+  TableSearch,
+} from "@commons/components/ce-table/type";
+/**
+ * 树对象
+ */
 const treeRef = ref<InstanceType<typeof ElTree>>();
-
-const ruleValues = ref<Array<SimpleMap<string>>>();
-
-watch(rukeKey, () => {
-  if (rukeKey.value) {
-    dimensionSettingApi.listAuthorizeValues(rukeKey.value).then((ok) => {
-      ruleValues.value = ok.data;
-    });
-  }
-});
+/**
+ * 当前选中的table
+ */
 const activeTab = ref<string>("dimension_rules");
 
-const handleClick = (tab: TabsPaneContext, event: Event) => {
-  console.log(tab, event);
+/**
+ * 切换tab触发函数
+ * @param tab table对象
+ * @param event
+ */
+const handleClick = (tab: TabsPaneContext) => {
+  activeTab.value = tab.props.name as string;
 };
+
 /**
  *过滤文本
  */
@@ -174,38 +213,127 @@ const mergeTree = (
     return itemP;
   });
 };
+/**
+ * 组织加载器
+ */
 const orgLoading = ref<boolean>(false);
-const currentNodeKey = ref<Array<string>>([]);
 
 onMounted(() => {
   OrganizationApi.tree("ORGANIZATION_AND_WORKSPACE", orgLoading).then((ok) => {
-    data.value = JSON.parse(JSON.stringify(mergeTree(ok.data, [])));
-    if (data.value) {
-      activeWorkSpaceOrOrg.value = data.value[0];
+    organizationWorkspaceTreeData.value = JSON.parse(
+      JSON.stringify(mergeTree(ok.data, []))
+    );
+    if (organizationWorkspaceTreeData.value) {
+      activeWorkSpaceOrOrg.value = organizationWorkspaceTreeData.value[0];
       nextTick(() => {
-        treeRef.value?.setCurrentKey(data.value[0].id, false);
+        treeRef.value?.setCurrentKey(
+          organizationWorkspaceTreeData.value[0].id,
+          false
+        );
       });
     }
   });
-  dimensionSettingApi.listAuthorizeKeys().then((ok) => {
-    dimensionSettingKeys.value = ok.data;
-  });
 });
-const dimensionSettingKeys = ref<Array<SimpleMap<string>>>([]);
 
+/**
+ * 选中的组织
+ */
 const activeWorkSpaceOrOrg = ref<OrganizationWorkspaceTree>();
 
+/**
+ * 选中树节点触发函数
+ * @param data 数节点
+ */
 const handleNodeClick = (data: OrganizationWorkspaceTree) => {
   activeWorkSpaceOrOrg.value = data;
 };
 
-const data = ref<Array<OrganizationWorkspaceTree>>([]);
+/**
+ * 组织书对象
+ */
+const organizationWorkspaceTreeData = ref<Array<OrganizationWorkspaceTree>>([]);
 
+/**
+ * 组织树配置
+ */
 const defaultProps = {
   label: "name",
 };
+// table ---------- start ------
+// 列表字段数据
+const columns = ref([]);
+// 资源列表
+const resourceLoading = ref<boolean>(false);
+// 资源列表数据
+const dataList = ref<Array<AuthorizeResourcesResponse>>([]);
+
+/**
+ * 搜索
+ * @param condition 搜索对象
+ */
+const search = (condition: TableSearch) => {
+  const params = TableSearch.toSearchParams(condition);
+  dimensionSettingApi
+    .pageAuthorizeResources(
+      tableConfig.value.paginationConfig.currentPage,
+      tableConfig.value.paginationConfig.pageSize,
+      {
+        ...params,
+        authorizeId: activeWorkSpaceOrOrg.value?.id,
+        type: activeWorkSpaceOrOrg.value?.type,
+      },
+      resourceLoading
+    )
+    .then((ok) => {
+      dataList.value = ok.data.records;
+      tableConfig.value.paginationConfig?.setTotal(
+        ok.data.total,
+        tableConfig.value.paginationConfig
+      );
+      tableConfig.value.paginationConfig?.setCurrentPage(
+        ok.data.current,
+        tableConfig.value.paginationConfig
+      );
+    });
+};
+
+watch(activeWorkSpaceOrOrg, () => {
+  if (activeTab.value === "allocated") {
+    search(new TableSearch());
+  }
+});
+
+watch(activeTab, () => {
+  if (activeTab.value === "allocated") {
+    search(new TableSearch());
+  }
+});
+
+/**
+ * 表单配置
+ */
+const tableConfig = ref<TableConfig>({
+  searchConfig: {
+    showEmpty: false,
+    // 查询函数
+    search: search,
+    quickPlaceholder: "搜索",
+    components: [],
+    searchOptions: [
+      { label: "资源名称", value: "resourceName" },
+      { label: "云账号", value: "cloudAccountName" },
+      { label: "企业项目", value: "projectName" },
+      { label: "产品名称", value: "productName" },
+    ],
+  },
+  paginationConfig: new PaginationConfig(),
+  tableOperations: undefined,
+});
 </script>
 <style lang="scss" scoped>
+:deep(.el-tab-pane) {
+  height: 100%;
+}
 .contentWapper {
   height: 100%;
   width: 100%;

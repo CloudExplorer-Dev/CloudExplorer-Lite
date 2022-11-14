@@ -1,5 +1,6 @@
 package com.fit2cloud.provider.impl.huawei;
 
+import com.fit2cloud.common.provider.entity.F2CPerfMetricMonitorData;
 import com.fit2cloud.common.form.util.FormUtil;
 import com.fit2cloud.common.form.vo.FormObject;
 import com.fit2cloud.common.utils.JsonUtil;
@@ -8,6 +9,7 @@ import com.fit2cloud.provider.ICloudProvider;
 import com.fit2cloud.provider.entity.F2CDisk;
 import com.fit2cloud.provider.entity.F2CImage;
 import com.fit2cloud.provider.entity.F2CVirtualMachine;
+import com.fit2cloud.provider.entity.request.GetMetricsRequest;
 import com.fit2cloud.provider.impl.huawei.api.HuaweiSyncCloudApi;
 import com.fit2cloud.provider.impl.huawei.entity.credential.HuaweiVmCredential;
 import com.fit2cloud.provider.impl.huawei.entity.request.*;
@@ -132,5 +134,10 @@ public class HuaweiCloudProvider extends AbstractCloudProvider<HuaweiVmCredentia
     @Override
     public boolean deleteDisk(String req) {
         return HuaweiSyncCloudApi.deleteDisk(JsonUtil.parseObject(req, HuaweiDeleteDiskRequest.class));
+    }
+
+    @Override
+    public List<F2CPerfMetricMonitorData> getF2CPerfMetricMonitorData(String req){
+        return HuaweiSyncCloudApi.getF2CPerfMetricList(JsonUtil.parseObject(req, GetMetricsRequest.class));
     }
 }
