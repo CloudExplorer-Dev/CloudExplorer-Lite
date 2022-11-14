@@ -21,6 +21,6 @@ public class TencentCreateDiskForm {
     private String fileSystemType;
     @Form(inputType = InputType.Text, label = "目录", required = false)
     private String mountPoint;
-    @Form(inputType = InputType.Radio, label = "随实例删除", defaultValue = "NO", textField = "name", valueField = "id", method = "getDeleteWithInstance", clazz = TencentCloudProvider.class)
+    @Form(inputType = InputType.Radio, label = "随实例删除", defaultValue = "YES", textField = "name", valueField = "id", method = "getDeleteWithInstance", clazz = TencentCloudProvider.class)
     private String deleteWithInstance;
 }

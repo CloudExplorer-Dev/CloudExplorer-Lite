@@ -7,13 +7,11 @@ import com.fit2cloud.common.provider.entity.F2CPerfMetricMonitorData;
 import com.fit2cloud.common.utils.JsonUtil;
 import com.fit2cloud.provider.AbstractCloudProvider;
 import com.fit2cloud.provider.ICloudProvider;
+import com.fit2cloud.provider.constants.DeleteWithInstance;
 import com.fit2cloud.provider.entity.F2CDisk;
 import com.fit2cloud.provider.entity.F2CImage;
 import com.fit2cloud.provider.entity.F2CVirtualMachine;
 import com.fit2cloud.provider.entity.request.GetMetricsRequest;
-import com.fit2cloud.provider.impl.aliyun.api.AliyunSyncCloudApi;
-import com.fit2cloud.provider.impl.aliyun.entity.request.AliyunCreateDiskForm;
-import com.fit2cloud.provider.impl.aliyun.entity.request.AliyunGetDiskTypeRequest;
 import com.fit2cloud.provider.impl.tencent.api.TencetSyncCloudApi;
 import com.fit2cloud.provider.impl.tencent.constants.TencentDiskType;
 import com.fit2cloud.provider.impl.tencent.entity.request.*;
@@ -91,7 +89,7 @@ public class TencentCloudProvider extends AbstractCloudProvider<TencentCredentia
         return FormUtil.toForm(TencentCreateDiskForm.class);
     }
 
-    public List<Map<String, String>> getFileSystemType(String req){
+    public List<Map<String, String>> getFileSystemType(String req) {
         List<Map<String, String>> types = new ArrayList<>();
         Map<String, String> typeOne = new HashMap<>();
         typeOne.put("id", "EXT4");
@@ -119,15 +117,15 @@ public class TencentCloudProvider extends AbstractCloudProvider<TencentCredentia
     @Override
     public List<Map<String, String>> getDeleteWithInstance(String req) {
         List<Map<String, String>> deleteWithInstance = new ArrayList<>();
-        Map<String, String> no = new HashMap<>();
-        no.put("id", "NO");
-        no.put("name", "NO");
-        deleteWithInstance.add(no);
-
         Map<String, String> yes = new HashMap<>();
-        yes.put("id", "YES");
-        yes.put("name", "YES");
+        yes.put("id", DeleteWithInstance.YES.name());
+        yes.put("name", "是");
         deleteWithInstance.add(yes);
+
+        Map<String, String> no = new HashMap<>();
+        no.put("id", DeleteWithInstance.NO.name());
+        no.put("name", "否");
+        deleteWithInstance.add(no);
         return deleteWithInstance;
     }
 
@@ -161,7 +159,7 @@ public class TencentCloudProvider extends AbstractCloudProvider<TencentCredentia
     }
 
     @Override
-    public List<F2CPerfMetricMonitorData> getF2CPerfMetricMonitorData(String req){
+    public List<F2CPerfMetricMonitorData> getF2CPerfMetricMonitorData(String req) {
         return TencetSyncCloudApi.getF2CPerfMetricList(JsonUtil.parseObject(req, GetMetricsRequest.class));
     }
 }

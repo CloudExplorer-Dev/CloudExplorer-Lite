@@ -6,6 +6,7 @@ import com.fit2cloud.common.form.vo.FormObject;
 import com.fit2cloud.common.utils.JsonUtil;
 import com.fit2cloud.provider.AbstractCloudProvider;
 import com.fit2cloud.provider.ICloudProvider;
+import com.fit2cloud.provider.constants.DeleteWithInstance;
 import com.fit2cloud.provider.entity.F2CDisk;
 import com.fit2cloud.provider.entity.F2CImage;
 import com.fit2cloud.provider.entity.F2CVirtualMachine;
@@ -54,17 +55,17 @@ public class HuaweiCloudProvider extends AbstractCloudProvider<HuaweiVmCredentia
     }
 
     @Override
-    public boolean shutdownInstance(String req){
+    public boolean shutdownInstance(String req) {
         return HuaweiSyncCloudApi.powerOff(JsonUtil.parseObject(req, HuaweiInstanceRequest.class));
     }
 
     @Override
-    public boolean rebootInstance(String req){
+    public boolean rebootInstance(String req) {
         return HuaweiSyncCloudApi.rebootInstance(JsonUtil.parseObject(req, HuaweiInstanceRequest.class));
     }
 
     @Override
-    public boolean deleteInstance(String req){
+    public boolean deleteInstance(String req) {
         return HuaweiSyncCloudApi.deleteInstance(JsonUtil.parseObject(req, HuaweiInstanceRequest.class));
     }
 
@@ -94,15 +95,15 @@ public class HuaweiCloudProvider extends AbstractCloudProvider<HuaweiVmCredentia
     @Override
     public List<Map<String, String>> getDeleteWithInstance(String req) {
         List<Map<String, String>> deleteWithInstance = new ArrayList<>();
-        Map<String, String> no = new HashMap<>();
-        no.put("id", "NO");
-        no.put("name", "NO");
-        deleteWithInstance.add(no);
-
         Map<String, String> yes = new HashMap<>();
-        yes.put("id", "YES");
-        yes.put("name", "YES");
+        yes.put("id", DeleteWithInstance.YES.name());
+        yes.put("name", "是");
         deleteWithInstance.add(yes);
+
+        Map<String, String> no = new HashMap<>();
+        no.put("id", DeleteWithInstance.NO.name());
+        no.put("name", "否");
+        deleteWithInstance.add(no);
         return deleteWithInstance;
     }
 
@@ -137,7 +138,7 @@ public class HuaweiCloudProvider extends AbstractCloudProvider<HuaweiVmCredentia
     }
 
     @Override
-    public List<F2CPerfMetricMonitorData> getF2CPerfMetricMonitorData(String req){
+    public List<F2CPerfMetricMonitorData> getF2CPerfMetricMonitorData(String req) {
         return HuaweiSyncCloudApi.getF2CPerfMetricList(JsonUtil.parseObject(req, GetMetricsRequest.class));
     }
 }
