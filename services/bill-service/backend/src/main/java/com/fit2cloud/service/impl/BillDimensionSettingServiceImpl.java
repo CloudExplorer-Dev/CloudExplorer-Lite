@@ -138,8 +138,10 @@ public class BillDimensionSettingServiceImpl extends ServiceImpl<BillDimensionSe
             billDimensionSetting.setType(AuthorizeTypeConstants.valueOf(type));
             billDimensionSetting.setAuthorizeRule(authorizeRule);
             save(billDimensionSetting);
-            // 授权
-            authorize(billDimensionSetting);
+            if (CollectionUtils.isNotEmpty(authorizeRule.getBillAuthorizeRuleSettingGroups())) {
+                // 授权
+                authorize(billDimensionSetting);
+            }
             return billDimensionSetting;
         } else {
             // 清除授权数据
@@ -147,8 +149,10 @@ public class BillDimensionSettingServiceImpl extends ServiceImpl<BillDimensionSe
             res.setAuthorizeRule(authorizeRule);
             updateById(res);
         }
-        // 授权
-        authorize(res);
+        if (CollectionUtils.isNotEmpty(res.getAuthorizeRule().getBillAuthorizeRuleSettingGroups())) {
+            // 授权
+            authorize(res);
+        }
         return res;
     }
 
