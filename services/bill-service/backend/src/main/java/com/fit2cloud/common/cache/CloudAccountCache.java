@@ -69,10 +69,8 @@ public class CloudAccountCache {
                 updateCache();
                 return cloudAccount.getName();
             }
-            return cloudAccountId;
-        } else {
-            return cache;
         }
+        return cache;
 
     }
 }

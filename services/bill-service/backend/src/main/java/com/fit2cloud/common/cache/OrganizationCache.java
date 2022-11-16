@@ -5,13 +5,17 @@ import com.fit2cloud.base.entity.Workspace;
 import com.fit2cloud.base.mapper.BaseOrganizationMapper;
 import com.fit2cloud.base.mapper.BaseWorkspaceMapper;
 import com.fit2cloud.common.utils.SpringUtil;
+import com.mchange.v2.lang.StringUtils;
+import jodd.util.StringUtil;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.collections4.keyvalue.DefaultKeyValue;
 
+import javax.swing.*;
 import java.lang.ref.SoftReference;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 /**
@@ -56,6 +60,25 @@ public class OrganizationCache {
     public synchronized static String getCache(String orgId) {
         Map<String, String> orgMap = organizationCache.get();
         return MapUtils.isEmpty(orgMap) ? null : orgMap.get(orgId);
+    }
+
+    /**
+     * 获取缓存组织并且更新
+     *
+     * @param orgId 组织id
+     * @return 组织名称
+     */
+    public synchronized static String getCacheOrUpdate(String orgId) {
+        String cache = getCache(orgId);
+        if (StringUtil.isEmpty(cache)) {
+            BaseOrganizationMapper organizationMapper = SpringUtil.getBean(BaseOrganizationMapper.class);
+            Organization organization = organizationMapper.selectById(orgId);
+            if (Objects.nonNull(organization)) {
+                updateCache();
+                return organization.getName();
+            }
+        }
+        return cache;
     }
 
 }

@@ -2,9 +2,7 @@
   <el-input
     v-model="searchValue"
     @input="input"
-    @blur="blur"
     @keydown="keydown"
-    @clear="clear"
     v-bind="$attrs"
     clearable
     :placeholder="quickPlaceholder"

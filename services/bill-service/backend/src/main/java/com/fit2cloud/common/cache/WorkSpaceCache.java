@@ -4,13 +4,16 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.fit2cloud.base.entity.Workspace;
 import com.fit2cloud.base.mapper.BaseWorkspaceMapper;
 import com.fit2cloud.common.utils.SpringUtil;
+import jodd.util.StringUtil;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.collections4.keyvalue.DefaultKeyValue;
+import org.jacoco.agent.rt.internal_1f1cc91.core.internal.flow.IFrame;
 
 import java.lang.ref.SoftReference;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
@@ -60,5 +63,24 @@ public class WorkSpaceCache {
     public synchronized static String getCache(String workspaceId) {
         Map<String, String> workspaceMap = workSpaceCache.get();
         return MapUtils.isEmpty(workspaceMap) ? null : workspaceMap.get(workspaceId);
+    }
+
+    /**
+     * 获取工作空间名称
+     *
+     * @param workspaceId 工作空间id
+     * @return 工作空间名称
+     */
+    public synchronized static String getCacheOrUpdate(String workspaceId) {
+        String cache = getCache(workspaceId);
+        if (StringUtil.isEmpty(cache)) {
+            BaseWorkspaceMapper workspaceMapper = SpringUtil.getBean(BaseWorkspaceMapper.class);
+            Workspace workspace = workspaceMapper.selectById(workspaceId);
+            if (Objects.nonNull(workspace)) {
+                updateCache();
+                return workspace.getName();
+            }
+        }
+        return cache;
     }
 }

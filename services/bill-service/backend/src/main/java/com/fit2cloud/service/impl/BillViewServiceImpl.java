@@ -7,6 +7,7 @@ import co.elastic.clients.elasticsearch._types.query_dsl.ScriptQuery;
 import co.elastic.clients.json.JsonData;
 import co.elastic.clients.util.ObjectBuilder;
 import com.fit2cloud.common.exception.Fit2cloudException;
+import com.fit2cloud.common.util.EsScriptUtil;
 import com.fit2cloud.common.util.MappingUtil;
 import com.fit2cloud.common.utils.JsonUtil;
 import com.fit2cloud.controller.request.BillExpensesRequest;
@@ -62,7 +63,7 @@ public class BillViewServiceImpl implements BillViewService {
         } catch (ParseException e) {
             throw new Fit2cloudException(111, "时间格式正确");
         }
-        ScriptQuery scriptQuery = new ScriptQuery.Builder().script(s -> getScript(s, type, value)).build();
+        ScriptQuery scriptQuery = new ScriptQuery.Builder().script(s -> EsScriptUtil.getMonthOrYearScript(s, type, value)).build();
         Aggregation aggregation = new Aggregation.Builder().sum(new SumAggregation.Builder().field("realTotalCost").build()).build();
 
         NativeQuery query = new NativeQueryBuilder().withQuery(new Query.Builder().script(scriptQuery).build()).withAggregation("sum", aggregation).build();
@@ -303,27 +304,4 @@ public class BillViewServiceImpl implements BillViewService {
         return s.inline(inlineScript -> inlineScript.lang("painless").source(script));
     }
 
-    /**
-     * @param s    脚本构造器
-     * @param type 类型
-     * @return 脚本对象
-     */
-    public ObjectBuilder<Script> getScript(Script.Builder s, String type, String value) {
-        String script = type.equals("MONTH") ? "doc['billingCycle'].value.monthValue==params.month&&doc['billingCycle'].value.year==params.year" : "doc['billingCycle'].value.year==params.year";
-        return s.inline(inlineScript -> inlineScript.lang("painless").source(script).params(getParams(type, value)));
-    }
-
-    private Map<String, JsonData> getParams(String type, String value) {
-        if (type.equals("MONTH")) {
-            String[] split = value.split("-");
-            return new HashMap<>() {{
-                put("year", JsonData.of(Integer.parseInt(split[0])));
-                put("month", JsonData.of(Integer.parseInt(split[1])));
-            }};
-        }
-        return new HashMap<>() {{
-            put("year", JsonData.of(Integer.parseInt(value)));
-        }};
-
-    }
 }
