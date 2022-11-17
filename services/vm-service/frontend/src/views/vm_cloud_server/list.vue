@@ -14,7 +14,7 @@ import { ElMessage, ElMessageBox } from "element-plus";
 import _ from "lodash";
 import type { SimpleMap } from "@commons/api/base/type";
 import variables_server from "../../styles/vm_cloud_server/server.module.scss";
-import { platformIcon } from "@/utils/platform";
+import { platformIcon } from "@commons/utils/platform";
 import BaseCloudAccountApi from "@commons/api/cloud_account";
 
 const { t } = useI18n();

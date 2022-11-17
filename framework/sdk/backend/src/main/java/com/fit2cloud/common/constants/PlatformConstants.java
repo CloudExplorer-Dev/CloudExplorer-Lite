@@ -5,10 +5,7 @@ import com.fit2cloud.common.platform.bill.impl.AliBill;
 import com.fit2cloud.common.platform.bill.impl.HuaweiBill;
 import com.fit2cloud.common.platform.bill.impl.TencentBill;
 import com.fit2cloud.common.platform.credential.Credential;
-import com.fit2cloud.common.platform.credential.impl.AliCredential;
-import com.fit2cloud.common.platform.credential.impl.HuaweiCredential;
-import com.fit2cloud.common.platform.credential.impl.TencentCredential;
-import com.fit2cloud.common.platform.credential.impl.VsphereCredential;
+import com.fit2cloud.common.platform.credential.impl.*;
 
 /**
  * @Author:张少虎
@@ -33,7 +30,12 @@ public enum PlatformConstants {
     /**
      * VMWARE 平台
      */
-    fit2cloud_vsphere_platform("VMWare vSphere", VsphereCredential.class, null);
+    fit2cloud_vsphere_platform("VMWare vSphere", VsphereCredential.class, null),
+
+    /**
+     * OpenStack 平台
+     */
+    fit2cloud_openstack_platform("OpenStack", OpenStackCredential.class, null);
 
     private String message;
 

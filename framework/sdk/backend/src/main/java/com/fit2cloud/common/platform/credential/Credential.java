@@ -7,6 +7,7 @@ import com.fit2cloud.common.utils.JsonUtil;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.experimental.Accessors;
 
 import java.io.Serializable;
 import java.util.List;
@@ -62,6 +63,7 @@ public interface Credential {
     @Data
     @AllArgsConstructor
     @NoArgsConstructor
+    @Accessors(chain = true)
     class Region implements Serializable {
         /**
          * 区域id/数据中心id

@@ -1,6 +1,6 @@
 package com.fit2cloud.provider.impl.vsphere.util;
 
-import com.fit2cloud.common.platform.vmware.SslUtil;
+import com.fit2cloud.common.provider.impl.vsphere.utils.SslUtil;
 import com.vmware.vapi.protocol.HttpConfiguration;
 
 public class ContentLibaryUtils {
