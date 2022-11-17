@@ -25,7 +25,7 @@ public class CloudBill {
 
     @BillField(label = "组织级别")
     @Field(type = FieldType.Object)
-    private Map<String, Object> orgLevel;
+    private Map<String, Object> orgTree;
 
     @BillField(label = "工作空间id", group = true, conver = WorkSpaceConvert.class)
     @Field(type = FieldType.Keyword)
@@ -88,7 +88,6 @@ public class CloudBill {
     @BillField(label = "计费模式", group = true, conver = BillModeConvert.class)
     @Field(type = FieldType.Keyword)
     private String billMode;
-
 
     @BillField(label = "区域Id")
     @Field(type = FieldType.Keyword)

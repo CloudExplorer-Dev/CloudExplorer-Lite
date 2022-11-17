@@ -6,10 +6,7 @@ import co.elastic.clients.elasticsearch._types.Script;
 import co.elastic.clients.elasticsearch._types.aggregations.*;
 import co.elastic.clients.elasticsearch._types.mapping.FieldType;
 import co.elastic.clients.elasticsearch._types.mapping.RuntimeFieldType;
-import co.elastic.clients.elasticsearch._types.query_dsl.BoolQuery;
-import co.elastic.clients.elasticsearch._types.query_dsl.Query;
-import co.elastic.clients.elasticsearch._types.query_dsl.TermsQuery;
-import co.elastic.clients.elasticsearch._types.query_dsl.TermsQueryField;
+import co.elastic.clients.elasticsearch._types.query_dsl.*;
 import co.elastic.clients.elasticsearch.core.SearchRequest;
 import co.elastic.clients.elasticsearch.core.SearchResponse;
 import co.elastic.clients.elasticsearch.core.UpdateByQueryRequest;
@@ -34,6 +31,7 @@ import com.fit2cloud.constants.AuthorizeTypeConstants;
 import com.fit2cloud.constants.BillAuthorizeConditionTypeConstants;
 import com.fit2cloud.constants.BillFieldConstants;
 import com.fit2cloud.controller.request.AuthorizeResourcesRequest;
+import com.fit2cloud.controller.request.NotAuthorizeResourcesRequest;
 import com.fit2cloud.controller.response.AuthorizeResourcesResponse;
 import com.fit2cloud.dao.entity.BillDimensionSetting;
 import com.fit2cloud.dao.jentity.BillAuthorizeRule;
@@ -46,6 +44,7 @@ import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.keyvalue.DefaultKeyValue;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.reflect.FieldUtils;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.data.elasticsearch.annotations.Document;
 import org.springframework.data.elasticsearch.annotations.MultiField;
 import org.springframework.data.elasticsearch.client.elc.ElasticsearchAggregations;
@@ -178,7 +177,6 @@ public class BillDimensionSettingServiceImpl extends ServiceImpl<BillDimensionSe
             e.printStackTrace();
             throw new Fit2cloudException(111, "规则授权失败");
         }
-
     }
 
 
@@ -206,15 +204,16 @@ public class BillDimensionSettingServiceImpl extends ServiceImpl<BillDimensionSe
     public Page<AuthorizeResourcesResponse> getAuthorizeResources(Integer page, Integer limit, AuthorizeResourcesRequest request) {
         String source = "emit(%s)".formatted(String.join("+", getBurstField("projectId"), getBurstField("productId"), getBurstField("resourceId"), findTags().stream().map(t -> getBurstField(t.getValue() + "." + FieldType.Keyword.jsonValue())).collect(Collectors.joining("+"))));
         SearchRequest searchRequest = new SearchRequest.Builder().runtimeMappings("productIdAndProjectIdAndResourceId", s -> s.type(RuntimeFieldType.Keyword).script(a -> a.inline(s1 -> s1.source(source)))).aggregations(getAuthorizeResourcesAggregation(page, limit)).query(getQueryByAuthorizeResourcesRequest(request)).build();
-        SearchResponse<CloudBill> search = elasticsearchClient.search(searchRequest, CloudBill.class);
-        Map<String, Aggregate> aggregations = search.aggregations();
-        Aggregate count = aggregations.get("count");
-        Aggregate group = aggregations.get("group");
-        long total = count.cardinality().value();
-        List<AuthorizeResourcesResponse> authorizeResourcesResponses = group.sterms().buckets().array().stream().map(this::toAuthorizeResources).filter(Objects::nonNull).toList();
-        Page<AuthorizeResourcesResponse> authorizeResourcesResponsePage = Page.of(page, limit, total);
-        authorizeResourcesResponsePage.setRecords(authorizeResourcesResponses);
-        return authorizeResourcesResponsePage;
+        return getAuthorizeResourcesResponsePage(page, limit, searchRequest);
+    }
+
+    @Override
+    @SneakyThrows
+    public Page<AuthorizeResourcesResponse> getNotAuthorizeResources(Integer page, Integer limit, NotAuthorizeResourcesRequest request) {
+        String source = "emit(%s)".formatted(String.join("+", getBurstField("projectId"), getBurstField("productId"), getBurstField("resourceId"), findTags().stream().map(t -> getBurstField(t.getValue() + "." + FieldType.Keyword.jsonValue())).collect(Collectors.joining("+"))));
+        SearchRequest searchRequest = new SearchRequest.Builder().runtimeMappings("productIdAndProjectIdAndResourceId", s -> s.type(RuntimeFieldType.Keyword).script(a -> a.inline(s1 -> s1.source(source)))).aggregations(getAuthorizeResourcesAggregation(page, limit)).query(getQueryByNotAuthorizeResourcesRequest(request)).build();
+        return getAuthorizeResourcesResponsePage(page, limit, searchRequest);
+
     }
 
 
@@ -250,6 +249,27 @@ public class BillDimensionSettingServiceImpl extends ServiceImpl<BillDimensionSe
     }
 
     /**
+     * 获取资源授权对象返回值
+     *
+     * @param page          分页对象
+     * @param limit         每页大小
+     * @param searchRequest es查询对手
+     * @return 账单资源授权对象
+     * @throws IOException
+     */
+    private Page<AuthorizeResourcesResponse> getAuthorizeResourcesResponsePage(Integer page, Integer limit, SearchRequest searchRequest) throws IOException {
+        SearchResponse<CloudBill> search = elasticsearchClient.search(searchRequest, CloudBill.class);
+        Map<String, Aggregate> aggregations = search.aggregations();
+        Aggregate count = aggregations.get("count");
+        Aggregate group = aggregations.get("group");
+        long total = count.cardinality().value();
+        List<AuthorizeResourcesResponse> authorizeResourcesResponses = group.sterms().buckets().array().stream().map(this::toAuthorizeResources).filter(Objects::nonNull).toList();
+        Page<AuthorizeResourcesResponse> authorizeResourcesResponsePage = Page.of(page, limit, total);
+        authorizeResourcesResponsePage.setRecords(authorizeResourcesResponses);
+        return authorizeResourcesResponsePage;
+    }
+
+    /**
      * 获取查询条件
      *
      * @param request 请求对象
@@ -258,6 +278,31 @@ public class BillDimensionSettingServiceImpl extends ServiceImpl<BillDimensionSe
     private Query getQueryByAuthorizeResourcesRequest(AuthorizeResourcesRequest request) {
         String type = request.getType();
         Query auth = QueryUtil.getQuery(QueryUtil.CompareType.EQ, AuthorizeTypeConstants.valueOf(type).equals(AuthorizeTypeConstants.ORGANIZATION) ? "organizationId" : "workspaceId", request.getAuthorizeId());
+        List<Query> queries = getQuery(request);
+        List<Query> qs = new ArrayList<>(queries);
+        qs.add(auth);
+        return new Query.Builder().bool(new BoolQuery.Builder().must(qs).build()).build();
+    }
+
+    /**
+     * 获取未授权账单查询对象
+     *
+     * @param request 请求对象
+     * @return es查询对象
+     */
+    private Query getQueryByNotAuthorizeResourcesRequest(NotAuthorizeResourcesRequest request) {
+        ArrayList<Query> queries = new ArrayList<>(getQuery(request));
+        ExistsQuery existsQuery = new ExistsQuery.Builder().field("organizationId").build();
+        return new Query.Builder().bool(new BoolQuery.Builder().must(queries).mustNot(s -> s.exists(existsQuery)).build()).build();
+    }
+
+    /**
+     * 根据条件 构建es查询对象
+     *
+     * @param request 请求对象
+     * @return 查询对象
+     */
+    private List<Query> getQuery(Object request) {
         List<Query> queries = QueryUtil.getQuery(request, QueryFieldValueConvert.builder().field("cloudAccountName").convert(cloudAccountName -> {
             LambdaQueryWrapper<CloudAccount> like = new LambdaQueryWrapper<CloudAccount>().like(true, CloudAccount::getName, cloudAccountName);
             List<CloudAccount> list = cloudAccountService.list(like);
@@ -266,10 +311,7 @@ public class BillDimensionSettingServiceImpl extends ServiceImpl<BillDimensionSe
             }
             return list.stream().map(CloudAccount::getId).toList();
         }).build());
-        List<Query> qs = new ArrayList<>();
-        qs.addAll(queries);
-        qs.add(auth);
-        return new Query.Builder().bool(new BoolQuery.Builder().must(qs).build()).build();
+        return queries;
     }
 
 
