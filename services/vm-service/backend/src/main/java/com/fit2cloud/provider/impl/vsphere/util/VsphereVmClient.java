@@ -2,8 +2,8 @@ package com.fit2cloud.provider.impl.vsphere.util;
 
 import com.fit2cloud.common.constants.Language;
 import com.fit2cloud.common.platform.credential.impl.VsphereCredential;
-import com.fit2cloud.common.platform.vmware.ClsApiClient;
-import com.fit2cloud.common.platform.vmware.VapiAuthenticationHelper;
+import com.fit2cloud.common.provider.impl.vsphere.utils.ClsApiClient;
+import com.fit2cloud.common.provider.impl.vsphere.utils.VapiAuthenticationHelper;
 import com.fit2cloud.common.provider.impl.vsphere.utils.VsphereClient;
 import com.fit2cloud.provider.impl.vsphere.entity.VsphereTemplate;
 import com.fit2cloud.provider.impl.vsphere.entity.request.VsphereVmCreateRequest;

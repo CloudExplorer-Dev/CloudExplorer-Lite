@@ -101,7 +101,7 @@ import type {
 import { computed } from "vue";
 import _ from "lodash";
 import type { CloudAccount } from "@commons/api/cloud_account/type";
-import { platformIcon } from "@/utils/platform";
+import { platformIcon } from "@commons/utils/platform";
 
 const props = defineProps<{
   cloudAccount?: CloudAccount;

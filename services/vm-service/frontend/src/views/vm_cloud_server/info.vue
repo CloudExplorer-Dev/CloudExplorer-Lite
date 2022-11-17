@@ -188,7 +188,7 @@ import { useI18n } from "vue-i18n";
 import _, { constant } from "lodash";
 import { useRouter } from "vue-router";
 import variables_server from "../../styles/vm_cloud_server/server.module.scss";
-import { platformIcon } from "@/utils/platform";
+import { platformIcon } from "@commons/utils/platform";
 const { t } = useI18n();
 const loading = ref<boolean>(false);
 const useRoute = useRouter();
