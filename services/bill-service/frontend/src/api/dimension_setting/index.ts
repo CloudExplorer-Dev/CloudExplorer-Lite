@@ -8,6 +8,7 @@ import type {
   BillAuthorizeRule,
   AuthorizeResourcesRequest,
   AuthorizeResourcesResponse,
+  NotAuthorizeResourcesRequest,
 } from "@/api/dimension_setting/type";
 import type { Page } from "@commons/request/Result";
 /**
@@ -92,10 +93,36 @@ const pageAuthorizeResources: (
   );
 };
 
+/**
+ * 分页获取未授权资源
+ * @param currentPage 当前页
+ * @param limit       每页显示多少条
+ * @param request     请求对象
+ * @param loading     加载器
+ * @returns           未授权资源数据
+ */
+const pageNotAuthorizeResource: (
+  currentPage: number,
+  limit: number,
+  request: NotAuthorizeResourcesRequest,
+  loading?: Ref<boolean>
+) => Promise<Result<Page<AuthorizeResourcesResponse>>> = (
+  currentPage,
+  limit,
+  request,
+  loading
+) => {
+  return get(
+    `/api/dimension_setting/not_authorize_resources/${currentPage}/${limit}`,
+    request,
+    loading
+  );
+};
 export default {
   listAuthorizeKeys,
   listAuthorizeValues,
   getBillDimensionSetting,
   saveOrUpdate,
   pageAuthorizeResources,
+  pageNotAuthorizeResource,
 };

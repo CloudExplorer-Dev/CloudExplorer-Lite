@@ -3,6 +3,7 @@ package com.fit2cloud.controller;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.fit2cloud.controller.handler.ResultHolder;
 import com.fit2cloud.controller.request.AuthorizeResourcesRequest;
+import com.fit2cloud.controller.request.NotAuthorizeResourcesRequest;
 import com.fit2cloud.controller.response.AuthorizeResourcesResponse;
 import com.fit2cloud.dao.entity.BillDimensionSetting;
 import com.fit2cloud.dao.jentity.BillAuthorizeRule;
@@ -15,6 +16,7 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
+import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Pattern;
 import java.util.List;
@@ -70,5 +72,13 @@ public class DimensionSettingController {
                                                                              @ApiParam("每页多少条") @NotNull(message = "每页显示多少条必填") @NotNull @PathVariable("limit") Integer limit,
                                                                              AuthorizeResourcesRequest request) {
         return ResultHolder.success(billDimensionSettingService.getAuthorizeResources(page, limit, request));
+    }
+
+    @GetMapping("/not_authorize_resources/{page}/{limit}")
+    @ApiOperation(value = "获取未授权资源列表", notes = "获取未授权资源列表")
+    public ResultHolder<Page<AuthorizeResourcesResponse>> notAuthorizeResources(@ApiParam("当前页") @NotNull(message = "当前页必填") @PathVariable("page") Integer page,
+                                                                                @ApiParam("每页多少条") @NotNull(message = "每页显示多少条必填") @NotNull @PathVariable("limit") Integer limit,
+                                                                                NotAuthorizeResourcesRequest request) {
+        return ResultHolder.success(billDimensionSettingService.getNotAuthorizeResources(page, limit, request));
     }
 }

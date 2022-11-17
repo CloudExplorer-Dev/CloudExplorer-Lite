@@ -30,6 +30,22 @@
               style="width: 90%; height: 30px"
             />
           </div>
+          <div
+            style="
+              height: 50px;
+              width: 100%;
+              display: flex;
+              padding-left: 30px;
+              align-items: center;
+              font-family: Helvetica, PingFang SC, Arial, sans-serif;
+              font-size: 16px;
+              cursor: pointer;
+            "
+            :class="activeUnassignedResource ? 'active' : ''"
+            @click="handleUnassignedResource"
+          >
+            未分账资源
+          </div>
           <el-tree
             ref="treeRef"
             :data="organizationWorkspaceTreeData"
@@ -58,10 +74,15 @@
         </div>
         <div class="rightContent">
           <div class="title">
-            <span>{{ activeWorkSpaceOrOrg?.name }}</span>
+            <span>{{
+              activeUnassignedResource
+                ? "未分账资源"
+                : activeWorkSpaceOrOrg?.name
+            }}</span>
           </div>
           <div class="content">
             <el-tabs
+              v-if="activeWorkSpaceOrOrg"
               v-model="activeTab"
               @tab-click="handleClick"
               style="width: 100%"
@@ -116,6 +137,42 @@
                   /> </ce-table
               ></el-tab-pane>
             </el-tabs>
+            <ce-table
+              v-else
+              v-loading="resourceLoading"
+              height="100%"
+              ref="table"
+              :columns="columns"
+              :data="dataList"
+              :tableConfig="tableConfig"
+              row-key="id"
+            >
+              <el-table-column type="selection" />
+              <el-table-column prop="resourceName" label="资源名称">
+                <template #default="scope">
+                  <span>
+                    {{ scope.row.resourceId }} /
+                    {{ scope.row.resourceName }}</span
+                  >
+                </template>
+              </el-table-column>
+              <el-table-column prop="cloudAccountName" label="云账号" />
+              <el-table-column prop="productName" label="产品" />
+              <el-table-column prop="tags" label="标签">
+                <template #default="scope">
+                  <span>
+                    {{
+                      scope.row.tags
+                        ? Object.values(scope.row.tags).length > 0
+                          ? Object.values(scope.row.tags).join(",")
+                          : "-"
+                        : "-"
+                    }}
+                  </span>
+                </template>
+              </el-table-column>
+              <el-table-column prop="projectName" label="企业项目" />
+            </ce-table>
           </div>
         </div>
       </div>
@@ -223,29 +280,34 @@ onMounted(() => {
     organizationWorkspaceTreeData.value = JSON.parse(
       JSON.stringify(mergeTree(ok.data, []))
     );
-    if (organizationWorkspaceTreeData.value) {
-      activeWorkSpaceOrOrg.value = organizationWorkspaceTreeData.value[0];
-      nextTick(() => {
-        treeRef.value?.setCurrentKey(
-          organizationWorkspaceTreeData.value[0].id,
-          false
-        );
-      });
-    }
   });
+  search(new TableSearch());
 });
 
 /**
  * 选中的组织
  */
 const activeWorkSpaceOrOrg = ref<OrganizationWorkspaceTree>();
-
+/**
+ * 选中未分账资源
+ */
+const activeUnassignedResource = ref<boolean>(true);
 /**
  * 选中树节点触发函数
  * @param data 数节点
  */
 const handleNodeClick = (data: OrganizationWorkspaceTree) => {
   activeWorkSpaceOrOrg.value = data;
+  activeUnassignedResource.value = false;
+};
+
+/**
+ * 选中未出账资源处理函数
+ */
+const handleUnassignedResource = () => {
+  activeUnassignedResource.value = true;
+  activeWorkSpaceOrOrg.value = undefined;
+  treeRef.value?.setCurrentKey(undefined, false);
 };
 
 /**
@@ -273,38 +335,41 @@ const dataList = ref<Array<AuthorizeResourcesResponse>>([]);
  */
 const search = (condition: TableSearch) => {
   const params = TableSearch.toSearchParams(condition);
-  dimensionSettingApi
-    .pageAuthorizeResources(
-      tableConfig.value.paginationConfig.currentPage,
-      tableConfig.value.paginationConfig.pageSize,
-      {
-        ...params,
-        authorizeId: activeWorkSpaceOrOrg.value?.id,
-        type: activeWorkSpaceOrOrg.value?.type,
-      },
-      resourceLoading
-    )
-    .then((ok) => {
-      dataList.value = ok.data.records;
-      tableConfig.value.paginationConfig?.setTotal(
-        ok.data.total,
-        tableConfig.value.paginationConfig
-      );
-      tableConfig.value.paginationConfig?.setCurrentPage(
-        ok.data.current,
-        tableConfig.value.paginationConfig
-      );
-    });
+  (activeUnassignedResource.value
+    ? dimensionSettingApi.pageNotAuthorizeResource
+    : dimensionSettingApi.pageAuthorizeResources)(
+    tableConfig.value.paginationConfig.currentPage,
+    tableConfig.value.paginationConfig.pageSize,
+    {
+      ...params,
+      authorizeId: activeWorkSpaceOrOrg.value?.id,
+      type: activeWorkSpaceOrOrg.value?.type,
+    },
+    resourceLoading
+  ).then((ok) => {
+    dataList.value = ok.data.records;
+    tableConfig.value.paginationConfig?.setTotal(
+      ok.data.total,
+      tableConfig.value.paginationConfig
+    );
+    tableConfig.value.paginationConfig?.setCurrentPage(
+      ok.data.current,
+      tableConfig.value.paginationConfig
+    );
+  });
 };
 
 watch(activeWorkSpaceOrOrg, () => {
-  if (activeTab.value === "allocated") {
+  if (activeTab.value === "allocated" && activeWorkSpaceOrOrg) {
+    search(new TableSearch());
+  }
+  if (!activeWorkSpaceOrOrg.value) {
     search(new TableSearch());
   }
 });
 
 watch(activeTab, () => {
-  if (activeTab.value === "allocated") {
+  if (activeTab.value === "allocated" && activeWorkSpaceOrOrg) {
     search(new TableSearch());
   }
 });
@@ -331,6 +396,9 @@ const tableConfig = ref<TableConfig>({
 });
 </script>
 <style lang="scss" scoped>
+.active {
+  background-color: var(--el-color-primary-light-9);
+}
 :deep(.el-tab-pane) {
   height: 100%;
 }
