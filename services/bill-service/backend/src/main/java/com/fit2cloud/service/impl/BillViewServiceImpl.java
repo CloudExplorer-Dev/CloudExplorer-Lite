@@ -291,18 +291,5 @@ public class BillViewServiceImpl implements BillViewService {
 
     }
 
-    /**
-     * 获取
-     *
-     * @param s    Script 脚本构造器
-     * @param type 类型
-     * @return 脚本构造
-     */
-    public ObjectBuilder<Script> getTermsAggregationScript(Script.Builder s, String type) {
-        String monthScript = "doc['billingCycle'].value.year.toString()+'-'+(doc['billingCycle'].value.monthValue<10?'0'+doc['billingCycle'].value.monthValue:doc['billingCycle'].value.monthValue.toString())";
-        String yearScript = "doc['billingCycle'].value.year.toString()";
-        String script = type.equals("MONTH") ? monthScript : yearScript;
-        return s.inline(inlineScript -> inlineScript.lang("painless").source(script));
-    }
 
 }

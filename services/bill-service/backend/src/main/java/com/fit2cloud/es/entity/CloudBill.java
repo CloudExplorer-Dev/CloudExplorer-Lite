@@ -23,7 +23,7 @@ public class CloudBill {
     @Id
     private String id;
 
-    @BillField(label = "组织级别")
+    @BillField(label = "组织层级树", group = true, conver = OrganizationConvert.class)
     @Field(type = FieldType.Object)
     private Map<String, Object> orgTree;
 

@@ -3,8 +3,8 @@
 </template>
 <script setup lang="ts">
 import type { TrendData } from "@/echarts/bill_view/type";
-import { onMounted, ref, nextTick, inject, watch } from "vue";
-import { initBillView, getTrendViewOption } from "@/echarts/bill_view/index";
+import { onMounted, ref, inject, watch } from "vue";
+import { getTrendViewOption } from "@/echarts/bill_view/index";
 import { cloneDeep } from "lodash";
 const echarts: any = inject("echarts");
 const props = defineProps<{

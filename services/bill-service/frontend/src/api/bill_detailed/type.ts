@@ -8,7 +8,7 @@ interface BillDetail {
   /**
    * 组织级别
    */
-  orgLevel: SimpleMap<string>;
+  orgTree: SimpleMap<string>;
   /**
    * 工作空间id
    */

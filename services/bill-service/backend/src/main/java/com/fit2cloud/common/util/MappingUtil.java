@@ -15,6 +15,9 @@ public class MappingUtil {
         if (BillFieldConstants.BILL_FIELD.containsKey(field)) {
             return CommonUtil.exec(BillFieldConstants.BILL_FIELD.get(field).conver(), groupName, Convert::conver);
         }
+        if (field.startsWith("orgTree.")) {
+            return CommonUtil.exec(BillFieldConstants.BILL_FIELD.get("orgTree").conver(), groupName, Convert::conver);
+        }
         return groupName;
     }
 }

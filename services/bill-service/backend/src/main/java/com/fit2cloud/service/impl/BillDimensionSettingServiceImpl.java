@@ -44,7 +44,6 @@ import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.keyvalue.DefaultKeyValue;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.reflect.FieldUtils;
-import org.jetbrains.annotations.NotNull;
 import org.springframework.data.elasticsearch.annotations.Document;
 import org.springframework.data.elasticsearch.annotations.MultiField;
 import org.springframework.data.elasticsearch.client.elc.ElasticsearchAggregations;
@@ -102,12 +101,11 @@ public class BillDimensionSettingServiceImpl extends ServiceImpl<BillDimensionSe
         if (response.hasAggregations()) {
             ElasticsearchAggregations aggregations = (ElasticsearchAggregations) response.getAggregations();
             assert aggregations != null;
-            StringTermsAggregate sterms = aggregations.aggregations().get(0).aggregation().getAggregate().sterms();
-            return sterms.buckets().array().stream().map(item -> new DefaultKeyValue<>(MappingUtil.mapping(groupField, item.key()), item.key())).toList();
+            StringTermsAggregate terms = aggregations.aggregations().get(0).aggregation().getAggregate().sterms();
+            return terms.buckets().array().stream().map(item -> new DefaultKeyValue<>(MappingUtil.mapping(groupField, item.key()), item.key())).toList();
         }
         return new ArrayList<>();
     }
-
 
     @Override
     public List<DefaultKeyValue<String, String>> authorizeKeys() {
@@ -179,26 +177,6 @@ public class BillDimensionSettingServiceImpl extends ServiceImpl<BillDimensionSe
         }
     }
 
-
-    /**
-     * 清除授权数据
-     *
-     * @param authorizeId 授权对象id
-     * @param type        授权对象类型
-     */
-    @Override
-    public void clearAuthorize(String authorizeId, AuthorizeTypeConstants type) {
-        Query auth = QueryUtil.getQuery(QueryUtil.CompareType.EQ, type.equals(AuthorizeTypeConstants.ORGANIZATION) ? "organizationId" : "workspaceId", authorizeId);
-        UpdateByQueryRequest.Builder orgLevel = new UpdateByQueryRequest.Builder().query(auth).index(CloudBill.class.getAnnotation(Document.class).indexName()).script(s -> s.inline(s1 -> s1.source("ctx._source['workspaceId']=null;ctx._source['organizationId']=null;ctx._source['orgLevel']=params.orgLevel;").params(new HashMap<>() {{
-            put("orgLevel", JsonData.of(new HashMap<>()));
-        }})));
-        try {
-            elasticsearchClient.updateByQuery(orgLevel.refresh(true).build());
-        } catch (IOException e) {
-            throw new Fit2cloudException(1000, e.getMessage());
-        }
-    }
-
     @SneakyThrows
     @Override
     public Page<AuthorizeResourcesResponse> getAuthorizeResources(Integer page, Integer limit, AuthorizeResourcesRequest request) {
@@ -217,6 +195,35 @@ public class BillDimensionSettingServiceImpl extends ServiceImpl<BillDimensionSe
     }
 
 
+    /**
+     * 清除授权数据
+     *
+     * @param authorizeId 授权对象id
+     * @param type        授权对象类型
+     */
+    @Override
+    public void clearAuthorize(String authorizeId, AuthorizeTypeConstants type) {
+        Query auth = QueryUtil.getQuery(QueryUtil.CompareType.EQ, type.equals(AuthorizeTypeConstants.ORGANIZATION) ? "organizationId" : "workspaceId", authorizeId);
+        if (type.equals(AuthorizeTypeConstants.ORGANIZATION)) {
+            auth = new Query.Builder().bool(new BoolQuery.Builder().must(auth).mustNot(new Query.Builder().exists(new ExistsQuery.Builder().field("workspaceId").build()).build()).build()).build();
+        }
+        UpdateByQueryRequest.Builder orgTree = new UpdateByQueryRequest.Builder().query(auth).index(CloudBill.class.getAnnotation(Document.class).indexName()).script(s -> s.inline(s1 -> s1.source("ctx._source['workspaceId']=null;ctx._source['organizationId']=null;ctx._source['orgTree']=params.orgTree;").params(new HashMap<>() {{
+            put("orgTree", JsonData.of(new HashMap<>()));
+        }})));
+        try {
+            elasticsearchClient.updateByQuery(orgTree.refresh(true).build());
+        } catch (IOException e) {
+            throw new Fit2cloudException(1000, e.getMessage());
+        }
+    }
+
+
+    /**
+     * 获取炸裂字段
+     *
+     * @param field 字段field
+     * @return 炸裂执行函数
+     */
     public String getBurstField(String field) {
         return "(doc['%s'].length>0?doc['%s'][0]:'')".formatted(field, field);
     }
@@ -232,18 +239,20 @@ public class BillDimensionSettingServiceImpl extends ServiceImpl<BillDimensionSe
         List<Hit<JsonData>> hitList = hits.topHits().hits().hits();
         if (hitList.size() > 0) {
             Hit<JsonData> jsonDataHit = hitList.get(0);
-            CloudBill cloudBill = jsonDataHit.source().to(CloudBill.class);
-            AuthorizeResourcesResponse authorizeResourcesResponse = new AuthorizeResourcesResponse();
-            authorizeResourcesResponse.setResourceId(cloudBill.getResourceId());
-            authorizeResourcesResponse.setResourceName(cloudBill.getResourceName());
-            authorizeResourcesResponse.setCloudAccountId(cloudBill.getCloudAccountId());
-            authorizeResourcesResponse.setCloudAccountName(CloudAccountCache.getCacheOrUpdate(cloudBill.getCloudAccountId()));
-            authorizeResourcesResponse.setProjectId(cloudBill.getProjectId());
-            authorizeResourcesResponse.setProjectName(cloudBill.getProjectName());
-            authorizeResourcesResponse.setProductId(cloudBill.getProductId());
-            authorizeResourcesResponse.setProductName(cloudBill.getProductName());
-            authorizeResourcesResponse.setTags(cloudBill.getTags());
-            return authorizeResourcesResponse;
+            if (Objects.nonNull(jsonDataHit.source())) {
+                CloudBill cloudBill = jsonDataHit.source().to(CloudBill.class);
+                AuthorizeResourcesResponse authorizeResourcesResponse = new AuthorizeResourcesResponse();
+                authorizeResourcesResponse.setResourceId(cloudBill.getResourceId());
+                authorizeResourcesResponse.setResourceName(cloudBill.getResourceName());
+                authorizeResourcesResponse.setCloudAccountId(cloudBill.getCloudAccountId());
+                authorizeResourcesResponse.setCloudAccountName(CloudAccountCache.getCacheOrUpdate(cloudBill.getCloudAccountId()));
+                authorizeResourcesResponse.setProjectId(cloudBill.getProjectId());
+                authorizeResourcesResponse.setProjectName(cloudBill.getProjectName());
+                authorizeResourcesResponse.setProductId(cloudBill.getProductId());
+                authorizeResourcesResponse.setProductName(cloudBill.getProductName());
+                authorizeResourcesResponse.setTags(cloudBill.getTags());
+                return authorizeResourcesResponse;
+            }
         }
         return null;
     }
@@ -255,7 +264,6 @@ public class BillDimensionSettingServiceImpl extends ServiceImpl<BillDimensionSe
      * @param limit         每页大小
      * @param searchRequest es查询对手
      * @return 账单资源授权对象
-     * @throws IOException
      */
     private Page<AuthorizeResourcesResponse> getAuthorizeResourcesResponsePage(Integer page, Integer limit, SearchRequest searchRequest) throws IOException {
         SearchResponse<CloudBill> search = elasticsearchClient.search(searchRequest, CloudBill.class);
@@ -303,7 +311,7 @@ public class BillDimensionSettingServiceImpl extends ServiceImpl<BillDimensionSe
      * @return 查询对象
      */
     private List<Query> getQuery(Object request) {
-        List<Query> queries = QueryUtil.getQuery(request, QueryFieldValueConvert.builder().field("cloudAccountName").convert(cloudAccountName -> {
+        return QueryUtil.getQuery(request, QueryFieldValueConvert.builder().field("cloudAccountName").convert(cloudAccountName -> {
             LambdaQueryWrapper<CloudAccount> like = new LambdaQueryWrapper<CloudAccount>().like(true, CloudAccount::getName, cloudAccountName);
             List<CloudAccount> list = cloudAccountService.list(like);
             if (CollectionUtils.isEmpty(list)) {
@@ -311,7 +319,6 @@ public class BillDimensionSettingServiceImpl extends ServiceImpl<BillDimensionSe
             }
             return list.stream().map(CloudAccount::getId).toList();
         }).build());
-        return queries;
     }
 
 
@@ -339,7 +346,7 @@ public class BillDimensionSettingServiceImpl extends ServiceImpl<BillDimensionSe
      *
      * @param authorizeId 授权id
      * @param type        授权类型
-     * @return
+     * @return 是否有效
      */
     private boolean verification(String authorizeId, AuthorizeTypeConstants type) {
         if (type.equals(AuthorizeTypeConstants.ORGANIZATION)) {
@@ -422,8 +429,8 @@ public class BillDimensionSettingServiceImpl extends ServiceImpl<BillDimensionSe
      * @return 执行脚本
      */
     public String getSource(AuthorizeTypeConstants authorizeType) {
-        String workspace = "ctx._source['workspaceId']=params.workspaceId;ctx._source['organizationId']=params.organizationId;ctx._source['orgLevel']=params.orgLevel;";
-        String org = "ctx._source['organizationId']=params.organizationId;ctx._source['orgLevel']=params.orgLevel;ctx._source['workspaceId']=null;";
+        String workspace = "ctx._source['workspaceId']=params.workspaceId;ctx._source['organizationId']=params.organizationId;ctx._source['orgTree']=params.orgTree;";
+        String org = "ctx._source['organizationId']=params.organizationId;ctx._source['orgTree']=params.orgTree;ctx._source['workspaceId']=null;";
         return authorizeType.equals(AuthorizeTypeConstants.WORKSPACE) ? workspace : org;
     }
 
@@ -442,12 +449,12 @@ public class BillDimensionSettingServiceImpl extends ServiceImpl<BillDimensionSe
             String organizationId = workspace.getOrganizationId();
             List<Organization> upOrg = getUpOrg(organizationId, new ArrayList<>());
             res.put("workspaceId", JsonData.of(workspace.getId()));
-            res.put("orgLevel", JsonData.of(toOrgLevel(upOrg)));
+            res.put("orgTree", JsonData.of(toOrgTree(upOrg)));
             res.put("organizationId", JsonData.of(organizationId));
             return res;
         } else {
             List<Organization> upOrg = getUpOrg(setting.getAuthorizeId(), new ArrayList<>());
-            res.put("orgLevel", JsonData.of(toOrgLevel(upOrg)));
+            res.put("orgTree", JsonData.of(toOrgTree(upOrg)));
             res.put("organizationId", JsonData.of(setting.getAuthorizeId()));
             return res;
 
@@ -478,8 +485,8 @@ public class BillDimensionSettingServiceImpl extends ServiceImpl<BillDimensionSe
      * @param organizations 组织
      * @return 组织级别
      */
-    public Map<String, String> toOrgLevel(List<Organization> organizations) {
-        return IntStream.range(0, organizations.size()).boxed().map(index -> new DefaultKeyValue<>(index + 1 + "级组织", organizations.get(index).getId())).collect(Collectors.toMap(DefaultKeyValue::getKey, DefaultKeyValue::getValue));
+    public Map<String, String> toOrgTree(List<Organization> organizations) {
+        return IntStream.range(0, organizations.size()).boxed().map(index -> new DefaultKeyValue<>((organizations.size() - index) + "级组织", organizations.get(index).getId())).collect(Collectors.toMap(DefaultKeyValue::getKey, DefaultKeyValue::getValue));
     }
 
     /**

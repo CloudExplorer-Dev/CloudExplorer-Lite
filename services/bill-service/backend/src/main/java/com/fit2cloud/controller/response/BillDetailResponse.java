@@ -13,8 +13,8 @@ import java.util.Map;
 public class BillDetailResponse {
     @Id
     private String id;
-    @ApiModelProperty(value = "组织级别", notes = "组织级别")
-    private Map<String, Object> orgLevel;
+    @ApiModelProperty(value = "组织层级树", notes = "组织层级树")
+    private Map<String, Object> orgTree;
 
     @ApiModelProperty(value = "工作空间id", notes = "工作空间id")
 
