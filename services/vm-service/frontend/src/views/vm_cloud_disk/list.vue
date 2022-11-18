@@ -246,13 +246,30 @@ const batchDetach = () => {
     ElMessage.warning(t("vm_cloud_disk.msg.select_one", "至少选择一条数据"));
     return;
   } else {
-    const ids: string[] = Array.from(
-      multipleSelectedRowData.value,
-      ({ id }) => id
-    );
-    VmCloudDiskApi.batchDetach(ids).then(() => {
-      ElMessage.success(t("commons.msg.op_success"));
-      refresh();
+    ElMessageBox.confirm(
+        t("vm_cloud_disk.confirm.batch_detach", "确认批量卸载"),
+        t("commons.message_box.prompt", "提示"),
+        {
+          confirmButtonText: t("commons.message_box.confirm", "确认"),
+          cancelButtonText: t("commons.btn.cancel", "取消"),
+          type: "warning",
+        }
+    ).then(() => {
+      const ids: string[] = Array.from(
+          multipleSelectedRowData.value,
+          ({ id }) => id
+      );
+      VmCloudDiskApi.batchDetach(ids).then(() => {
+        ElMessage.success(t("commons.msg.op_success"));
+        refresh();
+      });
+    }).catch(() => {
+      ElMessage.info(
+          t("vm_cloud_disk.msg.canceled", [
+            t("vm_cloud_disk.btn.uninstall"),
+            "已取消卸载",
+          ])
+      );
     });
   }
 };
@@ -265,13 +282,30 @@ const batchDelete = () => {
     ElMessage.warning(t("vm_cloud_disk.msg.select_one", "至少选择一条数据"));
     return;
   } else {
-    const ids: string[] = Array.from(
-      multipleSelectedRowData.value,
-      ({ id }) => id
-    );
-    VmCloudDiskApi.batchDeleteDisk(ids).then(() => {
-      ElMessage.success(t("commons.msg.op_success"));
-      refresh();
+    ElMessageBox.confirm(
+        t("vm_cloud_disk.confirm.batch_delete", "确认批量删除"),
+        t("commons.message_box.prompt", "提示"),
+        {
+          confirmButtonText: t("commons.message_box.confirm", "确认"),
+          cancelButtonText: t("commons.btn.cancel", "取消"),
+          type: "warning",
+        }
+    ).then(() => {
+      const ids: string[] = Array.from(
+          multipleSelectedRowData.value,
+          ({ id }) => id
+      );
+      VmCloudDiskApi.batchDeleteDisk(ids).then(() => {
+        ElMessage.success(t("commons.msg.op_success"));
+        refresh();
+      });
+    }).catch(() => {
+      ElMessage.info(
+          t("vm_cloud_disk.msg.canceled", [
+            t("vm_cloud_disk.btn.delete"),
+            "已取消删除",
+          ])
+      );
     });
   }
 };

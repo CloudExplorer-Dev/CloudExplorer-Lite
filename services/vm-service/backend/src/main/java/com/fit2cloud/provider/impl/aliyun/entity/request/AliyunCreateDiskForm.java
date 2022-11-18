@@ -19,6 +19,6 @@ public class AliyunCreateDiskForm {
     private Long size;
     @Form(inputType = InputType.Radio, label = "磁盘类型", defaultValue = "cloud_ssd", textField = "name", valueField = "id", method = "getDiskTypes", clazz = AliyunCloudProvider.class)
     private String diskType;
-    @Form(inputType = InputType.Radio, label = "随实例删除", defaultValue = "NO", textField = "name", valueField = "id", method = "getDeleteWithInstance", clazz = AliyunCloudProvider.class)
+    @Form(inputType = InputType.Radio, label = "随实例删除", defaultValue = "YES", textField = "name", valueField = "id", method = "getDeleteWithInstance", clazz = AliyunCloudProvider.class)
     private String deleteWithInstance;
 }

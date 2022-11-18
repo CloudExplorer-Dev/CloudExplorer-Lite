@@ -1,4 +1,4 @@
-package com.fit2cloud.common.platform.vmware;
+package com.fit2cloud.common.provider.impl.vsphere.utils;
 
 
 import com.vmware.cis.Session;

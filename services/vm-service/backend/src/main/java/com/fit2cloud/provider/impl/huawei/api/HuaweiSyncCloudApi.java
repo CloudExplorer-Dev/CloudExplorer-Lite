@@ -450,13 +450,13 @@ public class HuaweiSyncCloudApi {
             ShowVolumeRequest showVolumeRequest = new ShowVolumeRequest();
             showVolumeRequest.setVolumeId(request.getDiskId());
             VolumeDetail volume = evsClient.showVolume(showVolumeRequest).getVolume();
-            Optional.ofNullable(volume).orElseThrow(() -> new RuntimeException("Disk can not find!"));
+            Optional.ofNullable(volume).orElseThrow(() -> new RuntimeException("Can not find the disk!"));
 
             if (Boolean.valueOf(volume.getBootable())) {
                 // 判断实例是否是关机状态
                 ShowServerResponse showServerResponse = ecsClient.showServer(new ShowServerRequest().withServerId(request.getInstanceUuid()));
                 ServerDetail server = showServerResponse.getServer();
-                Optional.ofNullable(server).orElseThrow(() -> new RuntimeException("Can not find server!"));
+                Optional.ofNullable(server).orElseThrow(() -> new RuntimeException("Can not find the server!"));
 
                 String serverStatus = server.getStatus();
                 if (!"stopped".equalsIgnoreCase(serverStatus)) {

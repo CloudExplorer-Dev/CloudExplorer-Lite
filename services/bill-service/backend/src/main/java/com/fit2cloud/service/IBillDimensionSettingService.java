@@ -1,5 +1,10 @@
 package com.fit2cloud.service;
 
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.fit2cloud.constants.AuthorizeTypeConstants;
+import com.fit2cloud.controller.request.AuthorizeResourcesRequest;
+import com.fit2cloud.controller.request.NotAuthorizeResourcesRequest;
+import com.fit2cloud.controller.response.AuthorizeResourcesResponse;
 import com.fit2cloud.dao.entity.BillDimensionSetting;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.fit2cloud.dao.jentity.BillAuthorizeRule;
@@ -61,4 +66,33 @@ public interface IBillDimensionSettingService extends IService<BillDimensionSett
      * @param billDimensionSetting 授权规则设置对象
      */
     void authorize(BillDimensionSetting billDimensionSetting);
+
+    /**
+     * 清除授权
+     *
+     * @param authorizeId 授权id
+     * @param type        授权对象类型
+     */
+    void clearAuthorize(String authorizeId, AuthorizeTypeConstants type);
+
+
+    /**
+     * 获取授权的资源
+     *
+     * @param page    当前页
+     * @param limit   每页显示多少条
+     * @param request 请求对象
+     * @return 授权资源分页对象
+     */
+    Page<AuthorizeResourcesResponse> getAuthorizeResources(Integer page, Integer limit, AuthorizeResourcesRequest request);
+
+    /**
+     * 获取未授权的资源
+     *
+     * @param page    当前页
+     * @param limit   每页显示多少条
+     * @param request 请求对象
+     * @return 资源分页对象
+     */
+    Page<AuthorizeResourcesResponse> getNotAuthorizeResources(Integer page, Integer limit, NotAuthorizeResourcesRequest request);
 }

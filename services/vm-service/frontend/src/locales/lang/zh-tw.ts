@@ -61,10 +61,13 @@ const message = {
     confirm: {
       detach: "確認將雲磁盤{0}從雲主機{1}上卸載",
       delete: "確認將雲磁盤{0}刪除",
+      batch_detach: "確認批量卸載雲磁盤",
+      batch_delete: "確認批量刪除雲磁盤",
     },
     msg: {
       canceled: "已取消{0}",
       select_one: "至少選擇一條記錄",
+      datastore_null: "存儲器不能為空",
     },
   },
 };

@@ -1,9 +1,9 @@
 package com.fit2cloud.provider.impl.vsphere.util;
 
 import com.fit2cloud.common.platform.credential.impl.VsphereCredential;
-import com.fit2cloud.common.platform.vmware.ClsApiClient;
-import com.fit2cloud.common.platform.vmware.SslUtil;
-import com.fit2cloud.common.platform.vmware.VapiAuthenticationHelper;
+import com.fit2cloud.common.provider.impl.vsphere.utils.ClsApiClient;
+import com.fit2cloud.common.provider.impl.vsphere.utils.SslUtil;
+import com.fit2cloud.common.provider.impl.vsphere.utils.VapiAuthenticationHelper;
 import com.fit2cloud.common.utils.JsonUtil;
 import com.fit2cloud.provider.entity.F2CImage;
 import com.fit2cloud.provider.impl.vsphere.entity.VsphereTemplate;
@@ -12,7 +12,6 @@ import com.vmware.content.library.Item;
 import com.vmware.content.library.ItemModel;
 import com.vmware.vapi.bindings.StubConfiguration;
 import com.vmware.vapi.protocol.HttpConfiguration;
-import com.vmware.vim25.VirtualDevice;
 import com.vmware.vim25.VirtualDisk;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

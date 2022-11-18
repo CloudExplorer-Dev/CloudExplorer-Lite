@@ -2,8 +2,8 @@ package com.fit2cloud.provider.impl.vsphere.util;
 
 import com.fit2cloud.common.constants.Language;
 import com.fit2cloud.common.platform.credential.impl.VsphereCredential;
-import com.fit2cloud.common.platform.vmware.ClsApiClient;
-import com.fit2cloud.common.platform.vmware.VapiAuthenticationHelper;
+import com.fit2cloud.common.provider.impl.vsphere.utils.ClsApiClient;
+import com.fit2cloud.common.provider.impl.vsphere.utils.VapiAuthenticationHelper;
 import com.fit2cloud.common.provider.impl.vsphere.utils.VsphereClient;
 import com.fit2cloud.provider.impl.vsphere.entity.VsphereTemplate;
 import com.fit2cloud.provider.impl.vsphere.entity.request.VsphereVmCreateRequest;
@@ -296,7 +296,7 @@ public class VsphereVmClient extends VsphereClient {
             int cpu = request.getCpu();
 
             String diskType = request.getDiskType();
-            List<VsphereVmCreateRequest.DiskConfig> diskConfigs = request.getDisks();
+
             List<VsphereVmCreateRequest.NetworkAdapter> networkAdapters = request.getNetworkConfigs().get(currentIndex).getAdapters();
 
 
@@ -328,23 +328,6 @@ public class VsphereVmClient extends VsphereClient {
 
             VirtualMachine template = getTemplateFromAll(templateName);
 
-            StoragePlacementSpec spSpec = null;
-
-
-            // TODO 未处理内容库创建的情况
-            long diskSum = 0;
-            if (template != null) {
-                VirtualMachineConfigInfo templateConfig = template.getConfig();
-                VirtualDevice[] devices = templateConfig.getHardware().getDevice();
-                for (VirtualDevice device : devices) {
-                    if (device instanceof VirtualDisk vd) {
-                        long capacityInKB = vd.getCapacityInKB();
-                        diskSum += capacityInKB / 1024 / 1024;
-
-                    }
-                }
-            }
-
             //todo 内容库需要处理
             long diskSize = 0;
 
@@ -355,6 +338,25 @@ public class VsphereVmClient extends VsphereClient {
                     vm = getVirtualMachine(vmName);
 
                 return reconfigVm(vm, cpu, memory, diskSize, diskType, true, true, "Created-by-FIT2CLOUD-from-template:" + templateName, null, null, null);
+            } else if (template == null && !templateName.contains(VsphereTemplate.SEPARATOR)) {
+                throw new RuntimeException("模版不存在");
+            }
+
+            VirtualMachineConfigInfo templateConfig = template.getConfig();
+            VirtualDevice[] devices = templateConfig.getHardware().getDevice();
+            List<VsphereVmCreateRequest.DiskConfig> diskConfigs = request.getDisks();
+
+            StoragePlacementSpec spSpec = null;
+
+
+            // TODO 未处理内容库创建的情况
+            long diskSum = 0;
+            for (VirtualDevice device : devices) {
+                if (device instanceof VirtualDisk vd) {
+                    long capacityInKB = vd.getCapacityInKB();
+                    diskSum += capacityInKB / 1024 / 1024;
+
+                }
             }
 
 
@@ -379,7 +381,6 @@ public class VsphereVmClient extends VsphereClient {
 
             VirtualMachineCloneSpec spec = new VirtualMachineCloneSpec();
 
-            VirtualMachineConfigInfo templateConfig = template.getConfig();
             String os = templateConfig.getGuestFullName();
             String osType = "Linux";
             if (StringUtils.containsIgnoreCase(os, "Win")) {
@@ -415,67 +416,78 @@ public class VsphereVmClient extends VsphereClient {
 
             // 磁盘设置
             List<VirtualDeviceConfigSpec> machineSpecs = new ArrayList<>();
-            if (diskSize > 0) {
-                VirtualDevice[] devices = templateConfig.getHardware().getDevice();
-                int controllerKey = 0;
-                // 原有的磁盘格式
-                String oldDiskType = DiskType.DEFAULT;
-                List<VirtualMachineRelocateSpecDiskLocator> diskLocator = new ArrayList<>();
-                for (VirtualDevice device : devices) {
-                    if (device instanceof VirtualDisk vd) {
-                        controllerKey = device.getControllerKey();
-                        VirtualDeviceBackingInfo backing = device.getBacking();
-                        if (backing instanceof VirtualDiskFlatVer2BackingInfo backingInfo) {
-                            if (Boolean.TRUE.equals(backingInfo.getThinProvisioned())) {
-                                oldDiskType = DiskType.THIN;
-                            } else if (Boolean.TRUE.equals(backingInfo.getEagerlyScrub())) {
-                                oldDiskType = DiskType.THICK;
-                            } else {
-                                oldDiskType = DiskType.EAGER_ZEROED;
-                            }
-                            // 按照 diskType 设置模板的配置
-                            // 对模板上的每一块磁盘进行设置
-                            // vc上存储集群无法修改原有磁盘的格式，会导致报错 Datastore unspecified for at least one disk in SDRS-disabled VM
-                            if (!(parent instanceof StoragePod) && !StringUtils.equals(diskType, DiskType.DEFAULT)) {
-                                backingInfo.setThinProvisioned(diskType.equalsIgnoreCase("thin"));
-                                backingInfo.setEagerlyScrub(diskType.equalsIgnoreCase("THICK"));
-                                VirtualMachineRelocateSpecDiskLocator locator = new VirtualMachineRelocateSpecDiskLocator();
-                                locator.setDatastore(datastore.getMOR());
-                                locator.setDiskBackingInfo(backingInfo);
-                                locator.setDiskId(vd.getKey());
-                                diskLocator.add(locator);
-                            }
+
+            List<Integer> controllerKeys = new ArrayList<>();
+            // 原有的磁盘格式
+            String oldDiskType = DiskType.DEFAULT;
+            List<VirtualMachineRelocateSpecDiskLocator> diskLocator = new ArrayList<>();
+            for (VirtualDevice device : devices) {
+                if (device instanceof VirtualDisk vd) {
+                    controllerKeys.add(device.getControllerKey());
+                    VirtualDeviceBackingInfo backing = device.getBacking();
+                    if (backing instanceof VirtualDiskFlatVer2BackingInfo backingInfo) {
+                        if (Boolean.TRUE.equals(backingInfo.getThinProvisioned())) {
+                            oldDiskType = DiskType.THIN;
+                        } else if (Boolean.TRUE.equals(backingInfo.getEagerlyScrub())) {
+                            oldDiskType = DiskType.EAGER_ZEROED;
+                        } else {
+                            oldDiskType = DiskType.THICK;
+                        }
+                        // 按照 diskType 设置模板的配置
+                        // 对模板上的每一块磁盘进行设置
+                        // vc上存储集群无法修改原有磁盘的格式，会导致报错 Datastore unspecified for at least one disk in SDRS-disabled VM
+                        if (!(parent instanceof StoragePod) && !StringUtils.equals(diskType, DiskType.DEFAULT)) {
+                            backingInfo.setThinProvisioned(diskType.equalsIgnoreCase("thin"));
+                            backingInfo.setEagerlyScrub(diskType.equalsIgnoreCase("THICK"));
+                            VirtualMachineRelocateSpecDiskLocator locator = new VirtualMachineRelocateSpecDiskLocator();
+                            locator.setDatastore(datastore.getMOR());
+                            locator.setDiskBackingInfo(backingInfo);
+                            locator.setDiskId(vd.getKey());
+                            diskLocator.add(locator);
                         }
                     }
                 }
-                if (diskLocator.size() > 0) {
-                    location.setDisk(diskLocator.toArray(new VirtualMachineRelocateSpecDiskLocator[0]));
-                }
-                // 使用镜像里的磁盘格式
-                if (StringUtils.equals(diskType, DiskType.DEFAULT)) {
-                    diskType = oldDiskType;
+            }
+            if (diskLocator.size() > 0) {
+                location.setDisk(diskLocator.toArray(new VirtualMachineRelocateSpecDiskLocator[0]));
+            }
+            // 使用镜像里的磁盘格式
+            if (StringUtils.equals(diskType, DiskType.DEFAULT)) {
+                diskType = oldDiskType;
+            }
+
+            //todo 替换为传入的盘list
+            if (diskConfigs.size() > controllerKeys.size()) {
+
+                int key = -1;
+
+                List<Integer> unitNumberList = new ArrayList<>();
+                for (final VirtualDevice device : devices) {
+                    if (device.getUnitNumber() != null && controllerKeys.contains(device.getControllerKey())) {
+                        unitNumberList.add(device.getUnitNumber());
+                        if (device.getKey() > key) {
+                            key = device.getKey();
+                        }
+                    }
                 }
 
-                //todo 替换为传入的盘list
-                if (diskSum < diskSize) {
-                    diskSize = diskSize - diskSum;
+                for (int i = controllerKeys.size(); i < diskConfigs.size(); i++) {
+
+                    diskSize = diskConfigs.get(i).getSize();
                     VirtualDeviceConnectInfo virtualDeviceConnectInfo = new VirtualDeviceConnectInfo();
                     virtualDeviceConnectInfo.setStartConnected(true);
                     virtualDeviceConnectInfo.setConnected(true);
                     virtualDeviceConnectInfo.setAllowGuestControl(false);
+
                     int unitNumber = 0;
-                    List<Integer> unitNumberList = new ArrayList<>();
-                    for (final VirtualDevice device : devices) {
-                        if (device.getUnitNumber() != null && device.getControllerKey().equals(controllerKey)) {
-                            unitNumberList.add(device.getUnitNumber());
-                        }
-                    }
-                    for (int i = 0; i < 16; i++) {
-                        if (!unitNumberList.contains(i)) {
-                            unitNumber = i;
+                    for (int j = 0; j < 16; j++) {
+                        if (!unitNumberList.contains(j)) {
+                            unitNumber = j;
+                            unitNumberList.add(unitNumber);
                             break;
                         }
                     }
+
                     VirtualDisk vd = new VirtualDisk();
                     VirtualDeviceConfigSpec diskSpec = new VirtualDeviceConfigSpec();
                     diskSpec.setOperation(VirtualDeviceConfigSpecOperation.add);
@@ -483,8 +495,9 @@ public class VsphereVmClient extends VsphereClient {
                     vd.setCapacityInKB(diskSize * 1024 * 1024);
                     vd.setConnectable(virtualDeviceConnectInfo);
                     vd.setUnitNumber(unitNumber);
-                    vd.setKey(-1);
-                    vd.setControllerKey(controllerKey);
+                    key++; //设置唯一key
+                    vd.setKey(key);
+                    vd.setControllerKey(controllerKeys.get(0));
 
                     VirtualDiskFlatVer2BackingInfo backinginfo = new VirtualDiskFlatVer2BackingInfo();
 //                    backinginfo.setDatastore(datastore);
@@ -503,6 +516,7 @@ public class VsphereVmClient extends VsphereClient {
                     machineSpecs.add(diskSpec);
                 }
             }
+
 
             // 网络设置
             //当在存储群集中创建虚拟机时，网络选择为模版的网络时需注意，当网络不合法时，创建虚拟机将会失败，错误提示形如：无法访问虚拟机配置，无法访问文件[datastore1 (35)]
@@ -779,6 +793,18 @@ public class VsphereVmClient extends VsphereClient {
                 }
                 if (mor.equals(vm.getMOR().getVal())) {
                     return vm;
+                }
+            }
+        }
+        return null;
+    }
+
+    public Datastore getDatastoreByMor(String datastoreMor) {
+        List<Datastore> datastores = listDataStores();
+        if (datastores != null) {
+            for (Datastore datastore : datastores) {
+                if (datastore.getMOR().getVal().equals(datastoreMor)) {
+                    return datastore;
                 }
             }
         }

@@ -80,6 +80,7 @@ public class VmCloudDiskServiceImpl extends ServiceImpl<BaseVmCloudDiskMapper, V
         // 构建查询参数
         QueryWrapper<VmCloudDiskDTO> wrapper = addQuery(request);
         Page<VmCloudDiskDTO> page = new Page<>(request.getCurrentPage(), request.getPageSize(), true);
+
         IPage<VmCloudDiskDTO> result = diskMapper.pageList(page, wrapper);
         return result;
     }
@@ -140,12 +141,16 @@ public class VmCloudDiskServiceImpl extends ServiceImpl<BaseVmCloudDiskMapper, V
             HashMap<String, Object> params = CommonUtil.getParams(cloudAccount.getCredential(), request.getRegionId());
             params.put("zone", request.getZone());
             params.put("diskName", request.getDiskName());
-            params.put("size", request.getSize());
             params.put("diskType", request.getDiskType());
+            params.put("diskMode", request.getDiskMode());
+            params.put("datastore", request.getDatastore());
+            params.put("size", request.getSize());
             params.put("description", request.getDescription());
-            params.put("instanceUuid", request.getInstanceUuid());
-            params.put("deleteWithInstance", request.getDeleteWithInstance());
-            params.put("isAttached", request.getIsAttached());
+            if (request.getIsAttached()) {
+                params.put("isAttached", request.getIsAttached());
+                params.put("instanceUuid", request.getInstanceUuid());
+                params.put("deleteWithInstance", request.getDeleteWithInstance());
+            }
 
             // 执行
             ResourceState resourceState = ResourceState.<VmCloudDisk, F2CDisk>builder()
@@ -443,6 +448,9 @@ public class VmCloudDiskServiceImpl extends ServiceImpl<BaseVmCloudDiskMapper, V
         }
 
         // 重新插入数据
+        if (vmCloudDisk.getDiskName() == null) {
+            vmCloudDisk.setDiskName(result.getDiskName());
+        }
         vmCloudDisk.setDiskId(result.getDiskId());
         vmCloudDisk.setDevice(result.getDevice());
         vmCloudDisk.setDatastoreId(result.getDatastoreUniqueId());

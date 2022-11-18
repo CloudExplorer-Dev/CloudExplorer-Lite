@@ -5,6 +5,7 @@ import com.fit2cloud.common.form.vo.FormObject;
 import com.fit2cloud.common.provider.entity.F2CPerfMetricMonitorData;
 import com.fit2cloud.provider.constants.ProviderConstants;
 import com.fit2cloud.provider.entity.*;
+import com.fit2cloud.provider.entity.result.CheckCreateServerResult;
 
 import java.util.Arrays;
 import java.util.List;
@@ -211,6 +212,8 @@ public interface ICloudProvider {
     F2CVirtualMachine getSimpleServerByCreateRequest(String req);
 
     F2CVirtualMachine createVirtualMachine(String req);
+
+    CheckCreateServerResult validateServerCreateRequest(String req);
 
 
 }

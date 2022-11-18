@@ -57,7 +57,9 @@
     </div>
     <div class="bottom_wapper berder">
       <div class="title title_font">
-        2022年10月份账单汇总<span class="sub_title_font">（单位：元）</span>
+        {{ viewMonth.substring(0, 4) }} 年{{
+          viewMonth.substring(5, 7)
+        }}月份账单汇总<span class="sub_title_font">（单位：元）</span>
       </div>
       <div class="operation">
         <div>
@@ -85,7 +87,7 @@
           class="demo-tabs"
           v-model="activeName"
           @tab-change="tabChange"
-          style="width: calc(100% - 40px); margin-left: 20px"
+          style="width: calc(100% - 40px); min-width: 600px; margin-left: 20px"
         >
           <el-tab-pane
             v-for="rule in BillRules"
@@ -118,6 +120,7 @@
               <el-auto-resizer>
                 <template #default="{ height, width }">
                   <el-table-v2
+                    :cache="5"
                     :columns="columns"
                     :sort-by="sortState"
                     :data="viewData"
@@ -135,6 +138,11 @@
     </div>
   </layout-content>
   <el-dialog v-model="tableChartVisible">
+    <template #title>
+      <div style="display: flex; align-items: center; justify-content: center">
+        {{ tableChartVisibleTitle }}——趋势图
+      </div>
+    </template>
     <template #default>
       <div ref="detailsWapper" style="height: 200px; width: 100%"></div>
     </template>
@@ -229,18 +237,23 @@ const resetViewData = (billViewData: SimpleMap<Array<BillView>>) => {
     viewData.value = [];
   }
   groups.value = ["root"];
-  if (char.value) {
-    char.value?.setOption(getBillViewOptions(viewData.value, groups));
+  if (char) {
+    char?.setOption(getBillViewOptions(viewData.value, groups));
   } else {
     init();
   }
 };
 
+const tableChartVisibleTitle = ref<string>();
 /**
  * 打开趋势图
  * @param treed 打开查看趋势图
  */
-const open = (treed: Array<TrendData>) => {
+const open = (treed: Array<TrendData>, row: BillSummary) => {
+  tableChartVisibleTitle.value = Object.keys(row)
+    .filter((g) => g.startsWith("group"))
+    .map((k) => row[k])
+    .join(",");
   treed.sort((pre, next) => pre.label.localeCompare(next.label));
   tableChartVisible.value = true;
   const option: any = getTrendViewOption(treed, "line", true, true, true);
@@ -297,39 +310,52 @@ const currentYearExpensesLoading = ref<boolean>(false);
 /**
  *历史趋势图
  */
-const historyTrendChart = ref<any>(null);
+let historyTrendChart: ECharts | undefined = undefined;
 const historyTrendLoading = ref<boolean>(false);
 
 const billViewChartLoading = ref<boolean>(false);
-const historyTrend = (historyNum: number, active: string) => {
+const historyTrend = async (historyNum: number, active: string) => {
   activeTreedYear.value = active;
   // 获取历史趋势
-  billViewAPi
+  await billViewAPi
     .getHistoryTrend("MONTH", historyNum, historyTrendLoading)
     .then((ok) => {
       hostryTreed.value = ok.data;
-      if (!historyTrendChart.value) {
-        historyTrendChart.value = echarts.init(chartWapper.value);
+      if (!historyTrendChart) {
+        historyTrendChart = echarts.init(chartWapper.value);
       }
       hostryTreed.value.sort((pre, next) =>
         pre.label.localeCompare(next.label)
       );
-      const option = getTrendViewOption(
+      const option: any = getTrendViewOption(
         hostryTreed.value,
         "bar",
         true,
         true,
         false
       );
-      historyTrendChart.value.setOption(option);
+      option["yAxis"]["splitLine"] = {
+        show: false,
+      };
+      option["tooltip"] = {
+        trigger: "item",
+        formatter: (p: any) => {
+          return `<div>月份:${p.name}</div><div>金额:${_.round(
+            p.data,
+            2
+          ).toFixed(2)}</div>`;
+        },
+      };
+      historyTrendChart?.setOption(option);
     });
 };
 const BillRules = ref<Array<BillRule>>([]);
+
 onMounted(() => {
   billViewAPi
     .getExpenses("MONTH", currentMonth, currentMonthExpensesLoading)
     .then((ok) => {
-      currentMonthExpenses.value = Math.floor(ok.data * 100) / 100;
+      currentMonthExpenses.value = parseFloat(_.round(ok.data, 2).toFixed(2));
     });
   billViewAPi
     .getExpenses(
@@ -338,20 +364,23 @@ onMounted(() => {
       currentYearExpensesLoading
     )
     .then((ok) => {
-      currentYearExpenses.value = Math.floor(ok.data * 100) / 100;
+      currentYearExpenses.value = parseFloat(_.round(ok.data, 2).toFixed(2));
     });
-  historyTrend(12, "YEAR");
+
   billRuleApi.listBillRules().then((ok) => {
     BillRules.value = ok.data;
     if (ok.data) {
       activeName.value = ok.data[0].id;
     }
   });
-  window.onresize = function () {
-    char.value?.resize();
-  };
+  historyTrend(12, "YEAR").then((OK) => {
+    window.onresize = function () {
+      char?.resize();
+      historyTrendChart?.resize();
+    };
+  });
 });
-const char = ref<ECharts>();
+let char: ECharts | undefined = undefined;
 
 const viewData = ref<Array<BillSummary>>([]);
 const groups = ref<Array<string>>(["root"]);
@@ -361,15 +390,15 @@ const groups = ref<Array<string>>(["root"]);
  */
 const fallback = () => {
   groups.value = [];
-  char.value?.setOption(getBillViewOptions(viewData.value, groups));
+  char?.setOption(getBillViewOptions(viewData.value, groups));
 };
 /**
  * 初始化饼图
  */
 const init = () => {
-  char.value = initBillView(echarts, chart.value, viewData.value, groups);
+  char = initBillView(echarts, chart.value, viewData.value, groups);
   // 监听图标点击事件
-  char.value?.on("click", "series", (param: any) => {
+  char?.on("click", "series", (param: any) => {
     if (
       viewData.value.every((i) =>
         Object.keys(i).includes("group" + (groups.value.length + 1))
@@ -377,14 +406,12 @@ const init = () => {
     ) {
       groups.value.push(param.name);
 
-      char.value?.setOption(getBillViewOptions(viewData.value, groups));
+      char?.setOption(getBillViewOptions(viewData.value, groups));
     }
   });
   // 监听legend选中事件
-  char.value?.on("legendselectchanged", (param: any) => {
-    char.value?.setOption(
-      getBillViewOptions(viewData.value, groups, param.selected)
-    );
+  char?.on("legendselectchanged", (param: any) => {
+    char?.setOption(getBillViewOptions(viewData.value, groups, param.selected));
   });
 };
 
@@ -425,6 +452,8 @@ const columns = computed(() => {
       width: 200,
       dataKey: "value",
       fixed: TableV2FixedDir.RIGHT,
+      cellRenderer: (cellData: any) =>
+        _.round(cellData.rowData.value, 2).toFixed(2) + "元",
       sortable: true,
     },
     {
@@ -452,7 +481,7 @@ const columns = computed(() => {
         return h(TableTrend, {
           trend: cellData.rowData.treed,
           onClick: () => {
-            open(cellData.rowData.treed);
+            open(cellData.rowData.treed, cellData.rowData);
           },
         });
       },
@@ -498,6 +527,8 @@ const sortState = ref<any>({
   display: flex;
   width: 100%;
   height: 300px;
+  overflow-x: auto;
+  overflow-y: hidden;
   .left_wapper {
     display: flex;
     flex-wrap: wrap;
@@ -507,22 +538,21 @@ const sortState = ref<any>({
     min-width: 200px;
     .top {
       border: 1px solid var(--el-border-color);
-      height: 45%;
+      height: calc(45% - 2px);
       width: 100%;
       margin-bottom: 30px;
     }
     .bottom {
       border: 1px solid var(--el-border-color);
-      height: 45%;
+      height: calc(45% - 2px);
       width: 100%;
     }
   }
   .right_wapper {
     margin-left: 20px;
     border: 1px solid var(--el-border-color);
-    width: 80%;
-    height: 100%;
-    min-width: 600px;
+    width: calc(80% - 20px);
+    height: calc(100% - 2px);
     .header {
       display: flex;
       justify-content: center;
@@ -576,6 +606,8 @@ const sortState = ref<any>({
   color: #006eff;
 }
 .bottom_wapper {
+  overflow-x: auto;
+  overflow-y: hidden;
   width: 100%;
   .title {
     display: flex;
@@ -611,7 +643,7 @@ const sortState = ref<any>({
   margin-top: 20px;
   font-family: "Arial-Black", "Arial Black", sans-serif;
   font-weight: 900;
-  font-size: 16px;
+  font-size: 14px;
 }
 .sub_title_font {
   font-family: "PingFangSC-Regular", "PingFang SC", sans-serif;

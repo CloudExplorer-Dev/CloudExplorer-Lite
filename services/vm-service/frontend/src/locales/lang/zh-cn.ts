@@ -61,10 +61,13 @@ const message = {
     confirm: {
       detach: "确认将云磁盘{0}从云主机{1}上卸载",
       delete: "确认将云磁盘{0}删除",
+      batch_detach: "确认批量卸载云磁盘",
+      batch_delete: "确认批量删除云磁盘",
     },
     msg: {
       canceled: "已取消{0}",
       select_one: "至少选择一条记录",
+      datastore_null: "存储器不能为空",
     },
   },
 };

@@ -7,6 +7,7 @@
         highlight-current-row
         style="width: 100%"
         @current-change="handleCurrentChange"
+        height="340px"
       >
         <el-table-column width="55">
           <template #default="scope">
@@ -61,7 +62,7 @@
 import type { FormView } from "@commons/components/ce-form/type";
 import { computed, onMounted, ref } from "vue";
 import _ from "lodash";
-import { ElTable } from "element-plus";
+import type { ElTable } from "element-plus";
 
 interface DataStore {
   mor: string;

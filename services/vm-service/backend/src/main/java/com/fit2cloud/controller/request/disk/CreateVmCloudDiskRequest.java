@@ -24,6 +24,10 @@ public class CreateVmCloudDiskRequest {
 
     private String diskType;
 
+    private String diskMode;
+
+    private String datastore;
+
     private Long size;
 
     /**

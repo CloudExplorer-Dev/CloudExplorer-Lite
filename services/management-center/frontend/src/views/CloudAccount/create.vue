@@ -44,7 +44,9 @@ const changePlatform = () => {
         from.value.credential[item.field] = JSON.parse(
           item.defaultValue as string
         );
-      } catch (e) {}
+      } catch (e) {
+        console.error(e);
+      }
     }
   });
 };

@@ -1,4 +1,4 @@
-import { i18n } from "@commons/base-locales/index";
+import { i18n } from "@commons/base-locales";
 
 /**
  * 资源收费类型

@@ -34,7 +34,7 @@
               <el-form-item
                 :rules="{
                   message: '网络' + '不能为空',
-                  trigger: 'blur',
+                  trigger: ['blur', 'change'],
                   required: true,
                 }"
                 label="网络"
@@ -72,15 +72,8 @@
 
               <template v-if="!adapter.dhcp">
                 <!--   //todo ipv6           -->
-
                 <el-form-item
-                  :rules="[
-                    {
-                      message: 'IP地址' + '不能为空',
-                      trigger: 'blur',
-                      required: true,
-                    },
-                  ]"
+                  :rules="getIpCheckRules('IP地址')"
                   label="IP地址"
                   :prop="'[' + index + '].adapters[' + i + '].ipAddr'"
                 >
@@ -88,13 +81,7 @@
                 </el-form-item>
 
                 <el-form-item
-                  :rules="[
-                    {
-                      message: '默认网关' + '不能为空',
-                      trigger: 'blur',
-                      required: true,
-                    },
-                  ]"
+                  :rules="getIpCheckRules('默认网关')"
                   label="默认网关"
                   :prop="'[' + index + '].adapters[' + i + '].gateway'"
                 >
@@ -102,13 +89,7 @@
                 </el-form-item>
 
                 <el-form-item
-                  :rules="[
-                    {
-                      message: '子网掩码' + '不能为空',
-                      trigger: 'blur',
-                      required: true,
-                    },
-                  ]"
+                  :rules="getMaskCheckRules('子网掩码')"
                   label="子网掩码"
                   :prop="'[' + index + '].adapters[' + i + '].netmask'"
                 >
@@ -128,13 +109,7 @@
           </div>
 
           <el-form-item
-            :rules="[
-              {
-                message: 'DNS1' + '不能为空',
-                trigger: 'blur',
-                required: false,
-              },
-            ]"
+            :rules="getIpCheckRules('DNS1', false)"
             label="DNS1"
             :prop="'[' + index + '].dns1'"
           >
@@ -142,13 +117,7 @@
           </el-form-item>
 
           <el-form-item
-            :rules="[
-              {
-                message: 'DNS2' + '不能为空',
-                trigger: 'blur',
-                required: false,
-              },
-            ]"
+            :rules="getIpCheckRules('DNS2', false)"
             label="DNS2"
             :prop="'[' + index + '].dns2'"
           >
@@ -199,15 +168,15 @@
         <el-descriptions :column="1">
           <el-descriptions-item label="DNS1">
             {{ s.dns1 }}
-            <span v-if="!s.dns1" style="color: var(--el-text-color-secondary)"
-              >无</span
-            >
+            <span v-if="!s.dns1" style="color: var(--el-text-color-secondary)">
+              无
+            </span>
           </el-descriptions-item>
           <el-descriptions-item label="DNS2">
             {{ s.dns2 }}
-            <span v-if="!s.dns2" style="color: var(--el-text-color-secondary)"
-              >无</span
-            >
+            <span v-if="!s.dns2" style="color: var(--el-text-color-secondary)">
+              无
+            </span>
           </el-descriptions-item>
         </el-descriptions>
       </el-card>
@@ -221,6 +190,7 @@ import _ from "lodash";
 import type { FormView } from "@commons/components/ce-form/type";
 import { CloseBold } from "@element-plus/icons-vue";
 import formApi from "@commons/api/form_resource_api";
+import IpChecker from "@commons/utils/IpChecker";
 
 interface NetworkConfig {
   adapters?: Array<NetWorkAdapter>;
@@ -276,6 +246,45 @@ watch(
     setServers(count);
   }
 );
+
+function getIpCheckRules(columnName: string, required?: boolean) {
+  const rules: Array<any> = [];
+  if (required === undefined || required) {
+    rules.push({
+      message: columnName + "不能为空",
+      trigger: "blur",
+      required: true,
+    });
+  }
+  /* rules.push({
+    message: columnName + "格式不正确",
+    trigger: ["blur", "change"],
+    pattern: IpChecker.RegExpPatterns.ipv4,
+  });*/
+  rules.push({
+    message: columnName + "格式不正确",
+    trigger: ["blur", "change"],
+    validator: IpChecker.ruleIpIsValid,
+  });
+
+  return rules;
+}
+
+function getMaskCheckRules(columnName: string) {
+  const rules: Array<any> = [
+    {
+      message: columnName + "不能为空",
+      trigger: "blur",
+      required: true,
+    },
+    {
+      message: columnName + "格式不正确",
+      trigger: ["blur", "change"],
+      validator: IpChecker.ruleMaskIsValidV6,
+    },
+  ];
+  return rules;
+}
 
 function getTempRequest() {
   return _.assignWith(

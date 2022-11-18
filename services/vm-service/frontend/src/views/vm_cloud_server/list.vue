@@ -14,7 +14,7 @@ import { ElMessage, ElMessageBox } from "element-plus";
 import _ from "lodash";
 import type { SimpleMap } from "@commons/api/base/type";
 import variables_server from "../../styles/vm_cloud_server/server.module.scss";
-import { platformIcon } from "@/utils/platform";
+import { platformIcon } from "@commons/utils/platform";
 import BaseCloudAccountApi from "@commons/api/cloud_account";
 
 const { t } = useI18n();
@@ -197,7 +197,10 @@ const tableConfig = ref<TableConfig>({
  */
 const showDetail = (row: VmCloudServerVO) => {
   useRoute.push({
-    path: useRoute.currentRoute.value.path.replace("/list", `/detail/${row.id}`)
+    path: useRoute.currentRoute.value.path.replace(
+      "/list",
+      `/detail/${row.id}`
+    ),
   });
 };
 const gotoCatalog = () => {

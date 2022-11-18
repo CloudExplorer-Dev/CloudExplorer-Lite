@@ -13,6 +13,7 @@ import com.fit2cloud.provider.entity.F2CDatastore;
 import com.fit2cloud.provider.entity.F2CDisk;
 import com.fit2cloud.provider.entity.F2CHost;
 import com.fit2cloud.provider.entity.F2CVirtualMachine;
+import com.fit2cloud.provider.entity.result.CheckCreateServerResult;
 
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
@@ -120,6 +121,11 @@ public abstract class AbstractCloudProvider<C extends Credential> implements ICl
     @Override
     public F2CVirtualMachine createVirtualMachine(String req) {
         return null;
+    }
+
+    @Override
+    public CheckCreateServerResult validateServerCreateRequest(String req) {
+        return CheckCreateServerResult.success();
     }
 
 }

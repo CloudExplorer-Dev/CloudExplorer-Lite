@@ -109,7 +109,7 @@ public class VsphereDiskUtil {
             VirtualDiskFlatVer2BackingInfo backingInfo = getVirtualDiskFlatVer2BackingInfo(disk);
             if (disk.getDatastore() != null) {
                 backingInfo.setDatastore(disk.getDatastore().getMOR());
-                //修复新增磁盘时，存储器设置无效问题：新增磁盘时，如果不设置fileName，则存储器选项不生效。
+                // 修复新增磁盘时，存储器设置无效问题：新增磁盘时，如果不设置fileName，则存储器选项不生效。
                 backingInfo.setFileName("[" + changedVsphereDisk.getDatastoreName() + "]");
             }
 
@@ -138,10 +138,10 @@ public class VsphereDiskUtil {
 
         virtualMachineConfigSpec.setDeviceChange(virtualDeviceConfigSpecs.toArray(new VirtualDeviceConfigSpec[0]));
 
-        Task reconfigVMTask = virtualMachine.reconfigVM_Task(virtualMachineConfigSpec);
-        String status = reconfigVMTask.waitForTask();
+        Task reConfigVMTask = virtualMachine.reconfigVM_Task(virtualMachineConfigSpec);
+        String status = reConfigVMTask.waitForTask();
         if (!Task.SUCCESS.equals(status)) {
-            throw new Exception(reconfigVMTask.getTaskInfo().getError().getLocalizedMessage());
+            throw new Exception(reConfigVMTask.getTaskInfo().getError().getLocalizedMessage());
         }
     }
 

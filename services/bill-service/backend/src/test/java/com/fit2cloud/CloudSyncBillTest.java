@@ -1,8 +1,12 @@
 package com.fit2cloud;
 
 import co.elastic.clients.elasticsearch._types.mapping.FieldType;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.fit2cloud.constants.AuthorizeTypeConstants;
+import com.fit2cloud.controller.request.AuthorizeResourcesRequest;
 import com.fit2cloud.controller.request.BillExpensesRequest;
 import com.fit2cloud.controller.request.HistoryTrendRequest;
+import com.fit2cloud.controller.response.AuthorizeResourcesResponse;
 import com.fit2cloud.controller.response.BillView;
 import com.fit2cloud.controller.response.Trend;
 import com.fit2cloud.dao.entity.BillDimensionSetting;
@@ -71,9 +75,18 @@ public class CloudSyncBillTest {
     }
 
     @Test
+    public void getAuthorizeResources() {
+        AuthorizeResourcesRequest authorizeResourcesRequest = new AuthorizeResourcesRequest();
+        authorizeResourcesRequest.setType(AuthorizeTypeConstants.ORGANIZATION.name());
+        authorizeResourcesRequest.setAuthorizeId("754f25293d20f0abb4a33c6aae585ec4");
+        Page<AuthorizeResourcesResponse> authorizeResources = iBillDimensionSettingService.getAuthorizeResources(2, 10, authorizeResourcesRequest);
+        System.out.println(authorizeResources);
+    }
+
+    @Test
     public void testas() {
-        BillDimensionSetting byId = iBillDimensionSettingService.getById("d9d7c901c03ddaf54a222f047953010a");
-        iBillDimensionSettingService.authorize();
+        BillDimensionSetting byId = iBillDimensionSettingService.getById("4e2b32251a7249984855dd5d23c494dd");
+        iBillDimensionSettingService.authorize(byId);
     }
 
     @Test

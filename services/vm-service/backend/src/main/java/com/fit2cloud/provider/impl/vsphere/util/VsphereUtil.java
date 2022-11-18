@@ -8,9 +8,9 @@ import com.fit2cloud.provider.entity.F2CDisk;
 import com.fit2cloud.provider.entity.F2CHost;
 import com.fit2cloud.provider.entity.F2CVirtualMachine;
 import com.fit2cloud.provider.impl.vsphere.entity.F2CVsphereDatastore;
-import com.fit2cloud.provider.impl.vsphere.entity.F2CVsphereDiskType;
 import com.fit2cloud.provider.impl.vsphere.entity.F2CVsphereHost;
 import com.fit2cloud.provider.impl.vsphere.entity.VsphereFolder;
+import com.fit2cloud.provider.impl.vsphere.entity.constants.VsphereDiskType;
 import com.fit2cloud.provider.impl.vsphere.entity.request.VsphereDiskRequest;
 import com.vmware.vim25.*;
 import com.vmware.vim25.mo.*;
@@ -365,20 +365,20 @@ public class VsphereUtil {
         if (backing instanceof VirtualDiskFlatVer2BackingInfo) {
             VirtualDiskFlatVer2BackingInfo virtualDiskFlatVer2BackingInfo = (VirtualDiskFlatVer2BackingInfo) backing;
             if (Boolean.TRUE.equals(virtualDiskFlatVer2BackingInfo.getThinProvisioned())) {// 精简置备
-                d.setDiskType(F2CVsphereDiskType.THIN.name());
+                d.setDiskType(VsphereDiskType.THIN.name());
             } else if (Boolean.TRUE.equals(virtualDiskFlatVer2BackingInfo.getEagerlyScrub())) {// 后置备（快速）置零
-                d.setDiskType(F2CVsphereDiskType.THICK_EAGER_ZEROED.name());
+                d.setDiskType(VsphereDiskType.THICK_EAGER_ZEROED.name());
             } else { // 后置备延迟置零
-                d.setDiskType(F2CVsphereDiskType.THICK_LAZY_ZEROED.name());
+                d.setDiskType(VsphereDiskType.THICK_LAZY_ZEROED.name());
             }
             d.setDevice(virtualDiskFlatVer2BackingInfo.getFileName());
             d.setDiskMode(virtualDiskFlatVer2BackingInfo.getDiskMode());
         } else if (backing instanceof VirtualDiskSparseVer2BackingInfo) {
-            d.setDiskType(F2CVsphereDiskType.SPARSE.name());
+            d.setDiskType(VsphereDiskType.SPARSE.name());
             d.setDevice(((VirtualDiskSparseVer2BackingInfo) backing).getFileName());
             d.setDiskMode(((VirtualDiskSparseVer2BackingInfo) backing).getDiskMode());
         } else {
-            d.setDiskType(F2CVsphereDiskType.DEFAULT.name());
+            d.setDiskType(VsphereDiskType.NA.name());
         }
     }
 
@@ -636,5 +636,14 @@ public class VsphereUtil {
             }
         }
         return virtualEthernetCards;
+    }
+
+    public static boolean validateFolder(VsphereClient client, String folderName) {
+        if (StringUtils.isNotBlank(folderName)) {
+            folderName = StringUtils.strip(folderName, "/");
+            Folder folder = client.getFolder(folderName);
+            return folder != null;
+        }
+        return false;
     }
 }

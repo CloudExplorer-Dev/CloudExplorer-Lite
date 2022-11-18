@@ -17,6 +17,6 @@ public class HuaweiCreateDiskForm {
     private Long size;
     @Form(inputType = InputType.Radio, label = "磁盘类型", defaultValue = "GPSSD", textField = "name", valueField = "id", method = "getDiskTypes", clazz = HuaweiCloudProvider.class)
     private String diskType;
-    @Form(inputType = InputType.Radio, label = "随实例删除", defaultValue = "NO", textField = "name", valueField = "id", method = "getDeleteWithInstance", clazz = HuaweiCloudProvider.class)
+    @Form(inputType = InputType.Radio, label = "随实例删除", defaultValue = "YES", textField = "name", valueField = "id", method = "getDeleteWithInstance", clazz = HuaweiCloudProvider.class)
     private String deleteWithInstance;
 }

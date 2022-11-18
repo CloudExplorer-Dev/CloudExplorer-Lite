@@ -3,15 +3,19 @@ package com.fit2cloud.common.utils;
 import co.elastic.clients.elasticsearch._types.FieldValue;
 import co.elastic.clients.elasticsearch._types.query_dsl.*;
 import co.elastic.clients.json.JsonData;
+import com.fit2cloud.common.query.convert.QueryFieldValueConvert;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.apache.commons.lang3.reflect.FieldUtils;
 import org.elasticsearch.index.query.BoolQueryBuilder;
 import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
 
 
 /**
@@ -23,7 +27,7 @@ import java.util.List;
 public class QueryUtil {
 
     public enum CompareType {
-        LT, LTE, GT, GTE, EQ, NOT_EQ, IN, NOT_IN, LIKE,NOT_EXIST
+        LT, LTE, GT, GTE, EQ, NOT_EQ, IN, NOT_IN, LIKE, NOT_EXIST
     }
 
     @Data
@@ -158,6 +162,40 @@ public class QueryUtil {
     }
 
     /**
+     * 获取查询Query对象
+     *
+     * @param type  类型
+     * @param field 字段
+     * @param value 值
+     * @return
+     */
+    public static Query getQuery(CompareType type, String field, Object value) {
+        return switch (type) {
+            case LT ->
+                    new Query.Builder().range(new RangeQuery.Builder().lt(JsonData.of(value)).field(field).build()).build();
+            case LTE ->
+                    new Query.Builder().range(new RangeQuery.Builder().lte(JsonData.of(value)).field(field).build()).build();
+            case GT ->
+                    new Query.Builder().range(new RangeQuery.Builder().gt(JsonData.of(value)).field(field).build()).build();
+            case GTE ->
+                    new Query.Builder().range(new RangeQuery.Builder().gte(JsonData.of(value)).field(field).build()).build();
+            case EQ ->
+                    new Query.Builder().term(new TermQuery.Builder().value(getFieldValue(value)).field(field).build()).build();
+            case LIKE ->
+                    new Query.Builder().match(new MatchQuery.Builder().query(getFieldValue(value)).field(field).build()).build();
+            case NOT_EQ ->
+                    new Query.Builder().bool(new BoolQuery.Builder().mustNot(new Query.Builder().match(new MatchQuery.Builder().query(getFieldValue(value)).field(field).build()).build()).build()).build();
+            case IN ->
+                    new Query.Builder().terms(new TermsQuery.Builder().field(field).terms(getTermsQueryField(value)).build()).build();
+            case NOT_IN ->
+                    new Query.Builder().bool(new BoolQuery.Builder().mustNot(new Query.Builder().terms(new TermsQuery.Builder().field(field).terms(getTermsQueryField(value)).build()).build()).build()).build();
+            case NOT_EXIST -> new Query.Builder().exists(new ExistsQuery.Builder().field(field).build()).build();
+            default -> throw new RuntimeException("不支持的查询");
+        };
+
+    }
+
+    /**
      * 将数据转换为es查询所需数据
      *
      * @param query 查询数据
@@ -192,5 +230,43 @@ public class QueryUtil {
         } else {
             throw new RuntimeException("非法的参数");
         }
+    }
+
+    /**
+     * 获取查询
+     *
+     * @param o       请求对象
+     * @param convert 转换器
+     * @return es查询条件
+     */
+    public static List<Query> getQuery(Object o, QueryFieldValueConvert... convert) {
+        return getQuery(o, true, convert);
+    }
+
+    /**
+     * @param o               请求对象
+     * @param filterValueNoll 如果值是value 就不构建Query
+     * @param convert         转换器
+     * @return es查询条件
+     */
+    public static List<Query> getQuery(Object o, boolean filterValueNoll, QueryFieldValueConvert... convert) {
+        return Arrays.stream(FieldUtils.getAllFields(o.getClass())).filter(f -> f.isAnnotationPresent(com.fit2cloud.common.query.annotaion.Query.class)).map(f -> {
+            com.fit2cloud.common.query.annotaion.Query annotation = f.getAnnotation(com.fit2cloud.common.query.annotaion.Query.class);
+            try {
+                Optional<QueryFieldValueConvert> first = Arrays.stream(convert).filter(c -> f.getName().equals(c.getField())).findFirst();
+                f.setAccessible(true);
+                Object v = f.get(o);
+                if (first.isPresent()) {
+                    QueryFieldValueConvert objectQueryFieldValueConvert = first.get();
+                    v = objectQueryFieldValueConvert.getConvert().apply(f.get(o));
+                }
+                if (filterValueNoll && Objects.isNull(v)) {
+                    return null;
+                }
+                return getQuery(annotation.compareType(), annotation.field(), v);
+            } catch (IllegalAccessException e) {
+                throw new RuntimeException(e);
+            }
+        }).filter(Objects::nonNull).toList();
     }
 }

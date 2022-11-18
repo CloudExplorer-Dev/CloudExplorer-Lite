@@ -7,9 +7,11 @@ import com.fit2cloud.common.provider.entity.F2CEntityType;
 import com.fit2cloud.common.provider.entity.F2CPerfMetricMonitorData;
 import com.fit2cloud.common.provider.impl.vsphere.utils.VsphereClient;
 import com.fit2cloud.common.utils.DateUtil;
+import com.fit2cloud.common.utils.IpChecker;
 import com.fit2cloud.common.utils.JsonUtil;
 import com.fit2cloud.provider.entity.*;
 import com.fit2cloud.provider.entity.request.GetMetricsRequest;
+import com.fit2cloud.provider.entity.result.CheckCreateServerResult;
 import com.fit2cloud.provider.impl.vsphere.entity.*;
 import com.fit2cloud.provider.impl.vsphere.entity.request.*;
 import com.fit2cloud.provider.impl.vsphere.util.*;
@@ -22,7 +24,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.springframework.beans.BeanUtils;
 
-import java.math.BigDecimal;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.*;
@@ -40,7 +41,7 @@ public class VsphereSyncCloudApi {
     private static final long MB = 1024 * 1024;
     private static final long GB = MB * 1024;
 
-    public static String VALID_HOST_REGEX = "^(?=.{1,255}$)[0-9A-Za-z](?:(?:[0-9A-Za-z]|\\b-){0,61}[0-9A-Za-z])?(?:\\.[0-9A-Za-z](?:(?:[0-9A-Za-z]|\\b-){0,61}[0-9A-Za-z])?)*\\.?$";
+    public static final String VALID_HOST_REGEX = "^(?=.{1,255}$)[0-9A-Za-z](?:(?:[0-9A-Za-z]|\\b-){0,61}[0-9A-Za-z])?(?:\\.[0-9A-Za-z](?:(?:[0-9A-Za-z]|\\b-){0,61}[0-9A-Za-z])?)*\\.?$";
 
 
     /**
@@ -435,7 +436,7 @@ public class VsphereSyncCloudApi {
         return networks;
     }
 
-    public static List<F2CDisk> createDisks(VsphereCreateDiskRequest request) {
+    public static List<F2CDisk> createDisks(VsphereCreateDisksRequest request) {
         VsphereDiskRequest diskRequest = new VsphereDiskRequest();
         BeanUtils.copyProperties(request, diskRequest);
         VsphereClient client = null;
@@ -458,6 +459,15 @@ public class VsphereSyncCloudApi {
         }
     }
 
+    public static F2CDisk createDisk(VsphereCreateDiskRequest request) {
+        F2CDisk disk = new F2CDisk();
+        List<F2CDisk> disks = createDisks(request.toVsphereCreateDisksRequest());
+        if (CollectionUtils.isNotEmpty(disks)) {
+            disk = disks.get(0);
+        }
+        return disk;
+    }
+
     public static boolean enlargeDisk(VsphereResizeDiskRequest resizeDiskRequest) {
         VsphereDiskRequest diskRequest = new VsphereDiskRequest();
         BeanUtils.copyProperties(resizeDiskRequest, diskRequest);
@@ -474,7 +484,7 @@ public class VsphereSyncCloudApi {
             }
         }
 
-        VsphereCreateDiskRequest createDiskRequest = new VsphereCreateDiskRequest();
+        VsphereCreateDisksRequest createDiskRequest = new VsphereCreateDisksRequest();
         BeanUtils.copyProperties(resizeDiskRequest, createDiskRequest);
         createDiskRequest.setDisks(toEnlargeDisks);
         VsphereClient client = createDiskRequest.getVsphereVmClient();
@@ -494,7 +504,7 @@ public class VsphereSyncCloudApi {
         }
     }
 
-    private static void editDisk(VsphereCreateDiskRequest createDiskRequest, VsphereClient client) {
+    private static void editDisk(VsphereCreateDisksRequest createDiskRequest, VsphereClient client) {
         try {
             VirtualMachine virtualMachine;
             try {
@@ -662,6 +672,55 @@ public class VsphereSyncCloudApi {
         } finally {
             closeConnection(client);
         }
+    }
+
+    public static List<VsphereDatastore> getDatastoreListByVm(VsphereDiskRequest request) {
+        VsphereVmClient client = request.getVsphereVmClient();
+        List<VsphereDatastore> result;
+        try {
+            VirtualMachine virtualMachine;
+            try {
+                virtualMachine = client.getVirtualMachineById(request.getInstanceUuid());
+            } catch (Exception e) {
+                throw new RuntimeException(e.getMessage(), e);
+            }
+            if (virtualMachine == null) {
+                throw new RuntimeException(String.format("Virtual machine: %s ", request.getInstanceUuid()) + " The host storage failed, the virtual machine was not found.");
+            }
+            result = new ArrayList<>();
+            try {
+                if (request.getDiskId() != null) {
+                    Datastore datastore = null;
+                    VirtualDisk virtualMachineDisk = VsphereDiskUtil.getVirtualMachineDisk(virtualMachine,
+                            request.getDiskId());
+                    if (virtualMachineDisk == null) {
+                        throw new RuntimeException("Failed to get the disk, can't find the virtual machine:" + request.getInstanceUuid() + " disk: " + request.getDiskId());
+                    }
+                    VirtualDeviceBackingInfo backing = virtualMachineDisk.getBacking();
+                    if (backing instanceof VirtualDiskFlatVer2BackingInfo) {
+                        datastore = client.getDatastoreByMor(((VirtualDiskFlatVer2BackingInfo) backing).getDatastore().getVal());
+                    } else if (backing instanceof VirtualDiskSparseVer2BackingInfo) {
+                        datastore = client.getDatastoreByMor(((VirtualDiskSparseVer2BackingInfo) backing).getDatastore().getVal());
+                    }
+                    if (null == datastore) {
+                        throw new RuntimeException("Failed to get datastore, unable to find disk:" + request.getDiskId() + " where the store");
+                    }
+                    result.add(convertToVsphereDatastore(datastore));
+                } else {
+                    Datastore[] datastores = virtualMachine.getDatastores();
+                    if (datastores != null) {
+                        for (Datastore ds : datastores) {
+                            result.add(convertToVsphereDatastore(ds));
+                        }
+                    }
+                }
+            } catch (Exception e) {
+                throw new RuntimeException(String.format("Virtual machine: %s ", request.getInstanceUuid()) + " where the store" + "，message:" + e.getMessage());
+            }
+        } finally {
+            closeConnection(client);
+        }
+        return result;
     }
 
     public static List<VsphereDatastore> getDatastoreList(VsphereVmCreateRequest request) {
@@ -966,7 +1025,7 @@ public class VsphereSyncCloudApi {
     }
 
 
-    public static List<F2CPerfMetricMonitorData> getF2CPerfMetricList(GetMetricsRequest getMetricsRequest){
+    public static List<F2CPerfMetricMonitorData> getF2CPerfMetricList(GetMetricsRequest getMetricsRequest) {
         if (StringUtils.isEmpty(getMetricsRequest.getRegionId())) {
             throw new Fit2cloudException(10002, "区域为必填参数");
         }
@@ -977,20 +1036,21 @@ public class VsphereSyncCloudApi {
 //        getMetricsRequest.setStartTime("1667375402125");
 //        getMetricsRequest.setEndTime("1667379002125");
         Long cur = System.currentTimeMillis();
-        System.out.println("开始时间："+cur);
-        try{
+        System.out.println("开始时间：" + cur);
+        try {
             getMetricsRequest.setRegionId(getMetricsRequest.getRegionId());
             result.addAll(getVmPerfMetric(getMetricsRequest));
-        }catch (Exception e){
-            throw new Fit2cloudException(100021, "获取监控数据失败-"+getMetricsRequest.getRegionId()+"-" + e.getMessage());
+        } catch (Exception e) {
+            throw new Fit2cloudException(100021, "获取监控数据失败-" + getMetricsRequest.getRegionId() + "-" + e.getMessage());
         }
         Long en = System.currentTimeMillis();
-        System.out.println("耗时:"+(cur-en)+"-------------------------------");
+        System.out.println("耗时:" + (cur - en) + "-------------------------------");
         return result;
     }
 
     /**
      * 获取虚拟机监控指标数据
+     *
      * @param getMetricsRequest
      * @return
      */
@@ -1005,17 +1065,17 @@ public class VsphereSyncCloudApi {
         //查询所有虚拟机
         List<VirtualMachine> vms = client.listVirtualMachines();
         //VirtualMachine vm = vms.stream().filter(v->StringUtils.equalsIgnoreCase(v.getConfig().getName(),"管理员-CE4.0测试环境")).collect(Collectors.toList()).get(0);
-        if( vms.size()!=0 ){
-            vms.forEach(vm->{
-                Arrays.stream(VspherePerfMetricConstants.CloudServerPerfMetricEnum.values()).sorted().collect(Collectors.toList()).forEach(perfMetric->{
+        if (vms.size() != 0) {
+            vms.forEach(vm -> {
+                Arrays.stream(VspherePerfMetricConstants.CloudServerPerfMetricEnum.values()).sorted().collect(Collectors.toList()).forEach(perfMetric -> {
 //                    if(perfMetric.getMetricName()!="181" && perfMetric.getMetricName()!="180"){
 //                        return;
 //                    }
-                    System.out.println("开始："+perfMetric.getDescription());
-                    System.out.println("MetricId："+perfMetric.getMetricName());
-                    Map<String, Map<String,Long>> dataMap = getPerfData(vm,client,getMetricsRequest,perfMetric.getMetricName(),getMetricsRequest.getInterval());
-                    System.out.println("结果："+JsonUtil.toJSONString(dataMap));
-                    dataMap.values().forEach((data)->{
+                    System.out.println("开始：" + perfMetric.getDescription());
+                    System.out.println("MetricId：" + perfMetric.getMetricName());
+                    Map<String, Map<String, Long>> dataMap = getPerfData(vm, client, getMetricsRequest, perfMetric.getMetricName(), getMetricsRequest.getInterval());
+                    System.out.println("结果：" + JsonUtil.toJSONString(dataMap));
+                    dataMap.values().forEach((data) -> {
                         F2CPerfMetricMonitorData f2CEntityPerfMetric = new F2CPerfMetricMonitorData();
                         f2CEntityPerfMetric.setTimestamp(data.get("timestamp"));
                         f2CEntityPerfMetric.setAverage(new BigDecimal(data.get("Average")).divide(new BigDecimal(perfMetric.getDivisor())));
@@ -1037,6 +1097,7 @@ public class VsphereSyncCloudApi {
 
     /**
      * 根据指标获取监控数据
+     *
      * @param virtualMachine
      * @param client
      * @param request
@@ -1044,13 +1105,13 @@ public class VsphereSyncCloudApi {
      * @param interval
      * @return
      */
-    public static Map<String, Map<String,Long>> getPerfData(VirtualMachine virtualMachine, VsphereVmClient client,
-                                                            GetMetricsRequest request, String metricName, Integer interval) {
+    public static Map<String, Map<String, Long>> getPerfData(VirtualMachine virtualMachine, VsphereVmClient client,
+                                                             GetMetricsRequest request, String metricName, Integer interval) {
         Calendar calBegin = Calendar.getInstance();
         //如果是虚拟磁盘读写监控，开始时间+40分钟，因为只能查询20分钟内的数据
-        if(StringUtils.equalsIgnoreCase(metricName,"181") || StringUtils.equalsIgnoreCase(metricName,"180")){
-            calBegin.setTime(new Date(Long.valueOf(request.getStartTime())+2400000));
-        }else{
+        if (StringUtils.equalsIgnoreCase(metricName, "181") || StringUtils.equalsIgnoreCase(metricName, "180")) {
+            calBegin.setTime(new Date(Long.valueOf(request.getStartTime()) + 2400000));
+        } else {
             calBegin.setTime(new Date(Long.valueOf(request.getStartTime())));
         }
         Calendar calEnd = Calendar.getInstance();
@@ -1070,9 +1131,9 @@ public class VsphereSyncCloudApi {
             qSpec.setMetricId(perfMetricIds);
             qSpec.setIntervalId(interval);
             qSpec.setFormat("normal");
-            PerfQuerySpec[] querySpecs = { qSpec };
+            PerfQuerySpec[] querySpecs = {qSpec};
             PerfEntityMetricBase[] pValues = performanceManager.queryPerf(querySpecs);
-            if(pValues != null){
+            if (pValues != null) {
                 return printPerfMetric(pValues[0]);
             }
         } catch (Exception e) {
@@ -1084,31 +1145,142 @@ public class VsphereSyncCloudApi {
     /**
      * 组数据，key:时间，value:数据
      * 因为vmware时间与数据分开两个数组返回，我们处理方式就是按照两个数组的下标对应关系
+     *
      * @param pemBase
      * @return
      */
-    static Map<String, Map<String,Long>> printPerfMetric(PerfEntityMetricBase pemBase){
-        Map<String, Map<String,Long>> perfEntityMetric = new LinkedHashMap<>();
-        if(pemBase instanceof PerfEntityMetric){
+    static Map<String, Map<String, Long>> printPerfMetric(PerfEntityMetricBase pemBase) {
+        Map<String, Map<String, Long>> perfEntityMetric = new LinkedHashMap<>();
+        if (pemBase instanceof PerfEntityMetric) {
             PerfEntityMetric pem = (PerfEntityMetric) pemBase;
             //时间数据
-            PerfSampleInfo[]  infos = pem.getSampleInfo();
-            if(!ObjectUtils.isEmpty(infos) ){
+            PerfSampleInfo[] infos = pem.getSampleInfo();
+            if (!ObjectUtils.isEmpty(infos)) {
                 //数据值
                 long[] values = ((PerfMetricIntSeries) pem.getValue()[0]).getValue();
-                System.out.println("时间数据数量："+infos.length);
-                System.out.println("数据数量："+values.length);
+                System.out.println("时间数据数量：" + infos.length);
+                System.out.println("数据数量：" + values.length);
                 System.out.println("\nSample values:");
                 F2CPerfMetricMonitorData data = new F2CPerfMetricMonitorData();
-                for(int j=0; values!=null && j<values.length; ++j){
-                    Map<String,Long> map = new HashMap<>();
-                    map.put("timestamp",infos[j].getTimestamp().getTimeInMillis());
-                    map.put("Average",values[j]);
-                    perfEntityMetric.put(String.valueOf(infos[j].getTimestamp().getTimeInMillis()),map);
+                for (int j = 0; values != null && j < values.length; ++j) {
+                    Map<String, Long> map = new HashMap<>();
+                    map.put("timestamp", infos[j].getTimestamp().getTimeInMillis());
+                    map.put("Average", values[j]);
+                    perfEntityMetric.put(String.valueOf(infos[j].getTimestamp().getTimeInMillis()), map);
                 }
             }
         }
         return perfEntityMetric;
     }
 
+    public static CheckCreateServerResult validateServerCreateRequest(VsphereVmCreateRequest request) {
+        VsphereVmClient client = null;
+        try {
+            int count = request.getCount();
+            if (count <= 0) {
+                return CheckCreateServerResult.fail("申请个数不能为空");
+            }
+            if (CollectionUtils.isEmpty(request.getNetworkConfigs()) || request.getNetworkConfigs().size() != count) {
+                return CheckCreateServerResult.fail("网络配置中主机个数与申请主机数不匹配");
+            }
+
+            String template = request.getTemplate();
+            if (StringUtils.isBlank(template)) {
+                return CheckCreateServerResult.fail("模版不能为空");
+            }
+
+            for (VsphereVmCreateRequest.NetworkConfig networkConfig : request.getNetworkConfigs()) {
+                if (CollectionUtils.isEmpty(networkConfig.getAdapters())) {
+                    return CheckCreateServerResult.fail("主机网卡不能为空");
+                }
+                //判断dns是否为ip格式
+                if (StringUtils.isNotBlank(networkConfig.getDns1()) && !IpChecker.isIpv4(networkConfig.getDns1())) {
+                    return CheckCreateServerResult.fail("DNS1: " + networkConfig.getDns1() + " 格式不正确");
+                }
+                if (StringUtils.isNotBlank(networkConfig.getDns2()) && !IpChecker.isIpv4(networkConfig.getDns2())) {
+                    return CheckCreateServerResult.fail("DNS2: " + networkConfig.getDns2() + " 格式不正确");
+                }
+                for (VsphereVmCreateRequest.NetworkAdapter adapter : networkConfig.getAdapters()) {
+                    if (StringUtils.isBlank(adapter.getVlan())) {
+                        return CheckCreateServerResult.fail("网络不能为空");
+                    }
+                    if (!adapter.isDhcp()) {
+                        if (StringUtils.isBlank(adapter.getIpAddr())) {
+                            return CheckCreateServerResult.fail("IP地址不能为空");
+                        }
+                        if (StringUtils.isBlank(adapter.getGateway())) {
+                            return CheckCreateServerResult.fail("网关不能为空");
+                        }
+                        if (StringUtils.isBlank(adapter.getNetmask())) {
+                            return CheckCreateServerResult.fail("Netmask不能为空");
+                        }
+                        if (!IpChecker.isIpv4(adapter.getIpAddr())) {
+                            return CheckCreateServerResult.fail("IP地址: " + adapter.getIpAddr() + " 格式不正确");
+                        }
+                        if (!IpChecker.isIpv4(adapter.getGateway())) {
+                            return CheckCreateServerResult.fail("网关: " + adapter.getGateway() + " 格式不正确");
+                        }
+                        if (!IpChecker.isNetmask(adapter.getNetmask())) {
+                            return CheckCreateServerResult.fail("Netmask: " + adapter.getNetmask() + " 格式不正确");
+                        }
+                    }
+                }
+
+            }
+            if (CollectionUtils.isEmpty(request.getServerInfos()) || request.getServerInfos().size() != count) {
+                return CheckCreateServerResult.fail("主机配置中主机个数与申请主机数不匹配");
+            }
+
+            Set<String> names = new HashSet<>();
+
+            Pattern pattern = Pattern.compile(VALID_HOST_REGEX, Pattern.CASE_INSENSITIVE);
+
+            for (VsphereVmCreateRequest.ServerInfo serverInfo : request.getServerInfos()) {
+                if (StringUtils.isBlank(serverInfo.getName())) {
+                    return CheckCreateServerResult.fail("主机名称不能为空");
+                }
+                if (StringUtils.isBlank(serverInfo.getHostname())) {
+                    return CheckCreateServerResult.fail("Hostname称不能为空");
+                }
+                Matcher matcher = pattern.matcher(serverInfo.getHostname());
+                if (!matcher.find()) {
+                    return CheckCreateServerResult.fail("Hostname: " + serverInfo.getHostname() + " 不正确");
+                }
+
+                names.add(serverInfo.getName());
+            }
+            if (names.size() != count) {
+                return CheckCreateServerResult.fail("主机名称不能重复");
+            }
+
+            client = request.getVsphereVmClient();
+
+            for (String name : names) {
+                //去查询该名称主机是否存在
+                client = request.getVsphereVmClient();
+                VirtualMachine vm = client.getVirtualMachine(name);
+                if (vm != null) {
+                    return CheckCreateServerResult.fail("主机: " + name + " 已存在");
+                }
+            }
+
+            String folderName = request.getFolder();
+            if (StringUtils.isNotBlank(folderName) && !VsphereClient.FOLDER_ROOT.equals(folderName)) {
+                boolean result = VsphereUtil.validateFolder(client, folderName);
+                if (!result) {
+                    return CheckCreateServerResult.fail("文件夹: " + folderName + " 不存在");
+                }
+            }
+
+            //todo 校验底层资源是否足够？
+
+
+            return CheckCreateServerResult.success();
+
+        } catch (Exception e) {
+            return CheckCreateServerResult.fail(e.getMessage());
+        } finally {
+            closeConnection(client);
+        }
+    }
 }

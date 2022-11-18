@@ -49,6 +49,8 @@ public class Form {
      */
     private List<String> relationShows;
 
+    private List<String> relationShowValues;
+
     private List<String> relationTrigger;
 
     /**

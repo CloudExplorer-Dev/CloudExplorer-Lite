@@ -61,10 +61,13 @@ const message = {
     confirm: {
       detach: "Confirm to uninstall cloud disk {0} from virtual machine {1}",
       delete: "Confirm to delete cloud disk {0}",
+      batch_detach: "Confirm to uninstall cloud disk in batch",
+      batch_delete: "Confirm to delete cloud disks in batch",
     },
     msg: {
       canceled: "{0}Cancelled",
       select_one: "At least to select one record",
+      datastore_null: "Datastore can not be null",
     },
   },
 };

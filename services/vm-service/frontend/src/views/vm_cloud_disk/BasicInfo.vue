@@ -4,7 +4,7 @@ import VmCloudDiskApi from "@/api/vm_cloud_disk";
 import _ from "lodash";
 import { useRouter } from "vue-router";
 import type { VmCloudDiskVO } from "@/api/vm_cloud_disk/type";
-import { platformIcon } from "@/utils/platform";
+import { platformIcon } from "@commons/utils/platform";
 import { CHARGE_TYPE } from "@/utils/constants";
 import { useI18n } from "vue-i18n";
 
@@ -186,7 +186,7 @@ onMounted(() => {
 </template>
 <style lang="scss" scoped>
 :deep(.el-descriptions__cell) {
-  border: 0px !important;
+  border: 0 !important;
 }
 :deep(.is-bordered-label) {
   background-color: transparent !important;

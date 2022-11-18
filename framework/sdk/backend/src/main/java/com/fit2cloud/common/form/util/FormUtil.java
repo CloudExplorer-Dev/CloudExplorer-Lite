@@ -80,6 +80,7 @@ public class FormUtil {
             map.put("unit", annotation.unit());
             map.put("field", field.getName());
             map.put("relationShows", annotation.relationShows());
+            map.put("relationShowValues", annotation.relationShowValues().length == 0 ? null : annotation.relationShowValues());
             map.put("relationTrigger", annotation.relationTrigger());
             map.put("index", atomicInteger.getAndIncrement());
             if (StringUtils.isNotEmpty(annotation.method())) {

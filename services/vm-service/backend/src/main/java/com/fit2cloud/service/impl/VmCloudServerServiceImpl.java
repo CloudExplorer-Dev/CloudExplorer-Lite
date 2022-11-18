@@ -35,6 +35,7 @@ import com.fit2cloud.provider.constants.CreateServerRequestConstants;
 import com.fit2cloud.provider.constants.F2CInstanceStatus;
 import com.fit2cloud.provider.constants.ProviderConstants;
 import com.fit2cloud.provider.entity.F2CVirtualMachine;
+import com.fit2cloud.provider.entity.result.CheckCreateServerResult;
 import com.fit2cloud.response.JobRecordResourceResponse;
 import com.fit2cloud.service.IVmCloudServerService;
 import com.fit2cloud.service.JobRecordCommonService;
@@ -122,7 +123,7 @@ public class VmCloudServerServiceImpl extends ServiceImpl<BaseVmCloudServerMappe
         wrapper.like(StringUtils.isNotBlank(request.getInstanceName()), "vm_cloud_server.instance_name", request.getInstanceName());
         wrapper.like(StringUtils.isNotBlank(request.getAccountName()), "cloud_account.name", request.getAccountName());
         wrapper.like(StringUtils.isNotBlank(request.getIpArray()), "vm_cloud_server.ip_array", request.getIpArray());
-        wrapper.in(CollectionUtils.isNotEmpty(request.getAccountIds()),"vm_cloud_server.account_id",request.getAccountIds());
+        wrapper.in(CollectionUtils.isNotEmpty(request.getAccountIds()), "vm_cloud_server.account_id", request.getAccountIds());
         wrapper.in(CollectionUtils.isNotEmpty(request.getInstanceStatus()), "vm_cloud_server.instance_status", request.getInstanceStatus());
         return wrapper;
     }
@@ -308,12 +309,18 @@ public class VmCloudServerServiceImpl extends ServiceImpl<BaseVmCloudServerMappe
 
         ICreateServerRequest requestObj = JsonUtil.parseObject(request.getCreateRequest(), createRequest);
 
+        //设置账号信息
+        requestObj.setCredential(cloudAccount.getCredential());
+
+        CheckCreateServerResult checkCreateServerResult = CommonUtil.exec(cloudProvider, JsonUtil.toJSONString(requestObj), ICloudProvider::validateServerCreateRequest);
+        if (!checkCreateServerResult.isPass()) {
+            throw new RuntimeException(checkCreateServerResult.getErrorInfo());
+        }
+
         int count = requestObj.getCount();
 
         for (int i = 0; i < count; i++) {
 
-            //设置账号信息
-            requestObj.setCredential(cloudAccount.getCredential());
             //设置index
             requestObj.setIndex(i);
 
@@ -334,14 +341,12 @@ public class VmCloudServerServiceImpl extends ServiceImpl<BaseVmCloudServerMappe
 
             this.save(vmCloudServer);
 
-
             //执行创建
             //F2CVirtualMachine result = CommonUtil.exec(cloudProvider, JsonUtil.toJSONString(requestObj), ICloudProvider::createVirtualMachine);
 
             createServerJob(vmCloudServer.getId(), JsonUtil.toJSONString(requestObj), request, OperatedTypeEnum.CREATE_SERVER.getDescription(), this::modifyResource, jobRecordCommonService::initJobRecord, jobRecordCommonService::modifyJobRecord);
 
         }
-
 
         return true;
     }

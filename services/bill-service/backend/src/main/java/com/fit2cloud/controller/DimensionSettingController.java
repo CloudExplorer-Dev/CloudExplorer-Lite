@@ -1,6 +1,10 @@
 package com.fit2cloud.controller;
 
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.fit2cloud.controller.handler.ResultHolder;
+import com.fit2cloud.controller.request.AuthorizeResourcesRequest;
+import com.fit2cloud.controller.request.NotAuthorizeResourcesRequest;
+import com.fit2cloud.controller.response.AuthorizeResourcesResponse;
 import com.fit2cloud.dao.entity.BillDimensionSetting;
 import com.fit2cloud.dao.jentity.BillAuthorizeRule;
 import com.fit2cloud.service.IBillDimensionSettingService;
@@ -12,6 +16,8 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
+import javax.validation.Valid;
+import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Pattern;
 import java.util.List;
 
@@ -46,7 +52,7 @@ public class DimensionSettingController {
     @GetMapping("/{authorize_id}/{type}")
     @ApiOperation(value = "获取账单授权设置", notes = "获取账单授权设置")
     public ResultHolder<BillDimensionSetting> getBillDimensionSetting(@ApiParam("授权账号id") @PathVariable("authorize_id") String authorizeId,
-                                                                      @ApiParam("授权账号类型 组织或者工作空间") @Pattern(regexp = "ORGANIZATION|WORKSPACE", message = "授权类型只支持WORKSPACE,ORGANIZATION") @PathVariable("type") String type) {
+                                                                      @ApiParam("授权账号类型 组织或者工作空间") @Pattern(regexp = "^(ORGANIZATION|WORKSPACE)$", message = "授权类型只支持WORKSPACE,ORGANIZATION") @PathVariable("type") String type) {
         BillDimensionSetting billDimensionSetting = billDimensionSettingService.getBillDimensionSetting(authorizeId, type);
         return ResultHolder.success(billDimensionSetting);
     }
@@ -58,5 +64,21 @@ public class DimensionSettingController {
                                                            @RequestBody BillAuthorizeRule authorizeRule) {
         BillDimensionSetting billDimensionSetting = billDimensionSettingService.saveOrUpdate(authorizeId, type, authorizeRule);
         return ResultHolder.success(billDimensionSetting);
+    }
+
+    @GetMapping("/authorize_resources/{page}/{limit}")
+    @ApiOperation(value = "获取已授权的资源列表", notes = "获取已授权的资源列表")
+    public ResultHolder<Page<AuthorizeResourcesResponse>> authorizeResources(@ApiParam("当前页") @NotNull(message = "当前页必填") @PathVariable("page") Integer page,
+                                                                             @ApiParam("每页多少条") @NotNull(message = "每页显示多少条必填") @NotNull @PathVariable("limit") Integer limit,
+                                                                             AuthorizeResourcesRequest request) {
+        return ResultHolder.success(billDimensionSettingService.getAuthorizeResources(page, limit, request));
+    }
+
+    @GetMapping("/not_authorize_resources/{page}/{limit}")
+    @ApiOperation(value = "获取未授权资源列表", notes = "获取未授权资源列表")
+    public ResultHolder<Page<AuthorizeResourcesResponse>> notAuthorizeResources(@ApiParam("当前页") @NotNull(message = "当前页必填") @PathVariable("page") Integer page,
+                                                                                @ApiParam("每页多少条") @NotNull(message = "每页显示多少条必填") @NotNull @PathVariable("limit") Integer limit,
+                                                                                NotAuthorizeResourcesRequest request) {
+        return ResultHolder.success(billDimensionSettingService.getNotAuthorizeResources(page, limit, request));
     }
 }
