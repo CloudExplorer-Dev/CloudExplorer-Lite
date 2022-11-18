@@ -26,6 +26,10 @@ interface BillRule {
 }
 interface Group {
   /**
+   *分组唯一id 用于前端循环
+   */
+  id: string;
+  /**
    *分组名称
    */
   name: string;
@@ -33,6 +37,10 @@ interface Group {
    * 分组字段
    */
   field: string;
+  /**
+   *分组未命中的名称
+   */
+  missName: string;
 }
 
 interface Filter {
@@ -50,4 +58,51 @@ interface Filter {
   value: string | number;
 }
 
-export type { BillRule, Group, Filter };
+interface BillRuleRequest {
+  name: string;
+}
+
+/**
+ * 账单分组规则
+ */
+interface BillGroupRule {
+  /**
+   * 前段用于唯一确认id
+   */
+  id: string;
+  /**
+   * 分组字段
+   */
+  field: string;
+  /**
+   *名称
+   */
+  name: string;
+}
+
+interface AddRule {
+  /**
+   * 规则名称
+   */
+  name: string;
+  /**
+   *分组
+   */
+  groups: Array<Group>;
+}
+
+interface UpdateRule extends AddRule {
+  /**
+   * 主键id
+   */
+  id: string;
+}
+export type {
+  BillRule,
+  Group,
+  Filter,
+  BillRuleRequest,
+  BillGroupRule,
+  AddRule,
+  UpdateRule,
+};

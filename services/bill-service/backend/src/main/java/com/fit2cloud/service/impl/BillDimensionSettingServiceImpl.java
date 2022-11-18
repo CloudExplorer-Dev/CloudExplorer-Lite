@@ -25,6 +25,7 @@ import com.fit2cloud.common.cache.CloudAccountCache;
 import com.fit2cloud.common.exception.Fit2cloudException;
 import com.fit2cloud.common.log.utils.LogUtil;
 import com.fit2cloud.common.query.convert.QueryFieldValueConvert;
+import com.fit2cloud.common.util.EsFieldUtil;
 import com.fit2cloud.common.util.MappingUtil;
 import com.fit2cloud.common.utils.QueryUtil;
 import com.fit2cloud.constants.AuthorizeTypeConstants;
@@ -94,7 +95,7 @@ public class BillDimensionSettingServiceImpl extends ServiceImpl<BillDimensionSe
             if (authorizeKeys().stream().noneMatch(item -> item.getValue().equals(groupField))) {
                 throw new Fit2cloudException(10000, "不支持的的字段类型");
             }
-            groupKeyByField = getGroupKeyByField(groupField);
+            groupKeyByField = EsFieldUtil.getGroupKeyByField(groupField);
         }
         NativeQueryBuilder nativeQueryBuilder = new NativeQueryBuilder().withAggregation("group", new TermsAggregation.Builder().field(groupKeyByField).size(Integer.MAX_VALUE).build()._toAggregation());
         SearchHits<CloudBill> response = elasticsearchTemplate.search(nativeQueryBuilder.build(), CloudBill.class);
@@ -364,52 +365,8 @@ public class BillDimensionSettingServiceImpl extends ServiceImpl<BillDimensionSe
      */
     private List<DefaultKeyValue<String, String>> findTags() {
         Map<String, Object> mapping = elasticsearchTemplate.indexOps(CloudBill.class).getMapping();
-        Map<String, Map<String, Object>> properties = (Map<String, Map<String, Object>>) mapping.get("properties");
-        if (properties.containsKey("tags")) {
-            return getEsField((Map<String, Map<String, Object>>) properties.get("tags").get("properties"), null).stream().map(field -> new DefaultKeyValue<>(field, "tags." + field)).toList();
-        }
-        return new ArrayList<>();
+        return EsFieldUtil.getChildEsField(mapping, "tags");
     }
-
-    /**
-     * 获取标签字段
-     *
-     * @param properties mapping properties
-     * @param parentName 传null 用于递归 可以传开头
-     * @return 获取es下面的字段
-     */
-    public List<String> getEsField(Map<String, Map<String, Object>> properties, String parentName) {
-        return properties.entrySet().stream().map((t) -> {
-            Map<String, Object> value = t.getValue();
-            if (value.get("type").toString().equals(co.elastic.clients.elasticsearch._types.mapping.FieldType.Text.jsonValue())) {
-                return List.of(StringUtils.isEmpty(parentName) ? t.getKey() : parentName + "." + t.getKey());
-            } else {
-                return getEsField((Map<String, Map<String, Object>>) value.get("properties"), StringUtils.isEmpty(parentName) ? t.getKey() : parentName + "." + t.getKey());
-            }
-        }).flatMap(List::stream).toList();
-    }
-
-    /**
-     * 获取分组字段
-     *
-     * @param groupField 实例对象字段
-     * @return 聚合字段
-     */
-    public String getGroupKeyByField(String groupField) {
-        Field field = FieldUtils.getField(CloudBill.class, groupField, true);
-        if (field.isAnnotationPresent(org.springframework.data.elasticsearch.annotations.Field.class)) {
-            if (field.getAnnotation(org.springframework.data.elasticsearch.annotations.Field.class).type().equals(org.springframework.data.elasticsearch.annotations.FieldType.Keyword)) {
-                return field.getName();
-            }
-        } else if (field.isAnnotationPresent(MultiField.class)) {
-            MultiField annotation = field.getAnnotation(MultiField.class);
-            return Arrays.stream(annotation.otherFields()).filter(a -> a.type().equals(org.springframework.data.elasticsearch.annotations.FieldType.Keyword)).findFirst().map(f -> {
-                return field.getName() + "." + f.suffix();
-            }).orElseThrow(() -> new Fit2cloudException(111, "不支持的分组字段" + groupField));
-        }
-        throw new Fit2cloudException(111, "不支持的分组字段" + groupField);
-    }
-
 
     /**
      * 获取授权脚本
@@ -514,7 +471,7 @@ public class BillDimensionSettingServiceImpl extends ServiceImpl<BillDimensionSe
      */
     public Query groupToQuery(BillAuthorizeRuleGroup group) {
         BillAuthorizeConditionTypeConstants conditionType = group.getConditionType();
-        List<Query> queries = group.getBillAuthorizeRules().stream().map(billAuthorizeRuleCondition -> new Query.Builder().terms(new TermsQuery.Builder().field(billAuthorizeRuleCondition.getField().startsWith("tags") ? billAuthorizeRuleCondition.getField() + "." + FieldType.Keyword.jsonValue() : getGroupKeyByField(billAuthorizeRuleCondition.getField())).terms(TermsQueryField.of(s -> s.value(billAuthorizeRuleCondition.getValue().stream().map(FieldValue::of).toList()))).build()).build()).toList();
+        List<Query> queries = group.getBillAuthorizeRules().stream().map(billAuthorizeRuleCondition -> new Query.Builder().terms(new TermsQuery.Builder().field(billAuthorizeRuleCondition.getField().startsWith("tags") ? billAuthorizeRuleCondition.getField() + "." + FieldType.Keyword.jsonValue() : EsFieldUtil.getGroupKeyByField(billAuthorizeRuleCondition.getField())).terms(TermsQueryField.of(s -> s.value(billAuthorizeRuleCondition.getValue().stream().map(FieldValue::of).toList()))).build()).build()).toList();
         if (conditionType.equals(BillAuthorizeConditionTypeConstants.OR)) {
             return new Query.Builder().bool(new BoolQuery.Builder().should(queries).build()).build();
         } else {

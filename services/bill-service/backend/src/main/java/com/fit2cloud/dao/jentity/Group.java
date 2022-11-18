@@ -18,4 +18,8 @@ public class Group {
      * 字段名称
      */
     private String field;
+    /**
+     * 分组未命中的名称
+     */
+    private String missName;
 }

@@ -2,6 +2,8 @@ package com.fit2cloud.es.entity;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fit2cloud.common.annotaion.BillField;
+import com.fit2cloud.common.child_key.impl.OrgTreeChildKey;
+import com.fit2cloud.common.child_key.impl.TagChildKey;
 import com.fit2cloud.common.conver.impl.*;
 import lombok.Data;
 import org.springframework.data.annotation.Id;
@@ -23,7 +25,7 @@ public class CloudBill {
     @Id
     private String id;
 
-    @BillField(label = "组织层级树", group = true, conver = OrganizationConvert.class)
+    @BillField(label = "组织层级树", group = true, conver = OrganizationConvert.class, childKey = OrgTreeChildKey.class)
     @Field(type = FieldType.Object)
     private Map<String, Object> orgTree;
 
@@ -106,7 +108,7 @@ public class CloudBill {
     @Field(type = FieldType.Keyword)
     private String cloudAccountId;
 
-    @BillField(label = "标签", authorize = true)
+    @BillField(label = "标签", authorize = true, group = true, childKey = TagChildKey.class)
     @Field(type = FieldType.Object)
     private Map<String, Object> tags;
 
