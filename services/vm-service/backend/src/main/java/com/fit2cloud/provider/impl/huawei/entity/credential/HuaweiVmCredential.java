@@ -3,9 +3,12 @@ package com.fit2cloud.provider.impl.huawei.entity.credential;
 import com.fit2cloud.common.platform.credential.Credential;
 import com.fit2cloud.common.platform.credential.impl.HuaweiCredential;
 import com.fit2cloud.common.provider.exception.SkipPageException;
+import com.huaweicloud.sdk.bss.v2.BssClient;
+import com.huaweicloud.sdk.bss.v2.region.BssRegion;
 import com.huaweicloud.sdk.ces.v1.CesClient;
 import com.huaweicloud.sdk.ces.v1.region.CesRegion;
 import com.huaweicloud.sdk.core.auth.BasicCredentials;
+import com.huaweicloud.sdk.core.auth.GlobalCredentials;
 import com.huaweicloud.sdk.core.auth.ICredential;
 import com.huaweicloud.sdk.ecs.v2.EcsClient;
 import com.huaweicloud.sdk.ecs.v2.region.EcsRegion;
@@ -16,6 +19,9 @@ import com.huaweicloud.sdk.iec.v1.region.IecRegion;
 import com.huaweicloud.sdk.ims.v2.ImsClient;
 import com.huaweicloud.sdk.ims.v2.region.ImsRegion;
 import com.huaweicloud.sdk.vpc.v2.VpcClient;
+import com.huaweicloud.sdk.iam.v3.region.IamRegion;
+import com.huaweicloud.sdk.iam.v3.*;
+import com.huaweicloud.sdk.iam.v3.model.*;
 
 /**
  * @Author:张少虎
@@ -122,6 +128,41 @@ public class HuaweiVmCredential extends HuaweiCredential implements Credential {
     public CesClient getCesClient(String region) {
         try {
             return CesClient.newBuilder().withCredential(getAuth()).withRegion(CesRegion.valueOf(region)).build();
+        } catch (Exception e) {
+            SkipPageException.throwHuaweiSkip(e);
+            throw e;
+        }
+    }
+
+    /**
+     * IAM ,与云账号认证不同，云账号使用的ecs的区域
+     * @param region
+     * @return
+     */
+    public IamClient getIamClient(String region) {
+        try {
+            return IamClient.newBuilder().withCredential(getAuth()).withRegion(IamRegion.valueOf(region)).build();
+        } catch (Exception e) {
+            SkipPageException.throwHuaweiSkip(e);
+            throw e;
+        }
+    }
+
+    /**
+     * 费用
+     * 客户端只认cn-north-1
+     * @param region
+     * @return
+     */
+    public BssClient getBssClient(String region) {
+        try {
+            ICredential auth = new GlobalCredentials()
+                    .withAk(getAk())
+                    .withSk(getSk());
+            return BssClient.newBuilder()
+                    .withCredential(auth)
+                    .withRegion(BssRegion.valueOf("cn-north-1"))
+                    .build();
         } catch (Exception e) {
             SkipPageException.throwHuaweiSkip(e);
             throw e;

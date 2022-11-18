@@ -7,7 +7,9 @@ import com.fit2cloud.provider.constants.DeleteWithInstance;
 import com.fit2cloud.provider.entity.F2CDisk;
 import com.fit2cloud.provider.entity.F2CImage;
 import com.fit2cloud.provider.entity.F2CVirtualMachine;
+import com.fit2cloud.provider.impl.huawei.entity.InstanceSpecType;
 import com.huaweicloud.sdk.ces.v1.model.Datapoint;
+import com.huaweicloud.sdk.ecs.v2.model.Flavor;
 import com.huaweicloud.sdk.ecs.v2.model.ServerAddress;
 import com.huaweicloud.sdk.ecs.v2.model.ServerDetail;
 import com.huaweicloud.sdk.ecs.v2.model.ServerFlavor;
@@ -220,5 +222,24 @@ public class HuaweiMappingUtil {
         //f2CEntityPerfMetric.setMinimum(new BigDecimal(v.getMin()).setScale(3, RoundingMode.HALF_UP));
         //f2CEntityPerfMetric.setMaximum(new BigDecimal(v.getMax()).setScale(3, RoundingMode.HALF_UP));
         return f2CEntityPerfMetric;
+    }
+
+    public static InstanceSpecType toInstanceSpecType(Flavor flavor) {
+        InstanceSpecType instanceSpecType = new InstanceSpecType();
+        try{
+            //s6.small.1
+            instanceSpecType.setSpecType(flavor.getName().split("\\.")[0]);
+            instanceSpecType.setSpecName(flavor.getName());
+            instanceSpecType.setInstanceSpec(transInstanceSpecTypeDescription(flavor));
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+        return instanceSpecType;
+    }
+
+    public static String transInstanceSpecTypeDescription(Flavor flavor) {
+        int ram = flavor.getRam();
+        float mbPerGb = 1024;
+        return flavor.getVcpus() + "vCPU " + (int) Math.ceil(ram / mbPerGb) + "GB";
     }
 }
