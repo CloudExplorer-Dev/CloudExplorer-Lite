@@ -1,5 +1,7 @@
 package com.fit2cloud.common.annotaion;
 
+import com.fit2cloud.common.child_key.ChildKey;
+import com.fit2cloud.common.child_key.impl.BaseChildKey;
 import com.fit2cloud.common.conver.Convert;
 import com.fit2cloud.common.conver.impl.DefaultConvert;
 
@@ -45,4 +47,11 @@ public @interface BillField {
      * @return 资源转换器
      */
     Class<? extends Convert> conver() default DefaultConvert.class;
+
+    /**
+     * 子字段处理器
+     *
+     * @return 子字段处理器
+     */
+    Class<? extends ChildKey> childKey() default BaseChildKey.class;
 }

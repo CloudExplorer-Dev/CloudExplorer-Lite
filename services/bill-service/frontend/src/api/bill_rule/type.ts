@@ -50,4 +50,26 @@ interface Filter {
   value: string | number;
 }
 
-export type { BillRule, Group, Filter };
+interface BillRuleRequest {
+  name: string;
+}
+
+/**
+ * 账单分组规则
+ */
+interface BillGroupRule {
+  /**
+   * 前段用于唯一确认id
+   */
+  id: string;
+  /**
+   * 分组字段
+   */
+  field: string;
+  /**
+   *名称
+   */
+  name: string;
+}
+
+export type { BillRule, Group, Filter, BillRuleRequest, BillGroupRule };

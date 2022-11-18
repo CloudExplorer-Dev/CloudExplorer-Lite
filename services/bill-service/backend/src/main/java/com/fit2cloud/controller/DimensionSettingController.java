@@ -35,14 +35,14 @@ public class DimensionSettingController {
     @Resource
     private IBillDimensionSettingService billDimensionSettingService;
 
-    @GetMapping("/group_values")
+    @GetMapping("/authorize_values")
     @ApiOperation(value = "获取指定授权字段的值", notes = "获取指定授权字段的值")
     public ResultHolder<List<DefaultKeyValue<String, String>>> authorizeValues(@RequestParam("authorizeKey") String authorizeKey) {
         List<DefaultKeyValue<String, String>> authorizeValues = billDimensionSettingService.authorizeValues(authorizeKey);
         return ResultHolder.success(authorizeValues);
     }
 
-    @GetMapping("/group_keys")
+    @GetMapping("/authorize_keys")
     @ApiOperation(value = "获取可授权的字段", notes = "获取可授权的字段")
     public ResultHolder<List<DefaultKeyValue<String, String>>> authorizeKeys() {
         List<DefaultKeyValue<String, String>> authorizeKeys = billDimensionSettingService.authorizeKeys();

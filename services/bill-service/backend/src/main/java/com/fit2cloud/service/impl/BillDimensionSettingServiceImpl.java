@@ -25,6 +25,7 @@ import com.fit2cloud.common.cache.CloudAccountCache;
 import com.fit2cloud.common.exception.Fit2cloudException;
 import com.fit2cloud.common.log.utils.LogUtil;
 import com.fit2cloud.common.query.convert.QueryFieldValueConvert;
+import com.fit2cloud.common.util.EsFieldUtil;
 import com.fit2cloud.common.util.MappingUtil;
 import com.fit2cloud.common.utils.QueryUtil;
 import com.fit2cloud.constants.AuthorizeTypeConstants;
@@ -364,30 +365,9 @@ public class BillDimensionSettingServiceImpl extends ServiceImpl<BillDimensionSe
      */
     private List<DefaultKeyValue<String, String>> findTags() {
         Map<String, Object> mapping = elasticsearchTemplate.indexOps(CloudBill.class).getMapping();
-        Map<String, Map<String, Object>> properties = (Map<String, Map<String, Object>>) mapping.get("properties");
-        if (properties.containsKey("tags")) {
-            return getEsField((Map<String, Map<String, Object>>) properties.get("tags").get("properties"), null).stream().map(field -> new DefaultKeyValue<>(field, "tags." + field)).toList();
-        }
-        return new ArrayList<>();
+        return EsFieldUtil.getChildEsField(mapping, "tags");
     }
 
-    /**
-     * 获取标签字段
-     *
-     * @param properties mapping properties
-     * @param parentName 传null 用于递归 可以传开头
-     * @return 获取es下面的字段
-     */
-    public List<String> getEsField(Map<String, Map<String, Object>> properties, String parentName) {
-        return properties.entrySet().stream().map((t) -> {
-            Map<String, Object> value = t.getValue();
-            if (value.get("type").toString().equals(co.elastic.clients.elasticsearch._types.mapping.FieldType.Text.jsonValue())) {
-                return List.of(StringUtils.isEmpty(parentName) ? t.getKey() : parentName + "." + t.getKey());
-            } else {
-                return getEsField((Map<String, Map<String, Object>>) value.get("properties"), StringUtils.isEmpty(parentName) ? t.getKey() : parentName + "." + t.getKey());
-            }
-        }).flatMap(List::stream).toList();
-    }
 
     /**
      * 获取分组字段

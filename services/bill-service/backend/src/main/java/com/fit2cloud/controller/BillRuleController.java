@@ -1,16 +1,19 @@
 package com.fit2cloud.controller;
 
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.fit2cloud.common.exception.Fit2cloudException;
+import com.fit2cloud.constants.BillFieldConstants;
 import com.fit2cloud.controller.handler.ResultHolder;
-import com.fit2cloud.controller.response.BillRules;
+import com.fit2cloud.controller.request.BillRuleRequest;
 import com.fit2cloud.dao.entity.BillRule;
 import com.fit2cloud.service.IBillRuleService;
 import io.swagger.annotations.Api;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import io.swagger.annotations.ApiParam;
+import org.apache.commons.collections4.keyvalue.DefaultKeyValue;
+import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
+import java.lang.reflect.InvocationTargetException;
 import java.util.List;
 
 /**
@@ -31,8 +34,33 @@ public class BillRuleController {
         return ResultHolder.success(billRuleService.list());
     }
 
-    @GetMapping("/page")
-    public ResultHolder<Page<BillRule>> page() {
-        return null;
+    @GetMapping("/group_keys")
+    public ResultHolder<List<DefaultKeyValue<String, String>>> groupKeys() {
+        return ResultHolder.success(BillFieldConstants.BILL_FIELD.entrySet().stream().filter(field -> field.getValue().group()).map(field -> new DefaultKeyValue<>(field.getValue().label(), field.getKey())).toList());
     }
+
+    @GetMapping("/group_child_keys")
+    public ResultHolder<List<DefaultKeyValue<String, String>>> groupChildKeys(@ApiParam("可分租的父级key") @RequestParam("parentKey") String parentKey) {
+        return ResultHolder.success(BillFieldConstants.BILL_FIELD.entrySet().stream()
+                .filter(field -> field.getValue().group())
+                .filter(field -> field.getKey().equals(parentKey))
+                .findFirst()
+                .map(s -> {
+                    try {
+                        return s.getValue().childKey().getConstructor().newInstance().childKeys();
+                    } catch (Exception e) {
+                        throw new Fit2cloudException(1112, "获取子字段发生异常:" + e.getMessage());
+                    }
+                }).orElseThrow(() -> new Fit2cloudException(1111, "不支持的key")));
+
+    }
+
+    @GetMapping("/page/{currentPage}/{limit}")
+    public ResultHolder<Page<BillRule>> page(@ApiParam(value = "当前页", required = true) @PathVariable("currentPage") Integer currentPage,
+                                             @ApiParam(value = "每页显示多少条", required = true) @PathVariable("limit") Integer limit,
+                                             BillRuleRequest request) {
+        Page<BillRule> page = billRuleService.page(currentPage, limit, request);
+        return ResultHolder.success(page);
+    }
+
 }
