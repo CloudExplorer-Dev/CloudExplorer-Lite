@@ -4,9 +4,9 @@ import co.elastic.clients.elasticsearch._types.Script;
 import co.elastic.clients.elasticsearch._types.aggregations.*;
 import co.elastic.clients.elasticsearch._types.query_dsl.Query;
 import co.elastic.clients.elasticsearch._types.query_dsl.ScriptQuery;
-import co.elastic.clients.json.JsonData;
 import co.elastic.clients.util.ObjectBuilder;
 import com.fit2cloud.common.exception.Fit2cloudException;
+import com.fit2cloud.common.util.EsFieldUtil;
 import com.fit2cloud.common.util.EsScriptUtil;
 import com.fit2cloud.common.util.MappingUtil;
 import com.fit2cloud.common.utils.JsonUtil;
@@ -21,6 +21,7 @@ import com.fit2cloud.service.BillViewService;
 import com.fit2cloud.service.IBillRuleService;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.keyvalue.DefaultKeyValue;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.data.elasticsearch.client.elc.ElasticsearchAggregations;
 import org.springframework.data.elasticsearch.client.elc.ElasticsearchTemplate;
 import org.springframework.data.elasticsearch.client.elc.NativeQuery;
@@ -36,7 +37,6 @@ import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
-import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -267,8 +267,9 @@ public class BillViewServiceImpl implements BillViewService {
      * @return es聚合对象
      */
     private Aggregation.Builder.ContainerBuilder getAggregationByGroup(Group group) {
-        return new Aggregation.Builder().terms(new TermsAggregation.Builder().field(group.getField()).size(Integer.MAX_VALUE).missing("其他").build());
+        return new Aggregation.Builder().terms(new TermsAggregation.Builder().field(EsFieldUtil.getGroupKeyByField(group.getField())).size(Integer.MAX_VALUE).missing(StringUtils.isEmpty(group.getMissName()) ? "其他" : group.getMissName()).build());
     }
+
 
     /**
      * 将esStringTermsBucket 转化为系统趋势对象

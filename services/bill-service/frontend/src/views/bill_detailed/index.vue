@@ -1,5 +1,8 @@
 <template>
   <layout-content>
+    <template #breadcrumb>
+      <breadcrumb :auto="true"></breadcrumb>
+    </template>
     <ce-table
       v-loading="loading"
       height="100%"

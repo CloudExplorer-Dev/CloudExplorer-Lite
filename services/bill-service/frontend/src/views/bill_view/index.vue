@@ -620,6 +620,7 @@ const sortState = ref<any>({
   }
   .content {
     width: 100%;
+    box-sizing: border-box;
     padding-left: 10px;
   }
 }
