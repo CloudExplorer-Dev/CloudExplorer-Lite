@@ -44,8 +44,9 @@ public class TencentMappingUtil {
         cloudBill.setUsageEndDate(CommonUtil.getLocalDateTime(item.getFeeEndTime(), "yyyy-MM-dd HH:mm:ss"));
         cloudBill.setTags(Arrays.stream(item.getTags()).collect(Collectors.toMap(BillTagInfo::getTagKey, BillTagInfo::getTagValue)));
         cloudBill.setPayAccountId(item.getPayerUin());
-        cloudBill.setProductName(item.getProductCodeName());
-        cloudBill.setProductId(item.getProductCode());
+        cloudBill.setProductName(item.getBusinessCodeName());
+        cloudBill.setProductDetail(item.getProductCodeName());
+        cloudBill.setProductId(item.getBusinessCode());
         cloudBill.setProvider(PlatformConstants.fit2cloud_tencent_platform.name());
         BillDetailComponent[] componentSet = item.getComponentSet();
         DoubleSummaryStatistics cost = Arrays.stream(componentSet).collect(Collectors.summarizingDouble(c -> Double.parseDouble(c.getCost())));

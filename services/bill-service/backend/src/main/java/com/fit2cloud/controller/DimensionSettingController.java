@@ -12,6 +12,9 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import org.apache.commons.collections4.keyvalue.DefaultKeyValue;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.Caching;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -37,6 +40,7 @@ public class DimensionSettingController {
 
     @GetMapping("/authorize_values")
     @ApiOperation(value = "获取指定授权字段的值", notes = "获取指定授权字段的值")
+    @Cacheable(value = "dimension_setting", keyGenerator = "notAuthKeyGenerator")
     public ResultHolder<List<DefaultKeyValue<String, String>>> authorizeValues(@RequestParam("authorizeKey") String authorizeKey) {
         List<DefaultKeyValue<String, String>> authorizeValues = billDimensionSettingService.authorizeValues(authorizeKey);
         return ResultHolder.success(authorizeValues);
@@ -44,6 +48,7 @@ public class DimensionSettingController {
 
     @GetMapping("/authorize_keys")
     @ApiOperation(value = "获取可授权的字段", notes = "获取可授权的字段")
+    @Cacheable(value = "dimension_setting", keyGenerator = "notAuthKeyGenerator")
     public ResultHolder<List<DefaultKeyValue<String, String>>> authorizeKeys() {
         List<DefaultKeyValue<String, String>> authorizeKeys = billDimensionSettingService.authorizeKeys();
         return ResultHolder.success(authorizeKeys);
@@ -58,6 +63,8 @@ public class DimensionSettingController {
     }
 
     @PostMapping("/{authorize_id}/{type}")
+    @Caching(evict = {@CacheEvict(value = "bill_view", allEntries = true),
+            @CacheEvict(value = "bill_rule", allEntries = true)})
     @ApiOperation(value = "插入或者修改账单授权设置", notes = "插入或者修改账单授权设置")
     public ResultHolder<BillDimensionSetting> saveOrUpdate(@ApiParam("授权账号id") @PathVariable("authorize_id") String authorizeId,
                                                            @ApiParam("授权账号类型 组织或者工作空间") @Pattern(regexp = "ORGANIZATION|WORKSPACE", message = "授权类型只支持WORKSPACE,ORGANIZATION") @PathVariable("type") String type,

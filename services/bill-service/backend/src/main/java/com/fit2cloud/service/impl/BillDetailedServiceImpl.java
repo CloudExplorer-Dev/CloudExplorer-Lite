@@ -21,10 +21,12 @@ import com.fit2cloud.common.utils.QueryUtil;
 import com.fit2cloud.controller.request.PageBillDetailedRequest;
 import com.fit2cloud.controller.response.BillDetailResponse;
 import com.fit2cloud.es.entity.CloudBill;
+import com.fit2cloud.request.pub.OrderRequest;
 import com.fit2cloud.service.IBillDetailedService;
 import jodd.util.StringUtil;
 import org.springframework.beans.BeanUtils;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.elasticsearch.client.elc.ElasticsearchAggregations;
 import org.springframework.data.elasticsearch.client.elc.ElasticsearchTemplate;
 import org.springframework.data.elasticsearch.client.elc.NativeQuery;
@@ -37,6 +39,7 @@ import org.springframework.util.CollectionUtils;
 import javax.annotation.Resource;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 @Service
 public class BillDetailedServiceImpl implements IBillDetailedService {
@@ -56,7 +59,11 @@ public class BillDetailedServiceImpl implements IBillDetailedService {
             Query monthQuery = new Query.Builder().script(new ScriptQuery.Builder().script(s -> EsScriptUtil.getMonthOrYearScript(s, "MONTH", request.getMonth())).build()).build();
             boolQueryList.add(monthQuery);
         }
+       if (Objects.isNull(request.getOrder())||StringUtil.isEmpty(request.getOrder().getColumn())){
+           request.setOrder(new OrderRequest(){{setAsc(false);setColumn("realTotalCost");}});
+       }
         NativeQuery nativeQuery = new NativeQueryBuilder()
+                .withSort(request.getOrder().isAsc() ? Sort.by(request.getOrder().getColumn()).ascending() : Sort.by(request.getOrder().getColumn()).descending())
                 .withQuery(new Query.Builder().bool(new BoolQuery.Builder().must(boolQueryList).build()).build())
                 .withAggregation("total", new Aggregation.Builder().valueCount(new ValueCountAggregation.Builder().field("id.keyword").build()).build())
                 .withPageable(Pageable.ofSize(pageSize).withPage((currentPage.equals(0) ? 1 : currentPage) - 1)).build();

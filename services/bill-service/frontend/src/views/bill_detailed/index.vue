@@ -42,34 +42,37 @@
           </span></template
         >
       </el-table-column>
-      <el-table-column prop="cloudAccountName" label="云账号">
-        <template #default="scope">
-          <span>{{
-            scope.row.cloudAccountName
-              ? scope.row.cloudAccountName
-              : scope.row.cloudAccountId
-          }}</span>
-        </template>
-      </el-table-column>
-      <el-table-column prop="productName" label="产品">
-        <template #default="scope">
-          <span>{{
-            scope.row.productName ? scope.row.productName : "N/A"
-          }}</span></template
-        >
-      </el-table-column>
-      <el-table-column prop="payAccountId" label="付款账号" />
-      <el-table-column prop="provider" label="云平台">
+
+      <el-table-column prop="cloudAccountName" label="云账号" width="200px">
         <template #default="scope">
           <div style="display: flex; align-items: center">
             <el-image
               style="margin-right: 20%; display: flex"
               :src="platformIcon[scope.row.provider].icon"
             ></el-image>
-            <span>{{ platformIcon[scope.row.provider].name }}</span>
+            <span>{{
+              scope.row.cloudAccountName
+                ? scope.row.cloudAccountName
+                : scope.row.cloudAccountId
+            }}</span>
           </div>
         </template>
       </el-table-column>
+      <el-table-column prop="productName" label="产品名称">
+        <template #default="scope">
+          <span>{{
+            scope.row.productName ? scope.row.productName : "N/A"
+          }}</span></template
+        >
+      </el-table-column>
+      <el-table-column prop="productDetail" label="产品详情">
+        <template #default="scope">
+          <span>{{
+            scope.row.productDetail ? scope.row.productDetail : "N/A"
+          }}</span></template
+        >
+      </el-table-column>
+      <el-table-column prop="payAccountId" label="付款账号" />
       <el-table-column prop="organizationName" label="组织名称">
         <template #default="scope">
           <span>{{
@@ -84,11 +87,23 @@
           }}</span>
         </template>
       </el-table-column>
+      <el-table-column prop="billMode" label="计费模式">
+        <template #default="scope">
+          <span>{{
+            scope.row.billMode === "MONTHLY"
+              ? "包年包月"
+              : scope.row.billMode === "ON_DEMAND"
+              ? "按需"
+              : "其他"
+          }}</span>
+        </template>
+      </el-table-column>
       <el-table-column prop="billingCycle" width="200px" label="账期">
         <template #default="scope">
           <span>{{ scope.row.billingCycle.substring(0, 7) }}</span>
         </template>
       </el-table-column>
+
       <el-table-column prop="tags" label="标签">
         <template #default="scope">
           <span>
@@ -103,6 +118,16 @@
         </template>
       </el-table-column>
       <el-table-column prop="projectName" label="企业项目" />
+      <el-table-column prop="totalCost" label="原价" sortable>
+        <template #default="scope">
+          <span> {{ scope.row.totalCost }}元 </span>
+        </template>
+      </el-table-column>
+      <el-table-column prop="realTotalCost" label="优惠后总价" sortable>
+        <template #default="scope">
+          <span> {{ scope.row.realTotalCost }}元 </span>
+        </template>
+      </el-table-column>
       <template #buttons>
         <fu-table-column-select type="icon" :columns="columns" size="small" />
       </template>

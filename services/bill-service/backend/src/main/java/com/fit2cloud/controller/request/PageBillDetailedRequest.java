@@ -2,6 +2,7 @@ package com.fit2cloud.controller.request;
 
 import com.fit2cloud.common.query.annotaion.Query;
 import com.fit2cloud.common.utils.QueryUtil;
+import com.fit2cloud.request.pub.OrderRequest;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
@@ -21,4 +22,6 @@ public class PageBillDetailedRequest {
     @ApiModelProperty("资源名称")
     @Query(field = "resourceName", compareType = QueryUtil.CompareType.LIKE)
     private String resourceName;
+    @ApiModelProperty("排序")
+    private OrderRequest order;
 }

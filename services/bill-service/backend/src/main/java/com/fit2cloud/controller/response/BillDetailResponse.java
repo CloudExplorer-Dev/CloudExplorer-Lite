@@ -66,6 +66,9 @@ public class BillDetailResponse {
     @ApiModelProperty(value = "产品名称", notes = "产品名称")
     private String productName;
 
+    @ApiModelProperty(value = "产品详情",notes = "产品详情")
+    private String productDetail;
+
     @ApiModelProperty(value = "计费模式", notes = "计费模式")
     private String billMode;
 

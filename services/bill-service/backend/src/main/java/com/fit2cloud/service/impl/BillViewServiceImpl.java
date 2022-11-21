@@ -2,9 +2,13 @@ package com.fit2cloud.service.impl;
 
 import co.elastic.clients.elasticsearch._types.Script;
 import co.elastic.clients.elasticsearch._types.aggregations.*;
+import co.elastic.clients.elasticsearch._types.query_dsl.BoolQuery;
 import co.elastic.clients.elasticsearch._types.query_dsl.Query;
 import co.elastic.clients.elasticsearch._types.query_dsl.ScriptQuery;
+import co.elastic.clients.elasticsearch._types.query_dsl.TermQuery;
 import co.elastic.clients.util.ObjectBuilder;
+import com.fit2cloud.base.service.IBaseOrganizationService;
+import com.fit2cloud.common.constants.RoleConstants;
 import com.fit2cloud.common.exception.Fit2cloudException;
 import com.fit2cloud.common.util.EsFieldUtil;
 import com.fit2cloud.common.util.EsScriptUtil;
@@ -16,6 +20,7 @@ import com.fit2cloud.controller.response.BillView;
 import com.fit2cloud.controller.response.Trend;
 import com.fit2cloud.dao.entity.BillRule;
 import com.fit2cloud.dao.jentity.Group;
+import com.fit2cloud.dto.UserDto;
 import com.fit2cloud.es.entity.CloudBill;
 import com.fit2cloud.service.BillViewService;
 import com.fit2cloud.service.IBillRuleService;
@@ -28,6 +33,8 @@ import org.springframework.data.elasticsearch.client.elc.NativeQuery;
 import org.springframework.data.elasticsearch.client.elc.NativeQueryBuilder;
 import org.springframework.data.elasticsearch.core.AggregationsContainer;
 import org.springframework.data.elasticsearch.core.SearchHits;
+import org.springframework.security.core.context.SecurityContext;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
@@ -54,6 +61,8 @@ public class BillViewServiceImpl implements BillViewService {
     private ElasticsearchTemplate elasticsearchTemplate;
     @Resource
     private IBillRuleService billRuleService;
+    @Resource
+    private IBaseOrganizationService organizationService;
 
 
     @Override
@@ -66,8 +75,12 @@ public class BillViewServiceImpl implements BillViewService {
         }
         ScriptQuery scriptQuery = new ScriptQuery.Builder().script(s -> EsScriptUtil.getMonthOrYearScript(s, type, value)).build();
         Aggregation aggregation = new Aggregation.Builder().sum(new SumAggregation.Builder().field("realTotalCost").build()).build();
-
-        NativeQuery query = new NativeQueryBuilder().withQuery(new Query.Builder().script(scriptQuery).build()).withAggregation("sum", aggregation).build();
+        Query q = new Query.Builder().script(scriptQuery).build();
+        Query authQuery = getAuthQuery();
+        if (Objects.nonNull(authQuery)) {
+            q = new Query.Builder().bool(new BoolQuery.Builder().must(q, authQuery).build()).build();
+        }
+        NativeQuery query = new NativeQueryBuilder().withQuery(q).withAggregation("sum", aggregation).build();
         SearchHits<CloudBill> response = elasticsearchTemplate.search(query, CloudBill.class);
         if (response.hasAggregations()) {
             try {
@@ -88,6 +101,10 @@ public class BillViewServiceImpl implements BillViewService {
         List<String> months = getHistoryMonth(LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM")), historyNum);
         // todo 根据趋势月份构建查询条件
         Query q = new Query.Builder().script(new ScriptQuery.Builder().script(s -> getTermsAggregationScript(s, months)).build()).build();
+        Query authQuery = getAuthQuery();
+        if (Objects.nonNull(authQuery)) {
+            q = new Query.Builder().bool(new BoolQuery.Builder().must(q, authQuery).build()).build();
+        }
         DateHistogramAggregation dateHistogramAggregation = new DateHistogramAggregation.Builder().field("billingCycle").format("yyyy-MM").calendarInterval(CalendarInterval.Month).build();
         Aggregation.Builder.ContainerBuilder aggregation = new Aggregation.Builder().dateHistogram(dateHistogramAggregation);
         aggregation.aggregations("total", new Aggregation.Builder().sum(new SumAggregation.Builder().field("realTotalCost").build()).build());
@@ -97,6 +114,31 @@ public class BillViewServiceImpl implements BillViewService {
         assert aggregations != null;
         DateHistogramAggregate dateHistogramAggregate = aggregations.aggregations().get(0).aggregation().getAggregate().dateHistogram();
         return dateHistogramAggregate.buckets().array().stream().map(this::toTrend).toList();
+    }
+
+    /**
+     * 获取当前用户角色的查询Query
+     *
+     * @return 获取当前用户角色查询Query
+     */
+    private Query getAuthQuery() {
+        SecurityContext context = SecurityContextHolder.getContext();
+        UserDto userDto = (UserDto) context.getAuthentication().getPrincipal();
+        if (userDto.getCurrentRole().equals(RoleConstants.ROLE.ADMIN)) {
+            // 如果是管理员则查询全部
+            return null;
+        }
+        if (userDto.getCurrentRole().equals(RoleConstants.ROLE.ORGADMIN)) {
+            String currentSource = userDto.getCurrentSource();
+            int orgLevel = organizationService.getOrgLevel(currentSource);
+            return new Query.Builder().term(new TermQuery.Builder().field(orgLevel + "级组织" + "." + "").value(currentSource).build()).build();
+        }
+        if (userDto.getCurrentRole().equals(RoleConstants.ROLE.USER)) {
+            String currentSource = userDto.getCurrentSource();
+            return new Query.Builder().term(new TermQuery.Builder().field("workspaceId").value(currentSource).build()).build();
+        }
+        return null;
+
     }
 
     @Override
@@ -181,6 +223,10 @@ public class BillViewServiceImpl implements BillViewService {
     private NativeQuery getSearchBillViewQueryByRule(BillRule billRule, List<String> months, String realTotalCostKey) {
         // todo 根据趋势月份构建查询条件
         Query q = new Query.Builder().script(new ScriptQuery.Builder().script(s -> getTermsAggregationScript(s, months)).build()).build();
+        Query authQuery = getAuthQuery();
+        if (Objects.nonNull(authQuery)) {
+            q = new Query.Builder().bool(new BoolQuery.Builder().must(q, authQuery).build()).build();
+        }
         // todo 获取聚合对象
         Aggregation aggregationByGroups = getAggregationByGroups(null, billRule.getGroups(), 0, a -> a.aggregations(realTotalCostKey, new Aggregation.Builder().sum(new SumAggregation.Builder().field(realTotalCostKey).build()).build()));
         DateHistogramAggregation dateHistogramAggregation = new DateHistogramAggregation.Builder().field("billingCycle").format("yyyy-MM").calendarInterval(CalendarInterval.Month).build();
