@@ -43,6 +43,8 @@ public enum InputType {
      */
     SwitchBtn(SwitchForm.class),
 
+    HuaweiInstanceSpecForm(com.fit2cloud.common.form.vo.huawei.InstanceSpecForm.class),
+    HuaweiDiskConfigForm(com.fit2cloud.common.form.vo.huawei.DiskConfigForm.class),
 
     VsphereDiskConfigForm(com.fit2cloud.common.form.vo.vsphere.DiskConfigForm.class),
     VsphereComputeConfigForm(com.fit2cloud.common.form.vo.vsphere.ComputeConfigForm.class),

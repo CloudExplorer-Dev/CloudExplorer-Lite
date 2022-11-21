@@ -226,6 +226,11 @@ public class VsphereCloudProvider extends AbstractCloudProvider<VsphereCredentia
         return VsphereSyncCloudApi.getDatastoreListByVm(JsonUtil.parseObject(req, VsphereDiskRequest.class));
     }
 
+    public List<VsphereDatastore> getDatastoreList(String req) {
+        VsphereVmCreateRequest request = JsonUtil.parseObject(req, VsphereVmCreateRequest.class);
+        return VsphereSyncCloudApi.getDatastoreList(request);
+    }
+
     @Override
     public List<F2CDisk> createDisks(String req) {
         return VsphereSyncCloudApi.createDisks(JsonUtil.parseObject(req, VsphereCreateDisksRequest.class));

@@ -31,7 +31,8 @@ public interface VmCloudDiskMapper extends BaseMapper<VmCloudDiskDTO> {
             " ,vm_cloud_server.instance_name as vm_instance_name"+
             " FROM vm_cloud_disk" +
             " LEFT JOIN cloud_account on vm_cloud_disk.account_id=cloud_account.id"+
-            " LEFT JOIN vm_cloud_server on vm_cloud_disk.instance_uuid=vm_cloud_server.instance_uuid"+
+            " LEFT JOIN vm_cloud_server on vm_cloud_disk.instance_uuid=vm_cloud_server.instance_uuid" +
+            " and vm_cloud_disk.account_id=vm_cloud_server.account_id"+
             " ${ew.customSqlSegment} ")
     IPage<VmCloudDiskDTO> pageList(Page page, @Param("ew") Wrapper queryWrapper);
 

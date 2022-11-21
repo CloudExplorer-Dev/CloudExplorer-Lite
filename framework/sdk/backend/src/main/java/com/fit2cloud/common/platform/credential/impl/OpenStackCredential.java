@@ -5,16 +5,21 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fit2cloud.common.form.annotaion.Form;
 import com.fit2cloud.common.form.constants.InputType;
 import com.fit2cloud.common.platform.credential.Credential;
+import com.fit2cloud.common.provider.impl.openstack.utils.OpenStackBaseUtils;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.SneakyThrows;
+import org.apache.commons.collections4.CollectionUtils;
 import org.openstack4j.api.OSClient;
+import org.openstack4j.api.types.ServiceType;
 import org.openstack4j.model.common.Identifier;
+import org.openstack4j.model.identity.v3.Service;
 import org.openstack4j.openstack.OSFactory;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Data
 @NoArgsConstructor
@@ -54,14 +59,14 @@ public class OpenStackCredential implements Credential {
     @SneakyThrows
     @Override
     public List<Region> regions() {
-        OSClient.OSClientV3 os = getOSClient();
+        OSClient.OSClientV3 osClient = getOSClient();
         List<Region> list = new ArrayList<>();
-        List<? extends org.openstack4j.model.identity.v3.Region> regions = os.identity().regions().list();
-        for (org.openstack4j.model.identity.v3.Region region : regions) {
+        List<String> regions = OpenStackBaseUtils.getRegionList(osClient);
+        for (String region : regions) {
             list.add(
                     new Region()
-                            .setRegionId(region.getId())
-                            .setName(region.getDescription())
+                            .setRegionId(region)
+                            .setName(region)
             );
         }
 

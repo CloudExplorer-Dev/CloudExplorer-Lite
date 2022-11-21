@@ -13,4 +13,13 @@ public class HuaweiGetDiskTypeRequest extends HuaweiBaseRequest {
      */
     private String zone;
 
+    /**
+     * 如果云管参数区域是availabilityZone 那么就重写set函数去赋值
+     *
+     * @param zone
+     */
+    public void setAvailabilityZone(String zone) {
+        this.zone = zone;
+    }
+
 }
