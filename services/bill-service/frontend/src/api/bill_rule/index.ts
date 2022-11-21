@@ -3,7 +3,11 @@ import type { Ref } from "vue";
 import type Result from "@commons/request/Result";
 import type { BillRule } from "@/api/bill_rule/type";
 import type { Page } from "@commons/request/Result";
-import type { BillRuleRequest } from "@/api/bill_rule/type";
+import type {
+  BillRuleRequest,
+  AddRule,
+  UpdateRule,
+} from "@/api/bill_rule/type";
 import type { SimpleMap } from "@commons/api/base/type";
 /**
  *获取所有规则
@@ -65,9 +69,37 @@ const getGroupChildKeys: (
     loading
   );
 };
+
+/**
+ * 添加一个账单规则
+ * @param billRule 账单规则对象
+ * @param loading 加载器
+ * @returns 添加后的账单规则
+ */
+const addBillRule: (
+  billRule: AddRule,
+  loading?: Ref<boolean>
+) => Promise<Result<BillRule>> = (billRule, loading) => {
+  return post("/api/bill_rule", {}, billRule, loading);
+};
+
+/**
+ * 修改账单规则
+ * @param billRule  账单规则
+ * @param loading   加载器
+ * @returns  修改后的账单规则
+ */
+const updateBillRule: (
+  billRule: UpdateRule,
+  loading?: Ref<boolean>
+) => Promise<Result<BillRule>> = (billRule, loading) => {
+  return put("/api/bill_rule", {}, billRule, loading);
+};
 export default {
   listBillRules,
   pageBillRules,
   getGroupKeys,
   getGroupChildKeys,
+  addBillRule,
+  updateBillRule,
 };

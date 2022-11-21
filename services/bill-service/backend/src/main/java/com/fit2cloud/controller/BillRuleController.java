@@ -2,9 +2,12 @@ package com.fit2cloud.controller;
 
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.fit2cloud.common.exception.Fit2cloudException;
+import com.fit2cloud.common.platform.bill.Bill;
 import com.fit2cloud.constants.BillFieldConstants;
 import com.fit2cloud.controller.handler.ResultHolder;
+import com.fit2cloud.controller.request.AddBillRuleRequest;
 import com.fit2cloud.controller.request.BillRuleRequest;
+import com.fit2cloud.controller.request.UpdateBillRuleRequest;
 import com.fit2cloud.dao.entity.BillRule;
 import com.fit2cloud.service.IBillRuleService;
 import io.swagger.annotations.Api;
@@ -61,6 +64,21 @@ public class BillRuleController {
                                              BillRuleRequest request) {
         Page<BillRule> page = billRuleService.page(currentPage, limit, request);
         return ResultHolder.success(page);
+    }
+
+    @PostMapping
+    public ResultHolder<BillRule> add(@RequestBody AddBillRuleRequest request) {
+        return ResultHolder.success(billRuleService.add(request));
+    }
+
+    @PutMapping
+    public ResultHolder<BillRule> update(@RequestBody UpdateBillRuleRequest request) {
+        return ResultHolder.success(billRuleService.update(request));
+    }
+
+    @DeleteMapping("/{bill_rule_id}")
+    public ResultHolder<Boolean> delete(@PathVariable("bill_rule_id") String billRuleId) {
+        return ResultHolder.success(billRuleService.removeById(billRuleId));
     }
 
 }

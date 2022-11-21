@@ -16,17 +16,16 @@
     >
       <el-select v-model="form.field" class="m-2" placeholder="请选择">
         <el-option
-          v-for="item in billRuleGroupKeys"
+          v-for="item in billKeys"
           :key="item.value"
           :label="item.key"
           :value="item.value"
         />
       </el-select>
     </el-form-item>
-    <div>等于:</div>
-    <template v-if="form.field === 'tags'">
+    <template v-if="form.field === 'tags' || form.field === 'orgTree'">
       <el-form-item
-        prop="tagField"
+        prop="childField"
         :rules="{
           message: '标签字段不能为空',
           trigger: 'change',
@@ -56,14 +55,20 @@
   </el-form>
 </template>
 <script setup lang="ts">
-import { ref, watch } from "vue";
+import { ref, watch, onMounted } from "vue";
 import type { SimpleMap } from "@commons/api/base/type";
 import type { BillGroupRule } from "@/api/bill_rule/type";
 import billRuleApi from "@/api/bill_rule";
+import type { FormInstance } from "element-plus";
 /**
  * 账单规则标签Key
  */
 const billChildKeys = ref<Array<SimpleMap<string>>>([]);
+
+/**
+ * 校验实例对象
+ */
+const ruleFormRef = ref<FormInstance>();
 
 const props = defineProps<{
   /**
@@ -89,10 +94,12 @@ const props = defineProps<{
   updateRule: (id: string, field: string, name: string) => void;
 }>();
 
+const billKeys = ref<Array<SimpleMap<string>>>();
+
 /**
  * 加载器
  */
-const loading = ref<boolean>();
+const loading = ref<boolean>(false);
 
 /**
  * 删除规则
@@ -100,6 +107,7 @@ const loading = ref<boolean>();
 const deleteItem = (id: string) => {
   props.deleteRule(id);
 };
+
 /**
  * 表单数据收集
  */
@@ -113,16 +121,15 @@ const form = ref<{
    */
   childField: string;
 }>({ field: "", childField: "" });
+
 /**
  * 根据字段获取label
  * @param field 字段
  */
 const getLabelByField = (field: string) => {
-  const findKey = props.billRuleGroupKeys.find((g) =>
-    Object.values(g).includes(field)
-  );
+  const findKey = props.billRuleGroupKeys.find((g) => g.value === field);
   if (findKey) {
-    return Object.keys(findKey)[0];
+    return findKey.key;
   }
   return "";
 };
@@ -130,10 +137,15 @@ const getLabelByField = (field: string) => {
 watch(
   () => form.value.field,
   () => {
-    if (form.value.field) {
+    if (form.value.field && props.billRuleGroupKeys.length > 0) {
       if (form.value.field === "tags" || form.value.field === "orgTree") {
         billRuleApi.getGroupChildKeys(form.value.field, loading).then((ok) => {
-          billChildKeys.value = ok.data;
+          billChildKeys.value = ok.data.filter((b) => {
+            return (
+              !props.selectedGroupFields.some((s) => s.field === b.value) ||
+              b.value === props.item.field
+            );
+          });
         });
       } else {
         props.updateRule(
@@ -149,15 +161,57 @@ watch(
 watch(
   () => form.value.childField,
   () => {
-    if (form.value.childField && form.value.field) {
+    if (
+      form.value.childField &&
+      form.value.field &&
+      props.billRuleGroupKeys.length > 0
+    ) {
       props.updateRule(
         props.item.id,
         form.value.childField,
-        `${getLabelByField(form.value.field)}[${form.value.childField}]`
+        `${getLabelByField(form.value.field)}[${form.value.childField.replace(
+          form.value.field + ".",
+          ""
+        )}]`
       );
     }
   }
 );
+watch(
+  () => props.billRuleGroupKeys,
+  () => {
+    if (props.item.name) {
+      billKeys.value = props.billRuleGroupKeys.filter((b) => {
+        return (
+          !props.selectedGroupFields.some((s) => s.field === b.value) ||
+          props.item.field === b.value
+        );
+      });
+    } else {
+      billKeys.value = props.billRuleGroupKeys.filter((b) => {
+        return !props.selectedGroupFields.some((s) => s.field === b.value);
+      });
+    }
+  },
+  { immediate: true }
+);
+onMounted(() => {
+  if (props.item.field.startsWith("tags.")) {
+    form.value.field = "tags";
+    form.value.childField = props.item.field;
+  } else if (props.item.field.startsWith("orgTree.")) {
+    form.value.field = "orgTree";
+    form.value.childField = props.item.field;
+  } else {
+    form.value.field = props.item.field;
+  }
+});
+const validate = () => {
+  if (!ruleFormRef.value) return;
+  return ruleFormRef.value.validate();
+};
+
+defineExpose({ validate });
 </script>
 <style lang="scss">
 :deep(.el-form-item) {
