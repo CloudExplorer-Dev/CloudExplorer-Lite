@@ -42,6 +42,7 @@ public class AliyunMappingUtil {
         cloudBill.setResourceId(item.getInstanceID());
         cloudBill.setProjectName(item.getCostUnit());
         cloudBill.setProductId(item.getProductCode());
+        cloudBill.setProductDetail(item.getProductDetail());
         cloudBill.setResourceName(item.getNickName());
         cloudBill.setProvider(PlatformConstants.fit2cloud_ali_platform.name());
         if (StringUtils.isNotEmpty(item.getBillingDate())) {

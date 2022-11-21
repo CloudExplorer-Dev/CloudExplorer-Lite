@@ -25,8 +25,17 @@ public interface IBaseOrganizationService extends IService<Organization> {
 
     /**
      * 根据类型获取树形结构
+     *
      * @param type
      * @return
      */
     List<OrganizationTree> tree(String type);
+
+    /**
+     * 获取组织级别 根据组织id
+     *
+     * @param orgId 根据组织id获取组织级别
+     * @return 组织级别
+     */
+    int getOrgLevel(String orgId);
 }

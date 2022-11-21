@@ -14,12 +14,17 @@ import com.fit2cloud.dao.entity.BillRule;
 import com.fit2cloud.dao.mapper.BillRuleMapper;
 import com.fit2cloud.service.IBillRuleService;
 import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import org.apache.commons.collections4.keyvalue.DefaultKeyValue;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
+import javax.validation.constraints.Min;
+import javax.validation.constraints.NotNull;
 import java.util.List;
 
 /**
@@ -37,16 +42,21 @@ public class BillRuleController {
     private IBillRuleService billRuleService;
 
     @GetMapping("/list")
+    @ApiOperation(value = "查询所有账单规则", notes = "查询所有账单规则")
     public ResultHolder<List<BillRule>> list() {
         return ResultHolder.success(billRuleService.list());
     }
 
     @GetMapping("/group_keys")
+    @ApiOperation(value = "获取可分组字段", notes = "获取可分组字段")
+    @Cacheable(value = "bill_rule", keyGenerator = "notAuthKeyGenerator")
     public ResultHolder<List<DefaultKeyValue<String, String>>> groupKeys() {
         return ResultHolder.success(BillFieldConstants.BILL_FIELD.entrySet().stream().filter(field -> field.getValue().group()).map(field -> new DefaultKeyValue<>(field.getValue().label(), field.getKey())).toList());
     }
 
     @GetMapping("/group_child_keys")
+    @ApiOperation(value = "获取可分组的子分组", notes = "获取可分组的子分组")
+    @Cacheable(value = "bill_rule", keyGenerator = "notAuthKeyGenerator")
     public ResultHolder<List<DefaultKeyValue<String, String>>> groupChildKeys(@ApiParam("可分租的父级key") @RequestParam("parentKey") String parentKey) {
         return ResultHolder.success(BillFieldConstants.BILL_FIELD.entrySet().stream()
                 .filter(field -> field.getValue().group())
@@ -63,25 +73,30 @@ public class BillRuleController {
     }
 
     @GetMapping("/page/{currentPage}/{limit}")
-    public ResultHolder<Page<BillRule>> page(@ApiParam(value = "当前页", required = true) @PathVariable("currentPage") Integer currentPage,
-                                             @ApiParam(value = "每页显示多少条", required = true) @PathVariable("limit") Integer limit,
+    @ApiOperation(value = "分页查询账单规则", notes = "分页查询账单规则")
+    public ResultHolder<Page<BillRule>> page(@NotNull(message = "当前页不能为空") @Min(value = 0, message = "当前页不能小于0") @ApiParam(value = "当前页", required = true) @PathVariable("currentPage") Integer currentPage,
+                                             @NotNull(message = "每页大小不能为空") @Min(value = 1, message = "每页大小不能小于1") @ApiParam(value = "每页显示多少条", required = true) @PathVariable("limit") Integer limit,
                                              BillRuleRequest request) {
         Page<BillRule> page = billRuleService.page(currentPage, limit, request);
         return ResultHolder.success(page);
     }
 
     @PostMapping
+    @ApiOperation(value = "添加账单规则", notes = "添加账单规则")
     public ResultHolder<BillRule> add(@Validated(ValidationGroup.SAVE.class) @RequestBody AddBillRuleRequest request) {
         return ResultHolder.success(billRuleService.add(request));
     }
 
     @PutMapping
+    @CacheEvict(value = "bill_view", allEntries = true)
+    @ApiOperation(value = "修改账单规则", notes = "修改账单规则")
     public ResultHolder<BillRule> update(@Validated @RequestBody UpdateBillRuleRequest request) {
         return ResultHolder.success(billRuleService.update(request));
     }
 
     @DeleteMapping("/{bill_rule_id}")
-    public ResultHolder<Boolean> delete(@CustomValidated(mapper = BillRuleMapper.class, handler = ExistHandler.class, message = "账单规则id必须存在", exist = false) @PathVariable("bill_rule_id") String billRuleId) {
+    @ApiOperation(value = "删除账单规则", notes = "删除账单规则")
+    public ResultHolder<Boolean> delete(@CustomValidated(mapper = BillRuleMapper.class, handler = ExistHandler.class, field = "id", message = "账单规则id必须存在", exist = false) @PathVariable("bill_rule_id") String billRuleId) {
         return ResultHolder.success(billRuleService.removeById(billRuleId));
     }
 

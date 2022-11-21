@@ -13,6 +13,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -47,6 +48,29 @@ public class BaseOrganizationServiceImpl extends ServiceImpl<BaseOrganizationMap
             appendOrganizationTree(organizationTree, workspaces);
         }
         return organizationTree;
+    }
+
+    @Override
+    public int getOrgLevel(String orgId) {
+        List<Organization> upOrganization = getUpOrganization(orgId, new ArrayList<>());
+        return upOrganization.size();
+    }
+
+    /**
+     * 获取上级组织
+     *
+     * @param orgId 组织id
+     * @param res   返回值,传空数组
+     * @return 当前组织及上级组织
+     */
+    private List<Organization> getUpOrganization(String orgId, List<Organization> res) {
+        Organization organization = getById(orgId);
+        res.add(organization);
+        if (StringUtils.isNotEmpty(organization.getPid())) {
+            return getUpOrganization(organization.getPid(), res);
+        }
+        return res;
+
     }
 
     private void appendOrganizationTree(List<OrganizationTree> organizationTree, List<Workspace> workspaces) {
