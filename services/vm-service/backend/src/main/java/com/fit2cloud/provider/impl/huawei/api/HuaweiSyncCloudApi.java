@@ -195,7 +195,7 @@ public class HuaweiSyncCloudApi {
                         .withBody(new BatchStopServersRequestBody()
                                 .withOsStop(
                                         new BatchStopServersOption()
-                                                .withServers(Arrays.asList(new ServerId().withId(request.getUuId())))
+                                                .withServers(Arrays.asList(new ServerId().withId(request.getUuid())))
                                                 .withType(request.getForce() ? BatchStopServersOption.TypeEnum.HARD : BatchStopServersOption.TypeEnum.SOFT))));
 
                 checkEcsJobStatus(client, batchStopServersResponse.getJobId());
@@ -222,7 +222,7 @@ public class HuaweiSyncCloudApi {
                         .withBody(new BatchStartServersRequestBody()
                                 .withOsStart(
                                         new BatchStartServersOption()
-                                                .withServers(Arrays.asList(new ServerId().withId(request.getUuId()))))));
+                                                .withServers(Arrays.asList(new ServerId().withId(request.getUuid()))))));
                 checkEcsJobStatus(client, batchStartServersResponse.getJobId());
                 return true;
             } catch (TeaException error) {
@@ -247,7 +247,7 @@ public class HuaweiSyncCloudApi {
                         .withBody(new BatchRebootServersRequestBody()
                                 .withReboot(
                                         new BatchRebootSeversOption()
-                                                .withServers(Arrays.asList(new ServerId().withId(request.getUuId())))
+                                                .withServers(Arrays.asList(new ServerId().withId(request.getUuid())))
                                                 .withType(request.getForce() ? BatchRebootSeversOption.TypeEnum.HARD : BatchRebootSeversOption.TypeEnum.SOFT))));
                 checkEcsJobStatus(client, batchRebootServersResponse.getJobId());
                 return true;
@@ -271,7 +271,7 @@ public class HuaweiSyncCloudApi {
             try {
                 DeleteServersResponse batchStartServersResponse = client.deleteServers(new DeleteServersRequest()
                         .withBody(new DeleteServersRequestBody()
-                                .withServers(Arrays.asList(new ServerId().withId(request.getUuId())))));
+                                .withServers(Arrays.asList(new ServerId().withId(request.getUuid())))));
                 checkEcsJobStatus(client, batchStartServersResponse.getJobId());
                 return true;
             } catch (TeaException error) {

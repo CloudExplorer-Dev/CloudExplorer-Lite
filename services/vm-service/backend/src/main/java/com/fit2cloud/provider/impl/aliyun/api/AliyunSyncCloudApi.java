@@ -223,7 +223,7 @@ public class AliyunSyncCloudApi {
             com.aliyun.ecs20140526.models.StopInstancesRequest stopInstancesRequest = new com.aliyun.ecs20140526.models.StopInstancesRequest();
             stopInstancesRequest.setRegionId(aliyunInstanceRequest.getRegionId());
             stopInstancesRequest.setForceStop(aliyunInstanceRequest.getForce());
-            stopInstancesRequest.setInstanceId(Arrays.asList(aliyunInstanceRequest.getUuId()));
+            stopInstancesRequest.setInstanceId(Arrays.asList(aliyunInstanceRequest.getUuid()));
             try {
                 client.stopInstancesWithOptions(stopInstancesRequest, new RuntimeOptions());
                 DescribeInstanceStatusRequest describeInstanceStatusRequest = new DescribeInstanceStatusRequest();
@@ -249,7 +249,7 @@ public class AliyunSyncCloudApi {
             Client client = credential.getClientByRegion(aliyunInstanceRequest.getRegionId());
             StartInstancesRequest startInstancesRequest = new StartInstancesRequest();
             startInstancesRequest.setRegionId(aliyunInstanceRequest.getRegionId());
-            startInstancesRequest.setInstanceId(Arrays.asList(aliyunInstanceRequest.getUuId()));
+            startInstancesRequest.setInstanceId(Arrays.asList(aliyunInstanceRequest.getUuid()));
             try {
                 client.startInstances(startInstancesRequest);
                 DescribeInstanceStatusRequest describeInstanceStatusRequest = new DescribeInstanceStatusRequest();
@@ -277,7 +277,7 @@ public class AliyunSyncCloudApi {
             rebootInstancesRequest.setRegionId(aliyunInstanceRequest.getRegionId());
             // TODO 强制重启
             rebootInstancesRequest.setForceReboot(aliyunInstanceRequest.getForce());
-            rebootInstancesRequest.setInstanceId(Arrays.asList(aliyunInstanceRequest.getUuId()));
+            rebootInstancesRequest.setInstanceId(Arrays.asList(aliyunInstanceRequest.getUuid()));
             try {
                 client.rebootInstances(rebootInstancesRequest);
                 DescribeInstanceStatusRequest describeInstanceStatusRequest = new DescribeInstanceStatusRequest();
@@ -305,7 +305,7 @@ public class AliyunSyncCloudApi {
             deleteInstancesRequest.setRegionId(aliyunInstanceRequest.getRegionId());
             // TODO 强制删除
             deleteInstancesRequest.setForce(aliyunInstanceRequest.getForce());
-            deleteInstancesRequest.setInstanceId(Arrays.asList(aliyunInstanceRequest.getUuId()));
+            deleteInstancesRequest.setInstanceId(Arrays.asList(aliyunInstanceRequest.getUuid()));
             try {
                 client.deleteInstances(deleteInstancesRequest);
                 return true;

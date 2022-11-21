@@ -4,13 +4,14 @@ import com.fit2cloud.common.provider.impl.openstack.entity.request.OpenStackBase
 import com.fit2cloud.provider.entity.F2CDisk;
 import com.fit2cloud.provider.entity.F2CImage;
 import com.fit2cloud.provider.entity.F2CVirtualMachine;
+import com.fit2cloud.provider.impl.openstack.entity.CheckStatusResult;
+import com.fit2cloud.provider.impl.openstack.entity.request.OpenStackInstanceActionRequest;
 import com.fit2cloud.provider.impl.openstack.util.OpenStackUtils;
-import org.apache.commons.collections4.CollectionUtils;
 import org.openstack4j.api.OSClient;
-import org.openstack4j.api.types.ServiceType;
+import org.openstack4j.model.common.ActionResponse;
+import org.openstack4j.model.compute.Action;
+import org.openstack4j.model.compute.RebootType;
 import org.openstack4j.model.compute.Server;
-import org.openstack4j.model.identity.v3.Region;
-import org.openstack4j.model.identity.v3.Service;
 import org.openstack4j.model.image.v2.Image;
 import org.openstack4j.model.storage.block.Volume;
 
@@ -20,7 +21,6 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 public class OpenStackCloudApi {
-
 
 
     public static List<F2CVirtualMachine> listVirtualMachine(OpenStackBaseRequest request) {
@@ -86,5 +86,111 @@ public class OpenStackCloudApi {
 
         return list;
 
+    }
+
+    public static boolean powerOff(OpenStackInstanceActionRequest request) {
+        try {
+            OSClient.OSClientV3 osClient = request.getOSClient();
+
+            Server server = osClient.compute().servers().get(request.getUuid());
+            if (server == null) {
+                throw new RuntimeException("server not exist");
+            }
+
+            ActionResponse response = osClient.compute().servers().action(request.getUuid(), Action.STOP);
+            if (!response.isSuccess()) {
+                throw new RuntimeException(response.getFault());
+            }
+            CheckStatusResult result = OpenStackUtils.checkServerStatus(osClient, server, Server.Status.SHUTOFF);
+            if (result.isSuccess()) {
+                return true;
+            } else {
+                throw new RuntimeException(result.getFault());
+            }
+
+        } catch (Exception e) {
+            throw new RuntimeException(e.getMessage(), e);
+        }
+    }
+
+    public static boolean powerOn(OpenStackInstanceActionRequest request) {
+        try {
+            OSClient.OSClientV3 osClient = request.getOSClient();
+
+            Server server = osClient.compute().servers().get(request.getUuid());
+            if (server == null) {
+                throw new RuntimeException("server not exist");
+            }
+
+            ActionResponse response = osClient.compute().servers().action(request.getUuid(), Action.START);
+            if (!response.isSuccess()) {
+                throw new RuntimeException(response.getFault());
+            }
+            CheckStatusResult result = OpenStackUtils.checkServerStatus(osClient, server, Server.Status.ACTIVE);
+            if (result.isSuccess()) {
+                return true;
+            } else {
+                throw new RuntimeException(result.getFault());
+            }
+
+        } catch (Exception e) {
+            throw new RuntimeException(e.getMessage(), e);
+        }
+    }
+
+    public static boolean rebootInstance(OpenStackInstanceActionRequest request) {
+        try {
+            OSClient.OSClientV3 osClient = request.getOSClient();
+
+            Server server = osClient.compute().servers().get(request.getUuid());
+            if (server == null) {
+                throw new RuntimeException("server not exist");
+            }
+
+            ActionResponse response;
+            if (!request.getForce()) {
+                response = osClient.compute().servers().reboot(request.getUuid(), RebootType.SOFT);
+            } else {
+                response = osClient.compute().servers().reboot(request.getUuid(), RebootType.HARD);
+            }
+            if (!response.isSuccess()) {
+                throw new RuntimeException(response.getFault());
+            }
+            CheckStatusResult result = OpenStackUtils.checkServerStatus(osClient, server, Server.Status.ACTIVE);
+            if (result.isSuccess()) {
+                return true;
+            } else {
+                throw new RuntimeException(result.getFault());
+            }
+
+        } catch (Exception e) {
+            throw new RuntimeException(e.getMessage(), e);
+        }
+    }
+
+    public static boolean deleteInstance(OpenStackInstanceActionRequest request) {
+        try {
+            OSClient.OSClientV3 osClient = request.getOSClient();
+
+            Server server = osClient.compute().servers().get(request.getUuid());
+            if (server == null) {
+                return true;
+            }
+            ActionResponse response;
+            if (!request.getForce()) {
+                response = osClient.compute().servers().delete(request.getUuid());
+            } else {
+                //force DElETE
+                response = osClient.compute().servers().action(request.getUuid(), Action.FORCEDELETE);
+            }
+            if (response.isSuccess()) {
+                return true;
+            } else {
+                throw new RuntimeException(response.getFault());
+            }
+
+        } catch (Exception e) {
+            throw new RuntimeException(e.getMessage(), e);
+        }
     }
 }

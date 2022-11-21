@@ -6,6 +6,7 @@ import com.fit2cloud.provider.constants.F2CInstanceStatus;
 import com.fit2cloud.provider.entity.F2CDisk;
 import com.fit2cloud.provider.entity.F2CImage;
 import com.fit2cloud.provider.entity.F2CVirtualMachine;
+import com.fit2cloud.provider.impl.openstack.entity.CheckStatusResult;
 import org.apache.commons.lang3.StringUtils;
 import org.openstack4j.api.OSClient;
 import org.openstack4j.model.compute.Address;
@@ -20,6 +21,8 @@ import java.util.Map;
 
 public class OpenStackUtils extends OpenStackBaseUtils {
 
+    private static final int MAX_COUNT = 100;
+    private static final int SLEEP_TIME = 30000;
 
     public static F2CVirtualMachine toF2CVirtualMachine(OSClient.OSClientV3 osClient, Server instance, String region) {
         return toF2CVirtualMachine(osClient, instance, region, null);
@@ -169,5 +172,30 @@ public class OpenStackUtils extends OpenStackBaseUtils {
             case ERROR, ERROR_DELETING, ERROR_RESTORING -> F2CDiskStatus.ERROR;
             default -> F2CDiskStatus.UNKNOWN;
         };
+    }
+
+    public static CheckStatusResult checkServerStatus(OSClient.OSClientV3 osClient, Server server, Server.Status expect) {
+        int count = 0;
+        while (true) {
+            try {
+                Thread.sleep(SLEEP_TIME);
+                Server newServer = osClient.compute().servers().get(server.getId());
+                if (newServer != null && newServer.getStatus() != null) {
+                    if (expect.equals(newServer.getStatus())) {
+                        return CheckStatusResult.success(newServer);
+                    }
+                    if (Server.Status.ERROR.equals(newServer.getStatus())) {
+                        return CheckStatusResult.fail("The virtual machine is in the ERROR，message:"
+                                + (newServer.getFault() == null ? "" : newServer.getFault().getMessage()));
+                    }
+                }
+                count++;
+                if (count >= MAX_COUNT) {
+                    return CheckStatusResult.fail("check server status timeout! [" + MAX_COUNT * SLEEP_TIME + "]");
+                }
+            } catch (Exception e) {
+                return CheckStatusResult.fail("Virtual machine: " + server.getId() + ", error: " + e.getMessage());
+            }
+        }
     }
 }

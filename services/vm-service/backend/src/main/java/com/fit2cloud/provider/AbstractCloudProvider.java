@@ -9,10 +9,7 @@ import com.fit2cloud.common.platform.credential.Credential;
 import com.fit2cloud.common.provider.entity.F2CPerfMetricMonitorData;
 import com.fit2cloud.common.utils.JsonUtil;
 import com.fit2cloud.constants.ErrorCodeConstants;
-import com.fit2cloud.provider.entity.F2CDatastore;
-import com.fit2cloud.provider.entity.F2CDisk;
-import com.fit2cloud.provider.entity.F2CHost;
-import com.fit2cloud.provider.entity.F2CVirtualMachine;
+import com.fit2cloud.provider.entity.*;
 import com.fit2cloud.provider.entity.result.CheckCreateServerResult;
 
 import java.lang.reflect.ParameterizedType;
@@ -128,4 +125,53 @@ public abstract class AbstractCloudProvider<C extends Credential> implements ICl
         return CheckCreateServerResult.success();
     }
 
+    @Override
+    public List<F2CVirtualMachine> listVirtualMachine(String req) {
+        return null;
+    }
+
+    @Override
+    public List<F2CImage> listImage(String req) {
+        return null;
+    }
+
+    @Override
+    public List<F2CDisk> listDisk(String req) {
+        return null;
+    }
+
+    @Override
+    public boolean powerOff(String req) {
+        return false;
+    }
+
+    @Override
+    public boolean powerOn(String req) {
+        return false;
+    }
+
+    @Override
+    public boolean shutdownInstance(String req) {
+        return false;
+    }
+
+    @Override
+    public boolean rebootInstance(String req) {
+        return false;
+    }
+
+    @Override
+    public boolean deleteInstance(String req) {
+        return false;
+    }
+
+    @Override
+    public boolean hardShutdownInstance(String req) {
+        return false;
+    }
+
+    @Override
+    public boolean hardRebootInstance(String req) {
+        return false;
+    }
 }

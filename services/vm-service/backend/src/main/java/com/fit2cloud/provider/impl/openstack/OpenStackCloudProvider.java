@@ -9,6 +9,7 @@ import com.fit2cloud.provider.entity.F2CDisk;
 import com.fit2cloud.provider.entity.F2CImage;
 import com.fit2cloud.provider.entity.F2CVirtualMachine;
 import com.fit2cloud.provider.impl.openstack.api.OpenStackCloudApi;
+import com.fit2cloud.provider.impl.openstack.entity.request.OpenStackInstanceActionRequest;
 
 import java.util.List;
 
@@ -31,36 +32,33 @@ public class OpenStackCloudProvider extends AbstractCloudProvider<OpenStackCrede
 
     @Override
     public boolean powerOff(String req) {
-        return false;
+        return OpenStackCloudApi.powerOff(JsonUtil.parseObject(req, OpenStackInstanceActionRequest.class));
     }
 
     @Override
     public boolean powerOn(String req) {
-        return false;
+        return OpenStackCloudApi.powerOn(JsonUtil.parseObject(req, OpenStackInstanceActionRequest.class));
     }
 
     @Override
     public boolean shutdownInstance(String req) {
-        return false;
+        return OpenStackCloudApi.powerOff(JsonUtil.parseObject(req, OpenStackInstanceActionRequest.class));
     }
 
     @Override
     public boolean rebootInstance(String req) {
-        return false;
-    }
-
-    @Override
-    public boolean deleteInstance(String req) {
-        return false;
-    }
-
-    @Override
-    public boolean hardShutdownInstance(String req) {
-        return false;
+        return OpenStackCloudApi.rebootInstance(JsonUtil.parseObject(req, OpenStackInstanceActionRequest.class));
     }
 
     @Override
     public boolean hardRebootInstance(String req) {
-        return false;
+        return OpenStackCloudApi.rebootInstance(JsonUtil.parseObject(req, OpenStackInstanceActionRequest.class).setForce(true));
     }
+
+    @Override
+    public boolean deleteInstance(String req) {
+        return OpenStackCloudApi.deleteInstance(JsonUtil.parseObject(req, OpenStackInstanceActionRequest.class));
+    }
+
+
 }
