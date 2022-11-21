@@ -63,6 +63,9 @@ const addRuleGroup = () => {
     .catch(() => {});
 };
 
+/**
+ * 校验函数
+ */
 const validate = () => {
   return Promise.all(billRuleItem.value?.map((b) => b.validate()));
 };

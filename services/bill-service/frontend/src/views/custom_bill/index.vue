@@ -36,6 +36,7 @@
     v-model="billRuleDialogVisible"
     :title="billRuleFormType === 'ADD' ? '添加规则' : '编辑规则'"
     width="60%"
+    style="min-width: 600px"
   >
     <el-form :model="billRuleForm" ref="ruleFormRef" label-width="120px">
       <el-form-item
@@ -71,7 +72,6 @@
     </el-form>
     <template #footer>
       <span class="dialog-footer">
-        <el-button @click="billRuleDialogVisible = false">Cancel</el-button>
         <el-button type="primary" @click="saveOrUpdate(billRuleFormType)">
           保存
         </el-button>
@@ -92,6 +92,8 @@ import type { AddRule, BillRule, Group } from "@/api/bill_rule/type";
 import BillRuleGroup from "@/components/bill_rule_group/index.vue";
 import { nanoid } from "nanoid";
 import type { FormInstance } from "element-plus";
+import { ElMessage } from "element-plus";
+
 /**
  *加载器
  */
@@ -168,12 +170,17 @@ const saveOrUpdate = (billRuleFormType: "ADD" | "EDIT") => {
   if (!ruleFormRef.value) return;
   Promise.all([billRuleGroup.value?.validate(), ruleFormRef.value.validate()])
     .then(() => {
-      billRuleFormType === "ADD"
+      (billRuleFormType === "ADD"
         ? billRuleApi.addBillRule(billRuleForm.value)
         : billRuleApi.updateBillRule({
             ...billRuleForm.value,
             id: editBillRuleRow.value?.id as string,
-          });
+          })
+      ).then(() => {
+        ElMessage.success(billRuleFormType === "ADD" ? "添加成功" : "修改成功");
+        table.value?.search();
+        billRuleDialogVisible.value = false;
+      });
     })
     // eslint-disable-next-line @typescript-eslint/no-empty-function
     .catch(() => {});
@@ -225,6 +232,8 @@ const deleteBillRule = () => {
 const addBillRule = () => {
   billRuleDialogVisible.value = true;
   billRuleFormType.value = "ADD";
+  billRuleForm.value.name = "";
+  billRuleForm.value.groups = [];
 };
 /**
  * 表单配置

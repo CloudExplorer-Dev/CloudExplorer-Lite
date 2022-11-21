@@ -12,9 +12,14 @@
         trigger: 'change',
         required: true,
       }"
-      style="width: 100px; margin-left: 20px"
+      style="width: 40%; margin-left: 20px"
     >
-      <el-select v-model="form.field" class="m-2" placeholder="请选择">
+      <el-select
+        style="width: 100%"
+        v-model="form.field"
+        class="m-2"
+        placeholder="请选择"
+      >
         <el-option
           v-for="item in billKeys"
           :key="item.value"
@@ -31,8 +36,14 @@
           trigger: 'change',
           required: true,
         }"
+        style="width: 45%"
       >
-        <el-select v-model="form.childField" class="m-2" placeholder="请选择">
+        <el-select
+          style="width: 100%"
+          v-model="form.childField"
+          class="m-2"
+          placeholder="请选择"
+        >
           <el-option
             v-for="item in billChildKeys"
             :key="item.value"
@@ -47,10 +58,11 @@
         color: var(--el-color-primary);
         margin-right: 20px;
         cursor: pointer;
+        white-space: nowrap;
       "
       @click="deleteItem(item.id)"
     >
-      删除条件
+      删除
     </div>
   </el-form>
 </template>
@@ -137,7 +149,7 @@ const getLabelByField = (field: string) => {
 watch(
   () => form.value.field,
   () => {
-    if (form.value.field && props.billRuleGroupKeys.length > 0) {
+    if (form.value.field) {
       if (form.value.field === "tags" || form.value.field === "orgTree") {
         billRuleApi.getGroupChildKeys(form.value.field, loading).then((ok) => {
           billChildKeys.value = ok.data.filter((b) => {
@@ -148,13 +160,18 @@ watch(
           });
         });
       } else {
-        props.updateRule(
-          props.item.id,
-          form.value.field,
-          getLabelByField(form.value.field)
-        );
+        if (props.billRuleGroupKeys.length > 0) {
+          props.updateRule(
+            props.item.id,
+            form.value.field,
+            getLabelByField(form.value.field)
+          );
+        }
       }
     }
+  },
+  {
+    immediate: true,
   }
 );
 
@@ -195,6 +212,7 @@ watch(
   },
   { immediate: true }
 );
+
 onMounted(() => {
   if (props.item.field.startsWith("tags.")) {
     form.value.field = "tags";
@@ -206,6 +224,9 @@ onMounted(() => {
     form.value.field = props.item.field;
   }
 });
+/**
+ * 校验函数
+ */
 const validate = () => {
   if (!ruleFormRef.value) return;
   return ruleFormRef.value.validate();

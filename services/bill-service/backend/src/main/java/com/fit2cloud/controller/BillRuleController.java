@@ -2,21 +2,24 @@ package com.fit2cloud.controller;
 
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.fit2cloud.common.exception.Fit2cloudException;
-import com.fit2cloud.common.platform.bill.Bill;
+import com.fit2cloud.common.validator.annnotaion.CustomValidated;
+import com.fit2cloud.common.validator.group.ValidationGroup;
+import com.fit2cloud.common.validator.handler.ExistHandler;
 import com.fit2cloud.constants.BillFieldConstants;
 import com.fit2cloud.controller.handler.ResultHolder;
 import com.fit2cloud.controller.request.AddBillRuleRequest;
 import com.fit2cloud.controller.request.BillRuleRequest;
 import com.fit2cloud.controller.request.UpdateBillRuleRequest;
 import com.fit2cloud.dao.entity.BillRule;
+import com.fit2cloud.dao.mapper.BillRuleMapper;
 import com.fit2cloud.service.IBillRuleService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiParam;
 import org.apache.commons.collections4.keyvalue.DefaultKeyValue;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
-import java.lang.reflect.InvocationTargetException;
 import java.util.List;
 
 /**
@@ -28,6 +31,7 @@ import java.util.List;
 @RestController
 @Api("账单规则相关接口")
 @RequestMapping("/api/bill_rule")
+@Validated
 public class BillRuleController {
     @Resource
     private IBillRuleService billRuleService;
@@ -67,17 +71,17 @@ public class BillRuleController {
     }
 
     @PostMapping
-    public ResultHolder<BillRule> add(@RequestBody AddBillRuleRequest request) {
+    public ResultHolder<BillRule> add(@Validated(ValidationGroup.SAVE.class) @RequestBody AddBillRuleRequest request) {
         return ResultHolder.success(billRuleService.add(request));
     }
 
     @PutMapping
-    public ResultHolder<BillRule> update(@RequestBody UpdateBillRuleRequest request) {
+    public ResultHolder<BillRule> update(@Validated @RequestBody UpdateBillRuleRequest request) {
         return ResultHolder.success(billRuleService.update(request));
     }
 
     @DeleteMapping("/{bill_rule_id}")
-    public ResultHolder<Boolean> delete(@PathVariable("bill_rule_id") String billRuleId) {
+    public ResultHolder<Boolean> delete(@CustomValidated(mapper = BillRuleMapper.class, handler = ExistHandler.class, message = "账单规则id必须存在", exist = false) @PathVariable("bill_rule_id") String billRuleId) {
         return ResultHolder.success(billRuleService.removeById(billRuleId));
     }
 
