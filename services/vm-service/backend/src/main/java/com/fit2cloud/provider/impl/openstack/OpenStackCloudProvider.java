@@ -9,6 +9,7 @@ import com.fit2cloud.provider.entity.F2CDisk;
 import com.fit2cloud.provider.entity.F2CImage;
 import com.fit2cloud.provider.entity.F2CVirtualMachine;
 import com.fit2cloud.provider.impl.openstack.api.OpenStackCloudApi;
+import com.fit2cloud.provider.impl.openstack.entity.VolumeType;
 import com.fit2cloud.provider.impl.openstack.entity.request.OpenStackDiskActionRequest;
 import com.fit2cloud.provider.impl.openstack.entity.request.OpenStackDiskCreateRequest;
 import com.fit2cloud.provider.impl.openstack.entity.request.OpenStackDiskEnlargeRequest;
@@ -86,6 +87,10 @@ public class OpenStackCloudProvider extends AbstractCloudProvider<OpenStackCrede
     @Override
     public boolean deleteDisk(String req) {
         return OpenStackCloudApi.deleteDisk(JsonUtil.parseObject(req, OpenStackDiskActionRequest.class));
+    }
+
+    public List<VolumeType> listVolumeType(String req) {
+        return OpenStackCloudApi.listVolumeType(JsonUtil.parseObject(req, OpenStackBaseRequest.class));
     }
 
 }

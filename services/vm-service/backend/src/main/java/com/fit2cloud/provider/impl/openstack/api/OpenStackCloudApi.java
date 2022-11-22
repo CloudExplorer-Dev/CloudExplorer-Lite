@@ -5,6 +5,7 @@ import com.fit2cloud.provider.entity.F2CDisk;
 import com.fit2cloud.provider.entity.F2CImage;
 import com.fit2cloud.provider.entity.F2CVirtualMachine;
 import com.fit2cloud.provider.impl.openstack.entity.CheckStatusResult;
+import com.fit2cloud.provider.impl.openstack.entity.VolumeType;
 import com.fit2cloud.provider.impl.openstack.entity.request.OpenStackDiskActionRequest;
 import com.fit2cloud.provider.impl.openstack.entity.request.OpenStackDiskCreateRequest;
 import com.fit2cloud.provider.impl.openstack.entity.request.OpenStackDiskEnlargeRequest;
@@ -97,6 +98,7 @@ public class OpenStackCloudApi {
     public static boolean powerOff(OpenStackInstanceActionRequest request) {
         try {
             OSClient.OSClientV3 osClient = request.getOSClient();
+            osClient.useRegion(request.getRegionId());
 
             Server server = osClient.compute().servers().get(request.getUuid());
             if (server == null) {
@@ -122,6 +124,7 @@ public class OpenStackCloudApi {
     public static boolean powerOn(OpenStackInstanceActionRequest request) {
         try {
             OSClient.OSClientV3 osClient = request.getOSClient();
+            osClient.useRegion(request.getRegionId());
 
             Server server = osClient.compute().servers().get(request.getUuid());
             if (server == null) {
@@ -147,6 +150,7 @@ public class OpenStackCloudApi {
     public static boolean rebootInstance(OpenStackInstanceActionRequest request) {
         try {
             OSClient.OSClientV3 osClient = request.getOSClient();
+            osClient.useRegion(request.getRegionId());
 
             Server server = osClient.compute().servers().get(request.getUuid());
             if (server == null) {
@@ -177,6 +181,7 @@ public class OpenStackCloudApi {
     public static boolean deleteInstance(OpenStackInstanceActionRequest request) {
         try {
             OSClient.OSClientV3 osClient = request.getOSClient();
+            osClient.useRegion(request.getRegionId());
 
             Server server = osClient.compute().servers().get(request.getUuid());
             if (server == null) {
@@ -203,6 +208,7 @@ public class OpenStackCloudApi {
     public static boolean attachDisk(OpenStackDiskActionRequest request) {
         try {
             OSClient.OSClientV3 osClient = request.getOSClient();
+            osClient.useRegion(request.getRegionId());
 
             Volume volume = osClient.blockStorage().volumes().get(request.getDiskId());
             if (volume == null) {
@@ -228,6 +234,7 @@ public class OpenStackCloudApi {
     public static boolean detachDisk(OpenStackDiskActionRequest request) {
         try {
             OSClient.OSClientV3 osClient = request.getOSClient();
+            osClient.useRegion(request.getRegionId());
 
             Volume volume = osClient.blockStorage().volumes().get(request.getDiskId());
             if (volume == null) {
@@ -257,6 +264,7 @@ public class OpenStackCloudApi {
     public static boolean deleteDisk(OpenStackDiskActionRequest request) {
         try {
             OSClient.OSClientV3 osClient = request.getOSClient();
+            osClient.useRegion(request.getRegionId());
 
             Volume volume = osClient.blockStorage().volumes().get(request.getDiskId());
             if (volume == null) {
@@ -283,6 +291,7 @@ public class OpenStackCloudApi {
     public static boolean enlargeDisk(OpenStackDiskEnlargeRequest request) {
         try {
             OSClient.OSClientV3 osClient = request.getOSClient();
+            osClient.useRegion(request.getRegionId());
 
             Volume volume = osClient.blockStorage().volumes().get(request.getDiskId());
             if (volume == null) {
@@ -311,6 +320,7 @@ public class OpenStackCloudApi {
     public static F2CDisk createDisk(OpenStackDiskCreateRequest request) {
         try {
             OSClient.OSClientV3 osClient = request.getOSClient();
+            osClient.useRegion(request.getRegionId());
 
             VolumeBuilder builder = Builders.volume()
                     .name(request.getDiskName())
@@ -345,5 +355,21 @@ public class OpenStackCloudApi {
             throw new RuntimeException(e.getMessage(), e);
         }
 
+    }
+
+    public static List<VolumeType> listVolumeType(OpenStackBaseRequest request) {
+        List<VolumeType> list = new ArrayList<>();
+        try {
+            OSClient.OSClientV3 osClient = request.getOSClient();
+            osClient.useRegion(request.getRegionId());
+
+            for (org.openstack4j.model.storage.block.VolumeType type : osClient.blockStorage().volumes().listVolumeTypes()) {
+                list.add(new VolumeType().setId(type.getId()).setName(type.getName()));
+            }
+
+        } catch (Exception e) {
+            throw new RuntimeException(e.getMessage(), e);
+        }
+        return list;
     }
 }
