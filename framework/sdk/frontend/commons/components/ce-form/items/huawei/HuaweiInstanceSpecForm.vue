@@ -1,25 +1,32 @@
 <template>
   <template v-if="!confirm">
-        <div style="font-size: 12px">
-          <el-input v-model="searchName" placeholder="关键字查" style="width: 20%" @keyup="handleQueryClick"/>
-          <el-button type="primary" plain @click="handleQueryClick">查 询</el-button>
-        </div>
+    <div style="font-size: 12px">
+      <el-input
+        v-model="searchName"
+        placeholder="关键字查"
+        style="width: 20%"
+        @keyup="handleQueryClick"
+      />
+      <el-button type="primary" plain @click="handleQueryClick"
+        >查 询</el-button
+      >
+    </div>
     <el-form
-        ref="ruleFormRef"
-        label-suffix=":"
-        label-position="left"
-        :model="_data"
-        size="small"
+      ref="ruleFormRef"
+      label-suffix=":"
+      label-position="left"
+      :model="_data"
+      size="small"
     >
       <el-form-item>
         <el-radio-group v-model="_data" style="width: 100%">
           <el-table
-              ref="multipleTableRef"
-              :data="props.formItem?.ext?.instanceConfig?.searchTableData"
-              highlight-current-row
-              style="width: 100%;height: 150px"
-              @current-change="handleCurrentChange"
-              v-loading="instanceTypeLoading"
+            ref="multipleTableRef"
+            :data="props.formItem?.ext?.instanceConfig?.searchTableData"
+            highlight-current-row
+            style="width: 100%; height: 150px"
+            @current-change="handleCurrentChange"
+            v-loading="instanceTypeLoading"
           >
             <el-table-column width="55">
               <template #default="scope">
@@ -29,9 +36,9 @@
               </template>
             </el-table-column>
             <el-table-column property="specType" label="规格类型" />
-            <el-table-column property="specName" label="规格名称"/>
-            <el-table-column property="instanceSpec" label="实例规格"/>
-            <el-table-column property="amountText" label="预估费用"/>
+            <el-table-column property="specName" label="规格名称" />
+            <el-table-column property="instanceSpec" label="实例规格" />
+            <el-table-column property="amountText" label="预估费用" />
           </el-table>
         </el-radio-group>
       </el-form-item>
@@ -59,7 +66,7 @@ interface InstanceSpec {
   specName: string;
 }
 
-const searchName = ref('')
+const searchName = ref("");
 
 const emit = defineEmits(["update:modelValue", "change"]);
 
@@ -74,7 +81,6 @@ const _data = computed({
 
 const instanceTypeLoading = ref<boolean>(false);
 
-
 // 校验实例对象
 const ruleFormRef = ref<FormInstance>();
 
@@ -84,8 +90,8 @@ const ruleFormRef = ref<FormInstance>();
 const currentRow = computed<InstanceSpec | undefined>({
   get() {
     return _.find(
-        props.formItem?.ext?.instanceConfig?.tableData,
-        (o: InstanceSpec) => o.specName === _data.value
+      props.formItem?.ext?.instanceConfig?.tableData,
+      (o: InstanceSpec) => o.specName === _data.value
     );
   },
   set(value) {
@@ -101,35 +107,38 @@ const _loading = ref<boolean>(false);
 
 const singleTableRef = ref<InstanceType<typeof ElTable>>();
 
-
 function getTempRequest() {
   return _.assignWith(
-      {},
-      { computeConfig: _data.value },
-      props.otherParams,
-      props.allData,
-      (objValue, srcValue) => {
-        return _.isUndefined(objValue) ? srcValue : objValue;
-      }
+    {},
+    { computeConfig: _data.value },
+    props.otherParams,
+    props.allData,
+    (objValue, srcValue) => {
+      return _.isUndefined(objValue) ? srcValue : objValue;
+    }
   );
 }
 
 function getList() {
   const _temp = getTempRequest();
-  let clazz = "com.fit2cloud.provider.impl.huawei.HuaweiCloudProvider";
-  let method = "getInstanceSpecTypes";
+  const clazz = "com.fit2cloud.provider.impl.huawei.HuaweiCloudProvider";
+  const method = "getInstanceSpecTypes";
   formApi
-      .getResourceMethod(false, clazz, method, _temp, instanceTypeLoading)
-      .then((ok) => {
-        _.set(props.formItem, "ext.instanceConfig", ok.data);
-        _.set(props.formItem, "ext.instanceConfig.searchTableData", ok.data.tableData);
-        if (currentRow.value === undefined) {
-          currentRow.value = (ok.data.tableData[0]);
-        } else {
-          //设置界面默认选中
-          singleTableRef.value?.setCurrentRow(currentRow.value);
-        }
-      });
+    .getResourceMethod(false, clazz, method, _temp, instanceTypeLoading)
+    .then((ok) => {
+      _.set(props.formItem, "ext.instanceConfig", ok.data);
+      _.set(
+        props.formItem,
+        "ext.instanceConfig.searchTableData",
+        ok.data.tableData
+      );
+      if (currentRow.value === undefined) {
+        currentRow.value = ok.data.tableData[0];
+      } else {
+        //设置界面默认选中
+        singleTableRef.value?.setCurrentRow(currentRow.value);
+      }
+    });
 }
 
 onMounted(() => {
@@ -139,39 +148,40 @@ onMounted(() => {
 });
 
 watch(
-    () => props.allData.billingMode,
-    (n,o) => {
-      getList();
-    }
+  () => props.allData.billingMode,
+  (n, o) => {
+    getList();
+  }
 );
 watch(
-    () => props.allData.availabilityZone,
-    (n,o) => {
-      getList();
-    }
+  () => props.allData.availabilityZone,
+  (n, o) => {
+    getList();
+  }
 );
 
-const handleQueryClick = ()=>{
-  if(!props.formItem?.ext?.instanceConfig?.tableData){
+const handleQueryClick = () => {
+  if (!props.formItem?.ext?.instanceConfig?.tableData) {
     return;
   }
   let arr = [...props.formItem?.ext?.instanceConfig?.tableData];
-  if(searchName.value.trim() && arr.length>0){
-    arr = _.filter(props.formItem?.ext?.instanceConfig?.tableData, function (v) {
-      let columnNames = Object.keys(arr[0]);
-      let isShow = false;
-      for(let i=0;i<columnNames.length;i++){
-        if(v[columnNames[i]]?.toString().indexOf(searchName.value)>-1){
-          isShow = true;
+  if (searchName.value.trim() && arr.length > 0) {
+    arr = _.filter(
+      props.formItem?.ext?.instanceConfig?.tableData,
+      function (v) {
+        const columnNames = Object.keys(arr[0]);
+        let isShow = false;
+        for (let i = 0; i < columnNames.length; i++) {
+          if (v[columnNames[i]]?.toString().indexOf(searchName.value) > -1) {
+            isShow = true;
+          }
         }
+        return isShow;
       }
-      return  isShow;
-    });
+    );
   }
   _.set(props.formItem, "ext.instanceConfig.searchTableData", arr);
-}
-
-
+};
 </script>
 <style lang="scss" scoped>
 .usage-bar-top-text {

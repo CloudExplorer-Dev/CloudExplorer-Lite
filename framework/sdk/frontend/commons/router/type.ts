@@ -11,14 +11,8 @@ import type {
 import type { Menu, RequiredPermissions } from "@commons/api/menu/type";
 import type { RolePermission } from "@commons/api/permission/type";
 import type { App } from "vue";
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-// @ts-ignore
 import Layout from "@commons/business/app-layout/index.vue";
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-// @ts-ignore
 import NoPermissions from "@commons/business/error-page/NoPermissions.vue";
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-// @ts-ignore
 import Login from "@commons/business/login/index.vue";
 import { getToken } from "@commons/utils/authStorage";
 import { useUserStore } from "@commons/stores/modules/user";
