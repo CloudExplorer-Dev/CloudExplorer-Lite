@@ -1,5 +1,7 @@
 package com.fit2cloud.provider.impl.openstack;
 
+import com.fit2cloud.common.form.util.FormUtil;
+import com.fit2cloud.common.form.vo.FormObject;
 import com.fit2cloud.common.platform.credential.impl.OpenStackCredential;
 import com.fit2cloud.common.provider.impl.openstack.entity.request.OpenStackBaseRequest;
 import com.fit2cloud.common.utils.JsonUtil;
@@ -62,6 +64,11 @@ public class OpenStackCloudProvider extends AbstractCloudProvider<OpenStackCrede
     @Override
     public boolean deleteInstance(String req) {
         return OpenStackCloudApi.deleteInstance(JsonUtil.parseObject(req, OpenStackInstanceActionRequest.class));
+    }
+
+    @Override
+    public FormObject getCreateDiskForm() {
+        return FormUtil.toForm(OpenStackDiskCreateRequest.class);
     }
 
     @Override

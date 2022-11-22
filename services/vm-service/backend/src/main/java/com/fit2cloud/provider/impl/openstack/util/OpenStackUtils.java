@@ -21,8 +21,8 @@ import java.util.Map;
 
 public class OpenStackUtils extends OpenStackBaseUtils {
 
-    private static final int MAX_COUNT = 100;
-    private static final int SLEEP_TIME = 30000;
+    private static final int MAX_COUNT = 300;
+    private static final int SLEEP_TIME = 10000;
 
     public static F2CVirtualMachine toF2CVirtualMachine(OSClient.OSClientV3 osClient, Server instance, String region) {
         return toF2CVirtualMachine(osClient, instance, region, null);
