@@ -5,8 +5,13 @@ import com.fit2cloud.provider.entity.F2CDisk;
 import com.fit2cloud.provider.entity.F2CImage;
 import com.fit2cloud.provider.entity.F2CVirtualMachine;
 import com.fit2cloud.provider.impl.openstack.entity.CheckStatusResult;
+import com.fit2cloud.provider.impl.openstack.entity.request.OpenStackDiskActionRequest;
+import com.fit2cloud.provider.impl.openstack.entity.request.OpenStackDiskCreateRequest;
+import com.fit2cloud.provider.impl.openstack.entity.request.OpenStackDiskEnlargeRequest;
 import com.fit2cloud.provider.impl.openstack.entity.request.OpenStackInstanceActionRequest;
 import com.fit2cloud.provider.impl.openstack.util.OpenStackUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.openstack4j.api.Builders;
 import org.openstack4j.api.OSClient;
 import org.openstack4j.model.common.ActionResponse;
 import org.openstack4j.model.compute.Action;
@@ -14,6 +19,7 @@ import org.openstack4j.model.compute.RebootType;
 import org.openstack4j.model.compute.Server;
 import org.openstack4j.model.image.v2.Image;
 import org.openstack4j.model.storage.block.Volume;
+import org.openstack4j.model.storage.block.builder.VolumeBuilder;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -192,5 +198,152 @@ public class OpenStackCloudApi {
         } catch (Exception e) {
             throw new RuntimeException(e.getMessage(), e);
         }
+    }
+
+    public static boolean attachDisk(OpenStackDiskActionRequest request) {
+        try {
+            OSClient.OSClientV3 osClient = request.getOSClient();
+
+            Volume volume = osClient.blockStorage().volumes().get(request.getDiskId());
+            if (volume == null) {
+                throw new RuntimeException("volume not exist");
+            }
+            Server server = osClient.compute().servers().get(request.getInstanceUuid());
+            if (server == null) {
+                throw new RuntimeException("server not exist");
+            }
+            osClient.compute().servers().attachVolume(request.getInstanceUuid(), request.getDiskId(), request.getDevice());
+
+            CheckStatusResult result = OpenStackUtils.checkDiskStatus(osClient, volume, Volume.Status.IN_USE);
+            if (result.isSuccess()) {
+                return true;
+            } else {
+                throw new RuntimeException(result.getFault());
+            }
+        } catch (Exception e) {
+            throw new RuntimeException(e.getMessage(), e);
+        }
+    }
+
+    public static boolean detachDisk(OpenStackDiskActionRequest request) {
+        try {
+            OSClient.OSClientV3 osClient = request.getOSClient();
+
+            Volume volume = osClient.blockStorage().volumes().get(request.getDiskId());
+            if (volume == null) {
+                throw new RuntimeException("volume not exist");
+            }
+            ActionResponse response;
+            if (!request.isForce()) {
+                response = osClient.blockStorage().volumes().detach(request.getDiskId(), null);
+            } else {
+                //force
+                response = osClient.blockStorage().volumes().forceDetach(request.getDiskId(), null, null);
+            }
+            if (!response.isSuccess()) {
+                throw new RuntimeException(response.getFault());
+            }
+            CheckStatusResult result = OpenStackUtils.checkDiskStatus(osClient, volume, Volume.Status.AVAILABLE);
+            if (result.isSuccess()) {
+                return true;
+            } else {
+                throw new RuntimeException(result.getFault());
+            }
+        } catch (Exception e) {
+            throw new RuntimeException(e.getMessage(), e);
+        }
+    }
+
+    public static boolean deleteDisk(OpenStackDiskActionRequest request) {
+        try {
+            OSClient.OSClientV3 osClient = request.getOSClient();
+
+            Volume volume = osClient.blockStorage().volumes().get(request.getDiskId());
+            if (volume == null) {
+                return true;
+            }
+
+            ActionResponse response;
+            if (!request.isForce()) {
+                response = osClient.blockStorage().volumes().delete(request.getDiskId());
+            } else {
+                //force
+                response = osClient.blockStorage().volumes().forceDelete(request.getDiskId());
+            }
+            if (response.isSuccess()) {
+                return true;
+            } else {
+                throw new RuntimeException(response.getFault());
+            }
+        } catch (Exception e) {
+            throw new RuntimeException(e.getMessage(), e);
+        }
+    }
+
+    public static boolean enlargeDisk(OpenStackDiskEnlargeRequest request) {
+        try {
+            OSClient.OSClientV3 osClient = request.getOSClient();
+
+            Volume volume = osClient.blockStorage().volumes().get(request.getDiskId());
+            if (volume == null) {
+                throw new RuntimeException("volume not exist");
+            }
+            if (StringUtils.isNotBlank(request.getInstanceUuid())) {
+                Server server = osClient.compute().servers().get(request.getInstanceUuid());
+                if (server == null) {
+                    throw new RuntimeException("server not exist");
+                }
+                //可能需要关机操作？目前z版测试不需要
+            }
+
+            ActionResponse response = osClient.blockStorage().volumes().extend(request.getDiskId(), request.getNewDiskSize());
+
+            if (response.isSuccess()) {
+                return true;
+            } else {
+                throw new RuntimeException(response.getFault());
+            }
+        } catch (Exception e) {
+            throw new RuntimeException(e.getMessage(), e);
+        }
+    }
+
+    public static F2CDisk createDisk(OpenStackDiskCreateRequest request) {
+        try {
+            OSClient.OSClientV3 osClient = request.getOSClient();
+
+            VolumeBuilder builder = Builders.volume()
+                    .name(request.getDiskName())
+                    .description(request.getDescription())
+                    .size(request.getSize())
+                    .zone(request.getZone());
+            if (StringUtils.isNotBlank(request.getDiskType())) {
+                builder.volumeType(request.getDiskType());
+            }
+            Volume volume = osClient.blockStorage().volumes().create(builder.build());
+            CheckStatusResult result = OpenStackUtils.checkDiskStatus(osClient, volume, Volume.Status.AVAILABLE);
+            if (!result.isSuccess()) {
+                throw new RuntimeException(result.getFault());
+            }
+
+            //创建出来后挂载
+            if (StringUtils.isNotBlank(request.getInstanceUuid())) {
+                Server server = osClient.compute().servers().get(request.getInstanceUuid());
+                if (server == null) {
+                    throw new RuntimeException("server not exist");
+                }
+                osClient.compute().servers().attachVolume(request.getInstanceUuid(), volume.getId(), null);
+                result = OpenStackUtils.checkDiskStatus(osClient, volume, Volume.Status.IN_USE);
+                if (!result.isSuccess()) {
+                    throw new RuntimeException(result.getFault());
+                }
+            }
+
+            return OpenStackUtils.toF2CDisk((Volume) result.getObject(), request.getRegionId());
+
+        } catch (Exception e) {
+            throw new RuntimeException(e.getMessage(), e);
+        }
+
     }
 }

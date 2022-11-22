@@ -179,14 +179,14 @@ public class OpenStackUtils extends OpenStackBaseUtils {
         while (true) {
             try {
                 Thread.sleep(SLEEP_TIME);
-                Server newServer = osClient.compute().servers().get(server.getId());
-                if (newServer != null && newServer.getStatus() != null) {
-                    if (expect.equals(newServer.getStatus())) {
-                        return CheckStatusResult.success(newServer);
+                Server s = osClient.compute().servers().get(server.getId());
+                if (s != null && s.getStatus() != null) {
+                    if (expect.equals(s.getStatus())) {
+                        return CheckStatusResult.success(s);
                     }
-                    if (Server.Status.ERROR.equals(newServer.getStatus())) {
-                        return CheckStatusResult.fail("The virtual machine is in the ERROR，message:"
-                                + (newServer.getFault() == null ? "" : newServer.getFault().getMessage()));
+                    if (Server.Status.ERROR.equals(s.getStatus())) {
+                        return CheckStatusResult.fail("The server status is ERROR，message:"
+                                + (s.getFault() == null ? "" : s.getFault().getMessage()));
                     }
                 }
                 count++;
@@ -194,8 +194,34 @@ public class OpenStackUtils extends OpenStackBaseUtils {
                     return CheckStatusResult.fail("check server status timeout! [" + MAX_COUNT * SLEEP_TIME + "]");
                 }
             } catch (Exception e) {
-                return CheckStatusResult.fail("Virtual machine: " + server.getId() + ", error: " + e.getMessage());
+                return CheckStatusResult.fail("Server: " + server.getId() + ", error: " + e.getMessage());
             }
         }
     }
+
+    public static CheckStatusResult checkDiskStatus(OSClient.OSClientV3 osClient, Volume volume, Volume.Status expect) {
+        int count = 0;
+        while (true) {
+            try {
+                Thread.sleep(SLEEP_TIME);
+                Volume v = osClient.blockStorage().volumes().get(volume.getId());
+                if (v != null && v.getStatus() != null) {
+                    if (expect.equals(v.getStatus())) {
+                        return CheckStatusResult.success(v);
+                    }
+                    if (Volume.Status.ERROR.equals(v.getStatus())) {
+                        return CheckStatusResult.fail("The volume status is ERROR");
+                    }
+                }
+                count++;
+                if (count >= MAX_COUNT) {
+                    return CheckStatusResult.fail("check volume status timeout! [" + MAX_COUNT * SLEEP_TIME + "]");
+                }
+            } catch (Exception e) {
+                return CheckStatusResult.fail("Volume: " + volume.getId() + ", error: " + e.getMessage());
+            }
+        }
+    }
+
+
 }

@@ -9,6 +9,9 @@ import com.fit2cloud.provider.entity.F2CDisk;
 import com.fit2cloud.provider.entity.F2CImage;
 import com.fit2cloud.provider.entity.F2CVirtualMachine;
 import com.fit2cloud.provider.impl.openstack.api.OpenStackCloudApi;
+import com.fit2cloud.provider.impl.openstack.entity.request.OpenStackDiskActionRequest;
+import com.fit2cloud.provider.impl.openstack.entity.request.OpenStackDiskCreateRequest;
+import com.fit2cloud.provider.impl.openstack.entity.request.OpenStackDiskEnlargeRequest;
 import com.fit2cloud.provider.impl.openstack.entity.request.OpenStackInstanceActionRequest;
 
 import java.util.List;
@@ -60,5 +63,29 @@ public class OpenStackCloudProvider extends AbstractCloudProvider<OpenStackCrede
         return OpenStackCloudApi.deleteInstance(JsonUtil.parseObject(req, OpenStackInstanceActionRequest.class));
     }
 
+    @Override
+    public F2CDisk createDisk(String req) {
+        return OpenStackCloudApi.createDisk(JsonUtil.parseObject(req, OpenStackDiskCreateRequest.class));
+    }
+
+    @Override
+    public boolean enlargeDisk(String req) {
+        return OpenStackCloudApi.enlargeDisk(JsonUtil.parseObject(req, OpenStackDiskEnlargeRequest.class));
+    }
+
+    @Override
+    public boolean attachDisk(String req) {
+        return OpenStackCloudApi.attachDisk(JsonUtil.parseObject(req, OpenStackDiskActionRequest.class));
+    }
+
+    @Override
+    public boolean detachDisk(String req) {
+        return OpenStackCloudApi.detachDisk(JsonUtil.parseObject(req, OpenStackDiskActionRequest.class));
+    }
+
+    @Override
+    public boolean deleteDisk(String req) {
+        return OpenStackCloudApi.deleteDisk(JsonUtil.parseObject(req, OpenStackDiskActionRequest.class));
+    }
 
 }
