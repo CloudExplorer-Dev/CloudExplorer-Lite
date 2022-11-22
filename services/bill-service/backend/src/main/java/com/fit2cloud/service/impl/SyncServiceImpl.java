@@ -5,9 +5,6 @@ import co.elastic.clients.elasticsearch._types.query_dsl.Query;
 import co.elastic.clients.elasticsearch._types.query_dsl.ScriptQuery;
 import co.elastic.clients.elasticsearch._types.query_dsl.TermQuery;
 import co.elastic.clients.json.JsonData;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.JavaType;
 import com.fit2cloud.base.entity.CloudAccount;
 import com.fit2cloud.base.entity.JobRecord;
 import com.fit2cloud.base.entity.JobRecordResourceMapping;
@@ -27,6 +24,8 @@ import com.fit2cloud.service.SyncService;
 import io.reactivex.rxjava3.functions.BiFunction;
 import io.reactivex.rxjava3.functions.Consumer;
 import org.apache.commons.collections4.MapUtils;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Caching;
 import org.springframework.data.elasticsearch.annotations.Document;
 import org.springframework.data.elasticsearch.client.elc.ElasticsearchTemplate;
 import org.springframework.data.elasticsearch.client.elc.NativeQueryBuilder;
@@ -34,7 +33,6 @@ import org.springframework.data.elasticsearch.core.mapping.IndexCoordinates;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
-import java.lang.reflect.InvocationTargetException;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -65,32 +63,34 @@ public class SyncServiceImpl extends BaseSyncService implements SyncService {
     private static final Integer billDay = 10;
 
     @Override
+    @Caching(evict = {@CacheEvict(value = "bill_view", allEntries = true),
+            @CacheEvict(value = "dimension_setting", allEntries = true),
+            @CacheEvict(value = "bill_rule", allEntries = true)})
     public void syncBill(String cloudAccountId) {
         syncBill(cloudAccountId, getMonths(billDay));
     }
 
     @Override
+    @Caching(evict = {@CacheEvict(value = "bill_view", allEntries = true),
+            @CacheEvict(value = "dimension_setting", allEntries = true),
+            @CacheEvict(value = "bill_rule", allEntries = true)})
     public void syncBill(String cloudAccountId, String... months) {
         syncBill(cloudAccountId, Arrays.stream(months).toList());
     }
 
     @Override
+    @Caching(evict = {@CacheEvict(value = "bill_view", allEntries = true),
+            @CacheEvict(value = "dimension_setting", allEntries = true),
+            @CacheEvict(value = "bill_rule", allEntries = true)})
     public void syncBill(String cloudAccountId, List<String> months) {
         syncBill(cloudAccountId, months, null);
     }
 
-    /**
-     * 同步账单
-     *
-     * @param cloudAccountId 云账号id
-     * @param months         月份
-     * @param billSetting    账单设置
-     */
-    private void syncBill(String cloudAccountId, List<String> months, Map<String, Object> billSetting) {
-        proxy(cloudAccountId, months, (p, r) -> syncBill(p, r, cloudAccountId), (a, month) -> this.getExecMethodArgs(a, month, billSetting), this::saveBatchOrUpdate, this::writeJobRecord, this::deleteDataSource);
-    }
 
     @Override
+    @Caching(evict = {@CacheEvict(value = "bill_view", allEntries = true),
+            @CacheEvict(value = "dimension_setting", allEntries = true),
+            @CacheEvict(value = "bill_rule", allEntries = true)})
     public void syncBill(Map<String, Object> params) {
         if (!params.containsKey(JobConstants.CloudAccount.CLOUD_ACCOUNT_ID.name())) {
             throw new RuntimeException("必要参数云账号不存在");
@@ -106,6 +106,17 @@ public class SyncServiceImpl extends BaseSyncService implements SyncService {
             months = JsonUtil.parseArray(JsonUtil.toJSONString(params.get("MONTHS")), String.class);
         }
         syncBill(cloudAccountId, months, billSetting);
+    }
+
+    /**
+     * 同步账单
+     *
+     * @param cloudAccountId 云账号id
+     * @param months         月份
+     * @param billSetting    账单设置
+     */
+    private void syncBill(String cloudAccountId, List<String> months, Map<String, Object> billSetting) {
+        proxy(cloudAccountId, months, (p, r) -> syncBill(p, r, cloudAccountId), (a, month) -> this.getExecMethodArgs(a, month, billSetting), this::saveBatchOrUpdate, this::writeJobRecord, this::deleteDataSource);
     }
 
     /**

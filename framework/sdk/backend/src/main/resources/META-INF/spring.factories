@@ -8,4 +8,5 @@ org.springframework.boot.autoconfigure.EnableAutoConfiguration=\
   com.fit2cloud.autoconfigure.RestTemplateConfig,\
   com.fit2cloud.autoconfigure.LocaleConfig,\
   com.fit2cloud.autoconfigure.SwaggerConfig,\
-  com.fit2cloud.autoconfigure.ThreadPoolConfig
+  com.fit2cloud.autoconfigure.ThreadPoolConfig,\
+  com.fit2cloud.autoconfigure.RedisConfig

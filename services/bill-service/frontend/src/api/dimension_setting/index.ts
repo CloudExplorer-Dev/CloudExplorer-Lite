@@ -18,7 +18,7 @@ import type { Page } from "@commons/request/Result";
 const listAuthorizeKeys: (
   loading?: Ref<boolean>
 ) => Promise<Result<Array<SimpleMap<string>>>> = (loading) => {
-  return get("/api/dimension_setting/group_keys", {}, loading);
+  return get("/api/dimension_setting/authorize_keys", {}, loading);
 };
 
 /**
@@ -30,7 +30,11 @@ const listAuthorizeValues: (
   authorizeKey: string,
   loading?: Ref<boolean>
 ) => Promise<Result<Array<SimpleMap<string>>>> = (authorizeKey, loading) => {
-  return get(`/api/dimension_setting/group_values`, { authorizeKey }, loading);
+  return get(
+    `/api/dimension_setting/authorize_values`,
+    { authorizeKey },
+    loading
+  );
 };
 
 /**

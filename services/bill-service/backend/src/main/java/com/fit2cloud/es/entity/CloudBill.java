@@ -29,11 +29,11 @@ public class CloudBill {
     @Field(type = FieldType.Object)
     private Map<String, Object> orgTree;
 
-    @BillField(label = "工作空间id", group = true, conver = WorkSpaceConvert.class)
+    @BillField(label = "工作空间", group = true, conver = WorkSpaceConvert.class)
     @Field(type = FieldType.Keyword)
     private String workspaceId;
 
-    @BillField(label = "组织id", group = true, conver = OrganizationConvert.class)
+    @BillField(label = "组织", group = true, conver = OrganizationConvert.class)
     @Field(type = FieldType.Keyword)
     private String organizationId;
 
@@ -86,6 +86,11 @@ public class CloudBill {
     @MultiField(mainField = @Field(type = FieldType.Text),
             otherFields = @InnerField(suffix = "keyword", type = FieldType.Keyword))
     private String productName;
+
+    @BillField(label = "产品详情", group = true, authorize = true)
+    @MultiField(mainField = @Field(type = FieldType.Text),
+            otherFields = @InnerField(suffix = "keyword", type = FieldType.Keyword))
+    private String productDetail;
 
     @BillField(label = "计费模式", group = true, conver = BillModeConvert.class)
     @Field(type = FieldType.Keyword)
