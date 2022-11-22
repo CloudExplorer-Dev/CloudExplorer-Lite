@@ -11,8 +11,14 @@ import type {
 import type { Menu, RequiredPermissions } from "@commons/api/menu/type";
 import type { RolePermission } from "@commons/api/permission/type";
 import type { App } from "vue";
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-ignore
 import Layout from "@commons/business/app-layout/index.vue";
-import noPermissions from "@commons/business/err-page/noPermissions.vue";
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-ignore
+import NoPermissions from "@commons/business/error-page/NoPermissions.vue";
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-ignore
 import Login from "@commons/business/login/index.vue";
 import { getToken } from "@commons/utils/authStorage";
 import { useUserStore } from "@commons/stores/modules/user";
@@ -226,7 +232,7 @@ export class RouteObj {
           {
             path: "/noPermission",
             name: "noPermission",
-            component: noPermissions,
+            component: NoPermissions,
           },
         ],
       },
@@ -291,6 +297,21 @@ export class RouteObj {
       to.meta.requiredPermissions instanceof Array<RequiredPermissions>
         ? to.meta.requiredPermissions
         : [];
+    if (to.name === "home" && import.meta.env.VITE_APP_NAME !== "base") {
+      // 路由到第一个有权限的菜单
+      for (const index in dynamicRoute.home) {
+        if (
+          (dynamicRoute.home[index].component ||
+            dynamicRoute.home[index].redirect) &&
+          (await this.routeHasRolePermission(
+            dynamicRoute.home[index].requiredPermissions
+          ))
+        ) {
+          next({ path: dynamicRoute.home[index].path });
+          return;
+        }
+      }
+    }
     // 判断是否有权限
     if (await this.routeHasRolePermission(requiredPermissions)) {
       // 如果路由被重置则需要重制路由
@@ -349,16 +370,28 @@ export class RouteObj {
         },
       };
     } else {
-      return {
-        name: menu.name,
-        path: menu.path,
-        component: this.routeComponent[menu.componentPath],
-        meta: {
-          requiredPermissions: menu.requiredPermissions,
-          title: menu.title,
-        },
-        props: true,
-      };
+      return menu.sourceMenu
+        ? {
+            name: menu.name,
+            path: menu.path,
+            component: this.routeComponent[menu.componentPath],
+            meta: {
+              requiredPermissions: menu.requiredPermissions,
+              title: menu.title,
+              sourceMenu: menu.sourceMenu,
+            },
+            props: true,
+          }
+        : {
+            name: menu.name,
+            path: menu.path,
+            component: this.routeComponent[menu.componentPath],
+            meta: {
+              requiredPermissions: menu.requiredPermissions,
+              title: menu.title,
+            },
+            props: true,
+          };
     }
   };
 

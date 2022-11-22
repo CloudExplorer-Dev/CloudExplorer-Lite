@@ -118,6 +118,11 @@ export default defineConfig(({ mode }: ConfigEnv) => {
     "http://localhost:" + Number(ENV.VITE_BASE_API_PORT);
   proxyConf[ENV.VITE_BASE_PATH + "vm-service"] = "http://127.0.0.1:5002";
 
+  //bill-service
+  proxyConf[ENV.VITE_BASE_PATH + "bill-service/api"] =
+    "http://localhost:" + Number(ENV.VITE_BASE_API_PORT);
+  proxyConf[ENV.VITE_BASE_PATH + "bill-service"] = "http://127.0.0.1:5003";
+
   //https://cn.vitejs.dev/config/server-options.html#server-host
   config.server = {
     cors: true,
