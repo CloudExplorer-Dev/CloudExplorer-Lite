@@ -1,6 +1,5 @@
 package com.fit2cloud;
 
-import co.elastic.clients.elasticsearch._types.mapping.FieldType;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.fit2cloud.constants.AuthorizeTypeConstants;
 import com.fit2cloud.controller.request.AuthorizeResourcesRequest;
@@ -12,13 +11,11 @@ import com.fit2cloud.controller.response.Trend;
 import com.fit2cloud.dao.entity.BillDimensionSetting;
 import com.fit2cloud.dao.entity.BillRule;
 import com.fit2cloud.dao.jentity.Group;
-import com.fit2cloud.es.entity.CloudBill;
 import com.fit2cloud.service.BillViewService;
 import com.fit2cloud.service.IBillDimensionSettingService;
 import com.fit2cloud.service.IBillRuleService;
 import com.fit2cloud.service.SyncService;
 import org.apache.commons.collections4.keyvalue.DefaultKeyValue;
-import org.apache.commons.lang3.StringUtils;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.data.elasticsearch.client.elc.ElasticsearchTemplate;
@@ -26,7 +23,6 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.test.context.TestPropertySource;
 
 import javax.annotation.Resource;
-import java.lang.reflect.Field;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
@@ -39,7 +35,7 @@ import java.util.concurrent.CompletableFuture;
  * {@code @Version 1.0}
  * {@code @注释: }
  */
-@SpringBootTest(classes = BillServiceApplication.class)
+@SpringBootTest(classes = FinanceManagementApplication.class)
 @TestPropertySource(locations = {
         "classpath:commons.properties",
         "file:${ce.config.file}"

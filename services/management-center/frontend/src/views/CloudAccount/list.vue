@@ -503,7 +503,7 @@ const billSyncShow = (row: CloudAccount) => {
   ];
   return (
     showPlatforms.includes(row.platform) &&
-    moduleStore.runningModules?.some((m) => m.id === "bill-service")
+    moduleStore.runningModules?.some((m) => m.id === "finance-management")
   );
 };
 
@@ -525,7 +525,7 @@ const syncBill = (formEl: FormInstance | undefined) => {
           {
             jobName: "SYNC_BILL",
             jobGroup: "CLOUD_ACCOUNT_BILL_SYNC_GROUP",
-            module: "bill-service",
+            module: "finance-management",
           },
         ],
       };
