@@ -6,10 +6,7 @@ import com.fit2cloud.provider.entity.F2CImage;
 import com.fit2cloud.provider.entity.F2CVirtualMachine;
 import com.fit2cloud.provider.impl.openstack.entity.CheckStatusResult;
 import com.fit2cloud.provider.impl.openstack.entity.VolumeType;
-import com.fit2cloud.provider.impl.openstack.entity.request.OpenStackDiskActionRequest;
-import com.fit2cloud.provider.impl.openstack.entity.request.OpenStackDiskCreateRequest;
-import com.fit2cloud.provider.impl.openstack.entity.request.OpenStackDiskEnlargeRequest;
-import com.fit2cloud.provider.impl.openstack.entity.request.OpenStackInstanceActionRequest;
+import com.fit2cloud.provider.impl.openstack.entity.request.*;
 import com.fit2cloud.provider.impl.openstack.util.OpenStackUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -17,6 +14,7 @@ import org.openstack4j.api.Builders;
 import org.openstack4j.api.OSClient;
 import org.openstack4j.model.common.ActionResponse;
 import org.openstack4j.model.compute.Action;
+import org.openstack4j.model.compute.Flavor;
 import org.openstack4j.model.compute.RebootType;
 import org.openstack4j.model.compute.Server;
 import org.openstack4j.model.image.v2.Image;
@@ -24,6 +22,7 @@ import org.openstack4j.model.storage.block.Volume;
 import org.openstack4j.model.storage.block.builder.VolumeBuilder;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -407,5 +406,40 @@ public class OpenStackCloudApi {
             throw new RuntimeException(e.getMessage(), e);
         }
         return list;
+    }
+
+    public static List<Flavor> getFlavors(OpenStackServerCreateRequest request) {
+        List<Flavor> list = new ArrayList<>();
+        try {
+            OSClient.OSClientV3 osClient = request.getOSClient();
+            osClient.useRegion(request.getRegionId());
+
+            Image image = osClient.imagesV2().get(request.getImageId());
+
+            for (Flavor flavor : osClient.compute().flavors().list()) {
+                if (flavor.isDisabled()) {
+                    continue;
+                }
+                //排除内存小于1G的
+                if (flavor.getRam() < 1024) {
+                    continue;
+                }
+                //根据镜像过滤
+                if (image != null) {
+                    if (image.getMinDisk() > flavor.getDisk()) {
+                        continue;
+                    }
+                    if (image.getMinRam() > flavor.getRam()) {
+                        continue;
+                    }
+                }
+                list.add(flavor);
+            }
+
+        } catch (Exception e) {
+            throw new RuntimeException(e.getMessage(), e);
+        }
+
+        return list.stream().sorted(Comparator.comparingInt(Flavor::getVcpus).thenComparingInt(Flavor::getRam).thenComparingInt(Flavor::getDisk)).collect(Collectors.toList());
     }
 }

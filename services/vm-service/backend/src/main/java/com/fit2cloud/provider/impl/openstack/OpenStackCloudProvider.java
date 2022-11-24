@@ -12,14 +12,17 @@ import com.fit2cloud.provider.entity.F2CImage;
 import com.fit2cloud.provider.entity.F2CVirtualMachine;
 import com.fit2cloud.provider.impl.openstack.api.OpenStackCloudApi;
 import com.fit2cloud.provider.impl.openstack.entity.VolumeType;
-import com.fit2cloud.provider.impl.openstack.entity.request.OpenStackDiskActionRequest;
-import com.fit2cloud.provider.impl.openstack.entity.request.OpenStackDiskCreateRequest;
-import com.fit2cloud.provider.impl.openstack.entity.request.OpenStackDiskEnlargeRequest;
-import com.fit2cloud.provider.impl.openstack.entity.request.OpenStackInstanceActionRequest;
+import com.fit2cloud.provider.impl.openstack.entity.request.*;
+import org.openstack4j.model.compute.Flavor;
 
 import java.util.List;
 
 public class OpenStackCloudProvider extends AbstractCloudProvider<OpenStackCredential> implements ICloudProvider {
+
+    @Override
+    public FormObject getCreateServerForm() {
+        return FormUtil.toForm(OpenStackServerCreateRequest.class);
+    }
 
     @Override
     public List<F2CVirtualMachine> listVirtualMachine(String req) {
@@ -99,5 +102,10 @@ public class OpenStackCloudProvider extends AbstractCloudProvider<OpenStackCrede
     public List<VolumeType> listVolumeType(String req) {
         return OpenStackCloudApi.listVolumeType(JsonUtil.parseObject(req, OpenStackBaseRequest.class));
     }
+
+    public List<Flavor> getFlavors(String req) {
+        return OpenStackCloudApi.getFlavors(JsonUtil.parseObject(req, OpenStackServerCreateRequest.class));
+    }
+
 
 }
