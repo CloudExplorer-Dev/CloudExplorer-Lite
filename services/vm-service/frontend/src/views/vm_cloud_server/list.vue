@@ -548,7 +548,7 @@ const handleAction = (actionObj: any) => {
         <div style="display: flex">
           <el-image
             style="margin-top: 3px; width: 16px; height: 16px"
-            :src="platformIcon[scope.row.platform].icon"
+            :src="platformIcon[scope.row.platform]?.icon"
             v-if="scope.row.platform"
           ></el-image>
           <span style="margin-left: 10px">{{ scope.row.accountName }}</span>
