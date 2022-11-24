@@ -1,6 +1,9 @@
 package com.fit2cloud.common.form.constants;
 
 import com.fit2cloud.common.form.vo.*;
+import com.fit2cloud.common.form.vo.aliyun.AliyunDiskConfig;
+import com.fit2cloud.common.form.vo.aliyun.AliyunInstanceType;
+import com.fit2cloud.common.form.vo.aliyun.AliyunNetConfig;
 
 /**
  * @Author:张少虎
@@ -43,6 +46,9 @@ public enum InputType {
      */
     SwitchBtn(SwitchForm.class),
 
+    AliyunInstanceTypeForm(AliyunInstanceType.class),
+    AliyunDiskConfigForm(AliyunDiskConfig.class),
+    AliyunNetConfigForm(AliyunNetConfig.class),
 
     VsphereDiskConfigForm(com.fit2cloud.common.form.vo.vsphere.DiskConfigForm.class),
     VsphereComputeConfigForm(com.fit2cloud.common.form.vo.vsphere.ComputeConfigForm.class),

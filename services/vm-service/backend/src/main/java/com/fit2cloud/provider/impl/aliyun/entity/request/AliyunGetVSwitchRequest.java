@@ -4,13 +4,12 @@ import lombok.Data;
 
 /**
  * Author: LiuDi
- * Date: 2022/11/4 2:05 PM
+ * Date: 2022/11/16 3:40 PM
  */
 @Data
-public class AliyunGetDiskTypeRequest extends AliyunBaseRequest{
-    /**
-     * 可用区 ID
-     */
+public class AliyunGetVSwitchRequest extends AliyunBaseRequest{
+
     private String zoneId;
 
+    private String vpcId;
 }

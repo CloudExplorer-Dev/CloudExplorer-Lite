@@ -1,5 +1,8 @@
 package com.fit2cloud.provider.impl.aliyun;
 
+import com.aliyun.ecs20140526.models.DescribeRegionsResponseBody;
+import com.aliyun.ecs20140526.models.DescribeSecurityGroupsResponseBody;
+import com.aliyun.ecs20140526.models.DescribeZonesResponseBody;
 import com.fit2cloud.common.form.util.FormUtil;
 import com.fit2cloud.common.form.vo.FormObject;
 import com.fit2cloud.common.provider.entity.F2CPerfMetricMonitorData;
@@ -9,9 +12,11 @@ import com.fit2cloud.provider.ICloudProvider;
 import com.fit2cloud.provider.constants.DeleteWithInstance;
 import com.fit2cloud.provider.entity.F2CDisk;
 import com.fit2cloud.provider.entity.F2CImage;
+import com.fit2cloud.provider.entity.F2CNetwork;
 import com.fit2cloud.provider.entity.F2CVirtualMachine;
 import com.fit2cloud.provider.entity.request.GetMetricsRequest;
 import com.fit2cloud.provider.impl.aliyun.api.AliyunSyncCloudApi;
+import com.fit2cloud.provider.impl.aliyun.constants.*;
 import com.fit2cloud.provider.impl.aliyun.entity.credential.AliyunVmCredential;
 import com.fit2cloud.provider.impl.aliyun.entity.request.*;
 
@@ -27,7 +32,153 @@ import java.util.Map;
  * @注释:
  */
 public class AliyunCloudProvider extends AbstractCloudProvider<AliyunVmCredential> implements ICloudProvider {
+    // For Create VM [START]
+    @Override
+    public FormObject getCreateServerForm() {
+        return FormUtil.toForm(AliyunVmCreateRequest.class);
+    }
 
+    public F2CVirtualMachine createVirtualMachine(String req) {
+        return AliyunSyncCloudApi.createVirtualMachine(JsonUtil.parseObject(req, AliyunVmCreateRequest.class));
+    }
+
+    @Override
+    public F2CVirtualMachine getSimpleServerByCreateRequest(String req) {
+        return AliyunSyncCloudApi.getSimpleServerByCreateRequest(JsonUtil.parseObject(req, AliyunVmCreateRequest.class));
+    }
+
+    public List<DescribeRegionsResponseBody.DescribeRegionsResponseBodyRegionsRegion> getRegions(String req) {
+        return AliyunSyncCloudApi.getRegions(JsonUtil.parseObject(req, AliyunGetRegionRequest.class));
+    }
+
+    public List<DescribeZonesResponseBody.DescribeZonesResponseBodyZonesZone> getZones(String req) {
+        return AliyunSyncCloudApi.getZones(JsonUtil.parseObject(req, AliyunGetZoneRequest.class));
+    }
+
+    /**
+     * 获取付费方式
+     *
+     * @param req
+     * @return
+     */
+    public List<Map<String, String>> getChargeType(String req) {
+        List<Map<String, String>> result = new ArrayList<>();
+        for (AliyunChargeType chargeType : AliyunChargeType.values()) {
+            Map<String, String> map = new HashMap<>();
+            map.put("id", chargeType.getId());
+            map.put("name", chargeType.getName());
+            result.add(map);
+        }
+        return result;
+    }
+
+    /**
+     * 获取操作系统类型
+     *
+     * @param req
+     * @return
+     */
+    public List<Map<String, String>> getOsTypes(String req) {
+        List<Map<String, String>> result = new ArrayList<>();
+        for (AliyunOSType type : AliyunOSType.values()) {
+            Map<String, String> map = new HashMap<>();
+            map.put("id", type.getDisplayValue());
+            map.put("name", type.getDisplayValue());
+            result.add(map);
+        }
+        return result;
+    }
+
+    /**
+     * 获取带宽计费类型
+     *
+     * @param req
+     * @return
+     */
+    public List<Map<String, String>> getBandwidthChargeTypes(String req) {
+        List<Map<String, String>> result = new ArrayList<>();
+        for (AliyunBandwidthType type : AliyunBandwidthType.values()) {
+            Map<String, String> map = new HashMap<>();
+            map.put("id", type.getId());
+            map.put("name", type.getName());
+            result.add(map);
+        }
+        return result;
+    }
+
+    /**
+     * 获取网络
+     *
+     * @param req
+     * @return
+     */
+    public List<F2CNetwork> getNetworks(String req) {
+        return AliyunSyncCloudApi.getNetworks(JsonUtil.parseObject(req, AliyunGetVSwitchRequest.class));
+    }
+
+    /**
+     * 获取安全组
+     *
+     * @param req
+     * @return
+     */
+    public List<DescribeSecurityGroupsResponseBody.DescribeSecurityGroupsResponseBodySecurityGroupsSecurityGroup> getSecurityGroupsByNetworkId(String req) {
+        AliyunGetSecurityGroupRequest request =  JsonUtil.parseObject(req, AliyunGetSecurityGroupRequest.class) ;
+        if (request.getNetworkId() != null) {
+            String networkId = request.getNetworkId();
+            String vpcId = networkId.substring(networkId.indexOf("[") + 1, networkId.indexOf("]"));
+            request.setVpcId(vpcId);
+        }
+        return getSecurityGroups(JsonUtil.toJSONString(request));
+    }
+
+    /**
+     * 获取安全组
+     *
+     * @param req
+     * @return
+     */
+    public List<DescribeSecurityGroupsResponseBody.DescribeSecurityGroupsResponseBodySecurityGroupsSecurityGroup> getSecurityGroups(String req) {
+        return AliyunSyncCloudApi.getSecurityGroups(JsonUtil.parseObject(req, AliyunGetSecurityGroupRequest.class));
+    }
+
+    /**
+     * 获取实例类型
+     *
+     * @param req
+     * @return
+     */
+    public List<AliyunInstanceType> getInstanceTypes(String req) {
+        return AliyunSyncCloudApi.getInstanceTypes(JsonUtil.parseObject(req, AliyunGetAvailableResourceRequest.class));
+    }
+
+    /**
+     * 获取登录方式
+     *
+     * @param req
+     * @return
+     */
+    public List<Map<String, String>> getLoginTypes(String req) {
+        List<Map<String, String>> result = new ArrayList<>();
+        for (AliyunLoginType type : AliyunLoginType.values()) {
+            Map<String, String> map = new HashMap<>();
+            map.put("id", type.getId());
+            map.put("name", type.getName());
+            result.add(map);
+        }
+        return result;
+    }
+
+    /**
+     * 获取密钥对
+     *
+     * @param req
+     * @return
+     */
+    public List<Map<String, String>> getKeyPairs(String req) {
+        return AliyunSyncCloudApi.getKeyPairs(JsonUtil.parseObject(req, AliyunBaseRequest.class));
+    }
+    // For Create VM [END]
 
     @Override
     public List<F2CVirtualMachine> listVirtualMachine(String req) {

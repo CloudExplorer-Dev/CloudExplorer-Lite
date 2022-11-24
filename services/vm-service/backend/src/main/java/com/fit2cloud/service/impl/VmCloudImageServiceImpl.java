@@ -79,6 +79,8 @@ public class VmCloudImageServiceImpl extends ServiceImpl<BaseVmCloudImageMapper,
         LambdaQueryWrapper<VmCloudImage> queryWrapper = new LambdaQueryWrapper<VmCloudImage>()
                 .eq(StringUtils.isNotBlank(request.getAccountId()), VmCloudImage::getAccountId, request.getAccountId())
                 .eq(StringUtils.isNotBlank(request.getRegion()), VmCloudImage::getRegion, request.getRegion())
+                .eq(StringUtils.isNotBlank(request.getRegionId()), VmCloudImage::getRegion, request.getRegionId())
+                .like(StringUtils.isNotBlank(request.getOs()), VmCloudImage::getOs, request.getOs())
                 .ne(VmCloudImage::getStatus, "DELETED");
 
         return list(queryWrapper);
