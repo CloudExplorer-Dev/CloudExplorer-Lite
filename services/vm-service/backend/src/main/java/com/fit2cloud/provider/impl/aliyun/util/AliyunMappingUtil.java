@@ -211,12 +211,11 @@ public class AliyunMappingUtil {
          *PrePaid：预付费，即包年包月
          *PostPaid：按小时后付费
          */
-
         switch (f2cChargeType) {
             case "PrePaid":
-                return AliyunChargeType.PREPAID;
+                return AliyunChargeType.PREPAID.getId();
             default:
-                return AliyunChargeType.POSTPAID;
+                return AliyunChargeType.POSTPAID.getId();
         }
     }
 }

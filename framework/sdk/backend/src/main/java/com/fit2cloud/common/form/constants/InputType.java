@@ -1,6 +1,9 @@
 package com.fit2cloud.common.form.constants;
 
 import com.fit2cloud.common.form.vo.*;
+import com.fit2cloud.common.form.vo.aliyun.AliyunDiskConfig;
+import com.fit2cloud.common.form.vo.aliyun.AliyunInstanceType;
+import com.fit2cloud.common.form.vo.aliyun.AliyunNetConfig;
 
 /**
  * @Author:张少虎
@@ -42,6 +45,10 @@ public enum InputType {
      * 开关
      */
     SwitchBtn(SwitchForm.class),
+
+    AliyunInstanceTypeForm(AliyunInstanceType.class),
+    AliyunDiskConfigForm(AliyunDiskConfig.class),
+    AliyunNetConfigForm(AliyunNetConfig.class),
 
     HuaweiInstanceSpecForm(com.fit2cloud.common.form.vo.huawei.InstanceSpecForm.class),
     HuaweiDiskConfigForm(com.fit2cloud.common.form.vo.huawei.DiskConfigForm.class),
