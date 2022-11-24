@@ -16,11 +16,11 @@ import java.util.TimeZone;
         "file:${ce.config.file}"
 }, encoding = "UTF-8", ignoreResourceNotFound = true)
 @ServletComponentScan
-public class BillServiceApplication {
+public class FinanceManagementApplication {
 
     public static void main(String[] args) {
         TimeZone.setDefault(TimeZone.getTimeZone(ZoneId.SHORT_IDS.get("CTT")));
-        SpringApplication.run(BillServiceApplication.class, args);
+        SpringApplication.run(FinanceManagementApplication.class, args);
     }
 
 }

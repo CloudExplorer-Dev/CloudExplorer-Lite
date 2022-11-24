@@ -5,14 +5,14 @@
 
     <parent>
         <groupId>com.fit2cloud</groupId>
-        <artifactId>bill-service-parent</artifactId>
+        <artifactId>finance-management-parent</artifactId>
         <version>${revision}</version>
     </parent>
 
-    <artifactId>bill-service</artifactId>
+    <artifactId>finance-management</artifactId>
     <version>${revision}</version>
-    <name>bill-service</name>
-    <description>bill-service</description>
+    <name>finance-management</name>
+    <description>finance-management</description>
 
     <properties>
     </properties>

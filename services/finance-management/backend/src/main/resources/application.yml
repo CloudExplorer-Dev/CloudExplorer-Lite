@@ -1,6 +1,6 @@
 spring:
   application:
-    name: bill-service
+    name: finance-management
   mvc:
     pathmatch:
       matching-strategy: ANT_PATH_MATCHER
@@ -44,6 +44,6 @@ eureka:
       order: 2
       name_zh-cn: 云账单服务
       name_zh-tw: 云账单服务
-      name_en: Bill Service
+      name_en: Finance Management
       basePath: ${server.servlet.context-path}/
       icon: feiyong

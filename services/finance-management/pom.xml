@@ -10,7 +10,7 @@
     </parent>
 
     <packaging>pom</packaging>
-    <artifactId>bill-service-parent</artifactId>
+    <artifactId>finance-management-parent</artifactId>
     <version>${revision}</version>
     <description>CE framework</description>
 
