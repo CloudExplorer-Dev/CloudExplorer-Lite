@@ -9,7 +9,7 @@ import lombok.Data;
 @Data
 public class AliyunInstanceRequest extends AliyunBaseRequest {
 
-    private String uuId;
+    private String uuid;
 
     /**
      * 强制执行

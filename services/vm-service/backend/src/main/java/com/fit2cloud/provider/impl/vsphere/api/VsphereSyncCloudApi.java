@@ -278,37 +278,37 @@ public class VsphereSyncCloudApi {
 
     public static boolean powerOff(VsphereVmPowerRequest req) {
         VsphereVmClient client = req.getVsphereVmClient();
-        return operate(req.getUuId(), client::powerOff, client::closeConnection);
+        return operate(req.getUuid(), client::powerOff, client::closeConnection);
     }
 
     public static boolean powerOn(VsphereVmPowerRequest req) {
         VsphereVmClient client = req.getVsphereVmClient();
-        return operate(req.getUuId(), client::powerOn, client::closeConnection);
+        return operate(req.getUuid(), client::powerOn, client::closeConnection);
     }
 
     public static boolean shutdownInstance(VsphereVmPowerRequest req) {
         VsphereVmClient client = req.getVsphereVmClient();
-        return operate(req.getUuId(), client::shutdownInstance, client::closeConnection);
+        return operate(req.getUuid(), client::shutdownInstance, client::closeConnection);
     }
 
     public static boolean reboot(VsphereVmPowerRequest req) {
         VsphereVmClient client = req.getVsphereVmClient();
-        return operate(req.getUuId(), client::reboot, client::closeConnection);
+        return operate(req.getUuid(), client::reboot, client::closeConnection);
     }
 
     public static boolean deleteInstance(VsphereVmPowerRequest req) {
         VsphereVmClient client = req.getVsphereVmClient();
-        return operate(req.getUuId(), client::deleteInstance, client::closeConnection);
+        return operate(req.getUuid(), client::deleteInstance, client::closeConnection);
     }
 
     public static boolean hardReboot(VsphereVmPowerRequest req) {
         VsphereVmClient client = req.getVsphereVmClient();
-        return operate(req.getUuId(), client::hardReboot, client::closeConnection);
+        return operate(req.getUuid(), client::hardReboot, client::closeConnection);
     }
 
-    private static boolean operate(String uuId, Function<String, Boolean> execMethod, Runnable closeConnection) {
+    private static boolean operate(String uuid, Function<String, Boolean> execMethod, Runnable closeConnection) {
         try {
-            return execMethod.apply(uuId);
+            return execMethod.apply(uuid);
         } catch (Exception e) {
             e.printStackTrace();
             log.error("[Failed to operate virtual machine]", e);

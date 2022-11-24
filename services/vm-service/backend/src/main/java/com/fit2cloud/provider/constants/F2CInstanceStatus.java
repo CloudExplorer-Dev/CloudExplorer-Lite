@@ -12,7 +12,9 @@ public enum F2CInstanceStatus {
     Stopping,
     Deleting,
     Rebooting,
-    Createding,
+
+    Resize,
+
     Unknown,
 
     //创建中

@@ -20,7 +20,11 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * <p>
@@ -85,4 +89,47 @@ public class VmCloudImageServiceImpl extends ServiceImpl<BaseVmCloudImageMapper,
 
         return list(queryWrapper);
     }
+
+    /**
+     *
+     * @param request
+     * @return
+     */
+    @Override
+    public List<Map<String, String>> listOs(String request) {
+        VmCloudImageRequest req = JsonUtil.parseObject(request, VmCloudImageRequest.class);
+        if(StringUtils.isEmpty(req.getRegion())){
+            return new ArrayList<>();
+        }
+        List<Map<String, String>> result = new ArrayList<>();
+        List<VmCloudImage> images = listVmCloudImage(req);
+        //去重复
+        Map<String, String> osMap = images.stream().collect(Collectors.toMap(VmCloudImage::getOs,VmCloudImage::getOs,(k1,k2)->k1));
+        osMap.values().stream().sorted().forEach(v->{
+            Map<String,String> m = new HashMap<>();
+            m.put("id",v);
+            m.put("name",v);
+            result.add(m);
+        });
+        return result;
+    }
+
+    @Override
+    public List<VmCloudImage> listVmCloudImageByOs(String request) {
+        return listVmCloudImageByOs(JsonUtil.parseObject(request, VmCloudImageRequest.class));
+    }
+
+    public List<VmCloudImage> listVmCloudImageByOs(VmCloudImageRequest request) {
+        if(StringUtils.isEmpty(request.getOs())){
+            return new ArrayList<>();
+        }
+        LambdaQueryWrapper<VmCloudImage> queryWrapper = new LambdaQueryWrapper<VmCloudImage>()
+                .eq(StringUtils.isNotBlank(request.getAccountId()), VmCloudImage::getAccountId, request.getAccountId())
+                .eq(StringUtils.isNotBlank(request.getRegion()), VmCloudImage::getRegion, request.getRegion())
+                .likeRight(StringUtils.isNotBlank(request.getOs()), VmCloudImage::getOs, request.getOs())
+                .ne(VmCloudImage::getStatus, "DELETED");
+
+        return list(queryWrapper);
+    }
+
 }

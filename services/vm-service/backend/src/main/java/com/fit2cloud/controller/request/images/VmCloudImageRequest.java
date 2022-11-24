@@ -25,7 +25,7 @@ public class VmCloudImageRequest  implements Serializable {
     @ApiModelProperty("区域")
     private String regionId;
 
-    @ApiModelProperty("os")
+    @ApiModelProperty("操作系统")
     private String os;
 
 }

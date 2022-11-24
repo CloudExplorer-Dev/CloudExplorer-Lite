@@ -9,6 +9,7 @@
     :model="_data"
     v-loading="_loading"
     @submit.prevent
+    size="small"
   >
     <div v-for="item in formViewData" :key="item.field">
       <template v-if="item.label">

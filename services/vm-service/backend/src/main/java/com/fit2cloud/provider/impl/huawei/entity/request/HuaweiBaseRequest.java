@@ -15,4 +15,13 @@ public class HuaweiBaseRequest {
     private String regionId;
 
     private Language language;
+
+    /**
+     * 如果云管参数区域是region 那么就重写set函数去赋值
+     *
+     * @param region 区域
+     */
+    public void setRegion(String region) {
+        this.regionId = region;
+    }
 }

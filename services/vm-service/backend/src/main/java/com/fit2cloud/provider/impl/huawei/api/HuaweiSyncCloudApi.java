@@ -14,12 +14,16 @@ import com.fit2cloud.provider.entity.F2CDisk;
 import com.fit2cloud.provider.entity.F2CImage;
 import com.fit2cloud.provider.entity.F2CVirtualMachine;
 import com.fit2cloud.provider.entity.request.GetMetricsRequest;
-import com.fit2cloud.provider.impl.huawei.constants.HuaweiPerfMetricConstants;
 import com.fit2cloud.provider.impl.huawei.constants.HuaweiDiskType;
+import com.fit2cloud.provider.impl.huawei.constants.HuaweiPerfMetricConstants;
+import com.fit2cloud.provider.impl.huawei.entity.InstanceSpecConfig;
+import com.fit2cloud.provider.impl.huawei.entity.InstanceSpecType;
+import com.fit2cloud.provider.impl.huawei.entity.NovaAvailabilityZoneDTO;
 import com.fit2cloud.provider.impl.huawei.entity.credential.HuaweiVmCredential;
 import com.fit2cloud.provider.impl.huawei.entity.request.*;
 import com.fit2cloud.provider.impl.huawei.util.HuaweiMappingUtil;
 import com.google.gson.Gson;
+import com.huaweicloud.sdk.bss.v2.model.*;
 import com.huaweicloud.sdk.ces.v1.CesClient;
 import com.huaweicloud.sdk.ces.v1.model.Datapoint;
 import com.huaweicloud.sdk.ces.v1.model.ShowMetricDataRequest;
@@ -30,6 +34,10 @@ import com.huaweicloud.sdk.evs.v2.EvsClient;
 import com.huaweicloud.sdk.evs.v2.model.ShowJobRequest;
 import com.huaweicloud.sdk.evs.v2.model.ShowJobResponse;
 import com.huaweicloud.sdk.evs.v2.model.*;
+import com.huaweicloud.sdk.iam.v3.IamClient;
+import com.huaweicloud.sdk.iam.v3.model.AuthProjectResult;
+import com.huaweicloud.sdk.iam.v3.model.KeystoneListAuthProjectsRequest;
+import com.huaweicloud.sdk.iam.v3.model.KeystoneListAuthProjectsResponse;
 import com.huaweicloud.sdk.ims.v2.ImsClient;
 import com.huaweicloud.sdk.ims.v2.model.ImageInfo;
 import com.huaweicloud.sdk.ims.v2.model.ListImagesResponse;
@@ -41,9 +49,10 @@ import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.*;
 import java.util.stream.Collectors;
-import java.util.*;
 
 
 /**
@@ -186,7 +195,7 @@ public class HuaweiSyncCloudApi {
                         .withBody(new BatchStopServersRequestBody()
                                 .withOsStop(
                                         new BatchStopServersOption()
-                                                .withServers(Arrays.asList(new ServerId().withId(request.getUuId())))
+                                                .withServers(Arrays.asList(new ServerId().withId(request.getUuid())))
                                                 .withType(request.getForce() ? BatchStopServersOption.TypeEnum.HARD : BatchStopServersOption.TypeEnum.SOFT))));
 
                 checkEcsJobStatus(client, batchStopServersResponse.getJobId());
@@ -213,7 +222,7 @@ public class HuaweiSyncCloudApi {
                         .withBody(new BatchStartServersRequestBody()
                                 .withOsStart(
                                         new BatchStartServersOption()
-                                                .withServers(Arrays.asList(new ServerId().withId(request.getUuId()))))));
+                                                .withServers(Arrays.asList(new ServerId().withId(request.getUuid()))))));
                 checkEcsJobStatus(client, batchStartServersResponse.getJobId());
                 return true;
             } catch (TeaException error) {
@@ -238,7 +247,7 @@ public class HuaweiSyncCloudApi {
                         .withBody(new BatchRebootServersRequestBody()
                                 .withReboot(
                                         new BatchRebootSeversOption()
-                                                .withServers(Arrays.asList(new ServerId().withId(request.getUuId())))
+                                                .withServers(Arrays.asList(new ServerId().withId(request.getUuid())))
                                                 .withType(request.getForce() ? BatchRebootSeversOption.TypeEnum.HARD : BatchRebootSeversOption.TypeEnum.SOFT))));
                 checkEcsJobStatus(client, batchRebootServersResponse.getJobId());
                 return true;
@@ -262,7 +271,7 @@ public class HuaweiSyncCloudApi {
             try {
                 DeleteServersResponse batchStartServersResponse = client.deleteServers(new DeleteServersRequest()
                         .withBody(new DeleteServersRequestBody()
-                                .withServers(Arrays.asList(new ServerId().withId(request.getUuId())))));
+                                .withServers(Arrays.asList(new ServerId().withId(request.getUuid())))));
                 checkEcsJobStatus(client, batchStartServersResponse.getJobId());
                 return true;
             } catch (TeaException error) {
@@ -626,6 +635,294 @@ public class HuaweiSyncCloudApi {
         listVirtualMachineRequest.setCredential(getMetricsRequest.getCredential());
         listVirtualMachineRequest.setRegionId(getMetricsRequest.getRegionId());
         return listVirtualMachineRequest;
+    }
+
+    public static List<NovaAvailabilityZoneDTO> getAvailabilityZone(HuaweiVmCreateRequest request){
+        if(StringUtils.isEmpty(request.getRegionId())){
+            return new ArrayList<>();
+        }
+        List<NovaAvailabilityZoneDTO> result = new ArrayList<>();
+        NovaAvailabilityZoneDTO defaultDto = new NovaAvailabilityZoneDTO();
+        defaultDto.setZoneName("random");
+        defaultDto.setDisplayName("随机分配");
+        result.add(defaultDto);
+        try {
+            HuaweiVmCredential credential = JsonUtil.parseObject(request.getCredential(),HuaweiVmCredential.class);
+            EcsClient client = credential.getEcsClient(request.getRegionId());
+            NovaListAvailabilityZonesRequest getAz = new NovaListAvailabilityZonesRequest();
+            NovaListAvailabilityZonesResponse response = client.novaListAvailabilityZones(getAz);
+            for (NovaAvailabilityZone novaAvailabilityZone : response.getAvailabilityZoneInfo()) {
+                NovaAvailabilityZoneDTO dto = new NovaAvailabilityZoneDTO(novaAvailabilityZone);
+                String name = dto.getZoneName();
+                int index = StringUtils.lowerCase(name).charAt(name.length() - 1) - 96;
+                dto.setDisplayName("可用区" + index);
+                result.add(dto);
+            }
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+        return result;
+    }
+
+    public static F2CVirtualMachine createServer(HuaweiVmCreateRequest request) {
+        HuaweiVmCredential credential = JsonUtil.parseObject(request.getCredential(),HuaweiVmCredential.class);
+        EcsClient client = credential.getEcsClient(request.getRegion());
+        //创建云主机参数
+        CreateServersRequest createServersRequest = new CreateServersRequest();
+        //参数实体
+        CreateServersRequestBody body = new CreateServersRequestBody();
+        //标签
+        List<PrePaidServerTag> listServerServerTags = new ArrayList<>();
+        //元数据
+        Map<String, String> listServerMetadata = new HashMap<>();
+        return null;
+    }
+
+
+    public static InstanceSpecConfig getInstanceSpecTypes(HuaweiVmCreateRequest request){
+        InstanceSpecConfig instanceSpecConfig = new InstanceSpecConfig();
+        if(StringUtils.isEmpty(request.getRegionId())){
+            return instanceSpecConfig;
+        }
+        try {
+            List<InstanceSpecType> instanceSpecTypes = new ArrayList<>();
+            HuaweiVmCredential credential = JsonUtil.parseObject(request.getCredential(),HuaweiVmCredential.class);
+            EcsClient client = credential.getEcsClient(request.getRegionId());
+            boolean isRandom = StringUtils.equalsIgnoreCase("random",request.getAvailabilityZone());
+            ListFlavorsResponse response = client.listFlavors(new ListFlavorsRequest()
+                    .withAvailabilityZone(isRandom?null:request.getAvailabilityZone()));
+            for (Flavor flavor : response.getFlavors()) {
+                if(StringUtils.isEmpty(flavor.getOsExtraSpecs().getCondOperationAz())){
+                    continue;
+                }
+                if(flavor.getOsExtraSpecs().getCondOperationAz().indexOf("normal")==-1){
+                    continue;
+                }
+                //只要这种状态的正常商用,不然询价会失败，正常控制台也无法使用，随机可能会询价失败
+                if(isRandom){
+                    InstanceSpecType instanceSpecType = HuaweiMappingUtil.toInstanceSpecType(flavor);
+                    instanceSpecTypes.add(instanceSpecType);
+                }else{
+                    if(flavor.getOsExtraSpecs().getCondOperationAz().indexOf(request.getAvailabilityZone()+"(normal)")>0){
+                        InstanceSpecType instanceSpecType = HuaweiMappingUtil.toInstanceSpecType(flavor);
+                        instanceSpecTypes.add(instanceSpecType);
+                    }
+                }
+            }
+            inquiry(instanceSpecTypes, request, credential);
+            instanceSpecConfig.setTableData(instanceSpecTypes);
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+        return instanceSpecConfig;
+    }
+
+    /**
+     * 询价
+     * @param instanceSpecTypes
+     * @param request
+     * @param credential
+     */
+    private static void inquiry(List<InstanceSpecType> instanceSpecTypes,HuaweiVmCreateRequest request,HuaweiVmCredential credential){
+        try{
+            //查询项目
+            KeystoneListAuthProjectsRequest projectsRequest = new KeystoneListAuthProjectsRequest();
+            IamClient client = credential.getIamClient(request.getRegionId());
+            KeystoneListAuthProjectsResponse projectsResponse = client.keystoneListAuthProjects(projectsRequest);
+            List<AuthProjectResult> projectResults = projectsResponse.getProjects().stream()
+                    .filter(v->StringUtils.equalsIgnoreCase(v.getName(),request.getRegionId())).collect(Collectors.toList());
+            if(CollectionUtils.isNotEmpty(projectResults)){
+                String projectId = projectResults.get(0).getId();
+                //按量计费
+                if(StringUtils.equalsIgnoreCase(request.getBillingMode(),"0")){
+                    inquiryForHour(instanceSpecTypes,request,credential,projectId);
+                }
+                if(StringUtils.equalsIgnoreCase(request.getBillingMode(),"1")){
+                    inquiryForMonth(instanceSpecTypes,request,credential,projectId);
+                }
+            }
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+    }
+
+    private static void inquiryForHour(List<InstanceSpecType> instanceSpecTypes,HuaweiVmCreateRequest request,HuaweiVmCredential credential,String projectId){
+        //询价结果
+        List<DemandProductRatingResult> resultList = new ArrayList<>();
+        List<InstanceSpecType> searchList = new ArrayList<>();
+        //每次最多只能查询100个实例的价格
+        int counter = 1;
+        for(InstanceSpecType instanceSpecType:instanceSpecTypes){
+            searchList.add(instanceSpecType);
+            if (counter % 100 == 0) {
+                ListOnDemandResourceRatingsRequest resourceRatingsRequest = getListOnDemandResourceRatingsRequest(searchList,projectId,request.getRegionId());
+                ListOnDemandResourceRatingsResponse response = credential.getBssClient("cn-north-1").listOnDemandResourceRatings(resourceRatingsRequest);
+                resultList.addAll(response.getProductRatingResults());
+                searchList.clear();
+            }
+            counter++;
+        }
+        //不够100个实例
+        if(searchList.size()>0){
+            ListOnDemandResourceRatingsRequest resourceRatingsRequest = getListOnDemandResourceRatingsRequest(searchList,projectId,request.getRegionId());
+            ListOnDemandResourceRatingsResponse response = credential.getBssClient("cn-north-1").listOnDemandResourceRatings(resourceRatingsRequest);
+            resultList.addAll(response.getProductRatingResults());
+        }
+        //设置价格
+        if(CollectionUtils.isNotEmpty(resultList)){
+            instanceSpecTypes.forEach(v->{
+                List<DemandProductRatingResult> vList = resultList.stream()
+                        .filter(r->StringUtils.equalsIgnoreCase(r.getId(),v.getSpecName())).collect(Collectors.toList());
+                if(CollectionUtils.isNotEmpty(vList)){
+                    v.setAmount(new BigDecimal(vList.get(0).getAmount()).setScale(3, RoundingMode.HALF_UP));
+                    v.setAmountText(v.getAmount()+"/小时");
+                }
+            });
+        }
+    }
+
+    /**
+     * 询价按量计费参数
+     *
+     * @param instanceSpecTypes
+     */
+    private static ListOnDemandResourceRatingsRequest getListOnDemandResourceRatingsRequest(List<InstanceSpecType> instanceSpecTypes,String projectId, String regionId){
+        ListOnDemandResourceRatingsRequest request = new ListOnDemandResourceRatingsRequest();
+        RateOnDemandReq body = new RateOnDemandReq();
+        List<DemandProductInfo> listBodyProductInfos = new ArrayList<>();
+        instanceSpecTypes.forEach(v->{
+            listBodyProductInfos.add(
+                    new DemandProductInfo()
+                            //唯一标识
+                            .withId(v.getSpecName())
+                            //云主机询价固定
+                            .withCloudServiceType("hws.service.type.ec2")
+                            .withResourceType("hws.resource.type.vm")
+                            //区分linux\win，目前查询结果价格一致，官网这个价格，不根据操作系统的不同而改变价格，所以这里不做区分
+                            .withResourceSpec(v.getSpecName()+".linux")
+                            .withRegion(regionId)
+                            //云服务器：Duration
+                            //云硬盘：Duration
+                            //弹性IP：Duration
+                            .withUsageFactor("Duration")
+                            //按小时询价，使用量值为1，使用量单位为小时。
+                            .withUsageValue((double)1)
+                            //调度单位小时为4
+                            .withUsageMeasureId(4)
+                            //订购数量，这里固定一个，跟创建虚拟机数量无关
+                            .withSubscriptionNum(1)
+            );
+        });
+        body.withProductInfos(listBodyProductInfos);
+        body.withProjectId(projectId);
+        request.withBody(body);
+        return request;
+    }
+
+    private static void inquiryForMonth(List<InstanceSpecType> instanceSpecTypes,HuaweiVmCreateRequest request,HuaweiVmCredential credential,String projectId){
+        //询价结果
+        List<PeriodProductOfficialRatingResult> resultList = new ArrayList<>();
+        List<InstanceSpecType> searchList = new ArrayList<>();
+        //每次最多只能查询100个实例的价格
+        int counter = 1;
+        for(InstanceSpecType instanceSpecType:instanceSpecTypes){
+            searchList.add(instanceSpecType);
+            if (counter % 100 == 0) {
+                ListRateOnPeriodDetailRequest resourceRatingsRequest = getListRateOnPeriodDetailRequest(searchList,projectId,request.getRegionId());
+                ListRateOnPeriodDetailResponse response = credential.getBssClient("cn-north-1").listRateOnPeriodDetail(resourceRatingsRequest);
+                resultList.addAll(response.getOfficialWebsiteRatingResult().getProductRatingResults());
+                searchList.clear();
+            }
+            counter++;
+        }
+        //不够100个实例
+        if(searchList.size()>0){
+            ListRateOnPeriodDetailRequest resourceRatingsRequest = getListRateOnPeriodDetailRequest(searchList,projectId,request.getRegionId());
+            ListRateOnPeriodDetailResponse response = credential.getBssClient("cn-north-1").listRateOnPeriodDetail(resourceRatingsRequest);
+            resultList.addAll(response.getOfficialWebsiteRatingResult().getProductRatingResults());
+        }
+        //设置价格
+        if(CollectionUtils.isNotEmpty(resultList)){
+            instanceSpecTypes.forEach(v->{
+                List<PeriodProductOfficialRatingResult> vList = resultList.stream()
+                        .filter(r->StringUtils.equalsIgnoreCase(r.getId(),v.getSpecName())).collect(Collectors.toList());
+                if(CollectionUtils.isNotEmpty(vList)){
+                    v.setAmount(new BigDecimal(vList.get(0).getOfficialWebsiteAmount()).setScale(3, RoundingMode.HALF_UP));
+                    v.setAmountText(v.getAmount()+"/月");
+                }
+            });
+        }
+    }
+
+    /**
+     * 询价包年包月参数
+     *
+     * @param instanceSpecTypes
+     */
+    private static ListRateOnPeriodDetailRequest getListRateOnPeriodDetailRequest(List<InstanceSpecType> instanceSpecTypes,String projectId, String regionId){
+        ListRateOnPeriodDetailRequest request = new ListRateOnPeriodDetailRequest();
+        RateOnPeriodReq body = new RateOnPeriodReq();
+        List<PeriodProductInfo> listPeriodProductInfo = new ArrayList<>();
+        instanceSpecTypes.forEach(v->{
+            listPeriodProductInfo.add(
+                    new PeriodProductInfo()
+                            //唯一标识
+                            .withId(v.getSpecName())
+                            //云主机询价固定
+                            .withCloudServiceType("hws.service.type.ec2")
+                            .withResourceType("hws.resource.type.vm")
+                            //区分linux\win，目前查询结果价格一致，官网这个价格，不根据操作系统的不同而改变价格，所以这里不做区分
+                            .withResourceSpec(v.getSpecName()+".linux")
+                            .withRegion(regionId)
+                            //周期类型 2月
+                            .withPeriodType(2)
+                            //周期数 1个月
+                            .withPeriodNum(1)
+                            //数量
+                            .withSubscriptionNum(1)
+            );
+        });
+        body.withProductInfos(listPeriodProductInfo);
+        body.withProjectId(projectId);
+        request.withBody(body);
+        return request;
+    }
+
+    public static List<Map<String, String>> getAllDiskTypes(HuaweiVmCreateRequest request) {
+        boolean isRandom = StringUtils.equalsIgnoreCase("random",request.getAvailabilityZone());
+        if(!isRandom){
+            HuaweiGetDiskTypeRequest getDiskTypeRequest = new HuaweiGetDiskTypeRequest();
+            getDiskTypeRequest.setZone(request.getAvailabilityZone());
+            getDiskTypeRequest.setCredential(request.getCredential());
+            getDiskTypeRequest.setRegion(request.getRegionId());
+            getDiskTypeRequest.setLanguage(request.getLanguage());
+            return getDiskTypes(getDiskTypeRequest);
+        }
+        HuaweiVmCredential huaweiVmCredential = JsonUtil.parseObject(request.getCredential(), HuaweiVmCredential.class);
+        EvsClient evsClient = huaweiVmCredential.getEvsClient(request.getRegionId());
+
+        CinderListVolumeTypesRequest cinderListVolumeTypesRequest = new CinderListVolumeTypesRequest();
+        try {
+            CinderListVolumeTypesResponse response = evsClient.cinderListVolumeTypes(cinderListVolumeTypesRequest);
+            List<Map<String, String>> mapList = new ArrayList<>();
+            response.getVolumeTypes().forEach(volumeType -> {
+                if (StringUtils.isNoneEmpty(volumeType.getExtraSpecs().getReSKEYAvailabilityZones())
+                        && (StringUtils.isEmpty(volumeType.getExtraSpecs().getOsVendorExtendedSoldOutAvailabilityZones())
+                        && !volumeType.getName().startsWith("DESS_"))) {
+                    Map<String, String> vol = new HashMap<>();
+                    vol.put("id", volumeType.getName());
+                    vol.put("name", HuaweiDiskType.getName(volumeType.getName()));
+                    mapList.add(vol);
+                }
+            });
+            return mapList;
+        } catch (Exception e) {
+            throw new RuntimeException(e.getMessage(), e);
+        }
+    }
+
+    public static void main(String[] args) {
+
     }
 
 }

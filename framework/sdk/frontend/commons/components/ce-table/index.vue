@@ -65,6 +65,7 @@ import {
   Order,
   TableSearch,
 } from "@commons/components/ce-table/type";
+import type { SimpleMap } from "@commons/api/base/type";
 const props = defineProps<{
   header?: string;
   tableConfig: TableConfig;
@@ -184,9 +185,24 @@ const search = (conditions: Conditions) => {
     )
   );
 };
-
+/**
+ * 获取查询对象
+ */
+const getTableSearch: (oherConditions: Conditions) => TableSearch = (
+  oherConditions
+) => {
+  return new TableSearch(
+    oherConditions
+      ? { ...condition.value, ...oherConditions }
+      : condition.value,
+    order.value,
+    searchCondition.value,
+    tableHeaderFilter.value
+  );
+};
 defineExpose({
   search,
+  getTableSearch,
 });
 </script>
 

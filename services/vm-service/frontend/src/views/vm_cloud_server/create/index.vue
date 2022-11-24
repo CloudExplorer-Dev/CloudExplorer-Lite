@@ -65,7 +65,12 @@
             ></CeFormItem>
           </template>
         </div>
-
+        <div class="footer-center">
+          <div>
+            <span>费用预估：</span>
+            <span style="color: red; font-size: large">123.4</span>
+          </div>
+        </div>
         <div class="footer-btn">
           <el-button @click="cancel()"> 取消</el-button>
           <el-button
@@ -336,6 +341,12 @@ onMounted(() => {
 
     .footer-form {
       min-width: 400px;
+    }
+    .footer-center {
+      display: flex;
+      flex-direction: row;
+      flex-wrap: wrap;
+      justify-content: center;
     }
 
     .footer-btn {

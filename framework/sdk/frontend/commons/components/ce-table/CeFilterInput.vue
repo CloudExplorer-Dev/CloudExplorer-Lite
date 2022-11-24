@@ -2,9 +2,7 @@
   <el-input
     v-model="searchValue"
     @input="input"
-    @blur="blur"
     @keydown="keydown"
-    @clear="clear"
     v-bind="$attrs"
     clearable
     :placeholder="quickPlaceholder"
@@ -29,18 +27,18 @@
 </template>
 <script setup lang="ts">
 import { ref, computed, onMounted } from "vue";
-import type { SearchOption, Condition } from "./index";
+import type { SearchOption, Condition } from "./type";
 
 const emit = defineEmits(["update:modelValue", "change"]);
 
-const props = defineProps({
+const props = defineProps<{
   /**
    *需要查询的下拉框
    */
-  searchOptions: Array<SearchOption>,
+  searchOptions: Array<SearchOption>;
 
-  quickPlaceholder: String,
-});
+  quickPlaceholder: string;
+}>();
 
 const activeSearchOption = ref<SearchOption>();
 

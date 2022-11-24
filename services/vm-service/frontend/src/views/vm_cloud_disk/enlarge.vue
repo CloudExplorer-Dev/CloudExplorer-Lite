@@ -6,7 +6,7 @@ import type {
   EnlargeDiskRequest,
   VmCloudDiskVO,
 } from "@/api/vm_cloud_disk/type";
-import { platformIcon } from "@/utils/platform";
+import { platformIcon } from "@commons/utils/platform";
 import { ElMessage } from "element-plus";
 import { useI18n } from "vue-i18n";
 

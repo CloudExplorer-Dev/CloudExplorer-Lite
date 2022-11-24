@@ -50,6 +50,9 @@ public enum InputType {
     AliyunDiskConfigForm(AliyunDiskConfig.class),
     AliyunNetConfigForm(AliyunNetConfig.class),
 
+    HuaweiInstanceSpecForm(com.fit2cloud.common.form.vo.huawei.InstanceSpecForm.class),
+    HuaweiDiskConfigForm(com.fit2cloud.common.form.vo.huawei.DiskConfigForm.class),
+
     VsphereDiskConfigForm(com.fit2cloud.common.form.vo.vsphere.DiskConfigForm.class),
     VsphereComputeConfigForm(com.fit2cloud.common.form.vo.vsphere.ComputeConfigForm.class),
     VsphereDatastoreForm(com.fit2cloud.common.form.vo.vsphere.DatastoreForm.class),

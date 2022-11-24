@@ -9,7 +9,7 @@ import lombok.Data;
 @Data
 public class HuaweiInstanceRequest extends HuaweiBaseRequest {
 
-    private String uuId;
+    private String uuid;
 
     /**
      * 强制执行

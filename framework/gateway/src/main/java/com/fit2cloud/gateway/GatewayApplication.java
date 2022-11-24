@@ -1,9 +1,6 @@
 package com.fit2cloud.gateway;
 
-import com.fit2cloud.autoconfigure.JobSettingConfig;
-import com.fit2cloud.autoconfigure.LocaleConfig;
-import com.fit2cloud.autoconfigure.SecurityConfig;
-import com.fit2cloud.autoconfigure.SwaggerConfig;
+import com.fit2cloud.autoconfigure.*;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.web.servlet.ServletWebServerFactoryAutoConfiguration;
@@ -15,7 +12,8 @@ import org.springframework.context.annotation.PropertySource;
         ServletWebServerFactoryAutoConfiguration.class,
         JobSettingConfig.class,
         LocaleConfig.class,
-        SwaggerConfig.class
+        SwaggerConfig.class,
+        RedisConfig.class
 })
 @EnableDiscoveryClient
 @PropertySource(value = {

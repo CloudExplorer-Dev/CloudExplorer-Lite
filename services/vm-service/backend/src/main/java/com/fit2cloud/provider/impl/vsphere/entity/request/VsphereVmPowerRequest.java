@@ -9,5 +9,5 @@ import lombok.Data;
 @Data
 public class VsphereVmPowerRequest extends VsphereVmBaseRequest{
 
-    private String uuId;
+    private String uuid;
 }
