@@ -140,7 +140,7 @@ function initOptionList(
     if (
       //关联对象有值
       _.every(formItem?.relationTrigger, (trigger) => {
-        return _.has(_temp, trigger);
+        return _.get(_temp, trigger) !== undefined;
       })
     ) {
       if (formItem.group?.toFixed() === props.groupId) {
