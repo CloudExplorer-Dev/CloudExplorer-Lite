@@ -4,6 +4,7 @@ import com.fit2cloud.common.provider.impl.openstack.entity.request.OpenStackBase
 import com.fit2cloud.provider.entity.F2CDisk;
 import com.fit2cloud.provider.entity.F2CImage;
 import com.fit2cloud.provider.entity.F2CVirtualMachine;
+import com.fit2cloud.provider.entity.result.CheckCreateServerResult;
 import com.fit2cloud.provider.impl.openstack.entity.CheckStatusResult;
 import com.fit2cloud.provider.impl.openstack.entity.VolumeType;
 import com.fit2cloud.provider.impl.openstack.entity.request.*;
@@ -17,6 +18,8 @@ import org.openstack4j.model.compute.Action;
 import org.openstack4j.model.compute.Flavor;
 import org.openstack4j.model.compute.RebootType;
 import org.openstack4j.model.compute.Server;
+import org.openstack4j.model.compute.builder.BlockDeviceMappingBuilder;
+import org.openstack4j.model.compute.builder.ServerCreateBuilder;
 import org.openstack4j.model.image.v2.Image;
 import org.openstack4j.model.network.Network;
 import org.openstack4j.model.network.SecurityGroup;
@@ -25,6 +28,7 @@ import org.openstack4j.model.storage.block.Volume;
 import org.openstack4j.model.storage.block.builder.VolumeBuilder;
 
 import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -485,5 +489,129 @@ public class OpenStackCloudApi {
             throw new RuntimeException(e.getMessage(), e);
         }
         return list;
+    }
+
+    public static F2CVirtualMachine getSimpleServerByCreateRequest(OpenStackServerCreateRequest request) {
+        F2CVirtualMachine virtualMachine = new F2CVirtualMachine();
+
+        int index = request.getIndex();
+
+        try {
+            OSClient.OSClientV3 osClient = request.getOSClient();
+            osClient.useRegion(request.getRegionId());
+
+            Flavor flavor = osClient.compute().flavors().get(request.getFlavorId());
+
+            String instanceType = flavor.getVcpus() + "vCpu " + flavor.getRam() / 1024 + "GB";
+
+            virtualMachine
+                    .setId(request.getId())
+                    .setName(request.getServerInfos().get(index).getName())
+                    .setCpu(flavor.getVcpus())
+                    .setMemory(flavor.getRam() / 1024)
+                    .setIpArray(new ArrayList<>())
+                    .setInstanceType(instanceType)
+                    .setInstanceTypeDescription(instanceType);
+
+            if (!request.isBootFormVolume()) {
+                virtualMachine.setDisk(flavor.getDisk());
+            }
+
+            return virtualMachine;
+
+        } catch (Exception e) {
+            throw new RuntimeException(e.getMessage(), e);
+        }
+    }
+
+    public static CheckCreateServerResult validateServerCreateRequest(OpenStackServerCreateRequest request) {
+        //todo
+
+        return CheckCreateServerResult.success();
+    }
+
+
+    public static F2CVirtualMachine createVirtualMachine(OpenStackServerCreateRequest request) {
+        F2CVirtualMachine f2CVirtualMachine = null;
+
+        int index = request.getIndex();
+        String serverName = request.getServerInfos().get(index).getName();
+
+        try {
+            OSClient.OSClientV3 osClient = request.getOSClient();
+            osClient.useRegion(request.getRegionId());
+
+            ServerCreateBuilder builder = Builders.server();
+            builder.addAdminPass(request.getPassword());
+            builder.name(serverName);
+            builder.availabilityZone(request.getZone());
+
+            builder.configDrive(true);
+            builder.flavor(request.getFlavorId());
+
+            builder.networks(request.getNetworks());
+            //安全组
+            for (String securityGroupId : request.getSecurityGroups()) {
+                SecurityGroup sg = osClient.networking().securitygroup().get(securityGroupId);
+                if (sg != null) {
+                    builder.addSecurityGroup(sg.getName());
+                }
+            }
+
+            if (!request.isBootFormVolume()) {
+                builder.image(request.getImageId());
+            } else {
+                AtomicInteger atomicInteger = new AtomicInteger(0);
+                for (OpenStackServerCreateRequest.DiskConfig disk : request.getDisks()) {
+                    //没有volumeType, 所以要自己先建盘出来
+                    BlockDeviceMappingBuilder blockDeviceMappingBuilder = Builders.blockDeviceMapping();
+                    //blockDeviceMappingBuilder.deviceName(serverName + "-volume-" + atomicInteger.getAndIncrement());
+                    //blockDeviceMappingBuilder.volumeSize(disk.getSize());
+                    /*if (disk.isBoot()) {
+                        blockDeviceMappingBuilder.uuid(request.getImageId())
+                                .sourceType(BDMSourceType.IMAGE)
+                                .bootIndex(0)
+                                .deleteOnTermination(disk.isDeleteWithInstance());
+                    }*/
+                    VolumeBuilder volumeBuilder = Builders.volume()
+                            .name(serverName + "-volume-" + atomicInteger.getAndIncrement())
+                            .description("create with server")
+                            .size(disk.getSize());
+                    if (StringUtils.isNotBlank(disk.getVolumeType())) {
+                        volumeBuilder.volumeType(disk.getVolumeType());
+                    }
+                    if (disk.isBoot()) {
+                        volumeBuilder.bootable(true)
+                                .imageRef(request.getImageId());
+                    }
+                    Volume volume = osClient.blockStorage().volumes().create(volumeBuilder.build());
+                    CheckStatusResult result = OpenStackUtils.checkDiskStatus(osClient, volume, Volume.Status.AVAILABLE);
+                    if (!result.isSuccess()) {
+                        throw new RuntimeException(result.getFault());
+                    }
+
+                    blockDeviceMappingBuilder.uuid(volume.getId()).deleteOnTermination(disk.isDeleteWithInstance());
+                    if (disk.isBoot()) {
+                        blockDeviceMappingBuilder.bootIndex(0);
+                    }
+
+                    builder.blockDevice(blockDeviceMappingBuilder.build());
+
+                }
+
+            }
+
+            Server server = osClient.compute().servers().boot(builder.build());
+
+            if (server == null) {
+                throw new RuntimeException("Launch openStack server error, boot result is null");
+            }
+            CheckStatusResult result = OpenStackUtils.checkServerStatus(osClient, server, Server.Status.ACTIVE);
+            return OpenStackUtils.toF2CVirtualMachine(osClient, (Server) result.getObject(), request.getRegionId(), null)
+                    .setId(request.getId());
+
+        } catch (Exception e) {
+            throw new RuntimeException(e.getMessage(), e);
+        }
     }
 }

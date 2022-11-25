@@ -10,6 +10,7 @@ import com.fit2cloud.provider.ICloudProvider;
 import com.fit2cloud.provider.entity.F2CDisk;
 import com.fit2cloud.provider.entity.F2CImage;
 import com.fit2cloud.provider.entity.F2CVirtualMachine;
+import com.fit2cloud.provider.entity.result.CheckCreateServerResult;
 import com.fit2cloud.provider.impl.openstack.api.OpenStackCloudApi;
 import com.fit2cloud.provider.impl.openstack.entity.VolumeType;
 import com.fit2cloud.provider.impl.openstack.entity.request.*;
@@ -130,4 +131,18 @@ public class OpenStackCloudProvider extends AbstractCloudProvider<OpenStackCrede
     }
 
 
+    @Override
+    public F2CVirtualMachine getSimpleServerByCreateRequest(String req) {
+        return OpenStackCloudApi.getSimpleServerByCreateRequest(JsonUtil.parseObject(req, OpenStackServerCreateRequest.class));
+    }
+
+    @Override
+    public CheckCreateServerResult validateServerCreateRequest(String req) {
+        return OpenStackCloudApi.validateServerCreateRequest(JsonUtil.parseObject(req, OpenStackServerCreateRequest.class));
+    }
+
+    @Override
+    public F2CVirtualMachine createVirtualMachine(String req) {
+        return OpenStackCloudApi.createVirtualMachine(JsonUtil.parseObject(req, OpenStackServerCreateRequest.class));
+    }
 }
