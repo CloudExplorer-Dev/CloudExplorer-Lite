@@ -57,7 +57,13 @@ public enum InputType {
     VsphereComputeConfigForm(com.fit2cloud.common.form.vo.vsphere.ComputeConfigForm.class),
     VsphereDatastoreForm(com.fit2cloud.common.form.vo.vsphere.DatastoreForm.class),
     VsphereNetworkAdapterForm(com.fit2cloud.common.form.vo.vsphere.NetworkAdapterForm.class),
-    VsphereServerInfoForm(com.fit2cloud.common.form.vo.vsphere.ServerInfoForm.class);
+    VsphereServerInfoForm(com.fit2cloud.common.form.vo.vsphere.ServerInfoForm.class),
+
+    OpenStackFlavorForm(com.fit2cloud.common.form.vo.openstack.FlavorForm.class),
+    OpenStackDiskConfigForm(com.fit2cloud.common.form.vo.openstack.DiskConfigForm.class),
+    OpenStackServerInfoForm(com.fit2cloud.common.form.vo.openstack.ServerInfoForm.class),
+    OpenStackNetworkConfigForm(com.fit2cloud.common.form.vo.openstack.NetworkConfigForm.class),
+    OpenStackSecurityGroupConfigForm(com.fit2cloud.common.form.vo.openstack.SecurityGroupConfigForm.class);
 
     /**
      * 表单类型对应的实体类
