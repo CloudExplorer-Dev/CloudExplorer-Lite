@@ -57,7 +57,7 @@
     {{
       _.get(
         _.find(formItem?.optionList, (o) => o.id === modelValue),
-        "id",
+        "name",
         modelValue
       )
     }}

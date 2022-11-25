@@ -133,11 +133,14 @@ public class OpenStackServerCreateRequest extends OpenStackBaseRequest implement
 
 
     @Form(inputType = InputType.OpenStackNetworkConfigForm,
+            label = "网络",
             step = 2,
             group = 5,
             defaultValue = "[]",
             defaultJsonValue = true,
             relationTrigger = {"region"},
+            clazz = OpenStackCloudProvider.class,
+            method = "getNetworks",
             confirmGroup = 2,
             confirmSpecial = true
     )
@@ -145,11 +148,14 @@ public class OpenStackServerCreateRequest extends OpenStackBaseRequest implement
 
 
     @Form(inputType = InputType.OpenStackSecurityGroupConfigForm,
+            label = "安全组",
             step = 2,
             group = 6,
             defaultValue = "[]",
             defaultJsonValue = true,
             relationTrigger = {"region"},
+            clazz = OpenStackCloudProvider.class,
+            method = "getSecurityGroups",
             confirmGroup = 2,
             confirmSpecial = true
     )
@@ -171,7 +177,7 @@ public class OpenStackServerCreateRequest extends OpenStackBaseRequest implement
     @Form(inputType = InputType.Password,
             step = 3,
             group = 7,
-            defaultValue = "[]",
+            label = "密码",
             defaultJsonValue = true,
             relationTrigger = {"loginMode"},
             confirmGroup = 2,

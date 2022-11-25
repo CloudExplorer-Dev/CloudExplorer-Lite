@@ -18,13 +18,13 @@ import org.openstack4j.model.compute.Flavor;
 import org.openstack4j.model.compute.RebootType;
 import org.openstack4j.model.compute.Server;
 import org.openstack4j.model.image.v2.Image;
+import org.openstack4j.model.network.Network;
+import org.openstack4j.model.network.SecurityGroup;
+import org.openstack4j.model.network.State;
 import org.openstack4j.model.storage.block.Volume;
 import org.openstack4j.model.storage.block.builder.VolumeBuilder;
 
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -441,5 +441,49 @@ public class OpenStackCloudApi {
         }
 
         return list.stream().sorted(Comparator.comparingInt(Flavor::getVcpus).thenComparingInt(Flavor::getRam).thenComparingInt(Flavor::getDisk)).collect(Collectors.toList());
+    }
+
+    public static List<SecurityGroup> getSecurityGroups(OpenStackServerCreateRequest request) {
+        List<SecurityGroup> list = new ArrayList<>();
+        try {
+            OSClient.OSClientV3 osClient = request.getOSClient();
+            osClient.useRegion(request.getRegionId());
+
+            Map<String, String> filteringParams = new HashMap<>();
+            //管理员账权限号可以拿到所有安全组？暂时无法区分是否为共享的，所以只拿这个project下的
+            filteringParams.put("project_id", request.getOpenStackCredential().getProject());
+
+            for (SecurityGroup securityGroup : osClient.networking().securitygroup().list(filteringParams)) {
+                //排除其他project下非共享的
+                list.add(securityGroup);
+            }
+
+
+        } catch (Exception e) {
+            throw new RuntimeException(e.getMessage(), e);
+        }
+        return list;
+    }
+
+    public static List<Network> getNetworks(OpenStackServerCreateRequest request) {
+        List<Network> list = new ArrayList<>();
+        try {
+            OSClient.OSClientV3 osClient = request.getOSClient();
+            osClient.useRegion(request.getRegionId());
+
+            Map<String, String> filteringParams = new HashMap<>();
+            //filteringParams.put("project_id", request.getOpenStackCredential().getProject());
+            //filteringParams.put("shared", "true");
+
+            for (Network network : osClient.networking().network().list(filteringParams)) {
+                if (State.ACTIVE.equals(network.getStatus())) {
+                    list.add(network);
+                }
+            }
+
+        } catch (Exception e) {
+            throw new RuntimeException(e.getMessage(), e);
+        }
+        return list;
     }
 }
