@@ -1,5 +1,7 @@
 package com.fit2cloud.provider.impl.aliyun.entity.request;
 
+import com.aliyun.bssopenapi20171214.models.GetPayAsYouGoPriceRequest;
+import com.aliyun.bssopenapi20171214.models.GetSubscriptionPriceRequest;
 import com.aliyun.ecs20140526.models.CreateInstanceRequest;
 import com.fit2cloud.common.form.annotaion.Form;
 import com.fit2cloud.common.form.annotaion.FormConfirmInfo;
@@ -10,6 +12,7 @@ import com.fit2cloud.provider.ICreateServerRequest;
 import com.fit2cloud.provider.impl.aliyun.AliyunCloudProvider;
 import com.fit2cloud.provider.impl.aliyun.constants.AliyunChargeType;
 import com.fit2cloud.provider.impl.aliyun.constants.AliyunLoginType;
+import com.fit2cloud.provider.impl.aliyun.entity.AliyunPriceModuleConfig;
 import com.fit2cloud.service.impl.VmCloudImageServiceImpl;
 import lombok.Data;
 import lombok.experimental.Accessors;
@@ -336,5 +339,163 @@ public class AliyunVmCreateRequest extends AliyunBaseRequest implements ICreateS
         }
 
         return createInstanceRequest;
+    }
+
+    /**
+     * 按量付费实例计费
+     *
+     * @return
+     */
+    public List<GetPayAsYouGoPriceRequest.GetPayAsYouGoPriceRequestModuleList> toPostPaidModuleList() {
+        List<GetPayAsYouGoPriceRequest.GetPayAsYouGoPriceRequestModuleList> moduleList = new ArrayList<>();
+        AliyunPriceModuleConfig config = generateModuleConfig();
+
+        GetPayAsYouGoPriceRequest.GetPayAsYouGoPriceRequestModuleList instanceTypeModule = new GetPayAsYouGoPriceRequest.GetPayAsYouGoPriceRequestModuleList()
+                .setModuleCode("InstanceType")
+                .setPriceType("Hour")
+                .setConfig(config.getInstanceTypeConfig());
+        moduleList.add(instanceTypeModule);
+
+        // 系统盘
+        if (StringUtils.isNotBlank(config.getSystemDiskConfig())) {
+            GetPayAsYouGoPriceRequest.GetPayAsYouGoPriceRequestModuleList systemDiskModule = new GetPayAsYouGoPriceRequest.GetPayAsYouGoPriceRequestModuleList()
+                    .setModuleCode("SystemDisk")
+                    .setPriceType("Hour")
+                    .setConfig(config.getSystemDiskConfig());
+            moduleList.add(systemDiskModule);
+        }
+
+        // 数据盘
+        List<String> dataConfigList = config.getDataDiskConfigList();
+        if (CollectionUtils.isNotEmpty(dataConfigList)) {
+            for (int i = 1; i < dataConfigList.size(); i++) {
+                GetPayAsYouGoPriceRequest.GetPayAsYouGoPriceRequestModuleList dataDiskModule = new GetPayAsYouGoPriceRequest.GetPayAsYouGoPriceRequestModuleList()
+                        .setModuleCode("DataDisk")
+                        .setPriceType("Hour")
+                        .setConfig(dataConfigList.get(i));
+                moduleList.add(dataDiskModule);
+            }
+        }
+
+        // 公网IP
+        if (hasPublicIp) {
+            if ("PayByTraffic".equalsIgnoreCase(bandwidthChargeType)) {
+                GetPayAsYouGoPriceRequest.GetPayAsYouGoPriceRequestModuleList internetTrafficOutModule = new GetPayAsYouGoPriceRequest.GetPayAsYouGoPriceRequestModuleList()
+                        .setModuleCode("InternetTrafficOut")
+                        .setPriceType("Usage")
+                        .setConfig(config.getPublicIpConfig());
+                moduleList.add(internetTrafficOutModule);
+            } else {
+                GetPayAsYouGoPriceRequest.GetPayAsYouGoPriceRequestModuleList internetMaxBandwidthOutModule = new GetPayAsYouGoPriceRequest.GetPayAsYouGoPriceRequestModuleList()
+                        .setModuleCode("InternetMaxBandwidthOut")
+                        .setPriceType("Hour")
+                        .setConfig(config.getPublicIpConfig());
+                moduleList.add(internetMaxBandwidthOutModule);
+            }
+        }
+        return new ArrayList<>();
+    }
+
+    /**
+     * 包年包月实例计费
+     *
+     * @return
+     */
+    public List<GetSubscriptionPriceRequest.GetSubscriptionPriceRequestModuleList> toPrePaidModuleList() {
+        List<GetSubscriptionPriceRequest.GetSubscriptionPriceRequestModuleList> moduleList = new ArrayList<>();
+        AliyunPriceModuleConfig config = generateModuleConfig();
+
+        // 实例类型
+        GetSubscriptionPriceRequest.GetSubscriptionPriceRequestModuleList instanceTypeModule = new GetSubscriptionPriceRequest.GetSubscriptionPriceRequestModuleList()
+                .setModuleCode("InstanceType")
+                .setConfig(config.getInstanceTypeConfig());
+        moduleList.add(instanceTypeModule);
+
+        // 系统盘
+        if (StringUtils.isNotBlank(config.getSystemDiskConfig())) {
+            GetSubscriptionPriceRequest.GetSubscriptionPriceRequestModuleList systemDiskModule = new GetSubscriptionPriceRequest.GetSubscriptionPriceRequestModuleList()
+                    .setModuleCode("SystemDisk")
+                    .setConfig(config.getSystemDiskConfig());
+            moduleList.add(systemDiskModule);
+        }
+
+        // 数据盘
+        List<String> dataConfigList = config.getDataDiskConfigList();
+        if (CollectionUtils.isNotEmpty(dataConfigList)) {
+            for (int i = 1; i < dataConfigList.size(); i++) {
+                GetSubscriptionPriceRequest.GetSubscriptionPriceRequestModuleList dataDiskModule = new GetSubscriptionPriceRequest.GetSubscriptionPriceRequestModuleList()
+                        .setModuleCode("DataDisk")
+                        .setConfig(dataConfigList.get(i));
+                moduleList.add(dataDiskModule);
+            }
+        }
+
+        // 公网IP
+        if (hasPublicIp) {
+            if ("PayByTraffic".equalsIgnoreCase(bandwidthChargeType)) {
+                GetSubscriptionPriceRequest.GetSubscriptionPriceRequestModuleList internetTrafficOutModule = new GetSubscriptionPriceRequest.GetSubscriptionPriceRequestModuleList()
+                        .setModuleCode("InternetTrafficOut")
+                        .setConfig(config.getPublicIpConfig());
+                moduleList.add(internetTrafficOutModule);
+            } else {
+                GetSubscriptionPriceRequest.GetSubscriptionPriceRequestModuleList internetMaxBandwidthOutModule = new GetSubscriptionPriceRequest.GetSubscriptionPriceRequestModuleList()
+                        .setModuleCode("InternetMaxBandwidthOut")
+                        .setConfig(config.getPublicIpConfig());
+                moduleList.add(internetMaxBandwidthOutModule);
+            }
+        }
+
+        return moduleList;
+    }
+
+    private AliyunPriceModuleConfig generateModuleConfig() {
+        AliyunPriceModuleConfig config = new AliyunPriceModuleConfig();
+
+        // 实例类型
+        String imageOs = os.indexOf("win") > 0 ? "windows" : "linux";
+        String instanceTypeConfig = "ImageOs:" + imageOs +
+                "IoOptimized:none" +
+                "InstanceTypeFamily:" + "" +
+                "Region:" + regionId +
+                "InstanceType:" + instanceType;
+        config.setInstanceTypeConfig(instanceTypeConfig);
+
+        // 磁盘
+        if (CollectionUtils.isNotEmpty(disks)) {
+            // 系统盘
+            AliyunCreateDiskForm systemDisk = disks.get(0);
+            String systemDiskConfig = "SystemDisk.PerformanceLevel:PL1" +
+                    "DataDisk.PerformanceLevel:PL1" +
+                    "Region:" + regionId +
+                    "SystemDisk.Category:" + systemDisk.getDiskType() +
+                    "SystemDisk.Size:" + systemDisk.getSize();
+            config.setSystemDiskConfig(systemDiskConfig);
+
+            // 数据盘
+            List<String> dataDiskConfigList = new ArrayList();
+            for (int i = 1; i < disks.size(); i++) {
+                String dataDiskConfig = "DataDisk.PerformanceLevel:PL1" +
+                        "Region:" + regionId +
+                        "DataDisk.Category:" + disks.get(i).getDiskType() +
+                        "DataDisk.Size:" + disks.get(i).getSize();
+                dataDiskConfigList.add(dataDiskConfig);
+            }
+            config.setDataDiskConfigList(dataDiskConfigList);
+        }
+
+        // 公网IP
+        if (hasPublicIp) {
+            if ("PayByTraffic".equalsIgnoreCase(bandwidthChargeType)) {
+                // 公网流量：按流量计费永远显示为：0.800/GB
+                String internetTrafficOutConfig = "Region:" + regionId;
+                config.setPublicIpConfig(internetTrafficOutConfig);
+            } else {
+                // 公网带宽：InternetMaxBandwidthOut 单位 KBPS;bandwidth 单位 MBPS
+                String internetMaxBandwidthOutConfig = "Region:" + regionId +
+                        "InternetMaxBandwidthOut:" + Integer.valueOf(bandwidth) * 1024;
+                config.setPublicIpConfig(internetMaxBandwidthOutConfig);
+            }
+        }
+        return config;
     }
 }

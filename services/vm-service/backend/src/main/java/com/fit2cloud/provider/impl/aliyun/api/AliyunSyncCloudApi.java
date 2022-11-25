@@ -1,5 +1,9 @@
 package com.fit2cloud.provider.impl.aliyun.api;
 
+import com.aliyun.bssopenapi20171214.models.GetPayAsYouGoPriceRequest;
+import com.aliyun.bssopenapi20171214.models.GetPayAsYouGoPriceResponse;
+import com.aliyun.bssopenapi20171214.models.GetSubscriptionPriceRequest;
+import com.aliyun.bssopenapi20171214.models.GetSubscriptionPriceResponse;
 import com.aliyun.cms20190101.models.DescribeMetricListRequest;
 import com.aliyun.cms20190101.models.DescribeMetricListResponse;
 import com.aliyun.ecs20140526.Client;
@@ -23,9 +27,10 @@ import com.fit2cloud.provider.entity.F2CImage;
 import com.fit2cloud.provider.entity.F2CNetwork;
 import com.fit2cloud.provider.entity.F2CVirtualMachine;
 import com.fit2cloud.provider.entity.request.GetMetricsRequest;
+import com.fit2cloud.provider.impl.aliyun.constants.AliyunChargeType;
 import com.fit2cloud.provider.impl.aliyun.constants.AliyunDiskType;
-import com.fit2cloud.provider.impl.aliyun.constants.AliyunInstanceType;
 import com.fit2cloud.provider.impl.aliyun.constants.AliyunPerfMetricConstants;
+import com.fit2cloud.provider.impl.aliyun.entity.AliyunInstanceType;
 import com.fit2cloud.provider.impl.aliyun.entity.credential.AliyunVmCredential;
 import com.fit2cloud.provider.impl.aliyun.entity.request.*;
 import com.fit2cloud.provider.impl.aliyun.util.AliyunMappingUtil;
@@ -481,6 +486,51 @@ public class AliyunSyncCloudApi {
         } catch (Exception e) {
             throw new RuntimeException("Failed to get key pair." + e.getMessage(), e);
         }
+    }
+
+    /**
+     * 获取创建云主机预估价格
+     *
+     * @param req
+     * @return
+     */
+    public static Double getPrice(AliyunVmCreateRequest req) {
+        try {
+            AliyunVmCredential credential = JsonUtil.parseObject(req.getCredential(), AliyunVmCredential.class);
+            com.aliyun.bssopenapi20171214.Client client = credential.getBssClient();
+
+            if (AliyunChargeType.PREPAID.getId().equalsIgnoreCase(req.getInstanceChargeType())) {
+                GetSubscriptionPriceRequest getSubscriptionPriceRequest = new com.aliyun.bssopenapi20171214.models.GetSubscriptionPriceRequest()
+                        .setProductCode("ecs")
+                        .setSubscriptionType("Subscription")
+                        .setOrderType("NewOrder")
+                        .setServicePeriodUnit("Month")
+                        .setServicePeriodQuantity(1)
+                        .setQuantity(1)
+                        .setRegion(req.getRegionId())
+                        .setModuleList(req.toPrePaidModuleList());
+                try {
+                    GetSubscriptionPriceResponse res = client.getSubscriptionPrice(getSubscriptionPriceRequest);
+                } catch (Exception e) {
+                    throw new RuntimeException(e);
+                }
+            } else {
+                GetPayAsYouGoPriceRequest getPayAsYouGoPriceRequest = new GetPayAsYouGoPriceRequest()
+                        .setProductCode("ecs")
+                        .setSubscriptionType("PayAsYouGo")
+                        .setRegion(req.getRegionId())
+                        .setModuleList(req.toPostPaidModuleList())
+                        .setProductType("");
+                try {
+                    GetPayAsYouGoPriceResponse res = client.getPayAsYouGoPrice(getPayAsYouGoPriceRequest);
+                } catch (Exception e) {
+                    throw new RuntimeException(e);
+                }
+            }
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to get price." + e.getMessage(), e);
+        }
+        return 0.0;
     }
 
     /**

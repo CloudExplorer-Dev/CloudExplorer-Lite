@@ -17,6 +17,7 @@ import com.fit2cloud.provider.entity.F2CVirtualMachine;
 import com.fit2cloud.provider.entity.request.GetMetricsRequest;
 import com.fit2cloud.provider.impl.aliyun.api.AliyunSyncCloudApi;
 import com.fit2cloud.provider.impl.aliyun.constants.*;
+import com.fit2cloud.provider.impl.aliyun.entity.AliyunInstanceType;
 import com.fit2cloud.provider.impl.aliyun.entity.credential.AliyunVmCredential;
 import com.fit2cloud.provider.impl.aliyun.entity.request.*;
 
@@ -178,6 +179,11 @@ public class AliyunCloudProvider extends AbstractCloudProvider<AliyunVmCredentia
     public List<Map<String, String>> getKeyPairs(String req) {
         return AliyunSyncCloudApi.getKeyPairs(JsonUtil.parseObject(req, AliyunBaseRequest.class));
     }
+
+    public Double getPrice(String req){
+        return AliyunSyncCloudApi.getPrice(JsonUtil.parseObject(req, AliyunVmCreateRequest.class));
+    }
+
     // For Create VM [END]
 
     @Override
