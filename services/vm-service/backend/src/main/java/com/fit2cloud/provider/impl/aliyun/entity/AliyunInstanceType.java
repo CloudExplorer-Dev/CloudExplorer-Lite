@@ -1,4 +1,4 @@
-package com.fit2cloud.provider.impl.aliyun.constants;
+package com.fit2cloud.provider.impl.aliyun.entity;
 
 import lombok.Data;
 

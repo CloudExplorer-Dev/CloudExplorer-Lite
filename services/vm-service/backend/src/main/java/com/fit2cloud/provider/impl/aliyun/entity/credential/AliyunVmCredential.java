@@ -2,16 +2,11 @@ package com.fit2cloud.provider.impl.aliyun.entity.credential;
 
 import com.aliyun.ecs20140526.Client;
 import com.aliyun.teaopenapi.models.Config;
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fit2cloud.common.exception.Fit2cloudException;
 import com.fit2cloud.common.platform.credential.Credential;
 import com.fit2cloud.common.platform.credential.impl.AliCredential;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Data;
-import lombok.NoArgsConstructor;
 
-import javax.validation.constraints.NotNull;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
@@ -83,4 +78,17 @@ public class AliyunVmCredential extends AliCredential implements Credential {
         }
     }
 
+    public com.aliyun.bssopenapi20171214.Client getBssClient() {
+        Config config = new Config()
+                .setAccessKeyId(getAccessKeyId())
+                .setAccessKeySecret(getAccessKeySecret())
+                .setEndpoint("business.aliyuncs.com");
+        com.aliyun.bssopenapi20171214.Client client = null;
+        try {
+            client = new com.aliyun.bssopenapi20171214.Client(config);
+            return client;
+        } catch (Exception e) {
+            throw new Fit2cloudException(1000, "获取客户端失败");
+        }
+    }
 }
