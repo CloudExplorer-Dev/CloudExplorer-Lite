@@ -74,15 +74,17 @@
                                         FROM
                                             job_record_resource_mapping aj
                                                 LEFT JOIN job_record jr ON aj.job_record_id = jr.id
+                                        WHERE jr.type in (0,3)
                                         GROUP BY
                                             aj.resource_id,
                                             jr.description
+
                                     ) t1 ON t1.resource_id = a.resource_id
                                         AND t1.create_time = a.create_time
                                         AND t1.description = j.description
                                         AND t1.resource_id = a.resource_id
-                                ORDER BY
-                                    j.description
+                                WHERE j.type in (0,3)
+
                             ) js
                         GROUP BY
                             resource_id

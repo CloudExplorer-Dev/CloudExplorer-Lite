@@ -4,10 +4,13 @@ import com.fit2cloud.common.constants.PlatformConstants;
 import com.fit2cloud.common.provider.util.CommonUtil;
 import com.fit2cloud.es.entity.CloudBill;
 import com.fit2cloud.provider.constants.BillModeConstants;
+import com.fit2cloud.provider.impl.huawei.entity.csv.HuaweiBillCsvModel;
+import com.fit2cloud.provider.impl.huawei.entity.request.SyncBillRequest;
 import com.huaweicloud.sdk.bss.v2.model.ResFeeRecordV2;
 import org.apache.commons.lang3.StringUtils;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
@@ -21,6 +24,38 @@ import java.util.stream.Collectors;
  * {@code @注释: }
  */
 public class HuaweiMappingUtil {
+
+    /**
+     * 将华为云账单文件转换为系统账单对象
+     *
+     * @param huaweiBillCsvModel 华为云账单文件对象
+     * @param request            请求参数
+     * @return 系统账单文件对象
+     */
+    public static CloudBill toCloudBill(HuaweiBillCsvModel huaweiBillCsvModel, SyncBillRequest request) {
+        CloudBill cloudBill = new CloudBill();
+        cloudBill.setId(UUID.randomUUID().toString().replace("-", ""));
+        cloudBill.setProvider(PlatformConstants.fit2cloud_huawei_platform.name());
+        cloudBill.setRegionId(huaweiBillCsvModel.getRegionId());
+        cloudBill.setRegionName(huaweiBillCsvModel.getRegionName());
+        cloudBill.setProjectId(huaweiBillCsvModel.getProjectId());
+        cloudBill.setProjectName(huaweiBillCsvModel.getProjectName());
+        cloudBill.setProductId(huaweiBillCsvModel.getProductId());
+        cloudBill.setProductName(huaweiBillCsvModel.getProductName());
+        cloudBill.setProductDetail(huaweiBillCsvModel.getSpecs());
+        cloudBill.setResourceId(huaweiBillCsvModel.getResourceId());
+        cloudBill.setResourceName(huaweiBillCsvModel.getResourceName());
+        cloudBill.setTags(toTags(huaweiBillCsvModel.getResourceTag()));
+        cloudBill.setTotalCost(BigDecimal.valueOf(huaweiBillCsvModel.getOfficialPrice()));
+        cloudBill.setRealTotalCost(BigDecimal.valueOf(huaweiBillCsvModel.getAmountPayable()));
+        cloudBill.setPayAccountId(huaweiBillCsvModel.getAccountId());
+        cloudBill.setUsageStartDate(CommonUtil.getLocalDateTime(huaweiBillCsvModel.getStartTime(), "yyyy-MM-dd HH:mm:ss"));
+        cloudBill.setUsageEndDate(CommonUtil.getLocalDateTime(huaweiBillCsvModel.getEndTime(), "yyyy-MM-dd HH:mm:ss"));
+        cloudBill.setBillingCycle(CommonUtil.getLocalDateTime(request.getCycle(), "yyyy-MM"));
+        cloudBill.setZone(huaweiBillCsvModel.getZone());
+        cloudBill.setBillMode(toBillModeByBucket(huaweiBillCsvModel.getBillMode()));
+        return cloudBill;
+    }
 
 
     /**
@@ -56,6 +91,20 @@ public class HuaweiMappingUtil {
     }
 
     /**
+     * @param billMode 华为云账单文件计费模式
+     * @return 运管计费模式
+     */
+    private static String toBillModeByBucket(String billMode) {
+        if (billMode.equals("按需")) {
+            return BillModeConstants.ON_DEMAND.name();
+        } else if (billMode.equals("包年包月")) {
+            return BillModeConstants.MONTHLY.name();
+        } else {
+            return BillModeConstants.OTHER.name();
+        }
+    }
+
+    /**
      * 计费模式。
      * <p>
      * 1：包年/包月
@@ -84,7 +133,7 @@ public class HuaweiMappingUtil {
      */
     private static Map<String, Object> toTags(String tag) {
         //"resource_tag":"billing:;"
-        if (StringUtils.isEmpty(tag)) {
+        if (StringUtils.isEmpty(tag) || tag.trim().equals("--")) {
             return new HashMap<>();
         } else {
             String[] split = tag.split(";");

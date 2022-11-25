@@ -41,9 +41,27 @@ public class PageUtil {
      * @param <Response> 接口返回类型
      * @return 分页查询到到全量数据
      */
+    public static <T, Request, Response> List<T> pageNextF(Request request, Function<Request, Response> exec, Function<Response, List<T>> getList, BiFunction<Request, Response, Boolean> hasNext, BiFunction<Request, Response, Request> next) {
+        ArrayList<T> collector = new ArrayList<>();
+        return page(request, exec, getList, hasNext, next, DefaultReTry, collector);
+    }
+
+    /**
+     * @param request    请求参数
+     * @param exec       执行函数
+     * @param getList    获取数据
+     * @param hasNext    是否有下一条
+     * @param next       下一条
+     * @param <T>        返回值类型
+     * @param <Request>  请求对象类型
+     * @param <Response> 接口返回类型
+     * @return 分页查询到到全量数据
+     */
     public static <T, Request, Response> List<T> page(Request request, Function<Request, Response> exec, Function<Response, List<T>> getList, BiFunction<Request, Response, Boolean> hasNext, Consumer<Request> next) {
         ArrayList<T> collector = new ArrayList<>();
-        return page(request, exec, getList, hasNext, (req, res) -> next.accept(req), DefaultReTry, collector);
+        return page(request, exec, getList, hasNext, (req, res) -> {
+            next.accept(req);
+        }, DefaultReTry, collector);
     }
 
     /**
@@ -60,7 +78,9 @@ public class PageUtil {
      */
     public static <T, Request, Response> List<T> page(Request request, Function<Request, Response> exec, Function<Response, List<T>> getList, BiFunction<Request, Response, Boolean> hasNext, Consumer<Request> next, Integer reTryNumber) {
         ArrayList<T> collector = new ArrayList<>();
-        return page(request, exec, getList, hasNext, (req, res) -> next.accept(req), reTryNumber, collector);
+        return page(request, exec, getList, hasNext, (req, res) -> {
+            next.accept(req);
+        }, reTryNumber, collector);
     }
 
     /**
@@ -110,6 +130,27 @@ public class PageUtil {
      * @return 分页查询到到全量数据
      */
     private static <T, Request, Response> List<T> page(Request request, Function<Request, Response> exec, Function<Response, List<T>> getList, BiFunction<Request, Response, Boolean> hasNext, BiConsumer<Request, Response> next, Integer reTry, List<T> collector) {
+        return page(request, exec, getList, hasNext, (req, res) -> {
+            next.accept(req, res);
+            return req;
+        }, reTry, collector);
+    }
+
+
+    /**
+     * @param request    请求参数
+     * @param exec       执行函数
+     * @param getList    获取数据
+     * @param hasNext    是否有下一条
+     * @param next       下一条
+     * @param reTry      重试次数
+     * @param collector  数据收集器
+     * @param <T>        返回值类型
+     * @param <Request>  请求对象类型
+     * @param <Response> 接口返回类型
+     * @return 分页查询到到全量数据
+     */
+    private static <T, Request, Response> List<T> page(Request request, Function<Request, Response> exec, Function<Response, List<T>> getList, BiFunction<Request, Response, Boolean> hasNext, BiFunction<Request, Response, Request> next, Integer reTry, List<T> collector) {
         Response response = null;
         try {
             response = exec.apply(request);
@@ -131,11 +172,10 @@ public class PageUtil {
             List<T> responseList = getList.apply(response);
             collector.addAll(responseList);
             if (hasNext.apply(request, response)) {
-                next.accept(request, response);
-                page(request, exec, getList, hasNext, next, reTry, collector);
+                Request nextReq = next.apply(request, response);
+                page(nextReq, exec, getList, hasNext, next, reTry, collector);
             }
         }
-
         return collector;
     }
 }

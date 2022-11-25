@@ -5,6 +5,7 @@ import com.fit2cloud.es.entity.CloudBill;
 import com.fit2cloud.provider.AbstractCloudProvider;
 import com.fit2cloud.provider.ICloudProvider;
 import com.fit2cloud.provider.impl.huawei.api.HuaweiBillApi;
+import com.fit2cloud.provider.impl.huawei.api.HuaweiBucketApi;
 import com.fit2cloud.provider.impl.huawei.entity.credential.HuaweiBillCredential;
 import com.fit2cloud.provider.impl.huawei.entity.request.SyncBillRequest;
 
@@ -19,6 +20,7 @@ import java.util.List;
 public class HuaweiCloudProvider extends AbstractCloudProvider<HuaweiBillCredential> implements ICloudProvider {
     @Override
     public List<CloudBill> syncBill(String request) {
-        return HuaweiBillApi.listBill(JsonUtil.parseObject(request, SyncBillRequest.class));
+        SyncBillRequest syncBillRequest = JsonUtil.parseObject(request, SyncBillRequest.class);
+        return syncBillRequest.getBill().getUseBucket() ? HuaweiBucketApi.listBill(syncBillRequest) : HuaweiBillApi.listBill(syncBillRequest);
     }
 }
