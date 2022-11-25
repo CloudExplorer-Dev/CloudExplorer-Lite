@@ -5,7 +5,6 @@ import com.aliyun.bssopenapi20171214.models.DescribeInstanceBillRequest;
 import com.aliyun.bssopenapi20171214.models.DescribeInstanceBillResponse;
 import com.aliyun.bssopenapi20171214.models.DescribeInstanceBillResponseBody;
 import com.aliyun.teautil.models.RuntimeOptions;
-import com.fit2cloud.common.platform.bill.Bill;
 import com.fit2cloud.common.platform.credential.Credential;
 import com.fit2cloud.common.provider.exception.ReTryException;
 import com.fit2cloud.common.provider.util.PageUtil;
@@ -23,6 +22,7 @@ import java.util.List;
  */
 public class AliyunBillApi {
 
+
     /**
      * 获取阿里云数据
      *
@@ -34,8 +34,8 @@ public class AliyunBillApi {
         syncBillRequest.setMaxResults(300);
         Client client = syncBillRequest.getCredential().getClient();
         List<DescribeInstanceBillResponseBody.DescribeInstanceBillResponseBodyDataItems> list = PageUtil.page(syncBillRequest,
-                req -> describeInstanceBillWithOptions(client, req),
-                res -> res.body.getData().getItems(), (req, res) -> req.getMaxResults() <= res.getBody().getData().getItems().size(),
+                req -> describeInstanceBillWithOptions(client, req), res -> res.body.getData().getItems(),
+                (req, res) -> req.getMaxResults() <= res.getBody().getData().getItems().size(),
                 (req, res) -> req.setNextToken(res.getBody().getData().getNextToken()));
         List<Credential.Region> regions = syncBillRequest.getCredential().regions();
         return list.stream().map(dataItem -> AliyunMappingUtil.toCloudBill(dataItem, syncBillRequest, regions)).toList();

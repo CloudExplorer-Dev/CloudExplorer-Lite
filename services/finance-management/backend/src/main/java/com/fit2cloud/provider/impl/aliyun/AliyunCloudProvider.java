@@ -5,6 +5,7 @@ import com.fit2cloud.common.utils.JsonUtil;
 import com.fit2cloud.es.entity.CloudBill;
 import com.fit2cloud.provider.AbstractCloudProvider;
 import com.fit2cloud.provider.ICloudProvider;
+import com.fit2cloud.provider.impl.aliyun.api.AliBucketApi;
 import com.fit2cloud.provider.impl.aliyun.api.AliyunBillApi;
 import com.fit2cloud.provider.impl.aliyun.entity.credential.AliyunBillCredential;
 import com.fit2cloud.provider.impl.aliyun.entity.request.SyncBillRequest;
@@ -20,6 +21,7 @@ import java.util.List;
 public class AliyunCloudProvider extends AbstractCloudProvider<AliyunBillCredential> implements ICloudProvider {
     @Override
     public List<CloudBill> syncBill(String request) {
-        return AliyunBillApi.listBill(JsonUtil.parseObject(request, SyncBillRequest.class));
+        SyncBillRequest syncBillRequest = JsonUtil.parseObject(request, SyncBillRequest.class);
+        return syncBillRequest.getBill().getUseBucket() ? AliBucketApi.listBill(syncBillRequest) : AliyunBillApi.listBill(syncBillRequest);
     }
 }
