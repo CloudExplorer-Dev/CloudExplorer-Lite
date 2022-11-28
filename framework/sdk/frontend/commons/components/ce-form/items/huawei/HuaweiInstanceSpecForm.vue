@@ -187,7 +187,7 @@ const handleQueryClick = () => {
   if (!props.formItem?.ext?.instanceConfig?.tableData) {
     return;
   }
-  let arr = [props.formItem?.ext?.instanceConfig?.tableData];
+  let arr = [...props.formItem?.ext?.instanceConfig?.tableData];
   if (searchName.value.trim() && arr.length > 0) {
     arr = _.filter(
       props.formItem?.ext?.instanceConfig?.tableData,

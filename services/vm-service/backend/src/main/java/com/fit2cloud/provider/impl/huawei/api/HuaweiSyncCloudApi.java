@@ -745,6 +745,8 @@ public class HuaweiSyncCloudApi {
                         .withExtendparam(extendparamEip);
                 publicipServer = new PrePaidServerPublicip();
                 publicipServer.withEip(eipPublicip);
+                //默认随实例删除
+                publicipServer.setDeleteOnTermination(true);
             }
 
             // TODO 网卡 目前仅支持一个网卡，官方支持最多两个
@@ -755,7 +757,12 @@ public class HuaweiSyncCloudApi {
                             .withIpAddress("")
             );
             PrePaidServer serverbody = new PrePaidServer();
-            serverbody.withImageRef(request.getOsVersion().getImageId())
+            //获取镜像ID，根据规格、操作系统、操作系统版本
+            List<F2CImage> images = listCreateImages(request);
+            if(CollectionUtils.isEmpty(images)){
+                throw  new RuntimeException("No suitable image found!");
+            }
+            serverbody.withImageRef(images.get(0).getId())
                     .withFlavorRef(request.getInstanceSpecConfig().getSpecName())
                     .withName(request.getServerNameInfos().get(request.getIndex()).getName())
                     .withVpcid(request.getNetworkConfigs().getVpcId())
@@ -790,6 +797,32 @@ public class HuaweiSyncCloudApi {
         }
         return f2CVirtualMachine;
     }
+
+    /**
+     * 获取创建主机镜像
+     * 根据规格、操作系统、操作系统版本、状态
+     * @param createRequest 请求对象
+     * @return 响应对象
+     */
+    public static List<F2CImage> listCreateImages(HuaweiVmCreateRequest createRequest) {
+        ListImageRequest request = new ListImageRequest();
+        request.setRegionId(createRequest.getRegionId());
+        request.setCredential(createRequest.getCredential());
+        request.setFlavorId(createRequest.getInstanceSpecConfig().getSpecName());
+        request.setPlatform(ListImagesRequest.PlatformEnum.valueOf(createRequest.getOs()));
+        request.setStatus(ListImagesRequest.StatusEnum.ACTIVE);
+        if (StringUtils.isNotEmpty(request.getCredential())) {
+            HuaweiVmCredential credential = JsonUtil.parseObject(request.getCredential(), HuaweiVmCredential.class);
+            ImsClient imsClient = credential.getImsClient(request.getRegionId());
+            request.setImagetype(ListImagesRequest.ImagetypeEnum.GOLD);
+            ListImagesResponse listImagesResponse = imsClient.listImages(request);
+            List<ImageInfo> images = listImagesResponse.getImages();
+            //根据用户输入的操作系统版本过滤
+            return images.stream().filter(v->StringUtils.equalsIgnoreCase(v.getOsVersion(),createRequest.getOsVersion().getOsVersion())).map(imageInfo -> HuaweiMappingUtil.toF2CImage(imageInfo, request.getRegionId())).filter(Objects::nonNull).toList();
+        }
+        return new ArrayList<>();
+    }
+
 
     private static ServerDetail getJobEntities(EcsClient client, String jobId) {
         int count = 0;
@@ -971,12 +1004,19 @@ public class HuaweiSyncCloudApi {
                 Double vmAmount = 0D;
                 Double diskAmount = 0D;
                 Double bandwidthAmount = 0D;
+                //带宽计费方式
+                boolean bandwidthTraffic = false;
+                if(request.isUsePublicIp() && StringUtils.equalsIgnoreCase(request.getChargeMode(),"traffic")){
+                    bandwidthTraffic = true;
+                }
                 //按量计费
                 if(StringUtils.equalsIgnoreCase(request.getBillingMode(),"0")){
                     vmAmount = vmInquiryPriceForHour(request,credential,projectId);
                     diskAmount = diskInquiryPriceForHour(request,credential,projectId);
-                    bandwidthAmount = bandwidthInquiryPriceForHour(request,credential,projectId);
-                    BigDecimal amountBig = new BigDecimal(vmAmount+diskAmount+bandwidthAmount);
+                    if(request.isUsePublicIp()){
+                        bandwidthAmount = bandwidthInquiryPriceForHour(request,credential,projectId);
+                    }
+                    BigDecimal amountBig = new BigDecimal(vmAmount+diskAmount+(!bandwidthTraffic?bandwidthAmount:0));
                     result.append(amountBig.setScale(4,RoundingMode.HALF_UP));
                     result.append("/小时");
                 }
@@ -984,11 +1024,17 @@ public class HuaweiSyncCloudApi {
                 if(StringUtils.equalsIgnoreCase(request.getBillingMode(),"1")){
                     vmAmount = vmInquiryPriceForMonth(request,credential,projectId);
                     diskAmount = diskInquiryPriceForMonth(request,credential,projectId);
-                    bandwidthAmount = bandwidthInquiryPriceForMonth(request,credential,projectId);
-                    BigDecimal amountBig = new BigDecimal(vmAmount+diskAmount+bandwidthAmount);
+                    if(request.isUsePublicIp()){
+                        bandwidthAmount = bandwidthInquiryPriceForMonth(request,credential,projectId);
+                    }
+                    BigDecimal amountBig = new BigDecimal(vmAmount+diskAmount+(!bandwidthTraffic?bandwidthAmount:0));
                     result.append(amountBig.setScale(4,RoundingMode.HALF_UP));
                     result.append("/");
                     result.append(StringUtils.equalsIgnoreCase("month",request.getPeriodType())?"月":"年");
+                }
+                if(bandwidthTraffic){
+                    result.append(" + ");
+                    result.append("弹性公网IP流量费用¥"+bandwidthAmount+"/GB");
                 }
             }
         }catch (Exception e){
@@ -1167,9 +1213,6 @@ public class HuaweiSyncCloudApi {
      * @return
      */
     private static Double bandwidthInquiryPriceForMonth(HuaweiVmCreateRequest createRequest,HuaweiVmCredential credential,String projectId){
-        if(!createRequest.isUsePublicIp()){
-            return 0D;
-        }
         //按流量与周期无关
         if(StringUtils.equalsIgnoreCase(createRequest.getChargeMode(),"traffic")){
             return bandwidthInquiryPriceForHour(createRequest,credential,projectId);
@@ -1217,7 +1260,7 @@ public class HuaweiSyncCloudApi {
      * @return
      */
     private static Double bandwidthInquiryPriceForHour(HuaweiVmCreateRequest createRequest,HuaweiVmCredential credential,String projectId){
-        if(!createRequest.isUsePublicIp()){
+        if(StringUtils.isEmpty(createRequest.getChargeMode()) && createRequest.getBandwidthSize()==0){
             return 0D;
         }
         ListOnDemandResourceRatingsRequest request = new ListOnDemandResourceRatingsRequest();

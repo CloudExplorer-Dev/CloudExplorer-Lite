@@ -90,8 +90,7 @@ public class VmCloudImageServiceImpl extends ServiceImpl<BaseVmCloudImageMapper,
     }
 
     /**
-     * 返回操作系统版本以及对应镜像信息
-     * 镜像取符合版本的第一个镜像
+     * 返回操作系统版本
      * @param request
      * @return
      */
@@ -105,16 +104,13 @@ public class VmCloudImageServiceImpl extends ServiceImpl<BaseVmCloudImageMapper,
         }
         List<VmCloudImage> imagesTmp = listVmCloudImage(req);
         //只取公共镜像
-        // TODO 这个地方加上选择镜像名称跟版本一样的镜像，去除其他特殊镜像
         List<VmCloudImage> images = imagesTmp.stream()
                 .filter(v->StringUtils.equalsIgnoreCase("gold",v.getImageType()))
-                .filter(v->StringUtils.equalsIgnoreCase(v.getImageName(),v.getOs()))
                 .collect(Collectors.toList());
         //操作系统去重复
         Map<String, VmCloudImage> osMap = images.stream().collect(Collectors.toMap(VmCloudImage::getOs,a->a,(k1,k2)->k1));
-        //转换对象
+        //转换对象，这里存储的镜像镜像理论上不会用到了，因为创建虚拟机的时候，重新查询可用镜像
         osMap.values().stream().forEach(v->{
-            if(v.getOs().indexOf(req.getOs())>-1){
                 OsConfig osConfig = new OsConfig();
                 osConfig.setOs(req.getOs());
                 osConfig.setOsVersion(v.getOs());
@@ -122,7 +118,6 @@ public class VmCloudImageServiceImpl extends ServiceImpl<BaseVmCloudImageMapper,
                 osConfig.setImageId(v.getImageId());
                 osConfig.setImageMinDiskSize(v.getDiskSize());
                 result.add(osConfig);
-            }
         });
         return result.stream().sorted(Comparator.comparing(OsConfig::getOsVersion)).collect(Collectors.toList());
     }

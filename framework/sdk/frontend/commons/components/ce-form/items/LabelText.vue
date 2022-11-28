@@ -1,5 +1,7 @@
 <template>
-  <span>{{ labelText }}</span>
+  <template v-if="!confirm">
+    <span>{{ labelText }}</span>
+  </template>
 </template>
 <script setup lang="ts">
 import type { FormView } from "@commons/components/ce-form/type";

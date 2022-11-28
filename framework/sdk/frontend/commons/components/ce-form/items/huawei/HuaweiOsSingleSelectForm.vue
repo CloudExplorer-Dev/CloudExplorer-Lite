@@ -26,11 +26,7 @@
     </el-form>
   </template>
   <template v-else>
-    <el-descriptions>
-      <el-descriptions-item label="操作系统版本">
         {{ modelValue?.osVersion }}
-      </el-descriptions-item>
-    </el-descriptions>
   </template>
 </template>
 <script setup lang="ts">
