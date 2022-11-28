@@ -11,50 +11,40 @@
     @submit.prevent
     size="small"
   >
-    <div v-for="item in formViewData" :key="item.field">
-      <template v-if="item.label">
-        <el-form-item
-          v-if="checkShow(item)"
-          :label="item.label"
-          :prop="item.field"
-          :rules="{
-            message: item.label + '不能为空',
-            trigger: 'blur',
-            required: item.required,
-          }"
-        >
-          <component
-            ref="formItemRef"
-            :is="item.inputType"
-            v-model="_data[item.field]"
-            :all-data="allData"
-            :all-form-view-data="allFormViewData"
-            :field="item.field"
-            :form-item="item"
-            :otherParams="otherParams"
-            v-bind="{ ...JSON.parse(item.attrs) }"
-            @change="change(item)"
-          ></component>
-          <span v-if="item.unit" style="padding-left: 15px">{{
-            item.unit
-          }}</span>
-        </el-form-item>
-      </template>
-      <template v-else>
-        <component
-          ref="formItemRef"
-          :is="item.inputType"
-          v-model="_data[item.field]"
-          :all-data="allData"
-          :all-form-view-data="allFormViewData"
-          :field="item.field"
-          :form-item="item"
-          :otherParams="otherParams"
-          v-bind="{ ...JSON.parse(item.attrs) }"
-          @change="change(item)"
-        ></component>
-      </template>
-    </div>
+    <el-row>
+      <div v-for="item in formViewData" :key="item.field">
+        <el-col>
+          <template v-if="item.label && item.footerLocation === 1">
+            <el-form-item
+              v-if="checkShow(item)"
+              :label="item.label"
+              :prop="item.field"
+              :rules="{
+                message: item.label + '不能为空',
+                trigger: 'blur',
+                required: item.required,
+              }"
+            >
+              <component
+                ref="formItemRef"
+                :is="item.inputType"
+                v-model="_data[item.field]"
+                :all-data="allData"
+                :all-form-view-data="allFormViewData"
+                :field="item.field"
+                :form-item="item"
+                :otherParams="otherParams"
+                v-bind="{ ...JSON.parse(item.attrs) }"
+                @change="change(item)"
+              ></component>
+              <span v-if="item.unit" style="padding-left: 15px">{{
+                item.unit
+              }}</span>
+            </el-form-item>
+          </template>
+        </el-col>
+      </div>
+    </el-row>
   </el-form>
 </template>
 
@@ -124,9 +114,6 @@ function checkShow(currentItem: any): any {
         _.get(props.allData, i) === true ? "true" : _.get(props.allData, i)
       )
     );
-  }
-  if (isShow) {
-    isShow = currentItem.footerLocation === 0;
   }
   return isShow;
 }

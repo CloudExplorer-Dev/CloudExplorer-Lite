@@ -448,6 +448,7 @@ public class SyncProviderServiceImpl extends BaseSyncService implements ISyncPro
         vmCloudImage.setOs(image.getOs());
         vmCloudImage.setStatus(F2CImageStatus.normal);
         vmCloudImage.setUpdateTime(updateTime);
+        vmCloudImage.setImageType(image.getImageType());
         return vmCloudImage;
     }
 

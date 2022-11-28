@@ -2,13 +2,13 @@
   <template v-if="!confirm">
     <div style="display: flex; flex-direction: row; flex-wrap: wrap">
       <div
-          v-for="(obj, index) in data"
-          :key="index"
-          class="vs-disk-config-card"
+        v-for="(obj, index) in _data"
+        :key="index"
+        class="vs-disk-config-card"
       >
         <el-card
-            class="card"
-            :body-style="{
+          class="card"
+          :body-style="{
             padding: 0,
             'text-align': 'center',
             display: 'flex',
@@ -25,52 +25,46 @@
           </span>
 
           <el-form
-              ref="ruleFormRef"
-              label-suffix=":"
-              label-position="left"
-              :model="_data"
-              size="small"
+            ref="ruleFormRef"
+            label-suffix=":"
+            label-position="left"
+            :model="_data"
+            size="small"
           >
-            <el-form-item
-                label="磁盘类型"
-                prop="diskType"
-            >
-              <el-select filterable v-model="obj.diskType" style="width: 150px">
+            <el-form-item label="磁盘类型" prop="diskType">
+              <el-select
+                filterable
+                v-model="obj.diskType"
+                style="width: 150px"
+                @change="change()"
+              >
                 <el-option
-                    v-for="(item, id) in props.formItem?.ext?.diskConfig?.diskTypes"
-                    :key="id"
-                    :label="item.name"
-                    :value="item.id"
+                  v-for="(item, id) in props.formItem?.ext?.diskConfig
+                    ?.diskTypes"
+                  :key="id"
+                  :label="item.name"
+                  :value="item.id"
                 >
                 </el-option>
               </el-select>
             </el-form-item>
-            <el-form-item
-                label="磁盘大小"
-                prop="size"
-            >
+            <el-form-item label="磁盘大小" prop="size">
               <el-input-number
-                  v-model="obj.size"
-                  :min="_.defaultTo(defaultDisks[index]?.size, 1)"
-                  :step="1"
-                  required
+                v-model="obj.size"
+                :min="_.defaultTo(defaultDisks[index]?.size, 10)"
+                :step="1"
+                required
+                @change="change()"
               />
             </el-form-item>
-            <el-form-item
-                label="预估费用"
-                prop="obj.amountText"
-            >
-              <span>112.19</span>
-            </el-form-item>
-
           </el-form>
           <el-button
-              v-if="index!=0"
-              class="remove-button"
-              @click="remove(index)"
-              :icon="CloseBold"
-              type="info"
-              text
+            v-if="index != 0"
+            class="remove-button"
+            @click="remove(index)"
+            :icon="CloseBold"
+            type="info"
+            text
           ></el-button>
         </el-card>
 
@@ -81,10 +75,10 @@
       <div class="vs-disk-config-card">
         <el-card class="card add-card">
           <el-button
-              style="margin: auto"
-              class="el-button--primary"
-              @click="add"
-          >添加磁盘</el-button
+            style="margin: auto"
+            class="el-button--primary"
+            @click="add"
+            >添加磁盘</el-button
           >
         </el-card>
       </div>
@@ -93,9 +87,9 @@
   <template v-else>
     <el-descriptions>
       <el-descriptions-item
-          :label="i === 0 ? '系统盘' : '数据盘' + (i + 1)"
-          v-for="(disk, i) in modelValue"
-          :key="i"
+        :label="i === 0 ? '系统盘' : '数据盘' + (i + 1)"
+        v-for="(disk, i) in modelValue"
+        :key="i"
       >
         {{ disk.size }}GB{{ disk.deleteWithInstance ? " (随实例删除)" : "" }}
       </el-descriptions-item>
@@ -103,8 +97,8 @@
   </template>
 </template>
 <script setup lang="ts">
-import type {FormInstance} from "element-plus";
-import { computed, watch, onMounted,ref} from "vue";
+import type { FormInstance } from "element-plus";
+import { computed, watch, ref } from "vue";
 import _ from "lodash";
 import type { FormView } from "@commons/components/ce-form/type";
 import { CloseBold } from "@element-plus/icons-vue";
@@ -135,63 +129,76 @@ const ruleFormRef = ref<FormInstance>();
 const defaultDisks = computed(() => {
   return [{ size: 1, deleteWithInstance: true }];
 });
-
-watch(
-    () => props.allData.availabilityZone,
-    (count) => {
-      getDiskType();
-    }
-);
 const emit = defineEmits(["update:modelValue", "change"]);
-/**
- * 双向绑定更新到外面
- */
-const data = computed<Array<any>>({
-  get() {
-    return props.modelValue;
-  },
-  set(value) {
-    emit("update:modelValue", value);
-  },
-});
-
 function add() {
-  data.value?.push({ size: 1,diskType:props.formItem?.ext?.diskConfig?.diskTypes?.[0].id,amountText:"", deleteWithInstance: true });
+  _data.value?.push({
+    size: 10,
+    diskType: props.formItem?.ext?.diskConfig?.diskTypes?.[0].id,
+    amountText: "",
+    deleteWithInstance: true,
+  });
+  change();
 }
 function remove(index: number) {
-  _.remove(data.value, (n, i) => index === i);
+  _.remove(_data.value, (n, i) => index === i);
+  change();
 }
 
+function change() {
+  emit("change");
+}
 function getTempRequest() {
   return _.assignWith(
-      {},
-      { computeConfig: _data.value },
-      props.otherParams,
-      props.allData,
-      (objValue, srcValue) => {
-        return _.isUndefined(objValue) ? srcValue : objValue;
-      }
+    {},
+    {},
+    props.otherParams,
+    props.allData,
+    (objValue, srcValue) => {
+      return _.isUndefined(objValue) ? srcValue : objValue;
+    }
   );
 }
-onMounted(()=>{
-  getDiskType();
-})
+watch(
+  () => props.allData.availabilityZone,
+  (n, o) => {
+    getDiskType();
+  }
+);
+
+watch(
+  () => props.allData,
+  (n, o) => {
+    emit("change");
+  }
+);
+
+watch(
+  () => props.allData.osVersion,
+  (n, o) => {
+    getDiskType();
+  }
+);
 
 function getDiskType() {
   const _temp = getTempRequest();
-  let clazz = "com.fit2cloud.provider.impl.huawei.HuaweiCloudProvider";
-  let method = "getAllDiskTypes";
-  formApi
-      .getResourceMethod(false, clazz, method, _temp)
-      .then((ok) => {
-        _.set(props.formItem, "ext.diskConfig.diskTypes", ok.data);
-        diskTypes.value = ok.data;
-        data.value.length=0;
-        data.value?.push({ size: 40,diskType:diskTypes?.value[0].id,amountText:"", deleteWithInstance: true });
-      });
+  const clazz = "com.fit2cloud.provider.impl.huawei.HuaweiCloudProvider";
+  const method = "getAllDiskTypes";
+  formApi.getResourceMethod(false, clazz, method, _temp).then((ok) => {
+    _.set(props.formItem, "ext.diskConfig.diskTypes", ok.data);
+    diskTypes.value = ok.data;
+    _data.value.length = 0;
+    let defaultSize = props.allData.osVersion?.imageMinDiskSize;
+    if (!defaultSize) {
+      defaultSize = 0;
+    }
+    _data.value?.push({
+      size: defaultSize < 40 ? 40 : defaultSize,
+      diskType: diskTypes?.value[0].id,
+      amountText: "",
+      deleteWithInstance: true,
+    });
+  });
 }
-
-
 </script>
 <style lang="scss" scoped>
 .vs-disk-config-card {

@@ -62,14 +62,23 @@
               v-model:all-form-view-data="formData.forms"
               v-model="data['0']"
               :all-data="formatData"
+              footer-location-center="false"
             ></CeFormItem>
           </template>
         </div>
         <div class="footer-center">
-          <div>
-            <span>费用预估：</span>
-            <span style="color: red; font-size: large">123.4</span>
-          </div>
+          <template v-if="hasFooterForm">
+            <CeFooterFormItem
+              ref="ceForms_0"
+              :other-params="otherParams"
+              group-id="0"
+              v-model:form-view-data="steps[0].groups[0].forms"
+              v-model:all-form-view-data="formData.forms"
+              v-model="data['0']"
+              :all-data="formatData"
+              footer-location-center="false"
+            ></CeFooterFormItem>
+          </template>
         </div>
         <div class="footer-btn">
           <el-button @click="cancel()"> 取消</el-button>
@@ -120,11 +129,12 @@ import CeFormItem from "./CeFormItem.vue";
 import CreateConfirmStep from "./CreateConfirmStep.vue";
 import type { CloudAccount } from "@commons/api/cloud_account/type";
 
-import { computed, onMounted, ref, type Ref } from "vue";
+import { computed, onMounted, ref, type Ref, watch } from "vue";
 import { useRouter } from "vue-router";
 import type { CreateServerRequest } from "@/api/vm_cloud_server/type";
 import { createServer } from "@/api/vm_cloud_server";
 import { useI18n } from "vue-i18n";
+import CeFooterFormItem from "@/views/vm_cloud_server/create/CeFooterFormItem.vue";
 
 const { t } = useI18n();
 const useRoute = useRouter();
@@ -178,7 +188,6 @@ function before() {
   //定位到最上面
   catalog_container.value?.$el?.scrollTo(0, 0);
 }
-
 function submit() {
   console.log(data.value);
   const req: CreateServerRequest = {

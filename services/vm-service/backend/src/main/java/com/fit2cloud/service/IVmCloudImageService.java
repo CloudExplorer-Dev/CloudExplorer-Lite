@@ -7,7 +7,6 @@ import com.fit2cloud.controller.request.images.PageVmCloudImageRequest;
 import com.fit2cloud.dto.VmCloudImageDTO;
 
 import java.util.List;
-import java.util.Map;
 
 /**
  * <p>
@@ -22,7 +21,4 @@ public interface IVmCloudImageService extends IService<VmCloudImage> {
 
     List<VmCloudImage> listVmCloudImage(String request);
 
-    List<VmCloudImage> listVmCloudImageByOs(String request);
-
-    List<Map<String, String>> listOs(String request);
 }

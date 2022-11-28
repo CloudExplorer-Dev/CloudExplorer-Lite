@@ -49,6 +49,8 @@ public class F2CImage {
 
     private String diskInfos;
 
+    private String imageType;
+
     public F2CImage(String id, String name, String description, String os, String region, Long diskSize, Long created) {
         this.id = id;
         this.name = name;

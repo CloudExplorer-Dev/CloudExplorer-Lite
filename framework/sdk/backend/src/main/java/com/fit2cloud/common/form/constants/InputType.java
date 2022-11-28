@@ -39,12 +39,20 @@ public enum InputType {
     MultiSelect(MultiSelectForm.class),
 
     /**
+     * 描述
+     */
+    LabelText(LabelTextForm.class),
+
+    /**
      * 开关
      */
     SwitchBtn(SwitchForm.class),
 
+    HuaweiOsSingleSelectForm(com.fit2cloud.common.form.vo.huawei.OsConfigForm.class),
     HuaweiInstanceSpecForm(com.fit2cloud.common.form.vo.huawei.InstanceSpecForm.class),
     HuaweiDiskConfigForm(com.fit2cloud.common.form.vo.huawei.DiskConfigForm.class),
+    HuaweiNetworkConfigForm(com.fit2cloud.common.form.vo.huawei.NetworkConfigForm.class),
+    HuaweiNameConfigForm(com.fit2cloud.common.form.vo.huawei.NameConfigForm.class),
 
     VsphereDiskConfigForm(com.fit2cloud.common.form.vo.vsphere.DiskConfigForm.class),
     VsphereComputeConfigForm(com.fit2cloud.common.form.vo.vsphere.ComputeConfigForm.class),

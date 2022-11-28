@@ -7,6 +7,9 @@ import com.fit2cloud.provider.constants.DeleteWithInstance;
 import com.fit2cloud.provider.entity.F2CDisk;
 import com.fit2cloud.provider.entity.F2CImage;
 import com.fit2cloud.provider.entity.F2CVirtualMachine;
+import com.fit2cloud.provider.impl.huawei.entity.F2CHuaweiSecurityGroups;
+import com.fit2cloud.provider.impl.huawei.entity.F2CHuaweiSubnet;
+import com.fit2cloud.provider.impl.huawei.entity.F2CHuaweiVpc;
 import com.fit2cloud.provider.impl.huawei.entity.InstanceSpecType;
 import com.huaweicloud.sdk.ces.v1.model.Datapoint;
 import com.huaweicloud.sdk.ecs.v2.model.Flavor;
@@ -16,6 +19,9 @@ import com.huaweicloud.sdk.ecs.v2.model.ServerFlavor;
 import com.huaweicloud.sdk.evs.v2.model.VolumeDetail;
 import com.huaweicloud.sdk.ims.v2.model.ImageInfo;
 import com.huaweicloud.sdk.vpc.v2.model.Port;
+import com.huaweicloud.sdk.vpc.v2.model.SecurityGroup;
+import com.huaweicloud.sdk.vpc.v2.model.Subnet;
+import com.huaweicloud.sdk.vpc.v2.model.Vpc;
 import org.apache.commons.lang3.StringUtils;
 
 import java.math.BigDecimal;
@@ -198,12 +204,14 @@ public class HuaweiMappingUtil {
         F2CImage result = null;
         if (image.getStatus() == ImageInfo.StatusEnum.ACTIVE) {
             result = new F2CImage();
+            result.setImageType(image.getImagetype().getValue());
             result.setId(image.getId());
             result.setName(image.getName());
             result.setRegion(region);
             long utcTime = CommonUtil.getUTCTime(image.getCreatedAt(), "yyyy-MM-dd'T'HH:mm:ss'Z'");
             result.setCreated(utcTime / 1000);
-            result.setDiskSize(image.getSize().longValue());
+            // TODO 华为的size字段暂无用处，这里存储镜像所需要的最小磁盘大小
+            result.setDiskSize(new BigDecimal(image.getMinDisk()).longValue());
             result.setOs(image.getOsVersion());
             result.setDescription(image.getDescription());
         }
@@ -230,6 +238,9 @@ public class HuaweiMappingUtil {
             //s6.small.1
             instanceSpecType.setSpecType(flavor.getName().split("\\.")[0]);
             instanceSpecType.setSpecName(flavor.getName());
+            instanceSpecType.setVcpus(flavor.getVcpus());
+            instanceSpecType.setRam(flavor.getRam());
+            instanceSpecType.setDisk(flavor.getDisk());
             instanceSpecType.setInstanceSpec(transInstanceSpecTypeDescription(flavor));
         }catch (Exception e){
             e.printStackTrace();
@@ -241,5 +252,36 @@ public class HuaweiMappingUtil {
         int ram = flavor.getRam();
         float mbPerGb = 1024;
         return flavor.getVcpus() + "vCPU " + (int) Math.ceil(ram / mbPerGb) + "GB";
+    }
+
+    public static F2CHuaweiSubnet toF2CHuaweiSubnet(Subnet subnet){
+        F2CHuaweiSubnet f2CHuaweiSubnet = new F2CHuaweiSubnet();
+        f2CHuaweiSubnet.setUuid(subnet.getId());
+        f2CHuaweiSubnet.setCidr(subnet.getCidr());
+        f2CHuaweiSubnet.setCidrV6(subnet.getCidrV6());
+        f2CHuaweiSubnet.setName(subnet.getName());
+        f2CHuaweiSubnet.setVpcId(subnet.getVpcId());
+        f2CHuaweiSubnet.setDescription(subnet.getDescription());
+        f2CHuaweiSubnet.setAvailabilityZone(subnet.getAvailabilityZone());
+        return f2CHuaweiSubnet;
+    }
+
+    public static F2CHuaweiVpc toF2CHuaweiVpc(Vpc vpc){
+        F2CHuaweiVpc f2CHuaweiVpc = new F2CHuaweiVpc();
+        f2CHuaweiVpc.setUuid(vpc.getId());
+        f2CHuaweiVpc.setCidr(vpc.getCidr());
+        f2CHuaweiVpc.setName(vpc.getName());
+        f2CHuaweiVpc.setStatus(vpc.getStatus().getValue());
+        f2CHuaweiVpc.setDescription(vpc.getDescription());
+        return f2CHuaweiVpc;
+    }
+
+    public static F2CHuaweiSecurityGroups toF2CHuaweiSecurityGroups(SecurityGroup securityGroup){
+        F2CHuaweiSecurityGroups f2CHuaweiSecurityGroups = new F2CHuaweiSecurityGroups();
+        f2CHuaweiSecurityGroups.setUuid(securityGroup.getId());
+        f2CHuaweiSecurityGroups.setName(securityGroup.getName());
+        f2CHuaweiSecurityGroups.setDescription(securityGroup.getDescription());
+        f2CHuaweiSecurityGroups.setVpc_id(securityGroup.getVpcId());
+        return f2CHuaweiSecurityGroups;
     }
 }

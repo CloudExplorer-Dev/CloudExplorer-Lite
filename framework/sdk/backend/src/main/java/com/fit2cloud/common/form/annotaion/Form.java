@@ -135,6 +135,12 @@ public @interface Form {
     int group() default 0;
 
     /**
+     * 页脚位置，0左1中2右
+     * @return
+     */
+    int footerLocation() default 0;
+
+    /**
      * 分页步骤
      *
      * @return
