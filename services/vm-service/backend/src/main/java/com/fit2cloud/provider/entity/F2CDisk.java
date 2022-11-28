@@ -1,6 +1,7 @@
 package com.fit2cloud.provider.entity;
 
 import lombok.Data;
+import lombok.experimental.Accessors;
 
 /**
  * @Author:张少虎
@@ -9,6 +10,7 @@ import lombok.Data;
  * @注释: 磁盘对象
  */
 @Data
+@Accessors(chain = true)
 public class F2CDisk {
     /**
      * 区域
@@ -102,4 +104,6 @@ public class F2CDisk {
      * 文件系统类型ext4、xfs
      */
     private String fileSystemType;
+
+    private String imageId;
 }

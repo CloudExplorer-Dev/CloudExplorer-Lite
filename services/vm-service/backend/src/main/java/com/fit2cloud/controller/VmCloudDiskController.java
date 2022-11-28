@@ -55,7 +55,7 @@ public class VmCloudDiskController {
 
     @GetMapping("/createDiskForm/{platform}")
     @ApiOperation(value = "根据云平台查询创建云磁盘的表单数据")
-    public  ResultHolder<FormObject> findCreateDiskForm(@PathVariable("platform") String platform) {
+    public ResultHolder<FormObject> findCreateDiskForm(@PathVariable("platform") String platform) {
         return ResultHolder.success(diskService.getCreateDiskForm(platform));
     }
 
@@ -69,14 +69,14 @@ public class VmCloudDiskController {
     @PutMapping("enlarge")
     @OperatedLog(resourceType = ResourceTypeEnum.CLOUD_DISK, operated = OperatedTypeEnum.ENLARGE_DISK, resourceId = "#{req.id}", param = "#{req}")
     public ResultHolder<Boolean> enlarge(@RequestBody EnlargeVmCloudDiskRequest req) {
-        return ResultHolder.success(diskService.enlarge(req.getId(),req.getNewDiskSize()));
+        return ResultHolder.success(diskService.enlarge(req.getId(), req.getNewDiskSize()));
     }
 
     @ApiOperation(value = "挂载磁盘")
     @PutMapping("attach")
     @OperatedLog(resourceType = ResourceTypeEnum.CLOUD_DISK, operated = OperatedTypeEnum.ATTACH_DISK, resourceId = "#{req.id}", param = "#{req}")
     public ResultHolder<Boolean> attach(@RequestBody AttachVmCloudDiskRequest req) {
-        return ResultHolder.success(diskService.attach(req.getId(),req.getInstanceUuid(),req.getDeleteWithInstance()));
+        return ResultHolder.success(diskService.attach(req.getId(), req.getInstanceUuid(), req.getDeleteWithInstance()));
     }
 
     @ApiOperation(value = "卸载磁盘")

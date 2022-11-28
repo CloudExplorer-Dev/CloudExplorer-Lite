@@ -11,6 +11,6 @@ public class AliyunGetDiskTypeRequest extends AliyunBaseRequest{
     /**
      * 可用区 ID
      */
-    private String zone;
+    private String zoneId;
 
 }

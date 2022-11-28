@@ -37,7 +37,8 @@ const root = ref<Module>({
 const hoverHandler = () => {
   collapse.value = true;
 };
-const test = (moduleName: string) => {
+const goModule = (moduleName: string) => {
+  currentModule.value = moduleName;
   router.push(moduleName);
 };
 </script>
@@ -64,7 +65,7 @@ const test = (moduleName: string) => {
       <StartMenuItem
         v-for="item in moduleStore.runningModules"
         :key="item.id"
-        @click="test(item.id)"
+        @click="goModule(item.id)"
         :start-menu-item="item"
         :root-item="false"
         v-hasPermission="item.requiredPermissions"

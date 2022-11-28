@@ -424,6 +424,7 @@ public class SyncProviderServiceImpl extends BaseSyncService implements ISyncPro
         vmCloudDisk.setDiskChargeType(disk.getDiskChargeType());
         vmCloudDisk.setZone(disk.getZone());
         vmCloudDisk.setUpdateTime(updateTime);
+        vmCloudDisk.setImageId(disk.getImageId());
         return vmCloudDisk;
     }
 

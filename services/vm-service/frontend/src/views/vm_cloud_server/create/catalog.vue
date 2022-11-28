@@ -14,7 +14,10 @@
         </span>
       </div>
       <div class="content">
-        <el-image style="width: 40px" :src="platformIcon[good.platform].icon" />
+        <el-image
+          style="width: 40px"
+          :src="platformIcon[good.platform]?.icon"
+        />
       </div>
       <el-button class="footer el-button--primary" @click="openCreatePage(good)"
         >立即创建</el-button
@@ -26,7 +29,7 @@
 <script setup lang="ts">
 import BaseCloudAccountApi from "@commons/api/cloud_account";
 import { platformIcon } from "@commons/utils/platform";
-import { type CloudAccount } from "@commons/api/cloud_account/type";
+import type {  CloudAccount } from "@commons/api/cloud_account/type";
 import { onMounted, ref } from "vue";
 import { useRouter } from "vue-router";
 

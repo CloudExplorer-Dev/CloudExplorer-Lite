@@ -10,7 +10,7 @@
       </el-steps>
     </el-header>
     <el-main ref="catalog_container">
-      <!--      {{ data }}-->
+      {{ data }}
 
       <p class="description">{{ steps[active + 1]?.description }}</p>
 
@@ -81,7 +81,7 @@
           </template>
         </div>
         <div class="footer-btn">
-          <el-button @click="cancel()"> 取消</el-button>
+          <el-button @click="cancel()"> 取消 </el-button>
           <el-button
             v-if="active + 1 < steps.length && active !== 0"
             @click="before()"

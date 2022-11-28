@@ -9,7 +9,7 @@ import lombok.Data;
 @Data
 public class TencentInstanceRequest extends TencentBaseRequest {
 
-    private String uuId;
+    private String uuid;
 
     /**
      * 强制执行

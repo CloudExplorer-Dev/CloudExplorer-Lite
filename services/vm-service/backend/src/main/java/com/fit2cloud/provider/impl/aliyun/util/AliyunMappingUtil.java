@@ -109,7 +109,7 @@ public class AliyunMappingUtil {
             f2cDisk.setCategory(disk.getCategory());
             f2cDisk.setDiskType(disk.getCategory());
         }
-        f2cDisk.setBootable(org.apache.commons.lang.StringUtils.isNotEmpty(disk.getType()) && disk.getType().equalsIgnoreCase("system"));
+        f2cDisk.setBootable(StringUtils.isNotEmpty(disk.getType()) && disk.getType().equalsIgnoreCase("system"));
         f2cDisk.setCreateTime(getUTCTime(disk.getCreationTime()));
         f2cDisk.setDescription(disk.getDescription());
         f2cDisk.setDevice(disk.getDevice());
@@ -121,7 +121,7 @@ public class AliyunMappingUtil {
         f2cDisk.setZone(disk.getZoneId());
         f2cDisk.setSize(disk.getSize());
         f2cDisk.setStatus(toF2CDiskStatus(disk.getStatus()));
-        if (org.apache.commons.lang.StringUtils.isBlank(disk.getDiskName())) {
+        if (StringUtils.isBlank(disk.getDiskName())) {
             f2cDisk.setDiskName(disk.getDiskId());
         }
         if (disk.getDeleteWithInstance()) {
@@ -145,9 +145,9 @@ public class AliyunMappingUtil {
     public static F2CPerfMetricMonitorData toF2CPerfMetricMonitorData(JsonNode v) {
         F2CPerfMetricMonitorData f2CEntityPerfMetric = new F2CPerfMetricMonitorData();
         f2CEntityPerfMetric.setTimestamp(v.get("timestamp").longValue());
-        f2CEntityPerfMetric.setAverage(new BigDecimal(v.get("Average").doubleValue()).setScale(3, RoundingMode.HALF_UP));
-        f2CEntityPerfMetric.setMinimum(new BigDecimal(v.get("Minimum").doubleValue()).setScale(3, RoundingMode.HALF_UP));
-        f2CEntityPerfMetric.setMaximum(new BigDecimal(v.get("Maximum").doubleValue()).setScale(3, RoundingMode.HALF_UP));
+        f2CEntityPerfMetric.setAverage(BigDecimal.valueOf(v.get("Average").doubleValue()).setScale(3, RoundingMode.HALF_UP));
+        f2CEntityPerfMetric.setMinimum(BigDecimal.valueOf(v.get("Minimum").doubleValue()).setScale(3, RoundingMode.HALF_UP));
+        f2CEntityPerfMetric.setMaximum(BigDecimal.valueOf(v.get("Maximum").doubleValue()).setScale(3, RoundingMode.HALF_UP));
         return f2CEntityPerfMetric;
     }
 
@@ -211,12 +211,11 @@ public class AliyunMappingUtil {
          *PrePaid：预付费，即包年包月
          *PostPaid：按小时后付费
          */
-
         switch (f2cChargeType) {
             case "PrePaid":
-                return AliyunChargeType.PREPAID;
+                return AliyunChargeType.PREPAID.getId();
             default:
-                return AliyunChargeType.POSTPAID;
+                return AliyunChargeType.POSTPAID.getId();
         }
     }
 }

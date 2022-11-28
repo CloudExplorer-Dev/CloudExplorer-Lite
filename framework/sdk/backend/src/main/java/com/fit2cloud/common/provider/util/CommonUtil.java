@@ -40,8 +40,25 @@ public class CommonUtil {
     }
 
 
+    /**
+     * 解析时间字符串
+     *
+     * @param dateStr 时间字符串
+     * @param format  时间字符串对于格式
+     * @return 解析后的时间对象
+     */
     public static LocalDateTime getLocalDateTime(String dateStr, String format) {
         return LocalDateTime.ofEpochSecond(getUTCTime(dateStr, format) / 1000, 0, ZoneOffset.ofHours(0));
+    }
+
+    /**
+     * 将Date转换为LocalDateTime对象
+     *
+     * @param date 时间
+     * @return 解析后的时间对象
+     */
+    public static LocalDateTime getLocalDateTime(Date date) {
+        return date.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime();
     }
 
     /**

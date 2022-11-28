@@ -194,7 +194,7 @@ public class HuaweiSyncCloudApi {
                         .withBody(new BatchStopServersRequestBody()
                                 .withOsStop(
                                         new BatchStopServersOption()
-                                                .withServers(Arrays.asList(new ServerId().withId(request.getUuId())))
+                                                .withServers(Arrays.asList(new ServerId().withId(request.getUuid())))
                                                 .withType(request.getForce() ? BatchStopServersOption.TypeEnum.HARD : BatchStopServersOption.TypeEnum.SOFT))));
 
                 checkEcsJobStatus(client, batchStopServersResponse.getJobId());
@@ -221,7 +221,7 @@ public class HuaweiSyncCloudApi {
                         .withBody(new BatchStartServersRequestBody()
                                 .withOsStart(
                                         new BatchStartServersOption()
-                                                .withServers(Arrays.asList(new ServerId().withId(request.getUuId()))))));
+                                                .withServers(Arrays.asList(new ServerId().withId(request.getUuid()))))));
                 checkEcsJobStatus(client, batchStartServersResponse.getJobId());
                 return true;
             } catch (TeaException error) {
@@ -246,7 +246,7 @@ public class HuaweiSyncCloudApi {
                         .withBody(new BatchRebootServersRequestBody()
                                 .withReboot(
                                         new BatchRebootSeversOption()
-                                                .withServers(Arrays.asList(new ServerId().withId(request.getUuId())))
+                                                .withServers(Arrays.asList(new ServerId().withId(request.getUuid())))
                                                 .withType(request.getForce() ? BatchRebootSeversOption.TypeEnum.HARD : BatchRebootSeversOption.TypeEnum.SOFT))));
                 checkEcsJobStatus(client, batchRebootServersResponse.getJobId());
                 return true;
@@ -270,7 +270,7 @@ public class HuaweiSyncCloudApi {
             try {
                 DeleteServersResponse batchStartServersResponse = client.deleteServers(new DeleteServersRequest()
                         .withBody(new DeleteServersRequestBody()
-                                .withServers(Arrays.asList(new ServerId().withId(request.getUuId())))));
+                                .withServers(Arrays.asList(new ServerId().withId(request.getUuid())))));
                 checkEcsJobStatus(client, batchStartServersResponse.getJobId());
                 return true;
             } catch (TeaException error) {
@@ -370,7 +370,6 @@ public class HuaweiSyncCloudApi {
      * @return
      */
     public static F2CDisk createDisk(HuaweiCreateDiskRequest request) {
-        F2CDisk f2CDisk = new F2CDisk();
         HuaweiVmCredential huaweiVmCredential = JsonUtil.parseObject(request.getCredential(), HuaweiVmCredential.class);
         EvsClient evsClient = huaweiVmCredential.getEvsClient(request.getRegionId());
         try {
@@ -379,7 +378,7 @@ public class HuaweiSyncCloudApi {
             String status = request.getInstanceUuid() == null ? F2CDiskStatus.AVAILABLE : "in-use"; //华为云的 in-use 是中划线😭
             F2CDisk createdDisk = HuaweiMappingUtil.toF2CDisk(checkVolumeStatus(showJobResponse.getEntities().getVolumeId(), evsClient, status));
             createdDisk.setDeleteWithInstance(request.getDeleteWithInstance());
-            return f2CDisk;
+            return createdDisk;
         } catch (Exception e) {
             throw new RuntimeException(e.getMessage(), e);
         }
@@ -609,6 +608,7 @@ public class HuaweiSyncCloudApi {
 
     /**
      * 查询云主机监控数据参数
+     *
      * @param getMetricsRequest
      * @return
      */
@@ -625,10 +625,11 @@ public class HuaweiSyncCloudApi {
 
     /**
      * 查询所有虚拟机参数
+     *
      * @param getMetricsRequest
      * @return
      */
-    public static ListVirtualMachineRequest getListVmRequest(GetMetricsRequest getMetricsRequest){
+    public static ListVirtualMachineRequest getListVmRequest(GetMetricsRequest getMetricsRequest) {
         ListVirtualMachineRequest listVirtualMachineRequest = new ListVirtualMachineRequest();
         listVirtualMachineRequest.setCredential(getMetricsRequest.getCredential());
         listVirtualMachineRequest.setRegionId(getMetricsRequest.getRegionId());

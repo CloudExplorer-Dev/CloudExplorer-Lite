@@ -230,7 +230,7 @@ export class Condition {
   /**
    *值
    */
-  value: Ref<any>;
+  value: Ref<any> | string;
   /**
    *值label
    */

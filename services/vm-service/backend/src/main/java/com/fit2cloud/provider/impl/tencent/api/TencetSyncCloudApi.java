@@ -497,10 +497,10 @@ public class TencetSyncCloudApi {
             CvmClient client = credential.getCvmClient(request.getRegionId());
             try {
                 StopInstancesRequest stopInstancesRequest = new StopInstancesRequest();
-                stopInstancesRequest.setInstanceIds(new String[]{request.getUuId()});
+                stopInstancesRequest.setInstanceIds(new String[]{request.getUuid()});
                 stopInstancesRequest.setStopType(request.getForce() ? "HARD" : "SOFT");
                 StopInstancesResponse response = client.StopInstances(stopInstancesRequest);
-                checkStatus(client, response.getRequestId(), request.getUuId());
+                checkStatus(client, response.getRequestId(), request.getUuid());
                 return true;
             } catch (TeaException error) {
                 throw new Fit2cloudException(ErrorCodeConstants.VM_POWER_OFF_FAIL.getCode(), error.getMessage());
@@ -521,9 +521,9 @@ public class TencetSyncCloudApi {
             CvmClient client = credential.getCvmClient(request.getRegionId());
             try {
                 StartInstancesRequest startInstancesRequest = new StartInstancesRequest();
-                startInstancesRequest.setInstanceIds(new String[]{request.getUuId()});
+                startInstancesRequest.setInstanceIds(new String[]{request.getUuid()});
                 StartInstancesResponse response = client.StartInstances(startInstancesRequest);
-                checkStatus(client, response.getRequestId(), request.getUuId());
+                checkStatus(client, response.getRequestId(), request.getUuid());
                 return true;
             } catch (TeaException error) {
                 throw new Fit2cloudException(ErrorCodeConstants.VM_POWER_ON_FAIL.getCode(), error.getMessage());
@@ -544,10 +544,10 @@ public class TencetSyncCloudApi {
             CvmClient client = credential.getCvmClient(request.getRegionId());
             try {
                 RebootInstancesRequest rebootInstancesRequest = new RebootInstancesRequest();
-                rebootInstancesRequest.setInstanceIds(new String[]{request.getUuId()});
+                rebootInstancesRequest.setInstanceIds(new String[]{request.getUuid()});
                 rebootInstancesRequest.setStopType(request.getForce() ? "HARD" : "SOFT");
                 RebootInstancesResponse response = client.RebootInstances(rebootInstancesRequest);
-                checkStatus(client, response.getRequestId(), request.getUuId());
+                checkStatus(client, response.getRequestId(), request.getUuid());
                 return true;
             } catch (TeaException error) {
                 throw new Fit2cloudException(ErrorCodeConstants.VM_REBOOT_FAIL.getCode(), error.getMessage());
@@ -568,7 +568,7 @@ public class TencetSyncCloudApi {
             CvmClient client = credential.getCvmClient(request.getRegionId());
             try {
                 TerminateInstancesRequest terminateInstancesRequest = new TerminateInstancesRequest();
-                terminateInstancesRequest.setInstanceIds(new String[]{request.getUuId()});
+                terminateInstancesRequest.setInstanceIds(new String[]{request.getUuid()});
                 client.TerminateInstances(terminateInstancesRequest);
                 return true;
             } catch (TeaException error) {

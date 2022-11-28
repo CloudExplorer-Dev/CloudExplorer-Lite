@@ -1,6 +1,9 @@
 package com.fit2cloud.common.form.constants;
 
 import com.fit2cloud.common.form.vo.*;
+import com.fit2cloud.common.form.vo.aliyun.AliyunDiskConfig;
+import com.fit2cloud.common.form.vo.aliyun.AliyunInstanceType;
+import com.fit2cloud.common.form.vo.aliyun.AliyunNetConfig;
 
 /**
  * @Author:张少虎
@@ -48,6 +51,10 @@ public enum InputType {
      */
     SwitchBtn(SwitchForm.class),
 
+    AliyunInstanceTypeForm(AliyunInstanceType.class),
+    AliyunDiskConfigForm(AliyunDiskConfig.class),
+    AliyunNetConfigForm(AliyunNetConfig.class),
+
     HuaweiOsSingleSelectForm(com.fit2cloud.common.form.vo.huawei.OsConfigForm.class),
     HuaweiInstanceSpecForm(com.fit2cloud.common.form.vo.huawei.InstanceSpecForm.class),
     HuaweiDiskConfigForm(com.fit2cloud.common.form.vo.huawei.DiskConfigForm.class),
@@ -58,7 +65,13 @@ public enum InputType {
     VsphereComputeConfigForm(com.fit2cloud.common.form.vo.vsphere.ComputeConfigForm.class),
     VsphereDatastoreForm(com.fit2cloud.common.form.vo.vsphere.DatastoreForm.class),
     VsphereNetworkAdapterForm(com.fit2cloud.common.form.vo.vsphere.NetworkAdapterForm.class),
-    VsphereServerInfoForm(com.fit2cloud.common.form.vo.vsphere.ServerInfoForm.class);
+    VsphereServerInfoForm(com.fit2cloud.common.form.vo.vsphere.ServerInfoForm.class),
+
+    OpenStackFlavorForm(com.fit2cloud.common.form.vo.openstack.FlavorForm.class),
+    OpenStackDiskConfigForm(com.fit2cloud.common.form.vo.openstack.DiskConfigForm.class),
+    OpenStackServerInfoForm(com.fit2cloud.common.form.vo.openstack.ServerInfoForm.class),
+    OpenStackNetworkConfigForm(com.fit2cloud.common.form.vo.openstack.NetworkConfigForm.class),
+    OpenStackSecurityGroupConfigForm(com.fit2cloud.common.form.vo.openstack.SecurityGroupConfigForm.class);
 
     /**
      * 表单类型对应的实体类
