@@ -88,7 +88,7 @@ const check = (row: CloudAccount) => {
   });
 };
 /**
- * 去编辑定时任务页面
+ * 去数据同步设置页面
  * @param row 当前这一行数据
  */
 const updateJob = (row: CloudAccount) => {
@@ -590,7 +590,7 @@ const tableConfig = ref<TableConfig>({
       billSyncShow
     ),
     TableOperations.buildButtons().newInstance(
-      t("cloud_account.edit_job_message", "编辑定时任务"),
+      t("cloud_account.edit_job_message", "数据同步设置"),
       "primary",
       updateJob,
       "Document"

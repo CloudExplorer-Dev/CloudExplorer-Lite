@@ -15,6 +15,7 @@ import com.fit2cloud.common.constants.JobTypeConstants;
 import com.fit2cloud.common.constants.PlatformConstants;
 import com.fit2cloud.common.provider.util.CommonUtil;
 import com.fit2cloud.common.utils.JsonUtil;
+import com.fit2cloud.constants.EsWriteLockConstants;
 import com.fit2cloud.es.entity.CloudBill;
 import com.fit2cloud.es.repository.CloudBillRepository;
 import com.fit2cloud.provider.ICloudProvider;
@@ -24,6 +25,7 @@ import com.fit2cloud.service.SyncService;
 import io.reactivex.rxjava3.functions.BiFunction;
 import io.reactivex.rxjava3.functions.Consumer;
 import org.apache.commons.collections4.MapUtils;
+import org.redisson.Redisson;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Caching;
 import org.springframework.data.elasticsearch.annotations.Document;
@@ -53,6 +55,8 @@ public class SyncServiceImpl extends BaseSyncService implements SyncService {
     private ElasticsearchTemplate elasticsearchTemplate;
     @Resource
     private IBillDimensionSettingService billDimensionSettingService;
+    @Resource
+    private Redisson redisson;
     /**
      * 任务描述
      */
@@ -125,9 +129,12 @@ public class SyncServiceImpl extends BaseSyncService implements SyncService {
      * @param cloudAccountId 云账号id
      */
     private void deleteDataSource(String cloudAccountId) {
-        // 如果云账号不存在,删除es对应数据
-        elasticsearchTemplate.delete(new NativeQueryBuilder().withQuery(new Query.Builder().term(new TermQuery.Builder().field("cloudAccountId").value(FieldValue.of(cloudAccountId)).build()).build()).build(), CloudBill.class, IndexCoordinates.of(CloudBill.class.getAnnotation(Document.class).indexName()));
+        synchronized (EsWriteLockConstants.WRITE_LOCK) {
+            // 如果云账号不存在,删除es对应数据
+            elasticsearchTemplate.delete(new NativeQueryBuilder().withQuery(new Query.Builder().term(new TermQuery.Builder().field("cloudAccountId").value(FieldValue.of(cloudAccountId)).build()).build()).build(), CloudBill.class, IndexCoordinates.of(CloudBill.class.getAnnotation(Document.class).indexName()));
+        }
     }
+
 
     /**
      * 同步账单
@@ -176,6 +183,8 @@ public class SyncServiceImpl extends BaseSyncService implements SyncService {
         try {
             if (MapUtils.isEmpty(billSetting)) {
                 defaultParams = PlatformConstants.valueOf(cloudAccount.getPlatform()).getBillClass().getConstructor().newInstance().getDefaultParams();
+            } else {
+                defaultParams = billSetting;
             }
         } catch (Exception e) {
             throw new RuntimeException(e);
@@ -195,14 +204,17 @@ public class SyncServiceImpl extends BaseSyncService implements SyncService {
     private void saveBatchOrUpdate(BiSaveBatchOrUpdateParams<CloudBill> saveBatchOrUpdateParams) {
         //todo 构建删除数据查询条件
         ScriptQuery scriptQuery = new ScriptQuery.Builder().script(s -> s.inline(inlineScript -> inlineScript.lang("painless").source("doc['billingCycle'].value.monthValue==params.month&&doc['billingCycle'].value.year==params.year&&doc['cloudAccountId'].value==params.cloudAccountId").params(getQueryParams(saveBatchOrUpdateParams.getRequestParams(), saveBatchOrUpdateParams.getCloudAccount().getId())))).build();
-        // todo 删除数据
-        elasticsearchTemplate.delete(new NativeQueryBuilder().withQuery(new Query.Builder().script(scriptQuery).build()).build(), CloudBill.class, IndexCoordinates.of(CloudBill.class.getAnnotation(Document.class).indexName()));
-        //todo 插入数据
-        List<CloudBill> syncRecord = saveBatchOrUpdateParams.getSyncRecord();
-        List<List<CloudBill>> lists = CommonUtil.averageAssign(syncRecord, 1000);
-        for (List<CloudBill> list : lists) {
-            cloudBillRepository.saveAll(list);
+        synchronized (EsWriteLockConstants.WRITE_LOCK) {
+            // todo 删除数据
+            elasticsearchTemplate.delete(new NativeQueryBuilder().withQuery(new Query.Builder().script(scriptQuery).build()).build(), CloudBill.class, IndexCoordinates.of(CloudBill.class.getAnnotation(Document.class).indexName()));
+            //todo 插入数据
+            List<CloudBill> syncRecord = saveBatchOrUpdateParams.getSyncRecord();
+            List<List<CloudBill>> lists = CommonUtil.averageAssign(syncRecord, 1000);
+            for (List<CloudBill> list : lists) {
+                cloudBillRepository.saveAll(list);
+            }
         }
+
     }
 
     /**
@@ -288,9 +300,8 @@ public class SyncServiceImpl extends BaseSyncService implements SyncService {
      * @param <T>               账单
      */
     private <T> void proxy(String cloudAccountId, List<String> months, BiFunction<ICloudProvider, String, List<T>> execMethod, BiFunction<CloudAccount, String, String> getExecMethodArgs, Consumer<BiSaveBatchOrUpdateParams<T>> saveBatchOrUpdate, Consumer<BiSaveBatchOrUpdateParams<T>> writeJobRecord, Consumer<String> remote) {
-        proxy(cloudAccountId, jobDescription, months, ICloudProvider::of, syncTime -> initJobRecord(syncTime, cloudAccountId), execMethod, getExecMethodArgs, saveBatchOrUpdate, writeJobRecord, remote);
-        // 授权
-        billDimensionSettingService.authorize();
+        proxy(cloudAccountId, jobDescription, months, ICloudProvider::of, syncTime -> initJobRecord(syncTime, cloudAccountId), execMethod, getExecMethodArgs, saveBatchOrUpdate, writeJobRecord, () -> billDimensionSettingService.authorize(), remote);
+
     }
 
     /**

@@ -95,6 +95,19 @@ const updateBillRule: (
 ) => Promise<Result<BillRule>> = (billRule, loading) => {
   return put("/api/bill_rule", {}, billRule, loading);
 };
+
+/**
+ * 删除规则
+ * @param billRuleId 规则id
+ * @param loading    加载器
+ * @returns  是否删除
+ */
+const deleteBillRule: (
+  billRuleId: string,
+  loading?: Ref<boolean>
+) => Promise<Result<boolean>> = (billRuleId, loading) => {
+  return del(`/api/bill_rule/${billRuleId}`, {}, {}, loading);
+};
 export default {
   listBillRules,
   pageBillRules,
@@ -102,4 +115,5 @@ export default {
   getGroupChildKeys,
   addBillRule,
   updateBillRule,
+  deleteBillRule,
 };

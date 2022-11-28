@@ -11,7 +11,9 @@ import com.fit2cloud.common.provider.impl.tencent.entity.request.GetBucketsReque
 import com.fit2cloud.common.provider.impl.tencent.entity.request.GetRegionsRequest;
 import com.fit2cloud.common.utils.JsonUtil;
 import com.qcloud.cos.model.Bucket;
+import org.apache.commons.collections4.keyvalue.DefaultKeyValue;
 
+import java.util.ArrayList;
 import java.util.List;
 
 
@@ -27,5 +29,18 @@ public class TencentBaseCloudProvider extends AbstractBaseCloudProvider<TencentC
 
     public List<Bucket> getBuckets(String req) {
         return TencentBaseMethodApi.getBuckets(JsonUtil.parseObject(req, GetBucketsRequest.class));
+    }
+
+    /**
+     * 获取账单同步方式
+     *
+     * @param req 请求字符串
+     * @return 账单所有同步方式
+     */
+    public List<DefaultKeyValue<String, String>> getSyncModes(String req) {
+        return new ArrayList<>() {{
+            add(new DefaultKeyValue<>("API", "api"));
+            add(new DefaultKeyValue<>("存储桶", "bucket"));
+        }};
     }
 }

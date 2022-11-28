@@ -118,17 +118,17 @@ public class AliBucketApi {
         List<AliBillCsvModel> aliBillCsvModels = objectSummaryList.stream()
                 .filter((objectSummary) -> objectSummary.getKey().endsWith("BillingItemDetailMonthly_" + syncBillRequest.getBillingCycle().replace("-", "")))
                 .findFirst()
-                .map(objectSummary -> writeAndReadFile(ossClient, objectSummary))
+                .map(objectSummary -> writeAndReadFile(ossClient, objectSummary, syncBillRequest.getBill().getBucketId()))
                 .orElse(new ArrayList<>());
         List<Credential.Region> regions = syncBillRequest.getCredential().regions();
         // todo 转换为系统账单对象
         return aliBillCsvModels.stream().map(aliBillCsvModel -> AliyunMappingUtil.toCloudBill(aliBillCsvModel, regions)).toList();
     }
 
-    private static List<AliBillCsvModel> writeAndReadFile(AsyncClient ossClient, ObjectSummary objectSummary) {
+    private static List<AliBillCsvModel> writeAndReadFile(AsyncClient ossClient, ObjectSummary objectSummary, String bucketName) {
         // 写入数据
         File file = CsvUtil.writeFile(BillingSettingConstants.billingPath, objectSummary.getKey(), objectSummary.getSize(),
-                () -> ossClient.getObject(GetObjectRequest.builder().key(objectSummary.getKey()).build()).join().getBody());
+                () -> ossClient.getObject(GetObjectRequest.builder().bucket(bucketName).key(objectSummary.getKey()).build()).join().getBody());
         return CsvUtil.parse(file, AliBillCsvModel.class);
     }
 

@@ -71,6 +71,7 @@ public abstract class BaseSyncService {
                                 BiFunction<CloudAccount, String, String> getExecMethodArgs,
                                 Consumer<BiSaveBatchOrUpdateParams<T>> saveBatchOrUpdate,
                                 Consumer<BiSaveBatchOrUpdateParams<T>> writeJobRecord,
+                                Runnable postHandler,
                                 Consumer<String> remote) {
         RLock lock = redissonClient.getLock(cloudAccountId + jobDescription);
         try {
@@ -96,6 +97,7 @@ public abstract class BaseSyncService {
                                 writeJobRecord.accept(new BiSaveBatchOrUpdateParams<>(cloudAccount, syncTime, params, new ArrayList<>(), jobRecord));
                             }
                         }
+                        postHandler.run();
                         // 修改同步状态为成功
                         baseJobRecordService.update(new LambdaUpdateWrapper<JobRecord>().eq(JobRecord::getId, jobRecord.getId()).set(JobRecord::getStatus, JobStatusConstants.SUCCESS));
                     } catch (Throwable e) {
@@ -118,6 +120,35 @@ public abstract class BaseSyncService {
                 lock.unlock();
             }
         }
+    }
+
+    /**
+     * 代理同步数据
+     *
+     * @param cloudAccountId    云账号id
+     * @param jobDescription    定时任务描述
+     * @param getCloudProvider  获取定时任务执行器
+     * @param initJobRecord     初始化任务记录
+     * @param execMethod        执行函数
+     * @param getExecMethodArgs 获取执行函数参数
+     * @param saveBatchOrUpdate 插入或者修改数据
+     * @param writeJobRecord    写入任务记录参数
+     * @param remote            云账号不存在的时候 删除云账号资源
+     * @param <T>               同步数据泛型
+     * @param <P>               执行器泛型
+     */
+    protected <T, P> void proxy(String cloudAccountId,
+                                String jobDescription,
+                                List<String> months,
+                                Function<String, Class<? extends P>> getCloudProvider,
+                                Function<LocalDateTime, JobRecord> initJobRecord,
+                                BiFunction<P, String, List<T>> execMethod,
+                                BiFunction<CloudAccount, String, String> getExecMethodArgs,
+                                Consumer<BiSaveBatchOrUpdateParams<T>> saveBatchOrUpdate,
+                                Consumer<BiSaveBatchOrUpdateParams<T>> writeJobRecord,
+                                Consumer<String> remote) {
+        proxy(cloudAccountId, jobDescription, months, getCloudProvider, initJobRecord, execMethod, getExecMethodArgs, saveBatchOrUpdate, writeJobRecord, () -> {
+        }, remote);
     }
 
     /**

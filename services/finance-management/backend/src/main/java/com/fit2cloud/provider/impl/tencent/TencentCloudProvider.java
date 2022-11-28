@@ -5,10 +5,13 @@ import com.fit2cloud.es.entity.CloudBill;
 import com.fit2cloud.provider.AbstractCloudProvider;
 import com.fit2cloud.provider.ICloudProvider;
 import com.fit2cloud.provider.impl.tencent.api.TencentBillApi;
+import com.fit2cloud.provider.impl.tencent.api.TencentBucketApi;
 import com.fit2cloud.provider.impl.tencent.entity.credential.TencentBillCredential;
 import com.fit2cloud.provider.impl.tencent.entity.request.SyncBillRequest;
+import org.apache.commons.lang3.StringUtils;
 
 import java.util.List;
+import java.util.Objects;
 
 /**
  * {@code @Author:张少虎}
@@ -19,6 +22,7 @@ import java.util.List;
 public class TencentCloudProvider extends AbstractCloudProvider<TencentBillCredential> implements ICloudProvider {
     @Override
     public List<CloudBill> syncBill(String request) {
-        return TencentBillApi.listBill(JsonUtil.parseObject(request, SyncBillRequest.class));
+        SyncBillRequest syncBillRequest = JsonUtil.parseObject(request, SyncBillRequest.class);
+        return Objects.nonNull(syncBillRequest.getBill()) && StringUtils.equals(syncBillRequest.getBill().getSyncMode(), "bucket") ? TencentBucketApi.listBill(syncBillRequest) : TencentBillApi.listBill(syncBillRequest);
     }
 }
