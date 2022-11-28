@@ -251,19 +251,20 @@ public class AliyunVmCreateRequest extends AliyunBaseRequest implements ICreateS
     )
     private String password;
 
-    @Form(inputType = InputType.SingleSelect,
-            label = "秘钥对",
-            clazz = AliyunCloudProvider.class,
-            method = "getKeyPairs",
-            relationShows = "loginType",
-            relationShowValues = "keyPair",
-            textField = "name",
-            valueField = "name",
-            step = 3,
-            group = 8,
-            confirmGroup = 3
-    )
-    private String keyPairName;
+// 暂不支持密钥对，先屏蔽
+//    @Form(inputType = InputType.SingleSelect,
+//            label = "秘钥对",
+//            clazz = AliyunCloudProvider.class,
+//            method = "getKeyPairs",
+//            relationShows = "loginType",
+//            relationShowValues = "keyPair",
+//            textField = "name",
+//            valueField = "name",
+//            step = 3,
+//            group = 8,
+//            confirmGroup = 3
+//    )
+//    private String keyPairName;
 
     @Form(inputType = InputType.VsphereServerInfoForm,
             defaultValue = "[]",
@@ -302,9 +303,11 @@ public class AliyunVmCreateRequest extends AliyunBaseRequest implements ICreateS
         createInstanceRequest.setVSwitchId(this.networkId.substring(this.networkId.indexOf("]") + 1));
         createInstanceRequest.setSecurityGroupId(this.securityGroupId);
         createInstanceRequest.setPassword(this.password);
-        if (AliyunLoginType.KeyPair.getId().equalsIgnoreCase(this.loginType)) {
-            createInstanceRequest.setKeyPairName(this.keyPairName);
-        }
+
+// 暂不支持密钥对，先屏蔽
+//        if (AliyunLoginType.KeyPair.getId().equalsIgnoreCase(this.loginType)) {
+//            createInstanceRequest.setKeyPairName(this.keyPairName);
+//        }
 
         // 设置云主机名称和 hostname
         String instanceName = this.serverInfos.get(index).getName();

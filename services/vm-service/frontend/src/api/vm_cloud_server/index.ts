@@ -31,15 +31,9 @@ export function listVmCloudServer(
  */
 export function shutdownInstance(
   instanceId: string,
-  powerOff: boolean,
   loading?: Ref<boolean>
 ): Promise<Result<boolean>> {
-  return post(
-    "api/server/shutdown/" + instanceId + "/" + powerOff,
-    null,
-    null,
-    loading
-  );
+  return post("api/server/shutdown/" + instanceId, null, null, loading);
 }
 
 /**

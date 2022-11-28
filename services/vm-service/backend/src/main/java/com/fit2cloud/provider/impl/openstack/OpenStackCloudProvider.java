@@ -10,12 +10,18 @@ import com.fit2cloud.provider.ICloudProvider;
 import com.fit2cloud.provider.entity.F2CDisk;
 import com.fit2cloud.provider.entity.F2CImage;
 import com.fit2cloud.provider.entity.F2CVirtualMachine;
+import com.fit2cloud.provider.entity.result.CheckCreateServerResult;
 import com.fit2cloud.provider.impl.openstack.api.OpenStackCloudApi;
 import com.fit2cloud.provider.impl.openstack.entity.VolumeType;
 import com.fit2cloud.provider.impl.openstack.entity.request.*;
 import org.openstack4j.model.compute.Flavor;
+import org.openstack4j.model.network.Network;
+import org.openstack4j.model.network.SecurityGroup;
 
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class OpenStackCloudProvider extends AbstractCloudProvider<OpenStackCredential> implements ICloudProvider {
 
@@ -107,5 +113,36 @@ public class OpenStackCloudProvider extends AbstractCloudProvider<OpenStackCrede
         return OpenStackCloudApi.getFlavors(JsonUtil.parseObject(req, OpenStackServerCreateRequest.class));
     }
 
+    public List<SecurityGroup> getSecurityGroups(String req) {
+        return OpenStackCloudApi.getSecurityGroups(JsonUtil.parseObject(req, OpenStackServerCreateRequest.class));
+    }
 
+    public List<Network> getNetworks(String req) {
+        return OpenStackCloudApi.getNetworks(JsonUtil.parseObject(req, OpenStackServerCreateRequest.class));
+    }
+
+    public List<Map<String, String>> getLoginModes(String req) {
+        List<Map<String, String>> list = new ArrayList<>();
+        Map<String, String> option = new HashMap<>();
+        option.put("id", "password");
+        option.put("name", "密码");
+        list.add(option);
+        return list;
+    }
+
+
+    @Override
+    public F2CVirtualMachine getSimpleServerByCreateRequest(String req) {
+        return OpenStackCloudApi.getSimpleServerByCreateRequest(JsonUtil.parseObject(req, OpenStackServerCreateRequest.class));
+    }
+
+    @Override
+    public CheckCreateServerResult validateServerCreateRequest(String req) {
+        return OpenStackCloudApi.validateServerCreateRequest(JsonUtil.parseObject(req, OpenStackServerCreateRequest.class));
+    }
+
+    @Override
+    public F2CVirtualMachine createVirtualMachine(String req) {
+        return OpenStackCloudApi.createVirtualMachine(JsonUtil.parseObject(req, OpenStackServerCreateRequest.class));
+    }
 }

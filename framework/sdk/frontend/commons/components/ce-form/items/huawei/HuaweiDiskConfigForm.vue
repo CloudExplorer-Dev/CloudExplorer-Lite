@@ -2,7 +2,7 @@
   <template v-if="!confirm">
     <div style="display: flex; flex-direction: row; flex-wrap: wrap">
       <div
-        v-for="(obj, index) in data"
+        v-for="(obj, index) in _data"
         :key="index"
         class="vs-disk-config-card"
       >
@@ -32,7 +32,12 @@
             size="small"
           >
             <el-form-item label="磁盘类型" prop="diskType">
-              <el-select filterable v-model="obj.diskType" style="width: 150px">
+              <el-select
+                filterable
+                v-model="obj.diskType"
+                style="width: 150px"
+                @change="change()"
+              >
                 <el-option
                   v-for="(item, id) in props.formItem?.ext?.diskConfig
                     ?.diskTypes"
@@ -46,13 +51,11 @@
             <el-form-item label="磁盘大小" prop="size">
               <el-input-number
                 v-model="obj.size"
-                :min="_.defaultTo(defaultDisks[index]?.size, 1)"
+                :min="_.defaultTo(defaultDisks[index]?.size, 10)"
                 :step="1"
                 required
+                @change="change()"
               />
-            </el-form-item>
-            <el-form-item label="预估费用" prop="obj.amountText">
-              <span>112.19</span>
             </el-form-item>
           </el-form>
           <el-button
@@ -95,7 +98,7 @@
 </template>
 <script setup lang="ts">
 import type { FormInstance } from "element-plus";
-import { computed, watch, onMounted, ref } from "vue";
+import { computed, watch, ref } from "vue";
 import _ from "lodash";
 import type { FormView } from "@commons/components/ce-form/type";
 import { CloseBold } from "@element-plus/icons-vue";
@@ -126,42 +129,28 @@ const ruleFormRef = ref<FormInstance>();
 const defaultDisks = computed(() => {
   return [{ size: 1, deleteWithInstance: true }];
 });
-
-watch(
-  () => props.allData.availabilityZone,
-  (count) => {
-    getDiskType();
-  }
-);
 const emit = defineEmits(["update:modelValue", "change"]);
-/**
- * 双向绑定更新到外面
- */
-const data = computed<Array<any>>({
-  get() {
-    return props.modelValue;
-  },
-  set(value) {
-    emit("update:modelValue", value);
-  },
-});
-
 function add() {
-  data.value?.push({
-    size: 1,
+  _data.value?.push({
+    size: 10,
     diskType: props.formItem?.ext?.diskConfig?.diskTypes?.[0].id,
     amountText: "",
     deleteWithInstance: true,
   });
+  change();
 }
 function remove(index: number) {
-  _.remove(data.value, (n, i) => index === i);
+  _.remove(_data.value, (n, i) => index === i);
+  change();
 }
 
+function change() {
+  emit("change");
+}
 function getTempRequest() {
   return _.assignWith(
     {},
-    { computeConfig: _data.value },
+    {},
     props.otherParams,
     props.allData,
     (objValue, srcValue) => {
@@ -169,9 +158,26 @@ function getTempRequest() {
     }
   );
 }
-onMounted(() => {
-  getDiskType();
-});
+watch(
+  () => props.allData.availabilityZone,
+  (n, o) => {
+    getDiskType();
+  }
+);
+
+watch(
+  () => props.allData,
+  (n, o) => {
+    emit("change");
+  }
+);
+
+watch(
+  () => props.allData.osVersion,
+  (n, o) => {
+    getDiskType();
+  }
+);
 
 function getDiskType() {
   const _temp = getTempRequest();
@@ -180,9 +186,13 @@ function getDiskType() {
   formApi.getResourceMethod(false, clazz, method, _temp).then((ok) => {
     _.set(props.formItem, "ext.diskConfig.diskTypes", ok.data);
     diskTypes.value = ok.data;
-    data.value.length = 0;
-    data.value?.push({
-      size: 40,
+    _data.value.length = 0;
+    let defaultSize = props.allData.osVersion?.imageMinDiskSize;
+    if (!defaultSize) {
+      defaultSize = 0;
+    }
+    _data.value?.push({
+      size: defaultSize < 40 ? 40 : defaultSize,
       diskType: diskTypes?.value[0].id,
       amountText: "",
       deleteWithInstance: true,

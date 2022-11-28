@@ -171,7 +171,8 @@ function getDisplayValue(form: FormView) {
     (typeof result === "string" && _.trim(result).length === 0)
   ) {
     return `<span style="color: var(--el-text-color-secondary)">空</span>`;
-  } else {
+  }
+  else {
     return result;
   }
 }

@@ -187,8 +187,11 @@ function remove(index: number) {
  */
 function validate(): Promise<boolean> {
   return new Promise((resolve, reject) => {
-    if (props.confirm || data.value.length === 0) {
+    if (props.allData.bootFormVolume && data.value.length === 0) {
       return reject(false);
+    }
+    if (!props.allData.bootFormVolume && data.value.length === 0) {
+      return resolve(true);
     }
     return _.every(data.value, (disk) => disk.size > 0 && disk.volumeType)
       ? resolve(true)

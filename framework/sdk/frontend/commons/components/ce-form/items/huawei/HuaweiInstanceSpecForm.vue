@@ -19,7 +19,7 @@
       size="small"
     >
       <el-form-item>
-        <el-radio-group v-model="_data" style="width: 100%">
+        <el-radio-group v-model="selectRowId" style="width: 100%">
           <el-table
             ref="multipleTableRef"
             :data="props.formItem?.ext?.instanceConfig?.searchTableData"
@@ -44,6 +44,13 @@
       </el-form-item>
     </el-form>
   </template>
+  <template v-else>
+    <el-descriptions>
+      <el-descriptions-item label="实例规格">
+        {{ modelValue?.instanceSpec }}
+      </el-descriptions-item>
+    </el-descriptions>
+  </template>
 </template>
 <script setup lang="ts">
 import type { FormView } from "@commons/components/ce-form/type";
@@ -53,7 +60,7 @@ import _ from "lodash";
 import type { ElTable, FormInstance } from "element-plus";
 
 const props = defineProps<{
-  modelValue?: string;
+  modelValue?: InstanceSpec;
   allData?: any;
   allFormViewData?: Array<FormView>;
   field: string;
@@ -62,9 +69,21 @@ const props = defineProps<{
   confirm?: boolean;
 }>();
 
+/**
+ *
+ */
 interface InstanceSpec {
   specName: string;
+  specType: string;
+  instanceSpec: string;
+  amount: number;
+  vcpus: string;
+  ram: number;
+  disk: string;
+  amountText: string;
+  randomImageId: string;
 }
+const selectRowId = ref<any>("");
 
 const searchName = ref("");
 
@@ -90,27 +109,27 @@ const ruleFormRef = ref<FormInstance>();
 const currentRow = computed<InstanceSpec | undefined>({
   get() {
     return _.find(
-      props.formItem?.ext?.instanceConfig?.tableData,
-      (o: InstanceSpec) => o.specName === _data.value
+      props.formItem?.ext?.instanceConfig?.searchTableData,
+      (o: InstanceSpec) => o.specName === _data.value?.specName
     );
   },
   set(value) {
-    _data.value = value?.specName;
+    _data.value = value;
   },
 });
 
 function handleCurrentChange(val: InstanceSpec | undefined) {
   currentRow.value = val;
+  selectRowId.value = val?.specName;
+  emit("change");
 }
-
-const _loading = ref<boolean>(false);
 
 const singleTableRef = ref<InstanceType<typeof ElTable>>();
 
 function getTempRequest() {
   return _.assignWith(
     {},
-    { computeConfig: _data.value },
+    {},
     props.otherParams,
     props.allData,
     (objValue, srcValue) => {
@@ -132,11 +151,15 @@ function getList() {
         "ext.instanceConfig.searchTableData",
         ok.data.tableData
       );
-      if (currentRow.value === undefined) {
-        currentRow.value = ok.data.tableData[0];
-      } else {
-        //设置界面默认选中
-        singleTableRef.value?.setCurrentRow(currentRow.value);
+      if (ok.data.tableData) {
+        if (currentRow.value === undefined) {
+          currentRow.value = ok.data.tableData[0];
+          selectRowId.value = ok.data.tableData[0].specName;
+        } else {
+          //设置界面默认选中
+          singleTableRef.value?.setCurrentRow(currentRow.value);
+          selectRowId.value = currentRow.value.specName;
+        }
       }
     });
 }

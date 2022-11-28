@@ -87,9 +87,10 @@ public class VmCloudServerServiceImpl extends ServiceImpl<BaseVmCloudServerMappe
     private void init() {
         batchOperationMap = new HashMap<>();
         batchOperationMap.put(OperatedTypeEnum.POWER_ON, this::powerOn);
-        batchOperationMap.put(OperatedTypeEnum.HARD_REBOOT, this::hardRebootInstance);
-        batchOperationMap.put(OperatedTypeEnum.HARD_SHUTDOWN, this::hardShutdownInstance);
-        batchOperationMap.put(OperatedTypeEnum.BATCH_DELETE, this::deleteInstance);
+        batchOperationMap.put(OperatedTypeEnum.REBOOT, this::rebootInstance);
+        batchOperationMap.put(OperatedTypeEnum.POWER_OFF, this::powerOff);
+        batchOperationMap.put(OperatedTypeEnum.SHUTDOWN, this::shutdownInstance);
+        batchOperationMap.put(OperatedTypeEnum.DELETE, this::deleteInstance);
     }
 
     @Override
@@ -150,29 +151,6 @@ public class VmCloudServerServiceImpl extends ServiceImpl<BaseVmCloudServerMappe
                 F2CInstanceStatus.Stopping.name(), F2CInstanceStatus.Stopped.name(), this::modifyResource,
                 jobRecordCommonService::initJobRecord, jobRecordCommonService::modifyJobRecord);
         return true;
-    }
-
-    public boolean hardShutdownInstance(String vmId) {
-        operate(vmId, OperatedTypeEnum.HARD_SHUTDOWN.getDescription(), ICloudProvider::hardShutdownInstance,
-                F2CInstanceStatus.Stopping.name(), F2CInstanceStatus.Stopped.name(), this::modifyResource,
-                jobRecordCommonService::initJobRecord, jobRecordCommonService::modifyJobRecord);
-        return true;
-    }
-
-    public boolean hardRebootInstance(String vmId) {
-        operate(vmId, OperatedTypeEnum.HARD_REBOOT.getDescription(), ICloudProvider::hardRebootInstance,
-                F2CInstanceStatus.Rebooting.name(), F2CInstanceStatus.Running.name(), this::modifyResource,
-                jobRecordCommonService::initJobRecord, jobRecordCommonService::modifyJobRecord);
-        return true;
-    }
-
-    @Override
-    public boolean shutdownInstance(String vmId, Boolean powerOff) {
-        if (powerOff) {
-            return powerOff(vmId);
-        } else {
-            return shutdownInstance(vmId);
-        }
     }
 
     @Override

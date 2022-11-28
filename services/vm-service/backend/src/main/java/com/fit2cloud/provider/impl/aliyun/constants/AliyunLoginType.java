@@ -6,8 +6,8 @@ package com.fit2cloud.provider.impl.aliyun.constants;
  */
 public enum AliyunLoginType {
 
-    Password("password","自定义密码"),
-    KeyPair("keyPair","秘钥对");
+    Password("password","自定义密码");
+    //KeyPair("keyPair","秘钥对");// 暂不支持密钥对，先屏蔽
 
     private String id;
     private String name;

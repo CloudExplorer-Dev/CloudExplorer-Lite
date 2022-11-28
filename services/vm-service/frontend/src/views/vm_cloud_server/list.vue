@@ -28,8 +28,8 @@ const cloudAccount = ref<Array<SimpleMap<string>>>([]);
 //批量操作
 const instanceOperateMap: Map<string, string> = new Map();
 instanceOperateMap.set("POWER_ON", t("", "启动"));
-instanceOperateMap.set("HARD_SHUTDOWN", t("", "关机"));
-instanceOperateMap.set("HARD_REBOOT", t("", "重启"));
+instanceOperateMap.set("POWER_OFF", t("", "关机"));
+instanceOperateMap.set("REBOOT", t("", "重启"));
 instanceOperateMap.set("DELETE", t("", "删除"));
 //状态
 const InstanceStatus = ref<Array<SimpleMap<string>>>([
@@ -341,18 +341,33 @@ const shutdown = (row: VmCloudServerVO) => {
     cancelButtonText: t("commons.btn.cancel", "取消"),
     type: "warning",
   }).then(() => {
-    VmCloudServerApi.shutdownInstance(row.id as string, powerOff)
-      .then((res) => {
-        startOperateInterval([row]);
-        console.log("-----" + res);
-        ElMessage.success(t("commons.msg.op_success"));
-      })
-      .catch((err) => {
-        console.log(err);
-      })
-      .finally(() => {
-        //table.value?.search();
-      });
+    if (powerOff) {
+      VmCloudServerApi.powerOff(row.id as string)
+        .then((res) => {
+          startOperateInterval([row]);
+          console.log("-----" + res);
+          ElMessage.success(t("commons.msg.op_success"));
+        })
+        .catch((err) => {
+          console.log(err);
+        })
+        .finally(() => {
+          //table.value?.search();
+        });
+    } else {
+      VmCloudServerApi.shutdownInstance(row.id as string)
+        .then((res) => {
+          startOperateInterval([row]);
+          console.log("-----" + res);
+          ElMessage.success(t("commons.msg.op_success"));
+        })
+        .catch((err) => {
+          console.log(err);
+        })
+        .finally(() => {
+          //table.value?.search();
+        });
+    }
   });
 };
 //关闭电源
@@ -489,10 +504,10 @@ const handleAction = (actionObj: any) => {
       <el-button @click="batchOperate('POWER_ON')">{{
         t("vm_cloud_server.btn.power_on", "启动")
       }}</el-button>
-      <el-button @click="batchOperate('HARD_SHUTDOWN')">{{
+      <el-button @click="batchOperate('SHUTDOWN')">{{
         t("vm_cloud_server.btn.shutdown", "关机")
       }}</el-button>
-      <el-button @click="batchOperate('HARD_REBOOT')">{{
+      <el-button @click="batchOperate('REBOOT')">{{
         t("vm_cloud_server.btn.reboot", "重启")
       }}</el-button>
       <el-dropdown

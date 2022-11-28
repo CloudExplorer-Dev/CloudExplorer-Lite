@@ -1,14 +1,14 @@
 package com.fit2cloud.provider.impl.huawei.entity;
 
 import lombok.Data;
-
-import java.math.BigDecimal;
+import lombok.experimental.Accessors;
 
 /**
  * @author jianneng
  * @date 2022/11/15 11:50
  **/
 @Data
+@Accessors(chain = true)
 public class InstanceSpecType {
 
     /**
@@ -24,13 +24,16 @@ public class InstanceSpecType {
      */
     private String instanceSpec;
     /**
-     * 金额
+     * cpu
      */
-    private BigDecimal amount;
-
+    private String vcpus;
     /**
-     * 金额显示
+     * 内存 MB
      */
-    private String amountText;
+    private Integer ram;
+    /**
+     * 磁盘 GB
+     */
+    private String disk;
 
 }
