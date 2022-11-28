@@ -9,7 +9,7 @@ import com.fit2cloud.common.form.constants.InputType;
 import com.fit2cloud.common.provider.impl.huawei.HuaweiBaseCloudProvider;
 import com.fit2cloud.provider.ICreateServerRequest;
 import com.fit2cloud.provider.impl.huawei.HuaweiCloudProvider;
-import com.fit2cloud.provider.impl.huawei.entity.DiskConfig;
+import com.fit2cloud.provider.impl.huawei.entity.*;
 import com.fit2cloud.service.impl.VmCloudImageServiceImpl;
 import lombok.Data;
 
@@ -36,6 +36,19 @@ import java.util.List;
 @FormGroupInfo(group = 9, name = "主机命名")
 public class HuaweiVmCreateRequest extends HuaweiBaseRequest implements ICreateServerRequest {
 
+    @Form(inputType = InputType.Radio,
+            label = "付费方式",
+            clazz = HuaweiCloudProvider.class,
+            method = "getBillingMode",
+            defaultValue = "0",
+            textField = "name",
+            valueField = "id",
+            step = 1,
+            group = 1,
+            confirmGroup = 1
+    )
+    private String billingMode;
+
     @Form(inputType = InputType.Number,
             label = "购买数量",
             unit = "台",
@@ -48,24 +61,25 @@ public class HuaweiVmCreateRequest extends HuaweiBaseRequest implements ICreateS
 
     @Form(inputType = InputType.Number,
             label = "购买时长",
-            defaultValue = "1",
             defaultJsonValue = true,
             attrs = "{\"min\":1,\"max\":9,\"step\":1}",
-            confirmGroup = 1
+            confirmGroup = 1,
+            relationShows = "billingMode",
+            relationShowValues = "1"
 
     )
-    private String periodNum;
+    private int periodNum;
 
     @Form(inputType = InputType.SingleSelect,
             label = "周期类型",
             clazz = HuaweiCloudProvider.class,
             method = "getPeriodType",
-            defaultValue = "month",
             attrs = "{\"style\":\"width:120px\"}",
             textField = "name",
             valueField = "id",
-            confirmGroup = 1
-
+            confirmGroup = 1,
+            relationShows = "billingMode",
+            relationShowValues = "1"
     )
     private String periodType;
 
@@ -73,17 +87,6 @@ public class HuaweiVmCreateRequest extends HuaweiBaseRequest implements ICreateS
 
     private String id;
 
-    @Form(inputType = InputType.Radio,
-            label = "计费模式",
-            clazz = HuaweiCloudProvider.class,
-            method = "getBillingMode",
-            defaultValue = "0",
-            textField = "name",
-            valueField = "id",
-            step = 1,
-            group = 1
-    )
-    private String billingMode;
 
     //step 1
     @Form(inputType = InputType.SingleSelect,
@@ -94,21 +97,22 @@ public class HuaweiVmCreateRequest extends HuaweiBaseRequest implements ICreateS
             textField = "name",
             valueField = "regionId",
             group = 2,
-            step = 1
+            step = 1,
+            confirmGroup = 0
     )
-    private String region;
+    private String regionId;
 
     //集群
     @Form(inputType = InputType.Radio,
             label = "可用区",
             clazz = HuaweiCloudProvider.class,
-            defaultValue = "random",
             method = "getAvailabilityZone",
             textField = "displayName",
             valueField = "zoneName",
-            relationTrigger = {"region", "billingMode"},
+            relationTrigger = {"regionId", "billingMode"},
             group = 2,
-            step = 1
+            step = 1,
+            confirmGroup = 0
     )
     private String availabilityZone;
 
@@ -126,31 +130,34 @@ public class HuaweiVmCreateRequest extends HuaweiBaseRequest implements ICreateS
     )
     private String os;
 
-    //镜像
-    @Form(inputType = InputType.SingleSelect,
-            label = "镜像名称",
+    @Form(inputType = InputType.HuaweiOsSingleSelectForm,
+            label = "系统版本",
             clazz = VmCloudImageServiceImpl.class,
             serviceMethod = true,
-            method = "listVmCloudImageByOs",
-            textField = "imageName",
-            valueField = "imageName", //由于vc还是拿name作为快速索引，所以不用mor作为查询值
+            confirmSpecial = true,
+            defaultJsonValue = true,
+            method = "listOsVersion",
             relationTrigger = "os",
+            textField = "osVersion",
+            valueField = "osVersion",
             group = 3,
             step = 1,
             confirmGroup = 1
     )
-    private String template;
+    private OsConfig osVersion;
 
     @Form(inputType = InputType.HuaweiInstanceSpecForm,
             description = "购买数量为多台时，实例规格一样，若想要不同实例规格需要分多次申请。",
-            defaultJsonValue = true,
+            defaultValue = "{}",
             confirmSpecial = true,
+            defaultJsonValue = true,
             relationTrigger = {"availabilityZone","billingMode"},
             group = 4,
             step = 1,
-            confirmGroup = 1
+            confirmGroup = 1,
+            confirmPosition = Form.Position.TOP
     )
-    private String instanceSpecConfig;
+    private InstanceSpecType instanceSpecConfig;
 
     //磁盘配置
     @Form(inputType = InputType.HuaweiDiskConfigForm,
@@ -164,8 +171,144 @@ public class HuaweiVmCreateRequest extends HuaweiBaseRequest implements ICreateS
     )
     private List<DiskConfig> disks;
 
-    public void setRegion(String region) {
-        setRegionId(region);
-    }
+    @Form(inputType = InputType.HuaweiNetworkConfigForm,
+            step = 2,
+            group = 6,
+            label = "网络",
+            confirmSpecial = true,
+            defaultJsonValue = true,
+            relationTrigger = "regionId",
+            confirmGroup = 2,
+            textField = "name",
+            valueField = "uuid",
+            confirmPosition = Form.Position.TOP
+    )
+    private NetworkConfig networkConfigs;
+
+    @Form(inputType = InputType.SingleSelect,
+            label = "选择安全组",
+            clazz = HuaweiCloudProvider.class,
+            method = "listSecurityGroups",
+            relationTrigger = "regionId",
+            textField = "name",
+            valueField = "uuid",
+            confirmGroup = 2,
+            group = 6,
+            step = 2
+    )
+    private String securityGroups;
+
+    @Form(inputType = InputType.SwitchBtn,
+            label = "公网IP",
+            defaultJsonValue = true,
+            confirmGroup = 2,
+            group = 7,
+            step = 2,
+            required = false
+    )
+    private boolean usePublicIp;
+
+    @Form(inputType = InputType.Radio,
+            label = "计费类型",
+            clazz = HuaweiCloudProvider.class,
+            method = "getChargeMode",
+            textField = "name",
+            valueField = "id",
+            relationShows = "usePublicIp",
+            relationShowValues = "true",
+            confirmGroup = 2,
+            step = 2,
+            group = 7
+    )
+    private String chargeMode;
+
+    @Form(inputType = InputType.Number,
+            label = "带宽大小",
+            unit = "Mbps",
+            defaultJsonValue = true,
+            attrs = "{\"min\":1,\"max\":200,\"step\":1}",
+            relationShows = "usePublicIp",
+            relationShowValues = "true",
+            confirmGroup = 2,
+            step = 2,
+            group = 7
+    )
+    private int bandwidthSize;
+
+
+    @Form(inputType = InputType.Radio,
+            label = "登录方式",
+            clazz = HuaweiCloudProvider.class,
+            method = "getLoginMethod",
+            defaultValue = "pwd",
+            confirmGroup = 3,
+            textField = "name",
+            valueField = "id",
+            step = 3,
+            group = 8
+    )
+    private String loginMethod;
+
+    @Form(inputType = InputType.Text,
+            label = "登录名",
+            attrs = "{\"style\":\"width:35%\"}",
+            relationShows = "loginMethod",
+            relationShowValues = "pwd",
+            confirmGroup = 3,
+            step = 3,
+            group = 8
+    )
+    private String loginName;
+
+    @Form(inputType = InputType.Password,
+            attrs = "{\"style\":\"width:35%\"}",
+            label = "密码",
+            relationShows = "loginMethod",
+            relationShowValues = "pwd",
+            step = 3,
+            group = 8
+    )
+    private String pwd;
+
+    @Form(inputType = InputType.SingleSelect,
+            label = "密钥对",
+            clazz = HuaweiCloudProvider.class,
+            method = "listKeyPairs",
+            relationTrigger = "regionId",
+            textField = "name",
+            valueField = "name",
+            relationShows = "loginMethod",
+            relationShowValues = "keyPair",
+            confirmGroup = 3,
+            step = 3,
+            group = 8
+    )
+    private String keyPari;
+
+    //云主机名称
+    @Form(inputType = InputType.HuaweiNameConfigForm,
+            attrs = "{\"style\":\"width:35%\"}",
+            step = 3,
+            group = 9,
+            defaultValue = "[]",
+            defaultJsonValue = true,
+            confirmGroup = 3,
+            confirmSpecial = true,
+            confirmPosition = Form.Position.TOP
+    )
+    private List<HuaweiServerNameInfo> serverNameInfos;
+
+    @Form(inputType = InputType.LabelText,
+            label = "预估价格",
+            clazz = HuaweiCloudProvider.class,
+            method = "calculatedPrice",
+            attrs = "{\"style\":\"color: red; font-size: large\"}",
+            confirmGroup = 1,
+            footerLocation = 1,
+            relationTrigger = {"count","billingMode","availabilityZone","instanceSpecConfig","disks"},
+            relationShows = "billingMode",
+            required = false
+    )
+    private String totalAmountText;
 
 }

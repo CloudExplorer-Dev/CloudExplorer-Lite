@@ -87,4 +87,6 @@ public class Form {
 
     private String confirmPosition;
 
+    private Integer footerLocation;
+
 }

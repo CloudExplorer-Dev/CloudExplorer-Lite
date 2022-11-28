@@ -12,10 +12,13 @@ import com.fit2cloud.provider.entity.F2CImage;
 import com.fit2cloud.provider.entity.F2CVirtualMachine;
 import com.fit2cloud.provider.entity.request.GetMetricsRequest;
 import com.fit2cloud.provider.impl.huawei.api.HuaweiSyncCloudApi;
+import com.fit2cloud.provider.impl.huawei.entity.F2CHuaweiSecurityGroups;
+import com.fit2cloud.provider.impl.huawei.entity.F2CHuaweiSubnet;
 import com.fit2cloud.provider.impl.huawei.entity.InstanceSpecConfig;
 import com.fit2cloud.provider.impl.huawei.entity.NovaAvailabilityZoneDTO;
 import com.fit2cloud.provider.impl.huawei.entity.credential.HuaweiVmCredential;
 import com.fit2cloud.provider.impl.huawei.entity.request.*;
+import com.huaweicloud.sdk.ecs.v2.model.NovaSimpleKeypair;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -172,6 +175,40 @@ public class HuaweiCloudProvider extends AbstractCloudProvider<HuaweiVmCredentia
     }
 
     /**
+     * 公网带宽计费类型
+     * 未传该字段,表示按带宽计费。
+     * 字段值为空,表示按带宽计费。
+     * 字段值为“traffic”,表示按流量计费。
+     * 字段为其它值,会导致创建云服务器失败。
+     * 特殊处理noTraffic
+     * @return
+     */
+    public List<Map<String, String>> getChargeMode(String req) {
+        List<Map<String, String>> billingModes = new ArrayList<>();
+        Map<String, String> defaultMap = new HashMap<>();
+        defaultMap.put("id", "traffic");
+        defaultMap.put("name", "按流量计费");
+        billingModes.add(defaultMap);
+        Map<String, String> thinMap = new HashMap<>();
+        thinMap.put("id", "noTraffic");
+        thinMap.put("name", "安固定带宽");
+        billingModes.add(thinMap);
+        return billingModes;
+    }
+    public List<Map<String, String>> getLoginMethod(String req) {
+        List<Map<String, String>> loginMethod = new ArrayList<>();
+        Map<String, String> defaultMap = new HashMap<>();
+        defaultMap.put("id", "pwd");
+        defaultMap.put("name", "自定义密码");
+        loginMethod.add(defaultMap);
+//        Map<String, String> thinMap = new HashMap<>();
+//        thinMap.put("id", "keyPair");
+//        thinMap.put("name", "密钥对");
+//        loginMethod.add(thinMap);
+        return loginMethod;
+    }
+
+    /**
      * 周期类型
      * @return
      */
@@ -196,8 +233,30 @@ public class HuaweiCloudProvider extends AbstractCloudProvider<HuaweiVmCredentia
         return HuaweiSyncCloudApi.getAllDiskTypes(JsonUtil.parseObject(req, HuaweiVmCreateRequest.class));
     }
 
-    public static void main(String[] args) {
-        String a = "{\"id\":\"0769f3f764f8eeada44b54014224180e\",\"name\":\"华为云-产品\",\"platform\":\"fit2cloud_huawei_platform\",\"credential\":\"{\\\"ak\\\":\\\"GE7J2S8B9AYNG2OO1RHP\\\",\\\"sk\\\":\\\"XQsLdaV3wd1W8SUntVw7FOf2MCphuJpiMZ1uw5Se\\\"}\",\"state\":false,\"createTime\":\"2022-11-11 16:06:35\",\"updateTime\":\"2022-11-15 11:24:23\",\"accountId\":\"0769f3f764f8eeada44b54014224180e\",\"count\":1,\"amount\":0,\"billingMode\":\"0\",\"region\":\"cn-south-1\",\"availabilityZone\":\"cn-south-1c\",\"disks\":[{\"size\":40,\"diskType\":\"ESSD\",\"amountText\":\"\",\"deleteWithInstance\":true}]}";
-        System.out.println(JsonUtil.toJSONString(JsonUtil.parseObject(a,HuaweiVmCreateRequest.class)));
+    public String calculatedPrice(String req){
+        return HuaweiSyncCloudApi.calculatedPrice(JsonUtil.parseObject(req, HuaweiVmCreateRequest.class));
     }
+
+    public List<F2CHuaweiSubnet> listSubnet(String req) {
+        return HuaweiSyncCloudApi.listSubnet(JsonUtil.parseObject(req, HuaweiVmCreateRequest.class));
+    }
+    public List<F2CHuaweiSecurityGroups> listSecurityGroups(String req) {
+        return HuaweiSyncCloudApi.listSecurityGroups(JsonUtil.parseObject(req, HuaweiVmCreateRequest.class));
+    }
+
+    public List<NovaSimpleKeypair> listKeyPairs(String req) {
+        return HuaweiSyncCloudApi.listKeyPairs(JsonUtil.parseObject(req, HuaweiVmCreateRequest.class));
+    }
+
+    @Override
+    public F2CVirtualMachine getSimpleServerByCreateRequest(String req) {
+        return HuaweiSyncCloudApi.getSimpleServerByCreateRequest(JsonUtil.parseObject(req, HuaweiVmCreateRequest.class));
+    }
+
+    @Override
+    public F2CVirtualMachine createVirtualMachine(String req) {
+        return HuaweiSyncCloudApi.createServer(JsonUtil.parseObject(req, HuaweiVmCreateRequest.class));
+    }
+
+
  }

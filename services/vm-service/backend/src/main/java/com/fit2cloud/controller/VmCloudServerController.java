@@ -59,12 +59,12 @@ public class VmCloudServerController {
     }
 
     @ApiOperation(value = "关机", notes = "关闭云主机操作系统")
-    @PostMapping("shutdown/{serverId}/{powerOff}")
+    @PostMapping("shutdown/{serverId}")
     @OperatedLog(resourceType = ResourceTypeEnum.CLOUD_SERVER, operated = OperatedTypeEnum.SHUTDOWN,
             resourceId = "#serverId",
             param = "#serverId")
-    public ResultHolder<Boolean> shutdown(@PathVariable String serverId, @PathVariable Boolean powerOff) throws Exception {
-        return ResultHolder.success(iVmCloudServerService.shutdownInstance(serverId, powerOff));
+    public ResultHolder<Boolean> shutdown(@PathVariable String serverId) throws Exception {
+        return ResultHolder.success(iVmCloudServerService.shutdownInstance(serverId));
     }
 
     @ApiOperation(value = "关闭电源", notes = "关闭云主机电源")

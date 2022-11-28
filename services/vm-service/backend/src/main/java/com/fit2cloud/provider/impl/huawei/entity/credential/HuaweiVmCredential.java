@@ -14,14 +14,14 @@ import com.huaweicloud.sdk.ecs.v2.EcsClient;
 import com.huaweicloud.sdk.ecs.v2.region.EcsRegion;
 import com.huaweicloud.sdk.evs.v2.EvsClient;
 import com.huaweicloud.sdk.evs.v2.region.EvsRegion;
+import com.huaweicloud.sdk.iam.v3.IamClient;
+import com.huaweicloud.sdk.iam.v3.region.IamRegion;
 import com.huaweicloud.sdk.iec.v1.IecClient;
 import com.huaweicloud.sdk.iec.v1.region.IecRegion;
 import com.huaweicloud.sdk.ims.v2.ImsClient;
 import com.huaweicloud.sdk.ims.v2.region.ImsRegion;
 import com.huaweicloud.sdk.vpc.v2.VpcClient;
-import com.huaweicloud.sdk.iam.v3.region.IamRegion;
-import com.huaweicloud.sdk.iam.v3.*;
-import com.huaweicloud.sdk.iam.v3.model.*;
+import com.huaweicloud.sdk.vpc.v2.region.VpcRegion;
 
 /**
  * @Author:张少虎
@@ -97,7 +97,7 @@ public class HuaweiVmCredential extends HuaweiCredential implements Credential {
      */
     public VpcClient getVpcClient(String region) {
         try {
-            return VpcClient.newBuilder().withCredential(getAuth()).withRegion(IecRegion.valueOf(region)).build();
+            return VpcClient.newBuilder().withCredential(getAuth()).withRegion(VpcRegion.valueOf(region)).build();
         } catch (Exception e) {
             SkipPageException.throwHuaweiSkip(e);
             throw e;
@@ -151,10 +151,9 @@ public class HuaweiVmCredential extends HuaweiCredential implements Credential {
     /**
      * 费用
      * 客户端只认cn-north-1
-     * @param region
      * @return
      */
-    public BssClient getBssClient(String region) {
+    public BssClient getBssClient() {
         try {
             ICredential auth = new GlobalCredentials()
                     .withAk(getAk())

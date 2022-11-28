@@ -1,4 +1,4 @@
-package com.fit2cloud.base.entity;
+package com.fit2cloud.dao.entity;
 
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;

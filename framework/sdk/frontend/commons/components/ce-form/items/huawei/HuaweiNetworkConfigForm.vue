@@ -1,16 +1,5 @@
 <template>
   <template v-if="!confirm">
-    <div style="font-size: 12px">
-      <el-input
-        v-model="searchName"
-        placeholder="关键字查"
-        style="width: 20%"
-        @keyup="handleQueryClick"
-      />
-      <el-button type="primary" plain @click="handleQueryClick"
-        >查 询</el-button
-      >
-    </div>
     <el-form
       ref="ruleFormRef"
       label-suffix=":"
@@ -18,27 +7,37 @@
       :model="_data"
       size="small"
     >
-      <el-form-item>
+      <el-form-item style="width: 100%">
+        <div>
+          <el-input
+            v-model="searchName"
+            placeholder="关键字查"
+            style="width: 50%"
+            @keyup="handleQueryClick"
+          />
+          <el-button type="primary" plain @click="handleQueryClick"
+            >查 询</el-button
+          >
+        </div>
         <el-radio-group v-model="selectRowId" style="width: 100%">
           <el-table
             ref="multipleTableRef"
-            :data="props.formItem?.ext?.instanceConfig?.searchTableData"
+            :data="props.formItem?.ext?.networkConfig?.searchTableData"
             highlight-current-row
             style="width: 100%; height: 150px"
             @current-change="handleCurrentChange"
-            v-loading="instanceTypeLoading"
+            v-loading="_loading"
           >
             <el-table-column width="55">
               <template #default="scope">
-                <el-radio :label="scope.row.specName">
+                <el-radio :label="scope.row.uuid">
                   <template #default>{{}}</template>
                 </el-radio>
               </template>
             </el-table-column>
-            <el-table-column property="specType" label="规格类型" />
-            <el-table-column property="specName" label="规格名称" />
-            <el-table-column property="instanceSpec" label="实例规格" />
-            <el-table-column property="amountText" label="预估费用" />
+            <el-table-column property="name" label="子网名称" />
+            <el-table-column property="vpcName" label="所属VPC" />
+            <el-table-column property="cidr" label="IPv4网段" />
           </el-table>
         </el-radio-group>
       </el-form-item>
@@ -46,8 +45,8 @@
   </template>
   <template v-else>
     <el-descriptions>
-      <el-descriptions-item label="实例规格">
-        {{ modelValue?.instanceSpec }}
+      <el-descriptions-item label="网络">
+        {{ modelValue?.name }}
       </el-descriptions-item>
     </el-descriptions>
   </template>
@@ -60,7 +59,7 @@ import _ from "lodash";
 import type { ElTable, FormInstance } from "element-plus";
 
 const props = defineProps<{
-  modelValue?: InstanceSpec;
+  modelValue?: Network;
   allData?: any;
   allFormViewData?: Array<FormView>;
   field: string;
@@ -69,20 +68,13 @@ const props = defineProps<{
   confirm?: boolean;
 }>();
 
-/**
- *
- */
-interface InstanceSpec {
-  specName: string;
-  specType: string;
-  instanceSpec: string;
-  amount: number;
-  vcpus: string;
-  ram: number;
-  disk: string;
-  amountText: string;
-  randomImageId: string;
+interface Network {
+  uuid: string;
+  name: string;
+  vpcId: string;
+  vpcName: string;
 }
+
 const selectRowId = ref<any>("");
 
 const searchName = ref("");
@@ -98,31 +90,31 @@ const _data = computed({
   },
 });
 
-const instanceTypeLoading = ref<boolean>(false);
-
 // 校验实例对象
 const ruleFormRef = ref<FormInstance>();
-
 /**
  * 列表选中
  */
-const currentRow = computed<InstanceSpec | undefined>({
+const currentRow = computed<Network | undefined>({
   get() {
     return _.find(
-      props.formItem?.ext?.instanceConfig?.searchTableData,
-      (o: InstanceSpec) => o.specName === _data.value?.specName
+      props.formItem?.ext?.networkConfig?.searchTableData,
+      (o: Network) => o.uuid === _data.value?.uuid
     );
   },
   set(value) {
     _data.value = value;
+    emit("change");
   },
 });
 
-function handleCurrentChange(val: InstanceSpec | undefined) {
+function handleCurrentChange(val: Network | undefined) {
   currentRow.value = val;
-  selectRowId.value = val?.specName;
+  selectRowId.value = val?.uuid;
   emit("change");
 }
+
+const _loading = ref<boolean>(false);
 
 const singleTableRef = ref<InstanceType<typeof ElTable>>();
 
@@ -141,25 +133,19 @@ function getTempRequest() {
 function getList() {
   const _temp = getTempRequest();
   const clazz = "com.fit2cloud.provider.impl.huawei.HuaweiCloudProvider";
-  const method = "getInstanceSpecTypes";
+  const method = "listSubnet";
   formApi
-    .getResourceMethod(false, clazz, method, _temp, instanceTypeLoading)
+    .getResourceMethod(false, clazz, method, _temp, _loading)
     .then((ok) => {
-      _.set(props.formItem, "ext.instanceConfig", ok.data);
-      _.set(
-        props.formItem,
-        "ext.instanceConfig.searchTableData",
-        ok.data.tableData
-      );
-      if (ok.data.tableData) {
-        if (currentRow.value === undefined) {
-          currentRow.value = ok.data.tableData[0];
-          selectRowId.value = ok.data.tableData[0].specName;
-        } else {
-          //设置界面默认选中
-          singleTableRef.value?.setCurrentRow(currentRow.value);
-          selectRowId.value = currentRow.value.specName;
-        }
+      _.set(props.formItem, "ext.networkConfig", ok.data);
+      _.set(props.formItem, "ext.networkConfig.searchTableData", ok.data);
+      if (currentRow.value === undefined) {
+        currentRow.value = ok.data[0];
+        selectRowId.value = ok.data[0].uuid;
+      } else {
+        //设置界面默认选中
+        singleTableRef.value?.setCurrentRow(currentRow.value);
+        selectRowId.value = currentRow.value.uuid;
       }
     });
 }
@@ -169,41 +155,58 @@ onMounted(() => {
     getList();
   }
 });
+watch(
+  () => props.allData,
+  (n, o) => {
+    if (n.usePublicIp) {
+      const amountFormView = _.find(props.allFormViewData, (formViewData) => {
+        return formViewData.field === "totalAmountText";
+      });
+      getAmount(amountFormView);
+    }
+  }
+);
+
+function getAmount(amountFowmView: any) {
+  const _temp = getTempRequest();
+  formApi
+    .getResourceMethod(
+      false,
+      amountFowmView.clazz,
+      amountFowmView.method,
+      _temp
+    )
+    .then((ok) => {
+      if (ok.data) {
+        amountFowmView.optionList = ok.data;
+      }
+    });
+}
 
 watch(
-  () => props.allData.billingMode,
+  () => props.allData.regionId,
   (n, o) => {
     getList();
   }
 );
-watch(
-  () => props.allData.availabilityZone,
-  (n, o) => {
-    getList();
-  }
-);
-
 const handleQueryClick = () => {
-  if (!props.formItem?.ext?.instanceConfig?.tableData) {
+  if (!props.formItem?.ext?.networkConfig) {
     return;
   }
-  let arr = [props.formItem?.ext?.instanceConfig?.tableData];
+  let arr = [props.formItem?.ext?.networkConfig];
   if (searchName.value.trim() && arr.length > 0) {
-    arr = _.filter(
-      props.formItem?.ext?.instanceConfig?.tableData,
-      function (v) {
-        const columnNames = Object.keys(arr[0]);
-        let isShow = false;
-        for (let i = 0; i < columnNames.length; i++) {
-          if (v[columnNames[i]]?.toString().indexOf(searchName.value) > -1) {
-            isShow = true;
-          }
+    arr = _.filter(props.formItem?.ext?.networkConfig, function (v) {
+      const columnNames = Object.keys(arr[0]);
+      let isShow = false;
+      for (let i = 0; i < columnNames.length; i++) {
+        if (v[columnNames[i]]?.toString().indexOf(searchName.value) > -1) {
+          isShow = true;
         }
-        return isShow;
       }
-    );
+      return isShow;
+    });
   }
-  _.set(props.formItem, "ext.instanceConfig.searchTableData", arr);
+  _.set(props.formItem, "ext.networkConfig.searchTableData", arr);
 };
 </script>
 <style lang="scss" scoped>
