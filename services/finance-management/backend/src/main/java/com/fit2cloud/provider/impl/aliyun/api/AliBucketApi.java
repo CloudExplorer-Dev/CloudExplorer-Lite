@@ -2,6 +2,7 @@ package com.fit2cloud.provider.impl.aliyun.api;
 
 import com.aliyun.sdk.service.oss20190517.AsyncClient;
 import com.aliyun.sdk.service.oss20190517.models.*;
+import com.fit2cloud.common.constants.PlatformConstants;
 import com.fit2cloud.common.exception.Fit2cloudException;
 import com.fit2cloud.common.platform.credential.Credential;
 import com.fit2cloud.common.provider.util.PageUtil;
@@ -10,6 +11,7 @@ import com.fit2cloud.constants.BillingSettingConstants;
 import com.fit2cloud.es.entity.CloudBill;
 import com.fit2cloud.provider.impl.aliyun.entity.credential.AliyunBillCredential;
 import com.fit2cloud.provider.impl.aliyun.entity.csv.AliBillCsvModel;
+import com.fit2cloud.provider.impl.aliyun.entity.request.ListBucketMonthRequest;
 import com.fit2cloud.provider.impl.aliyun.entity.request.SyncBillRequest;
 import com.fit2cloud.provider.impl.aliyun.uitil.AliyunMappingUtil;
 import jodd.util.StringUtil;
@@ -17,10 +19,15 @@ import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 
 import java.io.File;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class AliBucketApi {
+    //1922504452814088_BillingItemDetailMonthly_202201
+    private final static Pattern monthPattern = Pattern.compile("BillingItemDetailMonthly_\\d{4}");
 
     /**
      * 获取所有的桶
@@ -118,18 +125,25 @@ public class AliBucketApi {
         List<AliBillCsvModel> aliBillCsvModels = objectSummaryList.stream()
                 .filter((objectSummary) -> objectSummary.getKey().endsWith("BillingItemDetailMonthly_" + syncBillRequest.getBillingCycle().replace("-", "")))
                 .findFirst()
-                .map(objectSummary -> writeAndReadFile(ossClient, objectSummary, syncBillRequest.getBill().getBucketId()))
+                .map(objectSummary -> writeAndReadFile(ossClient, objectSummary, syncBillRequest.getBill().getBucketId(), syncBillRequest.getCloudAccountId()))
                 .orElse(new ArrayList<>());
         List<Credential.Region> regions = syncBillRequest.getCredential().regions();
         // todo 转换为系统账单对象
         return aliBillCsvModels.stream().map(aliBillCsvModel -> AliyunMappingUtil.toCloudBill(aliBillCsvModel, regions)).toList();
     }
 
-    private static List<AliBillCsvModel> writeAndReadFile(AsyncClient ossClient, ObjectSummary objectSummary, String bucketName) {
+    private static List<AliBillCsvModel> writeAndReadFile(AsyncClient ossClient, ObjectSummary objectSummary, String bucketName, String cloudAccountId) {
         // 写入数据
-        File file = CsvUtil.writeFile(BillingSettingConstants.billingPath, objectSummary.getKey(), objectSummary.getSize(),
+        File file = CsvUtil.writeFile(BillingSettingConstants.billingPath + File.separator + PlatformConstants.fit2cloud_ali_platform.name() + File.separator + cloudAccountId, objectSummary.getKey(), objectSummary.getSize(),
                 () -> ossClient.getObject(GetObjectRequest.builder().bucket(bucketName).key(objectSummary.getKey()).build()).join().getBody());
         return CsvUtil.parse(file, AliBillCsvModel.class);
     }
 
+    public static List<String> listBucketFileMonth(ListBucketMonthRequest listBucketMonthRequest) {
+        List<ObjectSummary> objectSummaryList = listObjectSummary(listBucketMonthRequest.getCredential(), listBucketMonthRequest.getBill().getBucketId());
+        return objectSummaryList.stream().filter(objectSummary -> monthPattern.matcher(objectSummary.getKey()).find()).map(ObjectSummary::getKey).map(fileName -> {
+            String month = fileName.substring(fileName.length() - 6);
+            return month.substring(0, 4) + "-" + month.substring(4, 6);
+        }).distinct().toList();
+    }
 }

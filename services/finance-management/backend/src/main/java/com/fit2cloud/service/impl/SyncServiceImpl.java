@@ -14,6 +14,7 @@ import com.fit2cloud.common.constants.JobStatusConstants;
 import com.fit2cloud.common.constants.JobTypeConstants;
 import com.fit2cloud.common.constants.PlatformConstants;
 import com.fit2cloud.common.provider.util.CommonUtil;
+import com.fit2cloud.common.util.MonthUtil;
 import com.fit2cloud.common.utils.JsonUtil;
 import com.fit2cloud.constants.EsWriteLockConstants;
 import com.fit2cloud.es.entity.CloudBill;
@@ -25,6 +26,7 @@ import com.fit2cloud.service.SyncService;
 import io.reactivex.rxjava3.functions.BiFunction;
 import io.reactivex.rxjava3.functions.Consumer;
 import org.apache.commons.collections4.MapUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.redisson.Redisson;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Caching;
@@ -71,7 +73,7 @@ public class SyncServiceImpl extends BaseSyncService implements SyncService {
             @CacheEvict(value = "dimension_setting", allEntries = true),
             @CacheEvict(value = "bill_rule", allEntries = true)})
     public void syncBill(String cloudAccountId) {
-        syncBill(cloudAccountId, getMonths(billDay));
+        syncBill(cloudAccountId, MonthUtil.getMonths(billDay));
     }
 
     @Override
@@ -101,13 +103,19 @@ public class SyncServiceImpl extends BaseSyncService implements SyncService {
         }
         // 云账号id
         String cloudAccountId = params.get(JobConstants.CloudAccount.CLOUD_ACCOUNT_ID.name()).toString();
+        CloudAccount cloudAccount = cloudAccountService.getById(cloudAccountId);
         Map<String, Object> billSetting = null;
         if (params.containsKey(JobConstants.CloudAccount.BILL_SETTING.name())) {
             billSetting = JsonUtil.parseObject(JsonUtil.toJSONString(params.get(JobConstants.CloudAccount.BILL_SETTING.name())), Map.class);
         }
-        List<String> months = getMonths(billDay);
+        List<String> months = MonthUtil.getMonths(billDay);
         if (params.containsKey("MONTHS")) {
             months = JsonUtil.parseArray(JsonUtil.toJSONString(params.get("MONTHS")), String.class);
+        }
+        if (Objects.nonNull(cloudAccount) && Objects.nonNull(billSetting) && params.containsKey("BUCKET_CYCLE") && StringUtils.equals((String) params.get("BUCKET_CYCLE"), "all")) {
+            Class<? extends ICloudProvider> of = ICloudProvider.of(cloudAccount.getPlatform());
+            String execMethodArgs = getExecMethodArgs(cloudAccount, "", billSetting);
+            months = CommonUtil.exec(of, execMethodArgs, ICloudProvider::listBucketFileMonth);
         }
         syncBill(cloudAccountId, months, billSetting);
     }
@@ -193,6 +201,7 @@ public class SyncServiceImpl extends BaseSyncService implements SyncService {
         params.put("credential", JsonUtil.parseObject(cloudAccount.getCredential()));
         params.put("bill", defaultParams);
         params.put("month", month);
+        params.put("cloudAccountId", cloudAccount.getId());
         return JsonUtil.toJSONString(params);
     }
 
@@ -304,20 +313,5 @@ public class SyncServiceImpl extends BaseSyncService implements SyncService {
 
     }
 
-    /**
-     * 如果还未到上个月的出账日,还需要同步上个月数据,反之则同步当前月
-     *
-     * @param billingDay 出账日
-     * @return 需要同步的月份
-     */
-    private static List<String> getMonths(Integer billingDay) {
-        Calendar instance = Calendar.getInstance();
-        String currentMonth = String.format("%04d-%02d", instance.get(Calendar.YEAR), instance.get(Calendar.MONTH) + 1);
-        instance.add(Calendar.MONTH, -1);
-        if (instance.get(Calendar.DAY_OF_MONTH) < billingDay) {
-            String upMonth = String.format("%04d-%02d", instance.get(Calendar.YEAR), instance.get(Calendar.MONTH));
-            return List.of(currentMonth, upMonth);
-        }
-        return List.of(currentMonth);
-    }
+
 }

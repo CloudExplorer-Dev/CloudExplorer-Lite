@@ -2,11 +2,14 @@ package com.fit2cloud.provider.impl.tencent.api;
 
 import com.fit2cloud.common.constants.PlatformConstants;
 import com.fit2cloud.common.platform.credential.Credential;
+import com.fit2cloud.common.provider.util.CommonUtil;
 import com.fit2cloud.common.provider.util.PageUtil;
 import com.fit2cloud.common.util.CsvUtil;
+import com.fit2cloud.common.util.MonthUtil;
 import com.fit2cloud.constants.BillingSettingConstants;
 import com.fit2cloud.es.entity.CloudBill;
 import com.fit2cloud.provider.impl.tencent.entity.csv.TencentCsvModel;
+import com.fit2cloud.provider.impl.tencent.entity.request.ListBucketMonthRequest;
 import com.fit2cloud.provider.impl.tencent.entity.request.SyncBillRequest;
 import com.fit2cloud.provider.impl.tencent.util.TencentMappingUtil;
 import com.qcloud.cos.COSClient;
@@ -19,6 +22,7 @@ import org.apache.commons.lang3.StringUtils;
 
 import java.io.*;
 import java.util.*;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -67,7 +71,7 @@ public class TencentBucketApi {
                 entry.getValue()
                         .map(cosObjectSummary ->
                                 CsvUtil.writeFile(
-                                        BillingSettingConstants.billingPath + File.separator + PlatformConstants.fit2cloud_tencent_platform.name(),
+                                        BillingSettingConstants.billingPath + File.separator + PlatformConstants.fit2cloud_tencent_platform.name() + File.separator + request.getCloudAccountId(),
                                         cosObjectSummary.getKey(),
                                         cosObjectSummary.getSize(),
                                         () -> {
@@ -198,6 +202,40 @@ public class TencentBucketApi {
             response.add(Arrays.stream(split).collect(Collectors.toList()));
         }
         return response;
+    }
+
+
+    /**
+     * 获取桶文件中的文件月份
+     *
+     * @param request 请求对象
+     * @return 桶中文件所有月份
+     */
+    public static List<String> listBucketFileMonth(ListBucketMonthRequest request) {
+        COSClient cosClient = request.getCredential().getCOSClient(request.getBill().getRegionId());
+        List<COSObjectSummary> cosObjectSummaries = listCOSObjectSummary(cosClient, request.getBill().getBucketId());
+        List<String> months = cosObjectSummaries.stream().map(COSObjectSummary::getKey).filter(key -> billMonthPattern.matcher(key).find() || billDayPattern.matcher(key).find()).map(key -> {
+            Matcher monthPattern = billMonthPattern.matcher(key);
+            if (monthPattern.find()) {
+                String billMonth = monthPattern.group();
+                Matcher matcher = Pattern.compile("\\d{6}").matcher(billMonth);
+                if (matcher.find()) {
+                    String month = matcher.group();
+                    return month.substring(0, 4) + "-" + month.substring(4, 6);
+                }
+            }
+            Matcher dayMatcher = billDayPattern.matcher(key);
+            if (dayMatcher.find()) {
+                String billDay = dayMatcher.group();
+                Matcher matcher = Pattern.compile("\\d{8}").matcher(billDay);
+                if (matcher.find()) {
+                    String month = matcher.group();
+                    return month.substring(0, 4) + "-" + month.substring(4, 6);
+                }
+            }
+            return null;
+        }).filter(Objects::nonNull).distinct().toList();
+        return months;
     }
 
 

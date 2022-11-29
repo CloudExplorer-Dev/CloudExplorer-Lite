@@ -7,15 +7,19 @@ import com.fit2cloud.constants.BillingSettingConstants;
 import com.fit2cloud.es.entity.CloudBill;
 import com.fit2cloud.provider.impl.huawei.entity.credential.HuaweiBillCredential;
 import com.fit2cloud.provider.impl.huawei.entity.csv.HuaweiBillCsvModel;
+import com.fit2cloud.provider.impl.huawei.entity.request.ListBucketMonthRequest;
 import com.fit2cloud.provider.impl.huawei.entity.request.SyncBillRequest;
 import com.fit2cloud.provider.impl.huawei.util.HuaweiMappingUtil;
 import com.obs.services.ObsClient;
 import com.obs.services.model.*;
 import org.apache.commons.lang3.StringUtils;
 
+import java.io.File;
 import java.util.Calendar;
 import java.util.List;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
 /**
  * {@code @Author:张少虎}
  * {@code @Date: 2022/11/24  10:39 PM}
@@ -53,7 +57,7 @@ public class HuaweiBucketApi {
                 .filter(obsObject -> (exitsMonthFile && Pattern.compile(billMonthFile).matcher(obsObject.getObjectKey().trim()).find()) || (!exitsMonthFile && readDayBillFile && Pattern.compile(billDayFile).matcher(obsObject.getObjectKey().trim()).find()))
                 .filter(obsObject -> obsObject.getObjectKey().contains(request.getCycle().replace("-", "").trim()))
                 .map(obsObject ->
-                        CsvUtil.writeFile(BillingSettingConstants.billingPath + "/" + PlatformConstants.fit2cloud_huawei_platform.name(), obsObject.getObjectKey(),
+                        CsvUtil.writeFile(BillingSettingConstants.billingPath + File.separator + PlatformConstants.fit2cloud_huawei_platform.name() + File.separator + request.getCloudAccountId(), obsObject.getObjectKey(),
                                 obsObject.getMetadata().getContentLength(), () -> obsClient.getObject(new GetObjectRequest() {{
                                     setBucketName(obsObject.getBucketName());
                                     setObjectKey(obsObject.getObjectKey());
@@ -110,4 +114,26 @@ public class HuaweiBucketApi {
     }
 
 
+    public static List<String> listBucketFileMonth(ListBucketMonthRequest listBucketMonthRequest) {
+        List<ObsObject> obsObjects = listObsObject(listBucketMonthRequest.getCredential(), listBucketMonthRequest.getBill().getBucketId());
+        return obsObjects.stream().map(ObsObject::getObjectKey)
+                .filter(key -> Pattern.compile(billDayFile).matcher(key).find() || Pattern.compile(billMonthFile).matcher(key).find())
+                .map(key -> {
+                    String month = findMonth(key, billMonthFile);
+                    return StringUtils.isNotEmpty(month) ? month : findMonth(key, billDayFile);
+                }).distinct().toList();
+    }
+
+    private static String findMonth(String fileName, String filePattern) {
+        Matcher monthFileNameMatcher = Pattern.compile(filePattern).matcher(fileName);
+        if (monthFileNameMatcher.find()) {
+            String monthFileName = monthFileNameMatcher.group();
+            Matcher monthMatcher = Pattern.compile("\\d{8}").matcher(monthFileName);
+            if (monthMatcher.find()) {
+                String month = monthMatcher.group();
+                return month.substring(0, 4) + "-" + month.substring(4, 6);
+            }
+        }
+        return null;
+    }
 }

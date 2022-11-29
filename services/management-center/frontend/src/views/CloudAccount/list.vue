@@ -438,16 +438,43 @@ const ruleFormSyncBill = ref<FormInstance>();
 /**
  * 账单同步表单
  */
-const billSyncForm = ref<{ months: Array<string> }>({ months: months.value });
+const billSyncForm = ref<{
+  months: Array<string>;
+  syncBillType: string;
+  bucketSyncCycle: "current" | "all";
+}>({
+  months: months.value,
+  syncBillType: "api",
+  bucketSyncCycle: "current",
+});
 
 /**
  *账单是否展示
  */
 const billSyncView = ref<boolean>(false);
+const billSyncLoading = ref<boolean>(false);
 /**
  *打开账单同步
  */
 const openBillSync = (row: CloudAccount) => {
+  cloudAccountApi.getJobs(row.id, billSyncLoading).then((ok) => {
+    const financeManagement = ok.data.cloudAccountModuleJobs.find(
+      (m) => m.module === "finance-management"
+    );
+    console.log("xxs", financeManagement);
+    if (financeManagement) {
+      if (
+        financeManagement.jobDetailsList &&
+        financeManagement.jobDetailsList.length > 0
+      ) {
+        billSyncForm.value.syncBillType =
+          financeManagement.jobDetailsList[0].params["BILL_SETTING"][
+            "syncMode"
+          ];
+        console.log(billSyncForm.value.syncBillType);
+      }
+    }
+  });
   billSyncView.value = true;
   syncCloudAccountId.value = row.id;
   billSyncForm.value.months = months.value;
@@ -529,6 +556,15 @@ const syncBill = (formEl: FormInstance | undefined) => {
           },
         ],
       };
+      if (billSyncForm.value.syncBillType === "api") {
+        syncSubmit.params = {
+          MONTHS: billSyncForm.value.months,
+        };
+      } else {
+        syncSubmit.params = {
+          BUCKET_CYCLE: billSyncForm.value.bucketSyncCycle,
+        };
+      }
       // 发送同步任务
       cloudAccountApi.syncJob(syncSubmit).then((ok) => {
         ElMessage.success("发送同步任务成功");
@@ -854,47 +890,58 @@ const syncAll = () => {
     </template>
   </el-dialog>
   <!-- 同步资源 END -->
-  <el-dialog v-model="billSyncView" title="同步账单" width="50%">
+  <el-dialog v-model="billSyncView" title="同步账单" width="30%">
     <el-form
+      v-loading="billSyncLoading"
       ref="ruleFormSyncBill"
       :rules="billSyncRules"
       :model="billSyncForm"
     >
       <layout-container :border="false">
-        <template #header><h4>同步月份</h4></template
-        ><template #content>
-          <el-checkbox
-            style="margin-bottom: 10px"
-            v-model="billMonthAll"
-            @change="handleCheckAllBillMonthChange"
-            >全选</el-checkbox
+        <template #content>
+          <el-form-item
+            label="账单周期:"
+            v-if="billSyncForm.syncBillType === 'api'"
           >
-          <el-form-item prop="months">
-            <el-checkbox-group
-              @change="changeMonths"
-              v-model="billSyncForm.months"
+            <el-checkbox
+              style="margin-bottom: 10px"
+              v-model="billMonthAll"
+              @change="handleCheckAllBillMonthChange"
+              >全选</el-checkbox
             >
-              <el-checkbox
-                :title="month"
-                v-for="month in months"
-                :key="month"
-                :label="month"
-                size="large"
-                ><span
-                  style="
-                    display: inline-block;
-                    width: 120px;
-                    overflow: hidden;
-                    text-overflow: ellipsis;
-                  "
-                >
-                  {{ month }}
-                </span>
-              </el-checkbox>
-            </el-checkbox-group>
+            <el-form-item prop="months">
+              <el-checkbox-group
+                @change="changeMonths"
+                v-model="billSyncForm.months"
+              >
+                <el-checkbox
+                  :title="month"
+                  v-for="month in months"
+                  :key="month"
+                  :label="month"
+                  size="large"
+                  ><span
+                    style="
+                      display: inline-block;
+                      width: 120px;
+                      overflow: hidden;
+                      text-overflow: ellipsis;
+                    "
+                  >
+                    {{ month }}
+                  </span>
+                </el-checkbox>
+              </el-checkbox-group>
+            </el-form-item>
           </el-form-item>
-        </template>
-      </layout-container>
+          <el-form-item label="账单周期:" v-else>
+            <el-radio-group v-model="billSyncForm.bucketSyncCycle" size="large">
+              <el-radio-button label="current">当月账单</el-radio-button>
+              <el-radio-button label="all">全部账单</el-radio-button>
+            </el-radio-group></el-form-item
+          >
+        </template></layout-container
+      >
     </el-form>
     <template #footer>
       <span class="dialog-footer">
