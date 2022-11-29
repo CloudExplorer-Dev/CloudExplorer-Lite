@@ -1,5 +1,5 @@
 <template>
-  <layout-content>
+  <layout-auto-height-content>
     <template #breadcrumb>
       <breadcrumb :auto="true"></breadcrumb>
     </template>
@@ -80,7 +80,7 @@
           </el-date-picker>
           <span>{{ currentMonth }}未出账</span>
         </div>
-        <div style="color: #006eff; cursor: pointer; top: 20px">导出</div>
+        <!-- <div style="color: #006eff; cursor: pointer; top: 20px">导出</div> -->
       </div>
       <div class="content">
         <el-tabs
@@ -123,7 +123,7 @@
                     :cache="5"
                     :columns="columns"
                     :sort-by="sortState"
-                    :data="viewData"
+                    :data="tableData"
                     :width="width"
                     :height="height"
                     @column-sort="onSort"
@@ -136,7 +136,7 @@
         </el-tabs>
       </div>
     </div>
-  </layout-content>
+  </layout-auto-height-content>
   <el-dialog v-model="tableChartVisible">
     <template #title>
       <div style="display: flex; align-items: center; justify-content: center">
@@ -257,6 +257,14 @@ const open = (treed: Array<TrendData>, row: BillSummary) => {
   treed.sort((pre, next) => pre.label.localeCompare(next.label));
   tableChartVisible.value = true;
   const option: any = getTrendViewOption(treed, "line", true, true, true);
+  option["tooltip"] = {
+    trigger: "item",
+    formatter: (p: any) => {
+      return `<div>月份:${p.name}</div><div>金额:${_.round(p.data, 2).toFixed(
+        2
+      )}</div>`;
+    },
+  };
   option["grid"] = { top: 20, bottom: 20 };
   if (tableChart.value) {
     tableChart.value.setOption(option);
@@ -337,6 +345,21 @@ const historyTrend = async (historyNum: number, active: string) => {
       option["yAxis"]["splitLine"] = {
         show: false,
       };
+      option["series"][0]["itemStyle"] = {
+        normal: {
+          label: {
+            show: true,
+            position: "top",
+            textStyle: {
+              color: "black",
+              fontSize: 12,
+            },
+            formatter: function (param: any) {
+              return _.round(param.value, 2).toFixed(2) + "元";
+            },
+          },
+        },
+      };
       option["tooltip"] = {
         trigger: "item",
         formatter: (p: any) => {
@@ -381,9 +404,28 @@ onMounted(() => {
   });
 });
 let char: ECharts | undefined = undefined;
-
+/**
+ * 全量账单表格数据
+ */
 const viewData = ref<Array<BillSummary>>([]);
+/**
+ * 账单分组
+ */
 const groups = ref<Array<string>>(["root"]);
+/**
+ * 钻取后账单表格数据
+ */
+const tableData = computed(() => {
+  const filterGroups = groups.value.filter((v) => v !== "root");
+  if (filterGroups.length > 0) {
+    return viewData.value.filter((item) => {
+      return filterGroups.every((groupValue, index) => {
+        return item["group" + (index + 1)] === groupValue;
+      });
+    });
+  }
+  return viewData.value;
+});
 
 /**
  * 返回

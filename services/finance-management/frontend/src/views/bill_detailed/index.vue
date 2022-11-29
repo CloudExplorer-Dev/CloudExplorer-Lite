@@ -120,12 +120,16 @@
       <el-table-column prop="projectName" label="企业项目" />
       <el-table-column prop="totalCost" label="原价" sortable>
         <template #default="scope">
-          <span> {{ scope.row.totalCost }}元 </span>
+          <span :title="scope.row.totalCost + '元'">
+            {{ _.round(scope.row.totalCost, 2).toFixed(2) }}元
+          </span>
         </template>
       </el-table-column>
       <el-table-column prop="realTotalCost" label="优惠后总价" sortable>
         <template #default="scope">
-          <span> {{ scope.row.realTotalCost }}元 </span>
+          <span :title="scope.row.realTotalCost + '元'">
+            {{ _.round(scope.row.realTotalCost, 2).toFixed(2) }}元
+          </span>
         </template>
       </el-table-column>
       <template #buttons>
@@ -143,6 +147,7 @@ import {
 } from "@commons/components/ce-table/type";
 import billDetailApi from "@/api/bill_detailed";
 import { platformIcon } from "@commons/utils/platform";
+import _ from "lodash";
 /**
  *当前月份
  */
