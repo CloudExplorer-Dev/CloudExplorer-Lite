@@ -890,7 +890,7 @@ const syncAll = () => {
     </template>
   </el-dialog>
   <!-- 同步资源 END -->
-  <el-dialog v-model="billSyncView" title="同步账单" width="30%">
+  <el-dialog v-model="billSyncView" title="同步账单" width="40%">
     <el-form
       v-loading="billSyncLoading"
       ref="ruleFormSyncBill"

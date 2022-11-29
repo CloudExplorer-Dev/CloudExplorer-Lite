@@ -19,6 +19,7 @@
           type="month"
           placeholder="Pick a day"
           format="YYYY-MM"
+          :clearable="false"
           :disabled-date="disabledDate"
           value-format="YYYY-MM"
         >
@@ -30,6 +31,11 @@
         </el-date-picker>
       </template>
       <el-table-column type="selection" />
+      <el-table-column prop="billingCycle" width="100px" label="账期">
+        <template #default="scope">
+          <span>{{ scope.row.billingCycle.substring(0, 7) }}</span>
+        </template>
+      </el-table-column>
       <el-table-column prop="resourceId" label="资源id">
         <template #default="scope">
           <span>{{ scope.row.resourceId ? scope.row.resourceId : "N/A" }}</span>
@@ -65,7 +71,7 @@
           }}</span></template
         >
       </el-table-column>
-      <el-table-column prop="productDetail" label="产品详情">
+      <el-table-column prop="productDetail" label="产品明细">
         <template #default="scope">
           <span>{{
             scope.row.productDetail ? scope.row.productDetail : "N/A"
@@ -96,11 +102,6 @@
               ? "按需"
               : "其他"
           }}</span>
-        </template>
-      </el-table-column>
-      <el-table-column prop="billingCycle" width="200px" label="账期">
-        <template #default="scope">
-          <span>{{ scope.row.billingCycle.substring(0, 7) }}</span>
         </template>
       </el-table-column>
 

@@ -3,17 +3,19 @@
     <template #breadcrumb>
       <breadcrumb :auto="true"></breadcrumb>
     </template>
-    <div class="up_wapper">
+    <div class="up_wapper" v-resize="reSize">
       <div class="left_wapper" :border="false">
         <div class="top" v-loading="currentMonthExpensesLoading">
           <p><span class="title_font money_title">当月花费</span></p>
           <div class="money_wapper">
-            <div>{{ currentMonthExpenses }} 元</div>
+            <div style="margin-top: 10px">{{ currentMonthExpenses }} 元</div>
           </div>
         </div>
         <div class="bottom" v-loading="currentYearExpensesLoading">
           <p><span class="title_font money_title">今年总花费</span></p>
-          <div class="money_wapper">{{ currentYearExpenses }} 元</div>
+          <div class="money_wapper" style="margin-top: 10px">
+            <div style="margin-top: 10px">{{ currentYearExpenses }} 元</div>
+          </div>
         </div>
       </div>
       <div class="right_wapper" ref="rightWapper">
@@ -46,7 +48,7 @@
           v-loading="historyTrendLoading"
           ref="chartWapper"
         ></div>
-        <span
+        <span style="margin-left: 10px"
           >{{ _.minBy(hostryTreed, "label")?.label }} ～
           {{ _.maxBy(hostryTreed, "label")?.label }}总费用为{{
             _.floor(_.sumBy(hostryTreed, "value"), 2)
@@ -78,7 +80,7 @@
               </div>
             </template>
           </el-date-picker>
-          <span>{{ currentMonth }}未出账</span>
+          <span style="margin-left: 10px">{{ currentMonth }}未出账</span>
         </div>
         <!-- <div style="color: #006eff; cursor: pointer; top: 20px">导出</div> -->
       </div>
@@ -140,7 +142,7 @@
   <el-dialog v-model="tableChartVisible">
     <template #title>
       <div style="display: flex; align-items: center; justify-content: center">
-        {{ tableChartVisibleTitle }}——趋势图
+        {{ tableChartVisibleTitle }}趋势 <span>（单位：元）</span>
       </div>
     </template>
     <template #default>
@@ -184,6 +186,10 @@ const activeGroup = computed(() => {
   }
 });
 
+const reSize = () => {
+  historyTrendChart?.resize();
+  char?.resize();
+};
 const tableChartVisible = ref<boolean>(false);
 
 const tableChart = ref<ECharts>();
@@ -355,7 +361,7 @@ const historyTrend = async (historyNum: number, active: string) => {
               fontSize: 12,
             },
             formatter: function (param: any) {
-              return _.round(param.value, 2).toFixed(2) + "元";
+              return _.round(param.value, 2).toFixed(2);
             },
           },
         },
@@ -396,12 +402,7 @@ onMounted(() => {
       activeName.value = ok.data[0].id;
     }
   });
-  historyTrend(12, "YEAR").then((OK) => {
-    window.onresize = function () {
-      char?.resize();
-      historyTrendChart?.resize();
-    };
-  });
+  historyTrend(12, "YEAR");
 });
 let char: ECharts | undefined = undefined;
 /**
@@ -631,6 +632,7 @@ const sortState = ref<any>({
     }
     .chart_wapper {
       height: 70%;
+      min-width: 600px;
       width: 100%;
       display: flex;
     }
@@ -692,7 +694,7 @@ const sortState = ref<any>({
   font-family: "PingFangSC-Regular", "PingFang SC", sans-serif;
   font-weight: 400;
   font-size: 12px;
-  line-height: 200%;
+  line-height: 140%;
 }
 .demo-tabs {
   .el-tabs__content {

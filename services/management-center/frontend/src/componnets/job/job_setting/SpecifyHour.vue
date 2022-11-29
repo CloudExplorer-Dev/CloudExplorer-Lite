@@ -21,7 +21,6 @@
           <div style="display: flex; align-items: center">
             <span style="width: 100px">{{ details.description }}:</span>
             <span style="width: 40px">每天</span>
-            【
             <div style="width: 100px">
               <el-input
                 style="width: 100px"
@@ -39,7 +38,6 @@
                 <template #append> <span>:00</span></template>
               </el-input>
             </div>
-            】
             <span style="width: 80px">同步</span>
           </div>
         </el-checkbox>

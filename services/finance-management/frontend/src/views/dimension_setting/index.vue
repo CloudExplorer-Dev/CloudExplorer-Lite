@@ -11,7 +11,7 @@
         <div
           class="leftMenu"
           v-loading="orgLoading"
-          style="--el-font-size-base: 18px"
+          style="--el-font-size-base: 14px"
         >
           <div
             style="
@@ -38,7 +38,7 @@
               padding-left: 30px;
               align-items: center;
               font-family: Helvetica, PingFang SC, Arial, sans-serif;
-              font-size: 16px;
+              font-size: 14px;
               cursor: pointer;
             "
             :class="activeUnassignedResource ? 'active' : ''"
@@ -117,7 +117,7 @@
                     </template>
                   </el-table-column>
                   <el-table-column prop="cloudAccountName" label="云账号" />
-                  <el-table-column prop="productName" label="产品" />
+                  <el-table-column prop="productName" label="产品名称" />
                   <el-table-column prop="tags" label="标签">
                     <template #default="scope">
                       <span>
@@ -157,7 +157,7 @@
                 </template>
               </el-table-column>
               <el-table-column prop="cloudAccountName" label="云账号" />
-              <el-table-column prop="productName" label="产品" />
+              <el-table-column prop="productName" label="产品名称" />
               <el-table-column prop="tags" label="标签">
                 <template #default="scope">
                   <span>
@@ -186,7 +186,7 @@ import type {
   OrganizationWorkspaceTree,
 } from "@/api/organization/type";
 import dimensionSettingApi from "@/api/dimension_setting";
-import { onMounted, ref, watch, nextTick } from "vue";
+import { onMounted, ref, watch } from "vue";
 import { ElTree } from "element-plus";
 import type { TabsPaneContext } from "element-plus";
 import BillRuleItemVue from "@/components/split_bill_rule_group/index.vue";
