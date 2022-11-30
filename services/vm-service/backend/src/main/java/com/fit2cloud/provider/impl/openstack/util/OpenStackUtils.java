@@ -16,6 +16,7 @@ import org.openstack4j.model.storage.block.Volume;
 import org.openstack4j.model.storage.block.VolumeAttachment;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
@@ -199,14 +200,14 @@ public class OpenStackUtils extends OpenStackBaseUtils {
         }
     }
 
-    public static CheckStatusResult checkDiskStatus(OSClient.OSClientV3 osClient, Volume volume, Volume.Status expect) {
+    public static CheckStatusResult checkDiskStatus(OSClient.OSClientV3 osClient, Volume volume, Volume.Status... expect) {
         int count = 0;
         while (true) {
             try {
                 Thread.sleep(SLEEP_TIME);
                 Volume v = osClient.blockStorage().volumes().get(volume.getId());
                 if (v != null && v.getStatus() != null) {
-                    if (expect.equals(v.getStatus())) {
+                    if (Arrays.stream(expect).toList().contains(v.getStatus())) {
                         return CheckStatusResult.success(v);
                     }
                     if (Volume.Status.ERROR.equals(v.getStatus())) {

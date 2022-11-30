@@ -54,7 +54,7 @@
               v-for="(item, index) in formItem?.ext?.volumeType?.optionList"
               :key="index"
               :label="item.name"
-              :value="item.id"
+              :value="item.name"
             />
           </el-select>
 
