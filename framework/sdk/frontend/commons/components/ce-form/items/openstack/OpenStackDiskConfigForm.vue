@@ -123,7 +123,8 @@
         v-for="(disk, i) in modelValue"
         :key="i"
       >
-        {{ disk.size }}GB{{ disk.deleteWithInstance ? " (随实例删除)" : "" }}
+        {{ disk.size }}GB [磁盘类型: {{ disk.volumeType }}]
+        <!--{{ disk.deleteWithInstance ? " (随实例删除)" : "" }}-->
       </el-descriptions-item>
     </el-descriptions>
   </template>
