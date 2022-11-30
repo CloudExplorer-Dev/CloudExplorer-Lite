@@ -1,90 +1,120 @@
 <template>
   <template v-if="!confirm">
-    <div style="display: flex; flex-direction: row; flex-wrap: wrap">
-      <div
-        v-for="(obj, index) in data"
-        :key="index"
-        class="vs-disk-config-card"
-      >
-        <el-card
-          class="card"
-          :body-style="{
-            padding: 0,
-            'text-align': 'center',
-            display: 'flex',
-            'flex-direction': 'column',
-            'flex-wrap': 'nowrap',
-            'align-items': 'center',
-            'justify-content': 'space-evenly',
-            height: '100%',
-            position: 'relative',
-          }"
+    <el-form
+      ref="ruleFormRef"
+      label-width="0"
+      label-suffix=""
+      label-position="left"
+      style="margin-bottom: 18px"
+      :model="data"
+    >
+      <div style="display: flex; flex-direction: row; flex-wrap: wrap">
+        <div
+          v-for="(obj, index) in data"
+          :key="index"
+          class="vs-disk-config-card"
         >
-          <span class="title">
-            {{ "磁盘 " + (index + 1) }}
-            <span
-              v-if="obj.boot"
-              style="font-size: small; color: var(--el-text-color-secondary)"
-            >
-              系统盘
-            </span>
-            <span
-              style="font-size: smaller; color: var(--el-text-color-secondary)"
-            >
-              (GB)
-            </span>
-          </span>
-
-          <el-input-number
-            v-model="obj.size"
-            :min="obj.minSize"
-            :step="1"
-            required
-          />
-
-          <el-select
-            class="m-2"
-            filterable
-            v-model="obj.volumeType"
-            placeholder="磁盘类型"
-            required
-            style="width: 126px"
+          <el-card
+            class="card"
+            :body-style="{
+              padding: 0,
+              'text-align': 'center',
+              display: 'flex',
+              'flex-direction': 'column',
+              'flex-wrap': 'nowrap',
+              'align-items': 'center',
+              'justify-content': 'space-evenly',
+              height: '100%',
+              position: 'relative',
+            }"
           >
-            <el-option
-              v-for="(item, index) in formItem?.ext?.volumeType?.optionList"
-              :key="index"
-              :label="item.name"
-              :value="item.name"
-            />
-          </el-select>
+            <span class="title">
+              {{ "磁盘 " + (index + 1) }}
+              <span
+                v-if="obj.boot"
+                style="font-size: small; color: var(--el-text-color-secondary)"
+              >
+                系统盘
+              </span>
+              <span
+                style="
+                  font-size: smaller;
+                  color: var(--el-text-color-secondary);
+                "
+              >
+                (GB)
+              </span>
+            </span>
 
-          <el-button
-            v-if="!obj.boot"
-            class="remove-button"
-            @click="remove(index)"
-            :icon="CloseBold"
-            type="info"
-            text
-          ></el-button>
-        </el-card>
+            <el-form-item
+              :rules="{
+                message: '大小' + '不能为空',
+                trigger: 'blur',
+                required: true,
+              }"
+              label=""
+              :prop="'[' + index + '].size'"
+            >
+              <el-input-number
+                v-model="obj.size"
+                :min="obj.minSize"
+                :step="1"
+                style="width: 150px"
+              />
+            </el-form-item>
 
-        <!--        <div style="width: 100%; height: 30px; text-align: center">
+            <el-form-item
+              :rules="{
+                message: '磁盘类型' + '不能为空',
+                trigger: 'blur',
+                required: true,
+              }"
+              label=""
+              :prop="'[' + index + '].volumeType'"
+            >
+              <el-select
+                filterable
+                v-model="obj.volumeType"
+                placeholder="磁盘类型"
+                style="width: 150px"
+              >
+                <el-option
+                  v-for="(item, index) in formItem?.ext?.volumeType?.optionList"
+                  :key="index"
+                  :label="item.name"
+                  :value="item.name"
+                />
+              </el-select>
+            </el-form-item>
+
+            <el-button
+              v-if="!obj.boot"
+              class="remove-button"
+              @click="remove(index)"
+              :icon="CloseBold"
+              type="info"
+              text
+            ></el-button>
+          </el-card>
+
+          <!--        <div style="width: 100%; height: 30px; text-align: center">
           <el-checkbox v-model="obj.deleteWithInstance" v-if="obj.boot"
             >随实例删除</el-checkbox
           >
         </div>-->
+        </div>
+        <div class="vs-disk-config-card">
+          <el-card class="card add-card">
+            <el-button
+              style="margin: auto"
+              class="el-button--primary"
+              @click="add"
+              >添加磁盘</el-button
+            >
+          </el-card>
+        </div>
       </div>
-      <div class="vs-disk-config-card">
-        <el-card class="card add-card">
-          <el-button
-            style="margin: auto"
-            class="el-button--primary"
-            @click="add"
-            >添加磁盘</el-button
-          >
-        </el-card>
-      </div>
-    </div>
+    </el-form>
   </template>
   <template v-else>
     <el-descriptions>
@@ -117,6 +147,7 @@ import { computed, onMounted, ref, watch } from "vue";
 import _ from "lodash";
 import type { FormView } from "@commons/components/ce-form/type";
 import { CloseBold } from "@element-plus/icons-vue";
+import { type FormInstance } from "element-plus";
 
 interface Disk {
   minSize: number;
@@ -182,11 +213,21 @@ function remove(index: number) {
   _.remove(data.value, (n, i) => index === i);
 }
 
+// 校验实例对象
+const ruleFormRef = ref<FormInstance>();
+
 /**
  * 校验方法
  */
 function validate(): Promise<boolean> {
-  return new Promise((resolve, reject) => {
+  if (ruleFormRef.value) {
+    return ruleFormRef.value.validate();
+  } else {
+    return new Promise((resolve, reject) => {
+      return reject(true);
+    });
+  }
+  /*return new Promise((resolve, reject) => {
     if (props.allData.bootFormVolume && data.value.length === 0) {
       return reject(false);
     }
@@ -196,7 +237,7 @@ function validate(): Promise<boolean> {
     return _.every(data.value, (disk) => disk.size > 0 && disk.volumeType)
       ? resolve(true)
       : reject(false);
-  });
+  });*/
 }
 
 function setDisks() {
