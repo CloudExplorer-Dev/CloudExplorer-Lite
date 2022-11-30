@@ -2,6 +2,7 @@ package com.fit2cloud.common.util;
 
 import com.fit2cloud.common.exception.Fit2cloudException;
 
+import java.io.PrintStream;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
@@ -49,8 +50,9 @@ public class MonthUtil {
         Calendar instance = Calendar.getInstance();
         String[] split = month.split("-");
         return IntStream.range(0, history).boxed().map(i -> {
-            instance.set(Calendar.YEAR, Integer.parseInt(split[0]));
+            instance.set(Calendar.DAY_OF_MONTH, 1);
             instance.set(Calendar.MONTH, Integer.parseInt(split[1]) - 1);
+            instance.set(Calendar.YEAR, Integer.parseInt(split[0]));
             instance.add(Calendar.MONTH, (i * -1));
             return String.format("%04d-%02d", instance.get(Calendar.YEAR), instance.get(Calendar.MONTH) + 1);
         }).toList();
