@@ -68,11 +68,11 @@
           ></el-button>
         </el-card>
 
-        <div style="width: 100%; height: 30px; text-align: center">
+        <!--        <div style="width: 100%; height: 30px; text-align: center">
           <el-checkbox v-model="obj.deleteWithInstance" v-if="obj.boot"
             >随实例删除</el-checkbox
           >
-        </div>
+        </div>-->
       </div>
       <div class="vs-disk-config-card">
         <el-card class="card add-card">
@@ -142,7 +142,7 @@ function getDefaultSystemDisk(): Disk {
   return {
     minSize: option.disk,
     size: option.disk,
-    deleteWithInstance: true,
+    deleteWithInstance: false,
     boot: true,
     volumeType: undefined,
   };
