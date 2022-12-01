@@ -268,6 +268,14 @@ public class OpenStackCloudApi {
         return OpenStackUtils.checkDiskStatus(osClient, volume, Volume.Status.AVAILABLE);
     }
 
+    private static CheckStatusResult resetVolumeState(OSClient.OSClientV3 osClient, Volume volume, Volume.Status status) {
+        ActionResponse response = osClient.blockStorage().volumes().resetState(volume.getId(), status);
+        if (!response.isSuccess()) {
+            throw new RuntimeException(response.getFault());
+        }
+        return OpenStackUtils.checkDiskStatus(osClient, volume, status);
+    }
+
 
     public static boolean deleteDisk(OpenStackDiskActionRequest request) {
         try {
@@ -311,12 +319,14 @@ public class OpenStackCloudApi {
                 throw new RuntimeException("volume not exist");
             }
             CheckStatusResult result;
-            //只有api > 3.42 时，in_use的盘可以直接扩，这里只能先卸载再挂载了
+            //只有api >= 3.42 时，in_use的盘可以直接扩，这里只能先卸载再挂载了
             if (volume.getStatus().equals(Volume.Status.IN_USE)) {
-                serverId = volume.getAttachments().get(0).getServerId();
-                device = volume.getAttachments().get(0).getDevice();
+                //serverId = volume.getAttachments().get(0).getServerId();
+                //device = volume.getAttachments().get(0).getDevice();
                 //卸载
-                result = doDetachVolume(osClient, volume);
+                //result = doDetachVolume(osClient, volume);
+                //不卸载，直接改状态
+                result = resetVolumeState(osClient, volume, Volume.Status.AVAILABLE);
                 if (result.isSuccess()) {
                     needAttach = true;
                 } else {
@@ -329,17 +339,23 @@ public class OpenStackCloudApi {
             if (!response.isSuccess()) {
                 throw new RuntimeException(response.getFault());
             }
-            result = OpenStackUtils.checkDiskStatus(osClient, volume, Volume.Status.AVAILABLE);
+            //可能扩容完直接就变成使用中了
+            result = OpenStackUtils.checkDiskStatus(osClient, volume, Volume.Status.AVAILABLE, Volume.Status.IN_USE);
             if (!result.isSuccess()) {
                 throw new RuntimeException(result.getFault());
             }
 
+            volume = (Volume) result.getObject();
+
             if (needAttach) {
                 needAttach = false; //防止catch重复挂载
-                //挂载
-                result = doAttachVolume(osClient, volume, serverId, device);
-                if (!result.isSuccess()) {
-                    throw new RuntimeException(result.getFault());
+                if (Volume.Status.AVAILABLE.equals(volume.getStatus())) {
+                    //挂载
+                    //result = doAttachVolume(osClient, volume, serverId, device);
+                    result = resetVolumeState(osClient, volume, Volume.Status.IN_USE);
+                    if (!result.isSuccess()) {
+                        throw new RuntimeException(result.getFault());
+                    }
                 }
             }
             return true;
@@ -347,7 +363,8 @@ public class OpenStackCloudApi {
         } catch (Exception e) {
             if (needAttach) {
                 try {
-                    doAttachVolume(osClient, volume, serverId, device);
+                    //doAttachVolume(osClient, volume, serverId, device);
+                    resetVolumeState(osClient, volume, Volume.Status.IN_USE);
                 } catch (Exception e1) {
                     log.error(e1.getMessage(), e1);
                 }

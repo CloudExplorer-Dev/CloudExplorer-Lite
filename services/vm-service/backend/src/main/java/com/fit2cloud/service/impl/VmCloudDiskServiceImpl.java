@@ -153,7 +153,7 @@ public class VmCloudDiskServiceImpl extends ServiceImpl<BaseVmCloudDiskMapper, V
             }
 
             // 执行
-            ResourceState resourceState = ResourceState.<VmCloudDisk, F2CDisk>builder()
+            ResourceState<VmCloudDisk, F2CDisk> resourceState = ResourceState.<VmCloudDisk, F2CDisk>builder()
                     .beforeResource(initVmCloudDisk)
                     .processingResource(creatingVmCloudDisk)
                     .afterResource(finishedVmCloudDisk)

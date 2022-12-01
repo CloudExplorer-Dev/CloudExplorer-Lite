@@ -19,10 +19,13 @@
         <el-table-column property="name" label="名称" />
         <el-table-column label="已连接的子网">
           <template #default="scope">
-            <div v-for="subnet in scope.row.neutronSubnets" :key="subnet.id">
-              <div style="font-weight: bold">{{ subnet.name }}</div>
+            <div
+              v-for="(subnet, index) in scope.row.neutronSubnets"
+              :key="index"
+            >
+              <div style="font-weight: bold">{{ subnet?.name }}</div>
               <div style="color: var(--el-text-color-secondary)">
-                {{ subnet.cidr }}
+                {{ subnet?.cidr }}
               </div>
             </div>
           </template>
@@ -37,10 +40,15 @@
   </template>
   <template v-else>
     {{
-      _.get(
-        _.find(formItem?.optionList, (o) => o.id === modelValue),
-        "name",
-        modelValue
+      _.join(
+        _.map(modelValue, (v) =>
+          _.get(
+            _.find(formItem?.optionList, (o) => o.id === v),
+            "name",
+            modelValue
+          )
+        ),
+        ","
       )
     }}
   </template>
