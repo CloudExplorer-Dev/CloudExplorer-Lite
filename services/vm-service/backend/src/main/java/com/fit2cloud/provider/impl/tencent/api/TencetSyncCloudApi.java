@@ -11,13 +11,16 @@ import com.fit2cloud.constants.ErrorCodeConstants;
 import com.fit2cloud.provider.constants.DeleteWithInstance;
 import com.fit2cloud.provider.entity.F2CDisk;
 import com.fit2cloud.provider.entity.F2CImage;
+import com.fit2cloud.provider.entity.F2CNetwork;
 import com.fit2cloud.provider.entity.F2CVirtualMachine;
 import com.fit2cloud.provider.entity.request.GetMetricsRequest;
+import com.fit2cloud.provider.impl.tencent.constants.TencentDiskType;
 import com.fit2cloud.provider.impl.tencent.constants.TencentPerfMetricConstants;
+import com.fit2cloud.provider.impl.tencent.entity.TencentDiskTypeDTO;
+import com.fit2cloud.provider.impl.tencent.entity.TencentInstanceType;
 import com.fit2cloud.provider.impl.tencent.entity.credential.TencentVmCredential;
 import com.fit2cloud.provider.impl.tencent.entity.request.*;
 import com.fit2cloud.provider.impl.tencent.util.TencentMappingUtil;
-import com.google.gson.Gson;
 import com.tencentcloudapi.cbs.v20170312.CbsClient;
 import com.tencentcloudapi.cbs.v20170312.models.Placement;
 import com.tencentcloudapi.cbs.v20170312.models.*;
@@ -30,8 +33,12 @@ import com.tencentcloudapi.monitor.v20180724.models.DataPoint;
 import com.tencentcloudapi.monitor.v20180724.models.Dimension;
 import com.tencentcloudapi.monitor.v20180724.models.GetMonitorDataRequest;
 import com.tencentcloudapi.monitor.v20180724.models.GetMonitorDataResponse;
+import com.tencentcloudapi.vpc.v20170312.VpcClient;
+import com.tencentcloudapi.vpc.v20170312.models.*;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
 
 import java.math.BigDecimal;
@@ -48,6 +55,395 @@ import static com.fit2cloud.provider.impl.tencent.util.TencentMappingUtil.toF2cD
  * @注释:
  */
 public class TencetSyncCloudApi {
+    private static Logger logger = LoggerFactory.getLogger(TencetSyncCloudApi.class);
+
+    public static F2CVirtualMachine createVirtualMachine(TencentVmCreateRequest req) {
+
+        TencentVmCredential tencentVmCredential = JsonUtil.parseObject(req.getCredential(), TencentVmCredential.class);
+        CvmClient cvmClient = tencentVmCredential.getCvmClient(req.getRegionId());
+
+        RunInstancesRequest runInstancesRequest = req.toRunInstancesRequest();
+        RunInstancesResponse runInstancesResponse;
+        try {
+            runInstancesResponse = cvmClient.RunInstances(runInstancesRequest);
+        } catch (TencentCloudSDKException e) {
+            logger.error("Failed to create instance", e);
+            throw new RuntimeException("Failed to create instance!" + e.getMessage(), e);
+        }
+
+        // 等待磁盘初始化结束
+        try {
+            DescribeDisksRequest describeDisksRequest = new DescribeDisksRequest();
+            com.tencentcloudapi.cbs.v20170312.models.Filter[] filters = new com.tencentcloudapi.cbs.v20170312.models.Filter[1];
+            com.tencentcloudapi.cbs.v20170312.models.Filter statusFilter = new com.tencentcloudapi.cbs.v20170312.models.Filter();
+            statusFilter.setName("instance-id");
+            statusFilter.setValues(runInstancesResponse.getInstanceIdSet());
+            filters[0] = statusFilter;
+            describeDisksRequest.setFilters(filters);
+            CbsClient cbsClient = tencentVmCredential.getCbsClient(req.getRegionId());
+
+            int count = 1;
+            while (count < 60) {
+                DescribeDisksResponse describeDisksResponse = cbsClient.DescribeDisks(describeDisksRequest);
+                Disk[] disks = describeDisksResponse.getDiskSet();
+                if (disks != null && disks.length == req.getDisks().size()) {
+                    break;
+                }
+                count++;
+                Thread.sleep(5000);
+            }
+        } catch (Exception e) {
+        }
+
+        try {
+            DescribeInstancesRequest describeInstancesRequest = new DescribeInstancesRequest();
+            String[] instanceIds = {runInstancesResponse.getInstanceIdSet()[0]};
+            describeInstancesRequest.setInstanceIds(instanceIds);
+            DescribeInstancesResponse describeInstancesResponse = null;
+            int count = 1;
+            while (count < 60) {
+                describeInstancesResponse = cvmClient.DescribeInstances(describeInstancesRequest);
+                if (describeInstancesResponse.getInstanceSet().length > 0) {
+                    if ("RUNNING".equalsIgnoreCase(describeInstancesResponse.getInstanceSet()[0].getInstanceState())) {
+                        break;
+                    }
+                }
+                count++;
+                Thread.sleep(5000);
+            }
+            if (count >= 60) {
+                throw new RuntimeException("Timeout!");
+            }
+            F2CVirtualMachine f2CVirtualMachine = TencentMappingUtil.toF2CVirtualMachine(describeInstancesResponse.getInstanceSet()[0]);
+            f2CVirtualMachine.setRegion(req.getRegionId());
+            if (f2CVirtualMachine != null) {
+                f2CVirtualMachine.setId(req.getId());
+            }
+            return f2CVirtualMachine;
+        } catch (InterruptedException e) {
+            String errMsg = "Thread hibernation failed!";
+            logger.error(errMsg, e);
+            throw new RuntimeException(errMsg + e.getMessage(), e);
+        } catch (TencentCloudSDKException e) {
+            String errMsg = "Failed to get instance!";
+            logger.error(errMsg, e);
+            throw new RuntimeException(errMsg + e.getMessage(), e);
+        }
+    }
+
+    /**
+     * 获取区域
+     *
+     * @param req
+     * @return
+     */
+    public static List<Map<String, String>> getRegions(TencentBaseRequest req) {
+        TencentVmCredential tencentVmCredential = JsonUtil.parseObject(req.getCredential(), TencentVmCredential.class);
+        CvmClient cvmClient = tencentVmCredential.getCvmClient(req.getRegionId());
+        try {
+            DescribeRegionsRequest request = new DescribeRegionsRequest();
+            DescribeRegionsResponse res = cvmClient.DescribeRegions(request);
+            RegionInfo[] regionInfos = res.getRegionSet();
+            return Arrays.asList(regionInfos).stream()
+                    .filter(regionInfo -> "AVAILABLE".equalsIgnoreCase(regionInfo.getRegionState()))
+                    .map(regionInfo -> {
+                        Map<String, String> map = new HashMap<>();
+                        map.put("id", regionInfo.getRegion());
+                        map.put("name", regionInfo.getRegionName());
+                        return map;
+                    }).toList();
+        } catch (TencentCloudSDKException e) {
+            throw new RuntimeException("Failed to get region." + e.getMessage(), e);
+        }
+    }
+
+    public static F2CVirtualMachine getSimpleServerByCreateRequest(TencentVmCreateRequest request) {
+        F2CVirtualMachine virtualMachine = new F2CVirtualMachine();
+        int index = request.getIndex();
+
+        virtualMachine
+                .setId(request.getId())
+                .setName(request.getServerInfos().get(index).getName())
+                .setIpArray(new ArrayList<>())
+                .setInstanceType(request.getInstanceTypeDTO().getInstanceType())
+                .setInstanceTypeDescription(request.getInstanceTypeDTO().getInstanceType());
+
+        return virtualMachine;
+    }
+
+    /**
+     * 获取可用区
+     *
+     * @param req
+     * @return
+     */
+    public static List<Map<String, String>> getZones(TencentBaseRequest req) {
+        TencentVmCredential tencentVmCredential = JsonUtil.parseObject(req.getCredential(), TencentVmCredential.class);
+        CvmClient cvmClient = tencentVmCredential.getCvmClient(req.getRegionId());
+        try {
+            DescribeZonesRequest request = new DescribeZonesRequest();
+            DescribeZonesResponse res = cvmClient.DescribeZones(request);
+            ZoneInfo[] zoneInfos = res.getZoneSet();
+            return Arrays.asList(zoneInfos).stream()
+                    .filter(zoneInfo -> "AVAILABLE".equalsIgnoreCase(zoneInfo.getZoneState()))
+                    .map(zoneInfo -> {
+                        Map<String, String> map = new HashMap<>();
+                        map.put("id", zoneInfo.getZone());
+                        map.put("name", zoneInfo.getZoneName());
+                        return map;
+                    }).toList();
+        } catch (Exception e) {
+            throw new RuntimeException(e.getMessage());
+        }
+    }
+
+    /**
+     * 获取实例类型
+     *
+     * @param req
+     * @return
+     */
+    public static List<TencentInstanceType> getInstanceTypes(TencentGetInstanceTypeRequest req) {
+        TencentVmCredential tencentVmCredential = JsonUtil.parseObject(req.getCredential(), TencentVmCredential.class);
+        CvmClient cvmClient = tencentVmCredential.getCvmClient(req.getRegionId());
+
+        try {
+            DescribeZoneInstanceConfigInfosRequest request = req.toDescribeZoneInstanceConfigInfosRequest();
+            DescribeZoneInstanceConfigInfosResponse res = cvmClient.DescribeZoneInstanceConfigInfos(request);
+            InstanceTypeQuotaItem[] instanceTypeQuotaItems = res.getInstanceTypeQuotaSet();
+
+            List<TencentInstanceType> returnList = new ArrayList<>();
+            if (instanceTypeQuotaItems != null && instanceTypeQuotaItems.length > 0) {
+                for (InstanceTypeQuotaItem instanceTypeQuotaItem : instanceTypeQuotaItems) {
+                    if (!"SOLD_OUT".equalsIgnoreCase(instanceTypeQuotaItem.getStatus())) {
+                        String cpuMemory = instanceTypeQuotaItem.getCpu() + "vCPU " + instanceTypeQuotaItem.getMemory() + "GB";
+                        TencentInstanceType tencentInstanceType = new TencentInstanceType().builder()
+                                .instanceTypeFamily(instanceTypeQuotaItem.getInstanceFamily())
+                                .instanceTypeFamilyName(instanceTypeQuotaItem.getTypeName())
+                                .instanceType(instanceTypeQuotaItem.getInstanceType())
+                                .cpuMemory(cpuMemory)
+                                .cpu(instanceTypeQuotaItem.getCpu())
+                                .memory(instanceTypeQuotaItem.getMemory())
+                                .build();
+                        returnList.add(tencentInstanceType);
+                    }
+                }
+            }
+
+            return returnList;
+        } catch (TencentCloudSDKException e) {
+            throw new RuntimeException("Failed to get instance type." + e.getMessage(), e);
+        }
+    }
+
+    /**
+     * 获取系统盘类型
+     *
+     * @param req 请求数据
+     * @return
+     */
+    public List<TencentDiskTypeDTO.TencentDiskType> getSystemDiskType(TencentGetDiskTypeRequest req) {
+        req.setDiskUsage("SYSTEM_DISK");
+        return getDiskTypes(req).getSystemDiskTypes();
+    }
+
+    /**
+     * 获取数据盘类型
+     *
+     * @param req 请求数据
+     * @return
+     */
+    public List<TencentDiskTypeDTO.TencentDiskType> getDataDiskType(TencentGetDiskTypeRequest req) {
+        req.setDiskUsage("DATA_DISK");
+        return getDiskTypes(req).getDataDiskTypes();
+    }
+
+    /**
+     * 获取磁盘类型
+     *
+     * @param req
+     * @return
+     */
+    public static TencentDiskTypeDTO getDiskTypes(TencentGetDiskTypeRequest req) {
+        if (req.getZoneId() == null) {
+            return new TencentDiskTypeDTO();
+        }
+        TencentVmCredential tencentVmCredential = JsonUtil.parseObject(req.getCredential(), TencentVmCredential.class);
+        CbsClient client = tencentVmCredential.getCbsClient(req.getRegionId());
+
+        DescribeDiskConfigQuotaRequest describeDiskConfigQuotaRequest = req.toDescribeDiskConfigQuotaRequest();
+        DescribeDiskConfigQuotaResponse describeDiskConfigQuotaResponse;
+        try {
+            describeDiskConfigQuotaResponse = client.DescribeDiskConfigQuota(describeDiskConfigQuotaRequest);
+        } catch (TencentCloudSDKException e) {
+            throw new RuntimeException("Failed to get disk type." + e.getMessage(), e);
+        }
+
+        List<TencentDiskTypeDTO.TencentDiskType> systemDiskTypes = new ArrayList<>();
+        List<TencentDiskTypeDTO.TencentDiskType> dataDiskTypes = new ArrayList<>();
+        Arrays.stream(describeDiskConfigQuotaResponse.getDiskConfigSet()).filter(DiskConfig::getAvailable).forEach(diskConfig -> {
+            if ("SYSTEM_DISK".equalsIgnoreCase(diskConfig.getDiskUsage())) {
+                TencentDiskTypeDTO.TencentDiskType type = new TencentDiskTypeDTO().new TencentDiskType();
+                type.setDiskType(diskConfig.getDiskType());
+                type.setDiskTypeName(TencentDiskType.getName(diskConfig.getDiskType()));
+                type.setMinDiskSize(diskConfig.getMinDiskSize());
+                type.setMaxDiskSize(diskConfig.getMaxDiskSize());
+                systemDiskTypes.add(type);
+            }
+
+            if ("DATA_DISK".equalsIgnoreCase(diskConfig.getDiskUsage())) {
+                TencentDiskTypeDTO.TencentDiskType type = new TencentDiskTypeDTO().new TencentDiskType();
+                type.setDiskType(diskConfig.getDiskType());
+                type.setDiskTypeName(TencentDiskType.getName(diskConfig.getDiskType()));
+                type.setMinDiskSize(diskConfig.getMinDiskSize());
+                type.setMaxDiskSize(diskConfig.getMaxDiskSize());
+                dataDiskTypes.add(type);
+            }
+        });
+
+        return new TencentDiskTypeDTO()
+                .builder()
+                .systemDiskTypes(systemDiskTypes.stream().distinct().toList())
+                .dataDiskTypes(dataDiskTypes.stream().distinct().toList())
+                .build();
+    }
+
+    /**
+     * 获取网络
+     *
+     * @param req
+     * @return
+     */
+    public static List<F2CNetwork> getNetworks(TencentGetSubnetRequest req) {
+        // 获取 VPC
+        TencentGetVpcRequest vpcRequest = new TencentGetVpcRequest();
+        BeanUtils.copyProperties(req, vpcRequest);
+        List<Vpc> vpcList = getVpcList(vpcRequest);
+
+        // 获取子网
+        List<Subnet> subnets = getSubnets(req);
+
+        // 组合返回数据
+        return subnets.stream().map(subnet -> {
+            F2CNetwork f2CNetwork = new F2CNetwork();
+            f2CNetwork.setVpcId(subnet.getVpcId());
+            String vpcName = vpcList.stream().filter(vpc ->
+                    vpc.getVpcId().equals(subnet.getVpcId())
+            ).findFirst().map(Vpc::getVpcName).orElse("——");
+            f2CNetwork.setVpcName(vpcName);
+            f2CNetwork.setNetworkName(subnet.getSubnetName());
+            f2CNetwork.setNetworkId(subnet.getSubnetId());
+            f2CNetwork.setIpSegment(subnet.getCidrBlock());
+            return f2CNetwork;
+        }).toList();
+    }
+
+    /**
+     * 获取 VPC
+     *
+     * @param req
+     * @return
+     */
+    public static List<Vpc> getVpcList(TencentGetVpcRequest req) {
+        TencentVmCredential tencentVmCredential = JsonUtil.parseObject(req.getCredential(), TencentVmCredential.class);
+        VpcClient client = tencentVmCredential.getVpcClient(req.getRegionId());
+
+        DescribeVpcsRequest describeVpcsRequest = req.toDescribeVpcRequest();
+        String offset = "0";
+        String limit = "100";
+        describeVpcsRequest.setLimit(limit);
+        List<Vpc> vpcList = new ArrayList<>();
+        while (true) {
+            describeVpcsRequest.setOffset(offset);
+            try {
+                DescribeVpcsResponse describeVpcsResponse = client.DescribeVpcs(describeVpcsRequest);
+                if (describeVpcsResponse.getVpcSet() != null) {
+                    vpcList.addAll(Arrays.asList(describeVpcsResponse.getVpcSet()));
+                }
+                if (describeVpcsResponse.getTotalCount() <= Integer.parseInt(offset) + Integer.parseInt(limit)) {
+                    break;
+                } else {
+                    offset = String.valueOf(Integer.parseInt(offset) + Integer.parseInt(limit));
+                }
+            } catch (TencentCloudSDKException e) {
+                logger.error("Failed to get vpc list!" + e.getMessage());
+                throw new RuntimeException(e.getMessage(), e);
+            }
+        }
+        return vpcList;
+    }
+
+    /**
+     * 获取子网
+     *
+     * @param req
+     * @return
+     */
+    public static List<Subnet> getSubnets(TencentGetSubnetRequest req) {
+        TencentVmCredential tencentVmCredential = JsonUtil.parseObject(req.getCredential(), TencentVmCredential.class);
+        VpcClient client = tencentVmCredential.getVpcClient(req.getRegionId());
+
+        DescribeSubnetsRequest describeSubnetsRequest = req.toDescribeSubnetsRequest();
+        String offset = "0";
+        String limit = "100";
+        describeSubnetsRequest.setLimit(limit);
+        List<Subnet> subnets = new ArrayList<>();
+        while (true) {
+            describeSubnetsRequest.setOffset(offset);
+            try {
+                DescribeSubnetsResponse describeSubnetsResponse = client.DescribeSubnets(describeSubnetsRequest);
+                subnets.addAll(Arrays.asList(describeSubnetsResponse.getSubnetSet()));
+                if (describeSubnetsResponse.getTotalCount() <= Integer.parseInt(offset) + Integer.parseInt(limit)) {
+                    break;
+                } else {
+                    offset = String.valueOf(Integer.parseInt(offset) + Integer.parseInt(limit));
+                }
+            } catch (TencentCloudSDKException e) {
+                logger.error("Failed to get subnet list!" + e.getMessage());
+                throw new RuntimeException(e.getMessage(), e);
+            }
+        }
+        return subnets;
+    }
+
+    /**
+     * 获取安全组
+     *
+     * @param req
+     * @return
+     */
+    public static List<Map<String, String>> getSecurityGroups(TencentBaseRequest req) {
+        TencentVmCredential tencentVmCredential = JsonUtil.parseObject(req.getCredential(), TencentVmCredential.class);
+        VpcClient client = tencentVmCredential.getVpcClient(req.getRegionId());
+
+        DescribeSecurityGroupsRequest describeSecurityGroupsRequest = new DescribeSecurityGroupsRequest();
+        String offset = "0";
+        String limit = "100";
+        describeSecurityGroupsRequest.setLimit(limit);
+        List<SecurityGroup> securityGroups = new ArrayList<>();
+        while (true) {
+            describeSecurityGroupsRequest.setOffset(offset);
+            try {
+                DescribeSecurityGroupsResponse describeSecurityGroupsResponse = client.DescribeSecurityGroups(describeSecurityGroupsRequest);
+                securityGroups.addAll(Arrays.asList(describeSecurityGroupsResponse.getSecurityGroupSet()));
+                if (describeSecurityGroupsResponse.getTotalCount() <= Integer.parseInt(offset) + Integer.parseInt(limit)) {
+                    break;
+                } else {
+                    offset = String.valueOf(Integer.parseInt(offset) + Integer.parseInt(limit));
+                }
+            } catch (TencentCloudSDKException e) {
+                logger.error("Failed to get security group!", e.getMessage());
+                throw new RuntimeException(e.getMessage(), e);
+            }
+        }
+        return securityGroups.stream().map(securityGroup -> {
+            Map<String, String> map = new HashMap<>();
+            String name = securityGroup.getSecurityGroupName() == null ? securityGroup.getSecurityGroupId() : securityGroup.getSecurityGroupId() + " (" + securityGroup.getSecurityGroupName() + ")";
+            map.put("id", securityGroup.getSecurityGroupId());
+            map.put("name", name);
+            return map;
+        }).toList();
+    }
 
     /**
      * 获取云主机数据
@@ -273,7 +669,7 @@ public class TencetSyncCloudApi {
                 if (request.getIsAttached() && createDisksRequest.getAutoMountConfiguration() == null) {
                     TencentAttachDiskRequest attachDiskRequest = new TencentAttachDiskRequest();
 
-                    BeanUtils.copyProperties(request,attachDiskRequest);
+                    BeanUtils.copyProperties(request, attachDiskRequest);
                     attachDiskRequest.setDiskId(disk.getDiskId());
                     attachDiskRequest.setInstanceUuid(disk.getInstanceUuid());
                     attachDiskRequest.setDeleteWithInstance(disk.getDeleteWithInstance());
@@ -624,8 +1020,8 @@ public class TencetSyncCloudApi {
             GetMonitorDataRequest request = getShowMetricDataRequest(getMetricsRequest);
             MonitorClient monitorClient = credential.getMonitorClient(getMetricsRequest.getRegionId());
             ///TODO 由于我们只查询一个小时内的数据，时间间隔是60s,所以查询每台机器的监控数据的时候最多不过60条数据，所以不需要分页查询
-            result.addAll(getVmPerfMetric(monitorClient,request,getMetricsRequest));
-            result.addAll(getDiskPerfMetric(monitorClient,request,getMetricsRequest));
+            result.addAll(getVmPerfMetric(monitorClient, request, getMetricsRequest));
+            result.addAll(getDiskPerfMetric(monitorClient, request, getMetricsRequest));
         } catch (Exception e) {
             throw new Fit2cloudException(100021, "获取监控数据失败-" + getMetricsRequest.getRegionId() + "-" + e.getMessage());
         }
@@ -638,23 +1034,23 @@ public class TencetSyncCloudApi {
      * @param getMetricsRequest
      * @return
      */
-    private static List<F2CPerfMetricMonitorData> getVmPerfMetric(MonitorClient monitorClient,GetMonitorDataRequest req,GetMetricsRequest getMetricsRequest) {
+    private static List<F2CPerfMetricMonitorData> getVmPerfMetric(MonitorClient monitorClient, GetMonitorDataRequest req, GetMetricsRequest getMetricsRequest) {
         List<F2CPerfMetricMonitorData> result = new ArrayList<>();
         ListVirtualMachineRequest listVirtualMachineRequest = new ListVirtualMachineRequest();
         listVirtualMachineRequest.setCredential(getMetricsRequest.getCredential());
         listVirtualMachineRequest.setRegionId(getMetricsRequest.getRegionId());
-        List<String> ids = listVirtualMachine(listVirtualMachineRequest).stream().map(vm->vm.getInstanceUUID()).collect(Collectors.toList());
+        List<String> ids = listVirtualMachine(listVirtualMachineRequest).stream().map(vm -> vm.getInstanceUUID()).collect(Collectors.toList());
         if (ids.size() == 0) {
             return result;
         }
         req.setNamespace("QCE/CVM");
-        ids.forEach(id->{
+        ids.forEach(id -> {
             Arrays.stream(TencentPerfMetricConstants.CloudServerPerfMetricEnum.values()).sorted().forEach(perfMetric -> {
                 req.setMetricName(perfMetric.getMetricName());
-                req.setInstances(getInstance("InstanceId",id));
-                Map<Long, BigDecimal> dataMap = getMonitorData(monitorClient,req);
-                System.out.println("结果："+JsonUtil.toJSONString(dataMap));
-                addMonitorData(result,dataMap,F2CEntityType.VIRTUAL_MACHINE.name(),perfMetric.getUnit(),getMetricsRequest.getPeriod(),perfMetric.name(),id);
+                req.setInstances(getInstance("InstanceId", id));
+                Map<Long, BigDecimal> dataMap = getMonitorData(monitorClient, req);
+                System.out.println("结果：" + JsonUtil.toJSONString(dataMap));
+                addMonitorData(result, dataMap, F2CEntityType.VIRTUAL_MACHINE.name(), perfMetric.getUnit(), getMetricsRequest.getPeriod(), perfMetric.name(), id);
             });
         });
         return result;
@@ -666,23 +1062,23 @@ public class TencetSyncCloudApi {
      * @param getMetricsRequest
      * @return
      */
-    private static List<F2CPerfMetricMonitorData> getDiskPerfMetric(MonitorClient monitorClient,GetMonitorDataRequest req,GetMetricsRequest getMetricsRequest) {
+    private static List<F2CPerfMetricMonitorData> getDiskPerfMetric(MonitorClient monitorClient, GetMonitorDataRequest req, GetMetricsRequest getMetricsRequest) {
         List<F2CPerfMetricMonitorData> result = new ArrayList<>();
         ListDiskRequest listDiskRequest = new ListDiskRequest();
         listDiskRequest.setCredential(getMetricsRequest.getCredential());
         listDiskRequest.setRegionId(getMetricsRequest.getRegionId());
-        List<String> ids = listDisk(listDiskRequest).stream().map(disk->disk.getDiskId()).collect(Collectors.toList());
+        List<String> ids = listDisk(listDiskRequest).stream().map(disk -> disk.getDiskId()).collect(Collectors.toList());
         if (ids.size() == 0) {
             return result;
         }
         req.setNamespace("QCE/BLOCK_STORAGE");
-        ids.forEach(id->{
+        ids.forEach(id -> {
             Arrays.stream(TencentPerfMetricConstants.CloudDiskPerfMetricEnum.values()).sorted().forEach(perfMetric -> {
                 req.setMetricName(perfMetric.getMetricName());
-                req.setInstances(getInstance("diskId",id));
-                Map<Long, BigDecimal> dataMap = getMonitorData(monitorClient,req);
-                System.out.println("结果："+JsonUtil.toJSONString(dataMap));
-                addMonitorData(result,dataMap,F2CEntityType.DISK.name(),perfMetric.getUnit(),getMetricsRequest.getPeriod(),perfMetric.name(),id);
+                req.setInstances(getInstance("diskId", id));
+                Map<Long, BigDecimal> dataMap = getMonitorData(monitorClient, req);
+                System.out.println("结果：" + JsonUtil.toJSONString(dataMap));
+                addMonitorData(result, dataMap, F2CEntityType.DISK.name(), perfMetric.getUnit(), getMetricsRequest.getPeriod(), perfMetric.name(), id);
             });
         });
         return result;
@@ -690,11 +1086,12 @@ public class TencetSyncCloudApi {
 
     /**
      * 获取查询对象
+     *
      * @param dimensionId
      * @param instanceId
      * @return
      */
-    private static com.tencentcloudapi.monitor.v20180724.models.Instance[] getInstance(String dimensionId,String instanceId){
+    private static com.tencentcloudapi.monitor.v20180724.models.Instance[] getInstance(String dimensionId, String instanceId) {
         com.tencentcloudapi.monitor.v20180724.models.Instance[] instances1 = new com.tencentcloudapi.monitor.v20180724.models.Instance[1];
         com.tencentcloudapi.monitor.v20180724.models.Instance instance1 = new com.tencentcloudapi.monitor.v20180724.models.Instance();
         Dimension[] dimensions1 = new Dimension[1];
@@ -707,36 +1104,37 @@ public class TencetSyncCloudApi {
         return instances1;
     }
 
-    private static void addMonitorData(List<F2CPerfMetricMonitorData> result,Map<Long, BigDecimal> dataMap,String entityType,String unit,Integer period,String metricName,String instanceId){
-        dataMap.keySet().forEach(k->{
-                    F2CPerfMetricMonitorData f2CEntityPerfMetric = TencentMappingUtil.toF2CPerfMetricMonitorData(dataMap,k,unit);
-                    f2CEntityPerfMetric.setEntityType(entityType);
-                    f2CEntityPerfMetric.setMetricName(metricName);
-                    f2CEntityPerfMetric.setPeriod(period);
-                    f2CEntityPerfMetric.setInstanceId(instanceId);
-                    f2CEntityPerfMetric.setUnit(unit);
-                    result.add(f2CEntityPerfMetric);
+    private static void addMonitorData(List<F2CPerfMetricMonitorData> result, Map<Long, BigDecimal> dataMap, String entityType, String unit, Integer period, String metricName, String instanceId) {
+        dataMap.keySet().forEach(k -> {
+            F2CPerfMetricMonitorData f2CEntityPerfMetric = TencentMappingUtil.toF2CPerfMetricMonitorData(dataMap, k, unit);
+            f2CEntityPerfMetric.setEntityType(entityType);
+            f2CEntityPerfMetric.setMetricName(metricName);
+            f2CEntityPerfMetric.setPeriod(period);
+            f2CEntityPerfMetric.setInstanceId(instanceId);
+            f2CEntityPerfMetric.setUnit(unit);
+            result.add(f2CEntityPerfMetric);
         });
     }
 
     /**
      * 返回的时间戳不足13位，*1000
+     *
      * @param monitorClient
      * @param req
      * @return
      */
-    private static Map<Long, BigDecimal> getMonitorData(MonitorClient monitorClient,GetMonitorDataRequest req) {
+    private static Map<Long, BigDecimal> getMonitorData(MonitorClient monitorClient, GetMonitorDataRequest req) {
         Map<Long, BigDecimal> map = new LinkedHashMap<>();
         try {
             //查询监控指标数据
             GetMonitorDataResponse response = monitorClient.GetMonitorData(req);
-            if (StringUtils.isEmpty(response.getMsg()) && response.getDataPoints().length>0) {
+            if (StringUtils.isEmpty(response.getMsg()) && response.getDataPoints().length > 0) {
                 DataPoint[] dataPoints = response.getDataPoints();
-                Arrays.stream(dataPoints).toList().forEach(dataPoint->{
+                Arrays.stream(dataPoints).toList().forEach(dataPoint -> {
                     Long[] timestamps = dataPoint.getTimestamps();
                     Float[] values = dataPoint.getValues();
-                    for(int i=0;i<timestamps.length;i++){
-                        map.put(timestamps[i]*1000,new BigDecimal(values[i]));
+                    for (int i = 0; i < timestamps.length; i++) {
+                        map.put(timestamps[i] * 1000, new BigDecimal(values[i]));
                     }
                 });
             }
@@ -748,6 +1146,7 @@ public class TencetSyncCloudApi {
 
     /**
      * 查询云主机监控数据参数
+     *
      * @param getMetricsRequest
      * @return
      */
@@ -755,8 +1154,8 @@ public class TencetSyncCloudApi {
     private static GetMonitorDataRequest getShowMetricDataRequest(GetMetricsRequest getMetricsRequest) {
         GetMonitorDataRequest req = new GetMonitorDataRequest();
         req.setPeriod(60L);
-        req.setStartTime(DateUtil.getISO8601TimestampFromDateStr(DateUtil.dateToString(Long.valueOf(getMetricsRequest.getStartTime()),null)));
-        req.setEndTime(DateUtil.getISO8601TimestampFromDateStr(DateUtil.dateToString(Long.valueOf(getMetricsRequest.getEndTime()),null)));
+        req.setStartTime(DateUtil.getISO8601TimestampFromDateStr(DateUtil.dateToString(Long.valueOf(getMetricsRequest.getStartTime()), null)));
+        req.setEndTime(DateUtil.getISO8601TimestampFromDateStr(DateUtil.dateToString(Long.valueOf(getMetricsRequest.getEndTime()), null)));
         return req;
     }
 
