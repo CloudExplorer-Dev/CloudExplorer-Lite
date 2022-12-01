@@ -3,21 +3,24 @@ package com.fit2cloud.provider.impl.openstack.util;
 import com.fit2cloud.common.provider.impl.openstack.utils.OpenStackBaseUtils;
 import com.fit2cloud.provider.constants.F2CDiskStatus;
 import com.fit2cloud.provider.constants.F2CInstanceStatus;
-import com.fit2cloud.provider.entity.F2CDisk;
-import com.fit2cloud.provider.entity.F2CImage;
-import com.fit2cloud.provider.entity.F2CVirtualMachine;
+import com.fit2cloud.provider.entity.*;
 import com.fit2cloud.provider.impl.openstack.entity.CheckStatusResult;
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.openstack4j.api.OSClient;
+import org.openstack4j.api.types.ServiceType;
 import org.openstack4j.model.compute.Address;
+import org.openstack4j.model.compute.HostAggregate;
 import org.openstack4j.model.compute.Server;
+import org.openstack4j.model.compute.ext.Hypervisor;
+import org.openstack4j.model.identity.v3.Role;
+import org.openstack4j.model.identity.v3.Service;
 import org.openstack4j.model.image.v2.Image;
 import org.openstack4j.model.storage.block.Volume;
 import org.openstack4j.model.storage.block.VolumeAttachment;
+import org.openstack4j.openstack.storage.block.domain.VolumeBackendPool;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class OpenStackUtils extends OpenStackBaseUtils {
 
@@ -199,14 +202,14 @@ public class OpenStackUtils extends OpenStackBaseUtils {
         }
     }
 
-    public static CheckStatusResult checkDiskStatus(OSClient.OSClientV3 osClient, Volume volume, Volume.Status expect) {
+    public static CheckStatusResult checkDiskStatus(OSClient.OSClientV3 osClient, Volume volume, Volume.Status... expect) {
         int count = 0;
         while (true) {
             try {
                 Thread.sleep(SLEEP_TIME);
                 Volume v = osClient.blockStorage().volumes().get(volume.getId());
                 if (v != null && v.getStatus() != null) {
-                    if (expect.equals(v.getStatus())) {
+                    if (Arrays.stream(expect).toList().contains(v.getStatus())) {
                         return CheckStatusResult.success(v);
                     }
                     if (Volume.Status.ERROR.equals(v.getStatus())) {
@@ -224,4 +227,73 @@ public class OpenStackUtils extends OpenStackBaseUtils {
     }
 
 
+    public static boolean isAdmin(OSClient.OSClientV3 osClient) {
+        boolean isAdmin = false;
+        List<? extends Role> roles = osClient.getToken().getRoles();
+        for (Role role : roles) {
+            if ("admin".equals(role.getName())) {
+                isAdmin = true;
+            }
+        }
+        return isAdmin;
+    }
+
+    public static F2CHost toF2CHost(List<? extends HostAggregate> hostAggregates, Hypervisor hypervisor, String region) {
+        F2CHost f2cHost = new F2CHost();
+        f2cHost.setCpuMHzTotal((long) hypervisor.getVirtualCPU() * hypervisor.getCpuAllocationRatio() * 1000);
+        f2cHost.setCpuMHzAllocated(hypervisor.getVirtualUsedCPU() * 1000L);
+        f2cHost.setCpuMHzPerOneCore(1000);
+        f2cHost.setNumCpuCores(hypervisor.getVirtualCPU() * hypervisor.getCpuAllocationRatio());
+        f2cHost.setHostId(hypervisor.getId());
+        f2cHost.setHostName(hypervisor.getHypervisorHostname());
+        f2cHost.setHostIp(hypervisor.getHostIP());
+        f2cHost.setMemoryAllocated(hypervisor.getLocalMemoryUsed());
+        f2cHost.setMemoryTotal((long) hypervisor.getLocalMemory() * hypervisor.getRamAllocationRatio());
+        f2cHost.setStatus("poweredOn");
+        f2cHost.setVmRunning(hypervisor.getRunningVM());
+        f2cHost.setVmStopped(0);
+        f2cHost.setVmTotal(hypervisor.getRunningVM());
+        f2cHost.setHypervisorType(hypervisor.getType());
+        f2cHost.setHypervisorVersion(String.valueOf(hypervisor.getVersion()));
+        f2cHost.setDataCenterId(region);
+        //新建的availableZone hostAggregates是不为空的，默认是nova
+        if (CollectionUtils.isNotEmpty(hostAggregates)) {
+            for (HostAggregate hostAggregate : hostAggregates) {
+                if (hostAggregate.getHosts().contains(hypervisor.getHypervisorHostname())) {
+                    f2cHost.setClusterId(hostAggregate.getAvailabilityZone());
+                    break;
+                } else {
+                    f2cHost.setClusterId("nova");
+                }
+            }
+        } else {
+            f2cHost.setClusterId("nova");
+        }
+        return f2cHost;
+    }
+
+    public static boolean isSupport(OSClient.OSClientV3 osClient, ServiceType serviceType) {
+        List<? extends Service> services = osClient.getToken().getCatalog();
+        for (Service service : services) {
+            if (!CollectionUtils.isEmpty(service.getEndpoints())
+                    && serviceType.getType().equalsIgnoreCase(service.getType())) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public static F2CDatastore toF2CDatastore(VolumeBackendPool backendPool, String region) {
+        F2CDatastore f2cDs = new F2CDatastore();
+        //默认
+        f2cDs.setClusterId("nova");
+        f2cDs.setDataCenterName(region);
+        f2cDs.setCapacity(backendPool.getCapabilities().getTotalCapacityGb());
+        f2cDs.setDataStoreId(backendPool.getName());
+        f2cDs.setDataStoreName(backendPool.getCapabilities().getVolumeBackendName());
+        f2cDs.setFreeSpace(backendPool.getCapabilities().getFreeCapacityGb());
+        f2cDs.setType("storage_pool");
+        f2cDs.setLastUpdate(new Date().getTime() / 1000);
+        return f2cDs;
+    }
 }

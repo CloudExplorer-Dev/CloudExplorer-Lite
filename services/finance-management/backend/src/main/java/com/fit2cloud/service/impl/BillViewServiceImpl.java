@@ -13,6 +13,7 @@ import com.fit2cloud.common.exception.Fit2cloudException;
 import com.fit2cloud.common.util.EsFieldUtil;
 import com.fit2cloud.common.util.EsScriptUtil;
 import com.fit2cloud.common.util.MappingUtil;
+import com.fit2cloud.common.util.MonthUtil;
 import com.fit2cloud.common.utils.JsonUtil;
 import com.fit2cloud.controller.request.BillExpensesRequest;
 import com.fit2cloud.controller.request.HistoryTrendRequest;
@@ -98,7 +99,7 @@ public class BillViewServiceImpl implements BillViewService {
 
     @Override
     public List<Trend> getTrend(String type, Integer historyNum, HistoryTrendRequest historyTrendRequest) {
-        List<String> months = getHistoryMonth(LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM")), historyNum);
+        List<String> months = MonthUtil.getHistoryMonth(LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM")), historyNum);
         // todo 根据趋势月份构建查询条件
         Query q = new Query.Builder().script(new ScriptQuery.Builder().script(s -> getTermsAggregationScript(s, months)).build()).build();
         Query authQuery = getAuthQuery();
@@ -144,33 +145,7 @@ public class BillViewServiceImpl implements BillViewService {
     @Override
     public Map<String, List<BillView>> billViewByRuleId(String ruleId, String month) {
         BillRule billRule = billRuleService.getById(ruleId);
-        return searchBillView(billRule, getHistoryMonth(month, 6), "realTotalCost");
-    }
-
-
-    /**
-     * 获取历史月份
-     *
-     * @param month   当前月份
-     * @param history 获取多少个月
-     * @return 月份数组
-     */
-    private static List<String> getHistoryMonth(String month, Integer history) {
-        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM");
-        try {
-            simpleDateFormat.parse(month);
-        } catch (ParseException e) {
-            throw new Fit2cloudException(2222, "月份格式化错误,yyyy-MM");
-        }
-        Calendar instance = Calendar.getInstance();
-        String[] split = month.split("-");
-        return IntStream.range(0, history).boxed().map(i -> {
-            instance.set(Calendar.YEAR, Integer.parseInt(split[0]));
-            instance.set(Calendar.MONTH, Integer.parseInt(split[1]) - 1);
-            instance.add(Calendar.MONTH, (i * -1));
-            return String.format("%04d-%02d", instance.get(Calendar.YEAR), instance.get(Calendar.MONTH) + 1);
-        }).toList();
-
+        return searchBillView(billRule, MonthUtil.getHistoryMonth(month, 6), "realTotalCost");
     }
 
 

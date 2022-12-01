@@ -34,6 +34,7 @@
         <flatten.version>1.2.7</flatten.version>
         <common-lang3.version>3.12.0</common-lang3.version>
         <common-collections4.version>4.4</common-collections4.version>
+        <common-io.version>2.11.0</common-io.version>
         <jjwt.version>0.11.5</jjwt.version>
         <junit.version>5.9.0</junit.version>
         <redisson.version>3.17.5</redisson.version>
@@ -79,6 +80,14 @@
             <artifactId>commons-collections4</artifactId>
             <version>${common-collections4.version}</version>
         </dependency>
+
+        <!-- https://mvnrepository.com/artifact/commons-io/commons-io -->
+        <dependency>
+            <groupId>commons-io</groupId>
+            <artifactId>commons-io</artifactId>
+            <version>${common-io.version}</version>
+        </dependency>
+
 
         <dependency>
             <groupId>com.fasterxml.jackson.datatype</groupId>

@@ -2,7 +2,7 @@
   "extends": "@vue/tsconfig/tsconfig.web.json",
   "include": ["env.d.ts", "src/**/*", "src/**/*.vue", "../../../framework/sdk/frontend/commons/**/*", "../../../framework/sdk/frontend/commons/**/*.vue"],
   "compilerOptions": {
-    "lib": ["es2016"],
+    "lib": ["es2016","dom"],
     "baseUrl": ".",
     "paths": {
       "@/*": ["./src/*"],

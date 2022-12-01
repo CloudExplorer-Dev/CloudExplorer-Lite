@@ -23,6 +23,11 @@ public class SyncBillRequest extends DescribeInstanceBillRequest {
      */
     private AliBill bill;
 
+    /**
+     * 云账号id
+     */
+    private String cloudAccountId;
+
 
     public DescribeInstanceBillRequest setMonth(String month) {
         return super.setBillingCycle(month);

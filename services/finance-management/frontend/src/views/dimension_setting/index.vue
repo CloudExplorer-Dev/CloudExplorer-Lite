@@ -11,7 +11,7 @@
         <div
           class="leftMenu"
           v-loading="orgLoading"
-          style="--el-font-size-base: 18px"
+          style="--el-font-size-base: 14px"
         >
           <div
             style="
@@ -38,7 +38,7 @@
               padding-left: 30px;
               align-items: center;
               font-family: Helvetica, PingFang SC, Arial, sans-serif;
-              font-size: 16px;
+              font-size: 14px;
               cursor: pointer;
             "
             :class="activeUnassignedResource ? 'active' : ''"
@@ -110,25 +110,69 @@
                   <el-table-column type="selection" />
                   <el-table-column prop="resourceName" label="资源名称">
                     <template #default="scope">
-                      <span>
-                        {{ scope.row.resourceId }} /
-                        {{ scope.row.resourceName }}</span
+                      <el-tooltip
+                        :content="
+                          scope.row.resourceId + '/' + scope.row.resourceName
+                        "
+                        placement="top"
+                      >
+                        <div
+                          style="
+                            white-space: nowrap;
+                            text-overflow: ellipsis;
+                            overflow: hidden;
+                          "
+                        >
+                          {{ scope.row.resourceId }} /
+                          {{ scope.row.resourceName }}
+                        </div></el-tooltip
                       >
                     </template>
                   </el-table-column>
                   <el-table-column prop="cloudAccountName" label="云账号" />
-                  <el-table-column prop="productName" label="产品" />
+                  <el-table-column prop="productName" label="产品名称" />
                   <el-table-column prop="tags" label="标签">
                     <template #default="scope">
-                      <span>
-                        {{
+                      <el-tooltip
+                        raw-content
+                        :content="
                           scope.row.tags
-                            ? Object.values(scope.row.tags).length > 0
-                              ? Object.values(scope.row.tags).join(",")
-                              : "-"
-                            : "-"
-                        }}
-                      </span>
+                            ? Object.keys(scope.row.tags).length > 0
+                              ? Object.keys(scope.row.tags)
+                                  .map(
+                                    (key) =>
+                                      '<div>' +
+                                      key +
+                                      '=' +
+                                      scope.row.tags[key] +
+                                      '</div>'
+                                  )
+                                  .join('')
+                              : 'N/A'
+                            : 'N/A'
+                        "
+                        placement="top"
+                      >
+                        <div
+                          style="
+                            white-space: nowrap;
+                            text-overflow: ellipsis;
+                            overflow: hidden;
+                          "
+                        >
+                          {{
+                            scope.row.tags
+                              ? Object.keys(scope.row.tags).length > 0
+                                ? Object.keys(scope.row.tags)
+                                    .map(
+                                      (key) => key + "=" + scope.row.tags[key]
+                                    )
+                                    .join(",")
+                                : "N/A"
+                              : "N/A"
+                          }}
+                        </div>
+                      </el-tooltip>
                     </template>
                   </el-table-column>
                   <el-table-column
@@ -150,25 +194,67 @@
               <el-table-column type="selection" />
               <el-table-column prop="resourceName" label="资源名称">
                 <template #default="scope">
-                  <span>
-                    {{ scope.row.resourceId }} /
-                    {{ scope.row.resourceName }}</span
+                  <el-tooltip
+                    :content="
+                      scope.row.resourceId + '/' + scope.row.resourceName
+                    "
+                    placement="top"
+                  >
+                    <div
+                      style="
+                        white-space: nowrap;
+                        text-overflow: ellipsis;
+                        overflow: hidden;
+                      "
+                    >
+                      {{ scope.row.resourceId }} /
+                      {{ scope.row.resourceName }}
+                    </div></el-tooltip
                   >
                 </template>
               </el-table-column>
               <el-table-column prop="cloudAccountName" label="云账号" />
-              <el-table-column prop="productName" label="产品" />
+              <el-table-column prop="productName" label="产品名称" />
               <el-table-column prop="tags" label="标签">
                 <template #default="scope">
-                  <span>
-                    {{
+                  <el-tooltip
+                    raw-content
+                    :content="
                       scope.row.tags
-                        ? Object.values(scope.row.tags).length > 0
-                          ? Object.values(scope.row.tags).join(",")
-                          : "-"
-                        : "-"
-                    }}
-                  </span>
+                        ? Object.keys(scope.row.tags).length > 0
+                          ? Object.keys(scope.row.tags)
+                              .map(
+                                (key) =>
+                                  '<div>' +
+                                  key +
+                                  '=' +
+                                  scope.row.tags[key] +
+                                  '</div>'
+                              )
+                              .join('')
+                          : 'N/A'
+                        : 'N/A'
+                    "
+                    placement="top"
+                  >
+                    <div
+                      style="
+                        white-space: nowrap;
+                        text-overflow: ellipsis;
+                        overflow: hidden;
+                      "
+                    >
+                      {{
+                        scope.row.tags
+                          ? Object.keys(scope.row.tags).length > 0
+                            ? Object.keys(scope.row.tags)
+                                .map((key) => key + "=" + scope.row.tags[key])
+                                .join(",")
+                            : "N/A"
+                          : "N/A"
+                      }}
+                    </div>
+                  </el-tooltip>
                 </template>
               </el-table-column>
               <el-table-column prop="projectName" label="企业项目" />
@@ -186,7 +272,7 @@ import type {
   OrganizationWorkspaceTree,
 } from "@/api/organization/type";
 import dimensionSettingApi from "@/api/dimension_setting";
-import { onMounted, ref, watch, nextTick } from "vue";
+import { onMounted, ref, watch } from "vue";
 import { ElTree } from "element-plus";
 import type { TabsPaneContext } from "element-plus";
 import BillRuleItemVue from "@/components/split_bill_rule_group/index.vue";

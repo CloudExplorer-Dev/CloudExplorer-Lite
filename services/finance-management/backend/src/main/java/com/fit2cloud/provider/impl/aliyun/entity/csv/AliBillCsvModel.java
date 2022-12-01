@@ -1,5 +1,6 @@
 package com.fit2cloud.provider.impl.aliyun.entity.csv;
 
+import com.fit2cloud.provider.convert.EmptyNumberConvert;
 import com.opencsv.bean.*;
 import lombok.Data;
 
@@ -66,39 +67,39 @@ public class AliBillCsvModel {
     private String zone;
     @CsvBindByName(column = "计费项")
     private String billItem;
-    @CsvBindByName(column = "单价")
+    @CsvCustomBindByName(converter = EmptyNumberConvert.class, column = "单价")
     private Double unitPrice;
     @CsvBindByName(column = "单价单位")
     private String unitPriceUnit;
-    @CsvBindByName(column = "用量")
+    @CsvCustomBindByName(converter = EmptyNumberConvert.class, column = "用量")
     private Double consumption;
     @CsvBindByName(column = "用量单位")
     private String consumptionUnit;
     @CsvBindByName(column = "资源包抵扣")
-    private Integer resourcePackageDeduction;
-    @CsvBindByName(column = "抵扣量（含RI）")
+    private String resourcePackageDeduction;
+    @CsvCustomBindByName(converter = EmptyNumberConvert.class, column = "抵扣量（含RI）")
     private Double deductionAmount;
     @CsvBindByName(column = "官网价")
     private Double officialWebsitePrice;
-    @CsvBindByName(column = "优惠金额")
+    @CsvCustomBindByName(converter = EmptyNumberConvert.class, column = "优惠金额")
     private Double discountAmount;
-    @CsvBindByName(column = "优惠券抵扣")
+    @CsvCustomBindByName(converter = EmptyNumberConvert.class, column = "优惠券抵扣")
     private Double couponDeduction;
-    @CsvBindByName(column = "应付金额")
+    @CsvCustomBindByName(converter = EmptyNumberConvert.class, column = "应付金额")
     private Double amountPayable;
-    @CsvBindByName(column = "现金支付")
+    @CsvCustomBindByName(converter = EmptyNumberConvert.class, column = "现金支付")
     private Double cashPayment;
-    @CsvBindByName(column = "代金券抵扣")
+    @CsvCustomBindByName(converter = EmptyNumberConvert.class, column = "代金券抵扣")
     private Double voucherDeduction;
-    @CsvBindByName(column = "储值卡支付金额")
+    @CsvCustomBindByName(converter = EmptyNumberConvert.class, column = "储值卡支付金额")
     private Double paymentAmountOfStoredValueCard;
-    @CsvBindByName(column = "欠费金额")
+    @CsvCustomBindByName(converter = EmptyNumberConvert.class, column = "欠费金额")
     private Double amountOwed;
     @CsvBindByName(column = "币种")
     private String currency;
     @CsvBindByName(column = "节省计划抵扣金额")
     private Double savingsPlanDeductionAmount;
-    @CsvBindByName(column = "信用额度退款抵扣")
+    @CsvCustomBindByName(converter = EmptyNumberConvert.class, column = "信用额度退款抵扣")
     private Double creditLineRefundDeduction;
     @CsvBindByName(column = "计费项Code")
     private String billingItemCode;

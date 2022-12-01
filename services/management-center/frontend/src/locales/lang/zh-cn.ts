@@ -50,7 +50,7 @@ const message = {
     cloud_account_size: "云账号必须选择一条",
     verification: "校验",
     sync_message: "同步",
-    edit_job_message: "编辑定时任务",
+    edit_job_message: "数据同步设置",
     platform: "云平台",
     native_state_valid_message: "云账号有效",
     native_state_invalid_message: "云账号无效",
@@ -95,7 +95,7 @@ const message = {
       once: "同步一次",
       region: "区域",
       range: "同步范围",
-      timing: "资源同步频率",
+      timing: "同步频率设置",
       interval: "每隔",
       interval_time_unit: {
         millisecond: "毫秒",

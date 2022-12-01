@@ -44,11 +44,7 @@
     </el-form>
   </template>
   <template v-else>
-    <el-descriptions>
-      <el-descriptions-item label="网络">
         {{ modelValue?.name }}
-      </el-descriptions-item>
-    </el-descriptions>
   </template>
 </template>
 <script setup lang="ts">
@@ -158,7 +154,7 @@ onMounted(() => {
 watch(
   () => props.allData,
   (n, o) => {
-    if (n.usePublicIp) {
+    if (n.usePublicIp || !n.usePublicIp) {
       const amountFormView = _.find(props.allFormViewData, (formViewData) => {
         return formViewData.field === "totalAmountText";
       });
@@ -193,7 +189,7 @@ const handleQueryClick = () => {
   if (!props.formItem?.ext?.networkConfig) {
     return;
   }
-  let arr = [props.formItem?.ext?.networkConfig];
+  let arr = [...props.formItem?.ext?.networkConfig];
   if (searchName.value.trim() && arr.length > 0) {
     arr = _.filter(props.formItem?.ext?.networkConfig, function (v) {
       const columnNames = Object.keys(arr[0]);

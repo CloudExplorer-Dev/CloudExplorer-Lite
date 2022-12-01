@@ -15,6 +15,7 @@
           <ce-filter-input
             @change="inputSearch"
             :searchOptions="tableConfig.searchConfig.searchOptions"
+            :quick-placeholder="tableConfig.searchConfig.quickPlaceholder"
           ></ce-filter-input
         ></template>
         <template #tl>

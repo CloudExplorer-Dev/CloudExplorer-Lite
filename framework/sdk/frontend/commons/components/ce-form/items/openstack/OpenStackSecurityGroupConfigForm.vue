@@ -23,10 +23,15 @@
   </template>
   <template v-else>
     {{
-      _.get(
-        _.find(formItem?.optionList, (o) => o.id === modelValue),
-        "name",
-        modelValue
+      _.join(
+        _.map(modelValue, (v) =>
+          _.get(
+            _.find(formItem?.optionList, (o) => o.id === v),
+            "name",
+            modelValue
+          )
+        ),
+        ","
       )
     }}
   </template>

@@ -21,6 +21,10 @@ public class SyncBillRequest extends ListCustomerselfResourceRecordsRequest {
      * 账单信息
      */
     private HuaweiBill bill;
+    /**
+     * 云账号id
+     */
+    private String cloudAccountId;
 
 
     public void setMonth(String month) {

@@ -25,6 +25,7 @@ import java.util.List;
 @FormConfirmInfo(group = 1, name = "基础配置")
 @FormConfirmInfo(group = 2, name = "网络配置")
 @FormConfirmInfo(group = 3, name = "系统配置")
+@FormConfirmInfo(group = 4, name = "计费信息")
 @FormGroupInfo(group = 1, name = "付费方式")
 @FormGroupInfo(group = 2, name = "区域")
 @FormGroupInfo(group = 3, name = "操作系统")
@@ -45,43 +46,10 @@ public class HuaweiVmCreateRequest extends HuaweiBaseRequest implements ICreateS
             valueField = "id",
             step = 1,
             group = 1,
-            confirmGroup = 1
+            confirmGroup = 4
     )
     private String billingMode;
 
-    @Form(inputType = InputType.Number,
-            label = "购买数量",
-            unit = "台",
-            defaultValue = "1",
-            defaultJsonValue = true,
-            attrs = "{\"min\":1,\"max\":10,\"step\":1}",
-            confirmGroup = 1
-    )
-    private int count;
-
-    @Form(inputType = InputType.Number,
-            label = "购买时长",
-            defaultJsonValue = true,
-            attrs = "{\"min\":1,\"max\":9,\"step\":1}",
-            confirmGroup = 1,
-            relationShows = "billingMode",
-            relationShowValues = "1"
-
-    )
-    private int periodNum;
-
-    @Form(inputType = InputType.SingleSelect,
-            label = "周期类型",
-            clazz = HuaweiCloudProvider.class,
-            method = "getPeriodType",
-            attrs = "{\"style\":\"width:120px\"}",
-            textField = "name",
-            valueField = "id",
-            confirmGroup = 1,
-            relationShows = "billingMode",
-            relationShowValues = "1"
-    )
-    private String periodType;
 
     private int index;
 
@@ -200,7 +168,9 @@ public class HuaweiVmCreateRequest extends HuaweiBaseRequest implements ICreateS
 
     @Form(inputType = InputType.SwitchBtn,
             label = "公网IP",
+            defaultValue = "false",
             defaultJsonValue = true,
+            attrs = "{\"active-text\":\"使用\",\"inactive-text\":\"禁用\",\"inline-prompt\":true}",
             confirmGroup = 2,
             group = 7,
             step = 2,
@@ -261,7 +231,7 @@ public class HuaweiVmCreateRequest extends HuaweiBaseRequest implements ICreateS
     private String loginName;
 
     @Form(inputType = InputType.Password,
-            attrs = "{\"style\":\"width:35%\"}",
+            attrs = "{\"style\":\"width:35%\",\"min\":\"8\"}",
             label = "密码",
             relationShows = "loginMethod",
             relationShowValues = "pwd",
@@ -298,15 +268,50 @@ public class HuaweiVmCreateRequest extends HuaweiBaseRequest implements ICreateS
     )
     private List<HuaweiServerNameInfo> serverNameInfos;
 
+    @Form(inputType = InputType.Number,
+            label = "购买数量",
+            unit = "台",
+            defaultValue = "1",
+            defaultJsonValue = true,
+            attrs = "{\"min\":1,\"max\":10,\"step\":1}",
+            confirmGroup = 4
+    )
+    private int count;
+
+    @Form(inputType = InputType.Number,
+            label = "购买时长",
+            defaultJsonValue = true,
+            attrs = "{\"min\":1,\"max\":9,\"step\":1}",
+            confirmGroup = 4,
+            relationShows = "billingMode",
+            relationShowValues = "1"
+
+    )
+    private int periodNum;
+
+    @Form(inputType = InputType.SingleSelect,
+            label = "周期类型",
+            clazz = HuaweiCloudProvider.class,
+            method = "getPeriodType",
+            attrs = "{\"style\":\"width:120px\"}",
+            textField = "name",
+            valueField = "id",
+            confirmGroup = 4,
+            relationShows = "billingMode",
+            relationShowValues = "1"
+    )
+    private String periodType;
+
     @Form(inputType = InputType.LabelText,
             label = "预估价格",
             clazz = HuaweiCloudProvider.class,
             method = "calculatedPrice",
             attrs = "{\"style\":\"color: red; font-size: large\"}",
-            confirmGroup = 1,
+            confirmGroup = 4,
             footerLocation = 1,
             relationTrigger = {"count","billingMode","availabilityZone","instanceSpecConfig","disks"},
             relationShows = "billingMode",
+            confirmSpecial = true,
             required = false
     )
     private String totalAmountText;

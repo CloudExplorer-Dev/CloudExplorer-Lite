@@ -17,6 +17,14 @@ public interface ICloudProvider {
     List<CloudBill> syncBill(String request);
 
     /**
+     * 获取桶中文件的所有月份
+     *
+     * @param request 请求对象
+     * @return 桶中所有月份文件
+     */
+    List<String> listBucketFileMonth(String request);
+
+    /**
      * 根据供应商获取对应云平台处理器
      *
      * @param platform 供应商

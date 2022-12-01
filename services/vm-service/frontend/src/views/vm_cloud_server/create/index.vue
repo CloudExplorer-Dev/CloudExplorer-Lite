@@ -10,10 +10,7 @@
       </el-steps>
     </el-header>
     <el-main ref="catalog_container">
-      {{ data }}
-
       <p class="description">{{ steps[active + 1]?.description }}</p>
-
       <template v-if="steps[active + 1] && active !== steps.length - 2">
         <layout-container
           v-for="group in steps[active + 1]?.groups"

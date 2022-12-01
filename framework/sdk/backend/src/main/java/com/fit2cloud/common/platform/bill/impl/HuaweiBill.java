@@ -19,21 +19,21 @@ import java.util.Map;
  */
 @Data
 public class HuaweiBill implements Bill {
-    @Form(inputType = InputType.SwitchBtn, label = "使用桶", defaultValue = "false", defaultJsonValue = true)
-    private Boolean useBucket;
+    @Form(inputType = InputType.Radio, label = "同步方式", defaultValue = "api", textField = "key", valueField = "value", method = "getSyncModes", clazz = HuaweiBaseCloudProvider.class)
+    private String syncMode;
 
-    @Form(inputType = InputType.SingleSelect, label = "区域", relationShows = {"useBucket"}, textField = "name", valueField = "regionId", method = "getRegions", relationTrigger = "useBucket", clazz = HuaweiBaseCloudProvider.class)
+    @Form(inputType = InputType.SingleSelect, label = "区域", relationShows = {"syncMode"}, relationShowValues = "bucket", textField = "name", valueField = "regionId", method = "getRegions", relationTrigger = "syncMode", clazz = HuaweiBaseCloudProvider.class)
     private String regionId;
 
-    @Form(inputType = InputType.SingleSelect, label = "桶", relationShows = "regionId", textField = "bucketName", valueField = "bucketName", relationTrigger = "regionId", method = "getBuckets", clazz = HuaweiBaseCloudProvider.class)
+    @Form(inputType = InputType.SingleSelect, label = "存储桶", relationShows = "syncMode", relationShowValues = "bucket", textField = "bucketName", valueField = "bucketName", relationTrigger = "regionId", method = "getBuckets", clazz = HuaweiBaseCloudProvider.class)
     private String bucketId;
 
     @Override
     public void verification() {
-        if (useBucket == null) {
+        if (StringUtils.isEmpty(syncMode)) {
             throw new Fit2cloudException(1001, "useBucket为必填参数");
         }
-        if (useBucket) {
+        if (StringUtils.equals(syncMode, "bucket")) {
             if (StringUtils.isEmpty(regionId) || StringUtils.isEmpty(bucketId)) {
                 throw new Fit2cloudException(1002, "获取数据使用桶后, 区域id和桶id为必填参数");
             }
@@ -43,7 +43,8 @@ public class HuaweiBill implements Bill {
     @Override
     public Map<String, Object> getDefaultParams() {
         HashMap<String, Object> params = new HashMap<>();
-        params.put("useBucket",false);
+        params.put("syncMode", "api");
         return params;
     }
 }
+

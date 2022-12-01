@@ -8,9 +8,12 @@ import com.fit2cloud.provider.ICloudProvider;
 import com.fit2cloud.provider.impl.aliyun.api.AliBucketApi;
 import com.fit2cloud.provider.impl.aliyun.api.AliyunBillApi;
 import com.fit2cloud.provider.impl.aliyun.entity.credential.AliyunBillCredential;
+import com.fit2cloud.provider.impl.aliyun.entity.request.ListBucketMonthRequest;
 import com.fit2cloud.provider.impl.aliyun.entity.request.SyncBillRequest;
+import org.apache.commons.lang3.StringUtils;
 
 import java.util.List;
+import java.util.Objects;
 
 /**
  * {@code @Author:张少虎}
@@ -22,6 +25,12 @@ public class AliyunCloudProvider extends AbstractCloudProvider<AliyunBillCredent
     @Override
     public List<CloudBill> syncBill(String request) {
         SyncBillRequest syncBillRequest = JsonUtil.parseObject(request, SyncBillRequest.class);
-        return syncBillRequest.getBill().getUseBucket() ? AliBucketApi.listBill(syncBillRequest) : AliyunBillApi.listBill(syncBillRequest);
+        return Objects.nonNull(syncBillRequest.getBill()) && StringUtils.equals(syncBillRequest.getBill().getSyncMode(), "bucket") ? AliBucketApi.listBill(syncBillRequest) : AliyunBillApi.listBill(syncBillRequest);
+    }
+
+    @Override
+    public List<String> listBucketFileMonth(String request) {
+        ListBucketMonthRequest listBucketMonthRequest = JsonUtil.parseObject(request, ListBucketMonthRequest.class);
+        return AliBucketApi.listBucketFileMonth(listBucketMonthRequest);
     }
 }

@@ -65,6 +65,8 @@ const collapse = ref<boolean>(true);
     padding: 0;
     overflow: hidden;
     background-color: #f2f2f2;
+    overflow-x: hidden;
+    overflow-y: auto;
   }
 }
 </style>
