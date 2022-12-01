@@ -15,6 +15,7 @@
     <description>provider parent</description>
 
     <modules>
+        <module>lib</module>
         <module>core</module>
     </modules>
 

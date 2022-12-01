@@ -1,20 +1,15 @@
 <script setup lang="ts">
-import { ref, onMounted } from "vue";
+import {onMounted, ref} from "vue";
 import VmCloudServerApi from "@/api/vm_cloud_server";
-import type { VmCloudServerVO } from "@/api/vm_cloud_server/type";
-import { useRouter } from "vue-router";
-import {
-  PaginationConfig,
-  TableConfig,
-  TableOperations,
-  TableSearch,
-} from "@commons/components/ce-table/type";
-import { useI18n } from "vue-i18n";
-import { ElMessage, ElMessageBox } from "element-plus";
+import type {VmCloudServerVO} from "@/api/vm_cloud_server/type";
+import {useRouter} from "vue-router";
+import {PaginationConfig, TableConfig, TableOperations, TableSearch,} from "@commons/components/ce-table/type";
+import {useI18n} from "vue-i18n";
+import {ElMessage, ElMessageBox} from "element-plus";
 import _ from "lodash";
-import type { SimpleMap } from "@commons/api/base/type";
+import type {SimpleMap} from "@commons/api/base/type";
 import variables_server from "../../styles/vm_cloud_server/server.module.scss";
-import { platformIcon } from "@commons/utils/platform";
+import {platformIcon} from "@commons/utils/platform";
 import BaseCloudAccountApi from "@commons/api/cloud_account";
 
 const { t } = useI18n();
@@ -562,9 +557,15 @@ const handleAction = (actionObj: any) => {
       <template #default="scope">
         <div style="display: flex">
           <el-image
-            style="margin-top: 3px; width: 16px; height: 16px"
-            :src="platformIcon[scope.row.platform]?.icon"
-            v-if="scope.row.platform"
+              style="
+              margin-top: 3px;
+              width: 16px;
+              height: 16px;
+              min-width: 16px;
+              min-height: 16px;
+            "
+              :src="platformIcon[scope.row.platform]?.icon"
+              v-if="scope.row.platform"
           ></el-image>
           <span style="margin-left: 10px">{{ scope.row.accountName }}</span>
         </div>

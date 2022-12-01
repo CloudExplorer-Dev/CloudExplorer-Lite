@@ -1,9 +1,7 @@
 package com.fit2cloud.provider.impl.openstack.api;
 
 import com.fit2cloud.common.provider.impl.openstack.entity.request.OpenStackBaseRequest;
-import com.fit2cloud.provider.entity.F2CDisk;
-import com.fit2cloud.provider.entity.F2CImage;
-import com.fit2cloud.provider.entity.F2CVirtualMachine;
+import com.fit2cloud.provider.entity.*;
 import com.fit2cloud.provider.entity.result.CheckCreateServerResult;
 import com.fit2cloud.provider.impl.openstack.entity.CheckStatusResult;
 import com.fit2cloud.provider.impl.openstack.entity.VolumeType;
@@ -13,19 +11,19 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.openstack4j.api.Builders;
 import org.openstack4j.api.OSClient;
+import org.openstack4j.api.types.ServiceType;
 import org.openstack4j.model.common.ActionResponse;
-import org.openstack4j.model.compute.Action;
-import org.openstack4j.model.compute.Flavor;
-import org.openstack4j.model.compute.RebootType;
-import org.openstack4j.model.compute.Server;
+import org.openstack4j.model.compute.*;
 import org.openstack4j.model.compute.builder.BlockDeviceMappingBuilder;
 import org.openstack4j.model.compute.builder.ServerCreateBuilder;
+import org.openstack4j.model.compute.ext.Hypervisor;
 import org.openstack4j.model.image.v2.Image;
 import org.openstack4j.model.network.Network;
 import org.openstack4j.model.network.SecurityGroup;
 import org.openstack4j.model.network.State;
 import org.openstack4j.model.storage.block.Volume;
 import org.openstack4j.model.storage.block.builder.VolumeBuilder;
+import org.openstack4j.openstack.storage.block.domain.VolumeBackendPool;
 
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -630,5 +628,57 @@ public class OpenStackCloudApi {
         } catch (Exception e) {
             throw new RuntimeException(e.getMessage(), e);
         }
+    }
+
+    public static List<F2CHost> listHost(OpenStackBaseRequest request) {
+        List<F2CHost> list = new ArrayList<>();
+        try {
+            OSClient.OSClientV3 osClient = request.getOSClient();
+            List<String> regions = OpenStackUtils.getRegionList(osClient);
+            if (OpenStackUtils.isAdmin(osClient)) {
+                regions.forEach(region -> {
+                    osClient.useRegion(region);
+                    List<? extends HostAggregate> hostAggregates = osClient.compute().hostAggregates().list();
+                    List<? extends Hypervisor> hypervisors = osClient.compute().hypervisors().list();
+                    for (Hypervisor hypervisor : hypervisors) {
+                        if (!hypervisor.getType().equalsIgnoreCase("ironic")) {
+                            list.add(OpenStackUtils.toF2CHost(hostAggregates, hypervisor, region));
+                        }
+                    }
+                });
+            }
+        } catch (Exception e) {
+            throw new RuntimeException(e.getMessage(), e);
+        }
+        return list;
+    }
+
+    public static List<F2CDatastore> listDataStore(OpenStackBaseRequest request) {
+        List<F2CDatastore> datastores = new ArrayList<>();
+        try {
+            OSClient.OSClientV3 osClient = request.getOSClient();
+            List<String> regions = OpenStackUtils.getRegionList(osClient);
+            if (OpenStackUtils.isAdmin(osClient)) {
+                regions.forEach(region -> {
+                    osClient.useRegion(region);
+                    if (OpenStackUtils.isSupport(osClient, ServiceType.BLOCK_STORAGE)) {
+                        List<? extends VolumeBackendPool> backendPools = osClient.blockStorage().schedulerStatsPools().poolsDetail();
+                        for (VolumeBackendPool backendPool : backendPools) {
+                            F2CDatastore f2CDataStore = OpenStackUtils.toF2CDatastore(backendPool, region);
+                            f2CDataStore.setDataCenterName(region);
+                            f2CDataStore.setDataCenterId(region);
+                            f2CDataStore.setDataStoreName(region + '-' + f2CDataStore.getDataStoreName());
+                            f2CDataStore.setDataStoreId(region + '-' + f2CDataStore.getDataStoreId());
+                            datastores.add(f2CDataStore);
+                        }
+                    }
+
+                });
+            }
+
+        } catch (Exception e) {
+            throw new RuntimeException(e.getMessage(), e);
+        }
+        return datastores;
     }
 }
