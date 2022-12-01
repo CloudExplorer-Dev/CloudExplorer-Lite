@@ -530,7 +530,7 @@ const billSyncShow = (row: CloudAccount) => {
   ];
   return (
     showPlatforms.includes(row.platform) &&
-    moduleStore.runningModules?.some((m) => m.id === "finance-management")
+    moduleStore.runningModules?.some((m: any) => m.id === "finance-management")
   );
 };
 
@@ -650,7 +650,7 @@ const syncAll = () => {
       ElMessage.success("发送同步任务成功");
     });
   } else {
-    ElMessage.success("请选择有效的定时任务进行同步");
+    ElMessage.error("请选择有效的云账号");
   }
 };
 </script>

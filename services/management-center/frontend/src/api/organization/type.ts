@@ -15,6 +15,14 @@ interface Organization {
    *父id
    */
   pid?: string;
+  /**
+   * 创建时间
+   */
+  createTime: string;
+  /**
+   * 修改时间
+   */
+  updateTime: string;
 }
 
 interface ListOrganizationRequest {

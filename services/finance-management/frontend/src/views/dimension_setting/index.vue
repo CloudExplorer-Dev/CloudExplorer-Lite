@@ -110,9 +110,22 @@
                   <el-table-column type="selection" />
                   <el-table-column prop="resourceName" label="资源名称">
                     <template #default="scope">
-                      <span>
-                        {{ scope.row.resourceId }} /
-                        {{ scope.row.resourceName }}</span
+                      <el-tooltip
+                        :content="
+                          scope.row.resourceId + '/' + scope.row.resourceName
+                        "
+                        placement="top"
+                      >
+                        <div
+                          style="
+                            white-space: nowrap;
+                            text-overflow: ellipsis;
+                            overflow: hidden;
+                          "
+                        >
+                          {{ scope.row.resourceId }} /
+                          {{ scope.row.resourceName }}
+                        </div></el-tooltip
                       >
                     </template>
                   </el-table-column>
@@ -120,15 +133,46 @@
                   <el-table-column prop="productName" label="产品名称" />
                   <el-table-column prop="tags" label="标签">
                     <template #default="scope">
-                      <span>
-                        {{
+                      <el-tooltip
+                        raw-content
+                        :content="
                           scope.row.tags
-                            ? Object.values(scope.row.tags).length > 0
-                              ? Object.values(scope.row.tags).join(",")
-                              : "-"
-                            : "-"
-                        }}
-                      </span>
+                            ? Object.keys(scope.row.tags).length > 0
+                              ? Object.keys(scope.row.tags)
+                                  .map(
+                                    (key) =>
+                                      '<div>' +
+                                      key +
+                                      '=' +
+                                      scope.row.tags[key] +
+                                      '</div>'
+                                  )
+                                  .join('')
+                              : 'N/A'
+                            : 'N/A'
+                        "
+                        placement="top"
+                      >
+                        <div
+                          style="
+                            white-space: nowrap;
+                            text-overflow: ellipsis;
+                            overflow: hidden;
+                          "
+                        >
+                          {{
+                            scope.row.tags
+                              ? Object.keys(scope.row.tags).length > 0
+                                ? Object.keys(scope.row.tags)
+                                    .map(
+                                      (key) => key + "=" + scope.row.tags[key]
+                                    )
+                                    .join(",")
+                                : "N/A"
+                              : "N/A"
+                          }}
+                        </div>
+                      </el-tooltip>
                     </template>
                   </el-table-column>
                   <el-table-column
@@ -150,9 +194,22 @@
               <el-table-column type="selection" />
               <el-table-column prop="resourceName" label="资源名称">
                 <template #default="scope">
-                  <span>
-                    {{ scope.row.resourceId }} /
-                    {{ scope.row.resourceName }}</span
+                  <el-tooltip
+                    :content="
+                      scope.row.resourceId + '/' + scope.row.resourceName
+                    "
+                    placement="top"
+                  >
+                    <div
+                      style="
+                        white-space: nowrap;
+                        text-overflow: ellipsis;
+                        overflow: hidden;
+                      "
+                    >
+                      {{ scope.row.resourceId }} /
+                      {{ scope.row.resourceName }}
+                    </div></el-tooltip
                   >
                 </template>
               </el-table-column>
@@ -160,15 +217,44 @@
               <el-table-column prop="productName" label="产品名称" />
               <el-table-column prop="tags" label="标签">
                 <template #default="scope">
-                  <span>
-                    {{
+                  <el-tooltip
+                    raw-content
+                    :content="
                       scope.row.tags
-                        ? Object.values(scope.row.tags).length > 0
-                          ? Object.values(scope.row.tags).join(",")
-                          : "-"
-                        : "-"
-                    }}
-                  </span>
+                        ? Object.keys(scope.row.tags).length > 0
+                          ? Object.keys(scope.row.tags)
+                              .map(
+                                (key) =>
+                                  '<div>' +
+                                  key +
+                                  '=' +
+                                  scope.row.tags[key] +
+                                  '</div>'
+                              )
+                              .join('')
+                          : 'N/A'
+                        : 'N/A'
+                    "
+                    placement="top"
+                  >
+                    <div
+                      style="
+                        white-space: nowrap;
+                        text-overflow: ellipsis;
+                        overflow: hidden;
+                      "
+                    >
+                      {{
+                        scope.row.tags
+                          ? Object.keys(scope.row.tags).length > 0
+                            ? Object.keys(scope.row.tags)
+                                .map((key) => key + "=" + scope.row.tags[key])
+                                .join(",")
+                            : "N/A"
+                          : "N/A"
+                      }}
+                    </div>
+                  </el-tooltip>
                 </template>
               </el-table-column>
               <el-table-column prop="projectName" label="企业项目" />

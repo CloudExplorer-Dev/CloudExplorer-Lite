@@ -2,6 +2,7 @@ package com.fit2cloud.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
@@ -30,9 +31,7 @@ import org.springframework.stereotype.Service;
 import javax.annotation.Resource;
 import java.lang.reflect.Field;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
+import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -61,7 +60,7 @@ public class OrganizationServiceImpl extends ServiceImpl<OrganizationMapper, Org
         if (request.getOrder() != null && StringUtils.isNotEmpty(request.getOrder().getColumn())) {
             wrapper.orderBy(true, request.getOrder().isAsc(), ColumnNameUtil.getColumnName(request.getOrder().getColumn(), Organization.class));
         } else {
-            wrapper.orderBy(true, false, "update_time");
+            wrapper.orderBy(true, true, "create_time");
         }
         QueryWrapper<Organization> pageWrapper = wrapper.clone();
         pageWrapper.last("limit " + ((request.getCurrentPage() - 1) * request.getPageSize()) + "," + request.getPageSize());
@@ -99,7 +98,7 @@ public class OrganizationServiceImpl extends ServiceImpl<OrganizationMapper, Org
     public Boolean batch(OrganizationBatchRequest request) {
         List<String> names = request.getOrgDetails().stream().map(OrganizationBatchRequest.OriginDetails::getName).toList();
         List<Organization> list = list(new LambdaQueryWrapper<Organization>().in(Organization::getName, names));
-        if (CollectionUtils.isNotEmpty(list)) {
+        if (CollectionUtils.isNotEmpty(list) || new HashSet<>(names).size() != names.size()) {
             throw new Fit2cloudException(ErrorCodeConstants.ORGANIZATION_NAME_REPEAT.getCode(), ErrorCodeConstants.ORGANIZATION_NAME_REPEAT.getMessage(new Object[]{JsonUtil.toJSONString(list.stream().map(Organization::getName).collect(Collectors.toList()))}));
         }
         List<Organization> organizations = request.getOrgDetails().stream().map(originDetails -> {
@@ -120,7 +119,7 @@ public class OrganizationServiceImpl extends ServiceImpl<OrganizationMapper, Org
             com.fit2cloud.base.entity.Organization organization = new com.fit2cloud.base.entity.Organization();
             BeanUtils.copyProperties(item, organization);
             return organization;
-        }).collect(Collectors.toList()));
+        }).collect(Collectors.toList()), (t) -> t);
         return deleteTreeById(organizationTrees);
     }
 

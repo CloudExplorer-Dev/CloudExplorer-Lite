@@ -11,7 +11,7 @@ export default {
           // 如果当前长宽和历史长宽不同
           if (width !== style.width || height !== style.height) {
             // binding.value在这里就是下面的resizeChart函数
-            binding.value({ width, height });
+            binding.value({ width: style.width, height: style.height });
           }
           width = style.width;
           height = style.height;
