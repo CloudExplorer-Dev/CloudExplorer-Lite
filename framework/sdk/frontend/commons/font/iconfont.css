@@ -1,8 +1,8 @@
 @font-face {
   font-family: "iconfont"; /* Project id 3519945 */
-  src: url('iconfont.woff2?t=1664352962959') format('woff2'),
-       url('iconfont.woff?t=1664352962959') format('woff'),
-       url('iconfont.ttf?t=1664352962959') format('truetype');
+  src: url('iconfont.woff2?t=1669964223090') format('woff2'),
+       url('iconfont.woff?t=1669964223090') format('woff'),
+       url('iconfont.ttf?t=1669964223090') format('truetype');
 }
 
 .iconfont {
@@ -11,6 +11,118 @@
   font-style: normal;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+}
+
+.ali-icon-icon_openstack:before {
+  content: "\e64d";
+}
+
+.ali-icon-jurassic_verify:before {
+  content: "\e710";
+}
+
+.ali-icon-aliyun:before {
+  content: "\e709";
+}
+
+.ali-icon-alibabacloud:before {
+  content: "\ea9f";
+}
+
+.ali-icon-huawei:before {
+  content: "\e67d";
+}
+
+.ali-icon-tengxunyun:before {
+  content: "\e66e";
+}
+
+.ali-icon-VMware:before {
+  content: "\e68a";
+}
+
+.ali-icon-VMwarejiqun:before {
+  content: "\e68b";
+}
+
+.ali-icon-huawei1:before {
+  content: "\e64b";
+}
+
+.ali-icon-a-ziyuan38:before {
+  content: "\e64c";
+}
+
+.ali-icon-aws:before {
+  content: "\ebed";
+}
+
+.ali-icon-aliyun1:before {
+  content: "\ee48";
+}
+
+.ali-icon-tengxunyun1:before {
+  content: "\ee49";
+}
+
+.ali-icon-zidingyibaobiao:before {
+  content: "\e694";
+}
+
+.ali-icon-erji-loudongsaomiaoguanli:before {
+  content: "\eab2";
+}
+
+.ali-icon-xitonganquanheguibaobiao:before {
+  content: "\e645";
+}
+
+.ali-icon-wj-zd:before {
+  content: "\e736";
+}
+
+.ali-icon-zichanzonglan:before {
+  content: "\e687";
+}
+
+.ali-icon-zidingyipeizhi:before {
+  content: "\e6ba";
+}
+
+.ali-icon-guizeguanli:before {
+  content: "\e663";
+}
+
+.ali-icon-zonglan:before {
+  content: "\e7b9";
+}
+
+.ali-icon-yunyingzonglan:before {
+  content: "\e626";
+}
+
+.ali-icon-anquansaomiao:before {
+  content: "\e6b9";
+}
+
+.ali-icon-loudongsaomiao:before {
+  content: "\e679";
+}
+
+.ali-icon-a-yunfenzhangxuanzhong:before {
+  content: "\e628";
+}
+
+.ali-icon-fenxi3:before {
+  content: "\ea3f";
+}
+
+.ali-icon-zonglan1:before {
+  content: "\e647";
+}
+
+.ali-icon-a-3cxjd:before {
+  content: "\e648";
 }
 
 .ali-icon-neiwang:before {
