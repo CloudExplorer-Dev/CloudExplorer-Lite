@@ -107,7 +107,7 @@ public class VmCloudServerController {
 
     @ApiOperation(value = "新建云主机", notes = "新建云主机")
     @PostMapping("create")
-    //@OperatedLog(resourceType = ResourceTypeEnum.CLOUD_SERVER, operated = OperatedTypeEnum.ADD, content = "#request.getOperate()")
+    @OperatedLog(resourceType = ResourceTypeEnum.CLOUD_SERVER, operated = OperatedTypeEnum.CREATE_SERVER)
     public ResultHolder<Boolean> createServer(@RequestBody CreateServerRequest request) {
         return ResultHolder.success(iVmCloudServerService.createServer(request));
     }

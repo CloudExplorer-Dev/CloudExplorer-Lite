@@ -32,7 +32,7 @@ public class PermissionConstants {
 
         public static final String INSTANCE_TYPE = "INSTANCE_TYPE";
 
-        public static final String SYSTEM_SETTING = "SYSTEM_SETTING";
+        public static final String JOBS = "JOBS";
 
         //...
     }
@@ -98,7 +98,8 @@ public class PermissionConstants {
                                     .operate(OPERATE.READ)
                                     .name("i18n_permission_cloud_disk_red")
                                     .role(RoleConstants.ROLE.ADMIN)
-                                    .role(RoleConstants.ROLE.ORGADMIN))
+                                    .role(RoleConstants.ROLE.ORGADMIN)
+                                    .role(RoleConstants.ROLE.USER))
             )
             .group(
                     new PermissionGroup.Builder()
@@ -109,6 +110,17 @@ public class PermissionConstants {
                                     .name("i18n_permission_cloud_images_red")
                                     .role(RoleConstants.ROLE.ADMIN)
                                     .role(RoleConstants.ROLE.ORGADMIN))
+            )
+            .group(
+                    new PermissionGroup.Builder()
+                            .id(GROUP.JOBS)
+                            .name("i18n_permission_jobs")
+                            .permission(new Permission.Builder()
+                                    .operate(OPERATE.READ)
+                                    .name("i18n_permission_jobs_read")
+                                    .role(RoleConstants.ROLE.ADMIN)
+                                    .role(RoleConstants.ROLE.ORGADMIN)
+                                    .role(RoleConstants.ROLE.USER))
             )
             //...
             ;
