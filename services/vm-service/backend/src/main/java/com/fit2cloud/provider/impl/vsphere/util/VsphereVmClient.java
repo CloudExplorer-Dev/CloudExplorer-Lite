@@ -233,7 +233,7 @@ public class VsphereVmClient extends VsphereClient {
      */
     public boolean deleteInstance(String uuid) {
         VirtualMachine virtualMachine = getVirtualMachineByUuId(uuid);
-        if (StringUtils.equalsIgnoreCase(VirtualMachinePowerState.poweredOff.name(), virtualMachine.getRuntime().getPowerState().name())) {
+        if (StringUtils.equalsIgnoreCase(VirtualMachinePowerState.poweredOn.name(), virtualMachine.getRuntime().getPowerState().name())) {
             throw new RuntimeException("The current state of the virtual machine is running!");
         }
         try {

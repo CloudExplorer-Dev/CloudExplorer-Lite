@@ -26,7 +26,7 @@
     </el-form>
   </template>
   <template v-else>
-        {{ modelValue?.osVersion }}
+    {{ modelValue?.osVersion }}
   </template>
 </template>
 <script setup lang="ts">

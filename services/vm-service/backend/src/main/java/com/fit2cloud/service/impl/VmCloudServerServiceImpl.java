@@ -11,6 +11,7 @@ import com.fit2cloud.base.entity.VmCloudServer;
 import com.fit2cloud.base.mapper.BaseJobRecordResourceMappingMapper;
 import com.fit2cloud.base.mapper.BaseVmCloudServerMapper;
 import com.fit2cloud.base.service.IBaseCloudAccountService;
+import com.fit2cloud.common.constants.CloudAccountConstants;
 import com.fit2cloud.common.constants.JobStatusConstants;
 import com.fit2cloud.common.constants.JobTypeConstants;
 import com.fit2cloud.common.exception.Fit2cloudException;
@@ -201,6 +202,13 @@ public class VmCloudServerServiceImpl extends ServiceImpl<BaseVmCloudServerMappe
         return vo;
     }
 
+    @Override
+    public List<VmCloudServerDTO> getByIds(List<String> vmIds){
+        QueryWrapper<VmCloudServerDTO> wrapper = new QueryWrapper<>();
+        wrapper.in("vm_cloud_server.id", vmIds);
+        return vmCloudServerMapper.getByIds(wrapper);
+    }
+
 
     /**
      * 云主机操作
@@ -221,7 +229,8 @@ public class VmCloudServerServiceImpl extends ServiceImpl<BaseVmCloudServerMappe
             try {
                 LocalDateTime createTime = DateUtil.getSyncTime();
                 QueryWrapper<VmCloudServer> wrapper = new QueryWrapper<VmCloudServer>()
-                        .eq(ColumnNameUtil.getColumnName(VmCloudServer::getId, true), vmId);
+                        .eq(ColumnNameUtil.getColumnName(VmCloudServer::getId, true), vmId)
+                        .ne(ColumnNameUtil.getColumnName(VmCloudServer::getInstanceStatus,true),F2CInstanceStatus.Deleted.name());
                 VmCloudServer vmCloudServer = baseMapper.selectOne(wrapper);
                 if (vmCloudServer == null) {
                     throw new Fit2cloudException(ErrorCodeConstants.VM_NOT_EXIST.getCode(), ErrorCodeConstants.VM_NOT_EXIST.getMessage());
@@ -249,10 +258,15 @@ public class VmCloudServerServiceImpl extends ServiceImpl<BaseVmCloudServerMappe
                             case SHUTDOWN:
                             case HARD_SHUTDOWN:
                                 vmCloudServer.setLastShutdownTime(DateUtil.getSyncTime());
+                                break;
                             case POWER_ON:
                                 vmCloudServer.setLastShutdownTime(null);
+                                break;
                             default:
                         }
+                    }else{
+                        vmCloudServer.setInstanceStatus(instanceStatus);
+                        jobRecord.setStatus(JobStatusConstants.FAILED);
                     }
                 } catch (Exception e) {
                     vmCloudServer.setInstanceStatus(instanceStatus);

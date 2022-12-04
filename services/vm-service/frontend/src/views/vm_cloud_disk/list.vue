@@ -26,25 +26,61 @@ const isBatchAttach = ref(false);
 
 //硬盘状态
 const diskStatus = ref<Array<SimpleMap<string>>>([
-  { text: "deleted", value: "deleted" },
-  { text: "in_use", value: "in_use" },
-  { text: "available", value: "available" },
-  { text: "attaching", value: "attaching" },
-  { text: "detaching", value: "detaching" },
-  { text: "creating", value: "creating" },
-  { text: "reiniting", value: "reiniting" },
-  { text: "unknown", value: "unknown" },
-  { text: "error", value: "error" },
-  { text: "deleting", value: "deleting" },
-  { text: "enlarging", value: "enlarging" },
+  { text: "已删除", value: "deleted" },
+  { text: "已挂载", value: "in_use" },
+  { text: "可用", value: "available" },
+  { text: "挂载中", value: "attaching" },
+  { text: "卸载中", value: "detaching" },
+  { text: "创建中", value: "creating" },
+  { text: "初始化中", value: "reiniting" },
+  { text: "未知", value: "unknown" },
+  { text: "错误", value: "error" },
+  { text: "删除中", value: "deleting" },
+  { text: "扩容中", value: "enlarging" },
 ]);
 //硬盘类型
 const diskTypes = ref<Array<SimpleMap<string>>>([
-  { text: "cloud_efficiency", value: "cloud_efficiency" },
-  { text: "cloud_essd", value: "cloud_essd" },
-  { text: "GPSSD", value: "GPSSD" },
-  { text: "cloud_auto", value: "cloud_auto" },
+  { text: "高效云盘", value: "cloud_efficiency" },
+  { text: "ESSD云盘", value: "cloud_essd" },
+  { text: "SSD云盘", value: "cloud_ssd" },
+  { text: "普通云盘", value: "cloud" },
+  { text: "通用性SSD", value: "GPSSD" },
+  { text: "极速型SSD", value: "ESSD" },
+  { text: "超高IO", value: "SSD" },
+  { text: "高IO", value: "SAS" },
+  { text: "高性能云硬盘", value: "CLOUD_PREMIUM" },
+  { text: "增强型SSD云硬盘", value: "CLOUD_HSSD" },
+  { text: "通用型SSD云硬盘", value: "CLOUD_BSSD" },
+  { text: "ESSD AutoPL云盘", value: "cloud_auto" },
+  { text: "精简置备", value: "THIN" },
+  { text: "厚置备置零", value: "THICK_EAGER_ZEROED" },
+  { text: "厚置备延迟置零", value: "THICK_LAZY_ZEROED" },
+  { text: "稀疏型", value: "SPARSE" },
+  { text: "未知", value: "NA" },
 ]);
+
+const filterType = (value: string) => {
+  let status = value;
+  diskTypes.value.forEach((v) => {
+    if (v.value == value) {
+      status = v.text;
+      return;
+    }
+  });
+  return status;
+};
+
+const filterStatus = (value: string) => {
+  let status = "";
+  diskStatus.value.forEach((v) => {
+    if (v.value == value) {
+      status = v.text;
+      return;
+    }
+  });
+  return status;
+};
+
 /**
  * 查询
  * @param condition
@@ -454,7 +490,7 @@ const buttons = ref([
     ></el-table-column>
     <el-table-column
       prop="size"
-      :label="$t('vm_cloud_disk.label.size')"
+      :label="$t('vm_cloud_disk.label.size') + '/G'"
       sortable
     ></el-table-column>
     <el-table-column
@@ -475,38 +511,46 @@ const buttons = ref([
       </template>
     </el-table-column>
     <el-table-column
-      prop="diskType"
-      :label="$t('vm_cloud_disk.label.disk_category')"
-      :filters="diskTypes"
+      prop="bootableText"
+      column-key="bootable"
+      :label="$t('vm_cloud_disk.label.disk_attribute')"
+      :filters="[
+        { text: t('vm_cloud_disk.label.system_disk'), value: 1 },
+        { text: t('vm_cloud_disk.label.data_disk'), value: 0 },
+      ]"
     >
       <template #default="scope">
         <div style="display: flex; align-items: center">
-          <span>{{ scope.row.diskType }}</span>
+          <span>{{ scope.row.bootableText }}</span>
         </div>
       </template>
     </el-table-column>
     <el-table-column
       prop="diskType"
+      column-key="diskType"
       :label="$t('vm_cloud_disk.label.disk_type')"
       :filters="diskTypes"
     >
       <template #default="scope">
         <div style="display: flex; align-items: center">
-          <span>{{ scope.row.diskType }}</span>
+          <span>{{ filterType(scope.row.diskType) }}</span>
         </div>
       </template>
     </el-table-column>
     <el-table-column
       prop="organizationName"
       :label="$t('commons.org')"
+      :show="false"
     ></el-table-column>
     <el-table-column
       prop="workspaceName"
       :label="$t('commons.workspace')"
+      :show="false"
     ></el-table-column>
     <el-table-column
       prop="device"
       :label="$t('vm_cloud_disk.label.mount_info')"
+      :show="false"
     >
       <template #default="scope">
         <el-tooltip
@@ -522,7 +566,9 @@ const buttons = ref([
       </template>
     </el-table-column>
     <el-table-column
+      :show="true"
       prop="deleteWithInstance"
+      column-key="deleteWithInstance"
       :label="$t('vm_cloud_disk.label.delete_with_instance')"
       :filters="[
         { text: t('commons.btn.yes'), value: 'YES' },
@@ -531,27 +577,29 @@ const buttons = ref([
     >
       <template #default="scope">
         <div style="display: flex; align-items: center">
-          <span
-            :style="{
-              color: scope.row.deleteWithInstance === 'YES' ? 'red' : '',
-            }"
-            >{{
-              scope.row.deleteWithInstance === "YES"
-                ? t("commons.btn.yes")
-                : t("commons.btn.no")
-            }}</span
-          >
+          <span>{{
+            scope.row.deleteWithInstance === "YES"
+              ? t("commons.btn.yes")
+              : t("commons.btn.no")
+          }}</span>
         </div>
       </template>
     </el-table-column>
     <el-table-column
       prop="status"
+      column-key="status"
       :label="$t('commons.status')"
       :filters="diskStatus"
+      :show="true"
     >
       <template #default="scope">
         <div style="display: flex; align-items: center">
-          <span>{{ scope.row.status }}</span>
+          <span
+            :style="{
+              color: scope.row.status === 'deleted' ? 'red' : '',
+            }"
+            >{{ filterStatus(scope.row.status) }}</span
+          >
           <ce-icon
             v-if="scope.row.status.toUpperCase().includes('ING')"
             code="Loading"
@@ -564,6 +612,12 @@ const buttons = ref([
     <el-table-column
       prop="createTime"
       :label="$t('commons.create_time')"
+      :show="true"
+    ></el-table-column>
+    <el-table-column
+      prop="updateTime"
+      :label="$t('commons.update_time')"
+      :show="true"
     ></el-table-column>
     <fu-table-operations
       :ellipsis="2"

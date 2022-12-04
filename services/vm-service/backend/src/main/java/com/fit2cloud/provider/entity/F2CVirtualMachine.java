@@ -171,11 +171,11 @@ public class F2CVirtualMachine {
     /**
      * vmtools版本
      */
-    private String vmtoolsVersion;
+    private String vmToolsVersion;
     /**
      * vmtools状态
      */
-    private String vmtoolsStatus;
+    private String vmToolsStatus;
     /**
      * 键密码
      */

@@ -1018,7 +1018,7 @@ public class HuaweiSyncCloudApi {
                     }
                     BigDecimal amountBig = new BigDecimal(vmAmount+diskAmount+(!bandwidthTraffic?bandwidthAmount:0));
                     result.append(amountBig.setScale(4,RoundingMode.HALF_UP));
-                    result.append("/小时");
+                    result.append("元/小时");
                 }
                 //包年包月
                 if(StringUtils.equalsIgnoreCase(request.getBillingMode(),"1")){
@@ -1029,12 +1029,12 @@ public class HuaweiSyncCloudApi {
                     }
                     BigDecimal amountBig = new BigDecimal(vmAmount+diskAmount+(!bandwidthTraffic?bandwidthAmount:0));
                     result.append(amountBig.setScale(4,RoundingMode.HALF_UP));
-                    result.append("/");
+                    result.append("元/");
                     result.append(StringUtils.equalsIgnoreCase("month",request.getPeriodType())?"月":"年");
                 }
                 if(bandwidthTraffic){
                     result.append(" + ");
-                    result.append("弹性公网IP流量费用¥"+bandwidthAmount+"/GB");
+                    result.append("弹性公网IP流量费用"+bandwidthAmount+"元/GB");
                 }
             }
         }catch (Exception e){

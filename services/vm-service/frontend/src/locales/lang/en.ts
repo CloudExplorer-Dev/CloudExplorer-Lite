@@ -35,6 +35,7 @@ const message = {
       vm: "Virtual machine",
       size: "Size",
       disk_category: "Disk category",
+      disk_attribute: "Disk attribute",
       disk_type: "Disk Type",
       mount_info: "Mounting information",
       delete_with_instance: "Delete with Instance",

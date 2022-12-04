@@ -35,6 +35,7 @@ const message = {
       vm: "所屬虛擬機器",
       size: "大小",
       disk_category: "磁片種類",
+      disk_attribute: "磁片屬性",
       disk_type: "磁片類型",
       mount_info: "掛載資訊",
       delete_with_instance: "隨實例删除",

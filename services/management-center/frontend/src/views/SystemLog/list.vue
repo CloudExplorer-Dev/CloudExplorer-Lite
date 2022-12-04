@@ -12,18 +12,18 @@
     <template #toolbar>
       <el-button type="primary" @click="clearPolicy">清空策略</el-button>
     </template>
-    <el-table-column prop="message" label="日志详情">
-      <template #default="scope">
-        <el-tooltip
-          class="item"
-          effect="dark"
-          :content="scope.row.message"
-          placement="top"
-        >
-          <p class="text-overflow">{{ scope.row.message }}</p>
-        </el-tooltip>
-      </template>
-    </el-table-column>
+    <!--    <el-table-column prop="message" label="日志详情">-->
+    <!--      <template #default="scope">-->
+    <!--        <el-tooltip-->
+    <!--          class="item"-->
+    <!--          effect="dark"-->
+    <!--          :content="scope.row.message"-->
+    <!--          placement="top"-->
+    <!--        >-->
+    <!--          <p class="text-overflow">{{ scope.row.message }}</p>-->
+    <!--        </el-tooltip>-->
+    <!--      </template>-->
+    <!--    </el-table-column>-->
     <el-table-column prop="module" label="模块"></el-table-column>
     <el-table-column
       prop="level"
@@ -50,7 +50,9 @@
       :label="$t('commons.create_time')"
       sortable
     />
+    <fu-table-operations v-bind="tableConfig.tableOperations" fix />
   </ce-table>
+  <LogDetail ref="logInfoRef" />
 </template>
 
 <script setup lang="ts">
@@ -67,11 +69,18 @@ import {
   Order,
 } from "@commons/components/ce-table/type";
 import { useI18n } from "vue-i18n";
+import type { OperatedLogVO } from "@/api/operated_log/type";
+import LogDetail from "./LogDetail.vue";
 const { t } = useI18n();
 
 const columns = ref([]);
 const tableData = ref<Array<SystemLogVO>>();
+const logInfoRef = ref();
 const tableLoading = ref<boolean>(false);
+const showLogInfoDialog = (v: OperatedLogVO) => {
+  logInfoRef.value.dialogVisible = true;
+  logInfoRef.value.logInfo = v;
+};
 onMounted(() => {
   const defaultCondition = new TableSearch();
   defaultCondition.order = new Order("createTime", false);
@@ -116,7 +125,14 @@ const tableConfig = ref<TableConfig>({
     ],
   },
   paginationConfig: new PaginationConfig(),
-  tableOperations: new TableOperations([]),
+  tableOperations: new TableOperations([
+    TableOperations.buildButtons().newInstance(
+      t("log_manage.view_details", "查看详情"),
+      "primary",
+      showLogInfoDialog,
+      "InfoFilled"
+    ),
+  ]),
 });
 
 const clearPolicy = () => {

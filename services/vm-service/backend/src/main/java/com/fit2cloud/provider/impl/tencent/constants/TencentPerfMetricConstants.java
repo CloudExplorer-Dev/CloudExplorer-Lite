@@ -16,6 +16,7 @@ public class TencentPerfMetricConstants {
         INTERNET_OUT_RATE("WanOuttraffic", "公网流出带宽","Mbps"),
         INTRANET_IN_RATE("LanIntraffic", "内网流入带宽","Mbps"),
         INTRANET_OUT_RATE("LanOuttraffic", "内网流出带宽","Mbps"),
+        DISK_USED_UTILIZATION("CvmDiskUsage","磁盘使用率","%"),
         ;
         /**
          * 名称

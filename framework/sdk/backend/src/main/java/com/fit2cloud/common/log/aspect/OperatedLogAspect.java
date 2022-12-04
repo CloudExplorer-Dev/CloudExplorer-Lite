@@ -58,7 +58,11 @@ public class OperatedLogAspect {
         ResultHolder errorResult = ResultHolder.error(GlobalErrorCodeConstants.BUSINESS_ERROR.getCode(),GlobalErrorCodeConstants.BUSINESS_ERROR.getMessage());
         try{
             res = pjd.proceed();
-            errorResult = ResultHolder.success("ok");
+            if (res instanceof ResultHolder) {
+                errorResult = (ResultHolder) res;
+            }else{
+                errorResult = ResultHolder.success("ok");
+            }
         }catch (Exception e){
             if(e instanceof Fit2cloudException){
                 Fit2cloudException fit2cloudException = (Fit2cloudException)e;

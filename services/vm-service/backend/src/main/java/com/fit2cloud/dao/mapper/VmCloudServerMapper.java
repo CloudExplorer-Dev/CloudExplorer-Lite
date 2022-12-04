@@ -57,5 +57,20 @@ public interface VmCloudServerMapper extends BaseMapper<VmCloudServerDTO> {
             " ${ew.customSqlSegment} ")
     VmCloudServerDTO getById(@Param("ew") Wrapper queryWrapper);
 
+    /**
+     * 根据IDS查询云主机
+     * @param queryWrapper
+     * @return
+     */
+    @Select("SELECT " +
+            "vm_cloud_server.*, " +
+            "cloud_account.NAME AS account_name, " +
+            "cloud_account.platform AS platform " +
+            "FROM " +
+            "vm_cloud_server " +
+            "LEFT JOIN cloud_account ON vm_cloud_server.account_id = cloud_account.id " +
+            " ${ew.customSqlSegment} ")
+    List<VmCloudServerDTO> getByIds(@Param("ew") Wrapper queryWrapper);
+
 
 }

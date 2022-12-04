@@ -258,6 +258,12 @@ public class VmCloudServer implements Serializable {
     @TableField("snap_shot")
     private Integer snapShot;
 
+    @TableField("vm_tools_version")
+    private String vmToolsVersion;
+
+    @TableField("vm_tools_status")
+    private String vmToolsStatus;
+
     /**
      * 创建时间
      */
