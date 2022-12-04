@@ -19,14 +19,13 @@
         <vsphereautomationsdk.version>3.9.0</vsphereautomationsdk.version>
         <vapi.version>2.34.0</vapi.version>
         <!--vmware end-->
-        <!--vmware end-->
     </properties>
 
     <dependencies>
         <dependency>
-            <groupId>com.github.openstack4j.core</groupId>
+            <groupId>com.fit2cloud</groupId>
             <artifactId>openstack4j</artifactId>
-            <version>3.10</version>
+            <version>3.11-SNAPSHOT</version>
             <exclusions>
                 <exclusion>
                     <artifactId>commons-codec</artifactId>

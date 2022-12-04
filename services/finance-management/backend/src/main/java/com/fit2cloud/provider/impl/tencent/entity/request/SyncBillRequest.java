@@ -23,6 +23,10 @@ public class SyncBillRequest extends DescribeBillDetailRequest {
      * 账单信息
      */
     private TencentBill bill;
+    /**
+     * 云账号id
+     */
+    private String cloudAccountId;
 
     @Override
     public void setMonth(String Month) {

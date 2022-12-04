@@ -13,7 +13,7 @@
       row-key="id"
     >
       <template #toolbar>
-        <el-button type="primary" @click="addBillRule">新增</el-button>
+        <el-button type="primary" @click="addBillRule">创建</el-button>
       </template>
       <el-table-column type="selection" />
       <el-table-column prop="name" label="规则名称"> </el-table-column>
@@ -92,7 +92,7 @@ import type { AddRule, BillRule, Group } from "@/api/bill_rule/type";
 import BillRuleGroup from "@/components/bill_rule_group/index.vue";
 import { nanoid } from "nanoid";
 import type { FormInstance } from "element-plus";
-import { ElMessage } from "element-plus";
+import { ElMessage, ElMessageBox } from "element-plus";
 
 /**
  *加载器
@@ -226,8 +226,17 @@ const editBillRule = (row: BillRule) => {
 };
 
 // 删除
-const deleteBillRule = () => {
-  console.log("删除账单规则");
+const deleteBillRule = (row: BillRule) => {
+  ElMessageBox.confirm(`确认删除:  ${row.name}`, "提示", {
+    confirmButtonText: "删除",
+    cancelButtonText: "取消",
+    type: "warning",
+  }).then((ok) => {
+    billRuleApi.deleteBillRule(row.id).then(() => {
+      ElMessage.success("删除成功");
+      table.value?.search();
+    });
+  });
 };
 const addBillRule = () => {
   billRuleDialogVisible.value = true;

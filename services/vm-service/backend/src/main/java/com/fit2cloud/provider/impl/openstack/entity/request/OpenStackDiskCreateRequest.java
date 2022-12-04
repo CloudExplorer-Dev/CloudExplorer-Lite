@@ -20,7 +20,7 @@ public class OpenStackDiskCreateRequest extends OpenStackBaseRequest {
     @Form(inputType = InputType.Radio,
             label = "磁盘类型",
             textField = "name",
-            valueField = "id",
+            valueField = "name",
             method = "listVolumeType",
             clazz = OpenStackCloudProvider.class)
     private String diskType;

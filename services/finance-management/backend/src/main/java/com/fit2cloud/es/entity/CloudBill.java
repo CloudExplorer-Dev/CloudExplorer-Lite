@@ -87,7 +87,7 @@ public class CloudBill {
             otherFields = @InnerField(suffix = "keyword", type = FieldType.Keyword))
     private String productName;
 
-    @BillField(label = "产品详情", group = true, authorize = true)
+    @BillField(label = "产品明细", group = true, authorize = true)
     @MultiField(mainField = @Field(type = FieldType.Text),
             otherFields = @InnerField(suffix = "keyword", type = FieldType.Keyword))
     private String productDetail;

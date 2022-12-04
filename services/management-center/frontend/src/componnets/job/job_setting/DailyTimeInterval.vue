@@ -2,7 +2,7 @@
   <layout-container :border="border">
     <template #header
       ><h4>
-        {{ t("cloud_account.sync.timing", "资源同步频率") }}
+        {{ t("cloud_account.sync.timing", "同步频率设置") }}
       </h4></template
     >
     <template #content>
@@ -19,17 +19,21 @@
           :disabled="readOnly"
         >
           <div style="display: flex; align-items: center">
-            <span style="width: 100px">{{ details.description }}:</span>
-            <span style="width: 40px">{{
+            <span style="width: 100px; white-space: NORMAL"
+              >{{ details.description }}:</span
+            >
+            <span style="width: 40px; margin-left: 30px">{{
               t("cloud_account.sync.interval", "每隔")
             }}</span>
             <div style="width: 100px">
-              <el-input-number
+              <el-input
                 style="width: 80px"
+                type="number"
                 @click.stop.prevent
                 size="small"
                 v-model="details.timeInterval"
                 controls-position="right"
+                onkeyup="value = Math.floor(value) < 1 ? 1 : Math.floor(value)"
                 :disabled="!details.active || (details.active && readOnly)"
               />
             </div>
@@ -45,13 +49,6 @@
               >
                 <el-option
                   v-for="item in [
-                    {
-                      value: 'MILLISECOND',
-                      label: t(
-                        'cloud_account.sync.interval_time_unit.millisecond',
-                        '毫秒'
-                      ),
-                    },
                     {
                       value: 'SECOND',
                       label: t(

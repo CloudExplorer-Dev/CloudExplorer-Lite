@@ -1,14 +1,14 @@
 package com.fit2cloud.base.entity;
 
-import com.baomidou.mybatisplus.annotation.IdType;
-import com.baomidou.mybatisplus.annotation.TableField;
-import com.baomidou.mybatisplus.annotation.TableId;
-import com.baomidou.mybatisplus.annotation.TableName;
+import com.baomidou.mybatisplus.annotation.*;
+
 import java.io.Serializable;
 import java.time.LocalDateTime;
+
 import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.Accessors;
+
 import java.io.Serial;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
@@ -19,10 +19,8 @@ import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateTimeSerializer;
 
 /**
  * <p>
- * 
+ *
  * </p>
- *
- *
  */
 @Getter
 @Setter
@@ -54,7 +52,7 @@ public class Organization implements Serializable {
     /**
      * 父id
      */
-    @TableField("pid")
+    @TableField(value = "pid", updateStrategy = FieldStrategy.IGNORED)
     private String pid;
 
     /**

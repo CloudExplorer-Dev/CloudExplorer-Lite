@@ -31,6 +31,7 @@ import com.fit2cloud.common.utils.QueryUtil;
 import com.fit2cloud.constants.AuthorizeTypeConstants;
 import com.fit2cloud.constants.BillAuthorizeConditionTypeConstants;
 import com.fit2cloud.constants.BillFieldConstants;
+import com.fit2cloud.constants.EsWriteLockConstants;
 import com.fit2cloud.controller.request.AuthorizeResourcesRequest;
 import com.fit2cloud.controller.request.NotAuthorizeResourcesRequest;
 import com.fit2cloud.controller.response.AuthorizeResourcesResponse;
@@ -44,9 +45,8 @@ import lombok.SneakyThrows;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.keyvalue.DefaultKeyValue;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.reflect.FieldUtils;
+import org.redisson.Redisson;
 import org.springframework.data.elasticsearch.annotations.Document;
-import org.springframework.data.elasticsearch.annotations.MultiField;
 import org.springframework.data.elasticsearch.client.elc.ElasticsearchAggregations;
 import org.springframework.data.elasticsearch.client.elc.ElasticsearchTemplate;
 import org.springframework.data.elasticsearch.client.elc.NativeQueryBuilder;
@@ -55,7 +55,6 @@ import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
 import java.io.IOException;
-import java.lang.reflect.Field;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -80,6 +79,8 @@ public class BillDimensionSettingServiceImpl extends ServiceImpl<BillDimensionSe
     private IBaseOrganizationService organizationService;
     @Resource
     private IBaseCloudAccountService cloudAccountService;
+    @Resource
+    private Redisson redisson;
 
 
     @Override
@@ -157,25 +158,32 @@ public class BillDimensionSettingServiceImpl extends ServiceImpl<BillDimensionSe
 
     @Override
     public void authorize() {
-        // 获取到授权规则
-        List<BillDimensionSetting> billDimensionSettings = list();
-        billDimensionSettings.stream().sorted(Comparator.comparing(BillDimensionSetting::getCreateTime)).forEach(this::authorize);
+        synchronized (EsWriteLockConstants.WRITE_LOCK) {
+            // 获取到授权规则
+            List<BillDimensionSetting> billDimensionSettings = list();
+            billDimensionSettings.stream().sorted(Comparator.comparing(BillDimensionSetting::getCreateTime)).forEach(this::authorize);
+        }
     }
 
     @Override
     public void authorize(BillDimensionSetting billDimensionSetting) {
-        try {
+        synchronized (EsWriteLockConstants.WRITE_LOCK) {
             BillAuthorizeRule authorizeRule = billDimensionSetting.getAuthorizeRule();
-            if (verification(billDimensionSetting.getAuthorizeId(), billDimensionSetting.getType())) {
-                Query query = analysisBillAuthorizeRule(authorizeRule);
-                UpdateByQueryRequest build = new UpdateByQueryRequest.Builder().index(CloudBill.class.getAnnotation(Document.class).indexName()).refresh(true).query(query).script(getAuthorizeScript(billDimensionSetting)).build();
-                elasticsearchClient.updateByQuery(build);
+            if (CollectionUtils.isNotEmpty(authorizeRule.getBillAuthorizeRuleSettingGroups())) {
+                if (verification(billDimensionSetting.getAuthorizeId(), billDimensionSetting.getType())) {
+                    Query query = analysisBillAuthorizeRule(authorizeRule);
+                    UpdateByQueryRequest build = new UpdateByQueryRequest.Builder().index(CloudBill.class.getAnnotation(Document.class).indexName()).refresh(true).query(query).script(getAuthorizeScript(billDimensionSetting)).build();
+                    try {
+                        elasticsearchClient.updateByQuery(build);
+                    } catch (Exception e) {
+                        LogUtil.error("规则授权失败:" + billDimensionSetting + e.getMessage());
+                        e.printStackTrace();
+                        throw new Fit2cloudException(111, "规则授权失败");
+                    }
+                }
             }
-        } catch (Exception e) {
-            LogUtil.error("规则授权失败:" + billDimensionSetting + e.getMessage());
-            e.printStackTrace();
-            throw new Fit2cloudException(111, "规则授权失败");
         }
+
     }
 
     @SneakyThrows

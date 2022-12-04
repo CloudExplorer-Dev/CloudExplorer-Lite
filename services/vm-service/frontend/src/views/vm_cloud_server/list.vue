@@ -619,6 +619,7 @@ const handleAction = (actionObj: any) => {
     ></el-table-column>
     <el-table-column
       prop="createTime"
+      sortable
       :label="$t('commons.create_time')"
     ></el-table-column>
     <fu-table-operations

@@ -1,32 +1,40 @@
 package com.fit2cloud.provider.impl.openstack.api;
 
+import com.fit2cloud.common.provider.entity.F2CEntityType;
+import com.fit2cloud.common.provider.entity.F2CPerfMetricMonitorData;
 import com.fit2cloud.common.provider.impl.openstack.entity.request.OpenStackBaseRequest;
-import com.fit2cloud.provider.entity.F2CDisk;
-import com.fit2cloud.provider.entity.F2CImage;
-import com.fit2cloud.provider.entity.F2CVirtualMachine;
+import com.fit2cloud.common.utils.JsonUtil;
+import com.fit2cloud.provider.entity.*;
+import com.fit2cloud.provider.entity.request.GetMetricsRequest;
 import com.fit2cloud.provider.entity.result.CheckCreateServerResult;
 import com.fit2cloud.provider.impl.openstack.entity.CheckStatusResult;
 import com.fit2cloud.provider.impl.openstack.entity.VolumeType;
 import com.fit2cloud.provider.impl.openstack.entity.request.*;
 import com.fit2cloud.provider.impl.openstack.util.OpenStackUtils;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.openstack4j.api.Builders;
 import org.openstack4j.api.OSClient;
+import org.openstack4j.api.types.ServiceType;
 import org.openstack4j.model.common.ActionResponse;
-import org.openstack4j.model.compute.Action;
-import org.openstack4j.model.compute.Flavor;
-import org.openstack4j.model.compute.RebootType;
-import org.openstack4j.model.compute.Server;
+import org.openstack4j.model.compute.*;
 import org.openstack4j.model.compute.builder.BlockDeviceMappingBuilder;
 import org.openstack4j.model.compute.builder.ServerCreateBuilder;
+import org.openstack4j.model.compute.ext.Hypervisor;
 import org.openstack4j.model.image.v2.Image;
 import org.openstack4j.model.network.Network;
 import org.openstack4j.model.network.SecurityGroup;
 import org.openstack4j.model.network.State;
 import org.openstack4j.model.storage.block.Volume;
 import org.openstack4j.model.storage.block.builder.VolumeBuilder;
+import org.openstack4j.model.telemetry.Resource;
+import org.openstack4j.model.telemetry.SampleCriteria;
+import org.openstack4j.model.telemetry.Statistics;
+import org.openstack4j.openstack.storage.block.domain.VolumeBackendPool;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
@@ -184,6 +192,9 @@ public class OpenStackCloudApi {
     }
 
     public static boolean deleteInstance(OpenStackInstanceActionRequest request) {
+        if (StringUtils.isBlank(request.getUuid())) {
+            return true;
+        }
         try {
             OSClient.OSClientV3 osClient = request.getOSClient();
             osClient.useRegion(request.getRegionId());
@@ -268,8 +279,19 @@ public class OpenStackCloudApi {
         return OpenStackUtils.checkDiskStatus(osClient, volume, Volume.Status.AVAILABLE);
     }
 
+    private static CheckStatusResult resetVolumeState(OSClient.OSClientV3 osClient, Volume volume, Volume.Status status) {
+        ActionResponse response = osClient.blockStorage().volumes().resetState(volume.getId(), status);
+        if (!response.isSuccess()) {
+            throw new RuntimeException(response.getFault());
+        }
+        return OpenStackUtils.checkDiskStatus(osClient, volume, status);
+    }
+
 
     public static boolean deleteDisk(OpenStackDiskActionRequest request) {
+        if (StringUtils.isBlank(request.getDiskId())) {
+            return true;
+        }
         try {
             OSClient.OSClientV3 osClient = request.getOSClient();
             osClient.useRegion(request.getRegionId());
@@ -311,12 +333,14 @@ public class OpenStackCloudApi {
                 throw new RuntimeException("volume not exist");
             }
             CheckStatusResult result;
-            //只有api > 3.42 时，in_use的盘可以直接扩，这里只能先卸载再挂载了
+            //只有api >= 3.42 时，in_use的盘可以直接扩，这里只能先卸载再挂载了
             if (volume.getStatus().equals(Volume.Status.IN_USE)) {
-                serverId = volume.getAttachments().get(0).getServerId();
-                device = volume.getAttachments().get(0).getDevice();
+                //serverId = volume.getAttachments().get(0).getServerId();
+                //device = volume.getAttachments().get(0).getDevice();
                 //卸载
-                result = doDetachVolume(osClient, volume);
+                //result = doDetachVolume(osClient, volume);
+                //不卸载，直接改状态
+                result = resetVolumeState(osClient, volume, Volume.Status.AVAILABLE);
                 if (result.isSuccess()) {
                     needAttach = true;
                 } else {
@@ -329,17 +353,23 @@ public class OpenStackCloudApi {
             if (!response.isSuccess()) {
                 throw new RuntimeException(response.getFault());
             }
-            result = OpenStackUtils.checkDiskStatus(osClient, volume, Volume.Status.AVAILABLE);
+            //可能扩容完直接就变成使用中了
+            result = OpenStackUtils.checkDiskStatus(osClient, volume, Volume.Status.AVAILABLE, Volume.Status.IN_USE);
             if (!result.isSuccess()) {
                 throw new RuntimeException(result.getFault());
             }
 
+            volume = (Volume) result.getObject();
+
             if (needAttach) {
                 needAttach = false; //防止catch重复挂载
-                //挂载
-                result = doAttachVolume(osClient, volume, serverId, device);
-                if (!result.isSuccess()) {
-                    throw new RuntimeException(result.getFault());
+                if (Volume.Status.AVAILABLE.equals(volume.getStatus())) {
+                    //挂载
+                    //result = doAttachVolume(osClient, volume, serverId, device);
+                    result = resetVolumeState(osClient, volume, Volume.Status.IN_USE);
+                    if (!result.isSuccess()) {
+                        throw new RuntimeException(result.getFault());
+                    }
                 }
             }
             return true;
@@ -347,7 +377,8 @@ public class OpenStackCloudApi {
         } catch (Exception e) {
             if (needAttach) {
                 try {
-                    doAttachVolume(osClient, volume, serverId, device);
+                    //doAttachVolume(osClient, volume, serverId, device);
+                    resetVolumeState(osClient, volume, Volume.Status.IN_USE);
                 } catch (Exception e1) {
                     log.error(e1.getMessage(), e1);
                 }
@@ -532,8 +563,6 @@ public class OpenStackCloudApi {
 
 
     public static F2CVirtualMachine createVirtualMachine(OpenStackServerCreateRequest request) {
-        F2CVirtualMachine f2CVirtualMachine = null;
-
         int index = request.getIndex();
         String serverName = request.getServerInfos().get(index).getName();
 
@@ -543,6 +572,8 @@ public class OpenStackCloudApi {
 
             ServerCreateBuilder builder = Builders.server();
             builder.addAdminPass(request.getPassword());
+            builder.userData(OpenStackUtils.getCloudInitUserData(request.getPassword()));
+
             builder.name(serverName);
             builder.availabilityZone(request.getZone());
 
@@ -598,7 +629,6 @@ public class OpenStackCloudApi {
                     builder.blockDevice(blockDeviceMappingBuilder.build());
 
                 }
-
             }
 
             Server server = osClient.compute().servers().boot(builder.build());
@@ -613,5 +643,190 @@ public class OpenStackCloudApi {
         } catch (Exception e) {
             throw new RuntimeException(e.getMessage(), e);
         }
+    }
+
+    public static List<F2CHost> listHost(OpenStackBaseRequest request) {
+        List<F2CHost> list = new ArrayList<>();
+        try {
+            OSClient.OSClientV3 osClient = request.getOSClient();
+            List<String> regions = OpenStackUtils.getRegionList(osClient);
+            if (OpenStackUtils.isAdmin(osClient)) {
+                regions.forEach(region -> {
+                    osClient.useRegion(region);
+                    List<? extends HostAggregate> hostAggregates = osClient.compute().hostAggregates().list();
+                    List<? extends Hypervisor> hypervisors = osClient.compute().hypervisors().list();
+                    for (Hypervisor hypervisor : hypervisors) {
+                        if (!hypervisor.getType().equalsIgnoreCase("ironic")) {
+                            list.add(OpenStackUtils.toF2CHost(hostAggregates, hypervisor, region));
+                        }
+                    }
+                });
+            }
+        } catch (Exception e) {
+            throw new RuntimeException(e.getMessage(), e);
+        }
+        return list;
+    }
+
+    public static List<F2CDatastore> listDataStore(OpenStackBaseRequest request) {
+        List<F2CDatastore> list = new ArrayList<>();
+        try {
+            OSClient.OSClientV3 osClient = request.getOSClient();
+            List<String> regions = OpenStackUtils.getRegionList(osClient);
+            if (OpenStackUtils.isAdmin(osClient)) {
+                regions.forEach(region -> {
+                    osClient.useRegion(region);
+                    if (OpenStackUtils.isSupport(osClient, ServiceType.BLOCK_STORAGE)) {
+                        List<? extends VolumeBackendPool> backendPools = osClient.blockStorage().schedulerStatsPools().poolsDetail();
+                        for (VolumeBackendPool backendPool : backendPools) {
+                            F2CDatastore f2CDataStore = OpenStackUtils.toF2CDatastore(backendPool, region);
+                            f2CDataStore.setDataCenterName(region);
+                            f2CDataStore.setDataCenterId(region);
+                            f2CDataStore.setDataStoreName(region + '-' + f2CDataStore.getDataStoreName());
+                            f2CDataStore.setDataStoreId(region + '-' + f2CDataStore.getDataStoreId());
+                            list.add(f2CDataStore);
+                        }
+                    }
+
+                });
+            }
+
+        } catch (Exception e) {
+            throw new RuntimeException(e.getMessage(), e);
+        }
+        return list;
+    }
+
+    public static List<F2CPerfMetricMonitorData> getF2CPerfMetricMonitorData(GetMetricsRequest request) {
+
+        List<F2CPerfMetricMonitorData> result = new ArrayList<>();
+        try {
+            OSClient.OSClientV3 osClient = JsonUtil.parseObject(JsonUtil.toJSONString(request), OpenStackBaseRequest.class).getOSClient();
+
+            List<String> regions = OpenStackUtils.getRegionList(osClient);
+
+            for (String region : regions) {
+                osClient.useRegion(region);
+
+                SampleCriteria sc = new SampleCriteria();
+                Date start, end;
+                if (StringUtils.isBlank(request.getStartTime()) || StringUtils.isBlank(request.getEndTime())) {
+                    Calendar calendar = Calendar.getInstance();
+                    end = calendar.getTime();
+                    calendar.set(Calendar.MINUTE, calendar.get(Calendar.MINUTE) - 40);
+                    start = calendar.getTime();
+                } else {
+                    start = new Date(Long.parseLong(request.getStartTime()));
+                    end = new Date(Long.parseLong(request.getEndTime()));
+                }
+                sc.timestamp(SampleCriteria.Oper.LTE, end);
+                sc.timestamp(SampleCriteria.Oper.GTE, start);
+
+                List<? extends Server> servers = osClient.compute().servers().list(true);
+
+                for (Server server : servers) {
+                    sc.resource(server.getId());
+                    List<? extends Statistics> cpuStatistics = osClient.telemetry().meters().statistics("cpu_util", sc);
+
+                    if (CollectionUtils.isNotEmpty(cpuStatistics)) {
+                        F2CPerfMetricMonitorData cpuData = new F2CPerfMetricMonitorData();
+                        cpuData.setTimestamp(cpuStatistics.get(0).getDurationEnd().getTime());
+                        cpuData.setAverage(BigDecimal.valueOf(cpuStatistics.get(0).getAvg()));
+                        cpuData.setMinimum(BigDecimal.valueOf(cpuStatistics.get(0).getMin()));
+                        cpuData.setMaximum(BigDecimal.valueOf(cpuStatistics.get(0).getMax()));
+                        cpuData.setEntityType(F2CEntityType.VIRTUAL_MACHINE.name());
+                        cpuData.setMetricName("cpu_util");
+                        cpuData.setPeriod(cpuStatistics.get(0).getPeriod());
+                        cpuData.setInstanceId(server.getId());
+                        cpuData.setUnit(cpuStatistics.get(0).getUnit());
+
+                        result.add(cpuData);
+                    }
+
+                    List<? extends Statistics> memoryStatistics = osClient.telemetry().meters().statistics("memory.usage", sc);
+
+                    if (CollectionUtils.isNotEmpty(memoryStatistics)) {
+                        F2CPerfMetricMonitorData memoryData = new F2CPerfMetricMonitorData();
+                        memoryData.setTimestamp(cpuStatistics.get(0).getDurationEnd().getTime());
+                        memoryData.setAverage(BigDecimal.valueOf(cpuStatistics.get(0).getAvg()).divide(BigDecimal.valueOf(server.getFlavor().getRam()), 4, RoundingMode.HALF_UP));
+                        memoryData.setMinimum(BigDecimal.valueOf(cpuStatistics.get(0).getMin()).divide(BigDecimal.valueOf(server.getFlavor().getRam()), 4, RoundingMode.HALF_UP));
+                        memoryData.setMaximum(BigDecimal.valueOf(cpuStatistics.get(0).getMax()).divide(BigDecimal.valueOf(server.getFlavor().getRam()), 4, RoundingMode.HALF_UP));
+                        memoryData.setEntityType(F2CEntityType.VIRTUAL_MACHINE.name());
+                        memoryData.setMetricName("memory.usage");
+                        memoryData.setPeriod(cpuStatistics.get(0).getPeriod());
+                        memoryData.setInstanceId(server.getId());
+                        memoryData.setUnit(cpuStatistics.get(0).getUnit());
+
+                        result.add(memoryData);
+                    }
+
+                    List<? extends InterfaceAttachment> interfaces = null;
+                    try {
+                        interfaces = osClient.compute().servers().interfaces().list(server.getId());
+                    } catch (Exception e) {
+                    }
+                    if (CollectionUtils.isNotEmpty(interfaces)) {
+                        String resourceId = null;
+                        Resource resource = osClient.telemetry().resources().get(server.getId());
+                        // 获取所有监控信息，遍历返回值获取当前云主机的resourceId(该resourceId格式为：instance-xxxxxxx-instanceId-tap网卡id前10位
+                        if (resource != null) {
+                            Map<String, Object> metaData = resource.getMeataData() == null ? new HashMap<>() : resource.getMeataData();
+                            resourceId = metaData.get("name") == null ? null
+                                    : metaData.get("name").toString() + "-" + server.getId() + "-tap";
+                        }
+                        if (StringUtils.isNotBlank(resourceId)) {
+                            // 可能存在多个网卡，所以resourceId可能有多个，根据resourceId的格式，当获取到一个resourceId后就可以根据interfaceId获取其他resourceId
+                            resourceId = resourceId.substring(0, resourceId.indexOf("tap") + 3);
+
+                            boolean hasInData = false, hasOutData = false;
+
+                            F2CPerfMetricMonitorData inData = new F2CPerfMetricMonitorData();
+                            inData.setEntityType(F2CEntityType.VIRTUAL_MACHINE.name());
+                            inData.setMetricName("network.incoming.bytes.rate");
+                            inData.setInstanceId(server.getId());
+                            inData.setAverage(BigDecimal.ZERO);
+
+                            F2CPerfMetricMonitorData outData = new F2CPerfMetricMonitorData();
+                            outData.setEntityType(F2CEntityType.VIRTUAL_MACHINE.name());
+                            outData.setMetricName("network.outgoing.bytes.rate");
+                            outData.setInstanceId(server.getId());
+                            outData.setAverage(BigDecimal.ZERO);
+
+                            for (InterfaceAttachment interfaceAttachment : interfaces) {
+                                sc.getCriteriaParams().remove(sc.getCriteriaParams().size() - 1);
+                                sc.resource(resourceId + interfaceAttachment.getPortId().substring(0, 11));
+                                List<? extends Statistics> networkIns = osClient.telemetry().meters()
+                                        .statistics("network.incoming.bytes.rate", sc);
+                                List<? extends Statistics> networkOuts = osClient.telemetry().meters()
+                                        .statistics("network.outgoing.bytes.rate", sc);
+                                if (null != networkIns && !networkIns.isEmpty()) {
+                                    inData.setAverage(inData.getAverage().add(BigDecimal.valueOf(networkIns.get(0).getAvg().intValue())));
+                                    hasInData = true;
+                                }
+                                if (null != networkOuts && !networkOuts.isEmpty()) {
+                                    outData.setAverage(outData.getAverage().add(BigDecimal.valueOf(networkOuts.get(0).getAvg().intValue())));
+                                    hasOutData = true;
+                                }
+                            }
+
+                            if (hasInData) {
+                                result.add(inData);
+                            }
+                            if (hasOutData) {
+                                result.add(outData);
+                            }
+                        }
+                    }
+
+                    sc.getCriteriaParams().remove(sc.getCriteriaParams().size() - 1);
+                }
+
+            }
+        } catch (Exception e) {
+            throw new RuntimeException(e.getMessage(), e);
+        }
+
+        return result;
+
     }
 }

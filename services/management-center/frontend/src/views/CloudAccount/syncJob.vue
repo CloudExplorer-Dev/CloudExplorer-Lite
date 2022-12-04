@@ -1,10 +1,12 @@
 <template>
-  <Job
-    :read-only="false"
-    :border="true"
-    ref="job"
-    :account-id="accountId"
-  ></Job>
+  <div>
+    <Job
+      :read-only="false"
+      :border="true"
+      ref="job"
+      :account-id="accountId"
+    ></Job>
+  </div>
 </template>
 <script setup lang="ts">
 import Job from "@/componnets/job/Job.vue";

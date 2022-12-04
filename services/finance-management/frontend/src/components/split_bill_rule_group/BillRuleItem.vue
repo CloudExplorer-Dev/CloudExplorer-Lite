@@ -152,8 +152,8 @@ watch(
         .then((ok) => {
           dimensionSettingValues.value = ok.data;
           if (
-            !ok.data.filter((item) => {
-              form.value.value.includes(item.value);
+            !ok.data.some((item) => {
+              return form.value.value.includes(item.value);
             })
           ) {
             form.value.value = [];
@@ -180,8 +180,8 @@ watch(
             dimensionSettingValues.value = ok.data;
 
             if (
-              !ok.data.filter((item) => {
-                form.value.value.includes(item.value);
+              !ok.data.some((item) => {
+                return form.value.value.includes(item.value);
               })
             ) {
               form.value.value = [];

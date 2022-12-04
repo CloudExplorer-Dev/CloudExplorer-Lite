@@ -26,25 +26,6 @@ import java.util.List;
  */
 public class TencentBillApi {
 
-    /**
-     * 获取账单数据
-     *
-     * @param request 请求参数
-     * @return
-     */
-    public static List<CloudBill> listBill(SyncBillRequest request) {
-        return request.getBill() != null && request.getBill().getUseBucket() ? listBillByBucket(request) : listBillByApi(request);
-    }
-
-    /**
-     * 从桶中读取账单信息
-     *
-     * @param request 请求对象
-     * @return 账单数据
-     */
-    private static List<CloudBill> listBillByBucket(SyncBillRequest request) {
-        return new ArrayList<>();
-    }
 
     /**
      * 调用api获取账单信息
@@ -52,7 +33,7 @@ public class TencentBillApi {
      * @param request 账单信息请求对象
      * @return 账单数据
      */
-    private static List<CloudBill> listBillByApi(SyncBillRequest request) {
+    public static List<CloudBill> listBill(SyncBillRequest request) {
         BillingClient billingClient = request.getCredential().getBillingClient();
         request.setOffset(0L);
         request.setLimit(100L);

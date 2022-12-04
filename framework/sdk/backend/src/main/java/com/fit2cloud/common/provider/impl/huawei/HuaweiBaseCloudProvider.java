@@ -10,7 +10,9 @@ import com.fit2cloud.common.provider.impl.huawei.entity.request.GetAccountBalanc
 import com.fit2cloud.common.provider.impl.huawei.entity.request.GetBucketsRequest;
 import com.fit2cloud.common.provider.impl.huawei.entity.request.GetRegionsRequest;
 import com.fit2cloud.common.utils.JsonUtil;
+import org.apache.commons.collections4.keyvalue.DefaultKeyValue;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -27,5 +29,18 @@ public class HuaweiBaseCloudProvider extends AbstractBaseCloudProvider<TencentCr
 
     public Object getBuckets(String req) {
         return HuaweiBaseMethodApi.getBuckets(JsonUtil.parseObject(req, GetBucketsRequest.class));
+    }
+
+    /**
+     * 获取账单同步方式
+     *
+     * @param req 请求字符串
+     * @return 账单所有同步方式
+     */
+    public List<DefaultKeyValue<String, String>> getSyncModes(String req) {
+        return new ArrayList<>() {{
+            add(new DefaultKeyValue<>("API", "api"));
+            add(new DefaultKeyValue<>("存储桶", "bucket"));
+        }};
     }
 }

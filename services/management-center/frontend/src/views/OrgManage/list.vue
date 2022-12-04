@@ -110,6 +110,15 @@ const resetData = (organizations: Array<Organization>) => {
   return result;
 };
 
+const sort = (tableData: Array<OrganizationTree>) => {
+  tableData.sort((pre, next) => pre.createTime.localeCompare(next.createTime));
+  tableData.forEach((data) => {
+    if (data.children && data.children.length > 0) {
+      sort(data.children);
+    }
+  });
+};
+
 /**
  * 查询
  * @param condition 查询条件
@@ -126,6 +135,10 @@ const search = (condition: TableSearch) => {
       organizations.value = ok.data.records;
       // 扁平化数据
       tableData.value = resetData(ok.data.records);
+      if (!condition.order) {
+        // 使用默认排序 默认是根据创建时间顺序
+        sort(tableData.value);
+      }
       if (condition.search) {
         const searchValue: unknown = condition.search.value;
         findOpenTree(

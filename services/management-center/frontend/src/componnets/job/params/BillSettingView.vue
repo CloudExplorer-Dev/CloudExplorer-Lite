@@ -1,6 +1,6 @@
 <template>
   <layout-container :border="border">
-    <template #header> <h4>云账号设置</h4></template>
+    <template #header> <h4>同步方式设置</h4></template>
     <template #content>
       <CeForm
         :readOnly="readOnly"
@@ -17,7 +17,6 @@ import cloudAccountApi from "@/api/cloud_account";
 import { ref, watch } from "vue";
 import type { CloudAccount } from "@/api/cloud_account/type";
 import type { FormView } from "@commons/components/ce-form/type";
-import cloud_account from "@/api/cloud_account";
 /**
  * 账单设置form表单
  */

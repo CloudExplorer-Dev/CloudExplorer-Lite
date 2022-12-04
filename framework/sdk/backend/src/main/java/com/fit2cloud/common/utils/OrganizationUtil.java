@@ -2,6 +2,9 @@ package com.fit2cloud.common.utils;
 
 import com.fit2cloud.base.entity.Organization;
 import com.fit2cloud.response.OrganizationTree;
+import io.reactivex.rxjava3.functions.Consumer;
+import io.reactivex.rxjava3.functions.Function;
+import lombok.SneakyThrows;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
@@ -24,6 +27,17 @@ public class OrganizationUtil {
      * @return 组织树状数据
      */
     public static List<OrganizationTree> toTree(List<Organization> source) {
+        return toTree(source, (organizationTrees) -> organizationTrees.stream().filter(organizationTree -> StringUtils.isEmpty(organizationTree.getPid())).toList());
+    }
+
+    /**
+     * 将数据转换为树状数据
+     *
+     * @param source 组织原始数据
+     * @return 组织树状数据
+     */
+    @SneakyThrows
+    public static List<OrganizationTree> toTree(List<Organization> source, Function<List<OrganizationTree>, List<OrganizationTree>> postHandler) {
         List<OrganizationTree> organizationTrees = source.stream().map(organization -> {
             OrganizationTree organizationTree = new OrganizationTree();
             BeanUtils.copyProperties(organization, organizationTree);
@@ -45,6 +59,6 @@ public class OrganizationUtil {
                 }
             }
         }
-        return organizationTrees.stream().filter(organizationTree -> StringUtils.isEmpty(organizationTree.getPid())).toList();
+        return postHandler.apply(organizationTrees);
     }
 }

@@ -31,14 +31,17 @@ import type { SearchOption, Condition } from "./type";
 
 const emit = defineEmits(["update:modelValue", "change"]);
 
-const props = defineProps<{
-  /**
-   *需要查询的下拉框
-   */
-  searchOptions: Array<SearchOption>;
+const props = withDefaults(
+  defineProps<{
+    /**
+     *需要查询的下拉框
+     */
+    searchOptions: Array<SearchOption>;
 
-  quickPlaceholder: string;
-}>();
+    quickPlaceholder: string;
+  }>(),
+  { quickPlaceholder: "搜索" }
+);
 
 const activeSearchOption = ref<SearchOption>();
 

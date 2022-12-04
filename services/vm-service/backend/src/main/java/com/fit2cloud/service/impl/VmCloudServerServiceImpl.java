@@ -29,6 +29,7 @@ import com.fit2cloud.controller.request.vm.CreateServerRequest;
 import com.fit2cloud.controller.request.vm.PageVmCloudServerRequest;
 import com.fit2cloud.dao.mapper.VmCloudServerMapper;
 import com.fit2cloud.dto.InitJobRecordDTO;
+import com.fit2cloud.dto.UserDto;
 import com.fit2cloud.dto.VmCloudServerDTO;
 import com.fit2cloud.provider.ICloudProvider;
 import com.fit2cloud.provider.ICreateServerRequest;
@@ -355,6 +356,10 @@ public class VmCloudServerServiceImpl extends ServiceImpl<BaseVmCloudServerMappe
                 requestToSave.setCreateRequest(createRequest);
                 Map<String, Object> jobParams = new HashMap<>();
                 jobParams.put("order", requestToSave);
+
+                UserDto user = CurrentUserUtils.getUser();
+                jobParams.put("username", user.getUsername());
+                jobParams.put("userDisplayName", user.getName());
 
                 //初始化任务
                 JobRecord jobRecord = iniJobMethod.apply(

@@ -1,0 +1,28 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <parent>
+        <groupId>com.fit2cloud</groupId>
+        <artifactId>openstack4j-parent</artifactId>
+        <version>3.11-SNAPSHOT</version>
+    </parent>
+    <modelVersion>4.0.0</modelVersion>
+    <groupId>com.fit2cloud.openstack4j.connectors</groupId>
+    <artifactId>openstack4j-connectors</artifactId>
+    <name>OpenStack4j Connectors</name>
+    <description>OpenStack Java API Connectors</description>
+    <packaging>pom</packaging>
+
+    <modules>
+
+        <module>httpclient</module>
+    </modules>
+
+    <dependencies>
+        <dependency>
+            <groupId>com.fit2cloud</groupId>
+            <artifactId>openstack4j-core</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+    </dependencies>
+
+</project>

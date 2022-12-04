@@ -1,18 +1,20 @@
 package com.fit2cloud.provider.impl.tencent.util;
 
 import com.fit2cloud.common.constants.PlatformConstants;
+import com.fit2cloud.common.platform.credential.Credential;
 import com.fit2cloud.common.provider.util.CommonUtil;
 import com.fit2cloud.es.entity.CloudBill;
 import com.fit2cloud.provider.constants.BillModeConstants;
+import com.fit2cloud.provider.impl.tencent.entity.csv.TencentCsvModel;
+import com.fit2cloud.provider.impl.tencent.entity.request.SyncBillRequest;
 import com.tencentcloudapi.billing.v20180709.models.BillDetail;
 import com.tencentcloudapi.billing.v20180709.models.BillDetailComponent;
 import com.tencentcloudapi.billing.v20180709.models.BillTagInfo;
+import org.apache.commons.collections.MapUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import java.math.BigDecimal;
-import java.util.Arrays;
-import java.util.DoubleSummaryStatistics;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -22,6 +24,41 @@ import java.util.stream.Collectors;
  * {@code @注释: }
  */
 public class TencentMappingUtil {
+
+    /**
+     * 讲存储桶文件对象转换为系统账单文件对象
+     *
+     * @param csvModel 存储桶文件对象
+     * @param regions  区域数据
+     * @param request  请求对象
+     * @return 系统账单对象
+     */
+    public static CloudBill toCloudBillByBucket(TencentCsvModel csvModel, List<Credential.Region> regions, SyncBillRequest request) {
+        CloudBill cloudBill = new CloudBill();
+        cloudBill.setId(UUID.randomUUID().toString().replace("-", ""));
+        cloudBill.setProjectId(csvModel.getEntryName());
+        cloudBill.setProjectName(csvModel.getEntryName());
+        cloudBill.setRegionId(csvModel.getRegion());
+        cloudBill.setRegionName(csvModel.getRegion());
+        regions.stream().filter(r -> StringUtils.equals(r.getName(), csvModel.getRegion().trim())).findFirst().ifPresent(r -> cloudBill.setRegionId(r.getRegionId()));
+        cloudBill.setZone(csvModel.getAvailabilityZone());
+        cloudBill.setResourceId(csvModel.getResourceId());
+        cloudBill.setResourceName(csvModel.getInstanceName());
+        cloudBill.setBillMode(toBillMode(csvModel.getBillingMode()));
+        cloudBill.setUsageStartDate((CommonUtil.getLocalDateTime(csvModel.getStartTime(), "yyyy-MM-dd HH:mm:ss")));
+        cloudBill.setUsageEndDate(CommonUtil.getLocalDateTime(csvModel.getEndTime(), "yyyy-MM-dd HH:mm:ss"));
+        cloudBill.setBillingCycle((CommonUtil.getLocalDateTime(request.getMonth(), "yyyy-MM")));
+        cloudBill.setTags(MapUtils.isEmpty(csvModel.getTag()) ? new HashMap<>() : (Map) csvModel.getTag());
+        cloudBill.setPayAccountId(csvModel.getPayerUin());
+        cloudBill.setProductName(csvModel.getProductName());
+        cloudBill.setProductDetail(csvModel.getSubProductName());
+        cloudBill.setProductId(csvModel.getProductName());
+        cloudBill.setTotalCost(BigDecimal.valueOf(csvModel.getComponentOriginalPrice()));
+        cloudBill.setRealTotalCost(BigDecimal.valueOf(csvModel.getDiscountTotalPrice()));
+        cloudBill.setProvider(PlatformConstants.fit2cloud_tencent_platform.name());
+        return cloudBill;
+    }
+
     /**
      * 将腾讯云账单对象转换为系统账单对象
      *
@@ -55,6 +92,7 @@ public class TencentMappingUtil {
         cloudBill.setRealTotalCost(BigDecimal.valueOf(realTotalCost.getSum()));
         return cloudBill;
     }
+
 
     /**
      * 计费模式。

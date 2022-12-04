@@ -179,9 +179,7 @@ public class OpenStackServerCreateRequest extends OpenStackBaseRequest implement
             group = 7,
             label = "密码",
             defaultJsonValue = true,
-            relationTrigger = {"loginMode"},
-            confirmGroup = 2,
-            confirmSpecial = true
+            relationTrigger = {"loginMode"}
     )
     private String password;
 

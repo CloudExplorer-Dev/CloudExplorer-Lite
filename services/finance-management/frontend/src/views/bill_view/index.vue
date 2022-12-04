@@ -1,60 +1,65 @@
 <template>
-  <layout-content>
+  <layout-auto-height-content>
     <template #breadcrumb>
       <breadcrumb :auto="true"></breadcrumb>
     </template>
-    <div class="up_wapper">
-      <div class="left_wapper" :border="false">
-        <div class="top" v-loading="currentMonthExpensesLoading">
-          <p><span class="title_font money_title">当月花费</span></p>
-          <div class="money_wapper">
-            <div>{{ currentMonthExpenses }} 元</div>
-          </div>
-        </div>
-        <div class="bottom" v-loading="currentYearExpensesLoading">
-          <p><span class="title_font money_title">今年总花费</span></p>
-          <div class="money_wapper">{{ currentYearExpenses }} 元</div>
-        </div>
-      </div>
-      <div class="right_wapper" ref="rightWapper">
-        <div class="header">
-          <div class="title title_font">
-            费用趋势<span class="sub_title_font">（单位：元）</span>
-          </div>
-        </div>
-        <div class="operation_wapper">
-          <div class="operation">
-            <div
-              class="left"
-              :class="[activeTreedYear === 'MONTH' ? 'active' : '']"
-              @click="historyTrend(6, 'MONTH')"
-            >
-              近半年
+    <div class="up_content">
+      <div class="up_wapper" v-resize="reSize">
+        <div class="left_wapper" :border="false">
+          <div class="top" v-loading="currentMonthExpensesLoading">
+            <p><span class="title_font money_title">当月花费</span></p>
+            <div class="money_wapper">
+              <div style="margin-top: 10px">{{ currentMonthExpenses }} 元</div>
             </div>
-            <div class="line"></div>
-            <div
-              class="right"
-              :class="[activeTreedYear === 'YEAR' ? 'active' : '']"
-              @click="historyTrend(12, 'YEAR')"
-            >
-              近一年
+          </div>
+          <div class="bottom" v-loading="currentYearExpensesLoading">
+            <p><span class="title_font money_title">今年总花费</span></p>
+            <div class="money_wapper" style="margin-top: 10px">
+              <div style="margin-top: 10px">{{ currentYearExpenses }} 元</div>
             </div>
           </div>
         </div>
-        <div
-          class="chart_wapper"
-          v-loading="historyTrendLoading"
-          ref="chartWapper"
-        ></div>
-        <span
-          >{{ _.minBy(hostryTreed, "label")?.label }} ～
-          {{ _.maxBy(hostryTreed, "label")?.label }}总费用为{{
-            _.floor(_.sumBy(hostryTreed, "value"), 2)
-          }}
-          元</span
-        >
+        <div class="right_wapper" ref="rightWapper">
+          <div class="header">
+            <div class="title title_font">
+              费用趋势<span class="sub_title_font">（单位：元）</span>
+            </div>
+          </div>
+          <div class="operation_wapper">
+            <div class="operation">
+              <div
+                class="left"
+                :class="[activeTreedYear === 'MONTH' ? 'active' : '']"
+                @click="historyTrend(6, 'MONTH')"
+              >
+                近半年
+              </div>
+              <div class="line"></div>
+              <div
+                class="right"
+                :class="[activeTreedYear === 'YEAR' ? 'active' : '']"
+                @click="historyTrend(12, 'YEAR')"
+              >
+                近一年
+              </div>
+            </div>
+          </div>
+          <div
+            class="chart_wapper"
+            v-loading="historyTrendLoading"
+            ref="chartWapper"
+          ></div>
+          <span style="margin-left: 10px"
+            >{{ _.minBy(hostryTreed, "label")?.label }} ～
+            {{ _.maxBy(hostryTreed, "label")?.label }}总费用为{{
+              _.floor(_.sumBy(hostryTreed, "value"), 2)
+            }}
+            元</span
+          >
+        </div>
       </div>
     </div>
+
     <div class="bottom_wapper berder">
       <div class="title title_font">
         {{ viewMonth.substring(0, 4) }} 年{{
@@ -67,7 +72,8 @@
             :editable="false"
             v-model="viewMonth"
             type="month"
-            placeholder="Pick a day"
+            :clearable="false"
+            placeholder="请选择月份"
             format="YYYY-MM"
             :disabled-date="disabledDate"
             value-format="YYYY-MM"
@@ -78,16 +84,25 @@
               </div>
             </template>
           </el-date-picker>
-          <span>{{ currentMonth }}未出账</span>
+          <span
+            style="margin-left: 10px"
+            v-if="
+              viewMonth === currentMonth ||
+              (new Date().getDate() < 10 &&
+                parseInt(viewMonth.substring(5, 7)) ===
+                  parseInt(currentMonth.substring(5, 7)) - 1)
+            "
+            >{{ viewMonth }}未出账
+          </span>
         </div>
-        <div style="color: #006eff; cursor: pointer; top: 20px">导出</div>
+        <!-- <div style="color: #006eff; cursor: pointer; top: 20px">导出</div> -->
       </div>
       <div class="content">
         <el-tabs
           class="demo-tabs"
           v-model="activeName"
           @tab-change="tabChange"
-          style="width: calc(100% - 40px); min-width: 600px; margin-left: 20px"
+          style="width: calc(100% - 40px); margin-left: 20px"
         >
           <el-tab-pane
             v-for="rule in BillRules"
@@ -100,7 +115,7 @@
             <div class="chart" style="position: relative">
               <div
                 ref="chart"
-                style="width: 100%; height: 300px; min-width: 1000px"
+                style="width: 100%; height: 300px; min-width: 760px"
               ></div>
               <div
                 v-if="groups.length > 1"
@@ -123,7 +138,7 @@
                     :cache="5"
                     :columns="columns"
                     :sort-by="sortState"
-                    :data="viewData"
+                    :data="tableData"
                     :width="width"
                     :height="height"
                     @column-sort="onSort"
@@ -136,11 +151,11 @@
         </el-tabs>
       </div>
     </div>
-  </layout-content>
+  </layout-auto-height-content>
   <el-dialog v-model="tableChartVisible">
-    <template #title>
+    <template #header>
       <div style="display: flex; align-items: center; justify-content: center">
-        {{ tableChartVisibleTitle }}——趋势图
+        {{ tableChartVisibleTitle }}趋势 <span>（单位：元）</span>
       </div>
     </template>
     <template #default>
@@ -184,6 +199,18 @@ const activeGroup = computed(() => {
   }
 });
 
+const reSize = (wh: any) => {
+  historyTrendChart?.resize();
+  char?.setOption(
+    getBillViewOptions(
+      viewData.value,
+      groups,
+      undefined,
+      Math.floor(parseInt(wh.width.replace("px", "")) / 2 / 3)
+    )
+  );
+  char?.resize();
+};
 const tableChartVisible = ref<boolean>(false);
 
 const tableChart = ref<ECharts>();
@@ -238,7 +265,10 @@ const resetViewData = (billViewData: SimpleMap<Array<BillView>>) => {
   }
   groups.value = ["root"];
   if (char) {
-    char?.setOption(getBillViewOptions(viewData.value, groups));
+    char?.setOption(
+      getBillViewOptions(viewData.value, groups, undefined, getWidth())
+    );
+    char.resize();
   } else {
     init();
   }
@@ -257,6 +287,14 @@ const open = (treed: Array<TrendData>, row: BillSummary) => {
   treed.sort((pre, next) => pre.label.localeCompare(next.label));
   tableChartVisible.value = true;
   const option: any = getTrendViewOption(treed, "line", true, true, true);
+  option["tooltip"] = {
+    trigger: "item",
+    formatter: (p: any) => {
+      return `<div>月份:${p.name}</div><div>金额:${_.round(p.data, 2).toFixed(
+        2
+      )}</div>`;
+    },
+  };
   option["grid"] = { top: 20, bottom: 20 };
   if (tableChart.value) {
     tableChart.value.setOption(option);
@@ -337,6 +375,21 @@ const historyTrend = async (historyNum: number, active: string) => {
       option["yAxis"]["splitLine"] = {
         show: false,
       };
+      option["series"][0]["itemStyle"] = {
+        normal: {
+          label: {
+            show: true,
+            position: "top",
+            textStyle: {
+              color: "black",
+              fontSize: 12,
+            },
+            formatter: function (param: any) {
+              return _.round(param.value, 2).toFixed(2);
+            },
+          },
+        },
+      };
       option["tooltip"] = {
         trigger: "item",
         formatter: (p: any) => {
@@ -373,30 +426,51 @@ onMounted(() => {
       activeName.value = ok.data[0].id;
     }
   });
-  historyTrend(12, "YEAR").then((OK) => {
-    window.onresize = function () {
-      char?.resize();
-      historyTrendChart?.resize();
-    };
-  });
+  historyTrend(12, "YEAR");
 });
 let char: ECharts | undefined = undefined;
-
+/**
+ * 全量账单表格数据
+ */
 const viewData = ref<Array<BillSummary>>([]);
+/**
+ * 账单分组
+ */
 const groups = ref<Array<string>>(["root"]);
-
+/**
+ * 钻取后账单表格数据
+ */
+const tableData = computed(() => {
+  const filterGroups = groups.value.filter((v) => v !== "root");
+  if (filterGroups.length > 0) {
+    return viewData.value.filter((item) => {
+      return filterGroups.every((groupValue, index) => {
+        return item["group" + (index + 1)] === groupValue;
+      });
+    });
+  }
+  return viewData.value;
+});
+const getWidth = () => {
+  const width = (document.defaultView as any).getComputedStyle(
+    document.querySelector(".up_wapper")
+  ).width;
+  return Math.floor(parseInt(width.replace("px", "")) / 2 / 3);
+};
 /**
  * 返回
  */
 const fallback = () => {
   groups.value = [];
-  char?.setOption(getBillViewOptions(viewData.value, groups));
+  char?.setOption(
+    getBillViewOptions(viewData.value, groups, undefined, getWidth())
+  );
 };
 /**
  * 初始化饼图
  */
 const init = () => {
-  char = initBillView(echarts, chart.value, viewData.value, groups);
+  char = initBillView(echarts, chart.value, viewData.value, groups, getWidth());
   // 监听图标点击事件
   char?.on("click", "series", (param: any) => {
     if (
@@ -405,13 +479,18 @@ const init = () => {
       )
     ) {
       groups.value.push(param.name);
-
-      char?.setOption(getBillViewOptions(viewData.value, groups));
+      nextTick(() => {
+        char?.setOption(
+          getBillViewOptions(viewData.value, groups, undefined, getWidth())
+        );
+      });
     }
   });
   // 监听legend选中事件
   char?.on("legendselectchanged", (param: any) => {
-    char?.setOption(getBillViewOptions(viewData.value, groups, param.selected));
+    char?.setOption(
+      getBillViewOptions(viewData.value, groups, param.selected, getWidth())
+    );
   });
 };
 
@@ -492,9 +571,11 @@ const columns = computed(() => {
       return {
         key: g.field,
         title: g.name,
-        maxWidthth: "500px",
-        minWidth: "200px",
-        width: 300,
+        maxWidth: "500px",
+        minWidth: "100px",
+        width: Math.floor(
+          (window.innerWidth - 1000) / activeGroup.value.length
+        ),
         dataKey: "group" + (index + 1),
       };
     }),
@@ -526,9 +607,8 @@ const sortState = ref<any>({
 .up_wapper {
   display: flex;
   width: 100%;
+  min-width: 800px;
   height: 300px;
-  overflow-x: auto;
-  overflow-y: hidden;
   .left_wapper {
     display: flex;
     flex-wrap: wrap;
@@ -590,10 +670,15 @@ const sortState = ref<any>({
     .chart_wapper {
       height: 70%;
       width: 100%;
+      min-width: 600px;
       display: flex;
     }
   }
-  margin-bottom: 20px;
+}
+.chart {
+  &:hover {
+    overflow-x: auto;
+  }
 }
 .line {
   height: 100%;
@@ -633,6 +718,15 @@ const sortState = ref<any>({
   height: 60%;
   line-height: 120%;
 }
+.up_content {
+  overflow-x: hidden;
+  overflow-y: hidden;
+
+  &:hover {
+    overflow-x: auto;
+  }
+  margin-bottom: 20px;
+}
 .money_title {
   height: 20%;
   margin-inline-start: 1em;
@@ -650,7 +744,7 @@ const sortState = ref<any>({
   font-family: "PingFangSC-Regular", "PingFang SC", sans-serif;
   font-weight: 400;
   font-size: 12px;
-  line-height: 200%;
+  line-height: 140%;
 }
 .demo-tabs {
   .el-tabs__content {
