@@ -8,6 +8,7 @@ import com.fit2cloud.common.platform.credential.Credential;
 import com.fit2cloud.common.provider.util.PageUtil;
 import com.fit2cloud.common.util.CsvUtil;
 import com.fit2cloud.constants.BillingSettingConstants;
+import com.fit2cloud.constants.ErrorCodeConstants;
 import com.fit2cloud.es.entity.CloudBill;
 import com.fit2cloud.provider.impl.aliyun.entity.credential.AliyunBillCredential;
 import com.fit2cloud.provider.impl.aliyun.entity.csv.AliBillCsvModel;
@@ -19,10 +20,8 @@ import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 
 import java.io.File;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class AliBucketApi {
@@ -56,15 +55,15 @@ public class AliBucketApi {
      */
     public static Bucket getBucket(AliyunBillCredential aliyunBillCredential, String bucketName, String regionId) {
         AsyncClient ossClient = aliyunBillCredential.getOssClient();
-        ListBucketsRequest listBucketsRequest = ListBucketsRequest.builder().prefix(bucketName).maxKeys(100l).build();
+        ListBucketsRequest listBucketsRequest = ListBucketsRequest.builder().prefix(bucketName).maxKeys(100L).build();
         ListBucketsResponse listBucketsResponse = ossClient.listBuckets(listBucketsRequest).join();
         List<Bucket> buckets = listBucketsResponse.getBody().getBuckets();
         if (CollectionUtils.isNotEmpty(buckets)) {
             return buckets.stream()
                     .filter(bucket -> StringUtils.equals(regionId, bucket.getRegion()) && bucket.getName().equals(bucketName))
-                    .findAny().orElseThrow(() -> new Fit2cloudException(222, "不存在的桶"));
+                    .findAny().orElseThrow(() -> new Fit2cloudException(ErrorCodeConstants.BILL_PROVIDER_ALI_CLOUD_BUCKET_NOT_EXIST.getCode(), ErrorCodeConstants.BILL_PROVIDER_ALI_CLOUD_BUCKET_NOT_EXIST.getMessage()));
         }
-        throw new Fit2cloudException(222, "不存在的桶");
+        throw new Fit2cloudException(ErrorCodeConstants.BILL_PROVIDER_ALI_CLOUD_BUCKET_NOT_EXIST.getCode(), ErrorCodeConstants.BILL_PROVIDER_ALI_CLOUD_BUCKET_NOT_EXIST.getMessage());
     }
 
     /**
@@ -132,6 +131,15 @@ public class AliBucketApi {
         return aliBillCsvModels.stream().map(aliBillCsvModel -> AliyunMappingUtil.toCloudBill(aliBillCsvModel, regions)).toList();
     }
 
+    /**
+     * 写入文件并且读取文件
+     *
+     * @param ossClient      客户端对象
+     * @param objectSummary  文件对象
+     * @param bucketName     桶名称
+     * @param cloudAccountId 云账户id
+     * @return 读取后的文件
+     */
     private static List<AliBillCsvModel> writeAndReadFile(AsyncClient ossClient, ObjectSummary objectSummary, String bucketName, String cloudAccountId) {
         // 写入数据
         File file = CsvUtil.writeFile(BillingSettingConstants.billingPath + File.separator + PlatformConstants.fit2cloud_ali_platform.name() + File.separator + cloudAccountId, objectSummary.getKey(), objectSummary.getSize(),
@@ -139,6 +147,12 @@ public class AliBucketApi {
         return CsvUtil.parse(file, AliBillCsvModel.class);
     }
 
+    /**
+     * 获取桶中所有文件根据月份
+     *
+     * @param listBucketMonthRequest 请求对象
+     * @return 桶中制定月份的文件
+     */
     public static List<String> listBucketFileMonth(ListBucketMonthRequest listBucketMonthRequest) {
         List<ObjectSummary> objectSummaryList = listObjectSummary(listBucketMonthRequest.getCredential(), listBucketMonthRequest.getBill().getBucketId());
         return objectSummaryList.stream().filter(objectSummary -> monthPattern.matcher(objectSummary.getKey()).find()).map(ObjectSummary::getKey).map(fileName -> {

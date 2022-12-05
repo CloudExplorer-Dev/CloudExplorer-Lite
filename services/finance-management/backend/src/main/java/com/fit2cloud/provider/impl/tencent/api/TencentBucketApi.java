@@ -1,12 +1,13 @@
 package com.fit2cloud.provider.impl.tencent.api;
 
 import com.fit2cloud.common.constants.PlatformConstants;
+import com.fit2cloud.common.exception.Fit2cloudException;
 import com.fit2cloud.common.platform.credential.Credential;
-import com.fit2cloud.common.provider.util.CommonUtil;
 import com.fit2cloud.common.provider.util.PageUtil;
 import com.fit2cloud.common.util.CsvUtil;
 import com.fit2cloud.common.util.MonthUtil;
 import com.fit2cloud.constants.BillingSettingConstants;
+import com.fit2cloud.constants.ErrorCodeConstants;
 import com.fit2cloud.es.entity.CloudBill;
 import com.fit2cloud.provider.impl.tencent.entity.csv.TencentCsvModel;
 import com.fit2cloud.provider.impl.tencent.entity.request.ListBucketMonthRequest;
@@ -119,11 +120,7 @@ public class TencentBucketApi {
      * @return 是否
      */
     public static boolean isReadDayBillFile(String month) {
-        Calendar instance = Calendar.getInstance();
-        String currentMonth = String.format("%04d-%02d", instance.get(Calendar.YEAR), instance.get(Calendar.MONTH) + 1);
-        instance.add(Calendar.MONTH, -1);
-        String upMonth = String.format("%04d-%02d", instance.get(Calendar.YEAR), instance.get(Calendar.MONTH) + 1);
-        return month.equals(currentMonth) || month.equals(upMonth);
+        return MonthUtil.getHistoryMonth(2).contains(month);
     }
 
     /**
@@ -179,7 +176,7 @@ public class TencentBucketApi {
                     e1.putAll(e2);
                     return e1;
                 }));
-            }).orElseThrow(() -> new RuntimeException("不存在的key"));
+            }).orElseThrow(() -> new Fit2cloudException(ErrorCodeConstants.BILL_PROVIDER_TENCENT_CLOUD_KEY_NOT_EXIST.getCode(), ErrorCodeConstants.BILL_PROVIDER_TENCENT_CLOUD_KEY_NOT_EXIST.getMessage()));
         } catch (Exception e) {
             throw new RuntimeException(e);
         }

@@ -28,10 +28,7 @@ import com.fit2cloud.common.query.convert.QueryFieldValueConvert;
 import com.fit2cloud.common.util.EsFieldUtil;
 import com.fit2cloud.common.util.MappingUtil;
 import com.fit2cloud.common.utils.QueryUtil;
-import com.fit2cloud.constants.AuthorizeTypeConstants;
-import com.fit2cloud.constants.BillAuthorizeConditionTypeConstants;
-import com.fit2cloud.constants.BillFieldConstants;
-import com.fit2cloud.constants.EsWriteLockConstants;
+import com.fit2cloud.constants.*;
 import com.fit2cloud.controller.request.AuthorizeResourcesRequest;
 import com.fit2cloud.controller.request.NotAuthorizeResourcesRequest;
 import com.fit2cloud.controller.response.AuthorizeResourcesResponse;
@@ -94,7 +91,7 @@ public class BillDimensionSettingServiceImpl extends ServiceImpl<BillDimensionSe
             }
         } else {
             if (authorizeKeys().stream().noneMatch(item -> item.getValue().equals(groupField))) {
-                throw new Fit2cloudException(10000, "不支持的的字段类型");
+                throw new Fit2cloudException(ErrorCodeConstants.BILL_DIMENSION_SETTING_NOT_SUPPORT_AUTHORIZE_FIELD.getCode(), ErrorCodeConstants.BILL_DIMENSION_SETTING_NOT_SUPPORT_AUTHORIZE_FIELD.getMessage(new Object[]{groupField}));
             }
             groupKeyByField = EsFieldUtil.getGroupKeyByField(groupField);
         }
@@ -123,11 +120,11 @@ public class BillDimensionSettingServiceImpl extends ServiceImpl<BillDimensionSe
     public BillDimensionSetting saveOrUpdate(String authorizeId, String type, BillAuthorizeRule authorizeRule) {
         if (AuthorizeTypeConstants.valueOf(type).equals(AuthorizeTypeConstants.ORGANIZATION)) {
             if (Objects.isNull(organizationService.getById(authorizeId))) {
-                throw new Fit2cloudException(10001, "授权id不存在");
+                throw new Fit2cloudException(ErrorCodeConstants.BILL_DIMENSION_SETTING_AUTHORIZE_ID_NOT_EXIST.getCode(), ErrorCodeConstants.BILL_DIMENSION_SETTING_AUTHORIZE_ID_NOT_EXIST.getMessage());
             }
         } else {
             if (Objects.isNull(workspaceService.getById(authorizeId))) {
-                throw new Fit2cloudException(10002, "授权id不存在");
+                throw new Fit2cloudException(ErrorCodeConstants.BILL_DIMENSION_SETTING_AUTHORIZE_ID_NOT_EXIST.getCode(), ErrorCodeConstants.BILL_DIMENSION_SETTING_AUTHORIZE_ID_NOT_EXIST.getMessage());
             }
         }
         BillDimensionSetting res = getOne(new LambdaQueryWrapper<BillDimensionSetting>().eq(BillDimensionSetting::getAuthorizeId, authorizeId).eq(BillDimensionSetting::getType, AuthorizeTypeConstants.valueOf(type)));
@@ -176,9 +173,7 @@ public class BillDimensionSettingServiceImpl extends ServiceImpl<BillDimensionSe
                     try {
                         elasticsearchClient.updateByQuery(build);
                     } catch (Exception e) {
-                        LogUtil.error("规则授权失败:" + billDimensionSetting + e.getMessage());
-                        e.printStackTrace();
-                        throw new Fit2cloudException(111, "规则授权失败");
+                        throw new Fit2cloudException(ErrorCodeConstants.BILL_DIMENSION_SETTING_AUTHORIZE_ERROR.getCode(), ErrorCodeConstants.BILL_DIMENSION_SETTING_AUTHORIZE_ERROR.getMessage());
                     }
                 }
             }

@@ -1,6 +1,7 @@
 package com.fit2cloud.common.util;
 
 import com.fit2cloud.common.exception.Fit2cloudException;
+import com.fit2cloud.constants.ErrorCodeConstants;
 import com.fit2cloud.es.entity.CloudBill;
 import org.apache.commons.collections4.keyvalue.DefaultKeyValue;
 import org.apache.commons.lang3.StringUtils;
@@ -34,9 +35,9 @@ public class EsFieldUtil {
             MultiField annotation = field.getAnnotation(MultiField.class);
             return Arrays.stream(annotation.otherFields()).filter(a -> a.type().equals(org.springframework.data.elasticsearch.annotations.FieldType.Keyword)).findFirst().map(f -> {
                 return field.getName() + "." + f.suffix();
-            }).orElseThrow(() -> new Fit2cloudException(111, "不支持的分组字段" + groupField));
+            }).orElseThrow(() -> new Fit2cloudException(ErrorCodeConstants.BILL_VIEW_UNSUPPORTED_GROUP_FIELD.getCode(), ErrorCodeConstants.BILL_VIEW_UNSUPPORTED_GROUP_FIELD.getMessage(new Object[]{groupField})));
         }
-        throw new Fit2cloudException(111, "不支持的分组字段" + groupField);
+        throw new Fit2cloudException(ErrorCodeConstants.BILL_VIEW_UNSUPPORTED_GROUP_FIELD.getCode(), ErrorCodeConstants.BILL_VIEW_UNSUPPORTED_GROUP_FIELD.getMessage(new Object[]{groupField}));
     }
 
     /**
