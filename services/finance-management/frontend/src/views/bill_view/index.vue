@@ -573,9 +573,11 @@ const columns = computed(() => {
         title: g.name,
         maxWidth: "500px",
         minWidth: "100px",
-        width: Math.floor(
-          (window.innerWidth - 1000) / activeGroup.value.length
-        ),
+        width:
+          Math.floor((window.innerWidth - 1000) / activeGroup.value.length) <
+          180
+            ? 180
+            : Math.floor((window.innerWidth - 1000) / activeGroup.value.length),
         dataKey: "group" + (index + 1),
       };
     }),

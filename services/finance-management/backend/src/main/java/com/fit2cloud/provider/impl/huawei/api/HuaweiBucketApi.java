@@ -3,6 +3,7 @@ package com.fit2cloud.provider.impl.huawei.api;
 import com.fit2cloud.common.constants.PlatformConstants;
 import com.fit2cloud.common.provider.util.PageUtil;
 import com.fit2cloud.common.util.CsvUtil;
+import com.fit2cloud.common.util.MonthUtil;
 import com.fit2cloud.constants.BillingSettingConstants;
 import com.fit2cloud.es.entity.CloudBill;
 import com.fit2cloud.provider.impl.huawei.entity.credential.HuaweiBillCredential;
@@ -73,12 +74,8 @@ public class HuaweiBucketApi {
      * @param month 月份
      * @return 是否
      */
-    public static boolean isReadDayBillFile(String month) {
-        Calendar instance = Calendar.getInstance();
-        String currentMonth = String.format("%04d-%02d", instance.get(Calendar.YEAR), instance.get(Calendar.MONTH) + 1);
-        instance.add(Calendar.MONTH, -1);
-        String upMonth = String.format("%04d-%02d", instance.get(Calendar.YEAR), instance.get(Calendar.MONTH) + 1);
-        return month.equals(currentMonth) || month.equals(upMonth);
+    private static boolean isReadDayBillFile(String month) {
+        return MonthUtil.getHistoryMonth(2).contains(month);
     }
 
 
@@ -114,6 +111,12 @@ public class HuaweiBucketApi {
     }
 
 
+    /**
+     * 获取所有的桶中文件,根据月份
+     *
+     * @param listBucketMonthRequest 请求对象
+     * @return 文件名称列表
+     */
     public static List<String> listBucketFileMonth(ListBucketMonthRequest listBucketMonthRequest) {
         List<ObsObject> obsObjects = listObsObject(listBucketMonthRequest.getCredential(), listBucketMonthRequest.getBill().getBucketId());
         return obsObjects.stream().map(ObsObject::getObjectKey)
@@ -124,6 +127,13 @@ public class HuaweiBucketApi {
                 }).distinct().toList();
     }
 
+    /**
+     * 根据文件名称查询月份
+     *
+     * @param fileName    文件名称
+     * @param filePattern 正则
+     * @return 月份 yyyy-mm
+     */
     private static String findMonth(String fileName, String filePattern) {
         Matcher monthFileNameMatcher = Pattern.compile(filePattern).matcher(fileName);
         if (monthFileNameMatcher.find()) {
