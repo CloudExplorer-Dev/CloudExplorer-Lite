@@ -321,10 +321,13 @@ public class BillDimensionSettingServiceImpl extends ServiceImpl<BillDimensionSe
      */
     private List<Query> getQuery(Object request) {
         return QueryUtil.getQuery(request, QueryFieldValueConvert.builder().field("cloudAccountName").convert(cloudAccountName -> {
+            if (Objects.isNull(cloudAccountName) || StringUtils.isEmpty(cloudAccountName.toString())) {
+                return null;
+            }
             LambdaQueryWrapper<CloudAccount> like = new LambdaQueryWrapper<CloudAccount>().like(true, CloudAccount::getName, cloudAccountName);
             List<CloudAccount> list = cloudAccountService.list(like);
             if (CollectionUtils.isEmpty(list)) {
-                return null;
+                return new ArrayList<>();
             }
             return list.stream().map(CloudAccount::getId).toList();
         }).build());
