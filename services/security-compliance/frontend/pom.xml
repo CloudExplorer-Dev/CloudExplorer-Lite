@@ -58,7 +58,7 @@
             </goals>
             <configuration>
               <yarnInheritsProxyConfigFromMaven>false</yarnInheritsProxyConfigFromMaven>
-              <arguments>build:bill</arguments>
+              <arguments>build:security</arguments>
             </configuration>
           </execution>
         </executions>

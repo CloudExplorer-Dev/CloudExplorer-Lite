@@ -18,6 +18,7 @@
         <module>management-center</module>
         <module>vm-service</module>
         <module>finance-management</module>
+        <module>security-compliance</module>
     </modules>
 
 </project>
