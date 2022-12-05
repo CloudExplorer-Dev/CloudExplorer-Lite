@@ -2,10 +2,12 @@ package com.fit2cloud.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
-import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.fit2cloud.base.entity.Organization;
+import com.fit2cloud.base.entity.Workspace;
+import com.fit2cloud.base.service.IBaseWorkspaceService;
 import com.fit2cloud.common.exception.Fit2cloudException;
 import com.fit2cloud.common.utils.ColumnNameUtil;
 import com.fit2cloud.common.utils.JsonUtil;
@@ -14,25 +16,24 @@ import com.fit2cloud.constants.ErrorCodeConstants;
 import com.fit2cloud.controller.request.OrganizationBatchRequest;
 import com.fit2cloud.controller.request.OrganizationRequest;
 import com.fit2cloud.controller.request.PageOrganizationRequest;
-import com.fit2cloud.base.entity.Organization;
 import com.fit2cloud.dao.mapper.OrganizationMapper;
 import com.fit2cloud.response.OrganizationTree;
 import com.fit2cloud.service.IOrganizationService;
 import lombok.SneakyThrows;
 import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.lang3.ClassUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.reflect.FieldUtils;
 import org.springframework.beans.BeanUtils;
-import org.springframework.context.MessageSource;
-import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import java.lang.reflect.Field;
 import java.text.SimpleDateFormat;
-import java.util.*;
-import java.util.function.Function;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.HashSet;
+import java.util.List;
 import java.util.stream.Collectors;
 
 /**
@@ -46,6 +47,8 @@ import java.util.stream.Collectors;
 @Service
 public class OrganizationServiceImpl extends ServiceImpl<OrganizationMapper, Organization> implements IOrganizationService {
     SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+    @Resource
+    private IBaseWorkspaceService workspaceService;
 
     @Override
     public IPage<Organization> pageOrganization(PageOrganizationRequest request) {
@@ -113,6 +116,7 @@ public class OrganizationServiceImpl extends ServiceImpl<OrganizationMapper, Org
     }
 
     @Override
+    @Transactional
     public boolean removeBatchTreeByIds(List<Organization> organizations) {
         // 因为是树形数据,如果父级别组织存在则不能删除, 根据树形组织,从子级开始排序
         List<OrganizationTree> organizationTrees = OrganizationUtil.toTree(organizations.stream().map(item -> {
@@ -144,6 +148,12 @@ public class OrganizationServiceImpl extends ServiceImpl<OrganizationMapper, Org
         long count = count(new LambdaQueryWrapper<Organization>().eq(Organization::getPid, id));
         if (count > 0) {
             throw new Fit2cloudException(ErrorCodeConstants.ORGANIZATION_CANNOT_DELETE.getCode(), ErrorCodeConstants.ORGANIZATION_CANNOT_DELETE.getMessage());
+        }
+        // todo 校验当前组织是否存在工作空间
+        List<Workspace> list = workspaceService.list(new LambdaQueryWrapper<Workspace>().eq(Workspace::getOrganizationId, id));
+        if (CollectionUtils.isNotEmpty(list)) {
+            Organization organization = getById(id);
+            throw new Fit2cloudException(ErrorCodeConstants.ORGANIZATION_EXIST_WORKSPACE_CANNOT_DELETE.getCode(), ErrorCodeConstants.ORGANIZATION_EXIST_WORKSPACE_CANNOT_DELETE.getMessage(new Object[]{organization.getName()}));
         }
         return removeById(id);
     }

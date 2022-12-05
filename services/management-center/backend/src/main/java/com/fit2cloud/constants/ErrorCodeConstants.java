@@ -27,10 +27,11 @@ public enum ErrorCodeConstants {
     ORGANIZATION_NAME_REPEAT(100012, "i18n.organization.name.not.repeat"),
     ORGANIZATION_UPDATE_NOT_THIS_CHILD(100013, "i18n.organization.pid.not.mv.to.this_child"),
 
+    ORGANIZATION_EXIST_WORKSPACE_CANNOT_DELETE(100014, "i18n.organization.exist.workspace.cannot.delete"),
     CLOUD_ACCOUNT_NOT_SUPPORT_PLATFORM(100100, "i18n.cloud_account.not_support.platform"),
 
     CLOUD_ACCOUNT_JOB_IS_NOT_EXISTENT(100101, "i18n.cloud_account.job.is.not.existent"),
-    CLOUD_ACCOUNT_INVALID_UNABLE_SYNC(100102,"i18n.cloud_account.invalid.unable.sync"),
+    CLOUD_ACCOUNT_INVALID_UNABLE_SYNC(100102, "i18n.cloud_account.invalid.unable.sync"),
     WORKSPACE_ID_AND_NAME_REQUIRED(100100401, "i18n.workspace.id.or.name.required"),
 
     WORKSPACE_NAME_REPEAT(100100402, "i18n.workspace.name.not.repeat"),
