@@ -55,9 +55,13 @@ public class ResourceOperateServiceImpl implements IResourceOperateService {
             try {
                 // 初始化任务
                 JobRecord jobRecord = initJobMethod.apply(
-                        InitJobRecordDTO.builder().jobDescription(resourceOperateType.getDescription()).
-                                jobStatus(JobStatusConstants.EXECUTION_ING).
-                                jobType(jobType).resourceId(resourceId).resourceType(resourceType).createTime(createTime)
+                        InitJobRecordDTO.builder()
+                                .jobDescription(resourceOperateType.getDescription())
+                                .jobStatus(JobStatusConstants.EXECUTION_ING)
+                                .jobType(jobType)
+                                .resourceId(resourceId)
+                                .resourceType(resourceType)
+                                .createTime(createTime)
                                 .build());
 
                 // 更新资源状态为操作中
