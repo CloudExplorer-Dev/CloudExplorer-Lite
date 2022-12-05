@@ -99,6 +99,12 @@ public class VmCloudServerController {
         return ResultHolder.success(iVmCloudServerService.getById(id));
     }
 
+    @GetMapping("/ids")
+    @ApiOperation(value = "根据ids查询云主机", notes = "根据ids查询云主机")
+    public ResultHolder<List<VmCloudServerDTO>> findCloudServer(@ApiParam("需要查询的云主机ids") @RequestParam("cloudServerIds[]") List<String> cloudServerIds) {
+        return ResultHolder.success(iVmCloudServerService.getByIds(cloudServerIds));
+    }
+
     @GetMapping("/operate/job_record")
     @ApiOperation(value = "查询云主机最新的操作记录", notes = "查询云主机最新的操作记录")
     public ResultHolder<Map<String, List<JobRecordResourceResponse>>> findCloudServerOperateStatus(@ApiParam("需要查询的云主机id") @RequestParam("cloudServerIds[]") List<String> cloudServerIds) {
@@ -107,7 +113,7 @@ public class VmCloudServerController {
 
     @ApiOperation(value = "新建云主机", notes = "新建云主机")
     @PostMapping("create")
-    //@OperatedLog(resourceType = ResourceTypeEnum.CLOUD_SERVER, operated = OperatedTypeEnum.ADD, content = "#request.getOperate()")
+    @OperatedLog(resourceType = ResourceTypeEnum.CLOUD_SERVER, operated = OperatedTypeEnum.CREATE_SERVER)
     public ResultHolder<Boolean> createServer(@RequestBody CreateServerRequest request) {
         return ResultHolder.success(iVmCloudServerService.createServer(request));
     }

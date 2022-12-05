@@ -39,5 +39,7 @@ public interface IVmCloudServerService extends IService<VmCloudServer> {
 
     VmCloudServerDTO getById(String vmId);
 
+    List<VmCloudServerDTO> getByIds(List<String> vmIds);
+
     boolean createServer(CreateServerRequest request);
 }

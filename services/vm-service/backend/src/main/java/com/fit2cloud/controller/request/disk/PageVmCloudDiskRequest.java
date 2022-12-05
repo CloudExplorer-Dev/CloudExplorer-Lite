@@ -30,6 +30,14 @@ public class PageVmCloudDiskRequest extends PageRequest {
     private String accountName;
     @ApiModelProperty("所属云主机")
     private String vmInstanceName;
+    @ApiModelProperty("是否随实例删除")
+    private List<String> deleteWithInstance;
+    @ApiModelProperty("磁盘类型")
+    private List<String> diskType;
+    @ApiModelProperty("磁盘属性")
+    private List<Boolean> bootable;
+    @ApiModelProperty("磁盘状态")
+    private List<String> status;
     @Size(min = 2, max = 2, message = "{i18n.request.date.message}")
     @ApiModelProperty(value = "创建时间", example = "createTime[]=2121&createTime[]=21212")
     private List<Long> createTime;

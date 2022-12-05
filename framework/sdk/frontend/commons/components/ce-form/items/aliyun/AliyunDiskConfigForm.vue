@@ -34,10 +34,10 @@
               <span>磁盘类型：</span>
               <el-select style="width: 50%" v-model="obj.diskType" filterable>
                 <el-option
-                    v-for="item in diskTypeOptions"
-                    :key="item.id"
-                    :label="item.name"
-                    :value="item.id"
+                  v-for="item in diskTypeOptions"
+                  :key="item.id"
+                  :label="item.name"
+                  :value="item.id"
                 />
               </el-select>
             </div>
@@ -94,7 +94,7 @@
   </template>
 </template>
 <script setup lang="ts">
-import {computed, watch, onMounted, ref} from "vue";
+import { computed, watch, onMounted, ref } from "vue";
 import _ from "lodash";
 import type { FormView } from "@commons/components/ce-form/type";
 import { CloseBold } from "@element-plus/icons-vue";
@@ -126,7 +126,7 @@ const diskTypeOptions = computed(() => {
 const defaultDisks = computed(() => {
   return [
     {
-      diskType:'cloud_essd',
+      diskType: "cloud_essd",
       size: 40,
       deleteWithInstance: true,
       readonly: false,

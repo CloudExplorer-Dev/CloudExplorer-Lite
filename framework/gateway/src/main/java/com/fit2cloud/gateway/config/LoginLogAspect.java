@@ -22,7 +22,9 @@ import org.aspectj.lang.annotation.Pointcut;
 import org.aspectj.lang.reflect.MethodSignature;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.MDC;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
+import reactor.core.publisher.Mono;
 
 import java.lang.reflect.Method;
 import java.util.Date;
@@ -53,7 +55,12 @@ public class LoginLogAspect {
         ResultHolder errorResult = ResultHolder.error(GlobalErrorCodeConstants.BUSINESS_ERROR.getCode(),GlobalErrorCodeConstants.BUSINESS_ERROR.getMessage());
         try{
             res = pjd.proceed();
-            errorResult = ResultHolder.success("ok");
+            Mono<ResponseEntity<ResultHolder<Object>>> result = (Mono)res;
+            if(result.block().getStatusCode().value()!=200){
+                errorResult = ResultHolder.error(result.block().getStatusCode().value(),result.block().getBody().getMessage());
+            }else{
+                errorResult = ResultHolder.success("ok");
+            }
         }catch (Exception e){
             if(e instanceof Fit2cloudException){
                 Fit2cloudException fit2cloudException = (Fit2cloudException)e;
@@ -67,9 +74,6 @@ public class LoginLogAspect {
         saveLog(pjd,res,endTime-startTime,errorResult);
         //请求完成后清理MDC
         MDC.clear();
-        if(errorResult.getCode()!=200){
-            throw new Fit2cloudException(errorResult.getCode(),errorResult.getMessage());
-        }
         errorResult.setRequestId(requestId);
         return res;
     }
@@ -120,6 +124,7 @@ public class LoginLogAspect {
         logVO.setTime(time);
         logVO.setStatus(errorResult.getCode()==200?1:0);
         logVO.setCode(errorResult.getCode());
+        logVO.setMsg(errorResult.getMessage());
         if(annotation!=null){
             if(StringUtils.equalsIgnoreCase(annotation.operated().getOperate(),OperatedTypeEnum.LOGIN.getOperate())||
                     StringUtils.equalsIgnoreCase(annotation.operated().getOperate(),OperatedTypeEnum.LOGOUT.getOperate())){

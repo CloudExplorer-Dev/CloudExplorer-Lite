@@ -8,6 +8,7 @@ import com.fit2cloud.common.utils.QueryUtil;
 import com.fit2cloud.dto.PerfMonitorEchartsDTO;
 import com.fit2cloud.es.entity.PerfMetricMonitorData;
 import com.fit2cloud.request.PerfMonitorRequest;
+import org.elasticsearch.search.collapse.CollapseBuilder;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.elasticsearch.client.elc.NativeQueryBuilder;
@@ -16,7 +17,9 @@ import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
+import java.util.TreeSet;
 import java.util.stream.Collectors;
 
 /**
@@ -32,8 +35,10 @@ public class PerfMonitorService {
 
     public List<PerfMonitorEchartsDTO> getPerfMonitorData(PerfMonitorRequest request) {
         List<PerfMonitorEchartsDTO> result = new ArrayList<>();
-        List<PerfMetricMonitorData> list = elasticsearchProvide.searchByQuery(CE_PERF_METRIC_MONITOR_DATA, getSearchQuery(request), PerfMetricMonitorData.class);
-        if (list.size() > 0) {
+        List<PerfMetricMonitorData> tmpList = elasticsearchProvide.searchByQuery(CE_PERF_METRIC_MONITOR_DATA, getSearchQuery(request), PerfMetricMonitorData.class);
+        if (tmpList.size() > 0) {
+            List<PerfMetricMonitorData> list = tmpList.stream().collect(Collectors.collectingAndThen(Collectors.toCollection(() ->
+                    new TreeSet<>(Comparator.comparing(PerfMetricMonitorData::getId))), ArrayList::new));//过滤重复ID
             PerfMonitorEchartsDTO perfMonitorEchartsDTO = new PerfMonitorEchartsDTO();
             perfMonitorEchartsDTO.setMetricName(request.getMetricName());
             perfMonitorEchartsDTO.setResourceId(request.getInstanceId());

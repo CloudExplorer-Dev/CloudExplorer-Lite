@@ -1,15 +1,20 @@
 <script setup lang="ts">
-import {onMounted, ref} from "vue";
-import VmCloudServerApi from "@/api/vm_cloud_server";
-import type {VmCloudServerVO} from "@/api/vm_cloud_server/type";
-import {useRouter} from "vue-router";
-import {PaginationConfig, TableConfig, TableOperations, TableSearch,} from "@commons/components/ce-table/type";
-import {useI18n} from "vue-i18n";
-import {ElMessage, ElMessageBox} from "element-plus";
+import { ref, onMounted, onBeforeUnmount } from "vue";
+import VmCloudServerApi, { getVmCloudServerByIds } from "@/api/vm_cloud_server";
+import type { VmCloudServerVO } from "@/api/vm_cloud_server/type";
+import { useRouter } from "vue-router";
+import {
+  PaginationConfig,
+  TableConfig,
+  TableOperations,
+  TableSearch,
+} from "@commons/components/ce-table/type";
+import { useI18n } from "vue-i18n";
+import { ElMessage, ElMessageBox } from "element-plus";
 import _ from "lodash";
-import type {SimpleMap} from "@commons/api/base/type";
+import type { SimpleMap } from "@commons/api/base/type";
 import variables_server from "../../styles/vm_cloud_server/server.module.scss";
-import {platformIcon} from "@commons/utils/platform";
+import { platformIcon } from "@commons/utils/platform";
 import BaseCloudAccountApi from "@commons/api/cloud_account";
 
 const { t } = useI18n();
@@ -17,7 +22,7 @@ const useRoute = useRouter();
 const table = ref<any>(null);
 const columns = ref([]);
 const tableData = ref<Array<VmCloudServerVO>>([]);
-const selectedRowData = ref<Array<VmCloudServerVO>>();
+const selectedRowData = ref<Array<VmCloudServerVO>>([]);
 const tableLoading = ref<boolean>(false);
 const cloudAccount = ref<Array<SimpleMap<string>>>([]);
 //批量操作
@@ -84,6 +89,10 @@ const search = (condition: TableSearch) => {
 onMounted(() => {
   search(new TableSearch());
   searchCloudAccount();
+  startOperateInterval();
+});
+onBeforeUnmount(() => {
+  stopOperateInterval();
 });
 
 const searchCloudAccount = () => {
@@ -96,60 +105,39 @@ const searchCloudAccount = () => {
     }
   });
 };
-
+const cloudServerInterval = ref<any>();
 //启动定时器
-const startOperateInterval = (list: Array<VmCloudServerVO>) => {
-  for (const vm of list) {
-    VmCloudServerApi.getVmCloudServerById(vm.id).then((res) => {
-      vm.instanceStatus = res.data.instanceStatus;
-    });
-  }
-  const cloudServerInterval = ref<any>();
-  const isOk = ref<boolean>(false);
+const startOperateInterval = () => {
   cloudServerInterval.value = setInterval(() => {
     console.log("初始化定时器：" + cloudServerInterval.value);
-    VmCloudServerApi.getServerJobRecord(list.map((r) => r.id))
-      .then((serverJobs) => {
-        for (const vm of list) {
-          const jobs = serverJobs.data[vm.id];
-          if (jobs) {
-            if (
-              jobs.some((job) => job.status === "FAILED") ||
-              jobs.every((job) => job.status === "SUCCESS")
-            ) {
-              VmCloudServerApi.getVmCloudServerById(vm.id).then((res) => {
-                vm.instanceStatus = res.data.instanceStatus;
-                isOk.value = true;
-                console.log(":" + vm.instanceStatus);
-              });
+    VmCloudServerApi.getVmCloudServerByIds(
+      tableData.value.map((r) => r.id)
+    ).then((res) => {
+      if (res) {
+        for (let i = 0; i < res.data.length; i++) {
+          _.forEach(tableData.value, function (vm) {
+            if (vm.id === res.data[i].id) {
+              vm.instanceStatus = res.data[i].instanceStatus;
             }
-          }
+          });
         }
-        if (isOk.value) {
-          stopOperateInterval(cloudServerInterval.value);
-        }
-      })
-      .catch((err) => {
-        console.log("出错了");
-        updateInstanceStatus(list);
-        stopOperateInterval(cloudServerInterval);
-        console.log(err);
-      });
+      }
+    });
   }, 6000);
 };
-//停止定时器
-const stopOperateInterval = (cloudServerInterval: any) => {
-  if (cloudServerInterval) {
-    console.log("关闭定时器：" + cloudServerInterval);
-    clearInterval(cloudServerInterval);
-  }
-};
-
 const updateInstanceStatus = (list: Array<VmCloudServerVO>) => {
   for (const vm of list) {
     VmCloudServerApi.getVmCloudServerById(vm.id).then((res) => {
       vm.instanceStatus = res.data.instanceStatus;
     });
+  }
+};
+//停止定时器
+const stopOperateInterval = () => {
+  console.log("即将关闭定时器：" + cloudServerInterval.value);
+  if (cloudServerInterval.value) {
+    console.log("关闭定时器：" + cloudServerInterval.value);
+    clearInterval(cloudServerInterval.value);
   }
 };
 
@@ -308,7 +296,6 @@ const powerOn = (row: VmCloudServerVO) => {
   ).then(() => {
     VmCloudServerApi.powerOn(row.id as string)
       .then((res) => {
-        startOperateInterval([row]);
         console.log("-----" + res);
         ElMessage.success(t("commons.msg.op_success"));
       })
@@ -339,7 +326,6 @@ const shutdown = (row: VmCloudServerVO) => {
     if (powerOff) {
       VmCloudServerApi.powerOff(row.id as string)
         .then((res) => {
-          startOperateInterval([row]);
           console.log("-----" + res);
           ElMessage.success(t("commons.msg.op_success"));
         })
@@ -352,8 +338,6 @@ const shutdown = (row: VmCloudServerVO) => {
     } else {
       VmCloudServerApi.shutdownInstance(row.id as string)
         .then((res) => {
-          startOperateInterval([row]);
-          console.log("-----" + res);
           ElMessage.success(t("commons.msg.op_success"));
         })
         .catch((err) => {
@@ -378,7 +362,6 @@ const powerOff = (row: VmCloudServerVO) => {
   ).then(() => {
     VmCloudServerApi.powerOff(row.id as string)
       .then(() => {
-        startOperateInterval([row]);
         ElMessage.success(t("commons.msg.op_success"));
       })
       .catch((err) => {
@@ -399,7 +382,6 @@ const reboot = (row: VmCloudServerVO) => {
   ).then(() => {
     VmCloudServerApi.reboot(row.id as string)
       .then(() => {
-        startOperateInterval([row]);
         ElMessage.success(t("commons.msg.op_success"));
       })
       .catch((err) => {
@@ -421,7 +403,6 @@ const deleteInstance = (row: VmCloudServerVO) => {
   ).then(() => {
     VmCloudServerApi.deleteInstance(row.id as string)
       .then(() => {
-        startOperateInterval([row]);
         ElMessage.success(t("commons.msg.op_success"));
       })
       .catch((err) => {
@@ -450,10 +431,10 @@ const batchOperate = (operate: string) => {
   ).then(() => {
     VmCloudServerApi.batchOperate(_.map(selectedRowData.value, "id"), operate)
       .then(() => {
-        startOperateInterval(selectedRowData.value as Array<VmCloudServerVO>);
         ElMessage.success(t("commons.msg.op_success"));
       })
       .catch((err) => {
+        debugger;
         console.log(err);
       });
   });
@@ -557,15 +538,9 @@ const handleAction = (actionObj: any) => {
       <template #default="scope">
         <div style="display: flex">
           <el-image
-              style="
-              margin-top: 3px;
-              width: 16px;
-              height: 16px;
-              min-width: 16px;
-              min-height: 16px;
-            "
-              :src="platformIcon[scope.row.platform]?.icon"
-              v-if="scope.row.platform"
+            style="margin-top: 3px; width: 16px; height: 16px"
+            :src="platformIcon[scope.row.platform]?.icon"
+            v-if="scope.row.platform"
           ></el-image>
           <span style="margin-left: 10px">{{ scope.row.accountName }}</span>
         </div>
@@ -644,6 +619,7 @@ const handleAction = (actionObj: any) => {
     ></el-table-column>
     <el-table-column
       prop="createTime"
+      sortable
       :label="$t('commons.create_time')"
     ></el-table-column>
     <fu-table-operations
@@ -660,10 +636,9 @@ const handleAction = (actionObj: any) => {
 </template>
 <style lang="scss" scoped>
 .name-span-class {
-  color: #4d809c;
+  color: var(--el-color-primary);
 }
 .name-span-class:hover {
-  color: #79bbff;
   cursor: pointer;
 }
 </style>

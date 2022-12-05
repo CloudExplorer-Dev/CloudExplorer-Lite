@@ -116,6 +116,18 @@ export function getVmCloudServerById(
 }
 
 /**
+ * 根据IDS查询
+ * @param id
+ * @param loading
+ */
+export function getVmCloudServerByIds(
+  cloudServerIds: Array<string>,
+  loading?: Ref<boolean>
+): Promise<Result<Array<VmCloudServerVO>>> {
+  return get("api/server/ids", { cloudServerIds: cloudServerIds }, loading);
+}
+
+/**
  * 获取云主机最新任务状态
  * @param cloudServerIds id
  * @param loading         加载器
@@ -162,6 +174,7 @@ const VmCloudServerApi = {
   getVmCloudServerById,
   getServerJobRecord,
   listPerfMetricMonitor,
+  getVmCloudServerByIds,
   createServer,
 };
 

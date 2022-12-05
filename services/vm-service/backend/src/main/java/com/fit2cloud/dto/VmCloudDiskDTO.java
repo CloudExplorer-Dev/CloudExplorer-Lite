@@ -22,4 +22,6 @@ public class VmCloudDiskDTO extends VmCloudDisk {
     private String vmInstanceName;
     @ApiModelProperty("所属云平台")
     private String platform;
+    @ApiModelProperty("磁盘属性")
+    private String bootableText;
 }

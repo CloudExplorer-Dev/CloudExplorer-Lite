@@ -3,11 +3,13 @@ package com.fit2cloud.provider.impl.openstack;
 import com.fit2cloud.common.form.util.FormUtil;
 import com.fit2cloud.common.form.vo.FormObject;
 import com.fit2cloud.common.platform.credential.impl.OpenStackCredential;
+import com.fit2cloud.common.provider.entity.F2CPerfMetricMonitorData;
 import com.fit2cloud.common.provider.impl.openstack.entity.request.OpenStackBaseRequest;
 import com.fit2cloud.common.utils.JsonUtil;
 import com.fit2cloud.provider.AbstractCloudProvider;
 import com.fit2cloud.provider.ICloudProvider;
 import com.fit2cloud.provider.entity.*;
+import com.fit2cloud.provider.entity.request.GetMetricsRequest;
 import com.fit2cloud.provider.entity.result.CheckCreateServerResult;
 import com.fit2cloud.provider.impl.openstack.api.OpenStackCloudApi;
 import com.fit2cloud.provider.impl.openstack.entity.VolumeType;
@@ -152,5 +154,10 @@ public class OpenStackCloudProvider extends AbstractCloudProvider<OpenStackCrede
     @Override
     public List<F2CDatastore> listDataStore(String req) {
         return OpenStackCloudApi.listDataStore(JsonUtil.parseObject(req, OpenStackBaseRequest.class));
+    }
+
+    @Override
+    public List<F2CPerfMetricMonitorData> getF2CPerfMetricMonitorData(String req) {
+        return OpenStackCloudApi.getF2CPerfMetricMonitorData(JsonUtil.parseObject(req, GetMetricsRequest.class));
     }
 }

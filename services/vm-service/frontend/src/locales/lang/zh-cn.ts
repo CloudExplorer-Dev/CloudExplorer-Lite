@@ -35,6 +35,7 @@ const message = {
       vm: "所属云主机",
       size: "大小",
       disk_category: "磁盘种类",
+      disk_attribute: "磁盘属性",
       disk_type: "磁盘类型",
       mount_info: "挂载信息",
       delete_with_instance: "随实例删除",
