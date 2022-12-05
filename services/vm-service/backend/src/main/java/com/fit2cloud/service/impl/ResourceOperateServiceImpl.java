@@ -99,6 +99,7 @@ public class ResourceOperateServiceImpl implements IResourceOperateService {
                 }
 
                 // 更新任务记录
+                jobRecord.setFinishTime(DateUtil.getSyncTime());
                 updateJobRecordMethod.accept(jobRecord);
             } catch (Throwable e) {
                 LogUtil.error("OperateWithJobRecord failed - {}", e.getMessage());

@@ -277,6 +277,7 @@ public class VmCloudServerServiceImpl extends ServiceImpl<BaseVmCloudServerMappe
                     e.printStackTrace();
                 }
                 modifyResource.accept(vmCloudServer);
+                jobRecord.setFinishTime(DateUtil.getSyncTime());
                 modifyJobRecord.accept(jobRecord);
             } catch (Throwable e) {
                 LogUtil.error("Cloud server operate fail - {}", e.getMessage());
@@ -394,6 +395,7 @@ public class VmCloudServerServiceImpl extends ServiceImpl<BaseVmCloudServerMappe
                     e.printStackTrace();
                 }
                 modifyResource.accept(vmCloudServer);
+                jobRecord.setFinishTime(DateUtil.getSyncTime());
                 modifyJobRecord.accept(jobRecord);
             } catch (Throwable e) {
                 LogUtil.error("Create Cloud server fail - {}", e.getMessage());
