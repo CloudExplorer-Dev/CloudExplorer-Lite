@@ -42,12 +42,20 @@
               label="任务对象"
             >
               <div v-for="server in data.servers" :key="server.id">
-                <a @click="jumpToServer(server)"
-                  >云主机: {{ server.instanceName }}</a
+                <a
+                  @click="jumpToServer(server)"
+                  style="color: var(--el-color-primary)"
                 >
+                  云主机: {{ server.instanceName }}
+                </a>
               </div>
               <div v-for="disk in data.disks" :key="disk.id">
-                <a @click="jumpToDisk(disk)">磁盘: {{ disk.diskName }}</a>
+                <a
+                  @click="jumpToDisk(disk)"
+                  style="color: var(--el-color-primary)"
+                >
+                  磁盘: {{ disk.diskName }}
+                </a>
               </div>
             </el-descriptions-item>
             <el-descriptions-item

@@ -128,10 +128,17 @@ const tableConfig = ref<TableConfig>({
     <el-table-column label="关联资源">
       <template #default="scope">
         <div v-for="server in scope.row.servers" :key="server.id">
-          <a @click="jumpToServer(server)">云主机: {{ server.instanceName }}</a>
+          <a
+            @click="jumpToServer(server)"
+            style="color: var(--el-color-primary)"
+          >
+            云主机: {{ server.instanceName }}
+          </a>
         </div>
         <div v-for="disk in scope.row.disks" :key="disk.id">
-          <a @click="jumpToDisk(disk)">磁盘: {{ disk.diskName }}</a>
+          <a @click="jumpToDisk(disk)" style="color: var(--el-color-primary)">
+            磁盘: {{ disk.diskName }}
+          </a>
         </div>
       </template>
     </el-table-column>
