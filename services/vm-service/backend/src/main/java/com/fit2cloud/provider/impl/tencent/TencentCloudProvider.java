@@ -10,10 +10,13 @@ import com.fit2cloud.provider.ICloudProvider;
 import com.fit2cloud.provider.constants.DeleteWithInstance;
 import com.fit2cloud.provider.entity.F2CDisk;
 import com.fit2cloud.provider.entity.F2CImage;
+import com.fit2cloud.provider.entity.F2CNetwork;
 import com.fit2cloud.provider.entity.F2CVirtualMachine;
 import com.fit2cloud.provider.entity.request.GetMetricsRequest;
 import com.fit2cloud.provider.impl.tencent.api.TencetSyncCloudApi;
-import com.fit2cloud.provider.impl.tencent.constants.TencentDiskType;
+import com.fit2cloud.provider.impl.tencent.constants.*;
+import com.fit2cloud.provider.impl.tencent.entity.TencentDiskTypeDTO;
+import com.fit2cloud.provider.impl.tencent.entity.TencentInstanceType;
 import com.fit2cloud.provider.impl.tencent.entity.request.*;
 
 import java.util.ArrayList;
@@ -28,6 +31,174 @@ import java.util.Map;
  * @注释:
  */
 public class TencentCloudProvider extends AbstractCloudProvider<TencentCredential> implements ICloudProvider {
+    // For Create VM [START]
+    @Override
+    public FormObject getCreateServerForm() {
+        return FormUtil.toForm(TencentVmCreateRequest.class);
+    }
+
+    public F2CVirtualMachine createVirtualMachine(String req) {
+        return TencetSyncCloudApi.createVirtualMachine(JsonUtil.parseObject(req, TencentVmCreateRequest.class));
+    }
+
+    @Override
+    public F2CVirtualMachine getSimpleServerByCreateRequest(String req) {
+        return TencetSyncCloudApi.getSimpleServerByCreateRequest(JsonUtil.parseObject(req, TencentVmCreateRequest.class));
+    }
+
+    public List<Map<String, String>> getRegions(String req) {
+        return TencetSyncCloudApi.getRegions(JsonUtil.parseObject(req, TencentBaseRequest.class));
+    }
+
+    public List<Map<String, String>> getZones(String req) {
+        return TencetSyncCloudApi.getZones(JsonUtil.parseObject(req, TencentBaseRequest.class));
+    }
+
+    /**
+     * 获取付费方式
+     *
+     * @param req
+     * @return
+     */
+    public List<Map<String, String>> getChargeType(String req) {
+        List<Map<String, String>> result = new ArrayList<>();
+        for (TencentChargeType chargeType : TencentChargeType.values()) {
+            Map<String, String> map = new HashMap<>();
+            map.put("id", chargeType.getId());
+            map.put("name", chargeType.getName());
+            result.add(map);
+        }
+        return result;
+    }
+
+    /**
+     * 获取付费周期
+     * @param req
+     * @return
+     */
+    public List<Map<String, Object>> getPeriodOption(String req) {
+        List<Map<String, Object>> periodList = new ArrayList<>();
+        for (TencentPeriodOption option : TencentPeriodOption.values()) {
+            Map<String, Object> map = new HashMap<>();
+            map.put("period", option.getPeriod());
+            map.put("periodDisplayName", option.getPeriodDisplayName());
+            periodList.add(map);
+        }
+        return periodList;
+    }
+
+    /**
+     * 获取操作系统类型
+     *
+     * @param req
+     * @return
+     */
+    public List<Map<String, String>> getOsTypes(String req) {
+        List<Map<String, String>> result = new ArrayList<>();
+        for (TencentOSType type : TencentOSType.values()) {
+            Map<String, String> map = new HashMap<>();
+            map.put("id", type.name());
+            map.put("name", type.name());
+            result.add(map);
+        }
+        return result;
+    }
+
+    /**
+     * 获取实例类型
+     *
+     * @param req
+     * @return
+     */
+    public List<TencentInstanceType> getInstanceTypes(String req) {
+        return TencetSyncCloudApi.getInstanceTypes(JsonUtil.parseObject(req, TencentGetInstanceTypeRequest.class));
+    }
+
+    /**
+     * 获取磁盘类型
+     * @param req
+     * @return
+     */
+    public TencentDiskTypeDTO getDiskTypesForCreateVm(String req) {
+        return TencetSyncCloudApi.getDiskTypes(JsonUtil.parseObject(req, TencentGetDiskTypeRequest.class));
+    }
+
+    /**
+     * 获取网络
+     *
+     * @param req
+     * @return
+     */
+    public List<F2CNetwork> getNetworks(String req) {
+        return TencetSyncCloudApi.getNetworks(JsonUtil.parseObject(req, TencentGetSubnetRequest.class));
+    }
+
+    /**
+     * 获取安全组
+     * @param req
+     * @return
+     */
+    public List<Map<String,String>> getSecurityGroups(String req) {
+        return TencetSyncCloudApi.getSecurityGroups(JsonUtil.parseObject(req, TencentBaseRequest.class));
+    }
+
+    /**
+     * 获取带宽计费类型
+     *
+     * @param req
+     * @return
+     */
+    public List<Map<String, String>> getBandwidthChargeTypes(String req) {
+        List<Map<String, String>> result = new ArrayList<>();
+        Map<String, String> map = new HashMap<>();
+        map.put("id", "bandwidth");
+        map.put("name", "按固定带宽");
+        result.add(map);
+
+        map = new HashMap<>();
+        map.put("id", "traffic");
+        map.put("name", "按使用流量");
+        result.add(map);
+        return result;
+    }
+
+    /**
+     * 获取登录方式
+     *
+     * @param req
+     * @return
+     */
+    public List<Map<String, String>> getLoginTypes(String req) {
+        List<Map<String, String>> result = new ArrayList<>();
+        for (TencentLoginType type : TencentLoginType.values()) {
+            Map<String, String> map = new HashMap<>();
+            map.put("id", type.getId());
+            map.put("name", type.getName());
+            result.add(map);
+        }
+        return result;
+    }
+
+    /**
+     * 基础配置询价
+     * @param req
+     * @return
+     */
+    @Override
+    public String calculateConfigPrice(String req){
+        return TencetSyncCloudApi.calculateConfigPrice(JsonUtil.parseObject(req, TencentVmCreateRequest.class));
+    }
+
+    /**
+     * 公网IP流量配置询价
+     * @param req
+     * @return
+     */
+    public String calculateTrafficPrice(String req){
+        return TencetSyncCloudApi.calculateTrafficPrice(JsonUtil.parseObject(req, TencentVmCreateRequest.class));
+    }
+    // For Create VM [END]
+
     @Override
     public List<F2CVirtualMachine> listVirtualMachine(String req) {
         return TencetSyncCloudApi.listVirtualMachine(JsonUtil.parseObject(req, ListVirtualMachineRequest.class));

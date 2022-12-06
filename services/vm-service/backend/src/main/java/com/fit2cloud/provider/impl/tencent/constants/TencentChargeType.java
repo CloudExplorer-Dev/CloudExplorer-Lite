@@ -1,21 +1,31 @@
 package com.fit2cloud.provider.impl.tencent.constants;
 
-public class TencentChargeType {
-    /**
-     * 后付费按小时
-     */
-    public static final String POSTPAID_BY_HOUR = "POSTPAID_BY_HOUR";
+public enum TencentChargeType {
+    POSTPAID("POSTPAID_BY_HOUR", "按量付费"),
+    PREPAID("PREPAID", "包年包月");
 
-    /**
-     * 预付费 (包年包月)
-     */
-    public static final String PREPAID = "PREPAID";
+    private String id;
+    private String name;
 
-    /**
-     * 独享集群付费
-     */
-    public static final String CDCPAID = "CDCPAID";
+    public String getId() {
+        return id;
+    }
 
-    public TencentChargeType() {
+    public String getName() {
+        return name;
+    }
+
+    public static String getName(String id) {
+        for (TencentChargeType chargeType : TencentChargeType.values()) {
+            if (id.equalsIgnoreCase(chargeType.id)) {
+                return chargeType.name;
+            }
+        }
+        return id;
+    }
+
+    TencentChargeType(String id, String name) {
+        this.id = id;
+        this.name = name;
     }
 }

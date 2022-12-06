@@ -174,4 +174,8 @@ public abstract class AbstractCloudProvider<C extends Credential> implements ICl
     public boolean hardRebootInstance(String req) {
         return false;
     }
+
+    public String calculateConfigPrice(String req){
+        return "";
+    }
 }

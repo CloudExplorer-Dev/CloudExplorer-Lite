@@ -38,13 +38,27 @@
           <span style="margin-left: 10px">{{ cloudAccount?.name }}</span>
         </el-descriptions-item>
         <template v-for="form in group.forms" :key="form.index">
-          <template v-if="form.label">
+          <template v-if="form.label && checkShow(form)">
             <el-descriptions-item
               :label="form.label"
               :span="form.confirmItemSpan"
             >
               <template v-if="!form.confirmSpecial">
                 <span
+                  v-if="getDisplayValue(form) instanceof Array"
+                  class="description-array"
+                >
+                  <div v-for="(item, index) in getDisplayValue(form)">
+                    <div v-if="index === getDisplayValue(form).length - 1">
+                      {{ item }}
+                    </div>
+                    <div v-else>
+                      {{ item + "，" }}
+                    </div>
+                  </div>
+                </span>
+                <span
+                  v-else
                   class="description-inline"
                   v-html="getDisplayValue(form)"
                 />
@@ -134,6 +148,21 @@ const groups = computed(() => {
   return list;
 });
 
+function checkShow(currentItem: any) {
+  let isShow = currentItem.label;
+  if (currentItem.relationShows && currentItem.relationShowValues) {
+    isShow = currentItem.relationShows.every((i: string) =>
+      currentItem.relationShowValues.includes(
+        _.get(props.allData, i) === true ? "true" : _.get(props.allData, i)
+      )
+    );
+  }
+  if (isShow) {
+    isShow = currentItem.footerLocation === 0;
+  }
+  return isShow;
+}
+
 /**
  * 处理列表中取值展示
  * @param form
@@ -147,30 +176,43 @@ function getDisplayValue(form: FormView) {
       form.optionList instanceof Array &&
       form.optionList.length > 0
     ) {
-      form.valueItem = _.find(
-        form.optionList,
-        (o) => value === _.get(o, form.valueField ? form.valueField : "value")
-      );
-      console.log(form.field, value);
+      if (value instanceof Array) {
+        form.valueItem = form.optionList.filter((o) =>
+          value.includes(_.get(o, form.valueField ? form.valueField : "value"))
+        );
+      } else {
+        form.valueItem = _.find(
+          form.optionList,
+          (o) => value === _.get(o, form.valueField ? form.valueField : "value")
+        );
+      }
 
       if (form.formatTextField && form.textField) {
         let temp = _.replace(form.textField, /{/g, "{form.valueItem['");
         temp = _.replace(temp, /}/g, "']}");
         result = eval("`" + temp + "`");
       } else {
-        result = _.get(
-          form.valueItem,
-          form.textField ? form.textField : "label"
-        );
+        if (value instanceof Array) {
+          result = [];
+          form.valueItem.forEach((item: any) => {
+            result.push(item[form.textField ? form.textField : "label"]);
+          });
+        } else {
+          result = _.get(
+            form.valueItem,
+            form.textField ? form.textField : "label"
+          );
+        }
       }
     }
   }
-  //console.log(typeof result === "string", result);
   if (
     result == undefined ||
     (typeof result === "string" && _.trim(result).length === 0)
   ) {
     return `<span style="color: var(--el-text-color-secondary)">空</span>`;
+  } else if (typeof result === "boolean") {
+    return result ? "是" : "否";
   } else {
     return result;
   }
@@ -182,5 +224,13 @@ function getDisplayValue(form: FormView) {
   display: inline-flex;
   flex-direction: row;
   justify-content: space-between;
+}
+
+.description-array {
+  width: 250px;
+  display: inline-flex;
+  overflow: auto;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 </style>

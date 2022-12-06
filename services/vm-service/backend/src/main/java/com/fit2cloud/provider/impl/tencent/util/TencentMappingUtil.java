@@ -195,23 +195,23 @@ public class TencentMappingUtil {
          * CDCPAID：独享集群付费
          */
         if (f2cChargeType == null) {
-            return TencentChargeType.POSTPAID_BY_HOUR;
+            return TencentChargeType.POSTPAID.getId();
         }
         switch (f2cChargeType.toUpperCase()) {
             case "PREPAID":
-                return TencentChargeType.PREPAID;
+                return TencentChargeType.PREPAID.getId();
             default:
-                return TencentChargeType.POSTPAID_BY_HOUR;
+                return TencentChargeType.POSTPAID.getId();
         }
     }
 
-    public static F2CPerfMetricMonitorData toF2CPerfMetricMonitorData(Map<Long, BigDecimal> map,Long k,String unit) {
+    public static F2CPerfMetricMonitorData toF2CPerfMetricMonitorData(Map<Long, BigDecimal> map, Long k, String unit) {
         F2CPerfMetricMonitorData f2CEntityPerfMetric = new F2CPerfMetricMonitorData();
         f2CEntityPerfMetric.setTimestamp(k);
         //Mbps Byte 128
-        if(StringUtils.equalsIgnoreCase(TencentPerfMetricConstants.CloudServerPerfMetricEnum.INTERNET_IN_RATE.getUnit(),unit)){
-            f2CEntityPerfMetric.setAverage(map.get(k).multiply(new BigDecimal(1024/8)).setScale(3, RoundingMode.HALF_UP));
-        }else{
+        if (StringUtils.equalsIgnoreCase(TencentPerfMetricConstants.CloudServerPerfMetricEnum.INTERNET_IN_RATE.getUnit(), unit)) {
+            f2CEntityPerfMetric.setAverage(map.get(k).multiply(new BigDecimal(1024 / 8)).setScale(3, RoundingMode.HALF_UP));
+        } else {
             f2CEntityPerfMetric.setAverage(map.get(k).setScale(3, RoundingMode.HALF_UP));
         }
 
