@@ -82,6 +82,13 @@ public class VmCloudDiskServiceImpl extends ServiceImpl<BaseVmCloudDiskMapper, V
         Page<VmCloudDiskDTO> page = new Page<>(request.getCurrentPage(), request.getPageSize(), true);
 
         IPage<VmCloudDiskDTO> result = diskMapper.pageList(page, wrapper);
+        result.getRecords().forEach(v->{
+            if(v.getBootable()){
+                v.setBootableText("系统盘");
+            }else{
+                v.setBootableText("数据盘");
+            }
+        });
         return result;
     }
 
@@ -98,6 +105,10 @@ public class VmCloudDiskServiceImpl extends ServiceImpl<BaseVmCloudDiskMapper, V
         wrapper.like(StringUtils.isNotBlank(request.getDiskName()), "vm_cloud_disk.disk_name", request.getDiskName());
         wrapper.like(StringUtils.isNotBlank(request.getAccountName()), "cloud_account.name", request.getAccountName());
         wrapper.like(StringUtils.isNotBlank(request.getVmInstanceName()), "vm_cloud_server.instance_name", request.getVmInstanceName());
+        wrapper.in(CollectionUtils.isNotEmpty(request.getBootable()), "vm_cloud_disk.bootable", request.getBootable());
+        wrapper.in(CollectionUtils.isNotEmpty(request.getDiskType()), "vm_cloud_disk.disk_type", request.getDiskType());
+        wrapper.in(CollectionUtils.isNotEmpty(request.getDeleteWithInstance()), "vm_cloud_disk.delete_with_instance", request.getDeleteWithInstance());
+        wrapper.in(CollectionUtils.isNotEmpty(request.getStatus()), "vm_cloud_disk.status", request.getStatus());
         return wrapper;
     }
 

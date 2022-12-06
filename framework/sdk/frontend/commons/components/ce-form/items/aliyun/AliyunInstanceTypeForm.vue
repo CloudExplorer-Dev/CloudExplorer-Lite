@@ -39,7 +39,7 @@
 </template>
 <script setup lang="ts">
 import type { FormView } from "@commons/components/ce-form/type";
-import {computed, ref, watch} from "vue";
+import { computed, ref, watch } from "vue";
 import _ from "lodash";
 import type { ElTable } from "element-plus";
 

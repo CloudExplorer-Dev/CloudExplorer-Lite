@@ -1094,8 +1094,8 @@ public class TencetSyncCloudApi {
             GetMonitorDataRequest request = getShowMetricDataRequest(getMetricsRequest);
             MonitorClient monitorClient = credential.getMonitorClient(getMetricsRequest.getRegionId());
             ///TODO 由于我们只查询一个小时内的数据，时间间隔是60s,所以查询每台机器的监控数据的时候最多不过60条数据，所以不需要分页查询
-            result.addAll(getVmPerfMetric(monitorClient, request, getMetricsRequest));
-            result.addAll(getDiskPerfMetric(monitorClient, request, getMetricsRequest));
+            result.addAll(getVmPerfMetric(monitorClient,request,getMetricsRequest));
+            //result.addAll(getDiskPerfMetric(monitorClient,request,getMetricsRequest));
         } catch (Exception e) {
             throw new Fit2cloudException(100021, "获取监控数据失败-" + getMetricsRequest.getRegionId() + "-" + e.getMessage());
         }
@@ -1131,7 +1131,7 @@ public class TencetSyncCloudApi {
     }
 
     /**
-     * 获取磁盘监控指标数据
+     * 获取系统磁盘监控指标数据
      *
      * @param getMetricsRequest
      * @return
@@ -1141,18 +1141,18 @@ public class TencetSyncCloudApi {
         ListDiskRequest listDiskRequest = new ListDiskRequest();
         listDiskRequest.setCredential(getMetricsRequest.getCredential());
         listDiskRequest.setRegionId(getMetricsRequest.getRegionId());
-        List<String> ids = listDisk(listDiskRequest).stream().map(disk -> disk.getDiskId()).collect(Collectors.toList());
+        List<F2CDisk> ids = listDisk(listDiskRequest).stream().filter(disk->disk.isBootable() && StringUtils.isNotEmpty(disk.getInstanceUuid())).collect(Collectors.toList());
         if (ids.size() == 0) {
             return result;
         }
         req.setNamespace("QCE/BLOCK_STORAGE");
-        ids.forEach(id -> {
+        ids.forEach(disk->{
             Arrays.stream(TencentPerfMetricConstants.CloudDiskPerfMetricEnum.values()).sorted().forEach(perfMetric -> {
                 req.setMetricName(perfMetric.getMetricName());
-                req.setInstances(getInstance("diskId", id));
-                Map<Long, BigDecimal> dataMap = getMonitorData(monitorClient, req);
-                System.out.println("结果：" + JsonUtil.toJSONString(dataMap));
-                addMonitorData(result, dataMap, F2CEntityType.DISK.name(), perfMetric.getUnit(), getMetricsRequest.getPeriod(), perfMetric.name(), id);
+                req.setInstances(getInstance("diskId",disk.getDiskId()));
+                Map<Long, BigDecimal> dataMap = getMonitorData(monitorClient,req);
+                System.out.println("结果："+JsonUtil.toJSONString(dataMap));
+                addMonitorData(result,dataMap,F2CEntityType.VIRTUAL_MACHINE.name(),perfMetric.getUnit(),getMetricsRequest.getPeriod(),perfMetric.name(),disk.getInstanceUuid());
             });
         });
         return result;

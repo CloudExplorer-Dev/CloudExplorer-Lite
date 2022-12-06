@@ -192,6 +192,9 @@ public class OpenStackCloudApi {
     }
 
     public static boolean deleteInstance(OpenStackInstanceActionRequest request) {
+        if (StringUtils.isBlank(request.getUuid())) {
+            return true;
+        }
         try {
             OSClient.OSClientV3 osClient = request.getOSClient();
             osClient.useRegion(request.getRegionId());
@@ -286,6 +289,9 @@ public class OpenStackCloudApi {
 
 
     public static boolean deleteDisk(OpenStackDiskActionRequest request) {
+        if (StringUtils.isBlank(request.getDiskId())) {
+            return true;
+        }
         try {
             OSClient.OSClientV3 osClient = request.getOSClient();
             osClient.useRegion(request.getRegionId());
@@ -557,8 +563,6 @@ public class OpenStackCloudApi {
 
 
     public static F2CVirtualMachine createVirtualMachine(OpenStackServerCreateRequest request) {
-        F2CVirtualMachine f2CVirtualMachine = null;
-
         int index = request.getIndex();
         String serverName = request.getServerInfos().get(index).getName();
 
@@ -568,6 +572,8 @@ public class OpenStackCloudApi {
 
             ServerCreateBuilder builder = Builders.server();
             builder.addAdminPass(request.getPassword());
+            builder.userData(OpenStackUtils.getCloudInitUserData(request.getPassword()));
+
             builder.name(serverName);
             builder.availabilityZone(request.getZone());
 
@@ -623,7 +629,6 @@ public class OpenStackCloudApi {
                     builder.blockDevice(blockDeviceMappingBuilder.build());
 
                 }
-
             }
 
             Server server = osClient.compute().servers().boot(builder.build());

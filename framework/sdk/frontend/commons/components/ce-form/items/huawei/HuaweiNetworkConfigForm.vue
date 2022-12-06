@@ -44,7 +44,7 @@
     </el-form>
   </template>
   <template v-else>
-        {{ modelValue?.name }}
+    {{ modelValue?.name }}
   </template>
 </template>
 <script setup lang="ts">

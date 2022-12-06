@@ -6,6 +6,202 @@
   "description": "",
   "glyphs": [
     {
+      "icon_id": "1312432",
+      "name": "icon_openstack",
+      "font_class": "icon_openstack",
+      "unicode": "e64d",
+      "unicode_decimal": 58957
+    },
+    {
+      "icon_id": "10793761",
+      "name": "校验_操作_jurassic",
+      "font_class": "jurassic_verify",
+      "unicode": "e710",
+      "unicode_decimal": 59152
+    },
+    {
+      "icon_id": "2966982",
+      "name": "品牌标识-aliyun",
+      "font_class": "aliyun",
+      "unicode": "e709",
+      "unicode_decimal": 59145
+    },
+    {
+      "icon_id": "19446883",
+      "name": "阿里云",
+      "font_class": "alibabacloud",
+      "unicode": "ea9f",
+      "unicode_decimal": 60063
+    },
+    {
+      "icon_id": "19609431",
+      "name": "huawei",
+      "font_class": "huawei",
+      "unicode": "e67d",
+      "unicode_decimal": 59005
+    },
+    {
+      "icon_id": "21053635",
+      "name": "腾讯云",
+      "font_class": "tengxunyun",
+      "unicode": "e66e",
+      "unicode_decimal": 58990
+    },
+    {
+      "icon_id": "21053837",
+      "name": "VMware",
+      "font_class": "VMware",
+      "unicode": "e68a",
+      "unicode_decimal": 59018
+    },
+    {
+      "icon_id": "21053840",
+      "name": "VMware集群",
+      "font_class": "VMwarejiqun",
+      "unicode": "e68b",
+      "unicode_decimal": 59019
+    },
+    {
+      "icon_id": "24164616",
+      "name": "华为",
+      "font_class": "huawei1",
+      "unicode": "e64b",
+      "unicode_decimal": 58955
+    },
+    {
+      "icon_id": "24818242",
+      "name": "Vsphere",
+      "font_class": "a-ziyuan38",
+      "unicode": "e64c",
+      "unicode_decimal": 58956
+    },
+    {
+      "icon_id": "27364950",
+      "name": "aws",
+      "font_class": "aws",
+      "unicode": "ebed",
+      "unicode_decimal": 60397
+    },
+    {
+      "icon_id": "27402563",
+      "name": "阿里云",
+      "font_class": "aliyun1",
+      "unicode": "ee48",
+      "unicode_decimal": 61000
+    },
+    {
+      "icon_id": "27402570",
+      "name": "腾讯云",
+      "font_class": "tengxunyun1",
+      "unicode": "ee49",
+      "unicode_decimal": 61001
+    },
+    {
+      "icon_id": "421185",
+      "name": "自定义报表",
+      "font_class": "zidingyibaobiao",
+      "unicode": "e694",
+      "unicode_decimal": 59028
+    },
+    {
+      "icon_id": "3068749",
+      "name": "二级-漏洞扫描管理",
+      "font_class": "erji-loudongsaomiaoguanli",
+      "unicode": "eab2",
+      "unicode_decimal": 60082
+    },
+    {
+      "icon_id": "3978302",
+      "name": "系统安全合规报表",
+      "font_class": "xitonganquanheguibaobiao",
+      "unicode": "e645",
+      "unicode_decimal": 58949
+    },
+    {
+      "icon_id": "6550552",
+      "name": "文件-账单",
+      "font_class": "wj-zd",
+      "unicode": "e736",
+      "unicode_decimal": 59190
+    },
+    {
+      "icon_id": "7551409",
+      "name": "资产总览",
+      "font_class": "zichanzonglan",
+      "unicode": "e687",
+      "unicode_decimal": 59015
+    },
+    {
+      "icon_id": "8203774",
+      "name": "自定义配置",
+      "font_class": "zidingyipeizhi",
+      "unicode": "e6ba",
+      "unicode_decimal": 59066
+    },
+    {
+      "icon_id": "8605719",
+      "name": "规则管理",
+      "font_class": "guizeguanli",
+      "unicode": "e663",
+      "unicode_decimal": 58979
+    },
+    {
+      "icon_id": "10465942",
+      "name": "总览",
+      "font_class": "zonglan",
+      "unicode": "e7b9",
+      "unicode_decimal": 59321
+    },
+    {
+      "icon_id": "14918522",
+      "name": "运营总览",
+      "font_class": "yunyingzonglan",
+      "unicode": "e626",
+      "unicode_decimal": 58918
+    },
+    {
+      "icon_id": "15644302",
+      "name": "安全扫描",
+      "font_class": "anquansaomiao",
+      "unicode": "e6b9",
+      "unicode_decimal": 59065
+    },
+    {
+      "icon_id": "21053717",
+      "name": "漏洞扫描",
+      "font_class": "loudongsaomiao",
+      "unicode": "e679",
+      "unicode_decimal": 59001
+    },
+    {
+      "icon_id": "26085596",
+      "name": "云分账(选中)",
+      "font_class": "a-yunfenzhangxuanzhong",
+      "unicode": "e628",
+      "unicode_decimal": 58920
+    },
+    {
+      "icon_id": "26841824",
+      "name": "分析",
+      "font_class": "fenxi3",
+      "unicode": "ea3f",
+      "unicode_decimal": 59967
+    },
+    {
+      "icon_id": "27708984",
+      "name": "总览",
+      "font_class": "zonglan1",
+      "unicode": "e647",
+      "unicode_decimal": 58951
+    },
+    {
+      "icon_id": "28316863",
+      "name": "安全报告",
+      "font_class": "a-3cxjd",
+      "unicode": "e648",
+      "unicode_decimal": 58952
+    },
+    {
       "icon_id": "169944",
       "name": "内网",
       "font_class": "neiwang",

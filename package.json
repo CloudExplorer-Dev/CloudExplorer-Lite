@@ -24,7 +24,10 @@
     "build:vm": "yarn workspace vm-service run build-only",
     "dev:bill": "yarn workspace finance-management run dev",
     "lint:bill": "yarn workspace finance-management run lint",
-    "build:bill": "yarn workspace finance-management run build-only"
+    "build:bill": "yarn workspace finance-management run build-only",
+    "dev:security": "yarn workspace security-compliance run dev",
+    "lint:security": "yarn workspace security-compliance run lint",
+    "build:security": "yarn workspace security-compliance run build-only"
   },
   "dependencies": {
     "@element-plus/icons-vue": "^2.0.6",

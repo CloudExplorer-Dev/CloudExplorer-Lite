@@ -49,6 +49,12 @@ public class JobRecordResourceMapping implements Serializable {
     /**
      * 资源类型
      */
+    @TableField("resource_type")
+    private String resourceType;
+
+    /**
+     * 任务类型
+     */
     @TableField("job_type")
     private JobTypeConstants jobType;
 

@@ -5,6 +5,7 @@ import com.fit2cloud.provider.constants.F2CDiskStatus;
 import com.fit2cloud.provider.constants.F2CInstanceStatus;
 import com.fit2cloud.provider.entity.*;
 import com.fit2cloud.provider.impl.openstack.entity.CheckStatusResult;
+import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.openstack4j.api.OSClient;
@@ -19,8 +20,12 @@ import org.openstack4j.model.image.v2.Image;
 import org.openstack4j.model.storage.block.Volume;
 import org.openstack4j.model.storage.block.VolumeAttachment;
 import org.openstack4j.openstack.storage.block.domain.VolumeBackendPool;
+import org.springframework.core.io.ClassPathResource;
 
+import java.io.*;
+import java.nio.charset.StandardCharsets;
 import java.util.*;
+import java.util.regex.Matcher;
 
 public class OpenStackUtils extends OpenStackBaseUtils {
 
@@ -295,5 +300,49 @@ public class OpenStackUtils extends OpenStackBaseUtils {
         f2cDs.setType("storage_pool");
         f2cDs.setLastUpdate(new Date().getTime() / 1000);
         return f2cDs;
+    }
+
+    public static String getCloudInitUserData(String password) {
+        String loginUser = "root";
+
+        ClassPathResource classPathResource = new ClassPathResource("linux_create_user.sh");
+        String cloudInitBootstrapUserData = getContentFromStream(classPathResource);
+
+        cloudInitBootstrapUserData = cloudInitBootstrapUserData
+                .replaceAll("USER_NAME", Matcher.quoteReplacement(loginUser))
+                .replaceAll("USER_PASSWORD", Matcher.quoteReplacement(password))
+                .replaceAll("GROUP_NAME", Matcher.quoteReplacement(loginUser));
+
+        return Base64.encodeBase64String(cloudInitBootstrapUserData.getBytes(StandardCharsets.UTF_8));
+    }
+
+    private static String getContentFromStream(ClassPathResource classPathResource) {
+        Reader reader = null;
+        BufferedReader br = null;
+        StringBuilder sb = new StringBuilder();
+        try {
+             reader = new InputStreamReader(classPathResource.getInputStream());
+             br = new BufferedReader(reader);
+
+            String line = br.readLine();
+            while (line != null) {
+                sb.append(line).append("\n");
+                line = br.readLine();
+            }
+        } catch (IOException e) {
+            throw new RuntimeException(e.getMessage(), e);
+        } finally {
+            try {
+                if (reader != null) {
+                    reader.close();
+                }
+                if (br != null) {
+                    br.close();
+                }
+            } catch (IOException ignored) {
+            }
+        }
+
+        return sb.toString();
     }
 }

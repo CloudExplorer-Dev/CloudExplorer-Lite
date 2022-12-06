@@ -116,8 +116,8 @@ public class VsphereUtil {
                     }
                 }
             }
-            instance.setVmtoolsVersion(vmGuest.getToolsVersion());
-            instance.setVmtoolsStatus(vmGuest.getToolsRunningStatus());
+            instance.setVmToolsVersion(vmGuest.getToolsVersion());
+            instance.setVmToolsStatus(vmGuest.getToolsRunningStatus());
             instance.setHostname(vmGuest.hostName);
         }
         instance.setIpArray(ipArray);
@@ -319,7 +319,7 @@ public class VsphereUtil {
         f2cHost.setCpuMHzTotal(totalCpu);
 
         Datacenter dc = client.getDataCenter(hs);
-        f2cHost.setDataCenterId(dc.getMOR().getVal());
+        f2cHost.setDataCenterId(dc.getName());
         f2cHost.setDataCenterName(dc.getName());
 
         f2cHost.setHostId(hs.getMOR().getVal());

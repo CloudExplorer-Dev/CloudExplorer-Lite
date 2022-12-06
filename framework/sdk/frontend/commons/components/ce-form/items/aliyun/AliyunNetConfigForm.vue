@@ -2,12 +2,12 @@
   <template v-if="!confirm">
     <el-radio-group v-model="_data" style="width: 100%">
       <el-table
-          ref="singleTableRef"
-          :data="filterTableData"
-          highlight-current-row
-          style="width: 100%"
-          @current-change="handleCurrentChange"
-          max-height="340px"
+        ref="singleTableRef"
+        :data="filterTableData"
+        highlight-current-row
+        style="width: 100%"
+        @current-change="handleCurrentChange"
+        max-height="340px"
       >
         <el-table-column width="55">
           <template #default="scope">
@@ -30,16 +30,16 @@
   <template v-else>
     {{
       _.get(
-          _.find(formItem?.optionList, (o) => o.networkId === modelValue),
-          "networkId",
-          modelValue
+        _.find(formItem?.optionList, (o) => o.networkId === modelValue),
+        "networkId",
+        modelValue
       )
     }}
   </template>
 </template>
 <script setup lang="ts">
 import type { FormView } from "@commons/components/ce-form/type";
-import {computed, ref, watch} from "vue";
+import { computed, ref, watch } from "vue";
 import _ from "lodash";
 import type { ElTable } from "element-plus";
 
@@ -64,11 +64,11 @@ const singleTableRef = ref<InstanceType<typeof ElTable>>();
 // 搜索
 const search = ref();
 const filterTableData = computed(() =>
-    props.formItem?.optionList?.filter(
-        (data: Network) =>
-            !search.value ||
-            data.networkId.toLowerCase().includes(search.value.toLowerCase())
-    )
+  props.formItem?.optionList?.filter(
+    (data: Network) =>
+      !search.value ||
+      data.networkId.toLowerCase().includes(search.value.toLowerCase())
+  )
 );
 
 const _data = computed({
@@ -84,13 +84,13 @@ const _data = computed({
  * 触发 change 事件
  */
 watch(
-    () => _data.value,
-    (value) => {
-      if(value != null){
-        emit("change");
-      }
-    },
-    { deep: true }
+  () => _data.value,
+  (value) => {
+    if (value != null) {
+      emit("change");
+    }
+  },
+  { deep: true }
 );
 
 /**
@@ -99,8 +99,8 @@ watch(
 const currentRow = computed<Network | undefined>({
   get() {
     return _.find(
-        props.formItem?.optionList,
-        (o: Network) => o.networkId === _data.value
+      props.formItem?.optionList,
+      (o: Network) => o.networkId === _data.value
     );
   },
   set(value) {

@@ -151,7 +151,8 @@ public class VsphereSyncCloudApi {
         VsphereVmClient client = null;
         try {
             client = req.getVsphereVmClient();
-            List<HostSystem> hostSystemList = client.listHostsFromAll();
+            //TODO 这个地方应该查询区域下的主机，不应该查询所有的，会导致查询磁盘的时候重复
+            List<HostSystem> hostSystemList = client.listHosts();
             if (!CollectionUtils.isEmpty(hostSystemList)) {
                 Map<String, F2CVsphereHost> hostCache = VsphereUtil.generateHostCache(client);
                 Map<String, F2CVsphereDatastore> datastoreCache = VsphereUtil.generateDatastoreCache(client);
@@ -185,7 +186,7 @@ public class VsphereSyncCloudApi {
         VsphereClient client = req.getVsphereVmClient();
         List<F2CHost> list;
         try {
-            List<HostSystem> hosts = client.listHostsFromAll();
+            List<HostSystem> hosts = client.listHosts();
             list = new ArrayList<>();
             for (HostSystem hs : hosts) {
                 list.add(VsphereUtil.toF2CHost(hs, client));

@@ -91,81 +91,83 @@ const getData = () => {
     }
     request.value.metricName = PerfMetricConst[metricName].metricName;
     VmCloudServerApi.listPerfMetricMonitor(request.value).then((res) => {
+      const xData = ref<any>([]);
+      const yData = ref<any>([]);
       if (res.data.length > 0) {
-        const yData = res.data[0].values;
-        if (
-          metricName === PerfMetricConst.DISK_READ_BPS.metricName ||
-          metricName === PerfMetricConst.DISK_WRITE_BPS.metricName
-        ) {
-          const isInitMapMetricName =
-            metricName === PerfMetricConst.DISK_READ_BPS.metricName;
-          const metricNameParam = isInitMapMetricName
-            ? PerfMetricConst.DISK_READ_BPS.metricName
-            : PerfMetricConst.DISK_WRITE_BPS.metricName;
-          setXData(
-            PerfMetricConst.DISK_READ_BPS.metricName,
-            metricNameParam,
-            res.data[0].timestamps,
-            yData
-          );
-        } else if (
-          metricName === PerfMetricConst.DISK_READ_IOPS.metricName ||
-          metricName === PerfMetricConst.DISK_WRITE_IOPS.metricName
-        ) {
-          const isInitMapMetricName =
-            metricName === PerfMetricConst.DISK_READ_IOPS.metricName;
-          const metricNameParam = isInitMapMetricName
-            ? PerfMetricConst.DISK_READ_IOPS.metricName
-            : PerfMetricConst.DISK_WRITE_IOPS.metricName;
-          setXData(
-            PerfMetricConst.DISK_READ_IOPS.metricName,
-            metricNameParam,
-            res.data[0].timestamps,
-            yData
-          );
-        } else if (
-          metricName === PerfMetricConst.INTERNET_IN_RATE.metricName ||
-          metricName === PerfMetricConst.INTERNET_OUT_RATE.metricName
-        ) {
-          const isInitMapMetricName =
-            metricName === PerfMetricConst.INTERNET_IN_RATE.metricName;
-          const metricNameParam = isInitMapMetricName
-            ? PerfMetricConst.INTERNET_IN_RATE.metricName
-            : PerfMetricConst.INTERNET_OUT_RATE.metricName;
-          setXData(
-            PerfMetricConst.INTERNET_IN_RATE.metricName,
-            metricNameParam,
-            res.data[0].timestamps,
-            yData
-          );
-        } else if (
-          metricName === PerfMetricConst.INTRANET_IN_RATE.metricName ||
-          metricName === PerfMetricConst.INTRANET_OUT_RATE.metricName
-        ) {
-          const isInitMapMetricName =
-            metricName === PerfMetricConst.INTRANET_IN_RATE.metricName;
-          const metricNameParam = isInitMapMetricName
-            ? PerfMetricConst.INTRANET_IN_RATE.metricName
-            : PerfMetricConst.INTRANET_OUT_RATE.metricName;
-          setXData(
-            PerfMetricConst.INTRANET_IN_RATE.metricName,
-            metricNameParam,
-            res.data[0].timestamps,
-            yData
-          );
-        } else {
-          const d = echartsData.value.filter((i) => {
-            return metricName == i.metricName;
-          });
-          if (d[0]) {
-            d[0].xData = res.data[0].timestamps;
-            d[0].series[0].data = yData;
-          }
-        }
+        yData.value = res.data[0].values;
+        xData.value = res.data[0].timestamps;
+      }
+      if (
+        metricName === PerfMetricConst.DISK_READ_BPS.metricName ||
+        metricName === PerfMetricConst.DISK_WRITE_BPS.metricName
+      ) {
+        const isInitMapMetricName =
+          metricName === PerfMetricConst.DISK_READ_BPS.metricName;
+        const metricNameParam = isInitMapMetricName
+          ? PerfMetricConst.DISK_READ_BPS.metricName
+          : PerfMetricConst.DISK_WRITE_BPS.metricName;
+        setXData(
+          PerfMetricConst.DISK_READ_BPS.metricName,
+          metricNameParam,
+          xData.value,
+          yData.value
+        );
+      } else if (
+        metricName === PerfMetricConst.DISK_READ_IOPS.metricName ||
+        metricName === PerfMetricConst.DISK_WRITE_IOPS.metricName
+      ) {
+        const isInitMapMetricName =
+          metricName === PerfMetricConst.DISK_READ_IOPS.metricName;
+        const metricNameParam = isInitMapMetricName
+          ? PerfMetricConst.DISK_READ_IOPS.metricName
+          : PerfMetricConst.DISK_WRITE_IOPS.metricName;
+        setXData(
+          PerfMetricConst.DISK_READ_IOPS.metricName,
+          metricNameParam,
+          xData.value,
+          yData.value
+        );
+      } else if (
+        metricName === PerfMetricConst.INTERNET_IN_RATE.metricName ||
+        metricName === PerfMetricConst.INTERNET_OUT_RATE.metricName
+      ) {
+        const isInitMapMetricName =
+          metricName === PerfMetricConst.INTERNET_IN_RATE.metricName;
+        const metricNameParam = isInitMapMetricName
+          ? PerfMetricConst.INTERNET_IN_RATE.metricName
+          : PerfMetricConst.INTERNET_OUT_RATE.metricName;
+        setXData(
+          PerfMetricConst.INTERNET_IN_RATE.metricName,
+          metricNameParam,
+          xData.value,
+          yData.value
+        );
+      } else if (
+        metricName === PerfMetricConst.INTRANET_IN_RATE.metricName ||
+        metricName === PerfMetricConst.INTRANET_OUT_RATE.metricName
+      ) {
+        const isInitMapMetricName =
+          metricName === PerfMetricConst.INTRANET_IN_RATE.metricName;
+        const metricNameParam = isInitMapMetricName
+          ? PerfMetricConst.INTRANET_IN_RATE.metricName
+          : PerfMetricConst.INTRANET_OUT_RATE.metricName;
+        setXData(
+          PerfMetricConst.INTRANET_IN_RATE.metricName,
+          metricNameParam,
+          xData.value,
+          yData.value
+        );
       } else {
-        if (childRefMap.get(metricName)) {
-          childRefMap.get(metricName).hideEchartsLoading();
+        const d = echartsData.value.filter((i) => {
+          return metricName == i.metricName;
+        });
+        if (d[0]) {
+          d[0].xData = xData.value;
+          d[0].series[0].data = yData.value;
         }
+      }
+      if (childRefMap.get(metricName)) {
+        childRefMap.get(metricName).hideEchartsLoading();
       }
     });
   });
@@ -181,7 +183,7 @@ const setXData = (
   mapMetricName: string,
   metricName: string,
   res: any,
-  yData: number[]
+  yData: any
 ) => {
   const d = echartsData.value.filter((i) => {
     return mapMetricName == i.metricName;

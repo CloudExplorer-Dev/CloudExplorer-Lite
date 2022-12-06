@@ -1,6 +1,7 @@
 package com.fit2cloud.common.util;
 
 import com.fit2cloud.common.exception.Fit2cloudException;
+import com.fit2cloud.constants.ErrorCodeConstants;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -41,7 +42,7 @@ public class MonthUtil {
         try {
             simpleDateFormat.parse(month);
         } catch (ParseException e) {
-            throw new Fit2cloudException(2222, "月份格式化错误,yyyy-MM");
+            throw new Fit2cloudException(ErrorCodeConstants.BILL_VIEW_DATE_FORMAT.getCode(), ErrorCodeConstants.BILL_VIEW_DATE_FORMAT.getMessage());
         }
         Calendar instance = Calendar.getInstance();
         String[] split = month.split("-");

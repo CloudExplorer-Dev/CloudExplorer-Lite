@@ -52,16 +52,22 @@ public class BillDetailedServiceImpl implements IBillDetailedService {
     public IPage<BillDetailResponse> page(Integer currentPage, Integer pageSize, PageBillDetailedRequest request) {
         List<Query> queries = QueryUtil.getQuery(request, QueryFieldValueConvert.builder().field("cloudAccountName").convert((cloudAccountName) -> {
             List<CloudAccount> list = cloudAccountService.list(new LambdaQueryWrapper<CloudAccount>().like(true, CloudAccount::getName, cloudAccountName));
-            return CollectionUtils.isEmpty(list) ? null : list.stream().map(CloudAccount::getId).toList();
+            if (StringUtil.isEmpty(request.getCloudAccountName())) {
+                return null;
+            }
+            return CollectionUtils.isEmpty(list) ? new ArrayList<>() : list.stream().map(CloudAccount::getId).toList();
         }).build());
         ArrayList<Query> boolQueryList = new ArrayList<>(queries);
         if (StringUtil.isNotEmpty(request.getMonth())) {
             Query monthQuery = new Query.Builder().script(new ScriptQuery.Builder().script(s -> EsScriptUtil.getMonthOrYearScript(s, "MONTH", request.getMonth())).build()).build();
             boolQueryList.add(monthQuery);
         }
-       if (Objects.isNull(request.getOrder())||StringUtil.isEmpty(request.getOrder().getColumn())){
-           request.setOrder(new OrderRequest(){{setAsc(false);setColumn("realTotalCost");}});
-       }
+        if (Objects.isNull(request.getOrder()) || StringUtil.isEmpty(request.getOrder().getColumn())) {
+            request.setOrder(new OrderRequest() {{
+                setAsc(false);
+                setColumn("realTotalCost");
+            }});
+        }
         NativeQuery nativeQuery = new NativeQueryBuilder()
                 .withSort(request.getOrder().isAsc() ? Sort.by(request.getOrder().getColumn()).ascending() : Sort.by(request.getOrder().getColumn()).descending())
                 .withQuery(new Query.Builder().bool(new BoolQuery.Builder().must(boolQueryList).build()).build())
