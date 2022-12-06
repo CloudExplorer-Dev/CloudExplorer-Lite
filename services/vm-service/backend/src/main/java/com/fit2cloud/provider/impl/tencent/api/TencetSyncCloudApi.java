@@ -14,6 +14,7 @@ import com.fit2cloud.provider.entity.F2CImage;
 import com.fit2cloud.provider.entity.F2CNetwork;
 import com.fit2cloud.provider.entity.F2CVirtualMachine;
 import com.fit2cloud.provider.entity.request.GetMetricsRequest;
+import com.fit2cloud.provider.impl.tencent.constants.TencentChargeType;
 import com.fit2cloud.provider.impl.tencent.constants.TencentDiskType;
 import com.fit2cloud.provider.impl.tencent.constants.TencentPerfMetricConstants;
 import com.fit2cloud.provider.impl.tencent.entity.TencentDiskTypeDTO;
@@ -27,6 +28,7 @@ import com.tencentcloudapi.cbs.v20170312.models.*;
 import com.tencentcloudapi.common.exception.TencentCloudSDKException;
 import com.tencentcloudapi.cvm.v20170312.CvmClient;
 import com.tencentcloudapi.cvm.v20170312.models.Image;
+import com.tencentcloudapi.cvm.v20170312.models.Price;
 import com.tencentcloudapi.cvm.v20170312.models.*;
 import com.tencentcloudapi.monitor.v20180724.MonitorClient;
 import com.tencentcloudapi.monitor.v20180724.models.DataPoint;
@@ -443,6 +445,78 @@ public class TencetSyncCloudApi {
             map.put("name", name);
             return map;
         }).toList();
+    }
+
+    /**
+     * 基础配置询价
+     *
+     * @param req
+     * @return
+     */
+    public static String calculateConfigPrice(TencentVmCreateRequest req) {
+      return calculatePrice(req, false);
+    }
+
+    /**
+     * 公网IP流量配置询价
+     *
+     * @param req
+     * @return
+     */
+    public static String calculateTrafficPrice(TencentVmCreateRequest req) {
+        return calculatePrice(req, true);
+    }
+
+    /**
+     * 询价
+     *
+     * @param req
+     * @return
+     */
+    private static String calculatePrice(TencentVmCreateRequest req, Boolean trafficPriceOnly) {
+        String result = "";
+
+        // 询价镜像 ID 必填
+        if (StringUtils.isBlank(req.getZoneId()) || StringUtils.isBlank(req.getOsVersion())) {
+            return result;
+        }
+
+        TencentVmCredential tencentVmCredential = JsonUtil.parseObject(req.getCredential(), TencentVmCredential.class);
+        CvmClient client = tencentVmCredential.getCvmClient(req.getRegionId());
+
+        InquiryPriceRunInstancesRequest request = req.toInquiryPriceRunInstancesRequest();
+        try {
+            InquiryPriceRunInstancesResponse resp = client.InquiryPriceRunInstances(request);
+            Price price = resp.getPrice();
+
+            // 按流量计费的公网IP单独显示价格
+            if (trafficPriceOnly) {
+                result = price.getBandwidthPrice().getUnitPrice() + "元/GB";
+                return result;
+            }
+
+            // 带宽计费方式
+            boolean traffic = false;
+            if (req.getHasPublicIp() != null && req.getHasPublicIp() && "traffic".equalsIgnoreCase(req.getBandwidthChargeType())) {
+                traffic = true;
+            }
+
+            // 按需
+            if (TencentChargeType.POSTPAID.getId().equalsIgnoreCase(req.getInstanceChargeType())) {
+                Float priceAmount = price.getInstancePrice().getUnitPrice() + (!traffic ? price.getBandwidthPrice().getUnitPrice() : 0);
+                result = String.format("%.2f", priceAmount * req.getCount()) + "元/小时";
+            }
+
+            // 包年包月
+            if (TencentChargeType.PREPAID.getId().equalsIgnoreCase(req.getInstanceChargeType())) {
+                Float priceAmount = price.getInstancePrice().getOriginalPrice() + (!traffic ? price.getBandwidthPrice().getOriginalPrice() : 0);
+                result = String.format("%.2f", priceAmount * req.getCount()) + "元";
+            }
+
+            return result;
+        } catch (TencentCloudSDKException e) {
+            throw new RuntimeException(e.getMessage(), e);
+        }
     }
 
     /**

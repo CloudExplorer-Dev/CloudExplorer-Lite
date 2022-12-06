@@ -5,6 +5,7 @@ import com.tencentcloudapi.cbs.v20170312.CbsClient;
 import com.tencentcloudapi.common.Credential;
 import com.tencentcloudapi.common.profile.ClientProfile;
 import com.tencentcloudapi.common.profile.HttpProfile;
+import com.tencentcloudapi.common.profile.Language;
 import com.tencentcloudapi.cvm.v20170312.CvmClient;
 import com.tencentcloudapi.monitor.v20180724.MonitorClient;
 import com.tencentcloudapi.vpc.v20170312.VpcClient;
@@ -20,7 +21,7 @@ public class TencentVmCredential extends TencentCredential implements com.fit2cl
         Credential cred = new Credential(getSecretId(), getSecretKey());
         HttpProfile httpProfile = new HttpProfile();
         httpProfile.setEndpoint("cvm.tencentcloudapi.com");
-        ClientProfile clientProfile = new ClientProfile();
+        ClientProfile clientProfile = getClientProfile();
         clientProfile.setHttpProfile(httpProfile);
         return new CvmClient(cred, region, clientProfile);
     }
@@ -29,7 +30,7 @@ public class TencentVmCredential extends TencentCredential implements com.fit2cl
         Credential cred = new Credential(getSecretId(), getSecretKey());
         HttpProfile httpProfile = new HttpProfile();
         httpProfile.setEndpoint("cbs.tencentcloudapi.com");
-        ClientProfile clientProfile = new ClientProfile();
+        ClientProfile clientProfile = getClientProfile();
         clientProfile.setHttpProfile(httpProfile);
         return new CbsClient(cred, region, clientProfile);
     }
@@ -38,17 +39,23 @@ public class TencentVmCredential extends TencentCredential implements com.fit2cl
         Credential cred = new Credential(getSecretId(), getSecretKey());
         HttpProfile httpProfile = new HttpProfile();
         httpProfile.setEndpoint("vpc.tencentcloudapi.com");
-        ClientProfile clientProfile = new ClientProfile();
+        ClientProfile clientProfile = getClientProfile();
         clientProfile.setHttpProfile(httpProfile);
         return new VpcClient(cred, region, clientProfile);
     }
 
-    public MonitorClient getMonitorClient(String region){
+    public MonitorClient getMonitorClient(String region) {
         Credential cred = new Credential(getSecretId(), getSecretKey());
         HttpProfile httpProfile = new HttpProfile();
         httpProfile.setEndpoint("monitor.tencentcloudapi.com");
         ClientProfile clientProfile = new ClientProfile();
         clientProfile.setHttpProfile(httpProfile);
         return new MonitorClient(cred, region, clientProfile);
+    }
+
+    private ClientProfile getClientProfile() {
+        ClientProfile clientProfile = new ClientProfile();
+        clientProfile.setLanguage(Language.ZH_CN);
+        return clientProfile;
     }
 }

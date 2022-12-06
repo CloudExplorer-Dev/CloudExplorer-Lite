@@ -114,6 +114,11 @@ public class TencentCloudProvider extends AbstractCloudProvider<TencentCredentia
         return TencetSyncCloudApi.getInstanceTypes(JsonUtil.parseObject(req, TencentGetInstanceTypeRequest.class));
     }
 
+    /**
+     * 获取磁盘类型
+     * @param req
+     * @return
+     */
     public TencentDiskTypeDTO getDiskTypesForCreateVm(String req) {
         return TencetSyncCloudApi.getDiskTypes(JsonUtil.parseObject(req, TencentGetDiskTypeRequest.class));
     }
@@ -172,6 +177,25 @@ public class TencentCloudProvider extends AbstractCloudProvider<TencentCredentia
             result.add(map);
         }
         return result;
+    }
+
+    /**
+     * 基础配置询价
+     * @param req
+     * @return
+     */
+    @Override
+    public String calculateConfigPrice(String req){
+        return TencetSyncCloudApi.calculateConfigPrice(JsonUtil.parseObject(req, TencentVmCreateRequest.class));
+    }
+
+    /**
+     * 公网IP流量配置询价
+     * @param req
+     * @return
+     */
+    public String calculateTrafficPrice(String req){
+        return TencetSyncCloudApi.calculateTrafficPrice(JsonUtil.parseObject(req, TencentVmCreateRequest.class));
     }
     // For Create VM [END]
 

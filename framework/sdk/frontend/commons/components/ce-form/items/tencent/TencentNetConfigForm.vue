@@ -42,18 +42,12 @@
     </el-form>
   </template>
   <template v-else>
-    {{
-      _.get(
-        _.find(formItem?.optionList, (o) => o.networkId === modelValue),
-        "networkId",
-        modelValue
-      )
-    }}
+    {{ modelValue?.networkId }}
   </template>
 </template>
 <script setup lang="ts">
 import type { FormView } from "@commons/components/ce-form/type";
-import { computed, ref, watch } from "vue";
+import { computed, onMounted, ref, watch } from "vue";
 import _ from "lodash";
 import type { ElTable } from "element-plus";
 
@@ -122,7 +116,7 @@ const currentRow = computed<NetworkConfig | undefined>({
   get() {
     return _.find(
       props.formItem?.optionList,
-      (o: NetworkConfig) => o.networkId === _data.value
+      (o: NetworkConfig) => o.networkId === _data.value?.networkId
     );
   },
   set(value) {
@@ -135,5 +129,9 @@ function handleCurrentChange(val: NetworkConfig | undefined) {
   selectRowId.value = val?.networkId;
   emit("change");
 }
+
+onMounted(() => {
+  selectRowId.value = currentRow.value?.networkId;
+});
 </script>
 <style lang="scss" scoped></style>

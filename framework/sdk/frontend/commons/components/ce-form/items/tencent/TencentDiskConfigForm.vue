@@ -28,7 +28,6 @@
               (GB)
             </span>
           </span>
-
           <div>
             <div style="padding-bottom: 5px">
               <span>磁盘类型：</span>
@@ -107,6 +106,7 @@ import { computed, watch, onMounted, ref } from "vue";
 import _ from "lodash";
 import type { FormView } from "@commons/components/ce-form/type";
 import { CloseBold } from "@element-plus/icons-vue";
+import { ElMessage } from "element-plus";
 
 interface DiskTypeConfig {
   size: number;
@@ -165,40 +165,42 @@ const defaultDisks = computed(() => {
 
 const minSize = computed(() => (disk: DiskTypeConfig, index: number) => {
   const minSize = ref(20);
-
-  // 系统盘
-  if (index === 0) {
-    systemDiskTypeOptions.value.forEach((diskTypeOption: DiskTypeConfig) => {
-      if (diskTypeOption.diskType === disk.diskType) {
-        minSize.value = diskTypeOption.minDiskSize;
-      }
-    });
-  } else {
-    dataDiskTypeOptions.value.forEach((diskTypeOption: DiskTypeConfig) => {
-      if (diskTypeOption.diskType === disk.diskType) {
-        minSize.value = diskTypeOption.minDiskSize;
-      }
-    });
+  if (disk && index) {
+    // 系统盘
+    if (index === 0) {
+      systemDiskTypeOptions.value.forEach((diskTypeOption: DiskTypeConfig) => {
+        if (diskTypeOption.diskType === disk.diskType) {
+          minSize.value = diskTypeOption.minDiskSize;
+        }
+      });
+    } else {
+      dataDiskTypeOptions.value.forEach((diskTypeOption: DiskTypeConfig) => {
+        if (diskTypeOption.diskType === disk.diskType) {
+          minSize.value = diskTypeOption.minDiskSize;
+        }
+      });
+    }
   }
   return minSize.value;
 });
 
 const maxSize = computed(() => (disk: DiskTypeConfig, index: number) => {
   const maxSize = ref(1024);
-
-  // 系统盘
-  if (index === 0) {
-    systemDiskTypeOptions.value.forEach((diskTypeOption: DiskTypeConfig) => {
-      if (diskTypeOption.diskType === disk.diskType) {
-        maxSize.value = diskTypeOption.maxDiskSize;
-      }
-    });
-  } else {
-    dataDiskTypeOptions.value.forEach((diskTypeOption: DiskTypeConfig) => {
-      if (diskTypeOption.diskType === disk.diskType) {
-        maxSize.value = diskTypeOption.maxDiskSize;
-      }
-    });
+  if (disk && index) {
+    // 系统盘
+    if (index === 0) {
+      systemDiskTypeOptions.value.forEach((diskTypeOption: DiskTypeConfig) => {
+        if (diskTypeOption.diskType === disk.diskType) {
+          maxSize.value = diskTypeOption.maxDiskSize;
+        }
+      });
+    } else {
+      dataDiskTypeOptions.value.forEach((diskTypeOption: DiskTypeConfig) => {
+        if (diskTypeOption.diskType === disk.diskType) {
+          maxSize.value = diskTypeOption.maxDiskSize;
+        }
+      });
+    }
   }
   return maxSize.value;
 });
@@ -227,35 +229,27 @@ watch(
 );
 
 function add() {
-  data.value?.push({ size: 20, deleteWithInstance: true, readonly: false });
+  if (dataDiskTypeOptions.value.length > 0) {
+    const dataDiskItem = dataDiskTypeOptions.value[0];
+    data.value?.push({
+      size: dataDiskItem.minDiskSize,
+      diskType: dataDiskItem.diskType,
+      deleteWithInstance: true,
+      readonly: false,
+    });
+  } else {
+    ElMessage.warning("可选择的数据盘类型为空");
+  }
 }
 
 function remove(index: number) {
   _.remove(data.value, (n, i) => index === i);
 }
 
-/**
- * 校验方法
- */
-function validate(): Promise<boolean> {
-  return new Promise((resolve, reject) => {
-    if (props.confirm || data.value.length === 0) {
-      return reject(false);
-    }
-    return _.every(data.value, (disk) => disk.size > 0)
-      ? resolve(true)
-      : reject(false);
-  });
-}
-
-const loading = ref<boolean>(false);
 onMounted(() => {
-  data.value = defaultDisks.value;
-});
-
-defineExpose({
-  validate,
-  field: props.field,
+  if (data.value.length == 0) {
+    data.value = defaultDisks.value;
+  }
 });
 </script>
 <style lang="scss" scoped>

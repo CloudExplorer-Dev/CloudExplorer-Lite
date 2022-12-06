@@ -16,7 +16,6 @@ import com.tencentcloudapi.cvm.v20170312.models.*;
 import lombok.Data;
 import lombok.experimental.Accessors;
 import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.lang3.StringUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -39,24 +38,12 @@ import java.util.List;
 @FormGroupInfo(group = 8, name = "登录凭证")
 @FormGroupInfo(group = 9, name = "主机命名")
 public class TencentVmCreateRequest extends TencentBaseRequest implements ICreateServerRequest {
-
-    @Form(inputType = InputType.Number,
-            label = "购买数量",
-            unit = "台",
-            defaultValue = "1",
-            defaultJsonValue = true,
-            attrs = "{\"min\":1,\"max\":10,\"step\":1}",
-            confirmGroup = 1
-
-    )
-    private int count;
-
-    private int index;
-
     /**
      * 数据库中预插入数据的主键
      */
     private String id;
+
+    private int index;
 
     @Form(inputType = InputType.Radio,
             label = "付费方式",
@@ -85,6 +72,17 @@ public class TencentVmCreateRequest extends TencentBaseRequest implements ICreat
             relationShowValues = "PREPAID"
     )
     private String periodNum;
+
+    @Form(inputType = InputType.Number,
+            label = "购买数量",
+            unit = "台",
+            defaultValue = "1",
+            defaultJsonValue = true,
+            attrs = "{\"min\":1,\"max\":10,\"step\":1}",
+            confirmGroup = 1
+
+    )
+    private int count;
 
     @Form(inputType = InputType.SingleSelect,
             label = "区域",
@@ -147,14 +145,15 @@ public class TencentVmCreateRequest extends TencentBaseRequest implements ICreat
             relationTrigger = {"instanceChargeType", "zoneId"},
             step = 1,
             group = 4,
-            confirmGroup = 1
+            confirmGroup = 1,
+            confirmSpecial = true
     )
     private TencentInstanceType instanceTypeDTO;
 
     @Form(inputType = InputType.TencentDiskConfigForm,
             clazz = TencentCloudProvider.class,
             method = "getDiskTypesForCreateVm",
-            label = "磁盘配置",
+            label = "",
             defaultValue = "[]",
             defaultJsonValue = true,
             relationTrigger = {"instanceChargeType", "zoneId", "instanceTypeDTO"},
@@ -168,18 +167,19 @@ public class TencentVmCreateRequest extends TencentBaseRequest implements ICreat
     @Form(inputType = InputType.TencentNetConfigForm,
             clazz = TencentCloudProvider.class,
             method = "getNetworks",
-            label = "选择网络",
+            label = "网络",
             textField = "name",
             valueField = "networkId",
             relationTrigger = "zoneId",
             step = 2,
             group = 6,
-            confirmGroup = 2
+            confirmGroup = 2,
+            confirmSpecial = true
     )
     private F2CNetwork f2CNetwork;
 
     @Form(inputType = InputType.MultiSelect,
-            label = "选择安全组",
+            label = "安全组",
             clazz = TencentCloudProvider.class,
             method = "getSecurityGroups",
             textField = "name",
@@ -194,6 +194,7 @@ public class TencentVmCreateRequest extends TencentBaseRequest implements ICreat
     @Form(inputType = InputType.SwitchBtn,
             label = "公网IP",
             defaultValue = "false",
+            defaultJsonValue = true,
             step = 2,
             group = 7,
             confirmGroup = 2
@@ -271,6 +272,34 @@ public class TencentVmCreateRequest extends TencentBaseRequest implements ICreat
     )
     private List<TencentVmCreateRequest.ServerInfo> serverInfos;
 
+    @Form(inputType = InputType.LabelText,
+            label = "配置费用",
+            clazz = TencentCloudProvider.class,
+            method = "calculateConfigPrice",
+            attrs = "{\"style\":\"color: red; font-size: large\"}",
+            confirmGroup = 1,
+            footerLocation = 1,
+            relationTrigger = {"hasPublicIp", "bandwidth", "bandwidthChargeType", "count", "instanceChargeType", "instanceTypeDTO", "osVersion", "disks"},
+            confirmSpecial = true,
+            required = false
+    )
+    private String configPrice;
+
+    @Form(inputType = InputType.LabelText,
+            label = "公网IP流量费用",
+            clazz = TencentCloudProvider.class,
+            method = "calculateTrafficPrice",
+            attrs = "{\"style\":\"color: red; font-size: large\"}",
+            confirmGroup = 1,
+            footerLocation = 1,
+            relationShows = {"bandwidthChargeType"},
+            relationShowValues = {"traffic"},
+            relationTrigger = {"bandwidth", "bandwidthChargeType"},
+            confirmSpecial = true,
+            required = false
+    )
+    private String trafficPrice;
+
     @Data
     @Accessors(chain = true)
     public static class ServerInfo {
@@ -281,6 +310,11 @@ public class TencentVmCreateRequest extends TencentBaseRequest implements ICreat
         private String hostname;
     }
 
+    /**
+     * 生产创建实例 request 对象
+     *
+     * @return
+     */
     public RunInstancesRequest toRunInstancesRequest() {
         RunInstancesRequest runInstancesRequest = new RunInstancesRequest();
 
@@ -288,50 +322,27 @@ public class TencentVmCreateRequest extends TencentBaseRequest implements ICreat
         placement.setZone(this.zoneId);
         runInstancesRequest.setPlacement(placement);
         runInstancesRequest.setImageId(this.osVersion);
-        runInstancesRequest.setInstanceType(this.instanceTypeDTO.getInstanceType());
+        if (this.instanceTypeDTO != null) {
+            runInstancesRequest.setInstanceType(this.instanceTypeDTO.getInstanceType());
+        }
+
+        // 设置机器收费类型:按需或者包周期
+        runInstancesRequest.setInstanceChargeType(this.instanceChargeType);
+        if (TencentChargeType.PREPAID.getId().equalsIgnoreCase(this.instanceChargeType)) {
+            runInstancesRequest.setInstanceChargePrepaid(generateInstanceChargePrepaid());
+        }
 
         // 磁盘
         if (CollectionUtils.isNotEmpty(this.disks)) {
-            // 系统盘： 默认第一块盘为系统盘
-            TencentCreateDiskForm systemDiskConfig = this.disks.get(0);
-            SystemDisk systemDisk = new SystemDisk();
-            systemDisk.setDiskType(systemDiskConfig.getDiskType());
-            systemDisk.setDiskSize(systemDiskConfig.getSize());
-            runInstancesRequest.setSystemDisk(systemDisk);
-
-            // 数据盘
-            List<DataDisk> dataDisks = new ArrayList<>();
-            for (int i = 1; i < this.disks.size(); i++) {
-                DataDisk dataDisk = new DataDisk();
-                dataDisk.setDeleteWithInstance("TRUE".equalsIgnoreCase(disks.get(i).getDeleteWithInstance()));
-                dataDisk.setDiskSize(this.disks.get(i).getSize());
-                dataDisk.setDiskType(this.disks.get(i).getDiskType());
-                dataDisks.add(dataDisk);
-            }
-            if (CollectionUtils.isNotEmpty(dataDisks)) {
-                runInstancesRequest.setDataDisks(dataDisks.toArray(new DataDisk[dataDisks.size()]));
+            runInstancesRequest.setSystemDisk(generateSystemDisk());
+            if (CollectionUtils.isNotEmpty(generateDataDisk())) {
+                runInstancesRequest.setDataDisks(generateDataDisk().toArray(new DataDisk[generateDataDisk().size()]));
             }
         }
 
         // 公网IP
         if (this.hasPublicIp) {
-            InternetAccessible internetAccessible = new InternetAccessible();
-            internetAccessible.setPublicIpAssigned(true);
-
-            String bandwidthChargeType = this.bandwidthChargeType;
-            if ("BANDWIDTH".equalsIgnoreCase(bandwidthChargeType)) {
-                if (TencentChargeType.PREPAID.getId().equalsIgnoreCase(this.instanceChargeType)) {
-                    bandwidthChargeType = TencentBandwidthType.BANDWIDTH_PREPAID.getId();
-                } else {
-                    bandwidthChargeType = TencentBandwidthType.BANDWIDTH_POSTPAID_BY_HOUR.getId();
-                }
-            } else {
-                bandwidthChargeType = TencentBandwidthType.TRAFFIC.getId();
-            }
-
-            internetAccessible.setInternetChargeType(bandwidthChargeType);
-            internetAccessible.setInternetMaxBandwidthOut(this.bandwidth);
-            runInstancesRequest.setInternetAccessible(internetAccessible);
+            runInstancesRequest.setInternetAccessible(generateInternetAccessible());
         }
 
         // 设置云主机名称和 hostname
@@ -359,21 +370,119 @@ public class TencentVmCreateRequest extends TencentBaseRequest implements ICreat
             runInstancesRequest.setSecurityGroupIds(securityGroupIds.toArray(new String[securityGroupIds.size()]));
         }
 
-        // 设置机器收费类型:按需或者包周期
-        if (StringUtils.isNotBlank(this.instanceChargeType) && TencentChargeType.PREPAID.getId().equalsIgnoreCase(this.instanceChargeType)) {
-            runInstancesRequest.setInstanceChargeType(this.instanceChargeType);
-            InstanceChargePrepaid chargePrepaid = new InstanceChargePrepaid();
-            chargePrepaid.setPeriod(Long.valueOf(periodNum));
+        return runInstancesRequest;
+    }
 
-            // 设定默认值
-            chargePrepaid.setRenewFlag("NOTIFY_AND_MANUAL_RENEW");
-            if (chargePrepaid.getPeriod() == null) {
-                chargePrepaid.setPeriod(1L);
-            }
+    /**
+     * 生成询价 request 对象
+     *
+     * @return
+     */
+    public InquiryPriceRunInstancesRequest toInquiryPriceRunInstancesRequest() {
+        InquiryPriceRunInstancesRequest req = new InquiryPriceRunInstancesRequest();
 
-            runInstancesRequest.setInstanceChargePrepaid(chargePrepaid);
+        Placement placement = new Placement();
+        placement.setZone(this.zoneId);
+        req.setPlacement(placement);
+        req.setImageId(this.osVersion);
+        if (this.instanceTypeDTO != null) {
+            req.setInstanceType(this.instanceTypeDTO.getInstanceType());
+        }
+        req.setInstanceChargeType(this.instanceChargeType);
+        if (TencentChargeType.PREPAID.getId().equalsIgnoreCase(this.instanceChargeType)) {
+            req.setInstanceChargePrepaid(generateInstanceChargePrepaid());
         }
 
-        return runInstancesRequest;
+        // 磁盘
+        if (CollectionUtils.isNotEmpty(this.disks)) {
+            req.setSystemDisk(generateSystemDisk());
+            if (CollectionUtils.isNotEmpty(generateDataDisk())) {
+                req.setDataDisks(generateDataDisk().toArray(new DataDisk[generateDataDisk().size()]));
+            }
+        }
+
+        // 公网 IP
+        if (this.hasPublicIp != null && this.hasPublicIp) {
+            req.setInternetAccessible(generateInternetAccessible());
+        }
+        return req;
+    }
+
+    /**
+     * 转换带宽计费模式
+     *
+     * @param bandwidthChargeType
+     * @return
+     */
+    public String transferBandwidthChargeType(String bandwidthChargeType) {
+        String result;
+        if ("BANDWIDTH".equalsIgnoreCase(bandwidthChargeType)) {
+            if (TencentChargeType.PREPAID.getId().equalsIgnoreCase(this.instanceChargeType)) {
+                result = TencentBandwidthType.BANDWIDTH_PREPAID.getId();
+            } else {
+                result = TencentBandwidthType.BANDWIDTH_POSTPAID_BY_HOUR.getId();
+            }
+        } else {
+            result = TencentBandwidthType.TRAFFIC.getId();
+        }
+        return result;
+    }
+
+    /**
+     * 生成系统盘配置（默认第一块盘为系统盘）
+     *
+     * @return
+     */
+    private SystemDisk generateSystemDisk() {
+        TencentCreateDiskForm systemDiskConfig = this.disks.get(0);
+        SystemDisk systemDisk = new SystemDisk();
+        systemDisk.setDiskType(systemDiskConfig.getDiskType());
+        systemDisk.setDiskSize(systemDiskConfig.getSize());
+        return systemDisk;
+    }
+
+    /**
+     * 生成数据盘配置（默认第一块盘为系统盘，其余为数据盘）
+     *
+     * @return
+     */
+    private List<DataDisk> generateDataDisk() {
+        List<DataDisk> dataDisks = new ArrayList<>();
+        for (int i = 1; i < this.disks.size(); i++) {
+            DataDisk dataDisk = new DataDisk();
+            dataDisk.setDeleteWithInstance("TRUE".equalsIgnoreCase(disks.get(i).getDeleteWithInstance()));
+            dataDisk.setDiskSize(this.disks.get(i).getSize());
+            dataDisk.setDiskType(this.disks.get(i).getDiskType());
+            dataDisks.add(dataDisk);
+        }
+        return dataDisks;
+    }
+
+    /**
+     * 生成公网IP配置
+     *
+     * @return
+     */
+    private InternetAccessible generateInternetAccessible() {
+        InternetAccessible internetAccessible = new InternetAccessible();
+        internetAccessible.setPublicIpAssigned(true);
+        internetAccessible.setInternetChargeType(transferBandwidthChargeType(this.bandwidthChargeType));
+        internetAccessible.setInternetMaxBandwidthOut(this.bandwidth);
+        return internetAccessible;
+    }
+
+    /**
+     * 生成包年包月配置
+     *
+     * @return
+     */
+    private InstanceChargePrepaid generateInstanceChargePrepaid() {
+        InstanceChargePrepaid instanceChargePrepaid = new InstanceChargePrepaid();
+        instanceChargePrepaid.setPeriod(Long.valueOf(this.periodNum));
+        instanceChargePrepaid.setRenewFlag("NOTIFY_AND_MANUAL_RENEW");
+        if (instanceChargePrepaid.getPeriod() == null) {
+            instanceChargePrepaid.setPeriod(1L);
+        }
+        return instanceChargePrepaid;
     }
 }

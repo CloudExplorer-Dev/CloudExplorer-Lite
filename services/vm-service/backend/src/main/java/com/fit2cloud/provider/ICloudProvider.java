@@ -215,5 +215,11 @@ public interface ICloudProvider {
 
     CheckCreateServerResult validateServerCreateRequest(String req);
 
+    /**
+     * 询价
+     * @param req
+     * @return
+     */
+    String calculateConfigPrice(String req);
 
 }
