@@ -48,7 +48,10 @@
                   v-if="getDisplayValue(form) instanceof Array"
                   class="description-array"
                 >
-                  <div v-for="(item, index) in getDisplayValue(form)">
+                  <div
+                    v-for="(item, index) in getDisplayValue(form)"
+                    :key="index"
+                  >
                     <div v-if="index === getDisplayValue(form).length - 1">
                       {{ item }}
                     </div>
