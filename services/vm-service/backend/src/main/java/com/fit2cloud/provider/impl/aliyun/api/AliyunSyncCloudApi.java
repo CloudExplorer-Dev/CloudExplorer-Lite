@@ -336,7 +336,7 @@ public class AliyunSyncCloudApi {
         f2CNetwork.setRegionId(vpc.getRegionId());
         f2CNetwork.setVpcId(vpc.getVpcId());
         f2CNetwork.setVpcName(vpc.getVpcName());
-        f2CNetwork.setName(vSwitch.getVSwitchName());
+        f2CNetwork.setNetworkName(vSwitch.getVSwitchName());
         f2CNetwork.setNetworkId("[" + vpc.getVpcId() + "]" + vSwitch.getVSwitchId());
         f2CNetwork.setZoneId(vSwitch.getZoneId());
         f2CNetwork.setIpSegment(vSwitch.cidrBlock);

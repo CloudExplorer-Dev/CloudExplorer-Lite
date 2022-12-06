@@ -71,7 +71,7 @@ public class JobRecordServiceImpl implements IJobRecordService {
 
         List<String> jobRecordIds = result.getRecords().stream().map(JobRecord::getId).toList();
 
-        List<JobRecordResourceMapping> jobRecordResourceMappings = baseJobRecordResourceMappingMapper.selectList(new LambdaQueryWrapper<JobRecordResourceMapping>().in(CollectionUtils.isNotEmpty(jobRecordIds), JobRecordResourceMapping::getJobRecordId, jobRecordIds));
+        List<JobRecordResourceMapping> jobRecordResourceMappings = CollectionUtils.isNotEmpty(jobRecordIds) ? baseJobRecordResourceMappingMapper.selectList(new LambdaQueryWrapper<JobRecordResourceMapping>().in(JobRecordResourceMapping::getJobRecordId, jobRecordIds)) : new ArrayList<>();
 
         Set<String> serverIds = new HashSet<>();
         Map<String, List<String>> serverIdMaps = new HashMap<>();
@@ -92,9 +92,9 @@ public class JobRecordServiceImpl implements IJobRecordService {
             }
         });
 
-        Map<String, VmCloudServer> servers = baseVmCloudServerMapper.selectBatchIds(serverIds).stream().collect(Collectors.toMap(VmCloudServer::getId, server -> server));
+        Map<String, VmCloudServer> servers = CollectionUtils.isNotEmpty(serverIds) ? baseVmCloudServerMapper.selectBatchIds(serverIds).stream().collect(Collectors.toMap(VmCloudServer::getId, server -> server)) : new HashMap<>();
 
-        Map<String, VmCloudDisk> disks = baseVmCloudDiskMapper.selectBatchIds(diskIds).stream().collect(Collectors.toMap(VmCloudDisk::getId, disk -> disk));
+        Map<String, VmCloudDisk> disks = CollectionUtils.isNotEmpty(diskIds) ? baseVmCloudDiskMapper.selectBatchIds(diskIds).stream().collect(Collectors.toMap(VmCloudDisk::getId, disk -> disk)) : new HashMap<>();
 
         result.getRecords().forEach(record -> {
             if (record.getServers() == null) {
