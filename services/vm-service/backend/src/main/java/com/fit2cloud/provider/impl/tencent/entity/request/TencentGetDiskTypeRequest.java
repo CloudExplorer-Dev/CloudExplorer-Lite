@@ -39,7 +39,11 @@ public class TencentGetDiskTypeRequest extends TencentBaseRequest {
         }
 
         if (this.instanceTypeDTO != null) {
-            describeDiskConfigQuotaRequest.setInstanceFamilies(new String[]{instanceTypeDTO.getInstanceTypeFamily()});
+            String instanceTypeFamily = instanceTypeDTO.getInstanceTypeFamily() == null ?
+                    this.instanceTypeDTO.getInstanceType().substring(0, this.instanceTypeDTO.getInstanceType().indexOf(".")) : instanceTypeDTO.getInstanceTypeFamily();
+            if (instanceTypeFamily != null) {
+                describeDiskConfigQuotaRequest.setInstanceFamilies(new String[]{instanceTypeFamily});
+            }
             describeDiskConfigQuotaRequest.setCPU(this.instanceTypeDTO.getCpu());
             describeDiskConfigQuotaRequest.setMemory(this.instanceTypeDTO.getMemory());
         }

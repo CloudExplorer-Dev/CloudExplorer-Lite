@@ -255,7 +255,7 @@ public class TencetSyncCloudApi {
      * @param req 请求数据
      * @return
      */
-    public List<TencentDiskTypeDTO.TencentDiskType> getDataDiskType(TencentGetDiskTypeRequest req) {
+    public static List<TencentDiskTypeDTO.TencentDiskType> getDataDiskType(TencentGetDiskTypeRequest req) {
         req.setDiskUsage("DATA_DISK");
         return getDiskTypes(req).getDataDiskTypes();
     }
