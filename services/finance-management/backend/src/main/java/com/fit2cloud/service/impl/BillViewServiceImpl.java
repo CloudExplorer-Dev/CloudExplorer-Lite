@@ -15,6 +15,7 @@ import com.fit2cloud.common.util.EsScriptUtil;
 import com.fit2cloud.common.util.MappingUtil;
 import com.fit2cloud.common.util.MonthUtil;
 import com.fit2cloud.common.utils.JsonUtil;
+import com.fit2cloud.constants.ErrorCodeConstants;
 import com.fit2cloud.controller.request.BillExpensesRequest;
 import com.fit2cloud.controller.request.HistoryTrendRequest;
 import com.fit2cloud.controller.response.BillView;
@@ -72,7 +73,7 @@ public class BillViewServiceImpl implements BillViewService {
         try {
             simpleDateFormat.parse(value);
         } catch (ParseException e) {
-            throw new Fit2cloudException(111, "时间格式正确");
+            throw new Fit2cloudException(ErrorCodeConstants.BILL_VIEW_DATE_FORMAT.getCode(), ErrorCodeConstants.BILL_VIEW_DATE_FORMAT.getMessage());
         }
         ScriptQuery scriptQuery = new ScriptQuery.Builder().script(s -> EsScriptUtil.getMonthOrYearScript(s, type, value)).build();
         Aggregation aggregation = new Aggregation.Builder().sum(new SumAggregation.Builder().field("realTotalCost").build()).build();

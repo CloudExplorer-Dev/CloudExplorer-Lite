@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.core.metadata.OrderItem;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.plugins.pagination.PageDTO;
 import com.fit2cloud.request.pub.PageOrderRequestInterface;
+import org.apache.commons.collections4.CollectionUtils;
 
 import java.util.Collections;
 
@@ -27,11 +28,10 @@ public class PageUtil {
             String column = ColumnNameUtil.getColumnName(pageRequest.getOrder().getColumn(), clazz, appendTableName);
             if (column != null) {
                 page.setOrders(Collections.singletonList(pageRequest.getOrder().resetColumn(column)));
-            } else {
-                if (defaultOrder != null) {
-                    page.setOrders(Collections.singletonList(defaultOrder));
-                }
             }
+        }
+        if (defaultOrder != null && CollectionUtils.isEmpty(page.getOrders())) {
+            page.setOrders(Collections.singletonList(defaultOrder));
         }
         return page;
     }

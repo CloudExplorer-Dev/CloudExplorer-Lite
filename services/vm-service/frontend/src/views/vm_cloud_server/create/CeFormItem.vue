@@ -181,6 +181,42 @@ function initOptionList(
 }
 
 /**
+ * 计算价格
+ * @param formItem
+ * @param data
+ * @param allData
+ */
+function calculatePrice(
+  formItem: FormView | undefined,
+  data: any,
+  allData?: any
+): void {
+  if (formItem && formItem.clazz && formItem.method) {
+    const _temp = _.assignWith(
+      {},
+      props.otherParams,
+      _.defaultTo(allData, props.allData),
+      (objValue, srcValue) => {
+        return _.isUndefined(objValue) ? srcValue : objValue;
+      }
+    );
+    _.assign(_temp, data);
+    formApi
+      .getResourceMethod(
+        formItem.serviceMethod,
+        formItem.clazz,
+        formItem.method,
+        _temp,
+        _loading
+      )
+      .then((ok) => {
+        formItem.optionList = ok.data;
+        emit("optionListRefresh", formItem.field);
+      });
+  }
+}
+
+/**
  * 根据field字段刷新optionList
  * @param field
  * @param allData
@@ -223,8 +259,13 @@ const change = (formItem: FormView) => {
       //console.log(formItem.field, "in", item.field);
       //设置空值
       _.set(_data.value, item.field, undefined);
-      //设置列表
-      initOptionList(item, _data.value);
+
+      if (item.method === "calculateConfigPrice") {
+        calculatePrice(item, _data.value);
+      } else {
+        //设置列表
+        initOptionList(item, _data.value);
+      }
     }
   });
 };

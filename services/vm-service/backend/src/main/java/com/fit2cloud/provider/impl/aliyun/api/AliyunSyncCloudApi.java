@@ -1,12 +1,11 @@
 package com.fit2cloud.provider.impl.aliyun.api;
 
-import com.aliyun.bssopenapi20171214.models.GetPayAsYouGoPriceRequest;
-import com.aliyun.bssopenapi20171214.models.GetPayAsYouGoPriceResponse;
-import com.aliyun.bssopenapi20171214.models.GetSubscriptionPriceRequest;
-import com.aliyun.bssopenapi20171214.models.GetSubscriptionPriceResponse;
+import com.aliyun.bssopenapi20171214.models.*;
 import com.aliyun.cms20190101.models.DescribeMetricListRequest;
 import com.aliyun.cms20190101.models.DescribeMetricListResponse;
 import com.aliyun.ecs20140526.Client;
+import com.aliyun.ecs20140526.models.CreateInstanceRequest;
+import com.aliyun.ecs20140526.models.CreateInstanceResponse;
 import com.aliyun.ecs20140526.models.*;
 import com.aliyun.tea.TeaException;
 import com.aliyun.teautil.models.RuntimeOptions;
@@ -100,7 +99,7 @@ public class AliyunSyncCloudApi {
             }
 
             if (instanceCreated) {
-                if (StringUtils.isNotBlank(req.getNetworkId())) {
+                if (req.getF2CNetwork() != null && req.getF2CNetwork().getNetworkId() != null) {
                     if (req.getHasPublicIp()) {
                         try {
                             // 创建 弹性公网IP
@@ -176,6 +175,9 @@ public class AliyunSyncCloudApi {
             }
             if (instance != null) {
                 F2CVirtualMachine f2cInstance = AliyunMappingUtil.toF2CVirtualMachine(instance);
+                if (f2cInstance != null) {
+                    f2cInstance.setId(req.getId());
+                }
                 return f2cInstance;
             } else {
                 throw new PluginException("Return result is null.");
@@ -193,8 +195,8 @@ public class AliyunSyncCloudApi {
                 .setId(request.getId())
                 .setName(request.getServerInfos().get(index).getName())
                 .setIpArray(new ArrayList<>())
-                .setInstanceType(request.getInstanceType())
-                .setInstanceTypeDescription(request.getInstanceType());
+                .setInstanceType(request.getInstanceTypeDTO() == null ? "" : request.getInstanceTypeDTO().getInstanceType())
+                .setInstanceTypeDescription(request.getInstanceTypeDTO() == null ? "" : request.getInstanceTypeDTO().getInstanceType());
 
         return virtualMachine;
     }
@@ -336,8 +338,8 @@ public class AliyunSyncCloudApi {
         f2CNetwork.setRegionId(vpc.getRegionId());
         f2CNetwork.setVpcId(vpc.getVpcId());
         f2CNetwork.setVpcName(vpc.getVpcName());
-        f2CNetwork.setName(vSwitch.getVSwitchName());
-        f2CNetwork.setNetworkId("[" + vpc.getVpcId() + "]" + vSwitch.getVSwitchId());
+        f2CNetwork.setNetworkName((vSwitch.getVSwitchName()));
+        f2CNetwork.setNetworkId(vSwitch.getVSwitchId());
         f2CNetwork.setZoneId(vSwitch.getZoneId());
         f2CNetwork.setIpSegment(vSwitch.cidrBlock);
         return f2CNetwork;
@@ -348,18 +350,15 @@ public class AliyunSyncCloudApi {
      *
      * @param req
      * @return
-     * @throws PluginException
      */
     public static List<DescribeSecurityGroupsResponseBody.DescribeSecurityGroupsResponseBodySecurityGroupsSecurityGroup> getSecurityGroups(AliyunGetSecurityGroupRequest req) {
         AliyunVmCredential credential = JsonUtil.parseObject(req.getCredential(), AliyunVmCredential.class);
         Client client = credential.getClientByRegion(req.getRegionId());
         DescribeSecurityGroupsRequest describeSecurityGroupsRequest = new DescribeSecurityGroupsRequest();
         describeSecurityGroupsRequest.setRegionId(req.getRegionId());
-        describeSecurityGroupsRequest.setVpcId(req.getVpcId());
 
-        String vpcId = req.getVpcId();
-        if (StringUtils.isNoneEmpty(vpcId)) {
-            describeSecurityGroupsRequest.setVpcId(vpcId);
+        if (req.getF2CNetwork() != null && StringUtils.isNotBlank(req.getF2CNetwork().getVpcId())) {
+            describeSecurityGroupsRequest.setVpcId(req.getF2CNetwork().getVpcId());
         }
         try {
             List<DescribeSecurityGroupsResponseBody.DescribeSecurityGroupsResponseBodySecurityGroupsSecurityGroup> resultSecurityGroups = new ArrayList<>();
@@ -489,30 +488,63 @@ public class AliyunSyncCloudApi {
     }
 
     /**
+     * 基础配置询价
+     *
+     * @param req
+     * @return
+     */
+    public static String calculateConfigPrice(AliyunVmCreateRequest req) {
+        return calculatePrice(req, false);
+    }
+
+    /**
+     * 公网IP流量配置询价
+     *
+     * @param req
+     * @return
+     */
+    public static String calculateTrafficPrice(AliyunVmCreateRequest req) {
+        return calculatePrice(req, true);
+    }
+
+    /**
      * 获取创建云主机预估价格
      *
      * @param req
      * @return
      */
-    public static Double getPrice(AliyunVmCreateRequest req) {
+    public static String calculatePrice(AliyunVmCreateRequest req, Boolean trafficPriceOnly) {
+        String result = "";
         try {
             AliyunVmCredential credential = JsonUtil.parseObject(req.getCredential(), AliyunVmCredential.class);
             com.aliyun.bssopenapi20171214.Client client = credential.getBssClient();
 
+            // TODO 阿里云查询公网流量费用时API返回内部错误，待后期API更新
+            if (trafficPriceOnly) {
+                result = "暂时无法预估";
+                return result;
+            }
+
+            // 预付费
             if (AliyunChargeType.PREPAID.getId().equalsIgnoreCase(req.getInstanceChargeType())) {
-                GetSubscriptionPriceRequest getSubscriptionPriceRequest = new com.aliyun.bssopenapi20171214.models.GetSubscriptionPriceRequest()
+                String periodNum = req.getPeriodNum();
+                String period = periodNum.indexOf("week") > 0 ? periodNum.substring(0, periodNum.indexOf("week")) : periodNum;
+                GetSubscriptionPriceRequest getSubscriptionPriceRequest = new GetSubscriptionPriceRequest()
                         .setProductCode("ecs")
                         .setSubscriptionType("Subscription")
                         .setOrderType("NewOrder")
-                        .setServicePeriodUnit("Month")
-                        .setServicePeriodQuantity(1)
-                        .setQuantity(1)
+                        .setServicePeriodUnit(periodNum.indexOf("week") > 0 ? "week" : "month")
+                        .setServicePeriodQuantity(Integer.valueOf(period))
+                        .setQuantity(req.getCount())
                         .setRegion(req.getRegionId())
                         .setModuleList(req.toPrePaidModuleList());
                 try {
                     GetSubscriptionPriceResponse res = client.getSubscriptionPrice(getSubscriptionPriceRequest);
+                    if ("Success".equalsIgnoreCase(res.getBody().getCode())) {
+                        result = String.format("%.2f", res.getBody().getData().tradePrice) + "元";
+                    }
                 } catch (Exception e) {
-                    throw new RuntimeException(e);
+                    throw new RuntimeException(e.getMessage(), e);
                 }
             } else {
                 GetPayAsYouGoPriceRequest getPayAsYouGoPriceRequest = new GetPayAsYouGoPriceRequest()
@@ -523,14 +555,22 @@ public class AliyunSyncCloudApi {
                         .setProductType("");
                 try {
                     GetPayAsYouGoPriceResponse res = client.getPayAsYouGoPrice(getPayAsYouGoPriceRequest);
+                    if ("Success".equalsIgnoreCase(res.getBody().getCode())) {
+                        Float price = 0.00f;
+                        List<GetPayAsYouGoPriceResponseBody.GetPayAsYouGoPriceResponseBodyDataModuleDetailsModuleDetail> moduleDetail = res.getBody().getData().moduleDetails.moduleDetail;
+                        for (int i = 0; i < moduleDetail.size(); i++) {
+                            price = price + moduleDetail.get(i).getCostAfterDiscount();
+                        }
+                        result = String.format("%.2f", price * req.getCount()) + "元/小时";
+                    }
                 } catch (Exception e) {
-                    throw new RuntimeException(e);
+                    throw new RuntimeException(e.getMessage(), e);
                 }
             }
         } catch (Exception e) {
-            throw new RuntimeException("Failed to get price." + e.getMessage(), e);
+            throw new RuntimeException("Failed to calculate price." + e.getMessage(), e);
         }
-        return 0.0;
+        return result;
     }
 
     /**

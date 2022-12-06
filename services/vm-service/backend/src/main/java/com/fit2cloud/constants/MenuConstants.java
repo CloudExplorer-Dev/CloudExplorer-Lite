@@ -121,7 +121,7 @@ public class MenuConstants {
                     .childOperationRoute(new Menu.Builder()
                             .name("server_create")
                             .title("新建")
-                            .path("/create/::accountId")
+                            .path("/create/:accountId")
                             .componentPath("/src/views/vm_cloud_server/create/index.vue")
                             .requiredPermission(new MenuPermission.Builder()
                                     .role(RoleConstants.ROLE.ADMIN)

@@ -1,6 +1,4 @@
 <template>
-  <!--  data: {{ _data }}
-  <br />-->
   <el-form
     ref="ruleFormRef"
     label-width="130px"
@@ -11,40 +9,36 @@
     @submit.prevent
     size="small"
   >
-    <el-row>
-      <div v-for="item in formViewData" :key="item.field">
-        <el-col>
-          <template v-if="item.label && item.footerLocation === 1">
-            <el-form-item
-              v-if="checkShow(item)"
-              :label="item.label"
-              :prop="item.field"
-              :rules="{
-                message: item.label + '不能为空',
-                trigger: 'blur',
-                required: item.required,
-              }"
-            >
-              <component
-                ref="formItemRef"
-                :is="item.inputType"
-                v-model="_data[item.field]"
-                :all-data="allData"
-                :all-form-view-data="allFormViewData"
-                :field="item.field"
-                :form-item="item"
-                :otherParams="otherParams"
-                v-bind="{ ...JSON.parse(item.attrs) }"
-                @change="change(item)"
-              ></component>
-              <span v-if="item.unit" style="padding-left: 15px">{{
-                item.unit
-              }}</span>
-            </el-form-item>
-          </template>
-        </el-col>
-      </div>
-    </el-row>
+    <div v-for="item in formViewData" :key="item.field">
+      <template v-if="item.label && item.footerLocation === 1">
+        <el-form-item
+          v-if="checkShow(item)"
+          :label="item.label"
+          :prop="item.field"
+          :rules="{
+            message: item.label + '不能为空',
+            trigger: 'blur',
+            required: item.required,
+          }"
+        >
+          <component
+            ref="formItemRef"
+            :is="item.inputType"
+            v-model="_data[item.field]"
+            :all-data="allData"
+            :all-form-view-data="allFormViewData"
+            :field="item.field"
+            :form-item="item"
+            :otherParams="otherParams"
+            v-bind="{ ...JSON.parse(item.attrs) }"
+            @change="change(item)"
+          ></component>
+          <span v-if="item.unit" style="padding-left: 15px">{{
+            item.unit
+          }}</span>
+        </el-form-item>
+      </template>
+    </div>
   </el-form>
 </template>
 

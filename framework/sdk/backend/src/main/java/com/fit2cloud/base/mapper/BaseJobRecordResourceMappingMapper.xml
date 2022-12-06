@@ -3,6 +3,7 @@
 <mapper namespace="com.fit2cloud.base.mapper.BaseJobRecordResourceMappingMapper">
         <resultMap id="ResourceJobRecordMap" type="com.fit2cloud.response.JobRecordResourceResponse">
             <result column="resource_id" jdbcType="VARCHAR" property="resourceId"/>
+            <result column="resource_type" jdbcType="VARCHAR" property="resourceType"/>
             <result column="job_record_id" jdbcType="VARCHAR" property="jobRecordId"/>
             <result column="type" jdbcType="INTEGER" property="type"/>
             <result column="status" jdbcType="INTEGER" property="status" />
@@ -17,6 +18,7 @@
                 resultMap="ResourceJobRecordMap">
             SELECT
             a.resource_id,
+            a.resource_type,
             a.create_time,
             a.job_record_id,
             j.type,

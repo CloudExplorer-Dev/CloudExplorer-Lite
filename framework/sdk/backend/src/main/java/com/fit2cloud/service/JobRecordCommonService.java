@@ -41,6 +41,7 @@ public class JobRecordCommonService {
         // 插入关联关系
         JobRecordResourceMapping jobRecordResourceMapping = new JobRecordResourceMapping();
         jobRecordResourceMapping.setResourceId(initJobRecordDTO.getResourceId());
+        jobRecordResourceMapping.setResourceType(initJobRecordDTO.getResourceType() == null ? null : initJobRecordDTO.getResourceType().getCode());
         jobRecordResourceMapping.setJobType(initJobRecordDTO.getJobType());
         jobRecordResourceMapping.setCreateTime(initJobRecordDTO.getCreateTime());
         jobRecordResourceMapping.setJobRecordId(jobRecord.getId());

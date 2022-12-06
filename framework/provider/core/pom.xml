@@ -96,6 +96,11 @@
         </dependency>
         <dependency>
             <groupId>com.tencentcloudapi</groupId>
+            <artifactId>tencentcloud-sdk-java-vpc</artifactId>
+            <version>3.1.637</version>
+        </dependency>
+        <dependency>
+            <groupId>com.tencentcloudapi</groupId>
             <artifactId>tencentcloud-sdk-java-billing</artifactId>
             <version>3.1.600</version>
         </dependency>

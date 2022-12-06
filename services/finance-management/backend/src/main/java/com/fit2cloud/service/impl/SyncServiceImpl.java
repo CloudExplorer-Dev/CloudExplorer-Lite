@@ -13,9 +13,11 @@ import com.fit2cloud.common.constants.JobConstants;
 import com.fit2cloud.common.constants.JobStatusConstants;
 import com.fit2cloud.common.constants.JobTypeConstants;
 import com.fit2cloud.common.constants.PlatformConstants;
+import com.fit2cloud.common.exception.Fit2cloudException;
 import com.fit2cloud.common.provider.util.CommonUtil;
 import com.fit2cloud.common.util.MonthUtil;
 import com.fit2cloud.common.utils.JsonUtil;
+import com.fit2cloud.constants.ErrorCodeConstants;
 import com.fit2cloud.constants.EsWriteLockConstants;
 import com.fit2cloud.es.entity.CloudBill;
 import com.fit2cloud.es.repository.CloudBillRepository;
@@ -27,7 +29,6 @@ import io.reactivex.rxjava3.functions.BiFunction;
 import io.reactivex.rxjava3.functions.Consumer;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.redisson.Redisson;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Caching;
 import org.springframework.data.elasticsearch.annotations.Document;
@@ -57,8 +58,6 @@ public class SyncServiceImpl extends BaseSyncService implements SyncService {
     private ElasticsearchTemplate elasticsearchTemplate;
     @Resource
     private IBillDimensionSettingService billDimensionSettingService;
-    @Resource
-    private Redisson redisson;
     /**
      * 任务描述
      */
@@ -99,7 +98,7 @@ public class SyncServiceImpl extends BaseSyncService implements SyncService {
             @CacheEvict(value = "bill_rule", allEntries = true)})
     public void syncBill(Map<String, Object> params) {
         if (!params.containsKey(JobConstants.CloudAccount.CLOUD_ACCOUNT_ID.name())) {
-            throw new RuntimeException("必要参数云账号不存在");
+            throw new Fit2cloudException(ErrorCodeConstants.BILL_SYNC_REQUIRED_PARAMS_NOT_EXIST.getCode(), ErrorCodeConstants.BILL_SYNC_REQUIRED_PARAMS_NOT_EXIST.getMessage(new Object[]{"云账户id"}));
         }
         // 云账号id
         String cloudAccountId = params.get(JobConstants.CloudAccount.CLOUD_ACCOUNT_ID.name()).toString();

@@ -1,13 +1,21 @@
 <template>
   <template v-if="!confirm">
-    <el-radio-group v-model="_data" style="width: 100%">
+    <div style="margin-bottom: 10px">
+      <el-input v-model="search" placeholder="输入关键字搜索">
+        <template #append>
+          <el-button style="color: var(--el-color-primary)" icon="Search" />
+        </template>
+      </el-input>
+    </div>
+    <el-radio-group v-model="selectRowId" style="width: 100%">
       <el-table
         ref="singleTableRef"
         :data="filterTableData"
         highlight-current-row
         style="width: 100%"
         @current-change="handleCurrentChange"
-        max-height="340px"
+        max-height="240px"
+        border
       >
         <el-table-column width="55">
           <template #default="scope">
@@ -16,25 +24,14 @@
             </el-radio>
           </template>
         </el-table-column>
-        <el-table-column label="虚拟交换机名称" property="networkId" />
+        <el-table-column label="虚拟交换机" property="networkName" />
         <el-table-column label="所属VPC" property="vpcName" />
         <el-table-column label="IPV4网段" property="ipSegment" />
-        <el-table-column align="left">
-          <template #header>
-            <el-input v-model="search" size="small" placeholder="搜索" />
-          </template>
-        </el-table-column>
       </el-table>
     </el-radio-group>
   </template>
   <template v-else>
-    {{
-      _.get(
-        _.find(formItem?.optionList, (o) => o.networkId === modelValue),
-        "networkId",
-        modelValue
-      )
-    }}
+    {{ modelValue?.networkName }}
   </template>
 </template>
 <script setup lang="ts">
@@ -43,9 +40,11 @@ import { computed, ref, watch } from "vue";
 import _ from "lodash";
 import type { ElTable } from "element-plus";
 
-interface Network {
+interface NetworkConfig {
+  vpcId: string;
   networkId: string;
   vpcName: string;
+  networkName: string;
 }
 
 const props = defineProps<{
@@ -60,15 +59,21 @@ const props = defineProps<{
 
 const emit = defineEmits(["update:modelValue", "change"]);
 const singleTableRef = ref<InstanceType<typeof ElTable>>();
+const selectRowId = ref();
 
 // 搜索
 const search = ref();
 const filterTableData = computed(() =>
-  props.formItem?.optionList?.filter(
-    (data: Network) =>
-      !search.value ||
-      data.networkId.toLowerCase().includes(search.value.toLowerCase())
-  )
+    props.formItem?.optionList?.filter(
+        (data: NetworkConfig) =>
+            !search.value ||
+            data.networkName
+                .toLowerCase()
+                .includes(search.value.toLowerCase().replace(/\s/g, "")) ||
+            data.vpcName
+                .toLowerCase()
+                .includes(search.value.toLowerCase().replace(/\s/g, ""))
+    )
 );
 
 const _data = computed({
@@ -96,20 +101,22 @@ watch(
 /**
  * 列表选中
  */
-const currentRow = computed<Network | undefined>({
+const currentRow = computed<NetworkConfig | undefined>({
   get() {
     return _.find(
       props.formItem?.optionList,
-      (o: Network) => o.networkId === _data.value
+      (o: NetworkConfig) => o.networkId === _data.value?.networkId
     );
   },
   set(value) {
-    _data.value = value?.networkId;
+    _data.value = value;
   },
 });
 
-function handleCurrentChange(val: Network | undefined) {
+function handleCurrentChange(val: NetworkConfig | undefined) {
   currentRow.value = val;
+  selectRowId.value = val?.networkId;
+  emit("change");
 }
 </script>
 <style lang="scss" scoped></style>

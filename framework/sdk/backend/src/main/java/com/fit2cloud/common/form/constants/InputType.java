@@ -4,6 +4,9 @@ import com.fit2cloud.common.form.vo.*;
 import com.fit2cloud.common.form.vo.aliyun.AliyunDiskConfig;
 import com.fit2cloud.common.form.vo.aliyun.AliyunInstanceType;
 import com.fit2cloud.common.form.vo.aliyun.AliyunNetConfig;
+import com.fit2cloud.common.form.vo.tencent.TencentDiskConfig;
+import com.fit2cloud.common.form.vo.tencent.TencentInstanceType;
+import com.fit2cloud.common.form.vo.tencent.TencentNetConfig;
 
 /**
  * @Author:张少虎
@@ -54,6 +57,10 @@ public enum InputType {
     AliyunInstanceTypeForm(AliyunInstanceType.class),
     AliyunDiskConfigForm(AliyunDiskConfig.class),
     AliyunNetConfigForm(AliyunNetConfig.class),
+
+    TencentInstanceTypeForm(TencentInstanceType.class),
+    TencentDiskConfigForm(TencentDiskConfig.class),
+    TencentNetConfigForm(TencentNetConfig.class),
 
     HuaweiOsSingleSelectForm(com.fit2cloud.common.form.vo.huawei.OsConfigForm.class),
     HuaweiInstanceSpecForm(com.fit2cloud.common.form.vo.huawei.InstanceSpecForm.class),
