@@ -8,6 +8,7 @@ export interface JobInfo {
   description?: string;
   params?: string;
   createTime?: string;
+  finishTime?: string;
   updateTime?: string;
   result?: string;
   servers?: Array<VmCloudServerVO>;
