@@ -12,18 +12,6 @@
     <template #toolbar>
       <el-button type="primary" @click="clearPolicy">清空策略</el-button>
     </template>
-    <!--    <el-table-column prop="message" label="日志详情">-->
-    <!--      <template #default="scope">-->
-    <!--        <el-tooltip-->
-    <!--          class="item"-->
-    <!--          effect="dark"-->
-    <!--          :content="scope.row.message"-->
-    <!--          placement="top"-->
-    <!--        >-->
-    <!--          <p class="text-overflow">{{ scope.row.message }}</p>-->
-    <!--        </el-tooltip>-->
-    <!--      </template>-->
-    <!--    </el-table-column>-->
     <el-table-column prop="module" label="模块"></el-table-column>
     <el-table-column
       prop="level"
@@ -50,7 +38,12 @@
       :label="$t('commons.create_time')"
       sortable
     />
-    <fu-table-operations v-bind="tableConfig.tableOperations" fix />
+    <el-table-column prop="message" label="日志详情" width="300px">
+      <template #default="scope">
+        <p class="text-overflow">{{ scope.row.message }}</p>
+        <a @click="showLogInfoDialog(scope.row)">更多详情</a>
+      </template>
+    </el-table-column>
   </ce-table>
   <LogDetail ref="logInfoRef" />
 </template>
@@ -125,14 +118,7 @@ const tableConfig = ref<TableConfig>({
     ],
   },
   paginationConfig: new PaginationConfig(),
-  tableOperations: new TableOperations([
-    TableOperations.buildButtons().newInstance(
-      t("log_manage.view_details", "查看详情"),
-      "primary",
-      showLogInfoDialog,
-      "InfoFilled"
-    ),
-  ]),
+  tableOperations: new TableOperations([]),
 });
 
 const clearPolicy = () => {
@@ -143,7 +129,7 @@ const clearPolicy = () => {
 
 <style lang="scss" scoped>
 .text-overflow {
-  max-width: 100px;
+  max-width: 300px;
   overflow: hidden;
   white-space: nowrap;
   text-overflow: ellipsis;

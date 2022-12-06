@@ -20,7 +20,7 @@ defineExpose({
   <el-dialog v-model="dialogVisible" title="详情" width="50%" destroy-on-close>
     <el-form :inline="true" :model="logInfo" class="demo-form-inline">
       <el-form-item label="详情:">
-        <label class="detail-class">{{ logInfo.msg }}</label>
+        <label class="detail-class">{{ logInfo.message }}</label>
       </el-form-item>
     </el-form>
 

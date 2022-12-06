@@ -291,7 +291,7 @@ public class HuaweiSyncCloudApi {
             if (ShowJobResponse.StatusEnum.SUCCESS.getValue().equals(status.getValue())) {
                 break;
             }
-            if (ShowJobResponse.StatusEnum.FAIL.equals(status)) {
+            if (ShowJobResponse.StatusEnum.FAIL.getValue().equals(status.getValue())) {
                 throw new RuntimeException(jobResponse.getFailReason());
             }
             if (count < 40) {

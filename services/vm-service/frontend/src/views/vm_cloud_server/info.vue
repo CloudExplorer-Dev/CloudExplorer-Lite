@@ -109,7 +109,9 @@
                 label-class-name="label-class"
                 class-name="content-class"
                 label="付费方式:"
-                >-</el-descriptions-item
+                >{{
+                  filterChargeType(infoVmCloudServer.instanceChargeType)
+                }}</el-descriptions-item
               >
               <el-descriptions-item
                 label-class-name="label-class"
@@ -138,7 +140,9 @@
               class-name="content-class"
               label="IP地址:"
             >
-              <pre>{{ filterIp(infoVmCloudServer.ipArray) }}</pre>
+              <pre>{{
+                filterIp(infoVmCloudServer, infoVmCloudServer.ipArray)
+              }}</pre>
             </el-descriptions-item>
             <el-descriptions-item
               label-class-name="label-class"
@@ -150,7 +154,7 @@
               label-class-name="label-class"
               class-name="content-class"
               label="安全组:"
-              >-</el-descriptions-item
+              >{{ filterSg(infoVmCloudServer) }}</el-descriptions-item
             >
             <el-descriptions-item
               label-class-name="label-class"
@@ -257,20 +261,53 @@ onMounted(() => {
   };
 });
 
-const filterIp = (ipArray: any) => {
+const filterIp = (infoVmCloudServer: any, ipArray: any) => {
   let ipText = "";
   if (ipArray) {
     const ips = JSON.parse(ipArray);
     let i;
     for (i in ips) {
+      let ip = ips[i];
+      if (
+        infoVmCloudServer.remoteIpv6 === ip ||
+        infoVmCloudServer.remoteIp === ip
+      ) {
+        ip += t("", "(公)");
+      }
       if (ipText === "") {
-        ipText += ips[i];
+        ipText += ip;
       } else {
-        ipText += "\n" + ips[i];
+        ipText += "\n" + ip;
       }
     }
   }
   return ipText;
+};
+
+const filterChargeType = (instanceChargeType: string) => {
+  let text = instanceChargeType;
+  switch (instanceChargeType) {
+    case "PostPaid":
+      text = "按需计费";
+      break;
+    case "PrePaid":
+      text = "包年/包月";
+      break;
+    case "SpotPaid":
+      text = "竞价计费";
+      break;
+    default:
+  }
+  return text;
+};
+
+const filterSg = (infoVmCloudServer: any) => {
+  let text = "";
+  if (infoVmCloudServer.securityGroupIds) {
+    const sg = JSON.parse(infoVmCloudServer.securityGroupIds);
+    text = sg.join(",");
+  }
+  return text;
 };
 
 //启动定时器

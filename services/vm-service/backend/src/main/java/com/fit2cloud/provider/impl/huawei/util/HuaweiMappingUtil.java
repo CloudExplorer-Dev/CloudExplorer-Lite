@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
 import com.fit2cloud.common.provider.entity.F2CPerfMetricMonitorData;
 import com.fit2cloud.common.provider.util.CommonUtil;
 import com.fit2cloud.provider.constants.DeleteWithInstance;
+import com.fit2cloud.provider.constants.F2CChargeType;
 import com.fit2cloud.provider.entity.F2CDisk;
 import com.fit2cloud.provider.entity.F2CImage;
 import com.fit2cloud.provider.entity.F2CVirtualMachine;
@@ -12,10 +13,7 @@ import com.fit2cloud.provider.impl.huawei.entity.F2CHuaweiSubnet;
 import com.fit2cloud.provider.impl.huawei.entity.F2CHuaweiVpc;
 import com.fit2cloud.provider.impl.huawei.entity.InstanceSpecType;
 import com.huaweicloud.sdk.ces.v1.model.Datapoint;
-import com.huaweicloud.sdk.ecs.v2.model.Flavor;
-import com.huaweicloud.sdk.ecs.v2.model.ServerAddress;
-import com.huaweicloud.sdk.ecs.v2.model.ServerDetail;
-import com.huaweicloud.sdk.ecs.v2.model.ServerFlavor;
+import com.huaweicloud.sdk.ecs.v2.model.*;
 import com.huaweicloud.sdk.evs.v2.model.VolumeDetail;
 import com.huaweicloud.sdk.ims.v2.model.ImageInfo;
 import com.huaweicloud.sdk.vpc.v2.model.Port;
@@ -72,6 +70,20 @@ public class HuaweiMappingUtil {
         f2CVirtualMachine.setLocalIP(localIP);
         f2CVirtualMachine.setSubnetId(subnetId);
         f2CVirtualMachine.setIpArray(ipArray);
+        String instanceChargeType = null;
+        // 竞价
+        if(server.getMetadata().get("charging_mode")=="2"){
+            instanceChargeType = F2CChargeType.SPOT_PAID;
+        }else{
+            instanceChargeType = server.getMetadata().get("charging_mode")=="0"? F2CChargeType.POST_PAID:F2CChargeType.PRE_PAID;
+        }
+        // 付费方式
+        f2CVirtualMachine.setInstanceChargeType(instanceChargeType);
+        if(!CollectionUtils.isEmpty(server.getSecurityGroups())){
+            // 安全组
+            List<String> sgIds = server.getSecurityGroups().stream().map(ServerSecurityGroup::getId).collect(Collectors.toList());
+            f2CVirtualMachine.setSecurityGroupIds(sgIds);
+        }
         return f2CVirtualMachine;
     }
 

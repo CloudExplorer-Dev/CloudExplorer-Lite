@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <included>
-    <springProperty scope="context" name="application.name" source="spring.application.name"/>
     <!--  系统调用日志输出到指定文件  -->
     <appender name="backendApiAppender"
               class="ch.qos.logback.core.rolling.RollingFileAppender">

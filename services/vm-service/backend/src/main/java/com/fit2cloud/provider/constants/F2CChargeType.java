@@ -10,6 +10,11 @@ public class F2CChargeType {
      */
     public static final String PRE_PAID = "PrePaid";
 
+    /**
+     * 竞价
+     */
+    public static final String SPOT_PAID = "SpotPaid";
+
     public F2CChargeType() {
     }
 }

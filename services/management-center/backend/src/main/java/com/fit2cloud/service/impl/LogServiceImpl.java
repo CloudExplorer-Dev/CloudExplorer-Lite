@@ -93,6 +93,8 @@ public class LogServiceImpl implements ILogService {
             }else{
                 query.withSort(Sort.by(order.isAsc() ? Sort.Order.asc(order.getColumn()) : Sort.Order.desc(order.getColumn())));
             }
+        }else{
+            query.withSort(Sort.by(Sort.Order.desc("@timestamp")));
         }
         return query.build();
     }
