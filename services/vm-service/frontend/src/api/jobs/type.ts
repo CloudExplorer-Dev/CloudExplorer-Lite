@@ -1,3 +1,6 @@
+import type { VmCloudDiskVO } from "@/api/vm_cloud_disk/type";
+import type { VmCloudServerVO } from "@/api/vm_cloud_server/type";
+
 export interface JobInfo {
   id?: string;
   type?: string;
@@ -7,6 +10,8 @@ export interface JobInfo {
   createTime?: string;
   updateTime?: string;
   result?: string;
+  servers?: Array<VmCloudServerVO>;
+  disks?: Array<VmCloudDiskVO>;
 }
 export interface ListJobRequest {
   pageSize: number;

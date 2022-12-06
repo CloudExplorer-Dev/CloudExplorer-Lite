@@ -1,7 +1,9 @@
 <script setup lang="ts">
 import { ref, onMounted } from "vue";
 import JobsApi from "@/api/jobs";
-import type { VmCloudImageVO } from "@/api/vm_cloud_image/type";
+import _ from "lodash";
+import type { JobInfo } from "@/api/jobs/type";
+import { JobTypeConst, JobStatusConst } from "@commons/utils/constants";
 import { useRouter } from "vue-router";
 import {
   PaginationConfig,
@@ -11,19 +13,43 @@ import {
 } from "@commons/components/ce-table/type";
 import { useI18n } from "vue-i18n";
 import ManageInfo from "@/views/vm_cloud_image/ManageInfo.vue";
+import type { VmCloudDiskVO } from "@/api/vm_cloud_disk/type";
+import type { VmCloudServerVO } from "@/api/vm_cloud_server/type";
+
 const { t } = useI18n();
 const useRoute = useRouter();
 const columns = ref([]);
-const tableData = ref<Array<VmCloudImageVO>>();
+const tableData = ref<Array<JobInfo>>();
 
 /**
  * 打开管理信息
  */
 const manageInfoRef = ref();
-const showManageInfoDialog = (v: VmCloudImageVO) => {
-  manageInfoRef.value.dialogVisible = true;
-  manageInfoRef.value.logInfo = v;
+const showDetail = (row: JobInfo) => {
+  useRoute.push({
+    path: useRoute.currentRoute.value.path.replace(
+      "/list",
+      `/detail/${row.id}`
+    ),
+  });
 };
+const jumpToServer = (server: VmCloudServerVO) => {
+  useRoute.push({
+    path: useRoute.currentRoute.value.path.replace(
+      "jobs/list",
+      `vm_cloud_server/detail/${server.id}`
+    ),
+  });
+};
+const jumpToDisk = (disk: VmCloudDiskVO) => {
+  useRoute.push({
+    path: useRoute.currentRoute.value.path.replace(
+      "jobs/list",
+      `vm_cloud_disk/detail/${disk.id}`
+    ),
+  });
+};
+
 /**
  * 查询
  * @param condition
@@ -63,19 +89,15 @@ const tableConfig = ref<TableConfig>({
     quickPlaceholder: t("commons.btn.search"),
     components: [],
     searchOptions: [
-      { label: t("commons.name", "名称"), value: "imageName" },
-      {
-        label: t("commons.cloud_account.name", "云账号名称"),
-        value: "accountName",
-      },
+      { label: t("job.detail.description", "描述"), value: "description" },
     ],
   },
   paginationConfig: new PaginationConfig(),
   tableOperations: new TableOperations([
     TableOperations.buildButtons().newInstance(
-      t("vm_cloud_image.btn.set_management_info", "设置管理信息"),
+      t("job.detail.btn.detail", "查看详情"),
       "primary",
-      showManageInfoDialog,
+      showDetail,
       "InfoFilled"
     ),
   ]),
@@ -90,40 +112,29 @@ const tableConfig = ref<TableConfig>({
     height="100%"
     ref="table"
   >
-    <el-table-column
-      prop="imageName"
-      :label="$t('vm_cloud_image.label.image_name')"
-    >
+    <el-table-column prop="id" label="ID"></el-table-column>
+    <el-table-column label="任务类型">
       <template #default="scope">
-        <el-tooltip
-          class="item"
-          effect="dark"
-          :content="scope.row.imageName"
-          placement="top"
-        >
-          <p class="text-overflow">
-            {{ scope.row.imageName }}
-          </p>
-        </el-tooltip>
+        {{ _.get(JobTypeConst, scope.row.type, scope.row.type) }}
       </template>
     </el-table-column>
-    <el-table-column
-      prop="imageId"
-      :label="$t('vm_cloud_image.label.image_id')"
-    ></el-table-column>
-    <el-table-column
-      prop="accountName"
-      :label="$t('commons.cloud_account.native')"
-    ></el-table-column>
-    <el-table-column
-      prop="region"
-      :label="$t('commons.cloud_account.data_center')"
-    ></el-table-column>
-    <el-table-column prop="os" :label="$t('commons.os')"></el-table-column>
-    <el-table-column
-      prop="osVersion"
-      :label="$t('commons.os_version')"
-    ></el-table-column>
+    <el-table-column prop="status" label="状态">
+      <template #default="scope">
+        {{ _.get(JobStatusConst, scope.row.status, scope.row.status) }}
+      </template>
+    </el-table-column>
+    <el-table-column prop="createTime" label="开始时间"></el-table-column>
+    <el-table-column prop="finishTime" label="结束时间"></el-table-column>
+    <el-table-column label="关联资源">
+      <template #default="scope">
+        <div v-for="server in scope.row.servers" :key="server.id">
+          <a @click="jumpToServer(server)">云主机: {{ server.instanceName }}</a>
+        </div>
+        <div v-for="disk in scope.row.disks" :key="disk.id">
+          <a @click="jumpToDisk(disk)">磁盘: {{ disk.diskName }}</a>
+        </div>
+      </template>
+    </el-table-column>
     <fu-table-operations v-bind="tableConfig.tableOperations" fix />
   </ce-table>
   <ManageInfo ref="manageInfoRef"></ManageInfo>

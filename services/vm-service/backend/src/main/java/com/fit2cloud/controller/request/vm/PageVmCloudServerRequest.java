@@ -6,6 +6,7 @@ import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
 import javax.validation.constraints.Size;
+import java.io.Serial;
 import java.util.List;
 
 /**
@@ -14,6 +15,8 @@ import java.util.List;
  **/
 @Data
 public class PageVmCloudServerRequest extends PageRequest {
+    @Serial
+    private static final long serialVersionUID = -6363229760062682871L;
     @ApiModelProperty(value = "云主机状态", allowableValues = "Running,Stopped,Deleted")
     private List<String> instanceStatus;
     @ApiModelProperty("云主机名称")

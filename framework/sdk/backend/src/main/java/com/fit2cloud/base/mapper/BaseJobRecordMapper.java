@@ -1,7 +1,9 @@
 package com.fit2cloud.base.mapper;
 
 import com.fit2cloud.base.entity.JobRecord;
-import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+import com.github.yulichang.base.MPJBaseMapper;
+
+import javax.annotation.Resource;
 
 /**
  * <p>
@@ -11,6 +13,7 @@ import com.baomidou.mybatisplus.core.mapper.BaseMapper;
  * @author fit2cloud
  * @since 
  */
-public interface BaseJobRecordMapper extends BaseMapper<JobRecord> {
+public interface BaseJobRecordMapper extends MPJBaseMapper<JobRecord> {
+
 
 }
