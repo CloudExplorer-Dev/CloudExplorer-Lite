@@ -18,13 +18,13 @@
 
         <el-radio-group v-model="selectRowId" style="width: 100%">
           <el-table
-            border
             ref="singleTableRef"
             :data="filterTableData"
             highlight-current-row
             style="width: 100%"
             @current-change="handleCurrentChange"
-            max-height="340px"
+            max-height="240px"
+            border
           >
             <el-table-column width="55">
               <template #default="scope">

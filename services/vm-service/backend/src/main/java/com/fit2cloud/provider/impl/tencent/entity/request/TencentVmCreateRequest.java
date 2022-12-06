@@ -279,7 +279,7 @@ public class TencentVmCreateRequest extends TencentBaseRequest implements ICreat
             attrs = "{\"style\":\"color: red; font-size: large\"}",
             confirmGroup = 1,
             footerLocation = 1,
-            relationTrigger = {"hasPublicIp", "bandwidth", "bandwidthChargeType", "count", "instanceChargeType", "instanceTypeDTO", "osVersion", "disks"},
+            relationTrigger = {"hasPublicIp", "bandwidth", "bandwidthChargeType", "count", "instanceChargeType", "periodNum", "instanceTypeDTO", "osVersion", "disks"},
             confirmSpecial = true,
             required = false
     )

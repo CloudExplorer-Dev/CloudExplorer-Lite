@@ -74,6 +74,22 @@ public class AliyunCloudProvider extends AbstractCloudProvider<AliyunVmCredentia
     }
 
     /**
+     * 获取付费周期
+     * @param req
+     * @return
+     */
+    public List<Map<String, Object>> getPeriodOption(String req) {
+        List<Map<String, Object>> periodList = new ArrayList<>();
+        for (AliyunPeriodOption option : AliyunPeriodOption.values()) {
+            Map<String, Object> map = new HashMap<>();
+            map.put("period", option.getPeriod());
+            map.put("periodDisplayName", option.getPeriodDisplayName());
+            periodList.add(map);
+        }
+        return periodList;
+    }
+
+    /**
      * 获取操作系统类型
      *
      * @param req
@@ -123,22 +139,6 @@ public class AliyunCloudProvider extends AbstractCloudProvider<AliyunVmCredentia
      * @param req
      * @return
      */
-    public List<DescribeSecurityGroupsResponseBody.DescribeSecurityGroupsResponseBodySecurityGroupsSecurityGroup> getSecurityGroupsByNetworkId(String req) {
-        AliyunGetSecurityGroupRequest request =  JsonUtil.parseObject(req, AliyunGetSecurityGroupRequest.class) ;
-        if (request.getNetworkId() != null) {
-            String networkId = request.getNetworkId();
-            String vpcId = networkId.substring(networkId.indexOf("[") + 1, networkId.indexOf("]"));
-            request.setVpcId(vpcId);
-        }
-        return getSecurityGroups(JsonUtil.toJSONString(request));
-    }
-
-    /**
-     * 获取安全组
-     *
-     * @param req
-     * @return
-     */
     public List<DescribeSecurityGroupsResponseBody.DescribeSecurityGroupsResponseBodySecurityGroupsSecurityGroup> getSecurityGroups(String req) {
         return AliyunSyncCloudApi.getSecurityGroups(JsonUtil.parseObject(req, AliyunGetSecurityGroupRequest.class));
     }
@@ -180,8 +180,22 @@ public class AliyunCloudProvider extends AbstractCloudProvider<AliyunVmCredentia
         return AliyunSyncCloudApi.getKeyPairs(JsonUtil.parseObject(req, AliyunBaseRequest.class));
     }
 
-    public Double getPrice(String req){
-        return AliyunSyncCloudApi.getPrice(JsonUtil.parseObject(req, AliyunVmCreateRequest.class));
+    /**
+     * 基础配置询价
+     * @param req
+     * @return
+     */
+    public String calculateConfigPrice(String req){
+        return AliyunSyncCloudApi.calculateConfigPrice(JsonUtil.parseObject(req, AliyunVmCreateRequest.class));
+    }
+
+    /**
+     * 公网IP流量配置询价
+     * @param req
+     * @return
+     */
+    public String calculateTrafficPrice(String req){
+        return AliyunSyncCloudApi.calculateTrafficPrice(JsonUtil.parseObject(req, AliyunVmCreateRequest.class));
     }
 
     // For Create VM [END]
