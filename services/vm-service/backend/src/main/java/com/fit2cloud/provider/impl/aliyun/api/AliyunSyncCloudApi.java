@@ -450,7 +450,72 @@ public class AliyunSyncCloudApi {
             return resultType;
         }).toList();
 
-        return result;
+        // 增加规格族名称
+        appendInstanceTypeFamilyName(result, req);
+
+        return result.stream().filter(instanceType -> StringUtils.isNotBlank(instanceType.getInstanceTypeFamilyName())).collect(Collectors.toList());
+    }
+
+    /**
+     * 查询实例族名称
+     *
+     * @param instanceTypes
+     * @param req
+     * @return
+     */
+    private static void appendInstanceTypeFamilyName(List<AliyunInstanceType> instanceTypes, AliyunGetAvailableResourceRequest req) {
+        // 查询规格族名称列表
+        AliyunGetPriceModuleRequest getPriceModuleRequest = new AliyunGetPriceModuleRequest();
+        BeanUtils.copyProperties(req, getPriceModuleRequest);
+        DescribePricingModuleResponseBody.DescribePricingModuleResponseBodyData pricingModuleResData = getPricingModule(getPriceModuleRequest);
+        List<DescribePricingModuleResponseBody.DescribePricingModuleResponseBodyDataAttributeListAttributeValuesAttributeValue> attributeValue = new ArrayList<>();
+        if (pricingModuleResData != null) {
+            List<DescribePricingModuleResponseBody.DescribePricingModuleResponseBodyDataAttributeListAttribute> attributeList = pricingModuleResData.getAttributeList().attribute.stream().filter(attribute ->
+                    "InstanceTypeFamily".equalsIgnoreCase(attribute.getCode())
+            ).collect(Collectors.toList());
+
+            if (CollectionUtils.isNotEmpty(attributeList) && CollectionUtils.isNotEmpty(attributeList.get(0).values.attributeValue)) {
+                attributeValue = attributeList.get(0).values.attributeValue;
+            }
+        }
+
+        // 根据实例类型查找
+        if (CollectionUtils.isNotEmpty(attributeValue)) {
+            for (int i = 0; i < instanceTypes.size(); i++) {
+                for (int j = 0; j < attributeValue.size(); j++) {
+                    if (instanceTypes.get(i).getInstanceTypeFamily().equalsIgnoreCase(attributeValue.get(j).value)) {
+                        instanceTypes.get(i).setInstanceTypeFamilyName(attributeValue.get(j).name);
+                        break;
+                    }
+                }
+            }
+        }
+    }
+
+    /**
+     * 查询阿里云某个产品对应模块信息
+     *
+     * @param req
+     * @return
+     */
+    private static DescribePricingModuleResponseBody.DescribePricingModuleResponseBodyData getPricingModule(AliyunGetPriceModuleRequest req) {
+        AliyunVmCredential credential = JsonUtil.parseObject(req.getCredential(), AliyunVmCredential.class);
+        com.aliyun.bssopenapi20171214.Client client = credential.getBssClient();
+
+        if (req.getInstanceChargeType() == null) {
+            return null;
+        }
+        DescribePricingModuleRequest describePricingModuleRequest = req.toDescribePricingModuleRequest();
+
+        try {
+            DescribePricingModuleResponse res = client.describePricingModule(describePricingModuleRequest);
+            if ("Success".equalsIgnoreCase(res.body.code)) {
+                return res.body.data;
+            }
+        } catch (Exception e) {
+            logger.error("Failed to get pricing module.");
+        }
+        return null;
     }
 
     /**
@@ -494,7 +559,7 @@ public class AliyunSyncCloudApi {
      * @return
      */
     public static String calculateConfigPrice(AliyunVmCreateRequest req) {
-        return calculatePrice(req, false);
+        return calculatePrice(req);
     }
 
     /**
@@ -504,7 +569,37 @@ public class AliyunSyncCloudApi {
      * @return
      */
     public static String calculateTrafficPrice(AliyunVmCreateRequest req) {
-        return calculatePrice(req, true);
+        try {
+            AliyunVmCredential credential = JsonUtil.parseObject(req.getCredential(), AliyunVmCredential.class);
+            com.aliyun.bssopenapi20171214.Client client = credential.getBssClient();
+
+            // 阿里云公网 IP 流量只能通过后付费接口查询
+            GetPayAsYouGoPriceRequest getPayAsYouGoPriceRequest = new GetPayAsYouGoPriceRequest()
+                    .setProductCode("ecs")
+                    .setSubscriptionType("PayAsYouGo")
+                    .setRegion(req.getRegionId())
+                    .setModuleList(req.toPostPaidModuleList())
+                    .setProductType("");
+            try {
+                GetPayAsYouGoPriceResponse res = client.getPayAsYouGoPrice(getPayAsYouGoPriceRequest);
+                if ("Success".equalsIgnoreCase(res.getBody().getCode())) {
+                    Float price;
+                    List<GetPayAsYouGoPriceResponseBody.GetPayAsYouGoPriceResponseBodyDataModuleDetailsModuleDetail> moduleDetail = res.getBody().getData().moduleDetails.moduleDetail;
+                    // 返回公网 IP 流量费用
+                    for (int i = 0; i < moduleDetail.size(); i++) {
+                        if ("InternetTrafficOut".equalsIgnoreCase(moduleDetail.get(i).getModuleCode())) {
+                            price = moduleDetail.get(i).getCostAfterDiscount();
+                            return String.format("%.2f", price) + "元/GB";
+                        }
+                    }
+                }
+            } catch (Exception e) {
+                throw new RuntimeException(e.getMessage(), e);
+            }
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to calculate traffic price." + e.getMessage(), e);
+        }
+        return "";
     }
 
     /**
@@ -513,17 +608,11 @@ public class AliyunSyncCloudApi {
      * @param req
      * @return
      */
-    public static String calculatePrice(AliyunVmCreateRequest req, Boolean trafficPriceOnly) {
+    private static String calculatePrice(AliyunVmCreateRequest req) {
         String result = "";
         try {
             AliyunVmCredential credential = JsonUtil.parseObject(req.getCredential(), AliyunVmCredential.class);
             com.aliyun.bssopenapi20171214.Client client = credential.getBssClient();
-
-            // TODO 阿里云查询公网流量费用时API返回内部错误，待后期API更新
-            if (trafficPriceOnly) {
-                result = "暂时无法预估";
-                return result;
-            }
 
             // 预付费
             if (AliyunChargeType.PREPAID.getId().equalsIgnoreCase(req.getInstanceChargeType())) {
@@ -558,8 +647,11 @@ public class AliyunSyncCloudApi {
                     if ("Success".equalsIgnoreCase(res.getBody().getCode())) {
                         Float price = 0.00f;
                         List<GetPayAsYouGoPriceResponseBody.GetPayAsYouGoPriceResponseBodyDataModuleDetailsModuleDetail> moduleDetail = res.getBody().getData().moduleDetails.moduleDetail;
+                        // 返回费用总和,排除公网 IP 流量费用，公网 IP 流量单独计费
                         for (int i = 0; i < moduleDetail.size(); i++) {
-                            price = price + moduleDetail.get(i).getCostAfterDiscount();
+                            if (!"InternetTrafficOut".equalsIgnoreCase(moduleDetail.get(i).getModuleCode())) {
+                                price = price + moduleDetail.get(i).getCostAfterDiscount();
+                            }
                         }
                         result = String.format("%.2f", price * req.getCount()) + "元/小时";
                     }
@@ -643,9 +735,9 @@ public class AliyunSyncCloudApi {
      * @return 返回值
      */
     public static List<DescribeInstanceTypesResponseBody.DescribeInstanceTypesResponseBodyInstanceTypesInstanceType> listInstanceType(ListInstanceTypesRequest listInstanceTypesRequest) {
-        AliyunVmCredential credential1 = JsonUtil.parseObject(listInstanceTypesRequest.getCredential(), AliyunVmCredential.class);
+        AliyunVmCredential credential = JsonUtil.parseObject(listInstanceTypesRequest.getCredential(), AliyunVmCredential.class);
         try {
-            DescribeInstanceTypesResponse describeInstanceTypesResponse = credential1.getClient().describeInstanceTypesWithOptions(listInstanceTypesRequest, new RuntimeOptions());
+            DescribeInstanceTypesResponse describeInstanceTypesResponse = credential.getClient().describeInstanceTypes(listInstanceTypesRequest);
             return describeInstanceTypesResponse.getBody().instanceTypes.instanceType;
         } catch (Exception e) {
             throw new RuntimeException(e);

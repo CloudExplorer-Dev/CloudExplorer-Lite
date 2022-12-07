@@ -36,7 +36,7 @@
 </template>
 <script setup lang="ts">
 import type { FormView } from "@commons/components/ce-form/type";
-import { computed, ref, watch } from "vue";
+import { computed, onMounted, ref, watch } from "vue";
 import _ from "lodash";
 import type { ElTable } from "element-plus";
 
@@ -64,16 +64,16 @@ const selectRowId = ref();
 // 搜索
 const search = ref();
 const filterTableData = computed(() =>
-    props.formItem?.optionList?.filter(
-        (data: NetworkConfig) =>
-            !search.value ||
-            data.networkName
-                .toLowerCase()
-                .includes(search.value.toLowerCase().replace(/\s/g, "")) ||
-            data.vpcName
-                .toLowerCase()
-                .includes(search.value.toLowerCase().replace(/\s/g, ""))
-    )
+  props.formItem?.optionList?.filter(
+    (data: NetworkConfig) =>
+      !search.value ||
+      data.networkName
+        .toLowerCase()
+        .includes(search.value.toLowerCase().replace(/\s/g, "")) ||
+      data.vpcName
+        .toLowerCase()
+        .includes(search.value.toLowerCase().replace(/\s/g, ""))
+  )
 );
 
 const _data = computed({
@@ -118,5 +118,9 @@ function handleCurrentChange(val: NetworkConfig | undefined) {
   selectRowId.value = val?.networkId;
   emit("change");
 }
+
+onMounted(() => {
+  selectRowId.value = currentRow.value?.networkId;
+});
 </script>
 <style lang="scss" scoped></style>
