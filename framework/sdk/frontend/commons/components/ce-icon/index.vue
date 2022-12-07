@@ -23,6 +23,9 @@ const props = defineProps({
     type: String,
     default: "25px",
   },
+  color: {
+    type: String,
+  },
 });
 
 /**
@@ -47,7 +50,7 @@ const getCode = computed(() => {
       :is="$antIcons[props.code]"
     ></component>
     <span
-      :style="{ fontSize: props.size }"
+      :style="{ fontSize: props.size, color: props.color }"
       v-else
       class="icon iconfont"
       :class="getCode"

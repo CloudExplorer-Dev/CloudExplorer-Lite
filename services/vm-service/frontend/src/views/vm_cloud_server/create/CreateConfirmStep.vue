@@ -30,11 +30,19 @@
       </template>
       <el-descriptions :column="group.items">
         <el-descriptions-item label="云账号" v-if="group.group === 0">
-          <el-image
+          <!--          <el-image
             style="margin-top: 3px; width: 16px; height: 16px"
             :src="platformIcon[cloudAccount?.platform].icon"
             v-if="cloudAccount?.platform"
-          />
+          />-->
+          <component
+            style="margin-top: 3px; width: 16px; height: 16px"
+            :is="platformIcon[cloudAccount?.platform]?.component"
+            v-bind="platformIcon[cloudAccount?.platform]?.icon"
+            :color="platformIcon[cloudAccount?.platform]?.color"
+            size="16px"
+            v-if="cloudAccount?.platform"
+          ></component>
           <span style="margin-left: 10px">{{ cloudAccount?.name }}</span>
         </el-descriptions-item>
         <template v-for="form in group.forms" :key="form.index">

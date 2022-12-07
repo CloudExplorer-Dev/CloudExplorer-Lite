@@ -51,11 +51,19 @@
                 label="云账号:"
               >
                 <div style="display: flex">
-                  <el-image
+                  <!--                  <el-image
                     style="margin-top: 3px; width: 16px; height: 16px"
                     :src="platformIcon[infoVmCloudServer.platform].icon"
                     v-if="infoVmCloudServer.platform"
-                  ></el-image>
+                  ></el-image>-->
+                  <component
+                    style="margin-top: 3px; width: 16px; height: 16px"
+                    :is="platformIcon[infoVmCloudServer.platform]?.component"
+                    v-bind="platformIcon[infoVmCloudServer.platform]?.icon"
+                    :color="platformIcon[infoVmCloudServer.platform]?.color"
+                    size="16px"
+                    v-if="infoVmCloudServer.platform"
+                  ></component>
                   <span style="margin-left: 10px">{{
                     infoVmCloudServer.accountName
                   }}</span>

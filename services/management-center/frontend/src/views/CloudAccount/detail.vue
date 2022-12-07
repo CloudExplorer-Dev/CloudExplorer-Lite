@@ -386,11 +386,19 @@ onBeforeUnmount(() => {
                   <span v-if="accountForm.platform">
                     {{ platformIcon[accountForm.platform].name }}</span
                   >
-                  <el-image
+                  <!--                  <el-image
                     style="margin-left: 10px; display: flex"
                     :src="platformIcon[accountForm.platform].icon"
                     v-if="accountForm.platform"
-                  ></el-image>
+                  ></el-image>-->
+                  <component
+                    style="margin-left: 10px; display: flex"
+                    :is="platformIcon[accountForm?.platform]?.component"
+                    v-bind="platformIcon[accountForm?.platform]?.icon"
+                    :color="platformIcon[accountForm?.platform]?.color"
+                    size="16px"
+                    v-if="accountForm.platform"
+                  ></component>
                 </el-form-item>
               </el-col>
 

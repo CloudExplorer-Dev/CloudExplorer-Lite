@@ -76,10 +76,17 @@
       <el-table-column prop="cloudAccountName" label="云账号" width="200px">
         <template #default="scope">
           <div style="display: flex; align-items: center">
-            <el-image
+            <!--            <el-image
               style="margin-right: 20%; display: flex"
               :src="platformIcon[scope.row.provider].icon"
-            ></el-image>
+            ></el-image>-->
+            <component
+              style="margin-right: 20%; display: flex"
+              :is="platformIcon[scope.row.provider]?.component"
+              v-bind="platformIcon[scope.row.provider]?.icon"
+              :color="platformIcon[scope.row.provider]?.color"
+              size="16px"
+            ></component>
             <span>{{
               scope.row.cloudAccountName
                 ? scope.row.cloudAccountName

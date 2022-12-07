@@ -695,10 +695,17 @@ const syncAll = () => {
     >
       <template #default="scope">
         <div style="display: flex; align-items: center">
-          <el-image
+          <!--          <el-image
             style="margin-right: 20%; display: flex"
             :src="platformIcon[scope.row.platform].icon"
-          ></el-image>
+          ></el-image>-->
+          <component
+            style="margin-right: 20%; display: flex"
+            :is="platformIcon[scope.row.platform]?.component"
+            v-bind="platformIcon[scope.row.platform]?.icon"
+            :color="platformIcon[scope.row.platform]?.color"
+            size="16px"
+          ></component>
           <span>{{ platformIcon[scope.row.platform].name }}</span>
         </div>
       </template>
