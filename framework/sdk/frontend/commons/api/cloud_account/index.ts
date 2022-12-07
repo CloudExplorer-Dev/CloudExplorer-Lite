@@ -21,6 +21,22 @@ function getCloudAccount(
   return get("/api/base/cloud_account/" + cloudAccountId, null, loading);
 }
 
-const BaseCloudAccountApi = { getCloudAccount, listAll };
+/**
+ * 查询云账户余额
+ * @param cloudAccountId
+ * @param loading
+ */
+function getAccountBalance(
+  cloudAccountId: string,
+  loading?: Ref<boolean>
+): Promise<Result<number | string>> {
+  return get(
+    "/api/base/cloud_account/balance/" + cloudAccountId,
+    null,
+    loading
+  );
+}
+
+const BaseCloudAccountApi = { getCloudAccount, listAll, getAccountBalance };
 
 export default BaseCloudAccountApi;

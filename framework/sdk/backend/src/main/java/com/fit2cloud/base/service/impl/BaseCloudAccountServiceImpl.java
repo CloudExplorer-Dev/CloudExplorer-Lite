@@ -7,12 +7,15 @@ import com.fit2cloud.base.mapper.BaseCloudAccountMapper;
 import com.fit2cloud.base.service.IBaseCloudAccountService;
 import com.fit2cloud.common.constants.JobConstants;
 import com.fit2cloud.common.constants.PlatformConstants;
+import com.fit2cloud.common.constants.ProviderConstants;
 import com.fit2cloud.common.exception.Fit2cloudException;
 import com.fit2cloud.common.form.util.FormUtil;
 import com.fit2cloud.common.form.vo.Form;
 import com.fit2cloud.common.form.vo.FormObject;
 import com.fit2cloud.common.platform.bill.Bill;
 import com.fit2cloud.common.platform.credential.Credential;
+import com.fit2cloud.common.provider.IBaseCloudProvider;
+import com.fit2cloud.common.provider.entity.F2CBalance;
 import com.fit2cloud.common.scheduler.SchedulerService;
 import com.fit2cloud.common.scheduler.entity.QuzrtzJobDetail;
 import com.fit2cloud.common.scheduler.handler.AsyncJob;
@@ -29,9 +32,10 @@ import com.fit2cloud.request.cloud_account.SyncRequest;
 import com.fit2cloud.response.cloud_account.ResourceCountResponse;
 import com.fit2cloud.response.cloud_account.SyncResource;
 import com.fit2cloud.service.IResourceCountService;
+import io.reactivex.rxjava3.functions.BiFunction;
 import lombok.SneakyThrows;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.quartz.DateBuilder;
 import org.quartz.Job;
@@ -50,6 +54,7 @@ import java.util.*;
  * @author fit2cloud
  * @since
  */
+@Slf4j
 @Service
 public class BaseCloudAccountServiceImpl extends ServiceImpl<BaseCloudAccountMapper, CloudAccount> implements IBaseCloudAccountService {
     @Resource
@@ -332,5 +337,49 @@ public class BaseCloudAccountServiceImpl extends ServiceImpl<BaseCloudAccountMap
         }
 
 
+    }
+
+    private String getParams(String credential) {
+        HashMap<String, String> params = new HashMap<>();
+        params.put("credential", credential);
+        return JsonUtil.toJSONString(params);
+    }
+    /**
+     * 执行函数
+     *
+     * @param providerClass 执行处理器
+     * @param req           请求参数
+     * @param exec          执行函数
+     * @param <T>           执行函数返回对象
+     * @return 执行函数返回对象泛型
+     */
+    private <T> T exec(Class<? extends IBaseCloudProvider> providerClass, String req, BiFunction<IBaseCloudProvider, String, T> exec) {
+        try {
+            IBaseCloudProvider iCloudProvider = providerClass.getConstructor().newInstance();
+            return exec.apply(iCloudProvider, req);
+        } catch (Throwable e) {
+            if (e instanceof RuntimeException) {
+                throw (RuntimeException) e;
+            } else {
+                throw new RuntimeException(e);
+            }
+        }
+    }
+
+    @Override
+    public Object getAccountBalance(String accountId) {
+        Object result = "--";
+        F2CBalance f2CBalance = null;
+        try {
+            CloudAccount cloudAccount = this.getById(accountId);
+            Class<? extends IBaseCloudProvider> cloudProvider = ProviderConstants.valueOf(cloudAccount.getPlatform()).getCloudProvider();
+            f2CBalance = exec(cloudProvider, getParams(cloudAccount.getCredential()), IBaseCloudProvider::getAccountBalance);
+        } catch (Exception e) {
+            log.error("Error:getAccountBalance!" + e.getMessage(), e);
+        }
+        if (f2CBalance != null) {
+            result = f2CBalance.getAmount();
+        }
+        return result;
     }
 }
