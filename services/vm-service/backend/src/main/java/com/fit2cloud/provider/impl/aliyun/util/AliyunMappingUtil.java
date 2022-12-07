@@ -7,6 +7,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fit2cloud.common.provider.entity.F2CPerfMetricMonitorData;
 import com.fit2cloud.common.provider.util.CommonUtil;
 import com.fit2cloud.provider.constants.DeleteWithInstance;
+import com.fit2cloud.provider.constants.F2CChargeType;
 import com.fit2cloud.provider.constants.F2CDiskStatus;
 import com.fit2cloud.provider.entity.F2CDisk;
 import com.fit2cloud.provider.entity.F2CImage;
@@ -18,8 +19,11 @@ import org.apache.commons.lang3.StringUtils;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
+import java.util.TimeZone;
 
 /**
  * @Author:张少虎
@@ -46,7 +50,8 @@ public class AliyunMappingUtil {
         f2CVirtualMachine.setInstanceStatus(instance.getStatus());
         String instanceType = instance.getInstanceType();
         f2CVirtualMachine.setInstanceType(instanceType);
-        f2CVirtualMachine.setInstanceChargeType(instance.getInstanceChargeType());
+        String instanceChargeType = StringUtils.equalsIgnoreCase(instance.getInstanceChargeType(),"PostPaid")? F2CChargeType.POST_PAID:F2CChargeType.PRE_PAID;
+        f2CVirtualMachine.setInstanceChargeType(instanceChargeType);
         List<String> ipArray = new ArrayList<>();
         DescribeInstancesResponseBody.DescribeInstancesResponseBodyInstancesInstancePublicIpAddress publicIpAddress = instance.getPublicIpAddress();
         List<String> ipAddress = publicIpAddress.getIpAddress();
@@ -81,7 +86,21 @@ public class AliyunMappingUtil {
         }
         f2CVirtualMachine.setOsInfo(instance.getOSName());
         f2CVirtualMachine.setZone(instance.getZoneId());
-
+        if(instance.getCreationTime()!=null){
+            try {
+                SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm'Z'");
+                sdf.setTimeZone(TimeZone.getTimeZone("GMT"));
+                Date cTime = sdf.parse(instance.getCreationTime());
+                f2CVirtualMachine.setCreated(cTime);
+                f2CVirtualMachine.setCreateTime(cTime.getTime());
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+        // 安全组
+        if(instance.getSecurityGroupIds() != null){
+            f2CVirtualMachine.setSecurityGroupIds(instance.getSecurityGroupIds().getSecurityGroupId());
+        }
         instance.setCreationTime(null);
         instance.setDescription(null);
         instance.setInstanceId(null);

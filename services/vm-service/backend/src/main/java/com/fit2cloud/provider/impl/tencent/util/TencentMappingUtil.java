@@ -3,6 +3,7 @@ package com.fit2cloud.provider.impl.tencent.util;
 import com.fit2cloud.common.provider.entity.F2CPerfMetricMonitorData;
 import com.fit2cloud.common.provider.util.CommonUtil;
 import com.fit2cloud.provider.constants.DeleteWithInstance;
+import com.fit2cloud.provider.constants.F2CChargeType;
 import com.fit2cloud.provider.constants.F2CDiskStatus;
 import com.fit2cloud.provider.constants.F2CInstanceStatus;
 import com.fit2cloud.provider.entity.F2CDisk;
@@ -66,6 +67,22 @@ public class TencentMappingUtil {
         f2CInstance.setIpArray(ipArray);
         f2CInstance.setVpcId(instance.getVirtualPrivateCloud().getVpcId());
         f2CInstance.setSubnetId(instance.getVirtualPrivateCloud().getSubnetId());
+        //计费方式
+        String instanceChargeType = null;
+        switch (instance.getInstanceChargeType()){
+            case "PREPAID":
+                instanceChargeType = F2CChargeType.PRE_PAID;
+                break;
+            case "POSTPAID_BY_HOUR":
+                instanceChargeType = F2CChargeType.POST_PAID;
+                break;
+            case "SPOTPAID":
+                instanceChargeType = F2CChargeType.SPOT_PAID;
+                break;
+            default:
+        }
+        f2CInstance.setInstanceChargeType(instanceChargeType);
+        f2CInstance.setSecurityGroupIds(Arrays.asList(instance.getSecurityGroupIds()));
         long dataSize = Arrays.stream(instance.getDataDisks()).mapToLong(DataDisk::getDiskSize).sum();
         f2CInstance.setDisk(dataSize + (instance.getSystemDisk() != null ? instance.getSystemDisk().getDiskSize() : 0));
         return f2CInstance;

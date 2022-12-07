@@ -274,15 +274,8 @@ public class TencentCloudProvider extends AbstractCloudProvider<TencentCredentia
         return types;
     }
 
-    public List<Map<String, String>> getDiskTypes(String req) {
-        List<Map<String, String>> types = new ArrayList<>();
-        for (TencentDiskType tencentDiskType : TencentDiskType.values()) {
-            Map<String, String> item = new HashMap<>();
-            item.put("id", tencentDiskType.getId());
-            item.put("name", tencentDiskType.getName());
-            types.add(item);
-        }
-        return types;
+    public List<TencentDiskTypeDTO.TencentDiskType> getDataDiskType(String req) {
+        return TencetSyncCloudApi.getDataDiskType(JsonUtil.parseObject(req, TencentGetDiskTypeRequest.class));
     }
 
     @Override

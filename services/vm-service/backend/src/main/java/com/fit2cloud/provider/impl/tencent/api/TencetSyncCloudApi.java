@@ -255,7 +255,7 @@ public class TencetSyncCloudApi {
      * @param req 请求数据
      * @return
      */
-    public List<TencentDiskTypeDTO.TencentDiskType> getDataDiskType(TencentGetDiskTypeRequest req) {
+    public static List<TencentDiskTypeDTO.TencentDiskType> getDataDiskType(TencentGetDiskTypeRequest req) {
         req.setDiskUsage("DATA_DISK");
         return getDiskTypes(req).getDataDiskTypes();
     }
@@ -1095,7 +1095,7 @@ public class TencetSyncCloudApi {
             MonitorClient monitorClient = credential.getMonitorClient(getMetricsRequest.getRegionId());
             ///TODO 由于我们只查询一个小时内的数据，时间间隔是60s,所以查询每台机器的监控数据的时候最多不过60条数据，所以不需要分页查询
             result.addAll(getVmPerfMetric(monitorClient,request,getMetricsRequest));
-            //result.addAll(getDiskPerfMetric(monitorClient,request,getMetricsRequest));
+            result.addAll(getDiskPerfMetric(monitorClient,request,getMetricsRequest));
         } catch (Exception e) {
             throw new Fit2cloudException(100021, "获取监控数据失败-" + getMetricsRequest.getRegionId() + "-" + e.getMessage());
         }
@@ -1123,7 +1123,6 @@ public class TencetSyncCloudApi {
                 req.setMetricName(perfMetric.getMetricName());
                 req.setInstances(getInstance("InstanceId", id));
                 Map<Long, BigDecimal> dataMap = getMonitorData(monitorClient, req);
-                System.out.println("结果：" + JsonUtil.toJSONString(dataMap));
                 addMonitorData(result, dataMap, F2CEntityType.VIRTUAL_MACHINE.name(), perfMetric.getUnit(), getMetricsRequest.getPeriod(), perfMetric.name(), id);
             });
         });
@@ -1151,7 +1150,6 @@ public class TencetSyncCloudApi {
                 req.setMetricName(perfMetric.getMetricName());
                 req.setInstances(getInstance("diskId",disk.getDiskId()));
                 Map<Long, BigDecimal> dataMap = getMonitorData(monitorClient,req);
-                System.out.println("结果："+JsonUtil.toJSONString(dataMap));
                 addMonitorData(result,dataMap,F2CEntityType.VIRTUAL_MACHINE.name(),perfMetric.getUnit(),getMetricsRequest.getPeriod(),perfMetric.name(),disk.getInstanceUuid());
             });
         });

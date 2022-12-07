@@ -35,3 +35,4 @@ eureka:
 logging:
   file:
     path: @ce.log.base.dir@/${spring.application.name}
+  config: classpath:logback-spring.xml

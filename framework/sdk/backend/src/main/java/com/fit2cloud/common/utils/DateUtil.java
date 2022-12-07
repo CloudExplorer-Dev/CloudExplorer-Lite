@@ -3,9 +3,7 @@ package com.fit2cloud.common.utils;
 import org.apache.commons.lang3.time.DateUtils;
 
 import java.text.SimpleDateFormat;
-import java.time.LocalDateTime;
-import java.time.OffsetDateTime;
-import java.time.ZoneOffset;
+import java.time.*;
 import java.time.format.DateTimeFormatter;
 import java.util.Calendar;
 import java.util.Date;
@@ -69,6 +67,11 @@ public class DateUtil extends DateUtils {
         java.time.format.DateTimeFormatter dtf2 = java.time.format.DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ssXXX");
 
         return date.format(dtf2 );
+    }
+
+    public static LocalDateTime timestampToDatetime(long timestamp){
+        Instant instant = Instant.ofEpochMilli(timestamp);
+        return LocalDateTime.ofInstant(instant, ZoneId.systemDefault());
     }
     public static void main(String[] args) {
 

@@ -22,7 +22,9 @@ const otherParams = computed(() => {
     ...cloudAccount.value,
     regionId: vmCloudServer.value?.region,
     zone: vmCloudServer.value?.zone,
+    zoneId: vmCloudServer.value?.zone,
     instanceUuid: vmCloudServer.value?.instanceUuid,
+    instanceTypeDTO:vmCloudServer.value
   };
 });
 

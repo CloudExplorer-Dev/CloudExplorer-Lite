@@ -220,4 +220,9 @@ public class F2CVirtualMachine {
      * 实例计费类型
      */
     private String instanceChargeType;
+
+    /**
+     * 安全组IDS
+     */
+    private List<String> securityGroupIds;
 }
