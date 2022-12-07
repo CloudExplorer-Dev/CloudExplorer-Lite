@@ -2,9 +2,9 @@
   <template v-if="!confirm">
     <div style="margin-bottom: 10px">
       <el-input
-          v-model="search"
-          placeholder="输入关键字搜索"
-          style="width: 20%"
+        v-model="search"
+        placeholder="输入关键字搜索"
+        style="width: 20%"
       >
         <template #append>
           <el-button style="color: var(--el-color-primary)" icon="Search" />
@@ -28,7 +28,7 @@
             </el-radio>
           </template>
         </el-table-column>
-        <el-table-column label="规格类型" property="instanceTypeFamily" />
+        <el-table-column label="规格类型" property="instanceTypeFamilyName" />
         <el-table-column label="规格名称" property="instanceType" />
         <el-table-column label="实例规格" property="cpuMemory" />
       </el-table>
@@ -44,7 +44,7 @@
 </template>
 <script setup lang="ts">
 import type { FormView } from "@commons/components/ce-form/type";
-import {computed, onMounted, ref, watch} from "vue";
+import { computed, onMounted, ref, watch } from "vue";
 import _ from "lodash";
 import type { ElTable } from "element-plus";
 
@@ -71,15 +71,15 @@ const selectRowId = ref();
 // 搜索
 const search = ref();
 const filterTableData = computed(() =>
-    props.formItem?.optionList?.filter(
-        (data: InstanceTypeConfig) =>
-            !search.value ||
-            data.instanceType.toLowerCase().includes(search.value.toLowerCase()) ||
-            data.cpuMemory
-                .toLowerCase()
-                .replace(/\s/g, "")
-                .includes(search.value.toLowerCase().replace(/\s/g, ""))
-    )
+  props.formItem?.optionList?.filter(
+    (data: InstanceTypeConfig) =>
+      !search.value ||
+      data.instanceType.toLowerCase().includes(search.value.toLowerCase()) ||
+      data.cpuMemory
+        .toLowerCase()
+        .replace(/\s/g, "")
+        .includes(search.value.toLowerCase().replace(/\s/g, ""))
+  )
 );
 
 const _data = computed({
@@ -117,15 +117,15 @@ onMounted(() => {
 });
 
 watch(
-    () => props.formItem?.optionList,
-    (value) => {
-      if (value != null && value.length > 0 && selectRowId.value == null) {
-        currentRow.value = value[0];
-        selectRowId.value = value[0].instanceType;
-        emit("change");
-      }
-    },
-    { deep: true }
+  () => props.formItem?.optionList,
+  (value) => {
+    if (value != null && value.length > 0 && selectRowId.value == null) {
+      currentRow.value = value[0];
+      selectRowId.value = value[0].instanceType;
+      emit("change");
+    }
+  },
+  { deep: true }
 );
 </script>
 <style lang="scss" scoped></style>

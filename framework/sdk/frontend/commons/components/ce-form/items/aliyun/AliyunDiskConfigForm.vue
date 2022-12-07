@@ -158,7 +158,12 @@ watch(
 );
 
 function add() {
-  data.value?.push({ size: 20, deleteWithInstance: true, readonly: false });
+  data.value?.push({
+    diskType: diskTypeOptions?.value[0].id,
+    size: 20,
+    deleteWithInstance: true,
+    readonly: false,
+  });
 }
 
 function remove(index: number) {
@@ -181,7 +186,9 @@ function validate(): Promise<boolean> {
 
 const loading = ref<boolean>(false);
 onMounted(() => {
-  data.value = defaultDisks.value;
+  if (data.value.length == 0) {
+    data.value = defaultDisks.value;
+  }
 });
 
 defineExpose({

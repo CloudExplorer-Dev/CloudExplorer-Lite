@@ -23,7 +23,7 @@ public class TencentBaseCloudApi {
                 TencentBaseCredential credential = JsonUtil.parseObject(request.getCredential(), TencentBaseCredential.class);
                 BillingClient billingClient = credential.getBillingClient();
                 DescribeAccountBalanceResponse response = billingClient.DescribeAccountBalance(request);
-                return new F2CBalance(response.getCashAccountBalance().doubleValue(), "", response.getOweAmount().doubleValue());
+                return new F2CBalance(response.getCashAccountBalance().doubleValue() / 100, "", response.getOweAmount().doubleValue() / 100);
             } catch (Exception e) {
                 throw new RuntimeException(e);
             }

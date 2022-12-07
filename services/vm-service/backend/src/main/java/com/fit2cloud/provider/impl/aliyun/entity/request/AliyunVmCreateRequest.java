@@ -11,6 +11,7 @@ import com.fit2cloud.common.form.constants.InputType;
 import com.fit2cloud.provider.ICreateServerRequest;
 import com.fit2cloud.provider.entity.F2CNetwork;
 import com.fit2cloud.provider.impl.aliyun.AliyunCloudProvider;
+import com.fit2cloud.provider.impl.aliyun.constants.AliyunBandwidthType;
 import com.fit2cloud.provider.impl.aliyun.constants.AliyunChargeType;
 import com.fit2cloud.provider.impl.aliyun.entity.AliyunInstanceType;
 import com.fit2cloud.provider.impl.aliyun.entity.AliyunPriceModuleConfig;
@@ -296,7 +297,7 @@ public class AliyunVmCreateRequest extends AliyunBaseRequest implements ICreateS
             attrs = "{\"style\":\"color: red; font-size: large\"}",
             confirmGroup = 1,
             footerLocation = 1,
-            relationTrigger = {"hasPublicIp", "bandwidth", "bandwidthChargeType", "count", "instanceChargeType","periodNum", "instanceTypeDTO", "osVersion", "disks"},
+            relationTrigger = {"hasPublicIp", "bandwidth", "bandwidthChargeType", "count", "instanceChargeType", "periodNum", "instanceTypeDTO", "osVersion", "disks"},
             confirmSpecial = true,
             required = false
     )
@@ -309,9 +310,9 @@ public class AliyunVmCreateRequest extends AliyunBaseRequest implements ICreateS
             attrs = "{\"style\":\"color: red; font-size: large\"}",
             confirmGroup = 1,
             footerLocation = 1,
-            relationShows = {"bandwidthChargeType"},
-            relationShowValues = {"traffic"},
-            relationTrigger = {"bandwidth", "bandwidthChargeType"},
+            relationShows = "bandwidthChargeType",
+            relationShowValues = "PayByTraffic",
+            relationTrigger = {"regionId","bandwidthChargeType","hasPublicIp"},
             confirmSpecial = true,
             required = false
     )
@@ -476,12 +477,8 @@ public class AliyunVmCreateRequest extends AliyunBaseRequest implements ICreateS
 
         // 公网IP
         if (hasPublicIp != null && hasPublicIp) {
-            if ("PayByTraffic".equalsIgnoreCase(bandwidthChargeType)) {
-                GetSubscriptionPriceRequest.GetSubscriptionPriceRequestModuleList internetTrafficOutModule = new GetSubscriptionPriceRequest.GetSubscriptionPriceRequestModuleList()
-                        .setModuleCode("InternetTrafficOut")
-                        .setConfig(config.getPublicIpConfig());
-                moduleList.add(internetTrafficOutModule);
-            } else {
+            // 按流量计费只能通过后付费询价，此处查按带宽计费的费用
+            if (AliyunBandwidthType.PayByBandwidth.getId().equalsIgnoreCase(bandwidthChargeType)) {
                 GetSubscriptionPriceRequest.GetSubscriptionPriceRequestModuleList internetMaxBandwidthOutModule = new GetSubscriptionPriceRequest.GetSubscriptionPriceRequestModuleList()
                         .setModuleCode("InternetMaxBandwidthOut")
                         .setConfig(config.getPublicIpConfig());
@@ -530,9 +527,11 @@ public class AliyunVmCreateRequest extends AliyunBaseRequest implements ICreateS
 
         // 公网IP
         if (hasPublicIp != null && hasPublicIp) {
-            if ("PayByTraffic".equalsIgnoreCase(bandwidthChargeType)) {
-                // 公网流量：按流量计费永远显示为：0.800/GB
-                String internetTrafficOutConfig = "Region:" + regionId;
+            // 按流量计费只能通过后付费询价
+            if (AliyunBandwidthType.PayByTraffic.getId().equalsIgnoreCase(bandwidthChargeType)) {
+                // 公网流量：按流量计费 XX元/GB
+                String internetTrafficOutConfig = "Region:" + regionId + "," +
+                        "InternetTrafficOut:1";
                 config.setPublicIpConfig(internetTrafficOutConfig);
             } else {
                 // 公网带宽：InternetMaxBandwidthOut 单位 KBPS;bandwidth 单位 MBPS

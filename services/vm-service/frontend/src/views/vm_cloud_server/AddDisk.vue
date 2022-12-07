@@ -24,7 +24,7 @@ const otherParams = computed(() => {
     zone: vmCloudServer.value?.zone,
     zoneId: vmCloudServer.value?.zone,
     instanceUuid: vmCloudServer.value?.instanceUuid,
-    instanceTypeDTO:vmCloudServer.value
+    instanceTypeDTO: vmCloudServer.value,
   };
 });
 
