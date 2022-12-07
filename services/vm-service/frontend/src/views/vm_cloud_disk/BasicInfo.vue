@@ -66,10 +66,17 @@ onMounted(() => {
                 :label="$t('commons.cloud_account.native', '云账号') + ':'"
               >
                 <div style="display: flex">
-                  <el-image
+                  <!--                  <el-image
                     style="margin-top: 3px; width: 16px; height: 16px"
                     :src="platformIcon[vmCloudDiskDetail?.platform]?.icon"
-                  ></el-image>
+                  ></el-image>-->
+                  <component
+                    style="margin-top: 3px; width: 16px; height: 16px"
+                    :is="platformIcon[vmCloudDiskDetail?.platform]?.component"
+                    v-bind="platformIcon[vmCloudDiskDetail?.platform]?.icon"
+                    :color="platformIcon[vmCloudDiskDetail?.platform]?.color"
+                    size="16px"
+                  ></component>
                   <span style="margin-left: 10px">
                     {{ vmCloudDiskDetail?.accountName }}
                   </span>

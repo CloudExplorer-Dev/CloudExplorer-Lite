@@ -12,6 +12,7 @@ import com.fit2cloud.common.constants.JobTypeConstants;
 import com.fit2cloud.common.es.ElasticsearchProvide;
 import com.fit2cloud.common.platform.credential.Credential;
 import com.fit2cloud.common.provider.entity.F2CPerfMetricMonitorData;
+import com.fit2cloud.common.utils.DateUtil;
 import com.fit2cloud.common.utils.JsonUtil;
 import com.fit2cloud.es.entity.PerfMetricMonitorData;
 import com.fit2cloud.provider.ICloudProvider;
@@ -391,8 +392,10 @@ public class SyncProviderServiceImpl extends BaseSyncService implements ISyncPro
         vmCloudServer.setInstanceName(f2CVirtualMachine.getName());
         vmCloudServer.setRemoteIp(f2CVirtualMachine.getRemoteIP());
         vmCloudServer.setOsInfo(f2CVirtualMachine.getOsInfo());
+        vmCloudServer.setCreateTime(DateUtil.timestampToDatetime(f2CVirtualMachine.getCreateTime()));
         vmCloudServer.setUpdateTime(updateTime);
         vmCloudServer.setIpArray(JsonUtil.toJSONString(f2CVirtualMachine.getIpArray()));
+        vmCloudServer.setSecurityGroupIds(JsonUtil.toJSONString(f2CVirtualMachine.getSecurityGroupIds()));
         return vmCloudServer;
     }
 

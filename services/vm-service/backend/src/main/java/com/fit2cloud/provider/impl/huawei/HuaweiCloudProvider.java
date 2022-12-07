@@ -185,14 +185,14 @@ public class HuaweiCloudProvider extends AbstractCloudProvider<HuaweiVmCredentia
      */
     public List<Map<String, String>> getChargeMode(String req) {
         List<Map<String, String>> billingModes = new ArrayList<>();
+        Map<String, String> thinMap = new HashMap<>();
+        thinMap.put("id", "noTraffic");
+        thinMap.put("name", "按固定带宽");
+        billingModes.add(thinMap);
         Map<String, String> defaultMap = new HashMap<>();
         defaultMap.put("id", "traffic");
         defaultMap.put("name", "按流量计费");
         billingModes.add(defaultMap);
-        Map<String, String> thinMap = new HashMap<>();
-        thinMap.put("id", "noTraffic");
-        thinMap.put("name", "安固定带宽");
-        billingModes.add(thinMap);
         return billingModes;
     }
     public List<Map<String, String>> getLoginMethod(String req) {

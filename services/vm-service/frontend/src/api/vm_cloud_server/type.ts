@@ -44,6 +44,8 @@ interface VmCloudServerVO {
   workspaceName?: string;
   organizationName?: string;
   showLoading?: boolean;
+  securityGroupIds?: [];
+  instanceChargeType?: string;
 }
 
 /**

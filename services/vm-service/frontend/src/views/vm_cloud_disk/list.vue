@@ -56,6 +56,8 @@ const diskTypes = ref<Array<SimpleMap<string>>>([
   { text: "厚置备置零", value: "THICK_EAGER_ZEROED" },
   { text: "厚置备延迟置零", value: "THICK_LAZY_ZEROED" },
   { text: "稀疏型", value: "SPARSE" },
+  { text: "lvmdriver-1", value: "lvmdriver-1" },
+  { text: "__DEFAULT__", value: "__DEFAULT__" },
   { text: "未知", value: "NA" },
 ]);
 

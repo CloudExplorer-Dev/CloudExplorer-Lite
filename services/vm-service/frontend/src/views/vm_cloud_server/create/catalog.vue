@@ -14,10 +14,17 @@
         </span>
       </div>
       <div class="content">
-        <el-image
+        <!--        <el-image
           style="width: 40px"
           :src="platformIcon[good.platform]?.icon"
-        />
+        />-->
+        <component
+          style="width: 100px; height: 100px"
+          :is="platformIcon[good.platform]?.component"
+          v-bind="platformIcon[good.platform]?.icon"
+          :color="platformIcon[good.platform]?.color"
+          size="100px"
+        ></component>
       </div>
       <el-button class="footer el-button--primary" @click="openCreatePage(good)"
         >立即创建</el-button
