@@ -46,6 +46,10 @@ public class BaseUserServiceImpl extends ServiceImpl<BaseUserMapper, User> imple
             throw new RuntimeException("用户不存在");
         }
 
+        if (!user.getEnabled()) {
+            throw new RuntimeException("用户已被禁用");
+        }
+
         if (!checkPassword(user, loginRequest.getPassword())) {
             throw new RuntimeException("密码错误");
         }

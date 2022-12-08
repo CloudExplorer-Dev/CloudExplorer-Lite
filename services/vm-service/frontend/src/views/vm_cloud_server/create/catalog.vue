@@ -1,5 +1,5 @@
 <template>
-  <div class="catalog-container">
+  <div class="catalog-container" v-loading="loading">
     <el-card
       :body-style="{
         padding: 0,
@@ -14,41 +14,75 @@
         </span>
       </div>
       <div class="content">
-        <!--        <el-image
-          style="width: 40px"
-          :src="platformIcon[good.platform]?.icon"
-        />-->
-        <component
-          style="width: 100px; height: 100px"
-          :is="platformIcon[good.platform]?.component"
-          v-bind="platformIcon[good.platform]?.icon"
-          :color="platformIcon[good.platform]?.color"
-          size="100px"
-        ></component>
+        <div class="main-content">
+          <component
+            style="width: 100px; height: 100px"
+            :is="platformIcon[good.platform]?.component"
+            v-bind="platformIcon[good.platform]?.icon"
+            :color="platformIcon[good.platform]?.color"
+            size="100px"
+          ></component>
+          <div>
+            <div class="right-content">
+              <div class="balance-content">
+                <h2 style="color: #fa022e">{{ good.balance }}</h2>
+                <h4>&nbsp;元</h4>
+              </div>
+              <h3>账户余额</h3>
+            </div>
+          </div>
+        </div>
+        <div class="resource-content">
+          <div style="font-weight: bold; margin-bottom: 6px">我的资源</div>
+          <div class="resource-main">
+            <div class="resource-item">
+              <ce-icon class="resource-icon" code="xuniji1" />
+              <div class="resource-text">
+                <div>云主机</div>
+                <div class="count">{{ good.serverCount }}台</div>
+              </div>
+            </div>
+            <div class="resource-item">
+              <ce-icon class="resource-icon" code="yuncunchu" />
+              <div class="resource-text">
+                <div>磁盘</div>
+                <div class="count">{{ good.diskCount }}块</div>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
-      <el-button class="footer el-button--primary" @click="openCreatePage(good)"
-        >立即创建</el-button
+      <el-button
+        class="footer el-button--primary"
+        @click="openCreatePage(good)"
       >
+        立即创建
+      </el-button>
     </el-card>
   </div>
 </template>
 
 <script setup lang="ts">
-import BaseCloudAccountApi from "@commons/api/cloud_account";
+import CatalogApi from "@/api/catalog";
 import { platformIcon } from "@commons/utils/platform";
-import type { CloudAccount } from "@commons/api/cloud_account/type";
-import { onMounted, ref } from "vue";
+
+import { onMounted, type Ref, ref } from "vue";
 import { useRouter } from "vue-router";
 
+import type { Good } from "@/api/catalog/type";
+
+const loading: Ref<boolean> | undefined = ref<boolean>(false);
 const useRoute = useRouter();
 
-const goods = ref<Array<CloudAccount>>([]);
+const goods = ref<Array<Good>>([]);
 
 onMounted(() => {
-  BaseCloudAccountApi.listAll().then((result) => (goods.value = result.data));
+  CatalogApi.getGoods(loading).then((result) => {
+    goods.value = result.data;
+  });
 });
 
-function openCreatePage(good: CloudAccount) {
+function openCreatePage(good: Good) {
   console.log(good);
   useRoute.push({
     path: useRoute.currentRoute.value.path.replace(
@@ -88,8 +122,67 @@ function openCreatePage(good: CloudAccount) {
     }
   }
   .content {
-    height: 227px;
-    padding: 16px;
+    height: 199px;
+    padding: 30px;
+    display: flex;
+    flex-direction: column;
+    flex-wrap: nowrap;
+    justify-content: space-between;
+
+    .main-content {
+      width: 100%;
+      display: flex;
+      flex-direction: row;
+      flex-wrap: nowrap;
+      justify-content: space-between;
+      align-items: center;
+
+      .right-content {
+        display: flex;
+        flex-direction: column;
+        flex-wrap: nowrap;
+        align-items: flex-end;
+      }
+      .balance-content {
+        display: flex;
+        flex-direction: row;
+        align-items: baseline;
+        flex-wrap: nowrap;
+      }
+    }
+  }
+  .resource-content {
+    width: 100%;
+    .resource-main {
+      display: flex;
+      flex-direction: row;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      align-items: center;
+      .resource-item {
+        display: flex;
+        .resource-icon {
+          height: 48px;
+          width: 48px;
+          background-color: #b7b7b7;
+        }
+
+        .resource-text {
+          height: 48px;
+          width: 60px;
+          font-weight: bolder;
+          display: flex;
+          flex-direction: column;
+          flex-wrap: nowrap;
+          align-items: center;
+          justify-content: space-evenly;
+
+          .count {
+            color: var(--el-color-primary);
+          }
+        }
+      }
+    }
   }
   .footer {
     height: 50px;

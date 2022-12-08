@@ -41,7 +41,7 @@ public class VsphereSyncCloudApi {
     private static final long MB = 1024 * 1024;
     private static final long GB = MB * 1024;
 
-    public static final String VALID_HOST_REGEX = "^(?=.{1,255}$)[0-9A-Za-z](?:(?:[0-9A-Za-z]|\\b-){0,61}[0-9A-Za-z])?(?:\\.[0-9A-Za-z](?:(?:[0-9A-Za-z]|\\b-){0,61}[0-9A-Za-z])?)*\\.?$";
+    public static final String VALID_HOST_REGEX = "^[A-Za-z]+[A-Za-z0-9\\.\\-]*[A-Za-z0-9]$";
 
 
     /**
