@@ -53,10 +53,16 @@ const RegExpPatterns = {
 };
 
 function isValid(ipaddr: string): boolean {
+  if (_.split(ipaddr, ".").length !== 4) {
+    return false;
+  }
   return IpAddr.IPv4.isValid(ipaddr);
 }
 
 function isValidV6(ipaddr: string): boolean {
+  if (_.indexOf(ipaddr, ":") < 0) {
+    return false;
+  }
   return IpAddr.IPv6.isValid(ipaddr);
 }
 
