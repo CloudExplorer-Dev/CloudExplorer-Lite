@@ -16,6 +16,7 @@ import com.tencentcloudapi.cvm.v20170312.models.*;
 import lombok.Data;
 import lombok.experimental.Accessors;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -348,10 +349,10 @@ public class TencentVmCreateRequest extends TencentBaseRequest implements ICreat
         // 设置云主机名称和 hostname
         String instanceName = this.serverInfos.get(index).getName();
         String hostname = this.serverInfos.get(index).getHostname();
-        if (org.apache.commons.lang.StringUtils.isNotBlank(instanceName)) {
+        if (StringUtils.isNotBlank(instanceName)) {
             runInstancesRequest.setInstanceName(instanceName.trim());
         }
-        if (org.apache.commons.lang.StringUtils.isNotBlank(hostname)) {
+        if (StringUtils.isNotBlank(hostname)) {
             runInstancesRequest.setHostName(hostname.trim());
         }
 
