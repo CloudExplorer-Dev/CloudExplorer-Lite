@@ -95,6 +95,7 @@ const handleSave = (formEl: FormInstance) => {
     :title="$t('commons.personal.edit_pwd')"
     width="25%"
     destroy-on-close
+    :close-on-click-modal="false"
   >
     <el-form
       :model="form"
