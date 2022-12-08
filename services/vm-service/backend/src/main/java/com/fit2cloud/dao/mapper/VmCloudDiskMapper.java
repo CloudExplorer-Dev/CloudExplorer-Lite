@@ -5,7 +5,6 @@ import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.fit2cloud.dto.VmCloudDiskDTO;
-import com.fit2cloud.dto.VmCloudServerDTO;
 import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.Select;
 
@@ -28,6 +27,7 @@ public interface VmCloudDiskMapper extends BaseMapper<VmCloudDiskDTO> {
      */
     @Select("SELECT vm_cloud_disk.* " +
             " ,cloud_account.name as account_name"+
+            " ,cloud_account.platform as platform"+
             " ,vm_cloud_server.instance_name as vm_instance_name"+
             " FROM vm_cloud_disk" +
             " LEFT JOIN cloud_account on vm_cloud_disk.account_id=cloud_account.id"+
