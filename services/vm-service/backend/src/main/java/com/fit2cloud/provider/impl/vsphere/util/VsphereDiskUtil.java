@@ -3,6 +3,7 @@ package com.fit2cloud.provider.impl.vsphere.util;
 import com.fit2cloud.provider.entity.F2CDisk;
 import com.fit2cloud.provider.impl.vsphere.entity.DiskOpsType;
 import com.fit2cloud.provider.impl.vsphere.entity.VsphereDisk;
+import com.fit2cloud.provider.impl.vsphere.entity.constants.VsphereDiskType;
 import com.vmware.vim25.*;
 import com.vmware.vim25.mo.Task;
 import com.vmware.vim25.mo.VirtualMachine;
@@ -39,8 +40,8 @@ public class VsphereDiskUtil {
     private static VirtualDiskFlatVer2BackingInfo getVirtualDiskFlatVer2BackingInfo(VsphereDisk disk) {
         VirtualDiskFlatVer2BackingInfo backingInfo = new VirtualDiskFlatVer2BackingInfo();
         backingInfo.setDiskMode(disk.getDiskMode() == null ? VirtualDiskMode.persistent.name() : disk.getDiskMode().toLowerCase());
-        backingInfo.setThinProvisioned(disk.getDiskType() != null && disk.getDiskType().equalsIgnoreCase("thin"));
-        backingInfo.setEagerlyScrub(disk.getDiskType() != null && disk.getDiskType().equalsIgnoreCase("THICK"));
+        backingInfo.setThinProvisioned(disk.getDiskType() != null && disk.getDiskType().equalsIgnoreCase(VsphereDiskType.THIN.getId()));
+        backingInfo.setEagerlyScrub(disk.getDiskType() != null && disk.getDiskType().equalsIgnoreCase(VsphereDiskType.THICK_EAGER_ZEROED.getId()));
         backingInfo.setFileName("");
         return backingInfo;
     }
@@ -130,7 +131,7 @@ public class VsphereDiskUtil {
             return;
         List<VirtualDisk> virtualMachineDisks = VsphereDiskUtil.getVirtualMachineDisks(virtualMachine);
         VirtualMachineConfigSpec virtualMachineConfigSpec = new VirtualMachineConfigSpec();
-        List<VirtualDeviceConfigSpec> virtualDeviceConfigSpecs = new ArrayList<VirtualDeviceConfigSpec>();
+        List<VirtualDeviceConfigSpec> virtualDeviceConfigSpecs = new ArrayList<>();
 
         for (VsphereDisk vsphereDisk : disks) {
             virtualDeviceConfigSpecs.add(getVirtualMachineDiskConfigSpec(virtualMachine, vsphereDisk, virtualMachineDisks, vsphereDisk));
