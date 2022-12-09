@@ -93,10 +93,14 @@ export const useUserStore = defineStore({
       this.userStoreObject.token = authStorage.getToken();
       await this.getCurrentUser();
     },
-    doLogout() {
+    doLogout(redirect?: string) {
       this.clear();
       window.location.href =
-        window.location.protocol + "//" + window.location.host + "/signin";
+        window.location.protocol +
+        "//" +
+        window.location.host +
+        "/signin" +
+        (redirect ? "?redirect=" + encodeURI(redirect) : "");
     },
     clear() {
       this.login = false;

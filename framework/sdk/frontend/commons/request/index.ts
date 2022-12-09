@@ -8,6 +8,7 @@ import { store } from "@commons/stores";
 import { useUserStore } from "@commons/stores/modules/user";
 import Config from "@commons/utils/constants";
 import { setToken } from "@commons/utils/authStorage";
+import _ from "lodash";
 
 const axiosConfig = {
   baseURL: import.meta.env.VITE_BASE_PATH,
@@ -55,7 +56,13 @@ instance.interceptors.response.use(
     if (err.response?.status === 401) {
       //401时清空token
       const userStore = useUserStore(store);
-      userStore.doLogout();
+      userStore.doLogout(
+        _.replace(
+          window.location.href,
+          window.location.protocol + "//" + window.location.host,
+          ""
+        )
+      );
     }
     return Promise.reject(err);
   }
