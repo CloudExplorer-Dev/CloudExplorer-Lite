@@ -272,6 +272,7 @@ const tableConfig = ref<TableConfig>({
     :title="$t('user.notify_setting')"
     width="25%"
     destroy-on-close
+    :close-on-click-modal="false"
   >
     <MsgConfig
       :userId="activeUserId"

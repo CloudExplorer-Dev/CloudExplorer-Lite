@@ -1,6 +1,8 @@
 package com.fit2cloud.base.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.fit2cloud.base.entity.Role;
 import com.fit2cloud.base.entity.UserRole;
@@ -137,4 +139,26 @@ public class BaseUserRoleServiceImpl extends ServiceImpl<BaseUserRoleMapper, Use
 
     }
 
+    @Override
+    public Boolean deleteUserRoleByRoleId(String roleId) {
+        QueryWrapper<UserRole> userRoleQueryWrapper = Wrappers.query();
+        userRoleQueryWrapper.lambda().eq(UserRole::getRoleId, roleId);
+        return remove(userRoleQueryWrapper);
+    }
+
+    @Override
+    public Boolean deleteUserRoleByOrgId(String orgId) {
+        return deleteUserRoleBySource(orgId);
+    }
+
+    @Override
+    public Boolean deleteUserRoleByWorkspaceId(String workspaceId) {
+        return deleteUserRoleBySource(workspaceId);
+    }
+
+    private Boolean deleteUserRoleBySource(String source) {
+        QueryWrapper<UserRole> userRoleQueryWrapper = Wrappers.query();
+        userRoleQueryWrapper.lambda().eq(UserRole::getSource, source);
+        return remove(userRoleQueryWrapper);
+    }
 }

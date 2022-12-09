@@ -28,6 +28,8 @@ public interface IWorkspaceService extends IService<Workspace> {
 
     WorkspaceDTO getOne(String id, String name);
 
+    Boolean delete(String id);
+
     Boolean batchDelete(List<Workspace> workspaces);
 
     Boolean batch(WorkspaceBatchCreateRequest request);

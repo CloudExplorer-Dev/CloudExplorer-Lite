@@ -91,7 +91,7 @@ public class WorkspaceController {
             @ApiParam("工作空间ID")
             @NotNull(message = "{i18n.workspace.id.is.not.empty}")
             @PathVariable("workspaceId") String workspaceId){
-        return ResultHolder.success(workspaceService.removeById(workspaceId));
+        return ResultHolder.success(workspaceService.delete(workspaceId));
     }
 
     @ApiOperation(value = "批量删除工作空间",notes = "批量删除工作空间")
