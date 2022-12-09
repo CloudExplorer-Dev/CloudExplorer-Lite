@@ -1,5 +1,4 @@
 import { defineStore } from "pinia";
-import route from "@commons/router";
 import authStorage from "@commons/utils/authStorage";
 import type { Ref } from "vue";
 import { fetchCurrentUser, login } from "@commons/api/user";
@@ -96,7 +95,8 @@ export const useUserStore = defineStore({
     },
     doLogout() {
       this.clear();
-      route.getRoute()?.router.push({ name: "signin" });
+      window.location.href =
+        window.location.protocol + "//" + window.location.host + "/signin";
     },
     clear() {
       this.login = false;
