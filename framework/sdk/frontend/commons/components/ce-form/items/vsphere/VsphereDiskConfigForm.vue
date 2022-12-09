@@ -66,7 +66,7 @@
   <template v-else>
     <el-descriptions>
       <el-descriptions-item
-        :label="i === 0 ? '系统盘' : '数据盘' + (i + 1)"
+        :label="i === 0 ? '系统盘' : '数据盘' + i"
         v-for="(disk, i) in modelValue"
         :key="i"
       >
