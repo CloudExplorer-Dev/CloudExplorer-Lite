@@ -73,4 +73,11 @@ public interface IBaseCloudAccountService extends IService<CloudAccount> {
     List<ResourceCountResponse> getModuleResourceCount(String accountId);
 
     List<? extends Form> getBillSettingFormByPlatform(String platform);
+
+    /*
+     * 获取云账户余额
+     * @param accountId
+     * @return 未获取到余额将返回--
+     */
+    Object getAccountBalance(String accountId);
 }

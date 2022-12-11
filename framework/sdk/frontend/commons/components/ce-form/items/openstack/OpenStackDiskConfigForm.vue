@@ -2,8 +2,8 @@
   <template v-if="!confirm">
     <el-form
       ref="ruleFormRef"
-      label-width="0"
-      label-suffix=""
+      label-width="76px"
+      label-suffix=":"
       label-position="left"
       style="margin-bottom: 18px"
       :model="data"
@@ -48,35 +48,19 @@
 
             <el-form-item
               :rules="{
-                message: '大小' + '不能为空',
-                trigger: 'blur',
-                required: true,
-              }"
-              label=""
-              :prop="'[' + index + '].size'"
-            >
-              <el-input-number
-                v-model="obj.size"
-                :min="obj.minSize"
-                :step="1"
-                style="width: 150px"
-              />
-            </el-form-item>
-
-            <el-form-item
-              :rules="{
                 message: '磁盘类型' + '不能为空',
                 trigger: 'blur',
                 required: true,
               }"
-              label=""
+              label="磁盘类型"
+              size="small"
               :prop="'[' + index + '].volumeType'"
             >
               <el-select
                 filterable
                 v-model="obj.volumeType"
                 placeholder="磁盘类型"
-                style="width: 150px"
+                style="width: 120px"
               >
                 <el-option
                   v-for="(item, index) in formItem?.ext?.volumeType?.optionList"
@@ -85,6 +69,24 @@
                   :value="item.name"
                 />
               </el-select>
+            </el-form-item>
+
+            <el-form-item
+              :rules="{
+                message: '磁盘大小' + '不能为空',
+                trigger: 'blur',
+                required: true,
+              }"
+              label="磁盘大小"
+              size="small"
+              :prop="'[' + index + '].size'"
+            >
+              <el-input-number
+                v-model="obj.size"
+                :min="obj.minSize"
+                :step="1"
+                style="width: 120px"
+              />
             </el-form-item>
 
             <el-button

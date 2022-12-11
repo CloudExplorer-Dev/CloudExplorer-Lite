@@ -28,6 +28,10 @@ public class UserAuthDetailsService implements UserDetailsService {
             throw new RuntimeException("用户不存在");
         }
 
+        if (!userDto.getEnabled()) {
+            throw new RuntimeException("用户已被禁用");
+        }
+
         SecurityUser securityUser = new SecurityUser();
         securityUser.setCurrentUserInfoDto(userDto);
 

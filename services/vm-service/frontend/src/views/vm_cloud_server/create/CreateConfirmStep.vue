@@ -53,23 +53,6 @@
             >
               <template v-if="!form.confirmSpecial">
                 <span
-                  v-if="getDisplayValue(form) instanceof Array"
-                  class="description-array"
-                >
-                  <div
-                    v-for="(item, index) in getDisplayValue(form)"
-                    :key="index"
-                  >
-                    <div v-if="index === getDisplayValue(form).length - 1">
-                      {{ item }}
-                    </div>
-                    <div v-else>
-                      {{ item + "，" }}
-                    </div>
-                  </div>
-                </span>
-                <span
-                  v-else
                   class="description-inline"
                   v-html="getDisplayValue(form)"
                 />
@@ -204,10 +187,12 @@ function getDisplayValue(form: FormView) {
         result = eval("`" + temp + "`");
       } else {
         if (value instanceof Array) {
-          result = [];
+          result = "";
           form.valueItem.forEach((item: any) => {
-            result.push(item[form.textField ? form.textField : "label"]);
+            result =
+              result + "," + item[form.textField ? form.textField : "label"];
           });
+          result = result.replace(",", "");
         } else {
           result = _.get(
             form.valueItem,
@@ -243,11 +228,7 @@ function getDisplayValue(form: FormView) {
   display: inline-flex;
   flex-direction: row;
   justify-content: space-between;
-}
-
-.description-array {
-  width: 250px;
-  display: inline-flex;
+  max-width: 250px;
   overflow: auto;
   text-overflow: ellipsis;
   white-space: nowrap;

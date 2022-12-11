@@ -36,6 +36,11 @@ const rules: FormRules = {
   ],
   email: [
     {
+      required: true,
+      message: t("commons.validate.required", [t("user.email")]),
+      trigger: "blur",
+    },
+    {
       pattern: /^[a-zA-Z0-9_._-]+@[a-zA-Z0-9_-]+(\.[a-zA-Z0-9_-]+)+$/,
       message: t("user.validate.email_format"),
       trigger: "blur",

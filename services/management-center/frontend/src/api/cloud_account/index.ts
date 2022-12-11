@@ -158,18 +158,6 @@ const syncJob = (data: SyncRequest, loading?: Ref<boolean>) => {
 };
 
 /**
- * 查询云账户余额
- * @param cloudAccountId
- * @param loading
- */
-const getAccountBalance: (
-  cloudAccountId: string,
-  loading?: Ref<boolean>
-) => Promise<Result<number | string>> = (cloudAccountId, loading) => {
-  return get("/api/cloud_account/balance/" + cloudAccountId, null, loading);
-};
-
-/**
  * 更新云账号名称
  * @param data
  * @param loading
@@ -278,7 +266,6 @@ const CloudAccountApi = {
   verificationCloudAccount,
   getResourceSync,
   syncJob,
-  getAccountBalance,
   updateAccountName,
   getResourceCount,
   getAccountJobRecord,

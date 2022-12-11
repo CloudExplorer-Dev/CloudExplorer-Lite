@@ -28,11 +28,20 @@
           </el-form-item>
 
           <el-form-item
-            :rules="{
-              message: 'Hostname' + '不能为空',
-              trigger: 'blur',
-              required: true,
-            }"
+            :rules="[
+              {
+                message: 'Hostname' + '不能为空',
+                trigger: 'blur',
+                required: true,
+              },
+              {
+                message:
+                  'Hostname' +
+                  '只能包含小写字母、大写字母、数字、点或横线且是合法的FQDN',
+                trigger: 'blur',
+                pattern: /^[A-Za-z]+[A-Za-z0-9\.\-]*[A-Za-z0-9]$/,
+              },
+            ]"
             label="Hostname"
             :prop="'[' + index + '].hostname'"
           >

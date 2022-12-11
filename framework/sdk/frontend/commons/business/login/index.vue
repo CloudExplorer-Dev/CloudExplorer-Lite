@@ -1,11 +1,19 @@
 <script setup lang="ts">
-import { onBeforeMount, onUnmounted, reactive, ref, watch } from "vue";
+import {
+  computed,
+  onBeforeMount,
+  onUnmounted,
+  reactive,
+  ref,
+  watch,
+} from "vue";
 import type { LocationQuery } from "vue-router";
 import { useRoute, useRouter } from "vue-router";
 import { useUserStore } from "@commons/stores/modules/user";
 import type { FormInstance, FormRules } from "element-plus";
 import type { LoginRequest } from "@commons/api/user/type";
 import { useI18n } from "vue-i18n";
+import _ from "lodash";
 
 const { t } = useI18n();
 
@@ -44,8 +52,34 @@ const rules: FormRules = {
   ],
 };
 const msg = ref("");
-const redirect = ref("");
-const otherQuery = ref({});
+const redirect = computed(() => {
+  const query = route.query;
+  if (query) {
+    return query.redirect ? query.redirect.toString() : "";
+  }
+  return "";
+});
+const hash = computed(() => {
+  //针对hash路由需要处理
+  if (
+    redirect.value !== "" &&
+    (_.includes(window.location.href, redirect.value + window.location.hash) ||
+      _.includes(
+        window.location.href,
+        redirect.value + "/" + window.location.hash
+      ))
+  ) {
+    return window.location.hash;
+  }
+  return undefined;
+});
+const otherQuery = computed(() => {
+  const query = route.query;
+  if (query) {
+    return getOtherQuery(query);
+  }
+  return {};
+});
 
 // 获取路径参数
 const getOtherQuery = (query: LocationQuery) => {
@@ -57,17 +91,17 @@ const getOtherQuery = (query: LocationQuery) => {
   }, {});
 };
 
-watch(
+/*watch(
   route,
   (route) => {
     const query = route.query;
     if (query) {
-      redirect.value = query.redirect == null ? "" : query.redirect.toString();
+      redirect.value = query.redirect ? query.redirect.toString() : "";
       otherQuery.value = getOtherQuery(query);
     }
   },
   { immediate: true }
-);
+);*/
 
 onBeforeMount(() => {
   document.addEventListener("keydown", watchEnter);
@@ -93,6 +127,7 @@ const submitForm = (formEl: FormInstance | undefined) => {
           router.push({
             path: redirect.value || "/",
             query: otherQuery.value,
+            hash: hash.value,
           });
         })
         .catch((error: any) => {

@@ -95,5 +95,12 @@ public class BaseCloudAccountController {
         return ResultHolder.success(forms);
     }
 
+    @GetMapping("/balance/{id}")
+    @ApiOperation(value = "获取云账号余额")
+    public ResultHolder<Object> getAccountBalance(@ApiParam(value = "云账号id", required = true)
+                                                      @CustomValidated(mapper = BaseCloudAccountMapper.class, field = "id", handler = ExistHandler.class, message = "{i18n.cloud_account.id.is.not.existent}", exist = false)
+                                                  @PathVariable("id") String id) {
+        return ResultHolder.success(cloudAccountService.getAccountBalance(id));
+    }
 
 }

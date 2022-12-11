@@ -149,21 +149,16 @@ const jumpToDisk = (disk: VmCloudDiskVO) => {
 function MillisecondToDate(msd: number) {
   const time = msd / 1000.0;
 
-  if (time > 60 && time < 60 * 60) {
-    return time / 60.0 + "分钟" + (time / 60.0 - time / 60.0) * 60 + "秒";
-  } else if (time >= 60 * 60 && time < 60 * 60 * 24) {
-    return (
-      time / 3600.0 +
-      "小时" +
-      (time / 3600.0 - time / 3600.0) * 60 +
-      "分钟" +
-      ((time / 3600.0 - time / 3600.0) * 60 -
-        (time / 3600.0 - time / 3600.0) * 60) *
-        60 +
-      "秒"
-    );
-  }
+  const hour = _.floor(time / 3600);
+  const restSecond1 = time - hour * 3600;
+  const minute = _.floor(restSecond1 / 60);
+  const second = restSecond1 - minute * 60;
 
+  if (time > 60 && time < 60 * 60) {
+    return `${minute}分钟${second}秒`;
+  } else if (time >= 60 * 60) {
+    return `${hour}小时${minute}分钟${second}秒`;
+  }
   return time + "秒";
 }
 

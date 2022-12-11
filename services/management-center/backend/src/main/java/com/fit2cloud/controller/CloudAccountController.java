@@ -175,15 +175,6 @@ public class CloudAccountController {
         return ResultHolder.success(true);
     }
 
-    @GetMapping("/balance/{id}")
-    @ApiOperation(value = "获取云账号余额")
-    @PreAuthorize("hasAnyCePermission('CLOUD_ACCOUNT:EDIT')")
-    public ResultHolder<Object> getAccountBalance(@ApiParam(value = "云账号id", required = true)
-                                                  @CustomValidated(mapper = CloudAccountMapper.class, handler = ExistHandler.class, message = "{i18n.cloud_account_id_not_existent}", exist = false)
-                                                  @PathVariable("id") String id) {
-        return ResultHolder.success(cloudAccountService.getAccountBalance(id));
-    }
-
 
     @PutMapping("/updateName")
     @ApiOperation(value = "修改云账号名称")

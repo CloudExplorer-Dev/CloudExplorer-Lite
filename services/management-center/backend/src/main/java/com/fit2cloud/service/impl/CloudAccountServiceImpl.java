@@ -6,7 +6,6 @@ import com.baomidou.mybatisplus.core.metadata.OrderItem;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.fit2cloud.autoconfigure.ServerInfo;
 import com.fit2cloud.base.entity.VmCloudDisk;
 import com.fit2cloud.base.entity.VmCloudImage;
@@ -19,11 +18,8 @@ import com.fit2cloud.base.service.IBaseVmCloudServerService;
 import com.fit2cloud.common.constants.*;
 import com.fit2cloud.common.exception.Fit2cloudException;
 import com.fit2cloud.common.form.vo.Form;
-import com.fit2cloud.common.log.constants.ResourceTypeEnum;
 import com.fit2cloud.common.platform.credential.Credential;
-import com.fit2cloud.common.provider.entity.F2CBalance;
 import com.fit2cloud.common.utils.ColumnNameUtil;
-import com.fit2cloud.common.utils.JsonUtil;
 import com.fit2cloud.common.utils.PageUtil;
 import com.fit2cloud.common.utils.ServiceUtil;
 import com.fit2cloud.constants.ErrorCodeConstants;
@@ -35,18 +31,15 @@ import com.fit2cloud.controller.response.cloud_account.PlatformResponse;
 import com.fit2cloud.dao.entity.CloudAccount;
 import com.fit2cloud.dao.mapper.CloudAccountMapper;
 import com.fit2cloud.redis.RedisService;
-import com.fit2cloud.request.cloud_account.CloudAccountJobItem;
 import com.fit2cloud.request.cloud_account.CloudAccountModuleJob;
 import com.fit2cloud.request.cloud_account.SyncRequest;
 import com.fit2cloud.response.JobRecordResourceResponse;
 import com.fit2cloud.response.cloud_account.ResourceCountResponse;
 import com.fit2cloud.response.cloud_account.SyncResource;
 import com.fit2cloud.service.ICloudAccountService;
-import com.fit2cloud.service.IProviderService;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.Nullable;
-import org.springframework.boot.configurationprocessor.json.JSONObject;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpMethod;
@@ -83,8 +76,6 @@ public class CloudAccountServiceImpl extends ServiceImpl<CloudAccountMapper, Clo
     SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
     @Resource
     private IBaseCloudAccountService baseCloudAccountService;
-    @Resource
-    private IProviderService providerService;
     @Resource
     IBaseVmCloudServerService cloudServerService;
     @Resource
@@ -394,15 +385,6 @@ public class CloudAccountServiceImpl extends ServiceImpl<CloudAccountMapper, Clo
         } else {
             return getResourceJob.apply(module);
         }
-    }
-
-    public Object getAccountBalance(String accountId) {
-        Object result = "--";
-        F2CBalance f2CBalance = providerService.getAccountBalance(accountId);
-        if (f2CBalance != null) {
-            result = f2CBalance.getAmount();
-        }
-        return result;
     }
 
     public Boolean updateAccountName(UpdateAccountNameRequest updateAccountNameRequest) {
