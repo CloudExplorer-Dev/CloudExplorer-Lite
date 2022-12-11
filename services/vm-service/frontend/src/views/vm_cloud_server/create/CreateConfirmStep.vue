@@ -221,7 +221,15 @@ function getDisplayValue(form: FormView) {
     result == undefined ||
     (typeof result === "string" && _.trim(result).length === 0)
   ) {
-    return `<span style="color: var(--el-text-color-secondary)">空</span>`;
+    if (
+      form.optionList &&
+      typeof form.optionList === "string" &&
+      form.optionList.length > 0
+    ) {
+      return form.optionList;
+    } else {
+      return `<span style="color: var(--el-text-color-secondary)">空</span>`;
+    }
   } else if (typeof result === "boolean") {
     return result ? "是" : "否";
   } else {

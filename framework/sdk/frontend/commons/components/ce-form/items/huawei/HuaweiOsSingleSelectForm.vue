@@ -6,6 +6,7 @@
       label-position="left"
       :model="_data"
       size="small"
+      v-loading="_loading"
     >
       <el-form-item style="width: 100%">
         <el-select
@@ -17,7 +18,7 @@
           <el-option
             v-for="item in optionList"
             :key="item.osVersion"
-            :label="item.osVersion"
+            :label="item.imageName"
             :value="item.osVersion"
           >
           </el-option>
@@ -100,14 +101,22 @@ function getTempRequest() {
 
 function getOsConfigList() {
   const _temp = getTempRequest();
-  const clazz = "com.fit2cloud.service.impl.VmCloudImageServiceImpl";
+  const clazz = "com.fit2cloud.provider.impl.huawei.HuaweiCloudProvider";
   const method = "listOsVersion";
-  formApi.getResourceMethod(true, clazz, method, _temp, _loading).then((ok) => {
-    if (_data.value) {
-      selectOsVersion.value = _data.value?.osVersion;
-    }
-    _.set(props.formItem, "optionList", ok.data);
-  });
+  formApi
+    .getResourceMethod(false, clazz, method, _temp, _loading)
+    .then((ok) => {
+      if (_data.value) {
+        if (!_.find(ok.data, ["imageName", _data.value?.imageName])) {
+          selectOsVersion.value = "";
+          _data.value = undefined;
+          _.set(props.formItem, "optionList", []);
+        } else {
+          selectOsVersion.value = _data.value?.osVersion;
+        }
+      }
+      _.set(props.formItem, "optionList", ok.data);
+    });
 }
 
 onMounted(() => {
@@ -116,6 +125,15 @@ onMounted(() => {
 watch(
   () => props.allData.availabilityZone,
   (n, o) => {
+    getOsConfigList();
+  }
+);
+watch(
+  () => props.allData.instanceSpecConfig,
+  (n, o) => {
+    selectOsVersion.value = "";
+    _data.value = undefined;
+    _.set(props.formItem, "optionList", []);
     getOsConfigList();
   }
 );

@@ -1,6 +1,7 @@
 <template v-loading="_loading">
   <template v-if="!confirm">
     <el-form
+      :inline-message="true"
       ref="ruleFormRef"
       label-width="130px"
       label-suffix=":"
@@ -24,19 +25,22 @@
             label="云主机名称"
             :prop="'[' + index + '].name'"
           >
-            <el-input v-model="item.name" />
+            <el-input v-model="item.name" style="width: 100%" />
           </el-form-item>
 
           <el-form-item
-            :rules="{
-              message: 'Hostname' + '不能为空',
-              trigger: 'blur',
-              required: true,
-            }"
+            :rules="rules()"
             label="Hostname"
-            :prop="'[' + index + '].hostname'"
+            :prop="'[' + index + '].hostName'"
           >
-            <el-input v-model="item.hostname" />
+            <el-input v-model="item.hostName" minlength="1" maxlength="65" />
+          </el-form-item>
+          <el-form-item :prop="'[' + index + '].authReboot'">
+            <div style="width: 100%; height: 30px; text-align: center">
+              <el-checkbox v-model="item.authReboot"
+                >重启生效Hostname</el-checkbox
+              >
+            </div>
           </el-form-item>
         </el-tab-pane>
       </el-tabs>
@@ -49,7 +53,10 @@
           {{ o.name }}
         </el-descriptions-item>
         <el-descriptions-item label="Hostname">
-          {{ o.hostname }}
+          {{ o.hostName }}
+        </el-descriptions-item>
+        <el-descriptions-item label="自动重启">
+          {{ o.authReboot ? "是" : "否" }}
         </el-descriptions-item>
       </el-descriptions>
     </template>
@@ -63,7 +70,8 @@ import type { FormView } from "@commons/components/ce-form/type";
 
 interface ServerInfo {
   name?: string;
-  hostname?: string;
+  hostName?: string;
+  authReboot?: boolean;
 }
 
 const props = defineProps<{
@@ -116,6 +124,31 @@ function setServers(count: number | undefined) {
       }
     }
   }
+}
+
+function rules() {
+  const rules = [
+    {
+      message: "Hostname" + "不能为空",
+      trigger: "blur",
+      required: true,
+    },
+    {
+      message: "Hostname" + "长度为1-64",
+      trigger: "blur",
+      pattern: "^.{1,64}$",
+    },
+  ];
+  if (props.formItem.regexp) {
+    const regexpObj = {
+      message: props.formItem.regexpDescription as string,
+      trigger: "blur",
+      required: true,
+    };
+    _.set(regexpObj, "pattern", props.formItem.regexp);
+    rules.push(regexpObj);
+  }
+  return rules;
 }
 
 /**
