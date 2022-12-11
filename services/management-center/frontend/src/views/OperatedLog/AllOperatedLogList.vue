@@ -6,7 +6,6 @@
     :data="tableData"
     :tableConfig="tableConfig"
     row-key="id"
-    table-layout="auto"
     height="100%"
   >
     <template #toolbar>
@@ -90,6 +89,7 @@ const showLogInfoDialog = (v: OperatedLogVO) => {
   logInfoRef.value.dialogVisible = true;
   logInfoRef.value.logInfo = v;
 };
+const table = ref<any>(null);
 const tableData = ref<Array<OperatedLogVO>>();
 onMounted(() => {
   const defaultCondition = new TableSearch();

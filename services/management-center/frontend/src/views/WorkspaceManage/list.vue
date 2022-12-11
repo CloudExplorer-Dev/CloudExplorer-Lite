@@ -171,7 +171,6 @@ const tableConfig = ref<TableConfig>({
     row-key="id"
     @selection-change="handleSelectionChange"
     height="100%"
-    table-layout="auto"
   >
     <template #toolbar>
       <el-button type="primary" @click="create">{{
