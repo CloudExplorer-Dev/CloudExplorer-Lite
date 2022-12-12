@@ -1,4 +1,4 @@
-import axios from "axios";
+import axios, { type AxiosRequestConfig } from "axios";
 import { ElMessage } from "element-plus";
 import type { NProgress } from "nprogress";
 import nProgress from "nprogress";
@@ -21,11 +21,45 @@ const instance = axios.create(axiosConfig);
 
 // 设置请求拦截器
 instance.interceptors.request.use(
-  (config: any) => {
+  (config: AxiosRequestConfig) => {
     const userStore = useUserStore(store);
+    if (config.headers === undefined) {
+      config.headers = {};
+    }
     config.headers[Config.CE_TOKEN_KEY] = userStore.currentToken;
     config.headers[Config.CE_ROLE_KEY] = userStore.currentRole;
     config.headers[Config.CE_SOURCE_KEY] = userStore.currentSource;
+
+    //针对params中的[]符号处理，不使用axios默认的传params，这里直接拼进url里
+    if (config.params && _.keysIn(config.params).length > 0) {
+      const paramList: Array<string> = [];
+      _.forIn(config.params, (value, key) => {
+        if (value !== undefined) {
+          if (value instanceof Array) {
+            _.forEach(value, (v) => {
+              paramList.push(
+                `${encodeURI(key + "[]")}=${encodeURI(
+                  v instanceof Object ? JSON.stringify(v) : v
+                )}`
+              );
+            });
+          } else {
+            paramList.push(
+              `${encodeURI(key)}=${encodeURI(
+                value instanceof Object ? JSON.stringify(value) : value
+              )}`
+            );
+          }
+        }
+      });
+      //拼接url
+      if (paramList.length > 0) {
+        config.url += "?" + _.join(paramList, "&");
+        //清空params
+        config.params = undefined;
+      }
+    }
+
     return config;
   },
   (err: any) => {
