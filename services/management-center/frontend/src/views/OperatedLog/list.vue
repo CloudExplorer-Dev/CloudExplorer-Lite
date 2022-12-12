@@ -45,6 +45,7 @@ import LoginLogList from "./LoginLogList.vue";
 import VmOperatedLogList from "./VmOperatedLogList.vue";
 import DiskOperatedLogList from "./DiskOperatedLogList.vue";
 import AllOperatedLogList from "./AllOperatedLogList.vue";
+import ClearLogConfig from "@/views/OperatedLog/ClearLogConfig.vue";
 const activeName = ref("LoginLogList");
 </script>
 <style scoped>

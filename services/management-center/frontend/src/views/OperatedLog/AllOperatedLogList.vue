@@ -63,14 +63,26 @@
     <fu-table-operations v-bind="tableConfig.tableOperations" fix />
   </ce-table>
   <LogDetail ref="logInfoRef" />
+  <el-dialog
+    v-model="clearLogConfigDialogVisible"
+    title="保存日志策略"
+    width="25%"
+    destroy-on-close
+    :close-on-click-modal="false"
+  >
+    <ClearLogConfig
+      :paramValue="paramValue"
+      :paramKey="'log.keep.api.months'"
+      v-model:visible="clearLogConfigDialogVisible"
+    />
+  </el-dialog>
 </template>
 
 <script setup lang="ts">
 import { ref, onMounted } from "vue";
 import OperatedLogApi from "@/api/operated_log/index";
 import type { OperatedLogVO } from "@/api/operated_log/type";
-
-import { ElMessage } from "element-plus/es";
+import ClearLogConfig from "@/views/OperatedLog/ClearLogConfig.vue";
 import {
   PaginationConfig,
   TableConfig,
@@ -91,6 +103,13 @@ const showLogInfoDialog = (v: OperatedLogVO) => {
 };
 const table = ref<any>(null);
 const tableData = ref<Array<OperatedLogVO>>();
+const paramValue = ref<string>();
+const clearLogConfigDialogVisible = ref<boolean>(false);
+
+const showClearLogConfigDialog = () => {
+  paramValue.value = "3";
+  clearLogConfigDialogVisible.value = true;
+};
 onMounted(() => {
   const defaultCondition = new TableSearch();
   defaultCondition.order = new Order("date", false);
@@ -145,8 +164,7 @@ const tableConfig = ref<TableConfig>({
 });
 
 const clearPolicy = () => {
-  //
-  ElMessage.success("敬请期待！");
+  showClearLogConfigDialog();
 };
 </script>
 

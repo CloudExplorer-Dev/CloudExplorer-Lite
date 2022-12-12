@@ -16,5 +16,7 @@ public interface ILogService {
 
     IPage<OperatedLogVO> operatedLogs(PageOperatedLogRequest request);
 
+    void deleteEsData(String index,int m,Class<?> clazz);
+
 
 }
