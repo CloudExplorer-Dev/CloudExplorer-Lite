@@ -1,11 +1,13 @@
 package com.fit2cloud.controller.request.images;
 
 import com.fit2cloud.request.pub.OrderRequest;
+import com.fit2cloud.request.pub.PageOrderRequestInterface;
 import com.fit2cloud.request.pub.PageRequest;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
 import javax.validation.constraints.Size;
+import java.io.Serial;
 import java.util.List;
 
 /**
@@ -13,7 +15,9 @@ import java.util.List;
  * @date 2022/9/27 14:45
  **/
 @Data
-public class PageVmCloudImageRequest extends PageRequest {
+public class PageVmCloudImageRequest extends PageRequest implements PageOrderRequestInterface {
+    @Serial
+    private static final long serialVersionUID = -5292015506261363029L;
     @ApiModelProperty("名称")
     private String imageName;
     @ApiModelProperty("组织ID")

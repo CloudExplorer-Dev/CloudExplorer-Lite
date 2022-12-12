@@ -17,19 +17,16 @@ import java.util.List;
 public class ColumnNameUtil {
 
     private static String getTableName(Class clazz) {
-        TableName tableName = (TableName) clazz.getAnnotation(TableName.class);
-        String table = tableName.value();
-        if (StringUtils.isEmpty(table)) {
-            while (clazz != null) {
-                tableName = (TableName) clazz.getAnnotation(TableName.class);
-                table = tableName.value();
-                if (StringUtils.isNotEmpty(table)) {
-                    break;
-                }
-                clazz = clazz.getSuperclass();
+        TableName tableName = null;
+        while (clazz != null) {
+            tableName = (TableName) clazz.getAnnotation(TableName.class);
+            if (tableName != null && StringUtils.isNotEmpty(tableName.value())) {
+                break;
             }
+            clazz = clazz.getSuperclass();
         }
-        return table;
+
+        return tableName == null ? null : tableName.value();
     }
 
     /**

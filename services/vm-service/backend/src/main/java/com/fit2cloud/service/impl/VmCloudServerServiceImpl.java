@@ -2,6 +2,7 @@ package com.fit2cloud.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.core.metadata.OrderItem;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.fit2cloud.autoconfigure.ThreadPoolConfig;
@@ -11,7 +12,6 @@ import com.fit2cloud.base.entity.VmCloudServer;
 import com.fit2cloud.base.mapper.BaseJobRecordResourceMappingMapper;
 import com.fit2cloud.base.mapper.BaseVmCloudServerMapper;
 import com.fit2cloud.base.service.IBaseCloudAccountService;
-import com.fit2cloud.common.constants.CloudAccountConstants;
 import com.fit2cloud.common.constants.JobStatusConstants;
 import com.fit2cloud.common.constants.JobTypeConstants;
 import com.fit2cloud.common.exception.Fit2cloudException;
@@ -19,10 +19,7 @@ import com.fit2cloud.common.log.constants.OperatedTypeEnum;
 import com.fit2cloud.common.log.constants.ResourceTypeEnum;
 import com.fit2cloud.common.log.utils.LogUtil;
 import com.fit2cloud.common.provider.util.CommonUtil;
-import com.fit2cloud.common.utils.ColumnNameUtil;
-import com.fit2cloud.common.utils.CurrentUserUtils;
-import com.fit2cloud.common.utils.DateUtil;
-import com.fit2cloud.common.utils.JsonUtil;
+import com.fit2cloud.common.utils.*;
 import com.fit2cloud.constants.ErrorCodeConstants;
 import com.fit2cloud.controller.request.vm.BatchOperateVmRequest;
 import com.fit2cloud.controller.request.vm.CreateServerRequest;
@@ -106,28 +103,22 @@ public class VmCloudServerServiceImpl extends ServiceImpl<BaseVmCloudServerMappe
             request.setOrganizationId(CurrentUserUtils.getOrganizationId());
             request.setOrganizationIds(organizationCommonService.getOrgIdsByParentId(CurrentUserUtils.getOrganizationId()));
         }
+        Page<VmCloudServerDTO> page = PageUtil.of(request, VmCloudServerDTO.class, new OrderItem(ColumnNameUtil.getColumnName(VmCloudServerDTO::getCreateTime, true), false), true);
         // 构建查询参数
         QueryWrapper<VmCloudServerDTO> wrapper = addQuery(request);
-        Page<VmCloudServerDTO> page = new Page<>(request.getCurrentPage(), request.getPageSize(), true);
-        IPage<VmCloudServerDTO> result = vmCloudServerMapper.pageList(page, wrapper);
-        return result;
+        return vmCloudServerMapper.pageList(page, wrapper);
     }
 
     private QueryWrapper<VmCloudServerDTO> addQuery(PageVmCloudServerRequest request) {
         QueryWrapper<VmCloudServerDTO> wrapper = new QueryWrapper<>();
-        //排序
-        if (request.getOrder() != null && StringUtils.isNotEmpty(request.getOrder().getColumn())) {
-            wrapper.orderBy(true, request.getOrder().isAsc(), ColumnNameUtil.getColumnName(request.getOrder().getColumn(), VmCloudServerDTO.class));
-        } else {
-            wrapper.orderBy(true, false, "vm_cloud_server.create_time");
-        }
-        wrapper.like(StringUtils.isNotBlank(request.getWorkspaceId()), "vm_cloud_disk.workspace_id", request.getWorkspaceId());
+
+        wrapper.like(StringUtils.isNotBlank(request.getWorkspaceId()), ColumnNameUtil.getColumnName(VmCloudServer::getWorkspaceId, true), request.getWorkspaceId());
         //wrapper.in(CollectionUtils.isNotEmpty(request.getOrganizationIds()),"vm_cloud_disk.organization_id",request.getOrganizationIds());
-        wrapper.like(StringUtils.isNotBlank(request.getInstanceName()), "vm_cloud_server.instance_name", request.getInstanceName());
-        wrapper.like(StringUtils.isNotBlank(request.getAccountName()), "cloud_account.name", request.getAccountName());
-        wrapper.like(StringUtils.isNotBlank(request.getIpArray()), "vm_cloud_server.ip_array", request.getIpArray());
-        wrapper.in(CollectionUtils.isNotEmpty(request.getAccountIds()), "vm_cloud_server.account_id", request.getAccountIds());
-        wrapper.in(CollectionUtils.isNotEmpty(request.getInstanceStatus()), "vm_cloud_server.instance_status", request.getInstanceStatus());
+        wrapper.like(StringUtils.isNotBlank(request.getInstanceName()), ColumnNameUtil.getColumnName(VmCloudServer::getInstanceName, true), request.getInstanceName());
+        wrapper.like(StringUtils.isNotBlank(request.getAccountName()), ColumnNameUtil.getColumnName(CloudAccount::getName, true), request.getAccountName());
+        wrapper.like(StringUtils.isNotBlank(request.getIpArray()), ColumnNameUtil.getColumnName(VmCloudServer::getIpArray, true), request.getIpArray());
+        wrapper.in(CollectionUtils.isNotEmpty(request.getAccountIds()), ColumnNameUtil.getColumnName(VmCloudServer::getAccountId, true), request.getAccountIds());
+        wrapper.in(CollectionUtils.isNotEmpty(request.getInstanceStatus()), ColumnNameUtil.getColumnName(VmCloudServer::getInstanceStatus, true), request.getInstanceStatus());
         return wrapper;
     }
 
@@ -180,7 +171,7 @@ public class VmCloudServerServiceImpl extends ServiceImpl<BaseVmCloudServerMappe
         if (batchOperationMap.get(operatedType) == null) {
             throw new Fit2cloudException(ErrorCodeConstants.NOT_SUPPORTED_TEMPORARILY.getCode(), ErrorCodeConstants.NOT_SUPPORTED_TEMPORARILY.getMessage() + " - " + request.getOperate());
         }
-        request.getInstanceIds().stream().forEach(instanceId -> {
+        request.getInstanceIds().forEach(instanceId -> {
             try {
                 batchOperationMap.get(operatedType).accept(instanceId);
             } catch (Throwable e) {
@@ -204,7 +195,7 @@ public class VmCloudServerServiceImpl extends ServiceImpl<BaseVmCloudServerMappe
     }
 
     @Override
-    public List<VmCloudServerDTO> getByIds(List<String> vmIds){
+    public List<VmCloudServerDTO> getByIds(List<String> vmIds) {
         QueryWrapper<VmCloudServerDTO> wrapper = new QueryWrapper<>();
         wrapper.in("vm_cloud_server.id", vmIds);
         return vmCloudServerMapper.getByIds(wrapper);
@@ -231,7 +222,7 @@ public class VmCloudServerServiceImpl extends ServiceImpl<BaseVmCloudServerMappe
                 LocalDateTime createTime = DateUtil.getSyncTime();
                 QueryWrapper<VmCloudServer> wrapper = new QueryWrapper<VmCloudServer>()
                         .eq(ColumnNameUtil.getColumnName(VmCloudServer::getId, true), vmId)
-                        .ne(ColumnNameUtil.getColumnName(VmCloudServer::getInstanceStatus,true),F2CInstanceStatus.Deleted.name());
+                        .ne(ColumnNameUtil.getColumnName(VmCloudServer::getInstanceStatus, true), F2CInstanceStatus.Deleted.name());
                 VmCloudServer vmCloudServer = baseMapper.selectOne(wrapper);
                 if (vmCloudServer == null) {
                     throw new Fit2cloudException(ErrorCodeConstants.VM_NOT_EXIST.getCode(), ErrorCodeConstants.VM_NOT_EXIST.getMessage());
@@ -265,7 +256,7 @@ public class VmCloudServerServiceImpl extends ServiceImpl<BaseVmCloudServerMappe
                                 break;
                             default:
                         }
-                    }else{
+                    } else {
                         vmCloudServer.setInstanceStatus(instanceStatus);
                         jobRecord.setStatus(JobStatusConstants.FAILED);
                     }

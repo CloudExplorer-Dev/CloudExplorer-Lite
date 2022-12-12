@@ -14,6 +14,7 @@ import com.fit2cloud.base.mapper.BaseVmCloudDiskMapper;
 import com.fit2cloud.base.mapper.BaseVmCloudServerMapper;
 import com.fit2cloud.common.constants.JobTypeConstants;
 import com.fit2cloud.common.log.constants.ResourceTypeEnum;
+import com.fit2cloud.common.utils.ColumnNameUtil;
 import com.fit2cloud.common.utils.PageUtil;
 import com.fit2cloud.controller.request.jobrecord.PageJobRecordRequest;
 import com.fit2cloud.dto.JobRecordDTO;
@@ -45,7 +46,7 @@ public class JobRecordServiceImpl implements IJobRecordService {
     @Override
     public IPage<JobRecordDTO> pageJobRecord(PageJobRecordRequest request) {
 
-        Page<JobRecordDTO> page = PageUtil.of(request, JobRecordDTO.class, new OrderItem("create_time", false), true);
+        Page<JobRecordDTO> page = PageUtil.of(request, JobRecordDTO.class, new OrderItem(ColumnNameUtil.getColumnName(JobRecordDTO::getCreateTime, false), false), true);
 
         SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 

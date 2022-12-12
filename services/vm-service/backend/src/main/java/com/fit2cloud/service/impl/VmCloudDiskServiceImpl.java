@@ -2,11 +2,13 @@ package com.fit2cloud.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.core.metadata.OrderItem;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.fit2cloud.base.entity.CloudAccount;
 import com.fit2cloud.base.entity.VmCloudDisk;
+import com.fit2cloud.base.entity.VmCloudServer;
 import com.fit2cloud.base.mapper.BaseVmCloudDiskMapper;
 import com.fit2cloud.base.service.IBaseCloudAccountService;
 import com.fit2cloud.common.constants.JobTypeConstants;
@@ -16,6 +18,7 @@ import com.fit2cloud.common.log.constants.ResourceTypeEnum;
 import com.fit2cloud.common.provider.util.CommonUtil;
 import com.fit2cloud.common.utils.ColumnNameUtil;
 import com.fit2cloud.common.utils.CurrentUserUtils;
+import com.fit2cloud.common.utils.PageUtil;
 import com.fit2cloud.controller.request.CreateJobRecordRequest;
 import com.fit2cloud.controller.request.ExecProviderMethodRequest;
 import com.fit2cloud.controller.request.ResourceState;
@@ -77,15 +80,15 @@ public class VmCloudDiskServiceImpl extends ServiceImpl<BaseVmCloudDiskMapper, V
             request.setOrganizationId(CurrentUserUtils.getOrganizationId());
             request.setOrganizationIds(organizationCommonService.getOrgIdsByParentId(CurrentUserUtils.getOrganizationId()));
         }
+        Page<VmCloudDiskDTO> page = PageUtil.of(request, VmCloudDiskDTO.class, new OrderItem(ColumnNameUtil.getColumnName(VmCloudDiskDTO::getCreateTime, true), false), true);
         // 构建查询参数
         QueryWrapper<VmCloudDiskDTO> wrapper = addQuery(request);
-        Page<VmCloudDiskDTO> page = new Page<>(request.getCurrentPage(), request.getPageSize(), true);
 
         IPage<VmCloudDiskDTO> result = diskMapper.pageList(page, wrapper);
-        result.getRecords().forEach(v->{
-            if(v.getBootable()){
+        result.getRecords().forEach(v -> {
+            if (v.getBootable()) {
                 v.setBootableText("系统盘");
-            }else{
+            } else {
                 v.setBootableText("数据盘");
             }
         });
@@ -94,21 +97,16 @@ public class VmCloudDiskServiceImpl extends ServiceImpl<BaseVmCloudDiskMapper, V
 
     private QueryWrapper<VmCloudDiskDTO> addQuery(PageVmCloudDiskRequest request) {
         QueryWrapper<VmCloudDiskDTO> wrapper = new QueryWrapper<>();
-        //排序
-        if (request.getOrder() != null && StringUtils.isNotEmpty(request.getOrder().getColumn())) {
-            wrapper.orderBy(true, request.getOrder().isAsc(), ColumnNameUtil.getColumnName(request.getOrder().getColumn(), VmCloudDiskDTO.class));
-        } else {
-            wrapper.orderBy(true, false, "vm_cloud_disk.create_time");
-        }
-        wrapper.like(StringUtils.isNotBlank(request.getWorkspaceId()), "vm_cloud_disk.workspace_id", request.getWorkspaceId());
+
+        wrapper.like(StringUtils.isNotBlank(request.getWorkspaceId()), ColumnNameUtil.getColumnName(VmCloudDisk::getWorkspaceId, true), request.getWorkspaceId());
         //wrapper.in(CollectionUtils.isNotEmpty(request.getOrganizationIds()),"vm_cloud_disk.organization_id",request.getOrganizationIds());
-        wrapper.like(StringUtils.isNotBlank(request.getDiskName()), "vm_cloud_disk.disk_name", request.getDiskName());
-        wrapper.like(StringUtils.isNotBlank(request.getAccountName()), "cloud_account.name", request.getAccountName());
-        wrapper.like(StringUtils.isNotBlank(request.getVmInstanceName()), "vm_cloud_server.instance_name", request.getVmInstanceName());
-        wrapper.in(CollectionUtils.isNotEmpty(request.getBootable()), "vm_cloud_disk.bootable", request.getBootable());
-        wrapper.in(CollectionUtils.isNotEmpty(request.getDiskType()), "vm_cloud_disk.disk_type", request.getDiskType());
-        wrapper.in(CollectionUtils.isNotEmpty(request.getDeleteWithInstance()), "vm_cloud_disk.delete_with_instance", request.getDeleteWithInstance());
-        wrapper.in(CollectionUtils.isNotEmpty(request.getStatus()), "vm_cloud_disk.status", request.getStatus());
+        wrapper.like(StringUtils.isNotBlank(request.getDiskName()), ColumnNameUtil.getColumnName(VmCloudDisk::getDiskName, true), request.getDiskName());
+        wrapper.like(StringUtils.isNotBlank(request.getAccountName()), ColumnNameUtil.getColumnName(CloudAccount::getName, true), request.getAccountName());
+        wrapper.like(StringUtils.isNotBlank(request.getVmInstanceName()), ColumnNameUtil.getColumnName(VmCloudServer::getInstanceName, true), request.getVmInstanceName());
+        wrapper.in(CollectionUtils.isNotEmpty(request.getBootable()), ColumnNameUtil.getColumnName(VmCloudDisk::getBootable, true), request.getBootable());
+        wrapper.in(CollectionUtils.isNotEmpty(request.getDiskType()), ColumnNameUtil.getColumnName(VmCloudDisk::getDiskType, true), request.getDiskType());
+        wrapper.in(CollectionUtils.isNotEmpty(request.getDeleteWithInstance()), ColumnNameUtil.getColumnName(VmCloudDisk::getDeleteWithInstance, true), request.getDeleteWithInstance());
+        wrapper.in(CollectionUtils.isNotEmpty(request.getStatus()), ColumnNameUtil.getColumnName(VmCloudDisk::getStatus, true), request.getStatus());
         return wrapper;
     }
 
@@ -209,7 +207,7 @@ public class VmCloudDiskServiceImpl extends ServiceImpl<BaseVmCloudDiskMapper, V
             params.put("instanceUuid", vmCloudDisk.getInstanceUuid());
 
             // 执行
-            ResourceState resourceState = ResourceState.<VmCloudDisk, Boolean>builder()
+            ResourceState<VmCloudDisk, Boolean> resourceState = ResourceState.<VmCloudDisk, Boolean>builder()
                     .beforeResource(beforeAttach)
                     .processingResource(processingAttach)
                     .afterResource(afterAttach)
@@ -268,7 +266,7 @@ public class VmCloudDiskServiceImpl extends ServiceImpl<BaseVmCloudDiskMapper, V
             }
 
             // 执行
-            ResourceState resourceState = ResourceState.<VmCloudDisk, Boolean>builder()
+            ResourceState<VmCloudDisk, Boolean> resourceState = ResourceState.<VmCloudDisk, Boolean>builder()
                     .beforeResource(beforeAttach)
                     .processingResource(processingAttach)
                     .afterResource(afterAttach)
@@ -321,7 +319,7 @@ public class VmCloudDiskServiceImpl extends ServiceImpl<BaseVmCloudDiskMapper, V
             params.put("instanceUuid", beforeDetach.getInstanceUuid());
 
             // 执行
-            ResourceState resourceState = ResourceState.<VmCloudDisk, Boolean>builder()
+            ResourceState<VmCloudDisk, Boolean> resourceState = ResourceState.<VmCloudDisk, Boolean>builder()
                     .beforeResource(beforeDetach)
                     .processingResource(processingDetach)
                     .afterResource(afterDetach)
@@ -370,7 +368,7 @@ public class VmCloudDiskServiceImpl extends ServiceImpl<BaseVmCloudDiskMapper, V
             params.put("diskId", vmCloudDisk.getDiskId());
 
             // 执行
-            ResourceState resourceState = ResourceState.<VmCloudDisk, Boolean>builder()
+            ResourceState<VmCloudDisk, Boolean> resourceState = ResourceState.<VmCloudDisk, Boolean>builder()
                     .beforeResource(beforeDelete)
                     .processingResource(processingDelete)
                     .afterResource(afterDelete)
