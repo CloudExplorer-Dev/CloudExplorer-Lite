@@ -11,13 +11,12 @@
         <div>
           <el-input
             v-model="searchName"
-            placeholder="关键字查"
-            style="width: 50%"
+            placeholder="输入关键字搜索"
+            suffix-icon="Search"
+            size="32"
+            style="width: 80%"
             @keyup="handleQueryClick"
           />
-          <el-button type="primary" plain @click="handleQueryClick"
-            >查 询</el-button
-          >
         </div>
         <el-radio-group v-model="selectRowId" style="width: 100%">
           <el-table

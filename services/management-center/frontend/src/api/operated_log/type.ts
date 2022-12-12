@@ -26,4 +26,9 @@ interface ListOperatedLogRequest {
   currentPage: number;
 }
 
-export type { OperatedLogVO, ListOperatedLogRequest };
+interface clearLogConfigRequest {
+  paramKey: string;
+  paramValue: string;
+}
+
+export type { OperatedLogVO, ListOperatedLogRequest, clearLogConfigRequest };

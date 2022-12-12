@@ -12,13 +12,11 @@ import com.fit2cloud.provider.entity.F2CImage;
 import com.fit2cloud.provider.entity.F2CVirtualMachine;
 import com.fit2cloud.provider.entity.request.GetMetricsRequest;
 import com.fit2cloud.provider.impl.huawei.api.HuaweiSyncCloudApi;
-import com.fit2cloud.provider.impl.huawei.entity.F2CHuaweiSecurityGroups;
-import com.fit2cloud.provider.impl.huawei.entity.F2CHuaweiSubnet;
-import com.fit2cloud.provider.impl.huawei.entity.InstanceSpecConfig;
-import com.fit2cloud.provider.impl.huawei.entity.NovaAvailabilityZoneDTO;
+import com.fit2cloud.provider.impl.huawei.entity.*;
 import com.fit2cloud.provider.impl.huawei.entity.credential.HuaweiVmCredential;
 import com.fit2cloud.provider.impl.huawei.entity.request.*;
 import com.huaweicloud.sdk.ecs.v2.model.NovaSimpleKeypair;
+import org.apache.commons.lang3.StringUtils;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -164,11 +162,11 @@ public class HuaweiCloudProvider extends AbstractCloudProvider<HuaweiVmCredentia
     public List<Map<String, String>> getBillingMode(String req) {
         List<Map<String, String>> billingModes = new ArrayList<>();
         Map<String, String> defaultMap = new HashMap<>();
-        defaultMap.put("id", "0");
+        defaultMap.put("id", "postPaid");
         defaultMap.put("name", "按需计费");
         billingModes.add(defaultMap);
         Map<String, String> thinMap = new HashMap<>();
-        thinMap.put("id", "1");
+        thinMap.put("id", "prePaid");
         thinMap.put("name", "包年/包月");
         billingModes.add(thinMap);
         return billingModes;
@@ -213,15 +211,18 @@ public class HuaweiCloudProvider extends AbstractCloudProvider<HuaweiVmCredentia
      * @return
      */
     public List<Map<String, String>> getPeriodType(String req) {
+        HuaweiVmCreateRequest request = JsonUtil.parseObject(req,HuaweiVmCreateRequest.class);
         List<Map<String, String>> periodTypes = new ArrayList<>();
         Map<String, String> monthMap = new HashMap<>();
         monthMap.put("id", "month");
         monthMap.put("name", "月");
         periodTypes.add(monthMap);
-        Map<String, String> yearMap = new HashMap<>();
-        yearMap.put("id", "year");
-        yearMap.put("name", "年");
-        periodTypes.add(yearMap);
+        if(request.getPeriodNum()<=3){
+            Map<String, String> yearMap = new HashMap<>();
+            yearMap.put("id", "year");
+            yearMap.put("name", "年");
+            periodTypes.add(yearMap);
+        }
         return periodTypes;
     }
 
@@ -257,6 +258,23 @@ public class HuaweiCloudProvider extends AbstractCloudProvider<HuaweiVmCredentia
     public F2CVirtualMachine createVirtualMachine(String req) {
         return HuaweiSyncCloudApi.createServer(JsonUtil.parseObject(req, HuaweiVmCreateRequest.class));
     }
+
+    public List<OsConfig> listOsVersion(String req) {
+        return HuaweiSyncCloudApi.listOsVersion(JsonUtil.parseObject(req, HuaweiVmCreateRequest.class));
+    }
+
+    public List<Map<String, String>> listOs(String req) {
+        return HuaweiSyncCloudApi.listOs(req);
+    }
+
+    public String getLoginName(String req){
+        HuaweiVmCreateRequest request = JsonUtil.parseObject(req,HuaweiVmCreateRequest.class);
+        if(StringUtils.equalsIgnoreCase(request.getOs(),"Windows")){
+            return "Administrator";
+        }
+        return "root";
+    }
+
 
 
  }

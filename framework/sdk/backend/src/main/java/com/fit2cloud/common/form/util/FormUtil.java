@@ -84,6 +84,8 @@ public class FormUtil {
             map.put("footerLocation", annotation.footerLocation());
             map.put("relationTrigger", annotation.relationTrigger());
             map.put("index", atomicInteger.getAndIncrement());
+            map.put("regexp",annotation.regexp());
+            map.put("regexpDescription",annotation.regexpDescription());
             if (StringUtils.isNotEmpty(annotation.method())) {
                 map.put("method", annotation.method());
                 map.put("clazz", annotation.clazz().getName());

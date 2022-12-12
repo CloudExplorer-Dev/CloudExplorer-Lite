@@ -51,7 +51,12 @@
             <el-form-item label="磁盘大小" prop="size">
               <el-input-number
                 v-model="obj.size"
-                :min="_.defaultTo(defaultDisks[index]?.size, 10)"
+                :min="
+                  index === 0
+                    ? (_.defaultTo(defaultDisks[index]?.size < 40), 40)
+                    : 10
+                "
+                :max="index === 0 ? 1024 : 32768"
                 :step="1"
                 required
                 @change="change()"
@@ -133,7 +138,9 @@ const emit = defineEmits(["update:modelValue", "change"]);
 function add() {
   _data.value?.push({
     size: 10,
-    diskType: props.formItem?.ext?.diskConfig?.diskTypes?.[0].id,
+    diskType: defaultType.value
+      ? defaultType.value
+      : props.formItem?.ext?.diskConfig?.diskTypes?.[0].id,
     amountText: "",
     deleteWithInstance: true,
   });
@@ -179,6 +186,8 @@ watch(
   }
 );
 
+const defaultType = ref<string>("");
+
 function getDiskType() {
   const _temp = getTempRequest();
   const clazz = "com.fit2cloud.provider.impl.huawei.HuaweiCloudProvider";
@@ -186,14 +195,16 @@ function getDiskType() {
   formApi.getResourceMethod(false, clazz, method, _temp).then((ok) => {
     _.set(props.formItem, "ext.diskConfig.diskTypes", ok.data);
     diskTypes.value = ok.data;
+
     _data.value.length = 0;
     let defaultSize = props.allData.osVersion?.imageMinDiskSize;
     if (!defaultSize) {
       defaultSize = 0;
     }
+    defaultType.value = _.find(diskTypes?.value, ["id", "GPSSD"]).id;
     _data.value?.push({
       size: defaultSize < 40 ? 40 : defaultSize,
-      diskType: diskTypes?.value[0].id,
+      diskType: defaultType.value ? defaultType.value : diskTypes.value?.[0].id,
       amountText: "",
       deleteWithInstance: true,
     });

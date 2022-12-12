@@ -10,7 +10,6 @@ import com.fit2cloud.common.provider.impl.huawei.HuaweiBaseCloudProvider;
 import com.fit2cloud.provider.ICreateServerRequest;
 import com.fit2cloud.provider.impl.huawei.HuaweiCloudProvider;
 import com.fit2cloud.provider.impl.huawei.entity.*;
-import com.fit2cloud.service.impl.VmCloudImageServiceImpl;
 import lombok.Data;
 
 import java.util.List;
@@ -28,8 +27,8 @@ import java.util.List;
 @FormConfirmInfo(group = 4, name = "计费信息")
 @FormGroupInfo(group = 1, name = "付费方式")
 @FormGroupInfo(group = 2, name = "区域")
-@FormGroupInfo(group = 3, name = "操作系统")
-@FormGroupInfo(group = 4, name = "实例规格")
+@FormGroupInfo(group = 3, name = "实例规格")
+@FormGroupInfo(group = 4, name = "操作系统")
 @FormGroupInfo(group = 5, name = "磁盘配置")
 @FormGroupInfo(group = 6, name = "网络与安全")
 @FormGroupInfo(group = 7, name = "公网IP",description="可以公网访问的公网IP")
@@ -41,7 +40,7 @@ public class HuaweiVmCreateRequest extends HuaweiBaseRequest implements ICreateS
             label = "付费方式",
             clazz = HuaweiCloudProvider.class,
             method = "getBillingMode",
-            defaultValue = "0",
+            defaultValue = "postPaid",
             textField = "name",
             valueField = "id",
             step = 1,
@@ -86,13 +85,12 @@ public class HuaweiVmCreateRequest extends HuaweiBaseRequest implements ICreateS
 
     @Form(inputType = InputType.SingleSelect,
             label = "操作系统",
-            clazz = VmCloudImageServiceImpl.class,
-            serviceMethod = true,
+            clazz = HuaweiCloudProvider.class,
             method = "listOs",
             textField = "name",
             valueField = "id",
-            relationTrigger = "availabilityZone",
-            group = 3,
+            relationTrigger = "instanceSpecConfig",
+            group = 4,
             step = 1,
             confirmGroup = 1
     )
@@ -100,15 +98,14 @@ public class HuaweiVmCreateRequest extends HuaweiBaseRequest implements ICreateS
 
     @Form(inputType = InputType.HuaweiOsSingleSelectForm,
             label = "系统版本",
-            clazz = VmCloudImageServiceImpl.class,
-            serviceMethod = true,
+            clazz = HuaweiCloudProvider.class,
             confirmSpecial = true,
             defaultJsonValue = true,
             method = "listOsVersion",
-            relationTrigger = "os",
+            relationTrigger = {"os","instanceSpecConfig"},
             textField = "osVersion",
             valueField = "osVersion",
-            group = 3,
+            group = 4,
             step = 1,
             confirmGroup = 1
     )
@@ -120,7 +117,7 @@ public class HuaweiVmCreateRequest extends HuaweiBaseRequest implements ICreateS
             confirmSpecial = true,
             defaultJsonValue = true,
             relationTrigger = {"availabilityZone","billingMode"},
-            group = 4,
+            group = 3,
             step = 1,
             confirmGroup = 1,
             confirmPosition = Form.Position.TOP
@@ -153,7 +150,7 @@ public class HuaweiVmCreateRequest extends HuaweiBaseRequest implements ICreateS
     )
     private NetworkConfig networkConfigs;
 
-    @Form(inputType = InputType.SingleSelect,
+    @Form(inputType = InputType.MultiSelect,
             label = "选择安全组",
             clazz = HuaweiCloudProvider.class,
             method = "listSecurityGroups",
@@ -164,7 +161,7 @@ public class HuaweiVmCreateRequest extends HuaweiBaseRequest implements ICreateS
             group = 6,
             step = 2
     )
-    private String securityGroups;
+    private List<String> securityGroups;
 
     @Form(inputType = InputType.SwitchBtn,
             label = "公网IP",
@@ -184,6 +181,7 @@ public class HuaweiVmCreateRequest extends HuaweiBaseRequest implements ICreateS
             method = "getChargeMode",
             textField = "name",
             valueField = "id",
+            defaultValue = "noTraffic",
             relationShows = "usePublicIp",
             relationShowValues = "true",
             confirmGroup = 2,
@@ -199,6 +197,7 @@ public class HuaweiVmCreateRequest extends HuaweiBaseRequest implements ICreateS
             attrs = "{\"min\":1,\"max\":200,\"step\":1}",
             relationShows = "usePublicIp",
             relationShowValues = "true",
+            defaultValue = "1",
             confirmGroup = 2,
             step = 2,
             group = 7
@@ -219,11 +218,15 @@ public class HuaweiVmCreateRequest extends HuaweiBaseRequest implements ICreateS
     )
     private String loginMethod;
 
-    @Form(inputType = InputType.Text,
+    @Form(inputType = InputType.LabelText,
             label = "登录名",
+            clazz = HuaweiCloudProvider.class,
+            method = "getLoginName",
             attrs = "{\"style\":\"width:35%\"}",
             relationShows = "loginMethod",
             relationShowValues = "pwd",
+            required = false,
+            relationTrigger = "os",
             confirmGroup = 3,
             step = 3,
             group = 8
@@ -235,6 +238,8 @@ public class HuaweiVmCreateRequest extends HuaweiBaseRequest implements ICreateS
             label = "密码",
             relationShows = "loginMethod",
             relationShowValues = "pwd",
+            regexp = "^((?=.*\\d)(?=.*[a-z])(?=.*[A-Z])(?!.*root)(?!.*toor)(?!.*[A|a]dministrator)(?!.*rotartsinimd[A|a]).{8,25})$",
+            regexpDescription = "必须包含大小写字母和数字的组合，可以使用特殊字符，不能包含用户名或逆向用户名，长度在8-26之间",
             step = 3,
             group = 8
     )
@@ -263,6 +268,8 @@ public class HuaweiVmCreateRequest extends HuaweiBaseRequest implements ICreateS
             defaultValue = "[]",
             defaultJsonValue = true,
             confirmGroup = 3,
+            regexp = "^(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\\-]*[a-zA-Z0-9])\\.)*([A-Za-z0-9]|[A-Za-z0-9][A-Za-z0-9\\-]*[A-Za-z0-9])$",
+            regexpDescription = "允许使用点号(.)分隔字符成多段,每段允许使用大小写字母、数字或连字符(-),但不能连续使用点号(.)或连字符(-),不能以点号(.)或连字符(-)开头或结尾,不能出现(.-)和(-.)",
             confirmSpecial = true,
             confirmPosition = Form.Position.TOP
     )
@@ -280,11 +287,12 @@ public class HuaweiVmCreateRequest extends HuaweiBaseRequest implements ICreateS
 
     @Form(inputType = InputType.Number,
             label = "购买时长",
+            defaultValue = "1",
             defaultJsonValue = true,
             attrs = "{\"min\":1,\"max\":9,\"step\":1}",
             confirmGroup = 4,
             relationShows = "billingMode",
-            relationShowValues = "1"
+            relationShowValues = "prePaid"
 
     )
     private int periodNum;
@@ -296,9 +304,11 @@ public class HuaweiVmCreateRequest extends HuaweiBaseRequest implements ICreateS
             attrs = "{\"style\":\"width:120px\"}",
             textField = "name",
             valueField = "id",
+            defaultValue = "month",
             confirmGroup = 4,
+            relationTrigger = "periodNum",
             relationShows = "billingMode",
-            relationShowValues = "1"
+            relationShowValues = "prePaid"
     )
     private String periodType;
 

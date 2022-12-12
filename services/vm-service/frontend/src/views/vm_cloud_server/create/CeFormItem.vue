@@ -17,11 +17,7 @@
           v-if="checkShow(item)"
           :label="item.label"
           :prop="item.field"
-          :rules="{
-            message: item.label + '不能为空',
-            trigger: 'blur',
-            required: item.required,
-          }"
+          :rules="rules(item)"
         >
           <component
             ref="formItemRef"
@@ -82,7 +78,7 @@ const emit = defineEmits([
 ]);
 
 import _ from "lodash";
-import { computed, onBeforeMount, onMounted, ref } from "vue";
+import { computed, onBeforeMount, onMounted, reactive, ref } from "vue";
 import type { FormView } from "@commons/components/ce-form/type";
 import formApi from "@commons/api/form_resource_api";
 import type { FormInstance } from "element-plus";
@@ -129,6 +125,25 @@ function checkShow(currentItem: any): any {
     isShow = currentItem.footerLocation === 0;
   }
   return isShow;
+}
+function rules(currentItem: any) {
+  const rules = [
+    {
+      message: currentItem.label + "不能为空",
+      trigger: "blur",
+      required: currentItem.required,
+    },
+  ];
+  if (currentItem.regexp) {
+    const regexpObj = {
+      message: currentItem.regexpDescription,
+      trigger: "blur",
+      required: currentItem.required,
+    };
+    _.set(regexpObj, "pattern", currentItem.regexp);
+    rules.push(regexpObj);
+  }
+  return rules;
 }
 
 /**

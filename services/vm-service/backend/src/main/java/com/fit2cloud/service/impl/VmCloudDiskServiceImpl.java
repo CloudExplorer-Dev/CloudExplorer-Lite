@@ -98,7 +98,7 @@ public class VmCloudDiskServiceImpl extends ServiceImpl<BaseVmCloudDiskMapper, V
         if (request.getOrder() != null && StringUtils.isNotEmpty(request.getOrder().getColumn())) {
             wrapper.orderBy(true, request.getOrder().isAsc(), ColumnNameUtil.getColumnName(request.getOrder().getColumn(), VmCloudDiskDTO.class));
         } else {
-            wrapper.orderBy(true, false, "vm_cloud_disk.update_time");
+            wrapper.orderBy(true, false, "vm_cloud_disk.create_time");
         }
         wrapper.like(StringUtils.isNotBlank(request.getWorkspaceId()), "vm_cloud_disk.workspace_id", request.getWorkspaceId());
         //wrapper.in(CollectionUtils.isNotEmpty(request.getOrganizationIds()),"vm_cloud_disk.organization_id",request.getOrganizationIds());

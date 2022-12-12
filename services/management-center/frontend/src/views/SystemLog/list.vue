@@ -6,7 +6,6 @@
     :data="tableData"
     :tableConfig="tableConfig"
     row-key="id"
-    table-layout="auto"
     height="100%"
   >
     <template #toolbar>
@@ -46,14 +45,26 @@
     </el-table-column>
   </ce-table>
   <LogDetail ref="logInfoRef" />
+  <el-dialog
+    v-model="clearLogConfigDialogVisible"
+    title="保存日志策略"
+    width="25%"
+    destroy-on-close
+    :close-on-click-modal="false"
+  >
+    <ClearLogConfig
+      :paramValue="paramValue"
+      :paramKey="'log.keep.system.months'"
+      v-model:visible="clearLogConfigDialogVisible"
+    />
+  </el-dialog>
 </template>
 
 <script setup lang="ts">
 import { ref, onMounted } from "vue";
 import SysLogApi from "@/api/sys_log/index";
 import type { SystemLogVO } from "@/api/sys_log/type";
-
-import { ElMessage } from "element-plus/es";
+import ClearLogConfig from "@/views/OperatedLog/ClearLogConfig.vue";
 import {
   PaginationConfig,
   TableConfig,
@@ -70,6 +81,13 @@ const columns = ref([]);
 const tableData = ref<Array<SystemLogVO>>();
 const logInfoRef = ref();
 const tableLoading = ref<boolean>(false);
+const paramValue = ref<string>();
+const clearLogConfigDialogVisible = ref<boolean>(false);
+
+const showClearLogConfigDialog = () => {
+  paramValue.value = "3";
+  clearLogConfigDialogVisible.value = true;
+};
 const showLogInfoDialog = (v: OperatedLogVO) => {
   logInfoRef.value.dialogVisible = true;
   logInfoRef.value.logInfo = v;
@@ -122,8 +140,7 @@ const tableConfig = ref<TableConfig>({
 });
 
 const clearPolicy = () => {
-  //
-  ElMessage.success("敬请期待！");
+  showClearLogConfigDialog();
 };
 </script>
 

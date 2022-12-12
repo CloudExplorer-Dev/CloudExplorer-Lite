@@ -65,7 +65,7 @@ public class VmCloudImageServiceImpl extends ServiceImpl<BaseVmCloudImageMapper,
         if (request.getOrder() != null && StringUtils.isNotEmpty(request.getOrder().getColumn())) {
             wrapper.orderBy(true, request.getOrder().isAsc(), ColumnNameUtil.getColumnName(request.getOrder().getColumn(), VmCloudImageDTO.class));
         } else {
-            wrapper.orderBy(true, false, "vm_cloud_image.update_time");
+            wrapper.orderBy(true, false, "vm_cloud_image.create_time");
         }
         wrapper.like(StringUtils.isNotBlank(request.getWorkspaceId()), "vm_cloud_image.workspace_id", request.getWorkspaceId());
         wrapper.like(StringUtils.isNotBlank(request.getImageName()), "vm_cloud_image.image_name", request.getImageName());

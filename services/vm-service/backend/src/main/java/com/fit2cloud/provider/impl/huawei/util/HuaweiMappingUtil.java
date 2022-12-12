@@ -72,10 +72,10 @@ public class HuaweiMappingUtil {
         f2CVirtualMachine.setIpArray(ipArray);
         String instanceChargeType = null;
         // 竞价
-        if(server.getMetadata().get("charging_mode")=="2"){
+        if(StringUtils.equalsIgnoreCase(server.getMetadata().get("charging_mode"),"2")){
             instanceChargeType = F2CChargeType.SPOT_PAID;
         }else{
-            instanceChargeType = server.getMetadata().get("charging_mode")=="0"? F2CChargeType.POST_PAID:F2CChargeType.PRE_PAID;
+            instanceChargeType = StringUtils.equalsIgnoreCase(server.getMetadata().get("charging_mode"),"0")? F2CChargeType.POST_PAID:F2CChargeType.PRE_PAID;
         }
         // 付费方式
         f2CVirtualMachine.setInstanceChargeType(instanceChargeType);

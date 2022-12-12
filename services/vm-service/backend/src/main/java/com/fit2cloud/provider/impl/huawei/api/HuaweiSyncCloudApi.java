@@ -46,6 +46,8 @@ import com.huaweicloud.sdk.vpc.v2.model.*;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -60,6 +62,7 @@ import java.util.stream.Collectors;
  * @注释:
  */
 public class HuaweiSyncCloudApi {
+    private static Logger logger = LoggerFactory.getLogger(HuaweiSyncCloudApi.class);
     private static final int WAIT_COUNT = 50;
 
     /**
@@ -713,14 +716,18 @@ public class HuaweiSyncCloudApi {
             PrePaidServerExtendParam extendparamServer = new PrePaidServerExtendParam();
             extendparamServer.withChargingMode(PrePaidServerExtendParam.ChargingModeEnum.fromValue(request.getBillingMode()))
                     .withRegionID(request.getRegionId());
-
+            if(StringUtils.equalsIgnoreCase(request.getBillingMode(),PrePaidServerExtendParam.ChargingModeEnum.PREPAID.getValue())){
+                extendparamServer.withPeriodType(PrePaidServerExtendParam.PeriodTypeEnum.fromValue(request.getPeriodType()));
+                extendparamServer.withPeriodNum(request.getPeriodNum());
+            }
             //安全组
             List<PrePaidServerSecurityGroup> listServerSecurityGroups = new ArrayList<>();
-            listServerSecurityGroups.add(
-                    new PrePaidServerSecurityGroup()
-                            .withId(request.getSecurityGroups())
-            );
-
+            request.getSecurityGroups().forEach(v->{
+                listServerSecurityGroups.add(
+                        new PrePaidServerSecurityGroup()
+                                .withId(v)
+                );
+            });
 
             //系统盘
             DiskConfig systemDisk = request.getDisks().get(0);
@@ -811,11 +818,41 @@ public class HuaweiSyncCloudApi {
             f2CVirtualMachine = HuaweiMappingUtil.toF2CVirtualMachine(getJobEntities(client,response.getJobId()),ports);
             f2CVirtualMachine.setRegion(request.getRegionId());
             f2CVirtualMachine.setId(request.getId());
+            setServerHostName(client,f2CVirtualMachine,request);
         }catch (Exception e){
             e.printStackTrace();
             throw new Fit2cloudException(5000,"Huawei create vm fail - "+e.getMessage());
         }
         return f2CVirtualMachine;
+    }
+
+    private static void setServerHostName(EcsClient client,F2CVirtualMachine f2CVirtualMachine,HuaweiVmCreateRequest createRequest){
+        try {
+            // 设置hostname
+            UpdateServerRequest request = new UpdateServerRequest();
+            request.withServerId(f2CVirtualMachine.getInstanceUUID());
+            UpdateServerRequestBody body = new UpdateServerRequestBody();
+            UpdateServerOption serverbody = new UpdateServerOption();
+            serverbody.withHostname(createRequest.getServerNameInfos().get(createRequest.getIndex()).getHostName());
+            body.withServer(serverbody);
+            request.withBody(body);
+            UpdateServerResponse response = client.updateServer(request);
+            if(response.getHttpStatusCode()==200){
+                if(createRequest.getServerNameInfos().get(createRequest.getIndex()).isAuthReboot()){
+                    // 重启
+                    HuaweiInstanceRequest instanceRequest = new HuaweiInstanceRequest();
+                    instanceRequest.setCredential(createRequest.getCredential());
+                    instanceRequest.setRegionId(createRequest.getRegionId());
+                    instanceRequest.setUuid(f2CVirtualMachine.getInstanceUUID());
+                    rebootInstance(instanceRequest);
+                    f2CVirtualMachine.setHostname(response.getServer().getOsEXTSRVATTRHostname());
+                }
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            logger.error("{}-set hostname fail：{}",f2CVirtualMachine.getName(),e.getMessage());
+        }
     }
 
     /**
@@ -1030,7 +1067,7 @@ public class HuaweiSyncCloudApi {
                     bandwidthTraffic = true;
                 }
                 //按量计费
-                if(StringUtils.equalsIgnoreCase(request.getBillingMode(),"0")){
+                if(StringUtils.equalsIgnoreCase(request.getBillingMode(),"postPaid")){
                     vmAmount = vmInquiryPriceForHour(request,credential,projectId);
                     diskAmount = diskInquiryPriceForHour(request,credential,projectId);
                     if(request.isUsePublicIp()){
@@ -1041,7 +1078,7 @@ public class HuaweiSyncCloudApi {
                     result.append("元/小时");
                 }
                 //包年包月
-                if(StringUtils.equalsIgnoreCase(request.getBillingMode(),"1")){
+                if(StringUtils.equalsIgnoreCase(request.getBillingMode(),"prePaid")){
                     vmAmount = vmInquiryPriceForMonth(request,credential,projectId);
                     diskAmount = diskInquiryPriceForMonth(request,credential,projectId);
                     if(request.isUsePublicIp()){
@@ -1049,8 +1086,9 @@ public class HuaweiSyncCloudApi {
                     }
                     BigDecimal amountBig = new BigDecimal(vmAmount+diskAmount+(!bandwidthTraffic?bandwidthAmount:0));
                     result.append(amountBig.setScale(4,RoundingMode.HALF_UP));
-                    result.append("元/");
-                    result.append(StringUtils.equalsIgnoreCase("month",request.getPeriodType())?"月":"年");
+                    //包年包月不显示单位
+                    result.append("元");
+//                    result.append(StringUtils.equalsIgnoreCase("month",request.getPeriodType())?"月":"年");
                 }
                 if(bandwidthTraffic){
                     result.append(" + ");
@@ -1315,6 +1353,55 @@ public class HuaweiSyncCloudApi {
         return 0D;
     }
 
+    /**
+     * 返回操作系统版本
+     * @param createRequest
+     * @return
+     */
+    public static List<OsConfig> listOsVersion(HuaweiVmCreateRequest createRequest) {
+        List<OsConfig> result = new ArrayList<>();
+        if(StringUtils.isEmpty(createRequest.getOs())
+                && StringUtils.isEmpty(createRequest.getInstanceSpecConfig().getSpecName())){
+            return result;
+        }
+        ListImageRequest request = new ListImageRequest();
+        request.setRegionId(createRequest.getRegionId());
+        request.setCredential(createRequest.getCredential());
+        request.setFlavorId(createRequest.getInstanceSpecConfig().getSpecName());
+        request.setPlatform(ListImagesRequest.PlatformEnum.valueOf(createRequest.getOs()));
+        request.setStatus(ListImagesRequest.StatusEnum.ACTIVE);
+        List<ImageInfo> osImages = new ArrayList<>();
+        if (StringUtils.isNotEmpty(request.getCredential())) {
+            HuaweiVmCredential credential = JsonUtil.parseObject(request.getCredential(), HuaweiVmCredential.class);
+            ImsClient imsClient = credential.getImsClient(request.getRegionId());
+            request.setImagetype(ListImagesRequest.ImagetypeEnum.GOLD);
+            ListImagesResponse listImagesResponse = imsClient.listImages(request);
+            List<ImageInfo> imagesAll = listImagesResponse.getImages();
+            osImages = imagesAll.stream().filter(v->StringUtils.equalsIgnoreCase(v.getPlatform().getValue(),createRequest.getOs())).collect(Collectors.toList());
+        }
+        osImages.forEach(v->{
+            OsConfig osConfig = new OsConfig();
+            osConfig.setOs(v.getPlatform().getValue());
+            osConfig.setOsVersion(v.getOsVersion());
+            osConfig.setImageName(v.getName());
+            osConfig.setImageId(v.getId());
+            osConfig.setImageMinDiskSize(Long.valueOf(String.valueOf(v.getMinDisk())));
+            result.add(osConfig);
+        });
+        return result.stream().sorted(Comparator.comparing(OsConfig::getOsVersion)).collect(Collectors.toList());
+    }
+
+    public static List<Map<String, String>> listOs(String request) {
+        List<Map<String, String>> result = new ArrayList<>();
+        List<String> osList = Arrays.asList("Windows","RedHat","CentOS","SUSE","Debian","OpenSUSE","Oracle Linux","Fedora","Ubuntu","EulerOS","CoreOS","ESXi","Other","openEuler");
+        osList.stream().sorted().forEach(v->{
+            Map<String,String> m = new HashMap<>();
+            m.put("id",v);
+            m.put("name",v);
+            result.add(m);
+        });
+        return result;
+    }
 
 
     public static void main(String[] args) {

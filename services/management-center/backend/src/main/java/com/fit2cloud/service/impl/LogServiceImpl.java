@@ -4,6 +4,8 @@ import co.elastic.clients.elasticsearch._types.aggregations.Aggregation;
 import co.elastic.clients.elasticsearch._types.aggregations.ValueCountAggregation;
 import co.elastic.clients.elasticsearch._types.query_dsl.BoolQuery;
 import co.elastic.clients.elasticsearch._types.query_dsl.Query;
+import co.elastic.clients.elasticsearch._types.query_dsl.RangeQuery;
+import co.elastic.clients.json.JsonData;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -123,5 +125,18 @@ public class LogServiceImpl implements ILogService {
         queryConditions.add(new QueryUtil.QueryCondition(true, "level", null, QueryUtil.CompareType.NOT_EXIST));
         BoolQuery.Builder query = QueryUtil.getQuery(queryConditions);
         return new Query.Builder().bool(query.build()).build();
+    }
+
+    @Override
+    public void deleteEsData(String index,int m,Class<?> clazz){
+        //provide.delete(5,"ce-file-system-logs", SystemLog.class);
+        RangeQuery.Builder rangeQuery = new RangeQuery.Builder();
+        rangeQuery.field("@timestamp");
+        rangeQuery.lt(JsonData.of("now-"+m+"m"));
+        rangeQuery.format("epoch_millis");
+        Query query = new Query.Builder().range(rangeQuery.build()).build();
+        NativeQueryBuilder builder = new NativeQueryBuilder();
+        builder.withQuery(query);
+        provide.delete(index,builder.build(), clazz);
     }
 }

@@ -3,6 +3,7 @@
     <springProperty scope="context" name="application.name" source="spring.application.name"/>
     <springProperty scope="context" name="logging.file.path" source="logging.file.path"/>
     <property file="@ce.config.file@"/>
+    <include resource="logback-aop.xml"></include>
     <appender name="console" class="ch.qos.logback.core.ConsoleAppender">
         <encoder>
             <pattern>%d %5p %40.40c:%4L - %m%n</pattern>

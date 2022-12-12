@@ -13,4 +13,5 @@ public class HuaweiServerNameInfo {
 
     private String name;
     private String hostName;
+    private boolean authReboot;
 }

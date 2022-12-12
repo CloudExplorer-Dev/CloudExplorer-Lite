@@ -44,7 +44,7 @@ const diskTypes = ref<Array<SimpleMap<string>>>([
   { text: "ESSD云盘", value: "cloud_essd" },
   { text: "SSD云盘", value: "cloud_ssd" },
   { text: "普通云盘", value: "cloud" },
-  { text: "通用性SSD", value: "GPSSD" },
+  { text: "通用型SSD", value: "GPSSD" },
   { text: "极速型SSD", value: "ESSD" },
   { text: "超高IO", value: "SSD" },
   { text: "高IO", value: "SAS" },
