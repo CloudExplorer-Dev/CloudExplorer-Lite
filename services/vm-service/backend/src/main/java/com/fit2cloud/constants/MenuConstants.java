@@ -36,7 +36,7 @@ public class MenuConstants {
                     .name("vm_cloud_server")
                     .title("云主机")
                     .path("/vm_cloud_server")
-                    .icon("xuniji1")
+                    .icon("xuniyunzhuji")
                     .componentPath("/src/views/vm_cloud_server/index.vue")
                     .redirect("/vm_cloud_server/list")
                     .order(1)
