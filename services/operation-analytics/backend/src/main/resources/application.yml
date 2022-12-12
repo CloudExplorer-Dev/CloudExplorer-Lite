@@ -32,7 +32,7 @@ mybatis-plus:
 #监控，访问路径 {ip}:{port}/actuator
 management:
   server:
-    port: 9913
+    port: 9914
 
 logging:
   file:
