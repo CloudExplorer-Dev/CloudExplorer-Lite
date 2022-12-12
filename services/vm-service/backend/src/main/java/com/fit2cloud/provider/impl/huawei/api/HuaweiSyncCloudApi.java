@@ -9,6 +9,7 @@ import com.fit2cloud.common.provider.util.PageUtil;
 import com.fit2cloud.common.utils.DateUtil;
 import com.fit2cloud.common.utils.JsonUtil;
 import com.fit2cloud.constants.ErrorCodeConstants;
+import com.fit2cloud.provider.constants.DeleteWithInstance;
 import com.fit2cloud.provider.constants.F2CDiskStatus;
 import com.fit2cloud.provider.entity.F2CDisk;
 import com.fit2cloud.provider.entity.F2CImage;
@@ -429,6 +430,25 @@ public class HuaweiSyncCloudApi {
             return true;
         } catch (Exception e) {
             throw new RuntimeException(e.getMessage(), e);
+        }
+    }
+
+    /**
+     * 修改云服务器挂载的单个磁盘信息（是否随实例删除属性）
+     *
+     * @param client
+     * @return
+     */
+    public static void updateServerBlockDevice(EcsClient client,String instanceId,String deviceId,String deleteWithInstance) {
+        if(StringUtils.isNotEmpty(instanceId)){
+            UpdateServerBlockDeviceRequest blockDeviceRequest  =
+                    new UpdateServerBlockDeviceRequest()
+                            .withServerId(instanceId)
+                            .withVolumeId(deviceId)
+                            .withBody(new UpdateServerBlockDeviceReq()
+                                    .withBlockDevice(new UpdateServerBlockDeviceOption()
+                                            .withDeleteOnTermination(DeleteWithInstance.YES.name().equals(deleteWithInstance))) );
+            client.updateServerBlockDevice(blockDeviceRequest);
         }
     }
 

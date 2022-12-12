@@ -31,16 +31,27 @@
           <div>
             <div style="padding-bottom: 5px">
               <span>磁盘类型：</span>
-              <el-select style="width: 50%" v-model="obj.diskType" filterable>
+              <el-select
+                style="width: 50%"
+                v-model="obj.diskType"
+                filterable
+                v-if="index === 0"
+              >
                 <el-option
-                  v-if="index === 0"
                   v-for="item in systemDiskTypeOptions"
                   :key="item.diskType"
                   :label="item.diskTypeName"
                   :value="item.diskType"
                 />
+              </el-select>
+
+              <el-select
+                style="width: 50%"
+                v-model="obj.diskType"
+                filterable
+                v-else
+              >
                 <el-option
-                  v-else
                   v-for="item in dataDiskTypeOptions"
                   :key="item.diskType"
                   :label="item.diskTypeName"

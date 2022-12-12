@@ -152,7 +152,6 @@ function initOptionList(
       }
     );
     _.assign(_temp, data);
-    //console.log(_temp, formItem?.relationTrigger);
     if (
       //关联对象有值
       _.every(formItem?.relationTrigger, (trigger) => {
@@ -160,7 +159,6 @@ function initOptionList(
       })
     ) {
       if (formItem.group?.toFixed() === props.groupId) {
-        //console.log(props.groupId, formItem.field);
         formApi
           .getResourceMethod(
             formItem.serviceMethod,
@@ -177,42 +175,6 @@ function initOptionList(
         emit("optionListRefresh", formItem.field);
       }
     }
-  }
-}
-
-/**
- * 计算价格
- * @param formItem
- * @param data
- * @param allData
- */
-function calculatePrice(
-  formItem: FormView | undefined,
-  data: any,
-  allData?: any
-): void {
-  if (formItem && formItem.clazz && formItem.method) {
-    const _temp = _.assignWith(
-      {},
-      props.otherParams,
-      _.defaultTo(allData, props.allData),
-      (objValue, srcValue) => {
-        return _.isUndefined(objValue) ? srcValue : objValue;
-      }
-    );
-    _.assign(_temp, data);
-    formApi
-      .getResourceMethod(
-        formItem.serviceMethod,
-        formItem.clazz,
-        formItem.method,
-        _temp,
-        _loading
-      )
-      .then((ok) => {
-        formItem.optionList = ok.data;
-        emit("optionListRefresh", formItem.field);
-      });
   }
 }
 
@@ -261,7 +223,7 @@ const change = (formItem: FormView) => {
       _.set(_data.value, item.field, undefined);
 
       if (item.method === "calculateConfigPrice") {
-        calculatePrice(item, _data.value);
+        emit("optionListRefresh", item.field);
       } else {
         //设置列表
         initOptionList(item, _data.value);
