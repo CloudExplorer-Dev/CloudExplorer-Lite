@@ -258,8 +258,7 @@ public class TencentVmCreateRequest extends TencentBaseRequest implements ICreat
             relationShows = "loginType",
             relationShowValues = "password",
             step = 3,
-            group = 8,
-            confirmGroup = 3
+            group = 8
     )
     private String password;
 

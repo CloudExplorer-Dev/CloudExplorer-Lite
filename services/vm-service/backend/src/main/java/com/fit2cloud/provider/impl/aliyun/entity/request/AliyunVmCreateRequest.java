@@ -260,8 +260,7 @@ public class AliyunVmCreateRequest extends AliyunBaseRequest implements ICreateS
             relationShows = "loginType",
             relationShowValues = "password",
             step = 3,
-            group = 8,
-            confirmGroup = 3
+            group = 8
     )
     private String password;
 
@@ -374,10 +373,10 @@ public class AliyunVmCreateRequest extends AliyunBaseRequest implements ICreateS
             for (int i = 1; i < disks.size(); i++) {
                 AliyunCreateDiskForm otherDisk = disks.get(i);
                 CreateInstanceRequest.CreateInstanceRequestDataDisk dataDisk = new CreateInstanceRequest.CreateInstanceRequestDataDisk();
-                systemDisk.setCategory(otherDisk.getDiskType());
-                systemDisk.setSize(otherDisk.getSize().intValue());
-                systemDisk.setDiskName(otherDisk.getDiskName());
-                systemDisk.setDescription(otherDisk.getDescription());
+                dataDisk.setCategory(otherDisk.getDiskType());
+                dataDisk.setSize(otherDisk.getSize().intValue());
+                dataDisk.setDiskName(otherDisk.getDiskName());
+                dataDisk.setDescription(otherDisk.getDescription());
                 dataDisks.add(dataDisk);
             }
             createInstanceRequest.setDataDisk(dataDisks);

@@ -164,6 +164,7 @@ public class AliyunSyncCloudApi {
                     List<DescribeInstancesResponseBody.DescribeInstancesResponseBodyInstancesInstance> instances = result1.body.instances.instance;
                     if (CollectionUtils.isNotEmpty(instances)) {
                         if (("Running").equalsIgnoreCase(instances.get(0).getStatus())) {
+                            instance = instances.get(0);
                             logger.debug("instance[" + instanceId + "] current status :: " + instances.get(0).getStatus());
                             break;
                         }

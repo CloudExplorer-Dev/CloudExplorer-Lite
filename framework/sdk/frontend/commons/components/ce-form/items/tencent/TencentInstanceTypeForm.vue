@@ -77,13 +77,21 @@ const filterTableData = computed(() =>
   props.formItem?.optionList?.filter(
     (data: InstanceTypeConfig) =>
       !search.value ||
-      data.instanceType.toLowerCase().includes(search.value.toLowerCase()) ||
-      data.cpuMemory
-        .toLowerCase()
-        .replace(/\s/g, "")
-        .includes(search.value.toLowerCase().replace(/\s/g, ""))
+      formatValue(data.instanceTypeFamilyName).includes(
+        formatValue(search.value)
+      ) ||
+      formatValue(data.instanceType).includes(formatValue(search.value)) ||
+      formatValue(data.cpuMemory).includes(formatValue(search.value))
   )
 );
+
+/**
+ * 格式处理
+ * @param value
+ */
+const formatValue = (value: string) => {
+  return value.toLowerCase().replace(/\s/g, "");
+};
 
 const _data = computed({
   get() {

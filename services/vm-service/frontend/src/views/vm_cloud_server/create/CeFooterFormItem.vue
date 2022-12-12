@@ -138,7 +138,9 @@ function initOptionList(
       //关联对象有值
       _.every(formItem?.relationTrigger, (trigger) => {
         return _.has(_temp, trigger);
-      })
+      }) ||
+      // 价格计算满足一个条件即可
+      formItem.method === "calculateConfigPrice"
     ) {
       if (formItem.group?.toFixed() === props.groupId) {
         //console.log(props.groupId, formItem.field);
