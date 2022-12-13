@@ -11,7 +11,6 @@ import com.fit2cloud.provider.impl.tencent.TencentCloudProvider;
 import com.fit2cloud.provider.impl.tencent.constants.TencentBandwidthType;
 import com.fit2cloud.provider.impl.tencent.constants.TencentChargeType;
 import com.fit2cloud.provider.impl.tencent.entity.TencentInstanceType;
-import com.fit2cloud.service.impl.VmCloudImageServiceImpl;
 import com.tencentcloudapi.cvm.v20170312.models.*;
 import lombok.Data;
 import lombok.experimental.Accessors;
@@ -31,8 +30,8 @@ import java.util.List;
 @FormConfirmInfo(group = 3, name = "系统配置")
 @FormGroupInfo(group = 1, name = "付费方式")
 @FormGroupInfo(group = 2, name = "区域")
-@FormGroupInfo(group = 3, name = "操作系统")
-@FormGroupInfo(group = 4, name = "实例规格", description = "购买数量为多台时，实例规格一样，若想要不同实例规格需要分多次申请。")
+@FormGroupInfo(group = 3, name = "实例规格", description = "购买数量为多台时，实例规格一样，若想要不同实例规格需要分多次申请。")
+@FormGroupInfo(group = 4, name = "操作系统")
 @FormGroupInfo(group = 5, name = "磁盘配置", description = "若需要新增数据盘，申请后需要挂载和初始化后才能正常使用。")
 @FormGroupInfo(group = 6, name = "网络与安全")
 @FormGroupInfo(group = 7, name = "公网IP")
@@ -112,6 +111,18 @@ public class TencentVmCreateRequest extends TencentBaseRequest implements ICreat
     )
     private String zoneId;
 
+    @Form(inputType = InputType.TencentInstanceTypeForm,
+            clazz = TencentCloudProvider.class,
+            method = "getInstanceTypes",
+            label = "",
+            relationTrigger = {"instanceChargeType", "zoneId"},
+            step = 1,
+            group = 3,
+            confirmGroup = 1,
+            confirmSpecial = true
+    )
+    private TencentInstanceType instanceTypeDTO;
+
     @Form(inputType = InputType.SingleSelect,
             label = "操作系统",
             clazz = TencentCloudProvider.class,
@@ -120,36 +131,23 @@ public class TencentVmCreateRequest extends TencentBaseRequest implements ICreat
             valueField = "id",
             defaultValue = "TencentOS",
             step = 1,
-            group = 3,
+            group = 4,
             confirmGroup = 1
     )
     private String os;
 
     @Form(inputType = InputType.SingleSelect,
             label = "操作系统版本",
-            clazz = VmCloudImageServiceImpl.class,
-            method = "listVmCloudImage",
-            serviceMethod = true,
-            textField = "os",
-            valueField = "imageId",
-            relationTrigger = "os",
+            clazz = TencentCloudProvider.class,
+            method = "getImages",
+            textField = "name",
+            valueField = "id",
+            relationTrigger = {"instanceTypeDTO", "os"},
             step = 1,
-            group = 3,
+            group = 4,
             confirmGroup = 1
     )
     private String osVersion;
-
-    @Form(inputType = InputType.TencentInstanceTypeForm,
-            clazz = TencentCloudProvider.class,
-            method = "getInstanceTypes",
-            label = "",
-            relationTrigger = {"instanceChargeType", "zoneId"},
-            step = 1,
-            group = 4,
-            confirmGroup = 1,
-            confirmSpecial = true
-    )
-    private TencentInstanceType instanceTypeDTO;
 
     @Form(inputType = InputType.TencentDiskConfigForm,
             clazz = TencentCloudProvider.class,
@@ -220,7 +218,7 @@ public class TencentVmCreateRequest extends TencentBaseRequest implements ICreat
     @Form(inputType = InputType.Number,
             label = "带宽值",
             clazz = TencentCloudProvider.class,
-            defaultValue = "1", attrs = "{\"min\":1,\"max\":200,\"step\":1}",
+            defaultValue = "1", attrs = "{\"min\":1,\"max\":100,\"step\":1}",
             relationShows = "hasPublicIp",
             relationShowValues = "true",
             unit = "Mbps",
@@ -243,10 +241,14 @@ public class TencentVmCreateRequest extends TencentBaseRequest implements ICreat
     )
     private String loginType;
 
-    @Form(inputType = InputType.Text,
+    @Form(inputType = InputType.LabelText,
             label = "登录名",
+            clazz = TencentCloudProvider.class,
+            method = "getLoginUser",
             relationShows = "loginType",
             relationShowValues = "password",
+            relationTrigger = "os",
+            required = false,
             step = 3,
             group = 8,
             confirmGroup = 3
@@ -257,12 +259,14 @@ public class TencentVmCreateRequest extends TencentBaseRequest implements ICreat
             label = "登录密码",
             relationShows = "loginType",
             relationShowValues = "password",
+            regexp = "^(?!/)(?![\\da-z]+$)(?![\\dA-Z]+$)(?![\\d\\(\\)`~!@#\\$%\\^&\\*-\\+=_\\|\\{\\}\\[\\]:;'<>,\\.\\?/]+$)(?![a-zA-Z]+$)(?![a-z\\(\\)`~!@#\\$%\\^&\\*-\\+=_\\|\\{\\}\\[\\]:;'<>,\\.\\?/]+$)(?![A-Z\\(\\)`~!@#\\$%\\^&\\*-\\+=_\\|\\{\\}\\[\\]:;'<>,\\.\\?/]+$)[\\da-zA-z\\(\\)`~!@#\\$%\\^&\\*-\\+=_\\|\\{\\}\\[\\]:;'<>,\\.\\?/]{12,30}$",
+            regexpDescription = "在 12 ～ 30 位字符数以内，不能以\" / \"开头，至少包含其中三项(小写字母 a ~ z、大写字母 A ～ Z、数字 0 ～ 9、()`~!@#$%^&*-+=_|{}[]:;'<>,.?/)\n",
             step = 3,
             group = 8
     )
     private String password;
 
-    @Form(inputType = InputType.VsphereServerInfoForm,
+    @Form(inputType = InputType.TencentServerInfoForm,
             defaultValue = "[]",
             defaultJsonValue = true,
             step = 3,

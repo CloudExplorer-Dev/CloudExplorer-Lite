@@ -14,7 +14,10 @@ import com.fit2cloud.provider.entity.F2CNetwork;
 import com.fit2cloud.provider.entity.F2CVirtualMachine;
 import com.fit2cloud.provider.entity.request.GetMetricsRequest;
 import com.fit2cloud.provider.impl.tencent.api.TencetSyncCloudApi;
-import com.fit2cloud.provider.impl.tencent.constants.*;
+import com.fit2cloud.provider.impl.tencent.constants.TencentChargeType;
+import com.fit2cloud.provider.impl.tencent.constants.TencentLoginType;
+import com.fit2cloud.provider.impl.tencent.constants.TencentOSType;
+import com.fit2cloud.provider.impl.tencent.constants.TencentPeriodOption;
 import com.fit2cloud.provider.impl.tencent.entity.TencentDiskTypeDTO;
 import com.fit2cloud.provider.impl.tencent.entity.TencentInstanceType;
 import com.fit2cloud.provider.impl.tencent.entity.request.*;
@@ -73,6 +76,7 @@ public class TencentCloudProvider extends AbstractCloudProvider<TencentCredentia
 
     /**
      * 获取付费周期
+     *
      * @param req
      * @return
      */
@@ -105,6 +109,16 @@ public class TencentCloudProvider extends AbstractCloudProvider<TencentCredentia
     }
 
     /**
+     * 获取可选镜像
+     *
+     * @param req
+     * @return
+     */
+    public List<F2CImage> getImages(String req) {
+        return TencetSyncCloudApi.getImages(JsonUtil.parseObject(req, TencentGetImageRequest.class));
+    }
+
+    /**
      * 获取实例类型
      *
      * @param req
@@ -116,6 +130,7 @@ public class TencentCloudProvider extends AbstractCloudProvider<TencentCredentia
 
     /**
      * 获取磁盘类型
+     *
      * @param req
      * @return
      */
@@ -135,10 +150,11 @@ public class TencentCloudProvider extends AbstractCloudProvider<TencentCredentia
 
     /**
      * 获取安全组
+     *
      * @param req
      * @return
      */
-    public List<Map<String,String>> getSecurityGroups(String req) {
+    public List<Map<String, String>> getSecurityGroups(String req) {
         return TencetSyncCloudApi.getSecurityGroups(JsonUtil.parseObject(req, TencentBaseRequest.class));
     }
 
@@ -180,21 +196,37 @@ public class TencentCloudProvider extends AbstractCloudProvider<TencentCredentia
     }
 
     /**
+     * 获取登录用户
+     *
+     * @param req
+     * @return
+     */
+    public String getLoginUser(String req) {
+        TencentVmCreateRequest request = JsonUtil.parseObject(req, TencentVmCreateRequest.class);
+        if (request.getOs() != null && request.getOs().toLowerCase().indexOf("windows") > -1) {
+            return "Administrator";
+        }
+        return "root";
+    }
+
+    /**
      * 基础配置询价
+     *
      * @param req
      * @return
      */
     @Override
-    public String calculateConfigPrice(String req){
+    public String calculateConfigPrice(String req) {
         return TencetSyncCloudApi.calculateConfigPrice(JsonUtil.parseObject(req, TencentVmCreateRequest.class));
     }
 
     /**
      * 公网IP流量配置询价
+     *
      * @param req
      * @return
      */
-    public String calculateTrafficPrice(String req){
+    public String calculateTrafficPrice(String req) {
         return TencetSyncCloudApi.calculateTrafficPrice(JsonUtil.parseObject(req, TencentVmCreateRequest.class));
     }
     // For Create VM [END]
