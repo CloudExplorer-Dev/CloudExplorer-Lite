@@ -2,6 +2,10 @@ export interface SimpleMap<V> {
   [propName: string]: V;
 }
 
+export interface KeyValue<K, V> {
+  key: K;
+  value: V;
+}
 export interface PageRequest {
   /**
    *每页显示多少

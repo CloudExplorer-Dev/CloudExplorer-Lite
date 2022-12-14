@@ -1,8 +1,11 @@
 package com.fit2cloud.provider;
 
+import com.fit2cloud.es.entity.ResourceInstance;
 import com.fit2cloud.provider.constants.ProviderConstants;
+import com.fit2cloud.provider.entity.InstanceSearchField;
 
 import java.util.Arrays;
+import java.util.List;
 
 /**
  * {@code @Author:张少虎}
@@ -11,6 +14,21 @@ import java.util.Arrays;
  * {@code @注释: }
  */
 public interface ICloudProvider {
+    /**
+     * 获取云服务器列表
+     *
+     * @param req 请求参数 包括认证对象
+     * @return 云服务器列表
+     */
+    List<ResourceInstance> listEcsInstance(String req);
+
+    /**
+     * 获取实例可查询字段
+     *
+     * @return 实例可查询字段
+     */
+    List<InstanceSearchField> listEcsInstanceSearchField();
+
     /**
      * 根据供应商获取对应云平台处理器
      *

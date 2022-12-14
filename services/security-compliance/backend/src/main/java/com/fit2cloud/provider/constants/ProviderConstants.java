@@ -2,7 +2,7 @@ package com.fit2cloud.provider.constants;
 
 
 import com.fit2cloud.provider.ICloudProvider;
-import com.fit2cloud.provider.impl.aliyun.AliyunCloudProvider;
+import com.fit2cloud.provider.impl.aliyun.AliCloudProvider;
 import com.fit2cloud.provider.impl.huawei.HuaweiCloudProvider;
 import com.fit2cloud.provider.impl.tencent.TencentCloudProvider;
 
@@ -16,7 +16,7 @@ public enum ProviderConstants {
     /**
      * 阿里云平台
      */
-    fit2cloud_ali_platform("阿里云", AliyunCloudProvider.class),
+    fit2cloud_ali_platform("阿里云", AliCloudProvider.class),
     /**
      * 华为云平台
      */

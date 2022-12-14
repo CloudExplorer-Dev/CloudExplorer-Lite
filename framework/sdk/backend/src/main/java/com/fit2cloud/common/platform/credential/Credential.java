@@ -1,5 +1,7 @@
 package com.fit2cloud.common.platform.credential;
 
+import com.fit2cloud.common.constants.PlatformConstants;
+import com.fit2cloud.common.exception.Fit2cloudException;
 import com.fit2cloud.common.form.util.FormUtil;
 import com.fit2cloud.common.form.vo.Form;
 import com.fit2cloud.common.form.vo.FormObject;
@@ -10,6 +12,7 @@ import lombok.NoArgsConstructor;
 import lombok.experimental.Accessors;
 
 import java.io.Serializable;
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -30,12 +33,38 @@ public interface Credential {
     }
 
     /**
-     * 将
+     * 将当前对象转换序列化为字符串
      *
-     * @return
+     * @return 序列化后的字符串
      */
     default String enCode() {
         return JsonUtil.toJSONString(this);
+    }
+
+    /**
+     * 根据供应商获取认证class
+     *
+     * @param platform 供应商
+     * @return 认证Class
+     */
+    static Class<? extends Credential> of(String platform) {
+        PlatformConstants platformConstants = Arrays.stream(PlatformConstants.values()).filter(p -> p.name().equals(platform)).findFirst().orElseThrow(() -> new Fit2cloudException(404, "不支持的认证对象"));
+        return platformConstants.getCredentialClass();
+    }
+
+    /**
+     * 根据供应商和认证信息获取认证对象
+     *
+     * @param platform   供应商
+     * @param credential 认证信息
+     * @return 认证对象
+     */
+    static Credential of(String platform, String credential) {
+        try {
+            return of(platform).getConstructor().newInstance().deCode(credential);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
     }
 
     /**
@@ -45,7 +74,7 @@ public interface Credential {
      */
     default List<? extends Form> toForm() {
         FormObject formObject = FormUtil.toForm(this.getClass());
-        return formObject == null ? null: formObject.getForms();
+        return formObject == null ? null : formObject.getForms();
     }
 
     /**
