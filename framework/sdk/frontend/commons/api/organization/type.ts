@@ -37,3 +37,13 @@ export interface OrganizationTree extends Organization {
    */
   workspaces?: Array<Workspace>;
 }
+
+export interface SourceTreeObject {
+  id: string;
+  pid?: string;
+  name: string;
+  label: string;
+  children?: Array<SourceTreeObject>;
+  isWorkspace?: boolean;
+  root?: boolean;
+}

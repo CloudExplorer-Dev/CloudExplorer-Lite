@@ -8,7 +8,7 @@ import { userAddRole, workspaceTree } from "@/api/user";
 import { listRoles } from "@commons/api/role";
 import { useUserStore } from "@commons/stores/modules/user";
 import { ElMessage } from "element-plus/es";
-import { tree } from "@/api/organization";
+import { tree } from "@commons/api/organization";
 import type { OrganizationTree } from "@/api/organization/type";
 import { roleConst } from "@commons/utils/constants";
 

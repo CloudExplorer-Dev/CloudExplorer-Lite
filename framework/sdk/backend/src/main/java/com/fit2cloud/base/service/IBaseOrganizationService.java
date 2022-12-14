@@ -1,8 +1,9 @@
 package com.fit2cloud.base.service;
 
-import com.fit2cloud.base.entity.Organization;
 import com.baomidou.mybatisplus.extension.service.IService;
+import com.fit2cloud.base.entity.Organization;
 import com.fit2cloud.response.OrganizationTree;
+import com.fit2cloud.response.SourceTreeObject;
 
 import java.util.List;
 
@@ -22,6 +23,8 @@ public interface IBaseOrganizationService extends IService<Organization> {
      * @return
      */
     List<OrganizationTree> tree();
+
+    List<SourceTreeObject> sourceTree();
 
     /**
      * 根据类型获取树形结构

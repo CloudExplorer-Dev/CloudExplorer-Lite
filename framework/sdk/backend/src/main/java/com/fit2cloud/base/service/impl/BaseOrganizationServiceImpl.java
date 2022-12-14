@@ -1,20 +1,27 @@
 package com.fit2cloud.base.service.impl;
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.fit2cloud.base.entity.Organization;
 import com.fit2cloud.base.entity.Workspace;
 import com.fit2cloud.base.mapper.BaseOrganizationMapper;
 import com.fit2cloud.base.service.IBaseOrganizationService;
-import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.fit2cloud.base.service.IBaseWorkspaceService;
+import com.fit2cloud.common.constants.RoleConstants;
+import com.fit2cloud.common.utils.CurrentUserUtils;
+import com.fit2cloud.common.utils.JsonUtil;
 import com.fit2cloud.common.utils.OrganizationUtil;
+import com.fit2cloud.dto.UserRoleDto;
 import com.fit2cloud.response.OrganizationTree;
+import com.fit2cloud.response.SourceTreeObject;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 /**
  * <p>
@@ -37,14 +44,66 @@ public class BaseOrganizationServiceImpl extends ServiceImpl<BaseOrganizationMap
     }
 
     @Override
+    public List<SourceTreeObject> sourceTree() {
+        Map<RoleConstants.ROLE, List<UserRoleDto>> roleListMap = CurrentUserUtils.getUser().getRoleMap();
+
+
+        //只返回有权限的工作空间
+        List<String> workspaceIds = roleListMap.getOrDefault(RoleConstants.ROLE.USER, new ArrayList<>()).stream().map(UserRoleDto::getSource).toList();
+
+        List<Workspace> workspaces = CollectionUtils.isEmpty(workspaceIds) ? new ArrayList<>() : workspaceService.list(new LambdaQueryWrapper<Workspace>().in(Workspace::getId, workspaceIds));
+
+        //已知需要的组织id
+        Set<String> orgIds = roleListMap.getOrDefault(RoleConstants.ROLE.ORGADMIN, new ArrayList<>()).stream().map(UserRoleDto::getSource).collect(Collectors.toSet());
+        orgIds.addAll(workspaces.stream().map(Workspace::getOrganizationId).toList());
+
+        List<Organization> orgList = list();
+        //所有组织的Map
+        Map<String, Organization> orgMap = orgList.stream().collect(Collectors.toMap(Organization::getId, organization -> organization));
+
+        //接收最后需要的所有orgId
+        Set<String> needOrgIds = new HashSet<>();
+        for (String orgId : orgIds) {
+            fillOrgIdSet(orgId, orgMap, needOrgIds);
+        }
+
+        List<SourceTreeObject> list = JsonUtil.parseArray(JsonUtil.toJSONString(
+                OrganizationUtil.toTree(
+                        orgList.stream().filter(organization -> needOrgIds.contains(organization.getId())).toList()
+                )
+        ), SourceTreeObject.class);
+
+        appendSourceTree(list, workspaces);
+
+        if (CollectionUtils.isNotEmpty(roleListMap.getOrDefault(RoleConstants.ROLE.ADMIN, new ArrayList<>()))) {
+            List<SourceTreeObject> adminList = new ArrayList<>();
+            adminList.add(new SourceTreeObject().setRoot(true).setLabel("CloudExplorer 云服务平台").setChildren(list));
+            return adminList;
+        }
+        return list;
+    }
+
+    private void fillOrgIdSet(String orgId, Map<String, Organization> orgMap, Set<String> needOrgIds) {
+        Organization organization = orgMap.get(orgId);
+        if (organization != null) {
+            needOrgIds.add(orgId);
+        } else {
+            return;
+        }
+        if (StringUtils.isNotBlank(organization.getPid())) {
+            fillOrgIdSet(organization.getPid(), orgMap, needOrgIds);
+        }
+    }
+
+    @Override
     public List<OrganizationTree> tree(String type) {
         List<OrganizationTree> organizationTree = tree();
         if (StringUtils.isEmpty(type) || StringUtils.equals(type, TreeTypeOrganization)) {
             return organizationTree;
         }
-        // 查询到所有的工作空间
-        List<Workspace> workspaces = workspaceService.list();
         if (StringUtils.equals(type, TreeTypeOrganizationAndWorkspace)) {
+            // 查询到所有的工作空间
+            List<Workspace> workspaces = workspaceService.list();
             appendOrganizationTree(organizationTree, workspaces);
         }
         return organizationTree;
@@ -64,13 +123,24 @@ public class BaseOrganizationServiceImpl extends ServiceImpl<BaseOrganizationMap
      * @return 当前组织及上级组织
      */
     private List<Organization> getUpOrganization(String orgId, List<Organization> res) {
-        Organization organization = getById(orgId);
+        return getUpOrganization(orgId, res, id -> getById(orgId));
+    }
+
+    /**
+     * 获取上级组织
+     *
+     * @param orgId            组织id
+     * @param res              返回值,传空数组
+     * @param findOrganization 根据id获取组织函数
+     * @return 当前组织及上级组织
+     */
+    private List<Organization> getUpOrganization(String orgId, List<Organization> res, Function<String, Organization> findOrganization) {
+        Organization organization = findOrganization.apply(orgId);
         res.add(organization);
         if (StringUtils.isNotEmpty(organization.getPid())) {
             return getUpOrganization(organization.getPid(), res);
         }
         return res;
-
     }
 
     private void appendOrganizationTree(List<OrganizationTree> organizationTree, List<Workspace> workspaces) {
@@ -79,6 +149,37 @@ public class BaseOrganizationServiceImpl extends ServiceImpl<BaseOrganizationMap
             tree.setWorkspaces(childWorkspaces);
             if (CollectionUtils.isNotEmpty(tree.getChildren())) {
                 appendOrganizationTree(tree.getChildren(), workspaces);
+            }
+        }
+    }
+
+    private void appendSourceTree(List<SourceTreeObject> organizationTree, List<Workspace> workspaces) {
+        for (SourceTreeObject object : organizationTree) {
+            object.setLabel(object.getName());
+
+            if (object.isWorkspace()) {
+                continue;
+            }
+
+            for (Workspace workspace : workspaces) {
+                if (!StringUtils.equals(object.getId(), workspace.getOrganizationId())) {
+                    continue;
+                }
+                if (object.getChildren() == null) {
+                    object.setChildren(new ArrayList<>());
+                }
+                object.getChildren().add(new SourceTreeObject()
+                        .setId(workspace.getId())
+                        .setPid(workspace.getOrganizationId())
+                        .setName(workspace.getName())
+                        .setLabel(workspace.getName())
+                        .setWorkspace(true)
+                );
+
+            }
+
+            if (CollectionUtils.isNotEmpty(object.getChildren())) {
+                appendSourceTree(object.getChildren(), workspaces);
             }
         }
     }

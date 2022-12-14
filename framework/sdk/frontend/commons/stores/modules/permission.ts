@@ -18,7 +18,7 @@ export const usePermissionStore = defineStore({
   },
   actions: {
     async refreshPermissions() {
-      console.log("调用");
+      //console.log("调用");
       const userStore = useUserStore();
       if (!userStore.isLogin) {
         return;

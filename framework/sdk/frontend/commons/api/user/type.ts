@@ -1,5 +1,6 @@
 import type { Role } from "@commons/api/role/type";
 import type { SimpleMap } from "@commons/api/base/type";
+import type { SourceTreeObject } from "@commons/api/organization/type";
 
 export class LoginRequest {
   /**
@@ -27,6 +28,9 @@ export class LoginResponse {
 
 export class UserStoreObjectWithLoginStatus {
   userStoreObject?: UserStoreObject | null;
+
+  sourceTree?: Array<SourceTreeObject> | null;
+
   login: boolean;
   lang: string;
 

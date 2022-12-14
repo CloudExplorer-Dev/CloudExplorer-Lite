@@ -1,17 +1,20 @@
 import { defineStore } from "pinia";
 import authStorage from "@commons/utils/authStorage";
 import type { Ref } from "vue";
+import _ from "lodash";
 import { fetchCurrentUser, login } from "@commons/api/user";
+import { sourceTree } from "@commons/api/organization";
 import type {
   LoginRequest,
   User,
   UserRole,
   UserStoreObjectWithLoginStatus,
 } from "@commons/api/user/type";
-import { find, flatMap, has, join } from "lodash";
+
 import type { Role } from "@commons/api/role/type";
 import { usePermissionStore } from "@commons/stores/modules/permission";
 import type { SimpleMap } from "@commons/api/base/type";
+import type { SourceTreeObject } from "@commons/api/organization/type";
 
 export const languages: SimpleMap<string> = {
   "zh-cn": "中文(简体)",
@@ -23,6 +26,7 @@ export const useUserStore = defineStore({
   id: "user",
   state: (): UserStoreObjectWithLoginStatus => ({
     userStoreObject: {},
+    sourceTree: null,
     login: false,
     lang: "none",
   }),
@@ -57,7 +61,9 @@ export const useUserStore = defineStore({
      * 返回用户角色名
      * @param state
      */
-    currentRoleSourceName(state: any): string | undefined | null {
+    currentRoleSourceName(
+      state: any
+    ): SimpleMap<string> | string | undefined | null {
       const roleList: UserRole[] | undefined =
         state?.userStoreObject?.user?.roleMap[state?.userStoreObject?.role];
       let roles: Role[] | undefined;
@@ -65,17 +71,37 @@ export const useUserStore = defineStore({
         state?.userStoreObject?.role == "ORGADMIN" ||
         state?.userStoreObject?.role == "USER"
       ) {
-        roles = find(roleList, state?.userStoreObject?.source)?.roles;
+        roles = _.find(roleList, state?.userStoreObject?.source)?.roles;
       } else {
         if (roleList) {
           roles = roleList[0]?.roles;
         }
       }
-      //todo add source
-      return join(
-        flatMap(roles, (o) => o.name),
+      const roleName = _.join(
+        _.flatMap(roles, (o) => o.name),
         ", "
       );
+      if (state.currentSource) {
+        return {
+          roleName: roleName,
+          sourceName: _.head(
+            _.filter(state.sourceList, (s) => s.id === state.currentSource)
+          )?.name,
+        };
+      } else {
+        return roleName;
+      }
+    },
+    sourceMap(state: any): Array<SourceTreeObject> {
+      if (state.sourceTree == null) {
+        sourceTree().then((response) => {
+          state.sourceTree = response.data;
+        });
+      }
+      return state.sourceTree;
+    },
+    sourceList(state: any): Array<SourceTreeObject> {
+      return flat(state.sourceMap, []);
     },
     currentLang(state: any): string {
       if (state.lang === "none") {
@@ -107,13 +133,13 @@ export const useUserStore = defineStore({
       this.userStoreObject = {};
       authStorage.removeToken();
     },
-    async getCurrentUser(): Promise<User | null> {
+    async getCurrentUser(loading?: Ref<boolean>): Promise<User | null> {
       if (authStorage.getToken() == null) {
         this.login = false;
         return null;
       }
       try {
-        const user: User = (await fetchCurrentUser()).data;
+        const user: User = (await fetchCurrentUser(loading)).data;
         let storedRole = authStorage.getRole();
         let storedSource: string | undefined | null = authStorage.getSource();
         if (user.roleMap == null) {
@@ -122,13 +148,13 @@ export const useUserStore = defineStore({
         }
         let userRoles: UserRole[] | undefined;
 
-        if (storedRole == null || !has(user.roleMap, storedRole)) {
+        if (storedRole == null || !_.has(user.roleMap, storedRole)) {
           //如果没有这个role，从admin角色开始判断
-          if (has(user.roleMap, "ADMIN")) {
+          if (_.has(user.roleMap, "ADMIN")) {
             storedRole = "ADMIN";
-          } else if (has(user.roleMap, "ORGADMIN")) {
+          } else if (_.has(user.roleMap, "ORGADMIN")) {
             storedRole = "ORGADMIN";
-          } else if (has(user.roleMap, "USER")) {
+          } else if (_.has(user.roleMap, "USER")) {
             storedRole = "USER";
           } else {
             //ANONYMOUS
@@ -137,9 +163,8 @@ export const useUserStore = defineStore({
         }
         if (storedRole == "ORGADMIN" || storedRole == "USER") {
           userRoles = user.roleMap[storedRole];
-          console.log(userRoles);
           //判断source
-          const findRole = find(userRoles, { source: storedSource });
+          const findRole = _.find(userRoles, { source: storedSource });
           if (findRole == undefined) {
             storedSource = userRoles ? userRoles[0].source : null;
           }
@@ -165,7 +190,6 @@ export const useUserStore = defineStore({
         const permissionStore = usePermissionStore();
         //刷新权限
         await permissionStore.refreshPermissions();
-        //console.log(permissionStore.userPermissions);
 
         return this.currentUser;
       } catch (err) {
@@ -184,7 +208,7 @@ export const useUserStore = defineStore({
       }
     },
     changeLang(lang: string) {
-      if (!has(languages, lang)) {
+      if (!_.has(languages, lang)) {
         lang = "zh-cn";
       }
       this.lang = lang;
@@ -192,3 +216,16 @@ export const useUserStore = defineStore({
     },
   },
 });
+
+function flat(
+  tree: Array<SourceTreeObject>,
+  list: Array<SourceTreeObject>
+): Array<SourceTreeObject> {
+  _.forEach(tree, (obj) => {
+    list.push(obj);
+    if (obj.children) {
+      flat(obj.children, list);
+    }
+  });
+  return list;
+}
