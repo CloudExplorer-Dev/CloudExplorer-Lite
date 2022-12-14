@@ -27,15 +27,15 @@ public class MyBatisPlusGenerator {
     /**
      * 传入需要生成代码的表名
      */
-    private static final List<String> TABLES = Arrays.asList("bill_dimension_setting");
+    private static final List<String> TABLES = Arrays.asList("compliance_rule", "compliance_rule_group");
 
     private static final Map<String, Object> CUSTOM_MAP = new HashMap<>();
 
     static {
         Map<String, Map<String, Map<String, Object>>> map = new HashMap<>();
         //指定需要生成enum的字段（Enum类需要自己生成）
-        map.put("cloud_account", convert(Arrays.asList(
-                new EnumCreator().setEnumField("status").setEnumClassName("CloudAccountConstants.Status").setEnumClass("com.fit2cloud.constants.CloudAccountConstants")
+        map.put("compliance_rule", convert(Arrays.asList(
+                new EnumCreator().setEnumField("risk_level").setEnumClassName("RiskLevel").setEnumClass("com.fit2cloud.dao.constants.RiskLevel")
         )));
 
         CUSTOM_MAP.put("useEnum", true);

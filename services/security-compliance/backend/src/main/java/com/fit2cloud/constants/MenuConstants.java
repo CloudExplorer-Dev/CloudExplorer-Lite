@@ -1,6 +1,8 @@
 package com.fit2cloud.constants;
 
+import com.fit2cloud.common.constants.RoleConstants;
 import com.fit2cloud.dto.module.Menu;
+import com.fit2cloud.dto.module.MenuPermission;
 import com.fit2cloud.dto.module.Menus;
 import com.fit2cloud.service.MenuService;
 import org.springframework.beans.factory.annotation.Value;
@@ -27,7 +29,44 @@ public class MenuConstants {
 
     }
 
-    private static final Menus.Builder MENUS_BUILDER = new Menus.Builder();
+    private static final Menus.Builder MENUS_BUILDER = new Menus.Builder()
+            .menu(new Menu.Builder().name("overview")
+                    .title("总览")
+                    .path("/overview")
+                    .componentPath("/src/views/overview/index.vue")
+                    .icon("yunzhuji2")
+                    .requiredPermission(
+                            new MenuPermission.Builder()
+                                    .role(RoleConstants.ROLE.ADMIN)
+                                    .permission(PermissionConstants.GROUP.OVERVIEW, PermissionConstants.OPERATE.READ))
+                    .order(1))
+            .menu(new Menu.Builder().name("scan").title("扫描检查")
+                    .componentPath("/src/views/scan/index.vue")
+                    .path("/scan")
+                    .icon("yunzhuji2")
+                    .requiredPermission(new MenuPermission.Builder()
+                            .role(RoleConstants.ROLE.ADMIN)
+                            .permission(PermissionConstants.GROUP.SCAN, PermissionConstants.OPERATE.READ))
+                    .order(2))
+            .menu(new Menu.Builder()
+                    .name("rule")
+                    .title("规则设置")
+                    .componentPath("/src/views/rule/index.vue")
+                    .path("/rule").icon("yunzhuji2")
+                    .requiredPermission(new MenuPermission.Builder()
+                            .role(RoleConstants.ROLE.ADMIN)
+                            .permission(PermissionConstants.GROUP.RULE, PermissionConstants.OPERATE.READ))
+                    .order(3))
+            .menu(new Menu.Builder()
+                    .name("insurance")
+                    .title("等保条例")
+                    .componentPath("/src/views/insurance/index.vue")
+                    .path("/insurance")
+                    .icon("yunzhuji2")
+                    .requiredPermission(new MenuPermission.Builder()
+                            .role(RoleConstants.ROLE.ADMIN)
+                            .permission(PermissionConstants.GROUP.INSURANCE, PermissionConstants.OPERATE.READ))
+                    .order(4));
 
 
 }

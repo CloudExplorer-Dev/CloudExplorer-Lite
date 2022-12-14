@@ -85,6 +85,24 @@ public class CommonUtil {
     }
 
     /**
+     * 执行无参的函数
+     *
+     * @param providerClass 执行处理器
+     * @param exec          执行函数
+     * @param <R>           执行函数返回值对象
+     * @param <P>           执行函数怼
+     * @return 执行函数返回的对象
+     */
+    public static <R, P> R exec(Class<? extends P> providerClass, Function<P, R> exec) {
+        try {
+            P iCloudProvider = providerClass.getConstructor().newInstance();
+            return exec.apply(iCloudProvider);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    /**
      * 执行函数
      *
      * @param platform         供应商

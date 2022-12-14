@@ -1,5 +1,6 @@
 package com.fit2cloud.common.utils;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.JavaType;
@@ -35,6 +36,20 @@ public class JsonUtil {
         mapper.setDateFormat(new SimpleDateFormat("yyyy-MM-dd HH:mm:ss"));
     }
 
+
+    public static String toJSONString(Object object, ObjectMapper mapper) {
+        mapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
+        mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+        mapper.registerModule(new JavaTimeModule());
+        //修改日期格式
+        mapper.setDateFormat(new SimpleDateFormat("yyyy-MM-dd HH:mm:ss"));
+        try {
+            return mapper.writeValueAsString(object);
+        } catch (JsonProcessingException e) {
+            LOGGER.error(">> convert to json failed ", e);
+            throw new RuntimeException(e);
+        }
+    }
 
     /**
      * 将对象转为json字符串

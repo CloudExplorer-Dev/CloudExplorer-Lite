@@ -1,5 +1,6 @@
 package com.fit2cloud.constants;
 
+import com.fit2cloud.common.constants.RoleConstants;
 import com.fit2cloud.dto.permission.ModulePermission;
 import com.fit2cloud.dto.permission.Permission;
 import com.fit2cloud.dto.permission.PermissionGroup;
@@ -22,12 +23,10 @@ import java.util.stream.Collectors;
 public class PermissionConstants {
 
     public static class GROUP {
-        public static final String BILL_ViEW = "BILL_ViEW";
-        public static final String BILL_DETAILED = "BILL_DETAILED";
-
-        public static final String CUSTOM_BILL = "CUSTOM_BILL";
-
-        public static final String DIMENSION_SETTING = "DIMENSION_SETTING";
+        public static final String OVERVIEW = "OVERVIEW";
+        public static final String SCAN = "SCAN";
+        public static final String RULE = "RULE";
+        public static final String INSURANCE = "INSURANCE";
 
         //...
     }
@@ -65,7 +64,36 @@ public class PermissionConstants {
         basePermissionService.init(module, PermissionConstants.MODULE_PERMISSION);
     }
 
-    private static final ModulePermission.Builder MODULE_PERMISSION_BUILDER = new ModulePermission.Builder().group();
+    private static final ModulePermission.Builder MODULE_PERMISSION_BUILDER = new ModulePermission.Builder().group()
+            .group(new PermissionGroup.Builder().id(GROUP.OVERVIEW)
+                    .permission(new Permission.Builder()
+                            .operate(OPERATE.READ)
+                            .name("i18n_permission_overview_red")
+                            .role(RoleConstants.ROLE.ADMIN)
+                            .role(RoleConstants.ROLE.ORGADMIN)
+                            .role(RoleConstants.ROLE.USER)))
+            .group(new PermissionGroup.Builder().id(GROUP.SCAN)
+                    .permission(new Permission.Builder()
+                            .operate(OPERATE.READ)
+                            .name("i18n_permission_scan_red")
+                            .role(RoleConstants.ROLE.ADMIN)
+                            .role(RoleConstants.ROLE.ORGADMIN)
+                            .role(RoleConstants.ROLE.USER)))
+            .group(new PermissionGroup.Builder().id(GROUP.RULE)
+                    .permission(new Permission.Builder()
+                            .operate(OPERATE.READ)
+                            .name("i18n_permission_rule_red")
+                            .role(RoleConstants.ROLE.ADMIN)
+                            .role(RoleConstants.ROLE.ORGADMIN)
+                            .role(RoleConstants.ROLE.USER)))
+            .group(new PermissionGroup.Builder().id(GROUP.INSURANCE)
+                    .permission(new Permission.Builder()
+                            .operate(OPERATE.READ)
+                            .name("i18n_permission_insurance_red")
+                            .role(RoleConstants.ROLE.ADMIN)
+                            .role(RoleConstants.ROLE.ORGADMIN)
+                            .role(RoleConstants.ROLE.USER)));
+    ;
 
 
 }
