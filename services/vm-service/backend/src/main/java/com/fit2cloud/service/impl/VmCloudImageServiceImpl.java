@@ -17,7 +17,6 @@ import com.fit2cloud.controller.request.images.PageVmCloudImageRequest;
 import com.fit2cloud.controller.request.images.VmCloudImageRequest;
 import com.fit2cloud.dao.mapper.VmCloudImageMapper;
 import com.fit2cloud.dto.VmCloudImageDTO;
-import com.fit2cloud.dto.VmCloudServerDTO;
 import com.fit2cloud.provider.impl.huawei.entity.OsConfig;
 import com.fit2cloud.provider.impl.huawei.entity.request.HuaweiBaseRequest;
 import com.fit2cloud.service.IVmCloudImageService;

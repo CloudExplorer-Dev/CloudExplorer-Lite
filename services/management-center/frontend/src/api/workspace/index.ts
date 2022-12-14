@@ -2,10 +2,11 @@ import { post, del, get, put } from "@commons/request";
 import type Result from "@commons/request/Result";
 import type { Page } from "@commons/request/Result";
 import type {
+  WorkspaceDetail,
+  ListWorkspaceRequest,
   CreateWorkspaceForm,
-  WorkspaceDetails,
-} from "@/views/WorkspaceManage/type";
-import type { Workspace, ListWorkspaceRequest, CloudMapping } from "./type";
+  WorkspaceCreate,
+} from "./type";
 import type { Ref } from "vue";
 
 /**
@@ -16,7 +17,7 @@ import type { Ref } from "vue";
 export function create(
   workspace: any,
   loading?: Ref<boolean>
-): Promise<Result<Workspace>> {
+): Promise<Result<WorkspaceDetail>> {
   return post("api/workspace/create", null, workspace, loading);
 }
 
@@ -28,7 +29,7 @@ export function create(
 export function listWorkspace(
   req: ListWorkspaceRequest,
   loading?: Ref<boolean>
-): Promise<Result<Page<Workspace>>> {
+): Promise<Result<Page<WorkspaceDetail>>> {
   return get("api/workspace/list", req, loading);
 }
 
@@ -50,7 +51,7 @@ export function deleteWorkspaceById(
  * @param loading
  */
 export function deleteBatch(
-  organizationIds: Array<Workspace>,
+  organizationIds: Array<WorkspaceDetail>,
   loading?: Ref<boolean>
 ): Promise<Result<boolean>> {
   return del("api/workspace", undefined, organizationIds, loading);
@@ -64,7 +65,7 @@ export function deleteBatch(
 export function getWorkspaceById(
   id: string,
   loading?: Ref<boolean>
-): Promise<Result<WorkspaceDetails>> {
+): Promise<Result<WorkspaceDetail>> {
   return get("api/workspace/one", { id: id, name: "" }, loading);
 }
 
@@ -74,7 +75,7 @@ export function getWorkspaceById(
  * @param loading
  */
 export function update(
-  workspace: any,
+  workspace: WorkspaceCreate,
   loading?: Ref<boolean>
 ): Promise<Result<boolean>> {
   return put("api/workspace/update", undefined, workspace, loading);
@@ -89,7 +90,7 @@ export function batch(
   data: CreateWorkspaceForm,
   loading?: Ref<boolean>
 ): Promise<Result<boolean>> {
-  return post("/api/workspace/batch", null, data);
+  return post("/api/workspace/batch", null, data, loading);
 }
 
 const WorkspaceApi = {

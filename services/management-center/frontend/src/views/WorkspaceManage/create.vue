@@ -10,7 +10,7 @@ import WorkspaceApi from "@/api/workspace";
 import type { FormInstance, FormRules } from "element-plus";
 import { useRouter } from "vue-router";
 import { useI18n } from "vue-i18n";
-import type { CreateWorkspaceForm, WorkspaceDetails } from "./type";
+import type { CreateWorkspaceForm } from "@/api/workspace/type";
 const { t } = useI18n();
 const route = useRouter();
 const loading = ref<boolean>(false);

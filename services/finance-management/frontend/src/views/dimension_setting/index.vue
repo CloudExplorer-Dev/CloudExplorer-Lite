@@ -266,7 +266,7 @@
   </layout-content>
 </template>
 <script setup lang="ts">
-import OrganizationApi from "@/api/organization/index";
+import BaseOrganizationApi from "@commons//api/organization/index";
 import type {
   OrganizationTree,
   OrganizationWorkspaceTree,
@@ -362,11 +362,13 @@ const mergeTree = (
 const orgLoading = ref<boolean>(false);
 
 onMounted(() => {
-  OrganizationApi.tree("ORGANIZATION_AND_WORKSPACE", orgLoading).then((ok) => {
-    organizationWorkspaceTreeData.value = JSON.parse(
-      JSON.stringify(mergeTree(ok.data, []))
-    );
-  });
+  BaseOrganizationApi.tree("ORGANIZATION_AND_WORKSPACE", orgLoading).then(
+    (ok) => {
+      organizationWorkspaceTreeData.value = JSON.parse(
+        JSON.stringify(mergeTree(ok.data, []))
+      );
+    }
+  );
   search(new TableSearch());
 });
 

@@ -1,7 +1,7 @@
-import { get } from "@commons/request";
 import type { Ref } from "vue";
 import type Result from "@commons/request/Result";
-import type { OrganizationTree } from "./type";
+import type { OrganizationTree } from "@commons/api/organization/type";
+import { get } from "@commons/request";
 
 export const tree: (
   treeType?: string,
@@ -11,6 +11,8 @@ export const tree: (
   return get("/api/base/organization/tree/" + type, {}, loading);
 };
 
-export default {
+const BaseOrganizationApi = {
   tree,
 };
+
+export default BaseOrganizationApi;

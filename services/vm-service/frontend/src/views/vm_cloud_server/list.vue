@@ -434,7 +434,6 @@ const batchOperate = (operate: string) => {
         ElMessage.success(t("commons.msg.op_success"));
       })
       .catch((err) => {
-        debugger;
         console.log(err);
       });
   });

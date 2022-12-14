@@ -26,8 +26,8 @@ import java.util.List;
  */
 @Service
 public class BaseOrganizationServiceImpl extends ServiceImpl<BaseOrganizationMapper, Organization> implements IBaseOrganizationService {
-    private final String TreeTypeOrganization = "ORGANIZATION";
-    private final String TreeTypeOrganizationAndWorkspace = "ORGANIZATION_AND_WORKSPACE";
+    private static final String TreeTypeOrganization = "ORGANIZATION";
+    private static final String TreeTypeOrganizationAndWorkspace = "ORGANIZATION_AND_WORKSPACE";
     @Resource
     private IBaseWorkspaceService workspaceService;
 

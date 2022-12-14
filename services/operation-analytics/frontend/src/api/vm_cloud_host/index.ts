@@ -1,10 +1,7 @@
 import { get } from "@commons/request";
 import type Result from "@commons/request/Result";
 import type { Page } from "@commons/request/Result";
-import type {
-  VmCloudHostVO,
-  ListVmCloudHostRequest
-} from "./type";
+import type { VmCloudHostVO, ListVmCloudHostRequest } from "./type";
 import type { Ref } from "vue";
 
 /**
@@ -19,9 +16,8 @@ export function listVmCloudHost(
   return get("api/baseResourceAnalysis/host/page", req, loading);
 }
 
-
 const VmCloudHostApi = {
-  listVmCloudHost
+  listVmCloudHost,
 };
 
 export default VmCloudHostApi;
