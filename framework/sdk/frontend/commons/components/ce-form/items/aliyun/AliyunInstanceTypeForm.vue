@@ -1,13 +1,25 @@
 <template>
   <template v-if="!confirm">
-    <el-radio-group v-model="_data" style="width: 100%">
+    <div style="margin-bottom: 10px">
+      <el-input
+        v-model="search"
+        placeholder="输入关键字搜索"
+        style="width: 20%"
+      >
+        <template #append>
+          <el-button style="color: var(--el-color-primary)" icon="Search" />
+        </template>
+      </el-input>
+    </div>
+    <el-radio-group v-model="selectRowId" style="width: 100%">
       <el-table
         ref="singleTableRef"
         :data="filterTableData"
         highlight-current-row
         style="width: 100%"
         @current-change="handleCurrentChange"
-        max-height="340px"
+        max-height="240px"
+        border
       >
         <el-table-column width="55">
           <template #default="scope">
@@ -16,34 +28,28 @@
             </el-radio>
           </template>
         </el-table-column>
-        <el-table-column label="规格类型" property="instanceTypeFamily" />
+        <el-table-column label="规格类型" property="instanceTypeFamilyName" />
         <el-table-column label="规格名称" property="instanceType" />
         <el-table-column label="实例规格" property="cpuMemory" />
-        <el-table-column align="left">
-          <template #header>
-            <el-input v-model="search" size="small" placeholder="搜索" />
-          </template>
-        </el-table-column>
       </el-table>
     </el-radio-group>
   </template>
   <template v-else>
-    {{
-      _.get(
-        _.find(formItem?.optionList, (o) => o.instanceType === modelValue),
-        "instanceType",
-        modelValue
-      )
-    }}
+    <el-descriptions>
+      <el-descriptions-item label="实例规格">
+        {{ modelValue?.instanceType }}
+      </el-descriptions-item>
+    </el-descriptions>
   </template>
 </template>
 <script setup lang="ts">
 import type { FormView } from "@commons/components/ce-form/type";
-import { computed, ref, watch } from "vue";
+import { computed, onMounted, ref, watch } from "vue";
 import _ from "lodash";
 import type { ElTable } from "element-plus";
 
-interface CloudInstanceType {
+interface InstanceTypeConfig {
+  instanceTypeFamilyName: string;
   instanceTypeFamily: string;
   instanceType: string;
   cpuMemory: string;
@@ -61,16 +67,29 @@ const props = defineProps<{
 
 const emit = defineEmits(["update:modelValue", "change"]);
 const singleTableRef = ref<InstanceType<typeof ElTable>>();
+const selectRowId = ref();
 
 // 搜索
 const search = ref();
 const filterTableData = computed(() =>
   props.formItem?.optionList?.filter(
-    (data: CloudInstanceType) =>
+    (data: InstanceTypeConfig) =>
       !search.value ||
-      data.instanceType.toLowerCase().includes(search.value.toLowerCase())
+      formatValue(data.instanceType).includes(formatValue(search.value)) ||
+      formatValue(data.instanceTypeFamilyName).includes(
+        formatValue(search.value)
+      ) ||
+      formatValue(data.cpuMemory).includes(formatValue(search.value))
   )
 );
+
+/**
+ * 格式处理
+ * @param value
+ */
+const formatValue = (value: string) => {
+  return value.toLowerCase().replace(/\s/g, "");
+};
 
 const _data = computed({
   get() {
@@ -84,20 +103,38 @@ const _data = computed({
 /**
  * 列表选中
  */
-const currentRow = computed<CloudInstanceType | undefined>({
+const currentRow = computed<InstanceTypeConfig | undefined>({
   get() {
     return _.find(
       props.formItem?.optionList,
-      (o: CloudInstanceType) => o.instanceType === _data.value
+      (o: InstanceTypeConfig) => o.instanceType === _data.value?.instanceType
     );
   },
   set(value) {
-    _data.value = value?.instanceType;
+    _data.value = value;
   },
 });
 
-function handleCurrentChange(val: CloudInstanceType | undefined) {
+function handleCurrentChange(val: InstanceTypeConfig | undefined) {
   currentRow.value = val;
+  selectRowId.value = val?.instanceType;
+  emit("change");
 }
+
+onMounted(() => {
+  selectRowId.value = currentRow.value?.instanceType;
+});
+
+watch(
+  () => props.formItem?.optionList,
+  (value) => {
+    if (value != null && value.length > 0 && selectRowId.value == null) {
+      currentRow.value = value[0];
+      selectRowId.value = value[0].instanceType;
+      emit("change");
+    }
+  },
+  { deep: true }
+);
 </script>
 <style lang="scss" scoped></style>

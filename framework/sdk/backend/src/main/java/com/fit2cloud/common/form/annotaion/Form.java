@@ -48,6 +48,14 @@ public @interface Form {
      */
     boolean required() default true;
 
+
+    /**
+     * 正则验证
+     * @return
+     */
+    String regexp() default "";
+
+    String regexpDescription() default "";
     /**
      * 默认值
      *

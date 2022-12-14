@@ -24,6 +24,9 @@ public class JobRecordResourceResponse {
     @ApiModelProperty(value = "资源id", notes = "资源id")
     private String resourceId;
 
+    @ApiModelProperty(value = "资源类型", notes = "资源类型")
+    private String resourceType;
+
     @ApiModelProperty(value = "任务记录id",notes = "任务记录id")
     private String jobRecordId;
     @ApiModelProperty(value = "定时任务类型", notes = "定时任务类型")

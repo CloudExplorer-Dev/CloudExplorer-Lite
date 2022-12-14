@@ -120,12 +120,6 @@ public interface ICloudAccountService extends IService<CloudAccount> {
      */
     void sync(SyncRequest syncRequest);
 
-    /*
-     * 获取云账户余额
-     * @param accountId
-     * @return 未获取到余额将返回--
-     */
-    Object getAccountBalance(String accountId);
 
     /**
      * 更新云账号名称

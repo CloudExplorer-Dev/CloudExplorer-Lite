@@ -7,7 +7,7 @@ package com.fit2cloud.provider.impl.huawei.constants;
 public enum HuaweiDiskType {
     SAS("SAS", "高IO"),
     SSD("SSD", "超高IO"),
-    GPSSD("GPSSD", "通用性SSD"),
+    GPSSD("GPSSD", "通用型SSD"),
     ESSD("ESSD", "极速型SSD");
 
     private String id;

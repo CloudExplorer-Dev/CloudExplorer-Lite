@@ -6,7 +6,6 @@
     :data="tableData"
     :tableConfig="tableConfig"
     row-key="id"
-    table-layout="auto"
     height="100%"
   >
     <template #toolbar>

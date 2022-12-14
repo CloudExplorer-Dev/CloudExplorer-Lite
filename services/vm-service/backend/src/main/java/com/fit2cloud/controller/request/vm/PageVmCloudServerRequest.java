@@ -1,11 +1,13 @@
 package com.fit2cloud.controller.request.vm;
 
 import com.fit2cloud.request.pub.OrderRequest;
+import com.fit2cloud.request.pub.PageOrderRequestInterface;
 import com.fit2cloud.request.pub.PageRequest;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
 import javax.validation.constraints.Size;
+import java.io.Serial;
 import java.util.List;
 
 /**
@@ -13,7 +15,9 @@ import java.util.List;
  * @date 2022/9/27 14:45
  **/
 @Data
-public class PageVmCloudServerRequest extends PageRequest {
+public class PageVmCloudServerRequest extends PageRequest implements PageOrderRequestInterface {
+    @Serial
+    private static final long serialVersionUID = -6363229760062682871L;
     @ApiModelProperty(value = "云主机状态", allowableValues = "Running,Stopped,Deleted")
     private List<String> instanceStatus;
     @ApiModelProperty("云主机名称")

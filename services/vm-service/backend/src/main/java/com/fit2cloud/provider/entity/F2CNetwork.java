@@ -13,6 +13,6 @@ public class F2CNetwork {
     private String vpcId;
     private String vpcName;
     private String networkId;
-    private String name;
+    private String networkName;
     private String ipSegment;
 }

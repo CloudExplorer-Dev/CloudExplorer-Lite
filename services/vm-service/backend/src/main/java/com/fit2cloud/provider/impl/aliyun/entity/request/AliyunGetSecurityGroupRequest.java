@@ -1,5 +1,6 @@
 package com.fit2cloud.provider.impl.aliyun.entity.request;
 
+import com.fit2cloud.provider.entity.F2CNetwork;
 import lombok.Data;
 
 /**
@@ -9,8 +10,5 @@ import lombok.Data;
 @Data
 public class AliyunGetSecurityGroupRequest extends AliyunBaseRequest {
 
-    private String networkId;
-
-    private String vpcId;
-
+    private F2CNetwork f2CNetwork;
 }

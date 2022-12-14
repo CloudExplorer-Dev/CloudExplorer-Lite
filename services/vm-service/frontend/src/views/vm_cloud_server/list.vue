@@ -434,7 +434,6 @@ const batchOperate = (operate: string) => {
         ElMessage.success(t("commons.msg.op_success"));
       })
       .catch((err) => {
-        debugger;
         console.log(err);
       });
   });
@@ -537,11 +536,19 @@ const handleAction = (actionObj: any) => {
     >
       <template #default="scope">
         <div style="display: flex">
-          <el-image
+          <!--          <el-image
             style="margin-top: 3px; width: 16px; height: 16px"
             :src="platformIcon[scope.row.platform]?.icon"
             v-if="scope.row.platform"
-          ></el-image>
+          ></el-image>-->
+          <component
+            style="margin-top: 3px; width: 16px; height: 16px"
+            :is="platformIcon[scope.row.platform]?.component"
+            v-bind="platformIcon[scope.row.platform]?.icon"
+            :color="platformIcon[scope.row.platform]?.color"
+            size="16px"
+            v-if="scope.row.platform"
+          ></component>
           <span style="margin-left: 10px">{{ scope.row.accountName }}</span>
         </div>
       </template>

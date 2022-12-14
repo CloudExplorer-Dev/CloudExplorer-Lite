@@ -44,7 +44,7 @@ const diskTypes = ref<Array<SimpleMap<string>>>([
   { text: "ESSD云盘", value: "cloud_essd" },
   { text: "SSD云盘", value: "cloud_ssd" },
   { text: "普通云盘", value: "cloud" },
-  { text: "通用性SSD", value: "GPSSD" },
+  { text: "通用型SSD", value: "GPSSD" },
   { text: "极速型SSD", value: "ESSD" },
   { text: "超高IO", value: "SSD" },
   { text: "高IO", value: "SAS" },
@@ -56,8 +56,15 @@ const diskTypes = ref<Array<SimpleMap<string>>>([
   { text: "厚置备置零", value: "THICK_EAGER_ZEROED" },
   { text: "厚置备延迟置零", value: "THICK_LAZY_ZEROED" },
   { text: "稀疏型", value: "SPARSE" },
+  { text: "lvmdriver-1", value: "lvmdriver-1" },
+  { text: "__DEFAULT__", value: "__DEFAULT__" },
   { text: "未知", value: "NA" },
 ]);
+
+/**
+ * 不支持磁盘单独管理的云平台
+ */
+const notSupportPlatforms = ref(["fit2cloud_vsphere_platform"]);
 
 const filterType = (value: string) => {
   let status = value;
@@ -366,6 +373,9 @@ const disableBatchAttach = computed(() => {
       ) ||
       multipleSelectedRowData.value.every(
         (row) => row.zone != multipleSelectedRowData.value[0].zone
+      ) ||
+      multipleSelectedRowData.value.some((row) =>
+        notSupportPlatforms.value.includes(row.platform)
       )
     );
   }
@@ -378,8 +388,13 @@ const disableBatchDetach = computed(() => {
   if (multipleSelectedRowData.value.length == 0) {
     return false;
   } else {
-    return multipleSelectedRowData.value.some(
-      (row) => row.status.toUpperCase() != "IN_USE"
+    return (
+      multipleSelectedRowData.value.some(
+        (row) => row.status.toUpperCase() != "IN_USE"
+      ) ||
+      multipleSelectedRowData.value.some((row) =>
+        notSupportPlatforms.value.includes(row.platform)
+      )
     );
   }
 });
@@ -391,8 +406,13 @@ const disableBatchDelete = computed(() => {
   if (multipleSelectedRowData.value.length == 0) {
     return false;
   } else {
-    return multipleSelectedRowData.value.some(
-      (row) => row.status.toUpperCase() != "AVAILABLE"
+    return (
+      multipleSelectedRowData.value.some(
+        (row) => row.status.toUpperCase() != "AVAILABLE"
+      ) ||
+      multipleSelectedRowData.value.some((row) =>
+        notSupportPlatforms.value.includes(row.platform)
+      )
     );
   }
 });
@@ -423,8 +443,11 @@ const buttons = ref([
     icon: "",
     click: handleAttach,
     show: true,
-    disabled: (row: { status: string }) => {
-      return row.status !== "available";
+    disabled: (row: VmCloudDiskVO) => {
+      return (
+        row.status !== "available" ||
+        notSupportPlatforms.value.includes(row.platform)
+      );
     },
   },
   {
@@ -432,8 +455,11 @@ const buttons = ref([
     icon: "",
     click: handleDetach,
     show: true,
-    disabled: (row: { status: string }) => {
-      return row.status !== "in_use";
+    disabled: (row: VmCloudDiskVO) => {
+      return (
+        row.status !== "in_use" ||
+        notSupportPlatforms.value.includes(row.platform)
+      );
     },
   },
   {
@@ -441,8 +467,11 @@ const buttons = ref([
     icon: "",
     click: handleDelete,
     show: true,
-    disabled: (row: { status: string }) => {
-      return row.status !== "available";
+    disabled: (row: VmCloudDiskVO) => {
+      return (
+        row.status !== "available" ||
+        notSupportPlatforms.value.includes(row.platform)
+      );
     },
   },
 ]);

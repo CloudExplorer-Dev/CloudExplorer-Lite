@@ -121,12 +121,20 @@ export default defineConfig(({ mode }: ConfigEnv) => {
   //finance-management
   proxyConf[ENV.VITE_BASE_PATH + "finance-management/api"] =
     "http://localhost:" + Number(ENV.VITE_BASE_API_PORT);
-  proxyConf[ENV.VITE_BASE_PATH + "finance-management"] = "http://127.0.0.1:5003";
+  proxyConf[ENV.VITE_BASE_PATH + "finance-management"] =
+    "http://127.0.0.1:5003";
 
   //security-compliance
   proxyConf[ENV.VITE_BASE_PATH + "security-compliance/api"] =
-      "http://localhost:" + Number(ENV.VITE_BASE_API_PORT);
-  proxyConf[ENV.VITE_BASE_PATH + "security-compliance"] = "http://127.0.0.1:5004";
+    "http://localhost:" + Number(ENV.VITE_BASE_API_PORT);
+  proxyConf[ENV.VITE_BASE_PATH + "security-compliance"] =
+    "http://127.0.0.1:5004";
+
+  //operation-analytics
+  proxyConf[ENV.VITE_BASE_PATH + "operation-analytics/api"] =
+    "http://localhost:" + Number(ENV.VITE_BASE_API_PORT);
+  proxyConf[ENV.VITE_BASE_PATH + "security-compliance"] =
+    "http://127.0.0.1:5005";
 
   //https://cn.vitejs.dev/config/server-options.html#server-host
   config.server = {

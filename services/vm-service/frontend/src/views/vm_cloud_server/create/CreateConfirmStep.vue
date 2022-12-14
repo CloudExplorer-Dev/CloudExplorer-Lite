@@ -30,15 +30,23 @@
       </template>
       <el-descriptions :column="group.items">
         <el-descriptions-item label="云账号" v-if="group.group === 0">
-          <el-image
+          <!--          <el-image
             style="margin-top: 3px; width: 16px; height: 16px"
             :src="platformIcon[cloudAccount?.platform].icon"
             v-if="cloudAccount?.platform"
-          />
+          />-->
+          <component
+            style="margin-top: 3px; width: 16px; height: 16px"
+            :is="platformIcon[cloudAccount?.platform]?.component"
+            v-bind="platformIcon[cloudAccount?.platform]?.icon"
+            :color="platformIcon[cloudAccount?.platform]?.color"
+            size="16px"
+            v-if="cloudAccount?.platform"
+          ></component>
           <span style="margin-left: 10px">{{ cloudAccount?.name }}</span>
         </el-descriptions-item>
         <template v-for="form in group.forms" :key="form.index">
-          <template v-if="form.label">
+          <template v-if="form.label && checkShow(form)">
             <el-descriptions-item
               :label="form.label"
               :span="form.confirmItemSpan"
@@ -134,6 +142,21 @@ const groups = computed(() => {
   return list;
 });
 
+function checkShow(currentItem: any) {
+  let isShow = currentItem.label;
+  if (currentItem.relationShows && currentItem.relationShowValues) {
+    isShow = currentItem.relationShows.every((i: string) =>
+      currentItem.relationShowValues.includes(
+        _.get(props.allData, i) === true ? "true" : _.get(props.allData, i)
+      )
+    );
+  }
+  if (isShow) {
+    isShow = currentItem.footerLocation === 0;
+  }
+  return isShow;
+}
+
 /**
  * 处理列表中取值展示
  * @param form
@@ -147,30 +170,53 @@ function getDisplayValue(form: FormView) {
       form.optionList instanceof Array &&
       form.optionList.length > 0
     ) {
-      form.valueItem = _.find(
-        form.optionList,
-        (o) => value === _.get(o, form.valueField ? form.valueField : "value")
-      );
-      console.log(form.field, value);
+      if (value instanceof Array) {
+        form.valueItem = form.optionList.filter((o) =>
+          value.includes(_.get(o, form.valueField ? form.valueField : "value"))
+        );
+      } else {
+        form.valueItem = _.find(
+          form.optionList,
+          (o) => value === _.get(o, form.valueField ? form.valueField : "value")
+        );
+      }
 
       if (form.formatTextField && form.textField) {
         let temp = _.replace(form.textField, /{/g, "{form.valueItem['");
         temp = _.replace(temp, /}/g, "']}");
         result = eval("`" + temp + "`");
       } else {
-        result = _.get(
-          form.valueItem,
-          form.textField ? form.textField : "label"
-        );
+        if (value instanceof Array) {
+          result = "";
+          form.valueItem.forEach((item: any) => {
+            result =
+              result + "," + item[form.textField ? form.textField : "label"];
+          });
+          result = result.replace(",", "");
+        } else {
+          result = _.get(
+            form.valueItem,
+            form.textField ? form.textField : "label"
+          );
+        }
       }
     }
   }
-  //console.log(typeof result === "string", result);
   if (
     result == undefined ||
     (typeof result === "string" && _.trim(result).length === 0)
   ) {
-    return `<span style="color: var(--el-text-color-secondary)">空</span>`;
+    if (
+      form.optionList &&
+      typeof form.optionList === "string" &&
+      form.optionList.length > 0
+    ) {
+      return form.optionList;
+    } else {
+      return `<span style="color: var(--el-text-color-secondary)">空</span>`;
+    }
+  } else if (typeof result === "boolean") {
+    return result ? "是" : "否";
   } else {
     return result;
   }
@@ -182,5 +228,9 @@ function getDisplayValue(form: FormView) {
   display: inline-flex;
   flex-direction: row;
   justify-content: space-between;
+  max-width: 250px;
+  overflow: auto;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 </style>

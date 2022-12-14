@@ -84,7 +84,7 @@
   <template v-else>
     <el-descriptions>
       <el-descriptions-item
-        :label="i === 0 ? '系统盘' : '数据盘' + (i + 1)"
+        :label="i === 0 ? '系统盘' : '数据盘' + i"
         v-for="(disk, i) in modelValue"
         :key="i"
       >
@@ -158,7 +158,12 @@ watch(
 );
 
 function add() {
-  data.value?.push({ size: 20, deleteWithInstance: true, readonly: false });
+  data.value?.push({
+    diskType: diskTypeOptions?.value[0].id,
+    size: 20,
+    deleteWithInstance: true,
+    readonly: false,
+  });
 }
 
 function remove(index: number) {
@@ -181,7 +186,9 @@ function validate(): Promise<boolean> {
 
 const loading = ref<boolean>(false);
 onMounted(() => {
-  data.value = defaultDisks.value;
+  if (data.value.length == 0) {
+    data.value = defaultDisks.value;
+  }
 });
 
 defineExpose({

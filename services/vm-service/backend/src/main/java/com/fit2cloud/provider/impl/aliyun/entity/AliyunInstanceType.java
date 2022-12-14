@@ -15,6 +15,11 @@ public class AliyunInstanceType {
     private String instanceTypeFamily;
 
     /**
+     * 实例规格族名称
+     */
+    private String instanceTypeFamilyName;
+
+    /**
      * 实例规格（例如：s1.small.1）
      */
     private String instanceType;

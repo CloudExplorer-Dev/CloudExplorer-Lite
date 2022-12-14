@@ -80,10 +80,17 @@ onMounted(async () => {
             <div class="value">
               <div class="div-flex">
                 <span>{{ diskInfo.accountName }}</span>
-                <el-image
+                <!--                <el-image
                   style="margin-left: 10px"
                   :src="platformIcon[diskInfo.platform]?.icon"
-                ></el-image>
+                ></el-image>-->
+                <component
+                  style="width: 10px; height: 10px"
+                  :is="platformIcon[diskInfo?.platform]?.component"
+                  v-bind="platformIcon[diskInfo?.platform]?.icon"
+                  :color="platformIcon[diskInfo?.platform]?.color"
+                  size="10px"
+                ></component>
               </div>
             </div>
           </div>

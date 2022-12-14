@@ -12,6 +12,7 @@ import org.openstack4j.api.OSClient;
 import org.openstack4j.api.types.ServiceType;
 import org.openstack4j.model.compute.Address;
 import org.openstack4j.model.compute.HostAggregate;
+import org.openstack4j.model.compute.SecurityGroup;
 import org.openstack4j.model.compute.Server;
 import org.openstack4j.model.compute.ext.Hypervisor;
 import org.openstack4j.model.identity.v3.Role;
@@ -26,6 +27,7 @@ import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.regex.Matcher;
+import java.util.stream.Collectors;
 
 public class OpenStackUtils extends OpenStackBaseUtils {
 
@@ -107,7 +109,11 @@ public class OpenStackUtils extends OpenStackBaseUtils {
         }
 
         vm.setOsInfo(getOsInfo(image));
-
+        if(CollectionUtils.isNotEmpty(instance.getSecurityGroups())){
+            // TODO 安全组ID?
+            List<String> names = instance.getSecurityGroups().stream().map(SecurityGroup::getName).collect(Collectors.toList());
+            vm.setSecurityGroupIds(names);
+        }
         return vm;
     }
 

@@ -10,7 +10,16 @@ export function listJobs(
 ): Promise<Result<Page<JobInfo>>> {
   return get("api/jobs/page", req, loading);
 }
+
+export function getJobById(
+  id: string,
+  loading?: Ref<boolean>
+): Promise<Result<JobInfo>> {
+  return get("/api/jobs", { id: id }, loading);
+}
+
 const JobsApi = {
   listJobs,
+  getJobById,
 };
 export default JobsApi;

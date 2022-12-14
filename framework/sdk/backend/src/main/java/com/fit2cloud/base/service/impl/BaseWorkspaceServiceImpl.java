@@ -10,13 +10,13 @@ import com.fit2cloud.base.service.IBaseWorkspaceService;
 import com.fit2cloud.response.NodeTree;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * <p>
@@ -34,53 +34,56 @@ public class BaseWorkspaceServiceImpl extends ServiceImpl<BaseWorkspaceMapper, W
     public List<NodeTree> workspaceTree() {
         // 查询到所有的组织
         List<Organization> organizations = baseOrganizationMapper.selectList(new QueryWrapper<>());
-
         // 查询到所有的工作空间
         List<Workspace> workspaces = list();
 
-        return toTree(organizations,workspaces);
+        if(CollectionUtils.isEmpty(organizations) || CollectionUtils.isEmpty(workspaces)){
+            return new ArrayList<>();
+        }
+
+        Map<String, String> organizationIdMap = organizations.stream().filter(organization -> StringUtils.isNotEmpty(organization.getPid())).collect(Collectors.toMap(Organization::getId, Organization::getPid));
+        List<String> effectiveOrgIds = new ArrayList<>();
+        List<NodeTree> trees = new ArrayList<>();
+        workspaces.stream().forEach(workspace -> {
+            getWorkspacesOrg(workspace.getOrganizationId(), effectiveOrgIds, organizationIdMap);
+            trees.add(new NodeTree(workspace.getId(), workspace.getOrganizationId(), workspace.getName()));
+        });
+
+        organizations.stream().forEach(organization -> {
+            if (effectiveOrgIds.contains(organization.getId())) {
+                trees.add(new NodeTree(organization.getId(), organization.getPid(), organization.getName()));
+            }
+        });
+        return buildTree(trees);
     }
 
-    public static List<NodeTree> toTree(List<Organization> orgList, List<Workspace> workspaceList) {
-        List<NodeTree> nodeTrees = orgList.stream().map(organization -> {
-            NodeTree orgNodeTree = new NodeTree();
-            BeanUtils.copyProperties(organization, orgNodeTree);
-
-            //添加工作空间节点
-            if(CollectionUtils.isNotEmpty(workspaceList)){
-                for (Workspace workspace : workspaceList) {
-                    if (workspace.getOrganizationId().equals(orgNodeTree.getId())) {
-                        NodeTree workspaceNodeTree = new NodeTree();
-                        BeanUtils.copyProperties(workspace, workspaceNodeTree);
-                        if (CollectionUtils.isNotEmpty(orgNodeTree.getChildren())) {
-                            orgNodeTree.getChildren().add(workspaceNodeTree);
-                        } else {
-                            orgNodeTree.setChildren(new ArrayList<>() {{
-                                add(workspaceNodeTree);
-                            }});
-                        }
-                    }
-                }
+    private List<NodeTree> buildTree(List<NodeTree> lists) {
+        List<NodeTree> rootNodes = new ArrayList<>();
+        lists.forEach(node -> {
+            if (isParent(node.getPid())) {
+                rootNodes.add(node);
             }
-            return orgNodeTree;
-        }).filter(nodeTree->CollectionUtils.isNotEmpty(nodeTree.getChildren())).toList();
-
-        for (NodeTree nodeTree : nodeTrees) {
-            if (StringUtils.isNotEmpty(nodeTree.getPid())) {
-                Optional<NodeTree> first = nodeTrees.stream().filter(org -> {
-                    return org.getId().equals(nodeTree.getPid());
-                }).findFirst();
-                if (first.isPresent()) {
-                    if (CollectionUtils.isNotEmpty(first.get().getChildren())) {
-                        first.get().getChildren().add(nodeTree);
-                    } else {
-                        first.get().setChildren(new ArrayList<>() {{
-                            add(nodeTree);
-                        }});
+            lists.forEach(tNode -> {
+                if (node.getId().equalsIgnoreCase(tNode.getPid())) {
+                    if (node.getChildren() == null) {
+                        node.setChildren(new ArrayList<NodeTree>());
                     }
+                    node.getChildren().add(tNode);
                 }
-            }
+            });
+        });
+        return rootNodes;
+    }
+
+    private Boolean isParent(String pid) {
+        return StringUtils.isEmpty(pid);
+    }
+
+    private void getWorkspacesOrg(String orgId, List<String> result, Map<String, String> organizationIdMap) {
+        result.add(orgId);
+        String pid = organizationIdMap.get(orgId);
+        if (StringUtils.isNotEmpty(pid)) {
+            getWorkspacesOrg(pid, result, organizationIdMap);
         }
-        return nodeTrees.stream().filter(nodeTree -> StringUtils.isEmpty(nodeTree.getPid())).toList();
     }
 }

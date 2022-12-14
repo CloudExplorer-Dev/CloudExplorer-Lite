@@ -265,6 +265,18 @@ public class VmCloudServer implements Serializable {
     private String vmToolsStatus;
 
     /**
+     * 安全组
+     */
+    @TableField("security_group_ids")
+    private String securityGroupIds;
+
+    /**
+     * 计费类型
+     */
+    @TableField("instance_charge_type")
+    private String instanceChargeType;
+
+    /**
      * 创建时间
      */
     @TableField("create_time")

@@ -1,8 +1,6 @@
 package com.fit2cloud.common.es;
 
-import co.elastic.clients.elasticsearch._types.ElasticsearchException;
 import co.elastic.clients.elasticsearch._types.aggregations.ValueCountAggregate;
-import co.elastic.clients.elasticsearch.core.SearchRequest;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.fit2cloud.common.es.constants.EsErrorCodeConstants;
 import com.fit2cloud.common.exception.Fit2cloudException;
@@ -45,20 +43,6 @@ public class ElasticsearchProvide {
     }
 
     /**
-     * 默认参数
-     *
-     * @param index
-     * @return
-     */
-    public SearchRequest.Builder requestBuilder(String index) {
-        SearchRequest.Builder builder = new SearchRequest.Builder();
-        builder.index(index)
-                //过滤字段
-                .source(s -> s.filter(f -> f.excludes("@version", "@timestamp", "host", "tags")));
-        return builder;
-    }
-
-    /**
      * 条件分页查询
      *
      * @param index 索引
@@ -89,9 +73,6 @@ public class ElasticsearchProvide {
             page.setRecords(resultList);
 
             return page;
-        } catch (ElasticsearchException e) {
-            LogUtil.error("[ elasticsearch ]CODE[{}] >>{}", EsErrorCodeConstants.SEARCH_FAILED.getCode(), e.getMessage() + " " + e.getMessage());
-            throw new Fit2cloudException(e.status(), e.getMessage());
         } catch (Exception e) {
             LogUtil.error("[ elasticsearch ]CODE[{}] >>{}", EsErrorCodeConstants.SEARCH_FAILED.getCode(), e.getMessage() + " " + e.getMessage());
             throw new Fit2cloudException(100010, e.getMessage());
@@ -113,9 +94,6 @@ public class ElasticsearchProvide {
             List<T> resultList = searchHits.stream().map(SearchHit::getContent).toList();
             return resultList;
 
-        } catch (ElasticsearchException e) {
-            LogUtil.error("[ elasticsearch ]CODE[{}] >>{}", EsErrorCodeConstants.SEARCH_FAILED.getCode(), e.getMessage() + " " + e.getMessage());
-            throw new Fit2cloudException(e.status(), e.getMessage());
         } catch (Exception e) {
             LogUtil.error("[ elasticsearch ]CODE[{}] >>{}", EsErrorCodeConstants.SEARCH_FAILED.getCode(), e.getMessage() + " " + e.getMessage());
             throw new Fit2cloudException(100010, e.getMessage());
@@ -167,6 +145,24 @@ public class ElasticsearchProvide {
         } catch (Exception e) {
             System.out.println("数据批量插入ES失败:" + e.getMessage());
             throw e;
+        }
+    }
+
+    /**
+     * 删除index下数据
+     * clazz 数据对象
+     * @param index
+     * @param query
+     * @param clazz
+     */
+    public void delete(String index, Query query, Class<?> clazz){
+        IndexCoordinates indexCoordinates = IndexCoordinates.of(index);
+        // 删除索引
+        try {
+            elasticsearchTemplate.delete(query, clazz, indexCoordinates);
+        } catch (Exception e) {
+            LogUtil.error("[ delete elasticsearch ]CODE[{}] >>{}", EsErrorCodeConstants.SEARCH_FAILED.getCode(), e.getMessage() + " " + e.getMessage());
+            throw new Fit2cloudException(100010, e.getMessage());
         }
     }
 

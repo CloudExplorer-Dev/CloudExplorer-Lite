@@ -71,7 +71,7 @@ import { useRouter } from "vue-router";
 import type { FormRules, FormInstance } from "element-plus";
 import { ElMessage } from "element-plus";
 import organizationApi from "@/api/organization";
-import type { OrganizationTree, UpdateForm } from "@/api/organization/type";
+import type { OrganizationTree, OrgUpdateForm } from "@/api/organization/type";
 import { useI18n } from "vue-i18n";
 // 国际化实例
 const { t } = useI18n();
@@ -115,7 +115,7 @@ const rules = reactive<FormRules>({
   ],
 });
 // 表单数据
-const from = ref<UpdateForm>({
+const from = ref<OrgUpdateForm>({
   pid: undefined,
   name: "",
   id: "",

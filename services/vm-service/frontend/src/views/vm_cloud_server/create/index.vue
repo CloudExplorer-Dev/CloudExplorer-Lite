@@ -60,6 +60,7 @@
               v-model="data['0']"
               :all-data="formatData"
               footer-location-center="false"
+              @optionListRefresh="optionListRefresh"
             ></CeFormItem>
           </template>
         </div>

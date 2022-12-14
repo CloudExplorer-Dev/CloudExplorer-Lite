@@ -57,41 +57,52 @@ onMounted(() => {
                 label-class-name="label-class"
                 class-name="content-class"
                 :label="$t('vm_cloud_disk.label.disk_id', '磁盘ID') + ':'"
-                >{{ vmCloudDiskDetail?.diskId }}</el-descriptions-item
               >
+                {{ vmCloudDiskDetail?.diskId }}
+              </el-descriptions-item>
               <el-descriptions-item
                 label-class-name="label-class"
                 class-name="content-class"
                 :label="$t('commons.cloud_account.native', '云账号') + ':'"
               >
                 <div style="display: flex">
-                  <el-image
+                  <!--                  <el-image
                     style="margin-top: 3px; width: 16px; height: 16px"
                     :src="platformIcon[vmCloudDiskDetail?.platform]?.icon"
-                  ></el-image>
-                  <span style="margin-left: 10px">{{
-                    vmCloudDiskDetail?.accountName
-                  }}</span>
+                  ></el-image>-->
+                  <component
+                    style="margin-top: 3px; width: 16px; height: 16px"
+                    :is="platformIcon[vmCloudDiskDetail?.platform]?.component"
+                    v-bind="platformIcon[vmCloudDiskDetail?.platform]?.icon"
+                    :color="platformIcon[vmCloudDiskDetail?.platform]?.color"
+                    size="16px"
+                  ></component>
+                  <span style="margin-left: 10px">
+                    {{ vmCloudDiskDetail?.accountName }}
+                  </span>
                 </div>
               </el-descriptions-item>
               <el-descriptions-item
                 label-class-name="label-class"
                 class-name="content-class"
                 :label="$t('vm_cloud_disk.label.cloudVm', '云主机') + ':'"
-                >{{ vmCloudDiskDetail?.vmInstanceName }}</el-descriptions-item
               >
+                {{ vmCloudDiskDetail?.vmInstanceName }}
+              </el-descriptions-item>
               <el-descriptions-item
                 label-class-name="label-class"
                 class-name="content-class"
                 :label="$t('vm_cloud_disk.label.size', '大小') + ':'"
-                >{{ vmCloudDiskDetail?.size }}</el-descriptions-item
               >
+                {{ vmCloudDiskDetail?.size }}
+              </el-descriptions-item>
               <el-descriptions-item
                 label-class-name="label-class"
                 class-name="content-class"
                 :label="$t('commons.charge_type.native', '付费方式') + ':'"
-                >{{
-                  CHARGE_TYPE[vmCloudDiskDetail?.diskChargeType.toUpperCase()]
+              >
+                {{
+                  CHARGE_TYPE[vmCloudDiskDetail?.diskChargeType?.toUpperCase()]
                 }}
               </el-descriptions-item>
               <el-descriptions-item
@@ -100,7 +111,8 @@ onMounted(() => {
                 :label="
                   $t('vm_cloud_disk.label.disk_category', '磁盘种类') + ':'
                 "
-                >{{
+              >
+                {{
                   vmCloudDiskDetail?.bootable
                     ? t("vm_cloud_disk.label.system_disk")
                     : t("vm_cloud_disk.label.data_disk")
@@ -110,8 +122,9 @@ onMounted(() => {
                 label-class-name="label-class"
                 class-name="content-class"
                 :label="$t('vm_cloud_disk.label.disk_type', '磁盘类型') + ':'"
-                >{{ vmCloudDiskDetail?.diskType }}</el-descriptions-item
               >
+                {{ vmCloudDiskDetail?.diskType }}
+              </el-descriptions-item>
               <el-descriptions-item
                 label-class-name="label-class"
                 class-name="content-class"
@@ -119,7 +132,8 @@ onMounted(() => {
                   $t('vm_cloud_disk.label.delete_with_instance', '随实例删除') +
                   ':'
                 "
-                >{{
+              >
+                {{
                   vmCloudDiskDetail?.deleteWithInstance === "YES"
                     ? t("commons.btn.yes")
                     : t("commons.btn.no")
@@ -129,20 +143,23 @@ onMounted(() => {
                 label-class-name="label-class"
                 class-name="content-class"
                 :label="$t('commons.status', '状态') + ':'"
-                >{{ vmCloudDiskDetail?.status }}</el-descriptions-item
               >
+                {{ vmCloudDiskDetail?.status }}
+              </el-descriptions-item>
               <el-descriptions-item
                 label-class-name="label-class"
                 class-name="content-class"
                 :label="$t('vm_cloud_disk.label.mount_info', '挂载信息') + ':'"
-                >{{ vmCloudDiskDetail?.device }}</el-descriptions-item
               >
+                {{ vmCloudDiskDetail?.device }}
+              </el-descriptions-item>
               <el-descriptions-item
                 label-class-name="label-class"
                 class-name="content-class"
                 :label="$t('commons.workspace', '工作空间') + ':'"
-                >{{ vmCloudDiskDetail?.workspaceName }}</el-descriptions-item
               >
+                {{ vmCloudDiskDetail?.workspaceName }}
+              </el-descriptions-item>
               <el-descriptions-item
                 label-class-name="label-class"
                 class-name="content-class"
@@ -152,8 +169,9 @@ onMounted(() => {
                   $t('commons.cloud_account.data_center', '数据中心') +
                   ':'
                 "
-                >{{ vmCloudDiskDetail?.region }}</el-descriptions-item
               >
+                {{ vmCloudDiskDetail?.region }}
+              </el-descriptions-item>
               <el-descriptions-item
                 label-class-name="label-class"
                 class-name="content-class"
@@ -163,20 +181,23 @@ onMounted(() => {
                   $t('commons.cloud_account.cluster', '集群') +
                   ':'
                 "
-                >{{ vmCloudDiskDetail?.zone }}</el-descriptions-item
               >
+                {{ vmCloudDiskDetail?.zone }}
+              </el-descriptions-item>
               <el-descriptions-item
                 label-class-name="label-class"
                 class-name="content-class"
                 :label="$t('commons.create_time', '创建时间') + ':'"
-                >{{ vmCloudDiskDetail?.createTime }}</el-descriptions-item
               >
+                {{ vmCloudDiskDetail?.createTime }}
+              </el-descriptions-item>
               <el-descriptions-item
                 label-class-name="label-class"
                 class-name="content-class"
                 :label="$t('commons.cloud_server.applicant', '申请人') + ':'"
-                >-</el-descriptions-item
               >
+                -
+              </el-descriptions-item>
             </el-descriptions>
           </div>
         </template>

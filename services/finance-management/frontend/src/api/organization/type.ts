@@ -1,58 +1,8 @@
-interface Organization {
-  /**
-   *主键id
-   */
-  id: string;
-  /**
-   *组织名称
-   */
-  name: string;
-  /**
-   *描述
-   */
-  description?: string;
-  /**
-   *父id
-   */
-  pid?: string;
-}
-interface Workspace {
-  /**
-   *主键id
-   */
-  id: string;
-  /**
-   *工作空间名称
-   */
-  name: string;
-  /**
-   *工作空间描述
-   */
-  description: string;
-  /**
-   *组织id
-   */
-  organizationId: string;
-  /**
-   *创建时间
-   */
-  createTime: string;
-  /**
-   *修改时间
-   */
-  updateTime: string;
-}
-
-interface OrganizationTree extends Organization {
-  /**
-   * 子组织
-   */
-  children: Array<OrganizationTree>;
-  /**
-   * 工作空间
-   */
-  workspaces: Array<Workspace>;
-}
+import type {
+  Organization,
+  OrganizationTree,
+} from "@commons/api/organization/type";
+import type { Workspace } from "@commons/api/workspace/type";
 
 interface OrganizationWorkspace {
   /**

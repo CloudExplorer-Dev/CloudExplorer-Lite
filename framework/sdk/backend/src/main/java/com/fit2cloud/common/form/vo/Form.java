@@ -89,4 +89,8 @@ public class Form {
 
     private Integer footerLocation;
 
+    private String regexp;
+
+    private String regexpDescription;
+
 }

@@ -76,6 +76,9 @@ export interface FormView {
 
   confirmItemSpan?: number | null;
 
+  regexp?: string | null;
+
+  regexpDescription?: string | null;
   index: number;
   /**
    * 其他字段

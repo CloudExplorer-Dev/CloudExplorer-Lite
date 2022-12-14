@@ -9,9 +9,11 @@ import com.fit2cloud.common.form.annotaion.FormGroupInfo;
 import com.fit2cloud.common.form.annotaion.FormStepInfo;
 import com.fit2cloud.common.form.constants.InputType;
 import com.fit2cloud.provider.ICreateServerRequest;
+import com.fit2cloud.provider.entity.F2CNetwork;
 import com.fit2cloud.provider.impl.aliyun.AliyunCloudProvider;
+import com.fit2cloud.provider.impl.aliyun.constants.AliyunBandwidthType;
 import com.fit2cloud.provider.impl.aliyun.constants.AliyunChargeType;
-import com.fit2cloud.provider.impl.aliyun.constants.AliyunLoginType;
+import com.fit2cloud.provider.impl.aliyun.entity.AliyunInstanceType;
 import com.fit2cloud.provider.impl.aliyun.entity.AliyunPriceModuleConfig;
 import com.fit2cloud.service.impl.VmCloudImageServiceImpl;
 import lombok.Data;
@@ -40,18 +42,6 @@ import java.util.List;
 @FormGroupInfo(group = 8, name = "登录凭证")
 @FormGroupInfo(group = 9, name = "主机命名")
 public class AliyunVmCreateRequest extends AliyunBaseRequest implements ICreateServerRequest {
-
-    @Form(inputType = InputType.Number,
-            label = "购买数量",
-            unit = "台",
-            defaultValue = "1",
-            defaultJsonValue = true,
-            attrs = "{\"min\":1,\"max\":10,\"step\":1}",
-            confirmGroup = 1
-
-    )
-    private int count;
-
     private int index;
 
     /**
@@ -72,7 +62,30 @@ public class AliyunVmCreateRequest extends AliyunBaseRequest implements ICreateS
     )
     private String instanceChargeType;
 
+    @Form(inputType = InputType.SingleSelect,
+            label = "购买时长",
+            clazz = AliyunCloudProvider.class,
+            method = "getPeriodOption",
+            attrs = "{\"style\":\"width:120px\"}",
+            textField = "periodDisplayName",
+            valueField = "period",
+            defaultValue = "1",
+            confirmGroup = 1,
+            relationShows = "instanceChargeType",
+            relationShowValues = "PrePaid"
+    )
     private String periodNum;
+
+    @Form(inputType = InputType.Number,
+            label = "购买数量",
+            unit = "台",
+            defaultValue = "1",
+            defaultJsonValue = true,
+            attrs = "{\"min\":1,\"max\":10,\"step\":1}",
+            confirmGroup = 1
+
+    )
+    private int count;
 
     @Form(inputType = InputType.SingleSelect,
             label = "区域",
@@ -81,7 +94,6 @@ public class AliyunVmCreateRequest extends AliyunBaseRequest implements ICreateS
             textField = "localName",
             valueField = "regionId",
             defaultValue = "cn-qingdao",
-            relationTrigger = "instanceChargeType",
             step = 1,
             group = 2,
             confirmGroup = 0
@@ -137,14 +149,15 @@ public class AliyunVmCreateRequest extends AliyunBaseRequest implements ICreateS
             relationTrigger = "zoneId",
             step = 1,
             group = 4,
-            confirmGroup = 1
+            confirmGroup = 1,
+            confirmSpecial = true
     )
-    private String instanceType;
+    private AliyunInstanceType instanceTypeDTO;
 
     @Form(inputType = InputType.AliyunDiskConfigForm,
             clazz = AliyunCloudProvider.class,
             method = "getDiskTypes",
-            label = "磁盘配置",
+            label = "",
             defaultValue = "[]",
             defaultJsonValue = true,
             relationTrigger = "zoneId",
@@ -158,23 +171,24 @@ public class AliyunVmCreateRequest extends AliyunBaseRequest implements ICreateS
     @Form(inputType = InputType.AliyunNetConfigForm,
             clazz = AliyunCloudProvider.class,
             method = "getNetworks",
-            label = "选择网络",
+            label = "网络",
             textField = "name",
             valueField = "networkId",
             relationTrigger = "zoneId",
             step = 2,
             group = 6,
-            confirmGroup = 2
+            confirmGroup = 2,
+            confirmSpecial = true
     )
-    private String networkId; // 格式 [vpcId]vSwitchId
+    private F2CNetwork f2CNetwork;
 
     @Form(inputType = InputType.SingleSelect,
-            label = "选择安全组",
+            label = "安全组",
             clazz = AliyunCloudProvider.class,
-            method = "getSecurityGroupsByNetworkId",
+            method = "getSecurityGroups",
             textField = "securityGroupName",
             valueField = "securityGroupId",
-            relationTrigger = {"regionId", "networkId"},
+            relationTrigger = {"regionId", "f2CNetwork"},
             step = 2,
             group = 6,
             confirmGroup = 2
@@ -246,8 +260,7 @@ public class AliyunVmCreateRequest extends AliyunBaseRequest implements ICreateS
             relationShows = "loginType",
             relationShowValues = "password",
             step = 3,
-            group = 8,
-            confirmGroup = 3
+            group = 8
     )
     private String password;
 
@@ -276,6 +289,34 @@ public class AliyunVmCreateRequest extends AliyunBaseRequest implements ICreateS
     )
     private List<AliyunVmCreateRequest.ServerInfo> serverInfos;
 
+    @Form(inputType = InputType.LabelText,
+            label = "配置费用",
+            clazz = AliyunCloudProvider.class,
+            method = "calculateConfigPrice",
+            attrs = "{\"style\":\"color: red; font-size: large\"}",
+            confirmGroup = 1,
+            footerLocation = 1,
+            relationTrigger = {"hasPublicIp", "bandwidth", "bandwidthChargeType", "count", "instanceChargeType", "periodNum", "instanceTypeDTO", "osVersion", "disks"},
+            confirmSpecial = true,
+            required = false
+    )
+    private String configPrice;
+
+    @Form(inputType = InputType.LabelText,
+            label = "公网IP流量费用",
+            clazz = AliyunCloudProvider.class,
+            method = "calculateTrafficPrice",
+            attrs = "{\"style\":\"color: red; font-size: large\"}",
+            confirmGroup = 1,
+            footerLocation = 1,
+            relationShows = "bandwidthChargeType",
+            relationShowValues = "PayByTraffic",
+            relationTrigger = {"regionId","bandwidthChargeType","hasPublicIp"},
+            confirmSpecial = true,
+            required = false
+    )
+    private String trafficPrice;
+
     @Data
     @Accessors(chain = true)
     public static class ServerInfo {
@@ -290,17 +331,17 @@ public class AliyunVmCreateRequest extends AliyunBaseRequest implements ICreateS
         CreateInstanceRequest createInstanceRequest = new CreateInstanceRequest();
         createInstanceRequest.setInstanceChargeType(this.instanceChargeType);
         if (AliyunChargeType.PREPAID.getId().equalsIgnoreCase(instanceChargeType)) {
-            String[] periodInfo = periodNum.split("-");
-            createInstanceRequest.setPeriod(Integer.valueOf(periodInfo[0]));
-            createInstanceRequest.setPeriodUnit(periodInfo[1]);
+            String period = periodNum.indexOf("week") > 0 ? periodNum.substring(0, periodNum.indexOf("week")) : periodNum;
+            createInstanceRequest.setPeriod(Integer.valueOf(period));
+            createInstanceRequest.setPeriodUnit(periodNum.indexOf("week") > 0 ? "week" : "month");
             createInstanceRequest.setAutoRenew(true);
             createInstanceRequest.setAutoRenewPeriod(1);
         }
         createInstanceRequest.setRegionId(this.regionId);
         createInstanceRequest.setZoneId(zoneId);
-        createInstanceRequest.setInstanceType(this.instanceType);
+        createInstanceRequest.setInstanceType(this.instanceTypeDTO == null ? "" : this.instanceTypeDTO.getInstanceType());
         createInstanceRequest.setImageId(this.osVersion);
-        createInstanceRequest.setVSwitchId(this.networkId.substring(this.networkId.indexOf("]") + 1));
+        createInstanceRequest.setVSwitchId(this.f2CNetwork == null ? "" : f2CNetwork.getNetworkId());
         createInstanceRequest.setSecurityGroupId(this.securityGroupId);
         createInstanceRequest.setPassword(this.password);
 
@@ -332,10 +373,10 @@ public class AliyunVmCreateRequest extends AliyunBaseRequest implements ICreateS
             for (int i = 1; i < disks.size(); i++) {
                 AliyunCreateDiskForm otherDisk = disks.get(i);
                 CreateInstanceRequest.CreateInstanceRequestDataDisk dataDisk = new CreateInstanceRequest.CreateInstanceRequestDataDisk();
-                systemDisk.setCategory(otherDisk.getDiskType());
-                systemDisk.setSize(otherDisk.getSize().intValue());
-                systemDisk.setDiskName(otherDisk.getDiskName());
-                systemDisk.setDescription(otherDisk.getDescription());
+                dataDisk.setCategory(otherDisk.getDiskType());
+                dataDisk.setSize(otherDisk.getSize().intValue());
+                dataDisk.setDiskName(otherDisk.getDiskName());
+                dataDisk.setDescription(otherDisk.getDescription());
                 dataDisks.add(dataDisk);
             }
             createInstanceRequest.setDataDisk(dataDisks);
@@ -381,7 +422,7 @@ public class AliyunVmCreateRequest extends AliyunBaseRequest implements ICreateS
         }
 
         // 公网IP
-        if (hasPublicIp) {
+        if (hasPublicIp != null && hasPublicIp) {
             if ("PayByTraffic".equalsIgnoreCase(bandwidthChargeType)) {
                 GetPayAsYouGoPriceRequest.GetPayAsYouGoPriceRequestModuleList internetTrafficOutModule = new GetPayAsYouGoPriceRequest.GetPayAsYouGoPriceRequestModuleList()
                         .setModuleCode("InternetTrafficOut")
@@ -396,7 +437,7 @@ public class AliyunVmCreateRequest extends AliyunBaseRequest implements ICreateS
                 moduleList.add(internetMaxBandwidthOutModule);
             }
         }
-        return new ArrayList<>();
+        return moduleList;
     }
 
     /**
@@ -425,7 +466,7 @@ public class AliyunVmCreateRequest extends AliyunBaseRequest implements ICreateS
         // 数据盘
         List<String> dataConfigList = config.getDataDiskConfigList();
         if (CollectionUtils.isNotEmpty(dataConfigList)) {
-            for (int i = 1; i < dataConfigList.size(); i++) {
+            for (int i = 0; i < dataConfigList.size(); i++) {
                 GetSubscriptionPriceRequest.GetSubscriptionPriceRequestModuleList dataDiskModule = new GetSubscriptionPriceRequest.GetSubscriptionPriceRequestModuleList()
                         .setModuleCode("DataDisk")
                         .setConfig(dataConfigList.get(i));
@@ -434,13 +475,9 @@ public class AliyunVmCreateRequest extends AliyunBaseRequest implements ICreateS
         }
 
         // 公网IP
-        if (hasPublicIp) {
-            if ("PayByTraffic".equalsIgnoreCase(bandwidthChargeType)) {
-                GetSubscriptionPriceRequest.GetSubscriptionPriceRequestModuleList internetTrafficOutModule = new GetSubscriptionPriceRequest.GetSubscriptionPriceRequestModuleList()
-                        .setModuleCode("InternetTrafficOut")
-                        .setConfig(config.getPublicIpConfig());
-                moduleList.add(internetTrafficOutModule);
-            } else {
+        if (hasPublicIp != null && hasPublicIp) {
+            // 按流量计费只能通过后付费询价，此处查按带宽计费的费用
+            if (AliyunBandwidthType.PayByBandwidth.getId().equalsIgnoreCase(bandwidthChargeType)) {
                 GetSubscriptionPriceRequest.GetSubscriptionPriceRequestModuleList internetMaxBandwidthOutModule = new GetSubscriptionPriceRequest.GetSubscriptionPriceRequestModuleList()
                         .setModuleCode("InternetMaxBandwidthOut")
                         .setConfig(config.getPublicIpConfig());
@@ -456,30 +493,31 @@ public class AliyunVmCreateRequest extends AliyunBaseRequest implements ICreateS
 
         // 实例类型
         String imageOs = os.indexOf("win") > 0 ? "windows" : "linux";
-        String instanceTypeConfig = "ImageOs:" + imageOs +
-                "IoOptimized:none" +
-                "InstanceTypeFamily:" + "" +
-                "Region:" + regionId +
-                "InstanceType:" + instanceType;
-        config.setInstanceTypeConfig(instanceTypeConfig);
+        if (instanceTypeDTO != null) {
+            String instanceTypeConfig = "ImageOs:" + imageOs + "," +
+                    "IoOptimized:none" + "," +
+                    "Region:" + regionId + "," +
+                    "InstanceTypeFamily:" + instanceTypeDTO.getInstanceTypeFamily() + "," +
+                    "InstanceType:" + instanceTypeDTO.getInstanceType();
+            config.setInstanceTypeConfig(instanceTypeConfig);
+        }
 
         // 磁盘
         if (CollectionUtils.isNotEmpty(disks)) {
             // 系统盘
             AliyunCreateDiskForm systemDisk = disks.get(0);
-            String systemDiskConfig = "SystemDisk.PerformanceLevel:PL1" +
-                    "DataDisk.PerformanceLevel:PL1" +
-                    "Region:" + regionId +
-                    "SystemDisk.Category:" + systemDisk.getDiskType() +
+            String systemDiskConfig = "SystemDisk.PerformanceLevel:PL1" + "," +
+                    "Region:" + regionId + "," +
+                    "SystemDisk.Category:" + systemDisk.getDiskType() + "," +
                     "SystemDisk.Size:" + systemDisk.getSize();
             config.setSystemDiskConfig(systemDiskConfig);
 
             // 数据盘
             List<String> dataDiskConfigList = new ArrayList();
             for (int i = 1; i < disks.size(); i++) {
-                String dataDiskConfig = "DataDisk.PerformanceLevel:PL1" +
-                        "Region:" + regionId +
-                        "DataDisk.Category:" + disks.get(i).getDiskType() +
+                String dataDiskConfig = "DataDisk.PerformanceLevel:PL1" + "," +
+                        "Region:" + regionId + "," +
+                        "DataDisk.Category:" + disks.get(i).getDiskType() + "," +
                         "DataDisk.Size:" + disks.get(i).getSize();
                 dataDiskConfigList.add(dataDiskConfig);
             }
@@ -487,14 +525,16 @@ public class AliyunVmCreateRequest extends AliyunBaseRequest implements ICreateS
         }
 
         // 公网IP
-        if (hasPublicIp) {
-            if ("PayByTraffic".equalsIgnoreCase(bandwidthChargeType)) {
-                // 公网流量：按流量计费永远显示为：0.800/GB
-                String internetTrafficOutConfig = "Region:" + regionId;
+        if (hasPublicIp != null && hasPublicIp) {
+            // 按流量计费只能通过后付费询价
+            if (AliyunBandwidthType.PayByTraffic.getId().equalsIgnoreCase(bandwidthChargeType)) {
+                // 公网流量：按流量计费 XX元/GB
+                String internetTrafficOutConfig = "Region:" + regionId + "," +
+                        "InternetTrafficOut:1";
                 config.setPublicIpConfig(internetTrafficOutConfig);
             } else {
                 // 公网带宽：InternetMaxBandwidthOut 单位 KBPS;bandwidth 单位 MBPS
-                String internetMaxBandwidthOutConfig = "Region:" + regionId +
+                String internetMaxBandwidthOutConfig = "Region:" + regionId + "," +
                         "InternetMaxBandwidthOut:" + Integer.valueOf(bandwidth) * 1024;
                 config.setPublicIpConfig(internetMaxBandwidthOutConfig);
             }

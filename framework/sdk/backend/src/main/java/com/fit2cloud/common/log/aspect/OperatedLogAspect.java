@@ -132,7 +132,7 @@ public class OperatedLogAspect {
                 extractRequestInfo(response, errorResult, logVO, paramStr);
                 // 上下文设置
                 setMDC(logVO);
-                LogUtil.info(logVO);
+                LogUtil.info(JsonUtil.toJSONString(logVO));
             }
         } catch (Exception e) {
             LogUtil.error(e.getMessage());
@@ -156,14 +156,7 @@ public class OperatedLogAspect {
         logVO.setMethod(request.getMethod());
         logVO.setParams(paramStr);
         logVO.setSourceIp(IpUtil.getIpAddress(request));
-        // 请求结果
-        ObjectNode reqObj = new ObjectNode(null);
-        if(errorResult.getCode()==200){
-            if(StringUtils.isNotEmpty(response)){
-                reqObj = Objects.nonNull(JsonUtil.parseObject(response)) ? JsonUtil.parseObject(response) : new ObjectNode(null);
-                logVO.setResponse(reqObj.toString());
-            }
-        }else{
+        if(errorResult.getCode()!=200){
             logVO.setResponse(errorResult.getMessage());
         }
     }

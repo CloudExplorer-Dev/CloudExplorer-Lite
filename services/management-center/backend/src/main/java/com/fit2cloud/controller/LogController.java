@@ -1,5 +1,7 @@
 package com.fit2cloud.controller;
 
+import com.fit2cloud.base.entity.SystemParameter;
+import com.fit2cloud.base.service.IBaseSystemParameterService;
 import com.fit2cloud.common.log.annotation.OperatedLog;
 import com.fit2cloud.common.log.constants.OperatedTypeEnum;
 import com.fit2cloud.common.log.constants.ResourceTypeEnum;
@@ -11,8 +13,10 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import wiremock.org.apache.commons.lang3.StringUtils;
 
 import javax.annotation.Resource;
 
@@ -27,6 +31,8 @@ public class LogController {
 
     @Resource
     private ILogService logService;
+    @Resource
+    private IBaseSystemParameterService baseSystemParameterService;
 
     @GetMapping("/system/list")
     @ApiOperation(value = "系统日志搜索", notes = "系统日志搜索")
@@ -40,5 +46,22 @@ public class LogController {
     @OperatedLog(resourceType = ResourceTypeEnum.LOG,operated = OperatedTypeEnum.SEARCH,param = "#pageOperatedLogRequest")
     public ResultHolder<Object> apiLogs(@Validated PageOperatedLogRequest pageOperatedLogRequest) {
         return ResultHolder.success(logService.operatedLogs(pageOperatedLogRequest));
+    }
+
+    @GetMapping("keep/months")
+    public ResultHolder getKeepMonths(SystemParameter systemParameter) {
+        String value = baseSystemParameterService.getValue(systemParameter.getParamKey());
+        if (StringUtils.isNotBlank(value)) {
+            return ResultHolder.success(value);
+        }
+        // 如果数据库里没有这个值，默认3
+        return ResultHolder.success("3");
+    }
+
+    @PostMapping("keep/months")
+    public ResultHolder saveKeepMonths(SystemParameter systemParameter) {
+        systemParameter.setParamKey(systemParameter.getParamKey());
+        baseSystemParameterService.saveValue(systemParameter);
+        return ResultHolder.success(true);
     }
 }

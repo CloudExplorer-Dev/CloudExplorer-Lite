@@ -7,6 +7,7 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.fit2cloud.base.entity.Organization;
 import com.fit2cloud.base.entity.Workspace;
+import com.fit2cloud.base.service.IBaseUserRoleService;
 import com.fit2cloud.base.service.IBaseWorkspaceService;
 import com.fit2cloud.common.exception.Fit2cloudException;
 import com.fit2cloud.common.utils.ColumnNameUtil;
@@ -49,6 +50,9 @@ public class OrganizationServiceImpl extends ServiceImpl<OrganizationMapper, Org
     SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
     @Resource
     private IBaseWorkspaceService workspaceService;
+
+    @Resource
+    private IBaseUserRoleService userRoleService;
 
     @Override
     public IPage<Organization> pageOrganization(PageOrganizationRequest request) {
@@ -155,6 +159,9 @@ public class OrganizationServiceImpl extends ServiceImpl<OrganizationMapper, Org
             Organization organization = getById(id);
             throw new Fit2cloudException(ErrorCodeConstants.ORGANIZATION_EXIST_WORKSPACE_CANNOT_DELETE.getCode(), ErrorCodeConstants.ORGANIZATION_EXIST_WORKSPACE_CANNOT_DELETE.getMessage(new Object[]{organization.getName()}));
         }
+
+        // 删除相应的用户角色关系
+        userRoleService.deleteUserRoleByOrgId(id);
         return removeById(id);
     }
 

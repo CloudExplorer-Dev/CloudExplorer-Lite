@@ -1,8 +1,8 @@
-import { get, post, del, put } from "@commons/request";
+import { get, post } from "@commons/request";
 import type { Ref } from "vue";
 import type Result from "@commons/request/Result";
 import type { SimpleMap } from "@commons/api/base/type";
-import type { BillView } from "@/api/bill_view/type";
+
 import type {
   BillDimensionSetting,
   BillAuthorizeRule,

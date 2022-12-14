@@ -1,15 +1,15 @@
 <template>
   <template v-if="!confirm">
-    <div style="font-size: 12px">
+    <div style="margin-bottom: 10px">
       <el-input
         v-model="searchName"
-        placeholder="关键字查"
+        suffix-icon="Search"
+        size="32"
+        placeholder="输入关键字搜索"
         style="width: 20%"
         @keyup="handleQueryClick"
-      />
-      <el-button type="primary" plain @click="handleQueryClick"
-        >查 询</el-button
       >
+      </el-input>
     </div>
     <el-form
       ref="ruleFormRef"
@@ -28,6 +28,9 @@
             @current-change="handleCurrentChange"
             v-loading="instanceTypeLoading"
           >
+            <template #empty>
+              <span> 所选可用区暂无可用实例规格</span>
+            </template>
             <el-table-column width="55">
               <template #default="scope">
                 <el-radio :label="scope.row.specName">
@@ -38,7 +41,6 @@
             <el-table-column property="specType" label="规格类型" />
             <el-table-column property="specName" label="规格名称" />
             <el-table-column property="instanceSpec" label="实例规格" />
-            <el-table-column property="amountText" label="预估费用" />
           </el-table>
         </el-radio-group>
       </el-form-item>

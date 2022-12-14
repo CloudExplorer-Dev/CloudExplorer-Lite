@@ -1,23 +1,18 @@
 package com.fit2cloud.service.impl;
 
-import com.baomidou.mybatisplus.core.conditions.Wrapper;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
-import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import com.fit2cloud.base.entity.UserRole;
+import com.fit2cloud.base.service.IBaseUserRoleService;
 import com.fit2cloud.common.exception.Fit2cloudException;
 import com.fit2cloud.common.utils.JsonUtil;
 import com.fit2cloud.constants.ErrorCodeConstants;
-import com.fit2cloud.controller.request.OrganizationBatchRequest;
 import com.fit2cloud.controller.request.workspace.PageWorkspaceRequest;
 import com.fit2cloud.controller.request.workspace.WorkspaceBatchCreateRequest;
 import com.fit2cloud.controller.request.workspace.WorkspaceRequest;
-import com.fit2cloud.base.entity.Organization;
 import com.fit2cloud.dao.entity.Workspace;
-import com.fit2cloud.dao.mapper.OrganizationMapper;
 import com.fit2cloud.dao.mapper.WorkspaceMapper;
 import com.fit2cloud.dto.WorkspaceDTO;
 import com.fit2cloud.service.IOrganizationService;
@@ -40,11 +35,11 @@ import java.util.stream.Collectors;
 
 /**
  * <p>
- *  服务实现类
+ * 服务实现类
  * </p>
  *
  * @author fit2cloud
- * @since 
+ * @since
  */
 @Service
 public class WorkspaceServiceImpl extends ServiceImpl<WorkspaceMapper, Workspace> implements IWorkspaceService {
@@ -54,15 +49,19 @@ public class WorkspaceServiceImpl extends ServiceImpl<WorkspaceMapper, Workspace
 
     @Resource
     private IOrganizationService organizationService;
+
+    @Resource
+    private IBaseUserRoleService userRoleService;
+
     @Override
     public Boolean create(WorkspaceRequest request) {
-        List<Workspace> list = list(new LambdaQueryWrapper<Workspace>().eq(Workspace::getName,request.getName()));
-        if(CollectionUtils.isNotEmpty(list)){
+        List<Workspace> list = list(new LambdaQueryWrapper<Workspace>().eq(Workspace::getName, request.getName()));
+        if (CollectionUtils.isNotEmpty(list)) {
             throw new Fit2cloudException(ErrorCodeConstants.WORKSPACE_NAME_REPEAT.getCode(),
-                    messageSource.getMessage(ErrorCodeConstants.WORKSPACE_NAME_REPEAT.getMessage(),null, LocaleContextHolder.getLocale()));
+                    messageSource.getMessage(ErrorCodeConstants.WORKSPACE_NAME_REPEAT.getMessage(), null, LocaleContextHolder.getLocale()));
         }
         Workspace workspace = new Workspace();
-        BeanUtils.copyProperties(request,workspace);
+        BeanUtils.copyProperties(request, workspace);
         workspace.setCreateTime(LocalDateTime.now());
         workspace.setUpdateTime(LocalDateTime.now());
         return save(workspace);
@@ -71,38 +70,38 @@ public class WorkspaceServiceImpl extends ServiceImpl<WorkspaceMapper, Workspace
     @Override
     public Boolean update(WorkspaceRequest request) {
         List<Workspace> list = list(new LambdaQueryWrapper<Workspace>()
-                .eq(Workspace::getName,request.getName())
-                .ne(Workspace::getId,request.getId()));
-        if(CollectionUtils.isNotEmpty(list)){
+                .eq(Workspace::getName, request.getName())
+                .ne(Workspace::getId, request.getId()));
+        if (CollectionUtils.isNotEmpty(list)) {
             throw new Fit2cloudException(ErrorCodeConstants.WORKSPACE_NAME_REPEAT.getCode(),
-                    messageSource.getMessage(ErrorCodeConstants.WORKSPACE_NAME_REPEAT.getMessage(),null,LocaleContextHolder.getLocale()));
+                    messageSource.getMessage(ErrorCodeConstants.WORKSPACE_NAME_REPEAT.getMessage(), null, LocaleContextHolder.getLocale()));
         }
         Workspace workspace = getById(request.getId());
-        if(Optional.ofNullable(workspace).isEmpty()){
+        if (Optional.ofNullable(workspace).isEmpty()) {
             throw new Fit2cloudException(ErrorCodeConstants.WORKSPACE_IS_NOT_EXIST.getCode(),
-                    messageSource.getMessage(ErrorCodeConstants.WORKSPACE_IS_NOT_EXIST.getMessage(),null,LocaleContextHolder.getLocale()));
+                    messageSource.getMessage(ErrorCodeConstants.WORKSPACE_IS_NOT_EXIST.getMessage(), null, LocaleContextHolder.getLocale()));
         }
-        BeanUtils.copyProperties(request,workspace);
+        BeanUtils.copyProperties(request, workspace);
         workspace.setUpdateTime(LocalDateTime.now());
         return updateById(workspace);
     }
 
     /**
-    * @description: TODO 查询还需要优化，根据时间、组织查询还没有弄
-    * @author jianneng
-    * @date: 2022/9/1 10:14
-    */
+     * @description: TODO 查询还需要优化，根据时间、组织查询还没有弄
+     * @author jianneng
+     * @date: 2022/9/1 10:14
+     */
     @Override
     public IPage<WorkspaceDTO> pageWorkspace(PageWorkspaceRequest request) {
         SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
         Page<Workspace> page = new Page<>(request.getCurrentPage(), request.getPageSize(), true);
         QueryWrapper<Workspace> queryWrapper = new QueryWrapper<>();
         //根据组织名称模糊查询
-        if(StringUtils.isNotEmpty(request.getOrganizationName())){
-            queryWrapper.like("organizationName",request.getOrganizationName());
+        if (StringUtils.isNotEmpty(request.getOrganizationName())) {
+            queryWrapper.like("organizationName", request.getOrganizationName());
         }
-        if(StringUtils.isNotEmpty(request.getName())){
-            queryWrapper.like("_name",request.getName());
+        if (StringUtils.isNotEmpty(request.getName())) {
+            queryWrapper.like("_name", request.getName());
         }
         if (CollectionUtils.isNotEmpty(request.getUpdateTime())) {
             queryWrapper.between("update_time", simpleDateFormat.format(request.getUpdateTime().get(0)), simpleDateFormat.format(request.getUpdateTime().get(1)));
@@ -122,7 +121,7 @@ public class WorkspaceServiceImpl extends ServiceImpl<WorkspaceMapper, Workspace
     public WorkspaceDTO getOne(String id, String name) {
         if (StringUtils.isEmpty(id) && StringUtils.isEmpty(name)) {
             throw new Fit2cloudException(ErrorCodeConstants.WORKSPACE_ID_AND_NAME_REQUIRED.getCode(),
-                    messageSource.getMessage(ErrorCodeConstants.WORKSPACE_ID_AND_NAME_REQUIRED.getMessage(),null,LocaleContextHolder.getLocale()));
+                    messageSource.getMessage(ErrorCodeConstants.WORKSPACE_ID_AND_NAME_REQUIRED.getMessage(), null, LocaleContextHolder.getLocale()));
         }
         LambdaQueryWrapper<Workspace> wrapper = new LambdaQueryWrapper<>();
         if (StringUtils.isNotEmpty(id)) {
@@ -133,13 +132,20 @@ public class WorkspaceServiceImpl extends ServiceImpl<WorkspaceMapper, Workspace
         }
         Workspace workspace = getOne(wrapper);
         WorkspaceDTO workspaceDTO = new WorkspaceDTO();
-        BeanUtils.copyProperties(workspace,workspaceDTO);
+        BeanUtils.copyProperties(workspace, workspaceDTO);
         return workspaceDTO;
+    }
+
+    @Override
+    public Boolean delete(String id) {
+        userRoleService.deleteUserRoleByWorkspaceId(id);
+        return removeById(id);
     }
 
     @Override
     public Boolean batchDelete(List<Workspace> workspaces) {
         List<String> ids = Optional.ofNullable(workspaces).orElse(new ArrayList<>()).stream().map(Workspace::getId).collect(Collectors.toList());
+        ids.forEach(id -> userRoleService.deleteUserRoleByWorkspaceId(id));
         return removeBatchByIds(ids);
     }
 

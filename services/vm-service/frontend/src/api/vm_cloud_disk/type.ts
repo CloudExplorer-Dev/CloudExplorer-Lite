@@ -24,7 +24,7 @@ interface VmCloudDiskVO {
   updateTime?: string;
   workspaceName?: string;
   accountName?: string;
-  platform?: string;
+  platform: string;
 }
 interface ListVmCloudDiskRequest {
   pageSize: number;

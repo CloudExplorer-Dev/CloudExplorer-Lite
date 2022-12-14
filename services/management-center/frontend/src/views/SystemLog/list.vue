@@ -6,24 +6,11 @@
     :data="tableData"
     :tableConfig="tableConfig"
     row-key="id"
-    table-layout="auto"
     height="100%"
   >
     <template #toolbar>
       <el-button type="primary" @click="clearPolicy">清空策略</el-button>
     </template>
-    <!--    <el-table-column prop="message" label="日志详情">-->
-    <!--      <template #default="scope">-->
-    <!--        <el-tooltip-->
-    <!--          class="item"-->
-    <!--          effect="dark"-->
-    <!--          :content="scope.row.message"-->
-    <!--          placement="top"-->
-    <!--        >-->
-    <!--          <p class="text-overflow">{{ scope.row.message }}</p>-->
-    <!--        </el-tooltip>-->
-    <!--      </template>-->
-    <!--    </el-table-column>-->
     <el-table-column prop="module" label="模块"></el-table-column>
     <el-table-column
       prop="level"
@@ -50,17 +37,34 @@
       :label="$t('commons.create_time')"
       sortable
     />
-    <fu-table-operations v-bind="tableConfig.tableOperations" fix />
+    <el-table-column prop="message" label="日志详情" width="300px">
+      <template #default="scope">
+        <p class="text-overflow">{{ scope.row.message }}</p>
+        <a @click="showLogInfoDialog(scope.row)">更多详情</a>
+      </template>
+    </el-table-column>
   </ce-table>
   <LogDetail ref="logInfoRef" />
+  <el-dialog
+    v-model="clearLogConfigDialogVisible"
+    title="保存日志策略"
+    width="25%"
+    destroy-on-close
+    :close-on-click-modal="false"
+  >
+    <ClearLogConfig
+      :paramValue="paramValue"
+      :paramKey="'log.keep.system.months'"
+      v-model:visible="clearLogConfigDialogVisible"
+    />
+  </el-dialog>
 </template>
 
 <script setup lang="ts">
 import { ref, onMounted } from "vue";
 import SysLogApi from "@/api/sys_log/index";
 import type { SystemLogVO } from "@/api/sys_log/type";
-
-import { ElMessage } from "element-plus/es";
+import ClearLogConfig from "@/views/OperatedLog/ClearLogConfig.vue";
 import {
   PaginationConfig,
   TableConfig,
@@ -77,6 +81,13 @@ const columns = ref([]);
 const tableData = ref<Array<SystemLogVO>>();
 const logInfoRef = ref();
 const tableLoading = ref<boolean>(false);
+const paramValue = ref<string>();
+const clearLogConfigDialogVisible = ref<boolean>(false);
+
+const showClearLogConfigDialog = () => {
+  paramValue.value = "3";
+  clearLogConfigDialogVisible.value = true;
+};
 const showLogInfoDialog = (v: OperatedLogVO) => {
   logInfoRef.value.dialogVisible = true;
   logInfoRef.value.logInfo = v;
@@ -125,25 +136,17 @@ const tableConfig = ref<TableConfig>({
     ],
   },
   paginationConfig: new PaginationConfig(),
-  tableOperations: new TableOperations([
-    TableOperations.buildButtons().newInstance(
-      t("log_manage.view_details", "查看详情"),
-      "primary",
-      showLogInfoDialog,
-      "InfoFilled"
-    ),
-  ]),
+  tableOperations: new TableOperations([]),
 });
 
 const clearPolicy = () => {
-  //
-  ElMessage.success("敬请期待！");
+  showClearLogConfigDialog();
 };
 </script>
 
 <style lang="scss" scoped>
 .text-overflow {
-  max-width: 100px;
+  max-width: 300px;
   overflow: hidden;
   white-space: nowrap;
   text-overflow: ellipsis;

@@ -2,7 +2,7 @@
 <script setup lang="ts">
 import { ref, onMounted } from "vue";
 import WorkspaceApi from "@/api/workspace/index";
-import type { Workspace } from "@/api/workspace/type";
+import type { WorkspaceDetail } from "@/api/workspace/type";
 import { useRouter } from "vue-router";
 import { ElMessageBox, ElMessage } from "element-plus/es";
 import {
@@ -16,10 +16,10 @@ import { useI18n } from "vue-i18n";
 const { t } = useI18n();
 const useRoute = useRouter();
 const columns = ref([]);
-const tableData = ref<Array<Workspace>>();
+const tableData = ref<Array<WorkspaceDetail>>();
 const tableLoading = ref<boolean>(false);
 //列表选中数据
-const multipleSelection = ref<Array<Workspace>>();
+const multipleSelection = ref<Array<WorkspaceDetail>>();
 
 onMounted(() => {
   search(new TableSearch());
@@ -47,7 +47,7 @@ const search = (condition: TableSearch) => {
 };
 
 //列表选中事件
-const handleSelectionChange = (val: Workspace[]) => {
+const handleSelectionChange = (val: WorkspaceDetail[]) => {
   multipleSelection.value = val;
 };
 
@@ -81,7 +81,7 @@ const batchDelete = () => {
   });
 };
 //单个删除
-const deleteOne = (row: Workspace) => {
+const deleteOne = (row: WorkspaceDetail) => {
   ElMessageBox.confirm(
     t("commons.message_box.confirm_delete"),
     t("commons.message_box.prompt"),
@@ -112,7 +112,7 @@ const create = () => {
 };
 
 //编辑
-const edit = (row: Workspace) => {
+const edit = (row: WorkspaceDetail) => {
   useRoute.push({
     path: useRoute.currentRoute.value.path.replace(
       "/list",
@@ -171,7 +171,6 @@ const tableConfig = ref<TableConfig>({
     row-key="id"
     @selection-change="handleSelectionChange"
     height="100%"
-    table-layout="auto"
   >
     <template #toolbar>
       <el-button type="primary" @click="create">{{

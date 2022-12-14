@@ -41,7 +41,7 @@ public class VsphereSyncCloudApi {
     private static final long MB = 1024 * 1024;
     private static final long GB = MB * 1024;
 
-    public static final String VALID_HOST_REGEX = "^(?=.{1,255}$)[0-9A-Za-z](?:(?:[0-9A-Za-z]|\\b-){0,61}[0-9A-Za-z])?(?:\\.[0-9A-Za-z](?:(?:[0-9A-Za-z]|\\b-){0,61}[0-9A-Za-z])?)*\\.?$";
+    public static final String VALID_HOST_REGEX = "^[A-Za-z]+[A-Za-z0-9\\.\\-]*[A-Za-z0-9]$";
 
 
     /**
@@ -214,7 +214,7 @@ public class VsphereSyncCloudApi {
                         for (Datastore ds : list) {
                             Datacenter dc = client.getDataCenter(ds);
                             F2CDatastore f2cDs = new F2CDatastore();
-                            f2cDs.setDataCenterId(dc.getMOR().getVal());
+                            f2cDs.setDataCenterId(dc.getName());
                             f2cDs.setDataCenterName(dc.getName());
                             f2cDs.setClusterId(cluster.getMOR().getVal());
                             f2cDs.setClusterName(cluster.getName());
@@ -233,7 +233,8 @@ public class VsphereSyncCloudApi {
             for (Datastore ds : list) {
                 boolean exist = false;
                 for (F2CDatastore f2CDataStore : datastoreList) {
-                    if (StringUtils.equals(f2CDataStore.getDataStoreId(), ds.getName())) {
+                    // TODO 这个地方应该是用ID进行比较，而不是名字
+                    if (StringUtils.equals(f2CDataStore.getDataStoreId(), ds.getMOR().getVal())) {
                         exist = true;
                         break;
                     }
@@ -248,7 +249,7 @@ public class VsphereSyncCloudApi {
                 f2cDs.setDataCenterId(dc.getName());
                 f2cDs.setDataCenterName(dc.getName());
                 f2cDs.setCapacity(summary.getCapacity() / GB);
-                f2cDs.setDataStoreId(ds.getName());
+                f2cDs.setDataStoreId(ds.getMOR().getVal());
                 f2cDs.setDataStoreName(ds.getName());
                 f2cDs.setFreeSpace(summary.getFreeSpace() / GB);
                 f2cDs.setType(summary.getType());
