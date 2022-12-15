@@ -11,7 +11,6 @@ public enum AliyunOSType {
     WindowsServer(" Windows Server"),
     RedHat("Red Hat"),
     SUSE("SUSE"),
-    Linux("Linux"),
     Ubuntu("Ubuntu"),
     Debian("Debian"),
     Fedora("Fedora"),

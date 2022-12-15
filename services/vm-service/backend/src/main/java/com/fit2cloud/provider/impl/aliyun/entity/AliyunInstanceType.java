@@ -29,4 +29,8 @@ public class AliyunInstanceType {
      */
     private String cpuMemory;
 
+    private int cpu;
+
+    private int memory;
+
 }
