@@ -34,7 +34,7 @@ public class JwtTokenAuthFilter extends BasicAuthenticationFilter {
 
     private final IBaseUserRoleService userRoleService;
 
-    public final static String CE_SOURCE_TOKEN = "CE_SOURCE";
+    public final static String CE_SOURCE_TOKEN = "CE-SOURCE";
 
     public JwtTokenAuthFilter(AuthenticationManager authenticationManager, BasePermissionService basePermissionService, IBaseUserRoleService userRoleService) {
         super(authenticationManager);
