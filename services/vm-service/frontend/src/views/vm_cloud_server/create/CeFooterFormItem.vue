@@ -101,12 +101,12 @@ function getDefaultValue(formItem: FormView): any {
 }
 
 function checkShow(currentItem: any): any {
-  let isShow = currentItem.label;
+  let isShow = true;
   if (currentItem.relationShows && currentItem.relationShowValues) {
     isShow = currentItem.relationShows.every((i: string) =>
-      currentItem.relationShowValues.includes(
-        _.get(props.allData, i) === true ? "true" : _.get(props.allData, i)
-      )
+        (checkShow(_.find(props.allFormViewData, (formViewData) => formViewData.field === i)) &&
+        currentItem.relationShowValues.includes(
+        _.get(props.allData, i) === true ? "true" : _.get(props.allData, i)))
     );
   }
   return isShow;
