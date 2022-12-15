@@ -9,6 +9,7 @@ import { useUserStore } from "@commons/stores/modules/user";
 import Config from "@commons/utils/constants";
 import { setToken } from "@commons/utils/authStorage";
 import _ from "lodash";
+import route from "@commons/router";
 
 const axiosConfig = {
   baseURL: import.meta.env.VITE_BASE_PATH,
@@ -87,7 +88,10 @@ instance.interceptors.response.use(
     return response;
   },
   (err: any) => {
-    if (err.response?.status === 401) {
+    if (
+      err.response?.status === 401 &&
+      route.getRoute()?.router?.currentRoute?.value.name !== "signin" //已经是登录页面了没必要再跳转了
+    ) {
       //401时清空token
       const userStore = useUserStore(store);
       userStore.doLogout(
