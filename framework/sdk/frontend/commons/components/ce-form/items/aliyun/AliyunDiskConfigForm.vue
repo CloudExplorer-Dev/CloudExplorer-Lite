@@ -45,10 +45,15 @@
               <span>磁盘大小：</span>
               <el-input-number
                 v-model="obj.size"
-                :min="_.defaultTo(defaultDisks[index]?.size, 20)"
+                :min="
+                  index === 0
+                    ? (_.defaultTo(defaultDisks[index]?.size < 40), 40)
+                    : 20
+                "
                 :step="1"
                 required
                 style="width: 50%"
+                value-on-clear="min"
               />
             </div>
           </div>
@@ -129,7 +134,7 @@ const defaultDisks = computed(() => {
       diskType: "cloud_essd",
       size: 40,
       deleteWithInstance: true,
-      readonly: false,
+      readonly: true,
     },
   ];
 });
@@ -162,7 +167,7 @@ function add() {
     diskType: diskTypeOptions?.value[0].id,
     size: 20,
     deleteWithInstance: true,
-    readonly: false,
+    readonly: true,
   });
 }
 

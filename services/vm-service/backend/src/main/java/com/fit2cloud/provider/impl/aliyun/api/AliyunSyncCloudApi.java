@@ -28,6 +28,7 @@ import com.fit2cloud.provider.entity.F2CVirtualMachine;
 import com.fit2cloud.provider.entity.request.GetMetricsRequest;
 import com.fit2cloud.provider.impl.aliyun.constants.AliyunChargeType;
 import com.fit2cloud.provider.impl.aliyun.constants.AliyunDiskType;
+import com.fit2cloud.provider.impl.aliyun.constants.AliyunOSType;
 import com.fit2cloud.provider.impl.aliyun.constants.AliyunPerfMetricConstants;
 import com.fit2cloud.provider.impl.aliyun.entity.AliyunInstanceType;
 import com.fit2cloud.provider.impl.aliyun.entity.credential.AliyunVmCredential;
@@ -67,9 +68,7 @@ public class AliyunSyncCloudApi {
             DescribeInstancesRequest describeInstancesRequest = new DescribeInstancesRequest();
             describeInstancesRequest.setRegionId(req.getRegionId());
             Collection<String> instancesList = new ArrayList<>();
-            if (instanceId != null) {
-                instancesList.add(instanceId);
-            }
+            Optional.ofNullable(instanceId).ifPresent(theInstanceId -> instancesList.add(theInstanceId));
             describeInstancesRequest.setInstanceIds(new Gson().toJson(instancesList));
             int count = 0;
             boolean instanceCreated = false;
@@ -445,16 +444,21 @@ public class AliyunSyncCloudApi {
         final List<String> instanceTypeIdsFinal = instanceTypeIds;
         List<AliyunInstanceType> result = allInstanceTypes.stream().filter(instanceType -> instanceTypeIdsFinal.contains(instanceType.getInstanceTypeId())).map((instanceType) -> {
             AliyunInstanceType resultType = new AliyunInstanceType();
-            resultType.setInstanceType(instanceType.getInstanceTypeId());
-            resultType.setCpuMemory(instanceType.getCpuCoreCount() + "vCPU" + instanceType.getMemorySize() + "GB");
-            resultType.setInstanceTypeFamily(instanceType.getInstanceTypeFamily());
+            // 应要求过滤掉小于1G内存的实例规格
+            if (instanceType.getMemorySize() >= 1) {
+                resultType.setInstanceType(instanceType.getInstanceTypeId());
+                resultType.setCpuMemory(instanceType.getCpuCoreCount() + "vCPU" + instanceType.getMemorySize().intValue() + "GB");
+                resultType.setCpu(instanceType.getCpuCoreCount());
+                resultType.setMemory(instanceType.getMemorySize().intValue());
+                resultType.setInstanceTypeFamily(instanceType.getInstanceTypeFamily());
+                resultType.setInstanceTypeFamilyName(instanceType.getInstanceTypeFamily());
+            }
             return resultType;
         }).toList();
 
-        // 增加规格族名称
-        appendInstanceTypeFamilyName(result, req);
-
-        return result.stream().filter(instanceType -> StringUtils.isNotBlank(instanceType.getInstanceTypeFamilyName())).collect(Collectors.toList());
+        return result.stream().filter(instanceType -> instanceType.getInstanceTypeFamily() != null).
+                sorted(Comparator.comparing(AliyunInstanceType::getInstanceTypeFamily).thenComparing(AliyunInstanceType::getCpu).thenComparing(AliyunInstanceType::getMemory))
+                .collect(Collectors.toList());
     }
 
     /**
@@ -484,12 +488,61 @@ public class AliyunSyncCloudApi {
         if (CollectionUtils.isNotEmpty(attributeValue)) {
             for (int i = 0; i < instanceTypes.size(); i++) {
                 for (int j = 0; j < attributeValue.size(); j++) {
-                    if (instanceTypes.get(i).getInstanceTypeFamily().equalsIgnoreCase(attributeValue.get(j).value)) {
+                    instanceTypes.get(i).setInstanceTypeFamilyName(instanceTypes.get(i).getInstanceTypeFamily());// 查不到名字则显示实例族
+                    if (instanceTypes.get(i).getInstanceTypeFamily() != null && instanceTypes.get(i).getInstanceTypeFamily().equalsIgnoreCase(attributeValue.get(j).value)) {
                         instanceTypes.get(i).setInstanceTypeFamilyName(attributeValue.get(j).name);
                         break;
                     }
                 }
             }
+        }
+    }
+
+    /**
+     * 获取可选镜像
+     *
+     * @param req
+     * @return
+     */
+    public static List<F2CImage> getImages(AliyunGetImageRequest req) {
+        AliyunVmCredential credential = JsonUtil.parseObject(req.getCredential(), AliyunVmCredential.class);
+        Client client = credential.getClientByRegion(req.getRegionId());
+
+        DescribeImagesRequest describeImagesRequest = req.toDescribeImagesRequest();
+        describeImagesRequest.setPageSize(PageUtil.DefaultPageSize);
+        describeImagesRequest.setPageNumber(PageUtil.DefaultCurrentPage);
+        List<F2CImage> f2CImages;
+        try {
+            List<DescribeImagesResponseBody.DescribeImagesResponseBodyImagesImage> images = PageUtil.page(describeImagesRequest, request -> describeImages(client, request), res -> res.getBody().images.image, (request, res) -> res.getBody().getPageSize() <= res.getBody().images.image.size(), request -> request.setPageNumber(request.getPageNumber() + 1));
+            String os = req.getOs();
+            if (os != null) {
+                if (AliyunOSType.WindowsServer.getDisplayValue().equalsIgnoreCase(os)) {
+                    images = images.stream().filter(image -> image.getOSType().equalsIgnoreCase("windows")).collect(Collectors.toList());
+                } else {
+                    images = images.stream().filter(image -> image.getOSName().indexOf(req.getOs()) > -1).collect(Collectors.toList());
+                }
+            }
+            f2CImages = images.stream().map(image -> AliyunMappingUtil.toF2CImage(image, req.getRegionId())).collect(Collectors.toList());
+        } catch (Exception e) {
+            throw new RuntimeException(e.getMessage(), e);
+        }
+        return f2CImages;
+    }
+
+    /**
+     * 获取镜像
+     *
+     * @param client 客户端
+     * @param req    请求参数
+     * @return 镜像数据返回值
+     */
+    private static DescribeImagesResponse describeImages(Client client, DescribeImagesRequest req) {
+        try {
+            return client.describeImages(req);
+        } catch (Exception e) {
+            SkipPageException.throwSkip(e);
+            ReTryException.throwReTry(e);
+            throw new RuntimeException("Failed to get images." + e.getMessage(), e);
         }
     }
 
@@ -631,7 +684,7 @@ public class AliyunSyncCloudApi {
                 try {
                     GetSubscriptionPriceResponse res = client.getSubscriptionPrice(getSubscriptionPriceRequest);
                     if ("Success".equalsIgnoreCase(res.getBody().getCode())) {
-                        result = String.format("%.2f", res.getBody().getData().tradePrice) + "元";
+                        result = String.format("%.3f", res.getBody().getData().tradePrice) + "元";
                     }
                 } catch (Exception e) {
                     throw new RuntimeException(e.getMessage(), e);
@@ -654,7 +707,7 @@ public class AliyunSyncCloudApi {
                                 price = price + moduleDetail.get(i).getCostAfterDiscount();
                             }
                         }
-                        result = String.format("%.2f", price * req.getCount()) + "元/小时";
+                        result = String.format("%.3f", price * req.getCount()) + "元/小时";
                     }
                 } catch (Exception e) {
                     throw new RuntimeException(e.getMessage(), e);
@@ -1021,7 +1074,16 @@ public class AliyunSyncCloudApi {
                 CreateDiskRequest createDiskRequest = request.toCreateDiskRequest(chargeType);
                 CreateDiskResponse createDiskResponse = client.createDisk(createDiskRequest);
                 F2CDisk createdDisk = checkDiskStatus(client, request.toDescribeDisksRequest(createDiskResponse.getBody().diskId), F2CDiskStatus.AVAILABLE);
-                if (isAttached && "PostPaid".equals(chargeType)) {
+
+                // 后付费的机器需要单独挂载
+//                if (isAttached && AliyunChargeType.POSTPAID.getId().equalsIgnoreCase(chargeType)) {
+//                    AliyunAttachDiskRequest attachDiskRequest = new AliyunAttachDiskRequest();
+//                    BeanUtils.copyProperties(request, attachDiskRequest);
+//                    attachDiskRequest.setDiskId(createdDisk.getDiskId());
+//                    attachDisk(attachDiskRequest);
+//                }
+
+                if (isAttached) {
                     AliyunAttachDiskRequest attachDiskRequest = new AliyunAttachDiskRequest();
                     BeanUtils.copyProperties(request, attachDiskRequest);
                     attachDiskRequest.setDiskId(createdDisk.getDiskId());

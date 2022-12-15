@@ -68,6 +68,7 @@
                 :step="1"
                 required
                 style="width: 50%"
+                value-on-clear="min"
               />
             </div>
           </div>
@@ -84,8 +85,8 @@
 
         <div style="width: 100%; height: 30px; text-align: center">
           <el-checkbox v-model="obj.deleteWithInstance" :disabled="obj.readonly"
-            >随实例删除</el-checkbox
-          >
+            >随实例删除
+          </el-checkbox>
         </div>
       </div>
       <div class="vs-disk-config-card">
@@ -94,8 +95,8 @@
             style="margin: auto"
             class="el-button--primary"
             @click="add"
-            >添加磁盘</el-button
-          >
+            >添加磁盘
+          </el-button>
         </el-card>
       </div>
     </div>
@@ -166,8 +167,8 @@ const dataDiskTypeOptions = computed(() => {
 const defaultDisks = computed(() => {
   return [
     {
-      diskType: "CLOUD_SSD",
-      size: 40,
+      diskType: "CLOUD_PREMIUM",
+      size: 50,
       deleteWithInstance: true,
       readonly: true,
     },
@@ -176,12 +177,18 @@ const defaultDisks = computed(() => {
 
 const minSize = computed(() => (disk: DiskTypeConfig, index: number) => {
   const minSize = ref(20);
-  if (disk && index) {
+  if (disk && index != null) {
     // 系统盘
     if (index === 0) {
       systemDiskTypeOptions.value.forEach((diskTypeOption: DiskTypeConfig) => {
         if (diskTypeOption.diskType === disk.diskType) {
           minSize.value = diskTypeOption.minDiskSize;
+        }
+        if (props.allData.os?.toLowerCase().indexOf("windows") > -1) {
+          minSize.value = 50;
+        }
+        if (disk.size < minSize.value) {
+          disk.size = minSize.value;
         }
       });
     } else {
@@ -197,7 +204,7 @@ const minSize = computed(() => (disk: DiskTypeConfig, index: number) => {
 
 const maxSize = computed(() => (disk: DiskTypeConfig, index: number) => {
   const maxSize = ref(1024);
-  if (disk && index) {
+  if (disk && index != null) {
     // 系统盘
     if (index === 0) {
       systemDiskTypeOptions.value.forEach((diskTypeOption: DiskTypeConfig) => {
@@ -257,6 +264,25 @@ function remove(index: number) {
   _.remove(data.value, (n, i) => index === i);
 }
 
+/**
+ * 校验方法
+ */
+function validate(): Promise<boolean> {
+  return new Promise((resolve, reject) => {
+    if (props.confirm || data.value.length === 0) {
+      return reject(false);
+    }
+    return _.every(data.value, (disk) => disk.size > 0)
+      ? resolve(true)
+      : reject(false);
+  });
+}
+
+defineExpose({
+  validate,
+  field: props.field,
+});
+
 onMounted(() => {
   if (data.value.length == 0) {
     data.value = defaultDisks.value;
@@ -269,18 +295,22 @@ onMounted(() => {
   width: 300px;
   margin-right: 20px;
   margin-bottom: 30px;
+
   .card {
     height: 150px;
+
     .title {
       font-size: 14px;
       font-weight: bold;
     }
+
     .remove-button {
       position: absolute;
       top: 0;
       right: 0;
     }
   }
+
   .add-card {
     display: flex;
     align-items: center;

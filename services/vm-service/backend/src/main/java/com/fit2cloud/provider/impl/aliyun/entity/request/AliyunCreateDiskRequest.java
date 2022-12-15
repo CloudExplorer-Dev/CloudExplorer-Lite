@@ -29,12 +29,7 @@ public class AliyunCreateDiskRequest extends AliyunBaseRequest {
         createDiskRequest.setDiskName(this.diskName);
         createDiskRequest.setSize( this.size);
         createDiskRequest.setDiskCategory(this.diskType);
-        //自动挂载 (zoneId 和instanceId不可同时存在 且只有预付费的才能自动挂载)
-        if (this.isAttached && "PrePaid".equals(chargeType)) {
-            createDiskRequest.setInstanceId(this.instanceUuid);
-        } else {
-            createDiskRequest.setZoneId(this.zone);
-        }
+        createDiskRequest.setZoneId(this.zone);
         return createDiskRequest;
     }
 

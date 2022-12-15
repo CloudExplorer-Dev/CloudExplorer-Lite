@@ -239,6 +239,49 @@ public class TencetSyncCloudApi {
     }
 
     /**
+     * 获取可选镜像
+     *
+     * @param req
+     * @return
+     */
+    public static List<F2CImage> getImages(TencentGetImageRequest req) {
+        TencentVmCredential tencentVmCredential = JsonUtil.parseObject(req.getCredential(), TencentVmCredential.class);
+        CvmClient cvmClient = tencentVmCredential.getCvmClient(req.getRegionId());
+        DescribeImagesRequest describeImagesRequest = req.toDescribeImagesRequest();
+        describeImagesRequest.setOffset(0l);
+        describeImagesRequest.setLimit(100l);
+
+        try {
+            List<Image> images = PageUtil.page(describeImagesRequest, request -> describeImages(cvmClient, request), res -> Arrays.stream(res.getImageSet()).toList(),
+                    (request, res) -> request.getLimit() <= res.getImageSet().length,
+                    request -> request.setOffset(request.getOffset() + request.getLimit()));
+
+            // 此处再根据 OS 过滤一遍的原因是API返回的数据不完全准确
+            List<F2CImage> f2CImages = images.stream().filter(image -> "Normal".equalsIgnoreCase(image.getImageState()) && image.getPlatform().equalsIgnoreCase(req.getOs()))
+                    .map(image -> TencentMappingUtil.toF2CImage(image)).collect(Collectors.toList());
+
+            return f2CImages;
+        } catch (Exception e) {
+            throw new RuntimeException(e.getMessage(), e);
+        }
+    }
+
+    /**
+     * 根据条件查询镜像列表
+     *
+     * @param cvmClient
+     * @param request
+     * @return
+     */
+    private static DescribeImagesResponse describeImages(CvmClient cvmClient, DescribeImagesRequest request) {
+        try {
+            return cvmClient.DescribeImages(request);
+        } catch (TencentCloudSDKException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    /**
      * 获取系统盘类型
      *
      * @param req 请求数据
@@ -454,7 +497,7 @@ public class TencetSyncCloudApi {
      * @return
      */
     public static String calculateConfigPrice(TencentVmCreateRequest req) {
-      return calculatePrice(req, false);
+        return calculatePrice(req, false);
     }
 
     /**
@@ -1094,8 +1137,8 @@ public class TencetSyncCloudApi {
             GetMonitorDataRequest request = getShowMetricDataRequest(getMetricsRequest);
             MonitorClient monitorClient = credential.getMonitorClient(getMetricsRequest.getRegionId());
             ///TODO 由于我们只查询一个小时内的数据，时间间隔是60s,所以查询每台机器的监控数据的时候最多不过60条数据，所以不需要分页查询
-            result.addAll(getVmPerfMetric(monitorClient,request,getMetricsRequest));
-            result.addAll(getDiskPerfMetric(monitorClient,request,getMetricsRequest));
+            result.addAll(getVmPerfMetric(monitorClient, request, getMetricsRequest));
+            result.addAll(getDiskPerfMetric(monitorClient, request, getMetricsRequest));
         } catch (Exception e) {
             throw new Fit2cloudException(100021, "获取监控数据失败-" + getMetricsRequest.getRegionId() + "-" + e.getMessage());
         }
@@ -1140,17 +1183,17 @@ public class TencetSyncCloudApi {
         ListDiskRequest listDiskRequest = new ListDiskRequest();
         listDiskRequest.setCredential(getMetricsRequest.getCredential());
         listDiskRequest.setRegionId(getMetricsRequest.getRegionId());
-        List<F2CDisk> ids = listDisk(listDiskRequest).stream().filter(disk->disk.isBootable() && StringUtils.isNotEmpty(disk.getInstanceUuid())).collect(Collectors.toList());
+        List<F2CDisk> ids = listDisk(listDiskRequest).stream().filter(disk -> disk.isBootable() && StringUtils.isNotEmpty(disk.getInstanceUuid())).collect(Collectors.toList());
         if (ids.size() == 0) {
             return result;
         }
         req.setNamespace("QCE/BLOCK_STORAGE");
-        ids.forEach(disk->{
+        ids.forEach(disk -> {
             Arrays.stream(TencentPerfMetricConstants.CloudDiskPerfMetricEnum.values()).sorted().forEach(perfMetric -> {
                 req.setMetricName(perfMetric.getMetricName());
-                req.setInstances(getInstance("diskId",disk.getDiskId()));
-                Map<Long, BigDecimal> dataMap = getMonitorData(monitorClient,req);
-                addMonitorData(result,dataMap,F2CEntityType.VIRTUAL_MACHINE.name(),perfMetric.getUnit(),getMetricsRequest.getPeriod(),perfMetric.name(),disk.getInstanceUuid());
+                req.setInstances(getInstance("diskId", disk.getDiskId()));
+                Map<Long, BigDecimal> dataMap = getMonitorData(monitorClient, req);
+                addMonitorData(result, dataMap, F2CEntityType.VIRTUAL_MACHINE.name(), perfMetric.getUnit(), getMetricsRequest.getPeriod(), perfMetric.name(), disk.getInstanceUuid());
             });
         });
         return result;

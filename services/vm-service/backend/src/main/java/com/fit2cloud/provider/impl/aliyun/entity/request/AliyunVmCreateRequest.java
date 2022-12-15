@@ -13,9 +13,9 @@ import com.fit2cloud.provider.entity.F2CNetwork;
 import com.fit2cloud.provider.impl.aliyun.AliyunCloudProvider;
 import com.fit2cloud.provider.impl.aliyun.constants.AliyunBandwidthType;
 import com.fit2cloud.provider.impl.aliyun.constants.AliyunChargeType;
+import com.fit2cloud.provider.impl.aliyun.constants.AliyunDiskType;
 import com.fit2cloud.provider.impl.aliyun.entity.AliyunInstanceType;
 import com.fit2cloud.provider.impl.aliyun.entity.AliyunPriceModuleConfig;
-import com.fit2cloud.service.impl.VmCloudImageServiceImpl;
 import lombok.Data;
 import lombok.experimental.Accessors;
 import org.apache.commons.collections4.CollectionUtils;
@@ -34,8 +34,8 @@ import java.util.List;
 @FormConfirmInfo(group = 3, name = "系统配置")
 @FormGroupInfo(group = 1, name = "付费方式")
 @FormGroupInfo(group = 2, name = "区域")
-@FormGroupInfo(group = 3, name = "操作系统")
-@FormGroupInfo(group = 4, name = "实例规格", description = "购买数量为多台时，实例规格一样，若想要不同实例规格需要分多次申请。")
+@FormGroupInfo(group = 3, name = "实例规格", description = "购买数量为多台时，实例规格一样，若想要不同实例规格需要分多次申请。")
+@FormGroupInfo(group = 4, name = "操作系统")
 @FormGroupInfo(group = 5, name = "磁盘配置", description = "若需要新增数据盘，申请后需要挂载和初始化后才能正常使用。")
 @FormGroupInfo(group = 6, name = "网络与安全")
 @FormGroupInfo(group = 7, name = "公网IP")
@@ -115,6 +115,18 @@ public class AliyunVmCreateRequest extends AliyunBaseRequest implements ICreateS
     )
     private String zoneId;
 
+    @Form(inputType = InputType.AliyunInstanceTypeForm,
+            clazz = AliyunCloudProvider.class,
+            method = "getInstanceTypes",
+            label = "",
+            relationTrigger = "zoneId",
+            step = 1,
+            group = 3,
+            confirmGroup = 1,
+            confirmSpecial = true
+    )
+    private AliyunInstanceType instanceTypeDTO;
+
     @Form(inputType = InputType.SingleSelect,
             label = "操作系统",
             clazz = AliyunCloudProvider.class,
@@ -123,36 +135,23 @@ public class AliyunVmCreateRequest extends AliyunBaseRequest implements ICreateS
             valueField = "id",
             defaultValue = "CentOS",
             step = 1,
-            group = 3,
+            group = 4,
             confirmGroup = 1
     )
     private String os;
 
     @Form(inputType = InputType.SingleSelect,
             label = "操作系统版本",
-            clazz = VmCloudImageServiceImpl.class,
-            method = "listVmCloudImage",
-            serviceMethod = true,
+            clazz = AliyunCloudProvider.class,
+            method = "getImages",
             textField = "os",
-            valueField = "imageId",
-            relationTrigger = "os",
+            valueField = "id",
+            relationTrigger = {"instanceTypeDTO", "os"},
             step = 1,
-            group = 3,
+            group = 4,
             confirmGroup = 1
     )
     private String osVersion;
-
-    @Form(inputType = InputType.AliyunInstanceTypeForm,
-            clazz = AliyunCloudProvider.class,
-            method = "getInstanceTypes",
-            label = "",
-            relationTrigger = "zoneId",
-            step = 1,
-            group = 4,
-            confirmGroup = 1,
-            confirmSpecial = true
-    )
-    private AliyunInstanceType instanceTypeDTO;
 
     @Form(inputType = InputType.AliyunDiskConfigForm,
             clazz = AliyunCloudProvider.class,
@@ -245,10 +244,16 @@ public class AliyunVmCreateRequest extends AliyunBaseRequest implements ICreateS
     )
     private String loginType;
 
-    @Form(inputType = InputType.Text,
+    @Form(inputType = InputType.LabelText,
             label = "登录名",
+            clazz = AliyunCloudProvider.class,
+            method = "getLoginUser",
             relationShows = "loginType",
             relationShowValues = "password",
+            regexp = "^(?!/)(?![\\da-z]+$)(?![\\dA-Z]+$)(?![\\d\\(\\)`~!@#\\$%\\^&\\*-\\+=_\\|\\{\\}\\[\\]:;'<>,\\.\\?/]+$)(?![a-zA-Z]+$)(?![a-z\\(\\)`~!@#\\$%\\^&\\*-\\+=_\\|\\{\\}\\[\\]:;'<>,\\.\\?/]+$)(?![A-Z\\(\\)`~!@#\\$%\\^&\\*-\\+=_\\|\\{\\}\\[\\]:;'<>,\\.\\?/]+$)[\\da-zA-z\\(\\)`~!@#\\$%\\^&\\*-\\+=_\\|\\{\\}\\[\\]:;'<>,\\.\\?/]{8,30}$",
+            regexpDescription = "在 8 ～ 30 位字符数以内，不能以\" / \"开头，至少包含其中三项(小写字母 a ~ z、大写字母 A ～ Z、数字 0 ～ 9、()`~!@#$%^&*-+=_|{}[]:;'<>,.?/)\n",
+            relationTrigger = "os",
+            required = false,
             step = 3,
             group = 8,
             confirmGroup = 3
@@ -279,7 +284,7 @@ public class AliyunVmCreateRequest extends AliyunBaseRequest implements ICreateS
 //    )
 //    private String keyPairName;
 
-    @Form(inputType = InputType.VsphereServerInfoForm,
+    @Form(inputType = InputType.AliyunServerInfoForm,
             defaultValue = "[]",
             defaultJsonValue = true,
             step = 3,
@@ -311,7 +316,7 @@ public class AliyunVmCreateRequest extends AliyunBaseRequest implements ICreateS
             footerLocation = 1,
             relationShows = "bandwidthChargeType",
             relationShowValues = "PayByTraffic",
-            relationTrigger = {"regionId","bandwidthChargeType","hasPublicIp"},
+            relationTrigger = {"regionId", "bandwidthChargeType", "hasPublicIp"},
             confirmSpecial = true,
             required = false
     )
@@ -412,7 +417,7 @@ public class AliyunVmCreateRequest extends AliyunBaseRequest implements ICreateS
         // 数据盘
         List<String> dataConfigList = config.getDataDiskConfigList();
         if (CollectionUtils.isNotEmpty(dataConfigList)) {
-            for (int i = 1; i < dataConfigList.size(); i++) {
+            for (int i = 0; i < dataConfigList.size(); i++) {
                 GetPayAsYouGoPriceRequest.GetPayAsYouGoPriceRequestModuleList dataDiskModule = new GetPayAsYouGoPriceRequest.GetPayAsYouGoPriceRequestModuleList()
                         .setModuleCode("DataDisk")
                         .setPriceType("Hour")
@@ -506,19 +511,23 @@ public class AliyunVmCreateRequest extends AliyunBaseRequest implements ICreateS
         if (CollectionUtils.isNotEmpty(disks)) {
             // 系统盘
             AliyunCreateDiskForm systemDisk = disks.get(0);
-            String systemDiskConfig = "SystemDisk.PerformanceLevel:PL1" + "," +
-                    "Region:" + regionId + "," +
+            String systemDiskConfig = "Region:" + regionId + "," +
                     "SystemDisk.Category:" + systemDisk.getDiskType() + "," +
                     "SystemDisk.Size:" + systemDisk.getSize();
+            if (AliyunDiskType.CLOUD_ESSD.getId().equalsIgnoreCase(systemDisk.getDiskType())) {
+                systemDiskConfig = systemDiskConfig + "," + "SystemDisk.PerformanceLevel:PL1";
+            }
             config.setSystemDiskConfig(systemDiskConfig);
 
             // 数据盘
             List<String> dataDiskConfigList = new ArrayList();
             for (int i = 1; i < disks.size(); i++) {
-                String dataDiskConfig = "DataDisk.PerformanceLevel:PL1" + "," +
-                        "Region:" + regionId + "," +
+                String dataDiskConfig = "Region:" + regionId + "," +
                         "DataDisk.Category:" + disks.get(i).getDiskType() + "," +
                         "DataDisk.Size:" + disks.get(i).getSize();
+                if (AliyunDiskType.CLOUD_ESSD.getId().equalsIgnoreCase(disks.get(i).getDiskType())) {
+                    dataDiskConfig = dataDiskConfig + "," + "DataDisk.PerformanceLevel:PL1";
+                }
                 dataDiskConfigList.add(dataDiskConfig);
             }
             config.setDataDiskConfigList(dataDiskConfigList);

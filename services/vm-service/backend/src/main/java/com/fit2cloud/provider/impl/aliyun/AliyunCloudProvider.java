@@ -75,6 +75,7 @@ public class AliyunCloudProvider extends AbstractCloudProvider<AliyunVmCredentia
 
     /**
      * 获取付费周期
+     *
      * @param req
      * @return
      */
@@ -154,6 +155,16 @@ public class AliyunCloudProvider extends AbstractCloudProvider<AliyunVmCredentia
     }
 
     /**
+     * 获取实例类型
+     *
+     * @param req
+     * @return
+     */
+    public List<F2CImage> getImages(String req) {
+        return AliyunSyncCloudApi.getImages(JsonUtil.parseObject(req, AliyunGetImageRequest.class));
+    }
+
+    /**
      * 获取登录方式
      *
      * @param req
@@ -171,6 +182,20 @@ public class AliyunCloudProvider extends AbstractCloudProvider<AliyunVmCredentia
     }
 
     /**
+     * 获取登录用户
+     *
+     * @param req
+     * @return
+     */
+    public String getLoginUser(String req) {
+        AliyunVmCreateRequest request = JsonUtil.parseObject(req, AliyunVmCreateRequest.class);
+        if (request.getOs() != null && request.getOs().toLowerCase().indexOf("windows") > -1) {
+            return "Administrator";
+        }
+        return "root";
+    }
+
+    /**
      * 获取密钥对
      *
      * @param req
@@ -182,22 +207,23 @@ public class AliyunCloudProvider extends AbstractCloudProvider<AliyunVmCredentia
 
     /**
      * 基础配置询价
+     *
      * @param req
      * @return
      */
-    public String calculateConfigPrice(String req){
+    public String calculateConfigPrice(String req) {
         return AliyunSyncCloudApi.calculateConfigPrice(JsonUtil.parseObject(req, AliyunVmCreateRequest.class));
     }
 
     /**
      * 公网IP流量配置询价
+     *
      * @param req
      * @return
      */
-    public String calculateTrafficPrice(String req){
+    public String calculateTrafficPrice(String req) {
         return AliyunSyncCloudApi.calculateTrafficPrice(JsonUtil.parseObject(req, AliyunVmCreateRequest.class));
     }
-
     // For Create VM [END]
 
     @Override
