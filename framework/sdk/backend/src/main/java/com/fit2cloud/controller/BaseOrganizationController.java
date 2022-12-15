@@ -1,7 +1,10 @@
 package com.fit2cloud.controller;
 
 import com.fit2cloud.base.service.IBaseOrganizationService;
+import com.fit2cloud.common.constants.RoleConstants;
+import com.fit2cloud.common.utils.CurrentUserUtils;
 import com.fit2cloud.controller.handler.ResultHolder;
+import com.fit2cloud.dto.UserRoleDto;
 import com.fit2cloud.response.OrganizationTree;
 import com.fit2cloud.response.SourceTreeObject;
 import io.swagger.annotations.Api;
@@ -15,6 +18,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import javax.annotation.Resource;
 import java.util.List;
+import java.util.Map;
 
 /**
  * @Author:张少虎
@@ -23,7 +27,7 @@ import java.util.List;
  * @注释: 组织对应接口
  */
 @RestController
-@RequestMapping("/api/base/organization")
+@RequestMapping("/api/organization")
 @Api("公共组织相关接口")
 @Validated
 public class BaseOrganizationController {
@@ -39,7 +43,8 @@ public class BaseOrganizationController {
     @GetMapping("/sourceTree")
     @ApiOperation(value = "获取组织架构树", notes = "获取组织架构树")
     public ResultHolder<List<SourceTreeObject>> sourceTree() {
-        return ResultHolder.success(organizationService.sourceTree());
+        Map<RoleConstants.ROLE, List<UserRoleDto>> roleListMap = CurrentUserUtils.getUser().getRoleMap();
+        return ResultHolder.success(organizationService.sourceTree(roleListMap));
     }
 
 }

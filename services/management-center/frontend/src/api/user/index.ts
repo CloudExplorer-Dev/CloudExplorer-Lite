@@ -37,7 +37,7 @@ export const getRoleInfo = (userId: string) => {
 };
 
 export const workspaceTree = (): Promise<Result<Array<any>>> => {
-  return get("/api/base/workspace/tree");
+  return get("/api/workspace/tree");
 };
 
 /**

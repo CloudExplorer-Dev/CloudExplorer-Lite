@@ -11,12 +11,12 @@ export function tree(
   loading?: Ref<boolean>
 ): Promise<Result<Array<OrganizationTree>>> {
   const type: string = treeType === undefined ? "ORGANIZATION" : treeType;
-  return get("/api/base/organization/tree/" + type, {}, loading);
+  return get("/api/organization/tree/" + type, {}, loading);
 }
 export function sourceTree(
   loading?: Ref<boolean>
 ): Promise<Result<Array<SourceTreeObject>>> {
-  return get("/api/base/organization/sourceTree", {}, loading);
+  return get("/api/organization/sourceTree", {}, loading);
 }
 
 const BaseOrganizationApi = {

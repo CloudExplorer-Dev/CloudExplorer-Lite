@@ -12,8 +12,9 @@ import org.springframework.web.bind.annotation.RestController;
 
 import javax.annotation.Resource;
 import java.util.List;
+
 @RestController
-@RequestMapping("/api/base/workspace")
+@RequestMapping("/api/workspace")
 @Api("公共工作空间相关接口")
 @Validated
 public class BaseWorkspaceController {
