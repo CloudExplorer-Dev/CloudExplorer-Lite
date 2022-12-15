@@ -14,7 +14,17 @@ const userStore = useUserStore();
       <img class="img" src="@commons/assets/white-logo.png" alt="" />
     </div>
     <h2>云服务平台</h2>
-    <div class="role">{{ userStore.currentRoleSourceName }}</div>
+    <div class="role">
+      <div style="font-weight: bold">
+        {{ userStore.currentRoleSourceName?.roleName }}
+      </div>
+      <div
+        style="font-size: small"
+        v-if="userStore.currentRoleSourceName?.sourceName"
+      >
+        {{ userStore.currentRoleSourceName?.sourceName }}
+      </div>
+    </div>
     <div class="flex-auto"></div>
     <SwitchLang />
     <ToDo />

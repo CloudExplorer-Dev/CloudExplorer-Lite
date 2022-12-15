@@ -20,8 +20,8 @@ export function getUser(id: string): Promise<Result<User>> {
   return get(`/api/user/${id}`);
 }
 
-export const saveUser = (data: User) => {
-  return post("/api/user-save", null, data);
+export const saveUser = (data: User, loading?: Ref<boolean>) => {
+  return post("/api/user-save", null, data, loading);
 };
 
 export const updateUserPwd = (data: any) => {

@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { getUser, saveUser } from "@commons/api/user";
-import { onMounted, ref } from "vue";
+import { saveUser } from "@commons/api/user";
+import { ref } from "vue";
 import { ElMessage } from "element-plus";
 import { useI18n } from "vue-i18n";
 
@@ -20,19 +20,21 @@ const defaultUser: User = new User("", "", "", "");
 
 const form = ref(defaultUser);
 
+const loading = ref<boolean>(false);
+
 const saveUserInfo = (userInfo: any) => {
-  saveUser(userInfo).then(() => {
+  saveUser(userInfo, loading).then(() => {
     dialogVisible.value = false;
     ElMessage.success(t("commons.msg.save_success"));
   });
 };
 
-onMounted(() => {
+function onOpen() {
   //通过store拿，顺便能刷新权限
-  userStore.getCurrentUser().then((result: User | null) => {
+  userStore.getCurrentUser(loading).then((result: User | null) => {
     form.value = result ? result : defaultUser;
   });
-});
+}
 </script>
 
 <template>
@@ -40,9 +42,15 @@ onMounted(() => {
     v-model="dialogVisible"
     :title="$t('commons.personal.personal_info')"
     width="35%"
+    @open="onOpen"
     destroy-on-close
   >
-    <el-form :model="form" label-width="auto" label-position="right">
+    <el-form
+      :model="form"
+      label-width="auto"
+      label-position="right"
+      v-loading="loading"
+    >
       <el-form-item label="ID">
         <el-input v-model="form.id" type="text" disabled />
       </el-form-item>
