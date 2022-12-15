@@ -61,9 +61,7 @@ export const useUserStore = defineStore({
      * 返回用户角色名
      * @param state
      */
-    currentRoleSourceName(
-      state: any
-    ): SimpleMap<string> | string | undefined | null {
+    currentRoleSourceName(state: any): SimpleMap<string> | undefined | null {
       const roleList: UserRole[] | undefined =
         state?.userStoreObject?.user?.roleMap[state?.userStoreObject?.role];
       let roles: Role[] | undefined;
@@ -71,7 +69,10 @@ export const useUserStore = defineStore({
         state?.userStoreObject?.role == "ORGADMIN" ||
         state?.userStoreObject?.role == "USER"
       ) {
-        roles = _.find(roleList, state?.userStoreObject?.source)?.roles;
+        roles = _.find(
+          roleList,
+          (r) => r.source === state.currentSource
+        )?.roles;
       } else {
         if (roleList) {
           roles = roleList[0]?.roles;
@@ -89,14 +90,12 @@ export const useUserStore = defineStore({
           )?.name,
         };
       } else {
-        return roleName;
+        return { roleName: roleName };
       }
     },
     sourceMap(state: any): Array<SourceTreeObject> {
       if (state.sourceTree == null) {
-        sourceTree().then((response) => {
-          state.sourceTree = response.data;
-        });
+        state.refreshSourceTree();
       }
       return state.sourceTree;
     },
@@ -193,7 +192,18 @@ export const useUserStore = defineStore({
 
         return this.currentUser;
       } catch (err) {
-        console.log(err);
+        console.error(err);
+        return null;
+      }
+    },
+    async refreshSourceTree(
+      loading?: Ref<boolean>
+    ): Promise<Array<SourceTreeObject> | null> {
+      try {
+        this.sourceTree = (await sourceTree(loading)).data;
+        return this.sourceTree;
+      } catch (err) {
+        console.error(err);
         return null;
       }
     },

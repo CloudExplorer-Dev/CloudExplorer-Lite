@@ -44,6 +44,6 @@ export interface SourceTreeObject {
   name: string;
   label: string;
   children?: Array<SourceTreeObject>;
-  isWorkspace?: boolean;
+  workspace?: boolean;
   root?: boolean;
 }
