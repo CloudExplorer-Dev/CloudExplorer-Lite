@@ -10,7 +10,7 @@ import { listRoles } from "@commons/api/role";
 import { useUserStore } from "@commons/stores/modules/user";
 import { useRouter } from "vue-router";
 import { ElMessage } from "element-plus/es";
-import { tree } from "@/api/organization";
+import { tree } from "@commons/api/organization";
 import type { OrganizationTree } from "@/api/organization/type";
 import { roleConst } from "@commons/utils/constants";
 import type { InternalRuleItem } from "async-validator/dist-types/interface";

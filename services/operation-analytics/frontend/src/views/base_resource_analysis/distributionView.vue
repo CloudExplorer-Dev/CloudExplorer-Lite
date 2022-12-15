@@ -4,10 +4,8 @@
 
 <script>
 export default {
-  name: "distributionView"
-}
+  name: "distributionView",
+};
 </script>
 
-<style scoped>
-
-</style>
+<style scoped></style>

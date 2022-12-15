@@ -2,15 +2,11 @@ import { get, post, del, put } from "@commons/request";
 import type { Ref } from "vue";
 import type Result from "@commons/request/Result";
 import type { Page } from "@commons/request/Result";
-import type { CreateOrgFrom } from "@/api/organization/type";
-import type {
-  Organization,
-  ListOrganizationRequest,
-  OrganizationTree,
-} from "./type";
+import type { CreateOrgFrom, OrgUpdateForm } from "@/api/organization/type";
+import BaseOrganizationApi from "@commons/api/organization";
+import type { Organization, ListOrganizationRequest } from "./type";
 /**
  *  分页查询组织
- * @param req 组织请求参数
  * @returns
  */
 const pageOrganization: (
@@ -29,13 +25,6 @@ const listAllOrganization: (
   return get("/api/listAll/org", null, loading);
 };
 
-export const tree: (
-  treeType?: string
-) => Promise<Result<Array<OrganizationTree>>> = (treeType) => {
-  const type: string = treeType === undefined ? "ORGANIZATION" : treeType;
-  return get("/api/base/organization/tree/" + type);
-};
-
 const batchSave = (data: CreateOrgFrom) => {
   return post("/api/organization/batch", null, data);
 };
@@ -49,13 +38,13 @@ const deleteBatchOrg = (organizations: Array<Organization>) => {
 const getOrgById = (id: string) => {
   return get("/api/organization/" + id, null);
 };
-const updateOrg = (organization: Organization) => {
+const updateOrg = (organization: OrgUpdateForm) => {
   return put("/api/organization", undefined, organization);
 };
 export default {
+  ...BaseOrganizationApi,
   pageOrganization,
   listAllOrganization,
-  tree,
   batchSave,
   deleteOrg,
   deleteBatchOrg,

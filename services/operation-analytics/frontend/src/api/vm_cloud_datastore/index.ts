@@ -1,10 +1,7 @@
 import { get } from "@commons/request";
 import type Result from "@commons/request/Result";
 import type { Page } from "@commons/request/Result";
-import type {
-  VmCloudDatastoreVO,
-  ListVmCloudDatastoreRequest
-} from "./type";
+import type { VmCloudDatastoreVO, ListVmCloudDatastoreRequest } from "./type";
 import type { Ref } from "vue";
 
 /**
@@ -19,9 +16,8 @@ export function listVmCloudDatastore(
   return get("api/baseResourceAnalysis/datastore/page", req, loading);
 }
 
-
 const VmCloudDatastoreApi = {
-  listVmCloudDatastore
+  listVmCloudDatastore,
 };
 
 export default VmCloudDatastoreApi;

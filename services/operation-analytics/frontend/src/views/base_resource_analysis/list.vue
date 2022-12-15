@@ -4,9 +4,9 @@
       <div class="log-table">
         <div class="log-table">
           <DistributionView
-              height="100%"
-              width="100%"
-              v-if="activeName === 'distribution'"
+            height="100%"
+            width="100%"
+            v-if="activeName === 'distribution'"
           ></DistributionView>
         </div>
       </div>

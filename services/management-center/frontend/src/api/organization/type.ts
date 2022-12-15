@@ -1,29 +1,7 @@
-interface Organization {
-  /**
-   *主键id
-   */
-  id: string;
-  /**
-   *组织名称
-   */
-  name: string;
-  /**
-   *描述
-   */
-  description?: string;
-  /**
-   *父id
-   */
-  pid?: string;
-  /**
-   * 创建时间
-   */
-  createTime: string;
-  /**
-   * 修改时间
-   */
-  updateTime: string;
-}
+import type {
+  Organization,
+  OrganizationTree,
+} from "@commons/api/organization/type";
 
 interface ListOrganizationRequest {
   /**
@@ -34,10 +12,6 @@ interface ListOrganizationRequest {
    *当前页
    */
   currentPage: number;
-}
-
-interface OrganizationTree extends Organization {
-  children: Array<OrganizationTree>;
 }
 
 /**
@@ -69,7 +43,7 @@ interface CreateOrgFrom {
 /**
  * 更新组织对象
  */
-interface UpdateForm {
+interface OrgUpdateForm {
   /**
    *主键id
    */
@@ -93,5 +67,5 @@ export type {
   ListOrganizationRequest,
   OrganizationTree,
   CreateOrgFrom,
-  UpdateForm,
+  OrgUpdateForm,
 };

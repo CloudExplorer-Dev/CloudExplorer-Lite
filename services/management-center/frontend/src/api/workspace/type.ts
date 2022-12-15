@@ -1,13 +1,33 @@
-interface Workspace {
-  id: string;
-  name: string;
-  description?: string;
-  createTime: string;
-  organization_id: string;
-  organization_name: string;
-  user_count: number;
-  cloud_mapping?: Array<CloudMapping>;
+import type { Workspace } from "@commons/api/workspace/type";
+
+export interface WorkspaceDetail extends Workspace {
+  organizationName?: string;
+  userCount?: number;
+  cloudMapping?: Array<CloudMapping>;
 }
+
+export interface WorkspaceCreate {
+  /**
+   *主键id
+   */
+  id?: string;
+  /**
+   *工作空间名称
+   */
+  name: string;
+  /**
+   *工作空间描述
+   */
+  description: string;
+
+  organizationId?: string;
+}
+
+export interface CreateWorkspaceForm {
+  organizationId?: string;
+  workspaceDetails: Array<WorkspaceCreate>;
+}
+
 interface CloudMapping {
   id: number;
   cloud_account_id: string;
@@ -17,9 +37,7 @@ interface CloudMapping {
   workspace_id: string;
   cloud_account_icon_url: string;
 }
-interface ListWorkspaceRequest {
+export interface ListWorkspaceRequest {
   pageSize: number;
   currentPage: number;
 }
-
-export type { Workspace, ListWorkspaceRequest, CloudMapping };

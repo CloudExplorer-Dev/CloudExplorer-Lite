@@ -2,7 +2,7 @@
 import { useRouter } from "vue-router";
 import { useI18n } from "vue-i18n";
 import { onMounted, reactive, ref } from "vue";
-import { tree } from "@/api/organization";
+import { tree } from "@commons/api/organization";
 import type { OrganizationTree } from "@/api/organization/type";
 import { getRoleInfo, updateUser, workspaceTree } from "@/api/user";
 import type { Role, RoleInfo } from "@/api/user/type";
