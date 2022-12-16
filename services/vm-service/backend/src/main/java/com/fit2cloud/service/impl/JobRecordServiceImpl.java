@@ -53,6 +53,7 @@ public class JobRecordServiceImpl implements IJobRecordService {
         //这里不联表，直接借用联表查询的返回DTO
         MPJLambdaWrapper<JobRecord> wrapper = new MPJLambdaWrapper<JobRecord>()
                 .selectAll(JobRecord.class)
+                .like(StringUtils.isNotBlank(request.getId()), JobRecord::getId, request.getId())
                 .like(StringUtils.isNotBlank(request.getDescription()), JobRecord::getDescription, request.getDescription())
                 .in(JobRecord::getType, Arrays.asList(
                         JobTypeConstants.CLOUD_SERVER_OPERATE_JOB.getCode(),
