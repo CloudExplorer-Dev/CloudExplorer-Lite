@@ -494,7 +494,7 @@ public class CloudAccountServiceImpl extends ServiceImpl<CloudAccountMapper, Clo
     };
 
     public IPage<JobRecordResourceResponse> pageSyncRecord(SyncRecordRequest syncRecordRequest) {
-        Page<JobRecordResourceResponse> syncRecordPage = PageUtil.of(syncRecordRequest, JobRecordResourceResponse.class, new OrderItem("create_time", true));
+        Page<JobRecordResourceResponse> syncRecordPage = PageUtil.of(syncRecordRequest, JobRecordResourceResponse.class);
         QueryWrapper wrapper = Wrappers.query();
         wrapper.eq("resource_id", syncRecordRequest.getCloudAccountId());
         return baseMapper.pageSyncRecord(syncRecordPage, wrapper);
