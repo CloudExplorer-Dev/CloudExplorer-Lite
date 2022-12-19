@@ -155,11 +155,11 @@ public class AliyunVmCreateRequest extends AliyunBaseRequest implements ICreateS
 
     @Form(inputType = InputType.AliyunDiskConfigForm,
             clazz = AliyunCloudProvider.class,
-            method = "getDiskTypes",
+            method = "getDiskTypesForCreateVm",
             label = "",
             defaultValue = "[]",
             defaultJsonValue = true,
-            relationTrigger = "zoneId",
+            relationTrigger = {"instanceChargeType","zoneId","instanceTypeDTO"},
             step = 1,
             group = 5,
             confirmGroup = 1,

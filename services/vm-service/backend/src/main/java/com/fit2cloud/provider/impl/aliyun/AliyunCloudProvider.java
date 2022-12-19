@@ -17,6 +17,7 @@ import com.fit2cloud.provider.entity.F2CVirtualMachine;
 import com.fit2cloud.provider.entity.request.GetMetricsRequest;
 import com.fit2cloud.provider.impl.aliyun.api.AliyunSyncCloudApi;
 import com.fit2cloud.provider.impl.aliyun.constants.*;
+import com.fit2cloud.provider.impl.aliyun.entity.AliyunDiskTypeDTO;
 import com.fit2cloud.provider.impl.aliyun.entity.AliyunInstanceType;
 import com.fit2cloud.provider.impl.aliyun.entity.credential.AliyunVmCredential;
 import com.fit2cloud.provider.impl.aliyun.entity.request.*;
@@ -105,6 +106,19 @@ public class AliyunCloudProvider extends AbstractCloudProvider<AliyunVmCredentia
             result.add(map);
         }
         return result;
+    }
+
+    /**
+     * 获取磁盘类型
+     *
+     * @param req
+     * @return
+     */
+    public AliyunDiskTypeDTO getDiskTypesForCreateVm(String req) {
+        AliyunDiskTypeDTO aliyunDiskTypeDTO = new AliyunDiskTypeDTO();
+        aliyunDiskTypeDTO.setSystemDiskTypes(AliyunSyncCloudApi.getSystemDiskType(JsonUtil.parseObject(req, AliyunGetDiskTypeRequest.class)));
+        aliyunDiskTypeDTO.setDataDiskTypes(AliyunSyncCloudApi.getDataDiskType(JsonUtil.parseObject(req, AliyunGetDiskTypeRequest.class)));
+        return aliyunDiskTypeDTO;
     }
 
     /**

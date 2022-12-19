@@ -30,6 +30,7 @@ import com.fit2cloud.provider.impl.aliyun.constants.AliyunChargeType;
 import com.fit2cloud.provider.impl.aliyun.constants.AliyunDiskType;
 import com.fit2cloud.provider.impl.aliyun.constants.AliyunOSType;
 import com.fit2cloud.provider.impl.aliyun.constants.AliyunPerfMetricConstants;
+import com.fit2cloud.provider.impl.aliyun.entity.AliyunDiskTypeDTO;
 import com.fit2cloud.provider.impl.aliyun.entity.AliyunInstanceType;
 import com.fit2cloud.provider.impl.aliyun.entity.credential.AliyunVmCredential;
 import com.fit2cloud.provider.impl.aliyun.entity.request.*;
@@ -431,13 +432,9 @@ public class AliyunSyncCloudApi {
 
         // 获取可用区可选实例的 ID 集合
         List<String> instanceTypeIds = new ArrayList<>();
-        List<DescribeAvailableResourceResponseBody.DescribeAvailableResourceResponseBodyAvailableZonesAvailableZone> availableZones = getAvailableResources(describeAvailableResourceRequest, client);
-        if (CollectionUtils.isNotEmpty(availableZones)
-                && CollectionUtils.isNotEmpty(availableZones.get(0).availableResources.availableResource)
-                && CollectionUtils.isNotEmpty(availableZones.get(0).availableResources.availableResource.get(0).supportedResources.supportedResource)) {
-            instanceTypeIds = availableZones.get(0)
-                    .availableResources.availableResource.get(0)
-                    .supportedResources.supportedResource.stream().map((supportedResource) -> supportedResource.getValue()).toList();
+        List<DescribeAvailableResourceResponseBody.DescribeAvailableResourceResponseBodyAvailableZonesAvailableZoneAvailableResourcesAvailableResourceSupportedResourcesSupportedResource> supportedResources = getAvailableResources(describeAvailableResourceRequest, client);
+        if (CollectionUtils.isNotEmpty(supportedResources)) {
+            instanceTypeIds = supportedResources.stream().map((supportedResource) -> supportedResource.getValue()).toList();
         }
 
         // 过滤可用实例
@@ -578,13 +575,20 @@ public class AliyunSyncCloudApi {
      * @param req
      * @return
      */
-    public static List<DescribeAvailableResourceResponseBody.DescribeAvailableResourceResponseBodyAvailableZonesAvailableZone> getAvailableResources(DescribeAvailableResourceRequest req, Client client) {
+    public static List<DescribeAvailableResourceResponseBody.DescribeAvailableResourceResponseBodyAvailableZonesAvailableZoneAvailableResourcesAvailableResourceSupportedResourcesSupportedResource> getAvailableResources(DescribeAvailableResourceRequest req, Client client) {
         try {
             DescribeAvailableResourceResponse describeAvailableResourceResponse = client.describeAvailableResource(req);
-            return describeAvailableResourceResponse.body.availableZones.availableZone;
+            List<DescribeAvailableResourceResponseBody.DescribeAvailableResourceResponseBodyAvailableZonesAvailableZone> availableZones = describeAvailableResourceResponse.body.availableZones.availableZone;
+
+            if (CollectionUtils.isNotEmpty(availableZones)
+                    && CollectionUtils.isNotEmpty(availableZones.get(0).availableResources.availableResource)
+                    && CollectionUtils.isNotEmpty(availableZones.get(0).availableResources.availableResource.get(0).supportedResources.supportedResource)) {
+                return availableZones.get(0).availableResources.availableResource.get(0).supportedResources.supportedResource;
+            }
         } catch (Exception e) {
-            throw new RuntimeException("Failed to get available instance types." + e.getMessage(), e);
+            throw new RuntimeException("Failed to get available resource types." + e.getMessage(), e);
         }
+        return new ArrayList<>();
     }
 
     public static List<Map<String, String>> getKeyPairs(AliyunBaseRequest req) {
@@ -1014,6 +1018,54 @@ public class AliyunSyncCloudApi {
                 break;
             }
         }
+    }
+
+    /**
+     * 获取系统盘类型
+     *
+     * @param req
+     * @return
+     */
+    public static List<AliyunDiskTypeDTO.AliyunDiskType> getSystemDiskType(AliyunGetDiskTypeRequest req) {
+        req.setDiskUsage("SystemDisk");
+        return getDiskTypesForCreateVM(req);
+    }
+
+    /**
+     * 获取数据盘类型
+     *
+     * @param req
+     * @return
+     */
+    public static List<AliyunDiskTypeDTO.AliyunDiskType> getDataDiskType(AliyunGetDiskTypeRequest req) {
+        req.setDiskUsage("DataDisk");
+        return getDiskTypesForCreateVM(req);
+    }
+
+    private static List<AliyunDiskTypeDTO.AliyunDiskType> getDiskTypesForCreateVM(AliyunGetDiskTypeRequest req) {
+        AliyunVmCredential credential = JsonUtil.parseObject(req.getCredential(), AliyunVmCredential.class);
+        Client client = credential.getClientByRegion(req.getRegionId());
+        DescribeAvailableResourceRequest describeAvailableResourceRequest = req.toDescribeAvailableResourceRequest();
+        List<AliyunDiskTypeDTO.AliyunDiskType> diskTypes = new ArrayList<>();
+
+        if (describeAvailableResourceRequest.getInstanceType() == null) {
+            return diskTypes;
+        }
+
+        List<DescribeAvailableResourceResponseBody.DescribeAvailableResourceResponseBodyAvailableZonesAvailableZoneAvailableResourcesAvailableResourceSupportedResourcesSupportedResource> supportedResources = getAvailableResources(describeAvailableResourceRequest, client);
+        if (CollectionUtils.isNotEmpty(supportedResources)) {
+            diskTypes = supportedResources.stream().map((supportedResource) -> {
+                AliyunDiskTypeDTO.AliyunDiskType systemDiskType = AliyunDiskTypeDTO.AliyunDiskType
+                        .builder()
+                        .diskType(supportedResource.value)
+                        .diskTypeName(AliyunDiskType.getName(supportedResource.value))
+                        .minDiskSize(supportedResource.min.longValue())
+                        .maxDiskSize(supportedResource.max.longValue())
+                        .build();
+                return systemDiskType;
+            }).collect(Collectors.toList());
+        }
+        return diskTypes;
     }
 
     /**
