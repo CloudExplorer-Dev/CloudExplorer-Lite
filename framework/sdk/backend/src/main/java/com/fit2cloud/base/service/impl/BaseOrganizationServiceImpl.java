@@ -8,7 +8,6 @@ import com.fit2cloud.base.mapper.BaseOrganizationMapper;
 import com.fit2cloud.base.service.IBaseOrganizationService;
 import com.fit2cloud.base.service.IBaseWorkspaceService;
 import com.fit2cloud.common.constants.RoleConstants;
-import com.fit2cloud.common.utils.CurrentUserUtils;
 import com.fit2cloud.common.utils.JsonUtil;
 import com.fit2cloud.common.utils.OrganizationUtil;
 import com.fit2cloud.dto.UserRoleDto;
@@ -44,9 +43,7 @@ public class BaseOrganizationServiceImpl extends ServiceImpl<BaseOrganizationMap
     }
 
     @Override
-    public List<SourceTreeObject> sourceTree() {
-        Map<RoleConstants.ROLE, List<UserRoleDto>> roleListMap = CurrentUserUtils.getUser().getRoleMap();
-
+    public List<SourceTreeObject> sourceTree(Map<RoleConstants.ROLE, List<UserRoleDto>> roleListMap) {
 
         //只返回有权限的工作空间
         List<String> workspaceIds = roleListMap.getOrDefault(RoleConstants.ROLE.USER, new ArrayList<>()).stream().map(UserRoleDto::getSource).toList();

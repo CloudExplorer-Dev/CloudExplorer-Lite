@@ -2,10 +2,13 @@ package com.fit2cloud.base.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.fit2cloud.base.entity.Organization;
+import com.fit2cloud.common.constants.RoleConstants;
+import com.fit2cloud.dto.UserRoleDto;
 import com.fit2cloud.response.OrganizationTree;
 import com.fit2cloud.response.SourceTreeObject;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * <p>
@@ -24,7 +27,7 @@ public interface IBaseOrganizationService extends IService<Organization> {
      */
     List<OrganizationTree> tree();
 
-    List<SourceTreeObject> sourceTree();
+    List<SourceTreeObject> sourceTree(Map<RoleConstants.ROLE, List<UserRoleDto>> roleListMap);
 
     /**
      * 根据类型获取树形结构

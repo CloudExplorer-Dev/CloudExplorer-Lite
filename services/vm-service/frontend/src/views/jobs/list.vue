@@ -88,19 +88,19 @@ const tableConfig = ref<TableConfig>({
     search: search,
     quickPlaceholder: t("commons.btn.search"),
     components: [],
-    searchOptions: [
-      { label: t("job.detail.description", "描述"), value: "description" },
-    ],
+    searchOptions: [{ label: t("job.detail.id", "ID"), value: "id" }],
   },
   paginationConfig: new PaginationConfig(),
-  tableOperations: new TableOperations([
-    TableOperations.buildButtons().newInstance(
-      t("job.detail.btn.detail", "查看详情"),
-      "primary",
-      showDetail,
-      "InfoFilled"
-    ),
-  ]),
+  tableOperations: new TableOperations(
+    [
+      TableOperations.buildButtons().newInstance(
+        t("job.detail.btn.detail", "查看详情"),
+        "primary",
+        showDetail
+      ),
+    ],
+    "label"
+  ),
 });
 </script>
 <template>
@@ -113,18 +113,11 @@ const tableConfig = ref<TableConfig>({
     ref="table"
   >
     <el-table-column prop="id" label="ID"></el-table-column>
-    <el-table-column label="任务类型">
+    <el-table-column label="任务类型" sortable>
       <template #default="scope">
         {{ _.get(JobTypeConst, scope.row.type, scope.row.type) }}
       </template>
     </el-table-column>
-    <el-table-column prop="status" label="状态">
-      <template #default="scope">
-        {{ _.get(JobStatusConst, scope.row.status, scope.row.status) }}
-      </template>
-    </el-table-column>
-    <el-table-column prop="createTime" label="开始时间"></el-table-column>
-    <el-table-column prop="finishTime" label="结束时间"></el-table-column>
     <el-table-column label="关联资源">
       <template #default="scope">
         <div v-for="server in scope.row.servers" :key="server.id">
@@ -142,6 +135,27 @@ const tableConfig = ref<TableConfig>({
         </div>
       </template>
     </el-table-column>
+    <el-table-column prop="status" label="状态">
+      <template #default="scope">
+        <a
+          @click="showDetail(scope.row)"
+          :style="{ color: scope.row.status === 'FAILED' ? 'red' : null }"
+        >
+          {{ _.get(JobStatusConst, scope.row.status, scope.row.status) }}
+        </a>
+      </template>
+    </el-table-column>
+    <el-table-column
+      prop="createTime"
+      label="开始时间"
+      sortable
+    ></el-table-column>
+    <el-table-column
+      prop="finishTime"
+      label="结束时间"
+      sortable
+    ></el-table-column>
+
     <fu-table-operations v-bind="tableConfig.tableOperations" fix />
   </ce-table>
   <ManageInfo ref="manageInfoRef"></ManageInfo>

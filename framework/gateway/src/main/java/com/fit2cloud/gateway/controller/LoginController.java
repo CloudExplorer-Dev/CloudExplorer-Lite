@@ -1,5 +1,6 @@
 package com.fit2cloud.gateway.controller;
 
+import com.fit2cloud.base.service.IBaseOrganizationService;
 import com.fit2cloud.base.service.IBaseUserService;
 import com.fit2cloud.common.log.annotation.OperatedLog;
 import com.fit2cloud.common.log.constants.OperatedTypeEnum;
@@ -10,6 +11,7 @@ import com.fit2cloud.dto.UserDto;
 import com.fit2cloud.dto.module.Menu;
 import com.fit2cloud.dto.module.Module;
 import com.fit2cloud.request.LoginRequest;
+import com.fit2cloud.response.SourceTreeObject;
 import com.fit2cloud.service.BasePermissionService;
 import com.fit2cloud.service.CommonService;
 import com.fit2cloud.service.MenuService;
@@ -37,9 +39,11 @@ public class LoginController {
     private MenuService menuService;
     @Resource
     private BasePermissionService basePermissionService;
+    @Resource
+    private IBaseOrganizationService organizationService;
 
     @PostMapping("login")
-    @OperatedLog(resourceType = ResourceTypeEnum.SYSTEM,operated = OperatedTypeEnum.LOGIN)
+    @OperatedLog(resourceType = ResourceTypeEnum.SYSTEM, operated = OperatedTypeEnum.LOGIN)
     public Mono<ResponseEntity<ResultHolder<Object>>> login(@RequestBody LoginRequest loginRequest) {
         String token = null;
         try {
@@ -63,7 +67,7 @@ public class LoginController {
     }
 
     @GetMapping("logout")
-    @OperatedLog(resourceType = ResourceTypeEnum.SYSTEM,operated = OperatedTypeEnum.LOGOUT)
+    @OperatedLog(resourceType = ResourceTypeEnum.SYSTEM, operated = OperatedTypeEnum.LOGOUT)
     public Mono<String> logout() {
         return Mono.just("test");
     }
@@ -87,6 +91,12 @@ public class LoginController {
     public Mono<ResultHolder<Set<String>>> getCurrentUserPermissionSet(ServerWebExchange exchange) {
         UserDto user = (UserDto) exchange.getAttributes().get("user");
         return Mono.just(ResultHolder.success(basePermissionService.getPlainPermissions(user.getId(), user.getCurrentRole(), user.getCurrentSource())));
+    }
+
+    @GetMapping("api/organization/sourceTree")
+    public Mono<ResultHolder<List<SourceTreeObject>>> sourceTree(ServerWebExchange exchange) {
+        UserDto user = (UserDto) exchange.getAttributes().get("user");
+        return Mono.just(ResultHolder.success(organizationService.sourceTree(user.getRoleMap())));
     }
 
 
