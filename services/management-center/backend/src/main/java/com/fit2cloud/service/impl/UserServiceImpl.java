@@ -77,7 +77,6 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
 
     @Override
     public IPage<UserDto> pageUser(PageUserRequest pageUserRequest) {
-
         Page<User> page = PageUtil.of(pageUserRequest, User.class, true);
 
         SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
@@ -87,7 +86,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
                 .like(StringUtils.isNotBlank(pageUserRequest.getEmail()), ColumnNameUtil.getColumnName(User::getEmail, true), pageUserRequest.getEmail())
                 .eq(StringUtils.isNotBlank(pageUserRequest.getRoleId()), ColumnNameUtil.getColumnName(UserRole::getRoleId, true), pageUserRequest.getRoleId())
                 .like(StringUtils.isNotBlank(pageUserRequest.getRoleName()), ColumnNameUtil.getColumnName(Role::getName, true), pageUserRequest.getRoleName())
-                .eq(StringUtils.isNotBlank(pageUserRequest.getWorkspaceId()),ColumnNameUtil.getColumnName(UserRole::getSource,true),pageUserRequest.getWorkspaceId());
+                .eq(StringUtils.isNotBlank(pageUserRequest.getWorkspaceId()), ColumnNameUtil.getColumnName(UserRole::getSource, true), pageUserRequest.getWorkspaceId());
 
         if (CollectionUtils.isNotEmpty(pageUserRequest.getUpdateTime())) {
             wrapper.between(ColumnNameUtil.getColumnName(User::getUpdateTime, true), simpleDateFormat.format(pageUserRequest.getUpdateTime().get(0)), simpleDateFormat.format(pageUserRequest.getUpdateTime().get(1)));
@@ -96,9 +95,21 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
             wrapper.between(ColumnNameUtil.getColumnName(User::getCreateTime, true), simpleDateFormat.format(pageUserRequest.getCreateTime().get(0)), simpleDateFormat.format(pageUserRequest.getCreateTime().get(1)));
         }
 
+        // 根据当前所在角色过滤
+        List<String> resourceIds = new ArrayList<>();
+        if (CurrentUserUtils.isOrgAdmin()) {
+            List<String> orgIds = organizationCommonService.getOrgIdsByParentId(CurrentUserUtils.getOrganizationId());
+            resourceIds = workspaceCommonService.getWorkspaceIdsByOrgIds(orgIds);
+            resourceIds.addAll(orgIds);
+            wrapper.in(CollectionUtils.isNotEmpty(resourceIds), ColumnNameUtil.getColumnName(UserRole::getSource, true), resourceIds);
+        }
+
         IPage<User> userIPage = baseMapper.pageUser(page, wrapper);
 
         Map<String, Object> param = new HashMap<>();
+        if (CollectionUtils.isNotEmpty(resourceIds)) {
+            param.put("resourceIds", resourceIds);
+        }
         return userIPage.convert(user -> {
             param.put("userId", user.getId());
             UserDto userDto = new UserDto();

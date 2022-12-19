@@ -61,7 +61,7 @@
         user_role.role_id = role.id
         and user_role.user_id = #{userId}
         <if test="resourceIds != null">
-            AND user_role.source_id in
+            AND user_role._source in
             <foreach collection="resourceIds" open="(" close=")" separator="," index="index" item="item">
                 #{item}
             </foreach>

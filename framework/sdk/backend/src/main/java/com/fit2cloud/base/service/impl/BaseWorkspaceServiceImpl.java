@@ -37,7 +37,7 @@ public class BaseWorkspaceServiceImpl extends ServiceImpl<BaseWorkspaceMapper, W
         // 查询到所有的工作空间
         List<Workspace> workspaces = list();
 
-        if(CollectionUtils.isEmpty(organizations) || CollectionUtils.isEmpty(workspaces)){
+        if (CollectionUtils.isEmpty(organizations) || CollectionUtils.isEmpty(workspaces)) {
             return new ArrayList<>();
         }
 
