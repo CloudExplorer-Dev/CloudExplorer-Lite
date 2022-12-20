@@ -57,9 +57,17 @@ public class JobRecordServiceImpl implements IJobRecordService {
                 .like(StringUtils.isNotBlank(request.getDescription()), JobRecord::getDescription, request.getDescription())
                 .in(JobRecord::getType, Arrays.asList(
                         JobTypeConstants.CLOUD_SERVER_OPERATE_JOB,
-                        JobTypeConstants.CLOUD_DISK_OPERATE_JOB,
                         JobTypeConstants.CLOUD_SERVER_CREATE_JOB,
-                        JobTypeConstants.CLOUD_SERVER_BATCH_OPERATE_JOB
+                        JobTypeConstants.CLOUD_SERVER_DELETE_JOB,
+                        JobTypeConstants.CLOUD_SERVER_START_JOB,
+                        JobTypeConstants.CLOUD_SERVER_STOP_JOB,
+                        JobTypeConstants.CLOUD_SERVER_RESTART_JOB,
+                        JobTypeConstants.CLOUD_DISK_OPERATE_JOB,
+                        JobTypeConstants.CLOUD_DISK_CREATE_JOB,
+                        JobTypeConstants.CLOUD_DISK_DELETE_JOB,
+                        JobTypeConstants.CLOUD_DISK_ATTACH_JOB,
+                        JobTypeConstants.CLOUD_DISK_DETACH_JOB,
+                        JobTypeConstants.CLOUD_DISK_ENLARGE_JOB
                 ))
                 .in(CollectionUtils.isNotEmpty(request.getType()), JobRecord::getType, request.getType())
                 .in(CollectionUtils.isNotEmpty(request.getStatus()), JobRecord::getStatus, request.getStatus());
