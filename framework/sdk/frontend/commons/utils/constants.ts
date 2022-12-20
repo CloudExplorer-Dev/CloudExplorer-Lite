@@ -15,18 +15,27 @@ export const Config = {
 };
 
 export const JobTypeConst = {
-  CLOUD_ACCOUNT_SYNC_JOB: " 云账户同步",
-  CLOUD_ACCOUNT_SYNC_BILL_JOB: "云账号账单同步",
   CLOUD_SERVER_OPERATE_JOB: "云主机操作",
   CLOUD_SERVER_CREATE_JOB: "云主机创建",
   CLOUD_SERVER_BATCH_OPERATE_JOB: "云主机批量操作",
   CLOUD_DISK_OPERATE_JOB: "磁盘操作",
 };
+
+export const AllJobTypeConst = {
+  ...JobTypeConst,
+  CLOUD_ACCOUNT_SYNC_JOB: " 云账户同步",
+  CLOUD_ACCOUNT_SYNC_BILL_JOB: "云账号账单同步",
+};
+
 export const JobStatusConst = {
   SUCCESS: "成功",
   FAILED: "失败",
-  SYNCING: "同步中",
   EXECUTION_ING: "执行中",
+};
+
+export const AllJobStatusConst = {
+  ...JobStatusConst,
+  SYNCING: "同步中",
 };
 
 // 角色类型常量

@@ -46,7 +46,7 @@ public class JobRecordServiceImpl implements IJobRecordService {
     @Override
     public IPage<JobRecordDTO> pageJobRecord(PageJobRecordRequest request) {
 
-        Page<JobRecordDTO> page = PageUtil.of(request, JobRecordDTO.class, new OrderItem(ColumnNameUtil.getColumnName(JobRecordDTO::getCreateTime, false), false), true);
+        Page<JobRecordDTO> page = PageUtil.of(request, JobRecordDTO.class, new OrderItem(ColumnNameUtil.getColumnName(JobRecordDTO::getCreateTime, false), false), false);
 
         SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
@@ -56,11 +56,13 @@ public class JobRecordServiceImpl implements IJobRecordService {
                 .like(StringUtils.isNotBlank(request.getId()), JobRecord::getId, request.getId())
                 .like(StringUtils.isNotBlank(request.getDescription()), JobRecord::getDescription, request.getDescription())
                 .in(JobRecord::getType, Arrays.asList(
-                        JobTypeConstants.CLOUD_SERVER_OPERATE_JOB.getCode(),
-                        JobTypeConstants.CLOUD_DISK_OPERATE_JOB.getCode(),
-                        JobTypeConstants.CLOUD_SERVER_CREATE_JOB.getCode(),
-                        JobTypeConstants.CLOUD_SERVER_BATCH_OPERATE_JOB.getCode()
-                ));
+                        JobTypeConstants.CLOUD_SERVER_OPERATE_JOB,
+                        JobTypeConstants.CLOUD_DISK_OPERATE_JOB,
+                        JobTypeConstants.CLOUD_SERVER_CREATE_JOB,
+                        JobTypeConstants.CLOUD_SERVER_BATCH_OPERATE_JOB
+                ))
+                .in(CollectionUtils.isNotEmpty(request.getType()), JobRecord::getType, request.getType())
+                .in(CollectionUtils.isNotEmpty(request.getStatus()), JobRecord::getStatus, request.getStatus());
 
         if (CollectionUtils.isNotEmpty(request.getCreateTime())) {
             wrapper.between(JobRecord::getCreateTime, simpleDateFormat.format(request.getCreateTime().get(0)), simpleDateFormat.format(request.getCreateTime().get(1)));
