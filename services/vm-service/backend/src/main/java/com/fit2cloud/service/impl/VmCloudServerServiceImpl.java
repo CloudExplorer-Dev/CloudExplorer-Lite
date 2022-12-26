@@ -135,7 +135,7 @@ public class VmCloudServerServiceImpl extends ServiceImpl<BaseVmCloudServerMappe
     public boolean powerOff(String vmId) {
         operate(vmId, OperatedTypeEnum.POWER_OFF.getDescription(), ICloudProvider::powerOff,
                 F2CInstanceStatus.Stopping.name(), F2CInstanceStatus.Stopped.name(), this::modifyResource,
-                jobRecordCommonService::initJobRecord, jobRecordCommonService::modifyJobRecord);
+                jobRecordCommonService::initJobRecord, jobRecordCommonService::modifyJobRecord, JobTypeConstants.CLOUD_SERVER_STOP_JOB);
         return true;
     }
 
@@ -143,7 +143,7 @@ public class VmCloudServerServiceImpl extends ServiceImpl<BaseVmCloudServerMappe
     public boolean powerOn(String vmId) {
         operate(vmId, OperatedTypeEnum.POWER_ON.getDescription(), ICloudProvider::powerOn,
                 F2CInstanceStatus.Starting.name(), F2CInstanceStatus.Running.name(), this::modifyResource,
-                jobRecordCommonService::initJobRecord, jobRecordCommonService::modifyJobRecord);
+                jobRecordCommonService::initJobRecord, jobRecordCommonService::modifyJobRecord, JobTypeConstants.CLOUD_SERVER_START_JOB);
         return true;
     }
 
@@ -151,7 +151,7 @@ public class VmCloudServerServiceImpl extends ServiceImpl<BaseVmCloudServerMappe
     public boolean shutdownInstance(String vmId) {
         operate(vmId, OperatedTypeEnum.SHUTDOWN.getDescription(), ICloudProvider::shutdownInstance,
                 F2CInstanceStatus.Stopping.name(), F2CInstanceStatus.Stopped.name(), this::modifyResource,
-                jobRecordCommonService::initJobRecord, jobRecordCommonService::modifyJobRecord);
+                jobRecordCommonService::initJobRecord, jobRecordCommonService::modifyJobRecord, JobTypeConstants.CLOUD_SERVER_STOP_JOB);
         return true;
     }
 
@@ -159,7 +159,7 @@ public class VmCloudServerServiceImpl extends ServiceImpl<BaseVmCloudServerMappe
     public boolean rebootInstance(String vmId) {
         operate(vmId, OperatedTypeEnum.REBOOT.getDescription(), ICloudProvider::rebootInstance,
                 F2CInstanceStatus.Rebooting.name(), F2CInstanceStatus.Running.name(), this::modifyResource,
-                jobRecordCommonService::initJobRecord, jobRecordCommonService::modifyJobRecord);
+                jobRecordCommonService::initJobRecord, jobRecordCommonService::modifyJobRecord, JobTypeConstants.CLOUD_SERVER_RESTART_JOB);
         return true;
     }
 
@@ -167,7 +167,7 @@ public class VmCloudServerServiceImpl extends ServiceImpl<BaseVmCloudServerMappe
     public boolean deleteInstance(String vmId) {
         operate(vmId, OperatedTypeEnum.DELETE.getDescription(), ICloudProvider::deleteInstance,
                 F2CInstanceStatus.Deleting.name(), F2CInstanceStatus.Deleted.name(), this::modifyResource,
-                jobRecordCommonService::initJobRecord, jobRecordCommonService::modifyJobRecord);
+                jobRecordCommonService::initJobRecord, jobRecordCommonService::modifyJobRecord, JobTypeConstants.CLOUD_SERVER_DELETE_JOB);
         return true;
     }
 
@@ -192,7 +192,14 @@ public class VmCloudServerServiceImpl extends ServiceImpl<BaseVmCloudServerMappe
 
     @Override
     public List<JobRecordResourceResponse> findCloudServerOperateStatus(List<String> vmIds) {
-        return baseJobRecordResourceMappingMapper.findLastResourceJobRecord(vmIds, Collections.singletonList(JobTypeConstants.CLOUD_SERVER_OPERATE_JOB.getCode()));
+        return baseJobRecordResourceMappingMapper.findLastResourceJobRecord(vmIds, Arrays.asList(
+                JobTypeConstants.CLOUD_SERVER_OPERATE_JOB.getCode(),
+                JobTypeConstants.CLOUD_SERVER_CREATE_JOB.getCode(),
+                JobTypeConstants.CLOUD_SERVER_DELETE_JOB.getCode(),
+                JobTypeConstants.CLOUD_SERVER_START_JOB.getCode(),
+                JobTypeConstants.CLOUD_SERVER_STOP_JOB.getCode(),
+                JobTypeConstants.CLOUD_SERVER_RESTART_JOB.getCode()
+        ));
     }
 
     @Override
@@ -223,9 +230,11 @@ public class VmCloudServerServiceImpl extends ServiceImpl<BaseVmCloudServerMappe
      * @param beforeStatus    初始化资源状态
      * @param afterStatus     最终资源状态
      */
-    private void operate(String vmId, String jobDescription, BiFunction<ICloudProvider, String, Boolean> execMethod,
-                         String beforeStatus, String afterStatus, Consumer<VmCloudServer> modifyResource,
-                         Function<InitJobRecordDTO, JobRecord> iniJobMethod, Consumer<JobRecord> modifyJobRecord) {
+    private void operate(String vmId, String jobDescription, BiFunction<ICloudProvider, String, Boolean> execMethod, String beforeStatus, String afterStatus, Consumer<VmCloudServer> modifyResource, Function<InitJobRecordDTO, JobRecord> iniJobMethod, Consumer<JobRecord> modifyJobRecord) {
+        operate(vmId, jobDescription, execMethod, beforeStatus, afterStatus, modifyResource, iniJobMethod, modifyJobRecord, JobTypeConstants.CLOUD_SERVER_OPERATE_JOB);
+    }
+
+    private void operate(String vmId, String jobDescription, BiFunction<ICloudProvider, String, Boolean> execMethod, String beforeStatus, String afterStatus, Consumer<VmCloudServer> modifyResource, Function<InitJobRecordDTO, JobRecord> iniJobMethod, Consumer<JobRecord> modifyJobRecord, JobTypeConstants operateType) {
         threadPoolConfig.workThreadPool().execute(() -> {
             try {
                 LocalDateTime createTime = DateUtil.getSyncTime();
@@ -240,7 +249,12 @@ public class VmCloudServerServiceImpl extends ServiceImpl<BaseVmCloudServerMappe
                 //初始化任务
                 JobRecord jobRecord = iniJobMethod.apply(
                         InitJobRecordDTO.builder()
-                                .jobDescription(jobDescription).jobStatus(JobStatusConstants.EXECUTION_ING).jobType(JobTypeConstants.CLOUD_SERVER_OPERATE_JOB).resourceId(vmCloudServer.getId()).resourceType(ResourceTypeEnum.CLOUD_SERVER).createTime(createTime)
+                                .jobDescription(jobDescription)
+                                .jobStatus(JobStatusConstants.EXECUTION_ING)
+                                .jobType(operateType)
+                                .resourceId(vmCloudServer.getId())
+                                .resourceType(ResourceTypeEnum.CLOUD_SERVER)
+                                .createTime(createTime)
                                 .build());
                 vmCloudServer.setInstanceStatus(beforeStatus);
                 modifyResource.accept(vmCloudServer);
@@ -248,22 +262,17 @@ public class VmCloudServerServiceImpl extends ServiceImpl<BaseVmCloudServerMappe
                 Class<? extends ICloudProvider> cloudProvider = ProviderConstants.valueOf(cloudAccount.getPlatform()).getCloudProvider();
                 HashMap<String, Object> params = CommonUtil.getParams(cloudAccount.getCredential(), vmCloudServer.getRegion());
                 params.put("uuid", vmCloudServer.getInstanceUuid());
-                OperatedTypeEnum operatedType = OperatedTypeEnum.getByDescription(jobDescription);
+
                 try {
                     boolean result = CommonUtil.exec(cloudProvider, JsonUtil.toJSONString(params), execMethod);
                     if (result) {
                         vmCloudServer.setInstanceStatus(afterStatus);
                         jobRecord.setStatus(JobStatusConstants.SUCCESS);
-                        switch (operatedType) {
-                            case POWER_OFF:
-                            case SHUTDOWN:
-                            case HARD_SHUTDOWN:
-                                vmCloudServer.setLastShutdownTime(DateUtil.getSyncTime());
-                                break;
-                            case POWER_ON:
-                                vmCloudServer.setLastShutdownTime(null);
-                                break;
-                            default:
+                        switch (operateType) {
+                            case CLOUD_SERVER_STOP_JOB -> vmCloudServer.setLastShutdownTime(DateUtil.getSyncTime());
+                            case CLOUD_SERVER_START_JOB -> vmCloudServer.setLastShutdownTime(null);
+                            default -> {
+                            }
                         }
                     } else {
                         vmCloudServer.setInstanceStatus(instanceStatus);

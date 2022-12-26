@@ -15,18 +15,35 @@ export const Config = {
 };
 
 export const JobTypeConst = {
+  /*CLOUD_SERVER_OPERATE_JOB: "云主机操作",*/
+  CLOUD_SERVER_CREATE_JOB: "云主机创建",
+  CLOUD_SERVER_DELETE_JOB: "云主机删除",
+  CLOUD_SERVER_START_JOB: "云主机开机",
+  CLOUD_SERVER_STOP_JOB: "云主机关机",
+  CLOUD_SERVER_RESTART_JOB: "云主机重启",
+  /*CLOUD_DISK_OPERATE_JOB: "磁盘操作",*/
+  CLOUD_DISK_CREATE_JOB: "磁盘创建",
+  CLOUD_DISK_DELETE_JOB: "磁盘删除",
+  CLOUD_DISK_ATTACH_JOB: "磁盘挂载",
+  CLOUD_DISK_DETACH_JOB: "卸载卸载",
+  CLOUD_DISK_ENLARGE_JOB: "磁盘扩容",
+};
+
+export const AllJobTypeConst = {
+  ...JobTypeConst,
   CLOUD_ACCOUNT_SYNC_JOB: " 云账户同步",
   CLOUD_ACCOUNT_SYNC_BILL_JOB: "云账号账单同步",
-  CLOUD_SERVER_OPERATE_JOB: "云主机操作",
-  CLOUD_SERVER_CREATE_JOB: "云主机创建",
-  CLOUD_SERVER_BATCH_OPERATE_JOB: "云主机批量操作",
-  CLOUD_DISK_OPERATE_JOB: "磁盘操作",
 };
+
 export const JobStatusConst = {
   SUCCESS: "成功",
   FAILED: "失败",
-  SYNCING: "同步中",
   EXECUTION_ING: "执行中",
+};
+
+export const AllJobStatusConst = {
+  ...JobStatusConst,
+  SYNCING: "同步中",
 };
 
 // 角色类型常量
