@@ -41,6 +41,7 @@ public class AliyunMappingUtil {
     public static F2CVirtualMachine toF2CVirtualMachine(DescribeInstancesResponseBody.DescribeInstancesResponseBodyInstancesInstance instance) {
         F2CVirtualMachine f2CVirtualMachine = new F2CVirtualMachine();
         f2CVirtualMachine.setCpu(instance.getCpu());
+        f2CVirtualMachine.setMemory(instance.getMemory() / 1024);
         f2CVirtualMachine.setRegion(instance.getRegionId());
         f2CVirtualMachine.setHostname(instance.getHostName());
         f2CVirtualMachine.setImageId(instance.getImageId());
@@ -50,7 +51,8 @@ public class AliyunMappingUtil {
         f2CVirtualMachine.setInstanceStatus(instance.getStatus());
         String instanceType = instance.getInstanceType();
         f2CVirtualMachine.setInstanceType(instanceType);
-        String instanceChargeType = StringUtils.equalsIgnoreCase(instance.getInstanceChargeType(),"PostPaid")? F2CChargeType.POST_PAID:F2CChargeType.PRE_PAID;
+        f2CVirtualMachine.setInstanceTypeDescription(f2CVirtualMachine.getCpu() + "vCPU " + f2CVirtualMachine.getMemory() + "GB");
+        String instanceChargeType = StringUtils.equalsIgnoreCase(instance.getInstanceChargeType(), "PostPaid") ? F2CChargeType.POST_PAID : F2CChargeType.PRE_PAID;
         f2CVirtualMachine.setInstanceChargeType(instanceChargeType);
         List<String> ipArray = new ArrayList<>();
         DescribeInstancesResponseBody.DescribeInstancesResponseBodyInstancesInstancePublicIpAddress publicIpAddress = instance.getPublicIpAddress();
@@ -86,7 +88,7 @@ public class AliyunMappingUtil {
         }
         f2CVirtualMachine.setOsInfo(instance.getOSName());
         f2CVirtualMachine.setZone(instance.getZoneId());
-        if(instance.getCreationTime()!=null){
+        if (instance.getCreationTime() != null) {
             try {
                 SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm'Z'");
                 sdf.setTimeZone(TimeZone.getTimeZone("GMT"));
@@ -98,7 +100,7 @@ public class AliyunMappingUtil {
             }
         }
         // 安全组
-        if(instance.getSecurityGroupIds() != null){
+        if (instance.getSecurityGroupIds() != null) {
             f2CVirtualMachine.setSecurityGroupIds(instance.getSecurityGroupIds().getSecurityGroupId());
         }
         instance.setCreationTime(null);

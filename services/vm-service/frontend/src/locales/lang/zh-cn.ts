@@ -2,12 +2,18 @@ const message = {
   vm_cloud_server: {
     label: {
       ip_address: "IP地址",
+      info: "主机信息",
+      vm: "云主机",
+      current_config: "当前配置",
+      instance_type: "实例规格",
+      new_config: "变更后配置",
     },
     btn: {
       power_on: "启动",
       shutdown: "关机",
       power_off: "关闭电源",
       reboot: "重启",
+      change_config: "配置变更",
     },
     message_box: {
       confirm_power_on: "确认启动",

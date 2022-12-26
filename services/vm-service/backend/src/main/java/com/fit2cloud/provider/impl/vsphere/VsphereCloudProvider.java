@@ -11,10 +11,6 @@ import com.fit2cloud.provider.entity.*;
 import com.fit2cloud.provider.entity.request.GetMetricsRequest;
 import com.fit2cloud.provider.entity.result.CheckCreateServerResult;
 import com.fit2cloud.provider.impl.vsphere.api.VsphereSyncCloudApi;
-import com.fit2cloud.provider.impl.vsphere.entity.F2CVsphereCluster;
-import com.fit2cloud.provider.impl.vsphere.entity.F2CVsphereNetwork;
-import com.fit2cloud.provider.impl.vsphere.entity.VsphereHost;
-import com.fit2cloud.provider.impl.vsphere.entity.VsphereResourcePool;
 import com.fit2cloud.provider.impl.vsphere.entity.*;
 import com.fit2cloud.provider.impl.vsphere.entity.constants.VsphereDiskMode;
 import com.fit2cloud.provider.impl.vsphere.entity.constants.VsphereDiskType;
@@ -259,5 +255,15 @@ public class VsphereCloudProvider extends AbstractCloudProvider<VsphereCredentia
     @Override
     public List<F2CPerfMetricMonitorData> getF2CPerfMetricMonitorData(String req){
         return VsphereSyncCloudApi.getF2CPerfMetricList(JsonUtil.parseObject(req, GetMetricsRequest.class));
+    }
+
+    @Override
+    public F2CVirtualMachine changeVmConfig(String req){
+        return VsphereSyncCloudApi.changeVmConfig(JsonUtil.parseObject(req, VsphereUpdateConfigRequest.class));
+    }
+
+    @Override
+    public FormObject getConfigUpdateForm() {
+        return FormUtil.toForm(VsphereConfigUpdateForm.class);
     }
 }

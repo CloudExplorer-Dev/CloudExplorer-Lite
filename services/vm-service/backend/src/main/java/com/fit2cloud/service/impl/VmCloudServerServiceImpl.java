@@ -15,13 +15,18 @@ import com.fit2cloud.base.service.IBaseCloudAccountService;
 import com.fit2cloud.common.constants.JobStatusConstants;
 import com.fit2cloud.common.constants.JobTypeConstants;
 import com.fit2cloud.common.exception.Fit2cloudException;
+import com.fit2cloud.common.form.vo.FormObject;
 import com.fit2cloud.common.log.constants.OperatedTypeEnum;
 import com.fit2cloud.common.log.constants.ResourceTypeEnum;
 import com.fit2cloud.common.log.utils.LogUtil;
 import com.fit2cloud.common.provider.util.CommonUtil;
 import com.fit2cloud.common.utils.*;
 import com.fit2cloud.constants.ErrorCodeConstants;
+import com.fit2cloud.controller.request.CreateJobRecordRequest;
+import com.fit2cloud.controller.request.ExecProviderMethodRequest;
+import com.fit2cloud.controller.request.ResourceState;
 import com.fit2cloud.controller.request.vm.BatchOperateVmRequest;
+import com.fit2cloud.controller.request.vm.ChangeServerConfigRequest;
 import com.fit2cloud.controller.request.vm.CreateServerRequest;
 import com.fit2cloud.controller.request.vm.PageVmCloudServerRequest;
 import com.fit2cloud.dao.mapper.VmCloudServerMapper;
@@ -31,11 +36,13 @@ import com.fit2cloud.dto.VmCloudServerDTO;
 import com.fit2cloud.provider.ICloudProvider;
 import com.fit2cloud.provider.ICreateServerRequest;
 import com.fit2cloud.provider.constants.CreateServerRequestConstants;
+import com.fit2cloud.provider.constants.F2CDiskStatus;
 import com.fit2cloud.provider.constants.F2CInstanceStatus;
 import com.fit2cloud.provider.constants.ProviderConstants;
 import com.fit2cloud.provider.entity.F2CVirtualMachine;
 import com.fit2cloud.provider.entity.result.CheckCreateServerResult;
 import com.fit2cloud.response.JobRecordResourceResponse;
+import com.fit2cloud.service.IResourceOperateService;
 import com.fit2cloud.service.IVmCloudServerService;
 import com.fit2cloud.service.JobRecordCommonService;
 import com.fit2cloud.service.OrganizationCommonService;
@@ -73,6 +80,8 @@ public class VmCloudServerServiceImpl extends ServiceImpl<BaseVmCloudServerMappe
     private ThreadPoolConfig threadPoolConfig;
     @Resource
     private JobRecordCommonService jobRecordCommonService;
+    @Resource
+    private IResourceOperateService resourceOperateService;
 
     @Resource
     private BaseJobRecordResourceMappingMapper baseJobRecordResourceMappingMapper;
@@ -394,5 +403,90 @@ public class VmCloudServerServiceImpl extends ServiceImpl<BaseVmCloudServerMappe
                 throw new RuntimeException(e);
             }
         });
+    }
+
+    public boolean changeConfig(ChangeServerConfigRequest request) {
+        try {
+            VmCloudServer vmCloudServer = baseMapper.selectById(request.getId());
+
+            // 配置变更前状态
+            VmCloudServer before = new VmCloudServer();
+            BeanUtils.copyProperties(vmCloudServer, before);
+
+            // 配置变更中状态
+            vmCloudServer.setInstanceStatus(F2CInstanceStatus.ConfigChanging.name());
+            VmCloudServer processing = new VmCloudServer();
+            BeanUtils.copyProperties(vmCloudServer, processing);
+
+            // 配置变更后状态
+            vmCloudServer.setInstanceStatus(F2CInstanceStatus.Running.name());
+            vmCloudServer.setInstanceType(request.getNewInstanceType());
+            VmCloudServer after = new VmCloudServer();
+            BeanUtils.copyProperties(vmCloudServer, after);
+
+            // 构建执行插件方法的参数
+            CloudAccount cloudAccount = cloudAccountService.getById(vmCloudServer.getAccountId());
+            String platform = cloudAccount.getPlatform();
+            HashMap<String, Object> params = CommonUtil.getParams(cloudAccount.getCredential(), vmCloudServer.getRegion());
+            params.put("instanceUuid", vmCloudServer.getInstanceUuid());
+            params.put("newInstanceType", request.getNewInstanceType());
+            params.put("cpu", request.getCpu());
+            params.put("memory", request.getMemory());
+
+            // 执行
+            ResourceState<VmCloudServer, F2CVirtualMachine> resourceState = ResourceState.<VmCloudServer, F2CVirtualMachine>builder()
+                    .beforeResource(before)
+                    .processingResource(processing)
+                    .afterResource(after)
+                    .updateResourceMethod(this::updateCloudServer)
+                    .updateResourceMethodNeedTransfer(this::updateCloudServer)
+                    .build();
+            ExecProviderMethodRequest execProviderMethod = ExecProviderMethodRequest.builder().
+                    execMethod(ICloudProvider::changeVmConfig)
+                    .methodParams(params)
+                    .platform(platform)
+                    .resultNeedTransfer(true)
+                    .build();
+            CreateJobRecordRequest createJobRecordRequest = CreateJobRecordRequest.builder().
+                    resourceOperateType(OperatedTypeEnum.CHANGE_SERVER_CONFIG).
+                    resourceId(vmCloudServer.getInstanceUuid()).
+                    resourceType(ResourceTypeEnum.CLOUD_SERVER).
+                    jobType(JobTypeConstants.CLOUD_SERVER_CONFIG_CHANGE_JOB)
+                    .build();
+            resourceOperateService.operateWithJobRecord(createJobRecordRequest, execProviderMethod, resourceState);
+            return true;
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to change cloud server config: " + e.getMessage());
+        }
+    }
+
+    /**
+     * 更新云主机
+     *
+     * @param vmCloudServer
+     * @param
+     */
+    private void updateCloudServer(VmCloudServer vmCloudServer) {
+        baseMapper.updateById(vmCloudServer);
+    }
+
+    /**
+     * 更新云主机
+     * @param vmCloudServer
+     * @param f2CVirtualMachine
+     */
+    private void updateCloudServer(VmCloudServer vmCloudServer, F2CVirtualMachine f2CVirtualMachine) {
+        VmCloudServer vmCloudServerUpdate = SyncProviderServiceImpl.toVmCloudServer(f2CVirtualMachine, vmCloudServer.getAccountId(), DateUtil.getSyncTime());
+        BeanUtils.copyProperties(vmCloudServerUpdate,vmCloudServer,new String[]{"id","ipArray"});
+        baseMapper.updateById(vmCloudServer);
+    }
+
+    public FormObject getConfigUpdateForm(String platform) {
+        Class<? extends ICloudProvider> cloudProvider = ProviderConstants.valueOf(platform).getCloudProvider();
+        try {
+            return cloudProvider.getConstructor().newInstance().getConfigUpdateForm();
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to get config update form!" + e.getMessage(), e);
+        }
     }
 }

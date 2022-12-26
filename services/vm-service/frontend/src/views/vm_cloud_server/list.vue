@@ -43,6 +43,7 @@ const InstanceStatus = ref<Array<SimpleMap<string>>>([
   { text: "创建中", value: "Createding" },
   { text: "排队中", value: "WaitCreating" },
   { text: "创建中", value: "Creating" },
+  { text: "配置变更中", value: "ConfigChanging" },
   { text: "失败", value: "Failed" },
   { text: "未知", value: "Unknown" },
 ]);
@@ -201,6 +202,14 @@ const createDisk = (row: VmCloudServerVO) => {
 };
 
 /**
+ * 配置变更
+ * @param row
+ */
+const changeVmConfig = (row: VmCloudServerVO) => {
+  useRoute.push({ name: "change_config", params: { id: row.id } });
+};
+
+/**
  * 操作按钮
  */
 const buttons = ref([
@@ -266,6 +275,19 @@ const buttons = ref([
     show: true,
     disabled: (row: { instanceStatus: string }) => {
       return row.instanceStatus === "Deleted";
+    },
+  },
+  {
+    label: t("vm_cloud_server.btn.change_config", "配置变更"),
+    icon: "",
+    click: changeVmConfig,
+    show: true,
+    disabled: (row: { instanceStatus: string }) => {
+      return (
+        row.instanceStatus === "Deleted" ||
+        (row.instanceStatus.toLowerCase() != "running" &&
+          row.instanceStatus.toLowerCase().indexOf("ing") > -1)
+      );
     },
   },
 ]);

@@ -21,6 +21,7 @@ import com.fit2cloud.common.utils.DateUtil;
 import com.fit2cloud.common.utils.JsonUtil;
 import com.fit2cloud.constants.ErrorCodeConstants;
 import com.fit2cloud.provider.constants.F2CDiskStatus;
+import com.fit2cloud.provider.constants.F2CInstanceStatus;
 import com.fit2cloud.provider.entity.F2CDisk;
 import com.fit2cloud.provider.entity.F2CImage;
 import com.fit2cloud.provider.entity.F2CNetwork;
@@ -65,124 +66,73 @@ public class AliyunSyncCloudApi {
         try {
             CreateInstanceResponse createInstanceResponse = client.createInstance(createInstanceRequest);
             String instanceId = createInstanceResponse.body.instanceId;
+            Optional.ofNullable(instanceId).orElseThrow(() -> new RuntimeException("Instance ID is null."));
 
-            DescribeInstancesRequest describeInstancesRequest = new DescribeInstancesRequest();
-            describeInstancesRequest.setRegionId(req.getRegionId());
-            Collection<String> instancesList = new ArrayList<>();
-            Optional.ofNullable(instanceId).ifPresent(theInstanceId -> instancesList.add(theInstanceId));
-            describeInstancesRequest.setInstanceIds(new Gson().toJson(instancesList));
-            int count = 0;
-            boolean instanceCreated = false;
-            while (true) {
-                try {
-                    Thread.sleep(5000);
-                } catch (InterruptedException e) {
+            DescribeInstanceStatusRequest describeInstanceStatusRequest = new DescribeInstanceStatusRequest();
+            describeInstanceStatusRequest.setRegionId(req.getRegionId());
+            describeInstanceStatusRequest.setInstanceId(Arrays.asList(new String[]{instanceId}));
+            checkStatus(client, "Stopped", describeInstanceStatusRequest);
 
-                }
-                try {
-                    DescribeInstancesResponse result = client.describeInstances(describeInstancesRequest);
-                    List<DescribeInstancesResponseBody.DescribeInstancesResponseBodyInstancesInstance> instances = result.body.instances.instance;
-                    if (CollectionUtils.isNotEmpty(instances)) {
-                        instance = instances.get(0);
-                        if ("Stopped".equalsIgnoreCase(instance.getStatus())) {
-                            instanceCreated = true;
-                            break;
-                        }
-                    }
-                } catch (Exception e) {
-                    logger.debug("Error querying virtual machine information! instance : " + createInstanceRequest.getInstanceName());
-                }
-                if (count >= 10) {
-                    logger.error("Create instance timeout!");
-                    break;
-                }
-            }
-
-            if (instanceCreated) {
-                if (req.getF2CNetwork() != null && req.getF2CNetwork().getNetworkId() != null) {
-                    if (req.getHasPublicIp()) {
-                        try {
-                            // 创建 弹性公网IP
-                            AllocateEipAddressRequest allocateEipAddressRequest = new AllocateEipAddressRequest();
-                            allocateEipAddressRequest.setRegionId(req.getRegionId());
-                            allocateEipAddressRequest.setBandwidth(req.getBandwidth());
-                            allocateEipAddressRequest.setInternetChargeType(req.getBandwidthChargeType());
-                            AllocateEipAddressResponse allocateEipAddressResponse = client.allocateEipAddress(allocateEipAddressRequest);
-                            String eipId = allocateEipAddressResponse.body.allocationId;
-
-                            // 弹性公网IP 绑定云主机
-                            AssociateEipAddressRequest associateEipAddressRequest = new AssociateEipAddressRequest();
-                            associateEipAddressRequest.setAllocationId(eipId);
-                            associateEipAddressRequest.setInstanceId(instanceId);
-                            client.associateEipAddress(associateEipAddressRequest);
-                        } catch (Exception e) {
-                            logger.error("Failed to create public ip !" + e.getMessage());
-                        }
-                    }
-                } else {
-                    if (req.getHasPublicIp()) {
-                        try {
-                            AllocatePublicIpAddressRequest allocatePublicIpAddressRequest = new AllocatePublicIpAddressRequest();
-                            allocatePublicIpAddressRequest.setInstanceId(instanceId);
-                            AllocatePublicIpAddressResponse allocatePublicIpAddressResponse = client.allocatePublicIpAddress(allocatePublicIpAddressRequest);
-                            String publicIp = allocatePublicIpAddressResponse.body.ipAddress;
-                            logger.debug("Succeed to allocate public ip. Public ip is :: " + publicIp);
-                        } catch (Exception e) {
-                            logger.error("Failed to allocate public ip ! Instance : " + createInstanceRequest.getInstanceName() + ", errorMsg : " + e.getMessage());
-                        }
-                    }
-                }
-
-                try {
-                    Thread.sleep(5000);
-                } catch (InterruptedException e) {
-
-                }
-
-                // 启动云主机
-                StartInstanceRequest startInstanceRequest = new StartInstanceRequest();
-                startInstanceRequest.setInstanceId(instanceId);
-                try {
-                    StartInstanceResponse startInstanceResponse = client.startInstance(startInstanceRequest);
-                    if (StringUtils.isNotBlank(startInstanceResponse.body.requestId)) {
-                        logger.debug("Start instance :: " + instanceId);
-                    } else {
-                        throw new PluginException("Failed to start virtual machine!");
-                    }
-                } catch (Exception e) {
-                    logger.error("Failed to start virtual machine! instance : " + createInstanceRequest.getInstanceName());
-                }
-
-                count = 0;
-                while (true) {
+            if (req.getF2CNetwork() != null && req.getF2CNetwork().getNetworkId() != null) {
+                if (req.getHasPublicIp()) {
                     try {
-                        Thread.sleep(5000);
-                    } catch (InterruptedException e) {
-                    }
-                    logger.debug("Check instance[" + instanceId + "] status for " + ++count + " times!");
-                    DescribeInstancesResponse result1 = client.describeInstances(describeInstancesRequest);
-                    List<DescribeInstancesResponseBody.DescribeInstancesResponseBodyInstancesInstance> instances = result1.body.instances.instance;
-                    if (CollectionUtils.isNotEmpty(instances)) {
-                        if (("Running").equalsIgnoreCase(instances.get(0).getStatus())) {
-                            instance = instances.get(0);
-                            logger.debug("instance[" + instanceId + "] current status :: " + instances.get(0).getStatus());
-                            break;
-                        }
-                    }
-                    if (count >= 40) {
-                        break;
+                        // 创建 弹性公网IP
+                        AllocateEipAddressRequest allocateEipAddressRequest = new AllocateEipAddressRequest();
+                        allocateEipAddressRequest.setRegionId(req.getRegionId());
+                        allocateEipAddressRequest.setBandwidth(req.getBandwidth());
+                        allocateEipAddressRequest.setInternetChargeType(req.getBandwidthChargeType());
+                        AllocateEipAddressResponse allocateEipAddressResponse = client.allocateEipAddress(allocateEipAddressRequest);
+                        String eipId = allocateEipAddressResponse.body.allocationId;
+
+                        // 弹性公网IP 绑定云主机
+                        AssociateEipAddressRequest associateEipAddressRequest = new AssociateEipAddressRequest();
+                        associateEipAddressRequest.setAllocationId(eipId);
+                        associateEipAddressRequest.setInstanceId(instanceId);
+                        client.associateEipAddress(associateEipAddressRequest);
+                    } catch (Exception e) {
+                        logger.error("Failed to create public ip !" + e.getMessage());
                     }
                 }
-            }
-            if (instance != null) {
-                F2CVirtualMachine f2cInstance = AliyunMappingUtil.toF2CVirtualMachine(instance);
-                if (f2cInstance != null) {
-                    f2cInstance.setId(req.getId());
-                }
-                return f2cInstance;
             } else {
-                throw new PluginException("Return result is null.");
+                if (req.getHasPublicIp()) {
+                    try {
+                        AllocatePublicIpAddressRequest allocatePublicIpAddressRequest = new AllocatePublicIpAddressRequest();
+                        allocatePublicIpAddressRequest.setInstanceId(instanceId);
+                        AllocatePublicIpAddressResponse allocatePublicIpAddressResponse = client.allocatePublicIpAddress(allocatePublicIpAddressRequest);
+                        String publicIp = allocatePublicIpAddressResponse.body.ipAddress;
+                        logger.debug("Succeed to allocate public ip. Public ip is :: " + publicIp);
+                    } catch (Exception e) {
+                        logger.error("Failed to allocate public ip ! Instance : " + createInstanceRequest.getInstanceName() + ", errorMsg : " + e.getMessage());
+                    }
+                }
             }
+
+            try {
+                Thread.sleep(5000);
+            } catch (InterruptedException e) {
+
+            }
+
+            // 启动云主机
+            StartInstanceRequest startInstanceRequest = new StartInstanceRequest();
+            startInstanceRequest.setInstanceId(instanceId);
+            try {
+                StartInstanceResponse startInstanceResponse = client.startInstance(startInstanceRequest);
+                if (StringUtils.isNotBlank(startInstanceResponse.body.requestId)) {
+                    logger.debug("Start instance :: " + instanceId);
+                } else {
+                    throw new PluginException("Failed to start virtual machine!");
+                }
+            } catch (Exception e) {
+                logger.error("Failed to start virtual machine! instance : " + createInstanceRequest.getInstanceName());
+            }
+
+            checkStatus(client, "Running", describeInstanceStatusRequest);
+            instance = getInstanceById(instanceId, req.getRegionId(), client);
+            Optional.ofNullable(instance).orElseThrow(() -> new RuntimeException("Return result is null."));
+            F2CVirtualMachine f2cInstance = AliyunMappingUtil.toF2CVirtualMachine(instance);
+            Optional.ofNullable(f2cInstance).ifPresent((result) -> result.setId(req.getId()));
+            return f2cInstance;
         } catch (Exception e) {
             throw new RuntimeException("Failed to create instance." + e.getMessage(), e);
         }
@@ -197,7 +147,7 @@ public class AliyunSyncCloudApi {
                 .setName(request.getServerInfos().get(index).getName())
                 .setIpArray(new ArrayList<>())
                 .setInstanceType(request.getInstanceTypeDTO() == null ? "" : request.getInstanceTypeDTO().getInstanceType())
-                .setInstanceTypeDescription(request.getInstanceTypeDTO() == null ? "" : request.getInstanceTypeDTO().getInstanceType());
+                .setInstanceTypeDescription(request.getInstanceTypeDTO() == null ? "" : request.getInstanceTypeDTO().getCpuMemory());
 
         return virtualMachine;
     }
@@ -1448,5 +1398,146 @@ public class AliyunSyncCloudApi {
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
+    }
+
+    /**
+     * 虚拟机配置变更
+     *
+     * @param request
+     * @return
+     * @throws PluginException
+     */
+    public static F2CVirtualMachine changeVmConfig(AliyunUpdateConfigRequest request) throws PluginException {
+        Client client = JsonUtil.parseObject(request.getCredential(), AliyunVmCredential.class).getClient();
+
+        DescribeInstancesResponseBody.DescribeInstancesResponseBodyInstancesInstance instance = getInstanceById(request.getInstanceUuid(), request.getRegionId(), client);
+        Optional.ofNullable(instance).orElseThrow(() -> new RuntimeException("Instance not exists."));
+
+        // 阿里云变更实例前需要先关机
+        boolean isStartInstance = false;
+        AliyunInstanceRequest instanceRequest = new AliyunInstanceRequest();
+        BeanUtils.copyProperties(request, instanceRequest);
+        instanceRequest.setUuid(request.getInstanceUuid());
+        if (!F2CInstanceStatus.Stopped.name().equalsIgnoreCase(instance.getStatus())) {
+            powerOff(instanceRequest);
+            isStartInstance = true;
+        }
+
+        // 变配
+        ModifyInstanceSpecRequest modifyInstanceSpecRequest = new ModifyInstanceSpecRequest();
+        modifyInstanceSpecRequest.setInstanceId(request.getInstanceUuid());
+        modifyInstanceSpecRequest.setInstanceType(request.getNewInstanceType());
+        try {
+            client.modifyInstanceSpec(modifyInstanceSpecRequest);
+        } catch (Exception e) {
+            throw new RuntimeException("Fail to modify instance!Error message:" + e.getMessage());
+        }
+
+        // 查看实例是否为已关机状态
+        DescribeInstanceStatusRequest describeInstanceStatusRequest = new DescribeInstanceStatusRequest();
+        describeInstanceStatusRequest.setRegionId(request.getRegionId());
+        describeInstanceStatusRequest.setInstanceId(Arrays.asList(new String[]{request.getInstanceUuid()}));
+        try {
+            checkStatus(client, "Stopped", describeInstanceStatusRequest);
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to get status!" + e.getMessage(), e);
+        }
+
+        if (isStartInstance) {
+            powerOn(instanceRequest);
+        }
+
+        F2CVirtualMachine f2CVirtualMachine = AliyunMappingUtil.toF2CVirtualMachine(getInstanceById(request.getInstanceUuid(), request.getRegionId(), client));
+        return f2CVirtualMachine;
+    }
+
+    /**
+     * 根据实例 ID 获取实例
+     *
+     * @param instanceId
+     * @param regionId
+     * @param client
+     * @return
+     */
+    private static DescribeInstancesResponseBody.DescribeInstancesResponseBodyInstancesInstance getInstanceById(String instanceId, String regionId, Client client) {
+        DescribeInstancesRequest describeInstancesRequest = new DescribeInstancesRequest();
+        describeInstancesRequest.setRegionId(regionId);
+        Optional.ofNullable(instanceId).orElseThrow(() -> new RuntimeException("Instance ID is null!"));
+        List<String> instancesList = new ArrayList<>();
+        instancesList.add(instanceId);
+        describeInstancesRequest.setInstanceIds(new Gson().toJson(instancesList));
+        return getInstanceById(describeInstancesRequest, client);
+    }
+
+    /**
+     * 根据实例 ID 获取实例
+     *
+     * @param describeInstancesRequest
+     * @param client
+     * @return
+     */
+    private static DescribeInstancesResponseBody.DescribeInstancesResponseBodyInstancesInstance getInstanceById(DescribeInstancesRequest describeInstancesRequest, Client client) {
+        try {
+            DescribeInstancesResponse res = client.describeInstances(describeInstancesRequest);
+            List<DescribeInstancesResponseBody.DescribeInstancesResponseBodyInstancesInstance> instances = res.body.instances.instance;
+            if (CollectionUtils.isNotEmpty(instances)) {
+                return res.getBody().getInstances().getInstance().get(0);
+            } else {
+                throw new RuntimeException("Instance not exist!");
+            }
+        } catch (Exception e) {
+            throw new RuntimeException(e.getMessage(), e);
+        }
+    }
+
+    public static List<AliyunInstanceType> getInstanceTypesForConfigUpdate(AliyunUpdateConfigRequest request) {
+        Client client = JsonUtil.parseObject(request.getCredential(), AliyunVmCredential.class).getClient();
+        List<AliyunInstanceType> result = new ArrayList<>();
+
+        // 获取所有实例
+        ListInstanceTypesRequest listInstanceTypesRequest = new ListInstanceTypesRequest();
+        BeanUtils.copyProperties(request, listInstanceTypesRequest);
+        List<DescribeInstanceTypesResponseBody.DescribeInstanceTypesResponseBodyInstanceTypesInstanceType> allInstanceTypes = listInstanceType(listInstanceTypesRequest);
+
+        // 获取配置变更可选实例
+        DescribeResourcesModificationRequest describeResourcesModificationRequest = new DescribeResourcesModificationRequest()
+                .setRegionId(request.getRegionId())
+                .setResourceId(request.getInstanceUuid())
+                .setDestinationResource("InstanceType")
+                .setOperationType("Upgrade")
+                .setZoneId(request.getZoneId());
+        try {
+            DescribeResourcesModificationResponse response = client.describeResourcesModification(describeResourcesModificationRequest);
+            List<DescribeResourcesModificationResponseBody.DescribeResourcesModificationResponseBodyAvailableZonesAvailableZone> availableZone = response.body.availableZones.availableZone;
+            List<DescribeResourcesModificationResponseBody.DescribeResourcesModificationResponseBodyAvailableZonesAvailableZoneAvailableResourcesAvailableResourceSupportedResourcesSupportedResource> supportedResource = new ArrayList<>();
+            if (CollectionUtils.isNotEmpty(availableZone) &&
+                    CollectionUtils.isNotEmpty(availableZone.get(0).availableResources.availableResource) &&
+                    CollectionUtils.isNotEmpty(availableZone.get(0).availableResources.availableResource.get(0).supportedResources.supportedResource)) {
+                supportedResource = availableZone.get(0).availableResources.availableResource.get(0).supportedResources.supportedResource.stream()
+                        .filter((theSupportedResource) -> "Available".equalsIgnoreCase(theSupportedResource.status)).collect(Collectors.toList());
+            }
+
+            // 获取可用区可选实例的 ID 集合
+            List<String> instanceTypeIds = supportedResource.stream().map((theSupportedResource) -> theSupportedResource.getValue()).toList();
+
+            // 过滤可用实例
+            final List<String> instanceTypeIdsFinal = instanceTypeIds;
+            result = allInstanceTypes.stream()
+                    .filter(instanceType -> instanceTypeIdsFinal.contains(instanceType.getInstanceTypeId()) &&
+                            !instanceType.getInstanceTypeId().equalsIgnoreCase(request.getCurrentInstanceType()))
+                    .map((instanceType) -> {
+                        AliyunInstanceType resultType = new AliyunInstanceType();
+                        // 应要求过滤掉小于 1G 内存的实例规格和当前实例的规格
+                        if (instanceType.getMemorySize() >= 1) {
+                            resultType.setInstanceType(instanceType.getInstanceTypeId());
+                            resultType.setCpuMemory(instanceType.getCpuCoreCount() + "vCPU" + instanceType.getMemorySize().intValue() + "GB");
+                            resultType.setInstanceTypeDesc(resultType.getInstanceType() + "(" + resultType.getCpuMemory() + ")");
+                        }
+                        return resultType;
+                    }).toList();
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to get instance type for updating!" + e.getMessage(), e);
+        }
+        return result;
     }
 }

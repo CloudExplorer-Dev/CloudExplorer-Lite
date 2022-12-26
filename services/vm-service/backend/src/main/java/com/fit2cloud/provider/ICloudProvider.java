@@ -222,4 +222,12 @@ public interface ICloudProvider {
      */
     String calculateConfigPrice(String req);
 
+    /**
+     * 配置变更
+     * @return
+     */
+    F2CVirtualMachine changeVmConfig(String req);
+
+    FormObject getConfigUpdateForm();
+
 }

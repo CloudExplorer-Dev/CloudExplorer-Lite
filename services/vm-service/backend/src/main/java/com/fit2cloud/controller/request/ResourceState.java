@@ -44,4 +44,9 @@ public class ResourceState<T, V> {
      */
     BiConsumer<T, V> saveResourceMethod;
 
+    /**
+     * 更新资源方法
+     */
+    BiConsumer<T,V> updateResourceMethodNeedTransfer;
+
 }

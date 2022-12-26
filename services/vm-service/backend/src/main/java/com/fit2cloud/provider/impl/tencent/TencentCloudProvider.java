@@ -13,6 +13,10 @@ import com.fit2cloud.provider.entity.F2CImage;
 import com.fit2cloud.provider.entity.F2CNetwork;
 import com.fit2cloud.provider.entity.F2CVirtualMachine;
 import com.fit2cloud.provider.entity.request.GetMetricsRequest;
+import com.fit2cloud.provider.impl.aliyun.api.AliyunSyncCloudApi;
+import com.fit2cloud.provider.impl.aliyun.entity.AliyunInstanceType;
+import com.fit2cloud.provider.impl.aliyun.entity.request.AliyunConfigUpdateForm;
+import com.fit2cloud.provider.impl.aliyun.entity.request.AliyunUpdateConfigRequest;
 import com.fit2cloud.provider.impl.tencent.api.TencetSyncCloudApi;
 import com.fit2cloud.provider.impl.tencent.constants.TencentChargeType;
 import com.fit2cloud.provider.impl.tencent.constants.TencentLoginType;
@@ -357,5 +361,19 @@ public class TencentCloudProvider extends AbstractCloudProvider<TencentCredentia
     @Override
     public List<F2CPerfMetricMonitorData> getF2CPerfMetricMonitorData(String req) {
         return TencetSyncCloudApi.getF2CPerfMetricList(JsonUtil.parseObject(req, GetMetricsRequest.class));
+    }
+
+    @Override
+    public F2CVirtualMachine changeVmConfig(String req){
+        return TencetSyncCloudApi.changeVmConfig(JsonUtil.parseObject(req, TencentUpdateConfigRequest.class));
+    }
+
+    @Override
+    public FormObject getConfigUpdateForm() {
+        return FormUtil.toForm(TencentConfigUpdateForm.class);
+    }
+
+    public List<TencentInstanceType> getInstanceTypesForConfigUpdate(String req) {
+        return TencetSyncCloudApi.getInstanceTypesForConfigUpdate(JsonUtil.parseObject(req, TencentUpdateConfigRequest.class));
     }
 }

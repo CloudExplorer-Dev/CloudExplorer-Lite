@@ -1,11 +1,13 @@
 package com.fit2cloud.controller;
 
 import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.fit2cloud.common.form.vo.FormObject;
 import com.fit2cloud.common.log.annotation.OperatedLog;
 import com.fit2cloud.common.log.constants.OperatedTypeEnum;
 import com.fit2cloud.common.log.constants.ResourceTypeEnum;
 import com.fit2cloud.controller.handler.ResultHolder;
 import com.fit2cloud.controller.request.vm.BatchOperateVmRequest;
+import com.fit2cloud.controller.request.vm.ChangeServerConfigRequest;
 import com.fit2cloud.controller.request.vm.CreateServerRequest;
 import com.fit2cloud.controller.request.vm.PageVmCloudServerRequest;
 import com.fit2cloud.dto.VmCloudServerDTO;
@@ -118,4 +120,16 @@ public class VmCloudServerController {
         return ResultHolder.success(iVmCloudServerService.createServer(request));
     }
 
+    @ApiOperation(value = "配置变更")
+    @PutMapping("changeConfig")
+    @OperatedLog(resourceType = ResourceTypeEnum.CLOUD_SERVER, operated = OperatedTypeEnum.CHANGE_CONFIG, resourceId = "#{req.instanceUuid}", param = "#{req}")
+    public ResultHolder<Boolean> changeConfig(@RequestBody ChangeServerConfigRequest req) {
+        return ResultHolder.success(iVmCloudServerService.changeConfig(req));
+    }
+
+    @GetMapping("/configUpdateForm/{platform}")
+    @ApiOperation(value = "根据云平台查询配置变更的表单数据")
+    public ResultHolder<FormObject> findConfigUpdateForm(@PathVariable("platform") String platform) {
+        return ResultHolder.success(iVmCloudServerService.getConfigUpdateForm(platform));
+    }
 }

@@ -1,4 +1,4 @@
-import { get, post } from "@commons/request";
+import { get, post, put } from "@commons/request";
 import type Result from "@commons/request/Result";
 import type { Page } from "@commons/request/Result";
 import type {
@@ -8,6 +8,7 @@ import type {
   CloudServerJobRecord,
   PerfMonitorData,
   GetPerfMonitorRequest,
+  ChangeServerConfigRequest,
 } from "./type";
 import type { Ref } from "vue";
 import type { SimpleMap } from "@commons/api/base/type";
@@ -163,6 +164,25 @@ export function createServer(
   return post("api/server/create", null, req, loading);
 }
 
+export function changeServerConfig(
+  req: ChangeServerConfigRequest,
+  loading?: Ref<boolean>
+): Promise<Result<boolean>> {
+  return put("api/server/changeConfig", null, req, loading);
+}
+
+/**
+ * 根据云账号查询配置变更表单数据
+ * @param req
+ * @param loading
+ */
+export function getConfigUpdateForm(
+  platform: string,
+  loading?: Ref<boolean>
+): Promise<Result<any>> {
+  return get("/api/server/configUpdateForm/" + platform, null, loading);
+}
+
 const VmCloudServerApi = {
   listVmCloudServer,
   shutdownInstance,
@@ -176,6 +196,8 @@ const VmCloudServerApi = {
   listPerfMetricMonitor,
   getVmCloudServerByIds,
   createServer,
+  changeServerConfig,
+  getConfigUpdateForm,
 };
 
 export default VmCloudServerApi;

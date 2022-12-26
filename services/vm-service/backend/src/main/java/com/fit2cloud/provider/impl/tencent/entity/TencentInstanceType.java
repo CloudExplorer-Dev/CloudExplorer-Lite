@@ -28,9 +28,13 @@ public class TencentInstanceType {
      * 实例规格（例如：s1.small.1）
      */
     private String instanceType;
+    /**
+     * 实例规格和 Cpu 内存
+     */
+    private String instanceTypeDesc;
 
     /**
-     * cpu和内存 （例如：1vCPU 1G）
+     * cpu 和内存 （例如：1vCPU 1G）
      */
     private String cpuMemory;
 

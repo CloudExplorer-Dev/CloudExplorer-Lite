@@ -169,7 +169,7 @@ public class AliyunCloudProvider extends AbstractCloudProvider<AliyunVmCredentia
     }
 
     /**
-     * 获取实例类型
+     * 获取镜像
      *
      * @param req
      * @return
@@ -355,5 +355,19 @@ public class AliyunCloudProvider extends AbstractCloudProvider<AliyunVmCredentia
     @Override
     public List<F2CPerfMetricMonitorData> getF2CPerfMetricMonitorData(String req) {
         return AliyunSyncCloudApi.getF2CPerfMetricList(JsonUtil.parseObject(req, GetMetricsRequest.class));
+    }
+
+    @Override
+    public F2CVirtualMachine changeVmConfig(String req){
+        return AliyunSyncCloudApi.changeVmConfig(JsonUtil.parseObject(req, AliyunUpdateConfigRequest.class));
+    }
+
+    @Override
+    public FormObject getConfigUpdateForm() {
+        return FormUtil.toForm(AliyunConfigUpdateForm.class);
+    }
+
+    public List<AliyunInstanceType> getInstanceTypesForConfigUpdate(String req) {
+        return AliyunSyncCloudApi.getInstanceTypesForConfigUpdate(JsonUtil.parseObject(req, AliyunUpdateConfigRequest.class));
     }
 }

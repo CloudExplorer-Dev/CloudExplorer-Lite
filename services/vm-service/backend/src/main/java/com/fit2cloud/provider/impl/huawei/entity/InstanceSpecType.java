@@ -24,6 +24,10 @@ public class InstanceSpecType {
      */
     private String instanceSpec;
     /**
+     * 规格名称+CPU内存
+     */
+    private String instanceTypeDesc;
+    /**
      * cpu
      */
     private String vcpus;

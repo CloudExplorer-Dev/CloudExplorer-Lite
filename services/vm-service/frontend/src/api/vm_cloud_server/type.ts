@@ -125,10 +125,17 @@ export interface CreateServerRequest {
 
   fromInfo: string;
 }
+
+interface ChangeServerConfigRequest {
+  id?: string;
+  newInstanceType: string;
+}
+
 export type {
   VmCloudServerVO,
   ListVmCloudServerRequest,
   CloudServerJobRecord,
   PerfMonitorData,
   GetPerfMonitorRequest,
+  ChangeServerConfigRequest,
 };

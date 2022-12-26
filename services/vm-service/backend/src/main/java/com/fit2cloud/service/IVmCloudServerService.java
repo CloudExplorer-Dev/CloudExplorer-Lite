@@ -3,7 +3,9 @@ package com.fit2cloud.service;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.fit2cloud.base.entity.VmCloudServer;
+import com.fit2cloud.common.form.vo.FormObject;
 import com.fit2cloud.controller.request.vm.BatchOperateVmRequest;
+import com.fit2cloud.controller.request.vm.ChangeServerConfigRequest;
 import com.fit2cloud.controller.request.vm.CreateServerRequest;
 import com.fit2cloud.controller.request.vm.PageVmCloudServerRequest;
 import com.fit2cloud.dto.VmCloudServerDTO;
@@ -42,4 +44,8 @@ public interface IVmCloudServerService extends IService<VmCloudServer> {
     List<VmCloudServerDTO> getByIds(List<String> vmIds);
 
     boolean createServer(CreateServerRequest request);
+
+    boolean changeConfig(ChangeServerConfigRequest request);
+
+    FormObject getConfigUpdateForm(String platform);
 }
