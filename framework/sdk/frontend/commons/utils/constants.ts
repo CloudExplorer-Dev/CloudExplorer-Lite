@@ -21,6 +21,7 @@ export const JobTypeConst = {
   CLOUD_SERVER_START_JOB: "云主机开机",
   CLOUD_SERVER_STOP_JOB: "云主机关机",
   CLOUD_SERVER_RESTART_JOB: "云主机重启",
+  CLOUD_SERVER_CONFIG_CHANGE_JOB: "云主机配置变更",
   /*CLOUD_DISK_OPERATE_JOB: "磁盘操作",*/
   CLOUD_DISK_CREATE_JOB: "磁盘创建",
   CLOUD_DISK_DELETE_JOB: "磁盘删除",

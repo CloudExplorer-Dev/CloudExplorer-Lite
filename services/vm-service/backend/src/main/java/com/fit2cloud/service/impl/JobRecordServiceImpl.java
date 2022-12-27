@@ -62,6 +62,7 @@ public class JobRecordServiceImpl implements IJobRecordService {
                         JobTypeConstants.CLOUD_SERVER_START_JOB,
                         JobTypeConstants.CLOUD_SERVER_STOP_JOB,
                         JobTypeConstants.CLOUD_SERVER_RESTART_JOB,
+                        JobTypeConstants.CLOUD_SERVER_CONFIG_CHANGE_JOB,
                         JobTypeConstants.CLOUD_DISK_OPERATE_JOB,
                         JobTypeConstants.CLOUD_DISK_CREATE_JOB,
                         JobTypeConstants.CLOUD_DISK_DELETE_JOB,
