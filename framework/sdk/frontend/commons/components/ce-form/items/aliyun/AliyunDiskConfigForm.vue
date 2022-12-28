@@ -254,7 +254,7 @@ function add() {
       size: dataDiskItem.minDiskSize,
       diskType: dataDiskItem.diskType,
       deleteWithInstance: true,
-      readonly: false,
+      readonly: true,
     });
   } else {
     ElMessage.warning("可选择的数据盘类型为空");
