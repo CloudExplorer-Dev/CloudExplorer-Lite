@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onMounted, reactive, ref } from "vue";
+import { computed, onMounted, ref, watch } from "vue";
 import VmCloudServerApi from "@/api/vm_cloud_server";
 import BaseCloudAccountApi from "@commons/api/cloud_account";
 import { useRouter } from "vue-router";
@@ -7,15 +7,19 @@ import type { VmCloudServerVO } from "@/api/vm_cloud_server/type";
 import type { CloudAccount } from "@commons/api/cloud_account/type";
 import type { FormInstance } from "element-plus";
 import { useI18n } from "vue-i18n";
-const { t } = useI18n();
 
+const { t } = useI18n();
 const router = useRouter();
 const id = ref<string>(router.currentRoute.value.params.id as string);
 const loading = ref(false);
+const loadingInstanceType = ref(false);
+const loadingPrice = ref(false);
+
 const vmCloudServer = ref<VmCloudServerVO>();
 const cloudAccount = ref<CloudAccount>();
 const formRef = ref<any>();
 const configUpdateFormData = ref();
+const configUpdatePrice = ref();
 const otherParams = computed(() => {
   return {
     ...cloudAccount.value,
@@ -23,6 +27,8 @@ const otherParams = computed(() => {
     zoneId: vmCloudServer.value?.zone,
     instanceUuid: vmCloudServer.value?.instanceUuid,
     currentInstanceType: vmCloudServer.value?.instanceType,
+    newInstanceType: formRef.value?.getFormData().newInstanceType,
+    instanceChargeType: vmCloudServer.value?.instanceChargeType,
   };
 });
 
@@ -42,7 +48,7 @@ onMounted(() => {
         // 获取相应云平台配置变更表单数据
         VmCloudServerApi.getConfigUpdateForm(
           cloudAccount.value.platform,
-          loading
+          loadingInstanceType
         ).then((res) => {
           configUpdateFormData.value = res.data;
         });
@@ -66,10 +72,25 @@ const handleSave = (formEl: FormInstance) => {
     });
   });
 };
+
+watch(
+  () => formRef.value?.getFormData().newInstanceType,
+  () => {
+    if (cloudAccount.value?.platform) {
+      VmCloudServerApi.getConfigUpdatePrice(
+        cloudAccount.value?.platform,
+        { ...otherParams.value },
+        loadingPrice
+      ).then((ok) => {
+        configUpdatePrice.value = ok.data;
+      });
+    }
+  }
+);
 </script>
 
 <template>
-  <layout-container :border="false">
+  <layout-container :border="false" v-loading="loading">
     <template #content>
       <layout-container>
         <template #header>
@@ -141,7 +162,7 @@ const handleSave = (formEl: FormInstance) => {
               </div>
             </el-card>
 
-            <el-card class="box-card" v-loading="loading">
+            <el-card class="box-card" v-loading="loadingInstanceType">
               <template #header>
                 <div class="card-header">
                   <span>{{
@@ -170,12 +191,21 @@ const handleSave = (formEl: FormInstance) => {
       </layout-container>
 
       <layout-container>
-        <el-button @click="handleCancel()"
-          >{{ $t("commons.btn.cancel") }}
-        </el-button>
-        <el-button type="primary" @click="handleSave(formRef)"
-          >{{ $t("commons.btn.save") }}
-        </el-button>
+        <div class="price-container">
+          <div class="price" v-loading="loadingPrice">
+            <span v-if="configUpdatePrice != null">
+              配置费用：{{ configUpdatePrice }}
+            </span>
+          </div>
+          <div>
+            <el-button @click="handleCancel()"
+              >{{ $t("commons.btn.cancel") }}
+            </el-button>
+            <el-button type="primary" @click="handleSave(formRef)"
+              >{{ $t("commons.btn.save") }}
+            </el-button>
+          </div>
+        </div>
       </layout-container>
     </template>
   </layout-container>
@@ -185,15 +215,28 @@ const handleSave = (formEl: FormInstance) => {
 .box-card {
   width: 400px;
 }
+
 .card-header {
   display: flex;
   justify-content: space-evenly;
   align-items: center;
 }
+
 :deep(.el-card__header) {
   background-color: var(--el-color-primary-light-9);
 }
+
 .item {
   margin-bottom: 18px;
+}
+
+.price-container {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+
+  .price {
+    padding-left: 60px;
+  }
 }
 </style>

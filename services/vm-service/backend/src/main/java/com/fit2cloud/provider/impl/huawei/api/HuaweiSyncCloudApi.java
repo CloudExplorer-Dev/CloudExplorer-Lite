@@ -10,7 +10,9 @@ import com.fit2cloud.common.utils.DateUtil;
 import com.fit2cloud.common.utils.JsonUtil;
 import com.fit2cloud.constants.ErrorCodeConstants;
 import com.fit2cloud.provider.constants.DeleteWithInstance;
+import com.fit2cloud.provider.constants.F2CChargeType;
 import com.fit2cloud.provider.constants.F2CDiskStatus;
+import com.fit2cloud.provider.constants.PriceUnit;
 import com.fit2cloud.provider.entity.F2CDisk;
 import com.fit2cloud.provider.entity.F2CImage;
 import com.fit2cloud.provider.entity.F2CVirtualMachine;
@@ -22,6 +24,7 @@ import com.fit2cloud.provider.impl.huawei.entity.credential.HuaweiVmCredential;
 import com.fit2cloud.provider.impl.huawei.entity.request.*;
 import com.fit2cloud.provider.impl.huawei.util.HuaweiMappingUtil;
 import com.google.gson.Gson;
+import com.huaweicloud.sdk.bss.v2.BssClient;
 import com.huaweicloud.sdk.bss.v2.model.*;
 import com.huaweicloud.sdk.ces.v1.CesClient;
 import com.huaweicloud.sdk.ces.v1.model.Datapoint;
@@ -48,6 +51,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.BeanUtils;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -1424,18 +1428,21 @@ public class HuaweiSyncCloudApi {
 
         String instanceId = request.getInstanceUuid();
         String instanceType = request.getNewInstanceType();
-        ShowServerResponse showServerResponse = ecsClient.showServer(new ShowServerRequest().withServerId(instanceId));
-        ServerDetail server = showServerResponse.getServer();
-        Optional.ofNullable(server).orElseThrow(() -> new RuntimeException("Instance not exists.Instance id :" + instanceId));
+        ServerDetail server = getInstanceById(instanceId, ecsClient);
+        Optional.ofNullable(server).orElseThrow(() -> new RuntimeException("Can not find the server!"));
 
         ResizeServerRequest resizeServerRequest = new ResizeServerRequest();
         resizeServerRequest.withServerId(instanceId);
         ResizeServerRequestBody body = new ResizeServerRequestBody();
-        ResizePrePaidServerOption resizeOption = new ResizePrePaidServerOption();
-        resizeOption.withFlavorRef(instanceType)
+
+        ResizeServerExtendParam extendParamResize = new ResizeServerExtendParam();
+        extendParamResize.withIsAutoPay("true");
+        ResizePrePaidServerOption resizeBody = new ResizePrePaidServerOption();
+        resizeBody.withFlavorRef(instanceType)
                 .withMode("withStopServer")
-                .withExtendparam(new ResizeServerExtendParam().withIsAutoPay("true"));
-        body.withResize(resizeOption);
+                .withExtendparam(extendParamResize);
+
+        body.withResize(resizeBody);
         resizeServerRequest.withBody(body);
 
         ResizeServerResponse resizeResponse = ecsClient.resizeServer(resizeServerRequest);
@@ -1448,9 +1455,7 @@ public class HuaweiSyncCloudApi {
             throw new RuntimeException("Failed to check ecs job status." + e.getMessage(), e);
         }
 
-        showServerResponse = ecsClient.showServer(new ShowServerRequest().withServerId(instanceId));
-        server = showServerResponse.getServer();
-        return HuaweiMappingUtil.toF2CVirtualMachine(server);
+        return HuaweiMappingUtil.toF2CVirtualMachine(getInstanceById(instanceId, ecsClient));
     }
 
     public static List<InstanceSpecType> getInstanceTypesForConfigUpdate(HuaweiUpdateConfigRequest request) {
@@ -1468,9 +1473,81 @@ public class HuaweiSyncCloudApi {
                     InstanceSpecType instanceSpecType = new InstanceSpecType();
                     instanceSpecType.setSpecName(flavor.getName());
                     instanceSpecType.setInstanceSpec(HuaweiMappingUtil.transInstanceSpecTypeDescription(flavor));
-                    instanceSpecType.setInstanceTypeDesc(instanceSpecType.getSpecName() + "(" + instanceSpecType.getInstanceSpec() + ")");
+                    instanceSpecType.setInstanceTypeDesc(instanceSpecType.getSpecName() + "（" + instanceSpecType.getInstanceSpec() + "）");
                     return instanceSpecType;
                 }).collect(Collectors.toList());
         return result;
+    }
+
+    /**
+     * 云主机配置变更询价
+     *
+     * @param request
+     * @return
+     */
+    public static String calculateConfigUpdatePrice(HuaweiUpdateConfigRequest request) {
+        HuaweiVmCredential huaweiVmCredential = JsonUtil.parseObject(request.getCredential(), HuaweiVmCredential.class);
+        EcsClient ecsClient = huaweiVmCredential.getEcsClient(request.getRegionId());
+
+        ServerDetail server = getInstanceById(request.getInstanceUuid(), ecsClient);
+        Optional.ofNullable(server).orElseThrow(() -> new RuntimeException("Can not find the server!"));
+
+        String instanceChargeType;
+        if (StringUtils.equalsIgnoreCase(server.getMetadata().get("charging_mode"), "2")) {
+            instanceChargeType = F2CChargeType.SPOT_PAID;
+        } else {
+            instanceChargeType = StringUtils.equalsIgnoreCase(server.getMetadata().get("charging_mode"), "0") ? F2CChargeType.POST_PAID : F2CChargeType.PRE_PAID;
+        }
+
+        HuaweiVmCreateRequest createRequest = new HuaweiVmCreateRequest();
+        BeanUtils.copyProperties(request, createRequest);
+        InstanceSpecType instanceSpecType = new InstanceSpecType();
+        instanceSpecType.setSpecName(request.getNewInstanceType());
+        createRequest.setInstanceSpecConfig(instanceSpecType);
+        createRequest.setCount(1);
+        String projectId = server.getTenantId();
+
+        Double price;
+        if (F2CChargeType.PRE_PAID.equalsIgnoreCase(instanceChargeType)) {
+            BssClient bssClient = huaweiVmCredential.getBssClient();
+            ShowCustomerOrderDetailsResponse response = getOrderDetailsById(server.getMetadata().get("metering.order_id"), bssClient);
+            response.getOrderLineItems().stream().forEach((item) -> {
+                if ("hws.service.type.ec2".equalsIgnoreCase(item.getServiceTypeCode())) {
+                    createRequest.setPeriodType(item.getPeriodType() == 2 ? "month" : "year");
+                    createRequest.setPeriodNum(item.getPeriodNum());
+                }
+            });
+            price = vmInquiryPriceForMonth(createRequest, huaweiVmCredential, projectId);
+        } else {
+            price = vmInquiryPriceForHour(createRequest, huaweiVmCredential, projectId);
+        }
+        return String.format("%.2f", price) + PriceUnit.YUAN;
+    }
+
+    /**
+     * 根据实例 ID 获取实例
+     *
+     * @param instanceId
+     * @param ecsClient
+     * @return
+     */
+    private static ServerDetail getInstanceById(String instanceId, EcsClient ecsClient) {
+        ShowServerResponse showServerResponse = ecsClient.showServer(new ShowServerRequest().withServerId(instanceId));
+        ServerDetail server = showServerResponse.getServer();
+        return server;
+    }
+
+    /**
+     * 查询订单详情
+     *
+     * @param orderId
+     * @param bssClient
+     * @return
+     */
+    private static ShowCustomerOrderDetailsResponse getOrderDetailsById(String orderId, BssClient bssClient) {
+        ShowCustomerOrderDetailsRequest request = new ShowCustomerOrderDetailsRequest();
+        request.setOrderId(orderId);
+        bssClient.showCustomerOrderDetails(request);
+        return bssClient.showCustomerOrderDetails(request);
     }
 }

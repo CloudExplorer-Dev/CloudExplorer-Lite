@@ -15,6 +15,7 @@ import com.fit2cloud.base.service.IBaseCloudAccountService;
 import com.fit2cloud.common.constants.JobStatusConstants;
 import com.fit2cloud.common.constants.JobTypeConstants;
 import com.fit2cloud.common.exception.Fit2cloudException;
+import com.fit2cloud.common.form.util.FormUtil;
 import com.fit2cloud.common.form.vo.FormObject;
 import com.fit2cloud.common.log.constants.OperatedTypeEnum;
 import com.fit2cloud.common.log.constants.ResourceTypeEnum;
@@ -36,7 +37,6 @@ import com.fit2cloud.dto.VmCloudServerDTO;
 import com.fit2cloud.provider.ICloudProvider;
 import com.fit2cloud.provider.ICreateServerRequest;
 import com.fit2cloud.provider.constants.CreateServerRequestConstants;
-import com.fit2cloud.provider.constants.F2CDiskStatus;
 import com.fit2cloud.provider.constants.F2CInstanceStatus;
 import com.fit2cloud.provider.constants.ProviderConstants;
 import com.fit2cloud.provider.entity.F2CVirtualMachine;
@@ -481,12 +481,13 @@ public class VmCloudServerServiceImpl extends ServiceImpl<BaseVmCloudServerMappe
 
     /**
      * 更新云主机
+     *
      * @param vmCloudServer
      * @param f2CVirtualMachine
      */
     private void updateCloudServer(VmCloudServer vmCloudServer, F2CVirtualMachine f2CVirtualMachine) {
         VmCloudServer vmCloudServerUpdate = SyncProviderServiceImpl.toVmCloudServer(f2CVirtualMachine, vmCloudServer.getAccountId(), DateUtil.getSyncTime());
-        BeanUtils.copyProperties(vmCloudServerUpdate,vmCloudServer,new String[]{"id","ipArray"});
+        BeanUtils.copyProperties(vmCloudServerUpdate, vmCloudServer, new String[]{"id", "ipArray"});
         baseMapper.updateById(vmCloudServer);
     }
 
@@ -496,6 +497,15 @@ public class VmCloudServerServiceImpl extends ServiceImpl<BaseVmCloudServerMappe
             return cloudProvider.getConstructor().newInstance().getConfigUpdateForm();
         } catch (Exception e) {
             throw new RuntimeException("Failed to get config update form!" + e.getMessage(), e);
+        }
+    }
+
+    public String calculateConfigUpdatePrice(String platform, Map<String, Object> params) {
+        Class<? extends ICloudProvider> cloudProvider = ProviderConstants.valueOf(platform).getCloudProvider();
+        try {
+            return (String) FormUtil.exec(cloudProvider.getName(), false, "calculateConfigUpdatePrice", params);
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to get config update price!" + e.getMessage(), e);
         }
     }
 }

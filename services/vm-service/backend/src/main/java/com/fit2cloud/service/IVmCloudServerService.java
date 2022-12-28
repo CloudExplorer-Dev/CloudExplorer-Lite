@@ -12,6 +12,7 @@ import com.fit2cloud.dto.VmCloudServerDTO;
 import com.fit2cloud.response.JobRecordResourceResponse;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * <p>
@@ -48,4 +49,7 @@ public interface IVmCloudServerService extends IService<VmCloudServer> {
     boolean changeConfig(ChangeServerConfigRequest request);
 
     FormObject getConfigUpdateForm(String platform);
+
+    String calculateConfigUpdatePrice(String platform,Map<String, Object> params);
+
 }

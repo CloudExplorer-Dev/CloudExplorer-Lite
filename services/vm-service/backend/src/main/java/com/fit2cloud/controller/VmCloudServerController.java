@@ -132,4 +132,10 @@ public class VmCloudServerController {
     public ResultHolder<FormObject> findConfigUpdateForm(@PathVariable("platform") String platform) {
         return ResultHolder.success(iVmCloudServerService.getConfigUpdateForm(platform));
     }
+
+    @PostMapping("/configUpdatePrice/{platform}")
+    @ApiOperation(value = "查询配置变更价格")
+    public ResultHolder<String> calculateConfigUpdatePrice(@PathVariable("platform") String platform,@RequestBody Map<String, Object> params) {
+        return ResultHolder.success(iVmCloudServerService.calculateConfigUpdatePrice(platform,params));
+    }
 }

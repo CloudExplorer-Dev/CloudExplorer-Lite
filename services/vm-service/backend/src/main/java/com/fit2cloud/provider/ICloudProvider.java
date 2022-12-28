@@ -216,7 +216,7 @@ public interface ICloudProvider {
     CheckCreateServerResult validateServerCreateRequest(String req);
 
     /**
-     * 询价
+     * 创建云主机询价
      * @param req
      * @return
      */
@@ -229,5 +229,11 @@ public interface ICloudProvider {
     F2CVirtualMachine changeVmConfig(String req);
 
     FormObject getConfigUpdateForm();
+
+    /**
+     * 云主机配置变更询价
+     * @return
+     */
+    String calculateConfigUpdatePrice(String req);
 
 }

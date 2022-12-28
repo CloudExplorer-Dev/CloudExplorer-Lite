@@ -188,4 +188,8 @@ public abstract class AbstractCloudProvider<C extends Credential> implements ICl
     public FormObject getConfigUpdateForm() {
         return null;
     }
+
+    public String calculateConfigUpdatePrice(String req){
+        return null;
+    }
 }

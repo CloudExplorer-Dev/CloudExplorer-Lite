@@ -226,7 +226,7 @@ public class AliyunCloudProvider extends AbstractCloudProvider<AliyunVmCredentia
      * @return
      */
     public String calculateConfigPrice(String req) {
-        return AliyunSyncCloudApi.calculateConfigPrice(JsonUtil.parseObject(req, AliyunVmCreateRequest.class));
+        return AliyunSyncCloudApi.calculateConfigPrice(JsonUtil.parseObject(req, AliyunPriceRequest.class));
     }
 
     /**
@@ -236,7 +236,7 @@ public class AliyunCloudProvider extends AbstractCloudProvider<AliyunVmCredentia
      * @return
      */
     public String calculateTrafficPrice(String req) {
-        return AliyunSyncCloudApi.calculateTrafficPrice(JsonUtil.parseObject(req, AliyunVmCreateRequest.class));
+        return AliyunSyncCloudApi.calculateTrafficPrice(JsonUtil.parseObject(req, AliyunPriceRequest.class));
     }
     // For Create VM [END]
 
@@ -369,5 +369,9 @@ public class AliyunCloudProvider extends AbstractCloudProvider<AliyunVmCredentia
 
     public List<AliyunInstanceType> getInstanceTypesForConfigUpdate(String req) {
         return AliyunSyncCloudApi.getInstanceTypesForConfigUpdate(JsonUtil.parseObject(req, AliyunUpdateConfigRequest.class));
+    }
+
+    public String calculateConfigUpdatePrice(String req){
+        return AliyunSyncCloudApi.calculateConfigUpdatePrice(JsonUtil.parseObject(req, AliyunUpdateConfigRequest.class));
     }
 }

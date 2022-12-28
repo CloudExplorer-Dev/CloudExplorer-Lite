@@ -15,10 +15,6 @@ import com.fit2cloud.provider.impl.huawei.api.HuaweiSyncCloudApi;
 import com.fit2cloud.provider.impl.huawei.entity.*;
 import com.fit2cloud.provider.impl.huawei.entity.credential.HuaweiVmCredential;
 import com.fit2cloud.provider.impl.huawei.entity.request.*;
-import com.fit2cloud.provider.impl.tencent.api.TencetSyncCloudApi;
-import com.fit2cloud.provider.impl.tencent.entity.TencentInstanceType;
-import com.fit2cloud.provider.impl.tencent.entity.request.TencentConfigUpdateForm;
-import com.fit2cloud.provider.impl.tencent.entity.request.TencentUpdateConfigRequest;
 import com.huaweicloud.sdk.ecs.v2.model.NovaSimpleKeypair;
 import org.apache.commons.lang3.StringUtils;
 
@@ -284,7 +280,6 @@ public class HuaweiCloudProvider extends AbstractCloudProvider<HuaweiVmCredentia
         return HuaweiSyncCloudApi.changeVmConfig(JsonUtil.parseObject(req, HuaweiUpdateConfigRequest.class));
     }
 
-
     @Override
     public FormObject getConfigUpdateForm() {
         return FormUtil.toForm(HuaweiConfigUpdateForm.class);
@@ -294,4 +289,7 @@ public class HuaweiCloudProvider extends AbstractCloudProvider<HuaweiVmCredentia
         return HuaweiSyncCloudApi.getInstanceTypesForConfigUpdate(JsonUtil.parseObject(req, HuaweiUpdateConfigRequest.class));
     }
 
+    public String calculateConfigUpdatePrice(String req){
+        return HuaweiSyncCloudApi.calculateConfigUpdatePrice(JsonUtil.parseObject(req, HuaweiUpdateConfigRequest.class));
+    }
  }

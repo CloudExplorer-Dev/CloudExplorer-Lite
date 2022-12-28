@@ -376,4 +376,8 @@ public class TencentCloudProvider extends AbstractCloudProvider<TencentCredentia
     public List<TencentInstanceType> getInstanceTypesForConfigUpdate(String req) {
         return TencetSyncCloudApi.getInstanceTypesForConfigUpdate(JsonUtil.parseObject(req, TencentUpdateConfigRequest.class));
     }
+
+    public String calculateConfigUpdatePrice(String req){
+        return TencetSyncCloudApi.calculateConfigUpdatePrice(JsonUtil.parseObject(req, TencentUpdateConfigRequest.class));
+    }
 }

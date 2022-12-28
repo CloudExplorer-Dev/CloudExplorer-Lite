@@ -10,6 +10,7 @@ import com.fit2cloud.common.utils.JsonUtil;
 import com.fit2cloud.constants.ErrorCodeConstants;
 import com.fit2cloud.provider.constants.DeleteWithInstance;
 import com.fit2cloud.provider.constants.F2CInstanceStatus;
+import com.fit2cloud.provider.constants.PriceUnit;
 import com.fit2cloud.provider.entity.F2CDisk;
 import com.fit2cloud.provider.entity.F2CImage;
 import com.fit2cloud.provider.entity.F2CNetwork;
@@ -29,6 +30,7 @@ import com.tencentcloudapi.cbs.v20170312.models.*;
 import com.tencentcloudapi.common.exception.TencentCloudSDKException;
 import com.tencentcloudapi.cvm.v20170312.CvmClient;
 import com.tencentcloudapi.cvm.v20170312.models.Image;
+import com.tencentcloudapi.cvm.v20170312.models.ItemPrice;
 import com.tencentcloudapi.cvm.v20170312.models.Price;
 import com.tencentcloudapi.cvm.v20170312.models.*;
 import com.tencentcloudapi.monitor.v20180724.MonitorClient;
@@ -535,7 +537,7 @@ public class TencetSyncCloudApi {
 
             // 按流量计费的公网IP单独显示价格
             if (trafficPriceOnly) {
-                result = price.getBandwidthPrice().getUnitPrice() + "元/GB";
+                result = price.getBandwidthPrice().getUnitPrice() + PriceUnit.YUAN + "/GB";
                 return result;
             }
 
@@ -548,13 +550,13 @@ public class TencetSyncCloudApi {
             // 按需
             if (TencentChargeType.POSTPAID.getId().equalsIgnoreCase(req.getInstanceChargeType())) {
                 Float priceAmount = price.getInstancePrice().getUnitPrice() + (!traffic ? price.getBandwidthPrice().getUnitPrice() : 0);
-                result = String.format("%.2f", priceAmount * req.getCount()) + "元/小时";
+                result = String.format("%.2f", priceAmount * req.getCount()) + PriceUnit.YUAN + "/" + PriceUnit.HOUR;
             }
 
             // 包年包月
             if (TencentChargeType.PREPAID.getId().equalsIgnoreCase(req.getInstanceChargeType())) {
                 Float priceAmount = price.getInstancePrice().getOriginalPrice() + (!traffic ? price.getBandwidthPrice().getOriginalPrice() : 0);
-                result = String.format("%.2f", priceAmount * req.getCount()) + "元";
+                result = String.format("%.2f", priceAmount * req.getCount()) + PriceUnit.YUAN;
             }
 
             return result;
@@ -1318,7 +1320,7 @@ public class TencetSyncCloudApi {
             powerOn(tencentInstanceRequest);
         }
 
-        return TencentMappingUtil.toF2CVirtualMachine(getInstanceById(request.getInstanceUuid(),cvmClient));
+        return TencentMappingUtil.toF2CVirtualMachine(getInstanceById(request.getInstanceUuid(), cvmClient));
     }
 
     /**
@@ -1368,6 +1370,12 @@ public class TencetSyncCloudApi {
         return true;
     }
 
+    /**
+     * 获取配置变更可选实例规格
+     *
+     * @param request
+     * @return
+     */
     public static List<TencentInstanceType> getInstanceTypesForConfigUpdate(TencentUpdateConfigRequest request) {
         TencentVmCredential tencentVmCredential = JsonUtil.parseObject(request.getCredential(), TencentVmCredential.class);
         CvmClient cvmClient = tencentVmCredential.getCvmClient(request.getRegionId());
@@ -1380,6 +1388,7 @@ public class TencetSyncCloudApi {
         try {
             DescribeInstancesModificationResponse resp = cvmClient.DescribeInstancesModification(req);
             InstanceTypeConfigStatus[] instanceTypeConfigStatusSet = resp.getInstanceTypeConfigStatusSet();
+
             if (instanceTypeConfigStatusSet != null && instanceTypeConfigStatusSet.length > 0) {
                 for (InstanceTypeConfigStatus instanceTypeConfigStatus : instanceTypeConfigStatusSet) {
                     if (!"SOLD_OUT".equalsIgnoreCase(instanceTypeConfigStatus.getStatus()) &&
@@ -1388,8 +1397,11 @@ public class TencetSyncCloudApi {
                         String cpuMemory = instanceTypeConfig.getCPU() + "vCPU " + instanceTypeConfig.getMemory() + "GB";
                         TencentInstanceType tencentInstanceType = new TencentInstanceType().builder()
                                 .instanceType(instanceTypeConfig.getInstanceType())
-                                .cpuMemory(cpuMemory)
                                 .instanceTypeDesc(instanceTypeConfig.getInstanceType() + "（" + cpuMemory + "）")
+                                .instanceTypeFamily(instanceTypeConfig.getInstanceFamily())
+                                .cpuMemory(cpuMemory)
+                                .cpu(instanceTypeConfig.getCPU())
+                                .memory(instanceTypeConfig.getMemory())
                                 .build();
                         returnList.add(tencentInstanceType);
                     }
@@ -1401,4 +1413,36 @@ public class TencetSyncCloudApi {
         return returnList;
     }
 
+    /**
+     * 配置变更询价
+     *
+     * @param request
+     * @return
+     */
+    public static String calculateConfigUpdatePrice(TencentUpdateConfigRequest request) {
+        TencentVmCredential tencentVmCredential = JsonUtil.parseObject(request.getCredential(), TencentVmCredential.class);
+        CvmClient cvmClient = tencentVmCredential.getCvmClient(request.getRegionId());
+
+        InquiryPriceResetInstancesTypeRequest req = new InquiryPriceResetInstancesTypeRequest();
+        Optional.ofNullable(request.getInstanceUuid()).orElseThrow(() -> new RuntimeException("Instance id is null."));
+        req.setInstanceIds(new String[]{request.getInstanceUuid()});
+        req.setInstanceType(request.getNewInstanceType());
+
+        try {
+            InquiryPriceResetInstancesTypeResponse resp = cvmClient.InquiryPriceResetInstancesType(req);
+            ItemPrice item = resp.getPrice().getInstancePrice();
+            Float price;
+            String unit;
+            if (TencentChargeType.PREPAID.getId().equalsIgnoreCase(request.getInstanceChargeType())) {
+                price = StringUtils.isBlank(String.valueOf(item.getDiscountPrice())) ? item.getOriginalPrice() : item.getDiscountPrice();
+                unit = PriceUnit.YUAN;
+            } else {
+                price = StringUtils.isBlank(String.valueOf(item.getUnitPriceDiscount())) ? item.getUnitPrice() : item.getUnitPriceDiscount();
+                unit = PriceUnit.YUAN + "/" + PriceUnit.HOUR;
+            }
+            return String.format("%.2f", price) + unit;
+        } catch (TencentCloudSDKException e) {
+            throw new RuntimeException("Failed to get the price of config update!" + e.getMessage(), e);
+        }
+    }
 }

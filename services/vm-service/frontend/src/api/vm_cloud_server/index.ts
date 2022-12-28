@@ -164,6 +164,11 @@ export function createServer(
   return post("api/server/create", null, req, loading);
 }
 
+/**
+ *配置变更
+ * @param req
+ * @param loading
+ */
 export function changeServerConfig(
   req: ChangeServerConfigRequest,
   loading?: Ref<boolean>
@@ -176,11 +181,21 @@ export function changeServerConfig(
  * @param req
  * @param loading
  */
-export function getConfigUpdateForm(
-  platform: string,
-  loading?: Ref<boolean>
-): Promise<Result<any>> {
+export function getConfigUpdateForm(platform: string, loading?: Ref<boolean>) {
   return get("/api/server/configUpdateForm/" + platform, null, loading);
+}
+
+/**
+ * 查询配置变更价格
+ * @param req
+ * @param loading
+ */
+export function getConfigUpdatePrice(
+  platform: string,
+  req: unknown,
+  loading?: Ref<boolean>
+) {
+  return post("/api/server/configUpdatePrice/" + platform, null, req, loading);
 }
 
 const VmCloudServerApi = {
@@ -198,6 +213,7 @@ const VmCloudServerApi = {
   createServer,
   changeServerConfig,
   getConfigUpdateForm,
+  getConfigUpdatePrice,
 };
 
 export default VmCloudServerApi;

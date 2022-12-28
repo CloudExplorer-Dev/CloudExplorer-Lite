@@ -1,12 +1,14 @@
 package com.fit2cloud.provider.impl.aliyun.entity;
 
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 /**
  * Author: LiuDi
  * Date: 2022/11/16 6:08 PM
  */
 @Data
+@NoArgsConstructor
 public class AliyunInstanceType {
 
     /**
@@ -35,5 +37,9 @@ public class AliyunInstanceType {
     private int cpu;
 
     private int memory;
+
+    public AliyunInstanceType(String instanceType){
+        this.instanceType = instanceType;
+    }
 
 }
