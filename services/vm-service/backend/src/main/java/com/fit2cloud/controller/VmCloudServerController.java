@@ -6,10 +6,7 @@ import com.fit2cloud.common.log.annotation.OperatedLog;
 import com.fit2cloud.common.log.constants.OperatedTypeEnum;
 import com.fit2cloud.common.log.constants.ResourceTypeEnum;
 import com.fit2cloud.controller.handler.ResultHolder;
-import com.fit2cloud.controller.request.vm.BatchOperateVmRequest;
-import com.fit2cloud.controller.request.vm.ChangeServerConfigRequest;
-import com.fit2cloud.controller.request.vm.CreateServerRequest;
-import com.fit2cloud.controller.request.vm.PageVmCloudServerRequest;
+import com.fit2cloud.controller.request.vm.*;
 import com.fit2cloud.dto.VmCloudServerDTO;
 import com.fit2cloud.response.JobRecordResourceResponse;
 import com.fit2cloud.service.IVmCloudServerService;
@@ -122,20 +119,26 @@ public class VmCloudServerController {
 
     @ApiOperation(value = "配置变更")
     @PutMapping("changeConfig")
-    @OperatedLog(resourceType = ResourceTypeEnum.CLOUD_SERVER, operated = OperatedTypeEnum.CHANGE_CONFIG, resourceId = "#{req.instanceUuid}", param = "#{req}")
+    @OperatedLog(resourceType = ResourceTypeEnum.CLOUD_SERVER, operated = OperatedTypeEnum.CHANGE_CONFIG, resourceId = "#{req.id}", param = "#{req}")
     public ResultHolder<Boolean> changeConfig(@RequestBody ChangeServerConfigRequest req) {
         return ResultHolder.success(iVmCloudServerService.changeConfig(req));
     }
 
-    @GetMapping("/configUpdateForm/{platform}")
     @ApiOperation(value = "根据云平台查询配置变更的表单数据")
+    @GetMapping("/configUpdateForm/{platform}")
     public ResultHolder<FormObject> findConfigUpdateForm(@PathVariable("platform") String platform) {
         return ResultHolder.success(iVmCloudServerService.getConfigUpdateForm(platform));
     }
 
-    @PostMapping("/configUpdatePrice/{platform}")
     @ApiOperation(value = "查询配置变更价格")
+    @PostMapping("/configUpdatePrice/{platform}")
     public ResultHolder<String> calculateConfigUpdatePrice(@PathVariable("platform") String platform,@RequestBody Map<String, Object> params) {
         return ResultHolder.success(iVmCloudServerService.calculateConfigUpdatePrice(platform,params));
+    }
+
+    @ApiOperation(value = "云主机授权")
+    @PostMapping("/grant")
+    public ResultHolder<Boolean> grant(@RequestBody GrantServerRequest grantServerRequest) {
+        return ResultHolder.success(iVmCloudServerService.grant(grantServerRequest));
     }
 }

@@ -15,5 +15,5 @@ import java.util.List;
  * @since
  */
 public interface IBaseWorkspaceService extends IService<Workspace> {
-     List<NodeTree> workspaceTree();
+     List<NodeTree> workspaceTree(Boolean isShowAllOrg);
 }

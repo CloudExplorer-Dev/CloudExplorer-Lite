@@ -31,7 +31,7 @@ public class BaseWorkspaceServiceImpl extends ServiceImpl<BaseWorkspaceMapper, W
     @Resource
     BaseOrganizationMapper baseOrganizationMapper;
 
-    public List<NodeTree> workspaceTree() {
+    public List<NodeTree> workspaceTree(Boolean isShowAllOrg) {
         // 查询到所有的组织
         List<Organization> organizations = baseOrganizationMapper.selectList(new QueryWrapper<>());
         // 查询到所有的工作空间
@@ -44,16 +44,22 @@ public class BaseWorkspaceServiceImpl extends ServiceImpl<BaseWorkspaceMapper, W
         Map<String, String> organizationIdMap = organizations.stream().filter(organization -> StringUtils.isNotEmpty(organization.getPid())).collect(Collectors.toMap(Organization::getId, Organization::getPid));
         List<String> effectiveOrgIds = new ArrayList<>();
         List<NodeTree> trees = new ArrayList<>();
+
         workspaces.stream().forEach(workspace -> {
             getWorkspacesOrg(workspace.getOrganizationId(), effectiveOrgIds, organizationIdMap);
             trees.add(new NodeTree(workspace.getId(), workspace.getOrganizationId(), workspace.getName()));
         });
 
         organizations.stream().forEach(organization -> {
-            if (effectiveOrgIds.contains(organization.getId())) {
+            if (isShowAllOrg) {
                 trees.add(new NodeTree(organization.getId(), organization.getPid(), organization.getName()));
+            } else {
+                if (effectiveOrgIds.contains(organization.getId())) {
+                    trees.add(new NodeTree(organization.getId(), organization.getPid(), organization.getName()));
+                }
             }
         });
+
         return buildTree(trees);
     }
 
@@ -66,7 +72,7 @@ public class BaseWorkspaceServiceImpl extends ServiceImpl<BaseWorkspaceMapper, W
             lists.forEach(tNode -> {
                 if (node.getId().equalsIgnoreCase(tNode.getPid())) {
                     if (node.getChildren() == null) {
-                        node.setChildren(new ArrayList<NodeTree>());
+                        node.setChildren(new ArrayList<>());
                     }
                     node.getChildren().add(tNode);
                 }
@@ -79,11 +85,11 @@ public class BaseWorkspaceServiceImpl extends ServiceImpl<BaseWorkspaceMapper, W
         return StringUtils.isEmpty(pid);
     }
 
-    private void getWorkspacesOrg(String orgId, List<String> result, Map<String, String> organizationIdMap) {
-        result.add(orgId);
+    private void getWorkspacesOrg(String orgId, List<String> effectiveOrgIds, Map<String, String> organizationIdMap) {
+        effectiveOrgIds.add(orgId);
         String pid = organizationIdMap.get(orgId);
         if (StringUtils.isNotEmpty(pid)) {
-            getWorkspacesOrg(pid, result, organizationIdMap);
+            getWorkspacesOrg(pid, effectiveOrgIds, organizationIdMap);
         }
     }
 }

@@ -4,12 +4,14 @@ import _ from "lodash";
 import type { FormInstance } from "element-plus/es";
 import { useI18n } from "vue-i18n";
 import type { RoleInfo, Role } from "@/api/user/type";
-import { userAddRole, workspaceTree } from "@/api/user";
+import { userAddRole } from "@/api/user";
 import { listRoles } from "@commons/api/role";
 import { useUserStore } from "@commons/stores/modules/user";
 import { ElMessage } from "element-plus/es";
 import { tree } from "@commons/api/organization";
 import type { OrganizationTree } from "@/api/organization/type";
+import { workspaceTree } from "@commons/api/workspace";
+import type { WorkspaceTree } from "@commons/api/workspace/type";
 import { roleConst } from "@commons/utils/constants";
 
 const props = defineProps({
@@ -32,7 +34,7 @@ const form = reactive<Record<string, RoleInfo[]>>({
 
 const roles = ref<Role[]>([]);
 const orgTreeData = ref<OrganizationTree[]>();
-const workspaceTreeData = ref<OrganizationTree[]>();
+const workspaceTreeData = ref<WorkspaceTree[]>();
 const isAddLineAble = ref(true);
 
 // 添加用户类型选项

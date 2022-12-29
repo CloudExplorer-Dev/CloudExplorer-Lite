@@ -1,6 +1,7 @@
 package com.fit2cloud.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.core.metadata.OrderItem;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -26,10 +27,7 @@ import com.fit2cloud.constants.ErrorCodeConstants;
 import com.fit2cloud.controller.request.CreateJobRecordRequest;
 import com.fit2cloud.controller.request.ExecProviderMethodRequest;
 import com.fit2cloud.controller.request.ResourceState;
-import com.fit2cloud.controller.request.vm.BatchOperateVmRequest;
-import com.fit2cloud.controller.request.vm.ChangeServerConfigRequest;
-import com.fit2cloud.controller.request.vm.CreateServerRequest;
-import com.fit2cloud.controller.request.vm.PageVmCloudServerRequest;
+import com.fit2cloud.controller.request.vm.*;
 import com.fit2cloud.dao.mapper.VmCloudServerMapper;
 import com.fit2cloud.dto.InitJobRecordDTO;
 import com.fit2cloud.dto.UserDto;
@@ -507,5 +505,15 @@ public class VmCloudServerServiceImpl extends ServiceImpl<BaseVmCloudServerMappe
         } catch (Exception e) {
             throw new RuntimeException("Failed to get config update price!" + e.getMessage(), e);
         }
+    }
+
+    public boolean grant(GrantServerRequest grantServerRequest) {
+        String sourceId = grantServerRequest.getGrant() ? grantServerRequest.getSourceId() : "";
+
+        UpdateWrapper<VmCloudServer> updateWrapper = new UpdateWrapper();
+        updateWrapper.lambda().in(VmCloudServer::getId, grantServerRequest.getCloudServerIds());
+        updateWrapper.lambda().set(VmCloudServer::getWorkspaceId, sourceId);
+
+        return update(updateWrapper);
     }
 }

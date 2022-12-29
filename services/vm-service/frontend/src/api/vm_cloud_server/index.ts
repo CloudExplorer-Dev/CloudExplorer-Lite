@@ -9,6 +9,7 @@ import type {
   PerfMonitorData,
   GetPerfMonitorRequest,
   ChangeServerConfigRequest,
+  GrantVmCloudServerRequest,
 } from "./type";
 import type { Ref } from "vue";
 import type { SimpleMap } from "@commons/api/base/type";
@@ -198,6 +199,18 @@ export function getConfigUpdatePrice(
   return post("/api/server/configUpdatePrice/" + platform, null, req, loading);
 }
 
+/**
+ * 云主机授权
+ * @param req
+ * @param loading
+ */
+export function grantVmCloudServer(
+  req: GrantVmCloudServerRequest,
+  loading?: Ref<boolean>
+) {
+  return post("/api/server/grant", null, req, loading);
+}
+
 const VmCloudServerApi = {
   listVmCloudServer,
   shutdownInstance,
@@ -214,6 +227,7 @@ const VmCloudServerApi = {
   changeServerConfig,
   getConfigUpdateForm,
   getConfigUpdatePrice,
+  grantVmCloudServer,
 };
 
 export default VmCloudServerApi;

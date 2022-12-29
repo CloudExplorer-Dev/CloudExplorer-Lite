@@ -20,6 +20,9 @@ const message = {
     update_time: "更新時間",
     description: "描述",
     basic_info: "基本信息",
+    grant: "授權",
+    cancel_grant: "取消授權",
+    org_workspace: "組織或工作空間",
     cloud_account: {
       native: "雲賬號",
       name: "雲賬號名稱",
@@ -87,6 +90,7 @@ const message = {
       delete_success: "刪除成功",
       fail: "{0}失敗",
       delete_canceled: "已取消刪除",
+      at_least_select_one: "至少選擇一條記錄",
     },
     validate: {
       required: "{0}必填",

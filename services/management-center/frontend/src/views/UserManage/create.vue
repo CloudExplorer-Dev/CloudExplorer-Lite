@@ -5,13 +5,15 @@ import type { FormRules } from "element-plus";
 import type { FormInstance } from "element-plus/es";
 import { useI18n } from "vue-i18n";
 import type { RoleInfo, Role } from "@/api/user/type";
-import { createUser, updateUser, getRoleInfo, workspaceTree } from "@/api/user";
+import { createUser, updateUser, getRoleInfo } from "@/api/user";
 import { listRoles } from "@commons/api/role";
 import { useUserStore } from "@commons/stores/modules/user";
 import { useRouter } from "vue-router";
 import { ElMessage } from "element-plus/es";
 import { tree } from "@commons/api/organization";
 import type { OrganizationTree } from "@/api/organization/type";
+import { workspaceTree } from "@commons/api/workspace";
+import type { WorkspaceTree } from "@commons/api/workspace/type";
 import { roleConst } from "@commons/utils/constants";
 import type { InternalRuleItem } from "async-validator/dist-types/interface";
 const router = useRouter();
@@ -136,7 +138,7 @@ const rule = reactive<FormRules>({
 });
 const roles = ref<Role[]>([]);
 const orgTreeData = ref<OrganizationTree[]>();
-const workspaceTreeData = ref<OrganizationTree[]>();
+const workspaceTreeData = ref<WorkspaceTree[]>();
 const isAddLineAble = ref(true);
 // 添加用户类型选项
 const addLine = () => {
