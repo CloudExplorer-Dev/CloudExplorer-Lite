@@ -22,8 +22,14 @@ public class BaseWorkspaceController {
     private IBaseWorkspaceService workspaceService;
 
     @GetMapping("/tree")
-    @ApiOperation(value = "获取工作空间树")
+    @ApiOperation(value = "获取工作空间树,不包含没有工作空间的组织节点")
     public ResultHolder<List<NodeTree>> workspaceTree() {
-        return ResultHolder.success(workspaceService.workspaceTree());
+        return ResultHolder.success(workspaceService.workspaceTree(false));
+    }
+
+    @GetMapping("/orgTree")
+    @ApiOperation(value = "获取工作空间树,包含没有工作空间的组织节点")
+    public ResultHolder<List<NodeTree>> workspaceOrgTree() {
+        return ResultHolder.success(workspaceService.workspaceTree(true));
     }
 }

@@ -36,10 +36,6 @@ export const getRoleInfo = (userId: string) => {
   return get("/api/user/role/info/" + userId);
 };
 
-export const workspaceTree = (): Promise<Result<Array<any>>> => {
-  return get("/api/workspace/tree");
-};
-
 /**
  * 启停用户
  * @param req

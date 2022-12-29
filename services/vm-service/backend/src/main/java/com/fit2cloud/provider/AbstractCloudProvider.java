@@ -175,7 +175,21 @@ public abstract class AbstractCloudProvider<C extends Credential> implements ICl
         return false;
     }
 
-    public String calculateConfigPrice(String req){
+    @Override
+    public String calculateConfigPrice(String req) {
         return "";
+    }
+
+    @Override
+    public F2CVirtualMachine changeVmConfig(String req) {
+        return null;
+    }
+
+    public FormObject getConfigUpdateForm() {
+        return null;
+    }
+
+    public String calculateConfigUpdatePrice(String req){
+        return null;
     }
 }

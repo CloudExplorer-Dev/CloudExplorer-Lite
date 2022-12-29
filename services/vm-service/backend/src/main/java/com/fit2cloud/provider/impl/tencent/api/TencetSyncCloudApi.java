@@ -9,6 +9,8 @@ import com.fit2cloud.common.utils.DateUtil;
 import com.fit2cloud.common.utils.JsonUtil;
 import com.fit2cloud.constants.ErrorCodeConstants;
 import com.fit2cloud.provider.constants.DeleteWithInstance;
+import com.fit2cloud.provider.constants.F2CInstanceStatus;
+import com.fit2cloud.provider.constants.PriceUnit;
 import com.fit2cloud.provider.entity.F2CDisk;
 import com.fit2cloud.provider.entity.F2CImage;
 import com.fit2cloud.provider.entity.F2CNetwork;
@@ -28,6 +30,7 @@ import com.tencentcloudapi.cbs.v20170312.models.*;
 import com.tencentcloudapi.common.exception.TencentCloudSDKException;
 import com.tencentcloudapi.cvm.v20170312.CvmClient;
 import com.tencentcloudapi.cvm.v20170312.models.Image;
+import com.tencentcloudapi.cvm.v20170312.models.ItemPrice;
 import com.tencentcloudapi.cvm.v20170312.models.Price;
 import com.tencentcloudapi.cvm.v20170312.models.*;
 import com.tencentcloudapi.monitor.v20180724.MonitorClient;
@@ -167,8 +170,8 @@ public class TencetSyncCloudApi {
                 .setId(request.getId())
                 .setName(request.getServerInfos().get(index).getName())
                 .setIpArray(new ArrayList<>())
-                .setInstanceType(request.getInstanceTypeDTO().getInstanceType())
-                .setInstanceTypeDescription(request.getInstanceTypeDTO().getInstanceType());
+                .setInstanceType(request.getInstanceTypeDTO() == null ? "" : request.getInstanceTypeDTO().getInstanceType())
+                .setInstanceTypeDescription(request.getInstanceTypeDTO() == null ? "" : request.getInstanceTypeDTO().getCpuMemory());
 
         return virtualMachine;
     }
@@ -534,7 +537,7 @@ public class TencetSyncCloudApi {
 
             // 按流量计费的公网IP单独显示价格
             if (trafficPriceOnly) {
-                result = price.getBandwidthPrice().getUnitPrice() + "元/GB";
+                result = price.getBandwidthPrice().getUnitPrice() + PriceUnit.YUAN + "/GB";
                 return result;
             }
 
@@ -547,13 +550,13 @@ public class TencetSyncCloudApi {
             // 按需
             if (TencentChargeType.POSTPAID.getId().equalsIgnoreCase(req.getInstanceChargeType())) {
                 Float priceAmount = price.getInstancePrice().getUnitPrice() + (!traffic ? price.getBandwidthPrice().getUnitPrice() : 0);
-                result = String.format("%.2f", priceAmount * req.getCount()) + "元/小时";
+                result = String.format("%.2f", priceAmount * req.getCount()) + PriceUnit.YUAN + "/" + PriceUnit.HOUR;
             }
 
             // 包年包月
             if (TencentChargeType.PREPAID.getId().equalsIgnoreCase(req.getInstanceChargeType())) {
                 Float priceAmount = price.getInstancePrice().getOriginalPrice() + (!traffic ? price.getBandwidthPrice().getOriginalPrice() : 0);
-                result = String.format("%.2f", priceAmount * req.getCount()) + "元";
+                result = String.format("%.2f", priceAmount * req.getCount()) + PriceUnit.YUAN;
             }
 
             return result;
@@ -1274,4 +1277,172 @@ public class TencetSyncCloudApi {
         return req;
     }
 
+    /**
+     * 云主机配置变更
+     *
+     * @param request
+     * @return
+     */
+    public static F2CVirtualMachine changeVmConfig(TencentUpdateConfigRequest request) {
+        TencentVmCredential tencentVmCredential = JsonUtil.parseObject(request.getCredential(), TencentVmCredential.class);
+        CvmClient cvmClient = tencentVmCredential.getCvmClient(request.getRegionId());
+        Instance instance = getInstanceById(request.getInstanceUuid(), cvmClient);
+
+        // 只支持系统盘类型是 CLOUD_BASIC、CLOUD_PREMIUM、CLOUD_SSD 类型的实例
+        if (!instance.getSystemDisk().getDiskType().startsWith("CLOUD")) {
+            throw new RuntimeException("Only instances whose system disk type is cloud_basic, cloud_premium, and cloud_ssd are supported!");
+        }
+
+        boolean isStartInstance = false;
+        // 先关机
+        if (!F2CInstanceStatus.Stopped.name().equalsIgnoreCase(instance.getInstanceState())) {
+            powerOff(request.getInstanceUuid(), "SOFT_FIRST", cvmClient);
+            isStartInstance = true;
+        }
+
+        // InstanceChargeType,对于包年包月实例，使用该接口会涉及扣费,这个得在前端处理
+        ResetInstancesTypeRequest resetInstancesTypeRequest = new ResetInstancesTypeRequest();
+        resetInstancesTypeRequest.setInstanceType(request.getNewInstanceType());
+        resetInstancesTypeRequest.setInstanceIds(new String[]{instance.getInstanceId()});
+        resetInstancesTypeRequest.setForceStop(true);
+        try {
+            ResetInstancesTypeResponse response = cvmClient.ResetInstancesType(resetInstancesTypeRequest);
+            checkStatus(cvmClient, response.getRequestId(), request.getInstanceUuid());
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to change instance's config!" + e.getMessage(), e);
+        }
+
+        // 完成调整后开机
+        if (isStartInstance) {
+            TencentInstanceRequest tencentInstanceRequest = new TencentInstanceRequest();
+            BeanUtils.copyProperties(request, tencentInstanceRequest);
+            tencentInstanceRequest.setUuid(request.getInstanceUuid());
+            powerOn(tencentInstanceRequest);
+        }
+
+        return TencentMappingUtil.toF2CVirtualMachine(getInstanceById(request.getInstanceUuid(), cvmClient));
+    }
+
+    /**
+     * 根据实例 ID 获取实例
+     *
+     * @param instanceId
+     * @param client
+     * @return
+     */
+    private static Instance getInstanceById(String instanceId, CvmClient client) {
+        Optional.ofNullable(instanceId).orElseThrow(() -> new RuntimeException("Instance id is null!"));
+
+        DescribeInstancesRequest describeInstancesRequest = new DescribeInstancesRequest();
+        describeInstancesRequest.setInstanceIds(new String[]{instanceId});
+        try {
+            DescribeInstancesResponse describeInstancesResponse = client.DescribeInstances(describeInstancesRequest);
+            if (describeInstancesResponse.getInstanceSet().length == 0) {
+                String errMsg = "Instance not exists! Instance id：" + instanceId;
+                logger.error(errMsg);
+                throw new RuntimeException(errMsg);
+            }
+            return describeInstancesResponse.getInstanceSet()[0];
+        } catch (Exception e) {
+            throw new RuntimeException(e.getMessage(), e);
+        }
+    }
+
+    /**
+     * 关机
+     *
+     * @param instanceId
+     * @param stopType
+     * @param cvmClient
+     * @return
+     */
+    private static Boolean powerOff(String instanceId, String stopType, CvmClient cvmClient) {
+        Optional.ofNullable(instanceId).orElseThrow(() -> new RuntimeException("Instance id is null!"));
+        StopInstancesRequest stopInstancesRequest = new StopInstancesRequest();
+        stopInstancesRequest.setInstanceIds(new String[]{instanceId});
+        stopInstancesRequest.setStopType(stopType);
+        try {
+            StopInstancesResponse response = cvmClient.StopInstances(stopInstancesRequest);
+            checkStatus(cvmClient, response.getRequestId(), instanceId);
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to stop instance!" + e.getMessage(), e);
+        }
+        return true;
+    }
+
+    /**
+     * 获取配置变更可选实例规格
+     *
+     * @param request
+     * @return
+     */
+    public static List<TencentInstanceType> getInstanceTypesForConfigUpdate(TencentUpdateConfigRequest request) {
+        TencentVmCredential tencentVmCredential = JsonUtil.parseObject(request.getCredential(), TencentVmCredential.class);
+        CvmClient cvmClient = tencentVmCredential.getCvmClient(request.getRegionId());
+
+        DescribeInstancesModificationRequest req = new DescribeInstancesModificationRequest();
+        Optional.ofNullable(request.getInstanceUuid()).orElseThrow(() -> new RuntimeException("Instance id is null!"));
+        req.setInstanceIds(new String[]{request.getInstanceUuid()});
+
+        List<TencentInstanceType> returnList = new ArrayList<>();
+        try {
+            DescribeInstancesModificationResponse resp = cvmClient.DescribeInstancesModification(req);
+            InstanceTypeConfigStatus[] instanceTypeConfigStatusSet = resp.getInstanceTypeConfigStatusSet();
+
+            if (instanceTypeConfigStatusSet != null && instanceTypeConfigStatusSet.length > 0) {
+                for (InstanceTypeConfigStatus instanceTypeConfigStatus : instanceTypeConfigStatusSet) {
+                    if (!"SOLD_OUT".equalsIgnoreCase(instanceTypeConfigStatus.getStatus()) &&
+                            !instanceTypeConfigStatus.getInstanceTypeConfig().getInstanceType().equalsIgnoreCase(request.getCurrentInstanceType())) {
+                        InstanceTypeConfig instanceTypeConfig = instanceTypeConfigStatus.getInstanceTypeConfig();
+                        String cpuMemory = instanceTypeConfig.getCPU() + "vCPU " + instanceTypeConfig.getMemory() + "GB";
+                        TencentInstanceType tencentInstanceType = new TencentInstanceType().builder()
+                                .instanceType(instanceTypeConfig.getInstanceType())
+                                .instanceTypeDesc(instanceTypeConfig.getInstanceType() + "（" + cpuMemory + "）")
+                                .instanceTypeFamily(instanceTypeConfig.getInstanceFamily())
+                                .cpuMemory(cpuMemory)
+                                .cpu(instanceTypeConfig.getCPU())
+                                .memory(instanceTypeConfig.getMemory())
+                                .build();
+                        returnList.add(tencentInstanceType);
+                    }
+                }
+            }
+        } catch (TencentCloudSDKException e) {
+            throw new RuntimeException("Failed to get instance type for updating!" + e.getMessage(), e);
+        }
+        return returnList;
+    }
+
+    /**
+     * 配置变更询价
+     *
+     * @param request
+     * @return
+     */
+    public static String calculateConfigUpdatePrice(TencentUpdateConfigRequest request) {
+        TencentVmCredential tencentVmCredential = JsonUtil.parseObject(request.getCredential(), TencentVmCredential.class);
+        CvmClient cvmClient = tencentVmCredential.getCvmClient(request.getRegionId());
+
+        InquiryPriceResetInstancesTypeRequest req = new InquiryPriceResetInstancesTypeRequest();
+        Optional.ofNullable(request.getInstanceUuid()).orElseThrow(() -> new RuntimeException("Instance id is null."));
+        req.setInstanceIds(new String[]{request.getInstanceUuid()});
+        req.setInstanceType(request.getNewInstanceType());
+
+        try {
+            InquiryPriceResetInstancesTypeResponse resp = cvmClient.InquiryPriceResetInstancesType(req);
+            ItemPrice item = resp.getPrice().getInstancePrice();
+            Float price;
+            String unit;
+            if (TencentChargeType.PREPAID.getId().equalsIgnoreCase(request.getInstanceChargeType())) {
+                price = StringUtils.isBlank(String.valueOf(item.getDiscountPrice())) ? item.getOriginalPrice() : item.getDiscountPrice();
+                unit = PriceUnit.YUAN;
+            } else {
+                price = StringUtils.isBlank(String.valueOf(item.getUnitPriceDiscount())) ? item.getUnitPrice() : item.getUnitPriceDiscount();
+                unit = PriceUnit.YUAN + "/" + PriceUnit.HOUR;
+            }
+            return String.format("%.2f", price) + unit;
+        } catch (TencentCloudSDKException e) {
+            throw new RuntimeException("Failed to get the price of config update!" + e.getMessage(), e);
+        }
+    }
 }

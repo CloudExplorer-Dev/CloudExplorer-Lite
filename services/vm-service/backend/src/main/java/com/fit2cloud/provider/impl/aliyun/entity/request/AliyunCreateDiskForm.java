@@ -21,4 +21,8 @@ public class AliyunCreateDiskForm {
     private String diskType;
     @Form(inputType = InputType.Radio, label = "随实例删除", defaultValue = "YES", textField = "name", valueField = "id", method = "getDeleteWithInstance", clazz = AliyunCloudProvider.class)
     private String deleteWithInstance;
+    /**
+     * ESSD 云盘的性能等级,创建时给默认值，前端暂不显示
+     */
+    private String performanceLevel;
 }

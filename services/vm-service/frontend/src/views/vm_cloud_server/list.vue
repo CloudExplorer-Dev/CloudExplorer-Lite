@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref, onMounted, onBeforeUnmount } from "vue";
-import VmCloudServerApi, { getVmCloudServerByIds } from "@/api/vm_cloud_server";
+import VmCloudServerApi from "@/api/vm_cloud_server";
 import type { VmCloudServerVO } from "@/api/vm_cloud_server/type";
 import { useRouter } from "vue-router";
 import {
@@ -16,6 +16,7 @@ import type { SimpleMap } from "@commons/api/base/type";
 import variables_server from "../../styles/vm_cloud_server/server.module.scss";
 import { platformIcon } from "@commons/utils/platform";
 import BaseCloudAccountApi from "@commons/api/cloud_account";
+import Grant from "@/views/vm_cloud_server/grant.vue";
 
 const { t } = useI18n();
 const useRoute = useRouter();
@@ -43,6 +44,7 @@ const InstanceStatus = ref<Array<SimpleMap<string>>>([
   { text: "创建中", value: "Createding" },
   { text: "排队中", value: "WaitCreating" },
   { text: "创建中", value: "Creating" },
+  { text: "配置变更中", value: "ConfigChanging" },
   { text: "失败", value: "Failed" },
   { text: "未知", value: "Unknown" },
 ]);
@@ -201,6 +203,14 @@ const createDisk = (row: VmCloudServerVO) => {
 };
 
 /**
+ * 配置变更
+ * @param row
+ */
+const changeVmConfig = (row: VmCloudServerVO) => {
+  useRoute.push({ name: "change_config", params: { id: row.id } });
+};
+
+/**
  * 操作按钮
  */
 const buttons = ref([
@@ -266,6 +276,19 @@ const buttons = ref([
     show: true,
     disabled: (row: { instanceStatus: string }) => {
       return row.instanceStatus === "Deleted";
+    },
+  },
+  {
+    label: t("vm_cloud_server.btn.change_config", "配置变更"),
+    icon: "",
+    click: changeVmConfig,
+    show: true,
+    disabled: (row: { instanceStatus: string }) => {
+      return (
+        row.instanceStatus === "Deleted" ||
+        (row.instanceStatus.toLowerCase() != "running" &&
+          row.instanceStatus.toLowerCase().indexOf("ing") > -1)
+      );
     },
   },
 ]);
@@ -443,8 +466,19 @@ const batchOperate = (operate: string) => {
  */
 //授权
 const authorizeBatch = () => {
-  ElMessage.info("等等");
+  if (!(selectedRowData.value && selectedRowData.value.length > 0)) {
+    ElMessage.warning(t("commons.msg.at_least_select_one", "至少选择一条数据"));
+    return;
+  }
+  showGrantDialog();
 };
+const grantDialogVisible = ref<boolean>(false);
+const selectedServerIds = ref<string[]>();
+const showGrantDialog = () => {
+  selectedServerIds.value = _.map(selectedRowData.value, "id");
+  grantDialogVisible.value = true;
+};
+
 //删除
 const deleteBatch = () => {
   batchOperate("DELETE");
@@ -640,6 +674,20 @@ const handleAction = (actionObj: any) => {
       <fu-table-column-select type="icon" :columns="columns" size="small" />
     </template>
   </ce-table>
+
+  <!-- 授权页面弹出框 -->
+  <el-dialog
+    v-model="grantDialogVisible"
+    :title="$t('commons.grant')"
+    width="35%"
+    destroy-on-close
+    :close-on-click-modal="false"
+  >
+    <Grant
+      :cloudServerIds="selectedServerIds"
+      v-model:visible="grantDialogVisible"
+    />
+  </el-dialog>
 </template>
 <style lang="scss" scoped>
 .name-span-class {

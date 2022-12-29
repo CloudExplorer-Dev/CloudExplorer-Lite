@@ -2,12 +2,18 @@ const message = {
   vm_cloud_server: {
     label: {
       ip_address: "IP Address",
+      info: "Host information",
+      vm: "Cloud server",
+      current_config: "Current config",
+      instance_type: "Instance type",
+      new_config: "New config",
     },
     btn: {
       power_on: "Power on",
       shutdown: "Shutdown",
       power_off: "Power off",
       reboot: "Reboot",
+      change_config: "Change config ",
     },
     message_box: {
       confirm_power_on: "Confirm Start",

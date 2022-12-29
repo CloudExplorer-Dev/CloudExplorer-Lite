@@ -50,6 +50,16 @@ const jumpToDisk = (disk: VmCloudDiskVO) => {
   });
 };
 
+const types = [];
+_.forIn(JobTypeConst, (value, key) => {
+  types.push({ text: value, value: key });
+});
+
+const status = [];
+_.forIn(JobStatusConst, (value, key) => {
+  status.push({ text: value, value: key });
+});
+
 /**
  * 查询
  * @param condition
@@ -113,7 +123,13 @@ const tableConfig = ref<TableConfig>({
     ref="table"
   >
     <el-table-column prop="id" label="ID"></el-table-column>
-    <el-table-column label="任务类型" sortable>
+    <el-table-column
+      prop="type"
+      column-key="type"
+      label="任务类型"
+      sortable
+      :filters="types"
+    >
       <template #default="scope">
         {{ _.get(JobTypeConst, scope.row.type, scope.row.type) }}
       </template>
@@ -135,7 +151,13 @@ const tableConfig = ref<TableConfig>({
         </div>
       </template>
     </el-table-column>
-    <el-table-column prop="status" label="状态">
+    <el-table-column
+      prop="status"
+      column-key="status"
+      label="状态"
+      sortable
+      :filters="status"
+    >
       <template #default="scope">
         <a
           @click="showDetail(scope.row)"

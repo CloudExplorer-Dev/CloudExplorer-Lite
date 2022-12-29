@@ -275,6 +275,21 @@ public class HuaweiCloudProvider extends AbstractCloudProvider<HuaweiVmCredentia
         return "root";
     }
 
+    @Override
+    public F2CVirtualMachine changeVmConfig(String req){
+        return HuaweiSyncCloudApi.changeVmConfig(JsonUtil.parseObject(req, HuaweiUpdateConfigRequest.class));
+    }
 
+    @Override
+    public FormObject getConfigUpdateForm() {
+        return FormUtil.toForm(HuaweiConfigUpdateForm.class);
+    }
 
+    public List<InstanceSpecType> getInstanceTypesForConfigUpdate(String req) {
+        return HuaweiSyncCloudApi.getInstanceTypesForConfigUpdate(JsonUtil.parseObject(req, HuaweiUpdateConfigRequest.class));
+    }
+
+    public String calculateConfigUpdatePrice(String req){
+        return HuaweiSyncCloudApi.calculateConfigUpdatePrice(JsonUtil.parseObject(req, HuaweiUpdateConfigRequest.class));
+    }
  }

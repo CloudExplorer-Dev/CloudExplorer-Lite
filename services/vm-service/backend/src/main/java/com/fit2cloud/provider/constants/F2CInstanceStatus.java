@@ -12,6 +12,7 @@ public enum F2CInstanceStatus {
     Stopping,
     Deleting,
     Rebooting,
+    ConfigChanging,// 配置变更中
 
     Resize,
 
