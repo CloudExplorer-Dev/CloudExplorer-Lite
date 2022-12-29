@@ -55,23 +55,5 @@ public abstract class AbstractCloudProvider<C extends Credential> implements ICl
         throw new Fit2cloudException(1001, "不存在认证对象");
     }
 
-    /**
-     * 讲云平台实例转换为系统资源实例对象
-     *
-     * @param platform              云平台
-     * @param instanceTypeConstants 实例类型
-     * @param instance              实例对象
-     * @return 系统实例对象
-     */
-    public ResourceInstance toResourceInstance(String platform, ResourceTypeConstants instanceTypeConstants, Object instance) {
-        ResourceInstance resourceInstance = new ResourceInstance();
-        resourceInstance.setInstanceType(instanceTypeConstants.name());
-        resourceInstance.setPlatform(platform);
-        resourceInstance.setId(UUID.randomUUID().toString().replace("-", ""));
-        Map<String, Object> instanceData = JsonUtil.parseObject(JsonUtil.toJSONString(instance), Map.class);
-        HashMap<String, Object> instanceTypeData = new HashMap<>();
-        instanceTypeData.put(platform + "_" + instanceTypeConstants.name(), instanceData);
-        resourceInstance.setInstance(instanceTypeData);
-        return resourceInstance;
-    }
+
 }

@@ -10,6 +10,7 @@ import com.fit2cloud.provider.ICloudProvider;
 import com.fit2cloud.provider.entity.InstanceSearchField;
 import com.fit2cloud.provider.impl.huawei.api.HuaweiApi;
 import com.fit2cloud.provider.impl.huawei.entity.request.ListEcsInstanceRequest;
+import com.fit2cloud.provider.util.ResourceUtil;
 import com.huaweicloud.sdk.ecs.v2.model.ServerDetail;
 
 import java.util.ArrayList;
@@ -27,7 +28,9 @@ public class HuaweiCloudProvider extends AbstractCloudProvider<HuaweiBaseCredent
     public List<ResourceInstance> listEcsInstance(String req) {
         ListEcsInstanceRequest listEcsInstanceRequest = JsonUtil.parseObject(req, ListEcsInstanceRequest.class);
         List<ServerDetail> serverDetails = HuaweiApi.listEcsInstance(listEcsInstanceRequest);
-        return serverDetails.stream().map(instance -> toResourceInstance(PlatformConstants.fit2cloud_huawei_platform.name(), ResourceTypeConstants.ECS, instance)).toList();
+        return serverDetails.stream()
+                .map(instance -> ResourceUtil.toResourceInstance(PlatformConstants.fit2cloud_huawei_platform.name(), ResourceTypeConstants.ECS, instance.getId(), instance.getName(), instance))
+                .toList();
     }
 
     @Override

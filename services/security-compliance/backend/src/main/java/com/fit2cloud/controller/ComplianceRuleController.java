@@ -9,12 +9,14 @@ import com.fit2cloud.controller.request.rule.ComplianceRuleRequest;
 import com.fit2cloud.controller.request.rule.PageComplianceRuleRequest;
 import com.fit2cloud.controller.response.rule.ComplianceRuleResponse;
 import com.fit2cloud.controller.response.rule.ComplianceRuleSearchFieldResponse;
+import com.fit2cloud.dao.entity.ComplianceRule;
 import com.fit2cloud.dao.mapper.ComplianceRuleMapper;
 import com.fit2cloud.service.IComplianceRuleService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiModelProperty;
 import io.swagger.annotations.ApiOperation;
 import org.apache.commons.collections4.keyvalue.DefaultKeyValue;
+import org.springframework.beans.BeanUtils;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -52,6 +54,15 @@ public class ComplianceRuleController {
         return ResultHolder.success(complianceRuleResponsePage);
     }
 
+    @ApiModelProperty("根据规则id获取合规规则")
+    @GetMapping("/{complianceRuleId}")
+    public ResultHolder<ComplianceRuleResponse> one(@PathVariable("complianceRuleId") String complianceRuleId) {
+        ComplianceRule complianceRule = complianceRuleService.getById(complianceRuleId);
+        ComplianceRuleResponse complianceRuleResponse = new ComplianceRuleResponse();
+        BeanUtils.copyProperties(complianceRule, complianceRuleResponse);
+        return ResultHolder.success(complianceRuleResponse);
+
+    }
 
     @ApiOperation("获取可过滤的合规条件维度")
     @GetMapping("/instance_search_field")

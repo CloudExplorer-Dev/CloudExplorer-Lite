@@ -1,5 +1,40 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.fit2cloud.dao.mapper.ComplianceRuleMapper">
+    <resultMap id="CloudAccountComplianceRuleMap"
+               type="com.fit2cloud.dao.entity.ComplianceRuleCloudAccount">
+        <id column="id" property="id"/>
+        <result column="name" property="name"/>
+        <result column="rule_group_id" property="ruleGroupId"/>
+        <result column="platform" property="platform"/>
+        <result column="resource_type" property="resourceType"/>
+        <result column="rules" property="rules"
+                typeHandler="com.fit2cloud.dao.handler.RuleHandler"/>
+        <result column="risk_level" property="riskLevel"/>
+        <result column="description" property="description"/>
+        <result column="enable" property="enable"/>
+        <result column="create_time" property="createTime"/>
+        <result column="update_time" property="updateTime"/>
+        <result column="cloud_account_id" property="cloudAccountId"/>
+        <result column="cloud_account_name" property="cloudAccountName"/>
+    </resultMap>
 
+    <select id="page" resultMap="CloudAccountComplianceRuleMap">
+        SELECT cr.id            AS id,
+               cr.NAME          AS NAME,
+               cr.rule_group_id AS rule_group_id,
+               cr.platform      AS platform,
+               cr.resource_type AS resource_type,
+               cr.rules         AS rules,
+               cr.risk_level    AS risk_level,
+               cr.description   AS description,
+               cr.ENABLE        AS enable,
+               cr.create_time   AS create_time,
+               cr.update_time   AS update_time,
+               ca.NAME          AS cloud_account_name,
+               ca.id            AS cloud_account_id
+        FROM compliance_rule cr
+        LEFT JOIN cloud_account ca ON cr.platform = ca.platform
+            ${ew.customSqlSegment}
+    </select>
 </mapper>
