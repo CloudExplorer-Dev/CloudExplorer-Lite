@@ -1,5 +1,6 @@
 package com.fit2cloud.provider.impl.huawei.entity.request;
 
+import com.huaweicloud.sdk.evs.v2.model.BssParamForCreateVolume;
 import com.huaweicloud.sdk.evs.v2.model.CreateVolumeOption;
 import com.huaweicloud.sdk.evs.v2.model.CreateVolumeRequest;
 import com.huaweicloud.sdk.evs.v2.model.CreateVolumeRequestBody;
@@ -40,6 +41,12 @@ public class HuaweiCreateDiskRequest extends HuaweiBaseRequest {
         volume.setVolumeType(CreateVolumeOption.VolumeTypeEnum.fromValue(this.diskType));
         body.setVolume(volume);
         body.setServerId(this.instanceUuid);
+
+        BssParamForCreateVolume bssParamBody = new BssParamForCreateVolume();
+        bssParamBody.withIsAutoPay(BssParamForCreateVolume.IsAutoPayEnum.TRUE)
+                .withIsAutoRenew(BssParamForCreateVolume.IsAutoRenewEnum.TRUE);
+        body.withBssParam(bssParamBody);
+
         createVolumeRequest.setBody(body);
 
         return createVolumeRequest;

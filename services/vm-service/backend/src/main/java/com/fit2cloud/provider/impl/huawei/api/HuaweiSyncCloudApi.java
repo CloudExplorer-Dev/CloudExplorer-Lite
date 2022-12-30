@@ -382,14 +382,51 @@ public class HuaweiSyncCloudApi {
         EvsClient evsClient = huaweiVmCredential.getEvsClient(request.getRegionId());
         try {
             CreateVolumeResponse response = evsClient.createVolume(request.toCreateVolumeRequest());
-            ShowJobResponse showJobResponse = getJob(response.getJobId(), evsClient);
+            String volumeId;
             String status = request.getInstanceUuid() == null ? F2CDiskStatus.AVAILABLE : "in-use"; //华为云的 in-use 是中划线😭
-            F2CDisk createdDisk = HuaweiMappingUtil.toF2CDisk(checkVolumeStatus(showJobResponse.getEntities().getVolumeId(), evsClient, status));
+            if (StringUtils.isNotEmpty(response.getOrderId())) {
+                volumeId = checkOrderResourceId(response.getOrderId(), huaweiVmCredential.getBssClient());
+            } else {
+                ShowJobResponse showJobResponse = getJob(response.getJobId(), evsClient);
+                volumeId = showJobResponse.getEntities().getVolumeId();
+            }
+            F2CDisk createdDisk = HuaweiMappingUtil.toF2CDisk(checkVolumeStatus(volumeId, evsClient, status));
             createdDisk.setDeleteWithInstance(request.getDeleteWithInstance());
             return createdDisk;
         } catch (Exception e) {
             throw new RuntimeException(e.getMessage(), e);
         }
+    }
+
+    public static String checkOrderResourceId(String orderId, BssClient bssClient) {
+        ListPayPerUseCustomerResourcesRequest resourceRequest = new ListPayPerUseCustomerResourcesRequest();
+        QueryResourcesReq body = new QueryResourcesReq();
+        body.setOrderId(orderId);
+        resourceRequest.withBody(body);
+        String resourceId = null;
+        try {
+            int count = 0;
+            boolean b = true;
+            while (b) {
+                Thread.sleep(5000);
+                count++;
+                ListPayPerUseCustomerResourcesResponse resourcesResponse = bssClient.listPayPerUseCustomerResources(resourceRequest);
+                List<OrderInstanceV2> disksInfo = resourcesResponse.getData();
+                if (CollectionUtils.isNotEmpty(disksInfo)) {
+                    b = false;
+                    resourceId = disksInfo.get(0).getResourceId();
+                }
+                if (count >= WAIT_COUNT) {
+                    throw new RuntimeException("Check order resource info timeout！");
+                }
+            }
+            return resourceId;
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new RuntimeException(e.getMessage(), e);
+        }
+
+
     }
 
     /**
@@ -1514,7 +1551,7 @@ public class HuaweiSyncCloudApi {
             response.getOrderLineItems().stream().forEach((item) -> {
                 if ("hws.service.type.ec2".equalsIgnoreCase(item.getServiceTypeCode())) {
                     createRequest.setPeriodType(item.getPeriodType() == 2 ? "month" : "year");
-                    createRequest.setPeriodNum(item.getPeriodNum());
+                    createRequest.setPeriodNum(item.getPeriodNum() == null ? 1 : item.getPeriodNum());
                 }
             });
             price = vmInquiryPriceForMonth(createRequest, huaweiVmCredential, projectId);
