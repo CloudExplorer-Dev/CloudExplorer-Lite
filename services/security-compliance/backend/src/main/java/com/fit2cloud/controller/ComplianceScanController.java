@@ -30,7 +30,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/compliance_scan")
 @Validated
-@Api("安全合规扫描相关接口")
+@Api(value = "安全合规扫描相关接口", tags = "安全合规扫描相关接口")
 public class ComplianceScanController {
     @Resource
     private IComplianceScanService complianceScanService;

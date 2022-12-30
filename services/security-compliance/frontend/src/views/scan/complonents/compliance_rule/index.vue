@@ -29,7 +29,17 @@
         row-key="id"
       >
         <el-table-column prop="name" label="规则名称" width="180" />
-        <el-table-column prop="cloudAccountName" label="云账号" width="180" />
+        <el-table-column prop="cloudAccountName" label="云账号" width="180">
+          <template #default="scope">
+            <div style="display: flex; align-items: center">
+              <el-image
+                style="margin-right: 20%; display: flex"
+                :src="platformIcon[scope.row.platform].oldIcon"
+              ></el-image>
+              <span>{{ scope.row.cloudAccountName }}</span>
+            </div>
+          </template></el-table-column
+        >
         <el-table-column prop="riskLevel" label="风险等级">
           <template #default="scope">
             {{
@@ -84,6 +94,7 @@ import type { KeyValue } from "@commons/api/base/type";
 import type { ComplianceScanResponse } from "@/api/compliance_scan/type";
 import { onMounted, ref, watch } from "vue";
 import complianceScanApi from "@/api/compliance_scan";
+import { platformIcon } from "@commons/utils/platform";
 import {
   PaginationConfig,
   TableConfig,

@@ -110,6 +110,10 @@ interface SaveComplianceRuleRequest {
    */
   riskLevel: "HIGH" | "MIDDLE" | "LOW";
   /**
+   * 等保条例
+   */
+  insuranceStatuteIds: Array<number>;
+  /**
    * 描述
    */
   description: string;
@@ -143,6 +147,10 @@ interface UpdateComplianceRuleRequest {
    * 风险等级
    */
   riskLevel?: "HIGH" | "MIDDLE" | "LOW";
+  /**
+   * 等保条例
+   */
+  insuranceStatuteIds: Array<number>;
   /**
    * 描述
    */

@@ -28,7 +28,17 @@
     </layout-container>
     <layout-container>
       <template #header><h4>改进意见</h4></template>
-      <template #content></template>
+      <template #content>
+        <el-descriptions :column="1">
+          <el-descriptions-item
+            v-for="(item, index) in complianceInsuranceStatutes"
+            :key="item.id"
+            :label="index + 1 + '.'"
+          >
+            {{ item.improvementProposal }}</el-descriptions-item
+          >
+        </el-descriptions>
+      </template>
     </layout-container>
     <layout-container>
       <template #header><h4>资源检测结果</h4></template>
@@ -42,7 +52,18 @@
           :tableConfig="tableConfig"
           row-key="id"
         >
-          <el-table-column type="selection" />
+          <el-table-column type="expand">
+            <template #default="props">
+              <el-descriptions :column="2" style="padding: 0 20px">
+                <el-descriptions-item
+                  v-for="key in Object.keys(props.row.instance)"
+                  :key="key"
+                  :label="key + ':'"
+                  >{{ props.row.instance[key] }}</el-descriptions-item
+                >
+              </el-descriptions>
+            </template>
+          </el-table-column>
           <el-table-column prop="resourceId" label="资源id" />
           <el-table-column prop="resourceName" label="资源名称" />
           <el-table-column prop="cloudAccountName" label="云账号名称" />
@@ -94,6 +115,8 @@ import complianceScanApi from "@/api/compliance_scan";
 import type { ComplianceRule } from "@/api/rule/type";
 import type { ComplianceRuleGroup } from "@/api/rule_group/type";
 import type { ComplianceResourceResponse } from "@/api/compliance_scan/type";
+import complianceInsuranceStatuteApi from "@/api/compliance_insurance_statute";
+import type { ComplianceInsuranceStatute } from "@/api/compliance_insurance_statute/type";
 import {
   PaginationConfig,
   TableConfig,
@@ -103,7 +126,7 @@ const route = useRoute();
 const complianceRule = ref<ComplianceRule>();
 const complianceRuleGroup = ref<ComplianceRuleGroup>();
 const tableLoading = ref<boolean>(false);
-
+const complianceInsuranceStatutes = ref<Array<ComplianceInsuranceStatute>>([]);
 /**
  * 表格数据
  */
@@ -125,6 +148,13 @@ onMounted(() => {
         .then((ok) => {
           complianceRuleGroup.value = ok.data;
         });
+    });
+  complianceInsuranceStatuteApi
+    .list({
+      complianceRuleId: route.params.compliance_rule_id as string,
+    })
+    .then((ok) => {
+      complianceInsuranceStatutes.value = ok.data;
     });
 });
 

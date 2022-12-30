@@ -11,17 +11,21 @@ import com.fit2cloud.controller.request.rule.ComplianceRuleRequest;
 import com.fit2cloud.controller.request.rule.PageComplianceRuleRequest;
 import com.fit2cloud.controller.response.rule.ComplianceRuleResponse;
 import com.fit2cloud.controller.response.rule.ComplianceRuleSearchFieldResponse;
+import com.fit2cloud.dao.entity.ComplianceInsuranceStatute;
 import com.fit2cloud.dao.entity.ComplianceRule;
 import com.fit2cloud.dao.entity.ComplianceRuleGroup;
 import com.fit2cloud.dao.mapper.ComplianceRuleMapper;
 import com.fit2cloud.provider.ICloudProvider;
+import com.fit2cloud.service.IComplianceInsuranceStatuteService;
 import com.fit2cloud.service.IComplianceRuleGroupService;
+import com.fit2cloud.service.IComplianceRuleInsuranceStatuteMappingService;
 import com.fit2cloud.service.IComplianceRuleService;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.keyvalue.DefaultKeyValue;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import java.util.ArrayList;
@@ -41,6 +45,10 @@ public class ComplianceRuleServiceImpl extends ServiceImpl<ComplianceRuleMapper,
 
     @Resource
     private IComplianceRuleGroupService complianceRuleGroupService;
+    @Resource
+    private IComplianceRuleInsuranceStatuteMappingService complianceRuleInsuranceStatuteMappingService;
+    @Resource
+    private IComplianceInsuranceStatuteService complianceInsuranceStatuteService;
 
     @Override
     public List<ComplianceRuleSearchFieldResponse> listInstanceSearchField(String platform, String resourceType) {
@@ -58,11 +66,13 @@ public class ComplianceRuleServiceImpl extends ServiceImpl<ComplianceRuleMapper,
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public ComplianceRuleResponse save(ComplianceRuleRequest complianceRuleRequest) {
         ComplianceRule complianceRule = new ComplianceRule();
         BeanUtils.copyProperties(complianceRuleRequest, complianceRule);
         complianceRule.setEnable(true);
         save(complianceRule);
+        complianceRuleInsuranceStatuteMappingService.save(complianceRule.getId(), complianceRuleRequest.getInsuranceStatuteIds());
         ComplianceRuleResponse complianceRuleResponse = new ComplianceRuleResponse();
         BeanUtils.copyProperties(complianceRule, complianceRuleResponse);
         return complianceRuleResponse;
@@ -98,6 +108,9 @@ public class ComplianceRuleServiceImpl extends ServiceImpl<ComplianceRuleMapper,
         ComplianceRule complianceRule = new ComplianceRule();
         BeanUtils.copyProperties(complianceRuleRequest, complianceRule);
         this.updateById(complianceRule);
+        if (CollectionUtils.isNotEmpty(complianceRuleRequest.getInsuranceStatuteIds())) {
+            complianceRuleInsuranceStatuteMappingService.update(complianceRule.getId(), complianceRuleRequest.getInsuranceStatuteIds());
+        }
         ComplianceRuleResponse complianceRuleResponse = new ComplianceRuleResponse();
         BeanUtils.copyProperties(complianceRule, complianceRuleResponse);
         return complianceRuleResponse;

@@ -119,7 +119,7 @@ public class ComplianceScanServiceImpl implements IComplianceScanService {
         page.setSearchCount(true);
         page.setOptimizeCountSql(false);
         QueryWrapper<ComplianceRuleCloudAccount> wrapper = new QueryWrapper<ComplianceRuleCloudAccount>()
-                .like(StringUtil.isNotEmpty(request.getComplianceRuleName()), ColumnNameUtil.getColumnName(ComplianceRuleCloudAccount::getName, false), "%" + request.getComplianceRuleName() + "%")
+                .like(StringUtil.isNotEmpty(request.getComplianceRuleName()), ColumnNameUtil.getColumnName(ComplianceRuleCloudAccount::getName, false), request.getComplianceRuleName())
                 .eq(StringUtils.isNotEmpty(request.getCloudAccountId()), ColumnNameUtil.getColumnName(ComplianceRuleCloudAccount::getCloudAccountId, false), request.getCloudAccountId())
                 .eq(StringUtils.isNotEmpty(request.getResourceType()), ColumnNameUtil.getColumnName(ComplianceRuleCloudAccount::getResourceType, false), request.getResourceType())
                 .eq(ColumnNameUtil.getColumnName(ComplianceRuleCloudAccount::getEnable, false), true);
@@ -211,7 +211,7 @@ public class ComplianceScanServiceImpl implements IComplianceScanService {
         BeanUtils.copyProperties(complianceRuleCloudAccount, complianceRule);
         CloudAccount cloudAccount = new CloudAccount();
         cloudAccount.setId(complianceRuleCloudAccount.getCloudAccountId());
-        cloudAccount.setName(complianceRuleCloudAccount.getName());
+        cloudAccount.setName(complianceRuleCloudAccount.getCloudAccountName());
         return proxy.scanCompliance(complianceRule, cloudAccount);
     }
 
