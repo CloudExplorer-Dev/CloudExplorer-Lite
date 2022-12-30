@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted, onBeforeUnmount } from "vue";
+import {ref, onMounted, onBeforeUnmount} from "vue";
 import VmCloudServerApi from "@/api/vm_cloud_server";
 import type { VmCloudServerVO } from "@/api/vm_cloud_server/type";
 import { useRouter } from "vue-router";
@@ -10,7 +10,7 @@ import {
   TableSearch,
 } from "@commons/components/ce-table/type";
 import { useI18n } from "vue-i18n";
-import { ElMessage, ElMessageBox } from "element-plus";
+import {ElMessage, ElMessageBox} from "element-plus";
 import _ from "lodash";
 import type { SimpleMap } from "@commons/api/base/type";
 import variables_server from "../../styles/vm_cloud_server/server.module.scss";
@@ -49,6 +49,16 @@ const InstanceStatus = ref<Array<SimpleMap<string>>>([
   { text: "未知", value: "Unknown" },
 ]);
 
+// 表格头中显示的筛选状态
+const instanceStatusForTableSelect = ([
+  { text: t("vm_cloud_server.status.creating", "创建中"), value: "Creating" },
+  { text: t("vm_cloud_server.status.running", "运行中"), value: "Running" },
+  { text: t("vm_cloud_server.status.stopped", "已关机"), value: "Stopped" },
+  { text: t("vm_cloud_server.status.rebooting", "重启中"), value: "Rebooting" },
+  { text: t("vm_cloud_server.status.wait_recycle", "待回收"), value: "Wait_Recycle" },
+  { text: t("vm_cloud_server.status.deleted", "已删除"), value: "Deleted" },
+]);
+
 const filterInstanceStatus = (value: string) => {
   let status = "";
   InstanceStatus.value.forEach((v) => {
@@ -83,6 +93,10 @@ const search = (condition: TableSearch) => {
       tableConfig.value.paginationConfig
     );
   });
+};
+
+const refresh = () => {
+  table.value.search();
 };
 
 /**
@@ -544,6 +558,7 @@ const handleAction = (actionObj: any) => {
     <el-table-column
       :show-overflow-tooltip="true"
       prop="instanceName"
+      column-key="instanceName"
       :label="$t('commons.name')"
     >
       <template #default="scope">
@@ -554,11 +569,13 @@ const handleAction = (actionObj: any) => {
     </el-table-column>
     <el-table-column
       prop="organizationName"
+      column-key="organizationName"
       :label="$t('commons.org')"
       :show="false"
     ></el-table-column>
     <el-table-column
       prop="workspaceName"
+      column-key="workspaceName"
       :label="$t('commons.workspace')"
       :show="false"
     ></el-table-column>
@@ -591,7 +608,7 @@ const handleAction = (actionObj: any) => {
       prop="instanceStatus"
       column-key="instanceStatus"
       :label="$t('commons.status')"
-      :filters="InstanceStatus"
+      :filters="instanceStatusForTableSelect"
     >
       <template #default="scope">
         <div style="display: flex; align-items: center">
@@ -621,10 +638,12 @@ const handleAction = (actionObj: any) => {
     </el-table-column>
     <el-table-column
       prop="instanceTypeDescription"
+      column-key="instanceTypeDescription"
       :label="$t('commons.cloud_server.instance_type')"
     ></el-table-column>
     <el-table-column
       prop="ipArray"
+      column-key="ipArray"
       :label="$t('vm_cloud_server.label.ip_address')"
     >
       <template #default="scope">
@@ -655,11 +674,13 @@ const handleAction = (actionObj: any) => {
     </el-table-column>
     <el-table-column
       prop="createUser"
+      column-key="createUser"
       :label="$t('commons.cloud_server.applicant')"
       :show="false"
     ></el-table-column>
     <el-table-column
       prop="createTime"
+      column-key="createTime"
       sortable
       :label="$t('commons.create_time')"
     ></el-table-column>
@@ -686,6 +707,7 @@ const handleAction = (actionObj: any) => {
     <Grant
       :cloudServerIds="selectedServerIds"
       v-model:visible="grantDialogVisible"
+      @refresh="refresh"
     />
   </el-dialog>
 </template>

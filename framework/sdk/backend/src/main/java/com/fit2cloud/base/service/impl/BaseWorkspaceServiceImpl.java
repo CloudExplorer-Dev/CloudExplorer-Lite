@@ -7,7 +7,10 @@ import com.fit2cloud.base.entity.Workspace;
 import com.fit2cloud.base.mapper.BaseOrganizationMapper;
 import com.fit2cloud.base.mapper.BaseWorkspaceMapper;
 import com.fit2cloud.base.service.IBaseWorkspaceService;
+import com.fit2cloud.common.utils.CurrentUserUtils;
 import com.fit2cloud.response.NodeTree;
+import com.fit2cloud.service.OrganizationCommonService;
+import com.fit2cloud.service.WorkspaceCommonService;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
@@ -30,12 +33,27 @@ import java.util.stream.Collectors;
 public class BaseWorkspaceServiceImpl extends ServiceImpl<BaseWorkspaceMapper, Workspace> implements IBaseWorkspaceService {
     @Resource
     BaseOrganizationMapper baseOrganizationMapper;
+    @Resource
+    OrganizationCommonService organizationCommonService;
+    @Resource
+    WorkspaceCommonService workspaceCommonService;
 
     public List<NodeTree> workspaceTree(Boolean isShowAllOrg) {
-        // 查询到所有的组织
-        List<Organization> organizations = baseOrganizationMapper.selectList(new QueryWrapper<>());
-        // 查询到所有的工作空间
-        List<Workspace> workspaces = list();
+        QueryWrapper<Organization> orgQueryWrapper = new QueryWrapper<>();
+        QueryWrapper<Workspace> workspaceQueryWrapper = new QueryWrapper<>();
+
+        // 当前角色如果是组织管理员
+        if (CurrentUserUtils.isOrgAdmin()) {
+            List<String> orgIdList = new ArrayList();
+            orgIdList.add(CurrentUserUtils.getOrganizationId());
+            orgIdList.addAll(organizationCommonService.getOrgIdsByParentId(CurrentUserUtils.getOrganizationId()));
+
+            orgQueryWrapper.lambda().in(Organization::getId, orgIdList);
+            workspaceQueryWrapper.lambda().in(Workspace::getId, workspaceCommonService.getWorkspaceIdsByOrgIds(orgIdList));
+        }
+
+        List<Organization> organizations = baseOrganizationMapper.selectList(orgQueryWrapper);
+        List<Workspace> workspaces = list(workspaceQueryWrapper);
 
         if (CollectionUtils.isEmpty(organizations) || CollectionUtils.isEmpty(workspaces)) {
             return new ArrayList<>();

@@ -8,6 +8,14 @@ const message = {
       instance_type: "Instance type",
       new_config: "New config",
     },
+    status:{
+      creating:"Creating",
+      running:"Running",
+      stopped:"Stopped",
+      rebooting:"Rebooting",
+      wait_recycle:"Wait to Recycle",
+      deleted:"Deleted",
+    },
     btn: {
       power_on: "Power on",
       shutdown: "Shutdown",
@@ -57,6 +65,14 @@ const message = {
       system_disk: "System Disk",
       data_disk: "Data Disk",
       disk_id: "Disk ID",
+    },
+    status:{
+      creating:"Creating",
+      in_use:"In Use",
+      available:"Available",
+      enlarging:"Enlarging",
+      wait_recycle:"Wait to Recycle",
+      deleted:"Deleted",
     },
     btn: {
       create: "Add Disk",

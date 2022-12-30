@@ -107,6 +107,11 @@ public class VmCloudDiskServiceImpl extends ServiceImpl<BaseVmCloudDiskMapper, V
         wrapper.in(CollectionUtils.isNotEmpty(request.getDiskType()), ColumnNameUtil.getColumnName(VmCloudDisk::getDiskType, true), request.getDiskType());
         wrapper.in(CollectionUtils.isNotEmpty(request.getDeleteWithInstance()), ColumnNameUtil.getColumnName(VmCloudDisk::getDeleteWithInstance, true), request.getDeleteWithInstance());
         wrapper.in(CollectionUtils.isNotEmpty(request.getStatus()), ColumnNameUtil.getColumnName(VmCloudDisk::getStatus, true), request.getStatus());
+
+        // 默认不展示已删除状态的磁盘
+        if (CollectionUtils.isEmpty(request.getStatus())) {
+            wrapper.notIn(ColumnNameUtil.getColumnName(VmCloudDisk::getStatus, true), F2CDiskStatus.DELETED);
+        }
         return wrapper;
     }
 
