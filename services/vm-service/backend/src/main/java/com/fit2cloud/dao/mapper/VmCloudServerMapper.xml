@@ -11,6 +11,28 @@
         <result column="create_time" jdbcType="BIGINT" property="createTime"/>
     </resultMap>
 
+    <select id="pageVmCloudServer" resultMap="serverResultMap">
+        SELECT
+            vm_cloud_server.*,
+            cloud_account.NAME AS account_name,
+            cloud_account.platform AS platform,
+            CASE
+                WHEN orgWorkspace.type = "workspace" THEN
+                    orgWorkspace.id ELSE NULL
+                END AS workspace_id,
+            CASE
+                WHEN orgWorkspace.type = "workspace" THEN
+                    orgWorkspace.NAME ELSE NULL
+                END AS workspace_name,
+            orgWorkspace.organization_id,
+            orgWorkspace.organization_name
+        FROM
+            vm_cloud_server
+                LEFT JOIN cloud_account ON vm_cloud_server.account_id = cloud_account.id
+                LEFT JOIN org_workspace orgWorkspace ON vm_cloud_server.workspace_id = orgWorkspace.id
+            ${ew.customSqlSegment}
+    </select>
+
     <select id="selectListByAccountId" resultMap="serverResultMap">
         SELECT
             vm_cloud_server.*,
