@@ -11,6 +11,7 @@ import com.fit2cloud.controller.request.es.PageSystemLogRequest;
 import com.fit2cloud.service.ILogService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -36,6 +37,7 @@ public class LogController {
 
     @GetMapping("/system/list")
     @ApiOperation(value = "系统日志搜索", notes = "系统日志搜索")
+    @PreAuthorize("hasAnyCePermission('SYS_LOG:READ')")
     @OperatedLog(resourceType = ResourceTypeEnum.LOG,operated = OperatedTypeEnum.SEARCH,param = "#pageSystemLogRequest")
     public ResultHolder<Object> systemLogs(@Validated PageSystemLogRequest pageSystemLogRequest) {
         return ResultHolder.success(logService.systemLogs(pageSystemLogRequest));
@@ -43,13 +45,14 @@ public class LogController {
 
     @GetMapping("/operated/list")
     @ApiOperation(value = "操作日志搜索", notes = "操作日志搜索")
+    @PreAuthorize("hasAnyCePermission('OPERATED_LOG:READ')")
     @OperatedLog(resourceType = ResourceTypeEnum.LOG,operated = OperatedTypeEnum.SEARCH,param = "#pageOperatedLogRequest")
     public ResultHolder<Object> apiLogs(@Validated PageOperatedLogRequest pageOperatedLogRequest) {
         return ResultHolder.success(logService.operatedLogs(pageOperatedLogRequest));
     }
 
     @GetMapping("keep/months")
-    public ResultHolder getKeepMonths(SystemParameter systemParameter) {
+    public ResultHolder<String> getKeepMonths(SystemParameter systemParameter) {
         String value = baseSystemParameterService.getValue(systemParameter.getParamKey());
         if (StringUtils.isNotBlank(value)) {
             return ResultHolder.success(value);
@@ -59,7 +62,7 @@ public class LogController {
     }
 
     @PostMapping("keep/months")
-    public ResultHolder saveKeepMonths(SystemParameter systemParameter) {
+    public ResultHolder<Boolean> saveKeepMonths(SystemParameter systemParameter) {
         systemParameter.setParamKey(systemParameter.getParamKey());
         baseSystemParameterService.saveValue(systemParameter);
         return ResultHolder.success(true);

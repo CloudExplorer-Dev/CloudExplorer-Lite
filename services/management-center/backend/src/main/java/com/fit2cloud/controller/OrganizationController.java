@@ -17,6 +17,7 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import org.springframework.beans.BeanUtils;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.WebDataBinder;
 import org.springframework.web.bind.annotation.*;
@@ -42,6 +43,7 @@ public class OrganizationController {
 
     @ApiOperation(value = "分页查询组织", notes = "分页查询组织")
     @GetMapping("/page")
+    @PreAuthorize("hasAnyCePermission('ORGANIZATION:READ')")
     public ResultHolder<IPage<Organization>> list(@Validated PageOrganizationRequest pageOrganizationRequest) {
         return ResultHolder.success(organizationService.pageOrganization(pageOrganizationRequest));
     }
@@ -57,6 +59,7 @@ public class OrganizationController {
 
     @ApiOperation(value = "添加组织", notes = "添加组织")
     @PostMapping
+    @PreAuthorize("hasAnyCePermission('ORGANIZATION:CREATE')")
     public ResultHolder<Organization> save(@RequestBody
                                            @Validated(ValidationGroup.SAVE.class) OrganizationRequest request) {
         Organization organization = new Organization();
@@ -67,6 +70,7 @@ public class OrganizationController {
 
     @ApiOperation(value = "批量添加组织", notes = "批量添加组织")
     @PostMapping("/batch")
+    @PreAuthorize("hasAnyCePermission('ORGANIZATION:CREATE')")
     public ResultHolder<Boolean> batch(@RequestBody
                                        @Validated(ValidationGroup.SAVE.class) OrganizationBatchRequest request) {
         Boolean batch = organizationService.batch(request);
@@ -75,6 +79,7 @@ public class OrganizationController {
 
     @ApiOperation(value = "修改组织", notes = "修改组织")
     @PutMapping
+    @PreAuthorize("hasAnyCePermission('ORGANIZATION:EDIT')")
     public ResultHolder<Organization> update(@RequestBody
                                              @Validated(ValidationGroup.UPDATE.class) OrganizationRequest request) {
         organizationService.update(request);
@@ -83,6 +88,7 @@ public class OrganizationController {
 
     @ApiOperation(value = "删除组织", notes = "删除组织")
     @DeleteMapping("/{organizationId}")
+    @PreAuthorize("hasAnyCePermission('ORGANIZATION:DELETE')")
     public ResultHolder<Boolean> delete(@ApiParam("组织id")
                                         @NotNull(message = "{i18n.organization.name.is.not.empty}")
                                         @CustomValidated(mapper = BaseOrganizationMapper.class, handler = ExistHandler.class, message = "{i18n.organization.id.is.not.existent}", exist = false)
@@ -92,6 +98,7 @@ public class OrganizationController {
 
     @ApiOperation(value = "批量删除组织", notes = "批量删除组织")
     @DeleteMapping
+    @PreAuthorize("hasAnyCePermission('ORGANIZATION:DELETE')")
     public ResultHolder<Boolean> deleteBatch(@ApiParam("批量删除组织")
                                              @Size(min = 1, message = "{i18n.organization.id.size.gt.one}")
                                              @NotNull(message = "{i18n.organization.id.is.not.empty}")

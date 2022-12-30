@@ -32,7 +32,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/compliance_rule_group")
 @Validated
-@Api("合规规则组相关接口")
+@Api(value = "合规规则组相关接口", tags = "合规规则组相关接口")
 public class ComplianceRuleGroupController {
     @Resource
     private IComplianceRuleGroupService complianceRuleGroupService;

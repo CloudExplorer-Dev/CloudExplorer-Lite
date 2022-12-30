@@ -85,6 +85,26 @@
           :resource-type="updateComplianceRuleForm.resourceType"
         ></compliance_rules>
       </el-form-item>
+      <el-form-item
+        prop="insuranceStatuteIds"
+        v-loading="insuranceStatuteLoading"
+        label="等保条例"
+      >
+        <el-select
+          style="width: 100%"
+          v-model="updateComplianceRuleForm.insuranceStatuteIds"
+          class="m-2"
+          :multiple="true"
+          :placeholder="'请选择等保条例'"
+        >
+          <el-option
+            v-for="item in complianceInsuranceStatuteList"
+            :key="item.id"
+            :label="item.id + ':' + item.baseClause"
+            :value="item.id"
+          />
+        </el-select>
+      </el-form-item>
       <el-form-item prop="description" label="描述">
         <el-input v-model="updateComplianceRuleForm.description" />
       </el-form-item>
@@ -98,7 +118,7 @@
   </el-dialog>
 </template>
 <script setup lang="ts">
-import { nextTick, ref } from "vue";
+import { nextTick, ref, onMounted } from "vue";
 import compliance_rules from "@/views/rule/components/compliance_rules/index.vue";
 import type { FormRules, FormInstance } from "element-plus";
 import type {
@@ -111,6 +131,8 @@ import { platformIcon } from "@commons/utils/platform";
 import type { KeyValue } from "@commons/api/base/type";
 import { ElMessage } from "element-plus";
 import _ from "lodash";
+import complianceInsuranceStatuteApi from "@/api/compliance_insurance_statute";
+import type { ComplianceInsuranceStatute } from "@/api/compliance_insurance_statute/type";
 const props = defineProps<{
   /**
    * 资源类型
@@ -130,6 +152,13 @@ const props = defineProps<{
   refresh: () => void;
 }>();
 /**
+ * 等保条例列表
+ */
+const complianceInsuranceStatuteList = ref<Array<ComplianceInsuranceStatute>>(
+  []
+);
+const insuranceStatuteLoading = ref<boolean>(false);
+/**
  * 表单对象
  */
 const ruleForm = ref<FormInstance>();
@@ -148,6 +177,7 @@ const updateComplianceRuleForm = ref<UpdateComplianceRuleRequest>({
   resourceType: "",
   rules: [],
   riskLevel: "LOW",
+  insuranceStatuteIds: [],
   description: "",
   enable: false,
 });
@@ -196,6 +226,14 @@ const updateComplianceRuleFormRules = ref<FormRules>({
       type: "array",
     },
   ],
+  insuranceStatuteIds: [
+    {
+      required: true,
+      min: 1,
+      message: "等保条例不能为空",
+      type: "array",
+    },
+  ],
   riskLevel: [
     {
       required: true,
@@ -231,6 +269,13 @@ const submit = () => {
   });
 };
 
+onMounted(() => {
+  complianceInsuranceStatuteApi
+    .list(undefined, insuranceStatuteLoading)
+    .then((ok) => {
+      complianceInsuranceStatuteList.value = ok.data;
+    });
+});
 /**
  * 打开弹出框
  */
@@ -247,7 +292,17 @@ const close = () => {
  */
 const echoData = (complianceRule: ComplianceRule) => {
   updateComplianceRuleForm.value.rules = [];
-  updateComplianceRuleForm.value = _.cloneDeep(complianceRule);
+  updateComplianceRuleForm.value = {
+    ..._.cloneDeep(complianceRule),
+    insuranceStatuteIds: [],
+  };
+  complianceInsuranceStatuteApi
+    .list({ complianceRuleId: complianceRule.id }, insuranceStatuteLoading)
+    .then((ok) => {
+      updateComplianceRuleForm.value.insuranceStatuteIds = ok.data.map(
+        (d) => d.id
+      );
+    });
   nextTick(() => {
     updateComplianceRuleForm.value.rules = complianceRule.rules;
   });

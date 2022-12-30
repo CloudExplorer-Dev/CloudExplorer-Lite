@@ -14,6 +14,7 @@ import com.fit2cloud.service.IWorkspaceService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -37,6 +38,7 @@ public class WorkspaceController {
 
     @ApiOperation(value="分页查询工作空间",notes = "分页查询工作空间")
     @GetMapping("/list")
+    @PreAuthorize("hasAnyCePermission('WORKSPACE:READ')")
     @OperatedLog(resourceType= ResourceTypeEnum.WORKSPACE,operated = OperatedTypeEnum.SEARCH,
             param = "#pageWorkspaceRequest")
     public ResultHolder<Object> listByPage(
@@ -46,6 +48,7 @@ public class WorkspaceController {
 
     @ApiOperation(value = "创建工作空间", notes = "创建工作空间")
     @PostMapping("/create")
+    @PreAuthorize("hasAnyCePermission('WORKSPACE:CREATE')")
     @OperatedLog(resourceType=ResourceTypeEnum.WORKSPACE,operated = OperatedTypeEnum.ADD,
             content = "'创建了名为'+#workspaceRequest.name+'的工作空间'",
             param = "#workspaceRequest")
@@ -58,6 +61,7 @@ public class WorkspaceController {
 
     @ApiOperation(value = "修改工作空间",notes = "修改工作空间")
     @PutMapping("/update")
+    @PreAuthorize("hasAnyCePermission('WORKSPACE:EDIT')")
     @OperatedLog(resourceType=ResourceTypeEnum.WORKSPACE,operated = OperatedTypeEnum.MODIFY,
             resourceId = "#workspaceRequest.id",
             content = "'更新了ID为'+#workspaceRequest.id+'的工作空间'",
@@ -87,6 +91,7 @@ public class WorkspaceController {
     @OperatedLog(resourceType=ResourceTypeEnum.WORKSPACE,operated = OperatedTypeEnum.DELETE,
             resourceId = "#workspaceId",
             param = "#workspaceId")
+    @PreAuthorize("hasAnyCePermission('WORKSPACE:DELETE')")
     public ResultHolder<Boolean> delete(
             @ApiParam("工作空间ID")
             @NotNull(message = "{i18n.workspace.id.is.not.empty}")
@@ -96,6 +101,7 @@ public class WorkspaceController {
 
     @ApiOperation(value = "批量删除工作空间",notes = "批量删除工作空间")
     @DeleteMapping
+    @PreAuthorize("hasAnyCePermission('WORKSPACE:DELETE')")
     @OperatedLog(resourceType=ResourceTypeEnum.WORKSPACE,operated = OperatedTypeEnum.BATCH_DELETE,
             content = "'批量删除了'+#workspaces.size+'个工作空间'",
             param = "#workspaces")
@@ -111,6 +117,7 @@ public class WorkspaceController {
     @OperatedLog(resourceType=ResourceTypeEnum.WORKSPACE,operated = OperatedTypeEnum.BATCH_ADD,
             content = "'批量创建了'+#request.workspaceDetails.size+'个工作空间'",
             param = "#request")
+    @PreAuthorize("hasAnyCePermission('WORKSPACE:CREATE')")
     public ResultHolder<Boolean> batch(@RequestBody @Validated(ValidationGroup.SAVE.class) WorkspaceBatchCreateRequest request) {
         Boolean batch = workspaceService.batch(request);
         return ResultHolder.success(batch);

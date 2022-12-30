@@ -44,19 +44,19 @@ public class ComplianceRuleCloudAccount {
     /**
      * 规则组id
      */
-    @TableField("rule_group_id")
+    @TableField("cr.rule_group_id")
     private String ruleGroupId;
 
     /**
      * 云平台
      */
-    @TableField("platform")
+    @TableField("cr.platform")
     private String platform;
 
     /**
      * 资源类型
      */
-    @TableField("resource_type")
+    @TableField("cr.resource_type")
     private String resourceType;
 
     /**
@@ -68,7 +68,7 @@ public class ComplianceRuleCloudAccount {
     /**
      * 风险等级
      */
-    @TableField("risk_level")
+    @TableField("cr.risk_level")
     private RiskLevel riskLevel;
     /**
      * 云账号id
@@ -85,13 +85,13 @@ public class ComplianceRuleCloudAccount {
     /**
      * 规则描述
      */
-    @TableField("description")
+    @TableField("cr.description")
     private String description;
 
     /**
      * 是否启用
      */
-    @TableField("enable")
+    @TableField("cr.enable")
     private Boolean enable;
 
     /**

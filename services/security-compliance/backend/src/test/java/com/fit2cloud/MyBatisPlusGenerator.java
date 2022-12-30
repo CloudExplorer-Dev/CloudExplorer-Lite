@@ -27,7 +27,7 @@ public class MyBatisPlusGenerator {
     /**
      * 传入需要生成代码的表名
      */
-    private static final List<String> TABLES = Arrays.asList("compliance_rule", "compliance_rule_group");
+    private static final List<String> TABLES = Arrays.asList("compliance_rule_insurance_statute_mapping");
 
     private static final Map<String, Object> CUSTOM_MAP = new HashMap<>();
 

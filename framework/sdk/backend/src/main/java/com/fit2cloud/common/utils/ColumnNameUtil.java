@@ -60,6 +60,20 @@ public class ColumnNameUtil {
         return StringUtils.isNotBlank(tableName) && StringUtils.isNotBlank(columnName) ? tableName + "." + columnName : columnName;
     }
 
+    /**
+     * 根据实体类中参数名查找table中column
+     *
+     * @param func      获取字段函数
+     * @param tableName 表名
+     * @return sql column字段
+     */
+    public static <T> String getColumnName(SFunction<T, ?> func, String tableName) {
+        LambdaMeta meta = LambdaUtils.extract(func);
+        String fieldName = PropertyNamer.methodToProperty(meta.getImplMethodName());
+        String columnName = getColumnName(getFieldByName(fieldName, meta.getInstantiatedClass()));
+        return StringUtils.isNotBlank(tableName) && StringUtils.isNotBlank(columnName) ? tableName + "." + columnName : columnName;
+    }
+
     public static String getColumnName(String name, Class clazz) {
         return getColumnName(name, clazz, false);
     }

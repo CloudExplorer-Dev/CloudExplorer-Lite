@@ -7,10 +7,13 @@ import com.fit2cloud.common.validator.handler.ExistHandler;
 import com.fit2cloud.controller.handler.ResultHolder;
 import com.fit2cloud.controller.request.rule.ComplianceRuleRequest;
 import com.fit2cloud.controller.request.rule.PageComplianceRuleRequest;
+import com.fit2cloud.controller.response.compliance_insurance_statute.ComplianceInsuranceStatuteResponse;
 import com.fit2cloud.controller.response.rule.ComplianceRuleResponse;
 import com.fit2cloud.controller.response.rule.ComplianceRuleSearchFieldResponse;
+import com.fit2cloud.dao.entity.ComplianceInsuranceStatute;
 import com.fit2cloud.dao.entity.ComplianceRule;
 import com.fit2cloud.dao.mapper.ComplianceRuleMapper;
+import com.fit2cloud.service.IComplianceInsuranceStatuteService;
 import com.fit2cloud.service.IComplianceRuleService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiModelProperty;
@@ -34,10 +37,12 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/compliance_rule")
 @Validated
-@Api("合规规则相关接口")
+@Api(value = "合规规则相关接口", tags = "合规规则相关接口")
 public class ComplianceRuleController {
     @Resource
     private IComplianceRuleService complianceRuleService;
+    @Resource
+    private IComplianceInsuranceStatuteService complianceInsuranceStatuteService;
 
     @ApiOperation("分页查询合规规则")
     @GetMapping("/{currentPage}/{limit}")

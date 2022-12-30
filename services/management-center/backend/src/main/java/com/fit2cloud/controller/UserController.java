@@ -52,7 +52,7 @@ public class UserController {
     }
 
     @ApiOperation(value = "更新用户")
-    @PreAuthorize("hasAnyCePermission('USER:CREATE')")
+    @PreAuthorize("hasAnyCePermission('USER:EDIT')")
     @PostMapping("/update")
     public ResultHolder<Boolean> updateUser(@RequestBody @Validated(ValidationGroup.UPDATE.class) UpdateUserRequest request) {
         return ResultHolder.success(userService.updateUser(request));
