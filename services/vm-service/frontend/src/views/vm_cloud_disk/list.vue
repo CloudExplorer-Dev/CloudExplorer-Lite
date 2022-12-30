@@ -61,6 +61,16 @@ const diskTypes = ref<Array<SimpleMap<string>>>([
   { text: "未知", value: "NA" },
 ]);
 
+// 表格头中显示的筛选状态
+const diskStatusForTableSelect = ([
+  { text: t("vm_cloud_disk.status.creating", "创建中"), value: "creating" },
+  { text: t("vm_cloud_disk.status.in_use", "已挂载"), value: "in_use" },
+  { text: t("vm_cloud_disk.status.available", "可用"), value: "available" },
+  { text: t("vm_cloud_disk.status.rebooting", "扩容中"), value: "enlarging" },
+  { text: t("vm_cloud_disk.status.wait_recycle", "待回收"), value: "wait_recycle" },
+  { text: t("vm_cloud_disk.status.deleted", "已删除"), value: "deleted" },
+]);
+
 /**
  * 不支持磁盘单独管理的云平台
  */
@@ -618,7 +628,7 @@ const buttons = ref([
       prop="status"
       column-key="status"
       :label="$t('commons.status')"
-      :filters="diskStatus"
+      :filters="diskStatusForTableSelect"
       :show="true"
     >
       <template #default="scope">

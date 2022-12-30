@@ -8,6 +8,14 @@ const message = {
       instance_type: "实例规格",
       new_config: "变更后配置",
     },
+    status:{
+      creating:"创建中",
+      running:"运行中",
+      stopped:"已关机",
+      rebooting:"重启中",
+      wait_recycle:"待回收",
+      deleted:"已删除",
+    },
     btn: {
       power_on: "启动",
       shutdown: "关机",
@@ -57,6 +65,14 @@ const message = {
       system_disk: "系统盘",
       data_disk: "数据盘",
       disk_id: "磁盘ID",
+    },
+    status:{
+      creating:"创建中",
+      in_use:"已挂载",
+      available:"可用",
+      enlarging:"扩容中",
+      wait_recycle:"待回收",
+      deleted:"已删除",
     },
     btn: {
       create: "添加磁盘",

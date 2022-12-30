@@ -40,10 +40,7 @@ import com.fit2cloud.provider.constants.ProviderConstants;
 import com.fit2cloud.provider.entity.F2CVirtualMachine;
 import com.fit2cloud.provider.entity.result.CheckCreateServerResult;
 import com.fit2cloud.response.JobRecordResourceResponse;
-import com.fit2cloud.service.IResourceOperateService;
-import com.fit2cloud.service.IVmCloudServerService;
-import com.fit2cloud.service.JobRecordCommonService;
-import com.fit2cloud.service.OrganizationCommonService;
+import com.fit2cloud.service.*;
 import io.reactivex.rxjava3.functions.BiFunction;
 import io.reactivex.rxjava3.functions.Consumer;
 import io.reactivex.rxjava3.functions.Function;
@@ -70,6 +67,8 @@ public class VmCloudServerServiceImpl extends ServiceImpl<BaseVmCloudServerMappe
 
     @Resource
     private OrganizationCommonService organizationCommonService;
+    @Resource
+    private WorkspaceCommonService workspaceCommonService;
     @Resource
     private VmCloudServerMapper vmCloudServerMapper;
     @Resource
@@ -102,30 +101,38 @@ public class VmCloudServerServiceImpl extends ServiceImpl<BaseVmCloudServerMappe
     @Override
     public IPage<VmCloudServerDTO> pageVmCloudServer(PageVmCloudServerRequest request) {
         // 普通用户
-        if (CurrentUserUtils.isUser()) {
-            request.setWorkspaceId(CurrentUserUtils.getWorkspaceId());
+        if (CurrentUserUtils.isUser() && StringUtils.isNotBlank(CurrentUserUtils.getWorkspaceId())) {
+            request.setSourceIds(Arrays.asList(new String[]{CurrentUserUtils.getWorkspaceId()}));
         }
         // 组织管理员
         if (CurrentUserUtils.isOrgAdmin()) {
-            request.setOrganizationId(CurrentUserUtils.getOrganizationId());
-            request.setOrganizationIds(organizationCommonService.getOrgIdsByParentId(CurrentUserUtils.getOrganizationId()));
+            List orgWorkspaceList = new ArrayList();
+            orgWorkspaceList.add(CurrentUserUtils.getOrganizationId());
+            orgWorkspaceList.addAll(organizationCommonService.getOrgIdsByParentId(CurrentUserUtils.getOrganizationId()));
+            orgWorkspaceList.addAll(workspaceCommonService.getWorkspaceIdsByOrgIds(orgWorkspaceList));
+            request.setSourceIds(orgWorkspaceList);
         }
         Page<VmCloudServerDTO> page = PageUtil.of(request, VmCloudServerDTO.class, new OrderItem(ColumnNameUtil.getColumnName(VmCloudServerDTO::getCreateTime, true), false), true);
         // 构建查询参数
         QueryWrapper<VmCloudServerDTO> wrapper = addQuery(request);
-        return vmCloudServerMapper.pageList(page, wrapper);
+        return vmCloudServerMapper.pageVmCloudServer(page, wrapper);
     }
 
     private QueryWrapper<VmCloudServerDTO> addQuery(PageVmCloudServerRequest request) {
         QueryWrapper<VmCloudServerDTO> wrapper = new QueryWrapper<>();
 
         wrapper.like(StringUtils.isNotBlank(request.getWorkspaceId()), ColumnNameUtil.getColumnName(VmCloudServer::getWorkspaceId, true), request.getWorkspaceId());
-        //wrapper.in(CollectionUtils.isNotEmpty(request.getOrganizationIds()),"vm_cloud_disk.organization_id",request.getOrganizationIds());
         wrapper.like(StringUtils.isNotBlank(request.getInstanceName()), ColumnNameUtil.getColumnName(VmCloudServer::getInstanceName, true), request.getInstanceName());
         wrapper.like(StringUtils.isNotBlank(request.getAccountName()), ColumnNameUtil.getColumnName(CloudAccount::getName, true), request.getAccountName());
         wrapper.like(StringUtils.isNotBlank(request.getIpArray()), ColumnNameUtil.getColumnName(VmCloudServer::getIpArray, true), request.getIpArray());
         wrapper.in(CollectionUtils.isNotEmpty(request.getAccountIds()), ColumnNameUtil.getColumnName(VmCloudServer::getAccountId, true), request.getAccountIds());
         wrapper.in(CollectionUtils.isNotEmpty(request.getInstanceStatus()), ColumnNameUtil.getColumnName(VmCloudServer::getInstanceStatus, true), request.getInstanceStatus());
+        wrapper.in(CollectionUtils.isNotEmpty(request.getSourceIds()), ColumnNameUtil.getColumnName(VmCloudServer::getWorkspaceId, true), request.getSourceIds());
+
+        // 默认不展示已删除状态的机器
+        if (CollectionUtils.isEmpty(request.getInstanceStatus())) {
+            wrapper.notIn(ColumnNameUtil.getColumnName(VmCloudServer::getInstanceStatus, true),F2CInstanceStatus.Deleted.name());
+        }
         return wrapper;
     }
 

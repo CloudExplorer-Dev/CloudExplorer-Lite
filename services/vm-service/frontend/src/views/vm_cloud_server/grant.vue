@@ -10,7 +10,7 @@ const props = defineProps<{
   cloudServerIds: string[];
   dialogVisible: boolean;
 }>();
-const emits = defineEmits(["update:visible"]);
+const emits = defineEmits(["update:visible","refresh"]);
 
 const { t } = useI18n();
 const loading = ref();
@@ -47,6 +47,7 @@ const handleSave = () => {
       grantVmCloudServer(param, loading)
         .then(() => {
           emits("update:visible", false);
+          emits("refresh");
           ElMessage.success(t("commons.msg.save_success"));
         })
         .catch((err) => {
@@ -80,8 +81,8 @@ onMounted(() => {
     >
       <el-form-item :label="$t('commons.operation','操作')" prop="grant">
         <el-radio-group v-model="form.grant">
-          <el-radio-button label="true">{{$t("commons.msg.save_success","授权")}}</el-radio-button>
-          <el-radio-button label="false">{{$t("commons.msg.save_success","取消授权")}}</el-radio-button>
+          <el-radio-button label="true">{{$t("commons.grant","授权")}}</el-radio-button>
+          <el-radio-button label="false">{{$t("commons.cancel_grant","取消授权")}}</el-radio-button>
         </el-radio-group>
       </el-form-item>
       <el-form-item
