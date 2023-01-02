@@ -17,12 +17,11 @@ import java.util.List;
 /**
  * 性能监控数据查询
  * @author jianneng
- * @date 2022/10/30 20:23
  **/
 @Validated
 @RestController
 @RequestMapping("/api/base/monitor")
-@Api("公共工作空间相关接口")
+@Api("公共监控相关接口")
 public class PerfMonitorQueryController {
 
     @Resource

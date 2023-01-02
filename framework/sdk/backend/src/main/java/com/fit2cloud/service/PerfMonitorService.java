@@ -4,11 +4,11 @@ import co.elastic.clients.elasticsearch._types.aggregations.Aggregation;
 import co.elastic.clients.elasticsearch._types.aggregations.ValueCountAggregation;
 import co.elastic.clients.elasticsearch._types.query_dsl.BoolQuery;
 import com.fit2cloud.common.es.ElasticsearchProvide;
+import com.fit2cloud.common.es.constants.IndexConstants;
 import com.fit2cloud.common.utils.QueryUtil;
 import com.fit2cloud.dto.PerfMonitorEchartsDTO;
 import com.fit2cloud.es.entity.PerfMetricMonitorData;
 import com.fit2cloud.request.PerfMonitorRequest;
-import org.elasticsearch.search.collapse.CollapseBuilder;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.elasticsearch.client.elc.NativeQueryBuilder;
@@ -24,18 +24,16 @@ import java.util.stream.Collectors;
 
 /**
  * @author jianneng
- * @date 2022/10/30 20:29
  **/
 @Service
 @Lazy
 public class PerfMonitorService {
-    private static final String CE_PERF_METRIC_MONITOR_DATA = "ce-perf-metric-monitor-data";
     @Resource
     private ElasticsearchProvide elasticsearchProvide;
 
     public List<PerfMonitorEchartsDTO> getPerfMonitorData(PerfMonitorRequest request) {
         List<PerfMonitorEchartsDTO> result = new ArrayList<>();
-        List<PerfMetricMonitorData> tmpList = elasticsearchProvide.searchByQuery(CE_PERF_METRIC_MONITOR_DATA, getSearchQuery(request), PerfMetricMonitorData.class);
+        List<PerfMetricMonitorData> tmpList = elasticsearchProvide.searchByQuery(IndexConstants.CE_PERF_METRIC_MONITOR_DATA.getCode(), getSearchQuery(request), PerfMetricMonitorData.class);
         if (tmpList.size() > 0) {
             List<PerfMetricMonitorData> list = tmpList.stream().collect(Collectors.collectingAndThen(Collectors.toCollection(() ->
                     new TreeSet<>(Comparator.comparing(PerfMetricMonitorData::getId))), ArrayList::new));//过滤重复ID

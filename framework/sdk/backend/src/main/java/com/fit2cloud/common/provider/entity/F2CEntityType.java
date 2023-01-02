@@ -3,7 +3,6 @@ package com.fit2cloud.common.provider.entity;
 /**
  * 监控对象类型
  * @author jianneng
- * @date 2022/10/27 13:43
  **/
 public enum F2CEntityType {
     /**
@@ -17,5 +16,9 @@ public enum F2CEntityType {
     /**
      * 云盘
      */
-    DISK
+    DISK,
+    /**
+     * 存储器
+     */
+    DATASTORE
 }
