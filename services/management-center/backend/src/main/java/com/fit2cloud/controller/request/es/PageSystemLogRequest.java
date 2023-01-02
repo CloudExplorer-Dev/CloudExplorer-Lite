@@ -1,6 +1,7 @@
 package com.fit2cloud.controller.request.es;
 
 import com.fit2cloud.request.pub.OrderRequest;
+import com.fit2cloud.request.pub.PageOrderRequestInterface;
 import com.fit2cloud.request.pub.PageRequest;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
@@ -9,7 +10,7 @@ import javax.validation.constraints.Size;
 import java.util.List;
 
 @Data
-public class PageSystemLogRequest extends PageRequest {
+public class PageSystemLogRequest extends PageRequest implements PageOrderRequestInterface {
     /**
      * 详细信息
      */

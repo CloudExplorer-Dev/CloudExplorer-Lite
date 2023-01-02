@@ -21,17 +21,14 @@ import java.util.Map;
  * @since 
  */
 public interface WorkspaceMapper extends BaseMapper<Workspace> {
-
-    String querySql = "SELECT " +
-            "a.*, " +
-            "( SELECT count( DISTINCT user_role.user_id ) FROM user_role WHERE user_role._source = a.id ) AS userCount, " +
-            "b.NAME AS organizationName  " +
+    @Select("SELECT " +
+            "workspace.*, " +
+            "( SELECT count( DISTINCT user_role.user_id ) FROM user_role WHERE user_role._source = workspace.id ) AS userCount, " +
+            "organization.NAME AS organizationName  " +
             "FROM " +
-            "workspace AS a " +
-            "LEFT JOIN organization AS b ON b.id = a.organization_id ";
-    String wrapperSql = "SELECT * from ( " + querySql + " ) AS q ${ew.customSqlSegment}";
-
-    @Select(wrapperSql)
+            "workspace " +
+            "LEFT JOIN organization ON organization.id = workspace.organization_id " +
+            "${ew.customSqlSegment}")
     IPage<WorkspaceDTO> pageList(Page page, @Param("ew") Wrapper queryWrapper);
 
 }

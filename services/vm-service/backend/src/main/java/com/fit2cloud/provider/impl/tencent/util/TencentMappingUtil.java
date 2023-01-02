@@ -106,7 +106,21 @@ public class TencentMappingUtil {
         f2CDisk.setDiskId(disk.getDiskId());
         f2CDisk.setInstanceUuid(disk.getInstanceId());
         f2CDisk.setDiskType(disk.getDiskType());
-        f2CDisk.setDiskChargeType(disk.getDiskChargeType());
+        //计费方式
+        String instanceChargeType = null;
+        switch (disk.getDiskChargeType()){
+            case "PREPAID":
+                instanceChargeType = F2CChargeType.PRE_PAID;
+                break;
+            case "POSTPAID_BY_HOUR":
+                instanceChargeType = F2CChargeType.POST_PAID;
+                break;
+            case "SPOTPAID":
+                instanceChargeType = F2CChargeType.SPOT_PAID;
+                break;
+            default:
+        }
+        f2CDisk.setDiskChargeType(instanceChargeType);
         f2CDisk.setCategory(disk.getDiskUsage());
         if (disk.getDeleteWithInstance()) {
             f2CDisk.setDeleteWithInstance(DeleteWithInstance.YES.name());

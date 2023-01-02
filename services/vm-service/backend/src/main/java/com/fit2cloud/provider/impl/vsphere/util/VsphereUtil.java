@@ -313,6 +313,7 @@ public class VsphereUtil {
             ClusterComputeResource cluster = (ClusterComputeResource) resource;
             f2cHost.setClusterId(cluster.getMOR().getVal());
             f2cHost.setClusterName(cluster.getName());
+            f2cHost.setZone(cluster.getName());
         }
 
         f2cHost.setCpuMHzAllocated(totalUsedCpu);
@@ -321,6 +322,7 @@ public class VsphereUtil {
         Datacenter dc = client.getDataCenter(hs);
         f2cHost.setDataCenterId(dc.getName());
         f2cHost.setDataCenterName(dc.getName());
+        f2cHost.setRegion(dc.getName());
 
         f2cHost.setHostId(hs.getMOR().getVal());
         f2cHost.setHostName(hs.getName());

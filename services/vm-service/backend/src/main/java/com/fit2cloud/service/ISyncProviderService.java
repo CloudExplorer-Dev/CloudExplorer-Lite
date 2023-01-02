@@ -129,4 +129,22 @@ public interface ISyncProviderService {
      */
     void syncCloudServerPerfMetricMonitor(Map<String, Object> params);
 
+    /**
+     * 同步宿主机性能监控数据
+     * @param params 同步宿主机所需要的参数
+     */
+    void syncCloudHostPerfMetricMonitor(Map<String, Object> params);
+
+    /**
+     * 同步云磁盘性能监控数据
+     * @param params 同步云磁盘所需要的参数
+     */
+    void syncCloudDiskPerfMetricMonitor(Map<String, Object> params);
+
+    /**
+     * 同步存储器性能监控数据
+     * @param params 同步存储器所需要的参数
+     */
+    void syncCloudDatastorePerfMetricMonitor(Map<String, Object> params);
+
 }

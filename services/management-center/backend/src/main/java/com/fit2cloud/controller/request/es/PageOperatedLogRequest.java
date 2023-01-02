@@ -1,6 +1,7 @@
 package com.fit2cloud.controller.request.es;
 
 import com.fit2cloud.request.pub.OrderRequest;
+import com.fit2cloud.request.pub.PageOrderRequestInterface;
 import com.fit2cloud.request.pub.PageRequest;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
@@ -10,7 +11,7 @@ import lombok.Data;
  * @date 2022/9/23 16:27
  **/
 @Data
-public class PageOperatedLogRequest extends PageRequest {
+public class PageOperatedLogRequest extends PageRequest implements PageOrderRequestInterface {
 
     /**
      * 类型，0登录日志、1虚拟机操作日志、2磁盘操作日志、3平台管理日志

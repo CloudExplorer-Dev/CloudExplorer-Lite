@@ -14,6 +14,7 @@ import com.fit2cloud.provider.entity.result.CheckCreateServerResult;
 
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -177,5 +178,38 @@ public abstract class AbstractCloudProvider<C extends Credential> implements ICl
 
     public String calculateConfigPrice(String req){
         return "";
+    }
+
+    /**
+     * 宿主机监控信息
+     *
+     * @param req
+     * @return
+     */
+    @Override
+    public List<F2CPerfMetricMonitorData> getF2CHostPerfMetricMonitorData(String req){
+        return new ArrayList<>();
+    }
+
+    /**
+     * 云磁盘监控信息
+     *
+     * @param req
+     * @return
+     */
+    @Override
+    public List<F2CPerfMetricMonitorData> getF2CDiskPerfMetricMonitorData(String req){
+        return new ArrayList<>();
+    }
+
+    /**
+     * 存储器监控信息
+     *
+     * @param req
+     * @return
+     */
+    @Override
+    public List<F2CPerfMetricMonitorData> getF2CDatastorePerfMetricMonitorData(String req){
+        return new ArrayList<>();
     }
 }

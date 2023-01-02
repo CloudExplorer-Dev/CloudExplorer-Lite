@@ -3,11 +3,14 @@ package com.fit2cloud.service.impl;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.core.metadata.OrderItem;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.fit2cloud.base.service.IBaseUserRoleService;
 import com.fit2cloud.common.exception.Fit2cloudException;
+import com.fit2cloud.common.utils.ColumnNameUtil;
 import com.fit2cloud.common.utils.JsonUtil;
+import com.fit2cloud.common.utils.PageUtil;
 import com.fit2cloud.constants.ErrorCodeConstants;
 import com.fit2cloud.controller.request.workspace.PageWorkspaceRequest;
 import com.fit2cloud.controller.request.workspace.WorkspaceBatchCreateRequest;
@@ -26,7 +29,6 @@ import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
-import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -93,28 +95,17 @@ public class WorkspaceServiceImpl extends ServiceImpl<WorkspaceMapper, Workspace
      */
     @Override
     public IPage<WorkspaceDTO> pageWorkspace(PageWorkspaceRequest request) {
-        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-        Page<Workspace> page = new Page<>(request.getCurrentPage(), request.getPageSize(), true);
-        QueryWrapper<Workspace> queryWrapper = new QueryWrapper<>();
-        //根据组织名称模糊查询
-        if (StringUtils.isNotEmpty(request.getOrganizationName())) {
-            queryWrapper.like("organizationName", request.getOrganizationName());
-        }
-        if (StringUtils.isNotEmpty(request.getName())) {
-            queryWrapper.like("_name", request.getName());
-        }
-        if (CollectionUtils.isNotEmpty(request.getUpdateTime())) {
-            queryWrapper.between("update_time", simpleDateFormat.format(request.getUpdateTime().get(0)), simpleDateFormat.format(request.getUpdateTime().get(1)));
-        }
-        if (CollectionUtils.isNotEmpty(request.getCreateTime())) {
-            queryWrapper.between("create_time", simpleDateFormat.format(request.getCreateTime().get(0)), simpleDateFormat.format(request.getCreateTime().get(1)));
-        }
-        if (request.getOrder() != null && StringUtils.isNotEmpty(request.getOrder().getColumn())) {
-            queryWrapper.orderBy(false, request.getOrder().isAsc(), request.getOrder().getColumn());
-        }
-        QueryWrapper<Workspace> pageWrapper = queryWrapper.clone();
-        IPage<WorkspaceDTO> organizations = baseMapper.pageList(page, pageWrapper);
+        Page<Workspace> page = PageUtil.of(request, Workspace.class, new OrderItem(ColumnNameUtil.getColumnName(Workspace::getCreateTime, true), false), true);
+        QueryWrapper<Workspace> queryWrapper = addQuery(request);
+        IPage<WorkspaceDTO> organizations = baseMapper.pageList(page, queryWrapper);
         return organizations;
+    }
+
+    private QueryWrapper<Workspace> addQuery(PageWorkspaceRequest request){
+        QueryWrapper<Workspace> queryWrapper = new QueryWrapper<>();
+        queryWrapper.like(StringUtils.isNotBlank(request.getOrganizationName()), ColumnNameUtil.getColumnName(WorkspaceDTO::getOrganizationName,false), request.getOrganizationName());
+        queryWrapper.like(StringUtils.isNotBlank(request.getName()), ColumnNameUtil.getColumnName(Workspace::getName,true), request.getName());
+        return queryWrapper;
     }
 
     @Override

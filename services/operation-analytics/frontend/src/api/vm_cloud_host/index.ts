@@ -13,7 +13,7 @@ export function listVmCloudHost(
   req: ListVmCloudHostRequest,
   loading?: Ref<boolean>
 ): Promise<Result<Page<VmCloudHostVO>>> {
-  return get("api/baseResourceAnalysis/host/page", req, loading);
+  return get("api/base_resource_analysis/host/page", req, loading);
 }
 
 const VmCloudHostApi = {

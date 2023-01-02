@@ -10,6 +10,7 @@ import com.fit2cloud.common.constants.JobConstants;
 import com.fit2cloud.common.constants.JobStatusConstants;
 import com.fit2cloud.common.constants.JobTypeConstants;
 import com.fit2cloud.common.es.ElasticsearchProvide;
+import com.fit2cloud.common.es.constants.IndexConstants;
 import com.fit2cloud.common.platform.credential.Credential;
 import com.fit2cloud.common.provider.entity.F2CPerfMetricMonitorData;
 import com.fit2cloud.common.utils.DateUtil;
@@ -271,6 +272,69 @@ public class SyncProviderServiceImpl extends BaseSyncService implements ISyncPro
         }
     }
 
+    @Override
+    public void syncCloudHostPerfMetricMonitor(Map<String, Object> params) {
+        try {
+            String cloudAccountId = getCloudAccountId(params);
+            List<Credential.Region> regions = getRegions(cloudAccountId);
+            if (params.containsKey(JobConstants.CloudAccount.CLOUD_ACCOUNT_ID.name()) && CollectionUtils.isNotEmpty(regions)) {
+                proxy(
+                        cloudAccountId,
+                        regions,
+                        "同步宿主机监控",
+                        ICloudProvider::getF2CHostPerfMetricMonitorData,
+                        this::perfMetricMonitorSaveOrUpdate,
+                        this::writeJobRecord,
+                        () -> {
+                        });
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    @Override
+    public void syncCloudDiskPerfMetricMonitor(Map<String, Object> params) {
+        try {
+            String cloudAccountId = getCloudAccountId(params);
+            List<Credential.Region> regions = getRegions(cloudAccountId);
+            if (params.containsKey(JobConstants.CloudAccount.CLOUD_ACCOUNT_ID.name()) && CollectionUtils.isNotEmpty(regions)) {
+                proxy(
+                        cloudAccountId,
+                        regions,
+                        "同步云磁盘监控",
+                        ICloudProvider::getF2CDiskPerfMetricMonitorData,
+                        this::perfMetricMonitorSaveOrUpdate,
+                        this::writeJobRecord,
+                        () -> {
+                        });
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    @Override
+    public void syncCloudDatastorePerfMetricMonitor(Map<String, Object> params) {
+        try {
+            String cloudAccountId = getCloudAccountId(params);
+            List<Credential.Region> regions = getRegions(cloudAccountId);
+            if (params.containsKey(JobConstants.CloudAccount.CLOUD_ACCOUNT_ID.name()) && CollectionUtils.isNotEmpty(regions)) {
+                proxy(
+                        cloudAccountId,
+                        regions,
+                        "同步存储器监控",
+                        ICloudProvider::getF2CDatastorePerfMetricMonitorData,
+                        this::perfMetricMonitorSaveOrUpdate,
+                        this::writeJobRecord,
+                        () -> {
+                        });
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
     /**
      * 监控插入
      *
@@ -285,7 +349,7 @@ public class SyncProviderServiceImpl extends BaseSyncService implements ISyncPro
             perfMetricMonitorData.setCloudAccountId(saveBatchOrUpdateParams.getCloudAccountId());
             perfMetricMonitorDataList.add(perfMetricMonitorData);
         });
-        elasticsearchProvide.bulkInsert(perfMetricMonitorDataList, "ce-perf-metric-monitor-data");
+        elasticsearchProvide.bulkInsert(perfMetricMonitorDataList, IndexConstants.CE_PERF_METRIC_MONITOR_DATA.getCode());
     }
 
     /**
@@ -467,8 +531,8 @@ public class SyncProviderServiceImpl extends BaseSyncService implements ISyncPro
         VmCloudHost vmCloudHost = new VmCloudHost();
         BeanUtils.copyProperties(host, vmCloudHost);
         vmCloudHost.setAccountId(cloudAccountId);
-        vmCloudHost.setRegion(host.getDataCenterId());
-        vmCloudHost.setZone(host.getClusterId());
+//        vmCloudHost.setRegion(host.getDataCenterId());
+//        vmCloudHost.setZone(host.getClusterId());
         vmCloudHost.setCpuAllocated(host.getCpuMHzAllocated());
         vmCloudHost.setCpuTotal(host.getCpuMHzTotal());
         vmCloudHost.setCpuMhzPerOneCore(host.getCpuMHzPerOneCore());
@@ -487,8 +551,8 @@ public class SyncProviderServiceImpl extends BaseSyncService implements ISyncPro
         VmCloudDatastore vmCloudDatastore = new VmCloudDatastore();
         BeanUtils.copyProperties(datastore, vmCloudDatastore);
         vmCloudDatastore.setAccountId(cloudAccountId);
-        vmCloudDatastore.setRegion(datastore.getDataCenterId());
-        vmCloudDatastore.setZone(datastore.getClusterId());
+//        vmCloudDatastore.setRegion(datastore.getDataCenterId());
+//        vmCloudDatastore.setZone(datastore.getClusterId());
         vmCloudDatastore.setDatastoreId(datastore.getDataStoreId());
         vmCloudDatastore.setDatastoreName(datastore.getDataStoreName());
         vmCloudDatastore.setUpdateTime(updateTime);

@@ -87,6 +87,7 @@ onMounted(() => {
       :show-overflow-tooltip="true"
       prop="hostName"
       :label="$t('commons.name')"
+      min-width="120"
     >
       <template #default="scope">
         <span class="name-span-class">
@@ -98,6 +99,7 @@ onMounted(() => {
       prop="accountName"
       column-key="accountIds"
       :label="$t('commons.cloud_account.native')"
+      min-width="120"
     >
       <template #default="scope">
         <div style="display: flex">
@@ -113,24 +115,48 @@ onMounted(() => {
         </div>
       </template>
     </el-table-column>
-    <el-table-column prop="region" label="数据中心"></el-table-column>
-    <el-table-column prop="zone" label="集群"></el-table-column>
-    <el-table-column prop="hostIp" label="IP地址"></el-table-column>
-    <el-table-column prop="cpuTotal" label="CPU总量(MHz)"></el-table-column>
-    <el-table-column prop="cpuAllocated" label="CPU已分配(MHz)">
+    <el-table-column
+      prop="region"
+      label="数据中心"
+      :show="false"
+    ></el-table-column>
+    <el-table-column prop="zone" label="集群" :show="false"></el-table-column>
+    <el-table-column
+      prop="hostIp"
+      label="IP地址"
+      :show="false"
+    ></el-table-column>
+    <el-table-column
+      prop="numCpuCores"
+      label="CPU总量(核)"
+      width="120"
+    ></el-table-column>
+    <el-table-column prop="vmCpuCores" label="CPU已分配(核)" min-width="150">
     </el-table-column>
-    <el-table-column prop="memoryTotal" label="内存总量(GB)">
+    <el-table-column prop="memoryTotal" label="内存总量(GB)" min-width="150">
       <template #default="scope">
         {{ (scope.row.memoryTotal / 1024).toFixed(2) }}
       </template>
     </el-table-column>
-    <el-table-column prop="memoryAllocated" label="内存已分配(GB)">
+    <el-table-column
+      prop="memoryAllocated"
+      label="内存已分配(GB)"
+      min-width="150"
+    >
       <template #default="scope">
         {{ (scope.row.memoryAllocated / 1024).toFixed(2) }}
       </template>
     </el-table-column>
-    <el-table-column prop="vmTotal" label="虚拟机总数"></el-table-column>
-    <el-table-column prop="vmRunning" label="运行中虚拟机"></el-table-column>
+    <el-table-column
+      prop="vmTotal"
+      label="云主机总数"
+      min-width="150"
+    ></el-table-column>
+    <el-table-column
+      prop="vmRunning"
+      label="运行中云主机"
+      min-width="150"
+    ></el-table-column>
     <template #buttons>
       <fu-table-column-select type="icon" :columns="columns" size="small" />
     </template>
@@ -138,9 +164,9 @@ onMounted(() => {
 </template>
 <style lang="scss" scoped>
 .name-span-class {
-  color: var(--el-color-primary);
+  //color: var(--el-color-primary);
 }
 .name-span-class:hover {
-  cursor: pointer;
+  //cursor: pointer;
 }
 </style>
