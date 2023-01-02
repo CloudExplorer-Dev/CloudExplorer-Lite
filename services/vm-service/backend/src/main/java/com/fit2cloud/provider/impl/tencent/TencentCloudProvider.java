@@ -363,4 +363,22 @@ public class TencentCloudProvider extends AbstractCloudProvider<TencentCredentia
     public List<F2CPerfMetricMonitorData> getF2CDiskPerfMetricMonitorData(String req) {
         return TencetSyncCloudApi.getF2CDiskPerfMetricList(JsonUtil.parseObject(req, GetMetricsRequest.class));
     }
+
+    @Override
+    public F2CVirtualMachine changeVmConfig(String req){
+        return TencetSyncCloudApi.changeVmConfig(JsonUtil.parseObject(req, TencentUpdateConfigRequest.class));
+    }
+
+    @Override
+    public FormObject getConfigUpdateForm() {
+        return FormUtil.toForm(TencentConfigUpdateForm.class);
+    }
+
+    public List<TencentInstanceType> getInstanceTypesForConfigUpdate(String req) {
+        return TencetSyncCloudApi.getInstanceTypesForConfigUpdate(JsonUtil.parseObject(req, TencentUpdateConfigRequest.class));
+    }
+
+    public String calculateConfigUpdatePrice(String req){
+        return TencetSyncCloudApi.calculateConfigUpdatePrice(JsonUtil.parseObject(req, TencentUpdateConfigRequest.class));
+    }
 }

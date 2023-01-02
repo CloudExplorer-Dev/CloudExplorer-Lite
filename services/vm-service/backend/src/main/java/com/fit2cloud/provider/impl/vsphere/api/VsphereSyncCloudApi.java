@@ -1513,4 +1513,86 @@ public class VsphereSyncCloudApi {
             System.out.println(perfCounterBuffer.toString()+"----"+pci.getKey());
         }
     }
+
+    /**
+     * 云主机配置变更
+     *
+     * @param request
+     * @return
+     * @throws Exception
+     */
+    public static F2CVirtualMachine changeVmConfig(VsphereUpdateConfigRequest request) {
+        VsphereVmClient client = request.getVsphereVmClient();
+        String instanceId = request.getInstanceUuid();
+        VirtualMachine vm;
+        try {
+            vm = client.getVirtualMachineById(instanceId);
+        } catch (Exception e) {
+            throw new RuntimeException(e.getMessage(), e);
+        }
+        Optional.ofNullable(vm).orElseThrow(() -> new RuntimeException("Vm does not exist!InstanceId: " + instanceId));
+
+        int cpuCount = request.getCpu();
+        int cpuSockets = 1;
+        long memory = request.getMemory() * 1024l;
+        HostSystem host = client.getHost(vm);
+        Optional.ofNullable(host).orElseThrow(() -> new RuntimeException("Host does not exist!"));
+        cpuSockets = host.getSummary().getHardware().getNumCpuPkgs();
+
+        F2CVirtualMachine currentInstance = VsphereUtil.toF2CInstance(vm, client);
+
+        VirtualMachineConfigSpec vmConfigSpec = new VirtualMachineConfigSpec();
+        if (StringUtils.isNotEmpty(request.getAnnotation())) {
+            vmConfigSpec.setAnnotation(request.getAnnotation());
+        }
+        if (memory > 0 && memory != currentInstance.getMemory() * 1024) {
+            vmConfigSpec.setMemoryMB(memory);
+        }
+        if (cpuCount > 0 && cpuCount != currentInstance.getCpu()) {
+            vmConfigSpec.setNumCPUs(cpuCount);
+            vmConfigSpec.setNumCoresPerSocket((int) Math.ceil(1.0 * cpuCount / cpuSockets));
+        }
+
+        // 获取虚机运行状态，以保证虚机运行状态不变
+        VirtualMachineRuntimeInfo vmRuntime = vm.getRuntime();
+        String vmStatus = VsphereUtil.getStatus(vmRuntime.getPowerState().name()).name();
+
+        try {
+            Task task = vm.reconfigVM_Task(vmConfigSpec);
+            String status = task.waitForTask();
+            if (!Task.SUCCESS.equals(status)) {
+                throw new RuntimeException("Virtual configuration modification failed! Error message:" + task.getTaskInfo().getError().getLocalizedMessage());
+            }
+        } catch (Exception e) {
+            // 直接修改失败，尝试关机后修改
+            log.info("Change vm config error, shutdown os and try again: " + instanceId + ", error: ", e);
+            if ("running".equalsIgnoreCase(vmStatus) && client.shutdownInstance(instanceId)) {
+                if (client.stopVm(instanceId)) {
+                    Task task;
+                    String status;
+                    try {
+                        task = vm.reconfigVM_Task(vmConfigSpec);
+                        status = task.waitForTask();
+                        if (!Task.SUCCESS.equals(status)) {
+                            throw new RuntimeException("Virtual configuration modification failed! Error message:" + task.getTaskInfo().getError().getLocalizedMessage());
+                        }
+                    } catch (Exception ex) {
+                        throw new RuntimeException(ex.getMessage(), e);
+                    }
+                } else {
+                    throw new RuntimeException("Failed to stop vm! InstanceId: " + instanceId);
+                }
+            } else {
+                throw new RuntimeException("Failed to close guestOS! InstanceId: " + instanceId);
+            }
+        }
+        if ("running".equalsIgnoreCase(vmStatus) && !client.startVm(instanceId)) {
+            throw new RuntimeException("Failed to start vm! InstanceId: " + instanceId);
+        }
+        try {
+            return VsphereUtil.toF2CInstance(client.getVirtualMachineById(instanceId), client);
+        } catch (Exception e) {
+            throw new RuntimeException(e.getMessage(), e);
+        }
+    }
 }

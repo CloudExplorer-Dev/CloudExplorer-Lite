@@ -1,4 +1,4 @@
-import { get, post } from "@commons/request";
+import { get, post, put } from "@commons/request";
 import type Result from "@commons/request/Result";
 import type { Page } from "@commons/request/Result";
 import type {
@@ -8,6 +8,8 @@ import type {
   CloudServerJobRecord,
   PerfMonitorData,
   GetPerfMonitorRequest,
+  ChangeServerConfigRequest,
+  GrantVmCloudServerRequest,
 } from "./type";
 import type { Ref } from "vue";
 import type { SimpleMap } from "@commons/api/base/type";
@@ -163,6 +165,52 @@ export function createServer(
   return post("api/server/create", null, req, loading);
 }
 
+/**
+ *配置变更
+ * @param req
+ * @param loading
+ */
+export function changeServerConfig(
+  req: ChangeServerConfigRequest,
+  loading?: Ref<boolean>
+): Promise<Result<boolean>> {
+  return put("api/server/changeConfig", null, req, loading);
+}
+
+/**
+ * 根据云账号查询配置变更表单数据
+ * @param req
+ * @param loading
+ */
+export function getConfigUpdateForm(platform: string, loading?: Ref<boolean>) {
+  return get("/api/server/configUpdateForm/" + platform, null, loading);
+}
+
+/**
+ * 查询配置变更价格
+ * @param req
+ * @param loading
+ */
+export function getConfigUpdatePrice(
+  platform: string,
+  req: unknown,
+  loading?: Ref<boolean>
+) {
+  return post("/api/server/configUpdatePrice/" + platform, null, req, loading);
+}
+
+/**
+ * 云主机授权
+ * @param req
+ * @param loading
+ */
+export function grantVmCloudServer(
+  req: GrantVmCloudServerRequest,
+  loading?: Ref<boolean>
+) {
+  return post("/api/server/grant", null, req, loading);
+}
+
 const VmCloudServerApi = {
   listVmCloudServer,
   shutdownInstance,
@@ -176,6 +224,10 @@ const VmCloudServerApi = {
   listPerfMetricMonitor,
   getVmCloudServerByIds,
   createServer,
+  changeServerConfig,
+  getConfigUpdateForm,
+  getConfigUpdatePrice,
+  grantVmCloudServer,
 };
 
 export default VmCloudServerApi;

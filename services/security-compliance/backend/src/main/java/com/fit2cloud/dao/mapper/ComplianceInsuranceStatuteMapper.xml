@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.fit2cloud.dao.mapper.ComplianceInsuranceStatuteMapper">
+
+    <select id="page" resultType="com.fit2cloud.dao.entity.ComplianceInsuranceStatute">
+        SELECT cis.id                   as id,
+               cis.base_clause          as base_clause,
+               cis.security_level       as security_level,
+               cis.control_point        as control_point,
+               cis.improvement_proposal as improvement_proposal
+        FROM compliance_insurance_statute cis
+                 LEFT JOIN compliance_rule_insurance_statute_mapping crism
+                           ON crism.compliance_insurance_statute_id = cis.id
+                 LEFT JOIN compliance_rule cr ON cr.id = crism.compliance_rule_id
+            ${ew.customSqlSegment}
+    </select>
+
+    <select id="list" resultType="com.fit2cloud.dao.entity.ComplianceInsuranceStatute">
+        SELECT cis.id                   as id,
+               cis.base_clause          as base_clause,
+               cis.security_level       as security_level,
+               cis.control_point        as control_point,
+               cis.improvement_proposal as improvement_proposal
+        FROM compliance_insurance_statute cis
+                 LEFT JOIN compliance_rule_insurance_statute_mapping crism
+                           ON crism.compliance_insurance_statute_id = cis.id
+                 LEFT JOIN compliance_rule cr ON cr.id = crism.compliance_rule_id
+            ${ew.customSqlSegment}
+    </select>
+</mapper>

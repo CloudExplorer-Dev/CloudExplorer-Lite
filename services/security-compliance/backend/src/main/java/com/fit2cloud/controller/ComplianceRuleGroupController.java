@@ -8,11 +8,13 @@ import com.fit2cloud.controller.handler.ResultHolder;
 import com.fit2cloud.controller.request.rule_group.ComplianceRuleGroupRequest;
 import com.fit2cloud.controller.request.rule_group.PageComplianceRuleGroupRequest;
 import com.fit2cloud.controller.response.rule_group.ComplianceRuleGroupResponse;
+import com.fit2cloud.dao.entity.ComplianceRuleGroup;
 import com.fit2cloud.dao.mapper.ComplianceRuleGroupMapper;
 import com.fit2cloud.service.IComplianceRuleGroupService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.BeanUtils;
+import org.springframework.context.annotation.Bean;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -30,7 +32,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/compliance_rule_group")
 @Validated
-@Api("合规规则组相关接口")
+@Api(value = "合规规则组相关接口", tags = "合规规则组相关接口")
 public class ComplianceRuleGroupController {
     @Resource
     private IComplianceRuleGroupService complianceRuleGroupService;
@@ -43,6 +45,15 @@ public class ComplianceRuleGroupController {
             BeanUtils.copyProperties(item, complianceRuleGroupResponse);
             return complianceRuleGroupResponse;
         }).toList());
+    }
+
+    @GetMapping("/{complianceRuleGroupId}")
+    @ApiOperation("根据合规规则组id获取规则组信息")
+    public ResultHolder<ComplianceRuleGroupResponse> one(@PathVariable("complianceRuleGroupId") String complianceRuleGroupId) {
+        ComplianceRuleGroup complianceRuleGroup = complianceRuleGroupService.getById(complianceRuleGroupId);
+        ComplianceRuleGroupResponse complianceRuleGroupResponse = new ComplianceRuleGroupResponse();
+        BeanUtils.copyProperties(complianceRuleGroup, complianceRuleGroupResponse);
+        return ResultHolder.success(complianceRuleGroupResponse);
     }
 
     @GetMapping("/{currentPage}/{limit}")

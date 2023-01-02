@@ -11,28 +11,51 @@
         </template>
       </el-input>
     </div>
-    <el-radio-group v-model="selectRowId" style="width: 100%">
-      <el-table
-        ref="singleTableRef"
-        :data="filterTableData"
-        highlight-current-row
-        style="width: 100%"
-        @current-change="handleCurrentChange"
-        max-height="240px"
-        border
+
+    <el-form ref="ruleFormRef" :model="form">
+      <el-form-item
+        :rules="{
+          message: '实例类型不能为空',
+          trigger: 'blur',
+          required: true,
+        }"
+        prop="selectRowId"
+        size="small"
       >
-        <el-table-column width="55">
-          <template #default="scope">
-            <el-radio :label="scope.row.instanceType">
-              <template #default>{{}}</template>
-            </el-radio>
-          </template>
-        </el-table-column>
-        <el-table-column label="规格类型" property="instanceTypeFamilyName" />
-        <el-table-column label="规格名称" property="instanceType" />
-        <el-table-column label="实例规格" property="cpuMemory" />
-      </el-table>
-    </el-radio-group>
+        <el-radio-group
+          v-model="form.selectRowId"
+          style="width: 100%"
+          @change="validate"
+        >
+          <el-table
+            ref="singleTableRef"
+            :data="filterTableData"
+            highlight-current-row
+            style="width: 100%"
+            @current-change="handleCurrentChange"
+            max-height="240px"
+            border
+          >
+            <el-table-column width="55">
+              <template #default="scope">
+                <el-radio :label="scope.row.instanceType">
+                  <template #default>{{}}</template>
+                </el-radio>
+              </template>
+            </el-table-column>
+            <el-table-column
+              label="规格类型"
+              property="instanceTypeFamilyName"
+            />
+            <el-table-column label="规格名称" property="instanceType" />
+            <el-table-column label="实例规格" property="cpuMemory" />
+          </el-table>
+        </el-radio-group>
+      </el-form-item>
+    </el-form>
+    <span style="font-size: 12px; color: #606266"
+      >当前选择实例 {{ form.selectRowId }}</span
+    >
   </template>
   <template v-else>
     <el-descriptions>
@@ -44,9 +67,9 @@
 </template>
 <script setup lang="ts">
 import type { FormView } from "@commons/components/ce-form/type";
-import { computed, onMounted, ref, watch } from "vue";
+import { computed, onMounted, reactive, ref, watch } from "vue";
 import _ from "lodash";
-import type { ElTable } from "element-plus";
+import type { ElTable, FormInstance } from "element-plus";
 
 interface InstanceTypeConfig {
   instanceTypeFamilyName: string;
@@ -67,7 +90,6 @@ const props = defineProps<{
 
 const emit = defineEmits(["update:modelValue", "change"]);
 const singleTableRef = ref<InstanceType<typeof ElTable>>();
-const selectRowId = ref();
 
 // 搜索
 const search = ref();
@@ -117,21 +139,49 @@ const currentRow = computed<InstanceTypeConfig | undefined>({
 
 function handleCurrentChange(val: InstanceTypeConfig | undefined) {
   currentRow.value = val;
-  selectRowId.value = val?.instanceType;
+  form.selectRowId = val?.instanceType;
   emit("change");
 }
 
+/**
+ * 校验方法
+ */
+const ruleFormRef = ref<FormInstance>();
+const form = reactive({
+  selectRowId: currentRow.value?.instanceType,
+});
+function validate(): Promise<boolean> {
+  if (ruleFormRef.value) {
+    return ruleFormRef.value.validate();
+  } else {
+    return new Promise((resolve, reject) => {
+      return reject(true);
+    });
+  }
+}
+
+defineExpose({
+  validate,
+  field: props.field,
+});
+
 onMounted(() => {
-  selectRowId.value = currentRow.value?.instanceType;
+  form.selectRowId = currentRow.value?.instanceType;
 });
 
 watch(
   () => props.formItem?.optionList,
   (value) => {
-    if (value != null && value.length > 0 && selectRowId.value == null) {
-      currentRow.value = value[0];
-      selectRowId.value = value[0].instanceType;
-      emit("change");
+    if (
+      value != null &&
+      value.length > 0 &&
+      (form.selectRowId == null ||
+        value.every(
+          (instanceTypeConfig: InstanceTypeConfig) =>
+            instanceTypeConfig.instanceType !== form.selectRowId
+        ))
+    ) {
+      handleCurrentChange(value[0]);
     }
   },
   { deep: true }

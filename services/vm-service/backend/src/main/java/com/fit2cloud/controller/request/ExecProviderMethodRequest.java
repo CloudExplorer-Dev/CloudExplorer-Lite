@@ -26,4 +26,8 @@ public class ExecProviderMethodRequest {
      * 方法参数
      */
     HashMap<String, Object> methodParams;
+    /**
+     * 返回结果是否需要转换成数据库实体
+     */
+    Boolean resultNeedTransfer;
 }

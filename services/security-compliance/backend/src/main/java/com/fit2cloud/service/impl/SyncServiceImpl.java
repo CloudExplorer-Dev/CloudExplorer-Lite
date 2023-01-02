@@ -60,7 +60,7 @@ public class SyncServiceImpl implements ISyncService {
         }
         Query query = new Query.Builder().bool(new BoolQuery.Builder()
                         .must(new Query.Builder().term(new TermQuery.Builder().field("cloudAccountId").value(cloudAccountId).build()).build(),
-                                new Query.Builder().term(new TermQuery.Builder().field("instanceType").value(instanceType.name()).build()).build()).build())
+                                new Query.Builder().term(new TermQuery.Builder().field("resourceType").value(instanceType.name()).build()).build()).build())
                 .build();
         DeleteByQueryRequest build = new DeleteByQueryRequest.Builder().index(ResourceInstance.class.getAnnotation(Document.class).indexName()).query(query).refresh(true).build();
         elasticsearchClient.deleteByQuery(build);

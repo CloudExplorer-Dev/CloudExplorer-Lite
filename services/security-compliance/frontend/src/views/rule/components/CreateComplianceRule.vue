@@ -85,6 +85,31 @@
           :resource-type="createComplianceRuleForm.resourceType"
         ></compliance_rules>
       </el-form-item>
+      <el-form-item
+        prop="insuranceStatuteIds"
+        v-loading="insuranceStatuteLoading"
+        label="等保条例"
+      >
+        <el-select
+          style="width: 100%"
+          v-model="createComplianceRuleForm.insuranceStatuteIds"
+          class="m-2"
+          :multiple="true"
+          :placeholder="'请选择等保条例'"
+        >
+          <el-option
+            v-for="item in complianceInsuranceStatuteList"
+            :key="item.id"
+            :label="
+              _.truncate(item.id + '.' + item.baseClause, {
+                length: 50,
+                separator: ' ',
+              })
+            "
+            :value="item.id"
+          />
+        </el-select>
+      </el-form-item>
       <el-form-item prop="description" label="描述">
         <el-input v-model="createComplianceRuleForm.description" />
       </el-form-item>
@@ -98,7 +123,7 @@
   </el-dialog>
 </template>
 <script setup lang="ts">
-import { ref } from "vue";
+import { ref, onMounted } from "vue";
 import compliance_rules from "@/views/rule/components/compliance_rules/index.vue";
 import type { FormRules, FormInstance } from "element-plus";
 import type { SaveComplianceRuleRequest } from "@/api/rule/type";
@@ -107,6 +132,9 @@ import type { ComplianceRuleGroup } from "@/api/rule_group/type";
 import { platformIcon } from "@commons/utils/platform";
 import type { KeyValue } from "@commons/api/base/type";
 import { ElMessage } from "element-plus";
+import complianceInsuranceStatuteApi from "@/api/compliance_insurance_statute";
+import type { ComplianceInsuranceStatute } from "@/api/compliance_insurance_statute/type";
+import _ from "lodash";
 const props = defineProps<{
   /**
    * 资源类型
@@ -125,6 +153,14 @@ const props = defineProps<{
    */
   refresh: () => void;
 }>();
+
+/**
+ * 等保条例列表
+ */
+const complianceInsuranceStatuteList = ref<Array<ComplianceInsuranceStatute>>(
+  []
+);
+const insuranceStatuteLoading = ref<boolean>(false);
 /**
  * 表单对象
  */
@@ -143,6 +179,7 @@ const createComplianceRuleForm = ref<SaveComplianceRuleRequest>({
   resourceType: "",
   rules: [],
   riskLevel: "LOW",
+  insuranceStatuteIds: [],
   description: "",
 });
 /**
@@ -189,6 +226,14 @@ const createComplianceRuleFormRules = ref<FormRules>({
       type: "array",
     },
   ],
+  insuranceStatuteIds: [
+    {
+      required: true,
+      min: 1,
+      message: "等保条例不能为空",
+      type: "array",
+    },
+  ],
   riskLevel: [
     {
       required: true,
@@ -223,6 +268,13 @@ const submit = () => {
     }
   });
 };
+onMounted(() => {
+  complianceInsuranceStatuteApi
+    .list(undefined, insuranceStatuteLoading)
+    .then((ok) => {
+      complianceInsuranceStatuteList.value = ok.data;
+    });
+});
 
 /**
  * 打开弹出框

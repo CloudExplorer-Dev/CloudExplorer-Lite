@@ -40,6 +40,7 @@ public class ResourceOperateServiceImpl implements IResourceOperateService {
 
     public <T, V> void operateWithJobRecord(CreateJobRecordRequest createJobRecordRequest, ExecProviderMethodRequest execProviderMethodRequest, ResourceState<T, V> resourceState) {
         CompletableFuture.runAsync(() -> {
+            LogUtil.info("Start to execute job.");
             JobTypeConstants jobType = createJobRecordRequest.getJobType();
             String resourceId = createJobRecordRequest.getResourceId();
             ResourceTypeEnum resourceType = createJobRecordRequest.getResourceType();
@@ -47,6 +48,7 @@ public class ResourceOperateServiceImpl implements IResourceOperateService {
             Consumer<T> updateResourceMethod = resourceState.getUpdateResourceMethod();
             Consumer<T> deleteResourceMethod = resourceState.getDeleteResourceMethod();
             BiConsumer<T, V> saveResourceMethod = resourceState.getSaveResourceMethod();
+            BiConsumer<T, V> updateResourceMethodNeedTransfer = resourceState.getUpdateResourceMethodNeedTransfer();
 
             Function<InitJobRecordDTO, JobRecord> initJobMethod = createJobRecordRequest.getInitJobMethod() == null ? jobRecordCommonService::initJobRecord : createJobRecordRequest.getInitJobMethod();
             Consumer<JobRecord> updateJobRecordMethod = createJobRecordRequest.getUpdateJobRecord() == null ? jobRecordCommonService::modifyJobRecord : createJobRecordRequest.getUpdateJobRecord();
@@ -70,10 +72,15 @@ public class ResourceOperateServiceImpl implements IResourceOperateService {
                 Object result;
                 try {
                     // 执行资源操作方法
+                    LogUtil.info("Start to execute provider method.");
                     result = CommonUtil.exec(ICloudProvider.of(execProviderMethodRequest.getPlatform()), JsonUtil.toJSONString(execProviderMethodRequest.getMethodParams()), execProviderMethodRequest.getExecMethod());
                     if (result != null) {
                         // 更新资源为完成态
-                        updateResourceMethod.accept(resourceState.getAfterResource());
+                        if (execProviderMethodRequest.getResultNeedTransfer() != null && execProviderMethodRequest.getResultNeedTransfer()) {
+                            updateResourceMethodNeedTransfer.accept(resourceState.getAfterResource(), (V) result);
+                        } else {
+                            updateResourceMethod.accept(resourceState.getAfterResource());
+                        }
 
                         // 如果是新增资源，则调用保存方法
                         if (saveResourceMethod != null) {
@@ -95,7 +102,7 @@ public class ResourceOperateServiceImpl implements IResourceOperateService {
                     // 设置任务状态为失败
                     jobRecord.setStatus(JobStatusConstants.FAILED);
                     jobRecord.setResult(e.getMessage());
-                    LogUtil.error("Exec operate failed - {}", e.getMessage());
+                    LogUtil.error("Execute method failed - {}", e.getMessage());
                 }
 
                 // 更新任务记录
@@ -103,6 +110,7 @@ public class ResourceOperateServiceImpl implements IResourceOperateService {
                 updateJobRecordMethod.accept(jobRecord);
             } catch (Throwable e) {
                 LogUtil.error("OperateWithJobRecord failed - {}", e.getMessage());
+                throw new RuntimeException(e.getMessage(), e);
             }
         }, workThreadPool);
     }

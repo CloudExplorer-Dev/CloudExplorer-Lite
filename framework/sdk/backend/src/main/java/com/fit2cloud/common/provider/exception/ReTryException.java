@@ -1,7 +1,9 @@
 package com.fit2cloud.common.provider.exception;
 
 import com.aliyun.tea.TeaException;
+import com.aliyun.tea.TeaUnretryableException;
 import com.huaweicloud.sdk.core.exception.ServiceResponseException;
+import jodd.util.StringUtil;
 
 /**
  * @Author:张少虎
@@ -28,6 +30,11 @@ public class ReTryException extends RuntimeException {
         //	Ecs	RequestTimeout	The request encounters an upstream server timeout.	上游服务器超时，请求被拒绝。
         if (e instanceof TeaException teaException) {
             if (teaException.getCode().equals("Throttling") || teaException.getCode().equals("RequestTimeout")) {
+                throw new ReTryException(1000, "重试");
+            }
+        }
+        if (e instanceof TeaUnretryableException teaUnretryableException) {
+            if (StringUtil.equals(teaUnretryableException.getMessage(), "Connect timed out")) {
                 throw new ReTryException(1000, "重试");
             }
         }

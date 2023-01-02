@@ -24,3 +24,10 @@ export interface Workspace {
    */
   updateTime?: string;
 }
+
+export interface WorkspaceTree {
+  id: string;
+  pid?: string;
+  name: string;
+  children?: Array<WorkspaceTree>;
+}

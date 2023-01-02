@@ -28,7 +28,7 @@ public class TwtTokenAuthFilter implements WebFilter {
     private IBaseUserRoleService userRoleService;
 
 
-    private final static String CE_SOURCE_TOKEN = "CE_SOURCE";
+    private final static String CE_SOURCE_TOKEN = "CE-SOURCE";
 
     /**
      * 针对网关webflux逻辑有些区别

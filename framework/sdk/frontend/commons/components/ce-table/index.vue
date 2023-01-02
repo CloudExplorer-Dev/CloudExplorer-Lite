@@ -66,7 +66,7 @@ import {
   Order,
   TableSearch,
 } from "@commons/components/ce-table/type";
-import type { SimpleMap } from "@commons/api/base/type";
+
 const props = defineProps<{
   header?: string;
   tableConfig: TableConfig;

@@ -18,6 +18,7 @@ import com.fit2cloud.service.IUserService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -37,30 +38,35 @@ public class UserController {
     IUserService userService;
 
     @ApiOperation(value = "分页查询用户")
+    @PreAuthorize("hasAnyCePermission('USER:READ')")
     @GetMapping("/page")
     public ResultHolder<IPage<UserDto>> listUser(PageUserRequest pageUserRequest) {
         return ResultHolder.success(userService.pageUser(pageUserRequest));
     }
 
     @ApiOperation(value = "添加用户")
+    @PreAuthorize("hasAnyCePermission('USER:CREATE')")
     @PostMapping("/add")
     public ResultHolder<Boolean> createUser(@RequestBody @Validated(ValidationGroup.SAVE.class) CreateUserRequest request) {
         return ResultHolder.success(userService.createUser(request));
     }
 
     @ApiOperation(value = "更新用户")
+    @PreAuthorize("hasAnyCePermission('USER:EDIT')")
     @PostMapping("/update")
     public ResultHolder<Boolean> updateUser(@RequestBody @Validated(ValidationGroup.UPDATE.class) UpdateUserRequest request) {
         return ResultHolder.success(userService.updateUser(request));
     }
 
     @ApiOperation(value = "更新密码")
+    @PreAuthorize("hasAnyCePermission('USER:EDIT')")
     @PostMapping("/updatePwd")
     public ResultHolder<Boolean> updatePwd(@RequestBody User user) {
         return ResultHolder.success(userService.updatePwd(user));
     }
 
     @ApiOperation(value = "删除用户")
+    @PreAuthorize("hasAnyCePermission('USER:DELETE')")
     @DeleteMapping("/{id}")
     public ResultHolder<Boolean> delete(@ApiParam("主键 ID")
                                         @NotNull(message = "{i18n.user.id.cannot.be.null}")
@@ -70,6 +76,7 @@ public class UserController {
     }
 
     @ApiOperation(value = "根据用户ID查询用户角色信息")
+    @PreAuthorize("hasAnyCePermission('USER:READ')")
     @GetMapping(value = "/role/info/{id}")
     public ResultHolder<UserOperateDto> roleInfo(@ApiParam("主键 ID") @NotNull(message = "{i18n.user.id.cannot.be.null}")
                                                  @NotNull(message = "{i18n.user.id.cannot.be.null}")
@@ -79,22 +86,26 @@ public class UserController {
     }
 
     @ApiOperation(value = "启停用户")
+    @PreAuthorize("hasAnyCePermission('USER:EDIT')")
     @PostMapping(value = "/changeStatus")
     public ResultHolder<Boolean> changeStatus(@RequestBody UserDto user) {
         return ResultHolder.success(userService.changeUserStatus(user));
     }
 
+    @PreAuthorize("hasAnyCePermission('USER:EDIT')")
     @PostMapping(value = "/notificationSetting")
     public ResultHolder<Boolean> userNotificationSetting(@RequestBody UserNotifySettingDTO userNotificationSetting) {
         return ResultHolder.success(userService.updateUserNotification(userNotificationSetting));
     }
 
+    @PreAuthorize("hasAnyCePermission('USER:EDIT')")
     @GetMapping(value = "/findUserNotification/{userId}")
     public ResultHolder<UserNotifySettingDTO> findUserNotification(@PathVariable String userId) {
         return ResultHolder.success(userService.findUserNotification(userId));
     }
 
     @ApiOperation(value = "批量添加用户角色")
+    @PreAuthorize("hasAnyCePermission('USER:EDIT')")
     @PostMapping(value = "/addRole")
     public ResultHolder<Boolean> addUserRole(@Validated @RequestBody UserBatchAddRoleRequest userBatchAddRoleRequest) {
         return ResultHolder.success(userService.addUserRole(userBatchAddRoleRequest));

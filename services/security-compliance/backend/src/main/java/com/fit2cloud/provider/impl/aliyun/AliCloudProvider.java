@@ -12,6 +12,7 @@ import com.fit2cloud.provider.impl.aliyun.api.AliApi;
 import com.fit2cloud.provider.impl.aliyun.api.AliInstanceSearchFieldApi;
 import com.fit2cloud.provider.impl.aliyun.entity.credential.AliSecurityComplianceCredential;
 import com.fit2cloud.provider.impl.aliyun.entity.request.ListEcsInstancesRequest;
+import com.fit2cloud.provider.util.ResourceUtil;
 
 import java.util.List;
 
@@ -27,7 +28,10 @@ public class AliCloudProvider extends AbstractCloudProvider<AliSecurityComplianc
     public List<ResourceInstance> listEcsInstance(String req) {
         ListEcsInstancesRequest listEcsInstancesRequest = JsonUtil.parseObject(req, ListEcsInstancesRequest.class);
         List<DescribeInstancesResponseBody.DescribeInstancesResponseBodyInstancesInstance> describeInstancesResponseBodyInstancesInstances = AliApi.listECSInstance(listEcsInstancesRequest);
-        return describeInstancesResponseBodyInstancesInstances.stream().map(instance -> toResourceInstance(PlatformConstants.fit2cloud_ali_platform.name(), ResourceTypeConstants.ECS, instance)).toList();
+        return describeInstancesResponseBodyInstancesInstances
+                .stream()
+                .map(instance -> ResourceUtil.toResourceInstance(PlatformConstants.fit2cloud_ali_platform.name(), ResourceTypeConstants.ECS, instance.getInstanceId(), instance.getInstanceName(), instance))
+                .toList();
     }
 
     @Override

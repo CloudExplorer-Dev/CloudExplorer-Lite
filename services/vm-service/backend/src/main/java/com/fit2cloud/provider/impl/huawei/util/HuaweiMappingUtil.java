@@ -35,6 +35,10 @@ import java.util.stream.Collectors;
  */
 public class HuaweiMappingUtil {
 
+    public static F2CVirtualMachine toF2CVirtualMachine(ServerDetail server) {
+        return toF2CVirtualMachine(server, null);
+    }
+
     public static F2CVirtualMachine toF2CVirtualMachine(ServerDetail server, List<Port> ports) {
         F2CVirtualMachine f2CVirtualMachine = new F2CVirtualMachine();
         if (StringUtils.isNotEmpty(server.getName())) {
@@ -65,21 +69,23 @@ public class HuaweiMappingUtil {
         String remoteIP = getRemoteIP(serverAddresses);
         String localIP = getLocalIP(serverAddresses);
         List<String> ipArray = getIpArray(serverAddresses);
-        String subnetId = getSubnetId(serverAddresses, ports);
+        if (CollectionUtils.isNotEmpty(ports)) {
+            String subnetId = getSubnetId(serverAddresses, ports);
+            f2CVirtualMachine.setSubnetId(subnetId);
+        }
         f2CVirtualMachine.setRemoteIP(remoteIP);
         f2CVirtualMachine.setLocalIP(localIP);
-        f2CVirtualMachine.setSubnetId(subnetId);
         f2CVirtualMachine.setIpArray(ipArray);
         String instanceChargeType = null;
         // 竞价
-        if(StringUtils.equalsIgnoreCase(server.getMetadata().get("charging_mode"),"2")){
+        if (StringUtils.equalsIgnoreCase(server.getMetadata().get("charging_mode"), "2")) {
             instanceChargeType = F2CChargeType.SPOT_PAID;
-        }else{
-            instanceChargeType = StringUtils.equalsIgnoreCase(server.getMetadata().get("charging_mode"),"0")? F2CChargeType.POST_PAID:F2CChargeType.PRE_PAID;
+        } else {
+            instanceChargeType = StringUtils.equalsIgnoreCase(server.getMetadata().get("charging_mode"), "0") ? F2CChargeType.POST_PAID : F2CChargeType.PRE_PAID;
         }
         // 付费方式
         f2CVirtualMachine.setInstanceChargeType(instanceChargeType);
-        if(!CollectionUtils.isEmpty(server.getSecurityGroups())){
+        if (!CollectionUtils.isEmpty(server.getSecurityGroups())) {
             // 安全组
             List<String> sgIds = server.getSecurityGroups().stream().map(ServerSecurityGroup::getId).collect(Collectors.toList());
             f2CVirtualMachine.setSecurityGroupIds(sgIds);
@@ -232,6 +238,7 @@ public class HuaweiMappingUtil {
 
     /**
      * 监控指标数据
+     *
      * @param v
      * @return
      */
@@ -246,7 +253,7 @@ public class HuaweiMappingUtil {
 
     public static InstanceSpecType toInstanceSpecType(Flavor flavor) {
         InstanceSpecType instanceSpecType = new InstanceSpecType();
-        try{
+        try {
             //s6.small.1
             instanceSpecType.setSpecType(flavor.getName().split("\\.")[0]);
             instanceSpecType.setSpecName(flavor.getName());
@@ -254,7 +261,7 @@ public class HuaweiMappingUtil {
             instanceSpecType.setRam(flavor.getRam());
             instanceSpecType.setDisk(flavor.getDisk());
             instanceSpecType.setInstanceSpec(transInstanceSpecTypeDescription(flavor));
-        }catch (Exception e){
+        } catch (Exception e) {
             e.printStackTrace();
         }
         return instanceSpecType;
@@ -266,7 +273,13 @@ public class HuaweiMappingUtil {
         return flavor.getVcpus() + "vCPU " + (int) Math.ceil(ram / mbPerGb) + "GB";
     }
 
-    public static F2CHuaweiSubnet toF2CHuaweiSubnet(Subnet subnet){
+    public static String transInstanceSpecTypeDescription(ListResizeFlavorsResult flavor) {
+        int ram = flavor.getRam();
+        float mbPerGb = 1024;
+        return flavor.getVcpus() + "vCPU " + (int) Math.ceil(ram / mbPerGb) + "GB";
+    }
+
+    public static F2CHuaweiSubnet toF2CHuaweiSubnet(Subnet subnet) {
         F2CHuaweiSubnet f2CHuaweiSubnet = new F2CHuaweiSubnet();
         f2CHuaweiSubnet.setUuid(subnet.getId());
         f2CHuaweiSubnet.setCidr(subnet.getCidr());
@@ -278,7 +291,7 @@ public class HuaweiMappingUtil {
         return f2CHuaweiSubnet;
     }
 
-    public static F2CHuaweiVpc toF2CHuaweiVpc(Vpc vpc){
+    public static F2CHuaweiVpc toF2CHuaweiVpc(Vpc vpc) {
         F2CHuaweiVpc f2CHuaweiVpc = new F2CHuaweiVpc();
         f2CHuaweiVpc.setUuid(vpc.getId());
         f2CHuaweiVpc.setCidr(vpc.getCidr());
@@ -288,7 +301,7 @@ public class HuaweiMappingUtil {
         return f2CHuaweiVpc;
     }
 
-    public static F2CHuaweiSecurityGroups toF2CHuaweiSecurityGroups(SecurityGroup securityGroup){
+    public static F2CHuaweiSecurityGroups toF2CHuaweiSecurityGroups(SecurityGroup securityGroup) {
         F2CHuaweiSecurityGroups f2CHuaweiSecurityGroups = new F2CHuaweiSecurityGroups();
         f2CHuaweiSecurityGroups.setUuid(securityGroup.getId());
         f2CHuaweiSecurityGroups.setName(securityGroup.getName());

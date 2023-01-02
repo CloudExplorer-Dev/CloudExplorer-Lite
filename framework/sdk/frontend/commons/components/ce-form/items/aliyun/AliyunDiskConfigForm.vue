@@ -32,12 +32,31 @@
           <div>
             <div style="padding-bottom: 5px">
               <span>磁盘类型：</span>
-              <el-select style="width: 50%" v-model="obj.diskType" filterable>
+              <el-select
+                style="width: 50%"
+                v-model="obj.diskType"
+                filterable
+                v-if="index === 0"
+              >
                 <el-option
-                  v-for="item in diskTypeOptions"
-                  :key="item.id"
-                  :label="item.name"
-                  :value="item.id"
+                  v-for="item in systemDiskTypeOptions"
+                  :key="item.diskType"
+                  :label="item.diskTypeName"
+                  :value="item.diskType"
+                />
+              </el-select>
+
+              <el-select
+                style="width: 50%"
+                v-model="obj.diskType"
+                filterable
+                v-else
+              >
+                <el-option
+                  v-for="item in dataDiskTypeOptions"
+                  :key="item.diskType"
+                  :label="item.diskTypeName"
+                  :value="item.diskType"
                 />
               </el-select>
             </div>
@@ -45,11 +64,8 @@
               <span>磁盘大小：</span>
               <el-input-number
                 v-model="obj.size"
-                :min="
-                  index === 0
-                    ? (_.defaultTo(defaultDisks[index]?.size < 40), 40)
-                    : 20
-                "
+                :min="minSize(defaultDisks[index], index)"
+                :max="maxSize(defaultDisks[index], index)"
                 :step="1"
                 required
                 style="width: 50%"
@@ -103,6 +119,17 @@ import { computed, watch, onMounted, ref } from "vue";
 import _ from "lodash";
 import type { FormView } from "@commons/components/ce-form/type";
 import { CloseBold } from "@element-plus/icons-vue";
+import { ElMessage } from "element-plus";
+
+interface DiskTypeConfig {
+  size: number;
+  diskType: string;
+  deleteWithInstance: boolean;
+  diskTypeName?: string;
+  minDiskSize: number;
+  maxDiskSize: number;
+  readonly?: boolean;
+}
 
 const props = defineProps<{
   modelValue: any;
@@ -116,13 +143,71 @@ const props = defineProps<{
 const emit = defineEmits(["update:modelValue", "change"]);
 
 /**
- * 磁盘类型下拉选
+ * 系统盘类型下拉选
  */
-const diskTypeOptions = computed(() => {
+const systemDiskTypeOptions = computed(() => {
   if (props.formItem?.optionList) {
-    return props.formItem.optionList;
+    return props.formItem.optionList.systemDiskTypes;
   }
   return [];
+});
+
+/**
+ * 数据盘类型下拉选
+ */
+const dataDiskTypeOptions = computed(() => {
+  if (props.formItem?.optionList) {
+    return props.formItem.optionList.dataDiskTypes;
+  }
+  return [];
+});
+
+const minSize = computed(() => (disk: DiskTypeConfig, index: number) => {
+  const minSize = ref(20);
+  if (disk && index != null) {
+    // 系统盘
+    if (index === 0) {
+      systemDiskTypeOptions.value.forEach((diskTypeOption: DiskTypeConfig) => {
+        if (diskTypeOption.diskType === disk.diskType) {
+          minSize.value = diskTypeOption.minDiskSize;
+        }
+        if (props.allData.os?.toLowerCase().indexOf("windows") > -1) {
+          minSize.value = 50;
+        }
+        if (disk.size < minSize.value) {
+          disk.size = minSize.value;
+        }
+      });
+    } else {
+      dataDiskTypeOptions.value.forEach((diskTypeOption: DiskTypeConfig) => {
+        if (diskTypeOption.diskType === disk.diskType) {
+          minSize.value = diskTypeOption.minDiskSize;
+        }
+      });
+    }
+  }
+  return minSize.value;
+});
+
+const maxSize = computed(() => (disk: DiskTypeConfig, index: number) => {
+  const maxSize = ref(1024);
+  if (disk && index != null) {
+    // 系统盘
+    if (index === 0) {
+      systemDiskTypeOptions.value.forEach((diskTypeOption: DiskTypeConfig) => {
+        if (diskTypeOption.diskType === disk.diskType) {
+          maxSize.value = diskTypeOption.maxDiskSize;
+        }
+      });
+    } else {
+      dataDiskTypeOptions.value.forEach((diskTypeOption: DiskTypeConfig) => {
+        if (diskTypeOption.diskType === disk.diskType) {
+          maxSize.value = diskTypeOption.maxDiskSize;
+        }
+      });
+    }
+  }
+  return maxSize.value;
 });
 
 /**
@@ -163,12 +248,17 @@ watch(
 );
 
 function add() {
-  data.value?.push({
-    diskType: diskTypeOptions?.value[0].id,
-    size: 20,
-    deleteWithInstance: true,
-    readonly: true,
-  });
+  if (dataDiskTypeOptions.value.length > 0) {
+    const dataDiskItem = dataDiskTypeOptions.value[0];
+    data.value?.push({
+      size: dataDiskItem.minDiskSize,
+      diskType: dataDiskItem.diskType,
+      deleteWithInstance: true,
+      readonly: true,
+    });
+  } else {
+    ElMessage.warning("可选择的数据盘类型为空");
+  }
 }
 
 function remove(index: number) {
@@ -189,16 +279,16 @@ function validate(): Promise<boolean> {
   });
 }
 
+defineExpose({
+  validate,
+  field: props.field,
+});
+
 const loading = ref<boolean>(false);
 onMounted(() => {
   if (data.value.length == 0) {
     data.value = defaultDisks.value;
   }
-});
-
-defineExpose({
-  validate,
-  field: props.field,
 });
 </script>
 <style lang="scss" scoped>

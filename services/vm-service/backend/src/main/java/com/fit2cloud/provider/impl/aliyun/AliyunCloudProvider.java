@@ -17,6 +17,7 @@ import com.fit2cloud.provider.entity.F2CVirtualMachine;
 import com.fit2cloud.provider.entity.request.GetMetricsRequest;
 import com.fit2cloud.provider.impl.aliyun.api.AliyunSyncCloudApi;
 import com.fit2cloud.provider.impl.aliyun.constants.*;
+import com.fit2cloud.provider.impl.aliyun.entity.AliyunDiskTypeDTO;
 import com.fit2cloud.provider.impl.aliyun.entity.AliyunInstanceType;
 import com.fit2cloud.provider.impl.aliyun.entity.credential.AliyunVmCredential;
 import com.fit2cloud.provider.impl.aliyun.entity.request.*;
@@ -108,6 +109,19 @@ public class AliyunCloudProvider extends AbstractCloudProvider<AliyunVmCredentia
     }
 
     /**
+     * 获取磁盘类型
+     *
+     * @param req
+     * @return
+     */
+    public AliyunDiskTypeDTO getDiskTypesForCreateVm(String req) {
+        AliyunDiskTypeDTO aliyunDiskTypeDTO = new AliyunDiskTypeDTO();
+        aliyunDiskTypeDTO.setSystemDiskTypes(AliyunSyncCloudApi.getSystemDiskType(JsonUtil.parseObject(req, AliyunGetDiskTypeRequest.class)));
+        aliyunDiskTypeDTO.setDataDiskTypes(AliyunSyncCloudApi.getDataDiskType(JsonUtil.parseObject(req, AliyunGetDiskTypeRequest.class)));
+        return aliyunDiskTypeDTO;
+    }
+
+    /**
      * 获取带宽计费类型
      *
      * @param req
@@ -155,7 +169,7 @@ public class AliyunCloudProvider extends AbstractCloudProvider<AliyunVmCredentia
     }
 
     /**
-     * 获取实例类型
+     * 获取镜像
      *
      * @param req
      * @return
@@ -212,7 +226,7 @@ public class AliyunCloudProvider extends AbstractCloudProvider<AliyunVmCredentia
      * @return
      */
     public String calculateConfigPrice(String req) {
-        return AliyunSyncCloudApi.calculateConfigPrice(JsonUtil.parseObject(req, AliyunVmCreateRequest.class));
+        return AliyunSyncCloudApi.calculateConfigPrice(JsonUtil.parseObject(req, AliyunPriceRequest.class));
     }
 
     /**
@@ -222,7 +236,7 @@ public class AliyunCloudProvider extends AbstractCloudProvider<AliyunVmCredentia
      * @return
      */
     public String calculateTrafficPrice(String req) {
-        return AliyunSyncCloudApi.calculateTrafficPrice(JsonUtil.parseObject(req, AliyunVmCreateRequest.class));
+        return AliyunSyncCloudApi.calculateTrafficPrice(JsonUtil.parseObject(req, AliyunPriceRequest.class));
     }
     // For Create VM [END]
 
@@ -345,5 +359,23 @@ public class AliyunCloudProvider extends AbstractCloudProvider<AliyunVmCredentia
     @Override
     public List<F2CPerfMetricMonitorData> getF2CDiskPerfMetricMonitorData(String req) {
         return AliyunSyncCloudApi.getF2CDiskPerfMetricList(JsonUtil.parseObject(req, GetMetricsRequest.class));
+    }
+
+    @Override
+    public F2CVirtualMachine changeVmConfig(String req){
+        return AliyunSyncCloudApi.changeVmConfig(JsonUtil.parseObject(req, AliyunUpdateConfigRequest.class));
+    }
+
+    @Override
+    public FormObject getConfigUpdateForm() {
+        return FormUtil.toForm(AliyunConfigUpdateForm.class);
+    }
+
+    public List<AliyunInstanceType> getInstanceTypesForConfigUpdate(String req) {
+        return AliyunSyncCloudApi.getInstanceTypesForConfigUpdate(JsonUtil.parseObject(req, AliyunUpdateConfigRequest.class));
+    }
+
+    public String calculateConfigUpdatePrice(String req){
+        return AliyunSyncCloudApi.calculateConfigUpdatePrice(JsonUtil.parseObject(req, AliyunUpdateConfigRequest.class));
     }
 }

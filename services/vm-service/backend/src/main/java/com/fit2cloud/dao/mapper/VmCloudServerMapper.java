@@ -27,13 +27,7 @@ public interface VmCloudServerMapper extends BaseMapper<VmCloudServerDTO> {
      * @param queryWrapper
      * @return
      */
-    @Select("SELECT vm_cloud_server.* " +
-            " ,cloud_account.name as account_name"+
-            " ,cloud_account.platform as platform"+
-            " FROM vm_cloud_server" +
-            " LEFT JOIN cloud_account on vm_cloud_server.account_id=cloud_account.id"+
-            " ${ew.customSqlSegment} ")
-    IPage<VmCloudServerDTO> pageList(Page page, @Param("ew") Wrapper queryWrapper);
+    IPage<VmCloudServerDTO> pageVmCloudServer(Page page, @Param("ew") Wrapper queryWrapper);
 
     /**
      * 根据云账号ID查询云主机列表

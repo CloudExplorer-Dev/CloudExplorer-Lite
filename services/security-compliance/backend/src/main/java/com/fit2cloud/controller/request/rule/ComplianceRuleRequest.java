@@ -46,6 +46,11 @@ public class ComplianceRuleRequest {
     @NotNull(message = "资源类型不能为空", groups = ValidationGroup.SAVE.class)
     private String resourceType;
 
+    @ApiModelProperty(value = "等保条例", notes = "等保条例")
+    @Size(message = "等保条例长度最小为1", min = 1, groups = ValidationGroup.SAVE.class)
+    @NotNull(message = "等保条例不能为空", groups = ValidationGroup.SAVE.class)
+    private List<Integer> insuranceStatuteIds;
+
     @ApiModelProperty(value = "规则条件", notes = "规则条件")
     @NotNull(message = "规则组不能为空", groups = ValidationGroup.SAVE.class)
     @Size(message = "规则组长度最小为1", min = 1, groups = ValidationGroup.SAVE.class)

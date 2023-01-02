@@ -2,12 +2,26 @@ const message = {
   vm_cloud_server: {
     label: {
       ip_address: "IP Address",
+      info: "Host information",
+      vm: "Cloud server",
+      current_config: "Current config",
+      instance_type: "Instance type",
+      new_config: "New config",
+    },
+    status:{
+      creating:"Creating",
+      running:"Running",
+      stopped:"Stopped",
+      rebooting:"Rebooting",
+      wait_recycle:"Wait to Recycle",
+      deleted:"Deleted",
     },
     btn: {
       power_on: "Power on",
       shutdown: "Shutdown",
       power_off: "Power off",
       reboot: "Reboot",
+      change_config: "Change config ",
     },
     message_box: {
       confirm_power_on: "Confirm Start",
@@ -51,6 +65,14 @@ const message = {
       system_disk: "System Disk",
       data_disk: "Data Disk",
       disk_id: "Disk ID",
+    },
+    status:{
+      creating:"Creating",
+      in_use:"In Use",
+      available:"Available",
+      enlarging:"Enlarging",
+      wait_recycle:"Wait to Recycle",
+      deleted:"Deleted",
     },
     btn: {
       create: "Add Disk",

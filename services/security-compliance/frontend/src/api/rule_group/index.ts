@@ -93,4 +93,30 @@ const deleteById: (
     loading
   );
 };
-export default { list, page, save, deleteById, update };
+/**
+ * 根据规则组id获取规则组信息
+ * @param complianceRuleGroupId 规则组id
+ * @param loading               加载器
+ * @returns 规则组信息
+ */
+const getComplianceRuleGroupById: (
+  complianceRuleGroupId: string,
+  loading?: Ref<boolean>
+) => Promise<Result<ComplianceRuleGroup>> = (
+  complianceRuleGroupId,
+  loading
+) => {
+  return get(
+    `/api/compliance_rule_group/${complianceRuleGroupId}`,
+    {},
+    loading
+  );
+};
+export default {
+  list,
+  page,
+  save,
+  deleteById,
+  update,
+  getComplianceRuleGroupById,
+};

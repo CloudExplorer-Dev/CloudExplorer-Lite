@@ -18,6 +18,7 @@ import java.util.Map;
 @Document(indexName = "ce-resource-instance")
 public class ResourceInstance {
     @Id
+    @Field(type = FieldType.Keyword)
     private String id;
     /**
      * 供应商
@@ -33,7 +34,17 @@ public class ResourceInstance {
      * 实例类型
      */
     @Field(type = FieldType.Keyword)
-    private String instanceType;
+    private String resourceType;
+    /**
+     * 资源名称
+     */
+    @Field(type = FieldType.Text)
+    private String resourceName;
+    /**
+     * 资源id
+     */
+    @Field(type = FieldType.Keyword)
+    private String resourceId;
     /**
      * 实例对象
      */

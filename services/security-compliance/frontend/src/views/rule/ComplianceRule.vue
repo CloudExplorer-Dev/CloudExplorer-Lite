@@ -22,7 +22,7 @@
           <div style="display: flex; align-items: center">
             <el-image
               style="margin-right: 20%; display: flex"
-              :src="platformIcon[scope.row.platform].icon"
+              :src="platformIcon[scope.row.platform].oldIcon"
             ></el-image>
             <span>{{ platformIcon[scope.row.platform].name }}</span>
           </div>

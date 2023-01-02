@@ -34,7 +34,9 @@
               class-name="content-class"
               label="任务状态"
             >
-              {{ _.get(JobStatusConst, data.status, data.status) }}
+              <span :style="{ color: data.status === 'FAILED' ? 'red' : null }">
+                {{ _.get(JobStatusConst, data.status, data.status) }}
+              </span>
             </el-descriptions-item>
             <el-descriptions-item
               label-class-name="label-class"
@@ -91,7 +93,9 @@
               class-name="content-class"
               label="失败原因"
             >
-              {{ data.result }}
+              <span :style="{ color: data.status === 'FAILED' ? 'red' : null }">
+                {{ data.result }}
+              </span>
             </el-descriptions-item>
           </el-descriptions>
         </template>

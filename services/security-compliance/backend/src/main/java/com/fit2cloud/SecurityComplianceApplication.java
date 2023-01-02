@@ -4,6 +4,7 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.web.servlet.ServletComponentScan;
 import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
+import org.springframework.context.annotation.EnableAspectJAutoProxy;
 import org.springframework.context.annotation.PropertySource;
 
 import java.time.ZoneId;
@@ -16,6 +17,7 @@ import java.util.TimeZone;
         "file:${ce.config.file}"
 }, encoding = "UTF-8", ignoreResourceNotFound = true)
 @ServletComponentScan
+@EnableAspectJAutoProxy(proxyTargetClass = true, exposeProxy = true)
 public class SecurityComplianceApplication {
 
     public static void main(String[] args) {

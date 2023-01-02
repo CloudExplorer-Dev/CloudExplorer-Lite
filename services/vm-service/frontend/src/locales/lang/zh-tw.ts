@@ -2,12 +2,26 @@ const message = {
   vm_cloud_server: {
     label: {
       ip_address: "IP地址",
+      info: "主機信息",
+      vm: "雲主機",
+      current_config: "當前配置",
+      instance_type: "實例規格",
+      new_config: "變更後配置",
+    },
+    status:{
+      creating:"創建中",
+      running:"運行中",
+      stopped:"已關機",
+      rebooting:"重啟中",
+      wait_recycle:"待回收",
+      deleted:"已刪除",
     },
     btn: {
       power_on: "啟動",
       shutdown: "關機",
       power_off: "關閉電源",
       reboot: "重啓",
+      change_config: "配置變更",
     },
     message_box: {
       confirm_power_on: "確認啟動",
@@ -51,6 +65,14 @@ const message = {
       system_disk: "系統盤",
       data_disk: "數據盤",
       disk_id: "磁盤ID",
+    },
+    status:{
+      creating:"創建中",
+      in_use:"已掛載",
+      available:"可用",
+      enlarging:"擴容中",
+      wait_recycle:"待回收",
+      deleted:"已刪除",
     },
     btn: {
       create: "添加磁盤",

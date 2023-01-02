@@ -9,7 +9,6 @@ public enum AliyunOSType {
     AnolisOS("Anolis OS"),
     CentOS("CentOS"),
     WindowsServer(" Windows Server"),
-    RedHat("Red Hat"),
     SUSE("SUSE"),
     Ubuntu("Ubuntu"),
     Debian("Debian"),

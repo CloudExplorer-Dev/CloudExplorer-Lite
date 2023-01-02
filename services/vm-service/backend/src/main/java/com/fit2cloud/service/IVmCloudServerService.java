@@ -3,13 +3,13 @@ package com.fit2cloud.service;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.fit2cloud.base.entity.VmCloudServer;
-import com.fit2cloud.controller.request.vm.BatchOperateVmRequest;
-import com.fit2cloud.controller.request.vm.CreateServerRequest;
-import com.fit2cloud.controller.request.vm.PageVmCloudServerRequest;
+import com.fit2cloud.common.form.vo.FormObject;
+import com.fit2cloud.controller.request.vm.*;
 import com.fit2cloud.dto.VmCloudServerDTO;
 import com.fit2cloud.response.JobRecordResourceResponse;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * <p>
@@ -42,4 +42,12 @@ public interface IVmCloudServerService extends IService<VmCloudServer> {
     List<VmCloudServerDTO> getByIds(List<String> vmIds);
 
     boolean createServer(CreateServerRequest request);
+
+    boolean changeConfig(ChangeServerConfigRequest request);
+
+    FormObject getConfigUpdateForm(String platform);
+
+    String calculateConfigUpdatePrice(String platform,Map<String, Object> params);
+
+    boolean grant(GrantServerRequest grantServerRequest);
 }

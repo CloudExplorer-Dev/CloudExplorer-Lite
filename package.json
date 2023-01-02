@@ -49,7 +49,9 @@
     "pinia": "^2.0.16",
     "sass": "^1.54.0",
     "sortablejs": "^1.15.0",
+    "swiper": "^8.4.5",
     "vue": "^3.2.37",
+    "vue-awesome-swiper": "^5.0.1",
     "vue-i18n": "^9.2.2",
     "vue-router": "^4.1.2"
   },

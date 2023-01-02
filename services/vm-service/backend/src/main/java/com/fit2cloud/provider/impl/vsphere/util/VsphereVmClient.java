@@ -848,7 +848,7 @@ public class VsphereVmClient extends VsphereClient {
         return false;
     }
 
-    private boolean stopVm(String instanceId) {
+    public boolean stopVm(String instanceId) {
         try {
             VirtualMachine vm = getVirtualMachineById(instanceId);
             if (vm != null) {
@@ -883,7 +883,7 @@ public class VsphereVmClient extends VsphereClient {
         return false;
     }
 
-    private boolean startVm(String instanceId) {
+    public boolean startVm(String instanceId) {
         try {
             VirtualMachine vm = getVirtualMachineById(instanceId);
             if (vm != null) {

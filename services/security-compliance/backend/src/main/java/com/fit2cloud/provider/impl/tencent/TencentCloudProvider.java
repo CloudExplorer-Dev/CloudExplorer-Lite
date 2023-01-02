@@ -10,6 +10,7 @@ import com.fit2cloud.provider.ICloudProvider;
 import com.fit2cloud.provider.entity.InstanceSearchField;
 import com.fit2cloud.provider.impl.tencent.api.TencentApi;
 import com.fit2cloud.provider.impl.tencent.entity.request.ListCvmInstanceRequest;
+import com.fit2cloud.provider.util.ResourceUtil;
 import com.tencentcloudapi.cvm.v20170312.models.Instance;
 
 import java.util.ArrayList;
@@ -27,7 +28,10 @@ public class TencentCloudProvider extends AbstractCloudProvider<TencentBaseCrede
     public List<ResourceInstance> listEcsInstance(String req) {
         ListCvmInstanceRequest listCvmInstanceRequest = JsonUtil.parseObject(req, ListCvmInstanceRequest.class);
         List<Instance> instances = TencentApi.listEcsInstance(listCvmInstanceRequest);
-        return instances.stream().map(instance -> toResourceInstance(PlatformConstants.fit2cloud_tencent_platform.name(), ResourceTypeConstants.ECS, instance)).toList();
+        return instances
+                .stream()
+                .map(instance -> ResourceUtil.toResourceInstance(PlatformConstants.fit2cloud_tencent_platform.name(), ResourceTypeConstants.ECS, instance.getInstanceId(), instance.getInstanceName(), instance))
+                .toList();
     }
 
     @Override

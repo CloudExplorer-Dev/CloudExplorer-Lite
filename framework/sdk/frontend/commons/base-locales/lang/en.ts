@@ -20,6 +20,9 @@ const message = {
     update_time: "Update Time",
     description: "Description",
     basic_info: "Basic Information",
+    grant: "Grant",
+    cancel_grant: "Cancel Grant",
+    org_workspace: "Organization Or Workspace",
     cloud_account: {
       native: "Cloud Account",
       name: "Cloud Account Name",
@@ -87,6 +90,7 @@ const message = {
       delete_success: "Delete Success",
       fail: "{0} Failed",
       delete_canceled: "Delete Canceled",
+      at_least_select_one: "At Least Select One Data",
     },
     validate: {
       required: "{0} Required",

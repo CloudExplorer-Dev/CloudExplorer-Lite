@@ -176,7 +176,8 @@ public abstract class AbstractCloudProvider<C extends Credential> implements ICl
         return false;
     }
 
-    public String calculateConfigPrice(String req){
+    @Override
+    public String calculateConfigPrice(String req) {
         return "";
     }
 
@@ -211,5 +212,18 @@ public abstract class AbstractCloudProvider<C extends Credential> implements ICl
     @Override
     public List<F2CPerfMetricMonitorData> getF2CDatastorePerfMetricMonitorData(String req){
         return new ArrayList<>();
+    }
+
+    @Override
+    public F2CVirtualMachine changeVmConfig(String req) {
+        return null;
+    }
+
+    public FormObject getConfigUpdateForm() {
+        return null;
+    }
+
+    public String calculateConfigUpdatePrice(String req){
+        return null;
     }
 }

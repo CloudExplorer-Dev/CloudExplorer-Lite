@@ -126,6 +126,18 @@ const switchEnable: (
     loading
   );
 };
+/**
+ *  获取合规规则根据合规id
+ * @param complianceRuleId 合规规则id
+ * @param loading   加载器
+ * @returns  合规规则
+ */
+const getComplianceRuleById: (
+  complianceRuleId: string,
+  loading?: Ref<boolean>
+) => Promise<Result<ComplianceRule>> = (complianceRuleId, loading) => {
+  return get(`/api/compliance_rule/${complianceRuleId}`, {}, loading);
+};
 export default {
   page,
   listInstanceSearchField,
@@ -134,4 +146,5 @@ export default {
   updateComplianceRule,
   deleteComplianceRule,
   switchEnable,
+  getComplianceRuleById,
 };
