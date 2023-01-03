@@ -444,6 +444,7 @@ public class VmCloudServerServiceImpl extends ServiceImpl<BaseVmCloudServerMappe
             HashMap<String, Object> params = CommonUtil.getParams(cloudAccount.getCredential(), vmCloudServer.getRegion());
             params.put("instanceUuid", vmCloudServer.getInstanceUuid());
             params.put("newInstanceType", request.getNewInstanceType());
+            params.put("instanceChargeType", vmCloudServer.getInstanceChargeType());
             params.put("cpu", request.getCpu());
             params.put("memory", request.getMemory());
 

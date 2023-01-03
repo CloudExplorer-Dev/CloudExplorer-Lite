@@ -1179,6 +1179,7 @@ public class AliyunSyncCloudApi {
 
     /**
      * TODO 未实现
+     *
      * @param getMetricsRequest
      * @return
      */
@@ -1570,45 +1571,73 @@ public class AliyunSyncCloudApi {
         List<DescribeInstanceTypesResponseBody.DescribeInstanceTypesResponseBodyInstanceTypesInstanceType> allInstanceTypes = listInstanceType(listInstanceTypesRequest);
 
         // 获取配置变更可选实例
+        List<DescribeResourcesModificationResponseBody.DescribeResourcesModificationResponseBodyAvailableZonesAvailableZoneAvailableResourcesAvailableResourceSupportedResourcesSupportedResource> supportedResource = new ArrayList<>();
+        List<DescribeResourcesModificationResponseBody.DescribeResourcesModificationResponseBodyAvailableZonesAvailableZoneAvailableResourcesAvailableResourceSupportedResourcesSupportedResource> upgradeSupportedResource = describeResourcesModification(request, AliyunOperationType.Upgrade, client);
+        if (CollectionUtils.isNotEmpty(upgradeSupportedResource)) {
+            supportedResource.addAll(upgradeSupportedResource);
+        }
+        if (AliyunChargeType.PREPAID.getId().equalsIgnoreCase(request.getInstanceChargeType())) {
+            List<DescribeResourcesModificationResponseBody.DescribeResourcesModificationResponseBodyAvailableZonesAvailableZoneAvailableResourcesAvailableResourceSupportedResourcesSupportedResource> downgradeSupportedResource = describeResourcesModification(request, AliyunOperationType.Downgrade, client);
+            if (CollectionUtils.isNotEmpty(downgradeSupportedResource)) {
+                supportedResource.addAll(downgradeSupportedResource);
+            }
+        }
+
+        // 获取配置变更可选实例 ID 集合
+        List<String> instanceTypeIds = supportedResource.stream().map((theSupportedResource) -> theSupportedResource.getValue()).toList();
+
+        // 过滤可用实例
+        final List<String> instanceTypeIdsFinal = instanceTypeIds;
+        result = allInstanceTypes.stream()
+                .filter(instanceType -> instanceTypeIdsFinal.contains(instanceType.getInstanceTypeId()) &&
+                        !instanceType.getInstanceTypeId().equalsIgnoreCase(request.getCurrentInstanceType()))
+                .map((instanceType) -> {
+                    AliyunInstanceType resultType = new AliyunInstanceType();
+                    // 应要求过滤掉小于 1G 内存的实例规格和当前实例的规格
+                    if (instanceType.getMemorySize() >= 1) {
+                        resultType.setInstanceType(instanceType.getInstanceTypeId());
+                        resultType.setCpuMemory(instanceType.getCpuCoreCount() + "vCPU " + instanceType.getMemorySize().intValue() + "GB");
+                        resultType.setInstanceTypeDesc(resultType.getInstanceType() + "（" + resultType.getCpuMemory() + "）");
+                    }
+                    return resultType;
+                }).toList();
+
+        return result;
+    }
+
+    /**
+     * 查询升级和降配实例规格或时，某一可用区的可用资源信息
+     *
+     * @param request
+     * @param operationType
+     * @param client
+     * @return
+     */
+    private static List<DescribeResourcesModificationResponseBody.DescribeResourcesModificationResponseBodyAvailableZonesAvailableZoneAvailableResourcesAvailableResourceSupportedResourcesSupportedResource> describeResourcesModification(AliyunUpdateConfigRequest request, AliyunOperationType operationType, Client client) {
         DescribeResourcesModificationRequest describeResourcesModificationRequest = new DescribeResourcesModificationRequest()
                 .setRegionId(request.getRegionId())
                 .setResourceId(request.getInstanceUuid())
                 .setDestinationResource("InstanceType")
-                .setOperationType("Upgrade")
+                .setOperationType(operationType.name())
                 .setZoneId(request.getZoneId());
+
+        DescribeResourcesModificationResponse response = null;
+        List<DescribeResourcesModificationResponseBody.DescribeResourcesModificationResponseBodyAvailableZonesAvailableZoneAvailableResourcesAvailableResourceSupportedResourcesSupportedResource> supportedResource = new ArrayList<>();
         try {
-            DescribeResourcesModificationResponse response = client.describeResourcesModification(describeResourcesModificationRequest);
+            response = client.describeResourcesModification(describeResourcesModificationRequest);
             List<DescribeResourcesModificationResponseBody.DescribeResourcesModificationResponseBodyAvailableZonesAvailableZone> availableZone = response.body.availableZones.availableZone;
-            List<DescribeResourcesModificationResponseBody.DescribeResourcesModificationResponseBodyAvailableZonesAvailableZoneAvailableResourcesAvailableResourceSupportedResourcesSupportedResource> supportedResource = new ArrayList<>();
             if (CollectionUtils.isNotEmpty(availableZone) &&
                     CollectionUtils.isNotEmpty(availableZone.get(0).availableResources.availableResource) &&
                     CollectionUtils.isNotEmpty(availableZone.get(0).availableResources.availableResource.get(0).supportedResources.supportedResource)) {
                 supportedResource = availableZone.get(0).availableResources.availableResource.get(0).supportedResources.supportedResource.stream()
-                        .filter((theSupportedResource) -> "Available".equalsIgnoreCase(theSupportedResource.status)).collect(Collectors.toList());
+                        .filter((theSupportedResource) -> "Available".equalsIgnoreCase(theSupportedResource.status) &&
+                                !"WithoutStock".equalsIgnoreCase(theSupportedResource.statusCategory)).collect(Collectors.toList());
             }
-
-            // 获取可用区可选实例的 ID 集合
-            List<String> instanceTypeIds = supportedResource.stream().map((theSupportedResource) -> theSupportedResource.getValue()).toList();
-
-            // 过滤可用实例
-            final List<String> instanceTypeIdsFinal = instanceTypeIds;
-            result = allInstanceTypes.stream()
-                    .filter(instanceType -> instanceTypeIdsFinal.contains(instanceType.getInstanceTypeId()) &&
-                            !instanceType.getInstanceTypeId().equalsIgnoreCase(request.getCurrentInstanceType()))
-                    .map((instanceType) -> {
-                        AliyunInstanceType resultType = new AliyunInstanceType();
-                        // 应要求过滤掉小于 1G 内存的实例规格和当前实例的规格
-                        if (instanceType.getMemorySize() >= 1) {
-                            resultType.setInstanceType(instanceType.getInstanceTypeId());
-                            resultType.setCpuMemory(instanceType.getCpuCoreCount() + "vCPU " + instanceType.getMemorySize().intValue() + "GB");
-                            resultType.setInstanceTypeDesc(resultType.getInstanceType() + "（" + resultType.getCpuMemory() + "）");
-                        }
-                        return resultType;
-                    }).toList();
         } catch (Exception e) {
-            throw new RuntimeException("Failed to get instance type for updating!" + e.getMessage(), e);
+            throw new RuntimeException("Failed to get instanceType for updating! " + e.getMessage(), e);
         }
-        return result;
+
+        return supportedResource;
     }
 
     /**
