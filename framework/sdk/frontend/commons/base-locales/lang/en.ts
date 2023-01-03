@@ -179,6 +179,7 @@ const permissions = {
         create: "Create",
         edit: "Edit",
         delete: "Delete",
+        sync: "Sync",
       },
       sys_log: {
         base: "System Logs",

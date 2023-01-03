@@ -178,6 +178,7 @@ const permissions = {
         create: "新建",
         edit: "编辑",
         delete: "删除",
+        sync: "同步",
       },
       sys_log: {
         base: "系统日志",

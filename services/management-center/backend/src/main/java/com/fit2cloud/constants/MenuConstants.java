@@ -88,7 +88,7 @@ public class MenuConstants {
                             .componentPath("/src/views/CloudAccount/detail.vue")
                             .requiredPermission(new MenuPermission.Builder()
                                     .role(RoleConstants.ROLE.ADMIN)
-                                    .permission(GROUP.CLOUD_ACCOUNT, OPERATE.EDIT)
+                                    .permission(GROUP.CLOUD_ACCOUNT, OPERATE.READ)
                             ))
             )
             .menu(new Menu.Builder()

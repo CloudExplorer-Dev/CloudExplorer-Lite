@@ -22,7 +22,10 @@ import { useI18n } from "vue-i18n";
 import type { FormInstance, FormRules } from "element-plus";
 import type { SimpleMap } from "@commons/api/base/type";
 import { useModuleStore } from "@commons/stores/modules/module";
+import { usePermissionStore } from "@commons/stores/modules/permission";
+
 const moduleStore = useModuleStore();
+const permissionStore = usePermissionStore();
 const { t } = useI18n();
 // 路由实例对象
 const router = useRouter();
@@ -530,7 +533,10 @@ const billSyncShow = (row: CloudAccount) => {
   ];
   return (
     showPlatforms.includes(row.platform) &&
-    moduleStore.runningModules?.some((m: any) => m.id === "finance-management")
+    moduleStore.runningModules?.some(
+      (m: any) => m.id === "finance-management"
+    ) &&
+    permissionStore.hasPermission("[management-center]CLOUD_ACCOUNT:SYNC")
   );
 };
 
@@ -603,7 +609,9 @@ const tableConfig = ref<TableConfig>({
       t("commons.btn.edit", "编辑"),
       "primary",
       edit,
-      "EditPen"
+      "EditPen",
+      undefined,
+      permissionStore.hasPermission("[management-center]CLOUD_ACCOUNT:EDIT")
     ),
     TableOperations.buildButtons().newInstance(
       t("cloud_account.verification", "校验"),
@@ -615,7 +623,9 @@ const tableConfig = ref<TableConfig>({
       t("cloud_account.sync.syncResource", "同步资源"),
       "primary",
       openSync,
-      "Refresh"
+      "Refresh",
+      undefined,
+      permissionStore.hasPermission("[management-center]CLOUD_ACCOUNT:SYNC")
     ),
     TableOperations.buildButtons().newInstance(
       t("cloud_account.sync.syncBill", "同步账单"),
@@ -629,13 +639,20 @@ const tableConfig = ref<TableConfig>({
       t("cloud_account.edit_job_message", "数据同步设置"),
       "primary",
       updateJob,
-      "Document"
+      "Document",
+      undefined,
+      permissionStore.hasPermission([
+        "[management-center]CLOUD_ACCOUNT:SYNC",
+        "[management-center]CLOUD_ACCOUNT:EDIT",
+      ])
     ),
     TableOperations.buildButtons().newInstance(
       t("commons.btn.delete", "删除"),
       "primary",
       deleteItem,
-      "Delete"
+      "Delete",
+      undefined,
+      permissionStore.hasPermission("[management-center]CLOUD_ACCOUNT:DELETE")
     ),
   ]),
 });
@@ -665,15 +682,25 @@ const syncAll = () => {
     row-key="id"
   >
     <template #toolbar>
-      <el-button type="primary" @click="create">{{
-        t("commons.btn.create", "创建")
-      }}</el-button>
-      <el-button @click="batchDelete">{{
-        t("commons.btn.delete", "删除")
-      }}</el-button>
-      <el-button @click="syncAll">{{
-        t("commons.btn.sync", "同步")
-      }}</el-button>
+      <el-button
+        type="primary"
+        @click="create"
+        v-hasPermission="'[management-center]CLOUD_ACCOUNT:CREATE'"
+      >
+        {{ t("commons.btn.create", "创建") }}
+      </el-button>
+      <el-button
+        @click="batchDelete"
+        v-hasPermission="'[management-center]CLOUD_ACCOUNT:DELETE'"
+      >
+        {{ t("commons.btn.delete", "删除") }}
+      </el-button>
+      <el-button
+        @click="syncAll"
+        v-hasPermission="'[management-center]CLOUD_ACCOUNT:SYNC'"
+      >
+        {{ t("commons.btn.sync", "同步") }}
+      </el-button>
     </template>
     <el-table-column type="selection" />
     <el-table-column prop="name" :label="t('commons.name', '名称')" sortable>
@@ -682,8 +709,8 @@ const syncAll = () => {
           style="cursor: pointer; color: var(--el-color-primary)"
           @click="showAccountDetail(scope.row)"
         >
-          {{ scope.row.name }}</span
-        >
+          {{ scope.row.name }}
+        </span>
       </template>
     </el-table-column>
     <el-table-column
@@ -837,7 +864,8 @@ const syncAll = () => {
                 :key="region.regionId"
                 :label="region.regionId"
                 size="large"
-                ><span
+              >
+                <span
                   style="
                     display: inline-block;
                     width: 120px;
@@ -859,8 +887,9 @@ const syncAll = () => {
             style="margin-bottom: 10px"
             v-model="resourcesCheckedAll"
             @change="handleCheckAllResource"
-            >全选</el-checkbox
           >
+            全选
+          </el-checkbox>
           <el-form-item prop="checkedResources">
             <el-checkbox-group
               v-model="syncForm.checkedResources"
@@ -873,7 +902,8 @@ const syncAll = () => {
                 :label="resource.jobName"
                 :title="resource.resourceDesc"
                 size="large"
-                ><span
+              >
+                <span
                   style="
                     display: inline-block;
                     width: 120px;
@@ -927,7 +957,8 @@ const syncAll = () => {
                   :key="month"
                   :label="month"
                   size="large"
-                  ><span
+                >
+                  <span
                     style="
                       display: inline-block;
                       width: 120px;
@@ -953,9 +984,9 @@ const syncAll = () => {
     <template #footer>
       <span class="dialog-footer">
         <el-button @click="billSyncView = false">取消</el-button>
-        <el-button type="primary" @click="syncBill(ruleFormSyncBill)"
-          >同步</el-button
-        >
+        <el-button type="primary" @click="syncBill(ruleFormSyncBill)">
+          同步
+        </el-button>
       </span>
     </template>
   </el-dialog>

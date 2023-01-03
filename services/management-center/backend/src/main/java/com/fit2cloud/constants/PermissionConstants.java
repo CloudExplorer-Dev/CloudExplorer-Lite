@@ -43,6 +43,7 @@ public class PermissionConstants {
         public static final String EDIT = "EDIT";
         public static final String CREATE = "CREATE";
         public static final String DELETE = "DELETE";
+        public static final String SYNC = "SYNC";
         //...
     }
 
@@ -266,6 +267,11 @@ public class PermissionConstants {
                                     .require(OPERATE.READ)
                                     .operate(OPERATE.DELETE)
                                     .name("permission.manage.cloud_account.delete")
+                                    .role(RoleConstants.ROLE.ADMIN))
+                            .permission(new Permission.Builder()
+                                    .require(OPERATE.READ)
+                                    .operate(OPERATE.SYNC)
+                                    .name("permission.manage.cloud_account.sync")
                                     .role(RoleConstants.ROLE.ADMIN))
             )
             //...
