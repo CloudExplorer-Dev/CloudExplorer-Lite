@@ -45,7 +45,7 @@ const message = {
       alert: "警告",
       confirm: "確認",
       prompt: "提示",
-      confirm_delete: "確認删除",
+      confirm_delete: "確認刪除",
     },
     btn: {
       login: "登錄",
@@ -141,9 +141,61 @@ const message = {
   },
 };
 
+const permissions = {
+  permission: {
+    manage: {
+      user: {
+        base: "用戶",
+        read: "查看",
+        create: "新建",
+        edit: "編輯",
+        delete: "刪除",
+      },
+      role: {
+        base: "角色",
+        read: "查看",
+        create: "新建",
+        edit: "編輯",
+        delete: "刪除",
+      },
+      organization: {
+        base: "組織",
+        read: "查看",
+        create: "新建",
+        edit: "編輯",
+        delete: "刪除",
+      },
+      workspace: {
+        base: "工作空間",
+        read: "查看",
+        create: "新建",
+        edit: "編輯",
+        delete: "刪除",
+      },
+      cloud_account: {
+        base: "云賬號",
+        read: "查看",
+        create: "新建",
+        edit: "編輯",
+        delete: "刪除",
+      },
+      sys_log: {
+        base: "系統日志",
+        read: "查看",
+      },
+      operated_log: {
+        base: "操作日志",
+        read: "查看",
+      },
+    },
+    vm: {},
+  },
+};
+
 export default {
   ...elementZhTwLocale,
   ...fit2cloudZhTwLocale,
   ...message,
+  ...permissions,
   ...subModuleTwLocale,
 };

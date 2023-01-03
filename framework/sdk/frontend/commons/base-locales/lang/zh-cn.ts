@@ -141,9 +141,61 @@ const message = {
   },
 };
 
+const permissions = {
+  permission: {
+    manage: {
+      user: {
+        base: "用户",
+        read: "查看",
+        create: "新建",
+        edit: "编辑",
+        delete: "删除",
+      },
+      role: {
+        base: "角色",
+        read: "查看",
+        create: "新建",
+        edit: "编辑",
+        delete: "删除",
+      },
+      organization: {
+        base: "组织",
+        read: "查看",
+        create: "新建",
+        edit: "编辑",
+        delete: "删除",
+      },
+      workspace: {
+        base: "工作空间",
+        read: "查看",
+        create: "新建",
+        edit: "编辑",
+        delete: "删除",
+      },
+      cloud_account: {
+        base: "云账号",
+        read: "查看",
+        create: "新建",
+        edit: "编辑",
+        delete: "删除",
+      },
+      sys_log: {
+        base: "系统日志",
+        read: "查看",
+      },
+      operated_log: {
+        base: "操作日志",
+        read: "查看",
+      },
+    },
+    vm: {},
+  },
+};
+
 export default {
   ...elementZhLocale,
   ...fit2cloudZhLocale,
   ...message,
+  ...permissions,
   ...subModuleZhLocale,
 };

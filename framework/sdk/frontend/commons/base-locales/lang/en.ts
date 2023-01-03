@@ -142,9 +142,61 @@ const message = {
   },
 };
 
+const permissions = {
+  permission: {
+    manage: {
+      user: {
+        base: "User",
+        read: "Read",
+        create: "Create",
+        edit: "Edit",
+        delete: "Delete",
+      },
+      role: {
+        base: "Role",
+        read: "Read",
+        create: "Create",
+        edit: "Edit",
+        delete: "Delete",
+      },
+      organization: {
+        base: "Organization",
+        read: "Read",
+        create: "Create",
+        edit: "Edit",
+        delete: "Delete",
+      },
+      workspace: {
+        base: "Workspace",
+        read: "Read",
+        create: "Create",
+        edit: "Edit",
+        delete: "Delete",
+      },
+      cloud_account: {
+        base: "Cloud Account",
+        read: "Read",
+        create: "Create",
+        edit: "Edit",
+        delete: "Delete",
+      },
+      sys_log: {
+        base: "System Logs",
+        read: "Read",
+      },
+      operated_log: {
+        base: "Operation Logs",
+        read: "Read",
+      },
+    },
+    vm: {},
+  },
+};
+
 export default {
   ...elementEnLocale,
   ...fit2cloudEnLocale,
   ...message,
+  ...permissions,
   ...subModuleEnLocale,
 };

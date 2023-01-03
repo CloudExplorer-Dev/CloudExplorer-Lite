@@ -10,7 +10,11 @@
     </el-aside>
     <el-main style="padding: 4px">
       <el-table :data="permissionTableData" style="width: 100%">
-        <el-table-column label="操作对象" prop="name" min-width="100px" />
+        <el-table-column label="操作对象" min-width="100px">
+          <template #default="scope">
+            {{ t(scope.row.name) }}
+          </template>
+        </el-table-column>
         <el-table-column label="权限" min-width="300px">
           <template #default="scope">
             <el-checkbox-group
@@ -23,7 +27,7 @@
                 :label="p.id"
                 @change="onPermissionChecked(p, scope.row.permissions)"
               >
-                {{ p.name }}
+                {{ t(p.name) }}
               </el-checkbox>
             </el-checkbox-group>
           </template>
