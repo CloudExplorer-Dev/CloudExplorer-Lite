@@ -130,7 +130,7 @@ public class CloudAccountController {
 
     @GetMapping("/sync/job_record")
     @ApiOperation(value = "查询云账号最新的同步记录", notes = "查询云账号最新的同步记录")
-    public ResultHolder<Map<String, List<JobRecordResourceResponse>>> findCloudAcoountSyncStatus(@ApiParam("需要查询的云账户id") @RequestParam("cloudAccountIds[]") List<String> cloudAccountIds) {
+    public ResultHolder<Map<String, List<JobRecordResourceResponse>>> findCloudAccountSyncStatus(@ApiParam("需要查询的云账户id") @RequestParam("cloudAccountIds[]") List<String> cloudAccountIds) {
         return ResultHolder.success(cloudAccountService.findCloudAccountSyncStatus(cloudAccountIds).stream().collect(Collectors.groupingBy(JobRecordResourceResponse::getResourceId)));
     }
 

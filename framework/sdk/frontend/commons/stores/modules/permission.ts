@@ -52,7 +52,7 @@ export const usePermissionStore = defineStore({
           return item === checkValue;
         });
       } else {
-        if ((typeof checkValue)[0] === "string") {
+        if (typeof checkValue[0] === "string") {
           has = this.userPermissions.some((item: string) => {
             return (checkValue as Array<string>).includes(item);
           });
