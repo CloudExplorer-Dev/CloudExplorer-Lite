@@ -14,6 +14,7 @@ import com.fit2cloud.provider.ICloudProvider;
 import com.fit2cloud.provider.constants.ProviderConstants;
 import io.swagger.annotations.Api;
 import org.springframework.beans.BeanUtils;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -46,6 +47,7 @@ public class VmCloudServerCatalogController {
     private BaseVmCloudDiskMapper diskMapper;
 
     @GetMapping("/form/{cloudAccountId}")
+    @PreAuthorize("hasAnyCePermission('CLOUD_SERVER:CREATE')")
     public ResultHolder<FormObject> getCreateServerForm(@PathVariable String cloudAccountId) throws Exception {
         CloudAccount cloudAccount = cloudAccountService.getById(cloudAccountId);
         Class<? extends ICloudProvider> cloudProvider = ProviderConstants.valueOf(cloudAccount.getPlatform()).getCloudProvider();
@@ -53,6 +55,7 @@ public class VmCloudServerCatalogController {
     }
 
     @GetMapping("/goods")
+    @PreAuthorize("hasAnyCePermission('CLOUD_SERVER:CREATE')")
     public ResultHolder<List<Good>> listGoods() {
         ExecutorService executorService = Executors.newFixedThreadPool(10);
         try {
