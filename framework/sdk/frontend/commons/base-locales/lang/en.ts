@@ -189,7 +189,39 @@ const permissions = {
         read: "Read",
       },
     },
-    vm: {},
+    vm: {
+      cloud_server: {
+        base: "Cloud Server",
+        read: "Read",
+        create: "Create",
+        edit: "Edit",
+        delete: "Delete",
+        start: "Start",
+        stop: "Stop",
+        restart: "Restart",
+        resize: "Resize",
+        auth: "Auth",
+      },
+      cloud_disk: {
+        base: "Cloud Disk",
+        read: "Read",
+        create: "Create",
+        edit: "Edit",
+        delete: "Delete",
+        attach: "Attach",
+        detach: "Detach",
+        resize: "Resize",
+        auth: "Auth",
+      },
+      cloud_image: {
+        base: "Cloud Image",
+        read: "Read",
+      },
+      jobs: {
+        base: "Job Records",
+        read: "Read",
+      },
+    },
   },
 };
 

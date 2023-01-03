@@ -188,7 +188,39 @@ const permissions = {
         read: "查看",
       },
     },
-    vm: {},
+    vm: {
+      cloud_server: {
+        base: "云主機",
+        read: "查看",
+        create: "新建",
+        edit: "編輯",
+        delete: "刪除",
+        start: "啟動",
+        stop: "停止",
+        restart: "重啟",
+        resize: "配置變更",
+        auth: "授權",
+      },
+      cloud_disk: {
+        base: "磁盤",
+        read: "查看",
+        create: "新建",
+        edit: "編輯",
+        delete: "刪除",
+        attach: "掛載",
+        detach: "卸載",
+        resize: "擴容",
+        auth: "授權",
+      },
+      cloud_image: {
+        base: "鏡像",
+        read: "查看",
+      },
+      jobs: {
+        base: "任務",
+        read: "查看",
+      },
+    },
   },
 };
 
