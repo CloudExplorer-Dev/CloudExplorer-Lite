@@ -90,13 +90,38 @@ const _permissionData = computed({
 const originPermissions = ref<SimpleMap<ModulePermission>>();
 const modules = ref<Array<Module>>([]);
 
+const availableModules = computed(() => {
+  return _.filter(modules.value, (m: Module) => {
+    const p: ModulePermission | undefined = _.get(
+      originPermissions.value,
+      m.id
+    );
+    if (p === undefined) {
+      return false;
+    }
+    return p.groups.length > 0;
+  });
+});
+
 const modulesPanels = computed(() => {
-  return _.map(modules.value, (m: Module) => {
+  return _.map(availableModules.value, (m: Module) => {
     return { value: m.id, label: m.name };
   });
 });
 
-const defaultSelectedModule = ref<string>();
+const selectedModule = ref<string | undefined>(undefined);
+
+const defaultSelectedModule = computed<string | undefined>({
+  get() {
+    if (selectedModule.value == undefined) {
+      return availableModules.value[0]?.id;
+    }
+    return selectedModule.value;
+  },
+  set(value) {
+    selectedModule.value = value;
+  },
+});
 
 const permissionTableData = computed<Array<GroupPermission>>(() => {
   const result =
@@ -244,7 +269,6 @@ const init = () => {
   //模块
   listModules(_loading).then((ok) => {
     modules.value = ok.data;
-    defaultSelectedModule.value = modules.value[0].id;
   });
 };
 
