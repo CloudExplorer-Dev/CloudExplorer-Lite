@@ -1,6 +1,6 @@
 package com.fit2cloud.provider.impl.tencent.entity.request;
 
-import com.tencentcloudapi.cvm.v20170312.models.DescribeInstanceTypeConfigsRequest;
+import com.fit2cloud.provider.impl.tencent.constants.TencentChargeType;
 import com.tencentcloudapi.cvm.v20170312.models.DescribeZoneInstanceConfigInfosRequest;
 import com.tencentcloudapi.cvm.v20170312.models.Filter;
 import lombok.Data;
@@ -33,7 +33,9 @@ public class TencentGetInstanceTypeRequest extends TencentBaseRequest {
         if (StringUtils.isNotBlank(this.instanceChargeType)) {
             Filter filter = new Filter();
             filter.setName("instance-charge-type");
-            filter.setValues(new String[]{instanceChargeType});
+            String tencentInstanceChargeType = TencentChargeType.PREPAID.getId().equalsIgnoreCase(this.instanceChargeType) ?
+                    TencentChargeType.PREPAID.getId() : TencentChargeType.POSTPAID.getId();
+            filter.setValues(new String[]{tencentInstanceChargeType});
             filterList.add(filter);
         }
 

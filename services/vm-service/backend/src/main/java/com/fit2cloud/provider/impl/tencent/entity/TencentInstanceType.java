@@ -5,6 +5,8 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.Objects;
+
 /**
  * @author : LiuDi
  * @date : 2022/11/25 17:23
@@ -41,5 +43,20 @@ public class TencentInstanceType {
     private Long cpu;
 
     private Long memory;
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o)
+            return true;
+        if (o == null || getClass() != o.getClass())
+            return false;
+        TencentInstanceType tencentInstanceType = (TencentInstanceType) o;
+        return Objects.equals(instanceType, tencentInstanceType.instanceType);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(instanceType);
+    }
 
 }
