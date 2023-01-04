@@ -52,7 +52,7 @@ public class ComplianceScanController {
                                                            @Min(message = "每页大小不能小于1", value = 1)
                                                            @PathVariable("limit")
                                                            Integer limit, ComplianceScanRequest request) {
-        Page<ComplianceScanResponse> page = complianceScanService.page(currentPage, limit, request);
+         Page<ComplianceScanResponse> page = complianceScanService.page(currentPage, limit, request);
         return ResultHolder.success(page);
     }
 
@@ -60,7 +60,7 @@ public class ComplianceScanController {
     @ApiOperation("获取规则组扫描情况")
     public ResultHolder<ComplianceScanRuleGroupResponse> getRuleGroupCompliance(@PathVariable("complianceRuleGroupId")
                                                                                 String complianceRuleGroupId) {
-        ComplianceScanRuleGroupResponse ruleGroupCompliance = complianceScanService.getRuleGroupCompliance(complianceRuleGroupId);
+        ComplianceScanRuleGroupResponse ruleGroupCompliance = complianceScanService.scanComplianceRuleGroupByGroupId(complianceRuleGroupId);
         return ResultHolder.success(ruleGroupCompliance);
     }
 

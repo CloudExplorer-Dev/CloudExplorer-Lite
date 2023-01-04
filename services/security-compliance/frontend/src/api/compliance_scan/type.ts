@@ -76,6 +76,10 @@ interface ComplianceScanRequest {
    * 资源类型
    */
   resourceType?: string;
+  /**
+   * 合规规则组id
+   */
+  complianceRuleGroupId?: string;
 }
 interface ComplianceResourceResponse {
   /**

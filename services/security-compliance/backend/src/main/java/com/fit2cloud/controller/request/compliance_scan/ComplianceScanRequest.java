@@ -23,6 +23,9 @@ public class ComplianceScanRequest {
     @Query(field = "cloudAccountId", compareType = QueryUtil.CompareType.EQ)
     private String cloudAccountId;
 
+    @ApiModelProperty(value = "合规规则组id", notes = "合规规则组id")
+    private String complianceRuleGroupId;
+
     @ApiModelProperty(value = "资源类型", notes = "资源类型", required = true)
     private String resourceType;
 
