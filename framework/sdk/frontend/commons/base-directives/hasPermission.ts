@@ -3,7 +3,6 @@ import _ from "lodash";
 import { store } from "@commons/stores";
 import type { RequiredPermissions } from "@commons/api/menu/type";
 import { usePermissionStore } from "@commons/stores/modules/permission";
-import { useUserStore } from "@commons/stores/modules/user";
 
 /**
  * 判断是否有角色和权限
@@ -39,39 +38,13 @@ export const hasRolePermission = (
   return false;
 };
 
-const hasPermission = async (el: any, binding: any) => {
+const display = async (el: any, binding: any) => {
   const permissionStore = usePermissionStore(store);
-  if (permissionStore.userPermissions?.length === 0) {
-    await permissionStore.refreshPermissions();
-  }
-  const permissions: Array<string> = permissionStore.userPermissions;
-  const role: string = useUserStore(store).currentRole;
-  if (typeof binding.value === "string") {
-    const hasPermission = permissions.some((item) => {
-      return item === binding.value;
-    });
-    if (!hasPermission) {
-      el.style.display = "none";
-    } else {
-      delete el.style.display;
-    }
-  }
-  if (binding.value instanceof Array && binding.value) {
-    let isPermission = false;
-    if (typeof binding.value[0] === "string") {
-      isPermission = permissions.some((item) => {
-        return binding.value.includes(item);
-      });
-    } else {
-      if (hasRolePermission(role, permissions, binding.value)) {
-        isPermission = true;
-      }
-    }
-    if (!isPermission) {
-      el.style.display = "none";
-    } else {
-      delete el.style.display;
-    }
+  const has = permissionStore.hasPermission(binding);
+  if (!has) {
+    el.style.display = "none";
+  } else {
+    delete el.style.display;
   }
 };
 
@@ -79,10 +52,10 @@ export default {
   install: (app: App) => {
     app.directive("hasPermission", {
       async created(el: any, binding: any) {
-        hasPermission(el, binding);
+        display(el, binding);
       },
       async beforeUpdate(el: any, binding: any) {
-        hasPermission(el, binding);
+        display(el, binding);
       },
     });
   },

@@ -15,6 +15,7 @@ import com.fit2cloud.common.log.constants.ResourceTypeEnum;
 import com.fit2cloud.common.log.entity.OperatedLogVO;
 import com.fit2cloud.common.log.entity.SystemLogVO;
 import com.fit2cloud.common.utils.JsonUtil;
+import com.fit2cloud.common.utils.PageUtil;
 import com.fit2cloud.common.utils.QueryUtil;
 import com.fit2cloud.controller.request.es.PageOperatedLogRequest;
 import com.fit2cloud.controller.request.es.PageSystemLogRequest;
@@ -47,14 +48,14 @@ public class LogServiceImpl implements ILogService {
 
     @Override
     public IPage<SystemLogVO> systemLogs(PageSystemLogRequest request) {
-        Page<SystemLogVO> page = new Page<>(request.getCurrentPage(), request.getPageSize(), false);
+        Page<SystemLogVO> page = PageUtil.of(request, SystemLogVO.class, true);
         return provide.searchByQuery(CE_FILE_SYSTEM_LOGS, getSearchQuery(request.getCurrentPage(), request.getPageSize(), JsonUtil.toJSONString(request), request.getOrder()), SystemLogVO.class, page);
     }
 
 
     @Override
     public IPage<OperatedLogVO> operatedLogs(PageOperatedLogRequest request) {
-        Page<OperatedLogVO> page = new Page<>(request.getCurrentPage(), request.getPageSize(), false);
+        Page<OperatedLogVO> page = PageUtil.of(request, OperatedLogVO.class, true);
         if (StringUtils.equalsIgnoreCase("loginLog", request.getType())) {
             request.setType(null);
             request.setResourceType(ResourceTypeEnum.SYSTEM.getCode());

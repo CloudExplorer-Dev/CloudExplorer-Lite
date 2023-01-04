@@ -463,7 +463,7 @@ public class VmCloudServerServiceImpl extends ServiceImpl<BaseVmCloudServerMappe
                     .build();
             CreateJobRecordRequest createJobRecordRequest = CreateJobRecordRequest.builder().
                     resourceOperateType(OperatedTypeEnum.CHANGE_SERVER_CONFIG).
-                    resourceId(vmCloudServer.getInstanceUuid()).
+                    resourceId(vmCloudServer.getId()).
                     resourceType(ResourceTypeEnum.CLOUD_SERVER).
                     jobType(JobTypeConstants.CLOUD_SERVER_CONFIG_CHANGE_JOB)
                     .build();

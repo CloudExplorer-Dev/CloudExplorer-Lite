@@ -76,7 +76,7 @@ public class ResourceOperateServiceImpl implements IResourceOperateService {
                     result = CommonUtil.exec(ICloudProvider.of(execProviderMethodRequest.getPlatform()), JsonUtil.toJSONString(execProviderMethodRequest.getMethodParams()), execProviderMethodRequest.getExecMethod());
                     if (result != null) {
                         // 更新资源为完成态
-                        if (execProviderMethodRequest.getResultNeedTransfer()) {
+                        if (execProviderMethodRequest.getResultNeedTransfer() != null && execProviderMethodRequest.getResultNeedTransfer()) {
                             updateResourceMethodNeedTransfer.accept(resourceState.getAfterResource(), (V) result);
                         } else {
                             updateResourceMethod.accept(resourceState.getAfterResource());

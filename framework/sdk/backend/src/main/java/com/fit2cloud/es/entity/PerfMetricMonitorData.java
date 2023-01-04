@@ -69,4 +69,16 @@ public class PerfMetricMonitorData {
 
     @Field(type = FieldType.Auto)
     private String unit;
+
+    /**
+     * 集群名称
+     */
+    @Field(type = FieldType.Auto)
+    private String clusterName;
+
+    /**
+     * 宿主机ID
+     */
+    @Field(type = FieldType.Auto)
+    private String hostId;
 }

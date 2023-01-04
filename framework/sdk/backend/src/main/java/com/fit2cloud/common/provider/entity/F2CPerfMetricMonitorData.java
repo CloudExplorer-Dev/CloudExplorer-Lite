@@ -7,7 +7,6 @@ import java.math.BigDecimal;
 /**
  * 性能指标监控数据
  * @author jianneng
- * @date 2022/10/28 10:43
  **/
 @Data
 public class F2CPerfMetricMonitorData {
@@ -47,4 +46,13 @@ public class F2CPerfMetricMonitorData {
      * 单位
      */
     private String unit;
+
+    /**
+     * 集群名称
+     */
+    private String clusterName;
+    /**
+     * 宿主机ID
+     */
+    private String hostId;
 }

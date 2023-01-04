@@ -338,9 +338,13 @@ onBeforeUnmount(() => {
           <span>{{ $t("commons.basic_info", "基本信息") }}</span>
         </template>
         <template #btn>
-          <span v-if="!basicEditable" @click="edit(resourceConst.basic)">{{
-            $t("commons.btn.edit")
-          }}</span>
+          <span
+            v-if="!basicEditable"
+            @click="edit(resourceConst.basic)"
+            v-hasPermission="'[management-center]CLOUD_ACCOUNT:EDIT'"
+          >
+            {{ $t("commons.btn.edit") }}
+          </span>
           <span v-if="basicEditable" @click="cancel(resourceConst.basic)">{{
             $t("commons.btn.cancel")
           }}</span>
@@ -496,9 +500,13 @@ onBeforeUnmount(() => {
       <span>{{ $t("cloud_account.sync.setting", "定时同步设置") }}</span>
     </template>
     <template #btn>
-      <span v-if="!syncEditable" @click="edit(resourceConst.sync)">{{
-        $t("commons.btn.edit")
-      }}</span>
+      <span
+        v-if="!syncEditable"
+        @click="edit(resourceConst.sync)"
+        v-hasPermission="'[management-center]CLOUD_ACCOUNT:SYNC_SETTING'"
+      >
+        {{ $t("commons.btn.edit") }}
+      </span>
       <span v-if="syncEditable" @click="cancel(resourceConst.sync)">{{
         $t("commons.btn.cancel")
       }}</span>

@@ -45,7 +45,7 @@ const message = {
       alert: "警告",
       confirm: "確認",
       prompt: "提示",
-      confirm_delete: "確認删除",
+      confirm_delete: "確認刪除",
     },
     btn: {
       login: "登錄",
@@ -141,9 +141,96 @@ const message = {
   },
 };
 
+const permissions = {
+  permission: {
+    manage: {
+      user: {
+        base: "用戶",
+        read: "查看",
+        create: "新建",
+        edit: "編輯",
+        delete: "刪除",
+      },
+      role: {
+        base: "角色",
+        read: "查看",
+        create: "新建",
+        edit: "編輯",
+        delete: "刪除",
+      },
+      organization: {
+        base: "組織",
+        read: "查看",
+        create: "新建",
+        edit: "編輯",
+        delete: "刪除",
+      },
+      workspace: {
+        base: "工作空間",
+        read: "查看",
+        create: "新建",
+        edit: "編輯",
+        delete: "刪除",
+      },
+      cloud_account: {
+        base: "云賬號",
+        read: "查看",
+        create: "新建",
+        edit: "編輯",
+        delete: "刪除",
+        sync_resource: "同步資源",
+        sync_bill: "同步賬單",
+        sync_setting: "同步設置",
+      },
+      sys_log: {
+        base: "系統日志",
+        read: "查看",
+      },
+      operated_log: {
+        base: "操作日志",
+        read: "查看",
+      },
+    },
+    vm: {
+      cloud_server: {
+        base: "云主機",
+        read: "查看",
+        create: "新建",
+        edit: "編輯",
+        delete: "刪除",
+        start: "啟動",
+        stop: "停止",
+        restart: "重啟",
+        resize: "配置變更",
+        auth: "授權",
+      },
+      cloud_disk: {
+        base: "磁盤",
+        read: "查看",
+        create: "新建",
+        edit: "編輯",
+        delete: "刪除",
+        attach: "掛載",
+        detach: "卸載",
+        resize: "擴容",
+        auth: "授權",
+      },
+      cloud_image: {
+        base: "鏡像",
+        read: "查看",
+      },
+      jobs: {
+        base: "任務",
+        read: "查看",
+      },
+    },
+  },
+};
+
 export default {
   ...elementZhTwLocale,
   ...fit2cloudZhTwLocale,
   ...message,
+  ...permissions,
   ...subModuleTwLocale,
 };

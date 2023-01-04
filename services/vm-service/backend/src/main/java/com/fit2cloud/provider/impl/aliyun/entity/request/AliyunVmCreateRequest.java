@@ -245,8 +245,6 @@ public class AliyunVmCreateRequest extends AliyunBaseRequest implements ICreateS
             method = "getLoginUser",
             relationShows = "loginType",
             relationShowValues = "password",
-            regexp = "^(?!/)(?![\\da-z]+$)(?![\\dA-Z]+$)(?![\\d\\(\\)`~!@#\\$%\\^&\\*-\\+=_\\|\\{\\}\\[\\]:;'<>,\\.\\?/]+$)(?![a-zA-Z]+$)(?![a-z\\(\\)`~!@#\\$%\\^&\\*-\\+=_\\|\\{\\}\\[\\]:;'<>,\\.\\?/]+$)(?![A-Z\\(\\)`~!@#\\$%\\^&\\*-\\+=_\\|\\{\\}\\[\\]:;'<>,\\.\\?/]+$)[\\da-zA-z\\(\\)`~!@#\\$%\\^&\\*-\\+=_\\|\\{\\}\\[\\]:;'<>,\\.\\?/]{8,30}$",
-            regexpDescription = "在 8 ～ 30 位字符数以内，不能以\" / \"开头，至少包含其中三项(小写字母 a ~ z、大写字母 A ～ Z、数字 0 ～ 9、()`~!@#$%^&*-+=_|{}[]:;'<>,.?/)\n",
             relationTrigger = "os",
             required = false,
             step = 3,
@@ -259,6 +257,8 @@ public class AliyunVmCreateRequest extends AliyunBaseRequest implements ICreateS
             label = "登录密码",
             relationShows = "loginType",
             relationShowValues = "password",
+            regexp = "^(?!/)(?![\\da-z]+$)(?![\\dA-Z]+$)(?![\\d\\(\\)`~!@#\\$%\\^&\\*\\-\\+=_\\|\\{\\}\\[\\]:;'<>,\\.\\?/]+$)(?![a-zA-Z]+$)(?![a-z\\(\\)`~!@#\\$%\\^&\\*\\-\\+=_\\|\\{\\}\\[\\]:;'<>,\\.\\?/]+$)(?![A-Z\\(\\)`~!@#\\$%\\^&\\*\\-\\+=_\\|\\{\\}\\[\\]:;'<>,\\.\\?/]+$)[\\da-zA-z\\(\\)`~!@#\\$%\\^&\\*\\-\\+=_\\|\\{\\}\\[\\]:;'<>,\\.\\?/]{8,30}$",
+            regexpDescription = "在 8 ～ 30 位字符数以内，不能以\" / \"开头，至少包含其中三项(小写字母 a ~ z、大写字母 A ～ Z、数字 0 ～ 9、()`~!@#$%^&*-+=_|{}[]:;'<>,.?/)\n",
             step = 3,
             group = 8
     )

@@ -13,7 +13,7 @@ export function listVmCloudDatastore(
   req: ListVmCloudDatastoreRequest,
   loading?: Ref<boolean>
 ): Promise<Result<Page<VmCloudDatastoreVO>>> {
-  return get("api/baseResourceAnalysis/datastore/page", req, loading);
+  return get("api/base_resource_analysis/datastore/page", req, loading);
 }
 
 const VmCloudDatastoreApi = {

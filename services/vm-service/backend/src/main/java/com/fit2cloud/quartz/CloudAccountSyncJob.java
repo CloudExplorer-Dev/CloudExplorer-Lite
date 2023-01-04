@@ -1,6 +1,7 @@
 package com.fit2cloud.quartz;
 
 import com.fit2cloud.common.log.utils.LogUtil;
+import com.fit2cloud.common.provider.entity.F2CEntityType;
 import com.fit2cloud.common.scheduler.handler.AsyncJob;
 import com.fit2cloud.common.utils.SpringUtil;
 import com.fit2cloud.service.ISyncProviderService;
@@ -76,6 +77,33 @@ public class CloudAccountSyncJob {
             LogUtil.info("开始同步云主机监控数据: ", map);
             SpringUtil.getBean(ISyncProviderService.class).syncCloudServerPerfMetricMonitor(map);
             LogUtil.info("同步云主机监控数据结束:", map);
+        }
+    }
+    @Name("同步宿主机监控数据任务")
+    public static class SyncCloudHostPerfMetricMonitor extends AsyncJob implements Job {
+        @Override
+        protected void run(Map<String, Object> map) {
+            LogUtil.info("开始同步宿主机监控数据: ", map);
+            SpringUtil.getBean(ISyncProviderService.class).syncCloudHostPerfMetricMonitor(map);
+            LogUtil.info("同步宿主机监控数据结束:", map);
+        }
+    }
+    @Name("同步云磁盘监控数据任务")
+    public static class SyncCloudDiskPerfMetricMonitor extends AsyncJob implements Job {
+        @Override
+        protected void run(Map<String, Object> map) {
+            LogUtil.info("开始同步云磁盘监控数据: ", map);
+            SpringUtil.getBean(ISyncProviderService.class).syncCloudDiskPerfMetricMonitor(map);
+            LogUtil.info("同步云磁盘监控数据结束:", map);
+        }
+    }
+    @Name("同步存储器监控数据任务")
+    public static class SyncCloudDatastorePerfMetricMonitor extends AsyncJob implements Job {
+        @Override
+        protected void run(Map<String, Object> map) {
+            LogUtil.info("开始同步存储器监控数据: ", map);
+            SpringUtil.getBean(ISyncProviderService.class).syncCloudDatastorePerfMetricMonitor(map);
+            LogUtil.info("同步存储器监控数据结束:", map);
         }
     }
 }

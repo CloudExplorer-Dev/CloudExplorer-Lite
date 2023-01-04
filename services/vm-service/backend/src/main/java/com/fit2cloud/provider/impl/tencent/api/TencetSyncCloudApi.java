@@ -1141,6 +1141,26 @@ public class TencetSyncCloudApi {
             MonitorClient monitorClient = credential.getMonitorClient(getMetricsRequest.getRegionId());
             ///TODO 由于我们只查询一个小时内的数据，时间间隔是60s,所以查询每台机器的监控数据的时候最多不过60条数据，所以不需要分页查询
             result.addAll(getVmPerfMetric(monitorClient, request, getMetricsRequest));
+            result.addAll(getVmDiskPerfMetric(monitorClient, request, getMetricsRequest));
+        } catch (Exception e) {
+            throw new Fit2cloudException(100021, "获取监控数据失败-" + getMetricsRequest.getRegionId() + "-" + e.getMessage());
+        }
+        return result;
+    }
+
+    public static List<F2CPerfMetricMonitorData> getF2CDiskPerfMetricList(GetMetricsRequest getMetricsRequest) {
+        if (StringUtils.isEmpty(getMetricsRequest.getRegionId())) {
+            throw new Fit2cloudException(10002, "区域为必填参数");
+        }
+        List<F2CPerfMetricMonitorData> result = new ArrayList<>();
+        //设置时间，根据interval,默认一个小时
+        getMetricsRequest.setStartTime(String.valueOf(DateUtil.getBeforeHourTime(getMetricsRequest.getInterval())));
+        getMetricsRequest.setEndTime(String.valueOf(System.currentTimeMillis()));
+        try {
+            getMetricsRequest.setRegionId(getMetricsRequest.getRegionId());
+            TencentVmCredential credential = JsonUtil.parseObject(getMetricsRequest.getCredential(), TencentVmCredential.class);
+            GetMonitorDataRequest request = getShowMetricDataRequest(getMetricsRequest);
+            MonitorClient monitorClient = credential.getMonitorClient(getMetricsRequest.getRegionId());
             result.addAll(getDiskPerfMetric(monitorClient, request, getMetricsRequest));
         } catch (Exception e) {
             throw new Fit2cloudException(100021, "获取监控数据失败-" + getMetricsRequest.getRegionId() + "-" + e.getMessage());
@@ -1181,7 +1201,7 @@ public class TencetSyncCloudApi {
      * @param getMetricsRequest
      * @return
      */
-    private static List<F2CPerfMetricMonitorData> getDiskPerfMetric(MonitorClient monitorClient, GetMonitorDataRequest req, GetMetricsRequest getMetricsRequest) {
+    private static List<F2CPerfMetricMonitorData> getVmDiskPerfMetric(MonitorClient monitorClient, GetMonitorDataRequest req, GetMetricsRequest getMetricsRequest) {
         List<F2CPerfMetricMonitorData> result = new ArrayList<>();
         ListDiskRequest listDiskRequest = new ListDiskRequest();
         listDiskRequest.setCredential(getMetricsRequest.getCredential());
@@ -1197,6 +1217,27 @@ public class TencetSyncCloudApi {
                 req.setInstances(getInstance("diskId", disk.getDiskId()));
                 Map<Long, BigDecimal> dataMap = getMonitorData(monitorClient, req);
                 addMonitorData(result, dataMap, F2CEntityType.VIRTUAL_MACHINE.name(), perfMetric.getUnit(), getMetricsRequest.getPeriod(), perfMetric.name(), disk.getInstanceUuid());
+            });
+        });
+        return result;
+    }
+
+    private static List<F2CPerfMetricMonitorData> getDiskPerfMetric(MonitorClient monitorClient, GetMonitorDataRequest req, GetMetricsRequest getMetricsRequest) {
+        List<F2CPerfMetricMonitorData> result = new ArrayList<>();
+        ListDiskRequest listDiskRequest = new ListDiskRequest();
+        listDiskRequest.setCredential(getMetricsRequest.getCredential());
+        listDiskRequest.setRegionId(getMetricsRequest.getRegionId());
+        List<F2CDisk> ids = listDisk(listDiskRequest).stream().collect(Collectors.toList());
+        if (ids.size() == 0) {
+            return result;
+        }
+        req.setNamespace("QCE/BLOCK_STORAGE");
+        ids.forEach(disk -> {
+            Arrays.stream(TencentPerfMetricConstants.CloudDiskPerfMetricEnum.values()).sorted().forEach(perfMetric -> {
+                req.setMetricName(perfMetric.getMetricName());
+                req.setInstances(getInstance("diskId", disk.getDiskId()));
+                Map<Long, BigDecimal> dataMap = getMonitorData(monitorClient, req);
+                addMonitorData(result, dataMap, F2CEntityType.DISK.name(), perfMetric.getUnit(), getMetricsRequest.getPeriod(), perfMetric.name(), disk.getDiskId());
             });
         });
         return result;
@@ -1223,13 +1264,18 @@ public class TencetSyncCloudApi {
     }
 
     private static void addMonitorData(List<F2CPerfMetricMonitorData> result, Map<Long, BigDecimal> dataMap, String entityType, String unit, Integer period, String metricName, String instanceId) {
+        //最大最小值去时间段内的，因为接口拿不到
         dataMap.keySet().forEach(k -> {
+            BigDecimal max = dataMap.entrySet().stream().max(Map.Entry.comparingByValue()).get().getValue();
+            BigDecimal min = dataMap.entrySet().stream().min(Map.Entry.comparingByValue()).get().getValue();
             F2CPerfMetricMonitorData f2CEntityPerfMetric = TencentMappingUtil.toF2CPerfMetricMonitorData(dataMap, k, unit);
             f2CEntityPerfMetric.setEntityType(entityType);
             f2CEntityPerfMetric.setMetricName(metricName);
             f2CEntityPerfMetric.setPeriod(period);
             f2CEntityPerfMetric.setInstanceId(instanceId);
             f2CEntityPerfMetric.setUnit(unit);
+            f2CEntityPerfMetric.setMaximum(max);
+            f2CEntityPerfMetric.setMinimum(min);
             result.add(f2CEntityPerfMetric);
         });
     }

@@ -1168,11 +1168,31 @@ public class AliyunSyncCloudApi {
         //设置时间，根据interval,默认一个小时
         getMetricsRequest.setStartTime(String.valueOf(DateUtil.getBeforeHourTime(getMetricsRequest.getInterval())));
         getMetricsRequest.setEndTime(String.valueOf(System.currentTimeMillis()));
-        System.out.println("开始时间：" + getMetricsRequest.getStartTime());
-        System.out.println("结束时间：" + getMetricsRequest.getEndTime());
         try {
             getMetricsRequest.setRegionId(getMetricsRequest.getRegionId());
             result.addAll(getVmPerfMetric(getMetricsRequest));
+        } catch (Exception e) {
+            throw new Fit2cloudException(100021, "获取监控数据失败-" + getMetricsRequest.getRegionId() + "-" + e.getMessage());
+        }
+        return result;
+    }
+
+    /**
+     * TODO 未实现
+     * @param getMetricsRequest
+     * @return
+     */
+    public static List<F2CPerfMetricMonitorData> getF2CDiskPerfMetricList(GetMetricsRequest getMetricsRequest) {
+        if (StringUtils.isEmpty(getMetricsRequest.getRegionId())) {
+            throw new Fit2cloudException(10002, "区域为必填参数");
+        }
+        List<F2CPerfMetricMonitorData> result = new ArrayList<>();
+        //设置时间，根据interval,默认一个小时
+        getMetricsRequest.setStartTime(String.valueOf(DateUtil.getBeforeHourTime(getMetricsRequest.getInterval())));
+        getMetricsRequest.setEndTime(String.valueOf(System.currentTimeMillis()));
+        try {
+            getMetricsRequest.setRegionId(getMetricsRequest.getRegionId());
+            //result.addAll(getVmPerfMetric(getMetricsRequest));
         } catch (Exception e) {
             throw new Fit2cloudException(100021, "获取监控数据失败-" + getMetricsRequest.getRegionId() + "-" + e.getMessage());
         }

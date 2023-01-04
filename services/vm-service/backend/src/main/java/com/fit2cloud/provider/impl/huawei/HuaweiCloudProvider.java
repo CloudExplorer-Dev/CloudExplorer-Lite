@@ -151,6 +151,11 @@ public class HuaweiCloudProvider extends AbstractCloudProvider<HuaweiVmCredentia
         return HuaweiSyncCloudApi.getF2CPerfMetricList(JsonUtil.parseObject(req, GetMetricsRequest.class));
     }
 
+    @Override
+    public List<F2CPerfMetricMonitorData> getF2CDiskPerfMetricMonitorData(String req) {
+        return HuaweiSyncCloudApi.getF2CDiskPerfMetricList(JsonUtil.parseObject(req, GetMetricsRequest.class));
+    }
+
     public List<NovaAvailabilityZoneDTO> getAvailabilityZone(String req){
         return HuaweiSyncCloudApi.getAvailabilityZone(JsonUtil.parseObject(req,HuaweiVmCreateRequest.class));
     }

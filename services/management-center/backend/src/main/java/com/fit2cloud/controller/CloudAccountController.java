@@ -109,6 +109,7 @@ public class CloudAccountController {
     }
 
     @PutMapping("/sync")
+    @PreAuthorize("hasAnyCePermission('CLOUD_ACCOUNT:SYNC')")
     @ApiOperation(value = "根据云账号全量同步", notes = "根据云账号全量同步")
     public ResultHolder<Boolean> sync(@ApiParam("云账号id") @Size(min = 1, message = "{i18n.i18n.cloud_account.id.is.not.empty}") @RequestBody ArrayList<String> cloudAccountIds) {
         cloudAccountService.sync(cloudAccountIds);
@@ -129,7 +130,7 @@ public class CloudAccountController {
 
     @GetMapping("/sync/job_record")
     @ApiOperation(value = "查询云账号最新的同步记录", notes = "查询云账号最新的同步记录")
-    public ResultHolder<Map<String, List<JobRecordResourceResponse>>> findCloudAcoountSyncStatus(@ApiParam("需要查询的云账户id") @RequestParam("cloudAccountIds[]") List<String> cloudAccountIds) {
+    public ResultHolder<Map<String, List<JobRecordResourceResponse>>> findCloudAccountSyncStatus(@ApiParam("需要查询的云账户id") @RequestParam("cloudAccountIds[]") List<String> cloudAccountIds) {
         return ResultHolder.success(cloudAccountService.findCloudAccountSyncStatus(cloudAccountIds).stream().collect(Collectors.groupingBy(JobRecordResourceResponse::getResourceId)));
     }
 
@@ -170,6 +171,7 @@ public class CloudAccountController {
 
     @PostMapping("/sync")
     @ApiOperation(value = "同步", notes = "同步")
+    @PreAuthorize("hasAnyCePermission('CLOUD_ACCOUNT:SYNC')")
     public ResultHolder<Boolean> sync(@RequestBody SyncRequest request) {
         cloudAccountService.sync(request);
         return ResultHolder.success(true);
@@ -185,7 +187,7 @@ public class CloudAccountController {
 
     @GetMapping("/resourceCount/{cloud_account_id}")
     @ApiOperation(value = "获取云账号资源计数")
-    @PreAuthorize("hasAnyCePermission('CLOUD_ACCOUNT:EDIT')")
+    @PreAuthorize("hasAnyCePermission('CLOUD_ACCOUNT:READ')")
     public ResultHolder<List<ResourceCountResponse>> resourceCount(@ApiParam("云账号id")
                                                                    @NotNull(message = "{i18n.cloud_account.id.is.not.empty}")
                                                                    @CustomValidated(mapper = CloudAccountMapper.class, field = "id", handler = ExistHandler.class, message = "{i18n.cloud_account.id.is.not.existent}", exist = false)
@@ -195,7 +197,7 @@ public class CloudAccountController {
 
     @GetMapping("/pageSyncRecord")
     @ApiOperation(value = "获取同步记录")
-    @PreAuthorize("hasAnyCePermission('CLOUD_ACCOUNT:EDIT')")
+    @PreAuthorize("hasAnyCePermission('CLOUD_ACCOUNT:READ')")
     public ResultHolder<IPage<JobRecordResourceResponse>> pageSyncRecord(@Validated SyncRecordRequest syncRecordRequest) {
         return ResultHolder.success(cloudAccountService.pageSyncRecord(syncRecordRequest));
     }

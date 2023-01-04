@@ -49,4 +49,13 @@ public class F2CDatastore {
      */
     private String type;
     private long lastUpdate;
+
+    /**
+     * 区域
+     */
+    private String region;
+    /**
+     * 可用区
+     */
+    private String zone;
 }

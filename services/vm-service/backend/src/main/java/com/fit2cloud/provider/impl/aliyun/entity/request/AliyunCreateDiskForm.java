@@ -15,7 +15,7 @@ public class AliyunCreateDiskForm {
     private String diskName;
     @Form(inputType = InputType.Text, label = "描述", required = false)
     private String description;
-    @Form(inputType = InputType.Number, label = "磁盘大小", defaultValue = "50", attrs = "{\"min\":40,\"max\":32768,\"step\":1}")
+    @Form(inputType = InputType.Number, label = "磁盘大小", defaultValue = "50", attrs = "{\"min\":40,\"max\":32768,\"step\":1}",unit = "GB")
     private Long size;
     @Form(inputType = InputType.Radio, label = "磁盘类型", defaultValue = "cloud_ssd", textField = "name", valueField = "id", method = "getDiskTypes", clazz = AliyunCloudProvider.class)
     private String diskType;

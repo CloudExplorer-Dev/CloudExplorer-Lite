@@ -13,7 +13,7 @@ import lombok.Data;
 public class HuaweiCreateDiskForm {
     @Form(inputType = InputType.Text, label = "名称")
     private String diskName;
-    @Form(inputType = InputType.Number, label = "磁盘大小", defaultValue = "10", attrs = "{\"min\":10,\"max\":32728,\"step\":10}")
+    @Form(inputType = InputType.Number, label = "磁盘大小", defaultValue = "10", attrs = "{\"min\":10,\"max\":32728,\"step\":10}",unit = "GB")
     private Long size;
     @Form(inputType = InputType.Radio, label = "磁盘类型", defaultValue = "GPSSD", textField = "name", valueField = "id", method = "getDiskTypes", clazz = HuaweiCloudProvider.class)
     private String diskType;

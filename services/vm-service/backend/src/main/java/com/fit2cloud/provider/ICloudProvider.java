@@ -208,6 +208,29 @@ public interface ICloudProvider {
      */
     List<F2CPerfMetricMonitorData> getF2CPerfMetricMonitorData(String req);
 
+    /**
+     * 宿主机监控信息
+     *
+     * @param req
+     * @return
+     */
+    List<F2CPerfMetricMonitorData> getF2CHostPerfMetricMonitorData(String req);
+
+    /**
+     * 云磁盘监控信息
+     *
+     * @param req
+     * @return
+     */
+    List<F2CPerfMetricMonitorData> getF2CDiskPerfMetricMonitorData(String req);
+
+    /**
+     * 存储器监控信息
+     *
+     * @param req
+     * @return
+     */
+    List<F2CPerfMetricMonitorData> getF2CDatastorePerfMetricMonitorData(String req);
 
     F2CVirtualMachine getSimpleServerByCreateRequest(String req);
 

@@ -258,6 +258,22 @@ public class VsphereCloudProvider extends AbstractCloudProvider<VsphereCredentia
     }
 
     @Override
+    public List<F2CPerfMetricMonitorData> getF2CHostPerfMetricMonitorData(String req){
+        return VsphereSyncCloudApi.getF2CHostPerfMetricList(JsonUtil.parseObject(req, GetMetricsRequest.class));
+    }
+
+    @Override
+    public List<F2CPerfMetricMonitorData> getF2CDiskPerfMetricMonitorData(String req){
+        return VsphereSyncCloudApi.getF2CDiskPerfMetricList(JsonUtil.parseObject(req, GetMetricsRequest.class));
+    }
+
+    @Override
+    public List<F2CPerfMetricMonitorData> getF2CDatastorePerfMetricMonitorData(String req){
+        return VsphereSyncCloudApi.getF2CDatastorePerfMetricList(JsonUtil.parseObject(req, GetMetricsRequest.class));
+    }
+
+
+    @Override
     public F2CVirtualMachine changeVmConfig(String req){
         return VsphereSyncCloudApi.changeVmConfig(JsonUtil.parseObject(req, VsphereUpdateConfigRequest.class));
     }

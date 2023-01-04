@@ -100,4 +100,13 @@ public class F2CHost {
      * 虚拟核数
      */
     private int vmCpuCores;
+
+    /**
+     * 区域
+     */
+    private String region;
+    /**
+     * 可用区
+     */
+    private String zone;
 }

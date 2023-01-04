@@ -28,7 +28,7 @@ const message = {
       confirm_shutdown: "確認關機",
       confirm_power_off: "確認關閉電源",
       confirm_reboot: "確認重啓",
-      confirm_delete: "確認删除",
+      confirm_delete: "確認刪除",
       confirm_batch_operate: "確認執行批量{0}操作",
       check_vm_tools_status_confirm_shutdown:
         "當前虛擬機器未安裝VmTools或VmTools未運行，無法軟關機，若繼續操作則關閉電源，是否繼續？",
@@ -52,7 +52,7 @@ const message = {
       disk_attribute: "磁片屬性",
       disk_type: "磁片類型",
       mount_info: "掛載資訊",
-      delete_with_instance: "隨實例删除",
+      delete_with_instance: "隨實例刪除",
       select_vm: "請選擇要掛載的雲主機",
       cloudVm: "雲主機",
       deleteWithVm: "隨雲主機刪除",

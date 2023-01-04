@@ -113,12 +113,16 @@ onMounted(() => {
         </div>
       </template>
     </el-table-column>
-    <el-table-column prop="region" label="数据中心"></el-table-column>
-    <el-table-column prop="zone" label="集群"></el-table-column>
+    <el-table-column
+      prop="region"
+      label="数据中心"
+      :show="false"
+    ></el-table-column>
+    <el-table-column prop="zone" label="集群" :show="false"></el-table-column>
     <el-table-column prop="capacity" label="总容量(GB)"></el-table-column>
     <el-table-column prop="allocated" label="已分配(GB)"> </el-table-column>
     <el-table-column prop="freeSpace" label="剩余(GB)"></el-table-column>
-    <el-table-column prop="useRate" label="使用率(%)"></el-table-column>
+    <!--    <el-table-column prop="useRate" label="使用率(%)"></el-table-column>-->
     <el-table-column prop="freeRate" label="剩余率(%)"></el-table-column>
     <el-table-column prop="type" label="类型" :show="false"></el-table-column>
     <template #buttons>
@@ -128,9 +132,9 @@ onMounted(() => {
 </template>
 <style lang="scss" scoped>
 .name-span-class {
-  color: var(--el-color-primary);
+  //color: var(--el-color-primary);
 }
 .name-span-class:hover {
-  cursor: pointer;
+  //cursor: pointer;
 }
 </style>
