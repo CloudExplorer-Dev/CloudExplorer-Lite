@@ -13,8 +13,11 @@ import {
   TableSearch,
 } from "@commons/components/ce-table/type";
 import { useI18n } from "vue-i18n";
+import { usePermissionStore } from "@commons/stores/modules/permission";
+
 const { t } = useI18n();
 const useRoute = useRouter();
+const permissionStore = usePermissionStore();
 const columns = ref([]);
 const tableData = ref<Array<WorkspaceDetail>>();
 const tableLoading = ref<boolean>(false);
@@ -151,13 +154,17 @@ const tableConfig = ref<TableConfig>({
       t("commons.btn.edit"),
       "primary",
       edit,
-      "EditPen"
+      "EditPen",
+      undefined,
+      permissionStore.hasPermission("[management-center]WORKSPACE:EDIT")
     ),
     TableOperations.buildButtons().newInstance(
       t("commons.btn.delete"),
       "primary",
       deleteOne,
-      "Delete"
+      "Delete",
+      undefined,
+      permissionStore.hasPermission("[management-center]WORKSPACE:DELETE")
     ),
   ]),
 });
@@ -173,10 +180,19 @@ const tableConfig = ref<TableConfig>({
     height="100%"
   >
     <template #toolbar>
-      <el-button type="primary" @click="create">{{
-        t("commons.btn.create")
-      }}</el-button>
-      <el-button @click="batchDelete">{{ t("commons.btn.delete") }}</el-button>
+      <el-button
+        type="primary"
+        @click="create"
+        v-hasPermission="'[management-center]WORKSPACE:CREATE'"
+      >
+        {{ t("commons.btn.create") }}
+      </el-button>
+      <el-button
+        @click="batchDelete"
+        v-hasPermission="'[management-center]WORKSPACE:DELETE'"
+      >
+        {{ t("commons.btn.delete") }}
+      </el-button>
     </template>
     <el-table-column type="selection" />
     <el-table-column prop="name" :label="$t('commons.name')">
