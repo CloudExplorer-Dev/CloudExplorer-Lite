@@ -6,6 +6,7 @@ import lombok.experimental.Accessors;
 
 import java.io.Serial;
 import java.io.Serializable;
+import java.util.List;
 
 /**
  * @author jianneng
@@ -19,4 +20,7 @@ public class ServerRequest implements Serializable {
     private static final long serialVersionUID = 8484185034593083260L;
     @ApiModelProperty("名称")
     private String name;
+
+    @ApiModelProperty("云账号IDs")
+    private List<String> accountIds;
 }

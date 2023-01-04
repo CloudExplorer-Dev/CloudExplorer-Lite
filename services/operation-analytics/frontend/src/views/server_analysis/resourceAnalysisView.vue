@@ -95,6 +95,7 @@
                   <el-date-picker
                     style="width: 180px"
                     v-model="trendTime"
+                    v-if="showTrendTime"
                     type="daterange"
                     unlink-panels
                     range-separator="至"
@@ -199,6 +200,14 @@ import _ from "lodash";
 import ChartsSpeed from "../../components/echart/ChartsSpeed.vue";
 import ResourceSpreadViewApi from "@/api/server_analysis/index";
 import { ResourceAnalysisRequest } from "@/api/server_analysis/type";
+import * as echarts from "echarts";
+import {
+  defaultPieOptions,
+  defaultTrendOptions,
+  emptyOptions,
+  trendSeriesColor,
+  getRandomColor,
+} from "@/components/echart/index";
 //分布情况
 const spreadByAccountOption = ref<any>({});
 const spreadByStatusOption = ref<any>({});
@@ -299,28 +308,83 @@ const getIncreaseTrend = (chartName: string) => {
   childRefMap.get(chartName + "-chart").echartsClear();
   childRefMap.get(chartName + "-chart").echartsLoading();
   _.set(params, "monthNumber", paramVmIncreaseTrendMonth.value);
-  const xAxis: any[] = [],
-    yAxis: any[] = [];
+  let legend: any[] = [],
+    series: any = {},
+    xAxis: any[] = [],
+    seriesData: any[] = [];
   ResourceSpreadViewApi.getIncreaseTrend(params).then((res) => {
-    let chartData = res.data;
-    chartData = _.sortBy(chartData, function (o) {
-      return o.xaxis;
-    });
+    const options = _.cloneDeep(defaultTrendOptions);
+    const chartData = res.data;
     chartData.forEach(function (item: any) {
       if (_.indexOf(xAxis, item.xaxis) === -1) {
         xAxis.push(item.xaxis);
-        yAxis.push(item.yaxis);
       }
     });
-    const options = _.cloneDeep(defaultLineOption);
-    _.set(options, "series[0].data", yAxis);
-    _.set(options, "xAxis.data", xAxis);
+    xAxis = _.sortBy(xAxis);
+    chartData.forEach(function (item: any) {
+      const name = item.groupName;
+      if (_.indexOf(legend, name) === -1) {
+        legend.push(name);
+        series[name] = [];
+        for (let i = 0; i < xAxis.length; i++) {
+          const d = _.find(chartData, { groupName: name, xaxis: xAxis[i] });
+          series[name][i] = [xAxis[i], d ? d.yaxis : 0];
+        }
+      }
+    });
+    legend = _.sortBy(legend);
+    const tmpSeries = [];
+    for (let i = 0; i < legend.length; i++) {
+      tmpSeries[legend[i]] = series[legend[i]];
+    }
+    series = tmpSeries;
+    let colorIndex = 0;
+    for (const name in series) {
+      const data = series[name];
+      const items = {
+        name: name,
+        type: "line",
+        stack: "Total",
+        smooth: true,
+        lineStyle: {
+          width: 0,
+        },
+        showSymbol: false,
+        areaStyle: {
+          opacity: 0.8,
+          color: new echarts.graphic.LinearGradient(
+            0,
+            0,
+            0,
+            1,
+            colorIndex >= 5
+              ? getRandomColor()
+              : _.nth(trendSeriesColor, colorIndex)
+          ),
+        },
+        emphasis: {
+          focus: "series",
+        },
+        data: data,
+      };
+      colorIndex++;
+      seriesData.push(items);
+    }
+    _.set(options, "legend.data", legend);
+    _.set(options, "xAxis[0].data", xAxis);
+    _.set(options, "series", seriesData);
     increaseOption.value = options;
     childRefMap.get(chartName + "-chart").hideEchartsLoading();
   });
 };
+
 //资源使用趋势
 const getResourceTrendData = (chartName: string) => {
+  if (resourceUsedChartType.value === "pie") {
+    showTrendTime.value = false;
+  } else {
+    showTrendTime.value = true;
+  }
   childRefMap.get(chartName + "-chart").echartsClear();
   childRefMap.get(chartName + "-chart").echartsLoading();
   _.set(params, "metricName", paramResourceUsedTrendType.value);
@@ -430,22 +494,36 @@ const getTrendOptions = (options: any) => {
       tmpSeries[legend[i]] = series[legend[i]];
     }
     series = tmpSeries;
+    let colorIndex = 0;
     for (const name in series) {
       const data = series[name];
       const items = {
         name: name,
         type: "line",
         stack: "Total",
-        label: {
-          show: true,
-          position: "top",
+        smooth: true,
+        lineStyle: {
+          width: 0,
         },
-        areaStyle: {},
+        showSymbol: false,
+        areaStyle: {
+          opacity: 0.8,
+          color: new echarts.graphic.LinearGradient(
+            0,
+            0,
+            0,
+            1,
+            colorIndex >= 5
+              ? getRandomColor()
+              : _.nth(trendSeriesColor, colorIndex)
+          ),
+        },
         emphasis: {
           focus: "series",
         },
         data: data,
       };
+      colorIndex++;
       seriesData.push(items);
     }
     _.set(options, "legend.data", legend);
@@ -465,6 +543,7 @@ const timestampData = ref<[Date, Date]>([
   new Date(),
 ]);
 const trendTime = ref(timestampData);
+const showTrendTime = ref<boolean>(true);
 /**
  * 时间调整
  */
@@ -502,101 +581,6 @@ const shortcuts = [
     },
   },
 ];
-// 默认显示的图表配置数据
-const emptyOptions = {
-  title: {
-    text: "暂无数据",
-    x: "center",
-    y: "center",
-    textStyle: {
-      fontSize: 12,
-      fontWeight: "normal",
-    },
-  },
-};
-const defaultPieOptions = {
-  tooltip: {
-    trigger: "item",
-  },
-  legend: {
-    type: "scroll",
-  },
-  series: [
-    {
-      name: "",
-      type: "pie",
-      radius: "50%",
-      center: ["50%", "50%"],
-      data: [{ value: 0 }],
-      emphasis: {
-        itemStyle: {
-          shadowBlur: 10,
-          shadowOffsetX: 0,
-          shadowColor: "rgba(0, 0, 0, 0.5)",
-        },
-      },
-    },
-  ],
-};
-const defaultTrendOptions = {
-  tooltip: {
-    trigger: "axis",
-    axisPointer: {
-      type: "cross",
-      label: {
-        backgroundColor: "#6a7985",
-      },
-    },
-  },
-  legend: {
-    data: ["80%-100%", "60%-80%", "40%-60%", "20%-40%", "0%-20%"],
-  },
-  grid: {
-    left: "3%",
-    right: "4%",
-    bottom: "3%",
-    containLabel: true,
-  },
-  xAxis: [
-    {
-      type: "category",
-      boundaryGap: false,
-      data: [],
-    },
-  ],
-  yAxis: [
-    {
-      type: "value",
-    },
-  ],
-  series: [],
-};
-const defaultLineOption = {
-  tooltip: {
-    trigger: "axis",
-    axisPointer: {
-      type: "cross",
-      label: {
-        backgroundColor: "#6a7985",
-      },
-    },
-  },
-  xAxis: {
-    type: "category",
-    boundaryGap: false,
-    data: [],
-  },
-  yAxis: {
-    type: "value",
-  },
-  series: [
-    {
-      data: [],
-      type: "line",
-      areaStyle: {},
-    },
-  ],
-};
 </script>
 
 <style scoped>

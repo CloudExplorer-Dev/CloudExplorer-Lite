@@ -169,6 +169,16 @@ import ChartsSpeed from "../../components/echart/ChartsSpeed.vue";
 import ResourceSpreadViewApi from "@/api/disk_analysis/index";
 import { ResourceAnalysisRequest } from "@/api/disk_analysis/type";
 import _ from "lodash";
+import {
+  defaultPieOptions,
+  defaultLineOption,
+  emptyOptions,
+  defaultPie2Options,
+  trendSeriesColor,
+  getRandomColor,
+  defaultTrendOptions,
+} from "@/components/echart/index";
+import * as echarts from "echarts";
 //分布情况
 const spreadByAccountOption = ref<any>({});
 const spreadByStatusOption = ref<any>({});
@@ -270,22 +280,71 @@ const getIncreaseTrend = (chartName: string) => {
   );
   _.set(params, "statisticalBlock", paramsStatisticalBlock.value === "block");
   _.set(params, "monthNumber", paramDiskIncreaseTrendMonth.value);
-  const xAxis: any[] = [],
-    yAxis: any[] = [];
+  let legend: any[] = [],
+    series: any = {},
+    xAxis: any[] = [],
+    seriesData: any[] = [];
   ResourceSpreadViewApi.getIncreaseTrend(params).then((res) => {
-    let chartData = res.data;
-    chartData = _.sortBy(chartData, function (o) {
-      return o.xaxis;
-    });
+    const options = _.cloneDeep(defaultTrendOptions);
+    const chartData = res.data;
     chartData.forEach(function (item: any) {
       if (_.indexOf(xAxis, item.xaxis) === -1) {
         xAxis.push(item.xaxis);
-        yAxis.push(item.yaxis);
       }
     });
-    const options = _.cloneDeep(defaultLineOption);
-    _.set(options, "series[0].data", yAxis);
-    _.set(options, "xAxis.data", xAxis);
+    xAxis = _.sortBy(xAxis);
+    chartData.forEach(function (item: any) {
+      const name = item.groupName;
+      if (_.indexOf(legend, name) === -1) {
+        legend.push(name);
+        series[name] = [];
+        for (let i = 0; i < xAxis.length; i++) {
+          const d = _.find(chartData, { groupName: name, xaxis: xAxis[i] });
+          series[name][i] = [xAxis[i], d ? d.yaxis : 0];
+        }
+      }
+    });
+    legend = _.sortBy(legend);
+    const tmpSeries = [];
+    for (let i = 0; i < legend.length; i++) {
+      tmpSeries[legend[i]] = series[legend[i]];
+    }
+    series = tmpSeries;
+    let colorIndex = 0;
+    for (const name in series) {
+      const data = series[name];
+      const items = {
+        name: name,
+        type: "line",
+        stack: "Total",
+        smooth: true,
+        lineStyle: {
+          width: 0,
+        },
+        showSymbol: false,
+        areaStyle: {
+          opacity: 0.8,
+          color: new echarts.graphic.LinearGradient(
+            0,
+            0,
+            0,
+            1,
+            colorIndex >= 5
+              ? getRandomColor()
+              : _.nth(trendSeriesColor, colorIndex)
+          ),
+        },
+        emphasis: {
+          focus: "series",
+        },
+        data: data,
+      };
+      colorIndex++;
+      seriesData.push(items);
+    }
+    _.set(options, "legend.data", legend);
+    _.set(options, "xAxis[0].data", xAxis);
+    _.set(options, "series", seriesData);
     increaseOption.value = options;
     childRefMap.get(chartName + "-chart").hideEchartsLoading();
   });
@@ -301,123 +360,6 @@ const timestampData = ref<[Date, Date]>([
   new Date(new Date().getTime() - 3600 * 1000 * 24 * 30),
   new Date(),
 ]);
-
-// 默认显示的图表配置数据
-const emptyOptions = {
-  title: {
-    text: "暂无数据",
-    x: "center",
-    y: "center",
-    textStyle: {
-      fontSize: 12,
-      fontWeight: "normal",
-    },
-  },
-};
-const defaultPieOptions = {
-  tooltip: {
-    trigger: "item",
-  },
-  legend: {
-    type: "scroll",
-  },
-  series: [
-    {
-      name: "",
-      type: "pie",
-      radius: "70%",
-      center: ["50%", "50%"],
-      data: [{ value: 0 }],
-      emphasis: {
-        itemStyle: {
-          shadowBlur: 10,
-          shadowOffsetX: 0,
-          shadowColor: "rgba(0, 0, 0, 0.5)",
-        },
-      },
-    },
-  ],
-};
-const defaultPie2Options = {
-  tooltip: {
-    trigger: "item",
-  },
-  legend: {
-    type: "scroll",
-    top: "5%",
-    left: "center",
-  },
-  title: {
-    // 主标题样式
-    textStyle: {
-      color: "#666",
-      fontSize: 18,
-    },
-    itemGap: 10,
-    x: "center",
-    y: "center",
-    text: "",
-    // 副标题样式
-    subtextStyle: {
-      color: "#666",
-    },
-    position: "center",
-  },
-  series: [
-    {
-      name: "",
-      type: "pie",
-      radius: ["40%", "70%"],
-      avoidLabelOverlap: false,
-      itemStyle: {
-        borderRadius: 10,
-        borderColor: "#fff",
-        borderWidth: 2,
-      },
-      label: {
-        show: false,
-        position: "center",
-      },
-      emphasis: {
-        label: {
-          show: false,
-          fontSize: 40,
-          fontWeight: "bold",
-        },
-      },
-      labelLine: {
-        show: false,
-      },
-      data: [{ value: 0 }],
-    },
-  ],
-};
-const defaultLineOption = {
-  tooltip: {
-    trigger: "axis",
-    axisPointer: {
-      type: "cross",
-      label: {
-        backgroundColor: "#6a7985",
-      },
-    },
-  },
-  xAxis: {
-    type: "category",
-    boundaryGap: false,
-    data: [],
-  },
-  yAxis: {
-    type: "value",
-  },
-  series: [
-    {
-      data: [],
-      type: "line",
-      areaStyle: {},
-    },
-  ],
-};
 </script>
 
 <style scoped>

@@ -255,6 +255,7 @@
                   <el-date-picker
                     v-model="trendTime"
                     type="daterange"
+                    v-if="showTrendTime"
                     unlink-panels
                     range-separator="至"
                     start-placeholder="开始时间"
@@ -313,6 +314,15 @@ import _ from "lodash";
 import ChartsSpeed from "../../components/echart/ChartsSpeed.vue";
 import ResourceSpreadViewApi from "@/api/resource_spread_view/index";
 import { ResourceAnalysisRequest } from "@/api/resource_spread_view/type";
+import {
+  defaultSpeedOptions,
+  defaultPieOptions,
+  defaultTrendOptions,
+  emptyOptions,
+  trendSeriesColor,
+  getRandomColor,
+} from "@/components/echart/index";
+import * as echarts from "echarts";
 //分配情况
 const allocatedInfo = ref<any>({});
 const allocatedComputerCpuOption = ref<any>({});
@@ -485,6 +495,11 @@ const getSpreadComputerInfo = (
 };
 //趋势
 const getResourceTrendData = (chartName: string) => {
+  if (trendChartType.value === "pie") {
+    showTrendTime.value = false;
+  } else {
+    showTrendTime.value = true;
+  }
   childRefMap.get("trend-" + chartName).echartsClear();
   childRefMap.get("trend-" + chartName).echartsLoading();
   _.set(params, "entityType", "HOST");
@@ -498,6 +513,12 @@ const getResourceTrendData = (chartName: string) => {
       paramDatastoreId.value === "all_list" ? [] : paramDatastoreId.value
     );
     _.set(params, "entityType", "DATASTORE");
+  } else {
+    _.set(
+      params,
+      "resourceIds",
+      paramHostId.value === "all_list" ? [] : paramHostId.value
+    );
   }
   ResourceSpreadViewApi.getResourceTrendData(params).then((res) => {
     trendInfo.value = res.data;
@@ -593,22 +614,36 @@ const getTrendOptions = (options: any) => {
       tmpSeries[legend[i]] = series[legend[i]];
     }
     series = tmpSeries;
+    let colorIndex = 0;
     for (const name in series) {
       const data = series[name];
       const items = {
         name: name,
         type: "line",
         stack: "Total",
-        label: {
-          show: true,
-          position: "top",
+        smooth: true,
+        lineStyle: {
+          width: 0,
         },
-        areaStyle: {},
+        showSymbol: false,
+        areaStyle: {
+          opacity: 0.8,
+          color: new echarts.graphic.LinearGradient(
+            0,
+            0,
+            0,
+            1,
+            colorIndex >= 5
+              ? getRandomColor()
+              : _.nth(trendSeriesColor, colorIndex)
+          ),
+        },
         emphasis: {
           focus: "series",
         },
         data: data,
       };
+      colorIndex++;
       seriesData.push(items);
     }
     _.set(options, "legend.data", legend);
@@ -625,6 +660,7 @@ const timestampData = ref<[Date, Date]>([
   new Date(),
 ]);
 const trendTime = ref(timestampData);
+const showTrendTime = ref<boolean>(true);
 /**
  * 时间调整
  */
@@ -666,139 +702,6 @@ const shortcuts = [
 onMounted(() => {
   getAccounts();
 });
-
-// 默认显示的图表配置数据
-const defaultSpeedOptions = {
-  series: [
-    {
-      type: "gauge",
-      progress: {
-        show: true,
-        width: 5,
-      },
-      axisLine: {
-        lineStyle: {
-          width: 5,
-        },
-      },
-      axisTick: {
-        show: false,
-      },
-      splitLine: {
-        distance: 1,
-        length: 5,
-        lineStyle: {
-          width: 1,
-          color: "#999",
-        },
-      },
-      axisLabel: {
-        distance: 8,
-        color: "#999",
-        fontSize: 8,
-      },
-      anchor: {
-        show: true,
-        showAbove: true,
-        size: 8,
-        itemStyle: {
-          borderWidth: 3,
-        },
-      },
-      pointer: {
-        width: 2,
-      },
-      title: {
-        offsetCenter: [0, "100%"],
-        fontSize: 15,
-        show: true,
-      },
-      radius: "100%",
-      //center:['30%','35%'],
-      detail: {
-        formatter: function (value: string) {
-          if (value) {
-            return value + "%";
-          } else {
-            return "0" + "%";
-          }
-        },
-        valueAnimation: true,
-        fontSize: 20,
-        offsetCenter: [0, "70%"],
-      },
-      data: [{ value: 0 }],
-    },
-  ],
-};
-const defaultPieOptions = {
-  tooltip: {
-    trigger: "item",
-  },
-  legend: {
-    type: "scroll",
-  },
-  series: [
-    {
-      name: "宿主机分布",
-      type: "pie",
-      radius: "50%",
-      center: ["50%", "50%"],
-      data: [{ value: 0 }],
-      emphasis: {
-        itemStyle: {
-          shadowBlur: 10,
-          shadowOffsetX: 0,
-          shadowColor: "rgba(0, 0, 0, 0.5)",
-        },
-      },
-    },
-  ],
-};
-const defaultTrendOptions = {
-  tooltip: {
-    trigger: "axis",
-    axisPointer: {
-      type: "cross",
-      label: {
-        backgroundColor: "#6a7985",
-      },
-    },
-  },
-  legend: {
-    data: ["80%-100%", "60%-80%", "40%-60%", "20%-40%", "0%-20%"],
-  },
-  grid: {
-    left: "3%",
-    right: "4%",
-    bottom: "3%",
-    containLabel: true,
-  },
-  xAxis: [
-    {
-      type: "category",
-      boundaryGap: false,
-      data: [],
-    },
-  ],
-  yAxis: [
-    {
-      type: "value",
-    },
-  ],
-  series: [],
-};
-const emptyOptions = {
-  title: {
-    text: "暂无数据",
-    x: "center",
-    y: "center",
-    textStyle: {
-      fontSize: 12,
-      fontWeight: "normal",
-    },
-  },
-};
 </script>
 
 <style scoped>

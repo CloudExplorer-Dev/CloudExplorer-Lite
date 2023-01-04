@@ -51,6 +51,8 @@ public class DiskAnalysisService implements IDiskAnalysisService {
     private QueryWrapper<VmCloudDiskDTO> addServerQuery(PageDiskRequest request) {
         QueryWrapper<VmCloudDiskDTO> wrapper = new QueryWrapper<>();
         wrapper.like(StringUtils.isNotBlank(request.getName()), ColumnNameUtil.getColumnName(VmCloudDiskDTO::getDiskName,true), request.getName());
+        wrapper.in(CollectionUtils.isNotEmpty(request.getAccountIds()), ColumnNameUtil.getColumnName(VmCloudDiskDTO::getAccountId, true), request.getAccountIds());
+        wrapper.notIn(true, ColumnNameUtil.getColumnName(VmCloudDiskDTO::getStatus,true), Arrays.asList("deleted"));
         return wrapper;
     }
 
@@ -98,28 +100,40 @@ public class DiskAnalysisService implements IDiskAnalysisService {
     @Override
     public List<ChartData> diskIncreaseTrend(ResourceAnalysisRequest request) {
         List<ChartData> tempChartDataList = new ArrayList<>();
+        List<CloudAccount> accountList = getAllCloudAccount();
+        Map<String,CloudAccount> accountMap = accountList.stream().collect(Collectors.toMap(CloudAccount::getId,v->v,(k1,k2)->k1));
+        if(accountMap.size()==0){
+            return tempChartDataList;
+        }
         QueryWrapper<VmCloudDiskDTO> queryWrapper = new QueryWrapper<>();
         queryWrapper.in(CollectionUtils.isNotEmpty(request.getAccountIds()),ColumnNameUtil.getColumnName(VmCloudDiskDTO::getAccountId,true),request.getAccountIds());
         queryWrapper.ge(true,ColumnNameUtil.getColumnName(VmCloudDiskDTO::getCreateTime,true), LocalDateTime.now().minusMonths(request.getMonthNumber()));
         List<VmCloudDiskDTO> vmList = vmCloudDiskMapper.list(queryWrapper);
         if(CollectionUtils.isNotEmpty(vmList)){
+            Map<String,List<VmCloudDiskDTO>> accountGroup = vmList.stream().filter(v->StringUtils.isNotEmpty(v.getAccountId())).collect(Collectors.groupingBy(VmCloudDiskDTO::getAccountId));
             //块
             if(request.isStatisticalBlock()){
-                Map<String,Long> hostSpread = vmList.stream().collect(Collectors.groupingBy(VmCloudDiskDTO::getCreateMonth, Collectors.counting()));
-                hostSpread.keySet().forEach(k->{
-                    ChartData chartData = new ChartData();
-                    chartData.setXAxis(k);
-                    chartData.setYAxis(new BigDecimal(hostSpread.get(k)));
-                    tempChartDataList.add(chartData);
+                accountGroup.keySet().forEach(accountId->{
+                    Map<String,Long> hostSpread = accountGroup.get(accountId).stream().collect(Collectors.groupingBy(VmCloudDiskDTO::getCreateMonth, Collectors.counting()));
+                    hostSpread.keySet().forEach(k->{
+                        ChartData chartData = new ChartData();
+                        chartData.setXAxis(k);
+                        chartData.setGroupName(accountGroup.get(accountId).get(0).getAccountName());
+                        chartData.setYAxis(new BigDecimal(hostSpread.get(k)));
+                        tempChartDataList.add(chartData);
+                    });
                 });
             }else{
-                //容量
-                Map<String,LongSummaryStatistics> statisticsSizeMap = vmList.stream().collect(Collectors.groupingBy(VmCloudDiskDTO::getCreateMonth,Collectors.summarizingLong(VmCloudDiskDTO::getSize)));
-                statisticsSizeMap.keySet().forEach(k->{
-                    ChartData chartData = new ChartData();
-                    chartData.setXAxis(k);
-                    chartData.setYAxis(new BigDecimal(statisticsSizeMap.get(k).getSum()));
-                    tempChartDataList.add(chartData);
+                accountGroup.keySet().forEach(accountId->{
+                    //容量
+                    Map<String,LongSummaryStatistics> statisticsSizeMap = vmList.stream().collect(Collectors.groupingBy(VmCloudDiskDTO::getCreateMonth,Collectors.summarizingLong(VmCloudDiskDTO::getSize)));
+                    statisticsSizeMap.keySet().forEach(k->{
+                        ChartData chartData = new ChartData();
+                        chartData.setXAxis(k);
+                        chartData.setGroupName(accountGroup.get(accountId).get(0).getAccountName());
+                        chartData.setYAxis(new BigDecimal(statisticsSizeMap.get(k).getSum()));
+                        tempChartDataList.add(chartData);
+                    });
                 });
             }
         }

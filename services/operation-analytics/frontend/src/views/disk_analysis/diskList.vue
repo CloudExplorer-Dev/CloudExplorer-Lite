@@ -190,7 +190,6 @@ const tableConfig = ref<TableConfig>({
       prop="status"
       column-key="status"
       :label="$t('commons.status')"
-      :filters="diskStatus"
       :show="true"
     >
       <template #default="scope">
@@ -214,7 +213,6 @@ const tableConfig = ref<TableConfig>({
       min-width="150"
       prop="size"
       label="大小(G)"
-      sortable
     ></el-table-column>
     <el-table-column min-width="150" prop="diskChargeType" label="付费方式">
       <template #default="scope">
