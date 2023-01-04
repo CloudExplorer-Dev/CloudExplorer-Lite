@@ -17,8 +17,10 @@ import variables_server from "../../styles/vm_cloud_server/server.module.scss";
 import { platformIcon } from "@commons/utils/platform";
 import BaseCloudAccountApi from "@commons/api/cloud_account";
 import Grant from "@/views/vm_cloud_server/grant.vue";
+import { usePermissionStore } from "@commons/stores/modules/permission";
 
 const { t } = useI18n();
+const permissionStore = usePermissionStore();
 const useRoute = useRouter();
 const table = ref<any>(null);
 const columns = ref([]);
@@ -250,7 +252,7 @@ const buttons = ref([
     click: (row: VmCloudServerVO) => {
       powerOn(row);
     },
-    show: true,
+    show: permissionStore.hasPermission("[vm-service]CLOUD_SERVER:START"),
     disabled: (row: { instanceStatus: string }) => {
       return row.instanceStatus !== "Stopped";
     },
@@ -261,7 +263,7 @@ const buttons = ref([
     click: (row: VmCloudServerVO) => {
       shutdown(row);
     },
-    show: true,
+    show: permissionStore.hasPermission("[vm-service]CLOUD_SERVER:STOP"),
     disabled: (row: { instanceStatus: string }) => {
       return row.instanceStatus !== "Running";
     },
@@ -272,7 +274,7 @@ const buttons = ref([
     click: (row: VmCloudServerVO) => {
       powerOff(row);
     },
-    show: true,
+    show: permissionStore.hasPermission("[vm-service]CLOUD_SERVER:STOP"),
     disabled: (row: { instanceStatus: string }) => {
       return row.instanceStatus !== "Running";
     },
@@ -283,7 +285,7 @@ const buttons = ref([
     click: (row: VmCloudServerVO) => {
       reboot(row);
     },
-    show: true,
+    show: permissionStore.hasPermission("[vm-service]CLOUD_SERVER:RESTART"),
     disabled: (row: { instanceStatus: string }) => {
       return row.instanceStatus !== "Running";
     },
@@ -294,7 +296,7 @@ const buttons = ref([
     click: (row: VmCloudServerVO) => {
       deleteInstance(row);
     },
-    show: true,
+    show: permissionStore.hasPermission("[vm-service]CLOUD_SERVER:DELETE"),
     disabled: (row: { instanceStatus: string }) => {
       return row.instanceStatus === "Deleted";
     },
@@ -303,7 +305,7 @@ const buttons = ref([
     label: t("vm_cloud_disk.btn.create", "添加磁盘"),
     icon: "",
     click: createDisk,
-    show: true,
+    show: permissionStore.hasPermission("[vm-service]CLOUD_DISK:CREATE"),
     disabled: (row: { instanceStatus: string }) => {
       return row.instanceStatus === "Deleted";
     },
@@ -312,7 +314,7 @@ const buttons = ref([
     label: t("vm_cloud_server.btn.change_config", "配置变更"),
     icon: "",
     click: changeVmConfig,
-    show: true,
+    show: permissionStore.hasPermission("[vm-service]CLOUD_SERVER:RESIZE"),
     disabled: (row: { instanceStatus: string }) => {
       return (
         row.instanceStatus === "Deleted" ||
@@ -514,8 +516,18 @@ const deleteBatch = () => {
   batchOperate("DELETE");
 };
 const moreActions = ref([
-  { text: t("commons.btn.grant", "授权"), arg: "", fn: authorizeBatch },
-  { text: t("commons.btn.delete", "删除"), arg: "", fn: deleteBatch },
+  {
+    text: t("commons.btn.grant", "授权"),
+    arg: undefined,
+    fn: authorizeBatch,
+    show: permissionStore.hasPermission("[vm-service]CLOUD_SERVER:AUTH"),
+  },
+  {
+    text: t("commons.btn.delete", "删除"),
+    arg: undefined,
+    fn: deleteBatch,
+    show: permissionStore.hasPermission("[vm-service]CLOUD_SERVER:DELETE"),
+  },
 ]);
 //触发事件
 const handleAction = (actionObj: any) => {
@@ -537,22 +549,36 @@ const handleAction = (actionObj: any) => {
     ref="table"
   >
     <template #toolbar>
-      <el-button @click="gotoCatalog()" type="primary">{{
-        t("commons.btn.create", "创建")
-      }}</el-button>
-      <el-button @click="batchOperate('POWER_ON')">{{
-        t("vm_cloud_server.btn.power_on", "启动")
-      }}</el-button>
-      <el-button @click="batchOperate('SHUTDOWN')">{{
-        t("vm_cloud_server.btn.shutdown", "关机")
-      }}</el-button>
-      <el-button @click="batchOperate('REBOOT')">{{
-        t("vm_cloud_server.btn.reboot", "重启")
-      }}</el-button>
+      <el-button
+        @click="gotoCatalog()"
+        type="primary"
+        v-hasPermission="'[vm-service]CLOUD_SERVER:CREATE'"
+      >
+        {{ t("commons.btn.create", "创建") }}
+      </el-button>
+      <el-button
+        @click="batchOperate('POWER_ON')"
+        v-hasPermission="'[vm-service]CLOUD_SERVER:START'"
+      >
+        {{ t("vm_cloud_server.btn.power_on", "启动") }}
+      </el-button>
+      <el-button
+        @click="batchOperate('SHUTDOWN')"
+        v-hasPermission="'[vm-service]CLOUD_SERVER:STOP'"
+      >
+        {{ t("vm_cloud_server.btn.shutdown", "关机") }}
+      </el-button>
+      <el-button
+        @click="batchOperate('REBOOT')"
+        v-hasPermission="'[vm-service]CLOUD_SERVER:RESTART'"
+      >
+        {{ t("vm_cloud_server.btn.reboot", "重启") }}
+      </el-button>
       <el-dropdown
         @command="handleAction"
         trigger="click"
         style="margin-left: 12px"
+        v-if="_.some(moreActions, 'show')"
       >
         <el-button>
           {{ t("commons.btn.more_actions", "更多操作")
@@ -560,12 +586,14 @@ const handleAction = (actionObj: any) => {
         </el-button>
         <template #dropdown>
           <el-dropdown-menu>
-            <el-dropdown-item
-              v-for="(item, index) in moreActions"
-              :key="index"
-              :command="{ arg: item.arg, fn: item.fn }"
-              >{{ item.text }}</el-dropdown-item
-            >
+            <template v-for="(item, index) in moreActions" :key="index">
+              <el-dropdown-item
+                :command="{ arg: item.arg, fn: item.fn }"
+                v-if="item.show"
+              >
+                {{ item.text }}
+              </el-dropdown-item>
+            </template>
           </el-dropdown-menu>
         </template>
       </el-dropdown>

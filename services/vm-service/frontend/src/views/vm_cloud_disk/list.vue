@@ -14,8 +14,10 @@ import { ElMessage, ElMessageBox } from "element-plus";
 import Attach from "@/views/vm_cloud_disk/attach.vue";
 import { useRouter } from "vue-router";
 import _ from "lodash";
+import { usePermissionStore } from "@commons/stores/modules/permission";
 
 const { t } = useI18n();
+const permissionStore = usePermissionStore();
 const columns = ref([]);
 const tableData = ref<Array<VmCloudDiskVO>>([]);
 const table = ref();
@@ -446,7 +448,7 @@ const buttons = ref([
     label: t("vm_cloud_disk.btn.enlarge", "扩容"),
     icon: "",
     click: handleEnlarge,
-    show: true,
+    show: permissionStore.hasPermission("[vm-service]CLOUD_DISK:RESIZE"),
     disabled: (row: { status: string }) => {
       return row.status == "deleted";
     },
@@ -455,7 +457,7 @@ const buttons = ref([
     label: t("vm_cloud_disk.btn.mount", "挂载"),
     icon: "",
     click: handleAttach,
-    show: true,
+    show: permissionStore.hasPermission("[vm-service]CLOUD_DISK:ATTACH"),
     disabled: (row: VmCloudDiskVO) => {
       return (
         row.status !== "available" ||
@@ -467,7 +469,7 @@ const buttons = ref([
     label: t("vm_cloud_disk.btn.uninstall", "卸载"),
     icon: "",
     click: handleDetach,
-    show: true,
+    show: permissionStore.hasPermission("[vm-service]CLOUD_DISK:DETACH"),
     disabled: (row: VmCloudDiskVO) => {
       return (
         row.status !== "in_use" ||
@@ -479,7 +481,7 @@ const buttons = ref([
     label: t("commons.btn.delete", "删除"),
     icon: "",
     click: handleDelete,
-    show: true,
+    show: permissionStore.hasPermission("[vm-service]CLOUD_DISK:DELETE"),
     disabled: (row: VmCloudDiskVO) => {
       return (
         row.status !== "available" ||
@@ -500,15 +502,27 @@ const buttons = ref([
     @selection-change="handleSelectionChange"
   >
     <template #toolbar>
-      <el-button @click="batchAttach()" :disabled="disableBatchAttach"
-        >{{ t("vm_cloud_disk.btn.mount", "挂载") }}
+      <el-button
+        @click="batchAttach()"
+        :disabled="disableBatchAttach"
+        v-hasPermission="'[vm-service]CLOUD_DISK:ATTACH'"
+      >
+        {{ t("vm_cloud_disk.btn.mount", "挂载") }}
       </el-button>
-      <el-button @click="batchDetach()" :disabled="disableBatchDetach">{{
-        t("vm_cloud_disk.btn.uninstall", "卸载")
-      }}</el-button>
-      <el-button @click="batchDelete()" :disabled="disableBatchDelete">{{
-        t("commons.btn.delete", "删除")
-      }}</el-button>
+      <el-button
+        @click="batchDetach()"
+        :disabled="disableBatchDetach"
+        v-hasPermission="'[vm-service]CLOUD_DISK:DETACH'"
+      >
+        {{ t("vm_cloud_disk.btn.uninstall", "卸载") }}
+      </el-button>
+      <el-button
+        @click="batchDelete()"
+        :disabled="disableBatchDelete"
+        v-hasPermission="'[vm-service]CLOUD_DISK:DELETE'"
+      >
+        {{ t("commons.btn.delete", "删除") }}
+      </el-button>
     </template>
     <el-table-column type="selection" />
     <el-table-column
