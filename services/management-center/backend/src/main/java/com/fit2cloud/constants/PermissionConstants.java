@@ -240,7 +240,6 @@ public class PermissionConstants {
                                             .operate(OPERATE.READ)
                                             .name("permission.manage.sys_log.read")
                                             .role(RoleConstants.ROLE.ADMIN)
-                                            .role(RoleConstants.ROLE.ORGADMIN)
                             )
                             .permission(
                                     //系统日志清空策略
@@ -261,7 +260,6 @@ public class PermissionConstants {
                                             .operate(OPERATE.READ)
                                             .name("permission.manage.operated_log.read")
                                             .role(RoleConstants.ROLE.ADMIN)
-                                            .role(RoleConstants.ROLE.ORGADMIN)
                             )
                             .permission(
                                     //操作日志清空策略
@@ -282,8 +280,7 @@ public class PermissionConstants {
                             .permission(new Permission.Builder()
                                     .operate(OPERATE.READ)
                                     .name("permission.manage.cloud_account.read")
-                                    .role(RoleConstants.ROLE.ADMIN)
-                                    .role(RoleConstants.ROLE.ORGADMIN))
+                                    .role(RoleConstants.ROLE.ADMIN))
                             .permission(new Permission.Builder()
                                     .require(OPERATE.READ)
                                     .operate(OPERATE.CREATE)
