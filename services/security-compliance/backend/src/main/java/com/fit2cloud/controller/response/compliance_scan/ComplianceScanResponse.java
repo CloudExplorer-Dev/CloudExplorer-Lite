@@ -1,5 +1,10 @@
 package com.fit2cloud.controller.response.compliance_scan;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.fasterxml.jackson.datatype.jsr310.deser.LocalDateTimeDeserializer;
+import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateTimeSerializer;
 import com.fit2cloud.constants.ComplianceStatus;
 import com.fit2cloud.dao.constants.RiskLevel;
 import io.swagger.annotations.ApiModelProperty;
@@ -19,10 +24,6 @@ public class ComplianceScanResponse {
     private String id;
     @ApiModelProperty(value = "规则名称", notes = "规则名称")
     private String name;
-    @ApiModelProperty(value = "云账户id", notes = "云账户id")
-    private String cloudAccountId;
-    @ApiModelProperty(value = "云账号名称", notes = "云账户名称")
-    private String cloudAccountName;
     @ApiModelProperty(value = "供应商", notes = "供应商")
     private String platform;
     @ApiModelProperty(value = "风险等级", notes = "风险等级")
@@ -34,5 +35,8 @@ public class ComplianceScanResponse {
     @ApiModelProperty(value = "不合规数量", notes = "不合规数量")
     private Long notComplianceCount;
     @ApiModelProperty(value = "最后同步时间", notes = "最后同步时间")
-    private LocalDateTime lastSyncTime;
+    @JsonDeserialize(using = LocalDateTimeDeserializer.class)
+    @JsonSerialize(using = LocalDateTimeSerializer.class)
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
+    private LocalDateTime updateTime;
 }

@@ -28,19 +28,33 @@
         :tableConfig="tableConfig"
         row-key="id"
       >
+        <template #toolbar>
+          <el-select
+            v-model="activeCloudAccount"
+            class="m-2"
+            placeholder="Select"
+          >
+            <el-option
+              v-for="item in cloudAccountList"
+              :key="item.value"
+              :label="item.key"
+              :value="item.value"
+            />
+          </el-select>
+        </template>
         <el-table-column prop="name" label="规则名称" width="180" />
-        <el-table-column prop="cloudAccountName" label="云账号" width="180">
+        <el-table-column prop="platform" label="云平台" width="180">
           <template #default="scope">
             <div style="display: flex; align-items: center">
               <el-image
                 style="margin-right: 20%; display: flex"
                 :src="platformIcon[scope.row.platform].oldIcon"
               ></el-image>
-              <span>{{ scope.row.cloudAccountName }}</span>
+              <span>{{ platformIcon[scope.row.platform].name }}</span>
             </div>
           </template></el-table-column
         >
-        <el-table-column prop="riskLevel" label="风险等级">
+        <el-table-column prop="riskLevel" label="风险等级" sortable>
           <template #default="scope">
             {{
               scope.row.riskLevel === "HIGH"
@@ -83,7 +97,7 @@
             </div>
           </template>
         </el-table-column>
-        <el-table-column prop="lastSyncTime" label="最后扫描时间" />
+        <el-table-column prop="updateTime" label="最后扫描时间" sortable />
       </ce-table>
     </div>
   </div>
@@ -101,23 +115,57 @@ import {
   TableSearch,
 } from "@commons/components/ce-table/type";
 import { useRouter } from "vue-router";
+import cloudAccountApi from "@commons/api/cloud_account";
+import bus from "@commons/bus";
+// 路由对象
 const router = useRouter();
-const resourceTypes = ref<Array<KeyValue<string, string>>>([]);
 onMounted(() => {
+  // 查询所有资源类型
   ruleApi.listResourceType().then((ok) => {
     resourceTypes.value = ok.data;
   });
+  // 查询列表数据
   table.value.search(table?.value.getTableSearch());
+  // 查询云账号数据
+  cloudAccountApi.listAll().then((ok) => {
+    cloudAccountList.value = [
+      { key: "全部云账号", value: "all" },
+      ...ok.data.map((cloudAccount) => ({
+        key: cloudAccount.name,
+        value: cloudAccount.id,
+      })),
+    ];
+  });
+  // 监控合规规则组变化
+  bus.on(
+    "update:compliance_rule_group_id",
+    (compliance_rule_group_id: string) => {
+      activeComplianceRuleGroupId.value = compliance_rule_group_id;
+    }
+  );
 });
+// 列表数据
 const tableData = ref<Array<ComplianceScanResponse>>([]);
-
+// 选中的合规规则组id
+const activeComplianceRuleGroupId = ref<string>("");
+// 选中的云账号
+const activeCloudAccount = ref<string>("all");
+// 云账号列表
+const cloudAccountList = ref<Array<KeyValue<string, string>>>([]);
+// 选中的资源类型
 const activeResourceType = ref<string>();
+// 资源类型列表数据
+const resourceTypes = ref<Array<KeyValue<string, string>>>([]);
+/**
+ * 路由到详情页面
+ * @param row 当前行数据
+ */
 const details = (row: ComplianceScanResponse) => {
   router.push({
     name: "details",
     params: {
       compliance_rule_id: row.id,
-      cloud_account_id: row.cloudAccountId,
+      cloud_account_id: activeCloudAccount.value,
     },
   });
 };
@@ -128,6 +176,9 @@ const details = (row: ComplianceScanResponse) => {
 const selectResourceType = (resourceType: string | undefined) => {
   activeResourceType.value = resourceType;
 };
+/**
+ * 表格实例对象
+ */
 const table: any = ref(null);
 // 列表字段数据
 const columns = ref([]);
@@ -136,16 +187,46 @@ const columns = ref([]);
  */
 const loading = ref<boolean>(false);
 
+/**
+ *监控资源类型的变化查询列表
+ */
 watch(activeResourceType, () => {
   table.value.search(table?.value.getTableSearch());
 });
+
+/**
+ * 监控云账号的变化查询列表数据
+ */
+watch(activeCloudAccount, () => {
+  table.value.search(table?.value.getTableSearch());
+});
+
+/**
+ * 监控合规规则组的变化查询列表数据
+ */
+watch(activeComplianceRuleGroupId, () => {
+  table.value.search(table?.value.getTableSearch());
+});
+
+/**
+ * 查询列表函数
+ * @param condition 查询条件
+ */
 const search = (condition: TableSearch) => {
   const params = TableSearch.toSearchParams(condition);
   complianceScanApi
     .pageScanComplianceRule(
       tableConfig.value.paginationConfig.currentPage,
       tableConfig.value.paginationConfig.pageSize,
-      { ...params, resourceType: activeResourceType.value },
+      {
+        ...params,
+        resourceType: activeResourceType.value,
+        cloudAccountId:
+          activeCloudAccount.value === "all"
+            ? undefined
+            : activeCloudAccount.value,
+        complianceRuleGroupId: activeComplianceRuleGroupId.value,
+      },
       loading
     )
     .then((ok) => {

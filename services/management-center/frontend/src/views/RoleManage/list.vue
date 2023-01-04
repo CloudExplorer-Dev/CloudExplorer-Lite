@@ -16,10 +16,12 @@ import { ElMessage, ElMessageBox, type MessageBoxData } from "element-plus";
 import { useI18n } from "vue-i18n";
 
 import type { Role } from "@commons/api/role/type";
+import { usePermissionStore } from "@commons/stores/modules/permission";
 
 const { t } = useI18n();
 
 const useRoute = useRouter();
+const permissionStore = usePermissionStore();
 const columns = ref([]);
 
 const table = ref<any>(null);
@@ -252,7 +254,8 @@ const tableConfig = ref<TableConfig>({
       "EditPen",
       (row: Role) => {
         return row.type === "origin";
-      }
+      },
+      permissionStore.hasPermission("[management-center]ROLE:EDIT")
     ),
     TableOperations.buildButtons().newInstance(
       "删除",
@@ -261,7 +264,8 @@ const tableConfig = ref<TableConfig>({
       "Delete",
       (row: Role) => {
         return row.type === "origin";
-      }
+      },
+      permissionStore.hasPermission("[management-center]ROLE:DELETE")
     ),
   ]),
 });
@@ -278,8 +282,19 @@ const tableConfig = ref<TableConfig>({
     row-key="id"
   >
     <template #toolbar>
-      <el-button type="primary" @click="create">创建</el-button>
-      <el-button @click="batchDelete">删除</el-button>
+      <el-button
+        type="primary"
+        @click="create"
+        v-hasPermission="'[management-center]ROLE:CREATE'"
+      >
+        创建
+      </el-button>
+      <el-button
+        @click="batchDelete"
+        v-hasPermission="'[management-center]ROLE:DELETE'"
+      >
+        删除
+      </el-button>
     </template>
     <el-table-column type="selection" :selectable="selectable" />
     <!--    <el-table-column prop="name" label="角色" sortable />-->

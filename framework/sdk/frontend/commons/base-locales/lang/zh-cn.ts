@@ -141,9 +141,99 @@ const message = {
   },
 };
 
+const permissions = {
+  permission: {
+    manage: {
+      user: {
+        base: "用户",
+        read: "查看",
+        create: "创建",
+        edit: "编辑",
+        delete: "删除",
+        notification_setting: "通知设置",
+      },
+      role: {
+        base: "角色",
+        read: "查看",
+        create: "创建",
+        edit: "编辑",
+        delete: "删除",
+      },
+      organization: {
+        base: "组织",
+        read: "查看",
+        create: "创建",
+        edit: "编辑",
+        delete: "删除",
+      },
+      workspace: {
+        base: "工作空间",
+        read: "查看",
+        create: "创建",
+        edit: "编辑",
+        delete: "删除",
+      },
+      cloud_account: {
+        base: "云账号",
+        read: "查看",
+        create: "创建",
+        edit: "编辑",
+        delete: "删除",
+        sync_resource: "同步资源",
+        sync_bill: "同步账单",
+        sync_setting: "同步设置",
+      },
+      sys_log: {
+        base: "系统日志",
+        read: "查看",
+        clear_policy: "清空策略设置",
+      },
+      operated_log: {
+        base: "操作日志",
+        read: "查看",
+        clear_policy: "清空策略设置",
+      },
+    },
+    vm: {
+      cloud_server: {
+        base: "云主机",
+        read: "查看",
+        create: "创建",
+        edit: "编辑",
+        delete: "删除",
+        start: "启动",
+        stop: "停止",
+        restart: "重启",
+        resize: "配置变更",
+        auth: "授权",
+      },
+      cloud_disk: {
+        base: "磁盘",
+        read: "查看",
+        create: "创建",
+        edit: "编辑",
+        delete: "删除",
+        attach: "挂载",
+        detach: "卸载",
+        resize: "扩容",
+        auth: "授权",
+      },
+      cloud_image: {
+        base: "镜像",
+        read: "查看",
+      },
+      jobs: {
+        base: "任务",
+        read: "查看",
+      },
+    },
+  },
+};
+
 export default {
   ...elementZhLocale,
   ...fit2cloudZhLocale,
   ...message,
+  ...permissions,
   ...subModuleZhLocale,
 };

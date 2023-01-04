@@ -12,6 +12,7 @@ import {
 } from "@commons/components/ce-table/type";
 import { ElMessage, ElMessageBox } from "element-plus";
 import { useI18n } from "vue-i18n";
+import { usePermissionStore } from "@commons/stores/modules/permission";
 
 // 树形组织对象
 interface OrganizationTree extends Organization {
@@ -22,6 +23,7 @@ interface OrganizationTree extends Organization {
 const { t } = useI18n();
 // 获取路由对象
 const router = useRouter();
+const permissionStore = usePermissionStore();
 // 表格所需字段
 const columns = ref([]);
 // 表格数据
@@ -256,13 +258,17 @@ const tableConfig = ref<TableConfig>({
       t("commons.btn.edit", "编辑"),
       "primary",
       edit,
-      "EditPen"
+      "EditPen",
+      undefined,
+      permissionStore.hasPermission("[management-center]ORGANIZATION:EDIT")
     ),
     TableOperations.buildButtons().newInstance(
       t("commons.btn.delete", "删除"),
       "primary",
       deleteItem,
-      "Delete"
+      "Delete",
+      undefined,
+      permissionStore.hasPermission("[management-center]ORGANIZATION:DELETE")
     ),
   ]),
 });
@@ -279,12 +285,19 @@ const tableConfig = ref<TableConfig>({
     row-key="id"
   >
     <template #toolbar>
-      <el-button type="primary" @click="create">{{
-        t("commons.btn.create", "创建")
-      }}</el-button>
-      <el-button @click="batchDelete">{{
-        t("commons.btn.delete", "删除")
-      }}</el-button>
+      <el-button
+        type="primary"
+        @click="create"
+        v-hasPermission="'[management-center]ORGANIZATION:CREATE'"
+      >
+        {{ t("commons.btn.create", "创建") }}
+      </el-button>
+      <el-button
+        @click="batchDelete"
+        v-hasPermission="'[management-center]ORGANIZATION:DELETE'"
+      >
+        {{ t("commons.btn.delete", "删除") }}
+      </el-button>
     </template>
     <el-table-column type="selection" />
     <el-table-column prop="name" :label="t('commons.org', '组织')" sortable />

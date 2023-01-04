@@ -25,34 +25,36 @@
         </div>
         <div class="colors">
           <div
-            style="background-color: rgb(200, 1, 0)"
+            id="high"
             :style="{
               width:
                 sum === 0
                   ? '33%'
-                  : (scanComplianceRuleGroup?.high / sum) * 100 + '%',
+                  : scanComplianceRuleGroup
+                  ? (scanComplianceRuleGroup?.high / sum) * 100 + '%'
+                  : '33%',
             }"
           ></div>
           <div
-            style="
-              background-color: rgb(250, 200, 0);
-              margin-left: 2px;
-              margin-right: 2px;
-            "
+            id="middle"
             :style="{
               width:
                 sum === 0
                   ? '33%'
-                  : (scanComplianceRuleGroup?.middle / sum) * 100 + '%',
+                  : scanComplianceRuleGroup
+                  ? (scanComplianceRuleGroup?.middle / sum) * 100 + '%'
+                  : '33%',
             }"
           ></div>
           <div
-            style="background-color: rgb(100, 125, 150)"
+            id="low"
             :style="{
               width:
                 sum === 0
                   ? '33%'
-                  : (scanComplianceRuleGroup?.low / sum) * 100 + '%',
+                  : scanComplianceRuleGroup
+                  ? (scanComplianceRuleGroup?.low / sum) * 100 + '%'
+                  : '33%',
             }"
           ></div>
         </div>
@@ -80,6 +82,7 @@ const sum = computed(() => {
 });
 
 const props = defineProps<{
+  // 合规规则id
   complianceRuleId: string;
 }>();
 /**
@@ -147,6 +150,17 @@ watch(
         padding: 0 5px;
         display: flex;
         height: 5px;
+        #middle {
+          background-color: rgb(250, 200, 0);
+          margin-left: 2px;
+          margin-right: 2px;
+        }
+        #low {
+          background-color: rgb(100, 125, 150);
+        }
+        #high {
+          background-color: rgb(200, 1, 0);
+        }
       }
     }
   }

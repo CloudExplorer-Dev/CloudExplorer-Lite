@@ -142,9 +142,99 @@ const message = {
   },
 };
 
+const permissions = {
+  permission: {
+    manage: {
+      user: {
+        base: "User",
+        read: "Read",
+        create: "Create",
+        edit: "Edit",
+        delete: "Delete",
+        notification_setting: "Notification Settings",
+      },
+      role: {
+        base: "Role",
+        read: "Read",
+        create: "Create",
+        edit: "Edit",
+        delete: "Delete",
+      },
+      organization: {
+        base: "Organization",
+        read: "Read",
+        create: "Create",
+        edit: "Edit",
+        delete: "Delete",
+      },
+      workspace: {
+        base: "Workspace",
+        read: "Read",
+        create: "Create",
+        edit: "Edit",
+        delete: "Delete",
+      },
+      cloud_account: {
+        base: "Cloud Account",
+        read: "Read",
+        create: "Create",
+        edit: "Edit",
+        delete: "Delete",
+        sync_resource: "Sync Resources",
+        sync_bill: "Sync Bill",
+        sync_setting: "Sync Settings",
+      },
+      sys_log: {
+        base: "System Logs",
+        read: "Read",
+        clear_policy: "Clear Policy Settings",
+      },
+      operated_log: {
+        base: "Operation Logs",
+        read: "Read",
+        clear_policy: "Clear Policy Settings",
+      },
+    },
+    vm: {
+      cloud_server: {
+        base: "Cloud Server",
+        read: "Read",
+        create: "Create",
+        edit: "Edit",
+        delete: "Delete",
+        start: "Start",
+        stop: "Stop",
+        restart: "Restart",
+        resize: "Resize",
+        auth: "Auth",
+      },
+      cloud_disk: {
+        base: "Cloud Disk",
+        read: "Read",
+        create: "Create",
+        edit: "Edit",
+        delete: "Delete",
+        attach: "Attach",
+        detach: "Detach",
+        resize: "Resize",
+        auth: "Auth",
+      },
+      cloud_image: {
+        base: "Cloud Image",
+        read: "Read",
+      },
+      jobs: {
+        base: "Job Records",
+        read: "Read",
+      },
+    },
+  },
+};
+
 export default {
   ...elementEnLocale,
   ...fit2cloudEnLocale,
   ...message,
+  ...permissions,
   ...subModuleEnLocale,
 };

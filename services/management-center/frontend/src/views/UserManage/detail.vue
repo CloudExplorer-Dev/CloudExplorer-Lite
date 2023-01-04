@@ -301,20 +301,26 @@ onMounted(() => {
         <span>{{ $t("commons.basic_info") }}</span>
       </template>
       <template #btn>
-        <span v-if="!basicEditable" @click="edit(resourceConst.basic)">{{
-          $t("commons.btn.edit")
-        }}</span>
+        <span
+          v-if="!basicEditable"
+          @click="edit(resourceConst.basic)"
+          v-hasPermission="'[management-center]USER:EDIT'"
+        >
+          {{ $t("commons.btn.edit") }}
+        </span>
         <span
           v-if="basicEditable"
           @click="cancel(resourceConst.basic, formRef)"
-          >{{ $t("commons.btn.cancel") }}</span
         >
+          {{ $t("commons.btn.cancel") }}
+        </span>
         <span
           v-if="basicEditable"
           @click="save(resourceConst.basic, formRef)"
           style="padding-left: 20px"
-          >{{ $t("commons.btn.save") }}</span
         >
+          {{ $t("commons.btn.save") }}
+        </span>
       </template>
       <template #content>
         <el-row>
@@ -336,9 +342,9 @@ onMounted(() => {
           <el-col :span="4">
             <el-form-item :label="$t('user.status')" prop="enabled">
               <el-switch v-model="form.enabled" v-if="basicEditable" />
-              <span v-if="!basicEditable">{{
-                enabledFilter(form.enabled)
-              }}</span>
+              <span v-if="!basicEditable">
+                {{ enabledFilter(form.enabled) }}
+              </span>
             </el-form-item>
           </el-col>
         </el-row>
@@ -386,12 +392,16 @@ onMounted(() => {
         <span>{{ $t("user.has_role") }}</span>
       </template>
       <template #btn>
-        <span v-if="!roleEditable" @click="edit(resourceConst.role)">{{
-          $t("commons.btn.edit")
-        }}</span>
-        <span v-if="roleEditable" @click="cancel(resourceConst.role)">{{
-          $t("commons.btn.cancel")
-        }}</span>
+        <span
+          v-if="!roleEditable"
+          @click="edit(resourceConst.role)"
+          v-hasPermission="'[management-center]USER:EDIT'"
+        >
+          {{ $t("commons.btn.edit") }}
+        </span>
+        <span v-if="roleEditable" @click="cancel(resourceConst.role)">
+          {{ $t("commons.btn.cancel") }}
+        </span>
         <span
           v-if="roleEditable"
           @click="save(resourceConst.role, formRef)"

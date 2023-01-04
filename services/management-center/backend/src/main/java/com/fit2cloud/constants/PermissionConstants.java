@@ -32,9 +32,10 @@ public class PermissionConstants {
         public static final String ORGANIZATION = "ORGANIZATION";
         public static final String SYSTEM_SETTING = "SYSTEM_SETTING";
 
-        public static final String SYS_LOG = "SYSLOG";
+        public static final String SYS_LOG = "SYS_LOG";
 
         public static final String OPERATED_LOG = "OPERATED_LOG";
+
         //...
     }
 
@@ -43,6 +44,11 @@ public class PermissionConstants {
         public static final String EDIT = "EDIT";
         public static final String CREATE = "CREATE";
         public static final String DELETE = "DELETE";
+        public static final String NOTIFICATION_SETTING = "NOTIFICATION_SETTING";
+        public static final String SYNC_RESOURCE = "SYNC_RESOURCE";
+        public static final String SYNC_BILL = "SYNC_BILL";
+        public static final String SYNC_SETTING = "SYNC_SETTING";
+        public static final String CLEAR_POLICY = "CLEAR_POLICY";
         //...
     }
 
@@ -76,21 +82,21 @@ public class PermissionConstants {
                     //用户管理
                     new PermissionGroup.Builder()
                             .id(GROUP.USER)
-                            .name("i18n_permission_user")
+                            .name("permission.manage.user.base")
                             .permission(
                                     //查看用户
                                     new Permission.Builder()
                                             .operate(OPERATE.READ)
-                                            .name("i18n_permission_user_read")
+                                            .name("permission.manage.user.read")
                                             .role(RoleConstants.ROLE.ADMIN)
                                             .role(RoleConstants.ROLE.ORGADMIN)
                             )
                             .permission(
-                                    //新建用户
+                                    //创建用户
                                     new Permission.Builder()
                                             .require(OPERATE.READ)
                                             .operate(OPERATE.CREATE)
-                                            .name("i18n_permission_user_create")
+                                            .name("permission.manage.user.create")
                                             .role(RoleConstants.ROLE.ADMIN)
                                             .role(RoleConstants.ROLE.ORGADMIN)
                             )
@@ -99,16 +105,25 @@ public class PermissionConstants {
                                     new Permission.Builder()
                                             .require(OPERATE.READ)
                                             .operate(OPERATE.EDIT)
-                                            .name("i18n_permission_user_edit")
+                                            .name("permission.manage.user.edit")
                                             .role(RoleConstants.ROLE.ADMIN)
                                             .role(RoleConstants.ROLE.ORGADMIN)
                             )
                             .permission(
-                                    //编辑用户
+                                    //删除用户
                                     new Permission.Builder()
                                             .require(OPERATE.READ)
                                             .operate(OPERATE.DELETE)
-                                            .name("i18n_permission_user_delete")
+                                            .name("permission.manage.user.delete")
+                                            .role(RoleConstants.ROLE.ADMIN)
+                                            .role(RoleConstants.ROLE.ORGADMIN)
+                            )
+                            .permission(
+                                    //删除用户
+                                    new Permission.Builder()
+                                            .require(OPERATE.READ)
+                                            .operate(OPERATE.NOTIFICATION_SETTING)
+                                            .name("permission.manage.user.notification_setting")
                                             .role(RoleConstants.ROLE.ADMIN)
                                             .role(RoleConstants.ROLE.ORGADMIN)
                             )
@@ -118,33 +133,33 @@ public class PermissionConstants {
                     //权限管理
                     new PermissionGroup.Builder()
                             .id(GROUP.ROLE)
-                            .name("i18n_permission_role")
+                            .name("permission.manage.role.base")
                             .permission(
                                     new Permission.Builder()
                                             .operate(OPERATE.READ)
-                                            .name("i18n_permission_role_read")
+                                            .name("permission.manage.role.read")
                                             .role(RoleConstants.ROLE.ADMIN)
                                             .role(RoleConstants.ROLE.ORGADMIN)
                             )
                             .permission(
                                     new Permission.Builder()
                                             .require(OPERATE.READ)
-                                            .operate(OPERATE.EDIT)
-                                            .name("i18n_permission_role_edit")
+                                            .operate(OPERATE.CREATE)
+                                            .name("permission.manage.role.create")
                                             .role(RoleConstants.ROLE.ADMIN)
                             )
                             .permission(
                                     new Permission.Builder()
                                             .require(OPERATE.READ)
-                                            .operate(OPERATE.CREATE)
-                                            .name("i18n_permission_role_create")
+                                            .operate(OPERATE.EDIT)
+                                            .name("permission.manage.role.edit")
                                             .role(RoleConstants.ROLE.ADMIN)
                             )
                             .permission(
                                     new Permission.Builder()
                                             .require(OPERATE.READ)
                                             .operate(OPERATE.DELETE)
-                                            .name("i18n_permission_role_delete")
+                                            .name("permission.manage.role.delete")
                                             .role(RoleConstants.ROLE.ADMIN)
                             )
             )
@@ -152,47 +167,47 @@ public class PermissionConstants {
             .group(
                     new PermissionGroup.Builder()
                             .id(GROUP.ORGANIZATION)
-                            .name("i18n_permission_organization")
+                            .name("permission.manage.organization.base")
                             .permission(new Permission.Builder()
                                     .operate(OPERATE.READ)
-                                    .name("i18n_permission_organization_read")
-                                    .role(RoleConstants.ROLE.ADMIN)
-                                    .role(RoleConstants.ROLE.ORGADMIN))
-                            .permission(new Permission.Builder()
-                                    .require(OPERATE.READ)
-                                    .operate(OPERATE.EDIT)
-                                    .name("i18n_permission_organization_edit")
+                                    .name("permission.manage.organization.read")
                                     .role(RoleConstants.ROLE.ADMIN)
                                     .role(RoleConstants.ROLE.ORGADMIN))
                             .permission(new Permission.Builder()
                                     .require(OPERATE.READ)
                                     .operate(OPERATE.CREATE)
-                                    .name("i18n_permission_organization_create")
+                                    .name("permission.manage.organization.create")
                                     .role(RoleConstants.ROLE.ADMIN))
                             .permission(new Permission.Builder()
                                     .require(OPERATE.READ)
+                                    .operate(OPERATE.EDIT)
+                                    .name("permission.manage.organization.edit")
+                                    .role(RoleConstants.ROLE.ADMIN)
+                                    .role(RoleConstants.ROLE.ORGADMIN))
+                            .permission(new Permission.Builder()
+                                    .require(OPERATE.READ)
                                     .operate(OPERATE.DELETE)
-                                    .name("i18n_permission_organization_delete")
+                                    .name("permission.manage.organization.delete")
                                     .role(RoleConstants.ROLE.ADMIN)))
             //工作空间
             .group(
                     new PermissionGroup.Builder()
                             .id(GROUP.WORKSPACE)
-                            .name("i18n_permission_workspace")
+                            .name("permission.manage.workspace.base")
                             .permission(
                                     //查看工作空间
                                     new Permission.Builder()
                                             .operate(OPERATE.READ)
-                                            .name("i18n_permission_workspace_read")
+                                            .name("permission.manage.workspace.read")
                                             .role(RoleConstants.ROLE.ADMIN)
                                             .role(RoleConstants.ROLE.ORGADMIN)
                             )
                             .permission(
-                                    //新建工作空间
+                                    //创建工作空间
                                     new Permission.Builder()
                                             .require(OPERATE.READ)
                                             .operate(OPERATE.CREATE)
-                                            .name("i18n_permission_workspace_create")
+                                            .name("permission.manage.workspace.create")
                                             .role(RoleConstants.ROLE.ADMIN)
                                             .role(RoleConstants.ROLE.ORGADMIN)
                             )
@@ -201,7 +216,7 @@ public class PermissionConstants {
                                     new Permission.Builder()
                                             .require(OPERATE.READ)
                                             .operate(OPERATE.EDIT)
-                                            .name("i18n_permission_workspace_edit")
+                                            .name("permission.manage.workspace.edit")
                                             .role(RoleConstants.ROLE.ADMIN)
                                             .role(RoleConstants.ROLE.ORGADMIN)
                             )
@@ -210,7 +225,7 @@ public class PermissionConstants {
                                     new Permission.Builder()
                                             .require(OPERATE.READ)
                                             .operate(OPERATE.DELETE)
-                                            .name("i18n_permission_workspace_delete")
+                                            .name("permission.manage.workspace.delete")
                                             .role(RoleConstants.ROLE.ADMIN)
                                             .role(RoleConstants.ROLE.ORGADMIN)
                             )
@@ -218,27 +233,44 @@ public class PermissionConstants {
             ).group(
                     new PermissionGroup.Builder()
                             .id(GROUP.SYS_LOG)
-                            .name("i18n_permission_sys_log")
+                            .name("permission.manage.sys_log.base")
                             .permission(
                                     //查看系统日志
                                     new Permission.Builder()
                                             .operate(OPERATE.READ)
-                                            .name("i18n_permission_sys_log_read")
+                                            .name("permission.manage.sys_log.read")
                                             .role(RoleConstants.ROLE.ADMIN)
                                             .role(RoleConstants.ROLE.ORGADMIN)
+                            )
+                            .permission(
+                                    //系统日志清空策略
+                                    new Permission.Builder()
+                                            .require(OPERATE.READ)
+                                            .operate(OPERATE.CLEAR_POLICY)
+                                            .name("permission.manage.sys_log.clear_policy")
+                                            .role(RoleConstants.ROLE.ADMIN)
                             )
                     //...
             ).group(
                     new PermissionGroup.Builder()
                             .id(GROUP.OPERATED_LOG)
-                            .name("i18n_permission_operated_log")
+                            .name("permission.manage.operated_log.base")
                             .permission(
                                     //查看操作日志
                                     new Permission.Builder()
                                             .operate(OPERATE.READ)
-                                            .name("i18n_permission_operated_log_read")
+                                            .name("permission.manage.operated_log.read")
                                             .role(RoleConstants.ROLE.ADMIN)
                                             .role(RoleConstants.ROLE.ORGADMIN)
+                            )
+                            .permission(
+                                    //操作日志清空策略
+                                    new Permission.Builder()
+                                            .require(OPERATE.READ)
+                                            .operate(OPERATE.CLEAR_POLICY)
+                                            .name("permission.manage.operated_log.clear_policy")
+                                            .role(RoleConstants.ROLE.ADMIN)
+
                             )
                     //...
             )
@@ -246,26 +278,41 @@ public class PermissionConstants {
             .group(
                     new PermissionGroup.Builder()
                             .id(GROUP.CLOUD_ACCOUNT)
-                            .name("i18n_permission_cloud_account")
+                            .name("permission.manage.cloud_account.base")
                             .permission(new Permission.Builder()
                                     .operate(OPERATE.READ)
-                                    .name("i18n_permission_cloud_account_read")
+                                    .name("permission.manage.cloud_account.read")
                                     .role(RoleConstants.ROLE.ADMIN)
                                     .role(RoleConstants.ROLE.ORGADMIN))
                             .permission(new Permission.Builder()
                                     .require(OPERATE.READ)
-                                    .operate(OPERATE.EDIT)
-                                    .name("i18n_permission_cloud_account_edit")
+                                    .operate(OPERATE.CREATE)
+                                    .name("permission.manage.cloud_account.create")
                                     .role(RoleConstants.ROLE.ADMIN))
                             .permission(new Permission.Builder()
                                     .require(OPERATE.READ)
-                                    .operate(OPERATE.CREATE)
-                                    .name("i18n_permission_cloud_account_create")
+                                    .operate(OPERATE.EDIT)
+                                    .name("permission.manage.cloud_account.edit")
                                     .role(RoleConstants.ROLE.ADMIN))
                             .permission(new Permission.Builder()
                                     .require(OPERATE.READ)
                                     .operate(OPERATE.DELETE)
-                                    .name("i18n_permission_cloud_account_delete")
+                                    .name("permission.manage.cloud_account.delete")
+                                    .role(RoleConstants.ROLE.ADMIN))
+                            .permission(new Permission.Builder()
+                                    .require(OPERATE.READ)
+                                    .operate(OPERATE.SYNC_RESOURCE)
+                                    .name("permission.manage.cloud_account.sync_resource")
+                                    .role(RoleConstants.ROLE.ADMIN))
+                            .permission(new Permission.Builder()
+                                    .require(OPERATE.READ)
+                                    .operate(OPERATE.SYNC_BILL)
+                                    .name("permission.manage.cloud_account.sync_bill")
+                                    .role(RoleConstants.ROLE.ADMIN))
+                            .permission(new Permission.Builder()
+                                    .require(OPERATE.READ)
+                                    .operate(OPERATE.SYNC_SETTING)
+                                    .name("permission.manage.cloud_account.sync_setting")
                                     .role(RoleConstants.ROLE.ADMIN))
             )
             //...

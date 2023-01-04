@@ -52,6 +52,7 @@ public class LogController {
     }
 
     @GetMapping("keep/months")
+    @PreAuthorize("hasAnyCePermission('SYS_LOG:CLEAR_POLICY')")
     public ResultHolder<String> getKeepMonths(SystemParameter systemParameter) {
         String value = baseSystemParameterService.getValue(systemParameter.getParamKey());
         if (StringUtils.isNotBlank(value)) {
@@ -62,6 +63,7 @@ public class LogController {
     }
 
     @PostMapping("keep/months")
+    @PreAuthorize("hasAnyCePermission('OPERATED_LOG:CLEAR_POLICY')")
     public ResultHolder<Boolean> saveKeepMonths(SystemParameter systemParameter) {
         systemParameter.setParamKey(systemParameter.getParamKey());
         baseSystemParameterService.saveValue(systemParameter);
