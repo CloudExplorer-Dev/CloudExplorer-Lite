@@ -12,6 +12,7 @@
             text
             @click="changeToEditInfo"
             v-if="showEditInfoButton"
+            v-hasPermission="'[management-center]ROLE:EDIT'"
           >
             修改
           </el-button>
@@ -48,6 +49,7 @@
             text
             @click="changeToEditPermission"
             v-if="showEditPermissionButton"
+            v-hasPermission="'[management-center]ROLE:EDIT'"
           >
             修改
           </el-button>
