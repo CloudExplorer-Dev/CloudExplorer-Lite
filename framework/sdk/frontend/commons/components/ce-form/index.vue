@@ -216,9 +216,7 @@ defineExpose({
           :field="item.field"
           v-bind="{ ...JSON.parse(item.attrs) }"
         ></component>
-        <span v-if="item.unit" style="padding-left: 15px">{{
-            item.unit
-          }}</span>
+        <span v-if="item.unit" style="padding-left: 15px">{{ item.unit }}</span>
       </el-form-item>
     </div>
   </el-form>
