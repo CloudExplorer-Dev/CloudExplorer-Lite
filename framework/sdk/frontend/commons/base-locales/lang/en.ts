@@ -179,7 +179,9 @@ const permissions = {
         create: "Create",
         edit: "Edit",
         delete: "Delete",
-        sync: "Sync",
+        sync_resource: "Sync Resources",
+        sync_bill: "Sync Bill",
+        sync_setting: "Sync Settings",
       },
       sys_log: {
         base: "System Logs",

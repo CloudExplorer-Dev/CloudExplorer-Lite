@@ -178,7 +178,9 @@ const permissions = {
         create: "新建",
         edit: "編輯",
         delete: "刪除",
-        sync: "同步",
+        sync_resource: "同步資源",
+        sync_bill: "同步賬單",
+        sync_setting: "同步設置",
       },
       sys_log: {
         base: "系統日志",

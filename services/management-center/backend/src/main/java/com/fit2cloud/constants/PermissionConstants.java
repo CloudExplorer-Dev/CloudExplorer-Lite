@@ -43,7 +43,9 @@ public class PermissionConstants {
         public static final String EDIT = "EDIT";
         public static final String CREATE = "CREATE";
         public static final String DELETE = "DELETE";
-        public static final String SYNC = "SYNC";
+        public static final String SYNC_RESOURCE = "SYNC_RESOURCE";
+        public static final String SYNC_BILL = "SYNC_BILL";
+        public static final String SYNC_SETTING = "SYNC_SETTING";
         //...
     }
 
@@ -270,8 +272,18 @@ public class PermissionConstants {
                                     .role(RoleConstants.ROLE.ADMIN))
                             .permission(new Permission.Builder()
                                     .require(OPERATE.READ)
-                                    .operate(OPERATE.SYNC)
-                                    .name("permission.manage.cloud_account.sync")
+                                    .operate(OPERATE.SYNC_RESOURCE)
+                                    .name("permission.manage.cloud_account.sync_resource")
+                                    .role(RoleConstants.ROLE.ADMIN))
+                            .permission(new Permission.Builder()
+                                    .require(OPERATE.READ)
+                                    .operate(OPERATE.SYNC_BILL)
+                                    .name("permission.manage.cloud_account.sync_bill")
+                                    .role(RoleConstants.ROLE.ADMIN))
+                            .permission(new Permission.Builder()
+                                    .require(OPERATE.READ)
+                                    .operate(OPERATE.SYNC_SETTING)
+                                    .name("permission.manage.cloud_account.sync_setting")
                                     .role(RoleConstants.ROLE.ADMIN))
             )
             //...

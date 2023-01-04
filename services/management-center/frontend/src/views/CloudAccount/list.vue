@@ -536,7 +536,7 @@ const billSyncShow = (row: CloudAccount) => {
     moduleStore.runningModules?.some(
       (m: any) => m.id === "finance-management"
     ) &&
-    permissionStore.hasPermission("[management-center]CLOUD_ACCOUNT:SYNC")
+    permissionStore.hasPermission("[management-center]CLOUD_ACCOUNT:SYNC_BILL")
   );
 };
 
@@ -625,7 +625,9 @@ const tableConfig = ref<TableConfig>({
       openSync,
       "Refresh",
       undefined,
-      permissionStore.hasPermission("[management-center]CLOUD_ACCOUNT:SYNC")
+      permissionStore.hasPermission(
+        "[management-center]CLOUD_ACCOUNT:SYNC_RESOURCE"
+      )
     ),
     TableOperations.buildButtons().newInstance(
       t("cloud_account.sync.syncBill", "同步账单"),
@@ -641,10 +643,9 @@ const tableConfig = ref<TableConfig>({
       updateJob,
       "Document",
       undefined,
-      permissionStore.hasPermission([
-        "[management-center]CLOUD_ACCOUNT:SYNC",
-        "[management-center]CLOUD_ACCOUNT:EDIT",
-      ])
+      permissionStore.hasPermission(
+        "[management-center]CLOUD_ACCOUNT:SYNC_SETTING"
+      )
     ),
     TableOperations.buildButtons().newInstance(
       t("commons.btn.delete", "删除"),
@@ -697,7 +698,7 @@ const syncAll = () => {
       </el-button>
       <el-button
         @click="syncAll"
-        v-hasPermission="'[management-center]CLOUD_ACCOUNT:SYNC'"
+        v-hasPermission="'[management-center]CLOUD_ACCOUNT:SYNC_RESOURCE'"
       >
         {{ t("commons.btn.sync", "同步") }}
       </el-button>

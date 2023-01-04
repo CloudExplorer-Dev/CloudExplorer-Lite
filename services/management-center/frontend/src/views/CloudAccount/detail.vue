@@ -503,10 +503,7 @@ onBeforeUnmount(() => {
       <span
         v-if="!syncEditable"
         @click="edit(resourceConst.sync)"
-        v-hasPermission="[
-          '[management-center]CLOUD_ACCOUNT:EDIT',
-          '[management-center]CLOUD_ACCOUNT:SYNC',
-        ]"
+        v-hasPermission="'[management-center]CLOUD_ACCOUNT:SYNC_SETTING'"
       >
         {{ $t("commons.btn.edit") }}
       </span>

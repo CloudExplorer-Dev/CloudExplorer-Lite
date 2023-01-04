@@ -79,7 +79,7 @@ public class MenuConstants {
                             .componentPath("/src/views/CloudAccount/syncJob.vue")
                             .requiredPermission(new MenuPermission.Builder()
                                     .role(RoleConstants.ROLE.ADMIN)
-                                    .permission(GROUP.CLOUD_ACCOUNT, OPERATE.EDIT)
+                                    .permission(GROUP.CLOUD_ACCOUNT, OPERATE.SYNC_SETTING)
                             ))
                     .childOperationRoute(new Menu.Builder()
                             .name("cloud_account_detail")
