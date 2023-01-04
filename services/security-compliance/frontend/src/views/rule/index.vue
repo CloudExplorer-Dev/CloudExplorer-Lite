@@ -15,7 +15,7 @@
   </layout-content>
 </template>
 <script setup lang="ts">
-import { ref, watch } from "vue";
+import { ref, watch, onMounted } from "vue";
 import compliance_rule from "@/views/rule/ComplianceRule.vue";
 import compliance_rule_group from "@/views/rule/ComplianceRuleGroup.vue";
 const activeCompliance = ref<string>("compliance_rule");
@@ -24,6 +24,9 @@ watch(activeCompliance, (new_value: string) => {
   if (new_value === "compliance_rule") {
     compliance_rule_ref.value?.refresh();
   }
+});
+onMounted(() => {
+  compliance_rule_ref.value?.refresh();
 });
 </script>
 <style lang="scss"></style>

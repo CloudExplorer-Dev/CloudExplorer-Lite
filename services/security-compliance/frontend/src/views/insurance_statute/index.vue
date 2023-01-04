@@ -29,14 +29,18 @@ import {
 import { ref, onMounted } from "vue";
 import complianceInsuranceStatuteApi from "@/api/compliance_insurance_statute";
 import type { ComplianceInsuranceStatute } from "@/api/compliance_insurance_statute/type";
+// 表格实例
 const table: any = ref(null);
-
+// 表格数据
 const dataList = ref<Array<ComplianceInsuranceStatute>>([]);
-
+// 表格加载器
 const loading = ref<boolean>(false);
-
+// 字段
 const columns = ref([]);
-
+/**
+ * 表格查询函数
+ * @param condition 表格查询参数
+ */
 const search = (condition: TableSearch) => {
   const params = TableSearch.toSearchParams(condition);
   complianceInsuranceStatuteApi

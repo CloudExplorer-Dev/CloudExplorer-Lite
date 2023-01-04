@@ -52,6 +52,20 @@
           :tableConfig="tableConfig"
           row-key="id"
         >
+          <template #toolbar>
+            <el-select
+              v-model="activeCloudAccount"
+              class="m-2"
+              placeholder="Select"
+            >
+              <el-option
+                v-for="item in cloudAccountList"
+                :key="item.value"
+                :label="item.key"
+                :value="item.value"
+              />
+            </el-select>
+          </template>
           <el-table-column type="expand">
             <template #default="props">
               <el-descriptions :column="2" style="padding: 0 20px">
@@ -108,7 +122,7 @@
 </template>
 <script setup lang="ts">
 import { useRoute } from "vue-router";
-import { onMounted, ref } from "vue";
+import { onMounted, ref, watch } from "vue";
 import complianceRuleApi from "@/api/rule";
 import complianceRuleGroupApi from "@/api/rule_group";
 import complianceScanApi from "@/api/compliance_scan";
@@ -122,10 +136,21 @@ import {
   TableConfig,
   TableSearch,
 } from "@commons/components/ce-table/type";
+import type { KeyValue } from "@commons/api/base/type";
+import cloudAccountApi from "@commons/api/cloud_account";
+// 路由对象
 const route = useRoute();
+// 合规规则数据
 const complianceRule = ref<ComplianceRule>();
+// 合规规则组数据
 const complianceRuleGroup = ref<ComplianceRuleGroup>();
+// 表格加载器
 const tableLoading = ref<boolean>(false);
+// 当前选中的云账号
+const activeCloudAccount = ref<string>("all");
+// 云账号列表数据
+const cloudAccountList = ref<Array<KeyValue<string, string>>>([]);
+// 等保条例数据
 const complianceInsuranceStatutes = ref<Array<ComplianceInsuranceStatute>>([]);
 /**
  * 表格数据
@@ -133,22 +158,41 @@ const complianceInsuranceStatutes = ref<Array<ComplianceInsuranceStatute>>([]);
 const dataList = ref<Array<ComplianceResourceResponse>>([]);
 // 列表字段数据
 const columns = ref([]);
+// 表格实例对象
 const table: any = ref(null);
+
 onMounted(() => {
+  // 查询合规规则数据
   complianceRuleApi
     .getComplianceRuleById(route.params.compliance_rule_id as string)
     .then((ok) => {
       complianceRule.value = ok.data;
+      // 查询云账号数据
+      cloudAccountApi.listAll().then((a) => {
+        cloudAccountList.value = [
+          { key: "全部云账号", value: "all" },
+          ...a.data
+            .filter((p) => p.platform === ok.data.platform)
+            .map((cloudAccount) => ({
+              key: cloudAccount.name,
+              value: cloudAccount.id,
+            })),
+        ];
+      });
+      // 查询列表
       search(new TableSearch());
       return ok.data;
     })
     .then((data) => {
+      // 查询合规规则组数据
       complianceRuleGroupApi
         .getComplianceRuleGroupById(data.ruleGroupId)
         .then((ok) => {
           complianceRuleGroup.value = ok.data;
+          return ok.data;
         });
     });
+  // 查询等保条例数据
   complianceInsuranceStatuteApi
     .list({
       complianceRuleId: route.params.compliance_rule_id as string,
@@ -156,8 +200,13 @@ onMounted(() => {
     .then((ok) => {
       complianceInsuranceStatutes.value = ok.data;
     });
+  activeCloudAccount.value = route.params.cloud_account_id as string;
 });
 
+/**
+ * 查询函数
+ * @param condition table收集的查询数据
+ */
 const search = (condition: TableSearch) => {
   const params = TableSearch.toSearchParams(condition);
   complianceScanApi
@@ -167,7 +216,10 @@ const search = (condition: TableSearch) => {
       route.params.compliance_rule_id as string,
       {
         ...params,
-        cloudAccountId: route.params.cloud_account_id,
+        cloudAccountId:
+          activeCloudAccount.value === "all"
+            ? undefined
+            : activeCloudAccount.value,
         resourceType: complianceRule.value?.resourceType,
       },
       tableLoading
@@ -184,6 +236,10 @@ const search = (condition: TableSearch) => {
       );
     });
 };
+// 监控云账号的变化,请求列表数据
+watch(activeCloudAccount, () => {
+  table.value.search(table?.value.getTableSearch());
+});
 /**
  * 表单配置
  */
