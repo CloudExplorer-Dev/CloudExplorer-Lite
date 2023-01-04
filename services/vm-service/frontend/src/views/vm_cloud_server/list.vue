@@ -226,7 +226,20 @@ const createDisk = (row: VmCloudServerVO) => {
  * @param row
  */
 const changeVmConfig = (row: VmCloudServerVO) => {
-  useRoute.push({ name: "change_config", params: { id: row.id } });
+  ElMessageBox.confirm(
+    t(
+      "vm_cloud_server.message_box.confirm_config_update",
+      "配置变更将会对实例执行关机操作，确认继续"
+    ),
+    t("commons.message_box.prompt", "提示"),
+    {
+      confirmButtonText: t("commons.message_box.confirm", "确认"),
+      cancelButtonText: t("commons.btn.cancel", "取消"),
+      type: "warning",
+    }
+  ).then(() => {
+    useRoute.push({ name: "change_config", params: { id: row.id } });
+  });
 };
 
 /**

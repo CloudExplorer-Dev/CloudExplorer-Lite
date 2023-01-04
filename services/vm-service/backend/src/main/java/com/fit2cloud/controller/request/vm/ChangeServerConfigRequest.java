@@ -12,4 +12,5 @@ public class ChangeServerConfigRequest {
     private String newInstanceType;
     private int cpu;
     private int memory;
+    private String instanceChargeType;
 }

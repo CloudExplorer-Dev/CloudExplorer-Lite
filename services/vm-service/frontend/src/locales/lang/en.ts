@@ -8,13 +8,13 @@ const message = {
       instance_type: "Instance type",
       new_config: "New config",
     },
-    status:{
-      creating:"Creating",
-      running:"Running",
-      stopped:"Stopped",
-      rebooting:"Rebooting",
-      wait_recycle:"Wait to Recycle",
-      deleted:"Deleted",
+    status: {
+      creating: "Creating",
+      running: "Running",
+      stopped: "Stopped",
+      rebooting: "Rebooting",
+      wait_recycle: "Wait to Recycle",
+      deleted: "Deleted",
     },
     btn: {
       power_on: "Power on",
@@ -32,6 +32,8 @@ const message = {
       confirm_batch_operate: "Confirm to execute batch {0} operation",
       check_vm_tools_status_confirm_shutdown:
         "The current virtual machine is not installed with VmTools or VmTools is not running and cannot be soft shut down. If you continue, turn off the power. Do you want to continue?",
+      confirm_config_update:
+        "The configuration change will shut down the instance.Confirm to continue?",
     },
   },
   vm_cloud_image: {
@@ -66,13 +68,13 @@ const message = {
       data_disk: "Data Disk",
       disk_id: "Disk ID",
     },
-    status:{
-      creating:"Creating",
-      in_use:"In Use",
-      available:"Available",
-      enlarging:"Enlarging",
-      wait_recycle:"Wait to Recycle",
-      deleted:"Deleted",
+    status: {
+      creating: "Creating",
+      in_use: "In Use",
+      available: "Available",
+      enlarging: "Enlarging",
+      wait_recycle: "Wait to Recycle",
+      deleted: "Deleted",
     },
     btn: {
       create: "Add Disk",

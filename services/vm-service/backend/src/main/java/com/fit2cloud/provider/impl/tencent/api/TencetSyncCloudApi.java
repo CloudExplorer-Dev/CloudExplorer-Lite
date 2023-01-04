@@ -220,7 +220,7 @@ public class TencetSyncCloudApi {
             List<TencentInstanceType> returnList = new ArrayList<>();
             if (instanceTypeQuotaItems != null && instanceTypeQuotaItems.length > 0) {
                 for (InstanceTypeQuotaItem instanceTypeQuotaItem : instanceTypeQuotaItems) {
-                    if (!"SOLD_OUT".equalsIgnoreCase(instanceTypeQuotaItem.getStatus())) {
+                    if ("SELL".equalsIgnoreCase(instanceTypeQuotaItem.getStatus())) {
                         String cpuMemory = instanceTypeQuotaItem.getCpu() + "vCPU " + instanceTypeQuotaItem.getMemory() + "GB";
                         TencentInstanceType tencentInstanceType = new TencentInstanceType().builder()
                                 .instanceTypeFamily(instanceTypeQuotaItem.getInstanceFamily())
@@ -1430,14 +1430,20 @@ public class TencetSyncCloudApi {
         Optional.ofNullable(request.getInstanceUuid()).orElseThrow(() -> new RuntimeException("Instance id is null!"));
         req.setInstanceIds(new String[]{request.getInstanceUuid()});
 
+        // 获取可用区可选实例
+        TencentGetInstanceTypeRequest tencentGetInstanceTypeRequest = new TencentGetInstanceTypeRequest();
+        BeanUtils.copyProperties(request, tencentGetInstanceTypeRequest);
+        List<TencentInstanceType> zoneResources = getInstanceTypes(tencentGetInstanceTypeRequest);
+
         List<TencentInstanceType> returnList = new ArrayList<>();
         try {
+            // 获取配置变更可选实例
             DescribeInstancesModificationResponse resp = cvmClient.DescribeInstancesModification(req);
             InstanceTypeConfigStatus[] instanceTypeConfigStatusSet = resp.getInstanceTypeConfigStatusSet();
 
             if (instanceTypeConfigStatusSet != null && instanceTypeConfigStatusSet.length > 0) {
                 for (InstanceTypeConfigStatus instanceTypeConfigStatus : instanceTypeConfigStatusSet) {
-                    if (!"SOLD_OUT".equalsIgnoreCase(instanceTypeConfigStatus.getStatus()) &&
+                    if ("SELL".equalsIgnoreCase(instanceTypeConfigStatus.getStatus()) &&
                             !instanceTypeConfigStatus.getInstanceTypeConfig().getInstanceType().equalsIgnoreCase(request.getCurrentInstanceType())) {
                         InstanceTypeConfig instanceTypeConfig = instanceTypeConfigStatus.getInstanceTypeConfig();
                         String cpuMemory = instanceTypeConfig.getCPU() + "vCPU " + instanceTypeConfig.getMemory() + "GB";
@@ -1456,7 +1462,9 @@ public class TencetSyncCloudApi {
         } catch (TencentCloudSDKException e) {
             throw new RuntimeException("Failed to get instance type for updating!" + e.getMessage(), e);
         }
-        return returnList;
+
+        // 可用区可选实例与配置变更可选实例取交集
+        return returnList.stream().filter(zoneResources::contains).collect(Collectors.toList());
     }
 
     /**

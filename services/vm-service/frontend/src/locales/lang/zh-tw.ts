@@ -8,13 +8,13 @@ const message = {
       instance_type: "實例規格",
       new_config: "變更後配置",
     },
-    status:{
-      creating:"創建中",
-      running:"運行中",
-      stopped:"已關機",
-      rebooting:"重啟中",
-      wait_recycle:"待回收",
-      deleted:"已刪除",
+    status: {
+      creating: "創建中",
+      running: "運行中",
+      stopped: "已關機",
+      rebooting: "重啟中",
+      wait_recycle: "待回收",
+      deleted: "已刪除",
     },
     btn: {
       power_on: "啟動",
@@ -32,6 +32,7 @@ const message = {
       confirm_batch_operate: "確認執行批量{0}操作",
       check_vm_tools_status_confirm_shutdown:
         "當前虛擬機器未安裝VmTools或VmTools未運行，無法軟關機，若繼續操作則關閉電源，是否繼續？",
+      confirm_config_update: "配置變更將會對實例執行關機操作，確認繼續?",
     },
   },
   vm_cloud_image: {
@@ -66,13 +67,13 @@ const message = {
       data_disk: "數據盤",
       disk_id: "磁盤ID",
     },
-    status:{
-      creating:"創建中",
-      in_use:"已掛載",
-      available:"可用",
-      enlarging:"擴容中",
-      wait_recycle:"待回收",
-      deleted:"已刪除",
+    status: {
+      creating: "創建中",
+      in_use: "已掛載",
+      available: "可用",
+      enlarging: "擴容中",
+      wait_recycle: "待回收",
+      deleted: "已刪除",
     },
     btn: {
       create: "添加磁盤",
