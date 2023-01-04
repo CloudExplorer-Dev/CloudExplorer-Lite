@@ -43,6 +43,7 @@ public class PermissionConstants {
         public static final String EDIT = "EDIT";
         public static final String CREATE = "CREATE";
         public static final String DELETE = "DELETE";
+        public static final String NOTIFICATION_SETTING = "NOTIFICATION_SETTING";
         public static final String SYNC_RESOURCE = "SYNC_RESOURCE";
         public static final String SYNC_BILL = "SYNC_BILL";
         public static final String SYNC_SETTING = "SYNC_SETTING";
@@ -89,7 +90,7 @@ public class PermissionConstants {
                                             .role(RoleConstants.ROLE.ORGADMIN)
                             )
                             .permission(
-                                    //新建用户
+                                    //创建用户
                                     new Permission.Builder()
                                             .require(OPERATE.READ)
                                             .operate(OPERATE.CREATE)
@@ -112,6 +113,15 @@ public class PermissionConstants {
                                             .require(OPERATE.READ)
                                             .operate(OPERATE.DELETE)
                                             .name("permission.manage.user.delete")
+                                            .role(RoleConstants.ROLE.ADMIN)
+                                            .role(RoleConstants.ROLE.ORGADMIN)
+                            )
+                            .permission(
+                                    //删除用户
+                                    new Permission.Builder()
+                                            .require(OPERATE.READ)
+                                            .operate(OPERATE.NOTIFICATION_SETTING)
+                                            .name("permission.manage.user.notification_setting")
                                             .role(RoleConstants.ROLE.ADMIN)
                                             .role(RoleConstants.ROLE.ORGADMIN)
                             )
@@ -191,7 +201,7 @@ public class PermissionConstants {
                                             .role(RoleConstants.ROLE.ORGADMIN)
                             )
                             .permission(
-                                    //新建工作空间
+                                    //创建工作空间
                                     new Permission.Builder()
                                             .require(OPERATE.READ)
                                             .operate(OPERATE.CREATE)

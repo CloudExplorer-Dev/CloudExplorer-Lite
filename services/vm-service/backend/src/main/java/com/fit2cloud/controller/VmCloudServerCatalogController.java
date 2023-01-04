@@ -34,7 +34,7 @@ import java.util.concurrent.Executors;
 @RestController
 @RequestMapping("/api/server/catalog")
 @Validated
-@Api("新建虚拟机")
+@Api("创建虚拟机")
 public class VmCloudServerCatalogController {
 
     @Resource

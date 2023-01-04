@@ -151,6 +151,7 @@ const permissions = {
         create: "Create",
         edit: "Edit",
         delete: "Delete",
+        notification_setting: "Notification Settings",
       },
       role: {
         base: "Role",
