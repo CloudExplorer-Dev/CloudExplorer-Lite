@@ -313,7 +313,7 @@ const filterSg = (infoVmCloudServer: any) => {
   let text = "";
   if (infoVmCloudServer.securityGroupIds) {
     const sg = JSON.parse(infoVmCloudServer.securityGroupIds);
-    text = sg.join(",");
+    text = sg?.join(",");
   }
   return text;
 };
