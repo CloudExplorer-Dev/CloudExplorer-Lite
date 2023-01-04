@@ -18,6 +18,8 @@ import { platformIcon } from "@commons/utils/platform";
 import BaseCloudAccountApi from "@commons/api/cloud_account";
 import Grant from "@/views/vm_cloud_server/grant.vue";
 import { usePermissionStore } from "@commons/stores/modules/permission";
+import ButtonToolBar from "@commons/components/button-tool-bar/ButtonToolBar.vue";
+import { ButtonAction } from "@commons/components/button-tool-bar/type";
 
 const { t } = useI18n();
 const permissionStore = usePermissionStore();
@@ -515,27 +517,50 @@ const showGrantDialog = () => {
 const deleteBatch = () => {
   batchOperate("DELETE");
 };
-const moreActions = ref([
-  {
-    text: t("commons.btn.grant", "授权"),
-    arg: undefined,
-    fn: authorizeBatch,
-    show: permissionStore.hasPermission("[vm-service]CLOUD_SERVER:AUTH"),
-  },
-  {
-    text: t("commons.btn.delete", "删除"),
-    arg: undefined,
-    fn: deleteBatch,
-    show: permissionStore.hasPermission("[vm-service]CLOUD_SERVER:DELETE"),
-  },
+const moreActions = ref<Array<ButtonAction>>([
+  new ButtonAction(
+    t("commons.btn.create", "创建"),
+    "primary",
+    undefined,
+    gotoCatalog,
+    permissionStore.hasPermission("[vm-service]CLOUD_SERVER:CREATE")
+  ),
+  new ButtonAction(
+    t("vm_cloud_server.btn.power_on", "启动"),
+    undefined,
+    "POWER_ON",
+    batchOperate,
+    permissionStore.hasPermission("[vm-service]CLOUD_SERVER:START")
+  ),
+  new ButtonAction(
+    t("vm_cloud_server.btn.shutdown", "关机"),
+    undefined,
+    "SHUTDOWN",
+    batchOperate,
+    permissionStore.hasPermission("[vm-service]CLOUD_SERVER:STOP")
+  ),
+  new ButtonAction(
+    t("vm_cloud_server.btn.reboot", "重启"),
+    undefined,
+    "REBOOT",
+    batchOperate,
+    permissionStore.hasPermission("[vm-service]CLOUD_SERVER:RESTART")
+  ),
+  new ButtonAction(
+    t("commons.btn.grant", "授权"),
+    undefined,
+    undefined,
+    authorizeBatch,
+    permissionStore.hasPermission("[vm-service]CLOUD_SERVER:AUTH")
+  ),
+  new ButtonAction(
+    t("commons.btn.delete", "删除"),
+    undefined,
+    undefined,
+    deleteBatch,
+    permissionStore.hasPermission("[vm-service]CLOUD_SERVER:DELETE")
+  ),
 ]);
-//触发事件
-const handleAction = (actionObj: any) => {
-  const { arg, fn } = actionObj;
-  if (fn) {
-    fn(arg);
-  }
-};
 </script>
 <template>
   <ce-table
@@ -549,54 +574,7 @@ const handleAction = (actionObj: any) => {
     ref="table"
   >
     <template #toolbar>
-      <el-button
-        @click="gotoCatalog()"
-        type="primary"
-        v-hasPermission="'[vm-service]CLOUD_SERVER:CREATE'"
-      >
-        {{ t("commons.btn.create", "创建") }}
-      </el-button>
-      <el-button
-        @click="batchOperate('POWER_ON')"
-        v-hasPermission="'[vm-service]CLOUD_SERVER:START'"
-      >
-        {{ t("vm_cloud_server.btn.power_on", "启动") }}
-      </el-button>
-      <el-button
-        @click="batchOperate('SHUTDOWN')"
-        v-hasPermission="'[vm-service]CLOUD_SERVER:STOP'"
-      >
-        {{ t("vm_cloud_server.btn.shutdown", "关机") }}
-      </el-button>
-      <el-button
-        @click="batchOperate('REBOOT')"
-        v-hasPermission="'[vm-service]CLOUD_SERVER:RESTART'"
-      >
-        {{ t("vm_cloud_server.btn.reboot", "重启") }}
-      </el-button>
-      <el-dropdown
-        @command="handleAction"
-        trigger="click"
-        style="margin-left: 12px"
-        v-if="_.some(moreActions, 'show')"
-      >
-        <el-button>
-          {{ t("commons.btn.more_actions", "更多操作")
-          }}<el-icon class="el-icon--right"><arrow-down /></el-icon>
-        </el-button>
-        <template #dropdown>
-          <el-dropdown-menu>
-            <template v-for="(item, index) in moreActions" :key="index">
-              <el-dropdown-item
-                :command="{ arg: item.arg, fn: item.fn }"
-                v-if="item.show"
-              >
-                {{ item.text }}
-              </el-dropdown-item>
-            </template>
-          </el-dropdown-menu>
-        </template>
-      </el-dropdown>
+      <ButtonToolBar :actions="moreActions" :ellipsis="4" />
     </template>
     <el-table-column type="selection" />
     <el-table-column
