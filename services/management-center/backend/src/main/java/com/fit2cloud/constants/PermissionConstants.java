@@ -32,9 +32,10 @@ public class PermissionConstants {
         public static final String ORGANIZATION = "ORGANIZATION";
         public static final String SYSTEM_SETTING = "SYSTEM_SETTING";
 
-        public static final String SYS_LOG = "SYSLOG";
+        public static final String SYS_LOG = "SYS_LOG";
 
         public static final String OPERATED_LOG = "OPERATED_LOG";
+
         //...
     }
 
@@ -47,6 +48,7 @@ public class PermissionConstants {
         public static final String SYNC_RESOURCE = "SYNC_RESOURCE";
         public static final String SYNC_BILL = "SYNC_BILL";
         public static final String SYNC_SETTING = "SYNC_SETTING";
+        public static final String CLEAR_POLICY = "CLEAR_POLICY";
         //...
     }
 
@@ -240,6 +242,14 @@ public class PermissionConstants {
                                             .role(RoleConstants.ROLE.ADMIN)
                                             .role(RoleConstants.ROLE.ORGADMIN)
                             )
+                            .permission(
+                                    //系统日志清空策略
+                                    new Permission.Builder()
+                                            .require(OPERATE.READ)
+                                            .operate(OPERATE.CLEAR_POLICY)
+                                            .name("permission.manage.sys_log.clear_policy")
+                                            .role(RoleConstants.ROLE.ADMIN)
+                            )
                     //...
             ).group(
                     new PermissionGroup.Builder()
@@ -252,6 +262,15 @@ public class PermissionConstants {
                                             .name("permission.manage.operated_log.read")
                                             .role(RoleConstants.ROLE.ADMIN)
                                             .role(RoleConstants.ROLE.ORGADMIN)
+                            )
+                            .permission(
+                                    //操作日志清空策略
+                                    new Permission.Builder()
+                                            .require(OPERATE.READ)
+                                            .operate(OPERATE.CLEAR_POLICY)
+                                            .name("permission.manage.operated_log.clear_policy")
+                                            .role(RoleConstants.ROLE.ADMIN)
+
                             )
                     //...
             )

@@ -186,10 +186,12 @@ const permissions = {
       sys_log: {
         base: "系统日志",
         read: "查看",
+        clear_policy: "清空策略设置",
       },
       operated_log: {
         base: "操作日志",
         read: "查看",
+        clear_policy: "清空策略设置",
       },
     },
     vm: {

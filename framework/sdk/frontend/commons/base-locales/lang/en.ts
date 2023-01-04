@@ -187,10 +187,12 @@ const permissions = {
       sys_log: {
         base: "System Logs",
         read: "Read",
+        clear_policy: "Clear Policy Settings",
       },
       operated_log: {
         base: "Operation Logs",
         read: "Read",
+        clear_policy: "Clear Policy Settings",
       },
     },
     vm: {
