@@ -109,7 +109,7 @@ public class CloudAccountController {
     }
 
     @PutMapping("/sync")
-    @PreAuthorize("hasAnyCePermission('CLOUD_ACCOUNT:SYNC')")
+    @PreAuthorize("hasAnyCePermission('CLOUD_ACCOUNT:SYNC_RESOURCE')")
     @ApiOperation(value = "根据云账号全量同步", notes = "根据云账号全量同步")
     public ResultHolder<Boolean> sync(@ApiParam("云账号id") @Size(min = 1, message = "{i18n.i18n.cloud_account.id.is.not.empty}") @RequestBody ArrayList<String> cloudAccountIds) {
         cloudAccountService.sync(cloudAccountIds);
@@ -157,7 +157,7 @@ public class CloudAccountController {
 
     @PutMapping("/jobs")
     @ApiOperation(value = "修改云账号定时任务", notes = "修改云账号定时任务")
-    @PreAuthorize("hasAnyCePermission('CLOUD_ACCOUNT:EDIT')")
+    @PreAuthorize("hasAnyCePermission('CLOUD_ACCOUNT:SYNC_SETTING')")
     public ResultHolder<CloudAccountJobDetailsResponse> updateJobs(@RequestBody UpdateJobsRequest updateJobsRequest) {
         return ResultHolder.success(cloudAccountService.updateJob(updateJobsRequest));
     }
@@ -171,7 +171,7 @@ public class CloudAccountController {
 
     @PostMapping("/sync")
     @ApiOperation(value = "同步", notes = "同步")
-    @PreAuthorize("hasAnyCePermission('CLOUD_ACCOUNT:SYNC')")
+    @PreAuthorize("hasAnyCePermission('CLOUD_ACCOUNT:SYNC_RESOURCE', 'CLOUD_ACCOUNT:SYNC_BILL')")
     public ResultHolder<Boolean> sync(@RequestBody SyncRequest request) {
         cloudAccountService.sync(request);
         return ResultHolder.success(true);
