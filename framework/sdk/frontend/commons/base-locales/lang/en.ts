@@ -150,6 +150,7 @@ const permissions = {
         read: "Read",
         create: "Create",
         edit: "Edit",
+        edit_password: "Change Password",
         delete: "Delete",
         notification_setting: "Notification Settings",
       },

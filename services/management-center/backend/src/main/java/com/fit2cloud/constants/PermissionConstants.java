@@ -42,6 +42,7 @@ public class PermissionConstants {
     public static class OPERATE {
         public static final String READ = "READ";
         public static final String EDIT = "EDIT";
+        public static final String EDIT_PASSWORD = "EDIT_PASSWORD";
         public static final String CREATE = "CREATE";
         public static final String DELETE = "DELETE";
         public static final String NOTIFICATION_SETTING = "NOTIFICATION_SETTING";
@@ -106,6 +107,15 @@ public class PermissionConstants {
                                             .require(OPERATE.READ)
                                             .operate(OPERATE.EDIT)
                                             .name("permission.manage.user.edit")
+                                            .role(RoleConstants.ROLE.ADMIN)
+                                            .role(RoleConstants.ROLE.ORGADMIN)
+                            )
+                            .permission(
+                                    //编辑用户
+                                    new Permission.Builder()
+                                            .require(OPERATE.READ)
+                                            .operate(OPERATE.EDIT_PASSWORD)
+                                            .name("permission.manage.user.edit_password")
                                             .role(RoleConstants.ROLE.ADMIN)
                                             .role(RoleConstants.ROLE.ORGADMIN)
                             )

@@ -194,7 +194,7 @@ const tableConfig = ref<TableConfig>({
       showPwdDialog,
       "EditPen",
       undefined,
-      permissionStore.hasPermission("[management-center]USER:EDIT")
+      permissionStore.hasPermission("[management-center]USER:EDIT_PASSWORD")
     ),
     TableOperations.buildButtons().newInstance(
       t("user.notify_setting"),

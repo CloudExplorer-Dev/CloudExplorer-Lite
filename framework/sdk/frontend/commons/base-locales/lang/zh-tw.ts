@@ -149,6 +149,7 @@ const permissions = {
         read: "查看",
         create: "創建",
         edit: "編輯",
+        edit_password: "修改密碼",
         delete: "刪除",
         notification_setting: "通知設置",
       },
