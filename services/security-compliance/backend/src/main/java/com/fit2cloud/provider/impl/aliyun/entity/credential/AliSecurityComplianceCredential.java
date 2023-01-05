@@ -31,4 +31,82 @@ public class AliSecurityComplianceCredential extends AliyunBaseCredential {
             throw new Fit2cloudException(1000, "获取客户端失败");
         }
     }
+
+    /**
+     * 获取redis客户端
+     *
+     * @param regionId 区域id
+     * @return redis客户端
+     */
+    public com.aliyun.r_kvstore20150101.Client getRedisClient(String regionId) {
+        com.aliyun.teaopenapi.models.Config config = new com.aliyun.teaopenapi.models.Config()
+                .setAccessKeyId(getAccessKeyId())
+                .setAccessKeySecret(getAccessKeySecret())
+                .setRegionId(regionId);
+        config.endpoint = "r-kvstore.aliyuncs.com";
+        try {
+            return new com.aliyun.r_kvstore20150101.Client(config);
+        } catch (Exception e) {
+            throw new Fit2cloudException(1000, "获取客户端失败");
+        }
+    }
+
+    /**
+     * 获取mongodb客户端
+     *
+     * @param regionId 区域
+     * @return MongoDB客户端
+     */
+    public com.aliyun.dds20151201.Client getMongodbClient(String regionId) {
+        com.aliyun.teaopenapi.models.Config config = new com.aliyun.teaopenapi.models.Config()
+                .setAccessKeyId(getAccessKeyId())
+                .setAccessKeySecret(getAccessKeySecret())
+                .setRegionId(regionId);
+        config.endpoint = "mongodb.aliyuncs.com";
+        try {
+            return new com.aliyun.dds20151201.Client(config);
+        } catch (Exception e) {
+            throw new Fit2cloudException(1000, "获取客户端失败");
+        }
+    }
+
+    /**
+     * 获取Rds客户端 -- MySQL,SQLServer,PostgreSQL,MariaDB
+     *
+     * @param regionId 区域
+     * @return Rds客户端
+     */
+    public com.aliyun.rds20140815.Client getRdsClient(String regionId) {
+        com.aliyun.teaopenapi.models.Config config = new com.aliyun.teaopenapi.models.Config()
+                .setAccessKeyId(getAccessKeyId())
+                .setAccessKeySecret(getAccessKeySecret())
+                .setRegionId(regionId);
+        config.endpoint = "rds.aliyuncs.com";
+        try {
+            return new com.aliyun.rds20140815.Client(config);
+        } catch (Exception e) {
+            throw new Fit2cloudException(1000, "获取客户端失败");
+        }
+    }
+
+    /**
+     * 获取 elasticsearch 客户端
+     *
+     * @param regionId 区域
+     * @return elasticsearch 客户端
+     */
+    public com.aliyun.elasticsearch20170613.Client getElasticSearchClient(String regionId) {
+        com.aliyun.teaopenapi.models.Config config = new com.aliyun.teaopenapi.models.Config()
+                .setAccessKeyId(getAccessKeyId())
+                .setAccessKeySecret(getAccessKeySecret())
+                .setRegionId(regionId);
+        // 访问的域名
+        config.endpoint = "elasticsearch." + regionId + ".aliyuncs.com";
+        try {
+            return new com.aliyun.elasticsearch20170613.Client(config);
+        } catch (Exception e) {
+            throw new Fit2cloudException(1000, "获取客户端失败");
+        }
+
+    }
 }

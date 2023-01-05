@@ -29,6 +29,10 @@ public enum InstanceFieldType {
      */
     ArrayString(IN),
     /**
+     * 数组枚举
+     */
+    ArrayEnum(IN),
+    /**
      * 数组数字
      */
     ArrayNumber(AVG_LE, AVG_GE, SUM_GE, SUM_LE, LE, GE, IN),

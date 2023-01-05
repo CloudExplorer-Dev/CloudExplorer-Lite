@@ -56,7 +56,7 @@ public class InstanceSearchField {
      * @param options   字段value枚举
      */
     public InstanceSearchField(String label, String field, InstanceFieldType fieldType, List<DefaultKeyValue<String, Object>> options) {
-        if (!fieldType.equals(InstanceFieldType.Enum)) {
+        if (!fieldType.equals(InstanceFieldType.Enum) && !fieldType.equals(InstanceFieldType.ArrayEnum)) {
             throw new RuntimeException("当前构造器只适用于枚举类型");
         }
         this.label = label;

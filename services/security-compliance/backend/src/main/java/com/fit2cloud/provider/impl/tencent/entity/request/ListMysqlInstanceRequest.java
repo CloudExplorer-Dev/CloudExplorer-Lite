@@ -1,20 +1,19 @@
 package com.fit2cloud.provider.impl.tencent.entity.request;
 
 import com.fit2cloud.provider.impl.tencent.entity.credential.TencentSecurityComplianceCredential;
-import com.tencentcloudapi.cvm.v20170312.models.DescribeInstancesRequest;
-import lombok.Data;
+import com.tencentcloudapi.cdb.v20170320.models.DescribeDBInstancesRequest;
 import lombok.Getter;
 import lombok.Setter;
 
 /**
  * {@code @Author:张少虎}
- * {@code @Date: 2022/12/6  13:51}
+ * {@code @Date: 2023/1/5  15:00}
  * {@code @Version 1.0}
  * {@code @注释: }
  */
 @Getter
 @Setter
-public class ListCvmInstanceRequest extends DescribeInstancesRequest {
+public class ListMysqlInstanceRequest extends DescribeDBInstancesRequest {
     /**
      * 认证对象
      */

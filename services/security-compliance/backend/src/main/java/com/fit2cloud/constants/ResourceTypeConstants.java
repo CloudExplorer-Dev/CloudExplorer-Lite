@@ -18,7 +18,36 @@ public enum ResourceTypeConstants {
     /**
      * 云服务器
      */
-    ECS("云服务器", ICloudProvider::listEcsInstance, ICloudProvider::listEcsInstanceSearchField);
+    ECS("云服务器", ICloudProvider::listEcsInstance, ICloudProvider::listEcsInstanceSearchField),
+    /**
+     * redis
+     */
+    REDIS("云数据库-Redis", ICloudProvider::listRedisInstance, ICloudProvider::listRedisInstanceSearchField),
+    /**
+     * mongodb
+     */
+    MONGO_DB("云数据库-Mongodb", ICloudProvider::listMongodbInstance, ICloudProvider::listMongodbInstanceSearchField),
+    /**
+     * mysql
+     */
+    MYSQL("云数据库-Mysql", ICloudProvider::listMysqlInstance, ICloudProvider::listMysqlInstanceSearchField),
+    /**
+     * sqlServer
+     */
+    SQL_SERVER("云数据库-SqlServer", ICloudProvider::listSqlServerInstance, ICloudProvider::listSqlServerInstanceSearchField),
+    /**
+     * PostGreSql
+     */
+    POST_GRE_SQL("云数据库-PostGreSql", ICloudProvider::listPostGreSqlInstance, ICloudProvider::listPostGreSqlInstanceSearchField),
+    /**
+     * MariaDB
+     */
+    MARIA_DB("云数据库-MariaDB", ICloudProvider::listMariaDBInstance, ICloudProvider::listMariaDBInstanceSearchField),
+
+    /**
+     * elasticsearch
+     */
+    ELASTIC_SEARCH("云数据库-Elasticsearch", ICloudProvider::listElasticSearchInstance, ICloudProvider::listElasticSearchInstanceSearchField);
     /**
      * 提示
      */

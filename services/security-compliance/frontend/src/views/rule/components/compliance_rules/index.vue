@@ -10,7 +10,7 @@
       @update:modelValue="update(index, $event)"
     ></compliance_rule_item>
   </div>
-  <span @click="addRule">添加规则</span>
+  <span @click="addRule" style="cursor: pointer">添加规则</span>
 </template>
 <script setup lang="ts">
 import { ref, watch } from "vue";
@@ -38,15 +38,30 @@ const emit = defineEmits(["update:modelValue"]);
  * @param index 需要修改的index
  * @param rule  需要修改的对象
  */
-const update = (index: number, rule: Rule) => {
+const update = (index: number, rule: Rule | string) => {
+  if (typeof rule === "string") {
+    deleteRule(index);
+  } else {
+    emit(
+      "update:modelValue",
+      props.modelValue.map((item, i) => {
+        if (i === index) {
+          return rule;
+        }
+        return item;
+      })
+    );
+  }
+};
+/**
+ * 删除数据
+ * @param index 需要修改的index
+ * @param rule  需要修改的对象
+ */
+const deleteRule = (index: number) => {
   emit(
     "update:modelValue",
-    props.modelValue.map((item, i) => {
-      if (i === index) {
-        return rule;
-      }
-      return item;
-    })
+    props.modelValue.filter((item, tindex) => tindex !== index)
   );
 };
 

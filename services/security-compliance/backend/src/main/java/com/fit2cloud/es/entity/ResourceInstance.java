@@ -23,7 +23,7 @@ public class ResourceInstance {
     /**
      * 供应商
      */
-    @Field(type = FieldType.Text)
+    @Field(type = FieldType.Keyword)
     private String platform;
     /**
      * 云账户id

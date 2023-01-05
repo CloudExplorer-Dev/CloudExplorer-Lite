@@ -2,7 +2,7 @@
   <div class="content">
     <el-select
       :modelValue="modelValue.field"
-      class="avg"
+      class="avg spacing"
       placeholder="请选择规则字段"
       size="default"
       @change="handler('field', $event)"
@@ -17,7 +17,7 @@
     <el-select
       :modelValue="modelValue.compare"
       @change="handler('compare', $event)"
-      class="avg"
+      class="avg spacing"
       placeholder="请选择比较器"
       size="default"
     >
@@ -32,7 +32,7 @@
       v-if="activeField && activeField.fieldType === 'Enum'"
       :modelValue="modelValue.value"
       @change="handler('value', $event)"
-      class="avg"
+      class="avg spacing"
       placeholder="请选择"
       size="default"
     >
@@ -44,7 +44,7 @@
       />
     </el-select>
     <el-input-number
-      class="avg"
+      class="avg spacing"
       v-else-if="
         activeField && ['ArrayNumber', 'Number'].includes(activeField.fieldType)
       "
@@ -53,11 +53,14 @@
       :precision="2"
     />
     <el-input
+      class="avg spacing"
       v-else
       :modelValue="modelValue.value"
       @input="handler('value', $event)"
       placeholder="请输入"
     />
+    <div style="flex: auto"></div>
+    <div @click="deleteRule" style="cursor: pointer">删除</div>
   </div>
 </template>
 <script setup lang="ts">
@@ -88,13 +91,15 @@ const activeField = computed(() => {
 // 字段绑定
 const emit = defineEmits(["update:modelValue"]);
 
+const deleteRule = () => {
+  emit("update:modelValue", "delete");
+};
 /**
  * 输入处理器
  * @param field 字段
  * @param value 值
  */
 const handler = (field: string, value: any) => {
-  console.log(field, value);
   if (field === "field") {
     const f = props.fields.find((f) => f.field === value);
     if (f && ["ArrayNumber", "Number"].includes(f.fieldType)) {
@@ -106,7 +111,6 @@ const handler = (field: string, value: any) => {
       return;
     }
   }
-  console.log({ ...props.modelValue, [field]: value });
   emit("update:modelValue", { ...props.modelValue, [field]: value });
 };
 </script>
@@ -118,5 +122,8 @@ const handler = (field: string, value: any) => {
 }
 .avg {
   width: 30%;
+}
+.spacing {
+  margin: 0 5px;
 }
 </style>

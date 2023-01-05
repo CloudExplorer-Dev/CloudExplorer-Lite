@@ -6,6 +6,7 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.fit2cloud.common.exception.Fit2cloudException;
 import com.fit2cloud.common.provider.util.CommonUtil;
+import com.fit2cloud.common.utils.SpringUtil;
 import com.fit2cloud.constants.ResourceTypeConstants;
 import com.fit2cloud.controller.request.rule.ComplianceRuleRequest;
 import com.fit2cloud.controller.request.rule.PageComplianceRuleRequest;
@@ -16,10 +17,7 @@ import com.fit2cloud.dao.entity.ComplianceRule;
 import com.fit2cloud.dao.entity.ComplianceRuleGroup;
 import com.fit2cloud.dao.mapper.ComplianceRuleMapper;
 import com.fit2cloud.provider.ICloudProvider;
-import com.fit2cloud.service.IComplianceInsuranceStatuteService;
-import com.fit2cloud.service.IComplianceRuleGroupService;
-import com.fit2cloud.service.IComplianceRuleInsuranceStatuteMappingService;
-import com.fit2cloud.service.IComplianceRuleService;
+import com.fit2cloud.service.*;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.keyvalue.DefaultKeyValue;
 import org.apache.commons.lang3.StringUtils;
@@ -47,8 +45,7 @@ public class ComplianceRuleServiceImpl extends ServiceImpl<ComplianceRuleMapper,
     private IComplianceRuleGroupService complianceRuleGroupService;
     @Resource
     private IComplianceRuleInsuranceStatuteMappingService complianceRuleInsuranceStatuteMappingService;
-    @Resource
-    private IComplianceInsuranceStatuteService complianceInsuranceStatuteService;
+
 
     @Override
     public List<ComplianceRuleSearchFieldResponse> listInstanceSearchField(String platform, String resourceType) {
@@ -113,6 +110,8 @@ public class ComplianceRuleServiceImpl extends ServiceImpl<ComplianceRuleMapper,
         }
         ComplianceRuleResponse complianceRuleResponse = new ComplianceRuleResponse();
         BeanUtils.copyProperties(complianceRule, complianceRuleResponse);
+        // todo 更新缓存
+        SpringUtil.getBean(IComplianceScanService.class).updateCacheScanComplianceByRuleId(complianceRuleRequest.getId());
         return complianceRuleResponse;
     }
 }

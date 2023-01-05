@@ -20,7 +20,6 @@ const loading = ref<boolean>(false);
  * @param rule 规则
  */
 const getField = (rule: Rule) => {
-  console.log(rule, fields);
   const f = fields.value.find((f) => f.field === rule.field);
   return f?.label;
 };

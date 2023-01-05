@@ -1,14 +1,17 @@
 package com.fit2cloud.provider.impl.aliyun.api;
 
+import com.aliyun.dds20151201.models.DescribeDBInstancesResponseBody;
 import com.aliyun.ecs20140526.Client;
 import com.aliyun.ecs20140526.models.DescribeInstancesResponseBody;
+import com.aliyun.elasticsearch20170613.models.ListInstanceResponseBody;
 import com.aliyun.teautil.models.RuntimeOptions;
 import com.fit2cloud.common.exception.Fit2cloudException;
 import com.fit2cloud.common.provider.exception.ReTryException;
 import com.fit2cloud.common.provider.exception.SkipPageException;
 import com.fit2cloud.common.provider.util.PageUtil;
-import com.fit2cloud.provider.impl.aliyun.entity.request.ListEcsInstancesRequest;
+import com.fit2cloud.provider.impl.aliyun.entity.request.*;
 
+import java.util.HashMap;
 import java.util.List;
 
 /**
@@ -39,4 +42,140 @@ public class AliApi {
             }
         }, res -> res.getBody().getInstances().instance, (req, res) -> res.getBody().getPageSize() <= res.getBody().getInstances().instance.size(), req -> req.setPageNumber(req.getPageNumber() + 1));
     }
+
+    /**
+     * 获取阿里云 云数据库redis实例列表
+     *
+     * @param request 请求对象
+     * @return 阿里云 云数据库redis 实例列表
+     */
+    public static List<com.aliyun.r_kvstore20150101.models.DescribeInstancesResponseBody.DescribeInstancesResponseBodyInstancesKVStoreInstance> listRedisInstance(ListRedisInstanceRequest request) {
+        com.aliyun.r_kvstore20150101.Client redisClient = request.getCredential().getRedisClient(request.getRegionId());
+        request.setPageNumber(PageUtil.DefaultCurrentPage);
+        request.setPageSize(PageUtil.DefaultPageSize);
+        return PageUtil.page(request, req -> {
+            try {
+                return redisClient.describeInstancesWithOptions(request, new RuntimeOptions());
+            } catch (Exception e) {
+                ReTryException.throwReTry(e);
+                SkipPageException.throwSkip(e);
+                throw new Fit2cloudException(10002, "获取阿里云redis列表失败" + e.getMessage());
+            }
+        }, res -> res.getBody().getInstances().getKVStoreInstance(), (req, res) -> res.getBody().getPageSize() <= res.getBody().getInstances().getKVStoreInstance().size(), req -> req.setPageNumber(req.getPageNumber() + 1));
+
+    }
+
+    /**
+     * 获取阿里云 云数据库Mongodb实例列表
+     *
+     * @param request 请求对象
+     * @return 阿里云 云数据库MongoDB 实例列表
+     */
+    public static List<DescribeDBInstancesResponseBody.DescribeDBInstancesResponseBodyDBInstancesDBInstance> listMongoDBInstance(ListMongoDBRequest request) {
+        com.aliyun.dds20151201.Client mongodbClient = request.getCredential().getMongodbClient(request.getRegionId());
+        request.setPageNumber(PageUtil.DefaultCurrentPage);
+        request.setPageSize(PageUtil.DefaultPageSize);
+        return PageUtil.page(request, req -> {
+            try {
+                return mongodbClient.describeDBInstancesWithOptions(request, new RuntimeOptions());
+            } catch (Exception e) {
+                ReTryException.throwReTry(e);
+                SkipPageException.throwSkip(e);
+                throw new Fit2cloudException(10002, "获取阿里云MongoDB实例失败" + e.getMessage());
+            }
+        }, res -> res.getBody().getDBInstances().getDBInstance(), (req, res) -> res.getBody().getPageSize() <= res.getBody().getDBInstances().getDBInstance().size(), req -> req.setPageNumber(req.getPageNumber() + 1));
+
+    }
+
+    /**
+     * 获取阿里云 云数据Mysql实例列表
+     *
+     * @param request 请求对象
+     * @return 阿里云 云数据库 mysql实例列表
+     */
+    public static List<com.aliyun.rds20140815.models.DescribeDBInstancesResponseBody.DescribeDBInstancesResponseBodyItemsDBInstance> listMysqlInstance(ListRdsInstanceRequest request) {
+        request.setEngine("MySQL");
+        return listRdsInstance(request);
+    }
+
+    /**
+     * 获取阿里云 云数据SQLServer实例列表
+     *
+     * @param request 请求对象
+     * @return 阿里云 云数据库 SQLServer实例列表
+     */
+    public static List<com.aliyun.rds20140815.models.DescribeDBInstancesResponseBody.DescribeDBInstancesResponseBodyItemsDBInstance> listSqlServerInstance(ListRdsInstanceRequest request) {
+        request.setEngine("SQLServer");
+        return listRdsInstance(request);
+    }
+
+    /**
+     * 获取阿里云 云数据SQLServer实例列表
+     *
+     * @param request 请求对象
+     * @return 阿里云 云数据库 SQLServer实例列表
+     */
+    public static List<com.aliyun.rds20140815.models.DescribeDBInstancesResponseBody.DescribeDBInstancesResponseBodyItemsDBInstance> listPostgreSqlInstance(ListRdsInstanceRequest request) {
+        request.setEngine("PostgreSQL");
+        return listRdsInstance(request);
+    }
+
+    /**
+     * 获取阿里云 云数据SQLServer实例列表
+     *
+     * @param request 请求对象
+     * @return 阿里云 云数据库 SQLServer实例列表
+     */
+    public static List<com.aliyun.rds20140815.models.DescribeDBInstancesResponseBody.DescribeDBInstancesResponseBodyItemsDBInstance> listMariaDBInstance(ListRdsInstanceRequest request) {
+        request.setEngine("MariaDB");
+        return listRdsInstance(request);
+    }
+
+    /**
+     * 获取阿里云 云数据库
+     * MySQL
+     * SQLServer
+     * PostgreSQL
+     * MariaDB
+     *
+     * @param request 请求对象
+     * @return 阿里云 云数据库 rds 实例列表
+     */
+    private static List<com.aliyun.rds20140815.models.DescribeDBInstancesResponseBody.DescribeDBInstancesResponseBodyItemsDBInstance> listRdsInstance(ListRdsInstanceRequest request) {
+        com.aliyun.rds20140815.Client rdsClient = request.getCredential().getRdsClient(request.getRegionId());
+        request.setPageNumber(PageUtil.DefaultCurrentPage);
+        request.setPageSize(PageUtil.DefaultPageSize);
+        return PageUtil.page(request, req -> {
+            try {
+                return rdsClient.describeDBInstancesWithOptions(request, new RuntimeOptions());
+            } catch (Exception e) {
+                ReTryException.throwReTry(e);
+                SkipPageException.throwSkip(e);
+                throw new Fit2cloudException(10002, "获取阿里云Mysql实例失败" + e.getMessage());
+            }
+        }, res -> res.getBody().getItems().getDBInstance(), (req, res) -> res.getBody().getPageRecordCount() <= res.getBody().getItems().getDBInstance().size(), req -> req.setPageNumber(req.getPageNumber() + 1));
+    }
+
+    /**
+     * 获取阿里云 云数据库 elasticsearch 实例列表
+     *
+     * @param request 请求对象
+     * @return 云数据库 elasticsearch 实例列表
+     */
+    public static List<ListInstanceResponseBody.ListInstanceResponseBodyResult> listElasticsearchInstance(ListElasticSearchInstanceRequest request) {
+        com.aliyun.elasticsearch20170613.Client elasticSearchClient = request.getCredential().getElasticSearchClient(request.getRegion());
+        request.setPage(PageUtil.DefaultCurrentPage);
+        request.setSize(PageUtil.DefaultPageSize);
+        return PageUtil.page(request, req -> {
+            try {
+                return elasticSearchClient.listInstanceWithOptions(request, new HashMap<>(), new RuntimeOptions());
+            } catch (Exception e) {
+                ReTryException.throwReTry(e);
+                SkipPageException.throwSkip(e);
+                throw new Fit2cloudException(10002, "获取阿里云ElasticSearch实例失败" + e.getMessage());
+            }
+        }, res -> res.getBody().getResult(), (req, res) -> req.getSize() <= res.getBody().getResult().size(), req -> req.setPage(req.getPage() + 1));
+
+    }
+
 }
