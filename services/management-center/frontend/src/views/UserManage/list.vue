@@ -15,9 +15,11 @@ import AddRole from "@/views/UserManage/AddRole.vue";
 import MsgConfig from "@/views/UserManage/MsgConfig.vue";
 import { useI18n } from "vue-i18n";
 import { ElMessageBox, ElMessage } from "element-plus/es";
+import { usePermissionStore } from "@commons/stores/modules/permission";
 
 const { t } = useI18n();
 const useRoute = useRouter();
+const permissionStore = usePermissionStore();
 const columns = ref([]);
 const tableData = ref<Array<User>>();
 const table = ref();
@@ -174,25 +176,35 @@ const tableConfig = ref<TableConfig>({
       t("commons.btn.edit"),
       "primary",
       edit,
-      "Edit"
+      "Edit",
+      undefined,
+      permissionStore.hasPermission("[management-center]USER:EDIT")
     ),
     TableOperations.buildButtons().newInstance(
       t("commons.btn.delete"),
       "danger",
       deleteUser,
-      "Delete"
+      "Delete",
+      undefined,
+      permissionStore.hasPermission("[management-center]USER:DELETE")
     ),
     TableOperations.buildButtons().newInstance(
       t("commons.personal.edit_pwd"),
       "primary",
       showPwdDialog,
-      "EditPen"
+      "EditPen",
+      undefined,
+      permissionStore.hasPermission("[management-center]USER:EDIT_PASSWORD")
     ),
     TableOperations.buildButtons().newInstance(
       t("user.notify_setting"),
       "primary",
       showMsgConfigDialog,
-      "Bell"
+      "Bell",
+      undefined,
+      permissionStore.hasPermission(
+        "[management-center]USER:NOTIFICATION_SETTING"
+      )
     ),
   ]),
 });
@@ -210,10 +222,19 @@ const tableConfig = ref<TableConfig>({
     table-layout="auto"
   >
     <template #toolbar>
-      <el-button @click="create" type="primary">{{
-        $t("commons.btn.create")
-      }}</el-button>
-      <el-button @click="addRole">{{ $t("user.add_role") }}</el-button>
+      <el-button
+        @click="create"
+        type="primary"
+        v-hasPermission="'[management-center]USER:CREATE'"
+      >
+        {{ $t("commons.btn.create") }}
+      </el-button>
+      <el-button
+        @click="addRole"
+        v-hasPermission="'[management-center]USER:EDIT'"
+      >
+        {{ $t("user.add_role") }}
+      </el-button>
     </template>
     <el-table-column type="selection" />
     <el-table-column prop="username" label="ID">
@@ -222,8 +243,8 @@ const tableConfig = ref<TableConfig>({
           style="cursor: pointer; color: var(--el-color-primary)"
           @click="showUserDetail(scope.row)"
         >
-          {{ scope.row.username }}</span
-        >
+          {{ scope.row.username }}
+        </span>
       </template>
     </el-table-column>
     <el-table-column prop="name" :label="$t('user.name')" />
@@ -231,9 +252,10 @@ const tableConfig = ref<TableConfig>({
     <el-table-column prop="roles" :label="$t('user.role')">
       <template #default="scope">
         <div v-for="role in scope.row.roles" :key="role.id">
-          <span style="color: var(--el-color-primary)"
-            >{{ role.name }}<br
-          /></span>
+          <span style="color: var(--el-color-primary)">
+            {{ role.name }}
+            <br />
+          </span>
         </div>
       </template>
     </el-table-column>

@@ -292,7 +292,7 @@ public class BaseResourceAnalysisServiceImpl implements IBaseResourceAnalysisSer
                             Long count = 0L;
                             //资源时间段内平均值
                             for(StringTermsBucket termsBucket:averageRanges){
-                                double avgValue = termsBucket.aggregations().get("average").avg().value();
+                                double avgValue = termsBucket.aggregations().get("average").max().value();
                                 //在区间里面
                                 if(avgValue>interval && avgValue<(interval+20)){
                                     count++;
@@ -351,7 +351,7 @@ public class BaseResourceAnalysisServiceImpl implements IBaseResourceAnalysisSer
                 .withSourceFilter(new FetchSourceFilter(new String[]{}, new String[]{"@version", "@timestamp", "host", "tags"}))
                 .withAggregation("timestamp",new Aggregation.Builder().dateHistogram(new DateHistogramAggregation.Builder().field("timestamp").calendarInterval(request.getIntervalPosition()).build())
                         .aggregations("instanceIds",new Aggregation.Builder().terms(new TermsAggregation.Builder().field("instanceId.keyword").size(Integer.MAX_VALUE).build())
-                                .aggregations("average",new Aggregation.Builder().avg(new AverageAggregation.Builder().field("average").build()).build()).build()).build())
+                                .aggregations("average",new Aggregation.Builder().max(new MaxAggregation.Builder().field("average").build()).build()).build()).build())
                 ;
         return query.build();
     }

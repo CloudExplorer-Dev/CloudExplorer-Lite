@@ -121,7 +121,7 @@ public class VmCloudServerController {
         return ResultHolder.success(iVmCloudServerService.findCloudServerOperateStatus(cloudServerIds).stream().collect(Collectors.groupingBy(JobRecordResourceResponse::getResourceId)));
     }
 
-    @ApiOperation(value = "新建云主机", notes = "新建云主机")
+    @ApiOperation(value = "创建云主机", notes = "创建云主机")
     @PostMapping("create")
     @PreAuthorize("hasAnyCePermission('CLOUD_SERVER:CREATE')")
     @OperatedLog(resourceType = ResourceTypeEnum.CLOUD_SERVER, operated = OperatedTypeEnum.CREATE_SERVER)

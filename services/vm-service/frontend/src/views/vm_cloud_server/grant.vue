@@ -10,7 +10,7 @@ const props = defineProps<{
   cloudServerIds: string[];
   dialogVisible: boolean;
 }>();
-const emits = defineEmits(["update:visible","refresh"]);
+const emits = defineEmits(["update:visible", "refresh"]);
 
 const { t } = useI18n();
 const loading = ref();
@@ -79,14 +79,18 @@ onMounted(() => {
       label-width="auto"
       label-position="right"
     >
-      <el-form-item :label="$t('commons.operation','操作')" prop="grant">
+      <el-form-item :label="$t('commons.operation', '操作')" prop="grant">
         <el-radio-group v-model="form.grant">
-          <el-radio-button label="true">{{$t("commons.grant","授权")}}</el-radio-button>
-          <el-radio-button label="false">{{$t("commons.cancel_grant","取消授权")}}</el-radio-button>
+          <el-radio-button label="true">{{
+            $t("commons.grant", "授权")
+          }}</el-radio-button>
+          <el-radio-button label="false">{{
+            $t("commons.cancel_grant", "取消授权")
+          }}</el-radio-button>
         </el-radio-group>
       </el-form-item>
       <el-form-item
-        :label="$t('commons.org_workspace','组织或工作空间')"
+        :label="$t('commons.org_workspace', '组织或工作空间')"
         prop="sourceId"
         v-show="form.grant === 'true'"
       >

@@ -131,7 +131,7 @@ function init() {
     originRoles.value = ok.data;
     if (props.createNew) {
       console.log("create new");
-      //新建时默认值
+      //创建时默认值
       _roleData.value.parentRoleId = originRoles.value[0]?.parentRoleId;
     }
   });

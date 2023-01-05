@@ -209,7 +209,7 @@ public class MenuConstants {
                             )
                             .childOperationRoute(new Menu.Builder()
                                     .name("role_create")
-                                    .title("新建角色")
+                                    .title("创建角色")
                                     .path("/create")
                                     .componentPath("/src/views/RoleManage/create.vue")
                                     .requiredPermission(new MenuPermission.Builder()

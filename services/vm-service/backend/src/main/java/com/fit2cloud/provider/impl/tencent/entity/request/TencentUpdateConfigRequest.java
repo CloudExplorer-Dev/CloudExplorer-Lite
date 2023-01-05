@@ -12,4 +12,5 @@ public class TencentUpdateConfigRequest extends TencentBaseRequest {
     private String instanceUuid;
     private String currentInstanceType;
     private String newInstanceType;
+    private String zoneId;
 }

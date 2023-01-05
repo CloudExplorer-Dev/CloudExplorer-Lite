@@ -12,5 +12,6 @@ public class AliyunUpdateConfigRequest extends AliyunBaseRequest{
     private String instanceUuid;
     private String currentInstanceType;
     private String newInstanceType;
+    private String instanceChargeType;
 
 }

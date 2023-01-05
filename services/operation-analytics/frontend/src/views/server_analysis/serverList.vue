@@ -19,6 +19,33 @@ const columns = ref([]);
 const tableData = ref<Array<VmCloudServerVO>>([]);
 const tableLoading = ref<boolean>(false);
 const cloudAccount = ref<Array<SimpleMap<string>>>([]);
+const filterInstanceStatus = (value: string) => {
+  let status = "";
+  InstanceStatus.value.forEach((v) => {
+    if (v.value == value) {
+      status = v.text;
+      return;
+    }
+  });
+  return status;
+};
+//状态
+const InstanceStatus = ref<Array<SimpleMap<string>>>([
+  { text: t("", "运行中"), value: "Running" },
+  { text: "已删除", value: "Deleted" },
+  { text: "已关机", value: "Stopped" },
+  { text: "启动中", value: "Starting" },
+  { text: "关机中", value: "Stopping" },
+  { text: "重启中", value: "Rebooting" },
+  { text: "删除中", value: "Deleting" },
+  { text: "创建中", value: "Createding" },
+  { text: "排队中", value: "WaitCreating" },
+  { text: "创建中", value: "Creating" },
+  { text: "配置变更中", value: "ConfigChanging" },
+  { text: "失败", value: "Failed" },
+  { text: "未知", value: "Unknown" },
+]);
+
 /**
  * 查询
  * @param condition
@@ -161,6 +188,18 @@ const tableConfig = ref<TableConfig>({
             </el-dropdown-menu>
           </template>
         </el-dropdown>
+      </template>
+    </el-table-column>
+    <el-table-column
+      :show="false"
+      prop="instanceStatus"
+      column-key="instanceStatus"
+      :label="$t('commons.status')"
+    >
+      <template #default="scope">
+        <div style="display: flex; align-items: center">
+          <span>{{ filterInstanceStatus(scope.row.instanceStatus) }} </span>
+        </div>
       </template>
     </el-table-column>
     <el-table-column

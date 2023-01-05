@@ -34,7 +34,7 @@ import java.util.concurrent.Executors;
 @RestController
 @RequestMapping("/api/server/catalog")
 @Validated
-@Api("新建虚拟机")
+@Api("创建虚拟机")
 public class VmCloudServerCatalogController {
 
     @Resource
@@ -59,7 +59,7 @@ public class VmCloudServerCatalogController {
     public ResultHolder<List<Good>> listGoods() {
         ExecutorService executorService = Executors.newFixedThreadPool(10);
         try {
-            List<CloudAccount> accounts = cloudAccountService.list();
+            List<CloudAccount> accounts = cloudAccountService.list(new LambdaQueryWrapper<CloudAccount>().eq(CloudAccount::getState, true));
             Map<String, Good> map = new HashMap<>();
             List<CompletableFuture<Good>> futureList = new ArrayList<>();
 

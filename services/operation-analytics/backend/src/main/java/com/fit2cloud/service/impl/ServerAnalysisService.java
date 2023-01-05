@@ -19,6 +19,7 @@ import com.fit2cloud.controller.request.server.ResourceAnalysisRequest;
 import com.fit2cloud.controller.response.ChartData;
 import com.fit2cloud.dao.mapper.VmCloudServerMapper;
 import com.fit2cloud.dto.KeyValue;
+import com.fit2cloud.dto.VmCloudDiskDTO;
 import com.fit2cloud.dto.VmCloudServerDTO;
 import com.fit2cloud.es.entity.PerfMetricMonitorData;
 import com.fit2cloud.service.IServerAnalysisService;
@@ -74,6 +75,8 @@ public class ServerAnalysisService implements IServerAnalysisService {
     private QueryWrapper<VmCloudServerDTO> addServerQuery(PageServerRequest request) {
         QueryWrapper<VmCloudServerDTO> wrapper = new QueryWrapper<>();
         wrapper.like(StringUtils.isNotBlank(request.getName()), ColumnNameUtil.getColumnName(VmCloudServerDTO::getInstanceName,true), request.getName());
+        wrapper.in(CollectionUtils.isNotEmpty(request.getAccountIds()), ColumnNameUtil.getColumnName(VmCloudServerDTO::getAccountId, true), request.getAccountIds());
+        wrapper.notIn(true,ColumnNameUtil.getColumnName(VmCloudServerDTO::getInstanceStatus, true), Arrays.asList("Deleted"));
         return wrapper;
     }
 
@@ -101,18 +104,27 @@ public class ServerAnalysisService implements IServerAnalysisService {
     @Override
     public List<ChartData> vmIncreaseTrend(ResourceAnalysisRequest request){
         List<ChartData> tempChartDataList = new ArrayList<>();
+        List<CloudAccount> accountList = getAllCloudAccount();
+        Map<String,CloudAccount> accountMap = accountList.stream().collect(Collectors.toMap(CloudAccount::getId,v->v,(k1,k2)->k1));
+        if(accountMap.size()==0){
+            return tempChartDataList;
+        }
         QueryWrapper<VmCloudServerDTO> queryWrapper = new QueryWrapper<>();
         queryWrapper.in(CollectionUtils.isNotEmpty(request.getAccountIds()),ColumnNameUtil.getColumnName(VmCloudServerDTO::getAccountId,true),request.getAccountIds());
         queryWrapper.in(CollectionUtils.isNotEmpty(request.getHostIds()),ColumnNameUtil.getColumnName(VmCloudServerDTO::getHostId,true),getVmHostIds(request));
         queryWrapper.ge(true,ColumnNameUtil.getColumnName(VmCloudServerDTO::getCreateTime,true),LocalDateTime.now().minusMonths(request.getMonthNumber()));
         List<VmCloudServerDTO> vmList = vmCloudServerMapper.list(queryWrapper);
         if(CollectionUtils.isNotEmpty(vmList)){
-            Map<String,Long> hostSpread = vmList.stream().collect(Collectors.groupingBy(VmCloudServerDTO::getCreateMonth, Collectors.counting()));
-            hostSpread.keySet().forEach(k->{
-                ChartData chartData = new ChartData();
-                chartData.setXAxis(k);
-                chartData.setYAxis(new BigDecimal(hostSpread.get(k)));
-                tempChartDataList.add(chartData);
+            Map<String,List<VmCloudServerDTO>> accountGroup = vmList.stream().collect(Collectors.groupingBy(VmCloudServerDTO::getAccountId));
+            accountGroup.keySet().forEach(accountId->{
+                Map<String,Long> month = accountGroup.get(accountId).stream().collect(Collectors.groupingBy(VmCloudServerDTO::getCreateMonth, Collectors.counting()));
+                month.keySet().forEach(k->{
+                    ChartData chartData = new ChartData();
+                    chartData.setXAxis(k);
+                    chartData.setGroupName(accountGroup.get(accountId).get(0).getAccountName());
+                    chartData.setYAxis(new BigDecimal(month.get(k)));
+                    tempChartDataList.add(chartData);
+                });
             });
         }
         return tempChartDataList;
@@ -248,7 +260,7 @@ public class ServerAnalysisService implements IServerAnalysisService {
                             Long count = 0L;
                             //资源时间段内平均值
                             for(StringTermsBucket termsBucket:averageRanges){
-                                double avgValue = termsBucket.aggregations().get("average").avg().value();
+                                double avgValue = termsBucket.aggregations().get("average").max().value();
                                 //在区间里面
                                 if(avgValue>interval && avgValue<(interval+20)){
                                     count++;
@@ -303,7 +315,7 @@ public class ServerAnalysisService implements IServerAnalysisService {
                 .withSourceFilter(new FetchSourceFilter(new String[]{}, new String[]{"@version", "@timestamp", "host", "tags"}))
                 .withAggregation("timestamp",new Aggregation.Builder().dateHistogram(new DateHistogramAggregation.Builder().field("timestamp").calendarInterval(request.getIntervalPosition()).build())
                         .aggregations("instanceIds",new Aggregation.Builder().terms(new TermsAggregation.Builder().field("instanceId.keyword").size(Integer.MAX_VALUE).build())
-                        .aggregations("average",new Aggregation.Builder().avg(new AverageAggregation.Builder().field("average").build()).build()).build()).build())
+                        .aggregations("average",new Aggregation.Builder().max(new MaxAggregation.Builder().field("average").build()).build()).build()).build())
                 ;
         return query.build();
     }

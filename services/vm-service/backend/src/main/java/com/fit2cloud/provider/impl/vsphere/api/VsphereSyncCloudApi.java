@@ -250,6 +250,7 @@ public class VsphereSyncCloudApi {
                 F2CDatastore f2cDs = new F2CDatastore();
                 f2cDs.setDataCenterId(dc.getName());
                 f2cDs.setDataCenterName(dc.getName());
+                f2cDs.setRegion(dc.getName());
                 f2cDs.setCapacity(summary.getCapacity() / GB);
                 f2cDs.setDataStoreId(ds.getMOR().getVal());
                 f2cDs.setDataStoreName(ds.getName());

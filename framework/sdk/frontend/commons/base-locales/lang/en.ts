@@ -150,7 +150,9 @@ const permissions = {
         read: "Read",
         create: "Create",
         edit: "Edit",
+        edit_password: "Change Password",
         delete: "Delete",
+        notification_setting: "Notification Settings",
       },
       role: {
         base: "Role",
@@ -186,10 +188,12 @@ const permissions = {
       sys_log: {
         base: "System Logs",
         read: "Read",
+        clear_policy: "Clear Policy Settings",
       },
       operated_log: {
         base: "Operation Logs",
         read: "Read",
+        clear_policy: "Clear Policy Settings",
       },
     },
     vm: {

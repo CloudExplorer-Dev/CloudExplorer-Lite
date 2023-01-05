@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import {ref, onMounted, onBeforeUnmount} from "vue";
+import { ref, onMounted, onBeforeUnmount } from "vue";
 import VmCloudServerApi from "@/api/vm_cloud_server";
 import type { VmCloudServerVO } from "@/api/vm_cloud_server/type";
 import { useRouter } from "vue-router";
@@ -10,15 +10,19 @@ import {
   TableSearch,
 } from "@commons/components/ce-table/type";
 import { useI18n } from "vue-i18n";
-import {ElMessage, ElMessageBox} from "element-plus";
+import { ElMessage, ElMessageBox } from "element-plus";
 import _ from "lodash";
 import type { SimpleMap } from "@commons/api/base/type";
 import variables_server from "../../styles/vm_cloud_server/server.module.scss";
 import { platformIcon } from "@commons/utils/platform";
 import BaseCloudAccountApi from "@commons/api/cloud_account";
 import Grant from "@/views/vm_cloud_server/grant.vue";
+import { usePermissionStore } from "@commons/stores/modules/permission";
+import ButtonToolBar from "@commons/components/button-tool-bar/ButtonToolBar.vue";
+import { ButtonAction } from "@commons/components/button-tool-bar/type";
 
 const { t } = useI18n();
+const permissionStore = usePermissionStore();
 const useRoute = useRouter();
 const table = ref<any>(null);
 const columns = ref([]);
@@ -50,14 +54,17 @@ const InstanceStatus = ref<Array<SimpleMap<string>>>([
 ]);
 
 // 表格头中显示的筛选状态
-const instanceStatusForTableSelect = ([
+const instanceStatusForTableSelect = [
   { text: t("vm_cloud_server.status.creating", "创建中"), value: "Creating" },
   { text: t("vm_cloud_server.status.running", "运行中"), value: "Running" },
   { text: t("vm_cloud_server.status.stopped", "已关机"), value: "Stopped" },
   { text: t("vm_cloud_server.status.rebooting", "重启中"), value: "Rebooting" },
-  { text: t("vm_cloud_server.status.wait_recycle", "待回收"), value: "Wait_Recycle" },
+  {
+    text: t("vm_cloud_server.status.wait_recycle", "待回收"),
+    value: "Wait_Recycle",
+  },
   { text: t("vm_cloud_server.status.deleted", "已删除"), value: "Deleted" },
-]);
+];
 
 const filterInstanceStatus = (value: string) => {
   let status = "";
@@ -221,7 +228,20 @@ const createDisk = (row: VmCloudServerVO) => {
  * @param row
  */
 const changeVmConfig = (row: VmCloudServerVO) => {
-  useRoute.push({ name: "change_config", params: { id: row.id } });
+  ElMessageBox.confirm(
+    t(
+      "vm_cloud_server.message_box.confirm_config_update",
+      "配置变更将会对实例执行关机操作，确认继续"
+    ),
+    t("commons.message_box.prompt", "提示"),
+    {
+      confirmButtonText: t("commons.message_box.confirm", "确认"),
+      cancelButtonText: t("commons.btn.cancel", "取消"),
+      type: "warning",
+    }
+  ).then(() => {
+    useRoute.push({ name: "change_config", params: { id: row.id } });
+  });
 };
 
 /**
@@ -234,7 +254,7 @@ const buttons = ref([
     click: (row: VmCloudServerVO) => {
       powerOn(row);
     },
-    show: true,
+    show: permissionStore.hasPermission("[vm-service]CLOUD_SERVER:START"),
     disabled: (row: { instanceStatus: string }) => {
       return row.instanceStatus !== "Stopped";
     },
@@ -245,7 +265,7 @@ const buttons = ref([
     click: (row: VmCloudServerVO) => {
       shutdown(row);
     },
-    show: true,
+    show: permissionStore.hasPermission("[vm-service]CLOUD_SERVER:STOP"),
     disabled: (row: { instanceStatus: string }) => {
       return row.instanceStatus !== "Running";
     },
@@ -256,7 +276,7 @@ const buttons = ref([
     click: (row: VmCloudServerVO) => {
       powerOff(row);
     },
-    show: true,
+    show: permissionStore.hasPermission("[vm-service]CLOUD_SERVER:STOP"),
     disabled: (row: { instanceStatus: string }) => {
       return row.instanceStatus !== "Running";
     },
@@ -267,7 +287,7 @@ const buttons = ref([
     click: (row: VmCloudServerVO) => {
       reboot(row);
     },
-    show: true,
+    show: permissionStore.hasPermission("[vm-service]CLOUD_SERVER:RESTART"),
     disabled: (row: { instanceStatus: string }) => {
       return row.instanceStatus !== "Running";
     },
@@ -278,7 +298,7 @@ const buttons = ref([
     click: (row: VmCloudServerVO) => {
       deleteInstance(row);
     },
-    show: true,
+    show: permissionStore.hasPermission("[vm-service]CLOUD_SERVER:DELETE"),
     disabled: (row: { instanceStatus: string }) => {
       return row.instanceStatus === "Deleted";
     },
@@ -287,7 +307,7 @@ const buttons = ref([
     label: t("vm_cloud_disk.btn.create", "添加磁盘"),
     icon: "",
     click: createDisk,
-    show: true,
+    show: permissionStore.hasPermission("[vm-service]CLOUD_DISK:CREATE"),
     disabled: (row: { instanceStatus: string }) => {
       return row.instanceStatus === "Deleted";
     },
@@ -296,7 +316,7 @@ const buttons = ref([
     label: t("vm_cloud_server.btn.change_config", "配置变更"),
     icon: "",
     click: changeVmConfig,
-    show: true,
+    show: permissionStore.hasPermission("[vm-service]CLOUD_SERVER:RESIZE"),
     disabled: (row: { instanceStatus: string }) => {
       return (
         row.instanceStatus === "Deleted" ||
@@ -497,17 +517,50 @@ const showGrantDialog = () => {
 const deleteBatch = () => {
   batchOperate("DELETE");
 };
-const moreActions = ref([
-  { text: t("commons.btn.grant", "授权"), arg: "", fn: authorizeBatch },
-  { text: t("commons.btn.delete", "删除"), arg: "", fn: deleteBatch },
+const moreActions = ref<Array<ButtonAction>>([
+  new ButtonAction(
+    t("commons.btn.create", "创建"),
+    "primary",
+    undefined,
+    gotoCatalog,
+    permissionStore.hasPermission("[vm-service]CLOUD_SERVER:CREATE")
+  ),
+  new ButtonAction(
+    t("vm_cloud_server.btn.power_on", "启动"),
+    undefined,
+    "POWER_ON",
+    batchOperate,
+    permissionStore.hasPermission("[vm-service]CLOUD_SERVER:START")
+  ),
+  new ButtonAction(
+    t("vm_cloud_server.btn.shutdown", "关机"),
+    undefined,
+    "SHUTDOWN",
+    batchOperate,
+    permissionStore.hasPermission("[vm-service]CLOUD_SERVER:STOP")
+  ),
+  new ButtonAction(
+    t("vm_cloud_server.btn.reboot", "重启"),
+    undefined,
+    "REBOOT",
+    batchOperate,
+    permissionStore.hasPermission("[vm-service]CLOUD_SERVER:RESTART")
+  ),
+  new ButtonAction(
+    t("commons.btn.grant", "授权"),
+    undefined,
+    undefined,
+    authorizeBatch,
+    permissionStore.hasPermission("[vm-service]CLOUD_SERVER:AUTH")
+  ),
+  new ButtonAction(
+    t("commons.btn.delete", "删除"),
+    undefined,
+    undefined,
+    deleteBatch,
+    permissionStore.hasPermission("[vm-service]CLOUD_SERVER:DELETE")
+  ),
 ]);
-//触发事件
-const handleAction = (actionObj: any) => {
-  const { arg, fn } = actionObj;
-  if (fn) {
-    fn(arg);
-  }
-};
 </script>
 <template>
   <ce-table
@@ -521,38 +574,7 @@ const handleAction = (actionObj: any) => {
     ref="table"
   >
     <template #toolbar>
-      <el-button @click="gotoCatalog()" type="primary">{{
-        t("commons.btn.create", "创建")
-      }}</el-button>
-      <el-button @click="batchOperate('POWER_ON')">{{
-        t("vm_cloud_server.btn.power_on", "启动")
-      }}</el-button>
-      <el-button @click="batchOperate('SHUTDOWN')">{{
-        t("vm_cloud_server.btn.shutdown", "关机")
-      }}</el-button>
-      <el-button @click="batchOperate('REBOOT')">{{
-        t("vm_cloud_server.btn.reboot", "重启")
-      }}</el-button>
-      <el-dropdown
-        @command="handleAction"
-        trigger="click"
-        style="margin-left: 12px"
-      >
-        <el-button>
-          {{ t("commons.btn.more_actions", "更多操作")
-          }}<el-icon class="el-icon--right"><arrow-down /></el-icon>
-        </el-button>
-        <template #dropdown>
-          <el-dropdown-menu>
-            <el-dropdown-item
-              v-for="(item, index) in moreActions"
-              :key="index"
-              :command="{ arg: item.arg, fn: item.fn }"
-              >{{ item.text }}</el-dropdown-item
-            >
-          </el-dropdown-menu>
-        </template>
-      </el-dropdown>
+      <ButtonToolBar :actions="moreActions" :ellipsis="4" />
     </template>
     <el-table-column type="selection" />
     <el-table-column

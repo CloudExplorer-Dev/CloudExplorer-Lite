@@ -59,7 +59,7 @@ public class UserController {
     }
 
     @ApiOperation(value = "更新密码")
-    @PreAuthorize("hasAnyCePermission('USER:EDIT')")
+    @PreAuthorize("hasAnyCePermission('USER:EDIT_PASSWORD')")
     @PostMapping("/updatePwd")
     public ResultHolder<Boolean> updatePwd(@RequestBody User user) {
         return ResultHolder.success(userService.updatePwd(user));
