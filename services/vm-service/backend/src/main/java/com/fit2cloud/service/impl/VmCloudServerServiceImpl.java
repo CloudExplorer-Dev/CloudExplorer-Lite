@@ -136,7 +136,7 @@ public class VmCloudServerServiceImpl extends ServiceImpl<BaseVmCloudServerMappe
 
         // 默认不展示已删除状态的机器
         if (CollectionUtils.isEmpty(request.getInstanceStatus())) {
-            wrapper.notIn(ColumnNameUtil.getColumnName(VmCloudServer::getInstanceStatus, true), F2CInstanceStatus.Deleted.name());
+            wrapper.ne(ColumnNameUtil.getColumnName(VmCloudServer::getInstanceStatus, true), F2CInstanceStatus.Deleted.name());
         }
         return wrapper;
     }
