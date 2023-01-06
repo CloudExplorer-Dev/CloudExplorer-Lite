@@ -12,20 +12,54 @@
         <result column="platform" jdbcType="VARCHAR" property="platform"/>
     </resultMap>
 
+    <select id="pageList" resultMap="diskResultMap">
+        SELECT
+            vm_cloud_disk.*,
+            cloud_account.NAME AS account_name,
+            cloud_account.platform AS platform,
+            vm_cloud_server.instance_name AS vm_instance_name,
+            CASE
+                WHEN org_workspace.type = "workspace" THEN
+                    org_workspace.id ELSE NULL
+                END AS workspace_id,
+            CASE
+                WHEN org_workspace.type = "workspace" THEN
+                    org_workspace.NAME ELSE NULL
+                END AS workspace_name,
+            org_workspace.organization_id,
+            org_workspace.organization_name
+        FROM
+            vm_cloud_disk
+                LEFT JOIN cloud_account ON vm_cloud_disk.account_id = cloud_account.id
+                LEFT JOIN vm_cloud_server ON vm_cloud_disk.instance_uuid = vm_cloud_server.instance_uuid
+                AND vm_cloud_disk.account_id = vm_cloud_server.account_id
+                LEFT JOIN org_workspace ON vm_cloud_disk.source_id = org_workspace.id
+            ${ew.customSqlSegment}
+    </select>
+
     <select id="selectDiskDetailById" resultMap="diskResultMap">
         SELECT
             vm_cloud_disk.*,
             vm_cloud_server.instance_name,
             cloud_account.`name` AS account_name,
             cloud_account.platform,
-            workspace._name AS workspace_name
+            CASE
+                WHEN org_workspace.type = "workspace" THEN
+                    org_workspace.id ELSE NULL
+                END AS workspace_id,
+            CASE
+                WHEN org_workspace.type = "workspace" THEN
+                    org_workspace.NAME ELSE NULL
+                END AS workspace_name,
+            org_workspace.organization_id,
+            org_workspace.organization_name
         FROM
             vm_cloud_disk
             LEFT JOIN vm_cloud_server ON vm_cloud_disk.instance_uuid = vm_cloud_server.instance_uuid
             AND vm_cloud_disk.account_id = vm_cloud_server.account_id
             AND vm_cloud_server.instance_status != 'Deleted'
             LEFT JOIN cloud_account ON vm_cloud_disk.account_id = cloud_account.id
-            LEFT JOIN workspace ON vm_cloud_disk.workspace_id = workspace.id
+            LEFT JOIN org_workspace ON vm_cloud_disk.source_id = org_workspace.id
         WHERE
             vm_cloud_disk.id = #{id}
     </select>

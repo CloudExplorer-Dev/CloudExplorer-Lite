@@ -29,7 +29,30 @@
         FROM
             vm_cloud_server
                 LEFT JOIN cloud_account ON vm_cloud_server.account_id = cloud_account.id
-                LEFT JOIN org_workspace orgWorkspace ON vm_cloud_server.workspace_id = orgWorkspace.id
+                LEFT JOIN org_workspace orgWorkspace ON vm_cloud_server.source_id = orgWorkspace.id
+            ${ew.customSqlSegment}
+    </select>
+
+    <select id="getById" resultMap="serverResultMap">
+        SELECT
+            vm_cloud_server.*,
+            cloud_account.NAME AS account_name,
+            cloud_account.platform AS platform,
+            CASE
+                WHEN org_workspace.type = "workspace" THEN
+                    org_workspace.id ELSE NULL
+                END AS workspace_id,
+            CASE
+
+                WHEN org_workspace.type = "workspace" THEN
+                    org_workspace.NAME ELSE NULL
+                END AS workspace_name,
+            org_workspace.organization_id,
+            org_workspace.organization_name
+        FROM
+            vm_cloud_server
+                LEFT JOIN cloud_account ON vm_cloud_server.account_id = cloud_account.id
+                LEFT JOIN org_workspace ON vm_cloud_server.source_id = org_workspace.id
             ${ew.customSqlSegment}
     </select>
 
@@ -39,7 +62,7 @@
             workspace._name AS workspace_name
         FROM
             vm_cloud_server
-            LEFT JOIN workspace ON vm_cloud_server.workspace_id = workspace.id
+            LEFT JOIN workspace ON vm_cloud_server.source_id = workspace.id
         WHERE
             vm_cloud_server.account_id = #{accountId}
             AND vm_cloud_server.zone = #{zone}

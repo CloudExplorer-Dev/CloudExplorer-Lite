@@ -38,15 +38,14 @@ import com.fit2cloud.provider.impl.vsphere.util.ResourceConstants;
 import com.fit2cloud.service.IResourceOperateService;
 import com.fit2cloud.service.IVmCloudDiskService;
 import com.fit2cloud.service.OrganizationCommonService;
+import com.fit2cloud.service.WorkspaceCommonService;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
-import java.util.HashMap;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 
 /**
  * <p>
@@ -61,6 +60,8 @@ public class VmCloudDiskServiceImpl extends ServiceImpl<BaseVmCloudDiskMapper, V
     @Resource
     private OrganizationCommonService organizationCommonService;
     @Resource
+    private WorkspaceCommonService workspaceCommonService;
+    @Resource
     private VmCloudDiskMapper diskMapper;
     @Resource
     private VmCloudServerMapper serverMapper;
@@ -72,13 +73,16 @@ public class VmCloudDiskServiceImpl extends ServiceImpl<BaseVmCloudDiskMapper, V
     @Override
     public IPage<VmCloudDiskDTO> pageVmCloudDisk(PageVmCloudDiskRequest request) {
         // 普通用户
-        if (CurrentUserUtils.isUser()) {
-            request.setWorkspaceId(CurrentUserUtils.getWorkspaceId());
+        if (CurrentUserUtils.isUser() && StringUtils.isNotBlank(CurrentUserUtils.getWorkspaceId())) {
+            request.setSourceIds(Arrays.asList(new String[]{CurrentUserUtils.getWorkspaceId()}));
         }
         // 组织管理员
         if (CurrentUserUtils.isOrgAdmin()) {
-            request.setOrganizationId(CurrentUserUtils.getOrganizationId());
-            request.setOrganizationIds(organizationCommonService.getOrgIdsByParentId(CurrentUserUtils.getOrganizationId()));
+            List orgWorkspaceList = new ArrayList();
+            orgWorkspaceList.add(CurrentUserUtils.getOrganizationId());
+            orgWorkspaceList.addAll(organizationCommonService.getOrgIdsByParentId(CurrentUserUtils.getOrganizationId()));
+            orgWorkspaceList.addAll(workspaceCommonService.getWorkspaceIdsByOrgIds(orgWorkspaceList));
+            request.setSourceIds(orgWorkspaceList);
         }
         Page<VmCloudDiskDTO> page = PageUtil.of(request, VmCloudDiskDTO.class, new OrderItem(ColumnNameUtil.getColumnName(VmCloudDiskDTO::getCreateTime, true), false), true);
         // 构建查询参数
@@ -98,8 +102,7 @@ public class VmCloudDiskServiceImpl extends ServiceImpl<BaseVmCloudDiskMapper, V
     private QueryWrapper<VmCloudDiskDTO> addQuery(PageVmCloudDiskRequest request) {
         QueryWrapper<VmCloudDiskDTO> wrapper = new QueryWrapper<>();
 
-        wrapper.like(StringUtils.isNotBlank(request.getWorkspaceId()), ColumnNameUtil.getColumnName(VmCloudDisk::getWorkspaceId, true), request.getWorkspaceId());
-        //wrapper.in(CollectionUtils.isNotEmpty(request.getOrganizationIds()),"vm_cloud_disk.organization_id",request.getOrganizationIds());
+        wrapper.like(StringUtils.isNotBlank(request.getWorkspaceId()), ColumnNameUtil.getColumnName(VmCloudDisk::getSourceId, true), request.getWorkspaceId());
         wrapper.like(StringUtils.isNotBlank(request.getDiskName()), ColumnNameUtil.getColumnName(VmCloudDisk::getDiskName, true), request.getDiskName());
         wrapper.like(StringUtils.isNotBlank(request.getAccountName()), ColumnNameUtil.getColumnName(CloudAccount::getName, true), request.getAccountName());
         wrapper.like(StringUtils.isNotBlank(request.getVmInstanceName()), ColumnNameUtil.getColumnName(VmCloudServer::getInstanceName, true), request.getVmInstanceName());
@@ -107,6 +110,7 @@ public class VmCloudDiskServiceImpl extends ServiceImpl<BaseVmCloudDiskMapper, V
         wrapper.in(CollectionUtils.isNotEmpty(request.getDiskType()), ColumnNameUtil.getColumnName(VmCloudDisk::getDiskType, true), request.getDiskType());
         wrapper.in(CollectionUtils.isNotEmpty(request.getDeleteWithInstance()), ColumnNameUtil.getColumnName(VmCloudDisk::getDeleteWithInstance, true), request.getDeleteWithInstance());
         wrapper.in(CollectionUtils.isNotEmpty(request.getStatus()), ColumnNameUtil.getColumnName(VmCloudDisk::getStatus, true), request.getStatus());
+        wrapper.in(CollectionUtils.isNotEmpty(request.getSourceIds()), ColumnNameUtil.getColumnName(VmCloudDisk::getSourceId, true), request.getSourceIds());
 
         // 默认不展示已删除状态的磁盘
         if (CollectionUtils.isEmpty(request.getStatus())) {
