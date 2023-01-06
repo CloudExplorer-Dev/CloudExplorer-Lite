@@ -3,9 +3,11 @@ package com.fit2cloud.provider.util;
 import com.fit2cloud.common.utils.JsonUtil;
 import com.fit2cloud.constants.ResourceTypeConstants;
 import com.fit2cloud.es.entity.ResourceInstance;
+import org.apache.commons.lang.StringUtils;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 import java.util.UUID;
 
 /**
@@ -37,6 +39,20 @@ public class ResourceUtil {
      * @return 系统实例对象
      */
     public static ResourceInstance toResourceInstance(String platform, ResourceTypeConstants resourceTypeConstants, String resourceId, String resourceName, Object instance) {
+        return toResourceInstance(platform, resourceTypeConstants, resourceId, resourceName, instance, null, null);
+    }
+
+    /**
+     * 将云平台实例转换为系统资源实例对象
+     *
+     * @param platform              云平台
+     * @param resourceTypeConstants 实例类型
+     * @param resourceId            资源id
+     * @param resourceName          资源名称
+     * @param instance              实例对象
+     * @return 系统实例对象
+     */
+    public static ResourceInstance toResourceInstance(String platform, ResourceTypeConstants resourceTypeConstants, String resourceId, String resourceName, Object instance, String otherDataKey, Object otherData) {
         ResourceInstance resourceInstance = new ResourceInstance();
         resourceInstance.setResourceType(resourceTypeConstants.name());
         resourceInstance.setPlatform(platform);
@@ -44,7 +60,20 @@ public class ResourceUtil {
         resourceInstance.setResourceName(resourceName);
         resourceInstance.setId(UUID.randomUUID().toString().replace("-", ""));
         HashMap<String, Object> instanceTypeData = new HashMap<>();
-        instanceTypeData.put(getResourceName(resourceTypeConstants.name(), platform), JsonUtil.parseObject(JsonUtil.toJSONString(instance), Map.class));
+
+        if (Objects.nonNull(otherData)) {
+            HashMap<String, Object> instanceData = new HashMap<>();
+            instanceData.putAll(JsonUtil.parseObject(JsonUtil.toJSONString(instance), Map.class));
+            if (StringUtils.isNotEmpty(otherDataKey)) {
+                instanceData.put(otherDataKey, JsonUtil.parseObject(JsonUtil.toJSONString(otherData), Map.class));
+                instanceTypeData.put(getResourceName(resourceTypeConstants.name(), platform), instanceData);
+            } else {
+                instanceData.putAll(JsonUtil.parseObject(JsonUtil.toJSONString(otherData), Map.class));
+                instanceTypeData.put(getResourceName(resourceTypeConstants.name(), platform), instanceData);
+            }
+        } else {
+            instanceTypeData.put(getResourceName(resourceTypeConstants.name(), platform), JsonUtil.parseObject(JsonUtil.toJSONString(instance), Map.class));
+        }
         resourceInstance.setInstance(instanceTypeData);
         return resourceInstance;
     }

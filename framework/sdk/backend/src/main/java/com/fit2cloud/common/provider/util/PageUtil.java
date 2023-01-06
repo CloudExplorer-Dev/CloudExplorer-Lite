@@ -5,10 +5,7 @@ import com.fit2cloud.common.provider.exception.SkipPageException;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.function.BiConsumer;
-import java.util.function.BiFunction;
-import java.util.function.Consumer;
-import java.util.function.Function;
+import java.util.function.*;
 
 /**
  * @Author:张少虎
@@ -177,5 +174,28 @@ public class PageUtil {
             }
         }
         return collector;
+    }
+
+    /**
+     * @param exec        执行函数
+     * @param reTryNumber 重试次数
+     * @param <Response>  响应对象
+     * @return 响应对象
+     */
+    public static <Response> Response reTry(Supplier<Response> exec, Integer reTryNumber) {
+        try {
+            return exec.get();
+        } catch (Exception e) {
+            if (reTryNumber > 0 && e instanceof ReTryException) {
+                try {
+                    Thread.sleep(2000);
+                } catch (InterruptedException ignored) {
+                }
+                return reTry(exec, reTryNumber);
+            } else if (e instanceof SkipPageException) {
+                return null;
+            }
+            throw e;
+        }
     }
 }

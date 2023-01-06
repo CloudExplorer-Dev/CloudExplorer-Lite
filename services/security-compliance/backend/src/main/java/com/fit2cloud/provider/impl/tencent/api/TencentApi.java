@@ -3,8 +3,14 @@ package com.fit2cloud.provider.impl.tencent.api;
 import com.fit2cloud.common.provider.exception.ReTryException;
 import com.fit2cloud.common.provider.util.PageUtil;
 import com.fit2cloud.provider.impl.tencent.entity.request.*;
+import com.tencentcloudapi.cbs.v20170312.CbsClient;
+import com.tencentcloudapi.cbs.v20170312.models.DescribeDisksRequest;
+import com.tencentcloudapi.cbs.v20170312.models.Disk;
 import com.tencentcloudapi.cdb.v20170320.CdbClient;
 import com.tencentcloudapi.cdb.v20170320.models.InstanceInfo;
+import com.tencentcloudapi.clb.v20180317.ClbClient;
+import com.tencentcloudapi.clb.v20180317.models.DescribeLoadBalancersRequest;
+import com.tencentcloudapi.clb.v20180317.models.LoadBalancer;
 import com.tencentcloudapi.cvm.v20170312.CvmClient;
 import com.tencentcloudapi.cvm.v20170312.models.DescribeInstancesRequest;
 import com.tencentcloudapi.cvm.v20170312.models.Instance;
@@ -16,6 +22,11 @@ import com.tencentcloudapi.redis.v20180412.RedisClient;
 import com.tencentcloudapi.redis.v20180412.models.InstanceSet;
 import com.tencentcloudapi.sqlserver.v20180328.SqlserverClient;
 import com.tencentcloudapi.sqlserver.v20180328.models.DBInstance;
+import com.tencentcloudapi.vpc.v20170312.VpcClient;
+import com.tencentcloudapi.vpc.v20170312.models.DescribeNetworkInterfacesRequest;
+import com.tencentcloudapi.vpc.v20170312.models.DescribeVpcsRequest;
+import com.tencentcloudapi.vpc.v20170312.models.NetworkInterface;
+import com.tencentcloudapi.vpc.v20170312.models.Vpc;
 import org.springframework.beans.BeanUtils;
 import com.tencentcloudapi.mongodb.v20190725.models.*;
 
@@ -238,6 +249,111 @@ public class TencentApi {
                 },
                 res -> Arrays.stream(res.getInstanceList()).toList(),
                 (req, res) -> req.getLimit() <= res.getInstanceList().length,
+                req -> req.setOffset(req.getOffset() + req.getLimit()));
+
+    }
+
+    /**
+     * 获取 云磁盘 实例列表
+     *
+     * @param request 请求对象
+     * @return 磁盘实例列表
+     */
+    public static List<Disk> listDiskInstance(ListDiskInstanceRequest request) {
+        CbsClient cbsClient = request.getCredential().getCbsClient(request.getRegionId());
+        request.setOffset(PageUtil.DefaultCurrentPage.longValue() - 1);
+        request.setLimit(PageUtil.DefaultPageSize.longValue());
+        return PageUtil.page(request,
+                req -> {
+                    try {
+                        DescribeDisksRequest describeInstancesRequest = new DescribeDisksRequest();
+                        BeanUtils.copyProperties(req, describeInstancesRequest);
+                        return cbsClient.DescribeDisks(describeInstancesRequest);
+                    } catch (Exception e) {
+                        ReTryException.throwReTry(e);
+                        throw new RuntimeException(e);
+                    }
+                },
+                res -> Arrays.stream(res.getDiskSet()).toList(),
+                (req, res) -> req.getLimit() <= res.getDiskSet().length,
+                req -> req.setOffset(req.getOffset() + req.getLimit()));
+    }
+
+    /**
+     * 获取 负载均衡 实例列表
+     *
+     * @param request 请求对象
+     * @return 负载均衡实例列表
+     */
+    public static List<LoadBalancer> listLoadBalancerInstance(ListLoadBalancerInstanceRequest request) {
+        ClbClient clbClient = request.getCredential().getClbClient(request.getRegionId());
+        request.setOffset(PageUtil.DefaultCurrentPage.longValue() - 1);
+        request.setLimit(PageUtil.DefaultPageSize.longValue());
+        return PageUtil.page(request,
+                req -> {
+                    try {
+                        DescribeLoadBalancersRequest describeInstancesRequest = new DescribeLoadBalancersRequest();
+                        BeanUtils.copyProperties(req, describeInstancesRequest);
+                        return clbClient.DescribeLoadBalancers(describeInstancesRequest);
+                    } catch (Exception e) {
+                        ReTryException.throwReTry(e);
+                        throw new RuntimeException(e);
+                    }
+                },
+                res -> Arrays.stream(res.getLoadBalancerSet()).toList(),
+                (req, res) -> req.getLimit() <= res.getLoadBalancerSet().length,
+                req -> req.setOffset(req.getOffset() + req.getLimit()));
+    }
+
+    /**
+     * 获取 弹性公网ip 实例列表
+     *
+     * @param request 请求对象
+     * @return 弹性公网ip实例列表
+     */
+    public static List<NetworkInterface> listPublicIpInstance(ListPublicIpInstanceRequest request) {
+        VpcClient vpcClient = request.getCredential().getVpcClient(request.getRegionId());
+        request.setOffset(PageUtil.DefaultCurrentPage.longValue() - 1);
+        request.setLimit(PageUtil.DefaultPageSize.longValue());
+        return PageUtil.page(request,
+                req -> {
+                    try {
+                        DescribeNetworkInterfacesRequest describeInstancesRequest = new DescribeNetworkInterfacesRequest();
+                        BeanUtils.copyProperties(req, describeInstancesRequest);
+                        return vpcClient.DescribeNetworkInterfaces(describeInstancesRequest);
+                    } catch (Exception e) {
+                        ReTryException.throwReTry(e);
+                        throw new RuntimeException(e);
+                    }
+                },
+                res -> Arrays.stream(res.getNetworkInterfaceSet()).toList(),
+                (req, res) -> req.getLimit() <= res.getNetworkInterfaceSet().length,
+                req -> req.setOffset(req.getOffset() + req.getLimit()));
+    }
+
+    /**
+     * 获取 vpc 实例列表
+     *
+     * @param request 请求对象
+     * @return vpc 实例列表
+     */
+    public static List<Vpc> listVpcInstance(ListVpcInstanceRequest request) {
+        VpcClient vpcClient = request.getCredential().getVpcClient(request.getRegionId());
+        request.setOffset(String.valueOf(PageUtil.DefaultCurrentPage.longValue() - 1));
+        request.setLimit(String.valueOf(PageUtil.DefaultPageSize.longValue()));
+        return PageUtil.page(request,
+                req -> {
+                    try {
+                        DescribeVpcsRequest describeInstancesRequest = new DescribeVpcsRequest();
+                        BeanUtils.copyProperties(req, describeInstancesRequest);
+                        return vpcClient.DescribeVpcs(describeInstancesRequest);
+                    } catch (Exception e) {
+                        ReTryException.throwReTry(e);
+                        throw new RuntimeException(e);
+                    }
+                },
+                res -> Arrays.stream(res.getVpcSet()).toList(),
+                (req, res) -> Integer.parseInt(req.getLimit()) <= res.getVpcSet().length,
                 req -> req.setOffset(req.getOffset() + req.getLimit()));
 
     }

@@ -11,9 +11,19 @@ import com.huaweicloud.sdk.dds.v3.DdsClient;
 import com.huaweicloud.sdk.dds.v3.region.DdsRegion;
 import com.huaweicloud.sdk.ecs.v2.EcsClient;
 import com.huaweicloud.sdk.ecs.v2.region.EcsRegion;
+import com.huaweicloud.sdk.eip.v3.EipClient;
+import com.huaweicloud.sdk.eip.v3.region.EipRegion;
+import com.huaweicloud.sdk.elb.v2.region.ElbRegion;
+import com.huaweicloud.sdk.evs.v2.EvsClient;
+import com.huaweicloud.sdk.evs.v2.region.EvsRegion;
+import com.huaweicloud.sdk.iam.v3.IamClient;
+import com.huaweicloud.sdk.iam.v3.region.IamRegion;
 import com.huaweicloud.sdk.rds.v3.RdsClient;
 import com.huaweicloud.sdk.rds.v3.region.RdsRegion;
 import com.huaweicloud.sdk.css.v1.*;
+import com.huaweicloud.sdk.elb.v3.*;
+import com.huaweicloud.sdk.vpc.v3.VpcClient;
+import com.huaweicloud.sdk.vpc.v3.region.VpcRegion;
 
 /**
  * {@code @Author:张少虎}
@@ -123,4 +133,95 @@ public class HuaweiSecurityComplianceCredential extends HuaweiBaseCredential {
             throw e;
         }
     }
+
+
+    /**
+     * 获取 EVS(云硬盘) 客户端
+     *
+     * @param region 区域
+     * @return 华为云EVS(云硬盘)客户端
+     */
+    public EvsClient getEvsClient(String region) {
+        try {
+            return EvsClient.newBuilder()
+                    .withCredential(getAuth())
+                    .withRegion(EvsRegion.valueOf(region))
+                    .build();
+        } catch (Exception e) {
+            SkipPageException.throwHuaweiSkip(e);
+            throw e;
+        }
+    }
+
+    /**
+     * 获取 ELB(负载均衡) 客户端
+     *
+     * @param region 区域
+     * @return 华为云ELB(负载均衡) 客户端
+     */
+    public ElbClient getElbClient(String region) {
+        try {
+            return ElbClient.newBuilder()
+                    .withCredential(getAuth())
+                    .withRegion(ElbRegion.valueOf(region))
+                    .build();
+        } catch (Exception e) {
+            SkipPageException.throwHuaweiSkip(e);
+            throw e;
+        }
+    }
+
+    /**
+     * 获取 Eip(弹性公网ip) 客户端
+     *
+     * @param region 区域
+     * @return Eip(弹性公网ip) 客户端
+     */
+    public EipClient getEipClient(String region) {
+        try {
+            return EipClient.newBuilder()
+                    .withCredential(getAuth())
+                    .withRegion(EipRegion.valueOf(region))
+                    .build();
+        } catch (Exception e) {
+            SkipPageException.throwHuaweiSkip(e);
+            throw e;
+        }
+    }
+
+    /**
+     * 获取 VPC 客户端
+     *
+     * @param region 区域
+     * @return Vpc 客户端
+     */
+    public VpcClient getVpcClient(String region) {
+        try {
+            return VpcClient.newBuilder()
+                    .withCredential(getAuth())
+                    .withRegion(VpcRegion.valueOf(region))
+                    .build();
+        } catch (Exception e) {
+            SkipPageException.throwHuaweiSkip(e);
+            throw e;
+        }
+    }
+
+    /**
+     * 获取认证服务客户端
+     *
+     * @return 用户认证服务客户端
+     */
+    public IamClient getIamClient() {
+        try {
+            return IamClient.newBuilder()
+                    .withCredential(getAuth())
+                    .withRegion(IamRegion.CN_EAST_2)
+                    .build();
+        } catch (Exception e) {
+            SkipPageException.throwHuaweiSkip(e);
+            throw e;
+        }
+    }
+
 }
