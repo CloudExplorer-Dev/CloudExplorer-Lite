@@ -20,16 +20,6 @@ public class PageVmCloudImageRequest extends PageRequest implements PageOrderReq
     private static final long serialVersionUID = -5292015506261363029L;
     @ApiModelProperty("名称")
     private String imageName;
-    @ApiModelProperty("组织ID")
-    private String organizationId;
-    @ApiModelProperty("组织IDs")
-    private List<String> organizationIds;
-    @ApiModelProperty("组织名称")
-    private String organizationName;
-    @ApiModelProperty("工作空间ID")
-    private String workspaceId;
-    @ApiModelProperty("工作空间名称")
-    private String workspaceName;
     @ApiModelProperty("云账号名称")
     private String accountName;
     @Size(min = 2, max = 2, message = "{i18n.request.date.message}")
