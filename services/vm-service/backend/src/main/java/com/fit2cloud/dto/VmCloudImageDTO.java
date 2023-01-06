@@ -4,6 +4,8 @@ import com.fit2cloud.base.entity.VmCloudImage;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
+import java.io.Serial;
+
 /**
  * @author jianneng
  * @date 2022/9/27 14:39
@@ -11,10 +13,8 @@ import lombok.Data;
 @Data
 public class VmCloudImageDTO extends VmCloudImage {
 
-    @ApiModelProperty("组织名称")
-    private String organizationName;
-    @ApiModelProperty("工作空间名称")
-    private String workspaceName;
+    @Serial
+    private static final long serialVersionUID = 5306701579549617726L;
     @ApiModelProperty("云账号名称")
     private String accountName;
     @ApiModelProperty("所属云主机")

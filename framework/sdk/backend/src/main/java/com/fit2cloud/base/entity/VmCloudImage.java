@@ -94,12 +94,6 @@ public class VmCloudImage implements Serializable {
     private String status;
 
     /**
-     * 工作空间 ID
-     */
-    @TableField("workspace_id")
-    private String workspaceId;
-
-    /**
      * 更新时间
      */
     @TableField("create_time")
