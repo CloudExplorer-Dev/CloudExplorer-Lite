@@ -14,6 +14,7 @@
 import type { FormView } from "@commons/components/ce-form/type";
 import { computed } from "vue";
 import _ from "lodash";
+
 const props = defineProps<{ formItem: FormView }>();
 const optionList = computed(() => {
   if (props.formItem.optionList) {
@@ -23,11 +24,23 @@ const optionList = computed(() => {
 });
 
 function baseTextField(formItem: FormView, item: any) {
-  return item[formItem.textField ? formItem.textField : "label"];
+  if (formItem.formatTextField) {
+    if (formItem.baseTextField && formItem.baseTextField !== "") {
+      return item[formItem.baseTextField];
+    }
+  }
+  if (formItem.textField && formItem.textField !== "") {
+    return item[formItem.textField];
+  }
+  return item["label"];
 }
 
 function formatTextField(formItem: FormView, item: any) {
-  if (formItem.formatTextField && formItem.textField) {
+  if (
+    formItem.formatTextField &&
+    formItem.textField &&
+    formItem.textField !== ""
+  ) {
     let temp = _.replace(formItem.textField, /{/g, "{item['");
     temp = _.replace(temp, /}/g, "']}");
     return eval("`" + temp + "`");

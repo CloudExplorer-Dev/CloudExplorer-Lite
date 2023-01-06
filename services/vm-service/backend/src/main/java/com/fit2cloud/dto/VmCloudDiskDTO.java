@@ -1,7 +1,6 @@
 package com.fit2cloud.dto;
 
 import com.fit2cloud.base.entity.VmCloudDisk;
-import com.fit2cloud.base.entity.VmCloudServer;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
@@ -16,6 +15,10 @@ public class VmCloudDiskDTO extends VmCloudDisk {
     private String organizationName;
     @ApiModelProperty("工作空间名称")
     private String workspaceName;
+    @ApiModelProperty("组织ID")
+    private String organizationId;
+    @ApiModelProperty("工作空间ID")
+    private String workspaceId;
     @ApiModelProperty("云账号名称")
     private String accountName;
     @ApiModelProperty("所属云主机")

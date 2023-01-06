@@ -48,8 +48,8 @@ public class OpenStackUtils extends OpenStackBaseUtils {
                 .setName(instance.getName())
                 .setCpu(instance.getFlavor().getVcpus())
                 .setMemory(instance.getFlavor().getRam() / 1024);
-        String instanceType = vm.getCpu() + "vCPU " + vm.getMemory() + "GB";
-        vm.setInstanceType(instanceType)
+        String instanceType = vm.getCpu() + "vCPU " + vm.getMemory() + "GB" + (instance.getFlavor().getDisk() == 0 ? "" : (" " + instance.getFlavor().getDisk() + "GB"));
+        vm.setInstanceType(instance.getFlavor().getName())
                 .setInstanceTypeDescription(instanceType)
                 .setImageId(instance.getImageId())
                 .setCreated(instance.getCreated())
@@ -109,7 +109,7 @@ public class OpenStackUtils extends OpenStackBaseUtils {
         }
 
         vm.setOsInfo(getOsInfo(image));
-        if(CollectionUtils.isNotEmpty(instance.getSecurityGroups())){
+        if (CollectionUtils.isNotEmpty(instance.getSecurityGroups())) {
             // TODO 安全组ID?
             List<String> names = instance.getSecurityGroups().stream().map(SecurityGroup::getName).collect(Collectors.toList());
             vm.setSecurityGroupIds(names);
@@ -200,7 +200,7 @@ public class OpenStackUtils extends OpenStackBaseUtils {
                     }
                     if (Server.Status.ERROR.equals(s.getStatus())) {
                         return CheckStatusResult.fail("The server status is ERROR，message:"
-                                + (s.getFault() == null ? "" : s.getFault().getMessage()));
+                                + (s.getFault() == null ? "" : s.getFault().getMessage()), s);
                     }
                 }
                 count++;
@@ -251,22 +251,24 @@ public class OpenStackUtils extends OpenStackBaseUtils {
 
     public static F2CHost toF2CHost(List<? extends HostAggregate> hostAggregates, Hypervisor hypervisor, String region) {
         F2CHost f2cHost = new F2CHost();
-        f2cHost.setCpuMHzTotal((long) hypervisor.getVirtualCPU() * hypervisor.getCpuAllocationRatio() * 1000);
+        f2cHost.setCpuMHzTotal((long) hypervisor.getVirtualCPU() * (hypervisor.getCpuAllocationRatio() == 0 ? 1 : hypervisor.getCpuAllocationRatio()) * 1000);
         f2cHost.setCpuMHzAllocated(hypervisor.getVirtualUsedCPU() * 1000L);
         f2cHost.setCpuMHzPerOneCore(1000);
-        f2cHost.setNumCpuCores(hypervisor.getVirtualCPU() * hypervisor.getCpuAllocationRatio());
+        f2cHost.setNumCpuCores(hypervisor.getVirtualCPU() * (hypervisor.getCpuAllocationRatio() == 0 ? 1 : hypervisor.getCpuAllocationRatio()));
         f2cHost.setHostId(hypervisor.getId());
         f2cHost.setHostName(hypervisor.getHypervisorHostname());
         f2cHost.setHostIp(hypervisor.getHostIP());
         f2cHost.setMemoryAllocated(hypervisor.getLocalMemoryUsed());
-        f2cHost.setMemoryTotal((long) hypervisor.getLocalMemory() * hypervisor.getRamAllocationRatio());
+        f2cHost.setMemoryTotal((long) hypervisor.getLocalMemory() * (hypervisor.getRamAllocationRatio() == 0 ? 1 : hypervisor.getRamAllocationRatio()));
         f2cHost.setStatus("poweredOn");
         f2cHost.setVmRunning(hypervisor.getRunningVM());
+        f2cHost.setVmCpuCores(hypervisor.getVirtualUsedCPU());
         f2cHost.setVmStopped(0);
         f2cHost.setVmTotal(hypervisor.getRunningVM());
         f2cHost.setHypervisorType(hypervisor.getType());
         f2cHost.setHypervisorVersion(String.valueOf(hypervisor.getVersion()));
         f2cHost.setDataCenterId(region);
+        f2cHost.setRegion(region);
         //新建的availableZone hostAggregates是不为空的，默认是nova
         if (CollectionUtils.isNotEmpty(hostAggregates)) {
             for (HostAggregate hostAggregate : hostAggregates) {
@@ -327,8 +329,8 @@ public class OpenStackUtils extends OpenStackBaseUtils {
         BufferedReader br = null;
         StringBuilder sb = new StringBuilder();
         try {
-             reader = new InputStreamReader(classPathResource.getInputStream());
-             br = new BufferedReader(reader);
+            reader = new InputStreamReader(classPathResource.getInputStream());
+            br = new BufferedReader(reader);
 
             String line = br.readLine();
             while (line != null) {

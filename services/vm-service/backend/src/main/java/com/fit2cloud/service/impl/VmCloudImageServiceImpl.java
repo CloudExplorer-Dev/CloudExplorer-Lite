@@ -40,21 +40,10 @@ import java.util.stream.Collectors;
 public class VmCloudImageServiceImpl extends ServiceImpl<BaseVmCloudImageMapper, VmCloudImage> implements IVmCloudImageService {
 
     @Resource
-    private OrganizationCommonService organizationCommonService;
-    @Resource
     private VmCloudImageMapper imageMapper;
 
     @Override
     public IPage<VmCloudImageDTO> pageVmCloudImage(PageVmCloudImageRequest request) {
-        // 普通用户
-        if (CurrentUserUtils.isUser()) {
-            request.setWorkspaceId(CurrentUserUtils.getWorkspaceId());
-        }
-        // 组织管理员
-        if (CurrentUserUtils.isOrgAdmin()) {
-            request.setOrganizationId(CurrentUserUtils.getOrganizationId());
-            request.setOrganizationIds(organizationCommonService.getOrgIdsByParentId(CurrentUserUtils.getOrganizationId()));
-        }
         // 构建查询参数
         QueryWrapper<VmCloudImageDTO> wrapper = addQuery(request);
         Page<VmCloudImageDTO> page = PageUtil.of(request, VmCloudImageDTO.class, new OrderItem(ColumnNameUtil.getColumnName(VmCloudImage::getCreateTime, true), false), true);
@@ -64,7 +53,6 @@ public class VmCloudImageServiceImpl extends ServiceImpl<BaseVmCloudImageMapper,
     private QueryWrapper<VmCloudImageDTO> addQuery(PageVmCloudImageRequest request) {
         QueryWrapper<VmCloudImageDTO> wrapper = new QueryWrapper<>();
 
-        wrapper.like(StringUtils.isNotBlank(request.getWorkspaceId()), ColumnNameUtil.getColumnName(VmCloudImage::getWorkspaceId, true), request.getWorkspaceId());
         wrapper.like(StringUtils.isNotBlank(request.getImageName()), ColumnNameUtil.getColumnName(VmCloudImage::getImageName, true), request.getImageName());
         wrapper.like(StringUtils.isNotBlank(request.getAccountName()), ColumnNameUtil.getColumnName(CloudAccount::getName, true), request.getAccountName());
         return wrapper;

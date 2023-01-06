@@ -9,10 +9,12 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.fit2cloud.autoconfigure.ThreadPoolConfig;
 import com.fit2cloud.base.entity.CloudAccount;
 import com.fit2cloud.base.entity.JobRecord;
+import com.fit2cloud.base.entity.VmCloudDisk;
 import com.fit2cloud.base.entity.VmCloudServer;
 import com.fit2cloud.base.mapper.BaseJobRecordResourceMappingMapper;
 import com.fit2cloud.base.mapper.BaseVmCloudServerMapper;
 import com.fit2cloud.base.service.IBaseCloudAccountService;
+import com.fit2cloud.base.service.IBaseVmCloudDiskService;
 import com.fit2cloud.common.constants.JobStatusConstants;
 import com.fit2cloud.common.constants.JobTypeConstants;
 import com.fit2cloud.common.exception.Fit2cloudException;
@@ -53,6 +55,7 @@ import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
 import java.time.LocalDateTime;
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * <p>
@@ -73,6 +76,8 @@ public class VmCloudServerServiceImpl extends ServiceImpl<BaseVmCloudServerMappe
     private VmCloudServerMapper vmCloudServerMapper;
     @Resource
     private IBaseCloudAccountService cloudAccountService;
+    @Resource
+    private IBaseVmCloudDiskService vmCloudDiskService;
     @Resource
     private ThreadPoolConfig threadPoolConfig;
     @Resource
@@ -121,17 +126,17 @@ public class VmCloudServerServiceImpl extends ServiceImpl<BaseVmCloudServerMappe
     private QueryWrapper<VmCloudServerDTO> addQuery(PageVmCloudServerRequest request) {
         QueryWrapper<VmCloudServerDTO> wrapper = new QueryWrapper<>();
 
-        wrapper.like(StringUtils.isNotBlank(request.getWorkspaceId()), ColumnNameUtil.getColumnName(VmCloudServer::getWorkspaceId, true), request.getWorkspaceId());
+        wrapper.like(StringUtils.isNotBlank(request.getWorkspaceId()), ColumnNameUtil.getColumnName(VmCloudServer::getSourceId, true), request.getWorkspaceId());
         wrapper.like(StringUtils.isNotBlank(request.getInstanceName()), ColumnNameUtil.getColumnName(VmCloudServer::getInstanceName, true), request.getInstanceName());
         wrapper.like(StringUtils.isNotBlank(request.getAccountName()), ColumnNameUtil.getColumnName(CloudAccount::getName, true), request.getAccountName());
         wrapper.like(StringUtils.isNotBlank(request.getIpArray()), ColumnNameUtil.getColumnName(VmCloudServer::getIpArray, true), request.getIpArray());
         wrapper.in(CollectionUtils.isNotEmpty(request.getAccountIds()), ColumnNameUtil.getColumnName(VmCloudServer::getAccountId, true), request.getAccountIds());
         wrapper.in(CollectionUtils.isNotEmpty(request.getInstanceStatus()), ColumnNameUtil.getColumnName(VmCloudServer::getInstanceStatus, true), request.getInstanceStatus());
-        wrapper.in(CollectionUtils.isNotEmpty(request.getSourceIds()), ColumnNameUtil.getColumnName(VmCloudServer::getWorkspaceId, true), request.getSourceIds());
+        wrapper.in(CollectionUtils.isNotEmpty(request.getSourceIds()), ColumnNameUtil.getColumnName(VmCloudServer::getSourceId, true), request.getSourceIds());
 
         // 默认不展示已删除状态的机器
         if (CollectionUtils.isEmpty(request.getInstanceStatus())) {
-            wrapper.notIn(ColumnNameUtil.getColumnName(VmCloudServer::getInstanceStatus, true),F2CInstanceStatus.Deleted.name());
+            wrapper.notIn(ColumnNameUtil.getColumnName(VmCloudServer::getInstanceStatus, true), F2CInstanceStatus.Deleted.name());
         }
         return wrapper;
     }
@@ -519,9 +524,17 @@ public class VmCloudServerServiceImpl extends ServiceImpl<BaseVmCloudServerMappe
         String sourceId = grantServerRequest.getGrant() ? grantServerRequest.getSourceId() : "";
 
         UpdateWrapper<VmCloudServer> updateWrapper = new UpdateWrapper();
-        updateWrapper.lambda().in(VmCloudServer::getId, grantServerRequest.getCloudServerIds());
-        updateWrapper.lambda().set(VmCloudServer::getWorkspaceId, sourceId);
+        updateWrapper.lambda().in(VmCloudServer::getId, grantServerRequest.getCloudServerIds())
+                .set(VmCloudServer::getSourceId, sourceId);
+        update(updateWrapper);
 
-        return update(updateWrapper);
+        // 更新云主机关联的云磁盘
+        List<String> instanceUuids = listByIds(Arrays.asList(grantServerRequest.getCloudServerIds())).stream().map(vmCloudServer -> vmCloudServer.getInstanceUuid()).collect(Collectors.toList());
+        UpdateWrapper<VmCloudDisk> updateDiskWrapper = new UpdateWrapper();
+        updateDiskWrapper.lambda().in(VmCloudDisk::getInstanceUuid, instanceUuids)
+                .set(VmCloudDisk::getSourceId, sourceId);
+        vmCloudDiskService.update(updateDiskWrapper);
+
+        return true;
     }
 }

@@ -12,8 +12,10 @@ import com.fit2cloud.provider.entity.*;
 import com.fit2cloud.provider.entity.request.GetMetricsRequest;
 import com.fit2cloud.provider.entity.result.CheckCreateServerResult;
 import com.fit2cloud.provider.impl.openstack.api.OpenStackCloudApi;
+import com.fit2cloud.provider.impl.openstack.entity.OpenStackFlavor;
 import com.fit2cloud.provider.impl.openstack.entity.VolumeType;
 import com.fit2cloud.provider.impl.openstack.entity.request.*;
+import com.fit2cloud.provider.impl.vsphere.api.VsphereSyncCloudApi;
 import org.openstack4j.model.compute.Flavor;
 import org.openstack4j.model.network.Network;
 import org.openstack4j.model.network.SecurityGroup;
@@ -159,5 +161,30 @@ public class OpenStackCloudProvider extends AbstractCloudProvider<OpenStackCrede
     @Override
     public List<F2CPerfMetricMonitorData> getF2CPerfMetricMonitorData(String req) {
         return OpenStackCloudApi.getF2CPerfMetricMonitorData(JsonUtil.parseObject(req, GetMetricsRequest.class));
+    }
+
+    @Override
+    public List<F2CPerfMetricMonitorData> getF2CHostPerfMetricMonitorData(String req){
+        return OpenStackCloudApi.getF2CHostPerfMetricList(JsonUtil.parseObject(req, GetMetricsRequest.class));
+    }
+
+    @Override
+    public List<F2CPerfMetricMonitorData> getF2CDatastorePerfMetricMonitorData(String req){
+        return OpenStackCloudApi.getF2CDatastorePerfMetricList(req, JsonUtil.parseObject(req, GetMetricsRequest.class));
+    }
+
+    @Override
+    public FormObject getConfigUpdateForm() {
+        return FormUtil.toForm(OpenStackConfigUpdateForm.class);
+    }
+
+
+    public List<OpenStackFlavor> getInstanceTypesForConfigUpdate(String req) {
+        return OpenStackCloudApi.getInstanceTypesForConfigUpdate(JsonUtil.parseObject(req, OpenStackConfigUpdateRequest.class));
+    }
+
+    @Override
+    public F2CVirtualMachine changeVmConfig(String req) {
+        return OpenStackCloudApi.changeVmConfig(JsonUtil.parseObject(req, OpenStackConfigUpdateRequest.class));
     }
 }

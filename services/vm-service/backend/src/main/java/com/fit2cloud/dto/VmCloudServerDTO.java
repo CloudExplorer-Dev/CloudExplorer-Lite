@@ -20,6 +20,10 @@ public class VmCloudServerDTO extends VmCloudServer {
     private String organizationName;
     @ApiModelProperty("工作空间名称")
     private String workspaceName;
+    @ApiModelProperty("组织ID")
+    private String organizationId;
+    @ApiModelProperty("工作空间ID")
+    private String workspaceId;
     @ApiModelProperty("云账号名称")
     private String accountName;
     @ApiModelProperty("企业项目")

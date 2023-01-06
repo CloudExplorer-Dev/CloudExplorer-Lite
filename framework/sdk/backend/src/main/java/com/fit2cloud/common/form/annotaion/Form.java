@@ -85,6 +85,12 @@ public @interface Form {
     String valueField() default "";
 
     /**
+     * 针对格式化情况，需要有个默认的展示
+     * @return
+     */
+    String baseTextField() default "";
+
+    /**
      * 单选多选框 option选项对应的文本字段
      *
      * @return option对象文本提示的属性名

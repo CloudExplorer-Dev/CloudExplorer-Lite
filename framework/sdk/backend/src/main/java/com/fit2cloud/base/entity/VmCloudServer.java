@@ -43,10 +43,10 @@ public class VmCloudServer implements Serializable {
     private String instanceUuid;
 
     /**
-     * 工作空间 ID
+     * 组织 ID 或工作空间 ID
      */
-    @TableField("workspace_id")
-    private String workspaceId;
+    @TableField("source_id")
+    private String sourceId;
 
     /**
      * Project ID

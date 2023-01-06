@@ -19,6 +19,8 @@ public class SingleSelectForm extends Form {
      */
     private String textField;
 
+    private String baseTextField;
+
     private boolean formatTextField;
     /**
      * 获取options数据

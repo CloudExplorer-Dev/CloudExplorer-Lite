@@ -76,6 +76,7 @@ public class FormUtil {
             map.put("description", annotation.description());
             map.put("valueField", annotation.valueField());
             map.put("textField", annotation.textField());
+            map.put("baseTextField", annotation.baseTextField());
             map.put("formatTextField", annotation.formatTextField());
             map.put("unit", annotation.unit());
             map.put("field", field.getName());

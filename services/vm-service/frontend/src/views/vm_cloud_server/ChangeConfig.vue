@@ -154,7 +154,7 @@ watch(
                 <span>{{ vmCloudServer?.instanceType }}</span>
                 <span
                   v-if="
-                    vmCloudServer?.instanceType !=
+                    vmCloudServer?.instanceType !==
                     vmCloudServer?.instanceTypeDescription
                   "
                   >{{ vmCloudServer?.instanceTypeDescription }}</span
