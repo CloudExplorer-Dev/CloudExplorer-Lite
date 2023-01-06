@@ -1,7 +1,9 @@
 package com.fit2cloud.provider.impl.tencent.entity.credential;
 
 import com.fit2cloud.common.provider.impl.tencent.entity.credential.TencentBaseCredential;
+import com.tencentcloudapi.cbs.v20170312.CbsClient;
 import com.tencentcloudapi.cdb.v20170320.CdbClient;
+import com.tencentcloudapi.clb.v20180317.ClbClient;
 import com.tencentcloudapi.common.Credential;
 import com.tencentcloudapi.common.profile.ClientProfile;
 import com.tencentcloudapi.common.profile.HttpProfile;
@@ -12,6 +14,7 @@ import com.tencentcloudapi.postgres.v20170312.PostgresClient;
 import com.tencentcloudapi.redis.v20180412.RedisClient;
 import com.tencentcloudapi.mongodb.v20190725.MongodbClient;
 import com.tencentcloudapi.sqlserver.v20180328.SqlserverClient;
+import com.tencentcloudapi.vpc.v20170312.VpcClient;
 
 /**
  * {@code @Author:张少虎}
@@ -138,5 +141,54 @@ public class TencentSecurityComplianceCredential extends TencentBaseCredential {
         ClientProfile clientProfile = new ClientProfile();
         clientProfile.setHttpProfile(httpProfile);
         return new EsClient(cred, region, clientProfile);
+    }
+
+
+    /**
+     * 获取 cbs(云磁盘) 客户端
+     *
+     * @param region 区域
+     * @return cbs(云磁盘)客户端
+     */
+    public CbsClient getCbsClient(String region) {
+        Credential cred = new Credential(getSecretId(), getSecretKey());
+        HttpProfile httpProfile = new HttpProfile();
+        httpProfile.setEndpoint("cbs.tencentcloudapi.com");
+        ClientProfile clientProfile = new ClientProfile();
+        clientProfile.setHttpProfile(httpProfile);
+        return new CbsClient(cred, region, clientProfile);
+    }
+
+    /**
+     * 获取 Clb(负载均衡) 客户端
+     *
+     * @param region 区域
+     * @return Clb(负载均衡)客户端
+     */
+    public ClbClient getClbClient(String region) {
+        Credential cred = new Credential(getSecretId(), getSecretKey());
+        HttpProfile httpProfile = new HttpProfile();
+        httpProfile.setEndpoint("clb.tencentcloudapi.com");
+        ClientProfile clientProfile = new ClientProfile();
+        clientProfile.setHttpProfile(httpProfile);
+        return new ClbClient(cred, region, clientProfile);
+    }
+
+    /**
+     * 获取 vpc(私有网络,弹性网卡) 客户端
+     *
+     * @param region 区域
+     * @return vpc(私有网络, 弹性网卡) 客户端
+     */
+    public VpcClient getVpcClient(String region) {
+        Credential cred = new Credential(getSecretId(), getSecretKey());
+        // 实例化一个http选项，可选的，没有特殊需求可以跳过
+        HttpProfile httpProfile = new HttpProfile();
+        httpProfile.setEndpoint("vpc.tencentcloudapi.com");
+        // 实例化一个client选项，可选的，没有特殊需求可以跳过
+        ClientProfile clientProfile = new ClientProfile();
+        clientProfile.setHttpProfile(httpProfile);
+        // 实例化要请求产品的client对象,clientProfile是可选的
+        return new VpcClient(cred, region, clientProfile);
     }
 }

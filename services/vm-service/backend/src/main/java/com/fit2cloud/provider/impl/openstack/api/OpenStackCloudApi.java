@@ -1,8 +1,10 @@
 package com.fit2cloud.provider.impl.openstack.api;
 
+import com.fit2cloud.common.exception.Fit2cloudException;
 import com.fit2cloud.common.provider.entity.F2CEntityType;
 import com.fit2cloud.common.provider.entity.F2CPerfMetricMonitorData;
 import com.fit2cloud.common.provider.impl.openstack.entity.request.OpenStackBaseRequest;
+import com.fit2cloud.common.utils.DateUtil;
 import com.fit2cloud.common.utils.JsonUtil;
 import com.fit2cloud.provider.entity.*;
 import com.fit2cloud.provider.entity.request.GetMetricsRequest;
@@ -53,6 +55,9 @@ public class OpenStackCloudApi {
             List<String> regions = OpenStackUtils.getRegionList(osClient);
 
             for (String region : regions) {
+                if (request.getRegionId() != null && !StringUtils.equals(request.getRegionId(), region)) {
+                    continue;
+                }
                 osClient.useRegion(region);
                 List<? extends Server> instances = osClient.compute().servers().list(true);
                 Map<String, Image> imageMap = osClient.imagesV2().list().stream().collect(Collectors.toMap(Image::getId, image -> image));
@@ -75,6 +80,9 @@ public class OpenStackCloudApi {
 
             List<String> regions = OpenStackUtils.getRegionList(osClient);
             for (String region : regions) {
+                if (request.getRegionId() != null && !StringUtils.equals(request.getRegionId(), region)) {
+                    continue;
+                }
                 osClient.useRegion(region);
                 for (Image image : osClient.imagesV2().list()) {
                     list.add(OpenStackUtils.toF2CImage(image, region));
@@ -96,6 +104,9 @@ public class OpenStackCloudApi {
 
             List<String> regions = OpenStackUtils.getRegionList(osClient);
             for (String region : regions) {
+                if (request.getRegionId() != null && !StringUtils.equals(request.getRegionId(), region)) {
+                    continue;
+                }
                 osClient.useRegion(region);
                 for (Volume volume : osClient.blockStorage().volumes().list()) {
                     list.add(OpenStackUtils.toF2CDisk(volume, region));
@@ -654,6 +665,9 @@ public class OpenStackCloudApi {
             List<String> regions = OpenStackUtils.getRegionList(osClient);
             if (OpenStackUtils.isAdmin(osClient)) {
                 regions.forEach(region -> {
+                    if (request.getRegionId() != null && !StringUtils.equals(request.getRegionId(), region)) {
+                        return;
+                    }
                     osClient.useRegion(region);
                     List<? extends HostAggregate> hostAggregates = osClient.compute().hostAggregates().list();
                     List<? extends Hypervisor> hypervisors = osClient.compute().hypervisors().list();
@@ -677,6 +691,9 @@ public class OpenStackCloudApi {
             List<String> regions = OpenStackUtils.getRegionList(osClient);
             if (OpenStackUtils.isAdmin(osClient)) {
                 regions.forEach(region -> {
+                    if (request.getRegionId() != null && !StringUtils.equals(request.getRegionId(), region)) {
+                        return;
+                    }
                     osClient.useRegion(region);
                     if (OpenStackUtils.isSupport(osClient, ServiceType.BLOCK_STORAGE)) {
                         List<? extends VolumeBackendPool> backendPools = osClient.blockStorage().schedulerStatsPools().poolsDetail();
@@ -708,6 +725,11 @@ public class OpenStackCloudApi {
             List<String> regions = OpenStackUtils.getRegionList(osClient);
 
             for (String region : regions) {
+
+                if (request.getRegionId() != null && !StringUtils.equals(request.getRegionId(), region)) {
+                    continue;
+                }
+
                 osClient.useRegion(region);
 
                 SampleCriteria sc = new SampleCriteria();
@@ -943,5 +965,38 @@ public class OpenStackCloudApi {
         } catch (Exception e) {
             throw new RuntimeException(e.getMessage(), e);
         }
+    }
+
+    public static List<F2CPerfMetricMonitorData> getF2CHostPerfMetricList(GetMetricsRequest request) {
+        return null;
+    }
+
+    public static List<F2CPerfMetricMonitorData> getF2CDatastorePerfMetricList(String req, GetMetricsRequest request) {
+        List<F2CDatastore> f2CDataStores = listDataStore(JsonUtil.parseObject(req, OpenStackBaseRequest.class));
+
+        List<F2CPerfMetricMonitorData> result = new ArrayList<>();
+        //设置时间，根据interval,默认一个小时
+        request.setStartTime(String.valueOf(DateUtil.getBeforeHourTime(1)));
+        request.setEndTime(String.valueOf(System.currentTimeMillis()));
+        try {
+            for (F2CDatastore datastore : f2CDataStores) {
+                F2CPerfMetricMonitorData f2CEntityPerfMetric = new F2CPerfMetricMonitorData();
+
+               /* f2CEntityPerfMetric.setTimestamp(data.get("timestamp"));
+                BigDecimal useAvg = new BigDecimal(data.get("Average")).divide(new BigDecimal(1024)).divide(new BigDecimal(1024)).setScale(2,RoundingMode.HALF_UP);
+                BigDecimal totalBig = new BigDecimal(datastore.getCapacity());
+                f2CEntityPerfMetric.setAverage(useAvg.multiply(new BigDecimal(100)).divide(totalBig,2,RoundingMode.HALF_UP));
+
+                f2CEntityPerfMetric.setEntityType(F2CEntityType.DATASTORE.name());
+                f2CEntityPerfMetric.setMetricName(perfMetric.name());
+                f2CEntityPerfMetric.setPeriod(request.getPeriod());
+                f2CEntityPerfMetric.setInstanceId(datastore.getDataStoreId());
+                f2CEntityPerfMetric.setUnit(perfMetric.getUnit());*/
+                result.add(f2CEntityPerfMetric);
+            }
+        } catch (Exception e) {
+            throw new Fit2cloudException(100021, "获取监控数据失败-" + request.getRegionId() + "-" + e.getMessage());
+        }
+        return result;
     }
 }

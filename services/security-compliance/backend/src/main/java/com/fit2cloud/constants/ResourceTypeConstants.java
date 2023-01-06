@@ -4,6 +4,7 @@ import com.fit2cloud.es.entity.ResourceInstance;
 import com.fit2cloud.provider.ICloudProvider;
 import com.fit2cloud.provider.entity.InstanceSearchField;
 import io.reactivex.rxjava3.functions.BiFunction;
+import org.redisson.connection.balancer.LoadBalancer;
 
 import java.util.List;
 import java.util.function.Function;
@@ -47,7 +48,31 @@ public enum ResourceTypeConstants {
     /**
      * elasticsearch
      */
-    ELASTIC_SEARCH("云数据库-Elasticsearch", ICloudProvider::listElasticSearchInstance, ICloudProvider::listElasticSearchInstanceSearchField);
+    ELASTIC_SEARCH("云数据库-Elasticsearch", ICloudProvider::listElasticSearchInstance, ICloudProvider::listElasticSearchInstanceSearchField),
+    /**
+     * 云磁盘
+     */
+    DISK("云磁盘", ICloudProvider::listDiskInstance, ICloudProvider::listDiskInstanceSearchField),
+
+    /**
+     * 负载均衡
+     */
+    LOAD_BALANCER("负载均衡", ICloudProvider::listLoadBalancerInstance, ICloudProvider::listLoadBalancerInstanceSearchField),
+    /**
+     * 公网ip
+     */
+    PUBLIC_IP("公网IP", ICloudProvider::listPublicIpInstance, ICloudProvider::listPublicIpInstanceSearchField),
+
+    /**
+     * vpc
+     */
+    VPC("VPC", ICloudProvider::listVpcInstance, ICloudProvider::listVpcInstanceSearchField),
+
+    /**
+     * RAM
+     */
+    RAM("RAM用户", ICloudProvider::listRamInstance, ICloudProvider::listRamInstanceSearchField);
+
     /**
      * 提示
      */

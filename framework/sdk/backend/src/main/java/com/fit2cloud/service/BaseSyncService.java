@@ -225,17 +225,17 @@ public abstract class BaseSyncService {
      * @param service             服务
      * @param dataList            需要插入的数据
      * @param getUpdateWrapper    获取更新的mapper
-     * @param updateDeleteWarpper 删除mapper
+     * @param updateDeleteWrapper 删除mapper
      * @param <T>                 数据泛型
      */
-    protected <T> void saveBatchOrUpdate(IService<T> service, List<T> dataList, Function<T, Wrapper<T>> getUpdateWrapper, Wrapper<T> updateDeleteWarpper) {
+    protected <T> void saveBatchOrUpdate(IService<T> service, List<T> dataList, Function<T, Wrapper<T>> getUpdateWrapper, Wrapper<T> updateDeleteWrapper) {
         for (T entity : dataList) {
             Wrapper<T> updateWrapper = getUpdateWrapper.apply(entity);
             // 插入或者更新数据
             service.saveOrUpdate(entity, updateWrapper);
         }
         // 删除数据,因为是逻辑删除所以更新status字段
-        service.update(updateDeleteWarpper);
+        service.update(updateDeleteWrapper);
     }
 
     /**

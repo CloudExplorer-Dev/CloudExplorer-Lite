@@ -12,11 +12,15 @@ import com.fit2cloud.provider.impl.tencent.api.TencentApi;
 import com.fit2cloud.provider.impl.tencent.api.TencentInstanceSearchFieldApi;
 import com.fit2cloud.provider.impl.tencent.entity.request.*;
 import com.fit2cloud.provider.util.ResourceUtil;
+import com.tencentcloudapi.cbs.v20170312.models.Disk;
 import com.tencentcloudapi.cdb.v20170320.models.InstanceInfo;
+import com.tencentcloudapi.clb.v20180317.models.LoadBalancer;
 import com.tencentcloudapi.cvm.v20170312.models.Instance;
 import com.tencentcloudapi.mongodb.v20190725.models.InstanceDetail;
 import com.tencentcloudapi.redis.v20180412.models.InstanceSet;
 import com.tencentcloudapi.sqlserver.v20180328.models.DBInstance;
+import com.tencentcloudapi.vpc.v20170312.models.NetworkInterface;
+import com.tencentcloudapi.vpc.v20170312.models.Vpc;
 
 import java.util.List;
 
@@ -146,6 +150,76 @@ public class TencentCloudProvider extends AbstractCloudProvider<TencentBaseCrede
     @Override
     public List<InstanceSearchField> listElasticSearchInstanceSearchField() {
         return List.of();
+    }
+
+    @Override
+    public List<ResourceInstance> listDiskInstance(String req) {
+        ListDiskInstanceRequest listDiskInstanceRequest = JsonUtil.parseObject(req, ListDiskInstanceRequest.class);
+        List<Disk> instances = TencentApi.listDiskInstance(listDiskInstanceRequest);
+        return instances
+                .stream()
+                .map(instance -> ResourceUtil.toResourceInstance(PlatformConstants.fit2cloud_tencent_platform.name(), ResourceTypeConstants.DISK, instance.getInstanceId(), instance.getDiskName(), instance))
+                .toList();
+    }
+
+    @Override
+    public List<InstanceSearchField> listDiskInstanceSearchField() {
+        return List.of();
+    }
+
+    @Override
+    public List<ResourceInstance> listLoadBalancerInstance(String req) {
+        ListLoadBalancerInstanceRequest listLoadBalancerInstanceRequest = JsonUtil.parseObject(req, ListLoadBalancerInstanceRequest.class);
+        List<LoadBalancer> instances = TencentApi.listLoadBalancerInstance(listLoadBalancerInstanceRequest);
+        return instances
+                .stream()
+                .map(instance -> ResourceUtil.toResourceInstance(PlatformConstants.fit2cloud_tencent_platform.name(), ResourceTypeConstants.LOAD_BALANCER, instance.getLoadBalancerId(), instance.getLoadBalancerName(), instance))
+                .toList();
+    }
+
+    @Override
+    public List<InstanceSearchField> listLoadBalancerInstanceSearchField() {
+        return List.of();
+    }
+
+    @Override
+    public List<ResourceInstance> listPublicIpInstance(String req) {
+        ListPublicIpInstanceRequest listPublicIpInstanceRequest = JsonUtil.parseObject(req, ListPublicIpInstanceRequest.class);
+        List<NetworkInterface> instances = TencentApi.listPublicIpInstance(listPublicIpInstanceRequest);
+        return instances
+                .stream()
+                .map(instance -> ResourceUtil.toResourceInstance(PlatformConstants.fit2cloud_tencent_platform.name(), ResourceTypeConstants.PUBLIC_IP, instance.getResourceId(), instance.getNetworkInterfaceName(), instance))
+                .toList();
+    }
+
+    @Override
+    public List<InstanceSearchField> listPublicIpInstanceSearchField() {
+        return List.of();
+    }
+
+    @Override
+    public List<ResourceInstance> listVpcInstance(String req) {
+        ListVpcInstanceRequest listVpcInstanceRequest = JsonUtil.parseObject(req, ListVpcInstanceRequest.class);
+        List<Vpc> instances = TencentApi.listVpcInstance(listVpcInstanceRequest);
+        return instances
+                .stream()
+                .map(instance -> ResourceUtil.toResourceInstance(PlatformConstants.fit2cloud_tencent_platform.name(), ResourceTypeConstants.VPC, instance.getVpcId(), instance.getVpcName(), instance))
+                .toList();
+    }
+
+    @Override
+    public List<InstanceSearchField> listVpcInstanceSearchField() {
+        return List.of();
+    }
+
+    @Override
+    public List<ResourceInstance> listRamInstance(String req) {
+        return null;
+    }
+
+    @Override
+    public List<InstanceSearchField> listRamInstanceSearchField() {
+        return null;
     }
 
 
