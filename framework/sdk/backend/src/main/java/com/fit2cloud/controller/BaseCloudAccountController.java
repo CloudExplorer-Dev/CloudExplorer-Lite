@@ -40,7 +40,6 @@ public class BaseCloudAccountController {
 
     @GetMapping("/{id}")
     @ApiOperation(value = "根据id查询云账号", notes = "根据id查询云账号")
-    @PreAuthorize("hasAuthority('[management-center]CLOUD_ACCOUNT:READ')")
     public ResultHolder<CloudAccount> findCloudAccount(@ApiParam(value = "云账号id", required = true)
                                                        @CustomValidated(mapper = BaseCloudAccountMapper.class, handler = ExistHandler.class, message = "{i18n.cloud_account_id_not_existent}", exist = false)
                                                        @PathVariable("id") String id) {
