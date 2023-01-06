@@ -8,6 +8,7 @@ import com.fit2cloud.provider.entity.*;
 import com.fit2cloud.provider.entity.request.GetMetricsRequest;
 import com.fit2cloud.provider.entity.result.CheckCreateServerResult;
 import com.fit2cloud.provider.impl.openstack.entity.CheckStatusResult;
+import com.fit2cloud.provider.impl.openstack.entity.OpenStackFlavor;
 import com.fit2cloud.provider.impl.openstack.entity.VolumeType;
 import com.fit2cloud.provider.impl.openstack.entity.request.*;
 import com.fit2cloud.provider.impl.openstack.util.OpenStackUtils;
@@ -31,6 +32,7 @@ import org.openstack4j.model.storage.block.builder.VolumeBuilder;
 import org.openstack4j.model.telemetry.Resource;
 import org.openstack4j.model.telemetry.SampleCriteria;
 import org.openstack4j.model.telemetry.Statistics;
+import org.openstack4j.openstack.compute.domain.NovaFlavor;
 import org.openstack4j.openstack.storage.block.domain.VolumeBackendPool;
 
 import java.math.BigDecimal;
@@ -828,5 +830,118 @@ public class OpenStackCloudApi {
 
         return result;
 
+    }
+
+    public static List<OpenStackFlavor> getInstanceTypesForConfigUpdate(OpenStackConfigUpdateRequest request) {
+        List<OpenStackFlavor> result = new ArrayList<>();
+        try {
+            OSClient.OSClientV3 osClient = request.getOSClient();
+            osClient.useRegion(request.getRegionId());
+
+            Server server = osClient.compute().servers().get(request.getInstanceUuid());
+            if (server == null) {
+                throw new RuntimeException("server not exist");
+            }
+
+            boolean bootFromVolume = StringUtils.isBlank(server.getImageId());
+
+            List<? extends Flavor> flavors = osClient.compute().flavors().list();
+
+            for (Flavor flavor : flavors) {
+                if (flavor.isDisabled()) {
+                    continue;
+                }
+                //排除内存小于1G的
+                if (flavor.getRam() < 1024) {
+                    continue;
+                }
+                if (flavor.getVcpus() == server.getFlavor().getVcpus() && flavor.getRam() == server.getFlavor().getRam()) {
+                    continue;
+                }
+                if (!bootFromVolume) {
+                    //需要判断系统盘
+                    if (flavor.getDisk() < server.getFlavor().getDisk()) {
+                        continue;
+                    }
+                }
+
+                result.add(OpenStackFlavor.copy(flavor));
+            }
+
+        } catch (Exception e) {
+            throw new RuntimeException(e.getMessage(), e);
+        }
+
+        return result.stream().sorted(Comparator.comparingInt(OpenStackFlavor::getVcpus).thenComparingInt(OpenStackFlavor::getRam).thenComparingInt(OpenStackFlavor::getDisk)).collect(Collectors.toList());
+    }
+
+    public static F2CVirtualMachine changeVmConfig(OpenStackConfigUpdateRequest request) {
+        try {
+            OSClient.OSClientV3 osClient = request.getOSClient();
+            osClient.useRegion(request.getRegionId());
+
+            Server server = osClient.compute().servers().get(request.getInstanceUuid());
+            if (server == null) {
+                throw new RuntimeException("server not exist");
+            }
+
+            boolean bootFromVolume = StringUtils.isBlank(server.getImageId());
+
+            Flavor flavor = osClient.compute().flavors().get(request.getNewInstanceType());
+            if (flavor == null) {
+                throw new RuntimeException("flavor not exist");
+            }
+
+            if (StringUtils.equals(server.getFlavor().getId(), flavor.getId())) {
+                throw new RuntimeException("flavor not change");
+            }
+
+            if (!bootFromVolume) {
+                //需要判断系统盘
+                if (flavor.getDisk() < server.getFlavor().getDisk()) {
+                    throw new RuntimeException("disk size can not be reduced");
+                }
+            }
+            ActionResponse response = osClient.compute().servers().resize(server.getId(), flavor.getId());
+            if (!response.isSuccess()) {
+                throw new RuntimeException(response.getFault());
+            }
+
+            Server.Status status = server.getStatus();
+
+            CheckStatusResult result = OpenStackUtils.checkServerStatus(osClient, server, Server.Status.VERIFY_RESIZE);
+            if (!result.isSuccess() && result.getObject() == null) {
+                throw new RuntimeException(result.getFault());
+            } else {
+                response = osClient.compute().servers().confirmResize(server.getId());
+                if (!response.isSuccess()) {
+                    String fault = response.getFault();
+                    response = osClient.compute().servers().revertResize(server.getId());
+                    if (!response.isSuccess()) {
+                        throw new RuntimeException(result.getFault());
+                    }
+                    throw new RuntimeException(fault);
+                }
+            }
+            result = OpenStackUtils.checkServerStatus(osClient, server, status);
+            if (!result.isSuccess()) {
+                if (result.getObject() != null && ((Server) result.getObject()).getStatus().equals(Server.Status.ERROR)) {
+                    response = osClient.compute().servers().resetState(server.getId(), status);
+                    if (!response.isSuccess()) {
+                        throw new RuntimeException(response.getFault());
+                    }
+                    result = OpenStackUtils.checkServerStatus(osClient, server, status);
+                    if (!result.isSuccess()) {
+                        throw new RuntimeException(result.getFault());
+                    }
+                } else {
+                    throw new RuntimeException(result.getFault());
+                }
+            }
+            return OpenStackUtils.toF2CVirtualMachine(osClient, (Server) result.getObject(), request.getRegionId(), null);
+
+        } catch (Exception e) {
+            throw new RuntimeException(e.getMessage(), e);
+        }
     }
 }

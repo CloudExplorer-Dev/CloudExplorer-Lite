@@ -48,8 +48,8 @@ public class OpenStackUtils extends OpenStackBaseUtils {
                 .setName(instance.getName())
                 .setCpu(instance.getFlavor().getVcpus())
                 .setMemory(instance.getFlavor().getRam() / 1024);
-        String instanceType = vm.getCpu() + "vCPU " + vm.getMemory() + "GB";
-        vm.setInstanceType(instanceType)
+        String instanceType = vm.getCpu() + "vCPU " + vm.getMemory() + "GB" + (instance.getFlavor().getDisk() == 0 ? "" : (" " + instance.getFlavor().getDisk() + "GB"));
+        vm.setInstanceType(instance.getFlavor().getName())
                 .setInstanceTypeDescription(instanceType)
                 .setImageId(instance.getImageId())
                 .setCreated(instance.getCreated())
@@ -109,7 +109,7 @@ public class OpenStackUtils extends OpenStackBaseUtils {
         }
 
         vm.setOsInfo(getOsInfo(image));
-        if(CollectionUtils.isNotEmpty(instance.getSecurityGroups())){
+        if (CollectionUtils.isNotEmpty(instance.getSecurityGroups())) {
             // TODO 安全组ID?
             List<String> names = instance.getSecurityGroups().stream().map(SecurityGroup::getName).collect(Collectors.toList());
             vm.setSecurityGroupIds(names);
@@ -200,7 +200,7 @@ public class OpenStackUtils extends OpenStackBaseUtils {
                     }
                     if (Server.Status.ERROR.equals(s.getStatus())) {
                         return CheckStatusResult.fail("The server status is ERROR，message:"
-                                + (s.getFault() == null ? "" : s.getFault().getMessage()));
+                                + (s.getFault() == null ? "" : s.getFault().getMessage()), s);
                     }
                 }
                 count++;
@@ -327,8 +327,8 @@ public class OpenStackUtils extends OpenStackBaseUtils {
         BufferedReader br = null;
         StringBuilder sb = new StringBuilder();
         try {
-             reader = new InputStreamReader(classPathResource.getInputStream());
-             br = new BufferedReader(reader);
+            reader = new InputStreamReader(classPathResource.getInputStream());
+            br = new BufferedReader(reader);
 
             String line = br.readLine();
             while (line != null) {
