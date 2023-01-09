@@ -164,12 +164,12 @@ public class OpenStackCloudProvider extends AbstractCloudProvider<OpenStackCrede
     }
 
     @Override
-    public List<F2CPerfMetricMonitorData> getF2CHostPerfMetricMonitorData(String req){
-        return OpenStackCloudApi.getF2CHostPerfMetricList(JsonUtil.parseObject(req, GetMetricsRequest.class));
+    public List<F2CPerfMetricMonitorData> getF2CHostPerfMetricMonitorData(String req) {
+        return OpenStackCloudApi.getF2CHostPerfMetricList(req, JsonUtil.parseObject(req, GetMetricsRequest.class));
     }
 
     @Override
-    public List<F2CPerfMetricMonitorData> getF2CDatastorePerfMetricMonitorData(String req){
+    public List<F2CPerfMetricMonitorData> getF2CDatastorePerfMetricMonitorData(String req) {
         return OpenStackCloudApi.getF2CDatastorePerfMetricList(req, JsonUtil.parseObject(req, GetMetricsRequest.class));
     }
 
