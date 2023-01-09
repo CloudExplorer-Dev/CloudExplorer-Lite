@@ -11,6 +11,7 @@ import com.fit2cloud.base.entity.VmCloudDisk;
 import com.fit2cloud.base.entity.VmCloudServer;
 import com.fit2cloud.base.mapper.BaseVmCloudDiskMapper;
 import com.fit2cloud.base.service.IBaseCloudAccountService;
+import com.fit2cloud.base.service.IBaseVmCloudServerService;
 import com.fit2cloud.common.constants.JobTypeConstants;
 import com.fit2cloud.common.form.vo.FormObject;
 import com.fit2cloud.common.log.constants.OperatedTypeEnum;
@@ -32,6 +33,7 @@ import com.fit2cloud.dto.VmCloudServerDTO;
 import com.fit2cloud.provider.ICloudProvider;
 import com.fit2cloud.provider.constants.DeleteWithInstance;
 import com.fit2cloud.provider.constants.F2CDiskStatus;
+import com.fit2cloud.provider.constants.F2CInstanceStatus;
 import com.fit2cloud.provider.constants.ProviderConstants;
 import com.fit2cloud.provider.entity.F2CDisk;
 import com.fit2cloud.provider.impl.vsphere.util.ResourceConstants;
@@ -66,23 +68,17 @@ public class VmCloudDiskServiceImpl extends ServiceImpl<BaseVmCloudDiskMapper, V
     @Resource
     private VmCloudServerMapper serverMapper;
     @Resource
+    private IBaseVmCloudServerService vmCloudServerService;
+    @Resource
     private IBaseCloudAccountService cloudAccountService;
     @Resource
     private IResourceOperateService resourceOperateService;
 
     @Override
     public IPage<VmCloudDiskDTO> pageVmCloudDisk(PageVmCloudDiskRequest request) {
-        // 普通用户
-        if (CurrentUserUtils.isUser() && StringUtils.isNotBlank(CurrentUserUtils.getWorkspaceId())) {
-            request.setSourceIds(Arrays.asList(new String[]{CurrentUserUtils.getWorkspaceId()}));
-        }
-        // 组织管理员
-        if (CurrentUserUtils.isOrgAdmin()) {
-            List orgWorkspaceList = new ArrayList();
-            orgWorkspaceList.add(CurrentUserUtils.getOrganizationId());
-            orgWorkspaceList.addAll(organizationCommonService.getOrgIdsByParentId(CurrentUserUtils.getOrganizationId()));
-            orgWorkspaceList.addAll(workspaceCommonService.getWorkspaceIdsByOrgIds(orgWorkspaceList));
-            request.setSourceIds(orgWorkspaceList);
+        List<String> sourceIds = getSourceIds();
+        if (CollectionUtils.isNotEmpty(sourceIds)) {
+            request.setSourceIds(sourceIds);
         }
         Page<VmCloudDiskDTO> page = PageUtil.of(request, VmCloudDiskDTO.class, new OrderItem(ColumnNameUtil.getColumnName(VmCloudDiskDTO::getCreateTime, true), false), true);
         // 构建查询参数
@@ -114,13 +110,22 @@ public class VmCloudDiskServiceImpl extends ServiceImpl<BaseVmCloudDiskMapper, V
 
         // 默认不展示已删除状态的磁盘
         if (CollectionUtils.isEmpty(request.getStatus())) {
-            wrapper.notIn(ColumnNameUtil.getColumnName(VmCloudDisk::getStatus, true), F2CDiskStatus.DELETED);
+            wrapper.ne(ColumnNameUtil.getColumnName(VmCloudDisk::getStatus, true), F2CDiskStatus.DELETED);
         }
         return wrapper;
     }
 
     public List<VmCloudServerDTO> cloudServerList(ListVmRequest req) {
-        return serverMapper.selectListByAccountId(req.getAccountId(), req.getZone());
+        List<String> sourceIds = getSourceIds();
+
+        QueryWrapper<VmCloudServer> wrapper = new QueryWrapper<>();
+        wrapper.lambda().eq(VmCloudServer::getAccountId, req.getAccountId())
+                .eq(VmCloudServer::getZone, req.getZone())
+                .ne(VmCloudServer::getInstanceStatus, F2CInstanceStatus.Deleted.name());
+        if (CollectionUtils.isNotEmpty(sourceIds)) {
+            wrapper.lambda().in(VmCloudServer::getSourceId, sourceIds);
+        }
+        return serverMapper.selectServerList(wrapper);
     }
 
     public VmCloudDiskDTO cloudDisk(String id) {
@@ -149,6 +154,10 @@ public class VmCloudDiskServiceImpl extends ServiceImpl<BaseVmCloudDiskMapper, V
 
             // 创建完成实体状态
             VmCloudDisk finishedVmCloudDisk = request.toVmCloudDisk(id, F2CDiskStatus.IN_USE);
+            String sourceId = getSourceId(initVmCloudDisk.getAccountId(), request.getInstanceUuid());
+            if (StringUtils.isNotBlank(sourceId)) {
+                finishedVmCloudDisk.setSourceId(sourceId);
+            }
 
             if (request.getInstanceUuid() != null) {
                 request.setIsAttached(true);
@@ -198,19 +207,19 @@ public class VmCloudDiskServiceImpl extends ServiceImpl<BaseVmCloudDiskMapper, V
             VmCloudDisk vmCloudDisk = baseMapper.selectById(id);
 
             // 扩容前状态
-            VmCloudDisk beforeAttach = new VmCloudDisk();
-            BeanUtils.copyProperties(vmCloudDisk, beforeAttach);
+            VmCloudDisk beforeEnlarge = new VmCloudDisk();
+            BeanUtils.copyProperties(vmCloudDisk, beforeEnlarge);
 
             // 扩容中状态
             vmCloudDisk.setStatus(F2CDiskStatus.ENLARGING);
-            VmCloudDisk processingAttach = new VmCloudDisk();
-            BeanUtils.copyProperties(vmCloudDisk, processingAttach);
+            VmCloudDisk processingEnlarge = new VmCloudDisk();
+            BeanUtils.copyProperties(vmCloudDisk, processingEnlarge);
 
             // 扩容后状态
-            vmCloudDisk.setStatus(beforeAttach.getStatus());
+            vmCloudDisk.setStatus(beforeEnlarge.getStatus());
             vmCloudDisk.setSize(newDiskSize);
-            VmCloudDisk afterAttach = new VmCloudDisk();
-            BeanUtils.copyProperties(vmCloudDisk, afterAttach);
+            VmCloudDisk afterEnlarge = new VmCloudDisk();
+            BeanUtils.copyProperties(vmCloudDisk, afterEnlarge);
 
             // 构建执行插件方法的参数
             CloudAccount cloudAccount = cloudAccountService.getById(vmCloudDisk.getAccountId());
@@ -222,9 +231,9 @@ public class VmCloudDiskServiceImpl extends ServiceImpl<BaseVmCloudDiskMapper, V
 
             // 执行
             ResourceState<VmCloudDisk, Boolean> resourceState = ResourceState.<VmCloudDisk, Boolean>builder()
-                    .beforeResource(beforeAttach)
-                    .processingResource(processingAttach)
-                    .afterResource(afterAttach)
+                    .beforeResource(beforeEnlarge)
+                    .processingResource(processingEnlarge)
+                    .afterResource(afterEnlarge)
                     .updateResourceMethod(this::updateCloudDisk)
                     .build();
             ExecProviderMethodRequest execProviderMethod = ExecProviderMethodRequest.builder().
@@ -262,6 +271,10 @@ public class VmCloudDiskServiceImpl extends ServiceImpl<BaseVmCloudDiskMapper, V
             vmCloudDisk.setStatus(F2CDiskStatus.IN_USE);
             vmCloudDisk.setInstanceUuid(instanceUuid);
             vmCloudDisk.setDeleteWithInstance(DeleteWithInstance.NO.name());
+            String sourceId = getSourceId(vmCloudDisk.getAccountId(), instanceUuid);
+            if (StringUtils.isNotBlank(sourceId)) {
+                vmCloudDisk.setSourceId(sourceId);
+            }
             if (deleteWithInstance) {
                 vmCloudDisk.setDeleteWithInstance(DeleteWithInstance.YES.name());
             }
@@ -479,5 +492,46 @@ public class VmCloudDiskServiceImpl extends ServiceImpl<BaseVmCloudDiskMapper, V
         vmCloudDisk.setDatastoreId(result.getDatastoreUniqueId());
         vmCloudDisk.setDiskChargeType(result.getDiskChargeType());
         baseMapper.insert(vmCloudDisk);
+    }
+
+    /**
+     * 获取当前登录角色具有权限查看的组织或者工作空间集合
+     *
+     * @return
+     */
+    private List<String> getSourceIds() {
+        List<String> sourceIds = new ArrayList<>();
+        // 普通用户
+        if (CurrentUserUtils.isUser() && StringUtils.isNotBlank(CurrentUserUtils.getWorkspaceId())) {
+            sourceIds = Arrays.asList(new String[]{CurrentUserUtils.getWorkspaceId()});
+        }
+        // 组织管理员
+        if (CurrentUserUtils.isOrgAdmin()) {
+            List orgWorkspaceList = new ArrayList();
+            orgWorkspaceList.add(CurrentUserUtils.getOrganizationId());
+            orgWorkspaceList.addAll(organizationCommonService.getOrgIdsByParentId(CurrentUserUtils.getOrganizationId()));
+            orgWorkspaceList.addAll(workspaceCommonService.getWorkspaceIdsByOrgIds(orgWorkspaceList));
+            sourceIds = orgWorkspaceList;
+        }
+        return sourceIds;
+    }
+
+    /**
+     * 获取云主机所属的组织或者工作空间 ID
+     *
+     * @param accountId
+     * @param instanceUuid
+     * @return
+     */
+    private String getSourceId(String accountId, String instanceUuid) {
+        QueryWrapper<VmCloudServer> queryWrapper = new QueryWrapper<>();
+        queryWrapper.lambda().eq(VmCloudServer::getAccountId, accountId)
+                .eq(VmCloudServer::getInstanceUuid, instanceUuid);
+        VmCloudServer vmCloudServer = vmCloudServerService.getOne(queryWrapper);
+        if (vmCloudServer != null) {
+            return vmCloudServer.getSourceId();
+        } else {
+            return null;
+        }
     }
 }
