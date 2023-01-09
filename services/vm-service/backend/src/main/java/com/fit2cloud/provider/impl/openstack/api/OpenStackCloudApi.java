@@ -750,7 +750,7 @@ public class OpenStackCloudApi {
 
                 for (Server server : servers) {
                     sc.resource(server.getId());
-                    List<? extends Statistics> cpuStatistics = osClient.telemetry().meters().statistics("cpu_util", sc);
+                    List<? extends Statistics> cpuStatistics = osClient.telemetry().meters().statistics(OpenStackPerfMetricConstants.CloudServerPerfMetricEnum.CPU_USED_UTILIZATION.getMetricName(), sc);
 
                     if (CollectionUtils.isNotEmpty(cpuStatistics)) {
                         F2CPerfMetricMonitorData cpuData = new F2CPerfMetricMonitorData();
@@ -759,7 +759,7 @@ public class OpenStackCloudApi {
                         cpuData.setMinimum(BigDecimal.valueOf(cpuStatistics.get(0).getMin()));
                         cpuData.setMaximum(BigDecimal.valueOf(cpuStatistics.get(0).getMax()));
                         cpuData.setEntityType(F2CEntityType.VIRTUAL_MACHINE.name());
-                        cpuData.setMetricName(OpenStackPerfMetricConstants.CloudServerPerfMetricEnum.CPU_USED_UTILIZATION.getMetricName());
+                        cpuData.setMetricName(OpenStackPerfMetricConstants.CloudServerPerfMetricEnum.CPU_USED_UTILIZATION.name());
                         cpuData.setPeriod(cpuStatistics.get(0).getPeriod());
                         cpuData.setInstanceId(server.getId());
                         cpuData.setUnit(OpenStackPerfMetricConstants.CloudServerPerfMetricEnum.CPU_USED_UTILIZATION.getUnit());
@@ -767,7 +767,7 @@ public class OpenStackCloudApi {
                         result.add(cpuData);
                     }
 
-                    List<? extends Statistics> memoryStatistics = osClient.telemetry().meters().statistics("memory.usage", sc);
+                    List<? extends Statistics> memoryStatistics = osClient.telemetry().meters().statistics(OpenStackPerfMetricConstants.CloudServerPerfMetricEnum.MEMORY_USED_UTILIZATION.getMetricName(), sc);
 
                     if (CollectionUtils.isNotEmpty(memoryStatistics)) {
                         F2CPerfMetricMonitorData memoryData = new F2CPerfMetricMonitorData();
@@ -776,7 +776,7 @@ public class OpenStackCloudApi {
                         memoryData.setMinimum(BigDecimal.valueOf(cpuStatistics.get(0).getMin()).divide(BigDecimal.valueOf(server.getFlavor().getRam()), 4, RoundingMode.HALF_UP));
                         memoryData.setMaximum(BigDecimal.valueOf(cpuStatistics.get(0).getMax()).divide(BigDecimal.valueOf(server.getFlavor().getRam()), 4, RoundingMode.HALF_UP));
                         memoryData.setEntityType(F2CEntityType.VIRTUAL_MACHINE.name());
-                        memoryData.setMetricName(OpenStackPerfMetricConstants.CloudServerPerfMetricEnum.MEMORY_USED_UTILIZATION.getMetricName());
+                        memoryData.setMetricName(OpenStackPerfMetricConstants.CloudServerPerfMetricEnum.MEMORY_USED_UTILIZATION.name());
                         memoryData.setPeriod(cpuStatistics.get(0).getPeriod());
                         memoryData.setInstanceId(server.getId());
                         memoryData.setUnit(OpenStackPerfMetricConstants.CloudServerPerfMetricEnum.MEMORY_USED_UTILIZATION.getUnit());
@@ -806,13 +806,13 @@ public class OpenStackCloudApi {
 
                             F2CPerfMetricMonitorData inData = new F2CPerfMetricMonitorData();
                             inData.setEntityType(F2CEntityType.VIRTUAL_MACHINE.name());
-                            inData.setMetricName("network.incoming.bytes.rate");
+                            inData.setMetricName(OpenStackPerfMetricConstants.CloudServerPerfMetricEnum.INTERNET_IN_RATE.name());
                             inData.setInstanceId(server.getId());
                             inData.setAverage(BigDecimal.ZERO);
 
                             F2CPerfMetricMonitorData outData = new F2CPerfMetricMonitorData();
                             outData.setEntityType(F2CEntityType.VIRTUAL_MACHINE.name());
-                            outData.setMetricName("network.outgoing.bytes.rate");
+                            outData.setMetricName(OpenStackPerfMetricConstants.CloudServerPerfMetricEnum.INTERNET_OUT_RATE.name());
                             outData.setInstanceId(server.getId());
                             outData.setAverage(BigDecimal.ZERO);
 
@@ -820,9 +820,9 @@ public class OpenStackCloudApi {
                                 sc.getCriteriaParams().remove(sc.getCriteriaParams().size() - 1);
                                 sc.resource(resourceId + interfaceAttachment.getPortId().substring(0, 11));
                                 List<? extends Statistics> networkIns = osClient.telemetry().meters()
-                                        .statistics("network.incoming.bytes.rate", sc);
+                                        .statistics(OpenStackPerfMetricConstants.CloudServerPerfMetricEnum.INTERNET_IN_RATE.getMetricName(), sc);
                                 List<? extends Statistics> networkOuts = osClient.telemetry().meters()
-                                        .statistics("network.outgoing.bytes.rate", sc);
+                                        .statistics(OpenStackPerfMetricConstants.CloudServerPerfMetricEnum.INTERNET_OUT_RATE.getMetricName(), sc);
                                 if (null != networkIns && !networkIns.isEmpty()) {
                                     inData.setAverage(inData.getAverage().add(BigDecimal.valueOf(networkIns.get(0).getAvg().intValue())));
                                     hasInData = true;
@@ -986,7 +986,7 @@ public class OpenStackCloudApi {
                 );
                 cpuData.setTimestamp(time);
                 cpuData.setEntityType(F2CEntityType.HOST.name());
-                cpuData.setMetricName(OpenStackPerfMetricConstants.CloudServerPerfMetricEnum.CPU_USED_UTILIZATION.getMetricName());
+                cpuData.setMetricName(OpenStackPerfMetricConstants.CloudServerPerfMetricEnum.CPU_USED_UTILIZATION.name());
                 cpuData.setPeriod(request.getPeriod());
                 cpuData.setInstanceId(f2CHost.getHostId());
                 cpuData.setUnit(OpenStackPerfMetricConstants.CloudServerPerfMetricEnum.CPU_USED_UTILIZATION.getUnit());
@@ -1001,7 +1001,7 @@ public class OpenStackCloudApi {
                 );
                 memData.setTimestamp(time);
                 memData.setEntityType(F2CEntityType.HOST.name());
-                memData.setMetricName(OpenStackPerfMetricConstants.CloudServerPerfMetricEnum.MEMORY_USED_UTILIZATION.getMetricName());
+                memData.setMetricName(OpenStackPerfMetricConstants.CloudServerPerfMetricEnum.MEMORY_USED_UTILIZATION.name());
                 memData.setPeriod(request.getPeriod());
                 memData.setInstanceId(f2CHost.getHostId());
                 memData.setUnit(OpenStackPerfMetricConstants.CloudServerPerfMetricEnum.MEMORY_USED_UTILIZATION.getUnit());
@@ -1035,7 +1035,7 @@ public class OpenStackCloudApi {
                         .divide(totalBig, 2, RoundingMode.HALF_UP));
 
                 f2CEntityPerfMetric.setEntityType(F2CEntityType.DATASTORE.name());
-                f2CEntityPerfMetric.setMetricName(OpenStackPerfMetricConstants.CloudServerPerfMetricEnum.DATASTORE_USED_UTILIZATION.getMetricName());
+                f2CEntityPerfMetric.setMetricName(OpenStackPerfMetricConstants.CloudServerPerfMetricEnum.DATASTORE_USED_UTILIZATION.name());
                 f2CEntityPerfMetric.setPeriod(request.getPeriod());
                 f2CEntityPerfMetric.setInstanceId(datastore.getDataStoreId());
                 f2CEntityPerfMetric.setUnit(OpenStackPerfMetricConstants.CloudServerPerfMetricEnum.DATASTORE_USED_UTILIZATION.getUnit());
