@@ -4,6 +4,7 @@ import com.fit2cloud.common.exception.Fit2cloudException;
 import com.fit2cloud.common.provider.exception.ReTryException;
 import com.fit2cloud.common.provider.util.PageUtil;
 import com.fit2cloud.provider.impl.huawei.entity.request.*;
+import com.fit2cloud.provider.util.ResourceUtil;
 import com.huaweicloud.sdk.css.v1.CssClient;
 import com.huaweicloud.sdk.css.v1.model.ClusterList;
 import com.huaweicloud.sdk.css.v1.model.ListClustersDetailsResponse;
@@ -31,11 +32,18 @@ import com.huaweicloud.sdk.rds.v3.model.ListInstancesResponse;
 import com.huaweicloud.sdk.vpc.v3.VpcClient;
 import com.huaweicloud.sdk.vpc.v3.model.ListVpcsResponse;
 import com.huaweicloud.sdk.vpc.v3.model.Vpc;
+import com.obs.services.ObsClient;
+import com.obs.services.model.AccessControlList;
+import com.obs.services.model.BucketEncryption;
+import com.obs.services.model.ListBucketsRequest;
+import com.obs.services.model.ObsBucket;
 import org.apache.commons.lang3.StringUtils;
 import com.huaweicloud.sdk.elb.v3.*;
 import com.huaweicloud.sdk.elb.v3.model.*;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 
 /**
@@ -320,7 +328,54 @@ public class HuaweiApi {
                 throw new Fit2cloudException(10000, "获取数据失败" + e.getMessage());
             }
         }, 3)).getLoginProtects();
+    }
 
+    /**
+     * 获取桶实例列表
+     *
+     * @param request 请求对象
+     * @return 桶实例列表
+     */
+    public static List<Map<String, Object>> listBucketInstance(ListBucketInstanceRequest request) {
+        ObsClient obsClient = request.getCredential().getObsClient();
+        List<ObsBucket> obsBuckets = obsClient.listBuckets(new ListBucketsRequest());
+        return obsBuckets.stream().map(obsBucket -> {
+            Map<String, Object> bucketMap = ResourceUtil.objectToMap(obsBucket);
+            ObsClient client = request.getCredential().getObsClient(obsBucket.getLocation());
+            bucketMap.putAll(getBucketAclEncryptionRefererCollection(client, obsBucket.getBucketName()));
+            return bucketMap;
+        }).toList();
+    }
+
+
+    /**
+     * 根据桶名称 获取访问控制与加密数据
+     *
+     * @param obsClient  客户端
+     * @param bucketName 桶名称
+     * @return 集合数据
+     */
+    private static Map<String, Object> getBucketAclEncryptionRefererCollection(ObsClient obsClient, String bucketName) {
+        AccessControlList bucketAcl = PageUtil.reTry(() -> {
+            try {
+                return obsClient.getBucketAcl(bucketName);
+            } catch (Exception e) {
+                ReTryException.throwHuaweiReTry(e);
+                return null;
+            }
+        }, 5);
+        BucketEncryption bucketEncryption = PageUtil.reTry(() -> {
+            try {
+                return obsClient.getBucketEncryption(bucketName);
+            } catch (Exception e) {
+                ReTryException.throwHuaweiReTry(e);
+                return null;
+            }
+        }, 5);
+        HashMap<String, Object> res = new HashMap<>();
+        res.put("acl", bucketAcl);
+        res.put("encryption", bucketEncryption);
+        return res;
     }
 
 }

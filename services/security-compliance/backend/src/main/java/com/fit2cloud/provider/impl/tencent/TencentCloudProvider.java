@@ -23,6 +23,7 @@ import com.tencentcloudapi.vpc.v20170312.models.NetworkInterface;
 import com.tencentcloudapi.vpc.v20170312.models.Vpc;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * {@code @Author:张少虎}
@@ -214,11 +215,26 @@ public class TencentCloudProvider extends AbstractCloudProvider<TencentBaseCrede
 
     @Override
     public List<ResourceInstance> listRamInstance(String req) {
-        return null;
+        return List.of();
     }
 
     @Override
     public List<InstanceSearchField> listRamInstanceSearchField() {
+        return null;
+    }
+
+    @Override
+    public List<ResourceInstance> listBucketInstance(String req) {
+        ListBucketInstanceRequest listBucketInstanceRequest = JsonUtil.parseObject(req, ListBucketInstanceRequest.class);
+        List<Map<String, Object>> instances = TencentApi.listBucketInstanceCollection(listBucketInstanceRequest);
+        return instances
+                .stream()
+                .map(instance -> ResourceUtil.toResourceInstance(PlatformConstants.fit2cloud_tencent_platform.name(), ResourceTypeConstants.OSS, instance.get("name").toString(), instance.get("name").toString(), instance))
+                .toList();
+    }
+
+    @Override
+    public List<InstanceSearchField> listBucketInstanceSearchField() {
         return null;
     }
 

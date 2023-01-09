@@ -1,6 +1,11 @@
 package com.fit2cloud.provider.impl.tencent.entity.credential;
 
 import com.fit2cloud.common.provider.impl.tencent.entity.credential.TencentBaseCredential;
+import com.fit2cloud.provider.impl.tencent.client.CeCosClient;
+import com.qcloud.cos.COSClient;
+import com.qcloud.cos.ClientConfig;
+import com.qcloud.cos.auth.BasicCOSCredentials;
+import com.qcloud.cos.auth.COSCredentials;
 import com.tencentcloudapi.cbs.v20170312.CbsClient;
 import com.tencentcloudapi.cdb.v20170320.CdbClient;
 import com.tencentcloudapi.clb.v20180317.ClbClient;
@@ -190,5 +195,27 @@ public class TencentSecurityComplianceCredential extends TencentBaseCredential {
         clientProfile.setHttpProfile(httpProfile);
         // 实例化要请求产品的client对象,clientProfile是可选的
         return new VpcClient(cred, region, clientProfile);
+    }
+
+    /**
+     * 获取 Cos 客户端
+     *
+     * @param region 区域
+     * @return Cos客户端对象
+     */
+    public COSClient getCOSClient(String region) {
+        COSCredentials cred = new BasicCOSCredentials(getSecretId(), getSecretKey());
+        return new COSClient(cred, new ClientConfig(new com.qcloud.cos.region.Region(region)));
+    }
+
+    /**
+     * 获取Ce Cos客户端
+     *
+     * @param region 区域
+     * @return Ce 封装后的Cos客户端
+     */
+    public CeCosClient getCeCosClient(String region) {
+        COSCredentials cred = new BasicCOSCredentials(getSecretId(), getSecretKey());
+        return new CeCosClient(cred, new ClientConfig(new com.qcloud.cos.region.Region(region)));
     }
 }
