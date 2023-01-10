@@ -4,9 +4,10 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.fit2cloud.base.entity.CloudAccount;
 import com.fit2cloud.controller.request.disk.PageDiskRequest;
 import com.fit2cloud.controller.request.disk.ResourceAnalysisRequest;
+import com.fit2cloud.controller.response.BarTreeChartData;
 import com.fit2cloud.controller.response.ChartData;
+import com.fit2cloud.dto.AnalyticsDiskDTO;
 import com.fit2cloud.dto.KeyValue;
-import com.fit2cloud.dto.VmCloudDiskDTO;
 
 import java.util.List;
 import java.util.Map;
@@ -22,7 +23,7 @@ public interface IDiskAnalysisService {
      * @param request
      * @return
      */
-    IPage<VmCloudDiskDTO> pageDisk(PageDiskRequest request);
+    IPage<AnalyticsDiskDTO> pageDisk(PageDiskRequest request);
 
     /**
      * 所有云账号
@@ -33,5 +34,7 @@ public interface IDiskAnalysisService {
     Map<String,List<KeyValue>> spread(ResourceAnalysisRequest request);
 
     List<ChartData> diskIncreaseTrend(ResourceAnalysisRequest request);
+
+    Map<String,List<BarTreeChartData>> analyticsVmCloudServerByOrgWorkspace(ResourceAnalysisRequest request);
 
 }

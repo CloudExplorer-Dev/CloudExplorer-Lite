@@ -315,12 +315,10 @@ public class VsphereSyncCloudApi {
         try {
             return execMethod.apply(uuid);
         } catch (Exception e) {
-            e.printStackTrace();
-            log.error("[Failed to operate virtual machine]", e);
+           throw e;
         } finally {
             closeConnection.run();
         }
-        return false;
     }
 
     public static List<Map<String, String>> getLocations(VsphereVmCreateRequest req) {

@@ -9,7 +9,7 @@ import lombok.Data;
  * @date 2022/9/27 14:39
  **/
 @Data
-public class VmCloudDiskDTO extends VmCloudDisk {
+public class AnalyticsDiskDTO extends VmCloudDisk {
 
     @ApiModelProperty("组织名称")
     private String organizationName;

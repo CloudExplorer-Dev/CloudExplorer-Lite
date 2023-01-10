@@ -195,6 +195,7 @@ public abstract class BaseSyncService {
                                 // 记录同步日志
                                 writeJobRecord.accept(tSaveBatchOrUpdateParams);
                             } catch (SkipPageException ignored) { // 如果发生跳过异常,那么就不同步当前区域
+                                jobRecord.setResult(region+"-"+ignored.getMessage());
                                 writeJobRecord.accept(new SaveBatchOrUpdateParams<>(cloudAccountId, syncTime, region, new ArrayList<>(), jobRecord));
                             }
                         }

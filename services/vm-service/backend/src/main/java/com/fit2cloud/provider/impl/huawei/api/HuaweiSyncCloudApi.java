@@ -621,6 +621,11 @@ public class HuaweiSyncCloudApi {
         return result;
     }
 
+    /**
+     * 需要通过云主机查询
+     * @param getMetricsRequest
+     * @return
+     */
     public static List<F2CPerfMetricMonitorData> getF2CDiskPerfMetricList(GetMetricsRequest getMetricsRequest) {
         if (StringUtils.isEmpty(getMetricsRequest.getRegionId())) {
             throw new Fit2cloudException(10002, "区域为必填参数");

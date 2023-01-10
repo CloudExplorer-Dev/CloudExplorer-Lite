@@ -4,7 +4,7 @@ import com.baomidou.mybatisplus.core.conditions.Wrapper;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import com.fit2cloud.dto.VmCloudHostDTO;
+import com.fit2cloud.dto.AnalyticsHostDTO;
 import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.Select;
 
@@ -16,7 +16,7 @@ import org.apache.ibatis.annotations.Select;
  * @author fit2cloud
  * @since
  */
-public interface VmCloudHostMapper extends BaseMapper<VmCloudHostDTO> {
+public interface AnalyticsHostMapper extends BaseMapper<AnalyticsHostDTO> {
 
 
     /**
@@ -30,7 +30,7 @@ public interface VmCloudHostMapper extends BaseMapper<VmCloudHostDTO> {
             " FROM vm_cloud_host" +
             " INNER JOIN cloud_account on vm_cloud_host.account_id=cloud_account.id"+
             " ${ew.customSqlSegment} ")
-    IPage<VmCloudHostDTO> pageList(Page page, @Param("ew") Wrapper queryWrapper);
+    IPage<AnalyticsHostDTO> pageList(Page page, @Param("ew") Wrapper queryWrapper);
 
 
 

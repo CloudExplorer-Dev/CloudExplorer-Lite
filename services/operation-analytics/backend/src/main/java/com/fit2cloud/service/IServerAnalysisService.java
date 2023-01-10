@@ -5,9 +5,10 @@ import com.fit2cloud.base.entity.CloudAccount;
 import com.fit2cloud.base.entity.VmCloudHost;
 import com.fit2cloud.controller.request.server.PageServerRequest;
 import com.fit2cloud.controller.request.server.ResourceAnalysisRequest;
+import com.fit2cloud.controller.response.BarTreeChartData;
 import com.fit2cloud.controller.response.ChartData;
+import com.fit2cloud.dto.AnalyticsServerDTO;
 import com.fit2cloud.dto.KeyValue;
-import com.fit2cloud.dto.VmCloudServerDTO;
 
 import java.util.List;
 import java.util.Map;
@@ -23,7 +24,7 @@ public interface IServerAnalysisService {
      * @param request
      * @return
      */
-    IPage<VmCloudServerDTO> pageServer(PageServerRequest request);
+    IPage<AnalyticsServerDTO> pageServer(PageServerRequest request);
 
     /**
      * 所有云账号
@@ -43,6 +44,8 @@ public interface IServerAnalysisService {
     List<ChartData> vmIncreaseTrend(ResourceAnalysisRequest request);
 
     List<ChartData> getResourceTrendData(ResourceAnalysisRequest request);
+
+    Map<String,List<BarTreeChartData>> analyticsVmCloudServerByOrgWorkspace(ResourceAnalysisRequest request);
 
 
 }

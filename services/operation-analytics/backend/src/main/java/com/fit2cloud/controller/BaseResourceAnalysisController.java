@@ -10,8 +10,8 @@ import com.fit2cloud.controller.request.datastore.PageDatastoreRequest;
 import com.fit2cloud.controller.request.host.PageHostRequest;
 import com.fit2cloud.controller.response.ResourceAllocatedInfo;
 import com.fit2cloud.dto.KeyValue;
-import com.fit2cloud.dto.VmCloudDatastoreDTO;
-import com.fit2cloud.dto.VmCloudHostDTO;
+import com.fit2cloud.dto.AnalyticsDatastoreDTO;
+import com.fit2cloud.dto.AnalyticsHostDTO;
 import com.fit2cloud.controller.response.ChartData;
 import com.fit2cloud.controller.request.base.resource.analysis.ResourceUsedTrendRequest;
 import com.fit2cloud.service.IBaseResourceAnalysisService;
@@ -46,14 +46,14 @@ public class BaseResourceAnalysisController {
     @ApiOperation(value = "分页查询宿主机", notes = "分页查询宿主机")
     @GetMapping("/host/page")
     @PreAuthorize("hasAnyCePermission('RESOURCE_ANALYSIS:READ')")
-    public ResultHolder<IPage<VmCloudHostDTO>> pageHostList(@Validated PageHostRequest pageHostRequest) {
+    public ResultHolder<IPage<AnalyticsHostDTO>> pageHostList(@Validated PageHostRequest pageHostRequest) {
         return ResultHolder.success(iBaseResourceAnalysisService.pageHost(pageHostRequest));
     }
 
     @ApiOperation(value = "分页查询存储器", notes = "分页查询存储器")
     @GetMapping("/datastore/page")
     @PreAuthorize("hasAnyCePermission('RESOURCE_ANALYSIS:READ')")
-    public ResultHolder<IPage<VmCloudDatastoreDTO>> pageDatastoreList(@Validated PageDatastoreRequest pageDatastoreRequest) {
+    public ResultHolder<IPage<AnalyticsDatastoreDTO>> pageDatastoreList(@Validated PageDatastoreRequest pageDatastoreRequest) {
         return ResultHolder.success(iBaseResourceAnalysisService.pageDatastore(pageDatastoreRequest));
     }
 

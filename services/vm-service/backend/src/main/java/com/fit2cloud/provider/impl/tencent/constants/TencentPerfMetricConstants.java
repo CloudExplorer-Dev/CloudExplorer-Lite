@@ -57,6 +57,7 @@ public class TencentPerfMetricConstants {
         DISK_WRITE_BPS("DiskWriteTraffic", "所有磁盘写入BPS","KB/s"),
         DISK_READ_IOPS("DiskReadIops", "所有磁盘每秒读取次数","Count/Second"),
         DISK_WRITE_IOPS("DiskWriteIops", "所有磁盘每秒写入次数","Count/Second"),
+        DISK_USED_UTILIZATION("CvmDiskUsage","磁盘使用率","%"),
         ;
         /**
          * 名称

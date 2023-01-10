@@ -9,7 +9,6 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.fit2cloud.base.entity.*;
 import com.fit2cloud.base.service.*;
 import com.fit2cloud.common.constants.PlatformConstants;
-import com.fit2cloud.common.es.ElasticsearchProvide;
 import com.fit2cloud.common.es.constants.IndexConstants;
 import com.fit2cloud.common.log.utils.LogUtil;
 import com.fit2cloud.common.provider.entity.F2CEntityType;
@@ -23,17 +22,16 @@ import com.fit2cloud.controller.request.datastore.PageDatastoreRequest;
 import com.fit2cloud.controller.request.host.PageHostRequest;
 import com.fit2cloud.controller.response.ChartData;
 import com.fit2cloud.controller.response.ResourceAllocatedInfo;
-import com.fit2cloud.dao.mapper.VmCloudDatastoreMapper;
-import com.fit2cloud.dao.mapper.VmCloudHostMapper;
+import com.fit2cloud.dao.mapper.AnalyticsDatastoreMapper;
+import com.fit2cloud.dao.mapper.AnalyticsHostMapper;
 import com.fit2cloud.dto.KeyValue;
-import com.fit2cloud.dto.VmCloudDatastoreDTO;
-import com.fit2cloud.dto.VmCloudHostDTO;
+import com.fit2cloud.dto.AnalyticsDatastoreDTO;
+import com.fit2cloud.dto.AnalyticsHostDTO;
 import com.fit2cloud.es.entity.PerfMetricMonitorData;
 import com.fit2cloud.service.IBaseResourceAnalysisService;
 import com.fit2cloud.utils.OperationUtils;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.elasticsearch.search.aggregations.bucket.histogram.DateHistogramInterval;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.elasticsearch.client.elc.ElasticsearchAggregation;
 import org.springframework.data.elasticsearch.client.elc.ElasticsearchAggregations;
@@ -57,9 +55,9 @@ import java.util.stream.Collectors;
 @Service
 public class BaseResourceAnalysisServiceImpl implements IBaseResourceAnalysisService {
     @Resource
-    private VmCloudHostMapper vmCloudHostMapper;
+    private AnalyticsHostMapper analyticsHostMapper;
     @Resource
-    private VmCloudDatastoreMapper vmCloudDatastoreMapper;
+    private AnalyticsDatastoreMapper analyticsDatastoreMapper;
     @Resource
     private IBaseCloudAccountService iBaseCloudAccountService;
     @Resource
@@ -73,29 +71,29 @@ public class BaseResourceAnalysisServiceImpl implements IBaseResourceAnalysisSer
     @Resource
     private IBaseVmCloudDiskService iBaseVmCloudDiskService;
 
-    public IPage<VmCloudHostDTO>  pageHost(PageHostRequest request){
-        Page<VmCloudHostDTO> page = PageUtil.of(request, VmCloudHostDTO.class, new OrderItem(ColumnNameUtil.getColumnName(VmCloudHostDTO::getCreateTime, true), false), true);
+    public IPage<AnalyticsHostDTO>  pageHost(PageHostRequest request){
+        Page<AnalyticsHostDTO> page = PageUtil.of(request, AnalyticsHostDTO.class, new OrderItem(ColumnNameUtil.getColumnName(AnalyticsHostDTO::getCreateTime, true), false), true);
         // 构建查询参数
-        QueryWrapper<VmCloudHostDTO> wrapper = addHostQuery(request);
-        IPage<VmCloudHostDTO> result = vmCloudHostMapper.pageList(page, wrapper);
+        QueryWrapper<AnalyticsHostDTO> wrapper = addHostQuery(request);
+        IPage<AnalyticsHostDTO> result = analyticsHostMapper.pageList(page, wrapper);
         return result;
     }
-    private QueryWrapper<VmCloudHostDTO> addHostQuery(PageHostRequest request) {
-        QueryWrapper<VmCloudHostDTO> wrapper = new QueryWrapper<>();
-        wrapper.like(StringUtils.isNotBlank(request.getHostName()), ColumnNameUtil.getColumnName(VmCloudHostDTO::getHostName,true), request.getHostName());
+    private QueryWrapper<AnalyticsHostDTO> addHostQuery(PageHostRequest request) {
+        QueryWrapper<AnalyticsHostDTO> wrapper = new QueryWrapper<>();
+        wrapper.like(StringUtils.isNotBlank(request.getHostName()), ColumnNameUtil.getColumnName(AnalyticsHostDTO::getHostName,true), request.getHostName());
         return wrapper;
     }
     @Override
-    public IPage<VmCloudDatastoreDTO> pageDatastore(PageDatastoreRequest request) {
-        Page<VmCloudDatastoreDTO> page = PageUtil.of(request, VmCloudDatastoreDTO.class, new OrderItem(ColumnNameUtil.getColumnName(VmCloudDatastoreDTO::getCreateTime, true), false), true);
+    public IPage<AnalyticsDatastoreDTO> pageDatastore(PageDatastoreRequest request) {
+        Page<AnalyticsDatastoreDTO> page = PageUtil.of(request, AnalyticsDatastoreDTO.class, new OrderItem(ColumnNameUtil.getColumnName(AnalyticsDatastoreDTO::getCreateTime, true), false), true);
         // 构建查询参数
-        QueryWrapper<VmCloudDatastoreDTO> wrapper = addQueryDatastore(request);
-        IPage<VmCloudDatastoreDTO> result = vmCloudDatastoreMapper.pageList(page, wrapper);
+        QueryWrapper<AnalyticsDatastoreDTO> wrapper = addQueryDatastore(request);
+        IPage<AnalyticsDatastoreDTO> result = analyticsDatastoreMapper.pageList(page, wrapper);
         return result;
     }
-    private QueryWrapper<VmCloudDatastoreDTO> addQueryDatastore(PageDatastoreRequest request) {
-        QueryWrapper<VmCloudDatastoreDTO> wrapper = new QueryWrapper<>();
-        wrapper.like(StringUtils.isNotBlank(request.getDatastoreName()), ColumnNameUtil.getColumnName(VmCloudDatastoreDTO::getDatastoreName,true), request.getDatastoreName());
+    private QueryWrapper<AnalyticsDatastoreDTO> addQueryDatastore(PageDatastoreRequest request) {
+        QueryWrapper<AnalyticsDatastoreDTO> wrapper = new QueryWrapper<>();
+        wrapper.like(StringUtils.isNotBlank(request.getDatastoreName()), ColumnNameUtil.getColumnName(AnalyticsDatastoreDTO::getDatastoreName,true), request.getDatastoreName());
         return wrapper;
     }
 

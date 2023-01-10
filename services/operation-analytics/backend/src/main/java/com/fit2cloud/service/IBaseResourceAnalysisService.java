@@ -11,8 +11,8 @@ import com.fit2cloud.controller.request.host.PageHostRequest;
 import com.fit2cloud.controller.response.ChartData;
 import com.fit2cloud.controller.response.ResourceAllocatedInfo;
 import com.fit2cloud.dto.KeyValue;
-import com.fit2cloud.dto.VmCloudDatastoreDTO;
-import com.fit2cloud.dto.VmCloudHostDTO;
+import com.fit2cloud.dto.AnalyticsDatastoreDTO;
+import com.fit2cloud.dto.AnalyticsHostDTO;
 
 import java.util.List;
 import java.util.Map;
@@ -28,13 +28,13 @@ public interface IBaseResourceAnalysisService {
      * @param request
      * @return
      */
-    IPage<VmCloudHostDTO> pageHost(PageHostRequest request);
+    IPage<AnalyticsHostDTO> pageHost(PageHostRequest request);
     /**
      * 存储器明细
      * @param request
      * @return
      */
-    IPage<VmCloudDatastoreDTO> pageDatastore(PageDatastoreRequest request);
+    IPage<AnalyticsDatastoreDTO> pageDatastore(PageDatastoreRequest request);
     /**
      * 私有云VMWare vSphere、OpenStack
      * @return
