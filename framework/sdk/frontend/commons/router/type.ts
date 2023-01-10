@@ -16,6 +16,7 @@ import NoPermissions from "@commons/business/error-page/NoPermissions.vue";
 import Login from "@commons/business/login/index.vue";
 import { getToken } from "@commons/utils/authStorage";
 import { useUserStore } from "@commons/stores/modules/user";
+import { useHomeStore } from "@commons/stores/modules/home";
 import { store } from "@commons/stores";
 import { usePermissionStore } from "@commons/stores/modules/permission";
 import { hasRolePermission } from "@commons/base-directives/hasPermission";
@@ -286,7 +287,6 @@ export class RouteObj {
       };
     }
     //console.log(to.meta.requiredPermissions);
-
     const requiredPermissions: Array<RequiredPermissions> =
       to.meta.requiredPermissions instanceof Array<RequiredPermissions>
         ? to.meta.requiredPermissions
@@ -305,6 +305,15 @@ export class RouteObj {
           return;
         }
       }
+    }
+    const homeStore = useHomeStore(store);
+    console.log(homeStore);
+    if (to.name === "home" && import.meta.env.VITE_APP_NAME === "base") {
+      console.log("11111111");
+      homeStore.setShow(true);
+    } else {
+      console.log("22222");
+      homeStore.setShow(false);
     }
     // 判断是否有权限
     if (await this.routeHasRolePermission(requiredPermissions)) {

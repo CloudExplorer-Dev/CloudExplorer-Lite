@@ -4,14 +4,32 @@ import PersonSetting from "@commons/business/person-setting/index.vue";
 import ToDo from "@commons/business/to-do/index.vue";
 import Notification from "@commons/business/notification/index.vue";
 import { useUserStore } from "@commons/stores/modules/user";
+import { useRouter } from "vue-router";
+import { useHomeStore } from "@commons/stores/modules/home";
 
 const userStore = useUserStore();
+const homeStore = useHomeStore();
+
+const router = useRouter();
+
+function goHome() {
+  //只有基座有首页
+  if (homeStore.isBase) {
+    router.push("/");
+  }
+}
 </script>
 
 <template>
   <div class="top-nav">
     <div class="logo">
-      <img class="img" src="@commons/assets/white-logo.png" alt="" />
+      <img
+        class="img"
+        :class="{ clickable: homeStore.isBase }"
+        src="@commons/assets/white-logo.png"
+        alt=""
+        @click="goHome"
+      />
     </div>
     <h2>云服务平台</h2>
     <div class="role">
@@ -44,6 +62,9 @@ const userStore = useUserStore();
     margin-right: 8px;
     .img {
       height: 100%;
+    }
+    .clickable {
+      cursor: pointer;
     }
   }
   .role {
