@@ -56,16 +56,20 @@
             ${ew.customSqlSegment}
     </select>
 
-    <select id="selectListByAccountId" resultMap="serverResultMap">
+    <select id="selectServerList" resultMap="serverResultMap">
         SELECT
             vm_cloud_server.*,
-            workspace._name AS workspace_name
+            CASE
+                WHEN org_workspace.type = "workspace" THEN
+                    org_workspace.id ELSE NULL
+                END AS workspace_id,
+            CASE
+                WHEN org_workspace.type = "workspace" THEN
+                    org_workspace.NAME ELSE NULL
+                END AS workspace_name
         FROM
             vm_cloud_server
-            LEFT JOIN workspace ON vm_cloud_server.source_id = workspace.id
-        WHERE
-            vm_cloud_server.account_id = #{accountId}
-            AND vm_cloud_server.zone = #{zone}
-            AND instance_status != 'deleted'
+            LEFT JOIN org_workspace ON vm_cloud_server.source_id = org_workspace.id
+            ${ew.customSqlSegment}
     </select>
 </mapper>

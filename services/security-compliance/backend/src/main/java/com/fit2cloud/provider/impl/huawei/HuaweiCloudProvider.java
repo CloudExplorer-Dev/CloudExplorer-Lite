@@ -2,6 +2,7 @@ package com.fit2cloud.provider.impl.huawei;
 
 import com.fit2cloud.common.constants.PlatformConstants;
 import com.fit2cloud.common.provider.impl.huawei.entity.credential.HuaweiBaseCredential;
+import com.fit2cloud.common.provider.util.PageUtil;
 import com.fit2cloud.common.utils.JsonUtil;
 import com.fit2cloud.constants.ResourceTypeConstants;
 import com.fit2cloud.es.entity.ResourceInstance;
@@ -15,10 +16,17 @@ import com.huaweicloud.sdk.css.v1.model.ClusterList;
 import com.huaweicloud.sdk.dcs.v2.model.InstanceListInfo;
 import com.huaweicloud.sdk.dds.v3.model.QueryInstanceResponse;
 import com.huaweicloud.sdk.ecs.v2.model.ServerDetail;
+import com.huaweicloud.sdk.eip.v3.model.PublicipSingleShowResp;
+import com.huaweicloud.sdk.elb.v3.model.LoadBalancer;
+import com.huaweicloud.sdk.evs.v2.model.VolumeDetail;
+import com.huaweicloud.sdk.iam.v3.model.KeystoneListUsersResult;
+import com.huaweicloud.sdk.iam.v3.model.LoginProtectResult;
 import com.huaweicloud.sdk.rds.v3.model.InstanceResponse;
+import com.huaweicloud.sdk.vpc.v3.model.Vpc;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 /**
  * {@code @Author:张少虎}
@@ -134,5 +142,94 @@ public class HuaweiCloudProvider extends AbstractCloudProvider<HuaweiBaseCredent
     @Override
     public List<InstanceSearchField> listElasticSearchInstanceSearchField() {
         return List.of();
+    }
+
+    @Override
+    public List<ResourceInstance> listDiskInstance(String req) {
+        ListDiskInstanceRequest listDiskInstanceRequest = JsonUtil.parseObject(req, ListDiskInstanceRequest.class);
+        List<VolumeDetail> volumeDetails = HuaweiApi.listDiskInstance(listDiskInstanceRequest);
+        return volumeDetails.stream()
+                .map(instance -> ResourceUtil.toResourceInstance(PlatformConstants.fit2cloud_huawei_platform.name(), ResourceTypeConstants.DISK, instance.getId(), instance.getName(), instance))
+                .toList();
+    }
+
+    @Override
+    public List<InstanceSearchField> listDiskInstanceSearchField() {
+        return List.of();
+    }
+
+    @Override
+    public List<ResourceInstance> listLoadBalancerInstance(String req) {
+        ListLoadBalancerInstanceRequest listLoadBalancerInstanceRequest = JsonUtil.parseObject(req, ListLoadBalancerInstanceRequest.class);
+        List<LoadBalancer> loadBalancers = HuaweiApi.listLoadBalancerInstance(listLoadBalancerInstanceRequest);
+        return loadBalancers.stream()
+                .map(instance -> ResourceUtil.toResourceInstance(PlatformConstants.fit2cloud_huawei_platform.name(), ResourceTypeConstants.LOAD_BALANCER, instance.getId(), instance.getName(), instance))
+                .toList();
+    }
+
+    @Override
+    public List<InstanceSearchField> listLoadBalancerInstanceSearchField() {
+        return null;
+    }
+
+    @Override
+    public List<ResourceInstance> listPublicIpInstance(String req) {
+        ListPublicIpInstanceRequest listPublicIpInstanceRequest = JsonUtil.parseObject(req, ListPublicIpInstanceRequest.class);
+        List<PublicipSingleShowResp> publicIpSingleShowList = HuaweiApi.listPublicIpInstance(listPublicIpInstanceRequest);
+        return publicIpSingleShowList.stream()
+                .map(instance -> ResourceUtil.toResourceInstance(PlatformConstants.fit2cloud_huawei_platform.name(), ResourceTypeConstants.PUBLIC_IP, instance.getId(), instance.getPublicipPoolName(), instance))
+                .toList();
+    }
+
+    @Override
+    public List<InstanceSearchField> listPublicIpInstanceSearchField() {
+        return null;
+    }
+
+    @Override
+    public List<ResourceInstance> listVpcInstance(String req) {
+        ListVpcInstanceRequest listVpcInstanceRequest = JsonUtil.parseObject(req, ListVpcInstanceRequest.class);
+        List<Vpc> instances = HuaweiApi.listVpcInstance(listVpcInstanceRequest);
+        return instances.stream()
+                .map(instance -> ResourceUtil.toResourceInstance(PlatformConstants.fit2cloud_huawei_platform.name(), ResourceTypeConstants.VPC, instance.getId(), instance.getName(), instance))
+                .toList();
+    }
+
+    @Override
+    public List<InstanceSearchField> listVpcInstanceSearchField() {
+        return null;
+    }
+
+    @Override
+    public List<ResourceInstance> listRamInstance(String req) {
+        ListRamInstanceRequest listRamInstanceRequest = JsonUtil.parseObject(req, ListRamInstanceRequest.class);
+        List<KeystoneListUsersResult> instances = HuaweiApi.listRamInstance(listRamInstanceRequest);
+        ListLoginProfileInstanceRequest listLoginProfileInstanceRequest = new ListLoginProfileInstanceRequest();
+        listLoginProfileInstanceRequest.setCredential(listRamInstanceRequest.getCredential());
+        List<LoginProtectResult> loginProtectResults = HuaweiApi.listLoginProfileInstance(listLoginProfileInstanceRequest);
+        return instances.stream()
+                .map(instance -> ResourceUtil.toResourceInstance(PlatformConstants.fit2cloud_huawei_platform.name(),
+                        ResourceTypeConstants.RAM, instance.getId(), instance.getName(), instance, "loginProfile",
+                        loginProtectResults.stream().filter(l -> l.getUserId().equals(instance.getId())).findFirst().orElse(null)))
+                .toList();
+    }
+
+    @Override
+    public List<InstanceSearchField> listRamInstanceSearchField() {
+        return null;
+    }
+
+    @Override
+    public List<ResourceInstance> listBucketInstance(String req) {
+        ListBucketInstanceRequest listBucketInstanceRequest = JsonUtil.parseObject(req, ListBucketInstanceRequest.class);
+        List<Map<String, Object>> instances = HuaweiApi.listBucketInstance(listBucketInstanceRequest);
+        return instances.stream()
+                .map(instance -> ResourceUtil.toResourceInstance(PlatformConstants.fit2cloud_huawei_platform.name(), ResourceTypeConstants.OSS, instance.get("bucketName").toString(), instance.get("bucketName").toString(), instance))
+                .toList();
+    }
+
+    @Override
+    public List<InstanceSearchField> listBucketInstanceSearchField() {
+        return null;
     }
 }

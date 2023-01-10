@@ -1066,6 +1066,7 @@ public class VsphereSyncCloudApi {
 
     /**
      * TODO 磁盘监控未实现
+     *
      * @param getMetricsRequest
      * @return
      */
@@ -1122,22 +1123,22 @@ public class VsphereSyncCloudApi {
         if (vms.size() != 0) {
             vms.forEach(vm -> {
                 VirtualMachineRuntimeInfo runtime = vm.getRuntime();
-                Arrays.stream(VspherePerfMetricConstants.CloudServerPerfMetricEnum.values()).sorted().collect(Collectors.toList()).forEach(perfMetric -> {
+                Arrays.stream(VspherePerfMetricConstants.CloudServerPerfMetricEnum.values()).sorted().toList().forEach(perfMetric -> {
                     System.out.println("开始：" + perfMetric.getDescription());
                     System.out.println("MetricId：" + perfMetric.getMetricName());
                     Map<String, Map<String, Long>> dataMap = getPerfData(vm.getMOR(), client, getMetricsRequest, perfMetric.getMetricName(), getMetricsRequest.getInterval());
                     System.out.println("结果：" + JsonUtil.toJSONString(dataMap));
                     /// TODO 没有最大最小值，可能需要自己算？
                     //最大最小值去时间段内的，因为接口拿不到
-                    Long max = dataMap.values().stream().toList().stream().map(map->map.get("Average"))
+                    Long max = dataMap.values().stream().toList().stream().map(map -> map.get("Average"))
                             .filter(Objects::nonNull)
                             .mapToLong(Long::longValue)
                             .max().orElse(0L);
-                    Long min = dataMap.values().stream().toList().stream().map(map->map.get("Average"))
+                    Long min = dataMap.values().stream().toList().stream().map(map -> map.get("Average"))
                             .filter(Objects::nonNull)
                             .mapToLong(Long::longValue)
                             .min().orElse(0L);
-                    dataMap.values().stream().forEach(data->{
+                    dataMap.values().forEach(data -> {
                         F2CPerfMetricMonitorData f2CEntityPerfMetric = new F2CPerfMetricMonitorData();
                         f2CEntityPerfMetric.setTimestamp(data.get("timestamp"));
                         f2CEntityPerfMetric.setAverage(new BigDecimal(data.get("Average")).divide(new BigDecimal(perfMetric.getDivisor())));
@@ -1167,7 +1168,7 @@ public class VsphereSyncCloudApi {
         if (hosts.size() != 0) {
             hosts.forEach(host -> {
                 ComputeResource clusterResource = client.getComputeResource(host);
-                Arrays.stream(VspherePerfMetricConstants.CloudServerPerfMetricEnum.values()).sorted().collect(Collectors.toList()).forEach(perfMetric -> {
+                Arrays.stream(VspherePerfMetricConstants.CloudServerPerfMetricEnum.values()).sorted().toList().forEach(perfMetric -> {
                     System.out.println("开始：" + perfMetric.getDescription());
                     System.out.println("MetricId：" + perfMetric.getMetricName());
                     Map<String, Map<String, Long>> dataMap = getPerfData(host.getMOR(), client, getMetricsRequest, perfMetric.getMetricName(), getMetricsRequest.getInterval());
@@ -1215,7 +1216,7 @@ public class VsphereSyncCloudApi {
         PerfMetricId perfMetricId = new PerfMetricId();
         //这个是必须的，不然查询会报错
         perfMetricId.setInstance("");
-        if(StringUtils.equalsIgnoreCase(managedObjectReference.getType(),"VirtualMachine")){
+        if (StringUtils.equalsIgnoreCase(managedObjectReference.getType(), "VirtualMachine")) {
             if (StringUtils.equalsIgnoreCase(metricName, "181") || StringUtils.equalsIgnoreCase(metricName, "180") ||
                     StringUtils.equalsIgnoreCase(metricName, "178") || StringUtils.equalsIgnoreCase(metricName, "179")) {
                 // 磁盘相关的直接取第一个磁盘
@@ -1268,7 +1269,7 @@ public class VsphereSyncCloudApi {
                 for (int j = 0; values != null && j < values.length; ++j) {
                     Map<String, Long> map = new HashMap<>();
                     map.put("timestamp", infos[j].getTimestamp().getTimeInMillis());
-                    map.put("Average", values[j]<0?0:values[j]);
+                    map.put("Average", values[j] < 0 ? 0 : values[j]);
                     perfEntityMetric.put(String.valueOf(infos[j].getTimestamp().getTimeInMillis()), map);
                 }
             }
@@ -1278,6 +1279,7 @@ public class VsphereSyncCloudApi {
 
     /**
      * 存储器特殊处理，由于无监控指标，这里查询实际使用量来计算使用率
+     *
      * @param getMetricsRequest
      * @return
      */
@@ -1299,10 +1301,10 @@ public class VsphereSyncCloudApi {
                 dataMap.values().forEach((data) -> {
                     F2CPerfMetricMonitorData f2CEntityPerfMetric = new F2CPerfMetricMonitorData();
                     f2CEntityPerfMetric.setTimestamp(data.get("timestamp"));
-                    BigDecimal useAvg = new BigDecimal(data.get("Average")).divide(new BigDecimal(1024)).divide(new BigDecimal(1024)).setScale(2,RoundingMode.HALF_UP);
+                    BigDecimal useAvg = new BigDecimal(data.get("Average")).divide(new BigDecimal(1024)).divide(new BigDecimal(1024)).setScale(2, RoundingMode.HALF_UP);
                     BigDecimal totalBig = new BigDecimal(datastore.getCapacity());
-                    f2CEntityPerfMetric.setAverage(useAvg.multiply(new BigDecimal(100)).divide(totalBig,2,RoundingMode.HALF_UP));
-                    if(f2CEntityPerfMetric.getAverage().compareTo(new BigDecimal(100))>0){
+                    f2CEntityPerfMetric.setAverage(useAvg.multiply(new BigDecimal(100)).divide(totalBig, 2, RoundingMode.HALF_UP));
+                    if (f2CEntityPerfMetric.getAverage().compareTo(new BigDecimal(100)) > 0) {
                         System.out.println("");
                     }
                     f2CEntityPerfMetric.setEntityType(F2CEntityType.DATASTORE.name());
@@ -1509,7 +1511,7 @@ public class VsphereSyncCloudApi {
             perfCounterBuffer.append(pci.getNameInfo().getKey());
             perfCounterBuffer.append(".");
             perfCounterBuffer.append(pci.getRollupType());
-            System.out.println(perfCounterBuffer.toString()+"----"+pci.getKey());
+            System.out.println(perfCounterBuffer.toString() + "----" + pci.getKey());
         }
     }
 

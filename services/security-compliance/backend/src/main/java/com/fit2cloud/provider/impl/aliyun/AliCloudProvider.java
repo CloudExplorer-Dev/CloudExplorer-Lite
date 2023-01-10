@@ -1,8 +1,14 @@
 package com.fit2cloud.provider.impl.aliyun;
 
 import com.aliyun.dds20151201.models.DescribeDBInstancesResponseBody;
+import com.aliyun.ecs20140526.models.DescribeDisksResponseBody;
 import com.aliyun.ecs20140526.models.DescribeInstancesResponseBody;
 import com.aliyun.elasticsearch20170613.models.ListInstanceResponseBody;
+import com.aliyun.ram20150501.models.GetLoginProfileResponse;
+import com.aliyun.ram20150501.models.ListUsersResponseBody;
+import com.aliyun.slb20140515.models.DescribeLoadBalancersResponseBody;
+import com.aliyun.vpc20160428.models.DescribeEipAddressesResponseBody;
+import com.aliyun.vpc20160428.models.DescribeVpcsResponseBody;
 import com.fit2cloud.common.constants.PlatformConstants;
 import com.fit2cloud.common.utils.JsonUtil;
 import com.fit2cloud.constants.ResourceTypeConstants;
@@ -18,6 +24,7 @@ import com.fit2cloud.provider.util.ResourceUtil;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 /**
  * {@code @Author:张少虎}
@@ -145,5 +152,100 @@ public class AliCloudProvider extends AbstractCloudProvider<AliSecurityComplianc
     @Override
     public List<InstanceSearchField> listElasticSearchInstanceSearchField() {
         return List.of();
+    }
+
+    @Override
+    public List<ResourceInstance> listDiskInstance(String req) {
+        ListDiskInstanceRequest listDiskInstanceRequest = JsonUtil.parseObject(req, ListDiskInstanceRequest.class);
+        List<DescribeDisksResponseBody.DescribeDisksResponseBodyDisksDisk> instances = AliApi.listDiskInstance(listDiskInstanceRequest);
+        return instances
+                .stream()
+                .map(instance -> ResourceUtil.toResourceInstance(PlatformConstants.fit2cloud_ali_platform.name(), ResourceTypeConstants.DISK, instance.getInstanceId(), instance.getDescription(), instance))
+                .toList();
+    }
+
+    @Override
+    public List<InstanceSearchField> listDiskInstanceSearchField() {
+        return List.of();
+    }
+
+    @Override
+    public List<ResourceInstance> listLoadBalancerInstance(String req) {
+        ListLoadBalancerInstanceRequest listLoadBalancerInstanceRequest = JsonUtil.parseObject(req, ListLoadBalancerInstanceRequest.class);
+        List<DescribeLoadBalancersResponseBody.DescribeLoadBalancersResponseBodyLoadBalancersLoadBalancer> instances = AliApi.listLoadBalancerInstance(listLoadBalancerInstanceRequest);
+        return instances
+                .stream()
+                .map(instance -> ResourceUtil.toResourceInstance(PlatformConstants.fit2cloud_ali_platform.name(), ResourceTypeConstants.LOAD_BALANCER, instance.getLoadBalancerId(), instance.getLoadBalancerName(), instance))
+                .toList();
+    }
+
+    @Override
+    public List<InstanceSearchField> listLoadBalancerInstanceSearchField() {
+        return List.of();
+    }
+
+    @Override
+    public List<ResourceInstance> listPublicIpInstance(String req) {
+        ListPublicIpInstanceRequest listPublicIpInstanceRequest = JsonUtil.parseObject(req, ListPublicIpInstanceRequest.class);
+        List<DescribeEipAddressesResponseBody.DescribeEipAddressesResponseBodyEipAddressesEipAddress> instances = AliApi.listPublicIpInstance(listPublicIpInstanceRequest);
+        return instances
+                .stream()
+                .map(instance -> ResourceUtil.toResourceInstance(PlatformConstants.fit2cloud_ali_platform.name(), ResourceTypeConstants.PUBLIC_IP, instance.getInstanceId(), instance.getName(), instance))
+                .toList();
+    }
+
+    @Override
+    public List<InstanceSearchField> listPublicIpInstanceSearchField() {
+        return List.of();
+    }
+
+    @Override
+    public List<ResourceInstance> listVpcInstance(String req) {
+        ListVpcInstanceRequest listVpcInstanceRequest = JsonUtil.parseObject(req, ListVpcInstanceRequest.class);
+        List<DescribeVpcsResponseBody.DescribeVpcsResponseBodyVpcsVpc> instances = AliApi.listVpcInstanceRequest(listVpcInstanceRequest);
+        return instances
+                .stream()
+                .map(instance -> ResourceUtil.toResourceInstance(PlatformConstants.fit2cloud_ali_platform.name(), ResourceTypeConstants.VPC, instance.getVpcId(), instance.getVpcName(), instance))
+                .toList();
+    }
+
+    @Override
+    public List<InstanceSearchField> listVpcInstanceSearchField() {
+        return null;
+    }
+
+    @Override
+    public List<ResourceInstance> listRamInstance(String req) {
+        ListRamInstanceRequest listRamInstanceRequest = JsonUtil.parseObject(req, ListRamInstanceRequest.class);
+        List<ListUsersResponseBody.ListUsersResponseBodyUsersUser> instances = AliApi.listRamInstanceRequest(listRamInstanceRequest);
+        ListLoginProfileInstanceRequest listLoginProfileInstanceRequest = new ListLoginProfileInstanceRequest();
+        listLoginProfileInstanceRequest.setUsernameList(instances.stream().map(ListUsersResponseBody.ListUsersResponseBodyUsersUser::getUserName).toList());
+        listLoginProfileInstanceRequest.setCredential(listRamInstanceRequest.getCredential());
+        List<GetLoginProfileResponse> getLoginProfileResponses = AliApi.listLoginProfile(listLoginProfileInstanceRequest);
+        return instances
+                .stream()
+                .map(instance -> ResourceUtil.toResourceInstance(PlatformConstants.fit2cloud_ali_platform.name(), ResourceTypeConstants.RAM,
+                        instance.getUserId(), instance.getUserName(), instance, "loginProfile", getLoginProfileResponses.stream().map(r -> r.body.loginProfile).filter(r -> r.getUserName().equals(instance.getUserName())).findAny().orElse(null)))
+                .toList();
+    }
+
+    @Override
+    public List<InstanceSearchField> listRamInstanceSearchField() {
+        return null;
+    }
+
+    @Override
+    public List<ResourceInstance> listBucketInstance(String req) {
+        ListBucketInstanceRequest listBucketInstanceRequest = JsonUtil.parseObject(req, ListBucketInstanceRequest.class);
+        List<Map<String, Object>> instances = AliApi.listBucketCollectionInstance(listBucketInstanceRequest);
+        return instances
+                .stream()
+                .map(instance -> ResourceUtil.toResourceInstance(PlatformConstants.fit2cloud_ali_platform.name(), ResourceTypeConstants.OSS, instance.get("name").toString(), instance.get("name").toString(), instance))
+                .toList();
+    }
+
+    @Override
+    public List<InstanceSearchField> listBucketInstanceSearchField() {
+        return null;
     }
 }

@@ -24,7 +24,7 @@ public class SkipPageException extends RuntimeException {
      */
     public static void throwSkip(Exception e) {
         if (e instanceof TeaException teaException) {
-            if (teaException.getCode().equals("InvalidOperation.NotSupportedEndpoint")||teaException.getCode().equals("InvalidRegionId.NotFound")) {
+            if (teaException.getCode().equals("InvalidOperation.NotSupportedEndpoint") || teaException.getCode().equals("InvalidRegionId.NotFound") || teaException.getCode().equals("EntityNotExist.User.LoginProfile")) {
                 throw new SkipPageException(1001, "跳过");
             }
         }

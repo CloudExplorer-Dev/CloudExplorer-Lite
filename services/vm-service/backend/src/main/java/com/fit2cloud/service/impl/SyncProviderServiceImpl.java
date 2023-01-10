@@ -102,9 +102,9 @@ public class SyncProviderServiceImpl extends BaseSyncService implements ISyncPro
                 .set(VmCloudServer::getInstanceStatus, F2CInstanceStatus.Deleted.name());
         //todo 处理创建中的同步？
         saveBatchOrUpdate(vmCloudServerService, vmCloudServers, vmCloudServer -> new LambdaQueryWrapper<VmCloudServer>()
-                .eq(VmCloudServer::getAccountId, vmCloudServer.getAccountId())
-                .eq(VmCloudServer::getInstanceUuid, vmCloudServer.getInstanceUuid())
-                .eq(VmCloudServer::getRegion, saveBatchOrUpdateParams.getRegion().getRegionId()), updateWrapper);
+                        .eq(VmCloudServer::getAccountId, vmCloudServer.getAccountId())
+                        .eq(VmCloudServer::getInstanceUuid, vmCloudServer.getInstanceUuid())
+                /*.eq(VmCloudServer::getRegion, saveBatchOrUpdateParams.getRegion().getRegionId())*/, updateWrapper);
     }
 
     /**
@@ -114,8 +114,16 @@ public class SyncProviderServiceImpl extends BaseSyncService implements ISyncPro
      */
     private void imageSaveOrUpdate(SaveBatchOrUpdateParams<F2CImage> saveBatchOrUpdateParams) {
         List<VmCloudImage> vmCloudImages = saveBatchOrUpdateParams.getSyncRecord().stream().map(img -> toVmImage(img, saveBatchOrUpdateParams.getRegion(), saveBatchOrUpdateParams.getCloudAccountId(), saveBatchOrUpdateParams.getSyncTime())).toList();
-        LambdaUpdateWrapper<VmCloudImage> updateWrapper = new LambdaUpdateWrapper<VmCloudImage>().eq(VmCloudImage::getAccountId, saveBatchOrUpdateParams.getCloudAccountId()).eq(VmCloudImage::getRegion, saveBatchOrUpdateParams.getRegion().getRegionId()).lt(VmCloudImage::getUpdateTime, saveBatchOrUpdateParams.getSyncTime()).set(VmCloudImage::getStatus, F2CImageStatus.deleted);
-        saveBatchOrUpdate(vmCloudImageService, vmCloudImages, vmCloudImage -> new LambdaQueryWrapper<VmCloudImage>().eq(VmCloudImage::getAccountId, vmCloudImage.getAccountId()).eq(VmCloudImage::getImageId, vmCloudImage.getImageId()).eq(VmCloudImage::getRegion, saveBatchOrUpdateParams.getRegion().getRegionId()), updateWrapper);
+        LambdaUpdateWrapper<VmCloudImage> updateWrapper = new LambdaUpdateWrapper<VmCloudImage>()
+                .eq(VmCloudImage::getAccountId, saveBatchOrUpdateParams.getCloudAccountId())
+                .eq(VmCloudImage::getRegion, saveBatchOrUpdateParams.getRegion().getRegionId())
+                .lt(VmCloudImage::getUpdateTime, saveBatchOrUpdateParams.getSyncTime())
+                .set(VmCloudImage::getStatus, F2CImageStatus.deleted);
+        saveBatchOrUpdate(vmCloudImageService, vmCloudImages, vmCloudImage -> new LambdaQueryWrapper<VmCloudImage>()
+                        .eq(VmCloudImage::getAccountId, vmCloudImage.getAccountId())
+                        .eq(VmCloudImage::getImageId, vmCloudImage.getImageId())
+                        .eq(VmCloudImage::getRegion, saveBatchOrUpdateParams.getRegion().getRegionId()),
+                updateWrapper);
     }
 
     /**
@@ -125,8 +133,16 @@ public class SyncProviderServiceImpl extends BaseSyncService implements ISyncPro
      */
     private void diskSaveOrUpdate(SaveBatchOrUpdateParams<F2CDisk> saveBatchOrUpdateParams) {
         List<VmCloudDisk> vmCloudDisks = saveBatchOrUpdateParams.getSyncRecord().stream().map(img -> toVmDisk(img, saveBatchOrUpdateParams.getRegion(), saveBatchOrUpdateParams.getCloudAccountId(), saveBatchOrUpdateParams.getSyncTime())).toList();
-        LambdaUpdateWrapper<VmCloudDisk> updateWrapper = new LambdaUpdateWrapper<VmCloudDisk>().eq(VmCloudDisk::getAccountId, saveBatchOrUpdateParams.getCloudAccountId()).eq(VmCloudDisk::getRegion, saveBatchOrUpdateParams.getRegion().getRegionId()).lt(VmCloudDisk::getUpdateTime, saveBatchOrUpdateParams.getSyncTime()).set(VmCloudDisk::getStatus, F2CDiskStatus.DELETED);
-        saveBatchOrUpdate(vmCloudDiskService, vmCloudDisks, vmCloudDisk -> new LambdaQueryWrapper<VmCloudDisk>().eq(VmCloudDisk::getAccountId, vmCloudDisk.getAccountId()).eq(VmCloudDisk::getDiskId, vmCloudDisk.getDiskId()).eq(VmCloudDisk::getRegion, saveBatchOrUpdateParams.getRegion().getRegionId()), updateWrapper);
+        LambdaUpdateWrapper<VmCloudDisk> updateWrapper = new LambdaUpdateWrapper<VmCloudDisk>()
+                .eq(VmCloudDisk::getAccountId, saveBatchOrUpdateParams.getCloudAccountId())
+                .eq(VmCloudDisk::getRegion, saveBatchOrUpdateParams.getRegion().getRegionId())
+                .lt(VmCloudDisk::getUpdateTime, saveBatchOrUpdateParams.getSyncTime())
+                .set(VmCloudDisk::getStatus, F2CDiskStatus.DELETED);
+        saveBatchOrUpdate(vmCloudDiskService, vmCloudDisks, vmCloudDisk -> new LambdaQueryWrapper<VmCloudDisk>()
+                        .eq(VmCloudDisk::getAccountId, vmCloudDisk.getAccountId())
+                        .eq(VmCloudDisk::getDiskId, vmCloudDisk.getDiskId())
+                /*.eq(VmCloudDisk::getRegion, saveBatchOrUpdateParams.getRegion().getRegionId())*/,
+                updateWrapper);
     }
 
     /**
@@ -136,8 +152,16 @@ public class SyncProviderServiceImpl extends BaseSyncService implements ISyncPro
      */
     private void hostSaveOrUpdate(SaveBatchOrUpdateParams<F2CHost> saveBatchOrUpdateParams) {
         List<VmCloudHost> vmCloudHosts = saveBatchOrUpdateParams.getSyncRecord().stream().map(host -> toVmHost(host, saveBatchOrUpdateParams.getCloudAccountId(), saveBatchOrUpdateParams.getSyncTime())).toList();
-        LambdaUpdateWrapper<VmCloudHost> updateWrapper = new LambdaUpdateWrapper<VmCloudHost>().eq(VmCloudHost::getAccountId, saveBatchOrUpdateParams.getCloudAccountId()).eq(VmCloudHost::getRegion, saveBatchOrUpdateParams.getRegion().getRegionId()).lt(VmCloudHost::getUpdateTime, saveBatchOrUpdateParams.getSyncTime()).set(VmCloudHost::getStatus, "Deleted");
-        saveBatchOrUpdate(vmCloudHostService, vmCloudHosts, vmCloudHost -> new LambdaQueryWrapper<VmCloudHost>().eq(VmCloudHost::getAccountId, vmCloudHost.getAccountId()).eq(VmCloudHost::getHostId, vmCloudHost.getHostId()).eq(VmCloudHost::getRegion, saveBatchOrUpdateParams.getRegion().getRegionId()), updateWrapper);
+        LambdaUpdateWrapper<VmCloudHost> updateWrapper = new LambdaUpdateWrapper<VmCloudHost>()
+                .eq(VmCloudHost::getAccountId, saveBatchOrUpdateParams.getCloudAccountId())
+                .eq(VmCloudHost::getRegion, saveBatchOrUpdateParams.getRegion().getRegionId())
+                .lt(VmCloudHost::getUpdateTime, saveBatchOrUpdateParams.getSyncTime())
+                .set(VmCloudHost::getStatus, "Deleted");
+        saveBatchOrUpdate(vmCloudHostService, vmCloudHosts, vmCloudHost -> new LambdaQueryWrapper<VmCloudHost>()
+                        .eq(VmCloudHost::getAccountId, vmCloudHost.getAccountId())
+                        .eq(VmCloudHost::getHostId, vmCloudHost.getHostId())
+                /*.eq(VmCloudHost::getRegion, saveBatchOrUpdateParams.getRegion().getRegionId())*/,
+                updateWrapper);
     }
 
     /**
@@ -147,8 +171,16 @@ public class SyncProviderServiceImpl extends BaseSyncService implements ISyncPro
      */
     private void dataStoreSaveOrUpdate(SaveBatchOrUpdateParams<F2CDatastore> saveBatchOrUpdateParams) {
         List<VmCloudDatastore> vmCloudDatastores = saveBatchOrUpdateParams.getSyncRecord().stream().map(datastore -> toVmDatastore(datastore, saveBatchOrUpdateParams.getCloudAccountId(), saveBatchOrUpdateParams.getSyncTime())).toList();
-        LambdaUpdateWrapper<VmCloudDatastore> updateWrapper = new LambdaUpdateWrapper<VmCloudDatastore>().eq(VmCloudDatastore::getAccountId, saveBatchOrUpdateParams.getCloudAccountId()).eq(VmCloudDatastore::getRegion, saveBatchOrUpdateParams.getRegion().getRegionId()).lt(VmCloudDatastore::getUpdateTime, saveBatchOrUpdateParams.getSyncTime()).set(VmCloudDatastore::getStatus, "Deleted");
-        saveBatchOrUpdate(vmCloudDatastoreService, vmCloudDatastores, vmCloudDatastore -> new LambdaQueryWrapper<VmCloudDatastore>().eq(VmCloudDatastore::getAccountId, vmCloudDatastore.getAccountId()).eq(VmCloudDatastore::getDatastoreId, vmCloudDatastore.getDatastoreId()).eq(VmCloudDatastore::getRegion, saveBatchOrUpdateParams.getRegion().getRegionId()), updateWrapper);
+        LambdaUpdateWrapper<VmCloudDatastore> updateWrapper = new LambdaUpdateWrapper<VmCloudDatastore>()
+                .eq(VmCloudDatastore::getAccountId, saveBatchOrUpdateParams.getCloudAccountId())
+                .eq(VmCloudDatastore::getRegion, saveBatchOrUpdateParams.getRegion().getRegionId())
+                .lt(VmCloudDatastore::getUpdateTime, saveBatchOrUpdateParams.getSyncTime())
+                .set(VmCloudDatastore::getStatus, "Deleted");
+        saveBatchOrUpdate(vmCloudDatastoreService, vmCloudDatastores, vmCloudDatastore -> new LambdaQueryWrapper<VmCloudDatastore>()
+                        .eq(VmCloudDatastore::getAccountId, vmCloudDatastore.getAccountId())
+                        .eq(VmCloudDatastore::getDatastoreId, vmCloudDatastore.getDatastoreId())
+                /*.eq(VmCloudDatastore::getRegion, saveBatchOrUpdateParams.getRegion().getRegionId())*/,
+                updateWrapper);
     }
 
     /**

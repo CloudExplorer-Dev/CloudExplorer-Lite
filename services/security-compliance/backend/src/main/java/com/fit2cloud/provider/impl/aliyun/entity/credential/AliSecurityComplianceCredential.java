@@ -1,9 +1,13 @@
 package com.fit2cloud.provider.impl.aliyun.entity.credential;
 
+import com.aliyun.auth.credentials.Credential;
+import com.aliyun.auth.credentials.provider.StaticCredentialProvider;
 import com.aliyun.ecs20140526.Client;
+import com.aliyun.sdk.service.oss20190517.AsyncClient;
 import com.aliyun.teaopenapi.models.Config;
 import com.fit2cloud.common.exception.Fit2cloudException;
 import com.fit2cloud.common.provider.impl.aliyun.entity.credential.AliyunBaseCredential;
+import darabonba.core.client.ClientOverrideConfiguration;
 
 /**
  * {@code @Author:张少虎}
@@ -107,6 +111,81 @@ public class AliSecurityComplianceCredential extends AliyunBaseCredential {
         } catch (Exception e) {
             throw new Fit2cloudException(1000, "获取客户端失败");
         }
-
     }
+
+    /**
+     * 获取 负载均衡 客户端
+     *
+     * @param regionId 区域
+     * @return 负载均衡 客户端
+     */
+    public com.aliyun.slb20140515.Client getLoadBalancerClient(String regionId) {
+        com.aliyun.teaopenapi.models.Config config = new com.aliyun.teaopenapi.models.Config()
+                .setAccessKeyId(getAccessKeyId())
+                .setAccessKeySecret(getAccessKeySecret())
+                .setRegionId(regionId);
+        // 访问的域名
+        config.endpoint = "slb.aliyuncs.com";
+        try {
+            return new com.aliyun.slb20140515.Client(config);
+        } catch (Exception e) {
+            throw new Fit2cloudException(1000, "获取客户端失败");
+        }
+    }
+
+    /**
+     * 获取 vpc(弹性公网ip,VPC..)客户端
+     *
+     * @param regionId 区域id
+     * @return vpc(弹性公网ip, VPC..)客户端
+     */
+    public com.aliyun.vpc20160428.Client getVpcClient(String regionId) {
+        com.aliyun.teaopenapi.models.Config config = new com.aliyun.teaopenapi.models.Config()
+                .setAccessKeyId(getAccessKeyId())
+                .setAccessKeySecret(getAccessKeySecret())
+                .setRegionId(regionId);
+        // 访问的域名
+        config.endpoint = "vpc.aliyuncs.com";
+        try {
+            return new com.aliyun.vpc20160428.Client(config);
+        } catch (Exception e) {
+            throw new Fit2cloudException(1000, "获取客户端失败");
+        }
+    }
+
+    /**
+     * 获取Ram客户端
+     *
+     * @return Ram客户端
+     */
+    public com.aliyun.ram20150501.Client getRamClient() {
+        com.aliyun.teaopenapi.models.Config config = new com.aliyun.teaopenapi.models.Config()
+                .setAccessKeyId(getAccessKeyId())
+                .setAccessKeySecret(getAccessKeySecret());
+        // 访问的域名
+        config.endpoint = "ram.aliyuncs.com";
+        try {
+            return new com.aliyun.ram20150501.Client(config);
+        } catch (Exception e) {
+            throw new Fit2cloudException(1000, "获取客户端失败");
+        }
+    }
+
+    /**
+     * 获取对象存储客户端
+     *
+     * @param region 区域
+     * @return 对象存储客户端
+     */
+    public AsyncClient getOssClient(String region) {
+        StaticCredentialProvider provider = StaticCredentialProvider.create(Credential.builder()
+                .accessKeyId(getAccessKeyId())
+                .accessKeySecret(getAccessKeySecret())
+                .build());
+        return AsyncClient.builder()
+                .region(region)
+                .credentialsProvider(provider)
+                .build();
+    }
+
 }

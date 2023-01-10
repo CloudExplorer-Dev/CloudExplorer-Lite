@@ -8,8 +8,13 @@ package com.fit2cloud.provider.entity;
  */
 public enum InstanceFieldCompare {
     NotExist("不存在", "doc[params.field].length==0"),
+
     Exist("存在", "doc[params.field].length>0"),
+
+    NotEq("不等于", "!doc[params.field].stream().anyMatch(s->(s==null&&params==null)||(s!=null&&params.value!=null&&s.toString()==params.value.toString()))"),
     EQ("等于", "doc[params.field].stream().anyMatch(s->(s==null&&params==null)||(s!=null&&params.value!=null&&s.toString()==params.value.toString()))"),
+
+    NotIn("不包含", "!doc[params.field].stream().anyMatch(s->(s==null&&params==null)||(s!=null&&params.value!=null&&s.toString()==params.value.toString()))"),
     IN("包含", "doc[params.field].stream().anyMatch(s->(s==null&&params==null)||(s!=null&&params.value!=null&&s.toString()==params.value.toString()))"),
     LE("小于等于", "doc[params.field].stream().map(s-> s instanceof String?Double.parseDouble(s):s).anyMatch(s->s<=params.value)"),
     GE("大于等于", "doc[params.field].stream().map(s-> s instanceof String?Double.parseDouble(s):s).anyMatch(s->s>=params.value)"),

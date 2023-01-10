@@ -2,25 +2,52 @@ package com.fit2cloud.provider.impl.tencent.api;
 
 import com.fit2cloud.common.provider.exception.ReTryException;
 import com.fit2cloud.common.provider.util.PageUtil;
+import com.fit2cloud.provider.impl.tencent.client.CeCosClient;
+import com.fit2cloud.provider.impl.tencent.entity.credential.TencentSecurityComplianceCredential;
 import com.fit2cloud.provider.impl.tencent.entity.request.*;
+import com.fit2cloud.provider.impl.tencent.entity.request.GetBucketAclRequest;
+import com.fit2cloud.provider.impl.tencent.entity.response.BucketEncryptionResponse;
+import com.fit2cloud.provider.impl.tencent.parser.CeXmlResponseSaxParser;
+import com.fit2cloud.provider.util.ResourceUtil;
+import com.qcloud.cos.COSClient;
+import com.qcloud.cos.ClientConfig;
+import com.qcloud.cos.exception.CosServiceException;
+import com.qcloud.cos.http.*;
+import com.qcloud.cos.internal.CosServiceRequest;
+import com.qcloud.cos.internal.CosServiceResponse;
+import com.qcloud.cos.internal.XmlResponsesSaxParser;
+import com.qcloud.cos.model.*;
+import com.qcloud.cos.utils.IOUtils;
+import com.tencentcloudapi.cbs.v20170312.CbsClient;
+import com.tencentcloudapi.cbs.v20170312.models.DescribeDisksRequest;
+import com.tencentcloudapi.cbs.v20170312.models.Disk;
 import com.tencentcloudapi.cdb.v20170320.CdbClient;
 import com.tencentcloudapi.cdb.v20170320.models.InstanceInfo;
+import com.tencentcloudapi.clb.v20180317.ClbClient;
+import com.tencentcloudapi.clb.v20180317.models.DescribeLoadBalancersRequest;
+import com.tencentcloudapi.clb.v20180317.models.LoadBalancer;
 import com.tencentcloudapi.cvm.v20170312.CvmClient;
 import com.tencentcloudapi.cvm.v20170312.models.DescribeInstancesRequest;
 import com.tencentcloudapi.cvm.v20170312.models.Instance;
 import com.tencentcloudapi.es.v20180416.EsClient;
 import com.tencentcloudapi.mariadb.v20170312.MariadbClient;
 import com.tencentcloudapi.mongodb.v20190725.MongodbClient;
+import com.tencentcloudapi.mongodb.v20190725.models.DescribeDBInstancesRequest;
+import com.tencentcloudapi.mongodb.v20190725.models.InstanceDetail;
 import com.tencentcloudapi.postgres.v20170312.PostgresClient;
 import com.tencentcloudapi.redis.v20180412.RedisClient;
 import com.tencentcloudapi.redis.v20180412.models.InstanceSet;
 import com.tencentcloudapi.sqlserver.v20180328.SqlserverClient;
 import com.tencentcloudapi.sqlserver.v20180328.models.DBInstance;
+import com.tencentcloudapi.vpc.v20170312.VpcClient;
+import com.tencentcloudapi.vpc.v20170312.models.DescribeNetworkInterfacesRequest;
+import com.tencentcloudapi.vpc.v20170312.models.DescribeVpcsRequest;
+import com.tencentcloudapi.vpc.v20170312.models.NetworkInterface;
+import com.tencentcloudapi.vpc.v20170312.models.Vpc;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
-import com.tencentcloudapi.mongodb.v20190725.models.*;
 
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
 
 /**
  * {@code @Author:张少虎}
@@ -241,4 +268,264 @@ public class TencentApi {
                 req -> req.setOffset(req.getOffset() + req.getLimit()));
 
     }
+
+    /**
+     * 获取 云磁盘 实例列表
+     *
+     * @param request 请求对象
+     * @return 磁盘实例列表
+     */
+    public static List<Disk> listDiskInstance(ListDiskInstanceRequest request) {
+        CbsClient cbsClient = request.getCredential().getCbsClient(request.getRegionId());
+        request.setOffset(PageUtil.DefaultCurrentPage.longValue() - 1);
+        request.setLimit(PageUtil.DefaultPageSize.longValue());
+        return PageUtil.page(request,
+                req -> {
+                    try {
+                        DescribeDisksRequest describeInstancesRequest = new DescribeDisksRequest();
+                        BeanUtils.copyProperties(req, describeInstancesRequest);
+                        return cbsClient.DescribeDisks(describeInstancesRequest);
+                    } catch (Exception e) {
+                        ReTryException.throwReTry(e);
+                        throw new RuntimeException(e);
+                    }
+                },
+                res -> Arrays.stream(res.getDiskSet()).toList(),
+                (req, res) -> req.getLimit() <= res.getDiskSet().length,
+                req -> req.setOffset(req.getOffset() + req.getLimit()));
+    }
+
+    /**
+     * 获取 负载均衡 实例列表
+     *
+     * @param request 请求对象
+     * @return 负载均衡实例列表
+     */
+    public static List<LoadBalancer> listLoadBalancerInstance(ListLoadBalancerInstanceRequest request) {
+        ClbClient clbClient = request.getCredential().getClbClient(request.getRegionId());
+        request.setOffset(PageUtil.DefaultCurrentPage.longValue() - 1);
+        request.setLimit(PageUtil.DefaultPageSize.longValue());
+        return PageUtil.page(request,
+                req -> {
+                    try {
+                        DescribeLoadBalancersRequest describeInstancesRequest = new DescribeLoadBalancersRequest();
+                        BeanUtils.copyProperties(req, describeInstancesRequest);
+                        return clbClient.DescribeLoadBalancers(describeInstancesRequest);
+                    } catch (Exception e) {
+                        ReTryException.throwReTry(e);
+                        throw new RuntimeException(e);
+                    }
+                },
+                res -> Arrays.stream(res.getLoadBalancerSet()).toList(),
+                (req, res) -> req.getLimit() <= res.getLoadBalancerSet().length,
+                req -> req.setOffset(req.getOffset() + req.getLimit()));
+    }
+
+    /**
+     * 获取 弹性公网ip 实例列表
+     *
+     * @param request 请求对象
+     * @return 弹性公网ip实例列表
+     */
+    public static List<NetworkInterface> listPublicIpInstance(ListPublicIpInstanceRequest request) {
+        VpcClient vpcClient = request.getCredential().getVpcClient(request.getRegionId());
+        request.setOffset(PageUtil.DefaultCurrentPage.longValue() - 1);
+        request.setLimit(PageUtil.DefaultPageSize.longValue());
+        return PageUtil.page(request,
+                req -> {
+                    try {
+                        DescribeNetworkInterfacesRequest describeInstancesRequest = new DescribeNetworkInterfacesRequest();
+                        BeanUtils.copyProperties(req, describeInstancesRequest);
+                        return vpcClient.DescribeNetworkInterfaces(describeInstancesRequest);
+                    } catch (Exception e) {
+                        ReTryException.throwReTry(e);
+                        throw new RuntimeException(e);
+                    }
+                },
+                res -> Arrays.stream(res.getNetworkInterfaceSet()).toList(),
+                (req, res) -> req.getLimit() <= res.getNetworkInterfaceSet().length,
+                req -> req.setOffset(req.getOffset() + req.getLimit()));
+    }
+
+    /**
+     * 获取 vpc 实例列表
+     *
+     * @param request 请求对象
+     * @return vpc 实例列表
+     */
+    public static List<Vpc> listVpcInstance(ListVpcInstanceRequest request) {
+        VpcClient vpcClient = request.getCredential().getVpcClient(request.getRegionId());
+        request.setOffset(String.valueOf(PageUtil.DefaultCurrentPage.longValue() - 1));
+        request.setLimit(String.valueOf(PageUtil.DefaultPageSize.longValue()));
+        return PageUtil.page(request,
+                req -> {
+                    try {
+                        DescribeVpcsRequest describeInstancesRequest = new DescribeVpcsRequest();
+                        BeanUtils.copyProperties(req, describeInstancesRequest);
+                        return vpcClient.DescribeVpcs(describeInstancesRequest);
+                    } catch (Exception e) {
+                        ReTryException.throwReTry(e);
+                        throw new RuntimeException(e);
+                    }
+                },
+                res -> Arrays.stream(res.getVpcSet()).toList(),
+                (req, res) -> Integer.parseInt(req.getLimit()) <= res.getVpcSet().length,
+                req -> req.setOffset(req.getOffset() + req.getLimit()));
+
+    }
+
+    /**
+     * 获取 bucket 桶 实例列表
+     *
+     * @param request 请求对象
+     * @return 桶
+     */
+    public static List<Bucket> listBucketInstance(ListBucketInstanceRequest request) {
+        COSClient cosClient = request.getCredential().getCOSClient(null);
+        return cosClient.listBuckets(request);
+    }
+
+
+    /**
+     * 获取 bucket 桶实例(桶对象,加密数据,防盗链数据,)列表
+     *
+     * @param request
+     * @return
+     */
+    public static List<Map<String, Object>> listBucketInstanceCollection(ListBucketInstanceRequest request) {
+        CeCosClient cosClient = request.getCredential().getCeCosClient(null);
+        List<Bucket> buckets = cosClient.listBuckets(request);
+        return buckets.stream().map(bucket -> {
+            CeCosClient ceCosClient = request.getCredential().getCeCosClient(bucket.getLocation());
+            Map<String, Object> bucketMap = ResourceUtil.objectToMap(bucket);
+            HashMap<String, Object> bucketAclRefererEncryption = getBucketAclRefererEncryption(ceCosClient, bucket.getName());
+            bucketMap.putAll(bucketAclRefererEncryption);
+            return bucketMap;
+        }).toList();
+
+    }
+
+
+    /**
+     * @param cosClient  客户端
+     * @param bucketName 桶对象
+     * @return 集合数据
+     */
+    private static HashMap<String, Object> getBucketAclRefererEncryption(CeCosClient cosClient, String bucketName) {
+        HashMap<String, Object> collection = new HashMap<>();
+        BucketRefererConfiguration bucketRefererConfiguration = PageUtil.reTry(() -> {
+            try {
+                return cosClient.getBucketRefererConfiguration(bucketName);
+            } catch (Exception e) {
+                ReTryException.throwReTry(e);
+                return null;
+            }
+        }, 5);
+
+        AccessControlList accessControlList = PageUtil.reTry(() -> {
+            try {
+                return cosClient.getBucketAcl(bucketName);
+            } catch (Exception e) {
+                ReTryException.throwReTry(e);
+                return null;
+            }
+        }, 5);
+
+        BucketEncryptionResponse.ServerSideEncryptionConfiguration serverSideEncryptionConfiguration = PageUtil.reTry(() -> {
+            try {
+                return getBucketEncryption(cosClient, bucketName);
+            } catch (Exception e) {
+                ReTryException.throwReTry(e);
+                return null;
+            }
+        }, 5);
+        collection.put("referer", bucketRefererConfiguration);
+        collection.put("access", accessControlList);
+        collection.put("encryption", serverSideEncryptionConfiguration);
+        return collection;
+    }
+
+    /**
+     * 获取桶访问权限
+     *
+     * @param request 请求对象
+     * @return 存储桶访问权限
+     */
+    public static AccessControlList getBucketAcl(GetBucketAclRequest request) {
+        COSClient cosClient = request.getCredential().getCOSClient(request.getRegionId());
+        return cosClient.getBucketAcl(request.getBucketName());
+    }
+
+    /**
+     * 获取桶的防盗链信息
+     *
+     * @param request 请求对象
+     * @return 桶的防盗链信息
+     */
+    public static BucketRefererConfiguration getBucketReferer(GetBucketReferRequest request) {
+        COSClient cosClient = request.getCredential().getCOSClient(request.getRegionId());
+        return getBucketReferer(cosClient, request.getBucketName());
+    }
+
+    /**
+     * 获取桶是否加密
+     *
+     * @param request 请求对象
+     * @return 桶加密信息
+     */
+    public static BucketEncryptionResponse.ServerSideEncryptionConfiguration getBucketEncryption(GetBucketEncryptionRequest request) {
+        CeCosClient ceCosClient = request.getCredential().getCeCosClient(request.getRegionId());
+        return getBucketEncryption(ceCosClient, request.getBucketName());
+    }
+
+    /**
+     * 获取Bucket防盗链信息
+     *
+     * @param cosClient  客户端
+     * @param bucketName 桶名称
+     * @return 当前桶的防盗链信息
+     */
+    private static BucketRefererConfiguration getBucketReferer(COSClient cosClient, String bucketName) {
+        return cosClient.getBucketRefererConfiguration(bucketName);
+    }
+
+    /**
+     * 获取cos 加密情况
+     *
+     * @param cosClient  客户端
+     * @param bucketName 桶m名称
+     * @return cos桶加密数据
+     */
+    private static BucketEncryptionResponse.ServerSideEncryptionConfiguration getBucketEncryption(CeCosClient cosClient, String bucketName) {
+        GenericBucketRequest getBucketEncryptionRequest = new GenericBucketRequest(bucketName);
+        CosHttpRequest<GenericBucketRequest> request = cosClient.createRequest(bucketName, null, getBucketEncryptionRequest, HttpMethodName.GET);
+        request.addParameter("encryption", (String) null);
+        try {
+            return cosClient.invoke(request, new HttpResponseHandler<>() {
+                @Override
+                public CosServiceResponse<BucketEncryptionResponse.ServerSideEncryptionConfiguration> handle(CosHttpResponse cosHttpResponse) throws Exception {
+                    BucketEncryptionResponse bucketEncryptionResponse = (new CeXmlResponseSaxParser()).parseBucketEncryptionResponse(cosHttpResponse.getContent());
+                    BucketEncryptionResponse.ServerSideEncryptionConfiguration response = bucketEncryptionResponse.getResponse();
+                    CosServiceResponse<BucketEncryptionResponse.ServerSideEncryptionConfiguration> objectCosServiceResponse = new CosServiceResponse<>();
+                    objectCosServiceResponse.setResult(response);
+                    return objectCosServiceResponse;
+                }
+
+                @Override
+                public boolean needsConnectionLeftOpen() {
+                    return false;
+                }
+            });
+        } catch (Exception e) {
+            if (e instanceof CosServiceException cosServiceException) {
+                if (cosServiceException.getErrorCode().equals("NoSuchEncryptionConfiguration")) {
+                    return null;
+                }
+            }
+            throw e;
+        }
+
+    }
+
+
 }
