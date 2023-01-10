@@ -1687,7 +1687,7 @@ public class AliyunSyncCloudApi {
                 return calculatePrePaidConfigUpgradePrice(request, client);
             } catch (Exception e) {
                 // 包年包月降配直接返回0，目前尚没有包年包月降配询价的接口
-                return "0.00";
+                return "--";
             }
         }
 

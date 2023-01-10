@@ -1,6 +1,7 @@
 package com.fit2cloud.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.core.metadata.OrderItem;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
@@ -22,6 +23,7 @@ import com.fit2cloud.common.utils.CurrentUserUtils;
 import com.fit2cloud.common.utils.PageUtil;
 import com.fit2cloud.controller.request.CreateJobRecordRequest;
 import com.fit2cloud.controller.request.ExecProviderMethodRequest;
+import com.fit2cloud.controller.request.GrantRequest;
 import com.fit2cloud.controller.request.ResourceState;
 import com.fit2cloud.controller.request.disk.CreateVmCloudDiskRequest;
 import com.fit2cloud.controller.request.disk.ListVmRequest;
@@ -48,6 +50,7 @@ import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * <p>
@@ -533,5 +536,19 @@ public class VmCloudDiskServiceImpl extends ServiceImpl<BaseVmCloudDiskMapper, V
         } else {
             return null;
         }
+    }
+
+    /**
+     * 云磁盘授权
+     * @param grantRequest
+     * @return
+     */
+    public boolean grant(GrantRequest grantRequest) {
+        String sourceId = grantRequest.getGrant() ? grantRequest.getSourceId() : "";
+
+        UpdateWrapper<VmCloudDisk> updateWrapper = new UpdateWrapper();
+        updateWrapper.lambda().in(VmCloudDisk::getId, grantRequest.getIds())
+                .set(VmCloudDisk::getSourceId, sourceId);
+        return update(updateWrapper);
     }
 }

@@ -10,6 +10,7 @@ import com.fit2cloud.common.validator.annnotaion.CustomValidated;
 import com.fit2cloud.common.validator.handler.ExistHandler;
 import com.fit2cloud.controller.handler.ResultHolder;
 import com.fit2cloud.controller.request.disk.*;
+import com.fit2cloud.controller.request.GrantRequest;
 import com.fit2cloud.dto.VmCloudDiskDTO;
 import com.fit2cloud.dto.VmCloudServerDTO;
 import com.fit2cloud.service.IVmCloudDiskService;
@@ -131,5 +132,12 @@ public class VmCloudDiskController {
     @OperatedLog(resourceType = ResourceTypeEnum.CLOUD_DISK, operated = OperatedTypeEnum.BATCH_DELETE_DISK, param = "#{ids}")
     public ResultHolder<Boolean> batchDelete(@RequestBody String[] ids) {
         return ResultHolder.success(diskService.batchDelete(ids));
+    }
+
+    @ApiOperation(value = "云磁盘授权")
+    @PostMapping("/grant")
+    @PreAuthorize("hasAnyCePermission('CLOUD_DISK:AUTH')")
+    public ResultHolder<Boolean> grant(@RequestBody GrantRequest grantDiskRequest) {
+        return ResultHolder.success(diskService.grant(grantDiskRequest));
     }
 }

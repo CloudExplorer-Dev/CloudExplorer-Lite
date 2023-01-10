@@ -6,6 +6,7 @@ import com.fit2cloud.common.log.annotation.OperatedLog;
 import com.fit2cloud.common.log.constants.OperatedTypeEnum;
 import com.fit2cloud.common.log.constants.ResourceTypeEnum;
 import com.fit2cloud.controller.handler.ResultHolder;
+import com.fit2cloud.controller.request.GrantRequest;
 import com.fit2cloud.controller.request.vm.*;
 import com.fit2cloud.dto.VmCloudServerDTO;
 import com.fit2cloud.response.JobRecordResourceResponse;
@@ -152,7 +153,7 @@ public class VmCloudServerController {
     @ApiOperation(value = "云主机授权")
     @PostMapping("/grant")
     @PreAuthorize("hasAnyCePermission('CLOUD_SERVER:AUTH')")
-    public ResultHolder<Boolean> grant(@RequestBody GrantServerRequest grantServerRequest) {
+    public ResultHolder<Boolean> grant(@RequestBody GrantRequest grantServerRequest) {
         return ResultHolder.success(iVmCloudServerService.grant(grantServerRequest));
     }
 }

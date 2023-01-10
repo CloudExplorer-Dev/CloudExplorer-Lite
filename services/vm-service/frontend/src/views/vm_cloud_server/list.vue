@@ -727,7 +727,8 @@ const moreActions = ref<Array<ButtonAction>>([
     :close-on-click-modal="false"
   >
     <Grant
-      :cloudServerIds="selectedServerIds"
+      :ids="selectedServerIds"
+      resource-type="vm"
       v-model:visible="grantDialogVisible"
       @refresh="refresh"
     />

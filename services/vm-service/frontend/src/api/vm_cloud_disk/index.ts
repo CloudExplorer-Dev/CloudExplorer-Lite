@@ -11,6 +11,7 @@ import type {
 } from "./type";
 import type { Ref } from "vue";
 import type { VmCloudServerVO } from "@/api/vm_cloud_server/type";
+import type { GrantRequest } from "@/api/vm_cloud_server/type";
 
 /**
  * 磁盘列表
@@ -153,6 +154,15 @@ export function showCloudDiskById(
   return get("api/disk/showCloudDiskById/" + id, null, loading);
 }
 
+/**
+ * 云磁盘授权
+ * @param req
+ * @param loading
+ */
+export function grantVmCloudDisk(req: GrantRequest, loading?: Ref<boolean>) {
+  return post("/api/disk/grant", null, req, loading);
+}
+
 const VmCloudDiskApi = {
   listVmCloudDisk,
   getCreateDiskForm,
@@ -166,5 +176,6 @@ const VmCloudDiskApi = {
   batchAttach,
   batchDetach,
   batchDeleteDisk,
+  grantVmCloudDisk,
 };
 export default VmCloudDiskApi;

@@ -4,11 +4,14 @@ import type { FormInstance, FormRules } from "element-plus";
 import { useI18n } from "vue-i18n";
 import BaseWorkspaceApi from "@commons/api/workspace";
 import { grantVmCloudServer } from "@/api/vm_cloud_server";
+import { grantVmCloudDisk } from "@/api/vm_cloud_disk";
+
 import { ElMessage } from "element-plus";
 
 const props = defineProps<{
-  cloudServerIds: string[];
+  ids: string[];
   dialogVisible: boolean;
+  resourceType: string;
 }>();
 const emits = defineEmits(["update:visible", "refresh"]);
 
@@ -40,19 +43,31 @@ const handleSave = () => {
   formRef.value.validate((valid) => {
     if (valid || form.grant === "NO") {
       const param = {
-        cloudServerIds: props.cloudServerIds,
+        ids: props.ids,
         grant: JSON.parse(form.grant),
         sourceId: form.sourceId,
       };
-      grantVmCloudServer(param, loading)
-        .then(() => {
-          emits("update:visible", false);
-          emits("refresh");
-          ElMessage.success(t("commons.msg.save_success"));
-        })
-        .catch((err) => {
-          ElMessage.error(err.response.data.message);
-        });
+      if (props.resourceType === "vm") {
+        grantVmCloudServer(param, loading)
+          .then(() => {
+            emits("update:visible", false);
+            emits("refresh");
+            ElMessage.success(t("commons.msg.save_success"));
+          })
+          .catch((err) => {
+            ElMessage.error(err.response.data.message);
+          });
+      } else {
+        grantVmCloudDisk(param, loading)
+          .then(() => {
+            emits("update:visible", false);
+            emits("refresh");
+            ElMessage.success(t("commons.msg.save_success"));
+          })
+          .catch((err) => {
+            ElMessage.error(err.response.data.message);
+          });
+      }
     } else {
       return false;
     }
