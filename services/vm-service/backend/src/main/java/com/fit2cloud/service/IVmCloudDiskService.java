@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.fit2cloud.base.entity.VmCloudDisk;
 import com.fit2cloud.common.form.vo.FormObject;
+import com.fit2cloud.controller.request.GrantRequest;
 import com.fit2cloud.controller.request.disk.CreateVmCloudDiskRequest;
 import com.fit2cloud.controller.request.disk.ListVmRequest;
 import com.fit2cloud.controller.request.disk.PageVmCloudDiskRequest;
@@ -113,4 +114,12 @@ public interface IVmCloudDiskService extends IService<VmCloudDisk> {
      * @return
      */
     boolean batchDelete(String[] ids);
+
+    /**
+     * 批量授权磁盘
+     * @param grantDiskRequest
+     * @return
+     */
+    boolean grant(GrantRequest grantDiskRequest);
+
 }

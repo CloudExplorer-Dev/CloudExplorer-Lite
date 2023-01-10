@@ -2,6 +2,7 @@ package com.fit2cloud.provider.impl.tencent.api;
 
 import com.aliyun.tea.TeaException;
 import com.fit2cloud.common.exception.Fit2cloudException;
+import com.fit2cloud.common.log.utils.LogUtil;
 import com.fit2cloud.common.provider.entity.F2CEntityType;
 import com.fit2cloud.common.provider.entity.F2CPerfMetricMonitorData;
 import com.fit2cloud.common.provider.util.PageUtil;
@@ -1303,7 +1304,8 @@ public class TencetSyncCloudApi {
                 });
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            System.out.println(req.getMetricName()+"-"+e.getMessage());
+            LogUtil.error("{}-{}",req.getMetricName(),e.getMessage());
         }
         return map;
     }

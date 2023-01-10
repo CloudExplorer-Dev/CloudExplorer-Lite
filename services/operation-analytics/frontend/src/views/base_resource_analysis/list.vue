@@ -1,25 +1,25 @@
 <template>
   <el-tabs v-model="activeName">
     <el-tab-pane label="资源分析" name="resourceSpread" :lazy="true">
-      <div class="log-table" v-if="activeName === 'resourceSpread'">
+      <div v-if="activeName === 'resourceSpread'">
         <ResourceAnalysisView></ResourceAnalysisView>
       </div>
     </el-tab-pane>
     <el-tab-pane label="宿主机明细" name="host">
-      <div class="log-table" v-if="activeName === 'host'">
+      <div v-if="activeName === 'host'">
         <HostList ref="host"></HostList>
       </div>
     </el-tab-pane>
     <el-tab-pane label="存储器明细" name="storage">
-      <div class="log-table">
+      <div>
         <StorageList v-if="activeName === 'storage'"></StorageList>
       </div>
     </el-tab-pane>
-    <el-tab-pane label="告警明细" name="alarm">
-      <div class="log-table">
-        <AlarmList v-if="activeName === 'alarm'"></AlarmList>
-      </div>
-    </el-tab-pane>
+    <!--    <el-tab-pane label="告警明细" name="alarm">-->
+    <!--      <div>-->
+    <!--        <AlarmList v-if="activeName === 'alarm'"></AlarmList>-->
+    <!--      </div>-->
+    <!--    </el-tab-pane>-->
   </el-tabs>
 </template>
 <script lang="ts" setup>
@@ -31,9 +31,4 @@ import ResourceAnalysisView from "./resourceAnalysisView.vue";
 const activeName = ref("resourceSpread");
 onMounted(() => {});
 </script>
-<style lang="scss" scoped>
-.log-table {
-  width: 100%;
-  height: calc(100vh - 270px);
-}
-</style>
+<style lang="scss" scoped></style>

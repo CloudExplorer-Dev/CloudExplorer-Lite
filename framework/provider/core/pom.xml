@@ -107,7 +107,7 @@
         <dependency>
             <groupId>com.qcloud</groupId>
             <artifactId>cos_api</artifactId>
-            <version>5.6.28</version>
+            <version>5.6.125.2</version>
             <exclusions>
                 <exclusion>
                     <groupId>org.slf4j</groupId>

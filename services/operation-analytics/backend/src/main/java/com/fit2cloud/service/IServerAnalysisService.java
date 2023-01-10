@@ -5,9 +5,10 @@ import com.fit2cloud.base.entity.CloudAccount;
 import com.fit2cloud.base.entity.VmCloudHost;
 import com.fit2cloud.controller.request.server.PageServerRequest;
 import com.fit2cloud.controller.request.server.ResourceAnalysisRequest;
+import com.fit2cloud.controller.response.BarTreeChartData;
 import com.fit2cloud.controller.response.ChartData;
+import com.fit2cloud.dto.AnalyticsServerDTO;
 import com.fit2cloud.dto.KeyValue;
-import com.fit2cloud.dto.VmCloudServerDTO;
 
 import java.util.List;
 import java.util.Map;
@@ -20,21 +21,21 @@ public interface IServerAnalysisService {
 
     /**
      * 云主机明细
-     * @param request
-     * @return
+     * @param request 分页查询云主机参数
+     * @return IPage<AnalyticsServerDTO>
      */
-    IPage<VmCloudServerDTO> pageServer(PageServerRequest request);
+    IPage<AnalyticsServerDTO> pageServer(PageServerRequest request);
 
     /**
      * 所有云账号
-     * @return
+     * @return List<CloudAccount>
      */
     List<CloudAccount> getAllCloudAccount();
 
     /**
      * 获取宿主机
-     * @param request
-     * @return
+     * @param request 云主机分析参数
+     * @return List<VmCloudHost>
      */
     List<VmCloudHost> getVmHost(ResourceAnalysisRequest request);
 
@@ -43,6 +44,16 @@ public interface IServerAnalysisService {
     List<ChartData> vmIncreaseTrend(ResourceAnalysisRequest request);
 
     List<ChartData> getResourceTrendData(ResourceAnalysisRequest request);
+
+    Map<String,List<BarTreeChartData>> analyticsVmCloudServerByOrgWorkspace(ResourceAnalysisRequest request);
+
+    Map<String,CloudAccount> getAllAccountIdMap();
+
+    List<BarTreeChartData> getChildren(BarTreeChartData barTreeChartData,List<BarTreeChartData> list,Map<String,List<BarTreeChartData>> workspaceMap);
+
+    List<BarTreeChartData> initWorkspaceChartData();
+
+    List<BarTreeChartData> initOrgChartData();
 
 
 }

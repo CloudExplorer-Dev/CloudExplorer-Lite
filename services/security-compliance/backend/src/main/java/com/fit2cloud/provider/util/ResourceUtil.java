@@ -77,4 +77,14 @@ public class ResourceUtil {
         resourceInstance.setInstance(instanceTypeData);
         return resourceInstance;
     }
+
+    /**
+     * 转换对象为Map
+     *
+     * @param instance 需要转换的对象
+     * @return 转换后的Map
+     */
+    public static Map<String, Object> objectToMap(Object instance) {
+        return JsonUtil.parseObject(JsonUtil.toJSONString(instance), Map.class);
+    }
 }

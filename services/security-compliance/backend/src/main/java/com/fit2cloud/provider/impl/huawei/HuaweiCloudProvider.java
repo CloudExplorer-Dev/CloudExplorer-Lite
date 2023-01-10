@@ -26,6 +26,7 @@ import com.huaweicloud.sdk.vpc.v3.model.Vpc;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 /**
  * {@code @Author:张少虎}
@@ -215,6 +216,20 @@ public class HuaweiCloudProvider extends AbstractCloudProvider<HuaweiBaseCredent
 
     @Override
     public List<InstanceSearchField> listRamInstanceSearchField() {
+        return null;
+    }
+
+    @Override
+    public List<ResourceInstance> listBucketInstance(String req) {
+        ListBucketInstanceRequest listBucketInstanceRequest = JsonUtil.parseObject(req, ListBucketInstanceRequest.class);
+        List<Map<String, Object>> instances = HuaweiApi.listBucketInstance(listBucketInstanceRequest);
+        return instances.stream()
+                .map(instance -> ResourceUtil.toResourceInstance(PlatformConstants.fit2cloud_huawei_platform.name(), ResourceTypeConstants.OSS, instance.get("bucketName").toString(), instance.get("bucketName").toString(), instance))
+                .toList();
+    }
+
+    @Override
+    public List<InstanceSearchField> listBucketInstanceSearchField() {
         return null;
     }
 }

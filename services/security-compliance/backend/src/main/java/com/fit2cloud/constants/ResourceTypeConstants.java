@@ -71,7 +71,12 @@ public enum ResourceTypeConstants {
     /**
      * RAM
      */
-    RAM("RAM用户", ICloudProvider::listRamInstance, ICloudProvider::listRamInstanceSearchField);
+    RAM("RAM用户", ICloudProvider::listRamInstance, ICloudProvider::listRamInstanceSearchField),
+
+    /**
+     * 对象存储
+     */
+    OSS("对象存储", ICloudProvider::listBucketInstance, ICloudProvider::listBucketInstanceSearchField);
 
     /**
      * 提示

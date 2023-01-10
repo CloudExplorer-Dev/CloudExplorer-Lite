@@ -17,6 +17,7 @@
     <properties>
     </properties>
     <dependencies>
+
         <dependency>
             <groupId>com.fit2cloud</groupId>
             <artifactId>sdk</artifactId>

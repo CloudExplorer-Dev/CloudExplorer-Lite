@@ -8,6 +8,9 @@ import com.aliyun.elasticsearch20170613.models.ListInstanceResponseBody;
 import com.aliyun.ram20150501.models.GetLoginProfileRequest;
 import com.aliyun.ram20150501.models.GetLoginProfileResponse;
 import com.aliyun.ram20150501.models.ListUsersResponseBody;
+import com.aliyun.sdk.gateway.oss.exception.OSSServerException;
+import com.aliyun.sdk.service.oss20190517.AsyncClient;
+import com.aliyun.sdk.service.oss20190517.models.*;
 import com.aliyun.slb20140515.models.DescribeLoadBalancersResponseBody;
 import com.aliyun.teautil.models.RuntimeOptions;
 import com.aliyun.vpc20160428.models.DescribeEipAddressesResponseBody;
@@ -16,11 +19,16 @@ import com.fit2cloud.common.exception.Fit2cloudException;
 import com.fit2cloud.common.provider.exception.ReTryException;
 import com.fit2cloud.common.provider.exception.SkipPageException;
 import com.fit2cloud.common.provider.util.PageUtil;
+import com.fit2cloud.provider.impl.aliyun.entity.credential.AliSecurityComplianceCredential;
 import com.fit2cloud.provider.impl.aliyun.entity.request.*;
+import com.fit2cloud.provider.util.ResourceUtil;
+import jodd.util.StringUtil;
 
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
+import java.util.concurrent.CompletableFuture;
 
 /**
  * {@code @Author:张少虎}
@@ -344,6 +352,68 @@ public class AliApi {
                 }
             }, 5);
         }).filter(Objects::nonNull).toList();
+
+    }
+
+    /**
+     * 获取 存储桶实例集合列表
+     *
+     * @param request 请求对象
+     * @return 存储桶实例列表
+     */
+    public static List<Map<String, Object>> listBucketCollectionInstance(ListBucketInstanceRequest request) {
+        List<Bucket> buckets = listBucket(request.getCredential());
+        return buckets.stream().map(bucket -> {
+            AsyncClient ossClient = request.getCredential().getOssClient(bucket.getRegion());
+            GetBucketRefererResponseBody refererResponse = PageUtil.reTry(() -> {
+                try {
+                    return ossClient.getBucketReferer(GetBucketRefererRequest.builder().bucket(bucket.getName()).build()).join().getBody();
+                } catch (Exception e) {
+                    ReTryException.throwReTry(e);
+                    return null;
+                }
+
+            }, 5);
+            GetBucketEncryptionResponseBody encryptionResponse = PageUtil.reTry(() -> {
+                try {
+                    return ossClient.getBucketEncryption(GetBucketEncryptionRequest.builder().bucket(bucket.getName()).build()).join().getBody();
+                } catch (Exception e) {
+                    ReTryException.throwReTry(e);
+                    return null;
+                }
+
+            }, 5);
+            GetBucketAclResponseBody aclResponse = PageUtil.reTry(() -> {
+                try {
+                    return ossClient.getBucketAcl(GetBucketAclRequest.builder().bucket(bucket.getName()).build()).join().getBody();
+                } catch (Exception e) {
+                    ReTryException.throwReTry(e);
+                    return null;
+                }
+
+            }, 5);
+            Map<String, Object> bucketMap = ResourceUtil.objectToMap(bucket);
+            bucketMap.put("acl", aclResponse);
+            bucketMap.put("referer", refererResponse);
+            bucketMap.put("encryption", encryptionResponse);
+            return bucketMap;
+        }).toList();
+    }
+
+    /**
+     * 获取所有的桶
+     *
+     * @param aliyunBillCredential 阿里云认证信息
+     * @return 获取所有的桶
+     */
+    public static List<Bucket> listBucket(AliSecurityComplianceCredential aliyunBillCredential) {
+        AsyncClient ossClient = aliyunBillCredential.getOssClient();
+        ListBucketsRequest listBucketsRequest = ListBucketsRequest.builder().maxKeys(100l).build();
+        return PageUtil.pageNextF(listBucketsRequest,
+                ossClient::listBuckets,
+                res -> res.join().getBody().getBuckets(),
+                (req, res) -> StringUtil.isNotEmpty(res.join().getBody().getNextMarker()),
+                (req, res) -> ListBucketsRequest.builder().marker(res.join().getBody().getNextMarker()).maxKeys(100l).build());
 
     }
 }

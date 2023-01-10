@@ -131,8 +131,8 @@ interface ChangeServerConfigRequest {
   newInstanceType: string;
 }
 
-interface GrantVmCloudServerRequest {
-  cloudServerIds: string[];
+interface GrantRequest {
+  ids: string[];
   sourceId: string;
   grant: boolean;
 }
@@ -144,5 +144,5 @@ export type {
   PerfMonitorData,
   GetPerfMonitorRequest,
   ChangeServerConfigRequest,
-  GrantVmCloudServerRequest,
+  GrantRequest,
 };
