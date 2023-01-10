@@ -1,9 +1,13 @@
 package com.fit2cloud.provider.impl.aliyun.entity.credential;
 
+import com.aliyun.auth.credentials.Credential;
+import com.aliyun.auth.credentials.provider.StaticCredentialProvider;
 import com.aliyun.ecs20140526.Client;
+import com.aliyun.sdk.service.oss20190517.AsyncClient;
 import com.aliyun.teaopenapi.models.Config;
 import com.fit2cloud.common.exception.Fit2cloudException;
 import com.fit2cloud.common.provider.impl.aliyun.entity.credential.AliyunBaseCredential;
+import darabonba.core.client.ClientOverrideConfiguration;
 
 /**
  * {@code @Author:张少虎}
@@ -165,6 +169,23 @@ public class AliSecurityComplianceCredential extends AliyunBaseCredential {
         } catch (Exception e) {
             throw new Fit2cloudException(1000, "获取客户端失败");
         }
+    }
+
+    /**
+     * 获取对象存储客户端
+     *
+     * @param region 区域
+     * @return 对象存储客户端
+     */
+    public AsyncClient getOssClient(String region) {
+        StaticCredentialProvider provider = StaticCredentialProvider.create(Credential.builder()
+                .accessKeyId(getAccessKeyId())
+                .accessKeySecret(getAccessKeySecret())
+                .build());
+        return AsyncClient.builder()
+                .region(region)
+                .credentialsProvider(provider)
+                .build();
     }
 
 }

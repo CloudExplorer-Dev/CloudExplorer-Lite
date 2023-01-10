@@ -24,6 +24,7 @@ import com.huaweicloud.sdk.css.v1.*;
 import com.huaweicloud.sdk.elb.v3.*;
 import com.huaweicloud.sdk.vpc.v3.VpcClient;
 import com.huaweicloud.sdk.vpc.v3.region.VpcRegion;
+import com.obs.services.ObsClient;
 
 /**
  * {@code @Author:张少虎}
@@ -222,6 +223,14 @@ public class HuaweiSecurityComplianceCredential extends HuaweiBaseCredential {
             SkipPageException.throwHuaweiSkip(e);
             throw e;
         }
+    }
+
+    public ObsClient getObsClient() {
+        return new ObsClient(this.getAk(), this.getSk(), "https://obs.cn-east-3.myhuaweicloud.com");
+    }
+
+    public ObsClient getObsClient(String region) {
+        return new ObsClient(this.getAk(), this.getSk(), String.format("https://obs.%s.myhuaweicloud.com", region));
     }
 
 }

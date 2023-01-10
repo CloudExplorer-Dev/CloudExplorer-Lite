@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.fit2cloud.dao.mapper.AnalyticsDiskMapper">
+    <resultMap id="analyticsResultMap" type="com.fit2cloud.controller.response.BarTreeChartData">
+        <id column="id" jdbcType="VARCHAR" property="id"/>
+        <result column="name" jdbcType="VARCHAR" property="name"/>
+        <result column="disk_count" jdbcType="VARCHAR" property="value"/>
+        <result column="pid" jdbcType="VARCHAR" property="pId"/>
+    </resultMap>
+    <select id="analyticsVmCloudDiskByOrgWorkspace" resultMap="analyticsResultMap">
+        SELECT
+            count(vm_cloud_disk.id) as disk_count,
+            org_workspace.id,
+            org_workspace.name,
+            org_workspace.pid
+        FROM
+            org_workspace
+                LEFT JOIN vm_cloud_disk ON org_workspace.id = vm_cloud_disk.source_id
+            ${ew.customSqlSegment}
+    </select>
+    <select id="analyticsVmCloudDiskByOrgWorkspaceFromSize" resultMap="analyticsResultMap">
+        SELECT
+            sum(vm_cloud_disk.size) as disk_count,
+            org_workspace.id,
+            org_workspace.name,
+            org_workspace.pid
+        FROM
+            org_workspace
+                LEFT JOIN vm_cloud_disk ON org_workspace.id = vm_cloud_disk.source_id
+            ${ew.customSqlSegment}
+    </select>
+</mapper>

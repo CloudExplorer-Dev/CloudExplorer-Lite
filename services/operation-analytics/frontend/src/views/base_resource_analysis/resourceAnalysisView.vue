@@ -2,7 +2,7 @@
   <div class="spread-layout">
     <div class="spread-header">
       <el-select v-model="paramAccountId" @change="getAccounts()" class="m-2">
-        <el-option label="全部私有云" value="all_list" />
+        <el-option label="全部云账号" value="all_list" />
         <el-option
           v-for="item in accounts"
           :key="item.id"
@@ -33,7 +33,7 @@
         @change="getDatastores()"
         class="m-2"
       >
-        <el-option label="全部宿存储器" value="all_list" />
+        <el-option label="全部存储器" value="all_list" />
         <el-option
           v-for="item in datastroes"
           :key="item.id"
@@ -45,14 +45,14 @@
     <div class="spread-main">
       <div class="spread-main-up">
         <el-row :gutter="10">
-          <el-col :span="16">
-            <div class="myChart">
+          <el-col :span="24">
+            <div class="myChart" style="height: 300px">
               <div class="echart-title">
                 <div class="echart-title-left">计算资源分配情况</div>
               </div>
               <div class="echart-content">
                 <el-row>
-                  <el-col :span="12">
+                  <el-col :span="8">
                     <div class="echart-content-left">
                       <el-row>
                         <el-col :span="12">
@@ -92,7 +92,7 @@
                       </el-row>
                     </div>
                   </el-col>
-                  <el-col :span="12">
+                  <el-col :span="8">
                     <div class="echart-content-right">
                       <el-row>
                         <el-col :span="12">
@@ -102,7 +102,7 @@
                             :ref="(el) => childRef(el, 'memory')"
                           />
                         </el-col>
-                        <el-col :span="12">
+                        <el-col :span="8">
                           <div class="echart-right">
                             <el-descriptions :column="1" size="small" border>
                               <el-descriptions-item
@@ -132,50 +132,47 @@
                       </el-row>
                     </div>
                   </el-col>
+                  <el-col :span="8">
+                    <div class="echart-content-right">
+                      <el-row>
+                        <el-col :span="12">
+                          <ChartsSpeed
+                            :height="200"
+                            :options="allocatedDatastoreOption"
+                            :ref="(el) => childRef(el, 'datastore')"
+                          />
+                        </el-col>
+                        <el-col :span="8">
+                          <div class="echart-right">
+                            <el-descriptions :column="1" size="small" border>
+                              <el-descriptions-item
+                                label-align="right"
+                                label="总量"
+                                >{{
+                                  allocatedInfo.datastore?.total
+                                }}GB</el-descriptions-item
+                              >
+                              <el-descriptions-item
+                                label-align="right"
+                                label="已分配"
+                                >{{
+                                  allocatedInfo.datastore?.allocated
+                                }}GB</el-descriptions-item
+                              >
+                              <el-descriptions-item
+                                label-align="right"
+                                label="未分配"
+                                >{{
+                                  allocatedInfo.datastore?.free
+                                }}GB</el-descriptions-item
+                              >
+                            </el-descriptions>
+                          </div>
+                        </el-col>
+                      </el-row>
+                    </div>
+                  </el-col>
                 </el-row>
-              </div>
-            </div>
-          </el-col>
-          <el-col :span="8">
-            <div class="myChart">
-              <div class="echart-title">存储器分配情况</div>
-              <div class="echart-content">
-                <div class="echart-content-left">
-                  <el-row>
-                    <el-col :span="12">
-                      <ChartsSpeed
-                        :height="200"
-                        :options="allocatedDatastoreOption"
-                        :ref="(el) => childRef(el, 'datastore')"
-                      />
-                    </el-col>
-                    <el-col :span="12">
-                      <div class="echart-right">
-                        <el-descriptions :column="1" size="small" border>
-                          <el-descriptions-item label-align="right" label="总量"
-                            >{{
-                              allocatedInfo.datastore?.total
-                            }}GB</el-descriptions-item
-                          >
-                          <el-descriptions-item
-                            label-align="right"
-                            label="已分配"
-                            >{{
-                              allocatedInfo.datastore?.allocated
-                            }}GB</el-descriptions-item
-                          >
-                          <el-descriptions-item
-                            label-align="right"
-                            label="未分配"
-                            >{{
-                              allocatedInfo.datastore?.free
-                            }}GB</el-descriptions-item
-                          >
-                        </el-descriptions>
-                      </div>
-                    </el-col>
-                  </el-row>
-                </div>
               </div>
             </div>
           </el-col>
@@ -187,13 +184,11 @@
             <div class="myChart">
               <div class="echart-title">宿主机分布</div>
               <div style="position: relative">
-                <div>
-                  <ChartsSpeed
-                    :height="260"
-                    :options="spreadHostOption"
-                    :ref="(el) => childRef(el, 'spread-host')"
-                  />
-                </div>
+                <ChartsSpeed
+                  :height="300"
+                  :options="spreadHostOption"
+                  :ref="(el) => childRef(el, 'spread-host')"
+                />
               </div>
             </div>
           </el-col>
@@ -201,15 +196,11 @@
             <div class="myChart">
               <div class="echart-title">存储器分布</div>
               <div style="position: relative">
-                <div>
-                  <div>
-                    <ChartsSpeed
-                      :height="260"
-                      :options="spreadDatastoreOption"
-                      :ref="(el) => childRef(el, 'spread-datastore')"
-                    />
-                  </div>
-                </div>
+                <ChartsSpeed
+                  :height="300"
+                  :options="spreadDatastoreOption"
+                  :ref="(el) => childRef(el, 'spread-datastore')"
+                />
               </div>
             </div>
           </el-col>
@@ -235,7 +226,7 @@
               <div style="position: relative">
                 <div>
                   <ChartsSpeed
-                    :height="260"
+                    :height="300"
                     :options="spreadVmOption"
                     :ref="(el) => childRef(el, 'spread-vm')"
                   />
@@ -282,6 +273,7 @@
                     />
                   </el-select>
                   <el-select
+                    v-if="false"
                     v-model="trendChartType"
                     @change="getResourceTrendData('chart')"
                     style="width: 100px; margin-bottom: 7px"
@@ -316,7 +308,7 @@ import ResourceSpreadViewApi from "@/api/resource_spread_view/index";
 import { ResourceAnalysisRequest } from "@/api/resource_spread_view/type";
 import {
   defaultSpeedOptions,
-  defaultPieOptions,
+  defaultPieDoughnutOptions,
   defaultTrendOptions,
   emptyOptions,
   trendSeriesColor,
@@ -478,9 +470,14 @@ const getSpreadComputerInfo = (
   _.set(params, "vmStatus", paramVmStatus.value);
   ResourceSpreadViewApi.getSpreadInfo(params).then((res) => {
     spreadInfo.value = res.data;
-    const options = _.cloneDeep(defaultPieOptions);
+    const options = _.cloneDeep(defaultPieDoughnutOptions);
     _.set(options, "series[0].data", spreadInfo.value[chartName]);
     _.set(options, "series[0].name", chartTitle);
+    _.set(
+      options,
+      "series[0].label.normal.formatter",
+      `{title|总数}\r\n{value|${_.sumBy(spreadInfo.value[chartName], "value")}}`
+    );
     if (chartName === "host") {
       spreadHostOption.value = options;
     }
@@ -526,7 +523,9 @@ const getResourceTrendData = (chartName: string) => {
       trendOption.value = getTrendOptions(_.cloneDeep(defaultTrendOptions));
     }
     if ("pie" === trendChartType.value) {
-      trendPieOption.value = getTrendPieOptions(_.cloneDeep(defaultPieOptions));
+      trendPieOption.value = getTrendPieOptions(
+        _.cloneDeep(defaultPieDoughnutOptions)
+      );
     }
     childRefMap.get("trend-" + chartName).hideEchartsLoading();
   });
@@ -706,18 +705,17 @@ onMounted(() => {
 
 <style scoped>
 .spread-layout {
-  height: 100% !important;
   width: 100% !important;
+  min-width: 900px;
 }
 .myChart {
-  height: 300px;
+  height: 370px;
+  min-width: 300px;
   border: 1px solid #e5e5e5;
 }
 .spread-main {
   margin-top: 10px;
-  height: 99% !important;
-  width: 99% !important;
-  overflow: auto;
+  width: 100% !important;
 }
 .spread-main-content {
   margin-top: 10px;
@@ -755,8 +753,8 @@ onMounted(() => {
 .echart-right {
   position: absolute;
   top: 15%;
-  left: 50%;
-  /*width: 150px;*/
+  left: 55%;
+  width: 150px;
   height: 150px;
 }
 .echart-left {

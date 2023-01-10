@@ -1,4 +1,12 @@
 <template>
+  <div
+    class="button"
+    @click="handleBackClick"
+    style="margin-left: 5%"
+    v-if="showBack"
+  >
+    返回
+  </div>
   <div :id="`echarts-${uuid}`" :style="getChartStyle"></div>
 </template>
 
@@ -10,9 +18,11 @@ import {
   onMounted,
   onBeforeUnmount,
   nextTick,
+  ref,
 } from "vue";
 import { debounce } from "lodash";
 import * as echarts from "echarts";
+import _ from "lodash";
 
 const props = defineProps({
   options: {
@@ -25,9 +35,25 @@ const props = defineProps({
     type: Number,
     default: 300,
   },
+  treeBar: {
+    type: Boolean,
+    default: () => {
+      return false;
+    },
+  },
+  treeBarData: {
+    type: Object,
+    default: () => {
+      return [];
+    },
+  },
+  treeBarAllData: {
+    type: Object,
+    default: () => {
+      return [];
+    },
+  },
 });
-
-const emit = defineEmits(["update"]);
 
 const getChartStyle = computed(() => {
   return {
@@ -40,6 +66,7 @@ watch(
   () => props.options,
   () => {
     setOptions();
+    initTreeBar();
   },
   {
     deep: true,
@@ -83,6 +110,81 @@ const initChart = () => {
   const chartDom = document.getElementById(`echarts-${uuid}`)!;
   eChartsRef.value = echarts.init(chartDom);
 };
+const colors = ["#0080ff", "#31b1c2"];
+const barSeriesItemStyle = {
+  normal: {
+    color: function (params: any) {
+      if (params.data && params.data?.groupName === "org") {
+        return colors[0];
+      }
+      return colors[1];
+    },
+    label: {
+      show: true, //开启显示
+      position: "top", //在上方显示
+      textStyle: {
+        //数值样式
+        color: "black",
+        fontSize: 12,
+      },
+    },
+  },
+};
+const showBack = ref<boolean>(false);
+const parentItem = ref<any>({});
+const initTreeBar = () => {
+  if (props.treeBar && props.treeBarData.length > 0) {
+    eChartsRef.value.on("click", (params: any) => {
+      const item = props.treeBarAllData.find(
+        (v: any) => v.name === params.name
+      );
+      if (!item) return;
+      const children = item.children;
+      if (children && children.length > 0) {
+        showBack.value = true;
+        parentItem.value = item;
+        const seriesData = ref<any>([]);
+        _.forEach(children, (v) => {
+          seriesData.value.push({ value: v.value, groupName: v.groupName });
+        });
+        eChartsRef.value.setOption({
+          xAxis: { data: children.map((item: any) => item.name) },
+          series: [{ data: seriesData.value, itemStyle: barSeriesItemStyle }],
+        });
+      }
+    });
+  }
+};
+
+const handleBackClick = () => {
+  const item = props.treeBarAllData.find(
+    (v: any) => v.id === parentItem.value.pid
+  );
+  if (!item) {
+    showBack.value = false;
+    const seriesData = ref<any>([]);
+    _.forEach(props.treeBarData, (v) => {
+      seriesData.value.push({ value: v.value, groupName: v.groupName });
+    });
+    eChartsRef.value.setOption({
+      xAxis: { data: props.treeBarData.map((item: any) => item.name) },
+      series: [{ data: seriesData.value, itemStyle: barSeriesItemStyle }],
+    });
+  } else {
+    const children = item.children;
+    if (children.length > 0) {
+      const seriesData = ref<any>([]);
+      _.forEach(children, (v) => {
+        seriesData.value.push({ value: v.value, groupName: v.groupName });
+      });
+      parentItem.value = item;
+      eChartsRef.value.setOption({
+        xAxis: { data: children.map((v: any) => v.name) },
+        series: [{ data: seriesData.value, itemStyle: barSeriesItemStyle }],
+      });
+    }
+  }
+};
 
 const setOptions = () => {
   let options = {};
@@ -119,6 +221,8 @@ defineExpose({
   echartsLoading,
   hideEchartsLoading,
   echartsClear,
+  handleBackClick,
+  barSeriesItemStyle,
 });
 
 const isEmptyObj = (obj: any) => {
@@ -139,6 +243,7 @@ const emptyOptions = {
 
 onMounted(() => {
   initChart();
+  initTreeBar();
 });
 
 onBeforeUnmount(() => {
@@ -146,4 +251,8 @@ onBeforeUnmount(() => {
   eChartsRef.value.dispose();
 });
 </script>
-<style lang="scss" scoped></style>
+<style lang="scss" scoped>
+.button {
+  cursor: pointer;
+}
+</style>

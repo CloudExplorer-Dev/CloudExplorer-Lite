@@ -204,9 +204,27 @@ public interface ICloudProvider {
 
     /**
      * 获取Ram 用户实例可查询字段
+     *
      * @return ram 实例可查询字段
      */
     List<InstanceSearchField> listRamInstanceSearchField();
+
+
+    /**
+     * 获取存储桶 实例列表
+     *
+     * @param req 请求对象
+     * @return 存储桶实例列表
+     */
+    List<ResourceInstance> listBucketInstance(String req);
+
+    /**
+     * 获取存储桶实例可查询字段
+     *
+     * @return 存储桶实例可查询字段
+     */
+    List<InstanceSearchField> listBucketInstanceSearchField();
+
     /**
      * 根据供应商获取对应云平台处理器
      *

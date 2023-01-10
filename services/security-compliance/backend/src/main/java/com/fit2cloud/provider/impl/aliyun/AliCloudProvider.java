@@ -24,6 +24,7 @@ import com.fit2cloud.provider.util.ResourceUtil;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 /**
  * {@code @Author:张少虎}
@@ -230,6 +231,21 @@ public class AliCloudProvider extends AbstractCloudProvider<AliSecurityComplianc
 
     @Override
     public List<InstanceSearchField> listRamInstanceSearchField() {
+        return null;
+    }
+
+    @Override
+    public List<ResourceInstance> listBucketInstance(String req) {
+        ListBucketInstanceRequest listBucketInstanceRequest = JsonUtil.parseObject(req, ListBucketInstanceRequest.class);
+        List<Map<String, Object>> instances = AliApi.listBucketCollectionInstance(listBucketInstanceRequest);
+        return instances
+                .stream()
+                .map(instance -> ResourceUtil.toResourceInstance(PlatformConstants.fit2cloud_ali_platform.name(), ResourceTypeConstants.OSS, instance.get("name").toString(), instance.get("name").toString(), instance))
+                .toList();
+    }
+
+    @Override
+    public List<InstanceSearchField> listBucketInstanceSearchField() {
         return null;
     }
 }

@@ -49,6 +49,12 @@ export function getResourceTrendData(
 ): Promise<Result<any>> {
   return get("api/server_analysis/resource_used_trend", req, loading);
 }
+export function getAnalyticsOrgWorkspaceVmCount(
+  req: ResourceAnalysisRequest | {},
+  loading?: Ref<boolean>
+): Promise<Result<any>> {
+  return get("api/server_analysis/org_workspace_vm_count_bar", req, loading);
+}
 
 const ResourceSpreadViewApi = {
   listServer,
@@ -57,6 +63,7 @@ const ResourceSpreadViewApi = {
   getSpreadData,
   getIncreaseTrend,
   getResourceTrendData,
+  getAnalyticsOrgWorkspaceVmCount,
 };
 
 export default ResourceSpreadViewApi;

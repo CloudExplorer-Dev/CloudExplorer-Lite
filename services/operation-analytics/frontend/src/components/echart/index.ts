@@ -68,33 +68,8 @@ const defaultSpeedOptions = {
     },
   ],
 };
-const defaultPieOptions = {
-  tooltip: {
-    trigger: "item",
-  },
-  legend: {
-    type: "scroll",
-  },
-  series: [
-    {
-      name: "宿主机分布",
-      type: "pie",
-      radius: "50%",
-      center: ["50%", "50%"],
-      // roseType: 'area',
-      data: [{ value: 0 }],
-      emphasis: {
-        itemStyle: {
-          shadowBlur: 10,
-          shadowOffsetX: 0,
-          shadowColor: "rgba(0, 0, 0, 0.5)",
-        },
-      },
-    },
-  ],
-};
 const defaultTrendOptions = {
-  color: ["#FFBF00", "#FF0087", "#37A2FF", "#00DDFF", "#80FFA5"],
+  color: ["#80FFA5", "#00DDFF", "#0080ff", "#FFBF00", "#FF0087", "#37A2FF"],
   title: {},
   tooltip: {
     trigger: "axis",
@@ -192,15 +167,31 @@ const emptyOptions = {
 /**
  * 圆环饼图
  */
-const defaultPie2Options = {
+const defaultPieDoughnutOptions = {
   tooltip: {
     trigger: "item",
   },
   legend: {
+    orient: "vertical",
     type: "scroll",
-    top: "5%",
-    left: "center",
+    right: "45",
+    top: "10%",
+    height: "180",
+    align: "left",
+    textStyle: {
+      width: "10px",
+      fontFamily:
+        "'Helvetica Neue', Helvetica, 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', '微软雅黑', Arial, sans-serif",
+    },
+    formatter: function (name: any) {
+      const len = name.length;
+      if (len > 5) {
+        name = name.slice(0, 5) + "...";
+      }
+      return name;
+    },
   },
+  icon: "circle",
   title: {
     // 主标题样式
     textStyle: {
@@ -221,7 +212,8 @@ const defaultPie2Options = {
     {
       name: "",
       type: "pie",
-      radius: ["40%", "70%"],
+      radius: ["40%", "65%"],
+      center: ["31%", "45%"],
       avoidLabelOverlap: false,
       itemStyle: {
         borderRadius: 10,
@@ -229,14 +221,34 @@ const defaultPie2Options = {
         borderWidth: 2,
       },
       label: {
-        show: false,
+        show: true,
         position: "center",
+        normal: {
+          show: true,
+          position: "center",
+          fontSize: 14,
+          backgroundColor: "#fff",
+          formatter: "总数\n0",
+          fontWeight: "bold",
+          rich: {
+            title: {
+              fontSize: 14,
+              color: "#333",
+            },
+            value: {
+              fontSize: 30,
+              color: "#000",
+            },
+          },
+        },
       },
       emphasis: {
         label: {
-          show: false,
-          fontSize: 40,
+          show: true,
+          fontSize: 14,
+          width: 100,
           fontWeight: "bold",
+          formatter: `{title|{b}}\r\n{value|{c}}`,
         },
       },
       labelLine: {
@@ -247,10 +259,60 @@ const defaultPie2Options = {
   ],
 };
 
+const defaultBarOptions = {
+  color: ["#95ceff", "#434348"],
+  tooltip: {
+    show: true,
+  },
+  xAxis: {
+    type: "category",
+    data: [],
+  },
+  yAxis: {
+    type: "value",
+  },
+  series: [
+    {
+      data: [],
+      type: "bar",
+    },
+  ],
+};
+
 /**
  * 颜色
  */
 const trendSeriesColor = [
+  [
+    {
+      offset: 0,
+      color: "rgb(128, 255, 165)",
+    },
+    {
+      offset: 1,
+      color: "rgb(1, 191, 236)",
+    },
+  ],
+  [
+    {
+      offset: 0,
+      color: "rgb(0, 221, 255)",
+    },
+    {
+      offset: 1,
+      color: "rgb(77, 119, 255)",
+    },
+  ],
+  [
+    {
+      offset: 0,
+      color: "rgb(55, 162, 255)",
+    },
+    {
+      offset: 1,
+      color: "rgb(116, 21, 219)",
+    },
+  ],
   [
     {
       offset: 0,
@@ -269,36 +331,6 @@ const trendSeriesColor = [
     {
       offset: 1,
       color: "rgb(135, 0, 157)",
-    },
-  ],
-  [
-    {
-      offset: 0,
-      color: "rgb(55, 162, 255)",
-    },
-    {
-      offset: 1,
-      color: "rgb(116, 21, 219)",
-    },
-  ],
-  [
-    {
-      offset: 0,
-      color: "rgb(0, 221, 255)",
-    },
-    {
-      offset: 1,
-      color: "rgb(77, 119, 255)",
-    },
-  ],
-  [
-    {
-      offset: 0,
-      color: "rgb(128, 255, 165)",
-    },
-    {
-      offset: 1,
-      color: "rgb(1, 191, 236)",
     },
   ],
 ];
@@ -335,11 +367,11 @@ const getRandomColor = () => {
 
 export {
   defaultSpeedOptions,
-  defaultPieOptions,
   defaultTrendOptions,
   defaultLineOption,
   emptyOptions,
-  defaultPie2Options,
+  defaultPieDoughnutOptions,
   trendSeriesColor,
   getRandomColor,
+  defaultBarOptions,
 };

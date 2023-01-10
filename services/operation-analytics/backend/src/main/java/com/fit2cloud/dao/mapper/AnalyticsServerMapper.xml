@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.fit2cloud.dao.mapper.AnalyticsServerMapper">
+
+    <resultMap id="serverResultMap" type="com.fit2cloud.dto.AnalyticsServerDTO">
+        <id column="id" jdbcType="VARCHAR" property="id"/>
+        <result column="instance_uuid" jdbcType="VARCHAR" property="instanceUuid"/>
+        <result column="instance_name" jdbcType="VARCHAR" property="instanceName"/>
+        <result column="workspace_id" jdbcType="VARCHAR" property="workspaceId"/>
+        <result column="workspace_name" jdbcType="VARCHAR" property="workspaceName"/>
+        <result column="create_time" jdbcType="BIGINT" property="createTime"/>
+    </resultMap>
+
+    <select id="pageVmCloudServer" resultMap="serverResultMap">
+        SELECT
+            vm_cloud_server.*,
+            cloud_account.NAME AS account_name,
+            cloud_account.platform AS platform,
+            CASE
+                WHEN orgWorkspace.type = "workspace" THEN
+                    orgWorkspace.id ELSE NULL
+                END AS workspace_id,
+            CASE
+                WHEN orgWorkspace.type = "workspace" THEN
+                    orgWorkspace.NAME ELSE NULL
+                END AS workspace_name,
+            orgWorkspace.organization_id,
+            orgWorkspace.organization_name
+        FROM
+            vm_cloud_server
+                LEFT JOIN cloud_account ON vm_cloud_server.account_id = cloud_account.id
+                LEFT JOIN org_workspace orgWorkspace ON vm_cloud_server.workspace_id = orgWorkspace.id
+            ${ew.customSqlSegment}
+    </select>
+
+    <select id="selectListByAccountId" resultMap="serverResultMap">
+        SELECT
+            vm_cloud_server.*,
+            workspace._name AS workspace_name
+        FROM
+            vm_cloud_server
+            LEFT JOIN workspace ON vm_cloud_server.workspace_id = workspace.id
+        WHERE
+            vm_cloud_server.account_id = #{accountId}
+            AND vm_cloud_server.zone = #{zone}
+            AND instance_status != 'deleted'
+    </select>
+
+    <resultMap id="analyticsResultMap" type="com.fit2cloud.controller.response.BarTreeChartData">
+        <id column="id" jdbcType="VARCHAR" property="id"/>
+        <result column="name" jdbcType="VARCHAR" property="name"/>
+        <result column="vm_count" jdbcType="VARCHAR" property="value"/>
+        <result column="pid" jdbcType="VARCHAR" property="pId"/>
+    </resultMap>
+    
+    <select id="analyticsVmCloudServerByOrgWorkspace" resultMap="analyticsResultMap">
+        SELECT
+            count(vm_cloud_server.id) as vm_count,
+            org_workspace.id,
+            org_workspace.name,
+            org_workspace.pid
+        FROM
+            org_workspace
+                LEFT JOIN vm_cloud_server ON org_workspace.id = vm_cloud_server.source_id
+            ${ew.customSqlSegment}
+    </select>
+
+</mapper>

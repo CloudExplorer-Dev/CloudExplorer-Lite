@@ -5,18 +5,21 @@ export class ResourceAnalysisRequest {
   spreadType: string;
   monthNumber: number;
   topType: string;
+  analysisWorkspace: boolean;
   constructor(
     accountIds: Array<string>,
     statisticalBlock: boolean,
     spreadType: string,
     monthNumber: number,
-    topType: string
+    topType: string,
+    analysisWorkspace: boolean
   ) {
     this.accountIds = accountIds;
     this.statisticalBlock = statisticalBlock;
     this.spreadType = spreadType;
     this.monthNumber = monthNumber;
     this.topType = topType;
+    this.analysisWorkspace = analysisWorkspace;
   }
 }
 
