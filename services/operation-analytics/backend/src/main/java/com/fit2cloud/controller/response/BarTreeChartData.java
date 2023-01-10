@@ -1,8 +1,8 @@
 package com.fit2cloud.controller.response;
 
-import lombok.Builder;
 import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.Getter;
+import lombok.Setter;
 
 import java.util.List;
 
@@ -10,8 +10,8 @@ import java.util.List;
  * @author jianneng
  * @date 2023/1/9 11:46
  **/
-@Data
-@NoArgsConstructor
+@Getter
+@Setter
 public class BarTreeChartData {
 
     private String id;

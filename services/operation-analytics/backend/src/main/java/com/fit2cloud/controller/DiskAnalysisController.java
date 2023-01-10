@@ -66,9 +66,9 @@ public class DiskAnalysisController {
     @ApiOperation(value="组织或工作空间云磁盘分布",notes = "组织或工作空间云磁盘分布")
     @GetMapping("/org_workspace_disk_count_bar")
     @PreAuthorize("hasAnyCePermission('DISK_ANALYSIS:READ')")
-    public ResultHolder<Map<String,List<BarTreeChartData>>> analyticsVmCloudServerByOrgWorkspace(
+    public ResultHolder<Map<String,List<BarTreeChartData>>> analyticsVmCloudDiskByOrgWorkspace(
             @Validated ResourceAnalysisRequest request) {
-        return ResultHolder.success(iDiskAnalysisService.analyticsVmCloudServerByOrgWorkspace(request));
+        return ResultHolder.success(iDiskAnalysisService.analyticsVmCloudDiskByOrgWorkspace(request));
     }
 
 }

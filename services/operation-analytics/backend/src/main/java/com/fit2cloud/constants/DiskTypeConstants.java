@@ -27,9 +27,9 @@ public enum DiskTypeConstants {
     NA("NA","未知"),
     ;
 
-    private String code;
+    private final String code;
 
-    private String name;
+    private final String name;
     DiskTypeConstants(String code, String name) {
         this.code = code;
         this.name = name;

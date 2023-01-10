@@ -217,7 +217,7 @@ const paramAccountId = ref<string>("all_list");
 const paramHostId = ref<string>("all_list");
 const paramVmIncreaseTrendMonth = ref<any>("7");
 const paramResourceUsedTrendType = ref<string>("CPU_USED_UTILIZATION");
-const paramDepartmentType = ref<string>("workspace");
+const paramDepartmentType = ref<string>("org");
 //下拉框数据
 const accounts = ref<any>();
 const hosts = ref<any>();
@@ -412,29 +412,33 @@ const getSpreadByDepartmentData = (chartName: string) => {
     "analysisWorkspace",
     paramDepartmentType.value === "workspace" ? true : false
   );
-  ResourceSpreadViewApi.getAnalyticsOrgWorkspaceVmCount(params).then((res) => {
-    const options = _.cloneDeep(defaultBarOptions);
-    const chartData = res.data.tree;
-    spreadByDepartmentOptionAllData.value = res.data.all;
-    spreadByDepartmentOptionData.value = chartData;
-    _.set(
-      options,
-      "xAxis.data",
-      chartData.map((item: any) => item.name)
-    );
-    _.set(
-      options,
-      "series[0].itemStyle",
-      childRefMap.get(chartName + "-chart").barSeriesItemStyle
-    );
-    const seriesData = ref<any>([]);
-    _.forEach(chartData, (v) => {
-      seriesData.value.push({ value: v.value, groupName: v.groupName });
+  ResourceSpreadViewApi.getAnalyticsOrgWorkspaceVmCount(params)
+    .then((res) => {
+      const options = _.cloneDeep(defaultBarOptions);
+      const chartData = res.data.tree;
+      spreadByDepartmentOptionAllData.value = res.data.all;
+      spreadByDepartmentOptionData.value = chartData;
+      _.set(
+        options,
+        "xAxis.data",
+        chartData.map((item: any) => item.name)
+      );
+      _.set(
+        options,
+        "series[0].itemStyle",
+        childRefMap.get(chartName + "-chart").barSeriesItemStyle
+      );
+      const seriesData = ref<any>([]);
+      _.forEach(chartData, (v) => {
+        seriesData.value.push({ value: v.value, groupName: v.groupName });
+      });
+      _.set(options, "series[0].data", seriesData);
+      spreadByDepartmentOption.value = options;
+      childRefMap.get(chartName + "-chart").hideEchartsLoading();
+    })
+    .catch((err) => {
+      console.log(err);
     });
-    _.set(options, "series[0].data", seriesData);
-    spreadByDepartmentOption.value = options;
-    childRefMap.get(chartName + "-chart").hideEchartsLoading();
-  });
 };
 const getTrendPieOptions = (options: any) => {
   let legend: any[] = [],

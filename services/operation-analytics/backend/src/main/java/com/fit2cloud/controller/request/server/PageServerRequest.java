@@ -4,6 +4,7 @@ import com.fit2cloud.request.pub.OrderRequest;
 import com.fit2cloud.request.pub.PageOrderRequestInterface;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.experimental.Accessors;
 
 import javax.validation.constraints.Min;
@@ -14,6 +15,7 @@ import java.io.Serial;
  * @author jianneng
  * @date 2022/12/11 18:46
  **/
+@EqualsAndHashCode(callSuper = true)
 @Accessors(chain = true)
 @Data
 public class PageServerRequest extends ServerRequest implements PageOrderRequestInterface {

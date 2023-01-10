@@ -17,16 +17,12 @@ import java.util.List;
  * </p>
  *
  * @author fit2cloud
- * @since
  */
 public interface AnalyticsDiskMapper extends BaseMapper<AnalyticsDiskDTO> {
 
 
     /**
      * TODO 这个地方慢慢累加查询条件
-     * @param page
-     * @param queryWrapper
-     * @return
      */
     @Select("SELECT vm_cloud_disk.* " +
             " ,cloud_account.name as account_name"+

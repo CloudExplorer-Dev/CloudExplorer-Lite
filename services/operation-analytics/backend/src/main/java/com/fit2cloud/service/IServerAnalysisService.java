@@ -21,21 +21,21 @@ public interface IServerAnalysisService {
 
     /**
      * 云主机明细
-     * @param request
-     * @return
+     * @param request 分页查询云主机参数
+     * @return IPage<AnalyticsServerDTO>
      */
     IPage<AnalyticsServerDTO> pageServer(PageServerRequest request);
 
     /**
      * 所有云账号
-     * @return
+     * @return List<CloudAccount>
      */
     List<CloudAccount> getAllCloudAccount();
 
     /**
      * 获取宿主机
-     * @param request
-     * @return
+     * @param request 云主机分析参数
+     * @return List<VmCloudHost>
      */
     List<VmCloudHost> getVmHost(ResourceAnalysisRequest request);
 
@@ -46,6 +46,14 @@ public interface IServerAnalysisService {
     List<ChartData> getResourceTrendData(ResourceAnalysisRequest request);
 
     Map<String,List<BarTreeChartData>> analyticsVmCloudServerByOrgWorkspace(ResourceAnalysisRequest request);
+
+    Map<String,CloudAccount> getAllAccountIdMap();
+
+    List<BarTreeChartData> getChildren(BarTreeChartData barTreeChartData,List<BarTreeChartData> list,Map<String,List<BarTreeChartData>> workspaceMap);
+
+    List<BarTreeChartData> initWorkspaceChartData();
+
+    List<BarTreeChartData> initOrgChartData();
 
 
 }

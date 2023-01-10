@@ -110,12 +110,14 @@ const initChart = () => {
   const chartDom = document.getElementById(`echarts-${uuid}`)!;
   eChartsRef.value = echarts.init(chartDom);
 };
-const colors = ["#0080ff", "#31b1c2"];
+const colors = ["#00b2ff", "#31b1c2", "#67c23a"];
 const barSeriesItemStyle = {
   normal: {
     color: function (params: any) {
       if (params.data && params.data?.groupName === "org") {
         return colors[0];
+      } else if (params.data && params.data?.groupName === "available") {
+        return colors[2];
       }
       return colors[1];
     },
@@ -134,6 +136,7 @@ const showBack = ref<boolean>(false);
 const parentItem = ref<any>({});
 const initTreeBar = () => {
   if (props.treeBar && props.treeBarData.length > 0) {
+    showBack.value = false;
     eChartsRef.value.on("click", (params: any) => {
       const item = props.treeBarAllData.find(
         (v: any) => v.name === params.name

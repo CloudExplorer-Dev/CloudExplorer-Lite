@@ -20,14 +20,14 @@ public interface IDiskAnalysisService {
 
     /**
      * 云磁盘明细
-     * @param request
-     * @return
+     * @param request 分页查询云磁盘参数
+     * @return IPage<AnalyticsDiskDTO>
      */
     IPage<AnalyticsDiskDTO> pageDisk(PageDiskRequest request);
 
     /**
      * 所有云账号
-     * @return
+     * @return List<CloudAccount>
      */
     List<CloudAccount> getAllCloudAccount();
 
@@ -35,6 +35,6 @@ public interface IDiskAnalysisService {
 
     List<ChartData> diskIncreaseTrend(ResourceAnalysisRequest request);
 
-    Map<String,List<BarTreeChartData>> analyticsVmCloudServerByOrgWorkspace(ResourceAnalysisRequest request);
+    Map<String,List<BarTreeChartData>> analyticsVmCloudDiskByOrgWorkspace(ResourceAnalysisRequest request);
 
 }

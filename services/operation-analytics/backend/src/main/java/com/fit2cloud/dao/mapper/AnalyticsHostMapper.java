@@ -14,16 +14,10 @@ import org.apache.ibatis.annotations.Select;
  * </p>
  *
  * @author fit2cloud
- * @since
  */
 public interface AnalyticsHostMapper extends BaseMapper<AnalyticsHostDTO> {
 
 
-    /**
-     * @param page
-     * @param queryWrapper
-     * @return
-     */
     @Select("SELECT vm_cloud_host.* " +
             " ,cloud_account.name as account_name"+
             " ,cloud_account.platform as platform"+

@@ -3,6 +3,7 @@ package com.fit2cloud.dto;
 import com.fit2cloud.base.entity.VmCloudServer;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 
 import java.math.BigDecimal;
 
@@ -10,6 +11,7 @@ import java.math.BigDecimal;
  * @author jianneng
  * @date 2022/12/24 11:25
  **/
+@EqualsAndHashCode(callSuper = true)
 @Data
 public class AnalyticsServerDTO extends VmCloudServer {
 
