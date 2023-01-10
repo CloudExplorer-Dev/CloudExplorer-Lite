@@ -1,5 +1,12 @@
 <template>
-  <div class="button" @click="handleBackClick" style="margin-left: 5%;" v-if="showBack">返回</div>
+  <div
+    class="button"
+    @click="handleBackClick"
+    style="margin-left: 5%"
+    v-if="showBack"
+  >
+    返回
+  </div>
   <div :id="`echarts-${uuid}`" :style="getChartStyle"></div>
 </template>
 
@@ -11,7 +18,7 @@ import {
   onMounted,
   onBeforeUnmount,
   nextTick,
-  ref
+  ref,
 } from "vue";
 import { debounce } from "lodash";
 import * as echarts from "echarts";
@@ -28,24 +35,24 @@ const props = defineProps({
     type: Number,
     default: 300,
   },
-  treeBar:{
+  treeBar: {
     type: Boolean,
     default: () => {
       return false;
-    }
+    },
   },
-  treeBarData:{
+  treeBarData: {
     type: Object,
     default: () => {
       return [];
     },
   },
-  treeBarAllData:{
-    type:Object,
-    default: () =>{
+  treeBarAllData: {
+    type: Object,
+    default: () => {
       return [];
-    }
-  }
+    },
+  },
 });
 
 const getChartStyle = computed(() => {
@@ -103,76 +110,81 @@ const initChart = () => {
   const chartDom = document.getElementById(`echarts-${uuid}`)!;
   eChartsRef.value = echarts.init(chartDom);
 };
-const colors = ['#0080ff','#31b1c2'];
+const colors = ["#0080ff", "#31b1c2"];
 const barSeriesItemStyle = {
-  normal:{
-    color: function(params:any){
-      if(params.data && params.data?.groupName==="org"){
+  normal: {
+    color: function (params: any) {
+      if (params.data && params.data?.groupName === "org") {
         return colors[0];
       }
       return colors[1];
     },
     label: {
       show: true, //开启显示
-      position: 'top', //在上方显示
-      textStyle: { //数值样式
-        color: 'black',
-        fontSize: 12
-      }
-    }
-  }
-}
+      position: "top", //在上方显示
+      textStyle: {
+        //数值样式
+        color: "black",
+        fontSize: 12,
+      },
+    },
+  },
+};
 const showBack = ref<boolean>(false);
 const parentItem = ref<any>({});
-const initTreeBar = ()=>{
-  if(props.treeBar && props.treeBarData.length>0){
-    eChartsRef.value.on('click', (params:any)=> {
-      const item = props.treeBarAllData.find((v:any)=>v.name===params.name);
+const initTreeBar = () => {
+  if (props.treeBar && props.treeBarData.length > 0) {
+    eChartsRef.value.on("click", (params: any) => {
+      const item = props.treeBarAllData.find(
+        (v: any) => v.name === params.name
+      );
       if (!item) return;
-      const children = item.children
-      if(children && children.length>0){
+      const children = item.children;
+      if (children && children.length > 0) {
         showBack.value = true;
         parentItem.value = item;
         const seriesData = ref<any>([]);
-        _.forEach(children,(v)=>{
-          seriesData.value.push({value:v.value,groupName:v.groupName});
+        _.forEach(children, (v) => {
+          seriesData.value.push({ value: v.value, groupName: v.groupName });
         });
         eChartsRef.value.setOption({
-          xAxis: { data: children.map((item:any) => item.name) },
-          series: [{ data: seriesData.value,itemStyle:barSeriesItemStyle }]
-        })
+          xAxis: { data: children.map((item: any) => item.name) },
+          series: [{ data: seriesData.value, itemStyle: barSeriesItemStyle }],
+        });
       }
-    })
+    });
   }
-}
+};
 
-const handleBackClick = ()=>{
-  const item = props.treeBarAllData.find((v:any)=>v.id===parentItem.value.pid);
+const handleBackClick = () => {
+  const item = props.treeBarAllData.find(
+    (v: any) => v.id === parentItem.value.pid
+  );
   if (!item) {
     showBack.value = false;
     const seriesData = ref<any>([]);
-    _.forEach(props.treeBarData,(v)=>{
-      seriesData.value.push({value:v.value,groupName:v.groupName});
+    _.forEach(props.treeBarData, (v) => {
+      seriesData.value.push({ value: v.value, groupName: v.groupName });
     });
     eChartsRef.value.setOption({
-      xAxis: { data: props.treeBarData.map((item:any) => item.name) },
-      series: [{ data: seriesData.value,itemStyle:barSeriesItemStyle  }]
-    })
-  }else{
-    const children = item.children
-    if(children.length>0) {
+      xAxis: { data: props.treeBarData.map((item: any) => item.name) },
+      series: [{ data: seriesData.value, itemStyle: barSeriesItemStyle }],
+    });
+  } else {
+    const children = item.children;
+    if (children.length > 0) {
       const seriesData = ref<any>([]);
-      _.forEach(children,(v)=>{
-        seriesData.value.push({value:v.value,groupName:v.groupName});
+      _.forEach(children, (v) => {
+        seriesData.value.push({ value: v.value, groupName: v.groupName });
       });
       parentItem.value = item;
       eChartsRef.value.setOption({
-        xAxis: {data: children.map((v: any) => v.name)},
-        series: [{data: seriesData.value,itemStyle:barSeriesItemStyle }]
-      })
+        xAxis: { data: children.map((v: any) => v.name) },
+        series: [{ data: seriesData.value, itemStyle: barSeriesItemStyle }],
+      });
     }
   }
-}
+};
 
 const setOptions = () => {
   let options = {};
@@ -210,7 +222,7 @@ defineExpose({
   hideEchartsLoading,
   echartsClear,
   handleBackClick,
-  barSeriesItemStyle
+  barSeriesItemStyle,
 });
 
 const isEmptyObj = (obj: any) => {
@@ -234,14 +246,13 @@ onMounted(() => {
   initTreeBar();
 });
 
-
 onBeforeUnmount(() => {
   window.removeEventListener("resize", resizeHandlerOrigin);
   eChartsRef.value.dispose();
 });
 </script>
 <style lang="scss" scoped>
-.button{
-  cursor:pointer;
+.button {
+  cursor: pointer;
 }
 </style>

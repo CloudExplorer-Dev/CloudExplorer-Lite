@@ -40,10 +40,10 @@
                 <div class="echart-title-left">云磁盘增长趋势</div>
                 <div class="echart-title-right">
                   <el-select
-                      v-model="paramDiskIncreaseTrendMonth"
-                      @change="getIncreaseTrend('byIncrease')"
-                      style="width: 100px; margin-bottom: 7px"
-                      size="small"
+                    v-model="paramDiskIncreaseTrendMonth"
+                    @change="getIncreaseTrend('byIncrease')"
+                    style="width: 100px; margin-bottom: 7px"
+                    size="small"
                   >
                     <el-option label="近7天" value="7" />
                     <el-option label="近30天" value="30" />
@@ -82,12 +82,12 @@
               <div class="echart-title">组织</div>
               <div style="position: relative">
                 <ChartsSpeed
-                    :height="300"
-                    :options="spreadByDepartmentOrgOption"
-                    :tree-bar="true"
-                    :tree-bar-data="spreadByDepartmentOptionOrgData"
-                    :tree-bar-all-data="spreadByDepartmentOptionOrgAllData"
-                    :ref="(el) => childRef(el, 'byDepartmentType-org-chart')"
+                  :height="300"
+                  :options="spreadByDepartmentOrgOption"
+                  :tree-bar="true"
+                  :tree-bar-data="spreadByDepartmentOptionOrgData"
+                  :tree-bar-all-data="spreadByDepartmentOptionOrgAllData"
+                  :ref="(el) => childRef(el, 'byDepartmentType-org-chart')"
                 />
               </div>
             </div>
@@ -113,12 +113,14 @@
               <div class="echart-title">工作空间</div>
               <div style="position: relative">
                 <ChartsSpeed
-                    :height="300"
-                    :options="spreadByDepartmentWorkspaceOption"
-                    :tree-bar="true"
-                    :tree-bar-data="spreadByDepartmentOptionWorkspaceData"
-                    :tree-bar-all-data="spreadByDepartmentOptionWorkspaceAllData"
-                    :ref="(el) => childRef(el, 'byDepartmentType-workspace-chart')"
+                  :height="300"
+                  :options="spreadByDepartmentWorkspaceOption"
+                  :tree-bar="true"
+                  :tree-bar-data="spreadByDepartmentOptionWorkspaceData"
+                  :tree-bar-all-data="spreadByDepartmentOptionWorkspaceAllData"
+                  :ref="
+                    (el) => childRef(el, 'byDepartmentType-workspace-chart')
+                  "
                 />
               </div>
             </div>
@@ -140,7 +142,8 @@ import {
   defaultPieDoughnutOptions,
   trendSeriesColor,
   getRandomColor,
-  defaultTrendOptions, defaultBarOptions,
+  defaultTrendOptions,
+  defaultBarOptions,
 } from "@/components/echart/index";
 import * as echarts from "echarts";
 //分布情况
@@ -315,9 +318,9 @@ const getSpreadByDepartmentOrgData = (chartName: string) => {
   childRefMap.get(chartName + "-chart").echartsClear();
   childRefMap.get(chartName + "-chart").echartsLoading();
   _.set(
-      params,
-      "accountIds",
-      paramAccountId.value === "all_list" ? [] : paramAccountId.value
+    params,
+    "accountIds",
+    paramAccountId.value === "all_list" ? [] : paramAccountId.value
   );
   _.set(params, "statisticalBlock", paramsStatisticalBlock.value === "block");
   _.set(params, "analysisWorkspace", false);
@@ -327,11 +330,19 @@ const getSpreadByDepartmentOrgData = (chartName: string) => {
     const chartData = res.data.tree;
     spreadByDepartmentOptionOrgAllData.value = res.data.all;
     spreadByDepartmentOptionOrgData.value = chartData;
-    _.set(options, "xAxis.data", chartData.map((item:any)=>item.name));
-    _.set(options, "series[0].itemStyle", childRefMap.get(chartName + "-chart").barSeriesItemStyle);
+    _.set(
+      options,
+      "xAxis.data",
+      chartData.map((item: any) => item.name)
+    );
+    _.set(
+      options,
+      "series[0].itemStyle",
+      childRefMap.get(chartName + "-chart").barSeriesItemStyle
+    );
     const seriesData = ref<any>([]);
-    _.forEach(chartData,(v)=>{
-      seriesData.value.push({value:v.value,groupName:v.groupName});
+    _.forEach(chartData, (v) => {
+      seriesData.value.push({ value: v.value, groupName: v.groupName });
     });
     _.set(options, "series[0].data", seriesData);
     spreadByDepartmentOrgOption.value = options;
@@ -349,17 +360,24 @@ const getSpreadByDepartmentWorkspaceData = (chartName: string) => {
     const chartData = res.data.tree;
     spreadByDepartmentOptionWorkspaceAllData.value = res.data.all;
     spreadByDepartmentOptionWorkspaceData.value = chartData;
-    _.set(options, "xAxis.data", chartData.map((item:any)=>item.name));
-    _.set(options, "series[0].itemStyle", childRefMap.get(chartName + "-chart").barSeriesItemStyle);
+    _.set(
+      options,
+      "xAxis.data",
+      chartData.map((item: any) => item.name)
+    );
+    _.set(
+      options,
+      "series[0].itemStyle",
+      childRefMap.get(chartName + "-chart").barSeriesItemStyle
+    );
     const seriesData = ref<any>([]);
-    _.forEach(chartData,(v)=>{
-      seriesData.value.push({value:v.value,groupName:v.groupName});
+    _.forEach(chartData, (v) => {
+      seriesData.value.push({ value: v.value, groupName: v.groupName });
     });
     _.set(options, "series[0].data", seriesData);
     spreadByDepartmentWorkspaceOption.value = options;
     childRefMap.get(chartName + "-chart").hideEchartsLoading();
   });
-
 };
 onMounted(() => {
   getALlAccount();

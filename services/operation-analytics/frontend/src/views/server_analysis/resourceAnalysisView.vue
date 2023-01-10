@@ -41,10 +41,10 @@
                 <div class="echart-title-left">云主机增长趋势</div>
                 <div class="echart-title-right">
                   <el-select
-                      v-model="paramVmIncreaseTrendMonth"
-                      @change="getIncreaseTrend('byIncrease')"
-                      style="width: 100px; margin-bottom: 7px"
-                      size="small"
+                    v-model="paramVmIncreaseTrendMonth"
+                    @change="getIncreaseTrend('byIncrease')"
+                    style="width: 100px; margin-bottom: 7px"
+                    size="small"
                   >
                     <el-option label="近7天" value="7" />
                     <el-option label="近30天" value="30" />
@@ -195,7 +195,7 @@ import {
   emptyOptions,
   trendSeriesColor,
   getRandomColor,
-  defaultBarOptions
+  defaultBarOptions,
 } from "@/components/echart/index";
 //分布情况
 const spreadByAccountOption = ref<any>({});
@@ -407,23 +407,34 @@ const getResourceTrendData = (chartName: string) => {
 const getSpreadByDepartmentData = (chartName: string) => {
   childRefMap.get(chartName + "-chart").echartsClear();
   childRefMap.get(chartName + "-chart").echartsLoading();
-  _.set(params, "analysisWorkspace", paramDepartmentType.value==="workspace"?true:false);
+  _.set(
+    params,
+    "analysisWorkspace",
+    paramDepartmentType.value === "workspace" ? true : false
+  );
   ResourceSpreadViewApi.getAnalyticsOrgWorkspaceVmCount(params).then((res) => {
     const options = _.cloneDeep(defaultBarOptions);
     const chartData = res.data.tree;
     spreadByDepartmentOptionAllData.value = res.data.all;
     spreadByDepartmentOptionData.value = chartData;
-    _.set(options, "xAxis.data", chartData.map((item:any)=>item.name));
-    _.set(options, "series[0].itemStyle", childRefMap.get(chartName + "-chart").barSeriesItemStyle);
+    _.set(
+      options,
+      "xAxis.data",
+      chartData.map((item: any) => item.name)
+    );
+    _.set(
+      options,
+      "series[0].itemStyle",
+      childRefMap.get(chartName + "-chart").barSeriesItemStyle
+    );
     const seriesData = ref<any>([]);
-    _.forEach(chartData,(v)=>{
-      seriesData.value.push({value:v.value,groupName:v.groupName});
+    _.forEach(chartData, (v) => {
+      seriesData.value.push({ value: v.value, groupName: v.groupName });
     });
     _.set(options, "series[0].data", seriesData);
     spreadByDepartmentOption.value = options;
     childRefMap.get(chartName + "-chart").hideEchartsLoading();
   });
-
 };
 const getTrendPieOptions = (options: any) => {
   let legend: any[] = [],

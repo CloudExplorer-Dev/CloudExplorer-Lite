@@ -37,14 +37,14 @@ export function getIncreaseTrend(
   return get("api/disk_analysis/increase_trend", req, loading);
 }
 export function getAnalyticsOrgDiskCount(
-    req: ResourceAnalysisRequest | {},
-    loading?: Ref<boolean>
+  req: ResourceAnalysisRequest | {},
+  loading?: Ref<boolean>
 ): Promise<Result<any>> {
   return get("api/disk_analysis/org_workspace_disk_count_bar", req, loading);
 }
 export function getAnalyticsWorkspaceDiskCount(
-    req: ResourceAnalysisRequest | {},
-    loading?: Ref<boolean>
+  req: ResourceAnalysisRequest | {},
+  loading?: Ref<boolean>
 ): Promise<Result<any>> {
   return get("api/disk_analysis/org_workspace_disk_count_bar", req, loading);
 }
@@ -55,7 +55,7 @@ const ResourceSpreadViewApi = {
   getSpreadData,
   getIncreaseTrend,
   getAnalyticsOrgDiskCount,
-  getAnalyticsWorkspaceDiskCount
+  getAnalyticsWorkspaceDiskCount,
 };
 
 export default ResourceSpreadViewApi;

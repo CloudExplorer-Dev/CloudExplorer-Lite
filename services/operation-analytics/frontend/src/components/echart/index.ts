@@ -259,25 +259,25 @@ const defaultPieDoughnutOptions = {
   ],
 };
 
-const defaultBarOptions={
-  color: ['#95ceff', '#434348'],
-  tooltip:{
-    show:true
+const defaultBarOptions = {
+  color: ["#95ceff", "#434348"],
+  tooltip: {
+    show: true,
   },
   xAxis: {
-    type: 'category',
-    data: []
+    type: "category",
+    data: [],
   },
   yAxis: {
-    type: 'value'
+    type: "value",
   },
   series: [
     {
       data: [],
-      type: 'bar'
-    }
-  ]
-}
+      type: "bar",
+    },
+  ],
+};
 
 /**
  * 颜色
@@ -373,5 +373,5 @@ export {
   defaultPieDoughnutOptions,
   trendSeriesColor,
   getRandomColor,
-  defaultBarOptions
+  defaultBarOptions,
 };
