@@ -120,8 +120,9 @@ const baseList: Array<BaseModuleInfo> = [
     module: "finance-management",
     path: "/finance-management/api/bill_view/expenses/MONTH/" + currentMonth,
     redirect: "/finance-management#/bill_view",
-    unit: "元",
-    roles: ["USER"],
+    /*unit: "元",*/
+    type: "currency",
+    roles: ["ADMIN", "ORGADMIN"],
   },
   {
     icon: "zichanzonglan",
@@ -134,8 +135,9 @@ const baseList: Array<BaseModuleInfo> = [
       "/finance-management/api/bill_view/expenses/YEAR/" +
       new Date().getFullYear().toString(),
     redirect: "/finance-management#/bill_view",
-    unit: "元",
-    roles: ["USER"],
+    /*unit: "元",*/
+    type: "currency",
+    roles: ["ADMIN", "ORGADMIN"],
   },
 ];
 

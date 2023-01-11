@@ -32,7 +32,8 @@ const baseList: Array<BaseModuleInfo> = [
     module: "finance-management",
     path: "/finance-management/api/bill_view/expenses/MONTH/" + currentMonth,
     redirect: "/finance-management#/bill_view",
-    unit: "元",
+    /*unit: "元",*/
+    type: "currency",
     roles: ["ADMIN", "ORGADMIN"],
   },
   {
@@ -46,7 +47,8 @@ const baseList: Array<BaseModuleInfo> = [
       "/finance-management/api/bill_view/expenses/YEAR/" +
       new Date().getFullYear().toString(),
     redirect: "/finance-management#/bill_view",
-    unit: "元",
+    /*unit: "元",*/
+    type: "currency",
     roles: ["ADMIN", "ORGADMIN"],
   },
 ];
@@ -91,6 +93,7 @@ const list = computed(() => {
         :redirect="obj.redirect"
         :func="obj.path"
         :unit="obj.unit"
+        :type="obj.type"
       />
     </el-col>
   </el-row>

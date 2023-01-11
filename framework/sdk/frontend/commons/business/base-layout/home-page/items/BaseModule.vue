@@ -13,6 +13,7 @@ const props = defineProps<{
   redirect: string;
   func: string;
   unit?: string;
+  type?: "currency" | undefined;
 }>();
 
 const loading = ref<boolean>(false);
@@ -62,7 +63,16 @@ onMounted(() => {
           "
           @click="jump"
         >
-          {{ count }} {{ unit }}
+          <span v-if="type === 'currency'">{{
+            count?.toLocaleString("zh-CN", {
+              style: "currency",
+              currency: "CNY",
+              minimumSignificantDigits: 2,
+              maximumFractionDigits: 2,
+            })
+          }}</span>
+          <span v-else>{{ count }}</span>
+          {{ unit }}
         </div>
       </div>
     </div>

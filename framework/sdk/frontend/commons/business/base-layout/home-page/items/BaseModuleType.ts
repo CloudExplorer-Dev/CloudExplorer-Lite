@@ -7,4 +7,5 @@ export interface BaseModuleInfo {
   path: string;
   redirect: string;
   unit?: string;
+  type?: "currency" | undefined;
 }
