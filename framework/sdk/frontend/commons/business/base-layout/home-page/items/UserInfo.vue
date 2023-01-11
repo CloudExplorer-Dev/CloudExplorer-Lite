@@ -1,9 +1,4 @@
 <script lang="ts" setup>
-import TopBar from "@commons/components/layout/top-bar/index.vue";
-import AsideStartMenu from "@commons/components/layout/aside-start-menu/index.vue";
-
-import { useHomeStore } from "@commons/stores/modules/home";
-import { onMounted } from "vue";
 import { useUserStore } from "@commons/stores/modules/user";
 import CeIcon from "@commons/components/ce-icon/index.vue";
 
@@ -11,7 +6,7 @@ const userStore = useUserStore();
 </script>
 <template>
   <el-card class="info-card">
-    <div style="font-weight: bold; font-size: 16px; padding-bottom: 20px">
+    <div style="font-weight: bold; font-size: 16px; padding-bottom: 26px">
       基本信息
     </div>
     <el-row type="flex" :gutter="20">
@@ -35,27 +30,37 @@ const userStore = useUserStore();
         </el-row>
       </el-col>
       <el-col :span="16">
-        <el-row type="flex">
-          <el-col :span="8" class="card-label">当前角色:</el-col>
-          <el-col :span="16">
+        <el-row type="flex" align="middle">
+          <el-col :span="8" class="card-label">当前角色</el-col>
+          <el-col :span="1">:</el-col>
+          <el-col :span="15">
             <div style="font-weight: bold; color: var(--el-color-primary)">
               {{ userStore.currentRoleSourceName.roleName }}
+              <div
+                style="font-size: small"
+                v-if="userStore.currentRoleSourceName?.sourceName"
+              >
+                【{{ userStore.currentRoleSourceName?.sourceName }}】
+              </div>
             </div>
           </el-col>
         </el-row>
-        <el-row type="flex">
-          <el-col :span="8" class="card-label">手机号:</el-col>
-          <el-col :span="16">
+        <el-row type="flex" align="middle">
+          <el-col :span="8" class="card-label">手机号</el-col>
+          <el-col :span="1">:</el-col>
+          <el-col :span="15">
             {{ userStore.currentUser.phone }}
           </el-col>
         </el-row>
-        <el-row type="flex">
-          <el-col :span="8" class="card-label">登录IP:</el-col>
-          <el-col :span="16"></el-col>
+        <el-row type="flex" align="middle">
+          <el-col :span="8" class="card-label">登录IP</el-col>
+          <el-col :span="1">:</el-col>
+          <el-col :span="15"></el-col>
         </el-row>
-        <el-row type="flex">
-          <el-col :span="8" class="card-label">登录时间:</el-col>
-          <el-col :span="16"></el-col>
+        <el-row type="flex" align="middle">
+          <el-col :span="8" class="card-label">登录时间</el-col>
+          <el-col :span="1">:</el-col>
+          <el-col :span="15"></el-col>
         </el-row>
       </el-col>
     </el-row>
@@ -64,7 +69,7 @@ const userStore = useUserStore();
 
 <style scoped lang="scss">
 .info-card {
-  min-width: 340px;
+  /*min-width: 340px;*/
   min-height: 200px;
 
   .card-label {

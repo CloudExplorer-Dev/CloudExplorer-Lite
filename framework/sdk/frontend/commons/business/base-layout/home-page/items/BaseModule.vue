@@ -12,6 +12,7 @@ const props = defineProps<{
   name: string;
   redirect: string;
   func: string;
+  unit?: string;
 }>();
 
 const loading = ref<boolean>(false);
@@ -61,7 +62,7 @@ onMounted(() => {
           "
           @click="jump"
         >
-          {{ count }}
+          {{ count }} {{ unit }}
         </div>
       </div>
     </div>

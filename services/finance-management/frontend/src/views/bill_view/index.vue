@@ -54,8 +54,8 @@
             {{ _.maxBy(hostryTreed, "label")?.label }}总费用为{{
               _.floor(_.sumBy(hostryTreed, "value"), 2)
             }}
-            元</span
-          >
+            元
+          </span>
         </div>
       </div>
     </div>

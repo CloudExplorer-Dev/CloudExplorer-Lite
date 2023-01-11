@@ -1,6 +1,8 @@
 package com.fit2cloud.controller;
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.fit2cloud.base.entity.VmCloudDisk;
 import com.fit2cloud.base.mapper.BaseVmCloudDiskMapper;
 import com.fit2cloud.common.form.vo.FormObject;
 import com.fit2cloud.common.log.annotation.OperatedLog;
@@ -9,10 +11,11 @@ import com.fit2cloud.common.log.constants.ResourceTypeEnum;
 import com.fit2cloud.common.validator.annnotaion.CustomValidated;
 import com.fit2cloud.common.validator.handler.ExistHandler;
 import com.fit2cloud.controller.handler.ResultHolder;
-import com.fit2cloud.controller.request.disk.*;
 import com.fit2cloud.controller.request.GrantRequest;
+import com.fit2cloud.controller.request.disk.*;
 import com.fit2cloud.dto.VmCloudDiskDTO;
 import com.fit2cloud.dto.VmCloudServerDTO;
+import com.fit2cloud.provider.constants.F2CDiskStatus;
 import com.fit2cloud.service.IVmCloudDiskService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -42,6 +45,16 @@ public class VmCloudDiskController {
     @PreAuthorize("hasAnyCePermission('CLOUD_DISK:READ')")
     public ResultHolder<IPage<VmCloudDiskDTO>> list(@Validated PageVmCloudDiskRequest pageVmCloudDiskRequest) {
         return ResultHolder.success(diskService.pageVmCloudDisk(pageVmCloudDiskRequest));
+    }
+
+    @ApiOperation(value = "查询硬盘数量", notes = "查询硬盘数量")
+    @GetMapping("/count")
+    @PreAuthorize("hasAnyCePermission('CLOUD_DISK:READ')")
+    public ResultHolder<Long> count() {
+        return ResultHolder.success(diskService.count(
+                new LambdaQueryWrapper<VmCloudDisk>()
+                        .ne(VmCloudDisk::getStatus, F2CDiskStatus.DELETED))
+        );
     }
 
     @ApiOperation(value = "查询可以挂载磁盘的虚拟机")

@@ -50,11 +50,25 @@ public class BaseResourceAnalysisController {
         return ResultHolder.success(iBaseResourceAnalysisService.pageHost(pageHostRequest));
     }
 
+    @ApiOperation(value = "查询宿主机数量", notes = "查询宿主机数量")
+    @GetMapping("/host/count")
+    @PreAuthorize("hasAnyCePermission('RESOURCE_ANALYSIS:READ')")
+    public ResultHolder<Long> countHost() {
+        return ResultHolder.success(iBaseResourceAnalysisService.countHost());
+    }
+
     @ApiOperation(value = "分页查询存储器", notes = "分页查询存储器")
     @GetMapping("/datastore/page")
     @PreAuthorize("hasAnyCePermission('RESOURCE_ANALYSIS:READ')")
     public ResultHolder<IPage<AnalyticsDatastoreDTO>> pageDatastoreList(@Validated PageDatastoreRequest pageDatastoreRequest) {
         return ResultHolder.success(iBaseResourceAnalysisService.pageDatastore(pageDatastoreRequest));
+    }
+
+    @ApiOperation(value = "查询存储器数量", notes = "查询存储器数量")
+    @GetMapping("/datastore/count")
+    @PreAuthorize("hasAnyCePermission('RESOURCE_ANALYSIS:READ')")
+    public ResultHolder<Long> countDatastore() {
+        return ResultHolder.success(iBaseResourceAnalysisService.countDatastore());
     }
 
     @ApiOperation(value = "查询私有云账号", notes = "查询私有云账号")

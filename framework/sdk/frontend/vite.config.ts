@@ -133,7 +133,7 @@ export default defineConfig(({ mode }: ConfigEnv) => {
   //operation-analytics
   proxyConf[ENV.VITE_BASE_PATH + "operation-analytics/api"] =
     "http://localhost:" + Number(ENV.VITE_BASE_API_PORT);
-  proxyConf[ENV.VITE_BASE_PATH + "security-compliance"] =
+  proxyConf[ENV.VITE_BASE_PATH + "operation-analytics"] =
     "http://127.0.0.1:5005";
 
   //https://cn.vitejs.dev/config/server-options.html#server-host

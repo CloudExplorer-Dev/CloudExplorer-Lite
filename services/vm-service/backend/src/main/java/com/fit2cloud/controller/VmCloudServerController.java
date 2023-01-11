@@ -1,14 +1,20 @@
 package com.fit2cloud.controller;
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.fit2cloud.base.entity.VmCloudServer;
 import com.fit2cloud.common.form.vo.FormObject;
 import com.fit2cloud.common.log.annotation.OperatedLog;
 import com.fit2cloud.common.log.constants.OperatedTypeEnum;
 import com.fit2cloud.common.log.constants.ResourceTypeEnum;
 import com.fit2cloud.controller.handler.ResultHolder;
 import com.fit2cloud.controller.request.GrantRequest;
-import com.fit2cloud.controller.request.vm.*;
+import com.fit2cloud.controller.request.vm.BatchOperateVmRequest;
+import com.fit2cloud.controller.request.vm.ChangeServerConfigRequest;
+import com.fit2cloud.controller.request.vm.CreateServerRequest;
+import com.fit2cloud.controller.request.vm.PageVmCloudServerRequest;
 import com.fit2cloud.dto.VmCloudServerDTO;
+import com.fit2cloud.provider.constants.F2CInstanceStatus;
 import com.fit2cloud.response.JobRecordResourceResponse;
 import com.fit2cloud.service.IVmCloudServerService;
 import io.swagger.annotations.Api;
@@ -40,6 +46,16 @@ public class VmCloudServerController {
     @PreAuthorize("hasAnyCePermission('CLOUD_SERVER:READ')")
     public ResultHolder<IPage<VmCloudServerDTO>> list(@Validated PageVmCloudServerRequest pageVmCloudServerRequest) {
         return ResultHolder.success(iVmCloudServerService.pageVmCloudServer(pageVmCloudServerRequest));
+    }
+
+    @ApiOperation(value = "查询云主机数量", notes = "查询云主机数量")
+    @GetMapping("/count")
+    @PreAuthorize("hasAnyCePermission('CLOUD_SERVER:READ')")
+    public ResultHolder<Long> count() {
+        return ResultHolder.success(iVmCloudServerService.count(
+                new LambdaQueryWrapper<VmCloudServer>()
+                        .ne(VmCloudServer::getInstanceStatus, F2CInstanceStatus.Deleted.name()))
+        );
     }
 
     @ApiOperation(value = "开机", notes = "启动云主机操作系统")
