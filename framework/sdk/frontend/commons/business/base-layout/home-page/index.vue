@@ -7,7 +7,10 @@ import BaseModuleGroup from "./items/BaseModuleGroup.vue";
 import BillModuleGroup from "./items/BillModuleGroup.vue";
 import SecurityInfo from "./items/SecurityInfo.vue";
 import QuickAccess from "./items/QuickAccess.vue";
+import BillTrend from "./items/BillTrend.vue";
 import { useUserStore } from "@commons/stores/modules/user";
+
+import { getHistoryTrend } from "./items/api";
 
 const homeStore = useHomeStore();
 const userStore = useUserStore();
@@ -24,7 +27,14 @@ onMounted(() => {
         <el-col :span="16">
           <div class="flex-content">
             <BaseModuleGroup class="flex-div-1" />
-            <QuickAccess class="flex-div-1" />
+            <QuickAccess class="flex-div-1 divide-info" />
+            <BillTrend
+              class="flex-div-1 divide-info"
+              :need-roles="['USER']"
+              :permission="'[finance-management]BILL_ViEW:READ'"
+              module="finance-management"
+              :getHistoryTrend="getHistoryTrend"
+            />
           </div>
         </el-col>
         <el-col :span="8">
@@ -36,6 +46,17 @@ onMounted(() => {
               v-if="userStore.currentRole === 'ADMIN'"
             />
           </div>
+        </el-col>
+      </el-row>
+      <el-row :gutter="20" type="flex">
+        <el-col :span="12"></el-col>
+        <el-col :span="12">
+          <BillTrend
+            :need-roles="['ADMIN', 'ORGADMIN']"
+            :permission="'[finance-management]BILL_ViEW:READ'"
+            module="finance-management"
+            :getHistoryTrend="getHistoryTrend"
+          />
         </el-col>
       </el-row>
     </div>
@@ -58,7 +79,6 @@ onMounted(() => {
   margin-left: var(--ce-main-breadcrumb-margin-left, 30px);
 }
 .content {
-  width: 100%;
   margin: var(--ce-main-content-margin-top, 10px)
     var(--ce-main-content-margin-left, 30px)
     var(--ce-main-content-margin-right, 30px)

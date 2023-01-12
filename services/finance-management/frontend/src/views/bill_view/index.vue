@@ -20,42 +20,13 @@
           </div>
         </div>
         <div class="right_wapper" ref="rightWapper">
-          <div class="header">
-            <div class="title title_font">
-              费用趋势<span class="sub_title_font">（单位：元）</span>
-            </div>
-          </div>
-          <div class="operation_wapper">
-            <div class="operation">
-              <div
-                class="left"
-                :class="[activeTreedYear === 'MONTH' ? 'active' : '']"
-                @click="historyTrend(6, 'MONTH')"
-              >
-                近半年
-              </div>
-              <div class="line"></div>
-              <div
-                class="right"
-                :class="[activeTreedYear === 'YEAR' ? 'active' : '']"
-                @click="historyTrend(12, 'YEAR')"
-              >
-                近一年
-              </div>
-            </div>
-          </div>
-          <div
-            class="chart_wapper"
-            v-loading="historyTrendLoading"
-            ref="chartWapper"
-          ></div>
-          <span style="margin-left: 10px"
-            >{{ _.minBy(hostryTreed, "label")?.label }} ～
-            {{ _.maxBy(hostryTreed, "label")?.label }}总费用为{{
-              _.floor(_.sumBy(hostryTreed, "value"), 2)
-            }}
-            元
-          </span>
+          <BillTrend
+            :need-roles="['ADMIN', 'ORGADMIN', 'USER']"
+            :permission="'[finance-management]BILL_ViEW:READ'"
+            module="finance-management"
+            :getHistoryTrend="billViewAPi.getHistoryTrend"
+            card-shadow="never"
+          />
         </div>
       </div>
     </div>
@@ -182,9 +153,9 @@ import TableTrend from "@/views/bill_view/TableTrend.vue";
 import { TableV2FixedDir } from "element-plus";
 import _ from "lodash";
 
-const echarts: any = inject("echarts");
+import BillTrend from "@commons/business/base-layout/home-page/items/BillTrend.vue";
 
-const chartWapper = ref<any>(null);
+const echarts: any = inject("echarts");
 
 const detailsWapper = ref<any>(null);
 
@@ -200,7 +171,6 @@ const activeGroup = computed(() => {
 });
 
 const reSize = (wh: any) => {
-  historyTrendChart?.resize();
   char?.setOption(
     getBillViewOptions(
       viewData.value,
@@ -215,8 +185,6 @@ const tableChartVisible = ref<boolean>(false);
 
 const tableChart = ref<ECharts>();
 const billViewData = ref<SimpleMap<Array<BillView>>>();
-
-const activeTreedYear = ref<string>("MONTH");
 
 /**
  * 重置数据
@@ -345,63 +313,9 @@ const currentYearExpenses = ref<number>();
  * 当前年花费加载器
  */
 const currentYearExpensesLoading = ref<boolean>(false);
-/**
- *历史趋势图
- */
-let historyTrendChart: ECharts | undefined = undefined;
-const historyTrendLoading = ref<boolean>(false);
 
 const billViewChartLoading = ref<boolean>(false);
-const historyTrend = async (historyNum: number, active: string) => {
-  activeTreedYear.value = active;
-  // 获取历史趋势
-  await billViewAPi
-    .getHistoryTrend("MONTH", historyNum, historyTrendLoading)
-    .then((ok) => {
-      hostryTreed.value = ok.data;
-      if (!historyTrendChart) {
-        historyTrendChart = echarts.init(chartWapper.value);
-      }
-      hostryTreed.value.sort((pre, next) =>
-        pre.label.localeCompare(next.label)
-      );
-      const option: any = getTrendViewOption(
-        hostryTreed.value,
-        "bar",
-        true,
-        true,
-        false
-      );
-      option["yAxis"]["splitLine"] = {
-        show: false,
-      };
-      option["series"][0]["itemStyle"] = {
-        normal: {
-          label: {
-            show: true,
-            position: "top",
-            textStyle: {
-              color: "black",
-              fontSize: 12,
-            },
-            formatter: function (param: any) {
-              return _.round(param.value, 2).toFixed(2);
-            },
-          },
-        },
-      };
-      option["tooltip"] = {
-        trigger: "item",
-        formatter: (p: any) => {
-          return `<div>月份:${p.name}</div><div>金额:${_.round(
-            p.data,
-            2
-          ).toFixed(2)}</div>`;
-        },
-      };
-      historyTrendChart?.setOption(option);
-    });
-};
+
 const BillRules = ref<Array<BillRule>>([]);
 
 onMounted(() => {
@@ -426,7 +340,6 @@ onMounted(() => {
       activeName.value = ok.data[0].id;
     }
   });
-  historyTrend(12, "YEAR");
 });
 let char: ECharts | undefined = undefined;
 /**
@@ -632,49 +545,9 @@ const sortState = ref<any>({
   }
   .right_wapper {
     margin-left: 20px;
-    border: 1px solid var(--el-border-color);
+    /*border: 1px solid var(--el-border-color);*/
     width: calc(80% - 20px);
     height: calc(100% - 2px);
-    .header {
-      display: flex;
-      justify-content: center;
-      height: 20px;
-    }
-    .operation_wapper {
-      display: flex;
-      justify-content: flex-end;
-      height: 30px;
-      .operation {
-        cursor: pointer;
-        width: 200px;
-        height: 100%;
-        display: flex;
-        border: 1px solid var(--el-border-color);
-        font-size: 12px;
-        line-height: 23px;
-        margin-right: 50px;
-        .left {
-          width: 50%;
-          height: 100%;
-          display: flex;
-          justify-content: center;
-          align-items: center;
-        }
-        .right {
-          width: 50%;
-          height: 100%;
-          display: flex;
-          justify-content: center;
-          align-items: center;
-        }
-      }
-    }
-    .chart_wapper {
-      height: 70%;
-      width: 100%;
-      min-width: 600px;
-      display: flex;
-    }
   }
 }
 .chart {
