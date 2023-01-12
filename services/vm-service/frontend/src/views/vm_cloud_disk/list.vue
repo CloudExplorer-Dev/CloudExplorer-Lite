@@ -15,6 +15,7 @@ import Attach from "@/views/vm_cloud_disk/attach.vue";
 import { useRouter } from "vue-router";
 import _ from "lodash";
 import { usePermissionStore } from "@commons/stores/modules/permission";
+import Grant from "@/views/vm_cloud_server/grant.vue";
 
 const { t } = useI18n();
 const permissionStore = usePermissionStore();
@@ -373,6 +374,25 @@ const batchDelete = () => {
 };
 
 /**
+ * 批量授权
+ */
+const batchAuthorize = () => {
+  if (!validateSelectedData.value) {
+    ElMessage.warning(t("vm_cloud_disk.msg.select_one", "至少选择一条数据"));
+    return;
+  }
+  showGrantDialog();
+};
+const grantDialogVisible = ref<boolean>(false);
+const showGrantDialog = () => {
+  selectedDiskIds.value = selectedDiskIds.value = Array.from(
+    multipleSelectedRowData.value,
+    ({ id }) => id
+  );
+  grantDialogVisible.value = true;
+};
+
+/**
  * 禁用批量挂载
  */
 const disableBatchAttach = computed(() => {
@@ -428,6 +448,21 @@ const disableBatchDelete = computed(() => {
       multipleSelectedRowData.value.some((row) =>
         notSupportPlatforms.value.includes(row.platform)
       )
+    );
+  }
+});
+
+/**
+ * 禁用批量授权
+ */
+const disableBatchAuthorize = computed(() => {
+  if (multipleSelectedRowData.value.length == 0) {
+    return false;
+  } else {
+    return multipleSelectedRowData.value.some(
+      (row) =>
+        (!_.isEmpty(row.instanceUuid) && !_.isNull(row.instanceUuid)) ||
+        row.status.toUpperCase() === "DELETED"
     );
   }
 });
@@ -515,6 +550,9 @@ const buttons = ref([
         v-hasPermission="'[vm-service]CLOUD_DISK:DETACH'"
       >
         {{ t("vm_cloud_disk.btn.uninstall", "卸载") }}
+      </el-button>
+      <el-button @click="batchAuthorize()" :disabled="disableBatchAuthorize">
+        {{ t("commons.btn.gran", "授权") }}
       </el-button>
       <el-button
         @click="batchDelete()"
@@ -702,6 +740,22 @@ const buttons = ref([
       :zone="diskZone"
       v-model:visible="attachWindowVisible"
       :isBatch="isBatchAttach"
+      @refresh="refresh"
+    />
+  </el-dialog>
+
+  <!-- 批量授权页面弹出框 -->
+  <el-dialog
+    v-model="grantDialogVisible"
+    :title="$t('commons.grant')"
+    width="35%"
+    destroy-on-close
+    :close-on-click-modal="false"
+  >
+    <Grant
+      :ids="selectedDiskIds"
+      resource-type="disk"
+      v-model:visible="grantDialogVisible"
       @refresh="refresh"
     />
   </el-dialog>

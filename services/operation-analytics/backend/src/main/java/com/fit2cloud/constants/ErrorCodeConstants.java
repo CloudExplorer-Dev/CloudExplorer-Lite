@@ -36,16 +36,6 @@ public enum ErrorCodeConstants {
     }
 
     /**
-     * 获取错误提示
-     *
-     * @param args 错误提示参数
-     * @return 错误提示文本
-     */
-    public String getMessage(Object[] args) {
-        return LocaleUtil.getMessage(message, args, message);
-    }
-
-    /**
      * 获取错误code
      *
      * @return 错误code

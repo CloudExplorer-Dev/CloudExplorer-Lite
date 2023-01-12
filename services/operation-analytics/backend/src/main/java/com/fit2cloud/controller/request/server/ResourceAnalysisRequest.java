@@ -18,14 +18,17 @@ public class ResourceAnalysisRequest {
     private List<String> hostIds;
     @ApiModelProperty("分布类型")
     private String spreadType;
-    @ApiModelProperty("月数")
-    private Long monthNumber;
+    @ApiModelProperty("天数")
+    private Long dayNumber;
     @ApiModelProperty("监控指标")
     private String metricName;
     @ApiModelProperty("开始时间")
     private long startTime;
     @ApiModelProperty("结束时间")
     private long endTime;
+
+    @ApiModelProperty("工作空间统计")
+    private boolean analysisWorkspace;
 
     private CalendarInterval intervalPosition;
 

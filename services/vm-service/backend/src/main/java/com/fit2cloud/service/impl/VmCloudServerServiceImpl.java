@@ -28,6 +28,7 @@ import com.fit2cloud.common.utils.*;
 import com.fit2cloud.constants.ErrorCodeConstants;
 import com.fit2cloud.controller.request.CreateJobRecordRequest;
 import com.fit2cloud.controller.request.ExecProviderMethodRequest;
+import com.fit2cloud.controller.request.GrantRequest;
 import com.fit2cloud.controller.request.ResourceState;
 import com.fit2cloud.controller.request.vm.*;
 import com.fit2cloud.dao.mapper.VmCloudServerMapper;
@@ -520,16 +521,16 @@ public class VmCloudServerServiceImpl extends ServiceImpl<BaseVmCloudServerMappe
         }
     }
 
-    public boolean grant(GrantServerRequest grantServerRequest) {
+    public boolean grant(GrantRequest grantServerRequest) {
         String sourceId = grantServerRequest.getGrant() ? grantServerRequest.getSourceId() : "";
 
         UpdateWrapper<VmCloudServer> updateWrapper = new UpdateWrapper();
-        updateWrapper.lambda().in(VmCloudServer::getId, grantServerRequest.getCloudServerIds())
+        updateWrapper.lambda().in(VmCloudServer::getId, grantServerRequest.getIds())
                 .set(VmCloudServer::getSourceId, sourceId);
         update(updateWrapper);
 
         // 更新云主机关联的云磁盘
-        List<String> instanceUuids = listByIds(Arrays.asList(grantServerRequest.getCloudServerIds())).stream().map(vmCloudServer -> vmCloudServer.getInstanceUuid()).collect(Collectors.toList());
+        List<String> instanceUuids = listByIds(Arrays.asList(grantServerRequest.getIds())).stream().map(vmCloudServer -> vmCloudServer.getInstanceUuid()).collect(Collectors.toList());
         UpdateWrapper<VmCloudDisk> updateDiskWrapper = new UpdateWrapper();
         updateDiskWrapper.lambda().in(VmCloudDisk::getInstanceUuid, instanceUuids)
                 .set(VmCloudDisk::getSourceId, sourceId);

@@ -9,7 +9,7 @@ import type {
   PerfMonitorData,
   GetPerfMonitorRequest,
   ChangeServerConfigRequest,
-  GrantVmCloudServerRequest,
+  GrantRequest,
 } from "./type";
 import type { Ref } from "vue";
 import type { SimpleMap } from "@commons/api/base/type";
@@ -204,10 +204,7 @@ export function getConfigUpdatePrice(
  * @param req
  * @param loading
  */
-export function grantVmCloudServer(
-  req: GrantVmCloudServerRequest,
-  loading?: Ref<boolean>
-) {
+export function grantVmCloudServer(req: GrantRequest, loading?: Ref<boolean>) {
   return post("/api/server/grant", null, req, loading);
 }
 

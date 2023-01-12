@@ -63,13 +63,7 @@ public class PerfMonitorService {
      * @return 复合查询对象
      */
     private org.springframework.data.elasticsearch.core.query.Query getSearchQuery(PerfMonitorRequest request) {
-        List<QueryUtil.QueryCondition> queryConditions = new ArrayList<>();
-        QueryUtil.QueryCondition startTimesTamp = new QueryUtil.QueryCondition(true, "timestamp", request.getStartTime(), QueryUtil.CompareType.GTE);
-        queryConditions.add(startTimesTamp);
-        QueryUtil.QueryCondition endTimesTamp = new QueryUtil.QueryCondition(true, "timestamp", request.getEndTime(), QueryUtil.CompareType.LTE);
-        queryConditions.add(endTimesTamp);
-        QueryUtil.QueryCondition entityType = new QueryUtil.QueryCondition(true, "entityType.keyword", request.getEntityType(), QueryUtil.CompareType.EQ);
-        queryConditions.add(entityType);
+        List<QueryUtil.QueryCondition> queryConditions = elasticsearchProvide.getDefaultQueryConditions(List.of(request.getCloudAccountId()),request.getMetricName(),request.getEntityType(),request.getStartTime(), request.getEndTime());
         QueryUtil.QueryCondition instanceId = new QueryUtil.QueryCondition(true, "instanceId.keyword", request.getInstanceId(), QueryUtil.CompareType.EQ);
         queryConditions.add(instanceId);
         QueryUtil.QueryCondition metricName = new QueryUtil.QueryCondition(true, "metricName.keyword", request.getMetricName(), QueryUtil.CompareType.EQ);
@@ -85,4 +79,5 @@ public class PerfMonitorService {
                 .withAggregation("count", new Aggregation.Builder().valueCount(new ValueCountAggregation.Builder().field("_id").build()).build());
         return query.build();
     }
+
 }

@@ -16,7 +16,7 @@
           v-for="item in hosts"
           :key="item.id"
           :label="item.hostName"
-          :value="item.id"
+          :value="item.hostId"
         />
       </el-select>
     </div>
@@ -24,36 +24,33 @@
       <div class="spread-main-up">
         <el-row :gutter="10">
           <el-col :span="8">
-            <div class="myChart" style="height: 370px">
+            <div class="myChart">
               <div class="echart-title">按云账号</div>
-              <div class="echart-content">
-                <div class="echart-content-left">
-                  <el-row>
-                    <el-col :span="24">
-                      <ChartsSpeed
-                        :height="300"
-                        :options="spreadByAccountOption"
-                        :ref="(el) => childRef(el, 'byAccount-chart')"
-                      />
-                    </el-col>
-                  </el-row>
-                </div>
+              <div style="position: relative">
+                <ChartsSpeed
+                  :height="300"
+                  :options="spreadByAccountOption"
+                  :ref="(el) => childRef(el, 'byAccount-chart')"
+                />
               </div>
             </div>
           </el-col>
           <el-col :span="16">
-            <div class="myChart" style="height: 370px">
+            <div class="myChart">
               <div class="echart-title">
                 <div class="echart-title-left">云主机增长趋势</div>
                 <div class="echart-title-right">
-                  <el-radio-group
+                  <el-select
                     v-model="paramVmIncreaseTrendMonth"
                     @change="getIncreaseTrend('byIncrease')"
-                    style="margin-bottom: 20px"
+                    style="width: 100px; margin-bottom: 7px"
+                    size="small"
                   >
-                    <el-radio-button :label="6">近半年</el-radio-button>
-                    <el-radio-button :label="12">近一年</el-radio-button>
-                  </el-radio-group>
+                    <el-option label="近7天" value="7" />
+                    <el-option label="近30天" value="30" />
+                    <el-option label="近半年" value="180" />
+                    <el-option label="近一年" value="360" />
+                  </el-select>
                 </div>
               </div>
               <div style="position: relative">
@@ -70,25 +67,19 @@
       <div class="spread-main-content">
         <el-row :gutter="10">
           <el-col :span="8">
-            <div class="myChart" style="height: 370px">
+            <div class="myChart">
               <div class="echart-title">按运行状态</div>
-              <div class="echart-content">
-                <div class="echart-content-left">
-                  <el-row>
-                    <el-col :span="24">
-                      <ChartsSpeed
-                        :height="300"
-                        :options="spreadByStatusOption"
-                        :ref="(el) => childRef(el, 'byStatus-chart')"
-                      />
-                    </el-col>
-                  </el-row>
-                </div>
+              <div style="position: relative">
+                <ChartsSpeed
+                  :height="300"
+                  :options="spreadByStatusOption"
+                  :ref="(el) => childRef(el, 'byStatus-chart')"
+                />
               </div>
             </div>
           </el-col>
           <el-col :span="16">
-            <div class="myChart" style="height: 370px">
+            <div class="myChart">
               <div class="echart-title">
                 <div class="echart-title-left">按资源使用情况</div>
                 <div class="echart-title-right">
@@ -147,25 +138,19 @@
       <div class="spread-main-bottom">
         <el-row :gutter="10">
           <el-col :span="8">
-            <div class="myChart" style="height: 370px">
+            <div class="myChart">
               <div class="echart-title">按付费方式</div>
-              <div class="echart-content">
-                <div class="echart-content-left">
-                  <el-row>
-                    <el-col :span="24">
-                      <ChartsSpeed
-                        :height="300"
-                        :options="spreadByChargeTypeOption"
-                        :ref="(el) => childRef(el, 'byChargeType-chart')"
-                      />
-                    </el-col>
-                  </el-row>
-                </div>
+              <div style="position: relative">
+                <ChartsSpeed
+                  :height="300"
+                  :options="spreadByChargeTypeOption"
+                  :ref="(el) => childRef(el, 'byChargeType-chart')"
+                />
               </div>
             </div>
           </el-col>
           <el-col :span="16">
-            <div class="myChart" style="height: 370px">
+            <div class="myChart">
               <div class="echart-title">
                 <div class="echart-title-left">
                   <el-select
@@ -184,6 +169,9 @@
                 <ChartsSpeed
                   :height="300"
                   :options="spreadByDepartmentOption"
+                  :tree-bar="true"
+                  :tree-bar-data="spreadByDepartmentOptionData"
+                  :tree-bar-all-data="spreadByDepartmentOptionAllData"
                   :ref="(el) => childRef(el, 'byDepartmentType-chart')"
                 />
               </div>
@@ -197,22 +185,25 @@
 <script lang="ts" setup>
 import { onMounted, ref } from "vue";
 import _ from "lodash";
-import ChartsSpeed from "../../components/echart/ChartsSpeed.vue";
+import ChartsSpeed from "@commons/components/echart/ChartsSpeed.vue";
 import ResourceSpreadViewApi from "@/api/server_analysis/index";
 import { ResourceAnalysisRequest } from "@/api/server_analysis/type";
 import * as echarts from "echarts";
 import {
-  defaultPieOptions,
+  defaultPieDoughnutOptions,
   defaultTrendOptions,
   emptyOptions,
   trendSeriesColor,
   getRandomColor,
-} from "@/components/echart/index";
+  defaultBarOptions,
+} from "@commons/components/echart/index";
 //分布情况
 const spreadByAccountOption = ref<any>({});
 const spreadByStatusOption = ref<any>({});
 const spreadByChargeTypeOption = ref<any>({});
 const spreadByDepartmentOption = ref<any>({});
+const spreadByDepartmentOptionData = ref<any>([]);
+const spreadByDepartmentOptionAllData = ref<any>([]);
 //增长趋势
 const increaseOption = ref<any>({});
 //资源使用情况趋势
@@ -224,7 +215,7 @@ const resourceUsedTrendPieOption = ref<any>({});
 const params = ref<ResourceAnalysisRequest | undefined>();
 const paramAccountId = ref<string>("all_list");
 const paramHostId = ref<string>("all_list");
-const paramVmIncreaseTrendMonth = ref<number>(6);
+const paramVmIncreaseTrendMonth = ref<any>("7");
 const paramResourceUsedTrendType = ref<string>("CPU_USED_UTILIZATION");
 const paramDepartmentType = ref<string>("org");
 //下拉框数据
@@ -243,6 +234,7 @@ const initParam = () => {
   spreadByStatusOption.value = emptyOptions;
   spreadByChargeTypeOption.value = emptyOptions;
   increaseOption.value = emptyOptions;
+  spreadByDepartmentOption.value = emptyOptions;
 };
 const getALlAccount = () => {
   initParam();
@@ -288,8 +280,14 @@ const getSpreadData = (spreadType: string) => {
   ResourceSpreadViewApi.getSpreadData(params).then((res) => {
     if (res.data) {
       const spreadData = res.data;
-      const options = _.cloneDeep(defaultPieOptions);
+      const options = _.cloneDeep(defaultPieDoughnutOptions);
+      _.set(options, "series[0].name", "云主机分布");
       _.set(options, "series[0].data", spreadData[spreadType]);
+      _.set(
+        options,
+        "series[0].label.normal.formatter",
+        `{title|总数}\r\n{value|${_.sumBy(spreadData[spreadType], "value")}}`
+      );
       if (spreadType === "byAccount") {
         spreadByAccountOption.value = options;
       }
@@ -307,7 +305,7 @@ const getSpreadData = (spreadType: string) => {
 const getIncreaseTrend = (chartName: string) => {
   childRefMap.get(chartName + "-chart").echartsClear();
   childRefMap.get(chartName + "-chart").echartsLoading();
-  _.set(params, "monthNumber", paramVmIncreaseTrendMonth.value);
+  _.set(params, "dayNumber", paramVmIncreaseTrendMonth.value);
   let legend: any[] = [],
     series: any = {},
     xAxis: any[] = [],
@@ -399,7 +397,7 @@ const getResourceTrendData = (chartName: string) => {
     }
     if ("pie" === resourceUsedChartType.value) {
       resourceUsedTrendPieOption.value = getTrendPieOptions(
-        _.cloneDeep(defaultPieOptions)
+        _.cloneDeep(defaultPieDoughnutOptions)
       );
     }
     childRefMap.get(chartName + "-chart").hideEchartsLoading();
@@ -409,8 +407,38 @@ const getResourceTrendData = (chartName: string) => {
 const getSpreadByDepartmentData = (chartName: string) => {
   childRefMap.get(chartName + "-chart").echartsClear();
   childRefMap.get(chartName + "-chart").echartsLoading();
-  spreadByDepartmentOption.value = _.cloneDeep(emptyOptions);
-  childRefMap.get(chartName + "-chart").hideEchartsLoading();
+  _.set(
+    params,
+    "analysisWorkspace",
+    paramDepartmentType.value === "workspace" ? true : false
+  );
+  ResourceSpreadViewApi.getAnalyticsOrgWorkspaceVmCount(params)
+    .then((res) => {
+      const options = _.cloneDeep(defaultBarOptions);
+      const chartData = res.data.tree;
+      spreadByDepartmentOptionAllData.value = res.data.all;
+      spreadByDepartmentOptionData.value = chartData;
+      _.set(
+        options,
+        "xAxis.data",
+        chartData.map((item: any) => item.name)
+      );
+      _.set(
+        options,
+        "series[0].itemStyle",
+        childRefMap.get(chartName + "-chart").barSeriesItemStyle
+      );
+      const seriesData = ref<any>([]);
+      _.forEach(chartData, (v) => {
+        seriesData.value.push({ value: v.value, groupName: v.groupName });
+      });
+      _.set(options, "series[0].data", seriesData);
+      spreadByDepartmentOption.value = options;
+      childRefMap.get(chartName + "-chart").hideEchartsLoading();
+    })
+    .catch((err) => {
+      console.log(err);
+    });
 };
 const getTrendPieOptions = (options: any) => {
   let legend: any[] = [],
@@ -585,18 +613,17 @@ const shortcuts = [
 
 <style scoped>
 .spread-layout {
-  height: 100% !important;
   width: 100% !important;
+  min-width: 900px;
 }
 .myChart {
-  height: 300px;
+  height: 370px;
+  min-width: 300px;
   border: 1px solid #e5e5e5;
 }
 .spread-main {
   margin-top: 10px;
-  height: 99% !important;
   width: 99% !important;
-  overflow: auto;
 }
 .spread-main-content {
   margin-top: 10px;
@@ -625,22 +652,7 @@ const shortcuts = [
   padding: 7px;
   margin-left: 25px;
 }
-.echart-content-right {
-  position: relative;
-  padding: 7px;
-  margin-left: 20px;
-}
 
-.echart-right {
-  position: absolute;
-  top: 15%;
-  left: 50%;
-  /*width: 150px;*/
-  height: 150px;
-}
-.echart-left {
-  position: absolute;
-}
 .echart-right div {
   padding: 5px;
 }

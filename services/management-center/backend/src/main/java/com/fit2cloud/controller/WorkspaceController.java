@@ -36,45 +36,51 @@ public class WorkspaceController {
     @Resource
     private IWorkspaceService workspaceService;
 
-    @ApiOperation(value="分页查询工作空间",notes = "分页查询工作空间")
+    @ApiOperation(value = "分页查询工作空间", notes = "分页查询工作空间")
     @GetMapping("/list")
     @PreAuthorize("hasAnyCePermission('WORKSPACE:READ')")
-    @OperatedLog(resourceType= ResourceTypeEnum.WORKSPACE,operated = OperatedTypeEnum.SEARCH,
+    @OperatedLog(resourceType = ResourceTypeEnum.WORKSPACE, operated = OperatedTypeEnum.SEARCH,
             param = "#pageWorkspaceRequest")
-    public ResultHolder<Object> listByPage(
-            @Validated PageWorkspaceRequest pageWorkspaceRequest) {
+    public ResultHolder<Object> listByPage(@Validated PageWorkspaceRequest pageWorkspaceRequest) {
         return ResultHolder.success(workspaceService.pageWorkspace(pageWorkspaceRequest));
+    }
+
+    @ApiOperation(value = "查询工作空间数量", notes = "查询工作空间数量")
+    @GetMapping("/count")
+    @PreAuthorize("hasAnyCePermission('WORKSPACE:READ')")
+    public ResultHolder<Long> count() {
+        return ResultHolder.success(workspaceService.count());
     }
 
     @ApiOperation(value = "创建工作空间", notes = "创建工作空间")
     @PostMapping("/create")
     @PreAuthorize("hasAnyCePermission('WORKSPACE:CREATE')")
-    @OperatedLog(resourceType=ResourceTypeEnum.WORKSPACE,operated = OperatedTypeEnum.ADD,
+    @OperatedLog(resourceType = ResourceTypeEnum.WORKSPACE, operated = OperatedTypeEnum.ADD,
             content = "'创建了名为'+#workspaceRequest.name+'的工作空间'",
             param = "#workspaceRequest")
     public ResultHolder<Boolean> create(
             @RequestBody
-            @Validated(ValidationGroup.SAVE.class) WorkspaceRequest workspaceRequest){
+            @Validated(ValidationGroup.SAVE.class) WorkspaceRequest workspaceRequest) {
         Boolean result = workspaceService.create(workspaceRequest);
         return ResultHolder.success(result);
     }
 
-    @ApiOperation(value = "修改工作空间",notes = "修改工作空间")
+    @ApiOperation(value = "修改工作空间", notes = "修改工作空间")
     @PutMapping("/update")
     @PreAuthorize("hasAnyCePermission('WORKSPACE:EDIT')")
-    @OperatedLog(resourceType=ResourceTypeEnum.WORKSPACE,operated = OperatedTypeEnum.MODIFY,
+    @OperatedLog(resourceType = ResourceTypeEnum.WORKSPACE, operated = OperatedTypeEnum.MODIFY,
             resourceId = "#workspaceRequest.id",
             content = "'更新了ID为'+#workspaceRequest.id+'的工作空间'",
             param = "#workspaceRequest")
     public ResultHolder<Boolean> update(
             @RequestBody
-            @Validated(ValidationGroup.UPDATE.class) WorkspaceRequest workspaceRequest){
+            @Validated(ValidationGroup.UPDATE.class) WorkspaceRequest workspaceRequest) {
         return ResultHolder.success(workspaceService.update(workspaceRequest));
     }
 
-    @ApiOperation(value = "根据ID或者名称获取一个工作空间",notes = "根据ID或者名称获取一个工作空间")
+    @ApiOperation(value = "根据ID或者名称获取一个工作空间", notes = "根据ID或者名称获取一个工作空间")
     @GetMapping("/one")
-    @OperatedLog(resourceType=ResourceTypeEnum.WORKSPACE,operated = OperatedTypeEnum.SEARCH,
+    @OperatedLog(resourceType = ResourceTypeEnum.WORKSPACE, operated = OperatedTypeEnum.SEARCH,
             content = "'通过ID为:'+#id+',名称为:'+#name+'查询了工作空间'",
             resourceId = "#id",
             param = "#id+#name")
@@ -82,39 +88,39 @@ public class WorkspaceController {
             @ApiParam("工作空间ID")
             @RequestParam("id") String id,
             @ApiParam("工作空间名称")
-            @RequestParam("name") String name){
-        return ResultHolder.success(workspaceService.getOne(id,name));
+            @RequestParam("name") String name) {
+        return ResultHolder.success(workspaceService.getOne(id, name));
     }
 
-    @ApiOperation(value = "删除一个工作空间",notes = "删除一个工作空间")
+    @ApiOperation(value = "删除一个工作空间", notes = "删除一个工作空间")
     @DeleteMapping("/{workspaceId}")
-    @OperatedLog(resourceType=ResourceTypeEnum.WORKSPACE,operated = OperatedTypeEnum.DELETE,
+    @OperatedLog(resourceType = ResourceTypeEnum.WORKSPACE, operated = OperatedTypeEnum.DELETE,
             resourceId = "#workspaceId",
             param = "#workspaceId")
     @PreAuthorize("hasAnyCePermission('WORKSPACE:DELETE')")
     public ResultHolder<Boolean> delete(
             @ApiParam("工作空间ID")
             @NotNull(message = "{i18n.workspace.id.is.not.empty}")
-            @PathVariable("workspaceId") String workspaceId){
+            @PathVariable("workspaceId") String workspaceId) {
         return ResultHolder.success(workspaceService.delete(workspaceId));
     }
 
-    @ApiOperation(value = "批量删除工作空间",notes = "批量删除工作空间")
+    @ApiOperation(value = "批量删除工作空间", notes = "批量删除工作空间")
     @DeleteMapping
     @PreAuthorize("hasAnyCePermission('WORKSPACE:DELETE')")
-    @OperatedLog(resourceType=ResourceTypeEnum.WORKSPACE,operated = OperatedTypeEnum.BATCH_DELETE,
+    @OperatedLog(resourceType = ResourceTypeEnum.WORKSPACE, operated = OperatedTypeEnum.BATCH_DELETE,
             content = "'批量删除了'+#workspaces.size+'个工作空间'",
             param = "#workspaces")
     public ResultHolder<Boolean> batchDelete(
             @ApiParam("批量删除工作空间")
             @Size(min = 1, message = "{i18n.workspace.is.required}")
-            @RequestBody ArrayList<Workspace> workspaces){
+            @RequestBody ArrayList<Workspace> workspaces) {
         return ResultHolder.success(workspaceService.batchDelete(workspaces));
     }
 
     @ApiOperation(value = "批量添加工作空间", notes = "批量添加工作空间")
     @PostMapping("/batch")
-    @OperatedLog(resourceType=ResourceTypeEnum.WORKSPACE,operated = OperatedTypeEnum.BATCH_ADD,
+    @OperatedLog(resourceType = ResourceTypeEnum.WORKSPACE, operated = OperatedTypeEnum.BATCH_ADD,
             content = "'批量创建了'+#request.workspaceDetails.size+'个工作空间'",
             param = "#request")
     @PreAuthorize("hasAnyCePermission('WORKSPACE:CREATE')")

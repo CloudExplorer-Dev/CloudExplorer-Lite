@@ -3,13 +3,15 @@ package com.fit2cloud.dto;
 import com.fit2cloud.base.entity.VmCloudDisk;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 
 /**
  * @author jianneng
  * @date 2022/9/27 14:39
  **/
+@EqualsAndHashCode(callSuper = true)
 @Data
-public class VmCloudDiskDTO extends VmCloudDisk {
+public class AnalyticsDiskDTO extends VmCloudDisk {
 
     @ApiModelProperty("组织名称")
     private String organizationName;

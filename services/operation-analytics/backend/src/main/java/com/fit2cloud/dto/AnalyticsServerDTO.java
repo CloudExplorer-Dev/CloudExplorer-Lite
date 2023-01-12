@@ -1,24 +1,19 @@
 package com.fit2cloud.dto;
 
-import com.baomidou.mybatisplus.annotation.TableField;
-import com.fasterxml.jackson.annotation.JsonFormat;
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-import com.fasterxml.jackson.datatype.jsr310.deser.LocalDateTimeDeserializer;
-import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateTimeSerializer;
 import com.fit2cloud.base.entity.VmCloudServer;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
 
 /**
  * @author jianneng
  * @date 2022/12/24 11:25
  **/
+@EqualsAndHashCode(callSuper = true)
 @Data
-public class VmCloudServerDTO extends VmCloudServer {
+public class AnalyticsServerDTO extends VmCloudServer {
 
     @ApiModelProperty("组织名称")
     private String organizationName;

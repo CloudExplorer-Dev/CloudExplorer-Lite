@@ -1,10 +1,18 @@
 package com.fit2cloud.utils;
 
 import co.elastic.clients.elasticsearch._types.aggregations.CalendarInterval;
-import org.elasticsearch.search.aggregations.bucket.histogram.DateHistogramInterval;
+import com.fit2cloud.controller.response.BarTreeChartData;
+import jodd.bean.BeanUtil;
+import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.BeanUtils;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * @author jianneng
@@ -12,58 +20,13 @@ import java.time.format.DateTimeFormatter;
  **/
 public class OperationUtils {
 
-    /**
-     * 时间差值计算
-     * @param start
-     * @param end
-     * @return
-     */
-    public static DateHistogramInterval getIntervalUnit(long start, long end) {
-        // 计算时间差值，转为小时(/1000 / 60 / 60)
-        long hours = (end - start) / 3600000;
-        if (hours <= 168) {
-            // 小于一周
-            return DateHistogramInterval.HOUR;
-        }
-        // 小于3个月
-        if (hours <= 93 * 24) {
-            return DateHistogramInterval.DAY;
-        }
-        // 小于6个月
-        if (hours <= 186 * 24) {
-            return DateHistogramInterval.MONTH;
-        }
-        // 小于24月
-        if (hours <= 24 * 30 * 24) {
-            return DateHistogramInterval.MONTH;
-        } else {
-            return DateHistogramInterval.YEAR;
-        }
-    }
 
     /**
-     * 时间间隔单位转化
-     * @param time
-     * @param intervalUnit
-     * @return
+     * 获取时间间隔
+     * @param start 开始时间
+     * @param end 结束时间
+     * @return CalendarInterval
      */
-    public static String getTimeFormat(String time, DateHistogramInterval intervalUnit){
-
-        LocalDateTime dateTime = LocalDateTime.parse(time, DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
-        DateTimeFormatter formatter = null;
-
-        if (DateHistogramInterval.HOUR.equals(intervalUnit)){
-            formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH");
-        } else if(DateHistogramInterval.DAY.equals(intervalUnit)){
-            formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
-        } else if(DateHistogramInterval.MONTH.equals(intervalUnit)){
-            formatter = DateTimeFormatter.ofPattern("yyyy-MM");
-        } else if(DateHistogramInterval.YEAR.equals(intervalUnit)){
-            formatter = DateTimeFormatter.ofPattern("yyyy");
-        }
-        return formatter.format(dateTime);
-    }
-
     public static CalendarInterval getCalendarIntervalUnit(long start, long end) {
         // 计算时间差值，转为小时(/1000 / 60 / 60)
         long hours = (end - start) / 3600000;
@@ -87,11 +50,16 @@ public class OperationUtils {
         }
     }
 
+    /**
+     * 根据时间间隔获取时间格式
+     * intervalUnit为小时时，返回时间格式到小时
+     * @param time 要格式化的时间
+     * @param intervalUnit 间隔单位
+     * @return String
+     */
     public static String getTimeFormat(String time, CalendarInterval intervalUnit){
-
         LocalDateTime dateTime = LocalDateTime.parse(time, DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
         DateTimeFormatter formatter = null;
-
         if (CalendarInterval.Hour.equals(intervalUnit)){
             formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH");
         } else if(CalendarInterval.Day.equals(intervalUnit)){
@@ -101,7 +69,49 @@ public class OperationUtils {
         } else if(CalendarInterval.Year.equals(intervalUnit)){
             formatter = DateTimeFormatter.ofPattern("yyyy");
         }
+        assert formatter != null;
         return formatter.format(dateTime);
+    }
+
+    /**
+     * 初始化组织或工作空间的数据
+     * @param initList 初始化的数据
+     * @param orgWorkspaceDataList 授权数据
+     */
+    public static void initOrgWorkspaceAnalyticsData(List<BarTreeChartData> initList, List<BarTreeChartData> orgWorkspaceDataList) {
+        initList.forEach(v->{
+            List<BarTreeChartData> tmp = orgWorkspaceDataList.stream().filter(c-> StringUtils.equalsIgnoreCase(v.getId(),c.getId())).collect(Collectors.toList());
+            if(CollectionUtils.isNotEmpty(tmp)){
+                v.setValue(tmp.get(0).getValue());
+            }
+        });
+    }
+
+    /**
+     * 将工作空间作为组织子级
+     * @param workspaceMap 工作按照组织ID分组
+     * @param org 组织
+     */
+    public static void workspaceToOrgChildren(Map<String, List<BarTreeChartData>> workspaceMap, BarTreeChartData org) {
+        if(workspaceMap.get(org.getId())!=null){
+            List<BarTreeChartData> wk = workspaceMap.get(org.getId());
+            Long wkVmCount = wk.stream().mapToLong(BarTreeChartData::getValue).sum();
+            org.setValue(org.getValue()+wkVmCount);
+            org.getChildren().addAll(wk);
+        }
+    }
+
+    /**
+     * 将组织自己的数据添加到子级作为未授权数据
+     * @param currentOrg 当前组织
+     */
+    public static void setSelfToChildren(BarTreeChartData currentOrg){
+        BarTreeChartData children = new BarTreeChartData();
+        BeanUtils.copyProperties(currentOrg,children);
+        children.setChildren(new ArrayList<>());
+        children.setGroupName("available");
+        children.setName(currentOrg.getName()+"(未授权)");
+        currentOrg.getChildren().add(children);
     }
 
 }

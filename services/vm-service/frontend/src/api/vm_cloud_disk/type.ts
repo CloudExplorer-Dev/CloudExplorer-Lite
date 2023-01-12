@@ -16,6 +16,7 @@ interface VmCloudDiskVO {
   instanceUuid: string;
   vmInstanceName?: string;
   workspaceId?: string;
+  sourceId?: string;
   projectId?: string;
   bootable?: boolean;
   imageId?: string;

@@ -53,6 +53,13 @@ public class CloudAccountController {
         return ResultHolder.success(cloudAccountService.page(cloudAccountRequest));
     }
 
+    @GetMapping("count")
+    @ApiOperation(value = "查询云账号个数", notes = "查询云账号个数")
+    @PreAuthorize("hasAnyCePermission('CLOUD_ACCOUNT:READ')")
+    public ResultHolder<Long> count() {
+        return ResultHolder.success(cloudAccountService.count());
+    }
+
 
     @GetMapping("/{id}")
     @ApiOperation(value = "根据id查询云账号", notes = "根据id查询云账号")

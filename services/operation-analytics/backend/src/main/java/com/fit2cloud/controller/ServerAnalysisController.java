@@ -4,14 +4,12 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.fit2cloud.base.entity.CloudAccount;
 import com.fit2cloud.base.entity.VmCloudHost;
 import com.fit2cloud.controller.handler.ResultHolder;
-import com.fit2cloud.controller.request.base.resource.analysis.ResourceUsedTrendRequest;
-import com.fit2cloud.controller.request.host.PageHostRequest;
 import com.fit2cloud.controller.request.server.PageServerRequest;
 import com.fit2cloud.controller.request.server.ResourceAnalysisRequest;
+import com.fit2cloud.controller.response.BarTreeChartData;
 import com.fit2cloud.controller.response.ChartData;
+import com.fit2cloud.dto.AnalyticsServerDTO;
 import com.fit2cloud.dto.KeyValue;
-import com.fit2cloud.dto.VmCloudHostDTO;
-import com.fit2cloud.dto.VmCloudServerDTO;
 import com.fit2cloud.service.IServerAnalysisService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -40,7 +38,7 @@ public class ServerAnalysisController {
     @ApiOperation(value = "分页查询云主机", notes = "分页查询云主机")
     @GetMapping("/server/page")
     @PreAuthorize("hasAnyCePermission('SERVER_ANALYSIS:READ')")
-    public ResultHolder<IPage<VmCloudServerDTO>> pageServerList(@Validated PageServerRequest request) {
+    public ResultHolder<IPage<AnalyticsServerDTO>> pageServerList(@Validated PageServerRequest request) {
         return ResultHolder.success(iServerAnalysisService.pageServer(request));
     }
 
@@ -79,6 +77,14 @@ public class ServerAnalysisController {
     public ResultHolder<List<ChartData>> getResourceUsedTrendData(
             @Validated ResourceAnalysisRequest request) {
         return ResultHolder.success(iServerAnalysisService.getResourceTrendData(request));
+    }
+
+    @ApiOperation(value="组织或工作空间云主机分布",notes = "组织或工作空间云主机分布")
+    @GetMapping("/org_workspace_vm_count_bar")
+    @PreAuthorize("hasAnyCePermission('SERVER_ANALYSIS:READ')")
+    public ResultHolder<Map<String,List<BarTreeChartData>>> analyticsVmCloudServerByOrgWorkspace(
+            @Validated ResourceAnalysisRequest request) {
+        return ResultHolder.success(iServerAnalysisService.analyticsVmCloudServerByOrgWorkspace(request));
     }
 
 

@@ -16,12 +16,14 @@ public class ResourceAnalysisRequest {
     private List<String> accountIds;
     @ApiModelProperty("统计块")
     private boolean statisticalBlock;
-    @ApiModelProperty("月数")
-    private Long monthNumber;
+    @ApiModelProperty("天数")
+    private Long dayNumber;
     @ApiModelProperty("分布类型")
     private String spreadType;
     @ApiModelProperty("TOP类型")
     private String topType;
+    @ApiModelProperty("工作空间统计")
+    private boolean analysisWorkspace;
     private CalendarInterval intervalPosition;
 
 
