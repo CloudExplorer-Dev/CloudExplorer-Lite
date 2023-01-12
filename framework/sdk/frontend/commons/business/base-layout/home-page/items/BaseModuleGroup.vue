@@ -122,7 +122,7 @@ const baseList: Array<BaseModuleInfo> = [
     redirect: "/finance-management#/bill_view",
     /*unit: "元",*/
     type: "currency",
-    roles: ["ADMIN", "ORGADMIN"],
+    roles: ["USER"],
   },
   {
     icon: "zichanzonglan",
@@ -137,7 +137,7 @@ const baseList: Array<BaseModuleInfo> = [
     redirect: "/finance-management#/bill_view",
     /*unit: "元",*/
     type: "currency",
-    roles: ["ADMIN", "ORGADMIN"],
+    roles: ["USER"],
   },
 ];
 
@@ -174,6 +174,7 @@ const list = computed(() => {
         :name="obj.name"
         :redirect="obj.redirect"
         :func="obj.path"
+        :type="obj.type"
         :unit="obj.unit"
       />
     </el-col>

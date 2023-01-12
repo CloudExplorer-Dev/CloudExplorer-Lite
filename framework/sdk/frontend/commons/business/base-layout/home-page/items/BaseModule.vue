@@ -67,7 +67,7 @@ onMounted(() => {
             count?.toLocaleString("zh-CN", {
               style: "currency",
               currency: "CNY",
-              minimumSignificantDigits: 2,
+              minimumFractionDigits: 2,
               maximumFractionDigits: 2,
             })
           }}</span>
