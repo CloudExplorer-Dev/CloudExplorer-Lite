@@ -14,22 +14,24 @@ const props = withDefaults(
   defineProps<{
     needRoles: Array<"ADMIN" | "ORGADMIN" | "USER">;
     permission: any;
-    module: string;
+    module?: string;
     getHistoryTrend: (
       type: "MONTH" | "YEAR",
       historyNum: number,
       loading?: Ref<boolean>
     ) => Promise<Result<Array<any>>>;
     cardShadow?: "always" | "hover" | "never";
+    headPosition?: "left" | "center";
   }>(),
   {
+    headPosition: "center",
+    module: "finance-management",
     cardShadow: "always",
   }
 );
 
 const moduleStore = useModuleStore();
 const permissionStore = usePermissionStore();
-
 const userStore = useUserStore();
 
 const historyTrendLoading = ref<boolean>(false);
@@ -158,7 +160,13 @@ onMounted(() => {
     v-if="show"
     :shadow="cardShadow"
   >
-    <div class="header">
+    <div
+      class="header"
+      :class="{
+        'header-left': headPosition === 'left',
+        'header-center': headPosition === 'center',
+      }"
+    >
       <div class="title title_font">
         费用趋势<span class="sub_title_font">（单位：元）</span>
       </div>
@@ -201,8 +209,20 @@ onMounted(() => {
 .bill-trend {
   .header {
     display: flex;
-    justify-content: center;
     height: 20px;
+
+    .title_font {
+      height: 20px;
+      font-weight: bold;
+      font-size: 16px;
+      padding-bottom: 26px;
+    }
+  }
+  .header-center {
+    justify-content: center;
+  }
+  .header-left {
+    justify-content: start;
   }
 
   .operation_wrapper {
@@ -239,7 +259,8 @@ onMounted(() => {
   }
 
   .chart_wrapper {
-    height: 200px;
+    height: 100%;
+    min-height: 200px;
     width: 100%;
     display: flex;
   }
