@@ -18,6 +18,10 @@ public enum JobTypeConstants {
      */
     CLOUD_ACCOUNT_SYNC_BILL_JOB(102),
 
+    /**
+     * 安全合规扫描任务
+     */
+    SECURITY_COMPLIANCE_CLOUD_ACCOUNT_SYNC_JOB(103),
 
     /**
      * 云主机操作任务

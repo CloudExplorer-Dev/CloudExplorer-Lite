@@ -12,6 +12,7 @@ import com.aliyun.vpc20160428.models.DescribeVpcsResponseBody;
 import com.fit2cloud.common.constants.PlatformConstants;
 import com.fit2cloud.common.utils.JsonUtil;
 import com.fit2cloud.constants.ResourceTypeConstants;
+import com.fit2cloud.constants.SyncDimensionConstants;
 import com.fit2cloud.es.entity.ResourceInstance;
 import com.fit2cloud.provider.AbstractCloudProvider;
 import com.fit2cloud.provider.ICloudProvider;
@@ -23,6 +24,7 @@ import com.fit2cloud.provider.impl.aliyun.entity.request.*;
 import com.fit2cloud.provider.util.ResourceUtil;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -33,6 +35,27 @@ import java.util.Map;
  * {@code @注释: }
  */
 public class AliCloudProvider extends AbstractCloudProvider<AliSecurityComplianceCredential> implements ICloudProvider {
+
+    @Override
+    public Map<ResourceTypeConstants, SyncDimensionConstants> getResourceSyncDimensionConstants() {
+        HashMap<ResourceTypeConstants, SyncDimensionConstants> map = new HashMap<>();
+        map.put(ResourceTypeConstants.ECS, SyncDimensionConstants.REGION);
+        map.put(ResourceTypeConstants.REDIS, SyncDimensionConstants.REGION);
+        map.put(ResourceTypeConstants.MONGO_DB, SyncDimensionConstants.REGION);
+        map.put(ResourceTypeConstants.MYSQL, SyncDimensionConstants.REGION);
+        map.put(ResourceTypeConstants.SQL_SERVER, SyncDimensionConstants.REGION);
+        map.put(ResourceTypeConstants.POST_GRE_SQL, SyncDimensionConstants.REGION);
+        map.put(ResourceTypeConstants.MARIA_DB, SyncDimensionConstants.REGION);
+        map.put(ResourceTypeConstants.ELASTIC_SEARCH, SyncDimensionConstants.REGION);
+        map.put(ResourceTypeConstants.DISK, SyncDimensionConstants.REGION);
+        map.put(ResourceTypeConstants.LOAD_BALANCER, SyncDimensionConstants.REGION);
+        map.put(ResourceTypeConstants.PUBLIC_IP, SyncDimensionConstants.REGION);
+        map.put(ResourceTypeConstants.VPC, SyncDimensionConstants.REGION);
+        map.put(ResourceTypeConstants.RAM, SyncDimensionConstants.CloudAccount);
+        map.put(ResourceTypeConstants.OSS, SyncDimensionConstants.CloudAccount);
+        map.put(ResourceTypeConstants.SECURITY_GROUP, SyncDimensionConstants.REGION);
+        return map;
+    }
 
     @Override
     public List<ResourceInstance> listEcsInstance(String req) {
@@ -52,91 +75,91 @@ public class AliCloudProvider extends AbstractCloudProvider<AliSecurityComplianc
     @Override
     public List<ResourceInstance> listRedisInstance(String req) {
         ListRedisInstanceRequest listRdsInstanceRequest = JsonUtil.parseObject(req, ListRedisInstanceRequest.class);
-        List<com.aliyun.r_kvstore20150101.models.DescribeInstancesResponseBody.DescribeInstancesResponseBodyInstancesKVStoreInstance> describeInstancesResponseBodyInstancesKVStoreInstances = AliApi.listRedisInstance(listRdsInstanceRequest);
-        return describeInstancesResponseBodyInstancesKVStoreInstances
+        List<Map<String, Object>> maps = AliApi.listRedisInstanceCollection(listRdsInstanceRequest);
+        return maps
                 .stream()
-                .map(instance -> ResourceUtil.toResourceInstance(PlatformConstants.fit2cloud_ali_platform.name(), ResourceTypeConstants.REDIS, instance.getInstanceId(), instance.getInstanceName(), instance))
+                .map(instance -> ResourceUtil.toResourceInstance(PlatformConstants.fit2cloud_ali_platform.name(), ResourceTypeConstants.REDIS, ResourceUtil.toString(instance.get("instanceId")), ResourceUtil.toString(instance.get("instanceName")), instance))
                 .toList();
     }
 
     @Override
     public List<InstanceSearchField> listRedisInstanceSearchField() {
-        return new ArrayList<>();
+        return AliInstanceSearchFieldApi.listRedisInstanceSearchField();
     }
 
     @Override
     public List<ResourceInstance> listMongodbInstance(String req) {
         ListMongoDBRequest listMongoDBRequest = JsonUtil.parseObject(req, ListMongoDBRequest.class);
-        List<DescribeDBInstancesResponseBody.DescribeDBInstancesResponseBodyDBInstancesDBInstance> instances = AliApi.listMongoDBInstance(listMongoDBRequest);
+        List<Map<String, Object>> instances = AliApi.listMongoDBInstanceCollection(listMongoDBRequest);
         return instances
                 .stream()
-                .map(instance -> ResourceUtil.toResourceInstance(PlatformConstants.fit2cloud_ali_platform.name(), ResourceTypeConstants.MONGO_DB, instance.getDBInstanceId(), instance.getDBInstanceDescription(), instance))
+                .map(instance -> ResourceUtil.toResourceInstance(PlatformConstants.fit2cloud_ali_platform.name(), ResourceTypeConstants.MONGO_DB, ResourceUtil.toString(instance.get("dbinstanceId")), ResourceUtil.toString(instance.get("DBInstanceDescription")), instance))
                 .toList();
     }
 
     @Override
     public List<InstanceSearchField> listMongodbInstanceSearchField() {
-        return List.of();
+        return AliInstanceSearchFieldApi.listMongodbInstanceSearchField();
     }
 
     @Override
     public List<ResourceInstance> listMysqlInstance(String req) {
         ListRdsInstanceRequest listRdsInstanceRequest = JsonUtil.parseObject(req, ListRdsInstanceRequest.class);
-        List<com.aliyun.rds20140815.models.DescribeDBInstancesResponseBody.DescribeDBInstancesResponseBodyItemsDBInstance> instances = AliApi.listMysqlInstance(listRdsInstanceRequest);
+        List<Map<String, Object>> instances = AliApi.listMysqlInstanceCollection(listRdsInstanceRequest);
         return instances
                 .stream()
-                .map(instance -> ResourceUtil.toResourceInstance(PlatformConstants.fit2cloud_ali_platform.name(), ResourceTypeConstants.MYSQL, instance.getDBInstanceId(), instance.getDBInstanceDescription(), instance))
+                .map(instance -> ResourceUtil.toResourceInstance(PlatformConstants.fit2cloud_ali_platform.name(), ResourceTypeConstants.MYSQL, ResourceUtil.toString(instance.get("DBInstanceId")), ResourceUtil.toString(instance.get("DBInstanceDescription")), instance))
                 .toList();
     }
 
     @Override
     public List<InstanceSearchField> listMysqlInstanceSearchField() {
-        return List.of();
+        return AliInstanceSearchFieldApi.listMysqlInstanceSearchField();
     }
 
     @Override
     public List<ResourceInstance> listSqlServerInstance(String req) {
         ListRdsInstanceRequest listRdsInstanceRequest = JsonUtil.parseObject(req, ListRdsInstanceRequest.class);
-        List<com.aliyun.rds20140815.models.DescribeDBInstancesResponseBody.DescribeDBInstancesResponseBodyItemsDBInstance> instances = AliApi.listSqlServerInstance(listRdsInstanceRequest);
+        List<Map<String, Object>> instances = AliApi.listSqlServerInstanceCollection(listRdsInstanceRequest);
         return instances
                 .stream()
-                .map(instance -> ResourceUtil.toResourceInstance(PlatformConstants.fit2cloud_ali_platform.name(), ResourceTypeConstants.SQL_SERVER, instance.getDBInstanceId(), instance.getDBInstanceDescription(), instance))
+                .map(instance -> ResourceUtil.toResourceInstance(PlatformConstants.fit2cloud_ali_platform.name(), ResourceTypeConstants.SQL_SERVER, ResourceUtil.toString(instance.get("DBInstanceId")), ResourceUtil.toString(instance.get("DBInstanceDescription")), instance))
                 .toList();
     }
 
     @Override
     public List<InstanceSearchField> listSqlServerInstanceSearchField() {
-        return List.of();
+        return AliInstanceSearchFieldApi.listSqlServerInstanceSearchField();
     }
 
     @Override
     public List<ResourceInstance> listPostGreSqlInstance(String req) {
         ListRdsInstanceRequest listRdsInstanceRequest = JsonUtil.parseObject(req, ListRdsInstanceRequest.class);
-        List<com.aliyun.rds20140815.models.DescribeDBInstancesResponseBody.DescribeDBInstancesResponseBodyItemsDBInstance> instances = AliApi.listPostgreSqlInstance(listRdsInstanceRequest);
+        List<Map<String, Object>> instances = AliApi.listPostgreSqlInstanceCollection(listRdsInstanceRequest);
         return instances
                 .stream()
-                .map(instance -> ResourceUtil.toResourceInstance(PlatformConstants.fit2cloud_ali_platform.name(), ResourceTypeConstants.POST_GRE_SQL, instance.getDBInstanceId(), instance.getDBInstanceDescription(), instance))
+                .map(instance -> ResourceUtil.toResourceInstance(PlatformConstants.fit2cloud_ali_platform.name(), ResourceTypeConstants.POST_GRE_SQL, ResourceUtil.toString(instance.get("DBInstanceId")), ResourceUtil.toString(instance.get("DBInstanceDescription")), instance))
                 .toList();
     }
 
     @Override
     public List<InstanceSearchField> listPostGreSqlInstanceSearchField() {
-        return null;
+        return AliInstanceSearchFieldApi.listPostGreSqlInstanceSearchField();
     }
 
     @Override
     public List<ResourceInstance> listMariaDBInstance(String req) {
         ListRdsInstanceRequest listRdsInstanceRequest = JsonUtil.parseObject(req, ListRdsInstanceRequest.class);
-        List<com.aliyun.rds20140815.models.DescribeDBInstancesResponseBody.DescribeDBInstancesResponseBodyItemsDBInstance> instances = AliApi.listMariaDBInstance(listRdsInstanceRequest);
+        List<Map<String, Object>> instances = AliApi.listMariaDBInstanceCollection(listRdsInstanceRequest);
         return instances
                 .stream()
-                .map(instance -> ResourceUtil.toResourceInstance(PlatformConstants.fit2cloud_ali_platform.name(), ResourceTypeConstants.MARIA_DB, instance.getDBInstanceId(), instance.getDBInstanceDescription(), instance))
+                .map(instance -> ResourceUtil.toResourceInstance(PlatformConstants.fit2cloud_ali_platform.name(), ResourceTypeConstants.MARIA_DB, ResourceUtil.toString(instance.get("DBInstanceId")), ResourceUtil.toString(instance.get("DBInstanceDescription")), instance))
                 .toList();
     }
 
     @Override
     public List<InstanceSearchField> listMariaDBInstanceSearchField() {
-        return List.of();
+        return AliInstanceSearchFieldApi.listMariadbInstanceSearchField();
     }
 
     @Override
@@ -151,7 +174,7 @@ public class AliCloudProvider extends AbstractCloudProvider<AliSecurityComplianc
 
     @Override
     public List<InstanceSearchField> listElasticSearchInstanceSearchField() {
-        return List.of();
+        return AliInstanceSearchFieldApi.listElasticSearchInstanceSearchField();
     }
 
     @Override
@@ -166,7 +189,7 @@ public class AliCloudProvider extends AbstractCloudProvider<AliSecurityComplianc
 
     @Override
     public List<InstanceSearchField> listDiskInstanceSearchField() {
-        return List.of();
+        return AliInstanceSearchFieldApi.listDiskInstanceSearchField();
     }
 
     @Override
@@ -181,7 +204,7 @@ public class AliCloudProvider extends AbstractCloudProvider<AliSecurityComplianc
 
     @Override
     public List<InstanceSearchField> listLoadBalancerInstanceSearchField() {
-        return List.of();
+        return AliInstanceSearchFieldApi.listLoadBalancerInstanceSearchField();
     }
 
     @Override
@@ -196,7 +219,7 @@ public class AliCloudProvider extends AbstractCloudProvider<AliSecurityComplianc
 
     @Override
     public List<InstanceSearchField> listPublicIpInstanceSearchField() {
-        return List.of();
+        return AliInstanceSearchFieldApi.listPublicIpInstanceSearchField();
     }
 
     @Override
@@ -211,7 +234,7 @@ public class AliCloudProvider extends AbstractCloudProvider<AliSecurityComplianc
 
     @Override
     public List<InstanceSearchField> listVpcInstanceSearchField() {
-        return null;
+        return AliInstanceSearchFieldApi.listVPCInstanceSearchField();
     }
 
     @Override
@@ -231,7 +254,7 @@ public class AliCloudProvider extends AbstractCloudProvider<AliSecurityComplianc
 
     @Override
     public List<InstanceSearchField> listRamInstanceSearchField() {
-        return null;
+        return AliInstanceSearchFieldApi.listRAMInstanceSearchField();
     }
 
     @Override
@@ -240,12 +263,27 @@ public class AliCloudProvider extends AbstractCloudProvider<AliSecurityComplianc
         List<Map<String, Object>> instances = AliApi.listBucketCollectionInstance(listBucketInstanceRequest);
         return instances
                 .stream()
-                .map(instance -> ResourceUtil.toResourceInstance(PlatformConstants.fit2cloud_ali_platform.name(), ResourceTypeConstants.OSS, instance.get("name").toString(), instance.get("name").toString(), instance))
+                .map(instance -> ResourceUtil.toResourceInstance(PlatformConstants.fit2cloud_ali_platform.name(), ResourceTypeConstants.OSS, ResourceUtil.toString(instance.get("name")), ResourceUtil.toString(instance.get("name")), instance))
                 .toList();
     }
 
     @Override
     public List<InstanceSearchField> listBucketInstanceSearchField() {
-        return null;
+        return AliInstanceSearchFieldApi.listOSSInstanceSearchField();
+    }
+
+    @Override
+    public List<ResourceInstance> listSecurityGroupInstance(String req) {
+        ListSecurityGroupInstanceRequest listSecurityGroupInstanceRequest = JsonUtil.parseObject(req, ListSecurityGroupInstanceRequest.class);
+        List<Map<String, Object>> instances = AliApi.listSecurityGroupCollectionInstance(listSecurityGroupInstanceRequest);
+        return instances
+                .stream()
+                .map(instance -> ResourceUtil.toResourceInstance(PlatformConstants.fit2cloud_ali_platform.name(), ResourceTypeConstants.SECURITY_GROUP, ResourceUtil.toString(instance.get("securityGroupId")), ResourceUtil.toString(instance.get("securityGroupName")), instance))
+                .toList();
+    }
+
+    @Override
+    public List<InstanceSearchField> listSecurityGroupInstanceSearchField() {
+        return AliInstanceSearchFieldApi.listSecurityGroupInstanceSearchField();
     }
 }

@@ -2,22 +2,18 @@ package com.fit2cloud.provider.impl.tencent.api;
 
 import com.fit2cloud.common.provider.exception.ReTryException;
 import com.fit2cloud.common.provider.util.PageUtil;
+import com.fit2cloud.common.utils.JsonUtil;
 import com.fit2cloud.provider.impl.tencent.client.CeCosClient;
-import com.fit2cloud.provider.impl.tencent.entity.credential.TencentSecurityComplianceCredential;
 import com.fit2cloud.provider.impl.tencent.entity.request.*;
 import com.fit2cloud.provider.impl.tencent.entity.request.GetBucketAclRequest;
 import com.fit2cloud.provider.impl.tencent.entity.response.BucketEncryptionResponse;
 import com.fit2cloud.provider.impl.tencent.parser.CeXmlResponseSaxParser;
 import com.fit2cloud.provider.util.ResourceUtil;
 import com.qcloud.cos.COSClient;
-import com.qcloud.cos.ClientConfig;
 import com.qcloud.cos.exception.CosServiceException;
 import com.qcloud.cos.http.*;
-import com.qcloud.cos.internal.CosServiceRequest;
 import com.qcloud.cos.internal.CosServiceResponse;
-import com.qcloud.cos.internal.XmlResponsesSaxParser;
 import com.qcloud.cos.model.*;
-import com.qcloud.cos.utils.IOUtils;
 import com.tencentcloudapi.cbs.v20170312.CbsClient;
 import com.tencentcloudapi.cbs.v20170312.models.DescribeDisksRequest;
 import com.tencentcloudapi.cbs.v20170312.models.Disk;
@@ -40,12 +36,9 @@ import com.tencentcloudapi.redis.v20180412.models.InstanceSet;
 import com.tencentcloudapi.sqlserver.v20180328.SqlserverClient;
 import com.tencentcloudapi.sqlserver.v20180328.models.DBInstance;
 import com.tencentcloudapi.vpc.v20170312.VpcClient;
-import com.tencentcloudapi.vpc.v20170312.models.DescribeNetworkInterfacesRequest;
-import com.tencentcloudapi.vpc.v20170312.models.DescribeVpcsRequest;
-import com.tencentcloudapi.vpc.v20170312.models.NetworkInterface;
-import com.tencentcloudapi.vpc.v20170312.models.Vpc;
-import org.apache.commons.lang3.StringUtils;
+import com.tencentcloudapi.vpc.v20170312.models.*;
 import org.springframework.beans.BeanUtils;
+import org.springframework.context.annotation.Bean;
 
 import java.util.*;
 
@@ -430,7 +423,6 @@ public class TencentApi {
                 return null;
             }
         }, 5);
-
         BucketEncryptionResponse.ServerSideEncryptionConfiguration serverSideEncryptionConfiguration = PageUtil.reTry(() -> {
             try {
                 return getBucketEncryption(cosClient, bucketName);
@@ -440,7 +432,7 @@ public class TencentApi {
             }
         }, 5);
         collection.put("referer", bucketRefererConfiguration);
-        collection.put("access", accessControlList);
+        collection.put("access", JsonUtil.parseObject(JsonUtil.toJSONString(accessControlList), Map.class));
         collection.put("encryption", serverSideEncryptionConfiguration);
         return collection;
     }
@@ -524,6 +516,78 @@ public class TencentApi {
             }
             throw e;
         }
+
+    }
+
+    /**
+     * 获取安全组 安全组规则合集实例
+     *
+     * @param request 请求对象
+     * @return 安全组 安全组规则合集实例
+     */
+    public static List<Map<String, Object>> listSecurityGroupCollectionInstance(ListSecurityGroupInstanceRequest request) {
+        return listSecurityGroupInstance(request).stream().map(securityGroup -> {
+            Map<String, Object> securityGroupMap = ResourceUtil.objectToMap(securityGroup);
+            String securityGroupId = securityGroup.getSecurityGroupId();
+            DescribeSecurityGroupPoliciesResponse securityGroupRuleInstance = getSecurityGroupRuleInstance(request.getCredential().getVpcClient(request.getRegionId()), securityGroupId);
+            securityGroupMap.put("rule", ResourceUtil.objectToMap(securityGroupRuleInstance.getSecurityGroupPolicySet()));
+            return securityGroupMap;
+        }).toList();
+    }
+
+    /**
+     * 获取 安全组实例
+     *
+     * @param request 请求对象
+     * @return 安全组实例
+     */
+    public static List<SecurityGroup> listSecurityGroupInstance(ListSecurityGroupInstanceRequest request) {
+        VpcClient vpcClient = request.getCredential().getVpcClient(request.getRegionId());
+        return PageUtil.page(request,
+                req -> {
+                    try {
+                        DescribeSecurityGroupsRequest describeInstancesRequest = new DescribeSecurityGroupsRequest();
+                        BeanUtils.copyProperties(req, describeInstancesRequest);
+                        return vpcClient.DescribeSecurityGroups(describeInstancesRequest);
+                    } catch (Exception e) {
+                        ReTryException.throwReTry(e);
+                        throw new RuntimeException(e);
+                    }
+                },
+                res -> Arrays.stream(res.getSecurityGroupSet()).toList(),
+                (req, res) -> Integer.parseInt(req.getLimit()) <= res.getSecurityGroupSet().length,
+                req -> req.setOffset(req.getOffset() + req.getLimit()));
+    }
+
+    /**
+     * 获取安全组规则实例
+     *
+     * @param request 请求对象
+     * @return 安全组规则实例
+     */
+    public static DescribeSecurityGroupPoliciesResponse getSecurityGroupRuleInstance(GetSecurityGroupRuleInstanceRequest request) {
+        VpcClient vpcClient = request.getCredential().getVpcClient(request.getRegionId());
+        return getSecurityGroupRuleInstance(vpcClient, request.getSecurityGroupId());
+    }
+
+    /**
+     * 获取安全组规则实例
+     *
+     * @param vpcClient       vpc客户端
+     * @param securityGroupId 安全组id
+     * @return 安全组规则实例
+     */
+    private static DescribeSecurityGroupPoliciesResponse getSecurityGroupRuleInstance(VpcClient vpcClient, String securityGroupId) {
+        DescribeSecurityGroupPoliciesRequest req = new DescribeSecurityGroupPoliciesRequest();
+        req.setSecurityGroupId(securityGroupId);
+        return PageUtil.reTry(() -> {
+            try {
+                return vpcClient.DescribeSecurityGroupPolicies(req);
+            } catch (Exception e) {
+                ReTryException.throwReTry(e);
+                throw new RuntimeException(e);
+            }
+        }, 5);
 
     }
 

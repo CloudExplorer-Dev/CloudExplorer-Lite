@@ -4,6 +4,7 @@ import com.fit2cloud.common.constants.PlatformConstants;
 import com.fit2cloud.common.provider.impl.tencent.entity.credential.TencentBaseCredential;
 import com.fit2cloud.common.utils.JsonUtil;
 import com.fit2cloud.constants.ResourceTypeConstants;
+import com.fit2cloud.constants.SyncDimensionConstants;
 import com.fit2cloud.es.entity.ResourceInstance;
 import com.fit2cloud.provider.AbstractCloudProvider;
 import com.fit2cloud.provider.ICloudProvider;
@@ -22,6 +23,7 @@ import com.tencentcloudapi.sqlserver.v20180328.models.DBInstance;
 import com.tencentcloudapi.vpc.v20170312.models.NetworkInterface;
 import com.tencentcloudapi.vpc.v20170312.models.Vpc;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -32,6 +34,26 @@ import java.util.Map;
  * {@code @注释: }
  */
 public class TencentCloudProvider extends AbstractCloudProvider<TencentBaseCredential> implements ICloudProvider {
+
+    @Override
+    public Map<ResourceTypeConstants, SyncDimensionConstants> getResourceSyncDimensionConstants() {
+        HashMap<ResourceTypeConstants, SyncDimensionConstants> map = new HashMap<>();
+        map.put(ResourceTypeConstants.ECS, SyncDimensionConstants.REGION);
+        map.put(ResourceTypeConstants.REDIS, SyncDimensionConstants.REGION);
+        map.put(ResourceTypeConstants.MONGO_DB, SyncDimensionConstants.REGION);
+        map.put(ResourceTypeConstants.MYSQL, SyncDimensionConstants.REGION);
+        map.put(ResourceTypeConstants.SQL_SERVER, SyncDimensionConstants.REGION);
+        map.put(ResourceTypeConstants.POST_GRE_SQL, SyncDimensionConstants.REGION);
+        map.put(ResourceTypeConstants.MARIA_DB, SyncDimensionConstants.REGION);
+        map.put(ResourceTypeConstants.ELASTIC_SEARCH, SyncDimensionConstants.REGION);
+        map.put(ResourceTypeConstants.DISK, SyncDimensionConstants.REGION);
+        map.put(ResourceTypeConstants.LOAD_BALANCER, SyncDimensionConstants.REGION);
+        map.put(ResourceTypeConstants.PUBLIC_IP, SyncDimensionConstants.REGION);
+        map.put(ResourceTypeConstants.VPC, SyncDimensionConstants.REGION);
+        map.put(ResourceTypeConstants.OSS, SyncDimensionConstants.CloudAccount);
+        map.put(ResourceTypeConstants.SECURITY_GROUP, SyncDimensionConstants.REGION);
+        return map;
+    }
 
     @Override
     public List<ResourceInstance> listEcsInstance(String req) {
@@ -235,7 +257,23 @@ public class TencentCloudProvider extends AbstractCloudProvider<TencentBaseCrede
 
     @Override
     public List<InstanceSearchField> listBucketInstanceSearchField() {
-        return null;
+        return TencentInstanceSearchFieldApi.listOSSInstanceSearchField();
+    }
+
+    @Override
+    public List<ResourceInstance> listSecurityGroupInstance(String req) {
+        ListSecurityGroupInstanceRequest listSecurityGroupInstanceRequest = JsonUtil.parseObject(req, ListSecurityGroupInstanceRequest.class);
+        List<Map<String, Object>> instances = TencentApi.listSecurityGroupCollectionInstance(listSecurityGroupInstanceRequest);
+        return instances
+                .stream()
+                .map(instance -> ResourceUtil.toResourceInstance(PlatformConstants.fit2cloud_tencent_platform.name(),
+                        ResourceTypeConstants.SECURITY_GROUP, instance.get("securityGroupId").toString(), instance.get("securityGroupName").toString(), instance))
+                .toList();
+    }
+
+    @Override
+    public List<InstanceSearchField> listSecurityGroupInstanceSearchField() {
+        return List.of();
     }
 
 

@@ -76,7 +76,12 @@ public enum ResourceTypeConstants {
     /**
      * 对象存储
      */
-    OSS("对象存储", ICloudProvider::listBucketInstance, ICloudProvider::listBucketInstanceSearchField);
+    OSS("对象存储", ICloudProvider::listBucketInstance, ICloudProvider::listBucketInstanceSearchField),
+
+    /**
+     * 安全组
+     */
+    SECURITY_GROUP("安全组", ICloudProvider::listSecurityGroupInstance, ICloudProvider::listSecurityGroupInstanceSearchField);
 
     /**
      * 提示

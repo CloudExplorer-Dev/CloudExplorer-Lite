@@ -4,9 +4,11 @@ import co.elastic.clients.elasticsearch.ElasticsearchClient;
 import co.elastic.clients.json.jackson.JacksonJsonpMapper;
 import co.elastic.clients.transport.ElasticsearchTransport;
 import co.elastic.clients.transport.rest_client.RestClientTransport;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.fit2cloud.common.log.utils.LogUtil;
+import com.fit2cloud.common.utils.JsonUtil;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.Header;
 import org.apache.http.HttpHost;
@@ -69,6 +71,8 @@ public class ElasticSearchConfig extends ElasticsearchConfigurationSupport {
         JacksonJsonpMapper jacksonJsonpMapper = new JacksonJsonpMapper();
         jacksonJsonpMapper.objectMapper().registerModule(new JavaTimeModule());
         jacksonJsonpMapper.objectMapper().configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+        jacksonJsonpMapper.objectMapper().setSerializationInclusion(JsonInclude.Include.NON_NULL);
+        jacksonJsonpMapper.objectMapper().setSerializationInclusion(JsonInclude.Include.NON_EMPTY);
         ElasticsearchTransport transport = new RestClientTransport(
                 restClient, jacksonJsonpMapper);
         return new ElasticsearchClient(transport);

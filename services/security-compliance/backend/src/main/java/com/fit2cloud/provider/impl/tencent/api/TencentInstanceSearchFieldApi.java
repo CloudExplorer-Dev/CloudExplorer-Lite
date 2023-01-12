@@ -14,7 +14,15 @@ import java.util.List;
  * {@code @注释: }
  */
 public class TencentInstanceSearchFieldApi {
+    /**
+     * 云服务器实例前缀
+     */
     public static final String ECS_INSTANCE_PREFIX = "instance.fit2cloud_tencent_platform_ECS.";
+
+    /**
+     * 对象存储实例前缀
+     */
+    public static final String OSS_INSTANCE_PREFIX = "instance.fit2cloud_tencent_platform_OSS.";
 
     public static List<InstanceSearchField> listEcsInstanceSearchField() {
         InstanceSearchField instanceChargeType = new InstanceSearchField("计费模式", "instanceChargeType.keyword", InstanceFieldType.Enum,
@@ -112,4 +120,37 @@ public class TencentInstanceSearchFieldApi {
                 defaultLoginUser, defaultLoginPort, systemDiskType, systemDiskSize, dataDiskSize, dataDiskDeleteWithInstance, dataDiskEncrypt, dataDiskType
                 , internetAccessibleInternetChargeType, internetAccessiblePublicIpAssigned, internetAccessibleInternetAccessible));
     }
+
+    public static List<InstanceSearchField> listOSSInstanceSearchField() {
+        InstanceSearchField refererStatus = new InstanceSearchField("是否开启防盗链", "referer.status.keyword", InstanceFieldType.Enum,
+                List.of(new DefaultKeyValue<>("开启", "Enabled"),
+                        new DefaultKeyValue<>("关闭", null)
+                ));
+
+        InstanceSearchField refererType = new InstanceSearchField("防盗链类型", "referer.refererType.keyword", InstanceFieldType.Enum,
+                List.of(new DefaultKeyValue<>("黑名单", "Black-List"),
+                        new DefaultKeyValue<>("白名单", "White-List")
+                ));
+        InstanceSearchField refererDomainList = new InstanceSearchField("生效域名列表", "referer.domainList", InstanceFieldType.ArrayString);
+
+        InstanceSearchField refererEmptyReferConfiguration = new InstanceSearchField("是否允许空Referer访问", "referer.emptyReferConfiguration.keyword", InstanceFieldType.Enum,
+                List.of(new DefaultKeyValue<>("允许", "Allow"),
+                        new DefaultKeyValue<>("不允许", "Deny")
+                ));
+
+        InstanceSearchField accessCannedAccessControl = new InstanceSearchField("公共权限", "access.cannedAccessControl.keyword", InstanceFieldType.Enum,
+                List.of(new DefaultKeyValue<>("允许", "Private"),
+                        new DefaultKeyValue<>("公有读私有写", "PublicRead"),
+                        new DefaultKeyValue<>("公有读写", "PublicReadWrite")
+                ));
+        InstanceSearchField encryptionSseAlgorithm = new InstanceSearchField("加密类型", "encryption.rule.applyServerSideEncryptionByDefault.sseAlgorithm.keyword", InstanceFieldType.Enum,
+                List.of(new DefaultKeyValue<>("未开启", null),
+                        new DefaultKeyValue<>("KMS", "KMS"),
+                        new DefaultKeyValue<>("AES256", "AES256")));
+
+        return FieldUtil.appendPrefixField(OSS_INSTANCE_PREFIX, List.of(refererStatus, refererType, refererDomainList, refererEmptyReferConfiguration
+                , accessCannedAccessControl, encryptionSseAlgorithm));
+
+    }
+
 }
