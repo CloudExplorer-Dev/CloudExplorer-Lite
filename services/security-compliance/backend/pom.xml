@@ -144,6 +144,13 @@
             <artifactId>tencentcloud-sdk-java-vpc</artifactId>
             <version>3.1.667</version>
         </dependency>
+
+        <!--      腾讯云 访问控制-->
+        <dependency>
+            <groupId>com.tencentcloudapi</groupId>
+            <artifactId>tencentcloud-sdk-java-cam</artifactId>
+            <version>3.1.677</version>
+        </dependency>
         <!--        华为云 red MySQL,PostGreSQL,SQLServer-->
         <dependency>
             <groupId>com.huaweicloud.sdk</groupId>

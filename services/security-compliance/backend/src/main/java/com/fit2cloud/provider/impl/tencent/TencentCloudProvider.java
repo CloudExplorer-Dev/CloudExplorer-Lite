@@ -13,6 +13,7 @@ import com.fit2cloud.provider.impl.tencent.api.TencentApi;
 import com.fit2cloud.provider.impl.tencent.api.TencentInstanceSearchFieldApi;
 import com.fit2cloud.provider.impl.tencent.entity.request.*;
 import com.fit2cloud.provider.util.ResourceUtil;
+import com.tencentcloudapi.cam.v20190116.models.SubAccountInfo;
 import com.tencentcloudapi.cbs.v20170312.models.Disk;
 import com.tencentcloudapi.cdb.v20170320.models.InstanceInfo;
 import com.tencentcloudapi.clb.v20180317.models.LoadBalancer;
@@ -20,6 +21,7 @@ import com.tencentcloudapi.cvm.v20170312.models.Instance;
 import com.tencentcloudapi.mongodb.v20190725.models.InstanceDetail;
 import com.tencentcloudapi.redis.v20180412.models.InstanceSet;
 import com.tencentcloudapi.sqlserver.v20180328.models.DBInstance;
+import com.tencentcloudapi.vpc.v20170312.models.Address;
 import com.tencentcloudapi.vpc.v20170312.models.NetworkInterface;
 import com.tencentcloudapi.vpc.v20170312.models.Vpc;
 
@@ -52,6 +54,7 @@ public class TencentCloudProvider extends AbstractCloudProvider<TencentBaseCrede
         map.put(ResourceTypeConstants.VPC, SyncDimensionConstants.REGION);
         map.put(ResourceTypeConstants.OSS, SyncDimensionConstants.CloudAccount);
         map.put(ResourceTypeConstants.SECURITY_GROUP, SyncDimensionConstants.REGION);
+        map.put(ResourceTypeConstants.RAM, SyncDimensionConstants.CloudAccount);
         return map;
     }
 
@@ -187,7 +190,7 @@ public class TencentCloudProvider extends AbstractCloudProvider<TencentBaseCrede
 
     @Override
     public List<InstanceSearchField> listDiskInstanceSearchField() {
-        return List.of();
+        return TencentInstanceSearchFieldApi.listDISKInstanceSearchField();
     }
 
     @Override
@@ -208,16 +211,16 @@ public class TencentCloudProvider extends AbstractCloudProvider<TencentBaseCrede
     @Override
     public List<ResourceInstance> listPublicIpInstance(String req) {
         ListPublicIpInstanceRequest listPublicIpInstanceRequest = JsonUtil.parseObject(req, ListPublicIpInstanceRequest.class);
-        List<NetworkInterface> instances = TencentApi.listPublicIpInstance(listPublicIpInstanceRequest);
+        List<Address> instances = TencentApi.listPublicIpInstance(listPublicIpInstanceRequest);
         return instances
                 .stream()
-                .map(instance -> ResourceUtil.toResourceInstance(PlatformConstants.fit2cloud_tencent_platform.name(), ResourceTypeConstants.PUBLIC_IP, instance.getResourceId(), instance.getNetworkInterfaceName(), instance))
+                .map(instance -> ResourceUtil.toResourceInstance(PlatformConstants.fit2cloud_tencent_platform.name(), ResourceTypeConstants.PUBLIC_IP, instance.getInstanceId(), instance.getAddressName(), instance))
                 .toList();
     }
 
     @Override
     public List<InstanceSearchField> listPublicIpInstanceSearchField() {
-        return List.of();
+        return TencentInstanceSearchFieldApi.listPublicIpInstanceSearchField();
     }
 
     @Override
@@ -232,17 +235,22 @@ public class TencentCloudProvider extends AbstractCloudProvider<TencentBaseCrede
 
     @Override
     public List<InstanceSearchField> listVpcInstanceSearchField() {
-        return List.of();
+        return TencentInstanceSearchFieldApi.listVpcInstanceSearchField();
     }
 
     @Override
     public List<ResourceInstance> listRamInstance(String req) {
-        return List.of();
+        ListUsersInstanceRequest listUsersInstanceRequest = JsonUtil.parseObject(req, ListUsersInstanceRequest.class);
+        List<Map<String, Object>> instances = TencentApi.listSubUserInstanceCollection(listUsersInstanceRequest);
+        return instances
+                .stream()
+                .map(instance -> ResourceUtil.toResourceInstance(PlatformConstants.fit2cloud_tencent_platform.name(), ResourceTypeConstants.RAM, ResourceUtil.toString(instance.get("uin")), ResourceUtil.toString(instance.get("name")), instance))
+                .toList();
     }
 
     @Override
     public List<InstanceSearchField> listRamInstanceSearchField() {
-        return null;
+        return List.of();
     }
 
     @Override
@@ -273,7 +281,7 @@ public class TencentCloudProvider extends AbstractCloudProvider<TencentBaseCrede
 
     @Override
     public List<InstanceSearchField> listSecurityGroupInstanceSearchField() {
-        return List.of();
+        return TencentInstanceSearchFieldApi.listSecurityGroupInstanceSearchField();
     }
 
 
