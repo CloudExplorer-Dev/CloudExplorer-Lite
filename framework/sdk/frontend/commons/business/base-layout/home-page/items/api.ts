@@ -25,9 +25,17 @@ export function getIncreaseTrend(
   );
 }
 
+export function getSpreadData(
+  req: any,
+  loading?: Ref<boolean>
+): Promise<Result<any>> {
+  return get("/operation-analytics/api/server_analysis/spread", req, loading);
+}
+
 const api = {
   getHistoryTrend,
   getIncreaseTrend,
+  getSpreadData,
 };
 
 export default api;
