@@ -9,10 +9,12 @@ import SecurityInfo from "./items/SecurityInfo.vue";
 import QuickAccess from "./items/QuickAccess.vue";
 import BillTrend from "./items/BillTrend.vue";
 import ServerIncreaseTrend from "./items/ServerIncreaseTrend.vue";
-import { useUserStore } from "@commons/stores/modules/user";
+import ServerDistribution from "./items/ServerDistribution.vue";
 
 import { getHistoryTrend } from "./items/api";
 import _ from "lodash";
+
+import { useUserStore } from "@commons/stores/modules/user";
 import { useModuleStore } from "@commons/stores/modules/module";
 import { usePermissionStore } from "@commons/stores/modules/permission";
 
@@ -55,7 +57,7 @@ onMounted(() => {
       <el-row :gutter="20" type="flex">
         <el-col :span="16">
           <div class="flex-content">
-            <BaseModuleGroup class="flex-div-1" />
+            <BaseModuleGroup />
             <QuickAccess class="flex-div-1 divide-info" />
             <BillTrend
               class="flex-div-1 divide-info"
@@ -69,10 +71,17 @@ onMounted(() => {
         <el-col :span="8">
           <div class="flex-content">
             <UserInfo class="flex-div-2 divide-info" />
-            <BillModuleGroup class="flex-div-1 divide-info" />
+            <BillModuleGroup />
             <SecurityInfo
               class="flex-div-2 divide-info"
               v-if="userStore.currentRole === 'ADMIN'"
+            />
+            <ServerDistribution
+              class="flex-div-2 divide-info"
+              :need-roles="['USER']"
+              :permission="'[operation-analytics]SERVER_ANALYSIS:READ'"
+              type="byAccount"
+              title="资源分布"
             />
           </div>
         </el-col>

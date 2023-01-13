@@ -78,13 +78,7 @@ const list = computed(() => {
 });
 </script>
 <template>
-  <el-row
-    :gutter="20"
-    type="flex"
-    v-for="(row, index) in list"
-    :key="index"
-    style="height: 100%"
-  >
+  <el-row :gutter="20" type="flex" v-for="(row, index) in list" :key="index">
     <el-col :span="12" v-for="(obj, x) in row" :key="x">
       <BaseModule
         style="height: 100%"

@@ -308,8 +308,8 @@ const getIncreaseTrend = (chartName: string) => {
   _.set(params, "dayNumber", paramVmIncreaseTrendMonth.value);
   let legend: any[] = [],
     series: any = {},
-    xAxis: any[] = [],
-    seriesData: any[] = [];
+    xAxis: any[] = [];
+  const seriesData: any[] = [];
   ResourceSpreadViewApi.getIncreaseTrend(params).then((res) => {
     const options = _.cloneDeep(defaultTrendOptions);
     const chartData = res.data;
@@ -443,8 +443,8 @@ const getSpreadByDepartmentData = (chartName: string) => {
 const getTrendPieOptions = (options: any) => {
   let legend: any[] = [],
     series: any = {},
-    xAxis: any[] = [],
-    seriesData: any[] = [];
+    xAxis: any[] = [];
+  const seriesData: any[] = [];
   if (!resourceUsedTrendInfo.value && resourceUsedTrendInfo.value.length == 0) {
     return emptyOptions;
   }
@@ -492,8 +492,8 @@ const getTrendPieOptions = (options: any) => {
 const getTrendOptions = (options: any) => {
   let legend: any[] = [],
     series: any = {},
-    xAxis: any[] = [],
-    seriesData: any[] = [];
+    xAxis: any[] = [];
+  const seriesData: any[] = [];
   if (!resourceUsedTrendInfo.value && resourceUsedTrendInfo.value.length == 0) {
     return emptyOptions;
   }
