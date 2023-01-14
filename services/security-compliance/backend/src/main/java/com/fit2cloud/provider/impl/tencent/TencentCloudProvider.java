@@ -85,7 +85,7 @@ public class TencentCloudProvider extends AbstractCloudProvider<TencentBaseCrede
 
     @Override
     public List<InstanceSearchField> listRedisInstanceSearchField() {
-        return List.of();
+        return TencentInstanceSearchFieldApi.listRedisInstanceSearchField();
     }
 
     @Override
@@ -100,7 +100,7 @@ public class TencentCloudProvider extends AbstractCloudProvider<TencentBaseCrede
 
     @Override
     public List<InstanceSearchField> listMongodbInstanceSearchField() {
-        return List.of();
+        return TencentInstanceSearchFieldApi.listMongodbInstanceSearchField();
     }
 
     @Override
@@ -115,7 +115,7 @@ public class TencentCloudProvider extends AbstractCloudProvider<TencentBaseCrede
 
     @Override
     public List<InstanceSearchField> listMysqlInstanceSearchField() {
-        return List.of();
+        return TencentInstanceSearchFieldApi.listMysqlInstanceSearchField();
     }
 
     @Override
@@ -130,7 +130,7 @@ public class TencentCloudProvider extends AbstractCloudProvider<TencentBaseCrede
 
     @Override
     public List<InstanceSearchField> listSqlServerInstanceSearchField() {
-        return List.of();
+        return TencentInstanceSearchFieldApi.listSqlServerInstanceSearchField();
     }
 
     @Override
@@ -145,7 +145,7 @@ public class TencentCloudProvider extends AbstractCloudProvider<TencentBaseCrede
 
     @Override
     public List<InstanceSearchField> listPostGreSqlInstanceSearchField() {
-        return List.of();
+        return TencentInstanceSearchFieldApi.listPostgresInstanceSearchField();
     }
 
     @Override
@@ -160,7 +160,7 @@ public class TencentCloudProvider extends AbstractCloudProvider<TencentBaseCrede
 
     @Override
     public List<InstanceSearchField> listMariaDBInstanceSearchField() {
-        return List.of();
+        return TencentInstanceSearchFieldApi.listMariadbInstanceSearchField();
     }
 
     @Override
@@ -175,7 +175,7 @@ public class TencentCloudProvider extends AbstractCloudProvider<TencentBaseCrede
 
     @Override
     public List<InstanceSearchField> listElasticSearchInstanceSearchField() {
-        return List.of();
+        return TencentInstanceSearchFieldApi.listElasticSearchInstanceSearchField();
     }
 
     @Override
@@ -205,7 +205,7 @@ public class TencentCloudProvider extends AbstractCloudProvider<TencentBaseCrede
 
     @Override
     public List<InstanceSearchField> listLoadBalancerInstanceSearchField() {
-        return List.of();
+        return TencentInstanceSearchFieldApi.listLoadBalancerInstanceSearchField();
     }
 
     @Override
