@@ -179,6 +179,9 @@ function loadData(name: string) {
 onMounted(() => {
   initEcharts();
 
+  if (!show.value) {
+    return;
+  }
   API.listVmCloudServer({}, loading).then((result) => {
     servers.value = result.data;
     if (servers.value.length > 0) {

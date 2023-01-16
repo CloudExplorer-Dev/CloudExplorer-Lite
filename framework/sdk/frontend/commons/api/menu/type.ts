@@ -37,6 +37,7 @@ interface MenuItem {
    *排序
    */
   order: number;
+  module?: string;
 }
 
 /**
