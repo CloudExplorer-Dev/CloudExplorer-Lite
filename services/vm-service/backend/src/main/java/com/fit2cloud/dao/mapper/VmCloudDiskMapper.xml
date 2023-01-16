@@ -14,6 +14,10 @@
 
     <select id="pageList" resultMap="diskResultMap">
         SELECT
+            CASE
+                WHEN recycle_bin.STATUS = 'ToBeRecycled' AND vm_cloud_disk.STATUS != 'deleted' THEN
+                    'ToBeRecycled' ELSE vm_cloud_disk.STATUS
+                END AS status,
             vm_cloud_disk.*,
             cloud_account.NAME AS account_name,
             cloud_account.platform AS platform,
@@ -34,11 +38,18 @@
                 LEFT JOIN vm_cloud_server ON vm_cloud_disk.instance_uuid = vm_cloud_server.instance_uuid
                 AND vm_cloud_disk.account_id = vm_cloud_server.account_id
                 LEFT JOIN org_workspace ON vm_cloud_disk.source_id = org_workspace.id
+                LEFT JOIN recycle_bin ON vm_cloud_disk.id = recycle_bin.resource_id
+                AND recycle_bin.resource_type = 'DISK'
+                AND recycle_bin.STATUS = 'ToBeRecycled'
             ${ew.customSqlSegment}
     </select>
 
     <select id="selectDiskDetailById" resultMap="diskResultMap">
         SELECT
+            CASE
+                WHEN recycle_bin.STATUS = 'ToBeRecycled' AND vm_cloud_disk.STATUS != 'deleted' THEN
+                    'ToBeRecycled' ELSE vm_cloud_disk.STATUS
+                END AS status,
             vm_cloud_disk.*,
             vm_cloud_server.instance_name,
             cloud_account.`name` AS account_name,
@@ -60,6 +71,9 @@
             AND vm_cloud_server.instance_status != 'Deleted'
             LEFT JOIN cloud_account ON vm_cloud_disk.account_id = cloud_account.id
             LEFT JOIN org_workspace ON vm_cloud_disk.source_id = org_workspace.id
+            LEFT JOIN recycle_bin ON vm_cloud_disk.id = recycle_bin.resource_id
+            AND recycle_bin.resource_type = 'DISK'
+            AND recycle_bin.STATUS = 'ToBeRecycled'
         WHERE
             vm_cloud_disk.id = #{id}
     </select>

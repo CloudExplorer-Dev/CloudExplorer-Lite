@@ -130,6 +130,20 @@ const message = {
       clear_policy: "清空策略",
     },
   },
+  system_setting: {
+    params_setting: {
+      recycle_bin: {
+        strategy: "回收站策略",
+        open: "开启回收站",
+        recycle_strategy: "回收站策略",
+        tips: "注意:",
+        tips_1:
+          "开启回收站功能后，用户删除云主机、云磁盘等资源时会将所删资源放入回收站，不会立即删除。",
+        tips_2:
+          "关闭回收站功能后，用户删除云主机、云磁盘等资源时会立即删除无法恢复。",
+      },
+    },
+  },
 };
 export default {
   ...message,

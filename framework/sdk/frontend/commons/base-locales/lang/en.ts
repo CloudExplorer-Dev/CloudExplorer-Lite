@@ -195,6 +195,11 @@ const permissions = {
         read: "Read",
         clear_policy: "Clear Policy Settings",
       },
+      params_setting: {
+        base: "Params Setting",
+        read: "Read",
+        edit: "Edit",
+      },
     },
     vm: {
       cloud_server: {
@@ -227,6 +232,12 @@ const permissions = {
       jobs: {
         base: "Job Records",
         read: "Read",
+      },
+      recycle_bin: {
+        base: "Recycle Bin",
+        read: "Read",
+        delete: "Delete",
+        recover: "Recover",
       },
     },
   },

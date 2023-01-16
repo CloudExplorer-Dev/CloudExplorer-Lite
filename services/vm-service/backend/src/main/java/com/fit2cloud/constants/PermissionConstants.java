@@ -34,6 +34,8 @@ public class PermissionConstants {
 
         public static final String JOBS = "JOBS";
 
+        public static final String RECYCLE_BIN = "RECYCLE_BIN";
+
         //...
     }
 
@@ -49,6 +51,7 @@ public class PermissionConstants {
         public static final String DETACH = "DETACH";
         public static final String RESIZE = "RESIZE";
         public static final String AUTH = "AUTH";
+        public static final String RECOVER = "RECOVER";
         //...
     }
 
@@ -222,6 +225,31 @@ public class PermissionConstants {
                             .permission(new Permission.Builder()
                                     .operate(OPERATE.READ)
                                     .name("permission.vm.jobs.read")
+                                    .role(RoleConstants.ROLE.ADMIN)
+                                    .role(RoleConstants.ROLE.ORGADMIN)
+                                    .role(RoleConstants.ROLE.USER))
+            )
+            .group(
+                    new PermissionGroup.Builder()
+                            .id(GROUP.RECYCLE_BIN)
+                            .name("permission.vm.recycle_bin.base")
+                            .permission(new Permission.Builder()
+                                    .operate(OPERATE.READ)
+                                    .name("permission.vm.recycle_bin.read")
+                                    .role(RoleConstants.ROLE.ADMIN)
+                                    .role(RoleConstants.ROLE.ORGADMIN)
+                                    .role(RoleConstants.ROLE.USER))
+                            .permission(new Permission.Builder()
+                                    .require(OPERATE.READ)
+                                    .operate(OPERATE.DELETE)
+                                    .name("permission.vm.recycle_bin.delete")
+                                    .role(RoleConstants.ROLE.ADMIN)
+                                    .role(RoleConstants.ROLE.ORGADMIN)
+                                    .role(RoleConstants.ROLE.USER))
+                            .permission(new Permission.Builder()
+                                    .require(OPERATE.READ)
+                                    .operate(OPERATE.RECOVER)
+                                    .name("permission.vm.recycle_bin.recover")
                                     .role(RoleConstants.ROLE.ADMIN)
                                     .role(RoleConstants.ROLE.ORGADMIN)
                                     .role(RoleConstants.ROLE.USER))

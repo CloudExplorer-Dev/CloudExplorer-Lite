@@ -17,6 +17,8 @@ public enum OperatedTypeEnum {
     BATCH_ADD("BATCH_ADD", "批量创建"),
     MODIFY("MODIFY", "更新"),
     DELETE("DELETE", "删除"),
+    RECYCLE_SERVER("RECYCLE_SERVER", "云主机放入回收站"),
+    RECOVER_SERVER("RECOVER_SERVER", "云主机从回收站恢复"),
     BATCH_DELETE("BATCH_DELETE", "批量删除"),
     SEARCH("SEARCH", "搜索"),
 
@@ -26,7 +28,6 @@ public enum OperatedTypeEnum {
     HARD_SHUTDOWN("HARD_SHUTDOWN", "硬关机"),
     REBOOT("REBOOT", "重启"),
     HARD_REBOOT("HARD_REBOOT", "硬重启"),
-    CHANGE_CONFIG("CHANGE_CONFIG", "配置变更"),
 
     BATCH_OPERATE("BATCH_OPERATE", "批量操作"),
 
@@ -35,10 +36,12 @@ public enum OperatedTypeEnum {
     ATTACH_DISK("ATTACH_DISK", "挂载磁盘"),
     DETACH_DISK("DETACH_DISK", "卸载磁盘"),
     DELETE_DISK("DELETE_DISK", "删除磁盘"),
+    RECYCLE_DISK("RECYCLE_DISK", "磁盘放入回收站"),
 
     BATCH_ATTACH_DISK("BATCH_ATTACH_DISK", "批量挂载磁盘"),
     BATCH_DETACH_DISK("BATCH_DETACH_DISK", "批量卸载磁盘"),
-    BATCH_DELETE_DISK("BATCH_DELETE_DISK", "批量删除磁盘");
+    BATCH_DELETE_DISK("BATCH_DELETE_DISK", "批量删除磁盘"),
+    BATCH_RECYCLE_DISK("BATCH_RECYCLE_DISK", "磁盘批量盘放入回收站");
 
     private String operate;
     private String description;

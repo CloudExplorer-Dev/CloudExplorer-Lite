@@ -85,15 +85,43 @@ const message = {
     },
     confirm: {
       detach: "Confirm to uninstall cloud disk {0} from virtual machine {1}",
-      delete: "Confirm to delete cloud disk {0}",
+      delete:
+        "The  recycle bin is not opened. Confirm to delete cloud disk {0} directly",
+      recycle:
+        "The current recycle bin is open. Confirm to put cloud disk {0} into the recycle bin",
       batch_detach: "Confirm to uninstall cloud disk in batch",
-      batch_delete: "Confirm to delete cloud disks in batch",
+      batch_delete:
+        "The recycle bin is not opened. Confirm to delete cloud disks in batches",
+      batch_recycle:
+        "The recycle bin is open. Confirm to put cloud disks into the recycle bin in batches",
     },
     msg: {
       canceled: "{0}Cancelled",
       select_one: "At least to select one record",
       datastore_null: "Datastore can not be null",
     },
+  },
+  recycle_bin: {
+    batch_recover_tips: "Do you want to restore the selected resources?",
+    batch_delete_tips:
+      "Do you want to delete the selected resource completely? After deletion, it cannot be recovered!",
+    recover_tips: "Do you want to recover the resource [{0}]?",
+    delete_tips:
+      "Do you want to delete [{0}] completely? After deletion, it cannot be recovered!",
+    recover: "recover",
+    delete: "Delete completely",
+    resource_name: "Resource Name",
+    resource_type: "resource type",
+    workspace_name: "Workspace",
+    resource_status: "Status",
+    relate_resource: "Associated resource",
+    resource_config: "Resource configuration",
+    user_name: "Operator",
+    delete_time: "Delete time",
+    create_time: "Creation time",
+    organization_name: "Organization",
+    account_name: "Cloud Account",
+    ip_array: "IP address",
   },
 };
 export default {

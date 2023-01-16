@@ -194,6 +194,11 @@ const permissions = {
         read: "查看",
         clear_policy: "清空策略設置",
       },
+      params_setting: {
+        base: "参数设置",
+        read: "查看",
+        edit: "编辑",
+      },
     },
     vm: {
       cloud_server: {
@@ -226,6 +231,12 @@ const permissions = {
       jobs: {
         base: "任務",
         read: "查看",
+      },
+      recycle_bin: {
+        base: "回收站",
+        read: "查看",
+        delete: "删除",
+        recover: "恢复",
       },
     },
   },

@@ -196,7 +196,7 @@ public class VsphereVmClient extends VsphereClient {
     public boolean shutdownInstance(String uuid) {
         VirtualMachine virtualMachine = getVirtualMachineByUuId(uuid);
         if (StringUtils.equalsIgnoreCase(VirtualMachinePowerState.poweredOff.name(), virtualMachine.getRuntime().getPowerState().name())) {
-            throw new RuntimeException("The current state of the virtual machine is shutdown!");
+            return true;
         }
         try {
             virtualMachine.shutdownGuest();

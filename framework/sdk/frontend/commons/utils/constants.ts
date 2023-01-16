@@ -1,3 +1,8 @@
+export const ResourceTypeConst = {
+  VM: "虚拟机",
+  DISK: "磁盘"
+};
+
 export const Config = {
   TITLE: "CloudExplorer 云服务平台",
   CE_TOKEN_KEY: "ce-token",
@@ -18,6 +23,7 @@ export const JobTypeConst = {
   /*CLOUD_SERVER_OPERATE_JOB: "云主机操作",*/
   CLOUD_SERVER_CREATE_JOB: "云主机创建",
   CLOUD_SERVER_DELETE_JOB: "云主机删除",
+  CLOUD_SERVER_RECYCLE_JOB: "云主机放入回收站",
   CLOUD_SERVER_START_JOB: "云主机开机",
   CLOUD_SERVER_STOP_JOB: "云主机关机",
   CLOUD_SERVER_RESTART_JOB: "云主机重启",

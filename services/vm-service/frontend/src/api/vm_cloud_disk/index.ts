@@ -99,6 +99,30 @@ export function deleteDisk(
 }
 
 /**
+ * 将磁盘放入
+ * @param id
+ * @param loading
+ */
+export function recycleDisk(
+  id: string,
+  loading?: Ref<boolean>
+): Promise<Result<boolean>> {
+  return put("api/disk/recycleDisk/" + id, null, null, loading);
+}
+
+/**
+ * 批量将磁盘放入
+ * @param ids
+ * @param loading
+ */
+export function batchRecycleDisks(
+  ids: string[],
+  loading?: Ref<boolean>
+): Promise<Result<boolean>> {
+  return put("api/disk/batchRecycleDisks", null, ids, loading);
+}
+
+/**
  * 批量挂载磁盘
  * @param attachDiskRequest
  * @param loading
@@ -177,5 +201,7 @@ const VmCloudDiskApi = {
   batchDetach,
   batchDeleteDisk,
   grantVmCloudDisk,
+  batchRecycleDisks,
+  recycleDisk,
 };
 export default VmCloudDiskApi;

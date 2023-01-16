@@ -47,7 +47,10 @@ public enum JobTypeConstants {
      * 云主机配置变更任务
      */
     CLOUD_SERVER_CONFIG_CHANGE_JOB(206),
-
+    /**
+     * 云主机回收
+     */
+    CLOUD_SERVER_RECYCLE_JOB(207),
     /**
      * 磁盘操作任务
      */

@@ -13,14 +13,63 @@
 
     <select id="pageVmCloudServer" resultMap="serverResultMap">
         SELECT
-            vm_cloud_server.*,
+            vm_cloud_server.`id`,
+            vm_cloud_server.`instance_uuid`,
+            vm_cloud_server.`source_id`,
+            vm_cloud_server.`project_id`,
+            vm_cloud_server.`account_id`,
+            vm_cloud_server.`instance_id`,
+            vm_cloud_server.`instance_name`,
+            vm_cloud_server.`image_id`,
+            CASE
+                WHEN recycle_bin.STATUS = 'ToBeRecycled' and vm_cloud_server.instance_status !='Deleted' THEN
+                    'ToBeRecycled' ELSE vm_cloud_server.instance_status
+                END AS instance_status,
+            vm_cloud_server.`instance_type`,
+            vm_cloud_server.`instance_type_description`,
+            vm_cloud_server.`region`,
+            vm_cloud_server.`zone`,
+            vm_cloud_server.`host_id`,
+            vm_cloud_server.`host`,
+            vm_cloud_server.`resource_pool_id`,
+            vm_cloud_server.`resource_pool`,
+            vm_cloud_server.`remote_ip`,
+            vm_cloud_server.`ip_array`,
+            vm_cloud_server.`os`,
+            vm_cloud_server.`os_version`,
+            vm_cloud_server.`cpu`,
+            vm_cloud_server.`memory`,
+            vm_cloud_server.`disk`,
+            vm_cloud_server.`hostname`,
+            vm_cloud_server.`management_ip`,
+            vm_cloud_server.`management_port`,
+            vm_cloud_server.`os_info`,
+            vm_cloud_server.`remark`,
+            vm_cloud_server.`network`,
+            vm_cloud_server.`vpc_id`,
+            vm_cloud_server.`subnet_id`,
+            vm_cloud_server.`network_interface_id`,
+            vm_cloud_server.`management_ipv6`,
+            vm_cloud_server.`remote_ipv6`,
+            vm_cloud_server.`local_ipv6`,
+            vm_cloud_server.`ip_type`,
+            vm_cloud_server.`snap_shot`,
+            vm_cloud_server.`create_time`,
+            vm_cloud_server.`update_time`,
+            vm_cloud_server.`last_shutdown_time`,
+            vm_cloud_server.`vm_tools_version`,
+            vm_cloud_server.`vm_tools_status`,
+            vm_cloud_server.`instance_charge_type`,
+            vm_cloud_server.`security_group_ids`,
             cloud_account.NAME AS account_name,
             cloud_account.platform AS platform,
             CASE
+
                 WHEN orgWorkspace.type = "workspace" THEN
                     orgWorkspace.id ELSE NULL
                 END AS workspace_id,
             CASE
+
                 WHEN orgWorkspace.type = "workspace" THEN
                     orgWorkspace.NAME ELSE NULL
                 END AS workspace_name,
@@ -30,6 +79,9 @@
             vm_cloud_server
                 LEFT JOIN cloud_account ON vm_cloud_server.account_id = cloud_account.id
                 LEFT JOIN org_workspace orgWorkspace ON vm_cloud_server.source_id = orgWorkspace.id
+                LEFT JOIN recycle_bin ON vm_cloud_server.id = recycle_bin.resource_id
+                AND recycle_bin.resource_type = 'VM'
+                AND recycle_bin.STATUS = 'ToBeRecycled'
             ${ew.customSqlSegment}
     </select>
 
@@ -70,6 +122,17 @@
         FROM
             vm_cloud_server
             LEFT JOIN org_workspace ON vm_cloud_server.source_id = org_workspace.id
-            ${ew.customSqlSegment}
+            LEFT JOIN recycle_bin ON vm_cloud_server.id = recycle_bin.resource_id
+                AND recycle_bin.resource_type = 'VM'
+                AND recycle_bin.STATUS = 'ToBeRecycled'
+        <where>
+            (recycle_bin.STATUS is null or recycle_bin.STATUS !='ToBeRecycled')
+            <if test="ew != null">
+                <if test="ew.nonEmptyOfWhere">
+                    AND
+                </if>
+                ${ew.sqlSegment}
+            </if>
+        </where>
     </select>
 </mapper>
