@@ -24,6 +24,8 @@ public interface IVmCloudServerService extends IService<VmCloudServer> {
 
     IPage<VmCloudServerDTO> pageVmCloudServer(PageVmCloudServerRequest request);
 
+    List<VmCloudServer> listVmCloudServer(PageVmCloudServerRequest request);
+
     boolean powerOff(String vmId);
 
     boolean powerOn(String vmId);
@@ -55,4 +57,6 @@ public interface IVmCloudServerService extends IService<VmCloudServer> {
     String calculateConfigUpdatePrice(String platform,Map<String, Object> params);
 
     boolean grant(GrantRequest grantServerRequest);
+
+    long countVmCloudServer();
 }

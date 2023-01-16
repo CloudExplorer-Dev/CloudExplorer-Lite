@@ -30,12 +30,15 @@
                   <Charts
                     :ref="(el) => childRef(el, item.metricName)"
                     :data="echartsData"
-                    :metricName="item.metricName"
+                    :metric-name="item.metricName"
                     :y-unit="item.yUnit"
                     :title="item.title"
                     :legend="item.legend"
                     :x-data="item.xData"
                     :series="item.series"
+                    :device-list="item.deviceList"
+                    :device-data="item.deviceData"
+                    :current-device="item.currentDevice"
                     @vnode-mounted="loadingEchartsDone"
                   />
                 </div>
@@ -93,9 +96,10 @@ const getData = () => {
     VmCloudServerApi.listPerfMetricMonitor(request.value).then((res) => {
       const xData = ref<any>([]);
       const yData = ref<any>([]);
-      if (res.data.length > 0) {
-        yData.value = res.data[0].values;
-        xData.value = res.data[0].timestamps;
+      const deviceList = ref<any>([]);
+      if (_.keys(res.data).length > 0 && _.has(res.data, "other")) {
+        yData.value = res.data["other"][0].values;
+        xData.value = res.data["other"][0].timestamps;
       }
       if (
         metricName === PerfMetricConst.DISK_READ_BPS.metricName ||
@@ -157,6 +161,26 @@ const getData = () => {
           xData.value,
           yData.value
         );
+      } else if (
+        metricName === PerfMetricConst.DISK_USED_UTILIZATION.metricName
+      ) {
+        if (_.keys(res.data).length > 0) {
+          deviceList.value = _.keys(res.data);
+          yData.value = res.data[_.keys(res.data)[0]][0].values;
+          xData.value = res.data[_.keys(res.data)[0]][0].timestamps;
+          const d = echartsData.value.filter((i) => {
+            return metricName == i.metricName;
+          });
+          if (d[0]) {
+            if (deviceList.value.length > 0) {
+              d[0].deviceList = deviceList.value;
+              d[0].currentDevice = deviceList.value[0];
+            }
+            d[0].deviceData = res.data;
+            d[0].xData = xData.value;
+            d[0].series[0].data = yData.value;
+          }
+        }
       } else {
         const d = echartsData.value.filter((i) => {
           return metricName == i.metricName;
@@ -202,7 +226,7 @@ const setXData = (
  * 默认时间当前时间过去一个小时
  */
 const timestampData = ref<[Date, Date]>([
-  new Date(new Date().getTime() - 1 * 60 * 60 * 1000),
+  new Date(new Date().getTime() - 24 * 60 * 60 * 1000),
   new Date(),
 ]);
 /**
@@ -243,6 +267,9 @@ const initEchartsData = () => {
     legend: [],
     xData: [],
     series: [],
+    deviceList: [],
+    currentDevice: "",
+    deviceData: {},
   };
   echarts.set(
     PerfMetricConst.CPU_USED_UTILIZATION.metricName,

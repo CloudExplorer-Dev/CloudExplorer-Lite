@@ -9,8 +9,8 @@ import com.fit2cloud.common.log.constants.ResourceTypeEnum;
 import com.fit2cloud.common.validator.annnotaion.CustomValidated;
 import com.fit2cloud.common.validator.handler.ExistHandler;
 import com.fit2cloud.controller.handler.ResultHolder;
-import com.fit2cloud.controller.request.disk.*;
 import com.fit2cloud.controller.request.GrantRequest;
+import com.fit2cloud.controller.request.disk.*;
 import com.fit2cloud.dto.VmCloudDiskDTO;
 import com.fit2cloud.dto.VmCloudServerDTO;
 import com.fit2cloud.service.IVmCloudDiskService;
@@ -42,6 +42,13 @@ public class VmCloudDiskController {
     @PreAuthorize("hasAnyCePermission('CLOUD_DISK:READ')")
     public ResultHolder<IPage<VmCloudDiskDTO>> list(@Validated PageVmCloudDiskRequest pageVmCloudDiskRequest) {
         return ResultHolder.success(diskService.pageVmCloudDisk(pageVmCloudDiskRequest));
+    }
+
+    @ApiOperation(value = "查询硬盘数量", notes = "查询硬盘数量")
+    @GetMapping("/count")
+    @PreAuthorize("hasAnyCePermission('CLOUD_DISK:READ')")
+    public ResultHolder<Long> count() {
+        return ResultHolder.success(diskService.countDisk());
     }
 
     @ApiOperation(value = "查询可以挂载磁盘的虚拟机")

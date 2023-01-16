@@ -2,7 +2,9 @@ package com.fit2cloud.provider.impl.huawei.api;
 
 import com.fit2cloud.common.exception.Fit2cloudException;
 import com.fit2cloud.common.provider.exception.ReTryException;
+import com.fit2cloud.common.provider.exception.SkipPageException;
 import com.fit2cloud.common.provider.util.PageUtil;
+import com.fit2cloud.common.utils.JsonUtil;
 import com.fit2cloud.provider.impl.huawei.entity.request.*;
 import com.fit2cloud.provider.util.ResourceUtil;
 import com.huaweicloud.sdk.css.v1.CssClient;
@@ -22,6 +24,7 @@ import com.huaweicloud.sdk.evs.v2.EvsClient;
 import com.huaweicloud.sdk.evs.v2.model.ListVolumesResponse;
 import com.huaweicloud.sdk.evs.v2.model.VolumeDetail;
 import com.huaweicloud.sdk.iam.v3.IamClient;
+import com.huaweicloud.sdk.iam.v3.model.KeystoneListUsersRequest;
 import com.huaweicloud.sdk.iam.v3.model.KeystoneListUsersResponse;
 import com.huaweicloud.sdk.iam.v3.model.KeystoneListUsersResult;
 import com.huaweicloud.sdk.iam.v3.model.LoginProtectResult;
@@ -30,16 +33,13 @@ import com.huaweicloud.sdk.rds.v3.model.InstanceResponse;
 import com.huaweicloud.sdk.rds.v3.model.ListInstancesRequest;
 import com.huaweicloud.sdk.rds.v3.model.ListInstancesResponse;
 import com.huaweicloud.sdk.vpc.v3.VpcClient;
-import com.huaweicloud.sdk.vpc.v3.model.ListVpcsResponse;
-import com.huaweicloud.sdk.vpc.v3.model.Vpc;
+import com.huaweicloud.sdk.vpc.v3.model.*;
 import com.obs.services.ObsClient;
-import com.obs.services.model.AccessControlList;
-import com.obs.services.model.BucketEncryption;
-import com.obs.services.model.ListBucketsRequest;
-import com.obs.services.model.ObsBucket;
+import com.obs.services.model.*;
 import org.apache.commons.lang3.StringUtils;
 import com.huaweicloud.sdk.elb.v3.*;
 import com.huaweicloud.sdk.elb.v3.model.*;
+import org.springframework.beans.BeanUtils;
 
 import java.util.HashMap;
 import java.util.List;
@@ -240,6 +240,7 @@ public class HuaweiApi {
                         return elbClient.listLoadBalancers(request);
                     } catch (Exception e) {
                         ReTryException.throwHuaweiReTry(e);
+                        SkipPageException.throwHuaweiSkip(e);
                         throw new Fit2cloudException(10000, "获取数据失败" + e.getMessage());
                     }
                 },
@@ -304,7 +305,8 @@ public class HuaweiApi {
         IamClient iamClient = request.getCredential().getIamClient();
         return Objects.requireNonNull(PageUtil.reTry(() -> {
             try {
-                return iamClient.keystoneListUsers(request);
+                KeystoneListUsersRequest keystoneListUsersRequest = new KeystoneListUsersRequest();
+                return iamClient.keystoneListUsers(keystoneListUsersRequest);
             } catch (Exception e) {
                 ReTryException.throwHuaweiReTry(e);
                 throw new Fit2cloudException(10000, "获取数据失败" + e.getMessage());
@@ -376,6 +378,69 @@ public class HuaweiApi {
         res.put("acl", bucketAcl);
         res.put("encryption", bucketEncryption);
         return res;
+    }
+
+    /**
+     * 获取安全组实例列表
+     *
+     * @param request 请求对象
+     * @return 安全组实例列表
+     */
+    public static List<Map<String, Object>> listSecurityGroupCollectionInstance(ListSecurityGroupInstanceRequest request) {
+        List<SecurityGroup> securityGroups = listSecurityGroupInstance(request);
+        ListSecurityGroupRuleInstanceRequest listSecurityGroupRuleInstanceRequest = new ListSecurityGroupRuleInstanceRequest();
+        BeanUtils.copyProperties(request, listSecurityGroupRuleInstanceRequest);
+        List<SecurityGroupRule> securityGroupRules = listSecurityGroupRuleInstance(listSecurityGroupRuleInstanceRequest);
+        return securityGroups.stream().map(securityGroup -> {
+            Map<String, Object> securityGroupMap = ResourceUtil.objectToMap(securityGroup);
+            List<SecurityGroupRule> rules = securityGroupRules.stream().filter(rule -> StringUtils.equals(rule.getSecurityGroupId(), securityGroup.getId())).toList();
+            securityGroupMap.put("security_group_rules", rules);
+            return securityGroupMap;
+        }).toList();
+    }
+
+    /**
+     * 获取 安全组实例列表
+     *
+     * @param request 请求对象
+     * @return 获取安全组实例列表
+     */
+    public static List<SecurityGroup> listSecurityGroupInstance(ListSecurityGroupInstanceRequest request) {
+        VpcClient vpcClient = request.getCredential().getVpcClient(request.getRegionId());
+        return PageUtil.page(request,
+                req -> {
+                    try {
+                        return vpcClient.listSecurityGroups(request);
+                    } catch (Exception e) {
+                        ReTryException.throwHuaweiReTry(e);
+                        throw new Fit2cloudException(10000, "获取数据失败" + e.getMessage());
+                    }
+                },
+                ListSecurityGroupsResponse::getSecurityGroups,
+                (req, res) -> StringUtils.isNotEmpty(res.getPageInfo().getNextMarker()),
+                (req, res) -> req.setMarker(res.getPageInfo().getNextMarker()));
+    }
+
+    /**
+     * 获取安全组规则实例对象
+     *
+     * @param request 请对象
+     * @return 安全组规则实例对象
+     */
+    public static List<SecurityGroupRule> listSecurityGroupRuleInstance(ListSecurityGroupRuleInstanceRequest request) {
+        VpcClient vpcClient = request.getCredential().getVpcClient(request.getRegionId());
+        return PageUtil.page(request,
+                req -> {
+                    try {
+                        return vpcClient.listSecurityGroupRules(request);
+                    } catch (Exception e) {
+                        ReTryException.throwHuaweiReTry(e);
+                        throw new Fit2cloudException(10000, "获取数据失败" + e.getMessage());
+                    }
+                },
+                ListSecurityGroupRulesResponse::getSecurityGroupRules,
+                (req, res) -> StringUtils.isNotEmpty(res.getPageInfo().getNextMarker()),
+                (req, res) -> req.setMarker(res.getPageInfo().getNextMarker()));
     }
 
 }

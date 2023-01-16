@@ -268,6 +268,8 @@ public class ComplianceScanServiceImpl implements IComplianceScanService {
     private ComplianceScanResponse getComplianceScanResponse(ComplianceRule complianceRule, String cloudAccountId) {
         List<Rule> rules = complianceRule.getRules();
         List<Query> otherQueries = new ArrayList<>();
+        otherQueries.add(new Query.Builder().term(new TermQuery.Builder().field("resourceType").value(complianceRule.getResourceType()).build()).build());
+        otherQueries.add(new Query.Builder().term(new TermQuery.Builder().field("platform").value(complianceRule.getPlatform()).build()).build());
         if (StringUtils.isNotEmpty(cloudAccountId)) {
             otherQueries.add(new Query.Builder().term(new TermQuery.Builder().field("cloudAccountId").value(cloudAccountId).build()).build());
         }
@@ -317,7 +319,6 @@ public class ComplianceScanServiceImpl implements IComplianceScanService {
         return Math.round(valueCount.value());
     }
 
-
     /**
      * @param resourceType   资源类型
      * @param platform       供应商 - 云平台
@@ -362,8 +363,11 @@ public class ComplianceScanServiceImpl implements IComplianceScanService {
         InstanceFieldCompare instanceFieldCompare = InstanceFieldCompare.valueOf(rule.getCompare());
         HashMap<String, JsonData> params = new HashMap<>() {{
             put("field", JsonData.of(rule.getField()));
-            put("value", JsonData.of(rule.getValue()));
+
         }};
+        if (Objects.nonNull(rule.getValue())) {
+            params.put("value", JsonData.of(rule.getValue()));
+        }
         return new Query.Builder().script(new ScriptQuery.Builder()
                 .script(Script.of(s -> s.inline(new InlineScript.Builder().source(instanceFieldCompare.getScript())
                         .params(params).build()))).build()).build();

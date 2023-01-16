@@ -3,6 +3,7 @@ package com.fit2cloud.es.entity;
 import lombok.Data;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.elasticsearch.annotations.Document;
+import org.springframework.data.elasticsearch.annotations.Dynamic;
 import org.springframework.data.elasticsearch.annotations.Field;
 import org.springframework.data.elasticsearch.annotations.FieldType;
 
@@ -48,6 +49,6 @@ public class ResourceInstance {
     /**
      * 实例对象
      */
-    @Field(type = FieldType.Object)
+    @Field(type = FieldType.Object,dynamic = Dynamic.RUNTIME)
     private Map<String, Object> instance;
 }

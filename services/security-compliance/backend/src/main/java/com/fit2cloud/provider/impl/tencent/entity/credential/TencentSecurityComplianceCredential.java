@@ -6,6 +6,7 @@ import com.qcloud.cos.COSClient;
 import com.qcloud.cos.ClientConfig;
 import com.qcloud.cos.auth.BasicCOSCredentials;
 import com.qcloud.cos.auth.COSCredentials;
+import com.tencentcloudapi.cam.v20190116.CamClient;
 import com.tencentcloudapi.cbs.v20170312.CbsClient;
 import com.tencentcloudapi.cdb.v20170320.CdbClient;
 import com.tencentcloudapi.clb.v20180317.ClbClient;
@@ -20,6 +21,8 @@ import com.tencentcloudapi.redis.v20180412.RedisClient;
 import com.tencentcloudapi.mongodb.v20190725.MongodbClient;
 import com.tencentcloudapi.sqlserver.v20180328.SqlserverClient;
 import com.tencentcloudapi.vpc.v20170312.VpcClient;
+
+import javax.validation.constraints.Null;
 
 /**
  * {@code @Author:张少虎}
@@ -217,5 +220,20 @@ public class TencentSecurityComplianceCredential extends TencentBaseCredential {
     public CeCosClient getCeCosClient(String region) {
         COSCredentials cred = new BasicCOSCredentials(getSecretId(), getSecretKey());
         return new CeCosClient(cred, new ClientConfig(new com.qcloud.cos.region.Region(region)));
+    }
+
+    /**
+     * 获取访问控制客户端
+     *
+     * @param region 区域 非必填
+     * @return 访问控制客户端
+     */
+    public CamClient getCamClient(String region) {
+        Credential cred = new Credential(getSecretId(), getSecretKey());
+        HttpProfile httpProfile = new HttpProfile();
+        httpProfile.setEndpoint("cam.tencentcloudapi.com");
+        ClientProfile clientProfile = new ClientProfile();
+        clientProfile.setHttpProfile(httpProfile);
+        return new CamClient(cred, region, clientProfile);
     }
 }

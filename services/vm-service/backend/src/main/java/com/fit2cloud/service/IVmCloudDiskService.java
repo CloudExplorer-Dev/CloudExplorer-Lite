@@ -137,4 +137,5 @@ public interface IVmCloudDiskService extends IService<VmCloudDisk> {
     boolean recycleDisk(String id);
 
 
+    long countDisk();
 }

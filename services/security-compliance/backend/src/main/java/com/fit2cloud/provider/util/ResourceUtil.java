@@ -5,10 +5,7 @@ import com.fit2cloud.constants.ResourceTypeConstants;
 import com.fit2cloud.es.entity.ResourceInstance;
 import org.apache.commons.lang.StringUtils;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Objects;
-import java.util.UUID;
+import java.util.*;
 
 /**
  * {@code @Author:张少虎}
@@ -86,5 +83,32 @@ public class ResourceUtil {
      */
     public static Map<String, Object> objectToMap(Object instance) {
         return JsonUtil.parseObject(JsonUtil.toJSONString(instance), Map.class);
+    }
+
+    /**
+     * 转换对象为Map
+     *
+     * @param instance 需要转换的对象
+     * @return 转换后的Map
+     */
+    public static Map<String, Object> objectsToMap(Object... instance) {
+        return Arrays.stream(instance).filter(Objects::nonNull).map(ResourceUtil::objectToMap).reduce(new HashMap<>(), (pre, next) -> {
+            pre.putAll(next);
+            return pre;
+        });
+    }
+
+
+    /**
+     * 将对象转换为字符串
+     *
+     * @param o 需要转换的对象
+     * @return 对象字符串
+     */
+    public static String toString(Object o) {
+        if (Objects.isNull(o)) {
+            return "N/A";
+        }
+        return o.toString();
     }
 }

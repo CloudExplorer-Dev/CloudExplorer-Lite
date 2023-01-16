@@ -5,6 +5,7 @@ import com.fit2cloud.common.exception.Fit2cloudException;
 import com.fit2cloud.common.provider.entity.F2CEntityType;
 import com.fit2cloud.common.provider.entity.F2CPerfMetricMonitorData;
 import com.fit2cloud.common.provider.exception.ReTryException;
+import com.fit2cloud.common.provider.exception.SkipPageException;
 import com.fit2cloud.common.provider.util.PageUtil;
 import com.fit2cloud.common.utils.DateUtil;
 import com.fit2cloud.common.utils.JsonUtil;
@@ -55,6 +56,7 @@ import org.springframework.beans.BeanUtils;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -608,14 +610,14 @@ public class HuaweiSyncCloudApi {
             throw new Fit2cloudException(10002, "区域为必填参数");
         }
         List<F2CPerfMetricMonitorData> result = new ArrayList<>();
-        //设置时间，根据interval,默认一个小时
-        getMetricsRequest.setStartTime(String.valueOf(DateUtil.getBeforeHourTime(getMetricsRequest.getInterval())));
-        getMetricsRequest.setEndTime(String.valueOf(System.currentTimeMillis()));
+        //设置时间，根据syncTimeStampStr,默认一个小时
+        getMetricsRequest.setStartTime(String.valueOf(DateUtil.beforeOneHourToTimestamp(Long.valueOf(getMetricsRequest.getSyncTimeStampStr()))));
+        getMetricsRequest.setEndTime(getMetricsRequest.getSyncTimeStampStr());
         try {
             getMetricsRequest.setRegionId(getMetricsRequest.getRegionId());
             result.addAll(getVmPerfMetric(getMetricsRequest));
         } catch (Exception e) {
-            e.printStackTrace();
+            SkipPageException.throwSkipPageException(e);
             throw new Fit2cloudException(100021, "获取监控数据失败-" + getMetricsRequest.getRegionId() + "-" + e.getMessage());
         }
         return result;
@@ -631,14 +633,15 @@ public class HuaweiSyncCloudApi {
             throw new Fit2cloudException(10002, "区域为必填参数");
         }
         List<F2CPerfMetricMonitorData> result = new ArrayList<>();
-        //设置时间，根据interval,默认一个小时
-        getMetricsRequest.setStartTime(String.valueOf(DateUtil.getBeforeHourTime(getMetricsRequest.getInterval())));
-        getMetricsRequest.setEndTime(String.valueOf(System.currentTimeMillis()));
+        //设置时间，根据syncTimeStampStr,默认一个小时
+        getMetricsRequest.setStartTime(String.valueOf(DateUtil.beforeOneHourToTimestamp(Long.valueOf(getMetricsRequest.getSyncTimeStampStr()))));
+        getMetricsRequest.setEndTime(getMetricsRequest.getSyncTimeStampStr());
         try {
             getMetricsRequest.setRegionId(getMetricsRequest.getRegionId());
             //result.addAll(getVmPerfMetric(getMetricsRequest));
         } catch (Exception e) {
             e.printStackTrace();
+            SkipPageException.throwSkipPageException(e);
             throw new Fit2cloudException(100021, "获取监控数据失败-" + getMetricsRequest.getRegionId() + "-" + e.getMessage());
         }
         return result;
@@ -663,23 +666,45 @@ public class HuaweiSyncCloudApi {
         vms.forEach(vm -> {
             request.setDim0("instance_id," + vm.getInstanceUUID());
             //监控指标
-            Arrays.stream(HuaweiPerfMetricConstants.CloudServerPerfMetricEnum.values()).sorted().collect(Collectors.toList()).forEach(perfMetric -> {
+            Arrays.stream(HuaweiPerfMetricConstants.CloudServerPerfMetricEnum.values()).sorted().toList().forEach(perfMetric -> {
                 request.setMetricName(perfMetric.getMetricName());
                 try {
-                    //查询监控指标数据
-                    ShowMetricDataResponse response = cesClient.showMetricData(request);
-                    if (response.getHttpStatusCode() == 200 && CollectionUtils.isNotEmpty(response.getDatapoints())) {
-                        List<Datapoint> list = response.getDatapoints();
-                        list.forEach(v -> {
-                            F2CPerfMetricMonitorData f2CEntityPerfMetric = HuaweiMappingUtil.toF2CPerfMetricMonitorData(v);
-                            f2CEntityPerfMetric.setEntityType(F2CEntityType.VIRTUAL_MACHINE.name());
-                            f2CEntityPerfMetric.setMetricName(perfMetric.name());
-                            f2CEntityPerfMetric.setPeriod(getMetricsRequest.getPeriod());
-                            f2CEntityPerfMetric.setInstanceId(vm.getInstanceUUID());
-                            f2CEntityPerfMetric.setUnit(perfMetric.getUnit());
-                            result.add(f2CEntityPerfMetric);
-                        });
-                    }
+                    Map<Long,Datapoint> datapointMap = new HashMap<>();
+                    List.of("average","max","min").forEach(filter->{
+                        request.withFilter(ShowMetricDataRequest.FilterEnum.fromValue(filter));
+                        //查询监控指标数据
+                        ShowMetricDataResponse response = cesClient.showMetricData(request);
+                        if (response.getHttpStatusCode() == 200 && CollectionUtils.isNotEmpty(response.getDatapoints())) {
+                            List<Datapoint> list = response.getDatapoints();
+                            list.forEach(v -> {
+                                datapointMap.put(v.getTimestamp(),v);
+                                if(v.getAverage()!=null){
+                                    datapointMap.get(v.getTimestamp()).setAverage(v.getAverage());
+                                }
+                                if(v.getMax()!=null){
+                                    datapointMap.get(v.getTimestamp()).setMax(v.getMax());
+                                }
+                                if(v.getMin()!=null){
+                                    datapointMap.get(v.getTimestamp()).setMin(v.getMin());
+                                }
+                            });
+                        }
+                    });
+                    datapointMap.forEach((k,v)->{
+                        if(v.getMax()==null){
+                            v.setMax(v.getAverage());
+                        }
+                        if(v.getMin()==null){
+                            v.setMin(v.getAverage());
+                        }
+                        F2CPerfMetricMonitorData f2CEntityPerfMetric = HuaweiMappingUtil.toF2CPerfMetricMonitorData(v);
+                        f2CEntityPerfMetric.setEntityType(F2CEntityType.VIRTUAL_MACHINE.name());
+                        f2CEntityPerfMetric.setMetricName(perfMetric.name());
+                        f2CEntityPerfMetric.setPeriod(getMetricsRequest.getPeriod());
+                        f2CEntityPerfMetric.setInstanceId(vm.getInstanceUUID());
+                        f2CEntityPerfMetric.setUnit(perfMetric.getUnit());
+                        result.add(f2CEntityPerfMetric);
+                    });
                 } catch (Exception e) {
                     e.printStackTrace();
                 }

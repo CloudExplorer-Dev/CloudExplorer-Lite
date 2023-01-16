@@ -150,30 +150,26 @@ function isCurrent(data: SourceTreeObject): boolean {
   </el-dialog>
 </template>
 
-<style lang="scss">
+<style scoped lang="scss">
 .source-tree {
-  .el-tree-node__content {
+  .el-tree-node {
     cursor: default;
 
-    .el-tree-node__label {
-      width: 100%;
+    .active {
+      color: var(--el-color-primary);
+    }
+
+    .custom-tree-node {
+      flex: 1;
       cursor: default;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 14px;
+      padding-right: 8px;
 
-      .active {
-        color: var(--el-color-primary);
-      }
-
-      .custom-tree-node {
-        cursor: default;
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        font-size: 14px;
-        padding-right: 8px;
-
-        .custom-button {
-          cursor: pointer;
-        }
+      .custom-button {
+        cursor: pointer;
       }
     }
   }

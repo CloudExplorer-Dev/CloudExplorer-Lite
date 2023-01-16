@@ -1,5 +1,6 @@
 package com.fit2cloud.service.impl;
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
@@ -32,7 +33,10 @@ import com.fit2cloud.controller.request.CreateJobRecordRequest;
 import com.fit2cloud.controller.request.ExecProviderMethodRequest;
 import com.fit2cloud.controller.request.GrantRequest;
 import com.fit2cloud.controller.request.ResourceState;
-import com.fit2cloud.controller.request.vm.*;
+import com.fit2cloud.controller.request.vm.BatchOperateVmRequest;
+import com.fit2cloud.controller.request.vm.ChangeServerConfigRequest;
+import com.fit2cloud.controller.request.vm.CreateServerRequest;
+import com.fit2cloud.controller.request.vm.PageVmCloudServerRequest;
 import com.fit2cloud.dao.mapper.VmCloudServerMapper;
 import com.fit2cloud.dto.InitJobRecordDTO;
 import com.fit2cloud.dto.UserDto;
@@ -113,20 +117,49 @@ public class VmCloudServerServiceImpl extends ServiceImpl<BaseVmCloudServerMappe
         batchOperationMap.put(OperatedTypeEnum.RECYCLE_SERVER, this::recycleInstance);
     }
 
+    private void setCurrentInfos(PageVmCloudServerRequest request) {
+        // 普通用户
+        if (CurrentUserUtils.isUser() && StringUtils.isNotBlank(CurrentUserUtils.getWorkspaceId())) {
+            request.setSourceIds(Collections.singletonList(CurrentUserUtils.getWorkspaceId()));
+        }
+        // 组织管理员
+        if (CurrentUserUtils.isOrgAdmin()) {
+            List<String> orgWorkspaceList = new ArrayList<>();
+            orgWorkspaceList.add(CurrentUserUtils.getOrganizationId());
+            orgWorkspaceList.addAll(organizationCommonService.getOrgIdsByParentId(CurrentUserUtils.getOrganizationId()));
+            orgWorkspaceList.addAll(workspaceCommonService.getWorkspaceIdsByOrgIds(orgWorkspaceList));
+            request.setSourceIds(orgWorkspaceList);
+        }
+    }
+
+
     @Override
     public IPage<VmCloudServerDTO> pageVmCloudServer(PageVmCloudServerRequest request) {
-        List<String> sourceIds = permissionService.getSourceIds();
-        if (CollectionUtils.isNotEmpty(sourceIds)) {
-            request.setSourceIds(sourceIds);
-        }
+        setCurrentInfos(request);
+
         Page<VmCloudServerDTO> page = PageUtil.of(request, VmCloudServerDTO.class, new OrderItem(ColumnNameUtil.getColumnName(VmCloudServerDTO::getCreateTime, true), false), true);
         // 构建查询参数
         QueryWrapper<VmCloudServerDTO> wrapper = addQuery(request);
         return vmCloudServerMapper.pageVmCloudServer(page, wrapper);
     }
 
-    private QueryWrapper<VmCloudServerDTO> addQuery(PageVmCloudServerRequest request) {
-        QueryWrapper<VmCloudServerDTO> wrapper = new QueryWrapper<>();
+    @Override
+    public List<VmCloudServer> listVmCloudServer(PageVmCloudServerRequest request) {
+        setCurrentInfos(request);
+        QueryWrapper<VmCloudServer> wrapper = addQuery(request);
+        return this.list(wrapper);
+    }
+
+    @Override
+    public long countVmCloudServer() {
+        PageVmCloudServerRequest request = new PageVmCloudServerRequest();
+        setCurrentInfos(request);
+        QueryWrapper<VmCloudServer> wrapper = addQuery(request);
+        return this.count(wrapper);
+    }
+
+    private <T extends VmCloudServer> QueryWrapper<T> addQuery(PageVmCloudServerRequest request) {
+        QueryWrapper<T> wrapper = new QueryWrapper<>();
 
         wrapper.like(StringUtils.isNotBlank(request.getWorkspaceId()), ColumnNameUtil.getColumnName(VmCloudServer::getSourceId, true), request.getWorkspaceId());
         wrapper.like(StringUtils.isNotBlank(request.getInstanceName()), ColumnNameUtil.getColumnName(VmCloudServer::getInstanceName, true), request.getInstanceName());

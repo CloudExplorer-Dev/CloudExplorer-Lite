@@ -38,7 +38,7 @@ public class MenuConstants {
                     .title("云账号")
                     .path("/cloud_account")
                     .componentPath("/src/views/CloudAccount/index.vue")
-                    .icon("Cloudy")
+                    .icon("yun")
                     .order(1)
                     .redirect("/cloud_account/list")
                     .requiredPermission(new MenuPermission.Builder()

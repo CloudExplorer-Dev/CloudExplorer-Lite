@@ -1,6 +1,8 @@
 package com.fit2cloud.controller;
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.fit2cloud.base.entity.VmCloudImage;
 import com.fit2cloud.controller.handler.ResultHolder;
 import com.fit2cloud.controller.request.images.PageVmCloudImageRequest;
 import com.fit2cloud.dto.VmCloudImageDTO;
@@ -32,5 +34,15 @@ public class VmCloudImageController {
     @PreAuthorize("hasAnyCePermission('CLOUD_IMAGE:READ')")
     public ResultHolder<IPage<VmCloudImageDTO>> list(@Validated PageVmCloudImageRequest pageVmCloudImageRequest) {
         return ResultHolder.success(imageService.pageVmCloudImage(pageVmCloudImageRequest));
+    }
+
+    @ApiOperation(value = "查询镜像数量", notes = "查询镜像数量")
+    @GetMapping("/count")
+    @PreAuthorize("hasAnyCePermission('CLOUD_IMAGE:READ')")
+    public ResultHolder<Long> count() {
+        return ResultHolder.success(imageService.count(
+                new LambdaQueryWrapper<VmCloudImage>()
+                        .ne(VmCloudImage::getStatus, "DELETED"))
+        );
     }
 }

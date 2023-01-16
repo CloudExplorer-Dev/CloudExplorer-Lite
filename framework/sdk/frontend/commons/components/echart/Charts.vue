@@ -1,10 +1,13 @@
 <script setup lang="ts">
-import { defineProps, onMounted, watch, ref } from "vue";
+import { onMounted, ref, watch } from "vue";
 import * as echarts from "echarts";
 
 const props = defineProps({
   data: {
     type: Object,
+    default: () => {
+      return {};
+    },
   },
   metricName: {
     type: String,
@@ -20,9 +23,39 @@ const props = defineProps({
   },
   xData: {
     type: Array,
+    default: () => {
+      return {};
+    },
+  },
+  deviceList: {
+    type: Object,
+    default: () => {
+      return {};
+    },
+  },
+  currentDevice: {
+    type: String,
+    default: () => {
+      return "";
+    },
+  },
+  deviceData: {
+    type: Object,
+    default: () => {
+      return [];
+    },
   },
   series: {
-    type: Array,
+    type: Object,
+    default: () => {
+      return [];
+    },
+  },
+  selectTop: {
+    type: String,
+    default: () => {
+      return "10px";
+    },
   },
 });
 
@@ -31,7 +64,7 @@ const guid = () => {
 };
 
 const getUuid = (): string => {
-  const uuid =
+  return (
     guid() +
     guid() +
     "-" +
@@ -43,8 +76,8 @@ const getUuid = (): string => {
     "-" +
     guid() +
     guid() +
-    guid();
-  return uuid;
+    guid()
+  );
 };
 
 const uuid = getUuid();
@@ -144,8 +177,7 @@ const setEchartsData = () => {
       trigger: "axis",
       formatter: function (params: any) {
         const unit = ref<string>();
-        const timeText = timestampToTime(params[0].name);
-        let tooltipText = timeText;
+        let tooltipText = timestampToTime(params[0].name);
         params.forEach(function (v: any) {
           if (props.yUnit === "Byte/s" || props.yUnit === "bit/s") {
             unit.value = changeByte(v.value);
@@ -201,12 +233,12 @@ const timestampToTime = (timestamp: any) => {
 };
 
 const changeByte = (byte: number) => {
-  let size = "";
-  if (byte < 1 * 1024) {
+  let size: string;
+  if (byte < 1024) {
     size = `${byte.toFixed(2)}B`;
-  } else if (byte < 1 * 1024 * 1024) {
+  } else if (byte < 1024 * 1024) {
     size = `${(byte / 1024).toFixed(2)}KB`;
-  } else if (byte < 1 * 1024 * 1024 * 1024) {
+  } else if (byte < 1024 * 1024 * 1024) {
     size = `${(byte / (1024 * 1024)).toFixed(2)}MB`;
   } else {
     size = `${(byte / (1024 * 1024 * 1024)).toFixed(2)}GB`;
@@ -225,13 +257,57 @@ const changeByte = (byte: number) => {
 };
 
 //监听data变化
-watch(props.data, () => {
-  setEchartsData();
-});
+watch(
+  () => props.xData,
+  () => {
+    setEchartsData();
+  }
+);
+const currentDevice = ref("");
+const changeDeviceList = () => {
+  if (currentDevice.value != "") {
+    //props.xData = props.deviceData[currentDevice.value][0].timestamps;
+    props.series[0].data = props.deviceData[currentDevice.value][0].values;
+    setEchartsData();
+  }
+};
+const isDiskUsed = () => {
+  if (currentDevice.value === "") {
+    currentDevice.value = props.currentDevice;
+    changeDeviceList();
+  }
+  return props.metricName === "DISK_USED_UTILIZATION";
+};
+const getLabel = (item: string) => {
+  if (item === "ALL") {
+    return item;
+  }
+  return item.substring(1, item.length - 1);
+};
 </script>
 <template>
-  <div
-    :id="`echarts-${uuid}`"
-    style="width: 100%; height: 15rem; padding-top: 10px"
-  ></div>
+  <div style="position: relative">
+    <div
+      style="position: absolute; right: 20px; top: 10px; z-index: 10"
+      :style="{ top: selectTop }"
+    >
+      <el-select
+        v-model="currentDevice"
+        @change="changeDeviceList()"
+        class="m-2"
+        v-if="isDiskUsed()"
+      >
+        <el-option
+          v-for="item in props.deviceList"
+          :key="item"
+          :label="getLabel(item)"
+          :value="item"
+        />
+      </el-select>
+    </div>
+    <div
+      :id="`echarts-${uuid}`"
+      style="width: 99%; height: 15rem; padding-top: 10px"
+    ></div>
+  </div>
 </template>

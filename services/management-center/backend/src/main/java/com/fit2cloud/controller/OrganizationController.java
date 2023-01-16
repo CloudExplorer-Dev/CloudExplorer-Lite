@@ -1,17 +1,15 @@
 package com.fit2cloud.controller;
 
 import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.fit2cloud.base.entity.Organization;
 import com.fit2cloud.base.mapper.BaseOrganizationMapper;
 import com.fit2cloud.common.validator.annnotaion.CustomValidated;
 import com.fit2cloud.common.validator.group.ValidationGroup;
 import com.fit2cloud.common.validator.handler.ExistHandler;
-import com.fit2cloud.controller.editor.OrderEditor;
 import com.fit2cloud.controller.handler.ResultHolder;
 import com.fit2cloud.controller.request.OrganizationBatchRequest;
 import com.fit2cloud.controller.request.OrganizationRequest;
 import com.fit2cloud.controller.request.PageOrganizationRequest;
-import com.fit2cloud.base.entity.Organization;
-import com.fit2cloud.request.pub.OrderRequest;
 import com.fit2cloud.service.IOrganizationService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -19,7 +17,6 @@ import io.swagger.annotations.ApiParam;
 import org.springframework.beans.BeanUtils;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.WebDataBinder;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
@@ -44,8 +41,15 @@ public class OrganizationController {
     @ApiOperation(value = "分页查询组织", notes = "分页查询组织")
     @GetMapping("/page")
     @PreAuthorize("hasAnyCePermission('ORGANIZATION:READ')")
-    public ResultHolder<IPage<Organization>> list(@Validated PageOrganizationRequest pageOrganizationRequest) {
+    public ResultHolder<IPage<Organization>> page(@Validated PageOrganizationRequest pageOrganizationRequest) {
         return ResultHolder.success(organizationService.pageOrganization(pageOrganizationRequest));
+    }
+
+    @ApiOperation(value = "查询组织数量", notes = "查询组织数量")
+    @GetMapping("/count")
+    @PreAuthorize("hasAnyCePermission('ORGANIZATION:READ')")
+    public ResultHolder<Long> count() {
+        return ResultHolder.success(organizationService.count());
     }
 
     @GetMapping("/{organizationId}")

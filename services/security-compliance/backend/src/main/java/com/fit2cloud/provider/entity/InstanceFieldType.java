@@ -15,7 +15,7 @@ public enum InstanceFieldType {
     /**
      * 枚举
      */
-    Enum(EQ),
+    Enum(EQ, NotEq),
     /**
      * 字符串
      */

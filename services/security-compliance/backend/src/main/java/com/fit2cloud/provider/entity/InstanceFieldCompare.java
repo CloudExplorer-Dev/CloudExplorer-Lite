@@ -12,7 +12,7 @@ public enum InstanceFieldCompare {
     Exist("存在", "doc[params.field].length>0"),
 
     NotEq("不等于", "!doc[params.field].stream().anyMatch(s->(s==null&&params==null)||(s!=null&&params.value!=null&&s.toString()==params.value.toString()))"),
-    EQ("等于", "doc[params.field].stream().anyMatch(s->(s==null&&params==null)||(s!=null&&params.value!=null&&s.toString()==params.value.toString()))"),
+    EQ("等于", "doc[params.field].stream().anyMatch(s->(s==null&&params==null)||(s!=null&&params.value!=null&&s.toString()==params.value.toString()))||(doc[params.field].length==0&&(params==null||params.value==null))"),
 
     NotIn("不包含", "!doc[params.field].stream().anyMatch(s->(s==null&&params==null)||(s!=null&&params.value!=null&&s.toString()==params.value.toString()))"),
     IN("包含", "doc[params.field].stream().anyMatch(s->(s==null&&params==null)||(s!=null&&params.value!=null&&s.toString()==params.value.toString()))"),

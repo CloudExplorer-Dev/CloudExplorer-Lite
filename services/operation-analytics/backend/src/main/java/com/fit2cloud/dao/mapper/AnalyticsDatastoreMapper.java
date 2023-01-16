@@ -14,22 +14,14 @@ import org.apache.ibatis.annotations.Select;
  * </p>
  *
  * @author fit2cloud
- * @since
  */
 public interface AnalyticsDatastoreMapper extends BaseMapper<AnalyticsDatastoreDTO> {
 
 
-    /**
-     * @param page
-     * @param queryWrapper
-     * @return
-     */
     @Select("SELECT vm_cloud_datastore.* " +
             " ,cloud_account.name as account_name"+
             " ,( vm_cloud_datastore.capacity - vm_cloud_datastore.free_space ) AS allocated"+
-            " ,TRUNCATE (( vm_cloud_datastore.capacity - vm_cloud_datastore.free_space )* 100 / vm_cloud_datastore.capacity,\n" +
-            "\t2 \n" +
-            ") AS useRate"+
+            " ,TRUNCATE (( vm_cloud_datastore.capacity - vm_cloud_datastore.free_space )* 100 / vm_cloud_datastore.capacity,2 ) AS useRate"+
             " ,TRUNCATE(vm_cloud_datastore.free_space * 100 / vm_cloud_datastore.capacity,2) as free_rate"+
             " ,cloud_account.platform as platform"+
             " FROM vm_cloud_datastore" +

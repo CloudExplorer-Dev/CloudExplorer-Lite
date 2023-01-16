@@ -1,11 +1,14 @@
 package com.fit2cloud.provider;
 
+import com.fit2cloud.constants.ResourceTypeConstants;
+import com.fit2cloud.constants.SyncDimensionConstants;
 import com.fit2cloud.es.entity.ResourceInstance;
 import com.fit2cloud.provider.constants.ProviderConstants;
 import com.fit2cloud.provider.entity.InstanceSearchField;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 
 /**
  * {@code @Author:张少虎}
@@ -14,6 +17,14 @@ import java.util.List;
  * {@code @注释: }
  */
 public interface ICloudProvider {
+
+    /**
+     * 获取云的资源同步粒度
+     *
+     * @return 同步粒度表
+     */
+    Map<ResourceTypeConstants, SyncDimensionConstants> getResourceSyncDimensionConstants();
+
     /**
      * 获取云服务器列表
      *
@@ -224,6 +235,21 @@ public interface ICloudProvider {
      * @return 存储桶实例可查询字段
      */
     List<InstanceSearchField> listBucketInstanceSearchField();
+
+    /**
+     * 获取 安全组实例列表
+     *
+     * @param req 请对象
+     * @return 安全组实力列表
+     */
+    List<ResourceInstance> listSecurityGroupInstance(String req);
+
+    /**
+     * 获取安全组实例可查询字段
+     *
+     * @return 安全组实例可查询字段
+     */
+    List<InstanceSearchField> listSecurityGroupInstanceSearchField();
 
     /**
      * 根据供应商获取对应云平台处理器

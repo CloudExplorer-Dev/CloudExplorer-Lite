@@ -174,7 +174,7 @@ const defaultPieDoughnutOptions = {
   legend: {
     orient: "vertical",
     type: "scroll",
-    right: "45",
+    right: 30,
     top: "10%",
     height: "180",
     align: "left",
@@ -183,10 +183,13 @@ const defaultPieDoughnutOptions = {
       fontFamily:
         "'Helvetica Neue', Helvetica, 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', '微软雅黑', Arial, sans-serif",
     },
+    tooltip: {
+      show: true,
+    },
     formatter: function (name: any) {
       const len = name.length;
-      if (len > 5) {
-        name = name.slice(0, 5) + "...";
+      if (len > 10) {
+        name = name.slice(0, 10) + "...";
       }
       return name;
     },
@@ -212,8 +215,8 @@ const defaultPieDoughnutOptions = {
     {
       name: "",
       type: "pie",
-      radius: ["40%", "65%"],
-      center: ["31%", "45%"],
+      radius: ["36%", "55%"],
+      center: ["29%", "45%"],
       avoidLabelOverlap: false,
       itemStyle: {
         borderRadius: 10,

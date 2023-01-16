@@ -10,19 +10,18 @@
   <div :id="`echarts-${uuid}`" :style="getChartStyle"></div>
 </template>
 
-<script name="MyCharts" lang="ts" setup>
+<script lang="ts" setup>
 import {
-  shallowRef,
   computed,
-  watch,
-  onMounted,
-  onBeforeUnmount,
   nextTick,
+  onBeforeUnmount,
+  onMounted,
   ref,
+  shallowRef,
+  watch,
 } from "vue";
-import { debounce } from "lodash";
+import _, { debounce } from "lodash";
 import * as echarts from "echarts";
-import _ from "lodash";
 
 const props = defineProps({
   options: {
@@ -78,7 +77,7 @@ const guid = () => {
 };
 
 const getUuid = (): string => {
-  const uuid =
+  return (
     guid() +
     guid() +
     "-" +
@@ -90,8 +89,8 @@ const getUuid = (): string => {
     "-" +
     guid() +
     guid() +
-    guid();
-  return uuid;
+    guid()
+  );
 };
 
 const uuid = getUuid();
@@ -110,12 +109,14 @@ const initChart = () => {
   const chartDom = document.getElementById(`echarts-${uuid}`)!;
   eChartsRef.value = echarts.init(chartDom);
 };
-const colors = ["#0080ff", "#31b1c2"];
+const colors = ["#00b2ff", "#31b1c2", "#67c23a"];
 const barSeriesItemStyle = {
   normal: {
     color: function (params: any) {
       if (params.data && params.data?.groupName === "org") {
         return colors[0];
+      } else if (params.data && params.data?.groupName === "available") {
+        return colors[2];
       }
       return colors[1];
     },
@@ -134,6 +135,7 @@ const showBack = ref<boolean>(false);
 const parentItem = ref<any>({});
 const initTreeBar = () => {
   if (props.treeBar && props.treeBarData.length > 0) {
+    showBack.value = false;
     eChartsRef.value.on("click", (params: any) => {
       const item = props.treeBarAllData.find(
         (v: any) => v.name === params.name

@@ -3,11 +3,13 @@ package com.fit2cloud.dto;
 import com.fit2cloud.base.entity.VmCloudDatastore;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 
 /**
  * @author jianneng
  * @date 2022/12/11 18:55
  **/
+@EqualsAndHashCode(callSuper = true)
 @Data
 public class AnalyticsDatastoreDTO extends VmCloudDatastore {
     @ApiModelProperty("组织名称")

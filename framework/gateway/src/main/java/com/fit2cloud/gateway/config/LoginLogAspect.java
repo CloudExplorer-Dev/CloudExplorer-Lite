@@ -50,20 +50,20 @@ public class LoginLogAspect {
         Long startTime = System.currentTimeMillis();
         //创建一个请求id
         String requestId = String.valueOf(UUID.randomUUID());
-        MDC.put("requestId",requestId);
+        MDC.put("requestId", requestId);
         Object res = null;
-        ResultHolder errorResult = ResultHolder.error(GlobalErrorCodeConstants.BUSINESS_ERROR.getCode(),GlobalErrorCodeConstants.BUSINESS_ERROR.getMessage());
-        try{
+        ResultHolder errorResult = ResultHolder.error(GlobalErrorCodeConstants.BUSINESS_ERROR.getCode(), GlobalErrorCodeConstants.BUSINESS_ERROR.getMessage());
+        try {
             res = pjd.proceed();
-            Mono<ResponseEntity<ResultHolder<Object>>> result = (Mono)res;
-            if(result.block().getStatusCode().value()!=200){
-                errorResult = ResultHolder.error(result.block().getStatusCode().value(),result.block().getBody().getMessage());
-            }else{
+            Mono<ResponseEntity<ResultHolder<Object>>> result = (Mono) res;
+            if (result.block().getStatusCode().value() != 200) {
+                errorResult = ResultHolder.error(result.block().getStatusCode().value(), result.block().getBody().getMessage());
+            } else {
                 errorResult = ResultHolder.success("ok");
             }
-        }catch (Exception e){
-            if(e instanceof Fit2cloudException){
-                Fit2cloudException fit2cloudException = (Fit2cloudException)e;
+        } catch (Exception e) {
+            if (e instanceof Fit2cloudException) {
+                Fit2cloudException fit2cloudException = (Fit2cloudException) e;
                 errorResult.setCode(fit2cloudException.getCode());
                 errorResult.setMessage(fit2cloudException.getMessage());
             }
@@ -71,35 +71,35 @@ public class LoginLogAspect {
             e.printStackTrace();
         }
         Long endTime = System.currentTimeMillis();
-        saveLog(pjd,res,endTime-startTime,errorResult);
+        saveLog(pjd, res, endTime - startTime, errorResult);
         //请求完成后清理MDC
         MDC.clear();
         errorResult.setRequestId(requestId);
         return res;
     }
 
-    private void saveLog(ProceedingJoinPoint pjd, Object res, Long time ,ResultHolder errorResult){
+    private void saveLog(ProceedingJoinPoint pjd, Object res, Long time, ResultHolder errorResult) {
         try {
             MethodSignature methodSignature = (MethodSignature) pjd.getSignature();
             Method method = methodSignature.getMethod();
             Object[] args = pjd.getArgs();
             OperatedLog annotation = method.getAnnotation(OperatedLog.class);
             ApiOperation apiOperation = method.getAnnotation(ApiOperation.class);
-            if(annotation != null || apiOperation !=null){
-                OperatedLogVO logVO = createLog(time, errorResult,annotation,args);
+            if (annotation != null || apiOperation != null) {
+                OperatedLogVO logVO = createLog(time, errorResult, annotation, args);
                 logVO.setMethod("GET");
                 // 操作内容描述
-                if(apiOperation!=null){
+                if (apiOperation != null) {
                     logVO.setContent(apiOperation.notes());
                 }
                 // 日志注解内容
-                if(annotation!=null){
+                if (annotation != null) {
                     // 操作
                     logVO.setOperated(annotation.operated().getOperate());
                     logVO.setOperatedName(OperatedTypeEnum.getDescriptionByOperate(logVO.getOperated()));
                     // 资源类型
                     logVO.setResourceType(annotation.resourceType().getCode());
-                }else{
+                } else {
                     logVO.setOperated(apiOperation.value());
                     logVO.setOperatedName(apiOperation.value());
                 }
@@ -117,22 +117,22 @@ public class LoginLogAspect {
 
 
     @NotNull
-    private OperatedLogVO createLog(Long time, ResultHolder errorResult,OperatedLog annotation,Object[] args) {
+    private OperatedLogVO createLog(Long time, ResultHolder errorResult, OperatedLog annotation, Object[] args) {
         OperatedLogVO logVO = new OperatedLogVO();
         logVO.setModule(ServerInfo.module);
         logVO.setRequestTime(new Date().getTime());
         logVO.setTime(time);
-        logVO.setStatus(errorResult.getCode()==200?1:0);
+        logVO.setStatus(errorResult.getCode() == 200 ? 1 : 0);
         logVO.setCode(errorResult.getCode());
         logVO.setMsg(errorResult.getMessage());
-        if(annotation!=null){
-            if(StringUtils.equalsIgnoreCase(annotation.operated().getOperate(),OperatedTypeEnum.LOGIN.getOperate())||
-                    StringUtils.equalsIgnoreCase(annotation.operated().getOperate(),OperatedTypeEnum.LOGOUT.getOperate())){
-                LoginRequest loginRequest = JsonUtil.parseObject(JsonUtil.toJSONString(args[0]),LoginRequest.class);
+        if (annotation != null) {
+            if (StringUtils.equalsIgnoreCase(annotation.operated().getOperate(), OperatedTypeEnum.LOGIN.getOperate()) ||
+                    StringUtils.equalsIgnoreCase(annotation.operated().getOperate(), OperatedTypeEnum.LOGOUT.getOperate())) {
+                LoginRequest loginRequest = JsonUtil.parseObject(JsonUtil.toJSONString(args[0]), LoginRequest.class);
                 logVO.setUser(loginRequest.getUsername());
             }
         }
-        if(StringUtils.isEmpty(logVO.getUser()) && Optional.ofNullable(CurrentUserUtils.getUser()).isPresent()){
+        if (StringUtils.isEmpty(logVO.getUser()) && Optional.ofNullable(CurrentUserUtils.getUser()).isPresent()) {
             UserDto userDto = CurrentUserUtils.getUser();
             logVO.setUser(userDto.getUsername());
             logVO.setUserId(userDto.getId());
@@ -140,25 +140,25 @@ public class LoginLogAspect {
         return logVO;
     }
 
-    private void setMDC(OperatedLogVO logVO){
-        MDC.put("module",logVO.getModule());
-        MDC.put("operated",logVO.getOperated());
-        MDC.put("operatedName",logVO.getOperatedName());
-        MDC.put("resourceId",logVO.getResourceId());
-        MDC.put("resourceType",logVO.getResourceType());
-        MDC.put("joinResourceId",logVO.getJoinResourceId());
-        MDC.put("user",logVO.getUser());
-        MDC.put("userId",logVO.getUserId());
-        MDC.put("url",logVO.getUrl());
-        MDC.put("content",logVO.getContent());
-        MDC.put("requestTime",String.valueOf(logVO.getRequestTime()));
-        MDC.put("method",logVO.getMethod());
-        MDC.put("params",logVO.getParams());
-        MDC.put("status",String.valueOf(logVO.getStatus()));
-        MDC.put("sourceIp",logVO.getSourceIp());
-        MDC.put("time",String.valueOf(logVO.getTime()));
-        MDC.put("code",String.valueOf(logVO.getCode()));
-        MDC.put("response",logVO.getResponse());
+    private void setMDC(OperatedLogVO logVO) {
+        MDC.put("module", logVO.getModule());
+        MDC.put("operated", logVO.getOperated());
+        MDC.put("operatedName", logVO.getOperatedName());
+        MDC.put("resourceId", logVO.getResourceId());
+        MDC.put("resourceType", logVO.getResourceType());
+        MDC.put("joinResourceId", logVO.getJoinResourceId());
+        MDC.put("user", logVO.getUser());
+        MDC.put("userId", logVO.getUserId());
+        MDC.put("url", logVO.getUrl());
+        MDC.put("content", logVO.getContent());
+        MDC.put("requestTime", String.valueOf(logVO.getRequestTime()));
+        MDC.put("method", logVO.getMethod());
+        MDC.put("params", logVO.getParams());
+        MDC.put("status", String.valueOf(logVO.getStatus()));
+        MDC.put("sourceIp", logVO.getSourceIp());
+        MDC.put("time", String.valueOf(logVO.getTime()));
+        MDC.put("code", String.valueOf(logVO.getCode()));
+        MDC.put("response", logVO.getResponse());
     }
 
 

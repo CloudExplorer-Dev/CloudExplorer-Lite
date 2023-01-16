@@ -17,15 +17,12 @@ import java.util.List;
  * </p>
  *
  * @author fit2cloud
- * @since
  */
 public interface AnalyticsServerMapper extends BaseMapper<AnalyticsServerDTO> {
 
 
     /**
      * TODO 这个地方慢慢累加查询条件
-     * @param page
-     * @param queryWrapper
      * @return
      */
     @Select("SELECT vm_cloud_server.* " +
@@ -38,8 +35,6 @@ public interface AnalyticsServerMapper extends BaseMapper<AnalyticsServerDTO> {
 
     /**
      * 查询云主机
-     * @param queryWrapper
-     * @return
      */
     @Select("SELECT " +
             "vm_cloud_server.*, " +

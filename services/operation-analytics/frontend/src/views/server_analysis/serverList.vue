@@ -223,11 +223,11 @@ const tableConfig = ref<TableConfig>({
         prop="memoryMaximum"
         label="内存最大使用率(%)"
       ></el-table-column>
-      <el-table-column
-        min-width="150"
-        prop="diskAverage"
-        label="磁盘使用率(%)"
-      ></el-table-column>
+      <!--      <el-table-column-->
+      <!--        min-width="150"-->
+      <!--        prop="diskAverage"-->
+      <!--        label="磁盘使用率(%)"-->
+      <!--      ></el-table-column>-->
       <template #buttons>
         <fu-table-column-select type="icon" :columns="columns" size="small" />
       </template>

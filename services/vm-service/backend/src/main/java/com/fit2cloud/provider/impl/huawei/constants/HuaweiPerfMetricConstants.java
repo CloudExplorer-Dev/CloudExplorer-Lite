@@ -57,6 +57,7 @@ public class HuaweiPerfMetricConstants {
 
     }
     /**
+     * 磁盘的无法获取
      * 磁盘枚举
      */
     public enum CloudDiskPerfMetricEnum {
