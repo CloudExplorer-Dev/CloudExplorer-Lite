@@ -1,5 +1,6 @@
 package com.fit2cloud.service.impl;
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
@@ -12,14 +13,15 @@ import com.fit2cloud.base.entity.VmCloudDisk;
 import com.fit2cloud.base.entity.VmCloudServer;
 import com.fit2cloud.base.mapper.BaseVmCloudDiskMapper;
 import com.fit2cloud.base.service.IBaseCloudAccountService;
+import com.fit2cloud.base.service.IBaseRecycleBinService;
 import com.fit2cloud.base.service.IBaseVmCloudServerService;
 import com.fit2cloud.common.constants.JobTypeConstants;
+import com.fit2cloud.common.constants.ResourceTypeConstants;
 import com.fit2cloud.common.form.vo.FormObject;
 import com.fit2cloud.common.log.constants.OperatedTypeEnum;
 import com.fit2cloud.common.log.constants.ResourceTypeEnum;
 import com.fit2cloud.common.provider.util.CommonUtil;
 import com.fit2cloud.common.utils.ColumnNameUtil;
-import com.fit2cloud.common.utils.CurrentUserUtils;
 import com.fit2cloud.common.utils.PageUtil;
 import com.fit2cloud.controller.request.CreateJobRecordRequest;
 import com.fit2cloud.controller.request.ExecProviderMethodRequest;
@@ -39,18 +41,18 @@ import com.fit2cloud.provider.constants.F2CInstanceStatus;
 import com.fit2cloud.provider.constants.ProviderConstants;
 import com.fit2cloud.provider.entity.F2CDisk;
 import com.fit2cloud.provider.impl.vsphere.util.ResourceConstants;
+import com.fit2cloud.service.IPermissionService;
 import com.fit2cloud.service.IResourceOperateService;
 import com.fit2cloud.service.IVmCloudDiskService;
-import com.fit2cloud.service.OrganizationCommonService;
-import com.fit2cloud.service.WorkspaceCommonService;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
-import java.util.*;
-import java.util.stream.Collectors;
+import java.util.HashMap;
+import java.util.List;
+import java.util.UUID;
 
 /**
  * <p>
@@ -63,10 +65,6 @@ import java.util.stream.Collectors;
 @Service
 public class VmCloudDiskServiceImpl extends ServiceImpl<BaseVmCloudDiskMapper, VmCloudDisk> implements IVmCloudDiskService {
     @Resource
-    private OrganizationCommonService organizationCommonService;
-    @Resource
-    private WorkspaceCommonService workspaceCommonService;
-    @Resource
     private VmCloudDiskMapper diskMapper;
     @Resource
     private VmCloudServerMapper serverMapper;
@@ -76,10 +74,15 @@ public class VmCloudDiskServiceImpl extends ServiceImpl<BaseVmCloudDiskMapper, V
     private IBaseCloudAccountService cloudAccountService;
     @Resource
     private IResourceOperateService resourceOperateService;
+    @Resource
+    private IPermissionService permissionService;
+
+    @Resource
+    private IBaseRecycleBinService recycleService;
 
     @Override
     public IPage<VmCloudDiskDTO> pageVmCloudDisk(PageVmCloudDiskRequest request) {
-        List<String> sourceIds = getSourceIds();
+        List<String> sourceIds = permissionService.getSourceIds();
         if (CollectionUtils.isNotEmpty(sourceIds)) {
             request.setSourceIds(sourceIds);
         }
@@ -98,8 +101,17 @@ public class VmCloudDiskServiceImpl extends ServiceImpl<BaseVmCloudDiskMapper, V
         return result;
     }
 
-    private QueryWrapper<VmCloudDiskDTO> addQuery(PageVmCloudDiskRequest request) {
-        QueryWrapper<VmCloudDiskDTO> wrapper = new QueryWrapper<>();
+    @Override
+    public long countDisk() {
+        List<String> sourceIds = permissionService.getSourceIds();
+        return this.count(new LambdaQueryWrapper<VmCloudDisk>()
+                .in(CollectionUtils.isNotEmpty(sourceIds), VmCloudDisk::getSourceId, sourceIds)
+                .ne(VmCloudDisk::getStatus, F2CDiskStatus.DELETED)
+        );
+    }
+
+    private <T extends VmCloudDisk> QueryWrapper<T> addQuery(PageVmCloudDiskRequest request) {
+        QueryWrapper<T> wrapper = new QueryWrapper<>();
 
         wrapper.like(StringUtils.isNotBlank(request.getWorkspaceId()), ColumnNameUtil.getColumnName(VmCloudDisk::getSourceId, true), request.getWorkspaceId());
         wrapper.like(StringUtils.isNotBlank(request.getDiskName()), ColumnNameUtil.getColumnName(VmCloudDisk::getDiskName, true), request.getDiskName());
@@ -119,7 +131,7 @@ public class VmCloudDiskServiceImpl extends ServiceImpl<BaseVmCloudDiskMapper, V
     }
 
     public List<VmCloudServerDTO> cloudServerList(ListVmRequest req) {
-        List<String> sourceIds = getSourceIds();
+        List<String> sourceIds = permissionService.getSourceIds();
 
         QueryWrapper<VmCloudServer> wrapper = new QueryWrapper<>();
         wrapper.lambda().eq(VmCloudServer::getAccountId, req.getAccountId())
@@ -148,7 +160,7 @@ public class VmCloudDiskServiceImpl extends ServiceImpl<BaseVmCloudDiskMapper, V
     public boolean createDisk(CreateVmCloudDiskRequest request) {
         try {
             // 创建前:插入一条磁盘记录，状态为初始化
-            String id = UUID.randomUUID().toString();
+            String id = UUID.randomUUID().toString().replace("-", "");
             VmCloudDisk initVmCloudDisk = request.toVmCloudDisk(id, F2CDiskStatus.INIT);
             baseMapper.insert(initVmCloudDisk);
 
@@ -498,28 +510,6 @@ public class VmCloudDiskServiceImpl extends ServiceImpl<BaseVmCloudDiskMapper, V
     }
 
     /**
-     * 获取当前登录角色具有权限查看的组织或者工作空间集合
-     *
-     * @return
-     */
-    private List<String> getSourceIds() {
-        List<String> sourceIds = new ArrayList<>();
-        // 普通用户
-        if (CurrentUserUtils.isUser() && StringUtils.isNotBlank(CurrentUserUtils.getWorkspaceId())) {
-            sourceIds = Arrays.asList(new String[]{CurrentUserUtils.getWorkspaceId()});
-        }
-        // 组织管理员
-        if (CurrentUserUtils.isOrgAdmin()) {
-            List orgWorkspaceList = new ArrayList();
-            orgWorkspaceList.add(CurrentUserUtils.getOrganizationId());
-            orgWorkspaceList.addAll(organizationCommonService.getOrgIdsByParentId(CurrentUserUtils.getOrganizationId()));
-            orgWorkspaceList.addAll(workspaceCommonService.getWorkspaceIdsByOrgIds(orgWorkspaceList));
-            sourceIds = orgWorkspaceList;
-        }
-        return sourceIds;
-    }
-
-    /**
      * 获取云主机所属的组织或者工作空间 ID
      *
      * @param accountId
@@ -540,6 +530,7 @@ public class VmCloudDiskServiceImpl extends ServiceImpl<BaseVmCloudDiskMapper, V
 
     /**
      * 云磁盘授权
+     *
      * @param grantRequest
      * @return
      */
@@ -550,5 +541,19 @@ public class VmCloudDiskServiceImpl extends ServiceImpl<BaseVmCloudDiskMapper, V
         updateWrapper.lambda().in(VmCloudDisk::getId, grantRequest.getIds())
                 .set(VmCloudDisk::getSourceId, sourceId);
         return update(updateWrapper);
+    }
+
+    @Override
+    public boolean batchRecycleDisks(String[] ids) {
+        for (String id : ids) {
+            recycleDisk(id);
+        }
+        return true;
+    }
+
+    @Override
+    public boolean recycleDisk(String id) {
+        recycleService.insertRecycleRecord(id, ResourceTypeConstants.DISK);
+        return true;
     }
 }

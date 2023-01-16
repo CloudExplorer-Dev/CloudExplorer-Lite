@@ -16,7 +16,11 @@ public class TencentPerfMetricConstants {
         INTERNET_OUT_RATE("WanOuttraffic", "公网流出带宽","Mbps"),
         INTRANET_IN_RATE("LanIntraffic", "内网流入带宽","Mbps"),
         INTRANET_OUT_RATE("LanOuttraffic", "内网流出带宽","Mbps"),
-        DISK_USED_UTILIZATION("CvmDiskUsage","磁盘使用率","%"),
+        /**
+         * 磁盘已使用容量占总容量的百分比(所有磁盘)
+         * https://cloud.tencent.com/document/product/248/6843#.E7.A3.81.E7.9B.98.E7.9B.91.E6.8E.A7
+         */
+        DISK_USED_UTILIZATION("CvmDiskUsage","所有磁盘使用率","%"),
         ;
         /**
          * 名称
@@ -57,7 +61,8 @@ public class TencentPerfMetricConstants {
         DISK_WRITE_BPS("DiskWriteTraffic", "所有磁盘写入BPS","KB/s"),
         DISK_READ_IOPS("DiskReadIops", "所有磁盘每秒读取次数","Count/Second"),
         DISK_WRITE_IOPS("DiskWriteIops", "所有磁盘每秒写入次数","Count/Second"),
-        DISK_USED_UTILIZATION("CvmDiskUsage","磁盘使用率","%"),
+        //这个指标不行
+        //DISK_USED_UTILIZATION("disk_usage","磁盘使用率","%"),
         ;
         /**
          * 名称

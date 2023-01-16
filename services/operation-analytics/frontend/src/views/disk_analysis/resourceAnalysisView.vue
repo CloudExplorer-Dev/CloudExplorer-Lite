@@ -19,7 +19,7 @@
         <el-option label="容量(GB)" value="capacity" />
       </el-select>
     </div>
-    <div class="spread-main">
+    <div class="spread-main" style="min-width: 1000px">
       <div class="spread-main-up">
         <el-row :gutter="10">
           <el-col :span="8">
@@ -394,11 +394,11 @@ const timestampData = ref<[Date, Date]>([
 <style scoped>
 .spread-layout {
   width: 100% !important;
-  min-width: 900px;
+  min-width: 950px;
 }
 .myChart {
   height: 300px;
-  min-width: 300px;
+  min-width: 350px;
   border: 1px solid #e5e5e5;
 }
 .spread-main {

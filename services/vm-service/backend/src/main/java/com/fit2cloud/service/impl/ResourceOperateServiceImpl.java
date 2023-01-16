@@ -1,8 +1,10 @@
 package com.fit2cloud.service.impl;
 
 import com.fit2cloud.base.entity.JobRecord;
+import com.fit2cloud.base.service.IBaseRecycleBinService;
 import com.fit2cloud.common.constants.JobStatusConstants;
 import com.fit2cloud.common.constants.JobTypeConstants;
+import com.fit2cloud.common.constants.ResourceTypeConstants;
 import com.fit2cloud.common.log.constants.OperatedTypeEnum;
 import com.fit2cloud.common.log.constants.ResourceTypeEnum;
 import com.fit2cloud.common.log.utils.LogUtil;
@@ -37,6 +39,9 @@ public class ResourceOperateServiceImpl implements IResourceOperateService {
 
     @Resource
     ThreadPoolExecutor workThreadPool;
+
+    @Resource
+    private IBaseRecycleBinService recycleService;
 
     public <T, V> void operateWithJobRecord(CreateJobRecordRequest createJobRecordRequest, ExecProviderMethodRequest execProviderMethodRequest, ResourceState<T, V> resourceState) {
         CompletableFuture.runAsync(() -> {
@@ -89,6 +94,13 @@ public class ResourceOperateServiceImpl implements IResourceOperateService {
 
                         // 设置任务状态为成功
                         jobRecord.setStatus(JobStatusConstants.SUCCESS);
+
+                        switch (createJobRecordRequest.getJobType()) {
+                            case CLOUD_DISK_DELETE_JOB ->
+                                    recycleService.updateRecycleRecordOnDelete(createJobRecordRequest.getResourceId(), ResourceTypeConstants.DISK);
+                            default -> {
+                            }
+                        }
                     }
                 } catch (Exception e) {
                     // 还原资源状态

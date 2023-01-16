@@ -10,6 +10,7 @@ import QuickAccess from "./items/QuickAccess.vue";
 import BillTrend from "./items/BillTrend.vue";
 import ServerIncreaseTrend from "./items/ServerIncreaseTrend.vue";
 import ServerDistribution from "./items/ServerDistribution.vue";
+import ServerMetrics from "./items/ServerMetrics.vue";
 
 import { getHistoryTrend } from "./items/api";
 import _ from "lodash";
@@ -105,6 +106,26 @@ onMounted(() => {
             :permission="'[finance-management]BILL_ViEW:READ'"
             :getHistoryTrend="getHistoryTrend"
             head-position="left"
+          />
+        </el-col>
+      </el-row>
+      <el-row :gutter="20" type="flex" v-if="userStore.currentRole === 'USER'">
+        <el-col :span="6">
+          <ServerDistribution
+            class="flex-div-2 divide-info"
+            :need-roles="['USER']"
+            :permission="'[operation-analytics]SERVER_ANALYSIS:READ'"
+            type="byStatus"
+            title="我的资源"
+            :height="300"
+          />
+        </el-col>
+        <el-col :span="18">
+          <ServerMetrics
+            class="flex-div-2 divide-info"
+            :need-roles="['USER']"
+            :permission="'[vm-service]CLOUD_SERVER:READ'"
+            title="资源监控"
           />
         </el-col>
       </el-row>

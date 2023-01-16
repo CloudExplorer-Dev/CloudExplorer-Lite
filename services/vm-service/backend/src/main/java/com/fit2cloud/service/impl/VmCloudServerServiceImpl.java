@@ -1,5 +1,6 @@
 package com.fit2cloud.service.impl;
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
@@ -14,9 +15,11 @@ import com.fit2cloud.base.entity.VmCloudServer;
 import com.fit2cloud.base.mapper.BaseJobRecordResourceMappingMapper;
 import com.fit2cloud.base.mapper.BaseVmCloudServerMapper;
 import com.fit2cloud.base.service.IBaseCloudAccountService;
+import com.fit2cloud.base.service.IBaseRecycleBinService;
 import com.fit2cloud.base.service.IBaseVmCloudDiskService;
 import com.fit2cloud.common.constants.JobStatusConstants;
 import com.fit2cloud.common.constants.JobTypeConstants;
+import com.fit2cloud.common.constants.ResourceTypeConstants;
 import com.fit2cloud.common.exception.Fit2cloudException;
 import com.fit2cloud.common.form.util.FormUtil;
 import com.fit2cloud.common.form.vo.FormObject;
@@ -30,7 +33,10 @@ import com.fit2cloud.controller.request.CreateJobRecordRequest;
 import com.fit2cloud.controller.request.ExecProviderMethodRequest;
 import com.fit2cloud.controller.request.GrantRequest;
 import com.fit2cloud.controller.request.ResourceState;
-import com.fit2cloud.controller.request.vm.*;
+import com.fit2cloud.controller.request.vm.BatchOperateVmRequest;
+import com.fit2cloud.controller.request.vm.ChangeServerConfigRequest;
+import com.fit2cloud.controller.request.vm.CreateServerRequest;
+import com.fit2cloud.controller.request.vm.PageVmCloudServerRequest;
 import com.fit2cloud.dao.mapper.VmCloudServerMapper;
 import com.fit2cloud.dto.InitJobRecordDTO;
 import com.fit2cloud.dto.UserDto;
@@ -87,12 +93,18 @@ public class VmCloudServerServiceImpl extends ServiceImpl<BaseVmCloudServerMappe
     private IResourceOperateService resourceOperateService;
 
     @Resource
+    private IBaseRecycleBinService recycleService;
+
+    @Resource
     private BaseJobRecordResourceMappingMapper baseJobRecordResourceMappingMapper;
 
     /**
      * 云主机批量操作
      */
     private Map<OperatedTypeEnum, Consumer<String>> batchOperationMap;
+
+    @Resource
+    private IPermissionService permissionService;
 
     @PostConstruct
     private void init() {
@@ -102,30 +114,52 @@ public class VmCloudServerServiceImpl extends ServiceImpl<BaseVmCloudServerMappe
         batchOperationMap.put(OperatedTypeEnum.POWER_OFF, this::powerOff);
         batchOperationMap.put(OperatedTypeEnum.SHUTDOWN, this::shutdownInstance);
         batchOperationMap.put(OperatedTypeEnum.DELETE, this::deleteInstance);
+        batchOperationMap.put(OperatedTypeEnum.RECYCLE_SERVER, this::recycleInstance);
     }
 
-    @Override
-    public IPage<VmCloudServerDTO> pageVmCloudServer(PageVmCloudServerRequest request) {
+    private void setCurrentInfos(PageVmCloudServerRequest request) {
         // 普通用户
         if (CurrentUserUtils.isUser() && StringUtils.isNotBlank(CurrentUserUtils.getWorkspaceId())) {
-            request.setSourceIds(Arrays.asList(new String[]{CurrentUserUtils.getWorkspaceId()}));
+            request.setSourceIds(Collections.singletonList(CurrentUserUtils.getWorkspaceId()));
         }
         // 组织管理员
         if (CurrentUserUtils.isOrgAdmin()) {
-            List orgWorkspaceList = new ArrayList();
+            List<String> orgWorkspaceList = new ArrayList<>();
             orgWorkspaceList.add(CurrentUserUtils.getOrganizationId());
             orgWorkspaceList.addAll(organizationCommonService.getOrgIdsByParentId(CurrentUserUtils.getOrganizationId()));
             orgWorkspaceList.addAll(workspaceCommonService.getWorkspaceIdsByOrgIds(orgWorkspaceList));
             request.setSourceIds(orgWorkspaceList);
         }
+    }
+
+
+    @Override
+    public IPage<VmCloudServerDTO> pageVmCloudServer(PageVmCloudServerRequest request) {
+        setCurrentInfos(request);
+
         Page<VmCloudServerDTO> page = PageUtil.of(request, VmCloudServerDTO.class, new OrderItem(ColumnNameUtil.getColumnName(VmCloudServerDTO::getCreateTime, true), false), true);
         // 构建查询参数
         QueryWrapper<VmCloudServerDTO> wrapper = addQuery(request);
         return vmCloudServerMapper.pageVmCloudServer(page, wrapper);
     }
 
-    private QueryWrapper<VmCloudServerDTO> addQuery(PageVmCloudServerRequest request) {
-        QueryWrapper<VmCloudServerDTO> wrapper = new QueryWrapper<>();
+    @Override
+    public List<VmCloudServer> listVmCloudServer(PageVmCloudServerRequest request) {
+        setCurrentInfos(request);
+        QueryWrapper<VmCloudServer> wrapper = addQuery(request);
+        return this.list(wrapper);
+    }
+
+    @Override
+    public long countVmCloudServer() {
+        PageVmCloudServerRequest request = new PageVmCloudServerRequest();
+        setCurrentInfos(request);
+        QueryWrapper<VmCloudServer> wrapper = addQuery(request);
+        return this.count(wrapper);
+    }
+
+    private <T extends VmCloudServer> QueryWrapper<T> addQuery(PageVmCloudServerRequest request) {
+        QueryWrapper<T> wrapper = new QueryWrapper<>();
 
         wrapper.like(StringUtils.isNotBlank(request.getWorkspaceId()), ColumnNameUtil.getColumnName(VmCloudServer::getSourceId, true), request.getWorkspaceId());
         wrapper.like(StringUtils.isNotBlank(request.getInstanceName()), ColumnNameUtil.getColumnName(VmCloudServer::getInstanceName, true), request.getInstanceName());
@@ -180,6 +214,29 @@ public class VmCloudServerServiceImpl extends ServiceImpl<BaseVmCloudServerMappe
                 F2CInstanceStatus.Deleting.name(), F2CInstanceStatus.Deleted.name(), this::modifyResource,
                 jobRecordCommonService::initJobRecord, jobRecordCommonService::modifyJobRecord, JobTypeConstants.CLOUD_SERVER_DELETE_JOB);
         return true;
+    }
+
+    @Override
+    public boolean recycleInstance(String vmId) {
+        QueryWrapper<VmCloudServer> wrapper = new QueryWrapper<VmCloudServer>()
+                .eq(ColumnNameUtil.getColumnName(VmCloudServer::getId, true), vmId)
+                .ne(ColumnNameUtil.getColumnName(VmCloudServer::getInstanceStatus, true), F2CInstanceStatus.Deleted.name());
+        VmCloudServer vmCloudServer = baseMapper.selectOne(wrapper);
+        Optional.ofNullable(vmCloudServer).orElseThrow(() -> new Fit2cloudException(ErrorCodeConstants.VM_NOT_EXIST.getCode(), ErrorCodeConstants.VM_NOT_EXIST.getMessage()));
+
+        String beforeStatus = F2CInstanceStatus.Stopping.name();
+        if (vmCloudServer.getInstanceStatus().equalsIgnoreCase(F2CInstanceStatus.Stopped.name())) {
+            beforeStatus = F2CInstanceStatus.Stopped.name();
+        }
+
+        operate(vmId, OperatedTypeEnum.RECYCLE_SERVER.getDescription(), ICloudProvider::shutdownInstance,
+                beforeStatus, F2CInstanceStatus.Stopped.name(), this::modifyResource,
+                jobRecordCommonService::initJobRecord, jobRecordCommonService::modifyJobRecord, JobTypeConstants.CLOUD_SERVER_RECYCLE_JOB);
+        return true;
+    }
+
+    public boolean recoverInstance(String recycleBinId) {
+        return recycleService.updateRecycleRecordOnRecover(recycleBinId);
     }
 
     @Override
@@ -282,6 +339,10 @@ public class VmCloudServerServiceImpl extends ServiceImpl<BaseVmCloudServerMappe
                         switch (operateType) {
                             case CLOUD_SERVER_STOP_JOB -> vmCloudServer.setLastShutdownTime(DateUtil.getSyncTime());
                             case CLOUD_SERVER_START_JOB -> vmCloudServer.setLastShutdownTime(null);
+                            case CLOUD_SERVER_RECYCLE_JOB ->
+                                    recycleService.insertRecycleRecord(vmId, ResourceTypeConstants.VM);
+                            case CLOUD_SERVER_DELETE_JOB ->
+                                    recycleService.updateRecycleRecordOnDelete(vmId, ResourceTypeConstants.VM);
                             default -> {
                             }
                         }

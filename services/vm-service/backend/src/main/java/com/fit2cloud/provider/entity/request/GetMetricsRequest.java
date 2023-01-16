@@ -2,11 +2,13 @@ package com.fit2cloud.provider.entity.request;
 
 import com.fit2cloud.common.provider.entity.F2CEntityType;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 
 /**
  * @author jianneng
  * @date 2022/10/27 14:36
  **/
+@EqualsAndHashCode(callSuper = true)
 @Data
 public class GetMetricsRequest extends BaseRequest{
 
@@ -19,13 +21,18 @@ public class GetMetricsRequest extends BaseRequest{
      */
     private int interval = 1;
     /**
-     * 开始时间 通过interval计算
+     * 开始时间
      */
     private String startTime;
     /**
-     * 结束时间 通过interval计算
+     * 结束时间
      */
     private String endTime;
+
+    /**
+     * 开始同步的时间
+     */
+    private String syncTimeStampStr;
     /**
      * 资源类型
      */

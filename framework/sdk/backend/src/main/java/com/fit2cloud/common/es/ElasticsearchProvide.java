@@ -126,6 +126,7 @@ public class ElasticsearchProvide {
                 idSB.append(perfMetricMonitorData.getMetricName());
                 idSB.append("-");
                 idSB.append(perfMetricMonitorData.getTimestamp());
+                idSB.append(perfMetricMonitorData.getDevice());
                 perfMetricMonitorData.setId(idSB.toString());
                 IndexQuery indexQuery = new IndexQueryBuilder()
                         .withId(idSB.toString())

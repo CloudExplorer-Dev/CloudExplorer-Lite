@@ -73,6 +73,20 @@ public class DateUtil extends DateUtils {
         Instant instant = Instant.ofEpochMilli(timestamp);
         return LocalDateTime.ofInstant(instant, ZoneId.systemDefault());
     }
+
+    /**
+     * 获取当前时间过去一个小时的时间
+     * @param timestamp
+     * @return
+     */
+    public static Long beforeOneHourToTimestamp(Long timestamp) {
+        Calendar calendar = Calendar.getInstance();
+        /* HOUR_OF_DAY 指示一天中的小时 */
+        calendar.setTime(new Date(timestamp));
+        calendar.add(Calendar.HOUR_OF_DAY, -1);
+        return calendar.getTime().getTime();
+    }
+
     public static void main(String[] args) {
 
         System.out.println(getISO8601TimestampFromDateStr(dateToString(1667528700000L,null)));

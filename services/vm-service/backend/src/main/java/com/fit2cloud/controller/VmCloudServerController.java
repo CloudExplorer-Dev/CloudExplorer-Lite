@@ -1,6 +1,5 @@
 package com.fit2cloud.controller;
 
-import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.fit2cloud.base.entity.VmCloudServer;
 import com.fit2cloud.common.form.vo.FormObject;
@@ -14,7 +13,6 @@ import com.fit2cloud.controller.request.vm.ChangeServerConfigRequest;
 import com.fit2cloud.controller.request.vm.CreateServerRequest;
 import com.fit2cloud.controller.request.vm.PageVmCloudServerRequest;
 import com.fit2cloud.dto.VmCloudServerDTO;
-import com.fit2cloud.provider.constants.F2CInstanceStatus;
 import com.fit2cloud.response.JobRecordResourceResponse;
 import com.fit2cloud.service.IVmCloudServerService;
 import io.swagger.annotations.Api;
@@ -44,18 +42,22 @@ public class VmCloudServerController {
     @ApiOperation(value = "分页查询云主机", notes = "分页查询云主机")
     @GetMapping("/page")
     @PreAuthorize("hasAnyCePermission('CLOUD_SERVER:READ')")
-    public ResultHolder<IPage<VmCloudServerDTO>> list(@Validated PageVmCloudServerRequest pageVmCloudServerRequest) {
+    public ResultHolder<IPage<VmCloudServerDTO>> page(@Validated PageVmCloudServerRequest pageVmCloudServerRequest) {
         return ResultHolder.success(iVmCloudServerService.pageVmCloudServer(pageVmCloudServerRequest));
+    }
+
+    @ApiOperation(value = "查询云主机", notes = "查询云主机")
+    @GetMapping("/list")
+    @PreAuthorize("hasAnyCePermission('CLOUD_SERVER:READ')")
+    public ResultHolder<List<VmCloudServer>> list(PageVmCloudServerRequest pageVmCloudServerRequest) {
+        return ResultHolder.success(iVmCloudServerService.listVmCloudServer(pageVmCloudServerRequest));
     }
 
     @ApiOperation(value = "查询云主机数量", notes = "查询云主机数量")
     @GetMapping("/count")
     @PreAuthorize("hasAnyCePermission('CLOUD_SERVER:READ')")
     public ResultHolder<Long> count() {
-        return ResultHolder.success(iVmCloudServerService.count(
-                new LambdaQueryWrapper<VmCloudServer>()
-                        .ne(VmCloudServer::getInstanceStatus, F2CInstanceStatus.Deleted.name()))
-        );
+        return ResultHolder.success(iVmCloudServerService.countVmCloudServer());
     }
 
     @ApiOperation(value = "开机", notes = "启动云主机操作系统")
@@ -108,6 +110,22 @@ public class VmCloudServerController {
         return ResultHolder.success(iVmCloudServerService.deleteInstance(serverId));
     }
 
+    @ApiOperation(value = "放入回收站", notes = "云主机放入回收站")
+    @PostMapping("recycle/{serverId}")
+    @PreAuthorize("hasAnyCePermission('CLOUD_SERVER:DELETE')")
+    @OperatedLog(resourceType = ResourceTypeEnum.CLOUD_SERVER, operated = OperatedTypeEnum.RECYCLE_SERVER, resourceId = "#serverId", param = "#serverId")
+    public ResultHolder<Boolean> recycleInstance(@PathVariable String serverId) {
+        return ResultHolder.success(iVmCloudServerService.recycleInstance(serverId));
+    }
+
+    @ApiOperation(value = "恢复", notes = "云主机恢复")
+    @PostMapping("recover/{recycleBinId}")
+    @PreAuthorize("hasAnyCePermission('CLOUD_SERVER:RECOVER')")
+    @OperatedLog(resourceType = ResourceTypeEnum.CLOUD_SERVER, operated = OperatedTypeEnum.RECOVER_SERVER, resourceId = "#serverId", param = "#serverId")
+    public ResultHolder<Boolean> recoverInstance(@PathVariable String recycleBinId) {
+        return ResultHolder.success(iVmCloudServerService.recoverInstance(recycleBinId));
+    }
+
     @ApiOperation(value = "批量操作", notes = "批量操作云主机")
     @PostMapping("batchOperate")
     @PreAuthorize("hasAnyCePermission('CLOUD_SERVER:START','CLOUD_SERVER:STOP','CLOUD_SERVER:RESTART','CLOUD_SERVER:DELETE', 'CLOUD_SERVER:AUTH')")
@@ -149,7 +167,7 @@ public class VmCloudServerController {
     @ApiOperation(value = "配置变更")
     @PutMapping("changeConfig")
     @PreAuthorize("hasAnyCePermission('CLOUD_SERVER:RESIZE')")
-    @OperatedLog(resourceType = ResourceTypeEnum.CLOUD_SERVER, operated = OperatedTypeEnum.CHANGE_CONFIG, resourceId = "#{req.id}", param = "#{req}")
+    @OperatedLog(resourceType = ResourceTypeEnum.CLOUD_SERVER, operated = OperatedTypeEnum.CHANGE_SERVER_CONFIG, resourceId = "#{req.id}", param = "#{req}")
     public ResultHolder<Boolean> changeConfig(@RequestBody ChangeServerConfigRequest req) {
         return ResultHolder.success(iVmCloudServerService.changeConfig(req));
     }

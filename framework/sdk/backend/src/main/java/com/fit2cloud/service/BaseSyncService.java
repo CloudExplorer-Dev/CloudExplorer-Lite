@@ -25,6 +25,7 @@ import org.springframework.stereotype.Service;
 import javax.annotation.Resource;
 import java.lang.reflect.InvocationTargetException;
 import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -181,6 +182,8 @@ public abstract class BaseSyncService {
                 CloudAccount cloudAccount = cloudAccountService.getById(cloudAccountId);
                 if (Objects.nonNull(cloudAccount)) {
                     LocalDateTime syncTime = getSyncTime();
+                    //转换为时间戳字符串
+                    cloudAccount.setSyncTimeStampStr(String.valueOf(syncTime.toInstant(ZoneOffset.of("+8")).toEpochMilli()));
                     // 初始化一条定时任务记录
                     JobRecord jobRecord = initJobRecord.apply(syncTime);
                     Class<? extends P> cloudProvider = getCloudProvider.apply(cloudAccount.getPlatform());
@@ -202,8 +205,7 @@ public abstract class BaseSyncService {
                         // 修改同步状态为成功
                         baseJobRecordService.update(new LambdaUpdateWrapper<JobRecord>().eq(JobRecord::getId, jobRecord.getId()).set(JobRecord::getStatus, JobStatusConstants.SUCCESS));
                     } catch (Throwable e) {
-                        e.printStackTrace();
-                        baseJobRecordService.update(new LambdaUpdateWrapper<JobRecord>().eq(JobRecord::getId, jobRecord.getId()).set(JobRecord::getStatus, JobStatusConstants.FAILED));
+                        baseJobRecordService.update(new LambdaUpdateWrapper<JobRecord>().eq(JobRecord::getId, jobRecord.getId()).set(JobRecord::getStatus, JobStatusConstants.FAILED).set(JobRecord::getResult,e.getMessage()));
                     }
                 } else {
                     // 删除云账号相关的资源

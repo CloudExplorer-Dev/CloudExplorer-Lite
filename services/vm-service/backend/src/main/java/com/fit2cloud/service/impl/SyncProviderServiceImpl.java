@@ -289,15 +289,7 @@ public class SyncProviderServiceImpl extends BaseSyncService implements ISyncPro
             String cloudAccountId = getCloudAccountId(params);
             List<Credential.Region> regions = getRegions(cloudAccountId);
             if (params.containsKey(JobConstants.CloudAccount.CLOUD_ACCOUNT_ID.name()) && CollectionUtils.isNotEmpty(regions)) {
-                proxy(
-                        cloudAccountId,
-                        regions,
-                        "同步云主机监控",
-                        ICloudProvider::getF2CPerfMetricMonitorData,
-                        this::perfMetricMonitorSaveOrUpdate,
-                        this::writeJobRecord,
-                        () -> {
-                        });
+                proxy(cloudAccountId, regions, "同步云主机监控", ICloudProvider::getF2CPerfMetricMonitorData, this::perfMetricMonitorSaveOrUpdate, this::writeJobRecord, () -> {});
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -405,7 +397,7 @@ public class SyncProviderServiceImpl extends BaseSyncService implements ISyncPro
                 s -> ProviderConstants.valueOf(s).getCloudProvider(),
                 syncTime -> initJobRecord(jobDescription, syncTime, cloudAccountId),
                 execMethod,
-                (account, region) -> getParams(account.getCredential(), region.getRegionId()),
+                (account, region) -> getParams(account.getCredential(), region.getRegionId(),account.getSyncTimeStampStr()),
                 saveBatchOrUpdate,
                 writeJobRecord,
                 remote);
@@ -442,12 +434,14 @@ public class SyncProviderServiceImpl extends BaseSyncService implements ISyncPro
      *
      * @param credential 认证信息
      * @param region     区域信息
+     * @param syncTimeStampStr     开始同步的时间
      * @return json参数
      */
-    private String getParams(String credential, String region) {
+    private String getParams(String credential, String region,String syncTimeStampStr) {
         HashMap<String, String> params = new HashMap<>();
         params.put("credential", credential);
         params.put("regionId", region);
+        params.put("syncTimeStampStr",syncTimeStampStr);
         return JsonUtil.toJSONString(params);
     }
 

@@ -5,6 +5,7 @@ import com.fit2cloud.common.exception.Fit2cloudException;
 import com.fit2cloud.common.log.utils.LogUtil;
 import com.fit2cloud.common.provider.entity.F2CEntityType;
 import com.fit2cloud.common.provider.entity.F2CPerfMetricMonitorData;
+import com.fit2cloud.common.provider.exception.SkipPageException;
 import com.fit2cloud.common.provider.util.PageUtil;
 import com.fit2cloud.common.utils.DateUtil;
 import com.fit2cloud.common.utils.JsonUtil;
@@ -26,6 +27,7 @@ import com.fit2cloud.provider.impl.tencent.entity.credential.TencentVmCredential
 import com.fit2cloud.provider.impl.tencent.entity.request.*;
 import com.fit2cloud.provider.impl.tencent.util.TencentMappingUtil;
 import com.tencentcloudapi.cbs.v20170312.CbsClient;
+import com.tencentcloudapi.cbs.v20170312.models.Filter;
 import com.tencentcloudapi.cbs.v20170312.models.Placement;
 import com.tencentcloudapi.cbs.v20170312.models.*;
 import com.tencentcloudapi.common.exception.TencentCloudSDKException;
@@ -1130,9 +1132,9 @@ public class TencetSyncCloudApi {
             throw new Fit2cloudException(10002, "区域为必填参数");
         }
         List<F2CPerfMetricMonitorData> result = new ArrayList<>();
-        //设置时间，根据interval,默认一个小时
-        getMetricsRequest.setStartTime(String.valueOf(DateUtil.getBeforeHourTime(getMetricsRequest.getInterval())));
-        getMetricsRequest.setEndTime(String.valueOf(System.currentTimeMillis()));
+        //设置时间，根据syncTimeStampStr,默认一个小时
+        getMetricsRequest.setStartTime(String.valueOf(DateUtil.beforeOneHourToTimestamp(Long.valueOf(getMetricsRequest.getSyncTimeStampStr()))));
+        getMetricsRequest.setEndTime(getMetricsRequest.getSyncTimeStampStr());
         System.out.println("开始时间：" + getMetricsRequest.getStartTime());
         System.out.println("结束时间：" + getMetricsRequest.getEndTime());
         try {
@@ -1144,26 +1146,33 @@ public class TencetSyncCloudApi {
             result.addAll(getVmPerfMetric(monitorClient, request, getMetricsRequest));
             result.addAll(getVmDiskPerfMetric(monitorClient, request, getMetricsRequest));
         } catch (Exception e) {
+            SkipPageException.throwSkipPageException(e);
             throw new Fit2cloudException(100021, "获取监控数据失败-" + getMetricsRequest.getRegionId() + "-" + e.getMessage());
         }
         return result;
     }
 
+    /**
+     * 暂时不实现
+     * @param getMetricsRequest
+     * @return
+     */
     public static List<F2CPerfMetricMonitorData> getF2CDiskPerfMetricList(GetMetricsRequest getMetricsRequest) {
         if (StringUtils.isEmpty(getMetricsRequest.getRegionId())) {
             throw new Fit2cloudException(10002, "区域为必填参数");
         }
         List<F2CPerfMetricMonitorData> result = new ArrayList<>();
-        //设置时间，根据interval,默认一个小时
-        getMetricsRequest.setStartTime(String.valueOf(DateUtil.getBeforeHourTime(getMetricsRequest.getInterval())));
-        getMetricsRequest.setEndTime(String.valueOf(System.currentTimeMillis()));
+        //设置时间，根据syncTimeStampStr,默认一个小时
+        getMetricsRequest.setStartTime(String.valueOf(DateUtil.beforeOneHourToTimestamp(Long.valueOf(getMetricsRequest.getSyncTimeStampStr()))));
+        getMetricsRequest.setEndTime(getMetricsRequest.getSyncTimeStampStr());
         try {
             getMetricsRequest.setRegionId(getMetricsRequest.getRegionId());
             TencentVmCredential credential = JsonUtil.parseObject(getMetricsRequest.getCredential(), TencentVmCredential.class);
             GetMonitorDataRequest request = getShowMetricDataRequest(getMetricsRequest);
             MonitorClient monitorClient = credential.getMonitorClient(getMetricsRequest.getRegionId());
-            result.addAll(getDiskPerfMetric(monitorClient, request, getMetricsRequest));
+            //result.addAll(getDiskPerfMetric(monitorClient, request, getMetricsRequest));
         } catch (Exception e) {
+            SkipPageException.throwSkipPageException(e);
             throw new Fit2cloudException(100021, "获取监控数据失败-" + getMetricsRequest.getRegionId() + "-" + e.getMessage());
         }
         return result;
@@ -1190,7 +1199,7 @@ public class TencetSyncCloudApi {
                 req.setMetricName(perfMetric.getMetricName());
                 req.setInstances(getInstance("InstanceId", id));
                 Map<Long, BigDecimal> dataMap = getMonitorData(monitorClient, req);
-                addMonitorData(result, dataMap, F2CEntityType.VIRTUAL_MACHINE.name(), perfMetric.getUnit(), getMetricsRequest.getPeriod(), perfMetric.name(), id);
+                addMonitorData(null, result, dataMap, F2CEntityType.VIRTUAL_MACHINE.name(), perfMetric.getUnit(), getMetricsRequest.getPeriod(), perfMetric.name(), id);
             });
         });
         return result;
@@ -1207,7 +1216,7 @@ public class TencetSyncCloudApi {
         ListDiskRequest listDiskRequest = new ListDiskRequest();
         listDiskRequest.setCredential(getMetricsRequest.getCredential());
         listDiskRequest.setRegionId(getMetricsRequest.getRegionId());
-        List<F2CDisk> ids = listDisk(listDiskRequest).stream().filter(disk -> disk.isBootable() && StringUtils.isNotEmpty(disk.getInstanceUuid())).collect(Collectors.toList());
+        List<F2CDisk> ids = listDisk(listDiskRequest).stream().filter(disk -> StringUtils.isNotEmpty(disk.getInstanceUuid())).collect(Collectors.toList());
         if (ids.size() == 0) {
             return result;
         }
@@ -1215,9 +1224,18 @@ public class TencetSyncCloudApi {
         ids.forEach(disk -> {
             Arrays.stream(TencentPerfMetricConstants.CloudDiskPerfMetricEnum.values()).sorted().forEach(perfMetric -> {
                 req.setMetricName(perfMetric.getMetricName());
-                req.setInstances(getInstance("diskId", disk.getDiskId()));
-                Map<Long, BigDecimal> dataMap = getMonitorData(monitorClient, req);
-                addMonitorData(result, dataMap, F2CEntityType.VIRTUAL_MACHINE.name(), perfMetric.getUnit(), getMetricsRequest.getPeriod(), perfMetric.name(), disk.getInstanceUuid());
+                //TODO 这个磁盘使用率，查不到数据，一直是namespace或者MetricName无效，这个参数是通过控制台查看到的参数，无法获取到数据，暂时留着先
+                if(StringUtils.equalsIgnoreCase("DISK_USED_UTILIZATION",perfMetric.name())){
+                    req.setInstances(getInstance("InstanceId", disk.getInstanceUuid()));
+                    Map<String,Map<Long, BigDecimal>> dataMap = getMonitorDataForDiskUsedRate(monitorClient, req);
+                    dataMap.forEach((k,v)->{
+                        addMonitorData(k, result, v, F2CEntityType.VIRTUAL_MACHINE.name(), perfMetric.getUnit(), getMetricsRequest.getPeriod(), perfMetric.name(), disk.getInstanceUuid());
+                    });
+                }else{
+                    req.setInstances(getInstance("InstanceId", disk.getDiskId()));
+                    Map<Long, BigDecimal> dataMap = getMonitorData(monitorClient, req);
+                    addMonitorData(null, result, dataMap, F2CEntityType.VIRTUAL_MACHINE.name(), perfMetric.getUnit(), getMetricsRequest.getPeriod(), perfMetric.name(), disk.getInstanceUuid());
+                }
             });
         });
         return result;
@@ -1238,7 +1256,7 @@ public class TencetSyncCloudApi {
                 req.setMetricName(perfMetric.getMetricName());
                 req.setInstances(getInstance("diskId", disk.getDiskId()));
                 Map<Long, BigDecimal> dataMap = getMonitorData(monitorClient, req);
-                addMonitorData(result, dataMap, F2CEntityType.DISK.name(), perfMetric.getUnit(), getMetricsRequest.getPeriod(), perfMetric.name(), disk.getDiskId());
+                addMonitorData(null, result, dataMap, F2CEntityType.DISK.name(), perfMetric.getUnit(), getMetricsRequest.getPeriod(), perfMetric.name(), disk.getDiskId());
             });
         });
         return result;
@@ -1264,8 +1282,12 @@ public class TencetSyncCloudApi {
         return instances1;
     }
 
-    private static void addMonitorData(List<F2CPerfMetricMonitorData> result, Map<Long, BigDecimal> dataMap, String entityType, String unit, Integer period, String metricName, String instanceId) {
+    private static void addMonitorData(String device, List<F2CPerfMetricMonitorData> result, Map<Long, BigDecimal> dataMap, String entityType, String unit, Integer period, String metricName, String instanceId) {
+        if(StringUtils.isEmpty(device) && StringUtils.equalsIgnoreCase("DISK_USED_UTILIZATION",metricName)){
+            device = "ALL";
+        }
         //最大最小值去时间段内的，因为接口拿不到
+        String finalDevice = device;
         dataMap.keySet().forEach(k -> {
             BigDecimal max = dataMap.entrySet().stream().max(Map.Entry.comparingByValue()).get().getValue();
             BigDecimal min = dataMap.entrySet().stream().min(Map.Entry.comparingByValue()).get().getValue();
@@ -1277,6 +1299,7 @@ public class TencetSyncCloudApi {
             f2CEntityPerfMetric.setUnit(unit);
             f2CEntityPerfMetric.setMaximum(max);
             f2CEntityPerfMetric.setMinimum(min);
+            f2CEntityPerfMetric.setDevice(finalDevice);
             result.add(f2CEntityPerfMetric);
         });
     }
@@ -1308,6 +1331,30 @@ public class TencetSyncCloudApi {
             LogUtil.error("{}-{}",req.getMetricName(),e.getMessage());
         }
         return map;
+    }
+
+    private static Map<String,Map<Long, BigDecimal>> getMonitorDataForDiskUsedRate(MonitorClient monitorClient, GetMonitorDataRequest req) {
+        Map<String,Map<Long, BigDecimal>> result = new LinkedHashMap<>();
+        Map<Long, BigDecimal> map = new LinkedHashMap<>();
+        try {
+            //查询监控指标数据
+            GetMonitorDataResponse response = monitorClient.GetMonitorData(req);
+            if (StringUtils.isEmpty(response.getMsg()) && response.getDataPoints().length > 0) {
+                DataPoint[] dataPoints = response.getDataPoints();
+                Arrays.stream(dataPoints).toList().forEach(dataPoint -> {
+                    Long[] timestamps = dataPoint.getTimestamps();
+                    Float[] values = dataPoint.getValues();
+                    for (int i = 0; i < timestamps.length; i++) {
+                        map.put(timestamps[i] * 1000, new BigDecimal(values[i]));
+                    }
+                    result.put(dataPoint.getDimensions()[0].getValue(),map);
+                });
+            }
+        } catch (Exception e) {
+            System.out.println(req.getMetricName()+"-"+e.getMessage());
+            LogUtil.error("{}-{}",req.getMetricName(),e.getMessage());
+        }
+        return result;
     }
 
     /**

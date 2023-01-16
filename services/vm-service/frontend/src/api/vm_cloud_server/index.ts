@@ -75,6 +75,18 @@ export function powerOff(
 }
 
 /**
+ * 放入回收站
+ * @param instanceId
+ * @param loading
+ */
+export function recycleInstance(
+  instanceId: string,
+  loading?: Ref<boolean>
+): Promise<Result<boolean>> {
+  return post("api/server/recycle/" + instanceId, null, null, loading);
+}
+
+/**
  * 删除
  * @param instanceId
  * @param loading
@@ -154,7 +166,7 @@ export function getServerJobRecord(
 export function listPerfMetricMonitor(
   req: Ref<GetPerfMonitorRequest | null>,
   loading?: Ref<boolean>
-): Promise<Result<Array<PerfMonitorData>>> {
+): Promise<Result<Map<string, Array<PerfMonitorData>>>> {
   return get("/api/base/monitor/list", req, loading);
 }
 
@@ -214,6 +226,7 @@ const VmCloudServerApi = {
   powerOn,
   reboot,
   powerOff,
+  recycleInstance,
   deleteInstance,
   batchOperate,
   getVmCloudServerById,

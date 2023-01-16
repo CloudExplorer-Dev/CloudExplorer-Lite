@@ -110,6 +110,7 @@
                     />
                   </el-select>
                   <el-select
+                    v-if="false"
                     v-model="resourceUsedChartType"
                     @change="getResourceTrendData('byResourceUsed')"
                     style="width: 100px; margin-bottom: 7px"

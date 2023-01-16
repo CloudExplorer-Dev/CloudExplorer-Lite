@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted, onBeforeUnmount } from "vue";
+import { ref, onMounted, onBeforeUnmount, computed } from "vue";
 import VmCloudServerApi from "@/api/vm_cloud_server";
 import type { VmCloudServerVO } from "@/api/vm_cloud_server/type";
 import { useRouter } from "vue-router";
@@ -16,6 +16,7 @@ import type { SimpleMap } from "@commons/api/base/type";
 import variables_server from "../../styles/vm_cloud_server/server.module.scss";
 import { platformIcon } from "@commons/utils/platform";
 import BaseCloudAccountApi from "@commons/api/cloud_account";
+import RecycleBinsApi from "@/api/recycle_bin";
 import Grant from "@/views/vm_cloud_server/grant.vue";
 import { usePermissionStore } from "@commons/stores/modules/permission";
 import ButtonToolBar from "@commons/components/button-tool-bar/ButtonToolBar.vue";
@@ -51,6 +52,7 @@ const InstanceStatus = ref<Array<SimpleMap<string>>>([
   { text: "配置变更中", value: "ConfigChanging" },
   { text: "失败", value: "Failed" },
   { text: "未知", value: "Unknown" },
+  { text: "待回收", value: "ToBeRecycled" },
 ]);
 
 // 表格头中显示的筛选状态
@@ -60,8 +62,8 @@ const instanceStatusForTableSelect = [
   { text: t("vm_cloud_server.status.stopped", "已关机"), value: "Stopped" },
   { text: t("vm_cloud_server.status.rebooting", "重启中"), value: "Rebooting" },
   {
-    text: t("vm_cloud_server.status.wait_recycle", "待回收"),
-    value: "Wait_Recycle",
+    text: t("vm_cloud_server.status.ToBeRecycled", "待回收"),
+    value: "ToBeRecycled",
   },
   { text: t("vm_cloud_server.status.deleted", "已删除"), value: "Deleted" },
 ];
@@ -107,12 +109,24 @@ const refresh = () => {
 };
 
 /**
+ * 是否开启了回收站
+ */
+const isRecycleBinOpened = ref(true);
+const getRecycleBinSetting = () => {
+  // TODO 查询回收站配置
+  RecycleBinsApi.getRecycleEnableStatus().then((result) => {
+    isRecycleBinOpened.value = result.data;
+  });
+};
+
+/**
  * 页面挂载
  */
 onMounted(() => {
   search(new TableSearch());
   searchCloudAccount();
   startOperateInterval();
+  getRecycleBinSetting();
 });
 onBeforeUnmount(() => {
   stopOperateInterval();
@@ -300,7 +314,10 @@ const buttons = ref([
     },
     show: permissionStore.hasPermission("[vm-service]CLOUD_SERVER:DELETE"),
     disabled: (row: { instanceStatus: string }) => {
-      return row.instanceStatus === "Deleted";
+      return (
+        row.instanceStatus === "ToBeRecycled" ||
+        row.instanceStatus === "Deleted"
+      );
     },
   },
   {
@@ -309,7 +326,10 @@ const buttons = ref([
     click: createDisk,
     show: permissionStore.hasPermission("[vm-service]CLOUD_DISK:CREATE"),
     disabled: (row: { instanceStatus: string }) => {
-      return row.instanceStatus === "Deleted";
+      return (
+        row.instanceStatus === "ToBeRecycled" ||
+        row.instanceStatus === "Deleted"
+      );
     },
   },
   {
@@ -319,6 +339,7 @@ const buttons = ref([
     show: permissionStore.hasPermission("[vm-service]CLOUD_SERVER:RESIZE"),
     disabled: (row: { instanceStatus: string }) => {
       return (
+        row.instanceStatus === "ToBeRecycled" ||
         row.instanceStatus === "Deleted" ||
         (row.instanceStatus.toLowerCase() != "running" &&
           row.instanceStatus.toLowerCase().indexOf("ing") > -1)
@@ -449,22 +470,37 @@ const reboot = (row: VmCloudServerVO) => {
 
 //删除
 const deleteInstance = (row: VmCloudServerVO) => {
-  ElMessageBox.confirm(
-    t("vm_cloud_server.message_box.confirm_delete", "确认删除"),
-    t("commons.message_box.prompt", "提示"),
-    {
-      confirmButtonText: t("commons.message_box.confirm", "确认"),
-      cancelButtonText: t("commons.btn.cancel", "取消"),
-      type: "warning",
+  const message = isRecycleBinOpened.value
+    ? t(
+        "vm_cloud_server.message_box.confirm_recycle",
+        "回收站已开启，云主机将关机并放入回收站中"
+      )
+    : t(
+        "vm_cloud_server.message_box.confirm_to_delete",
+        "回收站已关闭，云主机将立即删除"
+      );
+  ElMessageBox.confirm(message, t("commons.message_box.prompt", "提示"), {
+    confirmButtonText: t("commons.message_box.confirm", "确认"),
+    cancelButtonText: t("commons.btn.cancel", "取消"),
+    type: "warning",
+  }).then(() => {
+    if (isRecycleBinOpened.value) {
+      VmCloudServerApi.recycleInstance(row.id as string)
+        .then(() => {
+          ElMessage.success(t("commons.msg.op_success"));
+        })
+        .catch((err) => {
+          console.log(err);
+        });
+    } else {
+      VmCloudServerApi.deleteInstance(row.id as string)
+        .then(() => {
+          ElMessage.success(t("commons.msg.op_success"));
+        })
+        .catch((err) => {
+          console.log(err);
+        });
     }
-  ).then(() => {
-    VmCloudServerApi.deleteInstance(row.id as string)
-      .then(() => {
-        ElMessage.success(t("commons.msg.op_success"));
-      })
-      .catch((err) => {
-        console.log(err);
-      });
   });
 };
 
@@ -475,17 +511,28 @@ const batchOperate = (operate: string) => {
   if (!(selectedRowData.value && selectedRowData.value.length > 0)) {
     return;
   }
-  ElMessageBox.confirm(
-    t("vm_cloud_server.message_box.confirm_batch_operate", [
-      instanceOperateMap.get(operate),
-    ]),
-    t("commons.message_box.prompt", "提示"),
-    {
-      confirmButtonText: t("commons.message_box.confirm", "确认"),
-      cancelButtonText: t("commons.btn.cancel", "取消"),
-      type: "warning",
-    }
-  ).then(() => {
+  let message = t("vm_cloud_server.message_box.confirm_batch_operate", [
+    instanceOperateMap.get(operate),
+  ]);
+  if (
+    operate.toUpperCase() === "DELETED" ||
+    operate.toUpperCase() === "RECYCLE_SERVER"
+  ) {
+    message = isRecycleBinOpened.value
+      ? t(
+          "vm_cloud_server.message_box.confirm_recycle",
+          "回收站已开启，云主机将关机并放入回收站中"
+        )
+      : t(
+          "vm_cloud_server.message_box.confirm_to_delete",
+          "回收站已关闭，云主机将立即删除"
+        );
+  }
+  ElMessageBox.confirm(message, t("commons.message_box.prompt", "提示"), {
+    confirmButtonText: t("commons.message_box.confirm", "确认"),
+    cancelButtonText: t("commons.btn.cancel", "取消"),
+    type: "warning",
+  }).then(() => {
     VmCloudServerApi.batchOperate(_.map(selectedRowData.value, "id"), operate)
       .then(() => {
         ElMessage.success(t("commons.msg.op_success"));
@@ -515,8 +562,22 @@ const showGrantDialog = () => {
 
 //删除
 const deleteBatch = () => {
-  batchOperate("DELETE");
+  if (isRecycleBinOpened.value) {
+    batchOperate("RECYCLE_SERVER");
+  } else {
+    batchOperate("DELETE");
+  }
 };
+
+/**
+ * 禁用批量启动
+ */
+const disableBatch = computed<boolean>(() => {
+  return (
+    selectedRowData.value.length > 0 &&
+    selectedRowData.value.some((row) => row.instanceStatus === "ToBeRecycled")
+  );
+});
 const moreActions = ref<Array<ButtonAction>>([
   new ButtonAction(
     t("commons.btn.create", "创建"),
@@ -530,35 +591,40 @@ const moreActions = ref<Array<ButtonAction>>([
     undefined,
     "POWER_ON",
     batchOperate,
-    permissionStore.hasPermission("[vm-service]CLOUD_SERVER:START")
+    permissionStore.hasPermission("[vm-service]CLOUD_SERVER:START"),
+    disableBatch
   ),
   new ButtonAction(
     t("vm_cloud_server.btn.shutdown", "关机"),
     undefined,
     "SHUTDOWN",
     batchOperate,
-    permissionStore.hasPermission("[vm-service]CLOUD_SERVER:STOP")
+    permissionStore.hasPermission("[vm-service]CLOUD_SERVER:STOP"),
+    disableBatch
   ),
   new ButtonAction(
     t("vm_cloud_server.btn.reboot", "重启"),
     undefined,
     "REBOOT",
     batchOperate,
-    permissionStore.hasPermission("[vm-service]CLOUD_SERVER:RESTART")
+    permissionStore.hasPermission("[vm-service]CLOUD_SERVER:RESTART"),
+    disableBatch
   ),
   new ButtonAction(
     t("commons.btn.grant", "授权"),
     undefined,
     undefined,
     authorizeBatch,
-    permissionStore.hasPermission("[vm-service]CLOUD_SERVER:AUTH")
+    permissionStore.hasPermission("[vm-service]CLOUD_SERVER:AUTH"),
+    disableBatch
   ),
   new ButtonAction(
     t("commons.btn.delete", "删除"),
     undefined,
     undefined,
     deleteBatch,
-    permissionStore.hasPermission("[vm-service]CLOUD_SERVER:DELETE")
+    permissionStore.hasPermission("[vm-service]CLOUD_SERVER:DELETE"),
+    disableBatch
   ),
 ]);
 </script>

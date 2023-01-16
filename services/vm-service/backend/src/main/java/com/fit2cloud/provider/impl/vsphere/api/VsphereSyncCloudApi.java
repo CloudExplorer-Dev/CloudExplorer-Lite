@@ -5,6 +5,7 @@ import com.fit2cloud.common.log.utils.LogUtil;
 import com.fit2cloud.common.platform.credential.impl.VsphereCredential;
 import com.fit2cloud.common.provider.entity.F2CEntityType;
 import com.fit2cloud.common.provider.entity.F2CPerfMetricMonitorData;
+import com.fit2cloud.common.provider.exception.SkipPageException;
 import com.fit2cloud.common.provider.impl.vsphere.utils.VsphereClient;
 import com.fit2cloud.common.utils.DateUtil;
 import com.fit2cloud.common.utils.IpChecker;
@@ -1033,15 +1034,16 @@ public class VsphereSyncCloudApi {
             throw new Fit2cloudException(10002, "区域为必填参数");
         }
         List<F2CPerfMetricMonitorData> result = new ArrayList<>();
-        //设置时间，根据interval,默认一个小时
-        getMetricsRequest.setStartTime(String.valueOf(DateUtil.getBeforeHourTime(1)));
-        getMetricsRequest.setEndTime(String.valueOf(System.currentTimeMillis()));
+        //设置时间，根据syncTimeStampStr,默认一个小时
+        getMetricsRequest.setStartTime(String.valueOf(DateUtil.beforeOneHourToTimestamp(Long.valueOf(getMetricsRequest.getSyncTimeStampStr()))));
+        getMetricsRequest.setEndTime(getMetricsRequest.getSyncTimeStampStr());
         try {
             getMetricsRequest.setRegionId(getMetricsRequest.getRegionId());
             result.addAll(getVmPerfMetric(getMetricsRequest));
-            result.addAll(getHostPerfMetric(getMetricsRequest));
-            result.addAll(getDatastorePerfMetric(getMetricsRequest));
+//            result.addAll(getHostPerfMetric(getMetricsRequest));
+//            result.addAll(getDatastorePerfMetric(getMetricsRequest));
         } catch (Exception e) {
+            SkipPageException.throwSkipPageException(e);
             throw new Fit2cloudException(100021, "获取监控数据失败-" + getMetricsRequest.getRegionId() + "-" + e.getMessage());
         }
         return result;
@@ -1052,13 +1054,14 @@ public class VsphereSyncCloudApi {
             throw new Fit2cloudException(10002, "区域为必填参数");
         }
         List<F2CPerfMetricMonitorData> result = new ArrayList<>();
-        //设置时间，根据interval,默认一个小时
-        getMetricsRequest.setStartTime(String.valueOf(DateUtil.getBeforeHourTime(1)));
-        getMetricsRequest.setEndTime(String.valueOf(System.currentTimeMillis()));
+        //设置时间，根据syncTimeStampStr,默认一个小时
+        getMetricsRequest.setStartTime(String.valueOf(DateUtil.beforeOneHourToTimestamp(Long.valueOf(getMetricsRequest.getSyncTimeStampStr()))));
+        getMetricsRequest.setEndTime(getMetricsRequest.getSyncTimeStampStr());
         try {
             getMetricsRequest.setRegionId(getMetricsRequest.getRegionId());
             result.addAll(getHostPerfMetric(getMetricsRequest));
         } catch (Exception e) {
+            SkipPageException.throwSkipPageException(e);
             throw new Fit2cloudException(100021, "获取监控数据失败-" + getMetricsRequest.getRegionId() + "-" + e.getMessage());
         }
         return result;
@@ -1075,12 +1078,13 @@ public class VsphereSyncCloudApi {
             throw new Fit2cloudException(10002, "区域为必填参数");
         }
         List<F2CPerfMetricMonitorData> result = new ArrayList<>();
-        //设置时间，根据interval,默认一个小时
-        getMetricsRequest.setStartTime(String.valueOf(DateUtil.getBeforeHourTime(1)));
-        getMetricsRequest.setEndTime(String.valueOf(System.currentTimeMillis()));
+        //设置时间，根据syncTimeStampStr,默认一个小时
+        getMetricsRequest.setStartTime(String.valueOf(DateUtil.beforeOneHourToTimestamp(Long.valueOf(getMetricsRequest.getSyncTimeStampStr()))));
+        getMetricsRequest.setEndTime(getMetricsRequest.getSyncTimeStampStr());
         try {
             getMetricsRequest.setRegionId(getMetricsRequest.getRegionId());
         } catch (Exception e) {
+            SkipPageException.throwSkipPageException(e);
             throw new Fit2cloudException(100021, "获取监控数据失败-" + getMetricsRequest.getRegionId() + "-" + e.getMessage());
         }
         return result;
@@ -1091,14 +1095,15 @@ public class VsphereSyncCloudApi {
             throw new Fit2cloudException(10002, "区域为必填参数");
         }
         List<F2CPerfMetricMonitorData> result = new ArrayList<>();
-        //设置时间，根据interval,默认一个小时
-        getMetricsRequest.setStartTime(String.valueOf(DateUtil.getBeforeHourTime(1)));
-        getMetricsRequest.setEndTime(String.valueOf(System.currentTimeMillis()));
+        //设置时间，根据syncTimeStampStr,默认一个小时
+        getMetricsRequest.setStartTime(String.valueOf(DateUtil.beforeOneHourToTimestamp(Long.valueOf(getMetricsRequest.getSyncTimeStampStr()))));
+        getMetricsRequest.setEndTime(getMetricsRequest.getSyncTimeStampStr());
         try {
             getMetricsRequest.setRegionId(getMetricsRequest.getRegionId());
             result.addAll(getDatastorePerfMetric(getMetricsRequest));
 
         } catch (Exception e) {
+            SkipPageException.throwSkipPageException(e);
             throw new Fit2cloudException(100021, "获取监控数据失败-" + getMetricsRequest.getRegionId() + "-" + e.getMessage());
         }
         return result;

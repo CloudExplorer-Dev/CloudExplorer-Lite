@@ -1,8 +1,6 @@
 package com.fit2cloud.controller;
 
-import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
-import com.fit2cloud.base.entity.VmCloudDisk;
 import com.fit2cloud.base.mapper.BaseVmCloudDiskMapper;
 import com.fit2cloud.common.form.vo.FormObject;
 import com.fit2cloud.common.log.annotation.OperatedLog;
@@ -15,7 +13,6 @@ import com.fit2cloud.controller.request.GrantRequest;
 import com.fit2cloud.controller.request.disk.*;
 import com.fit2cloud.dto.VmCloudDiskDTO;
 import com.fit2cloud.dto.VmCloudServerDTO;
-import com.fit2cloud.provider.constants.F2CDiskStatus;
 import com.fit2cloud.service.IVmCloudDiskService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -51,10 +48,7 @@ public class VmCloudDiskController {
     @GetMapping("/count")
     @PreAuthorize("hasAnyCePermission('CLOUD_DISK:READ')")
     public ResultHolder<Long> count() {
-        return ResultHolder.success(diskService.count(
-                new LambdaQueryWrapper<VmCloudDisk>()
-                        .ne(VmCloudDisk::getStatus, F2CDiskStatus.DELETED))
-        );
+        return ResultHolder.success(diskService.countDisk());
     }
 
     @ApiOperation(value = "查询可以挂载磁盘的虚拟机")
@@ -152,5 +146,24 @@ public class VmCloudDiskController {
     @PreAuthorize("hasAnyCePermission('CLOUD_DISK:AUTH')")
     public ResultHolder<Boolean> grant(@RequestBody GrantRequest grantDiskRequest) {
         return ResultHolder.success(diskService.grant(grantDiskRequest));
+    }
+
+    @ApiOperation(value = "批量放入回收站")
+    @PutMapping("batchRecycleDisks")
+    @PreAuthorize("hasAnyCePermission('CLOUD_DISK:DELETE')")
+    @OperatedLog(resourceType = ResourceTypeEnum.CLOUD_DISK, operated = OperatedTypeEnum.BATCH_RECYCLE_DISK, param = "#{ids}")
+    public ResultHolder<Boolean> batchRecycleDisks(@RequestBody String[] ids) {
+        return ResultHolder.success(diskService.batchRecycleDisks(ids));
+    }
+
+    @ApiOperation(value = "将磁盘放入回收站")
+    @PutMapping("recycleDisk/{id}")
+    @PreAuthorize("hasAnyCePermission('CLOUD_DISK:DELETE')")
+    @OperatedLog(resourceType = ResourceTypeEnum.CLOUD_DISK, operated = OperatedTypeEnum.RECYCLE_DISK, resourceId = "#id", param = "#id")
+    public ResultHolder<Boolean> recycleDisk(@ApiParam("主键 ID")
+                                             @NotNull(message = "{i18n.primary.key.cannot.be.null}")
+                                             @CustomValidated(mapper = BaseVmCloudDiskMapper.class, handler = ExistHandler.class, message = "{i18n.primary.key.not.exist}", exist = false)
+                                             @PathVariable("id") String id) {
+        return ResultHolder.success(diskService.recycleDisk(id));
     }
 }

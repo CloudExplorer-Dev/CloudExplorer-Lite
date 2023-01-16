@@ -122,4 +122,20 @@ public interface IVmCloudDiskService extends IService<VmCloudDisk> {
      */
     boolean grant(GrantRequest grantDiskRequest);
 
+    /**
+     * 批量将磁盘放入回收站
+     * @param ids
+     * @return
+     */
+    boolean batchRecycleDisks(String[] ids);
+
+    /**
+     * 将磁盘放入回收站
+     * @param id
+     * @return
+     */
+    boolean recycleDisk(String id);
+
+
+    long countDisk();
 }
