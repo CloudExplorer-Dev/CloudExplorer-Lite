@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref, onMounted, onBeforeUnmount, computed } from "vue";
-import VmCloudDiskApi from "@/api/vm_cloud_disk";
+import VmCloudDiskApi, { batchRecycleDisks } from "@/api/vm_cloud_disk";
 import type { VmCloudDiskVO } from "@/api/vm_cloud_disk/type";
 import {
   PaginationConfig,
@@ -16,6 +16,7 @@ import { useRouter } from "vue-router";
 import _ from "lodash";
 import { usePermissionStore } from "@commons/stores/modules/permission";
 import Grant from "@/views/vm_cloud_server/grant.vue";
+import RecycleBinsApi from "@/api/recycle_bin";
 
 const { t } = useI18n();
 const permissionStore = usePermissionStore();
@@ -40,6 +41,7 @@ const diskStatus = ref<Array<SimpleMap<string>>>([
   { text: "错误", value: "error" },
   { text: "删除中", value: "deleting" },
   { text: "扩容中", value: "enlarging" },
+  { text: "待回收", value: "ToBeRecycled" },
 ]);
 //硬盘类型
 const diskTypes = ref<Array<SimpleMap<string>>>([
@@ -62,6 +64,7 @@ const diskTypes = ref<Array<SimpleMap<string>>>([
   { text: "lvmdriver-1", value: "lvmdriver-1" },
   { text: "__DEFAULT__", value: "__DEFAULT__" },
   { text: "未知", value: "NA" },
+  { text: "待回收", value: "ToBeRecycled" },
 ]);
 
 // 表格头中显示的筛选状态
@@ -128,10 +131,21 @@ const search = (condition: TableSearch) => {
 };
 
 /**
+ * 是否开启了回收站
+ */
+const isRecycleBinOpened = ref(true);
+const getRecycleBinSetting = () => {
+  RecycleBinsApi.getRecycleEnableStatus().then((result) => {
+    isRecycleBinOpened.value = result.data;
+  });
+};
+
+/**
  * 页面挂载
  */
 let timer: any;
 onMounted(() => {
+  getRecycleBinSetting();
   search(new TableSearch());
   timer = setInterval(() => {
     if (tableData.value.some((s) => s.status.toUpperCase().includes("ING"))) {
@@ -236,20 +250,30 @@ const handleDetach = (row: VmCloudDiskVO) => {
  * @param row
  */
 const handleDelete = (row: VmCloudDiskVO) => {
-  ElMessageBox.confirm(
-    t("vm_cloud_disk.confirm.delete", ["【" + row.diskName + "】"]) + "？",
-    t("commons.message_box.prompt", "提示"),
-    {
-      confirmButtonText: t("commons.message_box.confirm"),
-      cancelButtonText: t("commons.btn.cancel"),
-      type: "warning",
-    }
-  )
+  const message = isRecycleBinOpened.value
+    ? t("vm_cloud_disk.confirm.recycle", ["【" + row.diskName + "】"]) + "？"
+    : t("vm_cloud_disk.confirm.delete", ["【" + row.diskName + "】"]) + "？";
+
+  ElMessageBox.confirm(message, t("commons.message_box.prompt", "提示"), {
+    confirmButtonText: t("commons.message_box.confirm"),
+    cancelButtonText: t("commons.btn.cancel"),
+    type: "warning",
+  })
     .then(() => {
-      VmCloudDiskApi.deleteDisk(row.id).then(() => {
-        ElMessage.success(t("commons.msg.op_success"));
-        refresh();
-      });
+      if (isRecycleBinOpened.value) {
+        VmCloudDiskApi.recycleDisk(row.id as string)
+          .then(() => {
+            ElMessage.success(t("commons.msg.op_success"));
+          })
+          .catch((err) => {
+            console.log(err);
+          });
+      } else {
+        VmCloudDiskApi.deleteDisk(row.id).then(() => {
+          ElMessage.success(t("commons.msg.op_success"));
+          refresh();
+        });
+      }
     })
     .catch(() => {
       ElMessage.info(
@@ -343,30 +367,37 @@ const batchDelete = () => {
     ElMessage.warning(t("vm_cloud_disk.msg.select_one", "至少选择一条数据"));
     return;
   } else {
-    ElMessageBox.confirm(
-      t("vm_cloud_disk.confirm.batch_delete", "确认批量删除"),
-      t("commons.message_box.prompt", "提示"),
-      {
-        confirmButtonText: t("commons.message_box.confirm", "确认"),
-        cancelButtonText: t("commons.btn.cancel", "取消"),
-        type: "warning",
-      }
-    )
+    const message = isRecycleBinOpened.value
+      ? t("vm_cloud_disk.confirm.batch_recycle") + "？"
+      : t("vm_cloud_disk.confirm.batch_delete") + "？";
+    ElMessageBox.confirm(message, t("commons.message_box.prompt", "提示"), {
+      confirmButtonText: t("commons.message_box.confirm", "确认"),
+      cancelButtonText: t("commons.btn.cancel", "取消"),
+      type: "warning",
+    })
       .then(() => {
         const ids: string[] = Array.from(
           multipleSelectedRowData.value,
           ({ id }) => id
         );
-        VmCloudDiskApi.batchDeleteDisk(ids).then(() => {
-          ElMessage.success(t("commons.msg.op_success"));
-          refresh();
-        });
+
+        if (isRecycleBinOpened.value) {
+          VmCloudDiskApi.batchRecycleDisks(ids).then(() => {
+            ElMessage.success(t("commons.msg.op_success"));
+            refresh();
+          });
+        } else {
+          VmCloudDiskApi.batchDeleteDisk(ids).then(() => {
+            ElMessage.success(t("commons.msg.op_success"));
+            refresh();
+          });
+        }
       })
       .catch(() => {
         ElMessage.info(
           t("vm_cloud_disk.msg.canceled", [
             t("vm_cloud_disk.btn.delete"),
-            "已取消删除",
+            "已取消",
           ])
         );
       });
@@ -401,6 +432,9 @@ const disableBatchAttach = computed(() => {
   } else {
     return (
       multipleSelectedRowData.value.some(
+        (row) => row.status === "ToBeRecycled"
+      ) ||
+      multipleSelectedRowData.value.some(
         (row) => row.status.toUpperCase() != "AVAILABLE"
       ) ||
       multipleSelectedRowData.value.every(
@@ -425,6 +459,9 @@ const disableBatchDetach = computed(() => {
   } else {
     return (
       multipleSelectedRowData.value.some(
+        (row) => row.status === "ToBeRecycled"
+      ) ||
+      multipleSelectedRowData.value.some(
         (row) => row.status.toUpperCase() != "IN_USE"
       ) ||
       multipleSelectedRowData.value.some((row) =>
@@ -443,6 +480,9 @@ const disableBatchDelete = computed(() => {
   } else {
     return (
       multipleSelectedRowData.value.some(
+        (row) => row.status === "ToBeRecycled"
+      ) ||
+      multipleSelectedRowData.value.some(
         (row) => row.status.toUpperCase() != "AVAILABLE"
       ) ||
       multipleSelectedRowData.value.some((row) =>
@@ -459,10 +499,15 @@ const disableBatchAuthorize = computed(() => {
   if (multipleSelectedRowData.value.length == 0) {
     return false;
   } else {
-    return multipleSelectedRowData.value.some(
-      (row) =>
-        (!_.isEmpty(row.instanceUuid) && !_.isNull(row.instanceUuid)) ||
-        row.status.toUpperCase() === "DELETED"
+    return (
+      multipleSelectedRowData.value.some(
+        (row) => row.status === "ToBeRecycled"
+      ) ||
+      multipleSelectedRowData.value.some(
+        (row) =>
+          (!_.isEmpty(row.instanceUuid) && !_.isNull(row.instanceUuid)) ||
+          row.status.toUpperCase() === "DELETED"
+      )
     );
   }
 });
@@ -485,7 +530,7 @@ const buttons = ref([
     click: handleEnlarge,
     show: permissionStore.hasPermission("[vm-service]CLOUD_DISK:RESIZE"),
     disabled: (row: { status: string }) => {
-      return row.status == "deleted";
+      return row.status == "ToBeRecycled" || row.status == "deleted";
     },
   },
   {

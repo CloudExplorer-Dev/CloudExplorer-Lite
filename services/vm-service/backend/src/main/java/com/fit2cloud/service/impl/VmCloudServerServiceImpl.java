@@ -15,9 +15,11 @@ import com.fit2cloud.base.entity.VmCloudServer;
 import com.fit2cloud.base.mapper.BaseJobRecordResourceMappingMapper;
 import com.fit2cloud.base.mapper.BaseVmCloudServerMapper;
 import com.fit2cloud.base.service.IBaseCloudAccountService;
+import com.fit2cloud.base.service.IBaseRecycleBinService;
 import com.fit2cloud.base.service.IBaseVmCloudDiskService;
 import com.fit2cloud.common.constants.JobStatusConstants;
 import com.fit2cloud.common.constants.JobTypeConstants;
+import com.fit2cloud.common.constants.ResourceTypeConstants;
 import com.fit2cloud.common.exception.Fit2cloudException;
 import com.fit2cloud.common.form.util.FormUtil;
 import com.fit2cloud.common.form.vo.FormObject;
@@ -91,12 +93,18 @@ public class VmCloudServerServiceImpl extends ServiceImpl<BaseVmCloudServerMappe
     private IResourceOperateService resourceOperateService;
 
     @Resource
+    private IBaseRecycleBinService recycleService;
+
+    @Resource
     private BaseJobRecordResourceMappingMapper baseJobRecordResourceMappingMapper;
 
     /**
      * 云主机批量操作
      */
     private Map<OperatedTypeEnum, Consumer<String>> batchOperationMap;
+
+    @Resource
+    private IPermissionService permissionService;
 
     @PostConstruct
     private void init() {
@@ -106,6 +114,7 @@ public class VmCloudServerServiceImpl extends ServiceImpl<BaseVmCloudServerMappe
         batchOperationMap.put(OperatedTypeEnum.POWER_OFF, this::powerOff);
         batchOperationMap.put(OperatedTypeEnum.SHUTDOWN, this::shutdownInstance);
         batchOperationMap.put(OperatedTypeEnum.DELETE, this::deleteInstance);
+        batchOperationMap.put(OperatedTypeEnum.RECYCLE_SERVER, this::recycleInstance);
     }
 
     private void setCurrentInfos(PageVmCloudServerRequest request) {
@@ -208,6 +217,29 @@ public class VmCloudServerServiceImpl extends ServiceImpl<BaseVmCloudServerMappe
     }
 
     @Override
+    public boolean recycleInstance(String vmId) {
+        QueryWrapper<VmCloudServer> wrapper = new QueryWrapper<VmCloudServer>()
+                .eq(ColumnNameUtil.getColumnName(VmCloudServer::getId, true), vmId)
+                .ne(ColumnNameUtil.getColumnName(VmCloudServer::getInstanceStatus, true), F2CInstanceStatus.Deleted.name());
+        VmCloudServer vmCloudServer = baseMapper.selectOne(wrapper);
+        Optional.ofNullable(vmCloudServer).orElseThrow(() -> new Fit2cloudException(ErrorCodeConstants.VM_NOT_EXIST.getCode(), ErrorCodeConstants.VM_NOT_EXIST.getMessage()));
+
+        String beforeStatus = F2CInstanceStatus.Stopping.name();
+        if (vmCloudServer.getInstanceStatus().equalsIgnoreCase(F2CInstanceStatus.Stopped.name())) {
+            beforeStatus = F2CInstanceStatus.Stopped.name();
+        }
+
+        operate(vmId, OperatedTypeEnum.RECYCLE_SERVER.getDescription(), ICloudProvider::shutdownInstance,
+                beforeStatus, F2CInstanceStatus.Stopped.name(), this::modifyResource,
+                jobRecordCommonService::initJobRecord, jobRecordCommonService::modifyJobRecord, JobTypeConstants.CLOUD_SERVER_RECYCLE_JOB);
+        return true;
+    }
+
+    public boolean recoverInstance(String recycleBinId) {
+        return recycleService.updateRecycleRecordOnRecover(recycleBinId);
+    }
+
+    @Override
     public boolean batchOperate(BatchOperateVmRequest request) {
         if (request.getInstanceIds().size() == 0) {
             throw new Fit2cloudException(ErrorCodeConstants.SELECT_AT_LEAST_ONE_VM.getCode(), ErrorCodeConstants.SELECT_AT_LEAST_ONE_VM.getMessage());
@@ -307,6 +339,10 @@ public class VmCloudServerServiceImpl extends ServiceImpl<BaseVmCloudServerMappe
                         switch (operateType) {
                             case CLOUD_SERVER_STOP_JOB -> vmCloudServer.setLastShutdownTime(DateUtil.getSyncTime());
                             case CLOUD_SERVER_START_JOB -> vmCloudServer.setLastShutdownTime(null);
+                            case CLOUD_SERVER_RECYCLE_JOB ->
+                                    recycleService.insertRecycleRecord(vmId, ResourceTypeConstants.VM);
+                            case CLOUD_SERVER_DELETE_JOB ->
+                                    recycleService.updateRecycleRecordOnDelete(vmId, ResourceTypeConstants.VM);
                             default -> {
                             }
                         }

@@ -32,6 +32,8 @@ public class PermissionConstants {
         public static final String ORGANIZATION = "ORGANIZATION";
         public static final String SYSTEM_SETTING = "SYSTEM_SETTING";
 
+        public static final String PARAMS_SETTING = "PARAMS_SETTING";
+
         public static final String SYS_LOG = "SYS_LOG";
 
         public static final String OPERATED_LOG = "OPERATED_LOG";
@@ -320,6 +322,21 @@ public class PermissionConstants {
                                     .require(OPERATE.READ)
                                     .operate(OPERATE.SYNC_SETTING)
                                     .name("permission.manage.cloud_account.sync_setting")
+                                    .role(RoleConstants.ROLE.ADMIN))
+            )
+            // 参数设置相关权限
+            .group(
+                    new PermissionGroup.Builder()
+                            .id(GROUP.PARAMS_SETTING)
+                            .name("permission.manage.params_setting.base")
+                            .permission(new Permission.Builder()
+                                    .operate(OPERATE.READ)
+                                    .name("permission.manage.params_setting.read")
+                                    .role(RoleConstants.ROLE.ADMIN))
+                            .permission(new Permission.Builder()
+                                    .require(OPERATE.READ)
+                                    .operate(OPERATE.EDIT)
+                                    .name("permission.manage.params_setting.edit")
                                     .role(RoleConstants.ROLE.ADMIN))
             )
             //...

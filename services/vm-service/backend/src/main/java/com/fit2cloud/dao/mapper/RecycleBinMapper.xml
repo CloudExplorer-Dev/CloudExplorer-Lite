@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.fit2cloud.dao.mapper.RecycleBinMapper">
+
+    <resultMap id="recycleBinResultMap" type="com.fit2cloud.dto.RecycleBinDTO">
+        <id column="id" jdbcType="VARCHAR" property="id"/>
+        <result column="resource_id" jdbcType="VARCHAR" property="resourceId"/>
+        <result column="resource_type" jdbcType="VARCHAR" property="resourceType"/>
+        <result column="status" jdbcType="VARCHAR" property="status"/>
+        <result column="user_id" jdbcType="VARCHAR" property="userId"/>
+        <result column="resource_status" jdbcType="VARCHAR" property="resourceStatus"/>
+        <result column="resource_config" jdbcType="VARCHAR" property="resourceConfig"/>
+        <result column="ip_array" jdbcType="VARCHAR" property="ipArray"/>
+        <result column="relate_resource" jdbcType="VARCHAR" property="relateResource"/>
+        <result column="delete_with_instance" jdbcType="VARCHAR" property="deleteWithInstance"/>
+        <result column="account_id" jdbcType="VARCHAR" property="accountId"/>
+        <result column="account_name" jdbcType="VARCHAR" property="accountName"/>
+        <result column="user_name" jdbcType="VARCHAR" property="userName"/>
+        <result column="user_id" jdbcType="VARCHAR" property="userId"/>
+        <result column="workspace_id" jdbcType="VARCHAR" property="workspaceId"/>
+        <result column="workspace_name" jdbcType="VARCHAR" property="workspaceName"/>
+        <result column="organization_id" jdbcType="VARCHAR" property="organizationId"/>
+        <result column="organization_name" jdbcType="VARCHAR" property="organizationName"/>
+        <result column="delete_time" jdbcType="BIGINT" property="deleteTime"/>
+        <result column="recover_time" jdbcType="BIGINT" property="recoverTime"/>
+        <result column="create_time" jdbcType="BIGINT" property="createTime"/>
+    </resultMap>
+
+    <select id="pageRecycleBin" resultMap="recycleBinResultMap">
+        SELECT
+            *
+        FROM
+            (
+                SELECT
+                    recycle_bin.*,
+                    vm_cloud_server.instance_name AS resource_name,
+                    vm_cloud_server.instance_status AS resource_status,
+                    vm_cloud_server.instance_type_description AS resource_config,
+                    vm_cloud_server.ip_array,
+                    '-' AS relate_resource,
+                    '-' AS delete_with_instance,
+                    vm_cloud_server.account_id,
+                    cloud_account.`name` AS account_name,
+                    USER._name AS user_name,
+                    CASE
+
+                        WHEN org_workspace.type = "workspace" THEN
+                            org_workspace.id ELSE NULL
+                        END AS workspace_id,
+                    CASE
+
+                        WHEN org_workspace.type = "workspace" THEN
+                            org_workspace.NAME ELSE NULL
+                        END AS workspace_name,
+                    org_workspace.organization_id,
+                    org_workspace.organization_name
+                FROM
+                    recycle_bin
+                        INNER JOIN vm_cloud_server ON recycle_bin.resource_type = 'VM'
+                        AND recycle_bin.resource_id = vm_cloud_server.id
+                        AND vm_cloud_server.instance_status != 'Deleted'
+		LEFT JOIN cloud_account ON vm_cloud_server.account_id = cloud_account.id
+                    LEFT JOIN org_workspace ON vm_cloud_server.source_id = org_workspace.id
+                    LEFT JOIN `user` ON recycle_bin.user_id = USER.id
+                WHERE
+                    recycle_bin.STATUS = 'ToBeRecycled' UNION ALL
+                SELECT
+                    recycle_bin.*,
+                    vm_cloud_disk.disk_name AS resource_name,
+                    vm_cloud_disk.`status` AS resource_status,
+                    CONCAT( vm_cloud_disk.size, 'GB' ) AS resource_config,
+                    '-' AS ip_array,
+                    ifnull( vm_cloud_server.instance_name, '-' ) AS relate_resource,
+                    vm_cloud_disk.delete_with_instance AS delete_with_instance,
+                    vm_cloud_disk.account_id,
+                    cloud_account.`name` AS account_name,
+                    USER._name AS user_name,
+                    CASE
+
+                    WHEN org_workspace.type = "workspace" THEN
+                    org_workspace.id ELSE NULL
+                    END AS workspace_id,
+                    CASE
+
+                    WHEN org_workspace.type = "workspace" THEN
+                    org_workspace.NAME ELSE NULL
+                    END AS workspace_name,
+                    org_workspace.organization_id,
+                    org_workspace.organization_name
+                FROM
+                    recycle_bin
+                    INNER JOIN vm_cloud_disk ON recycle_bin.resource_type = 'DISK'
+                    AND recycle_bin.resource_id = vm_cloud_disk.id
+                    AND vm_cloud_disk.STATUS != 'Deleted'
+                    LEFT JOIN vm_cloud_server ON vm_cloud_server.instance_uuid = vm_cloud_disk.instance_uuid
+                    AND vm_cloud_disk.account_id = vm_cloud_server.account_id
+                    LEFT JOIN cloud_account ON vm_cloud_disk.account_id = cloud_account.id
+                    LEFT JOIN org_workspace ON vm_cloud_disk.source_id = org_workspace.id
+                    LEFT JOIN `user` ON recycle_bin.user_id = USER.id
+                WHERE
+                    recycle_bin.STATUS = 'ToBeRecycled'
+            ) recycleInfo
+            ${ew.customSqlSegment}
+    </select>
+
+</mapper>

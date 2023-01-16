@@ -1,10 +1,13 @@
+import type { Ref } from "vue";
+import {ref} from "vue";
+
 export class ButtonAction {
   text: string;
   type?: string;
   arg?: any;
   fn?: any;
   show?: boolean;
-  disabled?: boolean;
+  disabled?:  Ref<boolean>;
 
   constructor(
     text: string,
@@ -12,13 +15,13 @@ export class ButtonAction {
     arg?: any,
     fn?: any,
     show?: boolean,
-    disabled?: boolean
+    disabled?: Ref<boolean>
   ) {
     this.text = text;
     this.type = type;
     this.arg = arg;
     this.fn = fn;
     this.show = show === undefined ? true : show;
-    this.disabled = disabled === undefined ? false : disabled;
+    this.disabled = disabled?.value === undefined ? ref<boolean>(false) : disabled;
   }
 }

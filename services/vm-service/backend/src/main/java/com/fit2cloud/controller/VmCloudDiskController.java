@@ -147,4 +147,23 @@ public class VmCloudDiskController {
     public ResultHolder<Boolean> grant(@RequestBody GrantRequest grantDiskRequest) {
         return ResultHolder.success(diskService.grant(grantDiskRequest));
     }
+
+    @ApiOperation(value = "批量放入回收站")
+    @PutMapping("batchRecycleDisks")
+    @PreAuthorize("hasAnyCePermission('CLOUD_DISK:DELETE')")
+    @OperatedLog(resourceType = ResourceTypeEnum.CLOUD_DISK, operated = OperatedTypeEnum.BATCH_RECYCLE_DISK, param = "#{ids}")
+    public ResultHolder<Boolean> batchRecycleDisks(@RequestBody String[] ids) {
+        return ResultHolder.success(diskService.batchRecycleDisks(ids));
+    }
+
+    @ApiOperation(value = "将磁盘放入回收站")
+    @PutMapping("recycleDisk/{id}")
+    @PreAuthorize("hasAnyCePermission('CLOUD_DISK:DELETE')")
+    @OperatedLog(resourceType = ResourceTypeEnum.CLOUD_DISK, operated = OperatedTypeEnum.RECYCLE_DISK, resourceId = "#id", param = "#id")
+    public ResultHolder<Boolean> recycleDisk(@ApiParam("主键 ID")
+                                             @NotNull(message = "{i18n.primary.key.cannot.be.null}")
+                                             @CustomValidated(mapper = BaseVmCloudDiskMapper.class, handler = ExistHandler.class, message = "{i18n.primary.key.not.exist}", exist = false)
+                                             @PathVariable("id") String id) {
+        return ResultHolder.success(diskService.recycleDisk(id));
+    }
 }

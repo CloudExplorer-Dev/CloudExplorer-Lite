@@ -48,13 +48,18 @@ public interface VmCloudServerMapper extends BaseMapper<VmCloudServerDTO> {
      * @param queryWrapper
      * @return
      */
-    @Select("SELECT " +
+    @Select("SELECT CASE " +
+            "WHEN recycle_bin.STATUS = 'ToBeRecycled' and vm_cloud_server.instance_status !='Deleted' THEN" +
+            "'ToBeRecycled' ELSE vm_cloud_server.instance_status " +
+            "END AS instance_status," +
             "vm_cloud_server.*, " +
             "cloud_account.NAME AS account_name, " +
             "cloud_account.platform AS platform " +
             "FROM " +
             "vm_cloud_server " +
-            "LEFT JOIN cloud_account ON vm_cloud_server.account_id = cloud_account.id " +
+            "LEFT JOIN cloud_account ON vm_cloud_server.account_id = cloud_account.id LEFT JOIN recycle_bin ON vm_cloud_server.id = recycle_bin.resource_id " +
+            "AND recycle_bin.resource_type = 'VM' " +
+            "AND recycle_bin.STATUS = 'ToBeRecycled' " +
             " ${ew.customSqlSegment} ")
     List<VmCloudServerDTO> getByIds(@Param("ew") Wrapper queryWrapper);
 
