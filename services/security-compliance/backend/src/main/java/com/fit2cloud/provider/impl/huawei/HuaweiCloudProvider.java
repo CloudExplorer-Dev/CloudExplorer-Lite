@@ -26,10 +26,7 @@ import com.huaweicloud.sdk.iam.v3.model.LoginProtectResult;
 import com.huaweicloud.sdk.rds.v3.model.InstanceResponse;
 import com.huaweicloud.sdk.vpc.v3.model.Vpc;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * {@code @Author:张少虎}
@@ -64,7 +61,7 @@ public class HuaweiCloudProvider extends AbstractCloudProvider<HuaweiBaseCredent
         ListEcsInstanceRequest listEcsInstanceRequest = JsonUtil.parseObject(req, ListEcsInstanceRequest.class);
         List<ServerDetail> serverDetails = HuaweiApi.listEcsInstance(listEcsInstanceRequest);
         return serverDetails.stream()
-                .map(instance -> ResourceUtil.toResourceInstance(PlatformConstants.fit2cloud_huawei_platform.name(), ResourceTypeConstants.ECS, instance.getId(), instance.getName(), instance))
+                .map(instance -> ResourceUtil.toResourceInstance(PlatformConstants.fit2cloud_huawei_platform.name(), ResourceTypeConstants.ECS, instance.getId(), instance.getName(), Map.of("fit2cloud_huawei_platform_ECS.osExtendedVolumesVolumesAttached", Arrays.asList(instance.getOsExtendedVolumesVolumesAttached().toArray())), instance))
                 .toList();
     }
 
@@ -233,7 +230,7 @@ public class HuaweiCloudProvider extends AbstractCloudProvider<HuaweiBaseCredent
         return instances.stream()
                 .map(instance -> ResourceUtil.toResourceInstance(PlatformConstants.fit2cloud_huawei_platform.name(),
                         ResourceTypeConstants.RAM, instance.getId(), instance.getName(), instance, "loginProfile",
-                        loginProtectResults.stream().filter(l -> l.getUserId().equals(instance.getId())).findFirst().orElse(null)))
+                        loginProtectResults.stream().filter(l -> l.getUserId().equals(instance.getId())).findFirst().orElse(new LoginProtectResult().withEnabled(false))))
                 .toList();
     }
 

@@ -25,6 +25,12 @@ public class ResourceUtil {
         return platform + "_" + resourceType;
     }
 
+    public static ResourceInstance toResourceInstance(String platform, ResourceTypeConstants resourceTypeConstants, String resourceId, String resourceName, Map<String, List<Object>> filterArray, Object instance) {
+        ResourceInstance resourceInstance = toResourceInstance(platform, resourceTypeConstants, resourceId, resourceName, instance, null, null);
+        resourceInstance.setFilterArray(filterArray);
+        return resourceInstance;
+    }
+
     /**
      * 将云平台实例转换为系统资源实例对象
      *

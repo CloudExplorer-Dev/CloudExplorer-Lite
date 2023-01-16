@@ -1,5 +1,7 @@
 package com.fit2cloud.provider.util;
 
+import com.fit2cloud.constants.ResourceTypeConstants;
+import com.fit2cloud.provider.entity.InstanceFieldType;
 import com.fit2cloud.provider.entity.InstanceSearchField;
 
 import java.util.List;
@@ -32,5 +34,9 @@ public class FieldUtil {
      */
     public static List<InstanceSearchField> appendPrefixField(String prefixField, List<InstanceSearchField> instanceSearchFields) {
         return instanceSearchFields.stream().map(instanceSearchField -> appendPrefixField(prefixField, instanceSearchField)).toList();
+    }
+
+    public static List<InstanceSearchField> appendPrefixField(String platform, ResourceTypeConstants resourceTypeConstants, List<InstanceSearchField> instanceSearchFields) {
+        return appendPrefixField("instance" + platform + "_" + resourceTypeConstants.name() + ".", instanceSearchFields);
     }
 }

@@ -7,6 +7,7 @@ import org.springframework.data.elasticsearch.annotations.Dynamic;
 import org.springframework.data.elasticsearch.annotations.Field;
 import org.springframework.data.elasticsearch.annotations.FieldType;
 
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -49,6 +50,19 @@ public class ResourceInstance {
     /**
      * 实例对象
      */
-    @Field(type = FieldType.Object,dynamic = Dynamic.RUNTIME)
+    @Field(type = FieldType.Object, dynamic = Dynamic.RUNTIME)
     private Map<String, Object> instance;
+
+    /**
+     * 存储嵌套数组对象
+     */
+    @Field(type = FieldType.Object)
+    private Map<String, List<Object>> filterArray;
+
+    /**
+     * 用于存储除实例对象以外的查询数据
+     */
+    @Field(type = FieldType.Object, dynamic = Dynamic.RUNTIME)
+    private Map<String, Object> filterObj;
+
 }
