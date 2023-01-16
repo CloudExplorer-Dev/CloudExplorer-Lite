@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { defineProps, onMounted, ref, watch } from "vue";
+import { onMounted, ref, watch } from "vue";
 import * as echarts from "echarts";
 
 const props = defineProps({
@@ -49,6 +49,12 @@ const props = defineProps({
     type: Object,
     default: () => {
       return [];
+    },
+  },
+  selectTop: {
+    type: String,
+    default: () => {
+      return "10px";
     },
   },
 });
@@ -281,7 +287,10 @@ const getLabel = (item: string) => {
 </script>
 <template>
   <div style="position: relative">
-    <div style="position: absolute; right: 20px; top: 10px; z-index: 10">
+    <div
+      style="position: absolute; right: 20px; top: 10px; z-index: 10"
+      :style="{ top: selectTop }"
+    >
       <el-select
         v-model="currentDevice"
         @change="changeDeviceList()"

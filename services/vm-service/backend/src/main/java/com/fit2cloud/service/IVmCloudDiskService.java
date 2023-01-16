@@ -122,4 +122,5 @@ public interface IVmCloudDiskService extends IService<VmCloudDisk> {
      */
     boolean grant(GrantRequest grantDiskRequest);
 
+    long countDisk();
 }

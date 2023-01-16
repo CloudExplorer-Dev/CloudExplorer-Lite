@@ -6,12 +6,8 @@ import { usePermissionStore } from "@commons/stores/modules/permission";
 import { useUserStore } from "@commons/stores/modules/user";
 import {
   defaultPieDoughnutOptions,
-  defaultTrendOptions,
   emptyOptions,
-  getRandomColor,
-  trendSeriesColor,
 } from "@commons/components/echart";
-import * as echarts from "echarts";
 
 import API from "./api";
 import ChartsSpeed from "@commons/components/echart/ChartsSpeed.vue";
@@ -24,9 +20,11 @@ const props = withDefaults(
     type: "byAccount" | "byStatus" | "byChargeType";
     title: string;
     cardShadow?: "always" | "hover" | "never";
+    height?: number;
   }>(),
   {
     module: "operation-analytics",
+    height: 300,
     cardShadow: "always",
   }
 );
@@ -56,6 +54,9 @@ const show = computed<boolean>(
 const spreadOption = ref<any>({});
 
 const getSpreadData = (spreadType: string) => {
+  if (!show.value) {
+    return;
+  }
   childRefMap.get(spreadType + "-chart").echartsClear();
   childRefMap.get(spreadType + "-chart").echartsLoading();
   _.set(params, "accountIds", []);
@@ -96,7 +97,7 @@ onMounted(() => {
     </div>
     <div style="position: relative">
       <ChartsSpeed
-        :height="300"
+        :height="height"
         :options="spreadOption"
         :ref="(el) => childRef(el, type + '-chart')"
       />
@@ -106,6 +107,8 @@ onMounted(() => {
 
 <style scoped lang="scss">
 .server-distribution {
+  height: 100%;
+
   .echart-title {
     height: 20px;
     font-weight: bold;

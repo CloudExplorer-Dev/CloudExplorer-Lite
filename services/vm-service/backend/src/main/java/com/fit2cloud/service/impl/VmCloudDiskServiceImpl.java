@@ -1,5 +1,6 @@
 package com.fit2cloud.service.impl;
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
@@ -50,7 +51,6 @@ import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
 import java.util.*;
-import java.util.stream.Collectors;
 
 /**
  * <p>
@@ -98,8 +98,17 @@ public class VmCloudDiskServiceImpl extends ServiceImpl<BaseVmCloudDiskMapper, V
         return result;
     }
 
-    private QueryWrapper<VmCloudDiskDTO> addQuery(PageVmCloudDiskRequest request) {
-        QueryWrapper<VmCloudDiskDTO> wrapper = new QueryWrapper<>();
+    @Override
+    public long countDisk() {
+        List<String> sourceIds = getSourceIds();
+        return this.count(new LambdaQueryWrapper<VmCloudDisk>()
+                .in(CollectionUtils.isNotEmpty(sourceIds), VmCloudDisk::getSourceId, sourceIds)
+                .ne(VmCloudDisk::getStatus, F2CDiskStatus.DELETED)
+        );
+    }
+
+    private <T extends VmCloudDisk> QueryWrapper<T> addQuery(PageVmCloudDiskRequest request) {
+        QueryWrapper<T> wrapper = new QueryWrapper<>();
 
         wrapper.like(StringUtils.isNotBlank(request.getWorkspaceId()), ColumnNameUtil.getColumnName(VmCloudDisk::getSourceId, true), request.getWorkspaceId());
         wrapper.like(StringUtils.isNotBlank(request.getDiskName()), ColumnNameUtil.getColumnName(VmCloudDisk::getDiskName, true), request.getDiskName());
@@ -540,6 +549,7 @@ public class VmCloudDiskServiceImpl extends ServiceImpl<BaseVmCloudDiskMapper, V
 
     /**
      * 云磁盘授权
+     *
      * @param grantRequest
      * @return
      */
