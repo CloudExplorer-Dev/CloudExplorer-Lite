@@ -154,7 +154,7 @@ export function getServerJobRecord(
 export function listPerfMetricMonitor(
   req: Ref<GetPerfMonitorRequest | null>,
   loading?: Ref<boolean>
-): Promise<Result<Array<PerfMonitorData>>> {
+): Promise<Result<Map<string, Array<PerfMonitorData>>>> {
   return get("/api/base/monitor/list", req, loading);
 }
 

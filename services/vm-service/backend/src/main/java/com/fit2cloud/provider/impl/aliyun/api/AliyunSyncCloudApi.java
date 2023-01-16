@@ -12,7 +12,6 @@ import com.aliyun.teautil.models.RuntimeOptions;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fit2cloud.common.constants.Language;
 import com.fit2cloud.common.exception.Fit2cloudException;
-import com.fit2cloud.common.log.utils.LogUtil;
 import com.fit2cloud.common.provider.entity.F2CEntityType;
 import com.fit2cloud.common.provider.entity.F2CPerfMetricMonitorData;
 import com.fit2cloud.common.provider.exception.ReTryException;
@@ -1166,15 +1165,15 @@ public class AliyunSyncCloudApi {
             throw new Fit2cloudException(10002, "区域为必填参数");
         }
         List<F2CPerfMetricMonitorData> result = new ArrayList<>();
-        //设置时间，根据interval,默认一个小时
-        getMetricsRequest.setStartTime(String.valueOf(DateUtil.getBeforeHourTime(getMetricsRequest.getInterval())));
-        getMetricsRequest.setEndTime(String.valueOf(System.currentTimeMillis()));
+        //设置时间，根据syncTimeStampStr,默认一个小时
+        getMetricsRequest.setStartTime(String.valueOf(DateUtil.beforeOneHourToTimestamp(Long.valueOf(getMetricsRequest.getSyncTimeStampStr()))));
+        getMetricsRequest.setEndTime(getMetricsRequest.getSyncTimeStampStr());
         try {
             getMetricsRequest.setRegionId(getMetricsRequest.getRegionId());
             result.addAll(getVmPerfMetric(getMetricsRequest));
         } catch (Exception e) {
-            LogUtil.error("获取监控数据失败-" + getMetricsRequest.getRegionId() + "-" + e.getMessage());
-           // throw new Fit2cloudException(100021, "获取监控数据失败-" + getMetricsRequest.getRegionId() + "-" + e.getMessage());
+            SkipPageException.throwSkipPageException(e);
+            throw new Fit2cloudException(100021, "获取监控数据失败-" + getMetricsRequest.getRegionId() + "-" + e.getMessage());
         }
         return result;
     }
@@ -1190,15 +1189,15 @@ public class AliyunSyncCloudApi {
             throw new Fit2cloudException(10002, "区域为必填参数");
         }
         List<F2CPerfMetricMonitorData> result = new ArrayList<>();
-        //设置时间，根据interval,默认一个小时
-        getMetricsRequest.setStartTime(String.valueOf(DateUtil.getBeforeHourTime(getMetricsRequest.getInterval())));
-        getMetricsRequest.setEndTime(String.valueOf(System.currentTimeMillis()));
+        //设置时间，根据syncTimeStampStr,默认一个小时
+        getMetricsRequest.setStartTime(String.valueOf(DateUtil.beforeOneHourToTimestamp(Long.valueOf(getMetricsRequest.getSyncTimeStampStr()))));
+        getMetricsRequest.setEndTime(getMetricsRequest.getSyncTimeStampStr());
         try {
             getMetricsRequest.setRegionId(getMetricsRequest.getRegionId());
-            result.addAll(getDiskPerfMetric(getMetricsRequest));
+           // result.addAll(getDiskPerfMetric(getMetricsRequest));
         } catch (Exception e) {
-            LogUtil.error("获取磁盘监控数据失败-" + getMetricsRequest.getRegionId() + "-" + e.getMessage());
-           // throw new Fit2cloudException(100021, "获取监控数据失败-" + getMetricsRequest.getRegionId() + "-" + e.getMessage());
+            SkipPageException.throwSkipPageException(e);
+            throw new Fit2cloudException(100021, "获取监控数据失败-" + getMetricsRequest.getRegionId() + "-" + e.getMessage());
         }
         return result;
     }
@@ -1218,14 +1217,14 @@ public class AliyunSyncCloudApi {
         ///TODO 由于我们只查询一个小时内的数据，时间间隔是60s,所以查询每台机器的监控数据的时候最多不过60条数据，所以不需要分页查询
         Map<String, String> dimension = new HashMap<>();
         DescribeMetricListRequest describeMetricListRequest = new DescribeMetricListRequest()
-                .setNamespace("acs_disk")
+                .setNamespace("acs_ecs_dashboard")
                 .setPeriod(String.valueOf(getMetricsRequest.getPeriod()))
                 .setEndTime(getMetricsRequest.getEndTime())
                 .setStartTime(getMetricsRequest.getStartTime())
                 .setRegionId(getMetricsRequest.getRegionId());
         com.aliyun.cms20190101.Client cmsClient = credential.getCmsClientByRegion(getMetricsRequest.getRegionId());
         disks.forEach(disk -> {
-            dimension.put("instanceId", disk.getDiskId());
+            dimension.put("instanceId", disk.getInstanceUuid());
             //监控指标
             Arrays.stream(AliyunPerfMetricConstants.CloudDiskPerfMetricEnum.values()).sorted().collect(Collectors.toList()).forEach(perfMetric -> {
                 describeMetricListRequest.setDimensions(JsonUtil.toJSONString(Arrays.asList(dimension)));
@@ -1294,6 +1293,7 @@ public class AliyunSyncCloudApi {
                         ArrayNode jsonArray = JsonUtil.parseArray(response.getBody().getDatapoints());
                         jsonArray.forEach(v -> {
                             F2CPerfMetricMonitorData f2CEntityPerfMetric = AliyunMappingUtil.toF2CPerfMetricMonitorData(v);
+                            f2CEntityPerfMetric.setDevice(v.get("device")==null?null:v.get("device").toString());
                             f2CEntityPerfMetric.setEntityType(F2CEntityType.VIRTUAL_MACHINE.name());
                             f2CEntityPerfMetric.setMetricName(perfMetric.name());
                             f2CEntityPerfMetric.setPeriod(getMetricsRequest.getPeriod());

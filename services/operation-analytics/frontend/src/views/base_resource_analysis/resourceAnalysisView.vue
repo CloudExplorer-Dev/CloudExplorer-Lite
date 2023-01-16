@@ -48,7 +48,7 @@
           <el-col :span="24">
             <div class="myChart" style="height: 300px">
               <div class="echart-title">
-                <div class="echart-title-left">计算资源分配情况</div>
+                <div class="echart-title-left">基础资源分配情况</div>
               </div>
               <div class="echart-content">
                 <el-row>

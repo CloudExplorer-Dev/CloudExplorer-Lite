@@ -10,19 +10,18 @@
   <div :id="`echarts-${uuid}`" :style="getChartStyle"></div>
 </template>
 
-<script name="MyCharts" lang="ts" setup>
+<script lang="ts" setup>
 import {
-  shallowRef,
   computed,
-  watch,
-  onMounted,
-  onBeforeUnmount,
   nextTick,
+  onBeforeUnmount,
+  onMounted,
   ref,
+  shallowRef,
+  watch,
 } from "vue";
-import { debounce } from "lodash";
+import _, { debounce } from "lodash";
 import * as echarts from "echarts";
-import _ from "lodash";
 
 const props = defineProps({
   options: {
@@ -78,7 +77,7 @@ const guid = () => {
 };
 
 const getUuid = (): string => {
-  const uuid =
+  return (
     guid() +
     guid() +
     "-" +
@@ -90,8 +89,8 @@ const getUuid = (): string => {
     "-" +
     guid() +
     guid() +
-    guid();
-  return uuid;
+    guid()
+  );
 };
 
 const uuid = getUuid();
