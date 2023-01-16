@@ -1,16 +1,18 @@
 package com.fit2cloud.common.utils;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.DeserializationFeature;
-import com.fasterxml.jackson.databind.JavaType;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.*;
+import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import com.qcloud.cos.model.GroupGrantee;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.List;
 
@@ -27,11 +29,27 @@ public class JsonUtil {
     public static final ObjectMapper mapper = new ObjectMapper();
 
     static {
+        // 声明一个简单Module 对象
+        SimpleModule module = new SimpleModule();
+        // 给Module 添加一个序列化器
+        module.addSerializer(GroupGrantee.class, new JsonSerializer<GroupGrantee>() {
+            @Override
+            public void serialize(GroupGrantee value, JsonGenerator gen, SerializerProvider serializers) throws IOException {
+                // 开始写入对象
+                gen.writeStartObject();
+                // 分别指定 k v   code   description
+                gen.writeStringField("identifier", value.getIdentifier());
+                gen.writeStringField("typeIdentifier", value.getTypeIdentifier());
+                // 显式结束操作
+                gen.writeEndObject();
+            }
+        });
         // 转换为格式化的json
         //mapper.enable(SerializationFeature.INDENT_OUTPUT);
         // 如果json中有新增的字段并且是实体类类中不存在的，不报错
         mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
         mapper.registerModule(new JavaTimeModule());
+        mapper.registerModule(module);
         //修改日期格式
         mapper.setDateFormat(new SimpleDateFormat("yyyy-MM-dd HH:mm:ss"));
     }

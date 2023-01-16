@@ -1,6 +1,7 @@
 package com.fit2cloud.common.provider.exception;
 
 import com.aliyun.tea.TeaException;
+import com.huaweicloud.sdk.core.exception.ClientRequestException;
 
 /**
  * @Author:张少虎
@@ -50,6 +51,11 @@ public class SkipPageException extends RuntimeException {
             //Unexpected regionId: af-south-1
             if (skipPageException.message.startsWith("Unexpected regionId")) {
                 throw new SkipPageException(1001, e.getMessage());
+            }
+        }
+        if (e instanceof ClientRequestException clientRequestException) {
+            if (clientRequestException.getHttpStatusCode() == 404 && clientRequestException.getErrorCode().equals("APIGW.0101")) {
+                throw new SkipPageException(1001, "跳过");
             }
         }
     }

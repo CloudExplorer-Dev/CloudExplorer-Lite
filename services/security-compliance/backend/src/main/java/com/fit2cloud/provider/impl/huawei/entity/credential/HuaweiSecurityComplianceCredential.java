@@ -3,6 +3,7 @@ package com.fit2cloud.provider.impl.huawei.entity.credential;
 import com.fit2cloud.common.provider.exception.SkipPageException;
 import com.fit2cloud.common.provider.impl.huawei.entity.credential.HuaweiBaseCredential;
 import com.huaweicloud.sdk.core.auth.BasicCredentials;
+import com.huaweicloud.sdk.core.auth.GlobalCredentials;
 import com.huaweicloud.sdk.core.auth.ICredential;
 import com.huaweicloud.sdk.css.v1.region.CssRegion;
 import com.huaweicloud.sdk.dcs.v2.DcsClient;
@@ -42,6 +43,15 @@ public class HuaweiSecurityComplianceCredential extends HuaweiBaseCredential {
     private ICredential getAuth() {
         try {
             return new BasicCredentials().withAk(getAk()).withSk(getSk());
+        } catch (Exception e) {
+            SkipPageException.throwHuaweiSkip(e);
+            throw e;
+        }
+    }
+
+    private ICredential getGlobalAuth() {
+        try {
+            return new GlobalCredentials().withAk(getAk()).withSk(getSk());
         } catch (Exception e) {
             SkipPageException.throwHuaweiSkip(e);
             throw e;
@@ -216,8 +226,8 @@ public class HuaweiSecurityComplianceCredential extends HuaweiBaseCredential {
     public IamClient getIamClient() {
         try {
             return IamClient.newBuilder()
-                    .withCredential(getAuth())
-                    .withRegion(IamRegion.CN_EAST_2)
+                    .withCredential(getGlobalAuth())
+                    .withRegion(IamRegion.valueOf("cn-east-2"))
                     .build();
         } catch (Exception e) {
             SkipPageException.throwHuaweiSkip(e);

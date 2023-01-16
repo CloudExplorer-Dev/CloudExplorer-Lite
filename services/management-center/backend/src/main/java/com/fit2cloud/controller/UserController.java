@@ -44,6 +44,13 @@ public class UserController {
         return ResultHolder.success(userService.pageUser(pageUserRequest));
     }
 
+    @ApiOperation(value = "查询用户总数")
+    @PreAuthorize("hasAnyCePermission('USER:READ')")
+    @GetMapping("/count")
+    public ResultHolder<Long> count() {
+        return ResultHolder.success(userService.count());
+    }
+
     @ApiOperation(value = "添加用户")
     @PreAuthorize("hasAnyCePermission('USER:CREATE')")
     @PostMapping("/add")

@@ -4,6 +4,7 @@ import com.fit2cloud.common.constants.PlatformConstants;
 import com.fit2cloud.common.provider.impl.tencent.entity.credential.TencentBaseCredential;
 import com.fit2cloud.common.utils.JsonUtil;
 import com.fit2cloud.constants.ResourceTypeConstants;
+import com.fit2cloud.constants.SyncDimensionConstants;
 import com.fit2cloud.es.entity.ResourceInstance;
 import com.fit2cloud.provider.AbstractCloudProvider;
 import com.fit2cloud.provider.ICloudProvider;
@@ -12,6 +13,7 @@ import com.fit2cloud.provider.impl.tencent.api.TencentApi;
 import com.fit2cloud.provider.impl.tencent.api.TencentInstanceSearchFieldApi;
 import com.fit2cloud.provider.impl.tencent.entity.request.*;
 import com.fit2cloud.provider.util.ResourceUtil;
+import com.tencentcloudapi.cam.v20190116.models.SubAccountInfo;
 import com.tencentcloudapi.cbs.v20170312.models.Disk;
 import com.tencentcloudapi.cdb.v20170320.models.InstanceInfo;
 import com.tencentcloudapi.clb.v20180317.models.LoadBalancer;
@@ -19,9 +21,11 @@ import com.tencentcloudapi.cvm.v20170312.models.Instance;
 import com.tencentcloudapi.mongodb.v20190725.models.InstanceDetail;
 import com.tencentcloudapi.redis.v20180412.models.InstanceSet;
 import com.tencentcloudapi.sqlserver.v20180328.models.DBInstance;
+import com.tencentcloudapi.vpc.v20170312.models.Address;
 import com.tencentcloudapi.vpc.v20170312.models.NetworkInterface;
 import com.tencentcloudapi.vpc.v20170312.models.Vpc;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -32,6 +36,27 @@ import java.util.Map;
  * {@code @注释: }
  */
 public class TencentCloudProvider extends AbstractCloudProvider<TencentBaseCredential> implements ICloudProvider {
+
+    @Override
+    public Map<ResourceTypeConstants, SyncDimensionConstants> getResourceSyncDimensionConstants() {
+        HashMap<ResourceTypeConstants, SyncDimensionConstants> map = new HashMap<>();
+        map.put(ResourceTypeConstants.ECS, SyncDimensionConstants.REGION);
+        map.put(ResourceTypeConstants.REDIS, SyncDimensionConstants.REGION);
+        map.put(ResourceTypeConstants.MONGO_DB, SyncDimensionConstants.REGION);
+        map.put(ResourceTypeConstants.MYSQL, SyncDimensionConstants.REGION);
+        map.put(ResourceTypeConstants.SQL_SERVER, SyncDimensionConstants.REGION);
+        map.put(ResourceTypeConstants.POST_GRE_SQL, SyncDimensionConstants.REGION);
+        map.put(ResourceTypeConstants.MARIA_DB, SyncDimensionConstants.REGION);
+        map.put(ResourceTypeConstants.ELASTIC_SEARCH, SyncDimensionConstants.REGION);
+        map.put(ResourceTypeConstants.DISK, SyncDimensionConstants.REGION);
+        map.put(ResourceTypeConstants.LOAD_BALANCER, SyncDimensionConstants.REGION);
+        map.put(ResourceTypeConstants.PUBLIC_IP, SyncDimensionConstants.REGION);
+        map.put(ResourceTypeConstants.VPC, SyncDimensionConstants.REGION);
+        map.put(ResourceTypeConstants.OSS, SyncDimensionConstants.CloudAccount);
+        map.put(ResourceTypeConstants.SECURITY_GROUP, SyncDimensionConstants.REGION);
+        map.put(ResourceTypeConstants.RAM, SyncDimensionConstants.CloudAccount);
+        return map;
+    }
 
     @Override
     public List<ResourceInstance> listEcsInstance(String req) {
@@ -60,7 +85,7 @@ public class TencentCloudProvider extends AbstractCloudProvider<TencentBaseCrede
 
     @Override
     public List<InstanceSearchField> listRedisInstanceSearchField() {
-        return List.of();
+        return TencentInstanceSearchFieldApi.listRedisInstanceSearchField();
     }
 
     @Override
@@ -75,7 +100,7 @@ public class TencentCloudProvider extends AbstractCloudProvider<TencentBaseCrede
 
     @Override
     public List<InstanceSearchField> listMongodbInstanceSearchField() {
-        return List.of();
+        return TencentInstanceSearchFieldApi.listMongodbInstanceSearchField();
     }
 
     @Override
@@ -90,7 +115,7 @@ public class TencentCloudProvider extends AbstractCloudProvider<TencentBaseCrede
 
     @Override
     public List<InstanceSearchField> listMysqlInstanceSearchField() {
-        return List.of();
+        return TencentInstanceSearchFieldApi.listMysqlInstanceSearchField();
     }
 
     @Override
@@ -105,7 +130,7 @@ public class TencentCloudProvider extends AbstractCloudProvider<TencentBaseCrede
 
     @Override
     public List<InstanceSearchField> listSqlServerInstanceSearchField() {
-        return List.of();
+        return TencentInstanceSearchFieldApi.listSqlServerInstanceSearchField();
     }
 
     @Override
@@ -120,7 +145,7 @@ public class TencentCloudProvider extends AbstractCloudProvider<TencentBaseCrede
 
     @Override
     public List<InstanceSearchField> listPostGreSqlInstanceSearchField() {
-        return List.of();
+        return TencentInstanceSearchFieldApi.listPostgresInstanceSearchField();
     }
 
     @Override
@@ -135,7 +160,7 @@ public class TencentCloudProvider extends AbstractCloudProvider<TencentBaseCrede
 
     @Override
     public List<InstanceSearchField> listMariaDBInstanceSearchField() {
-        return List.of();
+        return TencentInstanceSearchFieldApi.listMariadbInstanceSearchField();
     }
 
     @Override
@@ -150,7 +175,7 @@ public class TencentCloudProvider extends AbstractCloudProvider<TencentBaseCrede
 
     @Override
     public List<InstanceSearchField> listElasticSearchInstanceSearchField() {
-        return List.of();
+        return TencentInstanceSearchFieldApi.listElasticSearchInstanceSearchField();
     }
 
     @Override
@@ -165,7 +190,7 @@ public class TencentCloudProvider extends AbstractCloudProvider<TencentBaseCrede
 
     @Override
     public List<InstanceSearchField> listDiskInstanceSearchField() {
-        return List.of();
+        return TencentInstanceSearchFieldApi.listDISKInstanceSearchField();
     }
 
     @Override
@@ -180,22 +205,22 @@ public class TencentCloudProvider extends AbstractCloudProvider<TencentBaseCrede
 
     @Override
     public List<InstanceSearchField> listLoadBalancerInstanceSearchField() {
-        return List.of();
+        return TencentInstanceSearchFieldApi.listLoadBalancerInstanceSearchField();
     }
 
     @Override
     public List<ResourceInstance> listPublicIpInstance(String req) {
         ListPublicIpInstanceRequest listPublicIpInstanceRequest = JsonUtil.parseObject(req, ListPublicIpInstanceRequest.class);
-        List<NetworkInterface> instances = TencentApi.listPublicIpInstance(listPublicIpInstanceRequest);
+        List<Address> instances = TencentApi.listPublicIpInstance(listPublicIpInstanceRequest);
         return instances
                 .stream()
-                .map(instance -> ResourceUtil.toResourceInstance(PlatformConstants.fit2cloud_tencent_platform.name(), ResourceTypeConstants.PUBLIC_IP, instance.getResourceId(), instance.getNetworkInterfaceName(), instance))
+                .map(instance -> ResourceUtil.toResourceInstance(PlatformConstants.fit2cloud_tencent_platform.name(), ResourceTypeConstants.PUBLIC_IP, instance.getInstanceId(), instance.getAddressName(), instance))
                 .toList();
     }
 
     @Override
     public List<InstanceSearchField> listPublicIpInstanceSearchField() {
-        return List.of();
+        return TencentInstanceSearchFieldApi.listPublicIpInstanceSearchField();
     }
 
     @Override
@@ -210,17 +235,22 @@ public class TencentCloudProvider extends AbstractCloudProvider<TencentBaseCrede
 
     @Override
     public List<InstanceSearchField> listVpcInstanceSearchField() {
-        return List.of();
+        return TencentInstanceSearchFieldApi.listVpcInstanceSearchField();
     }
 
     @Override
     public List<ResourceInstance> listRamInstance(String req) {
-        return List.of();
+        ListUsersInstanceRequest listUsersInstanceRequest = JsonUtil.parseObject(req, ListUsersInstanceRequest.class);
+        List<Map<String, Object>> instances = TencentApi.listSubUserInstanceCollection(listUsersInstanceRequest);
+        return instances
+                .stream()
+                .map(instance -> ResourceUtil.toResourceInstance(PlatformConstants.fit2cloud_tencent_platform.name(), ResourceTypeConstants.RAM, ResourceUtil.toString(instance.get("uin")), ResourceUtil.toString(instance.get("name")), instance))
+                .toList();
     }
 
     @Override
     public List<InstanceSearchField> listRamInstanceSearchField() {
-        return null;
+        return List.of();
     }
 
     @Override
@@ -235,7 +265,23 @@ public class TencentCloudProvider extends AbstractCloudProvider<TencentBaseCrede
 
     @Override
     public List<InstanceSearchField> listBucketInstanceSearchField() {
-        return null;
+        return TencentInstanceSearchFieldApi.listOSSInstanceSearchField();
+    }
+
+    @Override
+    public List<ResourceInstance> listSecurityGroupInstance(String req) {
+        ListSecurityGroupInstanceRequest listSecurityGroupInstanceRequest = JsonUtil.parseObject(req, ListSecurityGroupInstanceRequest.class);
+        List<Map<String, Object>> instances = TencentApi.listSecurityGroupCollectionInstance(listSecurityGroupInstanceRequest);
+        return instances
+                .stream()
+                .map(instance -> ResourceUtil.toResourceInstance(PlatformConstants.fit2cloud_tencent_platform.name(),
+                        ResourceTypeConstants.SECURITY_GROUP, instance.get("securityGroupId").toString(), instance.get("securityGroupName").toString(), instance))
+                .toList();
+    }
+
+    @Override
+    public List<InstanceSearchField> listSecurityGroupInstanceSearchField() {
+        return TencentInstanceSearchFieldApi.listSecurityGroupInstanceSearchField();
     }
 
 

@@ -45,7 +45,7 @@ const getCompare = (rule: Rule) => {
  */
 const getValue = (rule: Rule) => {
   const f = fields.value.find((f) => f.field === rule.field);
-  if (f?.fieldType === "Enum") {
+  if (f?.fieldType === "Enum" || f?.fieldType === "ArrayEnum") {
     return f.options?.find((o: KeyValue<string, any>) => o.value == rule.value)
       ?.key;
   }

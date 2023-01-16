@@ -132,7 +132,7 @@
 </template>
 <script lang="ts" setup>
 import { onMounted, ref } from "vue";
-import ChartsSpeed from "../../components/echart/ChartsSpeed.vue";
+import ChartsSpeed from "@commons/components/echart/ChartsSpeed.vue";
 import ResourceSpreadViewApi from "@/api/disk_analysis/index";
 import { ResourceAnalysisRequest } from "@/api/disk_analysis/type";
 import _ from "lodash";
@@ -144,7 +144,7 @@ import {
   getRandomColor,
   defaultTrendOptions,
   defaultBarOptions,
-} from "@/components/echart/index";
+} from "@commons/components/echart/index";
 import * as echarts from "echarts";
 //分布情况
 const spreadByAccountOption = ref<any>({});

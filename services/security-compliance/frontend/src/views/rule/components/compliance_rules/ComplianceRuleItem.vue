@@ -29,7 +29,11 @@
       />
     </el-select>
     <el-select
-      v-if="activeField && activeField.fieldType === 'Enum'"
+      v-if="
+        activeField &&
+        (activeField.fieldType === 'Enum' ||
+          activeField.fieldType === 'ArrayEnum')
+      "
       :modelValue="modelValue.value"
       @change="handler('value', $event)"
       class="avg spacing"

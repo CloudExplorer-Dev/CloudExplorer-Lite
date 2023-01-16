@@ -2,22 +2,23 @@ package com.fit2cloud.provider.impl.tencent.api;
 
 import com.fit2cloud.common.provider.exception.ReTryException;
 import com.fit2cloud.common.provider.util.PageUtil;
+import com.fit2cloud.common.utils.JsonUtil;
 import com.fit2cloud.provider.impl.tencent.client.CeCosClient;
-import com.fit2cloud.provider.impl.tencent.entity.credential.TencentSecurityComplianceCredential;
 import com.fit2cloud.provider.impl.tencent.entity.request.*;
 import com.fit2cloud.provider.impl.tencent.entity.request.GetBucketAclRequest;
 import com.fit2cloud.provider.impl.tencent.entity.response.BucketEncryptionResponse;
 import com.fit2cloud.provider.impl.tencent.parser.CeXmlResponseSaxParser;
 import com.fit2cloud.provider.util.ResourceUtil;
 import com.qcloud.cos.COSClient;
-import com.qcloud.cos.ClientConfig;
 import com.qcloud.cos.exception.CosServiceException;
 import com.qcloud.cos.http.*;
-import com.qcloud.cos.internal.CosServiceRequest;
 import com.qcloud.cos.internal.CosServiceResponse;
-import com.qcloud.cos.internal.XmlResponsesSaxParser;
 import com.qcloud.cos.model.*;
-import com.qcloud.cos.utils.IOUtils;
+import com.tencentcloudapi.cam.v20190116.CamClient;
+import com.tencentcloudapi.cam.v20190116.models.DescribeSafeAuthFlagCollRequest;
+import com.tencentcloudapi.cam.v20190116.models.DescribeSafeAuthFlagCollResponse;
+import com.tencentcloudapi.cam.v20190116.models.ListUsersResponse;
+import com.tencentcloudapi.cam.v20190116.models.SubAccountInfo;
 import com.tencentcloudapi.cbs.v20170312.CbsClient;
 import com.tencentcloudapi.cbs.v20170312.models.DescribeDisksRequest;
 import com.tencentcloudapi.cbs.v20170312.models.Disk;
@@ -40,12 +41,9 @@ import com.tencentcloudapi.redis.v20180412.models.InstanceSet;
 import com.tencentcloudapi.sqlserver.v20180328.SqlserverClient;
 import com.tencentcloudapi.sqlserver.v20180328.models.DBInstance;
 import com.tencentcloudapi.vpc.v20170312.VpcClient;
-import com.tencentcloudapi.vpc.v20170312.models.DescribeNetworkInterfacesRequest;
-import com.tencentcloudapi.vpc.v20170312.models.DescribeVpcsRequest;
-import com.tencentcloudapi.vpc.v20170312.models.NetworkInterface;
-import com.tencentcloudapi.vpc.v20170312.models.Vpc;
-import org.apache.commons.lang3.StringUtils;
+import com.tencentcloudapi.vpc.v20170312.models.*;
 import org.springframework.beans.BeanUtils;
+import org.springframework.context.annotation.Bean;
 
 import java.util.*;
 
@@ -327,23 +325,23 @@ public class TencentApi {
      * @param request 请求对象
      * @return 弹性公网ip实例列表
      */
-    public static List<NetworkInterface> listPublicIpInstance(ListPublicIpInstanceRequest request) {
+    public static List<Address> listPublicIpInstance(ListPublicIpInstanceRequest request) {
         VpcClient vpcClient = request.getCredential().getVpcClient(request.getRegionId());
         request.setOffset(PageUtil.DefaultCurrentPage.longValue() - 1);
         request.setLimit(PageUtil.DefaultPageSize.longValue());
         return PageUtil.page(request,
                 req -> {
                     try {
-                        DescribeNetworkInterfacesRequest describeInstancesRequest = new DescribeNetworkInterfacesRequest();
+                        DescribeAddressesRequest describeInstancesRequest = new DescribeAddressesRequest();
                         BeanUtils.copyProperties(req, describeInstancesRequest);
-                        return vpcClient.DescribeNetworkInterfaces(describeInstancesRequest);
+                        return vpcClient.DescribeAddresses(describeInstancesRequest);
                     } catch (Exception e) {
                         ReTryException.throwReTry(e);
                         throw new RuntimeException(e);
                     }
                 },
-                res -> Arrays.stream(res.getNetworkInterfaceSet()).toList(),
-                (req, res) -> req.getLimit() <= res.getNetworkInterfaceSet().length,
+                res -> Arrays.stream(res.getAddressSet()).toList(),
+                (req, res) -> req.getLimit() <= res.getAddressSet().length,
                 req -> req.setOffset(req.getOffset() + req.getLimit()));
     }
 
@@ -430,7 +428,6 @@ public class TencentApi {
                 return null;
             }
         }, 5);
-
         BucketEncryptionResponse.ServerSideEncryptionConfiguration serverSideEncryptionConfiguration = PageUtil.reTry(() -> {
             try {
                 return getBucketEncryption(cosClient, bucketName);
@@ -440,7 +437,7 @@ public class TencentApi {
             }
         }, 5);
         collection.put("referer", bucketRefererConfiguration);
-        collection.put("access", accessControlList);
+        collection.put("access", JsonUtil.parseObject(JsonUtil.toJSONString(accessControlList), Map.class));
         collection.put("encryption", serverSideEncryptionConfiguration);
         return collection;
     }
@@ -527,5 +524,148 @@ public class TencentApi {
 
     }
 
+    /**
+     * 获取安全组 安全组规则合集实例
+     *
+     * @param request 请求对象
+     * @return 安全组 安全组规则合集实例
+     */
+    public static List<Map<String, Object>> listSecurityGroupCollectionInstance(ListSecurityGroupInstanceRequest request) {
+        return listSecurityGroupInstance(request).stream().map(securityGroup -> {
+            Map<String, Object> securityGroupMap = ResourceUtil.objectToMap(securityGroup);
+            String securityGroupId = securityGroup.getSecurityGroupId();
+            DescribeSecurityGroupPoliciesResponse securityGroupRuleInstance = getSecurityGroupRuleInstance(request.getCredential().getVpcClient(request.getRegionId()), securityGroupId);
+            securityGroupMap.put("rule", ResourceUtil.objectToMap(securityGroupRuleInstance.getSecurityGroupPolicySet()));
+            return securityGroupMap;
+        }).toList();
+    }
+
+    /**
+     * 获取 安全组实例
+     *
+     * @param request 请求对象
+     * @return 安全组实例
+     */
+    public static List<SecurityGroup> listSecurityGroupInstance(ListSecurityGroupInstanceRequest request) {
+        VpcClient vpcClient = request.getCredential().getVpcClient(request.getRegionId());
+        request.setOffset(String.valueOf(PageUtil.DefaultCurrentPage.longValue() - 1));
+        request.setLimit(String.valueOf(PageUtil.DefaultPageSize.longValue()));
+        return PageUtil.page(request,
+                req -> {
+                    try {
+                        DescribeSecurityGroupsRequest describeInstancesRequest = new DescribeSecurityGroupsRequest();
+                        BeanUtils.copyProperties(req, describeInstancesRequest);
+                        return vpcClient.DescribeSecurityGroups(describeInstancesRequest);
+                    } catch (Exception e) {
+                        ReTryException.throwReTry(e);
+                        throw new RuntimeException(e);
+                    }
+                },
+                res -> Arrays.stream(res.getSecurityGroupSet()).toList(),
+                (req, res) -> Integer.parseInt(req.getLimit()) <= res.getSecurityGroupSet().length,
+                req -> req.setOffset(req.getOffset() + req.getLimit()));
+    }
+
+    /**
+     * 获取安全组规则实例
+     *
+     * @param request 请求对象
+     * @return 安全组规则实例
+     */
+    public static DescribeSecurityGroupPoliciesResponse getSecurityGroupRuleInstance(GetSecurityGroupRuleInstanceRequest request) {
+        VpcClient vpcClient = request.getCredential().getVpcClient(request.getRegionId());
+        return getSecurityGroupRuleInstance(vpcClient, request.getSecurityGroupId());
+    }
+
+    /**
+     * 获取安全组规则实例
+     *
+     * @param vpcClient       vpc客户端
+     * @param securityGroupId 安全组id
+     * @return 安全组规则实例
+     */
+    private static DescribeSecurityGroupPoliciesResponse getSecurityGroupRuleInstance(VpcClient vpcClient, String securityGroupId) {
+        DescribeSecurityGroupPoliciesRequest req = new DescribeSecurityGroupPoliciesRequest();
+        req.setSecurityGroupId(securityGroupId);
+        return PageUtil.reTry(() -> {
+            try {
+                return vpcClient.DescribeSecurityGroupPolicies(req);
+            } catch (Exception e) {
+                ReTryException.throwReTry(e);
+                throw new RuntimeException(e);
+            }
+        }, 5);
+
+    }
+
+    /**
+     * 获取子用户 实例列表
+     *
+     * @param request 请求对象
+     * @return 子用户实例列表
+     */
+    public static List<Map<String, Object>> listSubUserInstanceCollection(ListUsersInstanceRequest request) {
+        List<SubAccountInfo> subAccountInfos = listSubUserInstanceRequest(request);
+        CamClient camClient = request.getCredential().getCamClient("");
+        return subAccountInfos.stream().map(user -> {
+            Map<String, Object> userMap = ResourceUtil.objectsToMap(user);
+            DescribeSafeAuthFlagCollResponse userAuth = getUserAuthInstance(camClient, user.getUin());
+            userMap.put("userAuth", userAuth);
+            return userMap;
+        }).toList();
+    }
+
+    /**
+     * 拉取子用户实例列表
+     *
+     * @param request 请求对象
+     * @return 子用户实例列表
+     */
+    public static List<SubAccountInfo> listSubUserInstanceRequest(ListUsersInstanceRequest request) {
+        CamClient camClient = request.getCredential().getCamClient("");
+        ListUsersResponse listUsersResponse = PageUtil.reTry(() -> {
+            try {
+                return camClient.ListUsers(request);
+            } catch (Exception e) {
+                ReTryException.throwReTry(e);
+                throw new RuntimeException(e);
+            }
+        }, 5);
+        assert listUsersResponse != null;
+        return Arrays.stream(listUsersResponse.getData()).toList();
+
+    }
+
+    /**
+     * 获取用户安全设置信息
+     *
+     * @param request 请求对象
+     * @return 用户安全设置数据
+     */
+    public static DescribeSafeAuthFlagCollResponse getUserAuthInstance(GetUserSafeAuthInstanceRequest request) {
+        CamClient camClient = request.getCredential().getCamClient("");
+        return getUserAuthInstance(camClient, request.getSubUin());
+    }
+
+    /**
+     * 获取用户安全设置信息
+     *
+     * @param client 客户端
+     * @param userId 用户id
+     * @return 用户安全设置数据
+     */
+    private static DescribeSafeAuthFlagCollResponse getUserAuthInstance(CamClient client, Long userId) {
+        DescribeSafeAuthFlagCollRequest req = new DescribeSafeAuthFlagCollRequest();
+        req.setSubUin(userId);
+        return PageUtil.reTry(() -> {
+            try {
+                return client.DescribeSafeAuthFlagColl(req);
+            } catch (Exception e) {
+                ReTryException.throwReTry(e);
+                throw new RuntimeException(e);
+            }
+        }, 5);
+
+    }
 
 }

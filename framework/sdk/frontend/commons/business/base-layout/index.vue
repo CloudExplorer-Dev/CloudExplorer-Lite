@@ -1,6 +1,12 @@
 <script lang="ts" setup>
 import TopBar from "@commons/components/layout/top-bar/index.vue";
 import AsideStartMenu from "@commons/components/layout/aside-start-menu/index.vue";
+
+import { useHomeStore } from "@commons/stores/modules/home";
+
+import HomePage from "@commons/business/base-layout/home-page/index.vue";
+
+const homeStore = useHomeStore();
 </script>
 <template>
   <el-container class="rootContainer">
@@ -10,6 +16,7 @@ import AsideStartMenu from "@commons/components/layout/aside-start-menu/index.vu
         <AsideStartMenu></AsideStartMenu>
       </el-aside>
       <el-container>
+        <HomePage v-if="homeStore.showHome"></HomePage>
         <router-view></router-view>
       </el-container>
     </el-container>

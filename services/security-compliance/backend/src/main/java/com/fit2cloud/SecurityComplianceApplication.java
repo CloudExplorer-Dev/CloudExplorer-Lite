@@ -1,5 +1,7 @@
 package com.fit2cloud;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fit2cloud.common.utils.JsonUtil;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.web.servlet.ServletComponentScan;
@@ -22,7 +24,10 @@ public class SecurityComplianceApplication {
 
     public static void main(String[] args) {
         TimeZone.setDefault(TimeZone.getTimeZone(ZoneId.SHORT_IDS.get("CTT")));
+        JsonUtil.mapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
+        JsonUtil.mapper.setSerializationInclusion(JsonInclude.Include.NON_EMPTY);
         SpringApplication.run(SecurityComplianceApplication.class, args);
+
     }
 
 }

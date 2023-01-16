@@ -303,7 +303,7 @@
 <script lang="ts" setup>
 import { onMounted, ref } from "vue";
 import _ from "lodash";
-import ChartsSpeed from "../../components/echart/ChartsSpeed.vue";
+import ChartsSpeed from "@commons/components/echart/ChartsSpeed.vue";
 import ResourceSpreadViewApi from "@/api/resource_spread_view/index";
 import { ResourceAnalysisRequest } from "@/api/resource_spread_view/type";
 import {
@@ -313,7 +313,7 @@ import {
   emptyOptions,
   trendSeriesColor,
   getRandomColor,
-} from "@/components/echart/index";
+} from "@commons/components/echart/index";
 import * as echarts from "echarts";
 //分配情况
 const allocatedInfo = ref<any>({});
