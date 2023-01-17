@@ -9,6 +9,7 @@ import CeIcon from "@commons/components/ce-icon/index.vue";
 import type { SimpleMap } from "@commons/api/base/type";
 import _ from "lodash";
 import { useRouter } from "vue-router";
+import microApp from "@micro-zoe/micro-app";
 
 interface ModuleContainer extends Module {
   /**
@@ -53,7 +54,6 @@ const resetMenus = () => {
     props.runningModules,
     props.runningModulePermissions
   );
-  console.log(moduleContainers);
   const filterModuleContainer: Array<ModuleContainer> = filterMenu(
     searchText.value,
     moduleContainers,
@@ -158,13 +158,37 @@ const searchChange = () => {
 };
 
 function jumpMenu(menu: Menu) {
-  console.log(menu);
+  console.debug(menu);
   const module = _.find(props.runningModules, (m) => m.id === menu.module);
   if (!module) {
     return;
   }
   const path = _.replace(module.basePath + menu.path, "//", "#/");
-  router.push(path);
+  //router.push(path);
+  let currentPath = router.currentRoute.value.path;
+
+  if (!_.endsWith(currentPath, "/")) {
+    currentPath += "/";
+  }
+  if (!_.startsWith(currentPath, "/")) {
+    currentPath = "/" + currentPath;
+  }
+  let targetPath = module.basePath;
+  if (!_.endsWith(targetPath, "/")) {
+    targetPath += "/";
+  }
+  if (!_.startsWith(targetPath, "/")) {
+    targetPath = "/" + targetPath;
+  }
+  if (currentPath != targetPath) {
+    router.push(path);
+  } else {
+    //通知当前子应用跳转
+    //router.push({ hash: "#" + menu.path });
+    microApp.setData(module.id, { type: "route", menu: menu });
+  }
+  //没有开启虚拟路由，所以无效
+  //microApp.router.push({ name: module.id, path: menu.path });
 }
 
 /**
@@ -175,7 +199,6 @@ watch(
   (newValue: boolean) => {
     if (newValue) {
       moduleMenus.value = resetMenus();
-      console.log(moduleMenus.value);
     }
   }
 );

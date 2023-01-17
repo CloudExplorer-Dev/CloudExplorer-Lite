@@ -1,6 +1,7 @@
 import type { App } from "vue";
 import config from "@commons/utils/constants";
-import route from "@commons/router";
+import route, { getRoute } from "@commons/router";
+import type { Menu } from "@commons/api/menu/type";
 
 export class AppMicroApp {
   appMount: () => Promise<App>;
@@ -17,7 +18,12 @@ export class AppMicroApp {
   mount() {
     this.appMount().then((app) => (this.app = app));
     this.addDataListener((data: any) => {
-      console.log(`[${import.meta.env.VITE_APP_NAME}]  addDataListener:`, data);
+      console.log(`[${import.meta.env.VITE_APP_NAME}]  Listener:`, data);
+      const route = getRoute();
+      if (data.type === "route") {
+        const menu = data.menu as Menu;
+        route?.router.push({ name: menu.name });
+      }
     });
   }
   /**

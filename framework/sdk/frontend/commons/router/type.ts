@@ -307,12 +307,9 @@ export class RouteObj {
       }
     }
     const homeStore = useHomeStore(store);
-    console.log(homeStore);
     if (to.name === "home" && import.meta.env.VITE_APP_NAME === "base") {
-      console.log("11111111");
       homeStore.setShow(true);
     } else {
-      console.log("22222");
       homeStore.setShow(false);
     }
     // 判断是否有权限
@@ -406,7 +403,7 @@ export class RouteObj {
     from: RouteLocationNormalized,
     failure?: NavigationFailure | void
   ) => {
-    console.log(to, from);
+    console.debug(to, from);
   };
   /**
    * 默认的错误处理器
@@ -416,6 +413,6 @@ export class RouteObj {
     to: RouteLocationNormalized,
     from: RouteLocationNormalizedLoaded
   ) => {
-    console.log("defaultOnError", error, to, from);
+    console.warn("defaultOnError", error, to, from);
   };
 }
