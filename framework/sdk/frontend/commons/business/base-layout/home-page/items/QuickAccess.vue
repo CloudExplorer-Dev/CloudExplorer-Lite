@@ -27,48 +27,65 @@ interface MenuObject extends Module {
 }
 
 const menus = computed(() => {
-  return _.map(
-    _.filter(moduleStore.runningModules, (module: Module) =>
-      hasRolePermission(
-        userStore.currentRole,
-        permissionStore.userPermissions,
-        module.requiredPermissions
-      )
-    ) as Array<Module>,
-    (module: Module) => {
-      const newMenu = flatMenu(moduleStore.runningMenus[module.id], [], false);
-      const filteredMenu = _.filter(
-        newMenu,
-        (m: Menu) =>
-          !!m.componentPath &&
+  return _.filter(
+    _.map(
+      _.filter(moduleStore.runningModules, (module: Module) =>
+        hasRolePermission(
+          userStore.currentRole,
+          permissionStore.userPermissions,
+          module.requiredPermissions
+        )
+      ) as Array<Module>,
+      (module: Module) => {
+        const newMenu = flatMenu(
+          moduleStore.runningMenus[module.id],
+          [],
+          false
+        );
+        const filteredMenu = _.filter(
+          newMenu,
+          (m: Menu) =>
+            !!m.componentPath &&
+            (queryString.value && queryString.value.length > 0
+              ? _.includes(m.title, queryString.value)
+              : true)
+        ) as Menu[];
+        const moduleBaseMenu: Menu = {
+          componentPath: "module",
+          title: module.name,
+          name: module.id,
+          path: _.defaultTo(module.basePath, ""),
+          icon: module.icon,
+          order: module.order,
+          requiredPermissions: _.defaultTo(module.requiredPermissions, []),
+        };
+
+        const hasModule =
           (queryString.value && queryString.value.length > 0
-            ? _.includes(m.title, queryString.value)
-            : true)
-      ) as Menu[];
-      const moduleBaseMenu: Menu = {
-        componentPath: "module",
-        title: module.name,
-        name: module.id,
-        path: _.defaultTo(module.basePath, ""),
-        icon: module.icon,
-        order: module.order,
-        requiredPermissions: _.defaultTo(module.requiredPermissions, []),
-      };
+            ? _.includes(moduleBaseMenu.title, queryString.value)
+            : true) || filteredMenu.length > 0;
 
-      const hasModule =
-        (queryString.value && queryString.value.length > 0
-          ? _.includes(moduleBaseMenu.title, queryString.value)
-          : true) || filteredMenu.length > 0;
-
-      return {
-        ...module,
-        childrenMenu: hasModule
-          ? _.concat(moduleBaseMenu, filteredMenu)
-          : filteredMenu,
-        permissions: permissionStore.userPermissions,
-      } as MenuObject;
-    }
+        return {
+          ...module,
+          childrenMenu: hasModule
+            ? _.concat(moduleBaseMenu, filteredMenu)
+            : filteredMenu,
+          permissions: permissionStore.userPermissions,
+        } as MenuObject;
+      }
+    ),
+    (g) => g.childrenMenu.length > 0
   );
+});
+
+const modules = computed(() => {
+  return _.filter(moduleStore.runningModules, (module: Module) =>
+    hasRolePermission(
+      userStore.currentRole,
+      permissionStore.userPermissions,
+      module.requiredPermissions
+    )
+  ) as Array<Module>;
 });
 
 function filterMenus(query?: string) {
@@ -96,8 +113,15 @@ function changeMenu() {
     path = _.replace(module.basePath + menu.path, "//", "#/");
   }
 
-  console.log(path);
+  //console.log(path);
   router.push(path);
+}
+
+function changeModule(id: string) {
+  const module = _.find(modules.value, (g: Module) => g.id === id);
+  if (module && module.basePath) {
+    router.push(module.basePath);
+  }
 }
 </script>
 <template>
@@ -142,6 +166,25 @@ function changeMenu() {
         </el-option>
       </el-option-group>
     </el-select>
+    <div
+      style="
+        display: flex;
+        flex-direction: row;
+        flex-wrap: wrap;
+        padding-top: 20px;
+        padding-bottom: 20px;
+      "
+    >
+      <el-button
+        v-for="m in modules"
+        :key="m.id"
+        plain
+        type="primary"
+        @click="changeModule(m.id)"
+      >
+        {{ m.name }}
+      </el-button>
+    </div>
   </el-card>
 </template>
 
