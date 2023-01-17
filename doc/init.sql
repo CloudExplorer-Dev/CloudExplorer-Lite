@@ -55,3 +55,21 @@ CREATE TABLE IF NOT EXISTS `workspace`
     PRIMARY KEY (`id`)
 )
 /**工作空间**/
+
+/**回收站*/
+CREATE TABLE `recycle_bin`
+(
+    `id` varchar(50) COLLATE utf8mb4_bin NOT NULL DEFAULT '' COMMENT '主键',
+    `resource_id` varchar(50) COLLATE utf8mb4_bin NOT NULL COMMENT '资源 ID',
+    `resource_type` varchar(50) COLLATE utf8mb4_bin DEFAULT NULL COMMENT '资源类型：云主机、云磁盘',
+    `status` varchar(50) COLLATE utf8mb4_bin NOT NULL COMMENT '资源状态：待回收、已删除、已恢复',
+    `create_time` datetime NOT NULL ON UPDATE CURRENT_TIMESTAMP COMMENT '创建时间（资源放入回收站时间）',
+    `delete_time` datetime DEFAULT NULL COMMENT '删除时间（资源彻底删除时间）',
+    `recover_time` datetime DEFAULT NULL COMMENT '恢复时间',
+    `user_id` varchar(50) COLLATE utf8mb4_bin NOT NULL COMMENT '发起回收、恢复或者删除操作的用户ID',
+    PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin;
+
+INSERT INTO `system_parameter` (`param_key`, `param_value`, `type`, `sort`, `module`) VALUES ('recycle_bin.enable', 'true', 'boolean', NULL, 'vm-service');
+/**回收站*/
+

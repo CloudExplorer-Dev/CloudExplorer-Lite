@@ -365,7 +365,7 @@ public class MenuConstants {
                     .name("recycle_bin")
                     .title("回收站")
                     .path("/recycle_bin")
-                    .icon("xitongshezhi")
+                    .icon("chanpinfabu")
                     .order(5)
                     .componentPath("/src/views/recycle_bin/index.vue")
                     .redirect("/recycle_bin/list")

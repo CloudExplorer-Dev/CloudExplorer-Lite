@@ -448,7 +448,7 @@ public class MenuConstants {
                                     .name("params_setting")
                                     .title("参数设置")
                                     .path("/params_setting")
-                                    .icon("shezhi")
+                                    .icon("zidingyipeizhi")
                                     .componentPath("/src/views/SystemSetting/index.vue")
                                     .redirect("/system_setting/params_setting/params_detail")
                                     .order(1)
