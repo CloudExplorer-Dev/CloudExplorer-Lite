@@ -7,6 +7,8 @@ import { hasRolePermission } from "@commons/base-directives/hasPermission";
 import { Search } from "@element-plus/icons-vue";
 import CeIcon from "@commons/components/ce-icon/index.vue";
 import type { SimpleMap } from "@commons/api/base/type";
+import _ from "lodash";
+import { useRouter } from "vue-router";
 
 interface ModuleContainer extends Module {
   /**
@@ -35,6 +37,8 @@ const props = defineProps<{
 const searchText = ref<string>("");
 // 模块菜单信息
 const moduleMenus = ref<Array<Array<ModuleContainer>>>([[], [], []]);
+
+const router = useRouter();
 
 onMounted(() => {
   moduleMenus.value = resetMenus();
@@ -70,9 +74,9 @@ const flatMapMenus = (
   runningModulePermissions: Array<string>
 ) => {
   return runningModules.map((module) => {
-    console.log(module);
-    console.log(runningModuleMenus);
-    console.log(runningModuleMenus[module.id]);
+    // console.log(module);
+    // console.log(runningModuleMenus);
+    // console.log(runningModuleMenus[module.id]);
     const newMenu = flatMenu(runningModuleMenus[module.id], [], false);
     const moduleContainer: ModuleContainer = {
       ...module,
@@ -153,6 +157,16 @@ const searchChange = () => {
   moduleMenus.value = resetMenus();
 };
 
+function jumpMenu(menu: Menu) {
+  console.log(menu);
+  const module = _.find(props.runningModules, (m) => m.id === menu.module);
+  if (!module) {
+    return;
+  }
+  const path = _.replace(module.basePath + menu.path, "//", "#/");
+  router.push(path);
+}
+
 /**
  * 监控打开状态
  */
@@ -202,7 +216,7 @@ watch(
               <div class="icon">
                 <CeIcon size="15px" :code="menuItem.icon"></CeIcon>
               </div>
-              <div class="title">
+              <div class="title" @click="jumpMenu(menuItem)">
                 <span>{{ menuItem.title }}</span>
               </div>
               <div style="flex: auto"></div>
