@@ -4,7 +4,9 @@ import type { MicroApp } from "@micro-zoe/micro-app";
 import type { App } from "vue";
 import { store } from "@commons/stores";
 import microApp from "@micro-zoe/micro-app";
-import { useModuleStore } from "@commons/stores/modules/module";
+import { getUrl, useModuleStore } from "@commons/stores/modules/module";
+import Config from "@commons/utils/constants";
+import _ from "lodash";
 
 export class RootMicroApp {
   /**
@@ -66,25 +68,54 @@ export class RootMicroApp {
       fetch(url, options, appName) {
         const config = {
           headers: {
-            "ce-micro-app": "micro-app-" + appName,
+            "ce-micro-app": Config.MICRO_APP_PREFIX + appName,
           },
         };
         return window.fetch(url, Object.assign(options, config)).then((res) => {
           return res.text();
         });
       },
-      /*关闭虚拟路由系统*/
-      "disable-memory-router": true,
+      /*关闭虚拟路由系统*/ /*不能关，关了之后基座不能发信息给子应用*/
+      /*"disable-memory-router": true,*/
       /*关闭对子应用请求的拦截*/
       "disable-patch-request": true,
     });
+
+    //预加载
+    if (getModules instanceof Array<Module>) {
+      this.preFetch(getModules);
+    }
+  }
+
+  /**
+   * 预加载 （目前没生效，第一次访问子模块还是会重新加载）
+   * @param modules
+   */
+  preFetch(modules: Array<Module>) {
+    if (modules?.length > 0) {
+      console.debug("preFetch modules!", modules);
+      this.microApp.preFetch(
+        _.map(modules, (m) => {
+          return {
+            name: m.id,
+            url: getUrl(m),
+            esmodule: true,
+            inline: true,
+            disableSandbox: true,
+            baseroute: m.basePath,
+          };
+        })
+      );
+    }
   }
 
   /**
    * 根据接口返回数据获取运行中的模块,替换代码
    */
   async updateModule() {
-    this.setModules(await this.getModules());
+    const modules = await this.getModules();
+    this.setModules(modules);
+    this.preFetch(modules);
   }
 
   /**
@@ -117,7 +148,7 @@ export function setupMicroApp(app: App<Element>) {
   app.use(
     new RootMicroApp(async () => {
       await moduleStore.refreshModules();
-      console.log(moduleStore.runningModules);
+      console.debug(moduleStore.runningModules);
       return moduleStore.runningModules;
     }, microApp)
   );

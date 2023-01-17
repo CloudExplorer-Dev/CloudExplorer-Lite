@@ -5,7 +5,7 @@ import Config from "@commons/utils/constants";
 
 const options = defineProps<{
   url: string;
-  baseroute: string;
+  baseRoute: string;
   name: string;
   moduleName: string;
 }>();
@@ -57,6 +57,7 @@ const handleDataChange = (e: CustomEvent): void => {
   <micro-app
     :name="options.name"
     :url="options.url"
+    :baseroute="options.baseRoute"
     inline
     disableSandbox
     @created="handleCreate"

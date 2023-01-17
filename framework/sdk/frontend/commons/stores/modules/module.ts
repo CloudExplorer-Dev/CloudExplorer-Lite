@@ -14,6 +14,15 @@ interface ModuleStoreObject {
   menus: SimpleMap<Array<Menu>>;
 }
 
+export function getUrl(module: Module): string {
+  return (
+    window.location.protocol +
+    "//" +
+    window.location.host +
+    (module.basePath ? module.basePath : "")
+  );
+}
+
 export const useModuleStore = defineStore({
   id: "module",
   state: (): ModuleStoreObject => ({
@@ -47,12 +56,8 @@ export const useModuleStore = defineStore({
           props: {
             moduleName: module.id,
             name: module.id,
-            url:
-              window.location.protocol +
-              "//" +
-              window.location.host +
-              (module.basePath ? module.basePath : ""),
-            baseRoute: "/",
+            url: getUrl(module),
+            baseRoute: _.defaultTo(module.basePath, "/"),
           },
           requiredPermissions: module.requiredPermissions,
         };
@@ -78,10 +83,10 @@ export const useModuleStore = defineStore({
         return;
       }
       if (this.modules) {
-        console.log("ok");
+        console.debug("ok");
         return;
       } else {
-        console.log("init");
+        console.debug("init");
       }
       const modules = (await listModules()).data;
       if (modules) {
