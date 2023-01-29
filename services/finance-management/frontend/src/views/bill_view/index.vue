@@ -280,7 +280,7 @@ const open = (treed: Array<TrendData>, row: BillSummary) => {
 const currentMonth =
   new Date().getFullYear().toString() +
   "-" +
-  ((new Date().getMonth() + 1).toString().length === 0
+  ((new Date().getMonth() + 1).toString().length === 1
     ? "0" + (new Date().getMonth() + 1).toString()
     : (new Date().getMonth() + 1).toString());
 /**
