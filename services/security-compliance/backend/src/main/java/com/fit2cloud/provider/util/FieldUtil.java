@@ -1,5 +1,6 @@
 package com.fit2cloud.provider.util;
 
+import com.fit2cloud.common.constants.PlatformConstants;
 import com.fit2cloud.constants.ResourceTypeConstants;
 import com.fit2cloud.provider.entity.InstanceFieldType;
 import com.fit2cloud.provider.entity.InstanceSearchField;
@@ -36,7 +37,15 @@ public class FieldUtil {
         return instanceSearchFields.stream().map(instanceSearchField -> appendPrefixField(prefixField, instanceSearchField)).toList();
     }
 
-    public static List<InstanceSearchField> appendPrefixField(String platform, ResourceTypeConstants resourceTypeConstants, List<InstanceSearchField> instanceSearchFields) {
-        return appendPrefixField("instance" + platform + "_" + resourceTypeConstants.name() + ".", instanceSearchFields);
+    /**
+     * 添加实例instance字段前缀
+     *
+     * @param platform              供应商
+     * @param resourceTypeConstants 资源类型
+     * @param instanceSearchFields  实例查询字段
+     * @return 添加前缀后的字段
+     */
+    public static List<InstanceSearchField> appendPrefixField(PlatformConstants platform, ResourceTypeConstants resourceTypeConstants, List<InstanceSearchField> instanceSearchFields) {
+        return appendPrefixField("instance." + platform.name() + "_" + resourceTypeConstants.name() + ".", instanceSearchFields);
     }
 }

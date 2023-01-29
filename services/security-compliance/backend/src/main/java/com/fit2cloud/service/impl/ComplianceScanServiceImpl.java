@@ -13,6 +13,7 @@ import co.elastic.clients.elasticsearch.core.SearchResponse;
 import co.elastic.clients.elasticsearch.core.search.Hit;
 import co.elastic.clients.elasticsearch.core.search.HitsMetadata;
 import co.elastic.clients.json.JsonData;
+import co.elastic.clients.util.ObjectBuilder;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.OrderItem;
@@ -52,6 +53,7 @@ import org.springframework.stereotype.Service;
 import javax.annotation.Resource;
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * {@code @Author:张少虎}
@@ -347,9 +349,34 @@ public class ComplianceScanServiceImpl implements IComplianceScanService {
      * @return 查询对象
      */
     private Query getQuery(List<Rule> rules, List<Query> otherQueries) {
-        List<Query> queries = rules.stream().map(this::getScriptQuery).collect(Collectors.toCollection(ArrayList::new));
+        List<Query> queries = rules.stream().filter(r -> !r.getField().startsWith("filterArray")).map(this::getScriptQuery).collect(Collectors.toCollection(ArrayList::new));
+        // 获取嵌套查询
+        List<Query> nestedQuery = listNestedQuery(rules);
         queries.addAll(otherQueries);
+        queries.addAll(nestedQuery);
         return new Query.Builder().bool(new BoolQuery.Builder().must(queries).build()).build();
+    }
+
+    /**
+     * 获取 nested 数组嵌套对象查询
+     *
+     * @param rules 规则
+     * @return 查询对象
+     */
+    private List<Query> listNestedQuery(List<Rule> rules) {
+        // todo filterArray 字段需要使用nested查询
+        List<Rule> filterArray = rules.stream().filter(r -> r.getField().startsWith("filterArray")).toList();
+        Map<String, List<Query>> nestPathScriptQueryMap = filterArray.stream().collect(Collectors.groupingBy(s -> getNestedPath(s.getField()), Collectors.mapping(this::getScriptQuery, Collectors.toList())));
+        List<Query> queries = nestPathScriptQueryMap.entrySet().stream().map(n -> new Query.Builder().nested(new NestedQuery.Builder().path(n.getKey())
+                .query(new Query.Builder().bool(new BoolQuery.Builder().must(n.getValue()).build()).build()).build()).build()).toList();
+        return queries;
+
+    }
+
+    private String getNestedPath(String field) {
+        String[] split = field.split("\\.");
+        // 注意 filterArray下面存储的都是 filterArray.xxxx:[] 所以当前不会出现越界问题,如果出现越界那就是配置不对
+        return split[0] + "." + split[1];
     }
 
 

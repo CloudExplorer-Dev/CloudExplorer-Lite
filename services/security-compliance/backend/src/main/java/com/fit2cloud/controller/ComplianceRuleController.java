@@ -66,7 +66,6 @@ public class ComplianceRuleController {
         ComplianceRuleResponse complianceRuleResponse = new ComplianceRuleResponse();
         BeanUtils.copyProperties(complianceRule, complianceRuleResponse);
         return ResultHolder.success(complianceRuleResponse);
-
     }
 
     @ApiOperation("获取可过滤的合规条件维度")

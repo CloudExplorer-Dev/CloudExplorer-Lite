@@ -109,11 +109,14 @@ public class SyncServiceImpl extends BaseSyncService implements ISyncService {
                                 new Query.Builder().term(new TermQuery.Builder().field("resourceType").value(instanceType.name()).build()).build()).build())
                 .build();
         DeleteByQueryRequest build = new DeleteByQueryRequest.Builder().index(ResourceInstance.class.getAnnotation(Document.class).indexName()).query(query).refresh(true).build();
-//        elasticsearchClient.indices().putMapping(b -> b.properties(Map.of("filters." + instanceType.name(), Property.of(p -> p.nested(NestedProperty.of(n -> n)))))
-//                .index(ResourceInstance.class.getAnnotation(Document.class).indexName()));
-        ;
+        // todo 处理嵌套数组问题
+        List<String> filterArrayKeys = resourceInstancesAll.stream().map(ResourceInstance::getFilterArray).flatMap(f -> f.keySet().stream()).distinct().toList();
+        for (String filterArrayKey : filterArrayKeys) {
+            elasticsearchClient.indices().putMapping(b -> b.properties(Map.of("filterArray." + filterArrayKey, Property.of(p -> p.nested(NestedProperty.of(n -> n)))))
+                    .index(ResourceInstance.class.getAnnotation(Document.class).indexName()));
+        }
+
         elasticsearchClient.deleteByQuery(build);
-        System.out.println(JsonUtil.toJSONString(resourceInstancesAll));
         // todo 插入数据
         elasticsearchTemplate.save(resourceInstancesAll);
         // todo 更新缓存

@@ -41,6 +41,6 @@ public class SyncTest {
 
     @Test
     public void syncAny() {
-        syncService.syncInstance("0769f3f764f8eeada44b54014224180e", ResourceTypeConstants.ECS);
+        syncService.syncInstance("0769f3f764f8eeada44b54014224180e", ResourceTypeConstants.SECURITY_GROUP);
     }
 }

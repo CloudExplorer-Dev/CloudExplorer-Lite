@@ -24,7 +24,11 @@ import com.huaweicloud.sdk.evs.v2.model.VolumeDetail;
 import com.huaweicloud.sdk.iam.v3.model.KeystoneListUsersResult;
 import com.huaweicloud.sdk.iam.v3.model.LoginProtectResult;
 import com.huaweicloud.sdk.rds.v3.model.InstanceResponse;
+import com.huaweicloud.sdk.vpc.v3.model.SecurityGroup;
+import com.huaweicloud.sdk.vpc.v3.model.SecurityGroupRule;
 import com.huaweicloud.sdk.vpc.v3.model.Vpc;
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.BeanUtils;
 
 import java.util.*;
 
@@ -67,7 +71,7 @@ public class HuaweiCloudProvider extends AbstractCloudProvider<HuaweiBaseCredent
 
     @Override
     public List<InstanceSearchField> listEcsInstanceSearchField() {
-        return new ArrayList<>();
+        return HuaweiInstanceSearchFieldApi.listEcsInstanceSearchField();
     }
 
     @Override
@@ -81,7 +85,7 @@ public class HuaweiCloudProvider extends AbstractCloudProvider<HuaweiBaseCredent
 
     @Override
     public List<InstanceSearchField> listRedisInstanceSearchField() {
-        return List.of();
+        return HuaweiInstanceSearchFieldApi.listRedisInstanceSearchField();
     }
 
     @Override
@@ -95,7 +99,7 @@ public class HuaweiCloudProvider extends AbstractCloudProvider<HuaweiBaseCredent
 
     @Override
     public List<InstanceSearchField> listMongodbInstanceSearchField() {
-        return null;
+        return HuaweiInstanceSearchFieldApi.listMongodbInstanceSearchField();
     }
 
     @Override
@@ -109,7 +113,7 @@ public class HuaweiCloudProvider extends AbstractCloudProvider<HuaweiBaseCredent
 
     @Override
     public List<InstanceSearchField> listMysqlInstanceSearchField() {
-        return null;
+        return HuaweiInstanceSearchFieldApi.listMysqlInstanceSearchField();
     }
 
     @Override
@@ -123,7 +127,7 @@ public class HuaweiCloudProvider extends AbstractCloudProvider<HuaweiBaseCredent
 
     @Override
     public List<InstanceSearchField> listSqlServerInstanceSearchField() {
-        return null;
+        return HuaweiInstanceSearchFieldApi.listSqlServerInstanceSearchField();
     }
 
     @Override
@@ -137,7 +141,7 @@ public class HuaweiCloudProvider extends AbstractCloudProvider<HuaweiBaseCredent
 
     @Override
     public List<InstanceSearchField> listPostGreSqlInstanceSearchField() {
-        return List.of();
+        return HuaweiInstanceSearchFieldApi.listPostGreSqlInstanceSearchField();
     }
 
     @Override
@@ -161,7 +165,7 @@ public class HuaweiCloudProvider extends AbstractCloudProvider<HuaweiBaseCredent
 
     @Override
     public List<InstanceSearchField> listElasticSearchInstanceSearchField() {
-        return List.of();
+        return HuaweiInstanceSearchFieldApi.listElasticSearchInstanceSearchField();
     }
 
     @Override
@@ -175,7 +179,7 @@ public class HuaweiCloudProvider extends AbstractCloudProvider<HuaweiBaseCredent
 
     @Override
     public List<InstanceSearchField> listDiskInstanceSearchField() {
-        return List.of();
+        return HuaweiInstanceSearchFieldApi.listDiskInstanceSearchField();
     }
 
     @Override
@@ -189,7 +193,7 @@ public class HuaweiCloudProvider extends AbstractCloudProvider<HuaweiBaseCredent
 
     @Override
     public List<InstanceSearchField> listLoadBalancerInstanceSearchField() {
-        return null;
+        return HuaweiInstanceSearchFieldApi.listLoadBalancerInstanceSearchField();
     }
 
     @Override
@@ -203,7 +207,7 @@ public class HuaweiCloudProvider extends AbstractCloudProvider<HuaweiBaseCredent
 
     @Override
     public List<InstanceSearchField> listPublicIpInstanceSearchField() {
-        return null;
+        return HuaweiInstanceSearchFieldApi.listPublicIpInstanceSearchField();
     }
 
     @Override
@@ -217,7 +221,7 @@ public class HuaweiCloudProvider extends AbstractCloudProvider<HuaweiBaseCredent
 
     @Override
     public List<InstanceSearchField> listVpcInstanceSearchField() {
-        return null;
+        return HuaweiInstanceSearchFieldApi.listVpcInstanceSearchField();
     }
 
     @Override
@@ -236,7 +240,7 @@ public class HuaweiCloudProvider extends AbstractCloudProvider<HuaweiBaseCredent
 
     @Override
     public List<InstanceSearchField> listRamInstanceSearchField() {
-        return null;
+        return HuaweiInstanceSearchFieldApi.listRamInstanceSearchField();
     }
 
     @Override
@@ -256,14 +260,18 @@ public class HuaweiCloudProvider extends AbstractCloudProvider<HuaweiBaseCredent
     @Override
     public List<ResourceInstance> listSecurityGroupInstance(String req) {
         ListSecurityGroupInstanceRequest listSecurityGroupInstanceRequest = JsonUtil.parseObject(req, ListSecurityGroupInstanceRequest.class);
-        List<Map<String, Object>> instances = HuaweiApi.listSecurityGroupCollectionInstance(listSecurityGroupInstanceRequest);
+        List<SecurityGroup> instances = HuaweiApi.listSecurityGroupInstance(listSecurityGroupInstanceRequest);
+        ListSecurityGroupRuleInstanceRequest listSecurityGroupRuleInstanceRequest = new ListSecurityGroupRuleInstanceRequest();
+        BeanUtils.copyProperties(listSecurityGroupInstanceRequest, listSecurityGroupRuleInstanceRequest);
+        List<SecurityGroupRule> securityGroupRules = HuaweiApi.listSecurityGroupRuleInstance(listSecurityGroupRuleInstanceRequest);
         return instances.stream()
-                .map(instance -> ResourceUtil.toResourceInstance(PlatformConstants.fit2cloud_huawei_platform.name(), ResourceTypeConstants.SECURITY_GROUP, instance.get("id").toString(), instance.get("name").toString(), instance))
+                .map(instance -> ResourceUtil.toResourceInstance(PlatformConstants.fit2cloud_huawei_platform.name(), ResourceTypeConstants.SECURITY_GROUP, instance.getId(), instance.getName(), instance))
+                .map(instance -> ResourceUtil.appendFilterArray(PlatformConstants.fit2cloud_huawei_platform.name(), ResourceTypeConstants.SECURITY_GROUP, "group_rule", instance, (List) securityGroupRules.stream().filter(rule -> StringUtils.equals(rule.getSecurityGroupId(), instance.getResourceId())).toList()))
                 .toList();
     }
 
     @Override
     public List<InstanceSearchField> listSecurityGroupInstanceSearchField() {
-        return List.of();
+        return HuaweiInstanceSearchFieldApi.listSecurityGroupInstanceSearchField();
     }
 }

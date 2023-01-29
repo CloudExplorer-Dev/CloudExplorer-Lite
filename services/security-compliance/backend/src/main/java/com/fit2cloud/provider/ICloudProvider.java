@@ -14,7 +14,7 @@ import java.util.Map;
  * {@code @Author:张少虎}
  * {@code @Date: 2022/12/5  15:41}
  * {@code @Version 1.0}
- * {@code @注释: }
+ * {@code @注释: todo 查询字段的获取未来存储到数据库,由程序进行增删改查。}
  */
 public interface ICloudProvider {
 

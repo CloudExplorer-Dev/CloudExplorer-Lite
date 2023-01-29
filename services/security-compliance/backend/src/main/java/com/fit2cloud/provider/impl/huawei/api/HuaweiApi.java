@@ -118,7 +118,7 @@ public class HuaweiApi {
     private static List<InstanceResponse> listRdsInstance(ListRdsInstanceRequest request) {
         RdsClient rdsClient = request.getCredential().getRdsClient(request.getRegionId());
         request.setLimit(PageUtil.DefaultPageSize);
-        request.setOffset(PageUtil.DefaultCurrentPage);
+        request.setOffset(0);
         return PageUtil.page(request, req -> {
                     try {
                         return rdsClient.listInstances(request);
@@ -142,7 +142,7 @@ public class HuaweiApi {
     public static List<InstanceListInfo> listRedisInstance(ListRedisInstanceRequest request) {
         DcsClient dcsClient = request.getCredential().getDcsClient(request.getRegionId());
         request.setLimit(PageUtil.DefaultPageSize);
-        request.setOffset(PageUtil.DefaultCurrentPage);
+        request.setOffset(0);
         return PageUtil.page(request, req -> {
                     try {
                         return dcsClient.listInstances(request);
@@ -165,7 +165,7 @@ public class HuaweiApi {
     public static List<QueryInstanceResponse> listMongodbInstance(ListMongodbInstanceRequest request) {
         DdsClient ddsClient = request.getCredential().getDdsClient(request.getRegionId());
         request.setLimit(PageUtil.DefaultPageSize);
-        request.setOffset(PageUtil.DefaultCurrentPage);
+        request.setOffset(0);
         return PageUtil.page(request, req -> {
                     try {
                         return ddsClient.listInstances(request);

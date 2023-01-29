@@ -1,8 +1,10 @@
 package com.fit2cloud.provider.util;
 
+import com.fit2cloud.common.constants.PlatformConstants;
 import com.fit2cloud.common.utils.JsonUtil;
 import com.fit2cloud.constants.ResourceTypeConstants;
 import com.fit2cloud.es.entity.ResourceInstance;
+import com.huaweicloud.sdk.css.v1.model.ShowTagsTagsResp;
 import org.apache.commons.lang.StringUtils;
 
 import java.util.*;
@@ -29,6 +31,13 @@ public class ResourceUtil {
         ResourceInstance resourceInstance = toResourceInstance(platform, resourceTypeConstants, resourceId, resourceName, instance, null, null);
         resourceInstance.setFilterArray(filterArray);
         return resourceInstance;
+    }
+
+    public static ResourceInstance appendFilterArray(String platform, ResourceTypeConstants resourceTypeConstants, String resourceField, ResourceInstance instance, List<Object> filterArray) {
+        HashMap<String, List<Object>> filterArrayMap = new HashMap<>();
+        filterArrayMap.put(platform + "_" + resourceTypeConstants.name() + "_" + resourceField, filterArray);
+        instance.setFilterArray(filterArrayMap);
+        return instance;
     }
 
     /**

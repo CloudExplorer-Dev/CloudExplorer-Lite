@@ -1,5 +1,7 @@
 package com.fit2cloud.provider.entity;
 
+import com.fit2cloud.common.constants.PlatformConstants;
+import com.fit2cloud.constants.ResourceTypeConstants;
 import lombok.Data;
 import org.apache.commons.collections4.keyvalue.DefaultKeyValue;
 
@@ -65,4 +67,50 @@ public class InstanceSearchField {
         this.options = options;
     }
 
+    /**
+     * 重置当前es字段
+     *
+     * @param platform     供应商
+     * @param resourceType 资源类型
+     * @return 实例对象下的属性
+     */
+    public InstanceSearchField resetInstanceField(PlatformConstants platform, ResourceTypeConstants resourceType) {
+        this.field = "instance." + platform.name() + "_" + resourceType.name() + "." + this.field;
+        return this;
+    }
+
+    /**
+     * 重置当前除去实例对象以外的过滤对象
+     *
+     * @param platform     供应商
+     * @param resourceType 资源类型
+     * @return 实例查询对象
+     */
+    public InstanceSearchField resetFilterObjField(PlatformConstants platform, ResourceTypeConstants resourceType) {
+        this.field = "filterObj." + platform.name() + "_" + resourceType.name() + "." + this.field;
+        return this;
+    }
+
+    /**
+     * 重置过滤数组对象
+     *
+     * @param platform     供应商
+     * @param resourceType 资源类型
+     * @return 实例查询对象
+     */
+    public InstanceSearchField resetFilterArrayField(PlatformConstants platform, ResourceTypeConstants resourceType, String filterField) {
+        return resetFilterArrayField(platform, resourceType, filterField, true);
+    }
+
+    /**
+     * 重置过滤数组对象
+     *
+     * @param platform     供应商
+     * @param resourceType 资源类型
+     * @return 实例查询对象
+     */
+    public InstanceSearchField resetFilterArrayField(PlatformConstants platform, ResourceTypeConstants resourceType, String filterField, Boolean appendKeyword) {
+        this.field = "filterArray." + platform.name() + "_" + resourceType.name() + "_" + filterField + "." + (this.field.endsWith(".keyword") && appendKeyword ? this.field : this.field + ".keyword");
+        return this;
+    }
 }
