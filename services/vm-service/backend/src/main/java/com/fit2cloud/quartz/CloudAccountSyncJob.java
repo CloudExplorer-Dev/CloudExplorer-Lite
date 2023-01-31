@@ -1,7 +1,6 @@
 package com.fit2cloud.quartz;
 
 import com.fit2cloud.common.log.utils.LogUtil;
-import com.fit2cloud.common.provider.entity.F2CEntityType;
 import com.fit2cloud.common.scheduler.handler.AsyncJob;
 import com.fit2cloud.common.utils.SpringUtil;
 import com.fit2cloud.service.ISyncProviderService;
@@ -70,7 +69,7 @@ public class CloudAccountSyncJob {
         }
     }
 
-    @Name("同步云主机监控数据任务")
+    @Name("云主机监控")
     public static class SyncCloudServerPerfMetricMonitor extends AsyncJob implements Job {
         @Override
         protected void run(Map<String, Object> map) {
@@ -79,7 +78,7 @@ public class CloudAccountSyncJob {
             LogUtil.info("同步云主机监控数据结束:", map);
         }
     }
-    @Name("同步宿主机监控数据任务")
+    @Name("宿主机监控")
     public static class SyncCloudHostPerfMetricMonitor extends AsyncJob implements Job {
         @Override
         protected void run(Map<String, Object> map) {
@@ -88,7 +87,7 @@ public class CloudAccountSyncJob {
             LogUtil.info("同步宿主机监控数据结束:", map);
         }
     }
-    @Name("同步云磁盘监控数据任务")
+    @Name("云磁盘监控")
     public static class SyncCloudDiskPerfMetricMonitor extends AsyncJob implements Job {
         @Override
         protected void run(Map<String, Object> map) {
@@ -97,7 +96,7 @@ public class CloudAccountSyncJob {
             LogUtil.info("同步云磁盘监控数据结束:", map);
         }
     }
-    @Name("同步存储器监控数据任务")
+    @Name("存储器监控")
     public static class SyncCloudDatastorePerfMetricMonitor extends AsyncJob implements Job {
         @Override
         protected void run(Map<String, Object> map) {
