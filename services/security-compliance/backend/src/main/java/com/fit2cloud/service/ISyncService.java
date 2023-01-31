@@ -2,6 +2,8 @@ package com.fit2cloud.service;
 
 import com.fit2cloud.constants.ResourceTypeConstants;
 
+import java.util.List;
+
 /**
  * {@code @Author:张少虎}
  * {@code @Date: 2022/12/6  14:29}
@@ -16,4 +18,12 @@ public interface ISyncService {
      * @param instanceType   实例类型
      */
     void syncInstance(String cloudAccountId, ResourceTypeConstants instanceType);
+
+    /**
+     * 同步实例数据
+     *
+     * @param cloudAccountId 云账户id
+     * @param instanceType   实例类型
+     */
+    void syncInstance(String cloudAccountId, List<String> instanceType);
 }

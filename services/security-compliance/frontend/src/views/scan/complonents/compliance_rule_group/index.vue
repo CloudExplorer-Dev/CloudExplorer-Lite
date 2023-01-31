@@ -26,12 +26,16 @@
         ></swiper-slide>
       </swiper>
     </div>
-    <div class="scan"><el-button type="primary">一键扫描</el-button></div>
+    <div class="scan">
+      <el-button type="primary" @click="openScanView">一键扫描</el-button>
+    </div>
+    <compliance_scan ref="scan"></compliance_scan>
   </div>
 </template>
 <script setup lang="ts">
 import complianceRuleGroupApi from "@/api/rule_group";
 import compliance_rule_cord from "@/views/scan/complonents/compliance_rule_group/ComplianceRuleCard.vue";
+import compliance_scan from "@/views/scan/complonents/compliance_rule_group/ComplianceScan.vue";
 import { onMounted, ref } from "vue";
 import type { ComplianceRuleGroup } from "@/api/rule_group/type";
 import { Pagination, Navigation, Autoplay } from "swiper";
@@ -48,6 +52,7 @@ onMounted(() => {
     complianceRuleGroups.value = ok.data;
   });
 });
+const scan = ref<InstanceType<typeof compliance_scan>>();
 // 选中的规则组
 const activeComplianceRuleGroupId = ref<string>("");
 /**
@@ -64,6 +69,9 @@ const selectComplianceRuleGroup = (complianceRuleGroup: string) => {
     "update:compliance_rule_group_id",
     activeComplianceRuleGroupId.value
   );
+};
+const openScanView = () => {
+  scan.value?.open();
 };
 </script>
 <style lang="scss" scoped>

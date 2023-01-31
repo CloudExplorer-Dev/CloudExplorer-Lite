@@ -1,20 +1,23 @@
 package com.fit2cloud.controller;
 
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.fit2cloud.common.provider.util.CommonUtil;
 import com.fit2cloud.controller.handler.ResultHolder;
 import com.fit2cloud.controller.request.compliance_scan.ComplianceResourceRequest;
 import com.fit2cloud.controller.request.compliance_scan.ComplianceScanRequest;
+import com.fit2cloud.controller.request.compliance_scan.ComplianceSyncRequest;
+import com.fit2cloud.controller.response.compliance_scan.SupportCloudAccountResourceResponse;
 import com.fit2cloud.controller.response.compliance_scan.ComplianceResourceResponse;
 import com.fit2cloud.controller.response.compliance_scan.ComplianceScanResponse;
 import com.fit2cloud.controller.response.compliance_scan.ComplianceScanRuleGroupResponse;
+import com.fit2cloud.response.JobRecordResourceResponse;
 import com.fit2cloud.service.IComplianceScanService;
+import com.fit2cloud.service.ISyncService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
+import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
 import javax.validation.constraints.Min;
@@ -34,6 +37,8 @@ import java.util.List;
 public class ComplianceScanController {
     @Resource
     private IComplianceScanService complianceScanService;
+    @Resource
+    private ISyncService syncService;
 
     @GetMapping
     @ApiOperation("获取当前合规信息")
@@ -52,7 +57,7 @@ public class ComplianceScanController {
                                                            @Min(message = "每页大小不能小于1", value = 1)
                                                            @PathVariable("limit")
                                                            Integer limit, ComplianceScanRequest request) {
-         Page<ComplianceScanResponse> page = complianceScanService.page(currentPage, limit, request);
+        Page<ComplianceScanResponse> page = complianceScanService.page(currentPage, limit, request);
         return ResultHolder.success(page);
     }
 
@@ -81,4 +86,26 @@ public class ComplianceScanController {
         return ResultHolder.success(res);
     }
 
+    @PostMapping("/sync_scan")
+    @ApiOperation("扫描")
+    public ResultHolder<Boolean> scan(@RequestBody ComplianceSyncRequest request) {
+        for (ComplianceSyncRequest.CloudAccountResource cloudAccountResource : request.getCloudAccountResources()) {
+            syncService.syncInstance(cloudAccountResource.getCloudAccountId(), cloudAccountResource.getResourceType());
+        }
+        return ResultHolder.success(true);
+    }
+
+    @ApiOperation("获取支持的云账号以及云账号可扫描资源")
+    @GetMapping("/support_cloud_account")
+    public ResultHolder<List<SupportCloudAccountResourceResponse>> listSupportCloudAccountResource() {
+        List<SupportCloudAccountResourceResponse> list = complianceScanService.listSupportCloudAccountResource();
+        return ResultHolder.success(list);
+    }
+
+    @ApiOperation("获取资源类型同步情况")
+    @GetMapping("job_record")
+    public ResultHolder<List<JobRecordResourceResponse>> listJobRecord() {
+        List<JobRecordResourceResponse> res = complianceScanService.listJobRecord();
+        return ResultHolder.success(res);
+    }
 }

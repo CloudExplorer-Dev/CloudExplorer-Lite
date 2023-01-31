@@ -1,3 +1,4 @@
+import type { SimpleMap } from "@commons/api/base/type";
 export interface CloudAccount {
   /**
    * 主键id
@@ -35,4 +36,50 @@ export interface CloudAccount {
    *修改时间
    */
   updateTime: string;
+}
+
+/**
+ *云账户任务记录
+ */
+export interface AccountJobRecord {
+  /**
+   *云账户id
+   */
+  accountId: string;
+  /**
+   *任务记录id
+   */
+  jobRecordId: string;
+  /**
+   *任务记录类型
+   */
+  type: string;
+  /**
+   * 资源类型
+   */
+  resourceType: string;
+  /**
+   * 资源id
+   */
+  resourceId: string;
+  /**
+   * 任务状态
+   */
+  status: string;
+  /**
+   * 任务描述
+   */
+  description: string;
+  /**
+   * 创建时间
+   */
+  createTime: string;
+  /**
+   * 更新时间
+   */
+  updateTime: string;
+  /**
+   *任务参数
+   */
+  params: SimpleMap<Array<{ size: number; region: string } | any>>;
 }

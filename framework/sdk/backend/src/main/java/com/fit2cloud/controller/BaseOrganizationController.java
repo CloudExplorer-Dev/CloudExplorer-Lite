@@ -28,7 +28,7 @@ import java.util.Map;
  */
 @RestController
 @RequestMapping("/api/organization")
-@Api("公共组织相关接口")
+@Api(value = "公共组织相关接口", tags = "公共组织相关接口")
 @Validated
 public class BaseOrganizationController {
     @Resource

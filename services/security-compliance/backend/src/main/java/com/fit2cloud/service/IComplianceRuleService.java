@@ -1,5 +1,6 @@
 package com.fit2cloud.service;
 
+import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.fit2cloud.controller.request.rule.ComplianceRuleRequest;
@@ -45,7 +46,7 @@ public interface IComplianceRuleService extends IService<ComplianceRule> {
      * @param request     请求过滤对象
      * @return 合规规则
      */
-    Page<ComplianceRuleResponse> page(Integer currentPage, Integer limit, PageComplianceRuleRequest request);
+    IPage<ComplianceRuleResponse> page(Integer currentPage, Integer limit, PageComplianceRuleRequest request);
 
     /**
      * 获取资源类型

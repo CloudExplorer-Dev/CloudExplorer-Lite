@@ -4,9 +4,11 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.fit2cloud.constants.ResourceTypeConstants;
 import com.fit2cloud.controller.request.compliance_scan.ComplianceResourceRequest;
 import com.fit2cloud.controller.request.compliance_scan.ComplianceScanRequest;
+import com.fit2cloud.controller.response.compliance_scan.SupportCloudAccountResourceResponse;
 import com.fit2cloud.controller.response.compliance_scan.ComplianceResourceResponse;
 import com.fit2cloud.controller.response.compliance_scan.ComplianceScanResponse;
 import com.fit2cloud.controller.response.compliance_scan.ComplianceScanRuleGroupResponse;
+import com.fit2cloud.response.JobRecordResourceResponse;
 
 import java.util.List;
 
@@ -92,4 +94,19 @@ public interface IComplianceScanService {
      * @return 合规规则扫描结果对象
      */
     ComplianceScanResponse updateCacheScanCompliance(String complianceRuleId, String cloudAccountId);
+
+
+    /**
+     * 获取支持的云账号 以及云账号可同步的资源
+     *
+     * @return 云账号以及对应同步资源类型
+     */
+    List<SupportCloudAccountResourceResponse> listSupportCloudAccountResource();
+
+    /**
+     * 获取扫描任务详情
+     *
+     * @return 扫描任务
+     */
+    List<JobRecordResourceResponse> listJobRecord();
 }

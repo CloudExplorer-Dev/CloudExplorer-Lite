@@ -28,6 +28,8 @@ public enum ProviderConstants {
     private final String message;
     private final Class<? extends ICloudProvider> cloudProvider;
 
+    public static final Integer retryNum = 10;
+
     ProviderConstants(String message, Class<? extends ICloudProvider> cloudProvider) {
         this.message = message;
         this.cloudProvider = cloudProvider;

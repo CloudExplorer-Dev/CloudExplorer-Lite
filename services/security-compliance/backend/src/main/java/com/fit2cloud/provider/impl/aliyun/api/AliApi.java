@@ -24,6 +24,7 @@ import com.fit2cloud.common.exception.Fit2cloudException;
 import com.fit2cloud.common.provider.exception.ReTryException;
 import com.fit2cloud.common.provider.exception.SkipPageException;
 import com.fit2cloud.common.provider.util.PageUtil;
+import com.fit2cloud.provider.constants.ProviderConstants;
 import com.fit2cloud.provider.impl.aliyun.entity.credential.AliSecurityComplianceCredential;
 import com.fit2cloud.provider.impl.aliyun.entity.request.*;
 import com.fit2cloud.provider.util.ResourceUtil;
@@ -67,7 +68,7 @@ public class AliApi {
                 }
                 , res -> res.getBody().getInstances().instance
                 , (req, res) -> res.getBody().getPageSize() <= res.getBody().getInstances().instance.size()
-                , req -> req.setPageNumber(req.getPageNumber() + 1));
+                , req -> req.setPageNumber(req.getPageNumber() + 1), ProviderConstants.retryNum);
     }
 
     /**
@@ -108,7 +109,7 @@ public class AliApi {
                 }
                 , res -> res.getBody().getInstances().getKVStoreInstance()
                 , (req, res) -> res.getBody().getPageSize() <= res.getBody().getInstances().getKVStoreInstance().size()
-                , req -> req.setPageNumber(req.getPageNumber() + 1));
+                , req -> req.setPageNumber(req.getPageNumber() + 1), ProviderConstants.retryNum);
 
     }
 
@@ -142,7 +143,7 @@ public class AliApi {
                 SkipPageException.throwSkip(e);
                 throw new Fit2cloudException(10002, "获取阿里云Redis网络失败" + e.getMessage());
             }
-        }, 5);
+        }, ProviderConstants.retryNum);
         assert describeDBInstanceNetInfoResponse != null;
         return describeDBInstanceNetInfoResponse.getBody();
     }
@@ -185,7 +186,7 @@ public class AliApi {
                 }
                 , res -> res.getBody().getDBInstances().getDBInstance()
                 , (req, res) -> res.getBody().getPageSize() <= res.getBody().getDBInstances().getDBInstance().size()
-                , req -> req.setPageNumber(req.getPageNumber() + 1));
+                , req -> req.setPageNumber(req.getPageNumber() + 1), ProviderConstants.retryNum);
 
     }
 
@@ -219,7 +220,7 @@ public class AliApi {
                 SkipPageException.throwSkip(e);
                 throw new Fit2cloudException(10002, "获取阿里云MongoDB实例失败" + e.getMessage());
             }
-        }, 5);
+        }, ProviderConstants.retryNum);
         assert describeShardingNetworkAddressResponse != null;
         return describeShardingNetworkAddressResponse.getBody();
     }
@@ -337,7 +338,7 @@ public class AliApi {
                 }
                 , res -> res.getBody().getItems().getDBInstance()
                 , (req, res) -> req.getPageSize() <= res.getBody().getItems().getDBInstance().size()
-                , req -> req.setPageNumber(req.getPageNumber() + 1));
+                , req -> req.setPageNumber(req.getPageNumber() + 1), ProviderConstants.retryNum);
     }
 
     /**
@@ -386,7 +387,7 @@ public class AliApi {
                 SkipPageException.throwSkip(e);
                 throw new Fit2cloudException(10002, "获取阿里云Mysql实例失败" + e.getMessage());
             }
-        }, 5);
+        }, ProviderConstants.retryNum);
         assert describeDBInstanceNetInfoResponse != null;
         return describeDBInstanceNetInfoResponse.getBody();
     }
@@ -412,7 +413,7 @@ public class AliApi {
                 }
                 , res -> res.getBody().getResult()
                 , (req, res) -> req.getSize() <= res.getBody().getResult().size()
-                , req -> req.setPage(req.getPage() + 1));
+                , req -> req.setPage(req.getPage() + 1), ProviderConstants.retryNum);
 
     }
 
@@ -437,7 +438,7 @@ public class AliApi {
                 }
                 , res -> res.getBody().getDisks().disk
                 , (req, res) -> res.getBody().getPageSize() <= res.getBody().getDisks().disk.size()
-                , req -> req.setPageNumber(req.getPageNumber() + 1));
+                , req -> req.setPageNumber(req.getPageNumber() + 1), ProviderConstants.retryNum);
 
     }
 
@@ -462,7 +463,7 @@ public class AliApi {
                 }
                 , res -> res.getBody().getLoadBalancers().loadBalancer
                 , (req, res) -> res.getBody().getPageSize() <= res.getBody().getLoadBalancers().loadBalancer.size()
-                , req -> req.setPageNumber(req.getPageNumber() + 1));
+                , req -> req.setPageNumber(req.getPageNumber() + 1), ProviderConstants.retryNum);
     }
 
     /**
@@ -486,7 +487,7 @@ public class AliApi {
                 }
                 , res -> res.getBody().getEipAddresses().eipAddress
                 , (req, res) -> res.getBody().getPageSize() <= res.getBody().getEipAddresses().eipAddress.size()
-                , req -> req.setPageNumber(req.getPageNumber() + 1));
+                , req -> req.setPageNumber(req.getPageNumber() + 1), ProviderConstants.retryNum);
     }
 
     /**
@@ -510,7 +511,7 @@ public class AliApi {
                 }
                 , res -> res.getBody().getVpcs().vpc
                 , (req, res) -> res.getBody().getPageSize() <= res.getBody().getVpcs().vpc.size()
-                , req -> req.setPageNumber(req.getPageNumber() + 1));
+                , req -> req.setPageNumber(req.getPageNumber() + 1), ProviderConstants.retryNum);
 
     }
 
@@ -529,12 +530,12 @@ public class AliApi {
                     } catch (Exception e) {
                         ReTryException.throwReTry(e);
                         SkipPageException.throwSkip(e);
-                        throw new Fit2cloudException(10002, "获取阿里云负载均衡实例失败" + e.getMessage());
+                        throw new Fit2cloudException(10002, "获取阿里云RAM用户实例失败" + e.getMessage());
                     }
                 }
                 , res -> res.getBody().getUsers().user
                 , (req, res) -> res.getBody().isTruncated
-                , (req, res) -> req.setMarker(res.getBody().marker));
+                , (req, res) -> req.setMarker(res.getBody().marker), ProviderConstants.retryNum);
     }
 
     /**
@@ -557,7 +558,7 @@ public class AliApi {
                     SkipPageException.throwSkip(e);
                     return null;
                 }
-            }, 5);
+            }, ProviderConstants.retryNum);
         }).filter(Objects::nonNull).toList();
 
     }
@@ -580,7 +581,7 @@ public class AliApi {
                     return null;
                 }
 
-            }, 5);
+            }, ProviderConstants.retryNum);
             GetBucketEncryptionResponseBody encryptionResponse = PageUtil.reTry(() -> {
                 try {
                     return ossClient.getBucketEncryption(GetBucketEncryptionRequest.builder().bucket(bucket.getName()).build()).join().getBody();
@@ -589,7 +590,7 @@ public class AliApi {
                     return null;
                 }
 
-            }, 5);
+            }, ProviderConstants.retryNum);
             GetBucketAclResponseBody aclResponse = PageUtil.reTry(() -> {
                 try {
                     return ossClient.getBucketAcl(GetBucketAclRequest.builder().bucket(bucket.getName()).build()).join().getBody();
@@ -598,7 +599,7 @@ public class AliApi {
                     return null;
                 }
 
-            }, 5);
+            }, ProviderConstants.retryNum);
             Map<String, Object> bucketMap = ResourceUtil.objectToMap(bucket);
             bucketMap.put("acl", aclResponse);
             bucketMap.put("referer", refererResponse);
@@ -658,12 +659,12 @@ public class AliApi {
                     } catch (Exception e) {
                         ReTryException.throwReTry(e);
                         SkipPageException.throwSkip(e);
-                        throw new Fit2cloudException(10002, "获取阿里云负载均衡实例失败" + e.getMessage());
+                        throw new Fit2cloudException(10002, "获取阿里云安全组实例失败" + e.getMessage());
                     }
                 }
                 , res -> res.getBody().getSecurityGroups().securityGroup
                 , (req, res) -> res.getBody().getPageSize() <= res.getBody().getSecurityGroups().securityGroup.size()
-                , req -> req.setPageNumber(req.getPageNumber() + 1));
+                , req -> req.setPageNumber(req.getPageNumber() + 1), ProviderConstants.retryNum);
     }
 
     /**
@@ -696,7 +697,7 @@ public class AliApi {
                 SkipPageException.throwSkip(e);
                 throw new Fit2cloudException(10002, "获取阿里云安全组实例失败" + e.getMessage());
             }
-        }, 5);
+        }, ProviderConstants.retryNum);
         assert describeSecurityGroupAttributeResponse != null;
         return describeSecurityGroupAttributeResponse.getBody();
 

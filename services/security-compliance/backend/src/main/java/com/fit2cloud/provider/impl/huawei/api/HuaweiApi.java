@@ -68,6 +68,7 @@ public class HuaweiApi {
                         return ecsClient.listServersDetails(request);
                     } catch (Exception e) {
                         ReTryException.throwHuaweiReTry(e);
+                        SkipPageException.throwSkip(e);
                         throw new Fit2cloudException(10000, "获取数据失败" + e.getMessage());
                     }
                 },
@@ -124,6 +125,7 @@ public class HuaweiApi {
                         return rdsClient.listInstances(request);
                     } catch (Exception e) {
                         ReTryException.throwHuaweiReTry(e);
+                        SkipPageException.throwSkip(e);
                         throw new Fit2cloudException(10000, "获取数据失败" + e.getMessage());
                     }
                 },
@@ -148,6 +150,7 @@ public class HuaweiApi {
                         return dcsClient.listInstances(request);
                     } catch (Exception e) {
                         ReTryException.throwHuaweiReTry(e);
+                        SkipPageException.throwSkip(e);
                         throw new Fit2cloudException(10000, "获取数据失败" + e.getMessage());
                     }
                 },
@@ -171,6 +174,7 @@ public class HuaweiApi {
                         return ddsClient.listInstances(request);
                     } catch (Exception e) {
                         ReTryException.throwHuaweiReTry(e);
+                        SkipPageException.throwSkip(e);
                         throw new Fit2cloudException(10000, "获取数据失败" + e.getMessage());
                     }
                 },
@@ -194,6 +198,7 @@ public class HuaweiApi {
                         return cssClient.listClustersDetails(request);
                     } catch (Exception e) {
                         ReTryException.throwHuaweiReTry(e);
+                        SkipPageException.throwSkip(e);
                         throw new Fit2cloudException(10000, "获取数据失败" + e.getMessage());
                     }
                 },
@@ -217,6 +222,7 @@ public class HuaweiApi {
                         return evsClient.listVolumes(request);
                     } catch (Exception e) {
                         ReTryException.throwHuaweiReTry(e);
+                        SkipPageException.throwSkip(e);
                         throw new Fit2cloudException(10000, "获取数据失败" + e.getMessage());
                     }
                 },
@@ -240,7 +246,7 @@ public class HuaweiApi {
                         return elbClient.listLoadBalancers(request);
                     } catch (Exception e) {
                         ReTryException.throwHuaweiReTry(e);
-                        SkipPageException.throwHuaweiSkip(e);
+                        SkipPageException.throwSkip(e);
                         throw new Fit2cloudException(10000, "获取数据失败" + e.getMessage());
                     }
                 },
@@ -264,6 +270,7 @@ public class HuaweiApi {
                         return eipClient.listPublicips(request);
                     } catch (Exception e) {
                         ReTryException.throwHuaweiReTry(e);
+                        SkipPageException.throwSkip(e);
                         throw new Fit2cloudException(10000, "获取数据失败" + e.getMessage());
                     }
                 },
@@ -287,6 +294,7 @@ public class HuaweiApi {
                         return vpcClient.listVpcs(request);
                     } catch (Exception e) {
                         ReTryException.throwHuaweiReTry(e);
+                        SkipPageException.throwSkip(e);
                         throw new Fit2cloudException(10000, "获取数据失败" + e.getMessage());
                     }
                 },
@@ -309,6 +317,7 @@ public class HuaweiApi {
                 return iamClient.keystoneListUsers(keystoneListUsersRequest);
             } catch (Exception e) {
                 ReTryException.throwHuaweiReTry(e);
+                SkipPageException.throwSkip(e);
                 throw new Fit2cloudException(10000, "获取数据失败" + e.getMessage());
             }
         }, 3)).getUsers();
@@ -327,6 +336,7 @@ public class HuaweiApi {
                 return iamClient.listUserLoginProtects(request);
             } catch (Exception e) {
                 ReTryException.throwHuaweiReTry(e);
+                SkipPageException.throwSkip(e);
                 throw new Fit2cloudException(10000, "获取数据失败" + e.getMessage());
             }
         }, 3)).getLoginProtects();
@@ -363,6 +373,7 @@ public class HuaweiApi {
                 return obsClient.getBucketAcl(bucketName);
             } catch (Exception e) {
                 ReTryException.throwHuaweiReTry(e);
+                SkipPageException.throwSkip(e);
                 return null;
             }
         }, 5);
@@ -371,6 +382,7 @@ public class HuaweiApi {
                 return obsClient.getBucketEncryption(bucketName);
             } catch (Exception e) {
                 ReTryException.throwHuaweiReTry(e);
+                SkipPageException.throwSkip(e);
                 return null;
             }
         }, 5);
@@ -413,6 +425,7 @@ public class HuaweiApi {
                         return vpcClient.listSecurityGroups(request);
                     } catch (Exception e) {
                         ReTryException.throwHuaweiReTry(e);
+                        SkipPageException.throwSkip(e);
                         throw new Fit2cloudException(10000, "获取数据失败" + e.getMessage());
                     }
                 },
@@ -435,6 +448,7 @@ public class HuaweiApi {
                         return vpcClient.listSecurityGroupRules(request);
                     } catch (Exception e) {
                         ReTryException.throwHuaweiReTry(e);
+                        SkipPageException.throwSkip(e);
                         throw new Fit2cloudException(10000, "获取数据失败" + e.getMessage());
                     }
                 },

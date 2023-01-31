@@ -1,9 +1,10 @@
 package com.fit2cloud.constants;
 
 import com.fit2cloud.base.entity.CloudAccount;
-import com.fit2cloud.common.job_record.JobRecordParam;
+import com.fit2cloud.base.entity.JobRecord;
+import com.fit2cloud.common.job_record.JobLink;
+import com.fit2cloud.common.job_record.JobLinkTypeConstants;
 import com.fit2cloud.common.platform.credential.Credential;
-import com.fit2cloud.es.entity.ResourceInstance;
 import com.fit2cloud.provider.util.ResourceUtil;
 
 import java.util.HashMap;
@@ -32,9 +33,17 @@ public enum SyncDimensionConstants {
                         put("regionObj", region);
                     }}))
                     .toList()
-            , map -> new HashMap<String, Object>() {{
-        put("region", map.get("regionObj"));
-    }}),
+            , map -> new HashMap<String, Object>() {
+        {
+            put("region", map.get("regionObj"));
+        }
+    }, (jobRecord, map) -> {
+        JobLink jobLink = new JobLink();
+        jobLink.setType(JobLinkTypeConstants.CLOUD_SYNC_REGION_RESOURCE);
+        jobLink.setDescription("同步" + ((Map) map.get("regionObj")).getOrDefault("name", "未知区域").toString() + "区域资源");
+        return jobLink;
+
+    }),
 
     /**
      * 云账户粒度
@@ -42,7 +51,12 @@ public enum SyncDimensionConstants {
     CloudAccount("云账户", (cloudAccount, otherParams) -> List.of(ResourceUtil.objectsToMap(otherParams, new HashMap<String, Object>() {{
         put("credential", Credential.of(cloudAccount.getPlatform(), cloudAccount.getCredential()));
         put("cloudAccount", cloudAccount);
-    }})), map -> new HashMap<>());
+    }})), map -> new HashMap<>(), ((jobRecord, stringObjectMap) -> {
+        JobLink jobLink = new JobLink();
+        jobLink.setType(JobLinkTypeConstants.CLOUD_SYNC_RESOURCE);
+        jobLink.setDescription(jobRecord.getDescription() + "资源");
+        return jobLink;
+    }));
 
     /**
      * 提示
@@ -53,12 +67,24 @@ public enum SyncDimensionConstants {
      */
     private BiFunction<CloudAccount, Map<String, Object>, List<Map<String, Object>>> dimensionExecParams;
 
+    /**
+     * 当前任务参数
+     */
     private Function<Map<String, Object>, Map<String, Object>> jobParams;
 
-    SyncDimensionConstants(String message, BiFunction<CloudAccount, Map<String, Object>, List<Map<String, Object>>> dimensionExecParams, Function<Map<String, Object>, Map<String, Object>> jobParams) {
+    /**
+     * 返回任务环节
+     */
+    private BiFunction<JobRecord, Map<String, Object>, JobLink> jobLink;
+
+    SyncDimensionConstants(String message,
+                           BiFunction<CloudAccount, Map<String, Object>, List<Map<String, Object>>> dimensionExecParams,
+                           Function<Map<String, Object>, Map<String, Object>> jobParams,
+                           BiFunction<JobRecord, Map<String, Object>, JobLink> jobLink) {
         this.dimensionExecParams = dimensionExecParams;
         this.message = message;
         this.jobParams = jobParams;
+        this.jobLink = jobLink;
     }
 
     public BiFunction<com.fit2cloud.base.entity.CloudAccount, Map<String, Object>, List<Map<String, Object>>> getDimensionExecParams() {
@@ -67,6 +93,10 @@ public enum SyncDimensionConstants {
 
     public Function<Map<String, Object>, Map<String, Object>> getJobParams() {
         return jobParams;
+    }
+
+    public BiFunction<JobRecord, Map<String, Object>, JobLink> getJobLink() {
+        return jobLink;
     }
 
     public static SyncDimensionConstants getInstance() {

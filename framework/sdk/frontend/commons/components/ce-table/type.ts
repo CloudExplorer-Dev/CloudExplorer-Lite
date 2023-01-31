@@ -249,7 +249,12 @@ export class Condition {
   }
 
   static toSearchObj(condition?: Condition) {
-    if (!condition || !condition.value) {
+    if (
+      !condition ||
+      condition.value == null ||
+      condition.value === undefined ||
+      condition.value === ""
+    ) {
       return {};
     }
     const field = condition.field;
@@ -492,6 +497,11 @@ export class TableSearch {
       .reduce((pre: any, next: any) => {
         return { ...pre, ...next };
       }, {});
+    console.log(
+      "tableHeaderFilter",
+      tableSearch.tableFilter,
+      tableHeaderFilter
+    );
     // 排序
     const order = tableSearch.order ? tableSearch.order : undefined;
     // 搜索框

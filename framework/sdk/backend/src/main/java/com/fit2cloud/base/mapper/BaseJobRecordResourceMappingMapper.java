@@ -9,14 +9,13 @@ import java.util.List;
 
 /**
  * <p>
- *  Mapper 接口
+ * Mapper 接口
  * </p>
  *
  * @author fit2cloud
- * @since 
+ * @since
  */
 public interface BaseJobRecordResourceMappingMapper extends BaseMapper<JobRecordResourceMapping> {
 
-    List<JobRecordResourceResponse> findLastResourceJobRecord(@Param("resourceIds") List<String> resourceIds,@Param("jobTypes") List<Integer> jobTypes);
-
+    List<JobRecordResourceResponse> findLastResourceJobRecord(@Param("resourceIds") List<String> resourceIds, @Param("jobTypes") List<Integer> jobTypes);
 }

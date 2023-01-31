@@ -1,5 +1,6 @@
 package com.fit2cloud.controller;
 
+import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.fit2cloud.common.validator.annnotaion.CustomValidated;
 import com.fit2cloud.common.validator.group.ValidationGroup;
@@ -41,21 +42,19 @@ import java.util.List;
 public class ComplianceRuleController {
     @Resource
     private IComplianceRuleService complianceRuleService;
-    @Resource
-    private IComplianceInsuranceStatuteService complianceInsuranceStatuteService;
 
     @ApiOperation("分页查询合规规则")
     @GetMapping("/{currentPage}/{limit}")
-    public ResultHolder<Page<ComplianceRuleResponse>> page(@NotNull(message = "当前页不能为空")
-                                                           @Min(message = "当前页不能小于0", value = 1)
-                                                           @PathVariable("currentPage")
-                                                           Integer currentPage,
-                                                           @NotNull(message = "每页大小不能为空")
-                                                           @Min(message = "每页大小不能小于1", value = 1)
-                                                           @PathVariable("limit")
-                                                           Integer limit,
-                                                           PageComplianceRuleRequest request) {
-        Page<ComplianceRuleResponse> complianceRuleResponsePage = complianceRuleService.page(currentPage, limit, request);
+    public ResultHolder<IPage<ComplianceRuleResponse>> page(@NotNull(message = "当前页不能为空")
+                                                            @Min(message = "当前页不能小于0", value = 1)
+                                                            @PathVariable("currentPage")
+                                                            Integer currentPage,
+                                                            @NotNull(message = "每页大小不能为空")
+                                                            @Min(message = "每页大小不能小于1", value = 1)
+                                                            @PathVariable("limit")
+                                                            Integer limit,
+                                                            PageComplianceRuleRequest request) {
+        IPage<ComplianceRuleResponse> complianceRuleResponsePage = complianceRuleService.page(currentPage, limit, request);
         return ResultHolder.success(complianceRuleResponsePage);
     }
 

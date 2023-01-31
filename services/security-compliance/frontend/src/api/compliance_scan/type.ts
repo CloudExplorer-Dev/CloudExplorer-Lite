@@ -1,3 +1,5 @@
+import type { KeyValue } from "@commons/api/base/type";
+import type { CloudAccount } from "@commons/api/cloud_account/type";
 interface ScanComplianceRuleGroupResponse {
   /**
    * 规则组名称
@@ -129,10 +131,40 @@ interface ComplianceResourceRequest {
    */
   cloudAccountId?: string;
 }
+interface CloudAccountResource {
+  /**
+   * 云账号
+   */
+  cloudAccountId: string;
+
+  /**
+   * 资源类型
+   */
+  resourceType: Array<string>;
+}
+interface SyncScanResourceRequest {
+  /**
+   * 需要同步的云账号以及资源
+   */
+  cloudAccountResources: Array<CloudAccountResource>;
+}
+interface SupportCloudAccountResourceResponse {
+  /**
+   * 云账号
+   */
+  cloudAccount: CloudAccount;
+  /**
+   * 资源类型
+   */
+  resourceTypes: Array<KeyValue<string, string>>;
+}
 export type {
   ScanComplianceRuleGroupResponse,
   ComplianceScanResponse,
   ComplianceScanRequest,
   ComplianceResourceResponse,
   ComplianceResourceRequest,
+  SyncScanResourceRequest,
+  CloudAccountResource,
+  SupportCloudAccountResourceResponse,
 };

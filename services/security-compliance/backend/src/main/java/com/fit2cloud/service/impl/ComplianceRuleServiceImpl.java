@@ -1,17 +1,24 @@
 package com.fit2cloud.service.impl;
 
+import com.baomidou.mybatisplus.core.conditions.Wrapper;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.core.metadata.OrderItem;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.fit2cloud.common.exception.Fit2cloudException;
+import com.fit2cloud.common.page.PageImpl;
 import com.fit2cloud.common.provider.util.CommonUtil;
+import com.fit2cloud.common.utils.ColumnNameUtil;
 import com.fit2cloud.common.utils.SpringUtil;
 import com.fit2cloud.constants.ResourceTypeConstants;
 import com.fit2cloud.controller.request.rule.ComplianceRuleRequest;
 import com.fit2cloud.controller.request.rule.PageComplianceRuleRequest;
 import com.fit2cloud.controller.response.rule.ComplianceRuleResponse;
 import com.fit2cloud.controller.response.rule.ComplianceRuleSearchFieldResponse;
+import com.fit2cloud.dao.constants.RiskLevel;
 import com.fit2cloud.dao.entity.ComplianceInsuranceStatute;
 import com.fit2cloud.dao.entity.ComplianceRule;
 import com.fit2cloud.dao.entity.ComplianceRuleGroup;
@@ -29,6 +36,7 @@ import javax.annotation.Resource;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * <p>
@@ -76,23 +84,21 @@ public class ComplianceRuleServiceImpl extends ServiceImpl<ComplianceRuleMapper,
     }
 
     @Override
-    public Page<ComplianceRuleResponse> page(Integer currentPage, Integer limit, PageComplianceRuleRequest request) {
-        LambdaUpdateWrapper<ComplianceRule> wrapper = new LambdaUpdateWrapper<>();
-        wrapper.like(StringUtils.isNotEmpty(request.getName()), ComplianceRule::getName, request.getName());
-        Page<ComplianceRule> page = this.page(Page.of(currentPage, limit), wrapper);
-        Page<ComplianceRuleResponse> responsePage = Page.of(page.getCurrent(), page.getSize(), page.getTotal());
-        List<ComplianceRuleGroup> complianceRuleGroups = new ArrayList<>();
-        if (CollectionUtils.isNotEmpty(page.getRecords())) {
-            complianceRuleGroups.addAll(complianceRuleGroupService.list(new LambdaQueryWrapper<ComplianceRuleGroup>().in(ComplianceRuleGroup::getId, page.getRecords().stream().map(ComplianceRule::getRuleGroupId).toList())));
-        }
-        responsePage.setRecords(page.getRecords().stream().map(item -> {
-            ComplianceRuleResponse complianceRuleResponse = new ComplianceRuleResponse();
-            BeanUtils.copyProperties(item, complianceRuleResponse);
-            complianceRuleGroups.stream().filter(group -> group.getId().equals(item.getRuleGroupId())).findFirst()
-                    .ifPresent(group -> complianceRuleResponse.setRuleGroupName(group.getName()));
-            return complianceRuleResponse;
-        }).toList());
-        return responsePage;
+    public IPage<ComplianceRuleResponse> page(Integer currentPage, Integer limit, PageComplianceRuleRequest request) {
+        Page<ComplianceRuleResponse> page = PageImpl.of(currentPage, limit, ComplianceRuleResponse.class, Objects.isNull(request.getOrder()) ? new OrderItem() : request.getOrder());
+        return this.baseMapper.pageRule(page, getWrapper(request));
+    }
+
+    public Wrapper<ComplianceRule> getWrapper(PageComplianceRuleRequest request) {
+        return new QueryWrapper<ComplianceRule>()
+                .like(StringUtils.isNotEmpty(request.getName()), ColumnNameUtil.getColumnName(ComplianceRule::getName, "cr"), request.getName())
+                .eq(StringUtils.isNotEmpty(request.getPlatform()), ColumnNameUtil.getColumnName(ComplianceRule::getPlatform, "cr"), request.getPlatform())
+                .like(StringUtils.isNotEmpty(request.getDescription()), ColumnNameUtil.getColumnName(ComplianceRule::getDescription, "cr"), request.getDescription())
+                .eq(StringUtils.isNotEmpty(request.getRiskLevel()), ColumnNameUtil.getColumnName(ComplianceRule::getRiskLevel, "cr"), StringUtils.isNotEmpty(request.getRiskLevel())? RiskLevel.valueOf(request.getRiskLevel()):null)
+                .like(StringUtils.isNotEmpty(request.getRuleGroupName()), ColumnNameUtil.getColumnName(ComplianceRuleGroup::getName, "crg"), request.getRuleGroupName())
+                .eq(StringUtils.isNotEmpty(request.getResourceType()), ColumnNameUtil.getColumnName(ComplianceRule::getResourceType, "cr"), request.getResourceType())
+                .eq(StringUtils.isNotEmpty(request.getRuleGroupId()), ColumnNameUtil.getColumnName(ComplianceRule::getRuleGroupId, "cr"), request.getRuleGroupId())
+                .eq(Objects.nonNull(request.getEnable()), ColumnNameUtil.getColumnName(ComplianceRule::getEnable, "cr"), request.getEnable());
     }
 
     @Override
