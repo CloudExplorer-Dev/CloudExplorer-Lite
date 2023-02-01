@@ -394,6 +394,7 @@ public class VmCloudServerServiceImpl extends ServiceImpl<BaseVmCloudServerMappe
 
         int count = requestObj.getCount();
 
+        String sourceId = CurrentUserUtils.getUser().getCurrentSource();
         for (int i = 0; i < count; i++) {
 
             //设置index
@@ -413,7 +414,9 @@ public class VmCloudServerServiceImpl extends ServiceImpl<BaseVmCloudServerMappe
             vmCloudServer.setUpdateTime(DateUtil.getSyncTime());
             vmCloudServer.setIpArray(JsonUtil.toJSONString(tempData.getIpArray()));
             vmCloudServer.setInstanceStatus(F2CInstanceStatus.WaitCreating.name());
-
+            if (!CurrentUserUtils.isAdmin() && StringUtils.isNotBlank(sourceId)) {
+                vmCloudServer.setSourceId(sourceId);
+            }
             this.save(vmCloudServer);
 
             //执行创建
