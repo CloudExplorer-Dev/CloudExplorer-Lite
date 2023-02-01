@@ -4,7 +4,14 @@ export interface RecycleBinInfo {
   resourceType?: string;
   resourceName?: string;
   status?: string;
+  /**
+   * 资源放入回收站时间
+   */
   createTime?: string;
+  /**
+   * 资源创建时间
+   */
+  resourceCreateTime: string;
   deleteTime?: string;
   recoverTime?: string;
   userId?: string;

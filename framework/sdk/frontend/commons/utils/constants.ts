@@ -1,5 +1,5 @@
 export const ResourceTypeConst = {
-  VM: "虚拟机",
+  VM: "云主机",
   DISK: "磁盘"
 };
 

@@ -117,7 +117,7 @@ const message = {
     relate_resource: "Associated resource",
     resource_config: "Resource configuration",
     user_name: "Operator",
-    delete_time: "Delete time",
+    put_into_recycle_bin_time: "Put in the recycle bin time",
     create_time: "Creation time",
     organization_name: "Organization",
     account_name: "Cloud Account",
