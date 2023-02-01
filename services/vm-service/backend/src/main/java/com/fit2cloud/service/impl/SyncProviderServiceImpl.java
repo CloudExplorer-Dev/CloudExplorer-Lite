@@ -11,6 +11,7 @@ import com.fit2cloud.common.constants.JobStatusConstants;
 import com.fit2cloud.common.constants.JobTypeConstants;
 import com.fit2cloud.common.es.ElasticsearchProvide;
 import com.fit2cloud.common.es.constants.IndexConstants;
+import com.fit2cloud.common.log.utils.LogUtil;
 import com.fit2cloud.common.platform.credential.Credential;
 import com.fit2cloud.common.provider.entity.F2CPerfMetricMonitorData;
 import com.fit2cloud.common.utils.DateUtil;
@@ -292,7 +293,7 @@ public class SyncProviderServiceImpl extends BaseSyncService implements ISyncPro
                 proxy(cloudAccountId, regions, "同步云主机监控", ICloudProvider::getF2CPerfMetricMonitorData, this::perfMetricMonitorSaveOrUpdate, this::writeJobRecord, () -> {});
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            LogUtil.error("同步云主机监控失败:"+e.getMessage());
         }
     }
 
@@ -313,7 +314,7 @@ public class SyncProviderServiceImpl extends BaseSyncService implements ISyncPro
                         });
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            LogUtil.error("同步宿主机监控失败:"+e.getMessage());
         }
     }
 
@@ -334,7 +335,7 @@ public class SyncProviderServiceImpl extends BaseSyncService implements ISyncPro
                         });
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            LogUtil.error("同步云磁盘监控失败:"+e.getMessage());
         }
     }
 
@@ -355,7 +356,7 @@ public class SyncProviderServiceImpl extends BaseSyncService implements ISyncPro
                         });
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            LogUtil.error("同步存储器监控失败:"+e.getMessage());
         }
     }
 

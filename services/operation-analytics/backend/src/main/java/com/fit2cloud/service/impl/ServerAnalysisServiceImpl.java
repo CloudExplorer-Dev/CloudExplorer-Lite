@@ -31,7 +31,6 @@ import com.fit2cloud.service.IServerAnalysisService;
 import com.fit2cloud.utils.OperationUtils;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.beans.BeanUtils;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.elasticsearch.client.elc.ElasticsearchTemplate;
@@ -54,7 +53,7 @@ import java.util.stream.Collectors;
  * {@code @date} 2022/12/24 11:29
  **/
 @Service
-public class ServerAnalysisService implements IServerAnalysisService {
+public class ServerAnalysisServiceImpl implements IServerAnalysisService {
 
     @Resource
     private AnalyticsServerMapper analyticsServerMapper;
@@ -129,7 +128,7 @@ public class ServerAnalysisService implements IServerAnalysisService {
             List<AnalyticsServerDTO> vmList = analyticsServerMapper.list(queryWrapper);
             if (CollectionUtils.isNotEmpty(vmList)) {
                 if (CollectionUtils.isNotEmpty(request.getHostIds())) {
-                    Map<String, List<AnalyticsServerDTO>> hostGroup = vmList.stream().collect(Collectors.groupingBy(ServerAnalysisService::buildKey));
+                    Map<String, List<AnalyticsServerDTO>> hostGroup = vmList.stream().collect(Collectors.groupingBy(ServerAnalysisServiceImpl::buildKey));
                     hostGroup.keySet().forEach(hostId -> {
                         Map<String, Long> month = hostGroup.get(hostId).stream().collect(Collectors.groupingBy(AnalyticsServerDTO::getCreateMonth, Collectors.counting()));
                         month.keySet().forEach(k -> {
@@ -301,7 +300,7 @@ public class ServerAnalysisService implements IServerAnalysisService {
     private Map<String,List<BarTreeChartData>> orgSpread(ResourceAnalysisRequest request, List<BarTreeChartData> workspaceList){
         Map<String,List<BarTreeChartData>> result = new HashMap<>();
         //组织下工作空间添加标识
-        workspaceList = workspaceList.stream().peek(v->{v.setName(v.getName()+"(工作空间)");}).collect(Collectors.toList());
+        workspaceList = workspaceList.stream().peek(v-> v.setName(v.getName()+"(工作空间)")).collect(Collectors.toList());
         //工作空间按照父级ID分组
         Map<String,List<BarTreeChartData>> workspaceMap = workspaceList.stream().collect(Collectors.groupingBy(BarTreeChartData::getPId));
         //查询所有组织，初始化为chart数据
@@ -316,10 +315,7 @@ public class ServerAnalysisService implements IServerAnalysisService {
         List<BarTreeChartData> list = analyticsServerMapper.analyticsVmCloudServerByOrgWorkspace(orgWrapper);
         OperationUtils.initOrgWorkspaceAnalyticsData(orgList,list);
         //初始化子级
-        orgList.forEach(v->{
-            OperationUtils.setSelfToChildren(v);
-            OperationUtils.workspaceToOrgChildren(workspaceMap, v);
-        });
+        orgList.forEach(OperationUtils::setSelfToChildren);
         orgList.sort((o1,o2)->o2.getValue().compareTo(o1.getValue()));
         //扁平数据
         result.put("all",orgList);

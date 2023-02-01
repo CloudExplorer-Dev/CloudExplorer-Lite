@@ -64,5 +64,40 @@
                 LEFT JOIN vm_cloud_server ON org_workspace.id = vm_cloud_server.source_id
             ${ew.customSqlSegment}
     </select>
+<!--    按需按量持续开机超过day天的云主机-->
+    <select id="getVolumeContinuedRunningCloudServer" resultMap="serverResultMap">
+        SELECT
+            id
+        FROM
+            vm_cloud_server
+        WHERE
+            last_shutdown_time IS NOT NULL
+          AND instance_status = 'Running'
+          AND instance_charge_type = 'PostPaid'
+          AND now() > ADDDATE( last_shutdown_time, INTERVAL #{days} DAY )
+    </select>
 
+    <!--    包年包月持续关机超过day天的云主机-->
+    <select id="getCycleContinuedRunningCloudServer" resultMap="serverResultMap">
+        SELECT
+            id
+        FROM
+            vm_cloud_server
+        WHERE
+            last_shutdown_time IS NOT NULL
+          AND instance_status = 'Stopped'
+          AND instance_charge_type = 'PrePaid'
+          AND now() > ADDDATE( last_shutdown_time, INTERVAL #{days} DAY )
+    </select>
+    <!--    持续关机超过day天的云主机-->
+    <select id="getContinuedRunningCloudServer" resultMap="serverResultMap">
+        SELECT
+            id
+        FROM
+            vm_cloud_server
+        WHERE
+            last_shutdown_time IS NOT NULL
+          AND instance_status = 'Stopped'
+          AND now() > ADDDATE( last_shutdown_time, INTERVAL #{days} DAY )
+    </select>
 </mapper>

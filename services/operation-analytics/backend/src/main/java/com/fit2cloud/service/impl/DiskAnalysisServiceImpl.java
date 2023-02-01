@@ -15,7 +15,6 @@ import com.fit2cloud.controller.response.BarTreeChartData;
 import com.fit2cloud.controller.response.ChartData;
 import com.fit2cloud.dao.mapper.AnalyticsDiskMapper;
 import com.fit2cloud.dto.AnalyticsDiskDTO;
-import com.fit2cloud.dto.AnalyticsServerDTO;
 import com.fit2cloud.dto.KeyValue;
 import com.fit2cloud.service.IDiskAnalysisService;
 import com.fit2cloud.service.IServerAnalysisService;
@@ -37,7 +36,7 @@ import java.util.stream.Collectors;
  * @date 2022/12/24 11:29
  **/
 @Service
-public class DiskAnalysisService implements IDiskAnalysisService {
+public class DiskAnalysisServiceImpl implements IDiskAnalysisService {
 
     @Resource
     private AnalyticsDiskMapper analyticsDiskMapper;
@@ -158,7 +157,7 @@ public class DiskAnalysisService implements IDiskAnalysisService {
 
     private void orgSpread(ResourceAnalysisRequest request, List<BarTreeChartData> workspaceList, Map<String,List<BarTreeChartData>> result){
         //组织下工作空间添加标识
-        workspaceList = workspaceList.stream().peek(v->{v.setName(v.getName()+"(工作空间)");}).collect(Collectors.toList());
+        workspaceList = workspaceList.stream().peek(v-> v.setName(v.getName()+"(工作空间)")).collect(Collectors.toList());
         //工作空间按组织ID分组
         Map<String,List<BarTreeChartData>> workspaceMap = workspaceList.stream().collect(Collectors.groupingBy(BarTreeChartData::getPId));
         //查询所有组织初始化为chart数据
@@ -177,10 +176,7 @@ public class DiskAnalysisService implements IDiskAnalysisService {
         }
         OperationUtils.initOrgWorkspaceAnalyticsData(orgList, list);
         //初始化子级
-        orgList.forEach(v->{
-            OperationUtils.setSelfToChildren(v);
-            OperationUtils.workspaceToOrgChildren(workspaceMap, v);
-        });
+        orgList.forEach(OperationUtils::setSelfToChildren);
         orgList.sort((o1,o2)->o2.getValue().compareTo(o1.getValue()));
         //扁平数据
         result.put("all",orgList);

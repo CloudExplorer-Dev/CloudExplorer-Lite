@@ -2,7 +2,6 @@ package com.fit2cloud.utils;
 
 import co.elastic.clients.elasticsearch._types.aggregations.CalendarInterval;
 import com.fit2cloud.controller.response.BarTreeChartData;
-import jodd.bean.BeanUtil;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
