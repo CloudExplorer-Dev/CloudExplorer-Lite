@@ -1,5 +1,5 @@
 <template>
-  <layout-content>
+  <layout-auto-height-content>
     <template #breadcrumb>
       <breadcrumb :auto="true"></breadcrumb>
     </template>
@@ -12,7 +12,7 @@
         <compliance_rule_group></compliance_rule_group
       ></el-tab-pane>
     </el-tabs>
-  </layout-content>
+  </layout-auto-height-content>
 </template>
 <script setup lang="ts">
 import { ref, watch, onMounted } from "vue";

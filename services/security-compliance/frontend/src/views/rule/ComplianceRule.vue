@@ -17,7 +17,18 @@
       <el-table-column type="selection" />
       <el-table-column prop="name" label="规则名称" />
       <el-table-column prop="ruleGroupName" label="规则组" />
-      <el-table-column prop="platform" label="云平台">
+      <el-table-column
+        prop="platform"
+        label="云平台"
+        :column-key="'platform'"
+        :filters="
+          Object.keys(platformIcon).map((key) => ({
+            text: platformIcon[key].name,
+            value: key,
+          }))
+        "
+        :filter-multiple="false"
+      >
         <template #default="scope">
           <div style="display: flex; align-items: center">
             <el-image
@@ -28,7 +39,25 @@
           </div>
         </template>
       </el-table-column>
-      <el-table-column prop="resourceType" label="资源类型" />
+      <el-table-column
+        prop="resourceType"
+        :column-key="'resourceType'"
+        label="资源类型"
+        :filters="
+          resourceTypeList.map((resource) => ({
+            text: resource.key,
+            value: resource.value,
+          }))
+        "
+        :filter-multiple="false"
+      >
+        <template #default="scope">
+          {{
+            resourceTypeList.find((r) => r.value === scope.row.resourceType)
+              ?.key
+          }}
+        </template>
+      </el-table-column>
       <el-table-column prop="rules" label="合规判断条件" width="210px">
         <template #default="scope">
           <compliance_rule_view
@@ -38,7 +67,18 @@
           ></compliance_rule_view>
         </template>
       </el-table-column>
-      <el-table-column prop="riskLevel" label="风险等级">
+      <el-table-column
+        prop="riskLevel"
+        label="风险等级"
+        :column-key="'riskLevel'"
+        :filters="
+          riskLevelOptionList.map((level) => ({
+            text: level.key,
+            value: level.value,
+          }))
+        "
+        :filter-multiple="false"
+      >
         <template #default="scope">
           <div
             v-html="riskLevelOptionList.find((r: KeyValue<string, string>) => r.value ===
@@ -48,7 +88,16 @@
         </template>
       </el-table-column>
       <el-table-column prop="description" label="规则描述"> </el-table-column>
-      <el-table-column prop="enable" label="是否启用">
+      <el-table-column
+        prop="enable"
+        column-key="enable"
+        label="是否启用"
+        :filters="[
+          { text: '启用', value: true },
+          { text: '禁用', value: false },
+        ]"
+        :filter-multiple="false"
+      >
         <template #default="scope">
           <compliance_rule_switch
             :compliance-rule-id="scope.row.id"
@@ -212,7 +261,11 @@ const tableConfig = ref<TableConfig>({
     search: search,
     quickPlaceholder: "搜索",
     components: [],
-    searchOptions: [{ label: "规则名称", value: "name" }],
+    searchOptions: [
+      { label: "规则名称", value: "name" },
+      { label: "规则组名称", value: "ruleGroupName" },
+      { label: "规则描述", value: "description" },
+    ],
   },
   paginationConfig: new PaginationConfig(),
   tableOperations: new TableOperations([

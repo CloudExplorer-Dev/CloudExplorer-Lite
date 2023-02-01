@@ -1,6 +1,7 @@
 package com.fit2cloud.provider.impl.tencent.api;
 
 import com.fit2cloud.common.provider.exception.ReTryException;
+import com.fit2cloud.common.provider.exception.SkipPageException;
 import com.fit2cloud.common.provider.util.PageUtil;
 import com.fit2cloud.common.utils.JsonUtil;
 import com.fit2cloud.provider.impl.tencent.client.CeCosClient;
@@ -72,6 +73,7 @@ public class TencentApi {
                         return cvmClient.DescribeInstances(describeInstancesRequest);
                     } catch (Exception e) {
                         ReTryException.throwReTry(e);
+                        SkipPageException.throwSkip(e);
                         throw new RuntimeException(e);
                     }
                 },
@@ -99,6 +101,7 @@ public class TencentApi {
                         return redisClient.DescribeInstances(describeInstancesRequest);
                     } catch (Exception e) {
                         ReTryException.throwReTry(e);
+                        SkipPageException.throwSkip(e);
                         throw new RuntimeException(e);
                     }
                 },
@@ -125,6 +128,7 @@ public class TencentApi {
                         return mongodbClient.DescribeDBInstances(describeDBInstancesRequest);
                     } catch (Exception e) {
                         ReTryException.throwReTry(e);
+                        SkipPageException.throwSkip(e);
                         throw new RuntimeException(e);
                     }
                 },
@@ -153,6 +157,7 @@ public class TencentApi {
                         return cdbClient.DescribeDBInstances(describeDBInstancesRequest);
                     } catch (Exception e) {
                         ReTryException.throwReTry(e);
+                        SkipPageException.throwSkip(e);
                         throw new RuntimeException(e);
                     }
                 },
@@ -179,6 +184,7 @@ public class TencentApi {
                         return sqlServerClient.DescribeDBInstances(describeDBInstancesRequest);
                     } catch (Exception e) {
                         ReTryException.throwReTry(e);
+                        SkipPageException.throwSkip(e);
                         throw new RuntimeException(e);
                     }
                 },
@@ -205,6 +211,7 @@ public class TencentApi {
                         return postgresClient.DescribeDBInstances(describeDBInstancesRequest);
                     } catch (Exception e) {
                         ReTryException.throwReTry(e);
+                        SkipPageException.throwSkip(e);
                         throw new RuntimeException(e);
                     }
                 },
@@ -231,6 +238,7 @@ public class TencentApi {
                         return mariadbClient.DescribeDBInstances(describeDBInstancesRequest);
                     } catch (Exception e) {
                         ReTryException.throwReTry(e);
+                        SkipPageException.throwSkip(e);
                         throw new RuntimeException(e);
                     }
                 },
@@ -258,6 +266,7 @@ public class TencentApi {
                         return esClient.DescribeInstances(describeInstancesRequest);
                     } catch (Exception e) {
                         ReTryException.throwReTry(e);
+                        SkipPageException.throwSkip(e);
                         throw new RuntimeException(e);
                     }
                 },
@@ -285,6 +294,7 @@ public class TencentApi {
                         return cbsClient.DescribeDisks(describeInstancesRequest);
                     } catch (Exception e) {
                         ReTryException.throwReTry(e);
+                        SkipPageException.throwSkip(e);
                         throw new RuntimeException(e);
                     }
                 },
@@ -311,6 +321,7 @@ public class TencentApi {
                         return clbClient.DescribeLoadBalancers(describeInstancesRequest);
                     } catch (Exception e) {
                         ReTryException.throwReTry(e);
+                        SkipPageException.throwSkip(e);
                         throw new RuntimeException(e);
                     }
                 },
@@ -337,6 +348,7 @@ public class TencentApi {
                         return vpcClient.DescribeAddresses(describeInstancesRequest);
                     } catch (Exception e) {
                         ReTryException.throwReTry(e);
+                        SkipPageException.throwSkip(e);
                         throw new RuntimeException(e);
                     }
                 },
@@ -363,6 +375,7 @@ public class TencentApi {
                         return vpcClient.DescribeVpcs(describeInstancesRequest);
                     } catch (Exception e) {
                         ReTryException.throwReTry(e);
+                        SkipPageException.throwSkip(e);
                         throw new RuntimeException(e);
                     }
                 },
@@ -558,6 +571,7 @@ public class TencentApi {
                         return vpcClient.DescribeSecurityGroups(describeInstancesRequest);
                     } catch (Exception e) {
                         ReTryException.throwReTry(e);
+                        SkipPageException.throwSkip(e);
                         throw new RuntimeException(e);
                     }
                 },
@@ -592,6 +606,7 @@ public class TencentApi {
                 return vpcClient.DescribeSecurityGroupPolicies(req);
             } catch (Exception e) {
                 ReTryException.throwReTry(e);
+                SkipPageException.throwSkip(e);
                 throw new RuntimeException(e);
             }
         }, 5);

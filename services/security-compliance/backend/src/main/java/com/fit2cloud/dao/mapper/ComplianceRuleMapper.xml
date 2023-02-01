@@ -19,6 +19,21 @@
         <result column="cloud_account_name" property="cloudAccountName"/>
     </resultMap>
 
+    <resultMap id="complianceRuleResponseMap" type="com.fit2cloud.controller.response.rule.ComplianceRuleResponse">
+        <id column="id" property="id"/>
+        <result column="name" property="name"/>
+        <result column="rule_group_id" property="ruleGroupId"/>
+        <result column="platform" property="platform"/>
+        <result column="resource_type" property="resourceType"/>
+        <result column="rules" property="rules"
+                typeHandler="com.fit2cloud.dao.handler.RuleHandler"/>
+        <result column="risk_level" property="riskLevel"/>
+        <result column="description" property="description"/>
+        <result column="enable" property="enable"/>
+        <result column="create_time" property="createTime"/>
+        <result column="update_time" property="updateTime"/>
+        <result column="rule_group_name" property="ruleGroupName"/>
+    </resultMap>
     <select id="page" resultMap="CloudAccountComplianceRuleMap">
         SELECT cr.id            AS id,
                cr.NAME          AS NAME,
@@ -34,7 +49,25 @@
                ca.NAME          AS cloud_account_name,
                ca.id            AS cloud_account_id
         FROM compliance_rule cr
-        LEFT JOIN cloud_account ca ON cr.platform = ca.platform
+                 LEFT JOIN cloud_account ca ON cr.platform = ca.platform
             ${ew.customSqlSegment}
+    </select>
+    <select id="pageRule" resultMap="complianceRuleResponseMap">
+        SELECT cr.id            AS id,
+               cr.NAME          AS NAME,
+               cr.rule_group_id AS rule_group_id,
+               cr.platform      AS platform,
+               cr.resource_type AS resource_type,
+               cr.rules         AS rules,
+               cr.risk_level    AS risk_level,
+               cr.description   AS description,
+               cr.ENABLE        AS ENABLE,
+               cr.create_time   AS create_time,
+               cr.update_time   AS update_time,
+               crg.NAME         AS rule_group_name
+        FROM compliance_rule cr
+                 LEFT JOIN compliance_rule_group crg ON cr.rule_group_id = crg.id
+            ${ew.customSqlSegment}
+
     </select>
 </mapper>

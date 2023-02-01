@@ -13,36 +13,44 @@ import co.elastic.clients.elasticsearch.core.SearchResponse;
 import co.elastic.clients.elasticsearch.core.search.Hit;
 import co.elastic.clients.elasticsearch.core.search.HitsMetadata;
 import co.elastic.clients.json.JsonData;
-import co.elastic.clients.util.ObjectBuilder;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.OrderItem;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.fit2cloud.base.entity.CloudAccount;
+import com.fit2cloud.base.mapper.BaseJobRecordResourceMappingMapper;
 import com.fit2cloud.base.service.IBaseCloudAccountService;
+import com.fit2cloud.common.constants.JobTypeConstants;
 import com.fit2cloud.common.page.PageImpl;
+import com.fit2cloud.common.provider.util.CommonUtil;
 import com.fit2cloud.common.utils.ColumnNameUtil;
 import com.fit2cloud.common.utils.QueryUtil;
 import com.fit2cloud.constants.ComplianceStatus;
 import com.fit2cloud.constants.ResourceTypeConstants;
+import com.fit2cloud.constants.SyncDimensionConstants;
 import com.fit2cloud.controller.request.compliance_scan.ComplianceResourceRequest;
 import com.fit2cloud.controller.request.compliance_scan.ComplianceScanRequest;
+import com.fit2cloud.controller.response.compliance_scan.SupportCloudAccountResourceResponse;
 import com.fit2cloud.controller.response.compliance_scan.ComplianceResourceResponse;
 import com.fit2cloud.controller.response.compliance_scan.ComplianceScanResponse;
 import com.fit2cloud.controller.response.compliance_scan.ComplianceScanRuleGroupResponse;
 import com.fit2cloud.dao.constants.RiskLevel;
 import com.fit2cloud.dao.entity.ComplianceRule;
-import com.fit2cloud.dao.entity.ComplianceRuleCloudAccount;
 import com.fit2cloud.dao.entity.ComplianceRuleGroup;
 import com.fit2cloud.dao.jentity.Rule;
 import com.fit2cloud.es.entity.ResourceInstance;
+import com.fit2cloud.provider.ICloudProvider;
+import com.fit2cloud.provider.constants.ProviderConstants;
 import com.fit2cloud.provider.entity.InstanceFieldCompare;
+import com.fit2cloud.response.JobRecordResourceResponse;
 import com.fit2cloud.service.IComplianceRuleGroupService;
 import com.fit2cloud.service.IComplianceRuleService;
 import com.fit2cloud.service.IComplianceScanService;
+import com.fit2cloud.service.ISyncService;
 import jodd.util.StringUtil;
 import lombok.SneakyThrows;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.collections4.keyvalue.DefaultKeyValue;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.aop.framework.AopContext;
 import org.springframework.beans.BeanUtils;
@@ -53,7 +61,6 @@ import org.springframework.stereotype.Service;
 import javax.annotation.Resource;
 import java.util.*;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 /**
  * {@code @Author:张少虎}
@@ -71,6 +78,9 @@ public class ComplianceScanServiceImpl implements IComplianceScanService {
     private IBaseCloudAccountService cloudAccountService;
     @Resource
     private IComplianceRuleGroupService complianceRuleGroupService;
+    @Resource
+    private BaseJobRecordResourceMappingMapper jobRecordResourceMappingMapper;
+
 
     @Override
     public List<ComplianceScanResponse> list(ComplianceScanRequest request) {
@@ -180,6 +190,33 @@ public class ComplianceScanServiceImpl implements IComplianceScanService {
         ComplianceRule complianceRule = complianceRuleService.getById(complianceRuleId);
         ComplianceScanServiceImpl proxy = (ComplianceScanServiceImpl) AopContext.currentProxy();
         return proxy.updateCacheScanComplianceByRuleId(complianceRule, null);
+    }
+
+    @Override
+    public List<SupportCloudAccountResourceResponse> listSupportCloudAccountResource() {
+        List<CloudAccount> cloudAccounts = cloudAccountService.list();
+        return cloudAccounts.stream()
+                .filter(cloudAccount -> Arrays.stream(ProviderConstants.values()).anyMatch(p -> StringUtils.equals(p.name(), cloudAccount.getPlatform())))
+                .map(cloudAccount -> {
+                    Map<ResourceTypeConstants, SyncDimensionConstants> exec = CommonUtil.exec(ICloudProvider.of(cloudAccount.getPlatform()), ICloudProvider::getResourceSyncDimensionConstants);
+                    List<DefaultKeyValue<String, String>> resourceTypes = exec.keySet().stream().map(resourceTypeConstants -> new DefaultKeyValue<>(resourceTypeConstants.getMessage(), resourceTypeConstants.name())).toList();
+                    SupportCloudAccountResourceResponse cloudAccountResourceResponse = new SupportCloudAccountResourceResponse();
+                    cloudAccountResourceResponse.setCloudAccount(cloudAccount);
+                    cloudAccountResourceResponse.setResourceTypes(resourceTypes);
+                    return cloudAccountResourceResponse;
+                })
+                .toList();
+    }
+
+    @Override
+    public List<JobRecordResourceResponse> listJobRecord() {
+        List<CloudAccount> cloudAccounts = cloudAccountService.list();
+        List<String> supportResourceIds = cloudAccounts.stream()
+                .filter(cloudAccount -> Arrays.stream(ProviderConstants.values()).anyMatch(p -> StringUtils.equals(p.name(), cloudAccount.getPlatform())))
+                .map(CloudAccount::getId)
+                .toList();
+        return jobRecordResourceMappingMapper.findLastResourceJobRecord(supportResourceIds, List.of(JobTypeConstants.SECURITY_COMPLIANCE_CLOUD_ACCOUNT_SYNC_JOB.getCode()));
+
     }
 
     @CachePut(value = "compliance_scan", key = "#root.targetClass.simpleName+':compliance_scan_rule:'+#complianceRule.id+':'+#complianceRule.platform+':'+#cloudAccountId")

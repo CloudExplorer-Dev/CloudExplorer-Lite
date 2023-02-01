@@ -32,6 +32,7 @@
 
     <div class="complex-table__body">
       <fu-table
+        ref="table"
         v-bind="$attrs"
         header-cell-class-name="table-handler"
         @sort-change="sortChange"
@@ -71,7 +72,7 @@ const props = defineProps<{
   header?: string;
   tableConfig: TableConfig;
 }>();
-
+const table = ref<any>();
 const condition = ref<Conditions>({});
 
 const searchCondition = ref<Condition>({});

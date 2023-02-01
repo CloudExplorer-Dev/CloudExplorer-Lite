@@ -15,7 +15,7 @@ import java.util.Map;
  */
 @RestController
 @RequestMapping("/api/base")
-@Api("云平台资源获取")
+@Api(value = "云平台资源获取",tags = "云平台资源获取")
 public class ProviderResourceController {
 
     @PostMapping("provider/{clazz}/{method}")

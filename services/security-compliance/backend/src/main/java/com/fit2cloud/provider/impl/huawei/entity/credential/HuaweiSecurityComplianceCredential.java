@@ -44,7 +44,7 @@ public class HuaweiSecurityComplianceCredential extends HuaweiBaseCredential {
         try {
             return new BasicCredentials().withAk(getAk()).withSk(getSk());
         } catch (Exception e) {
-            SkipPageException.throwHuaweiSkip(e);
+            SkipPageException.throwSkip(e);
             throw e;
         }
     }
@@ -53,7 +53,7 @@ public class HuaweiSecurityComplianceCredential extends HuaweiBaseCredential {
         try {
             return new GlobalCredentials().withAk(getAk()).withSk(getSk());
         } catch (Exception e) {
-            SkipPageException.throwHuaweiSkip(e);
+            SkipPageException.throwSkip(e);
             throw e;
         }
     }
@@ -68,7 +68,7 @@ public class HuaweiSecurityComplianceCredential extends HuaweiBaseCredential {
         try {
             return EcsClient.newBuilder().withCredential(getAuth()).withRegion(EcsRegion.valueOf(region)).build();
         } catch (Exception e) {
-            SkipPageException.throwHuaweiSkip(e);
+            SkipPageException.throwSkip(e);
             throw e;
         }
     }
@@ -86,7 +86,7 @@ public class HuaweiSecurityComplianceCredential extends HuaweiBaseCredential {
                     .withRegion(RdsRegion.valueOf(region))
                     .build();
         } catch (Exception e) {
-            SkipPageException.throwHuaweiSkip(e);
+            SkipPageException.throwSkip(e);
             throw e;
         }
     }
@@ -104,7 +104,7 @@ public class HuaweiSecurityComplianceCredential extends HuaweiBaseCredential {
                     .withRegion(DcsRegion.valueOf(region))
                     .build();
         } catch (Exception e) {
-            SkipPageException.throwHuaweiSkip(e);
+            SkipPageException.throwSkip(e);
             throw e;
         }
     }
@@ -122,7 +122,7 @@ public class HuaweiSecurityComplianceCredential extends HuaweiBaseCredential {
                     .withRegion(DdsRegion.valueOf(region))
                     .build();
         } catch (Exception e) {
-            SkipPageException.throwHuaweiSkip(e);
+            SkipPageException.throwSkip(e);
             throw e;
         }
     }
@@ -140,7 +140,7 @@ public class HuaweiSecurityComplianceCredential extends HuaweiBaseCredential {
                     .withRegion(CssRegion.valueOf(region))
                     .build();
         } catch (Exception e) {
-            SkipPageException.throwHuaweiSkip(e);
+            SkipPageException.throwSkip(e);
             throw e;
         }
     }
@@ -159,7 +159,7 @@ public class HuaweiSecurityComplianceCredential extends HuaweiBaseCredential {
                     .withRegion(EvsRegion.valueOf(region))
                     .build();
         } catch (Exception e) {
-            SkipPageException.throwHuaweiSkip(e);
+            SkipPageException.throwSkip(e);
             throw e;
         }
     }
@@ -177,7 +177,7 @@ public class HuaweiSecurityComplianceCredential extends HuaweiBaseCredential {
                     .withRegion(ElbRegion.valueOf(region))
                     .build();
         } catch (Exception e) {
-            SkipPageException.throwHuaweiSkip(e);
+            SkipPageException.throwSkip(e);
             throw e;
         }
     }
@@ -195,7 +195,7 @@ public class HuaweiSecurityComplianceCredential extends HuaweiBaseCredential {
                     .withRegion(EipRegion.valueOf(region))
                     .build();
         } catch (Exception e) {
-            SkipPageException.throwHuaweiSkip(e);
+            SkipPageException.throwSkip(e);
             throw e;
         }
     }
@@ -213,7 +213,7 @@ public class HuaweiSecurityComplianceCredential extends HuaweiBaseCredential {
                     .withRegion(VpcRegion.valueOf(region))
                     .build();
         } catch (Exception e) {
-            SkipPageException.throwHuaweiSkip(e);
+            SkipPageException.throwSkip(e);
             throw e;
         }
     }
@@ -230,7 +230,7 @@ public class HuaweiSecurityComplianceCredential extends HuaweiBaseCredential {
                     .withRegion(IamRegion.valueOf("cn-east-2"))
                     .build();
         } catch (Exception e) {
-            SkipPageException.throwHuaweiSkip(e);
+            SkipPageException.throwSkip(e);
             throw e;
         }
     }

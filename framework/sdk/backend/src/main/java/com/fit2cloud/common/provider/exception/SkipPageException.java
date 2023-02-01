@@ -24,10 +24,10 @@ public class SkipPageException extends RuntimeException {
      * @param e 异常信息
      */
     public static void throwSkip(Exception e) {
-        if (e instanceof TeaException teaException) {
-            if (teaException.getCode().equals("InvalidOperation.NotSupportedEndpoint") || teaException.getCode().equals("InvalidRegionId.NotFound") || teaException.getCode().equals("EntityNotExist.User.LoginProfile")) {
-                throw new SkipPageException(1001, e.getMessage());
-            }
+        try {
+            UnsupportedRegionException.throwUnsupportedRegion(e);
+        } catch (UnsupportedRegionException unsupportedRegionException) {
+            throw new SkipPageException(1001, e.getMessage());
         }
     }
 
@@ -44,6 +44,7 @@ public class SkipPageException extends RuntimeException {
      * 查询监控时先查询资源再查监控数据
      * 包了一层
      * 在查询资源的时候抛出了跳出异常
+     *
      * @param e
      */
     public static void throwSkipPageException(Exception e) {

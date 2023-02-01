@@ -15,7 +15,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/workspace")
-@Api("公共工作空间相关接口")
+@Api(value = "公共工作空间相关接口",tags = "公共工作空间相关接口")
 @Validated
 public class BaseWorkspaceController {
     @Resource

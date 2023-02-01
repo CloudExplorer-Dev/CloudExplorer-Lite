@@ -22,7 +22,7 @@ import java.util.Map;
 @Validated
 @RestController
 @RequestMapping("/api/base/monitor")
-@Api("公共监控相关接口")
+@Api(value = "公共监控相关接口",tags = "公共监控相关接口")
 public class PerfMonitorQueryController {
 
     @Resource

@@ -15,7 +15,90 @@
         :class="activeResourceType === resourceType.value ? 'active' : ''"
         @click="selectResourceType(resourceType.value)"
       >
-        {{ resourceType.key }}
+        <div style="display: flex; width: 100%">
+          <div>
+            {{ resourceType.key }}
+          </div>
+          <div style="flex: auto"></div>
+          <div style="margin-right: 10px" @click.stop>
+            <el-popover placement="right" :width="800" trigger="click">
+              <template #reference>
+                <scan_job_status_icon
+                  :status="scanStatus(resourceType.value, undefined)"
+                ></scan_job_status_icon>
+              </template>
+              <el-table
+                :data="
+                  accountJobRecordList.filter(
+                    (item) => item.resourceType === resourceType.value
+                  )
+                "
+              >
+                <el-table-column property="resourceId" label="云账号">
+                  <template #default="scope">
+                    {{
+                      cloudAccountSourceList.find(
+                        (c) => c.id === scope.row.resourceId
+                      )?.name
+                    }}
+                  </template>
+                </el-table-column>
+                <el-table-column label="云平台">
+                  <template #default="scope">
+                    <div style="display: flex; align-items: center">
+                      <el-image
+                        style="margin-right: 20%; display: flex"
+                        :src="
+                          platformIcon[
+                            orElse(
+                              cloudAccountSourceList.find(
+                                (c) => c.id === scope.row.resourceId
+                              )?.platform
+                            )
+                          ].oldIcon
+                        "
+                      ></el-image>
+                      <span>{{
+                        platformIcon[
+                          orElse(
+                            cloudAccountSourceList.find(
+                              (c) => c.id === scope.row.resourceId
+                            )?.platform
+                          )
+                        ].name
+                      }}</span>
+                    </div>
+                  </template>
+                </el-table-column>
+                <el-table-column property="description" label="任务描述" />
+                <el-table-column property="status" label="任务状态">
+                  <template #default="scope">
+                    <scan_job_status_icon
+                      :status="
+                        scanStatus(resourceType.value, scope.row.resourceId)
+                      "
+                      :show-text="true"
+                    ></scan_job_status_icon>
+                  </template>
+                </el-table-column>
+                <el-table-column property="createTime" label="同步时间" />
+                <el-table-column label="详情">
+                  <template #default="scope">
+                    <ce-icon
+                      @click="openDetailsJobView(scope.row)"
+                      style="
+                        color: var(--el-color-info);
+                        cursor: pointer;
+                        font-size: 20px;
+                      "
+                      code="InfoFilled"
+                    ></ce-icon
+                  ></template>
+                </el-table-column>
+              </el-table>
+            </el-popover>
+          </div>
+        </div>
       </div>
     </div>
     <div class="right_wapper">
@@ -100,13 +183,19 @@
         <el-table-column prop="updateTime" label="最后扫描时间" sortable />
       </ce-table>
     </div>
+    <job_details_view
+      ref="jobDetailsRef"
+      :account-job-record="currentJobRow"
+    ></job_details_view>
   </div>
 </template>
 <script setup lang="ts">
 import ruleApi from "@/api/rule";
+import scan_job_status_icon from "@/views/scan/complonents/compliance_rule/ScanJobStatusIcon.vue";
+import job_details_view from "@/views/scan/complonents/compliance_rule/JobDetailsView.vue";
 import type { KeyValue } from "@commons/api/base/type";
 import type { ComplianceScanResponse } from "@/api/compliance_scan/type";
-import { onMounted, ref, watch } from "vue";
+import { onMounted, ref, watch, onBeforeUnmount } from "vue";
 import complianceScanApi from "@/api/compliance_scan";
 import { platformIcon } from "@commons/utils/platform";
 import {
@@ -116,7 +205,12 @@ import {
 } from "@commons/components/ce-table/type";
 import { useRouter } from "vue-router";
 import cloudAccountApi from "@commons/api/cloud_account";
+import type {
+  AccountJobRecord,
+  CloudAccount,
+} from "@commons/api/cloud_account/type";
 import bus from "@commons/bus";
+let jobInterval: any;
 // 路由对象
 const router = useRouter();
 onMounted(() => {
@@ -135,6 +229,7 @@ onMounted(() => {
         value: cloudAccount.id,
       })),
     ];
+    cloudAccountSourceList.value = ok.data;
   });
   // 监控合规规则组变化
   bus.on(
@@ -143,7 +238,33 @@ onMounted(() => {
       activeComplianceRuleGroupId.value = compliance_rule_group_id;
     }
   );
+  complianceScanApi.listJobRecord().then((ok) => {
+    accountJobRecordList.value = ok.data;
+  });
+  jobInterval = setInterval(() => {
+    complianceScanApi.listJobRecord().then((ok) => {
+      accountJobRecordList.value = ok.data;
+      currentJobRow.value = accountJobRecordList.value.find(
+        (item) =>
+          item.resourceType === currentJobRow.value?.resourceType &&
+          item.resourceId === currentJobRow.value?.resourceId
+      );
+    });
+  }, 3000);
 });
+/**
+ * 给指定不确定的值一个默认值
+ * @param value 将不确定的类型转换为string
+ */
+const orElse = (value?: string) => {
+  return value ? value : "";
+};
+onBeforeUnmount(() => {
+  if (jobInterval) {
+    clearInterval(jobInterval);
+  }
+});
+const accountJobRecordList = ref<Array<AccountJobRecord>>([]);
 // 列表数据
 const tableData = ref<Array<ComplianceScanResponse>>([]);
 // 选中的合规规则组id
@@ -152,10 +273,16 @@ const activeComplianceRuleGroupId = ref<string>("");
 const activeCloudAccount = ref<string>("all");
 // 云账号列表
 const cloudAccountList = ref<Array<KeyValue<string, string>>>([]);
+// 云账号原始数据列表
+const cloudAccountSourceList = ref<Array<CloudAccount>>([]);
 // 选中的资源类型
 const activeResourceType = ref<string>();
 // 资源类型列表数据
 const resourceTypes = ref<Array<KeyValue<string, string>>>([]);
+// 当前这一行任务数据
+const currentJobRow = ref<AccountJobRecord>();
+// 任务详情组件
+const jobDetailsRef = ref<InstanceType<typeof job_details_view>>();
 /**
  * 路由到详情页面
  * @param row 当前行数据
@@ -169,6 +296,36 @@ const details = (row: ComplianceScanResponse) => {
     },
   });
 };
+/**
+ * 扫描状态
+ * @param resourceType       资源类型
+ * @param cloud_acclount_id  云账号id
+ */
+const scanStatus = (resourceType: string, cloud_acclount_id?: string) => {
+  const status = accountJobRecordList.value
+    .filter((item) => {
+      if (cloud_acclount_id) {
+        return (
+          item.resourceType === resourceType &&
+          item.resourceId === cloud_acclount_id
+        );
+      } else {
+        return item.resourceType === resourceType;
+      }
+    })
+    .map((item) => item.status);
+  if (status.includes("SYNCING")) {
+    return "SYNCING";
+  }
+  if (status.includes("FAILED")) {
+    return "FAILED";
+  }
+  if (status.includes("SUCCESS")) {
+    return "SUCCESS";
+  }
+  return "INIT";
+};
+
 /**
  * 资源类型点击事件
  * @param resourceType 资源类型
@@ -207,7 +364,14 @@ watch(activeCloudAccount, () => {
 watch(activeComplianceRuleGroupId, () => {
   table.value.search(table?.value.getTableSearch());
 });
-
+/**
+ * 打开查看同步详情
+ * @param row 当前行
+ */
+const openDetailsJobView = (row: AccountJobRecord) => {
+  currentJobRow.value = row;
+  jobDetailsRef.value?.open();
+};
 /**
  * 查询列表函数
  * @param condition 查询条件

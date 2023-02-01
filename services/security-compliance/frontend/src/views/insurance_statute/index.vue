@@ -1,5 +1,5 @@
 <template>
-  <layout-content>
+  <layout-auto-height-content>
     <template #breadcrumb>
       <breadcrumb :auto="true"></breadcrumb>
     </template>
@@ -17,7 +17,7 @@
       <el-table-column prop="baseClause" label="等级保护基本要求条款" />
       <el-table-column prop="improvementProposal" label="改进建议" />
     </ce-table>
-  </layout-content>
+  </layout-auto-height-content>
 </template>
 <script setup lang="ts">
 import {

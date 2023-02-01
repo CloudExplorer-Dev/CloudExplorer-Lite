@@ -2,7 +2,9 @@ package com.fit2cloud.common.provider.exception;
 
 import com.aliyun.tea.TeaException;
 import com.aliyun.tea.TeaUnretryableException;
+import com.huaweicloud.sdk.core.exception.ConnectionException;
 import com.huaweicloud.sdk.core.exception.ServiceResponseException;
+import com.tencentcloudapi.common.exception.TencentCloudSDKException;
 import jodd.util.StringUtil;
 
 /**
@@ -38,12 +40,18 @@ public class ReTryException extends RuntimeException {
                 throw new ReTryException(1000, "重试");
             }
         }
+
     }
 
     public static void throwHuaweiReTry(Exception e) {
         // 弹性云服务器	Common.0024	exceeds flow over limit	请求流控	请求并发过高，请稍后重试。
         if (e instanceof ServiceResponseException serviceResponseException) {
             if (serviceResponseException.getErrorCode().equals("Common.0024")) {
+                throw new ReTryException(1000, "重试");
+            }
+        }
+        if (e instanceof ConnectionException connectionException) {
+            if (connectionException.getMessage().equals("DefaultHttpClient ConnectionException")) {
                 throw new ReTryException(1000, "重试");
             }
         }

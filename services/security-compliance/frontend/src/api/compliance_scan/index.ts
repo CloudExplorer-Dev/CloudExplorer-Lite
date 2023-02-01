@@ -7,8 +7,10 @@ import type {
   ComplianceScanRequest,
   ComplianceScanResponse,
   ComplianceResourceResponse,
+  SyncScanResourceRequest,
+  SupportCloudAccountResourceResponse,
 } from "@/api/compliance_scan/type";
-import type { SingleOrRange } from "element-plus";
+import type { AccountJobRecord } from "@commons/api/cloud_account/type";
 
 /**
  * 获取扫描合规规则数据
@@ -99,9 +101,52 @@ const pageResource: (
     loading
   );
 };
+
+/**
+ * 同步扫描资源
+ * @param syncScanResource 同步扫描请求对象
+ * @param loading         加载器
+ * @returns 是否发送同步请求
+ */
+const syncScan: (
+  syncScanResource: SyncScanResourceRequest,
+  loading?: Ref<boolean>
+) => Promise<Result<boolean>> = (syncScanResource, loading) => {
+  return post(
+    "/api/compliance_scan/sync_scan",
+    undefined,
+    syncScanResource,
+    loading
+  );
+};
+/**
+ *
+ * @returns 获取支持的云账号以及云账号支持的资源
+ */
+const listSupportCloudAccountResource: (
+  loading?: Ref<boolean>
+) => Promise<Result<Array<SupportCloudAccountResourceResponse>>> = (
+  loading
+) => {
+  return get("/api/compliance_scan/support_cloud_account", undefined, loading);
+};
+
+/**
+ * 获取任务记录
+ * @param loading 加载器
+ * @returns 任务记录
+ */
+const listJobRecord: (
+  loading?: Ref<boolean>
+) => Promise<Result<Array<AccountJobRecord>>> = (loading) => {
+  return get("/api/compliance_scan/job_record", undefined, loading);
+};
 export default {
   getScanComplianceRuleGroup,
   listScanComplianceRule,
   pageScanComplianceRule,
   pageResource,
+  syncScan,
+  listSupportCloudAccountResource,
+  listJobRecord,
 };
