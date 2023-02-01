@@ -78,13 +78,13 @@ public class BaseWorkspaceServiceImpl extends ServiceImpl<BaseWorkspaceMapper, W
             }
         });
 
-        return buildTree(trees);
+        return buildTree(trees, organizations);
     }
 
-    private List<NodeTree> buildTree(List<NodeTree> lists) {
+    private List<NodeTree> buildTree(List<NodeTree> lists, List<Organization> organizations) {
         List<NodeTree> rootNodes = new ArrayList<>();
         lists.forEach(node -> {
-            if (isParent(node.getPid())) {
+            if (isParent(node.getPid(), organizations)) {
                 rootNodes.add(node);
             }
             lists.forEach(tNode -> {
@@ -99,8 +99,8 @@ public class BaseWorkspaceServiceImpl extends ServiceImpl<BaseWorkspaceMapper, W
         return rootNodes;
     }
 
-    private Boolean isParent(String pid) {
-        return StringUtils.isEmpty(pid);
+    private Boolean isParent(String pid, List<Organization> organizations) {
+        return StringUtils.isEmpty(pid) || !organizations.stream().map(Organization::getId).collect(Collectors.toList()).contains(pid);
     }
 
     private void getWorkspacesOrg(String orgId, List<String> effectiveOrgIds, Map<String, String> organizationIdMap) {
