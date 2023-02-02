@@ -130,6 +130,8 @@ public class MenuConstants {
                             .name("server_catalog")
                             .title("选择云账号")
                             .path("/catalog")
+                            .quickAccess(true)
+                            .quickAccessName("创建云主机")
                             .componentPath("/src/views/vm_cloud_server/create/catalog.vue")
                             .requiredPermission(new MenuPermission.Builder()
                                     .role(RoleConstants.ROLE.ADMIN)

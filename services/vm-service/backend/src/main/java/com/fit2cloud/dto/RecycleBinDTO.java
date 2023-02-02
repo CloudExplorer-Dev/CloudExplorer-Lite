@@ -22,6 +22,8 @@ public class RecycleBinDTO extends RecycleBin {
     private String ipArray;
     @ApiModelProperty("关联资源")
     private String relateResource;
+    @ApiModelProperty("资源创建时间")
+    private String resourceCreateTime;
     @ApiModelProperty("是否随实例删除")
     private String deleteWithInstance;
     @ApiModelProperty("账号ID")

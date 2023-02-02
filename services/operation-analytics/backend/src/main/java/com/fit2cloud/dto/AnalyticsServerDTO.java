@@ -40,4 +40,12 @@ public class AnalyticsServerDTO extends VmCloudServer {
 
     private BigDecimal diskAverage;
 
+    @ApiModelProperty("优化建议")
+    private String optimizeSuggest;
+
+    @ApiModelProperty("优化建议类型")
+    private String optimizeSuggestCode;
+    @ApiModelProperty("建议原因")
+    private String content;
+
 }

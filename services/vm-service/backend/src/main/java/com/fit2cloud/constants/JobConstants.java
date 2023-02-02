@@ -42,6 +42,11 @@ public class JobConstants implements JobSettingConfig.JobConfig {
     private static final String SYNC_DATASTORE = "SYNC_DATASTORE";
 
     /**
+     * 同步性能监控数据
+     */
+    private static final String SYNC_PERF_METRIC_MONITOR = "SYNC_PERF_METRIC_MONITOR";
+
+    /**
      * 同步云主机性能监控数据
      */
     private static final String SYNC_VIRTUAL_MACHINE_PERF_METRIC_MONITOR = "SYNC_VIRTUAL_MACHINE_PERF_METRIC_MONITOR";
@@ -75,13 +80,16 @@ public class JobConstants implements JobSettingConfig.JobConfig {
         // 同步存储器
         JobSetting syncDatastore = new JobSetting(CloudAccountSyncJob.SyncDatastoreJob.class, SYNC_DATASTORE, com.fit2cloud.common.constants.JobConstants.Group.CLOUD_ACCOUNT_RESOURCE_SYNC_GROUP.name(), "同步存储器", null, p -> p.equals(PlatformConstants.fit2cloud_vsphere_platform.name()) || p.equals(PlatformConstants.fit2cloud_openstack_platform.name()));
         // 同步云主机监控数据
-        JobSetting syncVmPerfMetricMonitor = new JobSetting(CloudAccountSyncJob.SyncCloudServerPerfMetricMonitor.class, SYNC_VIRTUAL_MACHINE_PERF_METRIC_MONITOR, com.fit2cloud.common.constants.JobConstants.Group.CLOUD_ACCOUNT_RESOURCE_SYNC_GROUP.name(), "同步云主机监控数据", null, p -> true);
+
+        JobSetting syncVmPerfMetricMonitor = new JobSetting(CloudAccountSyncJob.SyncCloudServerPerfMetricMonitor.class, SYNC_VIRTUAL_MACHINE_PERF_METRIC_MONITOR, com.fit2cloud.common.constants.JobConstants.Group.CLOUD_ACCOUNT_RESOURCE_SYNC_GROUP.name(), "同步云主机监控", null, p -> true);
         // 同步宿主机监控数据
-        JobSetting syncHostPerfMetricMonitor = new JobSetting(CloudAccountSyncJob.SyncCloudHostPerfMetricMonitor.class, SYNC_HOST_PERF_METRIC_MONITOR, com.fit2cloud.common.constants.JobConstants.Group.CLOUD_ACCOUNT_RESOURCE_SYNC_GROUP.name(), "同步宿主机监控数据", null, p -> p.equals(PlatformConstants.fit2cloud_vsphere_platform.name()) || p.equals(PlatformConstants.fit2cloud_openstack_platform.name()));
+        JobSetting syncHostPerfMetricMonitor = new JobSetting(CloudAccountSyncJob.SyncCloudHostPerfMetricMonitor.class, SYNC_HOST_PERF_METRIC_MONITOR, com.fit2cloud.common.constants.JobConstants.Group.CLOUD_ACCOUNT_RESOURCE_SYNC_GROUP.name(), "同步宿主机监控", null, p -> p.equals(PlatformConstants.fit2cloud_vsphere_platform.name()) || p.equals(PlatformConstants.fit2cloud_openstack_platform.name()));
         // 同步云磁盘监控数据
-        JobSetting syncDiskPerfMetricMonitor = new JobSetting(CloudAccountSyncJob.SyncCloudDiskPerfMetricMonitor.class, SYNC_DISK_PERF_METRIC_MONITOR, com.fit2cloud.common.constants.JobConstants.Group.CLOUD_ACCOUNT_RESOURCE_SYNC_GROUP.name(), "同步云磁盘监控数据", null, p -> !p.equals(PlatformConstants.fit2cloud_openstack_platform.name()));
+        JobSetting syncDiskPerfMetricMonitor = new JobSetting(CloudAccountSyncJob.SyncCloudDiskPerfMetricMonitor.class, SYNC_DISK_PERF_METRIC_MONITOR, com.fit2cloud.common.constants.JobConstants.Group.CLOUD_ACCOUNT_RESOURCE_SYNC_GROUP.name(), "同步云磁盘监控", null, p -> !p.equals(PlatformConstants.fit2cloud_openstack_platform.name()));
         // 同步存储器监控数据
-        JobSetting syncDatastorePerfMetricMonitor = new JobSetting(CloudAccountSyncJob.SyncCloudDatastorePerfMetricMonitor.class, SYNC_DATASTORE_PERF_METRIC_MONITOR, com.fit2cloud.common.constants.JobConstants.Group.CLOUD_ACCOUNT_RESOURCE_SYNC_GROUP.name(), "同步存储器监控数据", null, p -> p.equals(PlatformConstants.fit2cloud_vsphere_platform.name()) || p.equals(PlatformConstants.fit2cloud_openstack_platform.name()));
+        JobSetting syncDatastorePerfMetricMonitor = new JobSetting(CloudAccountSyncJob.SyncCloudDatastorePerfMetricMonitor.class, SYNC_DATASTORE_PERF_METRIC_MONITOR, com.fit2cloud.common.constants.JobConstants.Group.CLOUD_ACCOUNT_RESOURCE_SYNC_GROUP.name(), "同步存储器监控", null, p -> p.equals(PlatformConstants.fit2cloud_vsphere_platform.name()) || p.equals(PlatformConstants.fit2cloud_openstack_platform.name()));
+        // 同步监控数据
+        //JobInitSettingDto syncResourcePerfMetricMonitor = new JobInitSettingDto(CloudAccountSyncMonitorJob.class, SYNC_PERF_METRIC_MONITOR, com.fit2cloud.common.constants.JobConstants.Group.SYSTEM_GROUP.name(), "同步云监控数据", null, s -> false, 10, DateBuilder.IntervalUnit.MINUTE);
         return List.of(syncDisk, syncVirtual, syncImage, syncHost, syncDatastore, syncVmPerfMetricMonitor, syncHostPerfMetricMonitor, syncDiskPerfMetricMonitor, syncDatastorePerfMetricMonitor);
     }
 }

@@ -337,8 +337,7 @@ public class VmCloudServerServiceImpl extends ServiceImpl<BaseVmCloudServerMappe
                         vmCloudServer.setInstanceStatus(afterStatus);
                         jobRecord.setStatus(JobStatusConstants.SUCCESS);
                         switch (operateType) {
-                            case CLOUD_SERVER_STOP_JOB -> vmCloudServer.setLastShutdownTime(DateUtil.getSyncTime());
-                            case CLOUD_SERVER_START_JOB -> vmCloudServer.setLastShutdownTime(null);
+                            case CLOUD_SERVER_STOP_JOB, CLOUD_SERVER_START_JOB -> vmCloudServer.setLastShutdownTime(DateUtil.getSyncTime());
                             case CLOUD_SERVER_RECYCLE_JOB ->
                                     recycleService.insertRecycleRecord(vmId, ResourceTypeConstants.VM);
                             case CLOUD_SERVER_DELETE_JOB ->
@@ -394,6 +393,7 @@ public class VmCloudServerServiceImpl extends ServiceImpl<BaseVmCloudServerMappe
 
         int count = requestObj.getCount();
 
+        String sourceId = CurrentUserUtils.getUser().getCurrentSource();
         for (int i = 0; i < count; i++) {
 
             //设置index
@@ -413,7 +413,9 @@ public class VmCloudServerServiceImpl extends ServiceImpl<BaseVmCloudServerMappe
             vmCloudServer.setUpdateTime(DateUtil.getSyncTime());
             vmCloudServer.setIpArray(JsonUtil.toJSONString(tempData.getIpArray()));
             vmCloudServer.setInstanceStatus(F2CInstanceStatus.WaitCreating.name());
-
+            if (!CurrentUserUtils.isAdmin() && StringUtils.isNotBlank(sourceId)) {
+                vmCloudServer.setSourceId(sourceId);
+            }
             this.save(vmCloudServer);
 
             //执行创建

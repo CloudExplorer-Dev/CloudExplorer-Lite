@@ -36,6 +36,11 @@ public class Menu extends CeBaseObject {
     private String redirect;
 
     @Getter
+    private boolean quickAccess;
+    @Getter
+    private String quickAccessName;
+
+    @Getter
     private List<MenuPermission> requiredPermissions;
 
     @Getter
@@ -148,6 +153,15 @@ public class Menu extends CeBaseObject {
 
         public Builder redirect(String redirect) {
             this.menu.redirect = redirect;
+            return this;
+        }
+
+        public Builder quickAccess(boolean quickAccess) {
+            this.menu.quickAccess = quickAccess;
+            return this;
+        }
+        public Builder quickAccessName(String quickAccessName) {
+            this.menu.quickAccessName = quickAccessName;
             return this;
         }
 

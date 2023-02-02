@@ -1,6 +1,6 @@
 import { get } from "@commons/request";
 import type Result from "@commons/request/Result";
-import type { ResourceAnalysisRequest } from "./type";
+import type { ResourceAnalysisRequest } from "@commons/api/resource_spread_view/type";
 import type { Ref } from "vue";
 
 /**

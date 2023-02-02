@@ -4,14 +4,12 @@ import RecycleBinsApi from "@/api/recycle_bin";
 import _ from "lodash";
 import type { RecycleBinInfo } from "@/api/recycle_bin/type";
 import { ResourceTypeConst } from "@commons/utils/constants";
-import { useRouter } from "vue-router";
 import {
   PaginationConfig,
   TableConfig,
   TableSearch,
 } from "@commons/components/ce-table/type";
 import { useI18n } from "vue-i18n";
-import ManageInfo from "@/views/vm_cloud_image/ManageInfo.vue";
 import ButtonToolBar from "@commons/components/button-tool-bar/ButtonToolBar.vue";
 import { ButtonAction } from "@commons/components/button-tool-bar/type";
 import { usePermissionStore } from "@commons/stores/modules/permission";
@@ -19,24 +17,10 @@ import { ElMessage, ElMessageBox } from "element-plus";
 const permissionStore = usePermissionStore();
 
 const { t } = useI18n();
-const useRoute = useRouter();
 const columns = ref([]);
 const tableData = ref<Array<RecycleBinInfo>>();
 const table = ref();
 const selectedRowData = ref<Array<RecycleBinInfo>>([]);
-
-/**
- * 打开管理信息
- */
-const manageInfoRef = ref();
-const showDetail = (row: RecycleBinInfo) => {
-  useRoute.push({
-    path: useRoute.currentRoute.value.path.replace(
-      "/list",
-      `/detail/${row.id}`
-    ),
-  });
-};
 
 /**
  * 查询
@@ -260,11 +244,6 @@ const refresh = () => {
       column-key="resourceName"
       :label="t('recycle_bin.resource_name')"
     >
-      <template #default="scope">
-        <span @click="showDetail(scope.row)" class="name-span-class">
-          {{ scope.row.resourceName }}
-        </span>
-      </template>
     </el-table-column>
     <el-table-column
       prop="resourceType"
@@ -360,11 +339,11 @@ const refresh = () => {
       :label="t('recycle_bin.user_name')"
     ></el-table-column>
     <el-table-column
-      prop="deleteTime"
-      :label="t('recycle_bin.delete_time')"
+      prop="createTime"
+      :label="t('recycle_bin.put_into_recycle_bin_time')"
     ></el-table-column>
     <el-table-column
-      prop="createTime"
+      prop="resourceCreateTime"
       :label="t('recycle_bin.create_time')"
     ></el-table-column>
     <fu-table-operations
@@ -373,7 +352,6 @@ const refresh = () => {
       fix
     />
   </ce-table>
-  <ManageInfo ref="manageInfoRef"></ManageInfo>
 </template>
 <style lang="scss" scoped>
 .text-overflow {

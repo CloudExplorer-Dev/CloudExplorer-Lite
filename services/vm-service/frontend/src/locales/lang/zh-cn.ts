@@ -110,7 +110,7 @@ const message = {
     relate_resource: "关联资源",
     resource_config: "资源配置",
     user_name: "操作人",
-    delete_time: "删除时间",
+    put_into_recycle_bin_time: "放入回收站时间",
     create_time: "创建时间",
     organization_name: "组织",
     account_name: "云账号",

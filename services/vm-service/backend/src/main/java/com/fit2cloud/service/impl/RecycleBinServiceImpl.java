@@ -63,8 +63,8 @@ public class RecycleBinServiceImpl extends ServiceImpl<BaseRecycleBinMapper, Rec
     @Override
     public boolean batchDeleteResource(BatchRecycleRequest request) {
         List<String> recycleIds = request.getRecycleIds();
-        if (CollectionUtils.isNotEmpty(recycleIds)) {
-            throw new RuntimeException("批量回收ID不能为空");
+        if (CollectionUtils.isEmpty(recycleIds)) {
+            throw new RuntimeException("Batch recycle ID can not be empty! ");
         }
         for (String recycleId : recycleIds) {
             this.deleteResource(recycleId);
@@ -75,7 +75,7 @@ public class RecycleBinServiceImpl extends ServiceImpl<BaseRecycleBinMapper, Rec
     @Override
     public boolean deleteResource(String recycleId) {
         if (StringUtils.isEmpty(recycleId)) {
-            throw new RuntimeException("回收ID不能为空");
+            throw new RuntimeException("Recycle ID can not be empty!");
         }
         RecycleBin recycleBin = baseMapper.selectById(recycleId);
         if (recycleBin != null && StringUtils.isNotEmpty(recycleBin.getResourceId())) {
@@ -99,7 +99,7 @@ public class RecycleBinServiceImpl extends ServiceImpl<BaseRecycleBinMapper, Rec
     @Override
     public boolean batchRecoverResource(BatchRecycleRequest request) {
         if (CollectionUtils.isEmpty(request.getRecycleIds())) {
-            throw new RuntimeException("批量恢复资源ID不能为空");
+            throw new RuntimeException("Batch recover ID can not be empty!");
         }
         for (String recycleId : request.getRecycleIds()) {
             baseRecycleService.updateRecycleRecordOnRecover(recycleId);
@@ -110,7 +110,7 @@ public class RecycleBinServiceImpl extends ServiceImpl<BaseRecycleBinMapper, Rec
     @Override
     public boolean recoverResource(String recycleId) {
         if (StringUtils.isEmpty(recycleId)) {
-            throw new RuntimeException("回收ID不能为空");
+            throw new RuntimeException("Recover ID can not be empty!");
         }
         return baseRecycleService.updateRecycleRecordOnRecover(recycleId);
     }

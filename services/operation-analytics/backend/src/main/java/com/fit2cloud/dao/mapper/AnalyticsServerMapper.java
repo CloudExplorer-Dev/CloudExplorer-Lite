@@ -50,5 +50,23 @@ public interface AnalyticsServerMapper extends BaseMapper<AnalyticsServerDTO> {
 
     List<BarTreeChartData> analyticsVmCloudServerByOrgWorkspace(@Param("ew") Wrapper queryWrapper);
 
+    /**
+     * 按需按量持续开机超过day天的云主机
+     * @param days 天数
+     */
+    List<AnalyticsServerDTO> getVolumeContinuedRunningCloudServer(@Param("days") Long days);
+
+    /**
+     * 包年包月持续关机超过day天的云主机
+     * @param days 天数
+     */
+    List<AnalyticsServerDTO> getCycleContinuedRunningCloudServer(@Param("days") Long days);
+
+    /**
+     * 持续关机超过day天的云主机
+     * @param days 天数
+     */
+    List<AnalyticsServerDTO> getContinuedRunningCloudServer(@Param("days") Long days);
+
 
 }

@@ -69,6 +69,16 @@ interface Menu extends MenuItem {
    *子菜单路由 属于当前路由的字路由
    */
   childOperations?: Array<Menu>;
+  /**
+   * 首页快捷访问
+   */
+  quickAccess?: boolean;
+  /**
+   * 首页快捷访问名称
+   */
+  quickAccessName?: string;
+
+  parentTitle?: string;
 }
 
 /**
