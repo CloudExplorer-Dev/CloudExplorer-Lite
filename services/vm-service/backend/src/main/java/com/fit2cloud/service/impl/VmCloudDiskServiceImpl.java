@@ -506,6 +506,9 @@ public class VmCloudDiskServiceImpl extends ServiceImpl<BaseVmCloudDiskMapper, V
         vmCloudDisk.setDevice(result.getDevice());
         vmCloudDisk.setDatastoreId(result.getDatastoreUniqueId());
         vmCloudDisk.setDiskChargeType(result.getDiskChargeType());
+        if (StringUtils.isEmpty(vmCloudDisk.getDeleteWithInstance())) {
+            vmCloudDisk.setDeleteWithInstance(result.getDeleteWithInstance());
+        }
         baseMapper.insert(vmCloudDisk);
     }
 
