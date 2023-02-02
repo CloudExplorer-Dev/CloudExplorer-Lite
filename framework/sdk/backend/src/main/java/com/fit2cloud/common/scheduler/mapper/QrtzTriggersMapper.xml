@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.fit2cloud.common.scheduler.mapper.QuzrtzMapper">
-    <resultMap id="BaseResultMap" type="com.fit2cloud.common.scheduler.entity.QuzrtzJobDetail">
-        <result column="sched_name" property="schedName"/>
+    <resultMap id="BaseResultMap" type="com.fit2cloud.common.scheduler.entity.QuartzJobDetail">
+        <result column="scheduler_name" property="schedulerName"/>
         <result column="trigger_name" property="triggerName"/>
         <result column="trigger_group" property="triggerGroup"/>
         <result column="job_name" property="jobName"/>
@@ -19,7 +19,7 @@
         <result column="trigger_job_data" property="triggerJobData"
                 typeHandler="com.fit2cloud.common.scheduler.handler.ByteTypeHandler"/>
         <result column="is_durable" property="isDurable"/>
-        <result column="is_nonconcurrent" property="isNonconcurrent"/>
+        <result column="is_non_concurrent" property="isNonConcurrent"/>
         <result column="requests_recovery" property="requestsRecovery"/>
         <result column="job_details_job_data" property="jobDetailsJobData"
                 typeHandler="com.fit2cloud.common.scheduler.handler.ByteTypeHandler"/>
@@ -30,10 +30,10 @@
         <result column="repeat_count" property="repeatCount"/>
         <result column="misfire_instruction" property="misfireInstruction"/>
         <result column="cron_time_zone" property="cronTimeZone"/>
-        <result column="cron_expressopn" property="cronExpressopn"/>
+        <result column="cron_expression" property="cronExpression"/>
     </resultMap>
     <select id="list" resultMap="BaseResultMap">
-        SELECT qt.SCHED_NAME as sched_name,
+        SELECT qt.SCHED_NAME as scheduler_name,
         qt.TRIGGER_NAME as trigger_name,
         qt.TRIGGER_GROUP as trigger_group,
         qt.JOB_NAME as job_name,
@@ -50,7 +50,7 @@
         qt.JOB_DATA as trigger_job_data,
         qjd.JOB_CLASS_NAME as job_class_name,
         qjd.IS_DURABLE as is_durable,
-        qjd.IS_NONCONCURRENT as is_nonconcurrent,
+        qjd.IS_NONCONCURRENT as is_non_concurrent ,
         qjd.IS_UPDATE_DATA as is_update_data,
         qjd.REQUESTS_RECOVERY as requests_recovery,
         qjd.JOB_DATA as job_details_job_data,
@@ -61,7 +61,7 @@
         qst.LONG_PROP_1 as repeat_count,
         qst.LONG_PROP_2 as misfire_instruction,
         qct.TIME_ZONE_ID as cron_time_zone,
-        qct.CRON_EXPRESSION as cron_expressopn
+        qct.CRON_EXPRESSION as cron_expression
         FROM qrtz_triggers qt
         LEFT JOIN qrtz_job_details qjd ON qt.SCHED_NAME = qjd.SCHED_NAME
         AND qt.JOB_NAME = qjd.JOB_NAME AND qt.JOB_GROUP = qjd.JOB_GROUP

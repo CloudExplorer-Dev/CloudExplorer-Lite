@@ -26,6 +26,10 @@ public enum JobConstants {
          */
         CLOUD_ACCOUNT_BILL_SYNC_GROUP,
         /**
+         * 合规规则扫描分组
+         */
+        CLOUD_COMPLIANCE_RESOURCE_SYNC_GROUP,
+        /**
          * 系统定时任务
          */
         SYSTEM_GROUP;

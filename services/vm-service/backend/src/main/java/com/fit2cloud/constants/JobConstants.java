@@ -2,8 +2,8 @@ package com.fit2cloud.constants;
 
 import com.fit2cloud.autoconfigure.JobSettingConfig;
 import com.fit2cloud.common.constants.PlatformConstants;
-import com.fit2cloud.dto.job.JobInitSettingDto;
-import com.fit2cloud.dto.job.JobSettingParent;
+import com.fit2cloud.common.scheduler.util.CronUtils;
+import com.fit2cloud.dto.job.JobSetting;
 import com.fit2cloud.quartz.CloudAccountSyncJob;
 
 import java.util.List;
@@ -63,25 +63,25 @@ public class JobConstants implements JobSettingConfig.JobConfig {
 
 
     @Override
-    public List<JobSettingParent> listJobInitSetting() {
+    public List<JobSetting> listJobInitSetting() {
         // 同步虚拟机
-        JobInitSettingDto syncVirtual = new JobInitSettingDto(CloudAccountSyncJob.SyncVirtualMachineJob.class, SYNC_VIRTUAL_MACHINE, com.fit2cloud.common.constants.JobConstants.Group.CLOUD_ACCOUNT_RESOURCE_SYNC_GROUP.name(), "同步云主机", null, p -> true);
+        JobSetting syncVirtual = new JobSetting(CloudAccountSyncJob.SyncVirtualMachineJob.class, SYNC_VIRTUAL_MACHINE, com.fit2cloud.common.constants.JobConstants.Group.CLOUD_ACCOUNT_RESOURCE_SYNC_GROUP.name(), "同步云主机", null, p -> true);
         // 同步磁盘
-        JobInitSettingDto syncDisk = new JobInitSettingDto(CloudAccountSyncJob.SyncDiskJob.class, SYNC_DISK, com.fit2cloud.common.constants.JobConstants.Group.CLOUD_ACCOUNT_RESOURCE_SYNC_GROUP.name(), "同步磁盘", null, p -> true);
+        JobSetting syncDisk = new JobSetting(CloudAccountSyncJob.SyncDiskJob.class, SYNC_DISK, com.fit2cloud.common.constants.JobConstants.Group.CLOUD_ACCOUNT_RESOURCE_SYNC_GROUP.name(), "同步磁盘", null, p -> true);
         // 同步镜像
-        JobInitSettingDto syncImage = new JobInitSettingDto(CloudAccountSyncJob.SyncImageJob.class, SYNC_IMAGE, com.fit2cloud.common.constants.JobConstants.Group.CLOUD_ACCOUNT_RESOURCE_SYNC_GROUP.name(), "同步镜像", null, p -> true);
+        JobSetting syncImage = new JobSetting(CloudAccountSyncJob.SyncImageJob.class, SYNC_IMAGE, com.fit2cloud.common.constants.JobConstants.Group.CLOUD_ACCOUNT_RESOURCE_SYNC_GROUP.name(), "同步镜像", null, p -> true);
         // 同步宿主机
-        JobInitSettingDto syncHost = new JobInitSettingDto(CloudAccountSyncJob.SyncHostJob.class, SYNC_HOST, com.fit2cloud.common.constants.JobConstants.Group.CLOUD_ACCOUNT_RESOURCE_SYNC_GROUP.name(), "同步宿主机", null, p -> p.equals(PlatformConstants.fit2cloud_vsphere_platform.name()) || p.equals(PlatformConstants.fit2cloud_openstack_platform.name()));
+        JobSetting syncHost = new JobSetting(CloudAccountSyncJob.SyncHostJob.class, SYNC_HOST, com.fit2cloud.common.constants.JobConstants.Group.CLOUD_ACCOUNT_RESOURCE_SYNC_GROUP.name(), "同步宿主机", null, p -> p.equals(PlatformConstants.fit2cloud_vsphere_platform.name()) || p.equals(PlatformConstants.fit2cloud_openstack_platform.name()));
         // 同步存储器
-        JobInitSettingDto syncDatastore = new JobInitSettingDto(CloudAccountSyncJob.SyncDatastoreJob.class, SYNC_DATASTORE, com.fit2cloud.common.constants.JobConstants.Group.CLOUD_ACCOUNT_RESOURCE_SYNC_GROUP.name(), "同步存储器", null, p -> p.equals(PlatformConstants.fit2cloud_vsphere_platform.name()) || p.equals(PlatformConstants.fit2cloud_openstack_platform.name()));
+        JobSetting syncDatastore = new JobSetting(CloudAccountSyncJob.SyncDatastoreJob.class, SYNC_DATASTORE, com.fit2cloud.common.constants.JobConstants.Group.CLOUD_ACCOUNT_RESOURCE_SYNC_GROUP.name(), "同步存储器", null, p -> p.equals(PlatformConstants.fit2cloud_vsphere_platform.name()) || p.equals(PlatformConstants.fit2cloud_openstack_platform.name()));
         // 同步云主机监控数据
-        JobInitSettingDto syncVmPerfMetricMonitor = new JobInitSettingDto(CloudAccountSyncJob.SyncCloudServerPerfMetricMonitor.class, SYNC_VIRTUAL_MACHINE_PERF_METRIC_MONITOR, com.fit2cloud.common.constants.JobConstants.Group.CLOUD_ACCOUNT_RESOURCE_SYNC_GROUP.name(), "同步云主机监控数据", null, p -> true);
+        JobSetting syncVmPerfMetricMonitor = new JobSetting(CloudAccountSyncJob.SyncCloudServerPerfMetricMonitor.class, SYNC_VIRTUAL_MACHINE_PERF_METRIC_MONITOR, com.fit2cloud.common.constants.JobConstants.Group.CLOUD_ACCOUNT_RESOURCE_SYNC_GROUP.name(), "同步云主机监控数据", null, p -> true);
         // 同步宿主机监控数据
-        JobInitSettingDto syncHostPerfMetricMonitor = new JobInitSettingDto(CloudAccountSyncJob.SyncCloudHostPerfMetricMonitor.class, SYNC_HOST_PERF_METRIC_MONITOR, com.fit2cloud.common.constants.JobConstants.Group.CLOUD_ACCOUNT_RESOURCE_SYNC_GROUP.name(), "同步宿主机监控数据", null, p -> p.equals(PlatformConstants.fit2cloud_vsphere_platform.name()) || p.equals(PlatformConstants.fit2cloud_openstack_platform.name()));
+        JobSetting syncHostPerfMetricMonitor = new JobSetting(CloudAccountSyncJob.SyncCloudHostPerfMetricMonitor.class, SYNC_HOST_PERF_METRIC_MONITOR, com.fit2cloud.common.constants.JobConstants.Group.CLOUD_ACCOUNT_RESOURCE_SYNC_GROUP.name(), "同步宿主机监控数据", null, p -> p.equals(PlatformConstants.fit2cloud_vsphere_platform.name()) || p.equals(PlatformConstants.fit2cloud_openstack_platform.name()));
         // 同步云磁盘监控数据
-        JobInitSettingDto syncDiskPerfMetricMonitor = new JobInitSettingDto(CloudAccountSyncJob.SyncCloudDiskPerfMetricMonitor.class, SYNC_DISK_PERF_METRIC_MONITOR, com.fit2cloud.common.constants.JobConstants.Group.CLOUD_ACCOUNT_RESOURCE_SYNC_GROUP.name(), "同步云磁盘监控数据", null, p -> !p.equals(PlatformConstants.fit2cloud_openstack_platform.name()));
+        JobSetting syncDiskPerfMetricMonitor = new JobSetting(CloudAccountSyncJob.SyncCloudDiskPerfMetricMonitor.class, SYNC_DISK_PERF_METRIC_MONITOR, com.fit2cloud.common.constants.JobConstants.Group.CLOUD_ACCOUNT_RESOURCE_SYNC_GROUP.name(), "同步云磁盘监控数据", null, p -> !p.equals(PlatformConstants.fit2cloud_openstack_platform.name()));
         // 同步存储器监控数据
-        JobInitSettingDto syncDatastorePerfMetricMonitor = new JobInitSettingDto(CloudAccountSyncJob.SyncCloudDatastorePerfMetricMonitor.class, SYNC_DATASTORE_PERF_METRIC_MONITOR, com.fit2cloud.common.constants.JobConstants.Group.CLOUD_ACCOUNT_RESOURCE_SYNC_GROUP.name(), "同步存储器监控数据", null, p -> p.equals(PlatformConstants.fit2cloud_vsphere_platform.name()) || p.equals(PlatformConstants.fit2cloud_openstack_platform.name()));
+        JobSetting syncDatastorePerfMetricMonitor = new JobSetting(CloudAccountSyncJob.SyncCloudDatastorePerfMetricMonitor.class, SYNC_DATASTORE_PERF_METRIC_MONITOR, com.fit2cloud.common.constants.JobConstants.Group.CLOUD_ACCOUNT_RESOURCE_SYNC_GROUP.name(), "同步存储器监控数据", null, p -> p.equals(PlatformConstants.fit2cloud_vsphere_platform.name()) || p.equals(PlatformConstants.fit2cloud_openstack_platform.name()));
         return List.of(syncDisk, syncVirtual, syncImage, syncHost, syncDatastore, syncVmPerfMetricMonitor, syncHostPerfMetricMonitor, syncDiskPerfMetricMonitor, syncDatastorePerfMetricMonitor);
     }
 }
