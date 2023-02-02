@@ -8,11 +8,6 @@ export function listServer(
   req: ListOptimizationRequest | Record<string, never>,
   loading?: Ref<boolean>
 ): Promise<Result<Page<VmCloudServerVO>>> {
-  console.log(
-    (import.meta.env.VITE_APP_NAME === "operation-analytics"
-      ? ""
-      : "/operation-analytics/") + "api/optimize_analysis/server/page"
-  );
   return get(
     (import.meta.env.VITE_APP_NAME === "operation-analytics"
       ? ""

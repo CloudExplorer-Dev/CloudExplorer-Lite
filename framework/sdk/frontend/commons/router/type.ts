@@ -21,6 +21,7 @@ import { store } from "@commons/stores";
 import { usePermissionStore } from "@commons/stores/modules/permission";
 import { hasRolePermission } from "@commons/base-directives/hasPermission";
 import { flatMenu } from "@commons/router/index";
+import _ from "lodash";
 
 const rootRouteName = "rootRoute";
 
@@ -403,7 +404,40 @@ export class RouteObj {
     from: RouteLocationNormalized,
     failure?: NavigationFailure | void
   ) => {
-    console.debug(to, from);
+    //console.log(to);
+    if (
+      import.meta.env.VITE_APP_NAME !== "base" &&
+      to.name !== "signin" &&
+      to.name !== "home" &&
+      to.name
+    ) {
+      const menu: RecentAccessRoute = {
+        module: import.meta.env.VITE_APP_NAME,
+        name: to.name,
+        fullPath: to.fullPath,
+        time: new Date().getTime(),
+      };
+      const userStore = useUserStore(store);
+      if (!userStore.isLogin || !userStore.currentUser) {
+        userStore.getCurrentUser();
+        return;
+      }
+      const key = "RecentAccess-" + userStore.currentUser.id;
+      const str = localStorage.getItem(key);
+      const recentAccessRoutes: Array<RecentAccessRoute> = str
+        ? JSON.parse(str)
+        : [];
+
+      //去除原数组中同名route
+      _.remove(recentAccessRoutes, (r) => r.name === menu.name);
+
+      //限制长度为20
+      const result = _.slice(recentAccessRoutes, 0, 20);
+
+      result.unshift(menu);
+      //保存到 local storage
+      localStorage.setItem(key, JSON.stringify(result));
+    }
   };
   /**
    * 默认的错误处理器
@@ -415,4 +449,11 @@ export class RouteObj {
   ) => {
     console.warn("defaultOnError", error, to, from);
   };
+}
+
+export interface RecentAccessRoute {
+  module: string;
+  name: string | symbol;
+  fullPath: string;
+  time: number;
 }
