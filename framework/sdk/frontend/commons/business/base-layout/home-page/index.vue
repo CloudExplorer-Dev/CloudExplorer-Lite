@@ -11,6 +11,7 @@ import BillTrend from "./items/BillTrend.vue";
 import ServerIncreaseTrend from "./items/ServerIncreaseTrend.vue";
 import ServerDistribution from "./items/ServerDistribution.vue";
 import ServerMetrics from "./items/ServerMetrics.vue";
+import ServerOptimization from "./items/ServerOptimization.vue";
 
 import { getHistoryTrend } from "./items/api";
 import _ from "lodash";
@@ -19,7 +20,6 @@ import { useUserStore } from "@commons/stores/modules/user";
 import { useModuleStore } from "@commons/stores/modules/module";
 import { usePermissionStore } from "@commons/stores/modules/permission";
 
-const homeStore = useHomeStore();
 const userStore = useUserStore();
 const moduleStore = useModuleStore();
 const permissionStore = usePermissionStore();
@@ -127,6 +127,11 @@ onMounted(() => {
             :permission="'[vm-service]CLOUD_SERVER:READ'"
             title="资源监控"
           />
+        </el-col>
+      </el-row>
+      <el-row :gutter="20" type="flex">
+        <el-col :span="24">
+          <ServerOptimization />
         </el-col>
       </el-row>
     </div>
