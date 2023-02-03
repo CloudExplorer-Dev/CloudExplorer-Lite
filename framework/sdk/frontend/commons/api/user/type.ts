@@ -73,6 +73,9 @@ export class User {
   password?: string;
   roleMap?: SimpleMap<Array<UserRole>>;
 
+  ip?: string;
+  loginTime?: string;
+
   constructor(
     id: string,
     username: string,

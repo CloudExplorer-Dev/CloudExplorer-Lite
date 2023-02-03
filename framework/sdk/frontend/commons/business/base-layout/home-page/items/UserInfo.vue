@@ -55,12 +55,16 @@ const userStore = useUserStore();
         <el-row type="flex" align="middle">
           <el-col :span="8" class="card-label">登录IP</el-col>
           <el-col :span="1">:</el-col>
-          <el-col :span="15"></el-col>
+          <el-col :span="15">
+            {{ userStore.currentUser.ip }}
+          </el-col>
         </el-row>
         <el-row type="flex" align="middle">
           <el-col :span="8" class="card-label">登录时间</el-col>
           <el-col :span="1">:</el-col>
-          <el-col :span="15"></el-col>
+          <el-col :span="15">
+            {{ userStore.currentUser.loginTime }}
+          </el-col>
         </el-row>
       </el-col>
     </el-row>
