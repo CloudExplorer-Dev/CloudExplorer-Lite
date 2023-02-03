@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.extension.service.IService;
 import com.fit2cloud.base.entity.User;
 import com.fit2cloud.dto.UserDto;
 import com.fit2cloud.request.LoginRequest;
+import org.springframework.http.server.reactive.ServerHttpRequest;
 
 /**
  * <p>
@@ -11,11 +12,11 @@ import com.fit2cloud.request.LoginRequest;
  * </p>
  *
  * @author fit2cloud
- * @since 
+ * @since
  */
 public interface IBaseUserService extends IService<User> {
 
-    String login(LoginRequest loginRequest);
+    String login(ServerHttpRequest request, LoginRequest loginRequest);
 
     UserDto getUserByIdOrEmail(String username);
 

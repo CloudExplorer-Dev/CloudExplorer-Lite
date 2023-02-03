@@ -18,6 +18,7 @@ import com.fit2cloud.service.MenuService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Mono;
@@ -44,10 +45,11 @@ public class LoginController {
 
     @PostMapping("login")
     @OperatedLog(resourceType = ResourceTypeEnum.SYSTEM, operated = OperatedTypeEnum.LOGIN)
-    public Mono<ResponseEntity<ResultHolder<Object>>> login(@RequestBody LoginRequest loginRequest) {
+    public Mono<ResponseEntity<ResultHolder<Object>>> login(@RequestBody LoginRequest loginRequest, ServerWebExchange exchange) {
         String token = null;
         try {
-            token = loginService.login(loginRequest);
+            ServerHttpRequest request = exchange.getRequest();
+            token = loginService.login(request, loginRequest);
         } catch (Exception e) {
             return Mono.just(
                     ResponseEntity.status(HttpStatus.UNAUTHORIZED)
