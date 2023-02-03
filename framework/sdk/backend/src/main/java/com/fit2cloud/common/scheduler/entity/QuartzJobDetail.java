@@ -11,11 +11,11 @@ import java.util.Map;
  * @注释:
  */
 @Data
-public class QuzrtzJobDetail {
+public class QuartzJobDetail {
     /**
      * 定时任务模块名称
      */
-    private String schedName;
+    private String schedulerName;
     /**
      * 触发器名称
      */
@@ -67,7 +67,7 @@ public class QuzrtzJobDetail {
     private Long endTime;
 
     /**
-     * 日程表名称，表qrtz_calendars的CALENDAR_NAME字段的值
+     * 日程表名称，表(qrtz_calendars)的CALENDAR_NAME字段的值
      */
     private String calendarName;
 
@@ -90,7 +90,7 @@ public class QuzrtzJobDetail {
     /**
      * 是否并发
      */
-    private Integer isNonconcurrent;
+    private Integer isNonConcurrent;
     /**
      * 是否更新数据
      */
@@ -134,5 +134,5 @@ public class QuzrtzJobDetail {
     /**
      * 定时任务cron表达式
      */
-    private String cronExpressopn;
+    private String cronExpression;
 }

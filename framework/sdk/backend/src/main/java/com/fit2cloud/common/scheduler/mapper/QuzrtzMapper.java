@@ -2,7 +2,7 @@ package com.fit2cloud.common.scheduler.mapper;
 
 import com.baomidou.mybatisplus.core.conditions.Wrapper;
 import com.baomidou.mybatisplus.core.toolkit.Constants;
-import com.fit2cloud.common.scheduler.entity.QuzrtzJobDetail;
+import com.fit2cloud.common.scheduler.entity.QuartzJobDetail;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
@@ -24,7 +24,7 @@ public interface QuzrtzMapper {
      * @param wrapper 定时任务查询对象
      * @return 定时任务数据
      */
-    List<QuzrtzJobDetail> list(@Param(Constants.WRAPPER) Wrapper<QuzrtzJobDetail> wrapper);
+    List<QuartzJobDetail> list(@Param(Constants.WRAPPER) Wrapper<QuartzJobDetail> wrapper);
 
     boolean updateJob();
 }

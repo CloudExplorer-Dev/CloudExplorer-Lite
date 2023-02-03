@@ -17,15 +17,12 @@ import com.fit2cloud.common.platform.credential.Credential;
 import com.fit2cloud.common.provider.IBaseCloudProvider;
 import com.fit2cloud.common.provider.entity.F2CBalance;
 import com.fit2cloud.common.scheduler.SchedulerService;
-import com.fit2cloud.common.scheduler.entity.QuzrtzJobDetail;
+import com.fit2cloud.common.scheduler.entity.QuartzJobDetail;
 import com.fit2cloud.common.scheduler.handler.AsyncJob;
-import com.fit2cloud.common.scheduler.util.CronUtils;
 import com.fit2cloud.common.utils.JsonUtil;
 import com.fit2cloud.common.utils.SpringUtil;
-import com.fit2cloud.dto.job.JobCronSettingDto;
-import com.fit2cloud.dto.job.JobInitSettingDto;
 import com.fit2cloud.dto.job.JobModuleInfo;
-import com.fit2cloud.dto.job.JobSettingParent;
+import com.fit2cloud.dto.job.JobSetting;
 import com.fit2cloud.request.cloud_account.CloudAccountJobItem;
 import com.fit2cloud.request.cloud_account.CloudAccountModuleJob;
 import com.fit2cloud.request.cloud_account.SyncRequest;
@@ -37,7 +34,6 @@ import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.quartz.DateBuilder;
 import org.quartz.Job;
 import org.quartz.Trigger;
 import org.springframework.beans.BeanUtils;
@@ -52,7 +48,7 @@ import java.util.*;
  * </p>
  *
  * @author fit2cloud
- * @since
+ * @since 云账号相关接口
  */
 @Slf4j
 @Service
@@ -65,16 +61,21 @@ public class BaseCloudAccountServiceImpl extends ServiceImpl<BaseCloudAccountMap
         CloudAccount cloudAccount = getById(cloudAccountId);
         Map<String, Object> defaultCloudAccountJobParams = getDefaultCloudAccountJobParams(cloudAccountId);
         JobModuleInfo moduleJobInfo = JobSettingConfig.getModuleJobInfo();
-        moduleJobInfo.getJobDetails().stream().filter(j -> j.getCloudAccountShow().test(cloudAccount.getPlatform())).filter(job -> job.getJobGroup().equals(JobConstants.Group.CLOUD_ACCOUNT_RESOURCE_SYNC_GROUP.name()) || job.getJobGroup().equals(JobConstants.Group.CLOUD_ACCOUNT_BILL_SYNC_GROUP.name())).forEach(job -> {
-            String cloudAccountJobName = JobConstants.CloudAccount.getCloudAccountJobName(job.getJobName(), cloudAccountId);
-            if (!schedulerService.inclusionJobDetails(cloudAccountJobName, job.getJobGroup())) {
-                if (job instanceof JobInitSettingDto jobInitSettingDto) {
-                    schedulerService.addJob(jobInitSettingDto.getJobHandler(), cloudAccountJobName, jobInitSettingDto.getJobGroup(), jobInitSettingDto.getDescription(), job.getJobGroup().equals(JobConstants.Group.CLOUD_ACCOUNT_BILL_SYNC_GROUP.name()) ? getDefaultBillJobSettingParams(cloudAccountId, cloudAccount.getPlatform()) : defaultCloudAccountJobParams, jobInitSettingDto.getStartTimeDay(), jobInitSettingDto.getEndTimeDay(), jobInitSettingDto.getTimeInterval(), jobInitSettingDto.getUnit(), jobInitSettingDto.getRepeatCount(), jobInitSettingDto.getWeeks());
-                } else if (job instanceof JobCronSettingDto jobCronSettingDto) {
-                    schedulerService.addJob(jobCronSettingDto.getJobHandler(), cloudAccountJobName, jobCronSettingDto.getJobGroup(), jobCronSettingDto.getDescription(), CronUtils.createHourOfDay(jobCronSettingDto.getHoursOfDay()), job.getJobGroup().equals(JobConstants.Group.CLOUD_ACCOUNT_BILL_SYNC_GROUP.name()) ? getDefaultBillJobSettingParams(cloudAccountId, cloudAccount.getPlatform()) : defaultCloudAccountJobParams);
-                }
-            }
-        });
+        moduleJobInfo.getJobDetails().stream()
+                .filter(j -> j.getCloudAccountShow().test(cloudAccount.getPlatform()))
+                .filter(job -> job.getJobGroup().equals(JobConstants.Group.CLOUD_ACCOUNT_RESOURCE_SYNC_GROUP.name()) || job.getJobGroup().equals(JobConstants.Group.CLOUD_ACCOUNT_BILL_SYNC_GROUP.name()))
+                .forEach(job -> {
+                    String cloudAccountJobName = JobConstants.CloudAccount.getCloudAccountJobName(job.getJobName(), cloudAccountId);
+                    if (!schedulerService.inclusionJobDetails(cloudAccountJobName, job.getJobGroup())) {
+                        schedulerService.addJob(
+                                job.getJobHandler(),
+                                cloudAccountJobName,
+                                job.getJobGroup(),
+                                job.getDescription(),
+                                job.getCronExpression(),
+                                job.getJobGroup().equals(JobConstants.Group.CLOUD_ACCOUNT_BILL_SYNC_GROUP.name()) ? getDefaultBillJobSettingParams(cloudAccountId, cloudAccount.getPlatform()) : defaultCloudAccountJobParams);
+                    }
+                });
     }
 
     /**
@@ -93,21 +94,11 @@ public class BaseCloudAccountServiceImpl extends ServiceImpl<BaseCloudAccountMap
      *
      * @param accountId 云账号id
      * @param platform  供应商
-     * @return
+     * @return 云账单任务参数
      */
     private Map<String, Object> getDefaultBillJobSettingParams(String accountId, String platform) {
         Map<String, Object> defaultParams = Bill.getDefaultParams(platform);
         return JobConstants.CloudAccount.getCloudAccountBillSettingarams(accountId, defaultParams);
-    }
-
-    /**
-     * 获取同步云账号云主机监控数据参数
-     * @param accountId
-     * @return
-     */
-    private Map<String, Object> getDefaultCloudAccountPerfMetricMonitorParams(String accountId) {
-        //List<Credential.Region> regions = getRegionByAccountId(accountId);
-        return JobConstants.CloudAccount.getCloudAccountPerfMetricMonitorJobParams(accountId);
     }
 
     @SneakyThrows
@@ -121,39 +112,41 @@ public class BaseCloudAccountServiceImpl extends ServiceImpl<BaseCloudAccountMap
     @Override
     public CloudAccountModuleJob getCloudAccountJob(String accountId) {
         CloudAccount cloudAccount = getById(accountId);
-        // 当前模块的任务详情
+        // todo 当前模块的任务详情
         JobModuleInfo moduleJobInfo = JobSettingConfig.getModuleJobInfo();
         CloudAccountModuleJob moduleJob = new CloudAccountModuleJob();
         BeanUtils.copyProperties(moduleJobInfo, moduleJob);
-        List<QuzrtzJobDetail> quzrtzJobDetails = schedulerService.list(JobConstants.Group.CLOUD_ACCOUNT_RESOURCE_SYNC_GROUP.name());
-        quzrtzJobDetails.addAll(schedulerService.list(JobConstants.Group.CLOUD_ACCOUNT_BILL_SYNC_GROUP.name()));
-        List<JobSettingParent> jobDetails = moduleJobInfo.getJobDetails().stream().filter(job -> job.getCloudAccountShow().test(cloudAccount.getPlatform())).toList();
+        // todo 查询到当前模块的定时任务
+        List<QuartzJobDetail> quartzJobDetails = schedulerService.list();
+        // todo 过滤出当前云账号的定时任务
+        List<JobSetting> jobDetails = moduleJobInfo.getJobDetails().stream().filter(job -> job.getCloudAccountShow().test(cloudAccount.getPlatform())).toList();
         if (CollectionUtils.isEmpty(jobDetails)) {
             return null;
         }
         Map<String, Object> defaultCloudAccountJobParams = new HashMap<>();
         List<CloudAccountJobItem> jobItems = jobDetails.stream().map(job -> {
             String cloudAccountJobName = JobConstants.CloudAccount.getCloudAccountJobName(job.getJobName(), accountId);
-            Optional<QuzrtzJobDetail> jobDetail = quzrtzJobDetails.stream().filter(j -> j.getTriggerName().equals(cloudAccountJobName)).findFirst();
+            Optional<QuartzJobDetail> jobDetail = quartzJobDetails.stream().filter(j -> j.getTriggerName().equals(cloudAccountJobName)).findFirst();
             if (jobDetail.isPresent()) {
-                return getJobItem(jobDetail.get(), job);
+                return getJobItem(jobDetail.get());
             } else {
-                // 针对资源同步参数设置
+                // todo 针对资源同步参数设置
                 if (job.getJobGroup().equals(JobConstants.Group.CLOUD_ACCOUNT_RESOURCE_SYNC_GROUP.name())) {
                     defaultCloudAccountJobParams.putAll(getDefaultCloudAccountJobParams(accountId));
                 }
-                // 针对账单同步参数设置
+                // todo 针对账单同步参数设置
                 if (job.getJobGroup().equals(JobConstants.Group.CLOUD_ACCOUNT_BILL_SYNC_GROUP.name())) {
                     defaultCloudAccountJobParams.putAll(getDefaultBillJobSettingParams(accountId, cloudAccount.getPlatform()));
                 }
-                if (job instanceof JobInitSettingDto jobInitSettingDto) {
-                    schedulerService.addJob(jobInitSettingDto.getJobHandler(), cloudAccountJobName, jobInitSettingDto.getJobGroup(), jobInitSettingDto.getDescription(), defaultCloudAccountJobParams, jobInitSettingDto.getStartTimeDay(), jobInitSettingDto.getEndTimeDay(), jobInitSettingDto.getTimeInterval(), jobInitSettingDto.getUnit(), jobInitSettingDto.getRepeatCount(), jobInitSettingDto.getWeeks());
-                    return getJobItem(jobInitSettingDto, defaultCloudAccountJobParams, accountId);
-                } else if (job instanceof JobCronSettingDto jobCronSettingDto) {
-                    schedulerService.addJob(jobCronSettingDto.getJobHandler(), cloudAccountJobName, jobCronSettingDto.getJobGroup(), jobCronSettingDto.getDescription(), CronUtils.createHourOfDay(jobCronSettingDto.getHoursOfDay()), defaultCloudAccountJobParams);
-                    return getJobItem(jobCronSettingDto, accountId, defaultCloudAccountJobParams);
-                }
-                return null;
+                // todo 添加定时任务
+                schedulerService.addJob(job.getJobHandler(),
+                        cloudAccountJobName,
+                        job.getJobGroup(),
+                        job.getDescription(),
+                        job.getCronExpression(),
+                        defaultCloudAccountJobParams);
+
+                return getJobItem(job, accountId, defaultCloudAccountJobParams);
             }
         }).filter(Objects::nonNull).toList();
         moduleJob.setJobDetailsList(jobItems);
@@ -167,11 +160,8 @@ public class BaseCloudAccountServiceImpl extends ServiceImpl<BaseCloudAccountMap
             if (schedulerService.inclusionJobDetails(jobItem.getJobName(), jobItem.getJobGroup())) {
                 Map<String, Object> params = jobItem.getParams();
                 params.put(JobConstants.CloudAccount.CLOUD_ACCOUNT_ID.name(), accountId);
-                if (jobItem.getJobGroup().equals(JobConstants.Group.CLOUD_ACCOUNT_RESOURCE_SYNC_GROUP.name())) {
-                    schedulerService.updateJob(jobItem.getJobName(), jobItem.getJobGroup(), jobItem.getDescription(), params, null, null, jobItem.getTimeInterval().intValue(), jobItem.getUnit(), -1, jobItem.getActive() ? Trigger.TriggerState.NORMAL : Trigger.TriggerState.PAUSED, null);
-                } else {
-                    schedulerService.updateJob(jobItem.getJobName(), jobItem.getJobGroup(), jobItem.getDescription(), params, CronUtils.createHourOfDay(jobItem.getHoursOfDay().toArray(Integer[]::new)), jobItem.getActive() ? Trigger.TriggerState.NORMAL : Trigger.TriggerState.PAUSED);
-                }
+                schedulerService.updateJob(jobItem.getJobName(), jobItem.getJobGroup(), jobItem.getDescription(),
+                        params, jobItem.getCronExpression(), jobItem.getActive() ? Trigger.TriggerState.NORMAL : Trigger.TriggerState.PAUSED);
             } else {
                 throw new Fit2cloudException(1, "");
             }
@@ -182,7 +172,7 @@ public class BaseCloudAccountServiceImpl extends ServiceImpl<BaseCloudAccountMap
     @Override
     public boolean deleteJobByCloudAccountId(String cloudAccountId) {
         JobModuleInfo moduleJobInfo = JobSettingConfig.getModuleJobInfo();
-        for (JobSettingParent jobDetail : moduleJobInfo.getJobDetails()) {
+        for (JobSetting jobDetail : moduleJobInfo.getJobDetails()) {
             String jobName = JobConstants.CloudAccount.getCloudAccountJobName(jobDetail.getJobName(), cloudAccountId);
             schedulerService.deleteJob(jobName, jobDetail.getJobGroup());
         }
@@ -220,10 +210,10 @@ public class BaseCloudAccountServiceImpl extends ServiceImpl<BaseCloudAccountMap
 
 
     @SneakyThrows
-    private void exec(SyncRequest syncRequest, JobSettingParent j) {
+    private void exec(SyncRequest syncRequest, JobSetting j) {
         Job jobHandler = j.getJobHandler().getConstructor().newInstance();
         if (jobHandler instanceof AsyncJob) {
-            QuzrtzJobDetail jobDetails = schedulerService.getJobDetails(JobConstants.CloudAccount.getCloudAccountJobName(j.getJobName(), syncRequest.getCloudAccountId()), j.getJobGroup());
+            QuartzJobDetail jobDetails = schedulerService.getJobDetails(JobConstants.CloudAccount.getCloudAccountJobName(j.getJobName(), syncRequest.getCloudAccountId()), j.getJobGroup());
             if (Objects.isNull(jobDetails)) {
                 initCloudAccountJob(syncRequest.getCloudAccountId());
                 jobDetails = schedulerService.getJobDetails(JobConstants.CloudAccount.getCloudAccountJobName(j.getJobName(), syncRequest.getCloudAccountId()), j.getJobGroup());
@@ -236,9 +226,9 @@ public class BaseCloudAccountServiceImpl extends ServiceImpl<BaseCloudAccountMap
     }
 
     @SneakyThrows
-    private void exec(Map<String, Object> params, JobSettingParent j, String accountId) {
+    private void exec(Map<String, Object> params, JobSetting j, String accountId) {
         Job jobHandler = j.getJobHandler().getConstructor().newInstance();
-        QuzrtzJobDetail jobDetails = schedulerService.getJobDetails(JobConstants.CloudAccount.getCloudAccountJobName(j.getJobName(), accountId), j.getJobGroup());
+        QuartzJobDetail jobDetails = schedulerService.getJobDetails(JobConstants.CloudAccount.getCloudAccountJobName(j.getJobName(), accountId), j.getJobGroup());
         params.putAll(jobDetails.getTriggerJobData());
         if (jobHandler instanceof AsyncJob) {
             ((AsyncJob) jobHandler).exec(params);
@@ -246,73 +236,33 @@ public class BaseCloudAccountServiceImpl extends ServiceImpl<BaseCloudAccountMap
     }
 
     /**
-     * @param quzrtzJobDetail 定时任务详细信息
+     * @param quartzJobDetail 定时任务详细信息
      * @return JobItem
      */
-    public CloudAccountJobItem getJobItem(QuzrtzJobDetail quzrtzJobDetail, JobSettingParent job) {
+    public CloudAccountJobItem getJobItem(QuartzJobDetail quartzJobDetail) {
         CloudAccountJobItem jobItem = new CloudAccountJobItem();
-        jobItem.setJobGroup(quzrtzJobDetail.getTriggerGroup());
-        jobItem.setJobName(quzrtzJobDetail.getTriggerName());
-        jobItem.setActive(!quzrtzJobDetail.getTriggerState().equals(Trigger.TriggerState.PAUSED.name()));
-        jobItem.setDescription(quzrtzJobDetail.getDescription());
-        jobItem.setParams(quzrtzJobDetail.getTriggerJobData());
-        if (jobItem.getJobGroup().equals(JobConstants.Group.CLOUD_ACCOUNT_BILL_SYNC_GROUP.name())) {
-            jobItem.setHoursOfDay(getHoursByCron(quzrtzJobDetail.getCronExpressopn()));
-        } else if (jobItem.getJobGroup().equals(JobConstants.Group.CLOUD_ACCOUNT_RESOURCE_SYNC_GROUP.name())) {
-            jobItem.setTimeInterval(quzrtzJobDetail.getInterval().longValue());
-            jobItem.setUnit(DateBuilder.IntervalUnit.valueOf(quzrtzJobDetail.getUnit()));
-        }
-        if (job instanceof JobCronSettingDto) {
-            jobItem.setJobType(CloudAccountJobItem.JobType.SpecifyHour);
-        }
-        if (job instanceof JobInitSettingDto) {
-            jobItem.setJobType(CloudAccountJobItem.JobType.Interval);
-        }
+        jobItem.setJobGroup(quartzJobDetail.getTriggerGroup());
+        jobItem.setJobName(quartzJobDetail.getTriggerName());
+        jobItem.setActive(!quartzJobDetail.getTriggerState().equals(Trigger.TriggerState.PAUSED.name()));
+        jobItem.setDescription(quartzJobDetail.getDescription());
+        jobItem.setParams(quartzJobDetail.getTriggerJobData());
+        jobItem.setCronExpression(quartzJobDetail.getCronExpression());
         return jobItem;
     }
 
-    private List<Integer> getHoursByCron(String cron) {
-        if (StringUtils.isEmpty(cron)) {
-            return List.of(24);
-        }
-        return Arrays.stream(cron.split(" ")[2].split(",")).map(Integer::parseInt).toList();
-    }
-
     /**
-     * @param jobInitSettingDto 定时任务初始化设置数据
-     * @param params            定时任务默认参数
+     * @param jobSetting 定时任务初始化设置数据
      * @return JobItem          单个任务信息
      */
 
-    private CloudAccountJobItem getJobItem(JobInitSettingDto jobInitSettingDto, Map<String, Object> params, String cloudAccountId) {
+    private CloudAccountJobItem getJobItem(JobSetting jobSetting, String cloudAccountId, Map<String, Object> params) {
         CloudAccountJobItem jobItem = new CloudAccountJobItem();
-        String cloudAccountJobName = JobConstants.CloudAccount.getCloudAccountJobName(jobInitSettingDto.getJobName(), cloudAccountId);
-        jobItem.setJobGroup(jobInitSettingDto.getJobGroup());
+        String cloudAccountJobName = JobConstants.CloudAccount.getCloudAccountJobName(jobSetting.getJobName(), cloudAccountId);
+        jobItem.setJobGroup(jobSetting.getJobGroup());
         jobItem.setJobName(cloudAccountJobName);
-        jobItem.setDescription(jobInitSettingDto.getDescription());
+        jobItem.setDescription(jobSetting.getDescription());
+        jobSetting.setCronExpression(jobItem.getCronExpression());
         jobItem.setActive(true);
-        jobItem.setJobType(CloudAccountJobItem.JobType.Interval);
-        jobItem.setTimeInterval((long) jobInitSettingDto.getTimeInterval());
-        jobItem.setUnit(jobInitSettingDto.getUnit());
-        jobItem.setParams(params);
-        return jobItem;
-
-    }
-
-    /**
-     * @param jobCronSettingDto 定时任务初始化设置数据
-     * @return JobItem          单个任务信息
-     */
-
-    private CloudAccountJobItem getJobItem(JobCronSettingDto jobCronSettingDto, String cloudAccountId, Map<String, Object> params) {
-        CloudAccountJobItem jobItem = new CloudAccountJobItem();
-        String cloudAccountJobName = JobConstants.CloudAccount.getCloudAccountJobName(jobCronSettingDto.getJobName(), cloudAccountId);
-        jobItem.setJobGroup(jobCronSettingDto.getJobGroup());
-        jobItem.setJobName(cloudAccountJobName);
-        jobItem.setDescription(jobCronSettingDto.getDescription());
-        jobItem.setActive(true);
-        jobItem.setJobType(CloudAccountJobItem.JobType.SpecifyHour);
-        jobItem.setHoursOfDay(Arrays.asList(jobCronSettingDto.getHoursOfDay()));
         jobItem.setParams(params);
         return jobItem;
     }
@@ -335,8 +285,6 @@ public class BaseCloudAccountServiceImpl extends ServiceImpl<BaseCloudAccountMap
         } else {
             throw new Fit2cloudException(2000, "非法参数");
         }
-
-
     }
 
     private String getParams(String credential) {
@@ -344,6 +292,7 @@ public class BaseCloudAccountServiceImpl extends ServiceImpl<BaseCloudAccountMap
         params.put("credential", credential);
         return JsonUtil.toJSONString(params);
     }
+
     /**
      * 执行函数
      *

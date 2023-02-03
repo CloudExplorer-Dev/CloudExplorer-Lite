@@ -1,6 +1,6 @@
 package com.fit2cloud.common.scheduler;
 
-import com.fit2cloud.common.scheduler.entity.QuzrtzJobDetail;
+import com.fit2cloud.common.scheduler.entity.QuartzJobDetail;
 import org.quartz.*;
 
 import java.util.List;
@@ -113,7 +113,7 @@ public interface SchedulerService {
      * @param groupName 分组名称
      * @return 任务详情
      */
-    QuzrtzJobDetail getJobDetails(String jobName, String groupName);
+    QuartzJobDetail getJobDetails(String jobName, String groupName);
 
     /**
      * 是否存在当前jobDetails
@@ -129,7 +129,7 @@ public interface SchedulerService {
      *
      * @return 所有任务
      */
-    List<QuzrtzJobDetail> list();
+    List<QuartzJobDetail> list();
 
     /**
      * 根据任务组 获取定时任务
@@ -137,7 +137,7 @@ public interface SchedulerService {
      * @param groupName 任务组名称
      * @return 任务
      */
-    List<QuzrtzJobDetail> list(String groupName);
+    List<QuartzJobDetail> list(String groupName);
 
     /**
      * 暂停任务
