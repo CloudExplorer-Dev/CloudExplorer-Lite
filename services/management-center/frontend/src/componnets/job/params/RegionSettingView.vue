@@ -47,7 +47,7 @@
 </template>
 <script setup lang="ts">
 import type { JobDetails, Region } from "@/api/cloud_account/type";
-import { computed, ref, watch, onMounted } from "vue";
+import { ref, watch } from "vue";
 import { useI18n } from "vue-i18n";
 const { t } = useI18n();
 const props = defineProps<{

@@ -135,7 +135,7 @@ public class BaseCloudAccountServiceImpl extends ServiceImpl<BaseCloudAccountMap
                     defaultCloudAccountJobParams.putAll(getDefaultCloudAccountJobParams(accountId));
                 }
                 // todo 针对账单同步参数设置
-                if (job.getJobGroup().equals(JobConstants.Group.CLOUD_ACCOUNT_BILL_SYNC_GROUP.name())) {
+                else if (job.getJobGroup().equals(JobConstants.Group.CLOUD_ACCOUNT_BILL_SYNC_GROUP.name())) {
                     defaultCloudAccountJobParams.putAll(getDefaultBillJobSettingParams(accountId, cloudAccount.getPlatform()));
                 }
                 // todo 添加定时任务
@@ -261,7 +261,7 @@ public class BaseCloudAccountServiceImpl extends ServiceImpl<BaseCloudAccountMap
         jobItem.setJobGroup(jobSetting.getJobGroup());
         jobItem.setJobName(cloudAccountJobName);
         jobItem.setDescription(jobSetting.getDescription());
-        jobSetting.setCronExpression(jobItem.getCronExpression());
+        jobItem.setCronExpression(jobItem.getCronExpression());
         jobItem.setActive(true);
         jobItem.setParams(params);
         return jobItem;

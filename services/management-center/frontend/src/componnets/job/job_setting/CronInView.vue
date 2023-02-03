@@ -116,8 +116,17 @@ const props = withDefaults(
     usableCronType: () => [2, 3, 4, 5],
   }
 );
+// 获取默认值
+const getDefaultCron = () => {
+  if (props.modelValue) {
+    return props.modelValue;
+  } else {
+    emit("update:modelValue", "0 0 * * * ? *");
+    return "0 0 * * * ? *";
+  }
+};
 // cron对象 用于转化和解析cron字符串
-const simpleCron = ref<SimpleCron>(new SimpleCron(props.modelValue));
+const simpleCron = ref<SimpleCron>(new SimpleCron(getDefaultCron()));
 // 同步类型 每天 每日 每月
 const selectCronType = ref<number>(simpleCron.value.cronType);
 
