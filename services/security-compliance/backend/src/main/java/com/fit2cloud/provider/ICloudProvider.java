@@ -5,6 +5,7 @@ import com.fit2cloud.constants.SyncDimensionConstants;
 import com.fit2cloud.es.entity.ResourceInstance;
 import com.fit2cloud.provider.constants.ProviderConstants;
 import com.fit2cloud.provider.entity.InstanceSearchField;
+import com.vmware.vcenter.ResourcePool;
 
 import java.util.Arrays;
 import java.util.List;
@@ -250,6 +251,50 @@ public interface ICloudProvider {
      * @return 安全组实例可查询字段
      */
     List<InstanceSearchField> listSecurityGroupInstanceSearchField();
+
+    /**
+     * 获取宿主机列表
+     *
+     * @param req 请求对象
+     * @return 宿主机列表
+     */
+    List<ResourceInstance> listHostInstance(String req);
+
+    /**
+     * 获取宿主机实例可查询字段
+     *
+     * @return 宿主机实例可查询字段
+     */
+    List<InstanceSearchField> listHostInstanceSearchField();
+
+    /**
+     * 获取存储器实例列表
+     *
+     * @param req 请求对象
+     * @return 存储器实例列表
+     */
+    List<ResourceInstance> listDataStoreInstance(String req);
+
+    /**
+     * 获取存储器可查询字段
+     *
+     * @return 存储器可查询字段
+     */
+    List<InstanceSearchField> listDataStoreInstanceSearchField();
+
+    /**
+     * 获取资源池实例列表
+     *
+     * @return 资源池实例列表
+     */
+    List<ResourceInstance> listResourcePoolInstance(String req);
+
+    /**
+     * 获取资源池可查询字段
+     *
+     * @return 资源池可查询字段
+     */
+    List<InstanceSearchField> listResourcePoolInstanceSearchField();
 
     /**
      * 根据供应商获取对应云平台处理器

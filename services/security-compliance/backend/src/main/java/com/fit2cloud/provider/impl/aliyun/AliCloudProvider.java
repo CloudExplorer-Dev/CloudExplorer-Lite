@@ -286,4 +286,34 @@ public class AliCloudProvider extends AbstractCloudProvider<AliSecurityComplianc
     public List<InstanceSearchField> listSecurityGroupInstanceSearchField() {
         return AliInstanceSearchFieldApi.listSecurityGroupInstanceSearchField();
     }
+
+    @Override
+    public List<ResourceInstance> listHostInstance(String req) {
+        return List.of();
+    }
+
+    @Override
+    public List<InstanceSearchField> listHostInstanceSearchField() {
+        return List.of();
+    }
+
+    @Override
+    public List<ResourceInstance> listDataStoreInstance(String req) {
+        return List.of();
+    }
+
+    @Override
+    public List<InstanceSearchField> listDataStoreInstanceSearchField() {
+        return List.of();
+    }
+
+    @Override
+    public List<ResourceInstance> listResourcePoolInstance(String req) {
+        return List.of();
+    }
+
+    @Override
+    public List<InstanceSearchField> listResourcePoolInstanceSearchField() {
+        return List.of();
+    }
 }
