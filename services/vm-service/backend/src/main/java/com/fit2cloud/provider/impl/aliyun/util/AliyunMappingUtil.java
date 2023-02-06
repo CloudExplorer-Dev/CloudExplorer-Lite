@@ -19,6 +19,7 @@ import org.apache.commons.lang3.StringUtils;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -89,14 +90,17 @@ public class AliyunMappingUtil {
         f2CVirtualMachine.setOsInfo(instance.getOSName());
         f2CVirtualMachine.setZone(instance.getZoneId());
         if (instance.getCreationTime() != null) {
-            try {
-                SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm'Z'");
-                sdf.setTimeZone(TimeZone.getTimeZone("GMT"));
-                Date cTime = sdf.parse(instance.getCreationTime());
+            Date cTime = getFormatDateTime(instance.getCreationTime());
+            if (cTime != null) {
                 f2CVirtualMachine.setCreated(cTime);
                 f2CVirtualMachine.setCreateTime(cTime.getTime());
-            } catch (Exception e) {
-                e.printStackTrace();
+            }
+        }
+        if (instance.getExpiredTime() != null) {
+            Date cTime = getFormatDateTime(instance.getCreationTime());
+            if (cTime != null) {
+                f2CVirtualMachine.setExpired(cTime);
+                f2CVirtualMachine.setExpiredTime(cTime.getTime());
             }
         }
         // 安全组
@@ -194,6 +198,21 @@ public class AliyunMappingUtil {
         } else {
             return F2CDiskStatus.UNKNOWN;
         }
+    }
+
+    /**
+     * 格式化时间
+     */
+    private static Date getFormatDateTime(String time) {
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm'Z'");
+        sdf.setTimeZone(TimeZone.getTimeZone("GMT"));
+        Date cTime = null;
+        try {
+            cTime = sdf.parse(time);
+        } catch (ParseException e) {
+            e.getStackTrace();
+        }
+        return cTime;
     }
 
     /**
