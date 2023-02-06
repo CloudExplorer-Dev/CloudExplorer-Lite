@@ -1,7 +1,7 @@
 <template>
   <div class="header">
     <el-row :gutter="12">
-      <el-col :span="6" v-for="o in optimizeSuggests" key="o.code">
+      <el-col :span="6" v-for="o in optimizeSuggests" :key="o.code">
         <el-card :body-style="{ padding: '0px' }" shadow="hover">
           <div class="boxConter">
             <!--添加角标-->
@@ -331,13 +331,8 @@ import type { SimpleMap } from "@commons/api/base/type";
 import { platformIcon } from "@commons/utils/platform";
 import BaseCloudAccountApi from "@commons/api/cloud_account";
 import type { VmCloudServerVO } from "@/api/server_analysis/type";
-import ResourceOptimizationViewApi, {
-  listServer,
-} from "@/api/resource_optimization";
-import type {
-  OptimizeSuggest,
-  OptimizationRequest,
-} from "@/api/resource_optimization/type";
+import ResourceOptimizationViewApi from "@/api/resource_optimization";
+import type { OptimizeSuggest } from "@commons/api/resource_optimization/type";
 
 const { t } = useI18n();
 const table = ref<any>(null);
@@ -423,7 +418,7 @@ const selectOptimizeType = (o: any) => {
 };
 
 const saveSearchParams = () => {
-  window.localStorage.setItem(
+  localStorage.setItem(
     dialogFormData.value.optimizeSuggest,
     JSON.stringify(dialogFormData.value)
   );
@@ -438,8 +433,8 @@ const saveSearchParams = () => {
 };
 
 const getSearchParams = (o: any) => {
-  if (window.localStorage.getItem(o.code)) {
-    const str = window.localStorage.getItem(o.code);
+  if (localStorage.getItem(o.code)) {
+    const str = localStorage.getItem(o.code);
     if (str) {
       try {
         dialogFormData.value = JSON.parse(str);
@@ -462,7 +457,6 @@ const search = (condition: TableSearch) => {
   const d = _.find(optimizeSuggests.value, ["code", currentType.value]);
   getSearchParams(d);
   _.merge(params, dialogFormData.value);
-  debugger;
   ResourceOptimizationViewApi.listServer(
     {
       currentPage: tableConfig.value.paginationConfig.currentPage,

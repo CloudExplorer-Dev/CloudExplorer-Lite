@@ -2,6 +2,10 @@ export interface SimpleMap<V> {
   [propName: string]: V;
 }
 
+export interface SimpleMapPlus<K, V> {
+  [propName: K]: V;
+}
+
 export interface KeyValue<K, V> {
   key: K;
   value: V;

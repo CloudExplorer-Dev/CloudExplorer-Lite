@@ -1,11 +1,12 @@
 package com.fit2cloud.constants;
 
 import com.fit2cloud.autoconfigure.JobSettingConfig;
-import com.fit2cloud.dto.job.JobInitSettingDto;
-import com.fit2cloud.dto.job.JobSettingParent;
+import com.fit2cloud.common.scheduler.util.CronUtils;
+import com.fit2cloud.dto.job.JobSetting;
 import com.fit2cloud.quartz.VerificationCloudAccountJob;
 import org.quartz.DateBuilder;
 
+import java.util.Calendar;
 import java.util.List;
 
 /**
@@ -19,8 +20,10 @@ public class JobConstants implements JobSettingConfig.JobConfig {
 
 
     @Override
-    public List<JobSettingParent> listJobInitSetting() {
-        JobInitSettingDto verificationCloudAccountJob = new JobInitSettingDto(VerificationCloudAccountJob.class, VERIFICATION_CLOUDACCOUNT, com.fit2cloud.common.constants.JobConstants.Group.SYSTEM_GROUP.name(), "校验云账号", null, s -> false, 3, DateBuilder.IntervalUnit.HOUR);
+    public List<JobSetting> listJobInitSetting() {
+        JobSetting verificationCloudAccountJob = new JobSetting(VerificationCloudAccountJob.class, VERIFICATION_CLOUDACCOUNT,
+                com.fit2cloud.common.constants.JobConstants.Group.SYSTEM_GROUP.name(), "校验云账号",
+                null, CronUtils.create(new Integer[]{0}, Calendar.MINUTE), s -> false);
         return List.of(verificationCloudAccountJob);
     }
 }

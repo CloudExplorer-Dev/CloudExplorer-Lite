@@ -1,57 +1,71 @@
 <template>
-  <layout-container :border="border" v-if="regionJob.length > 0">
+  <layout-container :border="border">
     <template #content>
       <!-- 定时任务参数 -->
-      <RegionSettingView
+      <region-setting-view
+        v-if="regionJob.length > 0"
         :jobDetails="regionJob"
         :regions="regions"
         :border="border"
         :readOnly="readOnly"
-      ></RegionSettingView>
-      <!-- 定时任务设置 -->
-      <!-- 定时任务设置 -->
-      <JobSetting
-        :jobDetails="regionJob"
-        :border="border"
-        :readOnly="readOnly"
-      ></JobSetting>
-    </template>
-  </layout-container>
-  <layout-container :border="border" v-if="billJob.length > 0">
-    <template #content>
-      <!-- 定时任务参数 -->
-      <BillSettingView
+      ></region-setting-view>
+
+      <bill-setting-view
+        v-if="billJob.length > 0"
         :jobDetails="billJob"
         :cloudAccount="cloudAccount"
         :border="border"
         :readOnly="readOnly"
         ref="billSetting"
-      ></BillSettingView>
+      ></bill-setting-view>
+      <compliance-scan-setting-view
+        ref="complianceScanSettingViewRef"
+        v-else-if="complianceJob.length > 0"
+        :jobDetails="complianceJob"
+        :regions="regions"
+        :border="border"
+        :readOnly="readOnly"
+      ></compliance-scan-setting-view>
       <!-- 定时任务设置 -->
-      <JobSetting
+      <!-- 定时任务设置 -->
+      <job-setting
+        v-if="billJob.length > 0"
+        ref="jobCronSettingRef"
         :jobDetails="billJob"
         :border="border"
         :readOnly="readOnly"
-      ></JobSetting>
+      ></job-setting>
+      <job-setting
+        v-else-if="complianceJob.length > 0"
+        ref="jobCronSettingRef"
+        :jobDetails="complianceJob"
+        :border="border"
+        :readOnly="readOnly"
+      ></job-setting>
+      <job-setting
+        v-else
+        ref="jobCronSettingRef"
+        :jobDetails="regionJob"
+        :border="border"
+        :readOnly="readOnly"
+      ></job-setting>
     </template>
   </layout-container>
 </template>
 <script setup lang="ts">
 import { ref, computed } from "vue";
-import type {
-  Region,
-  ModuleJob,
-  JobDetails,
-  CloudAccount,
-} from "@/api/cloud_account/type";
-
+import type { Region, ModuleJob, CloudAccount } from "@/api/cloud_account/type";
+import JobSetting from "@/componnets/job/job_setting/index.vue";
 import RegionSettingView from "@/componnets/job/params/RegionSettingView.vue";
 
 import BillSettingView from "@/componnets/job/params/BillSettingView.vue";
-
-import JobSetting from "@/componnets/job/JobSetting.vue";
+import ComplianceScanSettingView from "@/componnets/job/params/ComplianceScanSettingView.vue";
 const billSetting = ref<InstanceType<typeof BillSettingView> | null>(null);
 
+const jobCronSettingRef = ref<InstanceType<typeof JobSetting>>();
+
+const complianceScanSettingViewRef =
+  ref<InstanceType<typeof ComplianceScanSettingView>>();
 const props = withDefaults(
   defineProps<{
     /**
@@ -62,6 +76,9 @@ const props = withDefaults(
      * 区域
      */
     regions: Array<Region>;
+    /**
+     * 是否有border
+     */
     border: boolean;
     /**
      * 是否可读
@@ -71,6 +88,10 @@ const props = withDefaults(
      * 云账号
      */
     cloudAccount?: CloudAccount;
+    /**
+     * 当前模块名称
+     */
+    activeModuleName: string;
   }>(),
   { border: true }
 );
@@ -94,11 +115,24 @@ const billJob = computed(() =>
   )
 );
 
+const complianceJob = computed(() =>
+  props.module.jobDetailsList.filter(
+    (j) => j.jobGroup === "CLOUD_COMPLIANCE_RESOURCE_SYNC_GROUP"
+  )
+);
+
 const validate = () => {
   if (billJob.value.length > 0) {
-    return billSetting.value?.validate();
+    return Promise.all([
+      billSetting.value?.validate(),
+      jobCronSettingRef.value?.validate(),
+      complianceScanSettingViewRef.value?.validate(),
+    ]);
   }
-  return true;
+  return Promise.all([
+    jobCronSettingRef.value?.validate(),
+    complianceScanSettingViewRef.value?.validate(),
+  ]);
 };
 defineExpose({ validate });
 </script>

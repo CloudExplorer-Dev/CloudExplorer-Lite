@@ -23,24 +23,55 @@ export const flatMenu = (
   menus: Array<Menu> | undefined,
   newMenus: Array<Menu>,
   autoOperations = true,
-  sourceMenu?: string
+  sourceMenu?: string,
+  childrenOperations?: boolean,
+  parentTitle?: string
 ) => {
   menus?.forEach((item) => {
     const newMenu: Menu = {
       ...item,
       sourceMenu: sourceMenu ? sourceMenu : item.path,
       children: [],
+      parentTitle: parentTitle,
     };
     newMenus.push(newMenu);
     if (item.children != null && item.children.length > 0) {
-      flatMenu(item.children, newMenus, autoOperations);
+      flatMenu(
+        item.children,
+        newMenus,
+        autoOperations,
+        undefined,
+        childrenOperations,
+        item.title
+      );
     }
     if (
       item.operations != null &&
       item.operations.length > 0 &&
       autoOperations
     ) {
-      flatMenu(item.operations, newMenus, autoOperations, item.path);
+      flatMenu(
+        item.operations,
+        newMenus,
+        autoOperations,
+        item.path,
+        childrenOperations,
+        item.title
+      );
+    }
+    if (
+      item.childOperations != null &&
+      item.childOperations.length > 0 &&
+      childrenOperations
+    ) {
+      flatMenu(
+        item.childOperations,
+        newMenus,
+        autoOperations,
+        item.path,
+        childrenOperations,
+        item.title
+      );
     }
   });
   return newMenus;

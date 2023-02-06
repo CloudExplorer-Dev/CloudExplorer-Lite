@@ -6,36 +6,40 @@
     :before-leave="beforeLeave"
     class="demo-tabs"
   >
-    <el-tab-pane
-      :label="mod.name"
-      :name="mod.module"
-      v-for="mod in moduleJobs"
-      :key="mod.name"
-    >
-      <JobModuleItem
-        ref="jobModule"
-        :module="mod"
-        :regions="regions"
-        :cloudAccount="cloudAccount"
-        :readOnly="readOnly"
-        :border="border"
+    <template v-for="mod in moduleJobs" :key="mod.name">
+      <el-tab-pane
+        :label="mod.name"
+        v-if="
+          mod.jobDetailsList.some((job) =>
+            supportJobGroups.includes(job.jobGroup)
+          )
+        "
+        :name="mod.module"
       >
-      </JobModuleItem>
-      <layout-container :boder="true" v-if="operation">
-        <el-button type="primary" @click="clear">{{
-          t("commons.btn.cancel", "取消")
-        }}</el-button>
-        <el-button type="primary" @click="submitForm">{{
-          t("commons.btn.save", "保存")
-        }}</el-button>
-      </layout-container>
-    </el-tab-pane>
+        <JobModuleItem
+          ref="jobModule"
+          :module="mod"
+          :regions="regions"
+          :cloudAccount="cloudAccount"
+          :readOnly="readOnly"
+          :border="border"
+        >
+        </JobModuleItem>
+        <layout-container :boder="true" v-if="operation">
+          <el-button type="primary" @click="clear">{{
+            t("commons.btn.cancel", "取消")
+          }}</el-button>
+          <el-button type="primary" @click="submitForm">{{
+            t("commons.btn.save", "保存")
+          }}</el-button>
+        </layout-container>
+      </el-tab-pane>
+    </template>
   </el-tabs>
 </template>
 <script setup lang="ts">
 import { ref, onMounted } from "vue";
 import type { CloudAccount, ModuleJob, Region } from "@/api/cloud_account/type";
-
 import JobModuleItem from "@/componnets/job/JobModuleItem.vue";
 import { ElMessage } from "element-plus";
 import cloudAccountApi from "@/api/cloud_account";
@@ -51,6 +55,9 @@ const jobModule = ref<Array<InstanceType<typeof JobModuleItem>> | null>(null);
  */
 const jobLoading = ref<boolean>(false);
 
+/**
+ * 没有定时任务的时候 显示空页面
+ */
 const empty = ref<boolean>(false);
 
 /**
@@ -66,7 +73,6 @@ const regions = ref<Array<Region>>([]);
  *云账号对象
  */
 const cloudAccount = ref<CloudAccount>();
-
 /**
  * 提交表单
  */
@@ -74,10 +80,13 @@ const submitForm: (isRouter: boolean) => void = (isRouter = true) => {
   if (jobModule.value) {
     Promise.all(jobModule.value.map((item) => item.validate())).then((ok) => {
       cloudAccountApi
-        .updateJobs({
-          cloudAccountModuleJobs: moduleJobs.value,
-          cloudAccountId: props.accountId as string,
-        })
+        .updateJobs(
+          {
+            cloudAccountModuleJobs: moduleJobs.value,
+            cloudAccountId: props.accountId as string,
+          },
+          jobLoading
+        )
         .then(() => {
           if (isRouter) {
             router.push({ name: "cloud_account_list" });
@@ -140,6 +149,14 @@ onMounted(() => {
   }
 });
 /**
+ * 支持的 任务组
+ */
+const supportJobGroups = [
+  "CLOUD_ACCOUNT_RESOURCE_SYNC_GROUP",
+  "CLOUD_ACCOUNT_BILL_SYNC_GROUP",
+  "CLOUD_COMPLIANCE_RESOURCE_SYNC_GROUP",
+];
+/**
  * 初始化定时任务数据
  */
 const init = (cloud_account_id: string) => {
@@ -161,11 +178,15 @@ const init = (cloud_account_id: string) => {
   const p2 = cloudAccountApi.getRegions(cloud_account_id).then((ok) => {
     regions.value = ok.data;
   });
-
+  // 获取云账户
   const p3 = cloudAccountApi.getCloudAccount(cloud_account_id).then((ok) => {
     cloudAccount.value = ok.data;
   });
-  Promise.all([p1, p2, p3]).then((ok) => (jobLoading.value = false));
+  Promise.all([p1, p2, p3])
+    .then(() => (jobLoading.value = false))
+    .catch(() => {
+      jobLoading.value = false;
+    });
 };
 defineExpose({
   rollBack,

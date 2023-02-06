@@ -4,7 +4,7 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.fit2cloud.common.exception.Fit2cloudException;
 import com.fit2cloud.common.scheduler.SchedulerService;
 import com.fit2cloud.common.scheduler.constants.JobErrorCodeConstants;
-import com.fit2cloud.common.scheduler.entity.QuzrtzJobDetail;
+import com.fit2cloud.common.scheduler.entity.QuartzJobDetail;
 import com.fit2cloud.common.scheduler.mapper.QuzrtzMapper;
 import lombok.SneakyThrows;
 import org.apache.commons.collections4.MapUtils;
@@ -133,15 +133,15 @@ public class QuartzSchedulerServiceImpl implements SchedulerService {
 
     @SneakyThrows
     @Override
-    public QuzrtzJobDetail getJobDetails(String jobName, String groupName) {
+    public QuartzJobDetail getJobDetails(String jobName, String groupName) {
         SqlSession sqlSession = quartzSqlSessionFactory.openSession();
         try {
             QuzrtzMapper quzrtzMapper = sqlSession.getMapper(QuzrtzMapper.class);
-            QueryWrapper<QuzrtzJobDetail> wrapper = new QueryWrapper<>();
-            QueryWrapper<QuzrtzJobDetail> eq = wrapper.eq("qt.SCHED_NAME", scheduler.getSchedulerName())
+            QueryWrapper<QuartzJobDetail> wrapper = new QueryWrapper<>();
+            QueryWrapper<QuartzJobDetail> eq = wrapper.eq("qt.SCHED_NAME", scheduler.getSchedulerName())
                     .eq("qt.TRIGGER_NAME", jobName)
                     .eq("qt.TRIGGER_GROUP", groupName);
-            Optional<QuzrtzJobDetail> any = quzrtzMapper.list(eq).stream().findAny();
+            Optional<QuartzJobDetail> any = quzrtzMapper.list(eq).stream().findAny();
             return any.orElse(null);
         } finally {
             sqlSession.close();
@@ -164,11 +164,11 @@ public class QuartzSchedulerServiceImpl implements SchedulerService {
 
     @SneakyThrows
     @Override
-    public List<QuzrtzJobDetail> list() {
+    public List<QuartzJobDetail> list() {
         SqlSession sqlSession = quartzSqlSessionFactory.openSession();
         try {
             QuzrtzMapper quzrtzMapper = sqlSession.getMapper(QuzrtzMapper.class);
-            QueryWrapper<QuzrtzJobDetail> eq = new QueryWrapper<QuzrtzJobDetail>().eq("qt.SCHED_NAME", scheduler.getSchedulerName());
+            QueryWrapper<QuartzJobDetail> eq = new QueryWrapper<QuartzJobDetail>().eq("qt.SCHED_NAME", scheduler.getSchedulerName());
             return quzrtzMapper.list(eq);
         } finally {
             sqlSession.close();
@@ -178,11 +178,11 @@ public class QuartzSchedulerServiceImpl implements SchedulerService {
 
     @SneakyThrows
     @Override
-    public List<QuzrtzJobDetail> list(String groupName) {
+    public List<QuartzJobDetail> list(String groupName) {
         SqlSession sqlSession = quartzSqlSessionFactory.openSession();
         try {
             QuzrtzMapper quzrtzMapper = sqlSession.getMapper(QuzrtzMapper.class);
-            QueryWrapper<QuzrtzJobDetail> eq = new QueryWrapper<QuzrtzJobDetail>().eq("qt.SCHED_NAME", scheduler.getSchedulerName()).eq("qt.TRIGGER_GROUP", groupName);
+            QueryWrapper<QuartzJobDetail> eq = new QueryWrapper<QuartzJobDetail>().eq("qt.SCHED_NAME", scheduler.getSchedulerName()).eq("qt.TRIGGER_GROUP", groupName);
             return quzrtzMapper.list(eq);
         } finally {
             sqlSession.close();

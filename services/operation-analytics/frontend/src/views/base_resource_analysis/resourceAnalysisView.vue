@@ -305,7 +305,7 @@ import { onMounted, ref } from "vue";
 import _ from "lodash";
 import ChartsSpeed from "@commons/components/echart/ChartsSpeed.vue";
 import ResourceSpreadViewApi from "@/api/resource_spread_view/index";
-import { ResourceAnalysisRequest } from "@/api/resource_spread_view/type";
+import { ResourceAnalysisRequest } from "@commons/api/resource_spread_view/type";
 import {
   defaultSpeedOptions,
   defaultPieDoughnutOptions,
@@ -313,7 +313,7 @@ import {
   emptyOptions,
   trendSeriesColor,
   getRandomColor,
-} from "@commons/components/echart/index";
+} from "@commons/components/echart";
 import * as echarts from "echarts";
 //分配情况
 const allocatedInfo = ref<any>({});
