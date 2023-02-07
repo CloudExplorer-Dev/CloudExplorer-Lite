@@ -38,6 +38,8 @@ interface VmCloudServerVO {
   snapShot?: number;
   createTime?: string;
   updateTime?: string;
+  deleteTime?: string;
+  expiredTime?: string;
   platform?: string;
   vmToolsStatus?: string;
   accountName?: string;
@@ -46,6 +48,7 @@ interface VmCloudServerVO {
   showLoading?: boolean;
   securityGroupIds?: [];
   instanceChargeType?: string;
+  applyUser: string;
 }
 
 /**

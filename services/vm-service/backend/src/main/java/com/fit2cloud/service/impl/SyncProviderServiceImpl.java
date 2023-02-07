@@ -290,10 +290,11 @@ public class SyncProviderServiceImpl extends BaseSyncService implements ISyncPro
             String cloudAccountId = getCloudAccountId(params);
             List<Credential.Region> regions = getRegions(cloudAccountId);
             if (params.containsKey(JobConstants.CloudAccount.CLOUD_ACCOUNT_ID.name()) && CollectionUtils.isNotEmpty(regions)) {
-                proxy(cloudAccountId, regions, "同步云主机监控", ICloudProvider::getF2CPerfMetricMonitorData, this::perfMetricMonitorSaveOrUpdate, this::writeJobRecord, () -> {});
+                proxy(cloudAccountId, regions, "同步云主机监控", ICloudProvider::getF2CPerfMetricMonitorData, this::perfMetricMonitorSaveOrUpdate, this::writeJobRecord, () -> {
+                });
             }
         } catch (Exception e) {
-            LogUtil.error("同步云主机监控失败:"+e.getMessage());
+            LogUtil.error("同步云主机监控失败:" + e.getMessage());
         }
     }
 
@@ -314,7 +315,7 @@ public class SyncProviderServiceImpl extends BaseSyncService implements ISyncPro
                         });
             }
         } catch (Exception e) {
-            LogUtil.error("同步宿主机监控失败:"+e.getMessage());
+            LogUtil.error("同步宿主机监控失败:" + e.getMessage());
         }
     }
 
@@ -335,7 +336,7 @@ public class SyncProviderServiceImpl extends BaseSyncService implements ISyncPro
                         });
             }
         } catch (Exception e) {
-            LogUtil.error("同步云磁盘监控失败:"+e.getMessage());
+            LogUtil.error("同步云磁盘监控失败:" + e.getMessage());
         }
     }
 
@@ -356,7 +357,7 @@ public class SyncProviderServiceImpl extends BaseSyncService implements ISyncPro
                         });
             }
         } catch (Exception e) {
-            LogUtil.error("同步存储器监控失败:"+e.getMessage());
+            LogUtil.error("同步存储器监控失败:" + e.getMessage());
         }
     }
 
@@ -398,7 +399,7 @@ public class SyncProviderServiceImpl extends BaseSyncService implements ISyncPro
                 s -> ProviderConstants.valueOf(s).getCloudProvider(),
                 syncTime -> initJobRecord(jobDescription, syncTime, cloudAccountId),
                 execMethod,
-                (account, region) -> getParams(account.getCredential(), region.getRegionId(),account.getSyncTimeStampStr()),
+                (account, region) -> getParams(account.getCredential(), region.getRegionId(), account.getSyncTimeStampStr()),
                 saveBatchOrUpdate,
                 writeJobRecord,
                 remote);
@@ -433,16 +434,16 @@ public class SyncProviderServiceImpl extends BaseSyncService implements ISyncPro
     /**
      * 获取函数执行参数
      *
-     * @param credential 认证信息
-     * @param region     区域信息
-     * @param syncTimeStampStr     开始同步的时间
+     * @param credential       认证信息
+     * @param region           区域信息
+     * @param syncTimeStampStr 开始同步的时间
      * @return json参数
      */
-    private String getParams(String credential, String region,String syncTimeStampStr) {
+    private String getParams(String credential, String region, String syncTimeStampStr) {
         HashMap<String, String> params = new HashMap<>();
         params.put("credential", credential);
         params.put("regionId", region);
-        params.put("syncTimeStampStr",syncTimeStampStr);
+        params.put("syncTimeStampStr", syncTimeStampStr);
         return JsonUtil.toJSONString(params);
     }
 
@@ -486,7 +487,7 @@ public class SyncProviderServiceImpl extends BaseSyncService implements ISyncPro
         Optional.ofNullable(f2CVirtualMachine.getCreateTime()).ifPresent((createTime) -> vmCloudServer.setCreateTime(DateUtil.timestampToDatetime(createTime)));
         vmCloudServer.setUpdateTime(updateTime);
         vmCloudServer.setIpArray(JsonUtil.toJSONString(f2CVirtualMachine.getIpArray()));
-        vmCloudServer.setSecurityGroupIds(JsonUtil.toJSONString(f2CVirtualMachine.getSecurityGroupIds()));
+        Optional.ofNullable(f2CVirtualMachine.getSecurityGroupIds()).ifPresent((theSecurityGroupIds) -> vmCloudServer.setSecurityGroupIds(JsonUtil.toJSONString(theSecurityGroupIds)));
         return vmCloudServer;
     }
 

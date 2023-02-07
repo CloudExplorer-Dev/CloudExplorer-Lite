@@ -258,24 +258,6 @@ public class VmCloudServer implements Serializable {
     @TableField("snap_shot")
     private Integer snapShot;
 
-    @TableField("vm_tools_version")
-    private String vmToolsVersion;
-
-    @TableField("vm_tools_status")
-    private String vmToolsStatus;
-
-    /**
-     * 安全组
-     */
-    @TableField("security_group_ids")
-    private String securityGroupIds;
-
-    /**
-     * 计费类型
-     */
-    @TableField("instance_charge_type")
-    private String instanceChargeType;
-
     /**
      * 创建时间
      */
@@ -302,4 +284,61 @@ public class VmCloudServer implements Serializable {
     @JsonSerialize(using = LocalDateTimeSerializer.class)
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
     private LocalDateTime lastShutdownTime;
+
+    /**
+     * 最近关机时间
+     */
+    @TableField("last_operate_time")
+    @JsonDeserialize(using = LocalDateTimeDeserializer.class)
+    @JsonSerialize(using = LocalDateTimeSerializer.class)
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
+    private LocalDateTime lastOperateTime;
+
+    /**
+     * tools版本
+     */
+    @TableField("vm_tools_version")
+    private String vmToolsVersion;
+
+    /**
+     * tools状态
+     */
+    @TableField("vm_tools_status")
+    private String vmToolsStatus;
+
+    /**
+     * 计费方式
+     */
+    @TableField("instance_charge_type")
+    private String instanceChargeType;
+
+    /**
+     * 安全组
+     */
+    @TableField("security_group_ids")
+    private String securityGroupIds;
+
+    /**
+     * 删除时间
+     */
+    @TableField("delete_time")
+    @JsonDeserialize(using = LocalDateTimeDeserializer.class)
+    @JsonSerialize(using = LocalDateTimeSerializer.class)
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
+    private LocalDateTime deleteTime;
+
+    /**
+     * 申请人
+     */
+    @TableField("apply_user")
+    private String applyUser;
+
+    /**
+     * 包年包月实例的到期时间
+     */
+    @TableField("expired_time")
+    @JsonDeserialize(using = LocalDateTimeDeserializer.class)
+    @JsonSerialize(using = LocalDateTimeSerializer.class)
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
+    private LocalDateTime expiredTime;
 }
