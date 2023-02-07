@@ -299,7 +299,7 @@ export class RouteObj {
           (dynamicRoute.home[index].component ||
             dynamicRoute.home[index].redirect) &&
           (await this.routeHasRolePermission(
-            dynamicRoute.home[index].requiredPermissions
+            dynamicRoute.home[index].meta.requiredPermissions
           ))
         ) {
           next({ path: dynamicRoute.home[index].path });
