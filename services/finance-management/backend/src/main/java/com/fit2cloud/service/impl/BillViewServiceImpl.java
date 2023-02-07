@@ -10,10 +10,7 @@ import co.elastic.clients.util.ObjectBuilder;
 import com.fit2cloud.base.service.IBaseOrganizationService;
 import com.fit2cloud.common.constants.RoleConstants;
 import com.fit2cloud.common.exception.Fit2cloudException;
-import com.fit2cloud.common.util.EsFieldUtil;
-import com.fit2cloud.common.util.EsScriptUtil;
-import com.fit2cloud.common.util.MappingUtil;
-import com.fit2cloud.common.util.MonthUtil;
+import com.fit2cloud.common.util.*;
 import com.fit2cloud.common.utils.JsonUtil;
 import com.fit2cloud.constants.ErrorCodeConstants;
 import com.fit2cloud.controller.request.BillExpensesRequest;
@@ -78,7 +75,7 @@ public class BillViewServiceImpl implements BillViewService {
         ScriptQuery scriptQuery = new ScriptQuery.Builder().script(s -> EsScriptUtil.getMonthOrYearScript(s, type, value)).build();
         Aggregation aggregation = new Aggregation.Builder().sum(new SumAggregation.Builder().field("realTotalCost").build()).build();
         Query q = new Query.Builder().script(scriptQuery).build();
-        Query authQuery = getAuthQuery();
+        Query authQuery = AuthUtil.getAuthQuery(org -> organizationService.getOrgLevel(org));
         if (Objects.nonNull(authQuery)) {
             q = new Query.Builder().bool(new BoolQuery.Builder().must(q, authQuery).build()).build();
         }
@@ -103,7 +100,7 @@ public class BillViewServiceImpl implements BillViewService {
         List<String> months = MonthUtil.getHistoryMonth(LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM")), historyNum);
         // todo 根据趋势月份构建查询条件
         Query q = new Query.Builder().script(new ScriptQuery.Builder().script(s -> getTermsAggregationScript(s, months)).build()).build();
-        Query authQuery = getAuthQuery();
+        Query authQuery = AuthUtil.getAuthQuery(org -> organizationService.getOrgLevel(org));
         if (Objects.nonNull(authQuery)) {
             q = new Query.Builder().bool(new BoolQuery.Builder().must(q, authQuery).build()).build();
         }
@@ -118,30 +115,6 @@ public class BillViewServiceImpl implements BillViewService {
         return dateHistogramAggregate.buckets().array().stream().map(this::toTrend).toList();
     }
 
-    /**
-     * 获取当前用户角色的查询Query
-     *
-     * @return 获取当前用户角色查询Query
-     */
-    private Query getAuthQuery() {
-        SecurityContext context = SecurityContextHolder.getContext();
-        UserDto userDto = (UserDto) context.getAuthentication().getPrincipal();
-        if (userDto.getCurrentRole().equals(RoleConstants.ROLE.ADMIN)) {
-            // 如果是管理员则查询全部
-            return null;
-        }
-        if (userDto.getCurrentRole().equals(RoleConstants.ROLE.ORGADMIN)) {
-            String currentSource = userDto.getCurrentSource();
-            int orgLevel = organizationService.getOrgLevel(currentSource);
-            return new Query.Builder().term(new TermQuery.Builder().field(orgLevel + "级组织" + "." + "").value(currentSource).build()).build();
-        }
-        if (userDto.getCurrentRole().equals(RoleConstants.ROLE.USER)) {
-            String currentSource = userDto.getCurrentSource();
-            return new Query.Builder().term(new TermQuery.Builder().field("workspaceId").value(currentSource).build()).build();
-        }
-        return null;
-
-    }
 
     @Override
     public Map<String, List<BillView>> billViewByRuleId(String ruleId, String month) {
@@ -199,7 +172,7 @@ public class BillViewServiceImpl implements BillViewService {
     private NativeQuery getSearchBillViewQueryByRule(BillRule billRule, List<String> months, String realTotalCostKey) {
         // todo 根据趋势月份构建查询条件
         Query q = new Query.Builder().script(new ScriptQuery.Builder().script(s -> getTermsAggregationScript(s, months)).build()).build();
-        Query authQuery = getAuthQuery();
+        Query authQuery = AuthUtil.getAuthQuery(org -> organizationService.getOrgLevel(org));
         if (Objects.nonNull(authQuery)) {
             q = new Query.Builder().bool(new BoolQuery.Builder().must(q, authQuery).build()).build();
         }

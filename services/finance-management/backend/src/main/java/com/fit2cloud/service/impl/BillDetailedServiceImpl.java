@@ -12,10 +12,12 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.fit2cloud.base.entity.CloudAccount;
 import com.fit2cloud.base.service.IBaseCloudAccountService;
+import com.fit2cloud.base.service.IBaseOrganizationService;
 import com.fit2cloud.common.cache.CloudAccountCache;
 import com.fit2cloud.common.cache.OrganizationCache;
 import com.fit2cloud.common.cache.WorkSpaceCache;
 import com.fit2cloud.common.query.convert.QueryFieldValueConvert;
+import com.fit2cloud.common.util.AuthUtil;
 import com.fit2cloud.common.util.EsScriptUtil;
 import com.fit2cloud.common.utils.QueryUtil;
 import com.fit2cloud.controller.request.PageBillDetailedRequest;
@@ -47,6 +49,8 @@ public class BillDetailedServiceImpl implements IBillDetailedService {
     private ElasticsearchTemplate elasticsearchTemplate;
     @Resource
     private IBaseCloudAccountService cloudAccountService;
+    @Resource
+    private IBaseOrganizationService organizationService;
 
     @Override
     public IPage<BillDetailResponse> page(Integer currentPage, Integer pageSize, PageBillDetailedRequest request) {
@@ -57,7 +61,11 @@ public class BillDetailedServiceImpl implements IBillDetailedService {
             }
             return CollectionUtils.isEmpty(list) ? new ArrayList<>() : list.stream().map(CloudAccount::getId).toList();
         }).build());
+        Query authQuery = AuthUtil.getAuthQuery(org -> organizationService.getOrgLevel(org));
         ArrayList<Query> boolQueryList = new ArrayList<>(queries);
+        if (Objects.nonNull(authQuery)) {
+            boolQueryList.add(authQuery);
+        }
         if (StringUtil.isNotEmpty(request.getMonth())) {
             Query monthQuery = new Query.Builder().script(new ScriptQuery.Builder().script(s -> EsScriptUtil.getMonthOrYearScript(s, "MONTH", request.getMonth())).build()).build();
             boolQueryList.add(monthQuery);
