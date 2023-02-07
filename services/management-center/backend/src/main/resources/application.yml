@@ -46,4 +46,4 @@ eureka:
       name_zh-tw: 管理中心
       name_en: Management Center
       basePath: ${server.servlet.context-path}/
-      icon: shouye3
+      icon: yonghuguanli_huaban
