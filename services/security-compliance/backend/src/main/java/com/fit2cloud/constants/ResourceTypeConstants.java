@@ -81,8 +81,19 @@ public enum ResourceTypeConstants {
     /**
      * 安全组
      */
-    SECURITY_GROUP("安全组", ICloudProvider::listSecurityGroupInstance, ICloudProvider::listSecurityGroupInstanceSearchField);
-
+    SECURITY_GROUP("安全组", ICloudProvider::listSecurityGroupInstance, ICloudProvider::listSecurityGroupInstanceSearchField),
+    /**
+     * 宿主机
+     */
+    HOST("宿主机", ICloudProvider::listHostInstance, ICloudProvider::listHostInstanceSearchField),
+    /**
+     * 存储器
+     */
+    DATA_STORE("存储器", ICloudProvider::listDataStoreInstance, ICloudProvider::listDataStoreInstanceSearchField),
+    /**
+     * 资源池
+     */
+    RESOURCE_POOL("资源池", ICloudProvider::listResourcePoolInstance, ICloudProvider::listResourcePoolInstanceSearchField);
     /**
      * 提示
      */

@@ -101,7 +101,8 @@ public class TencentCloudProvider extends AbstractCloudProvider<TencentCredentia
         List<Map<String, String>> result = new ArrayList<>();
         for (TencentOSType type : TencentOSType.values()) {
             Map<String, String> map = new HashMap<>();
-            map.put("id", type.name());
+            // 如果写成 windows，本地环境没问题，打包后的环境前端切换到 windows 选项会卡死
+            map.put("id", type.name().equalsIgnoreCase("Windows") ? "Window" : type.name());
             map.put("name", type.name());
             result.add(map);
         }
@@ -365,7 +366,7 @@ public class TencentCloudProvider extends AbstractCloudProvider<TencentCredentia
     }
 
     @Override
-    public F2CVirtualMachine changeVmConfig(String req){
+    public F2CVirtualMachine changeVmConfig(String req) {
         return TencetSyncCloudApi.changeVmConfig(JsonUtil.parseObject(req, TencentUpdateConfigRequest.class));
     }
 
@@ -378,7 +379,7 @@ public class TencentCloudProvider extends AbstractCloudProvider<TencentCredentia
         return TencetSyncCloudApi.getInstanceTypesForConfigUpdate(JsonUtil.parseObject(req, TencentUpdateConfigRequest.class));
     }
 
-    public String calculateConfigUpdatePrice(String req){
+    public String calculateConfigUpdatePrice(String req) {
         return TencetSyncCloudApi.calculateConfigUpdatePrice(JsonUtil.parseObject(req, TencentUpdateConfigRequest.class));
     }
 }

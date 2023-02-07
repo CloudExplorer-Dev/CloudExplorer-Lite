@@ -63,13 +63,18 @@ public class TencentMappingUtil {
             f2CInstance.setCreated(new Date(utcTime));
             f2CInstance.setCreateTime(utcTime);
         }
+        if (StringUtils.isNotEmpty(instance.getExpiredTime())) {
+            long utcTime = CommonUtil.getUTCTime(instance.getExpiredTime(), "yyyy-MM-dd'T'HH:mm:ss'Z'");
+            f2CInstance.setExpired(new Date(utcTime));
+            f2CInstance.setExpiredTime(utcTime);
+        }
         f2CInstance.setInstanceStatus(toF2CStatus(instance.getInstanceState()));
         f2CInstance.setIpArray(ipArray);
         f2CInstance.setVpcId(instance.getVirtualPrivateCloud().getVpcId());
         f2CInstance.setSubnetId(instance.getVirtualPrivateCloud().getSubnetId());
         //计费方式
         String instanceChargeType = null;
-        switch (instance.getInstanceChargeType()){
+        switch (instance.getInstanceChargeType()) {
             case "PREPAID":
                 instanceChargeType = F2CChargeType.PRE_PAID;
                 break;
@@ -108,7 +113,7 @@ public class TencentMappingUtil {
         f2CDisk.setDiskType(disk.getDiskType());
         //计费方式
         String instanceChargeType = null;
-        switch (disk.getDiskChargeType()){
+        switch (disk.getDiskChargeType()) {
             case "PREPAID":
                 instanceChargeType = F2CChargeType.PRE_PAID;
                 break;

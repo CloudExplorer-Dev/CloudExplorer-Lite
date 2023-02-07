@@ -18,12 +18,27 @@
         :readOnly="readOnly"
         ref="billSetting"
       ></bill-setting-view>
+      <compliance-scan-setting-view
+        ref="complianceScanSettingViewRef"
+        v-else-if="complianceJob.length > 0"
+        :jobDetails="complianceJob"
+        :regions="regions"
+        :border="border"
+        :readOnly="readOnly"
+      ></compliance-scan-setting-view>
       <!-- 定时任务设置 -->
       <!-- 定时任务设置 -->
       <job-setting
         v-if="billJob.length > 0"
         ref="jobCronSettingRef"
         :jobDetails="billJob"
+        :border="border"
+        :readOnly="readOnly"
+      ></job-setting>
+      <job-setting
+        v-else-if="complianceJob.length > 0"
+        ref="jobCronSettingRef"
+        :jobDetails="complianceJob"
         :border="border"
         :readOnly="readOnly"
       ></job-setting>
@@ -44,11 +59,13 @@ import JobSetting from "@/componnets/job/job_setting/index.vue";
 import RegionSettingView from "@/componnets/job/params/RegionSettingView.vue";
 
 import BillSettingView from "@/componnets/job/params/BillSettingView.vue";
-
+import ComplianceScanSettingView from "@/componnets/job/params/ComplianceScanSettingView.vue";
 const billSetting = ref<InstanceType<typeof BillSettingView> | null>(null);
 
 const jobCronSettingRef = ref<InstanceType<typeof JobSetting>>();
 
+const complianceScanSettingViewRef =
+  ref<InstanceType<typeof ComplianceScanSettingView>>();
 const props = withDefaults(
   defineProps<{
     /**
@@ -59,6 +76,9 @@ const props = withDefaults(
      * 区域
      */
     regions: Array<Region>;
+    /**
+     * 是否有border
+     */
     border: boolean;
     /**
      * 是否可读
@@ -68,6 +88,10 @@ const props = withDefaults(
      * 云账号
      */
     cloudAccount?: CloudAccount;
+    /**
+     * 当前模块名称
+     */
+    activeModuleName: string;
   }>(),
   { border: true }
 );
@@ -91,14 +115,24 @@ const billJob = computed(() =>
   )
 );
 
+const complianceJob = computed(() =>
+  props.module.jobDetailsList.filter(
+    (j) => j.jobGroup === "CLOUD_COMPLIANCE_RESOURCE_SYNC_GROUP"
+  )
+);
+
 const validate = () => {
   if (billJob.value.length > 0) {
     return Promise.all([
       billSetting.value?.validate(),
       jobCronSettingRef.value?.validate(),
+      complianceScanSettingViewRef.value?.validate(),
     ]);
   }
-  return jobCronSettingRef.value?.validate();
+  return Promise.all([
+    jobCronSettingRef.value?.validate(),
+    complianceScanSettingViewRef.value?.validate(),
+  ]);
 };
 defineExpose({ validate });
 </script>

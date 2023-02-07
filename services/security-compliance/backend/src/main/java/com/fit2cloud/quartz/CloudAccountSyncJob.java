@@ -2,6 +2,7 @@ package com.fit2cloud.quartz;
 
 import com.fit2cloud.base.entity.CloudAccount;
 import com.fit2cloud.base.service.IBaseCloudAccountService;
+import com.fit2cloud.common.constants.JobConstants;
 import com.fit2cloud.common.log.utils.LogUtil;
 import com.fit2cloud.common.scheduler.handler.AsyncJob;
 import com.fit2cloud.common.utils.SpringUtil;
@@ -28,12 +29,19 @@ public class CloudAccountSyncJob {
         @Override
         protected void run(Map<String, Object> map) {
             LogUtil.info("开始扫描合规资源: ", map);
+            List<String> complianceScanContents = (List<String>) map.get("complianceScanContent");
             ISyncService syncService = SpringUtil.getBean(ISyncService.class);
             IComplianceScanService complianceScanService = SpringUtil.getBean(IComplianceScanService.class);
-            List<SupportCloudAccountResourceResponse> supportCloudAccountResourceResponses = complianceScanService.listSupportCloudAccountResource();
-            for (SupportCloudAccountResourceResponse supportCloudAccountResource : supportCloudAccountResourceResponses) {
-                syncService.syncInstance(supportCloudAccountResource.getCloudAccount().getId(), supportCloudAccountResource.getResourceTypes()
-                        .stream().map(DefaultKeyValue::getValue).toList());
+            for (String complianceScanContent : complianceScanContents) {
+                if (complianceScanContent.equals("complianceScan")) {
+                    List<SupportCloudAccountResourceResponse> supportCloudAccountResourceResponses = complianceScanService.listSupportCloudAccountResource();
+                    for (SupportCloudAccountResourceResponse supportCloudAccountResource : supportCloudAccountResourceResponses) {
+                        if (map.containsKey(JobConstants.CloudAccount.CLOUD_ACCOUNT_ID.name()) && supportCloudAccountResource.getCloudAccount().getId().equals(map.get(JobConstants.CloudAccount.CLOUD_ACCOUNT_ID.name()))) {
+                            syncService.syncInstance(supportCloudAccountResource.getCloudAccount().getId(), supportCloudAccountResource.getResourceTypes()
+                                    .stream().map(DefaultKeyValue::getValue).toList());
+                        }
+                    }
+                }
             }
             LogUtil.info("合规资源扫描完毕:", map);
         }

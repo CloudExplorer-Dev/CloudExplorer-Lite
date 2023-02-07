@@ -6,6 +6,7 @@ import com.fit2cloud.common.provider.entity.F2CEntityType;
 import com.fit2cloud.common.provider.entity.F2CPerfMetricMonitorData;
 import com.fit2cloud.common.provider.exception.ReTryException;
 import com.fit2cloud.common.provider.exception.SkipPageException;
+import com.fit2cloud.common.provider.util.CommonUtil;
 import com.fit2cloud.common.provider.util.PageUtil;
 import com.fit2cloud.common.utils.DateUtil;
 import com.fit2cloud.common.utils.JsonUtil;
@@ -93,7 +94,14 @@ public class HuaweiSyncCloudApi {
                     req -> req.setOffset(req.getOffset() + 1));
             if (CollectionUtils.isNotEmpty(instances)) {
                 List<Port> ports = listPorts(listVirtualMachineRequest.getCredential(), listVirtualMachineRequest.getRegionId());
-                return instances.stream().map(server -> HuaweiMappingUtil.toF2CVirtualMachine(server, ports)).map(f2CVirtualMachine -> {
+                return instances.stream().map(server -> {
+                            F2CVirtualMachine virtualMachine = HuaweiMappingUtil.toF2CVirtualMachine(server, ports);
+                            // 获取包年包月机器的到期时间
+                            if (F2CChargeType.PRE_PAID.equalsIgnoreCase(virtualMachine.getInstanceChargeType())) {
+                                appendExpiredTime(credential, server, virtualMachine);
+                            }
+                            return virtualMachine;
+                        }).map(f2CVirtualMachine -> {
                             f2CVirtualMachine.setRegion(listVirtualMachineRequest.getRegionId());
                             return f2CVirtualMachine;
                         }).map(f2CVirtualMachine -> appendDisk(listVirtualMachineRequest.getCredential(), listVirtualMachineRequest.getRegionId(), f2CVirtualMachine))
@@ -158,6 +166,24 @@ public class HuaweiSyncCloudApi {
         return f2CVirtualMachine;
     }
 
+    /**
+     * 给云主机增加到期时间
+     *
+     * @param credential
+     * @param serverDetail
+     * @param f2CVirtualMachine
+     */
+    private static void appendExpiredTime(HuaweiVmCredential credential, ServerDetail serverDetail, F2CVirtualMachine f2CVirtualMachine) {
+        String orderId = serverDetail.getMetadata().get("metering.order_id");
+        String productId = serverDetail.getMetadata().get("metering.product_id");
+        ShowCustomerOrderDetailsResponse response = getOrderDetailsById(orderId, credential.getBssClient());
+        if (CollectionUtils.isNotEmpty(response.getOrderLineItems())) {
+            String expireTime = response.getOrderLineItems().stream().filter(orderLineItemEntityV2 ->
+                    orderLineItemEntityV2.getProductId().equalsIgnoreCase(productId)
+            ).collect(Collectors.toList()).get(0).getExpireTime();
+            f2CVirtualMachine.setCreateTime(new Date(CommonUtil.getUTCTime(expireTime, "yyyy-MM-dd'T'HH:mm:ss'Z'")).getTime());
+        }
+    }
 
     /**
      * 获取port列表
@@ -427,8 +453,6 @@ public class HuaweiSyncCloudApi {
             e.printStackTrace();
             throw new RuntimeException(e.getMessage(), e);
         }
-
-
     }
 
     /**
@@ -625,6 +649,7 @@ public class HuaweiSyncCloudApi {
 
     /**
      * 需要通过云主机查询
+     *
      * @param getMetricsRequest
      * @return
      */
@@ -646,6 +671,7 @@ public class HuaweiSyncCloudApi {
         }
         return result;
     }
+
     /**
      * 获取虚拟机监控指标数据
      *
