@@ -4,6 +4,16 @@ import aws from "@commons/assets/img/cloud-vendor-icon/aws.ico";
 import vmware from "@commons/assets/img/cloud-vendor-icon/vmware.ico";
 import qcloud from "@commons/assets/img/cloud-vendor-icon/qcloud.ico";
 import openstack from "@commons/assets/img/cloud-vendor-icon/openstack.ico";
+
+import LogoAliyun from "@commons/assets/img/cloud-vendor-icon/logo-aliyun.png";
+import LogoHuawei from "@commons/assets/img/cloud-vendor-icon/logo-huawei.svg";
+import LogoAws from "@commons/assets/img/cloud-vendor-icon/logo-aws.svg";
+import LogoVmware from "@commons/assets/img/cloud-vendor-icon/logo-vsphere.png";
+import LogoOpenStack from "@commons/assets/img/cloud-vendor-icon/logo-openstack.svg";
+import LogoTencent from "@commons/assets/img/cloud-vendor-icon/logo-tencent.svg";
+
+import IconVmware from "@commons/assets/img/cloud-vendor-icon/icon-vsphere.svg";
+
 import type { SimpleMap } from "@commons/api/base/type";
 import CeIcon from "@commons/components/ce-icon/index.vue";
 
@@ -13,6 +23,7 @@ interface PlatFormIcon {
   icon?: any;
   oldIcon?: any;
   name: string;
+  logo?: any;
 }
 
 export const platformIcon: SimpleMap<PlatFormIcon> = {
@@ -20,6 +31,7 @@ export const platformIcon: SimpleMap<PlatFormIcon> = {
     component: CeIcon,
     icon: { code: "aliyun" },
     oldIcon: aliyun,
+    logo: LogoAliyun, //就你不是svg
     color: "#ff6c06",
     name: "阿里云",
   },
@@ -27,6 +39,7 @@ export const platformIcon: SimpleMap<PlatFormIcon> = {
     component: CeIcon,
     icon: { code: "huawei" },
     oldIcon: huawei,
+    logo: LogoHuawei,
     color: "#f40f0a",
     name: "华为云",
   },
@@ -34,20 +47,25 @@ export const platformIcon: SimpleMap<PlatFormIcon> = {
     component: CeIcon,
     icon: { code: "aws" },
     oldIcon: aws,
+    logo: LogoAws,
     color: "#e38d2e",
     name: "AWS",
   },
   fit2cloud_vsphere_platform: {
+    /*component: ElImage,
+    icon: { src: IconVmware, style: { height: "1em", width: "1em" } },*/
     component: CeIcon,
-    icon: { code: "a-ziyuan38" },
+    icon: { src: IconVmware, type: "img" },
     oldIcon: vmware,
-    color: "#6e6e71",
+    logo: LogoVmware,
+    // color: "#6e6e71",
     name: "vmware",
   },
   fit2cloud_tencent_platform: {
     component: CeIcon,
     icon: { code: "tengxunyun" },
     oldIcon: qcloud,
+    logo: LogoTencent,
     color: "#139df6",
     name: "腾讯云",
   },
@@ -55,6 +73,7 @@ export const platformIcon: SimpleMap<PlatFormIcon> = {
     component: CeIcon,
     icon: { code: "icon_openstack" },
     oldIcon: openstack,
+    logo: LogoOpenStack,
     color: "#d21f33",
     name: "OpenStack",
   },

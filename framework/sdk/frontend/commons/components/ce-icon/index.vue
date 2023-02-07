@@ -26,6 +26,7 @@ const props = defineProps({
   color: {
     type: String,
   },
+  src: {},
 });
 
 /**
@@ -49,6 +50,11 @@ const getCode = computed(() => {
       v-else-if="Object.keys(components).includes(props.code)"
       :is="$antIcons[props.code]"
     ></component>
+    <el-image
+      v-if="type === 'img'"
+      :src="src"
+      :style="{ width: size, height: size }"
+    />
     <span
       :style="{ fontSize: props.size, color: props.color }"
       v-else

@@ -63,7 +63,7 @@ interface Platform {
    */
   field: string;
 
-  credentialFrom: Array<Form>;
+  credentialForm: Array<Form>;
 }
 
 interface CreateAccount {
