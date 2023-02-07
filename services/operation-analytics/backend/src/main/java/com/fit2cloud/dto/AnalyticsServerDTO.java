@@ -29,6 +29,7 @@ public class AnalyticsServerDTO extends VmCloudServer {
     private String chargeType;
 
     private String createMonth;
+    private String deleteMonth;
 
     private BigDecimal cpuMinimum;
     private BigDecimal cpuMaximum;

@@ -4,10 +4,15 @@ import co.elastic.clients.elasticsearch._types.aggregations.*;
 import co.elastic.clients.elasticsearch._types.query_dsl.BoolQuery;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
-import com.baomidou.mybatisplus.core.metadata.OrderItem;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import com.fit2cloud.base.entity.*;
-import com.fit2cloud.base.service.*;
+import com.fit2cloud.base.entity.CloudAccount;
+import com.fit2cloud.base.entity.VmCloudDatastore;
+import com.fit2cloud.base.entity.VmCloudHost;
+import com.fit2cloud.base.mapper.BaseVmCloudDatastoreMapper;
+import com.fit2cloud.base.mapper.BaseVmCloudHostMapper;
+import com.fit2cloud.base.service.IBaseCloudAccountService;
+import com.fit2cloud.base.service.IBaseVmCloudDatastoreService;
+import com.fit2cloud.base.service.IBaseVmCloudHostService;
 import com.fit2cloud.common.constants.PlatformConstants;
 import com.fit2cloud.common.es.ElasticsearchProvide;
 import com.fit2cloud.common.es.constants.IndexConstants;
@@ -23,14 +28,13 @@ import com.fit2cloud.controller.request.datastore.PageDatastoreRequest;
 import com.fit2cloud.controller.request.host.PageHostRequest;
 import com.fit2cloud.controller.response.ChartData;
 import com.fit2cloud.controller.response.ResourceAllocatedInfo;
-import com.fit2cloud.dao.mapper.AnalyticsDatastoreMapper;
-import com.fit2cloud.dao.mapper.AnalyticsHostMapper;
 import com.fit2cloud.dto.AnalyticsDatastoreDTO;
 import com.fit2cloud.dto.AnalyticsHostDTO;
 import com.fit2cloud.dto.KeyValue;
 import com.fit2cloud.es.entity.PerfMetricMonitorData;
 import com.fit2cloud.service.IBaseResourceAnalysisService;
 import com.fit2cloud.utils.OperationUtils;
+import com.github.yulichang.wrapper.MPJLambdaWrapper;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.data.domain.PageRequest;
@@ -58,9 +62,9 @@ import java.util.stream.Stream;
 @Service
 public class BaseResourceAnalysisServiceImpl implements IBaseResourceAnalysisService {
     @Resource
-    private AnalyticsHostMapper analyticsHostMapper;
+    private BaseVmCloudHostMapper baseVmCloudHostMapper;
     @Resource
-    private AnalyticsDatastoreMapper analyticsDatastoreMapper;
+    private BaseVmCloudDatastoreMapper baseVmCloudDatastoreMapper;
     @Resource
     private IBaseCloudAccountService iBaseCloudAccountService;
     @Resource
@@ -71,17 +75,22 @@ public class BaseResourceAnalysisServiceImpl implements IBaseResourceAnalysisSer
     private ElasticsearchTemplate elasticsearchTemplate;
     @Resource
     private ElasticsearchProvide elasticsearchProvide;
-    @Resource
-    private IBaseVmCloudServerService iBaseVmCloudServerService;
-    @Resource
-    private IBaseVmCloudDiskService iBaseVmCloudDiskService;
 
+    /**
+     * @param request 宿主机分页查询参数
+     * @return
+     */
     @Override
     public IPage<AnalyticsHostDTO> pageHost(PageHostRequest request) {
-        Page<AnalyticsHostDTO> page = PageUtil.of(request, AnalyticsHostDTO.class, new OrderItem(ColumnNameUtil.getColumnName(AnalyticsHostDTO::getCreateTime, true), false), true);
+        Page<AnalyticsHostDTO> page = PageUtil.of(request, AnalyticsHostDTO.class, null, true);
         // 构建查询参数
-        QueryWrapper<AnalyticsHostDTO> wrapper = addHostQuery(request);
-        return analyticsHostMapper.pageList(page, wrapper);
+        MPJLambdaWrapper<VmCloudHost> wrapper = new MPJLambdaWrapper<VmCloudHost>().selectAll(VmCloudHost.class);
+        wrapper.like(StringUtils.isNotBlank(request.getHostName()),VmCloudHost::getHostName,request.getHostName());
+        wrapper.selectAs(CloudAccount::getName,AnalyticsHostDTO::getAccountName);
+        wrapper.selectAs(CloudAccount::getPlatform,AnalyticsDatastoreDTO::getPlatform);
+        wrapper.leftJoin(CloudAccount.class,CloudAccount::getId,AnalyticsDatastoreDTO::getAccountId);
+        wrapper.orderByDesc(CloudAccount::getCreateTime);
+        return baseVmCloudHostMapper.selectJoinPage(page,AnalyticsHostDTO.class, wrapper);
     }
 
     @Override
@@ -89,18 +98,29 @@ public class BaseResourceAnalysisServiceImpl implements IBaseResourceAnalysisSer
         return iBaseVmCloudHostService.count();
     }
 
-    private QueryWrapper<AnalyticsHostDTO> addHostQuery(PageHostRequest request) {
-        QueryWrapper<AnalyticsHostDTO> wrapper = new QueryWrapper<>();
-        wrapper.like(StringUtils.isNotBlank(request.getHostName()), ColumnNameUtil.getColumnName(AnalyticsHostDTO::getHostName, true), request.getHostName());
-        return wrapper;
-    }
-
+    /**
+     * @param request 存储器分页查询参数
+     * @return
+     */
     @Override
     public IPage<AnalyticsDatastoreDTO> pageDatastore(PageDatastoreRequest request) {
-        Page<AnalyticsDatastoreDTO> page = PageUtil.of(request, AnalyticsDatastoreDTO.class, new OrderItem(ColumnNameUtil.getColumnName(AnalyticsDatastoreDTO::getCreateTime, true), false), true);
+        Page<VmCloudDatastore> page = PageUtil.of(request, VmCloudDatastore.class, null, false);
         // 构建查询参数
-        QueryWrapper<AnalyticsDatastoreDTO> wrapper = addQueryDatastore(request);
-        return analyticsDatastoreMapper.pageList(page, wrapper);
+        MPJLambdaWrapper<VmCloudDatastore> wrapper = addQueryDatastore(request);
+        wrapper.selectAs(CloudAccount::getName,AnalyticsDatastoreDTO::getAccountName);
+        wrapper.selectAs(CloudAccount::getPlatform,AnalyticsDatastoreDTO::getPlatform);
+        wrapper.leftJoin(CloudAccount.class,CloudAccount::getId,AnalyticsDatastoreDTO::getAccountId);
+        wrapper.orderByDesc(VmCloudDatastore::getCreateTime);
+        IPage<AnalyticsDatastoreDTO> result = baseVmCloudDatastoreMapper.selectJoinPage(page,AnalyticsDatastoreDTO.class,wrapper);
+        //计算
+        result.getRecords().stream().forEach(v->{
+            v.setAllocated(String.valueOf(v.getCapacity()-v.getFreeSpace()));
+            BigDecimal useRate = new BigDecimal(v.getCapacity()).subtract(new BigDecimal(v.getFreeSpace())).multiply(new BigDecimal(100)).divide(new BigDecimal(v.getCapacity()),2,RoundingMode.UP);
+            v.setUseRate(String.valueOf(useRate));
+            BigDecimal freeRate = new BigDecimal(v.getFreeSpace()).multiply(new BigDecimal(100)).divide(new BigDecimal(v.getCapacity()),2,RoundingMode.UP);
+            v.setFreeRate(String.valueOf(freeRate));
+        });
+        return result;
     }
 
     @Override
@@ -108,9 +128,10 @@ public class BaseResourceAnalysisServiceImpl implements IBaseResourceAnalysisSer
         return iBaseVmCloudDatastoreService.count();
     }
 
-    private QueryWrapper<AnalyticsDatastoreDTO> addQueryDatastore(PageDatastoreRequest request) {
-        QueryWrapper<AnalyticsDatastoreDTO> wrapper = new QueryWrapper<>();
-        wrapper.like(StringUtils.isNotBlank(request.getDatastoreName()), ColumnNameUtil.getColumnName(AnalyticsDatastoreDTO::getDatastoreName, true), request.getDatastoreName());
+    private MPJLambdaWrapper<VmCloudDatastore> addQueryDatastore(PageDatastoreRequest request) {
+        MPJLambdaWrapper<VmCloudDatastore> wrapper = new MPJLambdaWrapper<>();
+        wrapper.selectAll(VmCloudDatastore.class);
+        wrapper.like(StringUtils.isNotBlank(request.getDatastoreName()), VmCloudDatastore::getDatastoreName, request.getDatastoreName());
         return wrapper;
     }
 
@@ -318,9 +339,11 @@ public class BaseResourceAnalysisServiceImpl implements IBaseResourceAnalysisSer
                         Long count = 0L;
                         //资源时间段内平均值
                         for (StringTermsBucket termsBucket : averageRanges) {
+                            //
+                            termsBucket.key();
                             double avgValue = termsBucket.aggregations().get("average").max().value();
                             //在区间里面
-                            if (avgValue > interval && avgValue < (interval + 20)) {
+                            if (avgValue >= interval && avgValue <= (interval + 20)) {
                                 count++;
                             }
                         }
@@ -364,7 +387,7 @@ public class BaseResourceAnalysisServiceImpl implements IBaseResourceAnalysisSer
     }
 
     /**
-     * 聚合查询
+     * 聚合查询，时间、资源ID、平均使用率
      */
     @Override
     public Query getRangeQuery(List<QueryUtil.QueryCondition> queryConditions, CalendarInterval intervalPosition) {
@@ -404,24 +427,6 @@ public class BaseResourceAnalysisServiceImpl implements IBaseResourceAnalysisSer
                     List<VmCloudDatastore> vmCloudDatastoreList = iBaseVmCloudDatastoreService.list(queryDatastoreWrapper);
                     if (CollectionUtils.isNotEmpty(vmCloudDatastoreList)) {
                         resourceIds = vmCloudDatastoreList.stream().map(VmCloudDatastore::getDatastoreId).collect(Collectors.toList());
-                    }
-                }
-                case VIRTUAL_MACHINE -> {
-                    QueryWrapper<VmCloudServer> queryServerWrapper = new QueryWrapper<>();
-                    queryServerWrapper.in(CollectionUtils.isNotEmpty(request.getAccountIds()), ColumnNameUtil.getColumnName(VmCloudHost::getAccountId, true), request.getAccountIds());
-                    queryServerWrapper.in(true, ColumnNameUtil.getColumnName(VmCloudServer::getId, true), request.getResourceIds());
-                    List<VmCloudServer> vmCloudServers = iBaseVmCloudServerService.list(queryServerWrapper);
-                    if (CollectionUtils.isNotEmpty(vmCloudServers)) {
-                        resourceIds = vmCloudServers.stream().map(VmCloudServer::getInstanceUuid).collect(Collectors.toList());
-                    }
-                }
-                case DISK -> {
-                    QueryWrapper<VmCloudDisk> queryDiskWrapper = new QueryWrapper<>();
-                    queryDiskWrapper.in(CollectionUtils.isNotEmpty(request.getAccountIds()), ColumnNameUtil.getColumnName(VmCloudHost::getAccountId, true), request.getAccountIds());
-                    queryDiskWrapper.in(true, ColumnNameUtil.getColumnName(VmCloudDisk::getId, true), request.getResourceIds());
-                    List<VmCloudDisk> vmCloudDisks = iBaseVmCloudDiskService.list(queryDiskWrapper);
-                    if (CollectionUtils.isNotEmpty(vmCloudDisks)) {
-                        resourceIds = vmCloudDisks.stream().map(VmCloudDisk::getDiskId).collect(Collectors.toList());
                     }
                 }
                 default -> {

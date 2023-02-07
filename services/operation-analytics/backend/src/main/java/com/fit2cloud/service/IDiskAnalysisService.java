@@ -35,6 +35,6 @@ public interface IDiskAnalysisService {
 
     List<ChartData> diskIncreaseTrend(ResourceAnalysisRequest request);
 
-    Map<String,List<BarTreeChartData>> analyticsVmCloudDiskByOrgWorkspace(ResourceAnalysisRequest request);
+    Map<String,List<BarTreeChartData>> analyticsCloudDiskByOrgWorkspace(ResourceAnalysisRequest request);
 
 }

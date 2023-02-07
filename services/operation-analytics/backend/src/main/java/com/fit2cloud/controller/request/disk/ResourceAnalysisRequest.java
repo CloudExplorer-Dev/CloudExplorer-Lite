@@ -25,6 +25,8 @@ public class ResourceAnalysisRequest {
     @ApiModelProperty("工作空间统计")
     private boolean analysisWorkspace;
     private CalendarInterval intervalPosition;
+    @ApiModelProperty("组织或者工作空间 ID 集合")
+    private List<String> sourceIds;
 
 
 

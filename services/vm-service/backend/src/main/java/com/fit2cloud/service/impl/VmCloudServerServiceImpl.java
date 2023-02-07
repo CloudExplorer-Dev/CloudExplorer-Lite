@@ -336,14 +336,14 @@ public class VmCloudServerServiceImpl extends ServiceImpl<BaseVmCloudServerMappe
                     boolean result = CommonUtil.exec(cloudProvider, JsonUtil.toJSONString(params), execMethod);
                     if (result) {
                         vmCloudServer.setInstanceStatus(afterStatus);
+                        vmCloudServer.setLastOperateTime(DateUtil.getSyncTime());
                         jobRecord.setStatus(JobStatusConstants.SUCCESS);
                         switch (operateType) {
-                            case CLOUD_SERVER_STOP_JOB, CLOUD_SERVER_START_JOB ->
-                                    vmCloudServer.setLastShutdownTime(DateUtil.getSyncTime());
                             case CLOUD_SERVER_RECYCLE_JOB ->
                                     recycleService.insertRecycleRecord(vmId, ResourceTypeConstants.VM);
-                            case CLOUD_SERVER_DELETE_JOB ->
-                                    recycleService.updateRecycleRecordOnDelete(vmId, ResourceTypeConstants.VM);
+                            case CLOUD_SERVER_DELETE_JOB -> {
+                                recycleService.updateRecycleRecordOnDelete(vmId, ResourceTypeConstants.VM);
+                            }
                             default -> {
                             }
                         }

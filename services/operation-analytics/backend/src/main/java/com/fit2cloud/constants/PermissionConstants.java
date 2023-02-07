@@ -24,9 +24,11 @@ public class PermissionConstants {
 
     public static class GROUP {
         public static final String RESOURCE_ANALYSIS = "RESOURCE_ANALYSIS";
+        public static final String BASE_RESOURCE_ANALYSIS = "BASE_RESOURCE_ANALYSIS";
         public static final String SERVER_ANALYSIS = "SERVER_ANALYSIS";
         public static final String DISK_ANALYSIS = "DISK_ANALYSIS";
         public static final String RESOURCE_OPTIMIZATION = "RESOURCE_OPTIMIZATION";
+        public static final String SERVER_OPTIMIZATION = "SERVER_OPTIMIZATION";
         public static final String OVERVIEW = "OVERVIEW";
 
         //...
@@ -63,23 +65,25 @@ public class PermissionConstants {
 
     private static final ModulePermission.Builder MODULE_PERMISSION_BUILDER = new ModulePermission.Builder().group()
             .group(
+                    //总览
                     new PermissionGroup.Builder()
                             .id(GROUP.OVERVIEW)
-                            .name("i18n_permission_overview_view")
+                            .name("permission.operation.overview.base")
                             .permission(new Permission.Builder()
                                     .operate(OPERATE.READ)
-                                    .name("i18n_permission_overview_view_read")
+                                    .name("permission.operation.overview.read")
                                     .role(RoleConstants.ROLE.ADMIN)
                                     .role(RoleConstants.ROLE.ORGADMIN)
                                     .role(RoleConstants.ROLE.USER))
             )
             .group(
+                    //基础资源分析
                     new PermissionGroup.Builder()
-                            .id(GROUP.RESOURCE_ANALYSIS)
-                            .name("i18n_permission_resource_analysis_view")
+                            .id(GROUP.BASE_RESOURCE_ANALYSIS)
+                            .name("permission.operation.base_resource_analysis.base")
                             .permission(new Permission.Builder()
                                     .operate(OPERATE.READ)
-                                    .name("i18n_permission_resource_analysis_read")
+                                    .name("permission.operation.base_resource_analysis.read")
                                     .role(RoleConstants.ROLE.ADMIN)
                                     .role(RoleConstants.ROLE.ORGADMIN)
                                     .role(RoleConstants.ROLE.USER))
@@ -87,10 +91,10 @@ public class PermissionConstants {
             .group(
                     new PermissionGroup.Builder()
                             .id(GROUP.SERVER_ANALYSIS)
-                            .name("i18n_permission_server_analysis_view")
+                            .name("permission.operation.server_analysis.base")
                             .permission(new Permission.Builder()
                                     .operate(OPERATE.READ)
-                                    .name("i18n_permission_server_analysis_red")
+                                    .name("permission.operation.server_analysis.read")
                                     .role(RoleConstants.ROLE.ADMIN)
                                     .role(RoleConstants.ROLE.ORGADMIN)
                                     .role(RoleConstants.ROLE.USER))
@@ -98,21 +102,21 @@ public class PermissionConstants {
             .group(
                     new PermissionGroup.Builder()
                             .id(GROUP.DISK_ANALYSIS)
-                            .name("i18n_permission_disk_analysis_view")
+                            .name("permission.operation.disk_analysis.base")
                             .permission(new Permission.Builder()
                                     .operate(OPERATE.READ)
-                                    .name("i18n_permission_disk_analysis_red")
+                                    .name("permission.operation.disk_analysis.read")
                                     .role(RoleConstants.ROLE.ADMIN)
                                     .role(RoleConstants.ROLE.ORGADMIN)
                                     .role(RoleConstants.ROLE.USER))
             )
             .group(
                     new PermissionGroup.Builder()
-                            .id(GROUP.RESOURCE_OPTIMIZATION)
-                            .name("i18n_permission_resource_optimization_view")
+                            .id(GROUP.SERVER_OPTIMIZATION)
+                            .name("permission.operation.resource_optimization.base")
                             .permission(new Permission.Builder()
                                     .operate(OPERATE.READ)
-                                    .name("i18n_permission_resource_optimization_red")
+                                    .name("permission.operation.resource_optimization.read")
                                     .role(RoleConstants.ROLE.ADMIN)
                                     .role(RoleConstants.ROLE.ORGADMIN)
                                     .role(RoleConstants.ROLE.USER))

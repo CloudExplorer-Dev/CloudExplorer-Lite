@@ -43,14 +43,14 @@ public class DiskAnalysisController {
 
     @ApiOperation(value = "查询云账号", notes = "查询云账号")
     @GetMapping("/cloud_accounts")
-    @PreAuthorize("hasAnyCePermission('DISK_ANALYSIS:READ')")
+    @PreAuthorize("hasAnyCePermission('DISK_ANALYSIS:READ','OVERVIEW:READ')")
     public ResultHolder<List<CloudAccount>> listCloudAccount() {
         return ResultHolder.success(iDiskAnalysisService.getAllCloudAccount());
     }
 
     @ApiOperation(value = "根据分布类型查询云磁盘分布情况", notes = "根据分布类型查询云磁盘分布情况")
     @GetMapping("/spread")
-    @PreAuthorize("hasAnyCePermission('DISK_ANALYSIS:READ')")
+    @PreAuthorize("hasAnyCePermission('DISK_ANALYSIS:READ','OVERVIEW:READ')")
     public ResultHolder<Map<String,List<KeyValue>>> getDiskSpreadInfo(@Validated ResourceAnalysisRequest request) {
         return ResultHolder.success(iDiskAnalysisService.spread(request));
     }
@@ -66,9 +66,9 @@ public class DiskAnalysisController {
     @ApiOperation(value="组织或工作空间云磁盘分布",notes = "组织或工作空间云磁盘分布")
     @GetMapping("/org_workspace_disk_count_bar")
     @PreAuthorize("hasAnyCePermission('DISK_ANALYSIS:READ')")
-    public ResultHolder<Map<String,List<BarTreeChartData>>> analyticsVmCloudDiskByOrgWorkspace(
+    public ResultHolder<Map<String,List<BarTreeChartData>>> analyticsCloudDiskByOrgWorkspace(
             @Validated ResourceAnalysisRequest request) {
-        return ResultHolder.success(iDiskAnalysisService.analyticsVmCloudDiskByOrgWorkspace(request));
+        return ResultHolder.success(iDiskAnalysisService.analyticsCloudDiskByOrgWorkspace(request));
     }
 
 }

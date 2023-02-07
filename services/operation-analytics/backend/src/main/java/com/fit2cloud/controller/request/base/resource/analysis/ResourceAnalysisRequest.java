@@ -23,4 +23,7 @@ public class ResourceAnalysisRequest {
     @ApiModelProperty("云主机状态")
     private String vmStatus;
 
+    @ApiModelProperty("组织或者工作空间 ID 集合")
+    private List<String> sourceIds;
+
 }

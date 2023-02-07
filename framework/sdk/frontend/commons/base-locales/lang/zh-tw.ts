@@ -240,6 +240,28 @@ const permissions = {
         recover: "恢复",
       },
     },
+    operation: {
+      overview: {
+        base: "總覽",
+        read: "查看",
+      },
+      base_resource_analysis: {
+        base: "基礎資源分析",
+        read: "查看",
+      },
+      server_analysis: {
+        base: "雲主機分析",
+        read: "查看",
+      },
+      disk_analysis: {
+        base: "雲磁片分析",
+        read: "查看",
+      },
+      resource_optimization: {
+        base: "雲主機優化",
+        read: "查看",
+      },
+    },
   },
 };
 

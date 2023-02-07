@@ -44,7 +44,7 @@ public class ServerAnalysisController {
 
     @ApiOperation(value = "查询云账号", notes = "查询云账号")
     @GetMapping("/cloud_accounts")
-    @PreAuthorize("hasAnyCePermission('SERVER_ANALYSIS:READ')")
+    @PreAuthorize("hasAnyCePermission('SERVER_ANALYSIS:READ','OVERVIEW:READ')")
     public ResultHolder<List<CloudAccount>> listCloudAccount() {
         return ResultHolder.success(iServerAnalysisService.getAllCloudAccount());
     }
@@ -58,14 +58,14 @@ public class ServerAnalysisController {
 
     @ApiOperation(value = "根据分布类型查询云主机分布情况", notes = "根据分布类型查询云主机分布情况")
     @GetMapping("/spread")
-    @PreAuthorize("hasAnyCePermission('SERVER_ANALYSIS:READ')")
+    @PreAuthorize("hasAnyCePermission('SERVER_ANALYSIS:READ','OVERVIEW:READ')")
     public ResultHolder<Map<String,List<KeyValue>>> getVmSpreadInfo(@Validated ResourceAnalysisRequest request) {
         return ResultHolder.success(iServerAnalysisService.spread(request));
     }
 
     @ApiOperation(value="查询云主机增长趋势",notes = "查询云主机增长趋势")
     @GetMapping("/increase_trend")
-    @PreAuthorize("hasAnyCePermission('SERVER_ANALYSIS:READ')")
+    @PreAuthorize("hasAnyCePermission('SERVER_ANALYSIS:READ','OVERVIEW:READ')")
     public ResultHolder<List<ChartData>> getVmIncreaseTrendData(
             @Validated ResourceAnalysisRequest request) {
         return ResultHolder.success(iServerAnalysisService.vmIncreaseTrend(request));

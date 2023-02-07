@@ -30,7 +30,7 @@ public class OptimizeAnalysisController {
 
     @ApiOperation(value = "资源优化分析", notes = "资源优化分析")
     @GetMapping("/server/page")
-    @PreAuthorize("hasAnyCePermission('RESOURCE_OPTIMIZATION:READ')")
+    @PreAuthorize("hasAnyCePermission('SERVER_OPTIMIZATION:READ','OVERVIEW:READ')")
     public ResultHolder<IPage<AnalyticsServerDTO>> pageServerList(@Validated PageOptimizationRequest request) {
         return ResultHolder.success(iOptimizeAnalysisService.pageServer(request));
     }
