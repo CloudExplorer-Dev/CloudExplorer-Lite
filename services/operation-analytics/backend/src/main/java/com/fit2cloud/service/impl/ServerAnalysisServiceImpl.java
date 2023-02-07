@@ -1,13 +1,14 @@
 package com.fit2cloud.service.impl;
 
-import co.elastic.clients.elasticsearch._types.aggregations.*;
+import co.elastic.clients.elasticsearch._types.aggregations.CalendarInterval;
 import co.elastic.clients.elasticsearch._types.query_dsl.BoolQuery;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
-import com.baomidou.mybatisplus.core.metadata.OrderItem;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.fit2cloud.base.entity.CloudAccount;
 import com.fit2cloud.base.entity.VmCloudHost;
+import com.fit2cloud.base.entity.VmCloudServer;
+import com.fit2cloud.base.mapper.BaseVmCloudServerMapper;
 import com.fit2cloud.base.service.IBaseCloudAccountService;
 import com.fit2cloud.base.service.IBaseOrganizationService;
 import com.fit2cloud.base.service.IBaseVmCloudHostService;
@@ -16,21 +17,26 @@ import com.fit2cloud.common.es.constants.IndexConstants;
 import com.fit2cloud.common.log.utils.LogUtil;
 import com.fit2cloud.common.provider.entity.F2CEntityType;
 import com.fit2cloud.common.utils.ColumnNameUtil;
+import com.fit2cloud.common.utils.CurrentUserUtils;
 import com.fit2cloud.common.utils.PageUtil;
 import com.fit2cloud.common.utils.QueryUtil;
 import com.fit2cloud.controller.request.server.PageServerRequest;
 import com.fit2cloud.controller.request.server.ResourceAnalysisRequest;
 import com.fit2cloud.controller.response.BarTreeChartData;
 import com.fit2cloud.controller.response.ChartData;
-import com.fit2cloud.dao.mapper.AnalyticsServerMapper;
+import com.fit2cloud.dao.entity.OrgWorkspace;
+import com.fit2cloud.dao.mapper.OrgWorkspaceMapper;
 import com.fit2cloud.dto.AnalyticsServerDTO;
 import com.fit2cloud.dto.KeyValue;
 import com.fit2cloud.es.entity.PerfMetricMonitorData;
 import com.fit2cloud.service.IBaseResourceAnalysisService;
+import com.fit2cloud.service.IPermissionService;
 import com.fit2cloud.service.IServerAnalysisService;
 import com.fit2cloud.utils.OperationUtils;
+import com.github.yulichang.wrapper.MPJLambdaWrapper;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.time.DateUtils;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.elasticsearch.client.elc.ElasticsearchTemplate;
@@ -44,7 +50,8 @@ import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
+import java.text.SimpleDateFormat;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -56,36 +63,65 @@ import java.util.stream.Collectors;
 public class ServerAnalysisServiceImpl implements IServerAnalysisService {
 
     @Resource
-    private AnalyticsServerMapper analyticsServerMapper;
+    private OrgWorkspaceMapper orgWorkspaceMapper;
     @Resource
     private IBaseCloudAccountService iBaseCloudAccountService;
     @Resource
     private IBaseVmCloudHostService iBaseVmCloudHostService;
     @Resource
     private ElasticsearchTemplate elasticsearchTemplate;
-
     @Resource
     private IBaseWorkspaceService iBaseWorkspaceService;
     @Resource
     private IBaseOrganizationService iBaseOrganizationService;
-
     @Resource
     private IBaseResourceAnalysisService iBaseResourceAnalysisService;
+    @Resource
+    private IPermissionService permissionService;
+    @Resource
+    private BaseVmCloudServerMapper baseVmCloudServerMapper;
+
+    /**
+     * 分页查询云主机明细
+     * @param request 分页查询云主机参数
+     */
     @Override
     public IPage<AnalyticsServerDTO> pageServer(PageServerRequest request) {
-        Page<AnalyticsServerDTO> page = PageUtil.of(request, AnalyticsServerDTO.class, new OrderItem(ColumnNameUtil.getColumnName(AnalyticsServerDTO::getCreateTime, true), false), true);
+        Page<AnalyticsServerDTO> page = PageUtil.of(request, AnalyticsServerDTO.class, null, true);
         // 构建查询参数
-        QueryWrapper<AnalyticsServerDTO> wrapper = addServerQuery(request);
-        IPage<AnalyticsServerDTO> result = analyticsServerMapper.pageList(page, wrapper);
+        MPJLambdaWrapper<VmCloudServer> wrapper = addServerPageQuery(request);
+        IPage<AnalyticsServerDTO> result = baseVmCloudServerMapper.selectJoinPage(page,AnalyticsServerDTO.class, wrapper);
         //设置监控数据
         getVmPerfMetric(result.getRecords());
         return result;
     }
-    private QueryWrapper<AnalyticsServerDTO> addServerQuery(PageServerRequest request) {
-        QueryWrapper<AnalyticsServerDTO> wrapper = new QueryWrapper<>();
-        wrapper.like(StringUtils.isNotBlank(request.getName()), ColumnNameUtil.getColumnName(AnalyticsServerDTO::getInstanceName,true), request.getName());
-        wrapper.in(CollectionUtils.isNotEmpty(request.getAccountIds()), ColumnNameUtil.getColumnName(AnalyticsServerDTO::getAccountId, true), request.getAccountIds());
-        wrapper.notIn(true,ColumnNameUtil.getColumnName(AnalyticsServerDTO::getInstanceStatus, true), List.of("Deleted"));
+
+    /**
+     * 构建分页查询参数
+     */
+    private MPJLambdaWrapper<VmCloudServer> addServerPageQuery(PageServerRequest request) {
+        List<String> sourceIds = permissionService.getSourceIds();
+        if (!CurrentUserUtils.isAdmin() && CollectionUtils.isNotEmpty(sourceIds)) {
+            request.setSourceIds(sourceIds);
+        }
+        MPJLambdaWrapper<VmCloudServer> wrapper = addServerQuery(new MPJLambdaWrapper<>(),request.getAccountIds());
+        wrapper.selectAll(VmCloudServer.class);
+        wrapper.orderByDesc(VmCloudServer::getCreateTime);
+        wrapper.selectAs(CloudAccount::getName,AnalyticsServerDTO::getAccountName);
+        wrapper.selectAs(CloudAccount::getPlatform,AnalyticsServerDTO::getPlatform);
+        wrapper.like(StringUtils.isNotBlank(request.getName()), VmCloudServer::getInstanceName, request.getName());
+        wrapper.in(CollectionUtils.isNotEmpty(request.getSourceIds()), VmCloudServer::getSourceId, request.getSourceIds());
+        wrapper.notIn(true,VmCloudServer::getInstanceStatus, List.of("Deleted"));
+        return wrapper;
+    }
+
+    /**
+     * 查询云主机统一参数
+     */
+    private MPJLambdaWrapper<VmCloudServer> addServerQuery( MPJLambdaWrapper<VmCloudServer> wrapper,List<String> accountIds) {
+        wrapper.selectAll(VmCloudServer.class);
+        wrapper.in(CollectionUtils.isNotEmpty(accountIds), VmCloudServer::getAccountId, accountIds);
+        wrapper.leftJoin(CloudAccount.class, CloudAccount::getId, VmCloudServer::getAccountId);
         return wrapper;
     }
 
@@ -95,72 +131,131 @@ public class ServerAnalysisServiceImpl implements IServerAnalysisService {
         return iBaseCloudAccountService.list(queryWrapper);
     }
 
-    private void allCloudAccount(ResourceAnalysisRequest request) {
+    /**
+     * 通过云账号查询宿主机
+     * @param request 云主机分析参数
+     */
+    @Override
+    public List<VmCloudHost> getVmHost(ResourceAnalysisRequest request) {
         if(CollectionUtils.isEmpty(request.getAccountIds())){
             request.setAccountIds(getAllCloudAccount().stream().map(CloudAccount::getId).collect(Collectors.toList()));
         }
-    }
-
-    @Override
-    public List<VmCloudHost> getVmHost(ResourceAnalysisRequest request) {
-        allCloudAccount(request);
         QueryWrapper<VmCloudHost> queryWrapper = new QueryWrapper<>();
         queryWrapper.in(CollectionUtils.isNotEmpty(request.getAccountIds()),ColumnNameUtil.getColumnName(VmCloudHost::getAccountId,true),request.getAccountIds());
         return iBaseVmCloudHostService.list(queryWrapper);
     }
 
+    /**
+     * 云账号分组
+     */
     @Override
     public Map<String,CloudAccount> getAllAccountIdMap(){
         List<CloudAccount> accountList = getAllCloudAccount();
         return accountList.stream().collect(Collectors.toMap(CloudAccount::getId,v->v,(k1,k2)->k1));
     }
 
+    /**
+     * 云主机分析参数
+     */
+    private MPJLambdaWrapper<VmCloudServer> addServerAnalysisQuery(ResourceAnalysisRequest request) {
+        List<String> sourceIds = permissionService.getSourceIds();
+        if (!CurrentUserUtils.isAdmin() && CollectionUtils.isNotEmpty(sourceIds)) {
+            request.setSourceIds(sourceIds);
+        }
+        MPJLambdaWrapper<VmCloudServer> wrapper = addServerQuery(new MPJLambdaWrapper<>(),request.getAccountIds());
+        wrapper.in(CollectionUtils.isNotEmpty(request.getSourceIds()), VmCloudServer::getSourceId, request.getSourceIds());
+        wrapper.in(CollectionUtils.isNotEmpty(request.getHostIds()),VmCloudServer::getHostId,request.getHostIds());
+        return wrapper;
+    }
 
+
+    /**
+     * 云主机增长趋势，在一段时间内创建云主机数量产生趋势数据
+     */
     @Override
     public List<ChartData> vmIncreaseTrend(ResourceAnalysisRequest request){
         List<ChartData> tempChartDataList = new ArrayList<>();
         Map<String,CloudAccount> accountMap = getAllAccountIdMap();
         if (accountMap.size() != 0) {
-            QueryWrapper<AnalyticsServerDTO> queryWrapper = new QueryWrapper<>();
-            queryWrapper.in(CollectionUtils.isNotEmpty(request.getAccountIds()), ColumnNameUtil.getColumnName(AnalyticsServerDTO::getAccountId, true), request.getAccountIds());
-            queryWrapper.in(CollectionUtils.isNotEmpty(request.getHostIds()), ColumnNameUtil.getColumnName(AnalyticsServerDTO::getHostId, true), request.getHostIds());
-            queryWrapper.ge(true, ColumnNameUtil.getColumnName(AnalyticsServerDTO::getCreateTime, true), LocalDateTime.now().minusDays(request.getDayNumber()));
-            List<AnalyticsServerDTO> vmList = analyticsServerMapper.list(queryWrapper);
+            MPJLambdaWrapper<VmCloudServer> queryWrapper = addServerAnalysisQuery(request);
+            queryWrapper.selectAs(CloudAccount::getName,AnalyticsServerDTO::getAccountName);
+            queryWrapper.selectAs(CloudAccount::getPlatform,AnalyticsServerDTO::getPlatform);
+            List<AnalyticsServerDTO> vmList = baseVmCloudServerMapper.selectJoinList(AnalyticsServerDTO.class,queryWrapper);
             if (CollectionUtils.isNotEmpty(vmList)) {
+                //格式化创建时间,删除时间
+                vmList = vmList.stream().filter(v->Objects.nonNull(v.getCreateTime())).peek(v->{
+                    v.setCreateMonth(v.getCreateTime().format(DateTimeFormatter.ofPattern("yyyy-MM-dd")));
+                    if(Objects.nonNull(v.getLastOperateTime()) && StringUtils.equalsIgnoreCase(v.getInstanceStatus(),"Deleted")){
+                        v.setDeleteMonth(v.getLastOperateTime().format(DateTimeFormatter.ofPattern("yyyy-MM-dd")));
+                    }
+                }).toList();
+                Map<String, List<AnalyticsServerDTO>> resourceGroup = new HashMap<>();
                 if (CollectionUtils.isNotEmpty(request.getHostIds())) {
-                    Map<String, List<AnalyticsServerDTO>> hostGroup = vmList.stream().collect(Collectors.groupingBy(ServerAnalysisServiceImpl::buildKey));
-                    hostGroup.keySet().forEach(hostId -> {
-                        Map<String, Long> month = hostGroup.get(hostId).stream().collect(Collectors.groupingBy(AnalyticsServerDTO::getCreateMonth, Collectors.counting()));
-                        month.keySet().forEach(k -> {
-                            ChartData chartData = new ChartData();
-                            chartData.setXAxis(k);
-                            chartData.setGroupName(hostGroup.get(hostId).get(0).getHost() + "(" + hostGroup.get(hostId).get(0).getAccountName() + ")");
-                            chartData.setYAxis(new BigDecimal(month.get(k)));
-                            tempChartDataList.add(chartData);
-                        });
-                    });
+                    resourceGroup = vmList.stream().collect(Collectors.groupingBy(ServerAnalysisServiceImpl::buildKey));
                 } else {
-                    Map<String, List<AnalyticsServerDTO>> accountGroup = vmList.stream().collect(Collectors.groupingBy(AnalyticsServerDTO::getAccountId));
-                    accountGroup.keySet().forEach(accountId -> {
-                        Map<String, Long> month = accountGroup.get(accountId).stream().collect(Collectors.groupingBy(AnalyticsServerDTO::getCreateMonth, Collectors.counting()));
-                        month.keySet().forEach(k -> {
-                            ChartData chartData = new ChartData();
-                            chartData.setXAxis(k);
-                            chartData.setGroupName(accountGroup.get(accountId).get(0).getAccountName());
-                            chartData.setYAxis(new BigDecimal(month.get(k)));
-                            tempChartDataList.add(chartData);
-                        });
-                    });
+                    resourceGroup = vmList.stream().collect(Collectors.groupingBy(AnalyticsServerDTO::getAccountId));
                 }
+                setCloudServerIncreaseTrendData(resourceGroup,CollectionUtils.isNotEmpty(request.getHostIds()),request.getDayNumber(),tempChartDataList);
             }
         }
         return tempChartDataList;
     }
 
+    private void setCloudServerIncreaseTrendData(Map<String,List<AnalyticsServerDTO>> resourceGroup, boolean isHostGroup, Long days, List<ChartData> tempChartDataList){
+        List<String> dateRangeList = getRangeDateStrList(days);
+        resourceGroup.keySet().forEach(resourceId -> {
+            //总数
+            Map<String, Long> month = resourceGroup.get(resourceId).stream().collect(Collectors.groupingBy(AnalyticsServerDTO::getCreateMonth, Collectors.counting()));
+            //删除总数
+            Map<String, Long> delMonth = resourceGroup.get(resourceId).stream().filter(v->StringUtils.equalsIgnoreCase(v.getInstanceStatus(),"Deleted") && StringUtils.isNotEmpty(v.getDeleteMonth())).collect(Collectors.groupingBy(AnalyticsServerDTO::getDeleteMonth, Collectors.counting()));
+            dateRangeList.forEach(dateStr -> {
+                ChartData chartData = new ChartData();
+                chartData.setXAxis(dateStr);
+                if(isHostGroup){
+                    chartData.setGroupName(resourceGroup.get(resourceId).get(0).getHost() + "(" + resourceGroup.get(resourceId).get(0).getAccountName() + ")");
+                }else{
+                    chartData.setGroupName(resourceGroup.get(resourceId).get(0).getAccountName());
+                }
+                chartData.setYAxis(new BigDecimal(getResourceTotalDateBefore(month,dateStr)-getResourceTotalDateBefore(delMonth,dateStr)));
+                tempChartDataList.add(chartData);
+            });
+        });
+    }
+
+    @Override
+    public Long getResourceTotalDateBefore(Map<String, Long> monthTreeMap, String dateStr){
+        TreeMap<String,Long> totalMap = new TreeMap<>();
+        monthTreeMap.keySet().forEach(k -> {
+            if(k.compareTo(dateStr)<=0){
+                totalMap.put(k,monthTreeMap.get(k));
+            }
+        });
+        return totalMap.values().stream().mapToLong(x->x).sum();
+    }
+
+    @Override
+    public List<String> getRangeDateStrList(Long day) {
+        List<String> dateList = new ArrayList<>();
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+        for (int i = 0; i < day; i++) {
+            Date date = DateUtils.addDays(new Date(), -i);
+            String formatDate = sdf.format(date);
+            dateList.add(formatDate);
+        }
+        return dateList;
+    }
+
+    /**
+     * 增长趋势按宿主机，云主机按云账号与主机ID
+     */
     public static String buildKey(AnalyticsServerDTO serverDTO) {
         return serverDTO.getAccountId() + "#" + serverDTO.getHostId();
     }
 
+    /**
+     * 云主机分布
+     * 按云账号、状态、付费方式
+     */
     @Override
     public Map<String,List<KeyValue>> spread(ResourceAnalysisRequest request){
         Map<String,List<KeyValue>> result = new HashMap<>();
@@ -168,17 +263,22 @@ public class ServerAnalysisServiceImpl implements IServerAnalysisService {
         if(accountMap.size()==0){
             return result;
         }
-        QueryWrapper<AnalyticsServerDTO> queryWrapper = new QueryWrapper<>();
-        queryWrapper.in(CollectionUtils.isNotEmpty(request.getAccountIds()),ColumnNameUtil.getColumnName(AnalyticsServerDTO::getAccountId,true),request.getAccountIds());
-        queryWrapper.in(CollectionUtils.isNotEmpty(request.getHostIds()),ColumnNameUtil.getColumnName(AnalyticsServerDTO::getHostId,true),request.getHostIds());
-        //只统计开关机的
-        queryWrapper.in(true,ColumnNameUtil.getColumnName(AnalyticsServerDTO::getInstanceStatus,true), Arrays.asList("Running","Stopped"));
-        List<AnalyticsServerDTO> vmList = analyticsServerMapper.list(queryWrapper);
-        Map<String,Long> byAccountMap = vmList.stream().filter(v->StringUtils.isNotEmpty(v.getAccountId())).collect(Collectors.groupingBy(AnalyticsServerDTO::getAccountId, Collectors.counting()));
+        MPJLambdaWrapper<VmCloudServer> queryWrapper = addServerAnalysisQuery(request);
+        queryWrapper.notIn(true,VmCloudServer::getInstanceStatus, List.of("Deleted"));
+        List<AnalyticsServerDTO> vmList = baseVmCloudServerMapper.selectJoinList(AnalyticsServerDTO.class,queryWrapper);
+        //将除了开机关机的其他状态设置为其他
+        vmList = vmList.stream().peek(v-> {
+            if(!StringUtils.equalsIgnoreCase(v.getInstanceStatus(),"Running") && !StringUtils.equalsIgnoreCase(v.getInstanceStatus(),"Stopped")){
+                v.setInstanceStatus("Other");
+            }
+        }).collect(Collectors.toList());
+        vmList = vmList.stream().filter(v->StringUtils.isNotEmpty(v.getAccountId())).toList();
+        Map<String,Long> byAccountMap = vmList.stream().collect(Collectors.groupingBy(AnalyticsServerDTO::getAccountId, Collectors.counting()));
         result.put("byAccount",byAccountMap.entrySet().stream().map(c -> new KeyValue(StringUtils.isEmpty(accountMap.get(c.getKey()).getName())?c.getKey():accountMap.get(c.getKey()).getName(), c.getValue()) {}).collect(Collectors.toList()));
         Map<String,String> statusMap = new HashMap<>();
         statusMap.put("Running","运行中");
         statusMap.put("Stopped","已停止");
+        statusMap.put("Other","其他");
         Map<String,Long> byStatusMap = vmList.stream().collect(Collectors.groupingBy(AnalyticsServerDTO::getInstanceStatus, Collectors.counting()));
         result.put("byStatus",byStatusMap.entrySet().stream().map(c -> new KeyValue(statusMap.get(c.getKey()), c.getValue()) {}).collect(Collectors.toList()));
         Map<String,String> chargeTypeMap = new HashMap<>();
@@ -248,6 +348,9 @@ public class ServerAnalysisServiceImpl implements IServerAnalysisService {
         return query.build();
     }
 
+    /**
+     * 云主机资源使用率趋势
+     */
     @Override
     public List<ChartData> getResourceTrendData(ResourceAnalysisRequest request){
         List<ChartData> result = new ArrayList<>();
@@ -263,6 +366,9 @@ public class ServerAnalysisServiceImpl implements IServerAnalysisService {
         return result;
     }
 
+    /**
+     * 查询云主机监控数据
+     */
     private org.springframework.data.elasticsearch.core.query.Query getSearchResourceTrendDataQuery(ResourceAnalysisRequest request) {
         List<QueryUtil.QueryCondition> queryConditions = new ArrayList<>();
         //时间参数
@@ -282,9 +388,23 @@ public class ServerAnalysisServiceImpl implements IServerAnalysisService {
             QueryUtil.QueryCondition accountId = new QueryUtil.QueryCondition(true, "hostId.keyword", request.getHostIds(), QueryUtil.CompareType.IN);
             queryConditions.add(accountId);
         }
+        MPJLambdaWrapper<VmCloudServer> queryServerWrapper = addServerAnalysisQuery(request);
+        queryServerWrapper.notIn(true,VmCloudServer::getInstanceStatus, List.of("Deleted"));
+        List<AnalyticsServerDTO> vmList = baseVmCloudServerMapper.selectJoinList(AnalyticsServerDTO.class,queryServerWrapper);
+        List<String> vmUuIds = new ArrayList<>();
+        if (CollectionUtils.isNotEmpty(vmList)) {
+            vmUuIds = vmList.stream().map(VmCloudServer::getInstanceUuid).filter(StringUtils::isNotEmpty).collect(Collectors.toList());
+        }
+        if (CollectionUtils.isNotEmpty(vmUuIds)) {
+            QueryUtil.QueryCondition resourceIds = new QueryUtil.QueryCondition(true, "instanceId.keyword", vmUuIds, QueryUtil.CompareType.IN);
+            queryConditions.add(resourceIds);
+        }
         return iBaseResourceAnalysisService.getRangeQuery(queryConditions, request.getIntervalPosition());
     }
 
+    /**
+     * 云主机在组织工作空间上分布
+     */
     public Map<String,List<BarTreeChartData>> analyticsVmCloudServerByOrgWorkspace(ResourceAnalysisRequest request){
         Map<String,List<BarTreeChartData>> result = new HashMap<>();
         List<BarTreeChartData> workspaceList = workspaceSpread(request);
@@ -297,6 +417,9 @@ public class ServerAnalysisServiceImpl implements IServerAnalysisService {
         return result;
     }
 
+    /**
+     * 组织分布
+     */
     private Map<String,List<BarTreeChartData>> orgSpread(ResourceAnalysisRequest request, List<BarTreeChartData> workspaceList){
         Map<String,List<BarTreeChartData>> result = new HashMap<>();
         //组织下工作空间添加标识
@@ -306,17 +429,20 @@ public class ServerAnalysisServiceImpl implements IServerAnalysisService {
         //查询所有组织，初始化为chart数据
         List<BarTreeChartData> orgList = initOrgChartData();
         //查询组织授权数据
-        QueryWrapper<AnalyticsServerDTO> orgWrapper =new QueryWrapper<>();
-        orgWrapper.eq("org_workspace.type","org");
-        orgWrapper.ne(ColumnNameUtil.getColumnName(AnalyticsServerDTO::getInstanceStatus,true),"Deleted");
-        orgWrapper.in(CollectionUtils.isNotEmpty(request.getHostIds()), ColumnNameUtil.getColumnName(AnalyticsServerDTO::getHostId, true), request.getHostIds());
-        orgWrapper.in(CollectionUtils.isNotEmpty(request.getAccountIds()), ColumnNameUtil.getColumnName(AnalyticsServerDTO::getAccountId, true), request.getAccountIds());
-        orgWrapper.groupBy(true,Arrays.asList("org_workspace.id","org_workspace.name"));
-        List<BarTreeChartData> list = analyticsServerMapper.analyticsVmCloudServerByOrgWorkspace(orgWrapper);
+        List<String> sourceIds = permissionService.getSourceIds();
+        MPJLambdaWrapper<OrgWorkspace> orgWrapper = new MPJLambdaWrapper<>();
+        orgWrapper.selectAll(OrgWorkspace.class);
+        orgWrapper.selectCount(VmCloudServer::getId,BarTreeChartData::getValue);
+        orgWrapper.eq(true, OrgWorkspace::getType,"org");
+        orgWrapper.in(!CurrentUserUtils.isAdmin() && CollectionUtils.isNotEmpty(sourceIds),OrgWorkspace::getId,sourceIds);
+        orgWrapper.in(CollectionUtils.isNotEmpty(request.getAccountIds()),VmCloudServer::getAccountId,request.getAccountIds());
+        orgWrapper.notIn(true,VmCloudServer::getInstanceStatus, List.of("Deleted"));
+        orgWrapper.groupBy(OrgWorkspace::getId,OrgWorkspace::getName);
+        orgWrapper.leftJoin(VmCloudServer.class,VmCloudServer::getSourceId,OrgWorkspace::getId);
+        List<BarTreeChartData> list = orgWorkspaceMapper.selectJoinList(BarTreeChartData.class,orgWrapper);
         OperationUtils.initOrgWorkspaceAnalyticsData(orgList,list);
         //初始化子级
         orgList.forEach(OperationUtils::setSelfToChildren);
-        orgList.sort((o1,o2)->o2.getValue().compareTo(o1.getValue()));
         //扁平数据
         result.put("all",orgList);
         //树结构
@@ -327,7 +453,6 @@ public class ServerAnalysisServiceImpl implements IServerAnalysisService {
             v.getChildren().addAll(getChildren(v,orgList,workspaceMap));
             chartDataList.add(v);
         });
-        chartDataList.sort((o1,o2)->o2.getValue().compareTo(o1.getValue()));
         result.put("tree",chartDataList);
         return result;
     }
@@ -338,16 +463,19 @@ public class ServerAnalysisServiceImpl implements IServerAnalysisService {
      * @return List<BarTreeChartData>
      */
     private List<BarTreeChartData> workspaceSpread(ResourceAnalysisRequest request){
-        QueryWrapper<AnalyticsServerDTO> wrapper = new QueryWrapper<>();
-        wrapper.eq("org_workspace.type","workspace");
-        wrapper.ne(ColumnNameUtil.getColumnName(AnalyticsServerDTO::getInstanceStatus,true),"Deleted");
-        wrapper.in(CollectionUtils.isNotEmpty(request.getHostIds()), ColumnNameUtil.getColumnName(AnalyticsServerDTO::getHostId, true), request.getHostIds());
-        wrapper.in(CollectionUtils.isNotEmpty(request.getAccountIds()), ColumnNameUtil.getColumnName(AnalyticsServerDTO::getAccountId, true), request.getAccountIds());
-        wrapper.groupBy(true,Arrays.asList("org_workspace.id","org_workspace.name"));
-        List<BarTreeChartData> chartDateWorkspaceList = analyticsServerMapper.analyticsVmCloudServerByOrgWorkspace(wrapper);
+        List<String> sourceIds = permissionService.getSourceIds();
+        MPJLambdaWrapper<OrgWorkspace> wrapper = new MPJLambdaWrapper<>();
+        wrapper.selectAll(OrgWorkspace.class);
+        wrapper.selectCount(VmCloudServer::getId,BarTreeChartData::getValue);
+        wrapper.eq(true, OrgWorkspace::getType,"workspace");
+        wrapper.in(!CurrentUserUtils.isAdmin() && CollectionUtils.isNotEmpty(sourceIds),OrgWorkspace::getId,sourceIds);
+        wrapper.in(CollectionUtils.isNotEmpty(request.getAccountIds()),VmCloudServer::getAccountId,request.getAccountIds());
+        wrapper.notIn(true,VmCloudServer::getInstanceStatus, List.of("Deleted"));
+        wrapper.leftJoin(VmCloudServer.class,VmCloudServer::getSourceId,OrgWorkspace::getId);
+        wrapper.groupBy(OrgWorkspace::getId,OrgWorkspace::getName);
+        List<BarTreeChartData> chartDateWorkspaceList = orgWorkspaceMapper.selectJoinList(BarTreeChartData.class, wrapper);
         List<BarTreeChartData> workspaceList = initWorkspaceChartData();
         OperationUtils.initOrgWorkspaceAnalyticsData(workspaceList,chartDateWorkspaceList);
-        workspaceList.sort((o1,o2)->o2.getValue().compareTo(o1.getValue()));
         return workspaceList;
     }
 
@@ -357,6 +485,7 @@ public class ServerAnalysisServiceImpl implements IServerAnalysisService {
      */
     @Override
     public List<BarTreeChartData> initWorkspaceChartData(){
+        List<String> sourceIds = permissionService.getSourceIds();
         return iBaseWorkspaceService.list().stream().map(v->{
             BarTreeChartData barTreeChartData = new BarTreeChartData();
             barTreeChartData.setId(v.getId());
@@ -364,7 +493,7 @@ public class ServerAnalysisServiceImpl implements IServerAnalysisService {
             barTreeChartData.setValue(0L);
             barTreeChartData.setPId(v.getOrganizationId());
             return barTreeChartData;
-        }).collect(Collectors.toList());
+        }).toList().stream().filter(v->checkSourceId(sourceIds,v.getId())).toList();
     }
 
     /**
@@ -373,6 +502,7 @@ public class ServerAnalysisServiceImpl implements IServerAnalysisService {
      */
     @Override
     public List<BarTreeChartData> initOrgChartData(){
+        List<String> sourceIds = permissionService.getSourceIds();
         return iBaseOrganizationService.list().stream().map(v->{
             BarTreeChartData barTreeChartData = new BarTreeChartData();
             barTreeChartData.setId(v.getId());
@@ -381,7 +511,15 @@ public class ServerAnalysisServiceImpl implements IServerAnalysisService {
             barTreeChartData.setPId(v.getPid());
             barTreeChartData.setChildren(new ArrayList<>());
             return barTreeChartData;
-        }).collect(Collectors.toList());
+        }).toList().stream().filter(v->checkSourceId(sourceIds,v.getId())).toList();
+    }
+
+    private boolean checkSourceId(List<String> sourceIds,String id){
+        if(CurrentUserUtils.isAdmin()){
+            return true;
+        }else{
+            return sourceIds.contains(id);
+        }
     }
 
     /**

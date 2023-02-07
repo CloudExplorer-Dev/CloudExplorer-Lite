@@ -49,4 +49,7 @@ public class OptimizationRequest {
     private List<String> instanceIds;
     private List<String> instanceUuids;
 
+    @ApiModelProperty("组织或者工作空间 ID 集合")
+    private List<String> sourceIds;
+
 }

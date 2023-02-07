@@ -27,4 +27,5 @@ public class AnalyticsDiskDTO extends VmCloudDisk {
     private String bootableText;
 
     private String createMonth;
+    private String deleteMonth;
 }

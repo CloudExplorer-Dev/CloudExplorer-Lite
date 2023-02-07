@@ -56,20 +56,20 @@
             vm_cloud_server.`snap_shot`,
             vm_cloud_server.`create_time`,
             vm_cloud_server.`update_time`,
-            vm_cloud_server.`last_shutdown_time`,
+            vm_cloud_server.`delete_time`,
+            vm_cloud_server.`last_operate_time`,
             vm_cloud_server.`vm_tools_version`,
             vm_cloud_server.`vm_tools_status`,
             vm_cloud_server.`instance_charge_type`,
             vm_cloud_server.`security_group_ids`,
+            user._name as apply_user,
             cloud_account.NAME AS account_name,
             cloud_account.platform AS platform,
             CASE
-
                 WHEN orgWorkspace.type = "workspace" THEN
                     orgWorkspace.id ELSE NULL
                 END AS workspace_id,
             CASE
-
                 WHEN orgWorkspace.type = "workspace" THEN
                     orgWorkspace.NAME ELSE NULL
                 END AS workspace_name,
@@ -79,6 +79,7 @@
             vm_cloud_server
                 LEFT JOIN cloud_account ON vm_cloud_server.account_id = cloud_account.id
                 LEFT JOIN org_workspace orgWorkspace ON vm_cloud_server.source_id = orgWorkspace.id
+                LEFT JOIN user ON vm_cloud_server.apply_user = user.username
                 LEFT JOIN recycle_bin ON vm_cloud_server.id = recycle_bin.resource_id
                 AND recycle_bin.resource_type = 'VM'
                 AND recycle_bin.STATUS = 'ToBeRecycled'

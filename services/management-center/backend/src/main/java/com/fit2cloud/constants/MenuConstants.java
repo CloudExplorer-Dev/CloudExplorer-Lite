@@ -69,7 +69,7 @@ public class MenuConstants {
                             .name("cloud_account_update")
                             .path("/update/:id")
                             .title("修改")
-                            .componentPath("/src/views/CloudAccount/create.vue")
+                            .componentPath("/src/views/CloudAccount/edit.vue")
                             .requiredPermission(new MenuPermission.Builder()
                                     .role(RoleConstants.ROLE.ADMIN)
                                     .permission(GROUP.CLOUD_ACCOUNT, OPERATE.EDIT)

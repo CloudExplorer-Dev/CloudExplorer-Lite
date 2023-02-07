@@ -83,3 +83,57 @@ export interface AccountJobRecord {
    */
   params: SimpleMap<Array<{ size: number; region: string } | any>>;
 }
+
+export interface Form {
+  /**
+   * 输入类型
+   */
+  inputType: string;
+  /**
+   * 字段名称
+   */
+  field: string;
+  /**
+   * 提示
+   */
+  label: string;
+  /**
+   * 是否必填
+   */
+  required: boolean;
+  /**
+   * 默认值
+   */
+  defaultValue: unknown;
+  /**
+   * 描述
+   */
+  description: string;
+}
+export interface Platform {
+  /**
+   * 提示
+   */
+  label: string;
+  /**
+   * 字段
+   */
+  field: string;
+
+  credentialForm: Array<Form>;
+}
+
+export interface CreateAccount {
+  /**
+   *名称
+   */
+  name: string;
+  /**
+   * 云平台
+   */
+  platform: string;
+  /**
+   * 认证属性
+   */
+  credential: { [propName: string]: string };
+}

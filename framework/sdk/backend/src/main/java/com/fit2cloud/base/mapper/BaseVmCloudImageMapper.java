@@ -2,6 +2,7 @@ package com.fit2cloud.base.mapper;
 
 import com.fit2cloud.base.entity.VmCloudImage;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+import com.github.yulichang.base.MPJBaseMapper;
 
 /**
  * <p>
@@ -11,6 +12,6 @@ import com.baomidou.mybatisplus.core.mapper.BaseMapper;
  * @author fit2cloud
  * @since 
  */
-public interface BaseVmCloudImageMapper extends BaseMapper<VmCloudImage> {
+public interface BaseVmCloudImageMapper extends MPJBaseMapper<VmCloudImage> {
 
 }

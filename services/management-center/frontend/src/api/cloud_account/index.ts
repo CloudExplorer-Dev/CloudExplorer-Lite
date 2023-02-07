@@ -28,16 +28,6 @@ const page: (
 ) => Promise<Result<Page<CloudAccount>>> = (request) => {
   return get("/api/cloud_account/page", request);
 };
-/**
- * 获取所有的云账号供应商
- * @param loading   加载器
- * @returns         云账号供应商
- */
-const getPlatformAll: (
-  loading?: Ref<boolean>
-) => Promise<Result<Array<Platform>>> = (loading) => {
-  return get("/api/cloud_account/platform", null, loading);
-};
 
 /**
  * 校验云账号
@@ -54,18 +44,6 @@ const verificationCloudAccount: (
     null,
     loading
   );
-};
-/**
- * 保存一个云账号
- * @param createAccount 云账号对象
- * @param loading       加载器
- * @returns             保存成功后的云账号对象
- */
-const save: (
-  createAccount: CreateAccount,
-  loading?: Ref<boolean>
-) => Promise<Result<CloudAccount>> = (createAccount, loading) => {
-  return post("/api/cloud_account", null, createAccount, loading);
 };
 
 /**
@@ -255,8 +233,6 @@ const saveOrUpdateBillSetting = (
 const CloudAccountApi = {
   ...BaseCloudAccountApi,
   page,
-  getPlatformAll,
-  save,
   getRegions,
   getJobs,
   updateJobs,

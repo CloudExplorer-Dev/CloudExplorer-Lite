@@ -1,6 +1,6 @@
 package com.fit2cloud.controller.response;
 
-import lombok.Data;
+import com.fit2cloud.base.entity.VmCloudServer;
 import lombok.Getter;
 import lombok.Setter;
 

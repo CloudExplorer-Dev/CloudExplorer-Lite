@@ -2,7 +2,7 @@
   <div
     class="button"
     @click="handleBackClick"
-    style="margin-left: 5%"
+    style="margin-left: 5%; position: absolute; z-index: 10"
     v-if="showBack"
   >
     返回
@@ -187,6 +187,9 @@ const handleBackClick = () => {
     }
   }
 };
+window.onresize = () => {
+  console.log("窗口发生变化时会打印该条");
+};
 
 const setOptions = () => {
   let options = {};
@@ -197,7 +200,6 @@ const setOptions = () => {
   }
   nextTick(() => {
     eChartsRef.value.clear();
-    resizeHandler();
     eChartsRef.value.setOption(options);
     window.addEventListener("resize", resizeHandlerOrigin);
   });
@@ -246,11 +248,6 @@ const emptyOptions = {
 onMounted(() => {
   initChart();
   initTreeBar();
-});
-
-onBeforeUnmount(() => {
-  window.removeEventListener("resize", resizeHandlerOrigin);
-  eChartsRef.value.dispose();
 });
 </script>
 <style lang="scss" scoped>

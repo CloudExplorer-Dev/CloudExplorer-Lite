@@ -1,6 +1,5 @@
 package com.fit2cloud.service.impl;
 
-import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
@@ -168,6 +167,8 @@ public class VmCloudServerServiceImpl extends ServiceImpl<BaseVmCloudServerMappe
         wrapper.in(CollectionUtils.isNotEmpty(request.getAccountIds()), ColumnNameUtil.getColumnName(VmCloudServer::getAccountId, true), request.getAccountIds());
         wrapper.in(CollectionUtils.isNotEmpty(request.getInstanceStatus()), ColumnNameUtil.getColumnName(VmCloudServer::getInstanceStatus, true), request.getInstanceStatus());
         wrapper.in(CollectionUtils.isNotEmpty(request.getSourceIds()), ColumnNameUtil.getColumnName(VmCloudServer::getSourceId, true), request.getSourceIds());
+        wrapper.in(CollectionUtils.isNotEmpty(request.getInstanceChargeType()), ColumnNameUtil.getColumnName(VmCloudServer::getInstanceChargeType, true), request.getInstanceChargeType());
+        wrapper.in(CollectionUtils.isNotEmpty(request.getVmToolsStatus()), ColumnNameUtil.getColumnName(VmCloudServer::getVmToolsStatus, true), request.getVmToolsStatus());
 
         // 默认不展示已删除状态的机器
         if (CollectionUtils.isEmpty(request.getInstanceStatus())) {
@@ -335,13 +336,14 @@ public class VmCloudServerServiceImpl extends ServiceImpl<BaseVmCloudServerMappe
                     boolean result = CommonUtil.exec(cloudProvider, JsonUtil.toJSONString(params), execMethod);
                     if (result) {
                         vmCloudServer.setInstanceStatus(afterStatus);
+                        vmCloudServer.setLastOperateTime(DateUtil.getSyncTime());
                         jobRecord.setStatus(JobStatusConstants.SUCCESS);
                         switch (operateType) {
-                            case CLOUD_SERVER_STOP_JOB, CLOUD_SERVER_START_JOB -> vmCloudServer.setLastShutdownTime(DateUtil.getSyncTime());
                             case CLOUD_SERVER_RECYCLE_JOB ->
                                     recycleService.insertRecycleRecord(vmId, ResourceTypeConstants.VM);
-                            case CLOUD_SERVER_DELETE_JOB ->
-                                    recycleService.updateRecycleRecordOnDelete(vmId, ResourceTypeConstants.VM);
+                            case CLOUD_SERVER_DELETE_JOB -> {
+                                recycleService.updateRecycleRecordOnDelete(vmId, ResourceTypeConstants.VM);
+                            }
                             default -> {
                             }
                         }
@@ -393,7 +395,10 @@ public class VmCloudServerServiceImpl extends ServiceImpl<BaseVmCloudServerMappe
 
         int count = requestObj.getCount();
 
-        String sourceId = CurrentUserUtils.getUser().getCurrentSource();
+        UserDto currentUser = CurrentUserUtils.getUser();
+        Optional.ofNullable(currentUser).orElseThrow(() -> new RuntimeException("Can not get current user."));
+
+        String sourceId = currentUser.getCurrentSource();
         for (int i = 0; i < count; i++) {
 
             //设置index
@@ -413,6 +418,7 @@ public class VmCloudServerServiceImpl extends ServiceImpl<BaseVmCloudServerMappe
             vmCloudServer.setUpdateTime(DateUtil.getSyncTime());
             vmCloudServer.setIpArray(JsonUtil.toJSONString(tempData.getIpArray()));
             vmCloudServer.setInstanceStatus(F2CInstanceStatus.WaitCreating.name());
+            vmCloudServer.setApplyUser(currentUser.getUsername());
             if (!CurrentUserUtils.isAdmin() && StringUtils.isNotBlank(sourceId)) {
                 vmCloudServer.setSourceId(sourceId);
             }

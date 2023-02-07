@@ -1,6 +1,6 @@
 export const ResourceTypeConst = {
   VM: "云主机",
-  DISK: "磁盘"
+  DISK: "磁盘",
 };
 
 export const Config = {
