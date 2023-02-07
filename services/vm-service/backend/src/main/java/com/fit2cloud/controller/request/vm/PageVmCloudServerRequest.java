@@ -66,6 +66,10 @@ public class PageVmCloudServerRequest extends PageRequest implements PageOrderRe
     private String hostname;
     @ApiModelProperty("申请人")
     private String applyUser;
+    @ApiModelProperty("付费类型")
+    private List<String> instanceChargeType;
+    @ApiModelProperty("VMTools状态")
+    private List<String> vmToolsStatus;
     @Size(min = 2, max = 2, message = "{i18n.request.date.message}")
     @ApiModelProperty(value = "创建时间", example = "createTime[]=2121&createTime[]=21212")
     private List<Long> createTime;

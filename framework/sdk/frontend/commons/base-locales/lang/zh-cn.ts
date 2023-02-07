@@ -18,6 +18,7 @@ const message = {
     status: "状态",
     create_time: "创建时间",
     update_time: "更新时间",
+    delete_time: "删除时间",
     basic_info: "基本信息",
     description: "描述",
     grant: "授权",
@@ -136,7 +137,7 @@ const message = {
     charge_type: {
       native: "付费方式",
       prepaid: "包年包月",
-      postpaid: "按需付费",
+      postpaid: "按量付费",
     },
   },
 };

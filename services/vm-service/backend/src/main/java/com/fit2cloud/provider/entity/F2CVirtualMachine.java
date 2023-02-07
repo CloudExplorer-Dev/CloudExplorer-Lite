@@ -149,7 +149,7 @@ public class F2CVirtualMachine {
      */
     private Long createTime;
     /**
-     * 销毁时间
+     * 到期时间
      */
     private Long expiredTime;
     /**

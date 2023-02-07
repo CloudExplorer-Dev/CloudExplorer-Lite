@@ -55,7 +55,7 @@ const InstanceStatus = ref<Array<SimpleMap<string>>>([
   { text: "待回收", value: "ToBeRecycled" },
 ]);
 
-// 表格头中显示的筛选状态
+// 表格头:状态筛选项
 const instanceStatusForTableSelect = [
   { text: t("vm_cloud_server.status.creating", "创建中"), value: "Creating" },
   { text: t("vm_cloud_server.status.running", "运行中"), value: "Running" },
@@ -78,6 +78,47 @@ const filterInstanceStatus = (value: string) => {
   });
   return status;
 };
+
+// 表格头:付费类型筛选项
+const chargeType = [
+  { text: t("commons.charge_type.prepaid"), value: "PrePaid" },
+  { text: t("commons.charge_type.postpaid"), value: "PostPaid" },
+];
+
+const filterChargeType = (value: string) => {
+  let status = "";
+  chargeType.forEach((v) => {
+    if (v.value == value) {
+      status = v.text;
+      return;
+    }
+  });
+  return status;
+};
+
+// 表格头:VMTools 筛选项
+const vmToolsStatus = [
+  {
+    text: t("vm_cloud_server.vm_tools_status.running"),
+    value: "guestToolsRunning",
+  },
+  {
+    text: t("vm_cloud_server.vm_tools_status.not_running"),
+    value: "guestToolsNotRunning",
+  },
+];
+
+const filterVmToolsStatus = (value: string) => {
+  let status = "";
+  vmToolsStatus.forEach((v) => {
+    if (v.value == value) {
+      status = v.text;
+      return;
+    }
+  });
+  return status;
+};
+
 /**
  * 查询
  * @param condition
@@ -113,7 +154,6 @@ const refresh = () => {
  */
 const isRecycleBinOpened = ref(true);
 const getRecycleBinSetting = () => {
-  // TODO 查询回收站配置
   RecycleBinsApi.getRecycleEnableStatus().then((result) => {
     isRecycleBinOpened.value = result.data;
   });
@@ -648,6 +688,8 @@ const moreActions = ref<Array<ButtonAction>>([
       prop="instanceName"
       column-key="instanceName"
       :label="$t('commons.name')"
+      fixed
+      min-width="200px"
     >
       <template #default="scope">
         <span @click="showDetail(scope.row)" class="name-span-class">
@@ -656,40 +698,35 @@ const moreActions = ref<Array<ButtonAction>>([
       </template>
     </el-table-column>
     <el-table-column
-      prop="organizationName"
-      column-key="organizationName"
-      :label="$t('commons.org')"
-      :show="false"
-    ></el-table-column>
-    <el-table-column
-      prop="workspaceName"
-      column-key="workspaceName"
-      :label="$t('commons.workspace')"
-      :show="false"
-    ></el-table-column>
-    <el-table-column
-      prop="accountName"
-      column-key="accountIds"
-      :label="$t('commons.cloud_account.native')"
-      :filters="cloudAccount"
+      prop="ipArray"
+      column-key="ipArray"
+      :label="$t('vm_cloud_server.label.ip_address')"
+      min-width="180px"
     >
       <template #default="scope">
-        <div style="display: flex">
-          <!--          <el-image
-            style="margin-top: 3px; width: 16px; height: 16px"
-            :src="platformIcon[scope.row.platform]?.icon"
-            v-if="scope.row.platform"
-          ></el-image>-->
-          <component
-            style="margin-top: 3px; width: 16px; height: 16px"
-            :is="platformIcon[scope.row.platform]?.component"
-            v-bind="platformIcon[scope.row.platform]?.icon"
-            :color="platformIcon[scope.row.platform]?.color"
-            size="16px"
-            v-if="scope.row.platform"
-          ></component>
-          <span style="margin-left: 10px">{{ scope.row.accountName }}</span>
-        </div>
+        <span v-show="scope.row.ipArray?.length > 2">{{
+          JSON.parse(scope.row.ipArray)[0]
+        }}</span>
+        <el-dropdown
+          :class="variables_server.dropdown_box"
+          :hide-on-click="false"
+          v-if="scope.row.ipArray.length > 2"
+          max-height="100px"
+        >
+          <span>
+            {{ t("commons.cloud_server.more", "更多")
+            }}<el-icon class="el-icon--right"><arrow-down /></el-icon>
+          </span>
+          <template #dropdown>
+            <el-dropdown-menu>
+              <el-dropdown-item
+                v-for="(item, index) in JSON.parse(scope.row.ipArray)"
+                :key="index"
+                >{{ item }}</el-dropdown-item
+              >
+            </el-dropdown-menu>
+          </template>
+        </el-dropdown>
       </template>
     </el-table-column>
     <el-table-column
@@ -725,59 +762,158 @@ const moreActions = ref<Array<ButtonAction>>([
       </template>
     </el-table-column>
     <el-table-column
-      prop="instanceTypeDescription"
-      column-key="instanceTypeDescription"
-      :label="$t('commons.cloud_server.instance_type')"
-    ></el-table-column>
-    <el-table-column
-      prop="ipArray"
-      column-key="ipArray"
-      :label="$t('vm_cloud_server.label.ip_address')"
+      prop="accountName"
+      column-key="accountIds"
+      :label="$t('commons.cloud_account.native')"
+      :filters="cloudAccount"
+      min-width="180px"
     >
       <template #default="scope">
-        <span v-show="scope.row.ipArray?.length > 2">{{
-          JSON.parse(scope.row.ipArray)[0]
-        }}</span>
-        <el-dropdown
-          :class="variables_server.dropdown_box"
-          :hide-on-click="false"
-          v-if="scope.row.ipArray.length > 2"
-          max-height="100px"
-        >
-          <span>
-            {{ t("commons.cloud_server.more", "更多")
-            }}<el-icon class="el-icon--right"><arrow-down /></el-icon>
-          </span>
-          <template #dropdown>
-            <el-dropdown-menu>
-              <el-dropdown-item
-                v-for="(item, index) in JSON.parse(scope.row.ipArray)"
-                :key="index"
-                >{{ item }}</el-dropdown-item
-              >
-            </el-dropdown-menu>
-          </template>
-        </el-dropdown>
+        <div style="display: flex">
+          <component
+            style="margin-top: 3px; width: 16px; height: 16px"
+            :is="platformIcon[scope.row.platform]?.component"
+            v-bind="platformIcon[scope.row.platform]?.icon"
+            :color="platformIcon[scope.row.platform]?.color"
+            size="16px"
+            v-if="scope.row.platform"
+          ></component>
+          <span style="margin-left: 10px">{{ scope.row.accountName }}</span>
+        </div>
       </template>
     </el-table-column>
     <el-table-column
-      prop="createUser"
-      column-key="createUser"
-      :label="$t('commons.cloud_server.applicant')"
+      prop="region"
+      column-key="region"
+      :label="$t('vm_cloud_server.label.region', '区域/数据中心')"
       :show="false"
+      min-width="180px"
+    ></el-table-column>
+    <el-table-column
+      prop="zone"
+      column-key="zone"
+      :label="$t('vm_cloud_server.label.zone', '可用区/集群')"
+      :show="false"
+      min-width="180px"
+    ></el-table-column>
+    <el-table-column
+      prop="organizationName"
+      column-key="organizationName"
+      :label="$t('commons.org')"
+      :show="false"
+      min-width="180px"
+    ></el-table-column>
+    <el-table-column
+      prop="workspaceName"
+      column-key="workspaceName"
+      :label="$t('commons.workspace')"
+      :show="false"
+      min-width="180px"
+    ></el-table-column>
+    <el-table-column
+      prop="instanceTypeDescription"
+      column-key="instanceTypeDescription"
+      :label="$t('commons.cloud_server.instance_type')"
+      min-width="120px"
+    ></el-table-column>
+    <el-table-column
+      prop="osInfo"
+      column-key="osInfo"
+      :label="$t('commons.os_version', '操作系统版本')"
+      min-width="180px"
+    ></el-table-column>
+    <el-table-column
+      prop="instanceChargeType"
+      column-key="instanceChargeType"
+      :label="$t('cloud_server.label.charge_type', '付费类型')"
+      :filters="chargeType"
+      min-width="120px"
+    >
+      <template #default="scope">
+        {{ filterChargeType(scope.row.instanceChargeType) }}
+      </template>
+    </el-table-column>
+    <el-table-column
+      prop="projectId"
+      column-key="projectId"
+      :label="$t('cloud_server.label.project', '企业项目')"
+      :show="false"
+      min-width="180px"
+    ></el-table-column>
+    <el-table-column
+      prop="vpcId"
+      column-key="vpcId"
+      :label="$t('cloud_server.label.vpc', 'VPC')"
+      :show="false"
+      min-width="180px"
+    ></el-table-column>
+    <el-table-column
+      prop="subnetId"
+      column-key="subnetId"
+      :label="$t('cloud_server.label.subnet', '子网')"
+      :show="false"
+      min-width="180px"
+    ></el-table-column>
+    <el-table-column
+      prop="securityGroupIds"
+      column-key="securityGroupIds"
+      :label="$t('cloud_server.label.securityGroup', '安全组')"
+      :show="false"
+      min-width="180px"
+    ></el-table-column>
+    <el-table-column
+      prop="host"
+      column-key="host"
+      :label="$t('commons.cloud_account.host', '宿主机')"
+      :show="false"
+      min-width="120px"
+    ></el-table-column>
+    <el-table-column
+      prop="vmToolsStatus"
+      column-key="vmToolsStatus"
+      :label="$t('cloud_server.label.vm_tools_status', 'VMTools状态')"
+      :filters="vmToolsStatus"
+      :show="false"
+      min-width="180px"
+    >
+      <template #default="scope">
+        {{ filterVmToolsStatus(scope.row.vmToolsStatus) }}
+      </template>
+    </el-table-column>
+    <el-table-column
+      prop="expiredTime"
+      column-key="expiredTime"
+      sortable
+      :label="$t('cloud_server.label.expired_time', '到期时间')"
+      min-width="180px"
     ></el-table-column>
     <el-table-column
       prop="createTime"
       column-key="createTime"
       sortable
-      :label="$t('commons.create_time')"
+      :label="$t('commons.create_time', '创建时间')"
+      min-width="180px"
+    ></el-table-column>
+    <el-table-column
+      prop="applyUser"
+      column-key="applyUser"
+      :label="$t('commons.cloud_server.applicant', '申请人')"
+      min-width="120px"
+    ></el-table-column>
+    <el-table-column
+      prop="deleteTime"
+      column-key="deleteTime"
+      sortable
+      :label="$t('commons.delete_time', '删除时间')"
+      :show="false"
+      min-width="180px"
     ></el-table-column>
     <fu-table-operations
       :ellipsis="2"
       :columns="columns"
       :buttons="buttons"
       :label="$t('commons.operation')"
-      fix
+      fixed="right"
     />
     <template #buttons>
       <fu-table-column-select type="icon" :columns="columns" size="small" />
