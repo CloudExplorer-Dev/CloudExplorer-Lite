@@ -330,18 +330,18 @@ public class VmCloudServerServiceImpl extends ServiceImpl<BaseVmCloudServerMappe
                 Class<? extends ICloudProvider> cloudProvider = ProviderConstants.valueOf(cloudAccount.getPlatform()).getCloudProvider();
                 HashMap<String, Object> params = CommonUtil.getParams(cloudAccount.getCredential(), vmCloudServer.getRegion());
                 params.put("uuid", vmCloudServer.getInstanceUuid());
-
                 try {
                     boolean result = CommonUtil.exec(cloudProvider, JsonUtil.toJSONString(params), execMethod);
                     if (result) {
                         vmCloudServer.setInstanceStatus(afterStatus);
+                        vmCloudServer.setLastOperateTime(DateUtil.getSyncTime());
                         jobRecord.setStatus(JobStatusConstants.SUCCESS);
                         switch (operateType) {
-                            case CLOUD_SERVER_STOP_JOB, CLOUD_SERVER_START_JOB -> vmCloudServer.setLastShutdownTime(DateUtil.getSyncTime());
                             case CLOUD_SERVER_RECYCLE_JOB ->
                                     recycleService.insertRecycleRecord(vmId, ResourceTypeConstants.VM);
-                            case CLOUD_SERVER_DELETE_JOB ->
-                                    recycleService.updateRecycleRecordOnDelete(vmId, ResourceTypeConstants.VM);
+                            case CLOUD_SERVER_DELETE_JOB -> {
+                                recycleService.updateRecycleRecordOnDelete(vmId, ResourceTypeConstants.VM);
+                            }
                             default -> {
                             }
                         }

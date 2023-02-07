@@ -3,7 +3,7 @@
     <el-row :gutter="12">
       <el-col :span="6" v-for="o in optimizeSuggests" key="o.code">
         <el-card :body-style="{ padding: '0px' }" shadow="hover">
-          <div class="boxConter">
+          <div class="boxCenter">
             <!--添加角标-->
             <div class="AngleOfTheBox" v-if="o.checked">
               <span>当前</span>
@@ -338,7 +338,8 @@ import type {
   OptimizeSuggest,
   OptimizationRequest,
 } from "@/api/resource_optimization/type";
-
+import {useRouter} from "vue-router";
+const useRoute = useRouter();
 const { t } = useI18n();
 const table = ref<any>(null);
 const columns = ref([]);
@@ -419,7 +420,7 @@ optimizeSuggests.value.push({
 const selectOptimizeType = (o: any) => {
   currentTitle.value = o.name + "查询策略";
   currentType.value = o.code;
-  getSearchParams(o);
+  getSearchParams(o.code);
 };
 
 const saveSearchParams = () => {
@@ -437,19 +438,19 @@ const saveSearchParams = () => {
   search(new TableSearch());
 };
 
-const getSearchParams = (o: any) => {
-  if (window.localStorage.getItem(o.code)) {
-    const str = window.localStorage.getItem(o.code);
+const getSearchParams = (code: any) => {
+  if (window.localStorage.getItem(code)) {
+    const str = window.localStorage.getItem(code);
     if (str) {
       try {
         dialogFormData.value = JSON.parse(str);
       } catch (e) {
         console.error("get default dialogFormData error", e);
-        dialogFormData.value = paramOptimizationRequestMap.get(o.code);
+        dialogFormData.value = paramOptimizationRequestMap.get(code);
       }
     }
   } else {
-    dialogFormData.value = paramOptimizationRequestMap.get(o.code);
+    dialogFormData.value = paramOptimizationRequestMap.get(code);
   }
 };
 
@@ -460,9 +461,8 @@ const getSearchParams = (o: any) => {
 const search = (condition: TableSearch) => {
   const params = TableSearch.toSearchParams(condition);
   const d = _.find(optimizeSuggests.value, ["code", currentType.value]);
-  getSearchParams(d);
+  getSearchParams(d.code);
   _.merge(params, dialogFormData.value);
-  debugger;
   ResourceOptimizationViewApi.listServer(
     {
       currentPage: tableConfig.value.paginationConfig.currentPage,
@@ -491,8 +491,9 @@ const search = (condition: TableSearch) => {
  * 页面挂载
  */
 onMounted(() => {
+  const code = useRoute.currentRoute.value.query.code;
   optimizeSuggests.value.forEach((value) => {
-    getSearchParams(value);
+    getSearchParams(value.code);
     const params = TableSearch.toSearchParams(new TableSearch());
     _.merge(params, dialogFormData.value);
     ResourceOptimizationViewApi.listServer({
@@ -503,7 +504,8 @@ onMounted(() => {
     }).then((res) => {
       value.value = res.data.total;
       value.data = res.data.records;
-      if (value.code === "derating") {
+       if (!code && value.code === "derating") {
+         currentType.value = value.code;
         tableData.value = res.data.records;
         tableConfig.value.paginationConfig?.setTotal(
           res.data.total,
@@ -516,6 +518,18 @@ onMounted(() => {
       }
     });
   });
+  if(code){
+    currentType.value = code;
+    useRoute.currentRoute.value.query.code = null;
+    dialogFormVisible.value = false;
+    optimizeSuggests.value.forEach((value) => {
+      value.checked = false;
+      if (value.code === currentType.value) {
+        value.checked = true;
+      }
+    });
+    search(new TableSearch());
+  }
   searchCloudAccount();
 });
 onBeforeUnmount(() => {});
@@ -554,8 +568,8 @@ const tableConfig = ref<TableConfig>({
 </script>
 
 <style scoped lang="scss">
-.boxConter {
-  height: 100px;
+.boxCenter {
+  height: 150px;
   overflow: hidden;
   position: relative;
   //按钮
@@ -613,7 +627,7 @@ const tableConfig = ref<TableConfig>({
     width: 100%;
     height: 30px;
     position: absolute;
-    bottom: 40px;
+    bottom: 70px;
     text-align: center;
   }
   .BottomTheBox {

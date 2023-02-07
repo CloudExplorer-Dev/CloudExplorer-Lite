@@ -23,4 +23,9 @@ public class DiskRequest implements Serializable {
 
     @ApiModelProperty("云账号IDs")
     private List<String> accountIds;
+
+    @ApiModelProperty("组织或者工作空间 ID 集合")
+    private List<String> sourceIds;
+
+
 }

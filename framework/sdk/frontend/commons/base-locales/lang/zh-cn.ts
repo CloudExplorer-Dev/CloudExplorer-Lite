@@ -239,6 +239,28 @@ const permissions = {
         recover: "恢复",
       },
     },
+    operation: {
+      overview: {
+        base: "总览",
+        read: "查看",
+      },
+      base_resource_analysis: {
+        base: "基础资源分析",
+        read: "查看",
+      },
+      server_analysis: {
+        base: "云主机分析",
+        read: "查看",
+      },
+      disk_analysis: {
+        base: "云磁盘分析",
+        read: "查看",
+      },
+      resource_optimization: {
+        base: "云主机优化",
+        read: "查看",
+      },
+    },
   },
 };
 

@@ -240,6 +240,28 @@ const permissions = {
         recover: "Recover",
       },
     },
+    operation: {
+      overview: {
+        base: "Overview",
+        read: "Read",
+      },
+      base_resource_analysis: {
+        base: "Basic resource analysis",
+        read: "Read",
+      },
+      server_analysis: {
+        base: "Cloud server analysis",
+        read: "Read",
+      },
+      disk_analysis: {
+        base: "Cloud disk analysis",
+        read: "Read",
+      },
+      resource_optimization: {
+        base: "Cloud server optimization",
+        read: "Read",
+      },
+    },
   },
 };
 

@@ -26,6 +26,8 @@ public class ResourceUsedTrendRequest {
     private long startTime;
     @ApiModelProperty("结束时间")
     private long endTime;
+    @ApiModelProperty("组织或者工作空间 ID 集合")
+    private List<String> sourceIds;
 
     private CalendarInterval intervalPosition;
 }

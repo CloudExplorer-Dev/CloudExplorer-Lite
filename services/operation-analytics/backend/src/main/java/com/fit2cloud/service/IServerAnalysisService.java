@@ -55,5 +55,9 @@ public interface IServerAnalysisService {
 
     List<BarTreeChartData> initOrgChartData();
 
+    List<String> getRangeDateStrList(Long day);
+
+    Long getResourceTotalDateBefore(Map<String, Long> monthTreeMap, String dateStr);
+
 
 }

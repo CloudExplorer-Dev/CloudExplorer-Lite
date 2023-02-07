@@ -295,11 +295,13 @@ public class VmCloudServer implements Serializable {
     private LocalDateTime updateTime;
 
     /**
-     * 最近关机时间
+     * 最近操作时间，开关机、删除
      */
-    @TableField("last_shutdown_time")
+    @TableField("last_operate_time")
     @JsonDeserialize(using = LocalDateTimeDeserializer.class)
     @JsonSerialize(using = LocalDateTimeSerializer.class)
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
-    private LocalDateTime lastShutdownTime;
+    private LocalDateTime lastOperateTime;
+
+
 }

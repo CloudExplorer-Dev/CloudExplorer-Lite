@@ -263,27 +263,31 @@
       <div class="spread-main-bottom">
         <div class="myChart" style="height: 210px">
           <div class="echart-title">
-            <div class="echart-title-left">基础资源分配情况</div>
+            <div class="echart-title-left">资源优化建议</div>
           </div>
           <div class="echart-content" style="padding: 10px">
             <el-row :gutter="12">
               <el-col :span="6" v-for="o in optimizeSuggests" key="o.code">
-                <el-card :body-style="{ padding: '0px' }" shadow="hover">
-                  <div class="boxConter">
-                    <div class="CenterTheBox">
+                <router-link
+                    :to="{ name: 'server_optimization', query: { code: o.code } }"
+                >
+                  <el-card :body-style="{ padding: '0px' }" shadow="hover">
+                    <div class="boxConter">
+                      <div class="CenterTheBox">
                       <span
-                        ><span style="font-size: 24px">{{ o.value }}</span
-                        >台</span
+                      ><span style="font-size: 24px">{{ o.value }}</span
+                      >台</span
                       >
+                      </div>
+                      <div
+                          class="BottomTheBox"
+                          :style="{ 'background-color': o.color }"
+                      >
+                        <span>{{ o.name }}</span>
+                      </div>
                     </div>
-                    <div
-                      class="BottomTheBox"
-                      :style="{ 'background-color': o.color }"
-                    >
-                      <span>{{ o.name }}</span>
-                    </div>
-                  </div>
-                </el-card>
+                  </el-card>
+                </router-link>
               </el-col>
             </el-row>
           </div>
@@ -702,7 +706,7 @@ const getAllocatedComputerInfo = (
     if (chartName === "datastore") {
       allocatedDatastoreOption.value = options;
     }
-    childRefMap.get(chartName).hideEchartsLoading();
+    childRefMap.get(chartName)?.hideEchartsLoading();
   });
 };
 
@@ -882,7 +886,7 @@ onMounted(() => {
     width: 100%;
     height: 30px;
     position: absolute;
-    bottom: 40px;
+    bottom: 50px;
     text-align: center;
   }
   .BottomTheBox {
