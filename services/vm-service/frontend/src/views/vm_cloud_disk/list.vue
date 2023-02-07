@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref, onMounted, onBeforeUnmount, computed } from "vue";
-import VmCloudDiskApi, { batchRecycleDisks } from "@/api/vm_cloud_disk";
+import VmCloudDiskApi from "@/api/vm_cloud_disk";
 import type { VmCloudDiskVO } from "@/api/vm_cloud_disk/type";
 import {
   PaginationConfig,
@@ -17,6 +17,7 @@ import _ from "lodash";
 import { usePermissionStore } from "@commons/stores/modules/permission";
 import Grant from "@/views/vm_cloud_server/grant.vue";
 import RecycleBinsApi from "@/api/recycle_bin";
+import BaseCloudAccountApi from "@commons/api/cloud_account";
 
 const { t } = useI18n();
 const permissionStore = usePermissionStore();
@@ -27,6 +28,7 @@ const router = useRouter();
 // 选中的磁盘
 const multipleSelectedRowData = ref<Array<VmCloudDiskVO>>([]);
 const isBatchAttach = ref(false);
+const cloudAccount = ref<Array<SimpleMap<string>>>([]);
 
 //硬盘状态
 const diskStatus = ref<Array<SimpleMap<string>>>([
@@ -79,6 +81,17 @@ const diskStatusForTableSelect = [
   },
   { text: t("vm_cloud_disk.status.deleted", "已删除"), value: "deleted" },
 ];
+
+const searchCloudAccount = () => {
+  BaseCloudAccountApi.listAll().then((result) => {
+    if (result.data.length > 0) {
+      result.data.forEach(function (v) {
+        const ca = { text: v.name, value: v.id };
+        cloudAccount.value.push(ca);
+      });
+    }
+  });
+};
 
 /**
  * 不支持磁盘单独管理的云平台
@@ -145,6 +158,7 @@ const getRecycleBinSetting = () => {
  */
 let timer: any;
 onMounted(() => {
+  searchCloudAccount();
   getRecycleBinSetting();
   search(new TableSearch());
   timer = setInterval(() => {
@@ -612,6 +626,8 @@ const buttons = ref([
       prop="diskName"
       :label="$t('commons.name')"
       :show-overflow-tooltip="true"
+      min-width="200px"
+      fixed
     >
       <template #default="scope">
         <span
@@ -622,19 +638,43 @@ const buttons = ref([
         </span>
       </template>
     </el-table-column>
-
     <el-table-column
       prop="accountName"
+      column-key="accountIds"
       :label="$t('commons.cloud_account.native')"
+      :filters="cloudAccount"
+      min-width="180px"
     ></el-table-column>
     <el-table-column
-      prop="size"
-      :label="$t('vm_cloud_disk.label.size') + '/G'"
-      sortable
+      prop="region"
+      column-key="region"
+      :label="$t('vm_cloud_server.label.region', '区域/数据中心')"
+      :show="false"
+      min-width="180px"
+    ></el-table-column>
+    <el-table-column
+      prop="zone"
+      column-key="zone"
+      :label="$t('vm_cloud_server.label.zone', '可用区/集群')"
+      :show="false"
+      min-width="180px"
+    ></el-table-column>
+    <el-table-column
+      prop="organizationName"
+      :label="$t('commons.org')"
+      :show="false"
+      min-width="180px"
+    ></el-table-column>
+    <el-table-column
+      prop="workspaceName"
+      :label="$t('commons.workspace')"
+      :show="false"
+      min-width="180px"
     ></el-table-column>
     <el-table-column
       prop="vmInstanceName"
       :label="$t('vm_cloud_disk.label.vm')"
+      min-width="200px"
     >
       <template #default="scope">
         <el-tooltip
@@ -657,6 +697,7 @@ const buttons = ref([
         { text: t('vm_cloud_disk.label.system_disk'), value: 1 },
         { text: t('vm_cloud_disk.label.data_disk'), value: 0 },
       ]"
+      min-width="120px"
     >
       <template #default="scope">
         <div style="display: flex; align-items: center">
@@ -669,6 +710,7 @@ const buttons = ref([
       column-key="diskType"
       :label="$t('vm_cloud_disk.label.disk_type')"
       :filters="diskTypes"
+      min-width="120px"
     >
       <template #default="scope">
         <div style="display: flex; align-items: center">
@@ -677,53 +719,11 @@ const buttons = ref([
       </template>
     </el-table-column>
     <el-table-column
-      prop="organizationName"
-      :label="$t('commons.org')"
-      :show="false"
+      prop="size"
+      :label="$t('vm_cloud_disk.label.size') + '(GB)'"
+      sortable
+      min-width="160px"
     ></el-table-column>
-    <el-table-column
-      prop="workspaceName"
-      :label="$t('commons.workspace')"
-      :show="false"
-    ></el-table-column>
-    <el-table-column
-      prop="device"
-      :label="$t('vm_cloud_disk.label.mount_info')"
-      :show="false"
-    >
-      <template #default="scope">
-        <el-tooltip
-          class="item"
-          effect="dark"
-          :content="scope.row.device"
-          placement="top"
-        >
-          <p class="text-overflow">
-            {{ scope.row.device }}
-          </p>
-        </el-tooltip>
-      </template>
-    </el-table-column>
-    <el-table-column
-      :show="true"
-      prop="deleteWithInstance"
-      column-key="deleteWithInstance"
-      :label="$t('vm_cloud_disk.label.delete_with_instance')"
-      :filters="[
-        { text: t('commons.btn.yes'), value: 'YES' },
-        { text: t('commons.btn.no'), value: 'NO' },
-      ]"
-    >
-      <template #default="scope">
-        <div style="display: flex; align-items: center">
-          <span>{{
-            scope.row.deleteWithInstance === "YES"
-              ? t("commons.btn.yes")
-              : t("commons.btn.no")
-          }}</span>
-        </div>
-      </template>
-    </el-table-column>
     <el-table-column
       prop="status"
       column-key="status"
@@ -749,22 +749,58 @@ const buttons = ref([
       </template>
     </el-table-column>
     <el-table-column
+      :show="true"
+      prop="deleteWithInstance"
+      column-key="deleteWithInstance"
+      :label="$t('vm_cloud_disk.label.delete_with_instance')"
+      :filters="[
+        { text: t('commons.btn.yes'), value: 'YES' },
+        { text: t('commons.btn.no'), value: 'NO' },
+      ]"
+      min-width="130px"
+    >
+      <template #default="scope">
+        <div style="display: flex; align-items: center">
+          <span>{{
+            scope.row.deleteWithInstance === "YES"
+              ? t("commons.btn.yes")
+              : t("commons.btn.no")
+          }}</span>
+        </div>
+      </template>
+    </el-table-column>
+    <el-table-column
+      prop="device"
+      :label="$t('vm_cloud_disk.label.mount_info')"
+      :show="false"
+      min-width="120px"
+    >
+      <template #default="scope">
+        <el-tooltip
+          class="item"
+          effect="dark"
+          :content="scope.row.device"
+          placement="top"
+        >
+          <p class="text-overflow">
+            {{ scope.row.device }}
+          </p>
+        </el-tooltip>
+      </template>
+    </el-table-column>
+    <el-table-column
       prop="createTime"
       sortable
       :label="$t('commons.create_time')"
       :show="true"
-    ></el-table-column>
-    <el-table-column
-      prop="updateTime"
-      :label="$t('commons.update_time')"
-      :show="true"
+      min-width="180px"
     ></el-table-column>
     <fu-table-operations
       :ellipsis="2"
       :columns="columns"
       :buttons="buttons"
       :label="$t('commons.operation')"
-      fix
+      fixed="right"
     />
     <template #buttons>
       <fu-table-column-select type="icon" :columns="columns" size="small" />
