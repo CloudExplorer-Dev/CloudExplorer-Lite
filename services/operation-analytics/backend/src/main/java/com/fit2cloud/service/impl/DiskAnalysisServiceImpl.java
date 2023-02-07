@@ -185,8 +185,8 @@ public class DiskAnalysisServiceImpl implements IDiskAnalysisService {
             //格式化创建时间,删除时间
             diskList = diskList.stream().filter(v->Objects.nonNull(v.getCreateTime())).peek(v->{
                 v.setCreateMonth(v.getCreateTime().format(DateTimeFormatter.ofPattern("yyyy-MM-dd")));
-                if(Objects.nonNull(v.getLastOperateTime()) && StringUtils.equalsIgnoreCase(v.getStatus(),"deleted")){
-                    v.setDeleteMonth(v.getLastOperateTime().format(DateTimeFormatter.ofPattern("yyyy-MM-dd")));
+                if(Objects.nonNull(v.getUpdateTime()) && StringUtils.equalsIgnoreCase(v.getStatus(),"deleted")){
+                    v.setDeleteMonth(v.getUpdateTime().format(DateTimeFormatter.ofPattern("yyyy-MM-dd")));
                 }
             }).toList();
             Map<String,List<AnalyticsDiskDTO>> accountGroup = diskList.stream().filter(v->StringUtils.isNotEmpty(v.getAccountId())).collect(Collectors.groupingBy(AnalyticsDiskDTO::getAccountId));
