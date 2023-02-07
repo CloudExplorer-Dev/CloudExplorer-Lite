@@ -1,5 +1,4 @@
 <script lang="ts" setup>
-import { useHomeStore } from "@commons/stores/modules/home";
 import { computed, onMounted } from "vue";
 
 import UserInfo from "./items/UserInfo.vue";

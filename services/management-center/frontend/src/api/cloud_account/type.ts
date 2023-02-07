@@ -1,6 +1,12 @@
 import type { SimpleMap } from "@commons/api/base/type";
 import type { CloudAccount } from "@commons/api/cloud_account/type";
 
+import type {
+  Platform,
+  Form,
+  CreateAccount,
+} from "@commons/api/cloud_account/type";
+
 interface ListOrganizationRequest {
   /**
    *每页显示多少
@@ -25,60 +31,6 @@ interface ListSyncRecordRequest {
    *当前页
    */
   currentPage: number;
-}
-
-interface Form {
-  /**
-   * 输入类型
-   */
-  inputType: string;
-  /**
-   * 字段名称
-   */
-  field: string;
-  /**
-   * 提示
-   */
-  label: string;
-  /**
-   * 是否必填
-   */
-  required: boolean;
-  /**
-   * 默认值
-   */
-  defaultValue: unknown;
-  /**
-   * 描述
-   */
-  description: string;
-}
-interface Platform {
-  /**
-   * 提示
-   */
-  label: string;
-  /**
-   * 字段
-   */
-  field: string;
-
-  credentialForm: Array<Form>;
-}
-
-interface CreateAccount {
-  /**
-   *名称
-   */
-  name: string;
-  /**
-   * 云平台
-   */
-  platform: string;
-  /**
-   * 认证属性
-   */
-  credential: { [propName: string]: string };
 }
 
 /**
