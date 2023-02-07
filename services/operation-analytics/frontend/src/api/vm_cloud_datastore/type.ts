@@ -1,5 +1,3 @@
-import type { SimpleMap } from "@commons/api/base/type";
-
 interface VmCloudDatastoreVO {}
 
 interface ListVmCloudDatastoreRequest {

@@ -2,10 +2,9 @@ package com.fit2cloud.provider.impl.vsphere.util;
 
 import com.fit2cloud.common.provider.impl.vsphere.utils.VsphereClient;
 import com.fit2cloud.provider.constants.F2CInstanceStatus;
-import com.fit2cloud.provider.entity.F2CHost;
-import com.fit2cloud.provider.entity.F2CVirtualMachine;
-import com.fit2cloud.provider.impl.vsphere.entity.F2CVsphereDatastore;
-import com.fit2cloud.provider.impl.vsphere.entity.F2CVsphereHost;
+import com.fit2cloud.provider.entity.response.F2CHost;
+import com.fit2cloud.provider.entity.response.F2CVirtualMachine;
+import com.fit2cloud.provider.impl.vsphere.entity.response.F2CVsphereHost;
 import com.vmware.vim25.*;
 import com.vmware.vim25.mo.*;
 import lombok.extern.slf4j.Slf4j;
@@ -338,18 +337,7 @@ public class VsphereUtil {
         return host;
     }
 
-    /**
-     * 将 vsphere 存储器对象转为 F2C 云管存储器对象
-     *
-     * @param datastore 存储器对象
-     * @return
-     */
-    private static F2CVsphereDatastore transferDatastore2F2CVsphereDatastore(Datastore datastore) {
-        F2CVsphereDatastore f2CVsphereDatastore = new F2CVsphereDatastore();
-        f2CVsphereDatastore.setDatastoreName(datastore.getName());
-        f2CVsphereDatastore.setDatastoreMorVal(datastore.getMOR().getVal());
-        return f2CVsphereDatastore;
-    }
+
 
 
     /**

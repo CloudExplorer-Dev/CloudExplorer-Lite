@@ -22,9 +22,11 @@ import com.fit2cloud.base.service.IBaseCloudAccountService;
 import com.fit2cloud.base.service.IBaseOrganizationService;
 import com.fit2cloud.base.service.IBaseWorkspaceService;
 import com.fit2cloud.common.cache.CloudAccountCache;
+import com.fit2cloud.common.constants.RoleConstants;
 import com.fit2cloud.common.exception.Fit2cloudException;
 import com.fit2cloud.common.log.utils.LogUtil;
 import com.fit2cloud.common.query.convert.QueryFieldValueConvert;
+import com.fit2cloud.common.util.AuthUtil;
 import com.fit2cloud.common.util.EsFieldUtil;
 import com.fit2cloud.common.util.MappingUtil;
 import com.fit2cloud.common.utils.QueryUtil;
@@ -185,7 +187,9 @@ public class BillDimensionSettingServiceImpl extends ServiceImpl<BillDimensionSe
     @Override
     public Page<AuthorizeResourcesResponse> getAuthorizeResources(Integer page, Integer limit, AuthorizeResourcesRequest request) {
         String source = "emit(%s)".formatted(String.join("+", getBurstField("projectId"), getBurstField("productId"), getBurstField("resourceId"), findTags().stream().map(t -> getBurstField(t.getValue() + "." + FieldType.Keyword.jsonValue())).collect(Collectors.joining("+"))));
-        SearchRequest searchRequest = new SearchRequest.Builder().runtimeMappings("productIdAndProjectIdAndResourceId", s -> s.type(RuntimeFieldType.Keyword).script(a -> a.inline(s1 -> s1.source(source)))).aggregations(getAuthorizeResourcesAggregation(page, limit)).query(getQueryByAuthorizeResourcesRequest(request)).build();
+        SearchRequest searchRequest = new SearchRequest.Builder()
+                .runtimeMappings("productIdAndProjectIdAndResourceId", s -> s.type(RuntimeFieldType.Keyword).script(a -> a.inline(s1 -> s1.source(source))))
+                .aggregations(getAuthorizeResourcesAggregation(page, limit)).query(getQueryByAuthorizeResourcesRequest(request)).build();
         return getAuthorizeResourcesResponsePage(page, limit, searchRequest);
     }
 
@@ -289,10 +293,14 @@ public class BillDimensionSettingServiceImpl extends ServiceImpl<BillDimensionSe
      */
     private Query getQueryByAuthorizeResourcesRequest(AuthorizeResourcesRequest request) {
         String type = request.getType();
-        Query auth = QueryUtil.getQuery(QueryUtil.CompareType.EQ, AuthorizeTypeConstants.valueOf(type).equals(AuthorizeTypeConstants.ORGANIZATION) ? "organizationId" : "workspaceId", request.getAuthorizeId());
         List<Query> queries = getQuery(request);
         List<Query> qs = new ArrayList<>(queries);
-        qs.add(auth);
+        Query auth = AuthUtil.getOrgAuthQuery(AuthorizeTypeConstants.valueOf(type).equals(AuthorizeTypeConstants.ORGANIZATION) ? RoleConstants.ROLE.ORGADMIN : RoleConstants.ROLE.USER,
+                request.getAuthorizeId(),
+                org -> organizationService.getOrgLevel(org));
+        if (Objects.nonNull(auth)) {
+            qs.add(auth);
+        }
         return new Query.Builder().bool(new BoolQuery.Builder().must(qs).build()).build();
     }
 

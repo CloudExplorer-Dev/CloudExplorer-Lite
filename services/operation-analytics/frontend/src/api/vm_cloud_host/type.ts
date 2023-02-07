@@ -1,5 +1,3 @@
-import type { SimpleMap } from "@commons/api/base/type";
-
 interface VmCloudHostVO {}
 
 interface ListVmCloudHostRequest {
