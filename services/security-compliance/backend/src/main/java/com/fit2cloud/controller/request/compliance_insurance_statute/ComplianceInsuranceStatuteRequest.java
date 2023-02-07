@@ -1,5 +1,6 @@
 package com.fit2cloud.controller.request.compliance_insurance_statute;
 
+import com.fit2cloud.request.pub.OrderRequest;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
@@ -25,4 +26,8 @@ public class ComplianceInsuranceStatuteRequest {
 
     @ApiModelProperty(value = "合规规则id", notes = "合规规则id")
     private String complianceRuleId;
+
+    @ApiModelProperty(value = "排序", example = " {\"column\":\"createTime\",\"asc\":false}")
+    private OrderRequest order;
+
 }

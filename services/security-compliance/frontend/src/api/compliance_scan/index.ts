@@ -9,6 +9,7 @@ import type {
   ComplianceResourceResponse,
   SyncScanResourceRequest,
   SupportCloudAccountResourceResponse,
+  SupportPlatformResourceResponse,
 } from "@/api/compliance_scan/type";
 import type { AccountJobRecord } from "@commons/api/cloud_account/type";
 
@@ -130,7 +131,15 @@ const listSupportCloudAccountResource: (
 ) => {
   return get("/api/compliance_scan/support_cloud_account", undefined, loading);
 };
-
+/**
+ *
+ * @returns 获取支持的云平台以及对应的资源
+ */
+const listSupportPlatformResource: (
+  loading?: Ref<boolean>
+) => Promise<Result<Array<SupportPlatformResourceResponse>>> = (loading) => {
+  return get("/api/compliance_scan/support_platform", undefined, loading);
+};
 /**
  * 获取任务记录
  * @param loading 加载器
@@ -149,4 +158,5 @@ export default {
   syncScan,
   listSupportCloudAccountResource,
   listJobRecord,
+  listSupportPlatformResource,
 };

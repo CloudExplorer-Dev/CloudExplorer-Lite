@@ -9,6 +9,7 @@ import com.fit2cloud.provider.AbstractCloudProvider;
 import com.fit2cloud.provider.ICloudProvider;
 import com.fit2cloud.provider.entity.InstanceSearchField;
 import com.fit2cloud.provider.impl.vsphere.api.VsphereApi;
+import com.fit2cloud.provider.impl.vsphere.api.VsphereInstanceSearchApi;
 import com.fit2cloud.provider.impl.vsphere.entity.credential.VsphereComplianceCredential;
 import com.fit2cloud.provider.impl.vsphere.entity.request.ListDataStoreInstanceRequest;
 import com.fit2cloud.provider.impl.vsphere.entity.request.ListEcsInstanceRequest;
@@ -45,7 +46,7 @@ public class VsphereProvider extends AbstractCloudProvider<VsphereComplianceCred
 
     @Override
     public List<InstanceSearchField> listEcsInstanceSearchField() {
-        return List.of();
+        return VsphereInstanceSearchApi.listEcsInstanceSearchField();
     }
 
     @Override
@@ -199,7 +200,7 @@ public class VsphereProvider extends AbstractCloudProvider<VsphereComplianceCred
 
     @Override
     public List<InstanceSearchField> listHostInstanceSearchField() {
-        return List.of();
+        return VsphereInstanceSearchApi.listHostInstanceSearchField();
     }
 
     @Override
@@ -213,7 +214,7 @@ public class VsphereProvider extends AbstractCloudProvider<VsphereComplianceCred
 
     @Override
     public List<InstanceSearchField> listDataStoreInstanceSearchField() {
-        return List.of();
+        return VsphereInstanceSearchApi.listDataStoreInstanceSearchField();
     }
 
     @Override
@@ -227,6 +228,6 @@ public class VsphereProvider extends AbstractCloudProvider<VsphereComplianceCred
 
     @Override
     public List<InstanceSearchField> listResourcePoolInstanceSearchField() {
-        return List.of();
+        return VsphereInstanceSearchApi.listResourcePoolInstanceSearchField();
     }
 }

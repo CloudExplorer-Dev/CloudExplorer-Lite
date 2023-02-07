@@ -4,7 +4,9 @@ import com.baomidou.mybatisplus.core.conditions.Wrapper;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.core.metadata.OrderItem;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.fit2cloud.common.page.PageImpl;
 import com.fit2cloud.common.provider.util.CommonUtil;
 import com.fit2cloud.common.utils.ColumnNameUtil;
 import com.fit2cloud.controller.request.compliance_insurance_statute.ComplianceInsuranceStatuteRequest;
@@ -21,8 +23,10 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
+import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * <p>
@@ -34,12 +38,9 @@ import java.util.List;
  */
 @Service
 public class ComplianceInsuranceStatuteServiceImpl extends ServiceImpl<ComplianceInsuranceStatuteMapper, ComplianceInsuranceStatute> implements IComplianceInsuranceStatuteService {
-    @Resource
-    private IComplianceRuleInsuranceStatuteMappingService complianceRuleInsuranceStatuteMappingService;
-
     @Override
     public IPage<ComplianceInsuranceStatuteResponse> page(Integer currentPage, Integer limit, ComplianceInsuranceStatuteRequest request) {
-        IPage<ComplianceInsuranceStatute> page = baseMapper.page(Page.of(currentPage, limit), getQueryWrapper(request));
+        IPage<ComplianceInsuranceStatute> page = baseMapper.page(PageImpl.of(currentPage, limit, ComplianceInsuranceStatute.class, Objects.nonNull(request.getOrder()) ? request.getOrder() : new OrderItem("id", true)), getQueryWrapper(request));
         Page<ComplianceInsuranceStatuteResponse> res = Page.of(currentPage, limit);
         BeanUtils.copyProperties(page, res);
         res.setRecords(
@@ -56,6 +57,7 @@ public class ComplianceInsuranceStatuteServiceImpl extends ServiceImpl<Complianc
         return baseMapper.list(getQueryWrapper(request))
                 .stream()
                 .map(this::toComplianceStatuteResponse)
+                .sorted(Comparator.comparing(ComplianceInsuranceStatuteResponse::getId))
                 .toList();
     }
 

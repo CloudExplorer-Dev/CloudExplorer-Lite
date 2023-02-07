@@ -51,11 +51,7 @@
           :placeholder="'请选择云平台'"
         >
           <el-option
-            v-for="item in Object.keys(platformIcon).map((key) => ({
-              key: platformIcon[key].name,
-              value: key,
-              icon: platformIcon[key].icon,
-            }))"
+            v-for="item in supportPlatformList"
             :key="item.value"
             :label="item.key"
             :value="item.value"
@@ -71,7 +67,7 @@
           :placeholder="'请选择资源类型'"
         >
           <el-option
-            v-for="item in resourceTypeOptionList"
+            v-for="item in supportResourceTypeList"
             :key="item.value"
             :label="item.key"
             :value="item.value"
@@ -123,11 +119,13 @@
   </el-dialog>
 </template>
 <script setup lang="ts">
-import { ref, onMounted } from "vue";
+import { ref, onMounted, computed, watch } from "vue";
 import compliance_rules from "@/views/rule/components/compliance_rules/index.vue";
 import type { FormRules, FormInstance } from "element-plus";
 import type { SaveComplianceRuleRequest } from "@/api/rule/type";
 import complianceRuleApi from "@/api/rule";
+import complianceScanApi from "@/api/compliance_scan";
+import type { SupportPlatformResourceResponse } from "@/api/compliance_scan/type";
 import type { ComplianceRuleGroup } from "@/api/rule_group/type";
 import { platformIcon } from "@commons/utils/platform";
 import type { KeyValue } from "@commons/api/base/type";
@@ -160,6 +158,7 @@ const props = defineProps<{
 const complianceInsuranceStatuteList = ref<Array<ComplianceInsuranceStatute>>(
   []
 );
+
 const insuranceStatuteLoading = ref<boolean>(false);
 /**
  * 表单对象
@@ -228,8 +227,7 @@ const createComplianceRuleFormRules = ref<FormRules>({
   ],
   insuranceStatuteIds: [
     {
-      required: true,
-      min: 1,
+      min: 0,
       message: "等保条例不能为空",
       type: "array",
     },
@@ -253,6 +251,45 @@ const createComplianceRuleFormRules = ref<FormRules>({
 });
 
 /**
+ * 支持的云平台
+ */
+const supportPlatformResourceList = ref<Array<SupportPlatformResourceResponse>>(
+  []
+);
+/**
+ * 支持的云平台
+ */
+const supportPlatformList = computed(() => {
+  return [
+    ...new Set(supportPlatformResourceList.value.map((s) => s.platform)),
+  ].map((platform) => ({
+    key: platformIcon[platform].name,
+    value: platform,
+    icon: platformIcon[platform].icon,
+  }));
+});
+/**
+ * 支持的资源类型
+ */
+const supportResourceTypeList = computed(() => {
+  if (createComplianceRuleForm.value.platform) {
+    return supportPlatformResourceList.value.find(
+      (s) => s.platform === createComplianceRuleForm.value.platform
+    )?.resourceTypes;
+  }
+  return [];
+});
+/**
+ * 修改云账号后 清除规则和资源类型
+ */
+watch(
+  () => createComplianceRuleForm.value.platform,
+  () => {
+    createComplianceRuleForm.value.rules = [];
+    createComplianceRuleForm.value.resourceType = "";
+  }
+);
+/**
  * 表单提交
  */
 const submit = () => {
@@ -274,6 +311,9 @@ onMounted(() => {
     .then((ok) => {
       complianceInsuranceStatuteList.value = ok.data;
     });
+  complianceScanApi.listSupportPlatformResource().then((ok) => {
+    supportPlatformResourceList.value = ok.data;
+  });
 });
 
 /**

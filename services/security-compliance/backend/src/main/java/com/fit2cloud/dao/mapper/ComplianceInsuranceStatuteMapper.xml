@@ -3,7 +3,7 @@
 <mapper namespace="com.fit2cloud.dao.mapper.ComplianceInsuranceStatuteMapper">
 
     <select id="page" resultType="com.fit2cloud.dao.entity.ComplianceInsuranceStatute">
-        SELECT cis.id                   as id,
+        SELECT DISTINCT cis.id                   as id,
                cis.base_clause          as base_clause,
                cis.security_level       as security_level,
                cis.control_point        as control_point,
@@ -16,7 +16,7 @@
     </select>
 
     <select id="list" resultType="com.fit2cloud.dao.entity.ComplianceInsuranceStatute">
-        SELECT cis.id                   as id,
+        SELECT DISTINCT cis.id                   as id,
                cis.base_clause          as base_clause,
                cis.security_level       as security_level,
                cis.control_point        as control_point,

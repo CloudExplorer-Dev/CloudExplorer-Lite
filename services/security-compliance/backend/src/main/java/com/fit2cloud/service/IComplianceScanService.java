@@ -4,10 +4,7 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.fit2cloud.constants.ResourceTypeConstants;
 import com.fit2cloud.controller.request.compliance_scan.ComplianceResourceRequest;
 import com.fit2cloud.controller.request.compliance_scan.ComplianceScanRequest;
-import com.fit2cloud.controller.response.compliance_scan.SupportCloudAccountResourceResponse;
-import com.fit2cloud.controller.response.compliance_scan.ComplianceResourceResponse;
-import com.fit2cloud.controller.response.compliance_scan.ComplianceScanResponse;
-import com.fit2cloud.controller.response.compliance_scan.ComplianceScanRuleGroupResponse;
+import com.fit2cloud.controller.response.compliance_scan.*;
 import com.fit2cloud.response.JobRecordResourceResponse;
 
 import java.util.List;
@@ -109,4 +106,12 @@ public interface IComplianceScanService {
      * @return 扫描任务
      */
     List<JobRecordResourceResponse> listJobRecord();
+
+    /**
+     * 获取支持的云平台 资源数据
+     *
+     * @return 云平台以及对应的资源数据
+     */
+    List<SupportPlatformResourceResponse> listSupportPlatformResource();
+
 }

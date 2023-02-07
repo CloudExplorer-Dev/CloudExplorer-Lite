@@ -158,6 +158,17 @@ interface SupportCloudAccountResourceResponse {
    */
   resourceTypes: Array<KeyValue<string, string>>;
 }
+
+interface SupportPlatformResourceResponse {
+  /**
+   * 云账号
+   */
+  platform: string;
+  /**
+   * 资源类型
+   */
+  resourceTypes: Array<KeyValue<string, string>>;
+}
 export type {
   ScanComplianceRuleGroupResponse,
   ComplianceScanResponse,
@@ -167,4 +178,5 @@ export type {
   SyncScanResourceRequest,
   CloudAccountResource,
   SupportCloudAccountResourceResponse,
+  SupportPlatformResourceResponse,
 };

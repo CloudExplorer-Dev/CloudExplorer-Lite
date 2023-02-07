@@ -11,7 +11,7 @@
       :data="dataList"
       :tableConfig="tableConfig"
     >
-      <el-table-column prop="id" label="序号" width="80px" />
+      <el-table-column prop="id" label="序号" width="80px"></el-table-column>
       <el-table-column prop="securityLevel" label="安全层面" width="150px" />
       <el-table-column prop="controlPoint" label="控制点" width="150px" />
       <el-table-column prop="baseClause" label="等级保护基本要求条款" />

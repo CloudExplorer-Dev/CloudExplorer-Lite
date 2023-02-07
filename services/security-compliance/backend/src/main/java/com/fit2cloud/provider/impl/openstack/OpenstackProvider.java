@@ -9,6 +9,7 @@ import com.fit2cloud.provider.AbstractCloudProvider;
 import com.fit2cloud.provider.ICloudProvider;
 import com.fit2cloud.provider.entity.InstanceSearchField;
 import com.fit2cloud.provider.impl.openstack.api.OpenstackApi;
+import com.fit2cloud.provider.impl.openstack.api.OpenstackSearchFieldApi;
 import com.fit2cloud.provider.impl.openstack.entity.credential.OpenstackComplianceCredential;
 import com.fit2cloud.provider.impl.openstack.entity.request.ListEcsInstanceRequest;
 import com.fit2cloud.provider.impl.openstack.entity.request.ListSecurityGroupInstanceRequest;
@@ -46,7 +47,7 @@ public class OpenstackProvider extends AbstractCloudProvider<OpenstackCompliance
 
     @Override
     public List<InstanceSearchField> listEcsInstanceSearchField() {
-        return List.of();
+        return OpenstackSearchFieldApi.listEcsInstanceSearchField();
     }
 
     @Override
@@ -197,7 +198,7 @@ public class OpenstackProvider extends AbstractCloudProvider<OpenstackCompliance
 
     @Override
     public List<InstanceSearchField> listSecurityGroupInstanceSearchField() {
-        return List.of();
+        return OpenstackSearchFieldApi.listSecurityInstanceSearchField();
     }
 
     @Override

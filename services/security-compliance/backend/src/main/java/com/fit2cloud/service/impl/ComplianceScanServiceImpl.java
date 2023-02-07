@@ -30,10 +30,7 @@ import com.fit2cloud.constants.ResourceTypeConstants;
 import com.fit2cloud.constants.SyncDimensionConstants;
 import com.fit2cloud.controller.request.compliance_scan.ComplianceResourceRequest;
 import com.fit2cloud.controller.request.compliance_scan.ComplianceScanRequest;
-import com.fit2cloud.controller.response.compliance_scan.SupportCloudAccountResourceResponse;
-import com.fit2cloud.controller.response.compliance_scan.ComplianceResourceResponse;
-import com.fit2cloud.controller.response.compliance_scan.ComplianceScanResponse;
-import com.fit2cloud.controller.response.compliance_scan.ComplianceScanRuleGroupResponse;
+import com.fit2cloud.controller.response.compliance_scan.*;
 import com.fit2cloud.dao.constants.RiskLevel;
 import com.fit2cloud.dao.entity.ComplianceRule;
 import com.fit2cloud.dao.entity.ComplianceRuleGroup;
@@ -216,6 +213,19 @@ public class ComplianceScanServiceImpl implements IComplianceScanService {
                 .map(CloudAccount::getId)
                 .toList();
         return jobRecordResourceMappingMapper.findLastResourceJobRecord(supportResourceIds, List.of(JobTypeConstants.SECURITY_COMPLIANCE_CLOUD_ACCOUNT_SYNC_JOB.getCode()));
+
+    }
+
+    @Override
+    public List<SupportPlatformResourceResponse> listSupportPlatformResource() {
+        return Arrays.stream(ProviderConstants.values()).map(platform -> {
+            Map<ResourceTypeConstants, SyncDimensionConstants> exec = CommonUtil.exec(ICloudProvider.of(platform.name()), ICloudProvider::getResourceSyncDimensionConstants);
+            List<DefaultKeyValue<String, String>> resourceTypes = exec.keySet().stream().map(resourceTypeConstants -> new DefaultKeyValue<>(resourceTypeConstants.getMessage(), resourceTypeConstants.name())).toList();
+            SupportPlatformResourceResponse supportPlatformResourceResponse = new SupportPlatformResourceResponse();
+            supportPlatformResourceResponse.setPlatform(platform.name());
+            supportPlatformResourceResponse.setResourceTypes(resourceTypes);
+            return supportPlatformResourceResponse;
+        }).toList();
 
     }
 

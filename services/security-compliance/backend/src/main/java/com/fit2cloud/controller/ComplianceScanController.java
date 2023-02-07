@@ -6,10 +6,7 @@ import com.fit2cloud.controller.handler.ResultHolder;
 import com.fit2cloud.controller.request.compliance_scan.ComplianceResourceRequest;
 import com.fit2cloud.controller.request.compliance_scan.ComplianceScanRequest;
 import com.fit2cloud.controller.request.compliance_scan.ComplianceSyncRequest;
-import com.fit2cloud.controller.response.compliance_scan.SupportCloudAccountResourceResponse;
-import com.fit2cloud.controller.response.compliance_scan.ComplianceResourceResponse;
-import com.fit2cloud.controller.response.compliance_scan.ComplianceScanResponse;
-import com.fit2cloud.controller.response.compliance_scan.ComplianceScanRuleGroupResponse;
+import com.fit2cloud.controller.response.compliance_scan.*;
 import com.fit2cloud.response.JobRecordResourceResponse;
 import com.fit2cloud.service.IComplianceScanService;
 import com.fit2cloud.service.ISyncService;
@@ -99,6 +96,13 @@ public class ComplianceScanController {
     @GetMapping("/support_cloud_account")
     public ResultHolder<List<SupportCloudAccountResourceResponse>> listSupportCloudAccountResource() {
         List<SupportCloudAccountResourceResponse> list = complianceScanService.listSupportCloudAccountResource();
+        return ResultHolder.success(list);
+    }
+
+    @ApiOperation("获取支持的云平台以及对应的资源")
+    @GetMapping("/support_platform")
+    public ResultHolder<List<SupportPlatformResourceResponse>> listSupportPlatformResource() {
+        List<SupportPlatformResourceResponse> list = complianceScanService.listSupportPlatformResource();
         return ResultHolder.success(list);
     }
 
