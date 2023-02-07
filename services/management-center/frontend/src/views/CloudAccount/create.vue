@@ -2,6 +2,7 @@
 import { ref, onMounted, computed, reactive, watch } from "vue";
 import { ElMessage } from "element-plus";
 import cloudAccountApi from "@/api/cloud_account";
+import { platformIcon } from "@commons/utils/platform";
 import type {
   Platform,
   CreateAccount,
@@ -10,6 +11,8 @@ import type {
 import { useRouter } from "vue-router";
 import { useI18n } from "vue-i18n";
 import type { FormInstance, FormRules } from "element-plus";
+import _ from "lodash";
+
 const router = useRouter();
 const { t } = useI18n();
 const loading = ref<boolean>(false);
@@ -17,71 +20,11 @@ const loading = ref<boolean>(false);
 const platforms = ref<Array<Platform>>([]);
 // 校验实例对象
 const ruleFormRef = ref<FormInstance>();
-// 选中的供应商
-const activePlatform = computed(() => {
-  return platforms.value.find(
-    (platform) => from.value.platform === platform.field
-  );
-});
-// watch 供应商选择
-watch(
-  () => activePlatform,
-  () => {
-    changePlatform();
-  }
-);
-// 该比那供应商时,初始化default数据
-const changePlatform = () => {
-  const p = platforms.value.find(
-    (platform) => from.value.platform === platform.field
-  );
-  from.value.credential = {};
-  from.value.name = "";
-  p?.credentialFrom.forEach((item) => {
-    if (item.defaultValue && !from.value.credential[item.field]) {
-      try {
-        // 设置默认值
-        from.value.credential[item.field] = JSON.parse(
-          item.defaultValue as string
-        );
-      } catch (e) {
-        console.error(e);
-      }
-    }
-  });
-};
-/**
- * 更新云账号
- */
-const update = (formEl: FormInstance | undefined) => {
-  formEl?.validate((valid) => {
-    if (valid) {
-      cloudAccountApi
-        .updateCloudAccount(from.value as UpdateAccount)
-        .then(() => {
-          router.push({ name: "cloud_account_list" });
-          ElMessage.success(t("commons.msg.op_success", "操作成功"));
-        });
-    }
-  });
-};
-/**
- * 保存云账号
- */
-const create = (formEl: FormInstance | undefined) => {
-  formEl?.validate((valid) => {
-    if (valid) {
-      cloudAccountApi.save(from.value).then(() => {
-        router.push({ name: "cloud_account_list" });
-        ElMessage.success(t("commons.msg.save_success", "保存成功"));
-      });
-    }
-  });
-};
+
 /**
  * 云账号表单收集
  */
-const from = ref<CreateAccount | UpdateAccount>({
+const form = ref<CreateAccount | UpdateAccount>({
   platform: "",
   name: "",
   credential: {},
@@ -105,101 +48,152 @@ const rules = reactive<FormRules>({
     },
   ],
 });
+
+const steps = ["选择云平台", "输入云账号凭证"];
+
+const activeStep = ref(1);
+
 /**
  * 组建挂载
  */
 onMounted(() => {
-  init();
-});
-// 创建操作
-const createOperation = "创建";
-// 修改操作
-const updateOperation = "修改";
-// 当前操作
-const operation = ref<string>();
-
-/**
- * 初始化对象
- */
-const init = () => {
   // 获取所有供应商数据
   cloudAccountApi.getPlatformAll(loading).then((ok) => {
     platforms.value = ok.data;
   });
-  if (router.currentRoute.value.params.id) {
-    // 云账号id
-    const cloudAccountId = router.currentRoute.value.params.id as string;
-    cloudAccountApi.getCloudAccount(cloudAccountId, loading).then((ok) => {
-      (from.value as UpdateAccount).id = ok.data.id;
-      from.value.name = ok.data.name;
-      from.value.platform = ok.data.platform;
-      from.value.credential = JSON.parse(ok.data.credential);
-    });
-    operation.value = updateOperation;
-  } else {
-    operation.value = createOperation;
-  }
-};
+});
+
 /**
  * 取消,去列表页面
  */
-const clear = () => {
+const cancel = () => {
   router.push({ name: "cloud_account_list" });
+};
+
+function before() {
+  activeStep.value = 1;
+}
+
+const activePlatform = computed<Platform | undefined>(() => {
+  return _.find(
+    platforms.value,
+    (platform) => form.value.platform === platform.field
+  );
+});
+
+const hasPlatformValue = computed<boolean>(() => {
+  return (
+    platforms.value.length > 0 &&
+    _.some(platforms.value, (p) => p.field === form.value.platform)
+  );
+});
+
+function next() {
+  if (hasPlatformValue.value) {
+    activeStep.value = 2;
+  }
+}
+
+// 改变供应商时,初始化default数据
+const changePlatform = () => {
+  const p = platforms.value.find(
+    (platform) => form.value.platform === platform.field
+  );
+  form.value.credential = {};
+  form.value.name = "";
+  p?.credentialForm.forEach((item) => {
+    if (item.defaultValue && !form.value.credential[item.field]) {
+      try {
+        // 设置默认值
+        form.value.credential[item.field] = JSON.parse(
+          item.defaultValue as string
+        );
+      } catch (e) {
+        console.error(e);
+      }
+    }
+  });
+};
+
+function choosePlatform(p: string) {
+  form.value.platform = p;
+  changePlatform();
+}
+
+/**
+ * 保存云账号
+ */
+const submit = (formEl: FormInstance | undefined) => {
+  formEl?.validate((valid) => {
+    if (valid) {
+      cloudAccountApi.save(form.value, loading).then(() => {
+        router.push({ name: "cloud_account_list" });
+        ElMessage.success(t("commons.msg.save_success", "保存成功"));
+      });
+    }
+  });
 };
 </script>
 <template>
-  <el-form
-    v-loading="loading"
-    ref="ruleFormRef"
-    :model="from"
-    :inline="true"
-    status-icon
-    label-width="130px"
-    label-suffix=":"
-    label-position="left"
-  >
-    <layout-container :border="false">
-      <template #content>
-        <layout-container>
-          <template #header
-            ><h4>{{ t("cloud_account.platform", "云平台") }}</h4></template
-          >
-          <template #content>
-            <el-form-item
-              :label="t('cloud_account.platform', '云平台')"
-              style="width: 80%"
-              prop="platform"
-              :rules="rules.platform"
-            >
-              <el-select
-                style="width: 100%"
-                v-model="from.platform"
-                @change="changePlatform"
-                class="m-2"
-                :placeholder="
-                  t(
-                    'cloud_account.please_select_platform_message',
-                    '请选择云平台'
-                  )
-                "
+  <el-container class="create-cloud-account-form" v-loading="loading">
+    <el-aside width="180px" class="aside">
+      <h3>添加云账号</h3>
+      <p>将您的云资源同步到系统平台中进行统一管理</p>
+
+      <div
+        style="padding: 14px"
+        v-for="(step, index) in steps"
+        :key="index"
+        :style="{
+          'font-weight': index + 1 === activeStep ? 'bolder' : 'normal',
+        }"
+      >
+        {{ index + 1 }}. {{ step }}
+      </div>
+    </el-aside>
+    <el-container>
+      <el-header>
+        <div class="header">
+          <h2>{{ steps[activeStep - 1] }}</h2>
+        </div>
+      </el-header>
+      <el-main>
+        <template v-if="activeStep === 1">
+          <div class="platform-select">
+            <template v-for="platform in platforms" :key="platform.field">
+              <el-card
+                :shadow="form.platform === platform.field ? 'always' : 'hover'"
+                class="platform-card"
+                @click="choosePlatform(platform.field)"
               >
-                <el-option
-                  v-for="item in platforms"
-                  :key="item.label"
-                  :label="item.label"
-                  :value="item.field"
-                />
-              </el-select>
-            </el-form-item>
-          </template>
-        </layout-container>
-        <layout-container>
-          <template #header
-            ><h5>
-              {{ t("cloud_account.account_information_message", "账号信息") }}
-            </h5></template
+                <el-image
+                  style="width: 180px; height: 90px"
+                  fit="contain"
+                  :src="platformIcon[platform.field].logo"
+                ></el-image>
+                <div
+                  style="
+                    text-align: center;
+                    border-top: 1px solid var(--el-border-color);
+                    padding-top: 14px;
+                  "
+                >
+                  {{ platformIcon[platform.field].name }}
+                </div>
+              </el-card>
+            </template>
+          </div>
+        </template>
+        <template v-if="activeStep === 2">
+          <el-form
+            ref="ruleFormRef"
+            :model="form"
+            :inline="true"
+            status-icon
+            label-width="130px"
+            label-suffix=":"
+            label-position="left"
           >
-          <template #content>
             <el-form-item
               style="width: 80%"
               :label="t('cloud_account.name', '云账号名称')"
@@ -207,7 +201,7 @@ const clear = () => {
               :rules="rules.name"
             >
               <el-input
-                v-model="from.name"
+                v-model="form.name"
                 :placeholder="
                   t('cloud_account.name_placeholder', '请输入云账号名称')
                 "
@@ -215,7 +209,7 @@ const clear = () => {
             </el-form-item>
             <el-form-item
               style="width: 80%"
-              v-for="item in activePlatform?.credentialFrom"
+              v-for="item in activePlatform?.credentialForm"
               :prop="`credential.${item.field}`"
               :key="item.field"
               :label="item.label"
@@ -230,42 +224,112 @@ const clear = () => {
               ]"
             >
               <el-input
-                v-model="from.credential[item.field]"
+                v-model="form.credential[item.field]"
                 :type="item.inputType === 'Text' ? 'text' : ''"
-                :show-password="item.inputType === 'Password' ? true : false"
+                :show-password="item.inputType === 'Password'"
                 v-if="
                   item.inputType === 'Text' || item.inputType === 'Password'
                 "
-              ></el-input>
+              />
 
               <el-switch
-                v-model="from.credential[item.field]"
+                v-model="form.credential[item.field]"
                 v-if="item.inputType === 'SwitchBtn'"
               >
               </el-switch>
             </el-form-item>
-          </template>
-        </layout-container>
-        <layout-container>
-          <el-button @click="clear">{{
-            t("commons.btn.cancel", "取消")
-          }}</el-button>
-          <el-button
-            type="primary"
-            @click="create(ruleFormRef)"
-            v-if="operation === createOperation"
-            >{{ t("commons.btn.save", "保存") }}</el-button
-          >
-          <el-button
-            type="primary"
-            @click="update(ruleFormRef)"
-            v-if="operation === updateOperation"
-            >{{ t("commons.btn.submit", "提交") }}</el-button
-          >
-        </layout-container>
-      </template>
-    </layout-container>
-  </el-form>
+          </el-form>
+        </template>
+      </el-main>
+      <el-footer>
+        <div class="footer">
+          <div></div>
+          <div class="footer-btn">
+            <el-button @click="cancel()"> 取消 </el-button>
+            <el-button v-if="activeStep === 2" @click="before()">
+              上一步
+            </el-button>
+            <el-button
+              v-if="activeStep === 1"
+              class="el-button--primary"
+              :disabled="!hasPlatformValue"
+              @click="next()"
+            >
+              下一步
+            </el-button>
+            <el-button
+              v-if="activeStep === 2"
+              class="el-button--primary"
+              @click="submit(ruleFormRef)"
+            >
+              确认
+            </el-button>
+          </div>
+        </div>
+      </el-footer>
+    </el-container>
+  </el-container>
 </template>
 
-<style lang="scss"></style>
+<style lang="scss">
+.create-cloud-account-form {
+  height: 100%;
+
+  .aside {
+    min-height: 500px;
+    background-color: var(--el-color-primary);
+    display: flex;
+    flex-direction: column;
+    flex-wrap: nowrap;
+    align-items: stretch;
+    padding: 10px;
+    color: white;
+  }
+
+  .header {
+    border-bottom: 1px solid var(--el-border-color);
+  }
+
+  .platform-select {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+
+    .platform-card {
+      margin: 5px;
+    }
+    .el-card.is-always-shadow {
+      box-shadow: 0 0 12px #006eff !important;
+    }
+  }
+
+  .footer {
+    border-top: 1px solid var(--el-border-color);
+    padding-top: 10px;
+    padding-bottom: 10px;
+    display: flex;
+    justify-content: space-between;
+    flex-direction: row;
+    align-items: center;
+    flex-wrap: wrap;
+
+    .footer-form {
+      min-width: 400px;
+    }
+
+    .footer-center {
+      display: flex;
+      flex-direction: row;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+
+    .footer-btn {
+      display: flex;
+      flex-direction: row;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+    }
+  }
+}
+</style>

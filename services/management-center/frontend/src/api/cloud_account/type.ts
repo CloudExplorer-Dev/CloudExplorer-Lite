@@ -63,7 +63,7 @@ interface Platform {
    */
   field: string;
 
-  credentialFrom: Array<Form>;
+  credentialForm: Array<Form>;
 }
 
 interface CreateAccount {
@@ -157,14 +157,6 @@ interface JobDetails {
    */
   jobGroup: string;
   /**
-   * 执行间隔时间
-   */
-  timeInterval: string;
-  /**
-   * 执行间隔单位
-   */
-  unit: string;
-  /**
    * 描述
    */
   description: string;
@@ -177,14 +169,11 @@ interface JobDetails {
    * 任务参数
    */
   params: SimpleMap<any>;
+
   /**
-   * 每天那几个小时执行
+   * cron表达式
    */
-  hoursOfDay: Array<number>;
-  /**
-   *定时任务类型
-   */
-  jobType: string;
+  cronExpression: string;
 }
 interface UpdateJobsRequest extends CloudAccountJobDetailsResponse {
   cloudAccountId: string;

@@ -1,19 +1,8 @@
 import { get } from "@commons/request";
 import type Result from "@commons/request/Result";
-import type { Page } from "@commons/request/Result";
-import type {
-  OptimizationRequest,
-  ListOptimizationRequest,
-  VmCloudServerVO,
-} from "./type";
+import BaseResourceOptimizationViewApi from "@commons/api/resource_optimization";
 import type { Ref } from "vue";
 
-export function listServer(
-  req: ListOptimizationRequest | {},
-  loading?: Ref<boolean>
-): Promise<Result<Page<VmCloudServerVO>>> {
-  return get("api/optimize_analysis/server/page", req, loading);
-}
 /**
  * 云账号
  * @param req
@@ -24,7 +13,7 @@ export function listAccounts(loading?: Ref<boolean>): Promise<Result<any>> {
 }
 
 const ResourceOptimizationViewApi = {
-  listServer,
+  ...BaseResourceOptimizationViewApi,
   listAccounts,
 };
 

@@ -4,10 +4,8 @@ import com.fit2cloud.common.constants.JobConstants;
 import com.fit2cloud.common.scheduler.SchedulerService;
 import com.fit2cloud.common.scheduler.util.CronUtils;
 import com.fit2cloud.common.utils.ClassScanUtil;
-import com.fit2cloud.dto.job.JobCronSettingDto;
-import com.fit2cloud.dto.job.JobInitSettingDto;
 import com.fit2cloud.dto.job.JobModuleInfo;
-import com.fit2cloud.dto.job.JobSettingParent;
+import com.fit2cloud.dto.job.JobSetting;
 import com.fit2cloud.dto.module.ModuleInfo;
 import org.apache.commons.collections4.MapUtils;
 import org.jetbrains.annotations.NotNull;
@@ -21,7 +19,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.stream.Collectors;
 
 /**
  * @Author:张少虎
@@ -35,7 +32,7 @@ public class JobSettingConfig implements ApplicationContextAware {
     /**
      * 模块定时任务对象
      */
-    private static JobModuleInfo jobModuleInfo = new JobModuleInfo();
+    private static final JobModuleInfo jobModuleInfo = new JobModuleInfo();
 
     @Resource
     private SchedulerService schedulerService;
@@ -52,7 +49,7 @@ public class JobSettingConfig implements ApplicationContextAware {
      *
      * @return 返回当前系统的定时任务设置
      */
-    private static List<JobSettingParent> getModuleJob() {
+    private static List<JobSetting> getModuleJob() {
         List<Class<?>> classList = ClassScanUtil.getClassList("com.fit2cloud");
         return classList.stream().filter(JobConfig.class::isAssignableFrom).flatMap(clazz -> {
             try {
@@ -69,10 +66,10 @@ public class JobSettingConfig implements ApplicationContextAware {
      *
      * @param settingJobDetails 定时任务详情
      */
-    public void initSystemJobs(List<JobInitSettingDto> settingJobDetails) {
+    public void initSystemJob(List<JobSetting> settingJobDetails) {
         // 只初始化系统定时任务
         settingJobDetails = settingJobDetails.stream().filter(item -> item.getJobGroup().equals(JobConstants.Group.SYSTEM_GROUP.name())).toList();
-        for (JobInitSettingDto settingJobDetail : settingJobDetails) {
+        for (JobSetting settingJobDetail : settingJobDetails) {
             Map<String, Object> params = settingJobDetail.getParams();
             if (MapUtils.isEmpty(params)) {
                 params = new HashMap<>();
@@ -80,39 +77,17 @@ public class JobSettingConfig implements ApplicationContextAware {
             boolean exist = schedulerService.inclusionJobDetails(settingJobDetail.getJobName(), settingJobDetail.getJobGroup());
             if (exist) {
                 schedulerService.deleteJob(settingJobDetail.getJobName(), settingJobDetail.getJobGroup());
-                schedulerService.addJob(settingJobDetail.getJobHandler(), settingJobDetail.getJobName(), settingJobDetail.getJobGroup(), settingJobDetail.getDescription(), params, settingJobDetail.getStartTimeDay(), settingJobDetail.getEndTimeDay(), settingJobDetail.getTimeInterval(), settingJobDetail.getUnit(), settingJobDetail.getRepeatCount(), settingJobDetail.getWeeks());
-            } else {
-                schedulerService.addJob(settingJobDetail.getJobHandler(), settingJobDetail.getJobName(), settingJobDetail.getJobGroup(), settingJobDetail.getDescription(), params, settingJobDetail.getStartTimeDay(), settingJobDetail.getEndTimeDay(), settingJobDetail.getTimeInterval(), settingJobDetail.getUnit(), settingJobDetail.getRepeatCount(), settingJobDetail.getWeeks());
             }
+            schedulerService.addJob(settingJobDetail.getJobHandler(), settingJobDetail.getJobName(),
+                    settingJobDetail.getJobGroup(), settingJobDetail.getDescription(), settingJobDetail.getCronExpression(), params);
         }
+
     }
 
-    public void initCronSystemJob(List<JobCronSettingDto> jobCronSettingDtos) {
-        // 只初始化系统定时任务
-        jobCronSettingDtos = jobCronSettingDtos.stream().filter(item -> item.getJobGroup().equals(JobConstants.Group.SYSTEM_GROUP.name())).toList();
-        for (JobCronSettingDto settingJobDetail : jobCronSettingDtos) {
-            Map<String, Object> params = settingJobDetail.getParams();
-            if (MapUtils.isEmpty(params)) {
-                params = new HashMap<>();
-            }
-            boolean exist = schedulerService.inclusionJobDetails(settingJobDetail.getJobName(), settingJobDetail.getJobGroup());
-            if (exist) {
-                schedulerService.deleteJob(settingJobDetail.getJobName(), settingJobDetail.getJobGroup());
-                schedulerService.addJob(settingJobDetail.getJobHandler(), settingJobDetail.getJobName(), settingJobDetail.getJobGroup(), settingJobDetail.getDescription(), CronUtils.createHourOfDay(settingJobDetail.getHoursOfDay()), params);
-            } else {
-                schedulerService.addJob(settingJobDetail.getJobHandler(), settingJobDetail.getJobName(), settingJobDetail.getJobGroup(), settingJobDetail.getDescription(), CronUtils.createHourOfDay(settingJobDetail.getHoursOfDay()), params);
-            }
-        }
-    }
-
-    public void initSystemJob(List<JobSettingParent> settingParents) {
-        initSystemJobs(settingParents.stream().filter(s -> s instanceof JobInitSettingDto).map(s -> (JobInitSettingDto) s).toList());
-        initCronSystemJob(settingParents.stream().filter(s -> s instanceof JobCronSettingDto).map(s -> (JobCronSettingDto) s).toList());
-    }
 
     @Override
     public void setApplicationContext(@NotNull ApplicationContext applicationContext) throws BeansException {
-        List<JobSettingParent> moduleJob = getModuleJob();
+        List<JobSetting> moduleJob = getModuleJob();
         initSystemJob(moduleJob);
         initModuleJob(moduleJob);
     }
@@ -122,7 +97,7 @@ public class JobSettingConfig implements ApplicationContextAware {
      *
      * @param moduleJobs 模块任务
      */
-    private void initModuleJob(List<JobSettingParent> moduleJobs) {
+    private void initModuleJob(List<JobSetting> moduleJobs) {
         ModuleInfo moduleInfo = serverInfo.getModuleInfo();
         BeanUtils.copyProperties(moduleInfo, jobModuleInfo);
         jobModuleInfo.setModule(serverInfo.getModule());
@@ -136,6 +111,6 @@ public class JobSettingConfig implements ApplicationContextAware {
          *
          * @return 任务详情
          */
-        List<JobSettingParent> listJobInitSetting();
+        List<JobSetting> listJobInitSetting();
     }
 }

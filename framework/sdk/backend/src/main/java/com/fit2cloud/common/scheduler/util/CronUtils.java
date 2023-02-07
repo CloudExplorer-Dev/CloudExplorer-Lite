@@ -23,11 +23,11 @@ public class CronUtils {
     /**
      * 表示匹配该域的任意值。假如在Minutes域使用*, 即表示每分钟都会触发事件。
      */
-    private static final String all = "*";
+    public static final String all = "*";
     /**
      * 不指定,周每日,和月每日上,不能都用通配符不然表达式不正确
      */
-    private static final String not = "?";
+    public static final String not = "?";
     /**
      * 表示列出枚举值。例如：在Minutes域使用5,20，则意味着在5和20分每分钟触发一次。
      */
@@ -60,6 +60,32 @@ public class CronUtils {
      */
     public static String createHourOfDay(Integer[] hours) {
         return String.format(cronFormat, "0", "0", getInCron(hours, in), "*", "*", "?", "*");
+    }
+
+    /**
+     * 创建一个定时任务表达式
+     *
+     * @param integers 区间
+     * @param type     类型
+     * @return cron表达式
+     */
+    public static String create(Integer[] integers, Integer type) {
+        if (type.equals(Calendar.SECOND)) {
+            return create(integers, new Integer[]{}, new Integer[]{}, new Integer[]{}, new Integer[]{}, new Integer[]{}, new Integer[]{});
+        } else if (type.equals(Calendar.MINUTE)) {
+            return create(new Integer[]{}, integers, new Integer[]{}, new Integer[]{}, new Integer[]{}, new Integer[]{}, new Integer[]{});
+        } else if (type.equals(Calendar.HOUR)) {
+            return create(new Integer[]{}, new Integer[]{}, integers, new Integer[]{}, new Integer[]{}, new Integer[]{}, new Integer[]{});
+        } else if (type.equals(Calendar.DAY_OF_MONTH)) {
+            return create(new Integer[]{}, new Integer[]{}, new Integer[]{}, integers, new Integer[]{}, new Integer[]{}, new Integer[]{});
+        } else if (type.equals(Calendar.MONTH)) {
+            return create(new Integer[]{}, new Integer[]{}, new Integer[]{}, new Integer[]{}, integers, new Integer[]{}, new Integer[]{});
+        } else if (type.equals(Calendar.DAY_OF_WEEK)) {
+            return create(new Integer[]{}, new Integer[]{}, new Integer[]{}, new Integer[]{}, new Integer[]{}, integers, new Integer[]{});
+        } else if (type.equals(Calendar.YEAR)) {
+            return create(new Integer[]{}, new Integer[]{}, new Integer[]{}, new Integer[]{}, new Integer[]{}, new Integer[]{}, integers);
+        }
+        throw new RuntimeException("不支持的类型");
     }
 
     /**

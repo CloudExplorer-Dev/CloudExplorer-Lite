@@ -18,6 +18,7 @@ const message = {
     status: "Status",
     create_time: "Create Time",
     update_time: "Update Time",
+    delete_time: "Delete Time",
     description: "Description",
     basic_info: "Basic Information",
     grant: "Grant",

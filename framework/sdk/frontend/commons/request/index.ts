@@ -126,14 +126,11 @@ const promise: (
         } else {
           reject(response.data);
         }
-        if ((loading as NProgress).start) {
-          (loading as NProgress).done();
-        } else {
-          (loading as Ref).value = false;
-        }
       })
       .catch((error) => {
         reject(error);
+      })
+      .finally(() => {
         if ((loading as NProgress).start) {
           (loading as NProgress).done();
         } else {

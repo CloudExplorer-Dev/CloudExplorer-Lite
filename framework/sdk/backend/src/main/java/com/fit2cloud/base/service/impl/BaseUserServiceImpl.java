@@ -6,15 +6,18 @@ import com.fit2cloud.base.entity.User;
 import com.fit2cloud.base.mapper.BaseUserMapper;
 import com.fit2cloud.base.service.IBaseUserRoleService;
 import com.fit2cloud.base.service.IBaseUserService;
+import com.fit2cloud.common.log.utils.IpUtil;
 import com.fit2cloud.common.utils.JwtTokenUtils;
 import com.fit2cloud.common.utils.MD5Util;
 import com.fit2cloud.dto.UserDto;
 import com.fit2cloud.request.LoginRequest;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.BeanUtils;
+import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
+import java.time.LocalDateTime;
 
 /**
  * <p>
@@ -31,7 +34,7 @@ public class BaseUserServiceImpl extends ServiceImpl<BaseUserMapper, User> imple
     private IBaseUserRoleService userRoleService;
 
     @Override
-    public String login(LoginRequest loginRequest) {
+    public String login(ServerHttpRequest request, LoginRequest loginRequest) {
 
         if (StringUtils.isBlank(loginRequest.getUsername())) {
             throw new RuntimeException("用户名为空");
@@ -56,6 +59,10 @@ public class BaseUserServiceImpl extends ServiceImpl<BaseUserMapper, User> imple
 
         //将当前用户的授权角色更新到redis
         userRoleService.saveCachedUserRoleMap(user.getId());
+
+        System.out.println(IpUtil.getIpAddress(request));
+        user.setIp(IpUtil.getIpAddress(request));
+        user.setLoginTime(LocalDateTime.now());
 
         return JwtTokenUtils.createJwtToken(user);
     }

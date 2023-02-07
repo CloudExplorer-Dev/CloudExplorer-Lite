@@ -1,7 +1,8 @@
 package com.fit2cloud.constants;
 
 import com.fit2cloud.autoconfigure.JobSettingConfig;
-import com.fit2cloud.dto.job.JobSettingParent;
+import com.fit2cloud.dto.job.JobSetting;
+import com.fit2cloud.quartz.CloudAccountSyncJob;
 
 import java.util.List;
 
@@ -12,10 +13,18 @@ import java.util.List;
  * {@code @注释: }
  */
 public class JobConstants implements JobSettingConfig.JobConfig {
-
+    /**
+     * 同步扫描规则
+     */
+    private static final String SYNC_SCAN_RESOURCE = "SYNC_SCAN_RESOURCE";
 
     @Override
-    public List<JobSettingParent> listJobInitSetting() {
-        return List.of();
+    public List<JobSetting> listJobInitSetting() {
+        // 同步扫描规则
+        JobSetting syncScanResource = new JobSetting(CloudAccountSyncJob.SyncScanJob.class,
+                SYNC_SCAN_RESOURCE,
+                com.fit2cloud.common.constants.JobConstants.Group.CLOUD_COMPLIANCE_RESOURCE_SYNC_GROUP.name(),
+                "同步扫描合规资源", null, p -> true);
+        return List.of(syncScanResource);
     }
 }
