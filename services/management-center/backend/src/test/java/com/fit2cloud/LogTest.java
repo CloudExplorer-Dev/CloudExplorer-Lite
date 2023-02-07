@@ -85,23 +85,6 @@ public class LogTest {
         query.bool(boolQuery.build());
         System.out.println("");
     }
-
-
-    @Test
-    public void searchByQuery () throws Exception {
-        Page<SystemLogVO> page = new Page<>(1, 2, false);
-        SearchRequest.Builder builder = provide.requestBuilder("ce-file-system-logs");
-        //分页
-        builder.from(1).size(2);
-        //条件
-        Query.Builder query = new Query.Builder();
-        //详情
-        //query.fuzzy(f->f.field("msg").value(v->v.stringValue("time out")).fuzziness("2"));
-        //等级
-        query.bool(b->b.must(m -> m.match(u -> u.field("level").query(v->v.stringValue("ERROR")))));
-        //Page response = provide.searchByQuery("ce-file-system-logs",builder, SystemLogVO.class,page);
-        //System.out.println(">>>>>>"+JsonUtil.toJSONString(response));
-    }
     @Test
     public void save() {
         LogUtil.debug("这个是debug日志");

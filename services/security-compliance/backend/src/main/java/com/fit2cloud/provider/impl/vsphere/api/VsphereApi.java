@@ -1,12 +1,15 @@
 package com.fit2cloud.provider.impl.vsphere.api;
 
 import com.fit2cloud.common.provider.impl.vsphere.utils.VsphereClient;
-import com.fit2cloud.provider.entity.F2CDatastore;
-import com.fit2cloud.provider.entity.F2CHost;
-import com.fit2cloud.provider.entity.F2CVirtualMachine;
+import com.fit2cloud.provider.entity.response.F2CDatastore;
+import com.fit2cloud.provider.entity.response.F2CHost;
+import com.fit2cloud.provider.entity.response.F2CVirtualMachine;
 import com.fit2cloud.provider.entity.response.VsphereResourcePool;
-import com.fit2cloud.provider.impl.vsphere.entity.F2CVsphereHost;
-import com.fit2cloud.provider.impl.vsphere.entity.request.*;
+import com.fit2cloud.provider.impl.vsphere.entity.request.ListDataStoreInstanceRequest;
+import com.fit2cloud.provider.impl.vsphere.entity.request.ListEcsInstanceRequest;
+import com.fit2cloud.provider.impl.vsphere.entity.request.ListHostInstanceRequest;
+import com.fit2cloud.provider.impl.vsphere.entity.request.ListResourcePoolRequest;
+import com.fit2cloud.provider.impl.vsphere.entity.response.F2CVsphereHost;
 import com.fit2cloud.provider.impl.vsphere.util.VsphereUtil;
 import com.fit2cloud.provider.impl.vsphere.util.VsphereVmClient;
 import com.vmware.vim25.DatastoreInfo;
