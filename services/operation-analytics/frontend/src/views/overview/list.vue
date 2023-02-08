@@ -125,7 +125,7 @@
           </el-col>
         </el-row>
       </div>
-      <div class="spread-main-content">
+      <div class="spread-main-content" v-if="adminShowBaseResourceAllocatedInfo()">
         <el-row :gutter="10">
           <el-col :span="24">
             <div class="myChart" style="height: 300px">
@@ -297,13 +297,13 @@
   </div>
 </template>
 <script lang="ts" setup>
-import { onMounted, ref } from "vue";
+import {computed, onMounted, ref} from "vue";
 import _ from "lodash";
 import ChartsSpeed from "@commons/components/echart/ChartsSpeed.vue";
 import ResourceSpreadViewApi from "@/api/resource_spread_view/index";
 import CloudServerViewApi from "@/api/server_analysis/index";
 import CloudDiskViewApi from "@/api/disk_analysis/index";
-import { ResourceAnalysisRequest } from "@/api/resource_spread_view/type";
+import { ResourceAnalysisRequest } from "@commons/api/resource_spread_view/type";
 import {
   defaultPieDoughnutOptions,
   defaultSpeedOptions,
@@ -313,75 +313,23 @@ import {
   trendSeriesColor,
   getRandomColor,
 } from "@commons/components/echart/index";
-import type { OptimizeSuggest } from "@/api/resource_optimization/type";
+import {
+  type OptimizeSuggest,
+  paramOptimizationRequestMap,
+  baseOptimizeSuggests,
+} from "@commons/api/resource_optimization/type";
 import * as echarts from "echarts";
 import ResourceOptimizationViewApi from "@/api/resource_optimization";
+import { useUserStore } from "@commons/stores/modules/user";
 
-//默认查询参数
-const paramOptimizationRequestMap: Map<string, any> = new Map();
-paramOptimizationRequestMap.set("derating", {
-  conditionOr: "OR",
-  optimizeSuggest: "derating",
-  days: 10,
-  cpuRate: 30,
-  cpuMaxRate: "false",
-  memoryRate: 30,
-  memoryMaxRate: "false",
-});
-paramOptimizationRequestMap.set("upgrade", {
-  conditionOr: "OR",
-  optimizeSuggest: "upgrade",
-  days: 10,
-  cpuRate: 80,
-  cpuMaxRate: "false",
-  memoryRate: 80,
-  memoryMaxRate: "false",
-});
-paramOptimizationRequestMap.set("payment", {
-  optimizeSuggest: "payment",
-  cycleContinuedRunning: "false",
-  cycleContinuedDays: 10,
-  volumeContinuedRunning: "false",
-  volumeContinuedDays: 10,
-});
-paramOptimizationRequestMap.set("recovery", {
-  optimizeSuggest: "recovery",
-  continuedRunning: "false",
-  continuedDays: 30,
-});
-const optimizeSuggests = ref<Array<OptimizeSuggest>>([]);
-optimizeSuggests.value.push({
-  checked: true,
-  color: "#FF9899",
-  name: "建议降配云主机",
-  code: "derating",
-  value: 0,
-  data: [],
-});
-optimizeSuggests.value.push({
-  checked: false,
-  color: "#00A1E6",
-  name: "建议升配云主机",
-  code: "upgrade",
-  value: 0,
-  data: [],
-});
-optimizeSuggests.value.push({
-  checked: false,
-  color: "#FEB75C",
-  name: "建议变更付费方式云主机",
-  code: "payment",
-  value: 0,
-  data: [],
-});
-optimizeSuggests.value.push({
-  checked: false,
-  color: "#D763B7",
-  name: "建议回收云主机",
-  code: "recovery",
-  value: 0,
-  data: [],
-});
+const userStore = useUserStore();
+const adminShowBaseResourceAllocatedInfo = ()=>{
+  return _.includes(["ADMIN"], userStore.currentRole);
+};
+
+const optimizeSuggests = ref<Array<OptimizeSuggest>>(
+    _.clone(baseOptimizeSuggests)
+);
 
 //分配情况
 const allocatedInfo = ref<any>({});
@@ -478,7 +426,9 @@ const getAccounts = () => {
   CloudServerViewApi.listAccounts().then((res) => {
     if (res.data.length) {
       accounts.value = res.data;
-      getBaseResourceAllocatedInfo();
+      if(adminShowBaseResourceAllocatedInfo()){
+        getBaseResourceAllocatedInfo();
+      }
       getVmSpreadInfo();
       getDiskSpreadInfo();
       getComputerSpreadInfo("宿主机分布", "host");

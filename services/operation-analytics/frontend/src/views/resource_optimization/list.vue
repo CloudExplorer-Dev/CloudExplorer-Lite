@@ -331,13 +331,8 @@ import type { SimpleMap } from "@commons/api/base/type";
 import { platformIcon } from "@commons/utils/platform";
 import BaseCloudAccountApi from "@commons/api/cloud_account";
 import type { VmCloudServerVO } from "@/api/server_analysis/type";
-import ResourceOptimizationViewApi, {
-  listServer,
-} from "@/api/resource_optimization";
-import type {
-  OptimizeSuggest,
-  OptimizationRequest,
-} from "@/api/resource_optimization/type";
+import ResourceOptimizationViewApi from "@/api/resource_optimization";
+import type { OptimizeSuggest } from "@commons/api/resource_optimization/type";
 import {useRouter} from "vue-router";
 const useRoute = useRouter();
 const { t } = useI18n();
@@ -461,7 +456,7 @@ const getSearchParams = (code: any) => {
 const search = (condition: TableSearch) => {
   const params = TableSearch.toSearchParams(condition);
   const d = _.find(optimizeSuggests.value, ["code", currentType.value]);
-  getSearchParams(d.code);
+  getSearchParams(d?.code);
   _.merge(params, dialogFormData.value);
   ResourceOptimizationViewApi.listServer(
     {
@@ -519,7 +514,7 @@ onMounted(() => {
     });
   });
   if(code){
-    currentType.value = code;
+    currentType.value = code as string;
     useRoute.currentRoute.value.query.code = null;
     dialogFormVisible.value = false;
     optimizeSuggests.value.forEach((value) => {

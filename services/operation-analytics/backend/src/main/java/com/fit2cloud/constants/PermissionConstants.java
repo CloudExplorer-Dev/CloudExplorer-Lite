@@ -84,9 +84,7 @@ public class PermissionConstants {
                             .permission(new Permission.Builder()
                                     .operate(OPERATE.READ)
                                     .name("permission.operation.base_resource_analysis.read")
-                                    .role(RoleConstants.ROLE.ADMIN)
-                                    .role(RoleConstants.ROLE.ORGADMIN)
-                                    .role(RoleConstants.ROLE.USER))
+                                    .role(RoleConstants.ROLE.ADMIN))
             )
             .group(
                     new PermissionGroup.Builder()

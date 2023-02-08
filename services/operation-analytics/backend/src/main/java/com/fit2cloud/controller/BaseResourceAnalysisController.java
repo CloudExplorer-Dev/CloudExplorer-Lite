@@ -87,14 +87,14 @@ public class BaseResourceAnalysisController {
 
     @ApiOperation(value = "查询宿主机", notes = "查询云账号下宿主机")
     @GetMapping("/hosts")
-    @PreAuthorize("hasAnyCePermission('BASE_RESOURCE_ANALYSIS:READ')")
+    @PreAuthorize("hasAnyCePermission('BASE_RESOURCE_ANALYSIS:READ','OVERVIEW:READ')")
     public ResultHolder<List<VmCloudHost>> getVmHost(@Validated ResourceAnalysisRequest request) {
         return ResultHolder.success(iBaseResourceAnalysisService.getVmHost(request));
     }
 
     @ApiOperation(value = "查询存储器", notes = "查询云账号下存储器")
     @GetMapping("/datastores")
-    @PreAuthorize("hasAnyCePermission('BASE_RESOURCE_ANALYSIS:READ')")
+    @PreAuthorize("hasAnyCePermission('BASE_RESOURCE_ANALYSIS:READ','OVERVIEW:READ')")
     public ResultHolder<List<VmCloudDatastore>> getVmCloudDatastore(@Validated ResourceAnalysisRequest request) {
         return ResultHolder.success(iBaseResourceAnalysisService.getVmCloudDatastore(request));
     }
@@ -108,7 +108,7 @@ public class BaseResourceAnalysisController {
 
     @ApiOperation(value = "查询资源分布情况", notes = "查询云账号下资源分布情况")
     @GetMapping("/spread_info")
-    @PreAuthorize("hasAnyCePermission('BASE_RESOURCE_ANALYSIS:READ')")
+    @PreAuthorize("hasAnyCePermission('BASE_RESOURCE_ANALYSIS:READ','OVERVIEW:READ')")
     public ResultHolder<Map<String,List<KeyValue>>> getResourceSpreadInfo(@Validated ResourceAnalysisRequest request) {
         return ResultHolder.success(iBaseResourceAnalysisService.getResourceSpreadInfo(request));
     }
