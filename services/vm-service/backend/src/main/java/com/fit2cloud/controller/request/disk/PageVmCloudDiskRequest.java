@@ -44,6 +44,8 @@ public class PageVmCloudDiskRequest extends PageRequest implements PageOrderRequ
     private List<Boolean> bootable;
     @ApiModelProperty("磁盘状态")
     private List<String> status;
+    @ApiModelProperty("云账号IDs")
+    private List<String> accountIds;
     @Size(min = 2, max = 2, message = "{i18n.request.date.message}")
     @ApiModelProperty(value = "创建时间", example = "createTime[]=2121&createTime[]=21212")
     private List<Long> createTime;

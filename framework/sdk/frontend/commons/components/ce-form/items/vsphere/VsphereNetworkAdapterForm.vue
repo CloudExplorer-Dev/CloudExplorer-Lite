@@ -143,7 +143,7 @@
                       formItem?.ext?.network?.optionList,
                       (o) => o.mor === p.vlan
                     ),
-                    "mor",
+                    "name",
                     p.vlan
                   )
                 }}

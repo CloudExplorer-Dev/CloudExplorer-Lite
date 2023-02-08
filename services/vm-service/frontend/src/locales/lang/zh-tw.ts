@@ -61,7 +61,7 @@ const message = {
   vm_cloud_disk: {
     label: {
       vm: "所屬虛擬機器",
-      size: "大小",
+      size: "磁盤大小",
       disk_category: "磁片種類",
       disk_attribute: "磁片屬性",
       disk_type: "磁片類型",

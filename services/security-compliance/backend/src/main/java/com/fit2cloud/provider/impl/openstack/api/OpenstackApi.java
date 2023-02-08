@@ -1,7 +1,6 @@
 package com.fit2cloud.provider.impl.openstack.api;
 
-import com.fit2cloud.common.provider.impl.openstack.entity.request.OpenStackBaseRequest;
-import com.fit2cloud.provider.entity.F2CVirtualMachine;
+import com.fit2cloud.provider.entity.response.F2CVirtualMachine;
 import com.fit2cloud.provider.impl.openstack.entity.request.ListEcsInstanceRequest;
 import com.fit2cloud.provider.impl.openstack.entity.request.ListSecurityGroupInstanceRequest;
 import com.fit2cloud.provider.impl.openstack.util.OpenStackUtils;

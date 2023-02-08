@@ -62,7 +62,7 @@ const message = {
   vm_cloud_disk: {
     label: {
       vm: "Virtual machine",
-      size: "Size",
+      size: "Disk Size",
       disk_category: "Disk category",
       disk_attribute: "Disk attribute",
       disk_type: "Disk Type",

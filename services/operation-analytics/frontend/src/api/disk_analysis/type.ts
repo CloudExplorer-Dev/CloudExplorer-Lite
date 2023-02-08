@@ -1,4 +1,3 @@
-import type { SimpleMap } from "@commons/api/base/type";
 export class ResourceAnalysisRequest {
   accountIds: Array<string>;
   statisticalBlock: boolean;
