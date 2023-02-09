@@ -10,7 +10,7 @@ import {
   TableSearch,
 } from "@commons/components/ce-table/type";
 import { useI18n } from "vue-i18n";
-import { ElMessage, ElMessageBox } from "element-plus";
+import { ElMessage, ElMessageBox, ElPopover } from "element-plus";
 import _ from "lodash";
 import type { SimpleMap } from "@commons/api/base/type";
 import variables_server from "../../styles/vm_cloud_server/server.module.scss";
@@ -20,7 +20,11 @@ import RecycleBinsApi from "@/api/recycle_bin";
 import Grant from "@/views/vm_cloud_server/grant.vue";
 import { usePermissionStore } from "@commons/stores/modules/permission";
 import ButtonToolBar from "@commons/components/button-tool-bar/ButtonToolBar.vue";
+import TreeFilter from "@commons/components/table-filter/TreeFilter.vue";
 import { ButtonAction } from "@commons/components/button-tool-bar/type";
+import { workspaceTree } from "@commons/api/workspace";
+import type { WorkspaceTree } from "@commons/api/workspace/type";
+import { tree } from "@commons/api/organization";
 
 const { t } = useI18n();
 const permissionStore = usePermissionStore();
@@ -31,6 +35,45 @@ const tableData = ref<Array<VmCloudServerVO>>([]);
 const selectedRowData = ref<Array<VmCloudServerVO>>([]);
 const tableLoading = ref<boolean>(false);
 const cloudAccount = ref<Array<SimpleMap<string>>>([]);
+
+/**
+ * 表头：组织树筛选
+ */
+const orgTreeData = ref();
+const orgTreeRef = ref();
+const orgPopRef = ref<InstanceType<typeof ElPopover>>();
+const selectedOrganizationIds = computed(() =>
+  orgTreeRef.value?.getTreeRef().getCheckedKeys()
+);
+const handleOrgSelect = () => {
+  orgPopRef.value?.hide();
+  table.value.search(table?.value.getTableSearch().conditions);
+};
+const handleOrgReset = () => {
+  orgPopRef.value?.hide();
+  orgTreeRef.value?.getTreeRef().setCheckedNodes([], false);
+  table.value.search(table?.value.getTableSearch().conditions);
+};
+
+/**
+ * 表头：工作空间树筛选
+ */
+const workspaceTreeData = ref<WorkspaceTree[]>();
+const workspaceTreeRef = ref();
+const workspacePopRef = ref();
+const selectedWorkspaceIds = computed(() =>
+  workspaceTreeRef.value?.getTreeRef().getCheckedKeys(true)
+);
+const handleWorkspaceSelect = () => {
+  workspacePopRef.value?.hide();
+  table.value.search(table?.value.getTableSearch().conditions);
+};
+const handleWorkspaceReset = () => {
+  workspacePopRef.value?.hide();
+  workspaceTreeRef.value.getTreeRef().setCheckedNodes([], false);
+  table.value.search(table?.value.getTableSearch().conditions);
+};
+
 //批量操作
 const instanceOperateMap: Map<string, string> = new Map();
 instanceOperateMap.set("POWER_ON", t("", "启动"));
@@ -125,6 +168,14 @@ const filterVmToolsStatus = (value: string) => {
  */
 const search = (condition: TableSearch) => {
   const params = TableSearch.toSearchParams(condition);
+
+  if (selectedOrganizationIds.value?.length > 0) {
+    params.organizationIds = selectedOrganizationIds.value;
+  }
+  if (selectedWorkspaceIds.value?.length > 0) {
+    params.workspaceIds = selectedWorkspaceIds.value;
+  }
+
   VmCloudServerApi.listVmCloudServer(
     {
       currentPage: tableConfig.value.paginationConfig.currentPage,
@@ -167,6 +218,12 @@ onMounted(() => {
   searchCloudAccount();
   startOperateInterval();
   getRecycleBinSetting();
+  tree().then((res) => {
+    orgTreeData.value = res.data;
+  });
+  workspaceTree().then((res) => {
+    workspaceTreeData.value = res.data;
+  });
 });
 onBeforeUnmount(() => {
   stopOperateInterval();
@@ -798,18 +855,74 @@ const moreActions = ref<Array<ButtonAction>>([
     ></el-table-column>
     <el-table-column
       prop="organizationName"
-      column-key="organizationName"
-      :label="$t('commons.org')"
+      column-key="organizationIds"
+      :label="$t('commons.org', '组织')"
       :show="false"
       min-width="180px"
-    ></el-table-column>
+    >
+      <template #header>
+        <span :class="{ highlight: selectedOrganizationIds?.length > 0 }">{{
+          $t("commons.org", "组织")
+        }}</span>
+        <el-popover
+          ref="orgPopRef"
+          placement="bottom"
+          :width="200"
+          trigger="click"
+          :show-arrow="false"
+        >
+          <template #reference>
+            <span class="el-table__column-filter-trigger"
+              ><el-icon><ArrowDown /></el-icon
+            ></span>
+          </template>
+          <TreeFilter
+            ref="orgTreeRef"
+            :handle-reset="handleOrgReset"
+            :handle-select="handleOrgSelect"
+            :tree-data="orgTreeData"
+          />
+        </el-popover>
+      </template>
+      <template #default="scope">
+        <span v-html="scope.row.organizationName"></span>
+      </template>
+    </el-table-column>
     <el-table-column
       prop="workspaceName"
-      column-key="workspaceName"
-      :label="$t('commons.workspace')"
+      column-key="workspaceIds"
+      :label="$t('commons.workspace', '工作空间')"
       :show="false"
       min-width="180px"
-    ></el-table-column>
+    >
+      <template #header>
+        <span :class="{ highlight: selectedWorkspaceIds?.length > 0 }">{{
+          $t("commons.workspace", "工作空间")
+        }}</span>
+        <el-popover
+          ref="workspacePopRef"
+          placement="bottom"
+          :width="200"
+          trigger="click"
+          :show-arrow="false"
+        >
+          <template #reference>
+            <span class="el-table__column-filter-trigger"
+              ><el-icon><ArrowDown /></el-icon
+            ></span>
+          </template>
+          <TreeFilter
+            ref="workspaceTreeRef"
+            :handle-reset="handleWorkspaceReset"
+            :handle-select="handleWorkspaceSelect"
+            :tree-data="workspaceTreeData"
+          />
+        </el-popover>
+      </template>
+      <template #default="scope">
+        <span v-html="scope.row.workspaceName"></span>
+      </template>
+    </el-table-column>
     <el-table-column
       prop="instanceTypeDescription"
       column-key="instanceTypeDescription"
@@ -942,5 +1055,8 @@ const moreActions = ref<Array<ButtonAction>>([
 }
 .name-span-class:hover {
   cursor: pointer;
+}
+.highlight {
+  color: var(--el-color-primary);
 }
 </style>

@@ -10,7 +10,7 @@ import {
 } from "@commons/components/ce-table/type";
 import { useI18n } from "vue-i18n";
 import type { SimpleMap } from "@commons/api/base/type";
-import { ElMessage, ElMessageBox } from "element-plus";
+import { ElMessage, ElMessageBox, ElPopover } from "element-plus";
 import Attach from "@/views/vm_cloud_disk/attach.vue";
 import { useRouter } from "vue-router";
 import _ from "lodash";
@@ -18,6 +18,10 @@ import { usePermissionStore } from "@commons/stores/modules/permission";
 import Grant from "@/views/vm_cloud_server/grant.vue";
 import RecycleBinsApi from "@/api/recycle_bin";
 import BaseCloudAccountApi from "@commons/api/cloud_account";
+import { workspaceTree } from "@commons/api/workspace";
+import type { WorkspaceTree } from "@commons/api/workspace/type";
+import { tree } from "@commons/api/organization";
+import TreeFilter from "@commons/components/table-filter/TreeFilter.vue";
 
 const { t } = useI18n();
 const permissionStore = usePermissionStore();
@@ -29,6 +33,45 @@ const router = useRouter();
 const multipleSelectedRowData = ref<Array<VmCloudDiskVO>>([]);
 const isBatchAttach = ref(false);
 const cloudAccount = ref<Array<SimpleMap<string>>>([]);
+const tableLoading = ref<boolean>(false);
+
+/**
+ * 表头：组织树筛选
+ */
+const orgTreeData = ref();
+const orgTreeRef = ref();
+const orgPopRef = ref<InstanceType<typeof ElPopover>>();
+const selectedOrganizationIds = computed(() =>
+  orgTreeRef.value?.getTreeRef().getCheckedKeys()
+);
+const handleOrgSelect = () => {
+  orgPopRef.value?.hide();
+  table.value.search(table?.value.getTableSearch().conditions);
+};
+const handleOrgReset = () => {
+  orgPopRef.value?.hide();
+  orgTreeRef.value?.getTreeRef().setCheckedNodes([], false);
+  table.value.search(table?.value.getTableSearch().conditions);
+};
+
+/**
+ * 表头：工作空间树筛选
+ */
+const workspaceTreeData = ref<WorkspaceTree[]>();
+const workspaceTreeRef = ref();
+const workspacePopRef = ref();
+const selectedWorkspaceIds = computed(() =>
+  workspaceTreeRef.value?.getTreeRef().getCheckedKeys(true)
+);
+const handleWorkspaceSelect = () => {
+  workspacePopRef.value?.hide();
+  table.value.search(table?.value.getTableSearch().conditions);
+};
+const handleWorkspaceReset = () => {
+  workspacePopRef.value?.hide();
+  workspaceTreeRef.value.getTreeRef().setCheckedNodes([], false);
+  table.value.search(table?.value.getTableSearch().conditions);
+};
 
 //硬盘状态
 const diskStatus = ref<Array<SimpleMap<string>>>([
@@ -126,11 +169,22 @@ const filterStatus = (value: string) => {
  */
 const search = (condition: TableSearch) => {
   const params = TableSearch.toSearchParams(condition);
-  VmCloudDiskApi.listVmCloudDisk({
-    currentPage: tableConfig.value.paginationConfig.currentPage,
-    pageSize: tableConfig.value.paginationConfig.pageSize,
-    ...params,
-  }).then((res) => {
+
+  if (selectedOrganizationIds.value?.length > 0) {
+    params.organizationIds = selectedOrganizationIds.value;
+  }
+  if (selectedWorkspaceIds.value?.length > 0) {
+    params.workspaceIds = selectedWorkspaceIds.value;
+  }
+
+  VmCloudDiskApi.listVmCloudDisk(
+    {
+      currentPage: tableConfig.value.paginationConfig.currentPage,
+      pageSize: tableConfig.value.paginationConfig.pageSize,
+      ...params,
+    },
+    tableLoading
+  ).then((res) => {
     tableData.value = res.data.records;
     tableConfig.value.paginationConfig?.setTotal(
       res.data.total,
@@ -166,6 +220,12 @@ onMounted(() => {
       refresh();
     }
   }, 6000);
+  tree().then((res) => {
+    orgTreeData.value = res.data;
+  });
+  workspaceTree().then((res) => {
+    workspaceTreeData.value = res.data;
+  });
 });
 
 onBeforeUnmount(() => {
@@ -587,6 +647,7 @@ const buttons = ref([
 </script>
 <template>
   <ce-table
+    v-loading="tableLoading"
     :columns="columns"
     :data="tableData"
     :tableConfig="tableConfig"
@@ -661,16 +722,73 @@ const buttons = ref([
     ></el-table-column>
     <el-table-column
       prop="organizationName"
-      :label="$t('commons.org')"
+      column-key="organizationIds"
+      :label="$t('commons.org', '组织')"
       :show="false"
       min-width="180px"
-    ></el-table-column>
+      ><template #header>
+        <span :class="{ highlight: selectedOrganizationIds?.length > 0 }">{{
+          $t("commons.org", "组织")
+        }}</span>
+        <el-popover
+          ref="orgPopRef"
+          placement="bottom"
+          :width="200"
+          trigger="click"
+          :show-arrow="false"
+        >
+          <template #reference>
+            <span class="el-table__column-filter-trigger"
+              ><el-icon><ArrowDown /></el-icon
+            ></span>
+          </template>
+          <TreeFilter
+            ref="orgTreeRef"
+            :handle-reset="handleOrgReset"
+            :handle-select="handleOrgSelect"
+            :tree-data="orgTreeData"
+          />
+        </el-popover>
+      </template>
+      <template #default="scope">
+        <span v-html="scope.row.organizationName"></span>
+      </template>
+    </el-table-column>
     <el-table-column
       prop="workspaceName"
+      column-key="workspaceIds"
       :label="$t('commons.workspace')"
       :show="false"
       min-width="180px"
-    ></el-table-column>
+    >
+      <template #header>
+        <span :class="{ highlight: selectedWorkspaceIds?.length > 0 }">{{
+          $t("commons.workspace", "工作空间")
+        }}</span>
+        <el-popover
+          ref="workspacePopRef"
+          placement="bottom"
+          :width="200"
+          trigger="click"
+          :show-arrow="false"
+        >
+          <template #reference>
+            <span class="el-table__column-filter-trigger"
+              ><el-icon><ArrowDown /></el-icon
+            ></span>
+          </template>
+          <TreeFilter
+            ref="workspaceTreeRef"
+            :handle-reset="handleWorkspaceReset"
+            :handle-select="handleWorkspaceSelect"
+            :tree-data="workspaceTreeData"
+          />
+        </el-popover>
+      </template>
+      <template #default="scope">
+        <span v-html="scope.row.workspaceName"></span>
+      </template>
+    </el-table-column>
     <el-table-column
       prop="vmInstanceName"
       :label="$t('vm_cloud_disk.label.vm')"
@@ -847,5 +965,8 @@ const buttons = ref([
   overflow: hidden;
   white-space: nowrap;
   text-overflow: ellipsis;
+}
+.highlight {
+  color: var(--el-color-primary);
 }
 </style>

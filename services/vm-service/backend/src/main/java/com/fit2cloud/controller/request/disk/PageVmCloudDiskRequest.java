@@ -30,6 +30,8 @@ public class PageVmCloudDiskRequest extends PageRequest implements PageOrderRequ
     private String organizationName;
     @ApiModelProperty("工作空间ID")
     private String workspaceId;
+    @ApiModelProperty("工作空间IDs")
+    private List<String> workspaceIds;
     @ApiModelProperty("工作空间名称")
     private String workspaceName;
     @ApiModelProperty("云账号名称")

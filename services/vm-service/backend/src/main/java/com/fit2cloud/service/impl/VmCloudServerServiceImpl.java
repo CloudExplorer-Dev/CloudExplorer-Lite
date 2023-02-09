@@ -131,7 +131,6 @@ public class VmCloudServerServiceImpl extends ServiceImpl<BaseVmCloudServerMappe
         }
     }
 
-
     @Override
     public IPage<VmCloudServerDTO> pageVmCloudServer(PageVmCloudServerRequest request) {
         setCurrentInfos(request);
@@ -160,15 +159,22 @@ public class VmCloudServerServiceImpl extends ServiceImpl<BaseVmCloudServerMappe
     private <T extends VmCloudServer> QueryWrapper<T> addQuery(PageVmCloudServerRequest request) {
         QueryWrapper<T> wrapper = new QueryWrapper<>();
 
-        wrapper.like(StringUtils.isNotBlank(request.getWorkspaceId()), ColumnNameUtil.getColumnName(VmCloudServer::getSourceId, true), request.getWorkspaceId());
+        wrapper.eq(StringUtils.isNotBlank(request.getWorkspaceId()), ColumnNameUtil.getColumnName(VmCloudServer::getSourceId, true), request.getWorkspaceId());
         wrapper.like(StringUtils.isNotBlank(request.getInstanceName()), ColumnNameUtil.getColumnName(VmCloudServer::getInstanceName, true), request.getInstanceName());
         wrapper.like(StringUtils.isNotBlank(request.getAccountName()), ColumnNameUtil.getColumnName(CloudAccount::getName, true), request.getAccountName());
         wrapper.like(StringUtils.isNotBlank(request.getIpArray()), ColumnNameUtil.getColumnName(VmCloudServer::getIpArray, true), request.getIpArray());
         wrapper.in(CollectionUtils.isNotEmpty(request.getAccountIds()), ColumnNameUtil.getColumnName(VmCloudServer::getAccountId, true), request.getAccountIds());
         wrapper.in(CollectionUtils.isNotEmpty(request.getInstanceStatus()), ColumnNameUtil.getColumnName(VmCloudServer::getInstanceStatus, true), request.getInstanceStatus());
-        wrapper.in(CollectionUtils.isNotEmpty(request.getSourceIds()), ColumnNameUtil.getColumnName(VmCloudServer::getSourceId, true), request.getSourceIds());
         wrapper.in(CollectionUtils.isNotEmpty(request.getInstanceChargeType()), ColumnNameUtil.getColumnName(VmCloudServer::getInstanceChargeType, true), request.getInstanceChargeType());
         wrapper.in(CollectionUtils.isNotEmpty(request.getVmToolsStatus()), ColumnNameUtil.getColumnName(VmCloudServer::getVmToolsStatus, true), request.getVmToolsStatus());
+
+        wrapper.in(CollectionUtils.isNotEmpty(request.getSourceIds()), ColumnNameUtil.getColumnName(VmCloudServer::getSourceId, true), request.getSourceIds());
+        wrapper.in(CollectionUtils.isNotEmpty(request.getWorkspaceIds()), ColumnNameUtil.getColumnName(VmCloudServer::getSourceId, true), request.getWorkspaceIds());
+        if (CollectionUtils.isNotEmpty(request.getOrganizationIds())) {
+            List<String> orgWorkspaceList = workspaceCommonService.getWorkspaceIdsByOrgIds(request.getOrganizationIds());
+            orgWorkspaceList.addAll(request.getOrganizationIds());
+            wrapper.in(CollectionUtils.isNotEmpty(orgWorkspaceList), ColumnNameUtil.getColumnName(VmCloudServer::getSourceId, true), orgWorkspaceList);
+        }
 
         // 默认不展示已删除状态的机器
         if (CollectionUtils.isEmpty(request.getInstanceStatus())) {

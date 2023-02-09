@@ -44,12 +44,14 @@ import com.fit2cloud.provider.impl.vsphere.util.ResourceConstants;
 import com.fit2cloud.service.IPermissionService;
 import com.fit2cloud.service.IResourceOperateService;
 import com.fit2cloud.service.IVmCloudDiskService;
+import com.fit2cloud.service.WorkspaceCommonService;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
+import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.List;
 import java.util.UUID;
@@ -76,9 +78,10 @@ public class VmCloudDiskServiceImpl extends ServiceImpl<BaseVmCloudDiskMapper, V
     private IResourceOperateService resourceOperateService;
     @Resource
     private IPermissionService permissionService;
-
     @Resource
     private IBaseRecycleBinService recycleService;
+    @Resource
+    private WorkspaceCommonService workspaceCommonService;
 
     @Override
     public IPage<VmCloudDiskDTO> pageVmCloudDisk(PageVmCloudDiskRequest request) {
@@ -121,8 +124,15 @@ public class VmCloudDiskServiceImpl extends ServiceImpl<BaseVmCloudDiskMapper, V
         wrapper.in(CollectionUtils.isNotEmpty(request.getDiskType()), ColumnNameUtil.getColumnName(VmCloudDisk::getDiskType, true), request.getDiskType());
         wrapper.in(CollectionUtils.isNotEmpty(request.getDeleteWithInstance()), ColumnNameUtil.getColumnName(VmCloudDisk::getDeleteWithInstance, true), request.getDeleteWithInstance());
         wrapper.in(CollectionUtils.isNotEmpty(request.getStatus()), ColumnNameUtil.getColumnName(VmCloudDisk::getStatus, true), request.getStatus());
-        wrapper.in(CollectionUtils.isNotEmpty(request.getSourceIds()), ColumnNameUtil.getColumnName(VmCloudDisk::getSourceId, true), request.getSourceIds());
         wrapper.in(CollectionUtils.isNotEmpty(request.getAccountIds()), ColumnNameUtil.getColumnName(VmCloudDisk::getAccountId, true), request.getAccountIds());
+
+        wrapper.in(CollectionUtils.isNotEmpty(request.getSourceIds()), ColumnNameUtil.getColumnName(VmCloudDisk::getSourceId, true), request.getSourceIds());
+        wrapper.in(CollectionUtils.isNotEmpty(request.getWorkspaceIds()), ColumnNameUtil.getColumnName(VmCloudDisk::getSourceId, true), request.getWorkspaceIds());
+        if (CollectionUtils.isNotEmpty(request.getOrganizationIds())) {
+            List<String> orgWorkspaceList = workspaceCommonService.getWorkspaceIdsByOrgIds(request.getOrganizationIds());
+            orgWorkspaceList.addAll(request.getOrganizationIds());
+            wrapper.in(CollectionUtils.isNotEmpty(orgWorkspaceList), ColumnNameUtil.getColumnName(VmCloudDisk::getSourceId, true), orgWorkspaceList);
+        }
 
         // 默认不展示已删除状态的磁盘
         if (CollectionUtils.isEmpty(request.getStatus())) {
@@ -464,6 +474,7 @@ public class VmCloudDiskServiceImpl extends ServiceImpl<BaseVmCloudDiskMapper, V
      * @param
      */
     private void updateCloudDisk(VmCloudDisk vmCloudDisk) {
+        vmCloudDisk.setUpdateTime(LocalDateTime.now());
         baseMapper.updateById(vmCloudDisk);
     }
 

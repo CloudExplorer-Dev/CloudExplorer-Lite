@@ -1,0 +1,89 @@
+<script setup lang="ts">
+import { ref, watch } from "vue";
+import type { WorkspaceTree } from "../../api/workspace/type";
+import type { ElTree } from "element-plus";
+import { useI18n } from "vue-i18n";
+
+const { t } = useI18n();
+const props = defineProps<{
+  /**
+   * 树形结构数据
+   */
+  treeData: Array<WorkspaceTree>;
+  /**
+   * 筛选按钮触发事件
+   */
+  handleSelect: () => void;
+  /**
+   * 重置按钮触发事件
+   */
+  handleReset: () => void;
+}>();
+
+const filterText = ref("");
+const treeRef = ref<InstanceType<typeof ElTree>>();
+
+watch(filterText, (val) => {
+  treeRef.value!.filter(val);
+});
+
+const filterNode = (value: string, data: WorkspaceTree) => {
+  if (!value) return true;
+  return data.name.includes(value);
+};
+
+const getTreeRef = () => {
+  if (!treeRef.value) return;
+  return treeRef.value;
+};
+
+defineExpose({
+  getTreeRef,
+});
+</script>
+
+<template>
+  <el-input
+    v-model="filterText"
+    :placeholder="$t('commons.btn.grope', '搜索')"
+    size="small"
+  />
+  <el-tree
+    ref="treeRef"
+    node-key="id"
+    :props="{ label: 'name' }"
+    :data="treeData"
+    :filter-node-method="filterNode"
+    multiple
+    show-checkbox
+    style="width: 100%"
+  />
+  <div class="line" />
+  <el-button
+    @click="handleSelect()"
+    :disabled="treeRef?.getCheckedKeys().length === 0"
+    link
+    class="btn"
+    :class="{ active: treeRef?.getCheckedKeys().length !== 0 }"
+  >
+    {{ t("commons.btn.filter", "筛选") }}
+  </el-button>
+  <el-button @click="handleReset()" link class="btn active">
+    {{ t("commons.btn.reset", "重置") }}
+  </el-button>
+</template>
+
+<style lang="scss" scoped>
+.line {
+  margin: 6px 0px;
+  border-bottom: 1px solid var(--el-border-color);
+}
+.btn {
+  color: var(--el-text-color-regular);
+  cursor: pointer;
+  font-size: var(--el-font-size-small);
+}
+.active:hover {
+  color: var(--el-color-primary);
+}
+</style>
