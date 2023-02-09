@@ -83,6 +83,9 @@ const message = {
       upload: "上傳",
       download: "下載",
       more_actions: "更多操作",
+      filter: "篩選",
+      reset: "重置",
+      grope: "搜索",
     },
     msg: {
       success: "{0}成功",

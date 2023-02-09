@@ -83,6 +83,9 @@ const message = {
       upload: "Upload",
       download: "Download",
       more_actions: "More Actions",
+      filter: "Filter",
+      reset: "Reset",
+      grope: "Grope",
     },
     msg: {
       success: "{0}Success",
