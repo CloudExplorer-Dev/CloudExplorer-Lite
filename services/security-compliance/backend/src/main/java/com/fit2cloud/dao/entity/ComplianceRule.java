@@ -4,25 +4,21 @@ import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
-
-import java.io.Serializable;
-import java.time.LocalDateTime;
-
-import com.fit2cloud.dao.handler.RuleHandler;
-import com.fit2cloud.dao.jentity.Rule;
-import lombok.Getter;
-import lombok.Setter;
-import lombok.experimental.Accessors;
-
-import java.io.Serial;
-import java.util.List;
-
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.fasterxml.jackson.datatype.jsr310.deser.LocalDateTimeDeserializer;
 import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateTimeSerializer;
 import com.fit2cloud.dao.constants.RiskLevel;
+import com.fit2cloud.dao.handler.RuleHandler;
+import com.fit2cloud.dao.jentity.Rules;
+import lombok.Getter;
+import lombok.Setter;
+import lombok.experimental.Accessors;
+
+import java.io.Serial;
+import java.io.Serializable;
+import java.time.LocalDateTime;
 
 /**
  * <p>
@@ -72,7 +68,7 @@ public class ComplianceRule implements Serializable {
      * 规则条件
      */
     @TableField(value = "rules", typeHandler = RuleHandler.class)
-    private List<Rule> rules;
+    private Rules rules;
 
     /**
      * 风险等级

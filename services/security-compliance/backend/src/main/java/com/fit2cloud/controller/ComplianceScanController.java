@@ -1,18 +1,17 @@
 package com.fit2cloud.controller;
 
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import com.fit2cloud.common.provider.util.CommonUtil;
 import com.fit2cloud.controller.handler.ResultHolder;
 import com.fit2cloud.controller.request.compliance_scan.ComplianceResourceRequest;
-import com.fit2cloud.controller.request.compliance_scan.ComplianceScanRequest;
 import com.fit2cloud.controller.request.compliance_scan.ComplianceSyncRequest;
-import com.fit2cloud.controller.response.compliance_scan.*;
+import com.fit2cloud.controller.response.compliance_scan.ComplianceResourceResponse;
+import com.fit2cloud.controller.response.compliance_scan.SupportCloudAccountResourceResponse;
+import com.fit2cloud.controller.response.compliance_scan.SupportPlatformResourceResponse;
 import com.fit2cloud.response.JobRecordResourceResponse;
 import com.fit2cloud.service.IComplianceScanService;
 import com.fit2cloud.service.ISyncService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
-import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -37,35 +36,6 @@ public class ComplianceScanController {
     @Resource
     private ISyncService syncService;
 
-    @GetMapping
-    @ApiOperation("获取当前合规信息")
-    public ResultHolder<List<ComplianceScanResponse>> list(ComplianceScanRequest request) {
-        List<ComplianceScanResponse> list = complianceScanService.list(request);
-        return ResultHolder.success(list);
-    }
-
-    @GetMapping("/{currentPage}/{limit}")
-    @ApiOperation("分页查看规则的合规信息")
-    public ResultHolder<Page<ComplianceScanResponse>> page(@NotNull(message = "当前页不能为空")
-                                                           @Min(message = "当前页不能小于0", value = 1)
-                                                           @PathVariable("currentPage")
-                                                           Integer currentPage,
-                                                           @NotNull(message = "每页大小不能为空")
-                                                           @Min(message = "每页大小不能小于1", value = 1)
-                                                           @PathVariable("limit")
-                                                           Integer limit, ComplianceScanRequest request) {
-        Page<ComplianceScanResponse> page = complianceScanService.page(currentPage, limit, request);
-        return ResultHolder.success(page);
-    }
-
-    @GetMapping("/rule_group/{complianceRuleGroupId}")
-    @ApiOperation("获取规则组扫描情况")
-    public ResultHolder<ComplianceScanRuleGroupResponse> getRuleGroupCompliance(@PathVariable("complianceRuleGroupId")
-                                                                                String complianceRuleGroupId) {
-        ComplianceScanRuleGroupResponse ruleGroupCompliance = complianceScanService.scanComplianceRuleGroupByGroupId(complianceRuleGroupId);
-        return ResultHolder.success(ruleGroupCompliance);
-    }
-
     @GetMapping("/resource/{complianceRuleId}/{currentPage}/{limit}")
     @ApiOperation("分页查询资源")
     public ResultHolder<Page<ComplianceResourceResponse>> pageResource(@NotNull(message = "合规规则id不能为空")
@@ -84,7 +54,7 @@ public class ComplianceScanController {
     }
 
     @PostMapping("/sync_scan")
-    @ApiOperation("扫描")
+    @ApiOperation("发送扫描任务")
     public ResultHolder<Boolean> scan(@RequestBody ComplianceSyncRequest request) {
         for (ComplianceSyncRequest.CloudAccountResource cloudAccountResource : request.getCloudAccountResources()) {
             syncService.syncInstance(cloudAccountResource.getCloudAccountId(), cloudAccountResource.getResourceType());

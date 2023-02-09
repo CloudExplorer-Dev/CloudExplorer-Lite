@@ -63,9 +63,9 @@
   </div>
 </template>
 <script setup lang="ts">
-import type { ScanComplianceRuleGroupResponse } from "@/api/compliance_scan/type";
+import type { ComplianceScanResultRuleGroupResponse } from "@/api/compliance_scan_result/type";
 import { computed, ref, watch } from "vue";
-import complianceScanApi from "@/api/compliance_scan";
+import complianceScanResultApi from "@/api/compliance_scan_result";
 
 /**
  * 中高低风险总和
@@ -88,7 +88,7 @@ const props = defineProps<{
 /**
  * 规则组扫描结果
  */
-const scanComplianceRuleGroup = ref<ScanComplianceRuleGroupResponse>();
+const scanComplianceRuleGroup = ref<ComplianceScanResultRuleGroupResponse>();
 /**
  * 加载器
  */
@@ -98,8 +98,11 @@ watch(
   () => props.complianceRuleId,
   () => {
     if (props.complianceRuleId) {
-      complianceScanApi
-        .getScanComplianceRuleGroup(props.complianceRuleId, loading)
+      complianceScanResultApi
+        .getComplianceScanResultRuleGroupResponse(
+          props.complianceRuleId,
+          loading
+        )
         .then((ok) => {
           scanComplianceRuleGroup.value = ok.data;
         });

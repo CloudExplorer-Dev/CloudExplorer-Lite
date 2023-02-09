@@ -4,8 +4,6 @@ import com.fit2cloud.common.constants.PlatformConstants;
 import com.fit2cloud.constants.ResourceTypeConstants;
 import com.fit2cloud.provider.entity.InstanceFieldType;
 import com.fit2cloud.provider.entity.InstanceSearchField;
-import com.fit2cloud.provider.util.FieldUtil;
-import io.swagger.models.auth.In;
 import org.apache.commons.collections4.keyvalue.DefaultKeyValue;
 
 import java.util.List;
@@ -27,7 +25,8 @@ public class AliInstanceSearchFieldApi {
         InstanceSearchField cpu = new InstanceSearchField("cpu", "cpu", InstanceFieldType.Number)
                 .resetInstanceField(PlatformConstants.fit2cloud_ali_platform, ResourceTypeConstants.ECS);
 
-        InstanceSearchField memory = new InstanceSearchField("内存", "memory", InstanceFieldType.Number);
+        InstanceSearchField memory = new InstanceSearchField("内存", "memory", InstanceFieldType.Number)
+                .resetInstanceField(PlatformConstants.fit2cloud_ali_platform, ResourceTypeConstants.ECS);
 
         InstanceSearchField instanceStatus = new InstanceSearchField("实例状态", "status", InstanceFieldType.Enum,
                 List.of(new DefaultKeyValue<>("创建中", "Pending"),

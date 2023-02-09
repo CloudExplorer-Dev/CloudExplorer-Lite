@@ -228,8 +228,8 @@ const updateComplianceRuleFormRules = ref<FormRules>({
   ],
   insuranceStatuteIds: [
     {
-      required: true,
-      min: 1,
+      required: false,
+      min: 0,
       message: "等保条例不能为空",
       type: "array",
     },

@@ -1,6 +1,6 @@
 <template>
   <div class="content" v-loading="loading">
-    <div class="item" v-for="(rule, index) in rules" :key="index">
+    <div class="item" v-for="(rule, index) in rules.rules" :key="index">
       <div class="field">{{ getField(rule) }}</div>
       <div class="compare">{{ getCompare(rule) }}</div>
       <div class="value">{{ getValue(rule) }}</div>
@@ -11,7 +11,7 @@
 import { ref, watch } from "vue";
 import type { KeyValue } from "@commons/api/base/type";
 import complianceRuleApi from "@/api/rule";
-import type { InstanceSearchField, Rule } from "@/api/rule/type";
+import type { InstanceSearchField, Rule, Rules } from "@/api/rule/type";
 
 const fields = ref<Array<InstanceSearchField>>([]);
 const loading = ref<boolean>(false);
@@ -64,7 +64,7 @@ const props = defineProps<{
   /**
    * 规则信息
    */
-  rules: Array<Rule>;
+  rules: Rules;
 }>();
 
 watch(

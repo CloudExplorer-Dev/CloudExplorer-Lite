@@ -24,7 +24,7 @@ interface ComplianceRule {
   /**
    * 规则组
    */
-  rules: Array<Rule>;
+  rules: Rules;
   /**
    * 风险等级
    */
@@ -59,6 +59,21 @@ interface Rule {
    * 值
    */
   value: any;
+}
+
+interface Rules {
+  /**
+   * 规则
+   */
+  rules: Array<Rule>;
+  /**
+   * 条件类型 AND:并且  OR:或者
+   */
+  conditionType: "AND" | "OR";
+  /**
+   * 扫描规则 COMPLIANCE:视为合规 NOT_COMPLIANCE:视为不合规
+   */
+  scanRule: "COMPLIANCE" | "NOT_COMPLIANCE";
 }
 
 interface InstanceSearchField {
@@ -104,7 +119,7 @@ interface SaveComplianceRuleRequest {
   /**
    * 规则
    */
-  rules: Array<Rule>;
+  rules: Rules;
   /**
    * 风险等级
    */
@@ -161,6 +176,7 @@ interface UpdateComplianceRuleRequest {
   enable?: boolean;
 }
 export type {
+  Rules,
   Rule,
   ComplianceRule,
   InstanceSearchField,

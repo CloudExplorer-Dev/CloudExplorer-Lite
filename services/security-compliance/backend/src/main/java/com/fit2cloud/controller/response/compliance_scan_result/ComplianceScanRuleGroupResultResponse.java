@@ -1,6 +1,5 @@
-package com.fit2cloud.controller.response.compliance_scan;
+package com.fit2cloud.controller.response.compliance_scan_result;
 
-import com.fit2cloud.dao.constants.RiskLevel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
@@ -11,7 +10,7 @@ import lombok.Data;
  * {@code @注释: }
  */
 @Data
-public class ComplianceScanRuleGroupResponse {
+public class ComplianceScanRuleGroupResultResponse {
     @ApiModelProperty(value = "规则组名称", notes = "规则组名称")
     private String ruleGroupName;
     @ApiModelProperty(value = "合规的规则数量", notes = "合规的规则数量")

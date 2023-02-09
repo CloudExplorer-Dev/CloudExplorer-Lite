@@ -164,7 +164,11 @@
             </span>
           </template>
         </el-table-column>
-        <el-table-column prop="complianceCount" label="不合规/合规资源">
+        <el-table-column
+          prop="notComplianceCount"
+          label="不合规/合规资源"
+          sortable
+        >
           <template #default="scope">
             <div
               @click="details(scope.row)"
@@ -194,7 +198,8 @@ import ruleApi from "@/api/rule";
 import scan_job_status_icon from "@/views/scan/complonents/compliance_rule/ScanJobStatusIcon.vue";
 import job_details_view from "@/views/scan/complonents/compliance_rule/JobDetailsView.vue";
 import type { KeyValue } from "@commons/api/base/type";
-import type { ComplianceScanResponse } from "@/api/compliance_scan/type";
+import type { ComplianceScanResultResponse } from "@/api/compliance_scan_result/type";
+import complianceScanResultApi from "@/api/compliance_scan_result";
 import { onMounted, ref, watch, onBeforeUnmount } from "vue";
 import complianceScanApi from "@/api/compliance_scan";
 import { platformIcon } from "@commons/utils/platform";
@@ -266,7 +271,7 @@ onBeforeUnmount(() => {
 });
 const accountJobRecordList = ref<Array<AccountJobRecord>>([]);
 // 列表数据
-const tableData = ref<Array<ComplianceScanResponse>>([]);
+const tableData = ref<Array<ComplianceScanResultResponse>>([]);
 // 选中的合规规则组id
 const activeComplianceRuleGroupId = ref<string>("");
 // 选中的云账号
@@ -287,7 +292,7 @@ const jobDetailsRef = ref<InstanceType<typeof job_details_view>>();
  * 路由到详情页面
  * @param row 当前行数据
  */
-const details = (row: ComplianceScanResponse) => {
+const details = (row: ComplianceScanResultResponse) => {
   router.push({
     name: "details",
     params: {
@@ -378,8 +383,8 @@ const openDetailsJobView = (row: AccountJobRecord) => {
  */
 const search = (condition: TableSearch) => {
   const params = TableSearch.toSearchParams(condition);
-  complianceScanApi
-    .pageScanComplianceRule(
+  complianceScanResultApi
+    .page(
       tableConfig.value.paginationConfig.currentPage,
       tableConfig.value.paginationConfig.pageSize,
       {
@@ -428,7 +433,7 @@ const tableConfig = ref<TableConfig>({
 .compliance_rule_wapper {
   display: flex;
   margin-top: 10px;
-  height: 600px;
+  height: 700px;
   width: 100%;
 
   .left_wapper {

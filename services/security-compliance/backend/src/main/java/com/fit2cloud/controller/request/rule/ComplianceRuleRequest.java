@@ -4,7 +4,7 @@ import com.fit2cloud.common.validator.annnotaion.CustomValidated;
 import com.fit2cloud.common.validator.group.ValidationGroup;
 import com.fit2cloud.common.validator.handler.ExistHandler;
 import com.fit2cloud.dao.constants.RiskLevel;
-import com.fit2cloud.dao.jentity.Rule;
+import com.fit2cloud.dao.jentity.Rules;
 import com.fit2cloud.dao.mapper.ComplianceRuleGroupMapper;
 import com.fit2cloud.dao.mapper.ComplianceRuleMapper;
 import io.swagger.annotations.ApiModelProperty;
@@ -53,8 +53,7 @@ public class ComplianceRuleRequest {
 
     @ApiModelProperty(value = "规则条件", notes = "规则条件")
     @NotNull(message = "规则组不能为空", groups = ValidationGroup.SAVE.class)
-    @Size(message = "规则组长度最小为1", min = 1, groups = ValidationGroup.SAVE.class)
-    private List<Rule> rules;
+    private Rules rules;
 
     @ApiModelProperty(value = "风险等级", notes = "风险等级")
     @NotNull(message = "风险等级不能为空", groups = ValidationGroup.SAVE.class)

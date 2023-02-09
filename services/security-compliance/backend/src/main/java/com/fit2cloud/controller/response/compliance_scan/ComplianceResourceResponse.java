@@ -1,7 +1,6 @@
 package com.fit2cloud.controller.response.compliance_scan;
 
-import com.fit2cloud.constants.ResourceTypeConstants;
-import com.fit2cloud.constants.ComplianceStatus;
+import com.fit2cloud.dao.constants.ComplianceStatus;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 

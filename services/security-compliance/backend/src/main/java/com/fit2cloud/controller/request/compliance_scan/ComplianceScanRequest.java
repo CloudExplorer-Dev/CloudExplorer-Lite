@@ -3,12 +3,8 @@ package com.fit2cloud.controller.request.compliance_scan;
 import com.fit2cloud.common.query.annotaion.Query;
 import com.fit2cloud.common.utils.QueryUtil;
 import com.fit2cloud.request.pub.OrderRequest;
-import com.fit2cloud.request.pub.PageOrderRequestInterface;
-import com.fit2cloud.request.pub.PageRequest;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
-
-import javax.annotation.Resource;
 
 /**
  * {@code @Author:张少虎}

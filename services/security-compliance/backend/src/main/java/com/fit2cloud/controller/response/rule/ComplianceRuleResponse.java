@@ -6,14 +6,11 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.fasterxml.jackson.datatype.jsr310.deser.LocalDateTimeDeserializer;
 import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateTimeSerializer;
 import com.fit2cloud.dao.constants.RiskLevel;
-import com.fit2cloud.dao.entity.ComplianceInsuranceStatute;
-import com.fit2cloud.dao.jentity.Rule;
-import io.swagger.annotations.Api;
+import com.fit2cloud.dao.jentity.Rules;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
 import java.time.LocalDateTime;
-import java.util.List;
 
 /**
  * {@code @Author:张少虎}
@@ -43,7 +40,7 @@ public class ComplianceRuleResponse {
     private String resourceType;
 
     @ApiModelProperty(value = "规则条件", notes = "规则条件")
-    private List<Rule> rules;
+    private Rules rules;
 
     @ApiModelProperty(value = "风险等级", notes = "风险等级")
     private RiskLevel riskLevel;

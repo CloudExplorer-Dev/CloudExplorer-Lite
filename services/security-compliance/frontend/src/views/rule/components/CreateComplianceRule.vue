@@ -176,7 +176,7 @@ const createComplianceRuleForm = ref<SaveComplianceRuleRequest>({
   ruleGroupId: "",
   platform: "",
   resourceType: "",
-  rules: [],
+  rules: { conditionType: "AND", rules: [], scanRule: "COMPLIANCE" },
   riskLevel: "LOW",
   insuranceStatuteIds: [],
   description: "",
@@ -220,9 +220,7 @@ const createComplianceRuleFormRules = ref<FormRules>({
   rules: [
     {
       required: true,
-      min: 1,
       message: "规则条件不能为空",
-      type: "array",
     },
   ],
   insuranceStatuteIds: [
@@ -285,7 +283,11 @@ const supportResourceTypeList = computed(() => {
 watch(
   () => createComplianceRuleForm.value.platform,
   () => {
-    createComplianceRuleForm.value.rules = [];
+    createComplianceRuleForm.value.rules = {
+      conditionType: "AND",
+      rules: [],
+      scanRule: "COMPLIANCE",
+    };
     createComplianceRuleForm.value.resourceType = "";
   }
 );

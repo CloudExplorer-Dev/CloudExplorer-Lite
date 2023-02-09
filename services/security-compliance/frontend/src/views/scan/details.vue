@@ -86,6 +86,7 @@
             column-key="complianceStatus"
             prop="complianceStatus"
             label="检测状态"
+            :filter-multiple="false"
             :filters="[
               { text: '合规', value: 'COMPLIANCE' },
               { text: '不合规', value: 'NOT_COMPLIANCE' },

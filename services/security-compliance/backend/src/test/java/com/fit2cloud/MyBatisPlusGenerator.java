@@ -27,7 +27,7 @@ public class MyBatisPlusGenerator {
     /**
      * 传入需要生成代码的表名
      */
-    private static final List<String> TABLES = Arrays.asList("compliance_rule_insurance_statute_mapping");
+    private static final List<String> TABLES = Arrays.asList("compliance_scan_result");
 
     private static final Map<String, Object> CUSTOM_MAP = new HashMap<>();
 
@@ -36,6 +36,10 @@ public class MyBatisPlusGenerator {
         //指定需要生成enum的字段（Enum类需要自己生成）
         map.put("compliance_rule", convert(Arrays.asList(
                 new EnumCreator().setEnumField("risk_level").setEnumClassName("RiskLevel").setEnumClass("com.fit2cloud.dao.constants.RiskLevel")
+        )));
+        map.put("compliance_scan_result", convert(Arrays.asList(
+                new EnumCreator().setEnumField("resource_type").setEnumClassName("ResourceType").setEnumClass("com.fit2cloud.dao.constants.ResourceType"),
+                new EnumCreator().setEnumField("status").setEnumClassName("ComplianceStatus").setEnumClass("com.fit2cloud.dao.constants.ComplianceStatus")
         )));
 
         CUSTOM_MAP.put("useEnum", true);

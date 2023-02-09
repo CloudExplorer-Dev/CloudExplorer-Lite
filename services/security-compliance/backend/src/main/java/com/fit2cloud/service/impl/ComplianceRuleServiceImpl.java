@@ -1,9 +1,7 @@
 package com.fit2cloud.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.Wrapper;
-import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
-import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.core.metadata.OrderItem;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -19,12 +17,13 @@ import com.fit2cloud.controller.request.rule.PageComplianceRuleRequest;
 import com.fit2cloud.controller.response.rule.ComplianceRuleResponse;
 import com.fit2cloud.controller.response.rule.ComplianceRuleSearchFieldResponse;
 import com.fit2cloud.dao.constants.RiskLevel;
-import com.fit2cloud.dao.entity.ComplianceInsuranceStatute;
 import com.fit2cloud.dao.entity.ComplianceRule;
 import com.fit2cloud.dao.entity.ComplianceRuleGroup;
 import com.fit2cloud.dao.mapper.ComplianceRuleMapper;
 import com.fit2cloud.provider.ICloudProvider;
-import com.fit2cloud.service.*;
+import com.fit2cloud.service.IComplianceRuleInsuranceStatuteMappingService;
+import com.fit2cloud.service.IComplianceRuleService;
+import com.fit2cloud.service.IComplianceScanService;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.keyvalue.DefaultKeyValue;
 import org.apache.commons.lang3.StringUtils;
@@ -33,7 +32,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
@@ -49,8 +47,6 @@ import java.util.Objects;
 @Service
 public class ComplianceRuleServiceImpl extends ServiceImpl<ComplianceRuleMapper, ComplianceRule> implements IComplianceRuleService {
 
-    @Resource
-    private IComplianceRuleGroupService complianceRuleGroupService;
     @Resource
     private IComplianceRuleInsuranceStatuteMappingService complianceRuleInsuranceStatuteMappingService;
 
@@ -80,6 +76,8 @@ public class ComplianceRuleServiceImpl extends ServiceImpl<ComplianceRuleMapper,
         complianceRuleInsuranceStatuteMappingService.save(complianceRule.getId(), complianceRuleRequest.getInsuranceStatuteIds());
         ComplianceRuleResponse complianceRuleResponse = new ComplianceRuleResponse();
         BeanUtils.copyProperties(complianceRule, complianceRuleResponse);
+        // todo 更新mysql数据
+        SpringUtil.getBean(IComplianceScanService.class).scanComplianceOrSave(complianceRule);
         return complianceRuleResponse;
     }
 
@@ -94,7 +92,7 @@ public class ComplianceRuleServiceImpl extends ServiceImpl<ComplianceRuleMapper,
                 .like(StringUtils.isNotEmpty(request.getName()), ColumnNameUtil.getColumnName(ComplianceRule::getName, "cr"), request.getName())
                 .eq(StringUtils.isNotEmpty(request.getPlatform()), ColumnNameUtil.getColumnName(ComplianceRule::getPlatform, "cr"), request.getPlatform())
                 .like(StringUtils.isNotEmpty(request.getDescription()), ColumnNameUtil.getColumnName(ComplianceRule::getDescription, "cr"), request.getDescription())
-                .eq(StringUtils.isNotEmpty(request.getRiskLevel()), ColumnNameUtil.getColumnName(ComplianceRule::getRiskLevel, "cr"), StringUtils.isNotEmpty(request.getRiskLevel())? RiskLevel.valueOf(request.getRiskLevel()):null)
+                .eq(StringUtils.isNotEmpty(request.getRiskLevel()), ColumnNameUtil.getColumnName(ComplianceRule::getRiskLevel, "cr"), StringUtils.isNotEmpty(request.getRiskLevel()) ? RiskLevel.valueOf(request.getRiskLevel()) : null)
                 .like(StringUtils.isNotEmpty(request.getRuleGroupName()), ColumnNameUtil.getColumnName(ComplianceRuleGroup::getName, "crg"), request.getRuleGroupName())
                 .eq(StringUtils.isNotEmpty(request.getResourceType()), ColumnNameUtil.getColumnName(ComplianceRule::getResourceType, "cr"), request.getResourceType())
                 .eq(StringUtils.isNotEmpty(request.getRuleGroupId()), ColumnNameUtil.getColumnName(ComplianceRule::getRuleGroupId, "cr"), request.getRuleGroupId())
@@ -116,8 +114,8 @@ public class ComplianceRuleServiceImpl extends ServiceImpl<ComplianceRuleMapper,
         }
         ComplianceRuleResponse complianceRuleResponse = new ComplianceRuleResponse();
         BeanUtils.copyProperties(complianceRule, complianceRuleResponse);
-        // todo 更新缓存
-        SpringUtil.getBean(IComplianceScanService.class).updateCacheScanComplianceByRuleId(complianceRuleRequest.getId());
+        // todo 更新mysql数据
+        SpringUtil.getBean(IComplianceScanService.class).scanComplianceOrSave(complianceRuleRequest.getId());
         return complianceRuleResponse;
     }
 }

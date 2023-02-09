@@ -1,54 +1,37 @@
 package com.fit2cloud.service.impl;
 
 import co.elastic.clients.elasticsearch.ElasticsearchClient;
-import co.elastic.clients.elasticsearch._types.mapping.*;
+import co.elastic.clients.elasticsearch._types.mapping.NestedProperty;
+import co.elastic.clients.elasticsearch._types.mapping.Property;
 import co.elastic.clients.elasticsearch._types.query_dsl.BoolQuery;
 import co.elastic.clients.elasticsearch._types.query_dsl.Query;
 import co.elastic.clients.elasticsearch._types.query_dsl.TermQuery;
 import co.elastic.clients.elasticsearch.core.DeleteByQueryRequest;
-import co.elastic.clients.elasticsearch.indices.GetFieldMappingRequest;
-import co.elastic.clients.elasticsearch.indices.GetFieldMappingResponse;
-import co.elastic.clients.elasticsearch.indices.GetMappingResponse;
-import co.elastic.clients.elasticsearch.indices.get_mapping.IndexMappingRecord;
-import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.fit2cloud.base.entity.CloudAccount;
 import com.fit2cloud.base.entity.JobRecord;
 import com.fit2cloud.base.entity.JobRecordResourceMapping;
-import com.fit2cloud.base.mapper.BaseJobRecordMapper;
-import com.fit2cloud.base.mapper.BaseJobRecordResourceMappingMapper;
 import com.fit2cloud.base.service.IBaseCloudAccountService;
 import com.fit2cloud.base.service.IBaseJobRecordResourceMappingService;
-import com.fit2cloud.base.service.IBaseJobRecordService;
-import com.fit2cloud.base.service.impl.BaseJobRecordResourceMappingServiceImpl;
 import com.fit2cloud.common.constants.JobStatusConstants;
 import com.fit2cloud.common.constants.JobTypeConstants;
 import com.fit2cloud.common.job_record.JobLink;
 import com.fit2cloud.common.job_record.JobLinkTypeConstants;
 import com.fit2cloud.common.job_record.JobRecordParam;
-import com.fit2cloud.common.platform.credential.Credential;
 import com.fit2cloud.common.provider.exception.SkipPageException;
 import com.fit2cloud.common.provider.util.CommonUtil;
 import com.fit2cloud.common.utils.JsonUtil;
 import com.fit2cloud.constants.ResourceTypeConstants;
 import com.fit2cloud.constants.SyncDimensionConstants;
 import com.fit2cloud.dao.entity.ComplianceRule;
+import com.fit2cloud.dao.entity.ComplianceScanResult;
 import com.fit2cloud.es.entity.ResourceInstance;
 import com.fit2cloud.provider.ICloudProvider;
-import com.fit2cloud.request.cloud_account.CloudAccountJobItem;
 import com.fit2cloud.service.*;
-import com.vmware.vim25.ComplianceFailure;
 import io.reactivex.rxjava3.functions.Action;
-import io.reactivex.rxjava3.functions.BiConsumer;
 import lombok.SneakyThrows;
-import org.apache.commons.collections4.MapUtils;
-import org.apache.commons.collections4.keyvalue.DefaultKeyValue;
-import org.apache.commons.lang3.StringUtils;
-import org.apache.logging.log4j.core.util.NameUtil;
-import org.elasticsearch.http.HttpStats;
 import org.redisson.api.RLock;
 import org.springframework.data.elasticsearch.annotations.Document;
-import org.springframework.data.elasticsearch.annotations.DynamicTemplates;
 import org.springframework.data.elasticsearch.client.elc.ElasticsearchTemplate;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -60,8 +43,6 @@ import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
-import java.util.function.Consumer;
-import java.util.stream.Stream;
 
 /**
  * {@code @Author:张少虎}
@@ -85,6 +66,8 @@ public class SyncServiceImpl extends BaseSyncService implements ISyncService {
     private IBaseJobRecordResourceMappingService jobRecordResourceMappingService;
     @Resource
     private ThreadPoolExecutor workThreadPool;
+    @Resource
+    private IComplianceScanResultService complianceScanResultService;
 
     @SneakyThrows
     @Override
@@ -124,10 +107,9 @@ public class SyncServiceImpl extends BaseSyncService implements ISyncService {
             }
         }
         // todo 插入数据
-        proxyJob(jobRecord, new JobLink("插入数据", JobLinkTypeConstants.SYSTEM_SAVE_DATA), () -> saveOrUpdateData(cloudAccountId, instanceType, resourceInstancesAll), null);
+        proxyJob(jobRecord, new JobLink("插入原始数据", JobLinkTypeConstants.SYSTEM_SAVE_DATA), () -> saveOrUpdateData(cloudAccountId, instanceType, resourceInstancesAll), null);
         // todo 更新缓存
-        proxyJob(jobRecord, new JobLink("更新缓存数据", JobLinkTypeConstants.SYSTEM_SAVE_DATA), () ->
-                complianceScanService.updateCacheScanComplianceByInstanceType(instanceType), null);
+        proxyJob(jobRecord, new JobLink("扫描合规资源", JobLinkTypeConstants.SYSTEM_SAVE_DATA), () -> scan(instanceType), null);
         // todo 更新扫描时间
         proxyJob(jobRecord, new JobLink("更新扫描时间", JobLinkTypeConstants.SYSTEM_SAVE_DATA), () ->
                         complianceRuleService.update(new LambdaUpdateWrapper<ComplianceRule>().eq(ComplianceRule::getResourceType, instanceType.name()).set(ComplianceRule::getUpdateTime, syncTime))
@@ -138,6 +120,17 @@ public class SyncServiceImpl extends BaseSyncService implements ISyncService {
         updateJobRecord(jobRecord, JobRecordParam.success(new JobLink("任务执行结束", JobLinkTypeConstants.JOB_END), null));
     }
 
+
+    /**
+     * 扫描原始资源
+     *
+     * @param instanceType 实例类型
+     */
+    private void scan(ResourceTypeConstants instanceType) {
+        // todo 扫描到实例类型
+        List<ComplianceScanResult> complianceScanResults = complianceScanService.scanCompliance(instanceType);
+        complianceScanResultService.saveOrUpdate(complianceScanResults);
+    }
 
     /**
      * 插入或者更新数据

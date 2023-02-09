@@ -7,6 +7,7 @@ import com.fit2cloud.common.utils.ColumnNameUtil;
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.List;
+import java.util.Objects;
 
 /**
  * {@code @Author:张少虎}
@@ -28,7 +29,32 @@ public class PageImpl<T> extends Page<T> {
     public PageImpl(long current, long size, long total, boolean searchCount, Class<T> recordClazz, OrderItem orderItem, boolean appendTableName) {
         super(current, size, total, searchCount);
         String column = ColumnNameUtil.getColumnName(orderItem.getColumn(), recordClazz, appendTableName);
-        orderItem.setColumn(column);
+        if (Objects.nonNull(column)) {
+            orderItem.setColumn(column);
+        }
+
+        setOrders(List.of(orderItem));
+    }
+
+
+    /**
+     * @param current         当前页
+     * @param size            每页条数
+     * @param total           total
+     * @param searchCount     是否Count total
+     * @param orderFieldClass 用于处理排序对象
+     * @param orderItem       排序对象
+     * @param appendTableName 是否给排序对象添加表名
+     */
+    public PageImpl(long current, long size, long total, boolean searchCount, List<Class<T>> orderFieldClass, OrderItem orderItem, boolean appendTableName) {
+        super(current, size, total, searchCount);
+        for (Class<T> clazz : orderFieldClass) {
+            String column = ColumnNameUtil.getColumnName(orderItem.getColumn(), clazz, appendTableName);
+            if (Objects.nonNull(column)) {
+                orderItem.setColumn(column);
+                break;
+            }
+        }
         setOrders(List.of(orderItem));
     }
 
@@ -71,6 +97,18 @@ public class PageImpl<T> extends Page<T> {
      */
     public static <T> Page<T> of(long current, long size, Class<T> recordClazz, OrderItem orderItem, boolean appendTableName) {
         return new PageImpl<>(current, size, 0L, true, recordClazz, orderItem, appendTableName);
+    }
+
+    /**
+     * @param current         当前页
+     * @param size            每页条数
+     * @param orderFieldClass 用于处理排序field的class
+     * @param orderItem       排序对象
+     * @param appendTableName 是否给排序对象添加表名
+     * @return 分页对象
+     */
+    public static <T> Page<T> of(long current, long size, List<Class<?>> orderFieldClass, OrderItem orderItem, boolean appendTableName) {
+        return new PageImpl(current, size, 0L, true, orderFieldClass, orderItem, appendTableName);
     }
 
     /**

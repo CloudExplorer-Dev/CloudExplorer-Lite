@@ -2,10 +2,9 @@ package com.fit2cloud.controller.request.compliance_scan;
 
 import com.fit2cloud.common.query.annotaion.Query;
 import com.fit2cloud.common.utils.QueryUtil;
+import com.fit2cloud.dao.constants.ComplianceStatus;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
-
-import java.util.List;
 
 /**
  * {@code @Author:张少虎}
@@ -22,7 +21,7 @@ public class ComplianceResourceRequest {
     @Query(field = "cloudAccountId", compareType = QueryUtil.CompareType.EQ)
     private String cloudAccountId;
     @ApiModelProperty(value = "合规状态", example = "COMPLIANCE:合规,NOT_COMPLIANCE:不合规")
-    private List<String> complianceStatus;
+    private ComplianceStatus complianceStatus;
     @ApiModelProperty(value = "资源名称")
     @Query(field = "resourceName", compareType = QueryUtil.CompareType.LIKE)
     private String resourceName;

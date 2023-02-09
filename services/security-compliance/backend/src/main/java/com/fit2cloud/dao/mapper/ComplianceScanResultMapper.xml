@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.fit2cloud.dao.mapper.ComplianceScanResultMapper">
+    <resultMap id="ComplianceScanResponseMap"
+               type="com.fit2cloud.controller.response.compliance_scan_result.ComplianceScanResultResponse">
+        <id column="id" property="id"/>
+        <result column="name" property="name"/>
+        <result column="name" property="name"/>
+        <result column="platform" property="platform"/>
+        <result column="platform" property="platform"/>
+        <result column="risk_level" property="riskLevel"/>
+        <result column="scan_status" property="scanStatus"/>
+        <result column="compliance_count" property="complianceCount"/>
+        <result column="not_compliance_count" property="notComplianceCount"/>
+        <result column="update_time" property="updateTime"/>
+    </resultMap>
+    <select id="page" resultMap="ComplianceScanResponseMap">
+        SELECT
+            compliance_rule.*,
+            IFNULL(compliance_scan_result.compliance_count, 0) AS compliance_count,
+            IFNULL(compliance_scan_result.not_compliance_count,0) AS not_compliance_count,
+            IFNULL(compliance_scan_result.`scan_status`,1) as scan_status
+        FROM
+            compliance_rule compliance_rule
+                LEFT JOIN (
+                SELECT
+                    resource_id,
+                    SUM(compliance_count) AS compliance_count,
+                    SUM(not_compliance_count) AS not_compliance_count,
+                    SUM(resource_count) AS resource_count,
+                    IF(FIND_IN_SET(2,GROUP_CONCAT(`status`)),2,1) as `scan_status`,
+                    GROUP_CONCAT(cloud_account_id) as cloud_account_id
+                FROM
+                    compliance_scan_result
+                <where>
+                    <if test="cloudAccountId != null">
+                        cloud_account_id=#{cloudAccountId}
+                    </if>
+                </where>
+                GROUP BY
+                    resource_id
+            ) compliance_scan_result ON compliance_scan_result.resource_id = compliance_rule.id
+            ${ew.customSqlSegment}
+    </select>
+
+    <select id="list" resultMap="ComplianceScanResponseMap">
+        SELECT
+            compliance_rule.*,
+            IFNULL(compliance_scan_result.compliance_count, 0) AS compliance_count,
+            IFNULL(compliance_scan_result.not_compliance_count,0) AS not_compliance_count,
+            IFNULL(compliance_scan_result.`scan_status`,1) as scan_status
+        FROM
+            compliance_rule compliance_rule
+                LEFT JOIN (
+                SELECT
+                    resource_id,
+                    SUM(compliance_count) AS compliance_count,
+                    SUM(not_compliance_count) AS not_compliance_count,
+                    SUM(resource_count) AS resource_count,
+                    IF(FIND_IN_SET(2,GROUP_CONCAT(`status`)),2,1) as `scan_status`,
+                    GROUP_CONCAT(cloud_account_id) as cloud_account_id
+                FROM
+                    compliance_scan_result
+                <where>
+                    <if test="cloudAccountId != null">
+                        cloud_account_id=#{cloudAccountId}
+                    </if>
+                </where>
+                GROUP BY
+                    resource_id
+            ) compliance_scan_result ON compliance_scan_result.resource_id = compliance_rule.id
+            ${ew.customSqlSegment}
+    </select>
+</mapper>
