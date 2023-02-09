@@ -293,7 +293,6 @@ const getSpreadData = (spreadType: string) => {
         spreadByAccountOption.value = options;
       }
       if (spreadType === "byStatus") {
-        debugger;
         spreadByStatusOption.value = options;
       }
       if (spreadType === "byChargeType") {

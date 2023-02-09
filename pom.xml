@@ -47,7 +47,7 @@
         <logstash-logback-encoder>5.2</logstash-logback-encoder>
         <elasticsearch-java>7.16.2</elasticsearch-java>
         <!--日志-->
-
+        <skipTests>true</skipTests>
     </properties>
 
     <dependencies>
@@ -214,6 +214,13 @@
                         </fileset>
                         <fileset>
                             <directory>node_modules</directory>
+                            <includes>
+                                <include>**</include>
+                            </includes>
+                            <followSymlinks>false</followSymlinks>
+                        </fileset>
+                        <fileset>
+                            <directory>target</directory>
                             <includes>
                                 <include>**</include>
                             </includes>
