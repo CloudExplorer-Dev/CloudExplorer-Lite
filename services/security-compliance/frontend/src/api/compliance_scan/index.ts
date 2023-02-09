@@ -3,11 +3,11 @@ import type { Ref } from "vue";
 import type Result from "@commons/request/Result";
 import type { Page } from "@commons/request/Result";
 import type {
-  ScanComplianceRuleGroupResponse,
   ComplianceResourceResponse,
   SyncScanResourceRequest,
   SupportCloudAccountResourceResponse,
   SupportPlatformResourceResponse,
+  ComplianceResourceRequest,
 } from "@/api/compliance_scan/type";
 import type { AccountJobRecord } from "@commons/api/cloud_account/type";
 
@@ -24,7 +24,7 @@ const pageResource: (
   currentPage: number,
   pageSize: number,
   complianceRuleId: string,
-  complianceScanRequest: ComplianceScanRequest,
+  complianceScanRequest: ComplianceResourceRequest,
   loading?: Ref<boolean>
 ) => Promise<Result<Page<ComplianceResourceResponse>>> = (
   currentPage,

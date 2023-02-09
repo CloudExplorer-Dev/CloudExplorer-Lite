@@ -48,6 +48,14 @@ interface ComplianceResourceRequest {
    * 云账号id
    */
   cloudAccountId?: string;
+  /**
+   * 扫描状态
+   */
+  complianceStatus?: string;
+  /**
+   * 资源名称
+   */
+  resourceName?: string;
 }
 interface CloudAccountResource {
   /**
@@ -87,6 +95,7 @@ interface SupportPlatformResourceResponse {
    */
   resourceTypes: Array<KeyValue<string, string>>;
 }
+
 export type {
   ComplianceResourceResponse,
   ComplianceResourceRequest,
