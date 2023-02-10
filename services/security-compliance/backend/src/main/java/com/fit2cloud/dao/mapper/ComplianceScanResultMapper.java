@@ -4,6 +4,8 @@ import com.baomidou.mybatisplus.core.conditions.Wrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.core.toolkit.Constants;
 import com.fit2cloud.controller.response.compliance_scan_result.ComplianceScanResultResponse;
+import com.fit2cloud.dao.entity.ComplianceCount;
+import com.fit2cloud.dao.entity.ComplianceGroup;
 import com.fit2cloud.dao.entity.ComplianceScanResult;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import org.apache.ibatis.annotations.Param;
@@ -36,4 +38,8 @@ public interface ComplianceScanResultMapper extends BaseMapper<ComplianceScanRes
      * @return 扫描结果对象
      */
     IPage<ComplianceScanResultResponse> page(IPage<ComplianceScanResultResponse> page, @Param(Constants.WRAPPER) Wrapper<ComplianceScanResultResponse> wrapper, @Param("cloudAccountId") String cloudAccountId);
+
+    ComplianceCount count(@Param(Constants.WRAPPER) Wrapper<ComplianceScanResult> wrapper);
+
+    List<ComplianceGroup> group(@Param("groupType") String groupType, @Param(Constants.WRAPPER) Wrapper<ComplianceScanResult> wrapper);
 }

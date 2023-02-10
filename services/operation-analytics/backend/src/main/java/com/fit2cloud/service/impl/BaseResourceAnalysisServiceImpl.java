@@ -278,6 +278,7 @@ public class BaseResourceAnalysisServiceImpl implements IBaseResourceAnalysisSer
         result.put("host", hostSpread.entrySet().stream().map(c -> new KeyValue(StringUtils.isEmpty(accountMap.get(c.getKey()).getName()) ? c.getKey() : accountMap.get(c.getKey()).getName(), c.getValue()) {
         }).collect(Collectors.toList()));
         List<VmCloudDatastore> datastoreList = getVmCloudDatastore(request);
+        datastoreList = datastoreList.stream().filter(v -> !CollectionUtils.isNotEmpty(request.getDatastoreIds()) || request.getDatastoreIds().contains(v.getId())).collect(Collectors.toList());
         // 存储器在云账号上面的分布情况
         Map<String, Long> datastoreSpread = datastoreList.stream().filter(v -> StringUtils.isNotEmpty(v.getAccountId())).collect(Collectors.groupingBy(VmCloudDatastore::getAccountId, Collectors.counting()));
         result.put("datastore", datastoreSpread.entrySet().stream().map(c -> new KeyValue(StringUtils.isEmpty(accountMap.get(c.getKey()).getName()) ? c.getKey() : accountMap.get(c.getKey()).getName(), c.getValue()) {

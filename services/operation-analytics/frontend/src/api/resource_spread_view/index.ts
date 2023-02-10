@@ -13,42 +13,42 @@ export function listAccounts(loading?: Ref<boolean>): Promise<Result<any>> {
 }
 
 export function listClusters(
-  req: ResourceAnalysisRequest | {},
+  req: ResourceAnalysisRequest,
   loading?: Ref<boolean>
 ): Promise<Result<any>> {
   return get("api/base_resource_analysis/clusters", req, loading);
 }
 
 export function listHost(
-  req: ResourceAnalysisRequest | {},
+  req: ResourceAnalysisRequest,
   loading?: Ref<boolean>
 ): Promise<Result<any>> {
   return get("api/base_resource_analysis/hosts", req, loading);
 }
 
 export function listDatastores(
-  req: ResourceAnalysisRequest | {},
+  req: ResourceAnalysisRequest,
   loading?: Ref<boolean>
 ): Promise<Result<any>> {
   return get("api/base_resource_analysis/datastores", req, loading);
 }
 
 export function getAllocatedInfo(
-  req: ResourceAnalysisRequest | {},
+  req: ResourceAnalysisRequest,
   loading?: Ref<boolean>
 ): Promise<Result<any>> {
   return get("api/base_resource_analysis/allocated_info", req, loading);
 }
 
 export function getSpreadInfo(
-  req: ResourceAnalysisRequest | {},
+  req: ResourceAnalysisRequest,
   loading?: Ref<boolean>
 ): Promise<Result<any>> {
   return get("api/base_resource_analysis/spread_info", req, loading);
 }
 
 export function getResourceTrendData(
-  req: ResourceAnalysisRequest | {},
+  req: ResourceAnalysisRequest,
   loading?: Ref<boolean>
 ): Promise<Result<any>> {
   return get("api/base_resource_analysis/resource_trend", req, loading);

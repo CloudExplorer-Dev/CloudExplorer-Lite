@@ -112,6 +112,4 @@ public class ComplianceScanResultServiceImpl extends ServiceImpl<ComplianceScanR
                 .eq(ColumnNameUtil.getColumnName(ComplianceRule::getEnable, true), true);
         return wrapper;
     }
-
-
 }

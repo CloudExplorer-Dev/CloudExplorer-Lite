@@ -1,6 +1,10 @@
 package com.fit2cloud.service.impl;
 
-import co.elastic.clients.elasticsearch._types.aggregations.CalendarInterval;
+import co.elastic.clients.elasticsearch._types.InlineScript;
+import co.elastic.clients.elasticsearch._types.Script;
+import co.elastic.clients.elasticsearch._types.SortOptions;
+import co.elastic.clients.elasticsearch._types.SortOrder;
+import co.elastic.clients.elasticsearch._types.aggregations.*;
 import co.elastic.clients.elasticsearch._types.query_dsl.BoolQuery;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
@@ -16,10 +20,7 @@ import com.fit2cloud.base.service.IBaseWorkspaceService;
 import com.fit2cloud.common.es.constants.IndexConstants;
 import com.fit2cloud.common.log.utils.LogUtil;
 import com.fit2cloud.common.provider.entity.F2CEntityType;
-import com.fit2cloud.common.utils.ColumnNameUtil;
-import com.fit2cloud.common.utils.CurrentUserUtils;
-import com.fit2cloud.common.utils.PageUtil;
-import com.fit2cloud.common.utils.QueryUtil;
+import com.fit2cloud.common.utils.*;
 import com.fit2cloud.controller.request.server.PageServerRequest;
 import com.fit2cloud.controller.request.server.ResourceAnalysisRequest;
 import com.fit2cloud.controller.response.BarTreeChartData;
@@ -38,18 +39,17 @@ import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.time.DateUtils;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Sort;
+import org.springframework.data.elasticsearch.client.elc.ElasticsearchAggregations;
 import org.springframework.data.elasticsearch.client.elc.ElasticsearchTemplate;
 import org.springframework.data.elasticsearch.client.elc.NativeQueryBuilder;
-import org.springframework.data.elasticsearch.core.SearchHit;
 import org.springframework.data.elasticsearch.core.SearchHits;
 import org.springframework.data.elasticsearch.core.mapping.IndexCoordinates;
-import org.springframework.data.elasticsearch.core.query.FetchSourceFilter;
-import org.springframework.data.elasticsearch.core.query.Order;
+import org.springframework.data.elasticsearch.core.query.Query;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.text.SimpleDateFormat;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
@@ -189,7 +189,7 @@ public class ServerAnalysisServiceImpl implements IServerAnalysisService {
                         v.setDeleteMonth(v.getLastOperateTime().format(DateTimeFormatter.ofPattern("yyyy-MM-dd")));
                     }
                 }).toList();
-                Map<String, List<AnalyticsServerDTO>> resourceGroup = new HashMap<>();
+                Map<String, List<AnalyticsServerDTO>> resourceGroup;
                 if (CollectionUtils.isNotEmpty(request.getHostIds())) {
                     resourceGroup = vmList.stream().collect(Collectors.groupingBy(ServerAnalysisServiceImpl::buildKey));
                 } else {
@@ -295,58 +295,68 @@ public class ServerAnalysisServiceImpl implements IServerAnalysisService {
      * @param list 每页查询的虚拟机数据
      */
     private void getVmPerfMetric(List<AnalyticsServerDTO> list){
-        list.forEach(vm->{
-            String findKey = vm.getAccountId()+"@"+vm.getInstanceUuid();
-            //查询虚拟机最新一次监控数据，仅有一条
-            SearchHits<PerfMetricMonitorData> cpuHits = elasticsearchTemplate.search(getVmPerfMetricQuery(vm.getInstanceUuid(),"CPU_USED_UTILIZATION"), PerfMetricMonitorData.class, IndexCoordinates.of(IndexConstants.CE_PERF_METRIC_MONITOR_DATA.getCode()));
-            if(CollectionUtils.isNotEmpty(cpuHits.getSearchHits())){
-                List<PerfMetricMonitorData> response = cpuHits.stream().map(SearchHit::getContent).toList();
-                List<PerfMetricMonitorData> result = response.stream().filter(v->StringUtils.equalsIgnoreCase(v.getCloudAccountId()+"@"+v.getInstanceId(),findKey)).collect(Collectors.toList());
-                if(CollectionUtils.isNotEmpty(result)){
-                    vm.setCpuAverage(result.get(0).getAverage());
-                    vm.setCpuMinimum(result.get(0).getMinimum());
-                    vm.setCpuMaximum(result.get(0).getMaximum());
+        List<String> instanceUuids = list.stream().map(AnalyticsServerDTO::getInstanceUuid).filter(StringUtils::isNotEmpty).toList();
+        try{
+            Query query = getVmPerfMetricQuery(instanceUuids);
+            SearchHits<Object> response = elasticsearchTemplate.search(query, Object.class, IndexCoordinates.of(IndexConstants.CE_PERF_METRIC_MONITOR_DATA.getCode()));
+            ElasticsearchAggregations aggregations = (ElasticsearchAggregations) response.getAggregations();
+            assert aggregations != null;
+            List<StringTermsBucket> lastData = aggregations.aggregations().get(0).aggregation().getAggregate().sterms().buckets().array();
+            List<PerfMetricMonitorData> metricMonitorDataList = new ArrayList<>();
+            lastData.forEach(data-> data.aggregations().get("lastData").sterms().buckets().array().forEach(m->{
+                PerfMetricMonitorData vo = JsonUtil.parseObject(Objects.requireNonNull(m.aggregations().get("top1").topHits().hits().hits().get(0).source()).toString(),PerfMetricMonitorData.class);
+                metricMonitorDataList.add(vo);
+            }));
+            list.forEach(v-> metricMonitorDataList.stream().filter(d -> StringUtils.equalsIgnoreCase(v.getInstanceUuid(),d.getInstanceId())
+                    && StringUtils.equalsIgnoreCase(v.getAccountId(),d.getCloudAccountId())).forEach(m->{
+                if(StringUtils.equalsIgnoreCase("CPU_USED_UTILIZATION",m.getMetricName())){
+                    v.setCpuAverage(m.getAverage().setScale(3, RoundingMode.HALF_UP));
+                    v.setCpuMaximum(m.getMaximum().setScale(3, RoundingMode.HALF_UP));
+                    v.setCpuMinimum(m.getMinimum().setScale(3, RoundingMode.HALF_UP));
                 }
-            }
-            SearchHits<PerfMetricMonitorData> memoryHits = elasticsearchTemplate.search(getVmPerfMetricQuery(vm.getInstanceUuid(),"MEMORY_USED_UTILIZATION"), PerfMetricMonitorData.class, IndexCoordinates.of(IndexConstants.CE_PERF_METRIC_MONITOR_DATA.getCode()));
-            if(CollectionUtils.isNotEmpty(memoryHits.getSearchHits())){
-                List<PerfMetricMonitorData> response = memoryHits.stream().map(SearchHit::getContent).toList();
-                List<PerfMetricMonitorData> result = response.stream().filter(v->StringUtils.equalsIgnoreCase(v.getCloudAccountId()+"@"+v.getInstanceId(),findKey)).collect(Collectors.toList());
-                if(CollectionUtils.isNotEmpty(result)){
-                    vm.setMemoryAverage(result.get(0).getAverage());
-                    vm.setMemoryMinimum(result.get(0).getMinimum());
-                    vm.setMemoryMaximum(result.get(0).getMaximum());
+                if(StringUtils.equalsIgnoreCase("MEMORY_USED_UTILIZATION",m.getMetricName())){
+                    v.setMemoryAverage(m.getAverage().setScale(3, RoundingMode.HALF_UP));
+                    v.setMemoryMaximum(m.getMaximum().setScale(3, RoundingMode.HALF_UP));
+                    v.setMemoryMinimum(m.getMinimum().setScale(3, RoundingMode.HALF_UP));
                 }
-            }
-            SearchHits<PerfMetricMonitorData> diskHits = elasticsearchTemplate.search(getVmPerfMetricQuery(vm.getInstanceUuid(),"DISK_USED_UTILIZATION"), PerfMetricMonitorData.class, IndexCoordinates.of(IndexConstants.CE_PERF_METRIC_MONITOR_DATA.getCode()));
-            if(CollectionUtils.isNotEmpty(diskHits.getSearchHits())){
-                List<PerfMetricMonitorData> response = diskHits.stream().map(SearchHit::getContent).toList();
-                List<PerfMetricMonitorData> result = response.stream().filter(v->StringUtils.equalsIgnoreCase(v.getCloudAccountId()+"@"+v.getInstanceId(),findKey)).collect(Collectors.toList());
-                if(CollectionUtils.isNotEmpty(result)){
-                    vm.setDiskAverage(result.get(0).getAverage());
+                if(StringUtils.equalsIgnoreCase("DISK_USED_UTILIZATION",m.getMetricName())){
+                    v.setDiskAverage(m.getAverage().setScale(3, RoundingMode.HALF_UP));
                 }
-            }
-        });
+            }));
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+
     }
 
-    private org.springframework.data.elasticsearch.core.query.Query getVmPerfMetricQuery(String instanceId,String metric) {
+    private org.springframework.data.elasticsearch.core.query.Query getVmPerfMetricQuery(List<String> instanceUuids) {
         List<QueryUtil.QueryCondition> queryConditions = new ArrayList<>();
         QueryUtil.QueryCondition entityType = new QueryUtil.QueryCondition(true, "entityType.keyword", F2CEntityType.VIRTUAL_MACHINE.toString(), QueryUtil.CompareType.EQ);
         queryConditions.add(entityType);
-        QueryUtil.QueryCondition metricName = new QueryUtil.QueryCondition(true, "metricName.keyword", metric, QueryUtil.CompareType.EQ);
-        queryConditions.add(metricName);
-        if(StringUtils.isNotEmpty(instanceId)){
-            QueryUtil.QueryCondition instanceIdQuery = new QueryUtil.QueryCondition(true, "instanceId.keyword", instanceId, QueryUtil.CompareType.EQ);
+        if(CollectionUtils.isNotEmpty(instanceUuids)){
+            QueryUtil.QueryCondition instanceIdQuery = new QueryUtil.QueryCondition(true, "instanceId.keyword", instanceUuids, QueryUtil.CompareType.IN);
             queryConditions.add(instanceIdQuery);
         }
+        QueryUtil.QueryCondition accountId = new QueryUtil.QueryCondition(true, "cloudAccountId.keyword",null, QueryUtil.CompareType.NOT_EXIST);
+        queryConditions.add(accountId);
+        QueryUtil.QueryCondition metricName = new QueryUtil.QueryCondition(true, "metricName.keyword", Arrays.asList("CPU_USED_UTILIZATION","MEMORY_USED_UTILIZATION","DISK_USED_UTILIZATION"), QueryUtil.CompareType.IN);
+        queryConditions.add(metricName);
         BoolQuery.Builder boolQuery = QueryUtil.getQuery(queryConditions);
-        NativeQueryBuilder query = new NativeQueryBuilder()
+        return new NativeQueryBuilder()
                 .withPageable(PageRequest.of(0, 1))
                 .withQuery(new co.elastic.clients.elasticsearch._types.query_dsl.Query.Builder().bool(boolQuery.build()).build())
-                .withSourceFilter(new FetchSourceFilter(new String[]{}, new String[]{"@version", "@timestamp", "host", "tags"}))
-                .withSort(Sort.by(Order.desc("timestamp")));
-        return query.build();
+                //按实例与云账号ID分组
+                .withAggregation("groupInstanceId",addAggregation())
+                .build();
     }
+
+
+    private Aggregation addAggregation(){
+        Script script = new Script.Builder().inline(new InlineScript.Builder().source("doc['instanceId.keyword'].value+'_'+doc['cloudAccountId.keyword'].value").build()).build();
+        Aggregation top1 = new Aggregation.Builder().topHits(new TopHitsAggregation.Builder().size(1).sort(SortOptions.of(s -> s.field(f -> f.field("timestamp").order(SortOrder.Desc)))).build()).build();
+        return new Aggregation.Builder().terms(new TermsAggregation.Builder().script(script).size(Integer.MAX_VALUE).build()).aggregations("lastData",new Aggregation.Builder().terms(new TermsAggregation.Builder().field("metricName.keyword").size(Integer.MAX_VALUE).build()).aggregations("top1",top1).build()).build();
+    }
+
 
     /**
      * 云主机资源使用率趋势
