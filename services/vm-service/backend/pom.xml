@@ -98,14 +98,14 @@
                     <dependency>
                         <groupId>org.springframework.boot.experimental</groupId>
                         <artifactId>spring-boot-thin-layout</artifactId>
-                        <version>1.0.29.RELEASE</version>
+                        <version>${spring-boot-thin.version}</version>
                     </dependency>
                 </dependencies>
             </plugin>
             <plugin>
                 <groupId>org.springframework.boot.experimental</groupId>
                 <artifactId>spring-boot-thin-maven-plugin</artifactId>
-                <version>1.0.29.RELEASE</version>
+                <version>${spring-boot-thin.version}</version>
                 <executions>
                     <execution>
                         <!-- Download the dependencies at build time -->

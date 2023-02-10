@@ -29,6 +29,7 @@
         <revision>4.0.0</revision>
         <java.version>17</java.version>
         <spring-cloud.version>2021.0.5</spring-cloud.version>
+        <spring-boot-thin.version>1.0.29.RELEASE</spring-boot-thin.version>
         <swagger.version>2.9.2</swagger.version>
         <skipAntRunForJenkins>false</skipAntRunForJenkins>
         <flatten.version>1.2.7</flatten.version>
