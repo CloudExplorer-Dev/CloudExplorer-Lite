@@ -119,8 +119,8 @@ public class DiskAnalysisServiceImpl implements IDiskAnalysisService {
         MPJLambdaWrapper<VmCloudDisk> wrapper = defaultDiskQuery(new MPJLambdaWrapper<>(),request.getAccountIds());
         wrapper.selectAs(CloudAccount::getName, AnalyticsDiskDTO::getAccountName);
         wrapper.selectAs(CloudAccount::getPlatform,AnalyticsDiskDTO::getPlatform);
-        wrapper.eq(VmCloudDisk::getAccountId,VmCloudServer::getAccountId);
-        wrapper.leftJoin(VmCloudServer.class,VmCloudServer::getInstanceUuid, VmCloudDisk::getInstanceUuid);
+        //wrapper.eq(VmCloudDisk::getAccountId,VmCloudServer::getAccountId);
+        //wrapper.leftJoin(VmCloudServer.class,VmCloudServer::getInstanceUuid, VmCloudDisk::getInstanceUuid);
         wrapper.in(CollectionUtils.isNotEmpty(request.getSourceIds()), VmCloudDisk::getSourceId, request.getSourceIds());
         return wrapper;
     }

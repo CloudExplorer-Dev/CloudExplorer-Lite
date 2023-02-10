@@ -9,7 +9,7 @@ import type {
 import type { Ref } from "vue";
 
 export function listDisk(
-  req: ListVmCloudDiskRequest | {},
+  req: ListVmCloudDiskRequest,
   loading?: Ref<boolean>
 ): Promise<Result<Page<VmCloudDiskVO>>> {
   return get("api/disk_analysis/disk/page", req, loading);
@@ -24,26 +24,26 @@ export function listAccounts(loading?: Ref<boolean>): Promise<Result<any>> {
 }
 
 export function getSpreadData(
-  req: ResourceAnalysisRequest | {},
+  req: ResourceAnalysisRequest,
   loading?: Ref<boolean>
 ): Promise<Result<any>> {
   return get("api/disk_analysis/spread", req, loading);
 }
 
 export function getIncreaseTrend(
-  req: ResourceAnalysisRequest | {},
+  req: ResourceAnalysisRequest,
   loading?: Ref<boolean>
 ): Promise<Result<any>> {
   return get("api/disk_analysis/increase_trend", req, loading);
 }
 export function getAnalyticsOrgDiskCount(
-  req: ResourceAnalysisRequest | {},
+  req: ResourceAnalysisRequest,
   loading?: Ref<boolean>
 ): Promise<Result<any>> {
   return get("api/disk_analysis/org_workspace_disk_count_bar", req, loading);
 }
 export function getAnalyticsWorkspaceDiskCount(
-  req: ResourceAnalysisRequest | {},
+  req: ResourceAnalysisRequest,
   loading?: Ref<boolean>
 ): Promise<Result<any>> {
   return get("api/disk_analysis/org_workspace_disk_count_bar", req, loading);

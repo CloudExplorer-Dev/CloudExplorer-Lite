@@ -1,4 +1,6 @@
-interface VmCloudHostVO {}
+interface VmCloudHostVO {
+  id: string;
+}
 
 interface ListVmCloudHostRequest {
   pageSize: number;

@@ -22,7 +22,9 @@ export class ResourceAnalysisRequest {
   }
 }
 
-interface VmCloudDiskVO {}
+interface VmCloudDiskVO {
+  id: string;
+}
 
 interface ListVmCloudDiskRequest {
   pageSize: number;

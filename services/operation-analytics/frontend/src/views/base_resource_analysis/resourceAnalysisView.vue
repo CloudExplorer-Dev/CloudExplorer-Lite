@@ -534,8 +534,8 @@ const getResourceTrendData = (chartName: string) => {
 const getTrendPieOptions = (options: any) => {
   let legend: any[] = [],
     series: any = {},
-    xAxis: any[] = [],
-    seriesData: any[] = [];
+    xAxis: any[] = [];
+  const seriesData: any[] = [];
   if (!trendInfo.value && trendInfo.value.length === 0) {
     return emptyOptions;
   }
@@ -583,8 +583,8 @@ const getTrendPieOptions = (options: any) => {
 const getTrendOptions = (options: any) => {
   let legend: any[] = [],
     series: any = {},
-    xAxis: any[] = [],
-    seriesData: any[] = [];
+    xAxis: any[] = [];
+  const seriesData: any[] = [];
   if (!trendInfo.value && trendInfo.value.length === 0) {
     return emptyOptions;
   }

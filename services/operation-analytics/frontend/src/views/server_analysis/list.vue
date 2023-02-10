@@ -17,6 +17,5 @@ import { onMounted, ref } from "vue";
 import ServerList from "./serverList.vue";
 import ResourceSpreadView from "./resourceAnalysisView.vue";
 const activeName = ref("resourceSpread");
-onMounted(() => {});
 </script>
 <style lang="scss" scoped></style>

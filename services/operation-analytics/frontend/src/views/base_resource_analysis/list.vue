@@ -29,6 +29,5 @@ import HostList from "./hostList.vue";
 import StorageList from "./storageList.vue";
 import ResourceAnalysisView from "./resourceAnalysisView.vue";
 const activeName = ref("resourceSpread");
-onMounted(() => {});
 </script>
 <style lang="scss" scoped></style>

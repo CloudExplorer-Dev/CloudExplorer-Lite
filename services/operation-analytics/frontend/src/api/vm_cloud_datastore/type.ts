@@ -1,4 +1,6 @@
-interface VmCloudDatastoreVO {}
+interface VmCloudDatastoreVO {
+  id: string;
+}
 
 interface ListVmCloudDatastoreRequest {
   pageSize: number;
