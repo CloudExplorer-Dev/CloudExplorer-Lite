@@ -9,7 +9,7 @@ import type {
 import type { Ref } from "vue";
 
 export function listServer(
-  req: ListVmCloudServerRequest | {},
+  req: ListVmCloudServerRequest,
   loading?: Ref<boolean>
 ): Promise<Result<Page<VmCloudServerVO>>> {
   return get("api/server_analysis/server/page", req, loading);
@@ -24,33 +24,33 @@ export function listAccounts(loading?: Ref<boolean>): Promise<Result<any>> {
 }
 
 export function listHost(
-  req: ResourceAnalysisRequest | {},
+  req: ResourceAnalysisRequest,
   loading?: Ref<boolean>
 ): Promise<Result<any>> {
   return get("api/server_analysis/hosts", req, loading);
 }
 
 export function getSpreadData(
-  req: ResourceAnalysisRequest | {},
+  req: ResourceAnalysisRequest,
   loading?: Ref<boolean>
 ): Promise<Result<any>> {
   return get("api/server_analysis/spread", req, loading);
 }
 
 export function getIncreaseTrend(
-  req: ResourceAnalysisRequest | {},
+  req: ResourceAnalysisRequest,
   loading?: Ref<boolean>
 ): Promise<Result<any>> {
   return get("api/server_analysis/increase_trend", req, loading);
 }
 export function getResourceTrendData(
-  req: ResourceAnalysisRequest | {},
+  req: ResourceAnalysisRequest,
   loading?: Ref<boolean>
 ): Promise<Result<any>> {
   return get("api/server_analysis/resource_used_trend", req, loading);
 }
 export function getAnalyticsOrgWorkspaceVmCount(
-  req: ResourceAnalysisRequest | {},
+  req: ResourceAnalysisRequest,
   loading?: Ref<boolean>
 ): Promise<Result<any>> {
   return get("api/server_analysis/org_workspace_vm_count_bar", req, loading);

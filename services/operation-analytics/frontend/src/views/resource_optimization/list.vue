@@ -1,9 +1,13 @@
 <template>
   <div class="header">
     <el-row :gutter="12">
-      <el-col :span="6" v-for="o in optimizeSuggests" key="o.code">
+      <el-col :span="6" v-for="o in optimizeSuggests" :key="o.code">
         <el-card :body-style="{ padding: '0px' }" shadow="hover">
-          <div class="boxCenter">
+          <div
+            class="boxCenter"
+            style="cursor: pointer"
+            @click="changeOptimizeType(o)"
+          >
             <!--添加角标-->
             <div class="AngleOfTheBox" v-if="o.checked">
               <span>当前</span>
@@ -117,8 +121,9 @@
   <el-dialog
     v-model="dialogFormVisible"
     :title="currentTitle"
+    style="min-width: 600px"
     :width="
-      currentType === 'payment' || currentType === 'recovery' ? '45%' : '32%'
+      currentType === 'payment' || currentType === 'recovery' ? '45%' : '35%'
     "
   >
     <el-form :model="dialogFormData" :align="'center'">
@@ -142,7 +147,7 @@
               <el-option label="CPU平均使用率" value="false" />
               <el-option label="CPU最大使用率" value="true" />
             </el-select>
-            <span style="padding: 10px">小于</span>
+            <span style="padding: 10px">小于等于</span>
             <el-form-item>
               <el-input-number
                 v-model="dialogFormData.cpuRate"
@@ -170,7 +175,7 @@
               <el-option label="内存平均使用率" value="false" />
               <el-option label="内存最大使用率" value="true" />
             </el-select>
-            <span style="padding: 10px">小于</span>
+            <span style="padding: 10px">小于等于</span>
             <el-form-item>
               <el-input-number
                 v-model="dialogFormData.memoryRate"
@@ -205,7 +210,7 @@
               <el-option label="CPU平均使用率" value="false" />
               <el-option label="CPU最大使用率" value="true" />
             </el-select>
-            <span style="padding: 10px">大于</span>
+            <span style="padding: 10px">大于等于</span>
             <el-form-item>
               <el-input-number
                 v-model="dialogFormData.cpuRate"
@@ -230,7 +235,7 @@
               <el-option label="内存平均使用率" value="false" />
               <el-option label="内存最大使用率" value="true" />
             </el-select>
-            <span style="padding: 10px">大于</span>
+            <span style="padding: 10px">大于等于</span>
             <el-form-item>
               <el-input-number
                 v-model="dialogFormData.memoryRate"
@@ -333,7 +338,7 @@ import BaseCloudAccountApi from "@commons/api/cloud_account";
 import type { VmCloudServerVO } from "@/api/server_analysis/type";
 import ResourceOptimizationViewApi from "@/api/resource_optimization";
 import type { OptimizeSuggest } from "@commons/api/resource_optimization/type";
-import {useRouter} from "vue-router";
+import { useRouter } from "vue-router";
 const useRoute = useRouter();
 const { t } = useI18n();
 const table = ref<any>(null);
@@ -366,6 +371,7 @@ paramOptimizationRequestMap.set("upgrade", {
   memoryMaxRate: "false",
 });
 paramOptimizationRequestMap.set("payment", {
+  conditionOr: "OR",
   optimizeSuggest: "payment",
   cycleContinuedRunning: "false",
   cycleContinuedDays: 10,
@@ -412,6 +418,26 @@ optimizeSuggests.value.push({
   data: [],
 });
 
+const changeOptimizeType = (o: any) => {
+  currentType.value = o.code;
+  tableData.value = o.data.records;
+  tableConfig.value.paginationConfig?.setTotal(
+    o.data.total,
+    tableConfig.value.paginationConfig
+  );
+  tableConfig.value.paginationConfig?.setCurrentPage(
+    o.data.current,
+    tableConfig.value.paginationConfig
+  );
+  optimizeSuggests.value.forEach((value) => {
+    value.checked = false;
+    if (value.code === o.code) {
+      value.checked = true;
+    }
+  });
+  changTitleValue.value = false;
+};
+
 const selectOptimizeType = (o: any) => {
   currentTitle.value = o.name + "查询策略";
   currentType.value = o.code;
@@ -430,6 +456,7 @@ const saveSearchParams = () => {
       value.checked = true;
     }
   });
+  changTitleValue.value = true;
   search(new TableSearch());
 };
 
@@ -448,7 +475,7 @@ const getSearchParams = (code: any) => {
     dialogFormData.value = paramOptimizationRequestMap.get(code);
   }
 };
-
+const changTitleValue = ref<boolean>(false);
 /**
  * 查询
  * @param condition
@@ -467,8 +494,12 @@ const search = (condition: TableSearch) => {
     tableLoading
   ).then((res) => {
     if (dialogFormData.value.optimizeSuggest === currentType.value) {
-      const d = _.find(optimizeSuggests.value, ["code", currentType.value]);
-      d ? (d.value = res.data.total) : "";
+      if (changTitleValue.value) {
+        const d = _.find(optimizeSuggests.value, ["code", currentType.value]);
+        d ? (d.value = res.data.total) : "";
+        d ? (d.data = res.data) : [];
+      }
+      changTitleValue.value = false;
       tableData.value = res.data.records;
       tableConfig.value.paginationConfig?.setTotal(
         res.data.total,
@@ -498,9 +529,9 @@ onMounted(() => {
       tableLoading,
     }).then((res) => {
       value.value = res.data.total;
-      value.data = res.data.records;
-       if (!code && value.code === "derating") {
-         currentType.value = value.code;
+      value.data = res.data;
+      if (!code && value.code === "derating") {
+        currentType.value = value.code;
         tableData.value = res.data.records;
         tableConfig.value.paginationConfig?.setTotal(
           res.data.total,
@@ -513,7 +544,7 @@ onMounted(() => {
       }
     });
   });
-  if(code){
+  if (code) {
     currentType.value = code as string;
     useRoute.currentRoute.value.query.code = null;
     dialogFormVisible.value = false;
@@ -527,7 +558,6 @@ onMounted(() => {
   }
   searchCloudAccount();
 });
-onBeforeUnmount(() => {});
 
 const searchCloudAccount = () => {
   BaseCloudAccountApi.listAll().then((result) => {
@@ -563,6 +593,12 @@ const tableConfig = ref<TableConfig>({
 </script>
 
 <style scoped lang="scss">
+.header {
+  min-width: 900px;
+}
+.log-table {
+  min-width: 900px;
+}
 .boxCenter {
   height: 150px;
   overflow: hidden;

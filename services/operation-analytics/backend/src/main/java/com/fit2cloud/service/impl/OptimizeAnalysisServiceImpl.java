@@ -4,11 +4,16 @@ import co.elastic.clients.elasticsearch._types.InlineScript;
 import co.elastic.clients.elasticsearch._types.Script;
 import co.elastic.clients.elasticsearch._types.aggregations.*;
 import co.elastic.clients.elasticsearch._types.query_dsl.BoolQuery;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.fit2cloud.base.entity.CloudAccount;
+import com.fit2cloud.base.entity.RecycleBin;
 import com.fit2cloud.base.entity.VmCloudServer;
+import com.fit2cloud.base.mapper.BaseRecycleBinMapper;
 import com.fit2cloud.base.mapper.BaseVmCloudServerMapper;
+import com.fit2cloud.common.constants.RecycleBinStatusConstants;
+import com.fit2cloud.common.constants.ResourceTypeConstants;
 import com.fit2cloud.common.es.constants.IndexConstants;
 import com.fit2cloud.common.utils.PageUtil;
 import com.fit2cloud.common.utils.QueryUtil;
@@ -19,7 +24,6 @@ import com.fit2cloud.service.IOptimizeAnalysisService;
 import com.fit2cloud.service.IPermissionService;
 import com.github.yulichang.wrapper.MPJLambdaWrapper;
 import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.elasticsearch.client.elc.ElasticsearchAggregations;
@@ -34,7 +38,6 @@ import javax.annotation.Resource;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDateTime;
-import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -52,115 +55,133 @@ public class OptimizeAnalysisServiceImpl implements IOptimizeAnalysisService {
     @Resource
     private BaseVmCloudServerMapper baseVmCloudServerMapper;
 
+    @Resource
+    private BaseRecycleBinMapper baseRecycleBinMapper;
+
     @Override
     public  IPage<AnalyticsServerDTO> pageServer(PageOptimizationRequest request) {
-        OptimizationConstants optimizationConstants = OptimizationConstants.getByCode(request.getOptimizeSuggest());
-        //云主机付费方式变更原因
-        Map<String,String> paymentCloudSeverMap = new HashMap<>();
-        //监控数据
-        List<AnalyticsServerDTO> metricData = new ArrayList<>();
-        //建议优化原因
-        StringJoiner sj = new StringJoiner("");
-        //所有云主机
-        MPJLambdaWrapper<VmCloudServer> queryServerWrapper = addServerAnalysisQuery(request);
-        List<AnalyticsServerDTO> vmList = baseVmCloudServerMapper.selectJoinList(AnalyticsServerDTO.class,queryServerWrapper);
-        if(CollectionUtils.isEmpty(vmList)){
-            return new Page<>();
+        if(StringUtils.equalsIgnoreCase(OptimizationConstants.DERATING.getCode(),request.getOptimizeSuggest())
+                || StringUtils.equalsIgnoreCase(OptimizationConstants.UPGRADE.getCode(),request.getOptimizeSuggest())){
+            return getDeratingUpgrade(request);
         }
-        Optional.ofNullable(optimizationConstants).ifPresent((v)->{
-            switch (v) {
-                case DERATING, UPGRADE :
-                    List<String> resourceIds = vmList.stream().filter(vm->StringUtils.isNotEmpty(vm.getInstanceUuid())).map(AnalyticsServerDTO::getInstanceUuid).toList();
-                    request.setInstanceUuids(resourceIds);
-                    metricData.addAll(getMetricData(request, optimizationConstants));
-                    break;
-                case PAYMENT :
-                    List<String> changePaymentCloudServerIds = new ArrayList<>();
-                    // 按量付费资源持续开机时间超过day天建议变更付费方式为包年包月的云主机
-                    List<AnalyticsServerDTO> cycle = vmList.stream()
-                            .filter(vm-> ObjectUtils.isNotEmpty(vm.getLastOperateTime())
-                                    && StringUtils.equalsIgnoreCase(vm.getInstanceStatus(),"Running")
-                                    && StringUtils.equalsIgnoreCase(vm.getInstanceChargeType(),"PostPaid")
-                                    && (vm.getLastOperateTime().until(LocalDateTime.now(), ChronoUnit.DAYS)>=request.getVolumeContinuedDays())).toList();
-                    if (CollectionUtils.isNotEmpty(cycle)) {
-                        changePaymentCloudServerIds.addAll(cycle.stream().map(AnalyticsServerDTO::getId).toList());
-                        sj.add("持续开机").add(String.valueOf(request.getVolumeContinuedDays())).add("天以上，建议转为包年包月");
-                        cycle.forEach(serverDTO -> paymentCloudSeverMap.put(serverDTO.getId(), sj.toString()));
-                    }
-                    // 包年包月资源持续关机时间超过day天建议变更付费方式为按量付费的云主机
-                    List<AnalyticsServerDTO> volume = vmList.stream()
-                            .filter(vm-> ObjectUtils.isNotEmpty(vm.getLastOperateTime())
-                                    && StringUtils.equalsIgnoreCase(vm.getInstanceStatus(),"Stopped")
-                                    && StringUtils.equalsIgnoreCase(vm.getInstanceChargeType(),"PrePaid")
-                                    && (vm.getLastOperateTime().until(LocalDateTime.now(), ChronoUnit.DAYS)>=request.getCycleContinuedDays())).toList();
-                    if (CollectionUtils.isNotEmpty(volume)) {
-                        changePaymentCloudServerIds.addAll(volume.stream().map(AnalyticsServerDTO::getId).toList());
-                        sj.add("持续关机").add(String.valueOf(request.getCycleContinuedDays())).add("天以上，建议转为按需按量");
-                        volume.forEach(serverDTO -> paymentCloudSeverMap.put(serverDTO.getId(), sj.toString()));
-                    }
-                    request.setInstanceIds(changePaymentCloudServerIds);
-                    break;
-                case RECOVERY :
-                    List<String> recoveryCloudServerIds = new ArrayList<>();
-                    // 所有持续关机超过day天的云主机建议回收
-                    List<AnalyticsServerDTO> recovery = vmList.stream()
-                            .filter(vm-> ObjectUtils.isNotEmpty(vm.getLastOperateTime())
-                                    && StringUtils.equalsIgnoreCase(vm.getInstanceStatus(),"Stopped")
-                                    && (vm.getLastOperateTime().until(LocalDateTime.now(), ChronoUnit.DAYS)>=request.getContinuedDays())).toList();
-                    if (CollectionUtils.isNotEmpty(recovery)) {
-                        recoveryCloudServerIds.addAll(recovery.stream().map(AnalyticsServerDTO::getId).toList());
-                        sj.add("持续关机").add(String.valueOf(request.getContinuedDays())).add("天以上，闲置机器建议回收删除");
-                        recovery.forEach(serverDTO -> paymentCloudSeverMap.put(serverDTO.getId(), sj.toString()));
-                    }
-                    request.setInstanceIds(recoveryCloudServerIds);
-                    break;
-                default :
-            }
-        });
-        Page<AnalyticsServerDTO> page = PageUtil.of(request, AnalyticsServerDTO.class, null, true);
-        if(CollectionUtils.isNotEmpty(request.getInstanceIds())){
-            // 构建查询参数
-            MPJLambdaWrapper<VmCloudServer> wrapper = addServerAnalysisQuery(request);
-            wrapper.in(CollectionUtils.isNotEmpty(request.getInstanceIds()), VmCloudServer::getId, request.getInstanceIds());
-            IPage<AnalyticsServerDTO> result = baseVmCloudServerMapper.selectJoinPage(page,AnalyticsServerDTO.class, wrapper);
-            if(CollectionUtils.isNotEmpty(result.getRecords())){
-                result.getRecords().forEach(v->{
-                    assert optimizationConstants != null;
-                    v.setOptimizeSuggest(optimizationConstants.getName());
-                    v.setOptimizeSuggestCode(optimizationConstants.getCode());
-                    if(paymentCloudSeverMap.containsKey(v.getId())){
-                        v.setContent(paymentCloudSeverMap.get(v.getId()));
-                    }
-                });
-            }
-            return result;
+        if(StringUtils.equalsIgnoreCase(OptimizationConstants.PAYMENT.getCode(),request.getOptimizeSuggest())){
+            return getPayment(request);
         }
-        if(CollectionUtils.isNotEmpty(request.getInstanceUuids())){
-            Map<String,AnalyticsServerDTO>  metricDataMap = metricData.stream().collect(Collectors.toMap(server -> server.getInstanceUuid()+server.getAccountId(),o->o,(k1,k2)->k1));
-            // 构建查询参数
-            MPJLambdaWrapper<VmCloudServer> wrapper = addServerAnalysisQuery(request);
-            wrapper.in(CollectionUtils.isNotEmpty(request.getInstanceUuids()), VmCloudServer::getInstanceUuid, request.getInstanceUuids());
-            IPage<AnalyticsServerDTO> result = baseVmCloudServerMapper.selectJoinPage(page,AnalyticsServerDTO.class, wrapper);
-            if(CollectionUtils.isNotEmpty(result.getRecords())){
-                result.getRecords().forEach(v->{
-                    String key = v.getInstanceUuid()+v.getAccountId();
-                    assert optimizationConstants != null;
-                    v.setOptimizeSuggest(optimizationConstants.getName());
-                    v.setOptimizeSuggestCode(optimizationConstants.getCode());
-                    if(metricDataMap.containsKey(key)){
-                        AnalyticsServerDTO metricDto = metricDataMap.get(key);
-                        v.setContent(metricDto.getContent());
-                        v.setCpuMaximum(metricDto.getCpuMaximum());
-                        v.setCpuAverage(metricDto.getCpuAverage());
-                        v.setMemoryMaximum(metricDto.getMemoryMaximum());
-                        v.setMemoryAverage(metricDto.getMemoryAverage());
-                    }
-                });
-            }
-            return result;
+        if(StringUtils.equalsIgnoreCase(OptimizationConstants.RECOVERY.getCode(),request.getOptimizeSuggest())){
+            return getRecover(request);
         }
         return new Page<>();
     }
+
+    private IPage<AnalyticsServerDTO> getDeratingUpgrade(PageOptimizationRequest request){
+        boolean isDerating = StringUtils.equalsIgnoreCase(OptimizationConstants.DERATING.getCode(),request.getOptimizeSuggest());
+        List<AnalyticsServerDTO> metricList = getMetricData(request,  isDerating);
+        if(CollectionUtils.isEmpty(metricList)){
+            return new Page<>();
+        }
+        List<String> instanceUuids = metricList.stream().map(AnalyticsServerDTO::getInstanceUuid).toList();
+        Page<AnalyticsServerDTO> page = PageUtil.of(request, AnalyticsServerDTO.class, null, true);
+        MPJLambdaWrapper<VmCloudServer> queryServerWrapper = addServerAnalysisQuery(request);
+        queryServerWrapper.in(true,VmCloudServer::getInstanceUuid,instanceUuids);
+        IPage<AnalyticsServerDTO> pageData = baseVmCloudServerMapper.selectJoinPage(page,AnalyticsServerDTO.class,queryServerWrapper);
+        if(pageData.getRecords().size()>0){
+            OptimizationConstants optimizationConstants = OptimizationConstants.getByCode(request.getOptimizeSuggest());
+            List<String> resourceIds = pageData.getRecords().stream().filter(vm->StringUtils.isNotEmpty(vm.getInstanceUuid())).map(AnalyticsServerDTO::getInstanceUuid).toList();
+            request.setInstanceUuids(resourceIds);
+            Map<String,AnalyticsServerDTO>  metricDataMap = metricList.stream().collect(Collectors.toMap(server -> server.getInstanceUuid()+server.getAccountId(),o->o,(k1,k2)->k1));
+            pageData.getRecords().forEach(v->{
+                String key = v.getInstanceUuid()+v.getAccountId();
+                assert optimizationConstants != null;
+                v.setOptimizeSuggest(optimizationConstants.getName());
+                v.setOptimizeSuggestCode(optimizationConstants.getCode());
+                if(metricDataMap.containsKey(key)){
+                    AnalyticsServerDTO metricDto = metricDataMap.get(key);
+                    v.setContent(metricDto.getContent());
+                    v.setCpuMaximum(metricDto.getCpuMaximum());
+                    v.setCpuAverage(metricDto.getCpuAverage());
+                    v.setMemoryMaximum(metricDto.getMemoryMaximum());
+                    v.setMemoryAverage(metricDto.getMemoryAverage());
+                }
+            });
+            return pageData;
+        }
+        return new Page<>();
+    }
+
+    private IPage<AnalyticsServerDTO> getPayment(PageOptimizationRequest request){
+        OptimizationConstants optimizationConstants = OptimizationConstants.getByCode(request.getOptimizeSuggest());
+        Page<AnalyticsServerDTO> page = PageUtil.of(request, AnalyticsServerDTO.class, null, true);
+        MPJLambdaWrapper<VmCloudServer> queryServerWrapper = addServerAnalysisQuery(request);
+        // 按量付费资源持续开机时间超过day天建议变更付费方式为包年包月的云主机
+        queryServerWrapper.and(a1->
+                a1.and(a2->a2.eq(true,VmCloudServer::getInstanceStatus,"Running")
+                                .eq(true,VmCloudServer::getInstanceChargeType,"PostPaid")
+                                .le(AnalyticsServerDTO::getLastOperateTime,LocalDateTime.now().minusDays(request.getVolumeContinuedDays())))
+                        .or(a->{
+                            // 包年包月资源持续关机时间超过day天建议变更付费方式为按量付费的云主机
+                            a.eq(true,VmCloudServer::getInstanceStatus,"Stopped");
+                            a.eq(true,VmCloudServer::getInstanceChargeType,"PrePaid");
+                            a.le(VmCloudServer::getLastOperateTime,LocalDateTime.now().minusDays(request.getCycleContinuedDays()));
+                        })
+        );
+        IPage<AnalyticsServerDTO> pageData = baseVmCloudServerMapper.selectJoinPage(page,AnalyticsServerDTO.class,queryServerWrapper);
+        // 根据状态判断变更方式
+        if(pageData.getRecords().size()>0){
+            pageData.getRecords().forEach(vm->{
+                assert optimizationConstants != null;
+                vm.setOptimizeSuggest(optimizationConstants.getName());
+                vm.setOptimizeSuggestCode(optimizationConstants.getCode());
+                StringJoiner sj = new StringJoiner("");
+                if(StringUtils.equalsIgnoreCase(vm.getInstanceStatus(),"Running")){
+                    sj.add("持续开机").add(String.valueOf(request.getVolumeContinuedDays())).add("天以上，建议转为包年包月");
+                }
+                if(StringUtils.equalsIgnoreCase(vm.getInstanceStatus(),"Stopped")){
+                    sj.add("持续关机").add(String.valueOf(request.getCycleContinuedDays())).add("天以上，建议转为按需按量");
+                }
+                vm.setContent(sj.toString());
+            });
+            return pageData;
+        }
+        return new Page<>();
+    }
+
+    public static void main(String[] args) {
+        System.out.println(LocalDateTime.now().minusDays(10));
+        System.out.println(LocalDateTime.now());
+    }
+
+    private IPage<AnalyticsServerDTO> getRecover(PageOptimizationRequest request){
+        QueryWrapper recycleQuery = new QueryWrapper<>();
+        recycleQuery.eq(true, "recycle_bin.resource_type", ResourceTypeConstants.VM.name());
+        recycleQuery.eq(true, "recycle_bin.status", RecycleBinStatusConstants.ToBeRecycled.name());
+        List<RecycleBin> recycleBins = baseRecycleBinMapper.selectList(recycleQuery);
+        List<String> recycleBinServerIds = recycleBins.stream().map(RecycleBin::getResourceId).toList();
+        OptimizationConstants optimizationConstants = OptimizationConstants.getByCode(request.getOptimizeSuggest());
+        Page<AnalyticsServerDTO> page = PageUtil.of(request, AnalyticsServerDTO.class, null, true);
+        MPJLambdaWrapper<VmCloudServer> queryServerWrapper = addServerAnalysisQuery(request);
+        queryServerWrapper.eq(true,VmCloudServer::getInstanceStatus,"Stopped");
+        queryServerWrapper.or(or->{
+            or.in(CollectionUtils.isNotEmpty(recycleBinServerIds),VmCloudServer::getId,recycleBinServerIds);
+        });
+        queryServerWrapper.le(VmCloudServer::getLastOperateTime,LocalDateTime.now().minusDays(request.getContinuedDays()));
+        IPage<AnalyticsServerDTO> pageData = baseVmCloudServerMapper.selectJoinPage(page,AnalyticsServerDTO.class,queryServerWrapper);
+        if(pageData.getRecords().size()>0){
+            pageData.getRecords().forEach(vm-> {
+                        assert optimizationConstants != null;
+                        vm.setOptimizeSuggest(optimizationConstants.getName());
+                        vm.setOptimizeSuggestCode(optimizationConstants.getCode());
+                        if(recycleBinServerIds.contains(vm.getId())){
+                            vm.setContent("回收站");
+                        }else{
+                            vm.setContent("持续关机" + request.getContinuedDays() + "天以上，闲置机器建议回收删除");
+                        }
+                    }
+                    );
+            return pageData;
+        }
+        return new Page<>();
+    }
+
 
     /**
      * 云主机分析参数
@@ -180,9 +201,8 @@ public class OptimizeAnalysisServiceImpl implements IOptimizeAnalysisService {
         return wrapper;
     }
 
-    private List<AnalyticsServerDTO> getMetricData(PageOptimizationRequest request,OptimizationConstants optimizationConstants){
+    private List<AnalyticsServerDTO> getMetricData(PageOptimizationRequest request,boolean isDerating){
         List<AnalyticsServerDTO> metricData = new ArrayList<>();
-        boolean isDerating = StringUtils.equalsIgnoreCase(OptimizationConstants.DERATING.getCode(),optimizationConstants.getCode());
         String mark = isDerating?"<":">";
         // -1表示小于，1表示大于
         int flag = isDerating?-1:1;
@@ -197,30 +217,37 @@ public class OptimizeAnalysisServiceImpl implements IOptimizeAnalysisService {
         //条件判断
         list.forEach(vo->{
             vo.setContent(sj.toString());
-            if(vo.getMemoryMaximum().compareTo(BigDecimal.valueOf(0)) == 0
-                    && vo.getMemoryAverage().compareTo(BigDecimal.valueOf(0)) == 0
-                    && vo.getCpuMaximum().compareTo(BigDecimal.valueOf(0)) == 0
-                    && vo.getCpuAverage().compareTo(BigDecimal.valueOf(0)) == 0){
+            boolean cpuIsNull = Objects.isNull(vo.getCpuAverage());
+            boolean memoryIsNull = Objects.isNull(vo.getMemoryAverage());
+            //CPU内存都没有监控
+            if(cpuIsNull && memoryIsNull){
                 return;
             }
-            boolean compareCpu;
-            if(request.isCpuMaxRate()){
-                compareCpu = vo.getCpuMaximum().compareTo(BigDecimal.valueOf(request.getCpuRate())) == flag;
-            }else{
-                compareCpu = vo.getCpuAverage().compareTo(BigDecimal.valueOf(request.getCpuRate())) == flag;
+            Map<String,Boolean> cpuCompare = new HashMap<>();
+            cpuCompare.put("cpu",false);
+            if(!cpuIsNull){
+                if(request.isCpuMaxRate()){
+                    cpuCompare.put("cpu",vo.getCpuMaximum().compareTo(BigDecimal.valueOf(request.getCpuRate())) == flag);
+                }else{
+                    cpuCompare.put("cpu",vo.getCpuAverage().compareTo(BigDecimal.valueOf(request.getCpuRate())) == flag);
+                }
             }
-            boolean compareMemory;
-            if(request.isMemoryMaxRate()){
-                compareMemory = vo.getMemoryMaximum().compareTo(BigDecimal.valueOf(request.getMemoryRate())) == flag;
-            }else{
-                compareMemory = vo.getMemoryAverage().compareTo(BigDecimal.valueOf(request.getMemoryRate())) == flag;
+            Map<String,Boolean> memoryCompare = new HashMap<>();
+            cpuCompare.put("memory",false);
+            if(!memoryIsNull){
+                if(request.isMemoryMaxRate()){
+                    memoryCompare.put("memory", vo.getMemoryMaximum().compareTo(BigDecimal.valueOf(request.getMemoryRate())) == flag);
+                }else{
+                    memoryCompare.put("memory", vo.getMemoryAverage().compareTo(BigDecimal.valueOf(request.getMemoryRate())) == flag);
+                }
             }
-            if(StringUtils.equalsIgnoreCase("and",request.getConditionOr()) && (compareCpu && compareMemory)){
+            if(StringUtils.equalsIgnoreCase("and",request.getConditionOr()) && ((cpuCompare.get("cpu") || cpuIsNull) && (cpuCompare.get("memory") || memoryIsNull))){
                 metricData.add(vo);
             }
-            if(StringUtils.equalsIgnoreCase("or",request.getConditionOr()) && (compareCpu || compareMemory)){
+            if(StringUtils.equalsIgnoreCase("or",request.getConditionOr()) && (cpuCompare.get("cpu") || cpuCompare.get("memory"))){
                 metricData.add(vo);
             }
+
         });
         request.setInstanceUuids(metricData.stream().map(AnalyticsServerDTO::getInstanceUuid).collect(Collectors.toList()));
         return metricData;
@@ -268,17 +295,20 @@ public class OptimizeAnalysisServiceImpl implements IOptimizeAnalysisService {
                 AnalyticsServerDTO dto = new AnalyticsServerDTO();
                 dto.setInstanceUuid(v.key().split("_")[0]);
                 dto.setAccountId(v.key().split("_")[1]);
-                if(StringUtils.equalsIgnoreCase("i-m5eeatethjp2e4cvtb72",v.key().split("_")[0])){
-                    System.out.println("");
+                //CPU
+                if(v.aggregations().get("cpu").filter().aggregations().get("metricName").sterms().buckets().array().size()>0){
+                    double cpuMax = v.aggregations().get("cpu").filter().aggregations().get("max").max().value();
+                    dto.setCpuMaximum(BigDecimal.valueOf(cpuMax).setScale(3, RoundingMode.HALF_UP));
+                    double cpuAvg = v.aggregations().get("cpu").filter().aggregations().get("avg").avg().value();
+                    dto.setCpuAverage(BigDecimal.valueOf(cpuAvg).setScale(3, RoundingMode.HALF_UP));
                 }
-                Object cpuMax = v.aggregations().get("cpu").filter().aggregations().get("max").max().value();
-                dto.setCpuMaximum(BigDecimal.valueOf((double) cpuMax).setScale(2, RoundingMode.HALF_UP));
-                double cpuAvg = v.aggregations().get("cpu").filter().aggregations().get("avg").avg().value();
-                dto.setCpuAverage(BigDecimal.valueOf(cpuAvg).setScale(2, RoundingMode.HALF_UP));
-                double memoryMax = v.aggregations().get("memory").filter().aggregations().get("max").max().value();
-                dto.setMemoryMaximum(BigDecimal.valueOf(memoryMax).setScale(2, RoundingMode.HALF_UP));
-                double memoryAvg = v.aggregations().get("memory").filter().aggregations().get("avg").avg().value();
-                dto.setMemoryAverage(BigDecimal.valueOf(memoryAvg).setScale(2, RoundingMode.HALF_UP));
+                //内存
+                if(v.aggregations().get("memory").filter().aggregations().get("metricName").sterms().buckets().array().size()>0){
+                    double memoryMax = v.aggregations().get("memory").filter().aggregations().get("max").max().value();
+                    dto.setMemoryMaximum(BigDecimal.valueOf(memoryMax).setScale(3, RoundingMode.HALF_UP));
+                    double memoryAvg = v.aggregations().get("memory").filter().aggregations().get("avg").avg().value();
+                    dto.setMemoryAverage(BigDecimal.valueOf(memoryAvg).setScale(3, RoundingMode.HALF_UP));
+                }
                 cloudServerMetricData.add(dto);
             }
         }catch (Exception e){
@@ -293,10 +323,12 @@ public class OptimizeAnalysisServiceImpl implements IOptimizeAnalysisService {
         Aggregation cpu = new Aggregation.Builder().filter(filterQuery->filterQuery.term(t->t.field("metricName.keyword").value("CPU_USED_UTILIZATION")))
                 .aggregations("avg",new Aggregation.Builder().avg(new AverageAggregation.Builder().field("average").build()).build())
                 .aggregations("max",new Aggregation.Builder().max(new MaxAggregation.Builder().field("maximum").build()).build())
+                .aggregations("metricName",new Aggregation.Builder().terms(new TermsAggregation.Builder().field("metricName.keyword").build()).build())
                 .build();
         Aggregation memory = new Aggregation.Builder().filter(filterQuery->filterQuery.term(t->t.field("metricName.keyword").value("MEMORY_USED_UTILIZATION")))
                 .aggregations("avg",new Aggregation.Builder().avg(new AverageAggregation.Builder().field("average").build()).build())
                 .aggregations("max",new Aggregation.Builder().max(new MaxAggregation.Builder().field("maximum").build()).build())
+                .aggregations("metricName",new Aggregation.Builder().terms(new TermsAggregation.Builder().field("metricName.keyword").build()).build())
                 .build();
         return new Aggregation.Builder().terms(new TermsAggregation.Builder().script(script).size(Integer.MAX_VALUE).build()).aggregations("cpu",cpu).aggregations("memory",memory).build();
     }

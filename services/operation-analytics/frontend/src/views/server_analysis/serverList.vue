@@ -79,7 +79,6 @@ onMounted(() => {
   search(new TableSearch());
   searchCloudAccount();
 });
-onBeforeUnmount(() => {});
 
 const searchCloudAccount = () => {
   BaseCloudAccountApi.listAll().then((result) => {

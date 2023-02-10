@@ -125,7 +125,10 @@
           </el-col>
         </el-row>
       </div>
-      <div class="spread-main-content" v-if="adminShowBaseResourceAllocatedInfo()">
+      <div
+        class="spread-main-content"
+        v-if="adminShowBaseResourceAllocatedInfo()"
+      >
         <el-row :gutter="10">
           <el-col :span="24">
             <div class="myChart" style="height: 300px">
@@ -267,21 +270,21 @@
           </div>
           <div class="echart-content" style="padding: 10px">
             <el-row :gutter="12">
-              <el-col :span="6" v-for="o in optimizeSuggests" key="o.code">
+              <el-col :span="6" v-for="o in optimizeSuggests" :key="o.code">
                 <router-link
-                    :to="{ name: 'server_optimization', query: { code: o.code } }"
+                  :to="{ name: 'server_optimization', query: { code: o.code } }"
                 >
                   <el-card :body-style="{ padding: '0px' }" shadow="hover">
                     <div class="boxConter">
                       <div class="CenterTheBox">
-                      <span
-                      ><span style="font-size: 24px">{{ o.value }}</span
-                      >台</span
-                      >
+                        <span
+                          ><span style="font-size: 24px">{{ o.value }}</span
+                          >台</span
+                        >
                       </div>
                       <div
-                          class="BottomTheBox"
-                          :style="{ 'background-color': o.color }"
+                        class="BottomTheBox"
+                        :style="{ 'background-color': o.color }"
                       >
                         <span>{{ o.name }}</span>
                       </div>
@@ -297,7 +300,7 @@
   </div>
 </template>
 <script lang="ts" setup>
-import {computed, onMounted, ref} from "vue";
+import { computed, onMounted, ref } from "vue";
 import _ from "lodash";
 import ChartsSpeed from "@commons/components/echart/ChartsSpeed.vue";
 import ResourceSpreadViewApi from "@/api/resource_spread_view/index";
@@ -323,12 +326,12 @@ import ResourceOptimizationViewApi from "@/api/resource_optimization";
 import { useUserStore } from "@commons/stores/modules/user";
 
 const userStore = useUserStore();
-const adminShowBaseResourceAllocatedInfo = ()=>{
+const adminShowBaseResourceAllocatedInfo = () => {
   return _.includes(["ADMIN"], userStore.currentRole);
 };
 
 const optimizeSuggests = ref<Array<OptimizeSuggest>>(
-    _.clone(baseOptimizeSuggests)
+  _.clone(baseOptimizeSuggests)
 );
 
 //分配情况
@@ -426,7 +429,7 @@ const getAccounts = () => {
   CloudServerViewApi.listAccounts().then((res) => {
     if (res.data.length) {
       accounts.value = res.data;
-      if(adminShowBaseResourceAllocatedInfo()){
+      if (adminShowBaseResourceAllocatedInfo()) {
         getBaseResourceAllocatedInfo();
       }
       getVmSpreadInfo();

@@ -246,8 +246,8 @@ const getIncreaseTrend = (chartName: string) => {
   _.set(params, "dayNumber", paramDiskIncreaseTrendMonth.value);
   let legend: any[] = [],
     series: any = {},
-    xAxis: any[] = [],
-    seriesData: any[] = [];
+    xAxis: any[] = [];
+  const seriesData: any[] = [];
   ResourceSpreadViewApi.getIncreaseTrend(params).then((res) => {
     const options = _.cloneDeep(defaultTrendOptions);
     const chartData = res.data;
