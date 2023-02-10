@@ -16,59 +16,127 @@
     </resultMap>
     <select id="page" resultMap="ComplianceScanResponseMap">
         SELECT
-            compliance_rule.*,
-            IFNULL(compliance_scan_result.compliance_count, 0) AS compliance_count,
-            IFNULL(compliance_scan_result.not_compliance_count,0) AS not_compliance_count,
-            IFNULL(compliance_scan_result.`scan_status`,1) as scan_status
+        compliance_rule.*,
+        IFNULL(compliance_scan_result.compliance_count, 0) AS compliance_count,
+        IFNULL(compliance_scan_result.not_compliance_count,0) AS not_compliance_count,
+        IFNULL(compliance_scan_result.`scan_status`,1) as scan_status
         FROM
-            compliance_rule compliance_rule
-                LEFT JOIN (
-                SELECT
-                    resource_id,
-                    SUM(compliance_count) AS compliance_count,
-                    SUM(not_compliance_count) AS not_compliance_count,
-                    SUM(resource_count) AS resource_count,
-                    IF(FIND_IN_SET(2,GROUP_CONCAT(`status`)),2,1) as `scan_status`,
-                    GROUP_CONCAT(cloud_account_id) as cloud_account_id
-                FROM
-                    compliance_scan_result
-                <where>
-                    <if test="cloudAccountId != null">
-                        cloud_account_id=#{cloudAccountId}
-                    </if>
-                </where>
-                GROUP BY
-                    resource_id
-            ) compliance_scan_result ON compliance_scan_result.resource_id = compliance_rule.id
-            ${ew.customSqlSegment}
+        compliance_rule compliance_rule
+        LEFT JOIN (
+        SELECT
+        resource_id,
+        SUM(compliance_count) AS compliance_count,
+        SUM(not_compliance_count) AS not_compliance_count,
+        SUM(resource_count) AS resource_count,
+        IF(FIND_IN_SET(2,GROUP_CONCAT(`status`)),2,1) as `scan_status`,
+        GROUP_CONCAT(cloud_account_id) as cloud_account_id
+        FROM
+        compliance_scan_result
+        <where>
+            <if test="cloudAccountId != null">
+                cloud_account_id=#{cloudAccountId}
+            </if>
+        </where>
+        GROUP BY
+        resource_id
+        ) compliance_scan_result ON compliance_scan_result.resource_id = compliance_rule.id
+        ${ew.customSqlSegment}
     </select>
 
     <select id="list" resultMap="ComplianceScanResponseMap">
         SELECT
-            compliance_rule.*,
-            IFNULL(compliance_scan_result.compliance_count, 0) AS compliance_count,
-            IFNULL(compliance_scan_result.not_compliance_count,0) AS not_compliance_count,
-            IFNULL(compliance_scan_result.`scan_status`,1) as scan_status
+        compliance_rule.*,
+        IFNULL(compliance_scan_result.compliance_count, 0) AS compliance_count,
+        IFNULL(compliance_scan_result.not_compliance_count,0) AS not_compliance_count,
+        IFNULL(compliance_scan_result.`scan_status`,1) as scan_status
+        FROM
+        compliance_rule compliance_rule
+        LEFT JOIN (
+        SELECT
+        resource_id,
+        SUM(compliance_count) AS compliance_count,
+        SUM(not_compliance_count) AS not_compliance_count,
+        SUM(resource_count) AS resource_count,
+        IF(FIND_IN_SET(2,GROUP_CONCAT(`status`)),2,1) as `scan_status`,
+        GROUP_CONCAT(cloud_account_id) as cloud_account_id
+        FROM
+        compliance_scan_result
+        <where>
+            <if test="cloudAccountId != null">
+                cloud_account_id=#{cloudAccountId}
+            </if>
+        </where>
+        GROUP BY
+        resource_id
+        ) compliance_scan_result ON compliance_scan_result.resource_id = compliance_rule.id
+        ${ew.customSqlSegment}
+    </select>
+    <select id="group" resultType="com.fit2cloud.dao.entity.ComplianceGroup">
+        SELECT
+        IFNULL(
+        (
+        SUM(
+        compliance_scan_result.not_compliance_count
+        )
+        ),
+        0
+        ) AS not_compliance_count,
+        IFNULL(
+        SUM(
+        compliance_scan_result.compliance_count
+        ),
+        0
+        ) AS compliance_count
+        <if test="groupType=='CLOUD_ACCOUNT'">
+            , compliance_rule.cloud_account_id as `key`
+        </if>
+        <if test="groupType=='RESOURCE_TYPE'">
+            , compliance_rule.resource_type as `key`
+        </if>
+        <if test="groupType=='RULE_GROUP'">
+            , compliance_rule.rule_group_id as `key`
+        </if>
+        <if test="groupType=='RULE'">
+            , compliance_rule.id as `key`
+        </if>
+        FROM
+        compliance_rule
+        LEFT JOIN compliance_scan_result compliance_scan_result ON compliance_rule.id =
+        compliance_scan_result.resource_id
+        ${ew.customSqlSegment}
+        <if test="groupType=='CLOUD_ACCOUNT'">
+            GROUP BY
+            compliance_rule.cloud_account_id
+        </if>
+        <if test="groupType=='RESOURCE_TYPE'">
+            GROUP BY
+            compliance_rule.resource_type
+        </if>
+        <if test="groupType=='RULE_GROUP'">
+            GROUP BY
+            compliance_rule.rule_group_id
+        </if>
+        <if test="groupType=='RULE'">
+            GROUP BY
+            compliance_rule.id
+        </if>
+    </select>
+    <select id="count" resultType="com.fit2cloud.dao.entity.ComplianceCount">
+        SELECT
+            IFNULL(
+                    SUM(
+                            compliance_scan_result.compliance_count
+                        ),
+                    0
+                ) AS compliance_count,
+            IFNULL(
+                    SUM(
+                            compliance_scan_result.not_compliance_count
+                        ),
+                    0
+                ) AS not_compliance_count
         FROM
             compliance_rule compliance_rule
-                LEFT JOIN (
-                SELECT
-                    resource_id,
-                    SUM(compliance_count) AS compliance_count,
-                    SUM(not_compliance_count) AS not_compliance_count,
-                    SUM(resource_count) AS resource_count,
-                    IF(FIND_IN_SET(2,GROUP_CONCAT(`status`)),2,1) as `scan_status`,
-                    GROUP_CONCAT(cloud_account_id) as cloud_account_id
-                FROM
-                    compliance_scan_result
-                <where>
-                    <if test="cloudAccountId != null">
-                        cloud_account_id=#{cloudAccountId}
-                    </if>
-                </where>
-                GROUP BY
-                    resource_id
-            ) compliance_scan_result ON compliance_scan_result.resource_id = compliance_rule.id
-            ${ew.customSqlSegment}
+                LEFT JOIN compliance_scan_result compliance_scan_result ON compliance_rule.id = compliance_scan_result.resource_id
     </select>
 </mapper>
