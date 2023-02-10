@@ -18,6 +18,7 @@ const message = {
       project: "企业项目",
     },
     vm_tools_status: {
+      not_Installed: "未安裝",
       running: "运行中",
       not_running: "未运行",
     },

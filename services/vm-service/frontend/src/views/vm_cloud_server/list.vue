@@ -112,7 +112,7 @@ const instanceStatusForTableSelect = [
 ];
 
 const filterInstanceStatus = (value: string) => {
-  let status = "";
+  let status = value;
   InstanceStatus.value.forEach((v) => {
     if (v.value == value) {
       status = v.text;
@@ -129,7 +129,7 @@ const chargeType = [
 ];
 
 const filterChargeType = (value: string) => {
-  let status = "";
+  let status = value;
   chargeType.forEach((v) => {
     if (v.value == value) {
       status = v.text;
@@ -142,17 +142,21 @@ const filterChargeType = (value: string) => {
 // 表格头:VMTools 筛选项
 const vmToolsStatus = [
   {
-    text: t("vm_cloud_server.vm_tools_status.running"),
-    value: "guestToolsRunning",
+    text: t("vm_cloud_server.vm_tools_status.not_Installed"),
+    value: "toolsNotInstalled",
   },
   {
     text: t("vm_cloud_server.vm_tools_status.not_running"),
     value: "guestToolsNotRunning",
   },
+  {
+    text: t("vm_cloud_server.vm_tools_status.running"),
+    value: "guestToolsRunning",
+  },
 ];
 
 const filterVmToolsStatus = (value: string) => {
-  let status = "";
+  let status = value;
   vmToolsStatus.forEach((v) => {
     if (v.value == value) {
       status = v.text;
@@ -297,12 +301,12 @@ const tableConfig = ref<TableConfig>({
         value: "instanceName",
       },
       {
-        label: t("commons.cloud_account.name", "云账号名称"),
-        value: "accountName",
-      },
-      {
         label: t("vm_cloud_server.label.ip_address", "IP地址"),
         value: "ipArray",
+      },
+      {
+        label: t("commons.os", "操作系统"),
+        value: "osInfo",
       },
     ],
   },
@@ -946,34 +950,6 @@ const moreActions = ref<Array<ButtonAction>>([
         {{ filterChargeType(scope.row.instanceChargeType) }}
       </template>
     </el-table-column>
-    <el-table-column
-      prop="projectId"
-      column-key="projectId"
-      :label="$t('cloud_server.label.project', '企业项目')"
-      :show="false"
-      min-width="180px"
-    ></el-table-column>
-    <el-table-column
-      prop="vpcId"
-      column-key="vpcId"
-      :label="$t('cloud_server.label.vpc', 'VPC')"
-      :show="false"
-      min-width="180px"
-    ></el-table-column>
-    <el-table-column
-      prop="subnetId"
-      column-key="subnetId"
-      :label="$t('cloud_server.label.subnet', '子网')"
-      :show="false"
-      min-width="180px"
-    ></el-table-column>
-    <el-table-column
-      prop="securityGroupIds"
-      column-key="securityGroupIds"
-      :label="$t('cloud_server.label.securityGroup', '安全组')"
-      :show="false"
-      min-width="180px"
-    ></el-table-column>
     <el-table-column
       prop="host"
       column-key="host"

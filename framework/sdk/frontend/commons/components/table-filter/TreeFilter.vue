@@ -24,6 +24,7 @@ const filterText = ref("");
 const treeRef = ref<InstanceType<typeof ElTree>>();
 
 watch(filterText, (val) => {
+  treeRef.value?.$el?.scrollTo(0, 0);
   treeRef.value!.filter(val);
 });
 
@@ -36,7 +37,6 @@ const getTreeRef = () => {
   if (!treeRef.value) return;
   return treeRef.value;
 };
-
 defineExpose({
   getTreeRef,
 });
@@ -49,6 +49,7 @@ defineExpose({
     size="small"
   />
   <el-tree
+    class="filter-tree"
     ref="treeRef"
     node-key="id"
     :props="{ label: 'name' }"
@@ -85,5 +86,12 @@ defineExpose({
 }
 .active:hover {
   color: var(--el-color-primary);
+}
+.filter-tree {
+  max-height: 200px;
+  overflow: auto;
+}
+:deep(.el-tree-node > .el-tree-node__children) {
+  overflow: visible !important;
 }
 </style>

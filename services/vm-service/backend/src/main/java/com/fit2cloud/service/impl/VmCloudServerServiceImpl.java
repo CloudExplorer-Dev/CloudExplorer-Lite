@@ -161,7 +161,7 @@ public class VmCloudServerServiceImpl extends ServiceImpl<BaseVmCloudServerMappe
 
         wrapper.eq(StringUtils.isNotBlank(request.getWorkspaceId()), ColumnNameUtil.getColumnName(VmCloudServer::getSourceId, true), request.getWorkspaceId());
         wrapper.like(StringUtils.isNotBlank(request.getInstanceName()), ColumnNameUtil.getColumnName(VmCloudServer::getInstanceName, true), request.getInstanceName());
-        wrapper.like(StringUtils.isNotBlank(request.getAccountName()), ColumnNameUtil.getColumnName(CloudAccount::getName, true), request.getAccountName());
+        wrapper.like(StringUtils.isNotBlank(request.getOsInfo()), ColumnNameUtil.getColumnName(VmCloudServer::getOsInfo, true), request.getOsInfo());
         wrapper.like(StringUtils.isNotBlank(request.getIpArray()), ColumnNameUtil.getColumnName(VmCloudServer::getIpArray, true), request.getIpArray());
         wrapper.in(CollectionUtils.isNotEmpty(request.getAccountIds()), ColumnNameUtil.getColumnName(VmCloudServer::getAccountId, true), request.getAccountIds());
         wrapper.in(CollectionUtils.isNotEmpty(request.getInstanceStatus()), ColumnNameUtil.getColumnName(VmCloudServer::getInstanceStatus, true), request.getInstanceStatus());

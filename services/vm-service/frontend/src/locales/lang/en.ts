@@ -18,6 +18,7 @@ const message = {
       project: "Project",
     },
     vm_tools_status: {
+      not_Installed: "Not Installed",
       running: "Running",
       not_running: "Not Running",
     },

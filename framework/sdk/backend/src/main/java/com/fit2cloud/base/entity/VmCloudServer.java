@@ -310,15 +310,6 @@ public class VmCloudServer implements Serializable {
     private String securityGroupIds;
 
     /**
-     * 删除时间
-     */
-    @TableField("delete_time")
-    @JsonDeserialize(using = LocalDateTimeDeserializer.class)
-    @JsonSerialize(using = LocalDateTimeSerializer.class)
-    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
-    private LocalDateTime deleteTime;
-
-    /**
      * 申请人
      */
     @TableField("apply_user")

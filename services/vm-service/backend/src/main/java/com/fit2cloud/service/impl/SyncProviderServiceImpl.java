@@ -485,6 +485,7 @@ public class SyncProviderServiceImpl extends BaseSyncService implements ISyncPro
         vmCloudServer.setRemoteIp(f2CVirtualMachine.getRemoteIP());
         vmCloudServer.setOsInfo(f2CVirtualMachine.getOsInfo());
         Optional.ofNullable(f2CVirtualMachine.getCreateTime()).ifPresent((createTime) -> vmCloudServer.setCreateTime(DateUtil.timestampToDatetime(createTime)));
+        Optional.ofNullable(f2CVirtualMachine.getExpiredTime()).ifPresent((expiredTime) -> vmCloudServer.setExpiredTime(DateUtil.timestampToDatetime(expiredTime)));
         vmCloudServer.setUpdateTime(updateTime);
         vmCloudServer.setIpArray(JsonUtil.toJSONString(f2CVirtualMachine.getIpArray()));
         Optional.ofNullable(f2CVirtualMachine.getSecurityGroupIds()).ifPresent((theSecurityGroupIds) -> vmCloudServer.setSecurityGroupIds(JsonUtil.toJSONString(theSecurityGroupIds)));
@@ -518,6 +519,7 @@ public class SyncProviderServiceImpl extends BaseSyncService implements ISyncPro
         vmCloudDisk.setStatus(disk.getStatus());
         vmCloudDisk.setDiskChargeType(disk.getDiskChargeType());
         vmCloudDisk.setZone(disk.getZone());
+        Optional.ofNullable(disk.getCreateTime()).ifPresent((createTime) -> vmCloudDisk.setCreateTime(DateUtil.timestampToDatetime(createTime)));
         vmCloudDisk.setUpdateTime(updateTime);
         vmCloudDisk.setImageId(disk.getImageId());
         return vmCloudDisk;

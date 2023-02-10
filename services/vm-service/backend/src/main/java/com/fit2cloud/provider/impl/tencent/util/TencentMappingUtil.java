@@ -63,16 +63,11 @@ public class TencentMappingUtil {
             f2CInstance.setCreated(new Date(utcTime));
             f2CInstance.setCreateTime(utcTime);
         }
-        if (StringUtils.isNotEmpty(instance.getExpiredTime())) {
-            long utcTime = CommonUtil.getUTCTime(instance.getExpiredTime(), "yyyy-MM-dd'T'HH:mm:ss'Z'");
-            f2CInstance.setExpired(new Date(utcTime));
-            f2CInstance.setExpiredTime(utcTime);
-        }
         f2CInstance.setInstanceStatus(toF2CStatus(instance.getInstanceState()));
         f2CInstance.setIpArray(ipArray);
         f2CInstance.setVpcId(instance.getVirtualPrivateCloud().getVpcId());
         f2CInstance.setSubnetId(instance.getVirtualPrivateCloud().getSubnetId());
-        //计费方式
+        // 计费方式
         String instanceChargeType = null;
         switch (instance.getInstanceChargeType()) {
             case "PREPAID":
@@ -87,6 +82,11 @@ public class TencentMappingUtil {
             default:
         }
         f2CInstance.setInstanceChargeType(instanceChargeType);
+        if (F2CChargeType.PRE_PAID.equalsIgnoreCase(f2CInstance.getInstanceChargeType()) && StringUtils.isNotEmpty(instance.getExpiredTime())) {
+            long utcTime = CommonUtil.getUTCTime(instance.getExpiredTime(), "yyyy-MM-dd'T'HH:mm:ss'Z'");
+            f2CInstance.setExpired(new Date(utcTime));
+            f2CInstance.setExpiredTime(utcTime);
+        }
         f2CInstance.setSecurityGroupIds(Arrays.asList(instance.getSecurityGroupIds()));
         long dataSize = Arrays.stream(instance.getDataDisks()).mapToLong(DataDisk::getDiskSize).sum();
         f2CInstance.setDisk(dataSize + (instance.getSystemDisk() != null ? instance.getSystemDisk().getDiskSize() : 0));

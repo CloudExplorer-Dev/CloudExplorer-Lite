@@ -56,8 +56,9 @@
             vm_cloud_server.`snap_shot`,
             vm_cloud_server.`create_time`,
             vm_cloud_server.`update_time`,
-            vm_cloud_server.`delete_time`,
+            vm_cloud_server.`expired_time`,
             vm_cloud_server.`last_operate_time`,
+            IF(vm_cloud_server.instance_status='Deleted',vm_cloud_server.`last_operate_time`,NULL) as delete_time,
             vm_cloud_server.`vm_tools_version`,
             vm_cloud_server.`vm_tools_status`,
             vm_cloud_server.`instance_charge_type`,
@@ -65,14 +66,8 @@
             user._name as apply_user,
             cloud_account.NAME AS account_name,
             cloud_account.platform AS platform,
-            CASE
-                WHEN orgWorkspace.type = "workspace" THEN
-                    orgWorkspace.id ELSE NULL
-                END AS workspace_id,
-            CASE
-                WHEN orgWorkspace.type = "workspace" THEN
-                    orgWorkspace.NAME ELSE NULL
-                END AS workspace_name,
+            IF(orgWorkspace.type = "workspace",orgWorkspace.id,NULL) as workspace_id,
+            IF(orgWorkspace.type = "workspace",orgWorkspace.NAME,NULL) as workspace_name,
             orgWorkspace.organization_id,
             orgWorkspace.organization_name
         FROM
@@ -91,15 +86,8 @@
             vm_cloud_server.*,
             cloud_account.NAME AS account_name,
             cloud_account.platform AS platform,
-            CASE
-                WHEN org_workspace.type = "workspace" THEN
-                    org_workspace.id ELSE NULL
-                END AS workspace_id,
-            CASE
-
-                WHEN org_workspace.type = "workspace" THEN
-                    org_workspace.NAME ELSE NULL
-                END AS workspace_name,
+            IF(org_workspace.type = "workspace",org_workspace.id,NULL) as workspace_id,
+            IF(org_workspace.type = "workspace",org_workspace.NAME,NULL) as workspace_name,
             org_workspace.organization_id,
             org_workspace.organization_name
         FROM
@@ -112,14 +100,8 @@
     <select id="selectServerList" resultMap="serverResultMap">
         SELECT
             vm_cloud_server.*,
-            CASE
-                WHEN org_workspace.type = "workspace" THEN
-                    org_workspace.id ELSE NULL
-                END AS workspace_id,
-            CASE
-                WHEN org_workspace.type = "workspace" THEN
-                    org_workspace.NAME ELSE NULL
-                END AS workspace_name
+            IF(org_workspace.type = "workspace",org_workspace.id,NULL) as workspace_id,
+            IF(org_workspace.type = "workspace",org_workspace.NAME,NULL) as workspace_name
         FROM
             vm_cloud_server
             LEFT JOIN org_workspace ON vm_cloud_server.source_id = org_workspace.id

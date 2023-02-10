@@ -96,8 +96,8 @@ public class AliyunMappingUtil {
                 f2CVirtualMachine.setCreateTime(cTime.getTime());
             }
         }
-        if (instance.getExpiredTime() != null) {
-            Date cTime = getFormatDateTime(instance.getCreationTime());
+        if (F2CChargeType.PRE_PAID.equalsIgnoreCase(instanceChargeType) && instance.getExpiredTime() != null) {
+            Date cTime = getFormatDateTime(instance.getExpiredTime());
             if (cTime != null) {
                 f2CVirtualMachine.setExpired(cTime);
                 f2CVirtualMachine.setExpiredTime(cTime.getTime());

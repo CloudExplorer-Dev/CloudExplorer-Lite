@@ -117,7 +117,7 @@ public class VsphereUtil {
                 }
             }
             instance.setVmToolsVersion(vmGuest.getToolsVersion());
-            instance.setVmToolsStatus(vmGuest.getToolsRunningStatus());
+            instance.setVmToolsStatus(VirtualMachineToolsStatus.toolsNotInstalled.equals(vmGuest.getToolsStatus()) ? VirtualMachineToolsStatus.toolsNotInstalled.name() : vmGuest.getToolsRunningStatus());
             instance.setHostname(vmGuest.hostName);
         }
         instance.setIpArray(ipArray);
