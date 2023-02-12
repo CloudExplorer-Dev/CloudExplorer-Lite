@@ -39,8 +39,6 @@ public class WorkspaceController {
     @ApiOperation(value = "分页查询工作空间", notes = "分页查询工作空间")
     @GetMapping("/list")
     @PreAuthorize("hasAnyCePermission('WORKSPACE:READ')")
-    @OperatedLog(resourceType = ResourceTypeEnum.WORKSPACE, operated = OperatedTypeEnum.SEARCH,
-            param = "#pageWorkspaceRequest")
     public ResultHolder<Object> listByPage(@Validated PageWorkspaceRequest pageWorkspaceRequest) {
         return ResultHolder.success(workspaceService.pageWorkspace(pageWorkspaceRequest));
     }
@@ -80,10 +78,6 @@ public class WorkspaceController {
 
     @ApiOperation(value = "根据ID或者名称获取一个工作空间", notes = "根据ID或者名称获取一个工作空间")
     @GetMapping("/one")
-    @OperatedLog(resourceType = ResourceTypeEnum.WORKSPACE, operated = OperatedTypeEnum.SEARCH,
-            content = "'通过ID为:'+#id+',名称为:'+#name+'查询了工作空间'",
-            resourceId = "#id",
-            param = "#id+#name")
     public ResultHolder<WorkspaceDTO> one(
             @ApiParam("工作空间ID")
             @RequestParam("id") String id,

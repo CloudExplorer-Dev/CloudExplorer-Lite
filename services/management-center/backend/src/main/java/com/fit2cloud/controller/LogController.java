@@ -38,7 +38,6 @@ public class LogController {
     @GetMapping("/system/list")
     @ApiOperation(value = "系统日志搜索", notes = "系统日志搜索")
     @PreAuthorize("hasAnyCePermission('SYS_LOG:READ')")
-    @OperatedLog(resourceType = ResourceTypeEnum.LOG,operated = OperatedTypeEnum.SEARCH,param = "#pageSystemLogRequest")
     public ResultHolder<Object> systemLogs(@Validated PageSystemLogRequest pageSystemLogRequest) {
         return ResultHolder.success(logService.systemLogs(pageSystemLogRequest));
     }
@@ -46,7 +45,6 @@ public class LogController {
     @GetMapping("/operated/list")
     @ApiOperation(value = "操作日志搜索", notes = "操作日志搜索")
     @PreAuthorize("hasAnyCePermission('OPERATED_LOG:READ')")
-    @OperatedLog(resourceType = ResourceTypeEnum.LOG,operated = OperatedTypeEnum.SEARCH,param = "#pageOperatedLogRequest")
     public ResultHolder<Object> apiLogs(@Validated PageOperatedLogRequest pageOperatedLogRequest) {
         return ResultHolder.success(logService.operatedLogs(pageOperatedLogRequest));
     }
