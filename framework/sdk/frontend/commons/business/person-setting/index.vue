@@ -4,7 +4,6 @@ import { useUserStore } from "@commons/stores/modules/user";
 import ModifyPassword from "./ModifyPassword.vue";
 import SourceChangeDialog from "./SourceChangeDialog.vue";
 import PersonInfo from "./PersonInfo.vue";
-import ApiKey from "./Ukey.vue";
 
 const userStore = useUserStore();
 
@@ -26,11 +25,6 @@ const showPasswordDialog = () => {
 const userInfoRef = ref();
 const showUserInfoDialog = () => {
   userInfoRef.value.dialogVisible = true;
-};
-
-const apiKeyRef = ref();
-const showApiKeyDialog = () => {
-  apiKeyRef.value.dialogVisible = true;
 };
 
 const sourceChangeDialogRef = ref();
@@ -57,9 +51,6 @@ const showSourceChangeDialog = () => {
         <el-dropdown-item icon="Edit" @click="showPasswordDialog">
           {{ $t("commons.personal.edit_pwd") }}
         </el-dropdown-item>
-        <el-dropdown-item icon="Key" @click="showApiKeyDialog">
-          API Key
-        </el-dropdown-item>
         <el-dropdown-item icon="Right" divided @click="handleLogout">
           {{ $t("commons.personal.exit_system") }}
         </el-dropdown-item>
@@ -72,9 +63,6 @@ const showSourceChangeDialog = () => {
 
   <!--个人信息弹出框-->
   <PersonInfo ref="userInfoRef" />
-
-  <!--API keys弹出框-->
-  <ApiKey ref="apiKeyRef" />
 
   <SourceChangeDialog ref="sourceChangeDialogRef" />
 </template>
