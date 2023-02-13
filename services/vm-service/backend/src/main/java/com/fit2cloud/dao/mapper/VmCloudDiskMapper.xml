@@ -22,14 +22,8 @@
             cloud_account.NAME AS account_name,
             cloud_account.platform AS platform,
             vm_cloud_server.instance_name AS instance_name,
-            CASE
-                WHEN org_workspace.type = "workspace" THEN
-                    org_workspace.id ELSE NULL
-                END AS workspace_id,
-            CASE
-                WHEN org_workspace.type = "workspace" THEN
-                    org_workspace.NAME ELSE NULL
-                END AS workspace_name,
+            IF(org_workspace.type = "workspace",org_workspace.id,NULL) as workspace_id,
+            IF(org_workspace.type = "workspace",org_workspace.NAME,NULL) as workspace_name,
             org_workspace.organization_id,
             org_workspace.organization_name
         FROM
@@ -54,14 +48,8 @@
             vm_cloud_server.instance_name,
             cloud_account.`name` AS account_name,
             cloud_account.platform,
-            CASE
-                WHEN org_workspace.type = "workspace" THEN
-                    org_workspace.id ELSE NULL
-                END AS workspace_id,
-            CASE
-                WHEN org_workspace.type = "workspace" THEN
-                    org_workspace.NAME ELSE NULL
-                END AS workspace_name,
+            IF(org_workspace.type = "workspace",org_workspace.id,NULL) as workspace_id,
+            IF(org_workspace.type = "workspace",org_workspace.NAME,NULL) as workspace_name,
             org_workspace.organization_id,
             org_workspace.organization_name
         FROM
