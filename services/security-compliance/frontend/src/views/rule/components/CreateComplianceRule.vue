@@ -88,6 +88,7 @@
       >
         <el-select
           style="width: 100%"
+          filterable
           v-model="createComplianceRuleForm.insuranceStatuteIds"
           class="m-2"
           :multiple="true"
@@ -322,6 +323,16 @@ onMounted(() => {
  * 打开弹出框
  */
 const open = () => {
+  createComplianceRuleForm.value = {
+    name: "",
+    ruleGroupId: "",
+    platform: "",
+    resourceType: "",
+    rules: { conditionType: "AND", rules: [], scanRule: "COMPLIANCE" },
+    riskLevel: "LOW",
+    insuranceStatuteIds: [],
+    description: "",
+  };
   createComplianceRuleVisible.value = true;
 };
 // 关闭弹出框

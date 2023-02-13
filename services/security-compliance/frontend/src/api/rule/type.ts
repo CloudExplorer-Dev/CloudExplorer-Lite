@@ -1,4 +1,4 @@
-import type { KeyValue, SimpleMap } from "@commons/api/base/type";
+import type { KeyValue } from "@commons/api/base/type";
 
 interface ComplianceRule {
   /**
@@ -157,7 +157,7 @@ interface UpdateComplianceRuleRequest {
   /**
    * 规则
    */
-  rules: Array<Rule>;
+  rules: Rules;
   /**
    * 风险等级
    */

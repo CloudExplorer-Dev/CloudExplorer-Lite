@@ -88,7 +88,7 @@
         0
         ) AS compliance_count
         <if test="groupType=='CLOUD_ACCOUNT'">
-            , compliance_rule.cloud_account_id as `key`
+            , compliance_scan_result.cloud_account_id as `key`
         </if>
         <if test="groupType=='RESOURCE_TYPE'">
             , compliance_rule.resource_type as `key`
@@ -106,7 +106,7 @@
         ${ew.customSqlSegment}
         <if test="groupType=='CLOUD_ACCOUNT'">
             GROUP BY
-            compliance_rule.cloud_account_id
+            compliance_scan_result.cloud_account_id
         </if>
         <if test="groupType=='RESOURCE_TYPE'">
             GROUP BY
@@ -138,5 +138,6 @@
         FROM
             compliance_rule compliance_rule
                 LEFT JOIN compliance_scan_result compliance_scan_result ON compliance_rule.id = compliance_scan_result.resource_id
+        ${ew.customSqlSegment}
     </select>
 </mapper>

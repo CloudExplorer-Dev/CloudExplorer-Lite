@@ -97,6 +97,7 @@ public class IComplianceViewServiceImpl implements IComplianceViewService {
         complianceViewGroupResponse.setTotal(group.getComplianceCount() + group.getNotComplianceCount());
         complianceViewGroupResponse.setGroupType(groupType);
         complianceViewGroupResponse.setGroupName(getGroupName.apply(group.getKey()));
+        complianceViewGroupResponse.setGroupValue(group.getKey());
         return complianceViewGroupResponse;
     }
 
