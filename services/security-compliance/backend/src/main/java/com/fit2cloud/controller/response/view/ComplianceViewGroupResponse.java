@@ -12,6 +12,8 @@ import lombok.Data;
  */
 @Data
 public class ComplianceViewGroupResponse {
+    @ApiModelProperty(value = "分组值", notes = "分组值")
+    private String groupValue;
     @ApiModelProperty(value = "分组名称", notes = "分组名称")
     private String groupName;
     @ApiModelProperty(value = "分组类型", notes = "分组类型")

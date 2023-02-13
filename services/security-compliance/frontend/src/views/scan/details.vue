@@ -160,7 +160,7 @@ const dataList = ref<Array<ComplianceResourceResponse>>([]);
 // 列表字段数据
 const columns = ref([]);
 // 表格实例对象
-const table: any = ref(null);
+const table = ref(null);
 
 onMounted(() => {
   // 查询合规规则数据

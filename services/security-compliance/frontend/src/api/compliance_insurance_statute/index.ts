@@ -1,4 +1,4 @@
-import { get, post, del, put } from "@commons/request";
+import { get } from "@commons/request";
 import type { Ref } from "vue";
 import type Result from "@commons/request/Result";
 import type { Page } from "@commons/request/Result";
@@ -6,7 +6,6 @@ import type {
   ComplianceInsuranceStatute,
   ComplianceInsuranceStatuteRequest,
 } from "@/api/compliance_insurance_statute/type";
-import type { KeyValue } from "@commons/api/base/type";
 
 /**
  * 分页查询

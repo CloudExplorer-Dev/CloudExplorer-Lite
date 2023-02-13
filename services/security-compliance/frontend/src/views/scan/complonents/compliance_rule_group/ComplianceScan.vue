@@ -12,30 +12,39 @@
         v-for="item in supportCloudAccountResourceList"
         :key="item.cloudAccount.id"
       >
-        <el-checkbox
-          v-model="scanCheckAll[item.cloudAccount.id]"
-          :indeterminate="isIndeterminate[item.cloudAccount.id]"
-          @change="handleCheckAllChange(item, $event)"
-        >
-          <div style="width: 30px; height: 20px">
-            <el-image
-              style="margin-right: 10px"
-              :src="platformIcon[item.cloudAccount.platform].oldIcon"
-            ></el-image
-            >{{ item.cloudAccount.name }}
-          </div>
-        </el-checkbox>
-        <el-checkbox-group
-          v-model="scanFrom[item.cloudAccount.id]"
-          @change="handleCheckedCitiesChange(item.cloudAccount.id, $event)"
-        >
-          <el-checkbox
-            v-for="type in item.resourceTypes"
-            :key="type.value"
-            :label="type.value"
-            >{{ type.key }}</el-checkbox
-          >
-        </el-checkbox-group>
+        <el-row style="width: 100%">
+          <el-col :span="24">
+            <el-checkbox
+              v-model="scanCheckAll[item.cloudAccount.id]"
+              :indeterminate="isIndeterminate[item.cloudAccount.id]"
+              @change="handleCheckAllChange(item, $event)"
+            >
+              <div>
+                <el-image
+                  style="margin-right: 10px"
+                  :src="platformIcon[item.cloudAccount.platform].oldIcon"
+                ></el-image>
+                {{ item.cloudAccount.name }}
+              </div>
+            </el-checkbox>
+          </el-col>
+        </el-row>
+        <el-row style="width: 100%; margin-left: 20px">
+          <el-col :span="24">
+            <el-checkbox-group
+              v-model="scanFrom[item.cloudAccount.id]"
+              @change="handleCheckedCitiesChange(item.cloudAccount.id, $event)"
+            >
+              <el-checkbox
+                v-for="type in item.resourceTypes"
+                :key="type.key"
+                :label="type.value"
+              >
+                {{ type.key }}
+              </el-checkbox>
+            </el-checkbox-group>
+          </el-col>
+        </el-row>
       </el-form-item>
     </el-form>
     <template #footer>

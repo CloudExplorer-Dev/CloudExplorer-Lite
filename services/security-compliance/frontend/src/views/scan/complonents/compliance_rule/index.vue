@@ -24,6 +24,7 @@
             <el-popover placement="right" :width="800" trigger="click">
               <template #reference>
                 <scan_job_status_icon
+                  :show-text="false"
                   :status="scanStatus(resourceType.value, undefined)"
                 ></scan_job_status_icon>
               </template>
@@ -215,7 +216,9 @@ import type {
   CloudAccount,
 } from "@commons/api/cloud_account/type";
 import bus from "@commons/bus";
-let jobInterval: any;
+import { useRoute } from "vue-router";
+const route = useRoute();
+let jobInterval: number;
 // 路由对象
 const router = useRouter();
 onMounted(() => {
@@ -223,6 +226,12 @@ onMounted(() => {
   ruleApi.listResourceType().then((ok) => {
     resourceTypes.value = ok.data;
   });
+  if (route.query.resourceType) {
+    activeResourceType.value = route.query.resourceType as string;
+  }
+  if (route.query.cloudAccountId) {
+    activeCloudAccount.value = route.query.cloudAccountId as string;
+  }
   // 查询列表数据
   table.value.search(table?.value.getTableSearch());
   // 查询云账号数据
@@ -341,7 +350,7 @@ const selectResourceType = (resourceType: string | undefined) => {
 /**
  * 表格实例对象
  */
-const table: any = ref(null);
+const table = ref(null);
 // 列表字段数据
 const columns = ref([]);
 /**

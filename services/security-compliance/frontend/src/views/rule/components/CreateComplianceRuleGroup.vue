@@ -101,6 +101,10 @@ const submit = () => {
  * 打开创建规则组表单
  */
 const open = () => {
+  createComplianceRuleGroupForm.value = {
+    name: "",
+    description: "",
+  };
   createComplianceRuleGroupVisible.value = true;
 };
 /**
