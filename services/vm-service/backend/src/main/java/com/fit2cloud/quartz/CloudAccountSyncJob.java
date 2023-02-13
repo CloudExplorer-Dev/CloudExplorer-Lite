@@ -1,6 +1,10 @@
 package com.fit2cloud.quartz;
 
+import com.fit2cloud.base.entity.CloudAccount;
+import com.fit2cloud.base.service.IBaseCloudAccountService;
+import com.fit2cloud.common.constants.JobConstants;
 import com.fit2cloud.common.log.utils.LogUtil;
+import com.fit2cloud.common.platform.credential.Credential;
 import com.fit2cloud.common.scheduler.handler.AsyncJob;
 import com.fit2cloud.common.utils.SpringUtil;
 import com.fit2cloud.service.ISyncProviderService;
@@ -8,7 +12,11 @@ import jdk.jfr.Name;
 import org.quartz.Job;
 import org.springframework.stereotype.Component;
 
+import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.Objects;
+import java.util.concurrent.CompletableFuture;
 
 /**
  * @Author:张少虎
@@ -69,6 +77,42 @@ public class CloudAccountSyncJob {
         }
     }
 
+    @Name("监控数据同步")
+    public static class SyncMetricMonitor extends AsyncJob implements Job {
+        @Override
+        protected void run(Map<String, Object> map) {
+            List<Map<String, Object>> execParams = getExecParams();
+            for (Map<String, Object> execParam : execParams) {
+                // 云主机监控
+                new SyncCloudServerPerfMetricMonitor().exec(execParam);
+                //  宿主机监控
+                new SyncCloudHostPerfMetricMonitor().exec(execParam);
+                // 云磁盘监控
+                new SyncCloudDiskPerfMetricMonitor().exec(execParam);
+                // 存储器监控
+                new SyncCloudDatastorePerfMetricMonitor().exec(execParam);
+            }
+        }
+
+        /**
+         * 获取执行参数
+         *
+         * @return 所有云账号的执行参数
+         */
+        private List<Map<String, Object>> getExecParams() {
+            List<CloudAccount> cloudAccounts = SpringUtil.getBean(IBaseCloudAccountService.class).list();
+            return cloudAccounts.stream().map(cloudAccount -> {
+                try {
+                    List<Credential.Region> regions = Credential.of(cloudAccount.getPlatform(), cloudAccount.getCredential()).regions();
+                    return JobConstants.CloudAccount.getCloudAccountJobParams(cloudAccount.getId(), regions);
+                } catch (Exception e) {
+                    return null;
+                }
+
+            }).filter(Objects::nonNull).toList();
+        }
+    }
+
     @Name("云主机监控")
     public static class SyncCloudServerPerfMetricMonitor extends AsyncJob implements Job {
         @Override
@@ -78,6 +122,7 @@ public class CloudAccountSyncJob {
             LogUtil.info("同步云主机监控数据结束:", map);
         }
     }
+
     @Name("宿主机监控")
     public static class SyncCloudHostPerfMetricMonitor extends AsyncJob implements Job {
         @Override
@@ -87,6 +132,7 @@ public class CloudAccountSyncJob {
             LogUtil.info("同步宿主机监控数据结束:", map);
         }
     }
+
     @Name("云磁盘监控")
     public static class SyncCloudDiskPerfMetricMonitor extends AsyncJob implements Job {
         @Override
@@ -96,6 +142,7 @@ public class CloudAccountSyncJob {
             LogUtil.info("同步云磁盘监控数据结束:", map);
         }
     }
+
     @Name("存储器监控")
     public static class SyncCloudDatastorePerfMetricMonitor extends AsyncJob implements Job {
         @Override
