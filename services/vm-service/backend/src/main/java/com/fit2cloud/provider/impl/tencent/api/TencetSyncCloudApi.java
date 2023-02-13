@@ -1237,9 +1237,12 @@ public class TencetSyncCloudApi {
                         addMonitorData(k, result, v, F2CEntityType.VIRTUAL_MACHINE.name(), perfMetric.getUnit(), getMetricsRequest.getPeriod(), perfMetric.name(), disk.getInstanceUuid());
                     });
                 } else {
-                    req.setInstances(getInstance("InstanceId", disk.getDiskId()));
-                    Map<Long, BigDecimal> dataMap = getMonitorData(monitorClient, req);
-                    addMonitorData(null, result, dataMap, F2CEntityType.VIRTUAL_MACHINE.name(), perfMetric.getUnit(), getMetricsRequest.getPeriod(), perfMetric.name(), disk.getInstanceUuid());
+                    //这个地方没有云主机所有盘指标，所以只获取系统盘的指标
+                    if(disk.isBootable()){
+                        req.setInstances(getInstance("diskId", disk.getDiskId()));
+                        Map<Long, BigDecimal> dataMap = getMonitorData(monitorClient, req);
+                        addMonitorData(null, result, dataMap, F2CEntityType.VIRTUAL_MACHINE.name(), perfMetric.getUnit(), getMetricsRequest.getPeriod(), perfMetric.name(), disk.getInstanceUuid());
+                    }
                 }
             });
         });
