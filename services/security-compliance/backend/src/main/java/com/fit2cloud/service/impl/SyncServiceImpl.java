@@ -18,6 +18,7 @@ import com.fit2cloud.common.constants.JobTypeConstants;
 import com.fit2cloud.common.job_record.JobLink;
 import com.fit2cloud.common.job_record.JobLinkTypeConstants;
 import com.fit2cloud.common.job_record.JobRecordParam;
+import com.fit2cloud.common.platform.credential.Credential;
 import com.fit2cloud.common.provider.exception.SkipPageException;
 import com.fit2cloud.common.provider.util.CommonUtil;
 import com.fit2cloud.common.utils.JsonUtil;
@@ -73,6 +74,23 @@ public class SyncServiceImpl extends BaseSyncService implements ISyncService {
     @Override
     public void syncInstance(String cloudAccountId, ResourceTypeConstants instanceType) {
         CloudAccount cloudAccount = cloudAccountService.getById(cloudAccountId);
+        // 如果云账号没删除 没查询到
+        if (Objects.isNull(cloudAccount)) {
+            cloudAccountService.deleteJobByCloudAccountId(cloudAccountId);
+            return;
+        } else {
+            // 如果云账号无效 跳过执行
+            if (!cloudAccount.getState()) {
+                return;
+            }
+            Credential credential = Credential.of(cloudAccount.getPlatform(), cloudAccount.getCredential());
+            // 如果云账号无效 修改状态 并且跳过执行
+            if (!credential.verification()) {
+                cloudAccount.setState(false);
+                cloudAccountService.updateById(cloudAccount);
+                return;
+            }
+        }
         // 加锁
         RLock lock = redissonClient.getLock(cloudAccountId + instanceType.name());
         // 如果指定时间拿不到锁就不执行同步

@@ -2,6 +2,7 @@ package com.fit2cloud.service;
 
 import com.baomidou.mybatisplus.core.conditions.Wrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.fit2cloud.base.entity.CloudAccount;
 import com.fit2cloud.base.entity.JobRecord;
@@ -79,6 +80,17 @@ public abstract class BaseSyncService {
             if (lock.tryLock()) {
                 CloudAccount cloudAccount = cloudAccountService.getById(cloudAccountId);
                 if (Objects.nonNull(cloudAccount)) {
+                    // 如果云账号无效 跳过执行
+                    if (!cloudAccount.getState()) {
+                        return;
+                    }
+                    Credential credential = Credential.of(cloudAccount.getPlatform(), cloudAccount.getCredential());
+                    // 如果云账号无效 跳过执行
+                    if (!credential.verification()) {
+                        cloudAccount.setState(false);
+                        cloudAccountService.updateById(cloudAccount);
+                        return;
+                    }
                     LocalDateTime syncTime = getSyncTime();
                     // 初始化一条定时任务记录
                     JobRecord jobRecord = initJobRecord.apply(syncTime);
@@ -176,11 +188,24 @@ public abstract class BaseSyncService {
                                 Consumer<SaveBatchOrUpdateParams<T>> saveBatchOrUpdate,
                                 Consumer<SaveBatchOrUpdateParams<T>> writeJobRecord,
                                 Runnable remote) {
+
         RLock lock = redissonClient.getLock(cloudAccountId + jobDescription);
         try {
             if (lock.tryLock()) {
                 CloudAccount cloudAccount = cloudAccountService.getById(cloudAccountId);
+
                 if (Objects.nonNull(cloudAccount)) {
+                    // 如果云账号无效 跳过执行
+                    if (!cloudAccount.getState()) {
+                        return;
+                    }
+                    Credential credential = Credential.of(cloudAccount.getPlatform(), cloudAccount.getCredential());
+                    // 如果云账号无效 跳过执行
+                    if (!credential.verification()) {
+                        cloudAccount.setState(false);
+                        cloudAccountService.updateById(cloudAccount);
+                        return;
+                    }
                     LocalDateTime syncTime = getSyncTime();
                     //转换为时间戳字符串
                     cloudAccount.setSyncTimeStampStr(String.valueOf(syncTime.toInstant(ZoneOffset.of("+8")).toEpochMilli()));
@@ -198,14 +223,14 @@ public abstract class BaseSyncService {
                                 // 记录同步日志
                                 writeJobRecord.accept(tSaveBatchOrUpdateParams);
                             } catch (SkipPageException ignored) { // 如果发生跳过异常,那么就不同步当前区域
-                                jobRecord.setResult(region+"-"+ignored.getMessage());
+                                jobRecord.setResult(region + "-" + ignored.getMessage());
                                 writeJobRecord.accept(new SaveBatchOrUpdateParams<>(cloudAccountId, syncTime, region, new ArrayList<>(), jobRecord));
                             }
                         }
                         // 修改同步状态为成功
                         baseJobRecordService.update(new LambdaUpdateWrapper<JobRecord>().eq(JobRecord::getId, jobRecord.getId()).set(JobRecord::getStatus, JobStatusConstants.SUCCESS));
                     } catch (Throwable e) {
-                        baseJobRecordService.update(new LambdaUpdateWrapper<JobRecord>().eq(JobRecord::getId, jobRecord.getId()).set(JobRecord::getStatus, JobStatusConstants.FAILED).set(JobRecord::getResult,e.getMessage()));
+                        baseJobRecordService.update(new LambdaUpdateWrapper<JobRecord>().eq(JobRecord::getId, jobRecord.getId()).set(JobRecord::getStatus, JobStatusConstants.FAILED).set(JobRecord::getResult, e.getMessage()));
                     }
                 } else {
                     // 删除云账号相关的资源
