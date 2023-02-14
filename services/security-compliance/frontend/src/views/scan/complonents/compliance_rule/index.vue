@@ -233,7 +233,10 @@ onMounted(() => {
     activeCloudAccount.value = route.query.cloudAccountId as string;
   }
   // 查询列表数据
-  table.value.search(table?.value.getTableSearch());
+  if (table.value) {
+    table.value?.search(table?.value.getTableSearch());
+  }
+
   // 查询云账号数据
   cloudAccountApi.listAll().then((ok) => {
     cloudAccountList.value = [
@@ -264,7 +267,7 @@ onMounted(() => {
           item.resourceId === currentJobRow.value?.resourceId
       );
     });
-  }, 3000);
+  }, 6000);
 });
 /**
  * 给指定不确定的值一个默认值
@@ -350,7 +353,7 @@ const selectResourceType = (resourceType: string | undefined) => {
 /**
  * 表格实例对象
  */
-const table = ref(null);
+const table: any = ref(null);
 // 列表字段数据
 const columns = ref([]);
 /**

@@ -24,9 +24,10 @@ import type {
  * @returns       分页查询云账号列表
  */
 const page: (
-  request: ListOrganizationRequest
-) => Promise<Result<Page<CloudAccount>>> = (request) => {
-  return get("/api/cloud_account/page", request);
+  request: ListOrganizationRequest,
+  loading?: Ref<boolean>
+) => Promise<Result<Page<CloudAccount>>> = (request, loading) => {
+  return get("/api/cloud_account/page", request, loading);
 };
 
 /**

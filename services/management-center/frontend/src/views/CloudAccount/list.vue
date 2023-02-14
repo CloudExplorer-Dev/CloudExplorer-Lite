@@ -139,11 +139,14 @@ const search = (condition: TableSearch) => {
   tableSearch.value = condition;
   const params = TableSearch.toSearchParams(condition);
   cloudAccountApi
-    .page({
-      currentPage: tableConfig.value.paginationConfig.currentPage,
-      pageSize: tableConfig.value.paginationConfig.pageSize,
-      ...params,
-    })
+    .page(
+      {
+        currentPage: tableConfig.value.paginationConfig.currentPage,
+        pageSize: tableConfig.value.paginationConfig.pageSize,
+        ...params,
+      },
+      loading
+    )
     .then((ok) => {
       cloudAccountApi
         .getAccountJobRecord(ok.data.records.map((r) => r.id))
@@ -172,7 +175,7 @@ onMounted(() => {
       .then((data) => {
         cloudAccountJobRecord.value = data.data;
       });
-  }, 6000);
+  }, 8000);
 });
 
 onBeforeUnmount(() => {
@@ -181,6 +184,8 @@ onBeforeUnmount(() => {
   }
 });
 
+// 列表查询 loading
+const loading = ref<boolean>(false);
 const resources = ref<Array<ResourceSync>>([]);
 
 /**
@@ -679,6 +684,7 @@ const syncAll = () => {
     :columns="columns"
     :data="cloudAccountList"
     :tableConfig="tableConfig"
+    v-loading="loading"
     @selection-change="handleSelectionChange"
     row-key="id"
   >

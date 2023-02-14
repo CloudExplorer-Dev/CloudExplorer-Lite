@@ -1,59 +1,56 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.fit2cloud.base.mapper.BaseJobRecordResourceMappingMapper">
-        <resultMap id="ResourceJobRecordMap" type="com.fit2cloud.response.JobRecordResourceResponse">
-            <result column="resource_id" jdbcType="VARCHAR" property="resourceId"/>
-            <result column="resource_type" jdbcType="VARCHAR" property="resourceType"/>
-            <result column="job_record_id" jdbcType="VARCHAR" property="jobRecordId"/>
-            <result column="type" jdbcType="INTEGER" property="type"/>
-            <result column="status" jdbcType="INTEGER" property="status" />
-            <result column="description" jdbcType="VARCHAR" property="description"/>
-            <result column="result" jdbcType="LONGVARCHAR" property="result"/>
-            <result column="params" jdbcType="VARCHAR" property="params"
-                    typeHandler="com.baomidou.mybatisplus.extension.handlers.JacksonTypeHandler"/>
-            <result column="create_time" jdbcType="DATE" property="createTime"/>
-        </resultMap>
+    <resultMap id="ResourceJobRecordMap" type="com.fit2cloud.response.JobRecordResourceResponse">
+        <result column="resource_id" jdbcType="VARCHAR" property="resourceId"/>
+        <result column="resource_type" jdbcType="VARCHAR" property="resourceType"/>
+        <result column="job_record_id" jdbcType="VARCHAR" property="jobRecordId"/>
+        <result column="type" jdbcType="INTEGER" property="type"/>
+        <result column="status" jdbcType="INTEGER" property="status"/>
+        <result column="description" jdbcType="VARCHAR" property="description"/>
+        <result column="result" jdbcType="LONGVARCHAR" property="result"/>
+        <result column="params" jdbcType="VARCHAR" property="params"
+                typeHandler="com.baomidou.mybatisplus.extension.handlers.JacksonTypeHandler"/>
+        <result column="create_time" jdbcType="DATE" property="createTime"/>
+    </resultMap>
 
-        <select id="findLastResourceJobRecord"
-                resultMap="ResourceJobRecordMap">
-            SELECT
-            a.resource_id,
-            a.resource_type,
-            a.create_time,
-            a.job_record_id,
-            j.type,
-            j.`status`,
-            j.description,
-            j.params,
-            j.result
-            FROM
-            job_record_resource_mapping a
-            LEFT JOIN job_record j ON a.job_record_id = j.id
-            RIGHT JOIN (
-            SELECT
-            MAX( aj.create_time ) AS create_time,
-            resource_id,
-            description
-            FROM
-            job_record_resource_mapping aj
-            LEFT JOIN job_record jr ON aj.job_record_id = jr.id
-            WHERE
-            aj.job_type IN
-            <foreach collection="jobTypes" index="index" item="jobType" separator="," close=")" open="(">
-                 #{jobType}
-            </foreach>
-           and aj.resource_id IN
-            <foreach collection="resourceIds" index="index" item="id" separator="," close=")" open="(">
-                #{id}
-            </foreach>
-            GROUP BY
-            aj.resource_id,
-            jr.description
-            ) t1 ON t1.resource_id = a.resource_id
-            AND t1.create_time = a.create_time
-            AND t1.description = j.description
-            AND t1.resource_id = a.resource_id
-            ORDER BY
-            j.description;
-        </select>
+    <select id="findLastResourceJobRecord"
+            resultMap="ResourceJobRecordMap">
+        SELECT
+        job_record_resource_mapping.resource_id,
+        job_record_resource_mapping.resource_type,
+        job_record_resource_mapping.create_time,
+        job_record_resource_mapping.job_record_id,
+        job_record.type,
+        job_record.`status`,
+        job_record.description,
+        job_record.params,
+        job_record.result
+        FROM
+        job_record_resource_mapping job_record_resource_mapping
+        RIGHT JOIN (
+        SELECT
+        MAX(create_time) AS create_time,
+        resource_type AS resource_type,
+        resource_id AS resource_id
+        FROM
+        job_record_resource_mapping job_record_resource_mapping
+        WHERE
+        job_record_resource_mapping.resource_id IN
+        <foreach collection="resourceIds" index="index" item="id" separator="," close=")" open="(">
+            #{id}
+        </foreach>
+        AND job_record_resource_mapping.job_type IN
+        <foreach collection="jobTypes" index="index" item="jobType" separator="," close=")" open="(">
+            #{jobType}
+        </foreach>
+        GROUP BY
+        job_record_resource_mapping.resource_id,
+        job_record_resource_mapping.resource_type
+        ) t1 ON t1.resource_id = job_record_resource_mapping.resource_id
+        AND t1.resource_type = job_record_resource_mapping.resource_type
+        AND t1.create_time = job_record_resource_mapping.create_time
+        LEFT JOIN job_record job_record ON job_record.id=job_record_resource_mapping.job_record_id
+        WHERE job_record_resource_mapping.resource_type is not null
+    </select>
 </mapper>

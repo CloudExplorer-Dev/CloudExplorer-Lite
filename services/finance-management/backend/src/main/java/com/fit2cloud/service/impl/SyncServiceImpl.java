@@ -279,7 +279,7 @@ public class SyncServiceImpl extends BaseSyncService implements SyncService {
      */
     private JobRecord initJobRecord(LocalDateTime syncTime, String cloudAccountId) {
         JobRecord jobRecord = new JobRecord();
-        jobRecord.setDescription(jobDescription);
+        jobRecord.setDescription(com.fit2cloud.constants.JobConstants.JobSyncResourceType.BILL.getMessage());
         jobRecord.setStatus(JobStatusConstants.SYNCING);
         jobRecord.setParams(new HashMap<>());
         jobRecord.setType(JobTypeConstants.CLOUD_ACCOUNT_SYNC_BILL_JOB);
@@ -290,6 +290,7 @@ public class SyncServiceImpl extends BaseSyncService implements SyncService {
         JobRecordResourceMapping jobRecordResourceMapping = new JobRecordResourceMapping();
         jobRecordResourceMapping.setResourceId(cloudAccountId);
         jobRecordResourceMapping.setJobType(JobTypeConstants.CLOUD_ACCOUNT_SYNC_BILL_JOB);
+        jobRecordResourceMapping.setResourceType(com.fit2cloud.constants.JobConstants.JobSyncResourceType.BILL.name());
         jobRecordResourceMapping.setJobRecordId(jobRecord.getId());
         jobRecordResourceMappingService.save(jobRecordResourceMapping);
         return jobRecord;

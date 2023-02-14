@@ -5,6 +5,7 @@ import com.fit2cloud.common.constants.PlatformConstants;
 import com.fit2cloud.dto.job.JobSetting;
 import com.fit2cloud.quartz.CloudAccountSyncJob;
 
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -14,6 +15,30 @@ import java.util.List;
  * @注释:
  */
 public class JobConstants implements JobSettingConfig.JobConfig {
+    public enum JobSyncResourceType {
+        DISK("同步磁盘"),
+        VIRTUAL_MACHINE("同步云主机"),
+        IMAGE("同步镜像"),
+        HOST("同步宿主机"),
+        DATASTORE("同步存储器"),
+        VIRTUAL_MACHINE_PERF_METRIC_MONITOR("同步云主机监控"),
+        HOST_PERF_METRIC_MONITOR("同步宿主机监控"),
+        DISK_PERF_METRIC_MONITOR("同步云磁盘监控"),
+        DATASTORE_PERF_METRIC_MONITOR("同步存储器监控");
+        private String message;
+
+        JobSyncResourceType(String message) {
+            this.message = message;
+        }
+
+        public String getMessage() {
+            return message;
+        }
+
+        public static JobSyncResourceType of(String message) {
+            return Arrays.stream(JobSyncResourceType.values()).filter(item -> item.message.equals(message)).findFirst().orElse(null);
+        }
+    }
 
     /**
      * 同步磁盘
