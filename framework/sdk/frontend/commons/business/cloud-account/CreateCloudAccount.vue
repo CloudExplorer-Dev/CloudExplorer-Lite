@@ -9,7 +9,7 @@ import { useI18n } from "vue-i18n";
 import type { FormInstance, FormRules } from "element-plus";
 import _ from "lodash";
 
-withDefaults(
+const props = withDefaults(
   defineProps<{
     showAside: boolean;
     type: "dialog" | "model";
@@ -134,7 +134,17 @@ const submit = (formEl: FormInstance | undefined) => {
   formEl?.validate((valid) => {
     if (valid) {
       cloudAccountApi.save(form.value, loading).then(() => {
-        router.push({ name: "cloud_account_list" });
+        if (props.type === "model") {
+          router.push({ name: "cloud_account_list" });
+        } else {
+          //router.push("/management-center#/cloud_account/list");
+          window.location.href =
+            window.location.protocol +
+            "//" +
+            window.location.host +
+            "/management-center#/cloud_account/list";
+        }
+
         ElMessage.success(t("commons.msg.save_success", "保存成功"));
       });
     }
