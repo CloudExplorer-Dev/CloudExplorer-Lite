@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { saveUser } from "@commons/api/user";
+import { updateUser } from "@commons/api/user";
 import { ref } from "vue";
 import { ElMessage } from "element-plus";
 import { useI18n } from "vue-i18n";
@@ -22,8 +22,9 @@ const form = ref(defaultUser);
 
 const loading = ref<boolean>(false);
 
-const saveUserInfo = (userInfo: any) => {
-  saveUser(userInfo, loading).then(() => {
+const saveUserInfo = (userInfo: User) => {
+  console.log(userInfo);
+  updateUser(userInfo, loading).then(() => {
     dialogVisible.value = false;
     ElMessage.success(t("commons.msg.save_success"));
   });
@@ -52,11 +53,11 @@ function onOpen() {
       v-loading="loading"
     >
       <el-form-item label="ID">
-        <el-input v-model="form.id" type="text" disabled />
+        <el-input v-model="form.username" type="text" disabled />
       </el-form-item>
       <el-form-item :label="$t('commons.personal.username')">
         <el-input
-          v-model="form.username"
+          v-model="form.name"
           type="text"
           maxlength="30"
           show-word-limit

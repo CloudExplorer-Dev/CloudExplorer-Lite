@@ -4,8 +4,10 @@ import type { FormInstance, FormRules } from "element-plus";
 import { ElMessage } from "element-plus";
 import { useI18n } from "vue-i18n";
 import { updateUserPwd } from "@commons/api/user";
+import { useUserStore } from "@commons/stores/modules/user";
 
 const { t } = useI18n();
+const userStore = useUserStore();
 
 const dialogVisible = ref(false);
 defineExpose({
@@ -41,15 +43,15 @@ const rules: FormRules = {
   newPassword: [
     {
       required: true,
-      message: t("commons.validate.input", [
+      message: t("commons.validate.required", [
         t("commons.personal.new_password"),
       ]),
       trigger: "blur",
     },
     {
-      min: 6,
-      max: 30,
-      message: t("commons.validate.input", ["6", "30"]),
+      required: true,
+      pattern: /^(?!.*\s)(?=.*[A-Z])(?=.*[a-z])(?=.*[0-9])(?=.*[\W_]).{8,30}$/,
+      message: t("commons.validate.pwd"),
       trigger: "blur",
     },
   ],
@@ -70,13 +72,13 @@ const submitForm = (formEl: FormInstance | undefined) => {
   formEl.validate((valid) => {
     if (valid) {
       const param = {
-        password: form.oldPassword,
+        oldPassword: form.oldPassword,
         newPassword: form.newPassword,
       };
       updateUserPwd(param).then(() => {
         dialogVisible.value = false;
         ElMessage.success(t("commons.msg.save_success"));
-        // TODO 退出登录？
+        userStore.doLogout();
       });
     } else {
       return false;
