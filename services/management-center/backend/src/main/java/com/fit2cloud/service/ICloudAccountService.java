@@ -111,7 +111,7 @@ public interface ICloudAccountService extends IService<CloudAccount> {
      *
      * @return 所有的模块定时任务
      */
-    List<SyncResource> getModuleResourceJob();
+    List<SyncResource> getModuleResourceJob(String cloudAccountId);
 
     /**
      * 同步任务
@@ -149,6 +149,7 @@ public interface ICloudAccountService extends IService<CloudAccount> {
 
     /**
      * 获取云账号资源计数（动态）
+     *
      * @param accountId
      * @return
      */
@@ -156,6 +157,7 @@ public interface ICloudAccountService extends IService<CloudAccount> {
 
     /**
      * 获取云账号同步记录
+     *
      * @param syncRecordRequest
      * @return
      */

@@ -3,6 +3,7 @@ package com.fit2cloud.quartz;
 import com.fit2cloud.base.entity.CloudAccount;
 import com.fit2cloud.base.service.IBaseCloudAccountService;
 import com.fit2cloud.common.constants.JobConstants;
+import com.fit2cloud.common.constants.PlatformConstants;
 import com.fit2cloud.common.log.utils.LogUtil;
 import com.fit2cloud.common.platform.credential.Credential;
 import com.fit2cloud.common.scheduler.handler.AsyncJob;
@@ -10,6 +11,8 @@ import com.fit2cloud.common.utils.SpringUtil;
 import com.fit2cloud.service.ISyncProviderService;
 import jdk.jfr.Name;
 import org.quartz.Job;
+import org.quartz.JobExecutionContext;
+import org.quartz.JobExecutionException;
 import org.springframework.stereotype.Component;
 
 import java.util.HashMap;
@@ -17,6 +20,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
+import java.util.function.Predicate;
 
 /**
  * @Author:张少虎
@@ -82,17 +86,20 @@ public class CloudAccountSyncJob {
         @Override
         protected void run(Map<String, Object> map) {
             List<Map<String, Object>> execParams = getExecParams();
-            for (Map<String, Object> execParam : execParams) {
+            List<CloudAccount> cloudAccounts = SpringUtil.getBean(IBaseCloudAccountService.class).list();
+            for (CloudAccount cloudAccount : cloudAccounts) {
                 // 云主机监控
-                new SyncCloudServerPerfMetricMonitor().exec(execParam);
+                new SyncCloudServerPerfMetricMonitor().exec(cloudAccount);
                 //  宿主机监控
-                new SyncCloudHostPerfMetricMonitor().exec(execParam);
+                new SyncCloudHostPerfMetricMonitor().exec(cloudAccount);
                 // 云磁盘监控
-                new SyncCloudDiskPerfMetricMonitor().exec(execParam);
+                new SyncCloudDiskPerfMetricMonitor().exec(cloudAccount);
                 // 存储器监控
-                new SyncCloudDatastorePerfMetricMonitor().exec(execParam);
+                new SyncCloudDatastorePerfMetricMonitor().exec(cloudAccount);
             }
+
         }
+
 
         /**
          * 获取执行参数
@@ -121,6 +128,17 @@ public class CloudAccountSyncJob {
             SpringUtil.getBean(ISyncProviderService.class).syncCloudServerPerfMetricMonitor(map);
             LogUtil.info("同步云主机监控数据结束:", map);
         }
+
+        public Predicate<String> supportPlatform() {
+            return (platform) -> true;
+        }
+
+        public void exec(CloudAccount cloudAccount) {
+            if (supportPlatform().test(cloudAccount.getPlatform())) {
+                List<Credential.Region> regions = Credential.of(cloudAccount.getPlatform(), cloudAccount.getCredential()).regions();
+                exec(JobConstants.CloudAccount.getCloudAccountJobParams(cloudAccount.getId(), regions));
+            }
+        }
     }
 
     @Name("宿主机监控")
@@ -130,6 +148,17 @@ public class CloudAccountSyncJob {
             LogUtil.info("开始同步宿主机监控数据: ", map);
             SpringUtil.getBean(ISyncProviderService.class).syncCloudHostPerfMetricMonitor(map);
             LogUtil.info("同步宿主机监控数据结束:", map);
+        }
+
+        public Predicate<String> supportPlatform() {
+            return (platform) -> PlatformConstants.fit2cloud_vsphere_platform.name().equals(platform) || PlatformConstants.fit2cloud_openstack_platform.name().equals(platform);
+        }
+
+        public void exec(CloudAccount cloudAccount) {
+            if (supportPlatform().test(cloudAccount.getPlatform())) {
+                List<Credential.Region> regions = Credential.of(cloudAccount.getPlatform(), cloudAccount.getCredential()).regions();
+                exec(JobConstants.CloudAccount.getCloudAccountJobParams(cloudAccount.getId(), regions));
+            }
         }
     }
 
@@ -141,6 +170,17 @@ public class CloudAccountSyncJob {
             SpringUtil.getBean(ISyncProviderService.class).syncCloudDiskPerfMetricMonitor(map);
             LogUtil.info("同步云磁盘监控数据结束:", map);
         }
+
+        public Predicate<String> supportPlatform() {
+            return (platform) -> true;
+        }
+
+        public void exec(CloudAccount cloudAccount) {
+            if (supportPlatform().test(cloudAccount.getPlatform())) {
+                List<Credential.Region> regions = Credential.of(cloudAccount.getPlatform(), cloudAccount.getCredential()).regions();
+                exec(JobConstants.CloudAccount.getCloudAccountJobParams(cloudAccount.getId(), regions));
+            }
+        }
     }
 
     @Name("存储器监控")
@@ -150,6 +190,17 @@ public class CloudAccountSyncJob {
             LogUtil.info("开始同步存储器监控数据: ", map);
             SpringUtil.getBean(ISyncProviderService.class).syncCloudDatastorePerfMetricMonitor(map);
             LogUtil.info("同步存储器监控数据结束:", map);
+        }
+
+        public Predicate<String> supportPlatform() {
+            return (platform) -> PlatformConstants.fit2cloud_vsphere_platform.name().equals(platform);
+        }
+
+        public void exec(CloudAccount cloudAccount) {
+            if (supportPlatform().test(cloudAccount.getPlatform())) {
+                List<Credential.Region> regions = Credential.of(cloudAccount.getPlatform(), cloudAccount.getCredential()).regions();
+                exec(JobConstants.CloudAccount.getCloudAccountJobParams(cloudAccount.getId(), regions));
+            }
         }
     }
 }

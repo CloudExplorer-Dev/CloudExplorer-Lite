@@ -24,6 +24,10 @@ public enum JobTypeConstants {
     SECURITY_COMPLIANCE_CLOUD_ACCOUNT_SYNC_JOB(103),
 
     /**
+     * 云账号监控数据同步类型
+     */
+    CLOUD_ACCOUNT_SYNC_METRIC_MONITOR(104),
+    /**
      * 云主机操作任务
      */
     CLOUD_SERVER_OPERATE_JOB(200),

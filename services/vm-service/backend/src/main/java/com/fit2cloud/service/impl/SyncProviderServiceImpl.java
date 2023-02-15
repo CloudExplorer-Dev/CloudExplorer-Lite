@@ -418,14 +418,14 @@ public class SyncProviderServiceImpl extends BaseSyncService implements ISyncPro
         jobRecord.setDescription(jobSyncResourceType.getMessage());
         jobRecord.setStatus(JobStatusConstants.SYNCING);
         jobRecord.setParams(new HashMap<>());
-        jobRecord.setType(JobTypeConstants.CLOUD_ACCOUNT_SYNC_JOB);
+        jobRecord.setType(jobSyncResourceType.getJobType());
         jobRecord.setCreateTime(syncTime);
         // 插入任务数据
         baseJobRecordService.save(jobRecord);
         // 插入关联关系
         JobRecordResourceMapping jobRecordResourceMapping = new JobRecordResourceMapping();
         jobRecordResourceMapping.setResourceId(cloudAccountId);
-        jobRecordResourceMapping.setJobType(JobTypeConstants.CLOUD_ACCOUNT_SYNC_JOB);
+        jobRecordResourceMapping.setJobType(jobSyncResourceType.getJobType());
         jobRecordResourceMapping.setResourceType(jobSyncResourceType.name());
         jobRecordResourceMapping.setJobRecordId(jobRecord.getId());
         jobRecordResourceMappingService.save(jobRecordResourceMapping);

@@ -41,6 +41,7 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
+import java.lang.reflect.InvocationTargetException;
 import java.util.*;
 import java.util.function.Predicate;
 
@@ -65,7 +66,7 @@ public class BaseCloudAccountServiceImpl extends ServiceImpl<BaseCloudAccountMap
         JobModuleInfo moduleJobInfo = JobSettingConfig.getModuleJobInfo();
         moduleJobInfo.getJobDetails().stream()
                 .filter(j -> j.getCloudAccountShow().test(cloudAccount.getPlatform()))
-                .filter(job -> job.getJobGroup().equals(JobConstants.Group.CLOUD_ACCOUNT_RESOURCE_SYNC_GROUP.name()) || job.getJobGroup().equals(JobConstants.Group.CLOUD_ACCOUNT_BILL_SYNC_GROUP.name()))
+                .filter(job -> job.getJobGroup().equals(JobConstants.Group.CLOUD_ACCOUNT_RESOURCE_SYNC_GROUP.name()) || job.getJobGroup().equals(JobConstants.Group.CLOUD_ACCOUNT_BILL_SYNC_GROUP.name()) || job.getJobGroup().equals(JobConstants.Group.CLOUD_COMPLIANCE_RESOURCE_SYNC_GROUP.name()))
                 .forEach(job -> {
                     String cloudAccountJobName = JobConstants.CloudAccount.getCloudAccountJobName(job.getJobName(), cloudAccountId);
                     if (!schedulerService.inclusionJobDetails(cloudAccountJobName, job.getJobGroup())) {
@@ -132,7 +133,6 @@ public class BaseCloudAccountServiceImpl extends ServiceImpl<BaseCloudAccountMap
             boolean activeReadOnly = job.getActiveReadOnly().test(cloudAccount.getPlatform());
             boolean cronReadOnly = job.getCronReadOnly().test(cloudAccount.getPlatform());
             if (jobDetail.isPresent()) {
-
                 return getJobItem(jobDetail.get(), activeReadOnly, cronReadOnly);
             } else {
                 // todo 针对资源同步参数设置
@@ -201,23 +201,28 @@ public class BaseCloudAccountServiceImpl extends ServiceImpl<BaseCloudAccountMap
     }
 
     @Override
-    public List<SyncResource> getModuleResourceJob() {
+    public List<SyncResource> getModuleResourceJob(String cloudAccountId) {
+        CloudAccount cloudAccount = getById(cloudAccountId);
         JobModuleInfo moduleJobInfo = JobSettingConfig.getModuleJobInfo();
-        return moduleJobInfo.getJobDetails().stream().filter(item -> item.getJobGroup().equals(JobConstants.Group.CLOUD_ACCOUNT_RESOURCE_SYNC_GROUP.name())).map(item -> {
-            SyncResource syncResource = new SyncResource();
-            syncResource.setResourceDesc(item.getDescription());
-            syncResource.setJobName(item.getJobName());
-            syncResource.setJobGroup(item.getJobGroup());
-            syncResource.setModule(moduleJobInfo.getModule());
-            return syncResource;
-        }).toList();
+        return moduleJobInfo.getJobDetails()
+                .stream()
+                .filter(item -> item.getJobGroup().equals(JobConstants.Group.CLOUD_ACCOUNT_RESOURCE_SYNC_GROUP.name()))
+                .filter(item -> item.getCloudAccountShow().test(cloudAccount.getPlatform()))
+                .map(item -> {
+                    SyncResource syncResource = new SyncResource();
+                    syncResource.setResourceDesc(item.getDescription());
+                    syncResource.setJobName(item.getJobName());
+                    syncResource.setJobGroup(item.getJobGroup());
+                    syncResource.setModule(moduleJobInfo.getModule());
+                    return syncResource;
+                }).toList();
     }
 
     @Override
     public void sync(SyncRequest syncRequest) {
         JobModuleInfo moduleJobInfo = JobSettingConfig.getModuleJobInfo();
         for (SyncRequest.Job job : syncRequest.getSyncJob()) {
-            moduleJobInfo.getJobDetails().stream().filter(j -> StringUtils.equals(job.getJobName(), j.getJobName()) && (StringUtils.equals(j.getJobGroup(), JobConstants.Group.CLOUD_ACCOUNT_RESOURCE_SYNC_GROUP.name()) || StringUtils.equals(j.getJobGroup(), JobConstants.Group.CLOUD_ACCOUNT_BILL_SYNC_GROUP.name()))).findAny().ifPresent(j -> {
+            moduleJobInfo.getJobDetails().stream().filter(j -> StringUtils.equals(job.getJobName(), j.getJobName()) && StringUtils.equals(job.getJobGroup(), j.getJobGroup())).findAny().ifPresent(j -> {
                 exec(syncRequest, j);
             });
         }
@@ -227,6 +232,35 @@ public class BaseCloudAccountServiceImpl extends ServiceImpl<BaseCloudAccountMap
     public void sync(String jobName, String groupName, String cloudAccountId, Map<String, Object> params) {
         JobModuleInfo moduleJobInfo = JobSettingConfig.getModuleJobInfo();
         moduleJobInfo.getJobDetails().stream().filter(jobSettingParent -> jobSettingParent.getJobName().equals(jobName) && groupName.equals(jobSettingParent.getJobGroup())).findFirst().ifPresent(jobSettingParent -> exec(params, jobSettingParent, cloudAccountId));
+    }
+
+    @Override
+    public void sync(String cloudAccountId) {
+        CloudAccountModuleJob cloudAccountJob = getCloudAccountJob(cloudAccountId);
+        JobModuleInfo moduleJobInfo = JobSettingConfig.getModuleJobInfo();
+        List<JobSetting> jobDetails = moduleJobInfo.getJobDetails();
+        if (Objects.nonNull(cloudAccountJob) && CollectionUtils.isNotEmpty(cloudAccountJob.getJobDetailsList()) && CollectionUtils.isNotEmpty(jobDetails)) {
+            for (CloudAccountJobItem cloudAccountJobItem : cloudAccountJob.getJobDetailsList()) {
+                jobDetails.stream().filter(job -> {
+                            if (job.getJobGroup().equals(JobConstants.Group.SYSTEM_GROUP.name())) {
+                                return true;
+                            }
+                            return job.getJobGroup().equals(cloudAccountJobItem.getJobGroup())
+                                    && cloudAccountJobItem.getJobName().equals(JobConstants.CloudAccount.getCloudAccountJobName(job.getJobName(), cloudAccountId));
+                        }
+                ).findFirst().ifPresent(job -> {
+                    try {
+                        Job jobHandler = job.getJobHandler().getConstructor().newInstance();
+                        if (jobHandler instanceof AsyncJob) {
+                            ((AsyncJob) jobHandler).exec(cloudAccountJobItem.getParams());
+                        }
+                    } catch (Exception e) {
+                        throw new RuntimeException(e);
+                    }
+                });
+            }
+        }
+
     }
 
 

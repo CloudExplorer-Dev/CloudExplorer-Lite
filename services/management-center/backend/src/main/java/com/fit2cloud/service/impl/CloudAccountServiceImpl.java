@@ -32,6 +32,7 @@ import com.fit2cloud.controller.response.cloud_account.PlatformResponse;
 import com.fit2cloud.dao.entity.CloudAccount;
 import com.fit2cloud.dao.mapper.CloudAccountMapper;
 import com.fit2cloud.redis.RedisService;
+import com.fit2cloud.request.cloud_account.CloudAccountJobItem;
 import com.fit2cloud.request.cloud_account.CloudAccountModuleJob;
 import com.fit2cloud.request.cloud_account.SyncRequest;
 import com.fit2cloud.response.JobRecordResourceResponse;
@@ -41,6 +42,7 @@ import com.fit2cloud.service.ICloudAccountService;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.Nullable;
+import org.openstack4j.model.sahara.ServiceInfo;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpMethod;
@@ -127,8 +129,8 @@ public class CloudAccountServiceImpl extends ServiceImpl<CloudAccountMapper, Clo
     /**
      * 获取同步任务资源
      */
-    private final Function<String, List<SyncResource>> getResourceJob = (String module) -> {
-        String httpUrl = ServiceUtil.getHttpUrl(module, "/api/base/cloud_account/job/resource");
+    private final BiFunction<String, String, List<SyncResource>> getResourceJob = (String module, String cloudAccountId) -> {
+        String httpUrl = ServiceUtil.getHttpUrl(module, "/api/base/cloud_account/job/resource/" + cloudAccountId);
         ResponseEntity<ResultHolder<List<SyncResource>>> exchange = restTemplate.exchange(httpUrl, HttpMethod.GET, HttpEntity.EMPTY, new ParameterizedTypeReference<ResultHolder<List<SyncResource>>>() {
         });
         if (!Objects.requireNonNull(exchange.getBody()).getCode().equals(200)) {
@@ -144,6 +146,19 @@ public class CloudAccountServiceImpl extends ServiceImpl<CloudAccountMapper, Clo
         String httpUrl = ServiceUtil.getHttpUrl(module, "/api/base/cloud_account/sync");
         HttpEntity<SyncRequest> requestHttpEntity = new HttpEntity<>(request);
         ResponseEntity<ResultHolder<Boolean>> exchange = restTemplate.exchange(httpUrl, HttpMethod.POST, requestHttpEntity, new ParameterizedTypeReference<ResultHolder<Boolean>>() {
+        });
+        if (!Objects.requireNonNull(exchange.getBody()).getCode().equals(200)) {
+            throw new Fit2cloudException(exchange.getBody().getCode(), exchange.getBody().getMessage());
+        }
+        return exchange.getBody().getData();
+    };
+
+    /**
+     * 同步指定模块 指定云账的所有任务
+     */
+    private final BiFunction<String, String, Boolean> syncByCloudAccountId = (String module, String cloudAccountId) -> {
+        String httpUrl = ServiceUtil.getHttpUrl(module, "/api/base/cloud_account/sync/" + cloudAccountId);
+        ResponseEntity<ResultHolder<Boolean>> exchange = restTemplate.exchange(httpUrl, HttpMethod.POST, HttpEntity.EMPTY, new ParameterizedTypeReference<ResultHolder<Boolean>>() {
         });
         if (!Objects.requireNonNull(exchange.getBody()).getCode().equals(200)) {
             throw new Fit2cloudException(exchange.getBody().getCode(), exchange.getBody().getMessage());
@@ -338,10 +353,10 @@ public class CloudAccountServiceImpl extends ServiceImpl<CloudAccountMapper, Clo
     }
 
     @Override
-    public List<SyncResource> getModuleResourceJob() {
+    public List<SyncResource> getModuleResourceJob(String cloudAccountId) {
         return ServiceUtil.getServicesExcludeGatewayAndIncludeSelf(ServerInfo.module)
                 .stream()
-                .map(moduleId -> CompletableFuture.supplyAsync(() -> getSyncResource(moduleId), securityContextWorkThreadPool))
+                .map(moduleId -> CompletableFuture.supplyAsync(() -> getSyncResource(moduleId, cloudAccountId), securityContextWorkThreadPool))
                 .map(CompletableFuture::join)
                 .flatMap(Collection::stream)
                 .filter(Objects::nonNull)
@@ -380,11 +395,11 @@ public class CloudAccountServiceImpl extends ServiceImpl<CloudAccountMapper, Clo
      * @param module 模块名称
      * @return 模块的任务
      */
-    public List<SyncResource> getSyncResource(String module) {
+    public List<SyncResource> getSyncResource(String module, String cloudAccountId) {
         if (module.equals(ServerInfo.module)) {
-            return baseCloudAccountService.getModuleResourceJob();
+            return baseCloudAccountService.getModuleResourceJob(cloudAccountId);
         } else {
-            return getResourceJob.apply(module);
+            return getResourceJob.apply(module, cloudAccountId);
         }
     }
 
@@ -438,18 +453,17 @@ public class CloudAccountServiceImpl extends ServiceImpl<CloudAccountMapper, Clo
         }
     }
 
-    private void syncByCloudAccountId(String cloudAccountId) {
-        SyncRequest syncRequest = new SyncRequest();
-        // 获取同步资源
-        List<SyncResource> moduleResourceJob = getModuleResourceJob();
-        // 获取区域
-        List<Credential.Region> regionByAccountId = listRegions(cloudAccountId);
-        syncRequest.setParams(new HashMap<>() {{
-            put(JobConstants.CloudAccount.REGIONS.name(), regionByAccountId);
-        }});
-        syncRequest.setCloudAccountId(cloudAccountId);
-        syncRequest.setSyncJob(moduleResourceJob.stream().map(r -> new SyncRequest.Job(r.getModule(), r.getJobName(), JobConstants.Group.CLOUD_ACCOUNT_RESOURCE_SYNC_GROUP.name())).toList());
-        sync(syncRequest);
+    /**
+     * 根据云账号同步
+     *
+     * @param cloudAccountId 云账号
+     */
+    private List<CompletableFuture<Boolean>> syncByCloudAccountId(String cloudAccountId) {
+        List<CompletableFuture<Boolean>> completableFutures = ServiceUtil.getServicesExcludeGatewayAndIncludeSelf(ServerInfo.module)
+                .stream()
+                .map(moduleId -> CompletableFuture.supplyAsync(() -> syncByCloudAccountId.apply(moduleId, cloudAccountId), securityContextWorkThreadPool))
+                .toList();
+        return completableFutures;
     }
 
     /**

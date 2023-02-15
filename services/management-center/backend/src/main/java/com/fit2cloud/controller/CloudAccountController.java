@@ -169,10 +169,10 @@ public class CloudAccountController {
         return ResultHolder.success(cloudAccountService.updateJob(updateJobsRequest));
     }
 
-    @GetMapping("/jobs/resource")
+    @GetMapping("/jobs/resource/{cloudAccountId}")
     @ApiOperation(value = "获取所有模块的同步资源", notes = "获取所有模块的同步资源")
-    public ResultHolder<List<SyncResource>> getResourceJobs() {
-        List<SyncResource> moduleResourceJob = cloudAccountService.getModuleResourceJob();
+    public ResultHolder<List<SyncResource>> getResourceJobs(@PathVariable String cloudAccountId) {
+        List<SyncResource> moduleResourceJob = cloudAccountService.getModuleResourceJob(cloudAccountId);
         return ResultHolder.success(moduleResourceJob);
     }
 
