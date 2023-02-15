@@ -285,8 +285,9 @@ const save = (resource: string, formEl: FormInstance | undefined) => {
       }
     });
   } else {
-    job.value.submitForm(false);
-    syncEditable.value = false;
+    job.value.submitForm(false).then(() => {
+      syncEditable.value = false;
+    });
   }
 };
 

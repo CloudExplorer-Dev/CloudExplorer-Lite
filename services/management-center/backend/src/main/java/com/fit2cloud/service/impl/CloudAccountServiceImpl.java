@@ -7,6 +7,7 @@ import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.fit2cloud.autoconfigure.ServerInfo;
+import com.fit2cloud.base.entity.JobRecord;
 import com.fit2cloud.base.entity.VmCloudDisk;
 import com.fit2cloud.base.entity.VmCloudImage;
 import com.fit2cloud.base.entity.VmCloudServer;
@@ -495,7 +496,7 @@ public class CloudAccountServiceImpl extends ServiceImpl<CloudAccountMapper, Clo
 
     public IPage<JobRecordResourceResponse> pageSyncRecord(SyncRecordRequest syncRecordRequest) {
         Page<JobRecordResourceResponse> syncRecordPage = PageUtil.of(syncRecordRequest, JobRecordResourceResponse.class);
-        QueryWrapper wrapper = Wrappers.query();
+        QueryWrapper wrapper = Wrappers.query().in(ColumnNameUtil.getColumnName(JobRecord::getType, false), List.of(JobTypeConstants.CLOUD_ACCOUNT_SYNC_JOB, JobTypeConstants.CLOUD_ACCOUNT_SYNC_BILL_JOB));
         wrapper.eq("resource_id", syncRecordRequest.getCloudAccountId());
         return baseMapper.pageSyncRecord(syncRecordPage, wrapper);
     }

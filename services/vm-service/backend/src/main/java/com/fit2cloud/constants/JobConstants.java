@@ -83,7 +83,7 @@ public class JobConstants implements JobSettingConfig.JobConfig {
         // 同步存储器
         JobSetting syncDatastore = new JobSetting(CloudAccountSyncJob.SyncDatastoreJob.class, SYNC_DATASTORE, com.fit2cloud.common.constants.JobConstants.Group.CLOUD_ACCOUNT_RESOURCE_SYNC_GROUP.name(), "同步存储器", null, p -> p.equals(PlatformConstants.fit2cloud_vsphere_platform.name()) || p.equals(PlatformConstants.fit2cloud_openstack_platform.name()));
         // 同步监控数据
-        JobSetting syncMetricMonitor = new JobSetting(CloudAccountSyncJob.SyncMetricMonitor.class, SYNC_METRIC_MONITOR, com.fit2cloud.common.constants.JobConstants.Group.SYSTEM_GROUP.name(), "同步监控数据", null, "0 5 * * * ? *", p -> true);
+        JobSetting syncMetricMonitor = new JobSetting(CloudAccountSyncJob.SyncMetricMonitor.class, SYNC_METRIC_MONITOR, com.fit2cloud.common.constants.JobConstants.Group.SYSTEM_GROUP.name(), "同步监控数据", null, "0 5 * * * ? *", p -> true, p -> false, p -> false);
         return List.of(syncDisk, syncVirtual, syncImage, syncHost, syncDatastore, syncMetricMonitor);
     }
 }

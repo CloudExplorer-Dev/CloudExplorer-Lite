@@ -113,13 +113,19 @@ const change = (selectRegion: Array<string>) => {
 /**
  * 监听数据,并且修改里面的区域值
  */
-watch(checkedRegionIds, () => {
-  props.jobDetails.forEach((job) => {
-    job.params["REGIONS"] = props.regions.filter((r) =>
-      checkedRegionIds.value.includes(r.regionId)
-    );
-  });
-});
+watch(
+  checkedRegionIds,
+  () => {
+    props.jobDetails.forEach((job) => {
+      job.params["REGIONS"] = props.regions.filter((r) =>
+        checkedRegionIds.value.includes(r.regionId)
+      );
+    });
+  },
+  {
+    immediate: true,
+  }
+);
 
 watch(
   () => props.jobDetails,

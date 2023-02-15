@@ -101,6 +101,10 @@ interface ModuleJob {
  */
 interface JobDetails {
   /**
+   * 定时任务类型 CRON表达式 INTERVAL:间隔
+   */
+  jobType: string;
+  /**
    * 定时任务名称
    */
   jobName: string;
@@ -125,7 +129,23 @@ interface JobDetails {
   /**
    * cron表达式
    */
-  cronExpression: string;
+  cronExpression?: string;
+  /**
+   * 间隔
+   */
+  interval?: number;
+  /**
+   * 间隔单位
+   */
+  unit?: "MINUTE" | "HOUR" | "DAY" | "WEEK" | "MONTH";
+  /**
+   * 定时任务状态是否只读
+   */
+  activeReadOnly: boolean;
+  /**
+   * 定时任务数据是否只读
+   */
+  cronReadOnly: boolean;
 }
 interface UpdateJobsRequest extends CloudAccountJobDetailsResponse {
   cloudAccountId: string;
