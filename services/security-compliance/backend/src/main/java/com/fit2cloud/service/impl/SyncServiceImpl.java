@@ -13,16 +13,20 @@ import com.fit2cloud.base.entity.JobRecord;
 import com.fit2cloud.base.entity.JobRecordResourceMapping;
 import com.fit2cloud.base.service.IBaseCloudAccountService;
 import com.fit2cloud.base.service.IBaseJobRecordResourceMappingService;
+import com.fit2cloud.common.constants.JobConstants;
 import com.fit2cloud.common.constants.JobStatusConstants;
 import com.fit2cloud.common.constants.JobTypeConstants;
 import com.fit2cloud.common.job_record.JobLink;
 import com.fit2cloud.common.job_record.JobLinkTypeConstants;
 import com.fit2cloud.common.job_record.JobRecordParam;
+import com.fit2cloud.common.platform.credential.Credential;
 import com.fit2cloud.common.provider.exception.SkipPageException;
 import com.fit2cloud.common.provider.util.CommonUtil;
 import com.fit2cloud.common.utils.JsonUtil;
+import com.fit2cloud.common.utils.SpringUtil;
 import com.fit2cloud.constants.ResourceTypeConstants;
 import com.fit2cloud.constants.SyncDimensionConstants;
+import com.fit2cloud.controller.response.compliance_scan.SupportCloudAccountResourceResponse;
 import com.fit2cloud.dao.entity.ComplianceRule;
 import com.fit2cloud.dao.entity.ComplianceScanResult;
 import com.fit2cloud.es.entity.ResourceInstance;
@@ -30,6 +34,7 @@ import com.fit2cloud.provider.ICloudProvider;
 import com.fit2cloud.service.*;
 import io.reactivex.rxjava3.functions.Action;
 import lombok.SneakyThrows;
+import org.apache.commons.collections4.keyvalue.DefaultKeyValue;
 import org.redisson.api.RLock;
 import org.springframework.data.elasticsearch.annotations.Document;
 import org.springframework.data.elasticsearch.client.elc.ElasticsearchTemplate;
@@ -73,6 +78,23 @@ public class SyncServiceImpl extends BaseSyncService implements ISyncService {
     @Override
     public void syncInstance(String cloudAccountId, ResourceTypeConstants instanceType) {
         CloudAccount cloudAccount = cloudAccountService.getById(cloudAccountId);
+        // 如果云账号没删除 没查询到
+        if (Objects.isNull(cloudAccount)) {
+            cloudAccountService.deleteJobByCloudAccountId(cloudAccountId);
+            return;
+        } else {
+            // 如果云账号无效 跳过执行
+            if (!cloudAccount.getState()) {
+                return;
+            }
+            Credential credential = Credential.of(cloudAccount.getPlatform(), cloudAccount.getCredential());
+            // 如果云账号无效 修改状态 并且跳过执行
+            if (!credential.verification()) {
+                cloudAccount.setState(false);
+                cloudAccountService.updateById(cloudAccount);
+                return;
+            }
+        }
         // 加锁
         RLock lock = redissonClient.getLock(cloudAccountId + instanceType.name());
         // 如果指定时间拿不到锁就不执行同步
@@ -186,6 +208,18 @@ public class SyncServiceImpl extends BaseSyncService implements ISyncService {
                     syncInstance(cloudAccountId, ResourceTypeConstants.valueOf(type));
                 }
             }, workThreadPool);
+        }
+    }
+
+    @Override
+    public void syncInstance(String cloudAccountId) {
+        IComplianceScanService complianceScanService = SpringUtil.getBean(IComplianceScanService.class);
+        List<SupportCloudAccountResourceResponse> supportCloudAccountResourceResponses = complianceScanService.listSupportCloudAccountResource();
+        for (SupportCloudAccountResourceResponse supportCloudAccountResource : supportCloudAccountResourceResponses) {
+            if (supportCloudAccountResource.getCloudAccount().getId().equals(cloudAccountId)) {
+                syncInstance(supportCloudAccountResource.getCloudAccount().getId(), supportCloudAccountResource.getResourceTypes()
+                        .stream().map(DefaultKeyValue::getValue).toList());
+            }
         }
     }
 

@@ -65,27 +65,27 @@ public class SyncProviderServiceImpl extends BaseSyncService implements ISyncPro
 
     @Override
     public void syncCloudServer(String cloudAccountId, List<Credential.Region> regions) {
-        proxy(cloudAccountId, regions, "同步云主机", ICloudProvider::listVirtualMachine, this::cloudServerSaveOrUpdate, this::writeJobRecord, () -> vmCloudServerService.remove(new LambdaUpdateWrapper<VmCloudServer>().eq(VmCloudServer::getAccountId, cloudAccountId)));
+        proxy(cloudAccountId, regions, com.fit2cloud.constants.JobConstants.JobSyncResourceType.VIRTUAL_MACHINE, ICloudProvider::listVirtualMachine, this::cloudServerSaveOrUpdate, this::writeJobRecord, () -> vmCloudServerService.remove(new LambdaUpdateWrapper<VmCloudServer>().eq(VmCloudServer::getAccountId, cloudAccountId)));
     }
 
     @Override
     public void syncCloudImage(String cloudAccountId, List<Credential.Region> regions) {
-        proxy(cloudAccountId, regions, "同步镜像", ICloudProvider::listImage, this::imageSaveOrUpdate, this::writeJobRecord, () -> vmCloudImageService.remove(new LambdaUpdateWrapper<VmCloudImage>().eq(VmCloudImage::getAccountId, cloudAccountId)));
+        proxy(cloudAccountId, regions, com.fit2cloud.constants.JobConstants.JobSyncResourceType.IMAGE, ICloudProvider::listImage, this::imageSaveOrUpdate, this::writeJobRecord, () -> vmCloudImageService.remove(new LambdaUpdateWrapper<VmCloudImage>().eq(VmCloudImage::getAccountId, cloudAccountId)));
     }
 
     @Override
     public void syncCloudDisk(String cloudAccountId, List<Credential.Region> regions) {
-        proxy(cloudAccountId, regions, "同步磁盘", ICloudProvider::listDisk, this::diskSaveOrUpdate, this::writeJobRecord, () -> vmCloudDiskService.remove(new LambdaUpdateWrapper<VmCloudDisk>().eq(VmCloudDisk::getAccountId, cloudAccountId)));
+        proxy(cloudAccountId, regions, com.fit2cloud.constants.JobConstants.JobSyncResourceType.DISK, ICloudProvider::listDisk, this::diskSaveOrUpdate, this::writeJobRecord, () -> vmCloudDiskService.remove(new LambdaUpdateWrapper<VmCloudDisk>().eq(VmCloudDisk::getAccountId, cloudAccountId)));
     }
 
     @Override
     public void syncCloudHost(String cloudAccountId, List<Credential.Region> regions) {
-        proxy(cloudAccountId, regions, "同步宿主机", ICloudProvider::listHost, this::hostSaveOrUpdate, this::writeJobRecord, () -> vmCloudHostService.remove(new LambdaUpdateWrapper<VmCloudHost>().eq(VmCloudHost::getAccountId, cloudAccountId)));
+        proxy(cloudAccountId, regions, com.fit2cloud.constants.JobConstants.JobSyncResourceType.HOST, ICloudProvider::listHost, this::hostSaveOrUpdate, this::writeJobRecord, () -> vmCloudHostService.remove(new LambdaUpdateWrapper<VmCloudHost>().eq(VmCloudHost::getAccountId, cloudAccountId)));
     }
 
     @Override
     public void syncCloudDatastore(String cloudAccountId, List<Credential.Region> regions) {
-        proxy(cloudAccountId, regions, "同步存储器", ICloudProvider::listDataStore, this::dataStoreSaveOrUpdate, this::writeJobRecord, () -> vmCloudDatastoreService.remove(new LambdaUpdateWrapper<VmCloudDatastore>().eq(VmCloudDatastore::getAccountId, cloudAccountId)));
+        proxy(cloudAccountId, regions, com.fit2cloud.constants.JobConstants.JobSyncResourceType.DATASTORE, ICloudProvider::listDataStore, this::dataStoreSaveOrUpdate, this::writeJobRecord, () -> vmCloudDatastoreService.remove(new LambdaUpdateWrapper<VmCloudDatastore>().eq(VmCloudDatastore::getAccountId, cloudAccountId)));
     }
 
     /**
@@ -290,7 +290,7 @@ public class SyncProviderServiceImpl extends BaseSyncService implements ISyncPro
             String cloudAccountId = getCloudAccountId(params);
             List<Credential.Region> regions = getRegions(cloudAccountId);
             if (params.containsKey(JobConstants.CloudAccount.CLOUD_ACCOUNT_ID.name()) && CollectionUtils.isNotEmpty(regions)) {
-                proxy(cloudAccountId, regions, "同步云主机监控", ICloudProvider::getF2CPerfMetricMonitorData, this::perfMetricMonitorSaveOrUpdate, this::writeJobRecord, () -> {
+                proxy(cloudAccountId, regions, com.fit2cloud.constants.JobConstants.JobSyncResourceType.VIRTUAL_MACHINE_PERF_METRIC_MONITOR, ICloudProvider::getF2CPerfMetricMonitorData, this::perfMetricMonitorSaveOrUpdate, this::writeJobRecord, () -> {
                 });
             }
         } catch (Exception e) {
@@ -307,7 +307,7 @@ public class SyncProviderServiceImpl extends BaseSyncService implements ISyncPro
                 proxy(
                         cloudAccountId,
                         regions,
-                        "同步宿主机监控",
+                        com.fit2cloud.constants.JobConstants.JobSyncResourceType.HOST_PERF_METRIC_MONITOR,
                         ICloudProvider::getF2CHostPerfMetricMonitorData,
                         this::perfMetricMonitorSaveOrUpdate,
                         this::writeJobRecord,
@@ -328,7 +328,7 @@ public class SyncProviderServiceImpl extends BaseSyncService implements ISyncPro
                 proxy(
                         cloudAccountId,
                         regions,
-                        "同步云磁盘监控",
+                        com.fit2cloud.constants.JobConstants.JobSyncResourceType.DISK_PERF_METRIC_MONITOR,
                         ICloudProvider::getF2CDiskPerfMetricMonitorData,
                         this::perfMetricMonitorSaveOrUpdate,
                         this::writeJobRecord,
@@ -349,7 +349,7 @@ public class SyncProviderServiceImpl extends BaseSyncService implements ISyncPro
                 proxy(
                         cloudAccountId,
                         regions,
-                        "同步存储器监控",
+                        com.fit2cloud.constants.JobConstants.JobSyncResourceType.DATASTORE_PERF_METRIC_MONITOR,
                         ICloudProvider::getF2CDatastorePerfMetricMonitorData,
                         this::perfMetricMonitorSaveOrUpdate,
                         this::writeJobRecord,
@@ -381,23 +381,23 @@ public class SyncProviderServiceImpl extends BaseSyncService implements ISyncPro
     /**
      * 代理执行同步动作
      *
-     * @param cloudAccountId    云账号id
-     * @param regions           区域
-     * @param jobDescription    任务描述
-     * @param execMethod        同步函数
-     * @param saveBatchOrUpdate 插入更新函数
-     * @param writeJobRecord    写入任务记录函数
-     * @param remote            删除不存在的云账户函数
-     * @param <T>               同步对象类型
+     * @param cloudAccountId      云账号id
+     * @param regions             区域
+     * @param jobSyncResourceType 同步资源类型
+     * @param execMethod          同步函数
+     * @param saveBatchOrUpdate   插入更新函数
+     * @param writeJobRecord      写入任务记录函数
+     * @param remote              删除不存在的云账户函数
+     * @param <T>                 同步对象类型
      */
-    private <T> void proxy(String cloudAccountId, List<Credential.Region> regions, String jobDescription,
+    private <T> void proxy(String cloudAccountId, List<Credential.Region> regions, com.fit2cloud.constants.JobConstants.JobSyncResourceType jobSyncResourceType,
                            BiFunction<ICloudProvider, String, List<T>> execMethod,
                            Consumer<SaveBatchOrUpdateParams<T>> saveBatchOrUpdate,
                            Consumer<SaveBatchOrUpdateParams<T>> writeJobRecord,
                            Runnable remote) {
-        proxy(cloudAccountId, regions, jobDescription,
+        proxy(cloudAccountId, regions, jobSyncResourceType.getMessage(),
                 s -> ProviderConstants.valueOf(s).getCloudProvider(),
-                syncTime -> initJobRecord(jobDescription, syncTime, cloudAccountId),
+                syncTime -> initJobRecord(jobSyncResourceType, syncTime, cloudAccountId),
                 execMethod,
                 (account, region) -> getParams(account.getCredential(), region.getRegionId(), account.getSyncTimeStampStr()),
                 saveBatchOrUpdate,
@@ -408,24 +408,25 @@ public class SyncProviderServiceImpl extends BaseSyncService implements ISyncPro
     /**
      * 初始化任务记录
      *
-     * @param jobDescription 任务描述
-     * @param syncTime       同步时间
-     * @param cloudAccountId 云账户id
-     * @return 任务记录对象
+     * @param jobSyncResourceType 资源类型
+     * @param syncTime            同步时间
+     * @param cloudAccountId      云账户id
+     * @return 任务记录对象F
      */
-    private JobRecord initJobRecord(String jobDescription, LocalDateTime syncTime, String cloudAccountId) {
+    private JobRecord initJobRecord(com.fit2cloud.constants.JobConstants.JobSyncResourceType jobSyncResourceType, LocalDateTime syncTime, String cloudAccountId) {
         JobRecord jobRecord = new JobRecord();
-        jobRecord.setDescription(jobDescription);
+        jobRecord.setDescription(jobSyncResourceType.getMessage());
         jobRecord.setStatus(JobStatusConstants.SYNCING);
         jobRecord.setParams(new HashMap<>());
-        jobRecord.setType(JobTypeConstants.CLOUD_ACCOUNT_SYNC_JOB);
+        jobRecord.setType(jobSyncResourceType.getJobType());
         jobRecord.setCreateTime(syncTime);
         // 插入任务数据
         baseJobRecordService.save(jobRecord);
         // 插入关联关系
         JobRecordResourceMapping jobRecordResourceMapping = new JobRecordResourceMapping();
         jobRecordResourceMapping.setResourceId(cloudAccountId);
-        jobRecordResourceMapping.setJobType(JobTypeConstants.CLOUD_ACCOUNT_SYNC_JOB);
+        jobRecordResourceMapping.setJobType(jobSyncResourceType.getJobType());
+        jobRecordResourceMapping.setResourceType(jobSyncResourceType.name());
         jobRecordResourceMapping.setJobRecordId(jobRecord.getId());
         jobRecordResourceMappingService.save(jobRecordResourceMapping);
         return jobRecord;

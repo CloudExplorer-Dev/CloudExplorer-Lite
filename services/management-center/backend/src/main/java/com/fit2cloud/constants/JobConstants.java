@@ -23,7 +23,7 @@ public class JobConstants implements JobSettingConfig.JobConfig {
     public List<JobSetting> listJobInitSetting() {
         JobSetting verificationCloudAccountJob = new JobSetting(VerificationCloudAccountJob.class, VERIFICATION_CLOUDACCOUNT,
                 com.fit2cloud.common.constants.JobConstants.Group.SYSTEM_GROUP.name(), "校验云账号",
-                null, CronUtils.create(new Integer[]{0}, Calendar.MINUTE), s -> false);
+                null, CronUtils.create(new Integer[]{0}, Calendar.MINUTE), s -> false, p -> false, p -> false);
         return List.of(verificationCloudAccountJob);
     }
 }

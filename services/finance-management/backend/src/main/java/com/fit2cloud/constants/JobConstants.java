@@ -16,9 +16,25 @@ import java.util.Objects;
  * @注释:
  */
 public class JobConstants implements JobSettingConfig.JobConfig {
+    public enum JobSyncResourceType {
+        BILL("同步账单");
+        private String message;
+
+        JobSyncResourceType(String message) {
+            this.message = message;
+        }
+
+        public String getMessage() {
+            return message;
+        }
+
+        public static JobSyncResourceType of(String message) {
+            return Arrays.stream(JobSyncResourceType.values()).filter(item -> item.message.equals(message)).findFirst().orElse(null);
+        }
+    }
 
     /**
-     * 同步VPC
+     * 同步账单
      */
     private static final String SYNC_BILL = "SYNC_BILL";
 

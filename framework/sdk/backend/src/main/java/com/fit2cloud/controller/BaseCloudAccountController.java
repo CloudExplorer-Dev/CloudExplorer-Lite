@@ -68,16 +68,23 @@ public class BaseCloudAccountController {
         return ResultHolder.success(cloudAccountService.getCloudAccountJob(accountId));
     }
 
-    @GetMapping("/job/resource")
+    @GetMapping("/job/resource/{cloudAccountId}")
     @ApiOperation(value = "获取单个模块的定时任务", notes = "获取单个模块的定时任务")
-    public ResultHolder<List<SyncResource>> getModuleResourceJob() {
-        return ResultHolder.success(cloudAccountService.getModuleResourceJob());
+    public ResultHolder<List<SyncResource>> getModuleResourceJob(@PathVariable String cloudAccountId) {
+        return ResultHolder.success(cloudAccountService.getModuleResourceJob(cloudAccountId));
     }
 
     @PostMapping("/sync")
     @ApiOperation(value = "同步当前模块", notes = "同步当前模块云账号")
     public ResultHolder<Boolean> sync(@RequestBody SyncRequest syncRequest) {
         cloudAccountService.sync(syncRequest);
+        return ResultHolder.success(true);
+    }
+
+    @PostMapping("/sync/{cloudAccountId}")
+    @ApiOperation(value = "同步当前模块根据云账号id", notes = "同步当前模块根据云账号id")
+    public ResultHolder<Boolean> sync(@PathVariable String cloudAccountId) {
+        cloudAccountService.sync(cloudAccountId);
         return ResultHolder.success(true);
     }
 
@@ -97,7 +104,7 @@ public class BaseCloudAccountController {
     @GetMapping("/balance/{id}")
     @ApiOperation(value = "获取云账号余额")
     public ResultHolder<Object> getAccountBalance(@ApiParam(value = "云账号id", required = true)
-                                                      @CustomValidated(mapper = BaseCloudAccountMapper.class, field = "id", handler = ExistHandler.class, message = "{i18n.cloud_account.id.is.not.existent}", exist = false)
+                                                  @CustomValidated(mapper = BaseCloudAccountMapper.class, field = "id", handler = ExistHandler.class, message = "{i18n.cloud_account.id.is.not.existent}", exist = false)
                                                   @PathVariable("id") String id) {
         return ResultHolder.success(cloudAccountService.getAccountBalance(id));
     }

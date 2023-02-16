@@ -24,9 +24,10 @@ import type {
  * @returns       分页查询云账号列表
  */
 const page: (
-  request: ListOrganizationRequest
-) => Promise<Result<Page<CloudAccount>>> = (request) => {
-  return get("/api/cloud_account/page", request);
+  request: ListOrganizationRequest,
+  loading?: Ref<boolean>
+) => Promise<Result<Page<CloudAccount>>> = (request, loading) => {
+  return get("/api/cloud_account/page", request, loading);
 };
 
 /**
@@ -127,8 +128,12 @@ const updateJobs: (
  * @param loading 加载器
  * @returns 获取同步资源
  */
-const getResourceSync = (loading?: Ref<boolean>) => {
-  return get("api/cloud_account/jobs/resource");
+const getResourceSync = (cloudAccountId: string, loading?: Ref<boolean>) => {
+  return get(
+    `api/cloud_account/jobs/resource/${cloudAccountId}`,
+    undefined,
+    loading
+  );
 };
 
 const syncJob = (data: SyncRequest, loading?: Ref<boolean>) => {

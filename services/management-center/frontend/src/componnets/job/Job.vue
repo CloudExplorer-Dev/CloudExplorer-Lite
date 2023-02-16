@@ -78,22 +78,25 @@ const cloudAccount = ref<CloudAccount>();
  */
 const submitForm: (isRouter: boolean) => void = (isRouter = true) => {
   if (jobModule.value) {
-    Promise.all(jobModule.value.map((item) => item.validate())).then((ok) => {
-      cloudAccountApi
-        .updateJobs(
-          {
-            cloudAccountModuleJobs: moduleJobs.value,
-            cloudAccountId: props.accountId as string,
-          },
-          jobLoading
-        )
-        .then(() => {
-          if (isRouter) {
-            router.push({ name: "cloud_account_list" });
-          }
-          ElMessage.success(t("commons.msg.op_success", "操作成功"));
-        });
-    });
+    return Promise.all(jobModule.value.map((item) => item.validate())).then(
+      (ok) => {
+        return cloudAccountApi
+          .updateJobs(
+            {
+              cloudAccountModuleJobs: moduleJobs.value,
+              cloudAccountId: props.accountId as string,
+            },
+            jobLoading
+          )
+          .then(() => {
+            if (isRouter) {
+              router.push({ name: "cloud_account_list" });
+            }
+            ElMessage.success(t("commons.msg.op_success", "操作成功"));
+            return true;
+          });
+      }
+    );
   }
 };
 

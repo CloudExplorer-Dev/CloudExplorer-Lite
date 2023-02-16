@@ -285,8 +285,9 @@ const save = (resource: string, formEl: FormInstance | undefined) => {
       }
     });
   } else {
-    job.value.submitForm(false);
-    syncEditable.value = false;
+    job.value.submitForm(false).then(() => {
+      syncEditable.value = false;
+    });
   }
 };
 
@@ -323,6 +324,16 @@ onMounted(() => {
         });
     }
   }, 6000);
+  if (
+    router.currentRoute.value.query.go &&
+    router.currentRoute.value.query.go === "sync"
+  ) {
+    const toElement: any = document.getElementById("record-main");
+    //锚点存在跳转
+    if (toElement) {
+      toElement.scrollIntoView();
+    }
+  }
 });
 
 onBeforeUnmount(() => {
@@ -533,7 +544,7 @@ onBeforeUnmount(() => {
       <span>{{ $t("cloud_account.sync.record", "同步记录") }}</span>
     </template>
     <template #content>
-      <div class="record-main">
+      <div class="record-main" id="record-main">
         <div class="record-left">
           <div
             class="content"

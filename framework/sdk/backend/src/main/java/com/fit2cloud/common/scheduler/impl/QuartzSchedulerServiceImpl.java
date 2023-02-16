@@ -12,9 +12,11 @@ import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.quartz.*;
 import org.quartz.DateBuilder.IntervalUnit;
+import org.quartz.spi.MutableTrigger;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
+import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -96,7 +98,6 @@ public class QuartzSchedulerServiceImpl implements SchedulerService {
         }
     }
 
-
     public void updateJob(String jobName, String groupName, String description, Map<String, Object> param, TimeOfDay startTimeDay, TimeOfDay endTimeDay, int timeInterval, IntervalUnit unit, int repeatCount, Trigger.TriggerState triggerState, Integer... weeks) {
         DailyTimeIntervalScheduleBuilder dailyTimeIntervalScheduleBuilder = getDailyTimeIntervalScheduleBuilder(startTimeDay, endTimeDay, timeInterval, unit, repeatCount, weeks);
         DailyTimeIntervalTrigger trigger = TriggerBuilder.newTrigger().withSchedule(dailyTimeIntervalScheduleBuilder).withIdentity(jobName, groupName).withDescription(description).build();
@@ -105,6 +106,27 @@ public class QuartzSchedulerServiceImpl implements SchedulerService {
         }
         try {
             scheduler.rescheduleJob(TriggerKey.triggerKey(jobName, groupName), trigger);
+            if (triggerState.equals(Trigger.TriggerState.PAUSED)) {
+                pauseJob(jobName, groupName);
+            }
+        } catch (SchedulerException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    @Override
+    public void updateJob(String jobName, String groupName, String description, Map<String, Object> param, int timeInterval, IntervalUnit unit, Trigger.TriggerState triggerState) {
+        CalendarIntervalScheduleBuilder calendarIntervalScheduleBuilder = CalendarIntervalScheduleBuilder.calendarIntervalSchedule().withInterval(timeInterval, unit);
+
+        CalendarIntervalTrigger calendarIntervalTrigger = TriggerBuilder.newTrigger().withSchedule(calendarIntervalScheduleBuilder).
+                withIdentity(jobName, groupName)
+                .withDescription(description).build();
+
+        if (MapUtils.isNotEmpty(param)) {
+            calendarIntervalTrigger.getJobDataMap().putAll(param);
+        }
+        try {
+            scheduler.rescheduleJob(TriggerKey.triggerKey(jobName, groupName), calendarIntervalTrigger);
             if (triggerState.equals(Trigger.TriggerState.PAUSED)) {
                 pauseJob(jobName, groupName);
             }

@@ -94,9 +94,11 @@ public interface SchedulerService {
      */
     void updateJob(String jobName, String groupName, String description, Map<String, Object> param, TimeOfDay startTimeDay, TimeOfDay endTimeDay, int timeInterval, DateBuilder.IntervalUnit unit, int repeatCount, Trigger.TriggerState triggerState, Integer... weeks);
 
+    void updateJob(String jobName, String groupName, String description, Map<String, Object> param, int timeInterval, DateBuilder.IntervalUnit unit,Trigger.TriggerState triggerState);
 
     /**
      * 更新定时任务
+     *
      * @param jobName      任务名称
      * @param groupName    分组名称
      * @param description  描述

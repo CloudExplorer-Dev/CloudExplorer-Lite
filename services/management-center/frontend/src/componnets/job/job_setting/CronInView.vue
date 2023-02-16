@@ -1,5 +1,10 @@
 <template>
   <el-form
+    :style="{
+      color: readOnly
+        ? 'var(--el-disabled-text-color)'
+        : 'var(--el-checkbox-checked-text-color)',
+    }"
     ref="ruleFormRef"
     :model="cronFrom"
     label-width="0px"
@@ -8,6 +13,7 @@
   >
     <el-form-item>
       <el-select
+        :disabled="readOnly"
         @click.stop.prevent
         class="item"
         style="width: 100px"
@@ -36,6 +42,7 @@
           v-if="c === minuteAndSecond"
         >
           <el-time-picker
+            :disabled="readOnly"
             :disabled-hours="disabledHours"
             v-if="c === minuteAndSecond"
             v-model="cronFrom.composeCrons[c]"
@@ -55,6 +62,7 @@
           v-else-if="c === hoursAndMinuteAndSecond || c === hoursAndMinute"
         >
           <el-time-picker
+            :disabled="readOnly"
             class="item"
             v-model="cronFrom.composeCrons[c]"
             format="HH时mm分ss秒"
@@ -63,6 +71,7 @@
         /></el-form-item>
 
         <el-form-item
+          :disabled="readOnly"
           :rules="{
             message: '请选择时间',
             trigger: 'change',
@@ -75,6 +84,7 @@
           class="item"
         >
           <el-select
+            :disabled="readOnly"
             class="item"
             @click.stop.prevent
             style="width: 150px"
@@ -93,6 +103,13 @@
         ></el-form-item>
       </template>
     </template>
+    <div style="flex: auto"></div>
+    <el-icon
+      :style="{ cursor: readOnly ? 'not-allowed' : 'pointer' }"
+      style="height: 100%"
+      @click="switchJobType"
+      ><Switch
+    /></el-icon>
   </el-form>
 </template>
 <script setup lang="ts">
@@ -108,9 +125,18 @@ import {
 import type { FormInstance } from "element-plus";
 const props = withDefaults(
   defineProps<{
-    modelValue: string;
+    modelValue?: string;
     // 指定可定是同步类型 2:按小时 3:按天 4:按月 5:按周
     usableCronType: Array<2 | 3 | 4 | 5>;
+    /**
+     * 定时任务类型
+     */
+    jobType: string;
+
+    /**
+     * 是否可读
+     */
+    readOnly: boolean;
   }>(),
   {
     usableCronType: () => [2, 3, 4, 5],
@@ -137,7 +163,7 @@ const usableCronTypes = computed(() => {
   );
 });
 // 字段绑定
-const emit = defineEmits(["update:modelValue"]);
+const emit = defineEmits(["update:modelValue", "update:jobType"]);
 /**
  * 校验实例对象
  */
@@ -282,6 +308,11 @@ defineExpose({ validate });
 onMounted(() => {
   echoData();
 });
+const switchJobType = () => {
+  if (!props.readOnly) {
+    emit("update:jobType", "INTERVAL");
+  }
+};
 </script>
 <style lang="scss" scoped>
 .wapper {
