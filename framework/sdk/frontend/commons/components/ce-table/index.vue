@@ -257,26 +257,34 @@ const getTableSearch: (otherConditions: Conditions) => TableSearch = (
 };
 
 /**
- * 清除某个过滤项，从所有种类的查询条件中清除
+ * 清除表格上方回显的某个过滤项，从所有种类的查询条件中清除
  */
 const handleClear = (field: string) => {
-  clearConditions(condition, field);
-  clearConditions(searchCondition, field);
-  clearConditions(tableHeaderFilter, field);
+  clearConditions('0',condition, field);
+  clearConditions('1',searchCondition, field);
+  clearConditions('2',tableHeaderFilter, field);
+
+  removeConditions(field);
   refresh();
 };
 
 /**
  * 根据字段值清除过滤项
  */
-const clearConditions = (condition: any, field: string) => {
+const clearConditions = (conditionType: string,condition:any, field: string) => {
   Object.keys(condition.value).forEach((key: string) => {
     if (key === field) {
-      emit("clearCondition", field);
-      table.value.refElTable.clearFilter(new Array(field));
       delete condition.value[key];
 
-      removeConditions(field);
+      // 清除自定义的搜索项
+      if(conditionType === '0'){
+        emit("clearCondition", field);
+      }
+
+      // 清除表格搜索项
+      if(conditionType === '2'){
+        table.value.refElTable.clearFilter(new Array(field));
+      }
     }
   });
 };
