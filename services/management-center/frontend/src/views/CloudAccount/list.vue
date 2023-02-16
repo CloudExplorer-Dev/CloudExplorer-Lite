@@ -23,6 +23,7 @@ import type { FormInstance, FormRules } from "element-plus";
 import type { SimpleMap } from "@commons/api/base/type";
 import { useModuleStore } from "@commons/stores/modules/module";
 import { usePermissionStore } from "@commons/stores/modules/permission";
+import { objectToString } from "@vue/shared";
 
 const moduleStore = useModuleStore();
 const permissionStore = usePermissionStore();
@@ -56,8 +57,19 @@ const edit = (row: CloudAccount) => {
  * 展示云账号详情
  * @param row
  */
-const showAccountDetail = (row: CloudAccount) => {
-  router.push({ name: "cloud_account_detail", params: { id: row.id } });
+const showAccountDetail = (row: CloudAccount, go?: string) => {
+  if (go) {
+    router.push({
+      name: "cloud_account_detail",
+      params: { id: row.id },
+    });
+  } else {
+    router.push({
+      name: "cloud_account_detail",
+      params: { id: row.id },
+      query: { go: "sync" },
+    });
+  }
 };
 
 /**
@@ -170,11 +182,21 @@ const cloudAccountJobRecord = ref<SimpleMap<Array<AccountJobRecord>>>({});
 onMounted(() => {
   search(new TableSearch());
   cloudAccountInterval = setInterval(() => {
-    cloudAccountApi
-      .getAccountJobRecord(cloudAccountList.value.map((r) => r.id))
-      .then((data) => {
-        cloudAccountJobRecord.value = data.data;
+    const cloudAccountIds = cloudAccountList.value.map((r) => r.id);
+    if (cloudAccountIds.length === 0) {
+      return;
+    }
+    cloudAccountApi.getAccountJobRecord(cloudAccountIds).then((data) => {
+      Object.keys(data.data).forEach((key) => {
+        data.data[key].sort((pre: any, next: any) =>
+          (pre.type + pre.description).localeCompare(
+            next.type + next.description
+          )
+        );
       });
+
+      cloudAccountJobRecord.value = data.data;
+    });
   }, 8000);
 });
 
@@ -214,7 +236,7 @@ const openSync = (row: CloudAccount) => {
     syncForm.value.checkedRegions = ok.data.map((r) => r.regionId);
   });
   // 获取同步的资源
-  cloudAccountApi.getResourceSync(resourceLoading).then((ok) => {
+  cloudAccountApi.getResourceSync(row.id, resourceLoading).then((ok) => {
     resources.value = ok.data;
     syncForm.value.checkedResources = ok.data.map((r: any) => r.jobName);
   });
@@ -729,10 +751,6 @@ const syncAll = () => {
     >
       <template #default="scope">
         <div style="display: flex; align-items: center">
-          <!--          <el-image
-            style="margin-right: 20%; display: flex"
-            :src="platformIcon[scope.row.platform].icon"
-          ></el-image>-->
           <component
             style="margin-right: 20%; display: flex"
             :is="platformIcon[scope.row.platform]?.component"
@@ -801,12 +819,13 @@ const syncAll = () => {
                   width: 300px;
                 "
               >
-                <div style="width: 80px">{{ j.description }}</div>
+                <div style="width: 120px">{{ j.description }}</div>
                 <div>{{ mapStatus(j.status) }}</div>
                 <div>{{ j.createTime }}</div>
               </div>
             </template>
             <div
+              @click="showAccountDetail(scope.row)"
               style="display: flex; width: 60%; justify-content: space-between"
               :style="{
                 color: getColorByAccountStatus(

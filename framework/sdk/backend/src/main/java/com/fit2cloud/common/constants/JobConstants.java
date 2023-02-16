@@ -15,6 +15,17 @@ import java.util.Map;
 public enum JobConstants {
     ;
 
+    public enum JobType {
+        /**
+         * 表达式
+         */
+        CRON,
+        /**
+         * 间隔
+         */
+        INTERVAL
+    }
+
     public enum Group {
 
         /**

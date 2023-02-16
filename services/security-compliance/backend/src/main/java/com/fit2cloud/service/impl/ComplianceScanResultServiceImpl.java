@@ -109,7 +109,8 @@ public class ComplianceScanResultServiceImpl extends ServiceImpl<ComplianceScanR
                 .like(StringUtil.isNotEmpty(request.getComplianceRuleName()), ColumnNameUtil.getColumnName(ComplianceRule::getName, true), request.getComplianceRuleName())
                 .eq(StringUtils.isNotEmpty(request.getResourceType()), ColumnNameUtil.getColumnName(ComplianceRule::getResourceType, true), request.getResourceType())
                 .eq(StringUtils.isNotEmpty(request.getComplianceRuleGroupId()), ColumnNameUtil.getColumnName(ComplianceRule::getRuleGroupId, true), request.getComplianceRuleGroupId())
-                .eq(ColumnNameUtil.getColumnName(ComplianceRule::getEnable, true), true);
+                .eq(ColumnNameUtil.getColumnName(ComplianceRule::getEnable, true), true)
+                .eq(StringUtils.isNotEmpty(request.getCloudAccountId()), ColumnNameUtil.getColumnName(ComplianceScanResult::getCloudAccountId, true), request.getCloudAccountId());
         return wrapper;
     }
 }

@@ -15,14 +15,24 @@
           :checked="details.active"
           :label="details.active"
           v-model="details.active"
-          :disabled="readOnly"
+          :disabled="readOnly || details.activeReadOnly"
         >
           <div style="display: flex; align-items: center">
             <span style="width: 120px; white-space: NORMAL"
               >{{ details.description.replace("同步", "") }}:</span
             >
             <div style="width: 550px">
+              <cron-interval-view
+                :readOnly="readOnly || details.cronReadOnly"
+                v-if="details.jobType === 'INTERVAL'"
+                v-model:unit="details.unit"
+                v-model:job-type="details.jobType"
+                v-model:interval="details.interval"
+              ></cron-interval-view>
               <cron-in-view
+                :readOnly="readOnly || details.cronReadOnly"
+                v-else
+                v-model:job-type="details.jobType"
                 ref="cronInViewRef"
                 v-model="details.cronExpression"
               ></cron-in-view>
@@ -47,16 +57,18 @@
   </layout-container>
 </template>
 <script setup lang="ts">
-import { ref } from "vue";
+import { ref, watch } from "vue";
 import { useI18n } from "vue-i18n";
 import type { JobDetails } from "@/api/cloud_account/type";
 import CronInView from "@/componnets/job/job_setting/CronInView.vue";
+import CronIntervalView from "@/componnets/job/job_setting/CronIntervalView.vue";
 const { t } = useI18n();
 // 校验实例对象
 const cronInViewRef = ref<
   Array<InstanceType<typeof CronInView>> | InstanceType<typeof CronInView>
 >();
-withDefaults(
+
+const props = withDefaults(
   defineProps<{
     /**
      * 是否有边框
@@ -72,6 +84,15 @@ withDefaults(
     jobDetails: Array<JobDetails>;
   }>(),
   { readOnly: false, border: false }
+);
+watch(
+  () => props.jobDetails,
+  () => {
+    console.log(props.jobDetails);
+  },
+  {
+    deep: true,
+  }
 );
 // 校验
 const validate = () => {

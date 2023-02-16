@@ -13,6 +13,7 @@ import com.fit2cloud.base.entity.JobRecord;
 import com.fit2cloud.base.entity.JobRecordResourceMapping;
 import com.fit2cloud.base.service.IBaseCloudAccountService;
 import com.fit2cloud.base.service.IBaseJobRecordResourceMappingService;
+import com.fit2cloud.common.constants.JobConstants;
 import com.fit2cloud.common.constants.JobStatusConstants;
 import com.fit2cloud.common.constants.JobTypeConstants;
 import com.fit2cloud.common.job_record.JobLink;
@@ -22,8 +23,10 @@ import com.fit2cloud.common.platform.credential.Credential;
 import com.fit2cloud.common.provider.exception.SkipPageException;
 import com.fit2cloud.common.provider.util.CommonUtil;
 import com.fit2cloud.common.utils.JsonUtil;
+import com.fit2cloud.common.utils.SpringUtil;
 import com.fit2cloud.constants.ResourceTypeConstants;
 import com.fit2cloud.constants.SyncDimensionConstants;
+import com.fit2cloud.controller.response.compliance_scan.SupportCloudAccountResourceResponse;
 import com.fit2cloud.dao.entity.ComplianceRule;
 import com.fit2cloud.dao.entity.ComplianceScanResult;
 import com.fit2cloud.es.entity.ResourceInstance;
@@ -31,6 +34,7 @@ import com.fit2cloud.provider.ICloudProvider;
 import com.fit2cloud.service.*;
 import io.reactivex.rxjava3.functions.Action;
 import lombok.SneakyThrows;
+import org.apache.commons.collections4.keyvalue.DefaultKeyValue;
 import org.redisson.api.RLock;
 import org.springframework.data.elasticsearch.annotations.Document;
 import org.springframework.data.elasticsearch.client.elc.ElasticsearchTemplate;
@@ -204,6 +208,18 @@ public class SyncServiceImpl extends BaseSyncService implements ISyncService {
                     syncInstance(cloudAccountId, ResourceTypeConstants.valueOf(type));
                 }
             }, workThreadPool);
+        }
+    }
+
+    @Override
+    public void syncInstance(String cloudAccountId) {
+        IComplianceScanService complianceScanService = SpringUtil.getBean(IComplianceScanService.class);
+        List<SupportCloudAccountResourceResponse> supportCloudAccountResourceResponses = complianceScanService.listSupportCloudAccountResource();
+        for (SupportCloudAccountResourceResponse supportCloudAccountResource : supportCloudAccountResourceResponses) {
+            if (supportCloudAccountResource.getCloudAccount().getId().equals(cloudAccountId)) {
+                syncInstance(supportCloudAccountResource.getCloudAccount().getId(), supportCloudAccountResource.getResourceTypes()
+                        .stream().map(DefaultKeyValue::getValue).toList());
+            }
         }
     }
 

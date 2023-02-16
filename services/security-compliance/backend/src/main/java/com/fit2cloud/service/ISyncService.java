@@ -26,4 +26,6 @@ public interface ISyncService {
      * @param instanceType   实例类型
      */
     void syncInstance(String cloudAccountId, List<String> instanceType);
+
+    void syncInstance(String cloudAccountId);
 }

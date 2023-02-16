@@ -58,11 +58,13 @@ public interface IBaseCloudAccountService extends IService<CloudAccount> {
      *
      * @return 同步任务
      */
-    List<SyncResource> getModuleResourceJob();
+    List<SyncResource> getModuleResourceJob(String cloudAccountId);
 
     void sync(SyncRequest syncRequest);
 
-    void sync(String jobName,String groupName,String cloudAccountId,Map<String,Object> params);
+    void sync(String jobName, String groupName, String cloudAccountId, Map<String, Object> params);
+
+    void sync(String cloudAccountId);
 
     /**
      * 获取当前模块的资源计数
