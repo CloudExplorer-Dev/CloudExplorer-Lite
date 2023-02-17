@@ -82,6 +82,7 @@ function keydown(e: Event) {
   const event = e as KeyboardEvent;
   if (event.key === "Enter") {
     emit("change", conditionObj.value, e);
+    searchValue.value = undefined;
   }
 }
 </script>

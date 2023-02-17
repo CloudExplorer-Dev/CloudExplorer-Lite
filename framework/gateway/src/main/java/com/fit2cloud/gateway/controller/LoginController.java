@@ -1,5 +1,6 @@
 package com.fit2cloud.gateway.controller;
 
+import com.fit2cloud.base.entity.User;
 import com.fit2cloud.base.service.IBaseOrganizationService;
 import com.fit2cloud.base.service.IBaseUserService;
 import com.fit2cloud.common.log.annotation.OperatedLog;
@@ -11,14 +12,18 @@ import com.fit2cloud.dto.UserDto;
 import com.fit2cloud.dto.module.Menu;
 import com.fit2cloud.dto.module.Module;
 import com.fit2cloud.request.LoginRequest;
+import com.fit2cloud.request.user.EditUserRequest;
+import com.fit2cloud.request.user.ResetPwdRequest;
 import com.fit2cloud.response.SourceTreeObject;
 import com.fit2cloud.service.BasePermissionService;
 import com.fit2cloud.service.CommonService;
 import com.fit2cloud.service.MenuService;
+import org.springframework.beans.BeanUtils;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.server.reactive.ServerHttpRequest;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Mono;
@@ -42,6 +47,8 @@ public class LoginController {
     private BasePermissionService basePermissionService;
     @Resource
     private IBaseOrganizationService organizationService;
+    @Resource
+    private IBaseUserService userService;
 
     @PostMapping("login")
     @OperatedLog(resourceType = ResourceTypeEnum.SYSTEM, operated = OperatedTypeEnum.LOGIN)
@@ -76,7 +83,21 @@ public class LoginController {
 
     @GetMapping("api/user/current")
     public Mono<ResultHolder<UserDto>> currentUser(ServerWebExchange exchange) {
-        return Mono.just(ResultHolder.success((UserDto) exchange.getAttributes().get("user")));
+        UserDto userDto = (UserDto) exchange.getAttributes().get("user");
+        User user = userService.getById(userDto.getId());
+        BeanUtils.copyProperties(user, userDto);
+        return Mono.just(ResultHolder.success(userDto));
+    }
+
+    @PutMapping("api/user/current")
+    public Mono<ResultHolder<Boolean>> updateCurrentUser(@RequestBody @Validated EditUserRequest request) {
+        return Mono.just(ResultHolder.success(userService.updateUserBasicInfo(request)));
+    }
+
+    @PutMapping("api/user/current/pwd")
+    public Mono<ResultHolder<Boolean>> resetPwd(@RequestBody @Validated ResetPwdRequest request, ServerWebExchange exchange) {
+        UserDto userDto = (UserDto) exchange.getAttributes().get("user");
+        return Mono.just(ResultHolder.success(userService.resetPwd(request, userDto)));
     }
 
     @GetMapping("api/modules")

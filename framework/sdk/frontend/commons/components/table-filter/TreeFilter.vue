@@ -22,23 +22,45 @@ const props = defineProps<{
 
 const filterText = ref("");
 const treeRef = ref<InstanceType<typeof ElTree>>();
-
 watch(filterText, (val) => {
   treeRef.value?.$el?.scrollTo(0, 0);
   treeRef.value!.filter(val);
 });
-
 const filterNode = (value: string, data: WorkspaceTree) => {
   if (!value) return true;
   return data.name.includes(value);
 };
 
+/**
+ * 获取选中的节点key
+ */
+const getCheckedKeys = (leafOnly: boolean) => {
+  return treeRef.value?.getCheckedKeys(leafOnly);
+};
+
+/**
+ * 获取选中的节点Label
+ */
+const getCheckedLabels = (leafOnly: boolean) => {
+  return treeRef.value
+    ?.getCheckedNodes()
+    .filter((item: any) => getCheckedKeys(leafOnly)?.includes(item.id))
+    .map((item: any) => item.name)
+    .join(" | ");
+};
+
+/**
+ * 获取ElTree的Ref属性
+ */
 const getTreeRef = () => {
   if (!treeRef.value) return;
   return treeRef.value;
 };
+
 defineExpose({
   getTreeRef,
+  getCheckedKeys,
+  getCheckedLabels,
 });
 </script>
 

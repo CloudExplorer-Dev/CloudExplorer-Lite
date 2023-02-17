@@ -86,6 +86,7 @@ const message = {
       filter: "筛选",
       reset: "重置",
       grope: "搜索",
+      clear: "清空",
     },
     msg: {
       success: "{0}成功",
