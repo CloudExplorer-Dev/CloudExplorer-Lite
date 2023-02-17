@@ -23,11 +23,14 @@ const form = ref(defaultUser);
 const loading = ref<boolean>(false);
 
 const saveUserInfo = (userInfo: User) => {
-  console.log(userInfo);
-  updateUser(userInfo, loading).then(() => {
-    dialogVisible.value = false;
-    ElMessage.success(t("commons.msg.save_success"));
-  });
+  updateUser(userInfo, loading)
+    .then(() => {
+      dialogVisible.value = false;
+      ElMessage.success(t("commons.msg.save_success"));
+    })
+    .catch((err) => {
+      ElMessage.error(err.response.data.message);
+    });
 };
 
 function onOpen() {
