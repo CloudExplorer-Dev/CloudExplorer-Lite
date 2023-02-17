@@ -39,7 +39,10 @@
   );
   background-color: var(--ce-main-content-bg-color, #fff);
   border-radius: var(--ce-main-content-border-radius, 10px);
-  overflow-y: auto;
-  overflow-x: hidden;
+  overflow: hidden;
+
+  &:hover {
+    overflow-y: auto;
+  }
 }
 </style>

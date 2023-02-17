@@ -10,7 +10,7 @@
       </div>
       <div
         class="item"
-        v-for="resourceType in resourceTypes"
+        v-for="resourceType in supportResourceTypes"
         :key="resourceType.value"
         :class="activeResourceType === resourceType.value ? 'active' : ''"
         @click="selectResourceType(resourceType.value)"
@@ -20,85 +20,6 @@
             {{ resourceType.key }}
           </div>
           <div style="flex: auto"></div>
-          <div style="margin-right: 10px" @click.stop>
-            <el-popover placement="right" :width="800" trigger="click">
-              <template #reference>
-                <scan_job_status_icon
-                  :show-text="false"
-                  :status="scanStatus(resourceType.value, undefined)"
-                ></scan_job_status_icon>
-              </template>
-              <el-table
-                :data="
-                  accountJobRecordList.filter(
-                    (item) => item.resourceType === resourceType.value
-                  )
-                "
-              >
-                <el-table-column property="resourceId" label="云账号">
-                  <template #default="scope">
-                    {{
-                      cloudAccountSourceList.find(
-                        (c) => c.id === scope.row.resourceId
-                      )?.name
-                    }}
-                  </template>
-                </el-table-column>
-                <el-table-column label="云平台">
-                  <template #default="scope">
-                    <div style="display: flex; align-items: center">
-                      <el-image
-                        style="margin-right: 20%; display: flex"
-                        :src="
-                          platformIcon[
-                            orElse(
-                              cloudAccountSourceList.find(
-                                (c) => c.id === scope.row.resourceId
-                              )?.platform
-                            )
-                          ].oldIcon
-                        "
-                      ></el-image>
-                      <span>{{
-                        platformIcon[
-                          orElse(
-                            cloudAccountSourceList.find(
-                              (c) => c.id === scope.row.resourceId
-                            )?.platform
-                          )
-                        ].name
-                      }}</span>
-                    </div>
-                  </template>
-                </el-table-column>
-                <el-table-column property="description" label="任务描述" />
-                <el-table-column property="status" label="任务状态">
-                  <template #default="scope">
-                    <scan_job_status_icon
-                      :status="
-                        scanStatus(resourceType.value, scope.row.resourceId)
-                      "
-                      :show-text="true"
-                    ></scan_job_status_icon>
-                  </template>
-                </el-table-column>
-                <el-table-column property="createTime" label="同步时间" />
-                <el-table-column label="详情">
-                  <template #default="scope">
-                    <ce-icon
-                      @click="openDetailsJobView(scope.row)"
-                      style="
-                        color: var(--el-color-info);
-                        cursor: pointer;
-                        font-size: 20px;
-                      "
-                      code="InfoFilled"
-                    ></ce-icon
-                  ></template>
-                </el-table-column>
-              </el-table>
-            </el-popover>
-          </div>
         </div>
       </div>
     </div>
@@ -126,14 +47,26 @@
             />
           </el-select>
         </template>
-        <el-table-column prop="name" label="规则名称" width="180" />
+        <el-table-column prop="name" label="规则名称">
+          <template #default="scope"
+            ><div>
+              {{ scope.row.name }}
+            </div>
+          </template>
+        </el-table-column>
+        <el-table-column prop="resourceTyppe" label="资源类型" width="120px">
+          <template #default="scope"
+            >{{
+              resourceTypes.find(
+                (resourceType) => resourceType.value === scope.row.resourceType
+              )?.key
+            }}
+          </template>
+        </el-table-column>
         <el-table-column prop="platform" label="云平台" width="180">
           <template #default="scope">
             <div style="display: flex; align-items: center">
-              <el-image
-                style="margin-right: 20%; display: flex"
-                :src="platformIcon[scope.row.platform].oldIcon"
-              ></el-image>
+              <platform_icon :platform="scope.row.platform"></platform_icon>
               <span>{{ platformIcon[scope.row.platform].name }}</span>
             </div>
           </template></el-table-column
@@ -149,7 +82,7 @@
             }}
           </template>
         </el-table-column>
-        <el-table-column prop="scanStatus" label="检测状态">
+        <el-table-column prop="scanStatus" label="检测状态" width="100px">
           <template #default="scope">
             <span
               :style="{
@@ -168,6 +101,7 @@
         <el-table-column
           prop="notComplianceCount"
           label="不合规/合规资源"
+          width="150px"
           sortable
         >
           <template #default="scope">
@@ -185,7 +119,22 @@
             </div>
           </template>
         </el-table-column>
-        <el-table-column prop="updateTime" label="最后扫描时间" sortable />
+        <el-table-column
+          prop="updateTime"
+          label="最后扫描时间"
+          width="230px"
+          sortable
+        >
+          <template #default="scope">
+            <ScanStatusColumn
+              :account-job-record-list="accountJobRecordList"
+              :complaince-scan-result="scope.row"
+              :cloud-account-source-list="cloudAccountSourceList"
+              :open-details-job-view="openDetailsJobView"
+              :cloud-account-id="activeCloudAccount"
+            ></ScanStatusColumn>
+          </template>
+        </el-table-column>
       </ce-table>
     </div>
     <job_details_view
@@ -196,14 +145,16 @@
 </template>
 <script setup lang="ts">
 import ruleApi from "@/api/rule";
-import scan_job_status_icon from "@/views/scan/complonents/compliance_rule/ScanJobStatusIcon.vue";
+import ScanStatusColumn from "./ScanStatusColumn.vue";
 import job_details_view from "@/views/scan/complonents/compliance_rule/JobDetailsView.vue";
 import type { KeyValue } from "@commons/api/base/type";
 import type { ComplianceScanResultResponse } from "@/api/compliance_scan_result/type";
 import complianceScanResultApi from "@/api/compliance_scan_result";
-import { onMounted, ref, watch, onBeforeUnmount } from "vue";
+import { onMounted, ref, watch, onBeforeUnmount, computed } from "vue";
 import complianceScanApi from "@/api/compliance_scan";
+import type { SupportCloudAccountResourceResponse } from "@/api/compliance_scan/type";
 import { platformIcon } from "@commons/utils/platform";
+import platform_icon from "@commons/components/platform-icon/index.vue";
 import {
   PaginationConfig,
   TableConfig,
@@ -221,11 +172,26 @@ const route = useRoute();
 let jobInterval: number;
 // 路由对象
 const router = useRouter();
+const supportResourceTypes = computed(() => {
+  if (activeCloudAccount.value === "all" || !activeCloudAccount.value) {
+    return resourceTypes.value;
+  } else {
+    return supportCloudAccountResourceList.value
+      .filter((support) => support.cloudAccount.id === activeCloudAccount.value)
+      .flatMap((item) => {
+        return item.resourceTypes;
+      });
+  }
+});
 onMounted(() => {
+  complianceScanApi.listSupportCloudAccountResource().then((ok) => {
+    supportCloudAccountResourceList.value = ok.data;
+  });
   // 查询所有资源类型
   ruleApi.listResourceType().then((ok) => {
     resourceTypes.value = ok.data;
   });
+
   if (route.query.resourceType) {
     activeResourceType.value = route.query.resourceType as string;
   }
@@ -269,18 +235,15 @@ onMounted(() => {
     });
   }, 6000);
 });
-/**
- * 给指定不确定的值一个默认值
- * @param value 将不确定的类型转换为string
- */
-const orElse = (value?: string) => {
-  return value ? value : "";
-};
+
 onBeforeUnmount(() => {
   if (jobInterval) {
     clearInterval(jobInterval);
   }
 });
+const supportCloudAccountResourceList = ref<
+  Array<SupportCloudAccountResourceResponse>
+>([]);
 const accountJobRecordList = ref<Array<AccountJobRecord>>([]);
 // 列表数据
 const tableData = ref<Array<ComplianceScanResultResponse>>([]);
@@ -312,35 +275,6 @@ const details = (row: ComplianceScanResultResponse) => {
       cloud_account_id: activeCloudAccount.value,
     },
   });
-};
-/**
- * 扫描状态
- * @param resourceType       资源类型
- * @param cloud_acclount_id  云账号id
- */
-const scanStatus = (resourceType: string, cloud_acclount_id?: string) => {
-  const status = accountJobRecordList.value
-    .filter((item) => {
-      if (cloud_acclount_id) {
-        return (
-          item.resourceType === resourceType &&
-          item.resourceId === cloud_acclount_id
-        );
-      } else {
-        return item.resourceType === resourceType;
-      }
-    })
-    .map((item) => item.status);
-  if (status.includes("SYNCING")) {
-    return "SYNCING";
-  }
-  if (status.includes("FAILED")) {
-    return "FAILED";
-  }
-  if (status.includes("SUCCESS")) {
-    return "SUCCESS";
-  }
-  return "INIT";
 };
 
 /**

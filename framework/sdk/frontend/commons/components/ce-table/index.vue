@@ -257,3 +257,16 @@ defineExpose({
   }
 }
 </style>
+<style scoped lang="scss">
+:deep(.el-table) {
+  .cell {
+    box-sizing: border-box;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: normal;
+    word-break: break-all;
+    line-height: 23px;
+    padding: 0 12px;
+  }
+}
+</style>

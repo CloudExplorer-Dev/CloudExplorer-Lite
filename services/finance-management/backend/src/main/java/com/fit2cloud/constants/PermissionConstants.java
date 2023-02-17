@@ -75,9 +75,9 @@ public class PermissionConstants {
                                     new Permission.Builder()
                                             .operate(OPERATE.READ)
                                             .name("permission.bill.view.read")
-                                            .role(RoleConstants.ROLE.ADMIN)
-                                            .role(RoleConstants.ROLE.ORGADMIN)
-                                            .role(RoleConstants.ROLE.USER)
+                                            .role(RoleConstants.ROLE.ADMIN,
+                                                    RoleConstants.ROLE.ORGADMIN,
+                                                    RoleConstants.ROLE.USER)
                             )
             )
             .group(
@@ -88,9 +88,9 @@ public class PermissionConstants {
                                     new Permission.Builder()
                                             .operate(OPERATE.READ)
                                             .name("permission.bill.detailed.read")
-                                            .role(RoleConstants.ROLE.ADMIN)
-                                            .role(RoleConstants.ROLE.ORGADMIN)
-                                            .role(RoleConstants.ROLE.USER)
+                                            .role(RoleConstants.ROLE.ADMIN,
+                                                    RoleConstants.ROLE.ORGADMIN,
+                                                    RoleConstants.ROLE.USER)
                             )
             )
             .group(
@@ -102,9 +102,18 @@ public class PermissionConstants {
                                             .operate(OPERATE.READ)
                                             .name("permission.bill.dimension_setting.read")
                                             .role(RoleConstants.ROLE.ADMIN)
-                                            .role(RoleConstants.ROLE.ORGADMIN)
-                                            .role(RoleConstants.ROLE.USER)
-                            )
+                            ).permission(new Permission.Builder()
+                                    .operate(OPERATE.CREATE)
+                                    .name("permission.bill.dimension_setting.create")
+                                    .role(RoleConstants.ROLE.ADMIN))
+                            .permission(new Permission.Builder()
+                                    .operate(OPERATE.EDIT)
+                                    .name("permission.bill.dimension_setting.edit")
+                                    .role(RoleConstants.ROLE.ADMIN))
+                            .permission(new Permission.Builder()
+                                    .operate(OPERATE.DELETE)
+                                    .name("permission.bill.dimension_setting.delete")
+                                    .role(RoleConstants.ROLE.ADMIN))
             )
             .group(
                     new PermissionGroup.Builder()
@@ -114,10 +123,21 @@ public class PermissionConstants {
                                     new Permission.Builder()
                                             .operate(OPERATE.READ)
                                             .name("permission.bill.custom_bill.read")
-                                            .role(RoleConstants.ROLE.ADMIN)
-                                            .role(RoleConstants.ROLE.ORGADMIN)
-                                            .role(RoleConstants.ROLE.USER)
-                            )
+                                            .role(RoleConstants.ROLE.ADMIN,
+                                                    RoleConstants.ROLE.ORGADMIN,
+                                                    RoleConstants.ROLE.USER))
+                            .permission(new Permission.Builder()
+                                    .operate(OPERATE.CREATE)
+                                    .name("permission.bill.dimension_setting.create")
+                                    .role(RoleConstants.ROLE.ADMIN))
+                            .permission(new Permission.Builder()
+                                    .operate(OPERATE.EDIT)
+                                    .name("permission.bill.dimension_setting.edit")
+                                    .role(RoleConstants.ROLE.ADMIN))
+                            .permission(new Permission.Builder()
+                                    .operate(OPERATE.DELETE)
+                                    .name("permission.bill.dimension_setting.delete")
+                                    .role(RoleConstants.ROLE.ADMIN))
             );
 
 

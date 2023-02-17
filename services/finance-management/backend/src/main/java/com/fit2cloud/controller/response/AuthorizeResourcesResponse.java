@@ -31,4 +31,6 @@ public class AuthorizeResourcesResponse {
     private String cloudAccountId;
     @ApiModelProperty("云账号名称")
     private String cloudAccountName;
+    @ApiModelProperty("云平台")
+    private String provider;
 }

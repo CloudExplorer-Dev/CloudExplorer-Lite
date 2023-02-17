@@ -1,12 +1,16 @@
 package com.fit2cloud.service.impl;
 
 import co.elastic.clients.elasticsearch.ElasticsearchClient;
+import co.elastic.clients.elasticsearch._types.Refresh;
 import co.elastic.clients.elasticsearch._types.mapping.NestedProperty;
 import co.elastic.clients.elasticsearch._types.mapping.Property;
 import co.elastic.clients.elasticsearch._types.query_dsl.BoolQuery;
 import co.elastic.clients.elasticsearch._types.query_dsl.Query;
 import co.elastic.clients.elasticsearch._types.query_dsl.TermQuery;
+import co.elastic.clients.elasticsearch.core.BulkRequest;
 import co.elastic.clients.elasticsearch.core.DeleteByQueryRequest;
+import co.elastic.clients.elasticsearch.core.bulk.BulkOperation;
+import co.elastic.clients.elasticsearch.core.bulk.IndexOperation;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.fit2cloud.base.entity.CloudAccount;
 import com.fit2cloud.base.entity.JobRecord;
@@ -38,6 +42,7 @@ import org.apache.commons.collections4.keyvalue.DefaultKeyValue;
 import org.redisson.api.RLock;
 import org.springframework.data.elasticsearch.annotations.Document;
 import org.springframework.data.elasticsearch.client.elc.ElasticsearchTemplate;
+import org.springframework.data.elasticsearch.core.mapping.IndexCoordinates;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
@@ -59,8 +64,6 @@ import java.util.concurrent.TimeUnit;
 public class SyncServiceImpl extends BaseSyncService implements ISyncService {
     @Resource
     private IBaseCloudAccountService cloudAccountService;
-    @Resource
-    private ElasticsearchTemplate elasticsearchTemplate;
     @Resource
     private ElasticsearchClient elasticsearchClient;
     @Resource
@@ -101,47 +104,54 @@ public class SyncServiceImpl extends BaseSyncService implements ISyncService {
         if (!lock.tryLock(5, TimeUnit.SECONDS)) {
             return;
         }
-        LocalDateTime syncTime = getSyncTime();
-        ArrayList<ResourceInstance> resourceInstancesAll = new ArrayList<>();
-        Class<? extends ICloudProvider> iCloudProviderClazz = ICloudProvider.of(cloudAccount.getPlatform());
-        Map<ResourceTypeConstants, SyncDimensionConstants> map = CommonUtil.exec(iCloudProviderClazz, ICloudProvider::getResourceSyncDimensionConstants);
-        // 如果不存在同步粒度则为不支持的资源类型
-        if (!map.containsKey(instanceType)) {
-            return;
-        }
-        JobRecord jobRecord = initJobRecord("同步" + instanceType.getMessage(), syncTime, cloudAccountId, instanceType);
-        SyncDimensionConstants syncDimensionConstants = map.get(instanceType);
-        List<Map<String, Object>> dimension = syncDimensionConstants.getDimensionExecParams().apply(cloudAccount, null);
-        for (Map<String, Object> execParams : dimension) {
-            try {
-                List<ResourceInstance> resourceInstances = CommonUtil.exec(iCloudProviderClazz, JsonUtil.toJSONString(execParams), instanceType.getExec());
-                resourceInstances.forEach(resourceInstance -> resourceInstance.setCloudAccountId(cloudAccountId));
-                resourceInstancesAll.addAll(resourceInstances);
-                updateJobRecord(jobRecord, resourceInstances, syncDimensionConstants, execParams);
-            } catch (Exception e) {
-                if (e instanceof SkipPageException) {
-                    // todo 跳过当前区域
-                    updateJobRecord(jobRecord, new ArrayList<>(), syncDimensionConstants, execParams);
-                } else {
-                    // todo 记录当前区域同步错误
-                    updateJobRecord(jobRecord, getErrorDimensionJobRecordParam(jobRecord, e, syncDimensionConstants, execParams));
+        try {
+
+            LocalDateTime syncTime = getSyncTime();
+            ArrayList<ResourceInstance> resourceInstancesAll = new ArrayList<>();
+            Class<? extends ICloudProvider> iCloudProviderClazz = ICloudProvider.of(cloudAccount.getPlatform());
+            List<DefaultKeyValue<ResourceTypeConstants, SyncDimensionConstants>> map = CommonUtil.exec(iCloudProviderClazz, ICloudProvider::getResourceSyncDimensionConstants);
+            // 如果不存在同步粒度则为不支持的资源类型
+            Optional<DefaultKeyValue<ResourceTypeConstants, SyncDimensionConstants>> first = map.stream().filter(item -> item.getKey().equals(instanceType)).findFirst();
+            if (first.isEmpty()) {
+                return;
+            }
+            JobRecord jobRecord = initJobRecord("扫描" + instanceType.getMessage(), syncTime, cloudAccountId, instanceType);
+            SyncDimensionConstants syncDimensionConstants = first.get().getValue();
+            List<Map<String, Object>> dimension = syncDimensionConstants.getDimensionExecParams().apply(cloudAccount, null);
+            for (Map<String, Object> execParams : dimension) {
+                try {
+                    List<ResourceInstance> resourceInstances = CommonUtil.exec(iCloudProviderClazz, JsonUtil.toJSONString(execParams), instanceType.getExec());
+                    resourceInstances.forEach(resourceInstance -> resourceInstance.setCloudAccountId(cloudAccountId));
+                    resourceInstancesAll.addAll(resourceInstances);
+                    updateJobRecord(jobRecord, resourceInstances, syncDimensionConstants, execParams);
+                } catch (Exception e) {
+                    if (e instanceof SkipPageException) {
+                        // todo 跳过当前区域
+                        updateJobRecord(jobRecord, new ArrayList<>(), syncDimensionConstants, execParams);
+                    } else {
+                        // todo 记录当前区域同步错误
+                        updateJobRecord(jobRecord, getErrorDimensionJobRecordParam(jobRecord, e, syncDimensionConstants, execParams));
+                    }
                 }
             }
+            // todo 插入数据
+            proxyJob(jobRecord, new JobLink("插入原始数据", JobLinkTypeConstants.SYSTEM_SAVE_DATA), () -> saveOrUpdateData(cloudAccountId, instanceType, resourceInstancesAll), null);
+            // todo 更新缓存
+            proxyJob(jobRecord, new JobLink("扫描合规资源", JobLinkTypeConstants.SYSTEM_SAVE_DATA), () -> scan(instanceType), null);
+            // todo 更新扫描时间
+            proxyJob(jobRecord, new JobLink("更新扫描时间", JobLinkTypeConstants.SYSTEM_SAVE_DATA), () ->
+                            complianceRuleService.update(new LambdaUpdateWrapper<ComplianceRule>().eq(ComplianceRule::getResourceType, instanceType.name()).set(ComplianceRule::getUpdateTime, syncTime))
+                    , null);
+            // todo 更新任务状态
+            JobStatusConstants jobRecordStatus = getJobRecordStatus(jobRecord);
+            jobRecord.setStatus(jobRecordStatus);
+            updateJobRecord(jobRecord, JobRecordParam.success(new JobLink("任务执行结束", JobLinkTypeConstants.JOB_END), null));
+        } finally {
+            if (lock.isLocked()) {
+                lock.unlock();
+            }
         }
-        // todo 插入数据
-        proxyJob(jobRecord, new JobLink("插入原始数据", JobLinkTypeConstants.SYSTEM_SAVE_DATA), () -> saveOrUpdateData(cloudAccountId, instanceType, resourceInstancesAll), null);
-        // todo 更新缓存
-        proxyJob(jobRecord, new JobLink("扫描合规资源", JobLinkTypeConstants.SYSTEM_SAVE_DATA), () -> scan(instanceType), null);
-        // todo 更新扫描时间
-        proxyJob(jobRecord, new JobLink("更新扫描时间", JobLinkTypeConstants.SYSTEM_SAVE_DATA), () ->
-                        complianceRuleService.update(new LambdaUpdateWrapper<ComplianceRule>().eq(ComplianceRule::getResourceType, instanceType.name()).set(ComplianceRule::getUpdateTime, syncTime))
-                , null);
-        // todo 更新任务状态
-        JobStatusConstants jobRecordStatus = getJobRecordStatus(jobRecord);
-        jobRecord.setStatus(jobRecordStatus);
-        updateJobRecord(jobRecord, JobRecordParam.success(new JobLink("任务执行结束", JobLinkTypeConstants.JOB_END), null));
     }
-
 
     /**
      * 扫描原始资源
@@ -177,8 +187,11 @@ public class SyncServiceImpl extends BaseSyncService implements ISyncService {
         }
         // todo 删除数据
         elasticsearchClient.deleteByQuery(build);
+        BulkRequest bulkRequest = new BulkRequest.Builder().index(ResourceInstance.class.getAnnotation(Document.class).indexName())
+                .operations(resourceInstancesAll.stream().map(source -> new BulkOperation.Builder()
+                        .index(new IndexOperation.Builder<>().document(source).build()).build()).toList()).refresh(Refresh.True).build();
         // todo 插入数据
-        elasticsearchTemplate.save(resourceInstancesAll);
+        elasticsearchClient.bulk(bulkRequest);
     }
 
     /**

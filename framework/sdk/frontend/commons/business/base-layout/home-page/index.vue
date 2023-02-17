@@ -166,8 +166,10 @@ onMounted(() => {
     100% - var(--ce-main-content-margin-left, 30px) -
       var(--ce-main-content-margin-right, 30px)
   );
-  overflow-y: auto;
-  overflow-x: hidden;
+  overflow: hidden;
+  &:hover {
+    overflow-y: auto;
+  }
 }
 .el-row {
   margin-bottom: 20px;

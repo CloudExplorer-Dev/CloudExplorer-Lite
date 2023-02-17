@@ -7,7 +7,6 @@
       <el-tab-pane label="合规规则" name="compliance_rule"
         ><compliance_rule ref="compliance_rule_ref"></compliance_rule>
       </el-tab-pane>
-      <el-tab-pane label="漏洞规则" name="leak_hole"> </el-tab-pane>
       <el-tab-pane label="规则组" name="rule_group">
         <compliance_rule_group></compliance_rule_group
       ></el-tab-pane>

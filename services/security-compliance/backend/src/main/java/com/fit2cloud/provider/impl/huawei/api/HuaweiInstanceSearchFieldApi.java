@@ -180,7 +180,7 @@ public class HuaweiInstanceSearchFieldApi {
 
         InstanceSearchField cidr = new InstanceSearchField("私有云下可用子网的范围", "cidr", InstanceFieldType.String).resetInstanceField(PlatformConstants.fit2cloud_huawei_platform, ResourceTypeConstants.VPC);
 
-        InstanceSearchField status = new InstanceSearchField("私有云下可用子网的范围", "cidr", InstanceFieldType.String,
+        InstanceSearchField status = new InstanceSearchField("私有云下可用子网的范围", "cidr", InstanceFieldType.Enum,
                 List.of(
                         new DefaultKeyValue<>("创建中", "CREATING"),
                         new DefaultKeyValue<>("创建成功", "OK")
@@ -194,26 +194,26 @@ public class HuaweiInstanceSearchFieldApi {
      * @return 华为云 ram实例查询字段
      */
     public static List<InstanceSearchField> listRamInstanceSearchField() {
-        InstanceSearchField enabled = new InstanceSearchField("IAM用户是否启用", "enabled", InstanceFieldType.String,
+        InstanceSearchField enabled = new InstanceSearchField("IAM用户是否启用", "enabled", InstanceFieldType.Enum,
                 List.of(
                         new DefaultKeyValue<>("启用", true),
                         new DefaultKeyValue<>("停用", false)
                 )).resetInstanceField(PlatformConstants.fit2cloud_huawei_platform, ResourceTypeConstants.RAM);
 
-        InstanceSearchField pwd_status = new InstanceSearchField("IAM用户密码状态", "pwd_status", InstanceFieldType.String,
+        InstanceSearchField pwd_status = new InstanceSearchField("IAM用户密码状态", "pwd_status", InstanceFieldType.Enum,
                 List.of(
                         new DefaultKeyValue<>("需要修改密码", true),
                         new DefaultKeyValue<>("正常", false)
                 )).resetInstanceField(PlatformConstants.fit2cloud_huawei_platform, ResourceTypeConstants.RAM);
 
-        InstanceSearchField pwd_strength = new InstanceSearchField("IAM用户的密码强度", "pwd_strength", InstanceFieldType.String,
+        InstanceSearchField pwd_strength = new InstanceSearchField("IAM用户的密码强度", "pwd_strength", InstanceFieldType.Enum,
                 List.of(
                         new DefaultKeyValue<>("密码强度高", "high"),
                         new DefaultKeyValue<>("密码强度中等", "mid"),
                         new DefaultKeyValue<>("密码强度低", "low")
                 )).resetInstanceField(PlatformConstants.fit2cloud_huawei_platform, ResourceTypeConstants.RAM);
 
-        InstanceSearchField loginProfileEnabled = new InstanceSearchField("IAM用户的登录保护状态", "loginProfile.enabled", InstanceFieldType.String,
+        InstanceSearchField loginProfileEnabled = new InstanceSearchField("IAM用户的登录保护状态", "loginProfile.enabled", InstanceFieldType.Enum,
                 List.of(
                         new DefaultKeyValue<>("开启", true),
                         new DefaultKeyValue<>("未开启", false)

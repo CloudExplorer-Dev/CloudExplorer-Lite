@@ -143,8 +143,8 @@ public class ComplianceScanServiceImpl implements IComplianceScanService {
         return cloudAccounts.stream()
                 .filter(cloudAccount -> Arrays.stream(ProviderConstants.values()).anyMatch(p -> StringUtils.equals(p.name(), cloudAccount.getPlatform())))
                 .map(cloudAccount -> {
-                    Map<ResourceTypeConstants, SyncDimensionConstants> exec = CommonUtil.exec(ICloudProvider.of(cloudAccount.getPlatform()), ICloudProvider::getResourceSyncDimensionConstants);
-                    List<DefaultKeyValue<String, String>> resourceTypes = exec.keySet().stream().map(resourceTypeConstants -> new DefaultKeyValue<>(resourceTypeConstants.getMessage(), resourceTypeConstants.name())).toList();
+                    List<DefaultKeyValue<ResourceTypeConstants, SyncDimensionConstants>> exec = CommonUtil.exec(ICloudProvider.of(cloudAccount.getPlatform()), ICloudProvider::getResourceSyncDimensionConstants);
+                    List<DefaultKeyValue<String, String>> resourceTypes = exec.stream().map(DefaultKeyValue::getKey).map(resourceTypeConstants -> new DefaultKeyValue<>(resourceTypeConstants.getMessage(), resourceTypeConstants.name())).toList();
                     SupportCloudAccountResourceResponse cloudAccountResourceResponse = new SupportCloudAccountResourceResponse();
                     cloudAccountResourceResponse.setCloudAccount(cloudAccount);
                     cloudAccountResourceResponse.setResourceTypes(resourceTypes);
@@ -167,8 +167,8 @@ public class ComplianceScanServiceImpl implements IComplianceScanService {
     @Override
     public List<SupportPlatformResourceResponse> listSupportPlatformResource() {
         return Arrays.stream(ProviderConstants.values()).map(platform -> {
-            Map<ResourceTypeConstants, SyncDimensionConstants> exec = CommonUtil.exec(ICloudProvider.of(platform.name()), ICloudProvider::getResourceSyncDimensionConstants);
-            List<DefaultKeyValue<String, String>> resourceTypes = exec.keySet().stream().map(resourceTypeConstants -> new DefaultKeyValue<>(resourceTypeConstants.getMessage(), resourceTypeConstants.name())).toList();
+            List<DefaultKeyValue<ResourceTypeConstants, SyncDimensionConstants>> exec = CommonUtil.exec(ICloudProvider.of(platform.name()), ICloudProvider::getResourceSyncDimensionConstants);
+            List<DefaultKeyValue<String, String>> resourceTypes = exec.stream().map(resourceTypeConstants -> new DefaultKeyValue<>(resourceTypeConstants.getKey().getMessage(), resourceTypeConstants.getKey().name())).toList();
             SupportPlatformResourceResponse supportPlatformResourceResponse = new SupportPlatformResourceResponse();
             supportPlatformResourceResponse.setPlatform(platform.name());
             supportPlatformResourceResponse.setResourceTypes(resourceTypes);

@@ -17,7 +17,7 @@
           :editable="false"
           v-model="viewMonth"
           type="month"
-          placeholder="Pick a day"
+          placeholder="请选择月份"
           format="YYYY-MM"
           :clearable="false"
           :disabled-date="disabledDate"
@@ -72,52 +72,49 @@
           >
         </template>
       </el-table-column>
-
-      <el-table-column prop="cloudAccountName" label="云账号" width="200px">
+      <el-table-column
+        prop="cloudAccountName"
+        label="云账号"
+        :filters="
+          cloudAccountList.map((item) => ({
+            text: item.name,
+            value: item.id,
+          }))
+        "
+        :filter-multiple="false"
+        column-key="cloudAccountId"
+        width="150px"
+      >
         <template #default="scope">
           <div style="display: flex; align-items: center">
-            <!--            <el-image
-              style="margin-right: 20%; display: flex"
-              :src="platformIcon[scope.row.provider].icon"
-            ></el-image>-->
-            <component
-              style="margin-right: 20%; display: flex"
-              :is="platformIcon[scope.row.provider]?.component"
-              v-bind="platformIcon[scope.row.provider]?.icon"
-              :color="platformIcon[scope.row.provider]?.color"
-              size="16px"
-            ></component>
-            <span>{{
-              scope.row.cloudAccountName
-                ? scope.row.cloudAccountName
-                : scope.row.cloudAccountId
-            }}</span>
+            <platform_icon :platform="scope.row.provider"> </platform_icon>
+            <div>{{ scope.row.cloudAccountName }}</div>
           </div>
         </template>
       </el-table-column>
-      <el-table-column prop="productName" label="产品名称">
+      <el-table-column prop="productName" label="产品名称" width="120px">
         <template #default="scope">
           <span>{{
             scope.row.productName ? scope.row.productName : "N/A"
           }}</span></template
         >
       </el-table-column>
-      <el-table-column prop="productDetail" label="产品明细">
+      <el-table-column prop="productDetail" label="产品明细" width="200px">
         <template #default="scope">
           <span>{{
             scope.row.productDetail ? scope.row.productDetail : "N/A"
           }}</span></template
         >
       </el-table-column>
-      <el-table-column prop="payAccountId" label="付款账号" />
-      <el-table-column prop="organizationName" label="组织名称">
+      <el-table-column prop="payAccountId" label="付款账号" width="200px" />
+      <el-table-column prop="organizationName" label="组织">
         <template #default="scope">
           <span>{{
             scope.row.organizationName ? scope.row.organizationName : "N/A"
           }}</span>
         </template>
       </el-table-column>
-      <el-table-column prop="workspaceName" label="工作空间名称">
+      <el-table-column prop="workspaceName" label="工作空间">
         <template #default="scope">
           <span>{{
             scope.row.workspaceName ? scope.row.workspaceName : "N/A"
@@ -203,7 +200,9 @@ import {
   TableSearch,
 } from "@commons/components/ce-table/type";
 import billDetailApi from "@/api/bill_detailed";
-import { platformIcon } from "@commons/utils/platform";
+import platform_icon from "@commons/components/platform-icon/index.vue";
+import cloudAccountApi from "@commons/api/cloud_account/index";
+import type { CloudAccount } from "@commons/api/cloud_account/type";
 import _ from "lodash";
 /**
  *当前月份
@@ -211,7 +210,7 @@ import _ from "lodash";
 const currentMonth =
   new Date().getFullYear().toString() +
   "-" +
-  ((new Date().getMonth() + 1).toString().length === 0
+  ((new Date().getMonth() + 1).toString().length === 1
     ? "0" + (new Date().getMonth() + 1).toString()
     : (new Date().getMonth() + 1).toString());
 const viewMonth = ref<string>(currentMonth);
@@ -223,6 +222,8 @@ const disabledDate = (time: Date) => {
   return time.getTime() > Date.now();
 };
 
+const cloudAccountList = ref<Array<CloudAccount>>([]);
+
 /**
  * 表格对象
  */
@@ -233,6 +234,9 @@ onMounted(() => {
    * 组件挂载查询数据
    */
   search(table.value?.getTableSearch());
+  cloudAccountApi.listAll().then((ok) => {
+    cloudAccountList.value = ok.data;
+  });
 });
 
 /**
@@ -308,4 +312,4 @@ const tableConfig = ref<TableConfig>({
   tableOperations: undefined,
 });
 </script>
-<style lang="scss"></style>
+<style lang="scss" scoped></style>

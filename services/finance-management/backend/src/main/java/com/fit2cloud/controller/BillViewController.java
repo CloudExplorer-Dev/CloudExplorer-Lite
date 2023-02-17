@@ -13,6 +13,7 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -42,6 +43,7 @@ public class BillViewController {
 
     @GetMapping("/expenses/{type}/{value}")
     @ApiOperation(value = "获取账单花费,可以按月,按年", notes = "获取账单花费")
+    @PreAuthorize("hasAnyCePermission('BILL_ViEW:READ')")
     public ResultHolder<BigDecimal> getBillExpenses(@Pattern(regexp = "MONTH|YEAR", message = "类型,支持MONTH,YEAR") @ApiParam("类型,支持MONTH,YEAR") @PathVariable("type") String type,
                                                     @ApiParam("如果类型是MONTH yyyy-mm格式,YEAR yyyy") @PathVariable("value") String value,
                                                     BillExpensesRequest billExpensesRequest) {
@@ -51,6 +53,7 @@ public class BillViewController {
 
     @GetMapping("/history_trend/{type}/{history_num}")
     @ApiOperation(value = "获取账单趋势", notes = "获取账单趋势")
+    @PreAuthorize("hasAnyCePermission('BILL_ViEW:READ')")
     public ResultHolder<List<Trend>> historyTrend(@PathVariable("type") @Pattern(regexp = "MONTH|YEAR", message = "类型,支持MONTH,YEAR") String type,
                                                   @PathVariable("history_num") Integer historyNum,
                                                   HistoryTrendRequest historyTrendRequest) {
@@ -60,6 +63,7 @@ public class BillViewController {
 
     @GetMapping("/{ruleId}/{month}")
     @ApiOperation(value = "根据账单规则聚合账单", notes = "根据账单规则聚合账单")
+    @PreAuthorize("hasAnyCePermission('BILL_ViEW:READ')")
     public ResultHolder<Map<String, List<BillView>>> billViewByRule(@NotNull(message = "账单规则id不能为空") @CustomValidated(mapper = BillRuleMapper.class, handler = ExistHandler.class, field = "id", message = "账单规则id不存在", exist = false) @ApiParam("账单规则id") @PathVariable("ruleId") String ruleId,
                                                                     @Pattern(regexp = "^\\d{4}-\\d{2}$", message = "月份格式必须为yyyy-mm") @ApiParam("月份") @PathVariable("month") String month) {
         return ResultHolder.success(billViewService.billViewByRuleId(ruleId, month));

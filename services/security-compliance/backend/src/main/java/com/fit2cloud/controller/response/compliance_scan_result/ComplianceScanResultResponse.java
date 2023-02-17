@@ -5,7 +5,9 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.fasterxml.jackson.datatype.jsr310.deser.LocalDateTimeDeserializer;
 import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateTimeSerializer;
+import com.fit2cloud.constants.ResourceTypeConstants;
 import com.fit2cloud.dao.constants.ComplianceStatus;
+import com.fit2cloud.dao.constants.ResourceType;
 import com.fit2cloud.dao.constants.RiskLevel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
@@ -32,6 +34,9 @@ public class ComplianceScanResultResponse {
 
     @ApiModelProperty(value = "风险等级", notes = "风险等级")
     private RiskLevel riskLevel;
+
+    @ApiModelProperty(value = "资源类型", notes = "资源类型")
+    private ResourceTypeConstants resourceType;
 
     @ApiModelProperty(value = "检查状态", notes = "检查状态")
     private ComplianceStatus scanStatus;

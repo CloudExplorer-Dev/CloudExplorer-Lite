@@ -243,9 +243,9 @@ watch(
                 <span>{{ menuItem.title }}</span>
               </div>
               <div style="flex: auto"></div>
-              <div class="star">
-                <CeIcon size="15px" :code="'shoucang'"></CeIcon>
-              </div>
+<!--              <div class="star">-->
+<!--                <CeIcon size="15px" :code="'shoucang'"></CeIcon>-->
+<!--              </div>-->
             </div>
           </div>
         </div>

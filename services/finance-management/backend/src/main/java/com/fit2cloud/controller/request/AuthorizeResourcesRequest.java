@@ -34,4 +34,8 @@ public class AuthorizeResourcesRequest {
     @ApiModelProperty(value = "云账号名称", notes = "云账号名称")
     @Query(compareType = QueryUtil.CompareType.IN, field = "cloudAccountId")
     private String cloudAccountName;
+
+    @Query(compareType = QueryUtil.CompareType.EQ, field = "cloudAccountId")
+    @ApiModelProperty(value = "云账号名id", notes = "云账号id")
+    private String cloudAccountId;
 }

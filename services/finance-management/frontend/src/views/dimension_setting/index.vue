@@ -4,25 +4,13 @@
       <breadcrumb :auto="true"></breadcrumb>
     </template>
     <div class="contentWapper">
-      <div class="tips">
-        将各云账号的账单费用按照分账规则分摊到云管中的组织/工作空间上。
-      </div>
       <div class="content">
         <div
           class="leftMenu"
           v-loading="orgLoading"
           style="--el-font-size-base: 14px"
         >
-          <div
-            style="
-              width: 100%;
-              height: 40px;
-              display: flex;
-              justify-content: center;
-              align-items: flex-end;
-              align-content: flex-end;
-            "
-          >
+          <div class="search">
             <el-input
               v-model="filterText"
               placeholder="搜索"
@@ -38,7 +26,7 @@
               padding-left: 30px;
               align-items: center;
               font-family: Helvetica, PingFang SC, Arial, sans-serif;
-              font-size: 14px;
+              font-size: 12px;
               cursor: pointer;
             "
             :class="activeUnassignedResource ? 'active' : ''"
@@ -73,13 +61,17 @@
           </el-tree>
         </div>
         <div class="rightContent">
-          <div class="title">
+          <div class="title" v-if="!activeUnassignedResource">
             <span>{{
               activeUnassignedResource
                 ? "未分账资源"
                 : activeWorkSpaceOrOrg?.name
             }}</span>
+            <div style="font-size: 12px; color: #555555">
+              说明：各云账号的账单费用按照分账规则分摊到云管中的组织/工作空间上。
+            </div>
           </div>
+
           <div class="content">
             <el-tabs
               v-if="activeWorkSpaceOrOrg"
@@ -129,7 +121,27 @@
                       >
                     </template>
                   </el-table-column>
-                  <el-table-column prop="cloudAccountName" label="云账号" />
+                  <el-table-column
+                    :filters="
+                      cloudAccountList.map((item) => ({
+                        text: item.name,
+                        value: item.id,
+                      }))
+                    "
+                    :filter-multiple="false"
+                    column-key="cloudAccountId"
+                    prop="cloudAccountName"
+                    label="云账号"
+                    label-width="150px"
+                  >
+                    <template #default="scope">
+                      <div style="display: flex; align-items: center">
+                        <platform_icon :platform="scope.row.provider">
+                        </platform_icon>
+                        <div>{{ scope.row.cloudAccountName }}</div>
+                      </div>
+                    </template>
+                  </el-table-column>
                   <el-table-column prop="productName" label="产品名称" />
                   <el-table-column prop="tags" label="标签">
                     <template #default="scope">
@@ -191,6 +203,14 @@
               :tableConfig="tableConfig"
               row-key="id"
             >
+              <template #toolbar>
+                <div class="title" v-if="activeUnassignedResource">
+                  <span>未分账资源</span>
+                  <div style="font-size: 12px; color: #555555">
+                    说明：各云账号的账单费用按照分账规则分摊到云管中的组织/工作空间上。
+                  </div>
+                </div></template
+              >
               <el-table-column type="selection" />
               <el-table-column prop="resourceName" label="资源名称">
                 <template #default="scope">
@@ -213,7 +233,27 @@
                   >
                 </template>
               </el-table-column>
-              <el-table-column prop="cloudAccountName" label="云账号" />
+              <el-table-column
+                :filters="
+                  cloudAccountList.map((item) => ({
+                    text: item.name,
+                    value: item.id,
+                  }))
+                "
+                :filter-multiple="false"
+                column-key="cloudAccountId"
+                prop="cloudAccountName"
+                label="云账号"
+                label-width="150px"
+              >
+                <template #default="scope">
+                  <div style="display: flex; align-items: center">
+                    <platform_icon :platform="scope.row.provider">
+                    </platform_icon>
+                    <div>{{ scope.row.cloudAccountName }}</div>
+                  </div>
+                </template>
+              </el-table-column>
               <el-table-column prop="productName" label="产品名称" />
               <el-table-column prop="tags" label="标签">
                 <template #default="scope">
@@ -282,6 +322,11 @@ import {
   TableConfig,
   TableSearch,
 } from "@commons/components/ce-table/type";
+import cloudAccountApi from "@commons/api/cloud_account/index";
+import type { CloudAccount } from "@commons/api/cloud_account/type";
+import platform_icon from "@commons/components/platform-icon/index.vue";
+
+const cloudAccountList = ref<Array<CloudAccount>>([]);
 /**
  * 树对象
  */
@@ -315,7 +360,7 @@ watch(filterText, (val) => {
  * @param value
  * @param data
  */
-const filterNode = (value: string, data: OrganizationTree) => {
+const filterNode = (value: string, data: OrganizationTree | any) => {
   if (!value) return true;
   return data.name.includes(value);
 };
@@ -370,6 +415,9 @@ onMounted(() => {
     }
   );
   search(new TableSearch());
+  cloudAccountApi.listAll().then((ok) => {
+    cloudAccountList.value = ok.data;
+  });
 });
 
 /**
@@ -512,11 +560,19 @@ const tableConfig = ref<TableConfig>({
       width: 200px;
       border: 1px solid var(--el-border-color);
       overflow: hidden;
+      .search {
+        width: 100%;
+        height: 40px;
+        display: flex;
+        justify-content: center;
+        align-items: flex-end;
+        align-content: flex-end;
+      }
     }
     .rightContent {
       width: calc(100% - 220px);
       height: 100%;
-      border: 1px solid var(--el-border-color);
+
       box-sizing: border-box;
       padding: 20px;
       overflow: hidden;
@@ -527,7 +583,7 @@ const tableConfig = ref<TableConfig>({
           font-family: "PingFangSC-Regular", "PingFang SC", sans-serif;
           font-weight: 400;
           font-style: normal;
-          font-size: 20px;
+          font-size: 14px;
         }
       }
       .content {
@@ -549,11 +605,15 @@ const tableConfig = ref<TableConfig>({
 }
 :deep(.el-tree) {
   width: 100%;
-  overflow: scroll;
+  overflow: hidden;
   height: calc(100% - 40px);
+
   > .el-tree-node {
     display: inline-block;
     min-width: 100%;
+  }
+  &:hover {
+    overflow: scroll;
   }
 }
 

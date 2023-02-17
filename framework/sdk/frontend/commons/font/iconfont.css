@@ -1,8 +1,8 @@
 @font-face {
   font-family: "iconfont"; /* Project id 3519945 */
-  src: url('iconfont.woff2?t=1669964223090') format('woff2'),
-       url('iconfont.woff?t=1669964223090') format('woff'),
-       url('iconfont.ttf?t=1669964223090') format('truetype');
+  src: url('iconfont.woff2?t=1676628893373') format('woff2'),
+       url('iconfont.woff?t=1676628893373') format('woff'),
+       url('iconfont.ttf?t=1676628893373') format('truetype');
 }
 
 .iconfont {
@@ -11,6 +11,86 @@
   font-style: normal;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+}
+
+.ali-icon-huishouzhandierban:before {
+  content: "\e65d";
+}
+
+.ali-icon-yidongyunkongzhitaiicon06:before {
+  content: "\e74e";
+}
+
+.ali-icon-youhuayunhang:before {
+  content: "\e65c";
+}
+
+.ali-icon-fengxianqingdan:before {
+  content: "\e65a";
+}
+
+.ali-icon-fengxianguankongguanli:before {
+  content: "\e65b";
+}
+
+.ali-icon-feiyongguanli:before {
+  content: "\ea98";
+}
+
+.ali-icon-cunchushebei:before {
+  content: "\ea5f";
+}
+
+.ali-icon-shaixuanguolv:before {
+  content: "\e8d7";
+}
+
+.ali-icon-Windows:before {
+  content: "\e6a1";
+}
+
+.ali-icon-ubuntu:before {
+  content: "\e64e";
+}
+
+.ali-icon-shaixuan:before {
+  content: "\e655";
+}
+
+.ali-icon-anquan:before {
+  content: "\ec4d";
+}
+
+.ali-icon-jisuan-zhuanshusuzhuji:before {
+  content: "\e657";
+}
+
+.ali-icon-zongfeiyong:before {
+  content: "\e6a2";
+}
+
+.ali-icon-shaixuan1:before {
+  content: "\e8b6";
+}
+
+.ali-icon-feiyong1:before {
+  content: "\e658";
+}
+
+.ali-icon-debian:before {
+  content: "\eb74";
+}
+
+.ali-icon-centos:before {
+  content: "\e66f";
+}
+
+.ali-icon-SUSE:before {
+  content: "\e659";
+}
+
+.ali-icon-redhat:before {
+  content: "\ec1b";
 }
 
 .ali-icon-icon_openstack:before {

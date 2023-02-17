@@ -401,11 +401,6 @@ onBeforeUnmount(() => {
                   <span v-if="accountForm.platform">
                     {{ platformIcon[accountForm.platform].name }}</span
                   >
-                  <!--                  <el-image
-                    style="margin-left: 10px; display: flex"
-                    :src="platformIcon[accountForm.platform].icon"
-                    v-if="accountForm.platform"
-                  ></el-image>-->
                   <component
                     style="margin-left: 10px; display: flex"
                     :is="platformIcon[accountForm?.platform]?.component"
@@ -508,7 +503,7 @@ onBeforeUnmount(() => {
 
   <layout-container>
     <template #header>
-      <span>{{ $t("cloud_account.sync.setting", "定时同步设置") }}</span>
+      <span>{{ $t("cloud_account.sync.setting", "数据同步设置") }}</span>
     </template>
     <template #btn>
       <span
