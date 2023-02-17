@@ -260,9 +260,9 @@ const getTableSearch: (otherConditions: Conditions) => TableSearch = (
  * 清除表格上方回显的某个过滤项，从所有种类的查询条件中清除
  */
 const handleClear = (field: string) => {
-  clearConditions('0',condition, field);
-  clearConditions('1',searchCondition, field);
-  clearConditions('2',tableHeaderFilter, field);
+  clearConditions("0", condition, field);
+  clearConditions("1", searchCondition, field);
+  clearConditions("2", tableHeaderFilter, field);
 
   removeConditions(field);
   refresh();
@@ -271,18 +271,22 @@ const handleClear = (field: string) => {
 /**
  * 根据字段值清除过滤项
  */
-const clearConditions = (conditionType: string,condition:any, field: string) => {
+const clearConditions = (
+  conditionType: string,
+  condition: any,
+  field: string
+) => {
   Object.keys(condition.value).forEach((key: string) => {
     if (key === field) {
       delete condition.value[key];
 
       // 清除自定义的搜索项
-      if(conditionType === '0'){
+      if (conditionType === "0") {
         emit("clearCondition", field);
       }
 
       // 清除表格搜索项
-      if(conditionType === '2'){
+      if (conditionType === "2") {
         table.value.refElTable.clearFilter(new Array(field));
       }
     }
