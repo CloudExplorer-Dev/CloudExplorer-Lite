@@ -77,6 +77,9 @@ public class BaseUserServiceImpl extends ServiceImpl<BaseUserMapper, User> imple
         if (user == null) {
             user = getUserByEmail(username);
         }
+        if (user == null) {
+            return null;
+        }
 
         UserDto dto = new UserDto();
         BeanUtils.copyProperties(user, dto);
