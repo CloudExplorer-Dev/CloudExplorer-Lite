@@ -63,7 +63,7 @@ public class ServerAnalysisController {
         return ResultHolder.success(iServerAnalysisService.spread(request));
     }
 
-    @ApiOperation(value="查询云主机增长趋势",notes = "查询云主机增长趋势")
+    @ApiOperation(value="查询云主机趋势",notes = "查询云主机趋势")
     @GetMapping("/increase_trend")
     @PreAuthorize("hasAnyCePermission('SERVER_ANALYSIS:READ','OVERVIEW:READ')")
     public ResultHolder<List<ChartData>> getVmIncreaseTrendData(

@@ -43,10 +43,10 @@ const childRef = (el: any, chartName: any) => {
 
 const paramVmIncreaseTrendMonth = ref<any>("7");
 
-//增长趋势
+//趋势
 const increaseOption = ref<any>({});
 
-//增长趋势
+//趋势
 const getIncreaseTrend = (chartName: string) => {
   if (!show.value) {
     return;
@@ -146,7 +146,7 @@ onMounted(() => {
 <template>
   <el-card class="server-trend" v-if="show" :shadow="cardShadow">
     <div class="echart-title">
-      <div class="echart-title-left">云主机增长趋势</div>
+      <div class="echart-title-left">云主机趋势</div>
       <div class="echart-title-right">
         <el-select
           v-model="paramVmIncreaseTrendMonth"

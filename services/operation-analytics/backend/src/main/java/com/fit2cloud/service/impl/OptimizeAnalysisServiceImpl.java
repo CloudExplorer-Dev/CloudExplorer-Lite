@@ -1,9 +1,11 @@
 package com.fit2cloud.service.impl;
 
-import co.elastic.clients.elasticsearch._types.InlineScript;
-import co.elastic.clients.elasticsearch._types.Script;
 import co.elastic.clients.elasticsearch._types.aggregations.*;
 import co.elastic.clients.elasticsearch._types.query_dsl.BoolQuery;
+import co.elastic.clients.elasticsearch._types.query_dsl.Query;
+import co.elastic.clients.elasticsearch._types.query_dsl.RangeQuery;
+import co.elastic.clients.elasticsearch._types.query_dsl.TermQuery;
+import co.elastic.clients.json.JsonData;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -15,8 +17,8 @@ import com.fit2cloud.base.mapper.BaseVmCloudServerMapper;
 import com.fit2cloud.common.constants.RecycleBinStatusConstants;
 import com.fit2cloud.common.constants.ResourceTypeConstants;
 import com.fit2cloud.common.es.constants.IndexConstants;
+import com.fit2cloud.common.log.utils.LogUtil;
 import com.fit2cloud.common.utils.PageUtil;
-import com.fit2cloud.common.utils.QueryUtil;
 import com.fit2cloud.constants.OptimizationConstants;
 import com.fit2cloud.controller.request.optimize.PageOptimizationRequest;
 import com.fit2cloud.dto.AnalyticsServerDTO;
@@ -25,16 +27,20 @@ import com.fit2cloud.service.IPermissionService;
 import com.github.yulichang.wrapper.MPJLambdaWrapper;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.BeanUtils;
+import org.springframework.beans.BeanWrapper;
+import org.springframework.beans.BeanWrapperImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.elasticsearch.client.elc.ElasticsearchAggregations;
 import org.springframework.data.elasticsearch.client.elc.ElasticsearchTemplate;
+import org.springframework.data.elasticsearch.client.elc.NativeQuery;
 import org.springframework.data.elasticsearch.client.elc.NativeQueryBuilder;
 import org.springframework.data.elasticsearch.core.SearchHits;
 import org.springframework.data.elasticsearch.core.mapping.IndexCoordinates;
-import org.springframework.data.elasticsearch.core.query.Query;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
+import java.beans.PropertyDescriptor;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDateTime;
@@ -75,22 +81,29 @@ public class OptimizeAnalysisServiceImpl implements IOptimizeAnalysisService {
 
     private IPage<AnalyticsServerDTO> getDeratingUpgrade(PageOptimizationRequest request){
         boolean isDerating = StringUtils.equalsIgnoreCase(OptimizationConstants.DERATING.getCode(),request.getOptimizeSuggest());
+        Long esStart = System.currentTimeMillis();
         List<AnalyticsServerDTO> metricList = getMetricData(request,  isDerating);
+        Long esEnd = System.currentTimeMillis()-esStart;
+        System.out.println("ES耗时:"+esEnd);
+        LogUtil.info("ES耗时:"+esEnd);
         if(CollectionUtils.isEmpty(metricList)){
             return new Page<>();
         }
-        List<String> instanceUuids = metricList.stream().map(AnalyticsServerDTO::getInstanceUuid).toList();
+        Long start = System.currentTimeMillis();
         Page<AnalyticsServerDTO> page = PageUtil.of(request, AnalyticsServerDTO.class, null, true);
         MPJLambdaWrapper<VmCloudServer> queryServerWrapper = addServerAnalysisQuery(request);
-        queryServerWrapper.in(true,VmCloudServer::getInstanceUuid,instanceUuids);
+        queryServerWrapper.in(true,VmCloudServer::getInstanceUuid,request.getInstanceUuids());
         IPage<AnalyticsServerDTO> pageData = baseVmCloudServerMapper.selectJoinPage(page,AnalyticsServerDTO.class,queryServerWrapper);
+        Long end = System.currentTimeMillis()-start;
+        System.out.println("Server耗时:"+end);
+        LogUtil.info("Server耗时:"+end);
         if(pageData.getRecords().size()>0){
             OptimizationConstants optimizationConstants = OptimizationConstants.getByCode(request.getOptimizeSuggest());
             List<String> resourceIds = pageData.getRecords().stream().filter(vm->StringUtils.isNotEmpty(vm.getInstanceUuid())).map(AnalyticsServerDTO::getInstanceUuid).toList();
             request.setInstanceUuids(resourceIds);
-            Map<String,AnalyticsServerDTO>  metricDataMap = metricList.stream().collect(Collectors.toMap(server -> server.getInstanceUuid()+server.getAccountId(),o->o,(k1,k2)->k1));
+            Map<String,AnalyticsServerDTO>  metricDataMap = metricList.stream().collect(Collectors.toMap(server -> server.getInstanceUuid(),o->o,(k1,k2)->k1));
             pageData.getRecords().forEach(v->{
-                String key = v.getInstanceUuid()+v.getAccountId();
+                String key = v.getInstanceUuid();
                 assert optimizationConstants != null;
                 v.setOptimizeSuggest(optimizationConstants.getName());
                 v.setOptimizeSuggestCode(optimizationConstants.getCode());
@@ -146,24 +159,39 @@ public class OptimizeAnalysisServiceImpl implements IOptimizeAnalysisService {
     }
 
     public static void main(String[] args) {
-        System.out.println(LocalDateTime.now().minusDays(10));
-        System.out.println(LocalDateTime.now());
+        String a = "的";
+        String b = "是的";
+        System.out.println(b.indexOf(a));
     }
 
     private IPage<AnalyticsServerDTO> getRecover(PageOptimizationRequest request){
-        QueryWrapper recycleQuery = new QueryWrapper<>();
+        QueryWrapper<RecycleBin> recycleQuery = new QueryWrapper<>();
         recycleQuery.eq(true, "recycle_bin.resource_type", ResourceTypeConstants.VM.name());
         recycleQuery.eq(true, "recycle_bin.status", RecycleBinStatusConstants.ToBeRecycled.name());
+        // 回收站的
         List<RecycleBin> recycleBins = baseRecycleBinMapper.selectList(recycleQuery);
-        List<String> recycleBinServerIds = recycleBins.stream().map(RecycleBin::getResourceId).toList();
+        // 回收站的资源ID
+        List<String> temp = recycleBins.stream().map(RecycleBin::getResourceId).toList();
+        List<String> recycleBinServerIds = new ArrayList<>();
+        // 回收站资源
+        List<VmCloudServer> recycleBinServer = baseVmCloudServerMapper.selectBatchIds(temp);
+        if(CollectionUtils.isNotEmpty(request.getAccountIds())){
+            recycleBinServer = recycleBinServer.stream().filter(v->request.getAccountIds().contains(v.getAccountId())).collect(Collectors.toList());
+        }
+        if(StringUtils.isNotEmpty(request.getInstanceName())){
+            recycleBinServer = recycleBinServer.stream().filter(v->v.getInstanceName().indexOf(request.getInstanceName())>0).collect(Collectors.toList());
+        }
+        if(CollectionUtils.isNotEmpty(recycleBinServer)){
+            recycleBinServerIds.addAll(recycleBinServer.stream().map(VmCloudServer::getId).toList());
+        }
         OptimizationConstants optimizationConstants = OptimizationConstants.getByCode(request.getOptimizeSuggest());
         Page<AnalyticsServerDTO> page = PageUtil.of(request, AnalyticsServerDTO.class, null, true);
         MPJLambdaWrapper<VmCloudServer> queryServerWrapper = addServerAnalysisQuery(request);
         queryServerWrapper.eq(true,VmCloudServer::getInstanceStatus,"Stopped");
-        queryServerWrapper.or(or->{
-            or.in(CollectionUtils.isNotEmpty(recycleBinServerIds),VmCloudServer::getId,recycleBinServerIds);
-        });
         queryServerWrapper.le(VmCloudServer::getLastOperateTime,LocalDateTime.now().minusDays(request.getContinuedDays()));
+        if(CollectionUtils.isNotEmpty(recycleBinServerIds)){
+            queryServerWrapper.or(or-> or.in(true,VmCloudServer::getId,recycleBinServerIds));
+        }
         IPage<AnalyticsServerDTO> pageData = baseVmCloudServerMapper.selectJoinPage(page,AnalyticsServerDTO.class,queryServerWrapper);
         if(pageData.getRecords().size()>0){
             pageData.getRecords().forEach(vm-> {
@@ -213,7 +241,7 @@ public class OptimizeAnalysisServiceImpl implements IOptimizeAnalysisService {
                 .add("%，内存").add(request.isMemoryMaxRate()?"最大":"平均").add("使用率").add(mark).add(String.valueOf(request.getMemoryRate())).add("%")
                 .add("，建议").add(isDerating?"降低":"升级").add("配置");
         //查询监控数据
-        List<AnalyticsServerDTO> list = getVmPerfMetric(request);
+        List<AnalyticsServerDTO> list = getVmPerfMetric(request,isDerating);
         //条件判断
         list.forEach(vo->{
             vo.setContent(sj.toString());
@@ -241,7 +269,8 @@ public class OptimizeAnalysisServiceImpl implements IOptimizeAnalysisService {
                     memoryCompare.put("memory", vo.getMemoryAverage().compareTo(BigDecimal.valueOf(request.getMemoryRate())) == flag);
                 }
             }
-            if(StringUtils.equalsIgnoreCase("and",request.getConditionOr()) && ((cpuCompare.get("cpu") || cpuIsNull) && (cpuCompare.get("memory") || memoryIsNull))){
+            //and的话，内存为空的不参加比较
+            if(StringUtils.equalsIgnoreCase("and",request.getConditionOr()) && ((cpuCompare.get("cpu") || !cpuIsNull) && (cpuCompare.get("memory") || !memoryIsNull))){
                 metricData.add(vo);
             }
             if(StringUtils.equalsIgnoreCase("or",request.getConditionOr()) && (cpuCompare.get("cpu") || cpuCompare.get("memory"))){
@@ -265,72 +294,125 @@ public class OptimizeAnalysisServiceImpl implements IOptimizeAnalysisService {
     }
 
 
-    private List<AnalyticsServerDTO> getVmPerfMetric(PageOptimizationRequest optimizationParam) {
+    private List<AnalyticsServerDTO> getVmPerfMetric(PageOptimizationRequest request,boolean isDerating) {
         List<AnalyticsServerDTO> cloudServerMetricData = new ArrayList<>();
-        long currentTime = System.currentTimeMillis();
-        long sinceTime = currentTime - 1000L*60*60*24*optimizationParam.getDays();
-        List<QueryUtil.QueryCondition> queryConditions = new ArrayList<>();
-        QueryUtil.QueryCondition start = new QueryUtil.QueryCondition(true, "timestamp", sinceTime, QueryUtil.CompareType.GTE);
-        queryConditions.add(start);
-        QueryUtil.QueryCondition end = new QueryUtil.QueryCondition(true, "timestamp", currentTime, QueryUtil.CompareType.LTE);
-        queryConditions.add(end);
-        QueryUtil.QueryCondition type = new QueryUtil.QueryCondition(true, "entityType.keyword", "VIRTUAL_MACHINE", QueryUtil.CompareType.EQ);
-        queryConditions.add(type);
-        QueryUtil.QueryCondition instanceId = new QueryUtil.QueryCondition(CollectionUtils.isNotEmpty(optimizationParam.getInstanceUuids()), "instanceId.keyword", optimizationParam.getInstanceUuids(), QueryUtil.CompareType.IN);
-        queryConditions.add(instanceId);
-        BoolQuery.Builder boolQuery = QueryUtil.getQuery(queryConditions);
-
-        Query query = new NativeQueryBuilder()
-                .withPageable(PageRequest.of(0, 1))
-                .withQuery(new co.elastic.clients.elasticsearch._types.query_dsl.Query.Builder().bool(boolQuery.build()).build())
-                //按实例与云账号ID分组
-                .withAggregation("groupInstanceId",addAggregation())
-                .build();
         try {
-            SearchHits<Object> response = elasticsearchTemplate.search(query, Object.class, IndexCoordinates.of(IndexConstants.CE_PERF_METRIC_MONITOR_DATA.getCode()));
-            ElasticsearchAggregations aggregations = (ElasticsearchAggregations) response.getAggregations();
-            assert aggregations != null;
-            List<StringTermsBucket> list = aggregations.aggregations().get(0).aggregation().getAggregate().sterms().buckets().array();
-            for (StringTermsBucket v : list) {
-                AnalyticsServerDTO dto = new AnalyticsServerDTO();
-                dto.setInstanceUuid(v.key().split("_")[0]);
-                dto.setAccountId(v.key().split("_")[1]);
-                //CPU
-                if(v.aggregations().get("cpu").filter().aggregations().get("metricName").sterms().buckets().array().size()>0){
-                    double cpuMax = v.aggregations().get("cpu").filter().aggregations().get("max").max().value();
-                    dto.setCpuMaximum(BigDecimal.valueOf(cpuMax).setScale(3, RoundingMode.HALF_UP));
-                    double cpuAvg = v.aggregations().get("cpu").filter().aggregations().get("avg").avg().value();
-                    dto.setCpuAverage(BigDecimal.valueOf(cpuAvg).setScale(3, RoundingMode.HALF_UP));
+            Arrays.asList("CPU_USED_UTILIZATION","MEMORY_USED_UTILIZATION").forEach(metricName->{
+                Long startTime = System.currentTimeMillis();
+                NativeQuery query = new NativeQueryBuilder()
+                        .withPageable(PageRequest.of(0, 1))
+                        .withTrackScores(true)
+                        .withQuery(new Query.Builder().bool(addQueryBool(request,metricName,isDerating).build()).build())
+                        //按实例与云账号ID分组
+                        .withAggregation("instanceId",addAggregation())
+                        .build();
+                SearchHits<Object> response = elasticsearchTemplate.search(query, Object.class, IndexCoordinates.of(IndexConstants.CE_PERF_METRIC_MONITOR_DATA.getCode()));
+                ElasticsearchAggregations aggregations = (ElasticsearchAggregations) response.getAggregations();
+                assert aggregations != null;
+                List<StringTermsBucket> list = aggregations.aggregations().get(0).aggregation().getAggregate().sterms().buckets().array();
+                System.out.println(metricName+"命中："+list.size()+"-"+(System.currentTimeMillis()-startTime));
+                for (StringTermsBucket v : list) {
+                    AnalyticsServerDTO dto = new AnalyticsServerDTO();
+                    dto.setInstanceUuid(v.key());
+                    boolean isCpu = StringUtils.equalsIgnoreCase("CPU_USED_UTILIZATION",metricName);
+                    Aggregate avg = v.aggregations().get("avgValue");
+                    Aggregate max = v.aggregations().get("maxValue");
+                    Aggregate min = v.aggregations().get("minValue");
+                    BigDecimal avgBig = new BigDecimal(avg.avg().value()).setScale(3, RoundingMode.HALF_UP);
+                    BigDecimal maxBig = new BigDecimal(max.max().value()).setScale(3, RoundingMode.HALF_UP);
+                    BigDecimal minBig = new BigDecimal(min.min().value()).setScale(3, RoundingMode.HALF_UP);
+                    if(isCpu){
+                        dto.setCpuAverage(avgBig);
+                        dto.setCpuMaximum(maxBig);
+                        dto.setCpuMinimum(minBig);
+                    }else{
+                        dto.setMemoryAverage(avgBig);
+                        dto.setMemoryMaximum(maxBig);
+                        dto.setMemoryMinimum(minBig);
+                    }
+                    cloudServerMetricData.add(dto);
                 }
-                //内存
-                if(v.aggregations().get("memory").filter().aggregations().get("metricName").sterms().buckets().array().size()>0){
-                    double memoryMax = v.aggregations().get("memory").filter().aggregations().get("max").max().value();
-                    dto.setMemoryMaximum(BigDecimal.valueOf(memoryMax).setScale(3, RoundingMode.HALF_UP));
-                    double memoryAvg = v.aggregations().get("memory").filter().aggregations().get("avg").avg().value();
-                    dto.setMemoryAverage(BigDecimal.valueOf(memoryAvg).setScale(3, RoundingMode.HALF_UP));
-                }
-                cloudServerMetricData.add(dto);
-            }
+            });
         }catch (Exception e){
             e.printStackTrace();
         }
+        List<AnalyticsServerDTO> result = new ArrayList<>();
+        Map<String,List<AnalyticsServerDTO>> instanceMap = cloudServerMetricData.stream().collect(Collectors.groupingBy(AnalyticsServerDTO::getInstanceUuid));
+        instanceMap.keySet().forEach(v->{
+            AnalyticsServerDTO vo = new AnalyticsServerDTO();
+            instanceMap.get(v).forEach(filter->{
+                if(StringUtils.equalsIgnoreCase("i-8vb379bhzgth2yujfgpw",v)){
+                    System.out.println("");
+                }
+                BeanUtils.copyProperties(filter,vo,getNullPropertyNames(filter));
+            });
+            result.add(vo);
+        });
 
-        return cloudServerMetricData;
+        return result;
+    }
+
+    /**
+     * 获取需要忽略的属性
+     *
+     * @param source
+     * @return
+     */
+    public static String[] getNullPropertyNames (Object source) {
+        final BeanWrapper src = new BeanWrapperImpl(source);
+        PropertyDescriptor[] pds = src.getPropertyDescriptors();
+
+        Set<String> emptyNames = new HashSet<>();
+        for(PropertyDescriptor pd : pds) {
+            Object srcValue = src.getPropertyValue(pd.getName());
+            // 此处判断可根据需求修改
+            if (srcValue == null) {
+                emptyNames.add(pd.getName());
+            }
+        }
+        String[] result = new String[emptyNames.size()];
+        return emptyNames.toArray(result);
+    }
+
+
+    private BoolQuery.Builder addQueryBool(PageOptimizationRequest request,String metricName,boolean isDerating){
+        boolean isCpu = StringUtils.equalsIgnoreCase("CPU_USED_UTILIZATION",metricName);
+        Calendar currentMinuteEnd = Calendar.getInstance();
+        currentMinuteEnd.set(Calendar.HOUR_OF_DAY, 23);
+        currentMinuteEnd.set(Calendar.MINUTE, 59);
+        currentMinuteEnd.set(Calendar.SECOND, 59);
+        long currentTime = currentMinuteEnd.getTime().getTime();
+        long sinceTime = currentTime - 1000L*60*60*24*request.getDays();
+        //最外层bool
+        BoolQuery.Builder bool = new BoolQuery.Builder();
+        //filter bool
+        BoolQuery.Builder filterBool = new BoolQuery.Builder();
+        //资源类型
+        TermQuery.Builder entityTypeShouldTerm = new TermQuery.Builder().field("entityType.keyword").value("VIRTUAL_MACHINE");
+        filterBool.should(new co.elastic.clients.elasticsearch._types.query_dsl.Query.Builder().term(entityTypeShouldTerm.build()).build());
+        //指标类型
+        TermQuery.Builder metricNameShouldTerm = new TermQuery.Builder().field("metricName.keyword").value(metricName);
+        filterBool.should(new co.elastic.clients.elasticsearch._types.query_dsl.Query.Builder().term(metricNameShouldTerm.build()).build());
+        //指标值区间平均与最大
+        RangeQuery.Builder metricRangeShouldTerm;
+        if(isDerating){
+            metricRangeShouldTerm = new RangeQuery.Builder().field(request.isCpuMaxRate() || request.isMemoryMaxRate() ? "maximum" : "average").lte(JsonData.of(isCpu ? request.getCpuRate() : request.getMemoryRate()));
+        }else{
+            metricRangeShouldTerm = new RangeQuery.Builder().field(request.isCpuMaxRate() || request.isMemoryMaxRate() ? "maximum" : "average").gte(JsonData.of(isCpu ? request.getCpuRate() : request.getMemoryRate()));
+        }
+        filterBool.should(new Query.Builder().range(metricRangeShouldTerm.build()).build());
+        //时间区间类型
+        RangeQuery.Builder timestampRangeShouldTerm = new RangeQuery.Builder().field("timestamp").gte(JsonData.of(sinceTime)).lte(JsonData.of(currentTime));
+        filterBool.should(new co.elastic.clients.elasticsearch._types.query_dsl.Query.Builder().range(timestampRangeShouldTerm.build()).build());
+        bool.filter(filterBool.build().should());
+        return bool;
     }
 
     private Aggregation addAggregation(){
-        Script script = new Script.Builder().inline(new InlineScript.Builder().source("doc['instanceId.keyword'].value+'_'+doc['cloudAccountId.keyword'].value").build()).build();
-        Aggregation cpu = new Aggregation.Builder().filter(filterQuery->filterQuery.term(t->t.field("metricName.keyword").value("CPU_USED_UTILIZATION")))
-                .aggregations("avg",new Aggregation.Builder().avg(new AverageAggregation.Builder().field("average").build()).build())
-                .aggregations("max",new Aggregation.Builder().max(new MaxAggregation.Builder().field("maximum").build()).build())
-                .aggregations("metricName",new Aggregation.Builder().terms(new TermsAggregation.Builder().field("metricName.keyword").build()).build())
-                .build();
-        Aggregation memory = new Aggregation.Builder().filter(filterQuery->filterQuery.term(t->t.field("metricName.keyword").value("MEMORY_USED_UTILIZATION")))
-                .aggregations("avg",new Aggregation.Builder().avg(new AverageAggregation.Builder().field("average").build()).build())
-                .aggregations("max",new Aggregation.Builder().max(new MaxAggregation.Builder().field("maximum").build()).build())
-                .aggregations("metricName",new Aggregation.Builder().terms(new TermsAggregation.Builder().field("metricName.keyword").build()).build())
-                .build();
-        return new Aggregation.Builder().terms(new TermsAggregation.Builder().script(script).size(Integer.MAX_VALUE).build()).aggregations("cpu",cpu).aggregations("memory",memory).build();
+        return new Aggregation.Builder().terms(new TermsAggregation.Builder().field("instanceId.keyword").size(Integer.MAX_VALUE).build())
+                .aggregations("maxValue",new Aggregation.Builder().max(new MaxAggregation.Builder().field("maximum").build()).build())
+                .aggregations("avgValue",new Aggregation.Builder().avg(new AverageAggregation.Builder().field("average").build()).build())
+                .aggregations("minValue",new Aggregation.Builder().min(new MinAggregation.Builder().field("minimum").build()).build()).build();
     }
 
 
