@@ -19,7 +19,7 @@ spring:
             instanceName: ${spring.application.name}
             instanceId: ${spring.application.name}
 server:
-  port: 9013
+  port: @service.port@
   servlet:
     context-path: /${spring.application.name}
   web:
@@ -32,7 +32,7 @@ mybatis-plus:
 #监控，访问路径 {ip}:{port}/actuator
 management:
   server:
-    port: 9913
+    port: @service.management.port@
 
 logging:
   file:

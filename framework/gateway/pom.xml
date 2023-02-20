@@ -11,6 +11,10 @@
 
     <artifactId>gateway</artifactId>
 
+    <properties>
+        <service.port>9000</service.port>
+        <service.management.port>9900</service.management.port>
+    </properties>
     <dependencies>
         <dependency>
             <groupId>com.fit2cloud</groupId>

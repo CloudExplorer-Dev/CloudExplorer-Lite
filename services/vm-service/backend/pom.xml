@@ -15,6 +15,8 @@
     <description>vm-service</description>
 
     <properties>
+        <service.port>9011</service.port>
+        <service.management.port>9911</service.management.port>
     </properties>
     <dependencies>
         <dependency>

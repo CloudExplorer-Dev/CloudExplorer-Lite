@@ -11,6 +11,10 @@
 
     <artifactId>eureka</artifactId>
 
+    <properties>
+        <service.port>8761</service.port>
+        <service.management.port>8961</service.management.port>
+    </properties>
     <dependencies>
         <dependency>
             <groupId>org.springframework.cloud</groupId>
