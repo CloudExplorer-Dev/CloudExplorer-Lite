@@ -14,6 +14,7 @@ import com.fit2cloud.provider.impl.openstack.entity.credential.OpenstackComplian
 import com.fit2cloud.provider.impl.openstack.entity.request.ListEcsInstanceRequest;
 import com.fit2cloud.provider.impl.openstack.entity.request.ListSecurityGroupInstanceRequest;
 import com.fit2cloud.provider.util.ResourceUtil;
+import org.apache.commons.collections4.keyvalue.DefaultKeyValue;
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.List;
@@ -27,9 +28,10 @@ import java.util.Map;
  */
 public class OpenstackProvider extends AbstractCloudProvider<OpenstackComplianceCredential> implements ICloudProvider {
     @Override
-    public Map<ResourceTypeConstants, SyncDimensionConstants> getResourceSyncDimensionConstants() {
-        return Map.of(ResourceTypeConstants.ECS, SyncDimensionConstants.REGION,
-                ResourceTypeConstants.SECURITY_GROUP, SyncDimensionConstants.REGION);
+    public List<DefaultKeyValue<ResourceTypeConstants, SyncDimensionConstants>> getResourceSyncDimensionConstants() {
+        return List.of(
+                new DefaultKeyValue<>(ResourceTypeConstants.ECS, SyncDimensionConstants.REGION),
+                new DefaultKeyValue<>(ResourceTypeConstants.SECURITY_GROUP, SyncDimensionConstants.REGION));
     }
 
     @Override

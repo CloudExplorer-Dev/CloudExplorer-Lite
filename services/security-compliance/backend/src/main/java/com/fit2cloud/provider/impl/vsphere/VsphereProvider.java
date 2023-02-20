@@ -16,6 +16,7 @@ import com.fit2cloud.provider.impl.vsphere.entity.request.ListEcsInstanceRequest
 import com.fit2cloud.provider.impl.vsphere.entity.request.ListHostInstanceRequest;
 import com.fit2cloud.provider.impl.vsphere.entity.request.ListResourcePoolRequest;
 import com.fit2cloud.provider.util.ResourceUtil;
+import org.apache.commons.collections4.keyvalue.DefaultKeyValue;
 
 import java.util.List;
 import java.util.Map;
@@ -28,11 +29,11 @@ import java.util.Map;
  */
 public class VsphereProvider extends AbstractCloudProvider<VsphereComplianceCredential> implements ICloudProvider {
     @Override
-    public Map<ResourceTypeConstants, SyncDimensionConstants> getResourceSyncDimensionConstants() {
-        return Map.of(ResourceTypeConstants.ECS, SyncDimensionConstants.REGION,
-                ResourceTypeConstants.DATA_STORE, SyncDimensionConstants.REGION,
-                ResourceTypeConstants.RESOURCE_POOL, SyncDimensionConstants.REGION,
-                ResourceTypeConstants.HOST, SyncDimensionConstants.REGION);
+    public List<DefaultKeyValue<ResourceTypeConstants, SyncDimensionConstants>> getResourceSyncDimensionConstants() {
+        return List.of(new DefaultKeyValue<>(ResourceTypeConstants.ECS, SyncDimensionConstants.REGION),
+                new DefaultKeyValue<>(ResourceTypeConstants.DATA_STORE, SyncDimensionConstants.REGION),
+                new DefaultKeyValue<>(ResourceTypeConstants.RESOURCE_POOL, SyncDimensionConstants.REGION),
+                new DefaultKeyValue<>(ResourceTypeConstants.HOST, SyncDimensionConstants.REGION));
     }
 
     @Override

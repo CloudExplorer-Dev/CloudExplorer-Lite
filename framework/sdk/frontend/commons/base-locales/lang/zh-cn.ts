@@ -86,6 +86,7 @@ const message = {
       filter: "筛选",
       reset: "重置",
       grope: "搜索",
+      clear: "清空",
     },
     msg: {
       success: "{0}成功",
@@ -263,6 +264,36 @@ const permissions = {
       resource_optimization: {
         base: "云主机优化",
         read: "查看",
+      },
+    },
+    bill: {
+      view: {
+        base: "账单总览",
+        read: "查看",
+        create: "创建",
+        edit: "编辑",
+        delete: "删除",
+      },
+      detailed: {
+        base: "账单明细",
+        read: "查看",
+        create: "创建",
+        edit: "编辑",
+        delete: "删除",
+      },
+      custom_bill: {
+        base: "自定义账单",
+        read: "查看",
+        create: "创建",
+        edit: "编辑",
+        delete: "删除",
+      },
+      dimension_setting: {
+        base: "分账设置",
+        read: "查看",
+        create: "创建",
+        edit: "编辑",
+        delete: "删除",
       },
     },
   },

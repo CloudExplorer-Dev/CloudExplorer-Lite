@@ -38,7 +38,11 @@ interface ComplianceScanResultResponse {
   /**
    * 最后一次同步时间
    */
-  lastSyncTime: string;
+  updateTime: string;
+  /**
+   * 资源类型
+   */
+  resourceType: string;
 }
 
 interface ComplianceScanResultRequest {

@@ -91,7 +91,7 @@ const message = {
       time: "同步时间",
       status: "同步状态",
       resource: "同步资源",
-      setting: "定时同步设置",
+      setting: "数据同步设置",
       once: "同步一次",
       region: "区域",
       range: "同步范围",

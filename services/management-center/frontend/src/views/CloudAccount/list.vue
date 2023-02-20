@@ -23,7 +23,6 @@ import type { FormInstance, FormRules } from "element-plus";
 import type { SimpleMap } from "@commons/api/base/type";
 import { useModuleStore } from "@commons/stores/modules/module";
 import { usePermissionStore } from "@commons/stores/modules/permission";
-import { objectToString } from "@vue/shared";
 
 const moduleStore = useModuleStore();
 const permissionStore = usePermissionStore();

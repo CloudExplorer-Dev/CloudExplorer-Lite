@@ -47,4 +47,4 @@ eureka:
       name_zh-tw: 运营分析
       name_en: Operation Analytics
       basePath: ${server.servlet.context-path}/
-      icon: yunyingzonglan
+      icon: fenxi3

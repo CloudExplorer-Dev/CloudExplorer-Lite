@@ -75,11 +75,15 @@ const submitForm = (formEl: FormInstance | undefined) => {
         oldPassword: form.oldPassword,
         newPassword: form.newPassword,
       };
-      updateUserPwd(param).then(() => {
-        dialogVisible.value = false;
-        ElMessage.success(t("commons.msg.save_success"));
-        userStore.doLogout();
-      });
+      updateUserPwd(param)
+        .then(() => {
+          dialogVisible.value = false;
+          ElMessage.success(t("commons.msg.save_success"));
+          userStore.doLogout();
+        })
+        .catch((err) => {
+          ElMessage.error(err.response.data.message);
+        });
     } else {
       return false;
     }

@@ -13,6 +13,9 @@ public class PageBillDetailedRequest {
     @Query(field = "cloudAccountId", compareType = QueryUtil.CompareType.IN)
     @ApiModelProperty("云账号名称")
     private String cloudAccountName;
+    @Query(field = "cloudAccountId", compareType = QueryUtil.CompareType.EQ)
+    @ApiModelProperty("云账号id")
+    private String cloudAccountId;
     @ApiModelProperty("企业项目名称")
     @Query(field = "projectName", compareType = QueryUtil.CompareType.LIKE)
     private String projectName;

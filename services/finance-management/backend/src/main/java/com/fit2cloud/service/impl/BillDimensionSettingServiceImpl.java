@@ -258,6 +258,7 @@ public class BillDimensionSettingServiceImpl extends ServiceImpl<BillDimensionSe
                 authorizeResourcesResponse.setProjectName(cloudBill.getProjectName());
                 authorizeResourcesResponse.setProductId(cloudBill.getProductId());
                 authorizeResourcesResponse.setProductName(cloudBill.getProductName());
+                authorizeResourcesResponse.setProvider(cloudBill.getProvider());
                 authorizeResourcesResponse.setTags(cloudBill.getTags());
                 return authorizeResourcesResponse;
             }

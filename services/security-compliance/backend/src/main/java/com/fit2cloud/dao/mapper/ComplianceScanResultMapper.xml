@@ -7,7 +7,7 @@
         <result column="name" property="name"/>
         <result column="name" property="name"/>
         <result column="platform" property="platform"/>
-        <result column="platform" property="platform"/>
+        <result column="resource_type" property="resourceType"/>
         <result column="risk_level" property="riskLevel"/>
         <result column="scan_status" property="scanStatus"/>
         <result column="compliance_count" property="complianceCount"/>
@@ -122,22 +122,21 @@
         </if>
     </select>
     <select id="count" resultType="com.fit2cloud.dao.entity.ComplianceCount">
-        SELECT
-            IFNULL(
-                    SUM(
-                            compliance_scan_result.compliance_count
-                        ),
-                    0
-                ) AS compliance_count,
-            IFNULL(
-                    SUM(
-                            compliance_scan_result.not_compliance_count
-                        ),
-                    0
-                ) AS not_compliance_count
-        FROM
-            compliance_rule compliance_rule
-                LEFT JOIN compliance_scan_result compliance_scan_result ON compliance_rule.id = compliance_scan_result.resource_id
-        ${ew.customSqlSegment}
+        SELECT IFNULL(
+                       SUM(
+                               compliance_scan_result.compliance_count
+                           ),
+                       0
+                   ) AS compliance_count,
+               IFNULL(
+                       SUM(
+                               compliance_scan_result.not_compliance_count
+                           ),
+                       0
+                   ) AS not_compliance_count
+        FROM compliance_rule compliance_rule
+                 LEFT JOIN compliance_scan_result compliance_scan_result
+                           ON compliance_rule.id = compliance_scan_result.resource_id
+            ${ew.customSqlSegment}
     </select>
 </mapper>

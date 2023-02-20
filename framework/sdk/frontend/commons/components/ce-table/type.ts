@@ -462,7 +462,7 @@ export class TableSearch {
   /**
    *查询相关接口
    */
-  search?: Condition;
+  search?: Conditions;
   /**
    *表头筛选
    */
@@ -471,7 +471,7 @@ export class TableSearch {
   constructor(
     conditions: Conditions = {},
     order?: Order,
-    search?: Condition,
+    search?: Conditions,
     tableFilter?: Conditions
   ) {
     this.conditions = conditions;
@@ -497,15 +497,24 @@ export class TableSearch {
       .reduce((pre: any, next: any) => {
         return { ...pre, ...next };
       }, {});
-    console.log(
-      "tableHeaderFilter",
-      tableSearch.tableFilter,
-      tableHeaderFilter
-    );
+
     // 排序
     const order = tableSearch.order ? tableSearch.order : undefined;
     // 搜索框
-    const searchObj: any = Condition.toSearchObj(tableSearch.search);
+    const searchObj = (
+      tableSearch.search ? Object.keys(tableSearch.search) : []
+    )
+      .map((key: string) => {
+        return Condition.toSearchObj(
+          tableSearch.search
+            ? (tableSearch.search[key] as Condition)
+            : undefined
+        );
+      })
+      .reduce((pre: any, next: any) => {
+        return { ...pre, ...next };
+      }, {});
+
     // 所有查询
     return Object.keys(tableSearch.conditions)
       .map((key: string) => {

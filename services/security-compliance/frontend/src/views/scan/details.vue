@@ -26,8 +26,8 @@
         </el-descriptions>
       </template>
     </layout-container>
-    <layout-container>
-      <template #header><h4>改进意见</h4></template>
+    <layout-container v-if="complianceInsuranceStatutes.length > 0">
+      <template #header><h4>改进建议</h4></template>
       <template #content>
         <el-descriptions :column="1">
           <el-descriptions-item
@@ -52,20 +52,6 @@
           :tableConfig="tableConfig"
           row-key="id"
         >
-          <template #toolbar>
-            <el-select
-              v-model="activeCloudAccount"
-              class="m-2"
-              placeholder="Select"
-            >
-              <el-option
-                v-for="item in cloudAccountList"
-                :key="item.value"
-                :label="item.key"
-                :value="item.value"
-              />
-            </el-select>
-          </template>
           <el-table-column type="expand">
             <template #default="props">
               <el-descriptions :column="2" style="padding: 0 20px">
@@ -80,7 +66,25 @@
           </el-table-column>
           <el-table-column prop="resourceId" label="资源id" />
           <el-table-column prop="resourceName" label="资源名称" />
-          <el-table-column prop="cloudAccountName" label="云账号名称" />
+          <el-table-column
+            prop="cloudAccountName"
+            label="云账号名称"
+            :filters="
+              cloudAccountList.map((item) => ({
+                text: item.name,
+                value: item.id,
+              }))
+            "
+            :filter-multiple="false"
+            column-key="cloudAccountId"
+          >
+            <template #default="scope">
+              <div style="display: flex">
+                <platform_icon :platform="scope.row.platform"> </platform_icon>
+                {{ scope.row.cloudAccountName }}
+              </div>
+            </template></el-table-column
+          >
           <el-table-column prop="resourceType" label="资源类型" />
           <el-table-column
             column-key="complianceStatus"
@@ -137,8 +141,9 @@ import {
   TableConfig,
   TableSearch,
 } from "@commons/components/ce-table/type";
-import type { KeyValue } from "@commons/api/base/type";
 import cloudAccountApi from "@commons/api/cloud_account";
+import platform_icon from "@commons/components/platform-icon/index.vue";
+import type { CloudAccount } from "@commons/api/cloud_account/type";
 // 路由对象
 const route = useRoute();
 // 合规规则数据
@@ -147,10 +152,8 @@ const complianceRule = ref<ComplianceRule>();
 const complianceRuleGroup = ref<ComplianceRuleGroup>();
 // 表格加载器
 const tableLoading = ref<boolean>(false);
-// 当前选中的云账号
-const activeCloudAccount = ref<string>("all");
 // 云账号列表数据
-const cloudAccountList = ref<Array<KeyValue<string, string>>>([]);
+const cloudAccountList = ref<Array<CloudAccount>>([]);
 // 等保条例数据
 const complianceInsuranceStatutes = ref<Array<ComplianceInsuranceStatute>>([]);
 /**
@@ -160,7 +163,7 @@ const dataList = ref<Array<ComplianceResourceResponse>>([]);
 // 列表字段数据
 const columns = ref([]);
 // 表格实例对象
-const table = ref(null);
+const table: any = ref(null);
 
 onMounted(() => {
   // 查询合规规则数据
@@ -170,18 +173,11 @@ onMounted(() => {
       complianceRule.value = ok.data;
       // 查询云账号数据
       cloudAccountApi.listAll().then((a) => {
-        cloudAccountList.value = [
-          { key: "全部云账号", value: "all" },
-          ...a.data
-            .filter((p) => p.platform === ok.data.platform)
-            .map((cloudAccount) => ({
-              key: cloudAccount.name,
-              value: cloudAccount.id,
-            })),
-        ];
+        cloudAccountList.value = a.data.filter(
+          (p) => p.platform === ok.data.platform
+        );
       });
-      // 查询列表
-      search(new TableSearch());
+
       return ok.data;
     })
     .then((data) => {
@@ -192,6 +188,8 @@ onMounted(() => {
           complianceRuleGroup.value = ok.data;
           return ok.data;
         });
+      // 查询列表
+      search(new TableSearch());
     });
   // 查询等保条例数据
   complianceInsuranceStatuteApi
@@ -201,7 +199,6 @@ onMounted(() => {
     .then((ok) => {
       complianceInsuranceStatutes.value = ok.data;
     });
-  activeCloudAccount.value = route.params.cloud_account_id as string;
 });
 
 /**
@@ -217,10 +214,6 @@ const search = (condition: TableSearch) => {
       route.params.compliance_rule_id as string,
       {
         ...params,
-        cloudAccountId:
-          activeCloudAccount.value === "all"
-            ? undefined
-            : activeCloudAccount.value,
         resourceType: complianceRule.value?.resourceType,
       },
       tableLoading
@@ -237,10 +230,7 @@ const search = (condition: TableSearch) => {
       );
     });
 };
-// 监控云账号的变化,请求列表数据
-watch(activeCloudAccount, () => {
-  table.value.search(table?.value.getTableSearch());
-});
+
 /**
  * 表单配置
  */

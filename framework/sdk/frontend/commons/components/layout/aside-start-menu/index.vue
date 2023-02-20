@@ -34,12 +34,25 @@ const root = ref<Module>({
   icon: "caidan2",
   order: 0,
 });
+const home = ref<Module>({
+  id: "base",
+  name: "首页",
+  icon: "shouye3",
+  order: -1,
+});
 const hoverHandler = () => {
   collapse.value = true;
 };
 const goModule = (moduleName: string) => {
+  if (moduleName === currentModule.value) {
+    return;
+  }
   currentModule.value = moduleName;
-  router.push(moduleName);
+  if (moduleName === home.value.id) {
+    router.push("/");
+  } else {
+    router.push(moduleName);
+  }
 };
 </script>
 <template>
@@ -62,6 +75,19 @@ const goModule = (moduleName: string) => {
     </div>
     <div class="starMenuLine"></div>
     <div class="runningModule">
+      <StartMenuItem
+        @click="goModule(home.id)"
+        :start-menu-item="home"
+        :root-item="true"
+        :class="home.id === currentModule ? 'active' : ''"
+      >
+        <div class="move">
+          <CeIcon
+            size="var(--ce-star-menu-icon-width,18px)"
+            code="yidongshu"
+          ></CeIcon>
+        </div>
+      </StartMenuItem>
       <StartMenuItem
         v-for="item in moduleStore.runningModules"
         :key="item.id"

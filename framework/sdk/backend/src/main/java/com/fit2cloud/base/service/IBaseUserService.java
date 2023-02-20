@@ -26,6 +26,8 @@ public interface IBaseUserService extends IService<User> {
 
     boolean updateUserBasicInfo(EditUserRequest request);
 
+    boolean resetPwd(ResetPwdRequest request, UserDto currentUser);
+
     boolean resetPwd(ResetPwdRequest request);
 
 }

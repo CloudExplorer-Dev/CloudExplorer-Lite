@@ -24,6 +24,7 @@ import com.tencentcloudapi.sqlserver.v20180328.models.DBInstance;
 import com.tencentcloudapi.vpc.v20170312.models.Address;
 import com.tencentcloudapi.vpc.v20170312.models.NetworkInterface;
 import com.tencentcloudapi.vpc.v20170312.models.Vpc;
+import org.apache.commons.collections4.keyvalue.DefaultKeyValue;
 
 import java.util.HashMap;
 import java.util.List;
@@ -38,24 +39,24 @@ import java.util.Map;
 public class TencentCloudProvider extends AbstractCloudProvider<TencentBaseCredential> implements ICloudProvider {
 
     @Override
-    public Map<ResourceTypeConstants, SyncDimensionConstants> getResourceSyncDimensionConstants() {
-        HashMap<ResourceTypeConstants, SyncDimensionConstants> map = new HashMap<>();
-        map.put(ResourceTypeConstants.ECS, SyncDimensionConstants.REGION);
-        map.put(ResourceTypeConstants.REDIS, SyncDimensionConstants.REGION);
-        map.put(ResourceTypeConstants.MONGO_DB, SyncDimensionConstants.REGION);
-        map.put(ResourceTypeConstants.MYSQL, SyncDimensionConstants.REGION);
-        map.put(ResourceTypeConstants.SQL_SERVER, SyncDimensionConstants.REGION);
-        map.put(ResourceTypeConstants.POST_GRE_SQL, SyncDimensionConstants.REGION);
-        map.put(ResourceTypeConstants.MARIA_DB, SyncDimensionConstants.REGION);
-        map.put(ResourceTypeConstants.ELASTIC_SEARCH, SyncDimensionConstants.REGION);
-        map.put(ResourceTypeConstants.DISK, SyncDimensionConstants.REGION);
-        map.put(ResourceTypeConstants.LOAD_BALANCER, SyncDimensionConstants.REGION);
-        map.put(ResourceTypeConstants.PUBLIC_IP, SyncDimensionConstants.REGION);
-        map.put(ResourceTypeConstants.VPC, SyncDimensionConstants.REGION);
-        map.put(ResourceTypeConstants.OSS, SyncDimensionConstants.CloudAccount);
-        map.put(ResourceTypeConstants.SECURITY_GROUP, SyncDimensionConstants.REGION);
-        map.put(ResourceTypeConstants.RAM, SyncDimensionConstants.CloudAccount);
-        return map;
+    public List<DefaultKeyValue<ResourceTypeConstants, SyncDimensionConstants>> getResourceSyncDimensionConstants() {
+        return List.of(
+                new DefaultKeyValue<>(ResourceTypeConstants.ECS, SyncDimensionConstants.REGION),
+                new DefaultKeyValue<>(ResourceTypeConstants.REDIS, SyncDimensionConstants.REGION),
+                new DefaultKeyValue<>(ResourceTypeConstants.MONGO_DB, SyncDimensionConstants.REGION),
+                new DefaultKeyValue<>(ResourceTypeConstants.MYSQL, SyncDimensionConstants.REGION),
+                new DefaultKeyValue<>(ResourceTypeConstants.SQL_SERVER, SyncDimensionConstants.REGION),
+                new DefaultKeyValue<>(ResourceTypeConstants.POST_GRE_SQL, SyncDimensionConstants.REGION),
+                new DefaultKeyValue<>(ResourceTypeConstants.MARIA_DB, SyncDimensionConstants.REGION),
+                new DefaultKeyValue<>(ResourceTypeConstants.ELASTIC_SEARCH, SyncDimensionConstants.REGION),
+                new DefaultKeyValue<>(ResourceTypeConstants.DISK, SyncDimensionConstants.REGION),
+                new DefaultKeyValue<>(ResourceTypeConstants.LOAD_BALANCER, SyncDimensionConstants.REGION),
+                new DefaultKeyValue<>(ResourceTypeConstants.PUBLIC_IP, SyncDimensionConstants.REGION),
+                new DefaultKeyValue<>(ResourceTypeConstants.VPC, SyncDimensionConstants.REGION),
+                new DefaultKeyValue<>(ResourceTypeConstants.RAM, SyncDimensionConstants.CloudAccount),
+                new DefaultKeyValue<>(ResourceTypeConstants.OSS, SyncDimensionConstants.CloudAccount),
+                new DefaultKeyValue<>(ResourceTypeConstants.SECURITY_GROUP, SyncDimensionConstants.REGION));
+
     }
 
     @Override

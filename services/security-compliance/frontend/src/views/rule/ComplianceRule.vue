@@ -31,10 +31,7 @@
       >
         <template #default="scope">
           <div style="display: flex; align-items: center">
-            <el-image
-              style="margin-right: 20%; display: flex"
-              :src="platformIcon[scope.row.platform].oldIcon"
-            ></el-image>
+            <platform_icon :platform="scope.row.platform"></platform_icon>
             <span>{{ platformIcon[scope.row.platform].name }}</span>
           </div>
         </template>
@@ -128,6 +125,7 @@
 </template>
 <script setup lang="ts">
 import { ref, onMounted } from "vue";
+import platform_icon from "@commons/components/platform-icon/index.vue";
 import type { KeyValue } from "@commons/api/base/type";
 import {
   PaginationConfig,

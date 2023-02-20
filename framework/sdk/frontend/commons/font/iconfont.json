@@ -6,6 +6,146 @@
   "description": "",
   "glyphs": [
     {
+      "icon_id": "23023461",
+      "name": "回收站",
+      "font_class": "huishouzhandierban",
+      "unicode": "e65d",
+      "unicode_decimal": 58973
+    },
+    {
+      "icon_id": "868656",
+      "name": "弹性存储",
+      "font_class": "yidongyunkongzhitaiicon06",
+      "unicode": "e74e",
+      "unicode_decimal": 59214
+    },
+    {
+      "icon_id": "2468161",
+      "name": "优化运行",
+      "font_class": "youhuayunhang",
+      "unicode": "e65c",
+      "unicode_decimal": 58972
+    },
+    {
+      "icon_id": "11535023",
+      "name": "风险清单",
+      "font_class": "fengxianqingdan",
+      "unicode": "e65a",
+      "unicode_decimal": 58970
+    },
+    {
+      "icon_id": "12820165",
+      "name": "风险管控管理",
+      "font_class": "fengxianguankongguanli",
+      "unicode": "e65b",
+      "unicode_decimal": 58971
+    },
+    {
+      "icon_id": "15660021",
+      "name": "费用管理",
+      "font_class": "feiyongguanli",
+      "unicode": "ea98",
+      "unicode_decimal": 60056
+    },
+    {
+      "icon_id": "742123",
+      "name": "存储设备",
+      "font_class": "cunchushebei",
+      "unicode": "ea5f",
+      "unicode_decimal": 59999
+    },
+    {
+      "icon_id": "1727489",
+      "name": "245筛选过滤",
+      "font_class": "shaixuanguolv",
+      "unicode": "e8d7",
+      "unicode_decimal": 59607
+    },
+    {
+      "icon_id": "3846904",
+      "name": "Windows",
+      "font_class": "Windows",
+      "unicode": "e6a1",
+      "unicode_decimal": 59041
+    },
+    {
+      "icon_id": "3876211",
+      "name": "ubuntu",
+      "font_class": "ubuntu",
+      "unicode": "e64e",
+      "unicode_decimal": 58958
+    },
+    {
+      "icon_id": "5401273",
+      "name": "筛选",
+      "font_class": "shaixuan",
+      "unicode": "e655",
+      "unicode_decimal": 58965
+    },
+    {
+      "icon_id": "5961299",
+      "name": "安全",
+      "font_class": "anquan",
+      "unicode": "ec4d",
+      "unicode_decimal": 60493
+    },
+    {
+      "icon_id": "7556337",
+      "name": "计算-专属宿主机",
+      "font_class": "jisuan-zhuanshusuzhuji",
+      "unicode": "e657",
+      "unicode_decimal": 58967
+    },
+    {
+      "icon_id": "9945098",
+      "name": "总费用",
+      "font_class": "zongfeiyong",
+      "unicode": "e6a2",
+      "unicode_decimal": 59042
+    },
+    {
+      "icon_id": "11372691",
+      "name": "筛选",
+      "font_class": "shaixuan1",
+      "unicode": "e8b6",
+      "unicode_decimal": 59574
+    },
+    {
+      "icon_id": "11584983",
+      "name": "费用",
+      "font_class": "feiyong1",
+      "unicode": "e658",
+      "unicode_decimal": 58968
+    },
+    {
+      "icon_id": "15378275",
+      "name": "debian",
+      "font_class": "debian",
+      "unicode": "eb74",
+      "unicode_decimal": 60276
+    },
+    {
+      "icon_id": "21053638",
+      "name": "centos",
+      "font_class": "centos",
+      "unicode": "e66f",
+      "unicode_decimal": 58991
+    },
+    {
+      "icon_id": "24164610",
+      "name": "SUSE",
+      "font_class": "SUSE",
+      "unicode": "e659",
+      "unicode_decimal": 58969
+    },
+    {
+      "icon_id": "27365245",
+      "name": "redhat",
+      "font_class": "redhat",
+      "unicode": "ec1b",
+      "unicode_decimal": 60443
+    },
+    {
       "icon_id": "1312432",
       "name": "icon_openstack",
       "font_class": "icon_openstack",

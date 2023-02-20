@@ -20,11 +20,8 @@ import RecycleBinsApi from "@/api/recycle_bin";
 import Grant from "@/views/vm_cloud_server/grant.vue";
 import { usePermissionStore } from "@commons/stores/modules/permission";
 import ButtonToolBar from "@commons/components/button-tool-bar/ButtonToolBar.vue";
-import TreeFilter from "@commons/components/table-filter/TreeFilter.vue";
 import { ButtonAction } from "@commons/components/button-tool-bar/type";
-import { workspaceTree } from "@commons/api/workspace";
-import type { WorkspaceTree } from "@commons/api/workspace/type";
-import { tree } from "@commons/api/organization";
+import OrgTreeFilter from "@commons/components/table-filter/OrgTreeFilter.vue";
 
 const { t } = useI18n();
 const permissionStore = usePermissionStore();
@@ -39,39 +36,32 @@ const cloudAccount = ref<Array<SimpleMap<string>>>([]);
 /**
  * 表头：组织树筛选
  */
-const orgTreeData = ref();
 const orgTreeRef = ref();
-const orgPopRef = ref<InstanceType<typeof ElPopover>>();
+const orgPopRef = ref();
 const selectedOrganizationIds = computed(() =>
-  orgTreeRef.value?.getTreeRef().getCheckedKeys()
+  orgTreeRef.value?.getSelectedIds(false)
 );
-const handleOrgSelect = () => {
-  orgPopRef.value?.hide();
-  table.value.search(table?.value.getTableSearch().conditions);
-};
-const handleOrgReset = () => {
-  orgPopRef.value?.hide();
-  orgTreeRef.value?.getTreeRef().setCheckedNodes([], false);
-  table.value.search(table?.value.getTableSearch().conditions);
-};
 
 /**
  * 表头：工作空间树筛选
  */
-const workspaceTreeData = ref<WorkspaceTree[]>();
 const workspaceTreeRef = ref();
 const workspacePopRef = ref();
 const selectedWorkspaceIds = computed(() =>
-  workspaceTreeRef.value?.getTreeRef().getCheckedKeys(true)
+  workspaceTreeRef.value?.getSelectedIds(true)
 );
-const handleWorkspaceSelect = () => {
-  workspacePopRef.value?.hide();
-  table.value.search(table?.value.getTableSearch().conditions);
-};
-const handleWorkspaceReset = () => {
-  workspacePopRef.value?.hide();
-  workspaceTreeRef.value.getTreeRef().setCheckedNodes([], false);
-  table.value.search(table?.value.getTableSearch().conditions);
+
+/**
+ * 表头：清空组织和工作空间树的选中项
+ * @param field
+ */
+const clearCondition = (field: string) => {
+  if (field === "organizationIds") {
+    orgTreeRef.value.cancelChecked();
+  }
+  if (field === "workspaceIds") {
+    workspaceTreeRef.value.cancelChecked();
+  }
 };
 
 //批量操作
@@ -172,14 +162,6 @@ const filterVmToolsStatus = (value: string) => {
  */
 const search = (condition: TableSearch) => {
   const params = TableSearch.toSearchParams(condition);
-
-  if (selectedOrganizationIds.value?.length > 0) {
-    params.organizationIds = selectedOrganizationIds.value;
-  }
-  if (selectedWorkspaceIds.value?.length > 0) {
-    params.workspaceIds = selectedWorkspaceIds.value;
-  }
-
   VmCloudServerApi.listVmCloudServer(
     {
       currentPage: tableConfig.value.paginationConfig.currentPage,
@@ -222,12 +204,6 @@ onMounted(() => {
   searchCloudAccount();
   startOperateInterval();
   getRecycleBinSetting();
-  tree().then((res) => {
-    orgTreeData.value = res.data;
-  });
-  workspaceTree().then((res) => {
-    workspaceTreeData.value = res.data;
-  });
 });
 onBeforeUnmount(() => {
   stopOperateInterval();
@@ -736,6 +712,7 @@ const moreActions = ref<Array<ButtonAction>>([
     :data="tableData"
     :tableConfig="tableConfig"
     @selection-change="handleSelectionChange"
+    @clearCondition="clearCondition"
     row-key="id"
     height="100%"
     ref="table"
@@ -880,11 +857,13 @@ const moreActions = ref<Array<ButtonAction>>([
               ><el-icon><ArrowDown /></el-icon
             ></span>
           </template>
-          <TreeFilter
+          <OrgTreeFilter
+            tree-type="org"
             ref="orgTreeRef"
-            :handle-reset="handleOrgReset"
-            :handle-select="handleOrgSelect"
-            :tree-data="orgTreeData"
+            field="organizationIds"
+            :label="$t('commons.org', '组织')"
+            :popover-ref="orgPopRef"
+            :table-ref="table"
           />
         </el-popover>
       </template>
@@ -915,11 +894,13 @@ const moreActions = ref<Array<ButtonAction>>([
               ><el-icon><ArrowDown /></el-icon
             ></span>
           </template>
-          <TreeFilter
+          <OrgTreeFilter
+            tree-type="workspace"
             ref="workspaceTreeRef"
-            :handle-reset="handleWorkspaceReset"
-            :handle-select="handleWorkspaceSelect"
-            :tree-data="workspaceTreeData"
+            field="workspaceIds"
+            :label="$t('commons.workspace', '工作空间')"
+            :popover-ref="workspacePopRef"
+            :table-ref="table"
           />
         </el-popover>
       </template>

@@ -86,6 +86,7 @@ const message = {
       filter: "Filter",
       reset: "Reset",
       grope: "Grope",
+      clear: "Clear",
     },
     msg: {
       success: "{0}Success",

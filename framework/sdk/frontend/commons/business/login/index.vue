@@ -131,8 +131,7 @@ const submitForm = (formEl: FormInstance | undefined) => {
           });
         })
         .catch((error: any) => {
-          console.error(error);
-          msg.value = error.message;
+          msg.value = error.response.data.message;
         });
     } else {
       return false;
