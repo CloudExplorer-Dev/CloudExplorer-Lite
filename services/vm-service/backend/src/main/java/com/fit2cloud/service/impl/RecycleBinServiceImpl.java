@@ -48,6 +48,9 @@ public class RecycleBinServiceImpl extends ServiceImpl<BaseRecycleBinMapper, Rec
     @Resource
     private IBaseSystemParameterService baseSystemParameterService;
 
+    @Resource
+    private WorkspaceCommonService workspaceCommonService;
+
     @Override
     public IPage<RecycleBinDTO> pageRecycleBin(PageRecycleBinRequest request) {
         List<String> sourceIds = permissionService.getSourceIds();
@@ -118,6 +121,24 @@ public class RecycleBinServiceImpl extends ServiceImpl<BaseRecycleBinMapper, Rec
     private QueryWrapper<RecycleBinDTO> addQuery(PageRecycleBinRequest request) {
         QueryWrapper<RecycleBinDTO> wrapper = new QueryWrapper<>();
         wrapper.like(StringUtils.isNotBlank(request.getResourceName()), "recycleInfo.resource_name", request.getResourceName());
+        wrapper.like(StringUtils.isNotBlank(request.getIpArray()), "recycleInfo.ip_array", request.getIpArray());
+        wrapper.like(StringUtils.isNotBlank(request.getRelateResource()), "recycleInfo.relate_resource", request.getRelateResource());
+        wrapper.like(StringUtils.isNotBlank(request.getUserName()), "recycleInfo.user_name", request.getUserName());
+        wrapper.eq(StringUtils.isNotBlank(request.getResourceType()), "recycleInfo.resource_type", request.getResourceType());
+        wrapper.eq(StringUtils.isNotBlank(request.getResourceStatus()), "recycleInfo.resource_status", request.getResourceStatus());
+        wrapper.eq(StringUtils.isNotBlank(request.getDeleteWithInstance()), "recycleInfo.delete_with_instance", request.getDeleteWithInstance());
+        wrapper.in(CollectionUtils.isNotEmpty(request.getAccountIds()), "recycleInfo.account_id", request.getAccountIds());
+
+        wrapper.in(CollectionUtils.isNotEmpty(request.getWorkspaceIds()), "recycleInfo.workspace_id", request.getWorkspaceIds());
+        if (CollectionUtils.isNotEmpty(request.getOrganizationIds())) {
+            List<String> orgWorkspaceList = workspaceCommonService.getWorkspaceIdsByOrgIds(request.getOrganizationIds());
+            orgWorkspaceList.addAll(request.getOrganizationIds());
+            wrapper.in(CollectionUtils.isNotEmpty(orgWorkspaceList), "recycleInfo.organization_id", orgWorkspaceList);
+        }
+        if (CollectionUtils.isNotEmpty(request.getSourceIds())) {
+            wrapper.and(wrapperInner1 -> wrapperInner1.in("recycleInfo.workspace_id", request.getSourceIds())
+                    .or(wrapperInner2 -> wrapperInner2.in("recycleInfo.organization_id", request.getSourceIds())));
+        }
         return wrapper;
     }
 

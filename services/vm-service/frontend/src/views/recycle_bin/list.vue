@@ -16,15 +16,17 @@ import { usePermissionStore } from "@commons/stores/modules/permission";
 import { ElMessage, ElMessageBox } from "element-plus";
 import { platformIcon } from "@commons/utils/platform";
 import type { SimpleMap } from "@commons/api/base/type";
+import BaseCloudAccountApi from "@commons/api/cloud_account";
+import OrgTreeFilter from "@commons/components/table-filter/OrgTreeFilter.vue";
 
 const permissionStore = usePermissionStore();
-
 const { t } = useI18n();
 const columns = ref([]);
 const tableData = ref<Array<RecycleBinInfo>>();
 const table = ref();
 const selectedRowData = ref<Array<RecycleBinInfo>>([]);
 const tableLoading = ref<boolean>(false);
+const cloudAccount = ref<Array<SimpleMap<string>>>([]);
 
 /**
  * 查询
@@ -32,11 +34,13 @@ const tableLoading = ref<boolean>(false);
  */
 const search = (condition: TableSearch) => {
   const params = TableSearch.toSearchParams(condition);
-  RecycleBinsApi.listRecycleBins({
-    currentPage: tableConfig.value.paginationConfig.currentPage,
-    pageSize: tableConfig.value.paginationConfig.pageSize,
-    ...params,
-  },    tableLoading
+  RecycleBinsApi.listRecycleBins(
+    {
+      currentPage: tableConfig.value.paginationConfig.currentPage,
+      pageSize: tableConfig.value.paginationConfig.pageSize,
+      ...params,
+    },
+    tableLoading
   ).then((res) => {
     tableData.value = res.data.records;
     tableConfig.value.paginationConfig?.setTotal(
@@ -70,10 +74,56 @@ const filterStatus = (value: string) => {
 };
 
 /**
+ * 表头过滤选项
+ */
+const tableHeadFilters = ref({
+  resourceType: [
+    { text: t("commons.cloud_account.vm", "云主机"), value: "VM" },
+    { text: t("commons.cloud_account.disk", "磁盘"), value: "DISK" },
+  ],
+  cloudAccount: cloudAccount,
+  resourceStatus: resourceStatus,
+  deleteWithInstance: [
+    { text: t("commons.btn.yes", "是"), value: "YES" },
+    { text: t("commons.btn.no", "否"), value: "NO" },
+  ],
+});
+
+/**
+ * 表头：组织树筛选
+ */
+const orgTreeRef = ref();
+const orgPopRef = ref();
+const selectedOrganizationIds = computed(() =>
+  orgTreeRef.value?.getSelectedIds(false)
+);
+
+/**
+ * 表头：工作空间树筛选
+ */
+const workspaceTreeRef = ref();
+const workspacePopRef = ref();
+const selectedWorkspaceIds = computed(() =>
+  workspaceTreeRef.value?.getSelectedIds(true)
+);
+
+const searchCloudAccount = () => {
+  BaseCloudAccountApi.listAll().then((result) => {
+    if (result.data.length > 0) {
+      result.data.forEach(function (v) {
+        const ca = { text: v.name, value: v.id };
+        cloudAccount.value.push(ca);
+      });
+    }
+  });
+};
+
+/**
  * 页面挂载
  */
 onMounted(() => {
   search(new TableSearch());
+  searchCloudAccount();
 });
 /**
  * 表单配置
@@ -86,11 +136,27 @@ const tableConfig = ref<TableConfig>({
     quickPlaceholder: t("commons.btn.search"),
     components: [],
     searchOptions: [
-      { label: t("recycle_bin.resource_name"), value: "resourceName" },
+      {
+        label: t("recycle_bin.resource_name", "资源名称"),
+        value: "resourceName",
+      },
+      {
+        label: t("recycle_bin.relate_resource", "关联资源"),
+        value: "relateResource",
+      },
+      {
+        label: t("vm_cloud_server.label.ip_address", "IP地址"),
+        value: "ipArray",
+      },
+      {
+        label: t("recycle_bin.user_name", "操作人"),
+        value: "userName",
+      },
     ],
   },
   paginationConfig: new PaginationConfig(),
 });
+
 /**
  * 批量恢复操作
  */
@@ -251,8 +317,8 @@ const refresh = () => {
 </script>
 <template>
   <ce-table
-      v-loading="tableLoading"
-      :columns="columns"
+    v-loading="tableLoading"
+    :columns="columns"
     :data="tableData"
     :tableConfig="tableConfig"
     @selection-change="handleSelectionChange"
@@ -275,7 +341,10 @@ const refresh = () => {
     <el-table-column
       prop="resourceType"
       column-key="resourceType"
-      :label="t('recycle_bin.resource_type')"
+      :label="t('recycle_bin.resource_type', '资源类型')"
+      :filters="tableHeadFilters.resourceType"
+      :filter-multiple="false"
+      min-width="120px"
     >
       <template #default="scope">
         {{
@@ -290,34 +359,93 @@ const refresh = () => {
     <el-table-column
       prop="organizationName"
       column-key="organizationName"
-      :label="t('recycle_bin.organization_name','组织')"
+      :label="t('recycle_bin.organization_name', '组织')"
       :show="false"
       min-width="180px"
     >
+      <template #header>
+        <span :class="{ highlight: selectedOrganizationIds?.length > 0 }">{{
+          $t("commons.org", "组织")
+        }}</span>
+        <el-popover
+          ref="orgPopRef"
+          placement="bottom"
+          :width="200"
+          trigger="click"
+          :show-arrow="false"
+        >
+          <template #reference>
+            <span class="el-table__column-filter-trigger"
+              ><el-icon><ArrowDown /></el-icon
+            ></span>
+          </template>
+          <OrgTreeFilter
+            tree-type="org"
+            ref="orgTreeRef"
+            field="organizationIds"
+            :label="$t('commons.org', '组织')"
+            :popover-ref="orgPopRef"
+            :table-ref="table"
+          />
+        </el-popover>
+      </template>
+      <template #default="scope">
+        <span v-html="scope.row.organizationName"></span>
+      </template>
     </el-table-column>
     <el-table-column
       prop="workspaceName"
       column-key="workspaceName"
-      :label="t('recycle_bin.workspace_name','工作空间')"
+      :label="t('recycle_bin.workspace_name', '工作空间')"
       :show="false"
       min-width="180px"
     >
+      <template #header>
+        <span :class="{ highlight: selectedWorkspaceIds?.length > 0 }">{{
+          $t("commons.workspace", "工作空间")
+        }}</span>
+        <el-popover
+          ref="workspacePopRef"
+          placement="bottom"
+          :width="200"
+          trigger="click"
+          :show-arrow="false"
+        >
+          <template #reference>
+            <span class="el-table__column-filter-trigger"
+              ><el-icon><ArrowDown /></el-icon
+            ></span>
+          </template>
+          <OrgTreeFilter
+            tree-type="workspace"
+            ref="workspaceTreeRef"
+            field="workspaceIds"
+            :label="$t('commons.workspace', '工作空间')"
+            :popover-ref="workspacePopRef"
+            :table-ref="table"
+          />
+        </el-popover>
+      </template>
+      <template #default="scope">
+        <span v-html="scope.row.workspaceName"></span>
+      </template>
     </el-table-column>
     <el-table-column
       prop="accountName"
       column-key="accountIds"
-      :label="t('recycle_bin.account_name')"
+      :label="$t('commons.cloud_account.native', '云账号')"
+      :filters="tableHeadFilters.cloudAccount"
       min-width="180px"
     >
       <template #default="scope">
         <div style="display: flex">
           <component
-              style="margin-top: 3px; width: 16px; height: 16px"
-              :is="platformIcon[scope.row.platform]?.component"
-              v-bind="platformIcon[scope.row.platform]?.icon"
-              :color="platformIcon[scope.row.platform]?.color"
-              size="16px"
-              v-if="scope.row.platform"
+            style="margin-top: 3px; width: 16px; height: 16px"
+            :is="platformIcon[scope.row.platform]?.component"
+            v-bind="platformIcon[scope.row.platform]?.icon"
+            :color="platformIcon[scope.row.platform]?.color"
+            size="16px"
+            v-if="scope.row.platform"
           ></component>
           <span style="margin-left: 10px">{{ scope.row.accountName }}</span>
         </div>
@@ -327,11 +455,12 @@ const refresh = () => {
       prop="resourceStatus"
       column-key="resourceStatus"
       label="状态"
+      :filters="tableHeadFilters.resourceStatus"
+      :filter-multiple="false"
     >
       <template #default="scope">
         <div style="display: flex; align-items: center">
-          <span>{{ filterStatus(scope.row.resourceStatus) }}
-          </span>
+          <span>{{ filterStatus(scope.row.resourceStatus) }} </span>
         </div>
       </template>
     </el-table-column>
@@ -348,35 +477,37 @@ const refresh = () => {
       min-width="180px"
     />
     <el-table-column
-        :show="true"
-        prop="deleteWithInstance"
-        column-key="deleteWithInstance"
-        :label="$t('vm_cloud_disk.label.delete_with_instance')"
-        min-width="130px"
+      :show="true"
+      prop="deleteWithInstance"
+      column-key="deleteWithInstance"
+      :label="$t('vm_cloud_disk.label.delete_with_instance', '随实例删除')"
+      :filters="tableHeadFilters.deleteWithInstance"
+      :filter-multiple="false"
+      min-width="130px"
     >
       <template #default="scope">
         <div style="display: flex; align-items: center">
           <span v-if="scope.row.resourceType === 'DISK'">{{
-              scope.row.deleteWithInstance === "YES"
-                  ? t("commons.btn.yes")
-                  : t("commons.btn.no")
-            }}</span>
-          <span v-else>{{scope.row.deleteWithInstance }}</span>
+            scope.row.deleteWithInstance === "YES"
+              ? t("commons.btn.yes")
+              : t("commons.btn.no")
+          }}</span>
+          <span v-else>{{ scope.row.deleteWithInstance }}</span>
         </div>
       </template>
     </el-table-column>
     <el-table-column
-        prop="relateResource"
-        column-key="relateResource"
-        :label="t('recycle_bin.relate_resource')"
-        min-width="200px"
+      prop="relateResource"
+      column-key="relateResource"
+      :label="t('recycle_bin.relate_resource')"
+      min-width="200px"
     >
       <template #default="scope">
         <el-tooltip
-            class="item"
-            effect="dark"
-            :content="scope.row.relateResource"
-            placement="top"
+          class="item"
+          effect="dark"
+          :content="scope.row.relateResource"
+          placement="top"
         >
           <p class="text-overflow">
             {{ scope.row.relateResource }}

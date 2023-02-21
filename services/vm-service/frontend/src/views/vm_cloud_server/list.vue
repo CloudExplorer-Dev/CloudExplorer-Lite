@@ -218,6 +218,7 @@ const searchCloudAccount = () => {
     }
   });
 };
+
 const cloudServerInterval = ref<any>();
 //启动定时器
 const startOperateInterval = () => {
@@ -549,13 +550,13 @@ const deleteInstance = async (row: VmCloudServerVO) => {
   await getRecycleBinSetting();
 
   const message = isRecycleBinOpened.value
-      ? t(
-          "vm_cloud_server.message_box.confirm_recycle",
-          "回收站已开启，云主机将关机并放入回收站中"
+    ? t(
+        "vm_cloud_server.message_box.confirm_recycle",
+        "回收站已开启，云主机将关机并放入回收站中"
       )
-      : t(
-          "vm_cloud_server.message_box.confirm_to_delete",
-          "回收站已关闭，云主机将立即删除"
+    : t(
+        "vm_cloud_server.message_box.confirm_to_delete",
+        "回收站已关闭，云主机将立即删除"
       );
   ElMessageBox.confirm(message, t("commons.message_box.prompt", "提示"), {
     confirmButtonText: t("commons.message_box.confirm", "确认"),
@@ -564,20 +565,20 @@ const deleteInstance = async (row: VmCloudServerVO) => {
   }).then(() => {
     if (isRecycleBinOpened.value) {
       VmCloudServerApi.recycleInstance(row.id as string)
-          .then(() => {
-            ElMessage.success(t("commons.msg.op_success"));
-          })
-          .catch((err) => {
-            console.log(err);
-          });
+        .then(() => {
+          ElMessage.success(t("commons.msg.op_success"));
+        })
+        .catch((err) => {
+          console.log(err);
+        });
     } else {
       VmCloudServerApi.deleteInstance(row.id as string)
-          .then(() => {
-            ElMessage.success(t("commons.msg.op_success"));
-          })
-          .catch((err) => {
-            console.log(err);
-          });
+        .then(() => {
+          ElMessage.success(t("commons.msg.op_success"));
+        })
+        .catch((err) => {
+          console.log(err);
+        });
     }
   });
 };
@@ -805,7 +806,7 @@ const moreActions = ref<Array<ButtonAction>>([
     <el-table-column
       prop="accountName"
       column-key="accountIds"
-      :label="$t('commons.cloud_account.native','云账号')"
+      :label="$t('commons.cloud_account.native', '云账号')"
       :filters="cloudAccount"
       min-width="180px"
     >
