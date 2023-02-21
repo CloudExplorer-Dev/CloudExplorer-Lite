@@ -30,6 +30,8 @@ public class RecycleBinDTO extends RecycleBin {
     private String accountId;
     @ApiModelProperty("账号名称")
     private String accountName;
+    @ApiModelProperty("云平台")
+    private String platform;
     @ApiModelProperty("工作空间名称")
     private String workspaceName;
     @ApiModelProperty("工作空间ID")

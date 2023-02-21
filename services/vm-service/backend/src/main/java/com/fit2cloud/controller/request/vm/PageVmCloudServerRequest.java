@@ -19,7 +19,7 @@ public class PageVmCloudServerRequest extends PageRequest implements PageOrderRe
     @Serial
     private static final long serialVersionUID = -6363229760062682871L;
     @ApiModelProperty(value = "云主机状态", allowableValues = "Running,Stopped,Deleted")
-    private List<String> instanceStatus;
+    private String instanceStatus;
     @ApiModelProperty("云主机名称")
     private String instanceName;
     @ApiModelProperty("云账号IDs")

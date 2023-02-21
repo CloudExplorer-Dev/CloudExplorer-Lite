@@ -203,7 +203,6 @@ onMounted(() => {
   search(new TableSearch());
   searchCloudAccount();
   startOperateInterval();
-  getRecycleBinSetting();
 });
 onBeforeUnmount(() => {
   stopOperateInterval();
@@ -546,15 +545,17 @@ const reboot = (row: VmCloudServerVO) => {
 };
 
 //删除
-const deleteInstance = (row: VmCloudServerVO) => {
+const deleteInstance = async (row: VmCloudServerVO) => {
+  await getRecycleBinSetting();
+
   const message = isRecycleBinOpened.value
-    ? t(
-        "vm_cloud_server.message_box.confirm_recycle",
-        "回收站已开启，云主机将关机并放入回收站中"
+      ? t(
+          "vm_cloud_server.message_box.confirm_recycle",
+          "回收站已开启，云主机将关机并放入回收站中"
       )
-    : t(
-        "vm_cloud_server.message_box.confirm_to_delete",
-        "回收站已关闭，云主机将立即删除"
+      : t(
+          "vm_cloud_server.message_box.confirm_to_delete",
+          "回收站已关闭，云主机将立即删除"
       );
   ElMessageBox.confirm(message, t("commons.message_box.prompt", "提示"), {
     confirmButtonText: t("commons.message_box.confirm", "确认"),
@@ -563,20 +564,20 @@ const deleteInstance = (row: VmCloudServerVO) => {
   }).then(() => {
     if (isRecycleBinOpened.value) {
       VmCloudServerApi.recycleInstance(row.id as string)
-        .then(() => {
-          ElMessage.success(t("commons.msg.op_success"));
-        })
-        .catch((err) => {
-          console.log(err);
-        });
+          .then(() => {
+            ElMessage.success(t("commons.msg.op_success"));
+          })
+          .catch((err) => {
+            console.log(err);
+          });
     } else {
       VmCloudServerApi.deleteInstance(row.id as string)
-        .then(() => {
-          ElMessage.success(t("commons.msg.op_success"));
-        })
-        .catch((err) => {
-          console.log(err);
-        });
+          .then(() => {
+            ElMessage.success(t("commons.msg.op_success"));
+          })
+          .catch((err) => {
+            console.log(err);
+          });
     }
   });
 };
@@ -638,7 +639,8 @@ const showGrantDialog = () => {
 };
 
 //删除
-const deleteBatch = () => {
+const deleteBatch = async () => {
+  await getRecycleBinSetting();
   if (isRecycleBinOpened.value) {
     batchOperate("RECYCLE_SERVER");
   } else {
@@ -772,6 +774,7 @@ const moreActions = ref<Array<ButtonAction>>([
       column-key="instanceStatus"
       :label="$t('commons.status')"
       :filters="instanceStatusForTableSelect"
+      :filter-multiple="false"
     >
       <template #default="scope">
         <div style="display: flex; align-items: center">
@@ -802,7 +805,7 @@ const moreActions = ref<Array<ButtonAction>>([
     <el-table-column
       prop="accountName"
       column-key="accountIds"
-      :label="$t('commons.cloud_account.native')"
+      :label="$t('commons.cloud_account.native','云账号')"
       :filters="cloudAccount"
       min-width="180px"
     >

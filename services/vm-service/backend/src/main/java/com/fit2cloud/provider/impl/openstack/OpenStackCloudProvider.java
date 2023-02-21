@@ -15,7 +15,6 @@ import com.fit2cloud.provider.impl.openstack.api.OpenStackCloudApi;
 import com.fit2cloud.provider.impl.openstack.entity.OpenStackFlavor;
 import com.fit2cloud.provider.impl.openstack.entity.VolumeType;
 import com.fit2cloud.provider.impl.openstack.entity.request.*;
-import com.fit2cloud.provider.impl.vsphere.api.VsphereSyncCloudApi;
 import org.openstack4j.model.compute.Flavor;
 import org.openstack4j.model.network.Network;
 import org.openstack4j.model.network.SecurityGroup;
@@ -131,7 +130,6 @@ public class OpenStackCloudProvider extends AbstractCloudProvider<OpenStackCrede
         list.add(option);
         return list;
     }
-
 
     @Override
     public F2CVirtualMachine getSimpleServerByCreateRequest(String req) {
