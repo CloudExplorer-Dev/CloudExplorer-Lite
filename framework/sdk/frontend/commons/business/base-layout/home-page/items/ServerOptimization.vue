@@ -24,7 +24,7 @@ const props = withDefaults(
   {
     needRoles: () => ["ADMIN"],
     permission: [
-      "[operation-analytics]BASE_RESOURCE_ANALYSIS:READ",
+      "[operation-analytics]SERVER_OPTIMIZATION:READ",
       "[operation-analytics]OVERVIEW:READ",
     ],
     module: "operation-analytics",
