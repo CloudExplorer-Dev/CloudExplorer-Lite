@@ -5,7 +5,7 @@
 
     <parent>
         <groupId>com.fit2cloud</groupId>
-        <artifactId>cloudexplorer</artifactId>
+        <artifactId>cloudexplorer-lite</artifactId>
         <version>${revision}</version>
     </parent>
 

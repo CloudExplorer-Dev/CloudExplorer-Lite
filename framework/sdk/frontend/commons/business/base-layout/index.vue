@@ -35,7 +35,7 @@ const hasCreateAccountPermission = computed<boolean>(() => {
 
 function fetchToShowCreateAccount() {
   if (hasCreateAccountPermission.value && !fetchCount.value) {
-    get("/management-center/api/organization/count").then((r) => {
+    get("/management-center/api/cloud_account/count").then((r) => {
       if ((r.data as number) == 0) {
         showCreateAccount.value = true;
       }
