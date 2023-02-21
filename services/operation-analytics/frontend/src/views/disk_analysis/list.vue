@@ -1,6 +1,6 @@
 <template>
   <el-tabs v-model="activeName">
-    <el-tab-pane label="云磁盘分析" name="resourceSpread" :lazy="true">
+    <el-tab-pane label="磁盘分析" name="resourceSpread" :lazy="true">
       <div v-if="activeName === 'resourceSpread'">
         <ResourceSpreadView></ResourceSpreadView>
       </div>

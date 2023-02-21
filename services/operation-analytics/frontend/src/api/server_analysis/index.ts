@@ -16,7 +16,6 @@ export function listServer(
 }
 /**
  * 云账号
- * @param req
  * @param loading
  */
 export function listAccounts(loading?: Ref<boolean>): Promise<Result<any>> {

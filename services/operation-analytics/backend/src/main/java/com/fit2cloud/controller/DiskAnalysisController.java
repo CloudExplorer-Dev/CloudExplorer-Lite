@@ -29,12 +29,12 @@ import java.util.Map;
 @RestController
 @RequestMapping("/api/disk_analysis")
 @Validated
-@Api("云磁盘分析相关接口")
+@Api("磁盘分析相关接口")
 public class DiskAnalysisController {
     @Resource
     private IDiskAnalysisService iDiskAnalysisService;
 
-    @ApiOperation(value = "分页查询云磁盘", notes = "分页查询云磁盘")
+    @ApiOperation(value = "分页查询磁盘", notes = "分页查询磁盘")
     @GetMapping("/disk/page")
     @PreAuthorize("hasAnyCePermission('DISK_ANALYSIS:READ')")
     public ResultHolder<IPage<AnalyticsDiskDTO>> pageDiskList(@Validated PageDiskRequest request) {
@@ -48,14 +48,14 @@ public class DiskAnalysisController {
         return ResultHolder.success(iDiskAnalysisService.getAllCloudAccount());
     }
 
-    @ApiOperation(value = "根据分布类型查询云磁盘分布情况", notes = "根据分布类型查询云磁盘分布情况")
+    @ApiOperation(value = "根据分布类型查询磁盘分布情况", notes = "根据分布类型查询磁盘分布情况")
     @GetMapping("/spread")
     @PreAuthorize("hasAnyCePermission('DISK_ANALYSIS:READ','OVERVIEW:READ')")
     public ResultHolder<Map<String,List<KeyValue>>> getDiskSpreadInfo(@Validated ResourceAnalysisRequest request) {
         return ResultHolder.success(iDiskAnalysisService.spread(request));
     }
 
-    @ApiOperation(value="查询云磁盘增长趋势",notes = "查询云磁盘增长趋势")
+    @ApiOperation(value="查询磁盘趋势",notes = "查询磁盘趋势")
     @GetMapping("/increase_trend")
     @PreAuthorize("hasAnyCePermission('DISK_ANALYSIS:READ')")
     public ResultHolder<List<ChartData>> getDiskIncreaseTrendData(
@@ -63,7 +63,7 @@ public class DiskAnalysisController {
         return ResultHolder.success(iDiskAnalysisService.diskIncreaseTrend(request));
     }
 
-    @ApiOperation(value="组织或工作空间云磁盘分布",notes = "组织或工作空间云磁盘分布")
+    @ApiOperation(value="组织或工作空间磁盘分布",notes = "组织或工作空间磁盘分布")
     @GetMapping("/org_workspace_disk_count_bar")
     @PreAuthorize("hasAnyCePermission('DISK_ANALYSIS:READ')")
     public ResultHolder<Map<String,List<BarTreeChartData>>> analyticsCloudDiskByOrgWorkspace(
