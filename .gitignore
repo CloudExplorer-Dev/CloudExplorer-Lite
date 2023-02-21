@@ -54,4 +54,4 @@ node/
 ### Spring flatten ###
 .flattened-pom.xml
 
-
+.DS_Store
