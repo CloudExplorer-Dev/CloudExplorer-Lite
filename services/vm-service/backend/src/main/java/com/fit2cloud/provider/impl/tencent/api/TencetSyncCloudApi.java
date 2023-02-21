@@ -1018,6 +1018,12 @@ public class TencetSyncCloudApi {
         if (StringUtils.isNotEmpty(request.getCredential())) {
             TencentVmCredential credential = JsonUtil.parseObject(request.getCredential(), TencentVmCredential.class);
             CvmClient client = credential.getCvmClient(request.getRegionId());
+
+            Instance instance = getInstanceById(request.getUuid(), client);
+            if (F2CInstanceStatus.Stopped.name().equalsIgnoreCase(TencentMappingUtil.toF2CStatus(instance.getInstanceState()))) {
+                return true;
+            }
+
             try {
                 StopInstancesRequest stopInstancesRequest = new StopInstancesRequest();
                 stopInstancesRequest.setInstanceIds(new String[]{request.getUuid()});
@@ -1238,7 +1244,7 @@ public class TencetSyncCloudApi {
                     });
                 } else {
                     //这个地方没有云主机所有盘指标，所以只获取系统盘的指标
-                    if(disk.isBootable()){
+                    if (disk.isBootable()) {
                         req.setInstances(getInstance("diskId", disk.getDiskId()));
                         Map<Long, BigDecimal> dataMap = getMonitorData(monitorClient, req);
                         addMonitorData(null, result, dataMap, F2CEntityType.VIRTUAL_MACHINE.name(), perfMetric.getUnit(), getMetricsRequest.getPeriod(), perfMetric.name(), disk.getInstanceUuid());

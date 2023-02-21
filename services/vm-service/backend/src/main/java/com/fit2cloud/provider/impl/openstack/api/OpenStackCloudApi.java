@@ -6,6 +6,7 @@ import com.fit2cloud.common.provider.entity.F2CPerfMetricMonitorData;
 import com.fit2cloud.common.provider.impl.openstack.entity.request.OpenStackBaseRequest;
 import com.fit2cloud.common.utils.DateUtil;
 import com.fit2cloud.common.utils.JsonUtil;
+import com.fit2cloud.provider.constants.F2CInstanceStatus;
 import com.fit2cloud.provider.entity.*;
 import com.fit2cloud.provider.entity.request.GetMetricsRequest;
 import com.fit2cloud.provider.entity.result.CheckCreateServerResult;
@@ -129,6 +130,9 @@ public class OpenStackCloudApi {
             Server server = osClient.compute().servers().get(request.getUuid());
             if (server == null) {
                 throw new RuntimeException("server not exist");
+            }
+            if (F2CInstanceStatus.Stopped.name().equalsIgnoreCase(OpenStackUtils.getStatus(server.getStatus()).name())) {
+                return true;
             }
 
             ActionResponse response = osClient.compute().servers().action(request.getUuid(), Action.STOP);

@@ -9,6 +9,7 @@ import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.fit2cloud.base.entity.CloudAccount;
+import com.fit2cloud.base.entity.RecycleBin;
 import com.fit2cloud.base.entity.VmCloudDisk;
 import com.fit2cloud.base.entity.VmCloudServer;
 import com.fit2cloud.base.mapper.BaseVmCloudDiskMapper;
@@ -16,6 +17,7 @@ import com.fit2cloud.base.service.IBaseCloudAccountService;
 import com.fit2cloud.base.service.IBaseRecycleBinService;
 import com.fit2cloud.base.service.IBaseVmCloudServerService;
 import com.fit2cloud.common.constants.JobTypeConstants;
+import com.fit2cloud.common.constants.RecycleBinStatusConstants;
 import com.fit2cloud.common.constants.ResourceTypeConstants;
 import com.fit2cloud.common.form.vo.FormObject;
 import com.fit2cloud.common.log.constants.OperatedTypeEnum;
@@ -123,7 +125,6 @@ public class VmCloudDiskServiceImpl extends ServiceImpl<BaseVmCloudDiskMapper, V
         wrapper.in(CollectionUtils.isNotEmpty(request.getBootable()), ColumnNameUtil.getColumnName(VmCloudDisk::getBootable, true), request.getBootable());
         wrapper.in(CollectionUtils.isNotEmpty(request.getDiskType()), ColumnNameUtil.getColumnName(VmCloudDisk::getDiskType, true), request.getDiskType());
         wrapper.in(CollectionUtils.isNotEmpty(request.getDeleteWithInstance()), ColumnNameUtil.getColumnName(VmCloudDisk::getDeleteWithInstance, true), request.getDeleteWithInstance());
-        wrapper.in(CollectionUtils.isNotEmpty(request.getStatus()), ColumnNameUtil.getColumnName(VmCloudDisk::getStatus, true), request.getStatus());
         wrapper.in(CollectionUtils.isNotEmpty(request.getAccountIds()), ColumnNameUtil.getColumnName(VmCloudDisk::getAccountId, true), request.getAccountIds());
 
         wrapper.in(CollectionUtils.isNotEmpty(request.getSourceIds()), ColumnNameUtil.getColumnName(VmCloudDisk::getSourceId, true), request.getSourceIds());
@@ -135,8 +136,19 @@ public class VmCloudDiskServiceImpl extends ServiceImpl<BaseVmCloudDiskMapper, V
         }
 
         // 默认不展示已删除状态的磁盘
-        if (CollectionUtils.isEmpty(request.getStatus())) {
+        if (StringUtils.isEmpty(request.getStatus())) {
             wrapper.ne(ColumnNameUtil.getColumnName(VmCloudDisk::getStatus, true), F2CDiskStatus.DELETED);
+        } else {
+            if (RecycleBinStatusConstants.ToBeRecycled.name().equalsIgnoreCase(request.getStatus())) {
+                wrapper.and(wrapperInner -> wrapperInner.eq(ColumnNameUtil.getColumnName(RecycleBin::getStatus, true), RecycleBinStatusConstants.ToBeRecycled.name())
+                        .ne(ColumnNameUtil.getColumnName(VmCloudDisk::getStatus, true), F2CDiskStatus.DELETED));
+            } else if (F2CInstanceStatus.Deleted.name().equalsIgnoreCase(request.getStatus())) {
+                wrapper.eq(ColumnNameUtil.getColumnName(VmCloudDisk::getStatus, true), F2CDiskStatus.DELETED);
+            } else {
+                wrapper.in(ColumnNameUtil.getColumnName(VmCloudDisk::getStatus, true), request.getStatus())
+                        .and(wrapperInner1 -> wrapperInner1.ne(ColumnNameUtil.getColumnName(RecycleBin::getStatus, true), RecycleBinStatusConstants.ToBeRecycled.name())
+                                .or(wrapperInner2 -> wrapperInner2.isNull(ColumnNameUtil.getColumnName(RecycleBin::getStatus, true))));
+            }
         }
         return wrapper;
     }

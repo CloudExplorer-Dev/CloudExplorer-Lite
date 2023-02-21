@@ -3,25 +3,29 @@
     <el-row :gutter="12">
       <el-col :span="6" v-for="o in optimizeSuggests" :key="o.code">
         <el-card :body-style="{ padding: '0px' }" shadow="hover">
-          <div
-            class="boxCenter"
-            style="cursor: pointer"
-            @click="changeOptimizeType(o)"
-          >
+          <div class="boxCenter">
             <!--添加角标-->
             <div class="AngleOfTheBox" v-if="o.checked">
               <span>当前</span>
             </div>
-            <div class="BtnOfTheBox" @click="selectOptimizeType(o)">
-              <Setting @click="dialogFormVisible = true"></Setting>
+            <div class="BtnOfTheBox">
+              <Setting @click="selectOptimizeType(o)"></Setting>
             </div>
-            <div class="CenterTheBox">
+            <div
+              class="CenterTheBox"
+              style="cursor: pointer"
+              @click="changeOptimizeType(o)"
+            >
               <span
                 ><span style="font-size: 24px">{{ o.value }}</span
                 >台</span
               >
             </div>
-            <div class="BottomTheBox" :style="{ 'background-color': o.color }">
+            <div
+              class="BottomTheBox"
+              :style="{ 'background-color': o.color, cursor: 'pointer' }"
+              @click="changeOptimizeType(o)"
+            >
               <span>{{ o.name }}</span>
             </div>
           </div>
@@ -40,21 +44,22 @@
         height="100%"
         ref="table"
       >
-        <!--        <el-table-column type="selection" />-->
         <el-table-column
-          min-width="150"
           :show-overflow-tooltip="true"
           prop="instanceName"
+          column-key="instanceName"
           :label="$t('commons.name')"
+          fixed
+          min-width="120px"
         >
           <template #default="scope">
-            <!--        <span @click="" class="name-span-class">-->
-            {{ scope.row.instanceName }}
-            <!--        </span>-->
+            <span @click="showDetail(scope.row)" class="name-span-class">
+              {{ scope.row.instanceName }}
+            </span>
           </template>
         </el-table-column>
         <el-table-column
-          min-width="150"
+          min-width="150px"
           prop="accountName"
           column-key="accountIds"
           :label="$t('commons.cloud_account.native')"
@@ -72,6 +77,38 @@
               ></component>
               <span style="margin-left: 10px">{{ scope.row.accountName }}</span>
             </div>
+          </template>
+        </el-table-column>
+        <el-table-column
+          prop="ipArray"
+          column-key="ipArray"
+          label="IP地址"
+          min-width="180px"
+        >
+          <template #default="scope">
+            <span v-show="scope.row.ipArray?.length > 2">{{
+              JSON.parse(scope.row.ipArray)[0]
+            }}</span>
+            <el-dropdown
+              class="dropdown_box"
+              :hide-on-click="false"
+              v-if="scope.row.ipArray.length > 2"
+              max-height="100px"
+            >
+              <span>
+                {{ t("commons.cloud_server.more", "更多")
+                }}<el-icon class="el-icon--right"><arrow-down /></el-icon>
+              </span>
+              <template #dropdown>
+                <el-dropdown-menu>
+                  <el-dropdown-item
+                    v-for="(item, index) in JSON.parse(scope.row.ipArray)"
+                    :key="index"
+                    >{{ item }}</el-dropdown-item
+                  >
+                </el-dropdown-menu>
+              </template>
+            </el-dropdown>
           </template>
         </el-table-column>
         <el-table-column
@@ -323,7 +360,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, onBeforeUnmount } from "vue";
+import { ref, onMounted, onBeforeUnmount, computed } from "vue";
 import _ from "lodash";
 import {
   PaginationConfig,
@@ -339,6 +376,7 @@ import type { VmCloudServerVO } from "@/api/server_analysis/type";
 import ResourceOptimizationViewApi from "@/api/resource_optimization";
 import type { OptimizeSuggest } from "@commons/api/resource_optimization/type";
 import { useRouter } from "vue-router";
+import { ElMessage } from "element-plus";
 const useRoute = useRouter();
 const { t } = useI18n();
 const table = ref<any>(null);
@@ -375,7 +413,7 @@ paramOptimizationRequestMap.set("payment", {
   optimizeSuggest: "payment",
   cycleContinuedRunning: "false",
   cycleContinuedDays: 10,
-  volumeContinuedRunning: "false",
+  volumeContinuedRunning: "true",
   volumeContinuedDays: 10,
 });
 paramOptimizationRequestMap.set("recovery", {
@@ -417,31 +455,37 @@ optimizeSuggests.value.push({
   value: 0,
   data: [],
 });
-
+const allowChange = ref<boolean>(true);
 const changeOptimizeType = (o: any) => {
-  currentType.value = o.code;
-  tableData.value = o.data.records;
-  tableConfig.value.paginationConfig?.setTotal(
-    o.data.total,
-    tableConfig.value.paginationConfig
-  );
-  tableConfig.value.paginationConfig?.setCurrentPage(
-    o.data.current,
-    tableConfig.value.paginationConfig
-  );
-  optimizeSuggests.value.forEach((value) => {
-    value.checked = false;
-    if (value.code === o.code) {
-      value.checked = true;
-    }
-  });
-  changTitleValue.value = false;
+  if (allowChange.value) {
+    currentType.value = o.code;
+    //tableData.value = o.data.records;
+    tableConfig.value.paginationConfig?.setTotal(
+      o.data.total,
+      tableConfig.value.paginationConfig
+    );
+    tableConfig.value.paginationConfig?.setCurrentPage(
+      o.data.current,
+      tableConfig.value.paginationConfig
+    );
+    optimizeSuggests.value.forEach((value) => {
+      value.checked = false;
+      if (value.code === o.code) {
+        value.checked = true;
+      }
+    });
+    changTitleValue.value = false;
+    search(table?.value.getTableSearch());
+  }
 };
 
 const selectOptimizeType = (o: any) => {
-  currentTitle.value = o.name + "查询策略";
-  currentType.value = o.code;
-  getSearchParams(o.code);
+  if (allowChange.value) {
+    currentTitle.value = o.name + "查询策略";
+    currentType.value = o.code;
+    dialogFormVisible.value = true;
+    getSearchParams(o.code);
+  }
 };
 
 const saveSearchParams = () => {
@@ -482,9 +526,14 @@ const changTitleValue = ref<boolean>(false);
  */
 const search = (condition: TableSearch) => {
   const params = TableSearch.toSearchParams(condition);
-  const d = _.find(optimizeSuggests.value, ["code", currentType.value]);
+  const d = _.cloneDeep(
+    _.find(optimizeSuggests.value, ["code", currentType.value])
+  );
   getSearchParams(d?.code);
-  _.merge(params, dialogFormData.value);
+  const formData = _.cloneDeep(dialogFormData.value);
+  const type = _.cloneDeep(currentType.value);
+  _.merge(params, formData);
+  allowChange.value = false;
   ResourceOptimizationViewApi.listServer(
     {
       currentPage: tableConfig.value.paginationConfig.currentPage,
@@ -493,9 +542,9 @@ const search = (condition: TableSearch) => {
     },
     tableLoading
   ).then((res) => {
-    if (dialogFormData.value.optimizeSuggest === currentType.value) {
+    if (formData.optimizeSuggest === type) {
       if (changTitleValue.value) {
-        const d = _.find(optimizeSuggests.value, ["code", currentType.value]);
+        const d = _.find(optimizeSuggests.value, ["code", type]);
         d ? (d.value = res.data.total) : "";
         d ? (d.data = res.data) : [];
       }
@@ -509,6 +558,7 @@ const search = (condition: TableSearch) => {
         res.data.current,
         tableConfig.value.paginationConfig
       );
+      allowChange.value = true;
     }
   });
 };
@@ -518,6 +568,7 @@ const search = (condition: TableSearch) => {
  */
 onMounted(() => {
   const code = useRoute.currentRoute.value.query.code;
+  allowChange.value = false;
   optimizeSuggests.value.forEach((value) => {
     getSearchParams(value.code);
     const params = TableSearch.toSearchParams(new TableSearch());
@@ -531,7 +582,7 @@ onMounted(() => {
       value.value = res.data.total;
       value.data = res.data;
       if (!code && value.code === "derating") {
-        currentType.value = value.code;
+        //currentType.value = value.code;
         tableData.value = res.data.records;
         tableConfig.value.paginationConfig?.setTotal(
           res.data.total,
@@ -541,21 +592,31 @@ onMounted(() => {
           res.data.current,
           tableConfig.value.paginationConfig
         );
+        allowChange.value = true;
+      }
+      if (code === value.code) {
+        currentType.value = value.code;
+        useRoute.replace({ query: {} });
+        dialogFormVisible.value = false;
+        optimizeSuggests.value.forEach((value) => {
+          value.checked = false;
+          if (value.code === currentType.value) {
+            value.checked = true;
+          }
+        });
+        tableData.value = res.data.records;
+        tableConfig.value.paginationConfig?.setTotal(
+          res.data.total,
+          tableConfig.value.paginationConfig
+        );
+        tableConfig.value.paginationConfig?.setCurrentPage(
+          res.data.current,
+          tableConfig.value.paginationConfig
+        );
+        allowChange.value = true;
       }
     });
   });
-  if (code) {
-    currentType.value = code as string;
-    useRoute.currentRoute.value.query.code = null;
-    dialogFormVisible.value = false;
-    optimizeSuggests.value.forEach((value) => {
-      value.checked = false;
-      if (value.code === currentType.value) {
-        value.checked = true;
-      }
-    });
-    search(new TableSearch());
-  }
   searchCloudAccount();
 });
 
@@ -590,6 +651,18 @@ const tableConfig = ref<TableConfig>({
   paginationConfig: new PaginationConfig(),
   tableOperations: new TableOperations([]),
 });
+/**
+ * 详情
+ */
+const showDetail = (row: VmCloudServerVO) => {
+  //TODO 这个
+  window.location.href =
+    window.location.protocol +
+    "//" +
+    window.location.host +
+    "/vm-service#/vm_cloud_server/detail/" +
+    row.id;
+};
 </script>
 
 <style scoped lang="scss">
@@ -652,14 +725,16 @@ const tableConfig = ref<TableConfig>({
     width: 20px;
     height: 26px;
     right: 0;
+    z-index: 1000;
   }
   .CenterTheBox {
     border-radius: 1px;
     width: 100%;
-    height: 30px;
+    height: 80%;
     position: absolute;
-    bottom: 70px;
+    top: 30px;
     text-align: center;
+    line-height: 65px;
   }
   .BottomTheBox {
     border-radius: 1px;
@@ -682,5 +757,26 @@ const tableConfig = ref<TableConfig>({
   justify-content: center;
 
   align-content: center;
+}
+.name-span-class {
+  color: var(--el-color-primary);
+}
+.name-span-class:hover {
+  cursor: pointer;
+}
+.highlight {
+  color: var(--el-color-primary);
+}
+//文字长度限制
+.text_overflow {
+  max-width: 120px;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+//更多IP
+.dropdown_box {
+  margin-left: 10px;
+  margin-top: 2px;
 }
 </style>

@@ -7,10 +7,7 @@ import com.baomidou.mybatisplus.core.metadata.OrderItem;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.fit2cloud.autoconfigure.ThreadPoolConfig;
-import com.fit2cloud.base.entity.CloudAccount;
-import com.fit2cloud.base.entity.JobRecord;
-import com.fit2cloud.base.entity.VmCloudDisk;
-import com.fit2cloud.base.entity.VmCloudServer;
+import com.fit2cloud.base.entity.*;
 import com.fit2cloud.base.mapper.BaseJobRecordResourceMappingMapper;
 import com.fit2cloud.base.mapper.BaseVmCloudServerMapper;
 import com.fit2cloud.base.service.IBaseCloudAccountService;
@@ -18,6 +15,7 @@ import com.fit2cloud.base.service.IBaseRecycleBinService;
 import com.fit2cloud.base.service.IBaseVmCloudDiskService;
 import com.fit2cloud.common.constants.JobStatusConstants;
 import com.fit2cloud.common.constants.JobTypeConstants;
+import com.fit2cloud.common.constants.RecycleBinStatusConstants;
 import com.fit2cloud.common.constants.ResourceTypeConstants;
 import com.fit2cloud.common.exception.Fit2cloudException;
 import com.fit2cloud.common.form.util.FormUtil;
@@ -43,10 +41,12 @@ import com.fit2cloud.dto.VmCloudServerDTO;
 import com.fit2cloud.provider.ICloudProvider;
 import com.fit2cloud.provider.ICreateServerRequest;
 import com.fit2cloud.provider.constants.CreateServerRequestConstants;
+import com.fit2cloud.provider.constants.F2CDiskStatus;
 import com.fit2cloud.provider.constants.F2CInstanceStatus;
 import com.fit2cloud.provider.constants.ProviderConstants;
 import com.fit2cloud.provider.entity.F2CVirtualMachine;
 import com.fit2cloud.provider.entity.result.CheckCreateServerResult;
+import com.fit2cloud.provider.impl.vsphere.util.ResourceConstants;
 import com.fit2cloud.response.JobRecordResourceResponse;
 import com.fit2cloud.service.*;
 import io.reactivex.rxjava3.functions.BiFunction;
@@ -164,7 +164,6 @@ public class VmCloudServerServiceImpl extends ServiceImpl<BaseVmCloudServerMappe
         wrapper.like(StringUtils.isNotBlank(request.getOsInfo()), ColumnNameUtil.getColumnName(VmCloudServer::getOsInfo, true), request.getOsInfo());
         wrapper.like(StringUtils.isNotBlank(request.getIpArray()), ColumnNameUtil.getColumnName(VmCloudServer::getIpArray, true), request.getIpArray());
         wrapper.in(CollectionUtils.isNotEmpty(request.getAccountIds()), ColumnNameUtil.getColumnName(VmCloudServer::getAccountId, true), request.getAccountIds());
-        wrapper.in(CollectionUtils.isNotEmpty(request.getInstanceStatus()), ColumnNameUtil.getColumnName(VmCloudServer::getInstanceStatus, true), request.getInstanceStatus());
         wrapper.in(CollectionUtils.isNotEmpty(request.getInstanceChargeType()), ColumnNameUtil.getColumnName(VmCloudServer::getInstanceChargeType, true), request.getInstanceChargeType());
         wrapper.in(CollectionUtils.isNotEmpty(request.getVmToolsStatus()), ColumnNameUtil.getColumnName(VmCloudServer::getVmToolsStatus, true), request.getVmToolsStatus());
 
@@ -177,8 +176,19 @@ public class VmCloudServerServiceImpl extends ServiceImpl<BaseVmCloudServerMappe
         }
 
         // 默认不展示已删除状态的机器
-        if (CollectionUtils.isEmpty(request.getInstanceStatus())) {
+        if (StringUtils.isEmpty(request.getInstanceStatus())) {
             wrapper.ne(ColumnNameUtil.getColumnName(VmCloudServer::getInstanceStatus, true), F2CInstanceStatus.Deleted.name());
+        } else {
+            if (RecycleBinStatusConstants.ToBeRecycled.name().equalsIgnoreCase(request.getInstanceStatus())) {
+                wrapper.and(wrapperInner -> wrapperInner.eq(ColumnNameUtil.getColumnName(RecycleBin::getStatus, true), RecycleBinStatusConstants.ToBeRecycled.name())
+                        .ne(ColumnNameUtil.getColumnName(VmCloudServer::getInstanceStatus, true), F2CInstanceStatus.Deleted.name()));
+            } else if (F2CInstanceStatus.Deleted.name().equalsIgnoreCase(request.getInstanceStatus())) {
+                wrapper.eq(ColumnNameUtil.getColumnName(VmCloudServer::getInstanceStatus, true), F2CInstanceStatus.Deleted.name());
+            } else {
+                wrapper.in(ColumnNameUtil.getColumnName(VmCloudServer::getInstanceStatus, true), request.getInstanceStatus())
+                        .and(wrapperInner1 -> wrapperInner1.ne(ColumnNameUtil.getColumnName(RecycleBin::getStatus, true), RecycleBinStatusConstants.ToBeRecycled.name())
+                                .or(wrapperInner2 -> wrapperInner2.isNull(ColumnNameUtil.getColumnName(RecycleBin::getStatus, true))));
+            }
         }
         return wrapper;
     }
@@ -377,8 +387,35 @@ public class VmCloudServerServiceImpl extends ServiceImpl<BaseVmCloudServerMappe
 
     private void modifyResource(VmCloudServer vmCloudServer) {
         this.updateById(vmCloudServer);
+
+        if (F2CInstanceStatus.Deleted.name().equalsIgnoreCase(vmCloudServer.getInstanceStatus())) {
+            updateRelatedDisk(vmCloudServer);
+        }
     }
 
+    /**
+     * 删除云主机时更新云磁盘状态
+     *
+     * @param vmCloudServer
+     */
+    private void updateRelatedDisk(VmCloudServer vmCloudServer) {
+        // 更新【不随实例删除】的云磁盘的状态信息及关联的云主机信息
+        UpdateWrapper<VmCloudDisk> updateWrapper = new UpdateWrapper();
+        updateWrapper.lambda().eq(VmCloudDisk::getInstanceUuid, vmCloudServer.getInstanceUuid())
+                .ne(VmCloudDisk::getDeleteWithInstance, "YES")
+                .eq(VmCloudDisk::getAccountId, vmCloudServer.getAccountId())
+                .set(VmCloudDisk::getInstanceUuid, ResourceConstants.NO_INSTANCE)
+                .set(VmCloudDisk::getStatus, F2CDiskStatus.AVAILABLE);
+        vmCloudDiskService.update(updateWrapper);
+
+        // 更新【随实例删除】的云磁盘的状态信息
+        updateWrapper = new UpdateWrapper();
+        updateWrapper.lambda().eq(VmCloudDisk::getInstanceUuid, vmCloudServer.getInstanceUuid())
+                .eq(VmCloudDisk::getDeleteWithInstance, "YES")
+                .eq(VmCloudDisk::getAccountId, vmCloudServer.getAccountId())
+                .set(VmCloudDisk::getStatus, F2CDiskStatus.DELETED);
+        vmCloudDiskService.update(updateWrapper);
+    }
 
     @Override
     public boolean createServer(CreateServerRequest request) {

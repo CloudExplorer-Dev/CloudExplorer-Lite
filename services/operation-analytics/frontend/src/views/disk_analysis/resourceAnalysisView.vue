@@ -37,7 +37,7 @@
           <el-col :span="16">
             <div class="myChart" style="height: 370px">
               <div class="echart-title">
-                <div class="echart-title-left">云磁盘增长趋势</div>
+                <div class="echart-title-left">磁盘趋势</div>
                 <div class="echart-title-right">
                   <el-select
                     v-model="paramDiskIncreaseTrendMonth"
@@ -157,10 +157,10 @@ const spreadByDepartmentOptionOrgData = ref<any>([]);
 const spreadByDepartmentOptionOrgAllData = ref<any>([]);
 const spreadByDepartmentOptionWorkspaceData = ref<any>([]);
 const spreadByDepartmentOptionWorkspaceAllData = ref<any>([]);
-//增长趋势
+//趋势
 const increaseOption = ref<any>({});
 //参数
-const params = ref<ResourceAnalysisRequest | undefined>();
+const params = ref<any>({});
 const paramAccountId = ref<string>("all_list");
 const paramsStatisticalBlock = ref<string>("block");
 const paramDiskIncreaseTrendMonth = ref<any>("7");
@@ -214,7 +214,7 @@ const getSpreadData = (spreadType: string) => {
       const spreadData = res.data;
       const options = _.cloneDeep(defaultPieDoughnutOptions);
       _.set(options, "series[0].data", spreadData[spreadType]);
-      _.set(options, "series[0].name", "云磁盘分布");
+      _.set(options, "series[0].name", "磁盘分布");
       _.set(
         options,
         "series[0].label.normal.formatter",
@@ -233,7 +233,7 @@ const getSpreadData = (spreadType: string) => {
     }
   });
 };
-//增长趋势
+//趋势
 const getIncreaseTrend = (chartName: string) => {
   childRefMap.get(chartName + "-chart").echartsClear();
   childRefMap.get(chartName + "-chart").echartsLoading();
@@ -375,6 +375,20 @@ const getSpreadByDepartmentWorkspaceData = (chartName: string) => {
       seriesData.value.push({ value: v.value, groupName: v.groupName });
     });
     _.set(options, "series[0].data", seriesData);
+    const deptNumber = chartData.map((item: any) => item.name);
+    let showEchart = false;
+    let nameNum = 0;
+    if (deptNumber.length > 0) {
+      nameNum = Math.floor(100 / (deptNumber.length / 9));
+      if (deptNumber.length > 9) {
+        showEchart = true;
+      } else {
+        showEchart = false;
+      }
+    }
+    _.set(options, "dataZoom.[0].end", nameNum);
+    _.set(options, "dataZoom.[1].end", nameNum);
+    _.set(options, "dataZoom.[0].show", showEchart);
     spreadByDepartmentWorkspaceOption.value = options;
     childRefMap.get(chartName + "-chart").hideEchartsLoading();
   });

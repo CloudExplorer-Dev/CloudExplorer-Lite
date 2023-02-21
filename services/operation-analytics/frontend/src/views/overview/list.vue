@@ -28,7 +28,7 @@
           </el-col>
           <el-col :span="6">
             <div class="myChart" style="height: 330px">
-              <div class="echart-title">云磁盘</div>
+              <div class="echart-title">磁盘</div>
               <div style="position: relative">
                 <ChartsSpeed
                   :height="250"
@@ -99,7 +99,7 @@
           <el-col :span="12">
             <div class="myChart">
               <div class="echart-title">
-                <div class="echart-title-left">云主机增长趋势</div>
+                <div class="echart-title-left">云主机趋势</div>
                 <div class="echart-title-right">
                   <el-select
                     v-model="paramVmIncreaseTrendMonth"
@@ -349,10 +349,10 @@ const paramDepartmentType = ref<string>("org");
 const spreadByDepartmentOption = ref<any>({});
 const spreadByDepartmentOptionData = ref<any>([]);
 const spreadByDepartmentOptionAllData = ref<any>([]);
-//云主机增长趋势
+//云主机趋势
 const vmIncreaseOption = ref<any>({});
 //参数
-const params = ref<ResourceAnalysisRequest | undefined>();
+const params = ref<any>({});
 const paramVmIncreaseTrendMonth = ref<any>("7");
 const paramAccountId = ref<string>("all_list");
 //优化建议
@@ -402,7 +402,7 @@ const initParam = () => {
   spreadDiskOption.value = emptyOptions;
   spreadHostOption.value = emptyOptions;
   spreadDatastoreOption.value = emptyOptions;
-  //云主机增长趋势
+  //云主机趋势
   vmIncreaseOption.value = emptyOptions;
   //自定义圆环饼图样式
   defaultPieDoughnutOptionsCustom.value = _.cloneDeep(
@@ -463,7 +463,7 @@ const getVmSpreadInfo = () => {
     }
   });
 };
-//云磁盘云账号分布
+//磁盘云账号分布
 const getDiskSpreadInfo = () => {
   const spreadType = "disk-spread";
   childRefMap.get(spreadType + "-chart").echartsClear();
@@ -474,7 +474,7 @@ const getDiskSpreadInfo = () => {
       const spreadData = res.data;
       const options = _.cloneDeep(defaultPieDoughnutOptionsCustom.value);
       _.set(options, "series[0].data", spreadData["byAccount"]);
-      _.set(options, "series[0].name", "云磁盘分布");
+      _.set(options, "series[0].name", "磁盘分布");
       _.set(
         options,
         "series[0].label.normal.formatter",
@@ -538,6 +538,20 @@ const getSpreadByDepartmentData = (chartName: string) => {
         seriesData.value.push({ value: v.value, groupName: v.groupName });
       });
       _.set(options, "series[0].data", seriesData);
+      const deptNumber = chartData.map((item: any) => item.name);
+      let showEchart = false;
+      let nameNum = 0;
+      if (deptNumber.length > 0) {
+        nameNum = Math.floor(100 / (deptNumber.length / 9));
+        if (deptNumber.length > 9) {
+          showEchart = true;
+        } else {
+          showEchart = false;
+        }
+      }
+      _.set(options, "dataZoom.[0].end", nameNum);
+      _.set(options, "dataZoom.[1].end", nameNum);
+      _.set(options, "dataZoom.[0].show", showEchart);
       spreadByDepartmentOption.value = options;
       childRefMap.get(chartName + "-chart").hideEchartsLoading();
     })
@@ -546,7 +560,7 @@ const getSpreadByDepartmentData = (chartName: string) => {
     });
 };
 
-//云主机增长趋势
+//云主机趋势
 const getVmIncreaseTrend = () => {
   const chartName = "vm-increase";
   childRefMap.get(chartName + "-chart").echartsClear();

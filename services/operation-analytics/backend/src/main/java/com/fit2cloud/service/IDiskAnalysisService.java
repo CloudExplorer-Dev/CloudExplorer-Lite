@@ -19,8 +19,8 @@ import java.util.Map;
 public interface IDiskAnalysisService {
 
     /**
-     * 云磁盘明细
-     * @param request 分页查询云磁盘参数
+     * 磁盘明细
+     * @param request 分页查询磁盘参数
      * @return IPage<AnalyticsDiskDTO>
      */
     IPage<AnalyticsDiskDTO> pageDisk(PageDiskRequest request);

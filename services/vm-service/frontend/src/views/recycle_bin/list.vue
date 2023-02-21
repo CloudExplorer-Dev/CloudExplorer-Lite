@@ -14,6 +14,9 @@ import ButtonToolBar from "@commons/components/button-tool-bar/ButtonToolBar.vue
 import { ButtonAction } from "@commons/components/button-tool-bar/type";
 import { usePermissionStore } from "@commons/stores/modules/permission";
 import { ElMessage, ElMessageBox } from "element-plus";
+import { platformIcon } from "@commons/utils/platform";
+import type { SimpleMap } from "@commons/api/base/type";
+
 const permissionStore = usePermissionStore();
 
 const { t } = useI18n();
@@ -21,6 +24,7 @@ const columns = ref([]);
 const tableData = ref<Array<RecycleBinInfo>>();
 const table = ref();
 const selectedRowData = ref<Array<RecycleBinInfo>>([]);
+const tableLoading = ref<boolean>(false);
 
 /**
  * 查询
@@ -32,7 +36,8 @@ const search = (condition: TableSearch) => {
     currentPage: tableConfig.value.paginationConfig.currentPage,
     pageSize: tableConfig.value.paginationConfig.pageSize,
     ...params,
-  }).then((res) => {
+  },    tableLoading
+  ).then((res) => {
     tableData.value = res.data.records;
     tableConfig.value.paginationConfig?.setTotal(
       res.data.total,
@@ -43,6 +48,25 @@ const search = (condition: TableSearch) => {
       tableConfig.value.paginationConfig
     );
   });
+};
+
+const resourceStatus = ref<Array<SimpleMap<string>>>([
+  { text: "运行中", value: "Running" },
+  { text: "已关机", value: "Stopped" },
+  { text: "删除中", value: "Deleting" },
+  { text: "已挂载", value: "in_use" },
+  { text: "可用", value: "available" },
+]);
+
+const filterStatus = (value: string) => {
+  let status = value;
+  resourceStatus.value.forEach((v) => {
+    if (v.value.toUpperCase() == value.toUpperCase()) {
+      status = v.text;
+      return;
+    }
+  });
+  return status;
 };
 
 /**
@@ -161,7 +185,7 @@ const disableBatch = computed<boolean>(() => {
   return (
     selectedRowData.value.length > 0 &&
     selectedRowData.value.some(
-      (row) => row.relateResource !== "-" && row.resourceType == "DISK"
+      (row) => row.relateResource !== "--" && row.resourceType == "DISK"
     )
   );
 });
@@ -197,7 +221,7 @@ const buttons = ref([
     },
     show: permissionStore.hasPermission("[vm-service]RECYCLE_BIN:RECOVER"),
     disabled: (row: { relateResource: string; resourceType: string }) => {
-      return row.relateResource !== "-" && row.resourceType == "DISK";
+      return row.relateResource !== "--" && row.resourceType == "DISK";
     },
   },
   {
@@ -208,7 +232,7 @@ const buttons = ref([
     },
     show: permissionStore.hasPermission("[vm-service]RECYCLE_BIN:DELETE"),
     disabled: (row: { relateResource: string; resourceType: string }) => {
-      return row.relateResource !== "-" && row.resourceType == "DISK";
+      return row.relateResource !== "--" && row.resourceType == "DISK";
     },
   },
 ]);
@@ -227,7 +251,8 @@ const refresh = () => {
 </script>
 <template>
   <ce-table
-    :columns="columns"
+      v-loading="tableLoading"
+      :columns="columns"
     :data="tableData"
     :tableConfig="tableConfig"
     @selection-change="handleSelectionChange"
@@ -243,6 +268,8 @@ const refresh = () => {
       prop="resourceName"
       column-key="resourceName"
       :label="t('recycle_bin.resource_name')"
+      fixed
+      min-width="200px"
     >
     </el-table-column>
     <el-table-column
@@ -261,34 +288,95 @@ const refresh = () => {
       </template>
     </el-table-column>
     <el-table-column
-      :show="true"
-      prop="deleteWithInstance"
-      column-key="deleteWithInstance"
-      :label="$t('vm_cloud_disk.label.delete_with_instance')"
+      prop="organizationName"
+      column-key="organizationName"
+      :label="t('recycle_bin.organization_name','组织')"
+      :show="false"
+      min-width="180px"
+    >
+    </el-table-column>
+    <el-table-column
+      prop="workspaceName"
+      column-key="workspaceName"
+      :label="t('recycle_bin.workspace_name','工作空间')"
+      :show="false"
+      min-width="180px"
+    >
+    </el-table-column>
+    <el-table-column
+      prop="accountName"
+      column-key="accountIds"
+      :label="t('recycle_bin.account_name')"
+      min-width="180px"
     >
       <template #default="scope">
-        <div style="display: flex; align-items: center">
-          <span v-if="scope.row.deleteWithInstance === 'YES'">{{
-            t("commons.btn.yes")
-          }}</span>
-          <span v-else-if="scope.row.deleteWithInstance === 'NO'">{{
-            t("commons.btn.no")
-          }}</span>
-          <span v-else>{{ scope.row.deleteWithInstance }}</span>
+        <div style="display: flex">
+          <component
+              style="margin-top: 3px; width: 16px; height: 16px"
+              :is="platformIcon[scope.row.platform]?.component"
+              v-bind="platformIcon[scope.row.platform]?.icon"
+              :color="platformIcon[scope.row.platform]?.color"
+              size="16px"
+              v-if="scope.row.platform"
+          ></component>
+          <span style="margin-left: 10px">{{ scope.row.accountName }}</span>
         </div>
       </template>
     </el-table-column>
     <el-table-column
-      prop="relateResource"
-      column-key="relateResource"
-      :label="t('recycle_bin.relate_resource')"
+      prop="resourceStatus"
+      column-key="resourceStatus"
+      label="状态"
+    >
+      <template #default="scope">
+        <div style="display: flex; align-items: center">
+          <span>{{ filterStatus(scope.row.resourceStatus) }}
+          </span>
+        </div>
+      </template>
+    </el-table-column>
+    <el-table-column
+      prop="resourceConfig"
+      column-key="resourceConfig"
+      :label="t('recycle_bin.resource_config')"
+      min-width="180px"
+    />
+    <el-table-column
+      prop="ipArray"
+      column-key="ipArray"
+      :label="t('recycle_bin.ip_array')"
+      min-width="180px"
+    />
+    <el-table-column
+        :show="true"
+        prop="deleteWithInstance"
+        column-key="deleteWithInstance"
+        :label="$t('vm_cloud_disk.label.delete_with_instance')"
+        min-width="130px"
+    >
+      <template #default="scope">
+        <div style="display: flex; align-items: center">
+          <span v-if="scope.row.resourceType === 'DISK'">{{
+              scope.row.deleteWithInstance === "YES"
+                  ? t("commons.btn.yes")
+                  : t("commons.btn.no")
+            }}</span>
+          <span v-else>{{scope.row.deleteWithInstance }}</span>
+        </div>
+      </template>
+    </el-table-column>
+    <el-table-column
+        prop="relateResource"
+        column-key="relateResource"
+        :label="t('recycle_bin.relate_resource')"
+        min-width="200px"
     >
       <template #default="scope">
         <el-tooltip
-          class="item"
-          effect="dark"
-          :content="scope.row.relateResource"
-          placement="top"
+            class="item"
+            effect="dark"
+            :content="scope.row.relateResource"
+            placement="top"
         >
           <p class="text-overflow">
             {{ scope.row.relateResource }}
@@ -297,60 +385,29 @@ const refresh = () => {
       </template>
     </el-table-column>
     <el-table-column
-      prop="organizationName"
-      column-key="organizationName"
-      :label="t('recycle_bin.organization_name')"
-    >
-    </el-table-column>
-    <el-table-column
-      prop="workspaceName"
-      column-key="workspaceName"
-      :label="t('recycle_bin.workspace_name')"
-    >
-    </el-table-column>
-    <el-table-column
-      prop="accountName"
-      column-key="accountName"
-      :label="t('recycle_bin.account_name')"
-    >
-    </el-table-column>
-    <el-table-column
-      prop="resourceStatus"
-      column-key="resourceStatus"
-      label="状态"
-    >
-    </el-table-column>
-
-    <el-table-column
-      prop="resourceConfig"
-      column-key="resourceConfig"
-      :label="t('recycle_bin.resource_config')"
-    >
-    </el-table-column>
-    <el-table-column
-      prop="ipArray"
-      column-key="ipArray"
-      :label="t('recycle_bin.ip_array')"
-    >
-    </el-table-column>
-    <el-table-column
       prop="userName"
       column-key="userName"
       :label="t('recycle_bin.user_name')"
-    ></el-table-column>
+      min-width="120px"
+    />
     <el-table-column
       prop="createTime"
       :label="t('recycle_bin.put_into_recycle_bin_time')"
-    ></el-table-column>
+      min-width="180px"
+    />
     <el-table-column
       prop="resourceCreateTime"
       :label="t('recycle_bin.create_time')"
-    ></el-table-column>
+      min-width="180px"
+    />
     <fu-table-operations
       :buttons="buttons"
       :label="$t('commons.operation')"
-      fix
+      fixed="right"
     />
+    <template #buttons>
+      <fu-table-column-select type="icon" :columns="columns" size="small" />
+    </template>
   </ce-table>
 </template>
 <style lang="scss" scoped>

@@ -56,7 +56,7 @@ public class DiskAnalysisServiceImpl implements IDiskAnalysisService {
 
     /**
      * 分页查询磁盘明细
-     * @param request 分页查询云磁盘参数
+     * @param request 分页查询磁盘参数
      */
     @Override
     public IPage<AnalyticsDiskDTO> pageDisk(PageDiskRequest request) {
@@ -108,8 +108,8 @@ public class DiskAnalysisServiceImpl implements IDiskAnalysisService {
     }
 
     /**
-     * 云磁盘分析参数
-     * @param request 云磁盘分析参数
+     * 磁盘分析参数
+     * @param request 磁盘分析参数
      */
     private MPJLambdaWrapper<VmCloudDisk> addDiskAnalysisQuery(ResourceAnalysisRequest request) {
         List<String> sourceIds = permissionService.getSourceIds();
@@ -126,7 +126,7 @@ public class DiskAnalysisServiceImpl implements IDiskAnalysisService {
     }
 
     /**
-     * 云磁盘分布查询
+     * 磁盘分布查询
      * 包括按云账号、状态、类型分布
      */
     @Override
@@ -168,7 +168,7 @@ public class DiskAnalysisServiceImpl implements IDiskAnalysisService {
     }
 
     /**
-     * 云磁盘增长趋势
+     * 磁盘趋势
      * 统计一段时间内所有新增的磁盘数量生产趋势数据
      */
     @Override
@@ -221,7 +221,7 @@ public class DiskAnalysisServiceImpl implements IDiskAnalysisService {
     }
 
     /**
-     * 云磁盘在组织工作空间上的分布
+     * 磁盘在组织工作空间上的分布
      */
     public Map<String,List<BarTreeChartData>> analyticsCloudDiskByOrgWorkspace(ResourceAnalysisRequest request){
         Map<String,List<BarTreeChartData>> result = new HashMap<>();
@@ -262,13 +262,17 @@ public class DiskAnalysisServiceImpl implements IDiskAnalysisService {
             v.getChildren().addAll(iServerAnalysisService.getChildren(v,orgList,workspaceMap));
             chartDataList.add(v);
         });
-        result.put("tree",chartDataList);
-
+        //组织管理员的话，只有一个跟节点，然后只返回他的子集
+        if (CurrentUserUtils.isOrgAdmin()) {
+            result.put("tree",chartDataList.get(0).getChildren().stream().filter(v->v.getValue()!=0).toList());
+        }else{
+            result.put("tree",chartDataList.stream().filter(v->v.getValue()!=0).toList());
+        }
     }
 
     /**
      * 工作空间上分布
-     * @param request 云磁盘分析参数
+     * @param request 磁盘分析参数
      * @return List<BarTreeChartData>
      */
     private List<BarTreeChartData> workspaceSpread(ResourceAnalysisRequest request){
@@ -277,13 +281,14 @@ public class DiskAnalysisServiceImpl implements IDiskAnalysisService {
         wrapper.in(CollectionUtils.isNotEmpty(request.getAccountIds()),VmCloudDisk::getAccountId,request.getAccountIds());
         List<BarTreeChartData> workspaceList = iServerAnalysisService.initWorkspaceChartData();
         OperationUtils.initOrgWorkspaceAnalyticsData(workspaceList, getSpreadForType(request.isStatisticalBlock(),"workspace",wrapper));
-        return workspaceList;
+        return workspaceList.stream().filter(v->v.getValue()!=0).toList();
     }
 
     private List<BarTreeChartData> getSpreadForType(boolean isBlock, String type, MPJLambdaWrapper<OrgWorkspace> wrapper){
         List<String> sourceIds = permissionService.getSourceIds();
         wrapper.in(!CurrentUserUtils.isAdmin() && CollectionUtils.isNotEmpty(sourceIds),OrgWorkspace::getId,sourceIds);
         wrapper.eq(OrgWorkspace::getType,type);
+        wrapper.notIn(true, VmCloudDisk::getStatus, List.of("deleted"));
         wrapper.leftJoin(VmCloudDisk.class,VmCloudDisk::getSourceId,OrgWorkspace::getId);
         wrapper.groupBy(OrgWorkspace::getId,OrgWorkspace::getName);
         List<BarTreeChartData> list;
