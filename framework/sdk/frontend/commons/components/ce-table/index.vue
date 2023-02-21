@@ -75,7 +75,6 @@ import {
   TableSearch,
 } from "@commons/components/ce-table/type";
 import CeFilterBar from "@commons/components/ce-table/CeFilterBar.vue";
-import { computed } from "vue";
 import CeFilter from "@commons/components/ce-table/CeFilter.vue";
 
 const props = defineProps<{
@@ -139,6 +138,7 @@ const filterChange = (filterObj: any) => {
       tableHeaderFilter.value[key] = filter;
     } else {
       delete tableHeaderFilter.value[key];
+      removeConditions(key);
     }
   });
 
