@@ -127,7 +127,6 @@ const message = {
     put_into_recycle_bin_time: "放入回收站时间",
     create_time: "创建时间",
     organization_name: "组织",
-    account_name: "云账号",
     ip_array: "IP地址",
   },
 };
