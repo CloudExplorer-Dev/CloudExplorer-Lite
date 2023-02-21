@@ -30,13 +30,13 @@ spring:
                 prefix: "'/' + serviceId"
 
 server:
-  port: 9000
+  port: @service.port@
 
 #监控，访问路径 {ip}:{port}/actuator
 management:
   server:
     #    base-path: /${spring.application.name}/actuator
-    port: 9900
+    port: @service.management.port@
 
 
 logging:

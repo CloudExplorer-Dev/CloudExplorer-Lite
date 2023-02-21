@@ -11,6 +11,10 @@
 
     <artifactId>gateway</artifactId>
 
+    <properties>
+        <service.port>9000</service.port>
+        <service.management.port>9900</service.management.port>
+    </properties>
     <dependencies>
         <dependency>
             <groupId>com.fit2cloud</groupId>
@@ -73,6 +77,26 @@
         </dependency>
     </dependencies>
 
+    <profiles>
+        <profile>
+            <!-- 针对apple M系列芯片生效 -->
+            <id>Apple-Silicon</id>
+            <activation>
+                <os>
+                    <family>mac</family>
+                    <arch>aarch64</arch>
+                </os>
+            </activation>
+            <dependencies>
+                <dependency>
+                    <groupId>io.netty</groupId>
+                    <artifactId>netty-resolver-dns-native-macos</artifactId>
+                    <classifier>osx-aarch_64</classifier>
+                </dependency>
+            </dependencies>
+        </profile>
+    </profiles>
+
     <build>
         <resources>
             <resource>
@@ -111,6 +135,31 @@
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
+                <dependencies>
+                    <dependency>
+                        <groupId>org.springframework.boot.experimental</groupId>
+                        <artifactId>spring-boot-thin-layout</artifactId>
+                        <version>${spring-boot-thin.version}</version>
+                    </dependency>
+                </dependencies>
+            </plugin>
+            <plugin>
+                <groupId>org.springframework.boot.experimental</groupId>
+                <artifactId>spring-boot-thin-maven-plugin</artifactId>
+                <version>${spring-boot-thin.version}</version>
+                <executions>
+                    <execution>
+                        <!-- Download the dependencies at build time -->
+                        <id>resolve</id>
+                        <goals>
+                            <goal>resolve</goal>
+                        </goals>
+                        <inherited>false</inherited>
+                    </execution>
+                </executions>
+                <configuration>
+                    <outputDirectory>../../target</outputDirectory>
+                </configuration>
             </plugin>
             <plugin>
                 <artifactId>maven-clean-plugin</artifactId>

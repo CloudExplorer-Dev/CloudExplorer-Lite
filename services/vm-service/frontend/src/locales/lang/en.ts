@@ -134,7 +134,6 @@ const message = {
     put_into_recycle_bin_time: "Put in the recycle bin time",
     create_time: "Creation time",
     organization_name: "Organization",
-    account_name: "Cloud Account",
     ip_array: "IP address",
   },
 };

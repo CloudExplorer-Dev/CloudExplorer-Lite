@@ -24,6 +24,10 @@ const props = withDefaults(
   }>(),
   {
     module: "operation-analytics",
+    permission: [
+      "[operation-analytics]SERVER_ANALYSIS:READ",
+      "[operation-analytics]OVERVIEW:READ",
+    ],
     height: 300,
     cardShadow: "always",
   }

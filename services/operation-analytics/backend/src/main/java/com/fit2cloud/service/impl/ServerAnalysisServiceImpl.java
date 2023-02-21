@@ -170,7 +170,7 @@ public class ServerAnalysisServiceImpl implements IServerAnalysisService {
 
 
     /**
-     * 云主机增长趋势，在一段时间内创建云主机数量产生趋势数据
+     * 云主机趋势，在一段时间内创建云主机数量产生趋势数据
      */
     @Override
     public List<ChartData> vmIncreaseTrend(ResourceAnalysisRequest request){
@@ -246,7 +246,7 @@ public class ServerAnalysisServiceImpl implements IServerAnalysisService {
     }
 
     /**
-     * 增长趋势按宿主机，云主机按云账号与主机ID
+     * 趋势按宿主机，云主机按云账号与主机ID
      */
     public static String buildKey(AnalyticsServerDTO serverDTO) {
         return serverDTO.getAccountId() + "#" + serverDTO.getHostId();
@@ -463,7 +463,12 @@ public class ServerAnalysisServiceImpl implements IServerAnalysisService {
             v.getChildren().addAll(getChildren(v,orgList,workspaceMap));
             chartDataList.add(v);
         });
-        result.put("tree",chartDataList);
+        //组织管理员的话，只有一个跟节点，然后只返回他的子集
+        if (CurrentUserUtils.isOrgAdmin()) {
+            result.put("tree",chartDataList.get(0).getChildren().stream().filter(v->v.getValue()!=0).toList());
+        }else{
+            result.put("tree",chartDataList.stream().filter(v->v.getValue()!=0).toList());
+        }
         return result;
     }
 
@@ -486,7 +491,7 @@ public class ServerAnalysisServiceImpl implements IServerAnalysisService {
         List<BarTreeChartData> chartDateWorkspaceList = orgWorkspaceMapper.selectJoinList(BarTreeChartData.class, wrapper);
         List<BarTreeChartData> workspaceList = initWorkspaceChartData();
         OperationUtils.initOrgWorkspaceAnalyticsData(workspaceList,chartDateWorkspaceList);
-        return workspaceList;
+        return workspaceList.stream().filter(v->v.getValue()!=0).toList();
     }
 
     /**
@@ -541,16 +546,15 @@ public class ServerAnalysisServiceImpl implements IServerAnalysisService {
      */
     @Override
     public List<BarTreeChartData> getChildren(BarTreeChartData barTreeChartData,List<BarTreeChartData> list,Map<String,List<BarTreeChartData>> workspaceMap) {
+        //父级数量加上子级数量作为父级总量
+        OperationUtils.workspaceToOrgChildren(workspaceMap, barTreeChartData);
         //子级排序
-        return list.stream().filter(u -> Objects.equals(u.getPId(), barTreeChartData.getId())).peek(
+        return list.stream().filter(u -> Objects.equals(u.getPId(), barTreeChartData.getId()) && u.getValue()!=0).peek(
                 u -> {
-                    //OperationUtils.setSelfToChildren(u);
                     u.setName(u.getName() + "(子组织)");
                     // 用于区分组织与工作空间
                     u.setGroupName("org");
                     u.getChildren().addAll(getChildren(u, list, workspaceMap));
-                    OperationUtils.workspaceToOrgChildren(workspaceMap, u);
-                    //父级数量加上子级数量作为父级总量
                     barTreeChartData.setValue(barTreeChartData.getValue() + u.getValue());
                 }
         ).sorted((o1, o2) -> o2.getValue().compareTo(o1.getValue())).collect(Collectors.toList());

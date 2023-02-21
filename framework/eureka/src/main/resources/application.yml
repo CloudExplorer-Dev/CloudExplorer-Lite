@@ -3,12 +3,12 @@ spring:
     name: eureka
 
 server:
-  port: 8761
+  port: @service.port@
 
 #监控，访问路径 {ip}:{port}/actuator
 management:
   server:
-    port: 8961
+    port: @service.management.port@
   endpoints:
     web:
       exposure:

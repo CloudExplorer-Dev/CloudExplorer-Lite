@@ -34,7 +34,7 @@ const message = {
       host: "宿主机",
       storage: "存储器",
       disk: "磁盘",
-      vm: "虚拟机",
+      vm: "云主机",
       image: "镜像",
     },
     cloud_server: {

@@ -41,7 +41,10 @@ const adminShowBillTrend = computed<boolean>(() => {
 const adminShowServerIncreaseTrend = computed<boolean>(() => {
   return show(
     "operation-analytics",
-    "[operation-analytics]SERVER_ANALYSIS:READ",
+    [
+      "[operation-analytics]BASE_RESOURCE_ANALYSIS:READ",
+      "[operation-analytics]OVERVIEW:READ",
+    ],
     ["ADMIN", "ORGADMIN"]
   );
 });
@@ -79,7 +82,6 @@ onMounted(() => {
             <ServerDistribution
               class="flex-div-2 divide-info"
               :need-roles="['USER']"
-              :permission="'[operation-analytics]SERVER_ANALYSIS:READ'"
               type="byAccount"
               title="资源分布"
             />
@@ -95,7 +97,6 @@ onMounted(() => {
           <ServerIncreaseTrend
             style="height: 100%"
             :need-roles="['ADMIN', 'ORGADMIN']"
-            :permission="'[operation-analytics]SERVER_ANALYSIS:READ'"
           />
         </el-col>
         <el-col :span="adminShowServerIncreaseTrend ? 12 : 24">
@@ -113,7 +114,6 @@ onMounted(() => {
           <ServerDistribution
             class="flex-div-2 divide-info"
             :need-roles="['USER']"
-            :permission="'[operation-analytics]SERVER_ANALYSIS:READ'"
             type="byStatus"
             title="我的资源"
             :height="300"

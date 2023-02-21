@@ -23,6 +23,7 @@ export interface RecycleBinInfo {
   deleteWithInstance?: string;
   accountId?: string;
   accountName?: string;
+  platform: string;
   workspaceName?: string;
   workspaceId?: string;
   organizationName?: string;

@@ -109,7 +109,7 @@ const diskStatusForTableSelect = [
   { text: t("vm_cloud_disk.status.rebooting", "扩容中"), value: "enlarging" },
   {
     text: t("vm_cloud_disk.status.wait_recycle", "待回收"),
-    value: "wait_recycle",
+    value: "ToBeRecycled",
   },
   { text: t("vm_cloud_disk.status.deleted", "已删除"), value: "deleted" },
 ];
@@ -828,6 +828,7 @@ const buttons = ref([
       :label="$t('commons.status')"
       :filters="diskStatusForTableSelect"
       :show="true"
+      :filter-multiple="false"
     >
       <template #default="scope">
         <div style="display: flex; align-items: center">

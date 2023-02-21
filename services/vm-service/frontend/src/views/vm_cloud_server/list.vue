@@ -203,7 +203,6 @@ onMounted(() => {
   search(new TableSearch());
   searchCloudAccount();
   startOperateInterval();
-  getRecycleBinSetting();
 });
 onBeforeUnmount(() => {
   stopOperateInterval();
@@ -219,6 +218,7 @@ const searchCloudAccount = () => {
     }
   });
 };
+
 const cloudServerInterval = ref<any>();
 //启动定时器
 const startOperateInterval = () => {
@@ -546,7 +546,9 @@ const reboot = (row: VmCloudServerVO) => {
 };
 
 //删除
-const deleteInstance = (row: VmCloudServerVO) => {
+const deleteInstance = async (row: VmCloudServerVO) => {
+  await getRecycleBinSetting();
+
   const message = isRecycleBinOpened.value
     ? t(
         "vm_cloud_server.message_box.confirm_recycle",
@@ -638,7 +640,8 @@ const showGrantDialog = () => {
 };
 
 //删除
-const deleteBatch = () => {
+const deleteBatch = async () => {
+  await getRecycleBinSetting();
   if (isRecycleBinOpened.value) {
     batchOperate("RECYCLE_SERVER");
   } else {
@@ -772,6 +775,7 @@ const moreActions = ref<Array<ButtonAction>>([
       column-key="instanceStatus"
       :label="$t('commons.status')"
       :filters="instanceStatusForTableSelect"
+      :filter-multiple="false"
     >
       <template #default="scope">
         <div style="display: flex; align-items: center">
@@ -802,7 +806,7 @@ const moreActions = ref<Array<ButtonAction>>([
     <el-table-column
       prop="accountName"
       column-key="accountIds"
-      :label="$t('commons.cloud_account.native')"
+      :label="$t('commons.cloud_account.native', '云账号')"
       :filters="cloudAccount"
       min-width="180px"
     >

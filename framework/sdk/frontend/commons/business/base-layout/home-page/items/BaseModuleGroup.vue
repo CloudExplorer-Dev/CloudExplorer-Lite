@@ -90,9 +90,10 @@ const baseList: Array<BaseModuleInfo> = [
   {
     icon: "xuniji1",
     name: "宿主机",
-    hasPermission: permissionStore.hasPermission(
-      "[operation-analytics]RESOURCE_ANALYSIS:READ"
-    ),
+    hasPermission: permissionStore.hasPermission([
+      "[operation-analytics]BASE_RESOURCE_ANALYSIS:READ",
+      "[operation-analytics]OVERVIEW:READ",
+    ]),
     module: "operation-analytics",
     path: "/operation-analytics/api/base_resource_analysis/host/count",
     redirect:
@@ -102,9 +103,10 @@ const baseList: Array<BaseModuleInfo> = [
   {
     icon: "a-ziyuan59",
     name: "存储器",
-    hasPermission: permissionStore.hasPermission(
-      "[operation-analytics]RESOURCE_ANALYSIS:READ"
-    ),
+    hasPermission: permissionStore.hasPermission([
+      "[operation-analytics]BASE_RESOURCE_ANALYSIS:READ",
+      "[operation-analytics]OVERVIEW:READ",
+    ]),
     module: "operation-analytics",
     path: "/operation-analytics/api/base_resource_analysis/datastore/count",
     redirect:
