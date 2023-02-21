@@ -5,6 +5,7 @@ import com.baomidou.mybatisplus.extension.service.IService;
 import com.fit2cloud.controller.request.compliance_scan.ComplianceScanRequest;
 import com.fit2cloud.controller.response.compliance_scan_result.ComplianceScanResultResponse;
 import com.fit2cloud.controller.response.compliance_scan_result.ComplianceScanRuleGroupResultResponse;
+import com.fit2cloud.dao.entity.ComplianceRule;
 import com.fit2cloud.dao.entity.ComplianceScanResult;
 
 import java.util.List;
@@ -51,4 +52,10 @@ public interface IComplianceScanResultService extends IService<ComplianceScanRes
      */
     void saveOrUpdate(List<ComplianceScanResult> list);
 
+    /**
+     * 初始化一条查询记录
+     *
+     * @param complianceRule 合规规则
+     */
+    void initComplianceScanResultService(ComplianceRule complianceRule);
 }

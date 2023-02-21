@@ -1,5 +1,7 @@
 package com.fit2cloud.controller.request.view;
 
+import com.fit2cloud.common.query.annotaion.Query;
+import com.fit2cloud.common.utils.QueryUtil;
 import com.fit2cloud.constants.GroupTypeConstants;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
@@ -12,6 +14,7 @@ import lombok.Data;
  */
 @Data
 public class ComplianceGroupRequest {
+    @Query(field = "cloudAccountId", compareType = QueryUtil.CompareType.EQ)
     @ApiModelProperty(value = "云账号id", notes = "云账号id")
     private String cloudAccountId;
     @ApiModelProperty(value = "分组类型", notes = "分组类型")

@@ -1,7 +1,9 @@
 package com.fit2cloud.controller.response.view;
 
 import io.swagger.annotations.ApiModelProperty;
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 /**
  * {@code @Author:张少虎}
@@ -10,6 +12,8 @@ import lombok.Data;
  * {@code @注释: }
  */
 @Data
+@NoArgsConstructor
+@AllArgsConstructor
 public class ComplianceViewCountResponse {
     @ApiModelProperty(value = "合规数量", notes = "合规数量")
     private int complianceCount;
