@@ -43,7 +43,7 @@ const getCheckedKeys = (leafOnly: boolean) => {
  */
 const getCheckedLabels = (leafOnly: boolean) => {
   return treeRef.value
-    ?.getCheckedNodes()
+    ?.getCheckedNodes(leafOnly)
     .filter((item: any) => getCheckedKeys(leafOnly)?.includes(item.id))
     .map((item: any) => item.name)
     .join(" | ");

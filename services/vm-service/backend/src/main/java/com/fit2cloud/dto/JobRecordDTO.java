@@ -15,4 +15,15 @@ public class JobRecordDTO extends JobRecord {
     private static final long serialVersionUID = 6572654975684690195L;
     private List<VmCloudServer> servers;
     private List<VmCloudDisk> disks;
+    private String resourceId;
+    private String resourceName;
+    /**
+     * 资源类型：VM、DISK等
+     */
+    private String resourceType;
+    private String operateUserName;
+    private String workspaceId;
+    private String organizationId;
+    private String workspaceName;
+    private String organizationName;
 }

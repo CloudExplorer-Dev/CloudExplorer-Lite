@@ -35,4 +35,15 @@ public class PageJobRecordRequest extends PageRequest implements PageOrderReques
     private List<Long> finishTime;
     @ApiModelProperty(value = "排序", example = " {\"column\":\"createTime\",\"asc\":false}")
     private OrderRequest order;
+
+    @ApiModelProperty("当前登录角色有权限查询的组织或者工作空间 ID 集合")
+    private List<String> sourceIds;
+    @ApiModelProperty("工作空间 ID 集合")
+    private List<String> workspaceIds;
+    @ApiModelProperty("组织 ID 集合")
+    private List<String> organizationIds;
+    @ApiModelProperty("关联资源")
+    private String resourceName;
+    @ApiModelProperty("操作人")
+    private String operateUserName;
 }

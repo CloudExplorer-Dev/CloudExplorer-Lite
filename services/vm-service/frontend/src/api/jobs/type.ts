@@ -13,6 +13,11 @@ export interface JobInfo {
   result?: string;
   servers?: Array<VmCloudServerVO>;
   disks?: Array<VmCloudDiskVO>;
+  operateUserId?: string;
+  operateUserName?: string;
+  resourceId?: string;
+  resourceName?: string;
+  resourceType?: string;
 }
 export interface ListJobRequest {
   pageSize: number;

@@ -111,7 +111,7 @@ public class ServerAnalysisServiceImpl implements IServerAnalysisService {
         wrapper.selectAs(CloudAccount::getPlatform,AnalyticsServerDTO::getPlatform);
         wrapper.like(StringUtils.isNotBlank(request.getName()), VmCloudServer::getInstanceName, request.getName());
         wrapper.in(CollectionUtils.isNotEmpty(request.getSourceIds()), VmCloudServer::getSourceId, request.getSourceIds());
-        wrapper.notIn(true,VmCloudServer::getInstanceStatus, List.of("Deleted"));
+        wrapper.notIn(true,VmCloudServer::getInstanceStatus, List.of("Deleted","Failed"));
         return wrapper;
     }
 
@@ -264,7 +264,7 @@ public class ServerAnalysisServiceImpl implements IServerAnalysisService {
             return result;
         }
         MPJLambdaWrapper<VmCloudServer> queryWrapper = addServerAnalysisQuery(request);
-        queryWrapper.notIn(true,VmCloudServer::getInstanceStatus, List.of("Deleted"));
+        queryWrapper.notIn(true,VmCloudServer::getInstanceStatus, List.of("Deleted","Failed"));
         List<AnalyticsServerDTO> vmList = baseVmCloudServerMapper.selectJoinList(AnalyticsServerDTO.class,queryWrapper);
         //将除了开机关机的其他状态设置为其他
         vmList = vmList.stream().peek(v-> {
@@ -399,7 +399,7 @@ public class ServerAnalysisServiceImpl implements IServerAnalysisService {
             queryConditions.add(accountId);
         }
         MPJLambdaWrapper<VmCloudServer> queryServerWrapper = addServerAnalysisQuery(request);
-        queryServerWrapper.notIn(true,VmCloudServer::getInstanceStatus, List.of("Deleted"));
+        queryServerWrapper.notIn(true,VmCloudServer::getInstanceStatus, List.of("Deleted","Failed"));
         List<AnalyticsServerDTO> vmList = baseVmCloudServerMapper.selectJoinList(AnalyticsServerDTO.class,queryServerWrapper);
         List<String> vmUuIds = new ArrayList<>();
         if (CollectionUtils.isNotEmpty(vmList)) {
@@ -446,7 +446,7 @@ public class ServerAnalysisServiceImpl implements IServerAnalysisService {
         orgWrapper.eq(true, OrgWorkspace::getType,"org");
         orgWrapper.in(!CurrentUserUtils.isAdmin() && CollectionUtils.isNotEmpty(sourceIds),OrgWorkspace::getId,sourceIds);
         orgWrapper.in(CollectionUtils.isNotEmpty(request.getAccountIds()),VmCloudServer::getAccountId,request.getAccountIds());
-        orgWrapper.notIn(true,VmCloudServer::getInstanceStatus, List.of("Deleted"));
+        orgWrapper.notIn(true,VmCloudServer::getInstanceStatus, List.of("Deleted","Failed"));
         orgWrapper.groupBy(OrgWorkspace::getId,OrgWorkspace::getName);
         orgWrapper.leftJoin(VmCloudServer.class,VmCloudServer::getSourceId,OrgWorkspace::getId);
         List<BarTreeChartData> list = orgWorkspaceMapper.selectJoinList(BarTreeChartData.class,orgWrapper);
@@ -485,7 +485,7 @@ public class ServerAnalysisServiceImpl implements IServerAnalysisService {
         wrapper.eq(true, OrgWorkspace::getType,"workspace");
         wrapper.in(!CurrentUserUtils.isAdmin() && CollectionUtils.isNotEmpty(sourceIds),OrgWorkspace::getId,sourceIds);
         wrapper.in(CollectionUtils.isNotEmpty(request.getAccountIds()),VmCloudServer::getAccountId,request.getAccountIds());
-        wrapper.notIn(true,VmCloudServer::getInstanceStatus, List.of("Deleted"));
+        wrapper.notIn(true,VmCloudServer::getInstanceStatus, List.of("Deleted","Failed"));
         wrapper.leftJoin(VmCloudServer.class,VmCloudServer::getSourceId,OrgWorkspace::getId);
         wrapper.groupBy(OrgWorkspace::getId,OrgWorkspace::getName);
         List<BarTreeChartData> chartDateWorkspaceList = orgWorkspaceMapper.selectJoinList(BarTreeChartData.class, wrapper);

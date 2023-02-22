@@ -107,6 +107,19 @@ const selectedWorkspaceIds = computed(() =>
   workspaceTreeRef.value?.getSelectedIds(true)
 );
 
+/**
+ * 表头：清空组织和工作空间树的选中项
+ * @param field
+ */
+const clearCondition = (field: string) => {
+  if (field === "organizationIds") {
+    orgTreeRef.value.cancelChecked();
+  }
+  if (field === "workspaceIds") {
+    workspaceTreeRef.value.cancelChecked();
+  }
+};
+
 const searchCloudAccount = () => {
   BaseCloudAccountApi.listAll().then((result) => {
     if (result.data.length > 0) {
@@ -321,6 +334,7 @@ const refresh = () => {
     :columns="columns"
     :data="tableData"
     :tableConfig="tableConfig"
+    @clearCondition="clearCondition"
     @selection-change="handleSelectionChange"
     row-key="id"
     height="100%"
@@ -420,6 +434,7 @@ const refresh = () => {
             tree-type="workspace"
             ref="workspaceTreeRef"
             field="workspaceIds"
+            :leaf-only="true"
             :label="$t('commons.workspace', '工作空间')"
             :popover-ref="workspacePopRef"
             :table-ref="table"

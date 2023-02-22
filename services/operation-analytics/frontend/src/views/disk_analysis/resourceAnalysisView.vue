@@ -176,8 +176,8 @@ const childRef = (el: any, chartName: any) => {
 };
 //初始化参数及数据
 const initParam = () => {
-  paramsStatisticalBlock.value = "block" as string;
-  _.set(params, "statisticalBlock", true);
+  //paramsStatisticalBlock.value = "block" as string;
+  //_.set(params, "statisticalBlock", true);
   spreadByAccountOption.value = emptyOptions;
   spreadByStatusOption.value = emptyOptions;
   spreadByTypeOption.value = emptyOptions;

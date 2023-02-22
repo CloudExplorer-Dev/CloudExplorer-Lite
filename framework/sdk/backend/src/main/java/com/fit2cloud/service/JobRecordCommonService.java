@@ -4,7 +4,10 @@ import com.fit2cloud.base.entity.JobRecord;
 import com.fit2cloud.base.entity.JobRecordResourceMapping;
 import com.fit2cloud.base.service.IBaseJobRecordResourceMappingService;
 import com.fit2cloud.base.service.IBaseJobRecordService;
+import com.fit2cloud.common.log.utils.LogUtil;
+import com.fit2cloud.common.utils.CurrentUserUtils;
 import com.fit2cloud.dto.InitJobRecordDTO;
+import com.fit2cloud.dto.UserDto;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
@@ -36,6 +39,14 @@ public class JobRecordCommonService {
         jobRecord.setParams(initJobRecordDTO.getParams() == null ? new HashMap<>() : initJobRecordDTO.getParams());
         jobRecord.setType(initJobRecordDTO.getJobType());
         jobRecord.setCreateTime(initJobRecordDTO.getCreateTime());
+
+        try {
+            UserDto currentUser = CurrentUserUtils.getUser();
+            jobRecord.setOperateUserId(currentUser.getId());
+        } catch (Exception e) {
+            LogUtil.error("Can not find current login user.");
+        }
+
         // 插入任务数据
         baseJobRecordService.save(jobRecord);
         // 插入关联关系

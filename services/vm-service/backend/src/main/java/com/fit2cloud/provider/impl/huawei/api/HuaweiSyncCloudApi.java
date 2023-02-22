@@ -702,27 +702,23 @@ public class HuaweiSyncCloudApi {
                         ShowMetricDataResponse response = cesClient.showMetricData(request);
                         if (response.getHttpStatusCode() == 200 && CollectionUtils.isNotEmpty(response.getDatapoints())) {
                             List<Datapoint> list = response.getDatapoints();
-                            list.forEach(v -> {
-                                datapointMap.put(v.getTimestamp(),v);
-                                if(v.getAverage()!=null){
+                            list.forEach(v->{
+                                if(!datapointMap.containsKey(v.getTimestamp())){
+                                    datapointMap.put(v.getTimestamp(),v);
+                                }
+                                if(StringUtils.equalsIgnoreCase(filter,"average")){
                                     datapointMap.get(v.getTimestamp()).setAverage(v.getAverage());
                                 }
-                                if(v.getMax()!=null){
+                                if(StringUtils.equalsIgnoreCase(filter,"max")){
                                     datapointMap.get(v.getTimestamp()).setMax(v.getMax());
                                 }
-                                if(v.getMin()!=null){
+                                if(StringUtils.equalsIgnoreCase(filter,"min")){
                                     datapointMap.get(v.getTimestamp()).setMin(v.getMin());
                                 }
                             });
                         }
                     });
                     datapointMap.forEach((k,v)->{
-                        if(v.getMax()==null){
-                            v.setMax(v.getAverage());
-                        }
-                        if(v.getMin()==null){
-                            v.setMin(v.getAverage());
-                        }
                         F2CPerfMetricMonitorData f2CEntityPerfMetric = HuaweiMappingUtil.toF2CPerfMetricMonitorData(v);
                         f2CEntityPerfMetric.setEntityType(F2CEntityType.VIRTUAL_MACHINE.name());
                         f2CEntityPerfMetric.setMetricName(perfMetric.name());
