@@ -455,7 +455,7 @@ const getVmSpreadInfo = () => {
       _.set(options, "series[0].data", spreadData["byAccount"]);
       _.set(
         options,
-        "series[0].label.normal.formatter",
+        "series[0].label.formatter",
         `{title|总数}\r\n{value|${_.sumBy(spreadData["byAccount"], "value")}}`
       );
       spreadVmOption.value = options;
@@ -477,7 +477,7 @@ const getDiskSpreadInfo = () => {
       _.set(options, "series[0].name", "磁盘分布");
       _.set(
         options,
-        "series[0].label.normal.formatter",
+        "series[0].label.formatter",
         `{title|总数}\r\n{value|${_.sumBy(spreadData["byAccount"], "value")}}`
       );
       spreadDiskOption.value = options;
@@ -496,7 +496,7 @@ const getComputerSpreadInfo = (chartTitle: string, chartName: string) => {
     _.set(options, "series[0].name", chartTitle);
     _.set(
       options,
-      "series[0].label.normal.formatter",
+      "series[0].label.formatter",
       `{title|总数}\r\n{value|${_.sumBy(res.data[chartName], "value")}}`
     );
     if (chartName === "host") {

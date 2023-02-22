@@ -7,58 +7,44 @@
   >
     返回
   </div>
-  <div :id="`echarts-${uuid}`" :style="getChartStyle"></div>
+  <div ref="chartWrapper" :style="getChartStyle" style="width: 100%"></div>
 </template>
 
 <script lang="ts" setup>
-import {
-  computed,
-  nextTick,
-  onBeforeUnmount,
-  onMounted,
-  ref,
-  shallowRef,
-  watch,
-} from "vue";
-import _, { debounce } from "lodash";
+import { computed, nextTick, onMounted, ref, watch } from "vue";
+import _ from "lodash";
 import * as echarts from "echarts";
+import type { ECharts } from "echarts";
 
-const props = defineProps({
-  options: {
-    type: Object,
-    default: () => {
-      return {};
-    },
-  },
-  height: {
-    type: Number,
-    default: 300,
-  },
-  treeBar: {
-    type: Boolean,
-    default: () => {
-      return false;
-    },
-  },
-  treeBarData: {
-    type: Object,
-    default: () => {
-      return [];
-    },
-  },
-  treeBarAllData: {
-    type: Object,
-    default: () => {
-      return [];
-    },
-  },
-});
+const props = withDefaults(
+  defineProps<{
+    options?: any;
+    height?: number | string;
+    treeBar?: boolean;
+    treeBarData?: Array<any>;
+    treeBarAllData?: Array<any>;
+  }>(),
+  {
+    options: {},
+    height: "300px",
+    treeBar: false,
+    treeBarData: () => [],
+    treeBarAllData: () => [],
+  }
+);
+
+const chartWrapper = ref<any>(null);
 
 const getChartStyle = computed(() => {
-  return {
-    width: "100%",
-    height: `${props.height}px`,
-  };
+  if (typeof props.height === "number") {
+    return {
+      height: `${props.height}px`,
+    };
+  } else {
+    return {
+      height: props.height,
+    };
+  }
 });
 
 watch(
@@ -66,68 +52,43 @@ watch(
   () => {
     setOptions();
     initTreeBar();
+    //resizeHandler();
   },
   {
     deep: true,
   }
 );
 
-const guid = () => {
-  return (((1 + Math.random()) * 0x10000) | 0).toString(16).substring(1);
-};
-
-const getUuid = (): string => {
-  return (
-    guid() +
-    guid() +
-    "-" +
-    guid() +
-    "-" +
-    guid() +
-    "-" +
-    guid() +
-    "-" +
-    guid() +
-    guid() +
-    guid()
-  );
-};
-
-const uuid = getUuid();
+let eChartsRef: ECharts | undefined = undefined;
 
 const resizeHandler = () => {
-  eChartsRef.value.resize();
+  eChartsRef?.resize();
 };
 
-const resizeHandlerOrigin = debounce(resizeHandler, 500);
+const resizeHandlerOrigin = _.debounce(resizeHandler, 500);
 
-const eChartsRef = shallowRef<any>();
 const initChart = () => {
-  /**
-   * 多个图表会被后面的覆盖，这里使用uui区分
-   */
-  const chartDom = document.getElementById(`echarts-${uuid}`)!;
-  eChartsRef.value = echarts.init(chartDom);
+  if (!eChartsRef) {
+    eChartsRef = echarts.init(chartWrapper.value);
+  }
 };
 const colors = ["#00b2ff", "#31b1c2", "#67c23a"];
 const barSeriesItemStyle = {
-  normal: {
-    color: function (params: any) {
-      if (params.data && params.data?.groupName === "org") {
-        return colors[0];
-      } else if (params.data && params.data?.groupName === "available") {
-        return colors[2];
-      }
-      return colors[1];
-    },
-    label: {
-      show: true, //开启显示
-      position: "top", //在上方显示
-      textStyle: {
-        //数值样式
-        color: "black",
-        fontSize: 12,
-      },
+  color: function (params: any) {
+    if (params.data && params.data?.groupName === "org") {
+      return colors[0];
+    } else if (params.data && params.data?.groupName === "available") {
+      return colors[2];
+    }
+    return colors[1];
+  },
+  label: {
+    show: true, //开启显示
+    position: "top", //在上方显示
+    textStyle: {
+      //数值样式
+      color: "black",
+      fontSize: 12,
     },
   },
 };
@@ -136,7 +97,7 @@ const parentItem = ref<any>({});
 const initTreeBar = () => {
   if (props.treeBar && props.treeBarData.length > 0) {
     showBack.value = false;
-    eChartsRef.value.on("click", (params: any) => {
+    eChartsRef?.on("click", (params: any) => {
       const item = props.treeBarAllData.find(
         (v: any) => v.name === params.name
       );
@@ -149,7 +110,7 @@ const initTreeBar = () => {
         _.forEach(children, (v) => {
           seriesData.value.push({ value: v.value, groupName: v.groupName });
         });
-        eChartsRef.value.setOption({
+        eChartsRef?.setOption({
           xAxis: { data: children.map((item: any) => item.name) },
           series: [{ data: seriesData.value, itemStyle: barSeriesItemStyle }],
         });
@@ -168,7 +129,7 @@ const handleBackClick = () => {
     _.forEach(props.treeBarData, (v) => {
       seriesData.value.push({ value: v.value, groupName: v.groupName });
     });
-    eChartsRef.value.setOption({
+    eChartsRef?.setOption({
       xAxis: { data: props.treeBarData.map((item: any) => item.name) },
       series: [{ data: seriesData.value, itemStyle: barSeriesItemStyle }],
     });
@@ -180,15 +141,12 @@ const handleBackClick = () => {
         seriesData.value.push({ value: v.value, groupName: v.groupName });
       });
       parentItem.value = item;
-      eChartsRef.value.setOption({
+      eChartsRef?.setOption({
         xAxis: { data: children.map((v: any) => v.name) },
         series: [{ data: seriesData.value, itemStyle: barSeriesItemStyle }],
       });
     }
   }
-};
-window.onresize = () => {
-  console.log("窗口发生变化时会打印该条");
 };
 
 const setOptions = () => {
@@ -199,18 +157,18 @@ const setOptions = () => {
     options = emptyOptions;
   }
   nextTick(() => {
-    eChartsRef.value.clear();
-    eChartsRef.value.setOption(options);
+    eChartsRef?.clear();
+    eChartsRef?.setOption(options);
     window.addEventListener("resize", resizeHandlerOrigin);
   });
 };
 const echartsClear = () => {
-  eChartsRef.value.clear();
+  eChartsRef?.clear();
   resizeHandler();
 };
 
 const echartsLoading = () => {
-  eChartsRef.value.showLoading({
+  eChartsRef?.showLoading({
     text: "加载中",
     //color: '#c23531',
     textColor: "#000",
@@ -219,7 +177,7 @@ const echartsLoading = () => {
   });
 };
 const hideEchartsLoading = () => {
-  eChartsRef.value.hideLoading();
+  eChartsRef?.hideLoading();
 };
 defineExpose({
   echartsLoading,

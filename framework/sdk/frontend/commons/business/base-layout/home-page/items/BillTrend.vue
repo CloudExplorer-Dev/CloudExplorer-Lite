@@ -108,17 +108,15 @@ const historyTrend = async (historyNum: number, active: string) => {
         show: false,
       };
       option["series"][0]["itemStyle"] = {
-        normal: {
-          label: {
-            show: true,
-            position: "top",
-            textStyle: {
-              color: "black",
-              fontSize: 12,
-            },
-            formatter: function (param: any) {
-              return _.round(param.value, 2).toFixed(2);
-            },
+        label: {
+          show: true,
+          position: "top",
+          textStyle: {
+            color: "black",
+            fontSize: 12,
+          },
+          formatter: function (param: any) {
+            return _.round(param.value, 2).toFixed(2);
           },
         },
       };

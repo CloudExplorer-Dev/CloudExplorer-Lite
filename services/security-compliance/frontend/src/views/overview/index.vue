@@ -550,9 +550,7 @@ const getRuleOptions = (groupDatas: Array<ComplianceViewGroupResponse>) => {
         })),
         align: "center",
         itemStyle: {
-          normal: {
-            barBorderRadius: 10,
-          },
+          barBorderRadius: 10,
         },
         label: {
           show: true,
@@ -575,11 +573,9 @@ const getRuleOptions = (groupDatas: Array<ComplianceViewGroupResponse>) => {
           color: "#000",
         },
         itemStyle: {
-          normal: {
-            color: "#eee",
-            fontSize: 16,
-            barBorderRadius: 30,
-          },
+          color: "#eee",
+          fontSize: 16,
+          barBorderRadius: 30,
         },
       },
     ],

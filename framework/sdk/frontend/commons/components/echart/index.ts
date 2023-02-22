@@ -226,22 +226,18 @@ const defaultPieDoughnutOptions = {
       label: {
         show: true,
         position: "center",
-        normal: {
-          show: true,
-          position: "center",
-          fontSize: 14,
-          backgroundColor: "#fff",
-          formatter: "总数\n0",
-          fontWeight: "bold",
-          rich: {
-            title: {
-              fontSize: 14,
-              color: "#333",
-            },
-            value: {
-              fontSize: 30,
-              color: "#000",
-            },
+        fontSize: 14,
+        backgroundColor: "#fff",
+        formatter: "总数\n0",
+        fontWeight: "bold",
+        rich: {
+          title: {
+            fontSize: 14,
+            color: "#333",
+          },
+          value: {
+            fontSize: 30,
+            color: "#000",
           },
         },
       },
@@ -265,7 +261,7 @@ const defaultPieDoughnutOptions = {
 const defaultBarOptions = {
   dataZoom: [
     {
-      type: 'slider',
+      type: "slider",
       realtime: true,
       start: 0,
       end: 100, // 数据窗口范围的结束百分比。范围是：0 ~ 100。
@@ -274,8 +270,8 @@ const defaultBarOptions = {
       right: 5, //右边的距离
       bottom: 10, //下边的距离
       show: false, // 是否展示
-      fillerColor: 'rgba(17, 100, 210, 0.42)', // 滚动条颜色
-      borderColor: 'rgba(17, 100, 210, 0.12)',
+      fillerColor: "rgba(17, 100, 210, 0.42)", // 滚动条颜色
+      borderColor: "rgba(17, 100, 210, 0.12)",
       handleSize: 0, //两边手柄尺寸
       showDetail: false, //拖拽时是否展示滚动条两侧的文字
       zoomLock: true, //是否只平移不缩放
@@ -284,16 +280,16 @@ const defaultBarOptions = {
       startValue: 0, // 从头开始。
       endValue: 9, // 最多六个
       minValueSpan: 9, // 放大到最少几个
-      maxValueSpan: 9 //  缩小到最多几个
+      maxValueSpan: 9, //  缩小到最多几个
     },
     {
-      type: 'inside', // 支持内部鼠标滚动平移
+      type: "inside", // 支持内部鼠标滚动平移
       start: 0,
       end: 100,
       zoomOnMouseWheel: false, // 关闭滚轮缩放
       moveOnMouseWheel: false, // 开启滚轮平移
-      moveOnMouseMove: false // 鼠标移动能触发数据窗口平移
-    }
+      moveOnMouseMove: false, // 鼠标移动能触发数据窗口平移
+    },
   ],
   color: ["#95ceff", "#434348"],
   tooltip: {
