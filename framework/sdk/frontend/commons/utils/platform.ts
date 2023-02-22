@@ -43,14 +43,14 @@ export const platformIcon: SimpleMap<PlatFormIcon> = {
     color: "#f40f0a",
     name: "华为云",
   },
-  fit2cloud_aws_platform: {
-    component: CeIcon,
-    icon: { code: "aws" },
-    oldIcon: aws,
-    logo: LogoAws,
-    color: "#e38d2e",
-    name: "AWS",
-  },
+  // fit2cloud_aws_platform: {
+  //   component: CeIcon,
+  //   icon: { code: "aws" },
+  //   oldIcon: aws,
+  //   logo: LogoAws,
+  //   color: "#e38d2e",
+  //   name: "AWS",
+  // },
   fit2cloud_vsphere_platform: {
     /*component: ElImage,
     icon: { src: IconVmware, style: { height: "1em", width: "1em" } },*/
