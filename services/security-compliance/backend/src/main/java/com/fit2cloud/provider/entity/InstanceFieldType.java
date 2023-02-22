@@ -31,7 +31,7 @@ public enum InstanceFieldType {
     /**
      * 数组枚举
      */
-    ArrayEnum(IN),
+    ArrayEnum(EQ),
     /**
      * 数组数字
      */

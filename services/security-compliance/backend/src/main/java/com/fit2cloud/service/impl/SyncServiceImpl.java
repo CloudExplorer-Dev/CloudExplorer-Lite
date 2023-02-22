@@ -11,6 +11,7 @@ import co.elastic.clients.elasticsearch.core.BulkRequest;
 import co.elastic.clients.elasticsearch.core.DeleteByQueryRequest;
 import co.elastic.clients.elasticsearch.core.bulk.BulkOperation;
 import co.elastic.clients.elasticsearch.core.bulk.IndexOperation;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.fit2cloud.base.entity.CloudAccount;
 import com.fit2cloud.base.entity.JobRecord;
@@ -32,12 +33,14 @@ import com.fit2cloud.constants.ResourceTypeConstants;
 import com.fit2cloud.constants.SyncDimensionConstants;
 import com.fit2cloud.controller.response.compliance_scan.SupportCloudAccountResourceResponse;
 import com.fit2cloud.dao.entity.ComplianceRule;
+import com.fit2cloud.dao.entity.ComplianceScanResourceResult;
 import com.fit2cloud.dao.entity.ComplianceScanResult;
 import com.fit2cloud.es.entity.ResourceInstance;
 import com.fit2cloud.provider.ICloudProvider;
 import com.fit2cloud.service.*;
 import io.reactivex.rxjava3.functions.Action;
 import lombok.SneakyThrows;
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.keyvalue.DefaultKeyValue;
 import org.redisson.api.RLock;
 import org.springframework.data.elasticsearch.annotations.Document;
@@ -76,6 +79,8 @@ public class SyncServiceImpl extends BaseSyncService implements ISyncService {
     private ThreadPoolExecutor workThreadPool;
     @Resource
     private IComplianceScanResultService complianceScanResultService;
+    @Resource
+    private IComplianceScanResourceResultService complianceScanResourceResultService;
 
     @SneakyThrows
     @Override
@@ -105,7 +110,6 @@ public class SyncServiceImpl extends BaseSyncService implements ISyncService {
             return;
         }
         try {
-
             LocalDateTime syncTime = getSyncTime();
             ArrayList<ResourceInstance> resourceInstancesAll = new ArrayList<>();
             Class<? extends ICloudProvider> iCloudProviderClazz = ICloudProvider.of(cloudAccount.getPlatform());
@@ -135,9 +139,9 @@ public class SyncServiceImpl extends BaseSyncService implements ISyncService {
                 }
             }
             // todo 插入数据
-            proxyJob(jobRecord, new JobLink("插入原始数据", JobLinkTypeConstants.SYSTEM_SAVE_DATA), () -> saveOrUpdateData(cloudAccountId, instanceType, resourceInstancesAll), null);
+            proxyJob(jobRecord, new JobLink("插入原始数据", JobLinkTypeConstants.SYSTEM_SAVE_DATA), () -> saveOrUpdateData(cloudAccount, instanceType, resourceInstancesAll), null);
             // todo 更新缓存
-            proxyJob(jobRecord, new JobLink("扫描合规资源", JobLinkTypeConstants.SYSTEM_SAVE_DATA), () -> scan(instanceType), null);
+            proxyJob(jobRecord, new JobLink("扫描合规资源", JobLinkTypeConstants.SYSTEM_SAVE_DATA), () -> scan(instanceType, cloudAccountId), null);
             // todo 更新扫描时间
             proxyJob(jobRecord, new JobLink("更新扫描时间", JobLinkTypeConstants.SYSTEM_SAVE_DATA), () ->
                             complianceRuleService.update(new LambdaUpdateWrapper<ComplianceRule>().eq(ComplianceRule::getResourceType, instanceType.name()).set(ComplianceRule::getUpdateTime, syncTime))
@@ -158,24 +162,27 @@ public class SyncServiceImpl extends BaseSyncService implements ISyncService {
      *
      * @param instanceType 实例类型
      */
-    private void scan(ResourceTypeConstants instanceType) {
-        // todo 扫描到实例类型
-        List<ComplianceScanResult> complianceScanResults = complianceScanService.scanCompliance(instanceType);
-        complianceScanResultService.saveOrUpdate(complianceScanResults);
+    private void scan(ResourceTypeConstants instanceType, String cloudAccountId) {
+        complianceScanService.scanComplianceOrSave(instanceType, cloudAccountId);
+        complianceScanService.scanComplianceResourceOrSave(instanceType, cloudAccountId);
+
     }
 
     /**
      * 插入或者更新数据
      *
-     * @param cloudAccountId       云账号id
+     * @param cloudAccount         云账号id
      * @param instanceType         资源实例类型
      * @param resourceInstancesAll 资源数据
      * @throws IOException 插入可能抛出的异常
      */
-    private synchronized void saveOrUpdateData(String cloudAccountId, ResourceTypeConstants instanceType, ArrayList<ResourceInstance> resourceInstancesAll) throws IOException {
+    private synchronized void saveOrUpdateData(CloudAccount cloudAccount, ResourceTypeConstants instanceType, ArrayList<ResourceInstance> resourceInstancesAll) throws IOException {
+        if (CollectionUtils.isEmpty(resourceInstancesAll)) {
+            return;
+        }
         // todo 删除实例历史数据
         Query query = new Query.Builder().bool(new BoolQuery.Builder()
-                        .must(new Query.Builder().term(new TermQuery.Builder().field("cloudAccountId").value(cloudAccountId).build()).build(),
+                        .must(new Query.Builder().term(new TermQuery.Builder().field("cloudAccountId").value(cloudAccount.getId()).build()).build(),
                                 new Query.Builder().term(new TermQuery.Builder().field("resourceType").value(instanceType.name()).build()).build()).build())
                 .build();
         DeleteByQueryRequest build = new DeleteByQueryRequest.Builder().index(ResourceInstance.class.getAnnotation(Document.class).indexName()).query(query).refresh(true).build();

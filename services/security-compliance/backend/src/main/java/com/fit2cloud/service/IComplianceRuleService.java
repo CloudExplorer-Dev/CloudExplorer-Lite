@@ -62,4 +62,6 @@ public interface IComplianceRuleService extends IService<ComplianceRule> {
      * @return 合规规则响应对象
      */
     ComplianceRuleResponse update(ComplianceRuleRequest complianceRuleRequest);
+
+    void remove(String id);
 }

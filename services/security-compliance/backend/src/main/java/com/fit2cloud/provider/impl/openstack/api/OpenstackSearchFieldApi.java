@@ -44,17 +44,17 @@ public class OpenstackSearchFieldApi {
     }
 
     public static List<InstanceSearchField> listSecurityInstanceSearchField() {
-        InstanceSearchField direction = new InstanceSearchField("方向", "direction", InstanceFieldType.Enum,
+        InstanceSearchField direction = new InstanceSearchField("方向", "direction", InstanceFieldType.ArrayEnum,
                 List.of(new DefaultKeyValue<>("入方向", "ingress"),
                         new DefaultKeyValue<>("出方向", "egress")))
                 .resetFilterArrayField(PlatformConstants.fit2cloud_openstack_platform, ResourceTypeConstants.SECURITY_GROUP, "group_rule");
 
-        InstanceSearchField etherType = new InstanceSearchField("ip类型", "ethertype", InstanceFieldType.Enum,
+        InstanceSearchField etherType = new InstanceSearchField("ip类型", "ethertype", InstanceFieldType.ArrayEnum,
                 List.of(new DefaultKeyValue<>("IPv4", "IPv4"),
                         new DefaultKeyValue<>("IPv6", "IPv6")))
                 .resetFilterArrayField(PlatformConstants.fit2cloud_openstack_platform, ResourceTypeConstants.SECURITY_GROUP, "group_rule");
 
-        InstanceSearchField protocol = new InstanceSearchField("协议", "protocol", InstanceFieldType.Enum,
+        InstanceSearchField protocol = new InstanceSearchField("协议", "protocol", InstanceFieldType.ArrayEnum,
                 List.of(new DefaultKeyValue<>("TCP", "tcp"),
                         new DefaultKeyValue<>("UDP", "udp"),
                         new DefaultKeyValue<>("ICMP", "icmp"),

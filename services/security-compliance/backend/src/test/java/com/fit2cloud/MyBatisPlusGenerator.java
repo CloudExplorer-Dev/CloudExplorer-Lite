@@ -27,7 +27,7 @@ public class MyBatisPlusGenerator {
     /**
      * 传入需要生成代码的表名
      */
-    private static final List<String> TABLES = Arrays.asList("compliance_scan_result");
+    private static final List<String> TABLES = Arrays.asList("compliance_scan_resource_result", "compliance_scan_result");
 
     private static final Map<String, Object> CUSTOM_MAP = new HashMap<>();
 
@@ -38,10 +38,11 @@ public class MyBatisPlusGenerator {
                 new EnumCreator().setEnumField("risk_level").setEnumClassName("RiskLevel").setEnumClass("com.fit2cloud.dao.constants.RiskLevel")
         )));
         map.put("compliance_scan_result", convert(Arrays.asList(
-                new EnumCreator().setEnumField("resource_type").setEnumClassName("ResourceType").setEnumClass("com.fit2cloud.dao.constants.ResourceType"),
                 new EnumCreator().setEnumField("status").setEnumClassName("ComplianceStatus").setEnumClass("com.fit2cloud.dao.constants.ComplianceStatus")
         )));
-
+        map.put("compliance_scan_resource_result", convert(Arrays.asList(
+                new EnumCreator().setEnumField("status").setEnumClassName("ComplianceStatus").setEnumClass("com.fit2cloud.dao.constants.ComplianceStatus")
+        )));
         CUSTOM_MAP.put("useEnum", true);
         CUSTOM_MAP.put("useEnumMap", map);
     }

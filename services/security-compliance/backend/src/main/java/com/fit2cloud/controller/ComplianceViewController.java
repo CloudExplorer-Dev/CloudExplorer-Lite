@@ -8,6 +8,7 @@ import com.fit2cloud.controller.response.view.ComplianceViewGroupResponse;
 import com.fit2cloud.service.IComplianceViewService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
+import io.swagger.models.auth.In;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;

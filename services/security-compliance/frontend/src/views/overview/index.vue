@@ -34,7 +34,7 @@
                 ? (count) =>
                     Number.isNaN(_.ceil(count, 2))
                       ? '0%'
-                      : _.ceil(count, 2) + '%'
+                      : _.ceil(count * 100, 2) + '%'
                 : (count) => count
             "
             :describe="describe.describe"
@@ -204,9 +204,12 @@ const getCloudAccountOptions = (
 ) => {
   return {
     title: {
-      text: "不合规资源按云账号分布",
+      text: "扫描资源按云账号分布",
+      top: "20",
+      left: "20",
       textStyle: {
         fontSize: 14,
+        fontWeight: 400,
       },
     },
     tooltip: {
@@ -227,7 +230,7 @@ const getCloudAccountOptions = (
       {
         name: "不合规资源",
         type: "pie",
-        radius: ["40%", "70%"],
+        radius: ["40%", "60%"],
         avoidLabelOverlap: false,
         itemStyle: {
           borderRadius: 10,
@@ -235,14 +238,27 @@ const getCloudAccountOptions = (
           borderWidth: 2,
         },
         label: {
-          show: false,
+          show: true,
           position: "center",
-        },
-        emphasis: {
-          label: {
-            show: true,
-            fontSize: 20,
-            fontWeight: "bold",
+          backgroundColor: "#fff",
+          width: 140,
+          color: "#4c4a4a",
+          formatter: () => {
+            return `{title|资源总数}\r\n{value|${_.round(
+              _.sumBy(groupDatas, "total"),
+              2
+            ).toFixed(0)}}`;
+          },
+          rich: {
+            title: {
+              fontSize: 14,
+              color: "#333",
+            },
+            value: {
+              fontSize: 30,
+              color: "#000",
+              lineHeight: 44,
+            },
           },
         },
         labelLine: {
@@ -274,9 +290,12 @@ const getResourceTypeOptions = (
 ) => {
   return {
     title: {
-      text: "不合规资源按规则组分布",
+      text: "扫描规资源按资源类型分布",
+      top: "20",
+      left: "20",
       textStyle: {
         fontSize: 14,
+        fontWeight: 400,
       },
     },
     tooltip: {
@@ -289,15 +308,47 @@ const getResourceTypeOptions = (
           </div>`;
       },
     },
+    legend: {
+      bottom: "5%",
+      left: "center",
+    },
     series: [
       {
-        name: "Nightingale Chart",
+        name: "不合规资源",
         type: "pie",
-        radius: [20, 150],
-        center: ["50%", "50%"],
-        roseType: "area",
+        radius: ["40%", "60%"],
+        avoidLabelOverlap: false,
         itemStyle: {
-          borderRadius: 8,
+          borderRadius: 10,
+          borderColor: "#fff",
+          borderWidth: 2,
+        },
+        label: {
+          show: true,
+          position: "center",
+          backgroundColor: "#fff",
+          width: 140,
+          color: "#4c4a4a",
+          formatter: () => {
+            return `{title|资源总数}\r\n{value|${_.round(
+              _.sumBy(groupDatas, "total"),
+              2
+            ).toFixed(0)}}`;
+          },
+          rich: {
+            title: {
+              fontSize: 14,
+              color: "#333",
+            },
+            value: {
+              fontSize: 30,
+              color: "#000",
+              lineHeight: 44,
+            },
+          },
+        },
+        labelLine: {
+          show: false,
         },
         data: groupDatas.map((group) => ({
           value: group.total,
@@ -316,8 +367,11 @@ const getRuleGroupOptions = (
   return {
     title: {
       text: "不合规资源按规则组分布",
+      top: "20",
+      left: "20",
       textStyle: {
         fontSize: 14,
+        fontWeight: 400,
       },
     },
     tooltip: {
@@ -377,8 +431,11 @@ const getRuleOptions = (groupDatas: Array<ComplianceViewGroupResponse>) => {
     color: color,
     title: {
       text: "不合规规则 TOP 5",
+      top: "20",
+      left: "20",
       textStyle: {
         fontSize: 14,
+        fontWeight: 400,
       },
     },
 
@@ -469,7 +526,7 @@ const getRuleOptions = (groupDatas: Array<ComplianceViewGroupResponse>) => {
               padding: [0, 1, 2, 1],
             },
             nt: {
-              color: "#fff",
+              color: "#000",
               backgroundColor: "#009ef0",
               width: 13,
               height: 10,
@@ -481,7 +538,6 @@ const getRuleOptions = (groupDatas: Array<ComplianceViewGroupResponse>) => {
             },
           },
           formatter: function (value, index) {
-            console.log(value, index);
             index++;
             if (index - 1 < 3) {
               return ["{nt" + index + "|" + index + "}"].join("\n");
@@ -566,7 +622,14 @@ const getRuleOptions = (groupDatas: Array<ComplianceViewGroupResponse>) => {
         barWidth: 15,
         barGap: "-100%",
         margin: "20",
-        data: groupDatas.map((group) => group.notComplianceCount),
+        data: groupDatas.map((group) => ({
+          value: groupDatas[0].total,
+          notComplianceCount: group.notComplianceCount,
+          complianceCount: group.complianceCount,
+          total: group.total,
+          groupName: group.groupName,
+          groupValue: group.groupValue,
+        })),
         textStyle: {
           //图例文字的样式
           fontSize: 16,
@@ -576,6 +639,10 @@ const getRuleOptions = (groupDatas: Array<ComplianceViewGroupResponse>) => {
           color: "#eee",
           fontSize: 16,
           barBorderRadius: 30,
+          backgroundColor: "#eee",
+          emphasis: {
+            color: "#eee",
+          },
         },
       },
     ],
