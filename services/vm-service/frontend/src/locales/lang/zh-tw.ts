@@ -29,6 +29,7 @@ const message = {
       rebooting: "重啟中",
       wait_recycle: "待回收",
       deleted: "已刪除",
+      failed: "失敗",
     },
     btn: {
       power_on: "啟動",
@@ -47,6 +48,8 @@ const message = {
       check_vm_tools_status_confirm_shutdown:
         "當前虛擬機器未安裝VmTools或VmTools未運行，無法軟關機，若繼續操作則關閉電源，是否繼續？",
       confirm_config_update: "配置變更將會對實例執行關機操作，確認繼續?",
+      confirm_delete_record: "確認刪除失敗記錄",
+      confirm_batch_delete_record: "確認批量刪除失敗記錄",
     },
   },
   vm_cloud_image: {

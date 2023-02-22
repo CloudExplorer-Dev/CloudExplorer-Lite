@@ -234,6 +234,12 @@ public class VmCloudServerServiceImpl extends ServiceImpl<BaseVmCloudServerMappe
     }
 
     @Override
+    public boolean deleteFailedRecord(String vmId) {
+        baseMapper.deleteById(vmId);
+        return true;
+    }
+
+    @Override
     public boolean recycleInstance(String vmId) {
         QueryWrapper<VmCloudServer> wrapper = new QueryWrapper<VmCloudServer>()
                 .eq(ColumnNameUtil.getColumnName(VmCloudServer::getId, true), vmId)
@@ -267,7 +273,13 @@ public class VmCloudServerServiceImpl extends ServiceImpl<BaseVmCloudServerMappe
         }
         request.getInstanceIds().forEach(instanceId -> {
             try {
-                batchOperationMap.get(operatedType).accept(instanceId);
+                // 失败状态的机器直接删除数据库记录，不调用底层API，不生成任务
+                VmCloudServer vmCloudServer = baseMapper.selectById(instanceId);
+                if (F2CInstanceStatus.Failed.name().equalsIgnoreCase(vmCloudServer.getInstanceStatus())) {
+                    deleteFailedRecord(instanceId);
+                } else {
+                    batchOperationMap.get(operatedType).accept(instanceId);
+                }
             } catch (Throwable e) {
                 throw new Fit2cloudException(ErrorCodeConstants.VM_BATCH_OPERATE_FAIL.getCode(), e.getMessage());
             }

@@ -36,6 +36,8 @@ public interface IVmCloudServerService extends IService<VmCloudServer> {
 
     boolean deleteInstance(String vmId);
 
+    boolean deleteFailedRecord(String vmId);
+
     boolean recycleInstance(String vmId);
 
     boolean recoverInstance(String recycleBinId);

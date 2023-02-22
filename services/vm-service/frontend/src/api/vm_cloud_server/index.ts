@@ -99,6 +99,18 @@ export function deleteInstance(
 }
 
 /**
+ * 删除创建失败的记录
+ * @param instanceId
+ * @param loading
+ */
+export function deleteFailedRecord(
+  id: string,
+  loading?: Ref<boolean>
+): Promise<Result<boolean>> {
+  return post("api/server/deleteFailedRecord/" + id, null, null, loading);
+}
+
+/**
  * 批量操作
  * @param instanceIds
  * @param operate
@@ -238,6 +250,7 @@ const VmCloudServerApi = {
   getConfigUpdateForm,
   getConfigUpdatePrice,
   grantVmCloudServer,
+  deleteFailedRecord,
 };
 
 export default VmCloudServerApi;

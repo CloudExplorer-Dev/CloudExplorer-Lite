@@ -29,6 +29,7 @@ const message = {
       rebooting: "Rebooting",
       wait_recycle: "Wait to Recycle",
       deleted: "Deleted",
+      failed: "Failed",
     },
     btn: {
       power_on: "Power on",
@@ -48,6 +49,8 @@ const message = {
         "The current virtual machine is not installed with VmTools or VmTools is not running and cannot be soft shut down. If you continue, turn off the power. Do you want to continue?",
       confirm_config_update:
         "The configuration change will shut down the instance.Confirm to continue?",
+      confirm_delete_record: "Confirm to delete record",
+      confirm_batch_delete_record: "Confirm to delete record in batch",
     },
   },
   vm_cloud_image: {

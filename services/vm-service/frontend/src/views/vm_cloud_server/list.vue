@@ -99,6 +99,7 @@ const instanceStatusForTableSelect = [
     value: "ToBeRecycled",
   },
   { text: t("vm_cloud_server.status.deleted", "已删除"), value: "Deleted" },
+  { text: t("vm_cloud_server.status.failed", "失败"), value: "Failed" },
 ];
 
 const filterInstanceStatus = (value: string) => {
@@ -547,6 +548,10 @@ const reboot = (row: VmCloudServerVO) => {
 
 //删除
 const deleteInstance = async (row: VmCloudServerVO) => {
+  if (row.instanceStatus === "Failed") {
+    deleteFailedRecord(row.id);
+    return;
+  }
   await getRecycleBinSetting();
 
   const message = isRecycleBinOpened.value
@@ -583,6 +588,28 @@ const deleteInstance = async (row: VmCloudServerVO) => {
   });
 };
 
+// 删除创建失败机器的记录，只删除数据库记录，不调用云平台接口
+const deleteFailedRecord = (cloudServerId: string) => {
+  const message = t(
+    "vm_cloud_server.message_box.confirm_delete_record",
+    "确认删除失败记录？"
+  );
+  ElMessageBox.confirm(message, t("commons.message_box.prompt", "提示"), {
+    confirmButtonText: t("commons.message_box.confirm", "确认"),
+    cancelButtonText: t("commons.btn.cancel", "取消"),
+    type: "warning",
+  }).then(() => {
+    VmCloudServerApi.deleteFailedRecord(cloudServerId)
+      .then(() => {
+        ElMessage.success(t("commons.msg.op_success"));
+        refresh();
+      })
+      .catch((err) => {
+        ElMessage.error(err.response.data.message);
+      });
+  });
+};
+
 /**
  * 批量操作
  */
@@ -606,6 +633,16 @@ const batchOperate = (operate: string) => {
           "vm_cloud_server.message_box.confirm_to_delete",
           "回收站已关闭，云主机将立即删除"
         );
+    if (
+      selectedRowData.value.every(
+        (vmCloudServer) => vmCloudServer.instanceStatus === "Failed"
+      )
+    ) {
+      message = t(
+        "vm_cloud_server.message_box.confirm_batch_delete_record",
+        "确认批量删除失败记录"
+      );
+    }
   }
   ElMessageBox.confirm(message, t("commons.message_box.prompt", "提示"), {
     confirmButtonText: t("commons.message_box.confirm", "确认"),
