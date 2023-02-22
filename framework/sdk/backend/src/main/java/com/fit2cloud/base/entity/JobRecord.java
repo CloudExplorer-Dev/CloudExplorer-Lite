@@ -97,4 +97,10 @@ public class JobRecord implements Serializable {
      */
     @TableField("result")
     private String result;
+
+    /**
+     * 操作人
+     */
+    @TableField("operate_user_id")
+    private String operateUserId;
 }
