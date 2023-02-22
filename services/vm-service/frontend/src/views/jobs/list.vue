@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted } from "vue";
+import { ref, onMounted, computed } from "vue";
 import JobsApi from "@/api/jobs";
 import _ from "lodash";
 import type { JobInfo } from "@/api/jobs/type";
@@ -13,13 +13,50 @@ import {
 } from "@commons/components/ce-table/type";
 import { useI18n } from "vue-i18n";
 import ManageInfo from "@/views/vm_cloud_image/ManageInfo.vue";
-import type { VmCloudDiskVO } from "@/api/vm_cloud_disk/type";
-import type { VmCloudServerVO } from "@/api/vm_cloud_server/type";
+import { ResourceTypeConst } from "@commons/utils/constants";
+import OrgTreeFilter from "@commons/components/table-filter/OrgTreeFilter.vue";
 
 const { t } = useI18n();
 const useRoute = useRouter();
+const table = ref();
 const columns = ref([]);
 const tableData = ref<Array<JobInfo>>();
+const tableLoading = ref<boolean>(false);
+const ResourceType = {
+  VM: "VM",
+  DISK: "DISK",
+};
+
+/**
+ * 表头：组织树筛选
+ */
+const orgTreeRef = ref();
+const orgPopRef = ref();
+const selectedOrganizationIds = computed(() =>
+  orgTreeRef.value?.getSelectedIds(false)
+);
+
+/**
+ * 表头：工作空间树筛选
+ */
+const workspaceTreeRef = ref();
+const workspacePopRef = ref();
+const selectedWorkspaceIds = computed(() =>
+  workspaceTreeRef.value?.getSelectedIds(true)
+);
+
+/**
+ * 表头：清空组织和工作空间树的选中项
+ * @param field
+ */
+const clearCondition = (field: string) => {
+  if (field === "organizationIds") {
+    orgTreeRef.value.cancelChecked();
+  }
+  if (field === "workspaceIds") {
+    workspaceTreeRef.value.cancelChecked();
+  }
+};
 
 /**
  * 打开管理信息
@@ -33,19 +70,30 @@ const showDetail = (row: JobInfo) => {
     ),
   });
 };
-const jumpToServer = (server: VmCloudServerVO) => {
+
+const jumpToResource = (resourceType: string, resourceId: string) => {
+  if (ResourceType.VM === resourceType) {
+    jumpToServer(resourceId);
+  }
+  if (ResourceType.DISK === resourceType) {
+    jumpToDisk(resourceId);
+  }
+};
+
+const jumpToServer = (serverId: string) => {
   useRoute.push({
     path: useRoute.currentRoute.value.path.replace(
       "jobs/list",
-      `vm_cloud_server/detail/${server.id}`
+      `vm_cloud_server/detail/serverId`
     ),
   });
 };
-const jumpToDisk = (disk: VmCloudDiskVO) => {
+
+const jumpToDisk = (diskId: string) => {
   useRoute.push({
     path: useRoute.currentRoute.value.path.replace(
       "jobs/list",
-      `vm_cloud_disk/detail/${disk.id}`
+      `vm_cloud_disk/detail/diskId`
     ),
   });
 };
@@ -66,11 +114,14 @@ _.forIn(JobStatusConst, (value, key) => {
  */
 const search = (condition: TableSearch) => {
   const params = TableSearch.toSearchParams(condition);
-  JobsApi.listJobs({
-    currentPage: tableConfig.value.paginationConfig.currentPage,
-    pageSize: tableConfig.value.paginationConfig.pageSize,
-    ...params,
-  }).then((res) => {
+  JobsApi.listJobs(
+    {
+      currentPage: tableConfig.value.paginationConfig.currentPage,
+      pageSize: tableConfig.value.paginationConfig.pageSize,
+      ...params,
+    },
+    tableLoading
+  ).then((res) => {
     tableData.value = res.data.records;
     tableConfig.value.paginationConfig?.setTotal(
       res.data.total,
@@ -98,7 +149,11 @@ const tableConfig = ref<TableConfig>({
     search: search,
     quickPlaceholder: t("commons.btn.search"),
     components: [],
-    searchOptions: [{ label: t("job.detail.id", "ID"), value: "id" }],
+    searchOptions: [
+      { label: t("job.detail.id", "ID"), value: "id" },
+      { label: "关联资源", value: "resourceName" },
+      { label: "操作人", value: "operateUserName" },
+    ],
   },
   paginationConfig: new PaginationConfig(),
   tableOperations: new TableOperations(
@@ -115,40 +170,120 @@ const tableConfig = ref<TableConfig>({
 </script>
 <template>
   <ce-table
+    v-loading="tableLoading"
     :columns="columns"
     :data="tableData"
     :tableConfig="tableConfig"
+    @clearCondition="clearCondition"
     row-key="id"
     height="100%"
     ref="table"
   >
-    <el-table-column prop="id" label="ID"></el-table-column>
+    <el-table-column
+      prop="id"
+      label="ID"
+      fixed
+      min-width="180px"
+    ></el-table-column>
     <el-table-column
       prop="type"
       column-key="type"
       label="任务类型"
       sortable
       :filters="types"
+      width="160px"
     >
       <template #default="scope">
         {{ _.get(JobTypeConst, scope.row.type, scope.row.type) }}
       </template>
     </el-table-column>
-    <el-table-column label="关联资源">
+    <el-table-column label="关联资源" width="160px">
       <template #default="scope">
-        <div v-for="server in scope.row.servers" :key="server.id">
-          <a
-            @click="jumpToServer(server)"
-            style="color: var(--el-color-primary)"
-          >
-            云主机: {{ server.instanceName }}
-          </a>
-        </div>
-        <div v-for="disk in scope.row.disks" :key="disk.id">
-          <a @click="jumpToDisk(disk)" style="color: var(--el-color-primary)">
-            磁盘: {{ disk.diskName }}
-          </a>
-        </div>
+        <a
+          @click="jumpToResource(scope.row.resourceType, scope.row.resourceId)"
+          style="color: var(--el-color-primary)"
+        >
+          {{
+            _.get(
+              ResourceTypeConst,
+              scope.row.resourceType,
+              scope.row.resourceType
+            )
+          }}: {{ scope.row.resourceName }}
+        </a>
+      </template>
+    </el-table-column>
+    <el-table-column
+      prop="organizationName"
+      column-key="organizationIds"
+      :label="$t('commons.org', '组织')"
+      :show="false"
+      min-width="180px"
+      ><template #header>
+        <span :class="{ highlight: selectedOrganizationIds?.length > 0 }">{{
+          $t("commons.org", "组织")
+        }}</span>
+        <el-popover
+          ref="orgPopRef"
+          placement="bottom"
+          :width="200"
+          trigger="click"
+          :show-arrow="false"
+        >
+          <template #reference>
+            <span class="el-table__column-filter-trigger"
+              ><el-icon><ArrowDown /></el-icon
+            ></span>
+          </template>
+          <OrgTreeFilter
+            tree-type="org"
+            ref="orgTreeRef"
+            field="organizationIds"
+            label="组织"
+            :popover-ref="orgPopRef"
+            :table-ref="table"
+          />
+        </el-popover>
+      </template>
+      <template #default="scope">
+        <span v-html="scope.row.organizationName"></span>
+      </template>
+    </el-table-column>
+    <el-table-column
+      prop="workspaceName"
+      column-key="workspaceIds"
+      :label="$t('commons.workspace')"
+      :show="false"
+      min-width="180px"
+    >
+      <template #header>
+        <span :class="{ highlight: selectedWorkspaceIds?.length > 0 }">{{
+          $t("commons.workspace", "工作空间")
+        }}</span>
+        <el-popover
+          ref="workspacePopRef"
+          placement="bottom"
+          :width="200"
+          trigger="click"
+          :show-arrow="false"
+        >
+          <template #reference>
+            <span class="el-table__column-filter-trigger"
+              ><el-icon><ArrowDown /></el-icon
+            ></span>
+          </template>
+          <OrgTreeFilter
+            tree-type="workspace"
+            ref="workspaceTreeRef"
+            field="workspaceIds"
+            label="工作空间"
+            :popover-ref="workspacePopRef"
+            :table-ref="table"
+          />
+        </el-popover>
+      </template>
+      <template #default="scope">
+        <span v-html="scope.row.workspaceName"></span>
       </template>
     </el-table-column>
     <el-table-column
@@ -157,6 +292,7 @@ const tableConfig = ref<TableConfig>({
       label="状态"
       sortable
       :filters="status"
+      min-width="100px"
     >
       <template #default="scope">
         <a
@@ -167,18 +303,23 @@ const tableConfig = ref<TableConfig>({
         </a>
       </template>
     </el-table-column>
+    <el-table-column prop="operateUserName" label="操作人" min-width="100px" />
     <el-table-column
       prop="createTime"
       label="开始时间"
       sortable
-    ></el-table-column>
+      min-width="160px"
+    />
     <el-table-column
       prop="finishTime"
       label="结束时间"
       sortable
-    ></el-table-column>
-
-    <fu-table-operations v-bind="tableConfig.tableOperations" fix />
+      min-width="160px"
+    />
+    <fu-table-operations v-bind="tableConfig.tableOperations" fixed="right" />
+    <template #buttons>
+      <fu-table-column-select type="icon" :columns="columns" size="small" />
+    </template>
   </ce-table>
   <ManageInfo ref="manageInfoRef"></ManageInfo>
 </template>

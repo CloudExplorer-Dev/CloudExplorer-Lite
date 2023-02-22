@@ -35,6 +35,9 @@ public class ComplianceScanResultResponse {
     @ApiModelProperty(value = "风险等级", notes = "风险等级")
     private RiskLevel riskLevel;
 
+    @ApiModelProperty(value = "规则描述", notes = "规则描述")
+    private String description;
+
     @ApiModelProperty(value = "资源类型", notes = "资源类型")
     private ResourceTypeConstants resourceType;
 

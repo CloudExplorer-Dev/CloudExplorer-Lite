@@ -52,4 +52,7 @@ public class OptimizationRequest {
     @ApiModelProperty("组织或者工作空间 ID 集合")
     private List<String> sourceIds;
 
+    @ApiModelProperty("ES上CPU内存最新的同步数据时间点")
+    private Long esLastTime;
+
 }

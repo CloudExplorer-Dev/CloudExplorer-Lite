@@ -902,6 +902,7 @@ const moreActions = ref<Array<ButtonAction>>([
             tree-type="workspace"
             ref="workspaceTreeRef"
             field="workspaceIds"
+            :leaf-only="true"
             :label="$t('commons.workspace', '工作空间')"
             :popover-ref="workspacePopRef"
             :table-ref="table"

@@ -1,6 +1,7 @@
 package com.fit2cloud.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.core.metadata.OrderItem;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -17,8 +18,11 @@ import com.fit2cloud.common.log.constants.ResourceTypeEnum;
 import com.fit2cloud.common.utils.ColumnNameUtil;
 import com.fit2cloud.common.utils.PageUtil;
 import com.fit2cloud.controller.request.jobrecord.PageJobRecordRequest;
+import com.fit2cloud.dao.mapper.JobRecordMapper;
 import com.fit2cloud.dto.JobRecordDTO;
 import com.fit2cloud.service.IJobRecordService;
+import com.fit2cloud.service.IPermissionService;
+import com.fit2cloud.service.WorkspaceCommonService;
 import com.github.yulichang.wrapper.MPJLambdaWrapper;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -42,10 +46,65 @@ public class JobRecordServiceImpl implements IJobRecordService {
     private BaseVmCloudServerMapper baseVmCloudServerMapper;
     @Resource
     private BaseVmCloudDiskMapper baseVmCloudDiskMapper;
+    @Resource
+    private IPermissionService permissionService;
+    @Resource
+    private WorkspaceCommonService workspaceCommonService;
 
-    @Override
+    @Resource
+    private JobRecordMapper jobRecordMapper;
+
     public IPage<JobRecordDTO> pageJobRecord(PageJobRecordRequest request) {
+        List<String> sourceIds = permissionService.getSourceIds();
+        if (CollectionUtils.isNotEmpty(sourceIds)) {
+            request.setSourceIds(sourceIds);
+        }
+        Page<JobRecordDTO> page = PageUtil.of(request, JobRecordDTO.class, new OrderItem(ColumnNameUtil.getColumnName(JobRecordDTO::getCreateTime, true), false), false);
+        QueryWrapper<JobRecordDTO> wrapper = addQuery(request);
+        return jobRecordMapper.pageJobRecord(page, wrapper);
+    }
 
+    private <T extends JobRecord> QueryWrapper<T> addQuery(PageJobRecordRequest request) {
+        QueryWrapper<T> wrapper = new QueryWrapper<>();
+        wrapper.like(StringUtils.isNotBlank(request.getId()), ColumnNameUtil.getColumnName(JobRecord::getId, true), request.getId())
+                .like(StringUtils.isNotBlank(request.getDescription()), ColumnNameUtil.getColumnName(JobRecord::getDescription, true), request.getDescription())
+                .in(CollectionUtils.isNotEmpty(request.getType()), ColumnNameUtil.getColumnName(JobRecord::getType, true), request.getType())
+                .in(CollectionUtils.isNotEmpty(request.getStatus()), ColumnNameUtil.getColumnName(JobRecord::getStatus, true), request.getStatus())
+                .in(ColumnNameUtil.getColumnName(JobRecord::getType, true), Arrays.asList(
+                        JobTypeConstants.CLOUD_SERVER_OPERATE_JOB,
+                        JobTypeConstants.CLOUD_SERVER_CREATE_JOB,
+                        JobTypeConstants.CLOUD_SERVER_DELETE_JOB,
+                        JobTypeConstants.CLOUD_SERVER_RECYCLE_JOB,
+                        JobTypeConstants.CLOUD_SERVER_START_JOB,
+                        JobTypeConstants.CLOUD_SERVER_STOP_JOB,
+                        JobTypeConstants.CLOUD_SERVER_RESTART_JOB,
+                        JobTypeConstants.CLOUD_SERVER_CONFIG_CHANGE_JOB,
+                        JobTypeConstants.CLOUD_DISK_OPERATE_JOB,
+                        JobTypeConstants.CLOUD_DISK_CREATE_JOB,
+                        JobTypeConstants.CLOUD_DISK_DELETE_JOB,
+                        JobTypeConstants.CLOUD_DISK_ATTACH_JOB,
+                        JobTypeConstants.CLOUD_DISK_DETACH_JOB,
+                        JobTypeConstants.CLOUD_DISK_ENLARGE_JOB
+                ));
+        wrapper.in(CollectionUtils.isNotEmpty(request.getSourceIds()), "resource.source_id", request.getSourceIds());
+        wrapper.like(StringUtils.isNotEmpty(request.getResourceName()), "resource.resource_name", request.getResourceName());
+        wrapper.like(StringUtils.isNotEmpty(request.getOperateUserName()), "user._name", request.getOperateUserName());
+
+        if (CollectionUtils.isNotEmpty(request.getWorkspaceIds())){
+            wrapper.and(wrapperInner1 -> wrapperInner1.in("org_workspace.id", request.getWorkspaceIds())
+                    .and(wrapperInner2 -> wrapperInner2.eq("org_workspace.type", "workspace")));
+        }
+
+        if (CollectionUtils.isNotEmpty(request.getOrganizationIds())) {
+            List<String> orgWorkspaceList = workspaceCommonService.getWorkspaceIdsByOrgIds(request.getOrganizationIds());
+            orgWorkspaceList.addAll(request.getOrganizationIds());
+            wrapper.in(CollectionUtils.isNotEmpty(orgWorkspaceList), "org_workspace.id", orgWorkspaceList);
+        }
+
+        return wrapper;
+    }
+
+    public IPage<JobRecordDTO> pageJobRecordOld(PageJobRecordRequest request) {
         Page<JobRecordDTO> page = PageUtil.of(request, JobRecordDTO.class, new OrderItem(ColumnNameUtil.getColumnName(JobRecordDTO::getCreateTime, false), false), false);
 
         SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");

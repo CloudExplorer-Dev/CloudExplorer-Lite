@@ -1309,9 +1309,6 @@ public class VsphereSyncCloudApi {
                     BigDecimal useAvg = new BigDecimal(data.get("Average")).divide(new BigDecimal(1024)).divide(new BigDecimal(1024)).setScale(2, RoundingMode.HALF_UP);
                     BigDecimal totalBig = new BigDecimal(datastore.getCapacity());
                     f2CEntityPerfMetric.setAverage(useAvg.multiply(new BigDecimal(100)).divide(totalBig, 2, RoundingMode.HALF_UP));
-                    if (f2CEntityPerfMetric.getAverage().compareTo(new BigDecimal(100)) > 0) {
-                        System.out.println("");
-                    }
                     f2CEntityPerfMetric.setEntityType(F2CEntityType.DATASTORE.name());
                     f2CEntityPerfMetric.setMetricName(perfMetric.name());
                     f2CEntityPerfMetric.setPeriod(getMetricsRequest.getPeriod());

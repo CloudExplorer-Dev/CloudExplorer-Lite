@@ -23,7 +23,6 @@ const handleClick = (tab: TabsPaneContext, event: Event) => {
     <el-tab-pane :label="t('commons.basic_info', '基本信息')" name="BasicInfo">
       <BasicInfo />
     </el-tab-pane>
-    <el-tab-pane label="监控" name="Monitor"> 监控信息 </el-tab-pane>
   </el-tabs>
 </template>
 

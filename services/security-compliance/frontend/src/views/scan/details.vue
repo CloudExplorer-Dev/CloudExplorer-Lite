@@ -1,7 +1,25 @@
 <template>
   <layout-content>
     <template #breadcrumb>
-      <breadcrumb :auto="true"></breadcrumb>
+      <breadcrumb
+        :breadcrumbs="[
+          {
+            to: {
+              name: 'scan',
+              path: '/scan',
+            },
+            title: '扫描检测',
+          },
+          {
+            to: {
+              name: 'details',
+              path: '/scan/details/:compliance_rule_id/:cloud_account_id',
+            },
+            title: '详情',
+          },
+        ]"
+        :auto="false"
+      ></breadcrumb>
     </template>
     <layout-container>
       <template #header><h4>规则信息</h4></template>

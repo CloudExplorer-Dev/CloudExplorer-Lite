@@ -647,7 +647,11 @@ const buttons = ref([
       >
         {{ t("vm_cloud_disk.btn.uninstall", "卸载") }}
       </el-button>
-      <el-button @click="batchAuthorize()" :disabled="disableBatchAuthorize">
+      <el-button
+        @click="batchAuthorize()"
+        :disabled="disableBatchAuthorize"
+        v-hasPermission="'[vm-service]CLOUD_DISK:AUTH'"
+      >
         {{ t("commons.btn.gran", "授权") }}
       </el-button>
       <el-button
@@ -722,7 +726,7 @@ const buttons = ref([
             tree-type="org"
             ref="orgTreeRef"
             field="organizationIds"
-            label="组织"
+            :label="$t('commons.org', '组织')"
             :popover-ref="orgPopRef"
             :table-ref="table"
           />
@@ -759,7 +763,8 @@ const buttons = ref([
             tree-type="workspace"
             ref="workspaceTreeRef"
             field="workspaceIds"
-            label="工作空间"
+            :leaf-only="true"
+            :label="$t('commons.workspace', '工作空间')"
             :popover-ref="workspacePopRef"
             :table-ref="table"
           />

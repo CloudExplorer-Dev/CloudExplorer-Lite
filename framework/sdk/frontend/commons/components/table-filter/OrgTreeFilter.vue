@@ -6,21 +6,28 @@ import TreeFilter from "@commons/components/table-filter/TreeFilter.vue";
 import { tree } from "@commons/api/organization";
 import { workspaceTree } from "@commons/api/workspace";
 
-const props = defineProps<{
-  treeType: string;
-  leafOnly: boolean;
-  field: string;
-  label: string;
-  popoverRef: any;
-  tableRef: any;
-}>();
+const props = withDefaults(
+  defineProps<{
+    treeType: string;
+    leafOnly: boolean;
+    field: string;
+    label: string;
+    popoverRef: any;
+    tableRef: any;
+  }>(),
+  {
+    leafOnly: false,
+  }
+);
 
 const treeData = ref();
 const treeRef = ref();
 
 const selectedIds = computed(() => getSelectedIds(props.leafOnly));
 
-const selectedNames = computed(() => treeRef.value?.getCheckedLabels(false));
+const selectedNames = computed(() =>
+  treeRef.value?.getCheckedLabels(props.leafOnly)
+);
 
 const getSelectedIds = (leafOnly: boolean) => {
   return treeRef.value?.getCheckedKeys(leafOnly);

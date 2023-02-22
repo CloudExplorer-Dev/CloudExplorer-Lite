@@ -93,7 +93,10 @@
               class-name="content-class"
               label="失败原因"
             >
-              <span :style="{ color: data.status === 'FAILED' ? 'red' : null }">
+              <span
+                :style="{ color: data.status === 'FAILED' ? 'red' : null }"
+                class="result-content-class"
+              >
                 {{ data.result }}
               </span>
             </el-descriptions-item>
@@ -119,8 +122,8 @@ import _ from "lodash";
 import JobsApi from "@/api/jobs";
 import type { JobInfo } from "@/api/jobs/type";
 import { useI18n } from "vue-i18n";
-import { type VmCloudDiskVO } from "@/api/vm_cloud_disk/type";
-import { type VmCloudServerVO } from "@/api/vm_cloud_server/type";
+import type { VmCloudDiskVO } from "@/api/vm_cloud_disk/type";
+import type { VmCloudServerVO } from "@/api/vm_cloud_server/type";
 
 const { t } = useI18n();
 const useRoute = useRouter();
@@ -185,9 +188,14 @@ onMounted(() => {
 .content-class {
   border: 0 !important;
   background-color: transparent !important;
+  width: 90%;
 }
 .label-class {
   border: 0 !important;
   background-color: transparent !important;
+}
+.result-content-class {
+  word-break: break-all;
+  white-space: normal;
 }
 </style>
