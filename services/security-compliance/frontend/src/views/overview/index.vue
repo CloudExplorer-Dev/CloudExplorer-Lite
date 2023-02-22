@@ -424,7 +424,12 @@ const getRuleOptions = (groupDatas: Array<ComplianceViewGroupResponse>) => {
         return `<div>
               不合规资源
               <div style='display:flex;justify-content: space-between;width:200px'><div>规则名称</div><div>不合规/总数</div></div>
-              <div style='display:flex;justify-content: space-between;width:200px'><div>${data.data.groupName}</div><div>${data.data.notComplianceCount}/${data.data.total}</div></div>
+              <div style='display:flex;justify-content: space-between;width:200px'><div>${_.truncate(
+                data.data.groupName,
+                { length: 8 }
+              )}</div><div>${data.data.notComplianceCount}/${
+          data.data.total
+        }</div></div>
           </div>`;
       },
     },
@@ -585,7 +590,9 @@ const getRuleOptions = (groupDatas: Array<ComplianceViewGroupResponse>) => {
           lineHeight: 32,
           fontSize: 12,
         },
-        data: groupDatas.map((group) => group.groupName),
+        data: groupDatas.map((group) =>
+          _.truncate(group.groupName, { length: 8 })
+        ),
       },
     ],
     series: [
