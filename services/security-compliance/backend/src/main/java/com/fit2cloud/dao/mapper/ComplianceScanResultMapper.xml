@@ -12,6 +12,7 @@
         <result column="scan_status" property="scanStatus"/>
         <result column="compliance_count" property="complianceCount"/>
         <result column="not_compliance_count" property="notComplianceCount"/>
+        <result column="description" property="description"></result>
         <result column="update_time" property="updateTime"/>
     </resultMap>
     <select id="page" resultMap="ComplianceScanResponseMap">
@@ -19,7 +20,7 @@
         compliance_rule.*,
         IFNULL(compliance_scan_result.compliance_count, 0) AS compliance_count,
         IFNULL(compliance_scan_result.not_compliance_count,0) AS not_compliance_count,
-        IFNULL(compliance_scan_result.`scan_status`,1) as scan_status
+        IFNULL(compliance_scan_result.`status`,1) as scan_status
         FROM
         compliance_rule compliance_rule
         LEFT JOIN (
@@ -28,7 +29,7 @@
         SUM(compliance_count) AS compliance_count,
         SUM(not_compliance_count) AS not_compliance_count,
         SUM(resource_count) AS resource_count,
-        IF(FIND_IN_SET(2,GROUP_CONCAT(`status`)),2,1) as `scan_status`,
+        IF(FIND_IN_SET(2,GROUP_CONCAT(`status`)),2,1) as `status`,
         GROUP_CONCAT(cloud_account_id) as cloud_account_id
         FROM
         compliance_scan_result
@@ -48,7 +49,7 @@
         compliance_rule.*,
         IFNULL(compliance_scan_result.compliance_count, 0) AS compliance_count,
         IFNULL(compliance_scan_result.not_compliance_count,0) AS not_compliance_count,
-        IFNULL(compliance_scan_result.`scan_status`,1) as scan_status
+        IFNULL(compliance_scan_result.`status`,1) as scan_status
         FROM
         compliance_rule compliance_rule
         LEFT JOIN (
@@ -57,7 +58,7 @@
         SUM(compliance_count) AS compliance_count,
         SUM(not_compliance_count) AS not_compliance_count,
         SUM(resource_count) AS resource_count,
-        IF(FIND_IN_SET(2,GROUP_CONCAT(`status`)),2,1) as `scan_status`,
+        IF(FIND_IN_SET(2,GROUP_CONCAT(`status`)),2,1) as `status`,
         GROUP_CONCAT(cloud_account_id) as cloud_account_id
         FROM
         compliance_scan_result
@@ -104,7 +105,8 @@
         </if>
         FROM
         compliance_scan_resource_result compliance_scan_resource_result
-        LEFT JOIN compliance_rule compliance_rule ON compliance_rule.id = compliance_scan_resource_result.compliance_rule_id
+        LEFT JOIN compliance_rule compliance_rule ON compliance_rule.id =
+        compliance_scan_resource_result.compliance_rule_id
         ${ew.customSqlSegment}
         <if test="groupType=='CLOUD_ACCOUNT'">
             GROUP BY
@@ -131,37 +133,32 @@
         t1.`key`
     </select>
     <select id="count" resultType="com.fit2cloud.dao.entity.ComplianceCount">
-        SELECT
-            COUNT(*) AS total,
-            IFNULL(
-                    SUM(
-                            IF
-                                ( t1.`not_compliance_count` = 0, 1, 0 )),
-                    0
-                ) AS compliance_count,
-            IFNULL(
-                    SUM(
-                            IF
-                                ( t1.`not_compliance_count` >= 1, 1, 0 )),
-                    0
-                ) AS not_compliance_count
-        FROM
-            (
-                SELECT
-                    SUM( compliance_scan_resource_result.`status` ) AS a,
-                    SUM(
-                            IF
-                                ( compliance_scan_resource_result.`status` = 1, 1, 0 )) AS compliance_count,
-                    SUM(
-                            IF
-                                ( compliance_scan_resource_result.`status` = 2, 1, 0 )) AS not_compliance_count,
-                    compliance_scan_resource_result.cloud_account_id AS `key`
-                FROM
-                    compliance_scan_resource_result compliance_scan_resource_result
-                        LEFT JOIN compliance_rule compliance_rule ON compliance_rule.id = compliance_scan_resource_result.compliance_rule_id
-                    ${ew.customSqlSegment}
-                GROUP BY
-                    compliance_scan_resource_result.resource_instance_id
-            ) t1
+        SELECT COUNT(*) AS total,
+               IFNULL(
+                       SUM(
+                               IF
+                                   (t1.`not_compliance_count` = 0, 1, 0)),
+                       0
+                   )    AS compliance_count,
+               IFNULL(
+                       SUM(
+                               IF
+                                   (t1.`not_compliance_count` >= 1, 1, 0)),
+                       0
+                   )    AS not_compliance_count
+        FROM (SELECT SUM(compliance_scan_resource_result.`status`)                     AS a,
+                     SUM(
+                             IF
+                                 (compliance_scan_resource_result.`status` = 1, 1, 0)) AS compliance_count,
+                     SUM(
+                             IF
+                                 (compliance_scan_resource_result.`status` = 2, 1, 0)) AS not_compliance_count,
+                     compliance_scan_resource_result.cloud_account_id                  AS `key`
+              FROM compliance_scan_resource_result compliance_scan_resource_result
+                       LEFT JOIN compliance_rule compliance_rule
+                                 ON compliance_rule.id = compliance_scan_resource_result.compliance_rule_id
+                  ${ew.customSqlSegment}
+              GROUP BY
+                  compliance_scan_resource_result.resource_instance_id) t1
     </select>
 </mapper>

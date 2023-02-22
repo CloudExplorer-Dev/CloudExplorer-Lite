@@ -47,11 +47,16 @@
             />
           </el-select>
         </template>
-        <el-table-column prop="name" label="规则名称">
-          <template #default="scope"
-            ><div>
-              {{ scope.row.name }}
-            </div>
+        <el-table-column prop="name" label="规则名称" width="120">
+          <template #default="scope">
+            <el-tooltip class="box-item" effect="dark" placement="top-start">
+              <template #content>
+                <div style="max-width: 500px">{{ scope.row.description }}</div>
+              </template>
+              <div class="table_content_ellipsis">
+                {{ scope.row.name }}
+              </div></el-tooltip
+            >
           </template>
         </el-table-column>
         <el-table-column prop="resourceTyppe" label="资源类型" width="120px">
@@ -63,7 +68,19 @@
             }}
           </template>
         </el-table-column>
-        <el-table-column prop="platform" label="云平台" width="180">
+        <el-table-column
+          prop="platform"
+          label="云平台"
+          width="150"
+          :column-key="'platform'"
+          :filters="
+            Object.keys(platformIcon).map((key) => ({
+              text: platformIcon[key].name,
+              value: key,
+            }))
+          "
+          :filter-multiple="false"
+        >
           <template #default="scope">
             <div style="display: flex; align-items: center">
               <platform_icon :platform="scope.row.platform"></platform_icon>
@@ -71,7 +88,7 @@
             </div>
           </template></el-table-column
         >
-        <el-table-column prop="riskLevel" label="风险等级" sortable>
+        <el-table-column prop="riskLevel" label="风险等级" width="120" sortable>
           <template #default="scope">
             {{
               scope.row.riskLevel === "HIGH"
@@ -82,7 +99,17 @@
             }}
           </template>
         </el-table-column>
-        <el-table-column prop="scanStatus" label="检测状态" width="100px">
+        <el-table-column
+          prop="scanStatus"
+          column-key="scanStatus"
+          label="检测状态"
+          width="100px"
+          :filter-multiple="false"
+          :filters="[
+            { text: '合规', value: 'COMPLIANCE' },
+            { text: '不合规', value: 'NOT_COMPLIANCE' },
+          ]"
+        >
           <template #default="scope">
             <span
               :style="{

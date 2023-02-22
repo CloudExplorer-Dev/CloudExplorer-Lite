@@ -20,6 +20,7 @@
       <el-table-column
         prop="platform"
         label="云平台"
+        width="120"
         :column-key="'platform'"
         :filters="
           Object.keys(platformIcon).map((key) => ({
@@ -40,6 +41,7 @@
         prop="resourceType"
         :column-key="'resourceType'"
         label="资源类型"
+        width="130"
         :filters="
           resourceTypeList.map((resource) => ({
             text: resource.key,
@@ -67,6 +69,7 @@
       <el-table-column
         prop="riskLevel"
         label="风险等级"
+        width="120"
         :column-key="'riskLevel'"
         :filters="
           riskLevelOptionList.map((level) => ({
@@ -84,11 +87,23 @@
           ></div>
         </template>
       </el-table-column>
-      <el-table-column prop="description" label="规则描述"> </el-table-column>
+      <el-table-column prop="description" label="规则描述" width="150">
+        <template #default="scope">
+          <el-tooltip class="box-item" effect="dark" placement="top-start">
+            <template #content>
+              <div style="max-width: 500px">{{ scope.row.description }}</div>
+            </template>
+            <div class="table_content_ellipsis">
+              {{ scope.row.description }}
+            </div></el-tooltip
+          >
+        </template>
+      </el-table-column>
       <el-table-column
         prop="enable"
         column-key="enable"
         label="是否启用"
+        width="120"
         :filters="[
           { text: '启用', value: true },
           { text: '禁用', value: false },
@@ -102,7 +117,11 @@
           ></compliance_rule_switch>
         </template>
       </el-table-column>
-      <fu-table-operations v-bind="tableConfig.tableOperations" fix />
+      <fu-table-operations
+        fixed="right"
+        v-bind="tableConfig.tableOperations"
+        fix
+      />
       <template #buttons>
         <fu-table-column-select type="icon" :columns="columns" size="small" />
       </template>

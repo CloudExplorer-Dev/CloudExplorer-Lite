@@ -393,6 +393,11 @@ defineExpose({
     width: 6px !important; /* 高宽分别对应横竖滚动条的尺寸 */
   }
 }
+.table_content_ellipsis {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
 </style>
 <style scoped lang="scss">
 :deep(.el-table) {
