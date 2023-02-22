@@ -16,9 +16,6 @@
                 colon="true"
               >
                 {{ infoVmCloudServer.instanceName }}
-                <el-icon :size="15" style="margin-top: 5px">
-                  <Edit />
-                </el-icon>
                 <el-tag
                   style="margin-left: 20px"
                   :style="{
@@ -32,7 +29,7 @@
                       infoVmCloudServer.instanceStatus === 'Stopping' ||
                       infoVmCloudServer.instanceStatus === 'Rebooting' ||
                       infoVmCloudServer.instanceStatus === 'Deleting' ||
-                      infoVmCloudServer.instanceStatus === 'Createding'
+                      infoVmCloudServer.instanceStatus === 'Creating'
                     "
                     class="is-loading"
                     ><Loading
@@ -51,11 +48,6 @@
                 label="云账号:"
               >
                 <div style="display: flex">
-                  <!--                  <el-image
-                    style="margin-top: 3px; width: 16px; height: 16px"
-                    :src="platformIcon[infoVmCloudServer.platform].icon"
-                    v-if="infoVmCloudServer.platform"
-                  ></el-image>-->
                   <component
                     style="margin-top: 3px; width: 16px; height: 16px"
                     :is="platformIcon[infoVmCloudServer.platform]?.component"
@@ -72,6 +64,12 @@
               <el-descriptions-item
                 label-class-name="label-class"
                 class-name="content-class"
+                label="组织:"
+                >{{ infoVmCloudServer.organizationName }}</el-descriptions-item
+              >
+              <el-descriptions-item
+                label-class-name="label-class"
+                class-name="content-class"
                 label="工作空间:"
                 >{{ infoVmCloudServer.workspaceName }}</el-descriptions-item
               >
@@ -85,7 +83,7 @@
                 label-class-name="label-class"
                 class-name="content-class"
                 label="到期时间:"
-                >-</el-descriptions-item
+                >{{ infoVmCloudServer.expiredTime }}</el-descriptions-item
               >
               <el-descriptions-item
                 label-class-name="label-class"
@@ -125,13 +123,7 @@
                 label-class-name="label-class"
                 class-name="content-class"
                 label="申请人:"
-                >-</el-descriptions-item
-              >
-              <el-descriptions-item
-                label-class-name="label-class"
-                class-name="content-class"
-                label="镜像名称:"
-                >-</el-descriptions-item
+                >{{ infoVmCloudServer.applyUser }}</el-descriptions-item
               >
             </el-descriptions>
           </div>
@@ -194,16 +186,14 @@
 const props = defineProps<{
   id: string;
 }>();
-import { ref, onMounted, onBeforeUnmount } from "vue";
+import { ref, onMounted } from "vue";
 import VmCloudServerApi from "@/api/vm_cloud_server";
 import { useI18n } from "vue-i18n";
-import _, { constant } from "lodash";
-import { useRouter } from "vue-router";
+import _ from "lodash";
 import variables_server from "../../styles/vm_cloud_server/server.module.scss";
 import { platformIcon } from "@commons/utils/platform";
 const { t } = useI18n();
 const loading = ref<boolean>(false);
-const useRoute = useRouter();
 const infoVmCloudServer = ref<any>({});
 const contentSpan = ref<number>(2);
 const top = ref<HTMLElement | null>(null);
@@ -216,8 +206,9 @@ instanceStatusMap.set("Starting", t("", "启动中"));
 instanceStatusMap.set("Stopping", t("", "关机中"));
 instanceStatusMap.set("Rebooting", t("", "重启中"));
 instanceStatusMap.set("Deleting", t("", "删除中"));
-instanceStatusMap.set("Createding", t("", "创建中"));
-instanceStatusMap.set("Unknown", t("", "创建中"));
+instanceStatusMap.set("Creating", t("", "创建中"));
+instanceStatusMap.set("Unknown", t("", "未知"));
+instanceStatusMap.set("Failed", t("", "失败"));
 //显示进行中的状态
 const showLoading = ref<boolean>(true);
 //状态标签样式处理
@@ -233,6 +224,9 @@ const instanceStatusTagStyle = (instanceStatus: string) => {
       showLoading.value = false;
       break;
     case "Unknown":
+      showLoading.value = false;
+      break;
+    case "Failed":
       showLoading.value = false;
       break;
     default:

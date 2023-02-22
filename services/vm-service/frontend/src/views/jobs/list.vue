@@ -72,7 +72,6 @@ const showDetail = (row: JobInfo) => {
 };
 
 const jumpToResource = (resourceType: string, resourceId: string) => {
-  alert(resourceType);
   if (ResourceType.VM === resourceType) {
     jumpToServer(resourceId);
   }
