@@ -16,13 +16,14 @@ import Charts from "@commons/components/echart/Charts.vue";
 const props = withDefaults(
   defineProps<{
     needRoles: Array<"ADMIN" | "ORGADMIN" | "USER">;
-    permission: any;
+    permission?: any;
     module?: string;
     title: string;
     cardShadow?: "always" | "hover" | "never";
   }>(),
   {
     module: "vm-service",
+    permission: "[vm-service]CLOUD_SERVER:READ",
     title: "监控数据",
     cardShadow: "always",
   }

@@ -13,7 +13,7 @@ import * as echarts from "echarts";
 const props = withDefaults(
   defineProps<{
     needRoles: Array<"ADMIN" | "ORGADMIN" | "USER">;
-    permission: any;
+    permission?: any;
     module?: string;
     getHistoryTrend: (
       type: "MONTH" | "YEAR",
@@ -25,6 +25,7 @@ const props = withDefaults(
   }>(),
   {
     headPosition: "center",
+    permission: "[finance-management]BILL_ViEW:READ",
     module: "finance-management",
     cardShadow: "always",
   }

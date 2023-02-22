@@ -7,7 +7,12 @@
   >
     返回
   </div>
-  <div ref="chartWrapper" :style="getChartStyle" style="width: 100%"></div>
+  <div
+    v-resize="resize"
+    ref="chartWrapper"
+    :style="getChartStyle"
+    style="width: 100%; display: flex"
+  ></div>
 </template>
 
 <script lang="ts" setup>
@@ -52,7 +57,6 @@ watch(
   () => {
     setOptions();
     initTreeBar();
-    //resizeHandler();
   },
   {
     deep: true,
@@ -61,11 +65,9 @@ watch(
 
 let eChartsRef: ECharts | undefined = undefined;
 
-const resizeHandler = () => {
+const resize = () => {
   eChartsRef?.resize();
 };
-
-const resizeHandlerOrigin = _.debounce(resizeHandler, 500);
 
 const initChart = () => {
   if (!eChartsRef) {
@@ -159,12 +161,10 @@ const setOptions = () => {
   nextTick(() => {
     eChartsRef?.clear();
     eChartsRef?.setOption(options);
-    window.addEventListener("resize", resizeHandlerOrigin);
   });
 };
 const echartsClear = () => {
   eChartsRef?.clear();
-  resizeHandler();
 };
 
 const echartsLoading = () => {
