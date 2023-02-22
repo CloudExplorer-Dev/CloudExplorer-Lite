@@ -722,7 +722,7 @@ const buttons = ref([
             tree-type="org"
             ref="orgTreeRef"
             field="organizationIds"
-            label="组织"
+            :label="$t('commons.org', '组织')"
             :popover-ref="orgPopRef"
             :table-ref="table"
           />
@@ -759,7 +759,8 @@ const buttons = ref([
             tree-type="workspace"
             ref="workspaceTreeRef"
             field="workspaceIds"
-            label="工作空间"
+            :leaf-only="true"
+            :label="$t('commons.workspace', '工作空间')"
             :popover-ref="workspacePopRef"
             :table-ref="table"
           />

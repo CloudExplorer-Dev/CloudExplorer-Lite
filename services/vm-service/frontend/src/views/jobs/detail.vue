@@ -122,8 +122,8 @@ import _ from "lodash";
 import JobsApi from "@/api/jobs";
 import type { JobInfo } from "@/api/jobs/type";
 import { useI18n } from "vue-i18n";
-import type {  VmCloudDiskVO } from "@/api/vm_cloud_disk/type";
-import type {  VmCloudServerVO } from "@/api/vm_cloud_server/type";
+import type { VmCloudDiskVO } from "@/api/vm_cloud_disk/type";
+import type { VmCloudServerVO } from "@/api/vm_cloud_server/type";
 
 const { t } = useI18n();
 const useRoute = useRouter();
