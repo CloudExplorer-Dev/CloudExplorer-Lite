@@ -44,7 +44,7 @@ public class IComplianceViewServiceImpl implements IComplianceViewService {
     private IBaseCloudAccountService cloudAccountService;
 
     @Override
-    public List<ComplianceViewGroupResponse> group(ComplianceGroupRequest request) {
+    public List<ComplianceViewGroupResponse> resourceGroup(ComplianceGroupRequest request) {
         QueryWrapper<ComplianceScanResult> wrapper = getWrapper(request.getCloudAccountId());
         List<ComplianceGroup> groups = complianceScanResultMapper.group(request.getGroupType().name(), wrapper);
         List<DefaultKeyValue<String, String>> keyValueByGroupTypes = getKeyValueByGroupType(request.getGroupType());
@@ -52,8 +52,23 @@ public class IComplianceViewServiceImpl implements IComplianceViewService {
     }
 
     @Override
-    public ComplianceViewCountResponse getComplianceViewCountResponse(ComplianceCountRequest request) {
+    public ComplianceViewCountResponse resourceCount(ComplianceCountRequest request) {
         ComplianceCount complianceCount = complianceScanResultMapper.count(getWrapper(request.getCloudAccountId()));
+        ComplianceViewCountResponse complianceViewCountResponse = new ComplianceViewCountResponse();
+        complianceViewCountResponse.setNotComplianceCount(complianceCount.getNotComplianceCount());
+        complianceViewCountResponse.setComplianceCount(complianceCount.getComplianceCount());
+        complianceViewCountResponse.setTotal(complianceCount.getComplianceCount() + complianceCount.getNotComplianceCount());
+        complianceViewCountResponse.setNotCompliancePercentage((double) complianceCount.getNotComplianceCount() / complianceViewCountResponse.getTotal());
+        return toComplianceViewCountResponse(complianceCount);
+    }
+
+    @Override
+    public ComplianceViewCountResponse ruleCount(ComplianceCountRequest request) {
+        ComplianceCount complianceCount = complianceScanResultMapper.ruleCount(getWrapper(request.getCloudAccountId()));
+        return toComplianceViewCountResponse(complianceCount);
+    }
+
+    private ComplianceViewCountResponse toComplianceViewCountResponse(ComplianceCount complianceCount) {
         ComplianceViewCountResponse complianceViewCountResponse = new ComplianceViewCountResponse();
         complianceViewCountResponse.setNotComplianceCount(complianceCount.getNotComplianceCount());
         complianceViewCountResponse.setComplianceCount(complianceCount.getComplianceCount());

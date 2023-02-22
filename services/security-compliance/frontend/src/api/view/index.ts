@@ -17,7 +17,11 @@ const count: (
   complianceCountRequest,
   loading
 ) => {
-  return get("/api/compliance_view/count", complianceCountRequest, loading);
+  return get(
+    "/api/compliance_view/resource/count",
+    complianceCountRequest,
+    loading
+  );
 };
 
 /**
@@ -33,7 +37,11 @@ const group: (
   complianceGroupRequest,
   loading
 ) => {
-  return get("/api/compliance_view/group", complianceGroupRequest, loading);
+  return get(
+    "/api/compliance_view/resource/group",
+    complianceGroupRequest,
+    loading
+  );
 };
 
 export default {

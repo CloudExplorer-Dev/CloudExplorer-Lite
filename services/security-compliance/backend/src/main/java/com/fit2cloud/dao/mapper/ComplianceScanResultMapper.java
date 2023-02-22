@@ -1,6 +1,7 @@
 package com.fit2cloud.dao.mapper;
 
 import com.baomidou.mybatisplus.core.conditions.Wrapper;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.core.toolkit.Constants;
 import com.fit2cloud.controller.response.compliance_scan_result.ComplianceScanResultResponse;
@@ -42,4 +43,6 @@ public interface ComplianceScanResultMapper extends BaseMapper<ComplianceScanRes
     ComplianceCount count(@Param(Constants.WRAPPER) Wrapper<ComplianceScanResult> wrapper);
 
     List<ComplianceGroup> group(@Param("groupType") String groupType, @Param(Constants.WRAPPER) Wrapper<ComplianceScanResult> wrapper);
+
+    ComplianceCount ruleCount(@Param(Constants.WRAPPER) Wrapper<ComplianceScanResult> wrapper);
 }

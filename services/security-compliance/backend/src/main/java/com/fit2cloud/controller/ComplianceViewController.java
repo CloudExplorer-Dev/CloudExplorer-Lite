@@ -31,17 +31,24 @@ public class ComplianceViewController {
     @Resource
     private IComplianceViewService complianceViewService;
 
-    @GetMapping("/count")
+    @GetMapping("/resource/count")
     @ApiOperation("获取资源统计数据")
-    public ResultHolder<ComplianceViewCountResponse> count(ComplianceCountRequest request) {
-        ComplianceViewCountResponse complianceViewCountResponse = complianceViewService.getComplianceViewCountResponse(request);
+    public ResultHolder<ComplianceViewCountResponse> resourceCount(ComplianceCountRequest request) {
+        ComplianceViewCountResponse complianceViewCountResponse = complianceViewService.resourceCount(request);
         return ResultHolder.success(complianceViewCountResponse);
     }
 
-    @GetMapping("/group")
-    @ApiOperation(value = "获取分组统计数据", notes = "获取分组统计数据")
+    @GetMapping("/rule/count")
+    @ApiOperation("获取规则统计数据")
+    public ResultHolder<ComplianceViewCountResponse> ruleCount(ComplianceCountRequest request) {
+        ComplianceViewCountResponse complianceViewCountResponse = complianceViewService.ruleCount(request);
+        return ResultHolder.success(complianceViewCountResponse);
+    }
+
+    @GetMapping("/resource/group")
+    @ApiOperation(value = "获取资源分组统计数据", notes = "获取资源分组统计数据")
     public ResultHolder<List<ComplianceViewGroupResponse>> group(ComplianceGroupRequest request) {
-        List<ComplianceViewGroupResponse> res = complianceViewService.group(request);
+        List<ComplianceViewGroupResponse> res = complianceViewService.resourceGroup(request);
         return ResultHolder.success(res);
     }
 }
