@@ -18,20 +18,27 @@ public interface IComplianceViewService {
 
 
     /**
-     * 分组聚合数据
+     * 资源分组聚合数据
      *
      * @param request 请求对象
-     * @return 分组数据
+     * @return 资源分组数据
      */
-    List<ComplianceViewGroupResponse> group(ComplianceGroupRequest request);
+    List<ComplianceViewGroupResponse> resourceGroup(ComplianceGroupRequest request);
 
     /**
-     * 获取聚合数据
+     * 获取资源同居数据
      *
      * @param request 请求对象
-     * @return 聚合数据
+     * @return 资源统计数据
      */
-    ComplianceViewCountResponse getComplianceViewCountResponse(ComplianceCountRequest request);
+    ComplianceViewCountResponse resourceCount(ComplianceCountRequest request);
 
 
+    /**
+     * 获取规则聚合数据
+     *
+     * @param request 请求过滤对象
+     * @return 规则聚合数据
+     */
+    ComplianceViewCountResponse ruleCount(ComplianceCountRequest request);
 }

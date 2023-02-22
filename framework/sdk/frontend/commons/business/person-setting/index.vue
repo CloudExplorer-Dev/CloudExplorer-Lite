@@ -64,5 +64,6 @@ const showSourceChangeDialog = () => {
   <!--个人信息弹出框-->
   <PersonInfo ref="userInfoRef" />
 
+  <!--切换角色/组织架构 弹出框-->
   <SourceChangeDialog ref="sourceChangeDialogRef" />
 </template>

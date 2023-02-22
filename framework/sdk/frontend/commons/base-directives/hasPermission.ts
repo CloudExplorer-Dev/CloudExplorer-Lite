@@ -20,19 +20,23 @@ export const hasRolePermission = (
     return true;
   }
   //找到对应角色的权限
-  const rolePermission = _.find(requiredPermissions, (permission) => {
+  const rolePermissions = _.filter(requiredPermissions, (permission) => {
     if (permission == null) {
       return false;
     }
     return permission.role === role;
   });
-  if (rolePermission) {
+  if (rolePermissions && rolePermissions.length > 0) {
     //只要菜单中需要权限有任意一个存在，则表示有权限访问
-    return _.some(rolePermission.permissions, (permissionItem) =>
-      _.some(
-        permissions,
-        (permission) => permission === permissionItem.simpleId
-      )
+    return _.some(
+      _.flatMap(rolePermissions, (p) => {
+        return p.permissions;
+      }),
+      (permissionItem) =>
+        _.some(
+          permissions,
+          (permission) => permission === permissionItem.simpleId
+        )
     );
   }
   return false;
