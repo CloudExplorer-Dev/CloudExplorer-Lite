@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.fit2cloud.dao.mapper.JobRecordMapper">
+
+    <select id="pageJobRecord" resultType="com.fit2cloud.dto.JobRecordDTO">
+        SELECT
+            job_record.*,
+            user._name as operate_user_name,
+            job_record_resource_mapping.resource_id,
+            resource.resource_name,
+            resource.resource_type,
+            IF(org_workspace.type = "workspace",org_workspace.id,NULL) as workspace_id,
+            IF(org_workspace.type = "workspace",org_workspace.NAME,NULL) as workspace_name,
+            org_workspace.organization_id,
+            org_workspace.organization_name
+        FROM
+            job_record
+            INNER JOIN job_record_resource_mapping ON job_record.id = job_record_resource_mapping.job_record_id
+            LEFT JOIN user on job_record.operate_user_id = user.id
+            LEFT JOIN ( SELECT id, source_id,instance_name as resource_name,'VM' as resource_type FROM vm_cloud_server UNION ALL SELECT id, source_id,disk_name as resource_name,'DISK' as resource_type FROM vm_cloud_disk ) resource ON resource_id = resource.id
+            LEFT JOIN org_workspace ON resource.source_id = org_workspace.id
+            ${ew.customSqlSegment}
+    </select>
+</mapper>
