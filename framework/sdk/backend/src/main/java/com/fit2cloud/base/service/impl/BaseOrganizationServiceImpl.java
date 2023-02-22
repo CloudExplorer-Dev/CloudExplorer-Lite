@@ -10,11 +10,13 @@ import com.fit2cloud.base.service.IBaseWorkspaceService;
 import com.fit2cloud.common.constants.RoleConstants;
 import com.fit2cloud.common.utils.JsonUtil;
 import com.fit2cloud.common.utils.OrganizationUtil;
+import com.fit2cloud.dto.UserDto;
 import com.fit2cloud.dto.UserRoleDto;
 import com.fit2cloud.response.OrganizationTree;
 import com.fit2cloud.response.SourceTreeObject;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
@@ -94,7 +96,12 @@ public class BaseOrganizationServiceImpl extends ServiceImpl<BaseOrganizationMap
 
     @Override
     public List<OrganizationTree> tree(String type) {
-        List<OrganizationTree> organizationTree = tree();
+        UserDto credentials = (UserDto) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        List<Organization> organizationList = list();
+        if (Objects.equals(credentials.getCurrentRole(), RoleConstants.ROLE.ORGADMIN) && StringUtils.isNotEmpty(credentials.getCurrentSource())) {
+            organizationList = getDownOrganization(credentials.getCurrentSource(), new ArrayList<>(), organizationList);
+        }
+        List<OrganizationTree> organizationTree = OrganizationUtil.toTree(organizationList);
         if (StringUtils.isEmpty(type) || StringUtils.equals(type, TreeTypeOrganization)) {
             return organizationTree;
         }
@@ -136,6 +143,38 @@ public class BaseOrganizationServiceImpl extends ServiceImpl<BaseOrganizationMap
         res.add(organization);
         if (StringUtils.isNotEmpty(organization.getPid())) {
             return getUpOrganization(organization.getPid(), res);
+        }
+        return res;
+    }
+
+    /**
+     * 获取下级组织
+     *
+     * @param orgId      组织id
+     * @param res        返回值,传空数组
+     * @param allOrgTree 全量数据
+     * @return 当前组织的下级组织 包含当前组织
+     */
+    private List<Organization> getDownOrganization(String orgId, List<Organization> res, List<Organization> allOrgTree) {
+        allOrgTree.stream().filter(organization -> StringUtils.equals(organization.getId(), orgId)).findFirst().ifPresent(org -> {
+            res.add(org);
+        });
+        return getDownOrganization(orgId, res, (pid) -> allOrgTree.stream().filter(organization -> StringUtils.equals(organization.getPid(), pid)).toList());
+    }
+
+    /**
+     * 获取指定组织的下级组织
+     *
+     * @param orgId                组织id
+     * @param res                  返回值,传数组
+     * @param findDownOrganization 根据组织id 查询到组织到下一级到所有组织
+     * @return 当前组织下面到所有组织 不包含当前组织
+     */
+    private List<Organization> getDownOrganization(String orgId, List<Organization> res, Function<String, List<Organization>> findDownOrganization) {
+        List<Organization> organizationList = findDownOrganization.apply(orgId);
+        res.addAll(organizationList);
+        for (Organization organization : organizationList) {
+            getDownOrganization(organization.getId(), res, findDownOrganization);
         }
         return res;
     }

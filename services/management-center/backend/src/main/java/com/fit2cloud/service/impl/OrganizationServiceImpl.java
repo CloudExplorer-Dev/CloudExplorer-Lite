@@ -9,6 +9,7 @@ import com.fit2cloud.base.entity.Organization;
 import com.fit2cloud.base.entity.Workspace;
 import com.fit2cloud.base.service.IBaseUserRoleService;
 import com.fit2cloud.base.service.IBaseWorkspaceService;
+import com.fit2cloud.common.constants.RoleConstants;
 import com.fit2cloud.common.exception.Fit2cloudException;
 import com.fit2cloud.common.utils.ColumnNameUtil;
 import com.fit2cloud.common.utils.JsonUtil;
@@ -18,6 +19,7 @@ import com.fit2cloud.controller.request.OrganizationBatchRequest;
 import com.fit2cloud.controller.request.OrganizationRequest;
 import com.fit2cloud.controller.request.PageOrganizationRequest;
 import com.fit2cloud.dao.mapper.OrganizationMapper;
+import com.fit2cloud.dto.UserDto;
 import com.fit2cloud.response.OrganizationTree;
 import com.fit2cloud.service.IOrganizationService;
 import lombok.SneakyThrows;
@@ -25,6 +27,7 @@ import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.reflect.FieldUtils;
 import org.springframework.beans.BeanUtils;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -57,13 +60,16 @@ public class OrganizationServiceImpl extends ServiceImpl<OrganizationMapper, Org
     @Override
     public IPage<Organization> pageOrganization(PageOrganizationRequest request) {
         // 用户信息
-        //UserDto credentials = (UserDto) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        UserDto credentials = (UserDto) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         Page<Organization> page = new Page<>(request.getCurrentPage(), request.getPageSize(), false);
         // 构建查询参数
         QueryWrapper<Organization> wrapper = new QueryWrapper<>();
         wrapper.like(StringUtils.isNotEmpty(request.getName()), "name", request.getName())
                 .between(CollectionUtils.isNotEmpty(request.getUpdateTime()), "update_time", CollectionUtils.isNotEmpty(request.getUpdateTime()) ? simpleDateFormat.format(request.getUpdateTime().get(0)) : "", CollectionUtils.isNotEmpty(request.getUpdateTime()) ? simpleDateFormat.format(request.getUpdateTime().get(1)) : "")
                 .between(CollectionUtils.isNotEmpty(request.getCreateTime()), "create_time", CollectionUtils.isNotEmpty(request.getUpdateTime()) ? simpleDateFormat.format(request.getCreateTime().get(0)) : "", CollectionUtils.isNotEmpty(request.getUpdateTime()) ? simpleDateFormat.format(request.getCreateTime().get(1)) : "");
+        if (credentials.getCurrentRole().equals(RoleConstants.ROLE.ORGADMIN)) {
+            wrapper.eq(StringUtils.isNotEmpty(credentials.getCurrentSource()), "id", credentials.getCurrentSource());
+        }
         if (request.getOrder() != null && StringUtils.isNotEmpty(request.getOrder().getColumn())) {
             wrapper.orderBy(true, request.getOrder().isAsc(), ColumnNameUtil.getColumnName(request.getOrder().getColumn(), Organization.class));
         } else {
