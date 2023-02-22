@@ -122,7 +122,7 @@ public class BaseCloudAccountServiceImpl extends ServiceImpl<BaseCloudAccountMap
         // todo 查询到当前模块的定时任务
         List<QuartzJobDetail> quartzJobDetails = schedulerService.list();
         // todo 过滤出当前云账号的定时任务
-        List<JobSetting> jobDetails = moduleJobInfo.getJobDetails().stream().filter(job -> job.getCloudAccountShow().test(cloudAccount.getPlatform())).toList();
+        List<JobSetting> jobDetails = moduleJobInfo.getJobDetails().stream().filter(j -> !Objects.equals(j.getJobGroup(), JobConstants.Group.SYSTEM_GROUP.name())).filter(job -> job.getCloudAccountShow().test(cloudAccount.getPlatform())).toList();
         if (CollectionUtils.isEmpty(jobDetails)) {
             return null;
         }
