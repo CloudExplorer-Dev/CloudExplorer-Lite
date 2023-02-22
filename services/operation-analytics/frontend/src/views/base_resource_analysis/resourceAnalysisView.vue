@@ -475,7 +475,7 @@ const getSpreadComputerInfo = (
     _.set(options, "series[0].name", chartTitle);
     _.set(
       options,
-      "series[0].label.normal.formatter",
+      "series[0].label.formatter",
       `{title|总数}\r\n{value|${_.sumBy(spreadInfo.value[chartName], "value")}}`
     );
     if (chartName === "host") {

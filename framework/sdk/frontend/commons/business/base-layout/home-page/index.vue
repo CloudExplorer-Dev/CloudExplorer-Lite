@@ -65,7 +65,6 @@ onMounted(() => {
             <BillTrend
               class="flex-div-1 divide-info"
               :need-roles="['USER']"
-              :permission="'[finance-management]BILL_ViEW:READ'"
               :getHistoryTrend="getHistoryTrend"
               head-position="left"
             />
@@ -103,7 +102,6 @@ onMounted(() => {
           <BillTrend
             style="height: 100%"
             :need-roles="['ADMIN', 'ORGADMIN']"
-            :permission="'[finance-management]BILL_ViEW:READ'"
             :getHistoryTrend="getHistoryTrend"
             head-position="left"
           />
@@ -123,7 +121,6 @@ onMounted(() => {
           <ServerMetrics
             class="flex-div-2 divide-info"
             :need-roles="['USER']"
-            :permission="'[vm-service]CLOUD_SERVER:READ'"
             title="资源监控"
           />
         </el-col>

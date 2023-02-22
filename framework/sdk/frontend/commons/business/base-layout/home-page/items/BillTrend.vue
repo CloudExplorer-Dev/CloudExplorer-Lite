@@ -13,7 +13,7 @@ import * as echarts from "echarts";
 const props = withDefaults(
   defineProps<{
     needRoles: Array<"ADMIN" | "ORGADMIN" | "USER">;
-    permission: any;
+    permission?: any;
     module?: string;
     getHistoryTrend: (
       type: "MONTH" | "YEAR",
@@ -25,6 +25,7 @@ const props = withDefaults(
   }>(),
   {
     headPosition: "center",
+    permission: "[finance-management]BILL_ViEW:READ",
     module: "finance-management",
     cardShadow: "always",
   }
@@ -108,17 +109,15 @@ const historyTrend = async (historyNum: number, active: string) => {
         show: false,
       };
       option["series"][0]["itemStyle"] = {
-        normal: {
-          label: {
-            show: true,
-            position: "top",
-            textStyle: {
-              color: "black",
-              fontSize: 12,
-            },
-            formatter: function (param: any) {
-              return _.round(param.value, 2).toFixed(2);
-            },
+        label: {
+          show: true,
+          position: "top",
+          textStyle: {
+            color: "black",
+            fontSize: 12,
+          },
+          formatter: function (param: any) {
+            return _.round(param.value, 2).toFixed(2);
           },
         },
       };

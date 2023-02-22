@@ -238,28 +238,26 @@ const getCloudAccountOptions = (
           borderWidth: 2,
         },
         label: {
-          normal: {
-            show: true,
-            position: "center",
-            backgroundColor: "#fff",
-            width: 140,
-            color: "#4c4a4a",
-            formatter: () => {
-              return `{title|资源总数}\r\n{value|${_.round(
-                _.sumBy(groupDatas, "total"),
-                2
-              ).toFixed(0)}}`;
+          show: true,
+          position: "center",
+          backgroundColor: "#fff",
+          width: 140,
+          color: "#4c4a4a",
+          formatter: () => {
+            return `{title|资源总数}\r\n{value|${_.round(
+              _.sumBy(groupDatas, "total"),
+              2
+            ).toFixed(0)}}`;
+          },
+          rich: {
+            title: {
+              fontSize: 14,
+              color: "#333",
             },
-            rich: {
-              title: {
-                fontSize: 14,
-                color: "#333",
-              },
-              value: {
-                fontSize: 30,
-                color: "#000",
-                lineHeight: 44,
-              },
+            value: {
+              fontSize: 30,
+              color: "#000",
+              lineHeight: 44,
             },
           },
         },
@@ -326,28 +324,26 @@ const getResourceTypeOptions = (
           borderWidth: 2,
         },
         label: {
-          normal: {
-            show: true,
-            position: "center",
-            backgroundColor: "#fff",
-            width: 140,
-            color: "#4c4a4a",
-            formatter: () => {
-              return `{title|资源总数}\r\n{value|${_.round(
-                _.sumBy(groupDatas, "total"),
-                2
-              ).toFixed(0)}}`;
+          show: true,
+          position: "center",
+          backgroundColor: "#fff",
+          width: 140,
+          color: "#4c4a4a",
+          formatter: () => {
+            return `{title|资源总数}\r\n{value|${_.round(
+              _.sumBy(groupDatas, "total"),
+              2
+            ).toFixed(0)}}`;
+          },
+          rich: {
+            title: {
+              fontSize: 14,
+              color: "#333",
             },
-            rich: {
-              title: {
-                fontSize: 14,
-                color: "#333",
-              },
-              value: {
-                fontSize: 30,
-                color: "#000",
-                lineHeight: 44,
-              },
+            value: {
+              fontSize: 30,
+              color: "#000",
+              lineHeight: 44,
             },
           },
         },
@@ -610,9 +606,7 @@ const getRuleOptions = (groupDatas: Array<ComplianceViewGroupResponse>) => {
         })),
         align: "center",
         itemStyle: {
-          normal: {
-            barBorderRadius: 10,
-          },
+          barBorderRadius: 10,
         },
         label: {
           show: true,
@@ -642,12 +636,10 @@ const getRuleOptions = (groupDatas: Array<ComplianceViewGroupResponse>) => {
           color: "#000",
         },
         itemStyle: {
-          normal: {
-            color: "#eee",
-            fontSize: 16,
-            barBorderRadius: 30,
-            backgroundColor: "#eee",
-          },
+          color: "#eee",
+          fontSize: 16,
+          barBorderRadius: 30,
+          backgroundColor: "#eee",
           emphasis: {
             color: "#eee",
           },
