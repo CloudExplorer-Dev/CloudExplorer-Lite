@@ -20,8 +20,5 @@
   },
   "dependencies": {
     "@micro-zoe/micro-app": "^1.0.0-alpha.10"
-  },
-  "devDependencies": {
-    "vite-plugin-dts": "^1.4.0"
   }
 }

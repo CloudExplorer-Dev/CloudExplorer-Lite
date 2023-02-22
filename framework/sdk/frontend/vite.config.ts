@@ -6,7 +6,6 @@ import type { ProxyOptions } from "vite";
 import vue from "@vitejs/plugin-vue";
 import vueSetupExtend from "vite-plugin-vue-setup-extend";
 
-//import dts from "vite-plugin-dts"; //生成d.ts
 import { createHtmlPlugin } from "vite-plugin-html";
 
 /**
@@ -93,13 +92,6 @@ export default defineConfig(({ mode }: ConfigEnv) => {
 
   if (mode === "lib") {
     config = { ...config, ...commonBuild };
-    //生成d.ts
-    /*config.plugins.push(
-      dts({
-        outputDir: fileURLToPath(new URL("./lib", import.meta.url)),
-        tsConfigFilePath: "./tsconfig.json",
-      })
-    );*/
   }
 
   const proxyConf: Record<string, string | ProxyOptions> = {};
