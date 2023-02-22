@@ -46,7 +46,7 @@ const baseList: Array<BaseModuleInfo> = [
     roles: ["ADMIN", "ORGADMIN"],
   },
   {
-    icon: "zuzhijiagou",
+    icon: "zuzhijiagou1",
     name: "组织",
     hasPermission: permissionStore.hasPermission(
       "[management-center]ORGANIZATION:READ"
@@ -101,7 +101,7 @@ const baseList: Array<BaseModuleInfo> = [
     roles: ["ADMIN"],
   },
   {
-    icon: "a-ziyuan59",
+    icon: "yidongyunkongzhitaiicon06",
     name: "存储器",
     hasPermission: permissionStore.hasPermission([
       "[operation-analytics]BASE_RESOURCE_ANALYSIS:READ",
