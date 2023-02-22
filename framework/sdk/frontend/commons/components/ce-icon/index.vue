@@ -9,7 +9,6 @@ const $antIcons: any =
 const props = defineProps({
   code: {
     type: String,
-    required: true,
   },
   cssPrefixText: {
     type: String,
@@ -39,7 +38,7 @@ const getCode = computed(() => {
 <template>
   <el-icon>
     <svg
-      v-if="props.type === 'svg'"
+      v-if="props.code && props.type === 'svg'"
       class="icon svg-icon"
       preserveAspectRatio="none"
       style="height: 100%; width: 100%"
@@ -47,11 +46,11 @@ const getCode = computed(() => {
       <use :xlink:href="'#' + getCode"></use>
     </svg>
     <component
-      v-else-if="Object.keys(components).includes(props.code)"
+      v-else-if="props.code && Object.keys(components).includes(props.code)"
       :is="$antIcons[props.code]"
     ></component>
     <el-image
-      v-if="type === 'img'"
+      v-else-if="type === 'img'"
       :src="src"
       :style="{ width: size, height: size }"
     />

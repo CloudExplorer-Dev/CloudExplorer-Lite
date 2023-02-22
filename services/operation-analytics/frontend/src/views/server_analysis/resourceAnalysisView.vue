@@ -298,7 +298,7 @@ const getSpreadData = (spreadType: string) => {
       if (spreadType === "byChargeType") {
         spreadByChargeTypeOption.value = options;
       }
-      childRefMap.get(spreadType + "-chart").hideEchartsLoading();
+      childRefMap.get(spreadType + "-chart")?.hideEchartsLoading();
     }
   });
 };
