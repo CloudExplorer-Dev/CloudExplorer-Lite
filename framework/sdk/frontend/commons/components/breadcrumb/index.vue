@@ -11,7 +11,7 @@
   <div style="flex: 1 1 auto"></div>
   <el-affix
     v-if="
-      showReurns?.some(
+      showReturns?.some(
         (r) => router.currentRoute.value.meta[r.field] === r.value
       )
     "
@@ -47,12 +47,12 @@ const props = withDefaults(
     /**
      * 需要携带return的页面
      */
-    showReurns?: Array<{ field: string; value: string }>;
+    showReturns?: Array<{ field: string; value: string }>;
   }>(),
   {
     auto: true,
     excludes: () => [{ field: "title", value: "列表" }],
-    showReurns: () => [{ field: "title", value: "详情" }],
+    showReturns: () => [{ field: "title", value: "详情" }],
   }
 );
 
