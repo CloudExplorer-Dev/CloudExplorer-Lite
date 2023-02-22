@@ -126,29 +126,27 @@ const getBillViewOptions = (
         zlevel: 1,
         avoidLabelOverlap: false,
         label: {
-          normal: {
-            show: true,
-            position: "center",
-            backgroundColor: "#fff",
-            width: 140,
-            color: "#4c4a4a",
-            formatter: () => {
-              const sum = filterData
-                .filter((d) => (selected as SimpleMap<boolean>)[d.name])
-                .map((a) => a.value)
-                .reduce((p, n) => p + n, 0);
-              return `{title|总费用}\r\n{value|${_.round(sum, 2).toFixed(2)}}`;
+          show: true,
+          position: "center",
+          backgroundColor: "#fff",
+          width: 140,
+          color: "#4c4a4a",
+          formatter: () => {
+            const sum = filterData
+              .filter((d) => (selected as SimpleMap<boolean>)[d.name])
+              .map((a) => a.value)
+              .reduce((p, n) => p + n, 0);
+            return `{title|总费用}\r\n{value|${_.round(sum, 2).toFixed(2)}}`;
+          },
+          rich: {
+            title: {
+              fontSize: 14,
+              color: "#333",
             },
-            rich: {
-              title: {
-                fontSize: 14,
-                color: "#333",
-              },
-              value: {
-                fontSize: 30,
-                color: "#000",
-                lineHeight: 44,
-              },
+            value: {
+              fontSize: 30,
+              color: "#000",
+              lineHeight: 44,
             },
           },
         },

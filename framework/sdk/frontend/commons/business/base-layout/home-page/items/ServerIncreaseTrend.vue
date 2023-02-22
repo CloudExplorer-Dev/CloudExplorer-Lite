@@ -21,13 +21,17 @@ const params = {};
 const props = withDefaults(
   defineProps<{
     needRoles: Array<"ADMIN" | "ORGADMIN" | "USER">;
-    permission: any;
+    permission?: any;
     module?: string;
 
     cardShadow?: "always" | "hover" | "never";
   }>(),
   {
     module: "operation-analytics",
+    permission: [
+      "[operation-analytics]SERVER_ANALYSIS:READ",
+      "[operation-analytics]OVERVIEW:READ",
+    ],
     cardShadow: "always",
   }
 );
@@ -116,6 +120,8 @@ const getIncreaseTrend = (chartName: string) => {
       colorIndex++;
       seriesData.push(items);
     }
+    _.set(options, "legend.bottom", "3%");
+    _.set(options, "grid.bottom", "18%");
     _.set(options, "legend.data", legend);
     _.set(options, "xAxis[0].data", xAxis);
     _.set(options, "series", seriesData);

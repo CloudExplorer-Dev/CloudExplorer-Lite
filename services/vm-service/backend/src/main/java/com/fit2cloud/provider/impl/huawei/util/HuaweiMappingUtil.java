@@ -245,9 +245,15 @@ public class HuaweiMappingUtil {
     public static F2CPerfMetricMonitorData toF2CPerfMetricMonitorData(Datapoint v) {
         F2CPerfMetricMonitorData f2CEntityPerfMetric = new F2CPerfMetricMonitorData();
         f2CEntityPerfMetric.setTimestamp(v.getTimestamp());
-        f2CEntityPerfMetric.setAverage(new BigDecimal(v.getAverage()).setScale(3, RoundingMode.HALF_UP));
-        f2CEntityPerfMetric.setMinimum(new BigDecimal(v.getMin()).setScale(3, RoundingMode.HALF_UP));
-        f2CEntityPerfMetric.setMaximum(new BigDecimal(v.getMax()).setScale(3, RoundingMode.HALF_UP));
+        if(Objects.nonNull(v.getAverage())){
+            f2CEntityPerfMetric.setAverage(new BigDecimal(v.getAverage()).setScale(3, RoundingMode.HALF_UP));
+        }
+        if(Objects.nonNull(v.getMax())){
+            f2CEntityPerfMetric.setMaximum(new BigDecimal(v.getMax()).setScale(3, RoundingMode.HALF_UP));
+        }
+        if(Objects.nonNull(v.getMin())){
+            f2CEntityPerfMetric.setMinimum(new BigDecimal(v.getMin()).setScale(3, RoundingMode.HALF_UP));
+        }
         return f2CEntityPerfMetric;
     }
 

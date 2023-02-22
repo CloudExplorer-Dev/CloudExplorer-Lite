@@ -185,7 +185,7 @@ public class TencentCloudProvider extends AbstractCloudProvider<TencentBaseCrede
         List<Disk> instances = TencentApi.listDiskInstance(listDiskInstanceRequest);
         return instances
                 .stream()
-                .map(instance -> ResourceUtil.toResourceInstance(PlatformConstants.fit2cloud_tencent_platform.name(), ResourceTypeConstants.DISK, instance.getInstanceId(), instance.getDiskName(), instance))
+                .map(instance -> ResourceUtil.toResourceInstance(PlatformConstants.fit2cloud_tencent_platform.name(), ResourceTypeConstants.DISK, instance.getDiskId(), instance.getDiskName(), instance))
                 .toList();
     }
 

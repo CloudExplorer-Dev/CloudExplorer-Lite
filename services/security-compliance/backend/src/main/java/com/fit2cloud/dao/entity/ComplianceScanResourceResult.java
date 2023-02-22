@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
+
 import java.io.Serializable;
 import java.time.LocalDateTime;
 
@@ -12,6 +13,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.experimental.Accessors;
+
 import java.io.Serial;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
@@ -23,18 +25,16 @@ import com.fit2cloud.dao.constants.ComplianceStatus;
 
 /**
  * <p>
- * 
+ *
  * </p>
- *
- *
  */
 @Getter
 @Setter
 @Accessors(chain = true)
-@TableName("compliance_scan_result")
+@TableName("compliance_scan_resource_result")
 @AllArgsConstructor
 @NoArgsConstructor
-public class ComplianceScanResult implements Serializable {
+public class ComplianceScanResourceResult implements Serializable {
 
     @Serial
     private static final long serialVersionUID = 1L;
@@ -43,7 +43,7 @@ public class ComplianceScanResult implements Serializable {
     private String id;
 
     /**
-     * 规则id
+     * 合规规则id
      */
     @TableField("compliance_rule_id")
     private String complianceRuleId;
@@ -61,25 +61,13 @@ public class ComplianceScanResult implements Serializable {
     private String cloudAccountId;
 
     /**
-     * 合规数量
+     * 资源实例id
      */
-    @TableField("compliance_count")
-    private Integer complianceCount;
+    @TableField("resource_instance_id")
+    private String resourceInstanceId;
 
     /**
-     * 不合规数量
-     */
-    @TableField("not_compliance_count")
-    private Integer notComplianceCount;
-
-    /**
-     * 资源总数
-     */
-    @TableField("resource_count")
-    private Integer resourceCount;
-
-    /**
-     * 扫描状态
+     * 是否合规
      */
     @TableField("status")
     private ComplianceStatus status;

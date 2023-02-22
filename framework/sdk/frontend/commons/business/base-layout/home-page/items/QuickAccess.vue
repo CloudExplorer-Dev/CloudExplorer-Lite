@@ -270,21 +270,13 @@ function goRecentAccess(menu: RecentAccessRoute) {
         padding-bottom: 20px;
       "
     >
-      <!--      <el-button
-        v-for="m in modules"
-        :key="m.id"
-        plain
-        type="primary"
-        @click="changeModule(m.id)"
-      >
-        {{ m.name }}
-      </el-button>-->
       <el-button
         v-for="(m, index) in quickAccessMenus"
         :key="index"
         plain
         type="primary"
         @click="goQuickAccess(m)"
+        style="margin-bottom: 5px"
       >
         {{ m.quickAccessName }}
       </el-button>
@@ -308,6 +300,7 @@ function goRecentAccess(menu: RecentAccessRoute) {
         plain
         type="primary"
         @click="goRecentAccess(m)"
+        style="margin-bottom: 5px"
       >
         {{
           m.quickAccessName

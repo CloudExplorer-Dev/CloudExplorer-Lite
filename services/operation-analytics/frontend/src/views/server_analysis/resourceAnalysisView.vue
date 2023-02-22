@@ -286,7 +286,7 @@ const getSpreadData = (spreadType: string) => {
       _.set(options, "series[0].data", spreadData[spreadType]);
       _.set(
         options,
-        "series[0].label.normal.formatter",
+        "series[0].label.formatter",
         `{title|总数}\r\n{value|${_.sumBy(spreadData[spreadType], "value")}}`
       );
       if (spreadType === "byAccount") {

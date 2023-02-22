@@ -284,6 +284,8 @@ public class MenuConstants {
                                             .name("org_create")
                                             .title("创建")
                                             .path("/create")
+                                            .quickAccess(true)
+                                            .quickAccessName("创建组织")
                                             .componentPath("/src/views/OrgManage/create.vue")
                                             .requiredPermission(new MenuPermission.Builder()
                                                     .role(RoleConstants.ROLE.ADMIN)

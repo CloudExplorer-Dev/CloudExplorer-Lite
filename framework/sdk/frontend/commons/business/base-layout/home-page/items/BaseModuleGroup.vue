@@ -46,7 +46,7 @@ const baseList: Array<BaseModuleInfo> = [
     roles: ["ADMIN", "ORGADMIN"],
   },
   {
-    icon: "zuzhijiagou",
+    icon: "zuzhijiagou1",
     name: "组织",
     hasPermission: permissionStore.hasPermission(
       "[management-center]ORGANIZATION:READ"
@@ -90,9 +90,10 @@ const baseList: Array<BaseModuleInfo> = [
   {
     icon: "xuniji1",
     name: "宿主机",
-    hasPermission: permissionStore.hasPermission(
-      "[operation-analytics]RESOURCE_ANALYSIS:READ"
-    ),
+    hasPermission: permissionStore.hasPermission([
+      "[operation-analytics]BASE_RESOURCE_ANALYSIS:READ",
+      "[operation-analytics]OVERVIEW:READ",
+    ]),
     module: "operation-analytics",
     path: "/operation-analytics/api/base_resource_analysis/host/count",
     redirect:
@@ -100,11 +101,12 @@ const baseList: Array<BaseModuleInfo> = [
     roles: ["ADMIN"],
   },
   {
-    icon: "a-ziyuan59",
+    icon: "yidongyunkongzhitaiicon06",
     name: "存储器",
-    hasPermission: permissionStore.hasPermission(
-      "[operation-analytics]RESOURCE_ANALYSIS:READ"
-    ),
+    hasPermission: permissionStore.hasPermission([
+      "[operation-analytics]BASE_RESOURCE_ANALYSIS:READ",
+      "[operation-analytics]OVERVIEW:READ",
+    ]),
     module: "operation-analytics",
     path: "/operation-analytics/api/base_resource_analysis/datastore/count",
     redirect:

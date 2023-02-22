@@ -11,15 +11,11 @@ import com.fit2cloud.common.utils.SpringUtil;
 import com.fit2cloud.service.ISyncProviderService;
 import jdk.jfr.Name;
 import org.quartz.Job;
-import org.quartz.JobExecutionContext;
-import org.quartz.JobExecutionException;
 import org.springframework.stereotype.Component;
 
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.concurrent.CompletableFuture;
 import java.util.function.Predicate;
 
 /**
@@ -85,9 +81,11 @@ public class CloudAccountSyncJob {
     public static class SyncMetricMonitor extends AsyncJob implements Job {
         @Override
         protected void run(Map<String, Object> map) {
-            List<Map<String, Object>> execParams = getExecParams();
+            //List<Map<String, Object>> execParams = getExecParams();
+            LogUtil.info("开始同步监控数据...");
             List<CloudAccount> cloudAccounts = SpringUtil.getBean(IBaseCloudAccountService.class).list();
             for (CloudAccount cloudAccount : cloudAccounts) {
+                LogUtil.info("开始同步:"+cloudAccount.getName());
                 // 云主机监控
                 new SyncCloudServerPerfMetricMonitor().exec(cloudAccount);
                 //  宿主机监控
@@ -96,7 +94,9 @@ public class CloudAccountSyncJob {
                 new SyncCloudDiskPerfMetricMonitor().exec(cloudAccount);
                 // 存储器监控
                 new SyncCloudDatastorePerfMetricMonitor().exec(cloudAccount);
+                LogUtil.info("结束同步:"+cloudAccount.getName());
             }
+            LogUtil.info("结束同步监控数据...");
 
         }
 
@@ -135,8 +135,12 @@ public class CloudAccountSyncJob {
 
         public void exec(CloudAccount cloudAccount) {
             if (supportPlatform().test(cloudAccount.getPlatform())) {
-                List<Credential.Region> regions = Credential.of(cloudAccount.getPlatform(), cloudAccount.getCredential()).regions();
-                exec(JobConstants.CloudAccount.getCloudAccountJobParams(cloudAccount.getId(), regions));
+                try {
+                    List<Credential.Region> regions = Credential.of(cloudAccount.getPlatform(), cloudAccount.getCredential()).regions();
+                    exec(JobConstants.CloudAccount.getCloudAccountJobParams(cloudAccount.getId(), regions));
+                }catch (Exception e){
+                    LogUtil.error(cloudAccount.getName()+"-"+e.getMessage());
+                }
             }
         }
     }
@@ -156,8 +160,12 @@ public class CloudAccountSyncJob {
 
         public void exec(CloudAccount cloudAccount) {
             if (supportPlatform().test(cloudAccount.getPlatform())) {
-                List<Credential.Region> regions = Credential.of(cloudAccount.getPlatform(), cloudAccount.getCredential()).regions();
-                exec(JobConstants.CloudAccount.getCloudAccountJobParams(cloudAccount.getId(), regions));
+                try {
+                    List<Credential.Region> regions = Credential.of(cloudAccount.getPlatform(), cloudAccount.getCredential()).regions();
+                    exec(JobConstants.CloudAccount.getCloudAccountJobParams(cloudAccount.getId(), regions));
+                }catch (Exception e){
+                    LogUtil.error(cloudAccount.getName()+"-"+e.getMessage());
+                }
             }
         }
     }
@@ -177,8 +185,12 @@ public class CloudAccountSyncJob {
 
         public void exec(CloudAccount cloudAccount) {
             if (supportPlatform().test(cloudAccount.getPlatform())) {
-                List<Credential.Region> regions = Credential.of(cloudAccount.getPlatform(), cloudAccount.getCredential()).regions();
-                exec(JobConstants.CloudAccount.getCloudAccountJobParams(cloudAccount.getId(), regions));
+                try {
+                    List<Credential.Region> regions = Credential.of(cloudAccount.getPlatform(), cloudAccount.getCredential()).regions();
+                    exec(JobConstants.CloudAccount.getCloudAccountJobParams(cloudAccount.getId(), regions));
+                }catch (Exception e){
+                    LogUtil.error(cloudAccount.getName()+"-"+e.getMessage());
+                }
             }
         }
     }
@@ -198,8 +210,12 @@ public class CloudAccountSyncJob {
 
         public void exec(CloudAccount cloudAccount) {
             if (supportPlatform().test(cloudAccount.getPlatform())) {
-                List<Credential.Region> regions = Credential.of(cloudAccount.getPlatform(), cloudAccount.getCredential()).regions();
-                exec(JobConstants.CloudAccount.getCloudAccountJobParams(cloudAccount.getId(), regions));
+                try {
+                    List<Credential.Region> regions = Credential.of(cloudAccount.getPlatform(), cloudAccount.getCredential()).regions();
+                    exec(JobConstants.CloudAccount.getCloudAccountJobParams(cloudAccount.getId(), regions));
+                }catch (Exception e){
+                    LogUtil.error(cloudAccount.getName()+"-"+e.getMessage());
+                }
             }
         }
     }

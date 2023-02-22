@@ -192,7 +192,7 @@ const table = ref();
  * 刷新表格数据
  */
 const refreshTable = () => {
-  table.value.search(table?.value.getTableSearch());
+  table.value.search();
 };
 
 /**

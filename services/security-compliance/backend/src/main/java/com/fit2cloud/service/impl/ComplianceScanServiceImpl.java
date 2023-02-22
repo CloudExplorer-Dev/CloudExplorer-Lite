@@ -4,12 +4,13 @@ import co.elastic.clients.elasticsearch.ElasticsearchClient;
 import co.elastic.clients.elasticsearch._types.FieldValue;
 import co.elastic.clients.elasticsearch._types.InlineScript;
 import co.elastic.clients.elasticsearch._types.Script;
-import co.elastic.clients.elasticsearch._types.aggregations.Aggregation;
-import co.elastic.clients.elasticsearch._types.aggregations.ValueCountAggregate;
-import co.elastic.clients.elasticsearch._types.aggregations.ValueCountAggregation;
+import co.elastic.clients.elasticsearch._types.Time;
+import co.elastic.clients.elasticsearch._types.aggregations.*;
 import co.elastic.clients.elasticsearch._types.query_dsl.*;
+import co.elastic.clients.elasticsearch.core.ScrollRequest;
 import co.elastic.clients.elasticsearch.core.SearchRequest;
 import co.elastic.clients.elasticsearch.core.SearchResponse;
+import co.elastic.clients.elasticsearch.core.UpdateByQueryRequest;
 import co.elastic.clients.elasticsearch.core.search.Hit;
 import co.elastic.clients.elasticsearch.core.search.HitsMetadata;
 import co.elastic.clients.json.JsonData;
@@ -20,12 +21,14 @@ import com.fit2cloud.base.mapper.BaseJobRecordResourceMappingMapper;
 import com.fit2cloud.base.service.IBaseCloudAccountService;
 import com.fit2cloud.common.constants.JobTypeConstants;
 import com.fit2cloud.common.provider.util.CommonUtil;
+import com.fit2cloud.common.provider.util.PageUtil;
 import com.fit2cloud.common.utils.QueryUtil;
 import com.fit2cloud.constants.ConditionTypeConstants;
 import com.fit2cloud.constants.ResourceTypeConstants;
 import com.fit2cloud.constants.ScanRuleConstants;
 import com.fit2cloud.constants.SyncDimensionConstants;
 import com.fit2cloud.controller.request.compliance_scan.ComplianceResourceRequest;
+import com.fit2cloud.controller.request.view.ComplianceGroupRequest;
 import com.fit2cloud.controller.response.compliance_scan.ComplianceResourceResponse;
 import com.fit2cloud.controller.response.compliance_scan.SupportCloudAccountResourceResponse;
 import com.fit2cloud.controller.response.compliance_scan.SupportPlatformResourceResponse;
@@ -33,6 +36,7 @@ import com.fit2cloud.controller.response.compliance_scan_result.ComplianceScanRe
 import com.fit2cloud.dao.constants.ComplianceStatus;
 import com.fit2cloud.dao.constants.ResourceType;
 import com.fit2cloud.dao.entity.ComplianceRule;
+import com.fit2cloud.dao.entity.ComplianceScanResourceResult;
 import com.fit2cloud.dao.entity.ComplianceScanResult;
 import com.fit2cloud.dao.jentity.Rule;
 import com.fit2cloud.dao.jentity.Rules;
@@ -42,15 +46,20 @@ import com.fit2cloud.provider.constants.ProviderConstants;
 import com.fit2cloud.provider.entity.InstanceFieldCompare;
 import com.fit2cloud.response.JobRecordResourceResponse;
 import com.fit2cloud.service.IComplianceRuleService;
+import com.fit2cloud.service.IComplianceScanResourceResultService;
 import com.fit2cloud.service.IComplianceScanResultService;
 import com.fit2cloud.service.IComplianceScanService;
 import lombok.SneakyThrows;
 import org.apache.commons.collections4.keyvalue.DefaultKeyValue;
 import org.apache.commons.lang.StringUtils;
+import org.elasticsearch.client.transform.transforms.QueryConfig;
+import org.elasticsearch.client.transform.transforms.SourceConfig;
 import org.springframework.beans.BeanUtils;
+import org.springframework.data.elasticsearch.annotations.Document;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
+import java.io.IOException;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -72,6 +81,9 @@ public class ComplianceScanServiceImpl implements IComplianceScanService {
     private BaseJobRecordResourceMappingMapper jobRecordResourceMappingMapper;
     @Resource
     private IComplianceScanResultService complianceScanResultService;
+    @Resource
+    private IComplianceScanResourceResultService complianceScanResourceResultService;
+
 
     @SneakyThrows
     @Override
@@ -98,7 +110,7 @@ public class ComplianceScanServiceImpl implements IComplianceScanService {
         // 转换重新设置属性
         List<ComplianceResourceResponse> complianceResourceResponseList = hits.hits()
                 .stream().filter(item -> Objects.nonNull(item.source()))
-                .map(item -> getComplianceResourceResponse(complianceRule, complianceResourceResponses, cloudAccounts, item.source()))
+                .map(item -> getComplianceResourceResponse(complianceResourceResponses, cloudAccounts, item.source()))
                 .toList();
         responsePage.setTotal(((Double) search.aggregations().get("valueCount").valueCount().value()).longValue());
         responsePage.setRecords(complianceResourceResponseList);
@@ -106,31 +118,58 @@ public class ComplianceScanServiceImpl implements IComplianceScanService {
     }
 
 
+    @SneakyThrows
+    private SearchRequest getPageComplianceSearch(ComplianceRule rule, String cloudAccountId, ComplianceStatus status) {
+        ComplianceResourceRequest complianceResourceRequest = new ComplianceResourceRequest();
+        complianceResourceRequest.setComplianceStatus(status);
+        complianceResourceRequest.setCloudAccountId(cloudAccountId);
+        complianceResourceRequest.setResourceType(rule.getResourceType());
+        SearchRequest pageSearch = new SearchRequest.Builder()
+                .index(ResourceInstance.class.getAnnotation(Document.class).indexName())
+                .query(getResourceQuery(rule, complianceResourceRequest))
+                .aggregations(Map.of("id", new Aggregation.Builder().terms(new TermsAggregation.Builder().field("id").size(Integer.MAX_VALUE).build()).build()))
+                .build();
+        return pageSearch;
+    }
+
+    @SneakyThrows
+    private SearchResponse<ResourceInstance> listComplianceResource(SearchRequest searchRequest) {
+        return elasticsearchClient.search(searchRequest, ResourceInstance.class);
+    }
+
+    @SneakyThrows
+    private void updateByQuery(Query query) {
+        UpdateByQueryRequest build = new UpdateByQueryRequest.Builder().index(ResourceInstance.class.getAnnotation(Document.class).indexName()).query(query)
+                .script(new Script.Builder().inline(s -> s.source("ctx._source['status']=false;")).build())
+                .refresh(true)
+                .build();
+        elasticsearchClient.updateByQuery(build);
+    }
+
+    private List<Query> getComplianceOtherQueries(ComplianceRule complianceRule, String cloudAccountId) {
+        List<Query> otherQueries = new ArrayList<>();
+        otherQueries.add(new Query.Builder().term(new TermQuery.Builder().field("resourceType").value(complianceRule.getResourceType()).build()).build());
+        otherQueries.add(new Query.Builder().term(new TermQuery.Builder().field("cloudAccountId").value(cloudAccountId).build()).build());
+        return otherQueries;
+    }
+
+
     /**
-     * @param complianceRule              合规规则对象
      * @param complianceResourceResponses 根据规则查询到的数据
      * @param cloudAccounts               云账号数据
      * @param resourceInstance            资源实例对象
      * @return 资源响应对象
      */
-    private static ComplianceResourceResponse getComplianceResourceResponse(ComplianceRule complianceRule,
-                                                                            List<ComplianceResourceResponse> complianceResourceResponses,
+    private static ComplianceResourceResponse getComplianceResourceResponse(List<ComplianceResourceResponse> complianceResourceResponses,
                                                                             List<CloudAccount> cloudAccounts,
                                                                             ResourceInstance resourceInstance) {
         ComplianceResourceResponse complianceResourceResponse = new ComplianceResourceResponse();
         BeanUtils.copyProperties(resourceInstance, complianceResourceResponse);
         // 设置实例数据
         complianceResourceResponse.setInstance((Map<String, Object>) resourceInstance.getInstance().get(resourceInstance.getPlatform() + "_" + resourceInstance.getResourceType()));
-        // 如果视为合规
-        if (complianceRule.getRules().getScanRule().equals(ScanRuleConstants.COMPLIANCE)) {
-            complianceResourceResponse.setComplianceStatus(ComplianceStatus.NOT_COMPLIANCE);
-            complianceResourceResponses.stream().filter(c -> c.getId().equals(resourceInstance.getId())).findFirst().ifPresent(c -> complianceResourceResponse.setComplianceStatus(ComplianceStatus.COMPLIANCE));
-        } else {
-            // 视为不合规
-            complianceResourceResponse.setComplianceStatus(ComplianceStatus.COMPLIANCE);
-            complianceResourceResponses.stream().filter(c -> c.getId().equals(resourceInstance.getId())).findFirst().ifPresent(c -> complianceResourceResponse.setComplianceStatus(ComplianceStatus.NOT_COMPLIANCE));
-
-        }
+        // 视为不合规
+        complianceResourceResponse.setComplianceStatus(ComplianceStatus.COMPLIANCE);
+        complianceResourceResponses.stream().filter(c -> c.getId().equals(resourceInstance.getId())).findFirst().ifPresent(c -> complianceResourceResponse.setComplianceStatus(ComplianceStatus.NOT_COMPLIANCE));
         complianceResourceResponse.setCloudAccountName(complianceResourceResponse.getResourceName());
         cloudAccounts.stream().filter(c -> c.getId().equals(resourceInstance.getCloudAccountId())).findFirst().ifPresent(cloudAccount -> complianceResourceResponse.setCloudAccountName(cloudAccount.getName()));
         return complianceResourceResponse;
@@ -188,11 +227,76 @@ public class ComplianceScanServiceImpl implements IComplianceScanService {
     }
 
     @Override
+    public List<ComplianceScanResourceResult> scanComplianceResource(ResourceTypeConstants resourceTypeConstants) {
+        List<ComplianceRule> complianceRules = complianceRuleService.list(new LambdaQueryWrapper<ComplianceRule>().eq(ComplianceRule::getResourceType, resourceTypeConstants.name()));
+        List<ComplianceScanResourceResult> resultAll = new ArrayList<>();
+        for (ComplianceRule complianceRule : complianceRules) {
+            List<ComplianceScanResourceResult> complianceScanResourceResults = cloudAccountService.list(new LambdaQueryWrapper<CloudAccount>()
+                            .eq(CloudAccount::getPlatform, complianceRule.getPlatform()))
+                    .stream()
+                    .flatMap(cloudAccount -> listComplianceScanResourceResult(complianceRule, cloudAccount.getId()).stream())
+                    .toList();
+            resultAll.addAll(complianceScanResourceResults);
+        }
+        return resultAll;
+    }
+
+    @Override
+    public List<ComplianceScanResourceResult> scanComplianceResource(ResourceTypeConstants resourceType, String cloudAccountId) {
+        CloudAccount cloudAccount = cloudAccountService.getById(cloudAccountId);
+        List<ComplianceRule> complianceRules = complianceRuleService.list(new LambdaQueryWrapper<ComplianceRule>()
+                .eq(ComplianceRule::getResourceType, resourceType.name())
+                .eq(ComplianceRule::getPlatform, cloudAccount.getPlatform()));
+        List<ComplianceScanResourceResult> resultAll = new ArrayList<>();
+        for (ComplianceRule complianceRule : complianceRules) {
+            ComplianceResourceRequest complianceResourceRequest = new ComplianceResourceRequest();
+            complianceResourceRequest.setResourceType(complianceRule.getResourceType());
+            complianceResourceRequest.setCloudAccountId(cloudAccountId);
+            List<ComplianceScanResourceResult> complianceScanResourceResults = listComplianceScanResourceResult(complianceRule, cloudAccountId)
+                    .stream()
+                    .toList();
+            resultAll.addAll(complianceScanResourceResults);
+        }
+        return resultAll;
+    }
+
+    @SneakyThrows
+    private List<ComplianceScanResourceResult> listComplianceScanResourceResult(ComplianceRule rule, String cloudAccountId) {
+        SearchRequest pageSearch = getPageComplianceSearch(rule, cloudAccountId, ComplianceStatus.COMPLIANCE);
+        SearchResponse<ResourceInstance> response = elasticsearchClient.search(pageSearch, ResourceInstance.class);
+        List<String> resourceIds = response.aggregations().get("id").sterms().buckets().array().stream().map(StringTermsBucket::key).toList();
+        List<ComplianceScanResourceResult> complianceScanResourceResults = resourceIds.stream().map(id -> new ComplianceScanResourceResult(null, rule.getId(), rule.getResourceType(), cloudAccountId, id, ComplianceStatus.COMPLIANCE, null, null)).toList();
+        SearchResponse<ResourceInstance> notComplianceResource = elasticsearchClient.search(getPageComplianceSearch(rule, cloudAccountId, ComplianceStatus.NOT_COMPLIANCE), ResourceInstance.class);
+        List<ComplianceScanResourceResult> notComplianceResourceList = notComplianceResource.aggregations().get("id").sterms().buckets().array().stream().map(StringTermsBucket::key).toList().stream().map(id -> new ComplianceScanResourceResult(null, rule.getId(), rule.getResourceType(), cloudAccountId, id, ComplianceStatus.NOT_COMPLIANCE, null, null)).toList();
+        List<ComplianceScanResourceResult> all = new ArrayList<>(complianceScanResourceResults);
+        all.addAll(notComplianceResourceList);
+        return all;
+    }
+
+    @Override
     public List<ComplianceScanResult> scanCompliance(ResourceTypeConstants resourceTypeConstants, String cloudAccountId) {
-        return complianceRuleService.list(new LambdaQueryWrapper<ComplianceRule>().eq(ComplianceRule::getResourceType, resourceTypeConstants.name()))
+        CloudAccount cloudAccount = cloudAccountService.getById(cloudAccountId);
+        return complianceRuleService.list(new LambdaQueryWrapper<ComplianceRule>().eq(ComplianceRule::getResourceType, resourceTypeConstants.name())
+                        .eq(ComplianceRule::getPlatform, cloudAccount.getPlatform()))
                 .stream()
                 .map(complianceRule -> this.scan(complianceRule, cloudAccountId))
                 .toList();
+    }
+
+    @Override
+    public void scanComplianceResourceOrSave(ResourceTypeConstants resourceType, String cloudAccountId) {
+        complianceScanResourceResultService.saveOrUpdate(scanComplianceResource(resourceType, cloudAccountId));
+    }
+
+    @Override
+    public void scanComplianceResourceOrSave(ResourceTypeConstants resourceType) {
+        complianceScanResourceResultService.saveOrUpdate(scanComplianceResource(resourceType));
+    }
+
+    @Override
+    public void scanComplianceResourceOrSave(ComplianceRule complianceRule) {
+        String resourceType = complianceRule.getResourceType();
+        complianceScanResourceResultService.saveOrUpdate(scanComplianceResource(ResourceTypeConstants.valueOf(resourceType)));
     }
 
     @Override
@@ -255,52 +359,27 @@ public class ComplianceScanServiceImpl implements IComplianceScanService {
      */
     public ComplianceScanResult scan(ComplianceRule complianceRule, String cloudAccountId) {
         Rules rules = complianceRule.getRules();
-        List<Query> otherQueries = new ArrayList<>();
-        otherQueries.add(new Query.Builder().term(new TermQuery.Builder().field("resourceType").value(complianceRule.getResourceType()).build()).build());
-        otherQueries.add(new Query.Builder().term(new TermQuery.Builder().field("cloudAccountId").value(cloudAccountId).build()).build());
-        // todo 将扫描规则构建为查询语句
-        Query query = getQuery(rules, otherQueries);
+        List<Query> otherQueries = getComplianceOtherQueries(complianceRule, cloudAccountId);
+        // todo 根据查询条件 构建出不合规的查询条件
+        Query query = getQuery(rules, otherQueries, ScanRuleConstants.NOT_COMPLIANCE);
         // todo 根据规则查询资源数量
-        Long resourceValueCount = getResourceValueCount(query);
-        // todo 合规资源数
-        int complianceCount = 0;
-        // 不合规资源数
-        int notComplianceCount = 0;
+        Long notComplianceCount = getResourceValueCount(query);
         // todo 查询到所有资源数量
         Long allResourceValueCount = getAllResourceValueCount(complianceRule.getResourceType(), complianceRule.getPlatform(), cloudAccountId);
-        if (rules.getScanRule().equals(ScanRuleConstants.COMPLIANCE)) {
-            complianceCount = resourceValueCount.intValue();
-            notComplianceCount = allResourceValueCount.intValue() - resourceValueCount.intValue();
-        } else {
-            notComplianceCount = resourceValueCount.intValue();
-            complianceCount = allResourceValueCount.intValue() - resourceValueCount.intValue();
-        }
+        // todo 合规资源数
+        int complianceCount = allResourceValueCount.intValue() - notComplianceCount.intValue();
         return new ComplianceScanResult(
                 null,
                 complianceRule.getId(),
-                ResourceType.COMPLIANCE, cloudAccountId,
+                complianceRule.getResourceType(),
+                cloudAccountId,
                 complianceCount,
-                notComplianceCount,
+                notComplianceCount.intValue(),
                 allResourceValueCount.intValue(),
                 allResourceValueCount > 0 && notComplianceCount > 0 ? ComplianceStatus.NOT_COMPLIANCE : ComplianceStatus.COMPLIANCE,
                 null,
                 null
         );
-    }
-
-    /**
-     * 查询资源
-     *
-     * @param complianceRuleId 合规规则组id
-     * @param limit            每页条数
-     * @param resourceIds      资源id数组
-     * @param queryList        查询条件
-     * @return 资源数据 如果属于合规
-     */
-    @SneakyThrows
-    private List<ComplianceResourceResponse> searchComplianceResource(String complianceRuleId, Integer limit, List<String> resourceIds, List<Query> queryList) {
-        ComplianceRule complianceRule = complianceRuleService.getById(complianceRuleId);
-        return searchComplianceResource(complianceRule, limit, resourceIds, queryList);
     }
 
     /**
@@ -318,23 +397,10 @@ public class ComplianceScanServiceImpl implements IComplianceScanService {
         queries.add(new Query.Builder().terms(new TermsQuery.Builder()
                 .terms(new TermsQueryField.Builder().value(resourceIds.stream().map(FieldValue::of).toList()).build()).field("id")
                 .build()).build());
-        Query query = getQuery(complianceRule.getRules(), queries);
+        Query query = getQuery(complianceRule.getRules(), queries, ScanRuleConstants.NOT_COMPLIANCE);
         SearchRequest request = new SearchRequest.Builder().size(limit).query(query).build();
         SearchResponse<ComplianceResourceResponse> search = elasticsearchClient.search(request, ComplianceResourceResponse.class);
         return search.hits().hits().stream().map(Hit::source).filter(Objects::nonNull).toList();
-    }
-
-    /**
-     * 根据扫描规则获取es查询条件
-     *
-     * @param complianceRuleId 合规规则id
-     * @param request          资源过滤请求对象
-     * @return es查询对象
-     */
-    public Query getResourceQuery(String complianceRuleId, ComplianceResourceRequest request) {
-
-        ComplianceRule complianceRule = complianceRuleService.getById(complianceRuleId);
-        return getResourceQuery(complianceRule, request);
     }
 
     /**
@@ -345,29 +411,17 @@ public class ComplianceScanServiceImpl implements IComplianceScanService {
      * @return es查询对象
      */
     private Query getResourceQuery(ComplianceRule complianceRule, ComplianceResourceRequest request) {
-        List<Query> query = QueryUtil.getQuery(request);
-        List<Query> allQueries = new ArrayList<>(query);
-        allQueries.add(new Query.Builder().term(new TermQuery.Builder().field("platform").value(complianceRule.getPlatform()).build()).build());
+        List<Query> query = new ArrayList<>(QueryUtil.getQuery(request));
+        query.add(new Query.Builder().term(new TermQuery.Builder().field("resourceType").value(complianceRule.getResourceType()).build()).build());
+        query.add(new Query.Builder().term(new TermQuery.Builder().field("platform").value(complianceRule.getPlatform()).build()).build());
         // 规则视为合规
-        if (complianceRule.getRules().getScanRule().equals(ScanRuleConstants.COMPLIANCE)) {
-            // 如果请求只需要请求合规数据,那么就返回规则查询Query
-            if (Objects.equals(request.getComplianceStatus(), ComplianceStatus.COMPLIANCE)) {
-                return getQuery(complianceRule.getRules(), query);
-            } else if (Objects.equals(request.getComplianceStatus(), ComplianceStatus.NOT_COMPLIANCE)) {
-                List<Query> queries = complianceRule.getRules().getRules().stream().map(this::getScriptQuery).toList();
-                return new Query.Builder().bool(new BoolQuery.Builder().mustNot(queries).must(allQueries).build()).build();
-            }
+        if (Objects.equals(request.getComplianceStatus(), ComplianceStatus.COMPLIANCE)) {
+            return getQuery(complianceRule.getRules(), query, ScanRuleConstants.COMPLIANCE);
+        } else if (Objects.equals(request.getComplianceStatus(), ComplianceStatus.NOT_COMPLIANCE)) {
+            return getQuery(complianceRule.getRules(), query, ScanRuleConstants.NOT_COMPLIANCE);
         } else {
-            // 规则视为不合规
-            // 如果请求只需要请求合规数据,那么就返回规则查询Query
-            if (Objects.equals(request.getComplianceStatus(), ComplianceStatus.NOT_COMPLIANCE)) {
-                return getQuery(complianceRule.getRules(), query);
-            } else if (Objects.equals(request.getComplianceStatus(), ComplianceStatus.COMPLIANCE)) {
-                List<Query> queries = complianceRule.getRules().getRules().stream().map(this::getScriptQuery).toList();
-                return new Query.Builder().bool(new BoolQuery.Builder().mustNot(queries).must(allQueries).build()).build();
-            }
+            return new Query.Builder().bool(new BoolQuery.Builder().must(query).build()).build();
         }
-        return new Query.Builder().bool(new BoolQuery.Builder().must(allQueries).build()).build();
     }
 
 
@@ -429,25 +483,81 @@ public class ComplianceScanServiceImpl implements IComplianceScanService {
      * @param otherQueries 其他条件
      * @return 查询对象
      */
-    private Query getQuery(Rules rule, List<Query> otherQueries) {
-        List<Query> queries = rule.getRules().stream().filter(r -> !r.getField().startsWith("filterArray")).map(this::getScriptQuery).collect(Collectors.toCollection(ArrayList::new));
+    private Query getQuery(Rules rule, List<Query> otherQueries, ScanRuleConstants status) {
+        // 获取不合规的查询条件
+        if (status.equals(ScanRuleConstants.NOT_COMPLIANCE)) {
+            // 如果当前规则视为合规
+            if (rule.getConditionType().equals(ConditionTypeConstants.AND)) {
+                // 视为合规 然后获取不合规的查询条件 则需要排除Rule的规则
+                if (rule.getScanRule().equals(ScanRuleConstants.COMPLIANCE)) {
+                    return getQueryByNotRuleMustQueryList(rule.getRules(), otherQueries, ConditionTypeConstants.AND);
+                } else {
+                    // 反之只需要符合规则则为不合规查询条件
+                    return getQueryByRule(rule.getRules(), otherQueries, ConditionTypeConstants.AND);
+                }
+            } else {
+                // 如果視為合規
+                if (rule.getScanRule().equals(ScanRuleConstants.COMPLIANCE)) {
+                    return getQueryByNotRuleMustQueryList(rule.getRules(), otherQueries, ConditionTypeConstants.OR);
+                } else {
+                    return getQueryByRule(rule.getRules(), otherQueries, ConditionTypeConstants.OR);
+                }
+            }
+        } else {
+            // 如果当前规则视为合规
+            if (rule.getConditionType().equals(ConditionTypeConstants.AND)) {
+                // 如果视为合规
+                if (rule.getScanRule().equals(ScanRuleConstants.COMPLIANCE)) {
+                    return getQueryByRule(rule.getRules(), otherQueries, ConditionTypeConstants.AND);
+                } else {
+                    return getQueryByNotRuleMustQueryList(rule.getRules(), otherQueries, ConditionTypeConstants.AND);
+                }
+            } else {
+                // 如果視為合規
+                if (rule.getScanRule().equals(ScanRuleConstants.COMPLIANCE)) {
+                    return getQueryByRule(rule.getRules(), otherQueries, ConditionTypeConstants.OR);
+                } else {
+                    return getQueryByNotRuleMustQueryList(rule.getRules(), otherQueries, ConditionTypeConstants.OR);
+                }
+            }
+        }
+    }
+
+    /**
+     * 获取查询Query 不等于规则条件 并且等于must条件
+     *
+     * @param rules         规则条件
+     * @param mustQueryList most条件
+     * @param conditionType 类型 AND是规则之间是并且的关系 OR 是规则之间是或者的关系
+     * @return 查询条件
+     */
+    private Query getQueryByNotRuleMustQueryList(List<Rule> rules, List<Query> mustQueryList, ConditionTypeConstants conditionType) {
+        List<Query> queries = rules.stream().filter(r -> !r.getField().startsWith("filterArray")).map(this::getScriptQuery).collect(Collectors.toCollection(ArrayList::new));
         // 获取嵌套查询
-        List<Query> nestedQuery = listNestedQuery(rule.getRules());
+        List<Query> nestedQuery = listNestedQuery(rules);
+        queries.addAll(nestedQuery);
+
+        Query query = conditionType.equals(ConditionTypeConstants.AND) ? new BoolQuery.Builder().must(queries).build()._toQuery() : new BoolQuery.Builder().should(queries).build()._toQuery();
+        Query not = new BoolQuery.Builder().mustNot(query).build()._toQuery();
+        List<Query> all = new ArrayList<>(mustQueryList);
+        all.add(not);
+        all.addAll(mustQueryList);
+        return new BoolQuery.Builder().must(all).build()._toQuery();
+    }
+
+    private Query getQueryByRule(List<Rule> rules, List<Query> mustQueryList, ConditionTypeConstants conditionType) {
+        List<Query> queries = rules.stream().filter(r -> !r.getField().startsWith("filterArray")).map(this::getScriptQuery).collect(Collectors.toCollection(ArrayList::new));
+        // 获取嵌套查询
+        List<Query> nestedQuery = listNestedQuery(rules);
         queries.addAll(nestedQuery);
         BoolQuery.Builder bool = new BoolQuery.Builder();
-        // 如果当前规则视为合规
-        if (rule.getConditionType().equals(ConditionTypeConstants.AND)) {
-            queries.addAll(otherQueries);
-            bool.must(queries);
-        } else {
-            Query query = new BoolQuery.Builder().should(queries).build()._toQuery();
-            List<Query> all = new ArrayList<>();
-            all.addAll(otherQueries);
-            all.add(query);
-            bool.must(all);
-        }
-        return new Query.Builder().bool(bool.build()).build();
+        Query query = conditionType.equals(ConditionTypeConstants.AND) ? new BoolQuery.Builder().must(queries).build()._toQuery() : new BoolQuery.Builder().should(queries).build()._toQuery();
+        List<Query> all = new ArrayList<>(mustQueryList);
+        all.add(query);
+        bool.must(all);
+        return new BoolQuery.Builder().must(all).build()._toQuery();
     }
+
 
     /**
      * 获取 nested 数组嵌套对象查询

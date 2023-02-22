@@ -41,7 +41,10 @@ const adminShowBillTrend = computed<boolean>(() => {
 const adminShowServerIncreaseTrend = computed<boolean>(() => {
   return show(
     "operation-analytics",
-    "[operation-analytics]SERVER_ANALYSIS:READ",
+    [
+      "[operation-analytics]BASE_RESOURCE_ANALYSIS:READ",
+      "[operation-analytics]OVERVIEW:READ",
+    ],
     ["ADMIN", "ORGADMIN"]
   );
 });
@@ -62,7 +65,6 @@ onMounted(() => {
             <BillTrend
               class="flex-div-1 divide-info"
               :need-roles="['USER']"
-              :permission="'[finance-management]BILL_ViEW:READ'"
               :getHistoryTrend="getHistoryTrend"
               head-position="left"
             />
@@ -79,7 +81,6 @@ onMounted(() => {
             <ServerDistribution
               class="flex-div-2 divide-info"
               :need-roles="['USER']"
-              :permission="'[operation-analytics]SERVER_ANALYSIS:READ'"
               type="byAccount"
               title="资源分布"
             />
@@ -95,14 +96,12 @@ onMounted(() => {
           <ServerIncreaseTrend
             style="height: 100%"
             :need-roles="['ADMIN', 'ORGADMIN']"
-            :permission="'[operation-analytics]SERVER_ANALYSIS:READ'"
           />
         </el-col>
         <el-col :span="adminShowServerIncreaseTrend ? 12 : 24">
           <BillTrend
             style="height: 100%"
             :need-roles="['ADMIN', 'ORGADMIN']"
-            :permission="'[finance-management]BILL_ViEW:READ'"
             :getHistoryTrend="getHistoryTrend"
             head-position="left"
           />
@@ -113,7 +112,6 @@ onMounted(() => {
           <ServerDistribution
             class="flex-div-2 divide-info"
             :need-roles="['USER']"
-            :permission="'[operation-analytics]SERVER_ANALYSIS:READ'"
             type="byStatus"
             title="我的资源"
             :height="300"
@@ -123,7 +121,6 @@ onMounted(() => {
           <ServerMetrics
             class="flex-div-2 divide-info"
             :need-roles="['USER']"
-            :permission="'[vm-service]CLOUD_SERVER:READ'"
             title="资源监控"
           />
         </el-col>

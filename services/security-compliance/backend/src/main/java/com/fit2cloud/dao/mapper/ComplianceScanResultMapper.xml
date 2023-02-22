@@ -24,7 +24,7 @@
         compliance_rule compliance_rule
         LEFT JOIN (
         SELECT
-        resource_id,
+        compliance_rule_id,
         SUM(compliance_count) AS compliance_count,
         SUM(not_compliance_count) AS not_compliance_count,
         SUM(resource_count) AS resource_count,
@@ -38,8 +38,8 @@
             </if>
         </where>
         GROUP BY
-        resource_id
-        ) compliance_scan_result ON compliance_scan_result.resource_id = compliance_rule.id
+        compliance_rule_id
+        ) compliance_scan_result ON compliance_scan_result.compliance_rule_id = compliance_rule.id
         ${ew.customSqlSegment}
     </select>
 
@@ -53,7 +53,7 @@
         compliance_rule compliance_rule
         LEFT JOIN (
         SELECT
-        resource_id,
+        compliance_rule_id,
         SUM(compliance_count) AS compliance_count,
         SUM(not_compliance_count) AS not_compliance_count,
         SUM(resource_count) AS resource_count,
@@ -67,31 +67,34 @@
             </if>
         </where>
         GROUP BY
-        resource_id
-        ) compliance_scan_result ON compliance_scan_result.resource_id = compliance_rule.id
+        compliance_rule_id
+        ) compliance_scan_result ON compliance_scan_result.compliance_rule_id = compliance_rule.id
         ${ew.customSqlSegment}
     </select>
     <select id="group" resultType="com.fit2cloud.dao.entity.ComplianceGroup">
         SELECT
-        IFNULL(
+        SUM(
+        IF
+        ( t1.`not_compliance_count` = 0, 1, 0 )) AS compliance_count,
+        SUM(
+        IF
+        ( t1.`not_compliance_count` >= 1, 1, 0 )) AS not_compliance_count,
+        t1.`key` AS `key`
+        FROM
         (
+        SELECT
+        SUM( compliance_scan_resource_result.`status` ) AS a,
         SUM(
-        compliance_scan_result.not_compliance_count
-        )
-        ),
-        0
-        ) AS not_compliance_count,
-        IFNULL(
+        IF
+        ( compliance_scan_resource_result.`status` = 1, 1, 0 )) AS compliance_count,
         SUM(
-        compliance_scan_result.compliance_count
-        ),
-        0
-        ) AS compliance_count
+        IF
+        ( compliance_scan_resource_result.`status` = 2, 1, 0 )) AS not_compliance_count
         <if test="groupType=='CLOUD_ACCOUNT'">
-            , compliance_scan_result.cloud_account_id as `key`
+            , compliance_scan_resource_result.cloud_account_id as `key`
         </if>
         <if test="groupType=='RESOURCE_TYPE'">
-            , compliance_rule.resource_type as `key`
+            , compliance_scan_resource_result.resource_type as `key`
         </if>
         <if test="groupType=='RULE_GROUP'">
             , compliance_rule.rule_group_id as `key`
@@ -100,43 +103,65 @@
             , compliance_rule.id as `key`
         </if>
         FROM
-        compliance_rule
-        LEFT JOIN compliance_scan_result compliance_scan_result ON compliance_rule.id =
-        compliance_scan_result.resource_id
+        compliance_scan_resource_result compliance_scan_resource_result
+        LEFT JOIN compliance_rule compliance_rule ON compliance_rule.id = compliance_scan_resource_result.compliance_rule_id
         ${ew.customSqlSegment}
         <if test="groupType=='CLOUD_ACCOUNT'">
             GROUP BY
-            compliance_scan_result.cloud_account_id
+            compliance_scan_resource_result.resource_instance_id,
+            compliance_scan_resource_result.cloud_account_id
         </if>
         <if test="groupType=='RESOURCE_TYPE'">
             GROUP BY
-            compliance_rule.resource_type
+            compliance_scan_resource_result.resource_instance_id,
+            compliance_scan_resource_result.resource_type
         </if>
         <if test="groupType=='RULE_GROUP'">
             GROUP BY
+            compliance_scan_resource_result.resource_instance_id,
             compliance_rule.rule_group_id
         </if>
         <if test="groupType=='RULE'">
             GROUP BY
+            compliance_scan_resource_result.resource_instance_id,
             compliance_rule.id
         </if>
+        ) t1
+        GROUP BY
+        t1.`key`
     </select>
     <select id="count" resultType="com.fit2cloud.dao.entity.ComplianceCount">
-        SELECT IFNULL(
-                       SUM(
-                               compliance_scan_result.compliance_count
-                           ),
-                       0
-                   ) AS compliance_count,
-               IFNULL(
-                       SUM(
-                               compliance_scan_result.not_compliance_count
-                           ),
-                       0
-                   ) AS not_compliance_count
-        FROM compliance_rule compliance_rule
-                 LEFT JOIN compliance_scan_result compliance_scan_result
-                           ON compliance_rule.id = compliance_scan_result.resource_id
-            ${ew.customSqlSegment}
+        SELECT
+            COUNT(*) AS total,
+            IFNULL(
+                    SUM(
+                            IF
+                                ( t1.`not_compliance_count` = 0, 1, 0 )),
+                    0
+                ) AS compliance_count,
+            IFNULL(
+                    SUM(
+                            IF
+                                ( t1.`not_compliance_count` >= 1, 1, 0 )),
+                    0
+                ) AS not_compliance_count
+        FROM
+            (
+                SELECT
+                    SUM( compliance_scan_resource_result.`status` ) AS a,
+                    SUM(
+                            IF
+                                ( compliance_scan_resource_result.`status` = 1, 1, 0 )) AS compliance_count,
+                    SUM(
+                            IF
+                                ( compliance_scan_resource_result.`status` = 2, 1, 0 )) AS not_compliance_count,
+                    compliance_scan_resource_result.cloud_account_id AS `key`
+                FROM
+                    compliance_scan_resource_result compliance_scan_resource_result
+                        LEFT JOIN compliance_rule compliance_rule ON compliance_rule.id = compliance_scan_resource_result.compliance_rule_id
+                    ${ew.customSqlSegment}
+                GROUP BY
+                    compliance_scan_resource_result.resource_instance_id
+            ) t1
     </select>
 </mapper>

@@ -299,21 +299,21 @@ const loading = ref<boolean>(false);
  *监控资源类型的变化查询列表
  */
 watch(activeResourceType, () => {
-  table.value.search(table?.value.getTableSearch());
+  table.value.search();
 });
 
 /**
  * 监控云账号的变化查询列表数据
  */
 watch(activeCloudAccount, () => {
-  table.value.search(table?.value.getTableSearch());
+  table.value.search();
 });
 
 /**
  * 监控合规规则组的变化查询列表数据
  */
 watch(activeComplianceRuleGroupId, () => {
-  table.value.search(table?.value.getTableSearch());
+  table.value.search();
 });
 /**
  * 打开查看同步详情

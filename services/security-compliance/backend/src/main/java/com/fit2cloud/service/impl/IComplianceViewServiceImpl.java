@@ -11,11 +11,11 @@ import com.fit2cloud.controller.response.view.ComplianceViewCountResponse;
 import com.fit2cloud.controller.response.view.ComplianceViewGroupResponse;
 import com.fit2cloud.dao.entity.ComplianceCount;
 import com.fit2cloud.dao.entity.ComplianceGroup;
+import com.fit2cloud.dao.entity.ComplianceScanResourceResult;
 import com.fit2cloud.dao.entity.ComplianceScanResult;
 import com.fit2cloud.dao.mapper.ComplianceScanResultMapper;
 import com.fit2cloud.service.IComplianceRuleGroupService;
 import com.fit2cloud.service.IComplianceRuleService;
-import com.fit2cloud.service.IComplianceScanResultService;
 import com.fit2cloud.service.IComplianceViewService;
 import org.apache.commons.collections4.keyvalue.DefaultKeyValue;
 import org.apache.commons.lang3.StringUtils;
@@ -43,18 +43,12 @@ public class IComplianceViewServiceImpl implements IComplianceViewService {
     @Resource
     private IBaseCloudAccountService cloudAccountService;
 
-
     @Override
     public List<ComplianceViewGroupResponse> group(ComplianceGroupRequest request) {
         QueryWrapper<ComplianceScanResult> wrapper = getWrapper(request.getCloudAccountId());
         List<ComplianceGroup> groups = complianceScanResultMapper.group(request.getGroupType().name(), wrapper);
         List<DefaultKeyValue<String, String>> keyValueByGroupTypes = getKeyValueByGroupType(request.getGroupType());
-        return groups.stream()
-                .map(group ->
-                        toComplianceViewGroupResponse(group, request.getGroupType(),
-                                (key) -> keyValueByGroupTypes.stream().filter(
-                                                keyValueByGroupType -> keyValueByGroupType.getKey().equals(key)).
-                                        findFirst().map(DefaultKeyValue::getValue).orElse(key))).toList();
+        return groups.stream().map(group -> toComplianceViewGroupResponse(group, request.getGroupType(), (key) -> keyValueByGroupTypes.stream().filter(keyValueByGroupType -> keyValueByGroupType.getKey().equals(key)).findFirst().map(DefaultKeyValue::getValue).orElse(key))).toList();
     }
 
     @Override
@@ -64,7 +58,7 @@ public class IComplianceViewServiceImpl implements IComplianceViewService {
         complianceViewCountResponse.setNotComplianceCount(complianceCount.getNotComplianceCount());
         complianceViewCountResponse.setComplianceCount(complianceCount.getComplianceCount());
         complianceViewCountResponse.setTotal(complianceCount.getComplianceCount() + complianceCount.getNotComplianceCount());
-        complianceViewCountResponse.setNotCompliancePercentage((double) complianceCount.getComplianceCount() / complianceViewCountResponse.getTotal());
+        complianceViewCountResponse.setNotCompliancePercentage((double) complianceCount.getNotComplianceCount() / complianceViewCountResponse.getTotal());
         return complianceViewCountResponse;
     }
 
@@ -90,6 +84,15 @@ public class IComplianceViewServiceImpl implements IComplianceViewService {
         return List.of();
     }
 
+
+    /**
+     * 转换聚合对象
+     *
+     * @param group        分组对象
+     * @param groupType    分组类型
+     * @param getGroupName 分组名称
+     * @return
+     */
     private ComplianceViewGroupResponse toComplianceViewGroupResponse(ComplianceGroup group, GroupTypeConstants groupType, Function<String, String> getGroupName) {
         ComplianceViewGroupResponse complianceViewGroupResponse = new ComplianceViewGroupResponse();
         complianceViewGroupResponse.setComplianceCount(group.getComplianceCount());
@@ -101,8 +104,13 @@ public class IComplianceViewServiceImpl implements IComplianceViewService {
         return complianceViewGroupResponse;
     }
 
+    /**
+     * 获取查询对象
+     *
+     * @param cloudAccountId 云账号id
+     * @return 查询对象
+     */
     public QueryWrapper<ComplianceScanResult> getWrapper(String cloudAccountId) {
-        return new QueryWrapper<ComplianceScanResult>()
-                .eq(StringUtils.isNotEmpty(cloudAccountId), ColumnNameUtil.getColumnName(ComplianceScanResult::getCloudAccountId, true), cloudAccountId);
+        return new QueryWrapper<ComplianceScanResult>().eq(StringUtils.isNotEmpty(cloudAccountId), ColumnNameUtil.getColumnName(ComplianceScanResourceResult::getCloudAccountId, true), cloudAccountId);
     }
 }

@@ -6,6 +6,8 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.core.metadata.OrderItem;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.fit2cloud.base.entity.CloudAccount;
+import com.fit2cloud.base.service.IBaseCloudAccountService;
 import com.fit2cloud.common.page.PageImpl;
 import com.fit2cloud.common.utils.ColumnNameUtil;
 import com.fit2cloud.controller.request.compliance_scan.ComplianceScanRequest;
@@ -39,7 +41,8 @@ import java.util.stream.Collectors;
 public class ComplianceScanResultServiceImpl extends ServiceImpl<ComplianceScanResultMapper, ComplianceScanResult> implements IComplianceScanResultService {
     @Resource
     private IComplianceRuleGroupService complianceRuleGroupService;
-
+    @Resource
+    private IBaseCloudAccountService cloudAccountService;
 
     @Override
     public List<ComplianceScanResultResponse> list(ComplianceScanRequest request) {
@@ -69,9 +72,24 @@ public class ComplianceScanResultServiceImpl extends ServiceImpl<ComplianceScanR
         for (ComplianceScanResult complianceScanResult : complianceScanResults) {
             saveOrUpdate(complianceScanResult,
                     new LambdaQueryWrapper<ComplianceScanResult>()
-                            .eq(ComplianceScanResult::getResourceId, complianceScanResult.getResourceId())
+                            .eq(ComplianceScanResult::getComplianceRuleId, complianceScanResult.getComplianceRuleId())
                             .eq(ComplianceScanResult::getCloudAccountId, complianceScanResult.getCloudAccountId()));
         }
+    }
+
+    @Override
+    public void initComplianceScanResultService(ComplianceRule complianceRule) {
+        List<ComplianceScanResult> complianceScanResults = cloudAccountService.list(new LambdaQueryWrapper<CloudAccount>()
+                        .eq(CloudAccount::getPlatform, complianceRule.getPlatform()))
+                .stream()
+                .map(cloudAccount -> new ComplianceScanResult(
+                        null, complianceRule.getId(),
+                        complianceRule.getResourceType(),
+                        cloudAccount.getId(),
+                        0, 0, 0,
+                        ComplianceStatus.COMPLIANCE, null,
+                        null)).toList();
+        saveOrUpdate(complianceScanResults);
     }
 
 

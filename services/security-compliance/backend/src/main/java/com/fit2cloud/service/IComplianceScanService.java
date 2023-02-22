@@ -7,6 +7,7 @@ import com.fit2cloud.controller.response.compliance_scan.ComplianceResourceRespo
 import com.fit2cloud.controller.response.compliance_scan.SupportCloudAccountResourceResponse;
 import com.fit2cloud.controller.response.compliance_scan.SupportPlatformResourceResponse;
 import com.fit2cloud.dao.entity.ComplianceRule;
+import com.fit2cloud.dao.entity.ComplianceScanResourceResult;
 import com.fit2cloud.dao.entity.ComplianceScanResult;
 import com.fit2cloud.response.JobRecordResourceResponse;
 
@@ -51,6 +52,11 @@ public interface IComplianceScanService {
      */
     List<ComplianceScanResult> scanCompliance(ResourceTypeConstants resourceTypeConstants);
 
+    List<ComplianceScanResourceResult> scanComplianceResource(ResourceTypeConstants resourceTypeConstants);
+
+    List<ComplianceScanResourceResult> scanComplianceResource(ResourceTypeConstants resourceType, String cloudAccountId);
+
+
     /**
      * 扫描指定资源类型和云账号的所有资源
      *
@@ -61,6 +67,21 @@ public interface IComplianceScanService {
     List<ComplianceScanResult> scanCompliance(ResourceTypeConstants resourceTypeConstants, String cloudAccountId);
 
 
+    /**
+     * 扫描合规资源 并且插入数据库
+     *
+     * @param resourceType   资源类型
+     * @param cloudAccountId 云账号id
+     */
+    void scanComplianceResourceOrSave(ResourceTypeConstants resourceType, String cloudAccountId);
+
+    /**
+     * 扫描合规资源 并且插入数据库
+     * @param resourceType 资源类型
+     */
+    void scanComplianceResourceOrSave(ResourceTypeConstants resourceType);
+
+    void scanComplianceResourceOrSave(ComplianceRule complianceRule);
     /**
      * 扫描规则并且入库
      */
@@ -104,7 +125,6 @@ public interface IComplianceScanService {
      * @return 资源对象
      */
     Page<ComplianceResourceResponse> pageResource(String complianceRuleId, Integer currentPage, Integer limit, ComplianceResourceRequest complianceResourceRequest);
-
 
     /**
      * 获取支持的云账号 以及云账号可同步的资源
