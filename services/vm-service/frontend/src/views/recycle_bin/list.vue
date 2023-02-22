@@ -330,6 +330,7 @@ const refresh = () => {
 </script>
 <template>
   <ce-table
+    localKey="recycleBinTable"
     v-loading="tableLoading"
     :columns="columns"
     :data="tableData"

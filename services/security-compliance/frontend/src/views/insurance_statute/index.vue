@@ -4,6 +4,7 @@
       <breadcrumb :auto="true"></breadcrumb>
     </template>
     <ce-table
+      localKey="insuranceStatuteTable"
       v-loading="loading"
       height="100%"
       ref="table"

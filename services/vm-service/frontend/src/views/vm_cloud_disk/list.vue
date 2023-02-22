@@ -622,6 +622,7 @@ const buttons = ref([
 </script>
 <template>
   <ce-table
+    localKey="vmCloudDiskTable"
     v-loading="tableLoading"
     :columns="columns"
     :data="tableData"

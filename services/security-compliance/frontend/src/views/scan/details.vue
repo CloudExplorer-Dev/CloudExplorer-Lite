@@ -62,6 +62,7 @@
       <template #header><h4>资源检测结果</h4></template>
       <template #content>
         <ce-table
+          localKey="detailsTable"
           v-loading="tableLoading"
           height="100%"
           ref="table"

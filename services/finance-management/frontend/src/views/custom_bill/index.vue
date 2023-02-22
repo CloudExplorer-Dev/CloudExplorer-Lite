@@ -4,6 +4,7 @@
       <breadcrumb :auto="true"></breadcrumb>
     </template>
     <ce-table
+      localKey="customBillTable"
       v-loading="loading"
       height="100%"
       ref="table"

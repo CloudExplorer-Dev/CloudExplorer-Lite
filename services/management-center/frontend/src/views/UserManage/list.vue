@@ -212,6 +212,7 @@ const tableConfig = ref<TableConfig>({
 
 <template>
   <ce-table
+    localKey="userManageTable"
     ref="table"
     :columns="columns"
     :data="tableData"

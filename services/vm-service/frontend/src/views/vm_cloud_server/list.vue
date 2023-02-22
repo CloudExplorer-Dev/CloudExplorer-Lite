@@ -710,6 +710,7 @@ const moreActions = ref<Array<ButtonAction>>([
 </script>
 <template>
   <ce-table
+    localKey="vmCloudServerTable"
     v-loading="tableLoading"
     :columns="columns"
     :data="tableData"

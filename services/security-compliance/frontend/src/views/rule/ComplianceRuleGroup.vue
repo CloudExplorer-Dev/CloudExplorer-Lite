@@ -1,6 +1,7 @@
 <template>
   <div>
     <ce-table
+      localKey="complianceRuleGroupTable"
       v-loading="loading"
       height="100%"
       ref="table"

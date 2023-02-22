@@ -120,6 +120,7 @@ const tableConfig = ref<TableConfig>({
 <template>
   <div class="log-table">
     <ce-table
+      localKey="diskAnaltsisTable"
       v-loading="tableLoading"
       :columns="columns"
       :data="tableData"

@@ -275,6 +275,7 @@ const tableConfig = ref<TableConfig>({
 </script>
 <template>
   <ce-table
+    localKey="orgManageTable"
     height="100%"
     ref="table"
     :expand-row-keys="expandRowKeys"

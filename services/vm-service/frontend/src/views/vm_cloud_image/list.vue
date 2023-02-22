@@ -83,6 +83,7 @@ const tableConfig = ref<TableConfig>({
 </script>
 <template>
   <ce-table
+    localKey="vmCloudImageTable"
     :columns="columns"
     :data="tableData"
     :tableConfig="tableConfig"

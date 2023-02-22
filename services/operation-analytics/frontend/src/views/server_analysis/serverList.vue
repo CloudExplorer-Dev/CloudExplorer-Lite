@@ -115,6 +115,7 @@ const tableConfig = ref<TableConfig>({
 <template>
   <div class="log-table">
     <ce-table
+      localKey="serverAnalysisTable"
       v-loading="tableLoading"
       :columns="columns"
       :data="tableData"

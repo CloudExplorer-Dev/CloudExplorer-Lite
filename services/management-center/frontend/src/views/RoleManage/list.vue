@@ -272,6 +272,7 @@ const tableConfig = ref<TableConfig>({
 </script>
 <template>
   <ce-table
+    localKey="roleManageTable"
     v-loading="tableLoading"
     height="100%"
     ref="table"

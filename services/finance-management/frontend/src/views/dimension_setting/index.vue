@@ -91,6 +91,7 @@
               </el-tab-pane>
               <el-tab-pane label="已分账资源" name="allocated"
                 ><ce-table
+                  localKey="allocatedResourceTable"
                   v-loading="resourceLoading"
                   height="100%"
                   ref="table"
@@ -194,6 +195,7 @@
               ></el-tab-pane>
             </el-tabs>
             <ce-table
+              localKey="notShareResourceTable"
               v-else
               v-loading="resourceLoading"
               height="100%"

@@ -36,6 +36,7 @@
   <div>
     <div class="log-table">
       <ce-table
+        localKey="resourceOptimizationTable"
         v-loading="tableLoading"
         :columns="columns"
         :data="tableData"
