@@ -16,8 +16,8 @@ const message = {
     add_role: "Add Role",
     set_role: "Set Role",
     has_role: "Has Role",
-    add_org: "Add Organization",
-    add_workspace: "Add Workspace",
+    add_org: "Organization",
+    add_workspace: "Workspace",
     delete_confirm: "Sure To Delete",
     notify_setting: "Notify Setting",
     notify_tips:

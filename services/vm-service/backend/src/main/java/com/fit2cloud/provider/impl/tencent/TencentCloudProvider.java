@@ -204,7 +204,7 @@ public class TencentCloudProvider extends AbstractCloudProvider<TencentCredentia
      */
     public String getLoginUser(String req) {
         TencentVmCreateRequest request = JsonUtil.parseObject(req, TencentVmCreateRequest.class);
-        if (request.getOs() != null && request.getOs().toLowerCase().indexOf("windows") > -1) {
+        if (request.getOs() != null && request.getOs().toLowerCase().indexOf("window") > -1) {
             return "Administrator";
         }
         return "root";

@@ -203,6 +203,7 @@ const tableConfig = ref<TableConfig>({
         <a
           @click="jumpToResource(scope.row.resourceType, scope.row.resourceId)"
           style="color: var(--el-color-primary)"
+          v-if="scope.row.resourceType !== null"
         >
           {{
             _.get(

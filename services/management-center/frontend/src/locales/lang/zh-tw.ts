@@ -16,8 +16,8 @@ const message = {
     add_role: "添加角色",
     set_role: "設置角色",
     has_role: "擁有角色",
-    add_org: "添加組織",
-    add_workspace: "添加工作空間",
+    add_org: "組織",
+    add_workspace: "工作空間",
     delete_confirm: "確認刪除用戶",
     notify_setting: "通知設置",
     notify_tips:
