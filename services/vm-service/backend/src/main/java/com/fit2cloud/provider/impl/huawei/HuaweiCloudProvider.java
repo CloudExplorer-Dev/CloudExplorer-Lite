@@ -12,9 +12,11 @@ import com.fit2cloud.provider.entity.F2CImage;
 import com.fit2cloud.provider.entity.F2CVirtualMachine;
 import com.fit2cloud.provider.entity.request.GetMetricsRequest;
 import com.fit2cloud.provider.impl.huawei.api.HuaweiSyncCloudApi;
+import com.fit2cloud.provider.impl.huawei.constants.HuaweiPeriodOption;
 import com.fit2cloud.provider.impl.huawei.entity.*;
 import com.fit2cloud.provider.impl.huawei.entity.credential.HuaweiVmCredential;
 import com.fit2cloud.provider.impl.huawei.entity.request.*;
+import com.fit2cloud.provider.impl.tencent.constants.TencentPeriodOption;
 import com.huaweicloud.sdk.ecs.v2.model.NovaSimpleKeypair;
 import org.apache.commons.lang3.StringUtils;
 
@@ -211,26 +213,6 @@ public class HuaweiCloudProvider extends AbstractCloudProvider<HuaweiVmCredentia
         return loginMethod;
     }
 
-    /**
-     * 周期类型
-     * @return
-     */
-    public List<Map<String, String>> getPeriodType(String req) {
-        HuaweiVmCreateRequest request = JsonUtil.parseObject(req,HuaweiVmCreateRequest.class);
-        List<Map<String, String>> periodTypes = new ArrayList<>();
-        Map<String, String> monthMap = new HashMap<>();
-        monthMap.put("id", "month");
-        monthMap.put("name", "月");
-        periodTypes.add(monthMap);
-        if(request.getPeriodNum()<=3){
-            Map<String, String> yearMap = new HashMap<>();
-            yearMap.put("id", "year");
-            yearMap.put("name", "年");
-            periodTypes.add(yearMap);
-        }
-        return periodTypes;
-    }
-
     public InstanceSpecConfig getInstanceSpecTypes(String req){
         return HuaweiSyncCloudApi.getInstanceSpecTypes(JsonUtil.parseObject(req,HuaweiVmCreateRequest.class));
     }
@@ -239,8 +221,12 @@ public class HuaweiCloudProvider extends AbstractCloudProvider<HuaweiVmCredentia
         return HuaweiSyncCloudApi.getAllDiskTypes(JsonUtil.parseObject(req, HuaweiVmCreateRequest.class));
     }
 
-    public String calculatedPrice(String req){
-        return HuaweiSyncCloudApi.calculatedPrice(JsonUtil.parseObject(req, HuaweiVmCreateRequest.class));
+    public String calculateConfigPrice(String req){
+        return HuaweiSyncCloudApi.calculatedPrice(false,JsonUtil.parseObject(req, HuaweiVmCreateRequest.class));
+    }
+
+    public String calculateBandwidthConfigPrice(String req){
+        return HuaweiSyncCloudApi.calculatedPrice(true,JsonUtil.parseObject(req, HuaweiVmCreateRequest.class));
     }
 
     public List<F2CHuaweiSubnet> listSubnet(String req) {
@@ -296,5 +282,21 @@ public class HuaweiCloudProvider extends AbstractCloudProvider<HuaweiVmCredentia
 
     public String calculateConfigUpdatePrice(String req){
         return HuaweiSyncCloudApi.calculateConfigUpdatePrice(JsonUtil.parseObject(req, HuaweiUpdateConfigRequest.class));
+    }
+    /**
+     * 获取付费周期
+     *
+     * @param req
+     * @return
+     */
+    public List<Map<String, Object>> getPeriodOption(String req) {
+        List<Map<String, Object>> periodList = new ArrayList<>();
+        for (HuaweiPeriodOption option : HuaweiPeriodOption.values()) {
+            Map<String, Object> map = new HashMap<>();
+            map.put("period", option.getPeriod());
+            map.put("periodDisplayName", option.getPeriodDisplayName());
+            periodList.add(map);
+        }
+        return periodList;
     }
  }

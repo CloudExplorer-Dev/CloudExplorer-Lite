@@ -26,6 +26,7 @@
             style="width: 100%; height: 150px"
             @current-change="handleCurrentChange"
             v-loading="_loading"
+            border
           >
             <el-table-column width="55">
               <template #default="scope">
@@ -188,7 +189,7 @@ const handleQueryClick = () => {
   if (!props.formItem?.ext?.networkConfig) {
     return;
   }
-  let arr = [...props.formItem?.ext?.networkConfig];
+  let arr = [...props?.formItem?.ext?.networkConfig];
   if (searchName.value.trim() && arr.length > 0) {
     arr = _.filter(props.formItem?.ext?.networkConfig, function (v) {
       const columnNames = Object.keys(arr[0]);

@@ -1,5 +1,5 @@
 <template>
-  <el-input-number v-bind="$attrs" value-on-clear="min" />
+  <el-input-number v-bind="$attrs" value-on-clear="null" />
 </template>
 <script setup lang="ts">
 const props = defineProps<{ formItem: FormView }>();

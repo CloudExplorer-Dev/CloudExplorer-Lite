@@ -429,6 +429,11 @@ const getSpreadByDepartmentData = (chartName: string) => {
         "series[0].itemStyle",
         childRefMap.get(chartName + "-chart").barSeriesItemStyle
       );
+      _.set(
+        options,
+        "series[0].label",
+        childRefMap.get(chartName + "-chart").barSeriesLabel
+      );
       const seriesData = ref<any>([]);
       _.forEach(chartData, (v) => {
         seriesData.value.push({ value: v.value, groupName: v.groupName });

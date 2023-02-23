@@ -84,14 +84,14 @@ const barSeriesItemStyle = {
     }
     return colors[1];
   },
-  label: {
-    show: true, //开启显示
-    position: "top", //在上方显示
-    textStyle: {
-      //数值样式
-      color: "black",
-      fontSize: 12,
-    },
+};
+const barSeriesLabel = {
+  show: true, //开启显示
+  position: "top", //在上方显示
+  textStyle: {
+    //数值样式
+    color: "black",
+    fontSize: 12,
   },
 };
 const showBack = ref<boolean>(false);
@@ -114,7 +114,13 @@ const initTreeBar = () => {
         });
         eChartsRef?.setOption({
           xAxis: { data: children.map((item: any) => item.name) },
-          series: [{ data: seriesData.value, itemStyle: barSeriesItemStyle }],
+          series: [
+            {
+              data: seriesData.value,
+              label: barSeriesLabel,
+              itemStyle: barSeriesItemStyle,
+            },
+          ],
         });
       }
     });
@@ -133,7 +139,13 @@ const handleBackClick = () => {
     });
     eChartsRef?.setOption({
       xAxis: { data: props.treeBarData.map((item: any) => item.name) },
-      series: [{ data: seriesData.value, itemStyle: barSeriesItemStyle }],
+      series: [
+        {
+          data: seriesData.value,
+          label: barSeriesLabel,
+          itemStyle: barSeriesItemStyle,
+        },
+      ],
     });
   } else {
     const children = item.children;
@@ -145,7 +157,13 @@ const handleBackClick = () => {
       parentItem.value = item;
       eChartsRef?.setOption({
         xAxis: { data: children.map((v: any) => v.name) },
-        series: [{ data: seriesData.value, itemStyle: barSeriesItemStyle }],
+        series: [
+          {
+            data: seriesData.value,
+            label: barSeriesLabel,
+            itemStyle: barSeriesItemStyle,
+          },
+        ],
       });
     }
   }
@@ -185,6 +203,7 @@ defineExpose({
   echartsClear,
   handleBackClick,
   barSeriesItemStyle,
+  barSeriesLabel,
 });
 
 const isEmptyObj = (obj: any) => {

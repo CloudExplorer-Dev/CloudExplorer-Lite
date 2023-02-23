@@ -3,12 +3,13 @@
     <div style="margin-bottom: 10px">
       <el-input
         v-model="searchName"
-        suffix-icon="Search"
-        size="32"
         placeholder="输入关键字搜索"
         style="width: 20%"
         @keyup="handleQueryClick"
       >
+        <template #append>
+          <el-button style="color: var(--el-color-primary)" icon="Search" />
+        </template>
       </el-input>
     </div>
     <el-form
@@ -24,9 +25,11 @@
             ref="multipleTableRef"
             :data="props.formItem?.ext?.instanceConfig?.searchTableData"
             highlight-current-row
-            style="width: 100%; height: 150px"
+            style="width: 100%"
+            max-height="240px"
             @current-change="handleCurrentChange"
             v-loading="instanceTypeLoading"
+            border
           >
             <template #empty>
               <span> 所选可用区暂无可用实例规格</span>
@@ -45,6 +48,9 @@
         </el-radio-group>
       </el-form-item>
     </el-form>
+    <span style="font-size: 12px; color: #606266"
+      >当前选择实例 {{ selectRowId }}</span
+    >
   </template>
   <template v-else>
     <el-descriptions>
@@ -162,6 +168,7 @@ function getList() {
           singleTableRef.value?.setCurrentRow(currentRow.value);
           selectRowId.value = currentRow.value.specName;
         }
+        emit("change");
       }
     });
 }
@@ -174,13 +181,13 @@ onMounted(() => {
 
 watch(
   () => props.allData.billingMode,
-  (n, o) => {
+  () => {
     getList();
   }
 );
 watch(
   () => props.allData.availabilityZone,
-  (n, o) => {
+  () => {
     getList();
   }
 );

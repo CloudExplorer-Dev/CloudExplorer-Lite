@@ -22,6 +22,11 @@
         >
           <span class="title">
             {{ index === 0 ? "系统盘" : "数据盘 " + index }}
+            <span
+              style="font-size: smaller; color: var(--el-text-color-secondary)"
+            >
+              (GB)
+            </span>
           </span>
 
           <el-form
@@ -74,7 +79,9 @@
         </el-card>
 
         <div style="width: 100%; height: 30px; text-align: center">
-          <el-checkbox v-model="obj.deleteWithInstance">随实例删除</el-checkbox>
+          <el-checkbox v-model="obj.deleteWithInstance" :disabled="obj.readonly"
+            >随实例删除</el-checkbox
+          >
         </div>
       </div>
       <div class="vs-disk-config-card">
@@ -103,7 +110,7 @@
 </template>
 <script setup lang="ts">
 import type { FormInstance } from "element-plus";
-import { computed, watch, ref } from "vue";
+import { computed, watch, ref, onMounted } from "vue";
 import _ from "lodash";
 import type { FormView } from "@commons/components/ce-form/type";
 import { CloseBold } from "@element-plus/icons-vue";
@@ -117,7 +124,6 @@ const props = defineProps<{
   otherParams: any;
   confirm?: boolean;
 }>();
-const diskTypes = ref<any>([]);
 const _data = computed({
   get() {
     return props.modelValue;
@@ -132,7 +138,7 @@ const ruleFormRef = ref<FormInstance>();
  * 默认展示的盘
  */
 const defaultDisks = computed(() => {
-  return [{ size: 1, deleteWithInstance: true }];
+  return [{ size: 1, deleteWithInstance: true, readonly: true }];
 });
 const emit = defineEmits(["update:modelValue", "change"]);
 function add() {
@@ -168,23 +174,16 @@ function getTempRequest() {
 watch(
   () => props.allData.availabilityZone,
   (n, o) => {
+    _data.value.length = 0;
     getDiskType();
   }
 );
 
-watch(
-  () => props.allData,
-  (n, o) => {
-    emit("change");
-  }
-);
-
-watch(
-  () => props.allData.osVersion,
-  (n, o) => {
+onMounted(() => {
+  if (_data.value.length === 0) {
     getDiskType();
   }
-);
+});
 
 const defaultType = ref<string>("");
 
@@ -192,23 +191,26 @@ function getDiskType() {
   const _temp = getTempRequest();
   const clazz = "com.fit2cloud.provider.impl.huawei.HuaweiCloudProvider";
   const method = "getAllDiskTypes";
-  formApi.getResourceMethod(false, clazz, method, _temp).then((ok) => {
-    _.set(props.formItem, "ext.diskConfig.diskTypes", ok.data);
-    diskTypes.value = ok.data;
-
-    _data.value.length = 0;
-    let defaultSize = props.allData.osVersion?.imageMinDiskSize;
-    if (!defaultSize) {
-      defaultSize = 0;
-    }
-    defaultType.value = _.find(diskTypes?.value, ["id", "GPSSD"]).id;
-    _data.value?.push({
-      size: defaultSize < 40 ? 40 : defaultSize,
-      diskType: defaultType.value ? defaultType.value : diskTypes.value?.[0].id,
-      amountText: "",
-      deleteWithInstance: true,
+  if (_data.value.length === 0) {
+    formApi.getResourceMethod(false, clazz, method, _temp).then((ok) => {
+      _.set(props.formItem, "ext.diskConfig.diskTypes", ok.data);
+      const diskTypes = ref<any>([]);
+      diskTypes.value = ok.data;
+      let defaultSize = props.allData.osVersion?.imageMinDiskSize;
+      if (!defaultSize) {
+        defaultSize = 0;
+      }
+      _data.value?.push({
+        size: defaultSize < 40 ? 40 : defaultSize,
+        diskType: defaultType.value
+          ? defaultType.value
+          : diskTypes.value?.[0].id,
+        amountText: "",
+        readonly: true,
+        deleteWithInstance: true,
+      });
     });
-  });
+  }
 }
 </script>
 <style lang="scss" scoped>

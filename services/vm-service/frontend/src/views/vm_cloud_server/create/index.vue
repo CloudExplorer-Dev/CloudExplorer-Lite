@@ -157,25 +157,27 @@ const formatData = computed(() => {
 const cloudAccount = ref<CloudAccount | null>(null);
 
 function next() {
-  const promises = [];
-  _.forEach(ceForms.value, (formRef: InstanceType<typeof CeFormItem>) => {
-    promises.push(formRef.validate());
-  });
-  if (ceForms_0.value) {
-    promises.push(ceForms_0.value.validate());
-  }
-
-  //console.log(promises);
-
-  Promise.all(_.flatten(promises)).then((ok) => {
-    //console.log(ok);
-    active.value++;
-    if (active.value > steps.value.length - 2) {
-      active.value = steps.value.length - 2;
+  if(data.value[0].count != null ){
+    const promises = [];
+    _.forEach(ceForms.value, (formRef: InstanceType<typeof CeFormItem>) => {
+      promises.push(formRef.validate());
+    });
+    if (ceForms_0.value) {
+      promises.push(ceForms_0.value.validate());
     }
-    //定位到最上面
-    catalog_container.value?.$el?.scrollTo(0, 0);
-  });
+
+    //console.log(promises);
+
+    Promise.all(_.flatten(promises)).then((ok) => {
+      //console.log(ok);
+      active.value++;
+      if (active.value > steps.value.length - 2) {
+        active.value = steps.value.length - 2;
+      }
+      //定位到最上面
+      catalog_container.value?.$el?.scrollTo(0, 0);
+    });
+  }
 }
 
 function before() {

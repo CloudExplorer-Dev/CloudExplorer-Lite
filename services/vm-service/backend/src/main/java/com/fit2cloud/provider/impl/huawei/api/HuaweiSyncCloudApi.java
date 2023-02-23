@@ -21,6 +21,7 @@ import com.fit2cloud.provider.entity.F2CVirtualMachine;
 import com.fit2cloud.provider.entity.request.GetMetricsRequest;
 import com.fit2cloud.provider.impl.huawei.constants.HuaweiDiskType;
 import com.fit2cloud.provider.impl.huawei.constants.HuaweiPerfMetricConstants;
+import com.fit2cloud.provider.impl.huawei.constants.HuaweiPeriodOption;
 import com.fit2cloud.provider.impl.huawei.entity.*;
 import com.fit2cloud.provider.impl.huawei.entity.credential.HuaweiVmCredential;
 import com.fit2cloud.provider.impl.huawei.entity.request.*;
@@ -808,6 +809,16 @@ public class HuaweiSyncCloudApi {
 
     }
 
+    public static Integer getPeriodNumber(String periodNumber){
+        if(Integer.valueOf(periodNumber)>=12){
+            return Integer.valueOf(periodNumber)/12;
+        }
+        return Integer.valueOf(periodNumber);
+    }
+    public static String getPeriodType(String periodNumber){
+        return Integer.valueOf(periodNumber)<12?"month":"year";
+    }
+
     public static F2CVirtualMachine createServer(HuaweiVmCreateRequest request) {
         F2CVirtualMachine f2CVirtualMachine = new F2CVirtualMachine();
         try {
@@ -824,8 +835,8 @@ public class HuaweiSyncCloudApi {
             extendparamServer.withChargingMode(PrePaidServerExtendParam.ChargingModeEnum.fromValue(request.getBillingMode()))
                     .withRegionID(request.getRegionId());
             if (StringUtils.equalsIgnoreCase(request.getBillingMode(), PrePaidServerExtendParam.ChargingModeEnum.PREPAID.getValue())) {
-                extendparamServer.withPeriodType(PrePaidServerExtendParam.PeriodTypeEnum.fromValue(request.getPeriodType()));
-                extendparamServer.withPeriodNum(request.getPeriodNum());
+                extendparamServer.withPeriodType(PrePaidServerExtendParam.PeriodTypeEnum.fromValue(getPeriodType(request.getPeriodNum())));
+                extendparamServer.withPeriodNum(getPeriodNumber(request.getPeriodNum()));
                 extendparamServer.withIsAutoPay(PrePaidServerExtendParam.IsAutoPayEnum.TRUE);
             }
             //安全组
@@ -867,7 +878,8 @@ public class HuaweiSyncCloudApi {
                 PrePaidServerEipExtendParam extendparamEip = new PrePaidServerEipExtendParam();
                 extendparamEip.withChargingMode(PrePaidServerEipExtendParam.ChargingModeEnum.fromValue(request.getBillingMode() == "1" ? "prePaid" : "postPaid"));
                 PrePaidServerEipBandwidth bandwidthEip = new PrePaidServerEipBandwidth();
-                bandwidthEip.withSize(request.getBandwidthSize())
+                boolean isTraffic = StringUtils.equalsIgnoreCase("traffic",request.getChargeMode());
+                bandwidthEip.withSize(isTraffic? request.getTrafficBandwidthSize():request.getBandwidthSize())
                         //PER,表示独享。WHOLE,表示共享
                         .withSharetype(PrePaidServerEipBandwidth.SharetypeEnum.fromValue("PER"))
                         //traffic表示按流量计费，空或者不传为按带宽计费
@@ -984,7 +996,7 @@ public class HuaweiSyncCloudApi {
             ListImagesResponse listImagesResponse = imsClient.listImages(request);
             List<ImageInfo> images = listImagesResponse.getImages();
             //根据用户输入的操作系统版本过滤
-            return images.stream().filter(v -> StringUtils.equalsIgnoreCase(v.getOsVersion(), createRequest.getOsVersion().getOsVersion())).map(imageInfo -> HuaweiMappingUtil.toF2CImage(imageInfo, request.getRegionId())).filter(Objects::nonNull).toList();
+            return images.stream().filter(v -> StringUtils.equalsIgnoreCase(v.getId(), createRequest.getOsVersion().getImageId())).map(imageInfo -> HuaweiMappingUtil.toF2CImage(imageInfo, request.getRegionId())).filter(Objects::nonNull).toList();
         }
         return new ArrayList<>();
     }
@@ -1036,7 +1048,7 @@ public class HuaweiSyncCloudApi {
             ListFlavorsResponse response = client.listFlavors(new ListFlavorsRequest()
                     .withAvailabilityZone(request.getAvailabilityZone()));
             for (Flavor flavor : response.getFlavors()) {
-                if (flavor.getOsExtraSpecs().getCondOperationAz().indexOf(request.getAvailabilityZone() + "(normal)") > 0) {
+                if (flavor.getOsExtraSpecs().getCondOperationAz().contains((request.getAvailabilityZone() + "(normal)"))) {
                     InstanceSpecType instanceSpecType = HuaweiMappingUtil.toInstanceSpecType(flavor);
                     instanceSpecTypes.add(instanceSpecType);
                 }
@@ -1153,12 +1165,13 @@ public class HuaweiSyncCloudApi {
      * @param request
      * @return
      */
-    public static String calculatedPrice(HuaweiVmCreateRequest request) {
-        StringBuffer result = new StringBuffer();
+    public static String calculatedPrice(Boolean trafficPriceOnly,HuaweiVmCreateRequest request) {
+        StringBuilder result = new StringBuilder();
         try {
             if (StringUtils.isEmpty(request.getAvailabilityZone())) {
                 return result.toString();
             }
+            if(request.getCount()==0) request.setCount(1);
             HuaweiVmCredential credential = JsonUtil.parseObject(request.getCredential(), HuaweiVmCredential.class);
             //查询项目
             KeystoneListAuthProjectsRequest projectsRequest = new KeystoneListAuthProjectsRequest();
@@ -1171,19 +1184,22 @@ public class HuaweiSyncCloudApi {
                 Double vmAmount = 0D;
                 Double diskAmount = 0D;
                 Double bandwidthAmount = 0D;
-                //带宽计费方式
-                boolean bandwidthTraffic = false;
-                if (request.isUsePublicIp() && StringUtils.equalsIgnoreCase(request.getChargeMode(), "traffic")) {
-                    bandwidthTraffic = true;
+                //开启公网IP
+                boolean isUsePublicIp = request.isUsePublicIp();
+                //公网IP计费价格
+                if (isUsePublicIp) {
+                    bandwidthAmount = bandwidthInquiryPriceForHour(request, credential, projectId);
                 }
+                if (trafficPriceOnly) {
+                    result.append("弹性公网IP流量费用").append(bandwidthAmount).append("元/GB");
+                    return result.toString();
+                }
+                boolean isTraffic = StringUtils.equalsIgnoreCase("traffic",request.getChargeMode());
                 //按量计费
                 if (StringUtils.equalsIgnoreCase(request.getBillingMode(), "postPaid")) {
                     vmAmount = vmInquiryPriceForHour(request, credential, projectId);
                     diskAmount = diskInquiryPriceForHour(request, credential, projectId);
-                    if (request.isUsePublicIp()) {
-                        bandwidthAmount = bandwidthInquiryPriceForHour(request, credential, projectId);
-                    }
-                    BigDecimal amountBig = new BigDecimal(vmAmount + diskAmount + (!bandwidthTraffic ? bandwidthAmount : 0));
+                    BigDecimal amountBig = new BigDecimal(vmAmount + diskAmount + (isTraffic?0:bandwidthAmount));
                     result.append(amountBig.setScale(4, RoundingMode.HALF_UP));
                     result.append("元/小时");
                 }
@@ -1191,18 +1207,12 @@ public class HuaweiSyncCloudApi {
                 if (StringUtils.equalsIgnoreCase(request.getBillingMode(), "prePaid")) {
                     vmAmount = vmInquiryPriceForMonth(request, credential, projectId);
                     diskAmount = diskInquiryPriceForMonth(request, credential, projectId);
-                    if (request.isUsePublicIp()) {
+                    if (isUsePublicIp) {
                         bandwidthAmount = bandwidthInquiryPriceForMonth(request, credential, projectId);
                     }
-                    BigDecimal amountBig = new BigDecimal(vmAmount + diskAmount + (!bandwidthTraffic ? bandwidthAmount : 0));
+                    BigDecimal amountBig = new BigDecimal(vmAmount + diskAmount + (isTraffic?0:bandwidthAmount));
                     result.append(amountBig.setScale(4, RoundingMode.HALF_UP));
-                    //包年包月不显示单位
                     result.append("元");
-//                    result.append(StringUtils.equalsIgnoreCase("month",request.getPeriodType())?"月":"年");
-                }
-                if (bandwidthTraffic) {
-                    result.append(" + ");
-                    result.append("弹性公网IP流量费用" + bandwidthAmount + "元/GB");
                 }
             }
         } catch (Exception e) {
@@ -1234,17 +1244,19 @@ public class HuaweiSyncCloudApi {
                 .withResourceSpec(createRequest.getInstanceSpecConfig().getSpecName() + ".linux")
                 .withRegion(createRequest.getRegionId())
                 //周期类型0:天2:月3:年4:小时
-                .withPeriodType(StringUtils.equalsIgnoreCase(createRequest.getPeriodType(), "month") ? 2 : 3)
+                .withPeriodType(StringUtils.equalsIgnoreCase(getPeriodType(createRequest.getPeriodNum()),"month") ? 2 : 3)
                 //周期数 1个月
-                .withPeriodNum(createRequest.getPeriodNum())
+                .withPeriodNum(getPeriodNumber(createRequest.getPeriodNum()))
                 //数量
                 .withSubscriptionNum(createRequest.getCount()));
         body.withProductInfos(listPeriodProductInfo);
         body.withProjectId(projectId);
         request.withBody(body);
         try {
-            ListRateOnPeriodDetailResponse response = credential.getBssClient().listRateOnPeriodDetail(request);
-            return response.getOfficialWebsiteRatingResult().getOfficialWebsiteAmount();
+            if(CollectionUtils.isNotEmpty(body.getProductInfos())) {
+                ListRateOnPeriodDetailResponse response = credential.getBssClient().listRateOnPeriodDetail(request);
+                return response.getOfficialWebsiteRatingResult().getOfficialWebsiteAmount();
+            }
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -1263,6 +1275,9 @@ public class HuaweiSyncCloudApi {
         ListOnDemandResourceRatingsRequest request = new ListOnDemandResourceRatingsRequest();
         RateOnDemandReq body = new RateOnDemandReq();
         List<DemandProductInfo> listBodyProductInfos = new ArrayList<>();
+        if(StringUtils.isEmpty(createRequest.getInstanceSpecConfig().getSpecName())){
+            return 0D;
+        }
         listBodyProductInfos.add(new DemandProductInfo()
                 //唯一标识
                 .withId(createRequest.getInstanceSpecConfig().getSpecName())
@@ -1285,8 +1300,10 @@ public class HuaweiSyncCloudApi {
         body.withProjectId(projectId);
         request.withBody(body);
         try {
-            ListOnDemandResourceRatingsResponse response = credential.getBssClient().listOnDemandResourceRatings(request);
-            return response.getOfficialWebsiteAmount();
+            if(CollectionUtils.isNotEmpty(body.getProductInfos())) {
+                ListOnDemandResourceRatingsResponse response = credential.getBssClient().listOnDemandResourceRatings(request);
+                return response.getOfficialWebsiteAmount();
+            }
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -1317,16 +1334,20 @@ public class HuaweiSyncCloudApi {
                     .withResourceSize(diskConfig.getSize())
                     //资源容量度量标识云盘GB17、15Mbps
                     .withSizeMeasureId(17)
-                    .withPeriodType(StringUtils.equalsIgnoreCase(createRequest.getPeriodType(), "month") ? 2 : 3)
-                    .withPeriodNum(createRequest.getPeriodNum())
+                    //周期类型0:天2:月3:年4:小时
+                    .withPeriodType(StringUtils.equalsIgnoreCase(getPeriodType(createRequest.getPeriodNum()),"month") ? 2 : 3)
+                    //周期数 1个月
+                    .withPeriodNum(getPeriodNumber(createRequest.getPeriodNum()))
                     .withSubscriptionNum(1));
         }
         body.withProductInfos(listbodyProductInfos);
         body.withProjectId(projectId);
         request.withBody(body);
         try {
-            ListRateOnPeriodDetailResponse response = credential.getBssClient().listRateOnPeriodDetail(request);
-            return response.getOfficialWebsiteRatingResult().getOfficialWebsiteAmount();
+            if(CollectionUtils.isNotEmpty(body.getProductInfos())) {
+                ListRateOnPeriodDetailResponse response = credential.getBssClient().listRateOnPeriodDetail(request);
+                return response.getOfficialWebsiteRatingResult().getOfficialWebsiteAmount();
+            }
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -1368,8 +1389,10 @@ public class HuaweiSyncCloudApi {
         body.withProjectId(projectId);
         request.withBody(body);
         try {
-            ListOnDemandResourceRatingsResponse response = credential.getBssClient().listOnDemandResourceRatings(request);
-            return response.getOfficialWebsiteAmount();
+            if(CollectionUtils.isNotEmpty(body.getProductInfos())){
+                ListOnDemandResourceRatingsResponse response = credential.getBssClient().listOnDemandResourceRatings(request);
+                return response.getOfficialWebsiteAmount();
+            }
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -1386,8 +1409,9 @@ public class HuaweiSyncCloudApi {
      * @return
      */
     private static Double bandwidthInquiryPriceForMonth(HuaweiVmCreateRequest createRequest, HuaweiVmCredential credential, String projectId) {
+        boolean isTraffic = StringUtils.equalsIgnoreCase("traffic",createRequest.getChargeMode());
         //按流量与周期无关
-        if (StringUtils.equalsIgnoreCase(createRequest.getChargeMode(), "traffic")) {
+        if (isTraffic) {
             return bandwidthInquiryPriceForHour(createRequest, credential, projectId);
         }
         ListRateOnPeriodDetailRequest request = new ListRateOnPeriodDetailRequest();
@@ -1400,18 +1424,22 @@ public class HuaweiSyncCloudApi {
                         .withResourceType("hws.resource.type.bandwidth")
                         .withResourceSpec("19_bgp")
                         .withRegion(createRequest.getRegionId())
-                        .withResourceSize(createRequest.getBandwidthSize())
+                        .withResourceSize(isTraffic?createRequest.getTrafficBandwidthSize():createRequest.getBandwidthSize())
                         .withSizeMeasureId(15)
-                        .withPeriodType(StringUtils.equalsIgnoreCase(createRequest.getPeriodType(), "month") ? 2 : 3)
-                        .withPeriodNum(createRequest.getPeriodNum())
+                        //周期类型0:天2:月3:年4:小时
+                        .withPeriodType(StringUtils.equalsIgnoreCase(getPeriodType(createRequest.getPeriodNum()),"month") ? 2 : 3)
+                        //周期数 1个月
+                        .withPeriodNum(getPeriodNumber(createRequest.getPeriodNum()))
                         .withSubscriptionNum(createRequest.getCount())
         );
         body.withProductInfos(listbodyProductInfos);
         body.withProjectId(projectId);
         request.withBody(body);
         try {
-            ListRateOnPeriodDetailResponse response = credential.getBssClient().listRateOnPeriodDetail(request);
-            return response.getOfficialWebsiteRatingResult().getOfficialWebsiteAmount();
+            if(CollectionUtils.isNotEmpty(body.getProductInfos())) {
+                ListRateOnPeriodDetailResponse response = credential.getBssClient().listRateOnPeriodDetail(request);
+                return response.getOfficialWebsiteRatingResult().getOfficialWebsiteAmount();
+            }
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -1434,9 +1462,10 @@ public class HuaweiSyncCloudApi {
      * @return
      */
     private static Double bandwidthInquiryPriceForHour(HuaweiVmCreateRequest createRequest, HuaweiVmCredential credential, String projectId) {
-        if (StringUtils.isEmpty(createRequest.getChargeMode()) && createRequest.getBandwidthSize() == 0) {
+        if (StringUtils.isEmpty(createRequest.getChargeMode())) {
             return 0D;
         }
+        boolean isTraffic = StringUtils.equalsIgnoreCase("traffic",createRequest.getChargeMode());
         ListOnDemandResourceRatingsRequest request = new ListOnDemandResourceRatingsRequest();
         RateOnDemandReq body = new RateOnDemandReq();
         List<DemandProductInfo> listbodyProductInfos = new ArrayList<>();
@@ -1448,9 +1477,9 @@ public class HuaweiSyncCloudApi {
                 .withSizeMeasureId(15)
                 .withSubscriptionNum(createRequest.getCount())
                 .withRegion(createRequest.getRegionId())
-                .withResourceSize(createRequest.getBandwidthSize());
+                .withResourceSize(isTraffic?createRequest.getTrafficBandwidthSize():createRequest.getBandwidthSize());
         // 按流量
-        if (StringUtils.equalsIgnoreCase(createRequest.getChargeMode(), "traffic")) {
+        if (isTraffic) {
             demandProductInfo.withUsageFactor("upflow").withResourceSpec("12_bgp").withUsageMeasureId(10);
         } else {
             // 按带宽
@@ -1461,8 +1490,10 @@ public class HuaweiSyncCloudApi {
         body.withProjectId(projectId);
         request.withBody(body);
         try {
-            ListOnDemandResourceRatingsResponse response = credential.getBssClient().listOnDemandResourceRatings(request);
-            return response.getAmount();
+            if(CollectionUtils.isNotEmpty(body.getProductInfos())) {
+                ListOnDemandResourceRatingsResponse response = credential.getBssClient().listOnDemandResourceRatings(request);
+                return response.getAmount();
+            }
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -1617,8 +1648,15 @@ public class HuaweiSyncCloudApi {
             ShowCustomerOrderDetailsResponse response = getOrderDetailsById(server.getMetadata().get("metering.order_id"), bssClient);
             response.getOrderLineItems().stream().forEach((item) -> {
                 if ("hws.service.type.ec2".equalsIgnoreCase(item.getServiceTypeCode())) {
-                    createRequest.setPeriodType(item.getPeriodType() == 2 ? "month" : "year");
-                    createRequest.setPeriodNum(item.getPeriodNum() == null ? 1 : item.getPeriodNum());
+                    //createRequest.setPeriodType(item.getPeriodType() == 2 ? "month" : "year");
+                    //createRequest.setPeriodNum(item.getPeriodNum() == null ? 1 : item.getPeriodNum());
+                    for (HuaweiPeriodOption option : HuaweiPeriodOption.values()) {
+                        if(item.getPeriodType() == 2){
+                            createRequest.setPeriodNum(String.valueOf(option.getPeriod()));
+                        }else{
+                            createRequest.setPeriodNum(String.valueOf(option.getPeriod()*12));
+                        }
+                    }
                 }
             });
             price = vmInquiryPriceForMonth(createRequest, huaweiVmCredential, projectId);

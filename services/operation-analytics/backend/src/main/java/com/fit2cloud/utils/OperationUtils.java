@@ -110,7 +110,9 @@ public class OperationUtils {
         children.setChildren(new ArrayList<>());
         children.setGroupName("available");
         children.setName(currentOrg.getName()+"(未授权)");
-        currentOrg.getChildren().add(children);
+        if(children.getValue()>0){
+            currentOrg.getChildren().add(children);
+        }
     }
 
 }

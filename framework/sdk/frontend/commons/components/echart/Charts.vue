@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { onMounted, ref, watch } from "vue";
 import * as echarts from "echarts";
+import _ from "lodash";
 
 const props = defineProps({
   data: {
@@ -113,13 +114,17 @@ defineExpose({
 
 onMounted(() => {
   initEcharts();
-  setEchartsData();
+  setEchartsData(undefined);
   window.addEventListener("resize", () => {
     myChart && myChart.resize();
   });
 });
 
-const setEchartsData = () => {
+const setEchartsData = (seriesData: any) => {
+  const currentSeriesData = _.cloneDeep(props.series);
+  if (seriesData) {
+    currentSeriesData[0].data = seriesData;
+  }
   myChart.hideLoading();
   myChart.setOption({
     xAxis: {
@@ -198,7 +203,7 @@ const setEchartsData = () => {
         fontSize: 12,
       },
     },
-    series: props.series,
+    series: currentSeriesData,
   });
 };
 
@@ -260,15 +265,15 @@ const changeByte = (byte: number) => {
 watch(
   () => props.xData,
   () => {
-    setEchartsData();
+    setEchartsData(undefined);
   }
 );
 const currentDevice = ref("");
 const changeDeviceList = () => {
   if (currentDevice.value != "") {
     //props.xData = props.deviceData[currentDevice.value][0].timestamps;
-    props.series[0].data = props.deviceData[currentDevice.value][0].values;
-    setEchartsData();
+    //props.series[0].data = props.deviceData[currentDevice.value][0].values;
+    setEchartsData(props.deviceData[currentDevice.value][0].values);
   }
 };
 const isDiskUsed = () => {
