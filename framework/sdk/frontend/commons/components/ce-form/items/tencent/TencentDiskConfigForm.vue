@@ -184,7 +184,7 @@ const minSize = computed(() => (disk: DiskTypeConfig, index: number) => {
         if (diskTypeOption.diskType === disk.diskType) {
           minSize.value = diskTypeOption.minDiskSize;
         }
-        if (props.allData.os?.toLowerCase().indexOf("windows") > -1) {
+        if (props.allData.os?.toLowerCase().indexOf("window") > -1) {
           minSize.value = 50;
         }
         if (disk.size < minSize.value) {
