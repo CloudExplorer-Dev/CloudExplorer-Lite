@@ -42,7 +42,7 @@ logging:
 eureka:
   instance:
     metadata-map:
-      order: 4
+      order: 5
       name_zh-cn: 安全合规
       name_zh-tw: 安全合规
       name_en: Security Compliance

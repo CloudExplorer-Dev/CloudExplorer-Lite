@@ -35,7 +35,7 @@
   </layout-content>
   <el-dialog
     v-model="billRuleDialogVisible"
-    :title="billRuleFormType === 'ADD' ? '添加规则' : '编辑规则'"
+    :title="billRuleFormType === 'ADD' ? '创建自定义账单' : '编辑自定义账单'"
     width="60%"
     style="min-width: 600px"
   >
@@ -126,7 +126,14 @@ const billRuleGroup = ref<InstanceType<typeof BillRuleGroup> | null>();
  */
 const billRuleForm = ref<AddRule>({
   name: "",
-  groups: [],
+  groups: [
+    {
+      id: nanoid(),
+      field: "",
+      name: "",
+      missName: "其他",
+    },
+  ],
 });
 
 /**
@@ -243,7 +250,14 @@ const addBillRule = () => {
   billRuleDialogVisible.value = true;
   billRuleFormType.value = "ADD";
   billRuleForm.value.name = "";
-  billRuleForm.value.groups = [];
+  billRuleForm.value.groups = [
+    {
+      id: nanoid(),
+      field: "",
+      name: "",
+      missName: "其他",
+    },
+  ];
 };
 /**
  * 表单配置

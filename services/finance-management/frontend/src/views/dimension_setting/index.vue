@@ -50,7 +50,7 @@
                 <ce-icon
                   :code="`${
                     data.type === 'ORGANIZATION'
-                      ? 'zuzhijiagou'
+                      ? 'zuzhijiagou1'
                       : 'project_space'
                   }`"
                   size="3px"
@@ -67,7 +67,7 @@
                 ? "未分账资源"
                 : activeWorkSpaceOrOrg?.name
             }}</span>
-            <div style="font-size: 12px; color: #555555">
+            <div style="font-size: 12px; margin-top: 5px; color: #555555">
               说明：各云账号的账单费用按照分账规则分摊到云管中的组织/工作空间上。
             </div>
           </div>
@@ -208,7 +208,7 @@
               <template #toolbar>
                 <div class="title" v-if="activeUnassignedResource">
                   <span>未分账资源</span>
-                  <div style="font-size: 12px; color: #555555">
+                  <div style="font-size: 12px; margin-top: 5px; color: #555555">
                     说明：各云账号的账单费用按照分账规则分摊到云管中的组织/工作空间上。
                   </div>
                 </div></template
@@ -555,7 +555,7 @@ const tableConfig = ref<TableConfig>({
   .content {
     display: flex;
     justify-content: space-between;
-    height: calc(100% - 80px);
+    height: 100%;
     width: 100%;
     .leftMenu {
       height: 100%;
@@ -608,7 +608,7 @@ const tableConfig = ref<TableConfig>({
 :deep(.el-tree) {
   width: 100%;
   overflow: hidden;
-  height: calc(100% - 40px);
+  height: calc(100% - 90px);
 
   > .el-tree-node {
     display: inline-block;

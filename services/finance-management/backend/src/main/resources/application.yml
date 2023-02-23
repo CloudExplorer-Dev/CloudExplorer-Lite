@@ -42,7 +42,7 @@ logging:
 eureka:
   instance:
     metadata-map:
-      order: 2
+      order: 3
       name_zh-cn: 云账单服务
       name_zh-tw: 云账单服务
       name_en: Finance Management

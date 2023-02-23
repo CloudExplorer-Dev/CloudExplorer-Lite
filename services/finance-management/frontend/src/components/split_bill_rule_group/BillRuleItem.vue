@@ -74,7 +74,7 @@
       "
       @click="deleteItem(item)"
     >
-      删除条件
+      删除
     </div>
   </el-form>
 </template>

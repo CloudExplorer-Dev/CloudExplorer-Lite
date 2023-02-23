@@ -88,6 +88,9 @@ public class SyncServiceImpl extends BaseSyncService implements ISyncService {
         CloudAccount cloudAccount = cloudAccountService.getById(cloudAccountId);
         // 如果云账号没删除 没查询到
         if (Objects.isNull(cloudAccount)) {
+            // 删除资源数据
+            deleteResourceDataByCloudAccountId(cloudAccountId);
+            // 删除定时任务
             cloudAccountService.deleteJobByCloudAccountId(cloudAccountId);
             return;
         } else {
@@ -165,7 +168,6 @@ public class SyncServiceImpl extends BaseSyncService implements ISyncService {
     private void scan(ResourceTypeConstants instanceType, String cloudAccountId) {
         complianceScanService.scanComplianceOrSave(instanceType, cloudAccountId);
         complianceScanService.scanComplianceResourceOrSave(instanceType, cloudAccountId);
-
     }
 
     /**
@@ -199,6 +201,19 @@ public class SyncServiceImpl extends BaseSyncService implements ISyncService {
                         .index(new IndexOperation.Builder<>().document(source).build()).build()).toList()).refresh(Refresh.True).build();
         // todo 插入数据
         elasticsearchClient.bulk(bulkRequest);
+    }
+
+    @SneakyThrows
+    private void deleteResourceDataByCloudAccountId(String cloudAccountId) {
+        Query query = new TermQuery.Builder().field("cloudAccountId").value(cloudAccountId).build()._toQuery();
+        DeleteByQueryRequest build = new DeleteByQueryRequest.Builder().index(ResourceInstance.class.getAnnotation(Document.class).indexName()).query(query).refresh(true).build();
+        elasticsearchClient.deleteByQuery(build);
+        complianceScanResultService.remove(new LambdaQueryWrapper<ComplianceScanResult>()
+                .eq(ComplianceScanResult::getCloudAccountId, cloudAccountId));
+        complianceScanResourceResultService.remove(
+                new LambdaQueryWrapper<ComplianceScanResourceResult>()
+                        .eq(ComplianceScanResourceResult::getCloudAccountId, cloudAccountId)
+        );
     }
 
     /**
