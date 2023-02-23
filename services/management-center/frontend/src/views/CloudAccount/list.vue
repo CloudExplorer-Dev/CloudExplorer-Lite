@@ -732,7 +732,12 @@ const syncAll = () => {
       </el-button>
     </template>
     <el-table-column type="selection" />
-    <el-table-column prop="name" :label="t('commons.name', '名称')" sortable>
+    <el-table-column
+      min-width="150"
+      prop="name"
+      :label="t('commons.name', '名称')"
+      sortable
+    >
       <template #default="scope">
         <span
           style="cursor: pointer; color: var(--el-color-primary)"
@@ -743,6 +748,7 @@ const syncAll = () => {
       </template>
     </el-table-column>
     <el-table-column
+      min-width="120"
       column-key="platform"
       :filters="platformFilters"
       prop="platform"
@@ -763,8 +769,9 @@ const syncAll = () => {
       </template>
     </el-table-column>
     <el-table-column
+      min-width="100"
       prop="state"
-      :label="t('cloud_account.native_state', '云账号状态')"
+      :label="t('cloud_account.native_state', '状态')"
       column-key="state"
       sortable
       :filters="[
@@ -786,6 +793,7 @@ const syncAll = () => {
       </template>
     </el-table-column>
     <el-table-column
+      min-width="150"
       column-key="status"
       prop="status"
       :label="t('cloud_account.native_sync_status', '同步状态')"
@@ -849,16 +857,22 @@ const syncAll = () => {
       </template>
     </el-table-column>
     <el-table-column
+      min-width="155"
       prop="updateTime"
       :label="t('cloud_account.last_sync_time', '最近同步时间')"
       sortable
     />
     <el-table-column
+      min-width="155"
       prop="createTime"
       :label="t('commons.create_time', '创建时间')"
       sortable
     />
-    <fu-table-operations v-bind="tableConfig.tableOperations" fix />
+    <fu-table-operations
+      fixed="right"
+      v-bind="tableConfig.tableOperations"
+      fix
+    />
     <template #buttons>
       <fu-table-column-select type="icon" :columns="columns" size="small" />
     </template>

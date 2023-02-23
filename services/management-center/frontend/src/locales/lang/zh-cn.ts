@@ -54,10 +54,10 @@ const message = {
     platform: "云平台",
     native_state_valid_message: "云账号有效",
     native_state_invalid_message: "云账号无效",
-    native_state: "云账号状态",
+    native_state: "状态",
     native_state_valid: "有效",
     native_state_invalid: "无效",
-    native_sync_status: "云账号同步状态",
+    native_sync_status: "同步状态",
     native_sync: {
       init: "初始化",
       success: "成功",

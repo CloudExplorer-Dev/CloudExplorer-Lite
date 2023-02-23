@@ -48,7 +48,7 @@
             />
           </el-select>
         </template>
-        <el-table-column prop="name" label="规则名称" width="120">
+        <el-table-column prop="name" label="规则名称" min-width="120">
           <template #default="scope">
             <el-tooltip class="box-item" effect="dark" placement="top-start">
               <template #content>
@@ -60,7 +60,7 @@
             >
           </template>
         </el-table-column>
-        <el-table-column prop="resourceTyppe" label="资源类型" width="120px">
+        <el-table-column prop="resourceTyppe" min-width="120" label="资源类型">
           <template #default="scope"
             >{{
               resourceTypes.find(
@@ -72,7 +72,7 @@
         <el-table-column
           prop="platform"
           label="云平台"
-          width="150"
+          min-width="150"
           :column-key="'platform'"
           :filters="
             Object.keys(platformIcon).map((key) => ({
@@ -89,7 +89,12 @@
             </div>
           </template></el-table-column
         >
-        <el-table-column prop="riskLevel" label="风险等级" width="120" sortable>
+        <el-table-column
+          prop="riskLevel"
+          label="风险等级"
+          min-width="120"
+          sortable
+        >
           <template #default="scope">
             {{
               scope.row.riskLevel === "HIGH"
@@ -104,7 +109,7 @@
           prop="scanStatus"
           column-key="scanStatus"
           label="检测状态"
-          width="100px"
+          min-width="100px"
           :filter-multiple="false"
           :filters="[
             { text: '合规', value: 'COMPLIANCE' },
@@ -129,7 +134,7 @@
         <el-table-column
           prop="notComplianceCount"
           label="不合规/合规资源"
-          width="150px"
+          min-width="150px"
           sortable
         >
           <template #default="scope">
@@ -150,7 +155,7 @@
         <el-table-column
           prop="updateTime"
           label="最后扫描时间"
-          width="230px"
+          min-width="230px"
           sortable
         >
           <template #default="scope">
@@ -259,6 +264,11 @@ onMounted(() => {
         (item) =>
           item.resourceType === currentJobRow.value?.resourceType &&
           item.resourceId === currentJobRow.value?.resourceId
+      );
+
+      bus.emit(
+        "scanStatus",
+        ok.data.some((a) => a.status === "SYNCING") ? "SYNCING" : "SUCCESS"
       );
     });
   }, 6000);

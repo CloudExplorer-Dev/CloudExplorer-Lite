@@ -29,6 +29,11 @@
 
     <div class="scan">
       <el-button type="primary" @click="openScanView">一键扫描</el-button>
+      <div style="margin-top: 10px" v-if="scanStatus === 'SYNCING'">
+        扫描中...<el-icon class="is-loading">
+          <Loading />
+        </el-icon>
+      </div>
     </div>
     <compliance_scan ref="scan"></compliance_scan>
   </div>
@@ -81,6 +86,12 @@ const selectComplianceRuleGroup = (complianceRuleGroup: string) => {
     activeComplianceRuleGroupId.value
   );
 };
+
+const scanStatus = ref<"SYNCING" | "SUCCESS" | "INIT">("INIT");
+
+bus.on("scanStatus", (status: "SYNCING" | "SUCCESS") => {
+  scanStatus.value = status;
+});
 const openScanView = () => {
   scan.value?.open();
 };
@@ -106,6 +117,7 @@ const reSize = (wh: { width: string }) => {
     height: 100px;
   }
   .scan {
+    flex-wrap: wrap;
     width: 85px;
     display: flex;
     justify-content: center;

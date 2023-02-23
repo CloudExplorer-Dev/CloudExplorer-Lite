@@ -2,7 +2,7 @@
   <!-- 创建 -->
   <el-dialog
     v-model="createComplianceRuleVisible"
-    title="创建合规规则"
+    title="编辑合规规则"
     width="60%"
     :before-close="close"
   >

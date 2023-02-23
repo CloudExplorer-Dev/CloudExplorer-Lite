@@ -39,7 +39,7 @@
       <div @click="addRuleGroup">添加规则组</div>
     </div>
   </div>
-  <layout-container style="margin-top: 20px"
+  <layout-container :border="false" style="margin-top: 20px"
     ><el-button @click="submit" type="primary">保存</el-button>
   </layout-container>
 </template>
@@ -58,7 +58,13 @@ const props = defineProps<{ organizationWorkspace: OrganizationWorkspace }>();
 /**
  * 授权规则组
  */
-const billGroups = ref<Array<BillAuthorizeRuleSettingGroup>>([]);
+const billGroups = ref<Array<BillAuthorizeRuleSettingGroup>>([
+  {
+    id: nanoid(),
+    billAuthorizeRules: [],
+    conditionType: "AND",
+  },
+]);
 /**
  * 获取授权规则组加载器
  */
@@ -123,7 +129,19 @@ watch(
               ok.data.authorizeRule.billAuthorizeRuleSettingGroups;
             condition.value = ok.data.authorizeRule.conditionType;
           } else {
-            billGroups.value = [];
+            billGroups.value = [
+              {
+                id: nanoid(),
+                billAuthorizeRules: [
+                  {
+                    id: nanoid(),
+                    field: "",
+                    value: [],
+                  },
+                ],
+                conditionType: "AND",
+              },
+            ];
           }
         });
     }
@@ -137,7 +155,13 @@ const addRuleGroup = () => {
   Promise.all(billRuleGroup.value.map((i) => i.validate())).then((ok) => {
     billGroups.value.push({
       id: nanoid(),
-      billAuthorizeRules: [],
+      billAuthorizeRules: [
+        {
+          id: nanoid(),
+          field: "",
+          value: [],
+        },
+      ],
       conditionType: "AND",
     });
   });
@@ -173,7 +197,7 @@ const submit = () => {
 <style lang="scss" scoped>
 .bill_rule_group_wapper {
   width: calc(100% - 2px);
-  min-width: 950px;
+  min-width: 1000px;
   display: flex;
   justify-content: center;
   flex-wrap: wrap;
