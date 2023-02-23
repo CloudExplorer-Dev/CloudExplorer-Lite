@@ -31,6 +31,7 @@ const multipleSelectedRowData = ref<Array<VmCloudDiskVO>>([]);
 const isBatchAttach = ref(false);
 const cloudAccount = ref<Array<SimpleMap<string>>>([]);
 const tableLoading = ref<boolean>(false);
+import { platformIcon } from "@commons/utils/platform";
 
 /**
  * 表头：组织树筛选
@@ -686,7 +687,20 @@ const buttons = ref([
       :label="$t('commons.cloud_account.native')"
       :filters="cloudAccount"
       min-width="180px"
-    ></el-table-column>
+      ><template #default="scope">
+        <div style="display: flex">
+          <component
+            style="margin-top: 3px; width: 16px; height: 16px"
+            :is="platformIcon[scope.row.platform]?.component"
+            v-bind="platformIcon[scope.row.platform]?.icon"
+            :color="platformIcon[scope.row.platform]?.color"
+            size="16px"
+            v-if="scope.row.platform"
+          ></component>
+          <span style="margin-left: 10px">{{ scope.row.accountName }}</span>
+        </div>
+      </template>
+    </el-table-column>
     <el-table-column
       prop="region"
       column-key="region"

@@ -167,7 +167,6 @@ const tableConfig = ref<TableConfig>({
       { label: t("user.name"), value: "name" },
       { label: t("user.role"), value: "roleName" },
       { label: t("user.email"), value: "email" },
-      { label: t("user.workspaceId", "工作空间ID"), value: "workspaceId" },
     ],
   },
   paginationConfig: new PaginationConfig(),
