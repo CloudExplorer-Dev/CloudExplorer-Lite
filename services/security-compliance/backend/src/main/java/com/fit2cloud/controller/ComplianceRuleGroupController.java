@@ -15,6 +15,7 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.BeanUtils;
 import org.springframework.context.annotation.Bean;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -39,6 +40,7 @@ public class ComplianceRuleGroupController {
 
     @GetMapping
     @ApiOperation("获取所有规则组")
+    @PreAuthorize("hasAnyCePermission('RULE:READ')")
     public ResultHolder<List<ComplianceRuleGroupResponse>> list() {
         return ResultHolder.success(complianceRuleGroupService.list().stream().map(item -> {
             ComplianceRuleGroupResponse complianceRuleGroupResponse = new ComplianceRuleGroupResponse();
@@ -49,6 +51,7 @@ public class ComplianceRuleGroupController {
 
     @GetMapping("/{complianceRuleGroupId}")
     @ApiOperation("根据合规规则组id获取规则组信息")
+    @PreAuthorize("hasAnyCePermission('RULE:READ')")
     public ResultHolder<ComplianceRuleGroupResponse> one(@PathVariable("complianceRuleGroupId") String complianceRuleGroupId) {
         ComplianceRuleGroup complianceRuleGroup = complianceRuleGroupService.getById(complianceRuleGroupId);
         ComplianceRuleGroupResponse complianceRuleGroupResponse = new ComplianceRuleGroupResponse();
@@ -58,6 +61,7 @@ public class ComplianceRuleGroupController {
 
     @GetMapping("/{currentPage}/{limit}")
     @ApiOperation(value = "分页查询合规规则组", notes = "分页查询规格规则组")
+    @PreAuthorize("hasAnyCePermission('RULE:READ')")
     public ResultHolder<Page<ComplianceRuleGroupResponse>> page(@NotNull(message = "当前页不能为空")
                                                                 @Min(message = "当前页不能小于0", value = 1)
                                                                 @PathVariable("currentPage")
@@ -72,6 +76,7 @@ public class ComplianceRuleGroupController {
 
     @PostMapping
     @ApiOperation(value = "插入合规规则组", notes = "插入合规规则组")
+    @PreAuthorize("hasAnyCePermission('RULE:CREATE')")
     public ResultHolder<ComplianceRuleGroupResponse> save(@Validated(ValidationGroup.SELECT.class)
                                                           @RequestBody ComplianceRuleGroupRequest request) {
         ComplianceRuleGroupResponse complianceRuleGroupResponse = complianceRuleGroupService.save(request);
@@ -80,6 +85,7 @@ public class ComplianceRuleGroupController {
 
     @PutMapping
     @ApiOperation(value = "修改合规规则组", notes = "修改合规规则组")
+    @PreAuthorize("hasAnyCePermission('RULE:EDIT')")
     public ResultHolder<ComplianceRuleGroupResponse> update(@Validated(ValidationGroup.UPDATE.class)
                                                             @RequestBody ComplianceRuleGroupRequest request) {
         ComplianceRuleGroupResponse complianceRuleGroupResponse = complianceRuleGroupService.update(request);
@@ -88,6 +94,7 @@ public class ComplianceRuleGroupController {
 
     @ApiOperation(value = "删除规则组", notes = "删除规则组根据规则组id")
     @DeleteMapping("/{compliance_rule_group_id}")
+    @PreAuthorize("hasAnyCePermission('RULE:DELETE')")
     public ResultHolder<Boolean> deleteById(@NotNull(message = "规则组id不能为空")
                                             @CustomValidated(mapper = ComplianceRuleGroupMapper.class, handler = ExistHandler.class, field = "id", message = "规则组id不存在", exist = false)
                                             @PathVariable("compliance_rule_group_id")

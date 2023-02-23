@@ -267,6 +267,67 @@ const permissions = {
         read: "Read",
       },
     },
+    bill: {
+      view: {
+        base: "Bill overview",
+        read: "View",
+        create: "Create",
+        edit: "Edit",
+        delete: "Delete",
+      },
+      detailed: {
+        base: "Bill details",
+        read: "View",
+        create: "Create",
+        edit: "Edit",
+        delete: "Delete",
+      },
+      custom_bill: {
+        base: "Custom bill",
+        read: "View",
+        create: "Create",
+        edit: "Edit",
+        delete: "Delete",
+      },
+      dimension_setting: {
+        base: "Ledger setting",
+        read: "View",
+        create: "Create",
+        edit: "Edit",
+        delete: "Delete",
+      },
+    },
+    security: {
+      overview: {
+        base: "Overview",
+        read: "View",
+        create: "Create",
+        edit: "Edit",
+        delete: "Delete",
+      },
+      scan: {
+        base: "compliance scan",
+        read: "View",
+        create: "Create",
+        edit: "Edit",
+        delete: "Delete",
+        send_job: "Scan",
+      },
+      rule: {
+        base: "compliance rules",
+        read: "View",
+        create: "Create",
+        edit: "Edit",
+        delete: "Delete",
+      },
+      insurance: {
+        base: "Risk regulations",
+        read: "View",
+        create: "Create",
+        edit: "Edit",
+        delete: "Delete",
+      },
+    },
   },
 };
 

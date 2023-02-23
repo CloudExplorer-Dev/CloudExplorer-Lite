@@ -9,6 +9,7 @@ import com.fit2cloud.service.IComplianceInsuranceStatuteService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiModelProperty;
 import io.swagger.annotations.ApiOperation;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -36,6 +37,7 @@ public class ComplianceInsuranceStatuteController {
 
     @ApiOperation("分页查询等保条例")
     @GetMapping("/{currentPage}/{limit}")
+    @PreAuthorize("hasAnyCePermission('INSURANCE:READ')")
     public ResultHolder<IPage<ComplianceInsuranceStatuteResponse>> page(@NotNull(message = "当前页不能为空")
                                                                         @Min(message = "当前页不能小于0", value = 1)
                                                                         @PathVariable("currentPage")
@@ -50,6 +52,7 @@ public class ComplianceInsuranceStatuteController {
 
     @ApiOperation("获取所有的等保条例")
     @GetMapping
+    @PreAuthorize("hasAnyCePermission('INSURANCE:READ')")
     public ResultHolder<List<ComplianceInsuranceStatuteResponse>> list(ComplianceInsuranceStatuteRequest request) {
         return ResultHolder.success(complianceInsuranceStatuteService.list(request));
     }

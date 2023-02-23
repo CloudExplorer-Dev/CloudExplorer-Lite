@@ -17,6 +17,7 @@ import io.swagger.annotations.ApiModelProperty;
 import io.swagger.annotations.ApiOperation;
 import org.apache.commons.collections4.keyvalue.DefaultKeyValue;
 import org.springframework.beans.BeanUtils;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -41,6 +42,7 @@ public class ComplianceRuleController {
 
     @ApiOperation("分页查询合规规则")
     @GetMapping("/{currentPage}/{limit}")
+    @PreAuthorize("hasAnyCePermission('RULE:READ')")
     public ResultHolder<IPage<ComplianceRuleResponse>> page(@NotNull(message = "当前页不能为空")
                                                             @Min(message = "当前页不能小于0", value = 1)
                                                             @PathVariable("currentPage")
@@ -56,6 +58,7 @@ public class ComplianceRuleController {
 
     @ApiModelProperty("根据规则id获取合规规则")
     @GetMapping("/{complianceRuleId}")
+    @PreAuthorize("hasAnyCePermission('RULE:READ')")
     public ResultHolder<ComplianceRuleResponse> one(@PathVariable("complianceRuleId") String complianceRuleId) {
         ComplianceRule complianceRule = complianceRuleService.getById(complianceRuleId);
         ComplianceRuleResponse complianceRuleResponse = new ComplianceRuleResponse();
@@ -65,6 +68,7 @@ public class ComplianceRuleController {
 
     @ApiOperation("获取可过滤的合规条件维度")
     @GetMapping("/instance_search_field")
+    @PreAuthorize("hasAnyCePermission('RULE:READ')")
     public ResultHolder<List<ComplianceRuleSearchFieldResponse>> listInstanceSearchField(@RequestParam("platform")
                                                                                          String platform,
                                                                                          @RequestParam("resourceType")
@@ -75,6 +79,7 @@ public class ComplianceRuleController {
 
     @ApiOperation("插入合规规则")
     @PostMapping
+    @PreAuthorize("hasAnyCePermission('RULE:CREATE')")
     public ResultHolder<ComplianceRuleResponse> saveComplianceRule(@Validated(ValidationGroup.SAVE.class)
                                                                    @RequestBody
                                                                    ComplianceRuleRequest complianceRuleRequest) {
@@ -84,6 +89,7 @@ public class ComplianceRuleController {
 
     @ApiOperation("获取规则实例类型")
     @GetMapping("/resource_type")
+    @PreAuthorize("hasAnyCePermission('RULE:READ')")
     public ResultHolder<List<DefaultKeyValue<String, String>>> listResourceType() {
         List<DefaultKeyValue<String, String>> resourceTypes = complianceRuleService.listResourceType();
         return ResultHolder.success(resourceTypes);
@@ -91,6 +97,7 @@ public class ComplianceRuleController {
 
     @PutMapping
     @ApiOperation("修改合规规则")
+    @PreAuthorize("hasAnyCePermission('RULE:EDIT')")
     public ResultHolder<ComplianceRuleResponse> updateComplianceRule(@Validated(ValidationGroup.UPDATE.class)
                                                                      @RequestBody
                                                                      ComplianceRuleRequest complianceRuleRequest) {
@@ -100,6 +107,7 @@ public class ComplianceRuleController {
 
     @DeleteMapping("/{compliance_rule_id}")
     @ApiModelProperty("删除合规规则")
+    @PreAuthorize("hasAnyCePermission('RULE:DELETE')")
     public ResultHolder<Boolean> deleteComplianceRule(@NotNull(message = "规则id不能为空")
                                                       @CustomValidated(mapper = ComplianceRuleMapper.class, handler = ExistHandler.class, field = "id", message = "规则id不存在", exist = false)
                                                       @PathVariable("compliance_rule_id")

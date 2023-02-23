@@ -38,7 +38,8 @@ public class MenuConstants {
                     .requiredPermission(
                             new MenuPermission.Builder()
                                     .role(RoleConstants.ROLE.ADMIN)
-                                    .permission(PermissionConstants.GROUP.OVERVIEW, PermissionConstants.OPERATE.READ))
+                                    .permission(PermissionConstants.GROUP.OVERVIEW,
+                                            PermissionConstants.OPERATE.READ))
                     .order(1))
             .menu(new Menu.Builder().name("scan").title("扫描检查")
                     .componentPath("/src/views/scan/index.vue")
@@ -46,7 +47,8 @@ public class MenuConstants {
                     .icon("anquansaomiao")
                     .requiredPermission(new MenuPermission.Builder()
                             .role(RoleConstants.ROLE.ADMIN)
-                            .permission(PermissionConstants.GROUP.SCAN, PermissionConstants.OPERATE.READ))
+                            .permission(PermissionConstants.GROUP.SCAN,
+                                    PermissionConstants.OPERATE.READ))
                     .order(2).operationRoute(new Menu.Builder()
                             .name("details")
                             .title("详情")
