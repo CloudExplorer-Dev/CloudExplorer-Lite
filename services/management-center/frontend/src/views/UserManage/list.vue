@@ -175,7 +175,7 @@ const tableConfig = ref<TableConfig>({
       t("commons.btn.edit"),
       "primary",
       edit,
-      "Edit",
+      "EditPen",
       undefined,
       permissionStore.hasPermission("[management-center]USER:EDIT")
     ),
@@ -191,7 +191,7 @@ const tableConfig = ref<TableConfig>({
       t("commons.personal.edit_pwd"),
       "primary",
       showPwdDialog,
-      "EditPen",
+      "Lock",
       undefined,
       permissionStore.hasPermission("[management-center]USER:EDIT_PASSWORD")
     ),
@@ -237,7 +237,7 @@ const tableConfig = ref<TableConfig>({
       </el-button>
     </template>
     <el-table-column type="selection" />
-    <el-table-column prop="username" label="ID">
+    <el-table-column prop="username" label="ID" fixed>
       <template #default="scope">
         <span
           style="cursor: pointer; color: var(--el-color-primary)"
@@ -248,7 +248,7 @@ const tableConfig = ref<TableConfig>({
       </template>
     </el-table-column>
     <el-table-column prop="name" :label="$t('user.name')" />
-    <el-table-column prop="email" :label="$t('user.email')" />
+    <el-table-column prop="email" :label="$t('user.email')" min-width="160px" />
     <el-table-column prop="roles" :label="$t('user.role')">
       <template #default="scope">
         <div v-for="role in scope.row.roles" :key="role.id">
@@ -259,12 +259,22 @@ const tableConfig = ref<TableConfig>({
         </div>
       </template>
     </el-table-column>
-    <el-table-column prop="source" :label="$t('user.source')" sortable>
+    <el-table-column
+      prop="source"
+      :label="$t('user.source')"
+      sortable
+      min-width="160px"
+    >
       <template #default="scope">
         <span>{{ sourceFilter(scope.row.source) }}</span>
       </template>
     </el-table-column>
-    <el-table-column prop="enabled" :label="$t('user.status')" sortable>
+    <el-table-column
+      prop="enabled"
+      :label="$t('user.status')"
+      sortable
+      min-width="160px"
+    >
       <template #default="scope">
         <el-switch
           v-model="scope.row.enabled"
@@ -276,10 +286,10 @@ const tableConfig = ref<TableConfig>({
     <el-table-column
       prop="createTime"
       :label="$t('commons.create_time')"
-      min-width="120"
       sortable
+      min-width="200px"
     />
-    <fu-table-operations v-bind="tableConfig.tableOperations" fix />
+    <fu-table-operations v-bind="tableConfig.tableOperations" fixed="right" />
     <template #buttons>
       <fu-table-column-select type="icon" :columns="columns" size="small" />
     </template>
