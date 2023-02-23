@@ -37,14 +37,17 @@ const show = computed<boolean>(
     _.includes(props.needRoles, userStore.currentRole)
 );
 
-const resourceCount = ref<SimpleMap<any>>({});
-const ruleCount = ref<SimpleMap<any>>({});
+const resourceCount = ref<SimpleMap<any>>({ notComplianceCount: 0, total: 0 });
+const ruleCount = ref<SimpleMap<any>>({ notComplianceCount: 0, total: 0 });
+
+const resourceCountLoading = ref<boolean>(false);
+const ruleCountLoading = ref<boolean>(false);
 
 const getResourceCount = () => {
   if (!show.value) {
     return;
   }
-  API.getComplianceViewResourceCount({}).then((res) => {
+  API.getComplianceViewResourceCount({}, resourceCountLoading).then((res) => {
     resourceCount.value = res.data;
   });
 };
@@ -52,7 +55,7 @@ const getRuleCount = () => {
   if (!show.value) {
     return;
   }
-  API.getComplianceViewRuleCount({}).then((res) => {
+  API.getComplianceViewRuleCount({}, ruleCountLoading).then((res) => {
     ruleCount.value = res.data;
   });
 };
@@ -74,14 +77,14 @@ onMounted(() => {
       />
     </div>
     <el-row :gutter="20" type="flex">
-      <el-col :span="12">
+      <el-col :span="12" v-loading="ruleCountLoading">
         <div class="subtitle">不合规规则数</div>
         <span class="number">
           {{ ruleCount.notComplianceCount }}
         </span>
         <span class="total">/{{ ruleCount.total }}</span>
       </el-col>
-      <el-col :span="12">
+      <el-col :span="12" v-loading="resourceCountLoading">
         <div class="subtitle">不合规规则数</div>
         <span class="number">
           {{ resourceCount.notComplianceCount }}
