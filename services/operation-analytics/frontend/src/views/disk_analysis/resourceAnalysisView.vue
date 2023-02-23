@@ -345,6 +345,20 @@ const getSpreadByDepartmentOrgData = (chartName: string) => {
       seriesData.value.push({ value: v.value, groupName: v.groupName });
     });
     _.set(options, "series[0].data", seriesData);
+    const deptNumber = chartData.map((item: any) => item.name);
+    let showEchart = false;
+    let nameNum = 0;
+    if (deptNumber.length > 0) {
+      nameNum = Math.floor(100 / (deptNumber.length / 9));
+      if (deptNumber.length > 9) {
+        showEchart = true;
+      } else {
+        showEchart = false;
+      }
+    }
+    _.set(options, "dataZoom.[0].end", nameNum);
+    _.set(options, "dataZoom.[1].end", nameNum);
+    _.set(options, "dataZoom.[0].show", showEchart);
     spreadByDepartmentOrgOption.value = options;
     childRefMap.get(chartName + "-chart").hideEchartsLoading();
   });
