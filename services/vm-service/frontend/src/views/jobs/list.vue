@@ -84,7 +84,7 @@ const jumpToServer = (serverId: string) => {
   useRoute.push({
     path: useRoute.currentRoute.value.path.replace(
       "jobs/list",
-      `vm_cloud_server/detail/serverId`
+      `vm_cloud_server/detail/${serverId}`
     ),
   });
 };
@@ -93,7 +93,7 @@ const jumpToDisk = (diskId: string) => {
   useRoute.push({
     path: useRoute.currentRoute.value.path.replace(
       "jobs/list",
-      `vm_cloud_disk/detail/diskId`
+      `vm_cloud_disk/detail/${diskId}`
     ),
   });
 };
