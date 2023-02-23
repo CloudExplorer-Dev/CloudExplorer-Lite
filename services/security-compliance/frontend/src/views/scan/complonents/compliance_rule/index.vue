@@ -25,6 +25,7 @@
     </div>
     <div class="right_wapper">
       <ce-table
+        localKey="complianceScanRuleTable"
         v-loading="loading"
         height="100%"
         ref="table"

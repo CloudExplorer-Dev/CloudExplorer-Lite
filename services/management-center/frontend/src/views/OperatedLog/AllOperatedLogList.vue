@@ -1,6 +1,7 @@
 <!--操作日志列表-->
 <template>
   <ce-table
+    localKey="allOperatedLogTable"
     v-loading="tableLoading"
     :columns="columns"
     :data="tableData"

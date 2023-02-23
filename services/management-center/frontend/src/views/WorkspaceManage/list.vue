@@ -171,6 +171,7 @@ const tableConfig = ref<TableConfig>({
 </script>
 <template>
   <ce-table
+    localKey="workspaceManageTable"
     v-loading="tableLoading"
     :columns="columns"
     :data="tableData"

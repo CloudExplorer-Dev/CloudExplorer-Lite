@@ -35,15 +35,20 @@
         resource_id AS resource_id
         FROM
         job_record_resource_mapping job_record_resource_mapping
-        WHERE
-        job_record_resource_mapping.resource_id IN
-        <foreach collection="resourceIds" index="index" item="id" separator="," close=")" open="(">
-            #{id}
-        </foreach>
-        AND job_record_resource_mapping.job_type IN
-        <foreach collection="jobTypes" index="index" item="jobType" separator="," close=")" open="(">
-            #{jobType}
-        </foreach>
+        <where>
+        <if test="resourceIds!=null and resourceIds.size >0">
+          and  job_record_resource_mapping.resource_id IN
+            <foreach collection="resourceIds" index="index" item="id" separator="," close=")" open="(">
+                #{id}
+            </foreach>
+        </if>
+        <if test="jobTypes!=null and jobTypes.size >0">
+            and  job_record_resource_mapping.job_type IN
+            <foreach collection="jobTypes" index="index" item="jobType" separator="," close=")" open="(">
+                #{jobType}
+            </foreach>
+        </if>
+        </where>
         GROUP BY
         job_record_resource_mapping.resource_id,
         job_record_resource_mapping.resource_type

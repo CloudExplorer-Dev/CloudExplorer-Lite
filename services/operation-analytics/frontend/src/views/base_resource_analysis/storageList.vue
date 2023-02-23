@@ -74,6 +74,7 @@ onMounted(() => {
 <template>
   <div class="log-table">
     <ce-table
+      localKey="storageTable"
       v-loading="tableLoading"
       :columns="columns"
       :data="tableData"

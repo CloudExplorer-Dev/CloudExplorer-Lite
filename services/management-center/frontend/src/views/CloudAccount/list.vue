@@ -700,6 +700,7 @@ const syncAll = () => {
 </script>
 <template>
   <ce-table
+    localKey="cloudAccountTable"
     height="100%"
     ref="table"
     :columns="columns"

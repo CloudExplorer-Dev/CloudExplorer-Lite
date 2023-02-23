@@ -110,6 +110,16 @@ public class VmCloudServerController {
         return ResultHolder.success(iVmCloudServerService.deleteInstance(serverId));
     }
 
+    @ApiOperation(value = "删除创建失败的记录", notes = "删除云主机创建失败的记录")
+    @PostMapping("deleteFailedRecord/{serverId}")
+    @PreAuthorize("hasAnyCePermission('CLOUD_SERVER:DELETE')")
+    @OperatedLog(resourceType = ResourceTypeEnum.CLOUD_SERVER, operated = OperatedTypeEnum.DELETE,
+            resourceId = "#serverId",
+            param = "#serverId")
+    public ResultHolder<Boolean> deleteFailedRecord(@PathVariable String serverId) {
+        return ResultHolder.success(iVmCloudServerService.deleteFailedRecord(serverId));
+    }
+
     @ApiOperation(value = "放入回收站", notes = "云主机放入回收站")
     @PostMapping("recycle/{serverId}")
     @PreAuthorize("hasAnyCePermission('CLOUD_SERVER:DELETE')")

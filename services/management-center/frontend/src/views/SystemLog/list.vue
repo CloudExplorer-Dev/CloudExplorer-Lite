@@ -1,6 +1,7 @@
 <!--系统日志列表-->
 <template>
   <ce-table
+    localKey="systemLogTable"
     v-loading="tableLoading"
     :columns="columns"
     :data="tableData"
