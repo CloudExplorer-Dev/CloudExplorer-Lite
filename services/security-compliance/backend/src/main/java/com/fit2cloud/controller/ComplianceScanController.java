@@ -12,6 +12,7 @@ import com.fit2cloud.service.IComplianceScanService;
 import com.fit2cloud.service.ISyncService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -38,6 +39,7 @@ public class ComplianceScanController {
 
     @GetMapping("/resource/{complianceRuleId}/{currentPage}/{limit}")
     @ApiOperation("分页查询资源")
+    @PreAuthorize("hasAnyCePermission('SCAN:READ')")
     public ResultHolder<Page<ComplianceResourceResponse>> pageResource(@NotNull(message = "合规规则id不能为空")
                                                                        @PathVariable("complianceRuleId")
                                                                        String complianceRuleId,
@@ -55,6 +57,7 @@ public class ComplianceScanController {
 
     @PostMapping("/sync_scan")
     @ApiOperation("发送扫描任务")
+    @PreAuthorize("hasAnyCePermission('SCAN:SEND_JOB')")
     public ResultHolder<Boolean> scan(@RequestBody ComplianceSyncRequest request) {
         for (ComplianceSyncRequest.CloudAccountResource cloudAccountResource : request.getCloudAccountResources()) {
             syncService.syncInstance(cloudAccountResource.getCloudAccountId(), cloudAccountResource.getResourceType());
@@ -64,6 +67,7 @@ public class ComplianceScanController {
 
     @ApiOperation("获取支持的云账号以及云账号可扫描资源")
     @GetMapping("/support_cloud_account")
+    @PreAuthorize("hasAnyCePermission('SCAN:READ')")
     public ResultHolder<List<SupportCloudAccountResourceResponse>> listSupportCloudAccountResource() {
         List<SupportCloudAccountResourceResponse> list = complianceScanService.listSupportCloudAccountResource();
         return ResultHolder.success(list);
@@ -71,6 +75,7 @@ public class ComplianceScanController {
 
     @ApiOperation("获取支持的云平台以及对应的资源")
     @GetMapping("/support_platform")
+    @PreAuthorize("hasAnyCePermission('SCAN:READ')")
     public ResultHolder<List<SupportPlatformResourceResponse>> listSupportPlatformResource() {
         List<SupportPlatformResourceResponse> list = complianceScanService.listSupportPlatformResource();
         return ResultHolder.success(list);
@@ -78,6 +83,7 @@ public class ComplianceScanController {
 
     @ApiOperation("获取资源类型同步情况")
     @GetMapping("job_record")
+    @PreAuthorize("hasAnyCePermission('SCAN:READ')")
     public ResultHolder<List<JobRecordResourceResponse>> listJobRecord() {
         List<JobRecordResourceResponse> res = complianceScanService.listJobRecord();
         return ResultHolder.success(res);

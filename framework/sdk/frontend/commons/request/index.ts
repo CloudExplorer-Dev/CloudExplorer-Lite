@@ -102,6 +102,13 @@ instance.interceptors.response.use(
         )
       );
     }
+    if (err.response?.status === 403) {
+      ElMessage.error(
+        err.response.data && err.response.data.message
+          ? err.response.data.message
+          : "没有权限访问"
+      );
+    }
     return Promise.reject(err);
   }
 );

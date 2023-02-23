@@ -8,6 +8,7 @@ import com.fit2cloud.controller.response.compliance_scan_result.ComplianceScanRu
 import com.fit2cloud.service.IComplianceScanResultService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -35,6 +36,7 @@ public class ComplianceScanResultController {
 
     @GetMapping
     @ApiOperation("获取当前合规信息")
+    @PreAuthorize("hasAnyCePermission('SCAN:READ')")
     public ResultHolder<List<ComplianceScanResultResponse>> list(ComplianceScanRequest request) {
         List<ComplianceScanResultResponse> list = complianceScanResultService.list(request);
         return ResultHolder.success(list);
@@ -42,6 +44,7 @@ public class ComplianceScanResultController {
 
     @GetMapping("/{currentPage}/{limit}")
     @ApiOperation("分页查看规则的合规信息")
+    @PreAuthorize("hasAnyCePermission('SCAN:READ')")
     public ResultHolder<IPage<ComplianceScanResultResponse>> page(@NotNull(message = "当前页不能为空")
                                                             @Min(message = "当前页不能小于0", value = 1)
                                                             @PathVariable("currentPage")
@@ -57,6 +60,7 @@ public class ComplianceScanResultController {
 
     @GetMapping("/rule_group/{complianceRuleGroupId}")
     @ApiOperation("获取规则组扫描情况")
+    @PreAuthorize("hasAnyCePermission('SCAN:READ')")
     public ResultHolder<ComplianceScanRuleGroupResultResponse> getRuleGroupCompliance(@PathVariable("complianceRuleGroupId")
                                                                                 String complianceRuleGroupId) {
         ComplianceScanRuleGroupResultResponse ruleGroupCompliance = complianceScanResultService.getComplianceRuleGroupByGroupId(complianceRuleGroupId);

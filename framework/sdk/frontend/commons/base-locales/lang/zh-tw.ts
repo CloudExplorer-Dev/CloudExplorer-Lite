@@ -266,6 +266,67 @@ const permissions = {
         read: "查看",
       },
     },
+    bill: {
+      view: {
+        base: "帳單總覽",
+        read: "查看",
+        create: "創建",
+        edit: "編輯",
+        delete: "删除",
+      },
+      detailed: {
+        base: "帳單明細",
+        read: "查看",
+        create: "創建",
+        edit: "編輯",
+        delete: "删除",
+      },
+      custom_bill: {
+        base: "自定義帳單",
+        read: "查看",
+        create: "創建",
+        edit: "編輯",
+        delete: "删除",
+      },
+      dimension_setting: {
+        base: "分賬設定",
+        read: "查看",
+        create: "創建",
+        edit: "編輯",
+        delete: "删除",
+      },
+    },
+    security: {
+      overview: {
+        base: "總覽",
+        read: "查看",
+        create: "創建",
+        edit: "編輯",
+        delete: "删除",
+      },
+      scan: {
+        base: "合規掃描",
+        read: "查看",
+        create: "創建",
+        edit: "編輯",
+        delete: "删除",
+        send_job: "扫描",
+      },
+      rule: {
+        base: "合規規則",
+        read: "查看",
+        create: "創建",
+        edit: "編輯",
+        delete: "删除",
+      },
+      insurance: {
+        base: "風險條例",
+        read: "查看",
+        create: "創建",
+        edit: "編輯",
+        delete: "删除",
+      },
+    },
   },
 };
 

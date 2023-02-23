@@ -9,6 +9,7 @@ import com.fit2cloud.service.IComplianceViewService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.models.auth.In;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -33,6 +34,7 @@ public class ComplianceViewController {
 
     @GetMapping("/resource/count")
     @ApiOperation("获取资源统计数据")
+    @PreAuthorize("hasAnyCePermission('OVERVIEW:READ')")
     public ResultHolder<ComplianceViewCountResponse> resourceCount(ComplianceCountRequest request) {
         ComplianceViewCountResponse complianceViewCountResponse = complianceViewService.resourceCount(request);
         return ResultHolder.success(complianceViewCountResponse);
@@ -40,6 +42,7 @@ public class ComplianceViewController {
 
     @GetMapping("/rule/count")
     @ApiOperation("获取规则统计数据")
+    @PreAuthorize("hasAnyCePermission('OVERVIEW:READ')")
     public ResultHolder<ComplianceViewCountResponse> ruleCount(ComplianceCountRequest request) {
         ComplianceViewCountResponse complianceViewCountResponse = complianceViewService.ruleCount(request);
         return ResultHolder.success(complianceViewCountResponse);
@@ -47,6 +50,7 @@ public class ComplianceViewController {
 
     @GetMapping("/resource/group")
     @ApiOperation(value = "获取资源分组统计数据", notes = "获取资源分组统计数据")
+    @PreAuthorize("hasAnyCePermission('OVERVIEW:READ')")
     public ResultHolder<List<ComplianceViewGroupResponse>> group(ComplianceGroupRequest request) {
         List<ComplianceViewGroupResponse> res = complianceViewService.resourceGroup(request);
         return ResultHolder.success(res);

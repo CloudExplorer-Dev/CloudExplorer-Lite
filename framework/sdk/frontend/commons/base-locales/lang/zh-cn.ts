@@ -296,6 +296,37 @@ const permissions = {
         delete: "删除",
       },
     },
+    security: {
+      overview: {
+        base: "总览",
+        read: "查看",
+        create: "创建",
+        edit: "编辑",
+        delete: "删除",
+      },
+      scan: {
+        base: "合规扫描",
+        read: "查看",
+        create: "创建",
+        edit: "编辑",
+        delete: "删除",
+        send_job: "扫描",
+      },
+      rule: {
+        base: "合规规则",
+        read: "查看",
+        create: "创建",
+        edit: "编辑",
+        delete: "删除",
+      },
+      insurance: {
+        base: "风险条例",
+        read: "查看",
+        create: "创建",
+        edit: "编辑",
+        delete: "删除",
+      },
+    },
   },
 };
 
