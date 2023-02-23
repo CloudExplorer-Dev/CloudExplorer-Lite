@@ -26,6 +26,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * @Author:张少虎
@@ -303,8 +304,13 @@ public class AliyunCloudProvider extends AbstractCloudProvider<AliyunVmCredentia
         return FormUtil.toForm(AliyunCreateDiskForm.class);
     }
 
-    public List<Map<String, String>> getDiskTypes(String req) {
-        return AliyunSyncCloudApi.getDiskTypes(JsonUtil.parseObject(req, AliyunGetDiskTypeRequest.class));
+    public List<Map<String, String>> getDiskTypesForCreateDisk(String req) {
+        return AliyunSyncCloudApi.getDataDiskType(JsonUtil.parseObject(req, AliyunGetDiskTypeRequest.class)).stream().map((diskType) -> {
+            Map<String, String> result = new HashMap<>();
+            result.put("id", diskType.getDiskType());
+            result.put("name", diskType.getDiskTypeName());
+            return result;
+        }).collect(Collectors.toList());
     }
 
     @Override
@@ -362,7 +368,7 @@ public class AliyunCloudProvider extends AbstractCloudProvider<AliyunVmCredentia
     }
 
     @Override
-    public F2CVirtualMachine changeVmConfig(String req){
+    public F2CVirtualMachine changeVmConfig(String req) {
         return AliyunSyncCloudApi.changeVmConfig(JsonUtil.parseObject(req, AliyunUpdateConfigRequest.class));
     }
 
@@ -375,7 +381,7 @@ public class AliyunCloudProvider extends AbstractCloudProvider<AliyunVmCredentia
         return AliyunSyncCloudApi.getInstanceTypesForConfigUpdate(JsonUtil.parseObject(req, AliyunUpdateConfigRequest.class));
     }
 
-    public String calculateConfigUpdatePrice(String req){
+    public String calculateConfigUpdatePrice(String req) {
         return AliyunSyncCloudApi.calculateConfigUpdatePrice(JsonUtil.parseObject(req, AliyunUpdateConfigRequest.class));
     }
 }

@@ -978,7 +978,7 @@ public class AliyunSyncCloudApi {
      */
     public static List<AliyunDiskTypeDTO.AliyunDiskType> getSystemDiskType(AliyunGetDiskTypeRequest req) {
         req.setDiskUsage("SystemDisk");
-        return getDiskTypesForCreateVM(req);
+        return getDiskTypes(req);
     }
 
     /**
@@ -989,10 +989,10 @@ public class AliyunSyncCloudApi {
      */
     public static List<AliyunDiskTypeDTO.AliyunDiskType> getDataDiskType(AliyunGetDiskTypeRequest req) {
         req.setDiskUsage("DataDisk");
-        return getDiskTypesForCreateVM(req);
+        return getDiskTypes(req);
     }
 
-    private static List<AliyunDiskTypeDTO.AliyunDiskType> getDiskTypesForCreateVM(AliyunGetDiskTypeRequest req) {
+    private static List<AliyunDiskTypeDTO.AliyunDiskType> getDiskTypes(AliyunGetDiskTypeRequest req) {
         AliyunVmCredential credential = JsonUtil.parseObject(req.getCredential(), AliyunVmCredential.class);
         Client client = credential.getClientByRegion(req.getRegionId());
         DescribeAvailableResourceRequest describeAvailableResourceRequest = req.toDescribeAvailableResourceRequest();
@@ -1005,49 +1005,17 @@ public class AliyunSyncCloudApi {
         List<DescribeAvailableResourceResponseBody.DescribeAvailableResourceResponseBodyAvailableZonesAvailableZoneAvailableResourcesAvailableResourceSupportedResourcesSupportedResource> supportedResources = getAvailableResources(describeAvailableResourceRequest, client);
         if (CollectionUtils.isNotEmpty(supportedResources)) {
             diskTypes = supportedResources.stream().map((supportedResource) -> {
-                AliyunDiskTypeDTO.AliyunDiskType systemDiskType = AliyunDiskTypeDTO.AliyunDiskType
+                AliyunDiskTypeDTO.AliyunDiskType diskType = AliyunDiskTypeDTO.AliyunDiskType
                         .builder()
                         .diskType(supportedResource.value)
                         .diskTypeName(AliyunDiskType.getName(supportedResource.value))
                         .minDiskSize(supportedResource.min.longValue())
                         .maxDiskSize(supportedResource.max.longValue())
                         .build();
-                return systemDiskType;
+                return diskType;
             }).collect(Collectors.toList());
         }
         return diskTypes;
-    }
-
-    /**
-     * 查询可用区支持的磁盘类型
-     *
-     * @param req
-     * @return
-     */
-    public static List<Map<String, String>> getDiskTypes(AliyunGetDiskTypeRequest req) {
-        List<Map<String, String>> diskTypes = new ArrayList<>();
-        AliyunVmCredential credential = JsonUtil.parseObject(req.getCredential(), AliyunVmCredential.class);
-        Client client = credential.getClientByRegion(req.getRegionId());
-        DescribeZonesRequest describeZonesRequest = new DescribeZonesRequest();
-        describeZonesRequest.setRegionId(req.getRegionId());
-        describeZonesRequest.setVerbose(false); // 不展示详细信息
-
-        try {
-            List<DescribeZonesResponseBody.DescribeZonesResponseBodyZonesZone> zones = client.describeZones(describeZonesRequest).getBody().zones.zone;
-            for (DescribeZonesResponseBody.DescribeZonesResponseBodyZonesZone zone : zones) {
-                if (zone.getZoneId().equalsIgnoreCase(req.getZoneId())) {
-                    for (String availableDiskCategory : zone.availableDiskCategories.diskCategories) {
-                        Map<String, String> diskType = new HashMap<>();
-                        diskType.put("id", availableDiskCategory);
-                        diskType.put("name", AliyunDiskType.getName(availableDiskCategory));
-                        diskTypes.add(diskType);
-                    }
-                }
-            }
-            return diskTypes;
-        } catch (Exception e) {
-            throw new RuntimeException("Failed to get disk type! " + e.getMessage(), e);
-        }
     }
 
     /**

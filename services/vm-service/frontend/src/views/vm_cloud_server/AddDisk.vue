@@ -25,6 +25,8 @@ const otherParams = computed(() => {
     zoneId: vmCloudServer.value?.zone,
     instanceUuid: vmCloudServer.value?.instanceUuid,
     instanceTypeDTO: vmCloudServer.value,
+    instanceChargeType:vmCloudServer.value?.instanceChargeType,
+    instanceType:vmCloudServer.value?.instanceType
   };
 });
 
@@ -76,7 +78,7 @@ const handleCreate = () => {
       ...ceFormRef.value.getFormData(),
     };
 
-    // 获取相应云平台创建磁盘表单数据
+    // 获取相应云平台创建磁盘API
     VmCloudDiskApi.createDisk(dataInfo, loading).then(() => {
       router.push({ name: "vm_cloud_server" });
     });
