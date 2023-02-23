@@ -47,12 +47,35 @@ export function listPerfMetricMonitor(
   return get("/vm-service/api/base/monitor/list", req, loading);
 }
 
+export function getComplianceViewResourceCount(
+  req: any,
+  loading?: Ref<boolean>
+): Promise<Result<SimpleMap<any>>> {
+  return get(
+    "/security-compliance/api/compliance_view/resource/count",
+    req,
+    loading
+  );
+}
+export function getComplianceViewRuleCount(
+  req: any,
+  loading?: Ref<boolean>
+): Promise<Result<SimpleMap<any>>> {
+  return get(
+    "/security-compliance/api/compliance_view/rule/count",
+    req,
+    loading
+  );
+}
+
 const api = {
   getHistoryTrend,
   getIncreaseTrend,
   getSpreadData,
   listVmCloudServer,
   listPerfMetricMonitor,
+  getComplianceViewResourceCount,
+  getComplianceViewRuleCount,
 };
 
 export default api;
