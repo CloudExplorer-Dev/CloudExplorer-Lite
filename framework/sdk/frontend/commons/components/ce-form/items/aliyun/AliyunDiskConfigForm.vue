@@ -131,6 +131,13 @@ interface DiskTypeConfig {
   readonly?: boolean;
 }
 
+interface DiskTypeOption {
+  diskType: string;
+  diskTypeName: string;
+  minDiskSize: number;
+  maxDiskSize: number;
+}
+
 const props = defineProps<{
   modelValue: any;
   allData?: any;
@@ -145,7 +152,7 @@ const emit = defineEmits(["update:modelValue", "change"]);
 /**
  * 系统盘类型下拉选
  */
-const systemDiskTypeOptions = computed(() => {
+const systemDiskTypeOptions = computed<DiskTypeOption[]>(() => {
   if (props.formItem?.optionList) {
     return props.formItem.optionList.systemDiskTypes;
   }
@@ -155,7 +162,7 @@ const systemDiskTypeOptions = computed(() => {
 /**
  * 数据盘类型下拉选
  */
-const dataDiskTypeOptions = computed(() => {
+const dataDiskTypeOptions = computed<DiskTypeOption[]>(() => {
   if (props.formItem?.optionList) {
     return props.formItem.optionList.dataDiskTypes;
   }
@@ -167,7 +174,7 @@ const minSize = computed(() => (disk: DiskTypeConfig, index: number) => {
   if (disk && index != null) {
     // 系统盘
     if (index === 0) {
-      systemDiskTypeOptions.value.forEach((diskTypeOption: DiskTypeConfig) => {
+      systemDiskTypeOptions.value.forEach((diskTypeOption: DiskTypeOption) => {
         if (diskTypeOption.diskType === disk.diskType) {
           minSize.value = diskTypeOption.minDiskSize;
         }
@@ -179,7 +186,7 @@ const minSize = computed(() => (disk: DiskTypeConfig, index: number) => {
         }
       });
     } else {
-      dataDiskTypeOptions.value.forEach((diskTypeOption: DiskTypeConfig) => {
+      dataDiskTypeOptions.value.forEach((diskTypeOption: DiskTypeOption) => {
         if (diskTypeOption.diskType === disk.diskType) {
           minSize.value = diskTypeOption.minDiskSize;
         }
@@ -194,13 +201,13 @@ const maxSize = computed(() => (disk: DiskTypeConfig, index: number) => {
   if (disk && index != null) {
     // 系统盘
     if (index === 0) {
-      systemDiskTypeOptions.value.forEach((diskTypeOption: DiskTypeConfig) => {
+      systemDiskTypeOptions.value.forEach((diskTypeOption: DiskTypeOption) => {
         if (diskTypeOption.diskType === disk.diskType) {
           maxSize.value = diskTypeOption.maxDiskSize;
         }
       });
     } else {
-      dataDiskTypeOptions.value.forEach((diskTypeOption: DiskTypeConfig) => {
+      dataDiskTypeOptions.value.forEach((diskTypeOption: DiskTypeOption) => {
         if (diskTypeOption.diskType === disk.diskType) {
           maxSize.value = diskTypeOption.maxDiskSize;
         }
@@ -213,16 +220,14 @@ const maxSize = computed(() => (disk: DiskTypeConfig, index: number) => {
 /**
  * 默认展示的盘:系统盘
  */
-const defaultDisks = computed(() => {
-  return [
-    {
-      diskType: "cloud_essd",
-      size: 40,
-      deleteWithInstance: true,
-      readonly: true,
-    },
-  ];
-});
+const defaultDisks = computed(() => [
+  {
+    diskType: "cloud_essd",
+    size: 40,
+    deleteWithInstance: true,
+    readonly: true,
+  },
+]);
 
 /**
  * 双向绑定更新到外面
@@ -243,6 +248,47 @@ watch(
   () => data.value,
   (data) => {
     emit("change");
+  },
+  { deep: true }
+);
+
+/**
+ * 监听数据盘可选值变化
+ */
+watch(
+  () => dataDiskTypeOptions.value,
+  () => {
+    if (data.value?.length > 1) {
+      for (let i = 1; i < data.value.length; i++) {
+        if (
+          dataDiskTypeOptions.value.every(
+            (option) => option.diskType !== data.value[i].diskType
+          )
+        ) {
+          data.value[i].diskType = dataDiskTypeOptions.value[0].diskType;
+          data.value[i].size = dataDiskTypeOptions.value[0].minDiskSize;
+        }
+      }
+    }
+  },
+  { deep: true }
+);
+
+/**
+ * 监听系统盘可选值变化
+ */
+watch(
+  () => systemDiskTypeOptions.value,
+  () => {
+    if (
+      data.value?.length > 0 &&
+      systemDiskTypeOptions.value.filter(
+        (option: DiskTypeOption) => option.diskType === data.value[0].diskType
+      ).length === 0
+    ) {
+      data.value[0].diskType = systemDiskTypeOptions.value[0].diskType;
+      data.value[0].size = systemDiskTypeOptions.value[0].minDiskSize;
+    }
   },
   { deep: true }
 );
