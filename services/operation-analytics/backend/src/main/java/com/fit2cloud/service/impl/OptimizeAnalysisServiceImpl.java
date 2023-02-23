@@ -88,7 +88,7 @@ public class OptimizeAnalysisServiceImpl implements IOptimizeAnalysisService {
         //根据uuid以及条件分页查询
         Page<AnalyticsServerDTO> page = PageUtil.of(request, AnalyticsServerDTO.class, null, true);
         MPJLambdaWrapper<VmCloudServer> queryServerWrapper = addServerAnalysisQuery(request);
-        queryServerWrapper.in(true,VmCloudServer::getInstanceUuid,request.getInstanceUuids());
+        queryServerWrapper.in(CollectionUtils.isNotEmpty(request.getInstanceUuids()),VmCloudServer::getInstanceUuid,request.getInstanceUuids());
         IPage<AnalyticsServerDTO> pageData = baseVmCloudServerMapper.selectJoinPage(page,AnalyticsServerDTO.class,queryServerWrapper);
         //分页数据添加监控数据
         if(pageData.getRecords().size()>0){
@@ -161,8 +161,11 @@ public class OptimizeAnalysisServiceImpl implements IOptimizeAnalysisService {
         // 回收站的资源ID
         List<String> temp = recycleBins.stream().map(RecycleBin::getResourceId).toList();
         List<String> recycleBinServerIds = new ArrayList<>();
+        List<VmCloudServer> recycleBinServer = new ArrayList<>();
         // 回收站资源
-        List<VmCloudServer> recycleBinServer = baseVmCloudServerMapper.selectBatchIds(temp);
+        if(CollectionUtils.isNotEmpty(temp)){
+            recycleBinServer = baseVmCloudServerMapper.selectBatchIds(temp);
+        }
         if(CollectionUtils.isNotEmpty(request.getAccountIds())){
             recycleBinServer = recycleBinServer.stream().filter(v->request.getAccountIds().contains(v.getAccountId())).collect(Collectors.toList());
         }
@@ -170,7 +173,7 @@ public class OptimizeAnalysisServiceImpl implements IOptimizeAnalysisService {
             recycleBinServer = recycleBinServer.stream().filter(v->v.getInstanceName().indexOf(request.getInstanceName())>0).collect(Collectors.toList());
         }
         if(CollectionUtils.isNotEmpty(recycleBinServer)){
-            recycleBinServerIds.addAll(recycleBinServer.stream().map(VmCloudServer::getId).toList());
+            recycleBinServerIds.addAll(recycleBinServer.stream().filter(v->StringUtils.equalsIgnoreCase("Deleted",v.getInstanceStatus())).map(VmCloudServer::getId).toList());
         }
         OptimizationConstants optimizationConstants = OptimizationConstants.getByCode(request.getOptimizeSuggest());
         Page<AnalyticsServerDTO> page = PageUtil.of(request, AnalyticsServerDTO.class, null, true);

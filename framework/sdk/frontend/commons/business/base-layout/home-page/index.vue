@@ -74,10 +74,7 @@ onMounted(() => {
           <div class="flex-content">
             <UserInfo class="flex-div-2 divide-info" />
             <BillModuleGroup />
-            <SecurityInfo
-              class="flex-div-2 divide-info"
-              v-if="userStore.currentRole === 'ADMIN'"
-            />
+            <SecurityInfo class="flex-div-2 divide-info" />
             <ServerDistribution
               class="flex-div-2 divide-info"
               :need-roles="['USER']"

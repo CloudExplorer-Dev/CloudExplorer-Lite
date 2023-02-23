@@ -102,7 +102,7 @@ public class MenuConstants {
                             .name("base_resource_analysis")
                             .title("基础资源分析")
                             .path("/base_resource_analysis")
-                            .icon("fenxi2")
+                            .icon("yidongyunkongzhitaiicon06")
                             .componentPath("/src/views/base_resource_analysis/index.vue")
                             .redirect("/resource_analysis/base_resource_analysis/list")
                             .order(1)
