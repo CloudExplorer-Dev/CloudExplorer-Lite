@@ -204,7 +204,7 @@ function getDiskType() {
         size: defaultSize < 40 ? 40 : defaultSize,
         diskType: defaultType.value
           ? defaultType.value
-          : diskTypes.value?.[0].id,
+          : diskTypes.value?.[0]?.id,
         amountText: "",
         readonly: true,
         deleteWithInstance: true,

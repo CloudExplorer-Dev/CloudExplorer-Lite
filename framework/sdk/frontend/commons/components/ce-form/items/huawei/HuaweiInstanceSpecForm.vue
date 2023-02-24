@@ -168,8 +168,10 @@ function getList() {
           singleTableRef.value?.setCurrentRow(currentRow.value);
           selectRowId.value = currentRow.value.specName;
         }
-        emit("change");
+      } else {
+        selectRowId.value = undefined;
       }
+      emit("change");
     });
 }
 
