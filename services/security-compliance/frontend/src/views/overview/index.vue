@@ -412,9 +412,8 @@ const getRuleOptions = (groupDatas: Array<ComplianceViewGroupResponse>) => {
     (pre, next) => next.notComplianceCount - pre.notComplianceCount
   );
   if (groupDatas.length > 5) {
-    groupDatas = groupDatas.slice(0, 5);
+    groupDatas = groupDatas.filter((item, index) => index < 5);
   }
-
   return {
     backgroundColor: "#fff",
 
@@ -564,7 +563,6 @@ const getRuleOptions = (groupDatas: Array<ComplianceViewGroupResponse>) => {
             fontSize: "14",
           },
         },
-        // data: this.attackSourcesDataFmt(attaName),
         data: groupDatas.map(
           (group) =>
             `不合规资源/资源总数:${group.notComplianceCount}/${group.total}`
@@ -574,11 +572,12 @@ const getRuleOptions = (groupDatas: Array<ComplianceViewGroupResponse>) => {
         //名称
         type: "category",
         offset: -10,
+        inverse: true,
         position: "left",
         axisLine: {
           show: false,
         },
-        inverse: false,
+
         axisTick: {
           show: false,
         },
@@ -590,9 +589,9 @@ const getRuleOptions = (groupDatas: Array<ComplianceViewGroupResponse>) => {
           lineHeight: 32,
           fontSize: 12,
         },
-        data: groupDatas.map((group) =>
-          _.truncate(group.groupName, { length: 8 })
-        ),
+        data: groupDatas.map((group) => {
+          return _.truncate(group.groupName, { length: 8 });
+        }),
       },
     ],
     series: [

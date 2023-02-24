@@ -1,24 +1,26 @@
 package com.fit2cloud.autoconfigure;
 
+import com.fit2cloud.base.entity.CloudAccount;
+import com.fit2cloud.base.service.IBaseCloudAccountService;
 import com.fit2cloud.common.constants.JobConstants;
 import com.fit2cloud.common.scheduler.SchedulerService;
-import com.fit2cloud.common.scheduler.util.CronUtils;
+import com.fit2cloud.common.scheduler.entity.QuartzJobDetail;
 import com.fit2cloud.common.utils.ClassScanUtil;
 import com.fit2cloud.dto.job.JobModuleInfo;
 import com.fit2cloud.dto.job.JobSetting;
 import com.fit2cloud.dto.module.ModuleInfo;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.MapUtils;
+import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
+import org.quartz.Trigger;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 
 import javax.annotation.Resource;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 
 /**
  * @Author:张少虎
@@ -26,9 +28,12 @@ import java.util.Objects;
  * @Version 1.0
  * @注释:
  */
+@Slf4j
 public class JobSettingConfig implements ApplicationContextAware {
     @Resource
     private ServerInfo serverInfo;
+    @Resource
+    private IBaseCloudAccountService cloudAccountService;
     /**
      * 模块定时任务对象
      */
@@ -62,33 +67,132 @@ public class JobSettingConfig implements ApplicationContextAware {
     }
 
     /**
-     * 初始化定时任务
+     * 初始化任务
+     * 系统定时任务   : 根据新的任务配置修改定时任务
+     * 云账号定时任务 : 对于存量的定时任务,如果当前云账号的任务没有则添加
      *
-     * @param settingJobDetails 定时任务详情
+     * @param jobSettings 定时任务设置
      */
-    public void initSystemJob(List<JobSetting> settingJobDetails) {
-        // 只初始化系统定时任务
-        settingJobDetails = settingJobDetails.stream().filter(item -> item.getJobGroup().equals(JobConstants.Group.SYSTEM_GROUP.name())).toList();
-        for (JobSetting settingJobDetail : settingJobDetails) {
-            Map<String, Object> params = settingJobDetail.getParams();
-            if (MapUtils.isEmpty(params)) {
-                params = new HashMap<>();
-            }
-            boolean exist = schedulerService.inclusionJobDetails(settingJobDetail.getJobName(), settingJobDetail.getJobGroup());
-            if (exist) {
-                schedulerService.deleteJob(settingJobDetail.getJobName(), settingJobDetail.getJobGroup());
-            }
-            schedulerService.addJob(settingJobDetail.getJobHandler(), settingJobDetail.getJobName(),
-                    settingJobDetail.getJobGroup(), settingJobDetail.getDescription(), settingJobDetail.getCronExpression(), params);
-        }
+    public void initJob(List<JobSetting> jobSettings) {
+        // 获取所有的云账号
+        List<CloudAccount> cloudAccounts = cloudAccountService.list();
+        // 当前模块所有已存在的定时任务
+        List<QuartzJobDetail> quartzJobDetails = schedulerService.list();
+        // 默认参数缓存, 因为获取默认参数的区域是调取api
+        HashMap<JobConstants.Group, Map<String, Map<String, Object>>> paramsCache = new HashMap<>();
+        for (JobSetting localJob : jobSettings) {
+            Map<String, Object> params = MapUtils.isEmpty(localJob.getParams()) ? new HashMap<>() : new HashMap<>(localJob.getParams());
+            Arrays.stream(JobConstants.Group.values())
+                    .filter(group -> StringUtils.equals(group.name(), localJob.getJobGroup()))
+                    .findFirst()
+                    .ifPresent(group -> {
+                        if (group.equals(JobConstants.Group.SYSTEM_GROUP)) {
+                            initSystemJob(quartzJobDetails, localJob, params, group);
+                        } else {
+                            initCloudAccountJob(cloudAccounts, quartzJobDetails, paramsCache, localJob, params, group);
 
+                        }
+                    });
+        }
     }
 
+    /**
+     * 初始化云账号相关定时任务
+     *
+     * @param cloudAccounts    云账号
+     * @param quartzJobDetails 存量任务
+     * @param paramsCache      任务参数缓存
+     * @param localJob         本地任务
+     * @param params           本地任务参数
+     * @param group            任务分组
+     */
+    private void initCloudAccountJob(List<CloudAccount> cloudAccounts, List<QuartzJobDetail> quartzJobDetails, HashMap<JobConstants.Group, Map<String, Map<String, Object>>> paramsCache, JobSetting localJob, Map<String, Object> params, JobConstants.Group group) {
+        for (CloudAccount cloudAccount : cloudAccounts) {
+            if (localJob.getCloudAccountShow().test(cloudAccount.getPlatform())) {
+                quartzJobDetails
+                        .stream()
+                        .filter(job -> StringUtils.equals(group.name(), job.getJobGroup()) &&
+                                StringUtils.equals(group.getJobName.apply(localJob.getJobName(), cloudAccount.getId()), job.getJobName()))
+                        .findFirst().orElseGet(() -> {
+                            // 初始化任务参数
+                            if (!paramsCache.getOrDefault(group, new HashMap<>()).containsKey(cloudAccount.getId())) {
+                                Map<String, Object> defaultParams = group.getDefaultParams.apply(cloudAccount);
+                                if (MapUtils.isNotEmpty(paramsCache.get(group))) {
+                                    paramsCache.get(group).put(cloudAccount.getId(), defaultParams);
+                                } else {
+                                    paramsCache.put(group, new HashMap<>(Map.of(cloudAccount.getId(), defaultParams)));
+                                }
+                            }
+                            HashMap<String, Object> cloudAccountJobParams = new HashMap<>(params);
+                            cloudAccountJobParams.putAll(paramsCache.get(group).get(cloudAccount.getId()));
+                            // todo 云账号相关定时任务不存在 则创建
+                            if (localJob.getJobType().equals(JobConstants.JobType.CRON)) {
+                                schedulerService.addJob(
+                                        localJob.getJobHandler(),
+                                        group.getJobName.apply(localJob.getJobName(), cloudAccount.getId()),
+                                        localJob.getJobGroup(),
+                                        localJob.getDescription(),
+                                        localJob.getCronExpression(),
+                                        cloudAccountJobParams);
+                            } else if (localJob.getJobType().equals(JobConstants.JobType.INTERVAL)) {
+                                schedulerService.addJob(
+                                        localJob.getJobHandler(),
+                                        group.getJobName.apply(localJob.getJobName(), cloudAccount.getId()),
+                                        localJob.getJobGroup(),
+                                        localJob.getDescription(),
+                                        cloudAccountJobParams,
+                                        localJob.getInterval(),
+                                        localJob.getUnit()
+                                );
+                            }
+                            return null;
+                        });
+            }
+        }
+    }
+
+    /**
+     * 初始化系统定时任务
+     *
+     * @param quartzJobDetails 存量任务
+     * @param localJob         本地任务
+     * @param params           本地任务参数
+     * @param group            任务组
+     */
+    private void initSystemJob(List<QuartzJobDetail> quartzJobDetails, JobSetting localJob, Map<String, Object> params, JobConstants.Group group) {
+        quartzJobDetails
+                .stream()
+                .filter(job -> StringUtils.equals(group.name(), job.getJobGroup()) &&
+                        StringUtils.equals(group.getJobName.apply(localJob.getJobName(), null), job.getJobName()))
+                .findFirst()
+                .map(job -> {
+                    // 系统定时任务直接修改
+                    if (StringUtils.isNotEmpty(localJob.getCronExpression())) {
+                        schedulerService.updateJob(job.getJobName(), job.getJobGroup(), localJob.getDescription(), params, localJob.getCronExpression(), Trigger.TriggerState.NORMAL);
+
+                    }
+                    if (Objects.nonNull(localJob.getUnit())) {
+                        schedulerService.updateJob(job.getJobName(), job.getJobGroup(), localJob.getDescription(), params, localJob.getInterval(), localJob.getUnit(), Trigger.TriggerState.NORMAL);
+                    }
+                    return job;
+                }).orElseGet(() -> {
+                    // 云账号相关定时任务不存在 则创建
+                    if (localJob.getJobType().equals(JobConstants.JobType.CRON)) {
+                        schedulerService.addJob(localJob.getJobHandler(), group.getJobName.apply(localJob.getJobName(), null),
+                                localJob.getJobGroup(), localJob.getDescription(), localJob.getCronExpression(), params);
+                    }
+                    if (localJob.getJobType().equals(JobConstants.JobType.INTERVAL)) {
+                        schedulerService.addJob(localJob.getJobHandler(), group.getJobName.apply(localJob.getJobName(), null),
+                                localJob.getJobGroup(), localJob.getDescription(), params, localJob.getInterval(), localJob.getUnit());
+                    }
+                    return null;
+                });
+    }
 
     @Override
     public void setApplicationContext(@NotNull ApplicationContext applicationContext) throws BeansException {
         List<JobSetting> moduleJob = getModuleJob();
-        initSystemJob(moduleJob);
+        initJob(moduleJob);
         initModuleJob(moduleJob);
     }
 

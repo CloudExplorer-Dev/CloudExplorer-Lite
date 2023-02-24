@@ -12,11 +12,9 @@ import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.quartz.*;
 import org.quartz.DateBuilder.IntervalUnit;
-import org.quartz.spi.MutableTrigger;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
-import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -87,7 +85,7 @@ public class QuartzSchedulerServiceImpl implements SchedulerService {
      */
     public void addJob(Class<? extends Job> jobHandler, String jobName, String groupName, String description, ScheduleBuilder scheduleBuilder, Map<String, Object> param) {
         try {
-            JobDetail jobDetail = JobBuilder.newJob(jobHandler).withIdentity(jobName, groupName).build();
+            JobDetail jobDetail = JobBuilder.newJob(jobHandler).withIdentity(jobName, groupName).withDescription(description).build();
             Trigger trigger = TriggerBuilder.newTrigger().withSchedule(scheduleBuilder).withIdentity(jobName, groupName).withDescription(description).build();
             if (MapUtils.isNotEmpty(param)) {
                 trigger.getJobDataMap().putAll(param);
