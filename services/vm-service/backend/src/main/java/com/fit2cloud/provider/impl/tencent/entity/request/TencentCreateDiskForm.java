@@ -15,7 +15,7 @@ public class TencentCreateDiskForm {
     private String diskName;
     @Form(inputType = InputType.Number, label = "磁盘大小", defaultValue = "50", attrs = "{\"min\":20,\"max\":32000,\"step\":1}",unit = "GB")
     private Long size;
-    @Form(inputType = InputType.Radio, label = "磁盘类型", defaultValue = "CLOUD_PREMIUM", textField = "diskTypeName", valueField = "diskType", method = "getDataDiskType", clazz = TencentCloudProvider.class)
+    @Form(inputType = InputType.Radio, label = "磁盘类型", defaultValue = "CLOUD_PREMIUM", textField = "diskTypeName", valueField = "diskType", method = "getDiskTypesForCreateDisk", clazz = TencentCloudProvider.class)
     private String diskType;
     @Form(inputType = InputType.Radio, label = "文件系统", required = false, textField = "name", valueField = "id", method = "getFileSystemType", clazz = TencentCloudProvider.class)
     private String fileSystemType;

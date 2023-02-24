@@ -1,6 +1,7 @@
 package com.fit2cloud.provider.impl.tencent.entity.request;
 
 import com.fit2cloud.provider.impl.tencent.entity.TencentInstanceType;
+import com.fit2cloud.provider.impl.tencent.util.TencentMappingUtil;
 import com.tencentcloudapi.cbs.v20170312.models.DescribeDiskConfigQuotaRequest;
 import lombok.Data;
 
@@ -32,7 +33,7 @@ public class TencentGetDiskTypeRequest extends TencentBaseRequest {
         DescribeDiskConfigQuotaRequest describeDiskConfigQuotaRequest = new DescribeDiskConfigQuotaRequest();
         describeDiskConfigQuotaRequest.setDiskUsage(this.diskUsage);
         describeDiskConfigQuotaRequest.setInquiryType("INQUIRY_CVM_CONFIG");
-        describeDiskConfigQuotaRequest.setDiskChargeType(this.instanceChargeType);
+        describeDiskConfigQuotaRequest.setDiskChargeType(TencentMappingUtil.toTencentChargeType(this.instanceChargeType));
 
         if (this.zoneId != null) {
             describeDiskConfigQuotaRequest.setZones(new String[]{this.zoneId});

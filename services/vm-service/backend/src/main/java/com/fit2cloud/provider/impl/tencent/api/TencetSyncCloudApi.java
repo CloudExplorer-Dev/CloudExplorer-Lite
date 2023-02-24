@@ -27,7 +27,6 @@ import com.fit2cloud.provider.impl.tencent.entity.credential.TencentVmCredential
 import com.fit2cloud.provider.impl.tencent.entity.request.*;
 import com.fit2cloud.provider.impl.tencent.util.TencentMappingUtil;
 import com.tencentcloudapi.cbs.v20170312.CbsClient;
-import com.tencentcloudapi.cbs.v20170312.models.Filter;
 import com.tencentcloudapi.cbs.v20170312.models.Placement;
 import com.tencentcloudapi.cbs.v20170312.models.*;
 import com.tencentcloudapi.common.exception.TencentCloudSDKException;
@@ -310,7 +309,10 @@ public class TencetSyncCloudApi {
      */
     public static List<TencentDiskTypeDTO.TencentDiskType> getDataDiskType(TencentGetDiskTypeRequest req) {
         req.setDiskUsage("DATA_DISK");
-        return getDiskTypes(req).getDataDiskTypes();
+
+        // 极速型 SSD 云硬盘仅支持随存储增强型云服务器 S5se 一起购买。单独创建磁盘时不展示该选项
+        return getDiskTypes(req).getDataDiskTypes().stream().filter((item)->
+                !TencentDiskType.CLOUD_TSSD.getId().equalsIgnoreCase(item.getDiskType())).collect(Collectors.toList());
     }
 
     /**

@@ -307,7 +307,7 @@ public class TencentCloudProvider extends AbstractCloudProvider<TencentCredentia
         return types;
     }
 
-    public List<TencentDiskTypeDTO.TencentDiskType> getDataDiskType(String req) {
+    public List<TencentDiskTypeDTO.TencentDiskType> getDiskTypesForCreateDisk(String req) {
         return TencetSyncCloudApi.getDataDiskType(JsonUtil.parseObject(req, TencentGetDiskTypeRequest.class));
     }
 
