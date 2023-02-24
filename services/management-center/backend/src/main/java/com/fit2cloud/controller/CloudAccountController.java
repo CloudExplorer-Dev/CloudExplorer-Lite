@@ -81,7 +81,7 @@ public class CloudAccountController {
     @PostMapping
     @ApiOperation(value = "插入云账号", notes = "插入云账号")
     @PreAuthorize("hasAnyCePermission('CLOUD_ACCOUNT:CREATE')")
-    public ResultHolder<CloudAccount> save(@RequestBody AddCloudAccountRequest addCloudAccountRequest) {
+    public ResultHolder<CloudAccount> save(@Validated @RequestBody AddCloudAccountRequest addCloudAccountRequest) {
         CloudAccount cloudAccount = cloudAccountService.save(addCloudAccountRequest);
         return ResultHolder.success(cloudAccount);
     }
@@ -90,7 +90,7 @@ public class CloudAccountController {
     @PutMapping
     @ApiOperation(value = "更新云账号", notes = "更新云账号")
     @PreAuthorize("hasAnyCePermission('CLOUD_ACCOUNT:EDIT')")
-    public ResultHolder<CloudAccount> update(@RequestBody UpdateCloudAccountRequest updateCloudAccountRequest) {
+    public ResultHolder<CloudAccount> update(@Validated @RequestBody UpdateCloudAccountRequest updateCloudAccountRequest) {
         CloudAccount cloudAccount = cloudAccountService.update(updateCloudAccountRequest);
         return ResultHolder.success(cloudAccount);
     }
