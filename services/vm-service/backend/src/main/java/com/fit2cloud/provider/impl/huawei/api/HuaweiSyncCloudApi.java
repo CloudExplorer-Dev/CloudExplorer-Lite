@@ -371,8 +371,9 @@ public class HuaweiSyncCloudApi {
             });
             return mapList;
         } catch (Exception e) {
-            throw new RuntimeException(e.getMessage(), e);
+            e.printStackTrace();
         }
+        return new ArrayList<>();
     }
 
     /**
@@ -1509,34 +1510,39 @@ public class HuaweiSyncCloudApi {
     public static List<OsConfig> listOsVersion(HuaweiVmCreateRequest createRequest) {
         List<OsConfig> result = new ArrayList<>();
         if (StringUtils.isEmpty(createRequest.getOs())
-                && StringUtils.isEmpty(createRequest.getInstanceSpecConfig().getSpecName())) {
+                || StringUtils.isEmpty(createRequest.getInstanceSpecConfig().getSpecName())) {
             return result;
         }
-        ListImageRequest request = new ListImageRequest();
-        request.setRegionId(createRequest.getRegionId());
-        request.setCredential(createRequest.getCredential());
-        request.setFlavorId(createRequest.getInstanceSpecConfig().getSpecName());
-        request.setPlatform(ListImagesRequest.PlatformEnum.valueOf(createRequest.getOs()));
-        request.setStatus(ListImagesRequest.StatusEnum.ACTIVE);
-        List<ImageInfo> osImages = new ArrayList<>();
-        if (StringUtils.isNotEmpty(request.getCredential())) {
-            HuaweiVmCredential credential = JsonUtil.parseObject(request.getCredential(), HuaweiVmCredential.class);
-            ImsClient imsClient = credential.getImsClient(request.getRegionId());
-            request.setImagetype(ListImagesRequest.ImagetypeEnum.GOLD);
-            ListImagesResponse listImagesResponse = imsClient.listImages(request);
-            List<ImageInfo> imagesAll = listImagesResponse.getImages();
-            osImages = imagesAll.stream().filter(v -> StringUtils.equalsIgnoreCase(v.getPlatform().getValue(), createRequest.getOs())).collect(Collectors.toList());
+        try{
+            ListImageRequest request = new ListImageRequest();
+            request.setRegionId(createRequest.getRegionId());
+            request.setCredential(createRequest.getCredential());
+            request.setFlavorId(createRequest.getInstanceSpecConfig().getSpecName());
+            request.setPlatform(ListImagesRequest.PlatformEnum.valueOf(createRequest.getOs()));
+            request.setStatus(ListImagesRequest.StatusEnum.ACTIVE);
+            List<ImageInfo> osImages = new ArrayList<>();
+            if (StringUtils.isNotEmpty(request.getCredential())) {
+                HuaweiVmCredential credential = JsonUtil.parseObject(request.getCredential(), HuaweiVmCredential.class);
+                ImsClient imsClient = credential.getImsClient(request.getRegionId());
+                request.setImagetype(ListImagesRequest.ImagetypeEnum.GOLD);
+                ListImagesResponse listImagesResponse = imsClient.listImages(request);
+                List<ImageInfo> imagesAll = listImagesResponse.getImages();
+                osImages = imagesAll.stream().filter(v -> StringUtils.equalsIgnoreCase(v.getPlatform().getValue(), createRequest.getOs())).collect(Collectors.toList());
+            }
+            osImages.forEach(v -> {
+                OsConfig osConfig = new OsConfig();
+                osConfig.setOs(v.getPlatform().getValue());
+                osConfig.setOsVersion(v.getOsVersion());
+                osConfig.setImageName(v.getName());
+                osConfig.setImageId(v.getId());
+                osConfig.setImageMinDiskSize(Long.valueOf(String.valueOf(v.getMinDisk())));
+                result.add(osConfig);
+            });
+            return result.stream().sorted(Comparator.comparing(OsConfig::getOsVersion)).collect(Collectors.toList());
+        }catch (Exception e){
+            e.printStackTrace();
         }
-        osImages.forEach(v -> {
-            OsConfig osConfig = new OsConfig();
-            osConfig.setOs(v.getPlatform().getValue());
-            osConfig.setOsVersion(v.getOsVersion());
-            osConfig.setImageName(v.getName());
-            osConfig.setImageId(v.getId());
-            osConfig.setImageMinDiskSize(Long.valueOf(String.valueOf(v.getMinDisk())));
-            result.add(osConfig);
-        });
-        return result.stream().sorted(Comparator.comparing(OsConfig::getOsVersion)).collect(Collectors.toList());
+        return result;
     }
 
     public static List<Map<String, String>> listOs(String request) {
