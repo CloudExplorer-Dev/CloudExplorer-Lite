@@ -17,6 +17,7 @@ import com.fit2cloud.controller.request.vm.PageRecycleBinRequest;
 import com.fit2cloud.dao.mapper.RecycleBinMapper;
 import com.fit2cloud.dto.RecycleBinDTO;
 import com.fit2cloud.dto.VmCloudDiskDTO;
+import com.fit2cloud.provider.constants.F2CDiskStatus;
 import com.fit2cloud.service.*;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -90,7 +91,9 @@ public class RecycleBinServiceImpl extends ServiceImpl<BaseRecycleBinMapper, Rec
             // 删除磁盘
             if (resourceType.equals(ResourceTypeConstants.DISK)) {
                 VmCloudDiskDTO diskInfo = diskService.cloudDisk(recycleBin.getResourceId());
-                if (diskInfo != null && StringUtils.isEmpty(diskInfo.getInstanceUuid())) {
+                if (diskInfo != null && !F2CDiskStatus.AVAILABLE.equalsIgnoreCase(diskInfo.getStatus())) {
+                    throw new RuntimeException("Can not delete disk.The disk status must be available!");
+                } else {
                     diskService.delete(recycleBin.getResourceId());
                 }
             }
