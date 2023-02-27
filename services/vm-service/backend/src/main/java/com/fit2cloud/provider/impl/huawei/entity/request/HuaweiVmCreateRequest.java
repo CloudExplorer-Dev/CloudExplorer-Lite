@@ -334,7 +334,7 @@ public class HuaweiVmCreateRequest extends HuaweiBaseRequest implements ICreateS
             attrs = "{\"style\":\"color: red; font-size: large\"}",
             confirmGroup = 1,
             footerLocation = 1,
-            relationTrigger = {"billingMode","availabilityZone","instanceSpecConfig","disks","count"},
+            relationTrigger = {"billingMode","periodNum","availabilityZone","instanceSpecConfig","disks","count"},
             confirmSpecial = true,
             required = false
     )
@@ -349,7 +349,7 @@ public class HuaweiVmCreateRequest extends HuaweiBaseRequest implements ICreateS
             footerLocation = 1,
             relationShows = {"chargeMode"},
             relationShowValues = {"traffic"},
-            relationTrigger = {"bandwidthSize","trafficBandwidthSize", "chargeMode"},
+            relationTrigger = {"bandwidthSize", "periodNum", "trafficBandwidthSize", "chargeMode"},
             confirmSpecial = true,
             required = false
     )

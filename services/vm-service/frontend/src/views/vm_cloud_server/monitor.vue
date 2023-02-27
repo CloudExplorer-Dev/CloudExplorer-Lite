@@ -12,6 +12,7 @@
             range-separator="至"
             start-placeholder="开始日期"
             end-placeholder="结束日期"
+            :default-time="[new Date(),new Date()]"
             @change="changeTimestamp"
             @input="changeTimestamp"
           >
@@ -89,6 +90,12 @@ const loadingEchartsDone = () => {
  */
 const getData = () => {
   Object.keys(PerfMetricConst).forEach(function (metricName) {
+    if(vSphereFilter(metricName)){
+      return;
+    }
+    if(huaweiFilter(metricName)){
+      return;
+    }
     if (childRefMap.get(metricName)) {
       childRefMap.get(metricName).echartsLoading();
     }
@@ -178,6 +185,7 @@ const getData = () => {
             }
             d[0].deviceData = res.data;
             d[0].xData = xData.value;
+            d[0].series[0].connectNulls=true;
             d[0].series[0].data = yData.value;
           }
         }
@@ -187,6 +195,7 @@ const getData = () => {
         });
         if (d[0]) {
           d[0].xData = xData.value;
+          d[0].series[0].connectNulls=true;
           d[0].series[0].data = yData.value;
         }
       }
@@ -214,6 +223,7 @@ const setXData = (
   });
   if (d[0]) {
     d[0].xData = res;
+    d[0].series[0].connectNulls=true;
     d[0].series.forEach(function (s: any) {
       if (s.name === PerfMetricConst[metricName].name) {
         s.data = yData;
@@ -249,6 +259,7 @@ onMounted(() => {
       request.value.cloudAccountId = infoVmCloudServer.value.accountId;
       request.value.entityType = PerfMetricEntityTypeConst.VIRTUAL_MACHINE;
       request.value.metricName = "";
+      request.value.platform = infoVmCloudServer.value.platform;
       initEchartsData();
     })
     .catch((err) => {
@@ -289,7 +300,22 @@ const initEchartsData = () => {
     _.cloneDeep(data)
   );
 
+  if(isVsphere()){
+    echarts.delete(PerfMetricConst.INTERNET_IN_RATE.metricName);
+    echarts.delete(PerfMetricConst.DISK_USED_UTILIZATION.metricName);
+  }
+  if(isHuawei()){
+    echarts.delete(PerfMetricConst.DISK_USED_UTILIZATION.metricName);
+  }
+
   Object.keys(PerfMetricConst).forEach(function (perfMetric) {
+    const metricName = PerfMetricConst[perfMetric].metricName;
+    if(vSphereFilter(perfMetric)){
+      return;
+    }
+    if(huaweiFilter(perfMetric)){
+      return;
+    }
     const series = {
       name: PerfMetricConst[perfMetric].name,
       showSymbol: false,
@@ -297,8 +323,9 @@ const initEchartsData = () => {
       data: [],
       type: "line",
       smooth: false,
+      connectNulls: true
     };
-    const metricName = PerfMetricConst[perfMetric].metricName;
+
     const yUnit = PerfMetricConst[perfMetric].unit;
     //多数据图表初始数据处理
     if (metricName === PerfMetricConst.DISK_WRITE_BPS.metricName) {
@@ -344,6 +371,30 @@ const initEchartsData = () => {
     echartsData.value.push(v);
   });
 };
+const vSphereFilter = (perfMetric:any)=>{
+  const metricName = PerfMetricConst[perfMetric].metricName;
+  if(isVsphere()
+      && (metricName===PerfMetricConst.INTERNET_OUT_RATE.metricName
+          || metricName===PerfMetricConst.INTERNET_IN_RATE.metricName
+          || metricName===PerfMetricConst.DISK_USED_UTILIZATION.metricName)){
+    return true;
+  }
+  return false;
+}
+const huaweiFilter = (perfMetric:any)=>{
+  const metricName = PerfMetricConst[perfMetric].metricName;
+  if(isHuawei()
+      && (metricName===PerfMetricConst.DISK_USED_UTILIZATION.metricName)){
+    return true;
+  }
+  return false;
+}
+const isVsphere = ()=>{
+  return request.value.platform==="fit2cloud_vsphere_platform";
+}
+const isHuawei = ()=>{
+  return request.value.platform==="fit2cloud_huawei_platform";
+}
 </script>
 <style lang="scss">
 .myChart {
