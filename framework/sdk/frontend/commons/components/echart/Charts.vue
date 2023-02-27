@@ -184,11 +184,13 @@ const setEchartsData = (seriesData: any) => {
         const unit = ref<string>();
         let tooltipText = timestampToTime(params[0].name);
         params.forEach(function (v: any) {
-          console.log("-------"+v.value===undefined)
-          if (v.value!=undefined && (props.yUnit === "Byte/s" || props.yUnit === "bit/s")) {
+          if (
+            v.value != undefined &&
+            (props.yUnit === "Byte/s" || props.yUnit === "bit/s")
+          ) {
             unit.value = changeByte(v.value);
           } else {
-            unit.value = (v.value!=undefined?v.value:"无") + props.yUnit;
+            unit.value = (v.value != undefined ? v.value : "无") + props.yUnit;
           }
           tooltipText += "<br/>";
           tooltipText += v.marker + " " + v.seriesName + " " + unit.value;
@@ -209,10 +211,13 @@ const setEchartsData = (seriesData: any) => {
 };
 
 const yUnitConversion = (val: any) => {
-  if (val!=undefined && (props.yUnit === "Byte/s" || props.yUnit === "bit/s")) {
+  if (
+    val != undefined &&
+    (props.yUnit === "Byte/s" || props.yUnit === "bit/s")
+  ) {
     return changeByte(val);
   } else {
-    return val!=undefined?val:"无" + " " + props.yUnit;
+    return val != undefined ? val : "无" + " " + props.yUnit;
   }
 };
 

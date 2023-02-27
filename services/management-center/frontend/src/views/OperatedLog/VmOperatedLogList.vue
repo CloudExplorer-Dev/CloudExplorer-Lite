@@ -8,6 +8,7 @@
     :tableConfig="tableConfig"
     row-key="id"
     height="100%"
+    table-layout="auto"
   >
     <template #toolbar>
       <!-- <el-button type="primary" @click="clearPolicy">清空策略</el-button> -->
@@ -15,28 +16,34 @@
     <el-table-column
       prop="user"
       :label="$t('log_manage.operator')"
+      min-width="150px"
     ></el-table-column>
     <el-table-column
       prop="operatedName"
       :label="$t('log_manage.type')"
+      min-width="200px"
     ></el-table-column>
     <el-table-column
       prop="resourceId"
       :label="$t('log_manage.resource')"
+      min-width="200px"
     ></el-table-column>
     <el-table-column
       prop="sourceIp"
       :label="$t('log_manage.ip')"
+      min-width="200px"
     ></el-table-column>
     <el-table-column
       prop="date"
       :label="$t('commons.create_time')"
       sortable="desc"
+      min-width="200px"
     />
     <el-table-column
       prop="status"
       :label="$t('log_manage.status')"
       column-key="status"
+      min-width="150px"
     >
       <template #default="scope">
         <div
@@ -51,7 +58,10 @@
         </div>
       </template></el-table-column
     >
-    <fu-table-operations v-bind="tableConfig.tableOperations" fix />
+    <fu-table-operations v-bind="tableConfig.tableOperations" fixed="right" />
+    <template #buttons>
+      <fu-table-column-select type="icon" :columns="columns" size="small" />
+    </template>
   </ce-table>
   <LogDetail ref="logInfoRef" />
 </template>
@@ -131,7 +141,8 @@ const tableConfig = ref<TableConfig>({
       showLogInfoDialog,
       "InfoFilled"
     ),
-  ]),
+  ],
+      "label"),
 });
 
 const clearPolicy = () => {

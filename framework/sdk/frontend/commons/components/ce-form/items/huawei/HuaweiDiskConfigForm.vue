@@ -144,16 +144,14 @@ const emit = defineEmits(["update:modelValue", "change"]);
 function add() {
   _data.value?.push({
     size: 10,
-    diskType: defaultType.value
-      ? defaultType.value
-      : getDefaultType(),
+    diskType: defaultType.value ? defaultType.value : getDefaultType(),
     amountText: "",
     deleteWithInstance: true,
   });
   change();
 }
-function getDefaultType(){
-  if(_.find(props.formItem?.ext?.diskConfig?.diskTypes, { 'id': 'GPSSD' })){
+function getDefaultType() {
+  if (_.find(props.formItem?.ext?.diskConfig?.diskTypes, { id: "GPSSD" })) {
     return "GPSSD";
   }
 }

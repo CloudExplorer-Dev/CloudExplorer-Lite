@@ -114,7 +114,7 @@ const message = {
   },
   log_manage: {
     login: "登入日誌",
-    vm: "虛擬機器操作日誌",
+    vm: "雲主機操作日誌",
     disk: "磁片操作日誌",
     platform: "平臺管理日誌",
     operator: "操作人",
@@ -126,6 +126,7 @@ const message = {
     status: "操作狀態",
     view_details: "查看詳情",
     belong_vm: "所屬虛擬機器",
+    content: "操作詳情",
     btn: {
       clear_policy: "清空策略",
     },

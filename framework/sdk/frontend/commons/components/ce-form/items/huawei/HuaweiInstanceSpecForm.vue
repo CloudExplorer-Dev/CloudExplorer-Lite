@@ -191,7 +191,7 @@ watch(
 watch(
   () => props.allData.availabilityZone,
   () => {
-    if(props.allData.availabilityZone){
+    if (props.allData.availabilityZone) {
       getList();
     }
   }

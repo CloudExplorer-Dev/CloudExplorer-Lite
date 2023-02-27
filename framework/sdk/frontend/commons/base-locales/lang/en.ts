@@ -17,6 +17,7 @@ const message = {
     os_version: "Operating System Version",
     status: "Status",
     create_time: "Create Time",
+    operate_time: "Operate Time",
     update_time: "Update Time",
     delete_time: "Delete Time",
     description: "Description",

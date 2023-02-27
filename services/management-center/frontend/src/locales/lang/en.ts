@@ -127,6 +127,7 @@ const message = {
     status: "Operation status",
     view_details: "View details",
     belong_vm: "Virtual machine",
+    content: "Operation details",
     btn: {
       clear_policy: "Clear Policy",
     },
