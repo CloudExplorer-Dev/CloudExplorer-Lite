@@ -1040,8 +1040,6 @@ public class VsphereSyncCloudApi {
         try {
             getMetricsRequest.setRegionId(getMetricsRequest.getRegionId());
             result.addAll(getVmPerfMetric(getMetricsRequest));
-//            result.addAll(getHostPerfMetric(getMetricsRequest));
-//            result.addAll(getDatastorePerfMetric(getMetricsRequest));
         } catch (Exception e) {
             SkipPageException.throwSkipPageException(e);
             throw new Fit2cloudException(100021, "获取监控数据失败-" + getMetricsRequest.getRegionId() + "-" + e.getMessage());
@@ -1151,7 +1149,7 @@ public class VsphereSyncCloudApi {
                         f2CEntityPerfMetric.setMaximum(new BigDecimal(max).divide(new BigDecimal(perfMetric.getDivisor())).setScale(3, RoundingMode.HALF_UP));
                         f2CEntityPerfMetric.setEntityType(F2CEntityType.VIRTUAL_MACHINE.name());
                         f2CEntityPerfMetric.setMetricName(perfMetric.name());
-                        f2CEntityPerfMetric.setPeriod(getMetricsRequest.getPeriod());
+                        f2CEntityPerfMetric.setPeriod(getMetricsRequest.getInterval());
                         f2CEntityPerfMetric.setInstanceId(vm.getConfig().getInstanceUuid());
                         f2CEntityPerfMetric.setUnit(perfMetric.getUnit());
                         f2CEntityPerfMetric.setHostId(runtime.getHost().getVal());
@@ -1222,11 +1220,16 @@ public class VsphereSyncCloudApi {
         //这个是必须的，不然查询会报错
         perfMetricId.setInstance("");
         if (StringUtils.equalsIgnoreCase(managedObjectReference.getType(), "VirtualMachine")) {
+            //磁盘的，只能获取过去40分钟内的数据
             if (StringUtils.equalsIgnoreCase(metricName, "181") || StringUtils.equalsIgnoreCase(metricName, "180") ||
                     StringUtils.equalsIgnoreCase(metricName, "178") || StringUtils.equalsIgnoreCase(metricName, "179")) {
                 // 磁盘相关的直接取第一个磁盘
                 perfMetricId.setInstance("scsi0:0");
                 calBegin.setTime(new Date(Long.valueOf(request.getStartTime()) + 2400000));
+            }
+            //网络的，只能获取过去30分钟内的数据，小于30分
+            if (StringUtils.equalsIgnoreCase(metricName, "494") || StringUtils.equalsIgnoreCase(metricName, "495")) {
+                calBegin.setTime(new Date((Long.valueOf(request.getStartTime()) + 1900000)));
             }
         }
         Calendar calEnd = Calendar.getInstance();

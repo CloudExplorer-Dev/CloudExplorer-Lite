@@ -359,6 +359,8 @@ public class HuaweiSyncCloudApi {
             List<Map<String, String>> mapList = new ArrayList<>();
             response.getVolumeTypes().forEach(volumeType -> {
                 if (StringUtils.isNoneEmpty(request.getZone())
+                        //这个名称的磁盘类型有问题，云上显示没有，但是接口会返回来，在这里特殊处理去掉
+                        && !StringUtils.equalsIgnoreCase("uh-l1",volumeType.getName())
                         && StringUtils.isNoneEmpty(volumeType.getExtraSpecs().getReSKEYAvailabilityZones())
                         && volumeType.getExtraSpecs().getReSKEYAvailabilityZones().contains(request.getZone())
                         && (StringUtils.isEmpty(volumeType.getExtraSpecs().getOsVendorExtendedSoldOutAvailabilityZones())
@@ -750,6 +752,7 @@ public class HuaweiSyncCloudApi {
         request.setNamespace("SYS.ECS");
         request.withFilter(ShowMetricDataRequest.FilterEnum.fromValue("average"));
         request.withPeriod(300);
+        getMetricsRequest.setPeriod(request.getPeriod());
         request.withFrom(Long.valueOf(getMetricsRequest.getStartTime()));
         request.withTo(Long.valueOf(getMetricsRequest.getEndTime()));
         return request;

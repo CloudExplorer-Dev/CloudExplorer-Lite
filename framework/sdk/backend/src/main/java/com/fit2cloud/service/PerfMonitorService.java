@@ -7,7 +7,9 @@ import com.fit2cloud.common.utils.QueryUtil;
 import com.fit2cloud.dto.PerfMonitorEchartsDTO;
 import com.fit2cloud.es.entity.PerfMetricMonitorData;
 import com.fit2cloud.request.PerfMonitorRequest;
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.BeanUtils;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.elasticsearch.client.elc.NativeQueryBuilder;
@@ -15,7 +17,10 @@ import org.springframework.data.elasticsearch.core.query.FetchSourceFilter;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
@@ -29,10 +34,39 @@ public class PerfMonitorService {
 
     public Map<String,List<PerfMonitorEchartsDTO>> getPerfMonitorData(PerfMonitorRequest request) {
         Map<String,List<PerfMonitorEchartsDTO>> resultMap = new HashMap<>();
-        List<PerfMetricMonitorData> tmpList = elasticsearchProvide.searchByQuery(IndexConstants.CE_PERF_METRIC_MONITOR_DATA.getCode(), getSearchQuery(request), PerfMetricMonitorData.class);
+        List<PerfMetricMonitorData> arraysList = elasticsearchProvide.searchByQuery(IndexConstants.CE_PERF_METRIC_MONITOR_DATA.getCode(), getSearchQuery(request), PerfMetricMonitorData.class);
+        List<PerfMetricMonitorData> tmpList = new ArrayList<>();
+        tmpList.addAll(arraysList);
         if (tmpList.size() > 0) {
-            List<PerfMetricMonitorData> list = tmpList.stream().collect(Collectors.collectingAndThen(Collectors.toCollection(() ->
-                    new TreeSet<>(Comparator.comparing(PerfMetricMonitorData::getId))), ArrayList::new));//过滤重复ID
+            Long startTime = request.getStartTime();
+            Long endTime = request.getEndTime();
+            //对没有数据的时间点进行补全
+            Integer period = tmpList.get(0).getPeriod()*1000;
+            Long statPeriodTime =startTime%period;
+            startTime = startTime-statPeriodTime;
+            List<Long> timeList = new ArrayList<>();
+            while (true){
+                if(startTime<=endTime){
+                    timeList.add(startTime);
+                }else{
+                    break;
+                }
+                startTime = startTime+period;
+            }
+            List<PerfMetricMonitorData> completionList = new ArrayList<>();
+            timeList.forEach(time->{
+                List<PerfMetricMonitorData> tList = tmpList.stream().filter(v->v.getTimestamp().longValue()==time).toList();
+                if(CollectionUtils.isEmpty(tList)){
+                    PerfMetricMonitorData source = tmpList.get(0);
+                    PerfMetricMonitorData vo = new PerfMetricMonitorData();
+                    BeanUtils.copyProperties(source,vo);
+                    vo.setAverage(null);
+                    vo.setTimestamp(time);
+                    completionList.add(vo);
+                }
+            });
+            tmpList.addAll(completionList);
+            List<PerfMetricMonitorData> list = tmpList.stream().sorted((u1, u2) -> u1.getTimestamp().compareTo(u2.getTimestamp())).collect(Collectors.toList());
             if(StringUtils.equalsIgnoreCase(request.getMetricName(),"DISK_USED_UTILIZATION")){
                 Map<String,List<PerfMetricMonitorData>> diskMap = list.stream().filter(v->StringUtils.isNotEmpty(v.getDevice())).collect(Collectors.groupingBy(PerfMetricMonitorData::getDevice));
                 diskMap.forEach((k,v)->{

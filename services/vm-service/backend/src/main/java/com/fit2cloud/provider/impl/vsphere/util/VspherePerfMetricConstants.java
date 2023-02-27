@@ -37,6 +37,16 @@ public class VspherePerfMetricConstants {
          */
         DATASTORE_USED_UTILIZATION("275", "存储器使用率","%",1L),
 
+        /**
+         * 查询的时间参数，只能是过去30分钟内（不包含30分钟）才有数据返回，返回只返回5个点的数据，间隔是5分钟一个点
+         * 平均每秒接收的数据量
+         */
+        INTRANET_IN_RATE("494", "内网流入带宽","KBps",1L),
+        /**
+         * 平均每秒传输的数据量
+         */
+        INTRANET_OUT_RATE("495", "内网流出带宽","KBps",1L),
+
 
 //        DISK_READ_BPS("180", "虚拟磁盘读取速度","KBps",1L),
 //        DISK_WRITE_BPS("181", "虚拟磁盘写入速度","KBps",1L),
