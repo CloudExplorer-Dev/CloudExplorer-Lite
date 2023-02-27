@@ -12,8 +12,6 @@ import com.fit2cloud.common.exception.Fit2cloudException;
 import com.fit2cloud.common.form.util.FormUtil;
 import com.fit2cloud.common.form.vo.Form;
 import com.fit2cloud.common.form.vo.FormObject;
-import com.fit2cloud.common.platform.bill.Bill;
-import com.fit2cloud.common.platform.credential.Credential;
 import com.fit2cloud.common.provider.IBaseCloudProvider;
 import com.fit2cloud.common.provider.entity.F2CBalance;
 import com.fit2cloud.common.scheduler.SchedulerService;
@@ -33,6 +31,7 @@ import io.reactivex.rxjava3.functions.BiFunction;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.quartz.DateBuilder;
 import org.quartz.Job;
@@ -41,9 +40,7 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
-import java.lang.reflect.InvocationTargetException;
 import java.util.*;
-import java.util.function.Predicate;
 
 /**
  * <p>
@@ -61,56 +58,63 @@ public class BaseCloudAccountServiceImpl extends ServiceImpl<BaseCloudAccountMap
 
     @Override
     public void initCloudAccountJob(String cloudAccountId) {
+        // 获取当前云账号
         CloudAccount cloudAccount = getById(cloudAccountId);
-        Map<String, Object> defaultCloudAccountJobParams = getDefaultCloudAccountJobParams(cloudAccountId);
+        // 获取当前云账号所有定时任务
         JobModuleInfo moduleJobInfo = JobSettingConfig.getModuleJobInfo();
+        // 创建云账号定时任务缓存对象
+        Map<JobConstants.Group, Map<String, Object>> paramsCache = new HashMap<>();
         moduleJobInfo.getJobDetails().stream()
                 .filter(j -> j.getCloudAccountShow().test(cloudAccount.getPlatform()))
-                .filter(job -> job.getJobGroup().equals(JobConstants.Group.CLOUD_ACCOUNT_RESOURCE_SYNC_GROUP.name()) || job.getJobGroup().equals(JobConstants.Group.CLOUD_ACCOUNT_BILL_SYNC_GROUP.name()) || job.getJobGroup().equals(JobConstants.Group.CLOUD_COMPLIANCE_RESOURCE_SYNC_GROUP.name()))
-                .forEach(job -> {
-                    String cloudAccountJobName = JobConstants.CloudAccount.getCloudAccountJobName(job.getJobName(), cloudAccountId);
-                    if (!schedulerService.inclusionJobDetails(cloudAccountJobName, job.getJobGroup())) {
-                        schedulerService.addJob(
-                                job.getJobHandler(),
-                                cloudAccountJobName,
-                                job.getJobGroup(),
-                                job.getDescription(),
-                                job.getCronExpression(),
-                                job.getJobGroup().equals(JobConstants.Group.CLOUD_ACCOUNT_BILL_SYNC_GROUP.name()) ? getDefaultBillJobSettingParams(cloudAccountId, cloudAccount.getPlatform()) : defaultCloudAccountJobParams);
-                    }
-                });
+                .forEach(job -> initJobItem(cloudAccount, paramsCache, job));
     }
+
 
     /**
-     * 获取云账号同步默认参数
+     * 初始化任务
      *
-     * @param accountId 云账号id
-     * @return 云账号定时任务默认参数
+     * @param cloudAccount 云账号对象
+     * @param paramsCache  参数缓存
+     * @param job          需要初始化的任务
      */
-    private Map<String, Object> getDefaultCloudAccountJobParams(String accountId) {
-        List<Credential.Region> regions = getRegionByAccountId(accountId);
-        return JobConstants.CloudAccount.getCloudAccountJobParams(accountId, regions);
+    private void initJobItem(CloudAccount cloudAccount, Map<JobConstants.Group, Map<String, Object>> paramsCache, JobSetting job) {
+        JobConstants.Group group = JobConstants.Group.ofByName(job.getJobGroup());
+        if (Objects.nonNull(group)) {
+            // 获取任务名称
+            String jobName = group.getJobName.apply(job.getJobName(), cloudAccount.getId());
+            // 如果当前定时任务不存在 则去创建该任务
+            if (!schedulerService.inclusionJobDetails(jobName, job.getJobGroup())) {
+                // todo 获取定时任务参数
+                HashMap<String, Object> params = new HashMap<>(MapUtils.isNotEmpty(job.getParams()) ? job.getParams() : new HashMap<>());
+                if (paramsCache.containsKey(group)) {
+                    params.putAll(paramsCache.get(group));
+                } else {
+                    paramsCache.put(group, group.getDefaultParams.apply(cloudAccount));
+                }
+
+                // todo 创建定时任务
+                if (job.getJobType().equals(JobConstants.JobType.CRON)) {
+                    schedulerService.addJob(job.getJobHandler(),
+                            jobName,
+                            job.getJobGroup(),
+                            job.getDescription(),
+                            job.getCronExpression(),
+                            params
+                    );
+                } else {
+                    schedulerService.addJob(job.getJobHandler(),
+                            jobName,
+                            job.getJobGroup(),
+                            job.getDescription(),
+                            params,
+                            job.getInterval(),
+                            job.getUnit());
+                }
+            }
+
+        }
     }
 
-    /**
-     * 获取默认账单设置参数
-     *
-     * @param accountId 云账号id
-     * @param platform  供应商
-     * @return 云账单任务参数
-     */
-    private Map<String, Object> getDefaultBillJobSettingParams(String accountId, String platform) {
-        Map<String, Object> defaultParams = Bill.getDefaultParams(platform);
-        return JobConstants.CloudAccount.getCloudAccountBillSettingarams(accountId, defaultParams);
-    }
-
-    @SneakyThrows
-    private List<Credential.Region> getRegionByAccountId(String accountId) {
-        CloudAccount cloudAccount = getById(accountId);
-        PlatformConstants platformConstants = PlatformConstants.valueOf(cloudAccount.getPlatform());
-        Credential credential = platformConstants.getCredentialClass().getConstructor().newInstance().deCode(cloudAccount.getCredential());
-        return credential.regions();
-    }
 
     @Override
     public CloudAccountModuleJob getCloudAccountJob(String accountId) {
@@ -126,8 +130,8 @@ public class BaseCloudAccountServiceImpl extends ServiceImpl<BaseCloudAccountMap
         if (CollectionUtils.isEmpty(jobDetails)) {
             return null;
         }
-        Map<String, Object> defaultCloudAccountJobParams = new HashMap<>();
         List<CloudAccountJobItem> jobItems = jobDetails.stream().map(job -> {
+            JobConstants.Group group = JobConstants.Group.ofByName(job.getJobGroup());
             String cloudAccountJobName = JobConstants.CloudAccount.getCloudAccountJobName(job.getJobName(), accountId);
             Optional<QuartzJobDetail> jobDetail = quartzJobDetails.stream().filter(j -> j.getTriggerName().equals(cloudAccountJobName)).findFirst();
             boolean activeReadOnly = job.getActiveReadOnly().test(cloudAccount.getPlatform());
@@ -135,14 +139,7 @@ public class BaseCloudAccountServiceImpl extends ServiceImpl<BaseCloudAccountMap
             if (jobDetail.isPresent()) {
                 return getJobItem(jobDetail.get(), activeReadOnly, cronReadOnly);
             } else {
-                // todo 针对资源同步参数设置
-                if (job.getJobGroup().equals(JobConstants.Group.CLOUD_ACCOUNT_RESOURCE_SYNC_GROUP.name())) {
-                    defaultCloudAccountJobParams.putAll(getDefaultCloudAccountJobParams(accountId));
-                }
-                // todo 针对账单同步参数设置
-                else if (job.getJobGroup().equals(JobConstants.Group.CLOUD_ACCOUNT_BILL_SYNC_GROUP.name())) {
-                    defaultCloudAccountJobParams.putAll(getDefaultBillJobSettingParams(accountId, cloudAccount.getPlatform()));
-                }
+                Map<String, Object> params = Objects.isNull(group) ? new HashMap<>() : group.getDefaultParams.apply(cloudAccount);
                 if (job.getJobType().equals(JobConstants.JobType.CRON)) {
                     // todo 添加定时任务
                     schedulerService.addJob(job.getJobHandler(),
@@ -150,18 +147,18 @@ public class BaseCloudAccountServiceImpl extends ServiceImpl<BaseCloudAccountMap
                             job.getJobGroup(),
                             job.getDescription(),
                             job.getCronExpression(),
-                            defaultCloudAccountJobParams);
+                            params);
                 } else {
                     // todo 添加定时任务
                     schedulerService.addJob(job.getJobHandler(),
                             cloudAccountJobName,
                             job.getJobGroup(),
                             job.getDescription(),
-                            defaultCloudAccountJobParams,
+                            params,
                             job.getInterval(),
                             job.getUnit());
                 }
-                return getJobItem(job, accountId, defaultCloudAccountJobParams, activeReadOnly, cronReadOnly);
+                return getJobItem(job, accountId, params, activeReadOnly, cronReadOnly);
             }
         }).filter(Objects::nonNull).toList();
         moduleJob.setJobDetailsList(jobItems);
