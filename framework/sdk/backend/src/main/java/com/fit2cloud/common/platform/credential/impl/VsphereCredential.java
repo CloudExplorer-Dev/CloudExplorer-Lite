@@ -52,7 +52,6 @@ public class VsphereCredential implements Credential {
     /**
      * 是否启用内容库镜像
      */
-    @Form(inputType = InputType.SwitchBtn, label = "是否启用内容", defaultValue = "false", defaultJsonValue = true)
     private boolean useContentLibrary = false;
 
     @Override
