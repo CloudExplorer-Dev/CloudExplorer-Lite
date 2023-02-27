@@ -30,86 +30,88 @@ defineExpose({
   >
     <el-descriptions :column="1" border size="small">
       <el-descriptions-item
-          label-class-name="label-class"
-          class-name="content-class"
-          label="操作人"
-          colon="true"
-          min-width="55px"
+        label-class-name="label-class"
+        class-name="content-class"
+        label="操作人"
+        colon="true"
+        min-width="55px"
       >
-        {{logInfo.user}}
+        {{ logInfo.user }}
       </el-descriptions-item>
       <el-descriptions-item
-          label-class-name="label-class"
-          class-name="content-class"
-          label="时间"
-          colon="true"
+        label-class-name="label-class"
+        class-name="content-class"
+        label="时间"
+        colon="true"
       >
-        {{logInfo.date}}
+        {{ logInfo.date }}
       </el-descriptions-item>
       <el-descriptions-item
-          label-class-name="label-class"
-          class-name="content-class"
-          label="描述"
-          colon="true"
+        label-class-name="label-class"
+        class-name="content-class"
+        label="描述"
+        colon="true"
       >
-        {{logInfo.operatedName}}{{logInfo.centent}}
+        [{{ logInfo.operatedName }}]{{ logInfo.content }}
       </el-descriptions-item>
       <el-descriptions-item
-          label-class-name="label-class"
-          class-name="content-class"
-          label="相关资源ID/名称"
-          colon="true"
+        label-class-name="label-class"
+        class-name="content-class"
+        label="相关资源ID/名称"
+        colon="true"
       >
-        {{logInfo.resourceId}}
+        {{ logInfo.resourceId }}
       </el-descriptions-item>
       <el-descriptions-item
-          label-class-name="label-class"
-          class-name="content-class"
-          label="请求IP"
-          colon="true"
+        label-class-name="label-class"
+        class-name="content-class"
+        label="请求IP"
+        colon="true"
       >
-        {{logInfo.sourceIp}}
+        {{ logInfo.sourceIp }}
       </el-descriptions-item>
       <el-descriptions-item
-          label-class-name="label-class"
-          class-name="content-class"
-          label="请求地址"
-          colon="true"
+        label-class-name="label-class"
+        class-name="content-class"
+        label="请求地址"
+        colon="true"
       >
-        {{logInfo.url}}
+        {{ logInfo.url }}
       </el-descriptions-item>
       <el-descriptions-item
-          label-class-name="label-class"
-          class-name="content-class"
-          label="请求方式"
-          colon="true"
+        label-class-name="label-class"
+        class-name="content-class"
+        label="请求方式"
+        colon="true"
       >
-        {{logInfo.method}}
+        {{ logInfo.method }}
       </el-descriptions-item>
       <el-descriptions-item
-          label-class-name="label-class"
-          class-name="content-class"
-          label="请求参数"
-          colon="true"
-          min-width="115px"
+        label-class-name="label-class"
+        class-name="content-class"
+        label="请求参数"
+        colon="true"
+        min-width="115px"
       >
-        <div :style="{
+        <div
+          :style="{
+            maxHeight: '100px',
 
-          maxHeight: '100px',
+            overflowX: 'hidden',
 
-          overflowX: 'hidden',
-
-          overflowY: 'auto',
-
-        }">{{logInfo.params}}</div>
+            overflowY: 'auto',
+          }"
+        >
+          {{ logInfo.params }}
+        </div>
       </el-descriptions-item>
       <el-descriptions-item
-          label-class-name="label-class"
-          class-name="content-class"
-          label="状态码"
-          colon="true"
+        label-class-name="label-class"
+        class-name="content-class"
+        label="状态码"
+        colon="true"
       >
-        {{logInfo.code}}
+        {{ logInfo.code }}
       </el-descriptions-item>
     </el-descriptions>
     <template #footer>

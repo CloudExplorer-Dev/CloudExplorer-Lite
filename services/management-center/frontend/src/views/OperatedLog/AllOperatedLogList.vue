@@ -40,28 +40,51 @@
       min-width="150px"
     ></el-table-column>
     <el-table-column
-        prop="content"
-        :label="$t('log_manage.content')"
-        min-width="150px"
-    ></el-table-column>
+      prop="content"
+      :label="$t('log_manage.content')"
+      min-width="150px"
+    >
+      <template #default="scope">
+        <el-tooltip class="box-item" effect="dark" placement="top-start">
+          <template #content>
+            <div style="max-width: 500px">{{ scope.row.content }}</div>
+          </template>
+          <div class="table_content_ellipsis">
+            {{ scope.row.content }}
+          </div></el-tooltip
+        >
+      </template>
+    </el-table-column>
     <el-table-column
+      :show-overflow-tooltip="true"
       prop="resourceId"
       :label="$t('log_manage.resource')"
-      min-width="150px"
-    ></el-table-column>
+      min-width="200px"
+    >
+      <template #default="scope">
+        <el-tooltip class="box-item" effect="dark" placement="top-start">
+          <template #content>
+            <div style="max-width: 500px">{{ scope.row.resourceId }}</div>
+          </template>
+          <div class="table_content_ellipsis">
+            {{ scope.row.resourceId }}
+          </div></el-tooltip
+        >
+      </template>
+    </el-table-column>
     <el-table-column
       prop="sourceIp"
       :label="$t('log_manage.ip')"
       min-width="150px"
     ></el-table-column>
     <el-table-column
-        min-width="150px"
+      min-width="200px"
       prop="date"
       :label="$t('commons.operate_time')"
       sortable="desc"
     />
     <el-table-column
-        width="100px"
+      width="100px"
       prop="status"
       :label="$t('log_manage.status')"
       column-key="status"
@@ -175,14 +198,16 @@ const tableConfig = ref<TableConfig>({
     ],
   },
   paginationConfig: new PaginationConfig(),
-  tableOperations: new TableOperations([
-    TableOperations.buildButtons().newInstance(
-      t("log_manage.view_details", "查看详情"),
-      "primary",
-      showLogInfoDialog
-    ),
-  ],
-      "label"),
+  tableOperations: new TableOperations(
+    [
+      TableOperations.buildButtons().newInstance(
+        t("log_manage.view_details", "查看详情"),
+        "primary",
+        showLogInfoDialog
+      ),
+    ],
+    "label"
+  ),
 });
 
 const clearPolicy = () => {
