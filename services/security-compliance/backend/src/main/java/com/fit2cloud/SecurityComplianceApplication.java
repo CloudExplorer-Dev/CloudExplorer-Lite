@@ -10,8 +10,6 @@ import org.springframework.context.annotation.EnableAspectJAutoProxy;
 import org.springframework.context.annotation.PropertySource;
 
 import java.time.ZoneId;
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.TimeZone;
 
 @SpringBootApplication()
@@ -29,7 +27,6 @@ public class SecurityComplianceApplication {
         JsonUtil.mapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
         JsonUtil.mapper.setSerializationInclusion(JsonInclude.Include.NON_EMPTY);
         SpringApplication.run(SecurityComplianceApplication.class, args);
-
     }
 
 }

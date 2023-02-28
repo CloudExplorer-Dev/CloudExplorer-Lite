@@ -6,6 +6,8 @@ import com.fit2cloud.provider.entity.InstanceFieldType;
 import com.fit2cloud.provider.entity.InstanceSearchField;
 import org.apache.commons.collections4.keyvalue.DefaultKeyValue;
 
+import java.sql.Array;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -119,7 +121,6 @@ public class AliInstanceSearchFieldApi {
         InstanceSearchField referer = new InstanceSearchField("是否开启防盗链", "referer.refererList.referer", InstanceFieldType.Enum,
                 List.of(new DefaultKeyValue<>("未开启", null)))
                 .resetInstanceField(PlatformConstants.fit2cloud_ali_platform, ResourceTypeConstants.OSS);
-
         InstanceSearchField refererAllowEmptyReferer = new InstanceSearchField("空Referer", "referer.allowEmptyReferer", InstanceFieldType.Enum,
                 List.of(new DefaultKeyValue<>("允许", true),
                         new DefaultKeyValue<>("不允许", false)))
@@ -177,7 +178,16 @@ public class AliInstanceSearchFieldApi {
 
         InstanceSearchField cidrBlock = new InstanceSearchField("ipv4网段", "cidrBlock", InstanceFieldType.String)
                 .resetInstanceField(PlatformConstants.fit2cloud_ali_platform, ResourceTypeConstants.VPC);
-        return List.of(status, isDefault, cidrBlock);
+        InstanceSearchField flowLog = new InstanceSearchField("流日志状态", "flowLog.status", InstanceFieldType.Enum,
+                List.of(new DefaultKeyValue<>("启动状态", "Active"),
+                        new DefaultKeyValue<>("创建中", "Activating"),
+                        new DefaultKeyValue<>("未启动状态", "Inactive")
+                ))
+                .resetInstanceField(PlatformConstants.fit2cloud_ali_platform, ResourceTypeConstants.VPC);
+
+        InstanceSearchField switchesAvailableIpAddressCount = new InstanceSearchField("交换机可用IP数量", "availableIpAddressCount", InstanceFieldType.NestedArrayNumber)
+                .resetFilterArrayField(PlatformConstants.fit2cloud_ali_platform, ResourceTypeConstants.VPC, "switchesList", false);
+        return List.of(status, isDefault, cidrBlock, flowLog, switchesAvailableIpAddressCount);
     }
 
     /**
@@ -694,7 +704,7 @@ public class AliInstanceSearchFieldApi {
                         new DefaultKeyValue<>("按流量计费", "4")
                 )).resetInstanceField(PlatformConstants.fit2cloud_ali_platform, ResourceTypeConstants.LOAD_BALANCER);
 
-        InstanceSearchField deleteProtection = new InstanceSearchField("公网类型实例付费方式", "deleteProtection", InstanceFieldType.Enum,
+        InstanceSearchField deleteProtection = new InstanceSearchField("负载均衡删除保护状态", "deleteProtection", InstanceFieldType.Enum,
                 List.of(new DefaultKeyValue<>("开启", "on"),
                         new DefaultKeyValue<>("关闭", "off")
                 ))

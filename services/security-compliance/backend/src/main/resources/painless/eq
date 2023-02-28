@@ -1,0 +1,15 @@
+try{
+return (doc[params.field]
+       .stream()
+       .anyMatch
+       (s-> params.field!=null&&s.toString()==params.value.toString()))
+       || (doc[params.field].length==0&&params.value!=null);
+}catch (Exception e){
+    if(params.value==null){
+       return true;
+    }else{
+       return false;
+    }
+ }
+
+

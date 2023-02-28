@@ -20,5 +20,5 @@ public interface IComplianceScanResourceResultService extends IService<Complianc
      *
      * @param complianceScanResourceResults 合规资源扫描数据
      */
-    void saveOrUpdate(List<ComplianceScanResourceResult> complianceScanResourceResults);
+    void saveOrUpdate(List<ComplianceScanResourceResult> complianceScanResourceResults, ResourceTypeConstants resourceType, String cloudAccountId);
 }

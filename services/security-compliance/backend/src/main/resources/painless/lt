@@ -1,0 +1,11 @@
+/**
+ * 小于
+ */
+try{
+ return doc[params.field]
+         .stream()
+         .map(s-> s instanceof String?Double.parseDouble(s):s)
+         .anyMatch(s->s<(params.value instanceof String?Double.parseDouble(params.value):params.value));
+}catch (Exception e){
+      return false;
+}

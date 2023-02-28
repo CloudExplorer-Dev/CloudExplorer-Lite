@@ -1,0 +1,17 @@
+/**
+ * 不包含
+ * 用于数组字段查询
+ */
+ try{
+ return doc[params.field].length>0&&(doc[params.field]
+        .stream()
+        .allMatch
+        (s-> params.field!=null&&s.toString()!=params.value.toString()))
+        || (doc[params.field].length==0&&params.value!=null);
+ }catch (Exception e){
+     if(params.value==null){
+        return false;
+     }else{
+        return true;
+     }
+ }

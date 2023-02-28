@@ -1,0 +1,12 @@
+/**
+ * 数组总和小于
+ */
+try{
+return doc[params.field]
+       .stream()
+       .map(s-> s instanceof String?Double.parseDouble(s):s)
+       .collect(Collectors.summarizingDouble(Double::doubleValue))
+       .getSum()<(params.value instanceof String?Double.parseDouble(params.value):params.value);
+}catch (Exception e){
+     return false;
+}

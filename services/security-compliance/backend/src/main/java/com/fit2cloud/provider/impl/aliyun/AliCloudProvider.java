@@ -227,10 +227,10 @@ public class AliCloudProvider extends AbstractCloudProvider<AliSecurityComplianc
     @Override
     public List<ResourceInstance> listVpcInstance(String req) {
         ListVpcInstanceRequest listVpcInstanceRequest = JsonUtil.parseObject(req, ListVpcInstanceRequest.class);
-        List<DescribeVpcsResponseBody.DescribeVpcsResponseBodyVpcsVpc> instances = AliApi.listVpcInstanceRequest(listVpcInstanceRequest);
+        List<Map<String, Object>> instances = AliApi.listVpcInstanceCollection(listVpcInstanceRequest);
         return instances
                 .stream()
-                .map(instance -> ResourceUtil.toResourceInstance(PlatformConstants.fit2cloud_ali_platform.name(), ResourceTypeConstants.VPC, instance.getVpcId(), instance.getVpcName(), instance))
+                .map(instance -> ResourceUtil.toResourceInstance(PlatformConstants.fit2cloud_ali_platform.name(), ResourceTypeConstants.VPC, ResourceUtil.toString(instance.get("vpcId")), ResourceUtil.toString(instance.get("vpcName")), Map.of("switchesList", (List<Object>) instance.get("switchesList")), instance))
                 .toList();
     }
 

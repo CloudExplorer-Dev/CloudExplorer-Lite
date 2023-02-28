@@ -1,0 +1,5 @@
+try{
+   return doc[params.field].length==0;
+}catch (Exception e){
+   return true;
+}
