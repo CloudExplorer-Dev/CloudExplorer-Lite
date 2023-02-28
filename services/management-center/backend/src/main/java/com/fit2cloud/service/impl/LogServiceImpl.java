@@ -83,12 +83,10 @@ public class LogServiceImpl implements ILogService {
             request.setResourceType(ResourceTypeEnum.SYSTEM.getCode());
         }
         if (StringUtils.equalsIgnoreCase("vmOperateLog", request.getType())) {
-            request.setResourceType(ResourceTypeEnum.CLOUD_SERVER.getCode());
+            request.setResourceType(ResourceTypeEnum.CLOUD_SERVER.getName());
         }
         if (StringUtils.equalsIgnoreCase("diskOperateLog", request.getType())) {
-            request.setResourceType(ResourceTypeEnum.CLOUD_DISK.getCode());
-        }
-        if (StringUtils.equalsIgnoreCase("allLog", request.getType())) {
+            request.setResourceType(ResourceTypeEnum.CLOUD_DISK.getName());
         }
         request.setType(null);
         List<QueryUtil.QueryCondition> queryConditions = new ArrayList<>();
