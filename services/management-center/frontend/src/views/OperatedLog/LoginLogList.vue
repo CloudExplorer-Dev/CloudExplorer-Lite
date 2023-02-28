@@ -53,7 +53,6 @@
         </div>
       </template></el-table-column
     >
-    <fu-table-operations v-bind="tableConfig.tableOperations" fix />
   </ce-table>
   <el-dialog
     v-model="clearLogConfigDialogVisible"

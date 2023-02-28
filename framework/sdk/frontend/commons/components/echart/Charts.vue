@@ -157,7 +157,7 @@ const setEchartsData = (seriesData: any) => {
       left: "center",
       top: "middle",
       silent: true,
-      invisible: props.series[0].data.length != 0, //是否可见，这里的意思是当没有数据时可见
+      invisible: props.series[0]?.data?.length != 0, //是否可见，这里的意思是当没有数据时可见
       style: {
         fill: "black",
         font: '12px "bold" ',
@@ -184,10 +184,13 @@ const setEchartsData = (seriesData: any) => {
         const unit = ref<string>();
         let tooltipText = timestampToTime(params[0].name);
         params.forEach(function (v: any) {
-          if (props.yUnit === "Byte/s" || props.yUnit === "bit/s") {
+          if (
+            v.value != undefined &&
+            (props.yUnit === "Byte/s" || props.yUnit === "bit/s")
+          ) {
             unit.value = changeByte(v.value);
           } else {
-            unit.value = v.value + props.yUnit;
+            unit.value = (v.value != undefined ? v.value : "无") + props.yUnit;
           }
           tooltipText += "<br/>";
           tooltipText += v.marker + " " + v.seriesName + " " + unit.value;
@@ -208,10 +211,13 @@ const setEchartsData = (seriesData: any) => {
 };
 
 const yUnitConversion = (val: any) => {
-  if (props.yUnit === "Byte/s" || props.yUnit === "bit/s") {
+  if (
+    val != undefined &&
+    (props.yUnit === "Byte/s" || props.yUnit === "bit/s")
+  ) {
     return changeByte(val);
   } else {
-    return val + " " + props.yUnit;
+    return val != undefined ? val : "无" + " " + props.yUnit;
   }
 };
 
@@ -240,7 +246,7 @@ const timestampToTime = (timestamp: any) => {
 const changeByte = (byte: number) => {
   let size: string;
   if (byte < 1024) {
-    size = `${byte.toFixed(2)}B`;
+    size = `${byte.toFixed(2)}Byte`;
   } else if (byte < 1024 * 1024) {
     size = `${(byte / 1024).toFixed(2)}KB`;
   } else if (byte < 1024 * 1024 * 1024) {

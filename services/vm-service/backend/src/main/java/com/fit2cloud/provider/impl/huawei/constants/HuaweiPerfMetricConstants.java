@@ -18,8 +18,8 @@ public class HuaweiPerfMetricConstants {
         DISK_WRITE_IOPS("disk_write_requests_rate", "所有磁盘每秒写入次数","Count/Second"),
         INTERNET_IN_RATE("network_incoming_bytes_aggregate_rate", "公网流入带宽","Byte/s"),
         INTERNET_OUT_RATE("network_outgoing_bytes_aggregate_rate", "公网流出带宽","Byte/s"),
-        INTRANET_IN_RATE("network_incoming_bytes_rate_inband", "内网流入带宽","Byte/s"),
-        INTRANET_OUT_RATE("network_outgoing_bytes_rate_inband", "内网流出带宽","Byte/s"),
+        INTRANET_IN_RATE("network_vm_bandwidth_in", "内网流入带宽","KB/s"),
+        INTRANET_OUT_RATE("network_vm_bandwidth_out", "内网流出带宽","KB/s"),
         DISK_USED_UTILIZATION("disk_util_inband","磁盘使用率","%"),
         ;
 

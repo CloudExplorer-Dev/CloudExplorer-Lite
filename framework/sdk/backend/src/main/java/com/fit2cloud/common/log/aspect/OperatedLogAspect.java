@@ -1,7 +1,6 @@
 package com.fit2cloud.common.log.aspect;
 
 import com.fit2cloud.autoconfigure.ServerInfo;
-import com.fit2cloud.common.constants.GlobalErrorCodeConstants;
 import com.fit2cloud.common.exception.Fit2cloudException;
 import com.fit2cloud.common.log.annotation.OperatedLog;
 import com.fit2cloud.common.log.constants.OperatedTypeEnum;
@@ -28,7 +27,6 @@ import org.springframework.web.context.request.ServletRequestAttributes;
 import javax.servlet.http.HttpServletRequest;
 import java.lang.reflect.Method;
 import java.util.Date;
-import java.util.UUID;
 
 /**
  * @author jianneng
@@ -38,9 +36,7 @@ import java.util.UUID;
 @Component
 public class OperatedLogAspect {
 
-    @Pointcut("@annotation(com.fit2cloud.common.log.annotation.OperatedLog)" + "||"
-            + "execution(* com.fit2cloud.controller.*.*(..))" + "||"
-            + "execution(* com.fit2cloud.*.controller.*.*(..))")
+    @Pointcut("@annotation(com.fit2cloud.common.log.annotation.OperatedLog)")
     public void annotation() {
 
     }
@@ -48,63 +44,54 @@ public class OperatedLogAspect {
     @Around("annotation()")
     public Object aroundMethod(ProceedingJoinPoint pjd) throws Throwable {
         Long startTime = System.currentTimeMillis();
-        //创建一个请求id
-        String requestId = String.valueOf(UUID.randomUUID());
-        MDC.put("requestId",requestId);
         Object res = null;
-        ResultHolder errorResult = ResultHolder.error(GlobalErrorCodeConstants.BUSINESS_ERROR.getCode(),GlobalErrorCodeConstants.BUSINESS_ERROR.getMessage());
+        ResultHolder errorResult = ResultHolder.success("ok");
         try{
             res = pjd.proceed();
             if (res instanceof ResultHolder) {
                 errorResult = (ResultHolder) res;
-            }else{
-                errorResult = ResultHolder.success("ok");
             }
         }catch (Exception e){
             if(e instanceof Fit2cloudException){
                 Fit2cloudException fit2cloudException = (Fit2cloudException)e;
                 errorResult.setCode(fit2cloudException.getCode());
                 errorResult.setMessage(fit2cloudException.getMessage());
+            }else{
+                errorResult.setMessage(e.getMessage());
             }
-            errorResult.setMessage(e.getMessage());
-            e.printStackTrace();
         }
         Long endTime = System.currentTimeMillis();
-        saveLog(pjd,res,endTime-startTime,errorResult);
+        saveLog(pjd,endTime-startTime,errorResult);
         //请求完成后清理MDC
         MDC.clear();
         if(errorResult.getCode()!=200){
             throw new Fit2cloudException(errorResult.getCode(),errorResult.getMessage());
         }
-        errorResult.setRequestId(requestId);
         return res;
     }
 
-    private void saveLog(ProceedingJoinPoint pjd, Object res, Long time ,ResultHolder errorResult){
+    private void saveLog(ProceedingJoinPoint pjd, Long time ,ResultHolder errorResult){
         try {
-            String response = res==null?"":JsonUtil.toJSONString(res);
             MethodSignature methodSignature = (MethodSignature) pjd.getSignature();
             Method method = methodSignature.getMethod();
             Object[] args = pjd.getArgs();
             OperatedLog annotation = method.getAnnotation(OperatedLog.class);
             // 日志注解内容
             if(annotation != null){
-                OperatedLogVO logVO = createLog(time, errorResult,args);
+                OperatedLogVO logVO = createLog(time, errorResult);
                 String paramStr = "";
                 // 操作
                 logVO.setOperated(annotation.operated().getOperate());
                 String operatedName = OperatedTypeEnum.getDescriptionByOperate(logVO.getOperated());
+                logVO.setOperatedName(operatedName);
                 // 参数解析
                 paramStr = JsonUtil.toJSONString(args);
                 if(StringUtils.isNotEmpty(annotation.content())){
                     // 操作内容解析
                     logVO.setContent(SpelUtil.getElValueByKey(pjd,annotation.content()));
-                    operatedName += "-"+OperatedTypeEnum.getDescriptionByOperate(logVO.getContent());
                 }
-                logVO.setOperatedName(operatedName);
-
                 // 资源类型
-                logVO.setResourceType(annotation.resourceType().getCode());
+                logVO.setResourceType(annotation.resourceType().getName());
                 if(StringUtils.isNotEmpty(annotation.resourceId())){
                     // 资源ID
                     logVO.setResourceId(SpelUtil.getElValueByKey(pjd,annotation.resourceId()));
@@ -114,26 +101,24 @@ public class OperatedLogAspect {
                     logVO.setJoinResourceId(SpelUtil.getElValueByKey(pjd,annotation.joinResourceId()));
                 }
                 // 配置请求信息
-                extractRequestInfo(response, errorResult, logVO, paramStr);
+                extractRequestInfo(errorResult, logVO, paramStr);
                 // 上下文设置
                 setMDC(logVO);
                 LogUtil.info(JsonUtil.toJSONString(logVO));
             }
         } catch (Exception e) {
-            LogUtil.error(e.getMessage());
-            e.printStackTrace();
+            LogUtil.error("记录日志失败:{}",e.getMessage());
         }
     }
 
 
     /**
      * 请求头信息以及请求结果
-     * @param response
      * @param errorResult
      * @param logVO
      * @param paramStr
      */
-    private void extractRequestInfo(String response, ResultHolder errorResult, OperatedLogVO logVO, String paramStr) {
+    private void extractRequestInfo(ResultHolder errorResult, OperatedLogVO logVO, String paramStr) {
         // 请求头信息
         ServletRequestAttributes attributes = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
         HttpServletRequest request = attributes.getRequest();
@@ -147,15 +132,15 @@ public class OperatedLogAspect {
     }
 
     @NotNull
-    private OperatedLogVO createLog(Long time, ResultHolder errorResult,Object[] args) {
+    private OperatedLogVO createLog(Long time, ResultHolder errorResult) {
         OperatedLogVO logVO = new OperatedLogVO();
-        logVO.setModule(ServerInfo.module);
+        logVO.setModule(ServerInfo.moduleInfo.getName());
         logVO.setRequestTime(new Date().getTime());
         logVO.setTime(time);
         logVO.setStatus(errorResult.getCode()==200?1:0);
         logVO.setCode(errorResult.getCode());
         UserDto userDto = CurrentUserUtils.getUser();
-        logVO.setUser(userDto.getUsername());
+        logVO.setUser(userDto.getName());
         logVO.setUserId(userDto.getId());
         return logVO;
     }

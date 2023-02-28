@@ -17,6 +17,7 @@ const message = {
     os_version: "操作系统版本",
     status: "状态",
     create_time: "创建时间",
+    operate_time: "操作时间",
     update_time: "更新时间",
     delete_time: "删除时间",
     basic_info: "基本信息",

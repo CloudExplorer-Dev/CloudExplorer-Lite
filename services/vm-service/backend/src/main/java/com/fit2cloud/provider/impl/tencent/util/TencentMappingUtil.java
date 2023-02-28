@@ -1,5 +1,6 @@
 package com.fit2cloud.provider.impl.tencent.util;
 
+import com.fit2cloud.common.log.utils.LogUtil;
 import com.fit2cloud.common.provider.entity.F2CPerfMetricMonitorData;
 import com.fit2cloud.common.provider.util.CommonUtil;
 import com.fit2cloud.provider.constants.DeleteWithInstance;
@@ -19,6 +20,8 @@ import org.apache.commons.lang3.StringUtils;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.*;
 
 /**
@@ -103,8 +106,12 @@ public class TencentMappingUtil {
         F2CDisk f2CDisk = new F2CDisk();
         f2CDisk.setSize(disk.getDiskSize());
         if (StringUtils.isNotEmpty(disk.getCreateTime())) {
-            long utcTime = CommonUtil.getUTCTime(disk.getCreateTime(), "yyyy-MM-dd HH:mm:ss");
-            f2CDisk.setCreateTime(utcTime);
+            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+            try {
+                f2CDisk.setCreateTime(sdf.parse(disk.getCreateTime()).getTime());
+            } catch (ParseException e) {
+                LogUtil.error("Failed to format disk create time" + e.getMessage(), e);
+            }
         }
         f2CDisk.setDiskName(disk.getDiskName());
         f2CDisk.setStatus(toF2cDiskStatus(disk.getDiskState()));

@@ -1,7 +1,7 @@
 package com.fit2cloud.es.repository;
 
 import com.fit2cloud.es.entity.OperatedLog;
-import com.fit2cloud.es.entity.SystemLog;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.data.elasticsearch.repository.ElasticsearchRepository;
 
 /**
@@ -10,5 +10,6 @@ import org.springframework.data.elasticsearch.repository.ElasticsearchRepository
  * @Version 1.0
  * @注释:
  */
+@Lazy
 public interface OperatedLogRepository extends ElasticsearchRepository<OperatedLog, String> {
 }

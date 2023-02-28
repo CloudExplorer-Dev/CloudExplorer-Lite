@@ -170,6 +170,7 @@ function getList() {
         }
       } else {
         selectRowId.value = undefined;
+        currentRow.value = undefined;
       }
       emit("change");
     });
@@ -190,7 +191,9 @@ watch(
 watch(
   () => props.allData.availabilityZone,
   () => {
-    getList();
+    if (props.allData.availabilityZone) {
+      getList();
+    }
   }
 );
 

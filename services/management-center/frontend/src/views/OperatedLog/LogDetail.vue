@@ -14,6 +14,11 @@ defineExpose({
   height: 300px;
   overflow: auto;
 }
+.content-class {
+  border: 0 !important;
+  background-color: transparent !important;
+  width: 90%;
+}
 </style>
 
 <template>
@@ -23,24 +28,92 @@ defineExpose({
     width="50%"
     destroy-on-close
   >
-    <el-form :inline="true" :model="logInfo" class="demo-form-inline">
-      <el-form-item label="操作人:">
-        <label>{{ logInfo.user }}</label>
-      </el-form-item>
-      <el-form-item label="操作时间:">
-        <label>{{ logInfo.date }}</label>
-      </el-form-item>
-      <el-form-item label="操作对象:">
-        <label>{{ logInfo.resourceId }}</label>
-      </el-form-item>
-      <el-form-item label="操作类型:">
-        <label>{{ logInfo.resourceType }}</label>
-      </el-form-item>
-      <el-form-item label="API详情:">
-        <label class="detail-class">{{ logInfo.msg }}</label>
-      </el-form-item>
-    </el-form>
+    <el-descriptions :column="1" border size="small">
+      <el-descriptions-item
+        label-class-name="label-class"
+        class-name="content-class"
+        label="操作人"
+        colon="true"
+        min-width="55px"
+      >
+        {{ logInfo.user }}
+      </el-descriptions-item>
+      <el-descriptions-item
+        label-class-name="label-class"
+        class-name="content-class"
+        label="时间"
+        colon="true"
+      >
+        {{ logInfo.date }}
+      </el-descriptions-item>
+      <el-descriptions-item
+        label-class-name="label-class"
+        class-name="content-class"
+        label="描述"
+        colon="true"
+      >
+        [{{ logInfo.operatedName }}]{{ logInfo.content }}
+      </el-descriptions-item>
+      <el-descriptions-item
+        label-class-name="label-class"
+        class-name="content-class"
+        label="相关资源ID/名称"
+        colon="true"
+      >
+        {{ logInfo.resourceId }}
+      </el-descriptions-item>
+      <el-descriptions-item
+        label-class-name="label-class"
+        class-name="content-class"
+        label="请求IP"
+        colon="true"
+      >
+        {{ logInfo.sourceIp }}
+      </el-descriptions-item>
+      <el-descriptions-item
+        label-class-name="label-class"
+        class-name="content-class"
+        label="请求地址"
+        colon="true"
+      >
+        {{ logInfo.url }}
+      </el-descriptions-item>
+      <el-descriptions-item
+        label-class-name="label-class"
+        class-name="content-class"
+        label="请求方式"
+        colon="true"
+      >
+        {{ logInfo.method }}
+      </el-descriptions-item>
+      <el-descriptions-item
+        label-class-name="label-class"
+        class-name="content-class"
+        label="请求参数"
+        colon="true"
+        min-width="115px"
+      >
+        <div
+          :style="{
+            maxHeight: '100px',
 
+            overflowX: 'hidden',
+
+            overflowY: 'auto',
+          }"
+        >
+          {{ logInfo.params }}
+        </div>
+      </el-descriptions-item>
+      <el-descriptions-item
+        label-class-name="label-class"
+        class-name="content-class"
+        label="状态码"
+        colon="true"
+      >
+        {{ logInfo.code }}
+      </el-descriptions-item>
+    </el-descriptions>
     <template #footer>
       <span class="dialog-footer">
         <el-button @click="dialogVisible = false">关闭</el-button>

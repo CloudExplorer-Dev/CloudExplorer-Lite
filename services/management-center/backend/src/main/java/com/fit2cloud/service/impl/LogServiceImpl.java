@@ -32,6 +32,7 @@ import javax.annotation.Resource;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * @author jianneng
@@ -56,23 +57,61 @@ public class LogServiceImpl implements ILogService {
     @Override
     public IPage<OperatedLogVO> operatedLogs(PageOperatedLogRequest request) {
         Page<OperatedLogVO> page = PageUtil.of(request, OperatedLogVO.class, true);
+        return provide.searchByQuery(CE_FILE_API_LOGS, getSearchQueryFroOperation(request.getCurrentPage(), request.getPageSize(), request, request.getOrder()), OperatedLogVO.class, page);
+    }
+
+    private org.springframework.data.elasticsearch.core.query.Query getSearchQueryFroOperation(Integer currentPage, Integer pageSize, PageOperatedLogRequest request, OrderRequest order) {
+        NativeQueryBuilder query = new NativeQueryBuilder()
+                .withPageable(PageRequest.of(currentPage-1, pageSize))
+                .withQuery(buildQueryForOperation(request))
+                .withSourceFilter(new FetchSourceFilter(new String[]{}, new String[]{"@version", "@timestamp", "host", "tags"}))
+                .withAggregation("count", new Aggregation.Builder().valueCount(new ValueCountAggregation.Builder().field("_id").build()).build());
+        if (order != null && StringUtils.isNotEmpty(order.getColumn())) {
+            if(StringUtils.equalsIgnoreCase(order.getColumn(),"createTime") || StringUtils.equalsIgnoreCase(order.getColumn(),"date")){
+                query.withSort(Sort.by(order.isAsc() ? Sort.Order.asc("@timestamp") : Sort.Order.desc("@timestamp")));
+            }else{
+                query.withSort(Sort.by(order.isAsc() ? Sort.Order.asc(order.getColumn()) : Sort.Order.desc(order.getColumn())));
+            }
+        }else{
+            query.withSort(Sort.by(Sort.Order.desc("@timestamp")));
+        }
+        return query.build();
+    }
+
+    private Query buildQueryForOperation(PageOperatedLogRequest request) {
         if (StringUtils.equalsIgnoreCase("loginLog", request.getType())) {
-            request.setType(null);
             request.setResourceType(ResourceTypeEnum.SYSTEM.getCode());
         }
         if (StringUtils.equalsIgnoreCase("vmOperateLog", request.getType())) {
-            request.setType(null);
-            request.setResourceType(ResourceTypeEnum.CLOUD_SERVER.getCode());
+            request.setResourceType(ResourceTypeEnum.CLOUD_SERVER.getName());
         }
         if (StringUtils.equalsIgnoreCase("diskOperateLog", request.getType())) {
-            request.setType(null);
-            request.setResourceType(ResourceTypeEnum.CLOUD_DISK.getCode());
+            request.setResourceType(ResourceTypeEnum.CLOUD_DISK.getName());
         }
-        if (StringUtils.equalsIgnoreCase("allLog", request.getType())) {
-            request.setType(null);
+        request.setType(null);
+        List<QueryUtil.QueryCondition> queryConditions = new ArrayList<>();
+        ObjectNode params = JsonUtil.parseObject(JsonUtil.toJSONString(request));
+        Iterator<String> fieldNames = params.fieldNames();
+        while (fieldNames.hasNext()) {
+            String name = fieldNames.next();
+            if (StringUtils.equalsIgnoreCase("currentPage", name) || StringUtils.equalsIgnoreCase("pageSize", name) || StringUtils.equalsIgnoreCase("order", name)) {
+                continue;
+            }
+            JsonNode jsonNode = params.get(name);
+            String value = jsonNode.asText();
+            QueryUtil.QueryCondition condition = new QueryUtil.QueryCondition(StringUtils.isNotEmpty(value) && !StringUtils.equalsIgnoreCase("null", value), name, value, QueryUtil.CompareType.LIKE);
+            queryConditions.add(condition);
         }
-        return provide.searchByQuery(CE_FILE_API_LOGS, getSearchQuery(request.getCurrentPage(), request.getPageSize(), JsonUtil.toJSONString(request), request.getOrder()), OperatedLogVO.class, page);
+        //如果是查询所有的话，把登录的过滤掉
+        if(Objects.isNull(request.getResourceType())){
+            queryConditions.add(new QueryUtil.QueryCondition(true, "operated", "LOGIN", QueryUtil.CompareType.NOT_EQ));
+        }
+        //不查询没有等级的数据
+        queryConditions.add(new QueryUtil.QueryCondition(true, "level", null, QueryUtil.CompareType.NOT_EXIST));
+        BoolQuery.Builder query = QueryUtil.getQuery(queryConditions);
+        return new Query.Builder().bool(query.build()).build();
     }
+
 
 
     /**
