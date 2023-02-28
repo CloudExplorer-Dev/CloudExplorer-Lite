@@ -27,7 +27,7 @@ public enum InstanceFieldType {
     /**
      * 普通数组字符串
      */
-    ArrayString(CONTAIN, NOT_CONTAIN, EXIST, NOT_EXIST),
+    ArrayString(CONTAIN, NOT_CONTAIN, LENGTH_GE, LENGTH_GT, LENGTH_LE, LENGTH_LT, EXIST, NOT_EXIST),
     /**
      * 普通数组枚举
      */
@@ -35,7 +35,7 @@ public enum InstanceFieldType {
     /**
      * 普通数组数字
      */
-    ArrayNumber(AVG_GE, AVG_GT, AVG_LE, AVG_LT, SUM_GE, SUM_GT, SUM_LE, SUM_LT, EXIST, NOT_EXIST),
+    ArrayNumber(LENGTH_GE, LENGTH_GT, LENGTH_LE, LENGTH_LT, AVG_GE, AVG_GT, AVG_LE, AVG_LT, SUM_GE, SUM_GT, SUM_LE, SUM_LT, EXIST, NOT_EXIST),
     /**
      * 嵌套数组字符串
      */

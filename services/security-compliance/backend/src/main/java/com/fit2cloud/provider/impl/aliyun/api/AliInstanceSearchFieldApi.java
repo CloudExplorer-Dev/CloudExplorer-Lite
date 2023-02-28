@@ -37,7 +37,77 @@ public class AliInstanceSearchFieldApi {
                         new DefaultKeyValue<>("停止中", "Stopping"),
                         new DefaultKeyValue<>("已停止", "Stopped")))
                 .resetInstanceField(PlatformConstants.fit2cloud_ali_platform, ResourceTypeConstants.ECS);
-        ;
+
+        InstanceSearchField lockReason = new InstanceSearchField("实例的锁定原因", "operationLocks.lockReason", InstanceFieldType.ArrayEnum,
+                List.of(new DefaultKeyValue<>("因欠费被锁定", "financial"),
+                        new DefaultKeyValue<>("因安全原因被锁定", "security"),
+                        new DefaultKeyValue<>("抢占式实例的待释放锁定状态", "Recycling"),
+                        new DefaultKeyValue<>("因为专有宿主机欠费导致ECS实例被锁定", "dedicatedhostfinancial"),
+                        new DefaultKeyValue<>("因退款被锁定", "refunded")))
+                .resetInstanceField(PlatformConstants.fit2cloud_ali_platform, ResourceTypeConstants.ECS);
+
+        InstanceSearchField osType = new InstanceSearchField("操作系统类型", "OSType", InstanceFieldType.String)
+                .resetInstanceField(PlatformConstants.fit2cloud_ali_platform, ResourceTypeConstants.ECS);
+
+        InstanceSearchField instanceType = new InstanceSearchField("实例规格", "instanceType", InstanceFieldType.String)
+                .resetInstanceField(PlatformConstants.fit2cloud_ali_platform, ResourceTypeConstants.ECS);
+
+        InstanceSearchField gpu = new InstanceSearchField("GPU", "GPUAmount", InstanceFieldType.Number)
+                .resetInstanceField(PlatformConstants.fit2cloud_ali_platform, ResourceTypeConstants.ECS);
+
+
+        InstanceSearchField publicIpAddress = new InstanceSearchField("公网地址", "publicIpAddress.ipAddress", InstanceFieldType.ArrayString)
+                .resetInstanceField(PlatformConstants.fit2cloud_ali_platform, ResourceTypeConstants.ECS);
+
+        InstanceSearchField imageId = new InstanceSearchField("镜像Id", "imageId", InstanceFieldType.String)
+                .resetInstanceField(PlatformConstants.fit2cloud_ali_platform, ResourceTypeConstants.ECS);
+
+        InstanceSearchField securityGroupName = new InstanceSearchField("安全组名称", "securityGroupName", InstanceFieldType.String)
+                .resetFilterArrayField(PlatformConstants.fit2cloud_ali_platform, ResourceTypeConstants.ECS, "securityGroupRules");
+
+        InstanceSearchField securityGroupDescription = new InstanceSearchField("安全组描述信息", "description", InstanceFieldType.String)
+                .resetFilterArrayField(PlatformConstants.fit2cloud_ali_platform, ResourceTypeConstants.ECS, "securityGroupRules");
+
+        InstanceSearchField securityGroupDirection = new InstanceSearchField("安全组授权方向", "securityGroupName.rule.permissions.permission.direction", InstanceFieldType.Enum,
+                List.of(new DefaultKeyValue<>("出方向", "egress"),
+                        new DefaultKeyValue<>("入方向", "ingress")))
+                .resetFilterArrayField(PlatformConstants.fit2cloud_ali_platform, ResourceTypeConstants.ECS, "securityGroupRules");
+
+        InstanceSearchField securityGroupIpProtocol = new InstanceSearchField("安全组IP协议", "securityGroupName.rule.permissions.permission.ipProtocol", InstanceFieldType.String)
+                .resetFilterArrayField(PlatformConstants.fit2cloud_ali_platform, ResourceTypeConstants.ECS, "securityGroupRules");
+
+        InstanceSearchField securityGroupIpPolicy = new InstanceSearchField("安全组授权策略", "securityGroupName.rule.permissions.permission.policy", InstanceFieldType.String)
+                .resetFilterArrayField(PlatformConstants.fit2cloud_ali_platform, ResourceTypeConstants.ECS, "securityGroupRules");
+
+        InstanceSearchField securityGroupPortRange = new InstanceSearchField("安全组端口区间", "securityGroupName.rule.permissions.permission.portRange", InstanceFieldType.String)
+                .resetFilterArrayField(PlatformConstants.fit2cloud_ali_platform, ResourceTypeConstants.ECS, "securityGroupRules");
+
+        InstanceSearchField securityGroupSourceCidrIp = new InstanceSearchField("安全组源端IP地址段", "securityGroupName.rule.permissions.permission.sourceCidrIp", InstanceFieldType.String)
+                .resetFilterArrayField(PlatformConstants.fit2cloud_ali_platform, ResourceTypeConstants.ECS, "securityGroupRules");
+
+        InstanceSearchField securityGroupDestCidrIp = new InstanceSearchField("安全组源目的端IP地址段", "securityGroupName.rule.permissions.permission.destCidrIp", InstanceFieldType.String)
+                .resetFilterArrayField(PlatformConstants.fit2cloud_ali_platform, ResourceTypeConstants.ECS, "securityGroupRules");
+
+        InstanceSearchField diskLockReason = new InstanceSearchField("磁盘锁定原因", "lockReason", InstanceFieldType.Enum,
+                List.of(new DefaultKeyValue<>("因欠费被锁定", "financial"),
+                        new DefaultKeyValue<>("因安全原因被锁定", "security"),
+                        new DefaultKeyValue<>("抢占式实例的待释放锁定状态", "recycling"),
+                        new DefaultKeyValue<>("因为专有宿主机欠费导致ECS实例被锁定", "dedicatedhostfinancial")))
+                .resetFilterArrayField(PlatformConstants.fit2cloud_ali_platform, ResourceTypeConstants.ECS, "disks");
+
+        InstanceSearchField diskSize = new InstanceSearchField("磁盘大小", "size", InstanceFieldType.Number)
+                .resetFilterArrayField(PlatformConstants.fit2cloud_ali_platform, ResourceTypeConstants.ECS, "disks",false);
+
+        InstanceSearchField diskType = new InstanceSearchField("磁盘类型", "type", InstanceFieldType.Enum,
+                List.of(new DefaultKeyValue<>("系统盘", "system"),
+                        new DefaultKeyValue<>("数据盘", "data")))
+                .resetFilterArrayField(PlatformConstants.fit2cloud_ali_platform, ResourceTypeConstants.ECS, "disks");
+
+        InstanceSearchField autoRenewEnabled = new InstanceSearchField("是否开启自动续费", "autoRenew.autoRenewEnabled", InstanceFieldType.Enum,
+                List.of(new DefaultKeyValue<>("开启", true),
+                        new DefaultKeyValue<>("未开启", false)))
+                .resetInstanceField(PlatformConstants.fit2cloud_ali_platform, ResourceTypeConstants.ECS);
+
 
         InstanceSearchField spotStrategy = new InstanceSearchField("竞价策略", "spotStrategy", InstanceFieldType.Enum,
                 List.of(new DefaultKeyValue<>("正常按量付费实例", "NoSpot"),
@@ -56,7 +126,7 @@ public class AliInstanceSearchFieldApi {
                 List.of(new DefaultKeyValue<>("经典网络", "classic"),
                         new DefaultKeyValue<>("专有网络VPC", "vpc")))
                 .resetInstanceField(PlatformConstants.fit2cloud_ali_platform, ResourceTypeConstants.ECS);
-        ;
+
 
         InstanceSearchField internetMaxBandwidthOut = new InstanceSearchField("公网出带宽最大值", "internetMaxBandwidthOut", InstanceFieldType.Number)
                 .resetInstanceField(PlatformConstants.fit2cloud_ali_platform, ResourceTypeConstants.ECS);
@@ -101,7 +171,9 @@ public class AliInstanceSearchFieldApi {
 
         return List.of(cpu, memory, instanceStatus, spotStrategy, deviceAvailable, instanceNetworkType, internetMaxBandwidthOut,
                 internetMaxBandwidthIn, instanceChargeType, ioOptimized, internetChargeType, recyclable, deletionProtection,
-                stoppedMode
+                stoppedMode, instanceType, gpu, publicIpAddress, lockReason, imageId, securityGroupName, securityGroupDirection, securityGroupIpProtocol
+                , securityGroupIpPolicy, securityGroupPortRange, securityGroupSourceCidrIp, securityGroupDestCidrIp, diskLockReason, autoRenewEnabled,
+                diskSize, diskType, securityGroupDescription, osType
         );
     }
 

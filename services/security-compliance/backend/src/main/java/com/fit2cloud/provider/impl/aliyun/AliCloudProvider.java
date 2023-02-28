@@ -62,10 +62,14 @@ public class AliCloudProvider extends AbstractCloudProvider<AliSecurityComplianc
     @Override
     public List<ResourceInstance> listEcsInstance(String req) {
         ListEcsInstancesRequest listEcsInstancesRequest = JsonUtil.parseObject(req, ListEcsInstancesRequest.class);
-        List<DescribeInstancesResponseBody.DescribeInstancesResponseBodyInstancesInstance> describeInstancesResponseBodyInstancesInstances = AliApi.listECSInstance(listEcsInstancesRequest);
-        return describeInstancesResponseBodyInstancesInstances
+
+        List<Map<String, Object>> maps = AliApi.listECSInstanceCollection(listEcsInstancesRequest);
+        return maps
                 .stream()
-                .map(instance -> ResourceUtil.toResourceInstance(PlatformConstants.fit2cloud_ali_platform.name(), ResourceTypeConstants.ECS, instance.getInstanceId(), instance.getInstanceName(), instance))
+                .map(instance -> ResourceUtil.toResourceInstance(PlatformConstants.fit2cloud_ali_platform.name(), ResourceTypeConstants.ECS,
+                        ResourceUtil.toString(instance.get("instanceId")), ResourceUtil.toString(instance.get("instanceName")),
+                        Map.of("disks", (List<Object>) instance.get("disks"), "securityGroupRules", (List<Object>) instance.get("securityGroupRules")),
+                        instance))
                 .toList();
     }
 

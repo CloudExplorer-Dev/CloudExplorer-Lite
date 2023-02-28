@@ -37,10 +37,7 @@ import org.openstack4j.model.heat.Resource;
 import org.springframework.beans.BeanUtils;
 
 import javax.validation.constraints.NotNull;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 import java.util.concurrent.CompletableFuture;
 
 /**
@@ -73,6 +70,149 @@ public class AliApi {
                 , res -> res.getBody().getInstances().instance
                 , (req, res) -> res.getBody().getPageSize() <= res.getBody().getInstances().instance.size()
                 , req -> req.setPageNumber(req.getPageNumber() + 1), ProviderConstants.retryNum);
+    }
+
+    public static List<Map<String, Object>> listECSInstanceCollection(ListEcsInstancesRequest request) {
+        Client ecsClient = request.getCredential().getEcsClient(request.getRegionId());
+        // 查询到ecs实例列表
+        List<DescribeInstancesResponseBody.DescribeInstancesResponseBodyInstancesInstance> ecsInstances = listECSInstance(request);
+        // 查询安全组数据
+        ListSecurityGroupInstanceRequest listSecurityGroupInstanceRequest = new ListSecurityGroupInstanceRequest();
+        BeanUtils.copyProperties(request, listSecurityGroupInstanceRequest);
+        List<DescribeSecurityGroupsResponseBody.DescribeSecurityGroupsResponseBodySecurityGroupsSecurityGroup> securityGroups = listSecurityGroupInstance(listSecurityGroupInstanceRequest);
+        DescribeDisksRequest describeDisksRequest = new DescribeDisksRequest();
+        describeDisksRequest.setRegionId(request.getRegionId());
+        // 磁盘相关数据
+        List<DescribeDisksResponseBody.DescribeDisksResponseBodyDisksDisk> disks = listDisk(describeDisksRequest, ecsClient);
+        // 查询包年包月是否开启自动续费
+        DescribeInstanceAutoRenewAttributeRequest describeInstanceAutoRenewAttributeRequest = new DescribeInstanceAutoRenewAttributeRequest();
+        describeInstanceAutoRenewAttributeRequest.setRegionId(request.getRegionId());
+        List<DescribeInstanceAutoRenewAttributeResponseBody.DescribeInstanceAutoRenewAttributeResponseBodyInstanceRenewAttributesInstanceRenewAttribute> autoRenews = listInstanceAutoRenewAttributeAll(describeInstanceAutoRenewAttributeRequest, ecsClient);
+        return ecsInstances.stream().map(ecs -> mergeEcsInstance(ecs, securityGroups, disks, autoRenews, ecsClient)).toList();
+    }
+
+    /**
+     * 合并数据
+     *
+     * @param ecs
+     * @param securityGroups
+     * @param disks
+     * @param autoRenews
+     * @param ecsClient
+     * @return
+     */
+    private static Map<String, Object> mergeEcsInstance(DescribeInstancesResponseBody.DescribeInstancesResponseBodyInstancesInstance ecs,
+                                                        List<DescribeSecurityGroupsResponseBody.DescribeSecurityGroupsResponseBodySecurityGroupsSecurityGroup> securityGroups,
+                                                        List<DescribeDisksResponseBody.DescribeDisksResponseBodyDisksDisk> disks,
+                                                        List<DescribeInstanceAutoRenewAttributeResponseBody.DescribeInstanceAutoRenewAttributeResponseBodyInstanceRenewAttributesInstanceRenewAttribute> autoRenews,
+                                                        Client ecsClient) {
+        Map<String, Object> ecsInstance = ResourceUtil.objectToMap(ecs);
+        // 设置安全组属性
+        if (Objects.nonNull(ecs.securityGroupIds) && CollectionUtils.isNotEmpty(ecs.securityGroupIds.securityGroupId)) {
+            List<Map<String, Object>> securityGroupRules = securityGroups.stream().filter(group -> ecs.securityGroupIds.securityGroupId.contains(group.securityGroupId))
+                    .map(group -> {
+                        Map<String, Object> sGroup = ResourceUtil.objectToMap(group);
+                        sGroup.put("rule", getSecurityGroupRuleInstance(ecsClient, group.securityGroupId));
+                        return sGroup;
+                    }).toList();
+            ecsInstance.put("securityGroupRules", securityGroupRules);
+        }
+        // 设置磁盘属性
+        List<DescribeDisksResponseBody.DescribeDisksResponseBodyDisksDisk> ecsDisks = disks.stream().filter(disk -> StringUtil.equals(disk.instanceId, ecs.instanceId)).toList();
+        ecsInstance.put("disks", ecsDisks);
+        // 设置包年包月自动续费属性
+        autoRenews.stream().filter(auto -> StringUtil.equals(auto.instanceId, ecs.instanceId)).findFirst()
+                .ifPresent(auto -> ecsInstance.put("autoRenew", auto));
+
+        return ecsInstance;
+
+    }
+
+    /**
+     * 查询包年包月续费状态
+     *
+     * @return 实例续费状态
+     */
+    private static List<DescribeInstanceAutoRenewAttributeResponseBody.DescribeInstanceAutoRenewAttributeResponseBodyInstanceRenewAttributesInstanceRenewAttribute> listInstanceAutoRenewAttributeAll(DescribeInstanceAutoRenewAttributeRequest request, Client ecsClient) {
+        ArrayList<DescribeInstanceAutoRenewAttributeResponseBody.DescribeInstanceAutoRenewAttributeResponseBodyInstanceRenewAttributesInstanceRenewAttribute> all = new ArrayList<>();
+
+        for (String renewalStatus : List.of("AutoRenewal", "Normal", "NotRenewal")) {
+            request.setRenewalStatus(renewalStatus);
+            List<DescribeInstanceAutoRenewAttributeResponseBody.DescribeInstanceAutoRenewAttributeResponseBodyInstanceRenewAttributesInstanceRenewAttribute> item = listInstanceAutoRenewAttribute(request, ecsClient);
+            if (CollectionUtils.isNotEmpty(item)) {
+                all.addAll(item);
+            }
+        }
+        return all;
+    }
+
+    /**
+     * 查询包年包月续费状态
+     *
+     * @return 实例续费状态
+     */
+    private static List<DescribeInstanceAutoRenewAttributeResponseBody.DescribeInstanceAutoRenewAttributeResponseBodyInstanceRenewAttributesInstanceRenewAttribute> listInstanceAutoRenewAttribute(DescribeInstanceAutoRenewAttributeRequest request, Client ecsClient) {
+        request.setPageNumber(PageUtil.DefaultCurrentPage.toString());
+        request.setPageSize(PageUtil.DefaultPageSize.toString());
+
+        // 自动续费实例
+        return PageUtil.page(request, req -> {
+                    try {
+                        return ecsClient.describeInstanceAutoRenewAttributeWithOptions(request, new RuntimeOptions());
+                    } catch (Exception e) {
+                        ReTryException.throwReTry(e);
+                        SkipPageException.throwSkip(e);
+                        throw new Fit2cloudException(10002, "获取阿里云云主机列表失败" + e.getMessage());
+                    }
+                }
+                , res -> res.getBody().getInstanceRenewAttributes().instanceRenewAttribute
+                , (req, res) -> res.getBody().getPageSize() <= res.getBody().getInstanceRenewAttributes().instanceRenewAttribute.size()
+                , req -> req.setPageNumber(req.getPageNumber() + 1), ProviderConstants.retryNum);
+
+
+    }
+
+    private static List<DescribeDisksResponseBody.DescribeDisksResponseBodyDisksDisk> listDisk(DescribeDisksRequest request, Client ecsClient) {
+        request.setPageNumber(PageUtil.DefaultCurrentPage);
+        request.setPageSize(PageUtil.DefaultPageSize);
+        return PageUtil.page(request, req -> {
+                    try {
+                        return ecsClient.describeDisksWithOptions(request, new RuntimeOptions());
+                    } catch (Exception e) {
+                        ReTryException.throwReTry(e);
+                        SkipPageException.throwSkip(e);
+                        throw new Fit2cloudException(10002, "获取阿里云云主机列表失败" + e.getMessage());
+                    }
+                }
+                , res -> res.getBody().getDisks().disk
+                , (req, res) -> res.getBody().getPageSize() <= res.getBody().getDisks().disk.size()
+                , req -> req.setPageNumber(req.getPageNumber() + 1), ProviderConstants.retryNum);
+
+    }
+
+    /**
+     * 查询镜像实例列表数据
+     *
+     * @param request   请求对象
+     * @param ecsClient ecs客户端
+     * @return 镜像实例列表数据
+     */
+    private static List<DescribeImagesResponseBody.DescribeImagesResponseBodyImagesImage> listImagesInstance(DescribeImagesRequest request, Client ecsClient) {
+        request.setPageNumber(PageUtil.DefaultCurrentPage);
+        request.setPageSize(PageUtil.DefaultPageSize);
+        return PageUtil.page(request, req -> {
+                    try {
+                        return ecsClient.describeImages(request);
+                    } catch (Exception e) {
+                        ReTryException.throwReTry(e);
+                        SkipPageException.throwSkip(e);
+                        throw new Fit2cloudException(10002, "获取阿里云云主机列表失败" + e.getMessage());
+                    }
+                }
+                , res -> res.getBody().getImages().image
+                , (req, res) -> res.getBody().getPageSize() <= res.getBody().getImages().image.size()
+                , req -> req.setPageNumber(req.getPageNumber() + 1), ProviderConstants.retryNum);
+
     }
 
     /**

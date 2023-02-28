@@ -653,7 +653,7 @@ const getRuleOptions = (groupDatas: Array<ComplianceViewGroupResponse>) => {
       },
     ],
     grid: {
-      left: "-10%",
+      left: "-5%",
       right: "0%",
       width: "100%",
       bottom: "10%",

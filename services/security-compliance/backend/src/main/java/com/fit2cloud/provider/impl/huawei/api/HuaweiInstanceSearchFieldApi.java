@@ -573,7 +573,7 @@ public class HuaweiInstanceSearchFieldApi {
                         new DefaultKeyValue<>("拒绝", "deny")))
                 .resetFilterArrayField(PlatformConstants.fit2cloud_huawei_platform, ResourceTypeConstants.SECURITY_GROUP, "group_rule");
 
-        InstanceSearchField remote_ip_prefix = new InstanceSearchField("远端IP地址", "remoteIpPrefix", InstanceFieldType.String)
+        InstanceSearchField remote_ip_prefix = new InstanceSearchField("远端IP地址", "remote_ip_prefix", InstanceFieldType.String)
                 .resetFilterArrayField(PlatformConstants.fit2cloud_huawei_platform, ResourceTypeConstants.SECURITY_GROUP, "group_rule");
 
         return List.of(direction, protocol, ethertype, multiport, action, remote_ip_prefix);
