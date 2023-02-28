@@ -478,6 +478,29 @@ public class MenuConstants {
                     )
 
             )
+            .menu(new Menu.Builder()
+                    .name("module_manage")
+                    .title("模块管理")
+                    .path("/module_manage")
+                    .componentPath("/src/views/ModuleManage/index.vue")
+                    .icon("mokuai")
+                    .order(5)
+                    .redirect("/module_manage/manage")
+                    .requiredPermission(new MenuPermission.Builder()
+                            .role(RoleConstants.ROLE.ADMIN)
+                            .permission(GROUP.MODULE_MANAGE, OPERATE.READ))
+                    .childOperationRoute(new Menu.Builder()
+                            .name("module_manage_page")
+                            .path("/manage")
+                            .title("模块管理")
+                            .componentPath("/src/views/ModuleManage/ModuleManagePage.vue")
+                            .requiredPermission(new MenuPermission.Builder()
+                                    .role(RoleConstants.ROLE.ADMIN)
+                                    .permission(GROUP.MODULE_MANAGE, OPERATE.READ)
+                            )
+                    )
+
+            )
             //...
             ;
 
