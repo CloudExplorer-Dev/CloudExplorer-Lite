@@ -38,6 +38,8 @@ public class PermissionConstants {
 
         public static final String OPERATED_LOG = "OPERATED_LOG";
 
+        public static final String MODULE_MANAGE = "MODULE_MANAGE";
+
         //...
     }
 
@@ -337,6 +339,21 @@ public class PermissionConstants {
                                     .require(OPERATE.READ)
                                     .operate(OPERATE.EDIT)
                                     .name("permission.manage.params_setting.edit")
+                                    .role(RoleConstants.ROLE.ADMIN))
+            )
+            // 模块
+            .group(
+                    new PermissionGroup.Builder()
+                            .id(GROUP.MODULE_MANAGE)
+                            .name("permission.manage.module.base")
+                            .permission(new Permission.Builder()
+                                    .operate(OPERATE.READ)
+                                    .name("permission.manage.module.read")
+                                    .role(RoleConstants.ROLE.ADMIN))
+                            .permission(new Permission.Builder()
+                                    .require(OPERATE.READ)
+                                    .operate(OPERATE.EDIT)
+                                    .name("permission.manage.module.edit")
                                     .role(RoleConstants.ROLE.ADMIN))
             )
             //...

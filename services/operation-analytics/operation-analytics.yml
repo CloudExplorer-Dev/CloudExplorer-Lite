@@ -1,0 +1,5 @@
+name: operation-analytics
+version: APP_VERSION
+port: APP_PORT
+display_name: 运营分析
+icon: fenxi3

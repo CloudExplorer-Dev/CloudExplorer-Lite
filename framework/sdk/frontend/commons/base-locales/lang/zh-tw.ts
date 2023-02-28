@@ -205,6 +205,11 @@ const permissions = {
         read: "查看",
         edit: "编辑",
       },
+      module: {
+        base: "模塊管理",
+        read: "查看",
+        edit: "編輯",
+      },
     },
     vm: {
       cloud_server: {
