@@ -44,7 +44,9 @@ import com.fit2cloud.provider.constants.CreateServerRequestConstants;
 import com.fit2cloud.provider.constants.F2CDiskStatus;
 import com.fit2cloud.provider.constants.F2CInstanceStatus;
 import com.fit2cloud.provider.constants.ProviderConstants;
+import com.fit2cloud.provider.entity.F2CDisk;
 import com.fit2cloud.provider.entity.F2CVirtualMachine;
+import com.fit2cloud.provider.entity.request.BaseDiskRequest;
 import com.fit2cloud.provider.entity.result.CheckCreateServerResult;
 import com.fit2cloud.provider.impl.vsphere.util.ResourceConstants;
 import com.fit2cloud.response.JobRecordResourceResponse;
@@ -103,7 +105,7 @@ public class VmCloudServerServiceImpl extends ServiceImpl<BaseVmCloudServerMappe
     private Map<OperatedTypeEnum, Consumer<String>> batchOperationMap;
 
     @Resource
-    private IPermissionService permissionService;
+    private VmCloudDiskServiceImpl vmCloudDiskServiceImpl;
 
     @PostConstruct
     private void init() {
@@ -526,10 +528,8 @@ public class VmCloudServerServiceImpl extends ServiceImpl<BaseVmCloudServerMappe
                 params.put("id", vmCloudServer.getId());
                 try {
                     F2CVirtualMachine result = CommonUtil.exec(cloudProvider, createRequest, ICloudProvider::createVirtualMachine);
-
                     vmCloudServer = SyncProviderServiceImpl.toVmCloudServer(result, vmCloudServer.getAccountId(), DateUtil.getSyncTime());
                     jobRecord.setStatus(JobStatusConstants.SUCCESS);
-
 
                 } catch (Exception e) {
                     vmCloudServer.setInstanceStatus(F2CInstanceStatus.Failed.name());
@@ -538,6 +538,10 @@ public class VmCloudServerServiceImpl extends ServiceImpl<BaseVmCloudServerMappe
                     LogUtil.error("Create Cloud server fail - {}", e.getMessage());
                     e.printStackTrace();
                 }
+
+                // 保存云主机上的磁盘信息
+                saveCloudServerDisk(vmCloudServer);
+
                 modifyResource.accept(vmCloudServer);
                 jobRecord.setFinishTime(DateUtil.getSyncTime());
                 modifyJobRecord.accept(jobRecord);
@@ -547,6 +551,41 @@ public class VmCloudServerServiceImpl extends ServiceImpl<BaseVmCloudServerMappe
                 throw new RuntimeException(e);
             }
         });
+    }
+
+    /**
+     * 保存云主机关联的磁盘信息
+     * @param cloudServer
+     */
+    private void saveCloudServerDisk(VmCloudServer cloudServer) {
+        try {
+            List<F2CDisk> f2CDisks = getVmDisks(cloudServer);
+            vmCloudDiskServiceImpl.saveCloudDisks(f2CDisks, cloudServer.getAccountId(),cloudServer.getSourceId());
+        } catch (Exception ignore) {
+            LogUtil.error(ignore.getMessage(), ignore);
+        }
+    }
+
+    /**
+     * 获取云主机关联的磁盘信息
+     * @param vmCloudServer
+     * @return
+     */
+    public List<F2CDisk> getVmDisks(VmCloudServer vmCloudServer) {
+        Optional.ofNullable(vmCloudServer).orElseThrow(() -> new RuntimeException("Cloud server can not be null"));
+
+        BaseDiskRequest vmDisksRequest = new BaseDiskRequest();
+        vmDisksRequest.setInstanceUuid(vmCloudServer.getInstanceUuid());
+        vmDisksRequest.setRegionId(vmCloudServer.getRegion());
+        CloudAccount cloudAccount = cloudAccountService.getById(vmCloudServer.getAccountId());
+        vmDisksRequest.setCredential(cloudAccount.getCredential());
+
+        HashMap<String, Object> params = CommonUtil.getParams(cloudAccount.getCredential(), vmCloudServer.getRegion());
+        params.put("instanceUuid", vmCloudServer.getInstanceUuid());
+
+        Class<? extends ICloudProvider> cloudProvider = ProviderConstants.valueOf(cloudAccount.getPlatform()).getCloudProvider();
+        List<F2CDisk> f2CDisks = CommonUtil.exec(cloudProvider, JsonUtil.toJSONString(params), ICloudProvider::getVmF2CDisks);
+        return f2CDisks;
     }
 
     public boolean changeConfig(ChangeServerConfigRequest request) {
