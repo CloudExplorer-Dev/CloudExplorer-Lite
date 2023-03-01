@@ -11,6 +11,7 @@ import com.fit2cloud.common.form.vo.FormObject;
 import com.fit2cloud.controller.handler.ResultHolder;
 import com.fit2cloud.dto.Good;
 import com.fit2cloud.provider.ICloudProvider;
+import com.fit2cloud.provider.constants.F2CInstanceStatus;
 import com.fit2cloud.provider.constants.ProviderConstants;
 import io.swagger.annotations.Api;
 import org.springframework.beans.BeanUtils;
@@ -22,10 +23,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.annotation.Resource;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -70,7 +68,13 @@ public class VmCloudServerCatalogController {
                                     Good good = new Good();
                                     good.setId(cloudAccount.getId());
                                     try {
-                                        good.setServerCount(cloudServerMapper.selectCount(new LambdaQueryWrapper<VmCloudServer>().eq(VmCloudServer::getAccountId, cloudAccount.getId())));
+                                        LambdaQueryWrapper queryWrapper = new LambdaQueryWrapper<VmCloudServer>()
+                                                .eq(VmCloudServer::getAccountId, cloudAccount.getId())
+                                                .notIn(VmCloudServer::getInstanceStatus, Arrays.asList(
+                                                        F2CInstanceStatus.Deleted.name(),
+                                                        F2CInstanceStatus.Failed.name(),
+                                                        F2CInstanceStatus.Creating.name()));
+                                        good.setServerCount(cloudServerMapper.selectCount(queryWrapper));
                                     } catch (Exception e) {
                                         e.printStackTrace();
                                     }

@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.core.metadata.OrderItem;
+import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.fit2cloud.autoconfigure.ThreadPoolConfig;
@@ -562,7 +563,29 @@ public class VmCloudServerServiceImpl extends ServiceImpl<BaseVmCloudServerMappe
     }
 
     /**
-     * 保存云主机关联的磁盘信息
+     * 保存云主机（创建云主机成功后进行的操作）
+     *
+     * @param vmCloudServer
+     */
+    private void saveVmCloudServer(VmCloudServer vmCloudServer) {
+        // 先删除预处理插入的数据
+        baseMapper.deleteById(vmCloudServer.getId());
+
+        // 删除同步到的数据
+        QueryWrapper<VmCloudServer> qw = Wrappers.query();
+        qw.lambda()
+                .eq(VmCloudServer::getInstanceUuid, vmCloudServer.getInstanceUuid())
+                .eq(VmCloudServer::getRegion, vmCloudServer.getRegion())
+                .eq(VmCloudServer::getAccountId, vmCloudServer.getAccountId());
+        if (baseMapper.exists(qw)) {
+            baseMapper.delete(qw);
+        }
+
+        baseMapper.insert(vmCloudServer);
+    }
+
+    /**
+     * 保存云主机关联的磁盘信息 (云主机创建成功后的操作)
      *
      * @param vmCloudServer
      */
