@@ -228,7 +228,7 @@ public class ModuleManageServiceImpl implements IModuleManageService {
         Runtime runtime = Runtime.getRuntime();  //获取Runtime实例
         //执行命令
         try {
-            List<String> command = new ArrayList<>(List.of("run-core"));
+            List<String> command = new ArrayList<>(List.of("/opt/cloudexplorer/apps/core/run-core.sh"));
             List<String> propList = new ArrayList<>(Arrays.asList(props));
             command.addAll(propList);
 
@@ -239,9 +239,9 @@ public class ModuleManageServiceImpl implements IModuleManageService {
             String errStr = consumeInputStream(process.getErrorStream()); //若有错误信息则输出
 
             int proc = process.waitFor();
-            System.out.println(inStr);
+            //System.out.println(inStr);
             if (proc == 0) {
-                System.out.println("执行成功");
+                //System.out.println("执行成功");
                 return inStr;
             } else {
                 throw new Exception("执行失败: " + errStr);

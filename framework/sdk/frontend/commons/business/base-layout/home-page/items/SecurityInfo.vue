@@ -85,7 +85,7 @@ onMounted(() => {
         <span class="total">/{{ ruleCount.total }}</span>
       </el-col>
       <el-col :span="12" v-loading="resourceCountLoading">
-        <div class="subtitle">不合规规则数</div>
+        <div class="subtitle">不合规资源数</div>
         <span class="number">
           {{ resourceCount.notComplianceCount }}
         </span>
