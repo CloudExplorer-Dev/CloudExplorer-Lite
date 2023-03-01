@@ -16,7 +16,9 @@ public enum ResourceTypeEnum {
     CLOUD_ACCOUNT("CLOUD_ACCOUNT","云账号"),
     CLOUD_SERVER("CLOUD_SERVER","云主机"),
     CLOUD_DISK("CLOUD_DISK","云磁盘"),
-    DISK("DISK","磁盘");
+    DISK("DISK","磁盘"),
+    RECYCLE("RECYCLE","回收站"),
+    ;
 
     private String code;
     private String name;
@@ -49,5 +51,15 @@ public enum ResourceTypeEnum {
 
     public void setName(String name) {
         this.name = name;
+    }
+
+
+    public static ResourceTypeEnum codeOf(String code){
+        for (ResourceTypeEnum typeEnum : values()) {
+            if(typeEnum.getCode().equals(code)){
+                return typeEnum;
+            }
+        }
+        return null;
     }
 }

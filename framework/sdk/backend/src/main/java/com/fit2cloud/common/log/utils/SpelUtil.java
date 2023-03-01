@@ -62,7 +62,11 @@ public class SpelUtil {
             return standardEvaluationContext;
         }
         for (int i = 0; i < args.length; i++) {
-            standardEvaluationContext.setVariable(parametersName[i], args[i]);
+            try{
+                standardEvaluationContext.setVariable(parametersName[i], args[i]);
+            }catch (Exception e){
+                e.printStackTrace();
+            }
         }
         return standardEvaluationContext;
     }

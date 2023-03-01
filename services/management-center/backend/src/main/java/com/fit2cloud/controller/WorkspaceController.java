@@ -68,7 +68,7 @@ public class WorkspaceController {
     @PreAuthorize("hasAnyCePermission('WORKSPACE:EDIT')")
     @OperatedLog(resourceType = ResourceTypeEnum.WORKSPACE, operated = OperatedTypeEnum.MODIFY,
             resourceId = "#workspaceRequest.id",
-            content = "'更新了ID为'+#workspaceRequest.id+'的工作空间'",
+            content = "'更新了['+#workspaceRequest.name+']'",
             param = "#workspaceRequest")
     public ResultHolder<Boolean> update(
             @RequestBody
@@ -90,6 +90,7 @@ public class WorkspaceController {
     @DeleteMapping("/{workspaceId}")
     @OperatedLog(resourceType = ResourceTypeEnum.WORKSPACE, operated = OperatedTypeEnum.DELETE,
             resourceId = "#workspaceId",
+            content = "'删除工作空间'",
             param = "#workspaceId")
     @PreAuthorize("hasAnyCePermission('WORKSPACE:DELETE')")
     public ResultHolder<Boolean> delete(
@@ -103,6 +104,7 @@ public class WorkspaceController {
     @DeleteMapping
     @PreAuthorize("hasAnyCePermission('WORKSPACE:DELETE')")
     @OperatedLog(resourceType = ResourceTypeEnum.WORKSPACE, operated = OperatedTypeEnum.BATCH_DELETE,
+            resourceId = "#workspaces.![id]",
             content = "'批量删除了'+#workspaces.size+'个工作空间'",
             param = "#workspaces")
     public ResultHolder<Boolean> batchDelete(
@@ -115,7 +117,7 @@ public class WorkspaceController {
     @ApiOperation(value = "批量添加工作空间", notes = "批量添加工作空间")
     @PostMapping("/batch")
     @OperatedLog(resourceType = ResourceTypeEnum.WORKSPACE, operated = OperatedTypeEnum.BATCH_ADD,
-            content = "'批量创建了'+#request.workspaceDetails.size+'个工作空间'",
+            content = "'批量创建了'+#request.workspaceDetails.size+'个工作空间['+#request.workspaceDetails.![name]+']'",
             param = "#request")
     @PreAuthorize("hasAnyCePermission('WORKSPACE:CREATE')")
     public ResultHolder<Boolean> batch(@RequestBody @Validated(ValidationGroup.SAVE.class) WorkspaceBatchCreateRequest request) {

@@ -1,6 +1,9 @@
 package com.fit2cloud.controller;
 
 import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.fit2cloud.common.log.annotation.OperatedLog;
+import com.fit2cloud.common.log.constants.OperatedTypeEnum;
+import com.fit2cloud.common.log.constants.ResourceTypeEnum;
 import com.fit2cloud.common.platform.credential.Credential;
 import com.fit2cloud.common.validator.annnotaion.CustomValidated;
 import com.fit2cloud.common.validator.handler.ExistHandler;
@@ -81,6 +84,9 @@ public class CloudAccountController {
     @PostMapping
     @ApiOperation(value = "插入云账号", notes = "插入云账号")
     @PreAuthorize("hasAnyCePermission('CLOUD_ACCOUNT:CREATE')")
+    @OperatedLog(resourceType = ResourceTypeEnum.CLOUD_ACCOUNT, operated = OperatedTypeEnum.ADD,
+            content = "'添加云账号['+#addCloudAccountRequest.name+']'",
+            param = "#addCloudAccountRequest")
     public ResultHolder<CloudAccount> save(@Validated @RequestBody AddCloudAccountRequest addCloudAccountRequest) {
         CloudAccount cloudAccount = cloudAccountService.save(addCloudAccountRequest);
         return ResultHolder.success(cloudAccount);
@@ -90,6 +96,10 @@ public class CloudAccountController {
     @PutMapping
     @ApiOperation(value = "更新云账号", notes = "更新云账号")
     @PreAuthorize("hasAnyCePermission('CLOUD_ACCOUNT:EDIT')")
+    @OperatedLog(resourceType = ResourceTypeEnum.CLOUD_ACCOUNT, operated = OperatedTypeEnum.MODIFY,
+            resourceId = "#updateCloudAccountRequest.id",
+            content = "'更新云账号['+#updateCloudAccountRequest.name+']'",
+            param = "#updateCloudAccountRequest")
     public ResultHolder<CloudAccount> update(@Validated @RequestBody UpdateCloudAccountRequest updateCloudAccountRequest) {
         CloudAccount cloudAccount = cloudAccountService.update(updateCloudAccountRequest);
         return ResultHolder.success(cloudAccount);
@@ -98,6 +108,10 @@ public class CloudAccountController {
     @DeleteMapping("/{cloud_account_id}")
     @ApiOperation(value = "删除云账号", notes = "删除云账号")
     @PreAuthorize("hasAnyCePermission('CLOUD_ACCOUNT:DELETE')")
+    @OperatedLog(resourceType = ResourceTypeEnum.CLOUD_ACCOUNT, operated = OperatedTypeEnum.DELETE,
+            resourceId = "#accountId",
+            content = "'删除云账号'",
+            param = "#accountId")
     public ResultHolder<Boolean> delete(@ApiParam("云账号id")
                                         @PathVariable("cloud_account_id")
                                         @CustomValidated(mapper = CloudAccountMapper.class, field = "id", handler = ExistHandler.class, message = "{i18n.cloud_account.id.is.not.existent}", exist = false)
@@ -108,6 +122,10 @@ public class CloudAccountController {
     @DeleteMapping
     @ApiOperation(value = "批量删除云账号", notes = "批量删除云账号")
     @PreAuthorize("hasAnyCePermission('CLOUD_ACCOUNT:DELETE')")
+    @OperatedLog(resourceType = ResourceTypeEnum.CLOUD_ACCOUNT, operated = OperatedTypeEnum.BATCH_DELETE,
+            resourceId = "#cloudAccountIds",
+            content = "'批量删除云账号'",
+            param = "#cloudAccountIds")
     public ResultHolder<Boolean> deleteBatch(@ApiParam("云账号id")
                                              @Size(min = 1, message = "{i18n.i18n.cloud_account.id.is.not.empty}")
                                              @RequestBody ArrayList<String> cloudAccountIds) {
@@ -118,6 +136,10 @@ public class CloudAccountController {
     @PutMapping("/sync")
     @PreAuthorize("hasAnyCePermission('CLOUD_ACCOUNT:SYNC_RESOURCE')")
     @ApiOperation(value = "根据云账号全量同步", notes = "根据云账号全量同步")
+    @OperatedLog(resourceType = ResourceTypeEnum.CLOUD_ACCOUNT, operated = OperatedTypeEnum.SYNC,
+            resourceId = "#cloudAccountIds",
+            content = "'全量同步云账号'",
+            param = "#cloudAccountIds")
     public ResultHolder<Boolean> sync(@ApiParam("云账号id") @Size(min = 1, message = "{i18n.i18n.cloud_account.id.is.not.empty}") @RequestBody ArrayList<String> cloudAccountIds) {
         cloudAccountService.sync(cloudAccountIds);
         return ResultHolder.success(true);
@@ -144,6 +166,10 @@ public class CloudAccountController {
     @GetMapping("/verification/{cloud_account_id}")
     @ApiOperation(value = "校验云账号信息", notes = "校验云账号信息")
     @PreAuthorize("hasAnyCePermission('CLOUD_ACCOUNT:READ')")
+    @OperatedLog(resourceType = ResourceTypeEnum.CLOUD_ACCOUNT, operated = OperatedTypeEnum.CHECK,
+            resourceId = "#accountId",
+            content = "'验证账号信息'",
+            param = "#accountId")
     public ResultHolder<CloudAccount> verification(@ApiParam("云账号id")
                                                    @NotNull(message = "{i18n.cloud_account.id.is.not.empty}")
                                                    @CustomValidated(mapper = CloudAccountMapper.class, field = "id", handler = ExistHandler.class, message = "{i18n.cloud_account.id.is.not.existent}", exist = false)
@@ -165,6 +191,10 @@ public class CloudAccountController {
     @PutMapping("/jobs")
     @ApiOperation(value = "修改云账号定时任务", notes = "修改云账号定时任务")
     @PreAuthorize("hasAnyCePermission('CLOUD_ACCOUNT:SYNC_SETTING')")
+    @OperatedLog(resourceType = ResourceTypeEnum.CLOUD_ACCOUNT, operated = OperatedTypeEnum.MODIFY,
+            resourceId = "#updateJobsRequest.cloudAccountId",
+            content = "'修改云账号定时任务'",
+            param = "#updateJobsRequest")
     public ResultHolder<CloudAccountJobDetailsResponse> updateJobs(@RequestBody UpdateJobsRequest updateJobsRequest) {
         return ResultHolder.success(cloudAccountService.updateJob(updateJobsRequest));
     }
@@ -179,6 +209,10 @@ public class CloudAccountController {
     @PostMapping("/sync")
     @ApiOperation(value = "同步", notes = "同步")
     @PreAuthorize("hasAnyCePermission('CLOUD_ACCOUNT:SYNC_RESOURCE', 'CLOUD_ACCOUNT:SYNC_BILL')")
+    @OperatedLog(resourceType = ResourceTypeEnum.CLOUD_ACCOUNT, operated = OperatedTypeEnum.SYNC,
+            resourceId = "#request.cloudAccountId",
+            content = "'执行同步'",
+            param = "#request")
     public ResultHolder<Boolean> sync(@RequestBody SyncRequest request) {
         cloudAccountService.sync(request);
         return ResultHolder.success(true);
@@ -188,6 +222,10 @@ public class CloudAccountController {
     @PutMapping("/updateName")
     @ApiOperation(value = "修改云账号名称")
     @PreAuthorize("hasAnyCePermission('CLOUD_ACCOUNT:EDIT')")
+    @OperatedLog(resourceType = ResourceTypeEnum.CLOUD_ACCOUNT, operated = OperatedTypeEnum.MODIFY,
+            resourceId = "#updateAccountNameRequest.id",
+            content = "'修改云账号名称为['+#updateAccountNameRequest.name+']'",
+            param = "#updateAccountNameRequest")
     public ResultHolder<Boolean> updateAccountName(@RequestBody UpdateAccountNameRequest updateAccountNameRequest) {
         return ResultHolder.success(cloudAccountService.updateAccountName(updateAccountNameRequest));
     }
