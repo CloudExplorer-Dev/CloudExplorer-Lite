@@ -1,10 +1,12 @@
 package com.fit2cloud.service.impl;
 
+import co.elastic.clients.elasticsearch.ElasticsearchClient;
 import co.elastic.clients.elasticsearch._types.FieldValue;
-import co.elastic.clients.elasticsearch._types.query_dsl.Query;
-import co.elastic.clients.elasticsearch._types.query_dsl.ScriptQuery;
-import co.elastic.clients.elasticsearch._types.query_dsl.TermQuery;
+import co.elastic.clients.elasticsearch._types.query_dsl.*;
+import co.elastic.clients.elasticsearch.core.DeleteByQueryRequest;
+import co.elastic.clients.elasticsearch.core.DeleteByQueryResponse;
 import co.elastic.clients.json.JsonData;
+import co.elastic.clients.util.ObjectBuilder;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.fit2cloud.base.entity.CloudAccount;
 import com.fit2cloud.base.entity.JobRecord;
@@ -28,8 +30,10 @@ import com.fit2cloud.service.IBillDimensionSettingService;
 import com.fit2cloud.service.SyncService;
 import io.reactivex.rxjava3.functions.BiFunction;
 import io.reactivex.rxjava3.functions.Consumer;
+import lombok.SneakyThrows;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.elasticsearch.index.reindex.DeleteByQueryRequestBuilder;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Caching;
 import org.springframework.data.elasticsearch.annotations.Document;
@@ -57,6 +61,8 @@ public class SyncServiceImpl extends BaseSyncService implements SyncService {
     private CloudBillRepository cloudBillRepository;
     @Resource
     private ElasticsearchTemplate elasticsearchTemplate;
+    @Resource
+    private ElasticsearchClient elasticsearchClient;
     @Resource
     private IBillDimensionSettingService billDimensionSettingService;
     /**
@@ -128,6 +134,8 @@ public class SyncServiceImpl extends BaseSyncService implements SyncService {
         if (count == 0) {
             months = MonthUtil.getHistoryMonth(12);
         }
+        // 删除不属于当前已有云账号的数据
+        deleteNotFountCloudAccountData();
         syncBill(cloudAccountId, months, billSetting);
     }
 
@@ -150,7 +158,31 @@ public class SyncServiceImpl extends BaseSyncService implements SyncService {
     private void deleteDataSource(String cloudAccountId) {
         synchronized (EsWriteLockConstants.WRITE_LOCK) {
             // 如果云账号不存在,删除es对应数据
-            elasticsearchTemplate.delete(new NativeQueryBuilder().withQuery(new Query.Builder().term(new TermQuery.Builder().field("cloudAccountId").value(FieldValue.of(cloudAccountId)).build()).build()).build(), CloudBill.class, IndexCoordinates.of(CloudBill.class.getAnnotation(Document.class).indexName()));
+            elasticsearchTemplate.delete(new NativeQueryBuilder()
+                    .withQuery(new Query.Builder()
+                            .term(new TermQuery.Builder().field("cloudAccountId")
+                                    .value(FieldValue.of(cloudAccountId)).build()).build()).build(), CloudBill.class, IndexCoordinates.of(CloudBill.class.getAnnotation(Document.class).indexName()));
+        }
+    }
+
+    /**
+     * 清理不存在的云账号数据
+     */
+
+    private void deleteNotFountCloudAccountData() {
+        // 所有的云账号
+        List<CloudAccount> cloudAccounts = cloudAccountService.list();
+        synchronized (EsWriteLockConstants.WRITE_LOCK) {
+            Query query = new BoolQuery.Builder().mustNot(new Query.Builder().terms(new TermsQuery.Builder()
+                    .terms(new TermsQueryField.Builder().value(cloudAccounts.stream().map(CloudAccount::getId)
+                            .map(FieldValue::of).toList()).build()).field("cloudAccountId").build()).build()).build()._toQuery();
+            DeleteByQueryRequest deleteByQueryRequest = new DeleteByQueryRequest.Builder().query(query).refresh(Boolean.TRUE)
+                    .index(CloudBill.class.getAnnotation(Document.class).indexName()).build();
+            try {
+                elasticsearchClient.deleteByQuery(deleteByQueryRequest);
+            } catch (Exception ignored) {
+            }
+
         }
     }
 
