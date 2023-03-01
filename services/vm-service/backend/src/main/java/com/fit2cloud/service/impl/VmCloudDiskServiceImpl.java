@@ -47,6 +47,7 @@ import com.fit2cloud.service.IPermissionService;
 import com.fit2cloud.service.IResourceOperateService;
 import com.fit2cloud.service.IVmCloudDiskService;
 import com.fit2cloud.service.WorkspaceCommonService;
+import com.fit2cloud.utils.ConvertUtils;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
@@ -534,6 +535,42 @@ public class VmCloudDiskServiceImpl extends ServiceImpl<BaseVmCloudDiskMapper, V
             vmCloudDisk.setDeleteWithInstance(result.getDeleteWithInstance());
         }
         baseMapper.insert(vmCloudDisk);
+    }
+
+    /**
+     * 保存磁盘（创建云主机成功后进行的操作）
+     *
+     * @param f2cDisks
+     * @param accountId
+     * @param sourceId
+     */
+    public void saveCloudDisks(List<F2CDisk> f2cDisks, String accountId, String sourceId) {
+        for (F2CDisk f2cDisk : f2cDisks) {
+            VmCloudDisk vmCloudDisk = ConvertUtils.disk(f2cDisk);
+            if (f2cDisk.getCreateTime() == 0) {
+                vmCloudDisk.setCreateTime(LocalDateTime.now());
+            }
+            String diskId = UUID.randomUUID().toString().replace("-", "");
+            QueryWrapper<VmCloudDisk> queryWrapper = new QueryWrapper();
+            queryWrapper.lambda()
+                    .eq(VmCloudDisk::getAccountId, accountId)
+                    .eq(VmCloudDisk::getRegion, f2cDisk.getRegion())
+                    .eq(VmCloudDisk::getDiskId, f2cDisk.getDiskId());
+
+            boolean exist = baseMapper.exists(queryWrapper);
+            if (exist) {
+                diskId = baseMapper.selectOne(queryWrapper).getId();
+            }
+            vmCloudDisk.setUpdateTime(LocalDateTime.now());
+            vmCloudDisk.setId(diskId);
+            vmCloudDisk.setAccountId(accountId);
+            vmCloudDisk.setSourceId(sourceId);
+            if (exist) {
+                baseMapper.updateById(vmCloudDisk);
+            } else {
+                baseMapper.insert(vmCloudDisk);
+            }
+        }
     }
 
     /**

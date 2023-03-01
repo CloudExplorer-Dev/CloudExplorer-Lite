@@ -259,4 +259,10 @@ public interface ICloudProvider {
      */
     String calculateConfigUpdatePrice(String req);
 
+    /**
+     * 获取云主机关联的云磁盘
+     * @param req
+     * @return
+     */
+    List<F2CDisk> getVmF2CDisks(String req) ;
 }

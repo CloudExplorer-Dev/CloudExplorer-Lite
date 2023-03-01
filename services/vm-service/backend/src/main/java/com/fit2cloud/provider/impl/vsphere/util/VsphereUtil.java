@@ -565,12 +565,12 @@ public class VsphereUtil {
             return null;
         }
         List<VirtualDisk> diskList = client.getVirtualDisks(vm);
-        List<F2CDisk> disks = new ArrayList<F2CDisk>();
+        List<F2CDisk> disks = new ArrayList();
         ServerConnection serverConnection = client.getSi().getServerConnection();
         if (diskList != null && diskList.size() > 0) {
             for (VirtualDisk disk : diskList) {
                 F2CDisk d = new F2CDisk();
-                String tmpDiskId = vm.getMOR().getVal() + "-" + Integer.toString(disk.getKey());
+                String tmpDiskId = vm.getMOR().getVal() + "-" + disk.getKey();
                 d.setDiskId(tmpDiskId);
                 Description info = disk.getDeviceInfo();
                 if (info != null) {

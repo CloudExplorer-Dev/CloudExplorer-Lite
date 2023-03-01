@@ -12,8 +12,9 @@ import com.fit2cloud.provider.entity.F2CDisk;
 import com.fit2cloud.provider.entity.F2CImage;
 import com.fit2cloud.provider.entity.F2CNetwork;
 import com.fit2cloud.provider.entity.F2CVirtualMachine;
+import com.fit2cloud.provider.entity.request.BaseDiskRequest;
 import com.fit2cloud.provider.entity.request.GetMetricsRequest;
-import com.fit2cloud.provider.impl.tencent.api.TencetSyncCloudApi;
+import com.fit2cloud.provider.impl.tencent.api.TencentSyncCloudApi;
 import com.fit2cloud.provider.impl.tencent.constants.TencentChargeType;
 import com.fit2cloud.provider.impl.tencent.constants.TencentLoginType;
 import com.fit2cloud.provider.impl.tencent.constants.TencentOSType;
@@ -41,20 +42,20 @@ public class TencentCloudProvider extends AbstractCloudProvider<TencentCredentia
     }
 
     public F2CVirtualMachine createVirtualMachine(String req) {
-        return TencetSyncCloudApi.createVirtualMachine(JsonUtil.parseObject(req, TencentVmCreateRequest.class));
+        return TencentSyncCloudApi.createVirtualMachine(JsonUtil.parseObject(req, TencentVmCreateRequest.class));
     }
 
     @Override
     public F2CVirtualMachine getSimpleServerByCreateRequest(String req) {
-        return TencetSyncCloudApi.getSimpleServerByCreateRequest(JsonUtil.parseObject(req, TencentVmCreateRequest.class));
+        return TencentSyncCloudApi.getSimpleServerByCreateRequest(JsonUtil.parseObject(req, TencentVmCreateRequest.class));
     }
 
     public List<Map<String, String>> getRegions(String req) {
-        return TencetSyncCloudApi.getRegions(JsonUtil.parseObject(req, TencentBaseRequest.class));
+        return TencentSyncCloudApi.getRegions(JsonUtil.parseObject(req, TencentBaseRequest.class));
     }
 
     public List<Map<String, String>> getZones(String req) {
-        return TencetSyncCloudApi.getZones(JsonUtil.parseObject(req, TencentBaseRequest.class));
+        return TencentSyncCloudApi.getZones(JsonUtil.parseObject(req, TencentBaseRequest.class));
     }
 
     /**
@@ -101,8 +102,7 @@ public class TencentCloudProvider extends AbstractCloudProvider<TencentCredentia
         List<Map<String, String>> result = new ArrayList<>();
         for (TencentOSType type : TencentOSType.values()) {
             Map<String, String> map = new HashMap<>();
-            // 如果写成 windows，本地环境没问题，打包后的环境前端切换到 windows 选项会卡死
-            map.put("id", type.name().equalsIgnoreCase("Windows") ? "Window" : type.name());
+            map.put("id", type.name());
             map.put("name", type.name());
             result.add(map);
         }
@@ -116,7 +116,7 @@ public class TencentCloudProvider extends AbstractCloudProvider<TencentCredentia
      * @return
      */
     public List<F2CImage> getImages(String req) {
-        return TencetSyncCloudApi.getImages(JsonUtil.parseObject(req, TencentGetImageRequest.class));
+        return TencentSyncCloudApi.getImages(JsonUtil.parseObject(req, TencentGetImageRequest.class));
     }
 
     /**
@@ -126,7 +126,7 @@ public class TencentCloudProvider extends AbstractCloudProvider<TencentCredentia
      * @return
      */
     public List<TencentInstanceType> getInstanceTypes(String req) {
-        return TencetSyncCloudApi.getInstanceTypes(JsonUtil.parseObject(req, TencentGetInstanceTypeRequest.class));
+        return TencentSyncCloudApi.getInstanceTypes(JsonUtil.parseObject(req, TencentGetInstanceTypeRequest.class));
     }
 
     /**
@@ -136,7 +136,7 @@ public class TencentCloudProvider extends AbstractCloudProvider<TencentCredentia
      * @return
      */
     public TencentDiskTypeDTO getDiskTypesForCreateVm(String req) {
-        return TencetSyncCloudApi.getDiskTypes(JsonUtil.parseObject(req, TencentGetDiskTypeRequest.class));
+        return TencentSyncCloudApi.getDiskTypes(JsonUtil.parseObject(req, TencentGetDiskTypeRequest.class));
     }
 
     /**
@@ -146,7 +146,7 @@ public class TencentCloudProvider extends AbstractCloudProvider<TencentCredentia
      * @return
      */
     public List<F2CNetwork> getNetworks(String req) {
-        return TencetSyncCloudApi.getNetworks(JsonUtil.parseObject(req, TencentGetSubnetRequest.class));
+        return TencentSyncCloudApi.getNetworks(JsonUtil.parseObject(req, TencentGetSubnetRequest.class));
     }
 
     /**
@@ -156,7 +156,7 @@ public class TencentCloudProvider extends AbstractCloudProvider<TencentCredentia
      * @return
      */
     public List<Map<String, String>> getSecurityGroups(String req) {
-        return TencetSyncCloudApi.getSecurityGroups(JsonUtil.parseObject(req, TencentBaseRequest.class));
+        return TencentSyncCloudApi.getSecurityGroups(JsonUtil.parseObject(req, TencentBaseRequest.class));
     }
 
     /**
@@ -218,7 +218,7 @@ public class TencentCloudProvider extends AbstractCloudProvider<TencentCredentia
      */
     @Override
     public String calculateConfigPrice(String req) {
-        return TencetSyncCloudApi.calculateConfigPrice(JsonUtil.parseObject(req, TencentVmCreateRequest.class));
+        return TencentSyncCloudApi.calculateConfigPrice(JsonUtil.parseObject(req, TencentVmCreateRequest.class));
     }
 
     /**
@@ -228,64 +228,64 @@ public class TencentCloudProvider extends AbstractCloudProvider<TencentCredentia
      * @return
      */
     public String calculateTrafficPrice(String req) {
-        return TencetSyncCloudApi.calculateTrafficPrice(JsonUtil.parseObject(req, TencentVmCreateRequest.class));
+        return TencentSyncCloudApi.calculateTrafficPrice(JsonUtil.parseObject(req, TencentVmCreateRequest.class));
     }
     // For Create VM [END]
 
     @Override
     public List<F2CVirtualMachine> listVirtualMachine(String req) {
-        return TencetSyncCloudApi.listVirtualMachine(JsonUtil.parseObject(req, ListVirtualMachineRequest.class));
+        return TencentSyncCloudApi.listVirtualMachine(JsonUtil.parseObject(req, ListVirtualMachineRequest.class));
     }
 
     @Override
     public List<F2CImage> listImage(String req) {
-        return TencetSyncCloudApi.listImage(JsonUtil.parseObject(req, ListImageRequest.class));
+        return TencentSyncCloudApi.listImage(JsonUtil.parseObject(req, ListImageRequest.class));
     }
 
     @Override
     public List<F2CDisk> listDisk(String req) {
-        return TencetSyncCloudApi.listDisk(JsonUtil.parseObject(req, ListDiskRequest.class));
+        return TencentSyncCloudApi.listDisk(JsonUtil.parseObject(req, ListDiskRequest.class));
     }
 
     @Override
     public boolean powerOff(String req) {
         TencentInstanceRequest request = JsonUtil.parseObject(req, TencentInstanceRequest.class);
         request.setForce(true);
-        return TencetSyncCloudApi.powerOff(request);
+        return TencentSyncCloudApi.powerOff(request);
     }
 
     @Override
     public boolean powerOn(String req) {
-        return TencetSyncCloudApi.powerOn(JsonUtil.parseObject(req, TencentInstanceRequest.class));
+        return TencentSyncCloudApi.powerOn(JsonUtil.parseObject(req, TencentInstanceRequest.class));
     }
 
     @Override
     public boolean shutdownInstance(String req) {
-        return TencetSyncCloudApi.powerOff(JsonUtil.parseObject(req, TencentInstanceRequest.class));
+        return TencentSyncCloudApi.powerOff(JsonUtil.parseObject(req, TencentInstanceRequest.class));
     }
 
     @Override
     public boolean rebootInstance(String req) {
-        return TencetSyncCloudApi.rebootInstance(JsonUtil.parseObject(req, TencentInstanceRequest.class));
+        return TencentSyncCloudApi.rebootInstance(JsonUtil.parseObject(req, TencentInstanceRequest.class));
     }
 
     @Override
     public boolean deleteInstance(String req) {
-        return TencetSyncCloudApi.deleteInstance(JsonUtil.parseObject(req, TencentInstanceRequest.class));
+        return TencentSyncCloudApi.deleteInstance(JsonUtil.parseObject(req, TencentInstanceRequest.class));
     }
 
     @Override
     public boolean hardShutdownInstance(String req) {
         TencentInstanceRequest request = JsonUtil.parseObject(req, TencentInstanceRequest.class);
         request.setForce(true);
-        return TencetSyncCloudApi.powerOff(request);
+        return TencentSyncCloudApi.powerOff(request);
     }
 
     @Override
     public boolean hardRebootInstance(String req) {
         TencentInstanceRequest request = JsonUtil.parseObject(req, TencentInstanceRequest.class);
         request.setForce(true);
-        return TencetSyncCloudApi.rebootInstance(request);
+        return TencentSyncCloudApi.rebootInstance(request);
     }
 
     @Override
@@ -308,7 +308,7 @@ public class TencentCloudProvider extends AbstractCloudProvider<TencentCredentia
     }
 
     public List<TencentDiskTypeDTO.TencentDiskType> getDiskTypesForCreateDisk(String req) {
-        return TencetSyncCloudApi.getDataDiskType(JsonUtil.parseObject(req, TencentGetDiskTypeRequest.class));
+        return TencentSyncCloudApi.getDataDiskType(JsonUtil.parseObject(req, TencentGetDiskTypeRequest.class));
     }
 
     @Override
@@ -328,46 +328,46 @@ public class TencentCloudProvider extends AbstractCloudProvider<TencentCredentia
 
     @Override
     public List<F2CDisk> createDisks(String req) {
-        return TencetSyncCloudApi.createDisks(JsonUtil.parseObject(req, TencentCreateDisksRequest.class));
+        return TencentSyncCloudApi.createDisks(JsonUtil.parseObject(req, TencentCreateDisksRequest.class));
     }
 
     @Override
     public F2CDisk createDisk(String req) {
-        return TencetSyncCloudApi.createDisk(JsonUtil.parseObject(req, TencentCreateDiskRequest.class));
+        return TencentSyncCloudApi.createDisk(JsonUtil.parseObject(req, TencentCreateDiskRequest.class));
     }
 
     @Override
     public boolean enlargeDisk(String req) {
-        return TencetSyncCloudApi.enlargeDisk(JsonUtil.parseObject(req, TencentResizeDiskRequest.class));
+        return TencentSyncCloudApi.enlargeDisk(JsonUtil.parseObject(req, TencentResizeDiskRequest.class));
     }
 
     @Override
     public boolean attachDisk(String req) {
-        return TencetSyncCloudApi.attachDisk(JsonUtil.parseObject(req, TencentAttachDiskRequest.class));
+        return TencentSyncCloudApi.attachDisk(JsonUtil.parseObject(req, TencentAttachDiskRequest.class));
     }
 
     public boolean detachDisk(String req) {
-        return TencetSyncCloudApi.detachDisk(JsonUtil.parseObject(req, TencentDetachDiskRequest.class));
+        return TencentSyncCloudApi.detachDisk(JsonUtil.parseObject(req, TencentDetachDiskRequest.class));
     }
 
     @Override
     public boolean deleteDisk(String req) {
-        return TencetSyncCloudApi.deleteDisk(JsonUtil.parseObject(req, TencentDeleteDiskRequest.class));
+        return TencentSyncCloudApi.deleteDisk(JsonUtil.parseObject(req, TencentDeleteDiskRequest.class));
     }
 
     @Override
     public List<F2CPerfMetricMonitorData> getF2CPerfMetricMonitorData(String req) {
-        return TencetSyncCloudApi.getF2CPerfMetricList(JsonUtil.parseObject(req, GetMetricsRequest.class));
+        return TencentSyncCloudApi.getF2CPerfMetricList(JsonUtil.parseObject(req, GetMetricsRequest.class));
     }
 
     @Override
     public List<F2CPerfMetricMonitorData> getF2CDiskPerfMetricMonitorData(String req) {
-        return TencetSyncCloudApi.getF2CDiskPerfMetricList(JsonUtil.parseObject(req, GetMetricsRequest.class));
+        return TencentSyncCloudApi.getF2CDiskPerfMetricList(JsonUtil.parseObject(req, GetMetricsRequest.class));
     }
 
     @Override
     public F2CVirtualMachine changeVmConfig(String req) {
-        return TencetSyncCloudApi.changeVmConfig(JsonUtil.parseObject(req, TencentUpdateConfigRequest.class));
+        return TencentSyncCloudApi.changeVmConfig(JsonUtil.parseObject(req, TencentUpdateConfigRequest.class));
     }
 
     @Override
@@ -376,10 +376,15 @@ public class TencentCloudProvider extends AbstractCloudProvider<TencentCredentia
     }
 
     public List<TencentInstanceType> getInstanceTypesForConfigUpdate(String req) {
-        return TencetSyncCloudApi.getInstanceTypesForConfigUpdate(JsonUtil.parseObject(req, TencentUpdateConfigRequest.class));
+        return TencentSyncCloudApi.getInstanceTypesForConfigUpdate(JsonUtil.parseObject(req, TencentUpdateConfigRequest.class));
     }
 
     public String calculateConfigUpdatePrice(String req) {
-        return TencetSyncCloudApi.calculateConfigUpdatePrice(JsonUtil.parseObject(req, TencentUpdateConfigRequest.class));
+        return TencentSyncCloudApi.calculateConfigUpdatePrice(JsonUtil.parseObject(req, TencentUpdateConfigRequest.class));
+    }
+
+    @Override
+    public List<F2CDisk> getVmF2CDisks(String req) {
+        return TencentSyncCloudApi.getVmF2CDisks(JsonUtil.parseObject(req, BaseDiskRequest.class));
     }
 }

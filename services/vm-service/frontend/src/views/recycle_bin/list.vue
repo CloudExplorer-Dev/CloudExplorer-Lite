@@ -213,7 +213,7 @@ const batchDeleteOperate = () => {
         refresh();
       })
       .catch((err) => {
-        console.log(err);
+        ElMessage.error(err.response.data.message);
       });
   });
 };

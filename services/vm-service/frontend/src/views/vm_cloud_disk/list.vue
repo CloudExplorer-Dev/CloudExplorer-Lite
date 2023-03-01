@@ -314,6 +314,7 @@ const handleDelete = (row: VmCloudDiskVO) => {
         VmCloudDiskApi.recycleDisk(row.id as string)
           .then(() => {
             ElMessage.success(t("commons.msg.op_success"));
+            refresh();
           })
           .catch((err) => {
             console.log(err);

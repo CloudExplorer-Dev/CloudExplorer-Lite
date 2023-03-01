@@ -1,6 +1,7 @@
 package com.fit2cloud.provider.impl.openstack.api;
 
 import com.fit2cloud.common.exception.Fit2cloudException;
+import com.fit2cloud.common.platform.credential.impl.OpenStackCredential;
 import com.fit2cloud.common.provider.entity.F2CEntityType;
 import com.fit2cloud.common.provider.entity.F2CPerfMetricMonitorData;
 import com.fit2cloud.common.provider.impl.openstack.entity.request.OpenStackBaseRequest;
@@ -8,6 +9,7 @@ import com.fit2cloud.common.utils.DateUtil;
 import com.fit2cloud.common.utils.JsonUtil;
 import com.fit2cloud.provider.constants.F2CInstanceStatus;
 import com.fit2cloud.provider.entity.*;
+import com.fit2cloud.provider.entity.request.BaseDiskRequest;
 import com.fit2cloud.provider.entity.request.GetMetricsRequest;
 import com.fit2cloud.provider.entity.result.CheckCreateServerResult;
 import com.fit2cloud.provider.impl.openstack.entity.CheckStatusResult;
@@ -559,6 +561,7 @@ public class OpenStackCloudApi {
                     .setMemory(flavor.getRam() / 1024)
                     .setIpArray(new ArrayList<>())
                     .setInstanceType(instanceType)
+                    .setRegion(request.getRegion())
                     .setInstanceTypeDescription(instanceType);
 
             if (!request.isBootFormVolume()) {
@@ -1049,5 +1052,34 @@ public class OpenStackCloudApi {
             throw new Fit2cloudException(100021, "获取监控数据失败-" + request.getRegionId() + "-" + e.getMessage());
         }
         return result;
+    }
+
+    /**
+     * 获取云主机关联的磁盘
+     *
+     * @param request
+     * @return
+     */
+    public static List<F2CDisk> getVmF2CDisks(BaseDiskRequest request) {
+        try {
+            OpenStackCredential openStackCredential = JsonUtil.parseObject(request.getCredential(), OpenStackCredential.class);
+            OSClient.OSClientV3 osClient = openStackCredential.getOSClient();
+            Server server = osClient.compute().servers().get(request.getInstanceUuid());
+            Optional.ofNullable(server).orElseThrow(() -> new RuntimeException(String.format("Virtual machine: %s not found", request.getInstanceUuid())));
+
+            List<String> diskIds = server.getOsExtendedVolumesAttached();
+            List<F2CDisk> disks = new ArrayList<>();
+
+            if (!CollectionUtils.isEmpty(diskIds)) {
+                for (String diskId : diskIds) {
+                    Volume volume = osClient.blockStorage().volumes().get(diskId);
+                    Optional.ofNullable(volume).orElseThrow(() -> new RuntimeException(String.format("The volume: %s of virtual machine: %s not found", diskId, request.getInstanceUuid())));
+                    disks.add(OpenStackUtils.toF2CDisk(volume, request.getRegionId()));
+                }
+            }
+            return disks;
+        } catch (Exception e) {
+            throw new RuntimeException("GetVmF2CDisks Error!" + e.getMessage(), e);
+        }
     }
 }

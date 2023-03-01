@@ -9,6 +9,7 @@ import com.fit2cloud.common.utils.JsonUtil;
 import com.fit2cloud.provider.AbstractCloudProvider;
 import com.fit2cloud.provider.ICloudProvider;
 import com.fit2cloud.provider.entity.*;
+import com.fit2cloud.provider.entity.request.BaseDiskRequest;
 import com.fit2cloud.provider.entity.request.GetMetricsRequest;
 import com.fit2cloud.provider.entity.result.CheckCreateServerResult;
 import com.fit2cloud.provider.impl.openstack.api.OpenStackCloudApi;
@@ -185,4 +186,10 @@ public class OpenStackCloudProvider extends AbstractCloudProvider<OpenStackCrede
     public F2CVirtualMachine changeVmConfig(String req) {
         return OpenStackCloudApi.changeVmConfig(JsonUtil.parseObject(req, OpenStackConfigUpdateRequest.class));
     }
+
+    @Override
+    public List<F2CDisk> getVmF2CDisks(String req) {
+        return OpenStackCloudApi.getVmF2CDisks(JsonUtil.parseObject(req, BaseDiskRequest.class));
+    }
+
 }
