@@ -5,6 +5,7 @@ import co.elastic.clients.elasticsearch._types.query_dsl.Query;
 import co.elastic.clients.elasticsearch._types.query_dsl.ScriptQuery;
 import co.elastic.clients.elasticsearch._types.query_dsl.TermQuery;
 import co.elastic.clients.json.JsonData;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.fit2cloud.base.entity.CloudAccount;
 import com.fit2cloud.base.entity.JobRecord;
 import com.fit2cloud.base.entity.JobRecordResourceMapping;
@@ -107,14 +108,25 @@ public class SyncServiceImpl extends BaseSyncService implements SyncService {
         if (params.containsKey(JobConstants.CloudAccount.BILL_SETTING.name())) {
             billSetting = JsonUtil.parseObject(JsonUtil.toJSONString(params.get(JobConstants.CloudAccount.BILL_SETTING.name())), Map.class);
         }
+        // 获取默认同步月份
         List<String> months = MonthUtil.getMonths(billDay);
+        // 如果参数有传输 则使用参数月份
         if (params.containsKey("MONTHS")) {
             months = JsonUtil.parseArray(JsonUtil.toJSONString(params.get("MONTHS")), String.class);
         }
+        // 如果是桶 则获取桶中月份
         if (Objects.nonNull(cloudAccount) && Objects.nonNull(billSetting) && params.containsKey("BUCKET_CYCLE") && StringUtils.equals((String) params.get("BUCKET_CYCLE"), "all")) {
             Class<? extends ICloudProvider> of = ICloudProvider.of(cloudAccount.getPlatform());
             String execMethodArgs = getExecMethodArgs(cloudAccount, "", billSetting);
             months = CommonUtil.exec(of, execMethodArgs, ICloudProvider::listBucketFileMonth);
+        }
+        // 如果没有同步过,则同步历史12个月的账单
+        long count = jobRecordResourceMappingService.count(new LambdaQueryWrapper<JobRecordResourceMapping>()
+                .eq(JobRecordResourceMapping::getJobType, JobTypeConstants.CLOUD_ACCOUNT_SYNC_BILL_JOB)
+                .eq(JobRecordResourceMapping::getResourceId, cloudAccountId)
+                .eq(JobRecordResourceMapping::getResourceType, com.fit2cloud.constants.JobConstants.JobSyncResourceType.BILL.name()));
+        if (count == 0) {
+            months = MonthUtil.getHistoryMonth(12);
         }
         syncBill(cloudAccountId, months, billSetting);
     }

@@ -86,12 +86,10 @@ public class BaseCloudAccountServiceImpl extends ServiceImpl<BaseCloudAccountMap
             if (!schedulerService.inclusionJobDetails(jobName, job.getJobGroup())) {
                 // todo 获取定时任务参数
                 HashMap<String, Object> params = new HashMap<>(MapUtils.isNotEmpty(job.getParams()) ? job.getParams() : new HashMap<>());
-                if (paramsCache.containsKey(group)) {
-                    params.putAll(paramsCache.get(group));
-                } else {
+                if (!paramsCache.containsKey(group)) {
                     paramsCache.put(group, group.getDefaultParams.apply(cloudAccount));
                 }
-
+                params.putAll(paramsCache.get(group));
                 // todo 创建定时任务
                 if (job.getJobType().equals(JobConstants.JobType.CRON)) {
                     schedulerService.addJob(job.getJobHandler(),
