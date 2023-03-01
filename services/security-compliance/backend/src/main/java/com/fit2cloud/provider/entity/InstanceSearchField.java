@@ -110,7 +110,7 @@ public class InstanceSearchField {
      * @return 实例查询对象
      */
     public InstanceSearchField resetFilterArrayField(PlatformConstants platform, ResourceTypeConstants resourceType, String filterField, Boolean appendKeyword) {
-        this.field = "filterArray." + platform.name() + "_" + resourceType.name() + "_" + filterField + "." + (this.field.endsWith(".keyword") && appendKeyword ? this.field : this.field + ".keyword");
+        this.field = "filterArray." + platform.name() + "_" + resourceType.name() + "_" + filterField + "." + (this.field.endsWith(".keyword") ? this.field : appendKeyword ? this.field + ".keyword" : this.field);
         return this;
     }
 }

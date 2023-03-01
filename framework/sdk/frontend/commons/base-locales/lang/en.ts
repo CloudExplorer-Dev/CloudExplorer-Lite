@@ -206,6 +206,11 @@ const permissions = {
         read: "Read",
         edit: "Edit",
       },
+      module: {
+        base: "Module Manage",
+        read: "Read",
+        edit: "Edit",
+      },
     },
     vm: {
       cloud_server: {

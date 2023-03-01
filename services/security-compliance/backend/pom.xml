@@ -217,6 +217,7 @@
                 <includes>
                     <include>application.yml</include>
                     <include>logback-spring.xml</include>
+                    <include>painless/*</include>
                 </includes>
             </resource>
             <resource>

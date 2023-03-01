@@ -6,6 +6,20 @@
   "description": "",
   "glyphs": [
     {
+      "icon_id": "5243982",
+      "name": "插件",
+      "font_class": "chajian",
+      "unicode": "e69c",
+      "unicode_decimal": 59036
+    },
+    {
+      "icon_id": "11121489",
+      "name": "模块",
+      "font_class": "mokuai",
+      "unicode": "e665",
+      "unicode_decimal": 58981
+    },
+    {
       "icon_id": "524408",
       "name": "修改密码",
       "font_class": "xiugaimima01",

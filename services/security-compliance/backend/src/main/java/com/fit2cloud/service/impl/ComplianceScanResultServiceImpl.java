@@ -72,6 +72,7 @@ public class ComplianceScanResultServiceImpl extends ServiceImpl<ComplianceScanR
         for (ComplianceScanResult complianceScanResult : complianceScanResults) {
             saveOrUpdate(complianceScanResult,
                     new LambdaQueryWrapper<ComplianceScanResult>()
+                            .eq(ComplianceScanResult::getResourceType, complianceScanResult.getResourceType())
                             .eq(ComplianceScanResult::getComplianceRuleId, complianceScanResult.getComplianceRuleId())
                             .eq(ComplianceScanResult::getCloudAccountId, complianceScanResult.getCloudAccountId()));
         }

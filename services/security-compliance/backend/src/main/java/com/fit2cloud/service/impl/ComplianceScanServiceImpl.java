@@ -44,6 +44,7 @@ import com.fit2cloud.es.entity.ResourceInstance;
 import com.fit2cloud.provider.ICloudProvider;
 import com.fit2cloud.provider.constants.ProviderConstants;
 import com.fit2cloud.provider.entity.InstanceFieldCompare;
+import com.fit2cloud.provider.entity.InstanceFieldType;
 import com.fit2cloud.response.JobRecordResourceResponse;
 import com.fit2cloud.service.IComplianceRuleService;
 import com.fit2cloud.service.IComplianceScanResourceResultService;
@@ -62,6 +63,9 @@ import javax.annotation.Resource;
 import java.io.IOException;
 import java.util.*;
 import java.util.stream.Collectors;
+
+import static com.fit2cloud.provider.entity.InstanceFieldCompare.*;
+import static com.fit2cloud.provider.entity.InstanceFieldCompare.NOT_EXIST;
 
 /**
  * {@code @Author:张少虎}
@@ -285,19 +289,11 @@ public class ComplianceScanServiceImpl implements IComplianceScanService {
 
     @Override
     public void scanComplianceResourceOrSave(ResourceTypeConstants resourceType, String cloudAccountId) {
-        complianceScanResourceResultService.saveOrUpdate(scanComplianceResource(resourceType, cloudAccountId));
+        complianceScanResourceResultService.saveOrUpdate(scanComplianceResource(resourceType, cloudAccountId), resourceType, cloudAccountId);
     }
 
-    @Override
-    public void scanComplianceResourceOrSave(ResourceTypeConstants resourceType) {
-        complianceScanResourceResultService.saveOrUpdate(scanComplianceResource(resourceType));
-    }
 
-    @Override
-    public void scanComplianceResourceOrSave(ComplianceRule complianceRule) {
-        String resourceType = complianceRule.getResourceType();
-        complianceScanResourceResultService.saveOrUpdate(scanComplianceResource(ResourceTypeConstants.valueOf(resourceType)));
-    }
+
 
     @Override
     public void scanComplianceOrSave() {
@@ -425,22 +421,6 @@ public class ComplianceScanServiceImpl implements IComplianceScanService {
     }
 
 
-    /**
-     * @param source             原始对象
-     * @param allComplianceCount 所有资源数量
-     * @param notComplianceCount 不合规资源数量
-     * @return 合规扫描对象
-     */
-    private ComplianceScanResultResponse toComplianceScanResponse(Object source, long allComplianceCount, long notComplianceCount) {
-        ComplianceScanResultResponse complianceScanResponse = new ComplianceScanResultResponse();
-        BeanUtils.copyProperties(source, complianceScanResponse);
-        complianceScanResponse.setComplianceCount(allComplianceCount - notComplianceCount);
-        complianceScanResponse.setNotComplianceCount(notComplianceCount);
-        complianceScanResponse.setScanStatus(allComplianceCount == (allComplianceCount - notComplianceCount) ? ComplianceStatus.COMPLIANCE : ComplianceStatus.NOT_COMPLIANCE);
-        return complianceScanResponse;
-    }
-
-
     /***
      * 查询资源数量根据查询条件
      * @param query 查询条件
@@ -532,8 +512,10 @@ public class ComplianceScanServiceImpl implements IComplianceScanService {
      * @return 查询条件
      */
     private Query getQueryByNotRuleMustQueryList(List<Rule> rules, List<Query> mustQueryList, ConditionTypeConstants conditionType) {
-        List<Query> queries = rules.stream().filter(r -> !r.getField().startsWith("filterArray")).map(this::getScriptQuery).collect(Collectors.toCollection(ArrayList::new));
-        // 获取嵌套查询
+        // 获取不适用嵌套查询的Query
+        List<Query> queries = rules.stream().filter(this::isNotNestedQuery)
+                .map(this::getScriptQuery).collect(Collectors.toCollection(ArrayList::new));
+        // 获取使用嵌套查询的Query
         List<Query> nestedQuery = listNestedQuery(rules);
         queries.addAll(nestedQuery);
 
@@ -545,8 +527,34 @@ public class ComplianceScanServiceImpl implements IComplianceScanService {
         return new BoolQuery.Builder().must(all).build()._toQuery();
     }
 
+    /**
+     * 判断是否使用嵌套nested查询
+     *
+     * @param rule 规则对象
+     * @return 是否使用nested查询 使用嵌套查询返回true
+     */
+    private boolean isNestedQuery(Rule rule) {
+        List<InstanceFieldCompare> nestedArrayCompare = List.of(EQ, GE, GT, LE, LT);
+        // filterArray 用于存储nested查询 复杂数组
+        if (rule.getField().startsWith("filterArray")) {
+            return nestedArrayCompare.contains(InstanceFieldCompare.valueOf(rule.getCompare()));
+        } else {
+            return false;
+        }
+    }
+
+    /**
+     * 是否不使用嵌套查询
+     *
+     * @param rule 规则
+     * @return 不使用嵌套查询返回true
+     */
+    private boolean isNotNestedQuery(Rule rule) {
+        return !isNestedQuery(rule);
+    }
+
     private Query getQueryByRule(List<Rule> rules, List<Query> mustQueryList, ConditionTypeConstants conditionType) {
-        List<Query> queries = rules.stream().filter(r -> !r.getField().startsWith("filterArray")).map(this::getScriptQuery).collect(Collectors.toCollection(ArrayList::new));
+        List<Query> queries = rules.stream().filter(this::isNotNestedQuery).map(this::getScriptQuery).collect(Collectors.toCollection(ArrayList::new));
         // 获取嵌套查询
         List<Query> nestedQuery = listNestedQuery(rules);
         queries.addAll(nestedQuery);
@@ -567,7 +575,7 @@ public class ComplianceScanServiceImpl implements IComplianceScanService {
      */
     private List<Query> listNestedQuery(List<Rule> rules) {
         // todo filterArray 字段需要使用nested查询
-        List<Rule> filterArray = rules.stream().filter(r -> r.getField().startsWith("filterArray")).toList();
+        List<Rule> filterArray = rules.stream().filter(this::isNestedQuery).toList();
         Map<String, List<Query>> nestPathScriptQueryMap = filterArray.stream().collect(Collectors.groupingBy(s -> getNestedPath(s.getField()), Collectors.mapping(this::getScriptQuery, Collectors.toList())));
         List<Query> queries = nestPathScriptQueryMap.entrySet().stream().map(n -> new Query.Builder().nested(new NestedQuery.Builder().path(n.getKey())
                 .query(new Query.Builder().bool(new BoolQuery.Builder().must(n.getValue()).build()).build()).build()).build()).toList();

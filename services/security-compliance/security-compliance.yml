@@ -1,0 +1,5 @@
+name: security-compliance
+version: APP_VERSION
+port: APP_PORT
+display_name: 安全合规
+icon: xitonganquanheguibaobiao

@@ -18,7 +18,10 @@ import com.aliyun.sdk.service.oss20190517.AsyncClient;
 import com.aliyun.sdk.service.oss20190517.models.*;
 import com.aliyun.slb20140515.models.DescribeLoadBalancersResponseBody;
 import com.aliyun.teautil.models.RuntimeOptions;
+import com.aliyun.vpc20160428.models.*;
 import com.aliyun.vpc20160428.models.DescribeEipAddressesResponseBody;
+import com.aliyun.vpc20160428.models.DescribeVSwitchesRequest;
+import com.aliyun.vpc20160428.models.DescribeVSwitchesResponseBody;
 import com.aliyun.vpc20160428.models.DescribeVpcsResponseBody;
 import com.fit2cloud.common.exception.Fit2cloudException;
 import com.fit2cloud.common.provider.exception.ReTryException;
@@ -29,14 +32,12 @@ import com.fit2cloud.provider.impl.aliyun.entity.credential.AliSecurityComplianc
 import com.fit2cloud.provider.impl.aliyun.entity.request.*;
 import com.fit2cloud.provider.util.ResourceUtil;
 import jodd.util.StringUtil;
+import org.apache.commons.collections4.CollectionUtils;
 import org.openstack4j.model.heat.Resource;
 import org.springframework.beans.BeanUtils;
 
 import javax.validation.constraints.NotNull;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 import java.util.concurrent.CompletableFuture;
 
 /**
@@ -69,6 +70,149 @@ public class AliApi {
                 , res -> res.getBody().getInstances().instance
                 , (req, res) -> res.getBody().getPageSize() <= res.getBody().getInstances().instance.size()
                 , req -> req.setPageNumber(req.getPageNumber() + 1), ProviderConstants.retryNum);
+    }
+
+    public static List<Map<String, Object>> listECSInstanceCollection(ListEcsInstancesRequest request) {
+        Client ecsClient = request.getCredential().getEcsClient(request.getRegionId());
+        // 查询到ecs实例列表
+        List<DescribeInstancesResponseBody.DescribeInstancesResponseBodyInstancesInstance> ecsInstances = listECSInstance(request);
+        // 查询安全组数据
+        ListSecurityGroupInstanceRequest listSecurityGroupInstanceRequest = new ListSecurityGroupInstanceRequest();
+        BeanUtils.copyProperties(request, listSecurityGroupInstanceRequest);
+        List<DescribeSecurityGroupsResponseBody.DescribeSecurityGroupsResponseBodySecurityGroupsSecurityGroup> securityGroups = listSecurityGroupInstance(listSecurityGroupInstanceRequest);
+        DescribeDisksRequest describeDisksRequest = new DescribeDisksRequest();
+        describeDisksRequest.setRegionId(request.getRegionId());
+        // 磁盘相关数据
+        List<DescribeDisksResponseBody.DescribeDisksResponseBodyDisksDisk> disks = listDisk(describeDisksRequest, ecsClient);
+        // 查询包年包月是否开启自动续费
+        DescribeInstanceAutoRenewAttributeRequest describeInstanceAutoRenewAttributeRequest = new DescribeInstanceAutoRenewAttributeRequest();
+        describeInstanceAutoRenewAttributeRequest.setRegionId(request.getRegionId());
+        List<DescribeInstanceAutoRenewAttributeResponseBody.DescribeInstanceAutoRenewAttributeResponseBodyInstanceRenewAttributesInstanceRenewAttribute> autoRenews = listInstanceAutoRenewAttributeAll(describeInstanceAutoRenewAttributeRequest, ecsClient);
+        return ecsInstances.stream().map(ecs -> mergeEcsInstance(ecs, securityGroups, disks, autoRenews, ecsClient)).toList();
+    }
+
+    /**
+     * 合并数据
+     *
+     * @param ecs
+     * @param securityGroups
+     * @param disks
+     * @param autoRenews
+     * @param ecsClient
+     * @return
+     */
+    private static Map<String, Object> mergeEcsInstance(DescribeInstancesResponseBody.DescribeInstancesResponseBodyInstancesInstance ecs,
+                                                        List<DescribeSecurityGroupsResponseBody.DescribeSecurityGroupsResponseBodySecurityGroupsSecurityGroup> securityGroups,
+                                                        List<DescribeDisksResponseBody.DescribeDisksResponseBodyDisksDisk> disks,
+                                                        List<DescribeInstanceAutoRenewAttributeResponseBody.DescribeInstanceAutoRenewAttributeResponseBodyInstanceRenewAttributesInstanceRenewAttribute> autoRenews,
+                                                        Client ecsClient) {
+        Map<String, Object> ecsInstance = ResourceUtil.objectToMap(ecs);
+        // 设置安全组属性
+        if (Objects.nonNull(ecs.securityGroupIds) && CollectionUtils.isNotEmpty(ecs.securityGroupIds.securityGroupId)) {
+            List<Map<String, Object>> securityGroupRules = securityGroups.stream().filter(group -> ecs.securityGroupIds.securityGroupId.contains(group.securityGroupId))
+                    .map(group -> {
+                        Map<String, Object> sGroup = ResourceUtil.objectToMap(group);
+                        sGroup.put("rule", getSecurityGroupRuleInstance(ecsClient, group.securityGroupId));
+                        return sGroup;
+                    }).toList();
+            ecsInstance.put("securityGroupRules", securityGroupRules);
+        }
+        // 设置磁盘属性
+        List<DescribeDisksResponseBody.DescribeDisksResponseBodyDisksDisk> ecsDisks = disks.stream().filter(disk -> StringUtil.equals(disk.instanceId, ecs.instanceId)).toList();
+        ecsInstance.put("disks", ecsDisks);
+        // 设置包年包月自动续费属性
+        autoRenews.stream().filter(auto -> StringUtil.equals(auto.instanceId, ecs.instanceId)).findFirst()
+                .ifPresent(auto -> ecsInstance.put("autoRenew", auto));
+
+        return ecsInstance;
+
+    }
+
+    /**
+     * 查询包年包月续费状态
+     *
+     * @return 实例续费状态
+     */
+    private static List<DescribeInstanceAutoRenewAttributeResponseBody.DescribeInstanceAutoRenewAttributeResponseBodyInstanceRenewAttributesInstanceRenewAttribute> listInstanceAutoRenewAttributeAll(DescribeInstanceAutoRenewAttributeRequest request, Client ecsClient) {
+        ArrayList<DescribeInstanceAutoRenewAttributeResponseBody.DescribeInstanceAutoRenewAttributeResponseBodyInstanceRenewAttributesInstanceRenewAttribute> all = new ArrayList<>();
+
+        for (String renewalStatus : List.of("AutoRenewal", "Normal", "NotRenewal")) {
+            request.setRenewalStatus(renewalStatus);
+            List<DescribeInstanceAutoRenewAttributeResponseBody.DescribeInstanceAutoRenewAttributeResponseBodyInstanceRenewAttributesInstanceRenewAttribute> item = listInstanceAutoRenewAttribute(request, ecsClient);
+            if (CollectionUtils.isNotEmpty(item)) {
+                all.addAll(item);
+            }
+        }
+        return all;
+    }
+
+    /**
+     * 查询包年包月续费状态
+     *
+     * @return 实例续费状态
+     */
+    private static List<DescribeInstanceAutoRenewAttributeResponseBody.DescribeInstanceAutoRenewAttributeResponseBodyInstanceRenewAttributesInstanceRenewAttribute> listInstanceAutoRenewAttribute(DescribeInstanceAutoRenewAttributeRequest request, Client ecsClient) {
+        request.setPageNumber(PageUtil.DefaultCurrentPage.toString());
+        request.setPageSize(PageUtil.DefaultPageSize.toString());
+
+        // 自动续费实例
+        return PageUtil.page(request, req -> {
+                    try {
+                        return ecsClient.describeInstanceAutoRenewAttributeWithOptions(request, new RuntimeOptions());
+                    } catch (Exception e) {
+                        ReTryException.throwReTry(e);
+                        SkipPageException.throwSkip(e);
+                        throw new Fit2cloudException(10002, "获取阿里云云主机列表失败" + e.getMessage());
+                    }
+                }
+                , res -> res.getBody().getInstanceRenewAttributes().instanceRenewAttribute
+                , (req, res) -> res.getBody().getPageSize() <= res.getBody().getInstanceRenewAttributes().instanceRenewAttribute.size()
+                , req -> req.setPageNumber(req.getPageNumber() + 1), ProviderConstants.retryNum);
+
+
+    }
+
+    private static List<DescribeDisksResponseBody.DescribeDisksResponseBodyDisksDisk> listDisk(DescribeDisksRequest request, Client ecsClient) {
+        request.setPageNumber(PageUtil.DefaultCurrentPage);
+        request.setPageSize(PageUtil.DefaultPageSize);
+        return PageUtil.page(request, req -> {
+                    try {
+                        return ecsClient.describeDisksWithOptions(request, new RuntimeOptions());
+                    } catch (Exception e) {
+                        ReTryException.throwReTry(e);
+                        SkipPageException.throwSkip(e);
+                        throw new Fit2cloudException(10002, "获取阿里云云主机列表失败" + e.getMessage());
+                    }
+                }
+                , res -> res.getBody().getDisks().disk
+                , (req, res) -> res.getBody().getPageSize() <= res.getBody().getDisks().disk.size()
+                , req -> req.setPageNumber(req.getPageNumber() + 1), ProviderConstants.retryNum);
+
+    }
+
+    /**
+     * 查询镜像实例列表数据
+     *
+     * @param request   请求对象
+     * @param ecsClient ecs客户端
+     * @return 镜像实例列表数据
+     */
+    private static List<DescribeImagesResponseBody.DescribeImagesResponseBodyImagesImage> listImagesInstance(DescribeImagesRequest request, Client ecsClient) {
+        request.setPageNumber(PageUtil.DefaultCurrentPage);
+        request.setPageSize(PageUtil.DefaultPageSize);
+        return PageUtil.page(request, req -> {
+                    try {
+                        return ecsClient.describeImages(request);
+                    } catch (Exception e) {
+                        ReTryException.throwReTry(e);
+                        SkipPageException.throwSkip(e);
+                        throw new Fit2cloudException(10002, "获取阿里云云主机列表失败" + e.getMessage());
+                    }
+                }
+                , res -> res.getBody().getImages().image
+                , (req, res) -> res.getBody().getPageSize() <= res.getBody().getImages().image.size()
+                , req -> req.setPageNumber(req.getPageNumber() + 1), ProviderConstants.retryNum);
+
     }
 
     /**
@@ -491,6 +635,66 @@ public class AliApi {
     }
 
     /**
+     * 查询vpc vpn网关 vpn连接信息数据集合
+     *
+     * @param request 请求对象
+     * @return vpc 数据合集列表
+     */
+    public static List<Map<String, Object>> listVpcInstanceCollection(ListVpcInstanceRequest request) {
+        com.aliyun.vpc20160428.Client vpcClient = request.getCredential().getVpcClient(request.getRegionId());
+
+        // vpc实例列表
+        List<DescribeVpcsResponseBody.DescribeVpcsResponseBodyVpcsVpc> vpcList = listVpcInstanceRequest(request);
+        // vpn 网关列表
+        DescribeVpnGatewaysRequest describeVpnGatewaysRequest = new DescribeVpnGatewaysRequest();
+        describeVpnGatewaysRequest.setRegionId(request.getRegionId());
+        List<DescribeVpnGatewaysResponseBody.DescribeVpnGatewaysResponseBodyVpnGatewaysVpnGateway> vpnGateways = listVpnGateway(describeVpnGatewaysRequest, vpcClient);
+        // vpn 连接相关接口
+        DescribeVpnConnectionsRequest describeVpnConnectionsRequest = new DescribeVpnConnectionsRequest();
+        describeVpnConnectionsRequest.setRegionId(request.getRegionId());
+        List<DescribeVpnConnectionsResponseBody.DescribeVpnConnectionsResponseBodyVpnConnectionsVpnConnection> vpnConnections = listVpnConnection(describeVpnConnectionsRequest, vpcClient);
+        // vpc 流日志
+        DescribeFlowLogsRequest describeFlowLogsRequest = new DescribeFlowLogsRequest();
+        describeFlowLogsRequest.setRegionId(request.getRegionId());
+        List<DescribeFlowLogsResponseBody.DescribeFlowLogsResponseBodyFlowLogsFlowLog> describeFlowLogsResponseBodyFlowLogsFlowLogs = listFlowLogs(describeFlowLogsRequest, vpcClient);
+        // vpc 交换机
+        DescribeVSwitchesRequest describeVSwitchesRequest = new DescribeVSwitchesRequest();
+        describeVSwitchesRequest.setRegionId(request.getRegionId());
+        List<DescribeVSwitchesResponseBody.DescribeVSwitchesResponseBodyVSwitchesVSwitch> describeVSwitchesResponseBodyVSwitchesVSwitches = listSwitch(describeVSwitchesRequest, vpcClient);
+        return vpcList.stream().map(vpc -> mergeVpcInstance(vpc, vpnGateways, vpnConnections, describeFlowLogsResponseBodyFlowLogsFlowLogs, describeVSwitchesResponseBodyVSwitchesVSwitches)).toList();
+
+    }
+
+
+    /**
+     * 合并vpc实例
+     *
+     * @param vpc            vpc实例
+     * @param gateways       vpn网关数据
+     * @param vpnConnections vpn连接数据
+     * @return vpc对象合集
+     */
+    private static Map<String, Object> mergeVpcInstance(DescribeVpcsResponseBody.DescribeVpcsResponseBodyVpcsVpc vpc,
+                                                        List<DescribeVpnGatewaysResponseBody.DescribeVpnGatewaysResponseBodyVpnGatewaysVpnGateway> gateways,
+                                                        List<DescribeVpnConnectionsResponseBody.DescribeVpnConnectionsResponseBodyVpnConnectionsVpnConnection> vpnConnections,
+                                                        List<DescribeFlowLogsResponseBody.DescribeFlowLogsResponseBodyFlowLogsFlowLog> flowLogsResponseBodyFlowLogsFlowLogs,
+                                                        List<DescribeVSwitchesResponseBody.DescribeVSwitchesResponseBodyVSwitchesVSwitch> switches) {
+        Map<String, Object> collection = ResourceUtil.objectToMap(vpc);
+        gateways.stream().filter(gateway -> StringUtil.equals(gateway.vpcId, vpc.getVpcId())).findFirst().ifPresent(gateway -> {
+            collection.put("vpnGateway", ResourceUtil.objectToMap(gateway));
+            vpnConnections.stream().filter(vpnConnection -> StringUtil.equals(gateway.getVpnGatewayId(), vpnConnection.getVpnGatewayId())).findFirst()
+                    .ifPresent(vpnConnection -> collection.put("vpnConnection", ResourceUtil.objectToMap(vpnConnection)));
+        });
+        flowLogsResponseBodyFlowLogsFlowLogs.stream().filter(flowLog -> StringUtil.equals(flowLog.resourceId, vpc.getVpcId())).findFirst().ifPresent(s -> {
+            collection.put("flowLog", ResourceUtil.objectToMap(s));
+        });
+        List<DescribeVSwitchesResponseBody.DescribeVSwitchesResponseBodyVSwitchesVSwitch> switchesList = switches.stream().filter(s -> StringUtil.equals(s.getVpcId(), vpc.vpcId)).toList();
+        collection.put("switchesList", switchesList);
+        return collection;
+    }
+
+
+    /**
      * 获取 vpc 实例列表
      *
      * @param request 请求对象
@@ -512,6 +716,105 @@ public class AliApi {
                 , res -> res.getBody().getVpcs().vpc
                 , (req, res) -> res.getBody().getPageSize() <= res.getBody().getVpcs().vpc.size()
                 , req -> req.setPageNumber(req.getPageNumber() + 1), ProviderConstants.retryNum);
+
+    }
+
+    /**
+     * 查询流日志实例列表
+     *
+     * @param request   请求对象
+     * @param vpcClient 客户端
+     * @return 流日志实例列表数据
+     */
+    private static List<DescribeFlowLogsResponseBody.DescribeFlowLogsResponseBodyFlowLogsFlowLog> listFlowLogs(DescribeFlowLogsRequest request, com.aliyun.vpc20160428.Client vpcClient) {
+        request.setPageNumber(PageUtil.DefaultCurrentPage);
+        request.setPageSize(50);
+        return PageUtil.page(request, req -> {
+                    try {
+                        return vpcClient.describeFlowLogsWithOptions(request, new RuntimeOptions());
+                    } catch (Exception e) {
+                        ReTryException.throwReTry(e);
+                        SkipPageException.throwSkip(e);
+                        throw new Fit2cloudException(10002, "获取阿里云RAM用户实例失败" + e.getMessage());
+                    }
+                }
+                , res -> res.getBody().getFlowLogs().flowLog
+                , (req, res) -> Integer.parseInt(res.getBody().getPageSize()) <= res.getBody().getFlowLogs().flowLog.size()
+                , (req, res) -> req.setPageNumber(req.getPageNumber() + 1), ProviderConstants.retryNum);
+
+    }
+
+    /**
+     * 列举所有的vpnGateWays相关数据
+     *
+     * @param request   请求对象
+     * @param vpcClient vpc客户端
+     * @return vpc 网关列表相关数据
+     */
+    public static List<DescribeVpnGatewaysResponseBody.DescribeVpnGatewaysResponseBodyVpnGatewaysVpnGateway> listVpnGateway(DescribeVpnGatewaysRequest request, com.aliyun.vpc20160428.Client vpcClient) {
+        request.setPageNumber(PageUtil.DefaultCurrentPage);
+        request.setPageSize(50);
+        return PageUtil.page(request, req -> {
+                    try {
+                        return vpcClient.describeVpnGatewaysWithOptions(request, new RuntimeOptions());
+                    } catch (Exception e) {
+                        ReTryException.throwReTry(e);
+                        SkipPageException.throwSkip(e);
+                        throw new Fit2cloudException(10002, "获取阿里云RAM用户实例失败" + e.getMessage());
+                    }
+                }
+                , res -> res.getBody().getVpnGateways().vpnGateway
+                , (req, res) -> res.getBody().getPageSize() <= res.getBody().getVpnGateways().vpnGateway.size()
+                , (req, res) -> req.setPageNumber(req.getPageNumber() + 1), ProviderConstants.retryNum);
+    }
+
+    /**
+     * 查询交换机相关数据
+     *
+     * @param request   请求对象
+     * @param vpcClient vpc客户端
+     * @return 交换机相关数据
+     */
+    public static List<DescribeVSwitchesResponseBody.DescribeVSwitchesResponseBodyVSwitchesVSwitch> listSwitch(DescribeVSwitchesRequest request, com.aliyun.vpc20160428.Client vpcClient) {
+        request.setPageNumber(PageUtil.DefaultCurrentPage);
+        request.setPageSize(50);
+        return
+                PageUtil.page(request, req -> {
+                            try {
+                                return vpcClient.describeVSwitchesWithOptions(request, new RuntimeOptions());
+                            } catch (Exception e) {
+                                ReTryException.throwReTry(e);
+                                SkipPageException.throwSkip(e);
+                                throw new Fit2cloudException(10002, "获取阿里云RAM用户实例失败" + e.getMessage());
+                            }
+                        }
+                        , res -> res.getBody().getVSwitches().vSwitch
+                        , (req, res) -> res.getBody().getPageSize() <= res.getBody().getVSwitches().vSwitch.size()
+                        , (req, res) -> req.setPageNumber(req.getPageNumber() + 1), ProviderConstants.retryNum);
+    }
+
+    /**
+     * 查询 ipsec连接实例列表
+     *
+     * @param request   请求对象
+     * @param vpcClient vpc客户端
+     * @return ipsec连接实例列表数据
+     */
+    public static List<DescribeVpnConnectionsResponseBody.DescribeVpnConnectionsResponseBodyVpnConnectionsVpnConnection> listVpnConnection(DescribeVpnConnectionsRequest request, com.aliyun.vpc20160428.Client vpcClient) {
+        request.setPageNumber(PageUtil.DefaultCurrentPage);
+        request.setPageSize(50);
+        return PageUtil.page(request, req -> {
+                    try {
+                        return vpcClient.describeVpnConnectionsWithOptions(request, new RuntimeOptions());
+                    } catch (Exception e) {
+                        ReTryException.throwReTry(e);
+                        SkipPageException.throwSkip(e);
+                        throw new Fit2cloudException(10002, "获取阿里云RAM用户实例失败" + e.getMessage());
+                    }
+                }
+                , res -> res.getBody().getVpnConnections().vpnConnection
+                , (req, res) -> res.getBody().getPageSize() <= res.getBody().getVpnConnections().vpnConnection.size()
+                , (req, res) -> req.setPageNumber(req.getPageNumber() + 1), ProviderConstants.retryNum);
 
     }
 

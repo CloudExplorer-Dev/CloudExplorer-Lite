@@ -29,8 +29,24 @@ public class ResourceUtil {
 
     public static ResourceInstance toResourceInstance(String platform, ResourceTypeConstants resourceTypeConstants, String resourceId, String resourceName, Map<String, List<Object>> filterArray, Object instance) {
         ResourceInstance resourceInstance = toResourceInstance(platform, resourceTypeConstants, resourceId, resourceName, instance, null, null);
-        resourceInstance.setFilterArray(filterArray);
+        resourceInstance.setFilterArray(resetFilterArray(platform, resourceTypeConstants, filterArray));
         return resourceInstance;
+    }
+
+    /**
+     * 重置 filterArray数据
+     *
+     * @param platform              云平台
+     * @param resourceTypeConstants 资源类型
+     * @param filterArray           嵌套Array过滤
+     * @return 重置后的Array
+     */
+    private static Map<String, List<Object>> resetFilterArray(String platform, ResourceTypeConstants resourceTypeConstants, Map<String, List<Object>> filterArray) {
+        HashMap<String, List<Object>> filterArrayMap = new HashMap<>();
+        for (Map.Entry<String, List<Object>> stringListEntry : filterArray.entrySet()) {
+            filterArrayMap.put(platform + "_" + resourceTypeConstants.name() + "_" + stringListEntry.getKey(), stringListEntry.getValue());
+        }
+        return filterArrayMap;
     }
 
     public static ResourceInstance appendFilterArray(String platform, ResourceTypeConstants resourceTypeConstants, String resourceField, ResourceInstance instance, List<Object> filterArray) {

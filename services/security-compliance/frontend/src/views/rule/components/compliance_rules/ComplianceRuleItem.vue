@@ -32,7 +32,8 @@
       v-if="
         activeField &&
         (activeField.fieldType === 'Enum' ||
-          activeField.fieldType === 'ArrayEnum')
+          activeField.fieldType === 'ArrayEnum') &&
+        !['EXIST', 'NOT_EXIST'].includes(modelValue.compare)
       "
       :modelValue="modelValue.value"
       @change="handler('value', $event)"
@@ -58,7 +59,7 @@
     />
     <el-input
       class="avg spacing"
-      v-else
+      v-else-if="!['EXIST', 'NOT_EXIST'].includes(modelValue.compare)"
       :modelValue="modelValue.value"
       @input="handler('value', $event)"
       placeholder="请输入"

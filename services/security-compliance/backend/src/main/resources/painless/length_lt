@@ -1,0 +1,8 @@
+/**
+ * 数组长度小于
+ */
+try{
+return doc[params.field].length<(params.value instanceof String?Double.parseDouble(params.value):params.value);
+}catch (Exception e){
+   return false;
+}
