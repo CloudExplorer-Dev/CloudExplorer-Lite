@@ -191,8 +191,8 @@ const refresh = () => {
  * 是否开启了回收站
  */
 const isRecycleBinOpened = ref(true);
-const getRecycleBinSetting = () => {
-  RecycleBinsApi.getRecycleEnableStatus().then((result) => {
+const getRecycleBinSetting = async () => {
+  await RecycleBinsApi.getRecycleEnableStatus().then((result) => {
     isRecycleBinOpened.value = result.data;
   });
 };
