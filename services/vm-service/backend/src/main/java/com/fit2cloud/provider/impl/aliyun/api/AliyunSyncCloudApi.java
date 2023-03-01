@@ -27,6 +27,7 @@ import com.fit2cloud.provider.entity.F2CDisk;
 import com.fit2cloud.provider.entity.F2CImage;
 import com.fit2cloud.provider.entity.F2CNetwork;
 import com.fit2cloud.provider.entity.F2CVirtualMachine;
+import com.fit2cloud.provider.entity.request.BaseDiskRequest;
 import com.fit2cloud.provider.entity.request.GetMetricsRequest;
 import com.fit2cloud.provider.impl.aliyun.constants.*;
 import com.fit2cloud.provider.impl.aliyun.entity.AliyunDiskTypeDTO;
@@ -270,7 +271,7 @@ public class AliyunSyncCloudApi {
                 DescribeVSwitchesResponse describeVSwitchesResponse = client.describeVSwitches(describeVSwitchesRequest);
                 vSwitches = describeVSwitchesResponse.body.vSwitches.vSwitch;
                 vSwitches.stream().filter(vSwitch ->
-                        "Available" .equalsIgnoreCase(vSwitch.getStatus())).forEach(vSwitch -> {
+                        "Available".equalsIgnoreCase(vSwitch.getStatus())).forEach(vSwitch -> {
                     if (StringUtils.isBlank(vSwitch.getVSwitchName())) {
                         vSwitch.setVSwitchName(vSwitch.getVSwitchId());
                     }
@@ -421,7 +422,7 @@ public class AliyunSyncCloudApi {
         List<DescribePricingModuleResponseBody.DescribePricingModuleResponseBodyDataAttributeListAttributeValuesAttributeValue> attributeValue = new ArrayList<>();
         if (pricingModuleResData != null) {
             List<DescribePricingModuleResponseBody.DescribePricingModuleResponseBodyDataAttributeListAttribute> attributeList = pricingModuleResData.getAttributeList().attribute.stream().filter(attribute ->
-                    "InstanceTypeFamily" .equalsIgnoreCase(attribute.getCode())
+                    "InstanceTypeFamily".equalsIgnoreCase(attribute.getCode())
             ).collect(Collectors.toList());
 
             if (CollectionUtils.isNotEmpty(attributeList) && CollectionUtils.isNotEmpty(attributeList.get(0).values.attributeValue)) {
@@ -508,7 +509,7 @@ public class AliyunSyncCloudApi {
 
         try {
             DescribePricingModuleResponse res = client.describePricingModule(describePricingModuleRequest);
-            if ("Success" .equalsIgnoreCase(res.body.code)) {
+            if ("Success".equalsIgnoreCase(res.body.code)) {
                 return res.body.data;
             }
         } catch (Exception e) {
@@ -588,12 +589,12 @@ public class AliyunSyncCloudApi {
                     .setProductType("");
             try {
                 GetPayAsYouGoPriceResponse res = client.getPayAsYouGoPrice(getPayAsYouGoPriceRequest);
-                if ("Success" .equalsIgnoreCase(res.getBody().getCode())) {
+                if ("Success".equalsIgnoreCase(res.getBody().getCode())) {
                     Float price;
                     List<GetPayAsYouGoPriceResponseBody.GetPayAsYouGoPriceResponseBodyDataModuleDetailsModuleDetail> moduleDetail = res.getBody().getData().moduleDetails.moduleDetail;
                     // 返回公网 IP 流量费用
                     for (int i = 0; i < moduleDetail.size(); i++) {
-                        if ("InternetTrafficOut" .equalsIgnoreCase(moduleDetail.get(i).getModuleCode())) {
+                        if ("InternetTrafficOut".equalsIgnoreCase(moduleDetail.get(i).getModuleCode())) {
                             price = moduleDetail.get(i).getCostAfterDiscount();
                             return String.format("%.2f", price) + PriceUnit.YUAN + "/GB";
                         }
@@ -637,7 +638,7 @@ public class AliyunSyncCloudApi {
                 }
                 try {
                     GetSubscriptionPriceResponse res = client.getSubscriptionPrice(getSubscriptionPriceRequest);
-                    if ("Success" .equalsIgnoreCase(res.getBody().getCode())) {
+                    if ("Success".equalsIgnoreCase(res.getBody().getCode())) {
                         result = String.format("%.3f", res.getBody().getData().tradePrice) + PriceUnit.YUAN;
                     }
                 } catch (Exception e) {
@@ -652,12 +653,12 @@ public class AliyunSyncCloudApi {
                         .setProductType("");
                 try {
                     GetPayAsYouGoPriceResponse res = client.getPayAsYouGoPrice(getPayAsYouGoPriceRequest);
-                    if ("Success" .equalsIgnoreCase(res.getBody().getCode())) {
+                    if ("Success".equalsIgnoreCase(res.getBody().getCode())) {
                         Float price = 0.00f;
                         List<GetPayAsYouGoPriceResponseBody.GetPayAsYouGoPriceResponseBodyDataModuleDetailsModuleDetail> moduleDetail = res.getBody().getData().moduleDetails.moduleDetail;
                         // 返回费用总和,排除公网 IP 流量费用，公网 IP 流量单独计费
                         for (int i = 0; i < moduleDetail.size(); i++) {
-                            if (!"InternetTrafficOut" .equalsIgnoreCase(moduleDetail.get(i).getModuleCode())) {
+                            if (!"InternetTrafficOut".equalsIgnoreCase(moduleDetail.get(i).getModuleCode())) {
                                 price = price + moduleDetail.get(i).getCostAfterDiscount();
                             }
                         }
@@ -1261,7 +1262,7 @@ public class AliyunSyncCloudApi {
                         ArrayNode jsonArray = JsonUtil.parseArray(response.getBody().getDatapoints());
                         jsonArray.forEach(v -> {
                             F2CPerfMetricMonitorData f2CEntityPerfMetric = AliyunMappingUtil.toF2CPerfMetricMonitorData(v);
-                            f2CEntityPerfMetric.setDevice(v.get("device")==null?null:v.get("device").toString());
+                            f2CEntityPerfMetric.setDevice(v.get("device") == null ? null : v.get("device").toString());
                             f2CEntityPerfMetric.setEntityType(F2CEntityType.VIRTUAL_MACHINE.name());
                             f2CEntityPerfMetric.setMetricName(perfMetric.name());
                             f2CEntityPerfMetric.setPeriod(getMetricsRequest.getPeriod());
@@ -1306,7 +1307,7 @@ public class AliyunSyncCloudApi {
                 }
 
                 if (("running").equalsIgnoreCase(instanceStatus)) {
-                    if ("system" .equalsIgnoreCase(diskType)) {
+                    if ("system".equalsIgnoreCase(diskType)) {
                         resizeDiskRequest.setType("online");
                     }
                     if (("data").equalsIgnoreCase(diskType) && diskStatus.equalsIgnoreCase(F2CDiskStatus.IN_USE)) {
@@ -1574,7 +1575,6 @@ public class AliyunSyncCloudApi {
         DescribeDisksRequest describeDisksRequest = new DescribeDisksRequest()
                 .setRegionId(regionId)
                 .setInstanceId(instanceId);
-        List<DescribeDisksResponseBody.DescribeDisksResponseBodyDisksDisk> disk = null;
         try {
             DescribeDisksResponse response = client.describeDisks(describeDisksRequest);
             return response.getBody().getDisks().getDisk();
@@ -1608,7 +1608,7 @@ public class AliyunSyncCloudApi {
         String systemDiskCategory = "";
         List<DescribeDisksResponseBody.DescribeDisksResponseBodyDisksDisk> disks = getDiskByInstanceId(request.getInstanceUuid(), request.getRegionId(), client);
         for (DescribeDisksResponseBody.DescribeDisksResponseBodyDisksDisk diskInfo : disks) {
-            if ("System" .equalsIgnoreCase(diskInfo.getType())) {
+            if ("System".equalsIgnoreCase(diskInfo.getType())) {
                 systemDiskCategory = diskInfo.getCategory();
                 break;
             }
@@ -1685,8 +1685,8 @@ public class AliyunSyncCloudApi {
                     CollectionUtils.isNotEmpty(availableZone.get(0).availableResources.availableResource) &&
                     CollectionUtils.isNotEmpty(availableZone.get(0).availableResources.availableResource.get(0).supportedResources.supportedResource)) {
                 supportedResource = availableZone.get(0).availableResources.availableResource.get(0).supportedResources.supportedResource.stream()
-                        .filter((theSupportedResource) -> "Available" .equalsIgnoreCase(theSupportedResource.status) &&
-                                !"WithoutStock" .equalsIgnoreCase(theSupportedResource.statusCategory)).collect(Collectors.toList());
+                        .filter((theSupportedResource) -> "Available".equalsIgnoreCase(theSupportedResource.status) &&
+                                !"WithoutStock".equalsIgnoreCase(theSupportedResource.statusCategory)).collect(Collectors.toList());
             }
         } catch (Exception e) {
             throw new RuntimeException("Failed to get instanceType for updating! " + e.getMessage(), e);
@@ -1726,14 +1726,14 @@ public class AliyunSyncCloudApi {
         List<DescribeDisksResponseBody.DescribeDisksResponseBodyDisksDisk> disks = getDiskByInstanceId(request.getInstanceUuid(), request.getRegionId(), client);
         List<AliyunCreateDiskForm> diskList = new ArrayList<>();
         disks.stream().forEach((disk) -> {
-            if ("System" .equalsIgnoreCase(disk.getType())) {
+            if ("System".equalsIgnoreCase(disk.getType())) {
                 AliyunCreateDiskForm systemDisk = new AliyunCreateDiskForm();
                 systemDisk.setDiskType(disk.getCategory());
                 systemDisk.setSize(disk.getSize().longValue());
                 systemDisk.setPerformanceLevel(disk.getPerformanceLevel());
                 diskList.add(0, systemDisk);
             }
-            if ("Data" .equalsIgnoreCase(disk.getType())) {
+            if ("Data".equalsIgnoreCase(disk.getType())) {
                 AliyunCreateDiskForm dataDisk = new AliyunCreateDiskForm();
                 dataDisk.setDiskType(disk.getCategory());
                 dataDisk.setSize(disk.getSize().longValue());
@@ -1764,6 +1764,21 @@ public class AliyunSyncCloudApi {
             return result;
         } catch (Exception e) {
             throw new RuntimeException("Failed to get price! " + e.getMessage(), e);
+        }
+    }
+
+    /**
+     * 获取云主机关联的磁盘
+     * @param request
+     * @return
+     */
+    public static List<F2CDisk> getVmF2CDisks(BaseDiskRequest request) {
+        try {
+            Client client = JsonUtil.parseObject(request.getCredential(), AliyunVmCredential.class).getClient();
+            List<DescribeDisksResponseBody.DescribeDisksResponseBodyDisksDisk> disks = getDiskByInstanceId(request.getInstanceUuid(), request.getRegionId(), client);
+            return disks.stream().map((disk) -> AliyunMappingUtil.toF2CDisk(disk)).collect(Collectors.toList());
+        } catch (Exception e) {
+            throw new RuntimeException("GetVmF2CDisks Error!" + e.getMessage(), e);
         }
     }
 }

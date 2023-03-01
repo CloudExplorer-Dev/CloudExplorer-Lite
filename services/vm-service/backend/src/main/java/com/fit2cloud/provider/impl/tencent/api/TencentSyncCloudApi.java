@@ -17,6 +17,7 @@ import com.fit2cloud.provider.entity.F2CDisk;
 import com.fit2cloud.provider.entity.F2CImage;
 import com.fit2cloud.provider.entity.F2CNetwork;
 import com.fit2cloud.provider.entity.F2CVirtualMachine;
+import com.fit2cloud.provider.entity.request.BaseDiskRequest;
 import com.fit2cloud.provider.entity.request.GetMetricsRequest;
 import com.fit2cloud.provider.impl.tencent.constants.TencentChargeType;
 import com.fit2cloud.provider.impl.tencent.constants.TencentDiskType;
@@ -27,6 +28,7 @@ import com.fit2cloud.provider.impl.tencent.entity.credential.TencentVmCredential
 import com.fit2cloud.provider.impl.tencent.entity.request.*;
 import com.fit2cloud.provider.impl.tencent.util.TencentMappingUtil;
 import com.tencentcloudapi.cbs.v20170312.CbsClient;
+import com.tencentcloudapi.cbs.v20170312.models.Filter;
 import com.tencentcloudapi.cbs.v20170312.models.Placement;
 import com.tencentcloudapi.cbs.v20170312.models.*;
 import com.tencentcloudapi.common.exception.TencentCloudSDKException;
@@ -61,11 +63,10 @@ import static com.fit2cloud.provider.impl.tencent.util.TencentMappingUtil.toF2cD
  * @Version 1.0
  * @注释:
  */
-public class TencetSyncCloudApi {
-    private static Logger logger = LoggerFactory.getLogger(TencetSyncCloudApi.class);
+public class TencentSyncCloudApi {
+    private static Logger logger = LoggerFactory.getLogger(TencentSyncCloudApi.class);
 
     public static F2CVirtualMachine createVirtualMachine(TencentVmCreateRequest req) {
-
         TencentVmCredential tencentVmCredential = JsonUtil.parseObject(req.getCredential(), TencentVmCredential.class);
         CvmClient cvmClient = tencentVmCredential.getCvmClient(req.getRegionId());
 
@@ -100,6 +101,7 @@ public class TencetSyncCloudApi {
                 Thread.sleep(5000);
             }
         } catch (Exception e) {
+            LogUtil.error(e.getMessage(), e);
         }
 
         try {
@@ -311,7 +313,7 @@ public class TencetSyncCloudApi {
         req.setDiskUsage("DATA_DISK");
 
         // 极速型 SSD 云硬盘仅支持随存储增强型云服务器 S5se 一起购买。单独创建磁盘时不展示该选项
-        return getDiskTypes(req).getDataDiskTypes().stream().filter((item)->
+        return getDiskTypes(req).getDataDiskTypes().stream().filter((item) ->
                 !TencentDiskType.CLOUD_TSSD.getId().equalsIgnoreCase(item.getDiskType())).collect(Collectors.toList());
     }
 
@@ -1562,6 +1564,50 @@ public class TencetSyncCloudApi {
             return String.format("%.2f", price) + unit;
         } catch (TencentCloudSDKException e) {
             throw new RuntimeException("Failed to get the price of config update!" + e.getMessage(), e);
+        }
+    }
+
+    /**
+     * 获取云主机关联的磁盘
+     *
+     * @param request
+     * @return
+     */
+    public static List<F2CDisk> getVmF2CDisks(BaseDiskRequest request) {
+        TencentVmCredential tencentVmCredential = JsonUtil.parseObject(request.getCredential(), TencentVmCredential.class);
+        CbsClient cbsClient = tencentVmCredential.getCbsClient(request.getRegionId());
+        try {
+            return getDisksByInstanceId(request.getInstanceUuid(), cbsClient).stream().map((disk) -> {
+                        F2CDisk f2cDisk = TencentMappingUtil.toF2CDisk(disk);
+                        f2cDisk.setRegion(request.getRegionId());
+                        return f2cDisk;
+                    }
+            ).collect(Collectors.toList());
+        } catch (Exception e) {
+            throw new RuntimeException("GetVmF2CDisks Error!" + e.getMessage(), e);
+        }
+    }
+
+    /**
+     * 根据实例 ID 获取实例磁盘列表
+     *
+     * @param instanceId
+     * @param cbsClient
+     * @return
+     */
+    private static List<Disk> getDisksByInstanceId(String instanceId, CbsClient cbsClient) {
+        try {
+            DescribeDisksRequest req = new DescribeDisksRequest();
+            Filter[] filters = new Filter[1];
+            Filter filter = new Filter();
+            filter.setName("instance-id");
+            filter.setValues(new String[]{instanceId});
+            filters[0] = filter;
+            req.setFilters(filters);
+            DescribeDisksResponse response = cbsClient.DescribeDisks(req);
+            return Arrays.asList(response.getDiskSet());
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to get disks of instance.Instance id:" + instanceId + e.getMessage(), e);
         }
     }
 }

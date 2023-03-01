@@ -10,13 +10,13 @@ import com.fit2cloud.provider.constants.DeleteWithInstance;
 import com.fit2cloud.provider.entity.F2CDisk;
 import com.fit2cloud.provider.entity.F2CImage;
 import com.fit2cloud.provider.entity.F2CVirtualMachine;
+import com.fit2cloud.provider.entity.request.BaseDiskRequest;
 import com.fit2cloud.provider.entity.request.GetMetricsRequest;
 import com.fit2cloud.provider.impl.huawei.api.HuaweiSyncCloudApi;
 import com.fit2cloud.provider.impl.huawei.constants.HuaweiPeriodOption;
 import com.fit2cloud.provider.impl.huawei.entity.*;
 import com.fit2cloud.provider.impl.huawei.entity.credential.HuaweiVmCredential;
 import com.fit2cloud.provider.impl.huawei.entity.request.*;
-import com.fit2cloud.provider.impl.tencent.constants.TencentPeriodOption;
 import com.huaweicloud.sdk.ecs.v2.model.NovaSimpleKeypair;
 import org.apache.commons.lang3.StringUtils;
 
@@ -298,5 +298,9 @@ public class HuaweiCloudProvider extends AbstractCloudProvider<HuaweiVmCredentia
             periodList.add(map);
         }
         return periodList;
+    }
+
+    public List<F2CDisk> getVmF2CDisks(String req){
+        return HuaweiSyncCloudApi.getVmF2CDisks(JsonUtil.parseObject(req, BaseDiskRequest.class));
     }
  }

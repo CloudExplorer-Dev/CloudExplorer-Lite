@@ -499,6 +499,7 @@ public class VmCloudServerServiceImpl extends ServiceImpl<BaseVmCloudServerMappe
 
                 VmCloudServer vmCloudServer = this.getById(serverId);
                 String sourceId = vmCloudServer.getSourceId();
+                String regionId = vmCloudServer.getRegion();
 
                 CreateServerRequest requestToSave = new CreateServerRequest();
                 BeanUtils.copyProperties(request, requestToSave);
@@ -540,8 +541,13 @@ public class VmCloudServerServiceImpl extends ServiceImpl<BaseVmCloudServerMappe
                     e.printStackTrace();
                 }
 
-                vmCloudServer.setSourceId(sourceId);
                 // 保存云主机上的磁盘信息
+                if (StringUtils.isEmpty(vmCloudServer.getSourceId())) {
+                    vmCloudServer.setSourceId(sourceId);
+                }
+                if (StringUtils.isEmpty(vmCloudServer.getRegion())) {
+                    vmCloudServer.setRegion(regionId);
+                }
                 saveCloudServerDisks(vmCloudServer);
 
                 modifyResource.accept(vmCloudServer);

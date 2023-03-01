@@ -18,6 +18,7 @@ import com.fit2cloud.provider.constants.PriceUnit;
 import com.fit2cloud.provider.entity.F2CDisk;
 import com.fit2cloud.provider.entity.F2CImage;
 import com.fit2cloud.provider.entity.F2CVirtualMachine;
+import com.fit2cloud.provider.entity.request.BaseDiskRequest;
 import com.fit2cloud.provider.entity.request.GetMetricsRequest;
 import com.fit2cloud.provider.impl.huawei.constants.HuaweiDiskType;
 import com.fit2cloud.provider.impl.huawei.constants.HuaweiPerfMetricConstants;
@@ -1700,5 +1701,29 @@ public class HuaweiSyncCloudApi {
         request.setOrderId(orderId);
         bssClient.showCustomerOrderDetails(request);
         return bssClient.showCustomerOrderDetails(request);
+    }
+
+    /**
+     * 获取云主机关联的磁盘
+     *
+     * @param request
+     * @return
+     */
+    public static List<F2CDisk> getVmF2CDisks(BaseDiskRequest request) {
+        HuaweiVmCredential credential = JsonUtil.parseObject(request.getCredential(), HuaweiVmCredential.class);
+        EcsClient ecsClient = credential.getEcsClient(request.getRegionId());
+        EvsClient evsClient = credential.getEvsClient(request.getRegionId());
+        try {
+            ListServerBlockDevicesResponse listServerBlockDevicesResponse = ecsClient.listServerBlockDevices(new ListServerBlockDevicesRequest().withServerId(request.getInstanceUuid()));
+            List<ServerBlockDevice> volumeAttachments = listServerBlockDevicesResponse.getVolumeAttachments();
+            return volumeAttachments.stream().map(attachment -> {
+                ShowVolumeResponse showVolumeResponse = evsClient.showVolume(new ShowVolumeRequest().withVolumeId(attachment.getVolumeId()));
+                VolumeDetail volume = showVolumeResponse.getVolume();
+                F2CDisk f2CDisk = HuaweiMappingUtil.toF2CDisk(volume);
+                return f2CDisk;
+            }).collect(Collectors.toList());
+        } catch (Exception e) {
+            throw new RuntimeException("GetVmF2CDisks Error!" + e.getMessage(), e);
+        }
     }
 }
