@@ -226,4 +226,8 @@ public abstract class AbstractCloudProvider<C extends Credential> implements ICl
     public String calculateConfigUpdatePrice(String req){
         return null;
     }
+
+    public List<F2CDisk> getVmF2CDisks(String req) {
+        return new ArrayList<>();
+    }
 }

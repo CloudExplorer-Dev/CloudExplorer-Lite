@@ -153,6 +153,7 @@ public class VsphereCloudProvider extends AbstractCloudProvider<VsphereCredentia
 
     /**
      * 获取磁盘类型 （单独创建磁盘时使用）
+     *
      * @param req
      * @return
      */
@@ -178,6 +179,7 @@ public class VsphereCloudProvider extends AbstractCloudProvider<VsphereCredentia
 
     /**
      * 获取磁盘模式 （单独创建磁盘时使用）
+     *
      * @param req
      * @return
      */
@@ -202,6 +204,7 @@ public class VsphereCloudProvider extends AbstractCloudProvider<VsphereCredentia
 
     /**
      * 获取存储类型 （单独创建磁盘时使用）
+     *
      * @param req
      * @return
      */
@@ -253,33 +256,38 @@ public class VsphereCloudProvider extends AbstractCloudProvider<VsphereCredentia
     }
 
     @Override
-    public List<F2CPerfMetricMonitorData> getF2CPerfMetricMonitorData(String req){
+    public List<F2CPerfMetricMonitorData> getF2CPerfMetricMonitorData(String req) {
         return VsphereSyncCloudApi.getF2CPerfMetricList(JsonUtil.parseObject(req, GetMetricsRequest.class));
     }
 
     @Override
-    public List<F2CPerfMetricMonitorData> getF2CHostPerfMetricMonitorData(String req){
+    public List<F2CPerfMetricMonitorData> getF2CHostPerfMetricMonitorData(String req) {
         return VsphereSyncCloudApi.getF2CHostPerfMetricList(JsonUtil.parseObject(req, GetMetricsRequest.class));
     }
 
     @Override
-    public List<F2CPerfMetricMonitorData> getF2CDiskPerfMetricMonitorData(String req){
+    public List<F2CPerfMetricMonitorData> getF2CDiskPerfMetricMonitorData(String req) {
         return VsphereSyncCloudApi.getF2CDiskPerfMetricList(JsonUtil.parseObject(req, GetMetricsRequest.class));
     }
 
     @Override
-    public List<F2CPerfMetricMonitorData> getF2CDatastorePerfMetricMonitorData(String req){
+    public List<F2CPerfMetricMonitorData> getF2CDatastorePerfMetricMonitorData(String req) {
         return VsphereSyncCloudApi.getF2CDatastorePerfMetricList(JsonUtil.parseObject(req, GetMetricsRequest.class));
     }
 
 
     @Override
-    public F2CVirtualMachine changeVmConfig(String req){
+    public F2CVirtualMachine changeVmConfig(String req) {
         return VsphereSyncCloudApi.changeVmConfig(JsonUtil.parseObject(req, VsphereUpdateConfigRequest.class));
     }
 
     @Override
     public FormObject getConfigUpdateForm() {
         return FormUtil.toForm(VsphereConfigUpdateForm.class);
+    }
+
+    @Override
+    public List<F2CDisk> getVmF2CDisks(String req) {
+        return VsphereSyncCloudApi.getVmF2CDisks(JsonUtil.parseObject(req, VsphereDiskRequest.class));
     }
 }

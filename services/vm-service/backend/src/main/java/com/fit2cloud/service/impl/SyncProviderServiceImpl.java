@@ -520,7 +520,9 @@ public class SyncProviderServiceImpl extends BaseSyncService implements ISyncPro
         vmCloudDisk.setStatus(disk.getStatus());
         vmCloudDisk.setDiskChargeType(disk.getDiskChargeType());
         vmCloudDisk.setZone(disk.getZone());
-        Optional.ofNullable(disk.getCreateTime()).ifPresent((createTime) -> vmCloudDisk.setCreateTime(DateUtil.timestampToDatetime(createTime)));
+        if (disk.getCreateTime() != 0) {
+            vmCloudDisk.setCreateTime(DateUtil.timestampToDatetime(disk.getCreateTime()));
+        }
         vmCloudDisk.setUpdateTime(updateTime);
         vmCloudDisk.setImageId(disk.getImageId());
         return vmCloudDisk;

@@ -14,6 +14,7 @@ import com.fit2cloud.provider.entity.F2CDisk;
 import com.fit2cloud.provider.entity.F2CImage;
 import com.fit2cloud.provider.entity.F2CNetwork;
 import com.fit2cloud.provider.entity.F2CVirtualMachine;
+import com.fit2cloud.provider.entity.request.BaseDiskRequest;
 import com.fit2cloud.provider.entity.request.GetMetricsRequest;
 import com.fit2cloud.provider.impl.aliyun.api.AliyunSyncCloudApi;
 import com.fit2cloud.provider.impl.aliyun.constants.*;
@@ -383,5 +384,10 @@ public class AliyunCloudProvider extends AbstractCloudProvider<AliyunVmCredentia
 
     public String calculateConfigUpdatePrice(String req) {
         return AliyunSyncCloudApi.calculateConfigUpdatePrice(JsonUtil.parseObject(req, AliyunUpdateConfigRequest.class));
+    }
+
+    @Override
+    public List<F2CDisk> getVmF2CDisks(String req){
+        return AliyunSyncCloudApi.getVmF2CDisks(JsonUtil.parseObject(req, BaseDiskRequest.class));
     }
 }

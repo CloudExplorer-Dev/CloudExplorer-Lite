@@ -1,9 +1,11 @@
 package com.fit2cloud.provider.entity;
 
 import lombok.SneakyThrows;
+import org.springframework.core.io.ClassPathResource;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.InputStream;
 import java.nio.charset.Charset;
 
 /**
@@ -123,10 +125,10 @@ public enum InstanceFieldCompare {
 
     @SneakyThrows
     private static String loadingScript(String url) {
-        File file = new File(InstanceFieldCompare.class.getClassLoader().getResource(url).getFile());
-        FileInputStream fileInputStream = new FileInputStream(file);
-        byte[] bytes = new byte[fileInputStream.available()];
-        fileInputStream.read(bytes);
+        ClassPathResource classPathResource = new ClassPathResource(url);
+        InputStream inputStream = classPathResource.getInputStream();
+        byte[] bytes = new byte[inputStream.available()];
+        inputStream.read(bytes);
         return new String(bytes, Charset.forName("utf-8"));
     }
 
