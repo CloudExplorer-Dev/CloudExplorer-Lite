@@ -314,7 +314,7 @@ onMounted(() => {
   if (timer == null) {
     timer = setInterval(() => {
       getList();
-    }, 6000);
+    }, 10000);
   }
 });
 onBeforeUnmount(() => {

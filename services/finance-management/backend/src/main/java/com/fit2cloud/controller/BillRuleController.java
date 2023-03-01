@@ -45,7 +45,7 @@ public class BillRuleController {
 
     @GetMapping("/list")
     @ApiOperation(value = "查询所有账单规则", notes = "查询所有账单规则")
-    @PreAuthorize("hasAnyCePermission('CUSTOM_BILL:READ')")
+    @PreAuthorize("hasAnyCePermission('CUSTOM_BILL:READ','BILL_ViEW:READ')")
     public ResultHolder<List<BillRule>> list() {
         return ResultHolder.success(billRuleService.list());
     }

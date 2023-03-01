@@ -64,7 +64,7 @@ const handleReturn = () => {
 if (props.auto) {
   AutoBreadcrumbs.value = router.currentRoute.value.matched
     .filter((route) => {
-      return !props.excludes.some((ex) => route.meta[ex.field] === ex.value);
+      return !props.excludes.some((ex) => route.meta[ex.field] === ex.value || (route as any)[ex.field] === ex.value);
     })
     .filter((route) => route.meta.title)
     .map((route) => {
@@ -75,7 +75,7 @@ if (props.auto) {
 watch(router.currentRoute, () => {
   AutoBreadcrumbs.value = router.currentRoute.value.matched
     .filter((route) => {
-      return !props.excludes.some((ex) => route.meta[ex.field] === ex.value);
+      return !props.excludes.some((ex) => route.meta[ex.field] === ex.value || (route as any)[ex.field] === ex.value);
     })
     .filter((route) => route.meta.title)
     .map((route) => {

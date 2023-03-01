@@ -1,10 +1,13 @@
 package com.fit2cloud.service.impl;
 
+import co.elastic.clients.elasticsearch.ElasticsearchClient;
 import co.elastic.clients.elasticsearch._types.FieldValue;
-import co.elastic.clients.elasticsearch._types.query_dsl.Query;
-import co.elastic.clients.elasticsearch._types.query_dsl.ScriptQuery;
-import co.elastic.clients.elasticsearch._types.query_dsl.TermQuery;
+import co.elastic.clients.elasticsearch._types.query_dsl.*;
+import co.elastic.clients.elasticsearch.core.DeleteByQueryRequest;
+import co.elastic.clients.elasticsearch.core.DeleteByQueryResponse;
 import co.elastic.clients.json.JsonData;
+import co.elastic.clients.util.ObjectBuilder;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.fit2cloud.base.entity.CloudAccount;
 import com.fit2cloud.base.entity.JobRecord;
 import com.fit2cloud.base.entity.JobRecordResourceMapping;
@@ -27,8 +30,10 @@ import com.fit2cloud.service.IBillDimensionSettingService;
 import com.fit2cloud.service.SyncService;
 import io.reactivex.rxjava3.functions.BiFunction;
 import io.reactivex.rxjava3.functions.Consumer;
+import lombok.SneakyThrows;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.elasticsearch.index.reindex.DeleteByQueryRequestBuilder;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Caching;
 import org.springframework.data.elasticsearch.annotations.Document;
@@ -56,6 +61,8 @@ public class SyncServiceImpl extends BaseSyncService implements SyncService {
     private CloudBillRepository cloudBillRepository;
     @Resource
     private ElasticsearchTemplate elasticsearchTemplate;
+    @Resource
+    private ElasticsearchClient elasticsearchClient;
     @Resource
     private IBillDimensionSettingService billDimensionSettingService;
     /**
@@ -107,15 +114,28 @@ public class SyncServiceImpl extends BaseSyncService implements SyncService {
         if (params.containsKey(JobConstants.CloudAccount.BILL_SETTING.name())) {
             billSetting = JsonUtil.parseObject(JsonUtil.toJSONString(params.get(JobConstants.CloudAccount.BILL_SETTING.name())), Map.class);
         }
+        // 获取默认同步月份
         List<String> months = MonthUtil.getMonths(billDay);
+        // 如果参数有传输 则使用参数月份
         if (params.containsKey("MONTHS")) {
             months = JsonUtil.parseArray(JsonUtil.toJSONString(params.get("MONTHS")), String.class);
         }
+        // 如果是桶 则获取桶中月份
         if (Objects.nonNull(cloudAccount) && Objects.nonNull(billSetting) && params.containsKey("BUCKET_CYCLE") && StringUtils.equals((String) params.get("BUCKET_CYCLE"), "all")) {
             Class<? extends ICloudProvider> of = ICloudProvider.of(cloudAccount.getPlatform());
             String execMethodArgs = getExecMethodArgs(cloudAccount, "", billSetting);
             months = CommonUtil.exec(of, execMethodArgs, ICloudProvider::listBucketFileMonth);
         }
+        // 如果没有同步过,则同步历史12个月的账单
+        long count = jobRecordResourceMappingService.count(new LambdaQueryWrapper<JobRecordResourceMapping>()
+                .eq(JobRecordResourceMapping::getJobType, JobTypeConstants.CLOUD_ACCOUNT_SYNC_BILL_JOB)
+                .eq(JobRecordResourceMapping::getResourceId, cloudAccountId)
+                .eq(JobRecordResourceMapping::getResourceType, com.fit2cloud.constants.JobConstants.JobSyncResourceType.BILL.name()));
+        if (count == 0) {
+            months = MonthUtil.getHistoryMonth(12);
+        }
+        // 删除不属于当前已有云账号的数据
+        deleteNotFountCloudAccountData();
         syncBill(cloudAccountId, months, billSetting);
     }
 
@@ -138,7 +158,31 @@ public class SyncServiceImpl extends BaseSyncService implements SyncService {
     private void deleteDataSource(String cloudAccountId) {
         synchronized (EsWriteLockConstants.WRITE_LOCK) {
             // 如果云账号不存在,删除es对应数据
-            elasticsearchTemplate.delete(new NativeQueryBuilder().withQuery(new Query.Builder().term(new TermQuery.Builder().field("cloudAccountId").value(FieldValue.of(cloudAccountId)).build()).build()).build(), CloudBill.class, IndexCoordinates.of(CloudBill.class.getAnnotation(Document.class).indexName()));
+            elasticsearchTemplate.delete(new NativeQueryBuilder()
+                    .withQuery(new Query.Builder()
+                            .term(new TermQuery.Builder().field("cloudAccountId")
+                                    .value(FieldValue.of(cloudAccountId)).build()).build()).build(), CloudBill.class, IndexCoordinates.of(CloudBill.class.getAnnotation(Document.class).indexName()));
+        }
+    }
+
+    /**
+     * 清理不存在的云账号数据
+     */
+
+    private void deleteNotFountCloudAccountData() {
+        // 所有的云账号
+        List<CloudAccount> cloudAccounts = cloudAccountService.list();
+        synchronized (EsWriteLockConstants.WRITE_LOCK) {
+            Query query = new BoolQuery.Builder().mustNot(new Query.Builder().terms(new TermsQuery.Builder()
+                    .terms(new TermsQueryField.Builder().value(cloudAccounts.stream().map(CloudAccount::getId)
+                            .map(FieldValue::of).toList()).build()).field("cloudAccountId").build()).build()).build()._toQuery();
+            DeleteByQueryRequest deleteByQueryRequest = new DeleteByQueryRequest.Builder().query(query).refresh(Boolean.TRUE)
+                    .index(CloudBill.class.getAnnotation(Document.class).indexName()).build();
+            try {
+                elasticsearchClient.deleteByQuery(deleteByQueryRequest);
+            } catch (Exception ignored) {
+            }
+
         }
     }
 

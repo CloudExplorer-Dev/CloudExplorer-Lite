@@ -47,7 +47,7 @@ public enum InstanceFieldType {
     /**
      * 嵌套数组数字
      */
-    NestedArrayNumber(GE, GT, LE, LT, AVG_GE, AVG_GT, AVG_LE, AVG_LT, SUM_GE, SUM_GT, SUM_LE, SUM_LT, EXIST, NOT_EXIST),
+    NestedArrayNumber(EQ, GE, GT, LE, LT, AVG_GE, AVG_GT, AVG_LE, AVG_LT, SUM_GE, SUM_GT, SUM_LE, SUM_LT, EXIST, NOT_EXIST),
     /**
      * 时间
      */

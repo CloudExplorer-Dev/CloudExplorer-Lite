@@ -1,12 +1,11 @@
 package com.fit2cloud.service.impl;
 
 import co.elastic.clients.elasticsearch.ElasticsearchClient;
+import co.elastic.clients.elasticsearch._types.FieldValue;
 import co.elastic.clients.elasticsearch._types.Refresh;
 import co.elastic.clients.elasticsearch._types.mapping.NestedProperty;
 import co.elastic.clients.elasticsearch._types.mapping.Property;
-import co.elastic.clients.elasticsearch._types.query_dsl.BoolQuery;
-import co.elastic.clients.elasticsearch._types.query_dsl.Query;
-import co.elastic.clients.elasticsearch._types.query_dsl.TermQuery;
+import co.elastic.clients.elasticsearch._types.query_dsl.*;
 import co.elastic.clients.elasticsearch.core.BulkRequest;
 import co.elastic.clients.elasticsearch.core.DeleteByQueryRequest;
 import co.elastic.clients.elasticsearch.core.bulk.BulkOperation;
@@ -157,7 +156,35 @@ public class SyncServiceImpl extends BaseSyncService implements ISyncService {
             if (lock.isLocked()) {
                 lock.unlock();
             }
+            // 清除不存在的云账号数据
+            deleteNotFountCloudAccountData();
         }
+    }
+
+    /**
+     * 清理不存在的云账号数据
+     */
+
+    private void deleteNotFountCloudAccountData() {
+        // 所有的云账号
+        List<CloudAccount> cloudAccounts = cloudAccountService.list();
+        Query query = new BoolQuery.Builder().mustNot(new Query.Builder().terms(new TermsQuery.Builder()
+                .terms(new TermsQueryField.Builder().value(cloudAccounts.stream().map(CloudAccount::getId)
+                        .map(FieldValue::of).toList()).build()).field("cloudAccountId").build()).build()).build()._toQuery();
+        DeleteByQueryRequest deleteByQueryRequest = new DeleteByQueryRequest.Builder().query(query).refresh(Boolean.TRUE)
+                .index(ResourceInstance.class.getAnnotation(Document.class).indexName()).build();
+        try {
+            // 删除es数据
+            elasticsearchClient.deleteByQuery(deleteByQueryRequest);
+            // 删除扫描数据
+            complianceScanResultService.remove(new LambdaQueryWrapper<ComplianceScanResult>()
+                    .notIn(ComplianceScanResult::getCloudAccountId, (cloudAccounts.stream().map(CloudAccount::getId).toList())));
+            // 删除扫描资源数据
+            complianceScanResourceResultService.remove(new LambdaQueryWrapper<ComplianceScanResourceResult>()
+                    .notIn(ComplianceScanResourceResult::getCloudAccountId, (cloudAccounts.stream().map(CloudAccount::getId).toList())));
+        } catch (Exception ignored) {
+        }
+
     }
 
     /**
