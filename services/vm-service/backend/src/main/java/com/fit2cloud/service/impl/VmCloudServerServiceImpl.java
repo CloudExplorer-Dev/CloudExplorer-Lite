@@ -416,7 +416,8 @@ public class VmCloudServerServiceImpl extends ServiceImpl<BaseVmCloudServerMappe
         // 更新【不随实例删除】的云磁盘的状态信息及关联的云主机信息
         UpdateWrapper<VmCloudDisk> updateWrapper = new UpdateWrapper();
         updateWrapper.lambda().eq(VmCloudDisk::getInstanceUuid, vmCloudServer.getInstanceUuid())
-                .ne(VmCloudDisk::getDeleteWithInstance, "YES")
+                .and(wrapperInner1 -> wrapperInner1.ne(VmCloudDisk::getDeleteWithInstance, "YES")
+                        .or(wrapperInner2 -> wrapperInner2.isNull(VmCloudDisk::getDeleteWithInstance)))
                 .eq(VmCloudDisk::getAccountId, vmCloudServer.getAccountId())
                 .set(VmCloudDisk::getInstanceUuid, ResourceConstants.NO_INSTANCE)
                 .set(VmCloudDisk::getStatus, F2CDiskStatus.AVAILABLE);
@@ -497,6 +498,7 @@ public class VmCloudServerServiceImpl extends ServiceImpl<BaseVmCloudServerMappe
                 LocalDateTime createTime = DateUtil.getSyncTime();
 
                 VmCloudServer vmCloudServer = this.getById(serverId);
+                String sourceId = vmCloudServer.getSourceId();
 
                 CreateServerRequest requestToSave = new CreateServerRequest();
                 BeanUtils.copyProperties(request, requestToSave);
@@ -530,7 +532,6 @@ public class VmCloudServerServiceImpl extends ServiceImpl<BaseVmCloudServerMappe
                     F2CVirtualMachine result = CommonUtil.exec(cloudProvider, createRequest, ICloudProvider::createVirtualMachine);
                     vmCloudServer = SyncProviderServiceImpl.toVmCloudServer(result, vmCloudServer.getAccountId(), DateUtil.getSyncTime());
                     jobRecord.setStatus(JobStatusConstants.SUCCESS);
-
                 } catch (Exception e) {
                     vmCloudServer.setInstanceStatus(F2CInstanceStatus.Failed.name());
                     jobRecord.setStatus(JobStatusConstants.FAILED);
@@ -539,8 +540,9 @@ public class VmCloudServerServiceImpl extends ServiceImpl<BaseVmCloudServerMappe
                     e.printStackTrace();
                 }
 
+                vmCloudServer.setSourceId(sourceId);
                 // 保存云主机上的磁盘信息
-                saveCloudServerDisk(vmCloudServer);
+                saveCloudServerDisks(vmCloudServer);
 
                 modifyResource.accept(vmCloudServer);
                 jobRecord.setFinishTime(DateUtil.getSyncTime());
@@ -555,12 +557,13 @@ public class VmCloudServerServiceImpl extends ServiceImpl<BaseVmCloudServerMappe
 
     /**
      * 保存云主机关联的磁盘信息
-     * @param cloudServer
+     *
+     * @param vmCloudServer
      */
-    private void saveCloudServerDisk(VmCloudServer cloudServer) {
+    private void saveCloudServerDisks(VmCloudServer vmCloudServer) {
         try {
-            List<F2CDisk> f2CDisks = getVmDisks(cloudServer);
-            vmCloudDiskServiceImpl.saveCloudDisks(f2CDisks, cloudServer.getAccountId(),cloudServer.getSourceId());
+            List<F2CDisk> f2CDisks = getVmDisks(vmCloudServer);
+            vmCloudDiskServiceImpl.saveCloudDisks(f2CDisks, vmCloudServer.getAccountId(), vmCloudServer.getSourceId());
         } catch (Exception ignore) {
             LogUtil.error(ignore.getMessage(), ignore);
         }
@@ -568,6 +571,7 @@ public class VmCloudServerServiceImpl extends ServiceImpl<BaseVmCloudServerMappe
 
     /**
      * 获取云主机关联的磁盘信息
+     *
      * @param vmCloudServer
      * @return
      */

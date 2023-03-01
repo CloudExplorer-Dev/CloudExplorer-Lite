@@ -6,6 +6,7 @@ import com.baomidou.mybatisplus.core.metadata.OrderItem;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.fit2cloud.base.entity.RecycleBin;
+import com.fit2cloud.base.entity.VmCloudDisk;
 import com.fit2cloud.base.mapper.BaseRecycleBinMapper;
 import com.fit2cloud.base.service.IBaseRecycleBinService;
 import com.fit2cloud.base.service.IBaseSystemParameterService;
@@ -16,7 +17,6 @@ import com.fit2cloud.controller.request.vm.BatchRecycleRequest;
 import com.fit2cloud.controller.request.vm.PageRecycleBinRequest;
 import com.fit2cloud.dao.mapper.RecycleBinMapper;
 import com.fit2cloud.dto.RecycleBinDTO;
-import com.fit2cloud.dto.VmCloudDiskDTO;
 import com.fit2cloud.provider.constants.F2CDiskStatus;
 import com.fit2cloud.service.*;
 import org.apache.commons.collections4.CollectionUtils;
@@ -90,8 +90,8 @@ public class RecycleBinServiceImpl extends ServiceImpl<BaseRecycleBinMapper, Rec
             }
             // 删除磁盘
             if (resourceType.equals(ResourceTypeConstants.DISK)) {
-                VmCloudDiskDTO diskInfo = diskService.cloudDisk(recycleBin.getResourceId());
-                if (diskInfo != null && !F2CDiskStatus.AVAILABLE.equalsIgnoreCase(diskInfo.getStatus())) {
+                VmCloudDisk vmCloudDisk = diskService.getBaseMapper().selectById(recycleBin.getResourceId());
+                if (vmCloudDisk != null && !F2CDiskStatus.AVAILABLE.equalsIgnoreCase(vmCloudDisk.getStatus())) {
                     throw new RuntimeException("Can not delete disk.The disk status must be available!");
                 } else {
                     diskService.delete(recycleBin.getResourceId());
