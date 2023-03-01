@@ -45,13 +45,13 @@ const getColorByStatus = (status: string) => {
 };
 const mapStatus = (status: string) => {
   return status === "FAILED"
-    ? "同步失败"
+    ? "扫描失败"
     : status === "INIT"
     ? "初始化"
     : status === "SUCCESS"
-    ? "同步成功"
+    ? "扫描成功"
     : status === "SYNCING"
-    ? "同步中"
+    ? "扫描中"
     : "未知";
 };
 </script>
