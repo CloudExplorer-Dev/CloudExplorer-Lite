@@ -61,10 +61,6 @@ onMounted(() => {
   });
   if (route.query.ruleGroup) {
     activeComplianceRuleGroupId.value = route.query.ruleGroup as string;
-    bus.emit(
-      "update:compliance_rule_group_id",
-      activeComplianceRuleGroupId.value
-    );
   }
 });
 const scan = ref<InstanceType<typeof compliance_scan>>();

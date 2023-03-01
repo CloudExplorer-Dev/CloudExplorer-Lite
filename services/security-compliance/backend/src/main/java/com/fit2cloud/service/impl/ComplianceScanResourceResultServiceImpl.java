@@ -25,9 +25,7 @@ public class ComplianceScanResourceResultServiceImpl extends ServiceImpl<Complia
 
     @Override
     public void saveOrUpdate(List<ComplianceScanResourceResult> complianceScanResourceResults, ResourceTypeConstants resourceType, String cloudAccountId) {
-        boolean remove = this.remove(new LambdaUpdateWrapper<ComplianceScanResourceResult>().eq(ComplianceScanResourceResult::getResourceType, resourceType.name()).eq(ComplianceScanResourceResult::getCloudAccountId, cloudAccountId));
-        if (remove) {
-            saveBatch(complianceScanResourceResults);
-        }
+        this.remove(new LambdaUpdateWrapper<ComplianceScanResourceResult>().eq(ComplianceScanResourceResult::getResourceType, resourceType.name()).eq(ComplianceScanResourceResult::getCloudAccountId, cloudAccountId));
+        saveBatch(complianceScanResourceResults);
     }
 }

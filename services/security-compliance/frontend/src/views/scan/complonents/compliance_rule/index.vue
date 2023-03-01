@@ -231,6 +231,9 @@ onMounted(() => {
   if (route.query.cloudAccountId) {
     activeCloudAccount.value = route.query.cloudAccountId as string;
   }
+  if (route.query.ruleGroup) {
+    activeComplianceRuleGroupId.value = route.query.ruleGroup as string;
+  }
   // 查询列表数据
   if (table.value) {
     table.value?.search(table?.value.getTableSearch());
@@ -254,6 +257,7 @@ onMounted(() => {
       activeComplianceRuleGroupId.value = compliance_rule_group_id;
     }
   );
+
   complianceScanApi.listJobRecord().then((ok) => {
     accountJobRecordList.value = ok.data;
   });

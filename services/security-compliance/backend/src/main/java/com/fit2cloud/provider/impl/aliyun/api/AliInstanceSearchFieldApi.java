@@ -96,7 +96,7 @@ public class AliInstanceSearchFieldApi {
                 .resetFilterArrayField(PlatformConstants.fit2cloud_ali_platform, ResourceTypeConstants.ECS, "disks");
 
         InstanceSearchField diskSize = new InstanceSearchField("磁盘大小", "size", InstanceFieldType.Number)
-                .resetFilterArrayField(PlatformConstants.fit2cloud_ali_platform, ResourceTypeConstants.ECS, "disks",false);
+                .resetFilterArrayField(PlatformConstants.fit2cloud_ali_platform, ResourceTypeConstants.ECS, "disks", false);
 
         InstanceSearchField diskType = new InstanceSearchField("磁盘类型", "type", InstanceFieldType.Enum,
                 List.of(new DefaultKeyValue<>("系统盘", "system"),
@@ -190,9 +190,9 @@ public class AliInstanceSearchFieldApi {
                 ))
                 .resetInstanceField(PlatformConstants.fit2cloud_ali_platform, ResourceTypeConstants.OSS);
 
-        InstanceSearchField referer = new InstanceSearchField("是否开启防盗链", "referer.refererList.referer", InstanceFieldType.Enum,
-                List.of(new DefaultKeyValue<>("未开启", null)))
+        InstanceSearchField referer = new InstanceSearchField("防盗链", "referer.refererList.referer", InstanceFieldType.ArrayString)
                 .resetInstanceField(PlatformConstants.fit2cloud_ali_platform, ResourceTypeConstants.OSS);
+
         InstanceSearchField refererAllowEmptyReferer = new InstanceSearchField("空Referer", "referer.allowEmptyReferer", InstanceFieldType.Enum,
                 List.of(new DefaultKeyValue<>("允许", true),
                         new DefaultKeyValue<>("不允许", false)))
@@ -407,7 +407,7 @@ public class AliInstanceSearchFieldApi {
                         new DefaultKeyValue<>("单副本", "single")))
                 .resetInstanceField(PlatformConstants.fit2cloud_ali_platform, ResourceTypeConstants.REDIS);
 
-        InstanceSearchField editionType = new InstanceSearchField("实例类型", "editionType", InstanceFieldType.Enum,
+        InstanceSearchField editionType = new InstanceSearchField("版本类型", "editionType", InstanceFieldType.Enum,
                 List.of(new DefaultKeyValue<>("社区版", "Community"),
                         new DefaultKeyValue<>("企业版", "Enterprise")))
                 .resetInstanceField(PlatformConstants.fit2cloud_ali_platform, ResourceTypeConstants.REDIS);
@@ -602,7 +602,7 @@ public class AliInstanceSearchFieldApi {
                 ))
                 .resetInstanceField(PlatformConstants.fit2cloud_ali_platform, resourceType);
 
-        InstanceSearchField dbinstanceType = new InstanceSearchField("实例类型", "dbinstanceType", InstanceFieldType.ArrayEnum,
+        InstanceSearchField dbinstanceType = new InstanceSearchField("实例类型", "dbinstanceType", InstanceFieldType.Enum,
                 List.of(new DefaultKeyValue<>("主实例", "Primary"),
                         new DefaultKeyValue<>("只读实例", "Readonly"),
                         new DefaultKeyValue<>("灾备实例", "Guard"),
@@ -610,17 +610,17 @@ public class AliInstanceSearchFieldApi {
                 ))
                 .resetInstanceField(PlatformConstants.fit2cloud_ali_platform, resourceType);
 
-        InstanceSearchField deletionProtection = new InstanceSearchField("是否已开启释放保护功能", "deletionProtection", InstanceFieldType.ArrayEnum,
+        InstanceSearchField deletionProtection = new InstanceSearchField("是否已开启释放保护功能", "deletionProtection", InstanceFieldType.Enum,
                 List.of(new DefaultKeyValue<>("已开启", true),
                         new DefaultKeyValue<>("未开启", false)
                 ))
                 .resetInstanceField(PlatformConstants.fit2cloud_ali_platform, resourceType);
 
-        InstanceSearchField dbinstanceNetInfosIpType = new InstanceSearchField("实例网络连接类型", "networkObj.dbinstanceNetInfos.dbinstanceNetInfo.iptype", InstanceFieldType.ArrayEnum,
-                List.of(new DefaultKeyValue<>("经典网络类型内网", "Inner"),
-                        new DefaultKeyValue<>("经典网络类型外网", "Public"),
+        InstanceSearchField dbinstanceNetInfosIpType = new InstanceSearchField("实例网络连接类型", "networkObj.dbinstanceNetInfos.dbinstanceNetInfo.iptype", InstanceFieldType.Enum,
+                List.of(
+                        new DefaultKeyValue<>("外网", "Public"),
                         new DefaultKeyValue<>("VPC类型内网", "Private"),
-                        new DefaultKeyValue<>("VPC类型外网", "Public")
+                        new DefaultKeyValue<>("经典网络类型内网", "Inner")
                 ))
                 .resetInstanceField(PlatformConstants.fit2cloud_ali_platform, resourceType);
         return List.of(payType, mutriORsignle, engineVersion, instanceNetworkType, dbinstanceType, tipsLevel, connectionMode,
