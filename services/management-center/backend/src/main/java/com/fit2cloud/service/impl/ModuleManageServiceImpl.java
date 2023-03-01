@@ -228,7 +228,7 @@ public class ModuleManageServiceImpl implements IModuleManageService {
         Runtime runtime = Runtime.getRuntime();  //获取Runtime实例
         //执行命令
         try {
-            List<String> command = new ArrayList<>(List.of("run-core"));
+            List<String> command = new ArrayList<>(List.of("/opt/cloudexplorer/apps/core/run-core.sh"));
             List<String> propList = new ArrayList<>(Arrays.asList(props));
             command.addAll(propList);
 

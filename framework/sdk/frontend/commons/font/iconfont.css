@@ -1,8 +1,8 @@
 @font-face {
   font-family: "iconfont"; /* Project id 3519945 */
-  src: url('iconfont.woff2?t=1677479356436') format('woff2'),
-       url('iconfont.woff?t=1677479356436') format('woff'),
-       url('iconfont.ttf?t=1677479356436') format('truetype');
+  src: url('iconfont.woff2?t=1677639387273') format('woff2'),
+       url('iconfont.woff?t=1677639387273') format('woff'),
+       url('iconfont.ttf?t=1677639387273') format('truetype');
 }
 
 .iconfont {
@@ -11,6 +11,30 @@
   font-style: normal;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+}
+
+.ali-icon-download:before {
+  content: "\e668";
+}
+
+.ali-icon-stopcircle:before {
+  content: "\e80e";
+}
+
+.ali-icon-update:before {
+  content: "\e6f2";
+}
+
+.ali-icon-delete:before {
+  content: "\e66a";
+}
+
+.ali-icon-play:before {
+  content: "\e66b";
+}
+
+.ali-icon-restart-line:before {
+  content: "\e6c4";
 }
 
 .ali-icon-chajian:before {
