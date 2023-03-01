@@ -263,10 +263,6 @@ public class TencentSyncCloudApi {
                     (request, res) -> request.getLimit() <= res.getImageSet().length,
                     request -> request.setOffset(request.getOffset() + request.getLimit()));
 
-            if (req.getOs().equalsIgnoreCase("Window")) {
-                req.setOs("Windows");
-            }
-
             // 此处再根据 OS 过滤一遍的原因是API返回的数据不完全准确
             List<F2CImage> f2CImages = images.stream().filter(image -> "Normal".equalsIgnoreCase(image.getImageState()) && image.getPlatform().equalsIgnoreCase(req.getOs()))
                     .map(image -> TencentMappingUtil.toF2CImage(image)).collect(Collectors.toList());

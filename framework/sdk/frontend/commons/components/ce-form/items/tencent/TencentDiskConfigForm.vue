@@ -114,7 +114,7 @@
   </template>
 </template>
 <script setup lang="ts">
-import { computed, watch, onMounted, ref } from "vue";
+import {computed, watch, onMounted, ref} from "vue";
 import _ from "lodash";
 import type { FormView } from "@commons/components/ce-form/type";
 import { CloseBold } from "@element-plus/icons-vue";
@@ -176,30 +176,30 @@ const defaultDisks = computed(() => {
 });
 
 const minSize = computed(() => (disk: DiskTypeConfig, index: number) => {
-  const minSize = ref(20);
+  let min = 20;
   if (disk && index != null) {
     // 系统盘
     if (index === 0) {
       systemDiskTypeOptions.value.forEach((diskTypeOption: DiskTypeConfig) => {
         if (diskTypeOption.diskType === disk.diskType) {
-          minSize.value = diskTypeOption.minDiskSize;
+          min = diskTypeOption.minDiskSize;
         }
-        if (props.allData.os?.toLowerCase().indexOf("window") > -1) {
-          minSize.value = 50;
+        if (props.allData.os?.toLowerCase().indexOf('windows') > -1) {
+          min = 50;
         }
-        if (disk.size < minSize.value) {
-          disk.size = minSize.value;
+        if (disk.size < min) {
+          disk.size = min;
         }
       });
     } else {
       dataDiskTypeOptions.value.forEach((diskTypeOption: DiskTypeConfig) => {
         if (diskTypeOption.diskType === disk.diskType) {
-          minSize.value = diskTypeOption.minDiskSize;
+          min = diskTypeOption.minDiskSize;
         }
       });
     }
   }
-  return minSize.value;
+  return min;
 });
 
 const maxSize = computed(() => (disk: DiskTypeConfig, index: number) => {
