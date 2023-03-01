@@ -62,6 +62,9 @@ public class LogController {
 
     @PostMapping("keep/months")
     @PreAuthorize("hasAnyCePermission('OPERATED_LOG:CLEAR_POLICY')")
+    @OperatedLog(resourceType = ResourceTypeEnum.LOG, operated = OperatedTypeEnum.MODIFY,
+            content = "'更新日志清理策略为['+#systemParameter.paramValue+']天'",
+            param = "#systemParameter")
     public ResultHolder<Boolean> saveKeepMonths(SystemParameter systemParameter) {
         systemParameter.setParamKey(systemParameter.getParamKey());
         baseSystemParameterService.saveValue(systemParameter);

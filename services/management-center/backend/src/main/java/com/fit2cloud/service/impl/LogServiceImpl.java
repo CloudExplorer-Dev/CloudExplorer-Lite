@@ -5,12 +5,14 @@ import co.elastic.clients.elasticsearch._types.aggregations.ValueCountAggregatio
 import co.elastic.clients.elasticsearch._types.query_dsl.BoolQuery;
 import co.elastic.clients.elasticsearch._types.query_dsl.Query;
 import co.elastic.clients.elasticsearch._types.query_dsl.RangeQuery;
+import co.elastic.clients.elasticsearch._types.query_dsl.WildcardQuery;
 import co.elastic.clients.json.JsonData;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.fit2cloud.common.es.ElasticsearchProvide;
+import com.fit2cloud.common.log.constants.OperatedTypeEnum;
 import com.fit2cloud.common.log.constants.ResourceTypeEnum;
 import com.fit2cloud.common.log.entity.OperatedLogVO;
 import com.fit2cloud.common.log.entity.SystemLogVO;
@@ -29,10 +31,7 @@ import org.springframework.data.elasticsearch.core.query.FetchSourceFilter;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 
 /**
  * @author jianneng
@@ -102,13 +101,15 @@ public class LogServiceImpl implements ILogService {
             QueryUtil.QueryCondition condition = new QueryUtil.QueryCondition(StringUtils.isNotEmpty(value) && !StringUtils.equalsIgnoreCase("null", value), name, value, QueryUtil.CompareType.LIKE);
             queryConditions.add(condition);
         }
-        //如果是查询所有的话，把登录的过滤掉
+        //平台管理日志，把登录日志以及资产资源过滤掉，云主机、磁盘
         if(Objects.isNull(request.getResourceType())){
-            queryConditions.add(new QueryUtil.QueryCondition(true, "operated", "LOGIN", QueryUtil.CompareType.NOT_EQ));
+            queryConditions.add(new QueryUtil.QueryCondition(true, "operated", OperatedTypeEnum.LOGIN.getOperate(), QueryUtil.CompareType.NOT_EQ));
+            queryConditions.add(new QueryUtil.QueryCondition(true, "resourceType", Arrays.asList(ResourceTypeEnum.CLOUD_SERVER.getName(),ResourceTypeEnum.CLOUD_DISK.getName()), QueryUtil.CompareType.NOT_IN));
         }
         //不查询没有等级的数据
         queryConditions.add(new QueryUtil.QueryCondition(true, "level", null, QueryUtil.CompareType.NOT_EXIST));
         BoolQuery.Builder query = QueryUtil.getQuery(queryConditions);
+        query.must(new Query.Builder().wildcard(new WildcardQuery.Builder().field("module").value("*").build()).build());
         return new Query.Builder().bool(query.build()).build();
     }
 

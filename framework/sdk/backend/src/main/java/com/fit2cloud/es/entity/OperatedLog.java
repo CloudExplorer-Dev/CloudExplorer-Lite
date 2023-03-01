@@ -48,6 +48,12 @@ public class OperatedLog {
     private String resourceId;
 
     /**
+     * 资源Name
+     */
+    @Field(type = FieldType.Auto)
+    private String resourceName;
+
+    /**
      * 资源类型
      */
     @Field(type = FieldType.Auto)

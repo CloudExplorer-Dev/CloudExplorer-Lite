@@ -41,6 +41,7 @@
                         "operated":"%X{operated}",
                         "operatedName":"%X{operatedName}",
                         "resourceId":"%X{resourceId}",
+                        "resourceName":"%X{resourceName}",
                         "resourceType":"%X{resourceType}",
                         "status":"%X{status}",
                         "code":"%X{code}",

@@ -1,13 +1,17 @@
 package com.fit2cloud.common.log.entity;
 
-import lombok.Data;
+import com.fit2cloud.common.log.annotation.OperatedLogFieldConver;
+import com.fit2cloud.common.log.conver.impl.CloudResourceConvert;
+import lombok.Getter;
+import lombok.Setter;
 
 /**
  * 操作日志
  * @author jianneng
  * @date 2022/9/15 13:43
  **/
-@Data
+@Getter
+@Setter
 public class OperatedLogVO {
 
 
@@ -32,9 +36,13 @@ public class OperatedLogVO {
     private String operatedName;
 
     /**
-     * 资源ID
+     * 资源ID+@+资源类型
+     * id+"@"+type
      */
+    @OperatedLogFieldConver(conver = CloudResourceConvert.class)
     private String resourceId;
+
+    private String resourceName;
 
     /**
      * 资源类型

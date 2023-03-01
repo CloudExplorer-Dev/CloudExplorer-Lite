@@ -3,6 +3,9 @@ package com.fit2cloud.controller;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.fit2cloud.base.entity.Organization;
 import com.fit2cloud.base.mapper.BaseOrganizationMapper;
+import com.fit2cloud.common.log.annotation.OperatedLog;
+import com.fit2cloud.common.log.constants.OperatedTypeEnum;
+import com.fit2cloud.common.log.constants.ResourceTypeEnum;
 import com.fit2cloud.common.validator.annnotaion.CustomValidated;
 import com.fit2cloud.common.validator.group.ValidationGroup;
 import com.fit2cloud.common.validator.handler.ExistHandler;
@@ -64,6 +67,9 @@ public class OrganizationController {
     @ApiOperation(value = "添加组织", notes = "添加组织")
     @PostMapping
     @PreAuthorize("hasAnyCePermission('ORGANIZATION:CREATE')")
+    @OperatedLog(resourceType = ResourceTypeEnum.ORGANIZATION, operated = OperatedTypeEnum.ADD,
+            content = "'添加组织['+#request.name+']'",
+            param = "#request")
     public ResultHolder<Organization> save(@RequestBody
                                            @Validated(ValidationGroup.SAVE.class) OrganizationRequest request) {
         Organization organization = new Organization();
@@ -75,6 +81,9 @@ public class OrganizationController {
     @ApiOperation(value = "批量添加组织", notes = "批量添加组织")
     @PostMapping("/batch")
     @PreAuthorize("hasAnyCePermission('ORGANIZATION:CREATE')")
+    @OperatedLog(resourceType = ResourceTypeEnum.ORGANIZATION, operated = OperatedTypeEnum.BATCH_ADD,
+            content = "'批量添加组织['+#request.orgDetails.![name]+']'",
+            param = "#request")
     public ResultHolder<Boolean> batch(@RequestBody
                                        @Validated(ValidationGroup.SAVE.class) OrganizationBatchRequest request) {
         Boolean batch = organizationService.batch(request);
@@ -84,6 +93,10 @@ public class OrganizationController {
     @ApiOperation(value = "修改组织", notes = "修改组织")
     @PutMapping
     @PreAuthorize("hasAnyCePermission('ORGANIZATION:EDIT')")
+    @OperatedLog(resourceType = ResourceTypeEnum.ORGANIZATION, operated = OperatedTypeEnum.MODIFY,
+            resourceId = "#request.id",
+            content = "'修改组织['+#request.name+']'",
+            param = "#request")
     public ResultHolder<Organization> update(@RequestBody
                                              @Validated(ValidationGroup.UPDATE.class) OrganizationRequest request) {
         organizationService.update(request);
@@ -93,6 +106,10 @@ public class OrganizationController {
     @ApiOperation(value = "删除组织", notes = "删除组织")
     @DeleteMapping("/{organizationId}")
     @PreAuthorize("hasAnyCePermission('ORGANIZATION:DELETE')")
+    @OperatedLog(resourceType = ResourceTypeEnum.ORGANIZATION, operated = OperatedTypeEnum.DELETE,
+            resourceId = "#id",
+            content = "'删除组织'",
+            param = "#id")
     public ResultHolder<Boolean> delete(@ApiParam("组织id")
                                         @NotNull(message = "{i18n.organization.name.is.not.empty}")
                                         @CustomValidated(mapper = BaseOrganizationMapper.class, handler = ExistHandler.class, message = "{i18n.organization.id.is.not.existent}", exist = false)
@@ -103,6 +120,10 @@ public class OrganizationController {
     @ApiOperation(value = "批量删除组织", notes = "批量删除组织")
     @DeleteMapping
     @PreAuthorize("hasAnyCePermission('ORGANIZATION:DELETE')")
+    @OperatedLog(resourceType = ResourceTypeEnum.ORGANIZATION, operated = OperatedTypeEnum.BATCH_DELETE,
+            resourceId = "#organizationIds.![id]",
+            content = "'批量删除了['+#organizationIds.size+']个组织'",
+            param = "#organizationIds")
     public ResultHolder<Boolean> deleteBatch(@ApiParam("批量删除组织")
                                              @Size(min = 1, message = "{i18n.organization.id.size.gt.one}")
                                              @NotNull(message = "{i18n.organization.id.is.not.empty}")
