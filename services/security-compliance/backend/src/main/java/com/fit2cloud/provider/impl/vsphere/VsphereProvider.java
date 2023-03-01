@@ -223,7 +223,7 @@ public class VsphereProvider extends AbstractCloudProvider<VsphereComplianceCred
         ListResourcePoolRequest request = JsonUtil.parseObject(req, ListResourcePoolRequest.class);
         return VsphereApi.listResourcePool(request).stream()
                 .map(resource -> ResourceUtil.
-                        toResourceInstance(PlatformConstants.fit2cloud_vsphere_platform.name(), ResourceTypeConstants.HOST,
+                        toResourceInstance(PlatformConstants.fit2cloud_vsphere_platform.name(), ResourceTypeConstants.RESOURCE_POOL,
                                 resource.getMor(), resource.getName(), resource)).toList();
     }
 

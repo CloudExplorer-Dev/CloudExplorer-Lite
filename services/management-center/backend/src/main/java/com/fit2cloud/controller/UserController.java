@@ -3,6 +3,9 @@ package com.fit2cloud.controller;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.fit2cloud.base.entity.User;
 import com.fit2cloud.base.mapper.BaseUserMapper;
+import com.fit2cloud.common.log.annotation.OperatedLog;
+import com.fit2cloud.common.log.constants.OperatedTypeEnum;
+import com.fit2cloud.common.log.constants.ResourceTypeEnum;
 import com.fit2cloud.common.validator.annnotaion.CustomValidated;
 import com.fit2cloud.common.validator.group.ValidationGroup;
 import com.fit2cloud.common.validator.handler.ExistHandler;
@@ -54,6 +57,9 @@ public class UserController {
     @ApiOperation(value = "添加用户")
     @PreAuthorize("hasAnyCePermission('USER:CREATE')")
     @PostMapping("/add")
+    @OperatedLog(resourceType = ResourceTypeEnum.USER, operated = OperatedTypeEnum.ADD,
+            content = "'添加了用户['+#request.name+']'",
+            param = "#request")
     public ResultHolder<Boolean> createUser(@RequestBody @Validated(ValidationGroup.SAVE.class) CreateUserRequest request) {
         return ResultHolder.success(userService.createUser(request));
     }
@@ -61,6 +67,10 @@ public class UserController {
     @ApiOperation(value = "更新用户")
     @PreAuthorize("hasAnyCePermission('USER:EDIT')")
     @PostMapping("/update")
+    @OperatedLog(resourceType = ResourceTypeEnum.USER, operated = OperatedTypeEnum.MODIFY,
+            resourceId = "#request.id",
+            content = "'更新了用户['+#request.name+']'",
+            param = "#request")
     public ResultHolder<Boolean> updateUser(@RequestBody @Validated(ValidationGroup.UPDATE.class) UpdateUserRequest request) {
         return ResultHolder.success(userService.updateUser(request));
     }
@@ -68,6 +78,9 @@ public class UserController {
     @ApiOperation(value = "更新密码")
     @PreAuthorize("hasAnyCePermission('USER:EDIT_PASSWORD')")
     @PostMapping("/updatePwd")
+    @OperatedLog(resourceType = ResourceTypeEnum.USER, operated = OperatedTypeEnum.MODIFY,
+            resourceId = "#user.id",
+            content = "'更新了密码'")
     public ResultHolder<Boolean> updatePwd(@RequestBody User user) {
         return ResultHolder.success(userService.updatePwd(user));
     }
@@ -75,6 +88,10 @@ public class UserController {
     @ApiOperation(value = "删除用户")
     @PreAuthorize("hasAnyCePermission('USER:DELETE')")
     @DeleteMapping("/{id}")
+    @OperatedLog(resourceType = ResourceTypeEnum.USER, operated = OperatedTypeEnum.DELETE,
+            resourceId = "#id",
+            content = "'删除用户'",
+            param = "#id")
     public ResultHolder<Boolean> delete(@ApiParam("主键 ID")
                                         @NotNull(message = "{i18n.user.id.cannot.be.null}")
                                         @CustomValidated(mapper = BaseUserMapper.class, handler = ExistHandler.class, message = "{i18n.primary.key.not.exist}", exist = false)
@@ -95,12 +112,20 @@ public class UserController {
     @ApiOperation(value = "启停用户")
     @PreAuthorize("hasAnyCePermission('USER:EDIT')")
     @PostMapping(value = "/changeStatus")
+    @OperatedLog(resourceType = ResourceTypeEnum.USER, operated = OperatedTypeEnum.MODIFY,
+            resourceId = "#user.id",
+            content = "#user.enabled?'启用['+#user.name+']':'停用['+#user.name+']'",
+            param = "#user")
     public ResultHolder<Boolean> changeStatus(@RequestBody UserDto user) {
         return ResultHolder.success(userService.changeUserStatus(user));
     }
 
     @PreAuthorize("hasAnyCePermission('USER:EDIT')")
     @PostMapping(value = "/notificationSetting")
+    @OperatedLog(resourceType = ResourceTypeEnum.USER, operated = OperatedTypeEnum.MODIFY,
+            resourceId = "#userNotificationSetting.id",
+            content = "'修改用户通知设置'",
+            param = "#userNotificationSetting")
     public ResultHolder<Boolean> userNotificationSetting(@RequestBody UserNotifySettingDTO userNotificationSetting) {
         return ResultHolder.success(userService.updateUserNotification(userNotificationSetting));
     }
@@ -114,6 +139,10 @@ public class UserController {
     @ApiOperation(value = "批量添加用户角色")
     @PreAuthorize("hasAnyCePermission('USER:EDIT')")
     @PostMapping(value = "/addRole")
+    @OperatedLog(resourceType = ResourceTypeEnum.USER, operated = OperatedTypeEnum.BATCH_ADD,
+            resourceId = "#userBatchAddRoleRequest.userIdList",
+            content = "'批量添加用户角色['+#userBatchAddRoleRequest.roleInfoList.![roleId]+']'",
+            param = "#userBatchAddRoleRequest")
     public ResultHolder<Boolean> addUserRole(@Validated @RequestBody UserBatchAddRoleRequest userBatchAddRoleRequest) {
         return ResultHolder.success(userService.addUserRole(userBatchAddRoleRequest));
     }

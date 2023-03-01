@@ -41,7 +41,10 @@ public enum OperatedTypeEnum {
     BATCH_ATTACH_DISK("BATCH_ATTACH_DISK", "批量挂载磁盘"),
     BATCH_DETACH_DISK("BATCH_DETACH_DISK", "批量卸载磁盘"),
     BATCH_DELETE_DISK("BATCH_DELETE_DISK", "批量删除磁盘"),
-    BATCH_RECYCLE_DISK("BATCH_RECYCLE_DISK", "磁盘批量盘放入回收站");
+    BATCH_RECYCLE_DISK("BATCH_RECYCLE_DISK", "磁盘批量盘放入回收站"),
+    SYNC("SYNC", "同步"),
+    CHECK("CHECK", "校验"),
+    ;
 
     private String operate;
     private String description;

@@ -57,10 +57,10 @@ defineExpose({
       <el-descriptions-item
         label-class-name="label-class"
         class-name="content-class"
-        label="相关资源ID/名称"
+        label="操作对象ID/名称"
         colon="true"
       >
-        {{ logInfo.resourceId }}
+        {{ logInfo.resourceName }}
       </el-descriptions-item>
       <el-descriptions-item
         label-class-name="label-class"

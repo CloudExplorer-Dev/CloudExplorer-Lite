@@ -3,13 +3,17 @@ package com.fit2cloud.common.log.aspect;
 import com.fit2cloud.autoconfigure.ServerInfo;
 import com.fit2cloud.common.exception.Fit2cloudException;
 import com.fit2cloud.common.log.annotation.OperatedLog;
+import com.fit2cloud.common.log.annotation.OperatedLogFieldConver;
 import com.fit2cloud.common.log.constants.OperatedTypeEnum;
+import com.fit2cloud.common.log.conver.ResourceConvert;
 import com.fit2cloud.common.log.entity.OperatedLogVO;
 import com.fit2cloud.common.log.utils.IpUtil;
 import com.fit2cloud.common.log.utils.LogUtil;
 import com.fit2cloud.common.log.utils.SpelUtil;
+import com.fit2cloud.common.provider.util.CommonUtil;
 import com.fit2cloud.common.utils.CurrentUserUtils;
 import com.fit2cloud.common.utils.JsonUtil;
+import com.fit2cloud.common.utils.SensitiveFieldUtils;
 import com.fit2cloud.controller.handler.ResultHolder;
 import com.fit2cloud.dto.UserDto;
 import org.apache.commons.lang3.StringUtils;
@@ -25,8 +29,10 @@ import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 
 import javax.servlet.http.HttpServletRequest;
+import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.Date;
+import java.util.Objects;
 
 /**
  * @author jianneng
@@ -87,14 +93,22 @@ public class OperatedLogAspect {
                 // 参数解析
                 paramStr = JsonUtil.toJSONString(args);
                 if(StringUtils.isNotEmpty(annotation.content())){
-                    // 操作内容解析
-                    logVO.setContent(SpelUtil.getElValueByKey(pjd,annotation.content()));
+                    String content = "";
+                    try{
+                        content = OperatedTypeEnum.getDescriptionByOperate(annotation.content());
+                    }catch (Exception e){
+                        e.printStackTrace();
+                    }
+                    if(StringUtils.isEmpty(content)){
+                        // 操作内容解析
+                        logVO.setContent(SpelUtil.getElValueByKey(pjd,annotation.content()));
+                    }
                 }
                 // 资源类型
                 logVO.setResourceType(annotation.resourceType().getName());
                 if(StringUtils.isNotEmpty(annotation.resourceId())){
-                    // 资源ID
-                    logVO.setResourceId(SpelUtil.getElValueByKey(pjd,annotation.resourceId()));
+                    // 资源ID,这里特殊处理，到时候查询用到
+                    logVO.setResourceId(SpelUtil.getElValueByKey(pjd,annotation.resourceId())+"@"+annotation.resourceType().getCode());
                 }
                 if(StringUtils.isNotEmpty(annotation.joinResourceId())){
                     // 关联资源ID
@@ -102,6 +116,15 @@ public class OperatedLogAspect {
                 }
                 // 配置请求信息
                 extractRequestInfo(errorResult, logVO, paramStr);
+                Class logvoClass = logVO.getClass();
+                Field[] fields = logvoClass.getDeclaredFields();
+                for(Field field:fields){
+                    OperatedLogFieldConver fieldAnnotation = field.getAnnotation(OperatedLogFieldConver.class);
+                    if(Objects.nonNull(fieldAnnotation)){
+                        String a = CommonUtil.exec(fieldAnnotation.conver(), logVO.getResourceId(), ResourceConvert::conver);
+                        logVO.setResourceName(a);
+                    }
+                }
                 // 上下文设置
                 setMDC(logVO);
                 LogUtil.info(JsonUtil.toJSONString(logVO));
@@ -129,6 +152,9 @@ public class OperatedLogAspect {
         if(errorResult.getCode()!=200){
             logVO.setResponse(errorResult.getMessage());
         }
+        if(StringUtils.isNotEmpty(logVO.getParams())){
+            logVO.setParams(SensitiveFieldUtils.desensitization(logVO.getParams()));
+        }
     }
 
     @NotNull
@@ -150,6 +176,7 @@ public class OperatedLogAspect {
         MDC.put("operated",logVO.getOperated());
         MDC.put("operatedName",logVO.getOperatedName());
         MDC.put("resourceId",logVO.getResourceId());
+        MDC.put("resourceName",logVO.getResourceName());
         MDC.put("resourceType",logVO.getResourceType());
         MDC.put("joinResourceId",logVO.getJoinResourceId());
         MDC.put("user",logVO.getUser());

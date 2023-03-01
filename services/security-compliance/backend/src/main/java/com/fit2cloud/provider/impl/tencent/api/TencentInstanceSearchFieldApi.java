@@ -96,7 +96,7 @@ public class TencentInstanceSearchFieldApi {
         InstanceSearchField dataDiskSize = new InstanceSearchField("数据盘大小", "dataDisks.diskSize", InstanceFieldType.ArrayNumber)
                 .resetInstanceField(PlatformConstants.fit2cloud_tencent_platform, ResourceTypeConstants.ECS);
 
-        InstanceSearchField dataDiskDeleteWithInstance = new InstanceSearchField("数据盘是否随子机销毁", "dataDisks.deleteWithInstance", InstanceFieldType.ArrayEnum,
+        InstanceSearchField dataDiskDeleteWithInstance = new InstanceSearchField("数据盘是否随实例删除", "dataDisks.deleteWithInstance", InstanceFieldType.ArrayEnum,
                 List.of(new DefaultKeyValue<>("销毁数据盘", true),
                         new DefaultKeyValue<>("保留数据盘", false)))
                 .resetInstanceField(PlatformConstants.fit2cloud_tencent_platform, ResourceTypeConstants.ECS);
@@ -132,7 +132,7 @@ public class TencentInstanceSearchFieldApi {
                 ))
                 .resetInstanceField(PlatformConstants.fit2cloud_tencent_platform, ResourceTypeConstants.ECS);
 
-        InstanceSearchField internetAccessibleInternetAccessible = new InstanceSearchField("是否分配公网IP", "internetAccessible.internetMaxBandwidthOut", InstanceFieldType.Number)
+        InstanceSearchField internetAccessibleInternetAccessible = new InstanceSearchField("公网出带宽上限", "internetAccessible.internetMaxBandwidthOut", InstanceFieldType.Number)
                 .resetInstanceField(PlatformConstants.fit2cloud_tencent_platform, ResourceTypeConstants.ECS);
 
         return List.of(instanceChargeType, instanceState, cpu, memory, renewFlag, restrictState, stopChargingMode, isolatedSource,
@@ -168,7 +168,7 @@ public class TencentInstanceSearchFieldApi {
                 .resetInstanceField(PlatformConstants.fit2cloud_tencent_platform, ResourceTypeConstants.OSS);
 
         InstanceSearchField accessCannedAccessControl = new InstanceSearchField("公共权限", "access.cannedAccessControl", InstanceFieldType.Enum,
-                List.of(new DefaultKeyValue<>("允许", "Private"),
+                List.of(new DefaultKeyValue<>("私有读写", "Private"),
                         new DefaultKeyValue<>("公有读私有写", "PublicRead"),
                         new DefaultKeyValue<>("公有读写", "PublicReadWrite")
                 ))
@@ -224,18 +224,18 @@ public class TencentInstanceSearchFieldApi {
         InstanceSearchField snapshotCount = new InstanceSearchField("云盘拥有的快照总数", "snapshotCount", InstanceFieldType.Number)
                 .resetInstanceField(PlatformConstants.fit2cloud_tencent_platform, ResourceTypeConstants.DISK);
 
-        InstanceSearchField autoRenewFlagError = new InstanceSearchField("云盘已挂载到子机", "autoRenewFlagError", InstanceFieldType.Enum,
-                List.of(new DefaultKeyValue<>("子机设置了自动续费标识，但云盘未设置", true),
+        InstanceSearchField autoRenewFlagError = new InstanceSearchField("是否自动续费", "autoRenewFlagError", InstanceFieldType.Enum,
+                List.of(new DefaultKeyValue<>("主机设置了自动续费标识，但云盘未设置", true),
                         new DefaultKeyValue<>("云盘自动续费标识正常", false)))
                 .resetInstanceField(PlatformConstants.fit2cloud_tencent_platform, ResourceTypeConstants.DISK);
 
         InstanceSearchField rollbacking = new InstanceSearchField("云盘是否处于快照回滚状态", "rollbacking", InstanceFieldType.Enum,
-                List.of(new DefaultKeyValue<>("不处于快照回滚状态。", false),
+                List.of(new DefaultKeyValue<>("不处于快照回滚状态", false),
                         new DefaultKeyValue<>("处于快照回滚状态", true)))
                 .resetInstanceField(PlatformConstants.fit2cloud_tencent_platform, ResourceTypeConstants.DISK);
 
         InstanceSearchField encrypt = new InstanceSearchField("云盘是否为加密盘", "encrypt", InstanceFieldType.Enum,
-                List.of(new DefaultKeyValue<>("非加密盘。", false),
+                List.of(new DefaultKeyValue<>("非加密盘", false),
                         new DefaultKeyValue<>("加密盘", true)))
                 .resetInstanceField(PlatformConstants.fit2cloud_tencent_platform, ResourceTypeConstants.DISK);
 
@@ -248,7 +248,7 @@ public class TencentInstanceSearchFieldApi {
                 .resetInstanceField(PlatformConstants.fit2cloud_tencent_platform, ResourceTypeConstants.DISK);
 
         InstanceSearchField migrating = new InstanceSearchField("云盘是否处于类型变更中", "migrating", InstanceFieldType.Enum,
-                List.of(new DefaultKeyValue<>("云盘不处于类型变更中。", false),
+                List.of(new DefaultKeyValue<>("云盘不处于类型变更中", false),
                         new DefaultKeyValue<>("云盘已发起类型变更，正处于迁移中", true)))
                 .resetInstanceField(PlatformConstants.fit2cloud_tencent_platform, ResourceTypeConstants.DISK);
 
@@ -296,7 +296,7 @@ public class TencentInstanceSearchFieldApi {
         InstanceSearchField differDaysOfDeadline = new InstanceSearchField("当前时间距离盘到期的天数(仅对包年包月盘有意义)", "differDaysOfDeadline", InstanceFieldType.Number)
                 .resetInstanceField(PlatformConstants.fit2cloud_tencent_platform, ResourceTypeConstants.DISK);
 
-        InstanceSearchField shareable = new InstanceSearchField("云盘是否为共享型云盘", "deadlineError", InstanceFieldType.Enum,
+        InstanceSearchField shareable = new InstanceSearchField("云盘是否为共享型云盘", "shareable", InstanceFieldType.Enum,
                 List.of(new DefaultKeyValue<>("是", true),
                         new DefaultKeyValue<>("否", false)))
                 .resetInstanceField(PlatformConstants.fit2cloud_tencent_platform, ResourceTypeConstants.DISK);
@@ -306,7 +306,7 @@ public class TencentInstanceSearchFieldApi {
                         new DefaultKeyValue<>("非永久快照随云盘销毁而销毁", 1)))
                 .resetInstanceField(PlatformConstants.fit2cloud_tencent_platform, ResourceTypeConstants.DISK);
 
-        InstanceSearchField diskBackupCount = new InstanceSearchField("云硬盘备份点已使用的数量", "deleteSnapshot", InstanceFieldType.Number)
+        InstanceSearchField diskBackupCount = new InstanceSearchField("云硬盘备份点已使用的数量", "diskBackupCount", InstanceFieldType.Number)
                 .resetInstanceField(PlatformConstants.fit2cloud_tencent_platform, ResourceTypeConstants.DISK);
 
         InstanceSearchField instanceType = new InstanceSearchField("云硬盘挂载实例的类型", "instanceType", InstanceFieldType.Enum,
@@ -393,7 +393,7 @@ public class TencentInstanceSearchFieldApi {
                         new DefaultKeyValue<>("解绑后不会自动释放", false)))
                 .resetInstanceField(PlatformConstants.fit2cloud_tencent_platform, ResourceTypeConstants.PUBLIC_IP);
 
-        InstanceSearchField bandwidth = new InstanceSearchField("eip是否在解绑后自动释放", "bandwidth", InstanceFieldType.Number)
+        InstanceSearchField bandwidth = new InstanceSearchField("带宽", "bandwidth", InstanceFieldType.Number)
                 .resetInstanceField(PlatformConstants.fit2cloud_tencent_platform, ResourceTypeConstants.PUBLIC_IP);
 
         InstanceSearchField internetChargeType = new InstanceSearchField("网络计费模式", "internetChargeType", InstanceFieldType.Enum,
@@ -484,14 +484,14 @@ public class TencentInstanceSearchFieldApi {
         InstanceSearchField volume = new InstanceSearchField("硬盘容量,单位为 GB", "volume", InstanceFieldType.Number)
                 .resetInstanceField(PlatformConstants.fit2cloud_tencent_platform, ResourceTypeConstants.MYSQL);
 
-        InstanceSearchField autoRenew = new InstanceSearchField("实例状态", "autoRenew", InstanceFieldType.Enum,
+        InstanceSearchField autoRenew = new InstanceSearchField("自动续费", "autoRenew", InstanceFieldType.Enum,
                 List.of(new DefaultKeyValue<>("未开通自动续费", 0),
                         new DefaultKeyValue<>("已开通自动续费", 1),
                         new DefaultKeyValue<>("已关闭自动续费", 2)
                 ))
                 .resetInstanceField(PlatformConstants.fit2cloud_tencent_platform, ResourceTypeConstants.MYSQL);
 
-        InstanceSearchField protectMode = new InstanceSearchField("实例状态", "protectMode", InstanceFieldType.Enum,
+            InstanceSearchField protectMode = new InstanceSearchField("数据复制方式", "protectMode", InstanceFieldType.Enum,
                 List.of(new DefaultKeyValue<>("异步复制", 0),
                         new DefaultKeyValue<>("半同步复制", 1),
                         new DefaultKeyValue<>("强同步复制", 2)
@@ -505,13 +505,13 @@ public class TencentInstanceSearchFieldApi {
                 ))
                 .resetInstanceField(PlatformConstants.fit2cloud_tencent_platform, ResourceTypeConstants.MYSQL);
 
-        InstanceSearchField deployMode = new InstanceSearchField("实例类型", "deployMode", InstanceFieldType.Enum,
+        InstanceSearchField deployMode = new InstanceSearchField("可用区部署方式", "deployMode", InstanceFieldType.Enum,
                 List.of(new DefaultKeyValue<>("单可用区", 0),
                         new DefaultKeyValue<>("多可用区", 1)
                 ))
                 .resetInstanceField(PlatformConstants.fit2cloud_tencent_platform, ResourceTypeConstants.MYSQL);
 
-        InstanceSearchField taskStatus = new InstanceSearchField("实例任务状态", "deployMode", InstanceFieldType.Enum,
+        InstanceSearchField taskStatus = new InstanceSearchField("实例任务状态", "taskStatus", InstanceFieldType.Enum,
                 List.of(new DefaultKeyValue<>("没有任务", 0),
                         new DefaultKeyValue<>("升级中", 1),
                         new DefaultKeyValue<>("数据导入中", 2),
@@ -607,14 +607,14 @@ public class TencentInstanceSearchFieldApi {
         InstanceSearchField versionName = new InstanceSearchField("实例版本", "versionName", InstanceFieldType.String)
                 .resetInstanceField(PlatformConstants.fit2cloud_tencent_platform, ResourceTypeConstants.SQL_SERVER);
 
-        InstanceSearchField renewFlag = new InstanceSearchField("实例版本", "renewFlag", InstanceFieldType.Enum,
+        InstanceSearchField renewFlag = new InstanceSearchField("实例续费标记", "renewFlag", InstanceFieldType.Enum,
                 List.of(new DefaultKeyValue<>("正常续费", 0),
                         new DefaultKeyValue<>("自动续费", 1),
                         new DefaultKeyValue<>("到期不续费", 2)
                 ))
                 .resetInstanceField(PlatformConstants.fit2cloud_tencent_platform, ResourceTypeConstants.SQL_SERVER);
 
-        InstanceSearchField model = new InstanceSearchField("实例续费标记", "model", InstanceFieldType.Enum,
+        InstanceSearchField model = new InstanceSearchField("实例高可用", "model", InstanceFieldType.Enum,
                 List.of(new DefaultKeyValue<>("双机高可用", 1),
                         new DefaultKeyValue<>("单机", 2),
                         new DefaultKeyValue<>("跨可用区", 3),
@@ -731,7 +731,7 @@ public class TencentInstanceSearchFieldApi {
         InstanceSearchField cpu = new InstanceSearchField("实例CPU核数", "cpu", InstanceFieldType.Number)
                 .resetInstanceField(PlatformConstants.fit2cloud_tencent_platform, ResourceTypeConstants.MARIA_DB);
 
-        InstanceSearchField instanceType = new InstanceSearchField("实例类型", "isEncryptSupported", InstanceFieldType.Enum,
+        InstanceSearchField instanceType = new InstanceSearchField("实例类型", "instanceType", InstanceFieldType.Enum,
                 List.of(new DefaultKeyValue<>("主实例（独享型）", 1),
                         new DefaultKeyValue<>("主实例", 2),
                         new DefaultKeyValue<>("灾备实例", 3),
@@ -798,13 +798,13 @@ public class TencentInstanceSearchFieldApi {
                 ))
                 .resetInstanceField(PlatformConstants.fit2cloud_tencent_platform, ResourceTypeConstants.POST_GRE_SQL);
 
-        InstanceSearchField autoRenew = new InstanceSearchField("计费模式", "autoRenew", InstanceFieldType.Enum,
+        InstanceSearchField autoRenew = new InstanceSearchField("自动续费标识", "autoRenew", InstanceFieldType.Enum,
                 List.of(new DefaultKeyValue<>("自动续费", 1),
                         new DefaultKeyValue<>("不自动续费", 0)
                 ))
                 .resetInstanceField(PlatformConstants.fit2cloud_tencent_platform, ResourceTypeConstants.POST_GRE_SQL);
 
-        InstanceSearchField supportIpv6 = new InstanceSearchField("计费模式", "supportIpv6", InstanceFieldType.Enum,
+        InstanceSearchField supportIpv6 = new InstanceSearchField("是否支持ipv6", "supportIpv6", InstanceFieldType.Enum,
                 List.of(new DefaultKeyValue<>("支持", 1),
                         new DefaultKeyValue<>("不支持", 0)
                 ))
@@ -836,10 +836,10 @@ public class TencentInstanceSearchFieldApi {
                 ))
                 .resetInstanceField(PlatformConstants.fit2cloud_tencent_platform, ResourceTypeConstants.REDIS);
 
-        InstanceSearchField port = new InstanceSearchField("实例状态", "port", InstanceFieldType.Number)
+        InstanceSearchField port = new InstanceSearchField("实例端口", "port", InstanceFieldType.Number)
                 .resetInstanceField(PlatformConstants.fit2cloud_tencent_platform, ResourceTypeConstants.REDIS);
 
-        InstanceSearchField size = new InstanceSearchField("实例容量大小,单位：MB。", "size", InstanceFieldType.Number)
+        InstanceSearchField size = new InstanceSearchField("实例容量大小,单位：MB", "size", InstanceFieldType.Number)
                 .resetInstanceField(PlatformConstants.fit2cloud_tencent_platform, ResourceTypeConstants.REDIS);
 
         InstanceSearchField type = new InstanceSearchField("实例类型", "type", InstanceFieldType.Enum,
@@ -900,7 +900,7 @@ public class TencentInstanceSearchFieldApi {
      */
     public static List<InstanceSearchField> listMongodbInstanceSearchField() {
         InstanceSearchField payMode = new InstanceSearchField("付费类型", "payMode", InstanceFieldType.Enum,
-                List.of(new DefaultKeyValue<>("开启", 1),
+                List.of(new DefaultKeyValue<>("包年包月", 1),
                         new DefaultKeyValue<>("按量计费", 0)
                 ))
                 .resetInstanceField(PlatformConstants.fit2cloud_tencent_platform, ResourceTypeConstants.MONGO_DB);
@@ -953,7 +953,7 @@ public class TencentInstanceSearchFieldApi {
         InstanceSearchField usedVolume = new InstanceSearchField("已用容量,单位MB", "usedVolume", InstanceFieldType.Number)
                 .resetInstanceField(PlatformConstants.fit2cloud_tencent_platform, ResourceTypeConstants.MONGO_DB);
 
-        InstanceSearchField instanceType = new InstanceSearchField("实例自动续费标志", "instanceType", InstanceFieldType.Enum,
+        InstanceSearchField instanceType = new InstanceSearchField("实例类型", "instanceType", InstanceFieldType.Enum,
                 List.of(new DefaultKeyValue<>("正式实例", 1),
                         new DefaultKeyValue<>("临时实例", 2),
                         new DefaultKeyValue<>("只读实例", 3),

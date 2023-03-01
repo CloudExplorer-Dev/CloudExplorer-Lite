@@ -3,6 +3,9 @@ package com.fit2cloud.controller;
 import com.fit2cloud.base.entity.Role;
 import com.fit2cloud.base.mapper.BaseRoleMapper;
 import com.fit2cloud.common.constants.RoleConstants;
+import com.fit2cloud.common.log.annotation.OperatedLog;
+import com.fit2cloud.common.log.constants.OperatedTypeEnum;
+import com.fit2cloud.common.log.constants.ResourceTypeEnum;
 import com.fit2cloud.common.validator.annnotaion.CustomValidated;
 import com.fit2cloud.common.validator.group.ValidationGroup;
 import com.fit2cloud.common.validator.handler.ExistHandler;
@@ -41,6 +44,9 @@ public class RoleController {
     @ApiOperation(value = "添加角色", notes = "添加角色")
     @PreAuthorize("hasAnyCePermission('ROLE:CREATE')")
     @PostMapping
+    @OperatedLog(resourceType = ResourceTypeEnum.ROLE, operated = OperatedTypeEnum.ADD,
+            content = "'添加了角色['+#request.name+']'",
+            param = "#request")
     public ResultHolder<Role> save(@RequestBody @Validated(ValidationGroup.SAVE.class) CreateRoleRequest request) {
         Role role = new Role();
         BeanUtils.copyProperties(request, role);
@@ -54,6 +60,10 @@ public class RoleController {
     @ApiOperation(value = "更新角色", notes = "更新角色")
     @PreAuthorize("hasAnyCePermission('ROLE:EDIT')")
     @PutMapping
+    @OperatedLog(resourceType = ResourceTypeEnum.ROLE, operated = OperatedTypeEnum.MODIFY,
+            resourceId = "#request.id",
+            content = "'更新了角色['+#request.name+']'",
+            param = "#request")
     public ResultHolder<Role> update(@RequestBody @Validated(ValidationGroup.UPDATE.class) UpdateRoleRequest request) {
         Role role = new Role();
         BeanUtils.copyProperties(request, role);
@@ -67,6 +77,10 @@ public class RoleController {
     @ApiOperation(value = "删除角色", notes = "删除角色")
     @PreAuthorize("hasAnyCePermission('ROLE:DELETE')")
     @DeleteMapping
+    @OperatedLog(resourceType = ResourceTypeEnum.ROLE, operated = OperatedTypeEnum.DELETE,
+            resourceId = "#id",
+            content = "'删除角色'",
+            param = "#id")
     public ResultHolder<Boolean> removeRole(
             @ApiParam("角色ID")
             @NotNull(message = "角色ID不能为空")
@@ -79,6 +93,10 @@ public class RoleController {
     @ApiOperation(value = "批量删除角色", notes = "批量删除角色")
     @PreAuthorize("hasAnyCePermission('ROLE:DELETE')")
     @DeleteMapping("batch")
+    @OperatedLog(resourceType = ResourceTypeEnum.ROLE, operated = OperatedTypeEnum.BATCH_DELETE,
+            resourceId = "#ids",
+            content = "'批量删除了'+#ids.size+'个角色'",
+            param = "#ids")
     public ResultHolder<Boolean> batchRemoveRole(
             @ApiParam("角色ID列表")
             @Size(min = 1, message = "至少需要一个角色ID")
@@ -114,6 +132,10 @@ public class RoleController {
     @ApiOperation(value = "更新角色权限", notes = "更新角色权限")
     @PreAuthorize("hasAnyCePermission('ROLE:EDIT')")
     @PostMapping("permission")
+    @OperatedLog(resourceType = ResourceTypeEnum.ROLE, operated = OperatedTypeEnum.MODIFY,
+            resourceId = "#id",
+            content = "'更新角色权限为['+#permissionIds+']'",
+            param = "#permissionIds")
     public ResultHolder<List<String>> updateRolePermissionByRole(
             @ApiParam("角色ID")
             @NotNull(message = "角色ID不能为空")

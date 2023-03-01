@@ -173,7 +173,7 @@ public class OptimizeAnalysisServiceImpl implements IOptimizeAnalysisService {
             recycleBinServer = recycleBinServer.stream().filter(v->v.getInstanceName().indexOf(request.getInstanceName())>0).collect(Collectors.toList());
         }
         if(CollectionUtils.isNotEmpty(recycleBinServer)){
-            recycleBinServerIds.addAll(recycleBinServer.stream().filter(v->StringUtils.equalsIgnoreCase("Deleted",v.getInstanceStatus())).map(VmCloudServer::getId).toList());
+            recycleBinServerIds.addAll(recycleBinServer.stream().filter(v->!StringUtils.equalsIgnoreCase("Deleted",v.getInstanceStatus())).map(VmCloudServer::getId).toList());
         }
         OptimizationConstants optimizationConstants = OptimizationConstants.getByCode(request.getOptimizeSuggest());
         Page<AnalyticsServerDTO> page = PageUtil.of(request, AnalyticsServerDTO.class, null, true);

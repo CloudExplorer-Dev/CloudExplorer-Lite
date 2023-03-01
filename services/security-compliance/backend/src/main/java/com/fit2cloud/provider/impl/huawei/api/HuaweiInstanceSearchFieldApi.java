@@ -85,7 +85,7 @@ public class HuaweiInstanceSearchFieldApi {
                 ))
                 .resetInstanceField(PlatformConstants.fit2cloud_huawei_platform, ResourceTypeConstants.ECS);
 
-        InstanceSearchField __support_agent_list = new InstanceSearchField("操作系统类型", "metadata.os_type", InstanceFieldType.Enum,
+        InstanceSearchField __support_agent_list = new InstanceSearchField("云服务器是否支持企业主机安全、主机监控", "metadata.__support_agent_list", InstanceFieldType.Enum,
                 List.of(new DefaultKeyValue<>("企业主机安全", "hss"),
                         new DefaultKeyValue<>("主机监控", "ces"),
                         new DefaultKeyValue<>("委托的名称", "agency_name")
@@ -155,7 +155,7 @@ public class HuaweiInstanceSearchFieldApi {
                 ))
                 .resetInstanceField(PlatformConstants.fit2cloud_huawei_platform, ResourceTypeConstants.DISK);
 
-        InstanceSearchField size = new InstanceSearchField("云硬盘类型", "size", InstanceFieldType.Number)
+        InstanceSearchField size = new InstanceSearchField("云磁盘大小", "size", InstanceFieldType.Number)
                 .resetInstanceField(PlatformConstants.fit2cloud_huawei_platform, ResourceTypeConstants.DISK);
 
         InstanceSearchField bootable = new InstanceSearchField("云硬盘类型", "bootable", InstanceFieldType.Enum,
@@ -163,7 +163,7 @@ public class HuaweiInstanceSearchFieldApi {
                         new DefaultKeyValue<>("非启动云硬盘", "false")
                 )).resetInstanceField(PlatformConstants.fit2cloud_huawei_platform, ResourceTypeConstants.DISK);
 
-        InstanceSearchField encrypted = new InstanceSearchField("是否加密", "bootable", InstanceFieldType.Enum,
+        InstanceSearchField encrypted = new InstanceSearchField("是否加密", "encrypted", InstanceFieldType.Enum,
                 List.of(new DefaultKeyValue<>("加密", true),
                         new DefaultKeyValue<>("不加密", false)
                 )).resetInstanceField(PlatformConstants.fit2cloud_huawei_platform, ResourceTypeConstants.DISK);
@@ -252,7 +252,7 @@ public class HuaweiInstanceSearchFieldApi {
 
         InstanceSearchField enable_publicip = new InstanceSearchField("是否开启公网访问功能", "enable_publicip", InstanceFieldType.Enum,
                 List.of(new DefaultKeyValue<>("开启", true),
-                        new DefaultKeyValue<>("开启", false)))
+                        new DefaultKeyValue<>("关闭", false)))
                 .resetInstanceField(PlatformConstants.fit2cloud_huawei_platform, ResourceTypeConstants.REDIS);
         return List.of(charging_mode, enable_ssl, max_memory, used_memory, no_password_access, enable_publicip);
     }
@@ -270,8 +270,8 @@ public class HuaweiInstanceSearchFieldApi {
                 .resetInstanceField(PlatformConstants.fit2cloud_huawei_platform, ResourceTypeConstants.MONGO_DB);
 
         InstanceSearchField status = new InstanceSearchField("实例状态", "status", InstanceFieldType.Enum,
-                List.of(new DefaultKeyValue<>("实例创建中", "normal"),
-                        new DefaultKeyValue<>("实例创建中", "abnormal"),
+                List.of(new DefaultKeyValue<>("实例正常", "normal"),
+                        new DefaultKeyValue<>("实例异常", "abnormal"),
                         new DefaultKeyValue<>("实例创建中", "creating"),
                         new DefaultKeyValue<>("实例被冻结", "frozen"),
                         new DefaultKeyValue<>("实例磁盘已满", "data_disk_full"),
@@ -541,7 +541,7 @@ public class HuaweiInstanceSearchFieldApi {
                         new DefaultKeyValue<>("共享带宽", "WHOLE")))
                 .resetInstanceField(PlatformConstants.fit2cloud_huawei_platform, ResourceTypeConstants.PUBLIC_IP);
 
-        InstanceSearchField bandwidth_size = new InstanceSearchField("带宽类型", "bandwidth.size", InstanceFieldType.Number)
+        InstanceSearchField bandwidth_size = new InstanceSearchField("带宽大小", "bandwidth.size", InstanceFieldType.Number)
                 .resetInstanceField(PlatformConstants.fit2cloud_huawei_platform, ResourceTypeConstants.PUBLIC_IP);
 
 
@@ -549,31 +549,31 @@ public class HuaweiInstanceSearchFieldApi {
     }
 
     public static List<InstanceSearchField> listSecurityGroupInstanceSearchField() {
-        InstanceSearchField direction = new InstanceSearchField("安全组规则的出入控制方向", "direction", InstanceFieldType.Enum,
+        InstanceSearchField direction = new InstanceSearchField("安全组规则的出入控制方向", "direction", InstanceFieldType.NestedArrayEnum,
                 List.of(new DefaultKeyValue<>("入方向", "ingress"),
                         new DefaultKeyValue<>("出方向", "egress")))
                 .resetFilterArrayField(PlatformConstants.fit2cloud_huawei_platform, ResourceTypeConstants.SECURITY_GROUP, "group_rule");
 
-        InstanceSearchField protocol = new InstanceSearchField("网络协议", "protocol", InstanceFieldType.Enum,
+        InstanceSearchField protocol = new InstanceSearchField("网络协议", "protocol", InstanceFieldType.NestedArrayEnum,
                 List.of(new DefaultKeyValue<>("icmp", "icmp"),
                         new DefaultKeyValue<>("tcp", "tcp"),
                         new DefaultKeyValue<>("udp", "udp")))
                 .resetFilterArrayField(PlatformConstants.fit2cloud_huawei_platform, ResourceTypeConstants.SECURITY_GROUP, "group_rule");
 
-        InstanceSearchField ethertype = new InstanceSearchField("IP地址协议类型", "ethertype", InstanceFieldType.Enum,
+        InstanceSearchField ethertype = new InstanceSearchField("IP地址协议类型", "ethertype", InstanceFieldType.NestedArrayEnum,
                 List.of(new DefaultKeyValue<>("IPv4", "IPv4"),
                         new DefaultKeyValue<>("IPv6", "IPv6")))
                 .resetFilterArrayField(PlatformConstants.fit2cloud_huawei_platform, ResourceTypeConstants.SECURITY_GROUP, "group_rule");
 
-        InstanceSearchField multiport = new InstanceSearchField("端口取值范围", "multiport", InstanceFieldType.String)
+        InstanceSearchField multiport = new InstanceSearchField("端口取值范围", "multiport", InstanceFieldType.NestedArrayString)
                 .resetFilterArrayField(PlatformConstants.fit2cloud_huawei_platform, ResourceTypeConstants.SECURITY_GROUP, "group_rule");
 
-        InstanceSearchField action = new InstanceSearchField("安全组规则生效策略", "action", InstanceFieldType.Enum,
+        InstanceSearchField action = new InstanceSearchField("安全组规则生效策略", "action", InstanceFieldType.NestedArrayEnum,
                 List.of(new DefaultKeyValue<>("允许", "allow"),
                         new DefaultKeyValue<>("拒绝", "deny")))
                 .resetFilterArrayField(PlatformConstants.fit2cloud_huawei_platform, ResourceTypeConstants.SECURITY_GROUP, "group_rule");
 
-        InstanceSearchField remote_ip_prefix = new InstanceSearchField("远端IP地址", "remote_ip_prefix", InstanceFieldType.String)
+        InstanceSearchField remote_ip_prefix = new InstanceSearchField("远端IP地址", "remote_ip_prefix", InstanceFieldType.NestedArrayString)
                 .resetFilterArrayField(PlatformConstants.fit2cloud_huawei_platform, ResourceTypeConstants.SECURITY_GROUP, "group_rule");
 
         return List.of(direction, protocol, ethertype, multiport, action, remote_ip_prefix);
