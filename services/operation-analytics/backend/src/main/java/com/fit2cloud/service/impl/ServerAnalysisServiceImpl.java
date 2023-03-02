@@ -467,7 +467,7 @@ public class ServerAnalysisServiceImpl implements IServerAnalysisService {
         if (CurrentUserUtils.isOrgAdmin()) {
             result.put("tree",chartDataList.get(0).getChildren().stream().filter(this::childrenHasValue).toList());
         }else{
-            result.put("tree",chartDataList.stream().filter(v->childrenHasValue(v)).toList());
+            result.put("tree",chartDataList.stream().filter(this::childrenHasValue).toList());
         }
         return result;
     }
@@ -567,7 +567,7 @@ public class ServerAnalysisServiceImpl implements IServerAnalysisService {
                     u.getChildren().addAll(getChildren(u, list, workspaceMap));
                     barTreeChartData.setValue(barTreeChartData.getValue() + u.getValue());
                 }
-        ).sorted((o1, o2) -> o2.getValue().compareTo(o1.getValue())).collect(Collectors.toList());
+        ).filter(v->v.getValue()>0).collect(Collectors.toList());
     }
 
 }
