@@ -465,11 +465,21 @@ public class ServerAnalysisServiceImpl implements IServerAnalysisService {
         });
         //组织管理员的话，只有一个跟节点，然后只返回他的子集
         if (CurrentUserUtils.isOrgAdmin()) {
-            result.put("tree",chartDataList.get(0).getChildren().stream().filter(v->v.getValue()!=0).toList());
+            result.put("tree",chartDataList.get(0).getChildren().stream().filter(this::childrenHasValue).toList());
         }else{
-            result.put("tree",chartDataList.stream().filter(v->v.getValue()!=0).toList());
+            result.put("tree",chartDataList.stream().filter(v->childrenHasValue(v)).toList());
         }
         return result;
+    }
+
+    private boolean childrenHasValue(BarTreeChartData parent){
+        if(parent.getValue().longValue()==0){
+            return false;
+        }
+        for(BarTreeChartData chartData:parent.getChildren()){
+            return childrenHasValue(chartData);
+        }
+        return true;
     }
 
     /**
@@ -549,7 +559,7 @@ public class ServerAnalysisServiceImpl implements IServerAnalysisService {
         //父级数量加上子级数量作为父级总量
         OperationUtils.workspaceToOrgChildren(workspaceMap, barTreeChartData);
         //子级排序
-        return list.stream().filter(u -> Objects.equals(u.getPId(), barTreeChartData.getId()) && u.getValue()!=0).peek(
+        return list.stream().filter(u -> Objects.equals(u.getPId(), barTreeChartData.getId())).peek(
                 u -> {
                     u.setName(u.getName() + "(子组织)");
                     // 用于区分组织与工作空间

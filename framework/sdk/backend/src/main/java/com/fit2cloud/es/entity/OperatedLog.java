@@ -66,6 +66,12 @@ public class OperatedLog {
     private String joinResourceId;
 
     /**
+     * 关联资源Name
+     */
+    @Field(type = FieldType.Auto)
+    private String joinResourceName;
+
+    /**
      * 操作人
      */
     @Field(type = FieldType.Auto)

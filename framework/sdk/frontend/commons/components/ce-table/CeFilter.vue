@@ -1,14 +1,14 @@
 <template>
   <el-tag
     v-for="condition in props.allConditions"
-    :key="condition.field"
+    :key="condition?.field"
     closable
     :disable-transitions="false"
-    @close="clearOne(condition.field)"
+    @close="clearOne(condition?.field)"
     type="info"
     round
   >
-    {{ condition.label }}：{{ condition.valueLabel }}
+    {{ condition?.label }}：{{ condition?.valueLabel }}
   </el-tag>
   <span class="fu-search-board" v-show="showClearAllButton" @click="clearAll">{{
     t("commons.btn.clear", "清空")

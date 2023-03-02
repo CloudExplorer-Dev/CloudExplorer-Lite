@@ -32,7 +32,7 @@
     ></el-table-column>
     <el-table-column
       prop="date"
-      :label="$t('commons.create_time')"
+      :label="$t('log_manage.login_time')"
       sortable="desc"
     />
     <el-table-column

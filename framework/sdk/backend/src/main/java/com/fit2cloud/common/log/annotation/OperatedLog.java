@@ -41,6 +41,12 @@ public @interface OperatedLog {
     String joinResourceId() default "";
 
     /**
+     * 资源类型
+     * @return
+     */
+    ResourceTypeEnum joinResourceType() default ResourceTypeEnum.EMPTY;
+
+    /**
      * 接口描述
      */
     String description() default "";

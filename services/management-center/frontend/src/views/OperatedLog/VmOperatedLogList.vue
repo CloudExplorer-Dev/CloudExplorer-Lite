@@ -48,10 +48,10 @@
       <template #default="scope">
         <el-tooltip class="box-item" effect="dark" placement="top-start">
           <template #content>
-            <div style="max-width: 500px">{{ scope.row.resourceId }}</div>
+            <div style="max-width: 500px">{{ scope.row.resourceName }}</div>
           </template>
           <div class="table_content_ellipsis">
-            {{ scope.row.resourceId }}
+            {{ scope.row.resourceName }}
           </div></el-tooltip
         >
       </template>
@@ -63,7 +63,7 @@
     ></el-table-column>
     <el-table-column
       prop="date"
-      :label="$t('commons.create_time')"
+      :label="$t('commons.operate_time')"
       sortable="desc"
       min-width="200px"
     />
