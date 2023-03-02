@@ -84,25 +84,14 @@ public class LoginLogAspect {
             Method method = methodSignature.getMethod();
             Object[] args = pjd.getArgs();
             OperatedLog annotation = method.getAnnotation(OperatedLog.class);
-            ApiOperation apiOperation = method.getAnnotation(ApiOperation.class);
-            if (annotation != null || apiOperation != null) {
+            if (annotation != null) {
                 OperatedLogVO logVO = createLog(time, errorResult, annotation, args);
                 logVO.setMethod("GET");
-                // 操作内容描述
-                if (apiOperation != null) {
-                    logVO.setContent(apiOperation.notes());
-                }
-                // 日志注解内容
-                if (annotation != null) {
-                    // 操作
-                    logVO.setOperated(annotation.operated().getOperate());
-                    logVO.setOperatedName(OperatedTypeEnum.getDescriptionByOperate(logVO.getOperated()));
-                    // 资源类型
-                    logVO.setResourceType(annotation.resourceType().getCode());
-                } else {
-                    logVO.setOperated(apiOperation.value());
-                    logVO.setOperatedName(apiOperation.value());
-                }
+                // 操作
+                logVO.setOperated(annotation.operated().getOperate());
+                logVO.setOperatedName(OperatedTypeEnum.getDescriptionByOperate(logVO.getOperated()));
+                // 资源类型
+                logVO.setResourceType(annotation.resourceType().getCode());
                 // 配置请求信息
                 logVO.setSourceIp(IpUtil.getHostIp());
                 // 上下文设置
@@ -149,8 +138,6 @@ public class LoginLogAspect {
         MDC.put("joinResourceId", logVO.getJoinResourceId());
         MDC.put("user", logVO.getUser());
         MDC.put("userId", logVO.getUserId());
-        MDC.put("url", logVO.getUrl());
-        MDC.put("content", logVO.getContent());
         MDC.put("requestTime", String.valueOf(logVO.getRequestTime()));
         MDC.put("method", logVO.getMethod());
         MDC.put("params", logVO.getParams());

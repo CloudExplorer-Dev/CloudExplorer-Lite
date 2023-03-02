@@ -11,7 +11,7 @@ public class HuaweiPerfMetricConstants {
      */
     public enum CloudServerPerfMetricEnum {
         CPU_USED_UTILIZATION("cpu_util", "CPU使用率","%"),
-        MEMORY_USED_UTILIZATION("mem_util", "内存使用率","%"),
+        MEMORY_USED_UTILIZATION("mem_usedPercent", "内存使用率","%"),
         DISK_READ_BPS("disk_read_bytes_rate", "所有磁盘读取BPS","Byte/s"),
         DISK_WRITE_BPS("disk_write_bytes_rate", "所有磁盘写入BPS","Byte/s"),
         DISK_READ_IOPS("disk_read_requests_rate", "所有磁盘每秒读取次数","Count/Second"),

@@ -57,6 +57,7 @@ import javax.annotation.Resource;
 import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Objects;
 import java.util.UUID;
 
 /**
@@ -216,6 +217,14 @@ public class VmCloudDiskServiceImpl extends ServiceImpl<BaseVmCloudDiskMapper, V
                 params.put("isAttached", request.getIsAttached());
                 params.put("instanceUuid", request.getInstanceUuid());
                 params.put("deleteWithInstance", request.getDeleteWithInstance());
+                //获取云主机计费方式
+                QueryWrapper<VmCloudServer> queryWrapper = new QueryWrapper<>();
+                queryWrapper.lambda().eq(VmCloudServer::getAccountId, request.getAccountId())
+                        .eq(VmCloudServer::getInstanceUuid, request.getInstanceUuid());
+                VmCloudServer vmCloudServer = vmCloudServerService.getOne(queryWrapper);
+                if(Objects.nonNull(vmCloudServer)){
+                    params.put("diskChargeType", vmCloudServer.getInstanceChargeType());
+                }
             }
 
             // 执行

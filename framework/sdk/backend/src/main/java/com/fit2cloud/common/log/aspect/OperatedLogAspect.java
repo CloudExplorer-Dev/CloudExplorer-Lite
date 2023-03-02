@@ -85,6 +85,7 @@ public class OperatedLogAspect {
             // 日志注解内容
             if(annotation != null){
                 OperatedLogVO logVO = createLog(time, errorResult);
+                Class logvoClass = logVO.getClass();
                 String paramStr = "";
                 // 操作
                 logVO.setOperated(annotation.operated().getOperate());
@@ -93,13 +94,12 @@ public class OperatedLogAspect {
                 // 参数解析
                 paramStr = JsonUtil.toJSONString(args);
                 if(StringUtils.isNotEmpty(annotation.content())){
-                    String content = "";
                     try{
-                        content = OperatedTypeEnum.getDescriptionByOperate(annotation.content());
+                        logVO.setContent(OperatedTypeEnum.getDescriptionByOperate(SpelUtil.getElValueByKey(pjd,annotation.content())));
                     }catch (Exception e){
                         e.printStackTrace();
                     }
-                    if(StringUtils.isEmpty(content)){
+                    if(StringUtils.isEmpty(logVO.getContent())){
                         // 操作内容解析
                         logVO.setContent(SpelUtil.getElValueByKey(pjd,annotation.content()));
                     }
@@ -109,22 +109,25 @@ public class OperatedLogAspect {
                 if(StringUtils.isNotEmpty(annotation.resourceId())){
                     // 资源ID,这里特殊处理，到时候查询用到
                     logVO.setResourceId(SpelUtil.getElValueByKey(pjd,annotation.resourceId())+"@"+annotation.resourceType().getCode());
-                }
-                if(StringUtils.isNotEmpty(annotation.joinResourceId())){
-                    // 关联资源ID
-                    logVO.setJoinResourceId(SpelUtil.getElValueByKey(pjd,annotation.joinResourceId()));
-                }
-                // 配置请求信息
-                extractRequestInfo(errorResult, logVO, paramStr);
-                Class logvoClass = logVO.getClass();
-                Field[] fields = logvoClass.getDeclaredFields();
-                for(Field field:fields){
+                    Field field = logvoClass.getDeclaredField("resourceId");
                     OperatedLogFieldConver fieldAnnotation = field.getAnnotation(OperatedLogFieldConver.class);
                     if(Objects.nonNull(fieldAnnotation)){
                         String a = CommonUtil.exec(fieldAnnotation.conver(), logVO.getResourceId(), ResourceConvert::conver);
                         logVO.setResourceName(a);
                     }
                 }
+                if(StringUtils.isNotEmpty(annotation.joinResourceId())){
+                    // 关联资源ID
+                    logVO.setJoinResourceId(SpelUtil.getElValueByKey(pjd,annotation.joinResourceId())+"@"+annotation.joinResourceType().getCode());
+                    Field field = logvoClass.getDeclaredField("joinResourceId");
+                    OperatedLogFieldConver fieldAnnotation = field.getAnnotation(OperatedLogFieldConver.class);
+                    if(Objects.nonNull(fieldAnnotation)){
+                        String a = CommonUtil.exec(fieldAnnotation.conver(), logVO.getJoinResourceId(), ResourceConvert::conver);
+                        logVO.setJoinResourceName(a);
+                    }
+                }
+                // 配置请求信息
+                extractRequestInfo(errorResult, logVO, paramStr);
                 // 上下文设置
                 setMDC(logVO);
                 LogUtil.info(JsonUtil.toJSONString(logVO));
@@ -179,6 +182,7 @@ public class OperatedLogAspect {
         MDC.put("resourceName",logVO.getResourceName());
         MDC.put("resourceType",logVO.getResourceType());
         MDC.put("joinResourceId",logVO.getJoinResourceId());
+        MDC.put("joinResourceName",logVO.getJoinResourceName());
         MDC.put("user",logVO.getUser());
         MDC.put("userId",logVO.getUserId());
         MDC.put("url",logVO.getUrl());

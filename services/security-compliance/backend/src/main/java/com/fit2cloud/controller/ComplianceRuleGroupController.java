@@ -1,6 +1,9 @@
 package com.fit2cloud.controller;
 
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.fit2cloud.common.log.annotation.OperatedLog;
+import com.fit2cloud.common.log.constants.OperatedTypeEnum;
+import com.fit2cloud.common.log.constants.ResourceTypeEnum;
 import com.fit2cloud.common.validator.annnotaion.CustomValidated;
 import com.fit2cloud.common.validator.group.ValidationGroup;
 import com.fit2cloud.common.validator.handler.ExistHandler;
@@ -77,6 +80,10 @@ public class ComplianceRuleGroupController {
     @PostMapping
     @ApiOperation(value = "插入合规规则组", notes = "插入合规规则组")
     @PreAuthorize("hasAnyCePermission('RULE:CREATE')")
+    @OperatedLog(resourceType = ResourceTypeEnum.COMPLIANCE_RULE_GROUP, operated = OperatedTypeEnum.ADD,
+            resourceId = "#request.id",
+            content = "'创建合规规则组['+#request.name+']'",
+            param = "#request")
     public ResultHolder<ComplianceRuleGroupResponse> save(@Validated(ValidationGroup.SELECT.class)
                                                           @RequestBody ComplianceRuleGroupRequest request) {
         ComplianceRuleGroupResponse complianceRuleGroupResponse = complianceRuleGroupService.save(request);
@@ -86,6 +93,10 @@ public class ComplianceRuleGroupController {
     @PutMapping
     @ApiOperation(value = "修改合规规则组", notes = "修改合规规则组")
     @PreAuthorize("hasAnyCePermission('RULE:EDIT')")
+    @OperatedLog(resourceType = ResourceTypeEnum.COMPLIANCE_RULE_GROUP, operated = OperatedTypeEnum.MODIFY,
+            resourceId = "#request.id",
+            content = "'修改合规规则组['+#request.name+']'",
+            param = "#request")
     public ResultHolder<ComplianceRuleGroupResponse> update(@Validated(ValidationGroup.UPDATE.class)
                                                             @RequestBody ComplianceRuleGroupRequest request) {
         ComplianceRuleGroupResponse complianceRuleGroupResponse = complianceRuleGroupService.update(request);
@@ -95,6 +106,10 @@ public class ComplianceRuleGroupController {
     @ApiOperation(value = "删除规则组", notes = "删除规则组根据规则组id")
     @DeleteMapping("/{compliance_rule_group_id}")
     @PreAuthorize("hasAnyCePermission('RULE:DELETE')")
+    @OperatedLog(resourceType = ResourceTypeEnum.COMPLIANCE_RULE_GROUP, operated = OperatedTypeEnum.DELETE,
+            resourceId = "#complianceRuleGroupId",
+            content = "'删除合规规则组['+#complianceRuleGroupId+']'",
+            param = "#complianceRuleGroupId")
     public ResultHolder<Boolean> deleteById(@NotNull(message = "规则组id不能为空")
                                             @CustomValidated(mapper = ComplianceRuleGroupMapper.class, handler = ExistHandler.class, field = "id", message = "规则组id不存在", exist = false)
                                             @PathVariable("compliance_rule_group_id")

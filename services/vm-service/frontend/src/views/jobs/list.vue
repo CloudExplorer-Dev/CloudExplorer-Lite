@@ -133,6 +133,24 @@ const search = (condition: TableSearch) => {
     );
   });
 };
+
+const getColor = (status: string) => {
+  let color = null;
+  switch (status) {
+    case "SUCCESS":
+      color = "green";
+      break;
+    case "FAILED":
+      color = "red";
+      break;
+    case "EXECUTION_ING":
+      color = "#80d363";
+      break;
+    default:
+  }
+  return color;
+};
+
 /**
  * 页面挂载
  */
@@ -297,12 +315,22 @@ const tableConfig = ref<TableConfig>({
       min-width="100px"
     >
       <template #default="scope">
-        <a
-          @click="showDetail(scope.row)"
-          :style="{ color: scope.row.status === 'FAILED' ? 'red' : null }"
-        >
-          {{ _.get(JobStatusConst, scope.row.status, scope.row.status) }}
-        </a>
+        <div style="display: flex; align-items: center">
+          <a
+            @click="showDetail(scope.row)"
+            :style="{ color: getColor(scope.row.status) }"
+          >
+            {{ _.get(JobStatusConst, scope.row.status, scope.row.status) }}
+          </a>
+          <el-icon
+            v-show="scope.row.status === 'EXECUTION_ING'"
+            class="is-loading"
+            :style="{
+              color: getColor(scope.row.status),
+            }"
+            ><Loading
+          /></el-icon>
+        </div>
       </template>
     </el-table-column>
     <el-table-column prop="operateUserName" label="操作人" min-width="100px" />

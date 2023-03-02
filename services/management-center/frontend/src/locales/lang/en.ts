@@ -128,6 +128,8 @@ const message = {
     view_details: "View details",
     belong_vm: "Virtual machine",
     content: "Operation details",
+    login_time: "Login time",
+    op_time: "Operation time",
     btn: {
       clear_policy: "Clear Policy",
     },

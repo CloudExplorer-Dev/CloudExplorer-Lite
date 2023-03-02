@@ -42,6 +42,8 @@
                         "operatedName":"%X{operatedName}",
                         "resourceId":"%X{resourceId}",
                         "resourceName":"%X{resourceName}",
+                        "joinResourceId":"%X{joinResourceId}",
+                        "joinResourceName":"%X{joinResourceName}",
                         "resourceType":"%X{resourceType}",
                         "status":"%X{status}",
                         "code":"%X{code}",

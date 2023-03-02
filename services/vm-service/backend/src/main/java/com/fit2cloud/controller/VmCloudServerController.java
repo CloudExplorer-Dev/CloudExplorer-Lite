@@ -93,7 +93,7 @@ public class VmCloudServerController {
     @ApiOperation(value = "关闭电源", notes = "关闭云主机电源")
     @PostMapping("powerOff/{serverId}")
     @PreAuthorize("hasAnyCePermission('CLOUD_SERVER:STOP')")
-    @OperatedLog(resourceType = ResourceTypeEnum.CLOUD_SERVER, operated = OperatedTypeEnum.SHUTDOWN,
+    @OperatedLog(resourceType = ResourceTypeEnum.CLOUD_SERVER, operated = OperatedTypeEnum.POWER_OFF,
             resourceId = "#serverId",
             param = "#serverId")
     public ResultHolder<Boolean> powerOff(@PathVariable String serverId) throws Exception {
@@ -123,7 +123,7 @@ public class VmCloudServerController {
     @ApiOperation(value = "放入回收站", notes = "云主机放入回收站")
     @PostMapping("recycle/{serverId}")
     @PreAuthorize("hasAnyCePermission('CLOUD_SERVER:DELETE')")
-    @OperatedLog(resourceType = ResourceTypeEnum.CLOUD_SERVER, operated = OperatedTypeEnum.RECYCLE_SERVER, resourceId = "#serverId", param = "#serverId")
+    @OperatedLog(resourceType = ResourceTypeEnum.CLOUD_SERVER, operated = OperatedTypeEnum.RECYCLE, resourceId = "#serverId", param = "#serverId")
     public ResultHolder<Boolean> recycleInstance(@PathVariable String serverId) {
         return ResultHolder.success(iVmCloudServerService.recycleInstance(serverId));
     }
@@ -131,7 +131,7 @@ public class VmCloudServerController {
     @ApiOperation(value = "恢复", notes = "云主机恢复")
     @PostMapping("recover/{recycleBinId}")
     @PreAuthorize("hasAnyCePermission('CLOUD_SERVER:RECOVER')")
-    @OperatedLog(resourceType = ResourceTypeEnum.CLOUD_SERVER, operated = OperatedTypeEnum.RECOVER_SERVER, resourceId = "#serverId", param = "#serverId")
+    @OperatedLog(resourceType = ResourceTypeEnum.CLOUD_SERVER, operated = OperatedTypeEnum.RECOVER, resourceId = "#serverId", param = "#serverId")
     public ResultHolder<Boolean> recoverInstance(@PathVariable String recycleBinId) {
         return ResultHolder.success(iVmCloudServerService.recoverInstance(recycleBinId));
     }
@@ -139,7 +139,7 @@ public class VmCloudServerController {
     @ApiOperation(value = "批量操作", notes = "批量操作云主机")
     @PostMapping("batchOperate")
     @PreAuthorize("hasAnyCePermission('CLOUD_SERVER:START','CLOUD_SERVER:STOP','CLOUD_SERVER:RESTART','CLOUD_SERVER:DELETE', 'CLOUD_SERVER:AUTH')")
-    @OperatedLog(resourceType = ResourceTypeEnum.CLOUD_SERVER, operated = OperatedTypeEnum.BATCH_OPERATE, content = "#request.getOperate()")
+    @OperatedLog(resourceType = ResourceTypeEnum.CLOUD_SERVER, operated = OperatedTypeEnum.BATCH_OPERATE, resourceId = "#request.instanceIds", content = "#request.operate")
     public ResultHolder<Boolean> batchOperate(@RequestBody BatchOperateVmRequest request) {
         return ResultHolder.success(iVmCloudServerService.batchOperate(request));
     }
@@ -169,7 +169,7 @@ public class VmCloudServerController {
     @ApiOperation(value = "创建云主机", notes = "创建云主机")
     @PostMapping("create")
     @PreAuthorize("hasAnyCePermission('CLOUD_SERVER:CREATE')")
-    @OperatedLog(resourceType = ResourceTypeEnum.CLOUD_SERVER, operated = OperatedTypeEnum.CREATE_SERVER)
+    @OperatedLog(resourceType = ResourceTypeEnum.CLOUD_SERVER, operated = OperatedTypeEnum.ADD,param = "#request")
     public ResultHolder<Boolean> createServer(@RequestBody CreateServerRequest request) {
         return ResultHolder.success(iVmCloudServerService.createServer(request));
     }
@@ -177,7 +177,7 @@ public class VmCloudServerController {
     @ApiOperation(value = "配置变更")
     @PutMapping("changeConfig")
     @PreAuthorize("hasAnyCePermission('CLOUD_SERVER:RESIZE')")
-    @OperatedLog(resourceType = ResourceTypeEnum.CLOUD_SERVER, operated = OperatedTypeEnum.CHANGE_SERVER_CONFIG, resourceId = "#{req.id}", param = "#{req}")
+    @OperatedLog(resourceType = ResourceTypeEnum.CLOUD_SERVER, operated = OperatedTypeEnum.CHANGE_SERVER_CONFIG, resourceId = "#req.id", content = "'变更配置为['+#req.newInstanceType+']'", param = "#req")
     public ResultHolder<Boolean> changeConfig(@RequestBody ChangeServerConfigRequest req) {
         return ResultHolder.success(iVmCloudServerService.changeConfig(req));
     }
@@ -197,6 +197,9 @@ public class VmCloudServerController {
     @ApiOperation(value = "云主机授权")
     @PostMapping("/grant")
     @PreAuthorize("hasAnyCePermission('CLOUD_SERVER:AUTH')")
+    @OperatedLog(resourceType = ResourceTypeEnum.CLOUD_SERVER,operated = OperatedTypeEnum.BATCH_AUTHORISATION,
+            content = "#grantServerRequest.grant?'云主机批量授权':'云主机批量取消授权'",
+            resourceId = "#grantServerRequest.ids")
     public ResultHolder<Boolean> grant(@RequestBody GrantRequest grantServerRequest) {
         return ResultHolder.success(iVmCloudServerService.grant(grantServerRequest));
     }

@@ -1,6 +1,9 @@
 package com.fit2cloud.controller;
 
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.fit2cloud.common.log.annotation.OperatedLog;
+import com.fit2cloud.common.log.constants.OperatedTypeEnum;
+import com.fit2cloud.common.log.constants.ResourceTypeEnum;
 import com.fit2cloud.controller.handler.ResultHolder;
 import com.fit2cloud.controller.request.AuthorizeResourcesRequest;
 import com.fit2cloud.controller.request.NotAuthorizeResourcesRequest;
@@ -71,6 +74,9 @@ public class DimensionSettingController {
             @CacheEvict(value = "bill_rule", allEntries = true)})
     @ApiOperation(value = "插入或者修改账单授权设置", notes = "插入或者修改账单授权设置")
     @PreAuthorize("hasAnyCePermission('DIMENSION_SETTING:CREATE')")
+    @OperatedLog(resourceType = ResourceTypeEnum.DIMENSION, operated = OperatedTypeEnum.MODIFY,
+            content = "#type=='ORGANIZATION'?'账单授权组织['+#authorizeId+']':'账单授权工作空间['+#authorizeId+']'",
+            param = "#authorizeRule")
     public ResultHolder<BillDimensionSetting> saveOrUpdate(@ApiParam("授权账号id") @PathVariable("authorize_id") String authorizeId,
                                                            @ApiParam("授权账号类型 组织或者工作空间") @Pattern(regexp = "ORGANIZATION|WORKSPACE", message = "授权类型只支持WORKSPACE,ORGANIZATION") @PathVariable("type") String type,
                                                            @RequestBody BillAuthorizeRule authorizeRule) {
