@@ -76,7 +76,7 @@ public enum JobTypeConstants {
      */
     CLOUD_DISK_ATTACH_JOB(303),
     /**
-     * 卸载卸载
+     * 卸载磁盘
      */
     CLOUD_DISK_DETACH_JOB(304),
     /**

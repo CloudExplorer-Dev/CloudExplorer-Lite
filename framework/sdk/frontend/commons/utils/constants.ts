@@ -32,7 +32,7 @@ export const JobTypeConst = {
   CLOUD_DISK_CREATE_JOB: "磁盘创建",
   CLOUD_DISK_DELETE_JOB: "磁盘删除",
   CLOUD_DISK_ATTACH_JOB: "磁盘挂载",
-  CLOUD_DISK_DETACH_JOB: "卸载卸载",
+  CLOUD_DISK_DETACH_JOB: "磁盘卸载",
   CLOUD_DISK_ENLARGE_JOB: "磁盘扩容",
 };
 
