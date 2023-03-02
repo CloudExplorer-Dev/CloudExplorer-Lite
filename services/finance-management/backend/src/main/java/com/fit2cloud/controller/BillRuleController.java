@@ -2,6 +2,9 @@ package com.fit2cloud.controller;
 
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.fit2cloud.common.exception.Fit2cloudException;
+import com.fit2cloud.common.log.annotation.OperatedLog;
+import com.fit2cloud.common.log.constants.OperatedTypeEnum;
+import com.fit2cloud.common.log.constants.ResourceTypeEnum;
 import com.fit2cloud.common.validator.annnotaion.CustomValidated;
 import com.fit2cloud.common.validator.group.ValidationGroup;
 import com.fit2cloud.common.validator.handler.ExistHandler;
@@ -90,6 +93,9 @@ public class BillRuleController {
     @PostMapping
     @ApiOperation(value = "添加账单规则", notes = "添加账单规则")
     @PreAuthorize("hasAnyCePermission('CUSTOM_BILL:CREATE')")
+    @OperatedLog(resourceType = ResourceTypeEnum.BILL_RULE, operated = OperatedTypeEnum.ADD,
+            content = "'添加账单规则['+#request.name+']'",
+            param = "#request")
     public ResultHolder<BillRule> add(@Validated(ValidationGroup.SAVE.class) @RequestBody AddBillRuleRequest request) {
         return ResultHolder.success(billRuleService.add(request));
     }
@@ -98,6 +104,10 @@ public class BillRuleController {
     @CacheEvict(value = "bill_view", allEntries = true)
     @ApiOperation(value = "修改账单规则", notes = "修改账单规则")
     @PreAuthorize("hasAnyCePermission('CUSTOM_BILL:EDIT')")
+    @OperatedLog(resourceType = ResourceTypeEnum.BILL_RULE, operated = OperatedTypeEnum.MODIFY,
+            resourceId = "#request.id",
+            content = "'修改账单规则['+#request.name+']'",
+            param = "#request")
     public ResultHolder<BillRule> update(@Validated @RequestBody UpdateBillRuleRequest request) {
         return ResultHolder.success(billRuleService.update(request));
     }
@@ -105,6 +115,10 @@ public class BillRuleController {
     @DeleteMapping("/{bill_rule_id}")
     @ApiOperation(value = "删除账单规则", notes = "删除账单规则")
     @PreAuthorize("hasAnyCePermission('CUSTOM_BILL:DELETE')")
+    @OperatedLog(resourceType = ResourceTypeEnum.BILL_RULE, operated = OperatedTypeEnum.DELETE,
+            resourceId = "#billRuleId",
+            content = "'删除账单规则['+#billRuleId+']'",
+            param = "#billRuleId")
     public ResultHolder<Boolean> delete(@CustomValidated(mapper = BillRuleMapper.class, handler = ExistHandler.class, field = "id", message = "账单规则id必须存在", exist = false) @PathVariable("bill_rule_id") String billRuleId) {
         return ResultHolder.success(billRuleService.removeById(billRuleId));
     }

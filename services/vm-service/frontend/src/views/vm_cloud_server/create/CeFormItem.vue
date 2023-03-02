@@ -139,9 +139,9 @@ function rules(currentItem: any) {
     if(currentItem.field==="pwd" && props.otherParams.platform==="fit2cloud_huawei_platform"){
       let regexp = "";
       if (props.allData.os?.toLowerCase().indexOf("windows") > -1) {
-        regexp = "^((?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?!.*Adm)(?!.*dmi)(?!.*min)(?!.*ini)(?!.*nis)(?!.*ist)(?!.*str)(?!.*tra)(?!.*rat)(?!.*ato)(?!.*tor)(?!.*rotartsinimd[A|a]).{8,25})$";
+        regexp = "^((?=.*\\d)(?=.*[a-z])(?=.*[A-Z])(?!.*Adm)(?!.*dmi)(?!.*min)(?!.*ini)(?!.*nis)(?!.*ist)(?!.*str)(?!.*tra)(?!.*rat)(?!.*ato)(?!.*tor)(?!.*rotartsinimd[A|a]).{8,25})$";
       }else{
-        regexp = "^((?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?!.*roo)(?!.*oot)(?!.*toor).{8,25})$";
+        regexp = "^((?=.*\\d)(?=.*[a-z])(?=.*[A-Z])(?!.*roo)(?!.*oot)(?!.*toor).{8,25})$";
       }
       const regexpObj = {
         message: currentItem.regexpDescription,

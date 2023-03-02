@@ -49,10 +49,13 @@ public class OperatedLogVO {
      */
     private String resourceType;
 
+    @OperatedLogFieldConver(conver = CloudResourceConvert.class)
+    private String joinResourceId;
+
     /**
      * 关联资源ID
      */
-    private String joinResourceId;
+    private String joinResourceName;
 
     /**
      * 操作人

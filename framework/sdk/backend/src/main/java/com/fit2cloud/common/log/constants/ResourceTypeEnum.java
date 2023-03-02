@@ -15,9 +15,16 @@ public enum ResourceTypeEnum {
     ROLE("ROLE","角色"),
     CLOUD_ACCOUNT("CLOUD_ACCOUNT","云账号"),
     CLOUD_SERVER("CLOUD_SERVER","云主机"),
-    CLOUD_DISK("CLOUD_DISK","云磁盘"),
+    CLOUD_DISK("CLOUD_DISK","磁盘"),
     DISK("DISK","磁盘"),
     RECYCLE("RECYCLE","回收站"),
+    BILL_RULE("BILL_RULE","账单规则"),
+    DIMENSION("DIMENSION","分账设置"),
+
+    COMPLIANCE_RULE("COMPLIANCE_RULE","合规规则"),
+    COMPLIANCE_RULE_GROUP("COMPLIANCE_RULE_GROUP","合规规则组"),
+    COMPLIANCE_SCAN("COMPLIANCE_SCAN","扫描检查"),
+    EMPTY("EMPTY","无"),
     ;
 
     private String code;

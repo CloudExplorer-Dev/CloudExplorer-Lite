@@ -699,6 +699,9 @@ public class HuaweiSyncCloudApi {
             //监控指标
             Arrays.stream(HuaweiPerfMetricConstants.CloudServerPerfMetricEnum.values()).sorted().toList().forEach(perfMetric -> {
                 request.setMetricName(perfMetric.getMetricName());
+                if(HuaweiPerfMetricConstants.CloudServerPerfMetricEnum.MEMORY_USED_UTILIZATION==perfMetric){
+                    request.setNamespace("AGT.ECS");
+                }
                 try {
                     Map<Long,Datapoint> datapointMap = new HashMap<>();
                     List.of("average","max","min").forEach(filter->{

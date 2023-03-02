@@ -1,6 +1,9 @@
 package com.fit2cloud.controller;
 
 import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.fit2cloud.common.log.annotation.OperatedLog;
+import com.fit2cloud.common.log.constants.OperatedTypeEnum;
+import com.fit2cloud.common.log.constants.ResourceTypeEnum;
 import com.fit2cloud.common.validator.annnotaion.CustomValidated;
 import com.fit2cloud.common.validator.group.ValidationGroup;
 import com.fit2cloud.common.validator.handler.ExistHandler;
@@ -80,6 +83,10 @@ public class ComplianceRuleController {
     @ApiOperation("插入合规规则")
     @PostMapping
     @PreAuthorize("hasAnyCePermission('RULE:CREATE')")
+    @OperatedLog(resourceType = ResourceTypeEnum.COMPLIANCE_RULE, operated = OperatedTypeEnum.ADD,
+            resourceId = "#complianceRuleRequest.id",
+            content = "'创建合规规则['+#complianceRuleRequest.name+']'",
+            param = "#complianceRuleRequest")
     public ResultHolder<ComplianceRuleResponse> saveComplianceRule(@Validated(ValidationGroup.SAVE.class)
                                                                    @RequestBody
                                                                    ComplianceRuleRequest complianceRuleRequest) {
@@ -98,6 +105,10 @@ public class ComplianceRuleController {
     @PutMapping
     @ApiOperation("修改合规规则")
     @PreAuthorize("hasAnyCePermission('RULE:EDIT')")
+    @OperatedLog(resourceType = ResourceTypeEnum.COMPLIANCE_RULE, operated = OperatedTypeEnum.MODIFY,
+            resourceId = "#complianceRuleRequest.id",
+            content = "#complianceRuleRequest.name!=null?'修改合规规则['+#complianceRuleRequest.name+']':#complianceRuleRequest.enable?'修改合规规则为[启用]':'修改合规规则为[禁用]'",
+            param = "#complianceRuleRequest")
     public ResultHolder<ComplianceRuleResponse> updateComplianceRule(@Validated(ValidationGroup.UPDATE.class)
                                                                      @RequestBody
                                                                      ComplianceRuleRequest complianceRuleRequest) {
@@ -108,6 +119,10 @@ public class ComplianceRuleController {
     @DeleteMapping("/{compliance_rule_id}")
     @ApiModelProperty("删除合规规则")
     @PreAuthorize("hasAnyCePermission('RULE:DELETE')")
+    @OperatedLog(resourceType = ResourceTypeEnum.COMPLIANCE_RULE, operated = OperatedTypeEnum.DELETE,
+            resourceId = "#id",
+            content = "'删除合规规则['+#id+']'",
+            param = "#id")
     public ResultHolder<Boolean> deleteComplianceRule(@NotNull(message = "规则id不能为空")
                                                       @CustomValidated(mapper = ComplianceRuleMapper.class, handler = ExistHandler.class, field = "id", message = "规则id不存在", exist = false)
                                                       @PathVariable("compliance_rule_id")

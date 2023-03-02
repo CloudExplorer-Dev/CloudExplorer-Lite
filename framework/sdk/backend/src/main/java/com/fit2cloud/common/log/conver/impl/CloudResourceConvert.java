@@ -1,14 +1,18 @@
 package com.fit2cloud.common.log.conver.impl;
 
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.fit2cloud.base.entity.*;
 import com.fit2cloud.base.mapper.*;
-import com.fit2cloud.common.log.cache.*;
 import com.fit2cloud.common.log.constants.ResourceTypeEnum;
 import com.fit2cloud.common.log.conver.ResourceConvert;
+import com.fit2cloud.common.utils.ColumnNameUtil;
 import com.fit2cloud.common.utils.SpringUtil;
 import org.apache.commons.lang3.StringUtils;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 
@@ -52,9 +56,11 @@ public class CloudResourceConvert implements ResourceConvert {
             String cache = null;// BaseCloudServerCache.getCache(id);
             if (StringUtils.isEmpty(cache)) {
                 BaseVmCloudServerMapper cloudServerMapper = SpringUtil.getBean(BaseVmCloudServerMapper.class);
-                VmCloudServer cloudServer = cloudServerMapper.selectById(id);
+                QueryWrapper<VmCloudServer> wrapper = new QueryWrapper<>();
+                wrapper.eq(true, ColumnNameUtil.getColumnName(VmCloudServer::getId,true),id).or().eq(true, ColumnNameUtil.getColumnName(VmCloudServer::getInstanceUuid,true),id);
+                VmCloudServer cloudServer = cloudServerMapper.selectOneDeep(wrapper);
                 if (Objects.nonNull(cloudServer)) {
-                    BaseCloudServerCache.updateCache();
+                    //BaseCloudServerCache.updateCache();
                     names.add(cloudServer.getInstanceName());
                 }
             } else {
@@ -73,7 +79,7 @@ public class CloudResourceConvert implements ResourceConvert {
                 BaseVmCloudDiskMapper mapper = SpringUtil.getBean(BaseVmCloudDiskMapper.class);
                 VmCloudDisk vo = mapper.selectById(id);
                 if (Objects.nonNull(vo)) {
-                    BaseCloudDiskCache.updateCache();
+                    //BaseCloudDiskCache.updateCache();
                     names.add(vo.getDiskName());
                 }
             } else {
@@ -92,7 +98,7 @@ public class CloudResourceConvert implements ResourceConvert {
                 BaseCloudAccountMapper mapper = SpringUtil.getBean(BaseCloudAccountMapper.class);
                 CloudAccount vo = mapper.selectById(id);
                 if (Objects.nonNull(vo)) {
-                    BaseCloudAccountCache.updateCache();
+                    //BaseCloudAccountCache.updateCache();
                     names.add(vo.getName());
                 }
             } else {
@@ -110,7 +116,7 @@ public class CloudResourceConvert implements ResourceConvert {
                 BaseOrganizationMapper mapper = SpringUtil.getBean(BaseOrganizationMapper.class);
                 Organization vo = mapper.selectById(id);
                 if (Objects.nonNull(vo)) {
-                    BaseOrgCache.updateCache();
+                    //BaseOrgCache.updateCache();
                     names.add(vo.getName());
                 }
             } else {
@@ -128,7 +134,7 @@ public class CloudResourceConvert implements ResourceConvert {
                BaseWorkspaceMapper mapper = SpringUtil.getBean(BaseWorkspaceMapper.class);
                Workspace vo = mapper.selectById(id);
                if (Objects.nonNull(vo)) {
-                   BaseWorkspaceCache.updateCache();
+                   //BaseWorkspaceCache.updateCache();
                    names.add(vo.getName());
                }
            } else {
@@ -146,7 +152,7 @@ public class CloudResourceConvert implements ResourceConvert {
                 BaseRoleMapper mapper = SpringUtil.getBean(BaseRoleMapper.class);
                 Role vo = mapper.selectById(id);
                 if (Objects.nonNull(vo)) {
-                    BaseRoleCache.updateCache();
+                    //BaseRoleCache.updateCache();
                     names.add(vo.getName());
                 }
             } else {
@@ -164,7 +170,7 @@ public class CloudResourceConvert implements ResourceConvert {
                 BaseUserMapper mapper = SpringUtil.getBean(BaseUserMapper.class);
                 User vo = mapper.selectById(id);
                 if (Objects.nonNull(vo)) {
-                    BaseUserCache.updateCache();
+                    //BaseUserCache.updateCache();
                     names.add(vo.getName());
                 }
             } else {

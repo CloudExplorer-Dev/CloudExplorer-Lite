@@ -104,7 +104,7 @@ public class LogServiceImpl implements ILogService {
         //平台管理日志，把登录日志以及资产资源过滤掉，云主机、磁盘
         if(Objects.isNull(request.getResourceType())){
             queryConditions.add(new QueryUtil.QueryCondition(true, "operated", OperatedTypeEnum.LOGIN.getOperate(), QueryUtil.CompareType.NOT_EQ));
-            queryConditions.add(new QueryUtil.QueryCondition(true, "resourceType", Arrays.asList(ResourceTypeEnum.CLOUD_SERVER.getName(),ResourceTypeEnum.CLOUD_DISK.getName()), QueryUtil.CompareType.NOT_IN));
+            queryConditions.add(new QueryUtil.QueryCondition(true, "resourceType.keyword", Arrays.asList(ResourceTypeEnum.CLOUD_SERVER.getName(),ResourceTypeEnum.CLOUD_DISK.getName()), QueryUtil.CompareType.NOT_IN));
         }
         //不查询没有等级的数据
         queryConditions.add(new QueryUtil.QueryCondition(true, "level", null, QueryUtil.CompareType.NOT_EXIST));

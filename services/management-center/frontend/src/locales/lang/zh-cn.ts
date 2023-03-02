@@ -127,6 +127,8 @@ const message = {
     view_details: "查看详情",
     belong_vm: "所属虚拟机",
     content: "操作详情",
+    login_time: "登录时间",
+    op_time: "操作时间",
     btn: {
       clear_policy: "清空策略",
     },

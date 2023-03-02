@@ -1,6 +1,9 @@
 package com.fit2cloud.controller;
 
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.fit2cloud.common.log.annotation.OperatedLog;
+import com.fit2cloud.common.log.constants.OperatedTypeEnum;
+import com.fit2cloud.common.log.constants.ResourceTypeEnum;
 import com.fit2cloud.controller.handler.ResultHolder;
 import com.fit2cloud.controller.request.compliance_scan.ComplianceResourceRequest;
 import com.fit2cloud.controller.request.compliance_scan.ComplianceSyncRequest;
@@ -58,6 +61,10 @@ public class ComplianceScanController {
     @PostMapping("/sync_scan")
     @ApiOperation("发送扫描任务")
     @PreAuthorize("hasAnyCePermission('SCAN:SEND_JOB')")
+    @OperatedLog(resourceType = ResourceTypeEnum.COMPLIANCE_SCAN, operated = OperatedTypeEnum.SCAN,
+            resourceId = "#request.cloudAccountResources.![cloudAccountId]",
+            content = "'发送扫描任务'",
+            param = "#request")
     public ResultHolder<Boolean> scan(@RequestBody ComplianceSyncRequest request) {
         for (ComplianceSyncRequest.CloudAccountResource cloudAccountResource : request.getCloudAccountResources()) {
             syncService.syncInstance(cloudAccountResource.getCloudAccountId(), cloudAccountResource.getResourceType());
