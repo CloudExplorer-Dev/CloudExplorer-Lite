@@ -11,6 +11,7 @@ import com.fit2cloud.common.form.vo.FormObject;
 import com.fit2cloud.controller.handler.ResultHolder;
 import com.fit2cloud.dto.Good;
 import com.fit2cloud.provider.ICloudProvider;
+import com.fit2cloud.provider.constants.F2CDiskStatus;
 import com.fit2cloud.provider.constants.F2CInstanceStatus;
 import com.fit2cloud.provider.constants.ProviderConstants;
 import io.swagger.annotations.Api;
@@ -79,7 +80,12 @@ public class VmCloudServerCatalogController {
                                         e.printStackTrace();
                                     }
                                     try {
-                                        good.setDiskCount(diskMapper.selectCount(new LambdaQueryWrapper<VmCloudDisk>().eq(VmCloudDisk::getAccountId, cloudAccount.getId())));
+                                        LambdaQueryWrapper queryWrapper = new LambdaQueryWrapper<VmCloudDisk>()
+                                                .eq(VmCloudDisk::getAccountId, cloudAccount.getId())
+                                                .notIn(VmCloudDisk::getStatus, Arrays.asList(
+                                                        F2CDiskStatus.DELETED,
+                                                        F2CDiskStatus.CREATING));
+                                        good.setDiskCount(diskMapper.selectCount(queryWrapper));
                                     } catch (Exception e) {
                                         e.printStackTrace();
                                     }
