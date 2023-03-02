@@ -98,7 +98,7 @@ public class LogServiceImpl implements ILogService {
             }
             JsonNode jsonNode = params.get(name);
             String value = jsonNode.asText();
-            QueryUtil.QueryCondition condition = new QueryUtil.QueryCondition(StringUtils.isNotEmpty(value) && !StringUtils.equalsIgnoreCase("null", value), name, value, QueryUtil.CompareType.LIKE);
+            QueryUtil.QueryCondition condition = new QueryUtil.QueryCondition(StringUtils.isNotEmpty(value) && !StringUtils.equalsIgnoreCase("null", value), name+".keyword", value, QueryUtil.CompareType.LIKE);
             queryConditions.add(condition);
         }
         //平台管理日志，把登录日志以及资产资源过滤掉，云主机、磁盘
