@@ -278,11 +278,11 @@ public class CloudAccountServiceImpl extends ServiceImpl<CloudAccountMapper, Clo
         }
     }
 
-    private CloudAccountModuleJob updateCloudModuleJob(CloudAccountModuleJob cloudAccountModuleJob, String acloudAccountId, String moduleName) {
+    private CloudAccountModuleJob updateCloudModuleJob(CloudAccountModuleJob cloudAccountModuleJob, String cloudAccountId, String moduleName) {
         if (moduleName.equals(ServerInfo.module)) {
-            return baseCloudAccountService.updateJob(cloudAccountModuleJob, acloudAccountId);
+            return baseCloudAccountService.updateJob(cloudAccountModuleJob, cloudAccountId);
         } else {
-            return updateJob.apply(cloudAccountModuleJob, acloudAccountId);
+            return updateJob.apply(cloudAccountModuleJob, cloudAccountId);
         }
     }
 

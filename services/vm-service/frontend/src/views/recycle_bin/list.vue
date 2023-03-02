@@ -477,6 +477,11 @@ const refresh = () => {
       <template #default="scope">
         <div style="display: flex; align-items: center">
           <span>{{ filterStatus(scope.row.resourceStatus) }} </span>
+          <el-icon
+              v-show="scope.row.resourceStatus.toLowerCase() != 'running' && scope.row.resourceStatus.indexOf('ing')>-1"
+              class="is-loading"
+          ><Loading
+          /></el-icon>
         </div>
       </template>
     </el-table-column>

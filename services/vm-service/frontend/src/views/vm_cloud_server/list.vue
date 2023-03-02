@@ -191,8 +191,8 @@ const refresh = () => {
  * 是否开启了回收站
  */
 const isRecycleBinOpened = ref(true);
-const getRecycleBinSetting = () => {
-  RecycleBinsApi.getRecycleEnableStatus().then((result) => {
+const getRecycleBinSetting = async () => {
+  await RecycleBinsApi.getRecycleEnableStatus().then((result) => {
     isRecycleBinOpened.value = result.data;
   });
 };
@@ -224,7 +224,6 @@ const cloudServerInterval = ref<any>();
 //启动定时器
 const startOperateInterval = () => {
   cloudServerInterval.value = setInterval(() => {
-    console.log("初始化定时器：" + cloudServerInterval.value);
     VmCloudServerApi.getVmCloudServerByIds(
       tableData.value.map((r) => r.id)
     ).then((res) => {
@@ -233,6 +232,7 @@ const startOperateInterval = () => {
           _.forEach(tableData.value, function (vm) {
             if (vm.id === res.data[i].id) {
               vm.instanceStatus = res.data[i].instanceStatus;
+              vm.ipArray = res.data[i].ipArray;
             }
           });
         }
@@ -249,9 +249,7 @@ const updateInstanceStatus = (list: Array<VmCloudServerVO>) => {
 };
 //停止定时器
 const stopOperateInterval = () => {
-  console.log("即将关闭定时器：" + cloudServerInterval.value);
   if (cloudServerInterval.value) {
-    console.log("关闭定时器：" + cloudServerInterval.value);
     clearInterval(cloudServerInterval.value);
   }
 };
@@ -452,11 +450,10 @@ const powerOn = (row: VmCloudServerVO) => {
   ).then(() => {
     VmCloudServerApi.powerOn(row.id as string)
       .then((res) => {
-        console.log("-----" + res);
         ElMessage.success(t("commons.msg.op_success"));
       })
       .catch((err) => {
-        console.log(err);
+        ElMessage.error(err.response.data.message);
       })
       .finally(() => {
         //table.value?.search();
@@ -482,11 +479,10 @@ const shutdown = (row: VmCloudServerVO) => {
     if (powerOff) {
       VmCloudServerApi.powerOff(row.id as string)
         .then((res) => {
-          console.log("-----" + res);
           ElMessage.success(t("commons.msg.op_success"));
         })
         .catch((err) => {
-          console.log(err);
+          ElMessage.error(err.response.data.message);
         })
         .finally(() => {
           //table.value?.search();
@@ -497,7 +493,7 @@ const shutdown = (row: VmCloudServerVO) => {
           ElMessage.success(t("commons.msg.op_success"));
         })
         .catch((err) => {
-          console.log(err);
+          ElMessage.error(err.response.data.message);
         })
         .finally(() => {
           //table.value?.search();
@@ -521,7 +517,7 @@ const powerOff = (row: VmCloudServerVO) => {
         ElMessage.success(t("commons.msg.op_success"));
       })
       .catch((err) => {
-        console.log(err);
+        ElMessage.error(err.response.data.message);
       });
   });
 };
@@ -541,7 +537,7 @@ const reboot = (row: VmCloudServerVO) => {
         ElMessage.success(t("commons.msg.op_success"));
       })
       .catch((err) => {
-        console.log(err);
+        ElMessage.error(err.response.data.message);
       });
   });
 };
@@ -574,7 +570,7 @@ const deleteInstance = async (row: VmCloudServerVO) => {
           ElMessage.success(t("commons.msg.op_success"));
         })
         .catch((err) => {
-          console.log(err);
+          ElMessage.error(err.response.data.message);
         });
     } else {
       VmCloudServerApi.deleteInstance(row.id as string)
@@ -582,7 +578,7 @@ const deleteInstance = async (row: VmCloudServerVO) => {
           ElMessage.success(t("commons.msg.op_success"));
         })
         .catch((err) => {
-          console.log(err);
+          ElMessage.error(err.response.data.message);
         });
     }
   });
@@ -652,9 +648,10 @@ const batchOperate = (operate: string) => {
     VmCloudServerApi.batchOperate(_.map(selectedRowData.value, "id"), operate)
       .then(() => {
         ElMessage.success(t("commons.msg.op_success"));
+        refresh();
       })
       .catch((err) => {
-        console.log(err);
+        ElMessage.error(err.response.data.message);
       });
   });
 };

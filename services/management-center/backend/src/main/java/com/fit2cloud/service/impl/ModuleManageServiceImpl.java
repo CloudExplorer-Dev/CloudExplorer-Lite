@@ -21,7 +21,7 @@ import java.util.*;
 @Service
 public class ModuleManageServiceImpl implements IModuleManageService {
 
-    @Value("${ce.module.repository.url}")
+    @Value("${ce.module.repository.url:https://resource.fit2cloud.com/cloudexplorer-lite/modules/releases/latest/}")
     private String repositoryPath;
 
     @Override

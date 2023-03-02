@@ -19,11 +19,9 @@
               :indeterminate="isIndeterminate[item.cloudAccount.id]"
               @change="handleCheckAllChange(item, $event)"
             >
-              <div>
-                <el-image
-                  style="margin-right: 10px"
-                  :src="platformIcon[item.cloudAccount.platform].oldIcon"
-                ></el-image>
+              <div style="display: flex">
+                <platform_icon :platform="item.cloudAccount.platform">
+                </platform_icon>
                 {{ item.cloudAccount.name }}
               </div>
             </el-checkbox>
@@ -62,6 +60,7 @@ import { ElMessage } from "element-plus";
 import type { SupportCloudAccountResourceResponse } from "@/api/compliance_scan/type";
 import type { SimpleMap } from "@commons/api/base/type";
 import { platformIcon } from "@commons/utils/platform";
+import platform_icon from "@commons/components/platform-icon/index.vue";
 /**
  * 弹出框是否显示
  */
