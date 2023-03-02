@@ -101,7 +101,7 @@ public class ModuleManageServiceImpl implements IModuleManageService {
                         continue;
                     }
                     String[] statusStr = StringUtils.split(StringUtils.trim(psInfo), " ");
-                    if (statusStr.length != 4) {
+                    if (statusStr.length != 5) {
                         continue;
                     }
                     if (StringUtils.equals("pid:", statusStr[2])) {
