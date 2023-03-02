@@ -476,8 +476,10 @@ public class ServerAnalysisServiceImpl implements IServerAnalysisService {
         if(parent.getValue().longValue()==0){
             return false;
         }
-        for(BarTreeChartData chartData:parent.getChildren()){
-            return childrenHasValue(chartData);
+        if(CollectionUtils.isNotEmpty(parent.getChildren())){
+            for(BarTreeChartData chartData:parent.getChildren()){
+                return childrenHasValue(chartData);
+            }
         }
         return true;
     }
@@ -559,7 +561,7 @@ public class ServerAnalysisServiceImpl implements IServerAnalysisService {
         //父级数量加上子级数量作为父级总量
         OperationUtils.workspaceToOrgChildren(workspaceMap, barTreeChartData);
         //子级排序
-        return list.stream().filter(u -> Objects.equals(u.getPId(), barTreeChartData.getId())).peek(
+        return list.stream().filter(u -> StringUtils.equalsIgnoreCase(u.getPId(), barTreeChartData.getId())).peek(
                 u -> {
                     u.setName(u.getName() + "(子组织)");
                     // 用于区分组织与工作空间
