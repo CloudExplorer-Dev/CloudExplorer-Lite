@@ -30,11 +30,15 @@
       min-width="150px"
     >
       <template #default="scope">
-        <el-tooltip class="box-item" effect="dark" placement="top-start">
+        <el-tooltip>
           <template #content>
             <div style="max-width: 500px">{{ scope.row.content }}</div>
           </template>
-          <div class="table_content_ellipsis">
+          <div style="
+              white-space: nowrap;
+              overflow: hidden;
+              text-overflow: ellipsis;
+            ">
             {{ scope.row.content }}
           </div></el-tooltip
         >
@@ -44,13 +48,20 @@
       prop="resourceId"
       :label="$t('log_manage.resource')"
       min-width="200px"
+      max-width="200px"
     >
       <template #default="scope">
-        <el-tooltip class="box-item" effect="dark" placement="top-start">
+        <el-tooltip>
           <template #content>
             <div style="max-width: 500px">{{ scope.row.resourceName }}</div>
           </template>
-          <div class="table_content_ellipsis">
+          <div
+            style="
+              white-space: nowrap;
+              overflow: hidden;
+              text-overflow: ellipsis;
+            "
+          >
             {{ scope.row.resourceName }}
           </div></el-tooltip
         >
@@ -64,10 +75,20 @@
       <template #default="scope">
         <el-tooltip class="box-item" effect="dark" placement="top-start">
           <template #content>
-            <div style="max-width: 500px">{{ scope.row.joinResourceName!=null?scope.row.joinResourceName:scope.row.joinResourceId}}</div>
+            <div style="max-width: 500px">
+              {{
+                scope.row.joinResourceName != null
+                  ? scope.row.joinResourceName
+                  : scope.row.joinResourceId
+              }}
+            </div>
           </template>
           <div class="table_content_ellipsis">
-            {{ scope.row.joinResourceName!=null?scope.row.joinResourceName:scope.row.joinResourceId}}
+            {{
+              scope.row.joinResourceName != null
+                ? scope.row.joinResourceName
+                : scope.row.joinResourceId
+            }}
           </div></el-tooltip
         >
       </template>
