@@ -274,8 +274,10 @@ public class DiskAnalysisServiceImpl implements IDiskAnalysisService {
         if(parent.getValue()==0){
             return false;
         }
-        for(BarTreeChartData chartData:parent.getChildren()){
-            return childrenHasValue(chartData);
+        if(CollectionUtils.isNotEmpty(parent.getChildren())){
+            for(BarTreeChartData chartData:parent.getChildren()){
+                return childrenHasValue(chartData);
+            }
         }
         return true;
     }
