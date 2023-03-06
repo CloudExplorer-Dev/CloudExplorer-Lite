@@ -79,7 +79,6 @@ const InstanceStatus = ref<Array<SimpleMap<string>>>([
   { text: "关机中", value: "Stopping" },
   { text: "重启中", value: "Rebooting" },
   { text: "删除中", value: "Deleting" },
-  { text: "创建中", value: "Createding" },
   { text: "排队中", value: "WaitCreating" },
   { text: "创建中", value: "Creating" },
   { text: "配置变更中", value: "ConfigChanging" },
@@ -391,8 +390,10 @@ const buttons = ref([
     show: permissionStore.hasPermission("[vm-service]CLOUD_SERVER:DELETE"),
     disabled: (row: { instanceStatus: string }) => {
       return (
-        row.instanceStatus === "ToBeRecycled" ||
-        row.instanceStatus === "Deleted"
+          row.instanceStatus.toUpperCase() === "ToBeRecycled".toUpperCase() ||
+          row.instanceStatus.toUpperCase() === "Deleted".toUpperCase() ||
+          (row.instanceStatus.toUpperCase() !== "Running".toUpperCase() &&
+              row.instanceStatus.toUpperCase().indexOf("ING") > -1)
       );
     },
   },
@@ -403,8 +404,10 @@ const buttons = ref([
     show: permissionStore.hasPermission("[vm-service]CLOUD_DISK:CREATE"),
     disabled: (row: { instanceStatus: string }) => {
       return (
-        row.instanceStatus === "ToBeRecycled" ||
-        row.instanceStatus === "Deleted"
+        row.instanceStatus.toUpperCase() === "ToBeRecycled".toUpperCase() ||
+        row.instanceStatus.toUpperCase() === "Deleted".toUpperCase() ||
+        (row.instanceStatus.toUpperCase() !== "Running".toUpperCase() &&
+          row.instanceStatus.toUpperCase().indexOf("ING") > -1)
       );
     },
   },
@@ -451,13 +454,11 @@ const powerOn = (row: VmCloudServerVO) => {
     VmCloudServerApi.powerOn(row.id as string)
       .then((res) => {
         ElMessage.success(t("commons.msg.op_success"));
+        refresh();
       })
       .catch((err) => {
         ElMessage.error(err.response.data.message);
       })
-      .finally(() => {
-        //table.value?.search();
-      });
   });
 };
 //关机
@@ -480,24 +481,20 @@ const shutdown = (row: VmCloudServerVO) => {
       VmCloudServerApi.powerOff(row.id as string)
         .then((res) => {
           ElMessage.success(t("commons.msg.op_success"));
+          refresh();
         })
         .catch((err) => {
           ElMessage.error(err.response.data.message);
         })
-        .finally(() => {
-          //table.value?.search();
-        });
     } else {
       VmCloudServerApi.shutdownInstance(row.id as string)
         .then((res) => {
           ElMessage.success(t("commons.msg.op_success"));
+          refresh();
         })
         .catch((err) => {
           ElMessage.error(err.response.data.message);
         })
-        .finally(() => {
-          //table.value?.search();
-        });
     }
   });
 };
@@ -515,6 +512,7 @@ const powerOff = (row: VmCloudServerVO) => {
     VmCloudServerApi.powerOff(row.id as string)
       .then(() => {
         ElMessage.success(t("commons.msg.op_success"));
+        refresh();
       })
       .catch((err) => {
         ElMessage.error(err.response.data.message);
@@ -535,6 +533,7 @@ const reboot = (row: VmCloudServerVO) => {
     VmCloudServerApi.reboot(row.id as string)
       .then(() => {
         ElMessage.success(t("commons.msg.op_success"));
+        refresh();
       })
       .catch((err) => {
         ElMessage.error(err.response.data.message);
@@ -568,6 +567,7 @@ const deleteInstance = async (row: VmCloudServerVO) => {
       VmCloudServerApi.recycleInstance(row.id as string)
         .then(() => {
           ElMessage.success(t("commons.msg.op_success"));
+          refresh();
         })
         .catch((err) => {
           ElMessage.error(err.response.data.message);
@@ -576,6 +576,7 @@ const deleteInstance = async (row: VmCloudServerVO) => {
       VmCloudServerApi.deleteInstance(row.id as string)
         .then(() => {
           ElMessage.success(t("commons.msg.op_success"));
+          refresh();
         })
         .catch((err) => {
           ElMessage.error(err.response.data.message);
@@ -826,7 +827,6 @@ const moreActions = ref<Array<ButtonAction>>([
               scope.row.instanceStatus === 'Stopping' ||
               scope.row.instanceStatus === 'Rebooting' ||
               scope.row.instanceStatus === 'Deleting' ||
-              scope.row.instanceStatus === 'Createding' ||
               scope.row.instanceStatus === 'Creating'
             "
             class="is-loading"
