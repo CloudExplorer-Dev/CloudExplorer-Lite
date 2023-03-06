@@ -1283,7 +1283,7 @@ public class HuaweiSyncCloudApi {
         ListOnDemandResourceRatingsRequest request = new ListOnDemandResourceRatingsRequest();
         RateOnDemandReq body = new RateOnDemandReq();
         List<DemandProductInfo> listBodyProductInfos = new ArrayList<>();
-        if(StringUtils.isEmpty(createRequest.getInstanceSpecConfig().getSpecName())){
+        if(Objects.isNull(createRequest.getInstanceSpecConfig()) || StringUtils.isEmpty(createRequest.getInstanceSpecConfig().getSpecName())){
             return 0D;
         }
         listBodyProductInfos.add(new DemandProductInfo()

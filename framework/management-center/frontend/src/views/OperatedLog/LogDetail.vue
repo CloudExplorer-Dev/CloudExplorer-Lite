@@ -9,7 +9,7 @@ defineExpose({
   logInfo,
 });
 </script>
-<style scoped>
+<style scoped lang="scss">
 .detail-class {
   height: 300px;
   overflow: auto;
@@ -18,6 +18,16 @@ defineExpose({
   border: 0 !important;
   background-color: transparent !important;
   width: 90%;
+}
+.el-descriptions__body
+  .el-descriptions__table.is-bordered
+  .el-descriptions__cell {
+  width: 100% !important;
+}
+
+.el-descriptions__body .el-descriptions__table .el-descriptions__cell {
+  font-size: 12px !important;
+  width: 100% !important;
 }
 </style>
 
@@ -28,7 +38,12 @@ defineExpose({
     width="50%"
     destroy-on-close
   >
-    <el-descriptions :column="1" border size="small">
+    <el-descriptions
+      :column="1"
+      border
+      size="small"
+      style="word-break: break-all; word-wrap: break-word"
+    >
       <el-descriptions-item
         label-class-name="label-class"
         class-name="content-class"

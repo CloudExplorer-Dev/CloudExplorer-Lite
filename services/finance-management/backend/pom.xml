@@ -10,11 +10,12 @@
     </parent>
 
     <artifactId>finance-management</artifactId>
-    <version>${revision}</version>
+    <version>${service.version}</version>
     <name>finance-management</name>
     <description>finance-management</description>
 
     <properties>
+        <service.version>${revision}.0</service.version>
         <service.port>9012</service.port>
         <service.management.port>9912</service.management.port>
     </properties>

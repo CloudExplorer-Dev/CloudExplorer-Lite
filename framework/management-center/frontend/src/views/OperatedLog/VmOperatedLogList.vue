@@ -1,43 +1,28 @@
 <!--操作日志列表-->
 <template>
   <ce-table
-    localKey="allOperatedLogTable"
+    localKey="vmOperatedLogTable"
     v-loading="tableLoading"
     :columns="columns"
     :data="tableData"
     :tableConfig="tableConfig"
     row-key="id"
     height="100%"
+    table-layout="auto"
   >
     <template #toolbar>
-      <el-button
-        type="primary"
-        @click="clearPolicy"
-        v-hasPermission="'[management-center]OPERATED_LOG:CLEAR_POLICY'"
-      >
-        {{ t("log_manage.btn.clear_policy") }}
-      </el-button>
+      <!-- <el-button type="primary" @click="clearPolicy">清空策略</el-button> -->
     </template>
     <el-table-column
       prop="user"
       :label="$t('log_manage.operator')"
+      min-width="150px"
       fixed
-      min-width="150px"
-    ></el-table-column>
-    <el-table-column
-      prop="module"
-      :label="$t('log_manage.module')"
-      min-width="150px"
-    ></el-table-column>
-    <el-table-column
-      prop="resourceType"
-      :label="$t('log_manage.menu')"
-      min-width="150px"
     ></el-table-column>
     <el-table-column
       prop="operatedName"
       :label="$t('log_manage.type')"
-      min-width="150px"
+      min-width="200px"
     ></el-table-column>
     <el-table-column
       prop="content"
@@ -45,49 +30,48 @@
       min-width="150px"
     >
       <template #default="scope">
-        <el-tooltip class="box-item" effect="dark" placement="top-start">
+        <el-tooltip>
           <template #content>
             <div style="max-width: 500px">{{ scope.row.content }}</div>
           </template>
-          <div class="table_content_ellipsis">
+          <div class="text-overflow">
             {{ scope.row.content }}
-          </div></el-tooltip
-        >
+          </div>
+        </el-tooltip>
       </template>
     </el-table-column>
     <el-table-column
-      :show-overflow-tooltip="true"
       prop="resourceId"
       :label="$t('log_manage.resource')"
       min-width="200px"
     >
       <template #default="scope">
-        <el-tooltip class="box-item" effect="dark" placement="top-start">
+        <el-tooltip>
           <template #content>
             <div style="max-width: 500px">{{ scope.row.resourceName }}</div>
           </template>
-          <div class="table_content_ellipsis">
+          <div class="text-overflow">
             {{ scope.row.resourceName }}
-          </div></el-tooltip
-        >
+          </div>
+        </el-tooltip>
       </template>
     </el-table-column>
     <el-table-column
       prop="sourceIp"
       :label="$t('log_manage.ip')"
-      min-width="150px"
+      min-width="200px"
     ></el-table-column>
     <el-table-column
-      min-width="200px"
       prop="date"
       :label="$t('commons.operate_time')"
       sortable="desc"
+      min-width="200px"
     />
     <el-table-column
-      width="100px"
       prop="status"
       :label="$t('log_manage.status')"
       column-key="status"
+      min-width="150px"
     >
       <template #default="scope">
         <div
@@ -108,26 +92,14 @@
     </template>
   </ce-table>
   <LogDetail ref="logInfoRef" />
-  <el-dialog
-    v-model="clearLogConfigDialogVisible"
-    title="保存日志策略"
-    width="25%"
-    destroy-on-close
-    :close-on-click-modal="false"
-  >
-    <ClearLogConfig
-      :paramValue="paramValue"
-      :paramKey="'log.keep.api.months'"
-      v-model:visible="clearLogConfigDialogVisible"
-    />
-  </el-dialog>
 </template>
 
 <script setup lang="ts">
 import { ref, onMounted } from "vue";
 import OperatedLogApi from "@/api/operated_log/index";
 import type { OperatedLogVO } from "@/api/operated_log/type";
-import ClearLogConfig from "@/views/OperatedLog/ClearLogConfig.vue";
+
+import { ElMessage } from "element-plus/es";
 import {
   PaginationConfig,
   TableConfig,
@@ -146,15 +118,7 @@ const showLogInfoDialog = (v: OperatedLogVO) => {
   logInfoRef.value.dialogVisible = true;
   logInfoRef.value.logInfo = v;
 };
-const table = ref<any>(null);
 const tableData = ref<Array<OperatedLogVO>>();
-const paramValue = ref<string>();
-const clearLogConfigDialogVisible = ref<boolean>(false);
-
-const showClearLogConfigDialog = () => {
-  paramValue.value = "3";
-  clearLogConfigDialogVisible.value = true;
-};
 onMounted(() => {
   const defaultCondition = new TableSearch();
   defaultCondition.order = new Order("date", false);
@@ -162,7 +126,7 @@ onMounted(() => {
 });
 const search = (condition: TableSearch) => {
   const params = TableSearch.toSearchParams(condition);
-  params.type = "allLog";
+  params.type = "vmOperateLog";
   OperatedLogApi.listOperatedLog(
     {
       currentPage: tableConfig.value.paginationConfig.currentPage,
@@ -203,7 +167,8 @@ const tableConfig = ref<TableConfig>({
       TableOperations.buildButtons().newInstance(
         t("log_manage.view_details", "查看详情"),
         "primary",
-        showLogInfoDialog
+        showLogInfoDialog,
+        "InfoFilled"
       ),
     ],
     "label"
@@ -211,7 +176,8 @@ const tableConfig = ref<TableConfig>({
 });
 
 const clearPolicy = () => {
-  showClearLogConfigDialog();
+  //
+  ElMessage.success("敬请期待！");
 };
 </script>
 

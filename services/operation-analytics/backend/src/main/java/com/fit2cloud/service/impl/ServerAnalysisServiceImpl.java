@@ -467,7 +467,7 @@ public class ServerAnalysisServiceImpl implements IServerAnalysisService {
         if (CurrentUserUtils.isOrgAdmin()) {
             result.put("tree",chartDataList.get(0).getChildren().stream().filter(this::childrenHasValue).toList());
         }else{
-            result.put("tree",chartDataList.stream().filter(v->childrenHasValue(v)).toList());
+            result.put("tree",chartDataList.stream().filter(this::childrenHasValue).toList());
         }
         return result;
     }
@@ -476,8 +476,10 @@ public class ServerAnalysisServiceImpl implements IServerAnalysisService {
         if(parent.getValue().longValue()==0){
             return false;
         }
-        for(BarTreeChartData chartData:parent.getChildren()){
-            return childrenHasValue(chartData);
+        if(CollectionUtils.isNotEmpty(parent.getChildren())){
+            for(BarTreeChartData chartData:parent.getChildren()){
+                return childrenHasValue(chartData);
+            }
         }
         return true;
     }
@@ -559,7 +561,7 @@ public class ServerAnalysisServiceImpl implements IServerAnalysisService {
         //父级数量加上子级数量作为父级总量
         OperationUtils.workspaceToOrgChildren(workspaceMap, barTreeChartData);
         //子级排序
-        return list.stream().filter(u -> Objects.equals(u.getPId(), barTreeChartData.getId())).peek(
+        return list.stream().filter(u -> StringUtils.equalsIgnoreCase(u.getPId(), barTreeChartData.getId())).peek(
                 u -> {
                     u.setName(u.getName() + "(子组织)");
                     // 用于区分组织与工作空间
@@ -567,7 +569,7 @@ public class ServerAnalysisServiceImpl implements IServerAnalysisService {
                     u.getChildren().addAll(getChildren(u, list, workspaceMap));
                     barTreeChartData.setValue(barTreeChartData.getValue() + u.getValue());
                 }
-        ).sorted((o1, o2) -> o2.getValue().compareTo(o1.getValue())).collect(Collectors.toList());
+        ).filter(v->v.getValue()>0).collect(Collectors.toList());
     }
 
 }

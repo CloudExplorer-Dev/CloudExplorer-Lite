@@ -10,11 +10,12 @@
     </parent>
 
     <artifactId>vm-service</artifactId>
-    <version>${revision}</version>
+    <version>${service.version}</version>
     <name>vm-service</name>
     <description>vm-service</description>
 
     <properties>
+        <service.version>${revision}.0</service.version>
         <service.port>9011</service.port>
         <service.management.port>9911</service.management.port>
     </properties>

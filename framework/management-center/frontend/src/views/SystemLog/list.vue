@@ -44,7 +44,7 @@
       :label="$t('commons.create_time')"
       sortable
     />
-    <el-table-column prop="message" label="日志详情" width="300px">
+    <el-table-column prop="message" label="日志详情" min-width="350px">
       <template #default="scope">
         <p class="text-overflow">{{ scope.row.message }}</p>
         <a @click="showLogInfoDialog(scope.row)">更多详情</a>
@@ -153,7 +153,6 @@ const clearPolicy = () => {
 
 <style lang="scss" scoped>
 .text-overflow {
-  max-width: 300px;
   overflow: hidden;
   white-space: nowrap;
   text-overflow: ellipsis;

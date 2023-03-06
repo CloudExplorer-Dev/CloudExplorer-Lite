@@ -1,14 +1,14 @@
 <!--操作日志列表-->
 <template>
   <ce-table
-    localKey="vmOperatedLogTable"
+    localKey="diskOperatedLogTable"
     v-loading="tableLoading"
     :columns="columns"
     :data="tableData"
     :tableConfig="tableConfig"
     row-key="id"
-    height="100%"
     table-layout="auto"
+    height="100%"
   >
     <template #toolbar>
       <!-- <el-button type="primary" @click="clearPolicy">清空策略</el-button> -->
@@ -16,7 +16,7 @@
     <el-table-column
       prop="user"
       :label="$t('log_manage.operator')"
-      min-width="150px"
+      min-width="200px"
       fixed
     ></el-table-column>
     <el-table-column
@@ -30,14 +30,14 @@
       min-width="150px"
     >
       <template #default="scope">
-        <el-tooltip class="box-item" effect="dark" placement="top-start">
+        <el-tooltip>
           <template #content>
             <div style="max-width: 500px">{{ scope.row.content }}</div>
           </template>
-          <div class="table_content_ellipsis">
+          <div class="text-overflow">
             {{ scope.row.content }}
-          </div></el-tooltip
-        >
+          </div>
+        </el-tooltip>
       </template>
     </el-table-column>
     <el-table-column
@@ -46,12 +46,38 @@
       min-width="200px"
     >
       <template #default="scope">
-        <el-tooltip class="box-item" effect="dark" placement="top-start">
+        <el-tooltip>
           <template #content>
             <div style="max-width: 500px">{{ scope.row.resourceName }}</div>
           </template>
-          <div class="table_content_ellipsis">
+          <div class="text-overflow">
             {{ scope.row.resourceName }}
+          </div>
+        </el-tooltip>
+      </template>
+    </el-table-column>
+    <el-table-column
+      prop="joinResourceId"
+      :label="$t('log_manage.belong_vm')"
+      min-width="200px"
+    >
+      <template #default="scope">
+        <el-tooltip class="box-item" effect="dark" placement="top-start">
+          <template #content>
+            <div style="max-width: 500px">
+              {{
+                scope.row.joinResourceName != null
+                  ? scope.row.joinResourceName
+                  : scope.row.joinResourceId
+              }}
+            </div>
+          </template>
+          <div class="table_content_ellipsis">
+            {{
+              scope.row.joinResourceName != null
+                ? scope.row.joinResourceName
+                : scope.row.joinResourceId
+            }}
           </div></el-tooltip
         >
       </template>
@@ -71,7 +97,7 @@
       prop="status"
       :label="$t('log_manage.status')"
       column-key="status"
-      min-width="150px"
+      min-width="200px"
     >
       <template #default="scope">
         <div
@@ -98,7 +124,6 @@
 import { ref, onMounted } from "vue";
 import OperatedLogApi from "@/api/operated_log/index";
 import type { OperatedLogVO } from "@/api/operated_log/type";
-
 import { ElMessage } from "element-plus/es";
 import {
   PaginationConfig,
@@ -110,7 +135,6 @@ import {
 import LogDetail from "./LogDetail.vue";
 import { useI18n } from "vue-i18n";
 const { t } = useI18n();
-
 const columns = ref([]);
 const logInfoRef = ref();
 const tableLoading = ref<boolean>(false);
@@ -126,7 +150,7 @@ onMounted(() => {
 });
 const search = (condition: TableSearch) => {
   const params = TableSearch.toSearchParams(condition);
-  params.type = "vmOperateLog";
+  params.type = "diskOperateLog";
   OperatedLogApi.listOperatedLog(
     {
       currentPage: tableConfig.value.paginationConfig.currentPage,

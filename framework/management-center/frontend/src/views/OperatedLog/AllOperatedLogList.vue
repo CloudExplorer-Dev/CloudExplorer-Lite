@@ -1,28 +1,43 @@
 <!--操作日志列表-->
 <template>
   <ce-table
-    localKey="diskOperatedLogTable"
+    localKey="allOperatedLogTable"
     v-loading="tableLoading"
     :columns="columns"
     :data="tableData"
     :tableConfig="tableConfig"
     row-key="id"
-    table-layout="auto"
     height="100%"
   >
     <template #toolbar>
-      <!-- <el-button type="primary" @click="clearPolicy">清空策略</el-button> -->
+      <el-button
+        type="primary"
+        @click="clearPolicy"
+        v-hasPermission="'[management-center]OPERATED_LOG:CLEAR_POLICY'"
+      >
+        {{ t("log_manage.btn.clear_policy") }}
+      </el-button>
     </template>
     <el-table-column
       prop="user"
       :label="$t('log_manage.operator')"
-      min-width="200px"
       fixed
+      min-width="150px"
+    ></el-table-column>
+    <el-table-column
+      prop="module"
+      :label="$t('log_manage.module')"
+      min-width="150px"
+    ></el-table-column>
+    <el-table-column
+      prop="resourceType"
+      :label="$t('log_manage.menu')"
+      min-width="150px"
     ></el-table-column>
     <el-table-column
       prop="operatedName"
       :label="$t('log_manage.type')"
-      min-width="200px"
+      min-width="150px"
     ></el-table-column>
     <el-table-column
       prop="content"
@@ -30,44 +45,37 @@
       min-width="150px"
     >
       <template #default="scope">
-        <el-tooltip class="box-item" effect="dark" placement="top-start">
+        <el-tooltip>
           <template #content>
             <div style="max-width: 500px">{{ scope.row.content }}</div>
           </template>
-          <div class="table_content_ellipsis">
+          <div style="
+              white-space: nowrap;
+              overflow: hidden;
+              text-overflow: ellipsis;
+            ">
             {{ scope.row.content }}
           </div></el-tooltip
         >
       </template>
     </el-table-column>
     <el-table-column
+      :show-overflow-tooltip="true"
       prop="resourceId"
       :label="$t('log_manage.resource')"
       min-width="200px"
     >
       <template #default="scope">
-        <el-tooltip class="box-item" effect="dark" placement="top-start">
+        <el-tooltip>
           <template #content>
             <div style="max-width: 500px">{{ scope.row.resourceName }}</div>
           </template>
-          <div class="table_content_ellipsis">
+          <div style="
+              white-space: nowrap;
+              overflow: hidden;
+              text-overflow: ellipsis;
+            ">
             {{ scope.row.resourceName }}
-          </div></el-tooltip
-        >
-      </template>
-    </el-table-column>
-    <el-table-column
-      prop="joinResourceId"
-      :label="$t('log_manage.belong_vm')"
-      min-width="200px"
-    >
-      <template #default="scope">
-        <el-tooltip class="box-item" effect="dark" placement="top-start">
-          <template #content>
-            <div style="max-width: 500px">{{ scope.row.joinResourceName!=null?scope.row.joinResourceName:scope.row.joinResourceId}}</div>
-          </template>
-          <div class="table_content_ellipsis">
-            {{ scope.row.joinResourceName!=null?scope.row.joinResourceName:scope.row.joinResourceId}}
           </div></el-tooltip
         >
       </template>
@@ -75,19 +83,19 @@
     <el-table-column
       prop="sourceIp"
       :label="$t('log_manage.ip')"
-      min-width="200px"
+      min-width="150px"
     ></el-table-column>
     <el-table-column
+      min-width="200px"
       prop="date"
       :label="$t('commons.operate_time')"
       sortable="desc"
-      min-width="200px"
     />
     <el-table-column
+      width="100px"
       prop="status"
       :label="$t('log_manage.status')"
       column-key="status"
-      min-width="200px"
     >
       <template #default="scope">
         <div
@@ -108,13 +116,26 @@
     </template>
   </ce-table>
   <LogDetail ref="logInfoRef" />
+  <el-dialog
+    v-model="clearLogConfigDialogVisible"
+    title="保存日志策略"
+    width="25%"
+    destroy-on-close
+    :close-on-click-modal="false"
+  >
+    <ClearLogConfig
+      :paramValue="paramValue"
+      :paramKey="'log.keep.api.months'"
+      v-model:visible="clearLogConfigDialogVisible"
+    />
+  </el-dialog>
 </template>
 
 <script setup lang="ts">
 import { ref, onMounted } from "vue";
 import OperatedLogApi from "@/api/operated_log/index";
 import type { OperatedLogVO } from "@/api/operated_log/type";
-import { ElMessage } from "element-plus/es";
+import ClearLogConfig from "@/views/OperatedLog/ClearLogConfig.vue";
 import {
   PaginationConfig,
   TableConfig,
@@ -125,6 +146,7 @@ import {
 import LogDetail from "./LogDetail.vue";
 import { useI18n } from "vue-i18n";
 const { t } = useI18n();
+
 const columns = ref([]);
 const logInfoRef = ref();
 const tableLoading = ref<boolean>(false);
@@ -132,7 +154,15 @@ const showLogInfoDialog = (v: OperatedLogVO) => {
   logInfoRef.value.dialogVisible = true;
   logInfoRef.value.logInfo = v;
 };
+const table = ref<any>(null);
 const tableData = ref<Array<OperatedLogVO>>();
+const paramValue = ref<string>();
+const clearLogConfigDialogVisible = ref<boolean>(false);
+
+const showClearLogConfigDialog = () => {
+  paramValue.value = "3";
+  clearLogConfigDialogVisible.value = true;
+};
 onMounted(() => {
   const defaultCondition = new TableSearch();
   defaultCondition.order = new Order("date", false);
@@ -140,7 +170,7 @@ onMounted(() => {
 });
 const search = (condition: TableSearch) => {
   const params = TableSearch.toSearchParams(condition);
-  params.type = "diskOperateLog";
+  params.type = "allLog";
   OperatedLogApi.listOperatedLog(
     {
       currentPage: tableConfig.value.paginationConfig.currentPage,
@@ -181,8 +211,7 @@ const tableConfig = ref<TableConfig>({
       TableOperations.buildButtons().newInstance(
         t("log_manage.view_details", "查看详情"),
         "primary",
-        showLogInfoDialog,
-        "InfoFilled"
+        showLogInfoDialog
       ),
     ],
     "label"
@@ -190,8 +219,7 @@ const tableConfig = ref<TableConfig>({
 });
 
 const clearPolicy = () => {
-  //
-  ElMessage.success("敬请期待！");
+  showClearLogConfigDialog();
 };
 </script>
 

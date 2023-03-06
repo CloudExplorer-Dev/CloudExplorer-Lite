@@ -264,10 +264,22 @@ public class DiskAnalysisServiceImpl implements IDiskAnalysisService {
         });
         //组织管理员的话，只有一个跟节点，然后只返回他的子集
         if (CurrentUserUtils.isOrgAdmin()) {
-            result.put("tree",chartDataList.get(0).getChildren().stream().filter(v->v.getValue()!=0).toList());
+            result.put("tree",chartDataList.get(0).getChildren().stream().filter(this::childrenHasValue).toList());
         }else{
-            result.put("tree",chartDataList.stream().filter(v->v.getValue()!=0).toList());
+            result.put("tree",chartDataList.stream().filter(this::childrenHasValue).toList());
         }
+    }
+
+    private boolean childrenHasValue(BarTreeChartData parent){
+        if(parent.getValue()==0){
+            return false;
+        }
+        if(CollectionUtils.isNotEmpty(parent.getChildren())){
+            for(BarTreeChartData chartData:parent.getChildren()){
+                return childrenHasValue(chartData);
+            }
+        }
+        return true;
     }
 
     /**
