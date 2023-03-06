@@ -223,6 +223,7 @@ const submit = (formEl: FormInstance | undefined) => {
             ref="ruleFormRef"
             :model="form"
             :inline="true"
+            v-loading="loading"
             status-icon
             label-width="130px"
             label-suffix=":"
