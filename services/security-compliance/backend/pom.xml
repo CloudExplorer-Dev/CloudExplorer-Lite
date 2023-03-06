@@ -10,11 +10,12 @@
     </parent>
 
     <artifactId>security-compliance</artifactId>
-    <version>${revision}</version>
+    <version>${service.version}</version>
     <name>security-compliance</name>
     <description>security-compliance</description>
 
     <properties>
+        <service.version>${revision}.0</service.version>
         <service.port>9013</service.port>
         <service.management.port>9913</service.management.port>
     </properties>

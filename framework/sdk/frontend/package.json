@@ -1,6 +1,5 @@
 {
   "name": "ce-base",
-  "version": "0.0.0",
   "main": "./lib/ce-base.umd.js",
   "module": "./lib/ce-base.es.js",
   "types": "./lib/framework/sdk/frontend/commons/index.d.ts",
