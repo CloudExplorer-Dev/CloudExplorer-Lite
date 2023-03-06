@@ -34,16 +34,10 @@
           <template #content>
             <div style="max-width: 500px">{{ scope.row.content }}</div>
           </template>
-          <div
-            style="
-              white-space: nowrap;
-              overflow: hidden;
-              text-overflow: ellipsis;
-            "
-          >
+          <div class="text-overflow">
             {{ scope.row.content }}
-          </div></el-tooltip
-        >
+          </div>
+        </el-tooltip>
       </template>
     </el-table-column>
     <el-table-column
@@ -56,14 +50,10 @@
           <template #content>
             <div style="max-width: 500px">{{ scope.row.resourceName }}</div>
           </template>
-          <div style="
-              white-space: nowrap;
-              overflow: hidden;
-              text-overflow: ellipsis;
-            ">
-             {{ scope.row.resourceName }}
-          </div></el-tooltip
-        >
+          <div class="text-overflow">
+            {{ scope.row.resourceName }}
+          </div>
+        </el-tooltip>
       </template>
     </el-table-column>
     <el-table-column
