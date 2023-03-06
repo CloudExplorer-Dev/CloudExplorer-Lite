@@ -15,10 +15,10 @@ import static java.lang.annotation.ElementType.*;
 import static java.lang.annotation.RetentionPolicy.RUNTIME;
 
 /**
- * @Author:张少虎
- * @Date: 2022/8/24  9:22 PM
- * @Version 1.0
- * @注释: 自定义校验器
+ * { @Author:张少虎}
+ * { @Date: 2022/8/24  9:22 PM}
+ * { @Version 1.0}
+ * { @注释: 自定义校验器 }
  */
 @Documented
 @Target({METHOD, FIELD, ANNOTATION_TYPE, CONSTRUCTOR, PARAMETER, TYPE_USE})
@@ -35,16 +35,16 @@ public @interface CustomValidated {
     /**
      * 判断报错的条件，true：存在就报错，false：不存在就报错
      *
-     * @return
+     * @return 是否存在
      */
     boolean exist();
 
     /**
      * mapper
      *
-     * @return
+     * @return 处理Mapper
      */
-    Class<? extends BaseMapper> mapper();
+    Class<? extends BaseMapper<?>> mapper();
 
     /**
      * 自定义处理器
@@ -56,7 +56,7 @@ public @interface CustomValidated {
     /**
      * 分组
      *
-     * @return
+     * @return 分组
      */
     Class<?>[] groups() default {};
 
@@ -76,7 +76,7 @@ public @interface CustomValidated {
      * true 跳过判断
      * false 进入判断（默认）
      *
-     * @return
+     * @return 是否空值跳过判断
      */
     boolean ifNullPass() default false;
 }

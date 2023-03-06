@@ -13,10 +13,10 @@ import javax.validation.ConstraintValidatorContext;
 import javax.validation.ElementKind;
 
 /**
- * @Author:张少虎
- * @Date: 2022/8/24  11:53 PM
- * @Version 1.0
- * @注释:
+ * { @Author:张少虎}
+ * { @Date: 2022/8/24  11:53 PM}
+ * { @Version 1.0}
+ * { @注释:}
  */
 public class ExistHandler implements ValidatorFunction<Object, ConstraintValidatorContext, CustomValidated, Boolean> {
     @Override
@@ -32,7 +32,7 @@ public class ExistHandler implements ValidatorFunction<Object, ConstraintValidat
                 NodeImpl leafNode = next.getPath().getLeafNode();
                 String field = customValidated.field().length() == 0 ? leafNode.asString() : customValidated.field();
                 if (leafNode.getKind().equals(ElementKind.PROPERTY) || leafNode.getKind().equals(ElementKind.PARAMETER)) {
-                    QueryWrapper queryWrapper = new QueryWrapper();
+                    QueryWrapper<Object> queryWrapper = new QueryWrapper<>();
                     queryWrapper.eq(field, value);
                     if (customValidated.exist()) {
                         return !bean.exists(queryWrapper);
