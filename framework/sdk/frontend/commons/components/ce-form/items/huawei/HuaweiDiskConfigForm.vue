@@ -78,7 +78,7 @@
           ></el-button>
         </el-card>
 
-        <div style="width: 100%; height: 30px; text-align: center">
+        <div v-if="false" style="width: 100%; height: 30px; text-align: center">
           <el-checkbox v-model="obj.deleteWithInstance" :disabled="obj.readonly"
             >随实例删除</el-checkbox
           >
@@ -146,7 +146,7 @@ function add() {
     size: 10,
     diskType: defaultType.value ? defaultType.value : getDefaultType(),
     amountText: "",
-    deleteWithInstance: true,
+    deleteWithInstance: false,
   });
   change();
 }
