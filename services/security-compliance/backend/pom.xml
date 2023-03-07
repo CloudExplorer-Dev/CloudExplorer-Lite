@@ -15,7 +15,7 @@
     <description>security-compliance</description>
 
     <properties>
-        <service.version>${revision}.0</service.version>
+        <service.version>${revision}</service.version>
         <service.port>9013</service.port>
         <service.management.port>9913</service.management.port>
     </properties>
