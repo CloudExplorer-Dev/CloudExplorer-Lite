@@ -6,6 +6,7 @@ import com.fit2cloud.common.log.constants.OperatedTypeEnum;
 import com.fit2cloud.common.log.constants.ResourceTypeEnum;
 import com.fit2cloud.common.platform.credential.Credential;
 import com.fit2cloud.common.validator.annnotaion.CustomValidated;
+import com.fit2cloud.common.validator.group.ValidationGroup;
 import com.fit2cloud.common.validator.handler.ExistHandler;
 import com.fit2cloud.controller.handler.ResultHolder;
 import com.fit2cloud.controller.request.cloud_account.*;
@@ -87,7 +88,7 @@ public class CloudAccountController {
     @OperatedLog(resourceType = ResourceTypeEnum.CLOUD_ACCOUNT, operated = OperatedTypeEnum.ADD,
             content = "'添加云账号['+#addCloudAccountRequest.name+']'",
             param = "#addCloudAccountRequest")
-    public ResultHolder<CloudAccount> save(@Validated @RequestBody AddCloudAccountRequest addCloudAccountRequest) {
+    public ResultHolder<CloudAccount> save(@Validated(ValidationGroup.SAVE.class) @RequestBody AddCloudAccountRequest addCloudAccountRequest) {
         CloudAccount cloudAccount = cloudAccountService.save(addCloudAccountRequest);
         return ResultHolder.success(cloudAccount);
     }
@@ -100,7 +101,7 @@ public class CloudAccountController {
             resourceId = "#updateCloudAccountRequest.id",
             content = "'更新云账号['+#updateCloudAccountRequest.name+']'",
             param = "#updateCloudAccountRequest")
-    public ResultHolder<CloudAccount> update(@Validated @RequestBody UpdateCloudAccountRequest updateCloudAccountRequest) {
+    public ResultHolder<CloudAccount> update(@Validated(ValidationGroup.UPDATE.class) @RequestBody UpdateCloudAccountRequest updateCloudAccountRequest) {
         CloudAccount cloudAccount = cloudAccountService.update(updateCloudAccountRequest);
         return ResultHolder.success(cloudAccount);
     }
