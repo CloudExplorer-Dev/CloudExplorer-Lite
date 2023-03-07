@@ -1156,8 +1156,7 @@ public class TencentSyncCloudApi {
             result.addAll(getVmPerfMetric(monitorClient, request, getMetricsRequest));
             result.addAll(getVmDiskPerfMetric(monitorClient, request, getMetricsRequest));
         } catch (Exception e) {
-            SkipPageException.throwSkipPageException(e);
-            throw new Fit2cloudException(100021, "获取监控数据失败-" + getMetricsRequest.getRegionId() + "-" + e.getMessage());
+            throw new SkipPageException(100021, "获取监控数据失败-" + getMetricsRequest.getRegionId() + "-" + e.getMessage());
         }
         return result;
     }

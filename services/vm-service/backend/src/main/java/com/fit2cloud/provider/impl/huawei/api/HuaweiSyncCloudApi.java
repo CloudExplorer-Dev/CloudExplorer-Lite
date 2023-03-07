@@ -646,8 +646,8 @@ public class HuaweiSyncCloudApi {
             getMetricsRequest.setRegionId(getMetricsRequest.getRegionId());
             result.addAll(getVmPerfMetric(getMetricsRequest));
         } catch (Exception e) {
-            SkipPageException.throwSkipPageException(e);
-            throw new Fit2cloudException(100021, "获取监控数据失败-" + getMetricsRequest.getRegionId() + "-" + e.getMessage());
+            System.out.println("区域"+getMetricsRequest.getRegionId());
+            throw new SkipPageException(100021, "获取监控数据失败-" + getMetricsRequest.getRegionId() + "-" + e.getMessage());
         }
         return result;
     }
@@ -701,6 +701,8 @@ public class HuaweiSyncCloudApi {
                 request.setMetricName(perfMetric.getMetricName());
                 if(HuaweiPerfMetricConstants.CloudServerPerfMetricEnum.MEMORY_USED_UTILIZATION==perfMetric){
                     request.setNamespace("AGT.ECS");
+                }else{
+                    request.setNamespace("SYS.ECS");
                 }
                 try {
                     Map<Long,Datapoint> datapointMap = new HashMap<>();
