@@ -1,7 +1,12 @@
+export enum ResourceType {
+  VM = "VM",
+  DISK = "DISK",
+}
+
 export interface RecycleBinInfo {
   id: string;
-  resourceId?: string;
-  resourceType?: string;
+  resourceId: string;
+  resourceType: ResourceType;
   resourceName?: string;
   status?: string;
   /**
@@ -34,4 +39,16 @@ export interface ListRecycleBinRequest {
   pageSize: number;
   currentPage: number;
   [propName: string]: any;
+}
+
+export interface RecycleRequest {
+  id: string;
+  resourceId: string;
+  resourceType: ResourceType;
+}
+
+export interface BatchRecycleRequest {
+  ids: Array<string>;
+  resourceIds: Array<string>;
+  resourceType?: ResourceType;
 }

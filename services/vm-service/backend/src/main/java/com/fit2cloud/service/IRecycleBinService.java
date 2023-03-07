@@ -3,8 +3,8 @@ package com.fit2cloud.service;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.fit2cloud.base.entity.RecycleBin;
-import com.fit2cloud.controller.request.vm.BatchRecycleRequest;
-import com.fit2cloud.controller.request.vm.PageRecycleBinRequest;
+import com.fit2cloud.controller.request.recycle_bin.BatchRecycleRequest;
+import com.fit2cloud.controller.request.recycle_bin.PageRecycleBinRequest;
 import com.fit2cloud.dto.RecycleBinDTO;
 
 /**

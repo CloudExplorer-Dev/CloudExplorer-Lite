@@ -390,10 +390,10 @@ const buttons = ref([
     show: permissionStore.hasPermission("[vm-service]CLOUD_SERVER:DELETE"),
     disabled: (row: { instanceStatus: string }) => {
       return (
-          row.instanceStatus.toUpperCase() === "ToBeRecycled".toUpperCase() ||
-          row.instanceStatus.toUpperCase() === "Deleted".toUpperCase() ||
-          (row.instanceStatus.toUpperCase() !== "Running".toUpperCase() &&
-              row.instanceStatus.toUpperCase().indexOf("ING") > -1)
+        row.instanceStatus.toUpperCase() === "ToBeRecycled".toUpperCase() ||
+        row.instanceStatus.toUpperCase() === "Deleted".toUpperCase() ||
+        (row.instanceStatus.toUpperCase() !== "Running".toUpperCase() &&
+          row.instanceStatus.toUpperCase().indexOf("ING") > -1)
       );
     },
   },
@@ -458,7 +458,7 @@ const powerOn = (row: VmCloudServerVO) => {
       })
       .catch((err) => {
         ElMessage.error(err.response.data.message);
-      })
+      });
   });
 };
 //关机
@@ -485,7 +485,7 @@ const shutdown = (row: VmCloudServerVO) => {
         })
         .catch((err) => {
           ElMessage.error(err.response.data.message);
-        })
+        });
     } else {
       VmCloudServerApi.shutdownInstance(row.id as string)
         .then((res) => {
@@ -494,7 +494,7 @@ const shutdown = (row: VmCloudServerVO) => {
         })
         .catch((err) => {
           ElMessage.error(err.response.data.message);
-        })
+        });
     }
   });
 };

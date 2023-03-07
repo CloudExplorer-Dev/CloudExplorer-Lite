@@ -177,15 +177,18 @@ public class VmCloudDiskController {
     @ApiOperation(value = "批量放入回收站")
     @PutMapping("batchRecycleDisks")
     @PreAuthorize("hasAnyCePermission('CLOUD_DISK:DELETE')")
-    @OperatedLog(resourceType = ResourceTypeEnum.CLOUD_DISK, operated = OperatedTypeEnum.BATCH_ADD_IN, resourceId = "#ids", content = "'批量将磁盘放入回收站'", param = "#ids")
+    @OperatedLog(resourceType = ResourceTypeEnum.CLOUD_DISK, operated = OperatedTypeEnum.BATCH_RECYCLE,
+            resourceId = "#ids",
+            content = "'磁盘放入回收站'",
+            param = "#ids")
     public ResultHolder<Boolean> batchRecycleDisks(@RequestBody String[] ids) {
         return ResultHolder.success(diskService.batchRecycleDisks(ids));
     }
 
-    @ApiOperation(value = "将磁盘放入回收站")
+    @ApiOperation(value = "放入回收站")
     @PutMapping("recycleDisk/{id}")
     @PreAuthorize("hasAnyCePermission('CLOUD_DISK:DELETE')")
-    @OperatedLog(resourceType = ResourceTypeEnum.CLOUD_DISK, operated = OperatedTypeEnum.ADD_IN, resourceId = "#id", content = "'将磁盘放入回收站'", param = "#id")
+    @OperatedLog(resourceType = ResourceTypeEnum.CLOUD_DISK, operated = OperatedTypeEnum.RECYCLE, resourceId = "#id", param = "#id")
     public ResultHolder<Boolean> recycleDisk(@ApiParam("主键 ID")
                                              @NotNull(message = "{i18n.primary.key.cannot.be.null}")
                                              @CustomValidated(mapper = BaseVmCloudDiskMapper.class, handler = ExistHandler.class, message = "{i18n.primary.key.not.exist}", exist = false)
