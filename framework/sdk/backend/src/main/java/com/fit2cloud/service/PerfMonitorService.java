@@ -34,49 +34,70 @@ public class PerfMonitorService {
 
     public Map<String,List<PerfMonitorEchartsDTO>> getPerfMonitorData(PerfMonitorRequest request) {
         Map<String,List<PerfMonitorEchartsDTO>> resultMap = new HashMap<>();
-        List<PerfMetricMonitorData> arraysList = elasticsearchProvide.searchByQuery(IndexConstants.CE_PERF_METRIC_MONITOR_DATA.getCode(), getSearchQuery(request), PerfMetricMonitorData.class);
-        List<PerfMetricMonitorData> tmpList = new ArrayList<>();
-        tmpList.addAll(arraysList);
-        if (tmpList.size() > 0) {
+        List<PerfMetricMonitorData> esList = elasticsearchProvide.searchByQuery(IndexConstants.CE_PERF_METRIC_MONITOR_DATA.getCode(), getSearchQuery(request), PerfMetricMonitorData.class);
+        if (esList.size() > 0) {
             Long startTime = request.getStartTime();
             Long endTime = request.getEndTime();
             //对没有数据的时间点进行补全
-            Integer period = tmpList.get(0).getPeriod()*1000;
-            Long statPeriodTime =startTime%period;
+            Integer period = esList.get(0).getPeriod()*1000;
+            Long statPeriodTime = startTime%period;
             startTime = startTime-statPeriodTime;
             List<Long> timeList = new ArrayList<>();
-            while (true){
-                if(startTime<=endTime){
-                    timeList.add(startTime);
-                }else{
-                    break;
-                }
-                startTime = startTime+period;
+            while (startTime <= endTime) {
+                timeList.add(startTime);
+                startTime = startTime + period;
             }
-            List<PerfMetricMonitorData> completionList = new ArrayList<>();
-            timeList.forEach(time->{
-                List<PerfMetricMonitorData> tList = tmpList.stream().filter(v->v.getTimestamp().longValue()==time).toList();
-                if(CollectionUtils.isEmpty(tList)){
-                    PerfMetricMonitorData source = tmpList.get(0);
-                    PerfMetricMonitorData vo = new PerfMetricMonitorData();
-                    BeanUtils.copyProperties(source,vo);
-                    vo.setAverage(null);
-                    vo.setTimestamp(time);
-                    completionList.add(vo);
-                }
-            });
-            tmpList.addAll(completionList);
-            List<PerfMetricMonitorData> list = tmpList.stream().sorted((u1, u2) -> u1.getTimestamp().compareTo(u2.getTimestamp())).collect(Collectors.toList());
             if(StringUtils.equalsIgnoreCase(request.getMetricName(),"DISK_USED_UTILIZATION")){
-                Map<String,List<PerfMetricMonitorData>> diskMap = list.stream().filter(v->StringUtils.isNotEmpty(v.getDevice())).collect(Collectors.groupingBy(PerfMetricMonitorData::getDevice));
+                Map<String,List<PerfMetricMonitorData>> diskMap = esList.stream().filter(v->StringUtils.isNotEmpty(v.getDevice())).collect(Collectors.groupingBy(PerfMetricMonitorData::getDevice));
                 diskMap.forEach((k,v)->{
-                    resultMap.put(k,getObjetData(request, v));
+                    // 补全
+                    List<PerfMetricMonitorData> diskDeviceList = new ArrayList<>();
+                    if(CollectionUtils.isNotEmpty(v)){
+                        extracted(timeList, v, diskDeviceList);
+                    }
+                    if(CollectionUtils.isNotEmpty(diskDeviceList)){
+                        v.addAll(diskDeviceList);
+                    }
+                    resultMap.put(k,getObjetData(request,v.stream().sorted((u1, u2) -> u1.getTimestamp().compareTo(u2.getTimestamp())).collect(Collectors.toList())));
                 });
             }else{
+                // 补全
+                List<PerfMetricMonitorData> resultList = new ArrayList<>();
+                resultList.addAll(esList);
+                List<PerfMetricMonitorData> completionList = new ArrayList<>();
+                timeList.forEach(time->{
+                    List<PerfMetricMonitorData> tList = esList.stream().filter(v->v.getTimestamp().longValue()==time).toList();
+                    if(CollectionUtils.isEmpty(tList)){
+                        PerfMetricMonitorData source = new PerfMetricMonitorData();
+                        BeanUtils.copyProperties(source,source);
+                        source.setAverage(null);
+                        source.setTimestamp(time);
+                        completionList.add(source);
+                    }
+                });
+                resultList.addAll(completionList);
+                List<PerfMetricMonitorData> list = resultList.stream().sorted((u1, u2) -> u1.getTimestamp().compareTo(u2.getTimestamp())).collect(Collectors.toList());
                 resultMap.put("other",getObjetData(request, list));
             }
         }
         return resultMap;
+    }
+
+    /**
+     * 时间点空数据补全
+     */
+    private static void extracted(List<Long> timeList, List<PerfMetricMonitorData> v, List<PerfMetricMonitorData> resultList) {
+        timeList.forEach(time->{
+            List<PerfMetricMonitorData> tList = v.stream().filter(d->d.getTimestamp().longValue()==time).toList();
+            if(CollectionUtils.isEmpty(tList)){
+                PerfMetricMonitorData source = v.get(0);
+                PerfMetricMonitorData vo = new PerfMetricMonitorData();
+                BeanUtils.copyProperties(source,vo);
+                vo.setAverage(null);
+                vo.setTimestamp(time);
+                resultList.add(vo);
+            }
+        });
     }
 
     private static List<PerfMonitorEchartsDTO> getObjetData(PerfMonitorRequest request, List<PerfMetricMonitorData> v) {

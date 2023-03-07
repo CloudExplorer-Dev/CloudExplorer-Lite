@@ -57,7 +57,7 @@ const update = (formEl: FormInstance | undefined) => {
   formEl?.validate((valid) => {
     if (valid) {
       cloudAccountApi
-        .updateCloudAccount(from.value as UpdateAccount)
+        .updateCloudAccount(from.value as UpdateAccount, loading)
         .then(() => {
           router.push({ name: "cloud_account_list" });
           ElMessage.success(t("commons.msg.op_success", "操作成功"));

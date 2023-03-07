@@ -162,16 +162,26 @@
                   compliance_scan_resource_result.resource_instance_id) t1
     </select>
     <select id="ruleCount" resultType="com.fit2cloud.dao.entity.ComplianceCount">
-        SELECT
-            COUNT(*) AS total,
-            SUM(
-                    IF
-                        ( compliance_scan_result.`status` = 1, 1, 0 )) AS compliance_count,
-            SUM(
-                    IF
-                        ( compliance_scan_result.`status` = 2, 1, 0 )) AS not_compliance_count
-        FROM
-            compliance_rule compliance_rule
-                LEFT JOIN compliance_scan_result compliance_scan_result ON compliance_scan_result.compliance_rule_id = compliance_rule.id
+        SELECT 	COUNT(*) AS total,
+                  SUM(
+                          IF (
+                                      tmp.`status` = 1,
+                                      1,
+                                      0
+                              )
+                      ) AS compliance_count,
+                  SUM(
+                          IF (
+                                      tmp.`status` = 2,
+                                      1,
+                                      0
+                              )
+                      ) AS not_compliance_count FROM (
+                                                         SELECT  compliance_rule.*, MAX(compliance_scan_result.`status`) as `status`
+                                                         FROM
+                                                             compliance_rule compliance_rule
+                                                                 LEFT JOIN compliance_scan_result compliance_scan_result ON compliance_scan_result.compliance_rule_id = compliance_rule.id
+                                                         GROUP BY compliance_rule.id
+                                                     ) tmp
     </select>
 </mapper>
