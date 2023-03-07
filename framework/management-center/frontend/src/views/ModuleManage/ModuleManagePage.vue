@@ -18,7 +18,7 @@
       :limit="1"
       :headers="header"
       name="file"
-      action="api/module_manage/upload"
+      action="management-center/api/module_manage/upload"
       :on-error="onError"
       :on-success="onSuccess"
     >
