@@ -17,6 +17,9 @@ management:
           - metrics
 #          - env
 #          - heapdump
+  health:
+    elasticsearch:
+      enabled: false
 
 eureka:
   dashboard:

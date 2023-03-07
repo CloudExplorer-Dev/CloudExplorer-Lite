@@ -183,7 +183,7 @@ public class ServerAnalysisServiceImpl implements IServerAnalysisService {
             List<AnalyticsServerDTO> vmList = baseVmCloudServerMapper.selectJoinList(AnalyticsServerDTO.class,queryWrapper);
             if (CollectionUtils.isNotEmpty(vmList)) {
                 //格式化创建时间,删除时间
-                vmList = vmList.stream().filter(v->Objects.nonNull(v.getCreateTime())).peek(v->{
+                vmList = vmList.stream().filter(v->accountMap.containsKey(v.getAccountId())).filter(v->Objects.nonNull(v.getCreateTime())).peek(v->{
                     v.setCreateMonth(v.getCreateTime().format(DateTimeFormatter.ofPattern("yyyy-MM-dd")));
                     if(Objects.nonNull(v.getLastOperateTime()) && StringUtils.equalsIgnoreCase(v.getInstanceStatus(),"Deleted")){
                         v.setDeleteMonth(v.getLastOperateTime().format(DateTimeFormatter.ofPattern("yyyy-MM-dd")));
@@ -273,7 +273,7 @@ public class ServerAnalysisServiceImpl implements IServerAnalysisService {
             }
         }).collect(Collectors.toList());
         vmList = vmList.stream().filter(v->StringUtils.isNotEmpty(v.getAccountId())).toList();
-        Map<String,Long> byAccountMap = vmList.stream().collect(Collectors.groupingBy(AnalyticsServerDTO::getAccountId, Collectors.counting()));
+        Map<String,Long> byAccountMap = vmList.stream().filter(v->accountMap.containsKey(v.getAccountId())).collect(Collectors.groupingBy(AnalyticsServerDTO::getAccountId, Collectors.counting()));
         result.put("byAccount",byAccountMap.entrySet().stream().map(c -> new KeyValue(StringUtils.isEmpty(accountMap.get(c.getKey()).getName())?c.getKey():accountMap.get(c.getKey()).getName(), c.getValue()) {}).collect(Collectors.toList()));
         Map<String,String> statusMap = new HashMap<>();
         statusMap.put("Running","运行中");

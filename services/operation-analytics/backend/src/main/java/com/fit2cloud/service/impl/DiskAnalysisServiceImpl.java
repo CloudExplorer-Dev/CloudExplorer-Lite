@@ -139,7 +139,7 @@ public class DiskAnalysisServiceImpl implements IDiskAnalysisService {
         MPJLambdaWrapper<VmCloudDisk> queryWrapper = addDiskAnalysisQuery(request);
         List<AnalyticsDiskDTO> diskList = baseVmCloudDiskMapper.selectJoinList(AnalyticsDiskDTO.class, queryWrapper);
         //把除空闲与挂载状态设置为其他状态
-        diskList = diskList.stream().peek(v-> {
+        diskList = diskList.stream().filter(v->accountMap.containsKey(v.getAccountId())).peek(v-> {
             if(!StringUtils.equalsIgnoreCase(v.getStatus(),"available") && !StringUtils.equalsIgnoreCase(v.getStatus(),"in_use")){
                 v.setStatus("Other");
             }
@@ -183,7 +183,7 @@ public class DiskAnalysisServiceImpl implements IDiskAnalysisService {
         List<AnalyticsDiskDTO> diskList = baseVmCloudDiskMapper.selectJoinList(AnalyticsDiskDTO.class, queryWrapper);
         if(CollectionUtils.isNotEmpty(diskList)){
             //格式化创建时间,删除时间
-            diskList = diskList.stream().filter(v->Objects.nonNull(v.getCreateTime())).peek(v->{
+            diskList = diskList.stream().filter(v->accountMap.containsKey(v.getAccountId())).filter(v->Objects.nonNull(v.getCreateTime())).peek(v->{
                 v.setCreateMonth(v.getCreateTime().format(DateTimeFormatter.ofPattern("yyyy-MM-dd")));
                 if(Objects.nonNull(v.getUpdateTime()) && StringUtils.equalsIgnoreCase(v.getStatus(),"deleted")){
                     v.setDeleteMonth(v.getUpdateTime().format(DateTimeFormatter.ofPattern("yyyy-MM-dd")));

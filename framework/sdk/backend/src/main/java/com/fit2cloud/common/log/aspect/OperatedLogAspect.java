@@ -52,12 +52,14 @@ public class OperatedLogAspect {
         Long startTime = System.currentTimeMillis();
         Object res = null;
         ResultHolder errorResult = ResultHolder.success("ok");
+        OperatedLogVO logVO = initLog(pjd,errorResult);
         try{
             res = pjd.proceed();
             if (res instanceof ResultHolder) {
                 errorResult = (ResultHolder) res;
             }
         }catch (Exception e){
+            errorResult = ResultHolder.error("error");
             if(e instanceof Fit2cloudException){
                 Fit2cloudException fit2cloudException = (Fit2cloudException)e;
                 errorResult.setCode(fit2cloudException.getCode());
@@ -67,7 +69,7 @@ public class OperatedLogAspect {
             }
         }
         Long endTime = System.currentTimeMillis();
-        saveLog(pjd,endTime-startTime,errorResult);
+        saveLog(logVO,endTime-startTime,errorResult);
         //请求完成后清理MDC
         MDC.clear();
         if(errorResult.getCode()!=200){
@@ -76,7 +78,8 @@ public class OperatedLogAspect {
         return res;
     }
 
-    private void saveLog(ProceedingJoinPoint pjd, Long time ,ResultHolder errorResult){
+    private OperatedLogVO initLog(ProceedingJoinPoint pjd ,ResultHolder errorResult){
+        OperatedLogVO logVO = createLog(errorResult);
         try {
             MethodSignature methodSignature = (MethodSignature) pjd.getSignature();
             Method method = methodSignature.getMethod();
@@ -84,7 +87,6 @@ public class OperatedLogAspect {
             OperatedLog annotation = method.getAnnotation(OperatedLog.class);
             // 日志注解内容
             if(annotation != null){
-                OperatedLogVO logVO = createLog(time, errorResult);
                 Class logvoClass = logVO.getClass();
                 String paramStr = "";
                 // 操作
@@ -128,13 +130,25 @@ public class OperatedLogAspect {
                 }
                 // 配置请求信息
                 extractRequestInfo(errorResult, logVO, paramStr);
-                // 上下文设置
-                setMDC(logVO);
-                LogUtil.info(JsonUtil.toJSONString(logVO));
             }
         } catch (Exception e) {
             LogUtil.error("记录日志失败:{}",e.getMessage());
+            logVO.setStatus(1);
+            logVO.setResponse(e.getMessage());
         }
+        return logVO;
+    }
+
+    private void saveLog(OperatedLogVO logVO, Long time, ResultHolder resultHolder){
+        logVO.setTime(time);
+        logVO.setStatus(resultHolder.getCode()==200?1:0);
+        logVO.setCode(resultHolder.getCode());
+        if(resultHolder.getCode()!=200){
+            logVO.setResponse(resultHolder.getMessage());
+        }
+        setMDC(logVO);
+        //必须
+        LogUtil.info(JsonUtil.toJSONString(logVO));
     }
 
 
@@ -161,11 +175,10 @@ public class OperatedLogAspect {
     }
 
     @NotNull
-    private OperatedLogVO createLog(Long time, ResultHolder errorResult) {
+    private OperatedLogVO createLog(ResultHolder errorResult) {
         OperatedLogVO logVO = new OperatedLogVO();
         logVO.setModule(ServerInfo.moduleInfo.getName());
         logVO.setRequestTime(new Date().getTime());
-        logVO.setTime(time);
         logVO.setStatus(errorResult.getCode()==200?1:0);
         logVO.setCode(errorResult.getCode());
         UserDto userDto = CurrentUserUtils.getUser();

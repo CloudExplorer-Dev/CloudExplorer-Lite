@@ -43,6 +43,7 @@ interface BatchAttachDiskRequest {
 }
 interface EnlargeDiskRequest {
   id: string;
+  instanceUuid?: string;
   newDiskSize: number;
 }
 interface ListVmRequest {

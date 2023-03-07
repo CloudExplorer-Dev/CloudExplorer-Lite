@@ -36,7 +36,10 @@ server:
 management:
   server:
     #    base-path: /${spring.application.name}/actuator
-    port: @service.management.port@
+    port: @service.management.port@e
+  health:
+    elasticsearch:
+      enabled: false
 
 
 logging:
