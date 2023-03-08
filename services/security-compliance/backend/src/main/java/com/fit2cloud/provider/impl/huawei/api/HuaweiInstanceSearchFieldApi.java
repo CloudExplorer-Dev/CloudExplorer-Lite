@@ -39,13 +39,13 @@ public class HuaweiInstanceSearchFieldApi {
                 ))
                 .resetInstanceField(PlatformConstants.fit2cloud_huawei_platform, ResourceTypeConstants.ECS);
 
-        InstanceSearchField disk = new InstanceSearchField("云服务器规格对应要求系统盘大小,0为不限制", "disk", InstanceFieldType.Number)
+        InstanceSearchField disk = new InstanceSearchField("云服务器规格对应要求系统盘大小,0为不限制", "flavor.disk", InstanceFieldType.Number)
                 .resetInstanceField(PlatformConstants.fit2cloud_huawei_platform, ResourceTypeConstants.ECS);
 
-        InstanceSearchField vcpus = new InstanceSearchField("云服务器规格对应的CPU核数", "vcpus", InstanceFieldType.Number)
+        InstanceSearchField vcpus = new InstanceSearchField("云服务器规格对应的CPU核数", "flavor.vcpus", InstanceFieldType.Number)
                 .resetInstanceField(PlatformConstants.fit2cloud_huawei_platform, ResourceTypeConstants.ECS);
 
-        InstanceSearchField ram = new InstanceSearchField("云服务器规格对应的内存大小,单位为MB", "ram", InstanceFieldType.Number)
+        InstanceSearchField ram = new InstanceSearchField("云服务器规格对应的内存大小,单位为MB", "flavor.ram", InstanceFieldType.Number)
                 .resetInstanceField(PlatformConstants.fit2cloud_huawei_platform, ResourceTypeConstants.ECS);
 
         InstanceSearchField diskConfig = new InstanceSearchField("diskConfig的类型", "OS-DCF:diskConfig", InstanceFieldType.Enum,
