@@ -41,6 +41,7 @@ const message = {
     cloud_server: {
       instance_type: "Instance Type",
       applicant: "Applicant",
+      creator: "Created By",
       more: "More",
     },
     message_box: {

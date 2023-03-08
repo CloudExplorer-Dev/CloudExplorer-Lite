@@ -20,6 +20,8 @@ public class RecycleBinDTO extends RecycleBin {
     private String resourceConfig;
     @ApiModelProperty("ip")
     private String ipArray;
+    @ApiModelProperty("公网 IP")
+    private String remoteIp;
     @ApiModelProperty("关联资源")
     private String relateResource;
     @ApiModelProperty("资源创建时间")
