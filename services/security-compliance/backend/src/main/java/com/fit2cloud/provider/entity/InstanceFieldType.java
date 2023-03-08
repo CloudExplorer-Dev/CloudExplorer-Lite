@@ -39,15 +39,15 @@ public enum InstanceFieldType {
     /**
      * 嵌套数组字符串
      */
-    NestedArrayString(EQ, CONTAIN, NOT_CONTAIN, EXIST, NOT_EXIST),
+    NestedArrayString(EQ, EXIST, NOT_EXIST),
     /**
      * 嵌套数组枚举
      */
-    NestedArrayEnum(EQ, CONTAIN, NOT_CONTAIN, EXIST, NOT_EXIST),
+    NestedArrayEnum(EQ, EXIST, NOT_EXIST),
     /**
      * 嵌套数组数字
      */
-    NestedArrayNumber(EQ, GE, GT, LE, LT, AVG_GE, AVG_GT, AVG_LE, AVG_LT, SUM_GE, SUM_GT, SUM_LE, SUM_LT, EXIST, NOT_EXIST),
+    NestedArrayNumber(EQ, GE, GT, LE, LT, EXIST, NOT_EXIST),
     /**
      * 时间
      */

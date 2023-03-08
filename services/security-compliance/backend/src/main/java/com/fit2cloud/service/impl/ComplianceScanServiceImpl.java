@@ -293,8 +293,6 @@ public class ComplianceScanServiceImpl implements IComplianceScanService {
     }
 
 
-
-
     @Override
     public void scanComplianceOrSave() {
         complianceScanResultService.saveOrUpdate(scanCompliance());
@@ -393,7 +391,7 @@ public class ComplianceScanServiceImpl implements IComplianceScanService {
         queries.add(new Query.Builder().terms(new TermsQuery.Builder()
                 .terms(new TermsQueryField.Builder().value(resourceIds.stream().map(FieldValue::of).toList()).build()).field("id")
                 .build()).build());
-        Query query = getQuery(complianceRule.getRules(), queries, ScanRuleConstants.NOT_COMPLIANCE);
+        Query query = getQuery(complianceRule.getRules(), queries, complianceRule.getRules().getScanRule());
         SearchRequest request = new SearchRequest.Builder().size(limit).query(query).build();
         SearchResponse<ComplianceResourceResponse> search = elasticsearchClient.search(request, ComplianceResourceResponse.class);
         return search.hits().hits().stream().map(Hit::source).filter(Objects::nonNull).toList();
@@ -534,10 +532,9 @@ public class ComplianceScanServiceImpl implements IComplianceScanService {
      * @return 是否使用nested查询 使用嵌套查询返回true
      */
     private boolean isNestedQuery(Rule rule) {
-        List<InstanceFieldCompare> nestedArrayCompare = List.of(EQ, GE, GT, LE, LT);
         // filterArray 用于存储nested查询 复杂数组
         if (rule.getField().startsWith("filterArray")) {
-            return nestedArrayCompare.contains(InstanceFieldCompare.valueOf(rule.getCompare()));
+            return true;
         } else {
             return false;
         }
