@@ -1,5 +1,7 @@
 <template>
   <el-dialog
+    :close-on-press-escape="false"
+    :close-on-click-modal="false"
     v-model="updateComplianceRuleGroupVisible"
     title="修改规则组"
     width="60%"

@@ -1,14 +1,11 @@
 package com.fit2cloud.provider.impl.aliyun;
 
-import com.aliyun.dds20151201.models.DescribeDBInstancesResponseBody;
 import com.aliyun.ecs20140526.models.DescribeDisksResponseBody;
-import com.aliyun.ecs20140526.models.DescribeInstancesResponseBody;
 import com.aliyun.elasticsearch20170613.models.ListInstanceResponseBody;
 import com.aliyun.ram20150501.models.GetLoginProfileResponse;
 import com.aliyun.ram20150501.models.ListUsersResponseBody;
 import com.aliyun.slb20140515.models.DescribeLoadBalancersResponseBody;
 import com.aliyun.vpc20160428.models.DescribeEipAddressesResponseBody;
-import com.aliyun.vpc20160428.models.DescribeVpcsResponseBody;
 import com.fit2cloud.common.constants.PlatformConstants;
 import com.fit2cloud.common.utils.JsonUtil;
 import com.fit2cloud.constants.ResourceTypeConstants;
@@ -24,8 +21,6 @@ import com.fit2cloud.provider.impl.aliyun.entity.request.*;
 import com.fit2cloud.provider.util.ResourceUtil;
 import org.apache.commons.collections4.keyvalue.DefaultKeyValue;
 
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 

@@ -138,9 +138,9 @@ watch(
 watch(
   () => props.regions,
   () => {
-    checkAll.value =
-      new Set(props.regions.map((r) => r.regionId)).size ===
-      checkedRegionIds.value.length;
+    checkAll.value = props.regions.every((region) =>
+      checkedRegionIds.value.includes(region.regionId)
+    );
   },
   {
     immediate: true,

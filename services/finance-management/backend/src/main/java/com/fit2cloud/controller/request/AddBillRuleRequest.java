@@ -22,7 +22,7 @@ public class AddBillRuleRequest {
      * 账单规则名称
      */
     @ApiModelProperty(value = "账单规则名称", notes = "账单规则名称", required = true)
-    @CustomValidated(mapper = BillRuleMapper.class, handler = ExistHandler.class, message = "账单规则名称不能重复", exist = true, groups = ValidationGroup.SAVE.class)
+    @CustomValidated(groups = ValidationGroup.SAVE.class, mapper = BillRuleMapper.class, handler = ExistHandler.class, message = "账单规则名称不能重复", exist = true)
     private String name;
     /**
      * 账单组

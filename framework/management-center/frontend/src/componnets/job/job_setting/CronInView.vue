@@ -1,5 +1,6 @@
 <template>
   <el-form
+    :inline-message="true"
     :style="{
       color: readOnly
         ? 'var(--el-disabled-text-color)'

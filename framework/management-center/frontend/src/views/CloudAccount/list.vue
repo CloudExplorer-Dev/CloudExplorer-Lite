@@ -382,6 +382,8 @@ const getStatusIcone = (status: string) => {
     ? "CircleCheck"
     : status === "SYNCING"
     ? "Loading"
+    : status === "TIME_OUT"
+    ? "Timer"
     : "InfoFilled";
 };
 
@@ -394,6 +396,8 @@ const mapStatus = (status: string) => {
     ? t("cloud_account.native_sync.success", "同步成功")
     : status === "SYNCING"
     ? t("cloud_account.native_sync.syncing", "同步中")
+    : status === "TIME_OUT"
+    ? "超时"
     : t("cloud_account.native_sync.unknown", "未知");
 };
 
@@ -406,6 +410,8 @@ const getColorByAccountStatus = (status: string) => {
     ? "var(--el-color-success)"
     : status === "SYNCING"
     ? "var(--el-color-primary)"
+    : status === "TIME_OUT"
+    ? "var(--el-color-danger-dark-2)"
     : "var(--el-color-info)";
 };
 /**

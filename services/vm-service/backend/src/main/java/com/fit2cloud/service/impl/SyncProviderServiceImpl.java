@@ -420,6 +420,7 @@ public class SyncProviderServiceImpl extends BaseSyncService implements ISyncPro
         jobRecord.setParams(new HashMap<>());
         jobRecord.setType(jobSyncResourceType.getJobType());
         jobRecord.setCreateTime(syncTime);
+        jobRecord.setUpdateTime(syncTime);
         // 插入任务数据
         baseJobRecordService.save(jobRecord);
         // 插入关联关系
@@ -428,6 +429,8 @@ public class SyncProviderServiceImpl extends BaseSyncService implements ISyncPro
         jobRecordResourceMapping.setJobType(jobSyncResourceType.getJobType());
         jobRecordResourceMapping.setResourceType(jobSyncResourceType.name());
         jobRecordResourceMapping.setJobRecordId(jobRecord.getId());
+        jobRecordResourceMapping.setCreateTime(syncTime);
+        jobRecordResourceMapping.setUpdateTime(syncTime);
         jobRecordResourceMappingService.save(jobRecordResourceMapping);
         return jobRecord;
     }

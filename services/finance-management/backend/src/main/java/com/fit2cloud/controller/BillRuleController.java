@@ -108,7 +108,7 @@ public class BillRuleController {
             resourceId = "#request.id",
             content = "'修改账单规则['+#request.name+']'",
             param = "#request")
-    public ResultHolder<BillRule> update(@Validated @RequestBody UpdateBillRuleRequest request) {
+    public ResultHolder<BillRule> update(@Validated(ValidationGroup.UPDATE.class) @RequestBody UpdateBillRuleRequest request) {
         return ResultHolder.success(billRuleService.update(request));
     }
 

@@ -70,7 +70,7 @@
       </div>
       <div class="content">
         <el-tabs
-          class="demo-tabs"
+          id="tables"
           v-model="activeName"
           @tab-change="tabChange"
           style="width: calc(100% - 40px); margin-left: 20px"
@@ -152,6 +152,7 @@ import type { SimpleMap } from "@commons/api/base/type";
 import TableTrend from "@/views/bill_view/TableTrend.vue";
 import { TableV2FixedDir } from "element-plus";
 import _ from "lodash";
+import Sortable from "sortablejs";
 
 import BillTrend from "@commons/business/base-layout/home-page/items/BillTrend.vue";
 
@@ -184,7 +185,27 @@ const reSize = (wh: any) => {
 const tableChartVisible = ref<boolean>(false);
 
 const tableChart = ref<ECharts>();
+
 const billViewData = ref<SimpleMap<Array<BillView>>>();
+
+const dragTab = () => {
+  const tab = document.querySelector(
+    "#tables .el-tabs__nav-scroll .el-tabs__nav"
+  ); //获取需要拖拽的tab
+  // if (tab) {
+  //   Sortable.create(tab as HTMLElement, {
+  //     //oldIIndex拖放前的位置， newIndex拖放后的位置
+  //     onEnd(event: Sortable.SortableEvent) {
+  //       if (event.oldIndex != undefined && event.newIndex != undefined) {
+  //         const currentTab = BillRules.value.splice(event.oldIndex, 1)[0];
+  //         BillRules.value.splice(event.newIndex, 0, currentTab);
+  //         console.log(event.oldIndex, event.newIndex, currentTab, BillRules);
+  //         activeName.value = BillRules.value[event.newIndex].id;
+  //       }
+  //     },
+  //   });
+  // }
+};
 
 /**
  * 重置数据
@@ -319,6 +340,7 @@ const billViewChartLoading = ref<boolean>(false);
 const BillRules = ref<Array<BillRule>>([]);
 
 onMounted(() => {
+  dragTab();
   billViewAPi
     .getExpenses("MONTH", currentMonth, currentMonthExpensesLoading)
     .then((ok) => {

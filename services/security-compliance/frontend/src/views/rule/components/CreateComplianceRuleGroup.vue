@@ -1,5 +1,7 @@
 <template>
   <el-dialog
+    :close-on-press-escape="false"
+    :close-on-click-modal="false"
     v-model="createComplianceRuleGroupVisible"
     title="创建合规规则"
     width="60%"
@@ -10,9 +12,10 @@
       :rules="rules"
       ref="ruleFormRef"
       label-width="120px"
+      @submit.prevent
     >
       <el-form-item label="规则名称" prop="name">
-        <el-input v-model="createComplianceRuleGroupForm.name" />
+        <el-input type="input" v-model="createComplianceRuleGroupForm.name" />
       </el-form-item>
       <el-form-item label="规则组描述" prop="description">
         <el-input

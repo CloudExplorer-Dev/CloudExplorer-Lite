@@ -1,6 +1,8 @@
 <template>
   <!-- 创建 -->
   <el-dialog
+    :close-on-press-escape="false"
+    :close-on-click-modal="false"
     v-model="createComplianceRuleVisible"
     title="编辑合规规则"
     width="60%"

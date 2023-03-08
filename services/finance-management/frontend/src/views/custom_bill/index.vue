@@ -44,7 +44,7 @@
         label="规则名称"
         prop="name"
         :rules="{
-          message: '名称不能为null',
+          message: '名称不能为空',
           trigger: 'blur',
           required: true,
         }"

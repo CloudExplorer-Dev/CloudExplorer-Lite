@@ -14,7 +14,12 @@
       }"
       style="width: 100px; margin-left: 20px"
     >
-      <el-select v-model="form.field" class="m-2" placeholder="请选择">
+      <el-select
+        filterable
+        v-model="form.field"
+        class="m-2"
+        placeholder="请选择"
+      >
         <el-option
           v-for="item in dimensionSettingKeys"
           :key="item.value"
@@ -33,7 +38,12 @@
           required: true,
         }"
       >
-        <el-select v-model="form.tagField" class="m-2" placeholder="请选择">
+        <el-select
+          filterable
+          v-model="form.tagField"
+          class="m-2"
+          placeholder="请选择"
+        >
           <el-option
             v-for="item in dimensionSettingTagKeys"
             :key="item.value"
@@ -51,6 +61,7 @@
       }"
     >
       <el-select
+        filterable
         v-model="form.value"
         class="m-2"
         multiple

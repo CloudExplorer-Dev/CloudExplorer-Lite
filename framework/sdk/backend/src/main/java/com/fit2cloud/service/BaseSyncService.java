@@ -92,6 +92,8 @@ public abstract class BaseSyncService {
                         return;
                     }
                     LocalDateTime syncTime = getSyncTime();
+                    cloudAccount.setUpdateTime(syncTime);
+                    cloudAccountService.updateById(cloudAccount);
                     // 初始化一条定时任务记录
                     JobRecord jobRecord = initJobRecord.apply(syncTime);
                     Class<? extends P> cloudProvider = getCloudProvider.apply(cloudAccount.getPlatform());
@@ -129,6 +131,7 @@ public abstract class BaseSyncService {
                 }
             }
         } finally {
+
             if (lock.isLocked()) {
                 lock.unlock();
             }
@@ -207,6 +210,8 @@ public abstract class BaseSyncService {
                         return;
                     }
                     LocalDateTime syncTime = getSyncTime();
+                    cloudAccount.setUpdateTime(syncTime);
+                    cloudAccountService.updateById(cloudAccount);
                     //转换为时间戳字符串
                     cloudAccount.setSyncTimeStampStr(String.valueOf(syncTime.toInstant(ZoneOffset.of("+8")).toEpochMilli()));
                     // 初始化一条定时任务记录

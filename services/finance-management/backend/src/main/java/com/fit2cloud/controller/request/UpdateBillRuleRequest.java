@@ -1,7 +1,10 @@
 package com.fit2cloud.controller.request;
 
+import com.fit2cloud.common.validator.annnotaion.CustomQueryWrapperValidated;
 import com.fit2cloud.common.validator.annnotaion.CustomValidated;
+import com.fit2cloud.common.validator.group.ValidationGroup;
 import com.fit2cloud.common.validator.handler.ExistHandler;
+import com.fit2cloud.common.validator.handler.ExistQueryWrapperValidatedHandler;
 import com.fit2cloud.dao.mapper.BillRuleMapper;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
@@ -13,6 +16,8 @@ import lombok.Data;
  * {@code @注释: }
  */
 @Data
+@CustomQueryWrapperValidated(groups = ValidationGroup.UPDATE.class, handler = ExistQueryWrapperValidatedHandler.class, mapper = BillRuleMapper.class
+        , message = "账单规则名称不能重复", exist = true, el = "#getQueryWrapper().ne(\"id\",#this.id).eq(\"name\",#this.name)")
 public class UpdateBillRuleRequest extends AddBillRuleRequest {
     /**
      * 主键id

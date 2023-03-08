@@ -151,6 +151,9 @@ const scanStatus = (resourceType: string, cloud_acclount_id?: string) => {
   if (status.includes("FAILED")) {
     return "FAILED";
   }
+  if (status.includes("TIME_OUT")) {
+    return "TIME_OUT";
+  }
   if (status.includes("SUCCESS")) {
     return "SUCCESS";
   }

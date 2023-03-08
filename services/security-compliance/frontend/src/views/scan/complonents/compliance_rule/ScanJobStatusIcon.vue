@@ -3,14 +3,14 @@
     :style="{
       color: getColorByStatus(status),
     }"
-    style="display: flex; justify-content: space-around"
+    style="display: flex; justify-content: flex-start"
   >
     <ce-icon
       style="cursor: pointer; font-size: 20px"
       :class="status === 'SYNCING' ? 'is-loading' : ''"
       :code="getStatusIconCode(status)"
     ></ce-icon>
-    <div v-if="showText">{{ mapStatus(status) }}</div>
+    <div v-if="showText" style="margin-left: 20px">{{ mapStatus(status) }}</div>
   </div>
 </template>
 <script setup lang="ts">
@@ -30,6 +30,8 @@ const getStatusIconCode = (status: string) => {
     ? "CircleCheck"
     : status === "SYNCING"
     ? "Loading"
+    : status === "TIME_OUT"
+    ? "Timer"
     : "InfoFilled";
 };
 const getColorByStatus = (status: string) => {
@@ -41,6 +43,8 @@ const getColorByStatus = (status: string) => {
     ? "var(--el-color-success)"
     : status === "SYNCING"
     ? "var(--el-color-primary)"
+    : status === "TIME_OUT"
+    ? "var(--el-color-danger-dark-2)"
     : "var(--el-color-info)";
 };
 const mapStatus = (status: string) => {
@@ -52,6 +56,8 @@ const mapStatus = (status: string) => {
     ? "扫描成功"
     : status === "SYNCING"
     ? "扫描中"
+    : status === "TIME_OUT"
+    ? "超时"
     : "未知";
 };
 </script>

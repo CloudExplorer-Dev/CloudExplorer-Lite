@@ -328,6 +328,7 @@ public class SyncServiceImpl extends BaseSyncService implements SyncService {
         jobRecord.setParams(new HashMap<>());
         jobRecord.setType(JobTypeConstants.CLOUD_ACCOUNT_SYNC_BILL_JOB);
         jobRecord.setCreateTime(syncTime);
+        jobRecord.setUpdateTime(syncTime);
         // 插入任务数据
         baseJobRecordService.save(jobRecord);
         // 插入关联关系
@@ -336,6 +337,8 @@ public class SyncServiceImpl extends BaseSyncService implements SyncService {
         jobRecordResourceMapping.setJobType(JobTypeConstants.CLOUD_ACCOUNT_SYNC_BILL_JOB);
         jobRecordResourceMapping.setResourceType(com.fit2cloud.constants.JobConstants.JobSyncResourceType.BILL.name());
         jobRecordResourceMapping.setJobRecordId(jobRecord.getId());
+        jobRecordResourceMapping.setUpdateTime(syncTime);
+        jobRecordResourceMapping.setCreateTime(syncTime);
         jobRecordResourceMappingService.save(jobRecordResourceMapping);
         return jobRecord;
     }

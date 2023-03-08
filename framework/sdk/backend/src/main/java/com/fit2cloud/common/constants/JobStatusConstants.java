@@ -24,7 +24,12 @@ public enum JobStatusConstants {
     /**
      * 执行中
      */
-    EXECUTION_ING(3);
+    EXECUTION_ING(3),
+
+    /**
+     * 任务超时
+     */
+    TIME_OUT(4);
 
     @EnumValue
     private final int code;

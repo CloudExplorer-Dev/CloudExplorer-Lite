@@ -623,8 +623,11 @@ public class AliInstanceSearchFieldApi {
                         new DefaultKeyValue<>("经典网络类型内网", "Inner")
                 ))
                 .resetInstanceField(PlatformConstants.fit2cloud_ali_platform, resourceType);
+
+        InstanceSearchField dedicatedHostZoneIdForSlave = new InstanceSearchField("Slave节点所在主机的可用区ID", "dedicatedHostZoneIdForSlave", InstanceFieldType.String)
+                .resetInstanceField(PlatformConstants.fit2cloud_ali_platform, resourceType);
         return List.of(payType, mutriORsignle, engineVersion, instanceNetworkType, dbinstanceType, tipsLevel, connectionMode,
-                lockMode, deletionProtection, dbinstanceNetInfosIpType);
+                lockMode, deletionProtection, dbinstanceNetInfosIpType, dedicatedHostZoneIdForSlave);
 
     }
 
