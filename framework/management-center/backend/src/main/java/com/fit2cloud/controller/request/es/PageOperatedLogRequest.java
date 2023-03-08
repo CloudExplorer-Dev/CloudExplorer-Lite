@@ -49,6 +49,19 @@ public class PageOperatedLogRequest extends PageRequest implements PageOrderRequ
     private String resourceId;
 
     /**
+     * 资源名称
+     */
+    @ApiModelProperty("资源名称")
+    private String resourceName;
+
+    /**
+     * 关联资源名称
+     */
+    @ApiModelProperty("关联资源名称")
+    private String joinResourceName;
+
+
+    /**
      * 资源类型
      */
     @ApiModelProperty("资源类型")

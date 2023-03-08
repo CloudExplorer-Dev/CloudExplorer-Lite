@@ -20,11 +20,6 @@
       fixed
     ></el-table-column>
     <el-table-column
-      prop="operatedName"
-      :label="$t('log_manage.type')"
-      min-width="200px"
-    ></el-table-column>
-    <el-table-column
       prop="content"
       :label="$t('log_manage.content')"
       min-width="150px"
@@ -32,10 +27,10 @@
       <template #default="scope">
         <el-tooltip>
           <template #content>
-            <div style="max-width: 500px">{{ scope.row.content }}</div>
+            <div style="max-width: 500px">{{ scope.row.content?scope.row.content:scope.row.operatedName }}</div>
           </template>
           <div class="text-overflow">
-            {{ scope.row.content }}
+            {{ scope.row.content?scope.row.content:scope.row.operatedName }}
           </div>
         </el-tooltip>
       </template>
@@ -159,6 +154,7 @@ const tableConfig = ref<TableConfig>({
     components: [],
     searchOptions: [
       { label: t("log_manage.operator", "操作人"), value: "user" },
+      { label: t("log_manage.resource", "操作对象"), value: "resourceName" },
     ],
   },
   paginationConfig: new PaginationConfig(),
