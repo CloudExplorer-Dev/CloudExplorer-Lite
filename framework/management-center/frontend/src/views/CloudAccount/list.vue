@@ -496,7 +496,6 @@ const openBillSync = (row: CloudAccount) => {
     const financeManagement = ok.data.cloudAccountModuleJobs.find(
       (m) => m.module === "finance-management"
     );
-    console.log("xxs", financeManagement);
     if (financeManagement) {
       if (
         financeManagement.jobDetailsList &&
@@ -506,7 +505,6 @@ const openBillSync = (row: CloudAccount) => {
           financeManagement.jobDetailsList[0].params["BILL_SETTING"][
             "syncMode"
           ];
-        console.log(billSyncForm.value.syncBillType);
       }
     }
   });
@@ -603,12 +601,13 @@ const syncBill = (formEl: FormInstance | undefined) => {
           BUCKET_CYCLE: billSyncForm.value.bucketSyncCycle,
         };
       }
+
       // 发送同步任务
-      cloudAccountApi.syncJob(syncSubmit).then((ok) => {
+      cloudAccountApi.syncJob(syncSubmit).then(() => {
         ElMessage.success("发送同步任务成功");
+        billSyncView.value = false;
       });
     }
-    billSyncView.value = false;
   });
 };
 
