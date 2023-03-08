@@ -41,6 +41,7 @@ const message = {
     cloud_server: {
       instance_type: "实例规格",
       applicant: "申请人",
+      creator: "创建人",
       more: "更多",
     },
     message_box: {

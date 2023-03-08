@@ -13,8 +13,8 @@ import com.fit2cloud.base.service.IBaseSystemParameterService;
 import com.fit2cloud.common.constants.ResourceTypeConstants;
 import com.fit2cloud.common.utils.ColumnNameUtil;
 import com.fit2cloud.common.utils.PageUtil;
-import com.fit2cloud.controller.request.vm.BatchRecycleRequest;
-import com.fit2cloud.controller.request.vm.PageRecycleBinRequest;
+import com.fit2cloud.controller.request.recycle_bin.BatchRecycleRequest;
+import com.fit2cloud.controller.request.recycle_bin.PageRecycleBinRequest;
 import com.fit2cloud.dao.mapper.RecycleBinMapper;
 import com.fit2cloud.dto.RecycleBinDTO;
 import com.fit2cloud.provider.constants.F2CDiskStatus;
@@ -66,7 +66,7 @@ public class RecycleBinServiceImpl extends ServiceImpl<BaseRecycleBinMapper, Rec
 
     @Override
     public boolean batchDeleteResource(BatchRecycleRequest request) {
-        List<String> recycleIds = request.getRecycleIds();
+        List<String> recycleIds = request.getIds();
         if (CollectionUtils.isEmpty(recycleIds)) {
             throw new RuntimeException("Batch recycle ID can not be empty! ");
         }
@@ -104,10 +104,10 @@ public class RecycleBinServiceImpl extends ServiceImpl<BaseRecycleBinMapper, Rec
 
     @Override
     public boolean batchRecoverResource(BatchRecycleRequest request) {
-        if (CollectionUtils.isEmpty(request.getRecycleIds())) {
+        if (CollectionUtils.isEmpty(request.getIds())) {
             throw new RuntimeException("Batch recover ID can not be empty!");
         }
-        for (String recycleId : request.getRecycleIds()) {
+        for (String recycleId : request.getIds()) {
             baseRecycleService.updateRecycleRecordOnRecover(recycleId);
         }
         return true;
@@ -145,6 +145,7 @@ public class RecycleBinServiceImpl extends ServiceImpl<BaseRecycleBinMapper, Rec
         return wrapper;
     }
 
+    @Override
     public boolean getRecycleEnableStatus() {
         String recycleEnableStatus = baseSystemParameterService.getValue("recycle_bin.enable");
         return "true".equals(recycleEnableStatus) ? true : false;

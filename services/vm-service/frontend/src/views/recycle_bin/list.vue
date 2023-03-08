@@ -18,6 +18,8 @@ import { platformIcon } from "@commons/utils/platform";
 import type { SimpleMap } from "@commons/api/base/type";
 import BaseCloudAccountApi from "@commons/api/cloud_account";
 import OrgTreeFilter from "@commons/components/table-filter/OrgTreeFilter.vue";
+import { ResourceType } from "@/api/recycle_bin/type";
+import { classifyIP } from "@/utils/util";
 
 const permissionStore = usePermissionStore();
 const { t } = useI18n();
@@ -171,9 +173,9 @@ const tableConfig = ref<TableConfig>({
 });
 
 /**
- * 批量恢复操作
+ * 批量恢复
  */
-const batchRecoverOperate = (operate: string) => {
+const batchRecoverOperate = () => {
   if (!(selectedRowData.value && selectedRowData.value.length > 0)) {
     return;
   }
@@ -182,20 +184,38 @@ const batchRecoverOperate = (operate: string) => {
     confirmButtonText: t("commons.message_box.confirm", "确认"),
     cancelButtonText: t("commons.btn.cancel", "取消"),
     type: "warning",
-  }).then(() => {
-    RecycleBinsApi.batchRecoverResource(_.map(selectedRowData.value, "id"))
-      .then(() => {
-        ElMessage.success(t("commons.msg.op_success"));
-        refresh();
-      })
-      .catch((err) => {
-        console.log(err);
-      });
+  }).then(async () => {
+    const resourceGroup = _.groupBy(selectedRowData.value, "resourceType");
+
+    const recoverResource = async () => {
+      if (resourceGroup.VM?.length > 0) {
+        const req = {
+          ids: _.map(resourceGroup.VM, "id"),
+          resourceIds: _.map(resourceGroup.VM, "resourceId"),
+          resourceType: ResourceType.VM,
+        };
+        await RecycleBinsApi.batchRecoverVm(req);
+      }
+
+      if (resourceGroup.DISK?.length > 0) {
+        const req = {
+          ids: _.map(resourceGroup.DISK, "id"),
+          resourceIds: _.map(resourceGroup.DISK, "resourceId"),
+          resourceType: ResourceType.DISK,
+        };
+        await RecycleBinsApi.batchRecoverDisk(req);
+      }
+    };
+
+    await recoverResource();
+
+    ElMessage.success(t("commons.msg.op_success"));
+    refresh();
   });
 };
 
 /**
- * 批量彻底删除操作
+ * 批量彻底删除
  */
 const batchDeleteOperate = () => {
   if (!(selectedRowData.value && selectedRowData.value.length > 0)) {
@@ -206,20 +226,38 @@ const batchDeleteOperate = () => {
     confirmButtonText: t("commons.message_box.confirm", "确认"),
     cancelButtonText: t("commons.btn.cancel", "取消"),
     type: "warning",
-  }).then(() => {
-    RecycleBinsApi.batchDeleteResource(_.map(selectedRowData.value, "id"))
-      .then(() => {
-        ElMessage.success(t("commons.msg.op_success"));
-        refresh();
-      })
-      .catch((err) => {
-        ElMessage.error(err.response.data.message);
-      });
+  }).then(async () => {
+    const resourceGroup = _.groupBy(selectedRowData.value, "resourceType");
+
+    const deleteResource = async () => {
+      if (resourceGroup.VM?.length > 0) {
+        const req = {
+          ids: _.map(resourceGroup.VM, "id"),
+          resourceIds: _.map(resourceGroup.VM, "resourceId"),
+          resourceType: ResourceType.VM,
+        };
+        await RecycleBinsApi.batchDeleteVm(req);
+      }
+
+      if (resourceGroup.DISK?.length > 0) {
+        const req = {
+          ids: _.map(resourceGroup.DISK, "id"),
+          resourceIds: _.map(resourceGroup.DISK, "resourceId"),
+          resourceType: ResourceType.DISK,
+        };
+        await RecycleBinsApi.batchDeleteDisk(req);
+      }
+    };
+
+    await deleteResource();
+
+    ElMessage.success(t("commons.msg.op_success"));
+    refresh();
   });
 };
 
 /**
- * 恢复操作
+ * 恢复
  */
 const recoverOperate = (row: RecycleBinInfo) => {
   const message = t("recycle_bin.recover_tips", [row.resourceName]);
@@ -228,19 +266,40 @@ const recoverOperate = (row: RecycleBinInfo) => {
     cancelButtonText: t("commons.btn.cancel", "取消"),
     type: "warning",
   }).then(() => {
-    RecycleBinsApi.recoverResource(row.id)
-      .then(() => {
-        ElMessage.success(t("commons.msg.op_success"));
-        refresh();
-      })
-      .catch((err) => {
-        console.log(err);
-      });
+    const req = {
+      id: row.id,
+      resourceId: row.resourceId,
+      resourceType: row.resourceType,
+    };
+    switch (row.resourceType) {
+      case ResourceType.VM:
+        RecycleBinsApi.recoverVm(req)
+          .then(() => {
+            ElMessage.success(t("commons.msg.op_success"));
+            refresh();
+          })
+          .catch((err: any) => {
+            console.log(err);
+          });
+        break;
+      case ResourceType.DISK:
+        RecycleBinsApi.recoverDisk(req)
+          .then(() => {
+            ElMessage.success(t("commons.msg.op_success"));
+            refresh();
+          })
+          .catch((err: any) => {
+            console.log(err);
+          });
+        break;
+      default:
+        ElMessage.warning("不支持的资源类型");
+    }
   });
 };
 
 /**
- * 彻底删除操作
+ * 彻底删除
  */
 const deleteOperate = (row: RecycleBinInfo) => {
   const message = t("recycle_bin.delete_tips", [row.resourceName]);
@@ -249,14 +308,35 @@ const deleteOperate = (row: RecycleBinInfo) => {
     cancelButtonText: t("commons.btn.cancel", "取消"),
     type: "warning",
   }).then(() => {
-    RecycleBinsApi.deleteResource(row.id)
-      .then(() => {
-        ElMessage.success(t("commons.msg.op_success"));
-        refresh();
-      })
-      .catch((err) => {
-        console.log(err);
-      });
+    const req = {
+      id: row.id,
+      resourceId: row.resourceId,
+      resourceType: row.resourceType,
+    };
+    switch (row.resourceType) {
+      case ResourceType.VM:
+        RecycleBinsApi.deleteVm(req)
+          .then(() => {
+            ElMessage.success(t("commons.msg.op_success"));
+            refresh();
+          })
+          .catch((err: any) => {
+            console.log(err);
+          });
+        break;
+      case ResourceType.DISK:
+        RecycleBinsApi.deleteDisk(req)
+          .then(() => {
+            ElMessage.success(t("commons.msg.op_success"));
+            refresh();
+          })
+          .catch((err: any) => {
+            console.log(err);
+          });
+        break;
+      default:
+        ElMessage.warning("不支持的资源类型");
+    }
   });
 };
 
@@ -478,9 +558,12 @@ const refresh = () => {
         <div style="display: flex; align-items: center">
           <span>{{ filterStatus(scope.row.resourceStatus) }} </span>
           <el-icon
-              v-show="scope.row.resourceStatus.toLowerCase() != 'running' && scope.row.resourceStatus.indexOf('ing')>-1"
-              class="is-loading"
-          ><Loading
+            v-show="
+              scope.row.resourceStatus.toLowerCase() != 'running' &&
+              scope.row.resourceStatus.indexOf('ing') > -1
+            "
+            class="is-loading"
+            ><Loading
           /></el-icon>
         </div>
       </template>
@@ -496,7 +579,52 @@ const refresh = () => {
       column-key="ipArray"
       :label="t('recycle_bin.ip_array')"
       min-width="180px"
-    />
+    >
+      <template #default="scope">
+        <div v-if="scope.row.resourceType === ResourceType.VM">
+          <div
+            v-for="(item, index) in classifyIP(
+              scope.row.ipArray,
+              scope.row.remoteIp
+            )"
+            :key="index"
+          >
+            <div v-if="index < 2">
+              <span>{{ item.ip }}</span>
+              <span v-if="item.isPublicIp"> (公) </span>
+            </div>
+          </div>
+          <el-dropdown
+            :hide-on-click="false"
+            v-if="JSON.parse(scope.row.ipArray).length > 2"
+            max-height="100px"
+          >
+            <span style="color: var(--el-color-primary); cursor: pointer">
+              {{ t("commons.cloud_server.more", "更多")
+              }}<el-icon class="el-icon--right"><arrow-down /></el-icon>
+            </span>
+            <template #dropdown>
+              <el-dropdown-menu>
+                <el-dropdown-item
+                  v-for="(item, index) in classifyIP(
+                    scope.row.ipArray,
+                    scope.row.remoteIp
+                  )"
+                  :key="index"
+                >
+                  <span>{{ item.ip }}</span>
+                  <span v-if="item.isPublicIp"> (公) </span>
+                </el-dropdown-item>
+              </el-dropdown-menu>
+            </template>
+          </el-dropdown>
+        </div>
+        <span v-if="scope.row.resourceType === ResourceType.DISK">
+          {{ scope.row.ipArray }}
+        </span>
+      </template>
+    </el-table-column>
+
     <el-table-column
       :show="true"
       prop="deleteWithInstance"

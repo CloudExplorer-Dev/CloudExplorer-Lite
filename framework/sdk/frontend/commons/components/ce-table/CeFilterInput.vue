@@ -54,13 +54,15 @@ onMounted(() => {
 
 const conditionObj = computed(() => {
   if (activeSearchOption.value && searchValue.value) {
-    const obj: Condition = {
-      label: activeSearchOption.value.label,
-      value: searchValue.value,
-      field: activeSearchOption.value.value,
-      valueLabel: searchValue.value ? searchValue.value : "",
-    };
-    return obj;
+    if(searchValue.value.trim() !== ""){
+      const obj: Condition = {
+        label: activeSearchOption.value.label,
+        value: searchValue.value.trim(),
+        field: activeSearchOption.value.value,
+        valueLabel: searchValue.value.trim() ? searchValue.value.trim() : "",
+      };
+      return obj;
+    }
   }
   return undefined;
 });

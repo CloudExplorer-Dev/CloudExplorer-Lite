@@ -38,6 +38,7 @@ public class BaseRecycleBinServiceImpl extends ServiceImpl<BaseRecycleBinMapper,
     private IBaseVmCloudDiskService cloudDiskService;
 
     @Transactional
+    @Override
     public void insertRecycleRecord(String resourceId, ResourceTypeConstants resourceType) {
         String userId = CurrentUserUtils.getUser().getId();
         RecycleBin recycleBin = new RecycleBin();
@@ -70,14 +71,19 @@ public class BaseRecycleBinServiceImpl extends ServiceImpl<BaseRecycleBinMapper,
 
     @Override
     public boolean updateRecycleRecordOnRecover(String id) {
-        String userId = CurrentUserUtils.getUser().getId();
         RecycleBin recycleBin = getById(id);
+        return updateRecycleRecordOnRecover(recycleBin);
+    }
+
+    @Override
+    public boolean updateRecycleRecordOnRecover(RecycleBin recycleBin) {
+        String userId = CurrentUserUtils.getUser().getId();
         recycleBin.setStatus(RecycleBinStatusConstants.Recovered);
         recycleBin.setRecoverTime(LocalDateTime.now());
         recycleBin.setUserId(userId);
         updateById(recycleBin);
 
-        // 如果时虚拟机 则随实例删除的磁盘也从回收站恢复
+        // 如果是虚拟机 则随实例删除的磁盘也从回收站恢复
         String resourceId = recycleBin.getResourceId();
         ResourceTypeConstants resourceType = recycleBin.getResourceType();
         if (ResourceTypeConstants.VM.equals(resourceType)) {

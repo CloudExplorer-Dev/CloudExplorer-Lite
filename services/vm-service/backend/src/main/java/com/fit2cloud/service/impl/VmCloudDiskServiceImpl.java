@@ -19,12 +19,14 @@ import com.fit2cloud.base.service.IBaseVmCloudServerService;
 import com.fit2cloud.common.constants.JobTypeConstants;
 import com.fit2cloud.common.constants.RecycleBinStatusConstants;
 import com.fit2cloud.common.constants.ResourceTypeConstants;
+import com.fit2cloud.common.exception.Fit2cloudException;
 import com.fit2cloud.common.form.vo.FormObject;
 import com.fit2cloud.common.log.constants.OperatedTypeEnum;
 import com.fit2cloud.common.log.constants.ResourceTypeEnum;
 import com.fit2cloud.common.provider.util.CommonUtil;
 import com.fit2cloud.common.utils.ColumnNameUtil;
 import com.fit2cloud.common.utils.PageUtil;
+import com.fit2cloud.constants.ErrorCodeConstants;
 import com.fit2cloud.controller.request.CreateJobRecordRequest;
 import com.fit2cloud.controller.request.ExecProviderMethodRequest;
 import com.fit2cloud.controller.request.GrantRequest;
@@ -155,6 +157,7 @@ public class VmCloudDiskServiceImpl extends ServiceImpl<BaseVmCloudDiskMapper, V
         return wrapper;
     }
 
+    @Override
     public List<VmCloudServerDTO> cloudServerList(ListVmRequest req) {
         List<String> sourceIds = permissionService.getSourceIds();
 
@@ -168,10 +171,12 @@ public class VmCloudDiskServiceImpl extends ServiceImpl<BaseVmCloudDiskMapper, V
         return serverMapper.selectServerList(wrapper);
     }
 
+    @Override
     public VmCloudDiskDTO cloudDisk(String id) {
         return diskMapper.selectDiskDetailById(id);
     }
 
+    @Override
     public FormObject getCreateDiskForm(String platform) {
         Class<? extends ICloudProvider> cloudProvider = ProviderConstants.valueOf(platform).getCloudProvider();
         try {
@@ -250,6 +255,7 @@ public class VmCloudDiskServiceImpl extends ServiceImpl<BaseVmCloudDiskMapper, V
         }
     }
 
+    @Override
     public boolean enlarge(String id, long newDiskSize) {
         try {
             VmCloudDisk vmCloudDisk = baseMapper.selectById(id);
@@ -302,6 +308,7 @@ public class VmCloudDiskServiceImpl extends ServiceImpl<BaseVmCloudDiskMapper, V
         }
     }
 
+    @Override
     public boolean attach(String id, String instanceUuid, Boolean deleteWithInstance) {
         try {
             VmCloudDisk vmCloudDisk = baseMapper.selectById(id);
@@ -365,6 +372,7 @@ public class VmCloudDiskServiceImpl extends ServiceImpl<BaseVmCloudDiskMapper, V
         }
     }
 
+    @Override
     public boolean detach(String id) {
         try {
             VmCloudDisk vmCloudDisk = baseMapper.selectById(id);
@@ -418,6 +426,7 @@ public class VmCloudDiskServiceImpl extends ServiceImpl<BaseVmCloudDiskMapper, V
         }
     }
 
+    @Override
     public boolean delete(String id) {
         try {
             VmCloudDisk vmCloudDisk = baseMapper.selectById(id);
@@ -464,10 +473,11 @@ public class VmCloudDiskServiceImpl extends ServiceImpl<BaseVmCloudDiskMapper, V
 
             return true;
         } catch (Exception e) {
-            throw new RuntimeException("Failed to delete cloud disk!" + e.getMessage(), e);
+            throw new Fit2cloudException(ErrorCodeConstants.DISK_DELETE_FAIL.getCode(),"Failed to delete cloud disk!" + e.getMessage());
         }
     }
 
+    @Override
     public boolean batchAttach(String[] ids, String instanceUuid, Boolean deleteWithInstance) {
         for (String id : ids) {
             attach(id, instanceUuid, deleteWithInstance);
@@ -475,6 +485,7 @@ public class VmCloudDiskServiceImpl extends ServiceImpl<BaseVmCloudDiskMapper, V
         return true;
     }
 
+    @Override
     public boolean batchDetach(String[] ids) {
         for (String id : ids) {
             detach(id);
@@ -482,6 +493,7 @@ public class VmCloudDiskServiceImpl extends ServiceImpl<BaseVmCloudDiskMapper, V
         return true;
     }
 
+    @Override
     public boolean batchDelete(String[] ids) {
         for (String id : ids) {
             delete(id);

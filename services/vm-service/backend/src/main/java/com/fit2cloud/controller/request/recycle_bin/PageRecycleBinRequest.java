@@ -1,4 +1,4 @@
-package com.fit2cloud.controller.request.vm;
+package com.fit2cloud.controller.request.recycle_bin;
 
 import com.fit2cloud.request.pub.OrderRequest;
 import com.fit2cloud.request.pub.PageOrderRequestInterface;
@@ -8,10 +8,6 @@ import lombok.Data;
 
 import java.util.List;
 
-/**
- * @author jianneng
- * @date 2022/9/27 14:45
- **/
 @Data
 public class PageRecycleBinRequest extends PageRequest implements PageOrderRequestInterface {
     @ApiModelProperty("资源名称")

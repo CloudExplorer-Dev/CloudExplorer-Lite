@@ -22,6 +22,7 @@ import { usePermissionStore } from "@commons/stores/modules/permission";
 import ButtonToolBar from "@commons/components/button-tool-bar/ButtonToolBar.vue";
 import { ButtonAction } from "@commons/components/button-tool-bar/type";
 import OrgTreeFilter from "@commons/components/table-filter/OrgTreeFilter.vue";
+import { classifyIP } from "@/utils/util";
 
 const { t } = useI18n();
 const permissionStore = usePermissionStore();
@@ -79,7 +80,6 @@ const InstanceStatus = ref<Array<SimpleMap<string>>>([
   { text: "关机中", value: "Stopping" },
   { text: "重启中", value: "Rebooting" },
   { text: "删除中", value: "Deleting" },
-  { text: "创建中", value: "Createding" },
   { text: "排队中", value: "WaitCreating" },
   { text: "创建中", value: "Creating" },
   { text: "配置变更中", value: "ConfigChanging" },
@@ -391,8 +391,10 @@ const buttons = ref([
     show: permissionStore.hasPermission("[vm-service]CLOUD_SERVER:DELETE"),
     disabled: (row: { instanceStatus: string }) => {
       return (
-        row.instanceStatus === "ToBeRecycled" ||
-        row.instanceStatus === "Deleted"
+        row.instanceStatus.toUpperCase() === "ToBeRecycled".toUpperCase() ||
+        row.instanceStatus.toUpperCase() === "Deleted".toUpperCase() ||
+        (row.instanceStatus.toUpperCase() !== "Running".toUpperCase() &&
+          row.instanceStatus.toUpperCase().indexOf("ING") > -1)
       );
     },
   },
@@ -403,8 +405,10 @@ const buttons = ref([
     show: permissionStore.hasPermission("[vm-service]CLOUD_DISK:CREATE"),
     disabled: (row: { instanceStatus: string }) => {
       return (
-        row.instanceStatus === "ToBeRecycled" ||
-        row.instanceStatus === "Deleted"
+        row.instanceStatus.toUpperCase() === "ToBeRecycled".toUpperCase() ||
+        row.instanceStatus.toUpperCase() === "Deleted".toUpperCase() ||
+        (row.instanceStatus.toUpperCase() !== "Running".toUpperCase() &&
+          row.instanceStatus.toUpperCase().indexOf("ING") > -1)
       );
     },
   },
@@ -451,12 +455,10 @@ const powerOn = (row: VmCloudServerVO) => {
     VmCloudServerApi.powerOn(row.id as string)
       .then((res) => {
         ElMessage.success(t("commons.msg.op_success"));
+        refresh();
       })
       .catch((err) => {
         ElMessage.error(err.response.data.message);
-      })
-      .finally(() => {
-        //table.value?.search();
       });
   });
 };
@@ -480,23 +482,19 @@ const shutdown = (row: VmCloudServerVO) => {
       VmCloudServerApi.powerOff(row.id as string)
         .then((res) => {
           ElMessage.success(t("commons.msg.op_success"));
+          refresh();
         })
         .catch((err) => {
           ElMessage.error(err.response.data.message);
-        })
-        .finally(() => {
-          //table.value?.search();
         });
     } else {
       VmCloudServerApi.shutdownInstance(row.id as string)
         .then((res) => {
           ElMessage.success(t("commons.msg.op_success"));
+          refresh();
         })
         .catch((err) => {
           ElMessage.error(err.response.data.message);
-        })
-        .finally(() => {
-          //table.value?.search();
         });
     }
   });
@@ -515,6 +513,7 @@ const powerOff = (row: VmCloudServerVO) => {
     VmCloudServerApi.powerOff(row.id as string)
       .then(() => {
         ElMessage.success(t("commons.msg.op_success"));
+        refresh();
       })
       .catch((err) => {
         ElMessage.error(err.response.data.message);
@@ -535,6 +534,7 @@ const reboot = (row: VmCloudServerVO) => {
     VmCloudServerApi.reboot(row.id as string)
       .then(() => {
         ElMessage.success(t("commons.msg.op_success"));
+        refresh();
       })
       .catch((err) => {
         ElMessage.error(err.response.data.message);
@@ -568,6 +568,7 @@ const deleteInstance = async (row: VmCloudServerVO) => {
       VmCloudServerApi.recycleInstance(row.id as string)
         .then(() => {
           ElMessage.success(t("commons.msg.op_success"));
+          refresh();
         })
         .catch((err) => {
           ElMessage.error(err.response.data.message);
@@ -576,6 +577,7 @@ const deleteInstance = async (row: VmCloudServerVO) => {
       VmCloudServerApi.deleteInstance(row.id as string)
         .then(() => {
           ElMessage.success(t("commons.msg.op_success"));
+          refresh();
         })
         .catch((err) => {
           ElMessage.error(err.response.data.message);
@@ -777,29 +779,42 @@ const moreActions = ref<Array<ButtonAction>>([
       prop="ipArray"
       column-key="ipArray"
       :label="$t('vm_cloud_server.label.ip_address')"
-      min-width="180px"
+      min-width="270px"
     >
       <template #default="scope">
-        <span v-show="scope.row.ipArray?.length > 2">{{
-          JSON.parse(scope.row.ipArray)[0]
-        }}</span>
+        <div
+          v-for="(item, index) in classifyIP(
+            scope.row.ipArray,
+            scope.row.remoteIp
+          )"
+          :key="index"
+        >
+          <div v-if="index < 2">
+            <span>{{ item.ip }}</span>
+            <span v-if="item.isPublicIp"> (公) </span>
+          </div>
+        </div>
         <el-dropdown
-          :class="variables_server.dropdown_box"
           :hide-on-click="false"
-          v-if="scope.row.ipArray.length > 2"
+          v-if="JSON.parse(scope.row.ipArray).length > 2"
           max-height="100px"
         >
-          <span>
+          <span style="color: var(--el-color-primary); cursor: pointer">
             {{ t("commons.cloud_server.more", "更多")
             }}<el-icon class="el-icon--right"><arrow-down /></el-icon>
           </span>
           <template #dropdown>
             <el-dropdown-menu>
               <el-dropdown-item
-                v-for="(item, index) in JSON.parse(scope.row.ipArray)"
+                v-for="(item, index) in classifyIP(
+                  scope.row.ipArray,
+                  scope.row.remoteIp
+                )"
                 :key="index"
-                >{{ item }}</el-dropdown-item
               >
+                <span>{{ item.ip }}</span>
+                <span v-if="item.isPublicIp"> (公) </span>
+              </el-dropdown-item>
             </el-dropdown-menu>
           </template>
         </el-dropdown>
@@ -826,7 +841,6 @@ const moreActions = ref<Array<ButtonAction>>([
               scope.row.instanceStatus === 'Stopping' ||
               scope.row.instanceStatus === 'Rebooting' ||
               scope.row.instanceStatus === 'Deleting' ||
-              scope.row.instanceStatus === 'Createding' ||
               scope.row.instanceStatus === 'Creating'
             "
             class="is-loading"
@@ -952,20 +966,33 @@ const moreActions = ref<Array<ButtonAction>>([
       prop="instanceTypeDescription"
       column-key="instanceTypeDescription"
       :label="$t('commons.cloud_server.instance_type')"
-      min-width="120px"
-    ></el-table-column>
+      min-width="160px"
+    >
+      <template #default="scope">
+        <span style="display: inline-block">{{
+          scope.row.instanceTypeDescription
+        }}</span>
+        <span
+          style="display: inline-block"
+          v-if="scope.row.instanceType !== scope.row.instanceTypeDescription"
+          >{{ scope.row.instanceType }}</span
+        >
+      </template>
+    </el-table-column>
     <el-table-column
       prop="osInfo"
       column-key="osInfo"
       :label="$t('commons.os_version', '操作系统版本')"
       min-width="180px"
-    ></el-table-column>
+      :show="false"
+    />
     <el-table-column
       prop="instanceChargeType"
       column-key="instanceChargeType"
       :label="$t('cloud_server.label.charge_type', '付费类型')"
       :filters="chargeType"
       min-width="120px"
+      :show="false"
     >
       <template #default="scope">
         {{ filterChargeType(scope.row.instanceChargeType) }}
@@ -996,6 +1023,7 @@ const moreActions = ref<Array<ButtonAction>>([
       sortable
       :label="$t('cloud_server.label.expired_time', '到期时间')"
       min-width="180px"
+      :show="false"
     ></el-table-column>
     <el-table-column
       prop="createTime"
@@ -1007,8 +1035,9 @@ const moreActions = ref<Array<ButtonAction>>([
     <el-table-column
       prop="applyUser"
       column-key="applyUser"
-      :label="$t('commons.cloud_server.applicant', '申请人')"
+      :label="$t('commons.cloud_server.creator', '创建人')"
       min-width="120px"
+      :show="false"
     ></el-table-column>
     <el-table-column
       prop="deleteTime"

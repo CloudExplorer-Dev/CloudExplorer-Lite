@@ -3,8 +3,10 @@ import type Result from "@commons/request/Result";
 import type { Page } from "@commons/request/Result";
 import type { Ref } from "vue";
 import type {
+  BatchRecycleRequest,
   ListRecycleBinRequest,
   RecycleBinInfo,
+  RecycleRequest,
 } from "@/api/recycle_bin/type";
 
 export function listRecycleBins(
@@ -12,13 +14,6 @@ export function listRecycleBins(
   loading?: Ref<boolean>
 ): Promise<Result<Page<RecycleBinInfo>>> {
   return get("api/vm/recycleBin/page", req, loading);
-}
-
-export function getRecycleBinById(
-  id: string,
-  loading?: Ref<boolean>
-): Promise<Result<RecycleBinInfo>> {
-  return get("/api/vm/recycleBin/findOne", { id: id }, loading);
 }
 
 /**
@@ -39,6 +34,54 @@ export function deleteResource(
 }
 
 /**
+ * 删除单个云主机
+ * @param req
+ * @param loading
+ */
+export function deleteVm(
+  req: RecycleRequest,
+  loading?: Ref<boolean>
+): Promise<Result<boolean>> {
+  return post("/api/vm/recycleBin/deleteVm", null, req, loading);
+}
+
+/**
+ * 删除单个云磁盘
+ * @param req
+ * @param loading
+ */
+export function deleteDisk(
+  req: RecycleRequest,
+  loading?: Ref<boolean>
+): Promise<Result<boolean>> {
+  return post("/api/vm/recycleBin/deleteDisk", null, req, loading);
+}
+
+/**
+ * 恢复单个云主机
+ * @param req
+ * @param loading
+ */
+export function recoverVm(
+  req: RecycleRequest,
+  loading?: Ref<boolean>
+): Promise<Result<boolean>> {
+  return post("/api/vm/recycleBin/recoverVm", null, req, loading);
+}
+
+/**
+ * 恢复单个磁盘
+ * @param req
+ * @param loading
+ */
+export function recoverDisk(
+  req: RecycleRequest,
+  loading?: Ref<boolean>
+): Promise<Result<boolean>> {
+  return post("/api/vm/recycleBin/recoverDisk", null, req, loading);
+}
+
+/**
  * 批量删除资源
  * @param batchDeleteResource
  * @param loading
@@ -53,6 +96,30 @@ export function batchDeleteResource(
     { recycleIds: recycleIds },
     loading
   );
+}
+
+/**
+ * 批量删除云主机
+ * * @param req
+ * @param loading
+ */
+export function batchDeleteVm(
+  req: BatchRecycleRequest,
+  loading?: Ref<boolean>
+): Promise<Result<boolean>> {
+  return post("/api/vm/recycleBin/batchDeleteVm", null, req, loading);
+}
+
+/**
+ * 批量删除磁盘
+ * @param req
+ * @param loading
+ */
+export function batchDeleteDisk(
+  req: BatchRecycleRequest,
+  loading?: Ref<boolean>
+): Promise<Result<boolean>> {
+  return post("/api/vm/recycleBin/batchDeleteDisk", null, req, loading);
 }
 
 /**
@@ -90,6 +157,30 @@ export function batchRecoverResource(
 }
 
 /**
+ * 批量恢复云主机
+ * @param req
+ * @param loading
+ */
+export function batchRecoverVm(
+  req: BatchRecycleRequest,
+  loading?: Ref<boolean>
+): Promise<Result<boolean>> {
+  return post("/api/vm/recycleBin/batchRecoverVm", null, req, loading);
+}
+
+/**
+ * 批量恢复磁盘
+ * @param req
+ * @param loading
+ */
+export function batchRecoverDisk(
+  req: BatchRecycleRequest,
+  loading?: Ref<boolean>
+): Promise<Result<boolean>> {
+  return post("/api/vm/recycleBin/batchRecoverDisk", null, req, loading);
+}
+
+/**
  * 获取当前回收站的开启状态
  */
 export function getRecycleEnableStatus(
@@ -100,11 +191,18 @@ export function getRecycleEnableStatus(
 
 const RecycleBinsApi = {
   listRecycleBins,
-  getRecycleBinById,
   batchRecoverResource,
-  recoverResource,
+  batchRecoverVm,
+  batchRecoverDisk,
   batchDeleteResource,
+  batchDeleteVm,
+  batchDeleteDisk,
   deleteResource,
+  deleteVm,
+  deleteDisk,
+  recoverResource,
+  recoverVm,
+  recoverDisk,
   getRecycleEnableStatus,
 };
 

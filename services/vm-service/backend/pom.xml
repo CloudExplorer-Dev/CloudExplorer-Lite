@@ -15,7 +15,7 @@
     <description>vm-service</description>
 
     <properties>
-        <service.version>${revision}.0</service.version>
+        <service.version>${revision}</service.version>
         <service.port>9011</service.port>
         <service.management.port>9911</service.management.port>
     </properties>

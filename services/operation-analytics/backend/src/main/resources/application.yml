@@ -33,6 +33,9 @@ mybatis-plus:
 management:
   server:
     port: @service.management.port@
+  health:
+      elasticsearch:
+        enabled: false
 
 logging:
   file:

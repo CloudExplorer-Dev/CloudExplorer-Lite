@@ -212,7 +212,7 @@ public class VmCloudServerServiceImpl extends ServiceImpl<BaseVmCloudServerMappe
         return true;
     }
 
-
+    @Override
     public boolean shutdownInstance(String vmId) {
         operate(vmId, OperatedTypeEnum.SHUTDOWN.getDescription(), ICloudProvider::shutdownInstance,
                 F2CInstanceStatus.Stopping.name(), F2CInstanceStatus.Stopped.name(), this::modifyResource,
@@ -261,6 +261,7 @@ public class VmCloudServerServiceImpl extends ServiceImpl<BaseVmCloudServerMappe
         return true;
     }
 
+    @Override
     public boolean recoverInstance(String recycleBinId) {
         return recycleService.updateRecycleRecordOnRecover(recycleBinId);
     }
@@ -621,6 +622,7 @@ public class VmCloudServerServiceImpl extends ServiceImpl<BaseVmCloudServerMappe
         return f2CDisks;
     }
 
+    @Override
     public boolean changeConfig(ChangeServerConfigRequest request) {
         try {
             VmCloudServer vmCloudServer = baseMapper.selectById(request.getId());
@@ -699,6 +701,7 @@ public class VmCloudServerServiceImpl extends ServiceImpl<BaseVmCloudServerMappe
         baseMapper.updateById(vmCloudServer);
     }
 
+    @Override
     public FormObject getConfigUpdateForm(String platform) {
         Class<? extends ICloudProvider> cloudProvider = ProviderConstants.valueOf(platform).getCloudProvider();
         try {
@@ -708,6 +711,7 @@ public class VmCloudServerServiceImpl extends ServiceImpl<BaseVmCloudServerMappe
         }
     }
 
+    @Override
     public String calculateConfigUpdatePrice(String platform, Map<String, Object> params) {
         Class<? extends ICloudProvider> cloudProvider = ProviderConstants.valueOf(platform).getCloudProvider();
         try {
@@ -717,6 +721,7 @@ public class VmCloudServerServiceImpl extends ServiceImpl<BaseVmCloudServerMappe
         }
     }
 
+    @Override
     public boolean grant(GrantRequest grantServerRequest) {
         String sourceId = grantServerRequest.getGrant() ? grantServerRequest.getSourceId() : "";
 

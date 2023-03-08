@@ -16,6 +16,8 @@ public interface IBaseRecycleBinService extends IService<RecycleBin> {
 
     void insertRecycleRecord(String resourceId, ResourceTypeConstants resourceType);
 
+    boolean updateRecycleRecordOnRecover(RecycleBin recycleBin);
+
     boolean updateRecycleRecordOnRecover(String id);
 
     boolean updateRecycleRecordOnDelete(String resourceId, ResourceTypeConstants resourceType);

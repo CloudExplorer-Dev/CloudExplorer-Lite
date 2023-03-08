@@ -15,6 +15,7 @@ const { t } = useI18n();
 const id = ref<string>(router.currentRoute.value.params.id as string);
 const diskInfo = ref<VmCloudDiskVO | unknown>({});
 const newDiskSize = ref<number>();
+const instanceUuid = ref<string>();
 
 const backToDiskList = () => {
   router.push({ name: "vm_cloud_disk" });
@@ -24,6 +25,7 @@ const handleSave = () => {
   if (newDiskSize.value) {
     const req: EnlargeDiskRequest = {
       id: id.value,
+      instanceUuid: instanceUuid.value,
       newDiskSize: newDiskSize.value,
     };
     VmCloudDiskApi.enlarge(req).then(() => {
@@ -39,6 +41,7 @@ onMounted(async () => {
     const res = await VmCloudDiskApi.showCloudDiskById(id.value, loading);
     diskInfo.value = res.data;
     newDiskSize.value = res.data.size;
+    instanceUuid.value = res.data.instanceUuid;
   }
 });
 </script>
