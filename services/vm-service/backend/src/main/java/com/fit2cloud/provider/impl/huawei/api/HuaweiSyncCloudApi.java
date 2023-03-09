@@ -1201,7 +1201,7 @@ public class HuaweiSyncCloudApi {
                     bandwidthAmount = bandwidthInquiryPriceForHour(request, credential, projectId);
                 }
                 if (trafficPriceOnly) {
-                    result.append("弹性公网IP流量费用").append(bandwidthAmount).append("元/GB");
+                    result.append(bandwidthAmount).append("元/GB");
                     return result.toString();
                 }
                 boolean isTraffic = StringUtils.equalsIgnoreCase("traffic",request.getChargeMode());
@@ -1519,7 +1519,7 @@ public class HuaweiSyncCloudApi {
     public static List<OsConfig> listOsVersion(HuaweiVmCreateRequest createRequest) {
         List<OsConfig> result = new ArrayList<>();
         if (StringUtils.isEmpty(createRequest.getOs())
-                || StringUtils.isEmpty(createRequest.getInstanceSpecConfig().getSpecName())) {
+                || (Objects.isNull(createRequest.getInstanceSpecConfig()) || StringUtils.isEmpty(createRequest.getInstanceSpecConfig().getSpecName()))) {
             return result;
         }
         try{
