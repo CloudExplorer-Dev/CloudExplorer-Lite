@@ -90,8 +90,7 @@ public class JwtTokenAuthFilter extends BasicAuthenticationFilter {
 
             if (request.getServletPath().startsWith("/api/") || request.getServletPath().equals("/api")) {
                 //todo token续期？
-
-                response.setHeader(JwtTokenUtils.TOKEN_NAME, token);
+                response.setHeader(JwtTokenUtils.TOKEN_NAME, JwtTokenUtils.renewalToken(token));
             }
 
         } else {

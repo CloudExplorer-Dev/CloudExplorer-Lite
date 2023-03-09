@@ -104,7 +104,7 @@ public class BaseResourceAnalysisServiceImpl implements IBaseResourceAnalysisSer
      */
     @Override
     public IPage<AnalyticsDatastoreDTO> pageDatastore(PageDatastoreRequest request) {
-        Page<VmCloudDatastore> page = PageUtil.of(request, VmCloudDatastore.class, null, false);
+        Page<AnalyticsDatastoreDTO> page = PageUtil.of(request, AnalyticsDatastoreDTO.class, null, false);
         // 构建查询参数
         MPJLambdaWrapper<VmCloudDatastore> wrapper = addQueryDatastore(request);
         wrapper.selectAs(CloudAccount::getName,AnalyticsDatastoreDTO::getAccountName);

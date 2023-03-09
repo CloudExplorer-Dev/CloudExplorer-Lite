@@ -118,6 +118,12 @@ export const useUserStore = defineStore({
       this.userStoreObject.token = authStorage.getToken();
       await this.getCurrentUser();
     },
+    setToken(token: string) {
+      authStorage.setToken(token);
+      if (this.userStoreObject) {
+        this.userStoreObject.token = token;
+      }
+    },
     doLogout(redirect?: string) {
       this.clear();
       window.location.href =

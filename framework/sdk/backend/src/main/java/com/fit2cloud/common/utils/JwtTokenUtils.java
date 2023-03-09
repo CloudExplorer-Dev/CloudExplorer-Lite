@@ -4,10 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fit2cloud.common.constants.RoleConstants;
 import com.fit2cloud.dto.UserDto;
-import io.jsonwebtoken.CompressionCodecs;
-import io.jsonwebtoken.JwtBuilder;
-import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.SignatureAlgorithm;
+import io.jsonwebtoken.*;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.io.Encoders;
 import io.jsonwebtoken.security.Keys;
@@ -98,5 +95,29 @@ public class JwtTokenUtils {
         return null;
     }
 
+    /**
+     * token续期
+     *
+     * @param token 需要续期的token
+     * @return 续期后的token
+     */
+    public static String renewalToken(String token) {
+        Date now = new Date();
+        Date expirationDate = DateUtils.addMinutes(now, JWT_EXPIRE_MINUTES);
+        Jws<Claims> claimsJws = Jwts.parserBuilder()
+                .setSigningKey(JWT_KEY)
+                .requireSubject(KEY_SUBJECT)
+                .build()
+                .parseClaimsJws(token);
+        JwtBuilder builder = Jwts.builder()
+                .setClaims(claimsJws.getBody())
+                .setId(UUID.randomUUID().toString())
+                .setSubject(KEY_SUBJECT)
+                .setIssuedAt(now)
+                .setExpiration(expirationDate)
+                .signWith(JWT_KEY)
+                .compressWith(CompressionCodecs.GZIP);
+        return builder.compact();
+    }
 
 }

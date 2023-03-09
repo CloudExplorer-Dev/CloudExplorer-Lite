@@ -337,12 +337,21 @@ const stopOperateInterval = (cloudServerInterval: any) => {
 };
 </script>
 
-<style lang="scss">
+<style lang="scss" scoped>
 .text-overflow {
   max-width: 100px;
   overflow: hidden;
   white-space: nowrap;
   text-overflow: ellipsis;
+}
+:deep(.el-descriptions__cell) {
+  border: 0 !important;
+}
+:deep(.is-bordered-label) {
+  background-color: transparent !important;
+}
+:deep(.el-descriptions__cell) {
+  font-size: 12px !important;
 }
 .content-class {
   min-width: 230px;
@@ -352,18 +361,5 @@ const stopOperateInterval = (cloudServerInterval: any) => {
 .label-class {
   width: 150px;
   min-width: 150px;
-}
-.el-descriptions__body
-  .el-descriptions__table.is-bordered
-  .el-descriptions__cell {
-  border: 0px !important;
-}
-
-.el-descriptions__label.el-descriptions__cell.is-bordered-label {
-  background-color: transparent !important;
-}
-
-.el-descriptions__body .el-descriptions__table .el-descriptions__cell {
-  font-size: 12px !important;
 }
 </style>
