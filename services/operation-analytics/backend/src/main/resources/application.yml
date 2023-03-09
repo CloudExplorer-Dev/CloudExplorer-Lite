@@ -18,17 +18,15 @@ spring:
           scheduler:
             instanceName: ${spring.application.name}
             instanceId: ${spring.application.name}
+  flyway:
+    enabled: true
+    table: db_operation_analytics_version
+
 server:
   port: @service.port@
   servlet:
     context-path: /${spring.application.name}
-  web:
-    resources:
-      static-locations: classpath:/static/,classpath:/templates/
-mybatis-plus:
-  configuration:
-    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
-  type-handlers-package: com.fit2cloud.dao.handler
+
 #监控，访问路径 {ip}:{port}/actuator
 management:
   server:

@@ -43,6 +43,12 @@
             <groupId>com.aliyun</groupId>
             <artifactId>alibabacloud-oss20190517</artifactId>
             <version>1.0.2</version>
+            <exclusions>
+                <exclusion>
+                    <artifactId>wiremock-standalone</artifactId>
+                    <groupId>com.github.tomakehurst</groupId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>com.aliyun</groupId>

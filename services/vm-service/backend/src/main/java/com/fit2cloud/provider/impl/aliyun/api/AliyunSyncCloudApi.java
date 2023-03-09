@@ -39,7 +39,6 @@ import com.google.gson.Gson;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.ibatis.plugin.PluginException;
-import org.eclipse.jetty.util.ajax.JSON;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
@@ -1106,7 +1105,7 @@ public class AliyunSyncCloudApi {
         DescribeDisksRequest describeDisksRequest = new DescribeDisksRequest();
         describeDisksRequest.setRegionId(f2CDisk.getRegion());
         describeDisksRequest.setZoneId(f2CDisk.getZone());
-        describeDisksRequest.setDiskIds(JSON.toString(new String[]{f2CDisk.getDiskId()}));
+        describeDisksRequest.setDiskIds(JsonUtil.toJSONString(new String[]{f2CDisk.getDiskId()}));
         return describeDisksRequest;
     }
 

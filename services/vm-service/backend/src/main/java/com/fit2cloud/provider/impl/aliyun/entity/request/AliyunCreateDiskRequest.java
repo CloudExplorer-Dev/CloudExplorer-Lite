@@ -3,8 +3,8 @@ package com.fit2cloud.provider.impl.aliyun.entity.request;
 import com.aliyun.ecs20140526.models.CreateDiskRequest;
 import com.aliyun.ecs20140526.models.DescribeDisksRequest;
 import com.aliyun.ecs20140526.models.DescribeInstancesRequest;
+import com.fit2cloud.common.utils.JsonUtil;
 import lombok.Data;
-import org.eclipse.jetty.util.ajax.JSON;
 
 /**
  * Author: LiuDi
@@ -37,14 +37,14 @@ public class AliyunCreateDiskRequest extends AliyunBaseRequest {
         DescribeDisksRequest describeDisksRequest = new DescribeDisksRequest();
         describeDisksRequest.setRegionId(super.getRegionId());
         describeDisksRequest.setZoneId(this.zone);
-        describeDisksRequest.setDiskIds(JSON.toString(new String[]{diskId}));
+        describeDisksRequest.setDiskIds(JsonUtil.toJSONString(new String[]{diskId}));
         return describeDisksRequest;
     }
 
     public DescribeInstancesRequest toDescribeInstancesRequest() {
         DescribeInstancesRequest describeInstancesRequest = new DescribeInstancesRequest();
         describeInstancesRequest.setRegionId(super.getRegionId());
-        describeInstancesRequest.setInstanceIds(JSON.toString(new String[]{this.instanceUuid}));
+        describeInstancesRequest.setInstanceIds(JsonUtil.toJSONString(new String[]{this.instanceUuid}));
         return describeInstancesRequest;
     }
 }

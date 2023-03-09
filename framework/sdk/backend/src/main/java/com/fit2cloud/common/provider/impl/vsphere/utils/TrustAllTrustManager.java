@@ -27,8 +27,7 @@ public final class TrustAllTrustManager
         javax.net.ssl.TrustManager[] trustAllCerts =
                 new javax.net.ssl.TrustManager[1];
         trustAllCerts[0] = tm;
-        javax.net.ssl.SSLContext sc =
-                javax.net.ssl.SSLContext.getInstance("SSL");
+        javax.net.ssl.SSLContext sc = javax.net.ssl.SSLContext.getInstance("SSL");
         javax.net.ssl.SSLSessionContext sslsc = sc.getServerSessionContext();
         sslsc.setSessionTimeout(0);
         sc.init(null, trustAllCerts, null);
