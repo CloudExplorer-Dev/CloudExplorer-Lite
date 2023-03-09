@@ -93,7 +93,7 @@ public class OpenStackCloudProvider extends AbstractCloudProvider<OpenStackCrede
     }
 
     @Override
-    public boolean attachDisk(String req) {
+    public F2CDisk attachDisk(String req) {
         return OpenStackCloudApi.attachDisk(JsonUtil.parseObject(req, OpenStackDiskActionRequest.class));
     }
 

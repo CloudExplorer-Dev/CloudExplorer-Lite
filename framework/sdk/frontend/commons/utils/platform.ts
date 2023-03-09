@@ -78,3 +78,11 @@ export const platformIcon: SimpleMap<PlatFormIcon> = {
     name: "OpenStack",
   },
 };
+
+export enum Platform {
+  ALI = "fit2cloud_ali_platform",
+  HUAWEI = "fit2cloud_huawei_platform",
+  TENCENT = "fit2cloud_tencent_platform",
+  VSPHERE = "fit2cloud_vsphere_platform",
+  OPENSTACK = "fit2cloud_openstack_platform",
+}

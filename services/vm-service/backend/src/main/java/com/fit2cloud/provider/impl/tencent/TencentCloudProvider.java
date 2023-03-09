@@ -342,10 +342,11 @@ public class TencentCloudProvider extends AbstractCloudProvider<TencentCredentia
     }
 
     @Override
-    public boolean attachDisk(String req) {
+    public F2CDisk attachDisk(String req) {
         return TencentSyncCloudApi.attachDisk(JsonUtil.parseObject(req, TencentAttachDiskRequest.class));
     }
 
+    @Override
     public boolean detachDisk(String req) {
         return TencentSyncCloudApi.detachDisk(JsonUtil.parseObject(req, TencentDetachDiskRequest.class));
     }
@@ -379,6 +380,7 @@ public class TencentCloudProvider extends AbstractCloudProvider<TencentCredentia
         return TencentSyncCloudApi.getInstanceTypesForConfigUpdate(JsonUtil.parseObject(req, TencentUpdateConfigRequest.class));
     }
 
+    @Override
     public String calculateConfigUpdatePrice(String req) {
         return TencentSyncCloudApi.calculateConfigUpdatePrice(JsonUtil.parseObject(req, TencentUpdateConfigRequest.class));
     }
