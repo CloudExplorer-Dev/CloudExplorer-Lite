@@ -1,6 +1,7 @@
 package com.fit2cloud.controller;
 
 import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.fit2cloud.common.advice.annnotaion.TokenRenewal;
 import com.fit2cloud.common.log.annotation.OperatedLog;
 import com.fit2cloud.common.log.constants.OperatedTypeEnum;
 import com.fit2cloud.common.log.constants.ResourceTypeEnum;
@@ -160,6 +161,7 @@ public class CloudAccountController {
 
     @GetMapping("/sync/job_record")
     @ApiOperation(value = "查询云账号最新的同步记录", notes = "查询云账号最新的同步记录")
+    @TokenRenewal
     public ResultHolder<Map<String, List<JobRecordResourceResponse>>> findCloudAccountSyncStatus(@ApiParam("需要查询的云账户id") @RequestParam("cloudAccountIds[]") List<String> cloudAccountIds) {
         return ResultHolder.success(cloudAccountService.findCloudAccountSyncStatus(cloudAccountIds).stream().collect(Collectors.groupingBy(JobRecordResourceResponse::getResourceId)));
     }

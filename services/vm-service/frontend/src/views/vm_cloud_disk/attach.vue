@@ -6,11 +6,13 @@ import type { FormRules } from "element-plus";
 import { useI18n } from "vue-i18n";
 import type { VmCloudServerVO } from "@/api/vm_cloud_server/type";
 import { ElMessage } from "element-plus";
+import { Platform } from "@commons/utils/platform";
 
 const props = defineProps<{
   id: string;
   ids: string[];
   accountId: string;
+  platform: Platform;
   zone: string;
   visible: boolean;
   isBatch: boolean;
@@ -20,6 +22,7 @@ const { t } = useI18n();
 const vmList = ref<VmCloudServerVO[]>([]);
 const formRef = ref<FormInstance>();
 const loading = ref(false);
+const notSupportDeleteWithInstance = [Platform.OPENSTACK];
 
 const form = reactive({
   instanceUuid: "",
@@ -111,7 +114,9 @@ onMounted(() => {
           />
         </el-select>
       </el-form-item>
-      <el-form-item>
+      <el-form-item
+        v-if="!notSupportDeleteWithInstance.includes(props.platform)"
+      >
         <input
           v-model="form.deleteWithInstance"
           type="checkbox"

@@ -78,7 +78,8 @@ instance.interceptors.response.use(
         //取出header中返回的token
         const token = response.headers[Config.CE_TOKEN_KEY];
         if (token != null && token.length > 0) {
-          setToken(token);
+          const userStore = useUserStore(store);
+          userStore.setToken(token);
         }
       }
     }

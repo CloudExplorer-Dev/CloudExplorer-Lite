@@ -240,7 +240,7 @@ public class OpenStackCloudApi {
         }
     }
 
-    public static boolean attachDisk(OpenStackDiskActionRequest request) {
+    public static F2CDisk attachDisk(OpenStackDiskActionRequest request) {
         try {
             OSClient.OSClientV3 osClient = request.getOSClient();
             osClient.useRegion(request.getRegionId());
@@ -256,7 +256,7 @@ public class OpenStackCloudApi {
 
             CheckStatusResult result = doAttachVolume(osClient, volume, server.getId(), request.getDevice());
             if (result.isSuccess()) {
-                return true;
+                return OpenStackUtils.toF2CDisk((Volume) result.getObject(), request.getRegionId());
             } else {
                 throw new RuntimeException(result.getFault());
             }

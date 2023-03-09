@@ -42,6 +42,7 @@ public class AliyunCloudProvider extends AbstractCloudProvider<AliyunVmCredentia
         return FormUtil.toForm(AliyunVmCreateRequest.class);
     }
 
+    @Override
     public F2CVirtualMachine createVirtualMachine(String req) {
         return AliyunSyncCloudApi.createVirtualMachine(JsonUtil.parseObject(req, AliyunVmCreateRequest.class));
     }
@@ -227,6 +228,7 @@ public class AliyunCloudProvider extends AbstractCloudProvider<AliyunVmCredentia
      * @param req
      * @return
      */
+    @Override
     public String calculateConfigPrice(String req) {
         return AliyunSyncCloudApi.calculateConfigPrice(JsonUtil.parseObject(req, AliyunPriceRequest.class));
     }
@@ -345,7 +347,7 @@ public class AliyunCloudProvider extends AbstractCloudProvider<AliyunVmCredentia
     }
 
     @Override
-    public boolean attachDisk(String req) {
+    public F2CDisk attachDisk(String req) {
         return AliyunSyncCloudApi.attachDisk(JsonUtil.parseObject(req, AliyunAttachDiskRequest.class));
     }
 
@@ -363,6 +365,7 @@ public class AliyunCloudProvider extends AbstractCloudProvider<AliyunVmCredentia
     public List<F2CPerfMetricMonitorData> getF2CPerfMetricMonitorData(String req) {
         return AliyunSyncCloudApi.getF2CPerfMetricList(JsonUtil.parseObject(req, GetMetricsRequest.class));
     }
+
     @Override
     public List<F2CPerfMetricMonitorData> getF2CDiskPerfMetricMonitorData(String req) {
         return AliyunSyncCloudApi.getF2CDiskPerfMetricList(JsonUtil.parseObject(req, GetMetricsRequest.class));
@@ -382,12 +385,13 @@ public class AliyunCloudProvider extends AbstractCloudProvider<AliyunVmCredentia
         return AliyunSyncCloudApi.getInstanceTypesForConfigUpdate(JsonUtil.parseObject(req, AliyunUpdateConfigRequest.class));
     }
 
+    @Override
     public String calculateConfigUpdatePrice(String req) {
         return AliyunSyncCloudApi.calculateConfigUpdatePrice(JsonUtil.parseObject(req, AliyunUpdateConfigRequest.class));
     }
 
     @Override
-    public List<F2CDisk> getVmF2CDisks(String req){
+    public List<F2CDisk> getVmF2CDisks(String req) {
         return AliyunSyncCloudApi.getVmF2CDisks(JsonUtil.parseObject(req, BaseDiskRequest.class));
     }
 }

@@ -860,6 +860,7 @@ public class AliyunSyncCloudApi {
                 client.stopInstancesWithOptions(stopInstancesRequest, new RuntimeOptions());
                 DescribeInstanceStatusRequest describeInstanceStatusRequest = new DescribeInstanceStatusRequest();
                 describeInstanceStatusRequest.setRegionId(aliyunInstanceRequest.getRegionId());
+                describeInstanceStatusRequest.setInstanceId(Arrays.asList(aliyunInstanceRequest.getUuid()));
                 checkStatus(client, "Stopped", describeInstanceStatusRequest);
                 return true;
             } catch (TeaException error) {
@@ -1049,7 +1050,7 @@ public class AliyunSyncCloudApi {
                     AliyunAttachDiskRequest attachDiskRequest = new AliyunAttachDiskRequest();
                     BeanUtils.copyProperties(request, attachDiskRequest);
                     attachDiskRequest.setDiskId(createdDisk.getDiskId());
-                    attachDisk(attachDiskRequest);
+                    createdDisk = attachDisk(attachDiskRequest);
                 }
                 return createdDisk;
             } else {
@@ -1327,7 +1328,7 @@ public class AliyunSyncCloudApi {
      *
      * @return
      */
-    public static boolean attachDisk(AliyunAttachDiskRequest request) {
+    public static F2CDisk attachDisk(AliyunAttachDiskRequest request) {
         try {
             Client aliyunClient = JsonUtil.parseObject(request.getCredential(), AliyunVmCredential.class).getClient();
             DescribeDisksResponse describeDisksResponse = aliyunClient.describeDisks(request.toDescribeDisksRequest());
@@ -1348,8 +1349,7 @@ public class AliyunSyncCloudApi {
                 String instanceStatus = describeInstancesResponse.getBody().getInstances().getInstance().get(0).getStatus();
                 if (instanceStatus.equalsIgnoreCase("running") || instanceStatus.equalsIgnoreCase("stopped")) {
                     aliyunClient.attachDisk(request.toAttachDiskRequest());
-                    checkDiskStatus(aliyunClient, request.toDescribeDisksRequest(), F2CDiskStatus.IN_USE);
-                    return true;
+                    return checkDiskStatus(aliyunClient, request.toDescribeDisksRequest(), F2CDiskStatus.IN_USE);
                 } else {
                     throw new RuntimeException("The state of the instance must be running or stopped.");
                 }
@@ -1768,6 +1768,7 @@ public class AliyunSyncCloudApi {
 
     /**
      * 获取云主机关联的磁盘
+     *
      * @param request
      * @return
      */

@@ -87,13 +87,6 @@ public class JwtTokenAuthFilter extends BasicAuthenticationFilter {
             CeUsernamePasswordAuthenticationToken authenticationToken = new CeUsernamePasswordAuthenticationToken(ServerInfo.module, userDtoFromToken, token, authority);
 
             SecurityContextHolder.getContext().setAuthentication(authenticationToken);
-
-            if (request.getServletPath().startsWith("/api/") || request.getServletPath().equals("/api")) {
-                //todo token续期？
-
-                response.setHeader(JwtTokenUtils.TOKEN_NAME, token);
-            }
-
         } else {
             SecurityContextHolder.clearContext();
             //throw new BadCredentialsException(HttpStatus.UNAUTHORIZED.getReasonPhrase());
