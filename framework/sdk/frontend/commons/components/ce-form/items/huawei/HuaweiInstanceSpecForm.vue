@@ -159,7 +159,7 @@ function getList() {
         "ext.instanceConfig.searchTableData",
         ok.data.tableData
       );
-      if (ok.data.tableData) {
+      if (ok.data.tableData && ok.data.tableData.length>0) {
         if (currentRow.value === undefined) {
           currentRow.value = ok.data.tableData[0];
           selectRowId.value = ok.data.tableData[0].specName;

@@ -103,6 +103,7 @@
         v-for="(disk, i) in modelValue"
         :key="i"
       >
+        {{ findDiskTypeById(disk) }}，
         {{ disk.size }}GB{{ disk.deleteWithInstance ? " (随实例删除)" : "" }}
       </el-descriptions-item>
     </el-descriptions>
@@ -154,6 +155,13 @@ function getDefaultType() {
   if (_.find(props.formItem?.ext?.diskConfig?.diskTypes, { id: "GPSSD" })) {
     return "GPSSD";
   }
+}
+function findDiskTypeById(disk:any) {
+  const diskType = _.find(props.formItem?.ext?.diskConfig?.diskTypes, { id: disk.diskType });
+  if (diskType) {
+    return diskType.name;
+  }
+  return disk.diskType;
 }
 function remove(index: number) {
   _.remove(_data.value, (n, i) => index === i);

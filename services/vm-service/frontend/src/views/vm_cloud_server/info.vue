@@ -337,7 +337,7 @@ const stopOperateInterval = (cloudServerInterval: any) => {
 };
 </script>
 
-<style lang="scss">
+<style lang="scss" scoped>
 .text-overflow {
   max-width: 100px;
   overflow: hidden;

@@ -6,18 +6,21 @@
       label-position="left"
       :model="_data"
       size="small"
+      style="width: 100%"
     >
-      <el-form-item style="width: 100%">
-        <div>
-          <el-input
+      <div style="margin-bottom: 10px">
+        <el-input
             v-model="searchName"
             placeholder="输入关键字搜索"
-            suffix-icon="Search"
-            size="32"
-            style="width: 80%"
+            style="width: 20%"
             @keyup="handleQueryClick"
-          />
-        </div>
+        >
+          <template #append>
+            <el-button style="color: var(--el-color-primary)" icon="Search" />
+          </template>
+        </el-input>
+      </div>
+      <el-form-item style="width: 100%">
         <el-radio-group v-model="selectRowId" style="width: 100%">
           <el-table
             ref="multipleTableRef"
@@ -195,8 +198,10 @@ const handleQueryClick = () => {
       const columnNames = Object.keys(arr[0]);
       let isShow = false;
       for (let i = 0; i < columnNames.length; i++) {
-        if (v[columnNames[i]]?.toString().indexOf(searchName.value) > -1) {
-          isShow = true;
+        if(columnNames[i]==="name" || columnNames[i]==="cidr" || columnNames[i]==="vpcName"){
+          if (v[columnNames[i]]?.toString().indexOf(searchName.value) > -1) {
+            isShow = true;
+          }
         }
       }
       return isShow;

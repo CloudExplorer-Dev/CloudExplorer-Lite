@@ -25,7 +25,6 @@ import java.util.List;
 @FormConfirmInfo(group = 1, name = "基础配置")
 @FormConfirmInfo(group = 2, name = "网络配置")
 @FormConfirmInfo(group = 3, name = "系统配置")
-@FormConfirmInfo(group = 4, name = "计费信息")
 @FormGroupInfo(group = 1, name = "付费方式")
 @FormGroupInfo(group = 2, name = "区域")
 @FormGroupInfo(group = 3, name = "实例规格")
@@ -46,7 +45,7 @@ public class HuaweiVmCreateRequest extends HuaweiBaseRequest implements ICreateS
             valueField = "id",
             step = 1,
             group = 1,
-            confirmGroup = 4
+            confirmGroup = 1
     )
     private String billingMode;
 
