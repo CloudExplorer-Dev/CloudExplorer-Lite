@@ -2,6 +2,7 @@ package com.fit2cloud.provider.impl.huawei.api;
 
 import com.aliyun.tea.TeaException;
 import com.fit2cloud.common.exception.Fit2cloudException;
+import com.fit2cloud.common.log.utils.LogUtil;
 import com.fit2cloud.common.provider.entity.F2CEntityType;
 import com.fit2cloud.common.provider.entity.F2CPerfMetricMonitorData;
 import com.fit2cloud.common.provider.exception.ReTryException;
@@ -11,10 +12,7 @@ import com.fit2cloud.common.provider.util.PageUtil;
 import com.fit2cloud.common.utils.DateUtil;
 import com.fit2cloud.common.utils.JsonUtil;
 import com.fit2cloud.constants.ErrorCodeConstants;
-import com.fit2cloud.provider.constants.DeleteWithInstance;
-import com.fit2cloud.provider.constants.F2CChargeType;
-import com.fit2cloud.provider.constants.F2CDiskStatus;
-import com.fit2cloud.provider.constants.PriceUnit;
+import com.fit2cloud.provider.constants.*;
 import com.fit2cloud.provider.entity.F2CDisk;
 import com.fit2cloud.provider.entity.F2CImage;
 import com.fit2cloud.provider.entity.F2CVirtualMachine;
@@ -227,6 +225,12 @@ public class HuaweiSyncCloudApi {
         if (StringUtils.isNotEmpty(request.getCredential())) {
             HuaweiVmCredential credential = JsonUtil.parseObject(request.getCredential(), HuaweiVmCredential.class);
             EcsClient client = credential.getEcsClient(request.getRegionId());
+
+            ServerDetail serverDetail = getInstanceById(request.getUuid(), client);
+            if (F2CInstanceStatus.Stopped.name().equalsIgnoreCase(HuaweiMappingUtil.toF2CInstanceStatus(serverDetail.getStatus()))) {
+                return true;
+            }
+
             try {
                 BatchStopServersResponse batchStopServersResponse = client.batchStopServers(new BatchStopServersRequest()
                         .withBody(new BatchStopServersRequestBody()
@@ -361,7 +365,7 @@ public class HuaweiSyncCloudApi {
             response.getVolumeTypes().forEach(volumeType -> {
                 if (StringUtils.isNoneEmpty(request.getZone())
                         //这个名称的磁盘类型有问题，云上显示没有，但是接口会返回来，在这里特殊处理去掉
-                        && !StringUtils.equalsIgnoreCase("uh-l1",volumeType.getName())
+                        && !StringUtils.equalsIgnoreCase("uh-l1", volumeType.getName())
                         && StringUtils.isNoneEmpty(volumeType.getExtraSpecs().getReSKEYAvailabilityZones())
                         && volumeType.getExtraSpecs().getReSKEYAvailabilityZones().contains(request.getZone())
                         && (StringUtils.isEmpty(volumeType.getExtraSpecs().getOsVendorExtendedSoldOutAvailabilityZones())
@@ -424,7 +428,19 @@ public class HuaweiSyncCloudApi {
                 volumeId = showJobResponse.getEntities().getVolumeId();
             }
             F2CDisk createdDisk = HuaweiMappingUtil.toF2CDisk(checkVolumeStatus(volumeId, evsClient, status));
-            createdDisk.setDeleteWithInstance(request.getDeleteWithInstance());
+
+            // 单独调用接口设置磁盘是否随实例删除属性，不抛出异常
+            if (DeleteWithInstance.YES.name().equalsIgnoreCase(request.getDeleteWithInstance())) {
+                try {
+                    EcsClient ecsClient = huaweiVmCredential.getEcsClient(request.getRegionId());
+                    updateServerBlockDevice(ecsClient, request.getInstanceUuid(), createdDisk.getDiskId(), request.getDeleteWithInstance());
+                    createdDisk.setDeleteWithInstance(DeleteWithInstance.YES.name());
+                } catch (Exception e) {
+                    createdDisk.setDeleteWithInstance(DeleteWithInstance.NO.name());
+                    LogUtil.error("Failed to modify disk." + e.getMessage(), e);
+                }
+            }
+
             return createdDisk;
         } catch (Exception e) {
             throw new RuntimeException(e.getMessage(), e);
@@ -495,14 +511,26 @@ public class HuaweiSyncCloudApi {
      * @param request
      * @return
      */
-    public static boolean attachDisk(HuaweiAttachDiskRequest request) {
+    public static F2CDisk attachDisk(HuaweiAttachDiskRequest request) {
         try {
             HuaweiVmCredential huaweiVmCredential = JsonUtil.parseObject(request.getCredential(), HuaweiVmCredential.class);
             EvsClient evsClient = huaweiVmCredential.getEvsClient(request.getRegionId());
             EcsClient ecsClient = huaweiVmCredential.getEcsClient(request.getRegionId());
             ecsClient.attachServerVolume(request.toAttachServerVolumeRequest());
-            checkVolumeStatus(request.getDiskId(), evsClient, "in-use");
-            return true;
+            F2CDisk f2CDisk = HuaweiMappingUtil.toF2CDisk(checkVolumeStatus(request.getDiskId(), evsClient, "in-use"));
+
+            // 单独调用接口设置磁盘是否随实例删除属性，不抛出异常
+            if (DeleteWithInstance.YES.name().equalsIgnoreCase(request.getDeleteWithInstance())) {
+                try {
+                    updateServerBlockDevice(ecsClient, request.getInstanceUuid(), request.getDiskId(), request.getDeleteWithInstance());
+                    f2CDisk.setDeleteWithInstance(DeleteWithInstance.YES.name());
+                } catch (Exception e) {
+                    f2CDisk.setDeleteWithInstance(DeleteWithInstance.NO.name());
+                    LogUtil.error("Failed to modify disk." + e.getMessage(), e);
+                }
+            }
+
+            return f2CDisk;
         } catch (Exception e) {
             throw new RuntimeException(e.getMessage(), e);
         }
@@ -514,12 +542,12 @@ public class HuaweiSyncCloudApi {
      * @param client
      * @return
      */
-    public static void updateServerBlockDevice(EcsClient client, String instanceId, String deviceId, String deleteWithInstance) {
+    public static void updateServerBlockDevice(EcsClient client, String instanceId, String diskId, String deleteWithInstance) {
         if (StringUtils.isNotEmpty(instanceId)) {
             UpdateServerBlockDeviceRequest blockDeviceRequest =
                     new UpdateServerBlockDeviceRequest()
                             .withServerId(instanceId)
-                            .withVolumeId(deviceId)
+                            .withVolumeId(diskId)
                             .withBody(new UpdateServerBlockDeviceReq()
                                     .withBlockDevice(new UpdateServerBlockDeviceOption()
                                             .withDeleteOnTermination(DeleteWithInstance.YES.name().equals(deleteWithInstance))));

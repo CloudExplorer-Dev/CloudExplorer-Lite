@@ -62,46 +62,57 @@ public abstract class AbstractCloudProvider<C extends Credential> implements ICl
         throw new Fit2cloudException(1001, "不存在认证对象");
     }
 
+    @Override
     public List<F2CHost> listHost(String req) {
         return null;
     }
 
+    @Override
     public List<F2CDatastore> listDataStore(String req) {
         return null;
     }
 
+    @Override
     public boolean detachDisk(String req) {
         return false;
     }
 
+    @Override
     public boolean deleteDisk(String req) {
         return false;
     }
 
+    @Override
     public boolean enlargeDisk(String req) {
         return false;
     }
 
-    public boolean attachDisk(String req) {
-        return false;
+    @Override
+    public F2CDisk attachDisk(String req) {
+        return new F2CDisk();
     }
 
+    @Override
     public List<F2CDisk> createDisks(String req) {
         return null;
     }
 
+    @Override
     public F2CDisk createDisk(String req) {
         return null;
     }
 
+    @Override
     public FormObject getCreateDiskForm() {
         return null;
     }
 
+    @Override
     public List<Map<String, String>> getDiskTypes(String req) {
         return null;
     }
 
+    @Override
     public List<Map<String, String>> getDeleteWithInstance(String req) {
         return null;
     }
@@ -219,14 +230,17 @@ public abstract class AbstractCloudProvider<C extends Credential> implements ICl
         return null;
     }
 
+    @Override
     public FormObject getConfigUpdateForm() {
         return null;
     }
 
+    @Override
     public String calculateConfigUpdatePrice(String req){
         return null;
     }
 
+    @Override
     public List<F2CDisk> getVmF2CDisks(String req) {
         return new ArrayList<>();
     }
