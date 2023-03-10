@@ -2,7 +2,7 @@ SET SESSION innodb_lock_wait_timeout = 7200;
 
 CREATE TABLE IF NOT EXISTS `user_notification_setting`
 (
-    user_id        VARCHAR(50)                        NOT NULL NULL
+    user_id        VARCHAR(50)                        NOT NULL
         PRIMARY KEY,
     wechat_account VARCHAR(255)                       NULL,
     create_time    DATETIME DEFAULT CURRENT_TIMESTAMP NULL COMMENT '创建时间',
