@@ -26,7 +26,7 @@
         <ce.log.base.dir>${ce.base.dir}/logs</ce.log.base.dir>
         <!-- ce 基本配置变量 end -->
 
-        <revision>v0.1.1</revision>
+        <revision>v0.2.0</revision>
         <java.version>17</java.version>
         <spring-cloud.version>2021.0.5</spring-cloud.version>
         <spring-boot-thin.version>1.0.29.RELEASE</spring-boot-thin.version>
