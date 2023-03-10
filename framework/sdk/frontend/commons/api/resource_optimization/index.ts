@@ -9,9 +9,9 @@ export function listServer(
   loading?: Ref<boolean>
 ): Promise<Result<Page<VmCloudServerVO>>> {
   return get(
-    (import.meta.env.VITE_APP_NAME === "operation-analytics"
+    (import.meta.env.VITE_APP_NAME === "operation-analysis"
       ? ""
-      : "/operation-analytics/") + "api/optimize_analysis/server/page",
+      : "/operation-analysis/") + "api/optimize_analysis/server/page",
     req,
     loading
   );

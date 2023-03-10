@@ -122,10 +122,10 @@ export default defineConfig(({ mode }: ConfigEnv) => {
   proxyConf[ENV.VITE_BASE_PATH + "security-compliance"] =
     "http://127.0.0.1:5004";
 
-  //operation-analytics
-  proxyConf[ENV.VITE_BASE_PATH + "operation-analytics/api"] =
+  //operation-analysis
+  proxyConf[ENV.VITE_BASE_PATH + "operation-analysis/api"] =
     "http://localhost:" + Number(ENV.VITE_BASE_API_PORT);
-  proxyConf[ENV.VITE_BASE_PATH + "operation-analytics"] =
+  proxyConf[ENV.VITE_BASE_PATH + "operation-analysis"] =
     "http://127.0.0.1:5005";
 
   //https://cn.vitejs.dev/config/server-options.html#server-host

@@ -40,10 +40,10 @@ const adminShowBillTrend = computed<boolean>(() => {
 
 const adminShowServerIncreaseTrend = computed<boolean>(() => {
   return show(
-    "operation-analytics",
+    "operation-analysis",
     [
-      "[operation-analytics]BASE_RESOURCE_ANALYSIS:READ",
-      "[operation-analytics]OVERVIEW:READ",
+      "[operation-analysis]BASE_RESOURCE_ANALYSIS:READ",
+      "[operation-analysis]OVERVIEW:READ",
     ],
     ["ADMIN", "ORGADMIN"]
   );

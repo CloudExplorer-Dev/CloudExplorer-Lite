@@ -1600,4 +1600,73 @@ public class VsphereSyncCloudApi {
             throw new RuntimeException(e.getMessage(), e);
         }
     }
+
+    public static List<VsphereHost> getHostCurrentResourceUsedInfo(VsphereHostRequest request){
+        VsphereVmClient client = null;
+        try {
+            List<VsphereHost> result = new ArrayList<>();
+            List<HostSystem> list;
+            client = request.getVsphereVmClient();
+            if (StringUtils.isNotBlank(request.getClusterName())) {
+                ClusterComputeResource cluster = client.getCluster(request.getClusterName());
+                list = List.of(cluster.getHosts());
+            } else {
+                list = client.listHosts();
+            }
+            if(StringUtils.isNotBlank(request.getHostId())){
+                list = list.stream().filter(v->StringUtils.equalsIgnoreCase(v.getMOR().getVal(),request.getHostId())).toList();
+            }
+            for (HostSystem hostSystem : list) {
+                VsphereHost host = new VsphereHost(hostSystem.getMOR().getVal(), hostSystem.getName());
+                //使用情况
+                HostListSummary summary = hostSystem.getSummary();
+                HostHardwareSummary hostHw = summary.getHardware();
+
+                BigDecimal totalCpu = BigDecimal.valueOf(hostHw.getCpuMhz()).multiply(BigDecimal.valueOf(hostHw.getNumCpuCores())).divide(BigDecimal.valueOf(1000), 2, RoundingMode.HALF_UP); //GHz
+                BigDecimal totalUsedCpu = BigDecimal.valueOf(summary.getQuickStats().getOverallCpuUsage()).divide(BigDecimal.valueOf(1000), 2, RoundingMode.HALF_UP); //GHz
+                BigDecimal totalMemory = BigDecimal.valueOf(hostHw.getMemorySize()).divide(BigDecimal.valueOf(GB), 2, RoundingMode.HALF_UP);
+                BigDecimal totalUsedMemory = BigDecimal.valueOf(summary.getQuickStats().getOverallMemoryUsage()).divide(BigDecimal.valueOf(1024), 2, RoundingMode.HALF_UP); //直接拿到是MB还要再除1024
+
+                host.setTotalCpu(totalCpu)
+                        .setTotalMemory(totalMemory)
+                        .setUsedCpu(totalUsedCpu)
+                        .setUsedMemory(totalUsedMemory);
+
+                result.add(host);
+            }
+            result.sort(Comparator.comparing(VsphereHost::getName));
+            return result;
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        } finally {
+            closeConnection(client);
+        }
+    }
+
+    public static List<VsphereDatastore> getDatastoreCurrentResourceUsedInfo(VsphereDatastoreRequest request){
+        VsphereVmClient client = null;
+        try {
+            List<VsphereDatastore> result = new ArrayList<>();
+            List<Datastore> list;
+            client = request.getVsphereVmClient();
+            if (StringUtils.isNotBlank(request.getClusterName())) {
+                ClusterComputeResource cluster = client.getCluster(request.getClusterName());
+                list = List.of(cluster.getDatastores());
+            } else {
+                list = client.listDataStores();
+            }
+            if(StringUtils.isNotBlank(request.getDatastoreId())){
+                list = list.stream().filter(v->StringUtils.equalsIgnoreCase(v.getMOR().getVal(),request.getDatastoreId())).toList();
+            }
+            for (Datastore datastore : list) {
+                result.add(convertToVsphereDatastore(datastore));
+            }
+            result.sort(Comparator.comparing(VsphereDatastore::getName));
+            return result;
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        } finally {
+            closeConnection(client);
+        }
+    }
 }
