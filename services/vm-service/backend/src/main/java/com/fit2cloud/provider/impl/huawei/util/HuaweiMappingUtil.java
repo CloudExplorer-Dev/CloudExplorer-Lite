@@ -99,7 +99,7 @@ public class HuaweiMappingUtil {
      * @param openstackStatus 华为云实例状态
      * @return 系统实例状态
      */
-    private static String toF2CInstanceStatus(String openstackStatus) {
+    public static String toF2CInstanceStatus(String openstackStatus) {
         openstackStatus = openstackStatus.toLowerCase();
         if (openstackStatus.equalsIgnoreCase("active")) {
             return "Running";

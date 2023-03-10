@@ -6,6 +6,7 @@ import com.fit2cloud.dto.permission.Permission;
 import com.fit2cloud.dto.permission.PermissionGroup;
 import com.fit2cloud.service.BasePermissionService;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.DependsOn;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
@@ -20,6 +21,7 @@ import java.util.stream.Collectors;
  * 也可以通过判断id，但是id需要带上模块名与require组合，如："[management-center]USER:READ"
  */
 @Component
+@DependsOn({"flyway", "flywayInitializer"})
 public class PermissionConstants {
 
     public static class GROUP {

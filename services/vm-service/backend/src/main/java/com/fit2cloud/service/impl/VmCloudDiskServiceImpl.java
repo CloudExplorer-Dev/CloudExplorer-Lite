@@ -348,16 +348,18 @@ public class VmCloudDiskServiceImpl extends ServiceImpl<BaseVmCloudDiskMapper, V
             }
 
             // 执行
-            ResourceState<VmCloudDisk, Boolean> resourceState = ResourceState.<VmCloudDisk, Boolean>builder()
+            ResourceState<VmCloudDisk, F2CDisk> resourceState = ResourceState.<VmCloudDisk, F2CDisk>builder()
                     .beforeResource(beforeAttach)
                     .processingResource(processingAttach)
                     .afterResource(afterAttach)
                     .updateResourceMethod(this::updateCloudDisk)
+                    .updateResourceMethodNeedTransfer(this::updateCloudDisk)
                     .build();
             ExecProviderMethodRequest execProviderMethod = ExecProviderMethodRequest.builder()
                     .execMethod(ICloudProvider::attachDisk)
                     .methodParams(params)
                     .platform(platform)
+                    .resultNeedTransfer(true)
                     .build();
             CreateJobRecordRequest createJobRecordRequest = CreateJobRecordRequest.builder()
                     .resourceOperateType(OperatedTypeEnum.ATTACH_DISK)
@@ -473,7 +475,7 @@ public class VmCloudDiskServiceImpl extends ServiceImpl<BaseVmCloudDiskMapper, V
 
             return true;
         } catch (Exception e) {
-            throw new Fit2cloudException(ErrorCodeConstants.DISK_DELETE_FAIL.getCode(),"Failed to delete cloud disk!" + e.getMessage());
+            throw new Fit2cloudException(ErrorCodeConstants.DISK_DELETE_FAIL.getCode(), "Failed to delete cloud disk!" + e.getMessage());
         }
     }
 
@@ -502,7 +504,7 @@ public class VmCloudDiskServiceImpl extends ServiceImpl<BaseVmCloudDiskMapper, V
     }
 
     /**
-     * 更新磁盘 (磁盘挂载、卸载等操作命令执行后进行的操作)
+     * 更新磁盘 (磁盘扩容、卸载等操作命令执行后进行的操作)
      *
      * @param vmCloudDisk
      * @param
@@ -510,6 +512,18 @@ public class VmCloudDiskServiceImpl extends ServiceImpl<BaseVmCloudDiskMapper, V
     private void updateCloudDisk(VmCloudDisk vmCloudDisk) {
         vmCloudDisk.setUpdateTime(LocalDateTime.now());
         baseMapper.updateById(vmCloudDisk);
+    }
+
+    /**
+     * 更新磁盘 (磁盘挂载后进行的操作)
+     *
+     * @param vmCloudDisk
+     * @param f2CDisk
+     */
+    private void updateCloudDisk(VmCloudDisk vmCloudDisk, F2CDisk f2CDisk) {
+        vmCloudDisk.setDevice(f2CDisk.getDevice());
+        vmCloudDisk.setDeleteWithInstance(f2CDisk.getDeleteWithInstance());
+        updateCloudDisk(vmCloudDisk);
     }
 
     /**
@@ -619,6 +633,7 @@ public class VmCloudDiskServiceImpl extends ServiceImpl<BaseVmCloudDiskMapper, V
      * @param grantRequest
      * @return
      */
+    @Override
     public boolean grant(GrantRequest grantRequest) {
         String sourceId = grantRequest.getGrant() ? grantRequest.getSourceId() : "";
 

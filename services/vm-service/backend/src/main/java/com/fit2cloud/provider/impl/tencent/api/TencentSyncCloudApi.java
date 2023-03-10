@@ -838,7 +838,7 @@ public class TencentSyncCloudApi {
      *
      * @param request 挂载磁盘请求参数
      */
-    public static boolean attachDisk(TencentAttachDiskRequest request) {
+    public static F2CDisk attachDisk(TencentAttachDiskRequest request) {
         try {
             if (StringUtils.isNotEmpty(request.getRegionId()) && StringUtils.isNotEmpty(request.getCredential())) {
                 TencentVmCredential tencentVmCredential = JsonUtil.parseObject(request.getCredential(), TencentVmCredential.class);
@@ -852,10 +852,8 @@ public class TencentSyncCloudApi {
                     DescribeDisksRequest describeDisksRequest = new DescribeDisksRequest();
                     describeDisksRequest.setDiskIds(new String[]{request.getDiskId()});
                     DescribeDisksResponse describeDisksResponse = checkDiskState(cbsClient, describeDisksRequest, Arrays.asList("ATTACHED"));
-                    F2CDisk disk = trans2F2CDisk(request.getRegionId(), describeDisksResponse.getDiskSet()[0]);
-                    disk.setInstanceUuid(request.getInstanceUuid());
+                    return trans2F2CDisk(request.getRegionId(), describeDisksResponse.getDiskSet()[0]);
                 }
-                return true;
             } else {
                 throw new RuntimeException("RegionId or credential can not be null.");
             }

@@ -32,7 +32,8 @@
         <spring-boot-thin.version>1.0.29.RELEASE</spring-boot-thin.version>
         <swagger.version>2.9.2</swagger.version>
         <skipAntRunForJenkins>false</skipAntRunForJenkins>
-        <flatten.version>1.2.7</flatten.version>
+        <flatten.version>1.3.0</flatten.version>
+        <mysql-connector-j.version>8.0.32</mysql-connector-j.version>
         <common-lang3.version>3.12.0</common-lang3.version>
         <common-collections4.version>4.4</common-collections4.version>
         <common-io.version>2.11.0</common-io.version>
@@ -41,7 +42,10 @@
         <redisson.version>3.17.5</redisson.version>
         <mybatis-plus.version>3.5.2</mybatis-plus.version>
         <mybatis-plus-generator.version>3.5.3</mybatis-plus-generator.version>
+        <!--<mybatis-plus-join.version>1.4.3.2</mybatis-plus-join.version>-->
+        <mybatis-plus-join.version>1.3.8</mybatis-plus-join.version>
         <freemarker.version>2.3.31</freemarker.version>
+        <ipaddress.version>5.4.0</ipaddress.version>
         <!--日志-->
         <jakarta-json.version>2.0.1</jakarta-json.version>
         <logback-classic.version>1.2.11</logback-classic.version>
@@ -123,6 +127,7 @@
             <artifactId>spring-security-test</artifactId>
             <scope>test</scope>
         </dependency>
+
         <!--swagger 文档-->
         <dependency>
             <groupId>io.springfox</groupId>

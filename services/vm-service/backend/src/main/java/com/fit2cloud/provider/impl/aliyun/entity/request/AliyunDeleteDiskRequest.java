@@ -2,9 +2,9 @@ package com.fit2cloud.provider.impl.aliyun.entity.request;
 
 import com.aliyun.ecs20140526.models.DeleteDiskRequest;
 import com.aliyun.ecs20140526.models.DescribeDisksRequest;
+import com.fit2cloud.common.utils.JsonUtil;
 import com.fit2cloud.provider.entity.request.BaseDiskRequest;
 import lombok.Data;
-import org.eclipse.jetty.util.ajax.JSON;
 
 /**
  * Author: LiuDi
@@ -22,7 +22,7 @@ public class AliyunDeleteDiskRequest extends BaseDiskRequest {
     public DescribeDisksRequest toDescribeDisksRequest() {
         DescribeDisksRequest describeDisksRequest = new DescribeDisksRequest();
         describeDisksRequest.setRegionId(super.getRegionId());
-        describeDisksRequest.setDiskIds(JSON.toString(new String[]{super.getDiskId()}));
+        describeDisksRequest.setDiskIds(JsonUtil.toJSONString(new String[]{super.getDiskId()}));
         return describeDisksRequest;
     }
 }

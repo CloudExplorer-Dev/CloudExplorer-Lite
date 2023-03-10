@@ -199,7 +199,7 @@ onMounted(() => {
   search(new TableSearch());
   timer = setInterval(() => {
     if (tableData.value.some((s) => s.status.toUpperCase().includes("ING"))) {
-      refresh();
+      refreshWithoutLoading();
     }
   }, 6000);
 });
@@ -211,6 +211,26 @@ onBeforeUnmount(() => {
 // 刷新列表
 const refresh = () => {
   table.value.search();
+};
+
+// 刷新列表不展示 loading 图标
+const refreshWithoutLoading = () => {
+  const params = TableSearch.toSearchParams(table.value.getTableSearch());
+  VmCloudDiskApi.listVmCloudDisk({
+    currentPage: tableConfig.value.paginationConfig.currentPage,
+    pageSize: tableConfig.value.paginationConfig.pageSize,
+    ...params,
+  }).then((res) => {
+    tableData.value = res.data.records;
+    tableConfig.value.paginationConfig?.setTotal(
+      res.data.total,
+      tableConfig.value.paginationConfig
+    );
+    tableConfig.value.paginationConfig?.setCurrentPage(
+      res.data.current,
+      tableConfig.value.paginationConfig
+    );
+  });
 };
 
 /**
@@ -254,10 +274,12 @@ const handleEnlarge = (row: VmCloudDiskVO) => {
 const selectedDiskId = ref();
 const attachWindowVisible = ref(false);
 const accountId = ref();
+const platform = ref();
 const diskZone = ref();
 const handleAttach = (row: VmCloudDiskVO) => {
   selectedDiskId.value = row.id;
   accountId.value = row.accountId;
+  platform.value = row.platform;
   diskZone.value = row.zone;
   attachWindowVisible.value = true;
 };
@@ -850,6 +872,7 @@ const buttons = ref([
       :filters="diskStatusForTableSelect"
       :show="true"
       :filter-multiple="false"
+      min-width="100px"
     >
       <template #default="scope">
         <div style="display: flex; align-items: center">
@@ -938,6 +961,7 @@ const buttons = ref([
       :id="selectedDiskId"
       :ids="selectedDiskIds"
       :accountId="accountId"
+      :platform="platform"
       :zone="diskZone"
       v-model:visible="attachWindowVisible"
       :isBatch="isBatchAttach"

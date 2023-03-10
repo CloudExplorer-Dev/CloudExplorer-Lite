@@ -1,6 +1,7 @@
 package com.fit2cloud.controller;
 
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.fit2cloud.common.advice.annnotaion.TokenRenewal;
 import com.fit2cloud.common.log.annotation.OperatedLog;
 import com.fit2cloud.common.log.constants.OperatedTypeEnum;
 import com.fit2cloud.common.log.constants.ResourceTypeEnum;
@@ -91,6 +92,7 @@ public class ComplianceScanController {
     @ApiOperation("获取资源类型同步情况")
     @GetMapping("job_record")
     @PreAuthorize("hasAnyCePermission('SCAN:READ')")
+    @TokenRenewal
     public ResultHolder<List<JobRecordResourceResponse>> listJobRecord() {
         List<JobRecordResourceResponse> res = complianceScanService.listJobRecord();
         return ResultHolder.success(res);

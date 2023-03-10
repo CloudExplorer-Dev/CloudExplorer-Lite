@@ -4,8 +4,6 @@ import com.fit2cloud.request.pub.OrderRequest;
 import com.fit2cloud.request.pub.PageOrderRequestInterface;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
-import lombok.Getter;
-import lombok.Setter;
 import lombok.experimental.Accessors;
 
 import javax.validation.constraints.Min;

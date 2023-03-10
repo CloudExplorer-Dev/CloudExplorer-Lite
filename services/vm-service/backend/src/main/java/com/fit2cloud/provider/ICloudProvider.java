@@ -182,7 +182,7 @@ public interface ICloudProvider {
      * @param req
      * @return
      */
-    boolean attachDisk(String req);
+    F2CDisk attachDisk(String req);
 
     /**
      * 卸载磁盘

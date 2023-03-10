@@ -99,6 +99,7 @@ public class HuaweiCloudProvider extends AbstractCloudProvider<HuaweiVmCredentia
         return FormUtil.toForm(HuaweiCreateDiskForm.class);
     }
 
+    @Override
     public List<Map<String, String>> getDiskTypes(String req) {
         return HuaweiSyncCloudApi.getDiskTypes(JsonUtil.parseObject(req, HuaweiGetDiskTypeRequest.class));
     }
@@ -134,7 +135,7 @@ public class HuaweiCloudProvider extends AbstractCloudProvider<HuaweiVmCredentia
     }
 
     @Override
-    public boolean attachDisk(String req) {
+    public F2CDisk attachDisk(String req) {
         return HuaweiSyncCloudApi.attachDisk(JsonUtil.parseObject(req, HuaweiAttachDiskRequest.class));
     }
 
