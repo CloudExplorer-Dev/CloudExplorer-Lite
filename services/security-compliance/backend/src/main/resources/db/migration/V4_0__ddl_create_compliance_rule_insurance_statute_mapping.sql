@@ -2,7 +2,7 @@ SET SESSION innodb_lock_wait_timeout = 7200;
 
 CREATE TABLE IF NOT EXISTS `compliance_rule_insurance_statute_mapping`
 (
-    id                              VARCHAR(32)                        NULL COMMENT '主键id'
+    id                              VARCHAR(32)                        NOT NULL COMMENT '主键id'
         PRIMARY KEY,
     compliance_rule_id              VARCHAR(32)                        NULL COMMENT '合规规则id',
     compliance_insurance_statute_id INT(10)                            NULL COMMENT '等保条例id',
