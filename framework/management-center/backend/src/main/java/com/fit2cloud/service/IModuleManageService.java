@@ -17,4 +17,8 @@ public interface IModuleManageService {
 
     void upload(MultipartFile file);
 
+    void startGateway();
+
+    void startExtras();
+
 }

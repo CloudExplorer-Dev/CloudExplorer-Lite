@@ -176,6 +176,16 @@ public class ModuleManageServiceImpl implements IModuleManageService {
 
     }
 
+    @Override
+    public void startGateway() {
+        execRunCore("runGateway");
+    }
+
+    @Override
+    public void startExtras() {
+        execRunCore("runExtra");
+    }
+
     private String ps() {
         try {
             return execRunCore("ps");
