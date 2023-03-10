@@ -91,26 +91,26 @@ const baseList: Array<BaseModuleInfo> = [
     icon: "xuniji1",
     name: "宿主机",
     hasPermission: permissionStore.hasPermission([
-      "[operation-analytics]BASE_RESOURCE_ANALYSIS:READ",
-      "[operation-analytics]OVERVIEW:READ",
+      "[operation-analysis]BASE_RESOURCE_ANALYSIS:READ",
+      "[operation-analysis]OVERVIEW:READ",
     ]),
-    module: "operation-analytics",
-    path: "/operation-analytics/api/base_resource_analysis/host/count",
+    module: "operation-analysis",
+    path: "/operation-analysis/api/base_resource_analysis/host/count",
     redirect:
-      "/operation-analytics#/resource_analysis/base_resource_analysis/list",
+      "/operation-analysis#/resource_analysis/base_resource_analysis/list",
     roles: ["ADMIN"],
   },
   {
     icon: "yidongyunkongzhitaiicon06",
     name: "存储器",
     hasPermission: permissionStore.hasPermission([
-      "[operation-analytics]BASE_RESOURCE_ANALYSIS:READ",
-      "[operation-analytics]OVERVIEW:READ",
+      "[operation-analysis]BASE_RESOURCE_ANALYSIS:READ",
+      "[operation-analysis]OVERVIEW:READ",
     ]),
-    module: "operation-analytics",
-    path: "/operation-analytics/api/base_resource_analysis/datastore/count",
+    module: "operation-analysis",
+    path: "/operation-analysis/api/base_resource_analysis/datastore/count",
     redirect:
-      "/operation-analytics#/resource_analysis/base_resource_analysis/list",
+      "/operation-analysis#/resource_analysis/base_resource_analysis/list",
     roles: ["ADMIN"],
   },
   {

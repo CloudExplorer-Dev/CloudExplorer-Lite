@@ -27,10 +27,10 @@ const props = withDefaults(
     cardShadow?: "always" | "hover" | "never";
   }>(),
   {
-    module: "operation-analytics",
+    module: "operation-analysis",
     permission: [
-      "[operation-analytics]SERVER_ANALYSIS:READ",
-      "[operation-analytics]OVERVIEW:READ",
+      "[operation-analysis]SERVER_ANALYSIS:READ",
+      "[operation-analysis]OVERVIEW:READ",
     ],
     cardShadow: "always",
   }

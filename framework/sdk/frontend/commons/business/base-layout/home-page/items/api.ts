@@ -20,7 +20,7 @@ export function getIncreaseTrend(
   loading?: Ref<boolean>
 ): Promise<Result<any>> {
   return get(
-    "/operation-analytics/api/server_analysis/increase_trend",
+    "/operation-analysis/api/server_analysis/increase_trend",
     req,
     loading
   );
@@ -30,7 +30,7 @@ export function getSpreadData(
   req: any,
   loading?: Ref<boolean>
 ): Promise<Result<any>> {
-  return get("/operation-analytics/api/server_analysis/spread", req, loading);
+  return get("/operation-analysis/api/server_analysis/spread", req, loading);
 }
 
 export function listVmCloudServer(

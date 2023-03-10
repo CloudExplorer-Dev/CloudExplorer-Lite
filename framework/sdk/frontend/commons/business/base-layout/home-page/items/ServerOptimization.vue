@@ -24,10 +24,10 @@ const props = withDefaults(
   {
     needRoles: () => ["ADMIN"],
     permission: [
-      "[operation-analytics]SERVER_OPTIMIZATION:READ",
-      "[operation-analytics]OVERVIEW:READ",
+      "[operation-analysis]SERVER_OPTIMIZATION:READ",
+      "[operation-analysis]OVERVIEW:READ",
     ],
-    module: "operation-analytics",
+    module: "operation-analysis",
     title: "优化建议",
     cardShadow: "always",
   }

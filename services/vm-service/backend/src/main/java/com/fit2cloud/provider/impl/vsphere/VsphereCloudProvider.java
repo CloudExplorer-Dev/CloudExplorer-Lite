@@ -290,4 +290,13 @@ public class VsphereCloudProvider extends AbstractCloudProvider<VsphereCredentia
     public List<F2CDisk> getVmF2CDisks(String req) {
         return VsphereSyncCloudApi.getVmF2CDisks(JsonUtil.parseObject(req, VsphereDiskRequest.class));
     }
+
+    public List<VsphereHost> getHostCurrentResourceUsedInfo(String req){
+        return VsphereSyncCloudApi.getHostCurrentResourceUsedInfo(JsonUtil.parseObject(req,VsphereHostRequest.class));
+    }
+
+    public List<VsphereDatastore> getDatastoreCurrentResourceUsedInfo(String req){
+        return VsphereSyncCloudApi.getDatastoreCurrentResourceUsedInfo(JsonUtil.parseObject(req,VsphereDatastoreRequest.class));
+    }
+
 }

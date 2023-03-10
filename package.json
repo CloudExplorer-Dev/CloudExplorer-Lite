@@ -28,9 +28,9 @@
     "dev:security": "yarn workspace security-compliance run dev",
     "lint:security": "yarn workspace security-compliance run lint",
     "build:security": "yarn workspace security-compliance run build-only",
-    "dev:operation": "yarn workspace operation-analytics run dev",
-    "lint:operation": "yarn workspace operation-analytics run lint",
-    "build:operation": "yarn workspace operation-analytics run build-only"
+    "dev:operation": "yarn workspace operation-analysis run dev",
+    "lint:operation": "yarn workspace operation-analysis run lint",
+    "build:operation": "yarn workspace operation-analysis run build-only"
   },
   "dependencies": {
     "@element-plus/icons-vue": "^2.0.6",

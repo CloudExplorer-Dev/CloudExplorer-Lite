@@ -1,0 +1,51 @@
+spring:
+  application:
+    name: operation-analysis
+  mvc:
+    pathmatch:
+      matching-strategy: ANT_PATH_MATCHER
+  #       国际化配置
+  messages:
+    basename: i18n.messages,i18n.commons
+    encoding: UTF-8
+  quartz:
+    jdbc:
+      initialize-schema: always
+      schema: classpath:/quartz/tables.sql
+    properties:
+      org:
+        quartz:
+          scheduler:
+            instanceName: ${spring.application.name}
+            instanceId: ${spring.application.name}
+  flyway:
+    enabled: true
+    table: db_operation_analytics_version
+
+server:
+  port: @service.port@
+  servlet:
+    context-path: /${spring.application.name}
+
+#监控，访问路径 {ip}:{port}/actuator
+management:
+  server:
+    port: @service.management.port@
+  health:
+      elasticsearch:
+        enabled: false
+
+logging:
+  file:
+    path: @ce.log.base.dir@/${spring.application.name}
+  config: classpath:logback-spring.xml
+
+eureka:
+  instance:
+    metadata-map:
+      order: 4
+      name_zh-cn: 运营分析
+      name_zh-tw: 运营分析
+      name_en: Operation Analysis
+      basePath: ${server.servlet.context-path}/
+      icon: fenxi3
