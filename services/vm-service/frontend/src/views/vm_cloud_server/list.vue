@@ -268,7 +268,7 @@ const tableConfig = ref<TableConfig>({
     showEmpty: false,
     // 查询函数
     search: search,
-    quickPlaceholder: t("commons.btn.search", "查找"),
+    quickPlaceholder: t("commons.btn.search", "搜索"),
     components: [],
     searchOptions: [
       {

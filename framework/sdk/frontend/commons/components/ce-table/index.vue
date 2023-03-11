@@ -59,6 +59,7 @@
           v-bind="tableConfig.paginationConfig"
           @update:pageSize="updatePageSize"
           @update:currentPage="updateCurrentPage"
+          background
         />
       </slot>
     </div>
@@ -361,7 +362,7 @@ defineExpose({
     font-size: 18px;
   }
   .complex-table__body {
-    height: calc(100% - 140px);
+    height: calc(100% - 100px);
     width: 100%;
   }
   .fu-filter-bar {
@@ -382,7 +383,7 @@ defineExpose({
   }
 
   .complex-table__pagination {
-    margin-top: 20px;
+    margin-top: 16px;
     @include flex-row(flex-end);
   }
 }

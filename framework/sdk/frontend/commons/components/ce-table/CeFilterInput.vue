@@ -7,12 +7,13 @@
     clearable
     :placeholder="quickPlaceholder"
     class="input-with-select"
+    style="margin-right: 12px"
   >
     <template #prepend>
       <el-select
         v-model="activeSearchOption"
         placeholder="Select"
-        style="width: 115px"
+        style="width: 117px"
         @keydown="keydown"
       >
         <el-option
@@ -54,7 +55,7 @@ onMounted(() => {
 
 const conditionObj = computed(() => {
   if (activeSearchOption.value && searchValue.value) {
-    if(searchValue.value.trim() !== ""){
+    if (searchValue.value.trim() !== "") {
       const obj: Condition = {
         label: activeSearchOption.value.label,
         value: searchValue.value.trim(),

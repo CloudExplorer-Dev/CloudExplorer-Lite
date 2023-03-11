@@ -39,7 +39,7 @@
 import { useI18n } from "vue-i18n";
 import _ from "lodash";
 import { computed } from "vue";
-import { ButtonAction } from "@commons/components/button-tool-bar/type";
+import type { ButtonAction } from "@commons/components/button-tool-bar/type";
 
 const props = withDefaults(
   defineProps<{

@@ -78,7 +78,7 @@ const message = {
       switch_lang: "切换语言",
       add_favorites: "收藏",
       cancel_favorites: "取消收藏",
-      search: "查找",
+      search: "搜索",
       refresh: "刷新",
       import: "导入",
       export: "导出",

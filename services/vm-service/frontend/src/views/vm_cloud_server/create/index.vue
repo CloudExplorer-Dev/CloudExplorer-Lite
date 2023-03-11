@@ -157,7 +157,7 @@ const formatData = computed(() => {
 const cloudAccount = ref<CloudAccount | null>(null);
 
 function next() {
-  if(data.value[0].count != null ){
+  if (data.value[0].count != null) {
     const promises = [];
     _.forEach(ceForms.value, (formRef: InstanceType<typeof CeFormItem>) => {
       promises.push(formRef.validate());
