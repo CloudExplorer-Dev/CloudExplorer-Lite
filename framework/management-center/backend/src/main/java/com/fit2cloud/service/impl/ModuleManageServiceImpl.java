@@ -66,6 +66,12 @@ public class ModuleManageServiceImpl implements IModuleManageService {
             String repositoryUrl = repositoryPath + "modules_" + vList[0] + "." + vList[1] + ".x.yml";
 
             modules = JsonUtil.parseObject(JsonUtil.toJSONString(yaml.load(downloadTxt2String(repositoryUrl))), ExtraModules.class);
+            if (modules == null) {
+                modules = new ExtraModules();
+            }
+            if (modules.getModules() == null) {
+                modules.setModules(new ArrayList<>());
+            }
             List<String> installedKeys = new ArrayList<>();
             for (ExtraModule module : modules.getModules()) {
                 if (installedModuleMap.containsKey(module.getName())) {
@@ -174,6 +180,16 @@ public class ModuleManageServiceImpl implements IModuleManageService {
 
         execRunCore("installModule", fileName);
 
+    }
+
+    @Override
+    public void startGateway() {
+        execRunCore("runGateway");
+    }
+
+    @Override
+    public void startExtras() {
+        execRunCore("runExtra");
     }
 
     private String ps() {
