@@ -5,7 +5,7 @@ CREATE TABLE IF NOT EXISTS `vm_cloud_server`
     id                        VARCHAR(50)                        NOT NULL
         PRIMARY KEY,
     instance_uuid             VARCHAR(50)                        NULL COMMENT '实例唯一标识',
-    source_id                 VARCHAR(50)                        NOT NULL COMMENT '组织/工作空间 ID',
+    source_id                 VARCHAR(50)  DEFAULT ''            NOT NULL COMMENT '组织/工作空间 ID',
     project_id                VARCHAR(50)                        NULL COMMENT 'Project ID',
     account_id                VARCHAR(50)                        NOT NULL COMMENT '云账号 ID',
     instance_id               VARCHAR(256)                       NULL COMMENT '实例 ID',
