@@ -243,9 +243,6 @@ watch(
                 <span>{{ menuItem.title }}</span>
               </div>
               <div style="flex: auto"></div>
-              <!--              <div class="star">-->
-              <!--                <CeIcon size="15px" :code="'shoucang'"></CeIcon>-->
-              <!--              </div>-->
             </div>
           </div>
         </div>
@@ -254,7 +251,7 @@ watch(
   </transition>
 </template>
 
-<style lang="scss">
+<style lang="scss" scope>
 .collectMenu {
   height: 100%;
   width: 750px;

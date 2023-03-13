@@ -2,28 +2,38 @@
 import CeIcon from "../../ce-icon/index.vue";
 import type { Module } from "@commons/api/module/type";
 
-const props = defineProps<{
-  /**
-   * 数据
-   */
-  startMenuItem: Module;
-  /**
-   * 鼠标移入回掉函数
-   */
-  hoverHandler?: () => void;
-  /**
-   * 鼠标移出回掉函数
-   */
-  leaveHandler?: () => void;
-  /**
-   * 是否是服务目录
-   */
-  rootItem?: boolean;
-}>();
+const props = withDefaults(
+  defineProps<{
+    /**
+     * 数据
+     */
+    startMenuItem: Module;
+    /**
+     * 鼠标移入回掉函数
+     */
+    hoverHandler?: () => void;
+    /**
+     * 鼠标移出回掉函数
+     */
+    leaveHandler?: () => void;
+    /**
+     * 是否展示当前
+     */
+    hover: boolean;
+    /**
+     * 是否是服务目录
+     */
+    rootItem?: boolean;
+  }>(),
+  {
+    hover: false,
+  }
+);
 </script>
 <template>
   <div
     class="item"
+    :class="hover ? 'hover_item' : ''"
     :style="{
       height: props.rootItem ? '50px' : 'var(--ce-star-menu-item-height)',
     }"
@@ -76,6 +86,27 @@ const props = defineProps<{
     justify-content: space-around;
     line-height: var(--ce-star-menu-item-height);
     width: var(--ce-star-menu-item-height);
+  }
+}
+.hover_item {
+  .icon {
+    width: 30%;
+    height: var(--ce-star-menu-item-icon-size);
+    .el-icon {
+      width: 100%;
+    }
+  }
+  .text {
+    text-overflow: ellipsis;
+    width: 50%;
+    display: block;
+  }
+  .handle {
+    width: 20%;
+    display: flex;
+    .el-icon {
+      width: 100%;
+    }
   }
 }
 </style>
