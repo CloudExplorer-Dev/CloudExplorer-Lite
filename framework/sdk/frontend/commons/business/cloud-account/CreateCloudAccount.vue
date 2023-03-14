@@ -241,6 +241,7 @@ const submit = (formEl: FormInstance | undefined) => {
     <el-container>
       <el-header :class="{ model: type === 'model' }">
         <div class="header" :class="{ model: type === 'model' }">
+          <span v-if="type === 'model'"> STEP {{ activeStep }}/2: </span>
           {{ steps[activeStep - 1] }}
         </div>
       </el-header>
