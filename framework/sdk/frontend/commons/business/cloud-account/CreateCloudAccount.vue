@@ -196,7 +196,9 @@ const submit = (formEl: FormInstance | undefined) => {
   <el-container
     class="create-cloud-account-form"
     v-loading="loading"
-    :class="{ 'in-dialog': type === 'dialog' }"
+    :class="{
+      'in-dialog': type === 'dialog',
+    }"
   >
     <el-aside width="288px" class="aside" v-if="showAside">
       <div style="padding: 24px; height: 160px">
@@ -237,12 +239,12 @@ const submit = (formEl: FormInstance | undefined) => {
       </template>
     </el-aside>
     <el-container>
-      <el-header>
-        <div class="header">
+      <el-header :class="{ model: type === 'model' }">
+        <div class="header" :class="{ model: type === 'model' }">
           {{ steps[activeStep - 1] }}
         </div>
       </el-header>
-      <el-main>
+      <el-main :class="{ model: type === 'model' }">
         <template v-if="activeStep === 1">
           <el-radio-group v-model="platformType" class="platform-type-group">
             <el-radio-button label="all">全部</el-radio-button>
@@ -360,7 +362,7 @@ const submit = (formEl: FormInstance | undefined) => {
           </el-form>
         </template>
       </el-main>
-      <el-footer>
+      <el-footer :class="{ model: type === 'model' }">
         <div class="footer">
           <div></div>
           <div class="footer-btn">
@@ -408,14 +410,29 @@ const submit = (formEl: FormInstance | undefined) => {
     color: #1f2329;
   }
 
+  .el-header.model {
+    height: 48px;
+  }
+
   .el-main {
     --el-main-padding: 24px;
+  }
+
+  .el-main.model {
+    padding: 24px 0;
   }
 
   .el-footer {
     --el-footer-padding: 16px 24px;
     --el-footer-height: 64px;
     border-top: 1px solid var(--el-border-color);
+  }
+
+  .el-footer.model {
+    height: 48px;
+    padding-right: 0;
+    padding-bottom: 0;
+    padding-top: 16px;
   }
 
   .aside {
@@ -461,6 +478,12 @@ const submit = (formEl: FormInstance | undefined) => {
     font-size: 20px;
     line-height: 28px;
     padding: 24px;
+  }
+
+  .header.model {
+    padding-left: 0;
+    padding-top: 0;
+    padding-bottom: 16px;
   }
 
   .platform-type-group {
