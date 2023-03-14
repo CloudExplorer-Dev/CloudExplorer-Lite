@@ -85,8 +85,8 @@ public class FormUtil {
             map.put("footerLocation", annotation.footerLocation());
             map.put("relationTrigger", annotation.relationTrigger());
             map.put("index", atomicInteger.getAndIncrement());
-            map.put("regexp",annotation.regexp());
-            map.put("regexpDescription",annotation.regexpDescription());
+            map.put("regexp", annotation.regexp());
+            map.put("regexpDescription", annotation.regexpDescription());
             if (StringUtils.isNotEmpty(annotation.method())) {
                 map.put("method", annotation.method());
                 map.put("clazz", annotation.clazz().getName());
@@ -103,6 +103,9 @@ public class FormUtil {
                 map.put("confirmSpecial", annotation.confirmSpecial());
                 map.put("confirmPosition", annotation.confirmPosition());
                 map.put("confirmItemSpan", annotation.confirmItemSpan() > 0 ? annotation.confirmItemSpan() : 1);
+            }
+            if (StringUtils.isNotBlank(annotation.extraInfo())) {
+                map.put("extraInfo", annotation.extraInfo());
             }
 
             String jsonString = JsonUtil.toJSONString(map);

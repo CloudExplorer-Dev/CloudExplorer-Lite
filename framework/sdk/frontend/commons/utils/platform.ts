@@ -1,14 +1,12 @@
 import aliyun from "@commons/assets/img/cloud-vendor-icon/aliyun.ico";
 import huawei from "@commons/assets/img/cloud-vendor-icon/fusion.ico";
-import aws from "@commons/assets/img/cloud-vendor-icon/aws.ico";
 import vmware from "@commons/assets/img/cloud-vendor-icon/vmware.ico";
 import qcloud from "@commons/assets/img/cloud-vendor-icon/qcloud.ico";
 import openstack from "@commons/assets/img/cloud-vendor-icon/openstack.ico";
 
-import LogoAliyun from "@commons/assets/img/cloud-vendor-icon/logo-aliyun.png";
+import LogoAliyun from "@commons/assets/img/cloud-vendor-icon/logo-aliyun.svg";
 import LogoHuawei from "@commons/assets/img/cloud-vendor-icon/logo-huawei.svg";
-import LogoAws from "@commons/assets/img/cloud-vendor-icon/logo-aws.svg";
-import LogoVmware from "@commons/assets/img/cloud-vendor-icon/logo-vsphere.png";
+import LogoVmware from "@commons/assets/img/cloud-vendor-icon/logo-vmware.svg";
 import LogoOpenStack from "@commons/assets/img/cloud-vendor-icon/logo-openstack.svg";
 import LogoTencent from "@commons/assets/img/cloud-vendor-icon/logo-tencent.svg";
 
