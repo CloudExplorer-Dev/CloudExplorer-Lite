@@ -57,7 +57,7 @@ export const platformIcon: SimpleMap<PlatFormIcon> = {
     oldIcon: vmware,
     logo: LogoVmware,
     // color: "#6e6e71",
-    name: "vmware",
+    name: "VMware",
   },
   fit2cloud_tencent_platform: {
     component: CeIcon,

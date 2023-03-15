@@ -279,7 +279,7 @@ const submit = (formEl: FormInstance | undefined) => {
                       :class="form.platform === platform.field ? 'active' : ''"
                     >
                       <el-radio :label="platform.field">
-                        {{ platformIcon[platform.field].name }}
+                        {{ platform.label }}
                       </el-radio>
                     </div>
                   </div>

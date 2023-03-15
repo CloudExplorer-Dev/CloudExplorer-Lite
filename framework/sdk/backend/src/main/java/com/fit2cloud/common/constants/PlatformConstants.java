@@ -30,7 +30,7 @@ public enum PlatformConstants {
     /**
      * VMWARE 平台
      */
-    fit2cloud_vsphere_platform("VMWare vSphere", false, VsphereCredential.class, null),
+    fit2cloud_vsphere_platform("VMware", false, VsphereCredential.class, null),
 
     /**
      * OpenStack 平台
