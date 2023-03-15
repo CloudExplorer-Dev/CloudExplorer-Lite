@@ -4,6 +4,11 @@ import PersonSetting from "@commons/business/person-setting/index.vue";
 import { useUserStore } from "@commons/stores/modules/user";
 import { useRouter } from "vue-router";
 import { useHomeStore } from "@commons/stores/modules/home";
+import CeIcon from "@commons/components/ce-icon/index.vue";
+import SourceChangeDialog from "@commons/business/person-setting/SourceChangeDialog.vue";
+
+import CeMainLogo from "@commons/assets/CloudExplorer-Lite-02.svg";
+import { ref } from "vue";
 
 const userStore = useUserStore();
 const homeStore = useHomeStore();
@@ -16,31 +21,51 @@ function goHome() {
     router.push("/");
   }
 }
+
+const roleSelectOpen = ref<boolean>(false);
+
+function roleSelectVisibleChange(visible: boolean) {
+  roleSelectOpen.value = visible;
+}
 </script>
 
 <template>
   <div class="top-nav">
-    <div class="logo">
-      <img
-        class="img"
-        :class="{ clickable: homeStore.isBase }"
-        src="@commons/assets/white-logo.png"
-        alt=""
-        @click="goHome"
-      />
+    <el-image :src="CeMainLogo" fit="contain" style="width: 145px" />
+    <el-divider direction="vertical" class="header-divider" />
+    <div class="header-button home-button" @click="goHome">
+      <CeIcon code="icon_home_outlined" size="16px" /> 首页
     </div>
-    <h2>云服务平台</h2>
-    <div class="role">
-      <div style="font-weight: bold">
-        {{ userStore.currentRoleSourceName?.roleName }}
+    <el-dropdown trigger="click" @visible-change="roleSelectVisibleChange">
+      <div class="header-button" style="display: flex; flex-direction: row">
+        <div>
+          {{ userStore.currentRoleSourceName?.sourceName }}
+        </div>
+        <div
+          class="role-tag"
+          v-for="roleName in userStore.currentRoleSourceName?.roleName"
+          :key="roleName"
+        >
+          {{ roleName }}
+        </div>
+        <el-icon class="role-cart" v-if="!roleSelectOpen"
+          ><CaretBottom
+        /></el-icon>
+        <el-icon class="role-cart" v-else><CaretTop /></el-icon>
       </div>
-      <div
-        style="font-size: small"
-        v-if="userStore.currentRoleSourceName?.sourceName"
-      >
-        {{ userStore.currentRoleSourceName?.sourceName }}
-      </div>
-    </div>
+      <template #dropdown>
+        <div
+          style="
+            min-height: 40px;
+            min-width: 348px;
+            padding: 10px;
+            margin: auto;
+          "
+        >
+          <SourceChangeDialog v-if="roleSelectOpen" />
+        </div>
+      </template>
+    </el-dropdown>
     <div class="flex-auto"></div>
     <SwitchLang />
     <PersonSetting />
@@ -53,19 +78,44 @@ function goHome() {
   display: flex;
   color: white;
   align-items: center;
-  .logo {
-    height: 30px;
-    margin-right: 8px;
-    .img {
-      height: 100%;
+
+  .header-divider {
+    border-color: rgba(255, 255, 255, 0.15);
+    margin-left: 20px;
+  }
+
+  .home-button {
+    width: 64px;
+  }
+
+  .header-button {
+    color: #ffffff;
+    padding: 8px;
+    box-sizing: border-box;
+    margin: auto 8px;
+    cursor: pointer;
+    border-radius: 4px;
+    line-height: 22px;
+    font-size: 14px;
+
+    .role-tag {
+      border-radius: 2px;
+      line-height: 20px;
+      font-size: 12px;
+      background-color: rgba(255, 255, 255, 0.2);
+      margin-left: 4px;
+      padding: 1px 6px;
     }
-    .clickable {
-      cursor: pointer;
+    .role-cart {
+      margin-left: 4px;
+      margin-top: auto;
+      margin-bottom: auto;
     }
   }
-  .role {
-    padding: 0 20px;
+  .header-button:hover {
+    background-color: rgba(255, 255, 255, 0.1);
   }
+
   .flex-auto {
     flex: 1 1 auto;
   }

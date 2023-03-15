@@ -76,7 +76,7 @@ public class BaseOrganizationServiceImpl extends ServiceImpl<BaseOrganizationMap
 
         if (CollectionUtils.isNotEmpty(roleListMap.getOrDefault(RoleConstants.ROLE.ADMIN, new ArrayList<>()))) {
             List<SourceTreeObject> adminList = new ArrayList<>();
-            adminList.add(new SourceTreeObject().setRoot(true).setLabel("CloudExplorer 云服务平台").setChildren(list));
+            adminList.add(new SourceTreeObject().setRoot(true).setLabel("云管理平台").setChildren(list));
             return adminList;
         }
         return list;
