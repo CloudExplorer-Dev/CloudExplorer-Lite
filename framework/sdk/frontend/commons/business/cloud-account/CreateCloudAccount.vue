@@ -323,7 +323,7 @@ const submit = (formEl: FormInstance | undefined) => {
                 {
                   message:
                     item.label +
-                    t('cloud_account.field_is_not_null', '字段不能为null'),
+                    t('cloud_account.field_is_not_null', '字段不能为空'),
                   trigger: 'blur',
                   required: item.required,
                 },
