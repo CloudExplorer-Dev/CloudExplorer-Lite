@@ -96,7 +96,7 @@ const getCurrentModuleByMicroApp = () => {
     </div>
     <div class="starMenuLine"></div>
     <div class="runningModule">
-      <StartMenuItem
+      <!--      <StartMenuItem
         :hover="hover"
         @click="goModule(home.id)"
         :start-menu-item="home"
@@ -105,11 +105,11 @@ const getCurrentModuleByMicroApp = () => {
       >
         <div class="move">
           <CeIcon
-            size="var(--ce-star-menu-icon-width,18px)"
+            size="var(&#45;&#45;ce-star-menu-icon-width,18px)"
             code="yidongshu"
           ></CeIcon>
         </div>
-      </StartMenuItem>
+      </StartMenuItem>-->
       <StartMenuItem
         :hover="hover"
         v-for="item in moduleStore.runningModules"

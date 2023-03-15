@@ -61,7 +61,9 @@ export const useUserStore = defineStore({
      * 返回用户角色名
      * @param state
      */
-    currentRoleSourceName(state: any): SimpleMap<string> | undefined | null {
+    currentRoleSourceName(
+      state: any
+    ): SimpleMap<string | string[]> | undefined | null {
       const roleList: UserRole[] | undefined =
         state?.userStoreObject?.user?.roleMap[state?.userStoreObject?.role];
       let roles: Role[] | undefined;
@@ -78,19 +80,21 @@ export const useUserStore = defineStore({
           roles = roleList[0]?.roles;
         }
       }
-      const roleName = _.join(
-        _.flatMap(roles, (o) => o.name),
-        ", "
-      );
+      const roleNames = _.map(roles, (o) => o.name);
+
+      // const roleName = _.join(
+      //   _.flatMap(roles, (o) => o.name),
+      //   ", "
+      // );
       if (state.currentSource) {
         return {
-          roleName: roleName,
+          roleName: roleNames,
           sourceName: _.head(
             _.filter(state.sourceList, (s) => s.id === state.currentSource)
           )?.name,
         };
       } else {
-        return { roleName: roleName };
+        return { roleName: roleNames, sourceName: "云管理平台" };
       }
     },
     sourceMap(state: any): Array<SourceTreeObject> {
