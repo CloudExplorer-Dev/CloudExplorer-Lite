@@ -6,7 +6,8 @@
           v-model="condition"
           class="m-2"
           placeholder="Select"
-          style="width: 100px"
+          size="small"
+          style="width: 60px"
         >
           <el-option
             v-for="item in [
@@ -42,27 +43,28 @@
             :key="item.id"
           >
             <BillRuleItem
+              :key="item.id"
               ref="billItem"
               :item="item"
               :delete-rule="deleteRule"
             ></BillRuleItem>
           </div>
         </el-form-item>
+        <el-form-item>
+          <div class="operate">
+            <div class="add">
+              <div @click="addRule">
+                <ce-icon code="icon_add_outlined" size="12px"></ce-icon>添加条件
+              </div>
+            </div>
+            <div class="delete" @click="deleteGroup(props.group.id)">
+              <ce-icon code="icon_delete-trash_outlined" size="12px"></ce-icon>
+              删除组
+            </div>
+          </div>
+        </el-form-item>
       </el-form>
-      <div class="delete">
-        <div
-          style="
-            color: var(--el-color-primary);
-            margin-right: 20px;
-            cursor: pointer;
-          "
-          @click="deleteGroup(props.group.id)"
-        >
-          删除
-        </div>
-      </div>
     </div>
-    <div class="add"><div @click="addRule">添加规则</div></div>
   </div>
 </template>
 <script setup lang="ts">
@@ -154,26 +156,13 @@ defineExpose({
   border: 1px solid var(--el-border-color);
   border-radius: 5px;
   padding: 10px;
-  .add {
-    display: flex;
-    width: 100%;
-    justify-content: center;
 
-    height: 40px;
-    align-items: center;
-    div {
-      height: 40px;
-      width: 100px;
-      line-height: 40px;
-      cursor: pointer;
-    }
-  }
   .content {
     display: flex;
     width: 100%;
     .condition {
       height: 100%;
-      width: 120px;
+      width: 70px;
       display: flex;
       align-items: center;
     }
@@ -185,11 +174,27 @@ defineExpose({
         width: 100%;
       }
     }
-    .delete {
+    .operate {
+      margin-top: 10px;
+      background: #edf2f5;
+      border-radius: 4px;
+      width: 100%;
       display: flex;
-      align-items: center;
-      width: 10%;
-      justify-content: center;
+
+      .delete {
+        color: #f54a45;
+        margin-left: 10px;
+      }
+      .add {
+        color: #3370ff;
+        margin-left: 20px;
+      }
+      div {
+        height: 32px;
+        width: 100px;
+        line-height: 32px;
+        cursor: pointer;
+      }
     }
   }
 }

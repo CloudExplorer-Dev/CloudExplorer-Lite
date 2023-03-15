@@ -3,62 +3,62 @@
     <template #breadcrumb>
       <breadcrumb :auto="true"></breadcrumb>
     </template>
-    <div class="contentWapper">
+    <div
+      class="contentWapper"
+      style="--el-tree-node-hover-bg-color: rgba(51, 112, 255, 0.1)"
+    >
       <div class="content">
         <div
           class="leftMenu"
           v-loading="orgLoading"
           style="--el-font-size-base: 14px"
         >
-          <div class="search">
-            <el-input
-              v-model="filterText"
-              placeholder="搜索"
-              size="small"
-              style="width: 90%; height: 30px"
-            />
+          <div class="top">
+            <div class="search">
+              <el-input
+                v-model="filterText"
+                placeholder="搜索关键词"
+                size="small"
+                :prefix-icon="Search"
+                class="input"
+              />
+            </div>
+            <div
+              class="tree-item-content"
+              :class="activeUnassignedResource ? 'active' : ''"
+              @click="handleUnassignedResource"
+            >
+              未分账资源
+            </div>
           </div>
-          <div
-            style="
-              height: 50px;
-              width: 100%;
-              display: flex;
-              padding-left: 30px;
-              align-items: center;
-              font-family: Helvetica, PingFang SC, Arial, sans-serif;
-              font-size: 12px;
-              cursor: pointer;
-            "
-            :class="activeUnassignedResource ? 'active' : ''"
-            @click="handleUnassignedResource"
-          >
-            未分账资源
+          <div class="tree">
+            <el-tree
+              ref="treeRef"
+              :data="organizationWorkspaceTreeData"
+              :props="defaultProps"
+              node-key="id"
+              :accordion="true"
+              :expand-on-click-node="false"
+              @node-click="handleNodeClick"
+              :filter-node-method="filterNode"
+              :highlight-current="true"
+            >
+              <template #default="{ node, data }">
+                <div>
+                  <ce-icon
+                    style="color: black"
+                    :code="`${
+                      data.type === 'ORGANIZATION'
+                        ? 'zuzhijiagou1'
+                        : 'project_space'
+                    }`"
+                    size="3px"
+                  ></ce-icon>
+                  <span style="margin-left: 8px">{{ node.label }}</span>
+                </div>
+              </template>
+            </el-tree>
           </div>
-          <el-tree
-            ref="treeRef"
-            :data="organizationWorkspaceTreeData"
-            :props="defaultProps"
-            node-key="id"
-            :accordion="true"
-            :expand-on-click-node="false"
-            @node-click="handleNodeClick"
-            :filter-node-method="filterNode"
-            :highlight-current="true"
-          >
-            <template #default="{ node, data }">
-              <span>
-                <ce-icon
-                  :code="`${
-                    data.type === 'ORGANIZATION'
-                      ? 'zuzhijiagou1'
-                      : 'project_space'
-                  }`"
-                  size="3px"
-                ></ce-icon>
-              </span>
-              <span style="margin-left: 8px">{{ node.label }}</span>
-            </template>
-          </el-tree>
         </div>
         <div class="rightContent">
           <div class="title" v-if="!activeUnassignedResource">
@@ -67,240 +67,263 @@
                 ? "未分账资源"
                 : activeWorkSpaceOrOrg?.name
             }}</span>
-            <div style="font-size: 12px; margin-top: 5px; color: #555555">
-              说明：各云账号的账单费用按照分账规则分摊到云管中的组织/工作空间上。
-            </div>
+            <el-popover
+              placement="top-start"
+              :width="500"
+              trigger="click"
+              content="各云账号的账单费用按照分账规则分摊到云管中的组织/工作空间上。"
+            >
+              <template #reference>
+                <ce-icon
+                  code="icon-maybe_outlined"
+                  size="16px"
+                  color="#646A73"
+                ></ce-icon>
+              </template>
+            </el-popover>
           </div>
 
           <div class="content">
-            <el-tabs
-              v-if="activeWorkSpaceOrOrg"
-              v-model="activeTab"
-              @tab-click="handleClick"
-              style="width: 100%"
-            >
-              <el-tab-pane
-                label="分账规则"
-                name="dimension_rules"
-                class="dimension_rules"
+            <div v-if="activeWorkSpaceOrOrg" class="share-resource">
+              <el-tabs
+                v-model="activeTab"
+                @tab-click="handleClick"
+                style="width: 100%"
               >
-                <BillRuleItemVue
-                  v-if="activeWorkSpaceOrOrg"
-                  :organization-workspace="activeWorkSpaceOrOrg"
-                ></BillRuleItemVue>
-              </el-tab-pane>
-              <el-tab-pane label="已分账资源" name="allocated"
-                ><ce-table
-                  localKey="allocatedResourceTable"
-                  v-loading="resourceLoading"
-                  height="100%"
-                  ref="table"
-                  :columns="columns"
-                  :data="dataList"
-                  :tableConfig="tableConfig"
-                  row-key="id"
+                <el-tab-pane
+                  label="分账规则"
+                  name="dimension_rules"
+                  class="dimension_rules"
                 >
-                  <el-table-column type="selection" />
-                  <el-table-column prop="resourceName" label="资源名称">
-                    <template #default="scope">
-                      <el-tooltip
-                        :content="
-                          scope.row.resourceId + '/' + scope.row.resourceName
-                        "
-                        placement="top"
-                      >
-                        <div
-                          style="
-                            white-space: nowrap;
-                            text-overflow: ellipsis;
-                            overflow: hidden;
-                          "
-                        >
-                          {{ scope.row.resourceId }} /
-                          {{ scope.row.resourceName }}
-                        </div></el-tooltip
-                      >
-                    </template>
-                  </el-table-column>
-                  <el-table-column
-                    :filters="
-                      cloudAccountList.map((item) => ({
-                        text: item.name,
-                        value: item.id,
-                      }))
-                    "
-                    :filter-multiple="false"
-                    column-key="cloudAccountId"
-                    prop="cloudAccountName"
-                    label="云账号"
-                    label-width="150px"
+                  <BillRuleItemVue
+                    v-if="activeWorkSpaceOrOrg"
+                    :organization-workspace="activeWorkSpaceOrOrg"
+                  ></BillRuleItemVue>
+                </el-tab-pane>
+                <el-tab-pane label="已分账资源" name="allocated"
+                  ><ce-table
+                    localKey="allocatedResourceTable"
+                    v-loading="resourceLoading"
+                    height="100%"
+                    ref="table"
+                    :columns="columns"
+                    :data="dataList"
+                    :tableConfig="tableConfig"
+                    row-key="id"
                   >
-                    <template #default="scope">
-                      <div style="display: flex; align-items: center">
-                        <platform_icon :platform="scope.row.provider">
-                        </platform_icon>
-                        <div>{{ scope.row.cloudAccountName }}</div>
-                      </div>
-                    </template>
-                  </el-table-column>
-                  <el-table-column prop="productName" label="产品名称" />
-                  <el-table-column prop="tags" label="标签">
-                    <template #default="scope">
-                      <el-tooltip
-                        raw-content
-                        :content="
-                          scope.row.tags
-                            ? Object.keys(scope.row.tags).length > 0
-                              ? Object.keys(scope.row.tags)
-                                  .map(
-                                    (key) =>
-                                      '<div>' +
-                                      key +
-                                      '=' +
-                                      scope.row.tags[key] +
-                                      '</div>'
-                                  )
-                                  .join('')
-                              : 'N/A'
-                            : 'N/A'
-                        "
-                        placement="top"
-                      >
-                        <div
-                          style="
-                            white-space: nowrap;
-                            text-overflow: ellipsis;
-                            overflow: hidden;
+                    <el-table-column type="selection" />
+                    <el-table-column prop="resourceName" label="资源名称">
+                      <template #default="scope">
+                        <el-tooltip
+                          :content="
+                            scope.row.resourceId + '/' + scope.row.resourceName
                           "
+                          placement="top"
                         >
-                          {{
+                          <div
+                            style="
+                              white-space: nowrap;
+                              text-overflow: ellipsis;
+                              overflow: hidden;
+                            "
+                          >
+                            {{ scope.row.resourceId }} /
+                            {{ scope.row.resourceName }}
+                          </div></el-tooltip
+                        >
+                      </template>
+                    </el-table-column>
+                    <el-table-column
+                      :filters="
+                        cloudAccountList.map((item) => ({
+                          text: item.name,
+                          value: item.id,
+                        }))
+                      "
+                      :filter-multiple="false"
+                      column-key="cloudAccountId"
+                      prop="cloudAccountName"
+                      label="云账号"
+                      label-width="150px"
+                    >
+                      <template #default="scope">
+                        <div style="display: flex; align-items: center">
+                          <platform_icon :platform="scope.row.provider">
+                          </platform_icon>
+                          <div>{{ scope.row.cloudAccountName }}</div>
+                        </div>
+                      </template>
+                    </el-table-column>
+                    <el-table-column prop="productName" label="产品名称" />
+                    <el-table-column prop="tags" label="标签">
+                      <template #default="scope">
+                        <el-tooltip
+                          raw-content
+                          :content="
                             scope.row.tags
                               ? Object.keys(scope.row.tags).length > 0
                                 ? Object.keys(scope.row.tags)
                                     .map(
-                                      (key) => key + "=" + scope.row.tags[key]
+                                      (key) =>
+                                        '<div>' +
+                                        key +
+                                        '=' +
+                                        scope.row.tags[key] +
+                                        '</div>'
                                     )
-                                    .join(",")
+                                    .join('')
+                                : 'N/A'
+                              : 'N/A'
+                          "
+                          placement="top"
+                        >
+                          <div
+                            style="
+                              white-space: nowrap;
+                              text-overflow: ellipsis;
+                              overflow: hidden;
+                            "
+                          >
+                            {{
+                              scope.row.tags
+                                ? Object.keys(scope.row.tags).length > 0
+                                  ? Object.keys(scope.row.tags)
+                                      .map(
+                                        (key) => key + "=" + scope.row.tags[key]
+                                      )
+                                      .join(",")
+                                  : "N/A"
                                 : "N/A"
-                              : "N/A"
-                          }}
-                        </div>
-                      </el-tooltip>
-                    </template>
-                  </el-table-column>
-                  <el-table-column
-                    prop="projectName"
-                    label="企业项目"
-                  /> </ce-table
-              ></el-tab-pane>
-            </el-tabs>
-            <ce-table
-              localKey="notShareResourceTable"
-              v-else
-              v-loading="resourceLoading"
-              height="100%"
-              ref="table"
-              :columns="columns"
-              :data="dataList"
-              :tableConfig="tableConfig"
-              row-key="id"
-            >
-              <template #toolbar>
-                <div class="title" v-if="activeUnassignedResource">
-                  <span>未分账资源</span>
-                  <div style="font-size: 12px; margin-top: 5px; color: #555555">
-                    说明：各云账号的账单费用按照分账规则分摊到云管中的组织/工作空间上。
-                  </div>
-                </div></template
+                            }}
+                          </div>
+                        </el-tooltip>
+                      </template>
+                    </el-table-column>
+                    <el-table-column
+                      prop="projectName"
+                      label="企业项目"
+                    /> </ce-table
+                ></el-tab-pane>
+              </el-tabs>
+            </div>
+            <div v-else class="not-share-resource">
+              <ce-table
+                localKey="notShareResourceTable"
+                v-loading="resourceLoading"
+                height="100%"
+                ref="table"
+                :columns="columns"
+                :data="dataList"
+                :tableConfig="tableConfig"
+                row-key="id"
               >
-              <el-table-column type="selection" />
-              <el-table-column prop="resourceName" label="资源名称">
-                <template #default="scope">
-                  <el-tooltip
-                    :content="
-                      scope.row.resourceId + '/' + scope.row.resourceName
-                    "
-                    placement="top"
-                  >
-                    <div
-                      style="
-                        white-space: nowrap;
-                        text-overflow: ellipsis;
-                        overflow: hidden;
-                      "
+                <template #toolbar>
+                  <div class="title" v-if="activeUnassignedResource">
+                    <span>未分账资源</span>
+                    <el-popover
+                      placement="top-start"
+                      :width="500"
+                      trigger="click"
+                      content="各云账号的账单费用按照分账规则分摊到云管中的组织/工作空间上。"
                     >
-                      {{ scope.row.resourceId }} /
-                      {{ scope.row.resourceName }}
-                    </div></el-tooltip
-                  >
-                </template>
-              </el-table-column>
-              <el-table-column
-                :filters="
-                  cloudAccountList.map((item) => ({
-                    text: item.name,
-                    value: item.id,
-                  }))
-                "
-                :filter-multiple="false"
-                column-key="cloudAccountId"
-                prop="cloudAccountName"
-                label="云账号"
-                label-width="150px"
-              >
-                <template #default="scope">
-                  <div style="display: flex; align-items: center">
-                    <platform_icon :platform="scope.row.provider">
-                    </platform_icon>
-                    <div>{{ scope.row.cloudAccountName }}</div>
-                  </div>
-                </template>
-              </el-table-column>
-              <el-table-column prop="productName" label="产品名称" />
-              <el-table-column prop="tags" label="标签">
-                <template #default="scope">
-                  <el-tooltip
-                    raw-content
-                    :content="
-                      scope.row.tags
-                        ? Object.keys(scope.row.tags).length > 0
-                          ? Object.keys(scope.row.tags)
-                              .map(
-                                (key) =>
-                                  '<div>' +
-                                  key +
-                                  '=' +
-                                  scope.row.tags[key] +
-                                  '</div>'
-                              )
-                              .join('')
-                          : 'N/A'
-                        : 'N/A'
-                    "
-                    placement="top"
-                  >
-                    <div
-                      style="
-                        white-space: nowrap;
-                        text-overflow: ellipsis;
-                        overflow: hidden;
+                      <template #reference>
+                        <ce-icon
+                          code="icon-maybe_outlined"
+                          size="16px"
+                          color="#646A73"
+                        ></ce-icon>
+                      </template>
+                    </el-popover></div
+                ></template>
+                <el-table-column type="selection" />
+                <el-table-column prop="resourceName" label="资源名称">
+                  <template #default="scope">
+                    <el-tooltip
+                      :content="
+                        scope.row.resourceId + '/' + scope.row.resourceName
                       "
+                      placement="top"
                     >
-                      {{
+                      <div
+                        style="
+                          white-space: nowrap;
+                          text-overflow: ellipsis;
+                          overflow: hidden;
+                        "
+                      >
+                        {{ scope.row.resourceId }} /
+                        {{ scope.row.resourceName }}
+                      </div></el-tooltip
+                    >
+                  </template>
+                </el-table-column>
+                <el-table-column
+                  :filters="
+                    cloudAccountList.map((item) => ({
+                      text: item.name,
+                      value: item.id,
+                    }))
+                  "
+                  :filter-multiple="false"
+                  column-key="cloudAccountId"
+                  prop="cloudAccountName"
+                  label="云账号"
+                  label-width="150px"
+                >
+                  <template #default="scope">
+                    <div style="display: flex; align-items: center">
+                      <platform_icon :platform="scope.row.provider">
+                      </platform_icon>
+                      <div>{{ scope.row.cloudAccountName }}</div>
+                    </div>
+                  </template>
+                </el-table-column>
+                <el-table-column prop="productName" label="产品名称" />
+                <el-table-column prop="tags" label="标签">
+                  <template #default="scope">
+                    <el-tooltip
+                      raw-content
+                      :content="
                         scope.row.tags
                           ? Object.keys(scope.row.tags).length > 0
                             ? Object.keys(scope.row.tags)
-                                .map((key) => key + "=" + scope.row.tags[key])
-                                .join(",")
+                                .map(
+                                  (key) =>
+                                    '<div>' +
+                                    key +
+                                    '=' +
+                                    scope.row.tags[key] +
+                                    '</div>'
+                                )
+                                .join('')
+                            : 'N/A'
+                          : 'N/A'
+                      "
+                      placement="top"
+                    >
+                      <div
+                        style="
+                          white-space: nowrap;
+                          text-overflow: ellipsis;
+                          overflow: hidden;
+                        "
+                      >
+                        {{
+                          scope.row.tags
+                            ? Object.keys(scope.row.tags).length > 0
+                              ? Object.keys(scope.row.tags)
+                                  .map((key) => key + "=" + scope.row.tags[key])
+                                  .join(",")
+                              : "N/A"
                             : "N/A"
-                          : "N/A"
-                      }}
-                    </div>
-                  </el-tooltip>
-                </template>
-              </el-table-column>
-              <el-table-column prop="projectName" label="企业项目" />
-            </ce-table>
+                        }}
+                      </div>
+                    </el-tooltip>
+                  </template>
+                </el-table-column>
+                <el-table-column prop="projectName" label="企业项目" />
+              </ce-table>
+            </div>
           </div>
         </div>
       </div>
@@ -327,7 +350,7 @@ import {
 import cloudAccountApi from "@commons/api/cloud_account/index";
 import type { CloudAccount } from "@commons/api/cloud_account/type";
 import platform_icon from "@commons/components/platform-icon/index.vue";
-
+import { Search } from "@element-plus/icons-vue";
 const cloudAccountList = ref<Array<CloudAccount>>([]);
 /**
  * 树对象
@@ -459,6 +482,7 @@ const organizationWorkspaceTreeData = ref<Array<OrganizationWorkspaceTree>>([]);
 const defaultProps = {
   label: "name",
 };
+
 // table ---------- start ------
 // 列表字段数据
 const columns = ref([]);
@@ -534,18 +558,29 @@ const tableConfig = ref<TableConfig>({
 });
 </script>
 <style lang="scss" scoped>
+// 选中样式
+@mixin active() {
+  background-color: var(--el-tree-node-hover-bg-color);
+  color: rgba(51, 112, 255, 1); //节点的字体颜色
+  font-weight: 500;
+}
 .active {
-  background-color: var(--el-color-primary-light-9);
+  @include active;
 }
 :deep(.el-tab-pane) {
   height: 100%;
 }
 .contentWapper {
-  height: 100%;
+  font-weight: 400;
+  font-size: 14px;
+  line-height: 22px;
+  color: #1f2329;
+  height: calc(100% - 2px);
   width: 100%;
   display: flex;
   flex-wrap: wrap;
-
+  border: 1px solid var(--el-border-color);
+  border-radius: 2px;
   .tips {
     height: 40px;
     width: 100%;
@@ -557,46 +592,76 @@ const tableConfig = ref<TableConfig>({
     justify-content: space-between;
     height: 100%;
     width: 100%;
+
     .leftMenu {
       height: 100%;
-      width: 200px;
-      border: 1px solid var(--el-border-color);
-      overflow: hidden;
-      .search {
-        width: 100%;
-        height: 40px;
-        display: flex;
-        justify-content: center;
-        align-items: flex-end;
-        align-content: flex-end;
+      width: 250px;
+      border-right: 1px solid var(--el-border-color);
+
+      .top {
+        height: 100px;
+        .search {
+          width: 100%;
+          height: 44px;
+          margin-bottom: 13px;
+          display: flex;
+          justify-content: center;
+          align-items: flex-end;
+          align-content: flex-end;
+          .input {
+            margin: 0 13px;
+            height: 28px;
+          }
+        }
+      }
+      .tree {
+        height: calc(100% - 100px);
+        width: 250px;
+        overflow: hidden;
+        &:hover {
+          overflow: auto;
+        }
       }
     }
     .rightContent {
-      width: calc(100% - 220px);
+      width: calc(100% - 270px);
       height: 100%;
-
       box-sizing: border-box;
-      padding: 20px;
       overflow: hidden;
       .title {
-        height: 20px;
+        height: 32px;
+        display: flex;
+        align-items: center;
+
         span {
-          text-rendering: optimizeLegibility;
-          font-family: "PingFangSC-Regular", "PingFang SC", sans-serif;
-          font-weight: 400;
-          font-style: normal;
-          font-size: 14px;
+          margin-right: 10px;
         }
       }
       .content {
         box-sizing: border-box;
-        margin-top: 10px;
         height: calc(100% - 20px);
-        .dimension_rules {
+        width: 100%;
+        .not-share-resource {
+          margin-top: 10px;
           width: 100%;
           height: 100%;
-          overflow-y: auto;
-          overflow-x: auto;
+          padding-right: 20px;
+        }
+        .share-resource {
+          width: 100%;
+          height: calc(100% - 30px);
+          padding-right: 20px;
+          .el-tabs {
+            height: 100%;
+          }
+          .dimension_rules {
+            width: 100%;
+            height: 100%;
+            &:hover {
+              overflow-y: auto;
+              overflow-x: auto;
+            }
+          }
         }
       }
     }
@@ -606,20 +671,43 @@ const tableConfig = ref<TableConfig>({
   height: calc(100% - 40px);
 }
 :deep(.el-tree) {
+  --el-tree-node-hover-bg-color: rgba(51, 112, 255, 0.1);
+  --el-tree-text-color: rgba(31, 35, 41, 1);
+  --el-tree-expand-icon-color: rgba(100, 106, 115, 1);
+  color: #1f2329;
   width: 100%;
-  overflow: hidden;
   height: calc(100% - 90px);
 
   > .el-tree-node {
     display: inline-block;
     min-width: 100%;
   }
-  &:hover {
-    overflow: scroll;
-  }
 }
 
-:deep(.el-tree-node__content) {
+@mixin tree-item-content() {
+  margin: 0 13px;
+  box-sizing: border-box;
   height: 40px;
+  border-radius: 4px;
+  cursor: pointer;
+  line-height: 40px;
+  padding-left: 10px;
+}
+.tree-item-content {
+  @include tree-item-content;
+  &:hover {
+    background-color: var(--el-tree-node-hover-bg-color);
+  }
+}
+:deep(.el-tree-node__content) {
+  @include tree-item-content;
+}
+
+:deep(.el-tree--highlight-current) {
+  .el-tree-node.is-current {
+    > .el-tree-node__content {
+      @include active;
+    }
+  }
 }
 </style>

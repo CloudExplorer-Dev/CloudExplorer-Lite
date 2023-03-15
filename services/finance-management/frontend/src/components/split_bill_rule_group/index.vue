@@ -6,7 +6,8 @@
           v-model="condition"
           class="m-2"
           placeholder="Select"
-          style="width: 100px; margin-left: 10px"
+          size="small"
+          style="width: 60px; margin-left: 10px"
         >
           <el-option
             v-for="item in [
@@ -195,19 +196,22 @@ const submit = () => {
 };
 </script>
 <style lang="scss" scoped>
+.m-2 {
+  border: none;
+}
 .bill_rule_group_wapper {
   width: calc(100% - 2px);
-  min-width: 1000px;
+  min-width: 640px;
   display: flex;
   justify-content: center;
   flex-wrap: wrap;
-  border: 1px solid var(--el-border-color);
+
   .content {
     width: 100%;
     display: flex;
     .condition {
       height: 100%;
-      width: 120px;
+      width: 80px;
       display: flex;
       align-items: center;
     }
@@ -227,5 +231,13 @@ const submit = () => {
       cursor: pointer;
     }
   }
+}
+:deep(.el-input--medium) {
+  .el-input__inner {
+    border: 0;
+  }
+}
+:deep(.el-input__suffix-inner) {
+  width: 14px;
 }
 </style>

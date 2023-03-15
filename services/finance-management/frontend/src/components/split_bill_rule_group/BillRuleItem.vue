@@ -12,13 +12,15 @@
         trigger: 'change',
         required: true,
       }"
-      style="width: 100px; margin-left: 20px"
+      style="width: 90px; margin-left: 5px"
     >
       <el-select
         filterable
         v-model="form.field"
         class="m-2"
         placeholder="请选择"
+        size="small"
+        style="width: 80px"
       >
         <el-option
           v-for="item in dimensionSettingKeys"
@@ -28,7 +30,7 @@
         />
       </el-select>
     </el-form-item>
-    <div>等于:</div>
+    <div>等于:&nbsp;&nbsp;</div>
     <template v-if="form.field === 'tags'">
       <el-form-item
         prop="tagField"
@@ -43,6 +45,8 @@
           v-model="form.tagField"
           class="m-2"
           placeholder="请选择"
+          size="small"
+          style="width: 120px"
         >
           <el-option
             v-for="item in dimensionSettingTagKeys"
@@ -63,11 +67,12 @@
       <el-select
         filterable
         v-model="form.value"
-        class="m-2"
         multiple
         collapse-tags
         collapse-tags-tooltip
         placeholder="请选择"
+        size="small"
+        style="width: 150px"
       >
         <el-option
           v-for="item in dimensionSettingValues"
@@ -76,16 +81,12 @@
           :value="item.value"
         /> </el-select
     ></el-form-item>
-    <div style="flex: auto"></div>
+
     <div
-      style="
-        color: var(--el-color-primary);
-        margin-right: 20px;
-        cursor: pointer;
-      "
+      style="margin-left: 12px; cursor: pointer; line-height: 32px"
       @click="deleteItem(item)"
     >
-      删除
+      <ce-icon code="icon_delete-trash_outlined" size="16px"></ce-icon>
     </div>
   </el-form>
 </template>
@@ -250,10 +251,15 @@ defineExpose({ validate, setData });
 .item_rule {
   display: flex;
   align-items: center;
-  height: 40px;
+  height: 32px;
   width: 100%;
-  margin-top: 5px;
+  margin-top: 8px;
   background: #edf2f5;
   border-radius: 4px;
+}
+:deep(.el-form-item__content) {
+  .el-select__tags {
+    flex-wrap: nowrap;
+  }
 }
 </style>
