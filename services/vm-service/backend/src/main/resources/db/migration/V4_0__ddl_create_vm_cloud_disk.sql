@@ -18,7 +18,7 @@ CREATE TABLE IF NOT EXISTS `vm_cloud_disk`
     account_id           VARCHAR(50)                        NOT NULL COMMENT '云账号ID',
     datastore_id         VARCHAR(255)                       NULL COMMENT '存储器ID',
     instance_uuid        VARCHAR(128)                       NULL COMMENT '关联虚拟机UUID',
-    source_id            VARCHAR(50)                        NOT NULL COMMENT '组织/工作空间 ID',
+    source_id            VARCHAR(50)  DEFAULT ''            NOT NULL COMMENT '组织/工作空间 ID',
     project_id           VARCHAR(50)                        NULL COMMENT 'Project ID',
     bootable             TINYINT(1)                         NULL COMMENT '是否启动盘',
     image_id             VARCHAR(50)                        NULL COMMENT '镜像ID',

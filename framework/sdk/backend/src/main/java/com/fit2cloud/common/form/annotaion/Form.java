@@ -185,6 +185,8 @@ public @interface Form {
 
     int confirmItemSpan() default 1;
 
+    String extraInfo() default "";
+
     enum Position {
         TOP, BOTTOM
     }

@@ -18,6 +18,8 @@ public class PlatformResponse {
     private String label;
     @ApiModelProperty(value = "云平台对应的code", notes = "云平台对应的code")
     private String field;
+    @ApiModelProperty(value = "是否为公有云", notes = "是否为公有云")
+    private boolean publicCloud;
     @ApiModelProperty(value = "凭证表单", notes = "凭证表单")
     private List<? extends Form> credentialForm;
 }

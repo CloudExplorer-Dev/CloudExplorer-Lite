@@ -187,6 +187,7 @@ public class CloudAccountServiceImpl extends ServiceImpl<CloudAccountMapper, Clo
             Class<? extends Credential> credentialClass = platform.getCredentialClass();
             platformResponse.setLabel(platform.getMessage());
             platformResponse.setField(platform.name());
+            platformResponse.setPublicCloud(platform.getPublicCloud());
             try {
                 List<? extends Form> form = credentialClass.getConstructor().newInstance().toForm();
                 platformResponse.setCredentialForm(form);

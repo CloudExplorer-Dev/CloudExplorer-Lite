@@ -120,6 +120,8 @@ export interface Platform {
    */
   field: string;
 
+  publicCloud: boolean;
+
   credentialForm: Array<Form>;
 }
 

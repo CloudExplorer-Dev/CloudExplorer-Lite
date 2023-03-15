@@ -68,11 +68,12 @@ watch(hasCreateAccountPermission, (v) => {
     class="create-account-show"
     v-model="showCreateAccount"
     destroy-on-close
-    top="12vh"
-    width="78%"
+    top="3.5vh"
+    width="1200px"
+    :show-close="false"
     :close-on-click-modal="false"
   >
-    <CreateCloudAccount type="dialog" />
+    <CreateCloudAccount type="dialog" @close="showCreateAccount = false" />
   </el-dialog>
 </template>
 
@@ -98,9 +99,7 @@ watch(hasCreateAccountPermission, (v) => {
 
 <style lang="scss">
 .create-account-show {
-  height: 70%;
-  min-height: 520px;
-  max-height: 700px;
+  height: 780px;
 
   .el-dialog__header {
     padding: 0;

@@ -17,34 +17,37 @@ public enum PlatformConstants {
     /**
      * 阿里云平台
      */
-    fit2cloud_ali_platform("阿里云", AliCredential.class, AliBill.class),
+    fit2cloud_ali_platform("阿里云", true, AliCredential.class, AliBill.class),
     /**
      * 华为云平台
      */
-    fit2cloud_huawei_platform("华为云", HuaweiCredential.class, HuaweiBill.class),
+    fit2cloud_huawei_platform("华为云", true, HuaweiCredential.class, HuaweiBill.class),
     /**
      * 腾讯云平台
      */
-    fit2cloud_tencent_platform("腾讯云", TencentCredential.class, TencentBill.class),
+    fit2cloud_tencent_platform("腾讯云", true, TencentCredential.class, TencentBill.class),
 
     /**
      * VMWARE 平台
      */
-    fit2cloud_vsphere_platform("VMWare vSphere", VsphereCredential.class, null),
+    fit2cloud_vsphere_platform("VMware", false, VsphereCredential.class, null),
 
     /**
      * OpenStack 平台
      */
-    fit2cloud_openstack_platform("OpenStack", OpenStackCredential.class, null);
+    fit2cloud_openstack_platform("OpenStack", false, OpenStackCredential.class, null);
 
-    private String message;
+    private final String message;
 
-    private Class<? extends Credential> credentialClass;
+    private final boolean publicCloud;
 
-    private Class<? extends Bill> billClass;
+    private final Class<? extends Credential> credentialClass;
 
-    PlatformConstants(String message, Class<? extends Credential> credentialClass, Class<? extends Bill> billClass) {
+    private final Class<? extends Bill> billClass;
+
+    PlatformConstants(String message, boolean publicCloud, Class<? extends Credential> credentialClass, Class<? extends Bill> billClass) {
         this.message = message;
+        this.publicCloud = publicCloud;
         this.credentialClass = credentialClass;
         this.billClass = billClass;
     }
@@ -59,5 +62,9 @@ public enum PlatformConstants {
 
     public String getMessage() {
         return message;
+    }
+
+    public boolean getPublicCloud() {
+        return publicCloud;
     }
 }

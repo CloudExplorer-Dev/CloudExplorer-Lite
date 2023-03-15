@@ -35,7 +35,7 @@ public class TencentCredential implements Credential {
     /**
      * 密钥
      */
-    @Form(inputType = InputType.Password, label = "secretKey", description = "访问密钥")
+    @Form(inputType = InputType.Password, label = "secretKey", description = "访问密钥", extraInfo = "{\"text\":\"如何获取访问密钥？\",\"url\":\"https://cloud.tencent.com/document/product/573/38469\"}")
     private String secretKey;
 
     @Override

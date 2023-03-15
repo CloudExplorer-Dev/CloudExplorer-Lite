@@ -93,4 +93,6 @@ public class Form {
 
     private String regexpDescription;
 
+    private String extraInfo;
+
 }

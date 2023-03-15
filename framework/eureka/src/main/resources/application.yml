@@ -26,12 +26,19 @@ eureka:
     enabled: true
   instance:
     hostname: localhost #如果要启动集群，需要通过环境变量修改 eureka.instance.hostname=newHostname
-#    preferIpAddress: true #change when need ip to register, default is false. {eureka.instance.preferIpAddress}
+    # default is 30
+    leaseRenewalIntervalInSeconds: 30
+    #    preferIpAddress: true #change when need ip to register, default is false. {eureka.instance.preferIpAddress}
   client:
     register-with-eureka: false
     fetch-registry: false
 #    serviceUrl:
 #      defaultZone: http://${eureka.instance.hostname}:${server.port}/eureka/   #如果要启动集群，需要通过环境变量修改, eg. eureka.client.serviceUrl.defaultZone=https://peer1/eureka/,http://peer2/eureka/,http://peer3/eureka/
+  server:
+    # 默认值是true
+    enable-self-preservation: true
+    # default is 0.85 we can set the value to 0.49
+    renewalPercentThreshold: 0.49
 
 
 

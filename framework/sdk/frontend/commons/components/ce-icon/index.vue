@@ -36,7 +36,7 @@ const getCode = computed(() => {
 });
 </script>
 <template>
-  <el-icon>
+  <el-icon :size="size">
     <svg
       v-if="props.code && props.type === 'svg'"
       class="icon svg-icon"
