@@ -247,7 +247,7 @@ const tableConfig = ref<TableConfig>({
     <el-table-column prop="createTime" :label="$t('commons.create_time')" />
     <fu-table-operations v-bind="tableConfig.tableOperations" fix />
     <template #buttons>
-      <fu-table-column-select type="icon" :columns="columns" size="small" />
+      <CeTableColumnSelect :columns="columns"/>
     </template>
   </ce-table>
 </template>

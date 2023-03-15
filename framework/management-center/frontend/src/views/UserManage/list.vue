@@ -291,7 +291,7 @@ const tableConfig = ref<TableConfig>({
     />
     <fu-table-operations v-bind="tableConfig.tableOperations" fixed="right" />
     <template #buttons>
-      <fu-table-column-select type="icon" :columns="columns" size="small" />
+      <CeTableColumnSelect :columns="columns"/>
     </template>
   </ce-table>
 

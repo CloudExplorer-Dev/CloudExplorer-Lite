@@ -110,6 +110,10 @@ const sortChange = (sortObj: any) => {
   );
 };
 
+/**
+ * 表格头筛选 change 事件
+ * @param filterObj
+ */
 const filterChange = (filterObj: any) => {
   const column = table.value.$slots
     .default()

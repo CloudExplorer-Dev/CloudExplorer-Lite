@@ -227,7 +227,7 @@ const tableConfig = ref<TableConfig>({
       <!--          label="磁盘使用率(%)"-->
       <!--      ></el-table-column>-->
       <template #buttons>
-        <fu-table-column-select type="icon" :columns="columns" size="small" />
+        <CeTableColumnSelect :columns="columns"/>
       </template>
     </ce-table>
   </div>
