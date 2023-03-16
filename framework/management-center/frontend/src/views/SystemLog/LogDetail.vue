@@ -17,7 +17,8 @@ defineExpose({
 </style>
 
 <template>
-  <el-dialog v-model="dialogVisible" title="详情" width="50%" destroy-on-close>
+  <el-dialog v-model="dialogVisible" title="详情" width="50%" destroy-on-close class="custom-dialog"
+             style="min-width: 600px">
     <el-form :inline="true" :model="logInfo" class="demo-form-inline">
       <el-form-item label="详情:">
         <label class="detail-class">{{ logInfo.message }}</label>
@@ -25,7 +26,7 @@ defineExpose({
     </el-form>
 
     <template #footer>
-      <span class="dialog-footer">
+      <span class="dialog-footer footer-btn">
         <el-button @click="dialogVisible = false">关闭</el-button>
       </span>
     </template>

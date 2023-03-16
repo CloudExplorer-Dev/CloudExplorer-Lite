@@ -13,6 +13,7 @@ import type { OrganizationTree } from "@/api/organization/type";
 import { workspaceTree } from "@commons/api/workspace";
 import type { WorkspaceTree } from "@commons/api/workspace/type";
 import { roleConst } from "@commons/utils/constants";
+import CeIcon from "@commons/components/ce-icon/index.vue";
 
 const props = defineProps({
   visible: {
@@ -37,7 +38,7 @@ const orgTreeData = ref<OrganizationTree[]>();
 const workspaceTreeData = ref<WorkspaceTree[]>();
 const isAddLineAble = ref(true);
 
-// 添加用户类型选项
+// 添加用户角色选项
 const addLine = () => {
   const roleInfo: RoleInfo = {
     roleId: "",
@@ -59,7 +60,7 @@ const addLine = () => {
   }
 };
 
-// 清除用户类型选项
+// 清除用户角色选项
 const subtractLine = (roleInfo: RoleInfo) => {
   _.remove(form.roleInfoList, (item) => {
     return item === roleInfo;
@@ -148,115 +149,134 @@ onMounted(() => {
 </script>
 
 <template>
-  <el-form
-    :model="form"
-    ref="formRef"
-    label-width="100px"
-    label-position="right"
-  >
-    <div v-for="(roleInfo, index) in form.roleInfoList" :key="index">
-      <!-- 用户类型 -->
-      <el-row>
-        <el-col :span="20">
-          <el-form-item :label="$t('user.type')">
-            <el-select
-              v-model="roleInfo.roleId"
-              @change="setRoleType(roleInfo, roleInfo.roleId)"
-              :placeholder="$t('user.type')"
-              style="width: 100%"
-            >
-              <el-option
-                v-for="role in roles"
-                :key="role.id"
-                :label="role.name"
-                :value="role.id"
-                v-show="filterRole(role, roleInfo)"
+  <el-container class="create-catalog-container">
+    <el-form
+        :model="form"
+        ref="formRef"
+        label-width="100px"
+        label-position="top"
+        require-asterisk-position="right"
+        style="width: 100%;"
+    >
+      <el-row v-for="(roleInfo, index) in form.roleInfoList" :key="index">
+        <!-- 用户角色 -->
+        <el-row :gutter="10" style="width: 100%">
+          <el-col :span="23">
+            <el-form-item :label="$t('user.type')">
+              <el-select
+                  v-model="roleInfo.roleId"
+                  @change="setRoleType(roleInfo, roleInfo.roleId)"
+                  :placeholder="$t('user.type')"
+                  style="width: 100%"
+              >
+                <el-option
+                    v-for="role in roles"
+                    :key="role.id"
+                    :label="role.name"
+                    :value="role.id"
+                    v-show="filterRole(role, roleInfo)"
+                />
+              </el-select>
+            </el-form-item>
+          </el-col>
+          <el-col :span="1" style="padding-top: 38px">
+              <div
+                  class="delete-button-class"
+                  v-if="form.roleInfoList.length > 1"
+                  @click="subtractLine(roleInfo)"
+              >
+                <el-tooltip
+                    class="box-item"
+                    effect="dark"
+                    :content="$t('user.delete_role')"
+                    placement="bottom"
+                >
+                <CeIcon
+                    size="var(--ce-star-menu-icon-width,13.33px)"
+                    code="icon_delete-trash_outlined1"
+                ></CeIcon>
+                </el-tooltip>
+              </div>
+          </el-col>
+        </el-row>
+
+        <!-- 选择组织 -->
+        <el-row :gutter="10" v-if="roleInfo.roleType === roleConst.orgAdmin">
+          <el-col :span="23">
+            <el-form-item :label="$t('user.add_org')">
+              <el-tree-select
+                  v-model="roleInfo.organizationIds"
+                  node-key="id"
+                  :props="{ label: 'name' }"
+                  :data="orgTreeData"
+                  :render-after-expand="false"
+                  filterable
+                  multiple
+                  show-checkbox
+                  check-strictly
+                  style="width: 100%"
               />
-            </el-select>
+            </el-form-item>
+          </el-col>
+        </el-row>
+
+        <!-- 选择工作空间 -->
+        <el-row :gutter="10" style="width: 100%" v-if="roleInfo.roleType === roleConst.user">
+          <el-col :span="23">
+            <el-form-item :label="$t('user.add_workspace')">
+              <el-tree-select
+                  v-model="roleInfo.workspaceIds"
+                  node-key="id"
+                  :props="{ label: 'name' }"
+                  :data="workspaceTreeData"
+                  :render-after-expand="false"
+                  filterable
+                  multiple
+                  show-checkbox
+                  style="width: 100%"
+              />
+            </el-form-item>
+          </el-col>
+        </el-row>
+      </el-row>
+      <el-row :gutter="10">
+        <el-col :span="24">
+          <el-form-item>
+            <el-tooltip
+                class="box-item"
+                effect="dark"
+                :content="$t('user.add_role')"
+                placement="bottom"
+            >
+              <div
+                  class="add-button-class"
+                  @click="addLine"
+                  :disabled="!isAddLineAble"
+              >
+                <CeIcon
+                    size="var(--ce-star-menu-icon-width,13.33px)"
+                    code="icon_add_outlined"
+                ></CeIcon>
+                <span class="span-class">
+                      {{ t("commons.btn.add", "添加") }}
+                    </span>
+              </div>
+            </el-tooltip>
           </el-form-item>
-        </el-col>
-        <el-col :span="2" style="padding-left: 60px">
-          <el-tooltip
-            class="box-item"
-            effect="dark"
-            :content="$t('user.delete_role')"
-            placement="bottom"
-          >
-            <el-button
-              v-if="form.roleInfoList.length > 1"
-              @click="subtractLine(roleInfo)"
-              type="danger"
-              icon="minus"
-              circle
-            ></el-button>
-          </el-tooltip>
         </el-col>
       </el-row>
 
-      <!-- 选择组织 -->
-      <el-row v-if="roleInfo.roleType === roleConst.orgAdmin">
-        <el-col :span="20">
-          <el-form-item :label="$t('user.add_org')">
-            <el-tree-select
-              v-model="roleInfo.organizationIds"
-              node-key="id"
-              :props="{ label: 'name' }"
-              :data="orgTreeData"
-              :render-after-expand="false"
-              filterable
-              multiple
-              show-checkbox
-              check-strictly
-              style="width: 100%"
-            />
-          </el-form-item>
-        </el-col>
-      </el-row>
+      <div class="dialog_footer footer-btn">
+        <el-button @click="handleCancel(formRef)">{{
+            $t("commons.btn.cancel")
+          }}</el-button>
+        <el-button type="primary" @click="handleCreate(formRef)">{{
+            $t("commons.btn.save")
+          }}</el-button>
+      </div>
+    </el-form>
+  </el-container>
 
-      <!-- 选择工作空间 -->
-      <el-row v-if="roleInfo.roleType === roleConst.user">
-        <el-col :span="20">
-          <el-form-item :label="$t('user.add_workspace')">
-            <el-tree-select
-              v-model="roleInfo.workspaceIds"
-              node-key="id"
-              :props="{ label: 'name' }"
-              :data="workspaceTreeData"
-              :render-after-expand="false"
-              filterable
-              multiple
-              show-checkbox
-              style="width: 100%"
-            />
-          </el-form-item>
-        </el-col>
-      </el-row>
-    </div>
-    <div style="text-align: center">
-      <el-tooltip
-        class="box-item"
-        effect="dark"
-        :content="$t('user.add_role')"
-        placement="bottom"
-      >
-        <el-button
-          @click="addLine"
-          :disabled="!isAddLineAble"
-          type="primary"
-          icon="plus"
-          circle
-        ></el-button>
-      </el-tooltip>
-    </div>
-    <div class="dialog_footer">
-      <el-button @click="handleCancel(formRef)">{{
-        $t("commons.btn.cancel")
-      }}</el-button>
-      <el-button type="primary" @click="handleCreate(formRef)">{{
-        $t("commons.btn.save")
-      }}</el-button>
-    </div>
-  </el-form>
 </template>
 
 <style lang="scss">

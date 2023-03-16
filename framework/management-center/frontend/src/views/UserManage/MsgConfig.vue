@@ -94,13 +94,13 @@ onMounted(() => {
 </script>
 
 <template>
-  <div>
     <el-form
       :model="form"
       :rules="rules"
       ref="formRef"
       label-width="auto"
-      label-position="right"
+      label-position="top"
+      require-asterisk-position="right"
     >
       <el-form-item label="Email" prop="email">
         <el-input v-model="form.email" clearable />
@@ -128,7 +128,7 @@ onMounted(() => {
       >
     </div>
 
-    <div class="dialog_footer">
+    <div class="dialog_footer footer-btn">
       <el-button @click="handleCancel(formRef)">{{
         $t("commons.btn.cancel")
       }}</el-button>
@@ -136,7 +136,6 @@ onMounted(() => {
         $t("commons.btn.save")
       }}</el-button>
     </div>
-  </div>
 </template>
 
 <style lang="scss">
@@ -147,6 +146,7 @@ onMounted(() => {
 }
 .dialog_footer {
   text-align: right;
-  padding-top: 30px;
+  padding-top: 24px;
+  padding-bottom: 29px;
 }
 </style>

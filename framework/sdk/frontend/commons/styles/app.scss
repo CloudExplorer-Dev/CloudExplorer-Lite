@@ -119,8 +119,7 @@ a:hover {
   // 下方操作按钮区域
   .footer {
     border-top: 1px solid var(--el-border-color);
-    padding-top: 10px;
-    padding-bottom: 10px;
+    padding: 24px 0px 0px 0px;
     display: flex;
     justify-content: space-between;
     flex-direction: row;
@@ -151,6 +150,43 @@ a:hover {
     padding-left: 15px;
     font-size: smaller;
     color: #606266;
+  }
+}
+
+.custom-dialog{
+  //标题样式
+  .el-dialog__header{
+    padding: 24px !important;
+  }
+  //关闭按钮样式
+  .el-dialog__headerbtn .el-dialog__close{
+    height: auto !important;
+    color: #646A73 !important;
+    font-size: x-large !important;
+  }
+  .el-dialog__headerbtn .el-dialog__close:hover{
+    background: rgba(31, 35, 41, 0.1) !important;
+    border-radius: 4px !important;
+  }
+  //内容间距
+  .el-dialog__body{
+    padding: 0px 24px 0px 24px;
+  }
+  .el-dialog__footer{
+    padding-bottom: 29px !important;
+  }
+  //下方按钮
+  .footer-btn{
+    button{
+      height: 32px;
+      min-width: 80px
+    }
+    .save-btn{
+      background-color: #3370FF;
+    }
+    .cancel-btn{
+
+    }
   }
 }
 

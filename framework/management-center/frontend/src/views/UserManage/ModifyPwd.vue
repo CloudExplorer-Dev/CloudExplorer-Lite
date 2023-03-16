@@ -96,13 +96,15 @@ const handleSave = (formEl: FormInstance) => {
     width="25%"
     destroy-on-close
     :close-on-click-modal="false"
+    class="custom-dialog"
   >
     <el-form
       :model="form"
       :rules="rules"
       ref="formRef"
       label-width="auto"
-      label-position="right"
+      label-position="top"
+      require-asterisk-position="right"
     >
       <el-form-item
         :label="$t('commons.personal.new_password')"
@@ -130,7 +132,7 @@ const handleSave = (formEl: FormInstance) => {
       </el-form-item>
     </el-form>
     <template #footer>
-      <div style="flex: auto">
+      <div style="flex: auto" class="footer-btn">
         <el-button @click="handleCancel(formRef)">{{
           $t("commons.btn.cancel")
         }}</el-button>
@@ -142,4 +144,6 @@ const handleSave = (formEl: FormInstance) => {
   </el-dialog>
 </template>
 
-<style lang="scss"></style>
+<style lang="scss" scoped>
+
+</style>

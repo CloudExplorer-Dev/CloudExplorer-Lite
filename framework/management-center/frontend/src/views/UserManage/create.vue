@@ -141,7 +141,7 @@ const roles = ref<Role[]>([]);
 const orgTreeData = ref<OrganizationTree[]>();
 const workspaceTreeData = ref<WorkspaceTree[]>();
 const isAddLineAble = ref(true);
-// 添加用户类型选项
+// 添加用户角色选项
 const addLine = () => {
   const roleInfo: RoleInfo = {
     roleId: "",
@@ -162,7 +162,7 @@ const addLine = () => {
     }
   }
 };
-// 清除用户类型选项
+// 清除用户角色选项
 const subtractLine = (roleInfo: RoleInfo) => {
   _.remove(form.roleInfoList, (item) => {
     return item === roleInfo;
@@ -358,7 +358,7 @@ onMounted(() => {
             </el-col>
           </el-row>
           <el-row v-for="(roleInfo, index) in form.roleInfoList" :key="index">
-            <!-- 用户类型 -->
+            <!-- 用户角色 -->
             <el-row style="width: 100%">
               <el-col :span="23">
                 <el-form-item

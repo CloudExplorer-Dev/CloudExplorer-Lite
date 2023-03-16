@@ -81,27 +81,26 @@ onMounted(() => {
 </script>
 
 <template>
-  <div>
-    <el-form
-      :model="form"
-      :rules="rules"
-      ref="formRef"
-      label-width="auto"
-      label-position="top"
-    >
-      <el-form-item label="日志保存月数" prop="paramValue" required>
-        <el-input v-model="form.paramValue" clearable />
-      </el-form-item>
-    </el-form>
+  <el-form
+    :model="form"
+    :rules="rules"
+    ref="formRef"
+    label-width="auto"
+    label-position="top"
+    require-asterisk-position="right"
+  >
+    <el-form-item label="日志保存月数" prop="paramValue" required>
+      <el-input v-model="form.paramValue" clearable />
+    </el-form-item>
+  </el-form>
 
-    <div class="dialog_footer">
-      <el-button @click="handleCancel(formRef)">{{
-        $t("commons.btn.cancel")
-      }}</el-button>
-      <el-button type="primary" @click="handleSave(formRef)">{{
-        $t("commons.btn.save")
-      }}</el-button>
-    </div>
+  <div class="dialog_footer footer-btn">
+    <el-button @click="handleCancel(formRef)">{{
+      $t("commons.btn.cancel")
+    }}</el-button>
+    <el-button type="primary" @click="handleSave(formRef)">{{
+      $t("commons.btn.save")
+    }}</el-button>
   </div>
 </template>
 
@@ -113,6 +112,5 @@ onMounted(() => {
 }
 .dialog_footer {
   text-align: right;
-  padding-top: 30px;
 }
 </style>

@@ -37,6 +37,8 @@ defineExpose({
     title="API详情"
     width="50%"
     destroy-on-close
+    class="custom-dialog"
+    style="min-width: 600px"
   >
     <el-descriptions
       :column="1"
@@ -139,7 +141,7 @@ defineExpose({
       </el-descriptions-item>
     </el-descriptions>
     <template #footer>
-      <span class="dialog-footer">
+      <span class="dialog-footer footer-btn">
         <el-button @click="dialogVisible = false">关闭</el-button>
       </span>
     </template>
