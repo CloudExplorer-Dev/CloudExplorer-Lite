@@ -136,9 +136,10 @@ const message = {
     login: {
       username: "Username",
       password: "Password",
+      please_input_username: "Please Input Username",
+      please_input_password: "Please Input Password",
       title: "CloudExplorer Cloud Service Platform",
-      welcome:
-        "Welcome Back, Please Enter Your User Name and Password to Login",
+      welcome: "Welcome to CloudExplorer Cloud Management Platform",
       expires: "The Authentication Information Has Expired, Please Login Again",
     },
     charge_type: {

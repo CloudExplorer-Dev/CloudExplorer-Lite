@@ -14,6 +14,7 @@ import type { FormInstance, FormRules } from "element-plus";
 import type { LoginRequest } from "@commons/api/user/type";
 import { useI18n } from "vue-i18n";
 import _ from "lodash";
+import { ElMessage } from "element-plus";
 
 const { t } = useI18n();
 
@@ -132,6 +133,7 @@ const submitForm = (formEl: FormInstance | undefined) => {
         })
         .catch((error: any) => {
           msg.value = error.response.data.message;
+          ElMessage.error(msg.value);
         });
     } else {
       return false;
@@ -145,19 +147,24 @@ const submitForm = (formEl: FormInstance | undefined) => {
     <div class="login-container">
       <el-row type="flex" v-loading="loading">
         <el-col :span="12">
-          <el-form :model="form" :rules="rules" ref="formRef" size="default">
+          <el-form
+            :model="form"
+            :rules="rules"
+            ref="formRef"
+            size="default"
+            class="login-form"
+          >
             <div class="login-logo">
-              <img src="../../assets/blue-logo.png" alt="" />
+              <img src="../../assets/CloudExplorer-Lite-01.svg" alt="" />
             </div>
-            <div class="login-title">{{ $t("commons.login.title") }}</div>
-            <div class="login-border"></div>
             <div class="login-welcome">{{ $t("commons.login.welcome") }}</div>
-            <div class="login-form">
-              <el-form-item prop="username">
+            <div class="login-form-item-container">
+              <el-form-item prop="username" style="margin-bottom: 28px">
                 <el-input
                   v-model="form.username"
                   :placeholder="$t('commons.login.username')"
                   autofocus
+                  class="login-form-input"
                 />
               </el-form-item>
               <el-form-item prop="password">
@@ -168,6 +175,7 @@ const submitForm = (formEl: FormInstance | undefined) => {
                   maxlength="30"
                   show-word-limit
                   autocomplete="new-password"
+                  class="login-form-input"
                 />
               </el-form-item>
             </div>
@@ -178,11 +186,8 @@ const submitForm = (formEl: FormInstance | undefined) => {
                 @click="submitForm(formRef)"
                 size="default"
               >
-                {{ $t("commons.btn.login") }}
+                <span>{{ $t("commons.btn.login") }}</span>
               </el-button>
-            </div>
-            <div class="login-msg">
-              {{ msg }}
             </div>
           </el-form>
         </el-col>
@@ -209,84 +214,55 @@ const submitForm = (formEl: FormInstance | undefined) => {
 
 .login-container {
   min-width: 900px;
-  width: 1280px;
+  width: 1200px;
   height: 520px;
   background-color: #ffffff;
-  @media only screen and (max-width: 1280px) {
-    width: 900px;
-    height: 380px;
+
+  .login-form {
+    margin-top: 116px;
+    width: 440px;
+    margin-left: 80px;
   }
 
   .login-logo {
-    margin-top: 30px;
-    margin-left: 30px;
-    @media only screen and (max-width: 1280px) {
-      margin-top: 20px;
-    }
-
-    img {
-      height: 45px;
-    }
-  }
-
-  .login-title {
-    margin-top: 50px;
-    font-size: 24px;
-    letter-spacing: 0;
     text-align: center;
-    color: #999999;
-
-    @media only screen and (max-width: 1280px) {
-      margin-top: 20px;
-    }
-  }
-
-  .login-border {
-    height: 2px;
-    margin: 20px auto 20px;
-    position: relative;
-    width: 80px;
-    background: var(--el-color);
-    @media only screen and (max-width: 1280px) {
-      margin: 10px auto 10px;
+    img {
+      height: 53px;
     }
   }
 
   .login-welcome {
-    margin-top: 50px;
+    margin-top: 12px;
+    font-style: normal;
+    font-weight: 400;
     font-size: 14px;
-    color: #999999;
-    letter-spacing: 0;
-    line-height: 18px;
+    line-height: 20px;
+    color: #1f2329;
     text-align: center;
-    @media only screen and (max-width: 1280px) {
-      margin-top: 20px;
-    }
   }
 
-  .login-form {
-    margin-top: 30px;
-    padding: 0 40px;
-
-    @media only screen and (max-width: 1280px) {
-      margin-top: 10px;
+  .login-form-item-container {
+    margin-top: 24px;
+    .login-form-input {
+      height: 40px;
     }
-
     & :deep(.el-input__inner) {
-      border-radius: 0;
+      font-size: 16px;
+    }
+    & :deep(.el-form-item__error) {
+      font-size: 14px;
+      line-height: 22px;
     }
   }
 
   .login-btn {
-    margin-top: 40px;
-    padding: 0 40px;
-    @media only screen and (max-width: 1280px) {
-      margin-top: 20px;
-    }
-
+    margin-top: 48px;
     .submit {
       width: 100%;
-      border-radius: 0;
+      height: 40px;
+      span {
+        font-size: 16px;
+      }
     }
   }
 
@@ -302,9 +278,6 @@ const submitForm = (formEl: FormInstance | undefined) => {
     background-size: cover;
     width: 100%;
     height: 520px;
-    @media only screen and (max-width: 1280px) {
-      height: 380px;
-    }
   }
 }
 </style>

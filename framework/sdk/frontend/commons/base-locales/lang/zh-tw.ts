@@ -136,8 +136,10 @@ const message = {
     login: {
       username: "用戶名",
       password: "密碼",
+      please_input_username: "請輸入用戶名",
+      please_input_password: "請輸入密碼",
       title: "CloudExplorer 雲服務平臺",
-      welcome: "歡迎回來，請輸入用戶名和密碼登錄",
+      welcome: "歡迎使用 CloudExplorer 雲管理平臺",
       expires: "認證信息已過期，請重新登錄",
     },
     charge_type: {
