@@ -61,13 +61,18 @@ public class VsphereSyncCloudApi {
             if (!CollectionUtils.isEmpty(vmList)) {
                 Map<String, F2CVsphereHost> hostCache = VsphereUtil.generateHostCache(client);
                 for (VirtualMachine vm : vmList) {
-                    F2CVirtualMachine instance = VsphereUtil.toF2CInstance(vm, client, hostCache);
-                    if (instance != null) {
-                        list.add(instance);
+                    try {
+                        F2CVirtualMachine instance = VsphereUtil.toF2CInstance(vm, client, hostCache);
+                        if (instance != null) {
+                            list.add(instance);
+                        }
+                    } catch (Exception e) {
+                        log.warn("Can not to get vm which name is " + vm.getName() + ". Error message is:" + e.getMessage(), e);
                     }
                 }
             }
         } catch (Exception e) {
+            log.error("Failed to get vm list." + e.getMessage(), e);
             throw new RuntimeException(e.getMessage(), e);
         } finally {
             closeConnection(client);
@@ -316,7 +321,7 @@ public class VsphereSyncCloudApi {
         try {
             return execMethod.apply(uuid);
         } catch (Exception e) {
-           throw e;
+            throw e;
         } finally {
             closeConnection.run();
         }
@@ -1601,7 +1606,7 @@ public class VsphereSyncCloudApi {
         }
     }
 
-    public static List<VsphereHost> getHostCurrentResourceUsedInfo(VsphereHostRequest request){
+    public static List<VsphereHost> getHostCurrentResourceUsedInfo(VsphereHostRequest request) {
         VsphereVmClient client = null;
         try {
             List<VsphereHost> result = new ArrayList<>();
@@ -1613,8 +1618,8 @@ public class VsphereSyncCloudApi {
             } else {
                 list = client.listHosts();
             }
-            if(StringUtils.isNotBlank(request.getHostId())){
-                list = list.stream().filter(v->StringUtils.equalsIgnoreCase(v.getMOR().getVal(),request.getHostId())).toList();
+            if (StringUtils.isNotBlank(request.getHostId())) {
+                list = list.stream().filter(v -> StringUtils.equalsIgnoreCase(v.getMOR().getVal(), request.getHostId())).toList();
             }
             for (HostSystem hostSystem : list) {
                 VsphereHost host = new VsphereHost(hostSystem.getMOR().getVal(), hostSystem.getName());
@@ -1643,7 +1648,7 @@ public class VsphereSyncCloudApi {
         }
     }
 
-    public static List<VsphereDatastore> getDatastoreCurrentResourceUsedInfo(VsphereDatastoreRequest request){
+    public static List<VsphereDatastore> getDatastoreCurrentResourceUsedInfo(VsphereDatastoreRequest request) {
         VsphereVmClient client = null;
         try {
             List<VsphereDatastore> result = new ArrayList<>();
@@ -1655,8 +1660,8 @@ public class VsphereSyncCloudApi {
             } else {
                 list = client.listDataStores();
             }
-            if(StringUtils.isNotBlank(request.getDatastoreId())){
-                list = list.stream().filter(v->StringUtils.equalsIgnoreCase(v.getMOR().getVal(),request.getDatastoreId())).toList();
+            if (StringUtils.isNotBlank(request.getDatastoreId())) {
+                list = list.stream().filter(v -> StringUtils.equalsIgnoreCase(v.getMOR().getVal(), request.getDatastoreId())).toList();
             }
             for (Datastore datastore : list) {
                 result.add(convertToVsphereDatastore(datastore));
