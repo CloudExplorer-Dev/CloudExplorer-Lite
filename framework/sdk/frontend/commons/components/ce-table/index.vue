@@ -37,7 +37,7 @@
       </ce-filter-bar>
     </template>
 
-    <div class="complex-table__body">
+    <div :class="[Object.keys(allConditions).length !== 0 ? 'complex-table__body_with_filter' : 'complex-table__body']">
       <fu-table
         ref="table"
         v-bind="$attrs"
@@ -367,6 +367,10 @@ defineExpose({
   }
   .complex-table__body {
     height: calc(100% - 100px);
+    width: 100%;
+  }
+  .complex-table__body_with_filter {
+    height: calc(100% - 140px);
     width: 100%;
   }
   .fu-filter-bar {
