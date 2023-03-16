@@ -736,9 +736,6 @@ onMounted(() => {
   margin-top: -5px;
 }
 
-.echart-content {
-}
-
 .echart-content-left {
   position: relative;
   padding: 7px;

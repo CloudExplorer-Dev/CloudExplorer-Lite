@@ -159,7 +159,7 @@ function getList() {
         "ext.instanceConfig.searchTableData",
         ok.data.tableData
       );
-      if (ok.data.tableData && ok.data.tableData.length>0) {
+      if (ok.data.tableData && ok.data.tableData.length > 0) {
         if (currentRow.value === undefined) {
           currentRow.value = ok.data.tableData[0];
           selectRowId.value = ok.data.tableData[0].specName;
@@ -201,7 +201,11 @@ const handleQueryClick = () => {
   if (!props.formItem?.ext?.instanceConfig?.tableData) {
     return;
   }
-  let arr = [...props.formItem?.ext?.instanceConfig?.tableData];
+  const tableData = props.formItem?.ext?.instanceConfig?.tableData;
+  let arr: string | any[] = [];
+  if (tableData) {
+    arr = [...tableData];
+  }
   if (searchName.value.trim() && arr.length > 0) {
     arr = _.filter(
       props.formItem?.ext?.instanceConfig?.tableData,

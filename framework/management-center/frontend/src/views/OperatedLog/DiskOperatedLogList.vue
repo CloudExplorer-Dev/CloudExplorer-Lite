@@ -27,10 +27,14 @@
       <template #default="scope">
         <el-tooltip>
           <template #content>
-            <div style="max-width: 500px">{{ scope.row.content?scope.row.content:scope.row.operatedName }}</div>
+            <div style="max-width: 500px">
+              {{
+                scope.row.content ? scope.row.content : scope.row.operatedName
+              }}
+            </div>
           </template>
           <div class="text-overflow">
-            {{ scope.row.content?scope.row.content:scope.row.operatedName }}
+            {{ scope.row.content ? scope.row.content : scope.row.operatedName }}
           </div>
         </el-tooltip>
       </template>

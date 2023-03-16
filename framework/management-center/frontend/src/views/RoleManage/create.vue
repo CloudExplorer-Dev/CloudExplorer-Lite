@@ -1,9 +1,15 @@
 <template v-loading="loading">
-  <layout-container :border="false">
-    <template #content>
-      <layout-container>
-        <template #header><h4>基本信息</h4></template>
-        <template #content>
+  <el-container class="create-catalog-container">
+    <el-main ref="create-catalog-container">
+      <div class="form-div">
+        <el-row>
+          <el-col span="24">
+            <p class="tip">
+              {{ t("commons.basic_info", "基本信息") }}
+            </p>
+          </el-col>
+        </el-row>
+        <el-row>
           <RoleInfoTable
             :id="id"
             :loading="loading"
@@ -13,12 +19,13 @@
             v-model:rule-form-ref="ruleFormRef"
             :create-new="!id"
           />
-        </template>
-      </layout-container>
-
-      <layout-container>
-        <template #header><h4>角色权限</h4></template>
-        <template #content>
+        </el-row>
+        <el-row>
+          <el-col span="24">
+            <p class="tip">角色权限</p>
+          </el-col>
+        </el-row>
+        <el-row style="border: 1px solid; color: var(--el-border-color);">
           <RolePermissionTable
             :id="id"
             :loading="loading"
@@ -26,17 +33,26 @@
             :edit-permission="true"
             v-model:permission-data="permissionData"
           />
-        </template>
-      </layout-container>
-
-      <layout-container>
-        <el-button @click="back">取消</el-button>
-        <el-button type="primary" @click="submitForm(ruleFormRef)">
-          保存
-        </el-button>
-      </layout-container>
-    </template>
-  </layout-container>
+        </el-row>
+      </div>
+    </el-main>
+    <el-footer>
+      <div class="footer">
+        <div class="form-div">
+          <div class="footer-btn">
+            <el-button class="cancel-btn" @click="back">取消</el-button>
+            <el-button
+              class="save-btn"
+              type="primary"
+              @click="submitForm(ruleFormRef)"
+            >
+              保存
+            </el-button>
+          </div>
+        </div>
+      </div>
+    </el-footer>
+  </el-container>
 </template>
 <script setup lang="ts">
 const props = defineProps<{

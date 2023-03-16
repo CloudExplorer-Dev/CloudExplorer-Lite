@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted, onBeforeUnmount } from "vue";
+import { ref, onMounted } from "vue";
 import ResourceSpreadViewApi from "@/api/server_analysis/index";
 import {
   PaginationConfig,
@@ -12,6 +12,7 @@ import type { SimpleMap } from "@commons/api/base/type";
 import { platformIcon } from "@commons/utils/platform";
 import BaseCloudAccountApi from "@commons/api/cloud_account";
 import type { VmCloudServerVO } from "@/api/server_analysis/type";
+import _ from "lodash";
 
 const { t } = useI18n();
 const table = ref<any>(null);
@@ -21,12 +22,10 @@ const tableLoading = ref<boolean>(false);
 const cloudAccount = ref<Array<SimpleMap<string>>>([]);
 const filterInstanceStatus = (value: string) => {
   let status = "";
-  InstanceStatus.value.forEach((v) => {
-    if (v.value == value) {
-      status = v.text;
-      return;
-    }
-  });
+  let v = _.find(InstanceStatus.value, function(o) { return o.value == value; });
+  if(v){
+    status = v["text"];
+  }
   return status;
 };
 //状态
@@ -133,9 +132,7 @@ const tableConfig = ref<TableConfig>({
         :label="$t('commons.name')"
       >
         <template #default="scope">
-          <!--        <span @click="" class="name-span-class">-->
           {{ scope.row.instanceName }}
-          <!--        </span>-->
         </template>
       </el-table-column>
       <el-table-column
@@ -223,11 +220,6 @@ const tableConfig = ref<TableConfig>({
         prop="memoryMaximum"
         label="内存最大使用率(%)"
       ></el-table-column>
-      <!--      <el-table-column-->
-      <!--        min-width="150"-->
-      <!--        prop="diskAverage"-->
-      <!--        label="磁盘使用率(%)"-->
-      <!--      ></el-table-column>-->
       <template #buttons>
         <fu-table-column-select type="icon" :columns="columns" size="small" />
       </template>

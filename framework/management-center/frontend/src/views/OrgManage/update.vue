@@ -1,69 +1,86 @@
 <template>
-  <el-form
-    :rules="rules"
-    :model="from"
-    :inline="true"
-    ref="ruleFormRef"
-    status-icon
-  >
-    <layout-container :border="false">
-      <template #content>
-        <layout-container>
-          <template #header
-            ><h4>{{ t("commons.basic_info", "基本信息") }}</h4></template
-          >
-          <template #content>
-            <el-form-item
-              :label="t('commons.name', '名称')"
-              :prop="'name'"
-              style="width: 40%"
-            >
-              <el-input v-model="from.name" />
-            </el-form-item>
-            <el-form-item
-              :label="t('commons.description', '描述')"
-              :prop="'description'"
-              style="width: 40%"
-              :rules="rules.description"
-            >
-              <el-input v-model="from.description" />
-            </el-form-item>
-          </template>
-        </layout-container>
-        <layout-container>
-          <template #header
-            ><h4>
-              {{ t("org_manage.affiliated_organization", "所属组织") }}
-            </h4></template
-          >
-          <template #content>
-            <el-form-item :label="t('commons.org', '组织')" style="width: 80%">
-              <el-tree-select
-                filterable
-                :filter-method="filterMethod"
-                :props="{ label: 'name' }"
-                node-key="id"
-                v-model="from.pid"
-                :data="orientationData"
-                show-checkbox
-                style="width: 100%"
-                check-strictly
-                :render-after-expand="false"
-              />
-            </el-form-item>
-          </template>
-        </layout-container>
-        <layout-container>
-          <el-button @click="() => route.push({ name: 'org_list' })">{{
-            t("commons.btn.cancel", "取消")
-          }}</el-button>
-          <el-button type="primary" @click="submitForm(ruleFormRef)">{{
-            t("commons.btn.save", "保存")
-          }}</el-button></layout-container
+  <el-container class="create-catalog-container">
+    <el-main ref="create-catalog-container">
+      <div class="form-div">
+        <el-form
+          :rules="rules"
+          :model="from"
+          ref="ruleFormRef"
+          status-icon
+          label-position="top"
+          require-asterisk-position="right"
         >
-      </template>
-    </layout-container>
-  </el-form>
+          <el-row>
+            <el-col span="24">
+              <p class="tip">
+                {{ t("commons.basic_info", "基本信息") }}
+              </p>
+            </el-col>
+          </el-row>
+          <el-row :gutter="10">
+            <el-col :span="12">
+              <el-form-item :label="t('commons.name', '名称')" :prop="'name'">
+                <el-input v-model="from.name" />
+              </el-form-item>
+            </el-col>
+            <el-col :span="12">
+              <el-form-item
+                :label="t('commons.description', '描述')"
+                :prop="'description'"
+                :rules="rules.description"
+              >
+                <el-input v-model="from.description" />
+              </el-form-item>
+            </el-col>
+          </el-row>
+          <el-row>
+            <el-col :span="24">
+              <p class="tip">
+                {{ t("org_manage.affiliated_organization", "所属组织") }}
+              </p>
+            </el-col>
+          </el-row>
+          <el-row>
+            <el-col :span="24">
+              <el-form-item :label="t('commons.org', '组织')">
+                <el-tree-select
+                  filterable
+                  :filter-method="filterMethod"
+                  :props="{ label: 'name' }"
+                  node-key="id"
+                  v-model="from.pid"
+                  :data="orientationData"
+                  show-checkbox
+                  style="width: 100%"
+                  check-strictly
+                  :render-after-expand="false"
+                />
+              </el-form-item>
+            </el-col>
+          </el-row>
+        </el-form>
+      </div>
+    </el-main>
+    <el-footer>
+      <div class="footer">
+        <div class="form-div">
+          <div class="footer-btn">
+            <el-button
+              class="cancel-btn"
+              @click="() => route.push({ name: 'org_list' })"
+              >{{ t("commons.btn.cancel", "取消") }}</el-button
+            >
+            <el-button
+              class="save-btn"
+              type="primary"
+              @click="submitForm(ruleFormRef)"
+              >{{ t("commons.btn.save", "保存") }}</el-button
+            >
+          </div>
+        </div>
+      </div>
+    </el-footer>
+  </el-container>
 </template>
 <script setup lang="ts">
 import { onMounted, reactive, ref } from "vue";

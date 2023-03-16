@@ -42,14 +42,20 @@
       <template #default="scope">
         <el-tooltip>
           <template #content>
-            <div style="max-width: 500px">{{ scope.row.content?scope.row.content:scope.row.operatedName }}</div>
+            <div style="max-width: 500px">
+              {{
+                scope.row.content ? scope.row.content : scope.row.operatedName
+              }}
+            </div>
           </template>
-          <div style="
+          <div
+            style="
               white-space: nowrap;
               overflow: hidden;
               text-overflow: ellipsis;
-            ">
-            {{ scope.row.content?scope.row.content:scope.row.operatedName }}
+            "
+          >
+            {{ scope.row.content ? scope.row.content : scope.row.operatedName }}
           </div></el-tooltip
         >
       </template>
@@ -65,11 +71,13 @@
           <template #content>
             <div style="max-width: 500px">{{ scope.row.resourceName }}</div>
           </template>
-          <div style="
+          <div
+            style="
               white-space: nowrap;
               overflow: hidden;
               text-overflow: ellipsis;
-            ">
+            "
+          >
             {{ scope.row.resourceName }}
           </div></el-tooltip
         >

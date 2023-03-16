@@ -13,9 +13,8 @@
   </el-tabs>
 </template>
 <script lang="ts" setup>
-import { onMounted, ref } from "vue";
+import { ref } from "vue";
 import DiskList from "./diskList.vue";
 import ResourceSpreadView from "./resourceAnalysisView.vue";
 const activeName = ref("resourceSpread");
 </script>
-<style lang="scss" scoped></style>

@@ -291,7 +291,6 @@
           <el-form-item>
             <span>包年包月资源</span>
             <el-select v-model="dialogFormData.cycleContinuedRunning">
-              <!--              <el-option label="持续开机" value="true" />-->
               <el-option label="持续关机" value="false" />
             </el-select>
             <span style="padding: 10px">大于</span>
@@ -312,7 +311,6 @@
             <span>按需按量资源</span>
             <el-select v-model="dialogFormData.volumeContinuedRunning">
               <el-option label="持续开机" value="true" />
-              <!--              <el-option label="持续关机" value="false" />-->
             </el-select>
             <span style="padding: 10px">大于</span>
             <el-form-item>
@@ -333,7 +331,6 @@
         <div style="display: flex">
           <el-form-item>
             <el-select v-model="dialogFormData.continuedRunning">
-              <!--              <el-option label="持续开机" value="true" />-->
               <el-option label="持续关机" value="false" />
             </el-select>
             <span style="padding: 10px">大于</span>
@@ -361,7 +358,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, onBeforeUnmount, computed } from "vue";
+import { ref, onMounted, } from "vue";
 import _ from "lodash";
 import {
   PaginationConfig,
@@ -377,7 +374,6 @@ import type { VmCloudServerVO } from "@/api/server_analysis/type";
 import ResourceOptimizationViewApi from "@/api/resource_optimization";
 import type { OptimizeSuggest } from "@commons/api/resource_optimization/type";
 import { useRouter } from "vue-router";
-import { ElMessage } from "element-plus";
 const useRoute = useRouter();
 const { t } = useI18n();
 const table = ref<any>(null);
@@ -460,7 +456,6 @@ const allowChange = ref<boolean>(true);
 const changeOptimizeType = (o: any) => {
   if (allowChange.value) {
     currentType.value = o.code;
-    //tableData.value = o.data.records;
     tableConfig.value.paginationConfig?.setTotal(
       o.data.total,
       tableConfig.value.paginationConfig
@@ -546,8 +541,10 @@ const search = (condition: TableSearch) => {
     if (formData.optimizeSuggest === type) {
       if (changTitleValue.value) {
         const d = _.find(optimizeSuggests.value, ["code", type]);
-        d ? (d.value = res.data.total) : "";
-        d ? (d.data = res.data) : [];
+        if(d){
+          d.value = res.data.total
+          d.data = res.data
+        }
       }
       changTitleValue.value = false;
       tableData.value = res.data.records;
@@ -583,7 +580,6 @@ onMounted(() => {
       value.value = res.data.total;
       value.data = res.data;
       if (!code && value.code === "derating") {
-        //currentType.value = value.code;
         tableData.value = res.data.records;
         tableConfig.value.paginationConfig?.setTotal(
           res.data.total,
@@ -672,6 +668,9 @@ const showDetail = (row: VmCloudServerVO) => {
 }
 .log-table {
   min-width: 900px;
+  padding-top: 10px;
+  width: 100%;
+  height: calc(100vh - 100px);
 }
 .boxCenter {
   height: 150px;
@@ -747,11 +746,7 @@ const showDetail = (row: VmCloudServerVO) => {
     line-height: 40px;
   }
 }
-.log-table {
-  padding-top: 10px;
-  width: 100%;
-  height: calc(100vh - 100px);
-}
+
 .el-dialog__body {
   display: flex;
 

@@ -6,22 +6,37 @@ package com.fit2cloud.constants;
  * @date 2022/12/11 18:42
  **/
 public enum DiskTypeConstants {
+    /**
+     * 阿里云 高效云盘
+     */
     CLOUD_EFFICIENCY("cloud_efficiency","高效云盘"),
     CLOUD_ESSD("cloud_essd","ESSD云盘"),
     CLOUD_SSD("cloud_ssd","SSD云盘"),
+    CLOUD_AUTO("cloud_auto","ESSD AutoPL云盘"),
+    /**
+     * 华为 普通
+     */
     CLOUD("cloud","普通云盘"),
     GPSSD("GPSSD","通用型SSD"),
     ESSD("ESSD","极速型SSD"),
     SSD("SSD","超高IO"),
     SAS("SAS","高IO"),
+    /**
+     * 腾讯云 高性能
+     */
     CLOUD_PREMIUM("CLOUD_PREMIUM","高性能云硬盘"),
     CLOUD_HSSD("CLOUD_HSSD","增强型SSD云硬盘"),
     CLOUD_BSSD("CLOUD_BSSD","通用型SSD云硬盘"),
-    cloud_auto("cloud_auto","ESSD AutoPL云盘"),
+    /**
+     * Vsphere 精简
+     */
     THIN("THIN","精简置备"),
     THICK_EAGER_ZEROED("THICK_EAGER_ZEROED","厚置备置零"),
     THICK_LAZY_ZEROED("THICK_LAZY_ZEROED","厚置备延迟置零"),
     SPARSE("SPARSE","稀疏型"),
+    /**
+     * Openstack lvmdriver-1
+     */
     LVMDRIVER("lvmdriver-1","lvmdriver-1"),
     DEFAULT("__DEFAULT__","__DEFAULT__"),
     NA("NA","未知"),

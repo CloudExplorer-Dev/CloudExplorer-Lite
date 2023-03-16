@@ -19,6 +19,8 @@ import com.fit2cloud.common.constants.ResourceTypeConstants;
 import com.fit2cloud.common.es.constants.IndexConstants;
 import com.fit2cloud.common.utils.PageUtil;
 import com.fit2cloud.constants.OptimizationConstants;
+import com.fit2cloud.constants.ResourcePerfMetricEnum;
+import com.fit2cloud.constants.SpecialAttributesConstants;
 import com.fit2cloud.controller.request.optimize.PageOptimizationRequest;
 import com.fit2cloud.dto.AnalysisServerDTO;
 import com.fit2cloud.service.IOptimizeAnalysisService;
@@ -43,6 +45,7 @@ import javax.annotation.Resource;
 import java.beans.PropertyDescriptor;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.text.MessageFormat;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -91,7 +94,7 @@ public class OptimizeAnalysisServiceImpl implements IOptimizeAnalysisService {
         queryServerWrapper.in(CollectionUtils.isNotEmpty(request.getInstanceUuids()),VmCloudServer::getInstanceUuid,request.getInstanceUuids());
         IPage<AnalysisServerDTO> pageData = baseVmCloudServerMapper.selectJoinPage(page,AnalysisServerDTO.class,queryServerWrapper);
         //分页数据添加监控数据
-        if(pageData.getRecords().size()>0){
+        if(CollectionUtils.isNotEmpty(pageData.getRecords())){
             OptimizationConstants optimizationConstants = OptimizationConstants.getByCode(request.getOptimizeSuggest());
             //监控数据根据UUID分组
             Map<String,AnalysisServerDTO>  metricDataMap = metricList.stream().collect(Collectors.toMap(VmCloudServer::getInstanceUuid, o->o,(k1, k2)->k1));
@@ -125,23 +128,23 @@ public class OptimizeAnalysisServiceImpl implements IOptimizeAnalysisService {
                                 .le(AnalysisServerDTO::getLastOperateTime,LocalDateTime.now().minusDays(request.getVolumeContinuedDays())))
                         .or(a->{
                             // 包年包月资源持续关机时间超过day天建议变更付费方式为按量付费的云主机
-                            a.eq(true,VmCloudServer::getInstanceStatus,"Stopped");
+                            a.eq(true,VmCloudServer::getInstanceStatus, SpecialAttributesConstants.StatusField.STOPPED);
                             a.eq(true,VmCloudServer::getInstanceChargeType,"PrePaid");
                             a.le(VmCloudServer::getLastOperateTime,LocalDateTime.now().minusDays(request.getCycleContinuedDays()));
                         })
         );
         IPage<AnalysisServerDTO> pageData = baseVmCloudServerMapper.selectJoinPage(page,AnalysisServerDTO.class,queryServerWrapper);
         // 根据状态判断变更方式
-        if(pageData.getRecords().size()>0){
+        if(CollectionUtils.isNotEmpty(pageData.getRecords())){
             pageData.getRecords().forEach(vm->{
                 assert optimizationConstants != null;
                 vm.setOptimizeSuggest(optimizationConstants.getName());
                 vm.setOptimizeSuggestCode(optimizationConstants.getCode());
                 StringJoiner sj = new StringJoiner("");
-                if(StringUtils.equalsIgnoreCase(vm.getInstanceStatus(),"Running")){
+                if(StringUtils.equalsIgnoreCase(vm.getInstanceStatus(),SpecialAttributesConstants.StatusField.VM_RUNNING)){
                     sj.add("持续开机").add(String.valueOf(request.getVolumeContinuedDays())).add("天以上，建议转为包年包月");
                 }
-                if(StringUtils.equalsIgnoreCase(vm.getInstanceStatus(),"Stopped")){
+                if(StringUtils.equalsIgnoreCase(vm.getInstanceStatus(),SpecialAttributesConstants.StatusField.STOPPED)){
                     sj.add("持续关机").add(String.valueOf(request.getCycleContinuedDays())).add("天以上，建议转为按需按量");
                 }
                 vm.setContent(sj.toString());
@@ -167,10 +170,10 @@ public class OptimizeAnalysisServiceImpl implements IOptimizeAnalysisService {
             recycleBinServer = baseVmCloudServerMapper.selectBatchIds(temp);
         }
         if(CollectionUtils.isNotEmpty(request.getAccountIds())){
-            recycleBinServer = recycleBinServer.stream().filter(v->request.getAccountIds().contains(v.getAccountId())).collect(Collectors.toList());
+            recycleBinServer = recycleBinServer.stream().filter(v->request.getAccountIds().contains(v.getAccountId())).toList();
         }
         if(StringUtils.isNotEmpty(request.getInstanceName())){
-            recycleBinServer = recycleBinServer.stream().filter(v->v.getInstanceName().indexOf(request.getInstanceName())>0).collect(Collectors.toList());
+            recycleBinServer = recycleBinServer.stream().filter(v->v.getInstanceName().contains(request.getInstanceName())).toList();
         }
         if(CollectionUtils.isNotEmpty(recycleBinServer)){
             recycleBinServerIds.addAll(recycleBinServer.stream().filter(v->!StringUtils.equalsIgnoreCase("Deleted",v.getInstanceStatus())).map(VmCloudServer::getId).toList());
@@ -178,13 +181,13 @@ public class OptimizeAnalysisServiceImpl implements IOptimizeAnalysisService {
         OptimizationConstants optimizationConstants = OptimizationConstants.getByCode(request.getOptimizeSuggest());
         Page<AnalysisServerDTO> page = PageUtil.of(request, AnalysisServerDTO.class, null, true);
         MPJLambdaWrapper<VmCloudServer> queryServerWrapper = addServerAnalysisQuery(request);
-        queryServerWrapper.eq(true,VmCloudServer::getInstanceStatus,"Stopped");
+        queryServerWrapper.eq(true,VmCloudServer::getInstanceStatus,SpecialAttributesConstants.StatusField.STOPPED);
         queryServerWrapper.le(VmCloudServer::getLastOperateTime,LocalDateTime.now().minusDays(request.getContinuedDays()));
         if(CollectionUtils.isNotEmpty(recycleBinServerIds)){
             queryServerWrapper.or(or-> or.in(true,VmCloudServer::getId,recycleBinServerIds));
         }
         IPage<AnalysisServerDTO> pageData = baseVmCloudServerMapper.selectJoinPage(page,AnalysisServerDTO.class,queryServerWrapper);
-        if(pageData.getRecords().size()>0){
+        if(CollectionUtils.isNotEmpty(pageData.getRecords())){
             pageData.getRecords().forEach(vm-> {
                         assert optimizationConstants != null;
                         vm.setOptimizeSuggest(optimizationConstants.getName());
@@ -221,56 +224,100 @@ public class OptimizeAnalysisServiceImpl implements IOptimizeAnalysisService {
     }
 
     private List<AnalysisServerDTO> getMetricData(PageOptimizationRequest request,boolean isDerating){
+        String optimizationMsg = "持续{0}天以上，CPU{1}使用率{2}{3}%{4}内存{5}使用率{6}{7}%,建议{8}";
         List<AnalysisServerDTO> metricData = new ArrayList<>();
-        String mark = isDerating?"<=":">=";
-        // -1表示小于，1表示大于
-        int flag = isDerating?-1:1;
+        //升配降配表示符
+        Map<Boolean,String> upgradeCharacter = new HashMap<>(2);
+        //升配
+        upgradeCharacter.put(true,">=");
+        //降配
+        upgradeCharacter.put(false,"<=");
+        //升配降配
+        Map<Boolean,String> upgradeLabel = new HashMap<>(2);
+        //升配
+        upgradeLabel.put(true,"升配");
+        //降配
+        upgradeLabel.put(false,"降配");
+        //最大或者平均值
+        Map<Boolean,String> maxLabel = new HashMap<>(2);
+        maxLabel.put(true,"最大");
+        maxLabel.put(false,"平均");
+        //条件
+        Map<Boolean,String> conditionLabel = new HashMap<>(2);
+        conditionLabel.put(true,"并且");
+        conditionLabel.put(false,"或");
+        //条件
+        boolean isAnd = request.getConditionOr().equalsIgnoreCase(SpecialAttributesConstants.SpecialField.AND);
         // 优化建议原因
-        StringJoiner sj = new StringJoiner("");
-        sj.add("持续").add(String.valueOf(request.getDays())).add("天以上，CPU")
-                .add(request.isCpuMaxRate()?"最大":"平均").add("使用率").add(mark).add(String.valueOf(request.getCpuRate()))
-                .add("%").add(StringUtils.equalsIgnoreCase("and",request.getConditionOr())?"并且":"或").add("内存").add(request.isMemoryMaxRate()?"最大":"平均").add("使用率").add(mark).add(String.valueOf(request.getMemoryRate())).add("%")
-                .add("，建议").add(isDerating?"降低":"升级").add("配置");
-        //查询监控数据
+        String[] contentArray = new String[]{
+                String.valueOf(request.getDays()),
+                maxLabel.get(request.isCpuMaxRate()),
+                upgradeCharacter.get(!isDerating),
+                String.valueOf(request.getCpuRate()),
+                conditionLabel.get(isAnd),
+                maxLabel.get(request.isMemoryMaxRate()),
+                upgradeCharacter.get(!isDerating),
+                String.valueOf(request.getMemoryRate()),
+                upgradeLabel.get(!isDerating)};
+        optimizationMsg = MessageFormat.format(optimizationMsg,contentArray);
+        // 查询监控数据
         List<AnalysisServerDTO> list = getVmPerfMetric(request,isDerating);
-        //条件判断
+        // 条件判断
+        // -1表示小于，1表示大于
+        Map<Boolean,Integer> containValue = new HashMap<>(2);
+        containValue.put(true,-1);
+        containValue.put(false,1);
+        // 判断没有监控数据依据是，平均值为空，理论上平均值为空，最大值也是为空的，所以某个指标的平均值为空，那么认为这个指标没有监控数据
+        String finalOptimizationMsg = optimizationMsg;
         list.forEach(vo->{
-            vo.setContent(sj.toString());
+            vo.setContent(finalOptimizationMsg);
+            // 空数据指标
             boolean cpuIsNull = Objects.isNull(vo.getCpuAverage());
             boolean memoryIsNull = Objects.isNull(vo.getMemoryAverage());
-            //CPU内存都没有监控
-            if(cpuIsNull && memoryIsNull){
-                return;
-            }
-            Map<String,Boolean> cpuCompare = new HashMap<>();
-            cpuCompare.put("cpu",false);
-            if(!cpuIsNull){
-                if(request.isCpuMaxRate()){
-                    cpuCompare.put("cpu",vo.getCpuMaximum().compareTo(BigDecimal.valueOf(request.getCpuRate())) == flag);
-                }else{
-                    cpuCompare.put("cpu",vo.getCpuAverage().compareTo(BigDecimal.valueOf(request.getCpuRate())) == flag);
-                }
-            }
-            Map<String,Boolean> memoryCompare = new HashMap<>();
-            cpuCompare.put("memory",false);
-            if(!memoryIsNull){
-                if(request.isMemoryMaxRate()){
-                    memoryCompare.put("memory", vo.getMemoryMaximum().compareTo(BigDecimal.valueOf(request.getMemoryRate())) == flag);
-                }else{
-                    memoryCompare.put("memory", vo.getMemoryAverage().compareTo(BigDecimal.valueOf(request.getMemoryRate())) == flag);
-                }
-            }
-            //and的话，内存为空的不参加比较
-            if(StringUtils.equalsIgnoreCase("and",request.getConditionOr()) && ((cpuCompare.get("cpu") || !cpuIsNull) && (cpuCompare.get("memory") || !memoryIsNull))){
+            // CPU比较结果
+            Map<String,Boolean> cpuCompare = cpuCompare(cpuIsNull,vo,request,containValue,isDerating);
+            // 内存比较结果
+            Map<String,Boolean> memoryCompare = memoryCompare(memoryIsNull,vo,request,containValue,isDerating);
+            boolean cpuCompareResult = cpuCompare.get(SpecialAttributesConstants.ResourceField.CPU);
+            boolean memoryCompareResult = memoryCompare.get(SpecialAttributesConstants.ResourceField.MEMORY);
+            // and的话，为空的不参加比较
+            boolean andResult = (cpuCompareResult && !cpuIsNull) && (memoryCompareResult && !memoryIsNull);
+            boolean orResult = cpuCompareResult || memoryCompareResult;
+            if(isAnd && andResult){
                 metricData.add(vo);
             }
-            if(StringUtils.equalsIgnoreCase("or",request.getConditionOr()) && (cpuCompare.get("cpu") || cpuCompare.get("memory"))){
+            if(!isAnd && orResult){
                 metricData.add(vo);
             }
-
         });
-        request.setInstanceUuids(metricData.stream().map(AnalysisServerDTO::getInstanceUuid).collect(Collectors.toList()));
+        request.setInstanceUuids(metricData.stream().map(AnalysisServerDTO::getInstanceUuid).toList());
         return metricData;
+    }
+
+    private Map<String,Boolean> cpuCompare(boolean cpuIsNull,AnalysisServerDTO vo, PageOptimizationRequest request,Map<Boolean,Integer> containValue, boolean isDerating){
+        Map<String,Boolean> cpuCompare = new HashMap<>(1);
+        cpuCompare.put(SpecialAttributesConstants.ResourceField.CPU,false);
+        if(!cpuIsNull){
+            if(request.isCpuMaxRate()){
+                cpuCompare.put(SpecialAttributesConstants.ResourceField.CPU,vo.getCpuMaximum().compareTo(BigDecimal.valueOf(request.getCpuRate())) == containValue.get(isDerating));
+            }else{
+                cpuCompare.put(SpecialAttributesConstants.ResourceField.CPU,vo.getCpuAverage().compareTo(BigDecimal.valueOf(request.getCpuRate())) == containValue.get(isDerating));
+            }
+        }
+        return cpuCompare;
+    }
+
+    private Map<String,Boolean> memoryCompare(boolean memoryIsNull,AnalysisServerDTO vo, PageOptimizationRequest request,Map<Boolean,Integer> containValue, boolean isDerating){
+        Map<String,Boolean> compareResult = new HashMap<>(1);
+        compareResult.put(SpecialAttributesConstants.ResourceField.MEMORY,false);
+        if(!memoryIsNull){
+            if(request.isCpuMaxRate()){
+                compareResult.put(SpecialAttributesConstants.ResourceField.MEMORY,vo.getMemoryMaximum().compareTo(BigDecimal.valueOf(request.getMemoryRate())) == containValue.get(isDerating));
+            }else{
+                compareResult.put(SpecialAttributesConstants.ResourceField.MEMORY,vo.getMemoryAverage().compareTo(BigDecimal.valueOf(request.getMemoryRate())) == containValue.get(isDerating));
+            }
+        }
+        return compareResult;
     }
 
     /**
@@ -288,8 +335,8 @@ public class OptimizeAnalysisServiceImpl implements IOptimizeAnalysisService {
         List<AnalysisServerDTO> cloudServerMetricData = new ArrayList<>();
         try {
             request.setEsLastTime(getEsLastTime());
-            Arrays.asList("CPU_USED_UTILIZATION","MEMORY_USED_UTILIZATION").forEach(metricName->{
-                boolean isCpu = StringUtils.equalsIgnoreCase("CPU_USED_UTILIZATION",metricName);
+            Arrays.asList(ResourcePerfMetricEnum.CPU_USED_UTILIZATION.name(),ResourcePerfMetricEnum.MEMORY_USED_UTILIZATION.name()).forEach(metricName->{
+                boolean isCpu = StringUtils.equalsIgnoreCase(ResourcePerfMetricEnum.CPU_USED_UTILIZATION.name(),metricName);
                 NativeQuery query = new NativeQueryBuilder()
                         .withPageable(PageRequest.of(0, 1))
                         .withTrackScores(true)
@@ -304,9 +351,9 @@ public class OptimizeAnalysisServiceImpl implements IOptimizeAnalysisService {
                 for (StringTermsBucket v : list) {
                     AnalysisServerDTO dto = new AnalysisServerDTO();
                     dto.setInstanceUuid(v.key());
-                    Aggregate avg = v.aggregations().get("avgValue");
-                    Aggregate max = v.aggregations().get("maxValue");
-                    Aggregate min = v.aggregations().get("minValue");
+                    Aggregate avg = v.aggregations().get(SpecialAttributesConstants.SpecialField.AVERAGE_VALUE);
+                    Aggregate max = v.aggregations().get(SpecialAttributesConstants.SpecialField.MAX_VALUE);
+                    Aggregate min = v.aggregations().get(SpecialAttributesConstants.SpecialField.MIN_VALUE);
                     BigDecimal avgBig = BigDecimal.valueOf(avg.avg().value()).setScale(3, RoundingMode.HALF_UP);
                     BigDecimal maxBig = BigDecimal.valueOf(max.max().value()).setScale(3, RoundingMode.HALF_UP);
                     BigDecimal minBig = BigDecimal.valueOf(min.min().value()).setScale(3, RoundingMode.HALF_UP);
@@ -368,13 +415,15 @@ public class OptimizeAnalysisServiceImpl implements IOptimizeAnalysisService {
         String valueType = maxValue?"maxValue":"avgValue";
         Map<String,String> pathMap = new HashMap<>();
         pathMap.put(valueType,valueType);
-        BucketsPath bucketsPath = new BucketsPath.Builder().dict(pathMap).build();
-        Script script = new Script.Builder().inline(new InlineScript.Builder().source("params."+valueType+mark+(isCpu?request.getCpuRate():request.getMemoryRate())).build()).build();
+        // TODO 这个地方不要比较了，因为比较后，就会忽略指标不达标的机器，导致指标无数据,直接时间段内的值就好了
+        // BucketsPath bucketsPath = new BucketsPath.Builder().dict(pathMap).build();
+        // Script script = new Script.Builder().inline(new InlineScript.Builder().source("params."+valueType+mark+(isCpu?request.getCpuRate():request.getMemoryRate())).build()).build();
+        Script script = new Script.Builder().inline(new InlineScript.Builder().source("params."+valueType).build()).build();
         return new Aggregation.Builder().terms(new TermsAggregation.Builder().field("instanceId.keyword").size(Integer.MAX_VALUE).build())
                 .aggregations("maxValue",new Aggregation.Builder().max(new MaxAggregation.Builder().field("maximum").build()).build())
                 .aggregations("avgValue",new Aggregation.Builder().avg(new AverageAggregation.Builder().field("average").build()).build())
                 .aggregations("minValue",new Aggregation.Builder().min(new MinAggregation.Builder().field("minimum").build()).build())
-                .aggregations("having",new Aggregation.Builder().bucketSelector(new BucketSelectorAggregation.Builder().bucketsPath(bucketsPath).script(script).build()).build())
+                //.aggregations("having",new Aggregation.Builder().bucketSelector(new BucketSelectorAggregation.Builder().bucketsPath(bucketsPath).script(script).build()).build())
                 .build();
     }
 

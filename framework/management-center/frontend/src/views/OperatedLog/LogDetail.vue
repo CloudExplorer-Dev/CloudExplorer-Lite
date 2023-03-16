@@ -129,11 +129,11 @@ defineExpose({
         {{ logInfo.code }}
       </el-descriptions-item>
       <el-descriptions-item
-          v-if="logInfo.code !== 200"
-          label-class-name="label-class"
-          class-name="content-class"
-          label="失败原因"
-          colon="true"
+        v-if="logInfo.code !== 200"
+        label-class-name="label-class"
+        class-name="content-class"
+        label="失败原因"
+        colon="true"
       >
         {{ logInfo.response }}
       </el-descriptions-item>

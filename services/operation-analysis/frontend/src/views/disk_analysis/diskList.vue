@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted, onBeforeUnmount, computed } from "vue";
+import { ref, onMounted } from "vue";
 import ResourceSpreadViewApi from "@/api/disk_analysis";
 import type { VmCloudDiskVO } from "@/api/disk_analysis/type";
 import {
@@ -12,6 +12,7 @@ import { useI18n } from "vue-i18n";
 import type { SimpleMap } from "@commons/api/base/type";
 import { platformIcon } from "@commons/utils/platform";
 import BaseCloudAccountApi from "@commons/api/cloud_account";
+import _ from "lodash";
 
 const { t } = useI18n();
 const columns = ref([]);
@@ -54,12 +55,10 @@ const filterChargeType = (instanceChargeType: string) => {
 
 const filterStatus = (value: string) => {
   let status = "";
-  diskStatus.value.forEach((v) => {
-    if (v.value == value) {
-      status = v.text;
-      return;
-    }
-  });
+  let v = _.find(diskStatus.value, function(o) { return o.value == value; });
+  if(v){
+    status = v["text"];
+  }
   return status;
 };
 
@@ -221,11 +220,6 @@ const tableConfig = ref<TableConfig>({
           {{ filterChargeType(scope.row.diskChargeType) }}
         </template>
       </el-table-column>
-      <!--      <el-table-column-->
-      <!--          min-width="150"-->
-      <!--          prop="diskAverage"-->
-      <!--          label="磁盘使用率(%)"-->
-      <!--      ></el-table-column>-->
       <template #buttons>
         <fu-table-column-select type="icon" :columns="columns" size="small" />
       </template>

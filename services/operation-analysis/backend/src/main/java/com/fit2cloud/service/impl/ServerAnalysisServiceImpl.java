@@ -21,6 +21,8 @@ import com.fit2cloud.common.es.constants.IndexConstants;
 import com.fit2cloud.common.log.utils.LogUtil;
 import com.fit2cloud.common.provider.entity.F2CEntityType;
 import com.fit2cloud.common.utils.*;
+import com.fit2cloud.constants.ResourcePerfMetricEnum;
+import com.fit2cloud.constants.SpecialAttributesConstants;
 import com.fit2cloud.controller.request.server.PageServerRequest;
 import com.fit2cloud.controller.request.server.ResourceAnalysisRequest;
 import com.fit2cloud.controller.response.BarTreeChartData;
@@ -111,7 +113,7 @@ public class ServerAnalysisServiceImpl implements IServerAnalysisService {
         wrapper.selectAs(CloudAccount::getPlatform,AnalysisServerDTO::getPlatform);
         wrapper.like(StringUtils.isNotBlank(request.getName()), VmCloudServer::getInstanceName, request.getName());
         wrapper.in(CollectionUtils.isNotEmpty(request.getSourceIds()), VmCloudServer::getSourceId, request.getSourceIds());
-        wrapper.notIn(true,VmCloudServer::getInstanceStatus, List.of("Deleted","Failed"));
+        wrapper.notIn(true,VmCloudServer::getInstanceStatus, List.of(SpecialAttributesConstants.StatusField.VM_DELETE,SpecialAttributesConstants.StatusField.FAILED));
         return wrapper;
     }
 
@@ -138,7 +140,7 @@ public class ServerAnalysisServiceImpl implements IServerAnalysisService {
     @Override
     public List<VmCloudHost> getVmHost(ResourceAnalysisRequest request) {
         if(CollectionUtils.isEmpty(request.getAccountIds())){
-            request.setAccountIds(getAllCloudAccount().stream().map(CloudAccount::getId).collect(Collectors.toList()));
+            request.setAccountIds(getAllCloudAccount().stream().map(CloudAccount::getId).toList());
         }
         QueryWrapper<VmCloudHost> queryWrapper = new QueryWrapper<>();
         queryWrapper.in(CollectionUtils.isNotEmpty(request.getAccountIds()),ColumnNameUtil.getColumnName(VmCloudHost::getAccountId,true),request.getAccountIds());
@@ -183,12 +185,13 @@ public class ServerAnalysisServiceImpl implements IServerAnalysisService {
             List<AnalysisServerDTO> vmList = baseVmCloudServerMapper.selectJoinList(AnalysisServerDTO.class,queryWrapper);
             if (CollectionUtils.isNotEmpty(vmList)) {
                 //格式化创建时间,删除时间
-                vmList = vmList.stream().filter(v->accountMap.containsKey(v.getAccountId())).filter(v->Objects.nonNull(v.getCreateTime())).peek(v->{
-                    v.setCreateMonth(v.getCreateTime().format(DateTimeFormatter.ofPattern("yyyy-MM-dd")));
-                    if(Objects.nonNull(v.getLastOperateTime()) && StringUtils.equalsIgnoreCase(v.getInstanceStatus(),"Deleted")){
-                        v.setDeleteMonth(v.getLastOperateTime().format(DateTimeFormatter.ofPattern("yyyy-MM-dd")));
+                vmList = vmList.stream().filter(v->accountMap.containsKey(v.getAccountId())).filter(v->Objects.nonNull(v.getCreateTime())).toList();
+                vmList.forEach(v->{
+                    v.setCreateMonth(v.getCreateTime().format(DateTimeFormatter.ofPattern(DateUtil.YYYY_MM_DD)));
+                    if(Objects.nonNull(v.getLastOperateTime()) && StringUtils.equalsIgnoreCase(v.getInstanceStatus(), SpecialAttributesConstants.StatusField.VM_DELETE)){
+                        v.setDeleteMonth(v.getLastOperateTime().format(DateTimeFormatter.ofPattern(DateUtil.YYYY_MM_DD)));
                     }
-                }).toList();
+                });
                 Map<String, List<AnalysisServerDTO>> resourceGroup;
                 if (CollectionUtils.isNotEmpty(request.getHostIds())) {
                     resourceGroup = vmList.stream().collect(Collectors.groupingBy(ServerAnalysisServiceImpl::buildKey));
@@ -207,7 +210,10 @@ public class ServerAnalysisServiceImpl implements IServerAnalysisService {
             //总数
             Map<String, Long> month = resourceGroup.get(resourceId).stream().collect(Collectors.groupingBy(AnalysisServerDTO::getCreateMonth, Collectors.counting()));
             //删除总数
-            Map<String, Long> delMonth = resourceGroup.get(resourceId).stream().filter(v->StringUtils.equalsIgnoreCase(v.getInstanceStatus(),"Deleted") && StringUtils.isNotEmpty(v.getDeleteMonth())).collect(Collectors.groupingBy(AnalysisServerDTO::getDeleteMonth, Collectors.counting()));
+            Map<String, Long> delMonth = resourceGroup.get(resourceId).stream()
+                    .filter(v->StringUtils.equalsIgnoreCase(v.getInstanceStatus(),SpecialAttributesConstants.StatusField.VM_DELETE)
+                            && StringUtils.isNotEmpty(v.getDeleteMonth()))
+                    .collect(Collectors.groupingBy(AnalysisServerDTO::getDeleteMonth, Collectors.counting()));
             dateRangeList.forEach(dateStr -> {
                 ChartData chartData = new ChartData();
                 chartData.setXAxis(dateStr);
@@ -258,35 +264,35 @@ public class ServerAnalysisServiceImpl implements IServerAnalysisService {
      */
     @Override
     public Map<String,List<KeyValue>> spread(ResourceAnalysisRequest request){
-        Map<String,List<KeyValue>> result = new HashMap<>();
+        Map<String,List<KeyValue>> result = new HashMap<>(1);
         Map<String,CloudAccount> accountMap = getAllAccountIdMap();
         if(accountMap.size()==0){
             return result;
         }
         MPJLambdaWrapper<VmCloudServer> queryWrapper = addServerAnalysisQuery(request);
-        queryWrapper.notIn(true,VmCloudServer::getInstanceStatus, List.of("Deleted","Failed"));
+        queryWrapper.notIn(true,VmCloudServer::getInstanceStatus, List.of(SpecialAttributesConstants.StatusField.VM_DELETE,SpecialAttributesConstants.StatusField.FAILED));
         List<AnalysisServerDTO> vmList = baseVmCloudServerMapper.selectJoinList(AnalysisServerDTO.class,queryWrapper);
         //将除了开机关机的其他状态设置为其他
-        vmList = vmList.stream().peek(v-> {
-            if(!StringUtils.equalsIgnoreCase(v.getInstanceStatus(),"Running") && !StringUtils.equalsIgnoreCase(v.getInstanceStatus(),"Stopped")){
-                v.setInstanceStatus("Other");
+        vmList.forEach(v->{
+            if(!StringUtils.equalsIgnoreCase(v.getInstanceStatus(),SpecialAttributesConstants.StatusField.VM_RUNNING) && !StringUtils.equalsIgnoreCase(v.getInstanceStatus(),SpecialAttributesConstants.StatusField.STOPPED)){
+                v.setInstanceStatus(SpecialAttributesConstants.StatusField.OTHER);
             }
-        }).collect(Collectors.toList());
+        });
         vmList = vmList.stream().filter(v->StringUtils.isNotEmpty(v.getAccountId())).toList();
         Map<String,Long> byAccountMap = vmList.stream().filter(v->accountMap.containsKey(v.getAccountId())).collect(Collectors.groupingBy(AnalysisServerDTO::getAccountId, Collectors.counting()));
-        result.put("byAccount",byAccountMap.entrySet().stream().map(c -> new KeyValue(StringUtils.isEmpty(accountMap.get(c.getKey()).getName())?c.getKey():accountMap.get(c.getKey()).getName(), c.getValue()) {}).collect(Collectors.toList()));
-        Map<String,String> statusMap = new HashMap<>();
-        statusMap.put("Running","运行中");
-        statusMap.put("Stopped","已停止");
-        statusMap.put("Other","其他");
+        result.put("byAccount",byAccountMap.entrySet().stream().map(c -> new KeyValue(StringUtils.isEmpty(accountMap.get(c.getKey()).getName())?c.getKey():accountMap.get(c.getKey()).getName(), c.getValue())).toList());
+        Map<String,String> statusMap = new HashMap<>(3);
+        statusMap.put(SpecialAttributesConstants.StatusField.VM_RUNNING,"运行中");
+        statusMap.put(SpecialAttributesConstants.StatusField.STOPPED,"已停止");
+        statusMap.put(SpecialAttributesConstants.StatusField.OTHER,"其他");
         Map<String,Long> byStatusMap = vmList.stream().collect(Collectors.groupingBy(AnalysisServerDTO::getInstanceStatus, Collectors.counting()));
-        result.put("byStatus",byStatusMap.entrySet().stream().map(c -> new KeyValue(statusMap.get(c.getKey()), c.getValue()) {}).collect(Collectors.toList()));
-        Map<String,String> chargeTypeMap = new HashMap<>();
+        result.put("byStatus",byStatusMap.entrySet().stream().map(c -> new KeyValue(statusMap.get(c.getKey()), c.getValue())).toList());
+        Map<String,String> chargeTypeMap = new HashMap<>(3);
         chargeTypeMap.put("PostPaid","按需按量");
         chargeTypeMap.put("PrePaid","包年包月");
         chargeTypeMap.put("SpotPaid","竞价");
         Map<String,Long> byChargeTypeMap = vmList.stream().filter(v->StringUtils.isNotEmpty(v.getInstanceChargeType())).collect(Collectors.groupingBy(AnalysisServerDTO::getInstanceChargeType, Collectors.counting()));
-        result.put("byChargeType",byChargeTypeMap.entrySet().stream().map(c -> new KeyValue(chargeTypeMap.get(c.getKey()), c.getValue()) {}).collect(Collectors.toList()));
+        result.put("byChargeType",byChargeTypeMap.entrySet().stream().map(c -> new KeyValue(chargeTypeMap.get(c.getKey()), c.getValue())).toList());
         return result;
     }
 
@@ -309,17 +315,17 @@ public class ServerAnalysisServiceImpl implements IServerAnalysisService {
             }));
             list.forEach(v-> metricMonitorDataList.stream().filter(d -> StringUtils.equalsIgnoreCase(v.getInstanceUuid(),d.getInstanceId())
                     && StringUtils.equalsIgnoreCase(v.getAccountId(),d.getCloudAccountId())).forEach(m->{
-                if(StringUtils.equalsIgnoreCase("CPU_USED_UTILIZATION",m.getMetricName())){
+                if(StringUtils.equalsIgnoreCase(ResourcePerfMetricEnum.CPU_USED_UTILIZATION.name(),m.getMetricName())){
                     v.setCpuAverage(m.getAverage().setScale(3, RoundingMode.HALF_UP));
                     v.setCpuMaximum(m.getMaximum().setScale(3, RoundingMode.HALF_UP));
                     v.setCpuMinimum(m.getMinimum().setScale(3, RoundingMode.HALF_UP));
                 }
-                if(StringUtils.equalsIgnoreCase("MEMORY_USED_UTILIZATION",m.getMetricName())){
+                if(StringUtils.equalsIgnoreCase(ResourcePerfMetricEnum.MEMORY_USED_UTILIZATION.name(),m.getMetricName())){
                     v.setMemoryAverage(m.getAverage().setScale(3, RoundingMode.HALF_UP));
                     v.setMemoryMaximum(m.getMaximum().setScale(3, RoundingMode.HALF_UP));
                     v.setMemoryMinimum(m.getMinimum().setScale(3, RoundingMode.HALF_UP));
                 }
-                if(StringUtils.equalsIgnoreCase("DISK_USED_UTILIZATION",m.getMetricName())){
+                if(StringUtils.equalsIgnoreCase(ResourcePerfMetricEnum.DISK_USED_UTILIZATION.name(),m.getMetricName())){
                     v.setDiskAverage(m.getAverage().setScale(3, RoundingMode.HALF_UP));
                 }
             }));
@@ -399,11 +405,11 @@ public class ServerAnalysisServiceImpl implements IServerAnalysisService {
             queryConditions.add(accountId);
         }
         MPJLambdaWrapper<VmCloudServer> queryServerWrapper = addServerAnalysisQuery(request);
-        queryServerWrapper.notIn(true,VmCloudServer::getInstanceStatus, List.of("Deleted","Failed"));
+        queryServerWrapper.notIn(true,VmCloudServer::getInstanceStatus, List.of(SpecialAttributesConstants.StatusField.VM_DELETE,SpecialAttributesConstants.StatusField.FAILED));
         List<AnalysisServerDTO> vmList = baseVmCloudServerMapper.selectJoinList(AnalysisServerDTO.class,queryServerWrapper);
         List<String> vmUuIds = new ArrayList<>();
         if (CollectionUtils.isNotEmpty(vmList)) {
-            vmUuIds = vmList.stream().map(VmCloudServer::getInstanceUuid).filter(StringUtils::isNotEmpty).collect(Collectors.toList());
+            vmUuIds = vmList.stream().map(VmCloudServer::getInstanceUuid).filter(StringUtils::isNotEmpty).toList();
         }
         if (CollectionUtils.isNotEmpty(vmUuIds)) {
             QueryUtil.QueryCondition resourceIds = new QueryUtil.QueryCondition(true, "instanceId.keyword", vmUuIds, QueryUtil.CompareType.IN);
@@ -415,8 +421,9 @@ public class ServerAnalysisServiceImpl implements IServerAnalysisService {
     /**
      * 云主机在组织工作空间上分布
      */
+    @Override
     public Map<String,List<BarTreeChartData>> analysisVmCloudServerByOrgWorkspace(ResourceAnalysisRequest request){
-        Map<String,List<BarTreeChartData>> result = new HashMap<>();
+        Map<String,List<BarTreeChartData>> result = new HashMap<>(2);
         List<BarTreeChartData> workspaceList = workspaceSpread(request);
         if(request.isAnalysisWorkspace()){
             result.put("all",workspaceList);
@@ -431,9 +438,9 @@ public class ServerAnalysisServiceImpl implements IServerAnalysisService {
      * 组织分布
      */
     private Map<String,List<BarTreeChartData>> orgSpread(ResourceAnalysisRequest request, List<BarTreeChartData> workspaceList){
-        Map<String,List<BarTreeChartData>> result = new HashMap<>();
+        Map<String,List<BarTreeChartData>> result = new HashMap<>(1);
         //组织下工作空间添加标识
-        workspaceList = workspaceList.stream().peek(v-> v.setName(v.getName()+"(工作空间)")).collect(Collectors.toList());
+        workspaceList.forEach(v-> v.setName(v.getName()+"(工作空间)"));
         //工作空间按照父级ID分组
         Map<String,List<BarTreeChartData>> workspaceMap = workspaceList.stream().collect(Collectors.groupingBy(BarTreeChartData::getPId));
         //查询所有组织，初始化为chart数据
@@ -446,7 +453,7 @@ public class ServerAnalysisServiceImpl implements IServerAnalysisService {
         orgWrapper.eq(true, OrgWorkspace::getType,"org");
         orgWrapper.in(!CurrentUserUtils.isAdmin() && CollectionUtils.isNotEmpty(sourceIds),OrgWorkspace::getId,sourceIds);
         orgWrapper.in(CollectionUtils.isNotEmpty(request.getAccountIds()),VmCloudServer::getAccountId,request.getAccountIds());
-        orgWrapper.notIn(true,VmCloudServer::getInstanceStatus, List.of("Deleted","Failed"));
+        orgWrapper.notIn(true,VmCloudServer::getInstanceStatus, List.of(SpecialAttributesConstants.StatusField.VM_DELETE,SpecialAttributesConstants.StatusField.FAILED));
         orgWrapper.groupBy(OrgWorkspace::getId,OrgWorkspace::getName);
         orgWrapper.leftJoin(VmCloudServer.class,VmCloudServer::getSourceId,OrgWorkspace::getId);
         List<BarTreeChartData> list = orgWorkspaceMapper.selectJoinList(BarTreeChartData.class,orgWrapper);
@@ -473,15 +480,7 @@ public class ServerAnalysisServiceImpl implements IServerAnalysisService {
     }
 
     private boolean childrenHasValue(BarTreeChartData parent){
-        if(parent.getValue().longValue()==0){
-            return false;
-        }
-        if(CollectionUtils.isNotEmpty(parent.getChildren())){
-            for(BarTreeChartData chartData:parent.getChildren()){
-                return childrenHasValue(chartData);
-            }
-        }
-        return true;
+        return parent.getValue()>0;
     }
 
     /**
@@ -497,7 +496,7 @@ public class ServerAnalysisServiceImpl implements IServerAnalysisService {
         wrapper.eq(true, OrgWorkspace::getType,"workspace");
         wrapper.in(!CurrentUserUtils.isAdmin() && CollectionUtils.isNotEmpty(sourceIds),OrgWorkspace::getId,sourceIds);
         wrapper.in(CollectionUtils.isNotEmpty(request.getAccountIds()),VmCloudServer::getAccountId,request.getAccountIds());
-        wrapper.notIn(true,VmCloudServer::getInstanceStatus, List.of("Deleted","Failed"));
+        wrapper.notIn(true,VmCloudServer::getInstanceStatus, List.of(SpecialAttributesConstants.StatusField.VM_DELETE,SpecialAttributesConstants.StatusField.FAILED));
         wrapper.leftJoin(VmCloudServer.class,VmCloudServer::getSourceId,OrgWorkspace::getId);
         wrapper.groupBy(OrgWorkspace::getId,OrgWorkspace::getName);
         List<BarTreeChartData> chartDateWorkspaceList = orgWorkspaceMapper.selectJoinList(BarTreeChartData.class, wrapper);
@@ -560,16 +559,15 @@ public class ServerAnalysisServiceImpl implements IServerAnalysisService {
     public List<BarTreeChartData> getChildren(BarTreeChartData barTreeChartData,List<BarTreeChartData> list,Map<String,List<BarTreeChartData>> workspaceMap) {
         //父级数量加上子级数量作为父级总量
         OperationUtils.workspaceToOrgChildren(workspaceMap, barTreeChartData);
-        //子级排序
-        return list.stream().filter(u -> StringUtils.equalsIgnoreCase(u.getPId(), barTreeChartData.getId())).peek(
-                u -> {
-                    u.setName(u.getName() + "(子组织)");
-                    // 用于区分组织与工作空间
-                    u.setGroupName("org");
-                    u.getChildren().addAll(getChildren(u, list, workspaceMap));
-                    barTreeChartData.setValue(barTreeChartData.getValue() + u.getValue());
-                }
-        ).filter(v->v.getValue()>0).collect(Collectors.toList());
+        List<BarTreeChartData> filterList = list.stream().filter(u -> StringUtils.equalsIgnoreCase(u.getPId(), barTreeChartData.getId())).toList();
+        filterList.forEach(u->{
+            u.setName(u.getName() + "(子组织)");
+            // 用于区分组织与工作空间
+            u.setGroupName("org");
+            u.getChildren().addAll(getChildren(u, list, workspaceMap));
+            barTreeChartData.setValue(barTreeChartData.getValue() + u.getValue());
+        });
+        return filterList.stream().filter(v->v.getValue()>0).toList();
     }
 
 }

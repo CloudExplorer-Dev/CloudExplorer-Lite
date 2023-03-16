@@ -15,19 +15,12 @@
         <StorageList v-if="activeName === 'storage'"></StorageList>
       </div>
     </el-tab-pane>
-    <!--    <el-tab-pane label="告警明细" name="alarm">-->
-    <!--      <div>-->
-    <!--        <AlarmList v-if="activeName === 'alarm'"></AlarmList>-->
-    <!--      </div>-->
-    <!--    </el-tab-pane>-->
   </el-tabs>
 </template>
 <script lang="ts" setup>
-import { onMounted, ref } from "vue";
-import AlarmList from "./alarmList.vue";
+import { ref } from "vue";
 import HostList from "./hostList.vue";
 import StorageList from "./storageList.vue";
 import ResourceAnalysisView from "./resourceAnalysisView.vue";
 const activeName = ref("resourceSpread");
 </script>
-<style lang="scss" scoped></style>

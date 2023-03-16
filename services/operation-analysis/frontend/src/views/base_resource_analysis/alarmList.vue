@@ -7,5 +7,3 @@ export default {
   name: "alarmView",
 };
 </script>
-
-<style scoped></style>

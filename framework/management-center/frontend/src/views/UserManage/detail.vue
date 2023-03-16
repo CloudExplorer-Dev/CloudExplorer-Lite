@@ -15,6 +15,7 @@ import _ from "lodash";
 import type { UpdateUserForm } from "@/views/UserManage/type";
 import type { FormInstance, FormRules } from "element-plus";
 import { ElMessage } from "element-plus";
+import CeIcon from "@commons/components/ce-icon/index.vue";
 
 const router = useRouter();
 const { t } = useI18n();
@@ -289,227 +290,266 @@ onMounted(() => {
 </script>
 
 <template>
-  <el-form
-    :model="form"
-    :rules="rule"
-    ref="formRef"
-    label-width="100px"
-    label-position="right"
-  >
-    <layout-container>
-      <template #header>
-        <span>{{ $t("commons.basic_info") }}</span>
-      </template>
-      <template #btn>
-        <span
-          v-if="!basicEditable"
-          @click="edit(resourceConst.basic)"
-          v-hasPermission="'[management-center]USER:EDIT'"
+  <el-container class="create-catalog-container">
+    <el-main ref="create-catalog-container">
+      <div class="form-div">
+        <el-form
+          :model="form"
+          :rules="rule"
+          ref="formRef"
+          label-width="100px"
+          label-position="top"
+          require-asterisk-position="right"
         >
-          {{ $t("commons.btn.edit") }}
-        </span>
-        <span
-          v-if="basicEditable"
-          @click="cancel(resourceConst.basic, formRef)"
-        >
-          {{ $t("commons.btn.cancel") }}
-        </span>
-        <span
-          v-if="basicEditable"
-          @click="save(resourceConst.basic, formRef)"
-          style="padding-left: 20px"
-        >
-          {{ $t("commons.btn.save") }}
-        </span>
-      </template>
-      <template #content>
-        <el-row>
-          <el-col :span="10">
-            <el-form-item label="ID" prop="username">
-              <span>{{ form.username }}</span>
-            </el-form-item>
-          </el-col>
-          <el-col :span="10">
-            <el-form-item
-              :label="$t('user.name')"
-              prop="name"
-              style="width: 60%"
-            >
-              <el-input v-model="form.name" v-if="basicEditable" />
-              <span v-if="!basicEditable">{{ form.name }}</span>
-            </el-form-item>
-          </el-col>
-          <el-col :span="4">
-            <el-form-item :label="$t('user.status')" prop="enabled">
-              <el-switch v-model="form.enabled" v-if="basicEditable" />
-              <span v-if="!basicEditable">
-                {{ enabledFilter(form.enabled) }}
-              </span>
-            </el-form-item>
-          </el-col>
-        </el-row>
-
-        <el-row>
-          <el-col :span="10">
-            <el-form-item
-              :label="$t('user.email')"
-              prop="email"
-              style="width: 60%"
-            >
-              <el-input v-model="form.email" v-if="basicEditable" />
-              <span v-if="!basicEditable">{{ form.email }}</span>
-            </el-form-item>
-          </el-col>
-          <el-col :span="10">
-            <el-form-item
-              :label="$t('user.phone')"
-              prop="phone"
-              style="width: 60%"
-            >
-              <el-input v-model="form.phone" v-if="basicEditable" />
-              <span v-if="!basicEditable">{{ form.phone }}</span>
-            </el-form-item>
-          </el-col>
-        </el-row>
-
-        <el-row>
-          <el-col :span="10">
-            <el-form-item :label="$t('user.source')" prop="source">
-              <span>{{ sourceFilter(form.source) }}</span>
-            </el-form-item>
-          </el-col>
-          <el-col :span="10">
-            <el-form-item :label="$t('commons.create_time')" prop="createTime">
-              <span>{{ form.createTime }}</span>
-            </el-form-item>
-          </el-col>
-        </el-row>
-      </template>
-    </layout-container>
-
-    <layout-container>
-      <template #header>
-        <span>{{ $t("user.has_role") }}</span>
-      </template>
-      <template #btn>
-        <span
-          v-if="!roleEditable"
-          @click="edit(resourceConst.role)"
-          v-hasPermission="'[management-center]USER:EDIT'"
-        >
-          {{ $t("commons.btn.edit") }}
-        </span>
-        <span v-if="roleEditable" @click="cancel(resourceConst.role)">
-          {{ $t("commons.btn.cancel") }}
-        </span>
-        <span
-          v-if="roleEditable"
-          @click="save(resourceConst.role, formRef)"
-          style="padding-left: 20px"
-          >{{ $t("commons.btn.save") }}</span
-        >
-      </template>
-      <template #content>
-        <div v-for="(roleInfo, index) in form.roleInfoList" :key="index">
-          <!-- 用户类型 -->
-          <el-row>
-            <el-col :span="20">
-              <el-form-item :label="$t('user.type')">
-                <el-select
-                  v-model="roleInfo.roleId"
-                  @change="setRoleType(roleInfo, roleInfo.roleId)"
-                  :placeholder="$t('user.type')"
-                  style="width: 100%"
-                  :disabled="!roleEditable"
-                >
-                  <el-option
-                    v-for="role in roles"
-                    :key="role.id"
-                    :label="role.name"
-                    :value="role.id"
-                    v-show="filterRole(role, roleInfo)"
-                  />
-                </el-select>
-              </el-form-item>
+          <el-row :gutter="10">
+            <el-col :span="12">
+              <p class="tip">
+                {{ t("commons.basic_info", "基本信息") }}
+              </p>
             </el-col>
-            <el-col :span="2" style="padding-left: 60px">
-              <el-tooltip
-                class="box-item"
-                effect="dark"
-                :content="$t('user.delete_role')"
-                placement="bottom"
-                v-if="form.roleInfoList.length > 1 && roleEditable"
+            <el-col :span="11" style="text-align: end">
+              <el-button
+                key="edit"
+                type="primary"
+                text
+                v-if="!basicEditable"
+                @click="edit(resourceConst.basic)"
+                v-hasPermission="'[management-center]USER:EDIT'"
               >
-                <el-button
-                  @click="subtractLine(roleInfo)"
-                  type="danger"
-                  icon="minus"
-                  circle
-                ></el-button>
-              </el-tooltip>
+                {{ $t("commons.btn.edit") }}
+              </el-button>
+
+              <el-button
+                class="cancel-btn"
+                v-if="basicEditable"
+                @click="cancel(resourceConst.basic, formRef)"
+              >
+                {{ $t("commons.btn.cancel") }}
+              </el-button>
+              <el-button
+                class="save-btn"
+                type="primary"
+                v-if="basicEditable"
+                @click="save(resourceConst.basic, formRef)"
+              >
+                {{ $t("commons.btn.save") }}
+              </el-button>
             </el-col>
           </el-row>
-
-          <!-- 选择组织 -->
-          <el-row v-if="roleInfo.roleType === roleConst.orgAdmin">
-            <el-col :span="20">
-              <el-form-item :label="$t('user.add_org')">
-                <el-tree-select
-                  v-model="roleInfo.organizationIds"
-                  node-key="id"
-                  :props="{ label: 'name' }"
-                  :data="orgTreeData"
-                  :render-after-expand="false"
-                  :disabled="!roleEditable"
-                  filterable
-                  multiple
-                  show-checkbox
-                  check-strictly
-                  style="width: 100%"
-                />
+          <el-row>
+            <el-col :span="10">
+              <el-form-item label="ID" prop="username">
+                <span>{{ form.username }}</span>
+              </el-form-item>
+            </el-col>
+            <el-col :span="10">
+              <el-form-item
+                :label="$t('user.name')"
+                prop="name"
+                style="width: 60%"
+              >
+                <el-input v-model="form.name" v-if="basicEditable" />
+                <span v-if="!basicEditable">{{ form.name }}</span>
+              </el-form-item>
+            </el-col>
+            <el-col :span="4">
+              <el-form-item :label="$t('user.status')" prop="enabled">
+                <el-switch v-model="form.enabled" v-if="basicEditable" />
+                <span v-if="!basicEditable">
+                  {{ enabledFilter(form.enabled) }}
+                </span>
               </el-form-item>
             </el-col>
           </el-row>
-
-          <!-- 选择工作空间 -->
-          <el-row v-if="roleInfo.roleType === roleConst.user">
-            <el-col :span="20">
-              <el-form-item :label="$t('user.add_workspace')">
-                <el-tree-select
-                  v-model="roleInfo.workspaceIds"
-                  node-key="id"
-                  :props="{ label: 'name' }"
-                  :data="workspaceTreeData"
-                  :render-after-expand="false"
-                  :disabled="!roleEditable"
-                  filterable
-                  multiple
-                  show-checkbox
-                  style="width: 100%"
-                />
+          <el-row>
+            <el-col :span="10">
+              <el-form-item
+                :label="$t('user.email')"
+                prop="email"
+                style="width: 60%"
+              >
+                <el-input v-model="form.email" v-if="basicEditable" />
+                <span v-if="!basicEditable">{{ form.email }}</span>
+              </el-form-item>
+            </el-col>
+            <el-col :span="10">
+              <el-form-item
+                :label="$t('user.phone')"
+                prop="phone"
+                style="width: 60%"
+              >
+                <el-input v-model="form.phone" v-if="basicEditable" />
+                <span v-if="!basicEditable">{{ form.phone }}</span>
               </el-form-item>
             </el-col>
           </el-row>
-        </div>
+          <el-row>
+            <el-col :span="10">
+              <el-form-item :label="$t('user.source')" prop="source">
+                <span>{{ sourceFilter(form.source) }}</span>
+              </el-form-item>
+            </el-col>
+            <el-col :span="10">
+              <el-form-item
+                :label="$t('commons.create_time')"
+                prop="createTime"
+              >
+                <span>{{ form.createTime }}</span>
+              </el-form-item>
+            </el-col>
+          </el-row>
+          <el-row :gutter="10">
+            <el-col :span="12">
+              <p class="tip">
+                {{ $t("user.has_role") }}
+              </p>
+            </el-col>
+            <el-col :span="11" style="text-align: end">
+              <el-button
+                key="edit"
+                type="primary"
+                text
+                v-if="!roleEditable"
+                @click="edit(resourceConst.role)"
+                v-hasPermission="'[management-center]USER:EDIT'"
+              >
+                {{ $t("commons.btn.edit") }}
+              </el-button>
+              <el-button
+                class="cancel-btn"
+                v-if="roleEditable"
+                @click="cancel(resourceConst.role)"
+              >
+                {{ $t("commons.btn.cancel") }}
+              </el-button>
+              <el-button
+                class="save-btn"
+                type="primary"
+                v-if="roleEditable"
+                @click="save(resourceConst.role, formRef)"
+                >{{ $t("commons.btn.save") }}</el-button
+              >
+            </el-col>
+          </el-row>
+          <el-row v-for="(roleInfo, index) in form.roleInfoList" :key="index">
+            <!-- 用户类型 -->
+            <el-row style="width: 100%">
+              <el-col :span="23">
+                <el-form-item :label="$t('user.type')">
+                  <el-select
+                    v-model="roleInfo.roleId"
+                    @change="setRoleType(roleInfo, roleInfo.roleId)"
+                    :placeholder="$t('user.type')"
+                    style="width: 100%"
+                    :disabled="!roleEditable"
+                  >
+                    <el-option
+                      v-for="role in roles"
+                      :key="role.id"
+                      :label="role.name"
+                      :value="role.id"
+                      v-show="filterRole(role, roleInfo)"
+                    />
+                  </el-select>
+                </el-form-item>
+              </el-col>
+              <el-col :span="1" class="padding-top-40">
+                <el-tooltip
+                  class="box-item"
+                  effect="dark"
+                  :content="$t('user.delete_role')"
+                  placement="bottom"
+                  v-if="form.roleInfoList.length > 1 && roleEditable"
+                >
+                  <div
+                    class="delete-button-class"
+                    @click="subtractLine(roleInfo)"
+                  >
+                    <CeIcon
+                      size="var(--ce-star-menu-icon-width,13.33px)"
+                      code="icon_delete-trash_outlined1"
+                    ></CeIcon>
+                  </div>
+                </el-tooltip>
+              </el-col>
+            </el-row>
 
-        <div style="text-align: center">
-          <el-tooltip
-            class="box-item"
-            effect="dark"
-            :content="$t('user.add_role')"
-            placement="bottom"
-            v-if="roleEditable"
-          >
-            <el-button
-              @click="addLine"
-              :disabled="!isAddLineAble"
-              type="primary"
-              icon="plus"
-              circle
-            ></el-button>
-          </el-tooltip>
-        </div>
-      </template>
-    </layout-container>
-  </el-form>
+            <!-- 选择组织 -->
+            <el-row
+              style="width: 100%"
+              v-if="roleInfo.roleType === roleConst.orgAdmin"
+            >
+              <el-col :span="23">
+                <el-form-item :label="$t('user.add_org')">
+                  <el-tree-select
+                    v-model="roleInfo.organizationIds"
+                    node-key="id"
+                    :props="{ label: 'name' }"
+                    :data="orgTreeData"
+                    :render-after-expand="false"
+                    :disabled="!roleEditable"
+                    filterable
+                    multiple
+                    show-checkbox
+                    check-strictly
+                    style="width: 100%"
+                  />
+                </el-form-item>
+              </el-col>
+            </el-row>
+
+            <!-- 选择工作空间 -->
+            <el-row
+              style="width: 100%"
+              v-if="roleInfo.roleType === roleConst.user"
+            >
+              <el-col :span="23">
+                <el-form-item :label="$t('user.add_workspace')">
+                  <el-tree-select
+                    v-model="roleInfo.workspaceIds"
+                    node-key="id"
+                    :props="{ label: 'name' }"
+                    :data="workspaceTreeData"
+                    :render-after-expand="false"
+                    :disabled="!roleEditable"
+                    filterable
+                    multiple
+                    show-checkbox
+                    style="width: 100%"
+                  />
+                </el-form-item>
+              </el-col>
+            </el-row>
+          </el-row>
+          <el-row :gutter="10">
+            <el-col :span="24">
+              <el-form-item>
+                <el-tooltip
+                  class="box-item"
+                  effect="dark"
+                  :content="$t('user.add_role')"
+                  placement="bottom"
+                  v-if="roleEditable"
+                >
+                  <div
+                    class="add-button-class"
+                    @click="addLine"
+                    :disabled="!isAddLineAble"
+                  >
+                    <CeIcon
+                      size="var(--ce-star-menu-icon-width,13.33px)"
+                      code="icon_add_outlined"
+                    ></CeIcon>
+                    <span class="span-class">
+                      {{ t("commons.btn.add", "添加") }}
+                    </span>
+                  </div>
+                </el-tooltip>
+              </el-form-item>
+            </el-col>
+          </el-row>
+        </el-form>
+      </div>
+    </el-main>
+  </el-container>
 </template>

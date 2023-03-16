@@ -1,32 +1,42 @@
 <template>
-  <layout-container :border="false">
-    <template #content>
-      <layout-container v-loading="loading">
-        <template #header>
-          <h4>基本信息</h4>
-        </template>
-        <template #btn>
-          <el-button
-            key="edit"
-            type="primary"
-            text
-            @click="changeToEditInfo"
-            v-if="showEditInfoButton"
-            v-hasPermission="'[management-center]ROLE:EDIT'"
-          >
-            修改
-          </el-button>
-
-          <el-button v-if="editInfo" @click="cancelEditInfo"> 取消 </el-button>
-          <el-button
-            type="primary"
-            v-if="editInfo"
-            @click="submitRoleForm(ruleFormRef)"
-          >
-            保存
-          </el-button>
-        </template>
-        <template #content>
+  <el-container class="create-catalog-container">
+    <el-main ref="create-catalog-container">
+      <div class="form-div">
+        <el-row :gutter="10">
+          <el-col :span="12">
+            <p class="tip">
+              {{ t("commons.basic_info", "基本信息") }}
+            </p>
+          </el-col>
+          <el-col :span="12" style="text-align: end">
+            <el-button
+              key="edit"
+              type="primary"
+              text
+              @click="changeToEditInfo"
+              v-if="showEditInfoButton"
+              v-hasPermission="'[management-center]ROLE:EDIT'"
+            >
+              修改
+            </el-button>
+            <el-button
+              class="cancel-btn"
+              v-if="editInfo"
+              @click="cancelEditInfo"
+            >
+              取消
+            </el-button>
+            <el-button
+              class="save-btn"
+              type="primary"
+              v-if="editInfo"
+              @click="submitRoleForm(ruleFormRef)"
+            >
+              保存
+            </el-button>
+          </el-col>
+        </el-row>
+        <el-row style="width: 100%">
           <RoleInfoTable
             :id="id"
             :loading="loading"
@@ -35,37 +45,41 @@
             v-model:role-form-data="roleFormData"
             v-model:rule-form-ref="ruleFormRef"
           />
-        </template>
-      </layout-container>
+        </el-row>
+        <el-row :gutter="10">
+          <el-col :span="12">
+            <p class="tip">角色权限</p>
+          </el-col>
+          <el-col :span="12" style="text-align: end">
+            <el-button
+              key="edit"
+              type="primary"
+              text
+              @click="changeToEditPermission"
+              v-if="showEditPermissionButton"
+              v-hasPermission="'[management-center]ROLE:EDIT'"
+            >
+              修改
+            </el-button>
 
-      <layout-container v-loading="loadingPermission">
-        <template #header>
-          <h4>角色权限</h4>
-        </template>
-        <template #btn>
-          <el-button
-            key="edit"
-            type="primary"
-            text
-            @click="changeToEditPermission"
-            v-if="showEditPermissionButton"
-            v-hasPermission="'[management-center]ROLE:EDIT'"
-          >
-            修改
-          </el-button>
-
-          <el-button v-if="editPermission" @click="cancelEditPermission">
-            取消
-          </el-button>
-          <el-button
-            type="primary"
-            v-if="editPermission"
-            @click="submitRolePermission(permissionData)"
-          >
-            保存
-          </el-button>
-        </template>
-        <template #content>
+            <el-button
+              class="cancel-btn"
+              v-if="editPermission"
+              @click="cancelEditPermission"
+            >
+              取消
+            </el-button>
+            <el-button
+              class="save-btn"
+              type="primary"
+              v-if="editPermission"
+              @click="submitRolePermission(permissionData)"
+            >
+              保存
+            </el-button>
+          </el-col>
+        </el-row>
+        <el-row style="border: 1px solid; color: var(--el-border-color);">
           <RolePermissionTable
             :id="id"
             :loading="loadingPermission"
@@ -73,14 +87,21 @@
             :edit-permission="editPermission"
             v-model:permission-data="permissionData"
           />
-        </template>
-      </layout-container>
-
-      <layout-container v-if="!editInfo && !editPermission">
-        <el-button @click="back">返回</el-button>
-      </layout-container>
-    </template>
-  </layout-container>
+        </el-row>
+      </div>
+    </el-main>
+    <el-footer>
+      <div class="footer">
+        <div class="form-div">
+          <div class="footer-btn">
+            <el-button v-if="!editInfo && !editPermission" @click="back"
+              >返回</el-button
+            >
+          </div>
+        </div>
+      </div>
+    </el-footer>
+  </el-container>
 </template>
 <script setup lang="ts">
 const props = defineProps<{
@@ -188,7 +209,5 @@ const submitRolePermission = (permissionIds: Array<string>) => {
 .permission-container {
   width: 100%;
   min-height: 100px;
-  .module-selector {
-  }
 }
 </style>

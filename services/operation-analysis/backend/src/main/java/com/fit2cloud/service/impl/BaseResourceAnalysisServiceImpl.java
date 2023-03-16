@@ -22,6 +22,7 @@ import com.fit2cloud.common.utils.ColumnNameUtil;
 import com.fit2cloud.common.utils.DateUtil;
 import com.fit2cloud.common.utils.PageUtil;
 import com.fit2cloud.common.utils.QueryUtil;
+import com.fit2cloud.constants.SpecialAttributesConstants;
 import com.fit2cloud.controller.request.base.resource.analysis.ResourceAnalysisRequest;
 import com.fit2cloud.controller.request.base.resource.analysis.ResourceUsedTrendRequest;
 import com.fit2cloud.controller.request.datastore.PageDatastoreRequest;
@@ -78,7 +79,6 @@ public class BaseResourceAnalysisServiceImpl implements IBaseResourceAnalysisSer
 
     /**
      * @param request 宿主机分页查询参数
-     * @return
      */
     @Override
     public IPage<AnalysisHostDTO> pageHost(PageHostRequest request) {
@@ -100,7 +100,6 @@ public class BaseResourceAnalysisServiceImpl implements IBaseResourceAnalysisSer
 
     /**
      * @param request 存储器分页查询参数
-     * @return
      */
     @Override
     public IPage<AnalysisDatastoreDTO> pageDatastore(PageDatastoreRequest request) {
@@ -113,7 +112,7 @@ public class BaseResourceAnalysisServiceImpl implements IBaseResourceAnalysisSer
         wrapper.orderByDesc(VmCloudDatastore::getCreateTime);
         IPage<AnalysisDatastoreDTO> result = baseVmCloudDatastoreMapper.selectJoinPage(page,AnalysisDatastoreDTO.class,wrapper);
         //计算
-        result.getRecords().stream().forEach(v->{
+        result.getRecords().forEach(v->{
             v.setAllocated(String.valueOf(v.getCapacity()-v.getFreeSpace()));
             BigDecimal useRate = new BigDecimal(v.getCapacity()).subtract(new BigDecimal(v.getFreeSpace())).multiply(new BigDecimal(100)).divide(new BigDecimal(v.getCapacity()),2,RoundingMode.UP);
             v.setUseRate(String.valueOf(useRate));
@@ -159,11 +158,11 @@ public class BaseResourceAnalysisServiceImpl implements IBaseResourceAnalysisSer
         QueryWrapper<VmCloudHost> queryWrapper = new QueryWrapper<>();
         queryWrapper.in(CollectionUtils.isNotEmpty(request.getAccountIds()), ColumnNameUtil.getColumnName(VmCloudHost::getAccountId, true), request.getAccountIds());
         List<VmCloudHost> vmCloudHosts = iBaseVmCloudHostService.list(queryWrapper);
-        if (vmCloudHosts.size() > 0) {
+        if (CollectionUtils.isNotEmpty(vmCloudHosts)) {
             Map<String, List<VmCloudHost>> zoneMap = vmCloudHosts.stream().filter(v -> StringUtils.isNotEmpty(v.getZone())).collect(Collectors.groupingBy(VmCloudHost::getZone));
             zoneMap.forEach((k, v) -> {
-                if (v.size() > 0) {
-                    Map<String, String> map = new HashMap<>();
+                if (CollectionUtils.isNotEmpty(v)) {
+                    Map<String, String> map = new HashMap<>(2);
                     map.put("id", v.get(0).getZone());
                     map.put("name", v.get(0).getZone());
                     result.add(map);
@@ -175,7 +174,7 @@ public class BaseResourceAnalysisServiceImpl implements IBaseResourceAnalysisSer
 
     private void allPrivateCloudAccount(ResourceAnalysisRequest request) {
         if (CollectionUtils.isEmpty(request.getAccountIds())) {
-            request.setAccountIds(getAllPrivateCloudAccount().stream().map(CloudAccount::getId).collect(Collectors.toList()));
+            request.setAccountIds(getAllPrivateCloudAccount().stream().map(CloudAccount::getId).toList());
         }
     }
 
@@ -215,10 +214,10 @@ public class BaseResourceAnalysisServiceImpl implements IBaseResourceAnalysisSer
      */
     @Override
     public Map<String, ResourceAllocatedInfo> getResourceAllocatedInfo(ResourceAnalysisRequest request) {
-        Map<String, ResourceAllocatedInfo> result = new HashMap<>();
+        Map<String, ResourceAllocatedInfo> result = new HashMap<>(3);
         List<VmCloudHost> hosts = getVmHost(request);
         if (CollectionUtils.isNotEmpty(hosts)) {
-            hosts = hosts.stream().filter(v -> !CollectionUtils.isNotEmpty(request.getHostIds()) || request.getHostIds().contains(v.getId())).collect(Collectors.toList());
+            hosts = hosts.stream().filter(v -> !CollectionUtils.isNotEmpty(request.getHostIds()) || request.getHostIds().contains(v.getId())).toList();
             BigDecimal cpuTotal = new BigDecimal(hosts.stream().mapToLong(VmCloudHost::getNumCpuCores).sum());
             BigDecimal cpuAllocated = new BigDecimal(hosts.stream().mapToLong(VmCloudHost::getVmCpuCores).sum());
             BigDecimal cpuAllocatedRate = cpuAllocated.divide(cpuTotal, 2, RoundingMode.HALF_UP).multiply(new BigDecimal(100));
@@ -241,11 +240,11 @@ public class BaseResourceAnalysisServiceImpl implements IBaseResourceAnalysisSer
         }
         List<VmCloudDatastore> datastoreList = getVmCloudDatastore(request);
         if (CollectionUtils.isNotEmpty(datastoreList)) {
-            datastoreList = datastoreList.stream().filter(v -> !CollectionUtils.isNotEmpty(request.getDatastoreIds()) || request.getDatastoreIds().contains(v.getId())).collect(Collectors.toList());
+            datastoreList = datastoreList.stream().filter(v -> !CollectionUtils.isNotEmpty(request.getDatastoreIds()) || request.getDatastoreIds().contains(v.getId())).toList();
             BigDecimal capacity = new BigDecimal(datastoreList.stream().mapToLong(VmCloudDatastore::getCapacity).sum());
             BigDecimal freeSpace = new BigDecimal(datastoreList.stream().mapToLong(VmCloudDatastore::getFreeSpace).sum());
             BigDecimal memoryAllocatedRate = capacity.subtract(freeSpace).divide(capacity, 2, RoundingMode.HALF_UP).multiply(new BigDecimal(100));
-            result.put("datastore", ResourceAllocatedInfo.builder()
+            result.put(SpecialAttributesConstants.ResourceField.DATASTORE, ResourceAllocatedInfo.builder()
                     .total(capacity)
                     .allocated(capacity.subtract(freeSpace))
                     .allocatedRate(memoryAllocatedRate)
@@ -262,7 +261,7 @@ public class BaseResourceAnalysisServiceImpl implements IBaseResourceAnalysisSer
      */
     @Override
     public Map<String, List<KeyValue>> getResourceSpreadInfo(ResourceAnalysisRequest request) {
-        Map<String, List<KeyValue>> result = new HashMap<>();
+        Map<String, List<KeyValue>> result = new HashMap<>(3);
         List<CloudAccount> accountList = getAllPrivateCloudAccount();
         Map<String, CloudAccount> accountMap = accountList.stream().collect(Collectors.toMap(CloudAccount::getId, v -> v, (k1, k2) -> k1));
         if (accountMap.size() == 0) {
@@ -272,17 +271,15 @@ public class BaseResourceAnalysisServiceImpl implements IBaseResourceAnalysisSer
         if (CollectionUtils.isEmpty(hosts)) {
             return result;
         }
-        hosts = hosts.stream().filter(v -> !CollectionUtils.isNotEmpty(request.getHostIds()) || request.getHostIds().contains(v.getId())).collect(Collectors.toList());
+        hosts = hosts.stream().filter(v -> !CollectionUtils.isNotEmpty(request.getHostIds()) || request.getHostIds().contains(v.getId())).toList();
         // 主机在云账号上面的分布情况
         Map<String, Long> hostSpread = hosts.stream().filter(v -> StringUtils.isNotEmpty(v.getAccountId())).collect(Collectors.groupingBy(VmCloudHost::getAccountId, Collectors.counting()));
-        result.put("host", hostSpread.entrySet().stream().map(c -> new KeyValue(StringUtils.isEmpty(accountMap.get(c.getKey()).getName()) ? c.getKey() : accountMap.get(c.getKey()).getName(), c.getValue()) {
-        }).collect(Collectors.toList()));
+        result.put("host", hostSpread.entrySet().stream().map(c -> new KeyValue(StringUtils.isEmpty(accountMap.get(c.getKey()).getName()) ? c.getKey() : accountMap.get(c.getKey()).getName(), c.getValue())).toList());
         List<VmCloudDatastore> datastoreList = getVmCloudDatastore(request);
-        datastoreList = datastoreList.stream().filter(v -> !CollectionUtils.isNotEmpty(request.getDatastoreIds()) || request.getDatastoreIds().contains(v.getId())).collect(Collectors.toList());
+        datastoreList = datastoreList.stream().filter(v -> !CollectionUtils.isNotEmpty(request.getDatastoreIds()) || request.getDatastoreIds().contains(v.getId())).toList();
         // 存储器在云账号上面的分布情况
         Map<String, Long> datastoreSpread = datastoreList.stream().filter(v -> StringUtils.isNotEmpty(v.getAccountId())).collect(Collectors.groupingBy(VmCloudDatastore::getAccountId, Collectors.counting()));
-        result.put("datastore", datastoreSpread.entrySet().stream().map(c -> new KeyValue(StringUtils.isEmpty(accountMap.get(c.getKey()).getName()) ? c.getKey() : accountMap.get(c.getKey()).getName(), c.getValue()) {
-        }).collect(Collectors.toList()));
+        result.put("datastore", datastoreSpread.entrySet().stream().map(c -> new KeyValue(StringUtils.isEmpty(accountMap.get(c.getKey()).getName()) ? c.getKey() : accountMap.get(c.getKey()).getName(), c.getValue())).toList());
         List<KeyValue> vms = new ArrayList<>();
         // 云主机在宿主机上的分布情况
         hosts.forEach(v -> {
@@ -328,28 +325,24 @@ public class BaseResourceAnalysisServiceImpl implements IBaseResourceAnalysisSer
             assert aggregations != null;
             ElasticsearchAggregation aggregation = aggregations.aggregations().get(0);
             List<DateHistogramBucket> dateHistogramBucketList = aggregation.aggregation().getAggregate().dateHistogram().buckets().array();
-            Map<String, Map<String, Long>> groupDateAndRange = new HashMap<>();
+            Map<String, Map<String, Long>> groupDateAndRange = new HashMap<>(5);
             dateHistogramBucketList.forEach(dateHistogramBucket -> Stream.of(0, 20, 40, 60, 80).forEach(interval -> {
                 String rangeKey = interval + "~" + (interval + 20) + "%";
                 String key = dateHistogramBucket.key() + "-" + rangeKey;
-                Map<String, Long> map = new HashMap<>();
+                Map<String, Long> map = new HashMap<>(5);
                 map.put(rangeKey, 0L);
-                if (!groupDateAndRange.containsKey(key)) {
-                    List<StringTermsBucket> averageRanges = dateHistogramBucket.aggregations().get("instanceIds").sterms().buckets().array();
-                    if (CollectionUtils.isNotEmpty(averageRanges)) {
-                        Long count = 0L;
-                        //资源时间段内平均值
-                        for (StringTermsBucket termsBucket : averageRanges) {
-                            //
-                            termsBucket.key();
-                            double avgValue = termsBucket.aggregations().get("average").max().value();
-                            //在区间里面
-                            if (avgValue >= interval && avgValue <= (interval + 20)) {
-                                count++;
-                            }
+                List<StringTermsBucket> averageRanges = dateHistogramBucket.aggregations().get("instanceIds").sterms().buckets().array();
+                if (!groupDateAndRange.containsKey(key) && CollectionUtils.isNotEmpty(averageRanges)) {
+                    Long count = 0L;
+                    //资源时间段内平均值
+                    for (StringTermsBucket termsBucket : averageRanges) {
+                        double avgValue = termsBucket.aggregations().get(SpecialAttributesConstants.SpecialField.AVERAGE).max().value();
+                        //在区间里面
+                        if (avgValue >= interval && avgValue <= (interval + 20)) {
+                            count++;
                         }
-                        map.put(rangeKey, count);
                     }
+                    map.put(rangeKey, count);
                 }
                 groupDateAndRange.put(key, map);
             }));
@@ -418,7 +411,7 @@ public class BaseResourceAnalysisServiceImpl implements IBaseResourceAnalysisSer
                     queryHostWrapper.in(true, ColumnNameUtil.getColumnName(VmCloudHost::getId, true), request.getResourceIds());
                     List<VmCloudHost> vmCloudHosts = iBaseVmCloudHostService.list(queryHostWrapper);
                     if (CollectionUtils.isNotEmpty(vmCloudHosts)) {
-                        resourceIds = vmCloudHosts.stream().map(VmCloudHost::getHostId).collect(Collectors.toList());
+                        resourceIds = vmCloudHosts.stream().map(VmCloudHost::getHostId).toList();
                     }
                 }
                 case DATASTORE -> {
@@ -427,11 +420,10 @@ public class BaseResourceAnalysisServiceImpl implements IBaseResourceAnalysisSer
                     queryDatastoreWrapper.in(true, ColumnNameUtil.getColumnName(VmCloudDatastore::getId, true), request.getResourceIds());
                     List<VmCloudDatastore> vmCloudDatastoreList = iBaseVmCloudDatastoreService.list(queryDatastoreWrapper);
                     if (CollectionUtils.isNotEmpty(vmCloudDatastoreList)) {
-                        resourceIds = vmCloudDatastoreList.stream().map(VmCloudDatastore::getDatastoreId).collect(Collectors.toList());
+                        resourceIds = vmCloudDatastoreList.stream().map(VmCloudDatastore::getDatastoreId).toList();
                     }
                 }
-                default -> {
-                }
+                default -> {}
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -440,10 +432,10 @@ public class BaseResourceAnalysisServiceImpl implements IBaseResourceAnalysisSer
     }
 
     public Map<String, ResourceAllocatedInfo> getResourceUseRate(ResourceAnalysisRequest request) {
-        Map<String, ResourceAllocatedInfo> result = new HashMap<>();
+        Map<String, ResourceAllocatedInfo> result = new HashMap<>(3);
         List<VmCloudHost> hosts = getVmHost(request);
         if (CollectionUtils.isNotEmpty(hosts)) {
-            hosts = hosts.stream().filter(v -> !CollectionUtils.isNotEmpty(request.getHostIds()) || request.getHostIds().contains(v.getId())).collect(Collectors.toList());
+            hosts = hosts.stream().filter(v -> !CollectionUtils.isNotEmpty(request.getHostIds()) || request.getHostIds().contains(v.getId())).toList();
             BigDecimal cpuTotal = new BigDecimal(hosts.stream().mapToLong(VmCloudHost::getNumCpuCores).sum());
             BigDecimal cpuAllocated = new BigDecimal(hosts.stream().mapToLong(VmCloudHost::getVmCpuCores).sum());
             BigDecimal cpuAllocatedRate = cpuAllocated.divide(cpuTotal, 2, RoundingMode.HALF_UP).multiply(new BigDecimal(100));
@@ -466,7 +458,7 @@ public class BaseResourceAnalysisServiceImpl implements IBaseResourceAnalysisSer
         }
         List<VmCloudDatastore> datastoreList = getVmCloudDatastore(request);
         if (CollectionUtils.isNotEmpty(datastoreList)) {
-            datastoreList = datastoreList.stream().filter(v -> !CollectionUtils.isNotEmpty(request.getDatastoreIds()) || request.getDatastoreIds().contains(v.getId())).collect(Collectors.toList());
+            datastoreList = datastoreList.stream().filter(v -> !CollectionUtils.isNotEmpty(request.getDatastoreIds()) || request.getDatastoreIds().contains(v.getId())).toList();
             BigDecimal capacity = new BigDecimal(datastoreList.stream().mapToLong(VmCloudDatastore::getCapacity).sum());
             BigDecimal freeSpace = new BigDecimal(datastoreList.stream().mapToLong(VmCloudDatastore::getFreeSpace).sum());
             BigDecimal memoryAllocatedRate = capacity.subtract(freeSpace).divide(capacity, 2, RoundingMode.HALF_UP).multiply(new BigDecimal(100));

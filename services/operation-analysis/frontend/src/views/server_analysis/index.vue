@@ -7,5 +7,3 @@
     <router-view></router-view>
   </layout-auto-height-content>
 </template>
-
-<style lang="scss"></style>

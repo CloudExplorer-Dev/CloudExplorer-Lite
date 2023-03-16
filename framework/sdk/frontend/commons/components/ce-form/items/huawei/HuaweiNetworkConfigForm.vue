@@ -10,10 +10,10 @@
     >
       <div style="margin-bottom: 10px">
         <el-input
-            v-model="searchName"
-            placeholder="输入关键字搜索"
-            style="width: 20%"
-            @keyup="handleQueryClick"
+          v-model="searchName"
+          placeholder="输入关键字搜索"
+          style="width: 20%"
+          @keyup="handleQueryClick"
         >
           <template #append>
             <el-button style="color: var(--el-color-primary)" icon="Search" />
@@ -192,13 +192,21 @@ const handleQueryClick = () => {
   if (!props.formItem?.ext?.networkConfig) {
     return;
   }
-  let arr = [...props?.formItem?.ext?.networkConfig];
+  const networkConfig = props?.formItem?.ext?.networkConfig;
+  let arr: string | any[] = [];
+  if (networkConfig) {
+    arr = [...networkConfig];
+  }
   if (searchName.value.trim() && arr.length > 0) {
     arr = _.filter(props.formItem?.ext?.networkConfig, function (v) {
       const columnNames = Object.keys(arr[0]);
       let isShow = false;
       for (let i = 0; i < columnNames.length; i++) {
-        if(columnNames[i]==="name" || columnNames[i]==="cidr" || columnNames[i]==="vpcName"){
+        if (
+          columnNames[i] === "name" ||
+          columnNames[i] === "cidr" ||
+          columnNames[i] === "vpcName"
+        ) {
           if (v[columnNames[i]]?.toString().indexOf(searchName.value) > -1) {
             isShow = true;
           }

@@ -50,3 +50,107 @@ a:hover {
   background-color: transparent;
 }
 
+// 创建表单
+.create-catalog-container {
+  height: 100%;
+  .padding-top-30{
+    padding-top:30px;
+  }
+  .padding-top-40{
+    padding-top:40px;
+  }
+  //表单标题
+  .tip {
+    text-align: left;
+    padding: 3px 5px;
+    font-size: 16px;
+    border-radius: 0;
+    border-left: 2px solid #409EFF;
+    margin: 5px 5px 10px 0px;
+  }
+
+  // 表单外套
+  .form-div{
+    text-align: center;
+    margin: 0 auto;
+    width: 80%;
+    min-width: 300px;
+  }
+
+  // 删除按钮样式
+  .delete-button-class{
+    cursor: pointer;
+    color: #646a73
+  }
+
+  // 添加按钮样式
+  .add-button-class{
+    cursor: pointer;
+    border: 0px solid;
+    //width: 105px;
+    height: 22px;
+    font-family: 'PingFang SC';
+    font-style: normal;
+    font-weight: 400;
+    font-size: 14px;
+    line-height: 22px;
+    display: flex;
+    align-items: center;
+    letter-spacing: -0.1px;
+    color: #3370FF;
+    .span-class{
+      vertical-align:2px;
+      color: #3370FF;
+      padding-left: 5px
+    }
+  }
+
+  button{
+    height: 32px;
+    min-width: 80px
+  }
+  .save-btn{
+    background-color: #3370FF;
+  }
+  .cancel-btn{
+
+  }
+
+  // 下方操作按钮区域
+  .footer {
+    border-top: 1px solid var(--el-border-color);
+    padding-top: 10px;
+    padding-bottom: 10px;
+    display: flex;
+    justify-content: space-between;
+    flex-direction: row;
+    align-items: center;
+    flex-wrap: wrap;
+    margin: 0px -50px 0px;
+
+    .footer-form {
+      min-width: 400px;
+    }
+    .footer-center {
+      display: flex;
+      flex-direction: row;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+
+    .footer-btn {
+      margin: 0px 40px 0px;
+      text-align: left;
+      flex-direction: row;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+    }
+  }
+
+  .description {
+    padding-left: 15px;
+    font-size: smaller;
+    color: #606266;
+  }
+}
+

@@ -4,12 +4,30 @@
       <el-cascader-panel
         :options="modulesPanels"
         v-model="defaultSelectedModule"
-        style="width: 180px; height: 99%; padding: 0"
+        style="width: 180px; padding: 0;border:none"
         @change="onModuleSelect"
       />
     </el-aside>
-    <el-main style="padding: 4px">
-      <el-table :data="permissionTableData" style="width: 100%">
+    <el-main style="padding: 0px;min-height:200px;width:100%;">
+      <el-table :data="permissionTableData" style="width:100%;padding:0px;min-height:200px;border-left: 1px solid; color: var(--el-border-color);">
+        <el-table-column width="100px">
+          <template #header>
+            <el-checkbox
+              v-model="checkedAll"
+              :label="false"
+              :disabled="!editPermission"
+            >
+            </el-checkbox>
+          </template>
+          <template #default="scope">
+            <el-checkbox
+              v-model="scope.row.checked"
+              :label="false"
+              :disabled="!editPermission"
+            >
+            </el-checkbox>
+          </template>
+        </el-table-column>
         <el-table-column label="操作对象" min-width="100px">
           <template #default="scope">
             {{ t(scope.row.name) }}
@@ -30,27 +48,6 @@
                 {{ t(p.name) }}
               </el-checkbox>
             </el-checkbox-group>
-          </template>
-        </el-table-column>
-
-        <el-table-column label="全选" align="right" width="100px">
-          <template #header>
-            <el-checkbox
-              v-model="checkedAll"
-              :label="true"
-              :disabled="!editPermission"
-            >
-              全选
-            </el-checkbox>
-          </template>
-          <template #default="scope">
-            <el-checkbox
-              v-model="scope.row.checked"
-              :label="true"
-              :disabled="!editPermission"
-            >
-              全选
-            </el-checkbox>
           </template>
         </el-table-column>
       </el-table>

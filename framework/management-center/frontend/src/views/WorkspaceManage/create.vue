@@ -1,5 +1,7 @@
 <!--创建编辑工作空间-->
 <script setup lang="ts">
+import organizationApi from "@/api/organization";
+
 const props = defineProps<{
   id: string;
 }>();
@@ -11,6 +13,7 @@ import type { FormInstance, FormRules } from "element-plus";
 import { useRouter } from "vue-router";
 import { useI18n } from "vue-i18n";
 import type { CreateWorkspaceForm } from "@/api/workspace/type";
+import CeIcon from "@commons/components/ce-icon/index.vue";
 const { t } = useI18n();
 const route = useRouter();
 const loading = ref<boolean>(false);
@@ -26,17 +29,12 @@ const orgSelectData = ref<Array<OrganizationTree>>();
 //定义组织树选择数据
 const workspaceOrgSelectTree = ref();
 //默认父级组织选中
-const defaultCheckedKeys = ref();
-
-//设置云租户映射
-// const getCloudMapping = (cloudMappingData: any) => {
-//   form.value.cloudAccounts = cloudMappingData;
-// };
+const defaultCheckedKeys = ref<Array<string>>([]);
 
 //页面初始化
 onMounted(() => {
   //查询组织树
-  tree().then((data) => {
+  organizationApi.tree().then((data) => {
     orgSelectData.value = data.data;
     sourceData.value = [...orgSelectData.value];
   });
@@ -191,10 +189,9 @@ const addItem = (formEl: FormInstance | undefined) => {
 };
 
 /**
- * 组织下拉框过滤
- * 感觉这个搜索有问题，添加之后，checked有问题，先不加吧
+ * 从原数据里面过滤出于value相同的数据
+ * @param value   value
  */
-const sourceData = ref<Array<OrganizationTree>>();
 const filterMethod = (value: string) => {
   if (orgSelectData.value) {
     orgSelectData.value = sourceData.value?.filter((item) => {
@@ -202,112 +199,132 @@ const filterMethod = (value: string) => {
     });
   }
 };
+
+/**
+ * 组织下拉框过滤
+ */
+const sourceData = ref<Array<OrganizationTree>>();
 </script>
-<template v-loading="loading">
-  <el-form
-    :model="form"
-    :inline="true"
-    :rules="rules"
-    ref="ruleFormRef"
-    status-icon
-    class="form-class"
-    label-width="80px"
-  >
-    <layout-container :border="false">
-      <template #content>
-        <layout-container>
-          <template #header
-            ><h4>{{ t("commons.basic_info", "基本信息") }}</h4></template
+<template>
+  <el-container class="create-catalog-container" v-loading="loading">
+    <el-main ref="create-catalog-container">
+      <div class="form-div">
+        <el-form
+          :model="form"
+          :rules="rules"
+          ref="ruleFormRef"
+          status-icon
+          label-width="80px"
+          label-position="top"
+          require-asterisk-position="right"
+        >
+          <el-row>
+            <el-col>
+              <p class="tip">
+                {{ t("commons.basic_info", "基本信息") }}
+              </p>
+            </el-col>
+          </el-row>
+          <el-row
+            :gutter="10"
+            v-for="(item, index) in form.workspaceDetails"
+            :key="index"
           >
-          <template #content>
-            <div v-for="(item, index) in form.workspaceDetails" :key="index">
+            <el-col :span="11">
               <el-form-item
                 :label="$t('commons.name')"
                 :prop="'workspaceDetails[' + index + '].name'"
-                style="width: 40%"
                 :rules="rules.name"
               >
                 <el-input v-model="item.name" />
               </el-form-item>
+            </el-col>
+            <el-col :span="12">
               <el-form-item
                 :label="$t('commons.description')"
                 :prop="'workspaceDetails[' + index + '].description'"
-                style="width: 40%"
                 :rules="rules.description"
               >
                 <el-input v-model="item.description" />
               </el-form-item>
-              <el-form-item
-                v-if="
-                  index === form.workspaceDetails.length - 1 &&
-                  item.id === undefined
-                "
-              >
-                <ce-icon
-                  style="cursor: pointer; height: 20px; width: 20px"
-                  code="Plus"
-                  @click="addItem(ruleFormRef)"
-                ></ce-icon>
-              </el-form-item>
+            </el-col>
+            <el-col :span="1" class="padding-top-30">
               <el-form-item v-if="form.workspaceDetails.length > 1">
-                <ce-icon
-                  style="cursor: pointer; height: 20px; width: 20px"
-                  code="Minus"
+                <div
+                  class="delete-button-class"
                   @click="deleteItem(ruleFormRef, item, index)"
-                ></ce-icon>
+                >
+                  <CeIcon
+                    size="var(--ce-star-menu-icon-width,13.33px)"
+                    code="icon_delete-trash_outlined1"
+                  ></CeIcon>
+                </div>
               </el-form-item>
-            </div>
-          </template>
-        </layout-container>
-        <layout-container>
-          <template #header
-            ><h4>{{ t("workspace.org") }}</h4></template
-          >
-          <template #content>
-            <el-form-item
-              :label="$t('commons.org')"
-              prop="org"
-              style="width: 80%"
+            </el-col>
+          </el-row>
+          <el-row :gutter="10">
+            <el-col :span="24">
+              <el-form-item v-if="props.id === undefined">
+                <div class="add-button-class" @click="addItem(ruleFormRef)">
+                  <CeIcon
+                    size="var(--ce-star-menu-icon-width,13.33px)"
+                    code="icon_add_outlined"
+                  ></CeIcon>
+                  <span class="span-class">
+                    {{ t("commons.btn.add", "添加") }}
+                  </span>
+                </div>
+              </el-form-item>
+            </el-col>
+          </el-row>
+          <el-row>
+            <el-col>
+              <p class="tip">
+                {{ t("workspace.org") }}
+              </p>
+            </el-col>
+          </el-row>
+          <el-row>
+            <el-col :span="23">
+              <el-form-item :label="$t('commons.org')" prop="org">
+                <el-tree-select
+                  style="width: 100%"
+                  :props="{ label: 'name' }"
+                  node-key="id"
+                  v-model="form.organizationId"
+                  :data="orgSelectData"
+                  collapse-tags
+                  show-checkbox
+                  check-strictly
+                  :render-after-expand="false"
+                  :default-checked-keys="defaultCheckedKeys"
+                  :default-expanded-keys="defaultCheckedKeys"
+                  ref="workspaceOrgSelectTree"
+                />
+              </el-form-item>
+            </el-col>
+          </el-row>
+        </el-form>
+      </div>
+    </el-main>
+    <el-footer>
+      <div class="footer">
+        <div class="form-div">
+          <div class="footer-btn">
+            <el-button class="cancel-btn" @click="route.back">{{
+              t("commons.btn.cancel")
+            }}</el-button>
+            <el-button
+              class="save-btn"
+              type="primary"
+              @click="submitForm(ruleFormRef)"
+              >{{ t("commons.btn.save") }}</el-button
             >
-              <el-tree-select
-                :props="{ label: 'name' }"
-                node-key="id"
-                v-model="form.organizationId"
-                :data="orgSelectData"
-                show-checkbox
-                style="width: 100%"
-                check-strictly
-                :render-after-expand="false"
-                :default-checked-keys="defaultCheckedKeys"
-                ref="workspaceOrgSelectTree"
-              />
-            </el-form-item>
-          </template>
-        </layout-container>
-        <!--先屏蔽云租户映射-->
-        <!-- <layout-container style="display: none">
-            <template #header>
-              <h4>云租户映射</h4>
-              <div class="desc-text-class" style="padding-left: 10px">
-                各云平台上所有资源的企业项目属性都会按照映射关系设定，修改后可能会导致原工作空间下的资源授权变更，请勿随意修改映射。
-              </div>
-            </template>
-            <template #content>
-              <CloudMapping @cloudMapping="getCloudMapping"></CloudMapping>
-            </template>
-          </layout-container> -->
-        <!--先屏蔽云租户映射-->
-        <layout-container>
-          <el-button @click="route.back">{{
-            t("commons.btn.cancel")
-          }}</el-button>
-          <el-button type="primary" @click="submitForm(ruleFormRef)">{{
-            t("commons.btn.save")
-          }}</el-button></layout-container
-        >
-      </template>
-    </layout-container>
-  </el-form>
+          </div>
+        </div>
+      </div>
+    </el-footer>
+  </el-container>
 </template>
 <style lang="scss" scoped>
 //描述文字样式

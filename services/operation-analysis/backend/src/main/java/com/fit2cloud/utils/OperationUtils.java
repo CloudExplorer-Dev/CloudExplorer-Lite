@@ -11,7 +11,6 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 /**
  * @author jianneng
@@ -19,6 +18,12 @@ import java.util.stream.Collectors;
  **/
 public class OperationUtils {
 
+    private static final Long WEEK = 168L;
+    private static final Long THREE_MONTH = 93L*24L;
+    private static final Long SIX_MONTH = 186L*24L;
+    private static final Long YEAR = 12L*30L*24L;
+
+    private OperationUtils(){}
 
     /**
      * 获取时间间隔
@@ -29,20 +34,20 @@ public class OperationUtils {
     public static CalendarInterval getCalendarIntervalUnit(long start, long end) {
         // 计算时间差值，转为小时(/1000 / 60 / 60)
         long hours = (end - start) / 3600000;
-        if (hours <= 168) {
+        if (hours <= WEEK) {
             // 小于一周
             return CalendarInterval.Hour;
         }
         // 小于3个月
-        if (hours <= 93 * 24) {
+        if (hours <= THREE_MONTH) {
             return CalendarInterval.Day;
         }
         // 小于6个月
-        if (hours <= 186 * 24) {
+        if (hours <= SIX_MONTH) {
             return CalendarInterval.Month;
         }
-        // 小于24月
-        if (hours <= 24 * 30 * 24) {
+        // 小于12月
+        if (hours <= YEAR) {
             return CalendarInterval.Month;
         } else {
             return CalendarInterval.Year;
@@ -79,7 +84,7 @@ public class OperationUtils {
      */
     public static void initOrgWorkspaceAnalysisData(List<BarTreeChartData> initList, List<BarTreeChartData> orgWorkspaceDataList) {
         initList.forEach(v->{
-            List<BarTreeChartData> tmp = orgWorkspaceDataList.stream().filter(c-> StringUtils.equalsIgnoreCase(v.getId(),c.getId())).collect(Collectors.toList());
+            List<BarTreeChartData> tmp = orgWorkspaceDataList.stream().filter(c-> StringUtils.equalsIgnoreCase(v.getId(),c.getId())).toList();
             if(CollectionUtils.isNotEmpty(tmp)){
                 v.setValue(tmp.get(0).getValue());
             }

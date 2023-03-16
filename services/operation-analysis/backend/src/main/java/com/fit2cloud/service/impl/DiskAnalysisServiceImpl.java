@@ -11,6 +11,7 @@ import com.fit2cloud.base.service.IBaseCloudAccountService;
 import com.fit2cloud.common.utils.CurrentUserUtils;
 import com.fit2cloud.common.utils.PageUtil;
 import com.fit2cloud.constants.DiskTypeConstants;
+import com.fit2cloud.constants.SpecialAttributesConstants;
 import com.fit2cloud.controller.request.disk.PageDiskRequest;
 import com.fit2cloud.controller.request.disk.ResourceAnalysisRequest;
 import com.fit2cloud.controller.response.BarTreeChartData;
@@ -94,7 +95,7 @@ public class DiskAnalysisServiceImpl implements IDiskAnalysisService {
         wrapper.selectAll(VmCloudDisk.class);
         wrapper.in(CollectionUtils.isNotEmpty(accountIds), VmCloudDisk::getAccountId, accountIds);
         wrapper.leftJoin(CloudAccount.class,CloudAccount::getId, VmCloudDisk::getAccountId);
-        wrapper.notIn(true, VmCloudDisk::getStatus, List.of("deleted"));
+        wrapper.notIn(true, VmCloudDisk::getStatus, List.of(SpecialAttributesConstants.StatusField.DISK_DELETE));
         return wrapper;
     }
 
@@ -119,8 +120,6 @@ public class DiskAnalysisServiceImpl implements IDiskAnalysisService {
         MPJLambdaWrapper<VmCloudDisk> wrapper = defaultDiskQuery(new MPJLambdaWrapper<>(),request.getAccountIds());
         wrapper.selectAs(CloudAccount::getName, AnalysisDiskDTO::getAccountName);
         wrapper.selectAs(CloudAccount::getPlatform,AnalysisDiskDTO::getPlatform);
-        //wrapper.eq(VmCloudDisk::getAccountId,VmCloudServer::getAccountId);
-        //wrapper.leftJoin(VmCloudServer.class,VmCloudServer::getInstanceUuid, VmCloudDisk::getInstanceUuid);
         wrapper.in(CollectionUtils.isNotEmpty(request.getSourceIds()), VmCloudDisk::getSourceId, request.getSourceIds());
         return wrapper;
     }
@@ -131,7 +130,7 @@ public class DiskAnalysisServiceImpl implements IDiskAnalysisService {
      */
     @Override
     public Map<String, List<KeyValue>> spread(ResourceAnalysisRequest request) {
-        Map<String,List<KeyValue>> result = new HashMap<>();
+        Map<String,List<KeyValue>> result = new HashMap<>(1);
         Map<String,CloudAccount> accountMap = iServerAnalysisService.getAllAccountIdMap();
         if(accountMap.size()==0){
             return result;
@@ -139,30 +138,31 @@ public class DiskAnalysisServiceImpl implements IDiskAnalysisService {
         MPJLambdaWrapper<VmCloudDisk> queryWrapper = addDiskAnalysisQuery(request);
         List<AnalysisDiskDTO> diskList = baseVmCloudDiskMapper.selectJoinList(AnalysisDiskDTO.class, queryWrapper);
         //把除空闲与挂载状态设置为其他状态
-        diskList = diskList.stream().filter(v->accountMap.containsKey(v.getAccountId())).peek(v-> {
-            if(!StringUtils.equalsIgnoreCase(v.getStatus(),"available") && !StringUtils.equalsIgnoreCase(v.getStatus(),"in_use")){
-                v.setStatus("Other");
+        diskList = diskList.stream().filter(v->accountMap.containsKey(v.getAccountId())).toList();
+        diskList.forEach(v->{
+            if(!StringUtils.equalsIgnoreCase(v.getStatus(),SpecialAttributesConstants.StatusField.AVAILABLE) && !StringUtils.equalsIgnoreCase(v.getStatus(),SpecialAttributesConstants.StatusField.IN_USE)){
+                v.setStatus(SpecialAttributesConstants.StatusField.OTHER);
             }
-        }).collect(Collectors.toList());
+        });
         diskList = diskList.stream().filter(v->StringUtils.isNotEmpty(v.getAccountId())).toList();
-        Map<String,String> statusMap = new HashMap<>();
-        statusMap.put("available","空闲");
-        statusMap.put("in_use","已挂载");
-        statusMap.put("Other","其他");
+        Map<String,String> statusMap = new HashMap<>(3);
+        statusMap.put(SpecialAttributesConstants.StatusField.AVAILABLE,"空闲");
+        statusMap.put(SpecialAttributesConstants.StatusField.IN_USE,"已挂载");
+        statusMap.put(SpecialAttributesConstants.StatusField.OTHER,"其他");
         if(request.isStatisticalBlock()){
             Map<String,Long> byAccountMap = diskList.stream().collect(Collectors.groupingBy(AnalysisDiskDTO::getAccountId, Collectors.counting()));
-            result.put("byAccount",byAccountMap.entrySet().stream().map(c -> new KeyValue(StringUtils.isEmpty(accountMap.get(c.getKey()).getName())?c.getKey():accountMap.get(c.getKey()).getName(), c.getValue()) {}).collect(Collectors.toList()));
+            result.put("byAccount",byAccountMap.entrySet().stream().map(c -> new KeyValue(StringUtils.isEmpty(accountMap.get(c.getKey()).getName())?c.getKey():accountMap.get(c.getKey()).getName(), c.getValue())).toList());
             Map<String,Long> byStatusMap = diskList.stream().collect(Collectors.groupingBy(AnalysisDiskDTO::getStatus, Collectors.counting()));
-            result.put("byStatus",byStatusMap.entrySet().stream().map(c -> new KeyValue(statusMap.get(c.getKey()), c.getValue()) {}).collect(Collectors.toList()));
+            result.put("byStatus",byStatusMap.entrySet().stream().map(c -> new KeyValue(statusMap.get(c.getKey()), c.getValue())).toList());
             Map<String,Long> byTypeMap = diskList.stream().collect(Collectors.groupingBy(AnalysisDiskDTO::getDiskType, Collectors.counting()));
-            result.put("byType",byTypeMap.entrySet().stream().map(c -> new KeyValue(DiskTypeConstants.getName(c.getKey()), c.getValue()) {}).collect(Collectors.toList()));
+            result.put("byType",byTypeMap.entrySet().stream().map(c -> new KeyValue(DiskTypeConstants.getName(c.getKey()), c.getValue())).toList());
         }else{
             Map<String,LongSummaryStatistics> byAccountMap = diskList.stream().filter(v->StringUtils.isNotEmpty(v.getAccountId())).collect(Collectors.groupingBy(AnalysisDiskDTO::getAccountId, Collectors.summarizingLong(AnalysisDiskDTO::getSize)));
-            result.put("byAccount",byAccountMap.entrySet().stream().map(c -> new KeyValue(StringUtils.isEmpty(accountMap.get(c.getKey()).getName())?c.getKey():accountMap.get(c.getKey()).getName(), c.getValue().getSum()) {}).collect(Collectors.toList()));
+            result.put("byAccount",byAccountMap.entrySet().stream().map(c -> new KeyValue(StringUtils.isEmpty(accountMap.get(c.getKey()).getName())?c.getKey():accountMap.get(c.getKey()).getName(), c.getValue().getSum())).toList());
             Map<String,LongSummaryStatistics> byStatusMap = diskList.stream().collect(Collectors.groupingBy(AnalysisDiskDTO::getStatus, Collectors.summarizingLong(AnalysisDiskDTO::getSize)));
-            result.put("byStatus",byStatusMap.entrySet().stream().map(c -> new KeyValue(statusMap.get(c.getKey()), c.getValue().getSum()) {}).collect(Collectors.toList()));
+            result.put("byStatus",byStatusMap.entrySet().stream().map(c -> new KeyValue(statusMap.get(c.getKey()), c.getValue().getSum())).toList());
             Map<String,LongSummaryStatistics> byTypeMap = diskList.stream().collect(Collectors.groupingBy(AnalysisDiskDTO::getDiskType, Collectors.summarizingLong(AnalysisDiskDTO::getSize)));
-            result.put("byType",byTypeMap.entrySet().stream().map(c -> new KeyValue(DiskTypeConstants.getName(c.getKey()), c.getValue().getSum()) {}).collect(Collectors.toList()));
+            result.put("byType",byTypeMap.entrySet().stream().map(c -> new KeyValue(DiskTypeConstants.getName(c.getKey()), c.getValue().getSum())).toList());
         }
         return result;
     }
@@ -183,12 +183,13 @@ public class DiskAnalysisServiceImpl implements IDiskAnalysisService {
         List<AnalysisDiskDTO> diskList = baseVmCloudDiskMapper.selectJoinList(AnalysisDiskDTO.class, queryWrapper);
         if(CollectionUtils.isNotEmpty(diskList)){
             //格式化创建时间,删除时间
-            diskList = diskList.stream().filter(v->accountMap.containsKey(v.getAccountId())).filter(v->Objects.nonNull(v.getCreateTime())).peek(v->{
+            diskList = diskList.stream().filter(v->accountMap.containsKey(v.getAccountId())).filter(v->Objects.nonNull(v.getCreateTime())).toList();
+            diskList.forEach(v->{
                 v.setCreateMonth(v.getCreateTime().format(DateTimeFormatter.ofPattern("yyyy-MM-dd")));
-                if(Objects.nonNull(v.getUpdateTime()) && StringUtils.equalsIgnoreCase(v.getStatus(),"deleted")){
+                if(Objects.nonNull(v.getUpdateTime()) && StringUtils.equalsIgnoreCase(v.getStatus(),SpecialAttributesConstants.StatusField.DISK_DELETE)){
                     v.setDeleteMonth(v.getUpdateTime().format(DateTimeFormatter.ofPattern("yyyy-MM-dd")));
                 }
-            }).toList();
+            });
             Map<String,List<AnalysisDiskDTO>> accountGroup = diskList.stream().filter(v->StringUtils.isNotEmpty(v.getAccountId())).collect(Collectors.groupingBy(AnalysisDiskDTO::getAccountId));
             setDiskIncreaseTrendData(accountGroup, request.isStatisticalBlock(), request.getDayNumber(), tempChartDataList);
         }
@@ -197,16 +198,17 @@ public class DiskAnalysisServiceImpl implements IDiskAnalysisService {
 
     private void setDiskIncreaseTrendData(Map<String,List<AnalysisDiskDTO>> accountGroup,boolean isStatisticalBlock,Long days,List<ChartData> tempChartDataList){
         List<String> dateRangeList = iServerAnalysisService.getRangeDateStrList(days);
-        for (String accountId : accountGroup.keySet()) {
-            Map<String, Long> month = new HashMap<>();
-            Map<String, Long> delMonth = new HashMap<>();
+        for (Map.Entry<String,List<AnalysisDiskDTO>> entry : accountGroup.entrySet()) {
+            String accountId = entry.getKey();
+            Map<String, Long> month;
+            Map<String, Long> delMonth;
             //容量
             if (!isStatisticalBlock) {
                 month = accountGroup.get(accountId).stream().collect(Collectors.groupingBy(AnalysisDiskDTO::getCreateMonth, Collectors.summingLong(AnalysisDiskDTO::getSize)));
-                delMonth = accountGroup.get(accountId).stream().filter(v -> StringUtils.equalsIgnoreCase(v.getStatus(), "deleted") && StringUtils.isNotEmpty(v.getDeleteMonth())).collect(Collectors.groupingBy(AnalysisDiskDTO::getDeleteMonth, Collectors.summingLong(AnalysisDiskDTO::getSize)));
+                delMonth = accountGroup.get(accountId).stream().filter(v -> StringUtils.equalsIgnoreCase(v.getStatus(), SpecialAttributesConstants.StatusField.DISK_DELETE) && StringUtils.isNotEmpty(v.getDeleteMonth())).collect(Collectors.groupingBy(AnalysisDiskDTO::getDeleteMonth, Collectors.summingLong(AnalysisDiskDTO::getSize)));
             } else {
                 month = accountGroup.get(accountId).stream().collect(Collectors.groupingBy(AnalysisDiskDTO::getCreateMonth, Collectors.counting()));
-                delMonth = accountGroup.get(accountId).stream().filter(v -> StringUtils.equalsIgnoreCase(v.getStatus(), "deleted") && StringUtils.isNotEmpty(v.getDeleteMonth())).collect(Collectors.groupingBy(AnalysisDiskDTO::getDeleteMonth, Collectors.counting()));
+                delMonth = accountGroup.get(accountId).stream().filter(v -> StringUtils.equalsIgnoreCase(v.getStatus(), SpecialAttributesConstants.StatusField.DISK_DELETE) && StringUtils.isNotEmpty(v.getDeleteMonth())).collect(Collectors.groupingBy(AnalysisDiskDTO::getDeleteMonth, Collectors.counting()));
             }
             Map<String, Long> finalMonth = month;
             Map<String, Long> finalDelMonth = delMonth;
@@ -223,8 +225,9 @@ public class DiskAnalysisServiceImpl implements IDiskAnalysisService {
     /**
      * 磁盘在组织工作空间上的分布
      */
+    @Override
     public Map<String,List<BarTreeChartData>> analysisCloudDiskByOrgWorkspace(ResourceAnalysisRequest request){
-        Map<String,List<BarTreeChartData>> result = new HashMap<>();
+        Map<String,List<BarTreeChartData>> result = new HashMap<>(2);
         List<BarTreeChartData> workspaceList =  workspaceSpread(request);
         if(request.isAnalysisWorkspace()){
             result.put("tree",workspaceList);
@@ -240,7 +243,7 @@ public class DiskAnalysisServiceImpl implements IDiskAnalysisService {
      */
     private void orgSpread(ResourceAnalysisRequest request, List<BarTreeChartData> workspaceList, Map<String,List<BarTreeChartData>> result){
         //组织下工作空间添加标识
-        workspaceList = workspaceList.stream().peek(v-> v.setName(v.getName()+"(工作空间)")).collect(Collectors.toList());
+        workspaceList.forEach(v-> v.setName(v.getName()+"(工作空间)"));
         //工作空间按组织ID分组
         Map<String,List<BarTreeChartData>> workspaceMap = workspaceList.stream().collect(Collectors.groupingBy(BarTreeChartData::getPId));
         //查询所有组织初始化为chart数据
@@ -264,22 +267,10 @@ public class DiskAnalysisServiceImpl implements IDiskAnalysisService {
         });
         //组织管理员的话，只有一个跟节点，然后只返回他的子集
         if (CurrentUserUtils.isOrgAdmin()) {
-            result.put("tree",chartDataList.get(0).getChildren().stream().filter(this::childrenHasValue).toList());
+            result.put("tree",chartDataList.get(0).getChildren().stream().filter(v->v.getValue()>0).toList());
         }else{
-            result.put("tree",chartDataList.stream().filter(this::childrenHasValue).toList());
+            result.put("tree",chartDataList.stream().filter(v->v.getValue()>0).toList());
         }
-    }
-
-    private boolean childrenHasValue(BarTreeChartData parent){
-        if(parent.getValue()==0){
-            return false;
-        }
-        if(CollectionUtils.isNotEmpty(parent.getChildren())){
-            for(BarTreeChartData chartData:parent.getChildren()){
-                return childrenHasValue(chartData);
-            }
-        }
-        return true;
     }
 
     /**

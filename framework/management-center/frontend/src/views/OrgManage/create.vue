@@ -1,80 +1,123 @@
 <template>
-  <el-form :model="from" :inline="true" ref="ruleFormRef" status-icon>
-    <layout-container :border="false">
-      <template #content>
-        <layout-container>
-          <template #header
-            ><h4>{{ t("commons.basic_info", "基本信息") }}</h4></template
+  <el-container class="create-catalog-container">
+    <el-main ref="create-catalog-container">
+      <div class="form-div">
+        <el-form
+          :model="from"
+          ref="ruleFormRef"
+          label-width="80px"
+          status-icon
+          label-position="top"
+          require-asterisk-position="right"
+        >
+          <el-row>
+            <el-col span="24">
+              <p class="tip">
+                {{ t("commons.basic_info", "基本信息") }}
+              </p>
+            </el-col>
+          </el-row>
+          <el-row
+            :gutter="10"
+            v-for="(org, index) in from.orgDetails"
+            :key="index"
           >
-          <template #content>
-            <div v-for="(org, index) in from.orgDetails" :key="index">
+            <el-col :span="11">
               <el-form-item
                 :label="t('commons.name', '名称')"
                 :prop="'orgDetails[' + index + '].name'"
-                style="width: 40%"
                 :rules="rules.name"
               >
                 <el-input v-model="org.name" />
               </el-form-item>
+            </el-col>
+            <el-col :span="12">
               <el-form-item
                 :label="t('commons.description', '描述')"
                 :prop="'orgDetails[' + index + '].description'"
-                style="width: 40%"
                 :rules="rules.description"
               >
                 <el-input v-model="org.description" />
               </el-form-item>
-              <el-form-item v-if="index === from.orgDetails.length - 1">
-                <ce-icon
-                  style="cursor: pointer; height: 20px; width: 20px"
-                  code="Plus"
-                  @click="addOrgItem(ruleFormRef)"
-                ></ce-icon>
-              </el-form-item>
+            </el-col>
+            <el-col :span="1" class="padding-top-30">
               <el-form-item v-if="from.orgDetails.length > 1">
-                <ce-icon
-                  style="cursor: pointer; height: 20px; width: 20px"
-                  code="Minus"
+                <div
+                  class="delete-button-class"
                   @click="deleteOrgItem(ruleFormRef, org, index)"
-                ></ce-icon>
+                >
+                  <CeIcon
+                    size="var(--ce-star-menu-icon-width,13.33px)"
+                    code="icon_delete-trash_outlined1"
+                  ></CeIcon>
+                </div>
               </el-form-item>
-            </div>
-          </template>
-        </layout-container>
-        <layout-container>
-          <template #header
-            ><h4>
-              {{ t("org_manage.affiliated_organization", "所属组织") }}
-            </h4></template
-          >
-          <template #content>
-            <el-form-item :label="t('commons.org', '组织')" style="width: 80%">
-              <el-tree-select
-                filterable
-                :filter-method="filterMethod"
-                :props="{ label: 'name' }"
-                node-key="id"
-                v-model="from.pid"
-                :data="orientationData"
-                show-checkbox
-                style="width: 100%"
-                check-strictly
-                :render-after-expand="false"
-              />
-            </el-form-item>
-          </template>
-        </layout-container>
-        <layout-container>
-          <el-button @click="() => router.push({ name: 'org_list' })">{{
-            t("commons.btn.cancel", "取消")
-          }}</el-button>
-          <el-button type="primary" @click="submitForm(ruleFormRef)">{{
-            t("commons.btn.save", "保存")
-          }}</el-button></layout-container
-        >
-      </template>
-    </layout-container>
-  </el-form>
+            </el-col>
+          </el-row>
+          <el-row :gutter="10">
+            <el-col :span="24">
+              <el-form-item>
+                <!--                <el-form-item v-if="index === from.orgDetails.length - 1">-->
+                <div class="add-button-class" @click="addOrgItem(ruleFormRef)">
+                  <CeIcon
+                    size="var(--ce-star-menu-icon-width,13.33px)"
+                    code="icon_add_outlined"
+                  ></CeIcon>
+                  <span class="span-class">
+                    {{ t("commons.btn.add", "添加") }}
+                  </span>
+                </div>
+              </el-form-item>
+            </el-col>
+          </el-row>
+          <el-row>
+            <el-col span="24">
+              <p class="tip">
+                {{ t("org_manage.affiliated_organization", "所属组织") }}
+              </p>
+            </el-col>
+          </el-row>
+          <el-row>
+            <el-col :span="23">
+              <el-form-item :label="t('commons.org', '组织')">
+                <el-tree-select
+                  filterable
+                  :filter-method="filterMethod"
+                  :props="{ label: 'name' }"
+                  node-key="id"
+                  v-model="from.pid"
+                  :data="orientationData"
+                  show-checkbox
+                  style="width: 100%"
+                  check-strictly
+                  :render-after-expand="false"
+                />
+              </el-form-item>
+            </el-col>
+          </el-row>
+        </el-form>
+      </div>
+    </el-main>
+    <el-footer>
+      <div class="footer">
+        <div class="form-div">
+          <div class="footer-btn">
+            <el-button
+              class="cancel-btn"
+              @click="() => router.push({ name: 'org_list' })"
+              >{{ t("commons.btn.cancel", "取消") }}</el-button
+            >
+            <el-button
+              class="save-btn"
+              type="primary"
+              @click="submitForm(ruleFormRef)"
+              >{{ t("commons.btn.save", "保存") }}</el-button
+            >
+          </div>
+        </div>
+      </div>
+    </el-footer>
+  </el-container>
 </template>
 <script setup lang="ts">
 import { ElMessage } from "element-plus";
@@ -83,6 +126,7 @@ import organizationApi from "@/api/organization";
 import type { OrganizationTree, CreateOrgFrom } from "@/api/organization/type";
 import { useRouter } from "vue-router";
 import type { FormInstance, FormRules } from "element-plus";
+import CeIcon from "@commons/components/ce-icon/index.vue";
 import { useI18n } from "vue-i18n";
 const { t } = useI18n();
 // 路由对象

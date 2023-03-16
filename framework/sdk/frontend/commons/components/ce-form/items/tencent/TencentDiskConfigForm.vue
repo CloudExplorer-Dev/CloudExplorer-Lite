@@ -114,7 +114,7 @@
   </template>
 </template>
 <script setup lang="ts">
-import {computed, watch, onMounted, ref} from "vue";
+import { computed, watch, onMounted, ref } from "vue";
 import _ from "lodash";
 import type { FormView } from "@commons/components/ce-form/type";
 import { CloseBold } from "@element-plus/icons-vue";
@@ -184,7 +184,7 @@ const minSize = computed(() => (disk: DiskTypeConfig, index: number) => {
         if (diskTypeOption.diskType === disk.diskType) {
           min = diskTypeOption.minDiskSize;
         }
-        if (props.allData.os?.toLowerCase().indexOf('windows') > -1) {
+        if (props.allData.os?.toLowerCase().indexOf("windows") > -1) {
           min = 50;
         }
         if (disk.size < min) {

@@ -9,7 +9,6 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.fit2cloud.base.service.IBaseUserRoleService;
 import com.fit2cloud.common.exception.Fit2cloudException;
 import com.fit2cloud.common.utils.ColumnNameUtil;
-import com.fit2cloud.common.utils.JsonUtil;
 import com.fit2cloud.common.utils.PageUtil;
 import com.fit2cloud.constants.ErrorCodeConstants;
 import com.fit2cloud.controller.request.workspace.PageWorkspaceRequest;
@@ -18,7 +17,6 @@ import com.fit2cloud.controller.request.workspace.WorkspaceRequest;
 import com.fit2cloud.dao.entity.Workspace;
 import com.fit2cloud.dao.mapper.WorkspaceMapper;
 import com.fit2cloud.dto.WorkspaceDTO;
-import com.fit2cloud.service.IOrganizationService;
 import com.fit2cloud.service.IWorkspaceService;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -50,17 +48,13 @@ public class WorkspaceServiceImpl extends ServiceImpl<WorkspaceMapper, Workspace
     private MessageSource messageSource;
 
     @Resource
-    private IOrganizationService organizationService;
-
-    @Resource
     private IBaseUserRoleService userRoleService;
 
     @Override
     public Boolean create(WorkspaceRequest request) {
         List<Workspace> list = list(new LambdaQueryWrapper<Workspace>().eq(Workspace::getName, request.getName()));
         if (CollectionUtils.isNotEmpty(list)) {
-            throw new Fit2cloudException(ErrorCodeConstants.WORKSPACE_NAME_REPEAT.getCode(),
-                    messageSource.getMessage(ErrorCodeConstants.WORKSPACE_NAME_REPEAT.getMessage(), null, LocaleContextHolder.getLocale()));
+            throw new Fit2cloudException(ErrorCodeConstants.WORKSPACE_NAME_REPEAT.getCode(),ErrorCodeConstants.WORKSPACE_NAME_REPEAT.getMessage());
         }
         Workspace workspace = new Workspace();
         BeanUtils.copyProperties(request, workspace);
@@ -75,8 +69,7 @@ public class WorkspaceServiceImpl extends ServiceImpl<WorkspaceMapper, Workspace
                 .eq(Workspace::getName, request.getName())
                 .ne(Workspace::getId, request.getId()));
         if (CollectionUtils.isNotEmpty(list)) {
-            throw new Fit2cloudException(ErrorCodeConstants.WORKSPACE_NAME_REPEAT.getCode(),
-                    messageSource.getMessage(ErrorCodeConstants.WORKSPACE_NAME_REPEAT.getMessage(), null, LocaleContextHolder.getLocale()));
+            throw new Fit2cloudException(ErrorCodeConstants.WORKSPACE_NAME_REPEAT.getCode(),ErrorCodeConstants.WORKSPACE_NAME_REPEAT.getMessage());
         }
         Workspace workspace = getById(request.getId());
         if (Optional.ofNullable(workspace).isEmpty()) {
@@ -111,8 +104,7 @@ public class WorkspaceServiceImpl extends ServiceImpl<WorkspaceMapper, Workspace
     @Override
     public WorkspaceDTO getOne(String id, String name) {
         if (StringUtils.isEmpty(id) && StringUtils.isEmpty(name)) {
-            throw new Fit2cloudException(ErrorCodeConstants.WORKSPACE_ID_AND_NAME_REQUIRED.getCode(),
-                    messageSource.getMessage(ErrorCodeConstants.WORKSPACE_ID_AND_NAME_REQUIRED.getMessage(), null, LocaleContextHolder.getLocale()));
+            throw new Fit2cloudException(ErrorCodeConstants.WORKSPACE_ID_AND_NAME_REQUIRED.getCode(),ErrorCodeConstants.WORKSPACE_ID_AND_NAME_REQUIRED.getMessage());
         }
         LambdaQueryWrapper<Workspace> wrapper = new LambdaQueryWrapper<>();
         if (StringUtils.isNotEmpty(id)) {
@@ -145,8 +137,7 @@ public class WorkspaceServiceImpl extends ServiceImpl<WorkspaceMapper, Workspace
         List<String> names = request.getWorkspaceDetails().stream().map(WorkspaceBatchCreateRequest.WorkspaceDetails::getName).toList();
         List<Workspace> list = list(new LambdaQueryWrapper<Workspace>().in(Workspace::getName, names));
         if (CollectionUtils.isNotEmpty(list)) {
-            throw new Fit2cloudException(ErrorCodeConstants.WORKSPACE_NAME_REPEAT.getCode(), messageSource.getMessage(ErrorCodeConstants.WORKSPACE_NAME_REPEAT.getMessage(),
-                    new Object[]{JsonUtil.toJSONString(list.stream().map(Workspace::getName).collect(Collectors.toList()))}, LocaleContextHolder.getLocale()));
+            throw new Fit2cloudException(ErrorCodeConstants.WORKSPACE_NAME_REPEAT.getCode(), ErrorCodeConstants.WORKSPACE_NAME_REPEAT.getMessage(list.stream().map(Workspace::getName).toArray()));
         }
         List<Workspace> workspaces = request.getWorkspaceDetails().stream().map(workspaceDetails -> {
             Workspace workspace = new Workspace();

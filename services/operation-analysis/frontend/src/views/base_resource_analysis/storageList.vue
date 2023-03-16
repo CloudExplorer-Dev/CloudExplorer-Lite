@@ -124,7 +124,6 @@ onMounted(() => {
       <el-table-column prop="capacity" label="总容量(GB)"></el-table-column>
       <el-table-column prop="allocated" label="已分配(GB)"> </el-table-column>
       <el-table-column prop="freeSpace" label="剩余(GB)"></el-table-column>
-      <!--    <el-table-column prop="useRate" label="使用率(%)"></el-table-column>-->
       <el-table-column prop="freeRate" label="剩余率(%)"></el-table-column>
       <el-table-column prop="type" label="类型" :show="false"></el-table-column>
       <template #buttons>

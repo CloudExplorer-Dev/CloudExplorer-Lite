@@ -1,38 +1,45 @@
 <template>
   <el-form
     :rules="rules"
-    label-position="right"
     :model="_roleFormData"
-    :inline="false"
     ref="_ruleFormRef"
     status-icon
+    label-position="top"
+    require-asterisk-position="right"
+    style="width: 100%"
   >
-    <el-form-item label="名称" label-width="100px" prop="name">
-      <el-col :span="14">
-        <el-input v-model="_roleFormData.name" v-if="editInfo" />
-        <span v-if="!editInfo">{{ _roleData.name }}</span>
+    <el-row :gutter="10">
+      <el-col :span="24">
+        <el-form-item label="名称" label-width="100px" prop="name">
+          <el-input v-model="_roleFormData.name" v-if="editInfo"/>
+          <span v-if="!editInfo">{{ _roleData.name }}</span>
+        </el-form-item>
       </el-col>
-    </el-form-item>
-
-    <el-form-item label="描述" label-width="100px" prop="description">
-      <el-col :span="14">
-        <el-input v-model="_roleFormData.description" v-if="editInfo" />
-        <span v-if="!editInfo">{{ _roleData.description }}</span>
+    </el-row>
+    <el-row :gutter="10">
+      <el-col :span="24">
+        <el-form-item label="描述" label-width="100px" prop="description">
+          <el-input v-model="_roleFormData.description" v-if="editInfo" />
+          <span v-if="!editInfo">{{ _roleData.description }}</span>
+        </el-form-item>
       </el-col>
-    </el-form-item>
-
-    <el-form-item label="继承角色" label-width="100px" prop="parentRoleId">
-      <el-radio-group v-model="_roleData.parentRoleId">
-        <el-radio-button
-          v-for="baseRole in originRoles"
-          :key="baseRole.id"
-          :label="baseRole.id"
-          :disabled="!createNew && baseRole.id !== _roleData.parentRoleId"
-        >
-          {{ baseRole.name }}
-        </el-radio-button>
-      </el-radio-group>
-    </el-form-item>
+    </el-row>
+    <el-row :gutter="10">
+      <el-col :span="24">
+        <el-form-item label="继承角色" label-width="100px" prop="parentRoleId">
+          <el-radio-group v-model="_roleData.parentRoleId">
+            <el-radio
+              v-for="baseRole in originRoles"
+              :key="baseRole.id"
+              :label="baseRole.id"
+              :disabled="!createNew && baseRole.id !== _roleData.parentRoleId"
+            >
+              {{ baseRole.name }}
+            </el-radio>
+          </el-radio-group>
+        </el-form-item>
+      </el-col>
+    </el-row>
   </el-form>
 </template>
 <script setup lang="ts">

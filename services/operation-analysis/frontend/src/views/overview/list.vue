@@ -300,13 +300,12 @@
   </div>
 </template>
 <script lang="ts" setup>
-import { computed, onMounted, ref } from "vue";
+import { onMounted, ref } from "vue";
 import _ from "lodash";
 import ChartsSpeed from "@commons/components/echart/ChartsSpeed.vue";
 import ResourceSpreadViewApi from "@/api/resource_spread_view/index";
 import CloudServerViewApi from "@/api/server_analysis/index";
 import CloudDiskViewApi from "@/api/disk_analysis/index";
-import { ResourceAnalysisRequest } from "@commons/api/resource_spread_view/type";
 import {
   defaultPieDoughnutOptions,
   defaultSpeedOptions,
@@ -760,9 +759,6 @@ onMounted(() => {
 .echart-title-right {
   float: right;
   margin-top: -5px;
-}
-
-.echart-content {
 }
 
 .echart-content-left {
