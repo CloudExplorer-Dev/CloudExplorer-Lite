@@ -80,6 +80,8 @@ export interface FormView {
 
   regexpDescription?: string | null;
   index: number;
+
+  extraInfo: string;
   /**
    * 其他字段
    */

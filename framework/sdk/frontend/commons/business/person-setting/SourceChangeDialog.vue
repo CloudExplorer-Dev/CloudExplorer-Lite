@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref } from "vue";
+import { computed, onMounted, ref } from "vue";
 import { useI18n } from "vue-i18n";
 
 import _ from "lodash";
@@ -31,6 +31,9 @@ function onOpen() {
 }
 
 function click(data: SourceTreeObject) {
+  if (!getRoleName(data)) {
+    return;
+  }
   //console.log(data);
   if (isCurrent(data)) {
     dialogVisible.value = false;
@@ -58,47 +61,41 @@ function click(data: SourceTreeObject) {
   }
 }
 
-const adminRoleName = computed<string>(() => {
+const adminRoleName = computed<string[]>(() => {
   const adminRole: UserRole | undefined = _.head(
     _.get(userStore.currentUser?.roleMap, "ADMIN")
   );
-  return _.join(
-    _.flatMap(adminRole?.roles, (o) => o.name),
-    ", "
-  );
+  return _.map(adminRole?.roles, (o) => o.name);
 });
 
-const orgAdminRoleNameMap = computed<SimpleMap<string>>(() => {
+const orgAdminRoleNameMap = computed<SimpleMap<string[]>>(() => {
   return getRoleNameMap("ORGADMIN");
 });
 
-const userRoleNameMap = computed<SimpleMap<string>>(() => {
+const userRoleNameMap = computed<SimpleMap<string[]>>(() => {
   return getRoleNameMap("USER");
 });
 
-function getRoleNameMap(role: string): SimpleMap<string> {
+function getRoleNameMap(role: string): SimpleMap<string[]> {
   const orgRoles: Array<UserRole> | undefined = _.get(
     userStore.currentUser?.roleMap,
     role
   );
-  const map: SimpleMap<string> = {};
+  const map: SimpleMap<string[]> = {};
 
   _.forEach(orgRoles, (role) => {
     if (role.source) {
       _.set(
         map,
         role.source,
-        _.join(
-          _.flatMap(role?.roles, (o) => o.name),
-          ", "
-        )
+        _.map(role?.roles, (o) => o.name)
       );
     }
   });
   return map;
 }
 
-function getRoleName(data: SourceTreeObject): string | undefined {
+function getRoleName(data: SourceTreeObject): string[] | undefined {
   if (data.root) {
     return adminRoleName.value;
   }
@@ -124,44 +121,39 @@ function isCurrent(data: SourceTreeObject): boolean {
   }
   return false;
 }
+
+onMounted(() => {
+  onOpen();
+});
 </script>
 
 <template>
-  <el-dialog
-    v-model="dialogVisible"
-    title="切换角色"
-    node-key="id"
-    destroy-on-close
-    align-center
-    lock-scroll
-    @open="onOpen"
+  <el-tree
+    :data="userStore.sourceTree"
+    default-expand-all
+    :expand-on-click-node="false"
+    class="source-tree"
   >
-    <el-tree
-      :data="userStore.sourceTree"
-      default-expand-all
-      :expand-on-click-node="false"
-      class="source-tree"
-    >
-      <template #default="{ node, data }">
-        <span
-          class="custom-tree-node"
-          :class="{ active: isCurrent(data) }"
-          :key="node.id"
-        >
-          <span>{{ data.label }}</span>
-          <span
-            @click="click(data)"
-            class="custom-button"
-            v-if="getRoleName(data)"
-          >
-            [{{ getRoleName(data) }}]
-            <el-icon v-if="!isCurrent(data)"><Right /></el-icon>
-            <el-icon v-if="isCurrent(data)"><Aim /></el-icon>
-          </span>
-        </span>
-      </template>
-    </el-tree>
-  </el-dialog>
+    <template #default="{ node, data }">
+      <div
+        class="custom-tree-node"
+        :class="{
+          active: isCurrent(data),
+          'custom-button': getRoleName(data) !== undefined,
+        }"
+        @click="click(data)"
+        :key="node.id"
+      >
+        <span>{{ data.label }}</span>
+        <div class="role-tag" v-for="r in getRoleName(data)" :key="r">
+          {{ r }}
+        </div>
+        <div style="flex: 1; min-width: 50px"></div>
+        <el-icon v-if="isCurrent(data)"><Check /></el-icon>
+        <div v-else style="height: 1em; width: 1em"></div>
+      </div>
+    </template>
+  </el-tree>
 </template>
 
 <style scoped lang="scss">
@@ -178,13 +170,23 @@ function isCurrent(data: SourceTreeObject): boolean {
       cursor: default;
       display: flex;
       align-items: center;
-      justify-content: space-between;
+      justify-content: flex-start;
       font-size: 14px;
       padding-right: 8px;
 
-      .custom-button {
-        cursor: pointer;
+      .role-tag {
+        border-radius: 2px;
+        line-height: 20px;
+        font-size: 12px;
+        background-color: rgba(51, 112, 255, 0.2);
+        margin-left: 4px;
+        padding: 1px 6px;
+        color: var(--el-color-primary);
       }
+    }
+
+    .custom-button {
+      cursor: pointer;
     }
   }
 }

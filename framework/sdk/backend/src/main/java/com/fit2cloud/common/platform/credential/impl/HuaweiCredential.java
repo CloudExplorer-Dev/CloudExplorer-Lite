@@ -33,7 +33,7 @@ public class HuaweiCredential implements Credential {
     /**
      * SecretKey 密钥Key
      */
-    @Form(inputType = InputType.Password, label = "SecretKey", description = "访问密钥")
+    @Form(inputType = InputType.Password, label = "SecretKey", description = "访问密钥", extraInfo = "{\"text\":\"如何获取访问密钥？\",\"url\":\"https://support.huaweicloud.com/usermanual-ca/ca_01_0003.html\"}")
     private String sk;
 
     @Override

@@ -29,7 +29,7 @@ public class AliCredential implements Credential {
     /**
      * 访问密钥
      */
-    @Form(inputType = InputType.Password, label = "AccessKeySecret", description = "访问令牌")
+    @Form(inputType = InputType.Password, label = "AccessKeySecret", description = "访问令牌", extraInfo = "{\"text\":\"如何获取Accesskey？\",\"url\":\"https://help.aliyun.com/document_detail/116410.html\"}")
     private String accessKeySecret;
 
     @Override

@@ -2,7 +2,6 @@
 import { ref } from "vue";
 import { useUserStore } from "@commons/stores/modules/user";
 import ModifyPassword from "./ModifyPassword.vue";
-import SourceChangeDialog from "./SourceChangeDialog.vue";
 import PersonInfo from "./PersonInfo.vue";
 
 const userStore = useUserStore();
@@ -26,11 +25,6 @@ const userInfoRef = ref();
 const showUserInfoDialog = () => {
   userInfoRef.value.dialogVisible = true;
 };
-
-const sourceChangeDialogRef = ref();
-const showSourceChangeDialog = () => {
-  sourceChangeDialogRef.value.dialogVisible = true;
-};
 </script>
 
 <template>
@@ -42,10 +36,7 @@ const showSourceChangeDialog = () => {
     </el-button>
     <template #dropdown>
       <el-dropdown-menu>
-        <el-dropdown-item icon="UserFilled" @click="showSourceChangeDialog">
-          切换角色
-        </el-dropdown-item>
-        <el-dropdown-item icon="InfoFilled" divided @click="showUserInfoDialog">
+        <el-dropdown-item icon="InfoFilled" @click="showUserInfoDialog">
           {{ $t("commons.personal.personal_info") }}
         </el-dropdown-item>
         <el-dropdown-item icon="Edit" @click="showPasswordDialog">
@@ -63,7 +54,4 @@ const showSourceChangeDialog = () => {
 
   <!--个人信息弹出框-->
   <PersonInfo ref="userInfoRef" />
-
-  <!--切换角色/组织架构 弹出框-->
-  <SourceChangeDialog ref="sourceChangeDialogRef" />
 </template>

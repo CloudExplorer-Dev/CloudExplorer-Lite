@@ -15,7 +15,10 @@ declare global {
 }
 
 const components: SimpleMap<any> = import.meta.glob(
-  "./components/**/index.vue",
+  [
+    "./components/**/index.vue",
+    "./components/ce-table/CeTableColumnSelect.vue",
+  ],
   {
     eager: true,
   }
@@ -37,7 +40,7 @@ const install = (app: App) => {
   });
 
   Object.keys(components).forEach((key: string) => {
-    const replaceKey = key.replace("/index.vue", "");
+    const replaceKey = key.replace(".vue", "").replace("/index", "");
     app.component(
       replaceKey.substring(replaceKey.lastIndexOf("/") + 1, replaceKey.length),
       components[key].default

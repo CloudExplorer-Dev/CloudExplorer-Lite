@@ -221,7 +221,7 @@ const tableConfig = ref<TableConfig>({
         </template>
       </el-table-column>
       <template #buttons>
-        <fu-table-column-select type="icon" :columns="columns" size="small" />
+        <CeTableColumnSelect :columns="columns"/>
       </template>
     </ce-table>
   </div>
