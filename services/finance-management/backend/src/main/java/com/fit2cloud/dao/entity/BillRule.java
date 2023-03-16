@@ -54,7 +54,7 @@ public class BillRule implements Serializable {
     /**
      * 分组规则
      */
-    @TableField(value = "groups", typeHandler = GroupHandler.class)
+    @TableField(value = "_groups", typeHandler = GroupHandler.class)
     private List<Group> groups;
 
     /**

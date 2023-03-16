@@ -1,6 +1,6 @@
 SET SESSION innodb_lock_wait_timeout = 7200;
 
-INSERT INTO `bill_rule` (ce.bill_rule.id, ce.bill_rule.name, ce.bill_rule.`groups`, ce.bill_rule.filters)
+INSERT INTO `bill_rule` (bill_rule.id, bill_rule.name, bill_rule._groups, bill_rule.filters)
 VALUES ('03e3e6d10abea0643af6ba989e2891a0', '按云平台', '[
   {
     \"name\": \"云平台\",

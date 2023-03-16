@@ -296,7 +296,7 @@ const tableConfig = ref<TableConfig>({
   </ce-table>
 
   <!-- 修改密码弹出框 -->
-  <ModifyPwd ref="modifyPwdRef" :userId="activeUserId" />
+  <ModifyPwd ref="modifyPwdRef" :userId="activeUserId" style="min-width: 600px"/>
 
   <!-- 通知设置弹出框 -->
   <el-dialog
@@ -305,6 +305,8 @@ const tableConfig = ref<TableConfig>({
     width="25%"
     destroy-on-close
     :close-on-click-modal="false"
+    class="custom-dialog"
+    style="min-width: 600px"
   >
     <MsgConfig
       :userId="activeUserId"
@@ -317,7 +319,9 @@ const tableConfig = ref<TableConfig>({
     v-model="batchAddRoleDialogVisible"
     :title="$t('user.add_role')"
     width="40%"
+    class="custom-dialog"
     destroy-on-close
+    style="min-width: 600px"
   >
     <AddRole
       :userIds="selectedUserIds"

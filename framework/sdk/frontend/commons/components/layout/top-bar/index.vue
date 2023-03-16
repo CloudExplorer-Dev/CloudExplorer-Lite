@@ -43,10 +43,10 @@ function roleSelectVisibleChange(visible: boolean) {
         </div>
         <div
           class="role-tag"
-          v-for="roleName in userStore.currentRoleSourceName?.roleName"
-          :key="roleName"
+          v-for="role in userStore.currentRoleSourceName?.roles"
+          :key="role.id"
         >
-          {{ roleName }}
+          {{ role.name }}
         </div>
         <el-icon class="role-cart" v-if="!roleSelectOpen"
           ><CaretBottom

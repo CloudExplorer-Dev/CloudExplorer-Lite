@@ -10,6 +10,7 @@ import type { UserRole } from "@commons/api/user/type";
 import type { SimpleMap } from "@commons/api/base/type";
 import { useHomeStore } from "@commons/stores/modules/home";
 import { useRouter } from "vue-router";
+import type { Role } from "@commons/api/role/type";
 
 const userStore = useUserStore();
 const homeStore = useHomeStore();
@@ -31,7 +32,7 @@ function onOpen() {
 }
 
 function click(data: SourceTreeObject) {
-  if (!getRoleName(data)) {
+  if (!getRoleObj(data)) {
     return;
   }
   //console.log(data);
@@ -61,41 +62,37 @@ function click(data: SourceTreeObject) {
   }
 }
 
-const adminRoleName = computed<string[]>(() => {
+const adminRoleName = computed<Role[] | undefined>(() => {
   const adminRole: UserRole | undefined = _.head(
     _.get(userStore.currentUser?.roleMap, "ADMIN")
   );
-  return _.map(adminRole?.roles, (o) => o.name);
+  return adminRole?.roles;
 });
 
-const orgAdminRoleNameMap = computed<SimpleMap<string[]>>(() => {
-  return getRoleNameMap("ORGADMIN");
+const orgAdminRoleNameMap = computed<SimpleMap<Role[] | undefined>>(() => {
+  return getRoleObjMap("ORGADMIN");
 });
 
-const userRoleNameMap = computed<SimpleMap<string[]>>(() => {
-  return getRoleNameMap("USER");
+const userRoleNameMap = computed<SimpleMap<Role[] | undefined>>(() => {
+  return getRoleObjMap("USER");
 });
 
-function getRoleNameMap(role: string): SimpleMap<string[]> {
+function getRoleObjMap(role: string): SimpleMap<Role[] | undefined> {
   const orgRoles: Array<UserRole> | undefined = _.get(
     userStore.currentUser?.roleMap,
     role
   );
-  const map: SimpleMap<string[]> = {};
+  const map: SimpleMap<Role[]> = {};
 
   _.forEach(orgRoles, (role) => {
     if (role.source) {
-      _.set(
-        map,
-        role.source,
-        _.map(role?.roles, (o) => o.name)
-      );
+      _.set(map, role.source, role?.roles);
     }
   });
   return map;
 }
 
-function getRoleName(data: SourceTreeObject): string[] | undefined {
+function getRoleObj(data: SourceTreeObject): Role[] | undefined {
   if (data.root) {
     return adminRoleName.value;
   }
@@ -139,14 +136,19 @@ onMounted(() => {
         class="custom-tree-node"
         :class="{
           active: isCurrent(data),
-          'custom-button': getRoleName(data) !== undefined,
+          'custom-button': getRoleObj(data) !== undefined,
         }"
         @click="click(data)"
         :key="node.id"
       >
         <span>{{ data.label }}</span>
-        <div class="role-tag" v-for="r in getRoleName(data)" :key="r">
-          {{ r }}
+        <div
+          class="role-tag"
+          :class="{ 'extend-role': r.type !== 'origin' }"
+          v-for="r in getRoleObj(data)"
+          :key="r"
+        >
+          {{ r.name }}
         </div>
         <div style="flex: 1; min-width: 50px"></div>
         <el-icon v-if="isCurrent(data)"><Check /></el-icon>
@@ -182,6 +184,11 @@ onMounted(() => {
         margin-left: 4px;
         padding: 1px 6px;
         color: var(--el-color-primary);
+      }
+
+      .role-tag.extend-role {
+        background: rgba(255, 136, 0, 0.2);
+        color: rgba(255, 136, 0, 1);
       }
     }
 

@@ -5,7 +5,7 @@ CREATE TABLE IF NOT EXISTS `bill_rule`
     id          VARCHAR(64)                        NOT NULL COMMENT '主键'
         PRIMARY KEY,
     `name`      VARCHAR(255)                       NULL COMMENT '规则名称',
-    `groups`    JSON                               NULL COMMENT '分组规则',
+    _groups     JSON                               NULL COMMENT '分组规则',
     filters     JSON                               NULL COMMENT '过滤规则',
     create_time DATETIME DEFAULT CURRENT_TIMESTAMP NULL COMMENT '创建时间',
     update_time DATETIME DEFAULT CURRENT_TIMESTAMP NULL ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间'

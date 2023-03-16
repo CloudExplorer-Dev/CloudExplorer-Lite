@@ -56,10 +56,12 @@
   </ce-table>
   <el-dialog
     v-model="clearLogConfigDialogVisible"
-    title="保存日志策略"
+    title="清空策略"
     width="25%"
     destroy-on-close
     :close-on-click-modal="false"
+    class="custom-dialog"
+    style="min-width: 600px"
   >
     <ClearLogConfig
       :paramValue="paramValue"
