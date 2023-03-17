@@ -11,6 +11,7 @@ import type { SimpleMap } from "@commons/api/base/type";
 import { useHomeStore } from "@commons/stores/modules/home";
 import { useRouter } from "vue-router";
 import type { Role } from "@commons/api/role/type";
+import RoleTag from "@commons/business/person-setting/RoleTag.vue";
 
 const userStore = useUserStore();
 const homeStore = useHomeStore();
@@ -142,14 +143,7 @@ onMounted(() => {
         :key="node.id"
       >
         <span>{{ data.label }}</span>
-        <div
-          class="role-tag"
-          :class="{ 'extend-role': r.type !== 'origin' }"
-          v-for="r in getRoleObj(data)"
-          :key="r"
-        >
-          {{ r.name }}
-        </div>
+        <RoleTag v-for="r in getRoleObj(data)" :key="r" :role="r" />
         <div style="flex: 1; min-width: 50px"></div>
         <el-icon v-if="isCurrent(data)"><Check /></el-icon>
         <div v-else style="height: 1em; width: 1em"></div>
@@ -175,21 +169,6 @@ onMounted(() => {
       justify-content: flex-start;
       font-size: 14px;
       padding-right: 8px;
-
-      .role-tag {
-        border-radius: 2px;
-        line-height: 20px;
-        font-size: 12px;
-        background-color: rgba(51, 112, 255, 0.2);
-        margin-left: 4px;
-        padding: 1px 6px;
-        color: var(--el-color-primary);
-      }
-
-      .role-tag.extend-role {
-        background: rgba(255, 136, 0, 0.2);
-        color: rgba(255, 136, 0, 1);
-      }
     }
 
     .custom-button {

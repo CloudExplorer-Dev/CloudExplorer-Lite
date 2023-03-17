@@ -2,10 +2,12 @@
 import { computed, onMounted } from "vue";
 
 import UserInfo from "./items/UserInfo.vue";
-import BaseModuleGroup from "./items/BaseModuleGroup.vue";
+import MyResources from "./items/MyResources.vue";
+import QuickAccess from "./items/QuickAccess.vue";
+
 import BillModuleGroup from "./items/BillModuleGroup.vue";
 import SecurityInfo from "./items/SecurityInfo.vue";
-import QuickAccess from "./items/QuickAccess.vue";
+
 import BillTrend from "./items/BillTrend.vue";
 import ServerIncreaseTrend from "./items/ServerIncreaseTrend.vue";
 import ServerDistribution from "./items/ServerDistribution.vue";
@@ -55,13 +57,20 @@ onMounted(() => {
 </script>
 <template>
   <el-container class="contentContainer" direction="vertical">
-    <div class="breadcrumb"><h3>首页</h3></div>
-    <div class="content">
+    <el-row :gutter="20">
+      <el-col :span="16">
+        <QuickAccess />
+      </el-col>
+      <el-col :span="8">
+        <UserInfo />
+        <MyResources />
+      </el-col>
+    </el-row>
+
+    <!--    <div class="content">
       <el-row :gutter="20" type="flex">
         <el-col :span="16">
           <div class="flex-content">
-            <BaseModuleGroup />
-            <QuickAccess class="flex-div-1 divide-info" />
             <BillTrend
               class="flex-div-1 divide-info"
               :need-roles="['USER']"
@@ -72,7 +81,6 @@ onMounted(() => {
         </el-col>
         <el-col :span="8">
           <div class="flex-content">
-            <UserInfo class="flex-div-2 divide-info" />
             <BillModuleGroup />
             <SecurityInfo class="flex-div-2 divide-info" />
             <ServerDistribution
@@ -127,18 +135,26 @@ onMounted(() => {
           <ServerOptimization />
         </el-col>
       </el-row>
-    </div>
+    </div>-->
   </el-container>
 </template>
 
 <style scoped lang="scss">
 .contentContainer {
   height: calc(100vh - var(--ce-header-height));
-  padding: 0;
+  padding: 24px;
   background-color: #f2f2f2;
   overflow-y: auto;
   overflow-x: hidden;
 }
+
+.info-card {
+  margin-bottom: 20px;
+}
+.info-card:last-child {
+  margin-bottom: 0;
+}
+
 .breadcrumb {
   height: var(--ce-main-breadcrumb-height, 50px);
   width: 100%;

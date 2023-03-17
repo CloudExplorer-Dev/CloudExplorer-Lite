@@ -36,6 +36,8 @@ public class Menu extends CeBaseObject {
     private String redirect;
 
     @Getter
+    private boolean saveRecent;
+    @Getter
     private boolean quickAccess;
     @Getter
     private String quickAccessName;
@@ -156,6 +158,10 @@ public class Menu extends CeBaseObject {
             return this;
         }
 
+        public Builder saveRecent(boolean saveRecent) {
+            this.menu.saveRecent = saveRecent;
+            return this;
+        }
         public Builder quickAccess(boolean quickAccess) {
             this.menu.quickAccess = quickAccess;
             return this;

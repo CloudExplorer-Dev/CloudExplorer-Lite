@@ -1,5 +1,4 @@
 <script lang="ts" setup>
-import CeIcon from "@commons/components/ce-icon/index.vue";
 import { useRouter } from "vue-router";
 import { get } from "@commons/request";
 import { onMounted, ref } from "vue";
@@ -8,7 +7,6 @@ import Result from "@commons/request/Result";
 const router = useRouter();
 
 const props = defineProps<{
-  icon: string;
   name: string;
   redirect: string;
   func: string;
@@ -34,49 +32,49 @@ onMounted(() => {
 });
 </script>
 <template>
-  <el-card v-loading="loading">
-    <div
-      style="
-        display: flex;
-        flex-direction: row;
-        flex-wrap: nowrap;
-        justify-content: space-around;
-        align-items: center;
-      "
-    >
-      <CeIcon :code="icon" size="40px" style="height: 46px; width: 46px" />
-      <div
-        style="
-          display: flex;
-          flex-direction: column;
-          flex-wrap: nowrap;
-          align-items: center;
-        "
-      >
-        <div style="font-weight: bold; padding: 5px">{{ name }}</div>
-        <div
-          style="
-            font-weight: bold;
-            padding: 5px;
-            cursor: pointer;
-            color: var(--el-color-primary);
-          "
-          @click="jump"
-        >
-          <span v-if="type === 'currency'">{{
-            count?.toLocaleString("zh-CN", {
-              style: "currency",
-              currency: "CNY",
-              minimumFractionDigits: 2,
-              maximumFractionDigits: 2,
-            })
-          }}</span>
-          <span v-else>{{ count }}</span>
-          {{ unit }}
-        </div>
-      </div>
+  <div class="base-div">
+    <div class="label">
+      {{ name }}
     </div>
-  </el-card>
+    <div class="value" @click="jump" v-loading="loading">
+      <span v-if="type === 'currency'">{{
+        count?.toLocaleString("zh-CN", {
+          style: "currency",
+          currency: "CNY",
+          minimumFractionDigits: 2,
+          maximumFractionDigits: 2,
+        })
+      }}</span>
+      <span v-else>{{ count }}</span>
+      {{ unit }}
+    </div>
+  </div>
 </template>
 
-<style scoped lang="scss"></style>
+<style scoped lang="scss">
+.base-div {
+  .label {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    font-style: normal;
+    font-weight: 400;
+    font-size: 14px;
+    line-height: 22px;
+    color: #646a73;
+  }
+  .value {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    font-style: normal;
+    font-weight: 500;
+    font-size: 20px;
+    line-height: 28px;
+    color: #1f2329;
+    cursor: pointer;
+    width: fit-content;
+    min-width: 28px;
+  }
+}
+</style>

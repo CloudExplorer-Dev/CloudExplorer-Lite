@@ -1,107 +1,135 @@
 <script lang="ts" setup>
 import { useUserStore } from "@commons/stores/modules/user";
-import CeIcon from "@commons/components/ce-icon/index.vue";
+import UserAvatar from "@commons/business/person-setting/UserAvatar.vue";
+import RoleTag from "@commons/business/person-setting/RoleTag.vue";
+import { useModuleStore } from "@commons/stores/modules/module";
+import { usePermissionStore } from "@commons/stores/modules/permission";
+import { BaseModuleInfo } from "@commons/business/base-layout/home-page/items/BaseModuleType";
+import BaseModule from "@commons/business/base-layout/home-page/items/BaseModule.vue";
+import { computed } from "vue";
+import _ from "lodash";
 
+const moduleStore = useModuleStore();
+const permissionStore = usePermissionStore();
 const userStore = useUserStore();
+
+const baseList: Array<BaseModuleInfo> = [
+  new BaseModuleInfo(
+    "yonghuguanli_huaban",
+    "用户",
+    ["ADMIN", "ORGADMIN"],
+    "[management-center]USER:READ",
+    "management-center",
+    "/management-center/api/user/count",
+    "/management-center#/user_tenant/user/list"
+  ),
+  new BaseModuleInfo(
+    "zuzhijiagou1",
+    "组织",
+    ["ADMIN", "ORGADMIN"],
+    "[management-center]ORGANIZATION:READ",
+    "management-center",
+    "/management-center/api/organization/count",
+    "/management-center#/user_tenant/org/list"
+  ),
+  new BaseModuleInfo(
+    "project_space",
+    "工作空间",
+    ["ADMIN", "ORGADMIN"],
+    "[management-center]WORKSPACE:READ",
+    "management-center",
+    "/management-center/api/workspace/count",
+    "/management-center#/user_tenant/workspace/list"
+  ),
+];
+
+const showManageDivs = computed<boolean>(() => {
+  return _.some(baseList, (obj) => obj.show.value);
+});
 </script>
 <template>
-  <el-card class="info-card">
-    <div style="font-weight: bold; font-size: 16px; padding-bottom: 26px">
-      基本信息
-    </div>
-    <el-row type="flex" :gutter="20">
-      <el-col :span="8">
-        <el-row type="flex">
-          <el-col :span="24" class="card-left-info">
-            <CeIcon code="wodezhanghu" size="40px" style="height: 48px" />
-          </el-col>
-        </el-row>
-        <el-row type="flex" justify="center">
-          <el-col :span="24" class="card-left-info">
-            <div style="font-weight: bold">
+  <div class="info-card">
+    <el-row>
+      <el-col :span="24" class="user-info-row">
+        <UserAvatar size="48px" icon-size="1.4em" style="margin-right: 12px" />
+        <div>
+          <div class="user-info">
+            <div class="user-name">
               {{ userStore.currentUser.name }}
             </div>
-          </el-col>
-        </el-row>
-        <el-row type="flex" justify="center">
-          <el-col :span="24" class="card-left-info">
-            <div>{{ userStore.currentUser.username }}</div>
-          </el-col>
-        </el-row>
-      </el-col>
-      <el-col :span="16">
-        <el-row type="flex" align="middle">
-          <el-col :span="8" class="card-label">当前角色</el-col>
-          <el-col :span="1">:</el-col>
-          <el-col :span="15">
-            <div style="font-weight: bold; color: var(--el-color-primary)">
-              {{ userStore.currentRoleSourceName.roleName }}
-              <div
-                style="font-size: small"
-                v-if="userStore.currentRoleSourceName?.sourceName"
-              >
-                【{{ userStore.currentRoleSourceName?.sourceName }}】
-              </div>
-            </div>
-          </el-col>
-        </el-row>
-        <el-row type="flex" align="middle">
-          <el-col :span="8" class="card-label">手机号</el-col>
-          <el-col :span="1">:</el-col>
-          <el-col :span="15">
-            {{ userStore.currentUser.phone }}
-          </el-col>
-        </el-row>
-        <el-row type="flex" align="middle">
-          <el-col :span="8" class="card-label">登录IP</el-col>
-          <el-col :span="1">:</el-col>
-          <el-col :span="15">
-            {{ userStore.currentUser.ip }}
-          </el-col>
-        </el-row>
-        <el-row type="flex" align="middle">
-          <el-col :span="8" class="card-label">登录时间</el-col>
-          <el-col :span="1">:</el-col>
-          <el-col :span="15">
-            {{ userStore.currentUser.loginTime }}
-          </el-col>
-        </el-row>
+            <RoleTag
+              v-for="role in userStore.currentRoleSourceName?.roles"
+              :key="role.id"
+              :role="role"
+            />
+          </div>
+          <div class="user-id">ID: {{ userStore.currentUser.username }}</div>
+        </div>
       </el-col>
     </el-row>
-  </el-card>
+
+    <el-row v-if="showManageDivs">
+      <template v-for="(info, index) in baseList" :key="index">
+        <el-col :span="8" v-if="info.show.value">
+          <BaseModule
+            :name="info.name"
+            :redirect="info.redirect"
+            :func="info.path"
+            :type="info.type"
+            :unit="info.unit"
+          />
+        </el-col>
+      </template>
+    </el-row>
+  </div>
 </template>
 
 <style scoped lang="scss">
 .info-card {
-  /*min-width: 340px;*/
-  min-height: 200px;
-
-  .card-label {
-    display: flex;
-    align-items: center;
-    justify-content: flex-end;
-    padding-right: 1px;
-  }
-
-  .card-value {
-    display: flex;
-    align-items: center;
-    justify-content: flex-start;
-    padding-left: 1px;
-  }
-
-  .card-left-info {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
+  border-radius: 4px;
+  background-color: #ffffff;
+  padding: 24px;
 
   .el-row {
-    margin-bottom: 10px;
+    margin-bottom: 20px;
   }
-
   .el-row:last-child {
     margin-bottom: 0;
+  }
+
+  .user-info-row {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: nowrap;
+
+    .user-info {
+      height: 24px;
+      display: flex;
+      flex-direction: row;
+      flex-wrap: nowrap;
+
+      .user-name {
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        font-style: normal;
+        font-weight: 500;
+        font-size: 16px;
+        line-height: 24px;
+      }
+
+      .user-id {
+        margin-top: 4px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        font-style: normal;
+        font-weight: 400;
+        font-size: 14px;
+        line-height: 22px;
+        color: #646a73;
+      }
+    }
   }
 }
 </style>

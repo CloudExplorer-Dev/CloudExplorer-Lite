@@ -6,6 +6,7 @@ import { useRouter } from "vue-router";
 import { useHomeStore } from "@commons/stores/modules/home";
 import CeIcon from "@commons/components/ce-icon/index.vue";
 import SourceChangeDialog from "@commons/business/person-setting/SourceChangeDialog.vue";
+import RoleTag from "@commons/business/person-setting/RoleTag.vue";
 
 import CeMainLogo from "@commons/assets/CloudExplorer-Lite-02.svg";
 import { ref } from "vue";
@@ -41,16 +42,16 @@ function roleSelectVisibleChange(visible: boolean) {
         <div>
           {{ userStore.currentRoleSourceName?.sourceName }}
         </div>
-        <div
-          class="role-tag"
+        <RoleTag
+          default-tag
           v-for="role in userStore.currentRoleSourceName?.roles"
           :key="role.id"
-        >
-          {{ role.name }}
-        </div>
-        <el-icon class="role-cart" v-if="!roleSelectOpen"
-          ><CaretBottom
-        /></el-icon>
+          :role="role"
+          :extend-tag="role.type !== 'origin'"
+        />
+        <el-icon class="role-cart" v-if="!roleSelectOpen">
+          <CaretBottom />
+        </el-icon>
         <el-icon class="role-cart" v-else><CaretTop /></el-icon>
       </div>
       <template #dropdown>
@@ -98,14 +99,6 @@ function roleSelectVisibleChange(visible: boolean) {
     line-height: 22px;
     font-size: 14px;
 
-    .role-tag {
-      border-radius: 2px;
-      line-height: 20px;
-      font-size: 12px;
-      background-color: rgba(255, 255, 255, 0.2);
-      margin-left: 4px;
-      padding: 1px 6px;
-    }
     .role-cart {
       margin-left: 4px;
       margin-top: auto;
