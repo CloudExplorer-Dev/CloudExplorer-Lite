@@ -33,6 +33,7 @@ public class MenuConstants {
             .menu(new Menu.Builder().name("overview")
                     .title("总览")
                     .path("/overview")
+                    .saveRecent(true)
                     .componentPath("/src/views/overview/index.vue")
                     .icon("zonglan")
                     .requiredPermission(
@@ -45,6 +46,7 @@ public class MenuConstants {
                     .componentPath("/src/views/scan/index.vue")
                     .path("/scan")
                     .icon("anquansaomiao")
+                    .saveRecent(true)
                     .requiredPermission(new MenuPermission.Builder()
                             .role(RoleConstants.ROLE.ADMIN)
                             .permission(PermissionConstants.GROUP.SCAN,
@@ -60,6 +62,7 @@ public class MenuConstants {
             .menu(new Menu.Builder()
                     .name("rule")
                     .title("规则设置")
+                    .saveRecent(true)
                     .componentPath("/src/views/rule/index.vue")
                     .path("/rule").icon("guizeguanli")
                     .requiredPermission(new MenuPermission.Builder()
@@ -69,6 +72,7 @@ public class MenuConstants {
             .menu(new Menu.Builder()
                     .name("insurance_statute")
                     .title("风险条例")
+                    .saveRecent(true)
                     .componentPath("/src/views/insurance_statute/index.vue")
                     .path("/insurance_statute")
                     .icon("fengxianguankongguanli")

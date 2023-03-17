@@ -11,6 +11,7 @@ import CeIcon from "@commons/components/ce-icon/index.vue";
 import type { Module } from "@commons/api/module/type";
 import { useRouter } from "vue-router";
 import type { RecentAccessRoute } from "@commons/router/type";
+import * as module from "module";
 
 const router = useRouter();
 const userStore = useUserStore();
@@ -47,7 +48,12 @@ const menus = computed(() => {
           !!m.componentPath &&
           (queryString.value && queryString.value.length > 0
             ? _.includes(m.title, queryString.value)
-            : true)
+            : true) &&
+          hasRolePermission(
+            userStore.currentRole,
+            permissionStore.userPermissions,
+            m.requiredPermissions
+          )
       ) as Menu[];
       const moduleBaseMenu: Menu = {
         componentPath: "module",
@@ -159,7 +165,15 @@ const key = "RecentAccess-" + userStore.currentUser.id;
 const str = localStorage.getItem(key);
 const recentAccessRoutes: Array<RecentAccessRoute> = str ? JSON.parse(str) : [];
 
-const recentAccess = computed(() => {
+interface RecentAccess extends RecentAccessRoute {
+  title: string;
+  parentTitle: string;
+  quickAccessName: string;
+
+  moduleName: string;
+}
+
+const recentAccess = computed<Array<RecentAccess>>(() => {
   const accessibleMenus = _.flatMap(
     accessibleModules.value,
     (module: Module) => {
@@ -198,14 +212,30 @@ const recentAccess = computed(() => {
           title: m.title,
           parentTitle: m.parentTitle,
           quickAccessName: m.quickAccessName,
+          moduleName: _.find(
+            accessibleModules.value,
+            (module) => module.id === m.module
+          )?.name,
         };
       }),
       ["time"],
       ["desc"]
     ),
     0,
-    5 //只展示5个
-  );
+    8 //只展示8个
+  ) as Array<RecentAccess>;
+});
+
+const recentAccessGroup = computed<Array<Array<RecentAccess>>>(() => {
+  const group: Array<Array<RecentAccess>> = [];
+  _.forEach(recentAccess.value, (o, index) => {
+    const i = _.floor(index / 4);
+    if (group.length === i) {
+      group.push([]);
+    }
+    group[i].push(o);
+  });
+  return group;
 });
 
 function goRecentAccess(menu: RecentAccessRoute) {
@@ -220,101 +250,152 @@ function goRecentAccess(menu: RecentAccessRoute) {
 }
 </script>
 <template>
-  <el-card class="info-card">
-    <div style="font-weight: bold; font-size: 16px; padding-bottom: 26px">
-      快捷服务
-    </div>
-    <el-select
-      style="width: 100%"
-      v-model="value"
-      filterable
-      :filter-method="filterMenus"
-      reserve-keyword
-      placeholder="服务菜单名称"
-      :loading="loading"
-      @change="changeMenu"
-    >
-      <el-option-group v-for="group in menus" :key="group.id">
-        <el-option
-          v-for="item in group.childrenMenu"
-          :key="item.name"
-          :label="item.title"
-          :value="item.name"
-        >
-          <span
-            v-if="item.componentPath === 'module'"
-            style="font-weight: bold"
-          >
-            <CeIcon
-              size="15px"
-              :code="item.icon"
-              style="margin-right: 10px"
-            />{{ item.title }}
-          </span>
-          <span v-else style="padding-left: 40px">
-            <CeIcon
-              size="15px"
-              :code="item.icon"
-              style="margin-right: 10px"
-            />{{ item.title }}
-          </span>
-        </el-option>
-      </el-option-group>
-    </el-select>
-    <div
-      style="
-        display: flex;
-        flex-direction: row;
-        flex-wrap: wrap;
-        padding-top: 20px;
-        padding-bottom: 20px;
-      "
-    >
-      <el-button
-        v-for="(m, index) in quickAccessMenus"
-        :key="index"
-        plain
-        type="primary"
-        @click="goQuickAccess(m)"
-        style="margin-bottom: 5px"
+  <div class="info-card">
+    <div class="menu-div">
+      <el-select
+        style="width: 100%"
+        v-model="value"
+        filterable
+        :filter-method="filterMenus"
+        reserve-keyword
+        placeholder="服务菜单名称"
+        :loading="loading"
+        @change="changeMenu"
       >
-        {{ m.quickAccessName }}
-      </el-button>
+        <el-option-group v-for="group in menus" :key="group.id">
+          <el-option
+            v-for="item in group.childrenMenu"
+            :key="item.name"
+            :label="item.title"
+            :value="item.name"
+          >
+            <span
+              v-if="item.componentPath === 'module'"
+              style="font-weight: bold"
+            >
+              <CeIcon
+                size="15px"
+                :code="item.icon"
+                style="margin-right: 10px"
+              />{{ item.title }}
+            </span>
+            <span v-else style="padding-left: 40px">
+              <CeIcon
+                size="15px"
+                :code="item.icon"
+                style="margin-right: 10px"
+              />{{ item.title }}
+            </span>
+          </el-option>
+        </el-option-group>
+      </el-select>
     </div>
 
-    <div style="font-weight: bold; font-size: 16px; padding-top: 26px">
-      最近访问
+    <div class="menu-div" v-if="recentAccess.length > 0">
+      <div class="title">最近访问</div>
+      <div>
+        <template v-for="(array, _i) in recentAccessGroup" :key="_i">
+          <el-row class="group-row">
+            <template v-for="(o, _j) in array" :key="_j">
+              <el-col :span="6">
+                <div
+                  class="quick-access-btn"
+                  @click="goRecentAccess(o)"
+                  :title="
+                    o.moduleName +
+                    '-' +
+                    (o.quickAccessName ? o.quickAccessName : o.parentTitle)
+                  "
+                >
+                  {{
+                    o.moduleName +
+                    "-" +
+                    (o.quickAccessName ? o.quickAccessName : o.parentTitle)
+                  }}
+                </div>
+              </el-col>
+            </template>
+          </el-row>
+        </template>
+      </div>
     </div>
-    <div
-      style="
-        display: flex;
-        flex-direction: row;
-        flex-wrap: wrap;
-        padding-top: 20px;
-        min-height: 32px;
-      "
-    >
-      <el-button
-        v-for="(m, index) in recentAccess"
-        :key="index"
-        plain
-        type="primary"
-        @click="goRecentAccess(m)"
-        style="margin-bottom: 5px"
-      >
-        {{
-          m.quickAccessName
-            ? m.quickAccessName
-            : (m.parentTitle ? m.parentTitle + " / " : "") + m.title
-        }}
-      </el-button>
+
+    <div class="menu-div">
+      <div class="title">快捷入口</div>
+      <div>
+        <el-button
+          v-for="(m, index) in quickAccessMenus"
+          :key="index"
+          plain
+          @click="goQuickAccess(m)"
+          style="margin-bottom: 5px"
+        >
+          {{ m.quickAccessName }}
+        </el-button>
+      </div>
     </div>
-  </el-card>
+  </div>
 </template>
 
 <style scoped lang="scss">
 .info-card {
-  /*min-width: 340px;*/
-  min-height: 160px;
+  border-radius: 4px;
+  background-color: #ffffff;
+  padding: 24px;
+
+  .menu-div {
+    margin-bottom: 24px;
+  }
+
+  .menu-div:last-child {
+    margin-bottom: 0;
+  }
+
+  .title {
+    font-style: normal;
+    font-weight: 500;
+    font-size: 16px;
+    line-height: 24px;
+    margin-bottom: 10px;
+  }
+
+  .group-row {
+    margin-bottom: 8px;
+  }
+  .group-row:last-child {
+    margin-bottom: 0;
+  }
+
+  .quick-access-btn {
+    padding: 2px 6px;
+    cursor: pointer;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    font-style: normal;
+    font-weight: 400;
+    font-size: 14px;
+    line-height: 22px;
+    color: #646a73;
+  }
+
+  .quick-access-btn:hover {
+    color: var(--el-color-primary);
+  }
+
+  .quick-access-btn:before {
+    display: inline-block;
+    content: "";
+    height: 4px;
+    width: 4px;
+    border-radius: 2px;
+    background-color: var(--el-color-primary);
+    margin-right: 10px;
+    line-height: 22px;
+    vertical-align: middle;
+
+    margin-top: auto;
+    margin-bottom: auto;
+  }
 }
 </style>

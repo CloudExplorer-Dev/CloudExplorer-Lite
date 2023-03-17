@@ -368,6 +368,7 @@ export class RouteObj {
           requiredPermissions: menu.requiredPermissions,
           title: menu.title,
           sourceMenu: menu.sourceMenu,
+          saveRecent: menu.saveRecent,
         },
       };
     } else {
@@ -380,6 +381,7 @@ export class RouteObj {
               requiredPermissions: menu.requiredPermissions,
               title: menu.title,
               sourceMenu: menu.sourceMenu,
+              saveRecent: menu.saveRecent,
             },
             props: true,
           }
@@ -390,6 +392,7 @@ export class RouteObj {
             meta: {
               requiredPermissions: menu.requiredPermissions,
               title: menu.title,
+              saveRecent: menu.saveRecent,
             },
             props: true,
           };
@@ -404,11 +407,13 @@ export class RouteObj {
     from: RouteLocationNormalized,
     failure?: NavigationFailure | void
   ) => {
-    //console.log(to);
+    console.log(to.meta);
+
     if (
       import.meta.env.VITE_APP_NAME !== "base" &&
       to.name !== "signin" &&
       to.name !== "home" &&
+      to.meta.saveRecent &&
       to.name
     ) {
       const menu: RecentAccessRoute = {

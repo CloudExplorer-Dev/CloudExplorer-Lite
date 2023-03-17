@@ -3,6 +3,7 @@ import { ref } from "vue";
 import { useUserStore } from "@commons/stores/modules/user";
 import ModifyPassword from "./ModifyPassword.vue";
 import PersonInfo from "./PersonInfo.vue";
+import UserAvatar from "@commons/business/person-setting/UserAvatar.vue";
 
 const userStore = useUserStore();
 
@@ -29,11 +30,7 @@ const showUserInfoDialog = () => {
 
 <template>
   <el-dropdown ref="userDropdown" trigger="contextmenu">
-    <el-button type="primary" @click="handleClickUser" circle>
-      <el-icon :size="15" type="primary">
-        <UserFilled />
-      </el-icon>
-    </el-button>
+    <UserAvatar @click="handleClickUser" />
     <template #dropdown>
       <el-dropdown-menu>
         <el-dropdown-item icon="InfoFilled" @click="showUserInfoDialog">
