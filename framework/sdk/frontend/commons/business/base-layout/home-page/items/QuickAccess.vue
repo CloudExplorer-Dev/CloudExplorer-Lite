@@ -354,9 +354,10 @@ function goRecentAccess(menu: RecentAccessRoute) {
 
 <style scoped lang="scss">
 .info-card {
+  background: #ffffff;
   border-radius: 4px;
-  background-color: #ffffff;
   padding: 24px;
+  overflow: hidden;
 
   .menu-div {
     margin-bottom: 24px;

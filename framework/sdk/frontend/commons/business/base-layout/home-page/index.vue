@@ -62,7 +62,6 @@ onMounted(() => {
         <QuickAccess />
         <SecurityInfo />
         <BillTrend
-          style="height: 100%"
           :need-roles="['ADMIN', 'ORGADMIN']"
           :getHistoryTrend="getHistoryTrend"
           head-position="left"

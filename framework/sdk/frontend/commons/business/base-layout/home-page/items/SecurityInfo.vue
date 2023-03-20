@@ -6,7 +6,6 @@ import { useModuleStore } from "@commons/stores/modules/module";
 import { usePermissionStore } from "@commons/stores/modules/permission";
 import API from "./api";
 import type { SimpleMap } from "@commons/api/base/type";
-import CeIcon from "@commons/components/ce-icon/index.vue";
 
 const props = withDefaults(
   defineProps<{
@@ -175,6 +174,7 @@ onMounted(() => {
   background: #ffffff;
   border-radius: 4px;
   padding: 24px;
+  overflow: hidden;
 
   .title {
     font-style: normal;

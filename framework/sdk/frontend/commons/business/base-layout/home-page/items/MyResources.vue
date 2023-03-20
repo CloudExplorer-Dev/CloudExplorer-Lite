@@ -104,9 +104,10 @@ const showRow2 = computed<boolean>(() => {
 
 <style scoped lang="scss">
 .info-card {
+  background: #ffffff;
   border-radius: 4px;
-  background-color: #ffffff;
   padding: 24px;
+  overflow: hidden;
 
   .title {
     font-style: normal;
