@@ -20,14 +20,12 @@ const props = withDefaults(
       historyNum: number,
       loading?: Ref<boolean>
     ) => Promise<Result<Array<any>>>;
-    cardShadow?: "always" | "hover" | "never";
     headPosition?: "left" | "center";
   }>(),
   {
     headPosition: "center",
     permission: "[finance-management]BILL_ViEW:READ",
     module: "finance-management",
-    cardShadow: "always",
   }
 );
 
@@ -68,10 +66,8 @@ const getTrendViewOption = (
       show: showx,
       axisLabel: {
         show: true,
-        textStyle: {
-          color: "rgba(143, 149, 158, 1)",
-          fontSize: 12,
-        },
+        color: "rgba(143, 149, 158, 1)",
+        fontSize: 12,
       },
     },
     yAxis: {
@@ -79,9 +75,7 @@ const getTrendViewOption = (
       show: showy,
       axisLabel: {
         color: "rgba(143, 149, 158, 1)",
-        textStyle: {
-          fontSize: 12,
-        },
+        fontSize: 12,
       },
     },
     series: [
@@ -90,7 +84,8 @@ const getTrendViewOption = (
         data: data.map((d) => ({
           value: d.value,
           itemStyle: {
-            normal: { barBorderRadius: [2, 2, 0, 0], color: "#4E83FD" },
+            borderRadius: [2, 2, 0, 0],
+            color: "#4E83FD",
           },
         })),
         type: type,
@@ -137,10 +132,8 @@ const historyTrend = async (historyNum: number, active: string) => {
         label: {
           show: true,
           position: "top",
-          textStyle: {
-            color: "black",
-            fontSize: 12,
-          },
+          color: "black",
+          fontSize: 12,
           formatter: function (param: any) {
             return _.round(param.value, 2).toFixed(2);
           },
@@ -178,12 +171,7 @@ onMounted(() => {
 });
 </script>
 <template>
-  <el-card
-    class="bill-trend"
-    v-resize="reSize"
-    v-if="show"
-    :shadow="cardShadow"
-  >
+  <div class="info-card" v-resize="reSize" v-if="show">
     <div
       class="header"
       :class="{
@@ -216,9 +204,9 @@ onMounted(() => {
           </div>
         </div>
       </div>
-      <div class="all-in-cost">
+      <div class="all_in_cost">
         <span class="describe">
-          {{ _.minBy(historyTreed, "label")?.label + "–" }}
+          {{ _.minBy(historyTreed, "label")?.label + " – " }}
           {{ _.maxBy(historyTreed, "label")?.label + "：" }}
         </span>
         <span class="money">
@@ -232,20 +220,22 @@ onMounted(() => {
       v-loading="historyTrendLoading"
       ref="chartWrapper"
     ></div>
-  </el-card>
+  </div>
 </template>
 
 <style scoped lang="scss">
-.bill-trend {
-  height: 100%;
-  width: 100%;
+.info-card {
+  background: #ffffff;
+  border-radius: 4px;
+  padding: 24px;
+  overflow: hidden;
+
   .header {
     .top {
       display: flex;
       height: 32px;
       .operation_wrapper {
         display: flex;
-        justify-content: flex-end;
         height: 32px;
         margin-right: 24px;
         justify-content: flex-start;
@@ -256,10 +246,10 @@ onMounted(() => {
           display: flex;
           border: 1px solid #bbbfc4;
           border-radius: 4px;
-
           font-weight: 500;
           font-size: 14px;
           color: #1f2329;
+
           .left {
             margin: 4px 0 4px 4px;
             padding: 2px 0;
@@ -281,13 +271,15 @@ onMounted(() => {
           }
         }
       }
-      .all-in-cost {
-        height: 24px;
-        line-height: 24px;
-        .money {
-          font-size: 16px;
-          font-weight: 500;
-        }
+    }
+    .all_in_cost {
+      height: 20px;
+      line-height: 20px;
+      color: #646a73;
+      .money {
+        font-size: 16px;
+        font-weight: 500;
+        color: rgba(31, 35, 41, 1);
       }
     }
 

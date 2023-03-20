@@ -1,9 +1,9 @@
 <template>
-  <el-card class="content" shadow="never" v-loading="loading">
+  <div class="info-card view-expenses-aggs-card" v-loading="loading">
     <span class="title">{{ title }}</span>
     <div class="money">¥{{ expenses }}</div>
     <div class="compare">较上月 <span class="up"></span></div>
-  </el-card>
+  </div>
 </template>
 <script setup lang="ts">
 import { ref, onMounted } from "vue";
@@ -15,7 +15,6 @@ const props = defineProps<{
   // 标题
   title: string;
 }>();
-
 onMounted(() => {
   loading.value = true;
   props
@@ -30,9 +29,14 @@ onMounted(() => {
 });
 </script>
 <style lang="scss" scoped>
-.content {
-  height: 100%;
-  width: 100%;
+.view-expenses-aggs-card {
+  height: 94px;
+}
+.info-card {
+  background: #ffffff;
+  border-radius: 4px;
+  padding: 24px;
+  overflow: hidden;
   .title {
     margin: 4px 0 0 4px;
     height: 22px;

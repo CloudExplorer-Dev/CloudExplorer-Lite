@@ -5,33 +5,36 @@
     <template #breadcrumb>
       <breadcrumb :auto="true"></breadcrumb>
     </template>
-    <div class="up_content" v-resize="reSize">
-      <div class="left_content" :border="false">
-        <div class="expenses_card">
-          <ViewExpensesAggsCard
-            :get-aggs-count="getMonthExpenses"
-            title="本月花费"
-          >
-          </ViewExpensesAggsCard>
-        </div>
-        <div class="expenses_card">
-          <ViewExpensesAggsCard
-            :get-aggs-count="getYearExpenses"
-            title="本年总花费"
-          >
-          </ViewExpensesAggsCard>
-        </div>
-      </div>
-      <div class="right_content">
+
+    <el-row :gutter="24" v-resize="reSize" class="top-content">
+      <el-col :span="6">
+        <el-row class="left-div">
+          <el-col :spam="24">
+            <ViewExpensesAggsCard
+              :get-aggs-count="getMonthExpenses"
+              title="本月花费"
+            />
+          </el-col>
+        </el-row>
+        <el-row class="left-div">
+          <el-col :spam="24">
+            <ViewExpensesAggsCard
+              :get-aggs-count="getYearExpenses"
+              title="本年总花费"
+            />
+          </el-col>
+        </el-row>
+      </el-col>
+      <el-col :span="18">
         <BillTrend
           :need-roles="['ADMIN', 'ORGADMIN', 'USER']"
           :permission="'[finance-management]BILL_ViEW:READ'"
           module="finance-management"
           :getHistoryTrend="billViewAPi.getHistoryTrend"
-          card-shadow="never"
         />
-      </div>
-    </div>
+      </el-col>
+    </el-row>
+
     <el-card class="bottom_content" shadow="never">
       <div class="operation">
         <div class="title">
@@ -226,31 +229,15 @@ watch(viewMonth, () => {
   height: 24px;
   line-height: 24px;
 }
-.up_content {
-  display: flex;
-  width: 100%;
-  min-width: 800px;
-  height: 300px;
-  margin-bottom: 20px;
-  .left_content {
-    display: flex;
-    flex-wrap: wrap;
-    align-content: space-between;
-    height: 100%;
-    width: 20%;
-    min-width: 200px;
-    .expenses_card {
-      height: 142px;
-      width: 260px;
-    }
-  }
-  .right_content {
-    margin-left: 20px;
-    /*border: 1px solid var(--el-border-color);*/
-    width: 80%;
-    height: calc(100% - 2px);
-  }
+
+.left-div {
+  margin-bottom: 16px;
+  height: 142px;
 }
+.left-div:last-child {
+  margin-bottom: 0;
+}
+
 .chart_content {
   height: 300px;
   min-width: 760px;
@@ -274,10 +261,13 @@ watch(viewMonth, () => {
   background: #fff;
   color: #006eff;
 }
+.top-content {
+  margin-bottom: 24px;
+  min-width: 800px;
+}
 .bottom_content {
   overflow-x: auto;
   overflow-y: hidden;
-  width: 100%;
   min-width: 800px;
 
   .operation {

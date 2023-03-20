@@ -1,13 +1,8 @@
 <script lang="ts" setup>
-import { useModuleStore } from "@commons/stores/modules/module";
-import { usePermissionStore } from "@commons/stores/modules/permission";
 import { BaseModuleInfo } from "@commons/business/base-layout/home-page/items/BaseModuleType";
 import BaseModule from "@commons/business/base-layout/home-page/items/BaseModule.vue";
 import { computed } from "vue";
 import _ from "lodash";
-
-const moduleStore = useModuleStore();
-const permissionStore = usePermissionStore();
 
 const baseList1: Array<BaseModuleInfo> = [
   new BaseModuleInfo(
@@ -109,9 +104,10 @@ const showRow2 = computed<boolean>(() => {
 
 <style scoped lang="scss">
 .info-card {
+  background: #ffffff;
   border-radius: 4px;
-  background-color: #ffffff;
   padding: 24px;
+  overflow: hidden;
 
   .title {
     font-style: normal;

@@ -299,13 +299,21 @@ function goRecentAccess(menu: RecentAccessRoute) {
                   :title="
                     o.moduleName +
                     '-' +
-                    (o.quickAccessName ? o.quickAccessName : o.parentTitle)
+                    (o.quickAccessName
+                      ? o.quickAccessName
+                      : o.parentTitle
+                      ? o.parentTitle
+                      : o.title)
                   "
                 >
                   {{
                     o.moduleName +
                     "-" +
-                    (o.quickAccessName ? o.quickAccessName : o.parentTitle)
+                    (o.quickAccessName
+                      ? o.quickAccessName
+                      : o.parentTitle
+                      ? o.parentTitle
+                      : o.title)
                   }}
                 </div>
               </el-col>
@@ -315,7 +323,7 @@ function goRecentAccess(menu: RecentAccessRoute) {
       </div>
     </div>
 
-    <div class="menu-div">
+    <div class="menu-div" v-if="quickAccessMenus.length > 0">
       <div class="title">快捷入口</div>
       <div>
         <template v-for="(array, _i) in quickAccessGroup" :key="_i">
@@ -346,9 +354,10 @@ function goRecentAccess(menu: RecentAccessRoute) {
 
 <style scoped lang="scss">
 .info-card {
+  background: #ffffff;
   border-radius: 4px;
-  background-color: #ffffff;
   padding: 24px;
+  overflow: hidden;
 
   .menu-div {
     margin-bottom: 24px;
