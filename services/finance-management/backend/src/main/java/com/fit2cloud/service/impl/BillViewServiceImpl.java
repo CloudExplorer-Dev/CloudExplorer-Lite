@@ -125,6 +125,27 @@ public class BillViewServiceImpl implements BillViewService {
         return searchBillView(billRule, MonthUtil.getHistoryMonth(month, 6), "realTotalCost");
     }
 
+    @Override
+    public Map<String, List<BillView>> billViewByCloudAccount() {
+        BillRule cloudAccountBillRule = getCloudAccountBillRule();
+        return searchBillView(cloudAccountBillRule, MonthUtil.getHistoryMonth(6), "realTotalCost");
+    }
+
+    /**
+     * 获取云账号规则分账规则
+     *
+     * @return 云账号分账规则
+     */
+    private BillRule getCloudAccountBillRule() {
+        BillRule billRule = new BillRule();
+        Group group = new Group();
+        group.setField("cloudAccountId");
+        group.setName("云账号");
+        group.setMissName(null);
+        billRule.setGroups(List.of(group));
+        return billRule;
+    }
+
 
     /**
      * 解析聚合结果

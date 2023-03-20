@@ -10,6 +10,7 @@ import com.fit2cloud.controller.response.Trend;
 import com.fit2cloud.dao.mapper.BillRuleMapper;
 import com.fit2cloud.service.BillViewService;
 import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiModelProperty;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import org.springframework.cache.annotation.Cacheable;
@@ -69,5 +70,10 @@ public class BillViewController {
         return ResultHolder.success(billViewService.billViewByRuleId(ruleId, month));
     }
 
-
+    @GetMapping("/cloud_account")
+    @ApiModelProperty(value = "获取当月云账号聚合账单", notes = "获取当月云账号聚合账单")
+    @PreAuthorize("hasAnyCePermission('BILL_ViEW:READ')")
+    public ResultHolder<Map<String, List<BillView>>> billViewByCloudAccount() {
+        return ResultHolder.success(billViewService.billViewByCloudAccount());
+    }
 }
