@@ -2,15 +2,11 @@
 import { useUserStore } from "@commons/stores/modules/user";
 import UserAvatar from "@commons/business/person-setting/UserAvatar.vue";
 import RoleTag from "@commons/business/person-setting/RoleTag.vue";
-import { useModuleStore } from "@commons/stores/modules/module";
-import { usePermissionStore } from "@commons/stores/modules/permission";
 import { BaseModuleInfo } from "@commons/business/base-layout/home-page/items/BaseModuleType";
 import BaseModule from "@commons/business/base-layout/home-page/items/BaseModule.vue";
 import { computed } from "vue";
 import _ from "lodash";
 
-const moduleStore = useModuleStore();
-const permissionStore = usePermissionStore();
 const userStore = useUserStore();
 
 const baseList: Array<BaseModuleInfo> = [

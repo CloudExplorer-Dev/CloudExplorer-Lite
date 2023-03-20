@@ -60,6 +60,13 @@ onMounted(() => {
     <el-row :gutter="20">
       <el-col :span="16">
         <QuickAccess />
+        <SecurityInfo />
+        <BillTrend
+          style="height: 100%"
+          :need-roles="['ADMIN', 'ORGADMIN']"
+          :getHistoryTrend="getHistoryTrend"
+          head-position="left"
+        />
       </el-col>
       <el-col :span="8">
         <UserInfo />
