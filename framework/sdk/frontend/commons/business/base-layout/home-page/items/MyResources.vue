@@ -77,7 +77,7 @@ const showRow2 = computed<boolean>(() => {
   <div class="info-card" v-if="showRow1 || showRow2">
     <div class="title">我的资源</div>
 
-    <el-row v-if="showRow1">
+    <el-row v-if="showRow1" :gutter="8">
       <template v-for="(info, index) in baseList1" :key="index">
         <el-col :span="8" v-if="info.show.value">
           <BaseModule
@@ -91,7 +91,7 @@ const showRow2 = computed<boolean>(() => {
       </template>
     </el-row>
 
-    <el-row v-if="showRow2">
+    <el-row v-if="showRow2" :gutter="8">
       <template v-for="(info, index) in baseList2" :key="index">
         <el-col :span="8" v-if="info.show.value">
           <BaseModule

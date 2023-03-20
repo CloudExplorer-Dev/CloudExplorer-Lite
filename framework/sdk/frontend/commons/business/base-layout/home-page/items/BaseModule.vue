@@ -32,11 +32,11 @@ onMounted(() => {
 });
 </script>
 <template>
-  <div class="base-div">
+  <div class="base-div" @click="jump" v-loading="loading">
     <div class="label">
       {{ name }}
     </div>
-    <div class="value" @click="jump" v-loading="loading">
+    <div class="value">
       <span v-if="type === 'currency'">{{
         count?.toLocaleString("zh-CN", {
           style: "currency",
@@ -53,6 +53,9 @@ onMounted(() => {
 
 <style scoped lang="scss">
 .base-div {
+  cursor: pointer;
+  padding: 8px;
+
   .label {
     white-space: nowrap;
     overflow: hidden;
@@ -72,9 +75,11 @@ onMounted(() => {
     font-size: 20px;
     line-height: 28px;
     color: #1f2329;
-    cursor: pointer;
     width: fit-content;
     min-width: 28px;
   }
+}
+.base-div:hover {
+  background: rgba(31, 35, 41, 0.1);
 }
 </style>

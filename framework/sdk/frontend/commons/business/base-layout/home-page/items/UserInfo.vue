@@ -68,7 +68,7 @@ const showManageDivs = computed<boolean>(() => {
       </el-col>
     </el-row>
 
-    <el-row v-if="showManageDivs">
+    <el-row v-if="showManageDivs" :gutter="8">
       <template v-for="(info, index) in baseList" :key="index">
         <el-col :span="8" v-if="info.show.value">
           <BaseModule
