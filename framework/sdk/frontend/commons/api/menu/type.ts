@@ -78,6 +78,8 @@ interface Menu extends MenuItem {
    */
   quickAccessName?: string;
 
+  quickAccessIcon?: string;
+
   parentTitle?: string;
 
   saveRecent?: boolean;
