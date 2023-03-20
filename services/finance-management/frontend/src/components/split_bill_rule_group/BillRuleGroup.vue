@@ -149,7 +149,7 @@ defineExpose({
   setData,
 });
 </script>
-<style lang="scss">
+<style lang="scss" scoped>
 .bill_rule_wapper {
   display: flex;
   flex-wrap: wrap;

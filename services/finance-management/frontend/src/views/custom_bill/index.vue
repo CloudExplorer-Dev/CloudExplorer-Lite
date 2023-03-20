@@ -29,7 +29,7 @@
       </el-table-column>
       <fu-table-operations v-bind="tableConfig.tableOperations" fix />
       <template #buttons>
-        <CeTableColumnSelect :columns="columns"/>
+        <CeTableColumnSelect :columns="columns" />
       </template>
     </ce-table>
   </layout-content>
@@ -39,7 +39,13 @@
     width="60%"
     style="min-width: 600px"
   >
-    <el-form :model="billRuleForm" ref="ruleFormRef" label-width="120px">
+    <el-form
+      label-position="top"
+      :model="billRuleForm"
+      ref="ruleFormRef"
+      label-width="120px"
+      class="form_container"
+    >
       <el-form-item
         label="规则名称"
         prop="name"
@@ -73,6 +79,9 @@
     </el-form>
     <template #footer>
       <span class="dialog-footer">
+        <el-button @click="() => (billRuleDialogVisible = false)">
+          取消
+        </el-button>
         <el-button type="primary" @click="saveOrUpdate(billRuleFormType)">
           保存
         </el-button>
@@ -295,4 +304,8 @@ onMounted(() => {
   search(table.value?.getTableSearch());
 });
 </script>
-<style lang="scss"></style>
+<style lang="scss" scoped>
+.form_container {
+  margin: 0 26px;
+}
+</style>

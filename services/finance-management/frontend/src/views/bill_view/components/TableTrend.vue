@@ -1,5 +1,5 @@
 <template>
-  <div ref="echars" style="width: 200px; height: 100%"></div>
+  <div ref="echars" style="width: 200px; height: 50px"></div>
 </template>
 <script setup lang="ts">
 import type { TrendData } from "@/echarts/bill_view/type";

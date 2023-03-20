@@ -9,7 +9,9 @@
     :update-rule="updateRuleGroup"
     :selected-group-fields="groups"
   ></BillRuleItem>
-  <div @click="addRuleGroup">添加字段</div>
+  <div @click="addRuleGroup" class="add">
+    <ce-icon code="icon_add_outlined" size="12px"></ce-icon>添加字段
+  </div>
 </template>
 <script setup lang="ts">
 import { ref, onMounted } from "vue";
@@ -71,4 +73,8 @@ const validate = () => {
 };
 defineExpose({ validate });
 </script>
-<style lang="scss"></style>
+<style lang="scss" scoped>
+.add {
+  color: rgba(51, 112, 255, 1);
+}
+</style>

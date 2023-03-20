@@ -29,12 +29,12 @@ onMounted(() => {
     });
 });
 </script>
-<style lang="scss">
+<style lang="scss" scoped>
 .content {
   height: 100%;
   width: 100%;
   .title {
-    margin: 4 0 0 4;
+    margin: 4px 0 0 4px;
     height: 22px;
     font-size: 14px;
     font-weight: 500;
