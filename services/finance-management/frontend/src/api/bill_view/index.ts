@@ -3,19 +3,7 @@ import type { Ref } from "vue";
 import type Result from "@commons/request/Result";
 import type { SimpleMap } from "@commons/api/base/type";
 import type { BillView } from "@/api/bill_view/type";
-/**
- * 指定月份花费或者是年花费
- * @param type  MONTH月份 YEAR年
- * @param value  yyyy-MM 月 yyyy年
- * @param loading 加载器
- * @returns 花销
- */
-const getExpenses: (
-  type: "MONTH" | "YEAR",
-  value: string,
-  loading?: Ref<boolean>
-) => Promise<Result<number>> = (type, value, loading) =>
-  get(`/api/bill_view/expenses/${type}/${value}`, {}, loading);
+import BaseBillViewApi from "@commons/api/bil_view";
 
 /**
  * 获取历史趋势
@@ -46,4 +34,4 @@ const getBillView: (
 ) => Promise<Result<SimpleMap<Array<BillView>>>> = (ruleId, month, loading) => {
   return get(`/api/bill_view/${ruleId}/${month}`, {}, loading);
 };
-export default { getExpenses, getHistoryTrend, getBillView };
+export default { ...BaseBillViewApi, getHistoryTrend, getBillView };

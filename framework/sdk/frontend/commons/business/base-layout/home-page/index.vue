@@ -70,6 +70,7 @@ onMounted(() => {
       <el-col :span="8">
         <UserInfo />
         <MyResources />
+        <BillModuleGroup />
       </el-col>
     </el-row>
 
