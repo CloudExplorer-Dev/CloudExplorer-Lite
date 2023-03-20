@@ -20,14 +20,6 @@ public class WorkSpaceConvert implements Convert {
     public String conver(String workSpaceId) {
         String cache = WorkSpaceCache.getCache(workSpaceId);
         if (StringUtils.isEmpty(cache)) {
-            //todo 如果缓存中没有数据,判断当前工作空间是否存在在库里
-            BaseWorkspaceMapper workspaceMapper = SpringUtil.getBean(BaseWorkspaceMapper.class);
-            Workspace workspace = workspaceMapper.selectById(workSpaceId);
-            if (Objects.nonNull(workspace)) {
-                //todo 需要更新缓存数据
-                WorkSpaceCache.updateCache();
-                return workspace.getName();
-            }
             return workSpaceId;
         }
         return cache;

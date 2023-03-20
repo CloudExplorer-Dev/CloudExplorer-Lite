@@ -1,5 +1,5 @@
 <template>
-  <div ref="echars"></div>
+  <div ref="echars" style="width: 200px; height: 100%"></div>
 </template>
 <script setup lang="ts">
 import type { TrendData } from "@/echarts/bill_view/type";
@@ -26,7 +26,8 @@ const init = () => {
   const trend = cloneDeep(props.trend);
   trend.sort((pre, next) => pre.label.localeCompare(next.label));
   const option: any = getTrendViewOption(trend, "line", false, false, false);
-  option["grid"] = { top: 10, bottom: 10 };
+
+  option["grid"] = { left: "-10%", top: 10, bottom: 10 };
   if (echars.value) {
     if (!myChart.value) {
       myChart.value = echarts.init(echars.value);
@@ -38,10 +39,4 @@ const init = () => {
   }
 };
 </script>
-<style lang="scss" scoped>
-div {
-  height: 50px;
-  width: 100px;
-  padding: 10px;
-}
-</style>
+<style lang="scss" scoped></style>

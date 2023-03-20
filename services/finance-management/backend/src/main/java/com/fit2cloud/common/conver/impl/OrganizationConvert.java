@@ -20,11 +20,6 @@ public class OrganizationConvert implements Convert {
     public String conver(String orgId) {
         String cache = OrganizationCache.getCache(orgId);
         if (StringUtils.isEmpty(cache)) {
-            BaseOrganizationMapper organizationMapper = SpringUtil.getBean(BaseOrganizationMapper.class);
-            Organization organization = organizationMapper.selectById(orgId);
-            if (Objects.nonNull(organization)) {
-                OrganizationCache.updateCache();
-            }
             return orgId;
         }
         return cache;

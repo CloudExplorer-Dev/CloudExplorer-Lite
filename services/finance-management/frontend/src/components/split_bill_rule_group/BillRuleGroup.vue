@@ -158,6 +158,7 @@ defineExpose({
   padding: 10px;
 
   .content {
+    align-items: center;
     display: flex;
     width: 100%;
     .condition {

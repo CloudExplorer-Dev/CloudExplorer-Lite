@@ -7,7 +7,10 @@ import co.elastic.clients.elasticsearch._types.query_dsl.Query;
 import co.elastic.clients.elasticsearch._types.query_dsl.ScriptQuery;
 import co.elastic.clients.elasticsearch._types.query_dsl.TermQuery;
 import co.elastic.clients.util.ObjectBuilder;
+import com.fit2cloud.base.entity.Organization;
 import com.fit2cloud.base.service.IBaseOrganizationService;
+import com.fit2cloud.common.cache.OrganizationCache;
+import com.fit2cloud.common.cache.WorkSpaceCache;
 import com.fit2cloud.common.constants.RoleConstants;
 import com.fit2cloud.common.exception.Fit2cloudException;
 import com.fit2cloud.common.util.*;
@@ -131,6 +134,8 @@ public class BillViewServiceImpl implements BillViewService {
      * @return 解析后的聚合结果
      */
     public Map<String, List<BillView>> analysisBillView(AggregationsContainer<?> aggregations, NativeQuery query, Function<Map<String, Aggregate>, SumAggregate> getSumAggregate) {
+        OrganizationCache.updateCache();
+        WorkSpaceCache.updateCache();
         ElasticsearchAggregations aggr = (ElasticsearchAggregations) aggregations;
         DateHistogramAggregate dateHistogramAggregate = aggr.aggregations().get(0).aggregation().getAggregate().dateHistogram();
         return dateHistogramAggregate.buckets().array().stream().map(dateHistogramBucket -> {

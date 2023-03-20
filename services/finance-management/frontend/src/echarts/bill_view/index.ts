@@ -1,6 +1,7 @@
 import type { Ref } from "vue";
 import type { BillSummary, TrendData } from "@/echarts/bill_view/type";
 import type { SimpleMap } from "@commons/api/base/type";
+import { interpolationColor } from "@commons/utils/color";
 import _ from "lodash";
 /**
  * 重置数据
@@ -9,10 +10,10 @@ import _ from "lodash";
  * @returns 重置后的数据
  */
 const resetBillData = (billData: Array<BillSummary>, groupNum: number) => {
-  return [...new Set(billData.map((b) => b["group" + groupNum]))].map(
+  return [...new Set(billData.map((b) => b["group" + (groupNum + 1)]))].map(
     (group: string) => {
       const value = billData
-        .filter((b) => b["group" + groupNum] === group)
+        .filter((b) => b["group" + (groupNum + 1)] === group)
         .map((b) => b.value)
         .reduce((p, n) => p + n, 0);
       return { name: group, value };
@@ -33,17 +34,14 @@ const getBillViewOptions = (
   selected?: SimpleMap<boolean>,
   legendRichWidth?: number
 ) => {
-  if (groups.value && groups.value.length > 1) {
+  if (groups.value && groups.value.length > 0) {
     billData = billData.filter((item) => {
-      return Array.from({ length: groups.value.length })
-        .map((i, index) => index)
-        .filter((i) => i > 0)
-        .every((index) => {
-          return item["group" + index] === groups.value[index];
-        });
+      return Array.from({ length: groups.value.length }).every((i, index) => {
+        return item["group" + (index + 1)] === groups.value[index];
+      });
     });
   } else {
-    groups.value = ["root"];
+    groups.value = [];
   }
   const filterData = resetBillData(billData, groups.value.length);
   if (!selected) {
@@ -65,50 +63,64 @@ const getBillViewOptions = (
       type: "scroll",
       itemGap: 4,
       orient: "vertical",
+
+      left: "264px",
       top: "center",
-      left: "50%",
+      height: 180,
       icon: "circle",
       itemHeight: 12,
+      pageIcons: {
+        vertical: [
+          "M729.6 931.2l-416-425.6 416-416c9.6-9.6 9.6-25.6 0-35.2-9.6-9.6-25.6-9.6-35.2 0l-432 435.2c-9.6 9.6-9.6 25.6 0 35.2l432 441.6c9.6 9.6 25.6 9.6 35.2 0C739.2 956.8 739.2 940.8 729.6 931.2z",
+          "M761.6 489.6l-432-435.2c-9.6-9.6-25.6-9.6-35.2 0-9.6 9.6-9.6 25.6 0 35.2l416 416-416 425.6c-9.6 9.6-9.6 25.6 0 35.2s25.6 9.6 35.2 0l432-441.6C771.2 515.2 771.2 499.2 761.6 489.6z",
+        ],
+      },
+      pageButtonPosition: "end",
       textStyle: {
         fontSize: 24,
         color: "#828282",
         rich: {
           oneone: {
-            width: legendRichWidth ? legendRichWidth : 150,
-            color: "#333333",
+            width: legendRichWidth ? legendRichWidth : 160,
+            color: "rgba(100, 106, 115, 1)",
             fontSize: 12,
-            fontWeight: "bolder",
+            fontWeight: "400",
           },
           twotwo: {
-            width: legendRichWidth ? legendRichWidth : 150,
-            color: "#333333",
+            width: legendRichWidth ? legendRichWidth : 130,
+            color: "rgba(100, 106, 115, 1)",
             fontSize: 12,
+            fontWeight: "400",
           },
           threethree: {
-            width: legendRichWidth ? legendRichWidth : 150,
-            color: "#333333",
+            width: legendRichWidth ? legendRichWidth : 160,
+            color: "rgba(100, 106, 115, 1)",
             fontSize: 12,
+            fontWeight: "400",
           },
         },
       },
       formatter: (name: string) => {
         const dataItem = filterData.find((b) => b.name === name);
+
         const sum = filterData
           .map((i) => i.value)
           .reduce((p: number, n: number) => p + n, 0);
         const a = Math.floor(((dataItem?.value as number) / sum) * 10000) / 100;
+        const tow =
+          _.round(dataItem ? dataItem.value : 0, 2).toFixed(2) +
+          "    (" +
+          a +
+          "%)";
         return `{oneone|${
-          (dataItem?.name as string).length < 15
+          (dataItem?.name as string).length < 20
             ? dataItem?.name
             : dataItem?.name.substring(0, 15) + ".."
-        }}  {twotwo|${_.round(dataItem ? dataItem.value : 0, 2).toFixed(
-          2
-        )}}   {threethree|${a}%}`;
+        }}  {twotwo|${tow}}`;
       },
     },
     tooltip: {
       trigger: "item",
-
       formatter: (p: any) => {
         return `${p.name}:${_.round(p.value, 2).toFixed(2)}`;
       },
@@ -116,21 +128,23 @@ const getBillViewOptions = (
     series: [
       {
         itemStyle: {
-          borderRadius: 10,
+          borderRadius: 0,
           borderColor: "#fff",
           borderWidth: 2,
         },
         type: "pie",
-        center: ["20%", "50%"],
-        radius: ["50%", "90%"],
+        center: ["120px", "50%"],
+        radius: ["80px", "100px"],
         zlevel: 1,
         avoidLabelOverlap: false,
         label: {
           show: true,
           position: "center",
           backgroundColor: "#fff",
-          width: 140,
-          color: "#4c4a4a",
+          width: 120,
+          fontWeight: 400,
+          fontSize: "12px",
+          color: "rgba(100, 106, 115, 1)",
           formatter: () => {
             const sum = filterData
               .filter((d) => (selected as SimpleMap<boolean>)[d.name])
@@ -153,22 +167,34 @@ const getBillViewOptions = (
         emphasis: {
           label: {
             show: true,
-            width: 140,
+            width: 120,
             formatter: (a: any) => {
               return `{title|${a.name}}\r\n{value|${_.round(a.value, 2).toFixed(
                 2
               )}}`;
             },
-            fontWeight: "bold",
+            fontSize: "18px",
+            fontWeight: "500",
           },
         },
         labelLine: {
           show: false,
         },
         data: filterData,
+        color: interpolationColor(
+          [
+            "rgba(148, 90, 246, 1)",
+            "rgba(78, 131, 253, 1)",
+            "rgba(250, 211, 85, 1)",
+            "rgba(20, 225, 198, 1)",
+            "rgba(80, 206, 251, 1)",
+          ],
+          filterData.length
+        ),
       },
     ],
   };
+
   return options;
 };
 
@@ -191,7 +217,11 @@ const getTrendViewOption = (
     },
     series: [
       {
-        data: data.map((d) => d.value),
+        barWidth: 10,
+        data: data.map((d) => ({
+          value: d.value,
+          itemStyle: { normal: { barBorderRadius: [2, 2, 0, 0] } },
+        })),
         type: type,
         smooth: true,
         showSymbol: showSymbol,
