@@ -1,7 +1,16 @@
 <template>
   <div class="info-card view-expenses-aggs-card" v-loading="loading">
     <span class="title">{{ title }}</span>
-    <div class="money">¥{{ expenses }}</div>
+    <div class="money">
+      {{
+        expenses?.toLocaleString("zh-CN", {
+          style: "currency",
+          currency: "CNY",
+          minimumFractionDigits: 2,
+          maximumFractionDigits: 2,
+        })
+      }}
+    </div>
     <div class="compare">较上月 <span class="up"></span></div>
   </div>
 </template>

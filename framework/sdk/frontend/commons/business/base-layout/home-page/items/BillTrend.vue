@@ -210,8 +210,15 @@ onMounted(() => {
           {{ _.maxBy(historyTreed, "label")?.label + "：" }}
         </span>
         <span class="money">
-          ¥{{ _.floor(_.sumBy(historyTreed, "value"), 2) }}</span
-        >
+          {{
+            _.sumBy(historyTreed, "value")?.toLocaleString("zh-CN", {
+              style: "currency",
+              currency: "CNY",
+              minimumFractionDigits: 2,
+              maximumFractionDigits: 2,
+            })
+          }}
+        </span>
       </div>
     </div>
 

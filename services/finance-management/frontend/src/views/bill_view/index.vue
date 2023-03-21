@@ -174,7 +174,7 @@ const getMonthExpenses = () => {
   return billViewAPi
     .getExpenses("MONTH", currentMonth, currentMonthExpensesLoading)
     .then((ok) => {
-      return parseFloat(_.round(ok.data, 2).toFixed(2));
+      return ok.data;
     });
 };
 /**
@@ -188,7 +188,7 @@ const getYearExpenses = () => {
       currentYearExpensesLoading
     )
     .then((ok) => {
-      return parseFloat(_.round(ok.data, 2).toFixed(2));
+      return ok.data;
     });
 };
 /**
