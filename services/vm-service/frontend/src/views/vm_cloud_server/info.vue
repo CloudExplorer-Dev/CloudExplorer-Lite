@@ -85,7 +85,8 @@
                 label="到期时间:"
                 >{{ infoVmCloudServer.expiredTime }}</el-descriptions-item
               >
-              <el-descriptions-item v-if=" false "
+              <el-descriptions-item
+                v-if="false"
                 label-class-name="label-class"
                 class-name="content-class"
                 label="备注:"
@@ -164,13 +165,15 @@
                 infoVmCloudServer.vpcId
               }}</el-descriptions-item
             >
-            <el-descriptions-item  v-if=" false "
+            <el-descriptions-item
+              v-if="false"
               label-class-name="label-class"
               class-name="content-class"
               label="带宽计费类型:"
               >-</el-descriptions-item
             >
-            <el-descriptions-item  v-if=" false "
+            <el-descriptions-item
+              v-if="false"
               label-class-name="label-class"
               class-name="content-class"
               label="带宽峰值:"

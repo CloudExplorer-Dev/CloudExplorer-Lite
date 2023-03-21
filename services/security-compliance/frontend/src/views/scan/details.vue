@@ -133,7 +133,7 @@
           </el-table-column>
 
           <template #buttons>
-            <CeTableColumnSelect :columns="columns"/>
+            <CeTableColumnSelect :columns="columns" />
           </template>
         </ce-table>
       </template>

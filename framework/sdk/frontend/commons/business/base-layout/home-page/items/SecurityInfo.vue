@@ -188,8 +188,9 @@ onMounted(() => {
     padding-bottom: 8px;
   }
   .base-div {
-    padding: 8px;
     cursor: pointer;
+    padding: 8px;
+    border-radius: 4px;
   }
   .base-div:hover {
     background: rgba(31, 35, 41, 0.1);

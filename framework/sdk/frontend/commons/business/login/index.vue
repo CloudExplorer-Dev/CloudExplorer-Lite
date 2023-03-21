@@ -237,7 +237,7 @@ const submitForm = (formEl: FormInstance | undefined) => {
     font-weight: 400;
     font-size: 14px;
     line-height: 20px;
-    color: #646A73;
+    color: #646a73;
     text-align: center;
   }
 

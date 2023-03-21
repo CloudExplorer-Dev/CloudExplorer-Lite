@@ -26,7 +26,7 @@ const baseList1: Array<BaseModuleInfo> = [
   new BaseModuleInfo(
     "yuncunchu",
     "云磁盘",
-    ["ADMIN", "USER"],
+    ["ADMIN", "ORGADMIN", "USER"],
     "[vm-service]CLOUD_DISK:READ",
     "vm-service",
     "/vm-service/api/disk/count",

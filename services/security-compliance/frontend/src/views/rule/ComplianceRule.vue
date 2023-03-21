@@ -124,7 +124,7 @@
         fix
       />
       <template #buttons>
-        <CeTableColumnSelect :columns="columns"/>
+        <CeTableColumnSelect :columns="columns" />
       </template>
     </ce-table>
     <create_compliance_rule

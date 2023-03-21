@@ -2,14 +2,7 @@
   <div class="info-card view-expenses-aggs-card" v-loading="loading">
     <span class="title">{{ title }}</span>
     <div class="money">
-      {{
-        expenses?.toLocaleString("zh-CN", {
-          style: "currency",
-          currency: "CNY",
-          minimumFractionDigits: 2,
-          maximumFractionDigits: 2,
-        })
-      }}
+      {{ CurrencyFormat.format(expenses) }}
     </div>
     <div class="compare">较上月 <span class="up"></span></div>
   </div>
@@ -18,6 +11,8 @@
 import { ref, onMounted } from "vue";
 const loading = ref<boolean>(false);
 const expenses = ref<number>(0);
+import CurrencyFormat from "@commons/utils/currencyFormat";
+
 const props = defineProps<{
   // 获取数据
   getAggsCount: () => Promise<number>;

@@ -1,5 +1,6 @@
 <script lang="ts" setup>
 import { computed, onMounted, type Ref, ref } from "vue";
+import CurrencyFormat from "@commons/utils/currencyFormat";
 import { useModuleStore } from "@commons/stores/modules/module";
 import _ from "lodash";
 import { usePermissionStore } from "@commons/stores/modules/permission";
@@ -210,14 +211,7 @@ onMounted(() => {
           {{ _.maxBy(historyTreed, "label")?.label + "：" }}
         </span>
         <span class="money">
-          {{
-            _.sumBy(historyTreed, "value")?.toLocaleString("zh-CN", {
-              style: "currency",
-              currency: "CNY",
-              minimumFractionDigits: 2,
-              maximumFractionDigits: 2,
-            })
-          }}
+          {{ CurrencyFormat.format(_.sumBy(historyTreed, "value")) }}
         </span>
       </div>
     </div>

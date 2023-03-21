@@ -9,17 +9,28 @@ import type Result from "@commons/request/Result";
  * @param loading 加载器
  * @returns 花销
  */
-const getExpenses: (
+function getExpenses(
   type: "MONTH" | "YEAR",
   value: string,
   loading?: Ref<boolean>
-) => Promise<Result<number>> = (type, value, loading) =>
-  get(
+): Promise<Result<number>> {
+  return get(
     (import.meta.env.VITE_APP_NAME === "finance-management"
       ? ""
       : "/finance-management") + `/api/bill_view/expenses/${type}/${value}`,
     {},
     loading
   );
+}
 
-export default { getExpenses };
+function getCurrentMonthBill(loading?: Ref<boolean>) {
+  return get(
+    (import.meta.env.VITE_APP_NAME === "finance-management"
+      ? ""
+      : "/finance-management") + "/api/bill_view/cloud_account/current_month",
+    {},
+    loading
+  );
+}
+
+export default { getExpenses, getCurrentMonthBill };

@@ -61,7 +61,7 @@ public class MenuConstants {
                             .title("创建")
                             .quickAccess(true)
                             .saveRecent(true)
-                            .quickAccessName("创建云账号")
+                            .quickAccessName("添加云账号")
                             .quickAccessIcon("icon_cloud_outlined")
                             .componentPath("/src/views/CloudAccount/create.vue")
                             .requiredPermission(new MenuPermission.Builder()

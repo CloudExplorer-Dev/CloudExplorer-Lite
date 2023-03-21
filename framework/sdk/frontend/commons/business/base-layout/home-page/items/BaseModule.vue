@@ -1,6 +1,7 @@
 <script lang="ts" setup>
 import { useRouter } from "vue-router";
 import { get } from "@commons/request";
+import CurrencyFormat from "@commons/utils/currencyFormat";
 import { onMounted, ref } from "vue";
 import Result from "@commons/request/Result";
 
@@ -37,14 +38,7 @@ onMounted(() => {
       {{ name }}
     </div>
     <div class="value">
-      <span v-if="type === 'currency'">{{
-        count?.toLocaleString("zh-CN", {
-          style: "currency",
-          currency: "CNY",
-          minimumFractionDigits: 2,
-          maximumFractionDigits: 2,
-        })
-      }}</span>
+      <span v-if="type === 'currency'">{{ CurrencyFormat.format(count) }}</span>
       <span v-else>{{ count }}</span>
       {{ unit }}
     </div>
@@ -55,6 +49,7 @@ onMounted(() => {
 .base-div {
   cursor: pointer;
   padding: 8px;
+  border-radius: 4px;
 
   .label {
     white-space: nowrap;

@@ -55,8 +55,10 @@ const filterChargeType = (instanceChargeType: string) => {
 
 const filterStatus = (value: string) => {
   let status = "";
-  let v = _.find(diskStatus.value, function(o) { return o.value == value; });
-  if(v){
+  const v = _.find(diskStatus.value, function (o) {
+    return o.value == value;
+  });
+  if (v) {
     status = v["text"];
   }
   return status;
@@ -221,7 +223,7 @@ const tableConfig = ref<TableConfig>({
         </template>
       </el-table-column>
       <template #buttons>
-        <CeTableColumnSelect :columns="columns"/>
+        <CeTableColumnSelect :columns="columns" />
       </template>
     </ce-table>
   </div>

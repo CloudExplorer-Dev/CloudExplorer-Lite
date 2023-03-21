@@ -1,8 +1,41 @@
 <script lang="ts" setup>
+import { useModuleStore } from "@commons/stores/modules/module";
+
+const props = withDefaults(
+  defineProps<{
+    needRoles?: Array<"ADMIN" | "ORGADMIN" | "USER">;
+    permission?: any;
+    module?: string;
+  }>(),
+  {
+    needRoles: () => ["ADMIN", "ORGADMIN", "USER"],
+    permission: "[finance-management]BILL_ViEW:READ",
+    module: "finance-management",
+  }
+);
+
 import { computed, onMounted, ref } from "vue";
 import BillViewApi from "@commons/api/bil_view";
 import CeIcon from "@commons/components/ce-icon/index.vue";
+import CurrencyFormat from "@commons/utils/currencyFormat";
 import { useRouter } from "vue-router";
+import { usePermissionStore } from "@commons/stores/modules/permission";
+import { useUserStore } from "@commons/stores/modules/user";
+import _ from "lodash";
+
+const moduleStore = useModuleStore();
+const permissionStore = usePermissionStore();
+const userStore = useUserStore();
+
+const show = computed<boolean>(
+  () =>
+    _.some(
+      moduleStore.runningModules,
+      (module) => module.id === props.module
+    ) &&
+    permissionStore.hasPermission(props.permission) &&
+    _.includes(props.needRoles, userStore.currentRole)
+);
 
 const router = useRouter();
 
@@ -26,6 +59,9 @@ const loading1 = ref(false);
 const loading2 = ref(false);
 
 function getMonthCost() {
+  if (!show.value) {
+    return;
+  }
   BillViewApi.getExpenses("MONTH", currentMonth.value, loading1).then(
     (data) => {
       currentMonthCost.value = data.data;
@@ -33,6 +69,9 @@ function getMonthCost() {
   );
 }
 function getYearCost() {
+  if (!show.value) {
+    return;
+  }
   BillViewApi.getExpenses(
     "YEAR",
     new Date().getFullYear().toString(),
@@ -50,56 +89,37 @@ onMounted(() => {
   getMonthCost();
   getYearCost();
 });
+
+defineExpose({ show });
 </script>
 <template>
-  <div class="info-card no-padding">
-    <div class="info-card no-bottom-border">
-      <div class="title">
-        费用概览
-        <span class="right-info" @click="jump">
-          更多
-          <CeIcon code="icon_right_outlined" size="14px" />
-        </span>
-      </div>
-      <div>
-        <el-row :gutter="8">
-          <el-col :span="12">
-            <div class="base-div">
-              <div class="subtitle">本月花费</div>
-              <div class="value">
-                {{
-                  currentMonthCost?.toLocaleString("zh-CN", {
-                    style: "currency",
-                    currency: "CNY",
-                    minimumFractionDigits: 2,
-                    maximumFractionDigits: 2,
-                  })
-                }}
-              </div>
-            </div>
-          </el-col>
-          <el-col :span="12">
-            <div class="base-div">
-              <div class="subtitle">本年花费</div>
-              <div class="value">
-                {{
-                  currentYearCost?.toLocaleString("zh-CN", {
-                    style: "currency",
-                    currency: "CNY",
-                    minimumFractionDigits: 2,
-                    maximumFractionDigits: 2,
-                  })
-                }}
-              </div>
-            </div>
-          </el-col>
-        </el-row>
-      </div>
+  <div class="info-card" v-if="show">
+    <div class="title">
+      费用概览
+      <span class="right-info" @click="jump">
+        更多
+        <CeIcon code="icon_right_outlined" size="14px" />
+      </span>
     </div>
-    <div class="divider"></div>
-    <div class="info-card no-top-border">
-      <div class="title sub-main-title">本月费用分布</div>
-      <div></div>
+    <div>
+      <el-row :gutter="8">
+        <el-col :span="12">
+          <div class="base-div">
+            <div class="subtitle">本月花费</div>
+            <div class="value">
+              {{ CurrencyFormat.format(currentMonthCost) }}
+            </div>
+          </div>
+        </el-col>
+        <el-col :span="12">
+          <div class="base-div">
+            <div class="subtitle">本年花费</div>
+            <div class="value">
+              {{ CurrencyFormat.format(currentYearCost) }}
+            </div>
+          </div>
+        </el-col>
+      </el-row>
     </div>
   </div>
 </template>
@@ -110,14 +130,6 @@ onMounted(() => {
   border-radius: 4px;
   padding: 24px;
   overflow: hidden;
-
-  .divider {
-    height: 1px;
-    width: 90%;
-    margin-left: auto;
-    margin-right: auto;
-    background-color: rgba(31, 35, 41, 0.15);
-  }
 
   .title {
     font-style: normal;
@@ -145,6 +157,7 @@ onMounted(() => {
   }
   .base-div {
     padding: 8px;
+    border-radius: 4px;
 
     .subtitle {
       white-space: nowrap;
@@ -172,18 +185,5 @@ onMounted(() => {
       vertical-align: center;
     }
   }
-}
-
-.info-card.no-padding {
-  padding: 0;
-}
-
-.info-card.no-bottom-border {
-  border-bottom-left-radius: 0;
-  border-bottom-right-radius: 0;
-}
-.info-card.no-top-border {
-  border-top-left-radius: 0;
-  border-top-right-radius: 0;
 }
 </style>

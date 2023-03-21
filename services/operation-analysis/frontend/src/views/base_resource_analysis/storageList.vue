@@ -127,7 +127,7 @@ onMounted(() => {
       <el-table-column prop="freeRate" label="剩余率(%)"></el-table-column>
       <el-table-column prop="type" label="类型" :show="false"></el-table-column>
       <template #buttons>
-        <CeTableColumnSelect :columns="columns"/>
+        <CeTableColumnSelect :columns="columns" />
       </template>
     </ce-table>
   </div>

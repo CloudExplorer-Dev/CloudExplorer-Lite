@@ -71,9 +71,15 @@ public class BillViewController {
     }
 
     @GetMapping("/cloud_account")
-    @ApiModelProperty(value = "获取当月云账号聚合账单", notes = "获取当月云账号聚合账单")
+    @ApiModelProperty(value = "获取半年云账号聚合账单", notes = "获取半年云账号聚合账单")
     @PreAuthorize("hasAnyCePermission('BILL_ViEW:READ')")
     public ResultHolder<Map<String, List<BillView>>> billViewByCloudAccount() {
         return ResultHolder.success(billViewService.billViewByCloudAccount());
+    }
+    @GetMapping("/cloud_account/current_month")
+    @ApiModelProperty(value = "获取当月云账号聚合账单", notes = "获取当月云账号聚合账单")
+    @PreAuthorize("hasAnyCePermission('BILL_ViEW:READ')")
+    public ResultHolder<Map<String, List<BillView>>> currentMonthBillViewByCloudAccount() {
+        return ResultHolder.success(billViewService.currentMonthBillViewByCloudAccount());
     }
 }

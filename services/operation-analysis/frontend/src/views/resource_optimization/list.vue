@@ -150,7 +150,7 @@
           :show="false"
         ></el-table-column>
         <template #buttons>
-          <CeTableColumnSelect :columns="columns"/>
+          <CeTableColumnSelect :columns="columns" />
         </template>
       </ce-table>
     </div>
@@ -358,7 +358,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, } from "vue";
+import { ref, onMounted } from "vue";
 import _ from "lodash";
 import {
   PaginationConfig,
@@ -541,9 +541,9 @@ const search = (condition: TableSearch) => {
     if (formData.optimizeSuggest === type) {
       if (changTitleValue.value) {
         const d = _.find(optimizeSuggests.value, ["code", type]);
-        if(d){
-          d.value = res.data.total
-          d.data = res.data
+        if (d) {
+          d.value = res.data.total;
+          d.data = res.data;
         }
       }
       changTitleValue.value = false;

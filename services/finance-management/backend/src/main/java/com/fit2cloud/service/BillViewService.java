@@ -51,4 +51,6 @@ public interface BillViewService {
      * @return 账单云账号分账
      */
     Map<String, List<BillView>> billViewByCloudAccount();
+
+    Map<String, List<BillView>> currentMonthBillViewByCloudAccount();
 }
