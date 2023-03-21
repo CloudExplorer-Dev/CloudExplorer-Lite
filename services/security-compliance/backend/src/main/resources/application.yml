@@ -45,4 +45,4 @@ eureka:
       name_zh-tw: 安全合规
       name_en: Security Compliance
       basePath: ${server.servlet.context-path}/
-      icon: xitonganquanheguibaobiao
+      icon: icon_shield_outlined

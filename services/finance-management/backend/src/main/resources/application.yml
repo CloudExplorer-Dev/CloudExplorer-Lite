@@ -45,6 +45,6 @@ eureka:
       name_zh-tw: 云账单
       name_en: Finance Management
       basePath: ${server.servlet.context-path}/
-      icon: feiyong
+      icon: icon_bill_outlined
 billing:
   path: /opt/cloudexplorer/data/billing

@@ -42,9 +42,10 @@ const props = withDefaults(
   >
     <div class="icon">
       <CeIcon
-        size="var(--ce-star-menu-icon-width,18px)"
+        size="var(--ce-star-menu-icon-width, 18px)"
+        color="#1F2329"
         :code="props.startMenuItem.icon"
-      ></CeIcon>
+      />
     </div>
     <div class="text">{{ props.startMenuItem.name }}</div>
     <div class="handle">
@@ -62,6 +63,8 @@ const props = withDefaults(
   align-items: center;
   overflow: hidden;
   transition: 0.3s;
+  color: #1f2329;
+
   &:hover {
     background-color: var(--ce-star-menu-hover-bg-color);
     cursor: pointer;
