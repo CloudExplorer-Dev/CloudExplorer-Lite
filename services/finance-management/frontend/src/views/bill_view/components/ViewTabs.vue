@@ -18,7 +18,11 @@
         <el-dropdown
           @command="dropdownChange"
           trigger="click"
-          style="display: flex"
+          style="
+            display: inline-flex;
+            height: 100%;
+            transform: translateY(10px);
+          "
         >
           <span class="el-dropdown-link">
             更多
@@ -40,6 +44,7 @@
                       width: 80%;
                       text-overflow: ellipsis;
                       overflow: hidden;
+                      color: rgba(31, 35, 41, 1);
                     "
                   >
                     {{ item[labelField] }}
@@ -108,7 +113,7 @@ const active = computed({
  * 下拉选择的规则数据
  */
 const dropdownRuleList = computed(() => {
-  return props.tabs.filter((item, index) => index > props.maxNum);
+  return props.tabs.filter((item, index) => index >= props.maxNum);
 });
 /**
  * tabs规则数据
@@ -131,7 +136,6 @@ const tabsChange = (event: string) => {
  * @param event 事件值
  */
 const dropdownChange = (event: string) => {
-  console.log("xxx", event);
   if (props.topping) {
     const end: number = props.tabs
       .map((item, index) => {
@@ -198,9 +202,9 @@ const sortData = (tabs: Array<any>) => {
         }
       });
       tabs.sort((pre, next) => pre.order - next.order);
-      if (tabs && tabs.length > 0) {
-        emit("update:active", tabs[0][props.valueField]);
-      }
+    }
+    if (tabs && tabs.length > 0) {
+      emit("update:active", tabs[0][props.valueField]);
     }
   }
 };
@@ -239,13 +243,13 @@ defineExpose({ sortLocal });
   height: 22px;
   font-weight: 400;
   font-size: 14px;
-  margin-bottom: 9px;
 }
 .selected {
   color: #409eff;
 }
 :deep(.el-tabs__item) {
   @include tabs_text;
+  margin-bottom: 20px;
 }
 :deep(.el-dropdown-link) {
   @include tabs_text;

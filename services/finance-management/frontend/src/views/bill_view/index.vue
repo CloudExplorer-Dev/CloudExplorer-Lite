@@ -1,12 +1,18 @@
 <template>
   <layout-auto-height-content
     :style="{ backgroundColor: '#f2f2f2', height: 'auto' }"
+    style="
+      --ce-main-content-padding-top: 0;
+      --ce-main-content-padding-left: 0;
+      --ce-main-content-padding-righ: 0;
+      --ce-main-content-padding-bottom: 0;
+    "
   >
     <template #breadcrumb>
       <breadcrumb :auto="true"></breadcrumb>
     </template>
 
-    <el-row :gutter="24" v-resize="reSize" class="top-content">
+    <el-row :gutter="16" v-resize="reSize" class="top-content">
       <el-col :span="6">
         <el-row class="left-div">
           <el-col :spam="24">
@@ -40,7 +46,7 @@
         <div class="title">
           账单汇总-
           <el-date-picker
-            style="width: 120px; margin-left: 4px; height: 22px"
+            style="width: 120px; margin-left: 4px; height: 24px"
             ref="datePicker"
             :editable="false"
             v-model="viewMonth"
@@ -67,6 +73,7 @@
       </div>
       <div class="content">
         <ViewTabs
+          :max-num="6"
           ref="viewTabs"
           :local-key="'test'"
           :topping="true"
@@ -262,7 +269,7 @@ watch(viewMonth, () => {
   color: #006eff;
 }
 .top-content {
-  margin-bottom: 24px;
+  margin-bottom: 16px;
   min-width: 800px;
 }
 .bottom_content {

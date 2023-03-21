@@ -47,7 +47,7 @@
       class="form_container"
     >
       <el-form-item
-        label="规则名称"
+        label="账单名称"
         prop="name"
         :rules="{
           message: '名称不能为空',
@@ -58,7 +58,7 @@
         <el-input v-model="billRuleForm.name" />
       </el-form-item>
       <el-form-item
-        label="分组维度"
+        label="统计字段"
         prop="groups"
         :rules="{
           message: '分组维度不能为空',
