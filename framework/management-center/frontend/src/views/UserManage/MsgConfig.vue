@@ -94,48 +94,48 @@ onMounted(() => {
 </script>
 
 <template>
-    <el-form
-      :model="form"
-      :rules="rules"
-      ref="formRef"
-      label-width="auto"
-      label-position="top"
-      require-asterisk-position="right"
-    >
-      <el-form-item label="Email" prop="email">
-        <el-input v-model="form.email" clearable />
-      </el-form-item>
-      <el-form-item :label="$t('user.phone')" prop="phone">
-        <el-input v-model="form.phone" clearable />
-      </el-form-item>
-      <el-form-item :label="$t('user.wechatAccount')" prop="wechatAccount">
-        <el-input v-model="form.wechatAccount" clearable />
-      </el-form-item>
-    </el-form>
+  <el-form
+    :model="form"
+    :rules="rules"
+    ref="formRef"
+    label-width="auto"
+    label-position="top"
+    require-asterisk-position="right"
+  >
+    <el-form-item label="Email" prop="email">
+      <el-input v-model="form.email" clearable />
+    </el-form-item>
+    <el-form-item :label="$t('user.phone')" prop="phone">
+      <el-input v-model="form.phone" clearable />
+    </el-form-item>
+    <el-form-item :label="$t('user.wechatAccount')" prop="wechatAccount">
+      <el-input v-model="form.wechatAccount" clearable />
+    </el-form-item>
+  </el-form>
 
-    <div class="notification_title">
-      <span style="font-size: 12px">
-        <el-icon>
-          <InfoFilled />
-        </el-icon>
-        {{ $t("user.notify_tips") }}:<a
-          href="https://work.weixin.qq.com/api/doc/90000/90135/90665"
-          target="_blank"
-          style="color: var(--el-color-primary)"
-        >
-          https://work.weixin.qq.com/api/doc/90000/90135/90665</a
-        ></span
+  <div class="notification_title">
+    <span style="font-size: 12px">
+      <el-icon>
+        <InfoFilled />
+      </el-icon>
+      {{ $t("user.notify_tips") }}:<a
+        href="https://work.weixin.qq.com/api/doc/90000/90135/90665"
+        target="_blank"
+        style="color: var(--el-color-primary)"
       >
-    </div>
+        https://work.weixin.qq.com/api/doc/90000/90135/90665</a
+      ></span
+    >
+  </div>
 
-    <div class="dialog_footer footer-btn">
-      <el-button @click="handleCancel(formRef)">{{
-        $t("commons.btn.cancel")
-      }}</el-button>
-      <el-button type="primary" @click="handleSave(formRef)">{{
-        $t("commons.btn.save")
-      }}</el-button>
-    </div>
+  <div class="dialog_footer footer-btn">
+    <el-button @click="handleCancel(formRef)">{{
+      $t("commons.btn.cancel")
+    }}</el-button>
+    <el-button type="primary" @click="handleSave(formRef)">{{
+      $t("commons.btn.save")
+    }}</el-button>
+  </div>
 </template>
 
 <style lang="scss">

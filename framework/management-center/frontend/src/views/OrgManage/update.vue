@@ -12,9 +12,7 @@
         >
           <el-row>
             <el-col span="24">
-              <p class="tip">
-                {{ t("commons.basic_info", "基本信息") }}
-              </p>
+              <FormTitle>{{ t("commons.basic_info", "基本信息") }}</FormTitle>
             </el-col>
           </el-row>
           <el-row :gutter="10">
@@ -35,9 +33,9 @@
           </el-row>
           <el-row>
             <el-col :span="24">
-              <p class="tip">
-                {{ t("org_manage.affiliated_organization", "所属组织") }}
-              </p>
+              <FormTitle>{{
+                t("org_manage.affiliated_organization", "所属组织")
+              }}</FormTitle>
             </el-col>
           </el-row>
           <el-row>
@@ -90,6 +88,7 @@ import { ElMessage } from "element-plus";
 import organizationApi from "@/api/organization";
 import type { OrganizationTree, OrgUpdateForm } from "@/api/organization/type";
 import { useI18n } from "vue-i18n";
+import FormTitle from "@/componnets/from_title/FormTitle.vue";
 // 国际化实例
 const { t } = useI18n();
 // 校验实例对象

@@ -144,6 +144,4 @@ const handleSave = (formEl: FormInstance) => {
   </el-dialog>
 </template>
 
-<style lang="scss" scoped>
-
-</style>
+<style lang="scss" scoped></style>

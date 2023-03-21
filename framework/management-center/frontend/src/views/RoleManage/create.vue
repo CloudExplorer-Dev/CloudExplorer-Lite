@@ -4,9 +4,7 @@
       <div class="form-div">
         <el-row>
           <el-col span="24">
-            <p class="tip">
-              {{ t("commons.basic_info", "基本信息") }}
-            </p>
+            <FormTitle>{{ t("commons.basic_info", "基本信息") }}</FormTitle>
           </el-col>
         </el-row>
         <el-row>
@@ -22,10 +20,10 @@
         </el-row>
         <el-row>
           <el-col span="24">
-            <p class="tip">角色权限</p>
+            <FormTitle>角色权限</FormTitle>
           </el-col>
         </el-row>
-        <el-row style="border: 1px solid; color: var(--el-border-color);">
+        <el-row style="border: 1px solid; color: var(--el-border-color)">
           <RolePermissionTable
             :id="id"
             :loading="loading"
@@ -68,6 +66,7 @@ import RoleApi from "@/api/role";
 import { useI18n } from "vue-i18n";
 import RoleInfoTable from "./RoleInfoTable.vue";
 import RolePermissionTable from "./RolePermissionTable.vue";
+import FormTitle from "@/componnets/from_title/FormTitle.vue";
 
 const { t } = useI18n();
 

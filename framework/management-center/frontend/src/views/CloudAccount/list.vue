@@ -879,7 +879,7 @@ const syncAll = () => {
       fix
     />
     <template #buttons>
-      <CeTableColumnSelect :columns="columns"/>
+      <CeTableColumnSelect :columns="columns" />
     </template>
   </ce-table>
   <!-- 同步资源  START -->

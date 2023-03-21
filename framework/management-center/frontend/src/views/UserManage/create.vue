@@ -17,6 +17,7 @@ import type { WorkspaceTree } from "@commons/api/workspace/type";
 import { roleConst } from "@commons/utils/constants";
 import type { InternalRuleItem } from "async-validator/dist-types/interface";
 import CeIcon from "@commons/components/ce-icon/index.vue";
+import FormTitle from "@/componnets/from_title/FormTitle.vue";
 const router = useRouter();
 const { t } = useI18n();
 const operationType = ref<string>("create");
@@ -277,11 +278,7 @@ onMounted(() => {
           require-asterisk-position="right"
         >
           <el-row>
-            <el-col span="24">
-              <p class="tip">
-                {{ t("commons.basic_info", "基本信息") }}
-              </p>
-            </el-col>
+            <FormTitle>{{ t("commons.basic_info", "基本信息") }}</FormTitle>
           </el-row>
           <el-row :gutter="10">
             <el-col :span="11">
@@ -352,9 +349,7 @@ onMounted(() => {
           </el-row>
           <el-row>
             <el-col span="24">
-              <p class="tip">
-                {{ $t("user.set_role") }}
-              </p>
+              <FormTitle>{{ $t("user.set_role") }}</FormTitle>
             </el-col>
           </el-row>
           <el-row v-for="(roleInfo, index) in form.roleInfoList" :key="index">

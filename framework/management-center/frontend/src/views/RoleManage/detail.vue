@@ -4,9 +4,7 @@
       <div class="form-div">
         <el-row :gutter="10">
           <el-col :span="12">
-            <p class="tip">
-              {{ t("commons.basic_info", "基本信息") }}
-            </p>
+            <FormTitle>{{ t("commons.basic_info", "基本信息") }}</FormTitle>
           </el-col>
           <el-col :span="12" style="text-align: end">
             <el-button
@@ -48,7 +46,7 @@
         </el-row>
         <el-row :gutter="10">
           <el-col :span="12">
-            <p class="tip">角色权限</p>
+            <FormTitle>角色权限</FormTitle>
           </el-col>
           <el-col :span="12" style="text-align: end">
             <el-button
@@ -79,7 +77,7 @@
             </el-button>
           </el-col>
         </el-row>
-        <el-row style="border: 1px solid; color: var(--el-border-color);">
+        <el-row style="border: 1px solid; color: var(--el-border-color)">
           <RolePermissionTable
             :id="id"
             :loading="loadingPermission"
@@ -118,6 +116,7 @@ import { UpdateRoleRequest } from "@/api/role/type";
 import { useI18n } from "vue-i18n";
 import RoleInfoTable from "./RoleInfoTable.vue";
 import RolePermissionTable from "./RolePermissionTable.vue";
+import FormTitle from "@/componnets/from_title/FormTitle.vue";
 
 const { t } = useI18n();
 const route = useRouter();

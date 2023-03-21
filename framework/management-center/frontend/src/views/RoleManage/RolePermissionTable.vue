@@ -4,12 +4,20 @@
       <el-cascader-panel
         :options="modulesPanels"
         v-model="defaultSelectedModule"
-        style="width: 180px; padding: 0;border:none"
+        style="width: 180px; padding: 0; border: none"
         @change="onModuleSelect"
       />
     </el-aside>
-    <el-main style="padding: 0px;min-height:200px;width:100%;">
-      <el-table :data="permissionTableData" style="width:100%;padding:0px;min-height:200px;border-left: 1px solid; color: var(--el-border-color);">
+    <el-main style="padding: 0px; min-height: 200px; width: 100%">
+      <el-table
+        :data="permissionTableData"
+        style="
+          width: 100%;
+          padding: 0px;
+          min-height: 200px;
+          border-left: 1px solid var(--el-border-color);
+        "
+      >
         <el-table-column width="100px">
           <template #header>
             <el-checkbox
@@ -31,6 +39,7 @@
         <el-table-column label="操作对象" min-width="100px">
           <template #default="scope">
             {{ t(scope.row.name) }}
+            <span>dddd</span>
           </template>
         </el-table-column>
         <el-table-column label="权限" min-width="300px">

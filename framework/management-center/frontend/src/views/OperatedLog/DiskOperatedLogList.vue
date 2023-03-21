@@ -113,7 +113,7 @@
     >
     <fu-table-operations v-bind="tableConfig.tableOperations" fixed="right" />
     <template #buttons>
-      <CeTableColumnSelect :columns="columns"/>
+      <CeTableColumnSelect :columns="columns" />
     </template>
   </ce-table>
   <LogDetail ref="logInfoRef" />
