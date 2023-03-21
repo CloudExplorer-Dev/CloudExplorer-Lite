@@ -37,7 +37,13 @@
       </ce-filter-bar>
     </template>
 
-    <div :class="[Object.keys(allConditions).length !== 0 ? 'complex-table__body_with_filter' : 'complex-table__body']">
+    <div
+      :class="[
+        Object.keys(allConditions).length !== 0
+          ? 'complex-table__body_with_filter'
+          : 'complex-table__body',
+      ]"
+    >
       <fu-table
         ref="table"
         v-bind="$attrs"

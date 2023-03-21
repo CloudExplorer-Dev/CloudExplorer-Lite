@@ -1,55 +1,48 @@
 <template>
-  <layout-container :border="false">
+  <base-container>
     <template #content>
-      <layout-container>
-        <template #header>
-          <h4>监控数据</h4>
-        </template>
-        <template #content>
-          <el-date-picker
-            v-model="timestampData"
-            type="datetimerange"
-            range-separator="至"
-            start-placeholder="开始日期"
-            end-placeholder="结束日期"
-            :default-time="[new Date(),new Date()]"
-            @change="changeTimestamp"
-            @input="changeTimestamp"
+      <el-date-picker
+        v-model="timestampData"
+        type="datetimerange"
+        range-separator="至"
+        start-placeholder="开始日期"
+        end-placeholder="结束日期"
+        :default-time="[new Date(), new Date()]"
+        @change="changeTimestamp"
+        @input="changeTimestamp"
+      >
+      </el-date-picker>
+      <div class="card-content">
+        <el-row :gutter="24">
+          <el-col
+            :xl="12"
+            :md="12"
+            :sm="48"
+            v-for="item in echartsData"
+            style="padding-top: 10px"
+            :key="item.metricName"
           >
-          </el-date-picker>
-          <div class="card-content">
-            <el-row :gutter="24">
-              <el-col
-                :xl="12"
-                :md="12"
-                :sm="48"
-                v-for="item in echartsData"
-                style="padding-top: 10px"
-                :key="item.metricName"
-              >
-                <div class="myChart">
-                  <Charts
-                    :ref="(el) => childRef(el, item.metricName)"
-                    :data="echartsData"
-                    :metric-name="item.metricName"
-                    :y-unit="item.yUnit"
-                    :title="item.title"
-                    :legend="item.legend"
-                    :x-data="item.xData"
-                    :series="item.series"
-                    :device-list="item.deviceList"
-                    :device-data="item.deviceData"
-                    :current-device="item.currentDevice"
-                    @vnode-mounted="loadingEchartsDone"
-                  />
-                </div>
-              </el-col>
-            </el-row>
-          </div>
-        </template>
-      </layout-container>
+            <div class="myChart">
+              <Charts
+                :ref="(el) => childRef(el, item.metricName)"
+                :data="echartsData"
+                :metric-name="item.metricName"
+                :y-unit="item.yUnit"
+                :title="item.title"
+                :legend="item.legend"
+                :x-data="item.xData"
+                :series="item.series"
+                :device-list="item.deviceList"
+                :device-data="item.deviceData"
+                :current-device="item.currentDevice"
+                @vnode-mounted="loadingEchartsDone"
+              />
+            </div>
+          </el-col>
+        </el-row>
+      </div>
     </template>
-  </layout-container>
+  </base-container>
 </template>
 <script setup lang="ts">
 const props = defineProps<{
@@ -90,10 +83,10 @@ const loadingEchartsDone = () => {
  */
 const getData = () => {
   Object.keys(PerfMetricConst).forEach(function (metricName) {
-    if(vSphereFilter(metricName)){
+    if (vSphereFilter(metricName)) {
       return;
     }
-    if(huaweiFilter(metricName)){
+    if (huaweiFilter(metricName)) {
       return;
     }
     if (childRefMap.get(metricName)) {
@@ -185,7 +178,7 @@ const getData = () => {
             }
             d[0].deviceData = res.data;
             d[0].xData = xData.value;
-            d[0].series[0].connectNulls=true;
+            d[0].series[0].connectNulls = true;
             d[0].series[0].data = yData.value;
           }
         }
@@ -195,7 +188,7 @@ const getData = () => {
         });
         if (d[0]) {
           d[0].xData = xData.value;
-          d[0].series[0].connectNulls=true;
+          d[0].series[0].connectNulls = true;
           d[0].series[0].data = yData.value;
         }
       }
@@ -223,7 +216,7 @@ const setXData = (
   });
   if (d[0]) {
     d[0].xData = res;
-    d[0].series[0].connectNulls=true;
+    d[0].series[0].connectNulls = true;
     d[0].series.forEach(function (s: any) {
       if (s.name === PerfMetricConst[metricName].name) {
         s.data = yData;
@@ -300,20 +293,20 @@ const initEchartsData = () => {
     _.cloneDeep(data)
   );
 
-  if(isVsphere()){
+  if (isVsphere()) {
     echarts.delete(PerfMetricConst.INTERNET_IN_RATE.metricName);
     echarts.delete(PerfMetricConst.DISK_USED_UTILIZATION.metricName);
   }
-  if(isHuawei()){
+  if (isHuawei()) {
     echarts.delete(PerfMetricConst.DISK_USED_UTILIZATION.metricName);
   }
 
   Object.keys(PerfMetricConst).forEach(function (perfMetric) {
     const metricName = PerfMetricConst[perfMetric].metricName;
-    if(vSphereFilter(perfMetric)){
+    if (vSphereFilter(perfMetric)) {
       return;
     }
-    if(huaweiFilter(perfMetric)){
+    if (huaweiFilter(perfMetric)) {
       return;
     }
     const series = {
@@ -323,7 +316,7 @@ const initEchartsData = () => {
       data: [],
       type: "line",
       smooth: false,
-      connectNulls: true
+      connectNulls: true,
     };
 
     const yUnit = PerfMetricConst[perfMetric].unit;
@@ -371,30 +364,34 @@ const initEchartsData = () => {
     echartsData.value.push(v);
   });
 };
-const vSphereFilter = (perfMetric:any)=>{
+const vSphereFilter = (perfMetric: any) => {
   const metricName = PerfMetricConst[perfMetric].metricName;
-  if(isVsphere()
-      && (metricName===PerfMetricConst.INTERNET_OUT_RATE.metricName
-          || metricName===PerfMetricConst.INTERNET_IN_RATE.metricName
-          || metricName===PerfMetricConst.DISK_USED_UTILIZATION.metricName)){
+  if (
+    isVsphere() &&
+    (metricName === PerfMetricConst.INTERNET_OUT_RATE.metricName ||
+      metricName === PerfMetricConst.INTERNET_IN_RATE.metricName ||
+      metricName === PerfMetricConst.DISK_USED_UTILIZATION.metricName)
+  ) {
     return true;
   }
   return false;
-}
-const huaweiFilter = (perfMetric:any)=>{
+};
+const huaweiFilter = (perfMetric: any) => {
   const metricName = PerfMetricConst[perfMetric].metricName;
-  if(isHuawei()
-      && (metricName===PerfMetricConst.DISK_USED_UTILIZATION.metricName)){
+  if (
+    isHuawei() &&
+    metricName === PerfMetricConst.DISK_USED_UTILIZATION.metricName
+  ) {
     return true;
   }
   return false;
-}
-const isVsphere = ()=>{
-  return request.value.platform==="fit2cloud_vsphere_platform";
-}
-const isHuawei = ()=>{
-  return request.value.platform==="fit2cloud_huawei_platform";
-}
+};
+const isVsphere = () => {
+  return request.value.platform === "fit2cloud_vsphere_platform";
+};
+const isHuawei = () => {
+  return request.value.platform === "fit2cloud_huawei_platform";
+};
 </script>
 <style lang="scss">
 .myChart {

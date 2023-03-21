@@ -1,0 +1,33 @@
+<script setup lang="ts">
+const props = defineProps<{
+  securityGroupIds: string;
+}>();
+
+const isNotEmpty = (value: any) => {
+  if (value !== null && value !== "null" && value !== undefined) {
+    return true;
+  }
+  return false;
+};
+</script>
+<template>
+  <el-dropdown :hide-on-click="false" max-height="100px">
+    <span
+      v-if="isNotEmpty(securityGroupIds)"
+      style="cursor: pointer; color: var(--el-color-primary)"
+      >{{ JSON.parse(securityGroupIds).length }}</span
+    >
+    <span v-else>-</span>
+    <template #dropdown>
+      <el-dropdown-menu>
+        <el-dropdown-item
+          v-for="(item, index) in JSON.parse(securityGroupIds)"
+          :key="index"
+        >
+          <span>{{ item }}</span>
+        </el-dropdown-item>
+      </el-dropdown-menu>
+    </template>
+  </el-dropdown>
+</template>
+<style lang="scss" scoped></style>
