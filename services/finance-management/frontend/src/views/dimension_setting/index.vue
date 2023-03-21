@@ -70,7 +70,7 @@
             <el-popover
               placement="top-start"
               :width="500"
-              trigger="click"
+              trigger="hover"
               content="各云账号的账单费用按照分账规则分摊到云管中的组织/工作空间上。"
             >
               <template #reference>
@@ -223,7 +223,7 @@
                     <el-popover
                       placement="top-start"
                       :width="500"
-                      trigger="click"
+                      trigger="hover"
                       content="各云账号的账单费用按照分账规则分摊到云管中的组织/工作空间上。"
                     >
                       <template #reference>
@@ -364,7 +364,6 @@ const activeTab = ref<string>("dimension_rules");
 /**
  * 切换tab触发函数
  * @param tab table对象
- * @param event
  */
 const handleClick = (tab: TabsPaneContext) => {
   activeTab.value = tab.props.name as string;

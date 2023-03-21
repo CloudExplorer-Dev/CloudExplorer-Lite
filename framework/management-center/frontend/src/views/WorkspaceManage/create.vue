@@ -1,6 +1,7 @@
 <!--创建编辑工作空间-->
 <script setup lang="ts">
 import organizationApi from "@/api/organization";
+import FormTitle from "@/componnets/from_title/FormTitle.vue";
 
 const props = defineProps<{
   id: string;
@@ -220,9 +221,7 @@ const sourceData = ref<Array<OrganizationTree>>();
         >
           <el-row>
             <el-col>
-              <p class="tip">
-                {{ t("commons.basic_info", "基本信息") }}
-              </p>
+              <FormTitle>{{ t("commons.basic_info", "基本信息") }}</FormTitle>
             </el-col>
           </el-row>
           <el-row
@@ -279,9 +278,7 @@ const sourceData = ref<Array<OrganizationTree>>();
           </el-row>
           <el-row>
             <el-col>
-              <p class="tip">
-                {{ t("workspace.org") }}
-              </p>
+              <FormTitle>{{ t("workspace.org") }}</FormTitle>
             </el-col>
           </el-row>
           <el-row>

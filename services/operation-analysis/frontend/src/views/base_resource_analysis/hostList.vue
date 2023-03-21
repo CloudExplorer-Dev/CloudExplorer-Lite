@@ -160,7 +160,7 @@ onMounted(() => {
         min-width="150"
       ></el-table-column>
       <template #buttons>
-        <CeTableColumnSelect :columns="columns"/>
+        <CeTableColumnSelect :columns="columns" />
       </template>
     </ce-table>
   </div>

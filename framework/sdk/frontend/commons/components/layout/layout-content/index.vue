@@ -2,11 +2,15 @@
   <div class="breadcrumb" v-if="$slots.breadcrumb">
     <slot name="breadcrumb"></slot>
   </div>
-  <div class="content">
+  <div class="content" :style="props.style">
     <slot></slot>
   </div>
 </template>
-<script setup lang="ts"></script>
+<script setup lang="ts">
+const props = withDefaults(defineProps<{ style: any }>(), {
+  style: {},
+});
+</script>
 <style lang="scss" scoped>
 .breadcrumb {
   height: var(--ce-main-breadcrumb-height, 50px);

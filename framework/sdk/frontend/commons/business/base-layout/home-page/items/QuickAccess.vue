@@ -11,7 +11,6 @@ import CeIcon from "@commons/components/ce-icon/index.vue";
 import type { Module } from "@commons/api/module/type";
 import { useRouter } from "vue-router";
 import type { RecentAccessRoute } from "@commons/router/type";
-import * as module from "module";
 
 const router = useRouter();
 const userStore = useUserStore();
@@ -134,6 +133,18 @@ const quickAccessMenus = computed(() => {
   });
 });
 
+const quickAccessGroup = computed<Array<Array<Menu>>>(() => {
+  const group: Array<Array<Menu>> = [];
+  _.forEach(quickAccessMenus.value, (o, index) => {
+    const i = _.floor(index / 4);
+    if (group.length === i) {
+      group.push([]);
+    }
+    group[i].push(o);
+  });
+  return group;
+});
+
 function goQuickAccess(menu: Menu) {
   const module = _.find(
     menus.value,
@@ -144,22 +155,6 @@ function goQuickAccess(menu: Menu) {
   //console.log(path);
   router.push(path);
 }
-
-/*const modules = computed(() => {
-  return _.filter(moduleStore.runningModules, (module: Module) =>
-      hasRolePermission(
-          userStore.currentRole,
-          permissionStore.userPermissions,
-          module.requiredPermissions
-      )
-  ) as Array<Module>;
-});
-function changeModule(id: string) {
-  const module = _.find(modules.value, (g: Module) => g.id === id);
-  if (module && module.basePath) {
-    router.push(module.basePath);
-  }
-}*/
 
 const key = "RecentAccess-" + userStore.currentUser.id;
 const str = localStorage.getItem(key);
@@ -295,22 +290,30 @@ function goRecentAccess(menu: RecentAccessRoute) {
       <div class="title">最近访问</div>
       <div>
         <template v-for="(array, _i) in recentAccessGroup" :key="_i">
-          <el-row class="group-row">
+          <el-row class="group-row" :gutter="8">
             <template v-for="(o, _j) in array" :key="_j">
               <el-col :span="6">
                 <div
-                  class="quick-access-btn"
+                  class="recent-access-btn"
                   @click="goRecentAccess(o)"
                   :title="
                     o.moduleName +
                     '-' +
-                    (o.quickAccessName ? o.quickAccessName : o.parentTitle)
+                    (o.quickAccessName
+                      ? o.quickAccessName
+                      : o.parentTitle
+                      ? o.parentTitle
+                      : o.title)
                   "
                 >
                   {{
                     o.moduleName +
                     "-" +
-                    (o.quickAccessName ? o.quickAccessName : o.parentTitle)
+                    (o.quickAccessName
+                      ? o.quickAccessName
+                      : o.parentTitle
+                      ? o.parentTitle
+                      : o.title)
                   }}
                 </div>
               </el-col>
@@ -320,18 +323,30 @@ function goRecentAccess(menu: RecentAccessRoute) {
       </div>
     </div>
 
-    <div class="menu-div">
+    <div class="menu-div" v-if="quickAccessMenus.length > 0">
       <div class="title">快捷入口</div>
       <div>
-        <el-button
-          v-for="(m, index) in quickAccessMenus"
-          :key="index"
-          plain
-          @click="goQuickAccess(m)"
-          style="margin-bottom: 5px"
-        >
-          {{ m.quickAccessName }}
-        </el-button>
+        <template v-for="(array, _i) in quickAccessGroup" :key="_i">
+          <el-row class="group-row" :gutter="8">
+            <template v-for="(o, _j) in array" :key="_j">
+              <el-col :span="6">
+                <div
+                  class="quick-access-btn"
+                  @click="goQuickAccess(o)"
+                  :title="o.quickAccessName"
+                >
+                  <CeIcon
+                    :code="o.quickAccessIcon"
+                    v-if="o.quickAccessIcon"
+                    size="16px"
+                    style="margin-right: 8px"
+                  />
+                  {{ o.quickAccessName }}
+                </div>
+              </el-col>
+            </template>
+          </el-row>
+        </template>
       </div>
     </div>
   </div>
@@ -339,9 +354,10 @@ function goRecentAccess(menu: RecentAccessRoute) {
 
 <style scoped lang="scss">
 .info-card {
+  background: #ffffff;
   border-radius: 4px;
-  background-color: #ffffff;
   padding: 24px;
+  overflow: hidden;
 
   .menu-div {
     margin-bottom: 24px;
@@ -361,41 +377,61 @@ function goRecentAccess(menu: RecentAccessRoute) {
 
   .group-row {
     margin-bottom: 8px;
+
+    .recent-access-btn {
+      padding: 2px 6px;
+      cursor: pointer;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      font-style: normal;
+      font-weight: 400;
+      font-size: 14px;
+      line-height: 22px;
+      color: #646a73;
+    }
+
+    .recent-access-btn:hover {
+      color: var(--el-color-primary);
+    }
+
+    .recent-access-btn:before {
+      display: inline-block;
+      content: "";
+      height: 4px;
+      width: 4px;
+      border-radius: 2px;
+      background-color: var(--el-color-primary);
+      margin-right: 10px;
+      line-height: 22px;
+      vertical-align: middle;
+
+      margin-top: auto;
+      margin-bottom: auto;
+    }
+
+    .quick-access-btn {
+      padding: 8px 16px;
+      box-sizing: border-box;
+      background: #ffffff;
+      border: 1px solid #dee0e3;
+      border-radius: 4px;
+      cursor: pointer;
+      font-style: normal;
+      font-weight: 400;
+      font-size: 14px;
+      line-height: 22px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      color: #1f2329;
+    }
+    .quick-access-btn:hover {
+      box-shadow: 0 6px 24px rgba(31, 35, 41, 0.08);
+    }
   }
   .group-row:last-child {
     margin-bottom: 0;
-  }
-
-  .quick-access-btn {
-    padding: 2px 6px;
-    cursor: pointer;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    font-style: normal;
-    font-weight: 400;
-    font-size: 14px;
-    line-height: 22px;
-    color: #646a73;
-  }
-
-  .quick-access-btn:hover {
-    color: var(--el-color-primary);
-  }
-
-  .quick-access-btn:before {
-    display: inline-block;
-    content: "";
-    height: 4px;
-    width: 4px;
-    border-radius: 2px;
-    background-color: var(--el-color-primary);
-    margin-right: 10px;
-    line-height: 22px;
-    vertical-align: middle;
-
-    margin-top: auto;
-    margin-bottom: auto;
   }
 }
 </style>

@@ -1,6 +1,7 @@
 <script lang="ts" setup>
 import { useRouter } from "vue-router";
 import { get } from "@commons/request";
+import CurrencyFormat from "@commons/utils/currencyFormat";
 import { onMounted, ref } from "vue";
 import Result from "@commons/request/Result";
 
@@ -32,19 +33,12 @@ onMounted(() => {
 });
 </script>
 <template>
-  <div class="base-div">
+  <div class="base-div" @click="jump" v-loading="loading">
     <div class="label">
       {{ name }}
     </div>
-    <div class="value" @click="jump" v-loading="loading">
-      <span v-if="type === 'currency'">{{
-        count?.toLocaleString("zh-CN", {
-          style: "currency",
-          currency: "CNY",
-          minimumFractionDigits: 2,
-          maximumFractionDigits: 2,
-        })
-      }}</span>
+    <div class="value">
+      <span v-if="type === 'currency'">{{ CurrencyFormat.format(count) }}</span>
       <span v-else>{{ count }}</span>
       {{ unit }}
     </div>
@@ -53,6 +47,10 @@ onMounted(() => {
 
 <style scoped lang="scss">
 .base-div {
+  cursor: pointer;
+  padding: 8px;
+  border-radius: 4px;
+
   .label {
     white-space: nowrap;
     overflow: hidden;
@@ -72,9 +70,11 @@ onMounted(() => {
     font-size: 20px;
     line-height: 28px;
     color: #1f2329;
-    cursor: pointer;
     width: fit-content;
     min-width: 28px;
   }
+}
+.base-div:hover {
+  background: rgba(31, 35, 41, 0.1);
 }
 </style>

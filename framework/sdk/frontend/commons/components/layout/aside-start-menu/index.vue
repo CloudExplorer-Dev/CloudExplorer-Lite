@@ -28,7 +28,7 @@ const collapse = ref<boolean>(false);
 const root = ref<Module>({
   id: "",
   name: "服务列表",
-  icon: "caidan2",
+  icon: "icon_view-list_outlined",
   order: 0,
 });
 // 首页菜单

@@ -22,8 +22,10 @@ const tableLoading = ref<boolean>(false);
 const cloudAccount = ref<Array<SimpleMap<string>>>([]);
 const filterInstanceStatus = (value: string) => {
   let status = "";
-  let v = _.find(InstanceStatus.value, function(o) { return o.value == value; });
-  if(v){
+  const v = _.find(InstanceStatus.value, function (o) {
+    return o.value == value;
+  });
+  if (v) {
     status = v["text"];
   }
   return status;
@@ -221,7 +223,7 @@ const tableConfig = ref<TableConfig>({
         label="内存最大使用率(%)"
       ></el-table-column>
       <template #buttons>
-        <CeTableColumnSelect :columns="columns"/>
+        <CeTableColumnSelect :columns="columns" />
       </template>
     </ce-table>
   </div>

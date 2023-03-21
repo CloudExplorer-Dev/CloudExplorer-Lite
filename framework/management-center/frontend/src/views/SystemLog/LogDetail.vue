@@ -17,8 +17,14 @@ defineExpose({
 </style>
 
 <template>
-  <el-dialog v-model="dialogVisible" title="详情" width="50%" destroy-on-close class="custom-dialog"
-             style="min-width: 600px">
+  <el-dialog
+    v-model="dialogVisible"
+    title="详情"
+    width="50%"
+    destroy-on-close
+    class="custom-dialog"
+    style="min-width: 600px"
+  >
     <el-form :model="logInfo">
       <el-form-item label="详情:">
         <label class="detail-class">{{ logInfo.message }}</label>

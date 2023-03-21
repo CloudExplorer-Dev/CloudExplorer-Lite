@@ -3,9 +3,11 @@ import { usePermissionStore } from "@commons/stores/modules/permission";
 import _ from "lodash";
 import { computed, type ComputedRef } from "vue";
 import { store } from "@commons/stores";
+import { useUserStore } from "@commons/stores/modules/user";
 
 const moduleStore = useModuleStore(store);
 const permissionStore = usePermissionStore(store);
+const userStore = useUserStore(store);
 
 export class BaseModuleInfo {
   icon: string;
@@ -47,7 +49,10 @@ export class BaseModuleInfo {
     this.permissions = permissions;
 
     this.hasPermission = computed<boolean>(() => {
-      return permissionStore.hasPermission(this.permissions);
+      return (
+        _.includes(this.roles, userStore.currentRole) &&
+        permissionStore.hasPermission(this.permissions)
+      );
     });
     this.moduleActive = computed<boolean>(() => {
       return _.some(

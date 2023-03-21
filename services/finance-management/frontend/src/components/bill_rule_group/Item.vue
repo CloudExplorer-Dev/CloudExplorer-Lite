@@ -62,7 +62,11 @@
       "
       @click="deleteItem(item.id)"
     >
-      删除
+      <ce-icon
+        code="icon_delete-trash_outlined"
+        size="16px"
+        color="rgba(100, 106, 115, 1)"
+      ></ce-icon>
     </div>
   </el-form>
 </template>

@@ -44,4 +44,13 @@ public interface BillViewService {
      * @return 账单xx
      */
     Map<String, List<BillView>> billViewByRuleId(String ruleId, String month);
+
+
+    /**
+     * 获取账单云账号分账信息
+     * @return 账单云账号分账
+     */
+    Map<String, List<BillView>> billViewByCloudAccount();
+
+    Map<String, List<BillView>> currentMonthBillViewByCloudAccount();
 }

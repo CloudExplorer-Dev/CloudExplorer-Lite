@@ -41,6 +41,8 @@ public class Menu extends CeBaseObject {
     private boolean quickAccess;
     @Getter
     private String quickAccessName;
+    @Getter
+    private String quickAccessIcon;
 
     @Getter
     private List<MenuPermission> requiredPermissions;
@@ -168,6 +170,10 @@ public class Menu extends CeBaseObject {
         }
         public Builder quickAccessName(String quickAccessName) {
             this.menu.quickAccessName = quickAccessName;
+            return this;
+        }
+        public Builder quickAccessIcon(String quickAccessIcon) {
+            this.menu.quickAccessIcon = quickAccessIcon;
             return this;
         }
 

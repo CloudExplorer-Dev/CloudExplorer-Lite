@@ -134,6 +134,7 @@ public class MenuConstants {
                             .quickAccess(true)
                             .saveRecent(true)
                             .quickAccessName("创建云主机")
+                            .quickAccessIcon("icon_ecs_outlined")
                             .componentPath("/src/views/vm_cloud_server/create/catalog.vue")
                             .requiredPermission(new MenuPermission.Builder()
                                     .role(RoleConstants.ROLE.ADMIN)

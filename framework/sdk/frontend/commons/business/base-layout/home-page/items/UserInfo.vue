@@ -2,15 +2,11 @@
 import { useUserStore } from "@commons/stores/modules/user";
 import UserAvatar from "@commons/business/person-setting/UserAvatar.vue";
 import RoleTag from "@commons/business/person-setting/RoleTag.vue";
-import { useModuleStore } from "@commons/stores/modules/module";
-import { usePermissionStore } from "@commons/stores/modules/permission";
 import { BaseModuleInfo } from "@commons/business/base-layout/home-page/items/BaseModuleType";
 import BaseModule from "@commons/business/base-layout/home-page/items/BaseModule.vue";
 import { computed } from "vue";
 import _ from "lodash";
 
-const moduleStore = useModuleStore();
-const permissionStore = usePermissionStore();
 const userStore = useUserStore();
 
 const baseList: Array<BaseModuleInfo> = [
@@ -68,7 +64,7 @@ const showManageDivs = computed<boolean>(() => {
       </el-col>
     </el-row>
 
-    <el-row v-if="showManageDivs">
+    <el-row v-if="showManageDivs" :gutter="8">
       <template v-for="(info, index) in baseList" :key="index">
         <el-col :span="8" v-if="info.show.value">
           <BaseModule
@@ -86,9 +82,10 @@ const showManageDivs = computed<boolean>(() => {
 
 <style scoped lang="scss">
 .info-card {
+  background: #ffffff;
   border-radius: 4px;
-  background-color: #ffffff;
   padding: 24px;
+  overflow: hidden;
 
   .el-row {
     margin-bottom: 20px;

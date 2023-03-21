@@ -149,7 +149,7 @@ defineExpose({
   setData,
 });
 </script>
-<style lang="scss">
+<style lang="scss" scoped>
 .bill_rule_wapper {
   display: flex;
   flex-wrap: wrap;
@@ -158,6 +158,7 @@ defineExpose({
   padding: 10px;
 
   .content {
+    align-items: center;
     display: flex;
     width: 100%;
     .condition {

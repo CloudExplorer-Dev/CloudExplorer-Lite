@@ -1,13 +1,8 @@
 <script lang="ts" setup>
-import { useModuleStore } from "@commons/stores/modules/module";
-import { usePermissionStore } from "@commons/stores/modules/permission";
 import { BaseModuleInfo } from "@commons/business/base-layout/home-page/items/BaseModuleType";
 import BaseModule from "@commons/business/base-layout/home-page/items/BaseModule.vue";
 import { computed } from "vue";
 import _ from "lodash";
-
-const moduleStore = useModuleStore();
-const permissionStore = usePermissionStore();
 
 const baseList1: Array<BaseModuleInfo> = [
   new BaseModuleInfo(
@@ -31,7 +26,7 @@ const baseList1: Array<BaseModuleInfo> = [
   new BaseModuleInfo(
     "yuncunchu",
     "云磁盘",
-    ["ADMIN", "USER"],
+    ["ADMIN", "ORGADMIN", "USER"],
     "[vm-service]CLOUD_DISK:READ",
     "vm-service",
     "/vm-service/api/disk/count",
@@ -77,7 +72,7 @@ const showRow2 = computed<boolean>(() => {
   <div class="info-card" v-if="showRow1 || showRow2">
     <div class="title">我的资源</div>
 
-    <el-row v-if="showRow1">
+    <el-row v-if="showRow1" :gutter="8">
       <template v-for="(info, index) in baseList1" :key="index">
         <el-col :span="8" v-if="info.show.value">
           <BaseModule
@@ -91,7 +86,7 @@ const showRow2 = computed<boolean>(() => {
       </template>
     </el-row>
 
-    <el-row v-if="showRow2">
+    <el-row v-if="showRow2" :gutter="8">
       <template v-for="(info, index) in baseList2" :key="index">
         <el-col :span="8" v-if="info.show.value">
           <BaseModule
@@ -109,9 +104,10 @@ const showRow2 = computed<boolean>(() => {
 
 <style scoped lang="scss">
 .info-card {
+  background: #ffffff;
   border-radius: 4px;
-  background-color: #ffffff;
   padding: 24px;
+  overflow: hidden;
 
   .title {
     font-style: normal;

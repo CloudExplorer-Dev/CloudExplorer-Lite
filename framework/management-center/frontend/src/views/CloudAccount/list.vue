@@ -249,7 +249,7 @@ const syncVisible = ref<boolean>(false);
 const regions = ref<Array<Region>>([]);
 
 /**
- * 去创建云账号页面
+ * 去添加云账号页面
  */
 const create = () => {
   router.push({ name: "cloud_account_create" });
@@ -721,7 +721,7 @@ const syncAll = () => {
         @click="create"
         v-hasPermission="'[management-center]CLOUD_ACCOUNT:CREATE'"
       >
-        {{ t("commons.btn.create", "创建") }}
+        {{ t("commons.btn.add", "添加") }}
       </el-button>
       <el-button
         @click="batchDelete"
@@ -879,7 +879,7 @@ const syncAll = () => {
       fix
     />
     <template #buttons>
-      <CeTableColumnSelect :columns="columns"/>
+      <CeTableColumnSelect :columns="columns" />
     </template>
   </ce-table>
   <!-- 同步资源  START -->

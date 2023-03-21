@@ -16,6 +16,7 @@ import type { UpdateUserForm } from "@/views/UserManage/type";
 import type { FormInstance, FormRules } from "element-plus";
 import { ElMessage } from "element-plus";
 import CeIcon from "@commons/components/ce-icon/index.vue";
+import FormTitle from "@/componnets/from_title/FormTitle.vue";
 
 const router = useRouter();
 const { t } = useI18n();
@@ -303,9 +304,7 @@ onMounted(() => {
         >
           <el-row :gutter="10">
             <el-col :span="12">
-              <p class="tip">
-                {{ t("commons.basic_info", "基本信息") }}
-              </p>
+              <FormTitle>{{ t("commons.basic_info", "基本信息") }}</FormTitle>
             </el-col>
             <el-col :span="11" style="text-align: end">
               <el-button
@@ -400,9 +399,7 @@ onMounted(() => {
           </el-row>
           <el-row :gutter="10">
             <el-col :span="12">
-              <p class="tip">
-                {{ $t("user.has_role") }}
-              </p>
+              <FormTitle>{{ $t("user.has_role") }}</FormTitle>
             </el-col>
             <el-col :span="11" style="text-align: end">
               <el-button

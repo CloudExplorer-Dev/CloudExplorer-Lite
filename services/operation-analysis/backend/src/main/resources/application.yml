@@ -48,4 +48,4 @@ eureka:
       name_zh-tw: 运营分析
       name_en: Operation Analysis
       basePath: ${server.servlet.context-path}/
-      icon: fenxi3
+      icon: icon_operation-analysis_outlined

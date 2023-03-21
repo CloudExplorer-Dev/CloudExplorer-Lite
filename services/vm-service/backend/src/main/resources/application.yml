@@ -48,4 +48,4 @@ eureka:
       name_zh-tw: 云主机服务
       name_en: Virtual Machine Service
       basePath: ${server.servlet.context-path}/
-      icon: yunzhuji2
+      icon: icon_ecs_outlined

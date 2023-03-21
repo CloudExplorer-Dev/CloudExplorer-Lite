@@ -5,10 +5,10 @@ import UserInfo from "./items/UserInfo.vue";
 import MyResources from "./items/MyResources.vue";
 import QuickAccess from "./items/QuickAccess.vue";
 
-import BillModuleGroup from "./items/BillModuleGroup.vue";
+import BillModuleGroup from "./items/bill/BillModuleGroup.vue";
 import SecurityInfo from "./items/SecurityInfo.vue";
 
-import BillTrend from "./items/BillTrend.vue";
+import BillTrend from "./items/bill/BillTrend.vue";
 import ServerIncreaseTrend from "./items/ServerIncreaseTrend.vue";
 import ServerDistribution from "./items/ServerDistribution.vue";
 import ServerMetrics from "./items/ServerMetrics.vue";
@@ -60,10 +60,17 @@ onMounted(() => {
     <el-row :gutter="20">
       <el-col :span="16">
         <QuickAccess />
+        <SecurityInfo />
+        <BillTrend
+          :need-roles="['ADMIN', 'ORGADMIN']"
+          :getHistoryTrend="getHistoryTrend"
+          head-position="left"
+        />
       </el-col>
       <el-col :span="8">
         <UserInfo />
         <MyResources />
+        <BillModuleGroup />
       </el-col>
     </el-row>
 

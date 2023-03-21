@@ -291,12 +291,16 @@ const tableConfig = ref<TableConfig>({
     />
     <fu-table-operations v-bind="tableConfig.tableOperations" fixed="right" />
     <template #buttons>
-      <CeTableColumnSelect :columns="columns"/>
+      <CeTableColumnSelect :columns="columns" />
     </template>
   </ce-table>
 
   <!-- 修改密码弹出框 -->
-  <ModifyPwd ref="modifyPwdRef" :userId="activeUserId" style="min-width: 600px"/>
+  <ModifyPwd
+    ref="modifyPwdRef"
+    :userId="activeUserId"
+    style="min-width: 600px"
+  />
 
   <!-- 通知设置弹出框 -->
   <el-dialog

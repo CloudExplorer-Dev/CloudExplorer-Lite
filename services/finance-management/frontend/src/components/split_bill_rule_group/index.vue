@@ -37,7 +37,9 @@
       </div>
     </div>
     <div class="add_rule_group">
-      <div @click="addRuleGroup">添加规则组</div>
+      <div @click="addRuleGroup">
+        <ce-icon code="icon_add_outlined" size="12px"></ce-icon>添加组
+      </div>
     </div>
   </div>
   <layout-container :border="false" style="margin-top: 20px"
@@ -201,7 +203,7 @@ const submit = () => {
 }
 .bill_rule_group_wapper {
   width: calc(100% - 2px);
-  min-width: 640px;
+  min-width: 650px;
   display: flex;
   justify-content: center;
   flex-wrap: wrap;
@@ -210,7 +212,8 @@ const submit = () => {
     width: 100%;
     display: flex;
     .condition {
-      height: 100%;
+      margin-top: 20px;
+      height: calc(100% - 20px);
       width: 80px;
       display: flex;
       align-items: center;
@@ -227,6 +230,8 @@ const submit = () => {
     justify-content: center;
     height: 40px;
     align-items: center;
+    color: #3370ff;
+    margin-left: 20px;
     div {
       cursor: pointer;
     }

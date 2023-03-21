@@ -11,7 +11,7 @@
     <el-row :gutter="10">
       <el-col :span="24">
         <el-form-item label="名称" label-width="100px" prop="name">
-          <el-input v-model="_roleFormData.name" v-if="editInfo"/>
+          <el-input v-model="_roleFormData.name" v-if="editInfo" />
           <span v-if="!editInfo">{{ _roleData.name }}</span>
         </el-form-item>
       </el-col>

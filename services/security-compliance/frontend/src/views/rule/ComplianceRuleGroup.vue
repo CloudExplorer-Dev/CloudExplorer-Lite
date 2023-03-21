@@ -21,7 +21,7 @@
       <el-table-column prop="description" label="规则描述" />
       <fu-table-operations v-bind="tableConfig.tableOperations" fix />
       <template #buttons>
-        <CeTableColumnSelect :columns="columns"/>
+        <CeTableColumnSelect :columns="columns" />
       </template>
     </ce-table>
     <!-- 创建 -->

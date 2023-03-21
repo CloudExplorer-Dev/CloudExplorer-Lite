@@ -7,7 +7,10 @@ import co.elastic.clients.elasticsearch._types.query_dsl.Query;
 import co.elastic.clients.elasticsearch._types.query_dsl.ScriptQuery;
 import co.elastic.clients.elasticsearch._types.query_dsl.TermQuery;
 import co.elastic.clients.util.ObjectBuilder;
+import com.fit2cloud.base.entity.Organization;
 import com.fit2cloud.base.service.IBaseOrganizationService;
+import com.fit2cloud.common.cache.OrganizationCache;
+import com.fit2cloud.common.cache.WorkSpaceCache;
 import com.fit2cloud.common.constants.RoleConstants;
 import com.fit2cloud.common.exception.Fit2cloudException;
 import com.fit2cloud.common.util.*;
@@ -122,6 +125,33 @@ public class BillViewServiceImpl implements BillViewService {
         return searchBillView(billRule, MonthUtil.getHistoryMonth(month, 6), "realTotalCost");
     }
 
+    @Override
+    public Map<String, List<BillView>> billViewByCloudAccount() {
+        BillRule cloudAccountBillRule = getCloudAccountBillRule();
+        return searchBillView(cloudAccountBillRule, MonthUtil.getHistoryMonth(6), "realTotalCost");
+    }
+
+    @Override
+    public Map<String, List<BillView>> currentMonthBillViewByCloudAccount() {
+        BillRule cloudAccountBillRule = getCloudAccountBillRule();
+        return searchBillView(cloudAccountBillRule, MonthUtil.getHistoryMonth(1), "realTotalCost");
+    }
+
+    /**
+     * 获取云账号规则分账规则
+     *
+     * @return 云账号分账规则
+     */
+    private BillRule getCloudAccountBillRule() {
+        BillRule billRule = new BillRule();
+        Group group = new Group();
+        group.setField("cloudAccountId");
+        group.setName("云账号");
+        group.setMissName(null);
+        billRule.setGroups(List.of(group));
+        return billRule;
+    }
+
 
     /**
      * 解析聚合结果
@@ -131,6 +161,8 @@ public class BillViewServiceImpl implements BillViewService {
      * @return 解析后的聚合结果
      */
     public Map<String, List<BillView>> analysisBillView(AggregationsContainer<?> aggregations, NativeQuery query, Function<Map<String, Aggregate>, SumAggregate> getSumAggregate) {
+        OrganizationCache.updateCache();
+        WorkSpaceCache.updateCache();
         ElasticsearchAggregations aggr = (ElasticsearchAggregations) aggregations;
         DateHistogramAggregate dateHistogramAggregate = aggr.aggregations().get(0).aggregation().getAggregate().dateHistogram();
         return dateHistogramAggregate.buckets().array().stream().map(dateHistogramBucket -> {
