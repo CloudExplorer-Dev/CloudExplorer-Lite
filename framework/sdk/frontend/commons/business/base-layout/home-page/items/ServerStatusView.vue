@@ -225,14 +225,17 @@ const option = computed<ECBasicOption>(() => {
           show: false,
         },
         data: data.value,
-        color: interpolationColor(
-          [
-            "rgba(98, 210, 86, 1)",
-            "rgba(222, 224, 227, 1)",
-            "rgba(250, 211, 85, 1)",
-          ],
-          data.value.length
-        ),
+        color:
+          status.value.length === 0
+            ? ["rgba(187, 191, 196, 1)", "rgba(187, 191, 196, 1)"]
+            : interpolationColor(
+                [
+                  "rgba(98, 210, 86, 1)",
+                  "rgba(222, 224, 227, 1)",
+                  "rgba(250, 211, 85, 1)",
+                ],
+                data.value.length
+              ),
       },
     ],
   };
