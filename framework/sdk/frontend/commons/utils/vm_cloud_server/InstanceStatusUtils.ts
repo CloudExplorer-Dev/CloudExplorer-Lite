@@ -49,7 +49,7 @@ const instanceStatusListForTableSelect = computed<Array<InstanceStatus>>(() => {
 function getStatusName(status: string) {
   const o = _.find(instanceStatusList.value, (s) => s.status === status);
   if (o) {
-    return o.name?.value;
+    return _.defaultTo(o.name?.value, status);
   } else {
     return status;
   }
