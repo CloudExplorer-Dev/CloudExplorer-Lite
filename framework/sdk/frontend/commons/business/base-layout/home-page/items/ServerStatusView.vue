@@ -13,8 +13,7 @@ const props = withDefaults(
 );
 
 import { computed, onMounted, ref } from "vue";
-import API from "@commons/api/vm_cloud_server/index";
-import CurrencyFormat from "@commons/utils/currencyFormat";
+import API, { type StatusCount } from "@commons/api/vm_cloud_server/index";
 
 import VChart from "vue-echarts";
 
@@ -25,6 +24,7 @@ import type { ECBasicOption } from "echarts/types/src/util/types";
 import { useModuleStore } from "@commons/stores/modules/module";
 import { usePermissionStore } from "@commons/stores/modules/permission";
 import { useUserStore } from "@commons/stores/modules/user";
+import InstanceStatusUtils from "@commons/utils/vm_cloud_server/InstanceStatusUtils";
 
 const moduleStore = useModuleStore();
 const permissionStore = usePermissionStore();
@@ -42,33 +42,50 @@ const show = computed<boolean>(
 
 const loading = ref<boolean>(false);
 
-const bills = ref<any>();
+const status = ref<Array<StatusCount>>([]);
 
 interface EchartValue {
+  key: string;
   name: string;
   value: number;
-
-  empty?: boolean;
 }
 
 const data = computed<Array<EchartValue>>(() => {
-  const result: Array<EchartValue> = [];
-  const list = _.head(_.values(bills.value));
-  _.forEach(list, (o) => {
-    result.push({
-      name: _.head(o.billGroupDetails as Array<any>)?.value as string,
-      value: o.value as number,
-    });
-  });
+  const result: Array<EchartValue> = [
+    {
+      key: "Running",
+      name: InstanceStatusUtils.getStatusName("Running"),
+      value: _.defaultTo(
+        _.find(status.value, (s) => s.status === "Running")?.count,
+        0
+      ),
+    },
+    {
+      key: "Stopped",
+      name: InstanceStatusUtils.getStatusName("Stopped"),
+      value: _.defaultTo(
+        _.find(status.value, (s) => s.status === "Stopped")?.count,
+        0
+      ),
+    },
+  ];
 
-  if (result.length === 0) {
+  const otherCount = _.sum(
+    _.map(
+      _.filter(
+        status.value,
+        (s) => s.status !== "Running" && s.status !== "Stopped"
+      ),
+      (s) => s.count
+    )
+  );
+  if (otherCount > 0) {
     result.push({
-      name: "暂无数据",
-      value: 0,
-      empty: true,
+      key: "other",
+      name: "其他",
+      value: otherCount,
     });
   }
-
   return result;
 });
 
@@ -77,8 +94,7 @@ function getCurrentMonthBill() {
     return;
   }
   API.getCountsGroupByStatus(loading).then((ok) => {
-    //bills.value = ok.data;
-    console.log(ok.data);
+    status.value = ok.data;
   });
 }
 
@@ -98,7 +114,7 @@ const option = computed<ECBasicOption>(() => {
         if (p.data?.empty) {
           return `${p.name}`;
         }
-        return `${p.name}:${CurrencyFormat.format(p.value)}`;
+        return `${p.name}:${p.value}`;
       },
     },
     legend: {
@@ -143,18 +159,13 @@ const option = computed<ECBasicOption>(() => {
         },
       },
       formatter: (name: string) => {
-        const empty = _.head(data.value)?.empty;
-        if (empty) {
-          return `{oneone|${_.head(data.value)?.name}}`;
-        }
-
         const dataItem = data.value.find((b) => b.name === name);
 
         return `{oneone|${
           (dataItem?.name as string).length < 8
             ? dataItem?.name
             : dataItem?.name.substring(0, 7) + "..."
-        }}  {twotwo|${CurrencyFormat.format(dataItem?.value)}}`;
+        }}  {twotwo|${dataItem?.value}}`;
       },
     },
     series: [
@@ -178,15 +189,11 @@ const option = computed<ECBasicOption>(() => {
           fontSize: "12px",
           color: "rgba(100, 106, 115, 1)",
           formatter: () => {
-            const empty = _.head(data.value)?.empty;
-            if (empty) {
-              return `{title|总费用}\r\n{value|-}`;
-            }
             const sum = data.value
               .filter((d) => (selected as SimpleMap<boolean>)[d.name])
               .map((a) => a.value)
               .reduce((p, n) => p + n, 0);
-            return `{title|总费用}\r\n{value|${CurrencyFormat.format(sum)}}`;
+            return `{title|总数（台）}\r\n{value|${sum}}`;
           },
           rich: {
             title: {
@@ -201,14 +208,12 @@ const option = computed<ECBasicOption>(() => {
           },
         },
         emphasis: {
-          disabled: !!_.head(data.value)?.empty,
+          disabled: status.value.length === 0,
           label: {
             show: true,
             width: 110,
             formatter: (a: any) => {
-              return `{title|${a.name}}\r\n{value|${CurrencyFormat.format(
-                a.value
-              )}}`;
+              return `{title|${a.name}}\r\n{value|${a.value}}`;
             },
             fontSize: "12px",
             fontWeight: "500",
@@ -220,18 +225,14 @@ const option = computed<ECBasicOption>(() => {
           show: false,
         },
         data: data.value,
-        color: _.head(data.value)?.empty
-          ? ["rgba(187, 191, 196, 1)"]
-          : interpolationColor(
-              [
-                "rgba(148, 90, 246, 1)",
-                "rgba(78, 131, 253, 1)",
-                "rgba(250, 211, 85, 1)",
-                "rgba(20, 225, 198, 1)",
-                "rgba(80, 206, 251, 1)",
-              ],
-              data.value.length
-            ),
+        color: interpolationColor(
+          [
+            "rgba(98, 210, 86, 1)",
+            "rgba(222, 224, 227, 1)",
+            "rgba(250, 211, 85, 1)",
+          ],
+          data.value.length
+        ),
       },
     ],
   };
