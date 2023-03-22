@@ -1,14 +1,9 @@
 <script setup lang="ts">
+import { isNotEmpty } from "@/utils/util";
+
 const props = defineProps<{
   securityGroupIds: string;
 }>();
-
-const isNotEmpty = (value: any) => {
-  if (value !== null && value !== "null" && value !== undefined) {
-    return true;
-  }
-  return false;
-};
 </script>
 <template>
   <el-dropdown :hide-on-click="false" max-height="100px">

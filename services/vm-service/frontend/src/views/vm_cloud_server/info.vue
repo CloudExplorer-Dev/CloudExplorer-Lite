@@ -3,6 +3,7 @@ import { onMounted, ref } from "vue";
 import VmCloudServerApi from "@/api/vm_cloud_server";
 import _ from "lodash";
 import DetailPage from "@/views/detail-page/index.vue";
+import { filterChargeType } from "@/utils/util";
 
 const loading = ref<boolean>(false);
 const props = defineProps<{
@@ -12,23 +13,6 @@ const props = defineProps<{
 const infoVmCloudServer = ref<any>({});
 const basicInfo = ref();
 const networkInfo = ref();
-
-const filterChargeType = (instanceChargeType: string) => {
-  let text = instanceChargeType;
-  switch (instanceChargeType) {
-    case "PostPaid":
-      text = "按需计费";
-      break;
-    case "PrePaid":
-      text = "包年/包月";
-      break;
-    case "SpotPaid":
-      text = "竞价计费";
-      break;
-    default:
-  }
-  return text;
-};
 
 onMounted(() => {
   VmCloudServerApi.getVmCloudServerById(props.id, loading).then((res) => {

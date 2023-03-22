@@ -14,6 +14,7 @@ interface VmCloudDiskVO {
   accountId: string;
   datastoreId?: string;
   instanceUuid: string;
+  serverId?: string; // vm_cloud_server 主键
   vmInstanceName?: string;
   workspaceId?: string;
   sourceId?: string;
@@ -23,6 +24,7 @@ interface VmCloudDiskVO {
   deleteWithInstance?: string;
   createTime?: string;
   updateTime?: string;
+  organizationName?: string;
   workspaceName?: string;
   accountName?: string;
   platform: string;

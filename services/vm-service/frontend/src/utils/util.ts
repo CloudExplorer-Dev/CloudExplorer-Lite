@@ -19,3 +19,35 @@ export const classifyIP = (ipArray: string, remoteIp: string) => {
       return a.type - b.type;
     });
 };
+
+/**
+ * 判空
+ * @param value
+ */
+export const isNotEmpty = (value: any) => {
+  if (value !== null && value !== "null" && value !== undefined) {
+    return true;
+  }
+  return false;
+};
+
+/**
+ * 收费类型
+ * @param instanceChargeType
+ */
+export const filterChargeType = (instanceChargeType?: string) => {
+  let text = instanceChargeType;
+  switch (instanceChargeType) {
+    case "PostPaid":
+      text = "按需计费";
+      break;
+    case "PrePaid":
+      text = "包年/包月";
+      break;
+    case "SpotPaid":
+      text = "竞价计费";
+      break;
+    default:
+  }
+  return text;
+};

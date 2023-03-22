@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref } from "vue";
 import type { TabsPaneContext } from "element-plus";
-import BasicInfo from "@/views/vm_cloud_disk/BasicInfo.vue";
+import Info from "@/views/vm_cloud_disk/info.vue";
 import { useI18n } from "vue-i18n";
 
 const { t } = useI18n();
@@ -20,8 +20,8 @@ const handleClick = (tab: TabsPaneContext, event: Event) => {
     @tab-click="handleClick"
     height="100%"
   >
-    <el-tab-pane :label="t('commons.basic_info', '基本信息')" name="BasicInfo">
-      <BasicInfo />
+    <el-tab-pane label="详情" name="BasicInfo">
+      <Info />
     </el-tab-pane>
   </el-tabs>
 </template>

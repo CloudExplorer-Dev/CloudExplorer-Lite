@@ -3,7 +3,8 @@ import InstanceStatus from "./InstanceStatus.vue";
 import PlatformIcon from "./PlatformIcon.vue";
 import IpArray from "./IpArray.vue";
 import SecurityGroup from "./SecurityGroup.vue";
-import { ref } from "vue";
+import VmLink from "./VmLink.vue";
+import { reactive, ref } from "vue";
 
 const props = defineProps<{
   content: string;
@@ -16,19 +17,29 @@ const componentMap = ref({
   PlatformIcon: PlatformIcon,
   IpArray: IpArray,
   SecurityGroup: SecurityGroup,
+  VmLink: VmLink,
 });
 
 const tooltipRef = ref();
 const visible = ref(false); // 控制 tooltip 显示或者隐藏
 const currentItem = ref(); // 鼠标选中元素的值
 const spanRef = ref(); // 鼠标选中的元素
-const showTips = (item: any, e: any) => {
+const divRef = ref();
+const showTips = (index: number, e: Event) => {
   spanRef.value = e.currentTarget;
+  divRef.value = divRefList[index];
   const spanWidth = spanRef.value.offsetWidth;
-  if (spanWidth > 200) {
+  const divWidth = divRef.value.offsetWidth;
+  if (spanWidth >= Math.floor(divWidth * 0.9)) {
     visible.value = true;
   }
-  currentItem.value = item;
+  currentItem.value = props.content[index];
+};
+const divRefList = reactive<any>([]);
+const setDivRef = (el: any) => {
+  if (el) {
+    divRefList.push(el);
+  }
 };
 </script>
 <template>
@@ -38,29 +49,29 @@ const showTips = (item: any, e: any) => {
         <p class="label">
           {{ item[label] }}
         </p>
-        <div class="value">
+        <div class="value" :ref="setDivRef">
           <span
             v-if="!item.hideValue"
             class="truncate"
-            @mouseover="showTips(item, $event)"
+            @mouseover="showTips(index, $event)"
             @mouseout="visible = false"
           >
             {{
               item[value] === null || item[value] === "null" ? "-" : item[value]
             }}
           </span>
-          <div>
-            <component
-              v-bind:is="componentMap[com]"
-              v-for="(com, index) in item.components"
-              :key="index"
-              :instanceStatus="item.instanceStatus"
-              :platform="item.platform"
-              :remote-ip="item.remoteIp"
-              :ip-array="item.value"
-              :securityGroupIds="item.value"
-            />
-          </div>
+          <component
+            v-bind:is="componentMap[com]"
+            v-for="(com, index) in item.components"
+            :key="index"
+            :instanceStatus="item.instanceStatus"
+            :platform="item.platform"
+            :remote-ip="item.remoteIp"
+            :ip-array="item.value"
+            :securityGroupIds="item.value"
+            :serverId="item.serverId"
+            :serverName="item.value"
+          />
         </div>
       </div>
     </div>

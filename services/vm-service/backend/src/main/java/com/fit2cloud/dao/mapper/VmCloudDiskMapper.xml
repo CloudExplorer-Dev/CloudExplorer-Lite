@@ -46,6 +46,7 @@
                 END AS status,
             vm_cloud_disk.*,
             vm_cloud_server.instance_name,
+            vm_cloud_server.id as server_id,
             cloud_account.`name` AS account_name,
             cloud_account.platform,
             IF(org_workspace.type = "workspace",org_workspace.id,NULL) as workspace_id,
