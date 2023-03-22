@@ -32,12 +32,7 @@
         </el-row>
       </el-col>
       <el-col :span="18">
-        <BillTrend
-          :need-roles="['ADMIN', 'ORGADMIN', 'USER']"
-          :permission="'[finance-management]BILL_ViEW:READ'"
-          module="finance-management"
-          :getHistoryTrend="billViewAPi.getHistoryTrend"
-        />
+        <BillTrend />
       </el-col>
     </el-row>
 
@@ -113,8 +108,7 @@ import billViewAPi from "@/api/bill_view/index";
 import billRuleApi from "@/api/bill_rule/index";
 import type { BillRule } from "@/api/bill_rule/type";
 import ViewTable from "@/views/bill_view/components/ViewTable.vue";
-import _ from "lodash";
-import BillTrend from "@commons/business/base-layout/home-page/items/BillTrend.vue";
+import BillTrend from "@commons/business/base-layout/home-page/items/bill/BillTrend.vue";
 import ViewTabs from "@/views/bill_view/components/ViewTabs.vue";
 import ViewExpensesAggsCard from "@/views/bill_view/components/ViewExpensesAggsCard.vue";
 import ViewPieChart from "@/views/bill_view/components/ViewPieChart.vue";

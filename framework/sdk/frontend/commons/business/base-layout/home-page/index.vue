@@ -10,46 +10,7 @@ import SecurityInfo from "./items/SecurityInfo.vue";
 
 import BillTrend from "./items/bill/BillTrend.vue";
 import ServerIncreaseTrend from "./items/ServerIncreaseTrend.vue";
-import ServerDistribution from "./items/ServerDistribution.vue";
-import ServerMetrics from "./items/ServerMetrics.vue";
 import ServerOptimization from "./items/ServerOptimization.vue";
-
-import { getHistoryTrend } from "./items/api";
-import _ from "lodash";
-
-import { useUserStore } from "@commons/stores/modules/user";
-import { useModuleStore } from "@commons/stores/modules/module";
-import { usePermissionStore } from "@commons/stores/modules/permission";
-
-const userStore = useUserStore();
-const moduleStore = useModuleStore();
-const permissionStore = usePermissionStore();
-
-function show(module: string, permission: any, roles: string[]): boolean {
-  return (
-    _.some(moduleStore.runningModules, (m) => m.id === module) &&
-    permissionStore.hasPermission(permission) &&
-    _.includes(roles, userStore.currentRole)
-  );
-}
-
-const adminShowBillTrend = computed<boolean>(() => {
-  return show("finance-management", "[finance-management]BILL_ViEW:READ", [
-    "ADMIN",
-    "ORGADMIN",
-  ]);
-});
-
-const adminShowServerIncreaseTrend = computed<boolean>(() => {
-  return show(
-    "operation-analysis",
-    [
-      "[operation-analysis]BASE_RESOURCE_ANALYSIS:READ",
-      "[operation-analysis]OVERVIEW:READ",
-    ],
-    ["ADMIN", "ORGADMIN"]
-  );
-});
 
 onMounted(() => {
   console.log("home page load!");
@@ -61,11 +22,9 @@ onMounted(() => {
       <el-col :span="16">
         <QuickAccess />
         <SecurityInfo />
-        <BillTrend
-          :need-roles="['ADMIN', 'ORGADMIN']"
-          :getHistoryTrend="getHistoryTrend"
-          head-position="left"
-        />
+        <ServerOptimization />
+        <BillTrend head-position="left" />
+        <ServerIncreaseTrend />
       </el-col>
       <el-col :span="8">
         <UserInfo />
@@ -73,76 +32,6 @@ onMounted(() => {
         <BillModuleGroup />
       </el-col>
     </el-row>
-
-    <!--    <div class="content">
-      <el-row :gutter="20" type="flex">
-        <el-col :span="16">
-          <div class="flex-content">
-            <BillTrend
-              class="flex-div-1 divide-info"
-              :need-roles="['USER']"
-              :getHistoryTrend="getHistoryTrend"
-              head-position="left"
-            />
-          </div>
-        </el-col>
-        <el-col :span="8">
-          <div class="flex-content">
-            <BillModuleGroup />
-            <SecurityInfo class="flex-div-2 divide-info" />
-            <ServerDistribution
-              class="flex-div-2 divide-info"
-              :need-roles="['USER']"
-              type="byAccount"
-              title="资源分布"
-            />
-          </div>
-        </el-col>
-      </el-row>
-      <el-row
-        :gutter="20"
-        type="flex"
-        v-if="adminShowBillTrend || adminShowServerIncreaseTrend"
-      >
-        <el-col :span="adminShowBillTrend ? 12 : 24">
-          <ServerIncreaseTrend
-            style="height: 100%"
-            :need-roles="['ADMIN', 'ORGADMIN']"
-          />
-        </el-col>
-        <el-col :span="adminShowServerIncreaseTrend ? 12 : 24">
-          <BillTrend
-            style="height: 100%"
-            :need-roles="['ADMIN', 'ORGADMIN']"
-            :getHistoryTrend="getHistoryTrend"
-            head-position="left"
-          />
-        </el-col>
-      </el-row>
-      <el-row :gutter="20" type="flex" v-if="userStore.currentRole === 'USER'">
-        <el-col :span="6">
-          <ServerDistribution
-            class="flex-div-2 divide-info"
-            :need-roles="['USER']"
-            type="byStatus"
-            title="我的资源"
-            :height="300"
-          />
-        </el-col>
-        <el-col :span="18">
-          <ServerMetrics
-            class="flex-div-2 divide-info"
-            :need-roles="['USER']"
-            title="资源监控"
-          />
-        </el-col>
-      </el-row>
-      <el-row :gutter="20" type="flex">
-        <el-col :span="24">
-          <ServerOptimization />
-        </el-col>
-      </el-row>
-    </div>-->
   </el-container>
 </template>
 

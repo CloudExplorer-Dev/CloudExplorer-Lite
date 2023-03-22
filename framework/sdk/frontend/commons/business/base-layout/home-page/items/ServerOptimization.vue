@@ -19,7 +19,6 @@ const props = withDefaults(
     permission?: any;
     module?: string;
     title?: string;
-    cardShadow?: "always" | "hover" | "never";
   }>(),
   {
     needRoles: () => ["ADMIN"],
@@ -28,8 +27,7 @@ const props = withDefaults(
       "[operation-analysis]OVERVIEW:READ",
     ],
     module: "operation-analysis",
-    title: "优化建议",
-    cardShadow: "always",
+    title: "云主机优化建议",
   }
 );
 
@@ -101,7 +99,7 @@ onMounted(() => {
 });
 </script>
 <template>
-  <el-card class="server-optimization" v-if="show" :shadow="cardShadow">
+  <div class="info-card" v-if="show">
     <div class="echart-title">
       <div class="echart-title-left">{{ title }}</div>
     </div>
@@ -122,12 +120,15 @@ onMounted(() => {
         </el-card>
       </el-col>
     </el-row>
-  </el-card>
+  </div>
 </template>
 
 <style scoped lang="scss">
-.server-optimization {
-  height: 100%;
+.info-card {
+  background: #ffffff;
+  border-radius: 4px;
+  padding: 24px;
+  overflow: hidden;
 
   .echart-title {
     height: 20px;
