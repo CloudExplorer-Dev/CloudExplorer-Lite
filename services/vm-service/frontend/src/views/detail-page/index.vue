@@ -4,7 +4,7 @@ import PlatformIcon from "./PlatformIcon.vue";
 import IpArray from "./IpArray.vue";
 import SecurityGroup from "./SecurityGroup.vue";
 import VmLink from "./VmLink.vue";
-import { reactive, ref } from "vue";
+import { ref } from "vue";
 
 const props = defineProps<{
   content: string;
@@ -27,19 +27,12 @@ const spanRef = ref(); // 鼠标选中的元素
 const divRef = ref();
 const showTips = (index: number, e: Event) => {
   spanRef.value = e.currentTarget;
-  divRef.value = divRefList[index];
   const spanWidth = spanRef.value.offsetWidth;
-  const divWidth = divRef.value.offsetWidth;
-  if (spanWidth >= Math.floor(divWidth * 0.9)) {
+  const spanTextWidth = spanRef.value.scrollWidth;
+  if (spanTextWidth > spanWidth) {
     visible.value = true;
   }
   currentItem.value = props.content[index];
-};
-const divRefList = reactive<any>([]);
-const setDivRef = (el: any) => {
-  if (el) {
-    divRefList.push(el);
-  }
 };
 </script>
 <template>
@@ -49,7 +42,7 @@ const setDivRef = (el: any) => {
         <p class="label">
           {{ item[label] }}
         </p>
-        <div class="value" :ref="setDivRef">
+        <div class="value">
           <span
             v-if="!item.hideValue"
             class="truncate"
