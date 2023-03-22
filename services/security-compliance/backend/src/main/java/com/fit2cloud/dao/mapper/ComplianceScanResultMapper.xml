@@ -161,27 +161,22 @@
               GROUP BY
                   compliance_scan_resource_result.resource_instance_id) t1
     </select>
-    <select id="ruleCount" resultType="com.fit2cloud.dao.entity.ComplianceCount">
-        SELECT 	COUNT(*) AS total,
-                  SUM(
-                          IF (
-                                      tmp.`status` = 1,
-                                      1,
-                                      0
-                              )
-                      ) AS compliance_count,
-                  SUM(
-                          IF (
-                                      tmp.`status` = 2,
-                                      1,
-                                      0
-                              )
-                      ) AS not_compliance_count FROM (
-                                                         SELECT  compliance_rule.*, MAX(compliance_scan_result.`status`) as `status`
-                                                         FROM
-                                                             compliance_rule compliance_rule
-                                                                 LEFT JOIN compliance_scan_result compliance_scan_result ON compliance_scan_result.compliance_rule_id = compliance_rule.id
-                                                         GROUP BY compliance_rule.id
-                                                     ) tmp
+    <select id="ruleCount" resultType="com.fit2cloud.dao.entity.ComplianceRuleCount">
+        SELECT risk_level                      as risk_level,
+               COUNT(*)                        AS total,
+               SUM(IF(tmp.`status` = 1, 1, 0)) AS compliance_count,
+               SUM(IF(tmp.`status` = 2, 1, 0)) AS not_compliance_count
+        FROM (SELECT MAX(
+                             compliance_scan_result.`status`
+                         )                      AS `status`,
+                     compliance_rule.risk_level as risk_level
+              FROM compliance_rule compliance_rule
+                       LEFT JOIN compliance_scan_result compliance_scan_result
+                                 ON compliance_scan_result.compliance_rule_id = compliance_rule.id
+                  ${ew.customSqlSegment}
+              GROUP BY
+                  compliance_rule.id,
+                  compliance_rule.risk_level) tmp
+        GROUP BY tmp.risk_level
     </select>
 </mapper>

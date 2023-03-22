@@ -5,6 +5,9 @@ import com.fit2cloud.controller.request.view.ComplianceCountRequest;
 import com.fit2cloud.controller.request.view.ComplianceGroupRequest;
 import com.fit2cloud.controller.response.view.ComplianceViewCountResponse;
 import com.fit2cloud.controller.response.view.ComplianceViewGroupResponse;
+import com.fit2cloud.controller.response.view.ComplianceViewRuleCountResponse;
+import com.fit2cloud.dao.constants.RiskLevel;
+import com.fit2cloud.dao.entity.ComplianceRuleCount;
 import com.fit2cloud.service.IComplianceViewService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -18,6 +21,7 @@ import org.springframework.web.bind.annotation.RestController;
 import javax.annotation.Resource;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 
 /**
  * {@code @Author:张少虎}
@@ -44,9 +48,9 @@ public class ComplianceViewController {
     @GetMapping("/rule/count")
     @ApiOperation("获取规则统计数据")
     @PreAuthorize("hasAnyCePermission('OVERVIEW:READ')")
-    public ResultHolder<ComplianceViewCountResponse> ruleCount(ComplianceCountRequest request) {
-        ComplianceViewCountResponse complianceViewCountResponse = complianceViewService.ruleCount(request);
-        return ResultHolder.success(complianceViewCountResponse);
+    public ResultHolder<Map<RiskLevel, ComplianceViewRuleCountResponse>> ruleCount(ComplianceCountRequest request) {
+        Map<RiskLevel, ComplianceViewRuleCountResponse> riskLevelComplianceViewRuleCountResponseMap = complianceViewService.ruleCount(request);
+        return ResultHolder.success(riskLevelComplianceViewRuleCountResponseMap);
     }
 
     @GetMapping("/resource/group")
@@ -56,4 +60,5 @@ public class ComplianceViewController {
         List<ComplianceViewGroupResponse> res = complianceViewService.resourceGroup(request);
         return ResultHolder.success(res);
     }
+
 }

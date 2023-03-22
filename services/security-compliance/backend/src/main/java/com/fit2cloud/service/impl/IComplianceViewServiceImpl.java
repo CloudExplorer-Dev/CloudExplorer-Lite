@@ -9,22 +9,25 @@ import com.fit2cloud.controller.request.view.ComplianceCountRequest;
 import com.fit2cloud.controller.request.view.ComplianceGroupRequest;
 import com.fit2cloud.controller.response.view.ComplianceViewCountResponse;
 import com.fit2cloud.controller.response.view.ComplianceViewGroupResponse;
-import com.fit2cloud.dao.entity.ComplianceCount;
-import com.fit2cloud.dao.entity.ComplianceGroup;
-import com.fit2cloud.dao.entity.ComplianceScanResourceResult;
-import com.fit2cloud.dao.entity.ComplianceScanResult;
+import com.fit2cloud.controller.response.view.ComplianceViewRuleCountResponse;
+import com.fit2cloud.dao.constants.RiskLevel;
+import com.fit2cloud.dao.entity.*;
 import com.fit2cloud.dao.mapper.ComplianceScanResultMapper;
 import com.fit2cloud.service.IComplianceRuleGroupService;
 import com.fit2cloud.service.IComplianceRuleService;
 import com.fit2cloud.service.IComplianceViewService;
 import org.apache.commons.collections4.keyvalue.DefaultKeyValue;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
 /**
  * {@code @Author:张少虎}
@@ -63,9 +66,27 @@ public class IComplianceViewServiceImpl implements IComplianceViewService {
     }
 
     @Override
-    public ComplianceViewCountResponse ruleCount(ComplianceCountRequest request) {
-        ComplianceCount complianceCount = complianceScanResultMapper.ruleCount(getWrapper(request.getCloudAccountId()));
-        return toComplianceViewCountResponse(complianceCount);
+    public Map<RiskLevel, ComplianceViewRuleCountResponse> ruleCount(ComplianceCountRequest request) {
+        QueryWrapper<ComplianceScanResult> eq = new QueryWrapper<ComplianceScanResult>()
+                .eq(StringUtils.isNotEmpty(request.getCloudAccountId()), "compliance_scan_result.cloud_account_id", request.getCloudAccountId());
+        List<ComplianceRuleCount> complianceRuleCounts = complianceScanResultMapper.ruleCount(eq);
+        return complianceRuleCounts.stream().collect(Collectors.groupingBy(ComplianceRuleCount::getRiskLevel, Collectors.mapping(c -> {
+                    ComplianceViewRuleCountResponse complianceViewRuleCountResponse = new ComplianceViewRuleCountResponse();
+                    BeanUtils.copyProperties(c, complianceViewRuleCountResponse);
+                    return complianceViewRuleCountResponse;
+                }, Collectors.reducing((pre, next) -> {
+                    if (Objects.nonNull(pre.getRiskLevel())) {
+                        pre.setComplianceCount(pre.getComplianceCount() + next.getComplianceCount());
+                        pre.setNotComplianceCount(pre.getNotComplianceCount() + next.getNotComplianceCount());
+                        pre.setTotal(pre.getTotal() + next.getTotal());
+                    }
+                    return pre;
+                }))))
+                .entrySet()
+                .stream()
+                .map(entry -> new DefaultKeyValue<>(entry.getKey(), entry.getValue().get()))
+                .collect(Collectors.toMap(DefaultKeyValue::getKey, DefaultKeyValue::getValue));
+
     }
 
     private ComplianceViewCountResponse toComplianceViewCountResponse(ComplianceCount complianceCount) {

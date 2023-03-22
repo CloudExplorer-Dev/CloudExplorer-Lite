@@ -2,7 +2,7 @@
   <el-card
     shadow="always"
     v-loading="loading"
-    :body-style="{ padding: '0px', height: '400px' }"
+    :body-style="{ padding: '0px', height: '300px', ...bodyStyle }"
   >
     <div
       v-resize="reSize"
@@ -18,12 +18,18 @@ import viewApi from "@/api/view/index";
 import type { ComplianceViewGroupResponse } from "@/api/view/type";
 import type { ECharts, ECElementEvent } from "echarts";
 
-const props = defineProps<{
-  groupType: "CLOUD_ACCOUNT" | "RESOURCE_TYPE" | "RULE_GROUP" | "RULE";
-  cloudAccountId?: string;
-  clickSeries?: (event: ECElementEvent) => void;
-  getOptions: (req: Array<ComplianceViewGroupResponse>) => any;
-}>();
+const props = withDefaults(
+  defineProps<{
+    groupType: "CLOUD_ACCOUNT" | "RESOURCE_TYPE" | "RULE_GROUP" | "RULE";
+    cloudAccountId?: string;
+    clickSeries?: (event: ECElementEvent) => void;
+    getOptions: (req: Array<ComplianceViewGroupResponse>) => any;
+    bodyStyle: any;
+  }>(),
+  {
+    bodyStyle: {},
+  }
+);
 // 分组数据
 const groupData = ref<Array<ComplianceViewGroupResponse>>();
 // 加载器

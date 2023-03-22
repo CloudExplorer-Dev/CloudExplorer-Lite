@@ -21,6 +21,7 @@
       {{ $t("commons.btn.return") }}
     </el-button>
   </el-affix>
+  <slot v-else></slot>
 </template>
 <script setup lang="ts">
 import { ref, watch } from "vue";
