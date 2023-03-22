@@ -4,7 +4,7 @@
     style="
       --ce-main-content-padding-top: 0;
       --ce-main-content-padding-left: 0;
-      --ce-main-content-padding-righ: 0;
+      --ce-main-content-padding-right: 0;
       --ce-main-content-padding-bottom: 0;
     "
   >

@@ -1,6 +1,6 @@
 <script lang="ts" setup>
 import { useUserStore } from "@commons/stores/modules/user";
-import { computed, onMounted, ref } from "vue";
+import { computed, onMounted, ref, watch } from "vue";
 import _ from "lodash";
 import { useModuleStore } from "@commons/stores/modules/module";
 import { usePermissionStore } from "@commons/stores/modules/permission";
@@ -39,41 +39,53 @@ const resourceCount = ref<SimpleMap<any>>({
   total: 0,
   complianceCount: 0,
 });
-const ruleCount = ref<SimpleMap<any>>({
-  notComplianceCount: 0,
-  total: 0,
-  complianceCount: 0,
-});
+const ruleCount = ref<
+  SimpleMap<{
+    notComplianceCount: number;
+    total: number;
+    complianceCount: number;
+  }>
+>({});
 
 const resourceCountLoading = ref<boolean>(false);
 const ruleCountLoading = ref<boolean>(false);
 
-const getResourceCount = () => {
+const getResourceCount = (cloudAccountId?: string) => {
   if (!show.value) {
     return;
   }
-  API.getComplianceViewResourceCount({}, resourceCountLoading).then((res) => {
+  API.getComplianceViewResourceCount(
+    { cloudAccountId },
+    resourceCountLoading
+  ).then((res) => {
     resourceCount.value = res.data;
   });
 };
-const getRuleCount = () => {
+const getRuleCount = (cloudAccountId?: string) => {
   if (!show.value) {
     return;
   }
-  API.getComplianceViewRuleCount({}, ruleCountLoading).then((res) => {
-    ruleCount.value = res.data;
-  });
+  API.getComplianceViewRuleCount({ cloudAccountId }, ruleCountLoading).then(
+    (res) => {
+      ruleCount.value = res.data;
+    }
+  );
 };
 
 onMounted(() => {
   getResourceCount();
   getRuleCount();
 });
+const refresh = (cloudAccountId?: string) => {
+  getResourceCount(cloudAccountId);
+  getRuleCount(cloudAccountId);
+};
+defineExpose({ refresh });
 </script>
 <template>
   <el-row :gutter="16" v-if="show" type="flex">
     <el-col :span="12">
-      <div class="info-card">
+      <div class="info-card" v-loading="resourceCountLoading">
         <div class="title">不合规资源</div>
         <div class="resource-div">
           <div class="subtitle">
@@ -140,26 +152,40 @@ onMounted(() => {
       </div>
     </el-col>
     <el-col :span="12">
-      <div class="info-card">
+      <div class="info-card" v-loading="ruleCountLoading">
         <div class="title">不合规规则</div>
         <div>
           <el-row :gutter="8">
             <el-col :span="8">
               <div class="base-div">
                 <div class="subtitle">高风险</div>
-                <div class="value value-high">0</div>
+                <div class="value value-high">
+                  {{
+                    ruleCount["HIGH"] ? ruleCount["HIGH"].notComplianceCount : 0
+                  }}
+                </div>
               </div>
             </el-col>
             <el-col :span="8">
               <div class="base-div">
                 <div class="subtitle">中风险</div>
-                <div class="value value-middle">0</div>
+                <div class="value value-middle">
+                  {{
+                    ruleCount["MIDDLE"]
+                      ? ruleCount["MIDDLE"].notComplianceCount
+                      : 0
+                  }}
+                </div>
               </div>
             </el-col>
             <el-col :span="8">
               <div class="base-div">
                 <div class="subtitle">低风险</div>
-                <div class="value">0</div>
+                <div class="value">
+                  {{
+                    ruleCount["LOW"] ? ruleCount["LOW"].notComplianceCount : 0
+                  }}
+                </div>
               </div>
             </el-col>
           </el-row>
