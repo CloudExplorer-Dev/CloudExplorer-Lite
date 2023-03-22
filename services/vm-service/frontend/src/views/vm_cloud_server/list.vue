@@ -34,6 +34,8 @@ const selectedRowData = ref<Array<VmCloudServerVO>>([]);
 const tableLoading = ref<boolean>(false);
 const cloudAccount = ref<Array<SimpleMap<string>>>([]);
 
+import InstanceStatusUtils from "@commons/utils/vm_cloud_server/InstanceStatusUtils";
+
 /**
  * 表头：组织树筛选
  */
@@ -71,47 +73,19 @@ instanceOperateMap.set("POWER_ON", t("", "启动"));
 instanceOperateMap.set("POWER_OFF", t("", "关机"));
 instanceOperateMap.set("REBOOT", t("", "重启"));
 instanceOperateMap.set("DELETE", t("", "删除"));
-//状态
-const InstanceStatus = ref<Array<SimpleMap<string>>>([
-  { text: t("", "运行中"), value: "Running" },
-  { text: "已删除", value: "Deleted" },
-  { text: "已关机", value: "Stopped" },
-  { text: "启动中", value: "Starting" },
-  { text: "关机中", value: "Stopping" },
-  { text: "重启中", value: "Rebooting" },
-  { text: "删除中", value: "Deleting" },
-  { text: "排队中", value: "WaitCreating" },
-  { text: "创建中", value: "Creating" },
-  { text: "配置变更中", value: "ConfigChanging" },
-  { text: "失败", value: "Failed" },
-  { text: "未知", value: "Unknown" },
-  { text: "待回收", value: "ToBeRecycled" },
-]);
 
 // 表格头:状态筛选项
-const instanceStatusForTableSelect = [
-  { text: t("vm_cloud_server.status.creating", "创建中"), value: "Creating" },
-  { text: t("vm_cloud_server.status.running", "运行中"), value: "Running" },
-  { text: t("vm_cloud_server.status.stopped", "已关机"), value: "Stopped" },
-  { text: t("vm_cloud_server.status.rebooting", "重启中"), value: "Rebooting" },
-  {
-    text: t("vm_cloud_server.status.ToBeRecycled", "待回收"),
-    value: "ToBeRecycled",
-  },
-  { text: t("vm_cloud_server.status.deleted", "已删除"), value: "Deleted" },
-  { text: t("vm_cloud_server.status.failed", "失败"), value: "Failed" },
-];
-
-const filterInstanceStatus = (value: string) => {
-  let status = value;
-  InstanceStatus.value.forEach((v) => {
-    if (v.value == value) {
-      status = v.text;
-      return;
+const instanceStatusForTableSelect = computed(() => {
+  return _.map(
+    InstanceStatusUtils.instanceStatusListForTableSelect.value,
+    (s) => {
+      return {
+        text: s.name?.value,
+        value: s.status,
+      };
     }
-  });
-  return status;
-};
+  );
+});
 
 // 表格头:付费类型筛选项
 const chargeType = [
@@ -833,7 +807,7 @@ const moreActions = ref<Array<ButtonAction>>([
             :style="{
               color: variables_server[scope.row.instanceStatus],
             }"
-            >{{ filterInstanceStatus(scope.row.instanceStatus) }}
+            >{{ InstanceStatusUtils.getStatusName(scope.row.instanceStatus) }}
           </span>
           <el-icon
             v-show="

@@ -1,31 +1,63 @@
 import { i18n } from "@commons/base-locales";
+import { computed, type ComputedRef } from "vue";
+import _ from "lodash";
 
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore
 const { t } = i18n.global;
 
-//状态
-export const instanceStatusMap: Map<string, string> = new Map();
-instanceStatusMap.set("Running", t("", "运行中"));
-instanceStatusMap.set("Deleted", t("", "已删除"));
-instanceStatusMap.set("Stopped", t("", "已关机"));
-instanceStatusMap.set("Starting", t("", "启动中"));
-instanceStatusMap.set("Stopping", t("", "关机中"));
-instanceStatusMap.set("Rebooting", t("", "重启中"));
-instanceStatusMap.set("Deleting", t("", "删除中"));
-instanceStatusMap.set("Creating", t("", "创建中"));
-instanceStatusMap.set("Unknown", t("", "未知"));
-instanceStatusMap.set("Failed", t("", "失败"));
-instanceStatusMap.set("ToBeRecycled", t("", "待回收"));
-instanceStatusMap.set("WaitCreating", t("", "排队中"));
-instanceStatusMap.set("ConfigChanging", t("", "配置变更中"));
+class InstanceStatus {
+  status: string;
+  tableSelect: boolean;
+  name?: ComputedRef<string>;
 
-export function getStatusName(status: string) {
-  return instanceStatusMap.get(status);
+  order?: number;
+
+  constructor(status: string, tableSelect?: boolean, order?: number) {
+    this.status = status;
+    this.tableSelect = !!tableSelect;
+    this.order = order === undefined ? -1 : order;
+    this.name = computed<string>(() => {
+      return t(`commons.cloud_server.status.${this.status}`, this.status);
+    });
+  }
+}
+
+const instanceStatusList = computed<Array<InstanceStatus>>(() => [
+  new InstanceStatus("Running", true, 2),
+  new InstanceStatus("Deleted", true, 6),
+  new InstanceStatus("Stopped", true, 3),
+  new InstanceStatus("Starting"),
+  new InstanceStatus("Stopping"),
+  new InstanceStatus("Rebooting", true, 4),
+  new InstanceStatus("Deleting"),
+  new InstanceStatus("Creating", true, 1),
+  new InstanceStatus("Unknown"),
+  new InstanceStatus("Failed", true, 7),
+  new InstanceStatus("ToBeRecycled", true, 5),
+  new InstanceStatus("WaitCreating"),
+  new InstanceStatus("ConfigChanging"),
+]);
+
+const instanceStatusListForTableSelect = computed<Array<InstanceStatus>>(() => {
+  return _.orderBy(
+    _.filter(instanceStatusList.value, (s) => s.tableSelect),
+    (s) => s.order
+  );
+});
+
+function getStatusName(status: string) {
+  const o = _.find(instanceStatusList.value, (s) => s.status === status);
+  if (o) {
+    return o.name?.value;
+  } else {
+    return status;
+  }
 }
 
 const InstanceStatusUtils = {
-  instanceStatusMap,
+  instanceStatusList,
+  instanceStatusListForTableSelect,
   getStatusName,
 };
 
