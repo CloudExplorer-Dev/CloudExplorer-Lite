@@ -3,18 +3,6 @@ import type Result from "@commons/request/Result";
 import { get } from "@commons/request";
 import type { SimpleMap } from "@commons/api/base/type";
 
-export function getHistoryTrend(
-  type: "MONTH" | "YEAR",
-  historyNum: number,
-  loading?: Ref<boolean>
-): Promise<Result<Array<any>>> {
-  return get(
-    `/finance-management/api/bill_view/history_trend/${type}/${historyNum}`,
-    {},
-    loading
-  );
-}
-
 export function getIncreaseTrend(
   req: any,
   loading?: Ref<boolean>
@@ -69,7 +57,6 @@ export function getComplianceViewRuleCount(
 }
 
 const api = {
-  getHistoryTrend,
   getIncreaseTrend,
   getSpreadData,
   listVmCloudServer,

@@ -20,19 +20,17 @@ const params = {};
 
 const props = withDefaults(
   defineProps<{
-    needRoles: Array<"ADMIN" | "ORGADMIN" | "USER">;
+    needRoles?: Array<"ADMIN" | "ORGADMIN" | "USER">;
     permission?: any;
     module?: string;
-
-    cardShadow?: "always" | "hover" | "never";
   }>(),
   {
+    needRoles: () => ["ADMIN", "ORGADMIN", "USER"],
     module: "operation-analysis",
     permission: [
       "[operation-analysis]SERVER_ANALYSIS:READ",
       "[operation-analysis]OVERVIEW:READ",
     ],
-    cardShadow: "always",
   }
 );
 
@@ -150,7 +148,7 @@ onMounted(() => {
 });
 </script>
 <template>
-  <el-card class="server-trend" v-if="show" :shadow="cardShadow">
+  <div class="info-card" v-if="show">
     <div class="echart-title">
       <div class="echart-title-left">云主机趋势</div>
       <div class="echart-title-right">
@@ -174,11 +172,16 @@ onMounted(() => {
         :ref="(el) => childRef(el, 'byIncrease-chart')"
       />
     </div>
-  </el-card>
+  </div>
 </template>
 
 <style scoped lang="scss">
-.server-trend {
+.info-card {
+  background: #ffffff;
+  border-radius: 4px;
+  padding: 24px;
+  overflow: hidden;
+
   .echart-title {
     height: 20px;
     font-weight: bold;

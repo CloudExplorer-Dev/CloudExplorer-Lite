@@ -49,6 +49,8 @@ const bills = ref<any>();
 interface EchartValue {
   name: string;
   value: number;
+
+  empty?: boolean;
 }
 
 const data = computed<Array<EchartValue>>(() => {
@@ -60,6 +62,15 @@ const data = computed<Array<EchartValue>>(() => {
       value: o.value as number,
     });
   });
+
+  if (result.length === 0) {
+    result.push({
+      name: "暂无数据",
+      value: 0,
+      empty: true,
+    });
+  }
+
   return result;
 });
 
@@ -85,6 +96,9 @@ const option = computed<ECBasicOption>(() => {
     tooltip: {
       trigger: "item",
       formatter: (p: any) => {
+        if (p.data?.empty) {
+          return `${p.name}`;
+        }
         return `${p.name}:${CurrencyFormat.format(p.value)}`;
       },
     },
@@ -93,7 +107,7 @@ const option = computed<ECBasicOption>(() => {
       itemGap: 4,
       orient: "vertical",
 
-      left: 200,
+      right: 4,
       top: "center",
       height: 180,
       icon: "circle",
@@ -110,7 +124,7 @@ const option = computed<ECBasicOption>(() => {
         color: "#828282",
         rich: {
           oneone: {
-            width: 80,
+            width: 110,
             color: "rgba(100, 106, 115, 1)",
             fontSize: 12,
             fontWeight: "400",
@@ -130,12 +144,17 @@ const option = computed<ECBasicOption>(() => {
         },
       },
       formatter: (name: string) => {
+        const empty = _.head(data.value)?.empty;
+        if (empty) {
+          return `{oneone|${_.head(data.value)?.name}}`;
+        }
+
         const dataItem = data.value.find((b) => b.name === name);
 
         return `{oneone|${
-          (dataItem?.name as string).length < 13
+          (dataItem?.name as string).length < 8
             ? dataItem?.name
-            : dataItem?.name.substring(0, 10) + ".."
+            : dataItem?.name.substring(0, 7) + "..."
         }}  {twotwo|${CurrencyFormat.format(dataItem?.value)}}`;
       },
     },
@@ -150,6 +169,7 @@ const option = computed<ECBasicOption>(() => {
         center: [84, "50%"],
         radius: [60, 80],
         avoidLabelOverlap: false,
+        showEmptyCircle: true,
         label: {
           show: true,
           position: "center",
@@ -159,6 +179,10 @@ const option = computed<ECBasicOption>(() => {
           fontSize: "12px",
           color: "rgba(100, 106, 115, 1)",
           formatter: () => {
+            const empty = _.head(data.value)?.empty;
+            if (empty) {
+              return `{title|总费用}\r\n{value|-}`;
+            }
             const sum = data.value
               .filter((d) => (selected as SimpleMap<boolean>)[d.name])
               .map((a) => a.value)
@@ -178,6 +202,7 @@ const option = computed<ECBasicOption>(() => {
           },
         },
         emphasis: {
+          disabled: !!_.head(data.value)?.empty,
           label: {
             show: true,
             width: 110,
@@ -196,16 +221,18 @@ const option = computed<ECBasicOption>(() => {
           show: false,
         },
         data: data.value,
-        color: interpolationColor(
-          [
-            "rgba(148, 90, 246, 1)",
-            "rgba(78, 131, 253, 1)",
-            "rgba(250, 211, 85, 1)",
-            "rgba(20, 225, 198, 1)",
-            "rgba(80, 206, 251, 1)",
-          ],
-          data.value.length
-        ),
+        color: _.head(data.value)?.empty
+          ? ["rgba(187, 191, 196, 1)"]
+          : interpolationColor(
+              [
+                "rgba(148, 90, 246, 1)",
+                "rgba(78, 131, 253, 1)",
+                "rgba(250, 211, 85, 1)",
+                "rgba(20, 225, 198, 1)",
+                "rgba(80, 206, 251, 1)",
+              ],
+              data.value.length
+            ),
       },
     ],
   };
@@ -248,6 +275,7 @@ defineExpose({ show });
 
   .chart {
     min-height: 200px;
+    min-width: 370px;
     width: 100%;
   }
 }

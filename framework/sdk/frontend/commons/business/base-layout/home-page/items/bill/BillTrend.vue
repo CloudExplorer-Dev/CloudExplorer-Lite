@@ -4,6 +4,7 @@ import CurrencyFormat from "@commons/utils/currencyFormat";
 import { useModuleStore } from "@commons/stores/modules/module";
 import _ from "lodash";
 import { usePermissionStore } from "@commons/stores/modules/permission";
+import BillViewAPI from "@commons/api/bil_view/index";
 
 import { useUserStore } from "@commons/stores/modules/user";
 import type { ECharts } from "echarts";
@@ -13,10 +14,10 @@ import * as echarts from "echarts";
 
 const props = withDefaults(
   defineProps<{
-    needRoles: Array<"ADMIN" | "ORGADMIN" | "USER">;
+    needRoles?: Array<"ADMIN" | "ORGADMIN" | "USER">;
     permission?: any;
     module?: string;
-    getHistoryTrend: (
+    getHistoryTrend?: (
       type: "MONTH" | "YEAR",
       historyNum: number,
       loading?: Ref<boolean>
@@ -24,6 +25,8 @@ const props = withDefaults(
     headPosition?: "left" | "center";
   }>(),
   {
+    needRoles: () => ["ADMIN", "ORGADMIN", "USER"],
+    getHistoryTrend: BillViewAPI.getHistoryTrend,
     headPosition: "center",
     permission: "[finance-management]BILL_ViEW:READ",
     module: "finance-management",

@@ -33,4 +33,26 @@ function getCurrentMonthBill(loading?: Ref<boolean>) {
   );
 }
 
-export default { getExpenses, getCurrentMonthBill };
+/**
+ * 获取历史趋势
+ * @param type
+ * @param historyNum
+ * @param loading
+ * @returns
+ */
+function getHistoryTrend(
+  type: "MONTH" | "YEAR",
+  historyNum: number,
+  loading?: Ref<boolean>
+): Promise<Result<Array<any>>> {
+  return get(
+    (import.meta.env.VITE_APP_NAME === "finance-management"
+      ? ""
+      : "/finance-management") +
+      `/api/bill_view/history_trend/${type}/${historyNum}`,
+    {},
+    loading
+  );
+}
+
+export default { getExpenses, getCurrentMonthBill, getHistoryTrend };
