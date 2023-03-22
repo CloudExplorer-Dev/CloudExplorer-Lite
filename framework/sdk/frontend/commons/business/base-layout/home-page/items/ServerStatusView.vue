@@ -4,18 +4,16 @@ const props = withDefaults(
     needRoles?: Array<"ADMIN" | "ORGADMIN" | "USER">;
     permission?: any;
     module?: string;
-    subTitle?: boolean;
   }>(),
   {
     needRoles: () => ["ADMIN", "ORGADMIN", "USER"],
-    permission: "[finance-management]BILL_ViEW:READ",
-    module: "finance-management",
-    subTitle: false,
+    permission: "[vm-service]CLOUD_SERVER:READ",
+    module: "vm-service",
   }
 );
 
 import { computed, onMounted, ref } from "vue";
-import BillViewApi from "@commons/api/bil_view";
+import API from "@commons/api/vm_cloud_server/index";
 import CurrencyFormat from "@commons/utils/currencyFormat";
 
 import VChart from "vue-echarts";
@@ -78,9 +76,10 @@ function getCurrentMonthBill() {
   if (!show.value) {
     return;
   }
-  BillViewApi.getCurrentMonthBill(loading).then(
-    (ok) => (bills.value = ok.data)
-  );
+  API.getCountsGroupByStatus(loading).then((ok) => {
+    //bills.value = ok.data;
+    console.log(ok.data);
+  });
 }
 
 const option = computed<ECBasicOption>(() => {
@@ -246,9 +245,7 @@ defineExpose({ show });
 </script>
 <template>
   <div class="info-card" v-if="show">
-    <div class="title" :class="{ 'sub-main-title': subTitle }">
-      本月费用分布
-    </div>
+    <div class="title">云主机状态</div>
     <v-chart class="chart" :option="option" autoresize v-loading="loading" />
   </div>
 </template>

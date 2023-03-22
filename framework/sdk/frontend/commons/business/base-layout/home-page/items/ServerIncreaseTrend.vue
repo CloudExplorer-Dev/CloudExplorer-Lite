@@ -12,11 +12,12 @@ import {
 } from "@commons/components/echart";
 import * as echarts from "echarts";
 
-import API from "./api";
+import API from "@commons/api/server_analysis/index";
 import ChartsSpeed from "@commons/components/echart/ChartsSpeed.vue";
+import type { ResourceAnalysisRequest } from "@commons/api/server_analysis/type";
 
 //参数
-const params = {};
+const params: ResourceAnalysisRequest = {};
 
 const props = withDefaults(
   defineProps<{

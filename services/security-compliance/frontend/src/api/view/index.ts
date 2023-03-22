@@ -1,28 +1,26 @@
 import { get } from "@commons/request";
 import type { Ref } from "vue";
 import type Result from "@commons/request/Result";
+import BASE_API from "@commons/api/compliance-view/index";
 import type {
   ComplianceCountRequest,
   ComplianceGroupRequest,
   ComplianceViewCountResponse,
   ComplianceViewGroupResponse,
 } from "@/api/view/type";
+
 /**
  * 获取首页求和数据
  */
-const count: (
+function count(
   complianceCountRequest: ComplianceCountRequest,
   loading?: Ref<boolean>
-) => Promise<Result<ComplianceViewCountResponse>> = (
-  complianceCountRequest,
-  loading
-) => {
-  return get(
-    "/api/compliance_view/resource/count",
+): Promise<Result<ComplianceViewCountResponse>> {
+  return BASE_API.getComplianceViewResourceCount(
     complianceCountRequest,
     loading
   );
-};
+}
 
 /**
  * 获取首页 饼图分组数据
@@ -30,21 +28,21 @@ const count: (
  * @param loading  加载器
  * @returns  首页分组数据
  */
-const group: (
+function group(
   complianceGroupRequest: ComplianceGroupRequest,
   loading?: Ref<boolean>
-) => Promise<Result<Array<ComplianceViewGroupResponse>>> = (
-  complianceGroupRequest,
-  loading
-) => {
+): Promise<Result<Array<ComplianceViewGroupResponse>>> {
   return get(
     "/api/compliance_view/resource/group",
     complianceGroupRequest,
     loading
   );
-};
+}
 
-export default {
+const API = {
+  ...BASE_API,
   count,
   group,
 };
+
+export default API;

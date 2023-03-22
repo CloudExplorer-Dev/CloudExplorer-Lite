@@ -159,6 +159,22 @@ public class VmCloudServerServiceImpl extends ServiceImpl<BaseVmCloudServerMappe
         return this.count(wrapper);
     }
 
+    @Override
+    public List<Map<String, Object>> countByStatus() {
+        PageVmCloudServerRequest request = new PageVmCloudServerRequest();
+        setCurrentInfos(request);
+        QueryWrapper<VmCloudServer> wrapper = addQuery(request);
+        wrapper.select(
+                        ColumnNameUtil.getColumnName(VmCloudServer::getInstanceStatus, true) + " as status",
+                        "count(" + ColumnNameUtil.getColumnName(VmCloudServer::getId, true) + ") as count")
+                .lambda().groupBy(VmCloudServer::getInstanceStatus);
+
+        System.out.println(wrapper.getSqlSelect());
+
+        return this.listMaps(wrapper);
+
+    }
+
     private <T extends VmCloudServer> QueryWrapper<T> addQuery(PageVmCloudServerRequest request) {
         QueryWrapper<T> wrapper = new QueryWrapper<>();
 

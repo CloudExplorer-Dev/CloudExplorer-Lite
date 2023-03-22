@@ -1,32 +1,4 @@
-export class ResourceAnalysisRequest {
-  accountIds: Array<string>;
-  hostIds: Array<string>;
-  spreadType: string;
-  dayNumber: number;
-  metricName: string;
-  startTime: number;
-  endTime: number;
-  analysisWorkspace: boolean;
-  constructor(
-    accountIds: Array<string>,
-    hostIds: Array<string>,
-    spreadType: string,
-    dayNumber: number,
-    metricName: string,
-    startTime: number,
-    endTime: number,
-    analysisWorkspace: boolean
-  ) {
-    this.accountIds = accountIds;
-    this.hostIds = hostIds;
-    this.spreadType = spreadType;
-    this.dayNumber = dayNumber;
-    this.metricName = metricName;
-    this.startTime = startTime;
-    this.endTime = endTime;
-    this.analysisWorkspace = analysisWorkspace;
-  }
-}
+import type { ResourceAnalysisRequest } from "@commons/api/server_analysis/type";
 
 interface VmCloudServerVO {
   id: string;
@@ -81,4 +53,8 @@ interface ListVmCloudServerRequest {
   currentPage: number;
 }
 
-export type { VmCloudServerVO, ListVmCloudServerRequest };
+export type {
+  VmCloudServerVO,
+  ListVmCloudServerRequest,
+  ResourceAnalysisRequest,
+};

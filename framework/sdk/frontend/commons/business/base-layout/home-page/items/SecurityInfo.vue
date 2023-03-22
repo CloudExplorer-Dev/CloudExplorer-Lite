@@ -4,7 +4,7 @@ import { computed, onMounted, ref } from "vue";
 import _ from "lodash";
 import { useModuleStore } from "@commons/stores/modules/module";
 import { usePermissionStore } from "@commons/stores/modules/permission";
-import API from "./api";
+import API from "@commons/api/compliance-view/index";
 import type { SimpleMap } from "@commons/api/base/type";
 
 const props = withDefaults(
