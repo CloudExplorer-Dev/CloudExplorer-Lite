@@ -14,11 +14,10 @@ import org.apache.commons.collections4.keyvalue.DefaultKeyValue;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 
 public class HuaweiBaseCloudProvider extends AbstractBaseCloudProvider<TencentCredential> {
-
+    @Override
     public F2CBalance getAccountBalance(String req) {
         return HuaweiBaseCloudApi.getAccountBalance(JsonUtil.parseObject(req, GetAccountBalanceRequest.class));
     }
@@ -39,8 +38,8 @@ public class HuaweiBaseCloudProvider extends AbstractBaseCloudProvider<TencentCr
      */
     public List<DefaultKeyValue<String, String>> getSyncModes(String req) {
         return new ArrayList<>() {{
-            add(new DefaultKeyValue<>("API", "api"));
-            add(new DefaultKeyValue<>("存储桶", "bucket"));
+            add(new DefaultKeyValue<>("从API获取", "api"));
+            add(new DefaultKeyValue<>("从存储桶获取", "bucket"));
         }};
     }
 }

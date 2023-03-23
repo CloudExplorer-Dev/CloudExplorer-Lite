@@ -45,8 +45,8 @@ public class AliyunBaseCloudProvider extends AbstractBaseCloudProvider<AliCreden
      */
     public List<DefaultKeyValue<String, String>> getSyncModes(String req) {
         return new ArrayList<>() {{
-            add(new DefaultKeyValue<>("API", "api"));
-            add(new DefaultKeyValue<>("存储桶", "bucket"));
+            add(new DefaultKeyValue<>("从API获取", "api"));
+            add(new DefaultKeyValue<>("从存储桶获取", "bucket"));
         }};
     }
 }

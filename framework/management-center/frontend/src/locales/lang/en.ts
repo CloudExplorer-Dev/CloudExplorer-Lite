@@ -91,7 +91,7 @@ const message = {
       time: "Synchronization Time",
       status: "Synchronization Status",
       resource: "Synchronization Resources",
-      setting: "Timing synchronization settings",
+      setting: "Timing synchronization",
       once: "Synchronize once",
       region: "region",
       range: "Synchronization range",

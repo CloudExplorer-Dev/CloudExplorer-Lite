@@ -1,10 +1,10 @@
 <template>
-  <layout-container :border="border">
-    <template #header
-      ><h4>
-        {{ t("cloud_account.sync.timing", "同步频率设置") }}
-      </h4></template
-    >
+  <base-container>
+    <template #header>
+      <span>
+        {{ jobTypeDescription + "频率" }}
+      </span>
+    </template>
     <template #content>
       <div
         class="corn_item_wapper"
@@ -48,13 +48,13 @@
                 cursor: default;
               "
             >
-              <span>{{ t("cloud_account.sync.once", "同步一次") }}</span>
+              <span>{{ jobTypeDescription + "一次" }}</span>
             </div>
           </div>
         </el-checkbox>
       </div></template
     >
-  </layout-container>
+  </base-container>
 </template>
 <script setup lang="ts">
 import { ref, watch } from "vue";
@@ -62,6 +62,7 @@ import { useI18n } from "vue-i18n";
 import type { JobDetails } from "@/api/cloud_account/type";
 import CronInView from "@/componnets/job/job_setting/CronInView.vue";
 import CronIntervalView from "@/componnets/job/job_setting/CronIntervalView.vue";
+
 const { t } = useI18n();
 // 校验实例对象
 const cronInViewRef = ref<
@@ -71,10 +72,6 @@ const cronInViewRef = ref<
 const props = withDefaults(
   defineProps<{
     /**
-     * 是否有边框
-     */
-    border: boolean;
-    /**
      * 是否可读
      */
     readOnly: boolean;
@@ -82,8 +79,9 @@ const props = withDefaults(
      *定时任务信息
      */
     jobDetails: Array<JobDetails>;
+    jobTypeDescription: string;
   }>(),
-  { readOnly: false, border: false }
+  { readOnly: false, jobTypeDescription: "同步" }
 );
 watch(
   () => props.jobDetails,

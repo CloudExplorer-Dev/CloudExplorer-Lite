@@ -4,7 +4,6 @@
     v-loading="jobLoading"
     v-model="activeModuleName"
     :before-leave="beforeLeave"
-    class="demo-tabs"
   >
     <template v-for="mod in moduleJobs" :key="mod.name">
       <el-tab-pane
@@ -16,23 +15,27 @@
         "
         :name="mod.module"
       >
-        <JobModuleItem
-          ref="jobModule"
-          :module="mod"
-          :regions="regions"
-          :cloudAccount="cloudAccount"
-          :readOnly="readOnly"
-          :border="border"
-        >
-        </JobModuleItem>
-        <layout-container :boder="true" v-if="operation">
-          <el-button type="primary" @click="clear">{{
-            t("commons.btn.cancel", "取消")
-          }}</el-button>
-          <el-button type="primary" @click="submitForm">{{
-            t("commons.btn.save", "保存")
-          }}</el-button>
-        </layout-container>
+        <base-container>
+          <template #content>
+            <JobModuleItem
+              ref="jobModule"
+              :module="mod"
+              :regions="regions"
+              :cloudAccount="cloudAccount"
+              :readOnly="readOnly"
+              :border="border"
+            >
+            </JobModuleItem>
+          </template>
+          <template #formFooter v-if="operation">
+            <el-button @click="clear">{{
+              t("commons.btn.cancel", "取消")
+            }}</el-button>
+            <el-button type="primary" @click="submitForm">{{
+              t("commons.btn.save", "保存")
+            }}</el-button>
+          </template>
+        </base-container>
       </el-tab-pane>
     </template>
   </el-tabs>
@@ -196,4 +199,10 @@ defineExpose({
   submitForm,
 });
 </script>
-<style lang="scss"></style>
+<style lang="scss">
+.el-tabs__content {
+  position: inherit;
+  overflow-y: auto;
+  height: calc(100vh - 310px);
+}
+</style>

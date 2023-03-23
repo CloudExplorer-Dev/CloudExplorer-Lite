@@ -1,15 +1,16 @@
 <template>
-  <layout-container :border="border">
-    <template #header> <h4>同步方式设置</h4></template>
+  <base-container>
+    <template #header> <span>账单获取方式</span></template>
     <template #content>
       <CeForm
         :readOnly="readOnly"
         :formViewData="BillFrom"
         ref="ceform"
         :otherParams="cloudAccount"
+        labelPosition="top"
       ></CeForm>
     </template>
-  </layout-container>
+  </base-container>
 </template>
 <script setup lang="ts">
 import type { JobDetails } from "@/api/cloud_account/type";

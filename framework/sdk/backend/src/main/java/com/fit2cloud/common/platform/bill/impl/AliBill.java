@@ -20,7 +20,7 @@ import java.util.Map;
 @Data
 public class AliBill implements Bill {
 
-    @Form(inputType = InputType.Radio, label = "同步方式", defaultValue = "api", textField = "key", valueField = "value", method = "getSyncModes", clazz = AliyunBaseCloudProvider.class)
+    @Form(inputType = InputType.RadioRaw, label = "", defaultValue = "api", textField = "key", valueField = "value", method = "getSyncModes", clazz = AliyunBaseCloudProvider.class, attrs = "{\"style\":\"width:200px\"}")
     private String syncMode;
 
     @Form(inputType = InputType.SingleSelect, label = "区域", relationShowValues = "bucket", relationShows = "syncMode", textField = "name", valueField = "regionId", method = "getRegions", relationTrigger = "syncMode", clazz = AliyunBaseCloudProvider.class)

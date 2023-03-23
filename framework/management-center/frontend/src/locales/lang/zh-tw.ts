@@ -95,7 +95,7 @@ const message = {
       once: "同步一次",
       region: "區域",
       range: "同步範圍",
-      timing: "資源同步頻率",
+      timing: "同步頻率",
       interval: "每隔",
       interval_time_unit: {
         millisecond: "毫秒",

@@ -4,7 +4,6 @@ import com.fit2cloud.common.exception.Fit2cloudException;
 import com.fit2cloud.common.form.annotaion.Form;
 import com.fit2cloud.common.form.constants.InputType;
 import com.fit2cloud.common.platform.bill.Bill;
-import com.fit2cloud.common.provider.impl.aliyun.AliyunBaseCloudProvider;
 import com.fit2cloud.common.provider.impl.tencent.TencentBaseCloudProvider;
 import lombok.Data;
 import org.apache.commons.lang3.StringUtils;
@@ -21,7 +20,7 @@ import java.util.Map;
 @Data
 public class TencentBill implements Bill {
 
-    @Form(inputType = InputType.Radio, label = "同步方式", defaultValue = "api", textField = "key", valueField = "value", method = "getSyncModes", clazz = TencentBaseCloudProvider.class)
+    @Form(inputType = InputType.RadioRaw, label = "", defaultValue = "api", textField = "key", valueField = "value", method = "getSyncModes", clazz = TencentBaseCloudProvider.class, attrs = "{\"style\":\"width:200px\"}")
     private String syncMode;
 
     @Form(inputType = InputType.SingleSelect, label = "区域", relationShows = {"syncMode"}, relationShowValues = "bucket", textField = "name", valueField = "regionId", method = "getRegions", relationTrigger = "syncMode", clazz = TencentBaseCloudProvider.class)

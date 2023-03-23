@@ -116,7 +116,7 @@ const initTreeBar = () => {
           xAxis: { data: children.map((item: any) => item.name) },
           series: [
             {
-              barWidth:16,
+              barWidth: 16,
               data: seriesData.value,
               label: barSeriesLabel,
               itemStyle: barSeriesItemStyle,
@@ -142,7 +142,7 @@ const handleBackClick = () => {
       xAxis: { data: props.treeBarData.map((item: any) => item.name) },
       series: [
         {
-          barWidth:16,
+          barWidth: 16,
           data: seriesData.value,
           label: barSeriesLabel,
           itemStyle: barSeriesItemStyle,
@@ -161,7 +161,7 @@ const handleBackClick = () => {
         xAxis: { data: children.map((v: any) => v.name) },
         series: [
           {
-            barWidth:16,
+            barWidth: 16,
             data: seriesData.value,
             label: barSeriesLabel,
             itemStyle: barSeriesItemStyle,
