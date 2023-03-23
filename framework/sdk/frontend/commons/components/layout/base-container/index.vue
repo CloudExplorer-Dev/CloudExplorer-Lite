@@ -17,8 +17,13 @@
     <div class="content" v-if="$slots.content">
       <slot name="content"></slot>
     </div>
-    <div class="footer" v-if="$slots.default">
-      <slot></slot>
+    <div class="form" v-if="$slots.form">
+      <slot name="form"></slot>
+    </div>
+    <div class="footer" v-if="$slots.formFooter">
+      <div class="footer-inner" >
+        <slot name="formFooter"></slot>
+      </div>
     </div>
   </div>
 </template>
@@ -29,8 +34,8 @@
   overflow-y: hidden;
   overflow-x: hidden;
   .header {
-    height: 50px;
     display: flex;
+    margin-bottom: 16px;
     align-items: center;
     :deep(.title) {
       position: relative;
@@ -65,10 +70,32 @@
   .content {
     padding: 0px;
   }
-  .footer {
-    display: flex;
-    justify-content: flex-end;
-    padding: 20px;
+  .form {
+    width: 800px;
+    margin-left: auto;
+    margin-right: auto;
   }
+  .footer {
+    position: absolute;
+    display: flex;
+    width: calc(100% - 299px);
+    height: 80px;
+    bottom: 24px;
+    right: 24px;
+    box-shadow: 0 -2px 2px rgb(0 0 0 / 4%);
+    justify-content: center;
+    align-items: center;
+    z-index: 10;
+    border-radius: 0 0 var(--ce-main-content-border-radius, 10px) var(--ce-main-content-border-radius, 10px);
+    background-color: var(--ce-main-content-bg-color, #fff);
+    :deep(.footer-inner){
+      width: 800px;
+      text-align: right;
+      button {
+        min-width: 80px;
+      }
+    }
+  }
+
 }
 </style>
