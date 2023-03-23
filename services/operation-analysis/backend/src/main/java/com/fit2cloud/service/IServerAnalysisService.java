@@ -59,5 +59,7 @@ public interface IServerAnalysisService {
 
     Long getResourceTotalDateBefore(Map<String, Long> monthTreeMap, String dateStr);
 
+    long countCloudServerByCloudAccount(String cloudAccountId);
+
 
 }

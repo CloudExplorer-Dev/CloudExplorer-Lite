@@ -1,0 +1,267 @@
+<template>
+  <el-card shadow="never" class="info-card">
+    <el-row :gutter="10">
+      <el-col :span="24">
+        <div class="title">宿主云主机机分布</div>
+      </el-col>
+    </el-row>
+    <el-row :gutter="10">
+      <el-col :span="24">
+        <div class="echarts">
+          <div class="echarts-content">
+            <v-chart
+              class="chart"
+              :option="option"
+              v-loading="loading"
+              autoresize
+            />
+          </div>
+        </div>
+      </el-col>
+    </el-row>
+  </el-card>
+</template>
+<script setup lang="ts">
+import VChart from "vue-echarts";
+import { computed, ref, watch } from "vue";
+import ResourceSpreadViewApi from "@/api/resource_spread_view/index";
+import _ from "lodash";
+import type { ResourceAnalysisRequest } from "@commons/api/resource_spread_view/type";
+import type { ECBasicOption } from "echarts/types/src/util/types";
+import type { SimpleMap } from "@commons/api/base/type";
+import { interpolationColor } from "@commons/utils/color";
+const props = defineProps<{
+  cloudAccountId?: string | undefined;
+  clusterId?: string | undefined;
+  datastoreId?: string | undefined;
+  hostId?: string | undefined;
+}>();
+const params = ref<ResourceAnalysisRequest>();
+const loading = ref<boolean>(false);
+const setParams = () => {
+  props.cloudAccountId
+    ? _.set(
+        params,
+        "accountIds",
+        props.cloudAccountId === "all" ? [] : [props.cloudAccountId]
+      )
+    : "";
+  props.clusterId
+    ? _.set(
+        params,
+        "clusterIds",
+        props.clusterId === "all" ? [] : [props.clusterId]
+      )
+    : "";
+  props.datastoreId
+    ? _.set(
+        params,
+        "datastoreIds",
+        props.datastoreId === "all" ? [] : [props.datastoreId]
+      )
+    : "";
+  props.hostId
+    ? _.set(params, "hostIds", props.hostId === "all" ? [] : [props.hostId])
+    : "";
+};
+//获取数宿主机按云账号分布
+const apiDataStopped = ref<any>();
+const apiDataRunning = ref<any>();
+const getSpreadInfo = () => {
+  setParams();
+  _.set(params, "vmStatus", "stopped");
+  ResourceSpreadViewApi.getSpreadInfo(params, loading).then((res) => {
+    apiDataStopped.value = res.data;
+    _.set(params, "vmStatus", "running");
+    ResourceSpreadViewApi.getSpreadInfo(params, loading).then(
+      (res) => (apiDataRunning.value = res.data)
+    );
+  });
+};
+interface EchartsValue {
+  name: Array<string>;
+  running: Array<number>;
+  stopped: Array<number>;
+}
+interface ApiDataVO {
+  name: string;
+  value: number;
+}
+
+const data = computed<EchartsValue>(() => {
+  const result: EchartsValue = { name: [], running: [], stopped: [] };
+  const names: Array<string> = [];
+  const running: Array<number> = [];
+  const stopped: Array<number> = [];
+  const hosts: Array<any> = _.unionBy(
+    apiDataRunning.value?.vm,
+    apiDataRunning.value?.vm,
+    "name"
+  );
+  _.forEach(hosts, (v: ApiDataVO) => {
+    names.push(v.name);
+    const r = _.find(apiDataRunning.value?.vm, (o) => o.name === v.name);
+    if (r) {
+      running.push(r.value);
+    } else {
+      running.push(0);
+    }
+    const s = _.find(apiDataStopped.value?.vm, (o) => o.name === v.name);
+    if (s) {
+      stopped.push(s.value);
+    } else {
+      stopped.push(0);
+    }
+  });
+  result.name = names;
+  result.running = running;
+  result.stopped = stopped;
+  return result;
+});
+const option = computed<ECBasicOption>(() => {
+  const selected = data.value;
+  const options = {
+    dataZoom: [
+      {
+        type: "slider",
+        realtime: true,
+        start: 0,
+        end: 100, // 数据窗口范围的结束百分比。范围是：0 ~ 100。
+        height: 15, //组件高度
+        left: 5, //左边的距离
+        right: 5, //右边的距离
+        bottom: 25, //下边的距离
+        show: false, // 是否展示
+        fillerColor: "rgba(17, 100, 210, 0.42)", // 滚动条颜色
+        borderColor: "rgba(17, 100, 210, 0.12)",
+        handleSize: 0, //两边手柄尺寸
+        showDetail: false, //拖拽时是否展示滚动条两侧的文字
+        zoomLock: true, //是否只平移不缩放
+        moveOnMouseMove: false, //鼠标移动能触发数据窗口平移
+        brushSelect: false,
+        startValue: 0, // 从头开始。
+        endValue: 9, // 最多六个
+        minValueSpan: 9, // 放大到最少几个
+        maxValueSpan: 9, //  缩小到最多几个
+      },
+      {
+        type: "inside", // 支持内部鼠标滚动平移
+        start: 0,
+        end: 100,
+        zoomOnMouseWheel: false, // 关闭滚轮缩放
+        moveOnMouseWheel: false, // 开启滚轮平移
+        moveOnMouseMove: false, // 鼠标移动能触发数据窗口平移
+      },
+    ],
+    tooltip: {
+      trigger: "axis",
+      axisPointer: {
+        type: "shadow",
+      },
+    },
+    legend: {
+      show: true,
+      type: "scroll",
+      icon: "circle",
+      y: "bottom",
+      padding: [0, 0, 5, 0],
+    },
+    grid: {
+      left: "3%",
+      right: "4%",
+      top: "10px",
+      bottom: "15%",
+      containLabel: true,
+    },
+    yAxis: {
+      type: "value",
+    },
+    xAxis: {
+      type: "category",
+      data: selected.name,
+    },
+    color: ["rgba(79, 131, 253,1)", "rgba(250, 211, 85, 1)"],
+    series: [
+      {
+        name: "运行中",
+        type: "bar",
+        stack: "total",
+        label: {
+          show: false,
+        },
+        emphasis: {
+          focus: "series",
+        },
+        data: selected.running,
+        barWidth: 16,
+      },
+      {
+        name: "已停止",
+        type: "bar",
+        stack: "total",
+        label: {
+          show: false,
+        },
+        emphasis: {
+          focus: "series",
+        },
+        data: selected.stopped,
+        barWidth: 16,
+      },
+    ],
+  };
+  const deptNumber = selected.name.map((item: any) => item.name);
+  let showEcharts = false;
+  let nameNum = 0;
+  if (deptNumber.length > 0) {
+    nameNum = Math.floor(100 / (deptNumber.length / 9));
+    showEcharts = deptNumber.length > 9;
+  }
+  _.set(options, "dataZoom.[0].end", nameNum);
+  _.set(options, "dataZoom.[1].end", nameNum);
+  _.set(options, "dataZoom.[0].show", showEcharts);
+  return options;
+});
+watch(
+  props,
+  () => {
+    getSpreadInfo();
+  },
+  { immediate: true }
+);
+</script>
+<style scoped lang="scss">
+.info-card {
+  height: 448px;
+  background: #ffffff;
+  border-radius: 4px;
+  flex: none;
+  order: 0;
+  flex-grow: 0;
+}
+.chart {
+  min-height: 368px;
+  width: 100%;
+}
+.title {
+  font-weight: bold;
+  font-size: 16px;
+  padding-top: 4px;
+  padding-bottom: 16px;
+}
+.echarts-content {
+  margin-top: 7px;
+}
+.echarts-footer {
+  margin-top: 15px;
+  margin-bottom: 10px;
+  position: initial;
+  font-family: "PingFang SC", serif;
+  font-style: normal;
+  font-weight: 400;
+  font-size: 14px;
+  line-height: 12px;
+  text-align: center;
+  color: #1f2329;
+}
+</style>

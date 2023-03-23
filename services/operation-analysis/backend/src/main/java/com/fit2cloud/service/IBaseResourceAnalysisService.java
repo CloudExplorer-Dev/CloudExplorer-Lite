@@ -38,6 +38,8 @@ public interface IBaseResourceAnalysisService {
 
     long countHost();
 
+    long countHost(String cloudAccountId);
+
     /**
      * 存储器明细
      *
@@ -47,6 +49,8 @@ public interface IBaseResourceAnalysisService {
     IPage<AnalysisDatastoreDTO> pageDatastore(PageDatastoreRequest request);
 
     long countDatastore();
+
+    long countDatastore(String cloudAccountId);
 
     /**
      * 私有云VMWare vSphere、OpenStack

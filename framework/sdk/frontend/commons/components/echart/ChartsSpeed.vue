@@ -74,15 +74,15 @@ const initChart = () => {
     eChartsRef = echarts.init(chartWrapper.value);
   }
 };
-const colors = ["#00b2ff", "#31b1c2", "#67c23a"];
+const colors = ["#4E83FD"];
 const barSeriesItemStyle = {
   color: function (params: any) {
     if (params.data && params.data?.groupName === "org") {
       return colors[0];
     } else if (params.data && params.data?.groupName === "available") {
-      return colors[2];
+      return colors[0];
     }
-    return colors[1];
+    return colors[0];
   },
 };
 const barSeriesLabel = {
@@ -116,6 +116,7 @@ const initTreeBar = () => {
           xAxis: { data: children.map((item: any) => item.name) },
           series: [
             {
+              barWidth:16,
               data: seriesData.value,
               label: barSeriesLabel,
               itemStyle: barSeriesItemStyle,
@@ -141,6 +142,7 @@ const handleBackClick = () => {
       xAxis: { data: props.treeBarData.map((item: any) => item.name) },
       series: [
         {
+          barWidth:16,
           data: seriesData.value,
           label: barSeriesLabel,
           itemStyle: barSeriesItemStyle,
@@ -159,6 +161,7 @@ const handleBackClick = () => {
         xAxis: { data: children.map((v: any) => v.name) },
         series: [
           {
+            barWidth:16,
             data: seriesData.value,
             label: barSeriesLabel,
             itemStyle: barSeriesItemStyle,

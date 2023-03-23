@@ -83,6 +83,7 @@ const defaultTrendOptions = {
   legend: {
     type: "scroll",
     data: ["Line 1", "Line 2", "Line 3", "Line 4", "Line 5"],
+    y: "bottom"
   },
   toolbox: {
     feature: {
@@ -92,7 +93,7 @@ const defaultTrendOptions = {
   grid: {
     left: "3%",
     right: "4%",
-    bottom: "3%",
+    bottom: "15%",
     containLabel: true,
   },
   xAxis: [
@@ -291,7 +292,13 @@ const defaultBarOptions = {
       moveOnMouseMove: false, // 鼠标移动能触发数据窗口平移
     },
   ],
-  color: ["#95ceff", "#434348"],
+  color:["#4E83FD"],
+  legend:{
+    show:true,
+    type:"scroll",
+    icon: "circle",
+    y: "bottom"
+  },
   tooltip: {
     show: true,
   },
@@ -304,6 +311,7 @@ const defaultBarOptions = {
   },
   series: [
     {
+      barWidth:16,
       data: [],
       type: "bar",
     },

@@ -21,6 +21,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.annotation.Resource;
@@ -121,4 +122,20 @@ public class BaseResourceAnalysisController {
             @Validated ResourceUsedTrendRequest resourceUsedTrendRequest) {
         return ResultHolder.success(iBaseResourceAnalysisService.getResourceUsedTrendData(resourceUsedTrendRequest));
     }
+
+    @ApiOperation(value = "根据云账号查询宿主机数量", notes = "根据云账号查询宿主机数量")
+    @GetMapping("/cloud_account/host/count")
+    @PreAuthorize("hasAnyCePermission('BASE_RESOURCE_ANALYSIS:READ','OVERVIEW:READ')")
+    public ResultHolder<Long> countHostByCloudAccountId(@RequestParam("cloudAccountId") String cloudAccountId) {
+        return ResultHolder.success(iBaseResourceAnalysisService.countHost(cloudAccountId));
+    }
+
+    @ApiOperation(value = "根据云账号查询存储器数量", notes = "根据云账号查询存储器数量")
+    @GetMapping("/cloud_account/datastore/count")
+    @PreAuthorize("hasAnyCePermission('BASE_RESOURCE_ANALYSIS:READ','OVERVIEW:READ')")
+    public ResultHolder<Long> countDatastoreByCloudAccountId(@RequestParam("cloudAccountId") String cloudAccountId) {
+        return ResultHolder.success(iBaseResourceAnalysisService.countDatastore(cloudAccountId));
+    }
+
+
 }

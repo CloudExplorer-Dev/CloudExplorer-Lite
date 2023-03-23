@@ -304,5 +304,16 @@ public class DiskAnalysisServiceImpl implements IDiskAnalysisService {
         return list;
     }
 
+    @Override
+    public long countDiskByCloudAccount(String cloudAccountId) {
+        List<String> sourceIds = permissionService.getSourceIds();
+        MPJLambdaWrapper<VmCloudDisk> wrapper = new MPJLambdaWrapper<>();
+        wrapper.isNotNull(true,VmCloudDisk::getAccountId);
+        wrapper.eq(StringUtils.isNotEmpty(cloudAccountId),VmCloudDisk::getAccountId,cloudAccountId);
+        wrapper.in(!CurrentUserUtils.isAdmin() && CollectionUtils.isNotEmpty(sourceIds),VmCloudServer::getSourceId,sourceIds);
+        wrapper.notIn(true, VmCloudDisk::getStatus, List.of(SpecialAttributesConstants.StatusField.DISK_DELETE));
+        return baseVmCloudDiskMapper.selectCount(wrapper);
+    }
+
 
 }
