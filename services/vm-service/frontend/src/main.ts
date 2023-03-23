@@ -38,6 +38,8 @@ const mount = async () => {
     app.use(route.router);
   }
 
+  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+  // @ts-ignore
   app.use(Fit2CloudPlus);
 
   //全局启用 pinia store

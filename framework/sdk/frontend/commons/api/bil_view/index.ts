@@ -48,8 +48,8 @@ function getHistoryTrend(
   return get(
     (import.meta.env.VITE_APP_NAME === "finance-management"
       ? ""
-      : "/finance-management") +
-      `/api/bill_view/history_trend/${type}/${historyNum}`,
+      : "/finance-management/") +
+      `api/bill_view/history_trend/${type}/${historyNum}`,
     {},
     loading
   );

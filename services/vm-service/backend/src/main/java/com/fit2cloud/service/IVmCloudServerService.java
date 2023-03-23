@@ -61,4 +61,6 @@ public interface IVmCloudServerService extends IService<VmCloudServer> {
     boolean grant(GrantRequest grantServerRequest);
 
     long countVmCloudServer();
+
+    List<Map<String, Object>> countByStatus();
 }

@@ -16,6 +16,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.annotation.Resource;
@@ -69,6 +70,13 @@ public class DiskAnalysisController {
     public ResultHolder<Map<String,List<BarTreeChartData>>> analysisCloudDiskByOrgWorkspace(
             @Validated ResourceAnalysisRequest request) {
         return ResultHolder.success(iDiskAnalysisService.analysisCloudDiskByOrgWorkspace(request));
+    }
+
+    @ApiOperation(value = "根据云账号查询云盘数量", notes = "根据云账号查询云盘数量")
+    @GetMapping("/cloud_account/disk/count")
+    @PreAuthorize("hasAnyCePermission('DISK_ANALYSIS:READ')")
+    public ResultHolder<Long> countDiskByCloudAccountId(@RequestParam("cloudAccountId") String cloudAccountId) {
+        return ResultHolder.success(iDiskAnalysisService.countDiskByCloudAccount(cloudAccountId));
     }
 
 }

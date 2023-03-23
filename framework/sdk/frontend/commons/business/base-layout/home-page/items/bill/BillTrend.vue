@@ -23,6 +23,7 @@ const props = withDefaults(
       loading?: Ref<boolean>
     ) => Promise<Result<Array<any>>>;
     headPosition?: "left" | "center";
+    chartHeight?: number | string;
   }>(),
   {
     needRoles: () => ["ADMIN", "ORGADMIN", "USER"],
@@ -30,6 +31,7 @@ const props = withDefaults(
     headPosition: "center",
     permission: "[finance-management]BILL_ViEW:READ",
     module: "finance-management",
+    chartHeight: 200,
   }
 );
 
@@ -221,6 +223,7 @@ onMounted(() => {
 
     <div
       class="chart_wrapper"
+      :style="{ height: chartHeight + 'px' }"
       v-loading="historyTrendLoading"
       ref="chartWrapper"
     ></div>
@@ -303,7 +306,6 @@ onMounted(() => {
   }
 
   .chart_wrapper {
-    height: 187px;
     min-height: 200px;
     width: 100%;
     display: flex;

@@ -40,17 +40,16 @@
               <div class="echart-title">
                 <div class="echart-title-left">云主机趋势</div>
                 <div class="echart-title-right">
-                  <el-select
+                  <el-radio-group
+                    class="custom-radio-group"
                     v-model="paramVmIncreaseTrendMonth"
                     @change="getIncreaseTrend('byIncrease')"
-                    style="width: 100px; margin-bottom: 7px"
-                    size="small"
                   >
-                    <el-option label="近7天" value="7" />
-                    <el-option label="近30天" value="30" />
-                    <el-option label="近半年" value="180" />
-                    <el-option label="近一年" value="360" />
-                  </el-select>
+                    <el-radio-button label="7">近7天</el-radio-button>
+                    <el-radio-button label="30">近30天</el-radio-button>
+                    <el-radio-button label="180">近半年</el-radio-button>
+                    <el-radio-button label="360">近一年</el-radio-button>
+                  </el-radio-group>
                 </div>
               </div>
               <div style="position: relative">
@@ -153,18 +152,19 @@
           <el-col :span="16">
             <div class="myChart">
               <div class="echart-title">
-                <div class="echart-title-left">
-                  <el-select
+                <div class="echart-title-left"></div>
+                <div class="echart-title-right">
+                  <el-radio-group
+                    class="custom-radio-group"
                     v-model="paramDepartmentType"
                     @change="getSpreadByDepartmentData('byDepartmentType')"
-                    style="width: 100px; margin-bottom: 7px"
-                    size="small"
                   >
-                    <el-option label="组织" value="org" />
-                    <el-option label="工作空间" value="workspace" />
-                  </el-select>
+                    <el-radio-button label="org">组织</el-radio-button>
+                    <el-radio-button label="workspace"
+                      >工作空间</el-radio-button
+                    >
+                  </el-radio-group>
                 </div>
-                <div class="echart-title-right"></div>
               </div>
               <div style="position: relative">
                 <ChartsSpeed
@@ -188,7 +188,6 @@ import { onMounted, ref } from "vue";
 import _ from "lodash";
 import ChartsSpeed from "@commons/components/echart/ChartsSpeed.vue";
 import ResourceSpreadViewApi from "@/api/server_analysis/index";
-import { ResourceAnalysisRequest } from "@/api/server_analysis/type";
 import * as echarts from "echarts";
 import {
   defaultPieDoughnutOptions,
@@ -439,6 +438,8 @@ const getSpreadByDepartmentData = (chartName: string) => {
         seriesData.value.push({ value: v.value, groupName: v.groupName });
       });
       _.set(options, "series[0].data", seriesData);
+      _.set(options, "series[0].name", "云主机");
+      _.set(options, "legend.data", ["云主机"]);
       const deptNumber = chartData.map((item: any) => item.name);
       let showEchart = false;
       let nameNum = 0;
@@ -653,8 +654,7 @@ const shortcuts = [
   margin-bottom: 30px;
 }
 .echart-title {
-  padding: 20px;
-  height: 20px;
+  padding: 24px;
 }
 .echart-title-left {
   float: left;

@@ -72,15 +72,16 @@
                 云主机分布
                 <div class="echart-title-right">
                   <div class="echart-title-left">
-                    <el-select
+                    <el-radio-group
+                      class="custom-radio-group"
                       v-model="paramDepartmentType"
                       @change="getSpreadByDepartmentData('department')"
-                      style="width: 100px; margin-bottom: 7px"
-                      size="small"
                     >
-                      <el-option label="组织" value="org" />
-                      <el-option label="工作空间" value="workspace" />
-                    </el-select>
+                      <el-radio-button label="org">组织</el-radio-button>
+                      <el-radio-button label="workspace"
+                        >工作空间</el-radio-button
+                      >
+                    </el-radio-group>
                   </div>
                 </div>
               </div>
@@ -101,17 +102,16 @@
               <div class="echart-title">
                 <div class="echart-title-left">云主机趋势</div>
                 <div class="echart-title-right">
-                  <el-select
+                  <el-radio-group
+                    class="custom-radio-group"
                     v-model="paramVmIncreaseTrendMonth"
                     @change="getVmIncreaseTrend()"
-                    style="width: 100px; margin-bottom: 7px"
-                    size="small"
                   >
-                    <el-option label="近7天" value="7" />
-                    <el-option label="近30天" value="30" />
-                    <el-option label="近半年" value="180" />
-                    <el-option label="近一年" value="360" />
-                  </el-select>
+                    <el-radio-button label="7">近7天</el-radio-button>
+                    <el-radio-button label="30">近30天</el-radio-button>
+                    <el-radio-button label="180">近半年</el-radio-button>
+                    <el-radio-button label="360">近一年</el-radio-button>
+                  </el-radio-group>
                 </div>
               </div>
               <div style="position: relative">
@@ -542,6 +542,8 @@ const getSpreadByDepartmentData = (chartName: string) => {
         seriesData.value.push({ value: v.value, groupName: v.groupName });
       });
       _.set(options, "series[0].data", seriesData);
+      _.set(options, "series[0].name", "云主机");
+      _.set(options, "legend.data", ["云主机"]);
       const deptNumber = chartData.map((item: any) => item.name);
       let showEchart = false;
       let nameNum = 0;

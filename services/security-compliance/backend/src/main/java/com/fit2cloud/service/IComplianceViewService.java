@@ -5,8 +5,12 @@ import com.fit2cloud.controller.request.view.ComplianceCountRequest;
 import com.fit2cloud.controller.request.view.ComplianceGroupRequest;
 import com.fit2cloud.controller.response.view.ComplianceViewCountResponse;
 import com.fit2cloud.controller.response.view.ComplianceViewGroupResponse;
+import com.fit2cloud.controller.response.view.ComplianceViewRuleCountResponse;
+import com.fit2cloud.dao.constants.RiskLevel;
+import com.fit2cloud.dao.entity.ComplianceRuleCount;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * {@code @Author:张少虎}
@@ -40,5 +44,5 @@ public interface IComplianceViewService {
      * @param request 请求过滤对象
      * @return 规则聚合数据
      */
-    ComplianceViewCountResponse ruleCount(ComplianceCountRequest request);
+    Map<RiskLevel, ComplianceViewRuleCountResponse> ruleCount(ComplianceCountRequest request);
 }

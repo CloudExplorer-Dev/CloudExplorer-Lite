@@ -11,6 +11,7 @@ import SecurityInfo from "./items/SecurityInfo.vue";
 import BillTrend from "./items/bill/BillTrend.vue";
 import ServerIncreaseTrend from "./items/ServerIncreaseTrend.vue";
 import ServerOptimization from "./items/ServerOptimization.vue";
+import ServerStatusView from "./items/ServerStatusView.vue";
 
 onMounted(() => {
   console.log("home page load!");
@@ -23,13 +24,14 @@ onMounted(() => {
         <QuickAccess />
         <SecurityInfo />
         <ServerOptimization />
-        <BillTrend head-position="left" />
+        <BillTrend head-position="left" chart-height="310" />
         <ServerIncreaseTrend />
       </el-col>
       <el-col :span="8">
         <UserInfo />
         <MyResources />
         <BillModuleGroup />
+        <ServerStatusView />
       </el-col>
     </el-row>
   </el-container>

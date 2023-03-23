@@ -11,7 +11,6 @@ import {
 } from "@commons/api/resource_optimization/type";
 import { ResourceAnalysisRequest } from "@commons/api/resource_spread_view/type";
 import ResourceOptimizationViewApi from "@commons/api/resource_optimization";
-import type { SimpleMap } from "@commons/api/base/type";
 
 const props = withDefaults(
   defineProps<{

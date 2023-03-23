@@ -1,5 +1,8 @@
 interface VmCloudDatastoreVO {
   id: string;
+  datastoreName: string;
+  zone: string;
+  accountId: string;
 }
 
 interface ListVmCloudDatastoreRequest {

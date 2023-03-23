@@ -60,6 +60,13 @@ public class VmCloudServerController {
         return ResultHolder.success(iVmCloudServerService.countVmCloudServer());
     }
 
+    @ApiOperation(value = "查询云主机数量", notes = "查询云主机数量")
+    @GetMapping("status/count")
+    @PreAuthorize("hasAnyCePermission('CLOUD_SERVER:READ')")
+    public ResultHolder<List<Map<String, Object>>> countByStatus() {
+        return ResultHolder.success(iVmCloudServerService.countByStatus());
+    }
+
     @ApiOperation(value = "开机", notes = "启动云主机操作系统")
     @PostMapping("powerOn/{serverId}")
     @PreAuthorize("hasAnyCePermission('CLOUD_SERVER:START')")
@@ -169,7 +176,7 @@ public class VmCloudServerController {
     @ApiOperation(value = "创建云主机", notes = "创建云主机")
     @PostMapping("create")
     @PreAuthorize("hasAnyCePermission('CLOUD_SERVER:CREATE')")
-    @OperatedLog(resourceType = ResourceTypeEnum.CLOUD_SERVER, operated = OperatedTypeEnum.ADD,param = "#request")
+    @OperatedLog(resourceType = ResourceTypeEnum.CLOUD_SERVER, operated = OperatedTypeEnum.ADD, param = "#request")
     public ResultHolder<Boolean> createServer(@RequestBody CreateServerRequest request) {
         return ResultHolder.success(iVmCloudServerService.createServer(request));
     }
@@ -197,7 +204,7 @@ public class VmCloudServerController {
     @ApiOperation(value = "云主机授权")
     @PostMapping("/grant")
     @PreAuthorize("hasAnyCePermission('CLOUD_SERVER:AUTH')")
-    @OperatedLog(resourceType = ResourceTypeEnum.CLOUD_SERVER,operated = OperatedTypeEnum.BATCH_AUTHORISATION,
+    @OperatedLog(resourceType = ResourceTypeEnum.CLOUD_SERVER, operated = OperatedTypeEnum.BATCH_AUTHORISATION,
             content = "#grantServerRequest.grant?'云主机批量授权':'云主机批量取消授权'",
             resourceId = "#grantServerRequest.ids")
     public ResultHolder<Boolean> grant(@RequestBody GrantRequest grantServerRequest) {

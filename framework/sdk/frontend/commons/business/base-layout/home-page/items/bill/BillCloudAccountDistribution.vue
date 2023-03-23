@@ -249,7 +249,7 @@ defineExpose({ show });
     <div class="title" :class="{ 'sub-main-title': subTitle }">
       本月费用分布
     </div>
-    <v-chart class="chart" :option="option" autoresize />
+    <v-chart class="chart" :option="option" autoresize v-loading="loading" />
   </div>
 </template>
 

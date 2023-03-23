@@ -37,4 +37,6 @@ public interface IDiskAnalysisService {
 
     Map<String,List<BarTreeChartData>> analysisCloudDiskByOrgWorkspace(ResourceAnalysisRequest request);
 
+    long countDiskByCloudAccount(String cloudAccountId);
+
 }

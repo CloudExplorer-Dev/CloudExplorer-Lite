@@ -10,6 +10,7 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.fit2cloud.base.entity.CloudAccount;
+import com.fit2cloud.base.entity.VmCloudDisk;
 import com.fit2cloud.base.entity.VmCloudHost;
 import com.fit2cloud.base.entity.VmCloudServer;
 import com.fit2cloud.base.mapper.BaseVmCloudServerMapper;
@@ -222,7 +223,8 @@ public class ServerAnalysisServiceImpl implements IServerAnalysisService {
                 }else{
                     chartData.setGroupName(resourceGroup.get(resourceId).get(0).getAccountName());
                 }
-                chartData.setYAxis(new BigDecimal(getResourceTotalDateBefore(month,dateStr)-getResourceTotalDateBefore(delMonth,dateStr)));
+                BigDecimal v = new BigDecimal(getResourceTotalDateBefore(month,dateStr)-getResourceTotalDateBefore(delMonth,dateStr));
+                chartData.setYAxis(v.compareTo(BigDecimal.ZERO)==-1?BigDecimal.ZERO:v);
                 tempChartDataList.add(chartData);
             });
         });
@@ -568,6 +570,17 @@ public class ServerAnalysisServiceImpl implements IServerAnalysisService {
             barTreeChartData.setValue(barTreeChartData.getValue() + u.getValue());
         });
         return filterList.stream().filter(v->v.getValue()>0).toList();
+    }
+
+    @Override
+    public long countCloudServerByCloudAccount(String cloudAccountId) {
+        List<String> sourceIds = permissionService.getSourceIds();
+        MPJLambdaWrapper<VmCloudServer> wrapper = new MPJLambdaWrapper<>();
+        wrapper.isNotNull(true,VmCloudServer::getAccountId);
+        wrapper.eq(StringUtils.isNotEmpty(cloudAccountId),VmCloudServer::getAccountId,cloudAccountId);
+        wrapper.in(!CurrentUserUtils.isAdmin() && CollectionUtils.isNotEmpty(sourceIds),VmCloudServer::getSourceId,sourceIds);
+        wrapper.notIn(true, VmCloudServer::getInstanceStatus, List.of(SpecialAttributesConstants.StatusField.VM_DELETE,SpecialAttributesConstants.StatusField.FAILED));
+        return baseVmCloudServerMapper.selectCount(wrapper);
     }
 
 }

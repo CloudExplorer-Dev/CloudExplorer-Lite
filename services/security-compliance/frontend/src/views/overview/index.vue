@@ -1,11 +1,23 @@
 <template>
-  <layout-auto-height-content>
+  <layout-auto-height-content
+    :style="{ backgroundColor: '#f2f2f2', height: 'auto' }"
+    style="
+      --ce-main-content-padding-top: 0;
+      --ce-main-content-padding-left: 0;
+      --ce-main-content-padding-right: 0;
+      --ce-main-content-padding-bottom: 0;
+    "
+  >
     <template #breadcrumb>
-      <breadcrumb :auto="true"></breadcrumb>
-    </template>
-    <div class="view_wapper">
-      <el-row :gutter="12">
-        <el-col :span="6">
+      <breadcrumb :auto="true">
+        <div
+          style="
+            height: 100%;
+            display: flex;
+            align-items: center;
+            margin-right: 50px;
+          "
+        >
           <el-select
             v-model="activeCloudAccount"
             class="m-2"
@@ -17,33 +29,19 @@
               :key="item.value"
               :label="item.key"
               :value="item.value"
-            /> </el-select
-        ></el-col>
-      </el-row>
-
-      <el-row :gutter="12">
-        <el-col
-          :span="6"
-          v-for="describe in describeList"
-          :key="describe.field"
-        >
-          <resource-count-card
-            v-loading="resourceLoading"
-            :format="
-              describe.field === 'notCompliancePercentage'
-                ? (count) =>
-                    Number.isNaN(_.ceil(count, 2))
-                      ? '0%'
-                      : _.ceil(count * 100, 2) + '%'
-                : (count) => count
-            "
-            :describe="describe.describe"
-            :color="describe.color"
-            :count="viewCount ? viewCount[describe.field] : 0"
-          ></resource-count-card>
-        </el-col>
-      </el-row>
-      <el-row :gutter="12">
+            />
+          </el-select>
+        </div>
+      </breadcrumb>
+    </template>
+    <div class="view_wapper">
+      <SecurityInfo
+        ref="securityInfo"
+        :cloud-account-id="
+          activeCloudAccount === 'all' ? undefined : activeCloudAccount
+        "
+      ></SecurityInfo>
+      <el-row :gutter="8">
         <el-col :span="12">
           <group-card
             :cloud-account-id="activeCloudAccount"
@@ -77,9 +75,10 @@
           </group-card>
         </el-col>
       </el-row>
-      <el-row :gutter="12">
+      <el-row :gutter="8">
         <el-col :span="12">
           <group-card
+            :body-style="{ height: '412px' }"
             :cloud-account-id="activeCloudAccount"
             :click-series="
               (event:any) =>
@@ -96,6 +95,7 @@
         </el-col>
         <el-col :span="12">
           <group-card
+            :body-style="{ height: '412px' }"
             :cloud-account-id="activeCloudAccount"
             :click-series="
               (event:any) =>
@@ -122,35 +122,15 @@ import type {
   ComplianceViewCountResponse,
   ComplianceViewGroupResponse,
 } from "@/api/view/type";
-import _ from "lodash";
-import ResourceCountCard from "@/views/overview/components/ResourceCountCard.vue";
 import GroupCard from "@/views/overview/components/GroupCard.vue";
 import cloudAccountApi from "@commons/api/cloud_account";
 import type { KeyValue } from "@commons/api/base/type";
+import { PieTemplate } from "@commons/utils/echarts/template/PieTemplate";
+import { BarTemplate } from "@commons/utils/echarts/template/BarTemplate";
+import SecurityInfo from "@commons/business/base-layout/home-page/items/SecurityInfo.vue";
+const securityInfo = ref<InstanceType<typeof SecurityInfo>>();
 const router = useRouter();
 const viewCount = ref<ComplianceViewCountResponse>();
-const describeList = [
-  {
-    describe: "资源总数",
-    field: "total",
-    color: "rgba(254, 164, 126, 1)",
-  },
-  {
-    describe: "合规资源",
-    field: "complianceCount",
-    color: "rgba(10, 216, 144, 1)",
-  },
-  {
-    describe: "不合规资源",
-    field: "notComplianceCount",
-    color: "rgba(253, 126, 141, 1)",
-  },
-  {
-    describe: "不合规占比",
-    field: "notCompliancePercentage",
-    color: "rgba(0, 153, 255, 1)",
-  },
-];
 
 // 云账号列表
 const cloudAccountList = ref<Array<KeyValue<string, string>>>([]);
@@ -172,6 +152,9 @@ watch(activeCloudAccount, () => {
     .then((ok) => {
       viewCount.value = ok.data;
     });
+  securityInfo.value?.refresh(
+    activeCloudAccount.value === "all" ? undefined : activeCloudAccount.value
+  );
 });
 
 onMounted(() => {
@@ -199,468 +182,137 @@ onMounted(() => {
     ];
   });
 });
+/**
+ * 获取鼠标悬浮弹框内容
+ * @param title     标题
+ * @param titleName 标题名称
+ * @param data      数据
+ */
+const getTooltipFormatter = (title: string, titleName: string, data: any) => {
+  return `<div>
+              ${titleName}
+              <div style='display:flex;justify-content: space-between;width:200px'><div>${titleName}</div><div>不合规/总数</div></div>
+              <div style='display:flex;justify-content: space-between;width:200px'><div>${
+                data.name.length > 6
+                  ? data.name.substring(0, 6) + ".."
+                  : data.name
+              }</div><div>${data.data.notComplianceCount}/${
+    data.data.total
+  }</div></div>
+          </div>`;
+};
+
+/**
+ * 获取云账号echarts图表
+ * @param groupDatas 分组数据
+ */
 const getCloudAccountOptions = (
   groupDatas: Array<ComplianceViewGroupResponse>
 ) => {
-  return {
-    title: {
-      text: "扫描资源按云账号分布",
-      top: "20",
-      left: "20",
-      textStyle: {
-        fontSize: 14,
-        fontWeight: 400,
-      },
-    },
-    tooltip: {
-      trigger: "item",
-      formatter: (data: any) => {
-        return `<div>
-              不合规资源
-              <div style='display:flex;justify-content: space-between;width:200px'><div>云平台</div><div>不合规/总数</div></div>
-              <div style='display:flex;justify-content: space-between;width:200px'><div>${data.name}</div><div>${data.data.notComplianceCount}/${data.data.value}</div></div>
-          </div>`;
-      },
-    },
-    legend: {
-      bottom: "5%",
-      left: "center",
-    },
-    series: [
-      {
-        name: "不合规资源",
-        type: "pie",
-        radius: ["40%", "60%"],
-        avoidLabelOverlap: false,
-        itemStyle: {
-          borderRadius: 10,
-          borderColor: "#fff",
-          borderWidth: 2,
-        },
-        label: {
-          show: true,
-          position: "center",
-          backgroundColor: "#fff",
-          width: 140,
-          color: "#4c4a4a",
-          formatter: () => {
-            return `{title|资源总数}\r\n{value|${_.round(
-              _.sumBy(groupDatas, "total"),
-              2
-            ).toFixed(0)}}`;
-          },
-          rich: {
-            title: {
-              fontSize: 14,
-              color: "#333",
-            },
-            value: {
-              fontSize: 30,
-              color: "#000",
-              lineHeight: 44,
-            },
-          },
-        },
-        labelLine: {
-          show: false,
-        },
-        data: groupDatas.map((group) => ({
-          value: group.total,
-          name: group.groupName,
-          complianceCount: group.complianceCount,
-          notComplianceCount: group.notComplianceCount,
-          groupValue: group.groupValue,
-        })),
-      },
-    ],
-  };
+  const pieTemplate = PieTemplate.of(
+    groupDatas.map((item) => ({
+      ...item,
+      name: item.groupName,
+      value: item.notComplianceCount,
+    }))
+  );
+  //修改鼠标悬浮内容
+  pieTemplate.update("tooltip.formatter", (data: any) => {
+    return getTooltipFormatter("不合规云账号", "云账号名称", data);
+  });
+  // 修改标题
+  pieTemplate.updateTitleText("扫描资源 - 按云账号分布");
+  // 修改图表位置
+  pieTemplate.update("series.0.center", ["120px", "55%"]);
+  return pieTemplate.option;
 };
 
-const color = [
-  "#11cfae",
-  "#009ef0",
-  "#627dec",
-  "#0051a4",
-  "#893fdc",
-  "#89ffff",
-  "#0099ff",
-];
+/**
+ * 获取资源类型图表数据
+ * @param groupDatas 按资源类型分组数据
+ */
 const getResourceTypeOptions = (
   groupDatas: Array<ComplianceViewGroupResponse>
 ) => {
-  return {
-    title: {
-      text: "扫描规资源按资源类型分布",
-      top: "20",
-      left: "20",
-      textStyle: {
-        fontSize: 14,
-        fontWeight: 400,
-      },
-    },
-    tooltip: {
-      trigger: "item",
-      formatter: (data: any) => {
-        return `<div>
-              不合规资源
-              <div style='display:flex;justify-content: space-between;width:200px'><div>资源类型</div><div>不合规/总数</div></div>
-              <div style='display:flex;justify-content: space-between;width:200px'><div>${data.name}</div><div>${data.data.notComplianceCount}/${data.data.value}</div></div>
-          </div>`;
-      },
-    },
-    legend: {
-      bottom: "5%",
-      left: "center",
-    },
-    series: [
-      {
-        name: "不合规资源",
-        type: "pie",
-        radius: ["40%", "60%"],
-        avoidLabelOverlap: false,
-        itemStyle: {
-          borderRadius: 10,
-          borderColor: "#fff",
-          borderWidth: 2,
-        },
-        label: {
-          show: true,
-          position: "center",
-          backgroundColor: "#fff",
-          width: 140,
-          color: "#4c4a4a",
-          formatter: () => {
-            return `{title|资源总数}\r\n{value|${_.round(
-              _.sumBy(groupDatas, "total"),
-              2
-            ).toFixed(0)}}`;
-          },
-          rich: {
-            title: {
-              fontSize: 14,
-              color: "#333",
-            },
-            value: {
-              fontSize: 30,
-              color: "#000",
-              lineHeight: 44,
-            },
-          },
-        },
-        labelLine: {
-          show: false,
-        },
-        data: groupDatas.map((group) => ({
-          value: group.total,
-          name: group.groupName,
-          complianceCount: group.complianceCount,
-          notComplianceCount: group.notComplianceCount,
-          groupValue: group.groupValue,
-        })),
-      },
-    ],
-  };
+  const pieTemplate = PieTemplate.of(
+    groupDatas.map((item) => ({
+      ...item,
+      name: item.groupName,
+      value: item.notComplianceCount,
+    }))
+  );
+  // 修改鼠标悬浮内容
+  pieTemplate.update("tooltip.formatter", (data: any) => {
+    return getTooltipFormatter("不合规资源", "资源类型", data);
+  });
+  // 修改图表位置
+  pieTemplate.update("series.0.center", ["120px", "55%"]);
+  // 修改图表标题
+  pieTemplate.updateTitleText("扫描资源 - 按资源类型分布");
+  return pieTemplate.option;
 };
+
+/**
+ * 获取规则组图表数据
+ * @param groupDatas 按规则组组分组的数据
+ */
 const getRuleGroupOptions = (
   groupDatas: Array<ComplianceViewGroupResponse>
 ) => {
-  return {
-    title: {
-      text: "不合规资源按规则组分布",
-      top: "20",
-      left: "20",
-      textStyle: {
-        fontSize: 14,
-        fontWeight: 400,
-      },
-    },
-    tooltip: {
-      trigger: "item",
-      formatter: (data: any) => {
-        return `<div>
-              不合规资源
-              <div style='display:flex;justify-content: space-between;width:200px'><div>规则组名称</div><div>不合规/总数</div></div>
-              <div style='display:flex;justify-content: space-between;width:200px'><div>${data.name}</div><div>${data.data.notComplianceCount}/${data.data.value}</div></div>
-          </div>`;
-      },
-    },
-    xAxis: {
-      type: "category",
-      data: groupDatas.map((group) => group.groupName),
-    },
-    yAxis: {
-      type: "value",
-    },
-    series: [
-      {
-        data: groupDatas.map((group, index) => ({
-          value: group.total,
-          complianceCount: group.complianceCount,
-          notComplianceCount: group.notComplianceCount,
-          name: group.groupName,
-          groupValue: group.groupValue,
-          itemStyle: { color: index > 3 ? color[3] : color[index] },
-        })),
-        type: "bar",
-      },
-    ],
-  };
+  const barTemplate = BarTemplate.of(
+    groupDatas.map((item) => ({
+      ...item,
+      name: item.groupName,
+      value: item.notComplianceCount,
+    }))
+  );
+  // 鼠标移入弹框内容
+  barTemplate.update("tooltip.formatter", (data: any) => {
+    return getTooltipFormatter("不合规规则组", "规则组名称", data);
+  });
+  // 如果数据长度大于9 就加上滚动条
+  if (groupDatas.length >= 9) {
+    barTemplate.appendXDataZoom();
+  }
+  // 修改标题
+  barTemplate.updateTitleText("不合规资源-按规则组分布");
+  return barTemplate.option;
 };
 
+/**
+ * 获取规则图表数据
+ * @param groupDatas 按规则分组的数据
+ */
 const getRuleOptions = (groupDatas: Array<ComplianceViewGroupResponse>) => {
-  groupDatas.sort(
-    (pre, next) => next.notComplianceCount - pre.notComplianceCount
+  const ruleDataList = groupDatas.map((item) => ({
+    ...item,
+    name: item.groupName,
+    value: item.notComplianceCount,
+  }));
+  ruleDataList.sort(
+    (pre, next) => pre.notComplianceCount - next.notComplianceCount
   );
-  if (groupDatas.length > 5) {
-    groupDatas = groupDatas.filter((item, index) => index < 5);
+  const barTemplate = BarTemplate.of(ruleDataList);
+  // 添加鼠标移入提示
+  barTemplate.update("tooltip.formatter", (data: any) => {
+    return getTooltipFormatter("不合规规则", "规则名称", data);
+  });
+  // 柱状图转为横向柱状图
+  barTemplate.toHorizontal();
+  // 修改ecahrts间距
+  barTemplate.update("grid", {
+    x: 120,
+    y: 72,
+    x2: 24,
+    y2: 57,
+  });
+  // 修改title
+  barTemplate.updateTitleText("不合规规则排名");
+  // 如果数据长度大于9 就加上滚动条
+  if (ruleDataList.length >= 9) {
+    barTemplate.appendYDataZoom();
   }
-  return {
-    backgroundColor: "#fff",
-
-    tooltip: {
-      trigger: "item",
-      formatter: (data: any) => {
-        return `<div>
-              不合规资源
-              <div style='display:flex;justify-content: space-between;width:200px'><div>规则名称</div><div>不合规/总数</div></div>
-              <div style='display:flex;justify-content: space-between;width:200px'><div>${_.truncate(
-                data.data.groupName,
-                { length: 8 }
-              )}</div><div>${data.data.notComplianceCount}/${
-          data.data.total
-        }</div></div>
-          </div>`;
-      },
-    },
-    color: color,
-    title: {
-      text: "不合规规则 TOP 5",
-      top: "20",
-      left: "20",
-      textStyle: {
-        fontSize: 14,
-        fontWeight: 400,
-      },
-    },
-
-    legend: {
-      pageIconSize: [12, 12],
-      itemWidth: 20,
-      itemHeight: 10,
-      textStyle: {
-        //图例文字的样式
-        fontSize: 16,
-        color: "#444",
-      },
-      selectedMode: false,
-      data: ["不合规规则 TOP 5"],
-    },
-    xAxis: {
-      type: "value",
-      splitLine: {
-        show: false,
-      },
-      axisLabel: {
-        show: false,
-      },
-      axisTick: {
-        show: false,
-      },
-      axisLine: {
-        show: false,
-      },
-    },
-    yAxis: [
-      {
-        type: "category",
-        inverse: true,
-        axisLine: {
-          show: false,
-        },
-        axisTick: {
-          show: false,
-        },
-        axisPointer: {
-          label: {
-            show: true,
-          },
-        },
-        pdaaing: [5, 0, 0, 0],
-        postion: "right",
-        data: groupDatas.map(
-          (group) =>
-            `不合规资源/资源总数:${group.notComplianceCount}/${group.total}`
-        ),
-        axisLabel: {
-          margin: 30,
-          fontSize: 14,
-          align: "left",
-          padding: [2, 0, 0, 0],
-          color: "#000",
-          rich: {
-            nt1: {
-              color: "#fff",
-              backgroundColor: "#89ffff",
-              width: 13,
-              height: 10,
-              fontSize: 10,
-              align: "center",
-              borderRadius: 100,
-              lineHeight: "5",
-              padding: [0, 1, 2, 1],
-            },
-            nt2: {
-              color: "#fff",
-              backgroundColor: "#11cfae",
-              width: 13,
-              height: 10,
-              fontSize: 10,
-              align: "center",
-              borderRadius: 100,
-              padding: [0, 1, 2, 1],
-            },
-            nt3: {
-              color: "#fff",
-              backgroundColor: "#893fdc",
-              width: 13,
-              height: 10,
-              fontSize: 10,
-              align: "center",
-              borderRadius: 100,
-              padding: [0, 1, 2, 1],
-            },
-            nt: {
-              color: "#000",
-              backgroundColor: "#009ef0",
-              width: 13,
-              height: 10,
-              fontSize: 10,
-              align: "center",
-              borderRadius: 100,
-              padding: [0, 1, 2, 1],
-              lineHeight: 5,
-            },
-          },
-          formatter: function (value, index) {
-            index++;
-            if (index - 1 < 3) {
-              return ["{nt" + index + "|" + index + "}"].join("\n");
-            } else {
-              return ["{nt|" + index + "}"].join("\n");
-            }
-          },
-        },
-      },
-      {
-        type: "category",
-        inverse: true,
-        axisTick: "none",
-        axisLine: "none",
-        show: true,
-        axisLabel: {
-          textStyle: {
-            color: "#444",
-            fontSize: "14",
-          },
-        },
-        data: groupDatas.map(
-          (group) =>
-            `不合规资源/资源总数:${group.notComplianceCount}/${group.total}`
-        ),
-      },
-      {
-        //名称
-        type: "category",
-        offset: -10,
-        inverse: true,
-        position: "left",
-        axisLine: {
-          show: false,
-        },
-
-        axisTick: {
-          show: false,
-        },
-        axisLabel: {
-          interval: 0,
-          color: ["#000"],
-          align: "left",
-          verticalAlign: "bottom",
-          lineHeight: 32,
-          fontSize: 12,
-        },
-        data: groupDatas.map((group) => {
-          return _.truncate(group.groupName, { length: 8 });
-        }),
-      },
-    ],
-    series: [
-      {
-        zlevel: 1,
-        name: "不合规资源/资源总数",
-        type: "bar",
-        barWidth: "15px",
-        animationDuration: 1500,
-        data: groupDatas.map((group, index) => ({
-          value: group.notComplianceCount,
-          notComplianceCount: group.notComplianceCount,
-          complianceCount: group.complianceCount,
-          total: group.total,
-          groupName: group.groupName,
-          groupValue: group.groupValue,
-          itemStyle: { color: index > 3 ? color[3] : color[index] },
-        })),
-        align: "center",
-        itemStyle: {
-          barBorderRadius: 10,
-        },
-        label: {
-          show: true,
-          fontSize: 14,
-          color: "#fff",
-          textBorderWidth: 2,
-          padding: [2, 0, 0, 0],
-        },
-      },
-      {
-        name: "资源",
-        type: "bar",
-        barWidth: 15,
-        barGap: "-100%",
-        margin: "20",
-        data: groupDatas.map((group) => ({
-          value: groupDatas[0].total,
-          notComplianceCount: group.notComplianceCount,
-          complianceCount: group.complianceCount,
-          total: group.total,
-          groupName: group.groupName,
-          groupValue: group.groupValue,
-        })),
-        textStyle: {
-          //图例文字的样式
-          fontSize: 16,
-          color: "#000",
-        },
-        itemStyle: {
-          color: "#eee",
-          fontSize: 16,
-          barBorderRadius: 30,
-          backgroundColor: "#eee",
-          emphasis: {
-            color: "#eee",
-          },
-        },
-      },
-    ],
-    grid: {
-      left: "-5%",
-      right: "0%",
-      width: "100%",
-      bottom: "10%",
-      top: "20%",
-      containLabel: true,
-    },
-  };
+  return barTemplate.option;
 };
 </script>
 <style scoped lang="scss">
@@ -668,6 +320,6 @@ const getRuleOptions = (groupDatas: Array<ComplianceViewGroupResponse>) => {
   min-width: 900px;
 }
 .el-row {
-  margin-bottom: 20px;
+  margin-bottom: 16px;
 }
 </style>

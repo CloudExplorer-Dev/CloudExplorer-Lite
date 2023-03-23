@@ -2,11 +2,12 @@ import { get } from "@commons/request";
 import type Result from "@commons/request/Result";
 import type { Page } from "@commons/request/Result";
 import type {
-  ResourceAnalysisRequest,
   ListVmCloudServerRequest,
   VmCloudServerVO,
-} from "./type";
+  ResourceAnalysisRequest,
+} from "@/api/server_analysis/type";
 import type { Ref } from "vue";
+import BASE_API from "@commons/api/server_analysis/index";
 
 export function listServer(
   req: ListVmCloudServerRequest,
@@ -36,12 +37,6 @@ export function getSpreadData(
   return get("api/server_analysis/spread", req, loading);
 }
 
-export function getIncreaseTrend(
-  req: ResourceAnalysisRequest,
-  loading?: Ref<boolean>
-): Promise<Result<any>> {
-  return get("api/server_analysis/increase_trend", req, loading);
-}
 export function getResourceTrendData(
   req: ResourceAnalysisRequest,
   loading?: Ref<boolean>
@@ -49,18 +44,18 @@ export function getResourceTrendData(
   return get("api/server_analysis/resource_used_trend", req, loading);
 }
 export function getAnalysisOrgWorkspaceVmCount(
-  req: ResourceAnalysisRequest,
+  req: Ref<ResourceAnalysisRequest | undefined>,
   loading?: Ref<boolean>
 ): Promise<Result<any>> {
   return get("api/server_analysis/org_workspace_vm_count_bar", req, loading);
 }
 
 const ResourceSpreadViewApi = {
+  ...BASE_API,
   listServer,
   listAccounts,
   listHost,
   getSpreadData,
-  getIncreaseTrend,
   getResourceTrendData,
   getAnalysisOrgWorkspaceVmCount,
 };

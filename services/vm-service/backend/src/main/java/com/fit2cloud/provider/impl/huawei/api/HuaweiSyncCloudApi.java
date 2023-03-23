@@ -181,7 +181,7 @@ public class HuaweiSyncCloudApi {
             String expireTime = response.getOrderLineItems().stream().filter(orderLineItemEntityV2 ->
                     orderLineItemEntityV2.getProductId().equalsIgnoreCase(productId)
             ).collect(Collectors.toList()).get(0).getExpireTime();
-            f2CVirtualMachine.setCreateTime(new Date(CommonUtil.getUTCTime(expireTime, "yyyy-MM-dd'T'HH:mm:ss'Z'")).getTime());
+            f2CVirtualMachine.setExpiredTime(new Date(CommonUtil.getUTCTime(expireTime, "yyyy-MM-dd'T'HH:mm:ss'Z'")).getTime());
         }
     }
 
@@ -973,10 +973,15 @@ public class HuaweiSyncCloudApi {
             createServersRequest.withBody(body);
             CreateServersResponse response = client.createServers(createServersRequest);
             List<Port> ports = listPorts(request.getCredential(), request.getRegionId());
-            f2CVirtualMachine = HuaweiMappingUtil.toF2CVirtualMachine(getJobEntities(client, response.getJobId()), ports);
+            ServerDetail serverDetail =  getJobEntities(client, response.getJobId());
+            f2CVirtualMachine = HuaweiMappingUtil.toF2CVirtualMachine(serverDetail, ports);
             f2CVirtualMachine.setRegion(request.getRegionId());
             f2CVirtualMachine.setId(request.getId());
             setServerHostName(client, f2CVirtualMachine, request);
+            // 获取包年包月机器的到期时间
+            if (F2CChargeType.PRE_PAID.equalsIgnoreCase(f2CVirtualMachine.getInstanceChargeType())) {
+                appendExpiredTime(credential, serverDetail, f2CVirtualMachine);
+            }
         } catch (Exception e) {
             e.printStackTrace();
             throw new Fit2cloudException(5000, "Huawei create vm fail - " + e.getMessage());

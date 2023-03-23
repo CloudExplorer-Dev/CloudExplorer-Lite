@@ -17,6 +17,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.annotation.Resource;
@@ -85,6 +86,13 @@ public class ServerAnalysisController {
     public ResultHolder<Map<String,List<BarTreeChartData>>> analysisVmCloudServerByOrgWorkspace(
             @Validated ResourceAnalysisRequest request) {
         return ResultHolder.success(iServerAnalysisService.analysisVmCloudServerByOrgWorkspace(request));
+    }
+
+    @ApiOperation(value = "根据云账号查询云主机数量", notes = "根据云账号查询云主机数量")
+    @GetMapping("/cloud_account/cloud_server/count")
+    @PreAuthorize("hasAnyCePermission('SERVER_ANALYSIS:READ')")
+    public ResultHolder<Long> countCloudServerByCloudAccountId(@RequestParam("cloudAccountId") String cloudAccountId) {
+        return ResultHolder.success(iServerAnalysisService.countCloudServerByCloudAccount(cloudAccountId));
     }
 
 

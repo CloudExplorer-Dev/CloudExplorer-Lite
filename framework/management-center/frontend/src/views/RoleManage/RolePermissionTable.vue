@@ -39,7 +39,6 @@
         <el-table-column label="操作对象" min-width="100px">
           <template #default="scope">
             {{ t(scope.row.name) }}
-            <span>dddd</span>
           </template>
         </el-table-column>
         <el-table-column label="权限" min-width="300px">

@@ -34,6 +34,7 @@ import com.fit2cloud.dto.AnalysisHostDTO;
 import com.fit2cloud.dto.KeyValue;
 import com.fit2cloud.es.entity.PerfMetricMonitorData;
 import com.fit2cloud.service.IBaseResourceAnalysisService;
+import com.fit2cloud.service.IPermissionService;
 import com.fit2cloud.utils.OperationUtils;
 import com.github.yulichang.wrapper.MPJLambdaWrapper;
 import org.apache.commons.collections.CollectionUtils;
@@ -76,6 +77,8 @@ public class BaseResourceAnalysisServiceImpl implements IBaseResourceAnalysisSer
     private ElasticsearchTemplate elasticsearchTemplate;
     @Resource
     private ElasticsearchProvide elasticsearchProvide;
+    @Resource
+    private IPermissionService permissionService;
 
     /**
      * @param request 宿主机分页查询参数
@@ -96,6 +99,13 @@ public class BaseResourceAnalysisServiceImpl implements IBaseResourceAnalysisSer
     @Override
     public long countHost() {
         return iBaseVmCloudHostService.count();
+    }
+
+    @Override
+    public long countHost(String cloudAccountId) {
+        MPJLambdaWrapper<VmCloudHost> wrapper = new MPJLambdaWrapper<>();
+        wrapper.eq(StringUtils.isNotEmpty(cloudAccountId),VmCloudHost::getAccountId,cloudAccountId);
+        return iBaseVmCloudHostService.count(wrapper);
     }
 
     /**
@@ -125,6 +135,13 @@ public class BaseResourceAnalysisServiceImpl implements IBaseResourceAnalysisSer
     @Override
     public long countDatastore() {
         return iBaseVmCloudDatastoreService.count();
+    }
+
+    @Override
+    public long countDatastore(String cloudAccountId) {
+        MPJLambdaWrapper<VmCloudDatastore> wrapper = new MPJLambdaWrapper<>();
+        wrapper.eq(StringUtils.isNotEmpty(cloudAccountId),VmCloudDatastore::getAccountId,cloudAccountId);
+        return iBaseVmCloudDatastoreService.count(wrapper);
     }
 
     private MPJLambdaWrapper<VmCloudDatastore> addQueryDatastore(PageDatastoreRequest request) {
@@ -165,6 +182,7 @@ public class BaseResourceAnalysisServiceImpl implements IBaseResourceAnalysisSer
                     Map<String, String> map = new HashMap<>(2);
                     map.put("id", v.get(0).getZone());
                     map.put("name", v.get(0).getZone());
+                    map.put("accountId", v.get(0).getAccountId());
                     result.add(map);
                 }
             });
@@ -221,7 +239,7 @@ public class BaseResourceAnalysisServiceImpl implements IBaseResourceAnalysisSer
             BigDecimal cpuTotal = new BigDecimal(hosts.stream().mapToLong(VmCloudHost::getNumCpuCores).sum());
             BigDecimal cpuAllocated = new BigDecimal(hosts.stream().mapToLong(VmCloudHost::getVmCpuCores).sum());
             BigDecimal cpuAllocatedRate = cpuAllocated.divide(cpuTotal, 2, RoundingMode.HALF_UP).multiply(new BigDecimal(100));
-            result.put("cpu", ResourceAllocatedInfo.builder()
+            result.put(SpecialAttributesConstants.ResourceField.CPU, ResourceAllocatedInfo.builder()
                     .total(cpuTotal)
                     .allocated(cpuAllocated)
                     .allocatedRate(cpuAllocatedRate.compareTo(new BigDecimal(100)) > 0 ? new BigDecimal(100) : cpuAllocatedRate)
@@ -230,7 +248,7 @@ public class BaseResourceAnalysisServiceImpl implements IBaseResourceAnalysisSer
             BigDecimal memoryTotal = new BigDecimal(hosts.stream().mapToLong(VmCloudHost::getMemoryTotal).sum());
             BigDecimal memoryAllocated = new BigDecimal(hosts.stream().mapToLong(VmCloudHost::getMemoryAllocated).sum());
             BigDecimal memoryAllocatedRate = memoryAllocated.divide(memoryTotal, 2, RoundingMode.HALF_UP).multiply(new BigDecimal(100));
-            result.put("memory", ResourceAllocatedInfo.builder()
+            result.put(SpecialAttributesConstants.ResourceField.MEMORY, ResourceAllocatedInfo.builder()
                     .total(memoryTotal.divide(new BigDecimal(1024), RoundingMode.HALF_UP))
                     .allocated(memoryAllocated.divide(new BigDecimal(1024), RoundingMode.HALF_UP))
                     .allocatedRate(memoryAllocatedRate.compareTo(new BigDecimal(100)) > 0 ? new BigDecimal(100) : memoryAllocatedRate)
@@ -285,7 +303,7 @@ public class BaseResourceAnalysisServiceImpl implements IBaseResourceAnalysisSer
         hosts.forEach(v -> {
             KeyValue kv = new KeyValue();
             kv.setName(v.getHostName());
-            switch (request.getVmStatus()) {
+            switch (StringUtils.isEmpty(request.getVmStatus())?"":request.getVmStatus()) {
                 case "running" -> kv.setValue(v.getVmRunning());
                 case "stopped" -> kv.setValue(v.getVmStopped());
                 default -> kv.setValue(v.getVmTotal());
@@ -471,4 +489,5 @@ public class BaseResourceAnalysisServiceImpl implements IBaseResourceAnalysisSer
         }
         return result;
     }
+
 }

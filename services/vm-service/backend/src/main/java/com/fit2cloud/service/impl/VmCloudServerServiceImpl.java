@@ -148,6 +148,10 @@ public class VmCloudServerServiceImpl extends ServiceImpl<BaseVmCloudServerMappe
     public List<VmCloudServer> listVmCloudServer(PageVmCloudServerRequest request) {
         setCurrentInfos(request);
         QueryWrapper<VmCloudServer> wrapper = addQuery(request);
+        wrapper.lambda()
+                .ne(VmCloudServer::getInstanceStatus, F2CInstanceStatus.Creating.name())
+                .ne(VmCloudServer::getInstanceStatus, F2CInstanceStatus.WaitCreating.name())
+                .ne(VmCloudServer::getInstanceStatus, F2CInstanceStatus.Failed.name());
         return this.list(wrapper);
     }
 
@@ -156,7 +160,29 @@ public class VmCloudServerServiceImpl extends ServiceImpl<BaseVmCloudServerMappe
         PageVmCloudServerRequest request = new PageVmCloudServerRequest();
         setCurrentInfos(request);
         QueryWrapper<VmCloudServer> wrapper = addQuery(request);
+        wrapper.lambda()
+                .ne(VmCloudServer::getInstanceStatus, F2CInstanceStatus.Creating.name())
+                .ne(VmCloudServer::getInstanceStatus, F2CInstanceStatus.WaitCreating.name())
+                .ne(VmCloudServer::getInstanceStatus, F2CInstanceStatus.Failed.name());
         return this.count(wrapper);
+    }
+
+    @Override
+    public List<Map<String, Object>> countByStatus() {
+        PageVmCloudServerRequest request = new PageVmCloudServerRequest();
+        setCurrentInfos(request);
+        QueryWrapper<VmCloudServer> wrapper = addQuery(request);
+        wrapper.select(
+                        ColumnNameUtil.getColumnName(VmCloudServer::getInstanceStatus, true) + " as status",
+                        "count(" + ColumnNameUtil.getColumnName(VmCloudServer::getId, true) + ") as count")
+                .lambda()
+                .groupBy(VmCloudServer::getInstanceStatus)
+                .ne(VmCloudServer::getInstanceStatus, F2CInstanceStatus.Creating.name())
+                .ne(VmCloudServer::getInstanceStatus, F2CInstanceStatus.WaitCreating.name())
+                .ne(VmCloudServer::getInstanceStatus, F2CInstanceStatus.Failed.name());
+
+        return this.listMaps(wrapper);
+
     }
 
     private <T extends VmCloudServer> QueryWrapper<T> addQuery(PageVmCloudServerRequest request) {

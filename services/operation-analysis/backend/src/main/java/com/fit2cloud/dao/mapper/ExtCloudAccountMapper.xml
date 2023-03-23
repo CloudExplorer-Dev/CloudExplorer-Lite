@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.fit2cloud.dao.mapper.ExtCloudAccountMapper">
+    <resultMap id="ExtResultMap" type="com.fit2cloud.dto.AnalysisCloudAccountDTO"
+               extends="com.fit2cloud.base.mapper.BaseCloudAccountMapper.BaseResultMap">
+        <result column="host_count" property="hostCount"/>
+        <result column="datastore_count" property="datastoreCount"/>
+    </resultMap>
+
+    <select id="pageAccountSummary" resultMap="ExtResultMap">
+        SELECT
+        t.*,
+        count(DISTINCT vm_cloud_host.id) as host_count,
+        count(DISTINCT vm_cloud_datastore.id) as datastore_count
+        FROM cloud_account t
+        LEFT JOIN vm_cloud_host ON vm_cloud_host.account_id = t.id
+        LEFT JOIN vm_cloud_datastore ON vm_cloud_datastore.account_id = t.id
+        ${ew.customSqlSegment}
+    </select>
+</mapper>
