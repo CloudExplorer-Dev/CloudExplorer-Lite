@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import { computed, onMounted } from "vue";
+import { onMounted } from "vue";
 
 import UserInfo from "./items/UserInfo.vue";
 import MyResources from "./items/MyResources.vue";
@@ -9,13 +9,9 @@ import BillModuleGroup from "./items/bill/BillModuleGroup.vue";
 import SecurityInfo from "./items/SecurityInfo.vue";
 
 import BillTrend from "./items/bill/BillTrend.vue";
-import ServerIncreaseTrend from "./items/ServerIncreaseTrend.vue";
-import ServerOptimization from "./items/ServerOptimization.vue";
+import CloudServerIncreaseTrend from "./items/operation/CloudServerIncreaseTrend.vue";
+import ServerOptimization from "./items/operation/ServerOptimization.vue";
 import ServerStatusView from "./items/ServerStatusView.vue";
-
-onMounted(() => {
-  console.log("home page load!");
-});
 </script>
 <template>
   <el-container class="contentContainer" direction="vertical">
@@ -25,7 +21,7 @@ onMounted(() => {
         <SecurityInfo />
         <ServerOptimization />
         <BillTrend head-position="left" chart-height="310" />
-        <ServerIncreaseTrend />
+        <CloudServerIncreaseTrend />
       </el-col>
       <el-col :span="8">
         <UserInfo />

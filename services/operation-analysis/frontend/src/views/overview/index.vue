@@ -2,7 +2,8 @@
 import Detailed from "./items/resource_detailed/Detailed.vue";
 import ComputerResourceAllocatedRate from "@/views/base_resource_analysis/item/ComputerResourceAllocatedRate.vue";
 import CloudServerOrgWorkspaceSpread from "@/views/server_analysis/item/CloudServerOrgWorkspaceSpread.vue";
-import CloudServerIncreaseTrend from "@/views/server_analysis/item/CloudServerIncreaseTrend.vue";
+import CloudServerIncreaseTrend from "@commons/business/base-layout/home-page/items/operation/CloudServerIncreaseTrend.vue";
+import ServerOptimization from "@commons/business/base-layout/home-page/items/operation/ServerOptimization.vue";
 import { ref, onMounted } from "vue";
 import CommonApi from "@/api/common/index";
 import type { CloudAccount } from "@commons/api/cloud_account/type";
@@ -19,7 +20,7 @@ onMounted(() => {
 </script>
 <template>
   <el-container class="contentContainer" direction="vertical">
-    <div style="padding: 0px 24px 0px 24px">
+    <div style="padding: 0 24px 0 24px">
       <div style="float: left">
         <h3>总览</h3>
       </div>
@@ -36,49 +37,28 @@ onMounted(() => {
       </div>
     </div>
     <div class="content">
-      <el-row :gutter="16" type="flex">
+      <el-row :gutter="16">
         <el-col :span="24">
-          <div class="flex-content">
-            <div class="flex-div-1 divide-info">
-              <Detailed :cloud-account-id="currentAccountId"></Detailed>
-            </div>
-          </div>
+          <Detailed :cloud-account-id="currentAccountId"></Detailed>
         </el-col>
       </el-row>
-      <el-row :gutter="16" type="flex">
+      <el-row :gutter="16">
         <el-col :span="12">
-          <div class="flex-content">
-            <div class="flex-div-1 divide-info">
-              <ComputerResourceAllocatedRate
-                :cloud-account-id="currentAccountId"
-              ></ComputerResourceAllocatedRate>
-            </div>
-          </div>
+          <ComputerResourceAllocatedRate :cloud-account-id="currentAccountId" />
+        </el-col>
+        <el-col :span="12"> </el-col>
+      </el-row>
+      <el-row :gutter="16">
+        <el-col :span="12">
+          <CloudServerOrgWorkspaceSpread :cloud-account-id="currentAccountId" />
         </el-col>
         <el-col :span="12">
-          <div class="flex-content">
-            <div class="flex-div-1 divide-info"></div>
-          </div>
+          <CloudServerIncreaseTrend :cloud-account-id="currentAccountId" />
         </el-col>
       </el-row>
-      <el-row :gutter="16" type="flex">
-        <el-col :span="12">
-          <div class="flex-content">
-            <div class="flex-div-1 divide-info">
-              <CloudServerOrgWorkspaceSpread
-                :cloud-account-id="currentAccountId"
-              ></CloudServerOrgWorkspaceSpread>
-            </div>
-          </div>
-        </el-col>
-        <el-col :span="12">
-          <div class="flex-content">
-            <div class="flex-div-1 divide-info">
-              <CloudServerIncreaseTrend
-                :cloud-account-id="currentAccountId"
-              ></CloudServerIncreaseTrend>
-            </div>
-          </div>
+      <el-row :gutter="16">
+        <el-col :span="24">
+          <ServerOptimization :cloud-account-id="currentAccountId" />
         </el-col>
       </el-row>
     </div>
@@ -107,15 +87,11 @@ onMounted(() => {
   margin-left: var(--ce-main-breadcrumb-margin-right, 30px);
 }
 .content {
-  margin: var(--ce-main-content-margin-top, 10px)
+  padding: var(--ce-main-content-margin-top, 10px)
     var(--ce-main-content-margin-left, 30px)
     var(--ce-main-content-margin-right, 30px)
     var(--ce-main-content-margin-bottom, 30px);
-  height: calc(
-    100% - var(--ce-main-breadcrumb-height, 50px) -
-      var(--ce-main-content-margin-top, 10px) -
-      var(--ce-main-content-margin-bottom, 30px)
-  );
+  height: calc(100% - var(--ce-main-breadcrumb-height, 50px));
   width: calc(
     100% - var(--ce-main-content-margin-left, 30px) -
       var(--ce-main-content-margin-right, 30px)

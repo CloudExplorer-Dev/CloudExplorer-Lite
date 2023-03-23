@@ -24,7 +24,7 @@ public class OptimizationRequest {
     private boolean memoryMaxRate;
     @ApiModelProperty("云账号ID")
     private String accountId;
-    @ApiModelProperty("云账号IDS")
+    @ApiModelProperty("云账号ID列表")
     private List<String> accountIds;
     @ApiModelProperty("云主机名称")
     private String instanceName;

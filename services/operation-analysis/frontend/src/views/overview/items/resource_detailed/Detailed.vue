@@ -6,8 +6,17 @@ const props = defineProps<{
 }>();
 </script>
 <template>
-  <el-card shadow="never" class="info-card">
+  <div class="info-card">
     <CountGroup :cloud-account-id="props.cloudAccountId" />
     <CountTable :cloud-account-id="props.cloudAccountId" />
-  </el-card>
+  </div>
 </template>
+
+<style scoped lang="scss">
+.info-card {
+  background: #ffffff;
+  border-radius: 4px;
+  padding: 24px;
+  overflow: hidden;
+}
+</style>
