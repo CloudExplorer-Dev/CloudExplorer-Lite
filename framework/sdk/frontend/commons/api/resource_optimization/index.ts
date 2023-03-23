@@ -5,7 +5,7 @@ import type { ListOptimizationRequest, VmCloudServerVO } from "./type";
 import type { Ref } from "vue";
 
 export function listServer(
-  req: ListOptimizationRequest | Record<string, never>,
+  req: ListOptimizationRequest,
   loading?: Ref<boolean>
 ): Promise<Result<Page<VmCloudServerVO>>> {
   return get(

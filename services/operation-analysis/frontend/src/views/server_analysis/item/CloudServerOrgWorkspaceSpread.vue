@@ -1,5 +1,5 @@
 <template>
-  <el-card shadow="never" class="info-card">
+  <div class="info-card">
     <el-row>
       <el-col :span="10">
         <div class="title">云主机分布</div>
@@ -33,7 +33,7 @@
         </div>
       </el-col>
     </el-row>
-  </el-card>
+  </div>
 </template>
 <script setup lang="ts">
 import VChart from "vue-echarts";
@@ -228,21 +228,17 @@ const barSeriesItemStyle = {
 const barSeriesLabel = {
   show: true, //开启显示
   position: "top", //在上方显示
-  textStyle: {
-    //数值样式
-    color: "black",
-    fontSize: 12,
-  },
+  //数值样式
+  color: "black",
+  fontSize: 12,
 };
 </script>
 <style scoped lang="scss">
 .info-card {
-  height: 448px;
   background: #ffffff;
   border-radius: 4px;
-  flex: none;
-  order: 0;
-  flex-grow: 0;
+  padding: 24px;
+  overflow: hidden;
 }
 .chart {
   min-height: 368px;
@@ -261,7 +257,7 @@ const barSeriesLabel = {
   margin-top: 15px;
   margin-bottom: 10px;
   position: initial;
-  font-family: "PingFang SC", serif;
+
   font-style: normal;
   font-weight: 400;
   font-size: 14px;
