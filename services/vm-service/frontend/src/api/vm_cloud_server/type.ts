@@ -140,17 +140,6 @@ interface GrantRequest {
   grant: boolean;
 }
 
-export enum IpType {
-  IPv4,
-  IPv6,
-}
-
-interface Ip {
-  ip: string;
-  type: IpType;
-  isPublicIp: boolean;
-}
-
 export type {
   VmCloudServerVO,
   ListVmCloudServerRequest,
@@ -159,5 +148,4 @@ export type {
   GetPerfMonitorRequest,
   ChangeServerConfigRequest,
   GrantRequest,
-  Ip,
 };

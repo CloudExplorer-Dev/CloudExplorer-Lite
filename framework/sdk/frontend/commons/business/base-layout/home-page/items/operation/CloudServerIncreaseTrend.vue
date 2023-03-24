@@ -1,5 +1,5 @@
 <template>
-  <el-card shadow="never" class="info-card">
+  <div class="info-card">
     <el-row>
       <el-col :span="10">
         <div class="title">云主机趋势</div>
@@ -31,36 +31,40 @@
         </div>
       </el-col>
     </el-row>
-  </el-card>
+  </div>
 </template>
 <script setup lang="ts">
 import VChart from "vue-echarts";
 import { computed, ref, watch } from "vue";
 import _ from "lodash";
-import type { ResourceAnalysisRequest } from "@/api/server_analysis/type";
+import type { ResourceAnalysisRequest } from "@commons/api/server_analysis/type";
 import type { ECBasicOption } from "echarts/types/src/util/types";
-import CloudServerViewApi from "@/api/server_analysis/index";
+import CloudServerViewApi from "@commons/api/server_analysis/index";
 import * as echarts from "echarts";
+
 const props = defineProps<{
   cloudAccountId?: string | undefined;
   clusterId?: string | undefined;
   datastoreId?: string | undefined;
   hostId?: string | undefined;
 }>();
-const params = ref<ResourceAnalysisRequest>();
+
+const params = ref<ResourceAnalysisRequest>({});
 const paramVmIncreaseTrendMonth = ref<string>("7");
 const loading = ref<boolean>(false);
 const apiData = ref<any>();
 
 const getIncreaseTrend = () => {
-  _.set(params, "dayNumber", paramVmIncreaseTrendMonth.value);
+  _.set(params.value, "dayNumber", paramVmIncreaseTrendMonth.value);
   _.set(
-    params,
+    params.value,
     "accountIds",
-    props.cloudAccountId === "all" ? [] : [props.cloudAccountId]
+    props.cloudAccountId && props.cloudAccountId !== "all"
+      ? [props.cloudAccountId]
+      : []
   );
   props.hostId
-    ? _.set(params, "hostIds", props.hostId === "all" ? [] : [props.hostId])
+    ? _.set(params.value, "hostIds", props.hostId === "all" ? [] : [props.hostId])
     : "";
   CloudServerViewApi.getIncreaseTrend(params, loading).then(
     (res) => (apiData.value = res.data)
@@ -312,6 +316,10 @@ const getRandomColor = () => {
 .info-card {
   height: 295px;
   min-width: 400px;
+  background: #ffffff;
+  border-radius: 4px;
+  padding: 24px;
+  overflow: hidden;
 }
 .chart {
   min-height: 214px;

@@ -1,47 +1,40 @@
 <template>
-  <layout-container :border="border">
-    <template #content>
-      <!-- 定时任务参数 -->
-      <region-setting-view
-        v-if="regionJob.length > 0"
-        :jobDetails="regionJob"
-        :regions="regions"
-        :border="border"
-        :readOnly="readOnly"
-      ></region-setting-view>
-      <bill-setting-view
-        v-if="billJob.length > 0"
-        :jobDetails="billJob"
-        :cloudAccount="cloudAccount"
-        :border="border"
-        :readOnly="readOnly"
-        ref="billSetting"
-      ></bill-setting-view>
-      <!-- 定时任务设置 -->
-      <!-- 定时任务设置 -->
-      <job-setting
-        v-if="billJob.length > 0"
-        ref="jobCronSettingRef"
-        :jobDetails="billJob"
-        :border="border"
-        :readOnly="readOnly"
-      ></job-setting>
-      <job-setting
-        v-else-if="complianceJob.length > 0"
-        ref="jobCronSettingRef"
-        :jobDetails="complianceJob"
-        :border="border"
-        :readOnly="readOnly"
-      ></job-setting>
-      <job-setting
-        v-else
-        ref="jobCronSettingRef"
-        :jobDetails="regionJob"
-        :border="border"
-        :readOnly="readOnly"
-      ></job-setting>
-    </template>
-  </layout-container>
+  <!-- 定时任务参数 -->
+  <region-setting-view
+    v-if="regionJob.length > 0"
+    :jobDetails="regionJob"
+    :regions="regions"
+    :border="border"
+    :readOnly="readOnly"
+  ></region-setting-view>
+  <bill-setting-view
+    v-if="billJob.length > 0"
+    :jobDetails="billJob"
+    :cloudAccount="cloudAccount"
+    :readOnly="readOnly"
+    ref="billSetting"
+  ></bill-setting-view>
+  <!-- 定时任务设置 -->
+  <!-- 定时任务设置 -->
+  <job-setting
+    v-if="billJob.length > 0"
+    ref="jobCronSettingRef"
+    :jobDetails="billJob"
+    :readOnly="readOnly"
+  ></job-setting>
+  <job-setting
+    v-else-if="complianceJob.length > 0"
+    ref="jobCronSettingRef"
+    :jobDetails="complianceJob"
+    jobTypeDescription="扫描"
+    :readOnly="readOnly"
+  ></job-setting>
+  <job-setting
+    v-else
+    ref="jobCronSettingRef"
+    :jobDetails="regionJob"
+    :readOnly="readOnly"
+  ></job-setting>
 </template>
 <script setup lang="ts">
 import { ref, computed } from "vue";

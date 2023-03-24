@@ -1,7 +1,7 @@
 <!--系统日志列表-->
 <template>
-  <el-form :model="form" ref="formRef" label-width="auto">
-    <layout-container>
+  <el-form :model="form" ref="formRef" label-width="auto" label-position="top">
+    <base-container>
       <template #header>
         <span>{{
           $t("system_setting.params_setting.recycle_bin.strategy")
@@ -24,7 +24,14 @@
             </el-switch>
           </el-row>
 
-          <el-row style="width: 100%; font-size: 12px; line-height: 16px">
+          <el-row
+            style="
+              width: 100%;
+              font-size: 12px;
+              line-height: 16px;
+              margin-top: 12px;
+            "
+          >
             <el-col :span="1">
               {{ $t("system_setting.params_setting.recycle_bin.tips") }}
             </el-col>
@@ -40,14 +47,15 @@
           </el-row>
         </el-form-item>
       </template>
-    </layout-container>
-    <layout-container
-      v-hasPermission="'[management-center]PARAMS_SETTING:EDIT'"
-    >
-      <el-button type="primary" @click="save()">{{
-        $t("commons.btn.save")
-      }}</el-button>
-    </layout-container>
+      <template #formFooter>
+        <el-button
+          type="primary"
+          @click="save()"
+          v-hasPermission="'[management-center]PARAMS_SETTING:EDIT'"
+          >{{ $t("commons.btn.save") }}</el-button
+        >
+      </template>
+    </base-container>
   </el-form>
 </template>
 

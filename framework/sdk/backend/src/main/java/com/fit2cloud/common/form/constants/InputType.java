@@ -22,9 +22,13 @@ public enum InputType {
      */
     Text(InputTextForm.class),
     /**
-     * 单选框
+     * 单选框 (按钮)
      */
     Radio(RadioForm.class),
+    /**
+     * 单选框（原生）
+     */
+    RadioRaw(RadioForm.class),
     /**
      * 多选框
      */

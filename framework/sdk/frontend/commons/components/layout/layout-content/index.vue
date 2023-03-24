@@ -20,6 +20,7 @@ const props = withDefaults(defineProps<{ style: any }>(), {
 }
 .content {
   width: 100%;
+  position: relative;
   margin: var(--ce-main-content-margin-top, 10px)
     var(--ce-main-content-margin-left, 24px)
     var(--ce-main-content-margin-right, 24px)

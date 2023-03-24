@@ -13,7 +13,7 @@
       >
       </el-date-picker>
       <div class="card-content">
-        <el-row :gutter="24">
+        <el-row :gutter="24" style="margin-right: -8px">
           <el-col
             :xl="12"
             :md="12"

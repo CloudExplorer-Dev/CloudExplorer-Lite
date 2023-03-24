@@ -1,30 +1,19 @@
 <script setup lang="ts">
-import InstanceStatus from "./InstanceStatus.vue";
-import PlatformIcon from "./PlatformIcon.vue";
-import IpArray from "./IpArray.vue";
-import SecurityGroup from "./SecurityGroup.vue";
-import VmLink from "./VmLink.vue";
 import { ref } from "vue";
 
-const props = defineProps<{
-  content: string;
-  label: string;
-  value: string;
-}>();
-
-const componentMap = ref({
-  InstanceStatus: InstanceStatus,
-  PlatformIcon: PlatformIcon,
-  IpArray: IpArray,
-  SecurityGroup: SecurityGroup,
-  VmLink: VmLink,
-});
+const props = withDefaults(
+  defineProps<{
+    content: string;
+    label: string;
+    value: string;
+  }>(),
+  { label: "label", value: "value" }
+);
 
 const tooltipRef = ref();
 const visible = ref(false); // 控制 tooltip 显示或者隐藏
 const currentItem = ref(); // 鼠标选中元素的值
 const spanRef = ref(); // 鼠标选中的元素
-const divRef = ref();
 const showTips = (index: number, e: Event) => {
   spanRef.value = e.currentTarget;
   const spanWidth = spanRef.value.offsetWidth;
@@ -53,18 +42,7 @@ const showTips = (index: number, e: Event) => {
               item[value] === null || item[value] === "null" ? "-" : item[value]
             }}
           </span>
-          <component
-            v-bind:is="componentMap[com]"
-            v-for="(com, index) in item.components"
-            :key="index"
-            :instanceStatus="item.instanceStatus"
-            :platform="item.platform"
-            :remote-ip="item.remoteIp"
-            :ip-array="item.value"
-            :securityGroupIds="item.value"
-            :serverId="item.serverId"
-            :serverName="item.value"
-          />
+          <component v-bind:is="item.render" />
         </div>
       </div>
     </div>
@@ -87,7 +65,7 @@ const showTips = (index: number, e: Event) => {
 
   .item {
     width: 25%;
-    margin-bottom: 6px;
+    margin-bottom: 8px;
 
     .label {
       font-style: normal;
@@ -96,6 +74,7 @@ const showTips = (index: number, e: Event) => {
       font-size: 14px;
       line-height: 22px;
       color: #6c6c6c;
+      margin: 6px 0px;
     }
 
     .value {

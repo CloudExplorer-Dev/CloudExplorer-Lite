@@ -7,6 +7,7 @@ import type { VmCloudServerVO } from "@/api/vm_cloud_server/type";
 import type { CloudAccount } from "@commons/api/cloud_account/type";
 import type { FormInstance } from "element-plus";
 import { useI18n } from "vue-i18n";
+import DetailPage from "@/views/detail-page/index.vue";
 
 const { t } = useI18n();
 const router = useRouter();
@@ -32,11 +33,34 @@ const otherParams = computed(() => {
   };
 });
 
+const vmInfo = ref();
 onMounted(() => {
   if (router.currentRoute.value.params.id) {
     // 获取云主机详情
     VmCloudServerApi.getVmCloudServerById(id.value, loading).then((res) => {
       vmCloudServer.value = res.data;
+
+      // 主机信息要展示的内容
+      vmInfo.value = [
+        {
+          label: t("vm_cloud_server.label.cloudVm", "云主机"),
+          value: vmCloudServer.value.instanceName,
+        },
+        {
+          label: t("commons.cloud_account.native", "云账号"),
+          value: vmCloudServer.value.accountName,
+          platform: res.data.platform,
+          components: ["PlatformIcon"],
+        },
+        {
+          label: t("commons.organization", "组织"),
+          value: vmCloudServer.value.organizationName,
+        },
+        {
+          label: t("commons.workspace", "工作空间"),
+          value: vmCloudServer.value.workspaceName,
+        },
+      ];
 
       // 获取云账号详情
       BaseCloudAccountApi.getCloudAccount(
@@ -90,47 +114,27 @@ watch(
 </script>
 
 <template>
-  <layout-container :border="false" v-loading="loading">
-    <template #content>
-      <layout-container>
+  <base-container v-loading="loading">
+    <template #form>
+      <base-container>
         <template #header>
-          <h4>{{ $t("vm_cloud_server.label.info", "主机信息") }}</h4>
+          <span>{{ $t("vm_cloud_server.label.info", "主机信息") }}</span>
         </template>
         <template #content>
-          <div style="display: flex; justify-content: space-between">
-            <div>
-              <span>
-                {{ $t("vm_cloud_server.label.cloudVm", "云主机") }}：
-              </span>
-              <span>
-                {{ vmCloudServer?.instanceName }}
-              </span>
-            </div>
-            <div>
-              <span>
-                {{ $t("commons.cloud_account.native", "云账号") }}：
-              </span>
-              <span>
-                {{ vmCloudServer?.accountName }}
-              </span>
-            </div>
-            <div>
-              <span> {{ $t("commons.workspace", "工作空间") }}： </span>
-              <span>
-                {{ vmCloudServer?.workspaceName }}
-              </span>
-            </div>
-          </div>
+          <DetailPage :content="vmInfo" />
         </template>
-      </layout-container>
+      </base-container>
 
-      <layout-container>
+      <base-container>
         <template #header>
-          <h4>{{ $t("vm_cloud_server.btn.change_config", "配置变更") }}</h4>
+          <span>{{ $t("vm_cloud_server.btn.change_config", "配置变更") }}</span>
         </template>
         <template #content>
-          <div style="display: flex; justify-content: space-around">
-            <el-card class="box-card">
+          <div style="display: flex">
+            <el-card
+              class="box-card"
+              style="margin-right: var(--ce-main-content-margin-right, 24px)"
+            >
               <template #header>
                 <div class="card-header">
                   <span>{{
@@ -188,32 +192,32 @@ watch(
             </el-card>
           </div>
         </template>
-      </layout-container>
-
-      <layout-container>
-        <div class="price-container">
-          <div class="price" v-loading="loadingPrice">
-            <span v-if="configUpdatePrice != null">
-              配置费用：{{ configUpdatePrice }}
-            </span>
-          </div>
-          <div>
-            <el-button @click="handleCancel()"
-              >{{ $t("commons.btn.cancel") }}
-            </el-button>
-            <el-button type="primary" @click="handleSave(formRef)"
-              >{{ $t("commons.btn.save") }}
-            </el-button>
-          </div>
-        </div>
-      </layout-container>
+      </base-container>
     </template>
-  </layout-container>
+
+    <template #formFooter>
+      <div class="price-container">
+        <div class="price" v-loading="loadingPrice">
+          <span v-if="configUpdatePrice != null">
+            配置费用：{{ configUpdatePrice }}
+          </span>
+        </div>
+        <div>
+          <el-button @click="handleCancel()"
+            >{{ $t("commons.btn.cancel") }}
+          </el-button>
+          <el-button type="primary" @click="handleSave(formRef)"
+            >{{ $t("commons.btn.save") }}
+          </el-button>
+        </div>
+      </div>
+    </template>
+  </base-container>
 </template>
 
 <style lang="scss" scoped>
 .box-card {
-  width: 400px;
+  width: 388px;
 }
 
 .card-header {

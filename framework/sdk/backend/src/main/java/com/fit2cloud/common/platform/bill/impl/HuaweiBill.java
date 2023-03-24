@@ -19,7 +19,7 @@ import java.util.Map;
  */
 @Data
 public class HuaweiBill implements Bill {
-    @Form(inputType = InputType.Radio, label = "同步方式", defaultValue = "api", textField = "key", valueField = "value", method = "getSyncModes", clazz = HuaweiBaseCloudProvider.class)
+    @Form(inputType = InputType.RadioRaw, label = "", defaultValue = "api", textField = "key", valueField = "value", method = "getSyncModes", clazz = HuaweiBaseCloudProvider.class, attrs = "{\"style\":\"width:200px\"}")
     private String syncMode;
 
     @Form(inputType = InputType.SingleSelect, label = "区域", relationShows = {"syncMode"}, relationShowValues = "bucket", textField = "name", valueField = "regionId", method = "getRegions", relationTrigger = "syncMode", clazz = HuaweiBaseCloudProvider.class)

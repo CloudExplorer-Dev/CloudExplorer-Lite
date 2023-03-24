@@ -260,7 +260,7 @@ watch(
   margin-top: 15px;
   margin-bottom: 10px;
   position: initial;
-  font-family: "PingFang SC", serif;
+
   font-style: normal;
   font-weight: 400;
   font-size: 14px;

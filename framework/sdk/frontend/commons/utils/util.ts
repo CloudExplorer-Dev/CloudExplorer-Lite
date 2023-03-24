@@ -1,6 +1,13 @@
-import { IpType } from "@/api/vm_cloud_server/type";
-import type { Ip } from "@/api/vm_cloud_server/type";
+export enum IpType {
+  IPv4,
+  IPv6,
+}
 
+interface Ip {
+  ip: string;
+  type: IpType;
+  isPublicIp: boolean;
+}
 /**
  * IP 分类
  * @param ipArray

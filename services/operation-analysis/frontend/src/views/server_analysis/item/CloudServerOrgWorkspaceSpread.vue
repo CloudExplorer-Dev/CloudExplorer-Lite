@@ -1,5 +1,5 @@
 <template>
-  <el-card shadow="never" class="info-card">
+  <div class="info-card">
     <el-row>
       <el-col :span="10">
         <div class="title">云主机分布</div>
@@ -33,7 +33,7 @@
         </div>
       </el-col>
     </el-row>
-  </el-card>
+  </div>
 </template>
 <script setup lang="ts">
 import VChart from "vue-echarts";
@@ -249,6 +249,10 @@ const barSeriesLabel = {
 .info-card {
   height: 295px;
   min-width: 400px;
+  background: #ffffff;
+  border-radius: 4px;
+  padding: 24px;
+  overflow: hidden;
 }
 .chart {
   min-height: 214px;

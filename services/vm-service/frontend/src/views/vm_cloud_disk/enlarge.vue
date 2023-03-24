@@ -6,9 +6,9 @@ import type {
   EnlargeDiskRequest,
   VmCloudDiskVO,
 } from "@/api/vm_cloud_disk/type";
-import { platformIcon } from "@commons/utils/platform";
 import { ElMessage } from "element-plus";
 import { useI18n } from "vue-i18n";
+import DetailPage from "@/views/detail-page/index.vue";
 
 const router = useRouter();
 const { t } = useI18n();
@@ -36,137 +36,113 @@ const handleSave = () => {
 };
 
 const loading = ref(false);
+const info = ref();
 onMounted(async () => {
   if (router.currentRoute.value.params.id) {
     const res = await VmCloudDiskApi.showCloudDiskById(id.value, loading);
     diskInfo.value = res.data;
     newDiskSize.value = res.data.size;
     instanceUuid.value = res.data.instanceUuid;
+
+    // 磁盘信息要展示的内容
+    info.value = [
+      {
+        label: t("vm_cloud_disk.label.disk_name", "磁盘名称"),
+        value: res.data.diskName,
+      },
+      {
+        label: t("vm_cloud_disk.label.vm", "所属云主机"),
+        value: res.data.vmInstanceName,
+      },
+      {
+        label: t("commons.cloud_account.native", "云账号"),
+        value: res.data.accountName,
+        platform: res.data.platform,
+        components: ["PlatformIcon"],
+      },
+      {
+        label: t("commons.workspace", "工作空间"),
+        value: res.data.workspaceName,
+      },
+    ];
   }
 });
 </script>
 
 <template>
-  <div v-loading="loading">
-    <layout-container style="margin-right: 20px">
-      <template #header>
-        <span>{{ $t("vm_cloud_disk.label.disk_info", "磁盘信息") }}</span>
-      </template>
-      <template #content>
-        <div class="div-flex disk_info_container">
-          <div class="div-flex item">
-            <div class="label">
-              <label
-                >{{ $t("vm_cloud_disk.label.disk_name", "磁盘名称") }}：</label
-              >
-            </div>
-            <div class="value">
-              <div>
-                {{ diskInfo.diskName }}
-              </div>
-            </div>
-          </div>
-          <div class="div-flex item">
-            <div class="label">
-              <label>{{ $t("vm_cloud_disk.label.vm", "所属云主机") }}：</label>
-            </div>
-            <div class="value">
-              <div>{{ diskInfo.vmInstanceName }}</div>
-            </div>
-          </div>
-          <div class="div-flex item">
-            <div class="label">
-              <label
-                >{{ $t("commons.cloud_account.native", "云平台") }}：</label
-              >
-            </div>
-            <div class="value">
-              <div class="div-flex">
-                <span>{{ diskInfo.accountName }}</span>
-                <!--                <el-image
-                  style="margin-left: 10px"
-                  :src="platformIcon[diskInfo.platform]?.icon"
-                ></el-image>-->
-                <component
-                  style="width: 10px; height: 10px"
-                  :is="platformIcon[diskInfo?.platform]?.component"
-                  v-bind="platformIcon[diskInfo?.platform]?.icon"
-                  :color="platformIcon[diskInfo?.platform]?.color"
-                  size="10px"
-                ></component>
-              </div>
-            </div>
-          </div>
-          <div class="div-flex item">
-            <div class="label">
-              <label>{{ $t("commons.workspace", "工作空间") }}：</label>
-            </div>
-            <div class="value">
-              <div>{{ diskInfo.workspaceName }}</div>
-            </div>
-          </div>
-        </div>
-      </template>
-    </layout-container>
+  <base-container v-loading="loading">
+    <template #form>
+      <base-container>
+        <template #header>
+          <span>{{ $t("vm_cloud_disk.label.disk_info", "磁盘信息") }}</span>
+        </template>
+        <template #content>
+          <DetailPage :content="info" />
+        </template>
+      </base-container>
 
-    <layout-container>
-      <template #header>
-        <span>{{ $t("vm_cloud_disk.label.change_config", "配置变更") }}</span>
-      </template>
+      <base-container>
+        <template #header>
+          <span>{{ $t("vm_cloud_disk.label.change_config", "配置变更") }}</span>
+        </template>
 
-      <template #content>
-        <div class="div-flex">
-          <div class="config_card">
-            <div class="header">
-              <span>{{
-                $t("vm_cloud_disk.label.current_config", "当前配置")
-              }}</span>
-            </div>
-            <div class="line"></div>
-            <div class="div-flex content">
-              <div class="label margin">
-                <label
-                  >{{
-                    $t("vm_cloud_disk.label.disk_size", "磁盘大小")
-                  }}：</label
-                >
+        <template #content>
+          <div class="div-flex">
+            <div
+              class="config_card"
+              style="margin-right: var(--ce-main-content-margin-right, 24px)"
+            >
+              <div class="header">
+                <span>{{
+                  $t("vm_cloud_disk.label.current_config", "当前配置")
+                }}</span>
               </div>
-              <div class="margin">{{ diskInfo.size }}GB</div>
+              <div class="line"></div>
+              <div class="div-flex content">
+                <div class="label margin">
+                  <label
+                    >{{
+                      $t("vm_cloud_disk.label.disk_size", "磁盘大小")
+                    }}：</label
+                  >
+                </div>
+                <div class="margin">{{ diskInfo.size }}GB</div>
+              </div>
+            </div>
+            <div class="config_card">
+              <div class="header">
+                <span>{{
+                  $t("vm_cloud_disk.label.after_config", "变更后配置")
+                }}</span>
+              </div>
+              <div class="line"></div>
+              <div class="div-flex content">
+                <div class="label margin">
+                  <label
+                    >{{
+                      $t("vm_cloud_disk.label.disk_size", "磁盘大小")
+                    }}：</label
+                  >
+                </div>
+                <div class="div-flex">
+                  <el-form>
+                    <el-form-item>
+                      <el-input-number
+                        v-model="newDiskSize"
+                        :min="diskInfo.size"
+                      />
+                      <span style="padding: 0 10px">GB</span>
+                    </el-form-item>
+                  </el-form>
+                </div>
+              </div>
             </div>
           </div>
-          <div class="config_card">
-            <div class="header">
-              <span>{{
-                $t("vm_cloud_disk.label.after_config", "变更后配置")
-              }}</span>
-            </div>
-            <div class="line"></div>
-            <div class="div-flex content">
-              <div class="label margin">
-                <label
-                  >{{
-                    $t("vm_cloud_disk.label.disk_size", "磁盘大小")
-                  }}：</label
-                >
-              </div>
-              <div class="div-flex">
-                <el-form>
-                  <el-form-item>
-                    <el-input-number
-                      v-model="newDiskSize"
-                      :min="diskInfo.size"
-                    />
-                    <span style="padding: 0 10px">GB</span>
-                  </el-form-item>
-                </el-form>
-              </div>
-            </div>
-          </div>
-        </div>
-      </template>
-    </layout-container>
+        </template>
+      </base-container>
+    </template>
 
-    <layout-container>
+    <template #formFooter>
       <el-button @click="backToDiskList()"
         >{{ $t("commons.btn.cancel") }}
       </el-button>
@@ -176,8 +152,8 @@ onMounted(async () => {
         :disabled="diskInfo.size >= newDiskSize"
         >{{ $t("commons.btn.ok") }}
       </el-button>
-    </layout-container>
-  </div>
+    </template>
+  </base-container>
 </template>
 
 <style lang="scss" scoped>
@@ -211,7 +187,6 @@ onMounted(async () => {
 .config_card {
   width: 50%;
   height: 100%;
-  margin: 0 20px;
   border: 1px solid var(--el-border-color);
 
   .header {

@@ -342,199 +342,186 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-  <el-row>
-    <el-col id="basicInfo" :span="20">
-      <layout-container style="margin-right: 20px">
-        <template #header>
-          <span>{{ $t("commons.basic_info", "基本信息") }}</span>
-        </template>
-        <template #btn>
-          <span
-            v-if="!basicEditable"
-            @click="edit(resourceConst.basic)"
-            v-hasPermission="'[management-center]CLOUD_ACCOUNT:EDIT'"
-          >
-            {{ $t("commons.btn.edit") }}
-          </span>
-          <span v-if="basicEditable" @click="cancel(resourceConst.basic)">{{
-            $t("commons.btn.cancel")
-          }}</span>
-          <span
-            v-if="basicEditable"
-            @click="save(resourceConst.basic, accountFormRef)"
-            style="padding-left: 20px"
-            >{{ $t("commons.btn.save") }}</span
-          >
-        </template>
-        <template #content>
-          <el-form
-            :model="accountForm"
-            :rules="accountFormRules"
-            ref="accountFormRef"
-            label-width="100px"
-            label-position="right"
-            style="height: 30px"
-          >
-            <el-row>
-              <el-col :span="6">
-                <el-form-item
-                  :label="t('cloud_account.name', '云账号名称') + ':'"
-                  prop="name"
-                >
-                  <el-input
-                    v-model="accountForm.name"
-                    :placeholder="
-                      t('cloud_account.name_placeholder', '请输入云账号名称')
-                    "
-                    v-if="basicEditable"
-                    clearable
-                  />
-                  <span v-if="!basicEditable">{{ accountForm.name }}</span>
-                </el-form-item>
-              </el-col>
+  <base-container>
+    <template #header>
+      <span>{{ $t("commons.basic_info", "基本信息") }}</span>
+    </template>
+    <template #btn>
+      <el-button
+        v-if="!basicEditable"
+        @click="edit(resourceConst.basic)"
+        v-hasPermission="'[management-center]CLOUD_ACCOUNT:EDIT'"
+        type="primary"
+        plain
+      >
+        {{ $t("commons.btn.edit") }}
+      </el-button>
+      <el-button
+        v-if="basicEditable"
+        @click="cancel(resourceConst.basic)"
+        plain
+      >
+        {{ $t("commons.btn.cancel") }}
+      </el-button>
+      <el-button
+        v-if="basicEditable"
+        @click="save(resourceConst.basic, accountFormRef)"
+        type="primary"
+        plain
+      >
+        {{ $t("commons.btn.save") }}
+      </el-button>
+    </template>
+    <template #content>
+      <el-form
+        :model="accountForm"
+        :rules="accountFormRules"
+        ref="accountFormRef"
+        label-position="top"
+        style="height: 70px"
+      >
+        <el-row>
+          <el-col :span="6">
+            <el-form-item
+              :label="t('cloud_account.name', '云账号名称')"
+              prop="name"
+              style="margin-right: 12px"
+            >
+              <el-input
+                v-model="accountForm.name"
+                :placeholder="
+                  t('cloud_account.name_placeholder', '请输入云账号名称')
+                "
+                v-if="basicEditable"
+                clearable
+              />
+              <span v-if="!basicEditable">{{ accountForm.name }}</span>
+            </el-form-item>
+          </el-col>
 
-              <el-col :span="6">
-                <el-form-item
-                  :label="t('cloud_account.platform', '云平台') + ':'"
-                  prop="platform"
-                >
-                  <span v-if="accountForm.platform">
-                    {{ platformIcon[accountForm.platform].name }}</span
-                  >
-                  <component
-                    style="margin-left: 10px; display: flex"
-                    :is="platformIcon[accountForm?.platform]?.component"
-                    v-bind="platformIcon[accountForm?.platform]?.icon"
-                    :color="platformIcon[accountForm?.platform]?.color"
-                    size="16px"
-                    v-if="accountForm.platform"
-                  ></component>
-                </el-form-item>
-              </el-col>
+          <el-col :span="6">
+            <el-form-item
+              :label="t('cloud_account.platform', '云平台')"
+              prop="platform"
+            >
+              <span v-if="accountForm.platform">
+                {{ platformIcon[accountForm.platform].name }}</span
+              >
+              <component
+                style="margin-left: 10px; display: flex"
+                :is="platformIcon[accountForm?.platform]?.component"
+                v-bind="platformIcon[accountForm?.platform]?.icon"
+                :color="platformIcon[accountForm?.platform]?.color"
+                size="16px"
+                v-if="accountForm.platform"
+              ></component>
+            </el-form-item>
+          </el-col>
 
-              <el-col :span="6">
-                <el-form-item
-                  :label="t('commons.status', '状态') + ':'"
-                  prop="state"
-                >
-                  <div
-                    v-if="accountForm.state"
-                    style="display: flex; align-items: center"
-                  >
-                    <span>{{
-                      t("cloud_account.native_state_valid", "有效")
-                    }}</span>
-                    <el-icon color="green" style="margin-left: 5px"
-                      ><SuccessFilled
-                    /></el-icon>
-                  </div>
-                  <div
-                    v-if="!accountForm.state"
-                    style="display: flex; align-items: center"
-                  >
-                    <span>{{
-                      t("cloud_account.native_state_invalid", "无效")
-                    }}</span>
-                    <el-icon color="red" style="margin-left: 5px"
-                      ><CircleCloseFilled
-                    /></el-icon>
-                  </div>
-                </el-form-item>
-              </el-col>
+          <el-col :span="6">
+            <el-form-item :label="t('commons.status', '状态')" prop="state">
+              <div
+                v-if="accountForm.state"
+                style="display: flex; align-items: center"
+              >
+                <span>{{ t("cloud_account.native_state_valid", "有效") }}</span>
+                <el-icon color="green" style="margin-left: 5px"
+                  ><SuccessFilled
+                /></el-icon>
+              </div>
+              <div
+                v-if="!accountForm.state"
+                style="display: flex; align-items: center"
+              >
+                <span>{{
+                  t("cloud_account.native_state_invalid", "无效")
+                }}</span>
+                <el-icon color="red" style="margin-left: 5px"
+                  ><CircleCloseFilled
+                /></el-icon>
+              </div>
+            </el-form-item>
+          </el-col>
 
-              <el-col :span="6">
-                <el-form-item
-                  :label="t('commons.create_time', '创建时间') + ':'"
-                  prop="createTime"
-                >
-                  <span>{{ accountForm.createTime }}</span>
-                </el-form-item>
-              </el-col>
-            </el-row>
-          </el-form>
-        </template>
-      </layout-container>
-    </el-col>
+          <el-col :span="6">
+            <el-form-item
+              :label="t('cloud_account.balance.money', '账户余额')"
+              prop="balance"
+            >
+              <span
+                style="line-height: 30px; font-size: 16px; font-weight: 700"
+                >{{ accountBalance }}</span
+              >
+              <span style="padding-left: 10px" v-if="accountBalance != '--'">{{
+                $t("cloud_account.balance.unit", "元")
+              }}</span>
+            </el-form-item>
+          </el-col>
+        </el-row>
+      </el-form>
+    </template>
+  </base-container>
 
-    <el-col id="accountBalance" :span="4">
-      <layout-container>
-        <template #header>
-          <span>{{ $t("cloud_account.balance.money", "账户余额") }}</span>
-        </template>
-        <template #content>
-          <span
-            style="line-height: 30px; padding-left: 20px; font-size: 26px"
-            >{{ accountBalance }}</span
-          >
-          <span style="padding-left: 10px" v-if="accountBalance != '--'">{{
-            $t("cloud_account.balance.unit", "元")
-          }}</span>
-        </template>
-      </layout-container>
-    </el-col>
-  </el-row>
-
-  <layout-container>
+  <base-container>
     <template #header>
       <span>{{ $t("cloud_account.resource", "账户资源") }}</span>
     </template>
     <template #content>
-      <div class="resourceContainer">
-        <div
-          class="item"
+      <el-row>
+        <el-col
           v-for="resourceCount in resourceCountArray"
           :key="resourceCount.icon"
+          :span="6"
         >
           <div>
-            <ce-icon
-              class="iconStyle"
-              :code="resourceCount.icon"
-              size="60px"
-            ></ce-icon>
+            <div id="name" class="nameContent">{{ resourceCount.name }}</div>
+            <div id="count" class="valueContent">{{ resourceCount.count }}</div>
           </div>
-          <div class="right">
-            <div id="name" class="content">{{ resourceCount.name }}</div>
-            <div id="count" class="content">{{ resourceCount.count }}</div>
-          </div>
-        </div>
-      </div>
+        </el-col>
+      </el-row>
     </template>
-  </layout-container>
+  </base-container>
 
-  <layout-container>
+  <base-container :contentBorder="true">
     <template #header>
       <span>{{ $t("cloud_account.sync.setting", "数据同步设置") }}</span>
     </template>
     <template #btn>
-      <span
+      <el-button
         v-if="!syncEditable"
         @click="edit(resourceConst.sync)"
         v-hasPermission="'[management-center]CLOUD_ACCOUNT:SYNC_SETTING'"
+        type="primary"
+        plain
       >
         {{ $t("commons.btn.edit") }}
-      </span>
-      <span v-if="syncEditable" @click="cancel(resourceConst.sync)">{{
-        $t("commons.btn.cancel")
-      }}</span>
-      <span
+      </el-button>
+      <el-button v-if="syncEditable" @click="cancel(resourceConst.sync)" plain>
+        {{ $t("commons.btn.cancel") }}
+      </el-button>
+      <el-button
         v-if="syncEditable"
         @click="save(resourceConst.sync, undefined)"
-        style="padding-left: 20px"
-        >{{ $t("commons.btn.save") }}</span
+        type="primary"
+        plain
       >
+        {{ $t("commons.btn.save") }}
+      </el-button>
     </template>
     <template #content>
-      <Job
-        :read-only="!syncEditable"
-        :border="false"
-        ref="job"
-        :account-id="cloudAccountId"
-        :operation="false"
-      ></Job>
+      <div style="padding: 12px var(--ce-main-content-padding-left, 24px)">
+        <Job
+          :read-only="!syncEditable"
+          :border="false"
+          ref="job"
+          :account-id="cloudAccountId"
+          :operation="false"
+        ></Job>
+      </div>
     </template>
-  </layout-container>
+  </base-container>
 
-  <layout-container>
+  <base-container :contentBorder="true">
     <template #header>
       <span>{{ $t("cloud_account.sync.record", "同步记录") }}</span>
     </template>
@@ -701,36 +688,26 @@ onBeforeUnmount(() => {
         </div>
       </div>
     </template>
-  </layout-container>
+  </base-container>
 </template>
 
 <style lang="scss">
-.resourceContainer {
-  display: flex;
-  padding: 20px;
-  .item {
-    width: 200px;
-    display: flex;
-    .iconStyle {
-      cursor: pointer;
-      height: 60px;
-      width: 50%;
-      color: gray;
-    }
-    .right {
-      width: 50%;
-      display: flex;
-      flex-wrap: wrap;
-      align-content: center;
-      .content {
-        width: 100%;
-        padding: 5px;
-      }
-    }
-  }
+.base-container {
+  height: auto !important;
+}
+.el-tabs__content {
+  height: auto !important;
+}
+.nameContent {
+  color: var(--el-text-color-regular);
+  margin-bottom: 12px;
+}
+.valueContent {
+  font-size: 16px;
+  font-weight: 700;
+  margin-bottom: 6px;
 }
 .record-main {
-  border: 1px solid var(--el-border-color);
   width: 100%;
   height: 100%;
   display: flex;

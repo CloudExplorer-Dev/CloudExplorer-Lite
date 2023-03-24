@@ -18,8 +18,10 @@ const props = withDefaults(
     otherParams: any;
     // 是否只读
     readOnly: boolean;
+    // 表单 label 的展示位置
+    labelPosition: "left" | "right" | "top";
   }>(),
-  { readOnly: false }
+  { readOnly: false, labelPosition: "left" }
 );
 
 // 发生变化
@@ -190,7 +192,7 @@ defineExpose({
     ref="ruleFormRef"
     label-width="130px"
     label-suffix=":"
-    label-position="left"
+    :label-position="labelPosition"
     :model="formData"
     v-loading="resourceLoading"
   >

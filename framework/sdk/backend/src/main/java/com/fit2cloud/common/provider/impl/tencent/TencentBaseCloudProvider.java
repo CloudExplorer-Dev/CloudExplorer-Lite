@@ -16,9 +16,8 @@ import org.apache.commons.collections4.keyvalue.DefaultKeyValue;
 import java.util.ArrayList;
 import java.util.List;
 
-
 public class TencentBaseCloudProvider extends AbstractBaseCloudProvider<TencentCredential> {
-
+    @Override
     public F2CBalance getAccountBalance(String req) {
         return TencentBaseCloudApi.getAccountBalance(JsonUtil.parseObject(req, GetAccountBalanceRequest.class));
     }
@@ -39,8 +38,8 @@ public class TencentBaseCloudProvider extends AbstractBaseCloudProvider<TencentC
      */
     public List<DefaultKeyValue<String, String>> getSyncModes(String req) {
         return new ArrayList<>() {{
-            add(new DefaultKeyValue<>("API", "api"));
-            add(new DefaultKeyValue<>("存储桶", "bucket"));
+            add(new DefaultKeyValue<>("从API获取", "api"));
+            add(new DefaultKeyValue<>("从存储桶获取", "bucket"));
         }};
     }
 }

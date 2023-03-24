@@ -1,114 +1,108 @@
 <template>
-  <layout-container :border="false">
-    <template #content>
-      <layout-container v-loading="loading">
-        <template #header>
-          <h4>任务信息</h4>
-        </template>
-        <template #content>
-          <el-descriptions :column="1" border size="small">
-            <el-descriptions-item
-              label-class-name="label-class"
-              class-name="content-class"
-              label="任务类型"
-              colon="true"
-            >
-              {{ _.get(JobTypeConst, data.type, data.type) }}
-            </el-descriptions-item>
-            <el-descriptions-item
-              label-class-name="label-class"
-              class-name="content-class"
-              label="任务ID"
-            >
-              {{ data.id }}
-            </el-descriptions-item>
-            <el-descriptions-item
-              label-class-name="label-class"
-              class-name="content-class"
-              label="任务描述"
-            >
-              {{ data.description }}
-            </el-descriptions-item>
-            <el-descriptions-item
-              label-class-name="label-class"
-              class-name="content-class"
-              label="任务状态"
-            >
-              <span :style="{ color: data.status === 'FAILED' ? 'red' : null }">
-                {{ _.get(JobStatusConst, data.status, data.status) }}
-              </span>
-            </el-descriptions-item>
-            <el-descriptions-item
-              label-class-name="label-class"
-              class-name="content-class"
-              label="任务对象"
-            >
-              <div v-for="server in data.servers" :key="server.id">
-                <a
-                  @click="jumpToServer(server)"
-                  style="color: var(--el-color-primary)"
-                >
-                  云主机: {{ server.instanceName }}
-                </a>
-              </div>
-              <div v-for="disk in data.disks" :key="disk.id">
-                <a
-                  @click="jumpToDisk(disk)"
-                  style="color: var(--el-color-primary)"
-                >
-                  磁盘: {{ disk.diskName }}
-                </a>
-              </div>
-            </el-descriptions-item>
-            <el-descriptions-item
-              label-class-name="label-class"
-              class-name="content-class"
-              label="开始时间"
-            >
-              {{ data.createTime }}
-            </el-descriptions-item>
-            <el-descriptions-item
-              label-class-name="label-class"
-              class-name="content-class"
-              label="结束时间"
-            >
-              {{ data.finishTime }}
-            </el-descriptions-item>
-            <el-descriptions-item
-              label-class-name="label-class"
-              class-name="content-class"
-              label="持续时间"
-            >
-              {{
-                data.finishTime
-                  ? MillisecondToDate(
-                      new Date(data.finishTime).getTime() -
-                        new Date(data.createTime).getTime()
-                    )
-                  : ""
-              }}
-            </el-descriptions-item>
-            <el-descriptions-item
-              label-class-name="label-class"
-              class-name="content-class"
-              label="失败原因"
-            >
-              <span
-                :style="{ color: data.status === 'FAILED' ? 'red' : null }"
-                class="result-content-class"
-              >
-                {{ data.result }}
-              </span>
-            </el-descriptions-item>
-          </el-descriptions>
-        </template>
-      </layout-container>
-
-      <layout-container>
-        <el-button @click="back">返回</el-button>
-      </layout-container>
+  <base-container v-loading="loading">
+    <template #header>
+      <span>任务信息</span>
     </template>
-  </layout-container>
+    <template #content>
+      <el-descriptions
+        :column="1"
+        border
+        size="small"
+        style="margin-left: -6px"
+      >
+        <el-descriptions-item
+          label-class-name="label-class"
+          class-name="content-class"
+          label="任务类型"
+          colon="true"
+        >
+          {{ _.get(JobTypeConst, data.type, data.type) }}
+        </el-descriptions-item>
+        <el-descriptions-item
+          label-class-name="label-class"
+          class-name="content-class"
+          label="任务ID"
+        >
+          {{ data.id }}
+        </el-descriptions-item>
+        <el-descriptions-item
+          label-class-name="label-class"
+          class-name="content-class"
+          label="任务描述"
+        >
+          {{ data.description }}
+        </el-descriptions-item>
+        <el-descriptions-item
+          label-class-name="label-class"
+          class-name="content-class"
+          label="任务状态"
+        >
+          <span :style="{ color: data.status === 'FAILED' ? 'red' : null }">
+            {{ _.get(JobStatusConst, data.status, data.status) }}
+          </span>
+        </el-descriptions-item>
+        <el-descriptions-item
+          label-class-name="label-class"
+          class-name="content-class"
+          label="任务对象"
+        >
+          <div v-for="server in data.servers" :key="server.id">
+            <a
+              @click="jumpToServer(server)"
+              style="color: var(--el-color-primary)"
+            >
+              云主机: {{ server.instanceName }}
+            </a>
+          </div>
+          <div v-for="disk in data.disks" :key="disk.id">
+            <a @click="jumpToDisk(disk)" style="color: var(--el-color-primary)">
+              磁盘: {{ disk.diskName }}
+            </a>
+          </div>
+        </el-descriptions-item>
+        <el-descriptions-item
+          label-class-name="label-class"
+          class-name="content-class"
+          label="开始时间"
+        >
+          {{ data.createTime }}
+        </el-descriptions-item>
+        <el-descriptions-item
+          label-class-name="label-class"
+          class-name="content-class"
+          label="结束时间"
+        >
+          {{ data.finishTime }}
+        </el-descriptions-item>
+        <el-descriptions-item
+          label-class-name="label-class"
+          class-name="content-class"
+          label="持续时间"
+        >
+          {{
+            data.finishTime
+              ? MillisecondToDate(
+                  new Date(data.finishTime).getTime() -
+                    new Date(data.createTime).getTime()
+                )
+              : ""
+          }}
+        </el-descriptions-item>
+        <el-descriptions-item
+          label-class-name="label-class"
+          class-name="content-class"
+          label="失败原因"
+        >
+          <span
+            :style="{ color: data.status === 'FAILED' ? 'red' : null }"
+            class="result-content-class"
+          >
+            {{ data.result }}
+          </span>
+        </el-descriptions-item>
+      </el-descriptions>
+    </template>
+  </base-container>
 </template>
 <script setup lang="ts">
 const props = defineProps<{
@@ -131,10 +125,6 @@ const useRoute = useRouter();
 const loading: Ref<boolean> | undefined = ref<boolean>(false);
 
 const data = ref<JobInfo>({});
-
-const back = () => {
-  useRoute.push({ name: "job_list" });
-};
 
 const jumpToServer = (server: VmCloudServerVO) => {
   useRoute.push({

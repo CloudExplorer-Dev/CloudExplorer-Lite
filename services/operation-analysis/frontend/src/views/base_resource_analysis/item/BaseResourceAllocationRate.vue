@@ -1,5 +1,5 @@
 <template>
-  <el-card shadow="never" class="info-card">
+  <div class="info-card">
     <el-row :gutter="10">
       <el-col :span="24">
         <div class="title">基础资源分配率</div>
@@ -7,22 +7,20 @@
     </el-row>
     <el-row :gutter="10">
       <el-col :span="8" :key="item.code" v-for="item in data">
-        <div class="echarts">
-          <div class="echarts-content">
-            <v-chart
-              class="chart"
-              :option="item.options"
-              v-loading="loading"
-              autoresize
-            />
-          </div>
-          <div class="echarts-footer">
-            {{ item.footerName }}
-          </div>
+        <div class="echarts-content">
+          <v-chart
+            class="chart"
+            :option="item.options"
+            v-loading="loading"
+            autoresize
+          />
+        </div>
+        <div class="echarts-footer">
+          {{ item.footerName }}
         </div>
       </el-col>
     </el-row>
-  </el-card>
+  </div>
 </template>
 <script setup lang="ts">
 import VChart from "vue-echarts";
@@ -183,8 +181,10 @@ const defaultSpeedOptions = {
 </script>
 <style scoped lang="scss">
 .info-card {
-  height: 249px;
-  min-width: 400px;
+  background: #ffffff;
+  border-radius: 4px;
+  padding: 24px;
+  overflow: hidden;
 }
 .chart {
   min-height: 120px;
@@ -203,7 +203,7 @@ const defaultSpeedOptions = {
   margin-top: 15px;
   margin-bottom: 10px;
   position: initial;
-  font-family: "PingFang SC", serif;
+
   font-style: normal;
   font-weight: 400;
   font-size: 14px;

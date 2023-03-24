@@ -56,11 +56,11 @@ export class OptimizationRequest {
 
 export interface OptimizeSuggest {
   checked: boolean;
-  color: string;
   name: string;
   code: string;
   value: number;
   data: object;
+  id: number;
 }
 
 export interface VmCloudServerVO {
@@ -127,6 +127,8 @@ export interface VmCloudServerVO {
 export interface ListOptimizationRequest {
   pageSize: number;
   currentPage: number;
+
+  [propName: string]: any;
 }
 
 //默认查询参数
@@ -178,32 +180,32 @@ export const paramOptimizationRequestMap: Map<string, any> = new Map([
 export const baseOptimizeSuggests: Array<OptimizeSuggest> = [
   {
     checked: true,
-    color: "#FF9899",
     name: "建议降配云主机",
+    id: 1,
     code: "derating",
     value: 0,
     data: [],
   },
   {
     checked: false,
-    color: "#00A1E6",
     name: "建议升配云主机",
+    id: 2,
     code: "upgrade",
     value: 0,
     data: [],
   },
   {
     checked: false,
-    color: "#FEB75C",
     name: "建议变更付费方式云主机",
+    id: 3,
     code: "payment",
     value: 0,
     data: [],
   },
   {
     checked: false,
-    color: "#D763B7",
     name: "建议回收云主机",
+    id: 4,
     code: "recovery",
     value: 0,
     data: [],

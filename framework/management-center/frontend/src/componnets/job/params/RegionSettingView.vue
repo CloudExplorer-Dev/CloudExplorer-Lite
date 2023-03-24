@@ -1,10 +1,10 @@
 <template>
-  <layout-container :border="border">
-    <template #header
-      ><h4>
+  <base-container>
+    <template #header>
+      <span>
         {{ t("cloud_account.sync.range", "同步范围") }}
-      </h4></template
-    >
+      </span>
+    </template>
     <template #content>
       <el-form
         v-if="jobDetails"
@@ -43,7 +43,7 @@
         </el-checkbox-group>
       </el-form>
     </template>
-  </layout-container>
+  </base-container>
 </template>
 <script setup lang="ts">
 import type { JobDetails, Region } from "@/api/cloud_account/type";
@@ -63,10 +63,6 @@ const props = defineProps<{
    * 是否可读
    */
   readOnly: boolean;
-  /**
-   * 是有有boder
-   */
-  border: boolean;
 }>();
 
 /**
