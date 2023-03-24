@@ -1,5 +1,15 @@
+<script setup lang="ts">
+const props = withDefaults(
+  defineProps<{
+    contentBorder: boolean;
+  }>(),
+  {
+    contentBorder: false,
+  }
+);
+</script>
 <template>
-  <div class="layout-container">
+  <div class="base-container">
     <div
       class="header"
       v-if="$slots.header || $slots.btn || $slots.header_content"
@@ -14,7 +24,11 @@
         <slot name="btn"></slot>
       </div>
     </div>
-    <div class="content" v-if="$slots.content">
+    <div
+      class="content"
+      v-if="$slots.content"
+      :style="{ border: contentBorder ? '' : 'none' }"
+    >
       <slot name="content"></slot>
     </div>
     <div class="form" v-if="$slots.form">
@@ -27,9 +41,8 @@
     </div>
   </div>
 </template>
-<script setup lang="ts"></script>
 <style lang="scss" scoped>
-.layout-container {
+.base-container {
   margin: 0 0 20px 0;
   overflow-y: hidden;
   overflow-x: hidden;
@@ -62,14 +75,14 @@
     .auto {
       flex: 1 1 auto;
     }
-    .btn {
-      padding-right: 20px;
+    :deep(.btn) {
       color: var(--el-color-primary);
       cursor: pointer;
     }
   }
   .content {
     padding: 0px;
+    border: 1px solid var(--el-border-color);
   }
   .form {
     width: 800px;

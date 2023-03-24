@@ -418,12 +418,13 @@ public class CloudAccountServiceImpl extends ServiceImpl<CloudAccountMapper, Clo
      * @param accountId
      * @return
      */
+    @Override
     public List<ResourceCountResponse> resourceCount(String accountId) {
         List<ResourceCountResponse> list = new ArrayList<>();
         // 虚拟机
         QueryWrapper<VmCloudServer> vmQueryWrapper = Wrappers.query();
         vmQueryWrapper.lambda().ne(VmCloudServer::getInstanceStatus, "deleted").eq(VmCloudServer::getAccountId, accountId);
-        ResourceCountResponse vm = new ResourceCountResponse("xuniyunzhuji", "虚拟机", cloudServerService.count(vmQueryWrapper));
+        ResourceCountResponse vm = new ResourceCountResponse("xuniyunzhuji", "云主机", cloudServerService.count(vmQueryWrapper));
         list.add(vm);
         // 磁盘
         QueryWrapper<VmCloudDisk> diskQueryWrapper = Wrappers.query();
@@ -472,6 +473,7 @@ public class CloudAccountServiceImpl extends ServiceImpl<CloudAccountMapper, Clo
      *
      * @return
      */
+    @Override
     public List<ResourceCountResponse> getModuleResourceCount(String accountId) {
         return ServiceUtil.getServicesExcludeGatewayAndIncludeSelf(ServerInfo.module)
                 .stream()
