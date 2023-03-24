@@ -1,12 +1,13 @@
 <script setup lang="ts">
-import { onMounted, ref } from "vue";
+import { h, onMounted, ref } from "vue";
 import _ from "lodash";
-import DetailPage from "@/views/detail-page/index.vue";
 import { useRouter } from "vue-router";
 import type { VmCloudDiskVO } from "@/api/vm_cloud_disk/type";
 import VmCloudDiskApi from "@/api/vm_cloud_disk";
 import { useI18n } from "vue-i18n";
-import { filterChargeType } from "@/utils/util";
+import { filterChargeType } from "@commons/utils/util";
+import PlatformIcon from "@commons/components/detail-page/PlatformIcon.vue";
+import VmLink from "@commons/components/detail-page/VmLink.vue";
 
 const { t } = useI18n();
 const router = useRouter();
@@ -34,8 +35,11 @@ onMounted(() => {
       {
         label: t("commons.cloud_account.native", "云账号"),
         value: vmCloudDiskDetail.value.accountName,
-        platform: vmCloudDiskDetail.value.platform,
-        components: ["PlatformIcon"],
+        render: () => {
+          return h(PlatformIcon, {
+            platform: vmCloudDiskDetail.value?.platform,
+          });
+        },
       },
       {
         label: t("commons.status", "状态"),
@@ -105,9 +109,13 @@ onMounted(() => {
       {
         label: "云主机名称",
         value: vmCloudDiskDetail.value.vmInstanceName,
-        serverId: vmCloudDiskDetail.value.serverId,
         hideValue: true,
-        components: ["VmLink"],
+        render: () => {
+          return h(VmLink, {
+            serverId: vmCloudDiskDetail.value?.serverId,
+            serverName: vmCloudDiskDetail.value?.vmInstanceName,
+          });
+        },
       },
     ];
   });
@@ -121,7 +129,7 @@ onMounted(() => {
         <span>{{ $t("commons.basic_info", "基本信息") }}</span>
       </template>
       <template #content>
-        <DetailPage :content="basicInfo" label="label" value="value" />
+        <detail-page :content="basicInfo" />
       </template>
     </base-container>
     <base-container>
@@ -129,7 +137,7 @@ onMounted(() => {
         <span>{{ $t("vm_cloud_disk.label.vm", "所属云主机") }}</span>
       </template>
       <template #content>
-        <DetailPage :content="vmInfo" label="label" value="value" />
+        <detail-page :content="vmInfo" />
       </template>
     </base-container>
   </div>

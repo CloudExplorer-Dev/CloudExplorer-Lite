@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { isNotEmpty } from "@/utils/util";
+import { isNotEmpty } from "@commons/utils/util";
 
 const props = defineProps<{
   securityGroupIds: string;

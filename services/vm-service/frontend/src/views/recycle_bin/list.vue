@@ -19,7 +19,7 @@ import type { SimpleMap } from "@commons/api/base/type";
 import BaseCloudAccountApi from "@commons/api/cloud_account";
 import OrgTreeFilter from "@commons/components/table-filter/OrgTreeFilter.vue";
 import { ResourceType } from "@/api/recycle_bin/type";
-import { classifyIP } from "@/utils/util";
+import IpArray from "@commons/components/detail-page/IpArray.vue";
 
 const permissionStore = usePermissionStore();
 const { t } = useI18n();
@@ -582,42 +582,10 @@ const refresh = () => {
     >
       <template #default="scope">
         <div v-if="scope.row.resourceType === ResourceType.VM">
-          <div
-            v-for="(item, index) in classifyIP(
-              scope.row.ipArray,
-              scope.row.remoteIp
-            )"
-            :key="index"
-          >
-            <div v-if="index < 2">
-              <span>{{ item.ip }}</span>
-              <span v-if="item.isPublicIp"> (公) </span>
-            </div>
-          </div>
-          <el-dropdown
-            :hide-on-click="false"
-            v-if="JSON.parse(scope.row.ipArray).length > 2"
-            max-height="100px"
-          >
-            <span style="color: var(--el-color-primary); cursor: pointer">
-              {{ t("commons.cloud_server.more", "更多")
-              }}<el-icon class="el-icon--right"><arrow-down /></el-icon>
-            </span>
-            <template #dropdown>
-              <el-dropdown-menu>
-                <el-dropdown-item
-                  v-for="(item, index) in classifyIP(
-                    scope.row.ipArray,
-                    scope.row.remoteIp
-                  )"
-                  :key="index"
-                >
-                  <span>{{ item.ip }}</span>
-                  <span v-if="item.isPublicIp"> (公) </span>
-                </el-dropdown-item>
-              </el-dropdown-menu>
-            </template>
-          </el-dropdown>
+          <IpArray
+            :remote-ip="scope.row.remoteIp"
+            :ip-array="scope.row.ipArray"
+          />
         </div>
         <span v-if="scope.row.resourceType === ResourceType.DISK">
           {{ scope.row.ipArray }}

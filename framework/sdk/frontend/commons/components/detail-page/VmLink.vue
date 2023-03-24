@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { useRouter } from "vue-router";
-import { isNotEmpty } from "@/utils/util";
+import { isNotEmpty } from "@commons/utils/util";
 
 const useRoute = useRouter();
 const props = defineProps<{

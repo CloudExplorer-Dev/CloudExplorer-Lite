@@ -1,9 +1,4 @@
 <script setup lang="ts">
-import InstanceStatus from "./InstanceStatus.vue";
-import PlatformIcon from "./PlatformIcon.vue";
-import IpArray from "./IpArray.vue";
-import SecurityGroup from "./SecurityGroup.vue";
-import VmLink from "./VmLink.vue";
 import { ref } from "vue";
 
 const props = withDefaults(
@@ -14,14 +9,6 @@ const props = withDefaults(
   }>(),
   { label: "label", value: "value" }
 );
-
-const componentMap = ref({
-  InstanceStatus: InstanceStatus,
-  PlatformIcon: PlatformIcon,
-  IpArray: IpArray,
-  SecurityGroup: SecurityGroup,
-  VmLink: VmLink,
-});
 
 const tooltipRef = ref();
 const visible = ref(false); // 控制 tooltip 显示或者隐藏
@@ -55,18 +42,7 @@ const showTips = (index: number, e: Event) => {
               item[value] === null || item[value] === "null" ? "-" : item[value]
             }}
           </span>
-          <component
-            v-bind:is="componentMap[com]"
-            v-for="(com, index) in item.components"
-            :key="index"
-            :instanceStatus="item.instanceStatus"
-            :platform="item.platform"
-            :remote-ip="item.remoteIp"
-            :ip-array="item.value"
-            :securityGroupIds="item.value"
-            :serverId="item.serverId"
-            :serverName="item.value"
-          />
+          <component v-bind:is="item.render" />
         </div>
       </div>
     </div>

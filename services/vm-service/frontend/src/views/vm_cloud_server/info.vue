@@ -1,9 +1,12 @@
 <script setup lang="ts">
-import { onMounted, ref } from "vue";
+import { h, onMounted, ref } from "vue";
 import VmCloudServerApi from "@/api/vm_cloud_server";
 import _ from "lodash";
-import DetailPage from "@/views/detail-page/index.vue";
-import { filterChargeType } from "@/utils/util";
+import { filterChargeType } from "@commons/utils/util";
+import InstanceStatus from "@commons/components/detail-page/InstanceStatus.vue";
+import PlatformIcon from "@commons/components/detail-page/PlatformIcon.vue";
+import IpArray from "@commons/components/detail-page/IpArray.vue";
+import SecurityGroup from "@commons/components/detail-page/SecurityGroup.vue";
 
 const loading = ref<boolean>(false);
 const props = defineProps<{
@@ -25,14 +28,20 @@ onMounted(() => {
       {
         label: "名称",
         value: infoVmCloudServer.value.instanceName,
-        instanceStatus: infoVmCloudServer.value.instanceStatus,
-        components: ["InstanceStatus"],
+        render: () => {
+          return h(InstanceStatus, {
+            instanceStatus: infoVmCloudServer.value.instanceStatus,
+          });
+        },
       },
       {
         label: "云账号",
         value: infoVmCloudServer.value.accountName,
-        platform: infoVmCloudServer.value.platform,
-        components: ["PlatformIcon"],
+        render: () => {
+          return h(PlatformIcon, {
+            platform: infoVmCloudServer.value.platform,
+          });
+        },
       },
       { label: "区域/数据中心", value: infoVmCloudServer.value.region },
       {
@@ -60,9 +69,13 @@ onMounted(() => {
       {
         label: "IP地址",
         value: infoVmCloudServer.value.ipArray,
-        remoteIp: infoVmCloudServer.value.remoteIp,
         hideValue: true,
-        components: ["IpArray"],
+        render: () => {
+          return h(IpArray, {
+            ipArray: infoVmCloudServer.value.ipArray,
+            remoteIp: infoVmCloudServer.value.remoteIp,
+          });
+        },
       },
       { label: "子网", value: infoVmCloudServer.value.subnetId },
       { label: "VPC", value: infoVmCloudServer.value.vpcId },
@@ -70,7 +83,11 @@ onMounted(() => {
         label: "安全组",
         value: infoVmCloudServer.value.securityGroupIds,
         hideValue: true,
-        components: ["SecurityGroup"],
+        render: () => {
+          return h(SecurityGroup, {
+            securityGroupIds: infoVmCloudServer.value.securityGroupIds,
+          });
+        },
       },
     ];
   });
@@ -84,7 +101,7 @@ onMounted(() => {
         <span>基本信息</span>
       </template>
       <template #content>
-        <DetailPage :content="basicInfo" label="label" value="value" />
+        <detail-page :content="basicInfo" />
       </template>
     </base-container>
     <base-container :border="false">
@@ -92,7 +109,7 @@ onMounted(() => {
         <span>网络信息</span>
       </template>
       <template #content>
-        <DetailPage :content="networkInfo" label="label" value="value" />
+        <detail-page :content="networkInfo" />
       </template>
     </base-container>
   </div>
