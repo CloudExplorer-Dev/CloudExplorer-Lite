@@ -1,8 +1,9 @@
 <script setup lang="ts">
 import Detailed from "./items/resource_detailed/Detailed.vue";
-import ComputerResourceAllocatedRate from "@/views/base_resource_analysis/item/ComputerResourceAllocatedRate.vue";
+import ComputerResourceAllocatedRate from "@/views/base_resource_analysis/item/BaseResourceAllocationRate.vue";
 import CloudServerOrgWorkspaceSpread from "@/views/server_analysis/item/CloudServerOrgWorkspaceSpread.vue";
 import CloudServerIncreaseTrend from "@/views/server_analysis/item/CloudServerIncreaseTrend.vue";
+import ComputerResourceUseRate from "@/views/base_resource_analysis/item/BaseResourceUseRate.vue";
 import { ref, onMounted } from "vue";
 import CommonApi from "@/api/common/index";
 import type { CloudAccount } from "@commons/api/cloud_account/type";
@@ -36,7 +37,7 @@ onMounted(() => {
       </div>
     </div>
     <div class="content">
-      <el-row :gutter="16" type="flex">
+      <el-row :gutter="16">
         <el-col :span="24">
           <div class="flex-content">
             <div class="flex-div-1 divide-info">
@@ -45,7 +46,7 @@ onMounted(() => {
           </div>
         </el-col>
       </el-row>
-      <el-row :gutter="16" type="flex">
+      <el-row :gutter="16">
         <el-col :span="12">
           <div class="flex-content">
             <div class="flex-div-1 divide-info">
@@ -57,11 +58,13 @@ onMounted(() => {
         </el-col>
         <el-col :span="12">
           <div class="flex-content">
-            <div class="flex-div-1 divide-info"></div>
+            <div class="flex-div-1 divide-info">
+              <ComputerResourceUseRate></ComputerResourceUseRate>
+            </div>
           </div>
         </el-col>
       </el-row>
-      <el-row :gutter="16" type="flex">
+      <el-row :gutter="16">
         <el-col :span="12">
           <div class="flex-content">
             <div class="flex-div-1 divide-info">
@@ -87,6 +90,7 @@ onMounted(() => {
 <style scoped lang="scss">
 .contentContainer {
   height: calc(100vh - var(--ce-header-height));
+  min-width: 1000px;
   padding: 0;
   background-color: #f2f2f2;
   overflow-y: auto;
@@ -126,7 +130,7 @@ onMounted(() => {
   }
 }
 .el-row {
-  margin-bottom: 20px;
+  margin-bottom: 14px;
 }
 .el-row:last-child {
   margin-bottom: 0;

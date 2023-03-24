@@ -4,7 +4,7 @@ import type { ResourceAnalysisRequest } from "@commons/api/server_analysis/type"
 import type { Ref } from "vue";
 
 function getIncreaseTrend(
-  req: ResourceAnalysisRequest,
+  req: Ref<ResourceAnalysisRequest|undefined>,
   loading?: Ref<boolean>
 ): Promise<Result<any>> {
   return get(

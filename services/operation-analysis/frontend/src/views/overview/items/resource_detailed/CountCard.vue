@@ -48,7 +48,7 @@ watch(
     height: 22px;
     left: 40px;
     top: 80px;
-    font-family: "PingFang SC";
+    font-family: "PingFang SC", serif;
     font-style: normal;
     font-weight: 400;
     font-size: 14px;
@@ -60,7 +60,7 @@ watch(
     right: 95.22%;
     top: 8.13%;
     bottom: 89.72%;
-    font-family: "PingFang SC";
+    font-family: "PingFang SC", serif;
     font-style: normal;
     font-weight: 500;
     font-size: 20px;

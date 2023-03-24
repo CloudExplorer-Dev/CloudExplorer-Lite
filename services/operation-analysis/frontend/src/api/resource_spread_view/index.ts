@@ -60,7 +60,7 @@ export function getSpreadInfo(
 }
 
 export function getResourceTrendData(
-  req: ResourceAnalysisRequest,
+  req: Ref<ResourceAnalysisRequest | undefined>,
   loading?: Ref<boolean>
 ): Promise<Result<any>> {
   return get("api/base_resource_analysis/resource_trend", req, loading);

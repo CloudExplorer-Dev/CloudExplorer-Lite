@@ -15,22 +15,7 @@
               :value="item.id"
             />
           </el-select>
-          <el-select v-model="currentCluster" class="padding-r-12">
-            <template v-slot:prefix>
-              <span> 集群 </span>
-            </template>
-            <el-option label="全部集群" value="all" />
-            <el-option
-              v-for="item in clusters"
-              :key="item.id"
-              :label="item.name"
-              :value="item.id"
-              v-show="
-                item.accountId === currentAccount || currentAccount === 'all'
-              "
-            />
-          </el-select>
-          <el-select v-model="currentHost" class="padding-r-12">
+          <el-select v-model="currentHost">
             <template v-slot:prefix>
               <span> 宿主机 </span>
             </template>
@@ -41,26 +26,7 @@
               :label="item.hostName"
               :value="item.id"
               v-show="
-                (item.accountId === currentAccount ||
-                  currentAccount === 'all') &&
-                (item.zone === currentCluster || currentCluster === 'all')
-              "
-            />
-          </el-select>
-          <el-select v-model="currentDatastore">
-            <template v-slot:prefix>
-              <span> 存储器 </span>
-            </template>
-            <el-option label="全部存储器" value="all" />
-            <el-option
-              v-for="item in datastoreList"
-              :key="item.id"
-              :label="item.datastoreName"
-              :value="item.id"
-              v-show="
-                (item.accountId === currentAccount ||
-                  currentAccount === 'all') &&
-                (item.zone === currentCluster || currentCluster === 'all')
+                item.accountId === currentAccount || currentAccount === 'all'
               "
             />
           </el-select>
@@ -68,44 +34,45 @@
       </el-col>
     </el-row>
     <el-row :gutter="16" class="row">
-      <el-col :span="12">
-        <ComputerResourceAllocatedRate
+      <el-col :span="8">
+        <CloudAccountSpread
           :cloud-account-id="currentAccount"
-          :cluster-id="currentCluster"
-          :datastore-id="currentDatastore"
           :host-id="currentHost"
-        ></ComputerResourceAllocatedRate>
+        ></CloudAccountSpread>
       </el-col>
-      <el-col :span="12">
-        <ComputerResourceUseRate></ComputerResourceUseRate>
+      <el-col :span="8">
+        <StatusSpread
+          :cloud-account-id="currentAccount"
+          :host-id="currentHost"
+        ></StatusSpread>
+      </el-col>
+      <el-col :span="8">
+        <ChargeTypeSpread
+          :cloud-account-id="currentAccount"
+          :host-id="currentHost"
+        ></ChargeTypeSpread>
       </el-col>
     </el-row>
     <el-row :gutter="16" class="row">
       <el-col :span="12">
-        <CloudAccountHostSpread
+        <CloudServerIncreaseTrend
           :cloud-account-id="currentAccount"
-          :cluster-id="currentCluster"
-          :datastore-id="currentDatastore"
           :host-id="currentHost"
-        ></CloudAccountHostSpread>
+        ></CloudServerIncreaseTrend>
       </el-col>
       <el-col :span="12">
-        <HostCloudServerSpread
+        <CloudServerOrgWorkspaceSpread
           :cloud-account-id="currentAccount"
-          :cluster-id="currentCluster"
-          :datastore-id="currentDatastore"
           :host-id="currentHost"
-        ></HostCloudServerSpread>
+        ></CloudServerOrgWorkspaceSpread>
       </el-col>
     </el-row>
     <el-row :gutter="16" class="row">
       <el-col :span="24">
-        <DatastoreUseRate
+        <ResourceUseRateTrend
           :cloud-account-id="currentAccount"
-          :cluster-id="currentCluster"
-          :datastore-id="currentDatastore"
           :host-id="currentHost"
-        ></DatastoreUseRate>
+        ></ResourceUseRateTrend>
       </el-col>
     </el-row>
   </div>
@@ -116,39 +83,27 @@ import ResourceSpreadViewApi from "@/api/resource_spread_view";
 import { ResourceAnalysisRequest } from "@commons/api/resource_spread_view/type";
 import type { CloudAccount } from "@commons/api/cloud_account/type";
 import type { VmCloudHostVO } from "@/api/vm_cloud_host/type";
-import type { VmCloudDatastoreVO } from "@/api/vm_cloud_datastore/type";
-import ComputerResourceAllocatedRate from "@/views/base_resource_analysis/item/BaseResourceAllocationRate.vue";
-import CloudAccountHostSpread from "@/views/base_resource_analysis/item/BaseResourceSpread.vue";
-import HostCloudServerSpread from "@/views/base_resource_analysis/item/HostServerSpread.vue";
-import ComputerResourceUseRate from "@/views/base_resource_analysis/item/BaseResourceUseRate.vue";
-import DatastoreUseRate from "@/views/base_resource_analysis/item/BaseResourceUseRateTrend.vue";
+import CloudAccountSpread from "./item/CloudAccountSpread.vue";
+import StatusSpread from "./item/CLoudServerStatusSpread.vue";
+import ChargeTypeSpread from "./item/CloudServerChargeTypeSpread.vue";
+import CloudServerOrgWorkspaceSpread from "./item/CloudServerOrgWorkspaceSpread.vue";
+import CloudServerIncreaseTrend from "./item/CloudServerIncreaseTrend.vue";
+import ResourceUseRateTrend from "./item/CloudServerResourceUseRateTrend.vue";
 
 //条件
 const currentAccount = ref<string>("all");
-const currentCluster = ref<string>("all");
 const currentHost = ref<string>("all");
-const currentDatastore = ref<string>("all");
 const params = ref<ResourceAnalysisRequest>();
 //查询所有私有云云账号
 const accounts = ref<Array<CloudAccount>>();
-//查询所有集群
-const clusters = ref<any>();
 //查询所有宿主机
 const hosts = ref<Array<VmCloudHostVO>>();
-//查询所有存储器
-const datastoreList = ref<Array<VmCloudDatastoreVO>>();
 const getSearchCondition = () => {
   ResourceSpreadViewApi.listPrivateAccounts().then(
     (res) => (accounts.value = res.data)
   );
-  ResourceSpreadViewApi.listClusters(params).then(
-    (res) => (clusters.value = res.data)
-  );
   ResourceSpreadViewApi.listHost(params).then(
     (res) => (hosts.value = res.data)
-  );
-  ResourceSpreadViewApi.listDatastores(params).then(
-    (res) => (datastoreList.value = res.data)
   );
 };
 onMounted(() => {

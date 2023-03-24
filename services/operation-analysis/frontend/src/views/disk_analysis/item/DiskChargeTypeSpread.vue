@@ -2,7 +2,7 @@
   <el-card shadow="never" class="info-card">
     <el-row :gutter="10">
       <el-col :span="24">
-        <div class="title">宿主机按云账号分布</div>
+        <div class="title">付费方式</div>
       </el-col>
     </el-row>
     <el-row :gutter="10">
@@ -24,9 +24,9 @@
 <script setup lang="ts">
 import VChart from "vue-echarts";
 import { computed, ref, watch } from "vue";
-import ResourceSpreadViewApi from "@/api/resource_spread_view/index";
+import ResourceSpreadViewApi from "@/api/server_analysis/index";
 import _ from "lodash";
-import type { ResourceAnalysisRequest } from "@commons/api/resource_spread_view/type";
+import type { ResourceAnalysisRequest } from "@commons/api/server_analysis/type";
 import type { ECBasicOption } from "echarts/types/src/util/types";
 import type { SimpleMap } from "@commons/api/base/type";
 import { interpolationColor } from "@commons/utils/color";
@@ -36,6 +36,7 @@ const props = defineProps<{
   datastoreId?: string | undefined;
   hostId?: string | undefined;
 }>();
+const spreadType = ref<string>("byChargeType");
 const params = ref<ResourceAnalysisRequest>();
 const loading = ref<boolean>(false);
 const apiData = ref<any>();
@@ -47,28 +48,14 @@ const setParams = () => {
         props.cloudAccountId === "all" ? [] : [props.cloudAccountId]
       )
     : "";
-  props.clusterId
-    ? _.set(
-        params,
-        "clusterIds",
-        props.clusterId === "all" ? [] : [props.clusterId]
-      )
-    : "";
-  props.datastoreId
-    ? _.set(
-        params,
-        "datastoreIds",
-        props.datastoreId === "all" ? [] : [props.datastoreId]
-      )
-    : "";
   props.hostId
     ? _.set(params, "hostIds", props.hostId === "all" ? [] : [props.hostId])
     : "";
 };
 //获取数宿主机按云账号分布
-const getSpreadInfo = () => {
+const getSpreadData = () => {
   setParams();
-  ResourceSpreadViewApi.getSpreadInfo(params, loading).then(
+  ResourceSpreadViewApi.getSpreadData(params, loading).then(
     (res) => (apiData.value = res.data)
   );
 };
@@ -79,12 +66,25 @@ interface EchartsValue {
 
 const data = computed<Array<EchartsValue>>(() => {
   const result: Array<EchartsValue> = [];
-  _.forEach(apiData.value?.host, (v) => {
+  _.forEach(apiData.value?.[spreadType.value], (v) => {
     result.push({ name: v.name, value: v.value });
   });
   return result;
 });
 const option = computed<ECBasicOption>(() => {
+  if (data.value.length == 0) {
+    return {
+      title: {
+        text: "暂无数据",
+        x: "center",
+        y: "center",
+        textStyle: {
+          fontSize: 12,
+          fontWeight: "normal",
+        },
+      },
+    };
+  }
   const selected = data.value
     .map((b) => {
       return { [b.name]: true };
@@ -105,12 +105,11 @@ const option = computed<ECBasicOption>(() => {
     },
     legend: {
       type: "scroll",
-      itemGap: 4,
+      itemGap: 8,
       orient: "vertical",
-
-      right: 4,
+      right: 0, //值位置
       top: "center",
-      height: 180,
+      height: 150,
       icon: "circle",
       itemHeight: 12,
       pageIcons: {
@@ -122,17 +121,17 @@ const option = computed<ECBasicOption>(() => {
       pageButtonPosition: "end",
       textStyle: {
         fontSize: 12,
-        color: "#828282",
+        color: "rgb(100,106,115,1)",
         rich: {
           oneone: {
-            width: 110,
+            width: 85, //颜色标识位置
             color: "rgba(100, 106, 115, 1)",
             fontSize: 12,
             fontWeight: "400",
           },
           twotwo: {
             width: 40,
-            color: "rgba(100, 106, 115, 1)",
+            color: "rgba(31, 35, 41, 1)",
             fontSize: 12,
             fontWeight: "400",
           },
@@ -159,11 +158,11 @@ const option = computed<ECBasicOption>(() => {
         itemStyle: {
           borderRadius: 0,
           borderColor: "#fff",
-          borderWidth: 2,
+          borderWidth: 1,
         },
         type: "pie",
         center: [84, "50%"],
-        radius: [60, 80],
+        radius: [65, 80],
         avoidLabelOverlap: false,
         showEmptyCircle: true,
         label: {
@@ -194,7 +193,7 @@ const option = computed<ECBasicOption>(() => {
           },
         },
         emphasis: {
-          disabled: apiData.value?.host.length === 0,
+          disabled: apiData.value?.[spreadType.value].length === 0,
           label: {
             show: true,
             width: 110,
@@ -212,14 +211,10 @@ const option = computed<ECBasicOption>(() => {
         },
         data: data.value,
         color:
-          apiData.value?.host.length === 0
+          apiData.value?.[spreadType.value].length === 0
             ? ["rgba(187, 191, 196, 1)", "rgba(187, 191, 196, 1)"]
             : interpolationColor(
-                [
-                  "rgba(79, 131, 253,1)",
-                  "rgba(222, 224, 227, 1)",
-                  "rgba(250, 211, 85, 1)",
-                ],
+                ["rgb(148, 90, 246, 1)", "rgb(79, 131, 253, 1)"],
                 data.value.length
               ),
       },
@@ -229,18 +224,22 @@ const option = computed<ECBasicOption>(() => {
 watch(
   props,
   () => {
-    getSpreadInfo();
+    getSpreadData();
   },
   { immediate: true }
 );
 </script>
 <style scoped lang="scss">
 .info-card {
-  height: 100%;
-  min-width: 400px;
+  height: 277px;
+  background: #ffffff;
+  border-radius: 4px;
+  flex: none;
+  order: 0;
+  flex-grow: 0;
 }
 .chart {
-  min-height: 214px;
+  min-height: 180px;
   width: 100%;
 }
 .title {

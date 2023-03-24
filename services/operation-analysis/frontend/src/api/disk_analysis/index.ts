@@ -24,26 +24,33 @@ export function listAccounts(loading?: Ref<boolean>): Promise<Result<any>> {
 }
 
 export function getSpreadData(
-  req: ResourceAnalysisRequest,
+  req: Ref<ResourceAnalysisRequest | undefined>,
   loading?: Ref<boolean>
 ): Promise<Result<any>> {
   return get("api/disk_analysis/spread", req, loading);
 }
 
 export function getIncreaseTrend(
-  req: ResourceAnalysisRequest,
+  req: Ref<ResourceAnalysisRequest | undefined>,
   loading?: Ref<boolean>
 ): Promise<Result<any>> {
   return get("api/disk_analysis/increase_trend", req, loading);
 }
 export function getAnalysisOrgDiskCount(
-  req: ResourceAnalysisRequest,
+  req: Ref<ResourceAnalysisRequest | undefined>,
   loading?: Ref<boolean>
 ): Promise<Result<any>> {
   return get("api/disk_analysis/org_workspace_disk_count_bar", req, loading);
 }
 export function getAnalysisWorkspaceDiskCount(
   req: ResourceAnalysisRequest,
+  loading?: Ref<boolean>
+): Promise<Result<any>> {
+  return get("api/disk_analysis/org_workspace_disk_count_bar", req, loading);
+}
+
+export function getAnalysisOrgWorkspaceDiskCount(
+  req: Ref<ResourceAnalysisRequest | undefined>,
   loading?: Ref<boolean>
 ): Promise<Result<any>> {
   return get("api/disk_analysis/org_workspace_disk_count_bar", req, loading);
@@ -56,6 +63,7 @@ const ResourceSpreadViewApi = {
   getIncreaseTrend,
   getAnalysisOrgDiskCount,
   getAnalysisWorkspaceDiskCount,
+  getAnalysisOrgWorkspaceDiskCount,
 };
 
 export default ResourceSpreadViewApi;

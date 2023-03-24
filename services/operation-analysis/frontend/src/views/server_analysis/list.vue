@@ -2,7 +2,7 @@
   <el-tabs v-model="activeName">
     <el-tab-pane label="云主机分析" name="resourceSpread" :lazy="true">
       <div v-if="activeName === 'resourceSpread'">
-        <ResourceSpreadView></ResourceSpreadView>
+        <baseView></baseView>
       </div>
     </el-tab-pane>
     <el-tab-pane label="资源明细" name="host">
@@ -15,6 +15,6 @@
 <script lang="ts" setup>
 import { ref } from "vue";
 import ServerList from "./serverList.vue";
-import ResourceSpreadView from "./resourceAnalysisView.vue";
+import baseView from "./baseView.vue";
 const activeName = ref("resourceSpread");
 </script>

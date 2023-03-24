@@ -2,7 +2,7 @@
   <el-card shadow="never" class="info-card">
     <el-row :gutter="10">
       <el-col :span="24">
-        <div class="title">宿主云主机机分布</div>
+        <div class="title">宿主机上云主机分布</div>
       </el-col>
     </el-row>
     <el-row :gutter="10">
@@ -127,10 +127,10 @@ const option = computed<ECBasicOption>(() => {
         realtime: true,
         start: 0,
         end: 100, // 数据窗口范围的结束百分比。范围是：0 ~ 100。
-        height: 15, //组件高度
+        height: 5, //组件高度
         left: 5, //左边的距离
         right: 5, //右边的距离
-        bottom: 25, //下边的距离
+        bottom: 10, //下边的距离
         show: false, // 是否展示
         fillerColor: "rgba(17, 100, 210, 0.42)", // 滚动条颜色
         borderColor: "rgba(17, 100, 210, 0.12)",
@@ -163,14 +163,15 @@ const option = computed<ECBasicOption>(() => {
       show: true,
       type: "scroll",
       icon: "circle",
-      y: "bottom",
-      padding: [0, 0, 5, 0],
+      top: 0,
+      right: 10,
+      padding: [0, 0, 5, 10],
     },
     grid: {
       left: "3%",
       right: "4%",
-      top: "10px",
-      bottom: "15%",
+      top: "30px",
+      bottom: "10%",
       containLabel: true,
     },
     yAxis: {
@@ -179,8 +180,9 @@ const option = computed<ECBasicOption>(() => {
     xAxis: {
       type: "category",
       data: selected.name,
+      axisTick: false,
     },
-    color: ["rgba(79, 131, 253,1)", "rgba(250, 211, 85, 1)"],
+    color: ["rgba(98, 210, 85,1)", "rgba(223, 224, 227, 1)"],
     series: [
       {
         name: "运行中",
@@ -207,6 +209,12 @@ const option = computed<ECBasicOption>(() => {
         },
         data: selected.stopped,
         barWidth: 16,
+        itemStyle: {
+          normal: {
+            //这里设置柱形图圆角 [左上角，右上角，右下角，左下角]
+            barBorderRadius: [2, 2, 0, 0],
+          },
+        },
       },
     ],
   };
@@ -232,7 +240,7 @@ watch(
 </script>
 <style scoped lang="scss">
 .info-card {
-  height: 448px;
+  height: 277px;
   background: #ffffff;
   border-radius: 4px;
   flex: none;
@@ -240,7 +248,7 @@ watch(
   flex-grow: 0;
 }
 .chart {
-  min-height: 368px;
+  min-height: 189px;
   width: 100%;
 }
 .title {

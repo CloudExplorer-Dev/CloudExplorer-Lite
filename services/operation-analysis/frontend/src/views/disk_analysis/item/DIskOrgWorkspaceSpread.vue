@@ -2,7 +2,7 @@
   <el-card shadow="never" class="info-card">
     <el-row>
       <el-col :span="10">
-        <div class="title">云主机分布</div>
+        <div class="title">组织架构分布</div>
       </el-col>
       <el-col :span="14" style="text-align: right">
         <el-radio-group
@@ -38,15 +38,13 @@
 <script setup lang="ts">
 import VChart from "vue-echarts";
 import { computed, ref, watch } from "vue";
-import CloudServerViewApi from "@/api/server_analysis/index";
 import _ from "lodash";
-import type { ResourceAnalysisRequest } from "@/api/server_analysis/type";
+import type { ResourceAnalysisRequest } from "@/api/disk_analysis/type";
 import type { ECBasicOption } from "echarts/types/src/util/types";
+import ResourceSpreadViewApi from "@/api/disk_analysis/index";
 const props = defineProps<{
   cloudAccountId?: string | undefined;
-  clusterId?: string | undefined;
-  datastoreId?: string | undefined;
-  hostId?: string | undefined;
+  currentUnit?: string | undefined;
 }>();
 const paramDepartmentType = ref<string>("org");
 const params = ref<ResourceAnalysisRequest>();
@@ -54,18 +52,21 @@ const loading = ref<boolean>(false);
 const apiData = ref<any>();
 const showBack = ref<boolean>(false);
 const parentItem = ref<any>({});
+const setParams = () => {
+  props.cloudAccountId
+    ? _.set(
+        params,
+        "accountIds",
+        props.cloudAccountId === "all" ? [] : [props.cloudAccountId]
+      )
+    : "";
+  _.set(params, "statisticalBlock", props.currentUnit === "block");
+  _.set(params, "analysisWorkspace", paramDepartmentType.value === "workspace");
+};
 const getSpreadByDepartmentData = () => {
   showBack.value = false;
-  _.set(params, "analysisWorkspace", paramDepartmentType.value === "workspace");
-  _.set(
-    params,
-    "accountIds",
-    props.cloudAccountId === "all" ? [] : [props.cloudAccountId]
-  );
-  props.hostId
-    ? _.set(params, "hostIds", props.hostId === "all" ? [] : [props.hostId])
-    : "";
-  CloudServerViewApi.getAnalysisOrgWorkspaceVmCount(params, loading).then(
+  setParams();
+  ResourceSpreadViewApi.getAnalysisOrgWorkspaceDiskCount(params, loading).then(
     (res) => (apiData.value = res.data)
   );
 };
@@ -100,8 +101,8 @@ const options = computed<ECBasicOption>(() => {
       seriesData.value.push({ value: v.value, groupName: v.groupName });
     });
     _.set(options, "series[0].data", seriesData.value);
-    _.set(options, "series[0].name", "云主机");
-    _.set(options, "legend.data", ["云主机"]);
+    _.set(options, "series[0].name", "磁盘");
+    _.set(options, "legend.data", ["磁盘"]);
     const deptNumber = tree.map((item: any) => item.name);
     let showEcharts = false;
     let nameNum = 0;

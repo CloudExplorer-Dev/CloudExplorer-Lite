@@ -2,12 +2,12 @@
   <el-card shadow="never" class="info-card">
     <el-row>
       <el-col :span="10">
-        <div class="title">云主机趋势</div>
+        <div class="title">磁盘趋势</div>
       </el-col>
       <el-col :span="14" style="text-align: right">
         <el-radio-group
           class="custom-radio-group"
-          v-model="paramVmIncreaseTrendMonth"
+          v-model="paramDiskIncreaseTrendMonth"
           @change="getIncreaseTrend()"
         >
           <el-radio-button label="7">近7天</el-radio-button>
@@ -37,32 +37,28 @@
 import VChart from "vue-echarts";
 import { computed, ref, watch } from "vue";
 import _ from "lodash";
-import type { ResourceAnalysisRequest } from "@/api/server_analysis/type";
+import type { ResourceAnalysisRequest } from "@/api/disk_analysis/type";
 import type { ECBasicOption } from "echarts/types/src/util/types";
-import CloudServerViewApi from "@/api/server_analysis/index";
+import ResourceSpreadViewApi from "@/api/disk_analysis/index";
 import * as echarts from "echarts";
 const props = defineProps<{
   cloudAccountId?: string | undefined;
-  clusterId?: string | undefined;
-  datastoreId?: string | undefined;
-  hostId?: string | undefined;
+  currentUnit?: string | undefined;
 }>();
 const params = ref<ResourceAnalysisRequest>();
-const paramVmIncreaseTrendMonth = ref<string>("7");
+const paramDiskIncreaseTrendMonth = ref<string>("7");
 const loading = ref<boolean>(false);
 const apiData = ref<any>();
 
 const getIncreaseTrend = () => {
-  _.set(params, "dayNumber", paramVmIncreaseTrendMonth.value);
+  _.set(params, "dayNumber", paramDiskIncreaseTrendMonth.value);
   _.set(
     params,
     "accountIds",
     props.cloudAccountId === "all" ? [] : [props.cloudAccountId]
   );
-  props.hostId
-    ? _.set(params, "hostIds", props.hostId === "all" ? [] : [props.hostId])
-    : "";
-  CloudServerViewApi.getIncreaseTrend(params, loading).then(
+  _.set(params, "statisticalBlock", props.currentUnit === "block");
+  ResourceSpreadViewApi.getIncreaseTrend(params, loading).then(
     (res) => (apiData.value = res.data)
   );
 };

@@ -31,14 +31,14 @@ export function listHost(
 }
 
 export function getSpreadData(
-  req: ResourceAnalysisRequest,
+  req: Ref<ResourceAnalysisRequest | undefined>,
   loading?: Ref<boolean>
 ): Promise<Result<any>> {
   return get("api/server_analysis/spread", req, loading);
 }
 
 export function getResourceTrendData(
-  req: ResourceAnalysisRequest,
+  req: Ref<ResourceAnalysisRequest | undefined>,
   loading?: Ref<boolean>
 ): Promise<Result<any>> {
   return get("api/server_analysis/resource_used_trend", req, loading);

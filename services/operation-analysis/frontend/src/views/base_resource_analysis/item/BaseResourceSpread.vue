@@ -1,103 +1,96 @@
-<script lang="ts" setup>
-const props = withDefaults(
-  defineProps<{
-    needRoles?: Array<"ADMIN" | "ORGADMIN" | "USER">;
-    permission?: any;
-    module?: string;
-  }>(),
-  {
-    needRoles: () => ["ADMIN", "ORGADMIN", "USER"],
-    permission: "[vm-service]CLOUD_SERVER:READ",
-    module: "vm-service",
-  }
-);
-
-import { computed, onMounted, ref } from "vue";
-import API, { type StatusCount } from "@commons/api/vm_cloud_server/index";
-
+<template>
+  <el-card shadow="never" class="info-card">
+    <el-row :gutter="10">
+      <el-col :span="10">
+        <div class="title">基础资源分布</div>
+      </el-col>
+      <el-col :span="14" style="text-align: right">
+        <el-radio-group class="custom-radio-group" v-model="spreadType">
+          <el-radio-button label="host">宿主机</el-radio-button>
+          <el-radio-button label="datastore">存储器</el-radio-button>
+        </el-radio-group>
+      </el-col>
+    </el-row>
+    <el-row :gutter="10">
+      <el-col :span="24">
+        <div class="echarts">
+          <div class="echarts-content">
+            <v-chart
+              class="chart"
+              :option="option"
+              v-loading="loading"
+              autoresize
+            />
+          </div>
+        </div>
+      </el-col>
+    </el-row>
+  </el-card>
+</template>
+<script setup lang="ts">
 import VChart from "vue-echarts";
-
+import { computed, ref, watch } from "vue";
+import ResourceSpreadViewApi from "@/api/resource_spread_view/index";
 import _ from "lodash";
+import type { ResourceAnalysisRequest } from "@commons/api/resource_spread_view/type";
+import type { ECBasicOption } from "echarts/types/src/util/types";
 import type { SimpleMap } from "@commons/api/base/type";
 import { interpolationColor } from "@commons/utils/color";
-import type { ECBasicOption } from "echarts/types/src/util/types";
-import { useModuleStore } from "@commons/stores/modules/module";
-import { usePermissionStore } from "@commons/stores/modules/permission";
-import { useUserStore } from "@commons/stores/modules/user";
-import InstanceStatusUtils from "@commons/utils/vm_cloud_server/InstanceStatusUtils";
-
-const moduleStore = useModuleStore();
-const permissionStore = usePermissionStore();
-const userStore = useUserStore();
-
-const show = computed<boolean>(
-  () =>
-    _.some(
-      moduleStore.runningModules,
-      (module) => module.id === props.module
-    ) &&
-    permissionStore.hasPermission(props.permission) &&
-    _.includes(props.needRoles, userStore.currentRole)
-);
-
+const props = defineProps<{
+  cloudAccountId?: string | undefined;
+  clusterId?: string | undefined;
+  datastoreId?: string | undefined;
+  hostId?: string | undefined;
+}>();
+const spreadType = ref<string>("host");
+const params = ref<ResourceAnalysisRequest>();
 const loading = ref<boolean>(false);
-
-const status = ref<Array<StatusCount>>([]);
-
-interface EchartValue {
-  key: string;
+const apiData = ref<any>();
+const setParams = () => {
+  props.cloudAccountId
+    ? _.set(
+        params,
+        "accountIds",
+        props.cloudAccountId === "all" ? [] : [props.cloudAccountId]
+      )
+    : "";
+  props.clusterId
+    ? _.set(
+        params,
+        "clusterIds",
+        props.clusterId === "all" ? [] : [props.clusterId]
+      )
+    : "";
+  props.datastoreId
+    ? _.set(
+        params,
+        "datastoreIds",
+        props.datastoreId === "all" ? [] : [props.datastoreId]
+      )
+    : "";
+  props.hostId
+    ? _.set(params, "hostIds", props.hostId === "all" ? [] : [props.hostId])
+    : "";
+};
+//获取数宿主机按云账号分布
+const getSpreadInfo = () => {
+  setParams();
+  ResourceSpreadViewApi.getSpreadInfo(params, loading).then(
+    (res) => (apiData.value = res.data)
+  );
+};
+interface EchartsValue {
   name: string;
   value: number;
 }
 
-const data = computed<Array<EchartValue>>(() => {
-  const result: Array<EchartValue> = [
-    {
-      key: "Running",
-      name: InstanceStatusUtils.getStatusName("Running"),
-      value: _.defaultTo(
-        _.find(status.value, (s) => s.status === "Running")?.count,
-        0
-      ),
-    },
-    {
-      key: "Stopped",
-      name: InstanceStatusUtils.getStatusName("Stopped"),
-      value: _.defaultTo(
-        _.find(status.value, (s) => s.status === "Stopped")?.count,
-        0
-      ),
-    },
-  ];
-
-  const otherCount = _.sum(
-    _.map(
-      _.filter(
-        status.value,
-        (s) => s.status !== "Running" && s.status !== "Stopped"
-      ),
-      (s) => s.count
-    )
-  );
-  if (otherCount > 0) {
-    result.push({
-      key: "other",
-      name: "其他",
-      value: otherCount,
-    });
-  }
+const data = computed<Array<EchartsValue>>(() => {
+  const result: Array<EchartsValue> = [];
+  _.forEach(apiData.value?.[spreadType.value], (v) => {
+    result.push({ name: v.name, value: v.value });
+  });
   return result;
 });
-
-function getCurrentMonthBill() {
-  if (!show.value) {
-    return;
-  }
-  API.getCountsGroupByStatus(loading).then((ok) => {
-    status.value = ok.data;
-  });
-}
-
 const option = computed<ECBasicOption>(() => {
   const selected = data.value
     .map((b) => {
@@ -119,12 +112,11 @@ const option = computed<ECBasicOption>(() => {
     },
     legend: {
       type: "scroll",
-      itemGap: 4,
+      itemGap: 8,
       orient: "vertical",
-
-      right: 4,
+      right: 20, //值位置
       top: "center",
-      height: 180,
+      height: 150,
       icon: "circle",
       itemHeight: 12,
       pageIcons: {
@@ -139,7 +131,7 @@ const option = computed<ECBasicOption>(() => {
         color: "rgb(100,106,115,1)",
         rich: {
           oneone: {
-            width: 110,
+            width: 120, //颜色标识位置
             color: "rgba(100, 106, 115, 1)",
             fontSize: 12,
             fontWeight: "400",
@@ -173,11 +165,11 @@ const option = computed<ECBasicOption>(() => {
         itemStyle: {
           borderRadius: 0,
           borderColor: "#fff",
-          borderWidth: 2,
+          borderWidth: 1,
         },
         type: "pie",
         center: [84, "50%"],
-        radius: [60, 80],
+        radius: [65, 80],
         avoidLabelOverlap: false,
         showEmptyCircle: true,
         label: {
@@ -208,7 +200,7 @@ const option = computed<ECBasicOption>(() => {
           },
         },
         emphasis: {
-          disabled: status.value.length === 0,
+          disabled: apiData.value?.[spreadType.value].length === 0,
           label: {
             show: true,
             width: 110,
@@ -226,11 +218,11 @@ const option = computed<ECBasicOption>(() => {
         },
         data: data.value,
         color:
-          status.value.length === 0
+          apiData.value?.[spreadType.value].length === 0
             ? ["rgba(187, 191, 196, 1)", "rgba(187, 191, 196, 1)"]
             : interpolationColor(
                 [
-                  "rgba(98, 210, 86, 1)",
+                  "rgba(79, 131, 253,1)",
                   "rgba(222, 224, 227, 1)",
                   "rgba(250, 211, 85, 1)",
                 ],
@@ -240,44 +232,47 @@ const option = computed<ECBasicOption>(() => {
     ],
   };
 });
-
-onMounted(() => {
-  getCurrentMonthBill();
-});
-
-defineExpose({ show });
+watch(
+  props,
+  () => {
+    getSpreadInfo();
+  },
+  { immediate: true }
+);
 </script>
-<template>
-  <div class="info-card" v-if="show">
-    <div class="title">云主机状态</div>
-    <v-chart class="chart" :option="option" autoresize v-loading="loading" />
-  </div>
-</template>
-
 <style scoped lang="scss">
 .info-card {
+  height: 277px;
   background: #ffffff;
   border-radius: 4px;
-  padding: 24px;
-  overflow: hidden;
-
-  .title {
-    font-style: normal;
-    font-weight: 500;
-    font-size: 16px;
-    line-height: 24px;
-    margin-bottom: 10px;
-  }
-
-  .sub-main-title {
-    line-height: 22px;
-    font-size: 14px;
-  }
-
-  .chart {
-    min-height: 200px;
-    min-width: 370px;
-    width: 100%;
-  }
+  flex: none;
+  order: 0;
+  flex-grow: 0;
+  min-width: 400px;
+}
+.chart {
+  min-height: 189px;
+  width: 100%;
+}
+.title {
+  font-weight: bold;
+  font-size: 16px;
+  padding-top: 4px;
+  padding-bottom: 16px;
+}
+.echarts-content {
+  margin-top: 7px;
+}
+.echarts-footer {
+  margin-top: 15px;
+  margin-bottom: 10px;
+  position: initial;
+  font-family: "PingFang SC", serif;
+  font-style: normal;
+  font-weight: 400;
+  font-size: 14px;
+  line-height: 12px;
+  text-align: center;
+  color: #1f2329;
 }
 </style>

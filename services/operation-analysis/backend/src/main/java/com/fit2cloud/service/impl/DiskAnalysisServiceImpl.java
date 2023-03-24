@@ -298,7 +298,7 @@ public class DiskAnalysisServiceImpl implements IDiskAnalysisService {
         if (isBlock){
             wrapper.selectCount(VmCloudDisk::getId,BarTreeChartData::getValue);
         }else{
-            wrapper.selectCount(VmCloudDisk::getSize,BarTreeChartData::getValue);
+            wrapper.selectSum(VmCloudDisk::getSize,BarTreeChartData::getValue);
         }
         list = orgWorkspaceMapper.selectJoinList(BarTreeChartData.class,wrapper);
         return list;
