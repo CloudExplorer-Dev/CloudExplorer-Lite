@@ -19,6 +19,11 @@ const props = withDefaults(
     module?: string;
     title?: string;
     cloudAccountId?: string;
+    noTitle?: boolean;
+    noPadding?: boolean;
+    checkId?: number;
+    checkable?: boolean;
+    req?: ListOptimizationRequest;
   }>(),
   {
     needRoles: () => ["ADMIN", "ORGADMIN", "USER"],
@@ -28,6 +33,9 @@ const props = withDefaults(
     ],
     module: "operation-analysis",
     title: "云主机优化建议",
+    noTitle: false,
+    noPadding: false,
+    checkable: false,
   }
 );
 
@@ -50,6 +58,9 @@ const optimizeSuggests = computed<Array<ListOptimizationRequest>>(() => {
         ? [props.cloudAccountId]
         : []
     );
+    if (props.req) {
+      _.merge(v, props.req);
+    }
     return { ...v, currentPage: 1, pageSize: 1 };
   });
 });
@@ -79,14 +90,50 @@ const show = computed<boolean>(
     permissionStore.hasPermission(props.permission) &&
     _.includes(props.needRoles, userStore.currentRole)
 );
+
+const emit = defineEmits(["update:checkId", "change"]);
+
+const checkedId = computed({
+  get() {
+    return props.checkId;
+  },
+  set(value) {
+    if (checkedId.value !== value) {
+      emit("update:checkId", value);
+      emit("change", value);
+    }
+  },
+});
+
+function checkDiv(req: ListOptimizationRequest) {
+  if (!props.checkable) {
+    return;
+  }
+  checkedId.value = req.id;
+}
+
+function getCheckedSearchParams(
+  id: number
+): ListOptimizationRequest | undefined {
+  return _.find(optimizeSuggests.value, (s) => s.id === id);
+}
+
+defineExpose({
+  getCheckedSearchParams,
+});
 </script>
 <template>
-  <div class="info-card" v-if="show">
-    <div class="title">{{ title }}</div>
+  <div class="info-card" :class="{ 'no-padding': noPadding }" v-if="show">
+    <div class="title" v-if="!noTitle">{{ title }}</div>
 
-    <el-row :gutter="16" class="div-content">
+    <el-row :gutter="16" :class="{ 'div-content': !noTitle }">
       <el-col :span="6" v-for="o in optimizeSuggests" :key="o.code">
-        <ServerOptimizationCard :req="o" :show="show" />
+        <ServerOptimizationCard
+          :req="o"
+          :show="show"
+          :checked="checkedId === o.id"
+          @click="checkDiv(o)"
+        />
       </el-col>
     </el-row>
   </div>
@@ -107,34 +154,10 @@ const show = computed<boolean>(
   }
   .div-content {
     margin-top: 16px;
-
-    .div-card {
-      cursor: pointer;
-      background: #ffffff;
-      border: 1px solid #dee0e3;
-      border-radius: 4px;
-      padding: 16px;
-
-      .text {
-        font-style: normal;
-        font-weight: 400;
-        font-size: 14px;
-        line-height: 22px;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-      }
-      .main {
-        font-style: normal;
-        font-weight: 500;
-        font-size: 28px;
-        line-height: 36px;
-      }
-    }
-
-    .div-card:hover {
-      box-shadow: 0 6px 24px rgba(31, 35, 41, 0.08);
-    }
   }
+}
+
+.info-card.no-padding {
+  padding: 0;
 }
 </style>

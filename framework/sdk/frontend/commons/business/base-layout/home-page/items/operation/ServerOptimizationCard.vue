@@ -2,13 +2,18 @@
 import { ref, watch } from "vue";
 import type { ListOptimizationRequest } from "@commons/api/resource_optimization/type";
 import ResourceOptimizationViewApi from "@commons/api/resource_optimization";
+import _ from "lodash";
 
 const props = withDefaults(
   defineProps<{
     req: ListOptimizationRequest;
-    show: boolean;
+    show?: boolean;
+    checked?: boolean;
   }>(),
-  {}
+  {
+    show: true,
+    checked: false,
+  }
 );
 
 const loading = ref(false);
@@ -25,15 +30,27 @@ function getOptimizeSuggests() {
 }
 
 watch(
-  () => props,
-  (data) => {
+  () => {
+    return { req: props.req, show: props.show };
+  },
+  (data, old) => {
+    //防止重复查询
+    if (
+      data.show === old?.show &&
+      _.isEqual(
+        JSON.parse(JSON.stringify(data.req)),
+        JSON.parse(JSON.stringify(_.defaultTo(old?.req, {})))
+      )
+    ) {
+      return;
+    }
     getOptimizeSuggests();
   },
   { immediate: true, deep: true }
 );
 </script>
 <template>
-  <div class="div-card" v-loading="loading">
+  <div class="div-card" :class="{ checked: checked }" v-loading="loading">
     <div class="text">{{ req.name }}</div>
     <div class="text">
       <span class="main">
@@ -71,5 +88,12 @@ watch(
 
 .div-card:hover {
   box-shadow: 0 6px 24px rgba(31, 35, 41, 0.08);
+}
+
+.div-card.checked {
+  background-color: rgba(51, 112, 255, 0.1);
+  border-color: #3370ff;
+  border-left-width: 4px;
+  padding-left: 13px;
 }
 </style>

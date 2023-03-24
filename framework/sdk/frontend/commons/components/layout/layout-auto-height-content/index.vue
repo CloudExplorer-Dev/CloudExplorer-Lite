@@ -19,7 +19,6 @@ const props = withDefaults(defineProps<{ style: any }>(), {
   margin-left: var(--ce-main-breadcrumb-margin-left, 30px);
 }
 .content {
-  width: 100%;
   margin: var(--ce-main-content-margin-top, 10px)
     var(--ce-main-content-margin-left, 30px)
     var(--ce-main-content-margin-right, 30px)
