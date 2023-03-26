@@ -105,7 +105,7 @@ const setParams = () => {
       )
     : "";
   props.hostId
-    ? _.set(params, "hostIds", props.hostId === "all" ? [] : [props.hostId])
+    ? _.set(params, "resourceIds", props.hostId === "all" ? [] : [props.hostId])
     : "";
   _.set(params, "entityType", "HOST");
   _.set(params, "metricName", basicResourceType.value);

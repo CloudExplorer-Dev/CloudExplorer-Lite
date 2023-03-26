@@ -66,7 +66,7 @@ const getIncreaseTrend = () => {
   props.hostId
     ? _.set(params.value, "hostIds", props.hostId === "all" ? [] : [props.hostId])
     : "";
-  CloudServerViewApi.getIncreaseTrend(params, loading).then(
+  CloudServerViewApi.getIncreaseTrend(params.value, loading).then(
     (res) => (apiData.value = res.data)
   );
 };

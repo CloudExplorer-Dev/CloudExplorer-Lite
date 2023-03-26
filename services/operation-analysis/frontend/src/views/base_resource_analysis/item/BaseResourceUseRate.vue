@@ -1,5 +1,5 @@
 <template>
-  <el-card shadow="never" class="info-card">
+  <div class="info-card">
     <el-row :gutter="10">
       <el-col :span="24">
         <div class="title">基础资源使用率</div>
@@ -42,7 +42,7 @@
         </div>
       </el-col>
     </el-row>
-  </el-card>
+  </div>
 </template>
 
 <script lang="ts" setup>
@@ -148,8 +148,10 @@ onMounted(() => {
 </script>
 <style scoped lang="scss">
 .info-card {
-  height: 249px;
-  min-width: 400px;
+  background: #ffffff;
+  border-radius: 4px;
+  padding: 24px;
+  overflow: hidden;
 }
 .chart {
   min-height: 120px;
@@ -168,7 +170,7 @@ onMounted(() => {
   margin-top: 15px;
   margin-bottom: 10px;
   position: initial;
-  font-family: "PingFang SC", serif;
+
   font-style: normal;
   font-weight: 400;
   font-size: 14px;

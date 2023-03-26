@@ -247,7 +247,6 @@ const barSeriesLabel = {
 </script>
 <style scoped lang="scss">
 .info-card {
-  height: 295px;
   min-width: 400px;
   background: #ffffff;
   border-radius: 4px;

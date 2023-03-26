@@ -24,7 +24,7 @@
               v-for="item in hosts"
               :key="item.id"
               :label="item.hostName"
-              :value="item.id"
+              :value="item.hostId"
               v-show="
                 item.accountId === currentAccount || currentAccount === 'all'
               "
@@ -58,12 +58,14 @@
         <CloudServerIncreaseTrend
           :cloud-account-id="currentAccount"
           :host-id="currentHost"
+          style="height: 250px; border: 1px solid rgba(223, 224, 227, 1)"
         ></CloudServerIncreaseTrend>
       </el-col>
       <el-col :span="12">
         <CloudServerOrgWorkspaceSpread
           :cloud-account-id="currentAccount"
           :host-id="currentHost"
+          style="height: 250px; border: 1px solid rgba(223, 224, 227, 1)"
         ></CloudServerOrgWorkspaceSpread>
       </el-col>
     </el-row>
@@ -87,7 +89,7 @@ import CloudAccountSpread from "./item/CloudAccountSpread.vue";
 import StatusSpread from "./item/CLoudServerStatusSpread.vue";
 import ChargeTypeSpread from "./item/CloudServerChargeTypeSpread.vue";
 import CloudServerOrgWorkspaceSpread from "./item/CloudServerOrgWorkspaceSpread.vue";
-import CloudServerIncreaseTrend from "./item/CloudServerIncreaseTrend.vue";
+import CloudServerIncreaseTrend from "@commons/business/base-layout/home-page/items/operation/CloudServerIncreaseTrend.vue";
 import ResourceUseRateTrend from "./item/CloudServerResourceUseRateTrend.vue";
 
 //条件

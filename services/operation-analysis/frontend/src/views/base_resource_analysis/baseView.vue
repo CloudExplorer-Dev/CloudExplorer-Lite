@@ -74,10 +74,13 @@
           :cluster-id="currentCluster"
           :datastore-id="currentDatastore"
           :host-id="currentHost"
+          style="height: 198px; border: 1px solid rgba(223, 224, 227, 1)"
         ></ComputerResourceAllocatedRate>
       </el-col>
       <el-col :span="12">
-        <ComputerResourceUseRate></ComputerResourceUseRate>
+        <ComputerResourceUseRate
+          style="height: 198px; border: 1px solid rgba(223, 224, 227, 1)"
+        ></ComputerResourceUseRate>
       </el-col>
     </el-row>
     <el-row :gutter="16" class="row">
