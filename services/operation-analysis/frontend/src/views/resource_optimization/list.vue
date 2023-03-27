@@ -40,6 +40,7 @@
         column-key="accountIds"
         :label="$t('commons.cloud_account.native')"
         :filters="cloudAccount"
+        :filtered-value="checkedAccountIds"
       >
         <template #default="scope">
           <div style="display: flex">
@@ -132,7 +133,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, ref } from "vue";
+import { computed, onBeforeMount, onMounted, ref } from "vue";
 import {
   PaginationConfig,
   TableConfig,
@@ -150,10 +151,24 @@ import { useRouter } from "vue-router";
 import ServerOptimization from "@commons/business/base-layout/home-page/items/operation/ServerOptimization.vue";
 import _ from "lodash";
 
-const checkedId = ref(1);
 const optimizeDivRef = ref<InstanceType<typeof ServerOptimization> | null>();
 
 const useRoute = useRouter();
+
+const checkedId = ref(
+  _.defaultTo(
+    _.parseInt(useRoute.currentRoute.value.query?.checked as string),
+    1
+  )
+);
+
+const checkedAccountIds = ref(
+  useRoute.currentRoute.value.query?.accountIds
+    ? JSON.parse(
+        decodeURI(useRoute.currentRoute.value.query?.accountIds as string)
+      )
+    : undefined
+);
 
 const { t } = useI18n();
 const table = ref<any>(null);
@@ -163,7 +178,6 @@ const tableLoading = ref<boolean>(false);
 const cloudAccount = ref<Array<SimpleMap<string>>>([]);
 
 function selectChange(id: number) {
-  console.log(id);
   search(table?.value.getTableSearch());
 }
 
@@ -208,7 +222,9 @@ const search = (condition: TableSearch) => {
  * 页面挂载
  */
 onMounted(() => {
-  search(table?.value.getTableSearch());
+  if (!checkedAccountIds.value) {
+    search(table?.value.getTableSearch());
+  }
   searchCloudAccount();
 });
 
@@ -219,6 +235,12 @@ const searchCloudAccount = () => {
         const ca = { text: v.name, value: v.id };
         cloudAccount.value.push(ca);
       });
+
+      if (checkedAccountIds.value) {
+        table?.value?.filterChange({
+          accountIds: checkedAccountIds.value,
+        });
+      }
     }
   });
 };

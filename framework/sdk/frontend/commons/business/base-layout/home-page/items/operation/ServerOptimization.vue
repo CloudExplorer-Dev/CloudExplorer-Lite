@@ -11,6 +11,7 @@ import {
   paramOptimizationRequestMap,
 } from "@commons/api/resource_optimization/type";
 import ServerOptimizationCard from "@commons/business/base-layout/home-page/items/operation/ServerOptimizationCard.vue";
+import { useRouter } from "vue-router";
 
 const props = withDefaults(
   defineProps<{
@@ -42,6 +43,8 @@ const props = withDefaults(
 const moduleStore = useModuleStore();
 const permissionStore = usePermissionStore();
 const userStore = useUserStore();
+
+const useRoute = useRouter();
 
 //优化建议
 const optimizeParam = ref<any>();
@@ -114,6 +117,7 @@ const checkedId = computed({
 
 function checkDiv(req: ListOptimizationRequest) {
   if (!props.checkable) {
+    goTo(req.id);
     return;
   }
   checkedId.value = req.id;
@@ -127,6 +131,27 @@ function getCheckedSearchParams(
     _.clone(_.find(simpleOptimizeSuggests.value, (s) => s.id === id)),
     req
   );
+}
+
+function goTo(id: number) {
+  const queryParam: any = { checked: id };
+  if (props.cloudAccountId && props.cloudAccountId !== "all") {
+    queryParam.accountIds = encodeURI(JSON.stringify([props.cloudAccountId]));
+  }
+  if (import.meta.env.VITE_APP_NAME === "operation-analysis") {
+    useRoute.push({
+      name: "resource_optimization_list",
+      query: queryParam,
+    });
+  } else {
+    window.location.href =
+      window.location.protocol +
+      "//" +
+      window.location.host +
+      "/operation-analysis/#/server_optimization/list?checked=" +
+      queryParam.checked +
+      (queryParam.accountIds ? "&accountIds=" + queryParam.accountIds : "");
+  }
 }
 
 defineExpose({
