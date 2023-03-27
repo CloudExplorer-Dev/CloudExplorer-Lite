@@ -55,7 +55,6 @@ export class OptimizationRequest {
 }
 
 export interface OptimizeSuggest {
-  checked: boolean;
   name: string;
   code: string;
   value: number;
@@ -179,7 +178,6 @@ export const paramOptimizationRequestMap: Map<string, any> = new Map([
 
 export const baseOptimizeSuggests: Array<OptimizeSuggest> = [
   {
-    checked: true,
     name: "建议降配云主机",
     id: 1,
     code: "derating",
@@ -187,7 +185,6 @@ export const baseOptimizeSuggests: Array<OptimizeSuggest> = [
     data: [],
   },
   {
-    checked: false,
     name: "建议升配云主机",
     id: 2,
     code: "upgrade",
@@ -195,7 +192,6 @@ export const baseOptimizeSuggests: Array<OptimizeSuggest> = [
     data: [],
   },
   {
-    checked: false,
     name: "建议变更付费方式云主机",
     id: 3,
     code: "payment",
@@ -203,7 +199,6 @@ export const baseOptimizeSuggests: Array<OptimizeSuggest> = [
     data: [],
   },
   {
-    checked: false,
     name: "建议回收云主机",
     id: 4,
     code: "recovery",

@@ -46,11 +46,18 @@ const userStore = useUserStore();
 //优化建议
 const optimizeParam = ref<any>();
 
-const optimizeSuggests = computed<Array<ListOptimizationRequest>>(() => {
+const simpleOptimizeSuggests = computed<Array<ListOptimizationRequest>>(() => {
   return _.map(baseOptimizeSuggests, (s) => {
     const v = _.clone(s);
     getSearchParams(v);
-    _.merge(v, optimizeParam.value);
+    _.assign(v, optimizeParam.value);
+    return { ...v, currentPage: 1, pageSize: 1 };
+  });
+});
+
+const optimizeSuggests = computed<Array<ListOptimizationRequest>>(() => {
+  return _.map(simpleOptimizeSuggests.value, (s) => {
+    const v = _.clone(s);
     _.set(
       v,
       "accountIds",
@@ -59,9 +66,9 @@ const optimizeSuggests = computed<Array<ListOptimizationRequest>>(() => {
         : []
     );
     if (props.req) {
-      _.merge(v, props.req);
+      _.assign(v, props.req);
     }
-    return { ...v, currentPage: 1, pageSize: 1 };
+    return v;
   });
 });
 
@@ -113,9 +120,13 @@ function checkDiv(req: ListOptimizationRequest) {
 }
 
 function getCheckedSearchParams(
-  id: number
+  id: number,
+  req: ListOptimizationRequest
 ): ListOptimizationRequest | undefined {
-  return _.find(optimizeSuggests.value, (s) => s.id === id);
+  return _.assign(
+    _.clone(_.find(simpleOptimizeSuggests.value, (s) => s.id === id)),
+    req
+  );
 }
 
 defineExpose({

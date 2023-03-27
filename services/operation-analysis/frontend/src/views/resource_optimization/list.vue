@@ -9,127 +9,125 @@
     ref="optimizeDivRef"
   />
 
-  <div>
-    <div class="log-table">
-      <ce-table
-        localKey="resourceOptimizationTable"
-        v-loading="tableLoading"
-        :columns="columns"
-        :data="tableData"
-        :tableConfig="tableConfig"
-        row-key="id"
-        height="100%"
-        ref="table"
+  <div class="log-table">
+    <ce-table
+      localKey="resourceOptimizationTable"
+      v-loading="tableLoading"
+      :columns="columns"
+      :data="tableData"
+      :tableConfig="tableConfig"
+      row-key="id"
+      height="100%"
+      ref="table"
+    >
+      <el-table-column
+        :show-overflow-tooltip="true"
+        prop="instanceName"
+        column-key="instanceName"
+        :label="$t('commons.name')"
+        fixed
+        min-width="120px"
       >
-        <el-table-column
-          :show-overflow-tooltip="true"
-          prop="instanceName"
-          column-key="instanceName"
-          :label="$t('commons.name')"
-          fixed
-          min-width="120px"
-        >
-          <template #default="scope">
-            <span @click="showDetail(scope.row)" class="name-span-class">
-              {{ scope.row.instanceName }}
-            </span>
-          </template>
-        </el-table-column>
-        <el-table-column
-          min-width="150px"
-          prop="accountName"
-          column-key="accountIds"
-          :label="$t('commons.cloud_account.native')"
-          :filters="cloudAccount"
-        >
-          <template #default="scope">
-            <div style="display: flex">
-              <component
-                style="margin-top: 3px; width: 16px; height: 16px"
-                :is="platformIcon[scope.row.platform]?.component"
-                v-bind="platformIcon[scope.row.platform]?.icon"
-                :color="platformIcon[scope.row.platform]?.color"
-                size="16px"
-                v-if="scope.row.platform"
-              ></component>
-              <span style="margin-left: 10px">{{ scope.row.accountName }}</span>
-            </div>
-          </template>
-        </el-table-column>
-        <el-table-column
-          prop="ipArray"
-          column-key="ipArray"
-          label="IP地址"
-          min-width="180px"
-        >
-          <template #default="scope">
-            <span v-show="scope.row.ipArray?.length > 2">{{
-              JSON.parse(scope.row.ipArray)[0]
-            }}</span>
-            <el-dropdown
-              class="dropdown_box"
-              :hide-on-click="false"
-              v-if="scope.row.ipArray.length > 2"
-              max-height="100px"
-            >
-              <span>
-                {{ t("commons.cloud_server.more", "更多")
-                }}<el-icon class="el-icon--right"><arrow-down /></el-icon>
-              </span>
-              <template #dropdown>
-                <el-dropdown-menu>
-                  <el-dropdown-item
-                    v-for="(item, index) in JSON.parse(scope.row.ipArray)"
-                    :key="index"
-                    >{{ item }}</el-dropdown-item
-                  >
-                </el-dropdown-menu>
-              </template>
-            </el-dropdown>
-          </template>
-        </el-table-column>
-        <el-table-column
-          min-width="100"
-          prop="optimizeSuggest"
-          label="优化建议"
-        ></el-table-column>
-        <el-table-column
-          min-width="150"
-          prop="content"
-          label="建议原因"
-        ></el-table-column>
-        <el-table-column
-          min-width="150"
-          prop="instanceTypeDescription"
-          :label="$t('commons.cloud_server.instance_type')"
-        ></el-table-column>
-        <el-table-column
-          min-width="150"
-          prop="cpuAverage"
-          label="CPU平均使用率(%)"
-        ></el-table-column>
-        <el-table-column
-          min-width="150"
-          prop="cpuMaximum"
-          label="CPU最大使用率(%)"
-          :show="false"
-        ></el-table-column>
-        <el-table-column
-          min-width="150"
-          prop="memoryAverage"
-          label="内存平均使用率(%)"
-        ></el-table-column>
-        <el-table-column
-          min-width="150"
-          prop="memoryMaximum"
-          label="内存最大使用率(%)"
-          :show="false"
-        ></el-table-column>
-        <template #buttons>
-          <CeTableColumnSelect :columns="columns" />
+        <template #default="scope">
+          <span @click="showDetail(scope.row)" class="name-span-class">
+            {{ scope.row.instanceName }}
+          </span>
         </template>
-      </ce-table>
-    </div>
+      </el-table-column>
+      <el-table-column
+        min-width="150px"
+        prop="accountName"
+        column-key="accountIds"
+        :label="$t('commons.cloud_account.native')"
+        :filters="cloudAccount"
+      >
+        <template #default="scope">
+          <div style="display: flex">
+            <component
+              style="margin-top: 3px; width: 16px; height: 16px"
+              :is="platformIcon[scope.row.platform]?.component"
+              v-bind="platformIcon[scope.row.platform]?.icon"
+              :color="platformIcon[scope.row.platform]?.color"
+              size="16px"
+              v-if="scope.row.platform"
+            ></component>
+            <span style="margin-left: 10px">{{ scope.row.accountName }}</span>
+          </div>
+        </template>
+      </el-table-column>
+      <el-table-column
+        prop="ipArray"
+        column-key="ipArray"
+        label="IP地址"
+        min-width="180px"
+      >
+        <template #default="scope">
+          <span v-show="scope.row.ipArray?.length > 2">{{
+            JSON.parse(scope.row.ipArray)[0]
+          }}</span>
+          <el-dropdown
+            class="dropdown_box"
+            :hide-on-click="false"
+            v-if="scope.row.ipArray.length > 2"
+            max-height="100px"
+          >
+            <span>
+              {{ t("commons.cloud_server.more", "更多")
+              }}<el-icon class="el-icon--right"><arrow-down /></el-icon>
+            </span>
+            <template #dropdown>
+              <el-dropdown-menu>
+                <el-dropdown-item
+                  v-for="(item, index) in JSON.parse(scope.row.ipArray)"
+                  :key="index"
+                  >{{ item }}</el-dropdown-item
+                >
+              </el-dropdown-menu>
+            </template>
+          </el-dropdown>
+        </template>
+      </el-table-column>
+      <el-table-column
+        min-width="100"
+        prop="optimizeSuggest"
+        label="优化建议"
+      ></el-table-column>
+      <el-table-column
+        min-width="150"
+        prop="content"
+        label="建议原因"
+      ></el-table-column>
+      <el-table-column
+        min-width="150"
+        prop="instanceTypeDescription"
+        :label="$t('commons.cloud_server.instance_type')"
+      ></el-table-column>
+      <el-table-column
+        min-width="150"
+        prop="cpuAverage"
+        label="CPU平均使用率(%)"
+      ></el-table-column>
+      <el-table-column
+        min-width="150"
+        prop="cpuMaximum"
+        label="CPU最大使用率(%)"
+        :show="false"
+      ></el-table-column>
+      <el-table-column
+        min-width="150"
+        prop="memoryAverage"
+        label="内存平均使用率(%)"
+      ></el-table-column>
+      <el-table-column
+        min-width="150"
+        prop="memoryMaximum"
+        label="内存最大使用率(%)"
+        :show="false"
+      ></el-table-column>
+      <template #buttons>
+        <CeTableColumnSelect :columns="columns" />
+      </template>
+    </ce-table>
   </div>
 </template>
 
@@ -150,6 +148,7 @@ import ResourceOptimizationViewApi from "@/api/resource_optimization";
 import type { ListOptimizationRequest } from "@commons/api/resource_optimization/type";
 import { useRouter } from "vue-router";
 import ServerOptimization from "@commons/business/base-layout/home-page/items/operation/ServerOptimization.vue";
+import _ from "lodash";
 
 const checkedId = ref(1);
 const optimizeDivRef = ref<InstanceType<typeof ServerOptimization> | null>();
@@ -180,16 +179,14 @@ const searchParams = computed(() => {
  */
 const search = (condition: TableSearch) => {
   const params: ListOptimizationRequest | undefined =
-    optimizeDivRef.value?.getCheckedSearchParams(checkedId.value);
-
-  if (params === undefined) {
-    return;
-  }
+    optimizeDivRef.value?.getCheckedSearchParams(
+      checkedId.value,
+      TableSearch.toSearchParams(condition)
+    );
 
   ResourceOptimizationViewApi.listServer(
     {
       ...params,
-      ...searchParams.value,
       currentPage: tableConfig.value.paginationConfig.currentPage,
       pageSize: tableConfig.value.paginationConfig.pageSize,
     },
@@ -266,7 +263,7 @@ const showDetail = (row: VmCloudServerVO) => {
 }
 .log-table {
   min-width: 900px;
-  padding-top: 10px;
+  padding-top: 26px;
   width: 100%;
   height: calc(100vh - 100px);
 }
