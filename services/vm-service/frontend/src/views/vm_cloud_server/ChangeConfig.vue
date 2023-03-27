@@ -7,7 +7,7 @@ import type { VmCloudServerVO } from "@/api/vm_cloud_server/type";
 import type { CloudAccount } from "@commons/api/cloud_account/type";
 import type { FormInstance } from "element-plus";
 import { useI18n } from "vue-i18n";
-import DetailPage from "@/views/detail-page/index.vue";
+import DetailPage from "@commons/components/detail-page/index.vue";
 
 const { t } = useI18n();
 const router = useRouter();
