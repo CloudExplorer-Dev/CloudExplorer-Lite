@@ -4,6 +4,7 @@ import ComputerResourceAllocatedRate from "@/views/base_resource_analysis/item/B
 import CloudServerOrgWorkspaceSpread from "@/views/server_analysis/item/CloudServerOrgWorkspaceSpread.vue";
 import CloudServerIncreaseTrend from "@commons/business/base-layout/home-page/items/operation/CloudServerIncreaseTrend.vue";
 import ComputerResourceUseRate from "@/views/base_resource_analysis/item/BaseResourceUseRate.vue";
+import ServerOptimization from "@commons/business/base-layout/home-page/items/operation/ServerOptimization.vue";
 import { ref, onMounted } from "vue";
 import CommonApi from "@/api/common/index";
 import type { CloudAccount } from "@commons/api/cloud_account/type";
@@ -20,7 +21,7 @@ onMounted(() => {
 </script>
 <template>
   <el-container class="contentContainer" direction="vertical">
-    <div style="padding: 0px 24px 0px 24px">
+    <div style="padding: 0 24px 0 24px">
       <div style="float: left">
         <h3>总览</h3>
       </div>
@@ -39,45 +40,29 @@ onMounted(() => {
     <div class="content">
       <el-row class="row" :gutter="16">
         <el-col :span="24">
-          <div class="flex-content">
-            <div class="flex-div-1 divide-info">
-              <Detailed :cloud-account-id="currentAccountId"></Detailed>
-            </div>
-          </div>
+          <Detailed :cloud-account-id="currentAccountId" />
         </el-col>
       </el-row>
       <el-row class="row" :gutter="16">
         <el-col :span="12">
-          <div class="flex-content">
-            <div class="flex-div-1 divide-info">
-              <ComputerResourceAllocatedRate
-                style="height: 198px"
-                :cloud-account-id="currentAccountId"
-              ></ComputerResourceAllocatedRate>
-            </div>
-          </div>
+          <ComputerResourceAllocatedRate
+            style="height: 198px"
+            :cloud-account-id="currentAccountId"
+          />
         </el-col>
         <el-col :span="12">
-          <div class="flex-content">
-            <div class="flex-div-1 divide-info">
-              <ComputerResourceUseRate
-                style="height: 198px"
-                :cloud-account-id="currentAccountId"
-              ></ComputerResourceUseRate>
-            </div>
-          </div>
+          <ComputerResourceUseRate
+            style="height: 198px"
+            :cloud-account-id="currentAccountId"
+          />
         </el-col>
       </el-row>
       <el-row class="row" :gutter="16">
         <el-col :span="12">
-          <div class="flex-content">
-            <div class="flex-div-1 divide-info">
-              <CloudServerOrgWorkspaceSpread
-                style="height: 249px"
-                :cloud-account-id="currentAccountId"
-              ></CloudServerOrgWorkspaceSpread>
-            </div>
-          </div>
+          <CloudServerOrgWorkspaceSpread
+            style="height: 249px"
+            :cloud-account-id="currentAccountId"
+          />
         </el-col>
         <el-col :span="12">
           <div class="flex-content">
@@ -85,9 +70,14 @@ onMounted(() => {
               <CloudServerIncreaseTrend
                 style="height: 249px"
                 :cloud-account-id="currentAccountId"
-              ></CloudServerIncreaseTrend>
+              />
             </div>
           </div>
+        </el-col>
+      </el-row>
+      <el-row>
+        <el-col :span="24">
+          <ServerOptimization :cloud-account-id="currentAccountId" />
         </el-col>
       </el-row>
     </div>
@@ -117,15 +107,11 @@ onMounted(() => {
   margin-left: var(--ce-main-breadcrumb-margin-right, 30px);
 }
 .content {
-  margin: var(--ce-main-content-margin-top, 16px)
+  padding: var(--ce-main-content-margin-top, 10px)
     var(--ce-main-content-margin-left, 30px)
     var(--ce-main-content-margin-right, 30px)
     var(--ce-main-content-margin-bottom, 30px);
-  height: calc(
-    100% - var(--ce-main-breadcrumb-height, 50px) -
-      var(--ce-main-content-margin-top, 10px) -
-      var(--ce-main-content-margin-bottom, 30px)
-  );
+  height: calc(100% - var(--ce-main-breadcrumb-height, 50px));
   width: calc(
     100% - var(--ce-main-content-margin-left, 30px) -
       var(--ce-main-content-margin-right, 30px)

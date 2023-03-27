@@ -76,24 +76,20 @@ const initLiquidEchartByType = (v: number, e: HTMLElement) => {
             value: value,
             direction: "left",
             itemStyle: {
-              normal: {
-                //这里就是根据不同的值显示不同球体的颜色
-                color: eval(
-                  "if(value<0.8){'rgba(170, 201, 255, 1)'}else if(value<0.9){'rgba(254, 210, 126, 1)'}else{'rgba(254, 178, 170, 1)'}"
-                ),
-              },
+              //这里就是根据不同的值显示不同球体的颜色
+              color: eval(
+                "if(value<0.8){'rgba(170, 201, 255, 1)'}else if(value<0.9){'rgba(254, 210, 126, 1)'}else{'rgba(254, 178, 170, 1)'}"
+              ),
             },
           },
           {
             value: value,
             direction: "left",
             itemStyle: {
-              normal: {
-                //这里就是根据不同的值显示不同球体的颜色
-                color: eval(
-                  "if(value<0.8){'rgba(97, 145, 254, 1)'}else if(value<0.9){'rgba(254, 174, 75, 1)'}else{'rgba(248, 120, 114, 1)'}"
-                ),
-              },
+              //这里就是根据不同的值显示不同球体的颜色
+              color: eval(
+                "if(value<0.8){'rgba(97, 145, 254, 1)'}else if(value<0.9){'rgba(254, 174, 75, 1)'}else{'rgba(248, 120, 114, 1)'}"
+              ),
             },
           },
         ],
