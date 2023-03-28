@@ -58,4 +58,9 @@ public class F2CDatastore {
      * 可用区
      */
     private String zone;
+
+    /**
+     * 已分配GB
+     */
+    private long allocatedSpace;
 }

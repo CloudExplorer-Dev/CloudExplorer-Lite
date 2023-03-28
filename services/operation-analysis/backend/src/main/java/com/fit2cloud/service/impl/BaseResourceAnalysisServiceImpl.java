@@ -236,37 +236,34 @@ public class BaseResourceAnalysisServiceImpl implements IBaseResourceAnalysisSer
         List<VmCloudHost> hosts = getVmHost(request);
         if (CollectionUtils.isNotEmpty(hosts)) {
             hosts = hosts.stream().filter(v -> !CollectionUtils.isNotEmpty(request.getHostIds()) || request.getHostIds().contains(v.getId())).toList();
-            BigDecimal cpuTotal = new BigDecimal(hosts.stream().mapToLong(VmCloudHost::getNumCpuCores).sum());
-            BigDecimal cpuAllocated = new BigDecimal(hosts.stream().mapToLong(VmCloudHost::getVmCpuCores).sum());
+            BigDecimal cpuTotal = new BigDecimal(hosts.stream().filter(v->Objects.nonNull(v.getCpuTotal())).mapToLong(VmCloudHost::getCpuTotal).sum());
+            BigDecimal cpuAllocated = new BigDecimal(hosts.stream().filter(v->Objects.nonNull(v.getCpuAllocated())).mapToLong(VmCloudHost::getCpuAllocated).sum());
             BigDecimal cpuAllocatedRate = cpuAllocated.divide(cpuTotal, 2, RoundingMode.HALF_UP).multiply(new BigDecimal(100));
             result.put(SpecialAttributesConstants.ResourceField.CPU, ResourceAllocatedInfo.builder()
                     .total(cpuTotal)
                     .allocated(cpuAllocated)
                     .allocatedRate(cpuAllocatedRate.compareTo(new BigDecimal(100)) > 0 ? new BigDecimal(100) : cpuAllocatedRate)
-                    .free(cpuTotal.subtract(cpuAllocated))
                     .build());
-            BigDecimal memoryTotal = new BigDecimal(hosts.stream().mapToLong(VmCloudHost::getMemoryTotal).sum());
-            BigDecimal memoryAllocated = new BigDecimal(hosts.stream().mapToLong(VmCloudHost::getMemoryAllocated).sum());
+            BigDecimal memoryTotal = new BigDecimal(hosts.stream().filter(v->Objects.nonNull(v.getMemoryTotal())).mapToLong(VmCloudHost::getMemoryTotal).sum());
+            BigDecimal memoryAllocated = new BigDecimal(hosts.stream().filter(v->Objects.nonNull(v.getMemoryAllocated())).mapToLong(VmCloudHost::getMemoryAllocated).sum());
             BigDecimal memoryAllocatedRate = memoryAllocated.divide(memoryTotal, 2, RoundingMode.HALF_UP).multiply(new BigDecimal(100));
             result.put(SpecialAttributesConstants.ResourceField.MEMORY, ResourceAllocatedInfo.builder()
                     .total(memoryTotal.divide(new BigDecimal(1024), RoundingMode.HALF_UP))
                     .allocated(memoryAllocated.divide(new BigDecimal(1024), RoundingMode.HALF_UP))
                     .allocatedRate(memoryAllocatedRate.compareTo(new BigDecimal(100)) > 0 ? new BigDecimal(100) : memoryAllocatedRate)
-                    .free((memoryTotal.subtract(memoryAllocated)).divide(new BigDecimal(1024), RoundingMode.HALF_UP))
                     .build());
 
         }
         List<VmCloudDatastore> datastoreList = getVmCloudDatastore(request);
         if (CollectionUtils.isNotEmpty(datastoreList)) {
             datastoreList = datastoreList.stream().filter(v -> !CollectionUtils.isNotEmpty(request.getDatastoreIds()) || request.getDatastoreIds().contains(v.getId())).toList();
-            BigDecimal capacity = new BigDecimal(datastoreList.stream().mapToLong(VmCloudDatastore::getCapacity).sum());
-            BigDecimal freeSpace = new BigDecimal(datastoreList.stream().mapToLong(VmCloudDatastore::getFreeSpace).sum());
-            BigDecimal memoryAllocatedRate = capacity.subtract(freeSpace).divide(capacity, 2, RoundingMode.HALF_UP).multiply(new BigDecimal(100));
+            BigDecimal capacity = new BigDecimal(datastoreList.stream().filter(v->Objects.nonNull(v.getCapacity())).mapToLong(VmCloudDatastore::getCapacity).sum());
+            BigDecimal allocatedSpace = new BigDecimal(datastoreList.stream().filter(v->Objects.nonNull(v.getAllocatedSpace())).mapToLong(VmCloudDatastore::getAllocatedSpace).sum());
+            BigDecimal memoryAllocatedRate = capacity.subtract(allocatedSpace).divide(capacity, 2, RoundingMode.HALF_UP).multiply(new BigDecimal(100));
             result.put(SpecialAttributesConstants.ResourceField.DATASTORE, ResourceAllocatedInfo.builder()
                     .total(capacity)
-                    .allocated(capacity.subtract(freeSpace))
+                    .allocated(allocatedSpace)
                     .allocatedRate(memoryAllocatedRate)
-                    .free(freeSpace)
                     .build());
         }
         return result;
@@ -449,42 +446,50 @@ public class BaseResourceAnalysisServiceImpl implements IBaseResourceAnalysisSer
         return CollectionUtils.isEmpty(resourceIds) ? request.getResourceIds() : resourceIds;
     }
 
-    public Map<String, ResourceAllocatedInfo> getResourceUseRate(ResourceAnalysisRequest request) {
+    /**
+     * 使用情况
+     * @return Map<String, ResourceAllocatedInfo>
+     */
+    @Override
+    public Map<String, ResourceAllocatedInfo> getResourceUsedInfo(ResourceAnalysisRequest request) {
         Map<String, ResourceAllocatedInfo> result = new HashMap<>(3);
         List<VmCloudHost> hosts = getVmHost(request);
         if (CollectionUtils.isNotEmpty(hosts)) {
             hosts = hosts.stream().filter(v -> !CollectionUtils.isNotEmpty(request.getHostIds()) || request.getHostIds().contains(v.getId())).toList();
-            BigDecimal cpuTotal = new BigDecimal(hosts.stream().mapToLong(VmCloudHost::getNumCpuCores).sum());
-            BigDecimal cpuAllocated = new BigDecimal(hosts.stream().mapToLong(VmCloudHost::getVmCpuCores).sum());
-            BigDecimal cpuAllocatedRate = cpuAllocated.divide(cpuTotal, 2, RoundingMode.HALF_UP).multiply(new BigDecimal(100));
+            BigDecimal cpuTotal = new BigDecimal(hosts.stream().filter(v->Objects.nonNull(v.getCpuTotal())).mapToLong(VmCloudHost::getCpuTotal).sum());
+            BigDecimal cpuUsed = new BigDecimal(hosts.stream().filter(v->Objects.nonNull(v.getCpuUsed())).mapToLong(VmCloudHost::getCpuUsed).sum());
+            BigDecimal cpuUsedRate = cpuUsed.divide(cpuTotal, 2, RoundingMode.HALF_UP).multiply(new BigDecimal(100));
             result.put("cpu", ResourceAllocatedInfo.builder()
                     .total(cpuTotal)
-                    .allocated(cpuAllocated)
-                    .allocatedRate(cpuAllocatedRate.compareTo(new BigDecimal(100)) > 0 ? new BigDecimal(100) : cpuAllocatedRate)
-                    .free(cpuTotal.subtract(cpuAllocated))
+                    .used(cpuUsed)
+                    .usedRate(cpuUsedRate.compareTo(new BigDecimal(100)) > 0 ? new BigDecimal(100) : cpuUsedRate)
                     .build());
-            BigDecimal memoryTotal = new BigDecimal(hosts.stream().mapToLong(VmCloudHost::getMemoryTotal).sum());
-            BigDecimal memoryAllocated = new BigDecimal(hosts.stream().mapToLong(VmCloudHost::getMemoryAllocated).sum());
-            BigDecimal memoryAllocatedRate = memoryAllocated.divide(memoryTotal, 2, RoundingMode.HALF_UP).multiply(new BigDecimal(100));
+            BigDecimal memoryTotal = new BigDecimal(hosts.stream().filter(v->Objects.nonNull(v.getMemoryTotal())).mapToLong(VmCloudHost::getMemoryTotal).sum());
+            BigDecimal memoryUsed = new BigDecimal(hosts.stream().filter(v->Objects.nonNull(v.getMemoryUsed())).mapToLong(VmCloudHost::getMemoryUsed).sum());
+            BigDecimal memoryUsedRate = memoryUsed.divide(memoryTotal, 2, RoundingMode.HALF_UP).multiply(new BigDecimal(100));
             result.put("memory", ResourceAllocatedInfo.builder()
                     .total(memoryTotal.divide(new BigDecimal(1024), RoundingMode.HALF_UP))
-                    .allocated(memoryAllocated.divide(new BigDecimal(1024), RoundingMode.HALF_UP))
-                    .allocatedRate(memoryAllocatedRate.compareTo(new BigDecimal(100)) > 0 ? new BigDecimal(100) : memoryAllocatedRate)
-                    .free((memoryTotal.subtract(memoryAllocated)).divide(new BigDecimal(1024), RoundingMode.HALF_UP))
+                    .allocated(memoryUsedRate.divide(new BigDecimal(1024), RoundingMode.HALF_UP))
+                    .usedRate(memoryUsedRate.compareTo(new BigDecimal(100)) > 0 ? new BigDecimal(100) : memoryUsedRate)
                     .build());
 
         }
         List<VmCloudDatastore> datastoreList = getVmCloudDatastore(request);
         if (CollectionUtils.isNotEmpty(datastoreList)) {
             datastoreList = datastoreList.stream().filter(v -> !CollectionUtils.isNotEmpty(request.getDatastoreIds()) || request.getDatastoreIds().contains(v.getId())).toList();
-            BigDecimal capacity = new BigDecimal(datastoreList.stream().mapToLong(VmCloudDatastore::getCapacity).sum());
-            BigDecimal freeSpace = new BigDecimal(datastoreList.stream().mapToLong(VmCloudDatastore::getFreeSpace).sum());
-            BigDecimal memoryAllocatedRate = capacity.subtract(freeSpace).divide(capacity, 2, RoundingMode.HALF_UP).multiply(new BigDecimal(100));
+            BigDecimal capacity = new BigDecimal(datastoreList.stream().filter(v->Objects.nonNull(v.getCapacity())).mapToLong(VmCloudDatastore::getCapacity).sum());
+            BigDecimal freeSpace = new BigDecimal(datastoreList.stream().filter(v->Objects.nonNull(v.getFreeSpace())).mapToLong(VmCloudDatastore::getFreeSpace).sum());
+            BigDecimal memoryUsedRate = capacity.subtract(freeSpace).divide(capacity, 2, RoundingMode.HALF_UP).multiply(new BigDecimal(100));
             result.put("datastore", ResourceAllocatedInfo.builder()
                     .total(capacity)
-                    .allocated(capacity.subtract(freeSpace))
-                    .allocatedRate(memoryAllocatedRate)
-                    .free(freeSpace)
+                    .used(capacity.subtract(freeSpace))
+                    .usedRate(memoryUsedRate)
+                    .build());
+        }else{
+            result.put("datastore", ResourceAllocatedInfo.builder()
+                    .total(BigDecimal.ZERO)
+                    .used(BigDecimal.ZERO)
+                    .usedRate(BigDecimal.ZERO)
                     .build());
         }
         return result;

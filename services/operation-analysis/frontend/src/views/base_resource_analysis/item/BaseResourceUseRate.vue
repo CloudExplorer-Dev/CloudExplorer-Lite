@@ -7,140 +7,90 @@
     </el-row>
     <el-row :gutter="10">
       <el-col :span="8">
-        <div class="echarts">
-          <div class="echarts-content">
-            <div
-              ref="cpuLiquidEcharts"
-              v-resize="resize"
-              style="height: 125px; width: 100%"
-            ></div>
-            <div class="echarts-footer">CPU使用率</div>
-          </div>
-        </div>
+        <UsedRate
+          :api-data="apiData"
+          :type="'cpu'"
+          :type-text="'CPU'"
+          :loading="loading"
+        ></UsedRate>
       </el-col>
       <el-col :span="8">
-        <div class="echarts">
-          <div class="echarts-content">
-            <div
-              ref="memoryLiquidEcharts"
-              v-resize="resize"
-              style="height: 125px; width: 100%"
-            ></div>
-            <div class="echarts-footer">内存使用率</div>
-          </div>
-        </div>
+        <UsedRate
+          :api-data="apiData"
+          :type="'memory'"
+          :type-text="'内存'"
+          :loading="loading"
+        ></UsedRate>
       </el-col>
       <el-col :span="8">
-        <div class="echarts">
-          <div class="echarts-content">
-            <div
-              ref="datastoreLiquidEcharts"
-              style="height: 125px; width: 100%"
-            ></div>
-            <div class="echarts-footer">存储使用率</div>
-          </div>
-        </div>
+        <UsedRate
+          :api-data="apiData"
+          :type="'datastore'"
+          :type-text="'存储'"
+          :loading="loading"
+        ></UsedRate>
       </el-col>
     </el-row>
   </div>
 </template>
 
 <script lang="ts" setup>
-import { onMounted, ref } from "vue";
-import * as echarts from "echarts";
+import { ref, watch } from "vue";
 import "echarts-liquidfill";
-import type { ECharts } from "echarts";
-const cpuLiquidEcharts = ref<HTMLElement>();
-const memoryLiquidEcharts = ref<HTMLElement>();
-const datastoreLiquidEcharts = ref<HTMLElement>();
-let eCpuChartsRef: ECharts | undefined = undefined;
-let eMemoryChartsRef: ECharts | undefined = undefined;
-let eDatastoreChartsRef: ECharts | undefined = undefined;
-const resize = () => {
-  eCpuChartsRef?.resize();
-  eMemoryChartsRef?.resize();
-  eDatastoreChartsRef?.resize();
+import _ from "lodash";
+import ResourceSpreadViewApi from "@/api/resource_spread_view/index";
+import type { ResourceAnalysisRequest } from "@commons/api/resource_spread_view/type";
+import UsedRate from "./used_rate_item/UsedRate.vue";
+const props = defineProps<{
+  cloudAccountId?: string | undefined;
+  clusterId?: string | undefined;
+  datastoreId?: string | undefined;
+  hostId?: string | undefined;
+}>();
+const params = ref<ResourceAnalysisRequest>();
+const loading = ref<boolean>(false);
+const apiData = ref<any>();
+const setParams = () => {
+  props.cloudAccountId
+    ? _.set(
+        params,
+        "accountIds",
+        props.cloudAccountId === "all" ? [] : [props.cloudAccountId]
+      )
+    : "";
+  props.clusterId
+    ? _.set(
+        params,
+        "clusterIds",
+        props.clusterId === "all" ? [] : [props.clusterId]
+      )
+    : "";
+  props.datastoreId
+    ? _.set(
+        params,
+        "datastoreIds",
+        props.datastoreId === "all" ? [] : [props.datastoreId]
+      )
+    : "";
+  props.hostId
+    ? _.set(params, "hostIds", props.hostId === "all" ? [] : [props.hostId])
+    : "";
 };
-const initLiquidEchartByType = (v: number, e: HTMLElement) => {
-  const myChart = echarts.init(e!);
-  const value = v / 100;
-  // 把配置和数据放这里
-  myChart.setOption({
-    series: [
-      {
-        type: "liquidFill",
-        radius: "98%",
-        waveAnimation: true,
-        data: [
-          {
-            value: value,
-            direction: "left",
-            itemStyle: {
-              //这里就是根据不同的值显示不同球体的颜色
-              color: eval(
-                "if(value<0.8){'rgba(170, 201, 255, 1)'}else if(value<0.9){'rgba(254, 210, 126, 1)'}else{'rgba(254, 178, 170, 1)'}"
-              ),
-            },
-          },
-          {
-            value: value,
-            direction: "left",
-            itemStyle: {
-              //这里就是根据不同的值显示不同球体的颜色
-              color: eval(
-                "if(value<0.8){'rgba(97, 145, 254, 1)'}else if(value<0.9){'rgba(254, 174, 75, 1)'}else{'rgba(248, 120, 114, 1)'}"
-              ),
-            },
-          },
-        ],
-        outline: {
-          // show: true, //是否显示轮廓 布尔值
-          borderDistance: 3, // 外部轮廓与图表的距离 数字
-          itemStyle: {
-            //这里就是根据不同的值显示不同边框的颜色
-            borderColor: eval(
-              "if(value<0.8){'rgba(191, 209, 254, 1)'}else if(value<0.9){'rgba(252, 225, 196, 1)'}else{'rgba(250, 207, 208, 1)'}"
-            ), // 边框的颜色
-            borderWidth: 3, // 边框的宽度
-            // shadowBlur: 5 , //外部轮廓的阴影范围 一旦设置了内外都有阴影
-            // shadowColor: '#000' //外部轮廓的阴影颜色
-          },
-        },
-        itemStyle: {
-          opacity: 1, // 波浪的透明度
-          shadowBlur: 0, // 波浪的阴影范围
-        },
-        backgroundStyle: {
-          color: "#fff", // 图表的背景颜色
-        },
-        label: {
-          // 数据展示样式
-          show: true,
-          color: "#000",
-          insideColor: "#fff",
-          fontSize: 20,
-          fontWeight: 400,
-          position: ["50%", "80%"],
-        },
-      },
-    ],
-    tooltip: {
-      show: false, // 鼠标放上显示数据
-    },
-  });
-  return myChart;
-};
-const initLiquidEchart = () => {
-  eCpuChartsRef = initLiquidEchartByType(50, cpuLiquidEcharts.value!);
-  eMemoryChartsRef = initLiquidEchartByType(80, memoryLiquidEcharts.value!);
-  eDatastoreChartsRef = initLiquidEchartByType(
-    90,
-    datastoreLiquidEcharts.value!
+//获取分配情况
+const getUsedComputerInfo = () => {
+  setParams();
+  ResourceSpreadViewApi.getUsedInfo(params, loading).then(
+    (res) => (apiData.value = res.data)
   );
 };
-onMounted(() => {
-  initLiquidEchart();
-});
+
+watch(
+  props,
+  () => {
+    getUsedComputerInfo();
+  },
+  { immediate: true }
+);
 </script>
 <style scoped lang="scss">
 .info-card {

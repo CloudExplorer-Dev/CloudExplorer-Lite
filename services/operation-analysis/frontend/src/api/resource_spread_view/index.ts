@@ -66,6 +66,13 @@ export function getResourceTrendData(
   return get("api/base_resource_analysis/resource_trend", req, loading);
 }
 
+export function getUsedInfo(
+  req: Ref<ResourceAnalysisRequest | undefined>,
+  loading?: Ref<boolean>
+): Promise<Result<any>> {
+  return get("api/base_resource_analysis/used_info", req, loading);
+}
+
 const ResourceSpreadViewApi = {
   listAccounts,
   listClusters,
@@ -75,6 +82,7 @@ const ResourceSpreadViewApi = {
   getSpreadInfo,
   getResourceTrendData,
   listPrivateAccounts,
+  getUsedInfo,
 };
 
 export default ResourceSpreadViewApi;

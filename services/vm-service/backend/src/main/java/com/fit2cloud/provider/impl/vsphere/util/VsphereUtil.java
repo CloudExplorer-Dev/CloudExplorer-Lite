@@ -269,6 +269,8 @@ public class VsphereUtil {
         long vmStopped = 0;
         long vmTotal = 0;
         int vmCpuCores = 0;
+        int vmMemory = 0;
+        int vmCpuMHz = 0;
         if (vms != null) { //todo 后面可以替换掉，不同步所有机器
             for (VirtualMachine vm : vms) {
                 VirtualMachineConfigInfo vmConfig = vm.getConfig();
@@ -285,7 +287,8 @@ public class VsphereUtil {
                         if ("stopped".equalsIgnoreCase(vmStatus)) {
                             vmStopped++;
                         }
-                        continue;
+                        /// TODO 为什关机不往下走了？理论上关机也是要算的吧？
+                        //continue;
                     }
                 }
                 VirtualMachineSummary vmSummary = vm.getSummary();
@@ -293,8 +296,14 @@ public class VsphereUtil {
                     VirtualMachineConfigSummary vmConf = vmSummary.getConfig();
                     if (vmConf != null) {
                         vmCpuCores += vmConf.getNumCpu();
+                        vmMemory += (int) Math.ceil((double) vmConf.getMemorySizeMB());
                     }
                 }
+                VirtualHardware hardware = vmConfig.getHardware();
+                if(hardware != null){
+                    vmCpuMHz += vm.getSummary().getQuickStats().getOverallCpuUsage();
+                }
+
             }
         }
         AboutInfo product = summary.getConfig().getProduct();
@@ -316,7 +325,8 @@ public class VsphereUtil {
             f2cHost.setZone(cluster.getName());
         }
 
-        f2cHost.setCpuMHzAllocated(totalUsedCpu);
+        f2cHost.setCpuMHzAllocated(vmCpuMHz);
+        f2cHost.setCpuMHzUsed(totalUsedCpu);
         f2cHost.setCpuMHzTotal(totalCpu);
 
         Datacenter dc = client.getDataCenter(hs);
@@ -327,7 +337,8 @@ public class VsphereUtil {
         f2cHost.setHostId(hs.getMOR().getVal());
         f2cHost.setHostName(hs.getName());
 
-        f2cHost.setMemoryAllocated(totalUsedMemory);
+        f2cHost.setMemoryAllocated(vmMemory);
+        f2cHost.setMemoryUsed(totalUsedMemory);
         f2cHost.setMemoryTotal(totalMemory);
 
         f2cHost.setStatus(hs.getRuntime().getPowerState().name());
