@@ -1,5 +1,5 @@
 <template>
-  <layout-content>
+  <layout-auto-height-content :style="{ minWidth: '1000px' }">
     <template #breadcrumb>
       <breadcrumb
         :breadcrumbs="[
@@ -21,31 +21,59 @@
         :auto="false"
       ></breadcrumb>
     </template>
-    <layout-container>
-      <template #header><h4>规则信息</h4></template>
+    <base-container style="height: auto">
+      <template #header><span>规则信息</span></template>
       <template #content>
-        <el-descriptions :column="2">
-          <el-descriptions-item label="规则名称">{{
-            complianceRule?.name
-          }}</el-descriptions-item>
-          <el-descriptions-item label="风险等级">{{
-            complianceRule?.riskLevel === "HIGH"
-              ? "高风险"
-              : complianceRule?.riskLevel === "MIDDLE"
-              ? "中风险"
-              : "低风险"
-          }}</el-descriptions-item>
-          <el-descriptions-item label="规则描述">{{
-            complianceRule?.description
-          }}</el-descriptions-item>
-          <el-descriptions-item label="规则组">{{
-            complianceRuleGroup?.name
-          }}</el-descriptions-item>
-        </el-descriptions>
+        <el-form :inline="true" label-position="top">
+          <el-row style="width: 100%">
+            <el-col :span="19">
+              <el-form-item style="width: 100%" label="规则名称">{{
+                complianceRule?.name
+              }}</el-form-item></el-col
+            >
+            <el-col :span="5">
+              <el-form-item style="width: 100%" label="风险等级">
+                <el-tag
+                  disable-transitions
+                  :class="
+                    complianceRule?.riskLevel === 'HIGH'
+                      ? 'high'
+                      : complianceRule?.riskLevel === 'MIDDLE'
+                      ? 'middle'
+                      : 'low'
+                  "
+                >
+                  {{
+                    complianceRule?.riskLevel === "HIGH"
+                      ? "高风险"
+                      : complianceRule?.riskLevel === "MIDDLE"
+                      ? "中风险"
+                      : "低风险"
+                  }}</el-tag
+                >
+              </el-form-item></el-col
+            >
+          </el-row>
+          <el-row style="width: 100%">
+            <el-col :span="19">
+              <el-form-item style="width: 100%" label="规则描述">{{
+                complianceRule?.description
+              }}</el-form-item>
+            </el-col>
+            <el-col :span="5">
+              <el-form-item style="width: 100%" label="规则组">{{
+                complianceRuleGroup?.name
+              }}</el-form-item>
+            </el-col>
+          </el-row>
+        </el-form>
       </template>
-    </layout-container>
-    <layout-container v-if="complianceInsuranceStatutes.length > 0">
-      <template #header><h4>改进建议</h4></template>
+    </base-container>
+    <base-container
+      style="height: auto"
+      v-if="complianceInsuranceStatutes.length > 0"
+    >
+      <template #header><span>改进建议</span></template>
       <template #content>
         <el-descriptions :column="1">
           <el-descriptions-item
@@ -53,13 +81,15 @@
             :key="item.id"
             :label="index + 1 + '.'"
           >
-            {{ item.improvementProposal }}</el-descriptions-item
+            <span style="color: rgb(31, 35, 41)">
+              {{ item.improvementProposal }}</span
+            ></el-descriptions-item
           >
         </el-descriptions>
       </template>
-    </layout-container>
-    <layout-container>
-      <template #header><h4>资源检测结果</h4></template>
+    </base-container>
+    <base-container style="height: auto">
+      <template #header><span>资源检测结果</span></template>
       <template #content>
         <ce-table
           localKey="detailsTable"
@@ -104,7 +134,20 @@
               </div>
             </template></el-table-column
           >
-          <el-table-column prop="resourceType" label="资源类型" />
+          <el-table-column
+            prop="resourceTyppe"
+            min-width="100"
+            label="资源类型"
+          >
+            <template #default="scope"
+              >{{
+                resourceTypes.find(
+                  (resourceType) =>
+                    resourceType.value === scope.row.resourceType
+                )?.key
+              }}
+            </template>
+          </el-table-column>
           <el-table-column
             column-key="complianceStatus"
             prop="complianceStatus"
@@ -116,33 +159,37 @@
             ]"
           >
             <template #default="scope">
-              <span
-                :style="{
-                  color:
-                    scope.row.complianceStatus === 'COMPLIANCE'
-                      ? '#70B603'
-                      : '#D9001B',
-                }"
-                >{{
-                  scope.row.complianceStatus === "COMPLIANCE"
-                    ? "合规"
-                    : "不合规"
-                }}</span
-              >
+              <div class="compliance_status">
+                <div
+                  class="icon"
+                  :style="{
+                    backgroundColor:
+                      scope.row.complianceStatus === 'NOT_COMPLIANCE'
+                        ? '#F54A45'
+                        : '#34C724',
+                  }"
+                ></div>
+                <span class="text">
+                  {{
+                    scope.row.complianceStatus === "NOT_COMPLIANCE"
+                      ? "不合规"
+                      : "合规"
+                  }}</span
+                >
+              </div>
             </template>
           </el-table-column>
-
           <template #buttons>
             <CeTableColumnSelect :columns="columns" />
           </template>
         </ce-table>
       </template>
-    </layout-container>
-  </layout-content>
+    </base-container>
+  </layout-auto-height-content>
 </template>
 <script setup lang="ts">
 import { useRoute } from "vue-router";
-import { onMounted, ref, watch } from "vue";
+import { onMounted, ref } from "vue";
 import complianceRuleApi from "@/api/rule";
 import complianceRuleGroupApi from "@/api/rule_group";
 import complianceScanApi from "@/api/compliance_scan";
@@ -151,6 +198,7 @@ import type { ComplianceRuleGroup } from "@/api/rule_group/type";
 import type { ComplianceResourceResponse } from "@/api/compliance_scan/type";
 import complianceInsuranceStatuteApi from "@/api/compliance_insurance_statute";
 import type { ComplianceInsuranceStatute } from "@/api/compliance_insurance_statute/type";
+import ruleApi from "@/api/rule";
 import {
   PaginationConfig,
   TableConfig,
@@ -159,6 +207,7 @@ import {
 import cloudAccountApi from "@commons/api/cloud_account";
 import platform_icon from "@commons/components/platform-icon/index.vue";
 import type { CloudAccount } from "@commons/api/cloud_account/type";
+import type { KeyValue } from "@commons/api/base/type";
 // 路由对象
 const route = useRoute();
 // 合规规则数据
@@ -179,8 +228,13 @@ const dataList = ref<Array<ComplianceResourceResponse>>([]);
 const columns = ref([]);
 // 表格实例对象
 const table: any = ref(null);
-
+// 资源类型列表数据
+const resourceTypes = ref<Array<KeyValue<string, string>>>([]);
 onMounted(() => {
+  // 查询所有资源类型
+  ruleApi.listResourceType().then((ok) => {
+    resourceTypes.value = ok.data;
+  });
   // 查询合规规则数据
   complianceRuleApi
     .getComplianceRuleById(route.params.compliance_rule_id as string)
@@ -204,7 +258,7 @@ onMounted(() => {
           return ok.data;
         });
       // 查询列表
-      search(new TableSearch());
+      table.value?.search();
     });
   // 查询等保条例数据
   complianceInsuranceStatuteApi
@@ -261,4 +315,28 @@ const tableConfig = ref<TableConfig>({
   paginationConfig: new PaginationConfig(),
 });
 </script>
-<style lang="scss"></style>
+<style lang="scss" scoped>
+:deep(tbody) {
+  .el-table__cell {
+    .cell {
+      color: rgb(31, 35, 41);
+    }
+  }
+}
+.compliance_status {
+  display: flex;
+  align-items: center;
+  .icon {
+    height: 6px;
+    width: 6px;
+    border-radius: 50%;
+  }
+  .text {
+    margin-left: 8px;
+    color: rgba(31, 35, 41, 1);
+    font-weight: 400;
+    font-size: 14px;
+    height: 22px;
+  }
+}
+</style>

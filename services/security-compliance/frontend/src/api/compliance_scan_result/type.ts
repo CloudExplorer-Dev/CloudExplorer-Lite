@@ -1,3 +1,4 @@
+import type { ComplianceRuleGroup } from "@/api/rule_group/type";
 interface ComplianceScanResultResponse {
   /**
    * 主键id
@@ -55,6 +56,10 @@ interface ComplianceScanResultRequest {
    */
   resourceType?: string;
   /**
+   * 风险等级
+   */
+  riskLevel?: string;
+  /**
    * 合规规则组id
    */
   complianceRuleGroupId?: string;
@@ -87,8 +92,35 @@ interface ComplianceScanResultRuleGroupResponse {
   low: number;
 }
 
+interface ComplianceRuleGroupCountResponse extends ComplianceRuleGroup {
+  /**
+   * 低风险数量
+   */
+  low: number;
+  /**
+   * 中风险数量
+   */
+  middle: number;
+  /**
+   * 高风险数量
+   */
+  high: number;
+  /**
+   * 总数
+   */
+  total: number;
+  /**
+   *资源类型
+   */
+  resourceType: Array<string>;
+  /**
+   * 云平台
+   */
+  platform: Array<string>;
+}
 export type {
   ComplianceScanResultResponse,
   ComplianceScanResultRequest,
   ComplianceScanResultRuleGroupResponse,
+  ComplianceRuleGroupCountResponse,
 };

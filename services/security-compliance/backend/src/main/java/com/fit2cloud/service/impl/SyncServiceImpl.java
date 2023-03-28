@@ -263,7 +263,7 @@ public class SyncServiceImpl extends BaseSyncService implements ISyncService {
     @Override
     public void syncInstance(String cloudAccountId, List<String> instanceType) {
         // todo 每四个任务开启一个异步任务执行
-        List<List<String>> jobs = splitArr(instanceType, 5);
+        List<List<String>> jobs = splitArr(instanceType, 4);
         for (List<String> job : jobs) {
             CompletableFuture.runAsync(() -> {
                 for (String type : job) {

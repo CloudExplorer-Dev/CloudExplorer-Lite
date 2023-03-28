@@ -4,6 +4,8 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
+import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Size;
 import java.util.List;
 
 /**
@@ -14,15 +16,12 @@ import java.util.List;
  */
 @Data
 public class ComplianceSyncRequest {
-
-    @ApiModelProperty(value = "需要同步的云账号以及资源", notes = "需要同步的云账号以及资源")
-    private List<CloudAccountResource> cloudAccountResources;
-
-    @Data
-    public static class CloudAccountResource {
-        @ApiModelProperty(value = "云账号id", notes = "云账号id")
-        private String cloudAccountId;
-        @ApiModelProperty(value = "资源类型", notes = "资源类型")
-        private List<String> resourceType;
-    }
+    @ApiModelProperty(value = "需要扫描的云账号id", notes = "需要扫描的云账号id")
+    @Size(min = 1, message = "云账号最少传入一个")
+    @NotNull(message = "云账号不能为空")
+    private List<String> cloudAccountIds;
+    @ApiModelProperty(value = "需要扫描的规则组id", notes = "需要扫描的规则组id")
+    @Size(min = 1, message = "规则组最小传入一个")
+    @NotNull(message = "规则组不能为空")
+    private List<String> ruleGroupIds;
 }

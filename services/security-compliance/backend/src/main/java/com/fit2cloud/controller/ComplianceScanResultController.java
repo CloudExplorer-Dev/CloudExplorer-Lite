@@ -3,8 +3,10 @@ package com.fit2cloud.controller;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.fit2cloud.controller.handler.ResultHolder;
 import com.fit2cloud.controller.request.compliance_scan.ComplianceScanRequest;
+import com.fit2cloud.controller.request.view.ListRuleGroupRiskDataRequest;
 import com.fit2cloud.controller.response.compliance_scan_result.ComplianceScanResultResponse;
 import com.fit2cloud.controller.response.compliance_scan_result.ComplianceScanRuleGroupResultResponse;
+import com.fit2cloud.controller.response.view.ComplianceRuleGroupCountResponse;
 import com.fit2cloud.service.IComplianceScanResultService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -46,13 +48,13 @@ public class ComplianceScanResultController {
     @ApiOperation("分页查看规则的合规信息")
     @PreAuthorize("hasAnyCePermission('SCAN:READ')")
     public ResultHolder<IPage<ComplianceScanResultResponse>> page(@NotNull(message = "当前页不能为空")
-                                                            @Min(message = "当前页不能小于0", value = 1)
-                                                            @PathVariable("currentPage")
-                                                            Integer currentPage,
+                                                                  @Min(message = "当前页不能小于0", value = 1)
+                                                                  @PathVariable("currentPage")
+                                                                  Integer currentPage,
                                                                   @NotNull(message = "每页大小不能为空")
-                                                            @Min(message = "每页大小不能小于1", value = 1)
-                                                            @PathVariable("limit")
-                                                            Integer limit, ComplianceScanRequest request) {
+                                                                  @Min(message = "每页大小不能小于1", value = 1)
+                                                                  @PathVariable("limit")
+                                                                  Integer limit, ComplianceScanRequest request) {
         IPage<ComplianceScanResultResponse> page = complianceScanResultService.page(currentPage, limit, request);
         return ResultHolder.success(page);
     }
@@ -62,9 +64,16 @@ public class ComplianceScanResultController {
     @ApiOperation("获取规则组扫描情况")
     @PreAuthorize("hasAnyCePermission('SCAN:READ')")
     public ResultHolder<ComplianceScanRuleGroupResultResponse> getRuleGroupCompliance(@PathVariable("complianceRuleGroupId")
-                                                                                String complianceRuleGroupId) {
+                                                                                      String complianceRuleGroupId) {
         ComplianceScanRuleGroupResultResponse ruleGroupCompliance = complianceScanResultService.getComplianceRuleGroupByGroupId(complianceRuleGroupId);
         return ResultHolder.success(ruleGroupCompliance);
     }
 
+    @GetMapping("/rule_group")
+    @PreAuthorize("hasAnyCePermission('SCAN:READ')")
+    @ApiOperation(value = "获取规则组的扫描详情", notes = "获取规则组的扫描详情")
+    public ResultHolder<List<ComplianceRuleGroupCountResponse>> listRuleGroupRiskData(ListRuleGroupRiskDataRequest request) {
+        List<ComplianceRuleGroupCountResponse> res = complianceScanResultService.listRuleGroupRiskData(request);
+        return ResultHolder.success(res);
+    }
 }

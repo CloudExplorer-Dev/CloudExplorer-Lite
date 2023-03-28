@@ -1,175 +1,184 @@
 <template>
-  <div class="compliance_rule_wapper">
-    <div class="left_wapper">
-      <div
-        class="item"
-        :class="activeResourceType === undefined ? 'active' : ''"
-        @click="selectResourceType(undefined)"
-      >
-        全部
-      </div>
-      <div
-        class="item"
-        v-for="resourceType in supportResourceTypes"
-        :key="resourceType.value"
-        :class="activeResourceType === resourceType.value ? 'active' : ''"
-        @click="selectResourceType(resourceType.value)"
-      >
-        <div style="display: flex; width: 100%">
-          <div>
-            {{ resourceType.key }}
+  <div class="table_content">
+    <ce-table
+      localKey="complianceScanRuleTable"
+      v-loading="loading"
+      ref="table"
+      :columns="columns"
+      :data="tableData"
+      :tableConfig="tableConfig"
+      row-key="id"
+    >
+      <template #toolbar>
+        <div class="toolbar_content">
+          <div class="title">
+            {{ complianceRuleGroup ? complianceRuleGroup.name : "全部规则" }}
           </div>
           <div style="flex: auto"></div>
+          <div class="risk_level">
+            <ce-radio
+              :dataList="riskLevelOptions"
+              v-model:activeValue="activeRiskLevel"
+            ></ce-radio>
+          </div>
         </div>
-      </div>
-    </div>
-    <div class="right_wapper">
-      <ce-table
-        localKey="complianceScanRuleTable"
-        v-loading="loading"
-        height="100%"
-        ref="table"
-        :columns="columns"
-        :data="tableData"
-        :tableConfig="tableConfig"
-        row-key="id"
-      >
-        <template #toolbar>
-          <el-select
-            v-model="activeCloudAccount"
-            class="m-2"
-            placeholder="Select"
+      </template>
+      <el-table-column prop="name" label="规则名称" min-width="200">
+        <template #default="scope">
+          <el-tooltip class="box-item" effect="dark" placement="top-start">
+            <template #content>
+              <div style="max-width: 500px">{{ scope.row.description }}</div>
+            </template>
+            <div class="table_content_ellipsis">
+              {{ scope.row.name }}
+            </div></el-tooltip
           >
-            <el-option
-              v-for="item in cloudAccountList"
-              :key="item.value"
-              :label="item.key"
-              :value="item.value"
-            />
-          </el-select>
         </template>
-        <el-table-column prop="name" label="规则名称" min-width="120">
-          <template #default="scope">
-            <el-tooltip class="box-item" effect="dark" placement="top-start">
-              <template #content>
-                <div style="max-width: 500px">{{ scope.row.description }}</div>
-              </template>
-              <div class="table_content_ellipsis">
-                {{ scope.row.name }}
-              </div></el-tooltip
-            >
-          </template>
-        </el-table-column>
-        <el-table-column prop="resourceTyppe" min-width="120" label="资源类型">
-          <template #default="scope"
-            >{{
-              resourceTypes.find(
-                (resourceType) => resourceType.value === scope.row.resourceType
-              )?.key
-            }}
-          </template>
-        </el-table-column>
-        <el-table-column
-          prop="platform"
-          label="云平台"
-          min-width="150"
-          :column-key="'platform'"
-          :filters="
-            Object.keys(platformIcon).map((key) => ({
-              text: platformIcon[key].name,
-              value: key,
-            }))
-          "
-          :filter-multiple="false"
-        >
-          <template #default="scope">
-            <div style="display: flex; align-items: center">
-              <platform_icon :platform="scope.row.platform"></platform_icon>
-              <span>{{ platformIcon[scope.row.platform].name }}</span>
-            </div>
-          </template></el-table-column
-        >
-        <el-table-column
-          prop="riskLevel"
-          label="风险等级"
-          min-width="120"
-          sortable
-        >
-          <template #default="scope">
-            {{
-              scope.row.riskLevel === "HIGH"
-                ? "高风险"
-                : scope.row.riskLevel === "MIDDLE"
-                ? "中风险"
-                : "低风险"
-            }}
-          </template>
-        </el-table-column>
-        <el-table-column
-          prop="scanStatus"
-          column-key="scanStatus"
-          label="检测状态"
-          min-width="100px"
-          :filter-multiple="false"
-          :filters="[
-            { text: '合规', value: 'COMPLIANCE' },
-            { text: '不合规', value: 'NOT_COMPLIANCE' },
-          ]"
-        >
-          <template #default="scope">
-            <span
-              :style="{
-                color:
-                  scope.row.scanStatus === 'NOT_COMPLIANCE'
-                    ? '#d9001b'
-                    : '#70b603',
-              }"
+      </el-table-column>
+      <el-table-column
+        prop="resourceTyppe"
+        min-width="175"
+        label="资源类型"
+        :filtered-value="resourceTypeFilters"
+        :column-key="'resourceType'"
+        :filter-multiple="false"
+        :filters="
+          resourceTypes.map((item) => ({
+            text: item.key,
+            value: item.value,
+          }))
+        "
+      >
+        <template #default="scope"
+          >{{
+            resourceTypes.find(
+              (resourceType) => resourceType.value === scope.row.resourceType
+            )?.key
+          }}
+        </template>
+      </el-table-column>
+      <el-table-column
+        prop="platform"
+        label="云平台"
+        min-width="150"
+        :column-key="'platform'"
+        :filters="
+          Object.keys(platformIcon).map((key) => ({
+            text: platformIcon[key].name,
+            value: key,
+          }))
+        "
+        :filter-multiple="false"
+      >
+        <template #default="scope">
+          <div style="display: flex; align-items: center">
+            <platform_icon :platform="scope.row.platform"></platform_icon>
+            <span>{{ platformIcon[scope.row.platform].name }}</span>
+          </div>
+        </template></el-table-column
+      >
+      <el-table-column prop="riskLevel" label="风险等级" min-width="120">
+        <template #default="scope">
+          <div class="risk_level">
+            <el-tag
+              disable-transitions
+              :class="
+                scope.row.riskLevel === 'HIGH'
+                  ? 'high'
+                  : scope.row.riskLevel === 'MIDDLE'
+                  ? 'middle'
+                  : 'low'
+              "
             >
               {{
-                scope.row.scanStatus === "NOT_COMPLIANCE" ? "不合规" : "合规"
-              }}
-            </span>
-          </template>
-        </el-table-column>
-        <el-table-column
-          prop="notComplianceCount"
-          label="不合规/合规资源"
-          min-width="150px"
-          sortable
-        >
-          <template #default="scope">
-            <div
-              @click="details(scope.row)"
-              style="display: flex; cursor: pointer"
+                scope.row.riskLevel === "HIGH"
+                  ? "高风险"
+                  : scope.row.riskLevel === "MIDDLE"
+                  ? "中风险"
+                  : "低风险"
+              }}</el-tag
             >
-              <div style="color: #d9001b">
-                {{ scope.row.notComplianceCount }}
-              </div>
-              /
-              <div style="color: #70b603">
-                {{ scope.row.complianceCount }}
-              </div>
-            </div>
-          </template>
-        </el-table-column>
-        <el-table-column
-          prop="updateTime"
-          label="最后扫描时间"
-          min-width="230px"
-          sortable
-        >
-          <template #default="scope">
+          </div>
+        </template>
+      </el-table-column>
+      <el-table-column label="扫描状态" min-width="120">
+        <template #default="scope">
+          <div style="cursor: pointer">
             <ScanStatusColumn
               :account-job-record-list="accountJobRecordList"
               :complaince-scan-result="scope.row"
-              :cloud-account-source-list="cloudAccountSourceList"
+              :cloud-account-source-list="cloudAccountList"
               :open-details-job-view="openDetailsJobView"
               :cloud-account-id="activeCloudAccount"
             ></ScanStatusColumn>
-          </template>
-        </el-table-column>
-      </ce-table>
-    </div>
+          </div>
+        </template>
+      </el-table-column>
+      <el-table-column
+        prop="scanStatus"
+        column-key="scanStatus"
+        label="检测状态"
+        min-width="100px"
+        :filter-multiple="false"
+        :filters="[
+          { text: '合规', value: 'COMPLIANCE' },
+          { text: '不合规', value: 'NOT_COMPLIANCE' },
+        ]"
+      >
+        <template #default="scope">
+          <div class="compliance_status">
+            <div
+              class="icon"
+              :style="{
+                backgroundColor:
+                  scope.row.scanStatus === 'NOT_COMPLIANCE'
+                    ? '#F54A45'
+                    : '#34C724',
+              }"
+            ></div>
+            <span class="text">
+              {{
+                scope.row.scanStatus === "NOT_COMPLIANCE" ? "不合规" : "合规"
+              }}</span
+            >
+          </div>
+        </template>
+      </el-table-column>
+      <el-table-column
+        prop="notComplianceCount"
+        label="不合规资源"
+        min-width="120px"
+        sortable
+      >
+        <template #default="scope">
+          <div
+            @click="details(scope.row)"
+            style="display: flex; cursor: pointer; justify-content: flex-end"
+          >
+            <div style="color: #1f2329">
+              {{ scope.row.notComplianceCount }}
+            </div>
+          </div>
+        </template>
+      </el-table-column>
+      <el-table-column
+        prop="updateTime"
+        label="最后扫描时间"
+        min-width="170px"
+        sortable
+      />
+      <el-table-column label="操作栏" fixed="right">
+        <template #default="scope">
+          <span class="row_scan_result" @click="details(scope.row)"
+            >扫描结果</span
+          >
+        </template>
+      </el-table-column>
+      <template #buttons>
+        <CeTableColumnSelect :columns="columns" />
+      </template>
+    </ce-table>
+
     <job_details_view
       ref="jobDetailsRef"
       :account-job-record="currentJobRow"
@@ -183,9 +192,8 @@ import job_details_view from "@/views/scan/complonents/compliance_rule/JobDetail
 import type { KeyValue } from "@commons/api/base/type";
 import type { ComplianceScanResultResponse } from "@/api/compliance_scan_result/type";
 import complianceScanResultApi from "@/api/compliance_scan_result";
-import { onMounted, ref, watch, onBeforeUnmount, computed } from "vue";
+import { onMounted, ref, watch, onBeforeUnmount } from "vue";
 import complianceScanApi from "@/api/compliance_scan";
-import type { SupportCloudAccountResourceResponse } from "@/api/compliance_scan/type";
 import { platformIcon } from "@commons/utils/platform";
 import platform_icon from "@commons/components/platform-icon/index.vue";
 import {
@@ -194,39 +202,41 @@ import {
   TableSearch,
 } from "@commons/components/ce-table/type";
 import { useRouter } from "vue-router";
-import cloudAccountApi from "@commons/api/cloud_account";
+
 import type {
   AccountJobRecord,
   CloudAccount,
 } from "@commons/api/cloud_account/type";
+import type { ComplianceRuleGroupCountResponse } from "@/api/compliance_scan_result/type";
 import bus from "@commons/bus";
 import { useRoute } from "vue-router";
 const route = useRoute();
 let jobInterval: number;
 // 路由对象
 const router = useRouter();
-const supportResourceTypes = computed(() => {
-  if (activeCloudAccount.value === "all" || !activeCloudAccount.value) {
-    return resourceTypes.value;
-  } else {
-    return supportCloudAccountResourceList.value
-      .filter((support) => support.cloudAccount.id === activeCloudAccount.value)
-      .flatMap((item) => {
-        return item.resourceTypes;
-      });
-  }
-});
+const complianceRuleGroup = ref<ComplianceRuleGroupCountResponse>();
+const resourceTypeFilters = ref<Array<string>>([]);
+
+// 轮询时间
+const pollTime = 10000;
+const props = defineProps<{
+  cloudAccountList: Array<CloudAccount>;
+  cloudAccountId: string;
+}>();
+
 onMounted(() => {
-  complianceScanApi.listSupportCloudAccountResource().then((ok) => {
-    supportCloudAccountResourceList.value = ok.data;
-  });
   // 查询所有资源类型
   ruleApi.listResourceType().then((ok) => {
     resourceTypes.value = ok.data;
+    // 查询列表数据
+    if (table.value) {
+      table.value.getTableSearch(getResourceTypeParams());
+      table.value?.search();
+    }
   });
 
   if (route.query.resourceType) {
-    activeResourceType.value = route.query.resourceType as string;
+    resourceTypeFilters.value = [route.query.resourceType as string];
   }
   if (route.query.cloudAccountId) {
     activeCloudAccount.value = route.query.cloudAccountId as string;
@@ -234,27 +244,13 @@ onMounted(() => {
   if (route.query.ruleGroup) {
     activeComplianceRuleGroupId.value = route.query.ruleGroup as string;
   }
-  // 查询列表数据
-  if (table.value) {
-    table.value?.search(table?.value.getTableSearch());
-  }
 
-  // 查询云账号数据
-  cloudAccountApi.listAll().then((ok) => {
-    cloudAccountList.value = [
-      { key: "全部云账号", value: "all" },
-      ...ok.data.map((cloudAccount) => ({
-        key: cloudAccount.name,
-        value: cloudAccount.id,
-      })),
-    ];
-    cloudAccountSourceList.value = ok.data;
-  });
   // 监控合规规则组变化
   bus.on(
-    "update:compliance_rule_group_id",
-    (compliance_rule_group_id: string) => {
-      activeComplianceRuleGroupId.value = compliance_rule_group_id;
+    "update:compliance_rule_group",
+    (ruleGroup: ComplianceRuleGroupCountResponse) => {
+      complianceRuleGroup.value = ruleGroup;
+      table.value?.search();
     }
   );
 
@@ -262,30 +258,68 @@ onMounted(() => {
     accountJobRecordList.value = ok.data;
   });
   jobInterval = setInterval(() => {
-    complianceScanApi.listJobRecord().then((ok) => {
-      accountJobRecordList.value = ok.data;
-      currentJobRow.value = accountJobRecordList.value.find(
-        (item) =>
-          item.resourceType === currentJobRow.value?.resourceType &&
-          item.resourceId === currentJobRow.value?.resourceId
-      );
-
-      bus.emit(
-        "scanStatus",
-        ok.data.some((a) => a.status === "SYNCING") ? "SYNCING" : "SUCCESS"
-      );
-    });
-  }, 6000);
+    pollJobRecord();
+  }, pollTime);
 });
+
+/**
+ * 获取扫描状态
+ */
+const pollJobRecord = () => {
+  complianceScanApi.listJobRecord().then((ok) => {
+    accountJobRecordList.value = ok.data;
+    currentJobRow.value = accountJobRecordList.value.find(
+      (item) =>
+        item.resourceType === currentJobRow.value?.resourceType &&
+        item.resourceId === currentJobRow.value?.resourceId
+    );
+    bus.emit(
+      "sync_status",
+      ok.data
+        .filter((item) =>
+          props.cloudAccountList.some(
+            (account) => account.id === item.resourceId
+          )
+        )
+        .map((item) => ({
+          resourceType: item.resourceType,
+          status: item.status,
+          cloudAccountId: item.resourceId,
+          platform: props.cloudAccountList.find(
+            (account) => account.id === item.resourceId
+          )?.platform,
+        }))
+    );
+  });
+};
 
 onBeforeUnmount(() => {
   if (jobInterval) {
     clearInterval(jobInterval);
   }
 });
-const supportCloudAccountResourceList = ref<
-  Array<SupportCloudAccountResourceResponse>
->([]);
+
+// 风险等级数据
+const riskLevelOptions = ref<Array<{ label: string; value: number }>>([
+  {
+    label: "全部",
+    value: -2,
+  },
+  {
+    label: "高风险",
+    value: 1,
+  },
+  {
+    label: "中风险",
+    value: 0,
+  },
+  {
+    label: "低风险",
+    value: -1,
+  },
+]);
+// 风险等级level
+const activeRiskLevel = ref<number>(-2);
 const accountJobRecordList = ref<Array<AccountJobRecord>>([]);
 // 列表数据
 const tableData = ref<Array<ComplianceScanResultResponse>>([]);
@@ -293,12 +327,6 @@ const tableData = ref<Array<ComplianceScanResultResponse>>([]);
 const activeComplianceRuleGroupId = ref<string>("");
 // 选中的云账号
 const activeCloudAccount = ref<string>("all");
-// 云账号列表
-const cloudAccountList = ref<Array<KeyValue<string, string>>>([]);
-// 云账号原始数据列表
-const cloudAccountSourceList = ref<Array<CloudAccount>>([]);
-// 选中的资源类型
-const activeResourceType = ref<string>();
 // 资源类型列表数据
 const resourceTypes = ref<Array<KeyValue<string, string>>>([]);
 // 当前这一行任务数据
@@ -320,13 +348,6 @@ const details = (row: ComplianceScanResultResponse) => {
 };
 
 /**
- * 资源类型点击事件
- * @param resourceType 资源类型
- */
-const selectResourceType = (resourceType: string | undefined) => {
-  activeResourceType.value = resourceType;
-};
-/**
  * 表格实例对象
  */
 const table: any = ref(null);
@@ -336,27 +357,37 @@ const columns = ref([]);
  * 加载器
  */
 const loading = ref<boolean>(false);
-
-/**
- *监控资源类型的变化查询列表
- */
-watch(activeResourceType, () => {
-  table.value.search();
+const getResourceTypeParams = () => {
+  if (resourceTypeFilters.value.length > 0) {
+    const t = resourceTypes.value.find(
+      (type) => type.value === resourceTypeFilters.value[0]
+    );
+    if (t) {
+      return {
+        resourceType: {
+          field: "resourceType",
+          label: t.key,
+          value: t.value,
+          valueLabel: t.key,
+        },
+      };
+    }
+  }
+  return undefined;
+};
+watch(activeRiskLevel, () => {
+  table.value?.refresh();
 });
 
-/**
- * 监控云账号的变化查询列表数据
- */
-watch(activeCloudAccount, () => {
-  table.value.search();
-});
+watch(
+  () => props.cloudAccountId,
+  () => {
+    table.value?.refresh();
+  }
+);
 
 /**
- * 监控合规规则组的变化查询列表数据
- */
-watch(activeComplianceRuleGroupId, () => {
-  table.value.search();
-});
+ 
 /**
  * 打开查看同步详情
  * @param row 当前行
@@ -371,18 +402,20 @@ const openDetailsJobView = (row: AccountJobRecord) => {
  */
 const search = (condition: TableSearch) => {
   const params = TableSearch.toSearchParams(condition);
+
   complianceScanResultApi
     .page(
       tableConfig.value.paginationConfig.currentPage,
       tableConfig.value.paginationConfig.pageSize,
       {
         ...params,
-        resourceType: activeResourceType.value,
         cloudAccountId:
-          activeCloudAccount.value === "all"
-            ? undefined
-            : activeCloudAccount.value,
-        complianceRuleGroupId: activeComplianceRuleGroupId.value,
+          props.cloudAccountId === "all" ? undefined : props.cloudAccountId,
+        complianceRuleGroupId: complianceRuleGroup.value
+          ? complianceRuleGroup.value?.id
+          : undefined,
+        riskLevel:
+          activeRiskLevel.value === -2 ? undefined : activeRiskLevel.value,
       },
       loading
     )
@@ -396,6 +429,7 @@ const search = (condition: TableSearch) => {
         ok.data.current,
         tableConfig.value.paginationConfig
       );
+      pollJobRecord();
     });
 };
 /**
@@ -414,34 +448,76 @@ const tableConfig = ref<TableConfig>({
 });
 </script>
 <style lang="scss" scoped>
+:deep(tbody) {
+  .el-table__cell {
+    .cell {
+      color: rgb(31, 35, 41);
+    }
+  }
+}
 .active {
   color: var(--el-color-primary);
   background-color: var(--el-menu-hover-bg-color);
 }
-.compliance_rule_wapper {
-  display: flex;
-  margin-top: 10px;
-  height: 700px;
-  width: 100%;
-
-  .left_wapper {
-    border: 1px solid var(--el-menu-border-color);
-    width: 200px;
-    height: 100%;
-    .item {
-      padding-left: 15px;
-      display: flex;
-      align-items: center;
-      height: 35px;
-      border-bottom: 1px solid var(--el-menu-border-color);
-      color: #555555;
-      cursor: pointer;
+.table_content {
+  margin-top: 20px;
+  .toolbar_content {
+    display: flex;
+    width: 100%;
+    .title {
+      color: rgba(31, 35, 41, 1);
+      font-weight: 500;
+      font-size: 16px;
+      height: 24px;
+      height: 24px;
+    }
+    .risk_level {
+      margin-right: 8px;
     }
   }
-  .right_wapper {
-    width: calc(100% - 220px);
-    margin-left: 20px;
-    height: 100%;
+  .row_scan_result {
+    color: rgba(51, 112, 255, 1);
+    font-weight: 400;
+    font-size: 14px;
+    line-height: 22px;
+    height: 22px;
+    cursor: pointer;
+  }
+  .compliance_status {
+    display: flex;
+    align-items: center;
+    .icon {
+      height: 6px;
+      width: 6px;
+      border-radius: 50%;
+    }
+    .text {
+      margin-left: 8px;
+      color: rgba(31, 35, 41, 1);
+      font-weight: 400;
+      font-size: 14px;
+      height: 22px;
+    }
+  }
+  .risk_level {
+    .high {
+      background: rgba(245, 74, 69, 0.2);
+      border-radius: 2px;
+      color: rgba(216, 57, 49, 1);
+      border: none;
+    }
+    .middle {
+      background: rgba(255, 136, 0, 0.2);
+      border-radius: 2px;
+      color: rgba(222, 120, 2, 1);
+      border: none;
+    }
+    .low {
+      background: rgba(52, 199, 36, 0.2);
+      border-radius: 2px;
+      color: rgba(46, 161, 33, 1);
+      border: none;
+    }
   }
 }
 </style>

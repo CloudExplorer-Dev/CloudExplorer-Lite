@@ -70,9 +70,13 @@ interface CloudAccountResource {
 }
 interface SyncScanResourceRequest {
   /**
-   * 需要同步的云账号以及资源
+   *云账号id
    */
-  cloudAccountResources: Array<CloudAccountResource>;
+  cloudAccountIds: Array<string>;
+  /**
+   * 规则组id
+   */
+  ruleGroupIds: Array<string>;
 }
 interface SupportCloudAccountResourceResponse {
   /**

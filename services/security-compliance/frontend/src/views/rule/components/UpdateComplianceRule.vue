@@ -4,109 +4,129 @@
     :close-on-press-escape="false"
     :close-on-click-modal="false"
     v-model="createComplianceRuleVisible"
-    title="编辑合规规则"
+    title="修改规则"
     width="60%"
     :before-close="close"
   >
     <el-form
+      label-position="top"
+      :inline="true"
+      require-asterisk-position="right"
       :model="updateComplianceRuleForm"
       :rules="updateComplianceRuleFormRules"
       ref="ruleForm"
       label-width="120px"
     >
-      <el-form-item prop="name" label="规则名称">
-        <el-input v-model="updateComplianceRuleForm.name" />
-      </el-form-item>
-      <el-form-item prop="riskLevel" label="规则等级">
-        <el-radio-group
-          v-model="updateComplianceRuleForm.riskLevel"
-          size="large"
-        >
-          <el-radio-button
-            v-for="level in riskLevelOptionList"
-            :key="level.key"
-            :label="level.value"
-            >{{ level.key }}</el-radio-button
-          >
-        </el-radio-group>
-      </el-form-item>
-      <el-form-item prop="ruleGroupId" label="规则组">
-        <el-select
-          style="width: 100%"
-          v-model="updateComplianceRuleForm.ruleGroupId"
-          class="m-2"
-          :placeholder="'请选择规则组'"
-        >
-          <el-option
-            v-for="item in complianceRuleGroupList"
-            :key="item.id"
-            :label="item.name"
-            :value="item.id"
-          />
-        </el-select>
-      </el-form-item>
-      <el-form-item prop="platform" label="云平台">
-        <el-select
-          style="width: 100%"
-          v-model="updateComplianceRuleForm.platform"
-          class="m-2"
-          :placeholder="'请选择云平台'"
-        >
-          <el-option
-            v-for="item in supportPlatformList"
-            :key="item.value"
-            :label="item.key"
-            :value="item.value"
-          />
-        </el-select>
-      </el-form-item>
-
-      <el-form-item prop="resourceType" label="资源类型">
-        <el-select
-          style="width: 100%"
-          v-model="updateComplianceRuleForm.resourceType"
-          class="m-2"
-          :placeholder="'请选择资源类型'"
-        >
-          <el-option
-            v-for="item in supportResourceTypeList"
-            :key="item.value"
-            :label="item.key"
-            :value="item.value"
-          />
-        </el-select>
-      </el-form-item>
-      <el-form-item prop="resourceType" label="规则">
-        <compliance_rules
-          v-model="updateComplianceRuleForm.rules"
-          :platform="updateComplianceRuleForm.platform"
-          :resource-type="updateComplianceRuleForm.resourceType"
-        ></compliance_rules>
-      </el-form-item>
-      <el-form-item
-        prop="insuranceStatuteIds"
-        v-loading="insuranceStatuteLoading"
-        label="等保条例"
-      >
-        <el-select
-          style="width: 100%"
-          filterable
-          v-model="updateComplianceRuleForm.insuranceStatuteIds"
-          class="m-2"
-          :multiple="true"
-          :placeholder="'请选择等保条例'"
-        >
-          <el-option
-            v-for="item in complianceInsuranceStatuteList"
-            :key="item.id"
-            :label="item.id + ':' + item.baseClause"
-            :value="item.id"
-          />
-        </el-select>
-      </el-form-item>
-      <el-form-item prop="description" label="描述">
-        <el-input v-model="updateComplianceRuleForm.description" />
-      </el-form-item>
+      <base-container class="base_container">
+        <template #header><span>基本信息</span> </template>
+        <template #content>
+          <div class="base_info">
+            <el-form-item prop="name" style="width: 45%" label="规则名称">
+              <el-input v-model="updateComplianceRuleForm.name" />
+            </el-form-item>
+            <el-form-item prop="description" style="width: 45%" label="描述">
+              <el-input v-model="updateComplianceRuleForm.description" />
+            </el-form-item>
+            <el-form-item prop="ruleGroupId" style="width: 45%" label="规则组">
+              <el-select
+                style="width: 100%"
+                v-model="updateComplianceRuleForm.ruleGroupId"
+                class="m-2"
+                :placeholder="'请选择规则组'"
+              >
+                <el-option
+                  v-for="item in complianceRuleGroupList"
+                  :key="item.id"
+                  :label="item.name"
+                  :value="item.id"
+                />
+              </el-select>
+            </el-form-item>
+            <el-form-item prop="platform" style="width: 45%" label="云平台">
+              <el-select
+                style="width: 100%"
+                v-model="updateComplianceRuleForm.platform"
+                class="m-2"
+                :placeholder="'请选择云平台'"
+              >
+                <el-option
+                  v-for="item in supportPlatformList"
+                  :key="item.value"
+                  :label="item.key"
+                  :value="item.value"
+                />
+              </el-select>
+            </el-form-item>
+            <el-form-item prop="riskLevel" style="width: 45%" label="规则等级">
+              <el-radio-group v-model="updateComplianceRuleForm.riskLevel">
+                <el-radio-button
+                  v-for="level in riskLevelOptionList"
+                  :key="level.key"
+                  :label="level.value"
+                  >{{ level.key }}</el-radio-button
+                >
+              </el-radio-group>
+            </el-form-item>
+            <el-form-item
+              style="width: 45%"
+              prop="insuranceStatuteIds"
+              v-loading="insuranceStatuteLoading"
+              label="关联风险条例"
+            >
+              <el-select
+                style="width: 100%"
+                filterable
+                v-model="updateComplianceRuleForm.insuranceStatuteIds"
+                class="m-2"
+                :multiple="true"
+                :placeholder="'请选择等保条例'"
+                :max-collapse-tags="1"
+                collapse-tags
+                collapse-tags-tooltip
+              >
+                <el-option
+                  v-for="item in complianceInsuranceStatuteList"
+                  :key="item.id"
+                  :label="
+                    _.truncate(item.id + '.' + item.baseClause, {
+                      length: 50,
+                      separator: ' ',
+                    })
+                  "
+                  :value="item.id"
+                />
+              </el-select>
+            </el-form-item>
+          </div>
+        </template>
+      </base-container>
+      <base-container class="base_container">
+        <template #header><span>规则详情</span></template>
+        <template #content>
+          <el-form-item prop="resourceType" style="width: 45%" label="资源类型">
+            <el-select
+              style="width: 100%"
+              v-model="updateComplianceRuleForm.resourceType"
+              class="m-2"
+              :placeholder="'请选择资源类型'"
+            >
+              <el-option
+                v-for="item in supportResourceTypeList"
+                :key="item.value"
+                :label="item.key"
+                :value="item.value"
+              />
+            </el-select>
+          </el-form-item>
+          <el-form-item prop="rules.rules" label="判断条件">
+            <compliance_rules
+              ref="rulesRef"
+              v-model="updateComplianceRuleForm.rules"
+              :platform="updateComplianceRuleForm.platform"
+              :resource-type="updateComplianceRuleForm.resourceType"
+            ></compliance_rules> </el-form-item
+        ></template>
+      </base-container>
     </el-form>
     <template #footer>
       <span class="dialog-footer">
@@ -219,7 +239,7 @@ const updateComplianceRuleFormRules = ref<FormRules>({
       type: "string",
     },
   ],
-  rules: [
+  "rules.rules": [
     {
       required: true,
       min: 1,
@@ -366,4 +386,14 @@ const echoData = (complianceRule: ComplianceRule) => {
 };
 defineExpose({ open, close, echoData });
 </script>
-<style lang="scss"></style>
+<style lang="scss">
+.base_container {
+  width: 100%;
+  height: auto;
+  .base_info {
+    width: 100%;
+    display: FLEX;
+    flex-wrap: wrap;
+  }
+}
+</style>

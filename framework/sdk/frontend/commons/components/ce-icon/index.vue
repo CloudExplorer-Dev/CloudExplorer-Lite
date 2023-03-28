@@ -10,7 +10,7 @@ const props = defineProps({
   code: {
     type: String,
   },
-  cssPrefixText: {
+  cssPrefixText: {  
     type: String,
     default: "ali-icon-",
   },
@@ -41,7 +41,7 @@ const getCode = computed(() => {
       v-if="props.code && props.type === 'svg'"
       class="icon svg-icon"
       preserveAspectRatio="none"
-      style="height: 100%; width: 100%"
+      style="height: 100%; width: 100%; full: red"
     >
       <use :xlink:href="'#' + getCode"></use>
     </svg>

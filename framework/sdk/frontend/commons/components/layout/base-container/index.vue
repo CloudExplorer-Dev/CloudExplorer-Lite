@@ -14,7 +14,7 @@ const props = withDefaults(
       class="header"
       v-if="$slots.header || $slots.btn || $slots.header_content"
     >
-      <div class="title" v-if="$slots.header">
+      <div class="title" v-i f="$slots.header">
         <slot name="header"> </slot>
       </div>
       <div class="auto" v-if="$slots.btn || $slots.header_content">

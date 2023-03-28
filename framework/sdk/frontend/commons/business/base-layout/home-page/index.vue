@@ -51,7 +51,7 @@ import ServerStatusView from "./items/ServerStatusView.vue";
 
 .breadcrumb {
   height: var(--ce-main-breadcrumb-height, 50px);
-  width: 100%;
+  width: calc(100% - var(--ce-main-breadcrumb-margin-left, 30px));
   display: flex;
   align-items: center;
   margin-left: var(--ce-main-breadcrumb-margin-left, 30px);

@@ -222,6 +222,11 @@ const getCloudAccountOptions = (
   });
   // 修改标题
   pieTemplate.updateTitleText("扫描资源 - 按云账号分布");
+  pieTemplate.update("legend.formatter", (name: string) => {
+    return `{one|${
+      (name as string).length < 20 ? name : name.substring(0, 15) + ".."
+    }}`;
+  });
   // 修改图表位置
   pieTemplate.update("series.0.center", ["120px", "55%"]);
   return pieTemplate.option;
@@ -244,6 +249,11 @@ const getResourceTypeOptions = (
   // 修改鼠标悬浮内容
   pieTemplate.update("tooltip.formatter", (data: any) => {
     return getTooltipFormatter("不合规资源", "资源类型", data);
+  });
+  pieTemplate.update("legend.formatter", (name: string) => {
+    return `{one|${
+      (name as string).length < 20 ? name : name.substring(0, 15) + ".."
+    }}`;
   });
   // 修改图表位置
   pieTemplate.update("series.0.center", ["120px", "55%"]);
@@ -312,6 +322,7 @@ const getRuleOptions = (groupDatas: Array<ComplianceViewGroupResponse>) => {
   if (ruleDataList.length >= 9) {
     barTemplate.appendYDataZoom();
   }
+  barTemplate.update("dataZoom.0.startValue", ruleDataList.length);
   return barTemplate.option;
 };
 </script>

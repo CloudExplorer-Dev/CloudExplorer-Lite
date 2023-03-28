@@ -3,8 +3,10 @@ package com.fit2cloud.service;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.fit2cloud.controller.request.compliance_scan.ComplianceScanRequest;
+import com.fit2cloud.controller.request.view.ListRuleGroupRiskDataRequest;
 import com.fit2cloud.controller.response.compliance_scan_result.ComplianceScanResultResponse;
 import com.fit2cloud.controller.response.compliance_scan_result.ComplianceScanRuleGroupResultResponse;
+import com.fit2cloud.controller.response.view.ComplianceRuleGroupCountResponse;
 import com.fit2cloud.dao.entity.ComplianceRule;
 import com.fit2cloud.dao.entity.ComplianceScanResult;
 
@@ -58,4 +60,9 @@ public interface IComplianceScanResultService extends IService<ComplianceScanRes
      * @param complianceRule 合规规则
      */
     void initComplianceScanResultService(ComplianceRule complianceRule);
+
+
+
+    List<ComplianceRuleGroupCountResponse> listRuleGroupRiskData(ListRuleGroupRiskDataRequest request);
+
 }
