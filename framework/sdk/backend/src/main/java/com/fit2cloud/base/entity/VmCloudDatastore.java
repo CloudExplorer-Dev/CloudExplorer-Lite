@@ -91,6 +91,12 @@ public class VmCloudDatastore implements Serializable {
     private String zone;
 
     /**
+     * 已分配容量
+     */
+    @TableField("allocated_space")
+    private Long allocatedSpace;
+
+    /**
      * 创建时间
      */
     @TableField("create_time")

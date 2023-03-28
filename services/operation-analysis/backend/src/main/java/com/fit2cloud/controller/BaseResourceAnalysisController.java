@@ -137,5 +137,12 @@ public class BaseResourceAnalysisController {
         return ResultHolder.success(iBaseResourceAnalysisService.countDatastore(cloudAccountId));
     }
 
+    @ApiOperation(value = "查询资源使用情况", notes = "查询云账号下资使用情况")
+    @GetMapping("/used_info")
+    @PreAuthorize("hasAnyCePermission('BASE_RESOURCE_ANALYSIS:READ','OVERVIEW:READ')")
+    public ResultHolder<Map<String, ResourceAllocatedInfo>> getResourceUsedInfo(@Validated ResourceAnalysisRequest request) {
+        return ResultHolder.success(iBaseResourceAnalysisService.getResourceUsedInfo(request));
+    }
+
 
 }

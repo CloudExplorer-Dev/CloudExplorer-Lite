@@ -266,6 +266,18 @@ public class VsphereSyncCloudApi {
                 if (updated != null) {
                     f2cDs.setLastUpdate(updated.getTimeInMillis() / 1000);
                 }
+                VirtualMachine[] vms = ds.getVms();
+                int vmDiskSize = 0;
+                if (vms != null) {
+                    for (VirtualMachine vm : vms) {
+                        VirtualMachineConfigInfo vmConfig = vm.getConfig();
+                        if (vmConfig != null && vmConfig.isTemplate()) {
+                            continue;
+                        }
+                        vmDiskSize += VsphereUtil.getDiskSizeInGB(vmConfig);
+                    }
+                }
+                f2cDs.setAllocatedSpace(vmDiskSize);
                 datastoreList.add(f2cDs);
             }
         } catch (Exception e) {

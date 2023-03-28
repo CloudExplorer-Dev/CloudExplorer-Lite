@@ -105,4 +105,12 @@ public interface IBaseResourceAnalysisService {
 
     Query getRangeQuery(List<QueryUtil.QueryCondition> queryConditions, CalendarInterval intervalPosition);
 
+    /**
+     * 资源使用情况
+     *
+     * @param request 资源分析参数
+     * @return Map<String, ResourceAllocatedInfo>
+     */
+    Map<String, ResourceAllocatedInfo> getResourceUsedInfo(ResourceAnalysisRequest request);
+
 }

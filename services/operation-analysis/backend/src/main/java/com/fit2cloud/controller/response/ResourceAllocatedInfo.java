@@ -17,4 +17,6 @@ public class ResourceAllocatedInfo {
     private BigDecimal allocated;
     private BigDecimal free;
     private BigDecimal allocatedRate;
+    private BigDecimal used;
+    private BigDecimal usedRate;
 }

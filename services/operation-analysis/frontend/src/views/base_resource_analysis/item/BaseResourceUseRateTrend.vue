@@ -111,9 +111,14 @@ const setParams = () => {
   _.set(params, "metricName", basicResourceType.value);
   _.set(params, "startTime", timestampData.value[0].getTime());
   _.set(params, "endTime", timestampData.value[1].getTime());
-  basicResourceType.value === "DATASTORE_USED_UTILIZATION"
-    ? _.set(params, "entityType", "DATASTORE")
-    : "";
+  if (basicResourceType.value === "DATASTORE_USED_UTILIZATION") {
+    _.set(params, "entityType", "DATASTORE");
+    _.set(
+      params,
+      "resourceIds",
+      props.datastoreId === "all" ? [] : [props.datastoreId]
+    );
+  }
 };
 
 const getResourceTrendData = () => {

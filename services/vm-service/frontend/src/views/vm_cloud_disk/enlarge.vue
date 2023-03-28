@@ -8,7 +8,7 @@ import type {
 } from "@/api/vm_cloud_disk/type";
 import { ElMessage } from "element-plus";
 import { useI18n } from "vue-i18n";
-import DetailPage from "@/views/detail-page/index.vue";
+import DetailPage from "@commons/components/detail-page/index.vue";
 
 const router = useRouter();
 const { t } = useI18n();

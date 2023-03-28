@@ -79,6 +79,10 @@
       </el-col>
       <el-col :span="12">
         <ComputerResourceUseRate
+          :cloud-account-id="currentAccount"
+          :cluster-id="currentCluster"
+          :datastore-id="currentDatastore"
+          :host-id="currentHost"
           style="height: 198px; border: 1px solid rgba(223, 224, 227, 1)"
         ></ComputerResourceUseRate>
       </el-col>

@@ -573,6 +573,8 @@ public class SyncProviderServiceImpl extends BaseSyncService implements ISyncPro
         vmCloudHost.setCpuTotal(host.getCpuMHzTotal());
         vmCloudHost.setCpuMhzPerOneCore(host.getCpuMHzPerOneCore());
         vmCloudHost.setUpdateTime(updateTime);
+        vmCloudHost.setCpuUsed(host.getCpuMHzUsed());
+        vmCloudHost.setMemoryUsed(host.getMemoryUsed());
         return vmCloudHost;
     }
 
@@ -592,6 +594,7 @@ public class SyncProviderServiceImpl extends BaseSyncService implements ISyncPro
         vmCloudDatastore.setDatastoreId(datastore.getDataStoreId());
         vmCloudDatastore.setDatastoreName(datastore.getDataStoreName());
         vmCloudDatastore.setUpdateTime(updateTime);
+        vmCloudDatastore.setAllocatedSpace(datastore.getAllocatedSpace());
         return vmCloudDatastore;
     }
 }

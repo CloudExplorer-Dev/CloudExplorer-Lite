@@ -185,7 +185,9 @@ const option = computed<ECBasicOption>(() => {
               .filter((d) => (selected as SimpleMap<boolean>)[d.name])
               .map((a) => a.value)
               .reduce((p, n) => p + n, 0);
-            return `{title|总数（台）}\r\n{value|${sum}}`;
+            return `{title|总数（${
+              spreadType.value === "host" ? "台" : "块"
+            }）}\r\n{value|${sum}}`;
           },
           rich: {
             title: {

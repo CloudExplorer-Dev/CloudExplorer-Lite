@@ -175,6 +175,18 @@ public class VmCloudHost implements Serializable {
     private Integer vmCpuCores;
 
     /**
+     * CPU已使用MHZ
+     */
+    @TableField("cpu_used")
+    private Long cpuUsed;
+
+    /**
+     * 内存已使用MB
+     */
+    @TableField("memory_used")
+    private Long memoryUsed;
+
+    /**
      * 创建时间
      */
     @TableField("create_time")

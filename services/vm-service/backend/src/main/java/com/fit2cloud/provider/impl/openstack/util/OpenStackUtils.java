@@ -252,14 +252,18 @@ public class OpenStackUtils extends OpenStackBaseUtils {
     public static F2CHost toF2CHost(List<? extends HostAggregate> hostAggregates, Hypervisor hypervisor, String region) {
         F2CHost f2cHost = new F2CHost();
         f2cHost.setCpuMHzTotal((long) hypervisor.getVirtualCPU() * (hypervisor.getCpuAllocationRatio() == 0 ? 1 : hypervisor.getCpuAllocationRatio()) * 1000);
-        f2cHost.setCpuMHzAllocated(hypervisor.getVirtualUsedCPU() * 1000L);
+        //已分配
+        f2cHost.setCpuMHzAllocated(hypervisor.getVirtualCPU());
+        //已使用
+        f2cHost.setCpuMHzUsed(hypervisor.getVirtualUsedCPU() * 1000L);
         f2cHost.setCpuMHzPerOneCore(1000);
         f2cHost.setNumCpuCores(hypervisor.getVirtualCPU() * (hypervisor.getCpuAllocationRatio() == 0 ? 1 : hypervisor.getCpuAllocationRatio()));
         f2cHost.setHostId(hypervisor.getId());
         f2cHost.setHostName(hypervisor.getHypervisorHostname());
         f2cHost.setHostIp(hypervisor.getHostIP());
-        f2cHost.setMemoryAllocated(hypervisor.getLocalMemoryUsed());
+        f2cHost.setMemoryAllocated(hypervisor.getLocalMemory());
         f2cHost.setMemoryTotal((long) hypervisor.getLocalMemory() * (hypervisor.getRamAllocationRatio() == 0 ? 1 : hypervisor.getRamAllocationRatio()));
+        f2cHost.setMemoryUsed(hypervisor.getLocalMemoryUsed());
         f2cHost.setStatus("poweredOn");
         f2cHost.setVmRunning(hypervisor.getRunningVM());
         f2cHost.setVmCpuCores(hypervisor.getVirtualUsedCPU());
@@ -305,6 +309,8 @@ public class OpenStackUtils extends OpenStackBaseUtils {
         f2cDs.setDataStoreId(backendPool.getName());
         f2cDs.setDataStoreName(backendPool.getCapabilities().getVolumeBackendName());
         f2cDs.setFreeSpace(backendPool.getCapabilities().getFreeCapacityGb());
+        //已分配
+        f2cDs.setAllocatedSpace(backendPool.getCapabilities().getAllocatedcapacitygb());
         f2cDs.setType("storage_pool");
         f2cDs.setLastUpdate(new Date().getTime() / 1000);
         return f2cDs;
