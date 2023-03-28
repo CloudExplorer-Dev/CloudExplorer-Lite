@@ -201,8 +201,8 @@ defineExpose({
 </script>
 <style lang="scss">
 .el-tabs__content {
-  position: inherit;
-  overflow-y: auto;
-  height: calc(100vh - 310px);
+  position: inherit !important;
+  overflow-y: auto !important;
+  height: calc(100vh - 310px) !important;
 }
 </style>

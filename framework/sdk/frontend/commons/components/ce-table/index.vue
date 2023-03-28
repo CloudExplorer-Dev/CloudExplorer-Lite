@@ -121,6 +121,7 @@ const sortChange = (sortObj: any) => {
  * @param filterObj
  */
 const filterChange = (filterObj: any) => {
+  console.log(filterObj);
   const column = table.value.$slots
     .default()
     .flatMap((item: any) => {
@@ -348,6 +349,8 @@ defineExpose({
   search,
   getTableSearch,
   handleClear,
+  table,
+  filterChange,
 });
 </script>
 

@@ -230,19 +230,15 @@ const barSeriesItemStyle = {
     }
     return colors[0];
   },
-  normal: {
-    //这里设置柱形图圆角 [左上角，右上角，右下角，左下角]
-    barBorderRadius: [2, 2, 0, 0],
-  },
+  //这里设置柱形图圆角 [左上角，右上角，右下角，左下角]
+  borderRadius: [2, 2, 0, 0],
 };
 const barSeriesLabel = {
   show: true, //开启显示
   position: "top", //在上方显示
-  textStyle: {
-    //数值样式
-    color: "black",
-    fontSize: 12,
-  },
+  //数值样式
+  color: "black",
+  fontSize: 12,
 };
 </script>
 <style scoped lang="scss">
