@@ -483,7 +483,6 @@ export class TableSearch {
    * 返回查询对象
    */
   static toSearchParams(tableSearch: TableSearch): any {
-    console.log(tableSearch);
     // 表头筛选
     const tableHeaderFilter = (
       tableSearch.tableFilter ? Object.keys(tableSearch.tableFilter) : []
