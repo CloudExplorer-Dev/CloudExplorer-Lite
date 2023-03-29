@@ -10,7 +10,6 @@
   "scripts": {
     "dev": "vite --mode development",
     "build": "run-p type-check build-only",
-    "build-lib": "vite build --mode lib",
     "preview": "vite preview --port 4173",
     "test:unit": "vitest --environment jsdom",
     "build-only": "vite build",
