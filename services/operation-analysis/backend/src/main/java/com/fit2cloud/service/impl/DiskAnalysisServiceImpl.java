@@ -1,13 +1,12 @@
 package com.fit2cloud.service.impl;
 
-import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.fit2cloud.base.entity.CloudAccount;
 import com.fit2cloud.base.entity.VmCloudDisk;
 import com.fit2cloud.base.entity.VmCloudServer;
 import com.fit2cloud.base.mapper.BaseVmCloudDiskMapper;
-import com.fit2cloud.base.service.IBaseCloudAccountService;
+import com.fit2cloud.base.mapper.BaseVmCloudServerMapper;
 import com.fit2cloud.common.utils.CurrentUserUtils;
 import com.fit2cloud.common.utils.PageUtil;
 import com.fit2cloud.constants.DiskTypeConstants;
@@ -47,8 +46,6 @@ public class DiskAnalysisServiceImpl implements IDiskAnalysisService {
     @Resource
     private BaseVmCloudDiskMapper baseVmCloudDiskMapper;
     @Resource
-    private IBaseCloudAccountService iBaseCloudAccountService;
-    @Resource
     private IServerAnalysisService iServerAnalysisService;
     @Resource
     private IPermissionService permissionService;
@@ -56,6 +53,9 @@ public class DiskAnalysisServiceImpl implements IDiskAnalysisService {
     private OrgWorkspaceMapper orgWorkspaceMapper;
     @Resource
     private CurrentUserResourceService currentUserResourceService;
+
+    @Resource
+    private BaseVmCloudServerMapper baseVmCloudServerMapper;
 
     /**
      * 分页查询磁盘明细
@@ -66,7 +66,23 @@ public class DiskAnalysisServiceImpl implements IDiskAnalysisService {
         Page<AnalysisDiskDTO> page = PageUtil.of(request, AnalysisDiskDTO.class, null,  true);
         // 构建查询参数
         MPJLambdaWrapper<VmCloudDisk> wrapper = addDiskPageQuery(request);
-        return baseVmCloudDiskMapper.selectJoinPage(page,AnalysisDiskDTO.class, wrapper);
+        IPage<AnalysisDiskDTO> result = baseVmCloudDiskMapper.selectJoinPage(page,AnalysisDiskDTO.class, wrapper);
+        // 设置云主机名称
+        List<String> vmCloudUuids = result.getRecords().stream().map(AnalysisDiskDTO::getInstanceUuid).toList();
+        if(CollectionUtils.isNotEmpty(vmCloudUuids)){
+            MPJLambdaWrapper<VmCloudServer> vmCloudServerMPJLambdaWrapper =  new MPJLambdaWrapper<>();
+            vmCloudServerMPJLambdaWrapper.in(true,VmCloudServer::getInstanceUuid,vmCloudUuids);
+            List<VmCloudServer> list = baseVmCloudServerMapper.selectList(vmCloudServerMPJLambdaWrapper);
+            if(CollectionUtils.isNotEmpty(list)){
+                result.getRecords().forEach(disk->{
+                    List<VmCloudServer> has = list.stream().filter(v->StringUtils.equalsIgnoreCase(v.getAccountId(),disk.getAccountId())&& StringUtils.equalsIgnoreCase(v.getInstanceUuid(),disk.getInstanceUuid())).toList();
+                    if(CollectionUtils.isNotEmpty(has)){
+                        disk.setVmInstanceName(has.get(0).getInstanceName());
+                    }
+                });
+            }
+        }
+        return result;
     }
 
     /**
@@ -84,11 +100,8 @@ public class DiskAnalysisServiceImpl implements IDiskAnalysisService {
         wrapper.orderByDesc(VmCloudDisk::getCreateTime);
         wrapper.selectAs(CloudAccount::getName, AnalysisDiskDTO::getAccountName);
         wrapper.selectAs(CloudAccount::getPlatform,AnalysisDiskDTO::getPlatform);
-        wrapper.selectAs(VmCloudServer::getInstanceName, AnalysisDiskDTO::getVmInstanceName);
-        wrapper.eq(VmCloudDisk::getAccountId,VmCloudServer::getAccountId);
         wrapper.like(StringUtils.isNotBlank(request.getName()), VmCloudDisk::getDiskName, request.getName());
         wrapper.in(CollectionUtils.isNotEmpty(request.getSourceIds()), VmCloudDisk::getSourceId, request.getSourceIds());
-        wrapper.leftJoin(VmCloudServer.class,VmCloudServer::getInstanceUuid, VmCloudDisk::getInstanceUuid);
         return wrapper;
     }
 
