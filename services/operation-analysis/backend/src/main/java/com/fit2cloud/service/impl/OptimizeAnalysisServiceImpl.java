@@ -17,6 +17,7 @@ import com.fit2cloud.base.mapper.BaseVmCloudServerMapper;
 import com.fit2cloud.common.constants.RecycleBinStatusConstants;
 import com.fit2cloud.common.constants.ResourceTypeConstants;
 import com.fit2cloud.common.es.constants.IndexConstants;
+import com.fit2cloud.common.utils.CurrentUserUtils;
 import com.fit2cloud.common.utils.PageUtil;
 import com.fit2cloud.constants.OptimizationConstants;
 import com.fit2cloud.constants.ResourcePerfMetricEnum;
@@ -66,9 +67,17 @@ public class OptimizeAnalysisServiceImpl implements IOptimizeAnalysisService {
 
     @Resource
     private BaseRecycleBinMapper baseRecycleBinMapper;
+    @Resource
+    private CurrentUserResourceService currentUserResourceService;
 
     @Override
     public  IPage<AnalysisServerDTO> pageServer(PageOptimizationRequest request) {
+        if(CollectionUtils.isEmpty(request.getAccountIds())){
+            request.setAccountIds(currentUserResourceService.currentUserCloudAccountList().stream().map(CloudAccount::getId).toList());
+        }
+        if(!CurrentUserUtils.isAdmin() && CollectionUtils.isEmpty(request.getAccountIds())){
+            return new Page<>();
+        }
         if(StringUtils.equalsIgnoreCase(OptimizationConstants.DERATING.getCode(),request.getOptimizeSuggest())
                 || StringUtils.equalsIgnoreCase(OptimizationConstants.UPGRADE.getCode(),request.getOptimizeSuggest())){
             return getDeratingUpgrade(request);
@@ -176,7 +185,8 @@ public class OptimizeAnalysisServiceImpl implements IOptimizeAnalysisService {
             recycleBinServer = recycleBinServer.stream().filter(v->v.getInstanceName().contains(request.getInstanceName())).toList();
         }
         if(CollectionUtils.isNotEmpty(recycleBinServer)){
-            recycleBinServerIds.addAll(recycleBinServer.stream().filter(v->!StringUtils.equalsIgnoreCase("Deleted",v.getInstanceStatus())).map(VmCloudServer::getId).toList());
+            List<String> sourceIds = permissionService.getSourceIds();
+            recycleBinServerIds.addAll(recycleBinServer.stream().filter(v->sourceIds.contains(v.getSourceId())).filter(v->!StringUtils.equalsIgnoreCase("Deleted",v.getInstanceStatus())).map(VmCloudServer::getId).toList());
         }
         OptimizationConstants optimizationConstants = OptimizationConstants.getByCode(request.getOptimizeSuggest());
         Page<AnalysisServerDTO> page = PageUtil.of(request, AnalysisServerDTO.class, null, true);

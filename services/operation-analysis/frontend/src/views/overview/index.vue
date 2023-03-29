@@ -7,6 +7,8 @@ import ComputerResourceUseRate from "@/views/base_resource_analysis/item/BaseRes
 import ServerOptimization from "@commons/business/base-layout/home-page/items/operation/ServerOptimization.vue";
 import { ref, onMounted } from "vue";
 import CommonApi from "@/api/common/index";
+import { useUserStore } from "@commons/stores/modules/user";
+const userStore = useUserStore();
 import type { CloudAccount } from "@commons/api/cloud_account/type";
 const currentAccountId = ref<string>("all");
 const accounts = ref<Array<CloudAccount>>([]);
@@ -43,7 +45,7 @@ onMounted(() => {
           <Detailed :cloud-account-id="currentAccountId" />
         </el-col>
       </el-row>
-      <el-row class="row" :gutter="16">
+      <el-row class="row" :gutter="16" v-show="userStore.currentRole==='ADMIN'">
         <el-col :span="12">
           <ComputerResourceAllocatedRate
             style="height: 198px"

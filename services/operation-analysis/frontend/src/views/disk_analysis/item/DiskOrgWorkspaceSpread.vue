@@ -10,7 +10,7 @@
           v-model="paramDepartmentType"
           @change="getSpreadByDepartmentData()"
         >
-          <el-radio-button label="org">组织</el-radio-button>
+          <el-radio-button label="org" v-show="!userRole">组织</el-radio-button>
           <el-radio-button label="workspace">工作空间</el-radio-button>
         </el-radio-group>
       </el-col>
@@ -42,22 +42,27 @@ import _ from "lodash";
 import type { ResourceAnalysisRequest } from "@/api/disk_analysis/type";
 import type { ECBasicOption } from "echarts/types/src/util/types";
 import ResourceSpreadViewApi from "@/api/disk_analysis/index";
+import { useUserStore } from "@commons/stores/modules/user";
+const userStore = useUserStore();
+const userRole = ref<boolean>(userStore.currentRole==='USER');
+const adminRole = ref<boolean>(userStore.currentRole==='ADMIN');
 const props = defineProps<{
   cloudAccountId?: string | undefined;
   currentUnit?: string | undefined;
 }>();
-const paramDepartmentType = ref<string>("org");
 const params = ref<ResourceAnalysisRequest>();
+const paramDepartmentType = ref<string>(userRole.value?"workspace":"org");
 const loading = ref<boolean>(false);
 const apiData = ref<any>();
 const showBack = ref<boolean>(false);
 const parentItem = ref<any>({});
+
 const setParams = () => {
   props.cloudAccountId
     ? _.set(
         params,
         "accountIds",
-        props.cloudAccountId === "all" ? [] : [props.cloudAccountId]
+         props.cloudAccountId==="all" ?  [] : [props.cloudAccountId]
       )
     : "";
   _.set(params, "statisticalBlock", props.currentUnit === "block");
@@ -197,8 +202,8 @@ const defaultSpeedOptions = {
     padding: [0, 0, 10, 0],
   },
   grid: {
-    left: "3%",
-    right: "4%",
+    left: "0%",
+    right: "0%",
     top: "17px",
     bottom: "15%",
     containLabel: true,
@@ -209,6 +214,10 @@ const defaultSpeedOptions = {
   xAxis: {
     type: "category",
     data: [],
+    axisLabel: {
+      showMaxLabel: false,
+      showMinLabel: false,
+    },
   },
   yAxis: {
     type: "value",

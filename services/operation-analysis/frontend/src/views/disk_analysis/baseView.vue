@@ -25,26 +25,8 @@
         </div>
       </el-col>
     </el-row>
-    <el-row :gutter="16" class="row">
-      <el-col :span="8">
-        <CloudAccountSpread
-          :cloud-account-id="currentAccount"
-          :current-unit="currentUnit"
-        ></CloudAccountSpread>
-      </el-col>
-      <el-col :span="8">
-        <StatusSpread
-          :cloud-account-id="currentAccount"
-          :current-unit="currentUnit"
-        ></StatusSpread>
-      </el-col>
-      <el-col :span="8">
-        <DiskTypeSpread
-          :cloud-account-id="currentAccount"
-          :current-unit="currentUnit"
-        ></DiskTypeSpread>
-      </el-col>
-    </el-row>
+    <DiskDoughnutChartGroup :cloud-account-id="currentAccount"
+                            :current-unit="currentUnit"></DiskDoughnutChartGroup>
     <el-row :gutter="16" class="row">
       <el-col :span="12">
         <DiskIncreaseTrend
@@ -63,25 +45,19 @@
 </template>
 <script lang="ts" setup>
 import { onMounted, ref } from "vue";
-import ResourceSpreadViewApi from "@/api/resource_spread_view";
+import CommonApi from "@/api/common/index";
 import type { CloudAccount } from "@commons/api/cloud_account/type";
-import type { VmCloudHostVO } from "@/api/vm_cloud_host/type";
-import CloudAccountSpread from "./item/DiskCloudAccountSpread.vue";
-import StatusSpread from "./item/DIskStatusSpread.vue";
-import DiskTypeSpread from "./item/DiskTypeSpread.vue";
-import CloudServerOrgWorkspaceSpread from "./item/DIskOrgWorkspaceSpread.vue";
+import DiskDoughnutChartGroup from "./item/DiskDoughnutChartGroup.vue";
 import DiskIncreaseTrend from "./item/DiskIncreaseTrend.vue";
-import DIskOrgWorkspaceSpread from "@/views/disk_analysis/item/DIskOrgWorkspaceSpread.vue";
+import DIskOrgWorkspaceSpread from "@/views/disk_analysis/item/DiskOrgWorkspaceSpread.vue";
 
 //条件
 const currentAccount = ref<string>("all");
 const currentUnit = ref<string>("block");
 //查询所有私有云云账号
 const accounts = ref<Array<CloudAccount>>();
-//查询所有宿主机
-const hosts = ref<Array<VmCloudHostVO>>();
 const getSearchCondition = () => {
-  ResourceSpreadViewApi.listPrivateAccounts().then(
+  CommonApi.listAll().then(
     (res) => (accounts.value = res.data)
   );
 };
@@ -95,7 +71,7 @@ onMounted(() => {
   min-width: 1000px;
   .header-row {
     padding: 5px 0 10px 0;
-    text-align: right;
+    text-align: left;
     .header-title {
       font-family: "PingFang SC", serif;
       font-style: normal;

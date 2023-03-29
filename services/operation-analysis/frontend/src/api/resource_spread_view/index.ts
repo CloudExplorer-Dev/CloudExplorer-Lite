@@ -8,15 +8,6 @@ import type { Ref } from "vue";
 
 /**
  * 私有云账号
- * @param req
- * @param loading
- */
-export function listAccounts(loading?: Ref<boolean>): Promise<Result<any>> {
-  return get("api/base_resource_analysis/private_cloud_accounts", loading);
-}
-
-/**
- * 私有云账号
  */
 export function listPrivateAccounts(
   loading?: Ref<boolean>
@@ -74,7 +65,6 @@ export function getUsedInfo(
 }
 
 const ResourceSpreadViewApi = {
-  listAccounts,
   listClusters,
   listHost,
   listDatastores,

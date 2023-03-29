@@ -2,7 +2,7 @@
   <el-card shadow="never" class="info-card">
     <el-row :gutter="10">
       <el-col :span="24">
-        <div class="title">付费方式</div>
+        <div class="title">{{props.typeText}}</div>
       </el-col>
     </el-row>
     <el-row :gutter="10">
@@ -12,7 +12,7 @@
             <v-chart
               class="chart"
               :option="option"
-              v-loading="loading"
+              v-loading="props.loading"
               autoresize
             />
           </div>
@@ -23,68 +23,33 @@
 </template>
 <script setup lang="ts">
 import VChart from "vue-echarts";
-import { computed, ref, watch } from "vue";
-import ResourceSpreadViewApi from "@/api/server_analysis/index";
+import { computed } from "vue";
 import _ from "lodash";
-import type { ResourceAnalysisRequest } from "@commons/api/server_analysis/type";
 import type { ECBasicOption } from "echarts/types/src/util/types";
 import type { SimpleMap } from "@commons/api/base/type";
 import { interpolationColor } from "@commons/utils/color";
 const props = defineProps<{
-  cloudAccountId?: string | undefined;
-  clusterId?: string | undefined;
-  datastoreId?: string | undefined;
-  hostId?: string | undefined;
+  apiData: any;
+  type: string;
+  typeText: string;
+  loading: boolean;
 }>();
-const spreadType = ref<string>("byChargeType");
-const params = ref<ResourceAnalysisRequest>();
-const loading = ref<boolean>(false);
-const apiData = ref<any>();
-const setParams = () => {
-  props.cloudAccountId
-    ? _.set(
-        params,
-        "accountIds",
-        props.cloudAccountId === "all" ? [] : [props.cloudAccountId]
-      )
-    : "";
-  props.hostId
-    ? _.set(params, "hostIds", props.hostId === "all" ? [] : [props.hostId])
-    : "";
-};
-//获取数宿主机按云账号分布
-const getSpreadData = () => {
-  setParams();
-  ResourceSpreadViewApi.getSpreadData(params, loading).then(
-    (res) => (apiData.value = res.data)
-  );
-};
 interface EchartsValue {
   name: string;
   value: number;
 }
-
 const data = computed<Array<EchartsValue>>(() => {
   const result: Array<EchartsValue> = [];
-  _.forEach(apiData.value?.[spreadType.value], (v) => {
-    result.push({ name: v.name, value: v.value });
-  });
+  if(props.apiData && props.apiData?.[props.type].length>0){
+    _.forEach(props.apiData?.[props.type], (v) => {
+      result.push({ name: v.name, value: v.value });
+    });
+  }else{
+    result.push({ name: "", value: 0 });
+  }
   return result;
 });
 const option = computed<ECBasicOption>(() => {
-  if (data.value.length == 0) {
-    return {
-      title: {
-        text: "暂无数据",
-        x: "center",
-        y: "center",
-        textStyle: {
-          fontSize: 12,
-          fontWeight: "normal",
-        },
-      },
-    };
-  }
   const selected = data.value
     .map((b) => {
       return { [b.name]: true };
@@ -92,7 +57,6 @@ const option = computed<ECBasicOption>(() => {
     .reduce((pre, next) => {
       return { ...pre, ...next };
     }, {});
-
   return {
     tooltip: {
       trigger: "item",
@@ -193,7 +157,7 @@ const option = computed<ECBasicOption>(() => {
           },
         },
         emphasis: {
-          disabled: apiData.value?.[spreadType.value].length === 0,
+          disabled: props.apiData?.[props.type].length === 0,
           label: {
             show: true,
             width: 110,
@@ -211,23 +175,70 @@ const option = computed<ECBasicOption>(() => {
         },
         data: data.value,
         color:
-          apiData.value?.[spreadType.value].length === 0
+          props.apiData?.[props.type]?.length === 0 || !props.apiData?.[props.type]
             ? ["rgba(187, 191, 196, 1)", "rgba(187, 191, 196, 1)"]
             : interpolationColor(
-                ["rgb(148, 90, 246, 1)", "rgb(79, 131, 253, 1)"],
+                  chartColor.value,
                 data.value.length
               ),
       },
     ],
   };
 });
-watch(
-  props,
-  () => {
-    getSpreadData();
-  },
-  { immediate: true }
-);
+const chartColor = computed<Array<string>> (()=>{
+  if(props.type==="byStatus"){
+    const result = [];
+    if(_.find(data.value,['name', '已停止'])){
+      result.push("rgb(187, 191, 196, 1)");
+    }
+    if(_.find(data.value,['name', '运行中'])){
+      result.push("rgb(98, 210, 85, 1)");
+    }
+    if(_.find(data.value,['name', '其他'])){
+      result.push("rgb(255, 199, 94, 1)");
+    }
+    return result;
+  }else if(props.type==="byChargeType"){
+    const result = [];
+    if(_.find(data.value,['name', '按需按量'])){
+      result.push("rgb(148, 90, 246, 1)");
+    }
+    if(_.find(data.value,['name', '包年包月'])){
+      result.push("rgb(78, 131, 253, 1)");
+    }
+    return result;
+  }else{
+    return allColor;
+  }
+})
+const allColor = [
+  "rgb(79, 131, 253, 1)",
+  "rgb(150, 189, 255, 1)",
+  "rgb(250, 211, 85, 1)",
+  "rgb(255, 230, 104, 1)",
+  "rgb(22, 225, 198, 1)",
+  "rgb(76, 253, 224, 1)",
+  "rgb(81, 206, 251, 1)",
+  "rgb(118, 240, 255, 1)",
+  "rgb(148, 90, 246, 1)",
+  "rgb(220, 155, 255, 1)",
+  "rgb(255, 165, 61, 1)",
+  "rgb(255, 199, 94, 1)",
+  "rgb(241, 75, 169, 1)",
+  "rgb(255, 137, 227, 1)",
+  "rgb(247, 105, 101, 1)",
+  "rgb(255, 158, 149, 1)",
+  "rgb(219, 102, 219, 1)",
+  "rgb(254, 157, 254, 1)",
+  "rgb(195, 221, 65, 1)",
+  "rgb(217, 244, 87, 1)",
+  "rgb(97, 106, 229, 1)",
+  "rgb(172, 173, 255, 1)",
+  "rgb(98, 210, 85, 1)",
+  "rgb(134, 245, 120, 1)",
+]
+
+
 </script>
 <style scoped lang="scss">
 .info-card {

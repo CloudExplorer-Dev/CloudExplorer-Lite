@@ -32,7 +32,9 @@ const option = computed<ECBasicOption>(() => {
   let value = 0;
   if (props.apiData) {
     const obj = props.apiData;
-    value = obj[props.type]?.usedRate / 100;
+    if(obj[props.type]){
+      value = obj[props.type]?.usedRate / 100;
+    }
   } else {
     return {
       title: {

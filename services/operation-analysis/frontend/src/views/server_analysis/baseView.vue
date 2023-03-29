@@ -33,26 +33,8 @@
         </div>
       </el-col>
     </el-row>
-    <el-row :gutter="16" class="row">
-      <el-col :span="8">
-        <CloudAccountSpread
-          :cloud-account-id="currentAccount"
-          :host-id="currentHost"
-        ></CloudAccountSpread>
-      </el-col>
-      <el-col :span="8">
-        <StatusSpread
-          :cloud-account-id="currentAccount"
-          :host-id="currentHost"
-        ></StatusSpread>
-      </el-col>
-      <el-col :span="8">
-        <ChargeTypeSpread
-          :cloud-account-id="currentAccount"
-          :host-id="currentHost"
-        ></ChargeTypeSpread>
-      </el-col>
-    </el-row>
+    <DoughnutChartGroup :cloud-account-id="currentAccount"
+                        :host-id="currentHost"></DoughnutChartGroup>
     <el-row :gutter="16" class="row">
       <el-col :span="12">
         <CloudServerIncreaseTrend
@@ -80,18 +62,20 @@
   </div>
 </template>
 <script lang="ts" setup>
-import { onMounted, ref } from "vue";
-import ResourceSpreadViewApi from "@/api/resource_spread_view";
+import {onMounted, ref, watch} from "vue";
+import ResourceSpreadViewApi from "@/api/server_analysis/index";
+import CommonApi from "@/api/common/index";
 import { ResourceAnalysisRequest } from "@commons/api/resource_spread_view/type";
 import type { CloudAccount } from "@commons/api/cloud_account/type";
 import type { VmCloudHostVO } from "@/api/vm_cloud_host/type";
-import CloudAccountSpread from "./item/CloudAccountSpread.vue";
-import StatusSpread from "./item/CLoudServerStatusSpread.vue";
-import ChargeTypeSpread from "./item/CloudServerChargeTypeSpread.vue";
 import CloudServerOrgWorkspaceSpread from "./item/CloudServerOrgWorkspaceSpread.vue";
 import CloudServerIncreaseTrend from "@commons/business/base-layout/home-page/items/operation/CloudServerIncreaseTrend.vue";
 import ResourceUseRateTrend from "./item/CloudServerResourceUseRateTrend.vue";
-
+import DoughnutChartGroup from "@/views/server_analysis/item/DoughnutChartGroup.vue";
+import _ from "lodash";
+import { useUserStore } from "@commons/stores/modules/user";
+const userStore = useUserStore();
+const adminRole = ref<boolean>(userStore.currentRole==='ADMIN');
 //条件
 const currentAccount = ref<string>("all");
 const currentHost = ref<string>("all");
@@ -101,16 +85,34 @@ const accounts = ref<Array<CloudAccount>>();
 //查询所有宿主机
 const hosts = ref<Array<VmCloudHostVO>>();
 const getSearchCondition = () => {
-  ResourceSpreadViewApi.listPrivateAccounts().then(
-    (res) => (accounts.value = res.data)
-  );
-  ResourceSpreadViewApi.listHost(params).then(
-    (res) => (hosts.value = res.data)
+  CommonApi.listAll().then(
+    (res) => {
+      accounts.value = res.data;
+      if(res.data && res.data.length>0){
+        _.map(accounts.value, 'id')
+            ? _.set(
+                params,
+                "accountIds",
+                _.map(accounts.value, 'id')
+            )
+            : "";
+        ResourceSpreadViewApi.listHost(params).then(
+            (res) => (hosts.value = res.data)
+        );
+      }
+    }
   );
 };
 onMounted(() => {
   getSearchCondition();
 });
+watch(
+    currentAccount,
+    () => {
+      currentHost.value = "all";
+    },
+    { immediate: true }
+);
 </script>
 
 <style scoped lang="scss">
@@ -118,7 +120,7 @@ onMounted(() => {
   min-width: 1000px;
   .header-row {
     padding: 5px 0 10px 0;
-    text-align: right;
+    text-align: left;
     .header-title {
       font-family: "PingFang SC", serif;
       font-style: normal;

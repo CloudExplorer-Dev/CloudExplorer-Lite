@@ -58,6 +58,9 @@ import _ from "lodash";
 import type { ResourceAnalysisRequest } from "@commons/api/server_analysis/type";
 import type { ECBasicOption } from "echarts/types/src/util/types";
 import ResourceSpreadViewApi from "@/api/server_analysis/index";
+import { useUserStore } from "@commons/stores/modules/user";
+const userStore = useUserStore();
+const adminRole = ref<boolean>(userStore.currentRole==='ADMIN');
 const props = defineProps<{
   cloudAccountId?: string | undefined;
   clusterId?: string | undefined;
@@ -83,11 +86,11 @@ const setParams = () => {
     ? _.set(
         params,
         "accountIds",
-        props.cloudAccountId === "all" ? [] : [props.cloudAccountId]
+         props.cloudAccountId==="all" ?  [] : [props.cloudAccountId]
       )
     : "";
   props.hostId
-    ? _.set(params, "hostIds", props.hostId === "all" ? [] : [props.hostId])
+    ? _.set(params, "hostIds",  props.hostId === "all" ?  [] : [props.hostId])
     : "";
   _.set(params, "metricName", metricName.value);
   _.set(params, "startTime", timestampData.value[0].getTime());
@@ -108,7 +111,7 @@ const options = computed<ECBasicOption>(() => {
     series: any = {},
     xAxis: any[] = [];
   const seriesData: any[] = [];
-  if (!trendInfo) {
+  if (!trendInfo || trendInfo.length===0) {
     return {
       title: {
         text: "暂无数据",
@@ -187,7 +190,7 @@ const color: Array<string> = [
   "rgb(22, 225, 198, 1)",
   "rgb(79, 131, 253, 1)",
   "rgb(251, 218, 110, 1)",
-  "rgb(250, 139, 135, 1)",
+  "rgb(250, 139, 135, 1)"
 ];
 const defaultTrendOptions = {
   color: color,
@@ -214,8 +217,8 @@ const defaultTrendOptions = {
     },
   },
   grid: {
-    left: "3%",
-    right: "4%",
+    left: "0%",
+    right: "0%",
     top: "19px",
     bottom: "10%",
     containLabel: true,
@@ -225,6 +228,10 @@ const defaultTrendOptions = {
       type: "category",
       boundaryGap: false,
       data: ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"],
+      axisLabel: {
+        showMaxLabel: false,
+        showMinLabel: false,
+      },
     },
   ],
   yAxis: [
@@ -233,71 +240,6 @@ const defaultTrendOptions = {
     },
   ],
   series: [],
-};
-/**
- * 颜色
- */
-const trendSeriesColor = [
-  [
-    {
-      offset: 1,
-      color: "rgb(98, 210, 85, 1)",
-    },
-  ],
-  [
-    {
-      offset: 1,
-      color: "rgb(22, 225, 198, 1)",
-    },
-  ],
-  [
-    {
-      offset: 1,
-      color: "rgb(79, 131, 253, 1)",
-    },
-  ],
-  [
-    {
-      offset: 0,
-      color: "rgb(251, 218, 110, 1)",
-    },
-  ],
-  [
-    {
-      offset: 0,
-      color: "rgb(250, 139, 135, 1)",
-    },
-  ],
-];
-/**
- * 随机颜色
- */
-const getRandomColor = () => {
-  const randomColor = [
-    {
-      offset: 0,
-      color:
-        "rgb(" +
-        _.random(0, 255) +
-        ", " +
-        _.random(0, 255) +
-        ", " +
-        _.random(0, 255) +
-        ")",
-    },
-    {
-      offset: 1,
-      color:
-        "rgb(" +
-        _.random(0, 255) +
-        ", " +
-        _.random(0, 255) +
-        ", " +
-        _.random(0, 255) +
-        ")",
-    },
-  ];
-  return randomColor;
 };
 
 /**
