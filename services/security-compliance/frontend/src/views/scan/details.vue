@@ -1,191 +1,195 @@
 <template>
-  <layout-auto-height-content :style="{ minWidth: '1000px' }">
-    <template #breadcrumb>
-      <breadcrumb
-        :breadcrumbs="[
-          {
-            to: {
-              name: 'scan',
-              path: '/scan',
+  <div>
+    <layout-auto-height-content>
+      <template #breadcrumb>
+        <breadcrumb
+          :breadcrumbs="[
+            {
+              to: {
+                name: 'scan',
+                path: '/scan',
+              },
+              title: '扫描检测',
             },
-            title: '扫描检测',
-          },
-          {
-            to: {
-              name: 'details',
-              path: '/scan/details/:compliance_rule_id/:cloud_account_id',
+            {
+              to: {
+                name: 'details',
+                path: '/scan/details/:compliance_rule_id/:cloud_account_id',
+              },
+              title: '详情',
             },
-            title: '详情',
-          },
-        ]"
-        :auto="false"
-      ></breadcrumb>
-    </template>
-    <base-container style="height: auto">
-      <template #header><span>规则信息</span></template>
-      <template #content>
-        <el-form :inline="true" label-position="top">
-          <el-row style="width: 100%">
-            <el-col :span="19">
-              <el-form-item style="width: 100%" label="规则名称">{{
-                complianceRule?.name
-              }}</el-form-item></el-col
+          ]"
+          :auto="false"
+        ></breadcrumb>
+      </template>
+      <base-container style="height: auto" :contentBorder="false">
+        <template #header><span>规则信息</span></template>
+        <template #content>
+          <el-form :inline="true" label-position="top">
+            <el-row style="width: 100%">
+              <el-col :span="19">
+                <el-form-item style="width: 100%" label="规则名称">{{
+                  complianceRule?.name
+                }}</el-form-item></el-col
+              >
+              <el-col :span="5">
+                <el-form-item style="width: 100%" label="风险等级">
+                  <el-tag
+                    disable-transitions
+                    :class="
+                      complianceRule?.riskLevel === 'HIGH'
+                        ? 'high'
+                        : complianceRule?.riskLevel === 'MIDDLE'
+                        ? 'middle'
+                        : 'low'
+                    "
+                  >
+                    {{
+                      complianceRule?.riskLevel === "HIGH"
+                        ? "高风险"
+                        : complianceRule?.riskLevel === "MIDDLE"
+                        ? "中风险"
+                        : "低风险"
+                    }}</el-tag
+                  >
+                </el-form-item></el-col
+              >
+            </el-row>
+            <el-row style="width: 100%">
+              <el-col :span="19">
+                <el-form-item style="width: 100%" label="规则描述">{{
+                  complianceRule?.description
+                }}</el-form-item>
+              </el-col>
+              <el-col :span="5">
+                <el-form-item style="width: 100%" label="规则组">{{
+                  complianceRuleGroup?.name
+                }}</el-form-item>
+              </el-col>
+            </el-row>
+          </el-form>
+        </template>
+      </base-container>
+      <base-container
+        style="height: auto"
+        v-if="complianceInsuranceStatutes.length > 0"
+        :contentBorder="false"
+      >
+        <template #header><span>改进建议</span></template>
+        <template #content>
+          <el-descriptions :column="1">
+            <el-descriptions-item
+              v-for="(item, index) in complianceInsuranceStatutes"
+              :key="item.id"
+              :label="index + 1 + '.'"
             >
-            <el-col :span="5">
-              <el-form-item style="width: 100%" label="风险等级">
-                <el-tag
-                  disable-transitions
-                  :class="
-                    complianceRule?.riskLevel === 'HIGH'
-                      ? 'high'
-                      : complianceRule?.riskLevel === 'MIDDLE'
-                      ? 'middle'
-                      : 'low'
-                  "
-                >
-                  {{
-                    complianceRule?.riskLevel === "HIGH"
-                      ? "高风险"
-                      : complianceRule?.riskLevel === "MIDDLE"
-                      ? "中风险"
-                      : "低风险"
-                  }}</el-tag
-                >
-              </el-form-item></el-col
+              <span style="color: rgb(31, 35, 41)">
+                {{ item.improvementProposal }}</span
+              ></el-descriptions-item
             >
-          </el-row>
-          <el-row style="width: 100%">
-            <el-col :span="19">
-              <el-form-item style="width: 100%" label="规则描述">{{
-                complianceRule?.description
-              }}</el-form-item>
-            </el-col>
-            <el-col :span="5">
-              <el-form-item style="width: 100%" label="规则组">{{
-                complianceRuleGroup?.name
-              }}</el-form-item>
-            </el-col>
-          </el-row>
-        </el-form>
-      </template>
-    </base-container>
-    <base-container
-      style="height: auto"
-      v-if="complianceInsuranceStatutes.length > 0"
-    >
-      <template #header><span>改进建议</span></template>
-      <template #content>
-        <el-descriptions :column="1">
-          <el-descriptions-item
-            v-for="(item, index) in complianceInsuranceStatutes"
-            :key="item.id"
-            :label="index + 1 + '.'"
+          </el-descriptions>
+        </template>
+      </base-container>
+      <base-container style="height: auto" :contentBorder="false">
+        <template #header><span>资源检测结果</span></template>
+        <template #content>
+          <ce-table
+            localKey="detailsTable"
+            v-loading="tableLoading"
+            height="100%"
+            ref="table"
+            :columns="columns"
+            :data="dataList"
+            :tableConfig="tableConfig"
+            row-key="id"
           >
-            <span style="color: rgb(31, 35, 41)">
-              {{ item.improvementProposal }}</span
-            ></el-descriptions-item
-          >
-        </el-descriptions>
-      </template>
-    </base-container>
-    <base-container style="height: auto">
-      <template #header><span>资源检测结果</span></template>
-      <template #content>
-        <ce-table
-          localKey="detailsTable"
-          v-loading="tableLoading"
-          height="100%"
-          ref="table"
-          :columns="columns"
-          :data="dataList"
-          :tableConfig="tableConfig"
-          row-key="id"
-        >
-          <el-table-column type="expand">
-            <template #default="props">
-              <el-descriptions :column="2" style="padding: 0 20px">
-                <el-descriptions-item
-                  v-for="key in Object.keys(props.row.instance)"
-                  :key="key"
-                  :label="key + ':'"
-                  >{{ props.row.instance[key] }}</el-descriptions-item
-                >
-              </el-descriptions>
+            <el-table-column type="expand">
+              <template #default="props">
+                <el-descriptions :column="2" style="padding: 0 20px">
+                  <el-descriptions-item
+                    v-for="key in Object.keys(props.row.instance)"
+                    :key="key"
+                    :label="key + ':'"
+                    >{{ props.row.instance[key] }}</el-descriptions-item
+                  >
+                </el-descriptions>
+              </template>
+            </el-table-column>
+            <el-table-column prop="resourceId" label="资源id" />
+            <el-table-column prop="resourceName" label="资源名称" />
+            <el-table-column
+              prop="cloudAccountName"
+              label="云账号名称"
+              :filters="
+                cloudAccountList.map((item) => ({
+                  text: item.name,
+                  value: item.id,
+                }))
+              "
+              :filter-multiple="false"
+              column-key="cloudAccountId"
+            >
+              <template #default="scope">
+                <div style="display: flex">
+                  <platform_icon :platform="scope.row.platform">
+                  </platform_icon>
+                  {{ scope.row.cloudAccountName }}
+                </div>
+              </template></el-table-column
+            >
+            <el-table-column
+              prop="resourceTyppe"
+              min-width="100"
+              label="资源类型"
+            >
+              <template #default="scope"
+                >{{
+                  resourceTypes.find(
+                    (resourceType) =>
+                      resourceType.value === scope.row.resourceType
+                  )?.key
+                }}
+              </template>
+            </el-table-column>
+            <el-table-column
+              column-key="complianceStatus"
+              prop="complianceStatus"
+              label="检测状态"
+              :filter-multiple="false"
+              :filters="[
+                { text: '合规', value: 'COMPLIANCE' },
+                { text: '不合规', value: 'NOT_COMPLIANCE' },
+              ]"
+            >
+              <template #default="scope">
+                <div class="compliance_status">
+                  <div
+                    class="icon"
+                    :style="{
+                      backgroundColor:
+                        scope.row.complianceStatus === 'NOT_COMPLIANCE'
+                          ? '#F54A45'
+                          : '#34C724',
+                    }"
+                  ></div>
+                  <span class="text">
+                    {{
+                      scope.row.complianceStatus === "NOT_COMPLIANCE"
+                        ? "不合规"
+                        : "合规"
+                    }}</span
+                  >
+                </div>
+              </template>
+            </el-table-column>
+            <template #buttons>
+              <CeTableColumnSelect :columns="columns" />
             </template>
-          </el-table-column>
-          <el-table-column prop="resourceId" label="资源id" />
-          <el-table-column prop="resourceName" label="资源名称" />
-          <el-table-column
-            prop="cloudAccountName"
-            label="云账号名称"
-            :filters="
-              cloudAccountList.map((item) => ({
-                text: item.name,
-                value: item.id,
-              }))
-            "
-            :filter-multiple="false"
-            column-key="cloudAccountId"
-          >
-            <template #default="scope">
-              <div style="display: flex">
-                <platform_icon :platform="scope.row.platform"> </platform_icon>
-                {{ scope.row.cloudAccountName }}
-              </div>
-            </template></el-table-column
-          >
-          <el-table-column
-            prop="resourceTyppe"
-            min-width="100"
-            label="资源类型"
-          >
-            <template #default="scope"
-              >{{
-                resourceTypes.find(
-                  (resourceType) =>
-                    resourceType.value === scope.row.resourceType
-                )?.key
-              }}
-            </template>
-          </el-table-column>
-          <el-table-column
-            column-key="complianceStatus"
-            prop="complianceStatus"
-            label="检测状态"
-            :filter-multiple="false"
-            :filters="[
-              { text: '合规', value: 'COMPLIANCE' },
-              { text: '不合规', value: 'NOT_COMPLIANCE' },
-            ]"
-          >
-            <template #default="scope">
-              <div class="compliance_status">
-                <div
-                  class="icon"
-                  :style="{
-                    backgroundColor:
-                      scope.row.complianceStatus === 'NOT_COMPLIANCE'
-                        ? '#F54A45'
-                        : '#34C724',
-                  }"
-                ></div>
-                <span class="text">
-                  {{
-                    scope.row.complianceStatus === "NOT_COMPLIANCE"
-                      ? "不合规"
-                      : "合规"
-                  }}</span
-                >
-              </div>
-            </template>
-          </el-table-column>
-          <template #buttons>
-            <CeTableColumnSelect :columns="columns" />
-          </template>
-        </ce-table>
-      </template>
-    </base-container>
-  </layout-auto-height-content>
+          </ce-table>
+        </template>
+      </base-container>
+    </layout-auto-height-content>
+  </div>
 </template>
 <script setup lang="ts">
 import { useRoute } from "vue-router";

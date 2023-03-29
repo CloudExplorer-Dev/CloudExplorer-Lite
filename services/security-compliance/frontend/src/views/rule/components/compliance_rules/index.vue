@@ -45,14 +45,6 @@
       <div @click="addRule" class="add">
         <ce-icon code="icon_add_outlined" size="12px"></ce-icon>添加规则
       </div>
-      <el-radio-group
-        v-bind:modelValue="modelValue.scanRule"
-        @update:modelValue="updateScanRule($event)"
-        class="ml-4"
-      >
-        <el-radio label="COMPLIANCE" size="large">视为合规</el-radio>
-        <el-radio label="NOT_COMPLIANCE" size="large">视为不合规</el-radio>
-      </el-radio-group>
     </div>
   </el-form>
 </template>
@@ -153,7 +145,9 @@ watch(
     emit("update:modelValue", {
       conditionType: "AND",
       rules: [{ field: "", compare: "", value: "" }],
-      scanRule: "COMPLIANCE",
+      scanRule: props.modelValue.scanRule
+        ? props.modelValue.scanRule
+        : "COMPLIANCE",
     });
   },
   {
@@ -174,7 +168,9 @@ watch(
     emit("update:modelValue", {
       conditionType: "AND",
       rules: [{ field: "", compare: "", value: "" }],
-      scanRule: "COMPLIANCE",
+      scanRule: props.modelValue.scanRule
+        ? props.modelValue.scanRule
+        : "COMPLIANCE",
     });
   }
 );
@@ -199,7 +195,10 @@ const addRule = () => {
 };
 // 校验函数
 const validate = () => {
-  return Promise.all(ruleItem.value.map((item) => item.validate()));
+  return Promise.all(ruleItem.value.map((item) => item.validate())).catch(
+    // eslint-disable-next-line @typescript-eslint/no-empty-function
+    () => {}
+  );
 };
 defineExpose({ validate });
 </script>
