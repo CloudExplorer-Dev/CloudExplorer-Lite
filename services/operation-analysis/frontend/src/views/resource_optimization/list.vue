@@ -269,7 +269,8 @@ const tableConfig = ref<TableConfig>({
 const showDetail = (row: VmCloudServerVO) => {
   MicroAppRouterUtil.jumpToChildrenPath(
     "vm-service",
-    "/vm-service/vm_cloud_server/detail/" + row.id
+    "/vm-service/vm_cloud_server/detail/" + row.id,
+    router
   );
 };
 </script>
