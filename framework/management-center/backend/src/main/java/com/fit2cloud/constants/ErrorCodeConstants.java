@@ -32,6 +32,13 @@ public enum ErrorCodeConstants {
 
     CLOUD_ACCOUNT_JOB_IS_NOT_EXISTENT(100101, "i18n.cloud_account.job.is.not.existent"),
     CLOUD_ACCOUNT_INVALID_UNABLE_SYNC(100102, "i18n.cloud_account.invalid.unable.sync"),
+
+    CLOUD_ACCOUNT_PLATFORM_IS_NOT_NULL(100103, "i18n.cloud_account.platform,is.not.empty"),
+
+    CLOUD_ACCOUNT_CREDENTIAL_FORM_ERROR(100103, "认证信息格式错误"),
+
+    CLOUD_ACCOUNT_CREDENTIAL_IS_NOT_EMPTY(100104, "i18n.cloud_account.credential.is.not.empty"),
+
     WORKSPACE_ID_AND_NAME_REQUIRED(100100401, "i18n.workspace.id.or.name.required"),
 
     WORKSPACE_NAME_REPEAT(100100402, "i18n.workspace.name.not.repeat"),
