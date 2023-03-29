@@ -90,6 +90,7 @@ export class RootMicroApp {
    * @param modules
    */
   preFetch(modules: Array<Module>) {
+    return;
     if (modules?.length > 0) {
       console.debug("preFetch modules!", modules);
       this.microApp.preFetch(
