@@ -168,8 +168,8 @@ const option = computed<ECBasicOption>(() => {
       padding: [0, 0, 5, 10],
     },
     grid: {
-      left: "3%",
-      right: "4%",
+      left: "0%",
+      right: "0%",
       top: "30px",
       bottom: "10%",
       containLabel: true,
@@ -181,6 +181,10 @@ const option = computed<ECBasicOption>(() => {
       type: "category",
       data: selected.name,
       axisTick: false,
+      axisLabel: {
+        showMaxLabel: false,
+        showMinLabel: false,
+      },
     },
     color: ["rgba(98, 210, 85,1)", "rgba(223, 224, 227, 1)"],
     series: [

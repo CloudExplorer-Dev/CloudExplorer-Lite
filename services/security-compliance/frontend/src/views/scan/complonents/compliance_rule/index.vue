@@ -109,7 +109,7 @@
               :complaince-scan-result="scope.row"
               :cloud-account-source-list="cloudAccountList"
               :open-details-job-view="openDetailsJobView"
-              :cloud-account-id="activeCloudAccount"
+              :cloud-account-id="cloudAccountId"
             ></ScanStatusColumn>
           </div>
         </template>
@@ -238,9 +238,6 @@ onMounted(() => {
   if (route.query.resourceType) {
     resourceTypeFilters.value = [route.query.resourceType as string];
   }
-  if (route.query.cloudAccountId) {
-    activeCloudAccount.value = route.query.cloudAccountId as string;
-  }
   if (route.query.ruleGroup) {
     activeComplianceRuleGroupId.value = route.query.ruleGroup as string;
   }
@@ -325,8 +322,6 @@ const accountJobRecordList = ref<Array<AccountJobRecord>>([]);
 const tableData = ref<Array<ComplianceScanResultResponse>>([]);
 // 选中的合规规则组id
 const activeComplianceRuleGroupId = ref<string>("");
-// 选中的云账号
-const activeCloudAccount = ref<string>("all");
 // 资源类型列表数据
 const resourceTypes = ref<Array<KeyValue<string, string>>>([]);
 // 当前这一行任务数据
@@ -342,7 +337,7 @@ const details = (row: ComplianceScanResultResponse) => {
     name: "details",
     params: {
       compliance_rule_id: row.id,
-      cloud_account_id: activeCloudAccount.value,
+      cloud_account_id: props.cloudAccountId,
     },
   });
 };
@@ -376,13 +371,13 @@ const getResourceTypeParams = () => {
   return undefined;
 };
 watch(activeRiskLevel, () => {
-  table.value?.refresh();
+  table.value?.search();
 });
 
 watch(
   () => props.cloudAccountId,
   () => {
-    table.value?.refresh();
+    table.value?.search();
   }
 );
 

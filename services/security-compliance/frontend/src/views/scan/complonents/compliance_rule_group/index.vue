@@ -31,7 +31,7 @@ import { ref, onMounted, computed, watch } from "vue";
 import sacnResultApi from "@/api/compliance_scan_result/index";
 import type { ComplianceRuleGroupCountResponse } from "@/api/compliance_scan_result/type";
 import RuleGroupCard from "@/views/scan/complonents/compliance_rule_group/RuleGroupCard.vue";
-import { splitArray } from "@commons/utils/commons.ts";
+import { splitArray } from "@commons/utils/commons";
 import bus from "@commons/bus";
 import { useRoute } from "vue-router";
 const route = useRoute();
@@ -126,7 +126,6 @@ watch(
     search();
   }
 );
-const rule = ref<{}>();
 /**
  * 规则组选中状态
  * @param active 是否选中

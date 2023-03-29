@@ -38,15 +38,13 @@ public class CommonAnalysisServiceImpl implements ICommonAnalysisService {
     @Resource
     private IPermissionService permissionService;
     @Resource
-    private IBaseVmCloudServerService iBaseVmCloudServerService;
-    @Resource
-    private IBaseCloudAccountService iBaseCloudAccountService;
-    @Resource
     private ExtCloudAccountMapper extCloudAccountMapper;
     @Resource
     private BaseVmCloudServerMapper baseVmCloudServerMapper;
     @Resource
     private BaseVmCloudDiskMapper baseVmCloudDiskMapper;
+    @Resource
+    private CurrentUserResourceService currentUserResourceService;
 
     /**
      * 统计云账号数量
@@ -58,7 +56,7 @@ public class CommonAnalysisServiceImpl implements ICommonAnalysisService {
         if(StringUtils.isNotEmpty(cloudAccountId)){
             return 1L;
         }
-        List<String> cloudAccountIds = currentUserCloudServerList().stream().map(VmCloudServer::getAccountId).toList();
+        List<String> cloudAccountIds = currentUserResourceService.currentUserCloudServerList().stream().map(VmCloudServer::getAccountId).toList();
         if(CollectionUtils.isEmpty(cloudAccountIds)){
             return 0L;
         }
@@ -79,7 +77,7 @@ public class CommonAnalysisServiceImpl implements ICommonAnalysisService {
         if(StringUtils.isNotEmpty(cloudAccountId)){
             cloudAccountIds.add(cloudAccountId);
         }else{
-            cloudAccountIds.addAll(currentUserCloudServerList().stream().map(VmCloudServer::getAccountId).toList());
+            cloudAccountIds.addAll(currentUserResourceService.currentUserCloudServerList().stream().map(VmCloudServer::getAccountId).toList());
         }
         if(CollectionUtils.isEmpty(cloudAccountIds)){
             return resultList;
@@ -115,30 +113,6 @@ public class CommonAnalysisServiceImpl implements ICommonAnalysisService {
         });
     }
 
-
-    /**
-     * 根据当前用户拥有的云主机获取云账号
-     * @return 云账号集合
-     */
-    @Override
-    public List<CloudAccount> currentUserCloudAccountList() {
-        List<CloudAccount> resultList = new ArrayList<>();
-        List<String> cloudAccountIds = currentUserCloudServerList().stream().map(VmCloudServer::getAccountId).toList();
-        if(CollectionUtils.isNotEmpty(cloudAccountIds)){
-            MPJLambdaWrapper<CloudAccount> accountWrapper = new MPJLambdaWrapper<>();
-            accountWrapper.in(true,CloudAccount::getId,cloudAccountIds);
-            resultList = iBaseCloudAccountService.list(accountWrapper);
-        }
-        return resultList;
-    }
-
-    private List<VmCloudServer> currentUserCloudServerList(){
-        List<String> sourceIds = permissionService.getSourceIds();
-        MPJLambdaWrapper<VmCloudServer> wrapper = new MPJLambdaWrapper<>();
-        wrapper.in(!CurrentUserUtils.isAdmin() && CollectionUtils.isNotEmpty(sourceIds),VmCloudServer::getSourceId,sourceIds);
-        wrapper.notIn(true, VmCloudServer::getInstanceStatus, List.of(SpecialAttributesConstants.StatusField.VM_DELETE,SpecialAttributesConstants.StatusField.FAILED));
-        return iBaseVmCloudServerService.list(wrapper);
-    }
 
     private Map<String,Long> countCloudServerByCloudAccount(List<String> sourceIds) {
         MPJLambdaWrapper<VmCloudServer> wrapper = new MPJLambdaWrapper<>();

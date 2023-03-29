@@ -214,7 +214,7 @@ const color: Array<string> = [
   "rgb(22, 225, 198, 1)",
   "rgb(79, 131, 253, 1)",
   "rgb(251, 218, 110, 1)",
-  "rgb(250, 139, 135, 1)",
+  "rgb(250, 139, 135, 1)"
 ];
 const defaultTrendOptions = {
   color: color,
@@ -241,8 +241,8 @@ const defaultTrendOptions = {
     },
   },
   grid: {
-    left: "3%",
-    right: "4%",
+    left: "0%",
+    right: "0%",
     top: "19px",
     bottom: "10%",
     containLabel: true,
@@ -252,6 +252,10 @@ const defaultTrendOptions = {
       type: "category",
       boundaryGap: false,
       data: ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"],
+      axisLabel: {
+        showMaxLabel: false,
+        showMinLabel: false,
+      },
     },
   ],
   yAxis: [
@@ -261,41 +265,7 @@ const defaultTrendOptions = {
   ],
   series: [],
 };
-/**
- * 颜色
- */
-const trendSeriesColor = [
-  [
-    {
-      offset: 1,
-      color: "rgb(98, 210, 85, 1)",
-    },
-  ],
-  [
-    {
-      offset: 1,
-      color: "rgb(22, 225, 198, 1)",
-    },
-  ],
-  [
-    {
-      offset: 1,
-      color: "rgb(79, 131, 253, 1)",
-    },
-  ],
-  [
-    {
-      offset: 0,
-      color: "rgb(251, 218, 110, 1)",
-    },
-  ],
-  [
-    {
-      offset: 0,
-      color: "rgb(250, 139, 135, 1)",
-    },
-  ],
-];
+
 /**
  * 随机颜色
  */

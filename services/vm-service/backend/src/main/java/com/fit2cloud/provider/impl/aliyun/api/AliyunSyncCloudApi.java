@@ -940,6 +940,14 @@ public class AliyunSyncCloudApi {
             deleteInstancesRequest.setForce(aliyunInstanceRequest.getForce());
             deleteInstancesRequest.setInstanceId(Arrays.asList(aliyunInstanceRequest.getUuid()));
             try {
+                DescribeInstancesResponseBody.DescribeInstancesResponseBodyInstancesInstance instance = getInstanceById(aliyunInstanceRequest.getUuid(), aliyunInstanceRequest.getRegionId(), client);
+                if (AliyunChargeType.PREPAID.getId().equalsIgnoreCase(instance.getInstanceChargeType())) {
+                    ModifyInstanceChargeTypeRequest request = new ModifyInstanceChargeTypeRequest()
+                            .setInstanceIds(JsonUtil.toJSONString(Arrays.asList(aliyunInstanceRequest.getUuid())))
+                            .setRegionId(aliyunInstanceRequest.getRegionId())
+                            .setInstanceChargeType(AliyunChargeType.POSTPAID.getId());
+                    client.modifyInstanceChargeType(request);
+                }
                 client.deleteInstances(deleteInstancesRequest);
                 return true;
             } catch (TeaException error) {
@@ -1163,7 +1171,7 @@ public class AliyunSyncCloudApi {
         getMetricsRequest.setEndTime(getMetricsRequest.getSyncTimeStampStr());
         try {
             getMetricsRequest.setRegionId(getMetricsRequest.getRegionId());
-           // result.addAll(getDiskPerfMetric(getMetricsRequest));
+            // result.addAll(getDiskPerfMetric(getMetricsRequest));
         } catch (Exception e) {
             SkipPageException.throwSkipPageException(e);
             throw new Fit2cloudException(100021, "获取监控数据失败-" + getMetricsRequest.getRegionId() + "-" + e.getMessage());
