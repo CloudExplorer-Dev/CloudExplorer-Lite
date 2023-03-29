@@ -19,7 +19,7 @@
             v-for="item in optionList"
             :key="item.osVersion"
             :label="item.imageName"
-            :value="item.osVersion"
+            :value="item.imageId"
           >
           </el-option>
         </el-select>
@@ -78,7 +78,7 @@ const _data = computed({
 const selectChange = () => {
   _data.value = _.find(
     props.formItem?.optionList,
-    (o: OsConfig) => o.osVersion === selectOsVersion.value
+    (o: OsConfig) => o.imageId === selectOsVersion.value
   );
 };
 
@@ -112,7 +112,7 @@ function getOsConfigList() {
           _data.value = undefined;
           _.set(props.formItem, "optionList", []);
         } else {
-          selectOsVersion.value = _data.value?.osVersion;
+          selectOsVersion.value = _data.value?.imageId;
         }
       }
       _.set(props.formItem, "optionList", ok.data);
