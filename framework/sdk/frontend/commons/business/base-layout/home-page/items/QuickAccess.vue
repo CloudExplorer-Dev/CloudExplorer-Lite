@@ -11,6 +11,7 @@ import CeIcon from "@commons/components/ce-icon/index.vue";
 import type { Module } from "@commons/api/module/type";
 import { useRouter } from "vue-router";
 import type { RecentAccessRoute } from "@commons/router/type";
+import MicroAppRouterUtil from "@commons/router/MicroAppRouterUtil";
 
 const router = useRouter();
 const userStore = useUserStore();
@@ -98,16 +99,18 @@ function changeMenu() {
   //跳转模块
   if (!menu?.module && menu.componentPath === "module") {
     path = menu.path;
+    router.push(path);
   } else {
     const module = _.find(
       menus.value,
       (g: MenuObject) => g.id === menu.module
     ) as MenuObject;
-    path = _.replace(module.basePath + menu.path, "//", "#/");
+    MicroAppRouterUtil.jumpToChildrenPath(
+      module.id,
+      _.replace(module.basePath + menu.path, "//", "/"),
+      router
+    );
   }
-
-  //console.log(path);
-  router.push(path);
 }
 
 const quickAccessMenus = computed(() => {
@@ -150,10 +153,11 @@ function goQuickAccess(menu: Menu) {
     menus.value,
     (g: MenuObject) => g.id === menu.module
   ) as MenuObject;
-  const path = _.replace(module.basePath + menu.path, "//", "#/");
-
-  //console.log(path);
-  router.push(path);
+  MicroAppRouterUtil.jumpToChildrenPath(
+    module.id,
+    _.replace(module.basePath + menu.path, "//", "/"),
+    router
+  );
 }
 
 const key = "RecentAccess-" + userStore.currentUser.id;
@@ -238,10 +242,11 @@ function goRecentAccess(menu: RecentAccessRoute) {
     menus.value,
     (g: MenuObject) => g.id === menu.module
   ) as MenuObject;
-  const path = _.replace(module.basePath + menu.fullPath, "//", "#/");
-
-  //console.log(path);
-  router.push(path);
+  MicroAppRouterUtil.jumpToChildrenPath(
+    module.id,
+    _.replace(module.basePath + menu.fullPath, "//", "/"),
+    router
+  );
 }
 </script>
 <template>

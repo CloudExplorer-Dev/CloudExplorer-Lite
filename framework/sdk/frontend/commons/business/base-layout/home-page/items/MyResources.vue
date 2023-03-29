@@ -12,7 +12,7 @@ const baseList1: Array<BaseModuleInfo> = [
     "[management-center]CLOUD_ACCOUNT:READ",
     "management-center",
     "/management-center/api/cloud_account/count",
-    "/management-center#/cloud_account/list"
+    "/management-center/cloud_account/list"
   ),
   new BaseModuleInfo(
     "xuniyunzhuji",
@@ -21,7 +21,7 @@ const baseList1: Array<BaseModuleInfo> = [
     "[vm-service]CLOUD_SERVER:READ",
     "vm-service",
     "/vm-service/api/server/count",
-    "/vm-service#/vm_cloud_server/list"
+    "/vm-service/vm_cloud_server/list"
   ),
   new BaseModuleInfo(
     "yuncunchu",
@@ -30,7 +30,7 @@ const baseList1: Array<BaseModuleInfo> = [
     "[vm-service]CLOUD_DISK:READ",
     "vm-service",
     "/vm-service/api/disk/count",
-    "/vm-service#/vm_cloud_disk/list"
+    "/vm-service/vm_cloud_disk/list"
   ),
 ];
 
@@ -45,7 +45,7 @@ const baseList2: Array<BaseModuleInfo> = [
     ],
     "operation-analysis",
     "/operation-analysis/api/base_resource_analysis/host/count",
-    "/operation-analysis#/resource_analysis/base_resource_analysis/list"
+    "/operation-analysis/resource_analysis/base_resource_analysis/list"
   ),
   new BaseModuleInfo(
     "yidongyunkongzhitaiicon06",
@@ -57,7 +57,7 @@ const baseList2: Array<BaseModuleInfo> = [
     ],
     "operation-analysis",
     "/operation-analysis/api/base_resource_analysis/datastore/count",
-    "/operation-analysis#/resource_analysis/base_resource_analysis/list"
+    "/operation-analysis/resource_analysis/base_resource_analysis/list"
   ),
 ];
 
@@ -77,6 +77,7 @@ const showRow2 = computed<boolean>(() => {
         <el-col :span="8" v-if="info.show.value">
           <BaseModule
             :name="info.name"
+            :module="info.module"
             :redirect="info.redirect"
             :func="info.path"
             :type="info.type"
@@ -91,6 +92,7 @@ const showRow2 = computed<boolean>(() => {
         <el-col :span="8" v-if="info.show.value">
           <BaseModule
             :name="info.name"
+            :module="info.module"
             :redirect="info.redirect"
             :func="info.path"
             :type="info.type"

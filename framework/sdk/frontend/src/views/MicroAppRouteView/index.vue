@@ -1,6 +1,5 @@
 <script lang="ts" setup>
 import { getCurrentInstance, onMounted, ref } from "vue";
-import { EventCenterForMicroApp } from "@micro-zoe/micro-app";
 import Config from "@commons/utils/constants";
 
 const options = defineProps<{
@@ -29,11 +28,6 @@ const handleCreate = (): void => {
 
 const handleBeforeMount = (): void => {
   console.log(`child-vite [${options.name}]  即将被渲染`);
-  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-  // @ts-ignore 因为vite子应用关闭了沙箱，我们需要为子应用appname-vite创建EventCenterForMicroApp对象来实现数据通信
-  //window.eventCenterForAppNameVite = new EventCenterForMicroApp(options.name);
-  window[`${Config.MICRO_APP_EVENTCENTER_PREFIX}${options.name}`] =
-    new EventCenterForMicroApp(options.name);
 };
 
 const handleMount = (): void => {
@@ -59,7 +53,6 @@ const handleDataChange = (e: CustomEvent): void => {
     :url="options.url"
     :baseroute="options.baseRoute"
     inline
-    disableSandbox
     @created="handleCreate"
     @beforemount="handleBeforeMount"
     @mounted="handleMount"
@@ -67,6 +60,7 @@ const handleDataChange = (e: CustomEvent): void => {
     @error="handleError"
     @datachange="handleDataChange"
     :data="data"
+    iframe
   ></micro-app>
 </template>
 

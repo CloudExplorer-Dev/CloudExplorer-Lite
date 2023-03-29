@@ -82,6 +82,9 @@ const loading = ref<boolean>(false);
 const apiData = ref<any>();
 
 const getIncreaseTrend = () => {
+  if (!show.value) {
+    return;
+  }
   _.set(params.value, "dayNumber", paramVmIncreaseTrendMonth.value);
   _.set(
     params.value,

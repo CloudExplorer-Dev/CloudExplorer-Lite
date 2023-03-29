@@ -9,6 +9,7 @@ import { useI18n } from "vue-i18n";
 import type { FormInstance, FormRules } from "element-plus";
 import CeIcon from "@commons/components/ce-icon/index.vue";
 import _ from "lodash";
+import MicroAppRouterUtil from "@commons/router/MicroAppRouterUtil";
 
 const props = withDefaults(
   defineProps<{
@@ -178,14 +179,12 @@ const submit = (formEl: FormInstance | undefined) => {
         if (props.type === "model") {
           router.push({ name: "cloud_account_list" });
         } else {
-          //router.push("/management-center#/cloud_account/list");
-          window.location.href =
-            window.location.protocol +
-            "//" +
-            window.location.host +
-            "/management-center#/cloud_account/list";
+          MicroAppRouterUtil.jumpToChildrenPath(
+            "management-center",
+            "/management-center/cloud_account/list",
+            router
+          );
         }
-
         ElMessage.success(t("commons.msg.save_success", "保存成功"));
       });
     }

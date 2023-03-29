@@ -1,5 +1,14 @@
 <script lang="ts" setup>
+import { computed, onMounted, ref } from "vue";
+import BillViewApi from "@commons/api/bil_view";
+import CeIcon from "@commons/components/ce-icon/index.vue";
+import CurrencyFormat from "@commons/utils/currencyFormat";
+import { useRouter } from "vue-router";
+import { usePermissionStore } from "@commons/stores/modules/permission";
+import { useUserStore } from "@commons/stores/modules/user";
+import _ from "lodash";
 import { useModuleStore } from "@commons/stores/modules/module";
+import MicroAppRouterUtil from "@commons/router/MicroAppRouterUtil";
 
 const props = withDefaults(
   defineProps<{
@@ -13,15 +22,6 @@ const props = withDefaults(
     module: "finance-management",
   }
 );
-
-import { computed, onMounted, ref } from "vue";
-import BillViewApi from "@commons/api/bil_view";
-import CeIcon from "@commons/components/ce-icon/index.vue";
-import CurrencyFormat from "@commons/utils/currencyFormat";
-import { useRouter } from "vue-router";
-import { usePermissionStore } from "@commons/stores/modules/permission";
-import { useUserStore } from "@commons/stores/modules/user";
-import _ from "lodash";
 
 const moduleStore = useModuleStore();
 const permissionStore = usePermissionStore();
@@ -82,7 +82,11 @@ function getYearCost() {
 }
 
 function jump() {
-  router.push("/finance-management#/bill_view");
+  MicroAppRouterUtil.jumpToChildrenPath(
+    "finance-management",
+    "/finance-management/bill_view",
+    router
+  );
 }
 
 onMounted(() => {

@@ -4,8 +4,8 @@ import { ref } from "vue";
 const props = withDefaults(
   defineProps<{
     content: string;
-    label: string;
-    value: string;
+    label?: string;
+    value?: string;
   }>(),
   { label: "label", value: "value" }
 );
