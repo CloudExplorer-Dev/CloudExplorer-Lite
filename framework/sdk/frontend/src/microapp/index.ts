@@ -7,6 +7,7 @@ import microApp from "@micro-zoe/micro-app";
 import { getUrl, useModuleStore } from "@commons/stores/modules/module";
 import Config from "@commons/utils/constants";
 import _ from "lodash";
+import type { Router } from "vue-router";
 
 export class RootMicroApp {
   /**
@@ -60,10 +61,10 @@ export class RootMicroApp {
   install(app?: App) {
     const getModules = this.getModules();
     if (getModules instanceof Array<Module>) {
-      this.setModules(getModules);
+      //this.setModules(getModules);
     }
     this.microApp.start({
-      plugins: { modules: this.modules },
+      //plugins: { modules: this.modules },
       /*自定义fetch*/
       fetch(url, options, appName) {
         const config = {
@@ -75,10 +76,7 @@ export class RootMicroApp {
           return res.text();
         });
       },
-      /*关闭虚拟路由系统*/ /*不能关，关了之后基座不能发信息给子应用*/
-      /*"disable-memory-router": true,*/
-      /*关闭对子应用请求的拦截*/
-      "disable-patch-request": true,
+      iframe: true,
     });
 
     //预加载
@@ -99,10 +97,9 @@ export class RootMicroApp {
           return {
             name: m.id,
             url: getUrl(m),
-            esmodule: true,
             inline: true,
-            disableSandbox: true,
             baseroute: m.basePath,
+            iframe: true,
           };
         })
       );
@@ -114,7 +111,7 @@ export class RootMicroApp {
    */
   async updateModule() {
     const modules = await this.getModules();
-    this.setModules(modules);
+    //this.setModules(modules);
     this.preFetch(modules);
   }
 
@@ -152,4 +149,9 @@ export function setupMicroApp(app: App<Element>) {
       return moduleStore.runningModules;
     }, microApp)
   );
+}
+
+export function setupMicroAppBaseRouter(router: Router) {
+  // 注册主应用路由
+  microApp.router.setBaseAppRouter(router);
 }

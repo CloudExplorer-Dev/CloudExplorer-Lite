@@ -19,7 +19,6 @@ import { ElMessage } from "element-plus";
 const { t } = useI18n();
 
 const userStore = useUserStore();
-const route = useRoute();
 const router = useRouter();
 
 const loading = ref(false);
@@ -54,55 +53,12 @@ const rules: FormRules = {
 };
 const msg = ref("");
 const redirect = computed(() => {
-  const query = route.query;
-  if (query) {
-    return query.redirect ? query.redirect.toString() : "";
+  const r = _.split(window.location.href, "redirect=");
+  if (r.length > 1) {
+    return _.split(r[1], "&")[0];
   }
-  return "";
+  return "/";
 });
-const hash = computed(() => {
-  //针对hash路由需要处理
-  if (
-    redirect.value !== "" &&
-    (_.includes(window.location.href, redirect.value + window.location.hash) ||
-      _.includes(
-        window.location.href,
-        redirect.value + "/" + window.location.hash
-      ))
-  ) {
-    return window.location.hash;
-  }
-  return undefined;
-});
-const otherQuery = computed(() => {
-  const query = route.query;
-  if (query) {
-    return getOtherQuery(query);
-  }
-  return {};
-});
-
-// 获取路径参数
-const getOtherQuery = (query: LocationQuery) => {
-  return Object.keys(query).reduce((acc: LocationQuery, cur: string) => {
-    if (cur !== "redirect") {
-      acc[cur] = query[cur];
-    }
-    return acc;
-  }, {});
-};
-
-/*watch(
-  route,
-  (route) => {
-    const query = route.query;
-    if (query) {
-      redirect.value = query.redirect ? query.redirect.toString() : "";
-      otherQuery.value = getOtherQuery(query);
-    }
-  },
-  { immediate: true }
-);*/
 
 onBeforeMount(() => {
   document.addEventListener("keydown", watchEnter);
@@ -125,11 +81,7 @@ const submitForm = (formEl: FormInstance | undefined) => {
       userStore
         .doLogin(form, loading)
         .then(() => {
-          router.push({
-            path: redirect.value || "/",
-            query: otherQuery.value,
-            hash: hash.value,
-          });
+          router.push(redirect.value);
         })
         .catch((error: any) => {
           msg.value = error.response.data.message;

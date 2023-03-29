@@ -9,7 +9,6 @@ import App from "./App.vue";
 import common from "@commons/index";
 import { i18n } from "@commons/index";
 import "@commons/styles/index.scss";
-import { AppMicroApp } from "@commons/microapp";
 import { initRouteObj, getRoute } from "@commons/router";
 
 let app = null;
@@ -35,6 +34,8 @@ const mount = async () => {
     app.use(route.router);
   }
 
+  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+  // @ts-ignore
   app.use(Fit2CloudPlus);
 
   //全局启用 pinia store
@@ -44,4 +45,4 @@ const mount = async () => {
   return app;
 };
 
-new AppMicroApp(mount, import.meta.env.VITE_APP_NAME).install();
+mount();

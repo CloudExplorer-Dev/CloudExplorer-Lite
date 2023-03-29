@@ -17,7 +17,7 @@ const baseList: Array<BaseModuleInfo> = [
     "[management-center]USER:READ",
     "management-center",
     "/management-center/api/user/count",
-    "/management-center#/user_tenant/user/list"
+    "/management-center/user_tenant/user/list"
   ),
   new BaseModuleInfo(
     "zuzhijiagou1",
@@ -26,7 +26,7 @@ const baseList: Array<BaseModuleInfo> = [
     "[management-center]ORGANIZATION:READ",
     "management-center",
     "/management-center/api/organization/count",
-    "/management-center#/user_tenant/org/list"
+    "/management-center/user_tenant/org/list"
   ),
   new BaseModuleInfo(
     "project_space",
@@ -35,7 +35,7 @@ const baseList: Array<BaseModuleInfo> = [
     "[management-center]WORKSPACE:READ",
     "management-center",
     "/management-center/api/workspace/count",
-    "/management-center#/user_tenant/workspace/list"
+    "/management-center/user_tenant/workspace/list"
   ),
 ];
 
@@ -51,15 +51,15 @@ const showManageDivs = computed<boolean>(() => {
         <div>
           <div class="user-info">
             <div class="user-name">
-              {{ userStore.currentUser.name }}
+              {{ userStore?.currentUser?.name }}
             </div>
             <RoleTag
-              v-for="role in userStore.currentRoleSourceName?.roles"
+              v-for="role in userStore?.currentRoleSourceName?.roles"
               :key="role.id"
               :role="role"
             />
           </div>
-          <div class="user-id">ID: {{ userStore.currentUser.username }}</div>
+          <div class="user-id">ID: {{ userStore?.currentUser?.username }}</div>
         </div>
       </el-col>
     </el-row>
@@ -69,6 +69,7 @@ const showManageDivs = computed<boolean>(() => {
         <el-col :span="8" v-if="info.show.value">
           <BaseModule
             :name="info.name"
+            :module="info.module"
             :redirect="info.redirect"
             :func="info.path"
             :type="info.type"
