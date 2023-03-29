@@ -25,7 +25,7 @@
       <base-container style="height: auto" :contentBorder="false">
         <template #header><span>规则信息</span></template>
         <template #content>
-          <el-form :inline="true" label-position="top">
+          <el-form :inline="true" label-position="top" v-loading="infoLoading">
             <el-row style="width: 100%">
               <el-col :span="19">
                 <el-form-item style="width: 100%" label="规则名称">{{
@@ -120,6 +120,7 @@
             <el-table-column
               prop="cloudAccountName"
               label="云账号名称"
+              :filtered-value="filterCloudAccountId"
               :filters="
                 cloudAccountList.map((item) => ({
                   text: item.name,
@@ -220,6 +221,8 @@ const complianceRule = ref<ComplianceRule>();
 const complianceRuleGroup = ref<ComplianceRuleGroup>();
 // 表格加载器
 const tableLoading = ref<boolean>(false);
+// 基本信息加载器
+const infoLoading = ref<boolean>(false);
 // 云账号列表数据
 const cloudAccountList = ref<Array<CloudAccount>>([]);
 // 等保条例数据
@@ -234,26 +237,58 @@ const columns = ref([]);
 const table: any = ref(null);
 // 资源类型列表数据
 const resourceTypes = ref<Array<KeyValue<string, string>>>([]);
+// 过滤的值
+const filterCloudAccountId = ref<Array<string>>([]);
+const getCloudAccountParams = () => {
+  if (filterCloudAccountId.value.length > 0) {
+    const t = resourceTypes.value.find(
+      (type) => type.value === filterCloudAccountId.value[0]
+    );
+    if (t) {
+      return {
+        resourceType: {
+          field: "resourceType",
+          label: t.key,
+          value: t.value,
+          valueLabel: t.key,
+        },
+      };
+    }
+  }
+  return undefined;
+};
 onMounted(() => {
+  if (
+    route.params.cloud_account_id &&
+    route.params.cloud_account_id !== "all"
+  ) {
+    filterCloudAccountId.value = [route.params.cloud_account_id as string];
+  }
+
   // 查询所有资源类型
   ruleApi.listResourceType().then((ok) => {
     resourceTypes.value = ok.data;
   });
   // 查询合规规则数据
   complianceRuleApi
-    .getComplianceRuleById(route.params.compliance_rule_id as string)
+    .getComplianceRuleById(
+      route.params.compliance_rule_id as string,
+      infoLoading
+    )
     .then((ok) => {
       complianceRule.value = ok.data;
-      // 查询云账号数据
-      cloudAccountApi.listAll().then((a) => {
-        cloudAccountList.value = a.data.filter(
-          (p) => p.platform === ok.data.platform
-        );
-      });
-
       return ok.data;
     })
     .then((data) => {
+      // 查询云账号数据
+      cloudAccountApi.listAll().then((a) => {
+        cloudAccountList.value = a.data.filter(
+          (p) => p.platform === data.platform
+        );
+        table.value?.getTableSearch(getCloudAccountParams());
+        // 查询列表
+        table.value?.search();
+      });
       // 查询合规规则组数据
       complianceRuleGroupApi
         .getComplianceRuleGroupById(data.ruleGroupId)
@@ -261,8 +296,6 @@ onMounted(() => {
           complianceRuleGroup.value = ok.data;
           return ok.data;
         });
-      // 查询列表
-      table.value?.search();
     });
   // 查询等保条例数据
   complianceInsuranceStatuteApi
