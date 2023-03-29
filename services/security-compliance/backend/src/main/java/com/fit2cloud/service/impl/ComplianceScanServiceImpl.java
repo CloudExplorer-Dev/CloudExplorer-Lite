@@ -224,7 +224,7 @@ public class ComplianceScanServiceImpl implements IComplianceScanService {
         List<ComplianceRule> complianceRules = complianceRuleService.list(new LambdaQueryWrapper<ComplianceRule>().in(ComplianceRule::getRuleGroupId, request.getRuleGroupIds()));
         for (String cloudAccountId : request.getCloudAccountIds()) {
             ISyncService syncService = SpringUtil.getBean(ISyncService.class);
-            syncService.syncInstance(cloudAccountId, complianceRules.stream().map(ComplianceRule::getResourceType).toList());
+            syncService.syncInstance(cloudAccountId, complianceRules.stream().map(ComplianceRule::getResourceType).distinct().toList());
         }
     }
 

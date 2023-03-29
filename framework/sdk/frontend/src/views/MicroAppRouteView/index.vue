@@ -1,6 +1,5 @@
 <script lang="ts" setup>
 import { getCurrentInstance, onMounted, ref } from "vue";
-import Config from "@commons/utils/constants";
 
 const options = defineProps<{
   url: string;
@@ -10,15 +9,6 @@ const options = defineProps<{
 }>();
 
 const lastName = ref<string>();
-
-const data = ref({ path: "" });
-const $bus = getCurrentInstance()?.appContext.config.globalProperties.$bus;
-onMounted(() => {
-  $bus.on("changePath", (option: any) => {
-    console.log("changePath", option);
-    data.value = option;
-  });
-});
 
 const handleCreate = (): void => {
   console.log(`child-vite [${options.name}] url: ${options.url}`);
@@ -51,15 +41,12 @@ const handleDataChange = (e: CustomEvent): void => {
   <micro-app
     :name="options.name"
     :url="options.url"
-    :baseroute="options.baseRoute"
-    inline
     @created="handleCreate"
     @beforemount="handleBeforeMount"
     @mounted="handleMount"
     @unmount="handleUnmount"
     @error="handleError"
     @datachange="handleDataChange"
-    :data="data"
     iframe
   ></micro-app>
 </template>

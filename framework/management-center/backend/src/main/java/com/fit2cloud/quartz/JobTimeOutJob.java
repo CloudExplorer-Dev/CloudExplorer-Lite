@@ -13,6 +13,7 @@ import javax.annotation.Resource;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Map;
+import java.util.concurrent.CompletableFuture;
 
 /**
  * {@code @Author:张少虎}
@@ -38,6 +39,5 @@ public class JobTimeOutJob extends AsyncJob implements Job {
                 .set(JobRecord::getStatus, JobStatusConstants.TIME_OUT);
         jobRecordService.update(updateTimeOut);
     }
-
 
 }

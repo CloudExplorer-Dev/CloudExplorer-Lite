@@ -202,8 +202,7 @@ public class CloudAccountServiceImpl extends ServiceImpl<CloudAccountMapper, Clo
     @Override
     public CloudAccount save(AddCloudAccountRequest addCloudAccountRequest) {
         CloudAccount cloudAccount = new CloudAccount();
-        // 获取区域信息
-        addCloudAccountRequest.getCredential().regions();
+        checkCredential(addCloudAccountRequest.getCredential());
         cloudAccount.setCredential(addCloudAccountRequest.getCredential().enCode());
         cloudAccount.setPlatform(addCloudAccountRequest.getPlatform());
         cloudAccount.setName(addCloudAccountRequest.getName());
@@ -310,8 +309,7 @@ public class CloudAccountServiceImpl extends ServiceImpl<CloudAccountMapper, Clo
     @Override
     public CloudAccount update(UpdateCloudAccountRequest updateCloudAccountRequest) {
         CloudAccount cloudAccount = new CloudAccount();
-        // 校验ak sk
-        updateCloudAccountRequest.getCredential().regions();
+        checkCredential(updateCloudAccountRequest.getCredential());
         cloudAccount.setCredential(updateCloudAccountRequest.getCredential().enCode());
         cloudAccount.setPlatform(updateCloudAccountRequest.getPlatform());
         cloudAccount.setName(updateCloudAccountRequest.getName());
@@ -319,6 +317,18 @@ public class CloudAccountServiceImpl extends ServiceImpl<CloudAccountMapper, Clo
         cloudAccount.setId(updateCloudAccountRequest.getId());
         updateById(cloudAccount);
         return this.getById(updateCloudAccountRequest.getId());
+    }
+
+    /**
+     * 校验认证信息
+     *
+     * @param credential 认证对象
+     */
+    private void checkCredential(Credential credential) {
+        // 校验ak sk
+        if (!credential.verification()) {
+            throw new Fit2cloudException(ErrorCodeConstants.CLOUD_ACCOUNT_VERIFICATION_ERROR.getCode(), ErrorCodeConstants.CLOUD_ACCOUNT_VERIFICATION_ERROR.getMessage());
+        }
     }
 
     @Override
@@ -404,6 +414,7 @@ public class CloudAccountServiceImpl extends ServiceImpl<CloudAccountMapper, Clo
         }
     }
 
+    @Override
     public Boolean updateAccountName(UpdateAccountNameRequest updateAccountNameRequest) {
         CloudAccount cloudAccount = new CloudAccount();
         cloudAccount.setId(updateAccountNameRequest.getId());
@@ -461,11 +472,10 @@ public class CloudAccountServiceImpl extends ServiceImpl<CloudAccountMapper, Clo
      * @param cloudAccountId 云账号
      */
     private List<CompletableFuture<Boolean>> syncByCloudAccountId(String cloudAccountId) {
-        List<CompletableFuture<Boolean>> completableFutures = ServiceUtil.getServicesExcludeGatewayAndIncludeSelf(ServerInfo.module)
+        return ServiceUtil.getServicesExcludeGatewayAndIncludeSelf(ServerInfo.module)
                 .stream()
                 .map(moduleId -> CompletableFuture.supplyAsync(() -> syncByCloudAccountId.apply(moduleId, cloudAccountId), securityContextWorkThreadPool))
                 .toList();
-        return completableFutures;
     }
 
     /**
@@ -511,6 +521,7 @@ public class CloudAccountServiceImpl extends ServiceImpl<CloudAccountMapper, Clo
         return exchange.getBody().getData();
     };
 
+    @Override
     public IPage<JobRecordResourceResponse> pageSyncRecord(SyncRecordRequest syncRecordRequest) {
         Page<JobRecordResourceResponse> syncRecordPage = PageUtil.of(syncRecordRequest, JobRecordResourceResponse.class);
         QueryWrapper wrapper = Wrappers.query().in(ColumnNameUtil.getColumnName(JobRecord::getType, false), List.of(JobTypeConstants.CLOUD_ACCOUNT_SYNC_JOB, JobTypeConstants.CLOUD_ACCOUNT_SYNC_BILL_JOB));
