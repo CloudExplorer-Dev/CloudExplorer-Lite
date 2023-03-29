@@ -2,7 +2,11 @@
   <layout-auto-height-content :style="{ minWidth: '1000px' }">
     <template #breadcrumb>
       <breadcrumb :auto="true">
-        <div class="operate" style="--el-text-color-regular: #1f2329">
+        <div
+          class="operate"
+          v-loading="cloudAccountLoading"
+          style="--el-text-color-regular: #1f2329"
+        >
           <el-select v-model="activeCloudAccount" placeholder="Select">
             <el-option
               v-for="item in cloudAccountOptions"
@@ -39,8 +43,9 @@ import JobScan from "@/views/scan/complonents/job_scan/index.vue";
 import { ref, computed, onMounted } from "vue";
 import { useRoute } from "vue-router";
 const route = useRoute();
+const cloudAccountLoading = ref<boolean>(false);
 // 查询云账号数据
-cloudAccountApi.listAll().then((ok) => {
+cloudAccountApi.listAll(cloudAccountLoading).then((ok) => {
   cloudAccountSourceList.value = ok.data;
 });
 const jobScan = ref<InstanceType<typeof JobScan>>();
