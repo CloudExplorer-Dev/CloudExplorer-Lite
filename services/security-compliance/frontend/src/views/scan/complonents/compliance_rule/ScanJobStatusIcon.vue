@@ -1,64 +1,57 @@
 <template>
-  <div
-    :style="{
-      color: getColorByStatus(status),
-    }"
-    style="display: flex; justify-content: flex-start"
-  >
-    <ce-icon
-      style="cursor: pointer; font-size: 20px"
-      :class="status === 'SYNCING' ? 'is-loading' : ''"
-      :code="getStatusIconCode(status)"
-    ></ce-icon>
-    <div v-if="showText" style="margin-left: 20px">{{ mapStatus(status) }}</div>
-  </div>
+  <scan_status
+    v-if="statusMap[status]"
+    :icon-reader="statusMap[status].iconReader"
+    :label="statusMap[status].label"
+  ></scan_status>
 </template>
 <script setup lang="ts">
+import scan_status from "@/views/scan/complonents/compliance_rule/ScanStatus.vue";
+import CeIcon from "@commons/components/ce-icon/index.vue";
+import { h } from "vue";
 withDefaults(
   defineProps<{
-    status: string;
-    showText: boolean;
+    status: "FAILED" | "SUCCESS" | "SYNCING" | "NOT_HAVE";
   }>(),
-  { showText: false }
+  {}
 );
-const getStatusIconCode = (status: string) => {
-  return status === "FAILED"
-    ? "Warning"
-    : status === "INIT"
-    ? "Sunrise"
-    : status === "SUCCESS"
-    ? "CircleCheck"
-    : status === "SYNCING"
-    ? "Loading"
-    : status === "TIME_OUT"
-    ? "Timer"
-    : "InfoFilled";
-};
-const getColorByStatus = (status: string) => {
-  return status === "FAILED"
-    ? "var(--el-color-error)"
-    : status === "INIT"
-    ? "var(--el-color-warning)"
-    : status === "SUCCESS"
-    ? "var(--el-color-success)"
-    : status === "SYNCING"
-    ? "var(--el-color-primary)"
-    : status === "TIME_OUT"
-    ? "var(--el-color-danger-dark-2)"
-    : "var(--el-color-info)";
-};
-const mapStatus = (status: string) => {
-  return status === "FAILED"
-    ? "扫描失败"
-    : status === "INIT"
-    ? "初始化"
-    : status === "SUCCESS"
-    ? "扫描成功"
-    : status === "SYNCING"
-    ? "扫描中"
-    : status === "TIME_OUT"
-    ? "超时"
-    : "未知";
+
+const statusMap = {
+  FAILED: {
+    iconReader: () => {
+      return h(CeIcon, {
+        code: "icon_close_filled",
+        size: "14px",
+        color: "rgba(247, 105, 100, 1)",
+      });
+    },
+    label: "扫描失败",
+  },
+  SUCCESS: {
+    iconReader: () => {
+      return h(CeIcon, {
+        code: "icon_succeed_filled",
+        size: "14px",
+        color: "rgba(52, 199, 36, 1)",
+      });
+    },
+    label: "已完成",
+  },
+  SYNCING: {
+    iconReader: () => {
+      return h(CeIcon, {
+        code: "icon_testing",
+        size: "14px",
+        color: "rgba(51, 112, 255, 1)",
+        class: "is-loading",
+      });
+    },
+    label: "扫描中",
+  },
+  NOT_HAVE: {
+    iconReader: () => h("span"),
+    label: "-",
+  },
 };
 </script>
 <style lang="scss"></style>

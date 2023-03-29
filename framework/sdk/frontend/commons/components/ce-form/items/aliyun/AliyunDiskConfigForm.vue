@@ -170,30 +170,30 @@ const dataDiskTypeOptions = computed<DiskTypeOption[]>(() => {
 });
 
 const minSize = computed(() => (disk: DiskTypeConfig, index: number) => {
-  const minSize = ref(20);
+  let min = 20;
   if (disk && index != null) {
     // 系统盘
     if (index === 0) {
       systemDiskTypeOptions.value.forEach((diskTypeOption: DiskTypeOption) => {
         if (diskTypeOption.diskType === disk.diskType) {
-          minSize.value = diskTypeOption.minDiskSize;
+          min = diskTypeOption.minDiskSize;
         }
         if (props.allData.os?.toLowerCase().indexOf("windows") > -1) {
-          minSize.value = 50;
+          min = 50;
         }
-        if (disk.size < minSize.value) {
-          disk.size = minSize.value;
+        if (disk.size < min) {
+          disk.size = min;
         }
       });
     } else {
       dataDiskTypeOptions.value.forEach((diskTypeOption: DiskTypeOption) => {
         if (diskTypeOption.diskType === disk.diskType) {
-          minSize.value = diskTypeOption.minDiskSize;
+          min = diskTypeOption.minDiskSize;
         }
       });
     }
   }
-  return minSize.value;
+  return min;
 });
 
 const maxSize = computed(() => (disk: DiskTypeConfig, index: number) => {

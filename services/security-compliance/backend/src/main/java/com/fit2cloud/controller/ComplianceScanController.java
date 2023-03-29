@@ -8,14 +8,16 @@ import com.fit2cloud.common.log.constants.ResourceTypeEnum;
 import com.fit2cloud.controller.handler.ResultHolder;
 import com.fit2cloud.controller.request.compliance_scan.ComplianceResourceRequest;
 import com.fit2cloud.controller.request.compliance_scan.ComplianceSyncRequest;
+import com.fit2cloud.controller.request.view.ListRuleGroupRiskDataRequest;
 import com.fit2cloud.controller.response.compliance_scan.ComplianceResourceResponse;
 import com.fit2cloud.controller.response.compliance_scan.SupportCloudAccountResourceResponse;
 import com.fit2cloud.controller.response.compliance_scan.SupportPlatformResourceResponse;
+import com.fit2cloud.controller.response.view.ComplianceRuleGroupCountResponse;
 import com.fit2cloud.response.JobRecordResourceResponse;
 import com.fit2cloud.service.IComplianceScanService;
-import com.fit2cloud.service.ISyncService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
+import org.apache.commons.collections4.keyvalue.DefaultKeyValue;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -38,8 +40,7 @@ import java.util.List;
 public class ComplianceScanController {
     @Resource
     private IComplianceScanService complianceScanService;
-    @Resource
-    private ISyncService syncService;
+
 
     @GetMapping("/resource/{complianceRuleId}/{currentPage}/{limit}")
     @ApiOperation("分页查询资源")
@@ -67,9 +68,7 @@ public class ComplianceScanController {
             content = "'发送扫描任务'",
             param = "#request")
     public ResultHolder<Boolean> scan(@RequestBody ComplianceSyncRequest request) {
-        for (ComplianceSyncRequest.CloudAccountResource cloudAccountResource : request.getCloudAccountResources()) {
-            syncService.syncInstance(cloudAccountResource.getCloudAccountId(), cloudAccountResource.getResourceType());
-        }
+        complianceScanService.scan(request);
         return ResultHolder.success(true);
     }
 

@@ -41,6 +41,7 @@ public class TencentCloudProvider extends AbstractCloudProvider<TencentCredentia
         return FormUtil.toForm(TencentVmCreateRequest.class);
     }
 
+    @Override
     public F2CVirtualMachine createVirtualMachine(String req) {
         return TencentSyncCloudApi.createVirtualMachine(JsonUtil.parseObject(req, TencentVmCreateRequest.class));
     }

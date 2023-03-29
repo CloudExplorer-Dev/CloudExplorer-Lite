@@ -4,11 +4,13 @@ import { get } from "@commons/request";
 import CurrencyFormat from "@commons/utils/currencyFormat";
 import { onMounted, ref } from "vue";
 import Result from "@commons/request/Result";
+import MicroAppRouterUtil from "@commons/router/MicroAppRouterUtil";
 
 const router = useRouter();
 
 const props = defineProps<{
   name: string;
+  module: string;
   redirect: string;
   func: string;
   unit?: string;
@@ -23,7 +25,8 @@ function getCount(func: string): Promise<Result<number>> {
 }
 
 function jump() {
-  router.push(props.redirect);
+  //router.push(props.redirect);
+  MicroAppRouterUtil.jumpToChildrenPath(props.module, props.redirect, router);
 }
 
 onMounted(() => {

@@ -17,10 +17,6 @@ public class TencentCreateDiskForm {
     private Long size;
     @Form(inputType = InputType.Radio, label = "磁盘类型", defaultValue = "CLOUD_PREMIUM", textField = "diskTypeName", valueField = "diskType", method = "getDiskTypesForCreateDisk", clazz = TencentCloudProvider.class)
     private String diskType;
-    @Form(inputType = InputType.Radio, label = "文件系统", required = false, textField = "name", valueField = "id", method = "getFileSystemType", clazz = TencentCloudProvider.class)
-    private String fileSystemType;
-    @Form(inputType = InputType.Text, label = "目录", required = false)
-    private String mountPoint;
     @Form(inputType = InputType.Radio, label = "随实例删除", defaultValue = "YES", textField = "name", valueField = "id", method = "getDeleteWithInstance", clazz = TencentCloudProvider.class)
     private String deleteWithInstance;
 }

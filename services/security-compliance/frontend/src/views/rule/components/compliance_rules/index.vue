@@ -1,44 +1,52 @@
 <template>
-  <div v-if="modelValue.rules.length > 0">
-    <el-select
-      style="width: 60px"
-      v-bind:modelValue="modelValue.conditionType"
-      @update:modelValue="updateConditionType($event)"
-      class="m-2"
-      size="small"
-    >
-      <el-option
-        v-for="item in [
-          { label: '并且', value: 'AND' },
-          { label: '或者', value: 'OR' },
-        ]"
-        :key="item.value"
-        :label="item.label"
-        :value="item.value"
-      />
-    </el-select>
-  </div>
-  <div style="width: 90%">
-    <div v-for="(rule, index) in modelValue.rules" :key="rule.field">
-      <compliance_rule_item
-        :fields="fields"
-        v-bind:modelValue="modelValue.rules[index]"
-        @update:modelValue="update(index, $event)"
-      ></compliance_rule_item>
+  <el-form
+    style="width: 100%; display: flex; flex-wrap: wrap"
+    :model="modelValue"
+  >
+    <div style="width: 60px" v-if="modelValue.rules.length > 0">
+      <el-form-item
+        style="width: 60px; display: inline-flex; height: 100%"
+        prop="conditionType"
+      >
+        <el-select
+          v-bind:modelValue="modelValue.conditionType"
+          @update:modelValue="updateConditionType($event)"
+          class="m-2"
+          size="small"
+        >
+          <el-option
+            v-for="item in [
+              { label: '并且', value: 'AND' },
+              { label: '或者', value: 'OR' },
+            ]"
+            :key="item.value"
+            :label="item.label"
+            :value="item.value"
+          />
+        </el-select>
+      </el-form-item>
     </div>
-  </div>
+    <div style="width: 90%">
+      <div
+        style="margin: 14px 0"
+        v-for="(rule, index) in modelValue.rules"
+        :key="rule.field"
+      >
+        <compliance_rule_item
+          ref="ruleItem"
+          :fields="fields"
+          v-bind:modelValue="modelValue.rules[index]"
+          @update:modelValue="update(index, $event)"
+        ></compliance_rule_item>
+      </div>
+    </div>
 
-  <div style="display: flex; width: 100%; justify-content: space-between">
-    <div @click="addRule" style="cursor: pointer">添加规则</div>
-    <el-radio-group
-      v-bind:modelValue="modelValue.scanRule"
-      @update:modelValue="updateScanRule($event)"
-      class="ml-4"
-    >
-      <el-radio label="COMPLIANCE" size="large">视为合规</el-radio>
-      <el-radio label="NOT_COMPLIANCE" size="large">视为不合规</el-radio>
-    </el-radio-group>
-  </div>
+    <div style="display: flex; width: 100%; justify-content: space-between">
+      <div @click="addRule" class="add">
+        <ce-icon code="icon_add_outlined" size="12px"></ce-icon>添加规则
+      </div>
+    </div>
+  </el-form>
 </template>
 <script setup lang="ts">
 import { ref, watch } from "vue";
@@ -59,6 +67,7 @@ const props = defineProps<{
    */
   modelValue: Rules;
 }>();
+const ruleItem = ref<Array<InstanceType<typeof compliance_rule_item>>>([]);
 const emit = defineEmits(["update:modelValue"]);
 
 const updateConditionType = (conditionType: "AND" | "OR") => {
@@ -136,7 +145,9 @@ watch(
     emit("update:modelValue", {
       conditionType: "AND",
       rules: [{ field: "", compare: "", value: "" }],
-      scanRule: "COMPLIANCE",
+      scanRule: props.modelValue.scanRule
+        ? props.modelValue.scanRule
+        : "COMPLIANCE",
     });
   },
   {
@@ -157,7 +168,9 @@ watch(
     emit("update:modelValue", {
       conditionType: "AND",
       rules: [{ field: "", compare: "", value: "" }],
-      scanRule: "COMPLIANCE",
+      scanRule: props.modelValue.scanRule
+        ? props.modelValue.scanRule
+        : "COMPLIANCE",
     });
   }
 );
@@ -180,6 +193,19 @@ const addRule = () => {
 
   emit("update:modelValue", rules);
 };
+// 校验函数
+const validate = () => {
+  return Promise.all(ruleItem.value.map((item) => item.validate())).catch(
+    // eslint-disable-next-line @typescript-eslint/no-empty-function
+    () => {}
+  );
+};
+defineExpose({ validate });
 </script>
 
-<style lang="scss"></style>
+<style lang="scss">
+.add {
+  color: rgba(51, 112, 255, 1);
+  cursor: pointer;
+}
+</style>

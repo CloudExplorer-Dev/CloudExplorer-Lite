@@ -52,4 +52,5 @@ public interface IComplianceRuleGroupService extends IService<ComplianceRuleGrou
      */
     ComplianceRuleGroupResponse update(ComplianceRuleGroupRequest request);
 
+
 }

@@ -33,6 +33,9 @@ public class ComplianceScanRequest {
     @ApiModelProperty(value = "供应商", notes = "供应商")
     private String platform;
 
+    @ApiModelProperty(value = "风险等级", notes = "风险等级")
+    private String riskLevel;
+
     @ApiModelProperty(value = "检测状态", notes = "检测状态")
     private ComplianceStatus scanStatus;
 

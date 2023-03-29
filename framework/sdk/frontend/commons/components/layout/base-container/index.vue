@@ -1,7 +1,7 @@
 <script setup lang="ts">
 const props = withDefaults(
   defineProps<{
-    contentBorder: boolean;
+    contentBorder?: boolean;
   }>(),
   {
     contentBorder: false,

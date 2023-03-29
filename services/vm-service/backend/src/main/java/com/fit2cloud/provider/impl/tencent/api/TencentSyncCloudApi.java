@@ -925,7 +925,7 @@ public class TencentSyncCloudApi {
         createDisksRequest.setDiskType(f2CDisk.getDiskType());
         createDisksRequest.setDiskName(f2CDisk.getDiskName());
         createDisksRequest.setDiskSize(f2CDisk.getSize());
-        createDisksRequest.setDiskCount(1l);
+        createDisksRequest.setDiskCount(1L);
         createDisksRequest.setDiskChargeType(TencentMappingUtil.toTencentChargeType(f2CDisk.getDiskChargeType()));
         // 放置位置
         Placement placement = new Placement();

@@ -11,17 +11,21 @@ import com.fit2cloud.base.service.IBaseCloudAccountService;
 import com.fit2cloud.common.page.PageImpl;
 import com.fit2cloud.common.utils.ColumnNameUtil;
 import com.fit2cloud.controller.request.compliance_scan.ComplianceScanRequest;
+import com.fit2cloud.controller.request.view.ListRuleGroupRiskDataRequest;
 import com.fit2cloud.controller.response.compliance_scan_result.ComplianceScanResultResponse;
 import com.fit2cloud.controller.response.compliance_scan_result.ComplianceScanRuleGroupResultResponse;
+import com.fit2cloud.controller.response.view.ComplianceRuleGroupCountResponse;
 import com.fit2cloud.dao.constants.ComplianceStatus;
 import com.fit2cloud.dao.constants.RiskLevel;
 import com.fit2cloud.dao.entity.ComplianceRule;
+import com.fit2cloud.dao.entity.ComplianceRuleGroupCount;
 import com.fit2cloud.dao.entity.ComplianceScanResult;
 import com.fit2cloud.dao.mapper.ComplianceScanResultMapper;
 import com.fit2cloud.service.IComplianceRuleGroupService;
 import com.fit2cloud.service.IComplianceScanResultService;
 import jodd.util.StringUtil;
 import org.apache.commons.lang.StringUtils;
+import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
@@ -93,6 +97,16 @@ public class ComplianceScanResultServiceImpl extends ServiceImpl<ComplianceScanR
         saveOrUpdate(complianceScanResults);
     }
 
+    @Override
+    public List<ComplianceRuleGroupCountResponse> listRuleGroupRiskData(ListRuleGroupRiskDataRequest request) {
+        List<ComplianceRuleGroupCount> complianceRuleGroupCounts = this.baseMapper.ruleGroupCount(request.getCloudAccountId());
+        return complianceRuleGroupCounts.stream().map(item -> {
+            ComplianceRuleGroupCountResponse complianceRuleGroupCountResponse = new ComplianceRuleGroupCountResponse();
+            BeanUtils.copyProperties(item, complianceRuleGroupCountResponse);
+            return complianceRuleGroupCountResponse;
+        }).toList();
+
+    }
 
     /**
      * @param complianceScanResponses 规则组所有的规则
@@ -131,6 +145,7 @@ public class ComplianceScanResultServiceImpl extends ServiceImpl<ComplianceScanR
                 .eq(ColumnNameUtil.getColumnName(ComplianceRule::getEnable, true), true)
                 .eq(StringUtils.isNotEmpty(request.getCloudAccountId()), ColumnNameUtil.getColumnName(ComplianceScanResult::getCloudAccountId, true), request.getCloudAccountId())
                 .eq(StringUtils.isNotEmpty(request.getPlatform()), ColumnNameUtil.getColumnName(ComplianceRule::getPlatform, true), request.getPlatform())
+                .eq(StringUtils.isNotEmpty(request.getRiskLevel()), ColumnNameUtil.getColumnName(ComplianceRule::getRiskLevel, true), request.getRiskLevel())
                 .eq(Objects.nonNull(request.getScanStatus()), ColumnNameUtil.getColumnName(ComplianceScanResult::getStatus, true), Objects.nonNull(request.getScanStatus()) ? request.getScanStatus().getCode() : -1);
         return wrapper;
     }

@@ -5,14 +5,27 @@
                type="com.fit2cloud.controller.response.compliance_scan_result.ComplianceScanResultResponse">
         <id column="id" property="id"/>
         <result column="name" property="name"/>
-        <result column="name" property="name"/>
         <result column="platform" property="platform"/>
         <result column="resource_type" property="resourceType"/>
         <result column="risk_level" property="riskLevel"/>
         <result column="scan_status" property="scanStatus"/>
         <result column="compliance_count" property="complianceCount"/>
         <result column="not_compliance_count" property="notComplianceCount"/>
-        <result column="description" property="description"></result>
+        <result column="description" property="description"/>
+        <result column="update_time" property="updateTime"/>
+    </resultMap>
+    <resultMap id="ComplianceRuleGroupCountMap"
+               type="com.fit2cloud.dao.entity.ComplianceRuleGroupCount">
+        <id column="id" property="id"/>
+        <result column="low" property="low"/>
+        <result column="high" property="high"/>
+        <result column="middle" property="middle"/>
+        <result column="total" property="total"/>
+        <result column="resource_type" property="resourceType"
+                typeHandler="com.fit2cloud.dao.handler.ResourceTypeHandler"/>
+        <result column="platform" property="platform" typeHandler="com.fit2cloud.dao.handler.ResourceTypeHandler"/>
+        <result column="description" property="description"/>
+        <result column="create_time" property="createTime"/>
         <result column="update_time" property="updateTime"/>
     </resultMap>
     <select id="page" resultMap="ComplianceScanResponseMap">
@@ -178,5 +191,121 @@
                   compliance_rule.id,
                   compliance_rule.risk_level) tmp
         GROUP BY tmp.risk_level
+    </select>
+    <select id="ruleGroupCount" resultMap="ComplianceRuleGroupCountMap">
+        SELECT
+        *
+        FROM
+        (
+        SELECT
+        SUM(
+
+        IF (
+        risk_level =- 1,
+        `not_compliance_count`,
+        0
+        )
+        ) AS low,
+        SUM(
+
+        IF (
+        risk_level = 0,
+        `not_compliance_count`,
+        0
+        )
+        ) AS middle,
+        SUM(
+
+        IF (
+        risk_level = 1,
+        `not_compliance_count`,
+        0
+        )
+        ) AS high,
+        SUM(total) AS total,
+        IFNULL(
+        GROUP_CONCAT(DISTINCT resource_type),
+        ''
+        ) AS resource_type,
+        IFNULL(
+        GROUP_CONCAT(DISTINCT platform),
+        ''
+        ) AS platform,
+        id AS id
+        FROM
+        (
+        SELECT
+        compliance_rule_group.risk_level,
+        compliance_rule_group.id,
+        group_aggs.resource_type,
+        group_aggs.platform,
+        IFNULL(group_aggs.total, 0) AS total,
+        IFNULL(
+        group_aggs.compliance_count,
+        0
+        ) AS compliance_count,
+        IFNULL(
+        group_aggs.not_compliance_count,
+        0
+        ) AS not_compliance_count
+        FROM
+        (
+        SELECT
+        *
+        FROM
+        (
+        SELECT
+        - 1 AS risk_level
+        UNION
+        SELECT
+        0
+        UNION
+        SELECT
+        1
+        ) t1
+        JOIN compliance_rule_group
+        ) compliance_rule_group
+        LEFT JOIN (
+        SELECT
+        risk_level AS risk_level,
+        GROUP_CONCAT(DISTINCT resource_type) AS resource_type,
+        GROUP_CONCAT(DISTINCT platform) AS platform,
+        COUNT(*) AS total,
+        SUM(IF(tmp.`status` = 1, 1, 0)) AS compliance_count,
+        SUM(IF(tmp.`status` = 2, 1, 0)) AS not_compliance_count,
+        rule_group_id AS rule_group_id
+        FROM
+        (
+        SELECT
+        MAX(
+        compliance_scan_result.`status`
+        ) AS `status`,
+        compliance_rule.risk_level AS risk_level,
+        rule_group_id AS rule_group_id,
+        compliance_rule.resource_type AS resource_type,
+        compliance_rule.platform AS platform
+        FROM
+        compliance_rule compliance_rule
+        LEFT JOIN compliance_scan_result compliance_scan_result ON compliance_scan_result.compliance_rule_id = compliance_rule.id
+        WHERE
+        compliance_rule.`enable` = 1
+        <if test="cloudAccountId != null">
+            and
+            compliance_scan_result.cloud_account_id=#{cloudAccountId}
+        </if>
+        GROUP BY
+        compliance_rule.id,
+        compliance_rule.risk_level
+        ) tmp
+        GROUP BY
+        tmp.risk_level,
+        rule_group_id
+        ) group_aggs ON group_aggs.rule_group_id = compliance_rule_group.id
+        AND group_aggs.risk_level = compliance_rule_group.risk_level
+        ) tmp
+        GROUP BY
+        tmp.id
+        ) t2
+        LEFT JOIN compliance_rule_group compliance_rule_group ON t2.id = compliance_rule_group.id
     </select>
 </mapper>

@@ -41,16 +41,40 @@ import type { ResourceAnalysisRequest } from "@commons/api/server_analysis/type"
 import type { ECBasicOption } from "echarts/types/src/util/types";
 import CloudServerViewApi from "@commons/api/server_analysis/index";
 import * as echarts from "echarts";
+import { useModuleStore } from "@commons/stores/modules/module";
+import { usePermissionStore } from "@commons/stores/modules/permission";
 import { useUserStore } from "@commons/stores/modules/user";
-const userStore = useUserStore();
-const adminRole = ref<boolean>(userStore.currentRole === "ADMIN");
 
-const props = defineProps<{
-  cloudAccountId?: string | undefined;
-  clusterId?: string | undefined;
-  datastoreId?: string | undefined;
-  hostId?: string | undefined;
-}>();
+const props = withDefaults(
+  defineProps<{
+    needRoles?: Array<"ADMIN" | "ORGADMIN" | "USER">;
+    permission?: any;
+    module?: string;
+    cloudAccountId?: string;
+    clusterId?: string;
+    datastoreId?: string;
+    hostId?: string;
+  }>(),
+  {
+    needRoles: () => ["ADMIN", "ORGADMIN", "USER"],
+    permission: ["[operation-analysis]OVERVIEW:READ"],
+    module: "operation-analysis",
+  }
+);
+
+const moduleStore = useModuleStore();
+const permissionStore = usePermissionStore();
+const userStore = useUserStore();
+
+const show = computed<boolean>(
+  () =>
+    _.some(
+      moduleStore.runningModules,
+      (module) => module.id === props.module
+    ) &&
+    permissionStore.hasPermission(props.permission) &&
+    _.includes(props.needRoles, userStore.currentRole)
+);
 
 const params = ref<ResourceAnalysisRequest>({});
 const paramVmIncreaseTrendMonth = ref<string>("7");
@@ -58,6 +82,9 @@ const loading = ref<boolean>(false);
 const apiData = ref<any>();
 
 const getIncreaseTrend = () => {
+  if (!show.value) {
+    return;
+  }
   _.set(params.value, "dayNumber", paramVmIncreaseTrendMonth.value);
   _.set(
     params.value,

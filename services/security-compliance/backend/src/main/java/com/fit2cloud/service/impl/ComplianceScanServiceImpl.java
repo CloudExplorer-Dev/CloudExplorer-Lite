@@ -23,11 +23,13 @@ import com.fit2cloud.common.constants.JobTypeConstants;
 import com.fit2cloud.common.provider.util.CommonUtil;
 import com.fit2cloud.common.provider.util.PageUtil;
 import com.fit2cloud.common.utils.QueryUtil;
+import com.fit2cloud.common.utils.SpringUtil;
 import com.fit2cloud.constants.ConditionTypeConstants;
 import com.fit2cloud.constants.ResourceTypeConstants;
 import com.fit2cloud.constants.ScanRuleConstants;
 import com.fit2cloud.constants.SyncDimensionConstants;
 import com.fit2cloud.controller.request.compliance_scan.ComplianceResourceRequest;
+import com.fit2cloud.controller.request.compliance_scan.ComplianceSyncRequest;
 import com.fit2cloud.controller.request.view.ComplianceGroupRequest;
 import com.fit2cloud.controller.response.compliance_scan.ComplianceResourceResponse;
 import com.fit2cloud.controller.response.compliance_scan.SupportCloudAccountResourceResponse;
@@ -46,10 +48,7 @@ import com.fit2cloud.provider.constants.ProviderConstants;
 import com.fit2cloud.provider.entity.InstanceFieldCompare;
 import com.fit2cloud.provider.entity.InstanceFieldType;
 import com.fit2cloud.response.JobRecordResourceResponse;
-import com.fit2cloud.service.IComplianceRuleService;
-import com.fit2cloud.service.IComplianceScanResourceResultService;
-import com.fit2cloud.service.IComplianceScanResultService;
-import com.fit2cloud.service.IComplianceScanService;
+import com.fit2cloud.service.*;
 import lombok.SneakyThrows;
 import org.apache.commons.collections4.keyvalue.DefaultKeyValue;
 import org.apache.commons.lang.StringUtils;
@@ -218,6 +217,20 @@ public class ComplianceScanServiceImpl implements IComplianceScanService {
             return supportPlatformResourceResponse;
         }).toList();
 
+    }
+
+    @Override
+    public void scan(ComplianceSyncRequest request) {
+        List<ComplianceRule> complianceRules = complianceRuleService.list(new LambdaQueryWrapper<ComplianceRule>().in(ComplianceRule::getRuleGroupId, request.getRuleGroupIds()));
+        for (String cloudAccountId : request.getCloudAccountIds()) {
+            ISyncService syncService = SpringUtil.getBean(ISyncService.class);
+            syncService.syncInstance(cloudAccountId, complianceRules.stream().map(ComplianceRule::getResourceType).toList());
+        }
+    }
+
+    @Override
+    public List<DefaultKeyValue<String, String>> listResourceType() {
+        return Arrays.stream(ResourceTypeConstants.values()).map(item -> new DefaultKeyValue<>(item.getMessage(), item.name())).toList();
     }
 
 

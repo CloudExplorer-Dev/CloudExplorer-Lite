@@ -130,7 +130,6 @@ const pieChartOptionTemplate = (dataList: Array<DataItem>) => {
             show: true,
             width: 120,
             formatter: (a: any) => {
-              console.log("a", a);
               return `{title|${a.name}}\r\n{value|${_.round(a.value, 2).toFixed(
                 2
               )}}`;

@@ -18,6 +18,7 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
+import java.util.List;
 
 /**
  * <p>
@@ -77,4 +78,5 @@ public class ComplianceRuleGroupServiceImpl extends ServiceImpl<ComplianceRuleGr
         BeanUtils.copyProperties(getById(request.getId()), complianceRuleGroupResponse);
         return complianceRuleGroupResponse;
     }
+
 }

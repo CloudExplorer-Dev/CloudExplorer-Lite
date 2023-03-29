@@ -95,13 +95,24 @@ instance.interceptors.response.use(
     ) {
       //401时清空token
       const userStore = useUserStore(store);
-      userStore.doLogout(
-        _.replace(
-          window.location.href,
-          window.location.protocol + "//" + window.location.host,
-          ""
-        )
+
+      let path = _.replace(
+        window.location.href,
+        window.location.protocol + "//" + window.location.host,
+        ""
       );
+
+      if (window.__MICRO_APP_ENVIRONMENT__) {
+        path =
+          "/" +
+          import.meta.env.VITE_APP_NAME +
+          "?" +
+          import.meta.env.VITE_APP_NAME +
+          "=" +
+          window.microApp.router.encode(path);
+      }
+
+      userStore.doLogout(path === "/" ? undefined : path);
     }
     if (err.response?.status === 403) {
       ElMessage.error(

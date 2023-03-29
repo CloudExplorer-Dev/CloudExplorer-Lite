@@ -1,16 +1,12 @@
-import { createWebHashHistory, createWebHistory } from "vue-router";
+import { createWebHistory } from "vue-router";
 import Login from "@commons/business/login/index.vue";
-import type { UnwrapRef } from "vue";
 import type { Menu } from "@commons/api/menu/type";
 import { useUserStore } from "@commons/stores/modules/user";
 import { store } from "@commons/stores";
 import BaseLayout from "@commons/business/base-layout/index.vue";
 import { useModuleStore } from "@commons/stores/modules/module";
-import type { Module } from "@commons/api/module/type";
-import type { RouteModule } from "@commons/api/module/type";
 import type { RouteItem } from "@commons/router/type";
 import { RouteObj } from "@commons/router/type";
-//import AppContent from "@commons/components/layout/app-content/index.vue";
 import { usePermissionStore } from "@commons/stores/modules/permission";
 /**
  * 扁平化菜单
@@ -134,9 +130,9 @@ export async function initRouteObj(): Promise<RouteObj> {
       import("@commons/components/layout/app-content/index.vue");
 
     route = new RouteObj(
-      createWebHashHistory(),
+      createWebHistory(import.meta.env.VITE_APP_NAME),
       {},
-      window.__MICRO_APP_BASE_APPLICATION__
+      window.__MICRO_APP_ENVIRONMENT__
         ? [
             {
               path: "/",

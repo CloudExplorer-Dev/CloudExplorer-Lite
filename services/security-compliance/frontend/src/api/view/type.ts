@@ -2,7 +2,6 @@ import type {
   ComplianceViewCountResponse,
   ComplianceCountRequest,
 } from "@commons/api/compliance-view/type";
-
 interface ComplianceViewGroupResponse {
   /**
    * 分支值

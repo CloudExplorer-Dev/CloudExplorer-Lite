@@ -7,6 +7,8 @@ import com.fit2cloud.constants.GroupTypeConstants;
 import com.fit2cloud.constants.ResourceTypeConstants;
 import com.fit2cloud.controller.request.view.ComplianceCountRequest;
 import com.fit2cloud.controller.request.view.ComplianceGroupRequest;
+import com.fit2cloud.controller.request.view.ListRuleGroupRiskDataRequest;
+import com.fit2cloud.controller.response.view.ComplianceRuleGroupCountResponse;
 import com.fit2cloud.controller.response.view.ComplianceViewCountResponse;
 import com.fit2cloud.controller.response.view.ComplianceViewGroupResponse;
 import com.fit2cloud.controller.response.view.ComplianceViewRuleCountResponse;
@@ -88,6 +90,8 @@ public class IComplianceViewServiceImpl implements IComplianceViewService {
                 .collect(Collectors.toMap(DefaultKeyValue::getKey, DefaultKeyValue::getValue));
 
     }
+
+
 
     private ComplianceViewCountResponse toComplianceViewCountResponse(ComplianceCount complianceCount) {
         ComplianceViewCountResponse complianceViewCountResponse = new ComplianceViewCountResponse();

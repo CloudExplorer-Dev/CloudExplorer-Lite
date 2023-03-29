@@ -1,8 +1,9 @@
 package com.fit2cloud.provider.impl.tencent.entity.request;
 
-import com.fit2cloud.provider.impl.tencent.util.TencentMappingUtil;
+import com.fit2cloud.provider.impl.tencent.constants.TencentChargeType;
 import com.tencentcloudapi.cbs.v20170312.models.AutoMountConfiguration;
 import com.tencentcloudapi.cbs.v20170312.models.CreateDisksRequest;
+import com.tencentcloudapi.cbs.v20170312.models.DiskChargePrepaid;
 import com.tencentcloudapi.cbs.v20170312.models.Placement;
 import lombok.Data;
 import org.apache.commons.lang3.StringUtils;
@@ -45,8 +46,17 @@ public class TencentCreateDiskRequest extends TencentBaseRequest {
         createDisksRequest.setDiskType(this.diskType);
         createDisksRequest.setDiskName(this.diskName);
         createDisksRequest.setDiskSize(this.size);
-        createDisksRequest.setDiskCount(1l);
-        createDisksRequest.setDiskChargeType(TencentMappingUtil.toTencentChargeType(this.diskChargeType));
+        createDisksRequest.setDiskCount(1L);
+        // 先默认按量，待后续根据情况完善
+        // createDisksRequest.setDiskChargeType(TencentMappingUtil.toTencentChargeType(this.diskChargeType));
+        createDisksRequest.setDiskChargeType(TencentChargeType.POSTPAID.getId());
+
+        if (TencentChargeType.PREPAID.getId().equalsIgnoreCase(createDisksRequest.getDiskChargeType())) {
+            DiskChargePrepaid diskChargePrepaid = new DiskChargePrepaid();
+            diskChargePrepaid.setRenewFlag("NOTIFY_AND_AUTO_RENEW");
+            diskChargePrepaid.setPeriod(1L);
+            createDisksRequest.setDiskChargePrepaid(diskChargePrepaid);
+        }
 
         // 放置位置
         Placement placement = new Placement();

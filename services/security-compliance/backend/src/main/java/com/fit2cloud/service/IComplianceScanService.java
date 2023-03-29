@@ -3,6 +3,7 @@ package com.fit2cloud.service;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.fit2cloud.constants.ResourceTypeConstants;
 import com.fit2cloud.controller.request.compliance_scan.ComplianceResourceRequest;
+import com.fit2cloud.controller.request.compliance_scan.ComplianceSyncRequest;
 import com.fit2cloud.controller.response.compliance_scan.ComplianceResourceResponse;
 import com.fit2cloud.controller.response.compliance_scan.SupportCloudAccountResourceResponse;
 import com.fit2cloud.controller.response.compliance_scan.SupportPlatformResourceResponse;
@@ -10,6 +11,7 @@ import com.fit2cloud.dao.entity.ComplianceRule;
 import com.fit2cloud.dao.entity.ComplianceScanResourceResult;
 import com.fit2cloud.dao.entity.ComplianceScanResult;
 import com.fit2cloud.response.JobRecordResourceResponse;
+import org.apache.commons.collections4.keyvalue.DefaultKeyValue;
 
 import java.util.List;
 
@@ -139,5 +141,14 @@ public interface IComplianceScanService {
      * @return 云平台以及对应的资源数据
      */
     List<SupportPlatformResourceResponse> listSupportPlatformResource();
+
+    /**
+     * 扫描
+     *
+     * @param request 扫描条件
+     */
+    void scan(ComplianceSyncRequest request);
+
+    List<DefaultKeyValue<String, String>> listResourceType();
 
 }

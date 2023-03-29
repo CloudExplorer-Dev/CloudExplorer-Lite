@@ -10,6 +10,8 @@
     <el-form
       :model="updateComplianceRuleGroupForm"
       :rules="rules"
+      label-position="top"
+      require-asterisk-position="right"
       ref="ruleFormRef"
       label-width="120px"
     >

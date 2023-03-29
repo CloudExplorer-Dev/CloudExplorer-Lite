@@ -3,13 +3,15 @@
     :close-on-press-escape="false"
     :close-on-click-modal="false"
     v-model="createComplianceRuleGroupVisible"
-    title="创建合规规则"
+    title="创建规则组"
     width="60%"
     :before-close="close"
   >
     <el-form
       :model="createComplianceRuleGroupForm"
       :rules="rules"
+      label-position="top"
+      require-asterisk-position="right"
       ref="ruleFormRef"
       label-width="120px"
       @submit.prevent
@@ -104,6 +106,7 @@ const submit = () => {
  * 打开创建规则组表单
  */
 const open = () => {
+  ruleFormRef.value?.clearValidate();
   createComplianceRuleGroupForm.value = {
     name: "",
     description: "",

@@ -9,18 +9,18 @@
     </el-breadcrumb-item>
   </el-breadcrumb>
   <div style="flex: 1 1 auto"></div>
-  <el-affix
+  <div
     v-if="
       showReturns?.some(
         (r) => router.currentRoute.value.meta[r.field] === r.value
       )
     "
-    style="padding-top: 10px; padding-right: 60px"
+    style="padding-top: 10px; padding-right: 24px"
   >
     <el-button type="info" @click="handleReturn">
       {{ $t("commons.btn.return") }}
     </el-button>
-  </el-affix>
+  </div>
   <slot v-else></slot>
 </template>
 <script setup lang="ts">
@@ -92,4 +92,4 @@ watch(router.currentRoute, () => {
     });
 });
 </script>
-<style lang="scss"></style>
+<style lang="scss" scoped></style>

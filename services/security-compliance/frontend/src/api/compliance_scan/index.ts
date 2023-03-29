@@ -10,6 +10,7 @@ import type {
   ComplianceResourceRequest,
 } from "@/api/compliance_scan/type";
 import type { AccountJobRecord } from "@commons/api/cloud_account/type";
+import type { KeyValue } from "@commons/api/base/type";
 
 /**
  *分页查询资源
@@ -87,10 +88,22 @@ const listJobRecord: (
 ) => Promise<Result<Array<AccountJobRecord>>> = (loading) => {
   return get("/api/compliance_scan/job_record", undefined, loading);
 };
+
+/**
+ * 获取资源类型列表
+ * @param loading  加载器
+ * @returns  资源类型列表
+ */
+const listResourceType: (
+  loading?: Ref<boolean>
+) => Promise<Result<Array<KeyValue<string, string>>>> = (loading) => {
+  return get("/api/compliance_scan/resource_type", undefined, loading);
+};
 export default {
   pageResource,
   syncScan,
   listSupportCloudAccountResource,
   listJobRecord,
   listSupportPlatformResource,
+  listResourceType,
 };

@@ -1,12 +1,16 @@
 package com.fit2cloud;
 
 import com.fit2cloud.constants.ResourceTypeConstants;
+import com.fit2cloud.controller.response.view.ComplianceRuleGroupCountResponse;
+import com.fit2cloud.service.IComplianceViewService;
 import com.fit2cloud.service.ISyncService;
 import org.junit.jupiter.api.Test;
+import org.openstack4j.api.heat.StackService;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.TestPropertySource;
 
 import javax.annotation.Resource;
+import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
 /**
@@ -20,6 +24,7 @@ import java.util.concurrent.CompletableFuture;
 public class SyncTest {
     @Resource
     private ISyncService syncService;
+
 
     @Test
     public void syncAll() {

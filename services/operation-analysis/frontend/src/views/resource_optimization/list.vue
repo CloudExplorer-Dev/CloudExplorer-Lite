@@ -150,22 +150,20 @@ import type { ListOptimizationRequest } from "@commons/api/resource_optimization
 import { useRouter } from "vue-router";
 import ServerOptimization from "@commons/business/base-layout/home-page/items/operation/ServerOptimization.vue";
 import _ from "lodash";
+import MicroAppRouterUtil from "@commons/router/MicroAppRouterUtil";
 
 const optimizeDivRef = ref<InstanceType<typeof ServerOptimization> | null>();
 
-const useRoute = useRouter();
+const router = useRouter();
 
 const checkedId = ref(
-  _.defaultTo(
-    _.parseInt(useRoute.currentRoute.value.query?.checked as string),
-    1
-  )
+  _.defaultTo(_.parseInt(router.currentRoute.value.query?.checked as string), 1)
 );
 
 const checkedAccountIds = ref(
-  useRoute.currentRoute.value.query?.accountIds
+  router.currentRoute.value.query?.accountIds
     ? JSON.parse(
-        decodeURI(useRoute.currentRoute.value.query?.accountIds as string)
+        decodeURI(router.currentRoute.value.query?.accountIds as string)
       )
     : undefined
 );
@@ -269,13 +267,11 @@ const tableConfig = ref<TableConfig>({
  * 详情
  */
 const showDetail = (row: VmCloudServerVO) => {
-  //TODO 这个
-  window.location.href =
-    window.location.protocol +
-    "//" +
-    window.location.host +
-    "/vm-service#/vm_cloud_server/detail/" +
-    row.id;
+  MicroAppRouterUtil.jumpToChildrenPath(
+    "vm-service",
+    "/vm-service/vm_cloud_server/detail/" + row.id,
+    router
+  );
 };
 </script>
 

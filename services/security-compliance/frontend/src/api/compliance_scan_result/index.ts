@@ -6,6 +6,7 @@ import type {
   ComplianceScanResultResponse,
   ComplianceScanResultRequest,
   ComplianceScanResultRuleGroupResponse,
+  ComplianceRuleGroupCountResponse,
 } from "@/api/compliance_scan_result/type";
 /**
  * 获取合规扫描结果列表
@@ -50,6 +51,24 @@ const page: (
 };
 
 /**
+ * 获取规则组的扫描详情
+ * @param loading 加载器
+ * @returns 规则组统计数据
+ */
+const listRuleGroupCount: (
+  cloudAccountId?: string,
+  loading?: Ref<boolean>
+) => Promise<Result<Array<ComplianceRuleGroupCountResponse>>> = (
+  cloudAccountId,
+  loading
+) => {
+  return get(
+    "/api/compliance_scan_result/rule_group",
+    { cloudAccountId },
+    loading
+  );
+};
+/**
  * 获取扫描合规规则数据
  * @param compliance_rule_group_id 规则组id
  * @param loading  加载器
@@ -68,4 +87,9 @@ const getComplianceScanResultRuleGroupResponse: (
     loading
   );
 };
-export default { list, page, getComplianceScanResultRuleGroupResponse };
+export default {
+  list,
+  page,
+  getComplianceScanResultRuleGroupResponse,
+  listRuleGroupCount,
+};

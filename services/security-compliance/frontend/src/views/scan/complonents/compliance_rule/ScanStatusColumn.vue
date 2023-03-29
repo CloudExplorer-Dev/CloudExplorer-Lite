@@ -1,15 +1,9 @@
 <template>
   <el-popover placement="right" :width="800" trigger="click">
     <template #reference>
-      <div style="display: flex">
-        <div>{{ complainceScanResult.updateTime }}</div>
-        <div style="flex: auto"></div>
-        <scan_job_status_icon
-          :show-text="false"
-          :status="scanStatus(complainceScanResult.resourceType, undefined)"
-        ></scan_job_status_icon>
-        <div style="width: 20%"></div>
-      </div>
+      <scan_job_status_icon
+        :status="scanStatus(complainceScanResult.resourceType)"
+      ></scan_job_status_icon>
     </template>
     <el-table :data="accountJobRecords">
       <el-table-column property="resourceId" label="云账号">
@@ -23,18 +17,13 @@
       <el-table-column label="云平台">
         <template #default="scope">
           <div style="display: flex; align-items: center">
-            <el-image
-              style="margin-right: 20%; display: flex"
-              :src="
-                platformIcon[
-                  orElse(
-                    cloudAccountSourceList.find(
-                      (c) => c.id === scope.row.resourceId
-                    )?.platform
-                  )
-                ].oldIcon
+            <platform_icon
+              :platform="
+                cloudAccountSourceList.find(
+                  (c) => c.id === scope.row.resourceId
+                )?.platform || '-'
               "
-            ></el-image>
+            ></platform_icon>
             <span>{{
               platformIcon[
                 orElse(
@@ -61,16 +50,12 @@
           ></scan_job_status_icon>
         </template>
       </el-table-column>
-      <el-table-column property="createTime" label="扫描时间" width="150px" />
+      <el-table-column property="createTime" label="扫描时间" width="160px" />
       <el-table-column label="详情">
         <template #default="scope">
           <ce-icon
             @click="openDetailsJobView(scope.row)"
-            style="
-              color: var(--el-color-info);
-              cursor: pointer;
-              font-size: 20px;
-            "
+            class="icon"
             code="InfoFilled"
           ></ce-icon
         ></template>
@@ -87,9 +72,19 @@ import type {
 } from "@commons/api/cloud_account/type";
 import { platformIcon } from "@commons/utils/platform";
 import scan_job_status_icon from "@/views/scan/complonents/compliance_rule/ScanJobStatusIcon.vue";
+import platform_icon from "@commons/components/platform-icon/index.vue";
 const props = defineProps<{
+  /**
+   * 扫描结果
+   */
   complainceScanResult: ComplianceScanResultResponse;
+  /**
+   *账号任务
+   */
   accountJobRecordList: Array<AccountJobRecord>;
+  /**
+   *云账号
+   */
   cloudAccountSourceList: Array<CloudAccount>;
   /**
    * 打开任务详情
@@ -127,12 +122,19 @@ const getPlatformByCloudAccountId = (cloudAccountId: string) => {
   }
   return cloudAccountId;
 };
+
 /**
  * 扫描状态
  * @param resourceType       资源类型
  * @param cloud_acclount_id  云账号id
  */
-const scanStatus = (resourceType: string, cloud_acclount_id?: string) => {
+const scanStatus: (
+  resourceType: string,
+  cloud_acclount_id?: string
+) => "SYNCING" | "FAILED" | "SUCCESS" | "NOT_HAVE" = (
+  resourceType: string,
+  cloud_acclount_id?: string
+) => {
   const status = accountJobRecords.value
     .filter((item) => {
       if (cloud_acclount_id) {
@@ -152,12 +154,12 @@ const scanStatus = (resourceType: string, cloud_acclount_id?: string) => {
     return "FAILED";
   }
   if (status.includes("TIME_OUT")) {
-    return "TIME_OUT";
+    return "FAILED";
   }
   if (status.includes("SUCCESS")) {
     return "SUCCESS";
   }
-  return "INIT";
+  return "NOT_HAVE";
 };
 
 /**
@@ -168,4 +170,10 @@ const orElse = (value?: string) => {
   return value ? value : "";
 };
 </script>
-<style lang=""></style>
+<style lang="scss" scoped>
+.icon {
+  color: var(--el-color-info);
+  cursor: pointer;
+  font-size: 20px;
+}
+</style>

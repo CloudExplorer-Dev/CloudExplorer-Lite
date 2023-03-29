@@ -11,7 +11,7 @@ import "nprogress/nprogress.css";
 import "@commons/styles/index.scss";
 import "@commons/font/iconfont.css";
 import mitt from "mitt";
-import { setupMicroApp } from "@/microapp";
+import { setupMicroApp, setupMicroAppBaseRouter } from "@/microapp";
 import type { RouteObj } from "@commons/router/type";
 
 const app = createApp(App);
@@ -44,6 +44,7 @@ initRouteObj().then((result) => {
   if (route) {
     route.setRouteComponent(import.meta.glob("@/views/*/*.vue"));
     app.use(route.router);
+    setupMicroAppBaseRouter(route.router);
   }
 
   app.mount("#app");
