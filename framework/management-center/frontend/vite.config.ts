@@ -40,46 +40,6 @@ export default defineConfig(({ mode }) => {
           },
         },
       }),
-      // 自定义插件
-      /*(function () {
-              let basePath = "";
-
-              return {
-                name: "vite:micro-app",
-                apply: "build",
-                configResolved(config) {
-                  basePath = `${config.base}${config.build.assetsDir}/`;
-                },
-                writeBundle(options: OutputOptions, bundle: OutputBundle) {
-                  for (const chunkName in bundle) {
-                    if (Object.prototype.hasOwnProperty.call(bundle, chunkName)) {
-                      const chunk = bundle[chunkName];
-                      if (chunk.fileName && chunk.fileName.endsWith(".js")) {
-                        if ((chunk as OutputChunk).code) {
-                          (chunk as OutputChunk).code = (
-                            chunk as OutputChunk
-                          ).code.replace(
-                            /(from|import\()(\s*['"])(\.\.?\/)/g,
-                            (all, $1, $2, $3) => {
-                              return all.replace(
-                                $3,
-                                new URL($3, basePath).toString()
-                              );
-                            }
-                          );
-                          const fullPath = options.dir
-                            ? join(options.dir, chunk.fileName)
-                            : chunk.fileName;
-
-                          //console.log((chunk as OutputChunk).code);
-                          writeFileSync(fullPath, (chunk as OutputChunk).code);
-                        }
-                      }
-                    }
-                  }
-                },
-              };
-            })(),*/
     ],
     resolve: {
       alias: {

@@ -76,6 +76,7 @@ export class RootMicroApp {
           return res.text();
         });
       },
+      inline: import.meta.env.VITE_MICROAPP_SCRIPT_INLINE,
       iframe: true,
     });
 
@@ -93,13 +94,14 @@ export class RootMicroApp {
     return;
     if (modules?.length > 0) {
       console.debug("preFetch modules!", modules);
+      console.debug("inline", import.meta.env.VITE_MICROAPP_SCRIPT_INLINE);
       this.microApp.preFetch(
         _.map(modules, (m) => {
           return {
             name: m.id,
             url: getUrl(m),
-            inline: true,
-            baseroute: m.basePath,
+            inline: import.meta.env.VITE_MICROAPP_SCRIPT_INLINE,
+            /*baseroute: m.basePath,*/
             iframe: true,
           };
         })

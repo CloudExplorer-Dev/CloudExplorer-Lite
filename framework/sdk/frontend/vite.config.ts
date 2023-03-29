@@ -8,42 +8,20 @@ import vueSetupExtend from "vite-plugin-vue-setup-extend";
 
 import { createHtmlPlugin } from "vite-plugin-html";
 
-/**
- * 公共模块打包配置
- */
 const commonBuild = {
   build: {
-    outDir: fileURLToPath(new URL("./lib", import.meta.url)),
     rollupOptions: {
-      external: [
-        "vue",
-        "pinia",
-        "vue-router",
-        "@/config/modules.config",
-        "@/config/basePathConfig",
-        "@/locales/lang/zh-cn",
-        "@/locales/lang/zh-tw",
-        "@/locales/lang/en",
-        "@/stores",
-      ],
       output: {
-        globals: {
-          vue: "Vue",
-          pinia: "pinia",
-          "vue-router": "vue-router",
-          "@/config/modules.config": "@/config/modules.config",
-          "@/config/basePathConfig": "@/config/basePathConfig",
-          "@/locales/lang/zh-cn": "@/locales/lang/zh-cn",
-          "@/locales/lang/zh-tw": "@/locales/lang/zh-tw",
-          "@/locales/lang/en": "@/locales/lang/en",
-          "@/stores": "@/stores",
+        manualChunks(id: string) {
+          if (id.includes("node_modules")) {
+            return id
+              .toString()
+              .split("node_modules/")[1]
+              .split("/")[0]
+              .toString();
+          }
         },
       },
-    },
-    lib: {
-      entry: fileURLToPath(new URL("./commons/index.ts", import.meta.url)),
-      name: "ceBase",
-      fileName: (format: string) => `ce-base.${format}.js`,
     },
   },
 };
@@ -90,9 +68,7 @@ export default defineConfig(({ mode }: ConfigEnv) => {
     server: {},
   };
 
-  if (mode === "lib") {
-    config = { ...config, ...commonBuild };
-  }
+  //config = { ...config, ...commonBuild };
 
   const proxyConf: Record<string, string | ProxyOptions> = {};
   proxyConf[ENV.VITE_BASE_PATH + "api"] =

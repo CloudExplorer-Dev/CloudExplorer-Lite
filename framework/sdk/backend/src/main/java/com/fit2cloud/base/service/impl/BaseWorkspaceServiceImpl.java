@@ -38,9 +38,12 @@ public class BaseWorkspaceServiceImpl extends ServiceImpl<BaseWorkspaceMapper, W
     @Resource
     WorkspaceCommonService workspaceCommonService;
 
+    @Override
     public List<NodeTree> workspaceTree(Boolean isShowAllOrg) {
         QueryWrapper<Organization> orgQueryWrapper = new QueryWrapper<>();
         QueryWrapper<Workspace> workspaceQueryWrapper = new QueryWrapper<>();
+
+        List<Workspace> workspaces = new ArrayList<>();
 
         // 当前角色如果是组织管理员
         if (CurrentUserUtils.isOrgAdmin()) {
@@ -49,13 +52,19 @@ public class BaseWorkspaceServiceImpl extends ServiceImpl<BaseWorkspaceMapper, W
             orgIdList.addAll(organizationCommonService.getOrgIdsByParentId(CurrentUserUtils.getOrganizationId()));
 
             orgQueryWrapper.lambda().in(Organization::getId, orgIdList);
-            workspaceQueryWrapper.lambda().in(Workspace::getId, workspaceCommonService.getWorkspaceIdsByOrgIds(orgIdList));
+
+            List workspaceIdList = workspaceCommonService.getWorkspaceIdsByOrgIds(orgIdList);
+            if (CollectionUtils.isNotEmpty(workspaceIdList)) {
+                workspaceQueryWrapper.lambda().in(Workspace::getId, workspaceIdList);
+                workspaces = list(workspaceQueryWrapper);
+            }
+        } else {
+            workspaces = list(workspaceQueryWrapper);
         }
 
         List<Organization> organizations = baseOrganizationMapper.selectList(orgQueryWrapper);
-        List<Workspace> workspaces = list(workspaceQueryWrapper);
 
-        if (CollectionUtils.isEmpty(organizations) || CollectionUtils.isEmpty(workspaces)) {
+        if (CollectionUtils.isEmpty(organizations) || (CollectionUtils.isEmpty(organizations) && CollectionUtils.isEmpty(workspaces))) {
             return new ArrayList<>();
         }
 
@@ -63,10 +72,12 @@ public class BaseWorkspaceServiceImpl extends ServiceImpl<BaseWorkspaceMapper, W
         List<String> effectiveOrgIds = new ArrayList<>();
         List<NodeTree> trees = new ArrayList<>();
 
-        workspaces.stream().forEach(workspace -> {
-            getWorkspacesOrg(workspace.getOrganizationId(), effectiveOrgIds, organizationIdMap);
-            trees.add(new NodeTree(workspace.getId(), workspace.getOrganizationId(), workspace.getName()));
-        });
+        if (CollectionUtils.isNotEmpty(workspaces)) {
+            workspaces.stream().forEach(workspace -> {
+                getWorkspacesOrg(workspace.getOrganizationId(), effectiveOrgIds, organizationIdMap);
+                trees.add(new NodeTree(workspace.getId(), workspace.getOrganizationId(), workspace.getName()));
+            });
+        }
 
         organizations.stream().forEach(organization -> {
             if (isShowAllOrg) {

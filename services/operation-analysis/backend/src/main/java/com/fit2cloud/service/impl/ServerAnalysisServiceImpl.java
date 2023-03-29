@@ -522,6 +522,7 @@ public class ServerAnalysisServiceImpl implements IServerAnalysisService {
         wrapper.eq(true, OrgWorkspace::getType,"workspace");
         wrapper.in(!CurrentUserUtils.isAdmin() && CollectionUtils.isNotEmpty(sourceIds),OrgWorkspace::getId,sourceIds);
         wrapper.in(CollectionUtils.isNotEmpty(request.getAccountIds()),VmCloudServer::getAccountId,request.getAccountIds());
+        wrapper.in(CollectionUtils.isNotEmpty(request.getHostIds()),VmCloudServer::getHostId,request.getHostIds());
         wrapper.notIn(true,VmCloudServer::getInstanceStatus, List.of(SpecialAttributesConstants.StatusField.VM_DELETE,SpecialAttributesConstants.StatusField.FAILED));
         wrapper.leftJoin(VmCloudServer.class,VmCloudServer::getSourceId,OrgWorkspace::getId);
         wrapper.groupBy(OrgWorkspace::getId,OrgWorkspace::getName);
