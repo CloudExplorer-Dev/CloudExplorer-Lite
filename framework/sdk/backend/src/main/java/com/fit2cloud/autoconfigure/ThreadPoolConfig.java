@@ -25,8 +25,8 @@ public class ThreadPoolConfig {
      */
     @Bean(name = "workThreadPool")
     public ThreadPoolExecutor workThreadPool() {
-        //todo 核心线程4个,最大线程16个,活跃时间30秒,活跃时间单位秒,阻塞线程200个,线程生产工厂:默认的线程工厂,拒绝策略:当线程超过最大线程+阻塞队列后会抛出错误RejectedExecutionException
-        return new ThreadPoolExecutor(4, 16, 30, TimeUnit.SECONDS, new LinkedBlockingQueue(200), Executors.defaultThreadFactory(), new ThreadPoolExecutor.AbortPolicy());
+        //todo 核心线程4个,最大线程16个,活跃时间30秒(当线程池已经到最大线程池后30秒后清除不活跃线程),活跃时间单位秒,阻塞线程200个,线程生产工厂:默认的线程工厂,拒绝策略:当线程超过最大线程+阻塞队列后会抛出错误RejectedExecutionException
+        return new ThreadPoolExecutor(4, 100, 30, TimeUnit.SECONDS, new LinkedBlockingQueue(200), Executors.defaultThreadFactory(), new ThreadPoolExecutor.AbortPolicy());
     }
 
     /**

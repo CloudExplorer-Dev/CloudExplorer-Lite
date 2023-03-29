@@ -36,6 +36,7 @@ import com.fit2cloud.dao.entity.ComplianceScanResourceResult;
 import com.fit2cloud.dao.entity.ComplianceScanResult;
 import com.fit2cloud.es.entity.ResourceInstance;
 import com.fit2cloud.provider.ICloudProvider;
+import com.fit2cloud.quartz.CloudAccountSyncJob;
 import com.fit2cloud.service.*;
 import io.reactivex.rxjava3.functions.Action;
 import lombok.SneakyThrows;
@@ -84,6 +85,12 @@ public class SyncServiceImpl extends BaseSyncService implements ISyncService {
     @SneakyThrows
     @Override
     public void syncInstance(String cloudAccountId, ResourceTypeConstants instanceType) {
+        // 加锁
+        RLock lock = redissonClient.getLock(cloudAccountId + instanceType.name());
+        // 如果指定时间拿不到锁就不执行同步
+        if (!lock.tryLock()) {
+            return;
+        }
         CloudAccount cloudAccount = cloudAccountService.getById(cloudAccountId);
         // 如果云账号没删除 没查询到
         if (Objects.isNull(cloudAccount)) {
@@ -93,10 +100,6 @@ public class SyncServiceImpl extends BaseSyncService implements ISyncService {
             cloudAccountService.deleteJobByCloudAccountId(cloudAccountId);
             return;
         } else {
-            // 如果云账号无效 跳过执行
-            if (!cloudAccount.getState()) {
-                return;
-            }
             Credential credential = Credential.of(cloudAccount.getPlatform(), cloudAccount.getCredential());
             // 如果云账号无效 修改状态 并且跳过执行
             if (!credential.verification()) {
@@ -104,12 +107,6 @@ public class SyncServiceImpl extends BaseSyncService implements ISyncService {
                 cloudAccountService.updateById(cloudAccount);
                 return;
             }
-        }
-        // 加锁
-        RLock lock = redissonClient.getLock(cloudAccountId + instanceType.name());
-        // 如果指定时间拿不到锁就不执行同步
-        if (!lock.tryLock(5, TimeUnit.SECONDS)) {
-            return;
         }
         try {
             LocalDateTime syncTime = getSyncTime();
@@ -265,11 +262,11 @@ public class SyncServiceImpl extends BaseSyncService implements ISyncService {
         // todo 每四个任务开启一个异步任务执行
         List<List<String>> jobs = splitArr(instanceType, 4);
         for (List<String> job : jobs) {
-            CompletableFuture.runAsync(() -> {
+            CloudAccountSyncJob.SyncScanJob.run((() -> {
                 for (String type : job) {
                     syncInstance(cloudAccountId, ResourceTypeConstants.valueOf(type));
                 }
-            }, workThreadPool);
+            }));
         }
     }
 

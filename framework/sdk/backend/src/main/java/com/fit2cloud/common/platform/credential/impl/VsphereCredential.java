@@ -62,7 +62,7 @@ public class VsphereCredential implements Credential {
             return true;
         } catch (Exception e) {
             log.error("Cloud Account Verification failed!" + e.getMessage(), e);
-            throw new Fit2cloudException(100001, "云账号校验失败!");
+            return false;
         } finally {
             closeConnection(serviceInstance);
         }
