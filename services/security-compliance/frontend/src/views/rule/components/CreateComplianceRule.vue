@@ -17,7 +17,7 @@
       ref="ruleForm"
       label-width="120px"
     >
-      <base-container class="base_container">
+      <base-container class="base_container" :contentBorder="false">
         <template #header><span>基本信息</span> </template>
         <template #content>
           <div class="base_info">
@@ -46,6 +46,7 @@
               <el-select
                 style="width: 100%"
                 v-model="createComplianceRuleForm.platform"
+                @change="changePlatform"
                 class="m-2"
                 :placeholder="'请选择云平台'"
               >
@@ -100,32 +101,58 @@
           </div>
         </template>
       </base-container>
-      <base-container class="base_container">
+      <base-container class="base_container" :contentBorder="false">
         <template #header><span>规则详情</span></template>
         <template #content>
-          <el-form-item prop="resourceType" style="width: 45%" label="资源类型">
-            <el-select
-              style="width: 100%"
-              v-model="createComplianceRuleForm.resourceType"
-              class="m-2"
-              :placeholder="'请选择资源类型'"
+          <div class="rule_details">
+            <el-form-item
+              prop="resourceType"
+              style="width: 45%"
+              label="资源类型"
             >
-              <el-option
-                v-for="item in supportResourceTypeList"
-                :key="item.value"
-                :label="item.key"
-                :value="item.value"
-              />
-            </el-select>
-          </el-form-item>
-          <el-form-item prop="rules.rules" label="判断条件">
-            <compliance_rules
-              ref="rulesRef"
-              v-model="createComplianceRuleForm.rules"
-              :platform="createComplianceRuleForm.platform"
-              :resource-type="createComplianceRuleForm.resourceType"
-            ></compliance_rules> </el-form-item
-        ></template>
+              <el-select
+                style="width: 100%"
+                v-model="createComplianceRuleForm.resourceType"
+                class="m-2"
+                :placeholder="'请选择资源类型'"
+              >
+                <el-option
+                  v-for="item in supportResourceTypeList"
+                  :key="item.value"
+                  :label="item.key"
+                  :value="item.value"
+                />
+              </el-select>
+            </el-form-item>
+            <el-form-item
+              prop="rules.scanRule"
+              style="width: 45%"
+              label="规则类型"
+            >
+              <el-radio-group
+                v-model="createComplianceRuleForm.rules.scanRule"
+                class="ml-4"
+              >
+                <el-radio label="COMPLIANCE" size="large">视为合规</el-radio>
+                <el-radio label="NOT_COMPLIANCE" size="large"
+                  >视为不合规</el-radio
+                >
+              </el-radio-group>
+            </el-form-item>
+            <el-form-item
+              prop="rules.rules"
+              style="width: 100%"
+              label="判断条件"
+            >
+              <compliance_rules
+                ref="rulesRef"
+                v-model="createComplianceRuleForm.rules"
+                :platform="createComplianceRuleForm.platform"
+                :resource-type="createComplianceRuleForm.resourceType"
+              ></compliance_rules>
+            </el-form-item>
+          </div>
+        </template>
       </base-container>
     </el-form>
     <template #footer>
@@ -137,7 +164,7 @@
   </el-dialog>
 </template>
 <script setup lang="ts">
-import { ref, onMounted, computed, watch } from "vue";
+import { ref, onMounted, computed } from "vue";
 import compliance_rules from "@/views/rule/components/compliance_rules/index.vue";
 import type { FormRules, FormInstance } from "element-plus";
 import type { SaveComplianceRuleRequest } from "@/api/rule/type";
@@ -194,7 +221,11 @@ const createComplianceRuleForm = ref<SaveComplianceRuleRequest>({
   ruleGroupId: "",
   platform: "",
   resourceType: "",
-  rules: { conditionType: "AND", rules: [], scanRule: "COMPLIANCE" },
+  rules: {
+    conditionType: "AND",
+    rules: [{ field: "", compare: "", value: "" }],
+    scanRule: "COMPLIANCE",
+  },
   riskLevel: "LOW",
   insuranceStatuteIds: [],
   description: "",
@@ -241,6 +272,14 @@ const createComplianceRuleFormRules = ref<FormRules>({
       min: 1,
       message: "规则条件不能为空",
       type: "array",
+    },
+  ],
+  "rules.scanRule": [
+    {
+      required: true,
+      message: "规则类型不能为空",
+      trigger: "change",
+      type: "string",
     },
   ],
   insuranceStatuteIds: [
@@ -300,17 +339,17 @@ const supportResourceTypeList = computed(() => {
 /**
  * 修改云账号后 清除规则和资源类型
  */
-watch(
-  () => createComplianceRuleForm.value.platform,
-  () => {
-    createComplianceRuleForm.value.rules = {
-      conditionType: "AND",
-      rules: [],
-      scanRule: "COMPLIANCE",
-    };
-    createComplianceRuleForm.value.resourceType = "";
-  }
-);
+
+const changePlatform = () => {
+  createComplianceRuleForm.value.rules = {
+    conditionType: "AND",
+    rules: [],
+    scanRule: createComplianceRuleForm.value.rules.scanRule
+      ? createComplianceRuleForm.value.rules.scanRule
+      : "COMPLIANCE",
+  };
+  createComplianceRuleForm.value.resourceType = "";
+};
 /**
  * 表单提交
  */
@@ -344,18 +383,27 @@ onMounted(() => {
  * 打开弹出框
  */
 const open = () => {
-  ruleForm.value?.clearValidate();
+  createComplianceRuleVisible.value = true;
   createComplianceRuleForm.value = {
     name: "",
     ruleGroupId: "",
     platform: "",
     resourceType: "",
-    rules: { conditionType: "AND", rules: [], scanRule: "COMPLIANCE" },
+    rules: {
+      conditionType: "AND",
+      rules: [{ field: "", compare: "", value: "" }],
+      scanRule: "COMPLIANCE",
+    },
     riskLevel: "LOW",
     insuranceStatuteIds: [],
     description: "",
   };
-  createComplianceRuleVisible.value = true;
+  // 需要等elementui校验结束后再进清空
+  ruleForm.value
+    ?.validate(() => {
+      ruleForm.value?.clearValidate();
+    })
+    .catch();
 };
 // 关闭弹出框
 const close = () => {
@@ -369,7 +417,12 @@ defineExpose({ open, close });
   height: auto;
   .base_info {
     width: 100%;
-    display: FLEX;
+    display: flex;
+    flex-wrap: wrap;
+  }
+  .rule_details {
+    width: 100%;
+    display: flex;
     flex-wrap: wrap;
   }
 }

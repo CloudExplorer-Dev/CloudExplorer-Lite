@@ -7,7 +7,7 @@
   </div>
 </template>
 <script setup lang="ts">
-const props = withDefaults(defineProps<{ style: any }>(), {
+const props = withDefaults(defineProps<{ style?: any }>(), {
   style: {},
 });
 </script>

@@ -24,7 +24,7 @@ const props = withDefaults(
     cloudAccountId?: string;
     clickSeries?: (event: ECElementEvent) => void;
     getOptions: (req: Array<ComplianceViewGroupResponse>) => any;
-    bodyStyle: any;
+    bodyStyle?: any;
   }>(),
   {
     bodyStyle: {},

@@ -66,7 +66,9 @@
     <el-form-item
       class="avg spacing"
       v-else-if="
-        activeField && ['ArrayNumber', 'Number'].includes(activeField.fieldType)
+        activeField &&
+        ['ArrayNumber', 'Number'].includes(activeField.fieldType) &&
+        !['EXIST', 'NOT_EXIST'].includes(modelValue.compare)
       "
       key="number_value"
       prop="value"
@@ -145,7 +147,6 @@ const rules = ref<FormRules>({
     {
       required: true,
       message: "值不能为空",
-      type: "string",
       trigger: "blur",
     },
   ],
@@ -169,6 +170,15 @@ const handler = (field: string, value: any) => {
       emit("update:modelValue", {
         ...props.modelValue,
         value: 0,
+        compares: "EQ",
+        [field]: value,
+      });
+      return;
+    } else {
+      emit("update:modelValue", {
+        ...props.modelValue,
+        value: "",
+        compares: "EQ",
         [field]: value,
       });
       return;

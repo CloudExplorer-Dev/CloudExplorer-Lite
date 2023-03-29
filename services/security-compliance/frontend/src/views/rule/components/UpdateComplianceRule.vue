@@ -17,7 +17,7 @@
       ref="ruleForm"
       label-width="120px"
     >
-      <base-container class="base_container">
+      <base-container class="base_container" :contentBorder="false">
         <template #header><span>基本信息</span> </template>
         <template #content>
           <div class="base_info">
@@ -100,32 +100,58 @@
           </div>
         </template>
       </base-container>
-      <base-container class="base_container">
+      <base-container class="base_container" :contentBorder="false">
         <template #header><span>规则详情</span></template>
         <template #content>
-          <el-form-item prop="resourceType" style="width: 45%" label="资源类型">
-            <el-select
-              style="width: 100%"
-              v-model="updateComplianceRuleForm.resourceType"
-              class="m-2"
-              :placeholder="'请选择资源类型'"
+          <div class="rule_details">
+            <el-form-item
+              prop="resourceType"
+              style="width: 45%"
+              label="资源类型"
             >
-              <el-option
-                v-for="item in supportResourceTypeList"
-                :key="item.value"
-                :label="item.key"
-                :value="item.value"
-              />
-            </el-select>
-          </el-form-item>
-          <el-form-item prop="rules.rules" label="判断条件">
-            <compliance_rules
-              ref="rulesRef"
-              v-model="updateComplianceRuleForm.rules"
-              :platform="updateComplianceRuleForm.platform"
-              :resource-type="updateComplianceRuleForm.resourceType"
-            ></compliance_rules> </el-form-item
-        ></template>
+              <el-select
+                style="width: 100%"
+                v-model="updateComplianceRuleForm.resourceType"
+                class="m-2"
+                :placeholder="'请选择资源类型'"
+              >
+                <el-option
+                  v-for="item in supportResourceTypeList"
+                  :key="item.value"
+                  :label="item.key"
+                  :value="item.value"
+                />
+              </el-select>
+            </el-form-item>
+            <el-form-item
+              prop="rules.scanRule"
+              style="width: 45%"
+              label="规则类型"
+            >
+              <el-radio-group
+                v-model="updateComplianceRuleForm.rules.scanRule"
+                class="ml-4"
+              >
+                <el-radio label="COMPLIANCE" size="large">视为合规</el-radio>
+                <el-radio label="NOT_COMPLIANCE" size="large"
+                  >视为不合规</el-radio
+                >
+              </el-radio-group>
+            </el-form-item>
+            <el-form-item
+              prop="rules.rules"
+              style="width: 100%"
+              label="判断条件"
+            >
+              <compliance_rules
+                ref="rulesRef"
+                v-model="updateComplianceRuleForm.rules"
+                :platform="updateComplianceRuleForm.platform"
+                :resource-type="updateComplianceRuleForm.resourceType"
+              ></compliance_rules>
+            </el-form-item>
+          </div>
+        </template>
       </base-container>
     </el-form>
     <template #footer>
@@ -245,6 +271,14 @@ const updateComplianceRuleFormRules = ref<FormRules>({
       min: 1,
       message: "规则条件不能为空",
       type: "array",
+    },
+  ],
+  "rules.scanRule": [
+    {
+      required: true,
+      message: "规则类型不能为空",
+      trigger: "change",
+      type: "string",
     },
   ],
   insuranceStatuteIds: [
@@ -393,6 +427,11 @@ defineExpose({ open, close, echoData });
   .base_info {
     width: 100%;
     display: FLEX;
+    flex-wrap: wrap;
+  }
+  .rule_details {
+    width: 100%;
+    display: flex;
     flex-wrap: wrap;
   }
 }
