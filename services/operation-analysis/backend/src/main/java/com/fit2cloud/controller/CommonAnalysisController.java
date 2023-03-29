@@ -6,6 +6,7 @@ import com.fit2cloud.controller.handler.ResultHolder;
 import com.fit2cloud.controller.request.CommonRequest;
 import com.fit2cloud.dto.AnalysisCloudAccountDTO;
 import com.fit2cloud.service.ICommonAnalysisService;
+import com.fit2cloud.service.impl.CurrentUserResourceService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -29,6 +30,8 @@ import java.util.List;
 public class CommonAnalysisController {
     @Resource
     private ICommonAnalysisService iCommonAnalysisService;
+    @Resource
+    private CurrentUserResourceService currentUserResourceService;
 
     @ApiOperation(value = "查询云账号数量", notes = "查询云账号数量")
     @GetMapping("/cloud_account/count")
@@ -40,7 +43,7 @@ public class CommonAnalysisController {
     @GetMapping("/cloud_account/list")
     @PreAuthorize("hasAnyCePermission('OVERVIEW:READ')")
     public ResultHolder<List<CloudAccount>> cloudAccountList() {
-        return ResultHolder.success(iCommonAnalysisService.currentUserCloudAccountList());
+        return ResultHolder.success(currentUserResourceService.currentUserCloudAccountList());
     }
 
     @ApiOperation(value = "云账号资源统计", notes = "云账号资源统计")

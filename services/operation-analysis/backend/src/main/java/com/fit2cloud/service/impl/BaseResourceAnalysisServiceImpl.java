@@ -18,10 +18,7 @@ import com.fit2cloud.common.es.ElasticsearchProvide;
 import com.fit2cloud.common.es.constants.IndexConstants;
 import com.fit2cloud.common.log.utils.LogUtil;
 import com.fit2cloud.common.provider.entity.F2CEntityType;
-import com.fit2cloud.common.utils.ColumnNameUtil;
-import com.fit2cloud.common.utils.DateUtil;
-import com.fit2cloud.common.utils.PageUtil;
-import com.fit2cloud.common.utils.QueryUtil;
+import com.fit2cloud.common.utils.*;
 import com.fit2cloud.constants.SpecialAttributesConstants;
 import com.fit2cloud.controller.request.base.resource.analysis.ResourceAnalysisRequest;
 import com.fit2cloud.controller.request.base.resource.analysis.ResourceUsedTrendRequest;
@@ -78,7 +75,7 @@ public class BaseResourceAnalysisServiceImpl implements IBaseResourceAnalysisSer
     @Resource
     private ElasticsearchProvide elasticsearchProvide;
     @Resource
-    private IPermissionService permissionService;
+    private CurrentUserResourceService currentUserResourceService;
 
     /**
      * @param request 宿主机分页查询参数
@@ -320,6 +317,9 @@ public class BaseResourceAnalysisServiceImpl implements IBaseResourceAnalysisSer
         CalendarInterval intervalUnit = OperationUtils.getCalendarIntervalUnit(request.getStartTime(), request.getEndTime());
         try {
             request.setIntervalPosition(intervalUnit);
+            if(CollectionUtils.isEmpty(request.getAccountIds())){
+                request.setAccountIds(currentUserResourceService.currentUserCloudAccountList().stream().map(CloudAccount::getId).toList());
+            }
             SearchHits<PerfMetricMonitorData> response = elasticsearchTemplate.search(getSearchResourceTrendDataQuery(request), PerfMetricMonitorData.class, IndexCoordinates.of(IndexConstants.CE_PERF_METRIC_MONITOR_DATA.getCode()));
             return convertToTrendData(response, intervalUnit);
         } catch (Exception e) {

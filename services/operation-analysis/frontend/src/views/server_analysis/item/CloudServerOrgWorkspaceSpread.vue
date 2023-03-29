@@ -10,7 +10,7 @@
           v-model="paramDepartmentType"
           @change="getSpreadByDepartmentData()"
         >
-          <el-radio-button label="org">组织</el-radio-button>
+          <el-radio-button label="org" v-show="!userRole">组织</el-radio-button>
           <el-radio-button label="workspace">工作空间</el-radio-button>
         </el-radio-group>
       </el-col>
@@ -42,13 +42,17 @@ import CloudServerViewApi from "@/api/server_analysis/index";
 import _ from "lodash";
 import type { ResourceAnalysisRequest } from "@/api/server_analysis/type";
 import type { ECBasicOption } from "echarts/types/src/util/types";
+import { useUserStore } from "@commons/stores/modules/user";
+const userStore = useUserStore();
+const userRole = ref<boolean>(userStore.currentRole==='USER');
+const adminRole = ref<boolean>(userStore.currentRole==='ADMIN');
 const props = defineProps<{
   cloudAccountId?: string | undefined;
   clusterId?: string | undefined;
   datastoreId?: string | undefined;
   hostId?: string | undefined;
 }>();
-const paramDepartmentType = ref<string>("org");
+const paramDepartmentType = ref<string>(userRole.value?"workspace":"org");
 const params = ref<ResourceAnalysisRequest>();
 const loading = ref<boolean>(false);
 const apiData = ref<any>();
@@ -60,10 +64,10 @@ const getSpreadByDepartmentData = () => {
   _.set(
     params,
     "accountIds",
-    props.cloudAccountId === "all" ? [] : [props.cloudAccountId]
+     props.cloudAccountId==="all"  ? [] : [props.cloudAccountId]
   );
   props.hostId
-    ? _.set(params, "hostIds", props.hostId === "all" ? [] : [props.hostId])
+    ? _.set(params, "hostIds",  props.hostId==="all" ?  [] : [props.hostId])
     : "";
   CloudServerViewApi.getAnalysisOrgWorkspaceVmCount(params, loading).then(
     (res) => (apiData.value = res.data)
@@ -196,8 +200,8 @@ const defaultSpeedOptions = {
     padding: [0, 0, 10, 0],
   },
   grid: {
-    left: "3%",
-    right: "4%",
+    left: "0%",
+    right: "0%",
     top: "17px",
     bottom: "15%",
     containLabel: true,
@@ -208,6 +212,10 @@ const defaultSpeedOptions = {
   xAxis: {
     type: "category",
     data: [],
+    axisLabel: {
+      showMaxLabel: false,
+      showMinLabel: false,
+    },
   },
   yAxis: {
     type: "value",

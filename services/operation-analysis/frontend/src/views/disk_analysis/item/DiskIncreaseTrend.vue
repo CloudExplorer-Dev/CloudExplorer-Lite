@@ -41,6 +41,9 @@ import type { ResourceAnalysisRequest } from "@/api/disk_analysis/type";
 import type { ECBasicOption } from "echarts/types/src/util/types";
 import ResourceSpreadViewApi from "@/api/disk_analysis/index";
 import * as echarts from "echarts";
+import { useUserStore } from "@commons/stores/modules/user";
+const userStore = useUserStore();
+const adminRole = ref<boolean>(userStore.currentRole==='ADMIN');
 const props = defineProps<{
   cloudAccountId?: string | undefined;
   currentUnit?: string | undefined;
@@ -55,7 +58,7 @@ const getIncreaseTrend = () => {
   _.set(
     params,
     "accountIds",
-    props.cloudAccountId === "all" ? [] : [props.cloudAccountId]
+       props.cloudAccountId==="all" ?  [] : [props.cloudAccountId]
   );
   _.set(params, "statisticalBlock", props.currentUnit === "block");
   ResourceSpreadViewApi.getIncreaseTrend(params, loading).then(
@@ -69,6 +72,19 @@ const options = computed<ECBasicOption>(() => {
     series: any = {},
     xAxis: any[] = [];
   const seriesData: any[] = [];
+  if (!obj || obj.length===0) {
+    return {
+      title: {
+        text: "暂无数据",
+        x: "center",
+        y: "center",
+        textStyle: {
+          fontSize: 12,
+          fontWeight: "normal",
+        },
+      },
+    };
+  }
   const options = _.cloneDeep(defaultSpeedOptions);
   if (obj) {
     obj.forEach(function (item: any) {
@@ -109,15 +125,6 @@ const options = computed<ECBasicOption>(() => {
         showSymbol: false,
         areaStyle: {
           opacity: 0.1,
-          color: new echarts.graphic.LinearGradient(
-            0,
-            0,
-            0,
-            1,
-            colorIndex >= 5
-              ? getRandomColor()
-              : _.nth(trendSeriesColor, colorIndex)
-          ),
         },
         emphasis: {
           focus: "series",
@@ -153,9 +160,34 @@ watch(
   },
   { immediate: true }
 );
-
+const color: Array<string> = [
+  "rgb(79, 131, 253, 1)",
+  "rgb(150, 189, 255, 1)",
+  "rgb(250, 211, 85, 1)",
+  "rgb(255, 230, 104, 1)",
+  "rgb(22, 225, 198, 1)",
+  "rgb(76, 253, 224, 1)",
+  "rgb(81, 206, 251, 1)",
+  "rgb(118, 240, 255, 1)",
+  "rgb(148, 90, 246, 1)",
+  "rgb(220, 155, 255, 1)",
+  "rgb(255, 165, 61, 1)",
+  "rgb(255, 199, 94, 1)",
+  "rgb(241, 75, 169, 1)",
+  "rgb(255, 137, 227, 1)",
+  "rgb(247, 105, 101, 1)",
+  "rgb(255, 158, 149, 1)",
+  "rgb(219, 102, 219, 1)",
+  "rgb(254, 157, 254, 1)",
+  "rgb(195, 221, 65, 1)",
+  "rgb(217, 244, 87, 1)",
+  "rgb(97, 106, 229, 1)",
+  "rgb(172, 173, 255, 1)",
+  "rgb(98, 210, 85, 1)",
+  "rgb(134, 245, 120, 1)",
+];
 const defaultSpeedOptions = {
-  color: ["#80FFA5", "#00DDFF", "#0080ff", "#FFBF00", "#FF0087", "#37A2FF"],
+  color: color,
   title: {},
   tooltip: {
     trigger: "axis",
@@ -179,8 +211,8 @@ const defaultSpeedOptions = {
     },
   },
   grid: {
-    left: "3%",
-    right: "4%",
+    left: "0%",
+    right: "0%",
     top: "17px",
     bottom: "15%",
     containLabel: true,
@@ -190,6 +222,10 @@ const defaultSpeedOptions = {
       type: "category",
       boundaryGap: false,
       data: ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"],
+      axisLabel: {
+        showMaxLabel: false,
+        showMinLabel: false,
+      },
     },
   ],
   yAxis: [
@@ -217,91 +253,6 @@ const defaultSpeedOptions = {
       data: [140, 232, 101, 264, 90, 340, 250],
     },
   ],
-};
-/**
- * 颜色
- */
-const trendSeriesColor = [
-  [
-    {
-      offset: 0,
-      color: "rgb(128, 255, 165)",
-    },
-    {
-      offset: 1,
-      color: "rgb(1, 191, 236)",
-    },
-  ],
-  [
-    {
-      offset: 0,
-      color: "rgb(0, 221, 255)",
-    },
-    {
-      offset: 1,
-      color: "rgb(77, 119, 255)",
-    },
-  ],
-  [
-    {
-      offset: 0,
-      color: "rgb(55, 162, 255)",
-    },
-    {
-      offset: 1,
-      color: "rgb(116, 21, 219)",
-    },
-  ],
-  [
-    {
-      offset: 0,
-      color: "rgb(255, 191, 0)",
-    },
-    {
-      offset: 1,
-      color: "rgb(224, 62, 76)",
-    },
-  ],
-  [
-    {
-      offset: 0,
-      color: "rgb(255, 0, 135)",
-    },
-    {
-      offset: 1,
-      color: "rgb(135, 0, 157)",
-    },
-  ],
-];
-/**
- * 随机颜色
- */
-const getRandomColor = () => {
-  const randomColor = [
-    {
-      offset: 0,
-      color:
-        "rgb(" +
-        _.random(0, 255) +
-        ", " +
-        _.random(0, 255) +
-        ", " +
-        _.random(0, 255) +
-        ")",
-    },
-    {
-      offset: 1,
-      color:
-        "rgb(" +
-        _.random(0, 255) +
-        ", " +
-        _.random(0, 255) +
-        ", " +
-        _.random(0, 255) +
-        ")",
-    },
-  ];
-  return randomColor;
 };
 </script>
 <style scoped lang="scss">

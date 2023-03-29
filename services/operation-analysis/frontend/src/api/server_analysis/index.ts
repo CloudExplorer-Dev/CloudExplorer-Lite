@@ -24,7 +24,7 @@ export function listAccounts(loading?: Ref<boolean>): Promise<Result<any>> {
 }
 
 export function listHost(
-  req: ResourceAnalysisRequest,
+  req: Ref<ResourceAnalysisRequest | undefined>,
   loading?: Ref<boolean>
 ): Promise<Result<any>> {
   return get("api/server_analysis/hosts", req, loading);

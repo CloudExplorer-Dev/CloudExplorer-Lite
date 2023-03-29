@@ -54,6 +54,8 @@ public class DiskAnalysisServiceImpl implements IDiskAnalysisService {
     private IPermissionService permissionService;
     @Resource
     private OrgWorkspaceMapper orgWorkspaceMapper;
+    @Resource
+    private CurrentUserResourceService currentUserResourceService;
 
     /**
      * 分页查询磁盘明细
@@ -74,6 +76,9 @@ public class DiskAnalysisServiceImpl implements IDiskAnalysisService {
         List<String> sourceIds = permissionService.getSourceIds();
         if (!CurrentUserUtils.isAdmin() && CollectionUtils.isNotEmpty(sourceIds)) {
             request.setSourceIds(sourceIds);
+        }
+        if(CollectionUtils.isEmpty(request.getAccountIds())){
+            request.setAccountIds(currentUserResourceService.currentUserCloudAccountList().stream().map(CloudAccount::getId).toList());
         }
         MPJLambdaWrapper<VmCloudDisk> wrapper = defaultDiskQuery(new MPJLambdaWrapper<>(),request.getAccountIds());
         wrapper.orderByDesc(VmCloudDisk::getCreateTime);
@@ -104,8 +109,7 @@ public class DiskAnalysisServiceImpl implements IDiskAnalysisService {
      */
     @Override
     public List<CloudAccount> getAllCloudAccount() {
-        QueryWrapper<CloudAccount> queryWrapper = new QueryWrapper<>();
-        return iBaseCloudAccountService.list(queryWrapper);
+        return currentUserResourceService.currentUserCloudAccountList();
     }
 
     /**
@@ -116,6 +120,9 @@ public class DiskAnalysisServiceImpl implements IDiskAnalysisService {
         List<String> sourceIds = permissionService.getSourceIds();
         if (!CurrentUserUtils.isAdmin() && CollectionUtils.isNotEmpty(sourceIds)) {
             request.setSourceIds(sourceIds);
+        }
+        if(CollectionUtils.isEmpty(request.getAccountIds())){
+            request.setAccountIds(currentUserResourceService.currentUserCloudAccountList().stream().map(CloudAccount::getId).toList());
         }
         MPJLambdaWrapper<VmCloudDisk> wrapper = defaultDiskQuery(new MPJLambdaWrapper<>(),request.getAccountIds());
         wrapper.selectAs(CloudAccount::getName, AnalysisDiskDTO::getAccountName);
@@ -228,6 +235,9 @@ public class DiskAnalysisServiceImpl implements IDiskAnalysisService {
     @Override
     public Map<String,List<BarTreeChartData>> analysisCloudDiskByOrgWorkspace(ResourceAnalysisRequest request){
         Map<String,List<BarTreeChartData>> result = new HashMap<>(2);
+        if(CollectionUtils.isEmpty(request.getAccountIds())){
+            request.setAccountIds(currentUserResourceService.currentUserCloudAccountList().stream().map(CloudAccount::getId).toList());
+        }
         List<BarTreeChartData> workspaceList =  workspaceSpread(request);
         if(request.isAnalysisWorkspace()){
             result.put("tree",workspaceList);

@@ -65,9 +65,7 @@ const optimizeSuggests = computed<Array<ListOptimizationRequest>>(() => {
     _.set(
       v,
       "accountIds",
-      props.cloudAccountId && props.cloudAccountId !== "all"
-        ? [props.cloudAccountId]
-        : []
+      props.cloudAccountId === "all" ? [] : [props.cloudAccountId]
     );
     if (props.req) {
       _.assign(v, props.req);

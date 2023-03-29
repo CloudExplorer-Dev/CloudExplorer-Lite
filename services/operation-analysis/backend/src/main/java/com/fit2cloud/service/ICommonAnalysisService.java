@@ -19,9 +19,4 @@ public interface ICommonAnalysisService {
      */
     public IPage<AnalysisCloudAccountDTO> cloudAccountDetailed(Integer currentPage, Integer limit, String cloudAccountId);
 
-    /**
-     * 当前用户所有云账号
-     * 通过用户拥有的云主机
-     */
-    List<CloudAccount> currentUserCloudAccountList();
 }

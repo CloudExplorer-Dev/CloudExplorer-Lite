@@ -83,6 +83,8 @@ public class ServerAnalysisServiceImpl implements IServerAnalysisService {
     private IPermissionService permissionService;
     @Resource
     private BaseVmCloudServerMapper baseVmCloudServerMapper;
+    @Resource
+    private CurrentUserResourceService currentUserResourceService;
 
     /**
      * 分页查询云主机明细
@@ -107,6 +109,9 @@ public class ServerAnalysisServiceImpl implements IServerAnalysisService {
         if (!CurrentUserUtils.isAdmin() && CollectionUtils.isNotEmpty(sourceIds)) {
             request.setSourceIds(sourceIds);
         }
+        if(CollectionUtils.isEmpty(request.getAccountIds())){
+            request.setAccountIds(currentUserResourceService.currentUserCloudAccountList().stream().map(CloudAccount::getId).toList());
+        }
         MPJLambdaWrapper<VmCloudServer> wrapper = addServerQuery(new MPJLambdaWrapper<>(),request.getAccountIds());
         wrapper.selectAll(VmCloudServer.class);
         wrapper.orderByDesc(VmCloudServer::getCreateTime);
@@ -130,8 +135,7 @@ public class ServerAnalysisServiceImpl implements IServerAnalysisService {
 
     @Override
     public List<CloudAccount> getAllCloudAccount() {
-        QueryWrapper<CloudAccount> queryWrapper = new QueryWrapper<>();
-        return iBaseCloudAccountService.list(queryWrapper);
+       return currentUserResourceService.currentUserCloudAccountList();
     }
 
     /**
@@ -164,6 +168,9 @@ public class ServerAnalysisServiceImpl implements IServerAnalysisService {
         List<String> sourceIds = permissionService.getSourceIds();
         if (!CurrentUserUtils.isAdmin() && CollectionUtils.isNotEmpty(sourceIds)) {
             request.setSourceIds(sourceIds);
+        }
+        if(CollectionUtils.isEmpty(request.getAccountIds())){
+            request.setAccountIds(currentUserResourceService.currentUserCloudAccountList().stream().map(CloudAccount::getId).toList());
         }
         MPJLambdaWrapper<VmCloudServer> wrapper = addServerQuery(new MPJLambdaWrapper<>(),request.getAccountIds());
         wrapper.in(CollectionUtils.isNotEmpty(request.getSourceIds()), VmCloudServer::getSourceId, request.getSourceIds());
@@ -372,6 +379,12 @@ public class ServerAnalysisServiceImpl implements IServerAnalysisService {
     @Override
     public List<ChartData> getResourceTrendData(ResourceAnalysisRequest request){
         List<ChartData> result = new ArrayList<>();
+        if(CollectionUtils.isEmpty(request.getAccountIds())){
+            request.setAccountIds(currentUserResourceService.currentUserCloudAccountList().stream().map(CloudAccount::getId).toList());
+        }
+        if(!CurrentUserUtils.isAdmin() && CollectionUtils.isEmpty(request.getAccountIds())){
+            return result;
+        }
         CalendarInterval intervalUnit = OperationUtils.getCalendarIntervalUnit(request.getStartTime(),request.getEndTime());
         try {
             request.setIntervalPosition(intervalUnit);
@@ -402,20 +415,27 @@ public class ServerAnalysisServiceImpl implements IServerAnalysisService {
             QueryUtil.QueryCondition accountId = new QueryUtil.QueryCondition(true, "cloudAccountId.keyword", request.getAccountIds(), QueryUtil.CompareType.IN);
             queryConditions.add(accountId);
         }
-        if(CollectionUtils.isNotEmpty(request.getHostIds())){
+        if(CurrentUserUtils.isAdmin() && CollectionUtils.isNotEmpty(request.getHostIds())){
             QueryUtil.QueryCondition accountId = new QueryUtil.QueryCondition(true, "hostId.keyword", request.getHostIds(), QueryUtil.CompareType.IN);
             queryConditions.add(accountId);
-        }
-        MPJLambdaWrapper<VmCloudServer> queryServerWrapper = addServerAnalysisQuery(request);
-        queryServerWrapper.notIn(true,VmCloudServer::getInstanceStatus, List.of(SpecialAttributesConstants.StatusField.VM_DELETE,SpecialAttributesConstants.StatusField.FAILED));
-        List<AnalysisServerDTO> vmList = baseVmCloudServerMapper.selectJoinList(AnalysisServerDTO.class,queryServerWrapper);
-        List<String> vmUuIds = new ArrayList<>();
-        if (CollectionUtils.isNotEmpty(vmList)) {
-            vmUuIds = vmList.stream().map(VmCloudServer::getInstanceUuid).filter(StringUtils::isNotEmpty).toList();
-        }
-        if (CollectionUtils.isNotEmpty(vmUuIds)) {
-            QueryUtil.QueryCondition resourceIds = new QueryUtil.QueryCondition(true, "instanceId.keyword", vmUuIds, QueryUtil.CompareType.IN);
-            queryConditions.add(resourceIds);
+        }else{
+            MPJLambdaWrapper<VmCloudServer> queryServerWrapper = addServerAnalysisQuery(request);
+            queryServerWrapper.notIn(true,VmCloudServer::getInstanceStatus, List.of(SpecialAttributesConstants.StatusField.VM_DELETE,SpecialAttributesConstants.StatusField.FAILED));
+            List<AnalysisServerDTO> vmList = baseVmCloudServerMapper.selectJoinList(AnalysisServerDTO.class,queryServerWrapper);
+            //不是管理员时，通过云主机查询，查不到时，条件为不存在的云主机ID
+            if(CollectionUtils.isEmpty(vmList)){
+                QueryUtil.QueryCondition resourceIds = new QueryUtil.QueryCondition(true, "instanceId.keyword", System.currentTimeMillis(), QueryUtil.CompareType.EQ);
+                queryConditions.add(resourceIds);
+                return iBaseResourceAnalysisService.getRangeQuery(queryConditions, request.getIntervalPosition());
+            }
+            List<String> vmUuIds = new ArrayList<>();
+            if (CollectionUtils.isNotEmpty(vmList)) {
+                vmUuIds = vmList.stream().map(VmCloudServer::getInstanceUuid).filter(StringUtils::isNotEmpty).toList();
+            }
+            if (CollectionUtils.isNotEmpty(vmUuIds)) {
+                QueryUtil.QueryCondition resourceIds = new QueryUtil.QueryCondition(true, "instanceId.keyword", vmUuIds, QueryUtil.CompareType.IN);
+                queryConditions.add(resourceIds);
+            }
         }
         return iBaseResourceAnalysisService.getRangeQuery(queryConditions, request.getIntervalPosition());
     }
@@ -426,6 +446,9 @@ public class ServerAnalysisServiceImpl implements IServerAnalysisService {
     @Override
     public Map<String,List<BarTreeChartData>> analysisVmCloudServerByOrgWorkspace(ResourceAnalysisRequest request){
         Map<String,List<BarTreeChartData>> result = new HashMap<>(2);
+        if(CollectionUtils.isEmpty(request.getAccountIds())){
+            request.setAccountIds(currentUserResourceService.currentUserCloudAccountList().stream().map(CloudAccount::getId).toList());
+        }
         List<BarTreeChartData> workspaceList = workspaceSpread(request);
         if(request.isAnalysisWorkspace()){
             result.put("all",workspaceList);
@@ -455,6 +478,7 @@ public class ServerAnalysisServiceImpl implements IServerAnalysisService {
         orgWrapper.eq(true, OrgWorkspace::getType,"org");
         orgWrapper.in(!CurrentUserUtils.isAdmin() && CollectionUtils.isNotEmpty(sourceIds),OrgWorkspace::getId,sourceIds);
         orgWrapper.in(CollectionUtils.isNotEmpty(request.getAccountIds()),VmCloudServer::getAccountId,request.getAccountIds());
+        orgWrapper.in(CollectionUtils.isNotEmpty(request.getHostIds()),VmCloudServer::getHostId,request.getHostIds());
         orgWrapper.notIn(true,VmCloudServer::getInstanceStatus, List.of(SpecialAttributesConstants.StatusField.VM_DELETE,SpecialAttributesConstants.StatusField.FAILED));
         orgWrapper.groupBy(OrgWorkspace::getId,OrgWorkspace::getName);
         orgWrapper.leftJoin(VmCloudServer.class,VmCloudServer::getSourceId,OrgWorkspace::getId);
