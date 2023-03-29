@@ -10,6 +10,7 @@ const userStore = useUserStore();
 const props = defineProps<{
   cloudAccountId: string;
 }>();
+
 const baseList: Array<CountType> = [
   {
     icon: "yun",
@@ -19,7 +20,7 @@ const baseList: Array<CountType> = [
     ),
     module: "operation-analysis",
     path: "/api/common/cloud_account/count",
-    redirect: "/management-center#/cloud_account/list",
+    redirect: "/management-center/cloud_account/list",
     roles: ["ADMIN", "ORGADMIN", "USER"],
   },
   {
@@ -30,7 +31,7 @@ const baseList: Array<CountType> = [
     ),
     module: "operation-analysis",
     path: "/api/server_analysis/cloud_account/cloud_server/count",
-    redirect: "/vm-service#/vm_cloud_server/list",
+    redirect: "/vm-service/vm_cloud_server/list",
     roles: ["ADMIN", "ORGADMIN", "USER"],
   },
   {
@@ -39,7 +40,7 @@ const baseList: Array<CountType> = [
     hasPermission: permissionStore.hasPermission("[vm-service]CLOUD_DISK:READ"),
     module: "operation-analysis",
     path: "/api/disk_analysis/cloud_account/disk/count",
-    redirect: "/vm-service#/vm_cloud_disk/list",
+    redirect: "/vm-service/vm_cloud_disk/list",
     roles: ["ADMIN", "ORGADMIN", "USER"],
   },
   {

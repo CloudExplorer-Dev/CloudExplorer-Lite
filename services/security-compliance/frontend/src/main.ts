@@ -9,7 +9,6 @@ import App from "./App.vue";
 import common from "@commons/index";
 import { i18n } from "@commons/index";
 import "@commons/styles/index.scss";
-import { AppMicroApp } from "@commons/microapp";
 import { initRouteObj, getRoute } from "@commons/router";
 let app = null;
 
@@ -45,4 +44,4 @@ const mount = async () => {
   return app;
 };
 
-new AppMicroApp(mount, import.meta.env.VITE_APP_NAME).install();
+mount();

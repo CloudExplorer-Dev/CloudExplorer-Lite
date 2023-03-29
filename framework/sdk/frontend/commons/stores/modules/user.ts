@@ -10,11 +10,11 @@ import type {
   UserRole,
   UserStoreObjectWithLoginStatus,
 } from "@commons/api/user/type";
-
 import type { Role } from "@commons/api/role/type";
 import { usePermissionStore } from "@commons/stores/modules/permission";
 import type { SimpleMap } from "@commons/api/base/type";
 import type { SourceTreeObject } from "@commons/api/organization/type";
+import type { Router } from "vue-router";
 
 export const languages: SimpleMap<string> = {
   "zh-cn": "中文(简体)",
@@ -80,12 +80,7 @@ export const useUserStore = defineStore({
           roles = roleList[0]?.roles;
         }
       }
-      //const roleNames = _.map(roles, (o) => o.name);
 
-      // const roleName = _.join(
-      //   _.flatMap(roles, (o) => o.name),
-      //   ", "
-      // );
       if (state.currentSource) {
         return {
           roles: roles,
@@ -130,12 +125,24 @@ export const useUserStore = defineStore({
     },
     doLogout(redirect?: string) {
       this.clear();
-      window.location.href =
-        window.location.protocol +
-        "//" +
-        window.location.host +
-        "/signin" +
-        (redirect ? "?redirect=" + encodeURI(redirect) : "");
+
+      if (
+        import.meta.env.VITE_APP_NAME === "base" ||
+        !window.__MICRO_APP_ENVIRONMENT__
+      ) {
+        window.location.href =
+          window.location.protocol +
+          "//" +
+          window.location.host +
+          "/signin" +
+          (redirect ? "?redirect=" + encodeURI(redirect) : "");
+      } else {
+        const rObj: any = { name: "signin" };
+        if (redirect) {
+          rObj.query = { redirect: encodeURI(redirect) };
+        }
+        (window.microApp.router.getBaseAppRouter() as Router)?.push(rObj);
+      }
     },
     clear() {
       this.login = false;

@@ -12,6 +12,7 @@ import {
 } from "@commons/api/resource_optimization/type";
 import ServerOptimizationCard from "@commons/business/base-layout/home-page/items/operation/ServerOptimizationCard.vue";
 import { useRouter } from "vue-router";
+import MicroAppRouterUtil from "@commons/router/MicroAppRouterUtil";
 
 const props = withDefaults(
   defineProps<{
@@ -44,7 +45,7 @@ const moduleStore = useModuleStore();
 const permissionStore = usePermissionStore();
 const userStore = useUserStore();
 
-const useRoute = useRouter();
+const router = useRouter();
 
 //优化建议
 const optimizeParam = ref<any>();
@@ -139,18 +140,18 @@ function goTo(id: number) {
     queryParam.accountIds = encodeURI(JSON.stringify([props.cloudAccountId]));
   }
   if (import.meta.env.VITE_APP_NAME === "operation-analysis") {
-    useRoute.push({
+    router.push({
       name: "resource_optimization_list",
       query: queryParam,
     });
   } else {
-    window.location.href =
-      window.location.protocol +
-      "//" +
-      window.location.host +
-      "/operation-analysis/#/server_optimization/list?checked=" +
-      queryParam.checked +
-      (queryParam.accountIds ? "&accountIds=" + queryParam.accountIds : "");
+    MicroAppRouterUtil.jumpToChildrenPath(
+      "operation-analysis",
+      "/operation-analysis/server_optimization/list?checked=" +
+        queryParam.checked +
+        (queryParam.accountIds ? "&accountIds=" + queryParam.accountIds : ""),
+      router
+    );
   }
 }
 
