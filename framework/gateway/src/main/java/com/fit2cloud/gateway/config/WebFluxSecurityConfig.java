@@ -5,6 +5,7 @@ import org.springframework.security.config.annotation.web.reactive.EnableWebFlux
 import org.springframework.security.config.web.server.ServerHttpSecurity;
 import org.springframework.security.web.server.SecurityWebFilterChain;
 import org.springframework.security.web.server.context.NoOpServerSecurityContextRepository;
+import org.springframework.security.web.server.header.XFrameOptionsServerHttpHeadersWriter;
 
 /**
  * 网关不做security认证
@@ -24,6 +25,8 @@ public class WebFluxSecurityConfig {
                 )
                 //禁用session
                 .securityContextRepository(NoOpServerSecurityContextRepository.getInstance())
+                .headers().frameOptions().mode(XFrameOptionsServerHttpHeadersWriter.Mode.SAMEORIGIN)
+                .and()
                 .httpBasic().disable()
                 .formLogin().disable();
 
