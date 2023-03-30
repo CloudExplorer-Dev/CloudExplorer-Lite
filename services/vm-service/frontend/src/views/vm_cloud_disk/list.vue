@@ -192,7 +192,7 @@ const getRecycleBinSetting = () => {
 /**
  * 页面挂载
  */
-let timer: any;
+let timer: number;
 onMounted(() => {
   searchCloudAccount();
   getRecycleBinSetting();

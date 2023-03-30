@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted, computed } from "vue";
+import { ref, onMounted, computed, type Ref, onBeforeUnmount } from "vue";
 import RecycleBinsApi from "@/api/recycle_bin";
 import _ from "lodash";
 import type { RecycleBinInfo } from "@/api/recycle_bin/type";
@@ -30,19 +30,14 @@ const selectedRowData = ref<Array<RecycleBinInfo>>([]);
 const tableLoading = ref<boolean>(false);
 const cloudAccount = ref<Array<SimpleMap<string>>>([]);
 
-/**
- * 查询
- * @param condition
- */
-const search = (condition: TableSearch) => {
-  const params = TableSearch.toSearchParams(condition);
+const list = (params: any, loading?: Ref<boolean>) => {
   RecycleBinsApi.listRecycleBins(
     {
       currentPage: tableConfig.value.paginationConfig.currentPage,
       pageSize: tableConfig.value.paginationConfig.pageSize,
       ...params,
     },
-    tableLoading
+    loading
   ).then((res) => {
     tableData.value = res.data.records;
     tableConfig.value.paginationConfig?.setTotal(
@@ -54,6 +49,15 @@ const search = (condition: TableSearch) => {
       tableConfig.value.paginationConfig
     );
   });
+};
+
+/**
+ * 查询
+ * @param condition
+ */
+const search = (condition: TableSearch) => {
+  const params = TableSearch.toSearchParams(condition);
+  list(params, tableLoading);
 };
 
 const resourceStatus = ref<Array<SimpleMap<string>>>([
@@ -133,13 +137,36 @@ const searchCloudAccount = () => {
   });
 };
 
+const isResourceLoading = (status: string | undefined) => {
+  if (
+    status &&
+    status.toLowerCase() != "running" &&
+    status.indexOf("ing") > -1
+  ) {
+    return true;
+  } else {
+    return false;
+  }
+};
+
 /**
  * 页面挂载
  */
+let timer: number;
 onMounted(() => {
   search(new TableSearch());
   searchCloudAccount();
+  timer = setInterval(() => {
+    if (tableData.value?.some((s) => isResourceLoading(s.resourceStatus))) {
+      list(TableSearch.toSearchParams(table.value.getTableSearch()));
+    }
+  }, 6000);
 });
+
+onBeforeUnmount(() => {
+  if (timer) clearInterval(timer);
+});
+
 /**
  * 表单配置
  */
@@ -558,10 +585,7 @@ const refresh = () => {
         <div style="display: flex; align-items: center">
           <span>{{ filterStatus(scope.row.resourceStatus) }} </span>
           <el-icon
-            v-show="
-              scope.row.resourceStatus.toLowerCase() != 'running' &&
-              scope.row.resourceStatus.indexOf('ing') > -1
-            "
+            v-show="isResourceLoading(scope.row.resourceStatus)"
             class="is-loading"
             ><Loading
           /></el-icon>
