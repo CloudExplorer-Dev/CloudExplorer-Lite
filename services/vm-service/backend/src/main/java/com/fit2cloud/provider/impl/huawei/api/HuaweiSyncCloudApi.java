@@ -1714,14 +1714,10 @@ public class HuaweiSyncCloudApi {
             ShowCustomerOrderDetailsResponse response = getOrderDetailsById(server.getMetadata().get("metering.order_id"), bssClient);
             response.getOrderLineItems().stream().forEach((item) -> {
                 if ("hws.service.type.ec2".equalsIgnoreCase(item.getServiceTypeCode())) {
-                    //createRequest.setPeriodType(item.getPeriodType() == 2 ? "month" : "year");
-                    //createRequest.setPeriodNum(item.getPeriodNum() == null ? 1 : item.getPeriodNum());
-                    for (HuaweiPeriodOption option : HuaweiPeriodOption.values()) {
-                        if (item.getPeriodType() == 2) {
-                            createRequest.setPeriodNum(String.valueOf(option.getPeriod()));
-                        } else {
-                            createRequest.setPeriodNum(String.valueOf(option.getPeriod() * 12));
-                        }
+                    if (item.getPeriodType() == 2) {
+                        createRequest.setPeriodNum(String.valueOf(item.getPeriodNum() == null ? 1 : item.getPeriodNum()));
+                    } else {
+                        createRequest.setPeriodNum(String.valueOf(item.getPeriodNum() * 12));
                     }
                 }
             });
