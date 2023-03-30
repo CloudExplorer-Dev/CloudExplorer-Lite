@@ -159,12 +159,13 @@ public class HuaweiCloudProvider extends AbstractCloudProvider<HuaweiVmCredentia
         return HuaweiSyncCloudApi.getF2CDiskPerfMetricList(JsonUtil.parseObject(req, GetMetricsRequest.class));
     }
 
-    public List<NovaAvailabilityZoneDTO> getAvailabilityZone(String req){
-        return HuaweiSyncCloudApi.getAvailabilityZone(JsonUtil.parseObject(req,HuaweiVmCreateRequest.class));
+    public List<NovaAvailabilityZoneDTO> getAvailabilityZone(String req) {
+        return HuaweiSyncCloudApi.getAvailabilityZone(JsonUtil.parseObject(req, HuaweiVmCreateRequest.class));
     }
 
     /**
      * 计费模式
+     *
      * @return
      */
     public List<Map<String, String>> getBillingMode(String req) {
@@ -187,6 +188,7 @@ public class HuaweiCloudProvider extends AbstractCloudProvider<HuaweiVmCredentia
      * 字段值为“traffic”,表示按流量计费。
      * 字段为其它值,会导致创建云服务器失败。
      * 特殊处理noTraffic
+     *
      * @return
      */
     public List<Map<String, String>> getChargeMode(String req) {
@@ -201,6 +203,7 @@ public class HuaweiCloudProvider extends AbstractCloudProvider<HuaweiVmCredentia
         billingModes.add(defaultMap);
         return billingModes;
     }
+
     public List<Map<String, String>> getLoginMethod(String req) {
         List<Map<String, String>> loginMethod = new ArrayList<>();
         Map<String, String> defaultMap = new HashMap<>();
@@ -214,25 +217,27 @@ public class HuaweiCloudProvider extends AbstractCloudProvider<HuaweiVmCredentia
         return loginMethod;
     }
 
-    public InstanceSpecConfig getInstanceSpecTypes(String req){
-        return HuaweiSyncCloudApi.getInstanceSpecTypes(JsonUtil.parseObject(req,HuaweiVmCreateRequest.class));
+    public InstanceSpecConfig getInstanceSpecTypes(String req) {
+        return HuaweiSyncCloudApi.getInstanceSpecTypes(JsonUtil.parseObject(req, HuaweiVmCreateRequest.class));
     }
 
     public List<Map<String, String>> getAllDiskTypes(String req) {
         return HuaweiSyncCloudApi.getAllDiskTypes(JsonUtil.parseObject(req, HuaweiVmCreateRequest.class));
     }
 
-    public String calculateConfigPrice(String req){
-        return HuaweiSyncCloudApi.calculatedPrice(false,JsonUtil.parseObject(req, HuaweiVmCreateRequest.class));
+    @Override
+    public String calculateConfigPrice(String req) {
+        return HuaweiSyncCloudApi.calculatedPrice(false, JsonUtil.parseObject(req, HuaweiVmCreateRequest.class));
     }
 
-    public String calculateBandwidthConfigPrice(String req){
-        return HuaweiSyncCloudApi.calculatedPrice(true,JsonUtil.parseObject(req, HuaweiVmCreateRequest.class));
+    public String calculateBandwidthConfigPrice(String req) {
+        return HuaweiSyncCloudApi.calculatedPrice(true, JsonUtil.parseObject(req, HuaweiVmCreateRequest.class));
     }
 
     public List<F2CHuaweiSubnet> listSubnet(String req) {
         return HuaweiSyncCloudApi.listSubnet(JsonUtil.parseObject(req, HuaweiVmCreateRequest.class));
     }
+
     public List<F2CHuaweiSecurityGroups> listSecurityGroups(String req) {
         return HuaweiSyncCloudApi.listSecurityGroups(JsonUtil.parseObject(req, HuaweiVmCreateRequest.class));
     }
@@ -259,16 +264,16 @@ public class HuaweiCloudProvider extends AbstractCloudProvider<HuaweiVmCredentia
         return HuaweiSyncCloudApi.listOs(req);
     }
 
-    public String getLoginName(String req){
-        HuaweiVmCreateRequest request = JsonUtil.parseObject(req,HuaweiVmCreateRequest.class);
-        if(StringUtils.equalsIgnoreCase(request.getOs(),"Windows")){
+    public String getLoginName(String req) {
+        HuaweiVmCreateRequest request = JsonUtil.parseObject(req, HuaweiVmCreateRequest.class);
+        if (StringUtils.equalsIgnoreCase(request.getOs(), "Windows")) {
             return "Administrator";
         }
         return "root";
     }
 
     @Override
-    public F2CVirtualMachine changeVmConfig(String req){
+    public F2CVirtualMachine changeVmConfig(String req) {
         return HuaweiSyncCloudApi.changeVmConfig(JsonUtil.parseObject(req, HuaweiUpdateConfigRequest.class));
     }
 
@@ -281,9 +286,11 @@ public class HuaweiCloudProvider extends AbstractCloudProvider<HuaweiVmCredentia
         return HuaweiSyncCloudApi.getInstanceTypesForConfigUpdate(JsonUtil.parseObject(req, HuaweiUpdateConfigRequest.class));
     }
 
-    public String calculateConfigUpdatePrice(String req){
+    @Override
+    public String calculateConfigUpdatePrice(String req) {
         return HuaweiSyncCloudApi.calculateConfigUpdatePrice(JsonUtil.parseObject(req, HuaweiUpdateConfigRequest.class));
     }
+
     /**
      * 获取付费周期
      *
@@ -301,7 +308,8 @@ public class HuaweiCloudProvider extends AbstractCloudProvider<HuaweiVmCredentia
         return periodList;
     }
 
-    public List<F2CDisk> getVmF2CDisks(String req){
+    @Override
+    public List<F2CDisk> getVmF2CDisks(String req) {
         return HuaweiSyncCloudApi.getVmF2CDisks(JsonUtil.parseObject(req, BaseDiskRequest.class));
     }
- }
+}
