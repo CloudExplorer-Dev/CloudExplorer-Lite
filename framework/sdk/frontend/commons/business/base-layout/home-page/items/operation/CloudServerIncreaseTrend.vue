@@ -1,5 +1,5 @@
 <template>
-  <div class="info-card">
+  <div class="info-card" v-if="show">
     <el-row>
       <el-col :span="10">
         <div class="title">云主机趋势</div>
@@ -35,7 +35,7 @@
 </template>
 <script setup lang="ts">
 import VChart from "vue-echarts";
-import {computed, onMounted, ref, watch} from "vue";
+import { computed, onMounted, ref, watch } from "vue";
 import _ from "lodash";
 import type { ResourceAnalysisRequest } from "@commons/api/server_analysis/type";
 import type { ECBasicOption } from "echarts/types/src/util/types";
@@ -89,7 +89,9 @@ const getIncreaseTrend = () => {
   _.set(
     params.value,
     "accountIds",
-    props.cloudAccountId === "all" || !props.cloudAccountId ? [] : [props.cloudAccountId]
+    props.cloudAccountId === "all" || !props.cloudAccountId
+      ? []
+      : [props.cloudAccountId]
   );
   props.hostId
     ? _.set(
@@ -197,9 +199,9 @@ watch(
   },
   { immediate: true }
 );
-onMounted(()=>{
+onMounted(() => {
   getIncreaseTrend();
-})
+});
 const color: Array<string> = [
   "rgb(79, 131, 253, 1)",
   "rgb(150, 189, 255, 1)",

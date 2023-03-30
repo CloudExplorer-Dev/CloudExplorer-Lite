@@ -1,10 +1,11 @@
 import type { SimpleMap } from "@commons/api/base/type";
 import type { CloudAccount } from "@commons/api/cloud_account/type";
+import type { FormView as Form } from "@commons/components/ce-form/type";
 
 import type {
   Platform,
-  Form,
   CreateAccount,
+  UpdateAccount,
 } from "@commons/api/cloud_account/type";
 
 interface ListOrganizationRequest {
@@ -33,15 +34,6 @@ interface ListSyncRecordRequest {
   currentPage: number;
 }
 
-/**
- * 更新云账号所需要的参数
- */
-interface UpdateAccount extends CreateAccount {
-  /**
-   * 云账号id
-   */
-  id: string;
-}
 interface Region {
   /**
    * 区域名称

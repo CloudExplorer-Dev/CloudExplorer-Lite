@@ -114,3 +114,13 @@ export interface CreateAccount {
    */
   credential: { [propName: string]: string };
 }
+
+/**
+ * 更新云账号所需要的参数
+ */
+export interface UpdateAccount extends CreateAccount {
+  /**
+   * 云账号id
+   */
+  id: string;
+}
