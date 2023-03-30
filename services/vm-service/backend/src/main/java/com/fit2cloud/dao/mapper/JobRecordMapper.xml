@@ -4,7 +4,12 @@
 
     <select id="pageJobRecord" resultType="com.fit2cloud.dto.JobRecordDTO">
         SELECT
-            job_record.*,
+            job_record.id,
+            job_record.type,
+            job_record.status,
+            job_record.operate_user_id,
+            job_record.create_time,
+            job_record.finish_time,
             user._name as operate_user_name,
             job_record_resource_mapping.resource_id,
             resource.resource_name,
