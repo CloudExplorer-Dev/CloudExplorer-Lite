@@ -28,7 +28,6 @@
     margin-left: 8px;
     float: right;
     width: 64px;
-    font-family: "PingFang SC",serif;
     font-style: normal;
     font-weight: 500;
     font-size: 16px;

@@ -81,7 +81,8 @@ export interface FormView {
   regexpDescription?: string | null;
   index: number;
 
-  extraInfo: string;
+  extraInfo?: string;
+  hint?: string;
   /**
    * 其他字段
    */

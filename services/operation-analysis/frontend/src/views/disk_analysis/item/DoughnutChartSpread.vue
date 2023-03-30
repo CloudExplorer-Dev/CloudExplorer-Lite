@@ -2,7 +2,7 @@
   <el-card shadow="never" class="info-card">
     <el-row :gutter="10">
       <el-col :span="24">
-        <div class="title">{{props.typeText}}</div>
+        <div class="title">{{ props.typeText }}</div>
       </el-col>
     </el-row>
     <el-row :gutter="10">
@@ -41,11 +41,11 @@ interface EchartsValue {
 }
 const data = computed<Array<EchartsValue>>(() => {
   const result: Array<EchartsValue> = [];
-  if(props.apiData && props.apiData?.[props.type]?.length>0){
+  if (props.apiData && props.apiData?.[props.type]?.length > 0) {
     _.forEach(props.apiData?.[props.type], (v) => {
       result.push({ name: v.name, value: v.value });
     });
-  }else{
+  } else {
     result.push({ name: "", value: 0 });
   }
   return result;
@@ -179,33 +179,31 @@ const option = computed<ECBasicOption>(() => {
         },
         data: data.value,
         color:
-            props.apiData?.[props.type]?.length === 0 || !props.apiData?.[props.type]
+          props.apiData?.[props.type]?.length === 0 ||
+          !props.apiData?.[props.type]
             ? ["rgba(187, 191, 196, 1)", "rgba(187, 191, 196, 1)"]
-            : interpolationColor(
-                chartColor.value,
-                data.value.length
-              ),
+            : interpolationColor(chartColor.value, data.value.length),
       },
     ],
   };
 });
-const chartColor = computed<Array<string>> (()=>{
-  if(props.type==="byStatus"){
+const chartColor = computed<Array<string>>(() => {
+  if (props.type === "byStatus") {
     const result = [];
-    if(_.find(data.value,['name', '空闲'])){
+    if (_.find(data.value, ["name", "空闲"])) {
       result.push("rgb(98, 210, 85, 1)");
     }
-    if(_.find(data.value,['name', '已挂载'])){
+    if (_.find(data.value, ["name", "已挂载"])) {
       result.push("rgb(187, 191, 196, 1)");
     }
-    if(_.find(data.value,['name', '其他'])){
+    if (_.find(data.value, ["name", "其他"])) {
       result.push("rgb(255, 199, 94, 1)");
     }
     return result;
-  }else{
+  } else {
     return allColor;
   }
-})
+});
 const allColor = [
   "rgb(79, 131, 253, 1)",
   "rgb(150, 189, 255, 1)",
@@ -231,8 +229,7 @@ const allColor = [
   "rgb(172, 173, 255, 1)",
   "rgb(98, 210, 85, 1)",
   "rgb(134, 245, 120, 1)",
-]
-
+];
 </script>
 <style scoped lang="scss">
 .info-card {
@@ -260,7 +257,6 @@ const allColor = [
   margin-top: 15px;
   margin-bottom: 10px;
   position: initial;
-  font-family: "PingFang SC", serif;
   font-style: normal;
   font-weight: 400;
   font-size: 14px;

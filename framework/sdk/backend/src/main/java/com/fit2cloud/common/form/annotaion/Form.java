@@ -187,6 +187,8 @@ public @interface Form {
 
     String extraInfo() default "";
 
+    String hint() default "";
+
     enum Position {
         TOP, BOTTOM
     }

@@ -118,7 +118,7 @@
   </div>
 </template>
 <script lang="ts" setup>
-import {onMounted, ref, watch} from "vue";
+import { onMounted, ref, watch } from "vue";
 import ResourceSpreadViewApi from "@/api/resource_spread_view";
 import { ResourceAnalysisRequest } from "@commons/api/resource_spread_view/type";
 import type { CloudAccount } from "@commons/api/cloud_account/type";
@@ -162,21 +162,21 @@ onMounted(() => {
   getSearchCondition();
 });
 watch(
-    currentAccount,
-    () => {
-      currentCluster.value = "all";
-      currentHost.value = "all";
-      currentDatastore.value = "all";
-    },
-    { immediate: true }
+  currentAccount,
+  () => {
+    currentCluster.value = "all";
+    currentHost.value = "all";
+    currentDatastore.value = "all";
+  },
+  { immediate: true }
 );
 watch(
-    currentCluster,
-    () => {
-      currentHost.value = "all";
-      currentDatastore.value = "all";
-    },
-    { immediate: true }
+  currentCluster,
+  () => {
+    currentHost.value = "all";
+    currentDatastore.value = "all";
+  },
+  { immediate: true }
 );
 </script>
 
@@ -187,7 +187,6 @@ watch(
     padding: 5px 0 10px 0;
     text-align: left;
     .header-title {
-      font-family: "PingFang SC", serif;
       font-style: normal;
       font-weight: 500;
       font-size: 16px;
@@ -208,7 +207,6 @@ watch(
     padding: 5px 0 10px 0;
     text-align: left;
     .header-title {
-      font-family: "PingFang SC", serif;
       font-style: normal;
       font-weight: 500;
       font-size: 16px;

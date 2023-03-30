@@ -43,7 +43,7 @@ import ResourceSpreadViewApi from "@/api/disk_analysis/index";
 import * as echarts from "echarts";
 import { useUserStore } from "@commons/stores/modules/user";
 const userStore = useUserStore();
-const adminRole = ref<boolean>(userStore.currentRole==='ADMIN');
+const adminRole = ref<boolean>(userStore.currentRole === "ADMIN");
 const props = defineProps<{
   cloudAccountId?: string | undefined;
   currentUnit?: string | undefined;
@@ -58,7 +58,7 @@ const getIncreaseTrend = () => {
   _.set(
     params,
     "accountIds",
-       props.cloudAccountId==="all" ?  [] : [props.cloudAccountId]
+    props.cloudAccountId === "all" ? [] : [props.cloudAccountId]
   );
   _.set(params, "statisticalBlock", props.currentUnit === "block");
   ResourceSpreadViewApi.getIncreaseTrend(params, loading).then(
@@ -72,7 +72,7 @@ const options = computed<ECBasicOption>(() => {
     series: any = {},
     xAxis: any[] = [];
   const seriesData: any[] = [];
-  if (!obj || obj.length===0) {
+  if (!obj || obj.length === 0) {
     return {
       title: {
         text: "暂无数据",
@@ -277,7 +277,6 @@ const defaultSpeedOptions = {
   margin-top: 15px;
   margin-bottom: 10px;
   position: initial;
-  font-family: "PingFang SC", serif;
   font-style: normal;
   font-weight: 400;
   font-size: 14px;

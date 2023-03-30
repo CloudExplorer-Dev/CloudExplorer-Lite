@@ -1,4 +1,5 @@
 import type { SimpleMap } from "@commons/api/base/type";
+import type { FormView } from "@commons/components/ce-form/type";
 export interface CloudAccount {
   /**
    * 主键id
@@ -84,32 +85,6 @@ export interface AccountJobRecord {
   params: SimpleMap<Array<{ size: number; region: string } | any>>;
 }
 
-export interface Form {
-  /**
-   * 输入类型
-   */
-  inputType: string;
-  /**
-   * 字段名称
-   */
-  field: string;
-  /**
-   * 提示
-   */
-  label: string;
-  /**
-   * 是否必填
-   */
-  required: boolean;
-  /**
-   * 默认值
-   */
-  defaultValue: unknown;
-  /**
-   * 描述
-   */
-  description: string;
-}
 export interface Platform {
   /**
    * 提示
@@ -122,7 +97,7 @@ export interface Platform {
 
   publicCloud: boolean;
 
-  credentialForm: Array<Form>;
+  credentialForm: Array<FormView>;
 }
 
 export interface CreateAccount {

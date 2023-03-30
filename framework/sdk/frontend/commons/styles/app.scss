@@ -69,7 +69,6 @@ a:hover {
     form{
       .el-form-item {margin-bottom: 28px;}
       label{
-        font-family: 'PingFang SC';
         font-style: normal;
         font-weight: 400;
         font-size: 14px;
@@ -91,10 +90,9 @@ a:hover {
   // 添加按钮样式
   .add-button-class{
     cursor: pointer;
-    border: 0px solid;
+    border: 0 solid;
     //width: 105px;
     height: 22px;
-    font-family: 'PingFang SC';
     font-style: normal;
     font-weight: 400;
     font-size: 14px;

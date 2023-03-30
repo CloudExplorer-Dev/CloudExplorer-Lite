@@ -44,13 +44,13 @@ import type { ECBasicOption } from "echarts/types/src/util/types";
 import ResourceSpreadViewApi from "@/api/disk_analysis/index";
 import { useUserStore } from "@commons/stores/modules/user";
 const userStore = useUserStore();
-const userRole = ref<boolean>(userStore.currentRole==='USER');
+const userRole = ref<boolean>(userStore.currentRole === "USER");
 const props = defineProps<{
   cloudAccountId?: string | undefined;
   currentUnit?: string | undefined;
 }>();
 const params = ref<ResourceAnalysisRequest>();
-const paramDepartmentType = ref<string>(userRole.value?"workspace":"org");
+const paramDepartmentType = ref<string>(userRole.value ? "workspace" : "org");
 const loading = ref<boolean>(false);
 const apiData = ref<any>();
 const showBack = ref<boolean>(false);
@@ -61,7 +61,7 @@ const setParams = () => {
     ? _.set(
         params,
         "accountIds",
-         props.cloudAccountId==="all" ?  [] : [props.cloudAccountId]
+        props.cloudAccountId === "all" ? [] : [props.cloudAccountId]
       )
     : "";
   _.set(params, "statisticalBlock", props.currentUnit === "block");
@@ -112,7 +112,7 @@ const options = computed<ECBasicOption>(() => {
     let nameNum = 0;
     if (deptNumber.length > 0) {
       nameNum = Math.floor(100 / (deptNumber.length / 4));
-      showEcharts = deptNumber.length >=5;
+      showEcharts = deptNumber.length >= 5;
     }
     _.set(options, "dataZoom.[0].end", nameNum);
     _.set(options, "dataZoom.[1].end", nameNum);
@@ -206,19 +206,17 @@ const defaultSpeedOptions = {
   tooltip: {
     show: true,
   },
-  axisLabel :
-      {
-        formatter : function (value)
-        {
-          let valueTxt;
-          if (value.length > 5) {
-            valueTxt = value.substring(0, 5) + '...';
-          } else {
-            valueTxt = value;
-          }
-          return valueTxt ;
-        }
-      },
+  axisLabel: {
+    formatter: function (value) {
+      let valueTxt;
+      if (value.length > 5) {
+        valueTxt = value.substring(0, 5) + "...";
+      } else {
+        valueTxt = value;
+      }
+      return valueTxt;
+    },
+  },
   xAxis: {
     type: "category",
     data: [],
@@ -285,7 +283,6 @@ const barSeriesLabel = {
   margin-top: 15px;
   margin-bottom: 10px;
   position: initial;
-  font-family: "PingFang SC", serif;
   font-style: normal;
   font-weight: 400;
   font-size: 14px;
