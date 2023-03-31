@@ -41,7 +41,7 @@ public class TencentBillApi {
                 res -> Arrays.stream(res.getDetailSet()).toList(),
                 (req, res) -> req.getLimit() <= res.getDetailSet().length,
                 (req, res) -> req.setOffset(req.getLimit() + req.getOffset()));
-        return billDetails.stream().map(TencentMappingUtil::toCloudBill).toList();
+        return billDetails.stream().map(item -> TencentMappingUtil.toCloudBill(item, request)).toList();
     }
 
     /**

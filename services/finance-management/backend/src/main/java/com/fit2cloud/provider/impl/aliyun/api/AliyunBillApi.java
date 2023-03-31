@@ -8,11 +8,14 @@ import com.aliyun.teautil.models.RuntimeOptions;
 import com.fit2cloud.common.platform.credential.Credential;
 import com.fit2cloud.common.provider.exception.ReTryException;
 import com.fit2cloud.common.provider.util.PageUtil;
+import com.fit2cloud.common.util.MonthUtil;
 import com.fit2cloud.es.entity.CloudBill;
 import com.fit2cloud.provider.impl.aliyun.entity.request.SyncBillRequest;
 import com.fit2cloud.provider.impl.aliyun.uitil.AliyunMappingUtil;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * {@code @Author:张少虎}
@@ -24,17 +27,31 @@ public class AliyunBillApi {
 
 
     /**
+     * 火气阿里云账单数据 粒度为日
+     *
+     * @param syncBillRequest 请求参数
+     * @return 账单数据
+     */
+    public static List<CloudBill> listBill(SyncBillRequest syncBillRequest) {
+        syncBillRequest.setGranularity("DAILY");
+        String billingCycle = syncBillRequest.getBillingCycle();
+        List<String> monthDays = MonthUtil.getMonthDays(billingCycle);
+        return monthDays.stream().map(day -> listBill(syncBillRequest, day)).flatMap(List::stream).toList();
+    }
+
+    /**
      * 获取阿里云数据
      *
      * @param syncBillRequest 同步账单
      * @return 账单数据
      */
-    public static List<CloudBill> listBill(SyncBillRequest syncBillRequest) {
+    private static List<CloudBill> listBill(SyncBillRequest syncBillRequest, String billingDate) {
+        syncBillRequest.setBillingDate(billingDate);
         // 每次查询300条
         syncBillRequest.setMaxResults(300);
         Client client = syncBillRequest.getCredential().getClient();
         List<DescribeInstanceBillResponseBody.DescribeInstanceBillResponseBodyDataItems> list = PageUtil.page(syncBillRequest,
-                req -> describeInstanceBillWithOptions(client, req), res -> res.body.getData().getItems(),
+                req -> describeInstanceBillWithOptions(client, req), res -> Objects.nonNull(res.body) ? res.body.getData().getItems() : new ArrayList<>(),
                 (req, res) -> req.getMaxResults() <= res.getBody().getData().getItems().size(),
                 (req, res) -> req.setNextToken(res.getBody().getData().getNextToken()));
         List<Credential.Region> regions = syncBillRequest.getCredential().regions();

@@ -16,7 +16,8 @@ import java.util.Map;
  * {@code @注释: }
  */
 @Data
-public class TencentCsvModel implements Serializable {
+public class
+TencentCsvModel implements Serializable {
 
     @CsvCustomBindByName(converter = TrimStringConvert.class, column = "支付者UIN")
     private String payerUin;

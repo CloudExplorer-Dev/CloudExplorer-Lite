@@ -26,7 +26,7 @@ import java.util.regex.Pattern;
 
 public class AliBucketApi {
     //1922504452814088_BillingItemDetailMonthly_202201
-    private final static Pattern monthPattern = Pattern.compile("BillingItemDetailMonthly_\\d{4}");
+    private final static Pattern monthPattern = Pattern.compile("BillingItemDetailDaily_\\d{6}");
 
     /**
      * 获取所有的桶
@@ -36,12 +36,12 @@ public class AliBucketApi {
      */
     public static List<Bucket> listBucket(AliyunBillCredential aliyunBillCredential) {
         AsyncClient ossClient = aliyunBillCredential.getOssClient();
-        ListBucketsRequest listBucketsRequest = ListBucketsRequest.builder().maxKeys(100l).build();
+        ListBucketsRequest listBucketsRequest = ListBucketsRequest.builder().maxKeys(100L).build();
         return PageUtil.pageNextF(listBucketsRequest,
                 ossClient::listBuckets,
                 res -> res.join().getBody().getBuckets(),
                 (req, res) -> StringUtil.isNotEmpty(res.join().getBody().getNextMarker()),
-                (req, res) -> ListBucketsRequest.builder().marker(res.join().getBody().getNextMarker()).maxKeys(100l).build());
+                (req, res) -> ListBucketsRequest.builder().marker(res.join().getBody().getNextMarker()).maxKeys(100L).build());
 
     }
 
@@ -98,7 +98,7 @@ public class AliBucketApi {
      * @return 存储桶中所有的文件
      */
     public static List<ObjectSummary> listObjectSummary(AsyncClient ossClient, String bucketName) {
-        ListObjectsV2Request listObjectsRequest = ListObjectsV2Request.builder().bucket(bucketName).maxKeys(100l).build();
+        ListObjectsV2Request listObjectsRequest = ListObjectsV2Request.builder().bucket(bucketName).maxKeys(100L).build();
         return PageUtil.pageNextF(listObjectsRequest, ossClient::listObjectsV2
                 , res -> {
                     List<ObjectSummary> contents = res.join().getBody().getContents();
@@ -108,7 +108,7 @@ public class AliBucketApi {
                     return contents;
                 }
                 , (req, res) -> StringUtils.isNotEmpty(res.join().getBody().getNextContinuationToken())
-                , (req, res) -> ListObjectsV2Request.builder().bucket(bucketName).maxKeys(100l).continuationToken(res.join().getBody().getNextContinuationToken()).build());
+                , (req, res) -> ListObjectsV2Request.builder().bucket(bucketName).maxKeys(100L).continuationToken(res.join().getBody().getNextContinuationToken()).build());
     }
 
     /**
@@ -122,7 +122,7 @@ public class AliBucketApi {
         List<ObjectSummary> objectSummaryList = listObjectSummary(ossClient, syncBillRequest.getBill().getBucketId());
         // todo 获取阿里云桶账单文件并且读取
         List<AliBillCsvModel> aliBillCsvModels = objectSummaryList.stream()
-                .filter((objectSummary) -> objectSummary.getKey().endsWith("BillingItemDetailMonthly_" + syncBillRequest.getBillingCycle().replace("-", "")))
+                .filter((objectSummary) -> objectSummary.getKey().endsWith("BillingItemDetailDaily_" + syncBillRequest.getBillingCycle().replace("-", "")))
                 .findFirst()
                 .map(objectSummary -> writeAndReadFile(ossClient, objectSummary, syncBillRequest.getBill().getBucketId(), syncBillRequest.getCloudAccountId()))
                 .orElse(new ArrayList<>());

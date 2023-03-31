@@ -11,7 +11,7 @@ import com.fit2cloud.provider.impl.aliyun.entity.request.SyncBillRequest;
 import org.apache.commons.lang3.StringUtils;
 
 import java.math.BigDecimal;
-import java.time.ZoneId;
+import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -49,9 +49,15 @@ public class AliyunMappingUtil {
         cloudBill.setTotalCost(BigDecimal.valueOf(aliBillCsvModel.getOfficialWebsitePrice()));
         cloudBill.setRealTotalCost(BigDecimal.valueOf(aliBillCsvModel.getAmountPayable()));
         cloudBill.setProvider(PlatformConstants.fit2cloud_ali_platform.name());
-        cloudBill.setUsageStartDate(CommonUtil.getLocalDateTime(aliBillCsvModel.getBillingCycle()));
+        LocalDateTime deductionDate = CommonUtil.getLocalDateTime(aliBillCsvModel.getBillingCycle());
+        if (Objects.nonNull(aliBillCsvModel.getDate())) {
+            deductionDate = CommonUtil.getLocalDateTime(aliBillCsvModel.getDate());
+        }
+        cloudBill.setUsageStartDate(deductionDate);
+        cloudBill.setUsageEndDate(deductionDate);
+        cloudBill.setDeductionDate(deductionDate);
         cloudBill.setBillingCycle(CommonUtil.getLocalDateTime(aliBillCsvModel.getBillingCycle()));
-        cloudBill.setUsageEndDate(CommonUtil.getLocalDateTime(aliBillCsvModel.getBillingCycle()));
+
         return cloudBill;
     }
 
@@ -63,7 +69,9 @@ public class AliyunMappingUtil {
      * @param regions         区域
      * @return 系统账单对象
      */
-    public static CloudBill toCloudBill(DescribeInstanceBillResponseBody.DescribeInstanceBillResponseBodyDataItems item, SyncBillRequest syncBillRequest, List<Credential.Region> regions) {
+    public static CloudBill toCloudBill(DescribeInstanceBillResponseBody.DescribeInstanceBillResponseBodyDataItems item,
+                                        SyncBillRequest syncBillRequest,
+                                        List<Credential.Region> regions) {
         CloudBill cloudBill = new CloudBill();
         cloudBill.setId(UUID.randomUUID().toString().replace("-", ""));
         cloudBill.setBillMode(toBillMode(item.getSubscriptionType()));
@@ -83,10 +91,12 @@ public class AliyunMappingUtil {
             cloudBill.setUsageStartDate(CommonUtil.getLocalDateTime(item.getBillingDate(), "yyyy-MM-dd"));
             cloudBill.setBillingCycle(CommonUtil.getLocalDateTime(item.getBillingDate(), "yyyy-MM-dd"));
             cloudBill.setUsageEndDate(CommonUtil.getLocalDateTime(item.getBillingDate(), "yyyy-MM-dd"));
+            cloudBill.setDeductionDate(CommonUtil.getLocalDateTime(item.getBillingDate(), "yyyy-MM-dd"));
         } else {
-            cloudBill.setUsageStartDate(CommonUtil.getLocalDateTime(syncBillRequest.getBillingCycle(), "yyyy-MM"));
-            cloudBill.setBillingCycle(CommonUtil.getLocalDateTime(syncBillRequest.getBillingCycle(), "yyyy-MM"));
-            cloudBill.setUsageEndDate(CommonUtil.getLocalDateTime(syncBillRequest.getBillingCycle(), "yyyy-MM"));
+            cloudBill.setUsageStartDate(CommonUtil.getLocalDateTime(syncBillRequest.getBillingDate(), "yyyy-MM-dd"));
+            cloudBill.setBillingCycle(CommonUtil.getLocalDateTime(syncBillRequest.getBillingDate(), "yyyy-MM-dd"));
+            cloudBill.setUsageEndDate(CommonUtil.getLocalDateTime(syncBillRequest.getBillingDate(), "yyyy-MM-dd"));
+            cloudBill.setDeductionDate(CommonUtil.getLocalDateTime(syncBillRequest.getBillingDate(), "yyyy-MM-dd"));
         }
         cloudBill.setPayAccountId(item.getBillAccountID());
         cloudBill.setTotalCost(BigDecimal.valueOf(item.getPretaxGrossAmount()));

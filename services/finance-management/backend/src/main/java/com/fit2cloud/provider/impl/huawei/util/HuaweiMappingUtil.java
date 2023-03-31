@@ -49,6 +49,7 @@ public class HuaweiMappingUtil {
         cloudBill.setTotalCost(BigDecimal.valueOf(huaweiBillCsvModel.getOfficialPrice()));
         cloudBill.setRealTotalCost(BigDecimal.valueOf(huaweiBillCsvModel.getAmountPayable()));
         cloudBill.setPayAccountId(huaweiBillCsvModel.getAccountId());
+        cloudBill.setDeductionDate(CommonUtil.getLocalDateTime(huaweiBillCsvModel.getTransactionTime(), "yyyy-MM-dd HH:mm:ss"));
         cloudBill.setUsageStartDate(CommonUtil.getLocalDateTime(huaweiBillCsvModel.getStartTime(), "yyyy-MM-dd HH:mm:ss"));
         cloudBill.setUsageEndDate(CommonUtil.getLocalDateTime(huaweiBillCsvModel.getEndTime(), "yyyy-MM-dd HH:mm:ss"));
         cloudBill.setBillingCycle(CommonUtil.getLocalDateTime(request.getCycle(), "yyyy-MM"));
@@ -81,6 +82,7 @@ public class HuaweiMappingUtil {
         cloudBill.setTags(toTags(item.getResourceTag()));
         cloudBill.setTotalCost(BigDecimal.valueOf(item.getOfficialAmount()));
         cloudBill.setRealTotalCost(BigDecimal.valueOf(item.getAmount()));
+        cloudBill.setDeductionDate(CommonUtil.getLocalDateTime(item.getTradeTime(), "yyyy-MM-dd'T'HH:mm:ss'Z'"));
         //2022-04-30T14:00:00Z
         cloudBill.setUsageStartDate(CommonUtil.getLocalDateTime(item.getEffectiveTime(), "yyyy-MM-dd'T'HH:mm:ss'Z'"));
         cloudBill.setUsageEndDate(CommonUtil.getLocalDateTime(item.getExpireTime(), "yyyy-MM-dd'T'HH:mm:ss'Z'"));
