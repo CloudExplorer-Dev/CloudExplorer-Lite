@@ -281,7 +281,7 @@ public class VmCloudServerServiceImpl extends ServiceImpl<BaseVmCloudServerMappe
             beforeStatus = F2CInstanceStatus.Stopped.name();
         }
 
-        operate(vmId, OperatedTypeEnum.RECYCLE_SERVER.getDescription(), ICloudProvider::shutdownInstance,
+        operate(vmId, OperatedTypeEnum.RECYCLE_SERVER.getDescription(), ICloudProvider::powerOff,
                 beforeStatus, F2CInstanceStatus.Stopped.name(), this::modifyResource,
                 jobRecordCommonService::initJobRecord, jobRecordCommonService::modifyJobRecord, JobTypeConstants.CLOUD_SERVER_RECYCLE_JOB);
         return true;

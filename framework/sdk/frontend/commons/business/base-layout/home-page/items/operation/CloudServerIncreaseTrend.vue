@@ -1,5 +1,5 @@
 <template>
-  <div class="info-card">
+  <div class="info-card" v-if="show">
     <el-row>
       <el-col :span="10">
         <div class="title">云主机趋势</div>

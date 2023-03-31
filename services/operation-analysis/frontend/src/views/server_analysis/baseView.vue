@@ -33,8 +33,10 @@
         </div>
       </el-col>
     </el-row>
-    <DoughnutChartGroup :cloud-account-id="currentAccount"
-                        :host-id="currentHost"></DoughnutChartGroup>
+    <DoughnutChartGroup
+      :cloud-account-id="currentAccount"
+      :host-id="currentHost"
+    ></DoughnutChartGroup>
     <el-row :gutter="16" class="row">
       <el-col :span="12">
         <CloudServerIncreaseTrend
@@ -62,7 +64,7 @@
   </div>
 </template>
 <script lang="ts" setup>
-import {onMounted, ref, watch} from "vue";
+import { onMounted, ref, watch } from "vue";
 import ResourceSpreadViewApi from "@/api/server_analysis/index";
 import CommonApi from "@/api/common/index";
 import { ResourceAnalysisRequest } from "@commons/api/resource_spread_view/type";
@@ -75,7 +77,7 @@ import DoughnutChartGroup from "@/views/server_analysis/item/DoughnutChartGroup.
 import _ from "lodash";
 import { useUserStore } from "@commons/stores/modules/user";
 const userStore = useUserStore();
-const adminRole = ref<boolean>(userStore.currentRole==='ADMIN');
+const adminRole = ref<boolean>(userStore.currentRole === "ADMIN");
 //条件
 const currentAccount = ref<string>("all");
 const currentHost = ref<string>("all");
@@ -85,33 +87,27 @@ const accounts = ref<Array<CloudAccount>>();
 //查询所有宿主机
 const hosts = ref<Array<VmCloudHostVO>>();
 const getSearchCondition = () => {
-  CommonApi.listAll().then(
-    (res) => {
-      accounts.value = res.data;
-      if(res.data && res.data.length>0){
-        _.map(accounts.value, 'id')
-            ? _.set(
-                params,
-                "accountIds",
-                _.map(accounts.value, 'id')
-            )
-            : "";
-        ResourceSpreadViewApi.listHost(params).then(
-            (res) => (hosts.value = res.data)
-        );
-      }
+  CommonApi.listAll().then((res) => {
+    accounts.value = res.data;
+    if (res.data && res.data.length > 0) {
+      _.map(accounts.value, "id")
+        ? _.set(params, "accountIds", _.map(accounts.value, "id"))
+        : "";
+      ResourceSpreadViewApi.listHost(params).then(
+        (res) => (hosts.value = res.data)
+      );
     }
-  );
+  });
 };
 onMounted(() => {
   getSearchCondition();
 });
 watch(
-    currentAccount,
-    () => {
-      currentHost.value = "all";
-    },
-    { immediate: true }
+  currentAccount,
+  () => {
+    currentHost.value = "all";
+  },
+  { immediate: true }
 );
 </script>
 
@@ -122,7 +118,6 @@ watch(
     padding: 5px 0 10px 0;
     text-align: left;
     .header-title {
-      font-family: "PingFang SC", serif;
       font-style: normal;
       font-weight: 500;
       font-size: 16px;
@@ -143,7 +138,6 @@ watch(
     padding: 5px 0 10px 0;
     text-align: left;
     .header-title {
-      font-family: "PingFang SC", serif;
       font-style: normal;
       font-weight: 500;
       font-size: 16px;

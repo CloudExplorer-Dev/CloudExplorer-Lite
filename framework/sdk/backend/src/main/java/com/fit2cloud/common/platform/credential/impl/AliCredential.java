@@ -24,12 +24,12 @@ public class AliCredential implements Credential {
     /**
      * 访问令牌
      */
-    @Form(inputType = InputType.Text, label = "AccessKeyId", description = "访问令牌")
+    @Form(inputType = InputType.Text, label = "AccessKey", hint = "{\"title\": \"子账号权限要求\",\"content\": \"授权范围：整个云账号\\n授权策略：AliyunECSFullAccess\\n\\tAliyunEIPFullAccess\\n\\tReadOnlyAccess\"}")
     private String accessKeyId;
     /**
      * 访问密钥
      */
-    @Form(inputType = InputType.Password, label = "AccessKeySecret", description = "访问令牌", extraInfo = "{\"text\":\"如何获取Accesskey？\",\"url\":\"https://help.aliyun.com/document_detail/116410.html\"}")
+    @Form(inputType = InputType.Password, label = "AccessKey Secret", extraInfo = "{\"text\":\"如何获取Accesskey？\",\"url\":\"https://help.aliyun.com/document_detail/116410.html\"}")
     private String accessKeySecret;
 
     @Override

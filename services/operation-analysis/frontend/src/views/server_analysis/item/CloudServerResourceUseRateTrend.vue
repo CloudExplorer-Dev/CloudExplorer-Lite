@@ -60,7 +60,7 @@ import type { ECBasicOption } from "echarts/types/src/util/types";
 import ResourceSpreadViewApi from "@/api/server_analysis/index";
 import { useUserStore } from "@commons/stores/modules/user";
 const userStore = useUserStore();
-const adminRole = ref<boolean>(userStore.currentRole==='ADMIN');
+const adminRole = ref<boolean>(userStore.currentRole === "ADMIN");
 const props = defineProps<{
   cloudAccountId?: string | undefined;
   clusterId?: string | undefined;
@@ -86,11 +86,11 @@ const setParams = () => {
     ? _.set(
         params,
         "accountIds",
-         props.cloudAccountId==="all" ?  [] : [props.cloudAccountId]
+        props.cloudAccountId === "all" ? [] : [props.cloudAccountId]
       )
     : "";
   props.hostId
-    ? _.set(params, "hostIds",  props.hostId === "all" ?  [] : [props.hostId])
+    ? _.set(params, "hostIds", props.hostId === "all" ? [] : [props.hostId])
     : "";
   _.set(params, "metricName", metricName.value);
   _.set(params, "startTime", timestampData.value[0].getTime());
@@ -111,7 +111,7 @@ const options = computed<ECBasicOption>(() => {
     series: any = {},
     xAxis: any[] = [];
   const seriesData: any[] = [];
-  if (!trendInfo || trendInfo.length===0) {
+  if (!trendInfo || trendInfo.length === 0) {
     return {
       title: {
         text: "暂无数据",
@@ -190,7 +190,7 @@ const color: Array<string> = [
   "rgb(22, 225, 198, 1)",
   "rgb(79, 131, 253, 1)",
   "rgb(251, 218, 110, 1)",
-  "rgb(250, 139, 135, 1)"
+  "rgb(250, 139, 135, 1)",
 ];
 const defaultTrendOptions = {
   color: color,
@@ -306,7 +306,6 @@ const shortcuts = [
   margin-top: 15px;
   margin-bottom: 10px;
   position: initial;
-  font-family: "PingFang SC", serif;
   font-style: normal;
   font-weight: 400;
   font-size: 14px;

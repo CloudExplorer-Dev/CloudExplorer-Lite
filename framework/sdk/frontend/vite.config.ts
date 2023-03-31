@@ -34,7 +34,7 @@ const envDir = "./env";
 // 根据mode 判断打包依赖包还是当前项目
 export default defineConfig(({ mode }: ConfigEnv) => {
   const ENV = loadEnv(mode, envDir);
-  let config = {
+  const config = {
     plugins: [
       //alias(),
       vue({
@@ -78,6 +78,8 @@ export default defineConfig(({ mode }: ConfigEnv) => {
 
   //management-center
   proxyConf[ENV.VITE_BASE_PATH + "management-center/api"] =
+    "http://localhost:" + Number(ENV.VITE_BASE_API_PORT);
+  proxyConf[ENV.VITE_BASE_PATH + "management-center?management-center"] =
     "http://localhost:" + Number(ENV.VITE_BASE_API_PORT);
   proxyConf[ENV.VITE_BASE_PATH + "management-center"] = "http://127.0.0.1:5001";
 

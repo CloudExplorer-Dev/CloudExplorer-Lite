@@ -29,7 +29,6 @@ const activeName = ref("resourceSpread");
 <style scoped lang="scss">
 .tab-box {
   :deep(.el-tabs__item) {
-    //font-family: 'PingFang SC' !important;
     //font-style: normal;
     //font-weight: 500;
     //font-size: 16px !important;

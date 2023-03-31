@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted, computed } from "vue";
+import { ref, onMounted, computed, onBeforeUnmount, type Ref } from "vue";
 import JobsApi from "@/api/jobs";
 import _ from "lodash";
 import type { JobInfo } from "@/api/jobs/type";
@@ -108,19 +108,14 @@ _.forIn(JobStatusConst, (value, key) => {
   status.push({ text: value, value: key });
 });
 
-/**
- * 查询
- * @param condition
- */
-const search = (condition: TableSearch) => {
-  const params = TableSearch.toSearchParams(condition);
+const list = (params: any, loading?: Ref<boolean>) => {
   JobsApi.listJobs(
     {
       currentPage: tableConfig.value.paginationConfig.currentPage,
       pageSize: tableConfig.value.paginationConfig.pageSize,
       ...params,
     },
-    tableLoading
+    loading
   ).then((res) => {
     tableData.value = res.data.records;
     tableConfig.value.paginationConfig?.setTotal(
@@ -132,6 +127,15 @@ const search = (condition: TableSearch) => {
       tableConfig.value.paginationConfig
     );
   });
+};
+
+/**
+ * 查询
+ * @param condition
+ */
+const search = (condition: TableSearch) => {
+  const params = TableSearch.toSearchParams(condition);
+  list(params, tableLoading);
 };
 
 const getColor = (status: string) => {
@@ -151,12 +155,30 @@ const getColor = (status: string) => {
   return color;
 };
 
+const isJobExecuting = (status: string | undefined) => {
+  if (status && status.toUpperCase() === "EXECUTION_ING") {
+    return true;
+  } else {
+    return false;
+  }
+};
 /**
  * 页面挂载
  */
+let timer: number;
 onMounted(() => {
   search(new TableSearch());
+  timer = setInterval(() => {
+    if (tableData.value?.some((s) => isJobExecuting(s.status))) {
+      list(TableSearch.toSearchParams(table.value.getTableSearch()));
+    }
+  }, 6000);
 });
+
+onBeforeUnmount(() => {
+  if (timer) clearInterval(timer);
+});
+
 /**
  * 表单配置
  */

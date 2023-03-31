@@ -214,7 +214,7 @@ const color: Array<string> = [
   "rgb(22, 225, 198, 1)",
   "rgb(79, 131, 253, 1)",
   "rgb(251, 218, 110, 1)",
-  "rgb(250, 139, 135, 1)"
+  "rgb(250, 139, 135, 1)",
 ];
 const defaultTrendOptions = {
   color: color,
@@ -361,7 +361,6 @@ const shortcuts = [
   margin-top: 15px;
   margin-bottom: 10px;
   position: initial;
-  font-family: "PingFang SC", serif;
   font-style: normal;
   font-weight: 400;
   font-size: 14px;

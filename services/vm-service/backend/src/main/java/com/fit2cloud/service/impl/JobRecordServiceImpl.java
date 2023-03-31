@@ -54,6 +54,7 @@ public class JobRecordServiceImpl implements IJobRecordService {
     @Resource
     private JobRecordMapper jobRecordMapper;
 
+    @Override
     public IPage<JobRecordDTO> pageJobRecord(PageJobRecordRequest request) {
         List<String> sourceIds = permissionService.getSourceIds();
         if (CollectionUtils.isNotEmpty(sourceIds)) {
