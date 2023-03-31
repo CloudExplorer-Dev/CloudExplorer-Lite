@@ -11,6 +11,10 @@ import Job from "@/componnets/job/Job.vue";
 import type { AccountJobRecord, ResourceCount } from "@/api/cloud_account/type";
 import { PaginationConfig } from "@commons/components/ce-table/type";
 
+const props = defineProps<{
+  id: string;
+}>();
+
 const { t } = useI18n();
 const router = useRouter();
 const basicEditable = ref(false);
@@ -19,9 +23,7 @@ const loading = ref(false);
 const accountFormRef = ref<FormInstance>();
 const accountBalance = ref<number | string>();
 const originAccountName = ref();
-const cloudAccountId = ref<string>(
-  router.currentRoute.value.params.id as string
-);
+
 const resourceCountArray = ref<ResourceCount[]>();
 const job = ref<any>(null);
 const loadingSyncRecord = ref(false); // 同步记录加载标识
@@ -33,33 +35,27 @@ const syncRecordConfig = new PaginationConfig(1, 10); // 同步记录列表分�
 const init = () => {
   if (router.currentRoute.value.params.id) {
     // 获取云账号信息
-    cloudAccountApi
-      .getCloudAccount(cloudAccountId.value, loading)
-      .then((ok) => {
-        accountForm.value = _.cloneDeep(ok.data);
-        originAccountName.value = _.cloneDeep(ok.data.name);
-      });
+    cloudAccountApi.getCloudAccount(props.id, loading).then((ok) => {
+      accountForm.value = _.cloneDeep(ok.data);
+      originAccountName.value = _.cloneDeep(ok.data.name);
+    });
 
     // 获取账户余额
-    cloudAccountApi
-      .getAccountBalance(cloudAccountId.value, loading)
-      .then((ok) => {
-        accountBalance.value = ok.data;
-      });
+    cloudAccountApi.getAccountBalance(props.id, loading).then((ok) => {
+      accountBalance.value = ok.data;
+    });
 
     // 获取资源计数
-    cloudAccountApi
-      .getResourceCount(cloudAccountId.value, loading)
-      .then((ok) => {
-        resourceCountArray.value = ok.data;
-      });
+    cloudAccountApi.getResourceCount(props.id, loading).then((ok) => {
+      resourceCountArray.value = ok.data;
+    });
 
     // 分页获取云账号同步日志
     cloudAccountApi
       .pageSyncRecord({
         currentPage: syncRecordConfig.currentPage,
         pageSize: syncRecordConfig.pageSize,
-        cloudAccountId: cloudAccountId.value,
+        cloudAccountId: props.id,
       })
       .then((ok) => {
         syncRecords.value = _.cloneDeep(ok.data.records);
@@ -190,7 +186,7 @@ const load = () => {
     .pageSyncRecord({
       currentPage: syncRecordConfig.currentPage,
       pageSize: syncRecordConfig.pageSize,
-      cloudAccountId: cloudAccountId.value,
+      cloudAccountId: props.id,
     })
     .then((ok) => {
       syncRecordConfig.currentPage = ok.data.current + 1;
@@ -308,7 +304,7 @@ onMounted(() => {
         .pageSyncRecord({
           currentPage: 0,
           pageSize: syncRecordConfig.pageSize,
-          cloudAccountId: cloudAccountId.value,
+          cloudAccountId: props.id,
         })
         .then((ok) => {
           syncRecords.value.forEach((item) => {
@@ -514,7 +510,7 @@ onBeforeUnmount(() => {
           :read-only="!syncEditable"
           :border="false"
           ref="job"
-          :account-id="cloudAccountId"
+          :account-id="id"
           :operation="false"
         ></Job>
       </div>

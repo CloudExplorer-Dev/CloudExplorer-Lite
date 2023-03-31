@@ -1494,6 +1494,9 @@ public class AliyunSyncCloudApi {
         }
 
         F2CVirtualMachine f2CVirtualMachine = AliyunMappingUtil.toF2CVirtualMachine(getInstanceById(request.getInstanceUuid(), request.getRegionId(), client));
+        if (F2CInstanceStatus.Starting.name().equalsIgnoreCase(f2CVirtualMachine.getInstanceStatus())) {
+            f2CVirtualMachine.setInstanceStatus(F2CInstanceStatus.Running.name());
+        }
         return f2CVirtualMachine;
     }
 

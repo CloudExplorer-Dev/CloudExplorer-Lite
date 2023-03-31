@@ -44,15 +44,14 @@ import type { ResourceAnalysisRequest } from "@/api/server_analysis/type";
 import type { ECBasicOption } from "echarts/types/src/util/types";
 import { useUserStore } from "@commons/stores/modules/user";
 const userStore = useUserStore();
-const userRole = ref<boolean>(userStore.currentRole==='USER');
-const adminRole = ref<boolean>(userStore.currentRole==='ADMIN');
+const userRole = ref<boolean>(userStore.currentRole === "USER");
 const props = defineProps<{
   cloudAccountId?: string | undefined;
   clusterId?: string | undefined;
   datastoreId?: string | undefined;
   hostId?: string | undefined;
 }>();
-const paramDepartmentType = ref<string>(userRole.value?"workspace":"org");
+const paramDepartmentType = ref<string>(userRole.value ? "workspace" : "org");
 const params = ref<ResourceAnalysisRequest>();
 const loading = ref<boolean>(false);
 const apiData = ref<any>();
@@ -64,10 +63,10 @@ const getSpreadByDepartmentData = () => {
   _.set(
     params,
     "accountIds",
-     props.cloudAccountId==="all"  ? [] : [props.cloudAccountId]
+    props.cloudAccountId === "all" ? [] : [props.cloudAccountId]
   );
   props.hostId
-    ? _.set(params, "hostIds",  props.hostId==="all" ?  [] : [props.hostId])
+    ? _.set(params, "hostIds", props.hostId === "all" ? [] : [props.hostId])
     : "";
   CloudServerViewApi.getAnalysisOrgWorkspaceVmCount(params, loading).then(
     (res) => (apiData.value = res.data)
@@ -104,15 +103,16 @@ const options = computed<ECBasicOption>(() => {
       seriesData.value.push({ value: v.value, groupName: v.groupName });
     });
     _.set(options, "series[0].data", seriesData.value);
-    _.set(options, "series[0].name", "云主机");
-    _.set(options, "legend.data", ["云主机"]);
+    // _.set(options, "series[0].name", "云主机");
+    // _.set(options, "legend.data", ["云主机"]);
     const deptNumber = tree.map((item: any) => item.name);
     let showEcharts = false;
     let nameNum = 0;
     if (deptNumber.length > 0) {
-      nameNum = Math.floor(100 / (deptNumber.length / 9));
-      showEcharts = deptNumber.length > 9;
+      nameNum = Math.floor(100 / (deptNumber.length / 4));
+      showEcharts = deptNumber.length >= 5;
     }
+    console.log(nameNum);
     _.set(options, "dataZoom.[0].end", nameNum);
     _.set(options, "dataZoom.[1].end", nameNum);
     _.set(options, "dataZoom.[0].show", showEcharts);
@@ -165,7 +165,7 @@ const defaultSpeedOptions = {
       realtime: true,
       start: 0,
       end: 100, // 数据窗口范围的结束百分比。范围是：0 ~ 100。
-      height: 15, //组件高度
+      height: 5, //组件高度
       left: 5, //左边的距离
       right: 5, //右边的距离
       bottom: 10, //下边的距离
@@ -177,10 +177,6 @@ const defaultSpeedOptions = {
       zoomLock: true, //是否只平移不缩放
       moveOnMouseMove: false, //鼠标移动能触发数据窗口平移
       brushSelect: false,
-      startValue: 0, // 从头开始。
-      endValue: 9, // 最多六个
-      minValueSpan: 9, // 放大到最少几个
-      maxValueSpan: 9, //  缩小到最多几个
     },
     {
       type: "inside", // 支持内部鼠标滚动平移
@@ -209,12 +205,23 @@ const defaultSpeedOptions = {
   tooltip: {
     show: true,
   },
+  axisLabel: {
+    formatter: function (value) {
+      let valueTxt;
+      if (value.length > 5) {
+        valueTxt = value.substring(0, 5) + "...";
+      } else {
+        valueTxt = value;
+      }
+      return valueTxt;
+    },
+  },
   xAxis: {
     type: "category",
     data: [],
     axisLabel: {
-      showMaxLabel: false,
-      showMinLabel: false,
+      // showMaxLabel: false,
+      // showMinLabel: false,
     },
   },
   yAxis: {
@@ -242,7 +249,7 @@ const barSeriesItemStyle = {
   borderRadius: [2, 2, 0, 0],
 };
 const barSeriesLabel = {
-  show: true, //开启显示
+  show: false, //开启显示
   position: "top", //在上方显示
   //数值样式
   color: "black",
@@ -274,7 +281,6 @@ const barSeriesLabel = {
   margin-top: 15px;
   margin-bottom: 10px;
   position: initial;
-  font-family: "PingFang SC", serif;
   font-style: normal;
   font-weight: 400;
   font-size: 14px;

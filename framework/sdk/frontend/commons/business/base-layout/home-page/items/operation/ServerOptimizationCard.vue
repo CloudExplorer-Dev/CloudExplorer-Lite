@@ -2,6 +2,7 @@
 import { ref, watch } from "vue";
 import type { ListOptimizationRequest } from "@commons/api/resource_optimization/type";
 import ResourceOptimizationViewApi from "@commons/api/resource_optimization";
+import CeIcon from "@commons/components/ce-icon/index.vue";
 import _ from "lodash";
 
 const props = withDefaults(
@@ -9,10 +10,12 @@ const props = withDefaults(
     req: ListOptimizationRequest;
     show?: boolean;
     checked?: boolean;
+    showSettingIcon?: boolean;
   }>(),
   {
     show: true,
     checked: false,
+    showSettingIcon: false,
   }
 );
 
@@ -48,10 +51,30 @@ watch(
   },
   { immediate: true, deep: true }
 );
+const emit = defineEmits(["showConditionDialog"]);
+const showConditionDialog = (req: ListOptimizationRequest) => {
+  emit("showConditionDialog", req);
+};
 </script>
 <template>
   <div class="div-card" :class="{ checked: checked }" v-loading="loading">
-    <div class="text">{{ req.name }}</div>
+    <div class="text">
+      <div class="card-header">
+        <span class="left">
+          {{ req.name }}
+        </span>
+        <el-tooltip class="box-item" effect="dark" content="查询策略">
+          <span class="right" v-show="props.showSettingIcon">
+            <CeIcon
+              size="14px"
+              color="#646A73"
+              code="icon-setting"
+              @click.stop="showConditionDialog(req)"
+            />
+          </span>
+        </el-tooltip>
+      </div>
+    </div>
     <div class="text">
       <span class="main">
         {{ value }}
@@ -83,6 +106,15 @@ watch(
     font-weight: 500;
     font-size: 28px;
     line-height: 36px;
+  }
+  .card-header {
+    display: inline;
+    .left {
+      float: left;
+    }
+    .right {
+      float: right;
+    }
   }
 }
 

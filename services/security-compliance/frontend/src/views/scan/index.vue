@@ -25,23 +25,22 @@
         </div>
       </breadcrumb>
     </template>
-    <compliance_rule_group
-      :cloud-account-id="activeCloudAccount"
-    ></compliance_rule_group>
-    <compliance_rule
+    <ComplianceRuleGroup :cloud-account-id="activeCloudAccount" />
+    <ComplianceRule
       :cloud-account-id="activeCloudAccount"
       :cloud-account-list="cloudAccountSourceList"
-    ></compliance_rule>
+    />
   </layout-auto-height-content>
 </template>
 <script setup lang="ts">
-import compliance_rule_group from "@/views/scan/complonents/compliance_rule_group/index.vue";
-import compliance_rule from "@/views/scan/complonents/compliance_rule/index.vue";
+import ComplianceRuleGroup from "@/views/scan/complonents/compliance_rule_group/index.vue";
+import ComplianceRule from "@/views/scan/complonents/compliance_rule/index.vue";
 import cloudAccountApi from "@commons/api/cloud_account";
 import type { CloudAccount } from "@commons/api/cloud_account/type";
 import JobScan from "@/views/scan/complonents/job_scan/index.vue";
 import { ref, computed, onMounted } from "vue";
 import { useRoute } from "vue-router";
+
 const route = useRoute();
 const cloudAccountLoading = ref<boolean>(false);
 // 查询云账号数据
@@ -53,6 +52,7 @@ const jobScan = ref<InstanceType<typeof JobScan>>();
 const cloudAccountSourceList = ref<Array<CloudAccount>>([]);
 // 选中的云账号
 const activeCloudAccount = ref<string>("all");
+
 onMounted(() => {
   if (route.query.cloudAccountId) {
     activeCloudAccount.value = route.query.cloudAccountId as string;

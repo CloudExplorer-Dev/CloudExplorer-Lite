@@ -6,6 +6,8 @@ import { useModuleStore } from "@commons/stores/modules/module";
 import { usePermissionStore } from "@commons/stores/modules/permission";
 import API from "@commons/api/compliance-view/index";
 import type { SimpleMap } from "@commons/api/base/type";
+import MicroAppRouterUtil from "@commons/router/MicroAppRouterUtil";
+import { useRouter } from "vue-router";
 
 const props = withDefaults(
   defineProps<{
@@ -23,6 +25,8 @@ const props = withDefaults(
 const moduleStore = useModuleStore();
 const permissionStore = usePermissionStore();
 const userStore = useUserStore();
+
+const router = useRouter();
 
 const show = computed<boolean>(
   () =>
@@ -71,6 +75,19 @@ const getRuleCount = (cloudAccountId?: string) => {
     }
   );
 };
+
+function jump(level: number) {
+  const p = `scan?scanStatus=NOT_COMPLIANCE&riskLevel=${level}`;
+  if (import.meta.env.VITE_APP_NAME === "base") {
+    MicroAppRouterUtil.jumpToChildrenPath(
+      "security-compliance",
+      `/security-compliance/${p}`,
+      router
+    );
+  } else {
+    router.push(p);
+  }
+}
 
 onMounted(() => {
   getResourceCount();
@@ -157,7 +174,7 @@ defineExpose({ refresh });
         <div>
           <el-row :gutter="8">
             <el-col :span="8">
-              <div class="base-div">
+              <div class="base-div" @click="jump(1)">
                 <div class="subtitle">高风险</div>
                 <div class="value value-high">
                   {{
@@ -167,7 +184,7 @@ defineExpose({ refresh });
               </div>
             </el-col>
             <el-col :span="8">
-              <div class="base-div">
+              <div class="base-div" @click="jump(0)">
                 <div class="subtitle">中风险</div>
                 <div class="value value-middle">
                   {{
@@ -179,7 +196,7 @@ defineExpose({ refresh });
               </div>
             </el-col>
             <el-col :span="8">
-              <div class="base-div">
+              <div class="base-div" @click="jump(-1)">
                 <div class="subtitle">低风险</div>
                 <div class="value">
                   {{

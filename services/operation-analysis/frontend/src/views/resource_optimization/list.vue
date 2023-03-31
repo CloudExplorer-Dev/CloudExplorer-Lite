@@ -4,6 +4,7 @@
     no-padding
     v-model:check-id="checkedId"
     checkable
+    showSettingIcon
     @change="selectChange"
     :req="searchParams"
     ref="optimizeDivRef"

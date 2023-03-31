@@ -72,11 +72,11 @@
       >
         <template #default="scope">
           <div style="display: flex; align-items: center">
-            <platform_icon :platform="scope.row.platform"></platform_icon>
+            <PIcon :platform="scope.row.platform" />
             <span>{{ platformIcon[scope.row.platform].name }}</span>
           </div>
-        </template></el-table-column
-      >
+        </template>
+      </el-table-column>
       <el-table-column prop="riskLevel" label="风险等级" min-width="120">
         <template #default="scope">
           <div class="risk_level">
@@ -96,8 +96,8 @@
                   : scope.row.riskLevel === "MIDDLE"
                   ? "中风险"
                   : "低风险"
-              }}</el-tag
-            >
+              }}
+            </el-tag>
           </div>
         </template>
       </el-table-column>
@@ -110,7 +110,7 @@
               :cloud-account-source-list="cloudAccountList"
               :open-details-job-view="openDetailsJobView"
               :cloud-account-id="cloudAccountId"
-            ></ScanStatusColumn>
+            />
           </div>
         </template>
       </el-table-column>
@@ -120,10 +120,8 @@
         label="检测状态"
         min-width="100px"
         :filter-multiple="false"
-        :filters="[
-          { text: '合规', value: 'COMPLIANCE' },
-          { text: '不合规', value: 'NOT_COMPLIANCE' },
-        ]"
+        :filters="scanStatusList"
+        :filtered-value="scanStatus ? [scanStatus] : []"
       >
         <template #default="scope">
           <div class="compliance_status">
@@ -169,9 +167,9 @@
       />
       <el-table-column label="操作栏" fixed="right">
         <template #default="scope">
-          <span class="row_scan_result" @click="details(scope.row)"
-            >扫描结果</span
-          >
+          <span class="row_scan_result" @click="details(scope.row)">
+            扫描结果
+          </span>
         </template>
       </el-table-column>
       <template #buttons>
@@ -179,23 +177,22 @@
       </template>
     </ce-table>
 
-    <job_details_view
-      ref="jobDetailsRef"
-      :account-job-record="currentJobRow"
-    ></job_details_view>
+    <JobDetailsView ref="jobDetailsRef" :account-job-record="currentJobRow" />
   </div>
 </template>
 <script setup lang="ts">
 import ruleApi from "@/api/rule";
 import ScanStatusColumn from "./ScanStatusColumn.vue";
-import job_details_view from "@/views/scan/complonents/compliance_rule/JobDetailsView.vue";
+import JobDetailsView from "@/views/scan/complonents/compliance_rule/JobDetailsView.vue";
 import type { KeyValue } from "@commons/api/base/type";
 import type { ComplianceScanResultResponse } from "@/api/compliance_scan_result/type";
 import complianceScanResultApi from "@/api/compliance_scan_result";
 import { onMounted, ref, watch, onBeforeUnmount } from "vue";
 import complianceScanApi from "@/api/compliance_scan";
 import { platformIcon } from "@commons/utils/platform";
-import platform_icon from "@commons/components/platform-icon/index.vue";
+import PIcon from "@commons/components/platform-icon/index.vue";
+import _ from "lodash";
+
 import {
   PaginationConfig,
   TableConfig,
@@ -224,13 +221,19 @@ const props = defineProps<{
   cloudAccountId: string;
 }>();
 
+const scanStatus = ref<string>();
+const scanStatusList = ref([
+  { text: "合规", value: "COMPLIANCE" },
+  { text: "不合规", value: "NOT_COMPLIANCE" },
+]);
+
 onMounted(() => {
   // 查询所有资源类型
   ruleApi.listResourceType().then((ok) => {
     resourceTypes.value = ok.data;
     // 查询列表数据
     if (table.value) {
-      table.value.getTableSearch(getResourceTypeParams());
+      table.value.getTableSearch(getPathSearchParams());
       table.value?.search();
     }
   });
@@ -240,6 +243,12 @@ onMounted(() => {
   }
   if (route.query.ruleGroup) {
     activeComplianceRuleGroupId.value = route.query.ruleGroup as string;
+  }
+  if (route.query.scanStatus) {
+    scanStatus.value = route.query.scanStatus as string;
+  }
+  if (route.query.riskLevel) {
+    activeRiskLevel.value = parseInt(route.query.riskLevel as string);
   }
 
   // 监控合规规则组变化
@@ -327,7 +336,7 @@ const resourceTypes = ref<Array<KeyValue<string, string>>>([]);
 // 当前这一行任务数据
 const currentJobRow = ref<AccountJobRecord>();
 // 任务详情组件
-const jobDetailsRef = ref<InstanceType<typeof job_details_view>>();
+const jobDetailsRef = ref<InstanceType<typeof JobDetailsView>>();
 /**
  * 路由到详情页面
  * @param row 当前行数据
@@ -352,6 +361,13 @@ const columns = ref([]);
  * 加载器
  */
 const loading = ref<boolean>(false);
+
+function getPathSearchParams() {
+  const param1 = getResourceTypeParams();
+  const param2 = getScanStatusParams();
+  return { ...param1, ...param2 };
+}
+
 const getResourceTypeParams = () => {
   if (resourceTypeFilters.value.length > 0) {
     const t = resourceTypes.value.find(
@@ -364,6 +380,25 @@ const getResourceTypeParams = () => {
           label: t.key,
           value: t.value,
           valueLabel: t.key,
+        },
+      };
+    }
+  }
+  return undefined;
+};
+const getScanStatusParams = () => {
+  if (scanStatus.value) {
+    const t = _.find(
+      scanStatusList.value,
+      (type) => type.value === scanStatus.value
+    );
+    if (t) {
+      return {
+        scanStatus: {
+          field: "scanStatus",
+          label: t.text,
+          value: t.value,
+          valueLabel: t.text,
         },
       };
     }
@@ -396,6 +431,7 @@ const openDetailsJobView = (row: AccountJobRecord) => {
  * @param condition 查询条件
  */
 const search = (condition: TableSearch) => {
+  //
   const params = TableSearch.toSearchParams(condition);
 
   complianceScanResultApi

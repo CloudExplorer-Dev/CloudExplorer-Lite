@@ -52,10 +52,12 @@
               :span="form.confirmItemSpan"
             >
               <template v-if="!form.confirmSpecial">
-                <span
-                  class="description-inline"
-                  v-html="getDisplayValue(form)"
-                />
+                <div class="description-inline">
+                  <span
+                    v-html="getDisplayValue(form)"
+                    :title="getDisplayValue(form)"
+                  />
+                </div>
                 <span v-if="form.unit">{{ form.unit }}</span>
               </template>
               <template v-else>
@@ -228,9 +230,11 @@ function getDisplayValue(form: FormView) {
   display: inline-flex;
   flex-direction: row;
   justify-content: space-between;
-  max-width: 250px;
-  overflow: auto;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  span {
+    max-width: 200px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
 }
 </style>

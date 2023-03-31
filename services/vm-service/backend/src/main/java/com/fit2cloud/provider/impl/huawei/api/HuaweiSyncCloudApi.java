@@ -122,9 +122,15 @@ public class HuaweiSyncCloudApi {
         if (StringUtils.isNotEmpty(request.getCredential())) {
             HuaweiVmCredential credential = JsonUtil.parseObject(request.getCredential(), HuaweiVmCredential.class);
             EvsClient evsClient = credential.getEvsClient(request.getRegionId());
-            ListVolumesResponse listVolumesResponse = evsClient.listVolumes(request);
-            List<VolumeDetail> volumes = listVolumesResponse.getVolumes();
-            return volumes.stream().map(HuaweiMappingUtil::toF2CDisk).toList();
+            try {
+                ListVolumesResponse listVolumesResponse = evsClient.listVolumes(request);
+                List<VolumeDetail> volumes = listVolumesResponse.getVolumes();
+                return volumes.stream().map(HuaweiMappingUtil::toF2CDisk).toList();
+            }catch (Exception e) {
+                ReTryException.throwHuaweiReTry(e);
+                SkipPageException.throwHuaweiSkip(e);
+                throw new Fit2cloudException(10000, "获取数据失败" + e.getMessage());
+            }
         }
         return new ArrayList<>();
     }
@@ -139,11 +145,17 @@ public class HuaweiSyncCloudApi {
         if (StringUtils.isNotEmpty(request.getCredential())) {
             HuaweiVmCredential credential = JsonUtil.parseObject(request.getCredential(), HuaweiVmCredential.class);
             ImsClient imsClient = credential.getImsClient(request.getRegionId());
-            // 只查询公共镜像gold
-            request.setImagetype(ListImagesRequest.ImagetypeEnum.GOLD);
-            ListImagesResponse listImagesResponse = imsClient.listImages(request);
-            List<ImageInfo> images = listImagesResponse.getImages();
-            return images.stream().map(imageInfo -> HuaweiMappingUtil.toF2CImage(imageInfo, request.getRegionId())).filter(Objects::nonNull).toList();
+            try{
+                // 只查询公共镜像gold
+                request.setImagetype(ListImagesRequest.ImagetypeEnum.GOLD);
+                ListImagesResponse listImagesResponse = imsClient.listImages(request);
+                List<ImageInfo> images = listImagesResponse.getImages();
+                return images.stream().map(imageInfo -> HuaweiMappingUtil.toF2CImage(imageInfo, request.getRegionId())).filter(Objects::nonNull).toList();
+            }catch (Exception e) {
+                ReTryException.throwHuaweiReTry(e);
+                SkipPageException.throwHuaweiSkip(e);
+                throw new Fit2cloudException(10000, "获取数据失败" + e.getMessage());
+            }
         }
         return new ArrayList<>();
     }
@@ -214,6 +226,7 @@ public class HuaweiSyncCloudApi {
             return ecsClient.listServersDetails(req);
         } catch (Exception e) {
             ReTryException.throwHuaweiReTry(e);
+            SkipPageException.throwHuaweiSkip(e);
             throw new Fit2cloudException(10000, "获取数据失败" + e.getMessage());
         }
     }
@@ -1714,14 +1727,10 @@ public class HuaweiSyncCloudApi {
             ShowCustomerOrderDetailsResponse response = getOrderDetailsById(server.getMetadata().get("metering.order_id"), bssClient);
             response.getOrderLineItems().stream().forEach((item) -> {
                 if ("hws.service.type.ec2".equalsIgnoreCase(item.getServiceTypeCode())) {
-                    //createRequest.setPeriodType(item.getPeriodType() == 2 ? "month" : "year");
-                    //createRequest.setPeriodNum(item.getPeriodNum() == null ? 1 : item.getPeriodNum());
-                    for (HuaweiPeriodOption option : HuaweiPeriodOption.values()) {
-                        if (item.getPeriodType() == 2) {
-                            createRequest.setPeriodNum(String.valueOf(option.getPeriod()));
-                        } else {
-                            createRequest.setPeriodNum(String.valueOf(option.getPeriod() * 12));
-                        }
+                    if (item.getPeriodType() == 2) {
+                        createRequest.setPeriodNum(String.valueOf(item.getPeriodNum() == null ? 1 : item.getPeriodNum()));
+                    } else {
+                        createRequest.setPeriodNum(String.valueOf(item.getPeriodNum() * 12));
                     }
                 }
             });

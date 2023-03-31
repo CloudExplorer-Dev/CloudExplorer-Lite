@@ -25,8 +25,10 @@
         </div>
       </el-col>
     </el-row>
-    <DiskDoughnutChartGroup :cloud-account-id="currentAccount"
-                            :current-unit="currentUnit"></DiskDoughnutChartGroup>
+    <DiskDoughnutChartGroup
+      :cloud-account-id="currentAccount"
+      :current-unit="currentUnit"
+    ></DiskDoughnutChartGroup>
     <el-row :gutter="16" class="row">
       <el-col :span="12">
         <DiskIncreaseTrend
@@ -57,9 +59,7 @@ const currentUnit = ref<string>("block");
 //查询所有私有云云账号
 const accounts = ref<Array<CloudAccount>>();
 const getSearchCondition = () => {
-  CommonApi.listAll().then(
-    (res) => (accounts.value = res.data)
-  );
+  CommonApi.listAll().then((res) => (accounts.value = res.data));
 };
 onMounted(() => {
   getSearchCondition();
@@ -73,7 +73,6 @@ onMounted(() => {
     padding: 5px 0 10px 0;
     text-align: left;
     .header-title {
-      font-family: "PingFang SC", serif;
       font-style: normal;
       font-weight: 500;
       font-size: 16px;
@@ -94,7 +93,6 @@ onMounted(() => {
     padding: 5px 0 10px 0;
     text-align: left;
     .header-title {
-      font-family: "PingFang SC", serif;
       font-style: normal;
       font-weight: 500;
       font-size: 16px;

@@ -4,6 +4,7 @@ import _ from "lodash";
 import { useModuleStore } from "@commons/stores/modules/module";
 import { usePermissionStore } from "@commons/stores/modules/permission";
 import { useUserStore } from "@commons/stores/modules/user";
+import ConditionDialog from "./ConditionDialog.vue";
 import {
   baseOptimizeSuggests,
   type ListOptimizationRequest,
@@ -25,6 +26,7 @@ const props = withDefaults(
     noPadding?: boolean;
     checkId?: number;
     checkable?: boolean;
+    showSettingIcon?: boolean;
     req?: ListOptimizationRequest;
   }>(),
   {
@@ -38,6 +40,7 @@ const props = withDefaults(
     noTitle: false,
     noPadding: false,
     checkable: false,
+    showSettingIcon: false,
   }
 );
 
@@ -65,7 +68,9 @@ const optimizeSuggests = computed<Array<ListOptimizationRequest>>(() => {
     _.set(
       v,
       "accountIds",
-      props.cloudAccountId === "all" || !props.cloudAccountId ? [] : [props.cloudAccountId]
+      props.cloudAccountId === "all" || !props.cloudAccountId
+        ? []
+        : [props.cloudAccountId]
     );
     if (props.req) {
       _.assign(v, props.req);
@@ -73,6 +78,13 @@ const optimizeSuggests = computed<Array<ListOptimizationRequest>>(() => {
     return v;
   });
 });
+
+const modifyConditionRef = ref();
+const optimizationSearchReq = ref<ListOptimizationRequest>();
+const showConditionDialog = (req: ListOptimizationRequest) => {
+  optimizationSearchReq.value = req;
+  modifyConditionRef.value.dialogVisible = true;
+};
 
 const getSearchParams = (o: OptimizeSuggest) => {
   if (localStorage.getItem(o.code)) {
@@ -122,6 +134,8 @@ function checkDiv(req: ListOptimizationRequest) {
   checkedId.value = req.id;
 }
 
+const showSettingIcon = computed<boolean>(() => props.showSettingIcon);
+
 function getCheckedSearchParams(
   id: number,
   req: ListOptimizationRequest
@@ -166,12 +180,20 @@ defineExpose({
         <ServerOptimizationCard
           :req="o"
           :show="show"
+          :show-setting-icon="showSettingIcon"
           :checked="checkedId === o.id"
+          @showConditionDialog="showConditionDialog"
           @click="checkDiv(o)"
         />
       </el-col>
     </el-row>
   </div>
+  <ConditionDialog
+    ref="modifyConditionRef"
+    :optimization-search-req="optimizationSearchReq"
+    @showConditionDialog="showConditionDialog"
+    style="min-width: 600px"
+  />
 </template>
 
 <style scoped lang="scss">

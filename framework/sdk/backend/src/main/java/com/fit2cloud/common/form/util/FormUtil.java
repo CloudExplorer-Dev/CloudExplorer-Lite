@@ -107,6 +107,9 @@ public class FormUtil {
             if (StringUtils.isNotBlank(annotation.extraInfo())) {
                 map.put("extraInfo", annotation.extraInfo());
             }
+            if (StringUtils.isNotBlank(annotation.hint())) {
+                map.put("hint", annotation.hint());
+            }
 
             String jsonString = JsonUtil.toJSONString(map);
             return JsonUtil.parseObject(jsonString, annotation.inputType().getFormClass());
