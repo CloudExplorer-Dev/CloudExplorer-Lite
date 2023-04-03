@@ -172,7 +172,7 @@ public class MenuConstants {
                     .name("vm_cloud_disk")
                     .title("磁盘")
                     .path("/vm_cloud_disk")
-                    .icon("icon_cloud-storage_outlined")
+                    .icon("icon_storage_filled")
                     .componentPath("/src/views/vm_cloud_disk/index.vue")
                     .redirect("/vm_cloud_disk/list")
                     .order(2)
