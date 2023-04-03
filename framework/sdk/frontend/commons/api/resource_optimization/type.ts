@@ -162,7 +162,7 @@ export const paramOptimizationRequestMap: Map<string, any> = new Map([
       optimizeSuggest: "payment",
       cycleContinuedRunning: "false",
       cycleContinuedDays: 10,
-      volumeContinuedRunning: "false",
+      volumeContinuedRunning: "true",
       volumeContinuedDays: 10,
     },
   ],

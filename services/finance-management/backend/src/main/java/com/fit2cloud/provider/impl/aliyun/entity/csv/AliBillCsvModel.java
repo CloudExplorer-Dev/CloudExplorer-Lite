@@ -17,6 +17,9 @@ public class AliBillCsvModel {
     @CsvBindByName(column = "账期", required = true)
     @CsvDate(value = "yyyy-MM")
     private Date billingCycle;
+    @CsvBindByName(column = "日期", required = true)
+    @CsvDate(value = "yyyyMMdd")
+    private Date date;
     @CsvBindByName(column = "财务单元")
     private String financialUnit;
     @CsvBindByName(column = "账号ID")

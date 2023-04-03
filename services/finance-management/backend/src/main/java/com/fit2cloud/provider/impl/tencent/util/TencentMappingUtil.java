@@ -48,6 +48,7 @@ public class TencentMappingUtil {
         cloudBill.setUsageStartDate((CommonUtil.getLocalDateTime(csvModel.getStartTime(), "yyyy-MM-dd HH:mm:ss")));
         cloudBill.setUsageEndDate(CommonUtil.getLocalDateTime(csvModel.getEndTime(), "yyyy-MM-dd HH:mm:ss"));
         cloudBill.setBillingCycle((CommonUtil.getLocalDateTime(request.getMonth(), "yyyy-MM")));
+        cloudBill.setDeductionDate((CommonUtil.getLocalDateTime(csvModel.getDeductionTime(), "yyyy-MM-dd HH:mm:ss")));
         cloudBill.setTags(MapUtils.isEmpty(csvModel.getTag()) ? new HashMap<>() : (Map) csvModel.getTag());
         cloudBill.setPayAccountId(csvModel.getPayerUin());
         cloudBill.setProductName(csvModel.getProductName());
@@ -65,7 +66,7 @@ public class TencentMappingUtil {
      * @param item 腾讯云账单对象
      * @return 系统账单对象
      */
-    public static CloudBill toCloudBill(BillDetail item) {
+    public static CloudBill toCloudBill(BillDetail item, SyncBillRequest request) {
         CloudBill cloudBill = new CloudBill();
         cloudBill.setId(UUID.randomUUID().toString().replace("-", ""));
         cloudBill.setProjectId(item.getProjectId().toString());
@@ -76,9 +77,10 @@ public class TencentMappingUtil {
         cloudBill.setResourceId(item.getResourceId());
         cloudBill.setResourceName(item.getResourceName());
         cloudBill.setBillMode(toBillMode(item.getPayModeName()));
-        cloudBill.setBillingCycle(CommonUtil.getLocalDateTime(item.getPayTime(), "yyyy-MM-dd HH:mm:ss"));
+        cloudBill.setBillingCycle(CommonUtil.getLocalDateTime(request.getMonth(), "yyyy-MM"));
         cloudBill.setUsageStartDate(CommonUtil.getLocalDateTime(item.getFeeBeginTime(), "yyyy-MM-dd HH:mm:ss"));
         cloudBill.setUsageEndDate(CommonUtil.getLocalDateTime(item.getFeeEndTime(), "yyyy-MM-dd HH:mm:ss"));
+        cloudBill.setDeductionDate(CommonUtil.getLocalDateTime(item.getPayTime(), "yyyy-MM-dd HH:mm:ss"));
         cloudBill.setTags(Arrays.stream(item.getTags()).collect(Collectors.toMap(BillTagInfo::getTagKey, BillTagInfo::getTagValue)));
         cloudBill.setPayAccountId(item.getPayerUin());
         cloudBill.setProductName(item.getBusinessCodeName());

@@ -1,44 +1,35 @@
-<script setup lang="ts">
-import Detailed from "./items/resource_detailed/Detailed.vue";
-import ComputerResourceAllocatedRate from "@/views/base_resource_analysis/item/BaseResourceAllocationRate.vue";
-import CloudServerOrgWorkspaceSpread from "@/views/server_analysis/item/CloudServerOrgWorkspaceSpread.vue";
-import CloudServerIncreaseTrend from "@commons/business/base-layout/home-page/items/operation/CloudServerIncreaseTrend.vue";
-import ComputerResourceUseRate from "@/views/base_resource_analysis/item/BaseResourceUseRate.vue";
-import ServerOptimization from "@commons/business/base-layout/home-page/items/operation/ServerOptimization.vue";
-import { ref, onMounted } from "vue";
-import CommonApi from "@/api/common/index";
-import { useUserStore } from "@commons/stores/modules/user";
-const userStore = useUserStore();
-import type { CloudAccount } from "@commons/api/cloud_account/type";
-const currentAccountId = ref<string>("all");
-const accounts = ref<Array<CloudAccount>>([]);
-const getAccounts = () => {
-  CommonApi.listAll().then((res) => {
-    accounts.value = res.data;
-  });
-};
-onMounted(() => {
-  getAccounts();
-});
-</script>
 <template>
-  <el-container class="contentContainer" direction="vertical">
-    <div style="padding: 0 24px 0 24px">
-      <div style="float: left">
-        <h3>总览</h3>
-      </div>
-      <div style="float: right; margin-top: 15px">
+  <layout-auto-height-content
+      :style="{ backgroundColor: '#f2f2f2', height: 'auto' }"
+      style="
+      --ce-main-content-padding-top: 0;
+      --ce-main-content-padding-left: 0;
+      --ce-main-content-padding-right: 0;
+      --ce-main-content-padding-bottom: 0;
+    "
+  >
+    <template #breadcrumb>
+      <breadcrumb :auto="true"></breadcrumb>
+      <div
+          style="
+            height: 100%;
+            display: flex;
+            align-items: center;
+            margin-right: 50px;
+          "
+      >
         <el-select v-model="currentAccountId">
           <el-option label="全部云账号" value="all" />
           <el-option
-            v-for="item in accounts"
-            :key="item.id"
-            :label="item.name"
-            :value="item.id"
+              v-for="item in accounts"
+              :key="item.id"
+              :label="item.name"
+              :value="item.id"
           />
         </el-select>
       </div>
-    </div>
+    </template>
+
     <div class="content">
       <el-row class="row" :gutter="16">
         <el-col :span="24">
@@ -83,8 +74,31 @@ onMounted(() => {
         </el-col>
       </el-row>
     </div>
-  </el-container>
+  </layout-auto-height-content>
 </template>
+<script setup lang="ts">
+import Detailed from "./items/resource_detailed/Detailed.vue";
+import ComputerResourceAllocatedRate from "@/views/base_resource_analysis/item/BaseResourceAllocationRate.vue";
+import CloudServerOrgWorkspaceSpread from "@/views/server_analysis/item/CloudServerOrgWorkspaceSpread.vue";
+import CloudServerIncreaseTrend from "@commons/business/base-layout/home-page/items/operation/CloudServerIncreaseTrend.vue";
+import ComputerResourceUseRate from "@/views/base_resource_analysis/item/BaseResourceUseRate.vue";
+import ServerOptimization from "@commons/business/base-layout/home-page/items/operation/ServerOptimization.vue";
+import { ref, onMounted } from "vue";
+import CommonApi from "@/api/common/index";
+import { useUserStore } from "@commons/stores/modules/user";
+const userStore = useUserStore();
+import type { CloudAccount } from "@commons/api/cloud_account/type";
+const currentAccountId = ref<string>("all");
+const accounts = ref<Array<CloudAccount>>([]);
+const getAccounts = () => {
+  CommonApi.listAll().then((res) => {
+    accounts.value = res.data;
+  });
+};
+onMounted(() => {
+  getAccounts();
+});
+</script>
 <style scoped lang="scss">
 .contentContainer {
   height: calc(100vh - var(--ce-header-height));

@@ -64,6 +64,11 @@ public class CloudBill {
     @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss", timezone = "GMT+8")
     private LocalDateTime billingCycle;
 
+    @BillField(label = "扣费时间")
+    @Field(type = FieldType.Date, format = DateFormat.date_hour_minute_second)
+    @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss", timezone = "GMT+8")
+    private LocalDateTime deductionDate;
+
     @BillField(label = "账单开始时间")
     @Field(type = FieldType.Date, format = DateFormat.date_hour_minute_second)
     @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss", timezone = "GMT+8")
