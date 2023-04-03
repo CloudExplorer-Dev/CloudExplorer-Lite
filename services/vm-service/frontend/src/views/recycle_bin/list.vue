@@ -371,7 +371,7 @@ const disableBatch = computed<boolean>(() => {
   return (
     selectedRowData.value.length > 0 &&
     selectedRowData.value.some(
-      (row) => row.relateResource !== "--" && row.resourceType == "DISK"
+      (row) => row.relateResource !== "-" && row.resourceType == "DISK"
     )
   );
 });
@@ -407,7 +407,7 @@ const buttons = ref([
     },
     show: permissionStore.hasPermission("[vm-service]RECYCLE_BIN:RECOVER"),
     disabled: (row: { relateResource: string; resourceType: string }) => {
-      return row.relateResource !== "--" && row.resourceType == "DISK";
+      return row.relateResource !== "-" && row.resourceType == "DISK";
     },
   },
   {
@@ -418,7 +418,7 @@ const buttons = ref([
     },
     show: permissionStore.hasPermission("[vm-service]RECYCLE_BIN:DELETE"),
     disabled: (row: { relateResource: string; resourceType: string }) => {
-      return row.relateResource !== "--" && row.resourceType == "DISK";
+      return row.relateResource !== "-" && row.resourceType == "DISK";
     },
   },
 ]);
