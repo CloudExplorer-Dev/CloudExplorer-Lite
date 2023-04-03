@@ -47,13 +47,19 @@ const showManageDivs = computed<boolean>(() => {
   <div class="info-card">
     <el-row>
       <el-col :span="24" class="user-info-row">
-        <UserAvatar size="48px" icon-size="1.4em" style="margin-right: 12px" />
+        <UserAvatar
+          size="48px"
+          icon-size="1.4em"
+          style="margin-right: 12px"
+          un-clickable
+        />
         <div>
           <div class="user-info">
             <div class="user-name">
               {{ userStore?.currentUser?.name }}
             </div>
             <RoleTag
+              :clickable="false"
               v-for="role in userStore?.currentRoleSourceName?.roles"
               :key="role.id"
               :role="role"

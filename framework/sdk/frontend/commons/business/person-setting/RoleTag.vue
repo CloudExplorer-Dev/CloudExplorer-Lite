@@ -5,8 +5,11 @@ const props = withDefaults(
   defineProps<{
     role: Role;
     defaultTag?: boolean;
+    clickable?: boolean;
   }>(),
-  {}
+  {
+    clickable: true,
+  }
 );
 </script>
 
@@ -16,6 +19,7 @@ const props = withDefaults(
     :class="{
       'extend-role': props.role.type !== 'origin' && !defaultTag,
       default: defaultTag,
+      clickable: clickable,
     }"
   >
     {{ props.role.name }}
@@ -27,7 +31,7 @@ const props = withDefaults(
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  cursor: pointer;
+  cursor: default;
   border-radius: 2px;
   line-height: 20px;
   font-size: 12px;
@@ -36,6 +40,10 @@ const props = withDefaults(
   width: fit-content;
   background-color: rgba(51, 112, 255, 0.2);
   color: var(--el-color-primary);
+}
+
+.role-tag.clickable {
+  cursor: pointer;
 }
 
 .role-tag.default {
