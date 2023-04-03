@@ -212,9 +212,9 @@ watch(
               v-hasPermission="menuItem.requiredPermissions"
               :key="menuItem.name"
             >
-              <div class="icon">
+              <!--              <div class="icon">
                 <CeIcon size="15px" :code="menuItem.icon"></CeIcon>
-              </div>
+              </div>-->
               <div class="title" @click="jumpMenu(menuItem)">
                 <span>{{ menuItem.title }}</span>
               </div>
