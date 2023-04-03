@@ -228,6 +228,10 @@ const permissions = {
         read: "Read",
         edit: "Edit",
       },
+      about: {
+        base: "About",
+        read: "Read",
+      },
     },
     vm: {
       cloud_server: {
