@@ -80,7 +80,7 @@ onMounted(() => {
     flex-direction: row;
     justify-content: center;
     height: 100px;
-    background-image: url("@commons/assets/license_header.png");
+    background-image: url(@commons/assets/license_header.png);
     text-align: center;
     padding: 20px 0;
     background-size: 100% 100%;

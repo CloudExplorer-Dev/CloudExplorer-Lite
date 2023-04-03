@@ -358,7 +358,7 @@ const submit = () => {
   .aside {
     min-height: 500px;
     //background-color: var(--el-color-primary);
-    background-image: url("@commons/assets/cloud-account-add-background.jpg");
+    background-image: url(@commons/assets/cloud-account-add-background.jpg);
     display: flex;
     flex-direction: column;
     flex-wrap: nowrap;
