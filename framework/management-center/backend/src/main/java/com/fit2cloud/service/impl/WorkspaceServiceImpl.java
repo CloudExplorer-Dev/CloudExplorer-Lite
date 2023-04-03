@@ -6,15 +6,19 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.core.metadata.OrderItem;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.fit2cloud.base.entity.Organization;
+import com.fit2cloud.base.service.IBaseOrganizationService;
 import com.fit2cloud.base.service.IBaseUserRoleService;
 import com.fit2cloud.common.exception.Fit2cloudException;
 import com.fit2cloud.common.utils.ColumnNameUtil;
+import com.fit2cloud.common.utils.CurrentUserUtils;
 import com.fit2cloud.common.utils.PageUtil;
 import com.fit2cloud.constants.ErrorCodeConstants;
 import com.fit2cloud.controller.request.workspace.PageWorkspaceRequest;
 import com.fit2cloud.controller.request.workspace.WorkspaceBatchCreateRequest;
 import com.fit2cloud.controller.request.workspace.WorkspaceRequest;
 import com.fit2cloud.dao.entity.Workspace;
+import com.fit2cloud.dao.mapper.OrganizationMapper;
 import com.fit2cloud.dao.mapper.WorkspaceMapper;
 import com.fit2cloud.dto.WorkspaceDTO;
 import com.fit2cloud.service.IWorkspaceService;
@@ -50,11 +54,14 @@ public class WorkspaceServiceImpl extends ServiceImpl<WorkspaceMapper, Workspace
     @Resource
     private IBaseUserRoleService userRoleService;
 
+    @Resource
+    private IBaseOrganizationService baseOrganizationService;
+
     @Override
     public Boolean create(WorkspaceRequest request) {
         List<Workspace> list = list(new LambdaQueryWrapper<Workspace>().eq(Workspace::getName, request.getName()));
         if (CollectionUtils.isNotEmpty(list)) {
-            throw new Fit2cloudException(ErrorCodeConstants.WORKSPACE_NAME_REPEAT.getCode(),ErrorCodeConstants.WORKSPACE_NAME_REPEAT.getMessage());
+            throw new Fit2cloudException(ErrorCodeConstants.WORKSPACE_NAME_REPEAT.getCode(), ErrorCodeConstants.WORKSPACE_NAME_REPEAT.getMessage());
         }
         Workspace workspace = new Workspace();
         BeanUtils.copyProperties(request, workspace);
@@ -69,7 +76,7 @@ public class WorkspaceServiceImpl extends ServiceImpl<WorkspaceMapper, Workspace
                 .eq(Workspace::getName, request.getName())
                 .ne(Workspace::getId, request.getId()));
         if (CollectionUtils.isNotEmpty(list)) {
-            throw new Fit2cloudException(ErrorCodeConstants.WORKSPACE_NAME_REPEAT.getCode(),ErrorCodeConstants.WORKSPACE_NAME_REPEAT.getMessage());
+            throw new Fit2cloudException(ErrorCodeConstants.WORKSPACE_NAME_REPEAT.getCode(), ErrorCodeConstants.WORKSPACE_NAME_REPEAT.getMessage());
         }
         Workspace workspace = getById(request.getId());
         if (Optional.ofNullable(workspace).isEmpty()) {
@@ -90,21 +97,31 @@ public class WorkspaceServiceImpl extends ServiceImpl<WorkspaceMapper, Workspace
     public IPage<WorkspaceDTO> pageWorkspace(PageWorkspaceRequest request) {
         Page<Workspace> page = PageUtil.of(request, Workspace.class, new OrderItem(ColumnNameUtil.getColumnName(Workspace::getCreateTime, true), false), true);
         QueryWrapper<Workspace> queryWrapper = addQuery(request);
-        IPage<WorkspaceDTO> organizations = baseMapper.pageList(page, queryWrapper);
-        return organizations;
+        IPage<WorkspaceDTO> workspaceDTOs = baseMapper.pageList(page, queryWrapper);
+        return workspaceDTOs;
     }
 
-    private QueryWrapper<Workspace> addQuery(PageWorkspaceRequest request){
+    private QueryWrapper<Workspace> addQuery(PageWorkspaceRequest request) {
         QueryWrapper<Workspace> queryWrapper = new QueryWrapper<>();
-        queryWrapper.like(StringUtils.isNotBlank(request.getOrganizationName()), ColumnNameUtil.getColumnName(WorkspaceDTO::getOrganizationName,false), request.getOrganizationName());
-        queryWrapper.like(StringUtils.isNotBlank(request.getName()), ColumnNameUtil.getColumnName(Workspace::getName,true), request.getName());
+        queryWrapper.like(StringUtils.isNotBlank(request.getOrganizationName()), ColumnNameUtil.getColumnName(WorkspaceDTO::getOrganizationName, false), request.getOrganizationName());
+        queryWrapper.like(StringUtils.isNotBlank(request.getName()), ColumnNameUtil.getColumnName(Workspace::getName, true), request.getName());
+
+        if (CurrentUserUtils.isOrgAdmin()) {
+            QueryWrapper<Organization> wrapper = new QueryWrapper<>();
+            wrapper.eq(StringUtils.isNotEmpty(CurrentUserUtils.getOrganizationId()), "id", CurrentUserUtils.getOrganizationId());
+            List<String> orgIds = new ArrayList<>();
+            orgIds.add(CurrentUserUtils.getOrganizationId());
+            orgIds.addAll(baseOrganizationService.getDownOrganization(CurrentUserUtils.getOrganizationId(), baseOrganizationService.list()).stream().map(Organization::getId).toList());
+            queryWrapper.in(ColumnNameUtil.getColumnName(Workspace::getOrganizationId, true), orgIds);
+        }
+
         return queryWrapper;
     }
 
     @Override
     public WorkspaceDTO getOne(String id, String name) {
         if (StringUtils.isEmpty(id) && StringUtils.isEmpty(name)) {
-            throw new Fit2cloudException(ErrorCodeConstants.WORKSPACE_ID_AND_NAME_REQUIRED.getCode(),ErrorCodeConstants.WORKSPACE_ID_AND_NAME_REQUIRED.getMessage());
+            throw new Fit2cloudException(ErrorCodeConstants.WORKSPACE_ID_AND_NAME_REQUIRED.getCode(), ErrorCodeConstants.WORKSPACE_ID_AND_NAME_REQUIRED.getMessage());
         }
         LambdaQueryWrapper<Workspace> wrapper = new LambdaQueryWrapper<>();
         if (StringUtils.isNotEmpty(id)) {
@@ -149,5 +166,11 @@ public class WorkspaceServiceImpl extends ServiceImpl<WorkspaceMapper, Workspace
             return workspace;
         }).toList();
         return saveBatch(workspaces);
+    }
+
+    @Override
+    public long countWorkspace() {
+        QueryWrapper<Workspace> queryWrapper = addQuery(new PageWorkspaceRequest());
+        return baseMapper.selectCount(queryWrapper);
     }
 }

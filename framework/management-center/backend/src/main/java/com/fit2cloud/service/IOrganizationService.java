@@ -67,4 +67,6 @@ public interface IOrganizationService extends IService<Organization> {
      * @return        是否更新成功
      */
      boolean update(OrganizationRequest request);
+
+    long countOrganization();
 }

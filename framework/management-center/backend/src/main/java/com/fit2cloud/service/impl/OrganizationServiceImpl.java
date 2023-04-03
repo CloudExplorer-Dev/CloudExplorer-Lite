@@ -12,6 +12,7 @@ import com.fit2cloud.base.service.IBaseWorkspaceService;
 import com.fit2cloud.common.constants.RoleConstants;
 import com.fit2cloud.common.exception.Fit2cloudException;
 import com.fit2cloud.common.utils.ColumnNameUtil;
+import com.fit2cloud.common.utils.CurrentUserUtils;
 import com.fit2cloud.common.utils.JsonUtil;
 import com.fit2cloud.common.utils.OrganizationUtil;
 import com.fit2cloud.constants.ErrorCodeConstants;
@@ -60,7 +61,7 @@ public class OrganizationServiceImpl extends ServiceImpl<OrganizationMapper, Org
     @Override
     public IPage<Organization> pageOrganization(PageOrganizationRequest request) {
         // 用户信息
-        UserDto credentials = (UserDto) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        UserDto credentials = CurrentUserUtils.getUser();
         Page<Organization> page = new Page<>(request.getCurrentPage(), request.getPageSize(), false);
         // 构建查询参数
         QueryWrapper<Organization> wrapper = new QueryWrapper<>();
@@ -191,6 +192,15 @@ public class OrganizationServiceImpl extends ServiceImpl<OrganizationMapper, Org
         }
         BeanUtils.copyProperties(request, organization);
         return updateById(organization);
+    }
+
+    @Override
+    public long countOrganization() {
+        QueryWrapper<Organization> wrapper = new QueryWrapper<>();
+        if (CurrentUserUtils.isOrgAdmin()) {
+            wrapper.eq(StringUtils.isNotEmpty(CurrentUserUtils.getOrganizationId()), "id", CurrentUserUtils.getOrganizationId());
+        }
+        return baseMapper.listRootOrganizationIds(wrapper).size();
     }
 
     private List<Organization> getBottomOrganization(List<Organization> result, String pid) {

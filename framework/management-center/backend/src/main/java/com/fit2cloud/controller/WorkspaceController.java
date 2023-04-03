@@ -1,5 +1,6 @@
 package com.fit2cloud.controller;
 
+import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.fit2cloud.common.log.annotation.OperatedLog;
 import com.fit2cloud.common.log.constants.OperatedTypeEnum;
 import com.fit2cloud.common.log.constants.ResourceTypeEnum;
@@ -39,7 +40,7 @@ public class WorkspaceController {
     @ApiOperation(value = "分页查询工作空间", notes = "分页查询工作空间")
     @GetMapping("/list")
     @PreAuthorize("hasAnyCePermission('WORKSPACE:READ')")
-    public ResultHolder<Object> listByPage(@Validated PageWorkspaceRequest pageWorkspaceRequest) {
+    public ResultHolder<IPage<WorkspaceDTO>> listByPage(@Validated PageWorkspaceRequest pageWorkspaceRequest) {
         return ResultHolder.success(workspaceService.pageWorkspace(pageWorkspaceRequest));
     }
 
@@ -47,7 +48,7 @@ public class WorkspaceController {
     @GetMapping("/count")
     @PreAuthorize("hasAnyCePermission('WORKSPACE:READ')")
     public ResultHolder<Long> count() {
-        return ResultHolder.success(workspaceService.count());
+        return ResultHolder.success(workspaceService.countWorkspace());
     }
 
     @ApiOperation(value = "创建工作空间", notes = "创建工作空间")

@@ -417,6 +417,19 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
         return true;
     }
 
+    @Override
+    public long countUser() {
+        QueryWrapper<User> wrapper = new QueryWrapper<>();
+        // 根据当前所在角色过滤
+        if (CurrentUserUtils.isOrgAdmin()) {
+            List<String> orgIds = organizationCommonService.getOrgIdsByParentId(CurrentUserUtils.getOrganizationId());
+            List<String> resourceIds = workspaceCommonService.getWorkspaceIdsByOrgIds(orgIds);
+            resourceIds.addAll(orgIds);
+            wrapper.in(CollectionUtils.isNotEmpty(resourceIds), ColumnNameUtil.getColumnName(UserRole::getSource, true), resourceIds);
+        }
+        return baseMapper.selectCount(wrapper);
+    }
+
     /**
      * 判断用户是否已有某个角色
      *
