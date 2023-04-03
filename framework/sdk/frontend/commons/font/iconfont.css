@@ -1,8 +1,8 @@
 @font-face {
   font-family: "iconfont"; /* Project id 3519945 */
-  src: url('iconfont.woff2?t=1679653165949') format('woff2'),
-       url('iconfont.woff?t=1679653165949') format('woff'),
-       url('iconfont.ttf?t=1679653165949') format('truetype');
+  src: url('iconfont.woff2?t=1680505298852') format('woff2'),
+       url('iconfont.woff?t=1680505298852') format('woff'),
+       url('iconfont.ttf?t=1680505298852') format('truetype');
 }
 
 .iconfont {
@@ -11,6 +11,114 @@
   font-style: normal;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+}
+
+.ali-icon-fail:before {
+  content: "\e76e";
+}
+
+.ali-icon-shibai:before {
+  content: "\e76d";
+}
+
+.ali-icon-success:before {
+  content: "\e76c";
+}
+
+.ali-icon-icon_operational_analysis_area:before {
+  content: "\e768";
+}
+
+.ali-icon-icon_working_space:before {
+  content: "\e769";
+}
+
+.ali-icon-icon_safety_compliance_area:before {
+  content: "\e76a";
+}
+
+.ali-icon-icon_operational_analysis_thread:before {
+  content: "\e76b";
+}
+
+.ali-icon-icon_deleting:before {
+  content: "\e765";
+}
+
+.ali-icon-icon_binding:before {
+  content: "\e766";
+}
+
+.ali-icon-icon_wait:before {
+  content: "\e767";
+}
+
+.ali-icon-icon_restarting:before {
+  content: "\e764";
+}
+
+.ali-icon-icon_retrieve:before {
+  content: "\e763";
+}
+
+.ali-icon-icon_begin:before {
+  content: "\e762";
+}
+
+.ali-icon-icon_unusual:before {
+  content: "\e761";
+}
+
+.ali-icon-icon_suspend:before {
+  content: "\e760";
+}
+
+.ali-icon-icon_cease:before {
+  content: "\e75f";
+}
+
+.ali-icon-icon_ocula_closure:before {
+  content: "\e75e";
+}
+
+.ali-icon-icon_assignment:before {
+  content: "\e69f";
+}
+
+.ali-icon-icon_restart:before {
+  content: "\e755";
+}
+
+.ali-icon-icon_billing_overview:before {
+  content: "\e756";
+}
+
+.ali-icon-icon_rule:before {
+  content: "\e757";
+}
+
+.ali-icon-icon_ledger_settings:before {
+  content: "\e758";
+}
+
+.ali-icon-icon_cloud_billing_area:before {
+  content: "\e759";
+}
+
+.ali-icon-icon_cloud_billing_thread:before {
+  content: "\e75a";
+}
+
+.ali-icon-icon_safety_compliance_thread:before {
+  content: "\e75b";
+}
+
+.ali-icon-icon_scan:before {
+  content: "\e75c";
+}
+
+.ali-icon-icon_risk_regulations:before {
+  content: "\e75d";
 }
 
 .ali-icon-icon_testing:before {
