@@ -89,6 +89,10 @@ instance.interceptors.response.use(
     return response;
   },
   (err: any) => {
+    if (err.code === "ECONNABORTED") {
+      ElMessage.error(err.message);
+      console.error(err);
+    }
     if (
       err.response?.status === 401 &&
       route.getRoute()?.router?.currentRoute?.value.name !== "signin" //已经是登录页面了没必要再跳转了
