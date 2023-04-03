@@ -4,4 +4,5 @@ export interface Good extends CloudAccount {
   balance?: number | string;
   serverCount?: number;
   diskCount?: number;
+  publicCloud?: boolean;
 }

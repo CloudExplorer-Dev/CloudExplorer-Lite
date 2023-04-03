@@ -20,4 +20,6 @@ public class Good extends CloudAccount {
     private long serverCount;
     private long diskCount;
     private Object balance;
+    private boolean publicCloud;
+
 }

@@ -7,6 +7,7 @@ import com.fit2cloud.base.entity.VmCloudServer;
 import com.fit2cloud.base.mapper.BaseVmCloudDiskMapper;
 import com.fit2cloud.base.mapper.BaseVmCloudServerMapper;
 import com.fit2cloud.base.service.IBaseCloudAccountService;
+import com.fit2cloud.common.constants.PlatformConstants;
 import com.fit2cloud.common.form.vo.FormObject;
 import com.fit2cloud.controller.handler.ResultHolder;
 import com.fit2cloud.dto.Good;
@@ -112,7 +113,8 @@ public class VmCloudServerCatalogController {
                 if (good != null) {
                     result.setBalance(good.getBalance())
                             .setServerCount(good.getServerCount())
-                            .setDiskCount(good.getDiskCount());
+                            .setDiskCount(good.getDiskCount())
+                            .setPublicCloud(PlatformConstants.valueOf(result.getPlatform()).getPublicCloud());
                 }
                 goods.add(result);
             });
