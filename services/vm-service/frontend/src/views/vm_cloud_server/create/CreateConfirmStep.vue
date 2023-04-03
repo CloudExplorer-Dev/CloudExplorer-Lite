@@ -55,7 +55,7 @@
                 <div class="description-inline">
                   <span
                     v-html="getDisplayValue(form)"
-                    :title="getDisplayValue(form)"
+                    :title="fieldValueMap[form.field]"
                   />
                 </div>
                 <span v-if="form.unit">{{ form.unit }}</span>
@@ -108,7 +108,7 @@ import type {
   ConfirmAnnotation,
   FormView,
 } from "@commons/components/ce-form/type";
-import { computed } from "vue";
+import { computed, ref } from "vue";
 import _ from "lodash";
 import type { CloudAccount } from "@commons/api/cloud_account/type";
 import { platformIcon } from "@commons/utils/platform";
@@ -122,6 +122,8 @@ const props = defineProps<{
 interface Form extends ConfirmAnnotation {
   forms?: Array<FormView>;
 }
+
+const fieldValueMap = ref({});
 
 const groups = computed(() => {
   const tempList = _.sortBy(
@@ -143,6 +145,15 @@ const groups = computed(() => {
 
   return list;
 });
+
+function initFieldValueMap() {
+  groups.value.forEach((group) => {
+    group.forms?.forEach((form) => {
+      fieldValueMap.value[form.field] = getDisplayValue(form);
+    });
+  });
+}
+initFieldValueMap();
 
 function checkShow(currentItem: any) {
   let isShow = currentItem.label;
