@@ -38,7 +38,7 @@ public class CurrentUserResourceService {
         List<String> cloudAccountIds = currentUserCloudServerList().stream().map(VmCloudServer::getAccountId).toList();
         if(CollectionUtils.isNotEmpty(cloudAccountIds)){
             MPJLambdaWrapper<CloudAccount> accountWrapper = new MPJLambdaWrapper<>();
-            accountWrapper.in(true,CloudAccount::getId,cloudAccountIds);
+            accountWrapper.in(!CurrentUserUtils.isAdmin(),CloudAccount::getId,cloudAccountIds);
             resultList = iBaseCloudAccountService.list(accountWrapper);
         }
         return resultList;

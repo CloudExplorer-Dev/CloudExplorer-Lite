@@ -56,7 +56,7 @@ public class CommonAnalysisServiceImpl implements ICommonAnalysisService {
         if(StringUtils.isNotEmpty(cloudAccountId)){
             return 1L;
         }
-        List<String> cloudAccountIds = currentUserResourceService.currentUserCloudServerList().stream().map(VmCloudServer::getAccountId).toList();
+        List<String> cloudAccountIds = currentUserResourceService.currentUserCloudAccountList().stream().map(CloudAccount::getId).toList();
         if(CollectionUtils.isEmpty(cloudAccountIds)){
             return 0L;
         }
@@ -77,7 +77,7 @@ public class CommonAnalysisServiceImpl implements ICommonAnalysisService {
         if(StringUtils.isNotEmpty(cloudAccountId)){
             cloudAccountIds.add(cloudAccountId);
         }else{
-            cloudAccountIds.addAll(currentUserResourceService.currentUserCloudServerList().stream().map(VmCloudServer::getAccountId).toList());
+            cloudAccountIds.addAll(currentUserResourceService.currentUserCloudAccountList().stream().map(CloudAccount::getId).toList());
         }
         if(CollectionUtils.isEmpty(cloudAccountIds)){
             return resultList;

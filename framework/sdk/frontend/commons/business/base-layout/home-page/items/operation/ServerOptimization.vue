@@ -22,11 +22,13 @@ const props = withDefaults(
     module?: string;
     title?: string;
     cloudAccountId?: string;
+    cloudAccountIds?: Array<string>;
     noTitle?: boolean;
     noPadding?: boolean;
     checkId?: number;
     checkable?: boolean;
     showSettingIcon?: boolean;
+    tableLoading?: boolean;
     req?: ListOptimizationRequest;
   }>(),
   {
@@ -41,6 +43,7 @@ const props = withDefaults(
     noPadding: false,
     checkable: false,
     showSettingIcon: false,
+    tableLoading: false,
   }
 );
 
@@ -65,13 +68,17 @@ const simpleOptimizeSuggests = computed<Array<ListOptimizationRequest>>(() => {
 const optimizeSuggests = computed<Array<ListOptimizationRequest>>(() => {
   return _.map(simpleOptimizeSuggests.value, (s) => {
     const v = _.clone(s);
-    _.set(
-      v,
-      "accountIds",
-      props.cloudAccountId === "all" || !props.cloudAccountId
-        ? []
-        : [props.cloudAccountId]
-    );
+    const accountIds = [];
+    if (!(props.cloudAccountId === "all" || !props.cloudAccountId)) {
+      accountIds.push(props.cloudAccountId);
+    }
+    if (props.cloudAccountIds && props.cloudAccountIds.length > 0) {
+      props.cloudAccountIds.forEach((value) => {
+        accountIds.push(value);
+      });
+    }
+    _.set(v, "accountIds", accountIds.length > 0 ? accountIds : []);
+
     if (props.req) {
       _.assign(v, props.req);
     }
@@ -126,7 +133,17 @@ const checkedId = computed({
   },
 });
 
+function changeParam(req: any) {
+  // getSearchParams(req);
+  // emit("update:checkId", checkedId.value);
+  // emit("change", checkedId.value);
+}
+
 function checkDiv(req: ListOptimizationRequest) {
+  if (props.tableLoading) {
+    console.log("不要着急...");
+    return;
+  }
   if (!props.checkable) {
     goTo(req.id);
     return;
@@ -191,6 +208,7 @@ defineExpose({
   <ConditionDialog
     ref="modifyConditionRef"
     :optimization-search-req="optimizationSearchReq"
+    @changeParam="changeParam"
     @showConditionDialog="showConditionDialog"
     style="min-width: 600px"
   />

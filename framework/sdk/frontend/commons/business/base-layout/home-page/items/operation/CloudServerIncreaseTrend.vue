@@ -273,6 +273,9 @@ const defaultSpeedOptions = {
   yAxis: [
     {
       type: "value",
+      splitLine: {
+        show: false,
+      },
     },
   ],
   series: [

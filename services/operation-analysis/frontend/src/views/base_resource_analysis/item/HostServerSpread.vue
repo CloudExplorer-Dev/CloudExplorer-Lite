@@ -139,10 +139,6 @@ const option = computed<ECBasicOption>(() => {
         zoomLock: true, //是否只平移不缩放
         moveOnMouseMove: false, //鼠标移动能触发数据窗口平移
         brushSelect: false,
-        startValue: 0, // 从头开始。
-        endValue: 9, // 最多六个
-        minValueSpan: 9, // 放大到最少几个
-        maxValueSpan: 9, //  缩小到最多几个
       },
       {
         type: "inside", // 支持内部鼠标滚动平移
@@ -157,6 +153,17 @@ const option = computed<ECBasicOption>(() => {
       trigger: "axis",
       axisPointer: {
         type: "shadow",
+      },
+    },
+    axisLabel: {
+      formatter: function (value:any) {
+        let valueTxt;
+        if (value.length > 12) {
+          valueTxt = value.substring(0, 12) + "...";
+        } else {
+          valueTxt = value;
+        }
+        return valueTxt;
       },
     },
     legend: {
@@ -182,8 +189,8 @@ const option = computed<ECBasicOption>(() => {
       data: selected.name,
       axisTick: false,
       axisLabel: {
-        showMaxLabel: false,
-        showMinLabel: false,
+        // showMaxLabel: false,
+        // showMinLabel: false,
       },
     },
     color: ["rgba(98, 210, 85,1)", "rgba(223, 224, 227, 1)"],
@@ -226,8 +233,8 @@ const option = computed<ECBasicOption>(() => {
   let showEcharts = false;
   let nameNum = 0;
   if (deptNumber.length > 0) {
-    nameNum = Math.floor(100 / (deptNumber.length / 9));
-    showEcharts = deptNumber.length > 9;
+    nameNum = Math.floor(100 / (deptNumber.length / 4));
+    showEcharts = deptNumber.length >= 5;
   }
   _.set(options, "dataZoom.[0].end", nameNum);
   _.set(options, "dataZoom.[1].end", nameNum);

@@ -1,97 +1,82 @@
 <script setup lang="ts">
-import { computed, onMounted, reactive, ref } from "vue";
-import type { FormInstance, FormRules } from "element-plus";
-import _ from "lodash";
-import { paramOptimizationRequestMap } from "@commons/api/resource_optimization/type";
+import { computed } from "vue";
+
 const props = withDefaults(
   defineProps<{
     code?: string;
+    req?: any;
   }>(),
   {
     code: "",
   }
 );
-const optimizeParam = ref<any>(paramOptimizationRequestMap.get(props.code!));
-const getOptimizeParam = () => {
-  if (localStorage.getItem(props.code!)) {
-    const str = localStorage.getItem(props.code!);
-    if (str) {
-      try {
-        return JSON.parse(str);
-      } catch (e) {
-        console.error("get default dialogFormData error", e);
-        return paramOptimizationRequestMap.get(props.code!);
-      }
-    }
-  } else {
-    return paramOptimizationRequestMap.get(props.code!);
-  }
-};
-const comparisonSymbolMap = new Map<string, string>();
-comparisonSymbolMap.set("derating", "小于等于");
-comparisonSymbolMap.set("upgrade", "大于等于");
-const comparisonSymbol = computed<string>(() => {
-  return comparisonSymbolMap.get(props.code);
-});
-onMounted(() => {
-  optimizeParam.value = getOptimizeParam();
+const formReq = computed(() => {
+  return props;
 });
 </script>
-
 <template>
   <el-form class="form-box">
-    <div class="main-center">
-      <div v-show="props.code === 'payment'">
+    <div v-show="formReq.code === 'payment'">
+      <div class="box-title">包年包月资源</div>
+      <div class="main-center">
         <el-form-item>
           <div class="mo-input--number">
             <span style="padding: 0 8px 0 8px">持续关机</span>
+            <span style="padding: 0 8px 0 0"> > </span>
             <el-input-number
-              v-model="optimizeParam.cycleContinuedDays"
-              style="width: 177px"
-              min="1"
-              max="100"
-              step="1"
+              v-model="formReq.req.cycleContinuedDays"
+              style="width: 276px"
+              :min="1"
+              :max="100"
+              :step="1"
               controls-position="right"
               autocomplete="off"
             />
-            <span style="padding: 0 8px 0 8px"
-              >天的包年包月资源，建议转按需按量</span
-            >
+            <span class="unit-label">天</span>
           </div>
+          <span style="padding: 0 8px 0 8px">建议转按需按量</span>
         </el-form-item>
+      </div>
+      <div class="box-title" style="padding-top: 24px">按需按量资源</div>
+      <div class="main-center">
         <el-form-item>
           <div class="mo-input--number">
             <span style="padding: 0 8px 0 8px">持续开机</span>
+            <span style="padding: 0 8px 0 0"> > </span>
             <el-input-number
-              v-model="optimizeParam.volumeContinuedDays"
-              style="width: 177px"
-              min="1"
-              max="100"
-              step="1"
+              v-model="formReq.req.volumeContinuedDays"
+              style="width: 276px"
+              :min="1"
+              :max="100"
+              :step="1"
               controls-position="right"
               autocomplete="off"
             />
-            <span style="padding: 0 8px 0 8px"
-              >天的按需按量资源，建议转包年包月</span
-            >
+            <span class="unit-label">天</span>
           </div>
+          <span style="padding: 0 8px 0 8px">建议转包年包月</span>
         </el-form-item>
       </div>
-      <div v-show="props.code === 'recovery'">
+    </div>
+    <div v-show="formReq.code === 'recovery'">
+      <div class="box-title">闲置资源</div>
+      <div class="main-center">
         <el-form-item>
           <div class="mo-input--number">
             <span style="padding: 0 8px 0 8px">持续关机</span>
+            <span style="padding: 0 8px 0 0"> > </span>
             <el-input-number
-              v-model="optimizeParam.continuedDays"
-              style="width: 177px"
-              min="1"
-              max="100"
-              step="1"
+              v-model="formReq.req.continuedDays"
+              style="width: 276px"
+              :min="1"
+              :max="100"
+              :step="1"
               controls-position="right"
               autocomplete="off"
             />
-            <span style="padding: 0 8px 0 8px">天的闲置资源，建议回收</span>
+            <span class="unit-label">天</span>
           </div>
+          <span style="padding: 0 8px 0 8px">建议回收</span>
         </el-form-item>
       </div>
     </div>
@@ -114,21 +99,36 @@ onMounted(() => {
 
 /* 自定义数字输入框append  */
 .mo-input--number {
-  border: 1px solid #dcdfe6;
-  width: 100%;
   display: flex;
-  border-radius: 4px;
-  .el-input-number--mini {
-    flex: 1;
+  :deep(.el-input__wrapper) {
+    border-radius: 4px 0 0px 4px;
+  }
+  :deep(.el-input-number__decrease) {
+    background-color: #ffffff;
+  }
+  :deep(.el-input-number__increase) {
+    background-color: #ffffff;
+  }
+  .unit-label {
+    background-color: rgba(239, 240, 241, 1);
+    padding: 0 8px 0 8px;
+    border: 1px solid #dcdfe5;
+    border-left: 0px;
+    border-radius: 0 4px 4px 0;
+    height: 30px;
   }
 }
-.define-append {
-  display: inline-block;
-  padding: 0 9px;
-  border-left: none;
-  height: 32px;
-  line-height: 32px;
-  font-size: 12px;
-  text-align: center;
+.box-title {
+  padding-bottom: 5px;
+  width: 96px;
+  height: 24px;
+  left: 24px;
+  top: calc(50% - 24px / 2 - 100px);
+  font-family: "PingFang SC";
+  font-style: normal;
+  font-weight: 500;
+  font-size: 16px;
+  line-height: 24px;
+  color: #1f2329;
 }
 </style>

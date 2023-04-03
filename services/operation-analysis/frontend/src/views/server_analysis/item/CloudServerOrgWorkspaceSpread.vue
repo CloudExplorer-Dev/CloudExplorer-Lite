@@ -206,7 +206,7 @@ const defaultSpeedOptions = {
     show: true,
   },
   axisLabel: {
-    formatter: function (value) {
+    formatter: function (value:any) {
       let valueTxt;
       if (value.length > 5) {
         valueTxt = value.substring(0, 5) + "...";

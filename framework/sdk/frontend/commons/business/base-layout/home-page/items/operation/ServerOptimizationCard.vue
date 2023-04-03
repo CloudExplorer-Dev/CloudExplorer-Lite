@@ -51,9 +51,9 @@ watch(
   },
   { immediate: true, deep: true }
 );
-const emit = defineEmits(["showConditionDialog"]);
+const emit = defineEmits(["showConditionDialog", "changeParam"]);
 const showConditionDialog = (req: ListOptimizationRequest) => {
-  emit("showConditionDialog", req);
+  emit("showConditionDialog", props.req);
 };
 </script>
 <template>

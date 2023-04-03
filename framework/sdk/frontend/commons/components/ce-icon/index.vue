@@ -10,7 +10,7 @@ const props = defineProps({
   code: {
     type: String,
   },
-  cssPrefixText: {  
+  cssPrefixText: {
     type: String,
     default: "ali-icon-",
   },

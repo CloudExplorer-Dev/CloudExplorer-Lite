@@ -1,12 +1,14 @@
 <script setup lang="ts">
-import { reactive, ref } from "vue";
-import type { FormInstance, FormRules } from "element-plus";
+import { withDefaults, ref } from "vue";
 import DeratingForm from "./UsedRateSearchForm.vue";
 import type { ListOptimizationRequest } from "@commons/api/resource_optimization/type";
 import StatusSearchForm from "@commons/business/base-layout/home-page/items/operation/StatusSearchForm.vue";
-const props = defineProps<{
-  optimizationSearchReq?: ListOptimizationRequest;
-}>();
+const props = withDefaults(
+  defineProps<{
+    optimizationSearchReq?: ListOptimizationRequest;
+  }>(),
+  {}
+);
 
 const dialogVisible = ref(false);
 defineExpose({
@@ -16,9 +18,17 @@ defineExpose({
 const handleCancel = () => {
   dialogVisible.value = false;
 };
-
+const emit = defineEmits(["changeParam"]);
 const handleSave = () => {
   dialogVisible.value = false;
+  const obj = window.localStorage.getItem(props.optimizationSearchReq?.code);
+  if (obj) {
+    window.localStorage.setItem(
+      props.optimizationSearchReq?.code,
+      JSON.stringify(props.optimizationSearchReq)
+    );
+  }
+  emit("changeParam", props.optimizationSearchReq);
 };
 </script>
 
@@ -33,18 +43,22 @@ const handleSave = () => {
   >
     <div class="dialog-body">
       <DeratingForm
+        :req="props.optimizationSearchReq"
         :code="props.optimizationSearchReq?.code"
         v-show="props.optimizationSearchReq?.code === 'derating'"
       ></DeratingForm>
       <DeratingForm
+        :req="props.optimizationSearchReq"
         :code="props.optimizationSearchReq?.code"
         v-show="props.optimizationSearchReq?.code === 'upgrade'"
       ></DeratingForm>
       <StatusSearchForm
+        :req="props.optimizationSearchReq"
         :code="props.optimizationSearchReq?.code"
         v-show="props.optimizationSearchReq?.code === 'payment'"
       ></StatusSearchForm>
       <StatusSearchForm
+        :req="props.optimizationSearchReq"
         :code="props.optimizationSearchReq?.code"
         v-show="props.optimizationSearchReq?.code === 'recovery'"
       ></StatusSearchForm>

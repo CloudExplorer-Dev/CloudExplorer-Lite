@@ -8,6 +8,8 @@
     @change="selectChange"
     :req="searchParams"
     ref="optimizeDivRef"
+    :table-loading="tableLoading"
+    :cloud-account-ids="checkedAccountIds"
   />
 
   <div class="log-table">
@@ -196,7 +198,12 @@ const search = (condition: TableSearch) => {
       checkedId.value,
       TableSearch.toSearchParams(condition)
     );
-
+  //讲云账号查询条件下传到卡片
+  if(_.has(TableSearch.toSearchParams(condition),"accountIds")){
+    checkedAccountIds.value = TableSearch.toSearchParams(condition)?.accountIds;
+  }else{
+    checkedAccountIds.value = [];
+  }
   ResourceOptimizationViewApi.listServer(
     {
       ...params,
