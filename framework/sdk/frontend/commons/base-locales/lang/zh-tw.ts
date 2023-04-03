@@ -228,6 +228,10 @@ const permissions = {
         read: "查看",
         edit: "編輯",
       },
+      about: {
+        base: "關于",
+        read: "查看",
+      },
     },
     vm: {
       cloud_server: {

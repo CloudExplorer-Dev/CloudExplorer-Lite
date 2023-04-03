@@ -208,7 +208,7 @@ public class MenuConstants {
                     .name("server_optimization")
                     .title("云主机优化")
                     .path("/server_optimization")
-                    .icon("icon_logs_outlined")
+                    .icon("icon_ecs_outlined")
                     .componentPath("/src/views/resource_optimization/index.vue")
                     .redirect("/server_optimization/list")
                     .order(1)

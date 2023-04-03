@@ -4,6 +4,7 @@ import com.fit2cloud.common.utils.JsonUtil;
 import com.fit2cloud.dao.entity.ExtraModule;
 import com.fit2cloud.dao.entity.ExtraModules;
 import com.fit2cloud.service.IModuleManageService;
+import com.fit2cloud.utils.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -29,7 +30,7 @@ public class ModuleManageServiceImpl implements IModuleManageService {
         Yaml yaml = new Yaml();
 
         File versionFile = new File("/opt/cloudexplorer/VERSION");
-        String version = StringUtils.trim(txt2String(versionFile));
+        String version = StringUtils.trim(FileUtils.txt2String(versionFile));
 
         String[] vList = StringUtils.split(version, ".");
 
@@ -37,7 +38,7 @@ public class ModuleManageServiceImpl implements IModuleManageService {
 
         Map<String, ExtraModule> installedModuleMap = new HashMap<>();
         try {
-            String[] installedModules = StringUtils.trim(txt2String(installedModulesFile)).split("\\r?\\n");
+            String[] installedModules = StringUtils.trim(FileUtils.txt2String(installedModulesFile)).split("\\r?\\n");
             for (String installedModule : installedModules) {
                 if (StringUtils.contains(installedModule, "|")) {
                     String[] ss = StringUtils.split(installedModule, "|");
@@ -46,7 +47,7 @@ public class ModuleManageServiceImpl implements IModuleManageService {
                     try {
                         File moduleYml = new File("/opt/cloudexplorer/apps/extra/" + ss[0] + "-" + ss[2] + ".yml");
                         if (moduleYml.exists()) {
-                            ExtraModule m = JsonUtil.parseObject(JsonUtil.toJSONString(yaml.load(txt2String(moduleYml))), ExtraModule.class);
+                            ExtraModule m = JsonUtil.parseObject(JsonUtil.toJSONString(yaml.load(FileUtils.txt2String(moduleYml))), ExtraModule.class);
                             module.setDescription(m.getDescription()).setDisplayName(m.getDisplayName());
                         }
                     } catch (Exception e) {
@@ -221,22 +222,7 @@ public class ModuleManageServiceImpl implements IModuleManageService {
         return result.toString();
     }
 
-    private static String txt2String(File file) {
-        StringBuilder result = new StringBuilder();
-        try {
-            // 构造一个BufferedReader类来读取文件
-            BufferedReader br = new BufferedReader(new FileReader(file));
-            String s = null;
-            // 使用readLine方法，一次读一行
-            while ((s = br.readLine()) != null) {
-                result.append(System.lineSeparator()).append(s);
-            }
-            br.close();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return result.toString();
-    }
+
 
 
     //同步执行

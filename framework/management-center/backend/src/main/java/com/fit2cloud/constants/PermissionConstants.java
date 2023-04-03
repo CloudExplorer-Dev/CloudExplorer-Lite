@@ -35,6 +35,7 @@ public class PermissionConstants {
         public static final String SYSTEM_SETTING = "SYSTEM_SETTING";
 
         public static final String PARAMS_SETTING = "PARAMS_SETTING";
+        public static final String ABOUT = "ABOUT";
 
         public static final String SYS_LOG = "SYS_LOG";
 
@@ -341,6 +342,15 @@ public class PermissionConstants {
                                     .require(OPERATE.READ)
                                     .operate(OPERATE.EDIT)
                                     .name("permission.manage.params_setting.edit")
+                                    .role(RoleConstants.ROLE.ADMIN))
+            )
+            .group(
+                    new PermissionGroup.Builder()
+                            .id(GROUP.ABOUT)
+                            .name("permission.manage.about.base")
+                            .permission(new Permission.Builder()
+                                    .operate(OPERATE.READ)
+                                    .name("permission.manage.params_setting.read")
                                     .role(RoleConstants.ROLE.ADMIN))
             )
             // 模块

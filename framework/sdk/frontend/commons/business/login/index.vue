@@ -226,7 +226,7 @@ const submitForm = (formEl: FormInstance | undefined) => {
   }
 
   .login-image {
-    background: url(../../assets/login-desc.png) no-repeat;
+    background: url(@commons/assets/login-desc.jpg) no-repeat;
     background-size: cover;
     width: 100%;
     height: 520px;
