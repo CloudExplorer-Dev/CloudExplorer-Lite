@@ -49,7 +49,7 @@ const emit = defineEmits(["update:activeValue"]);
   display: inline-flex;
   border: 1px solid #bbbfc4;
   border-radius: 4px;
-  font-weight: 500;
+  font-weight: 400;
   font-size: 14px;
   color: #1f2329;
   padding: 3px 4px;

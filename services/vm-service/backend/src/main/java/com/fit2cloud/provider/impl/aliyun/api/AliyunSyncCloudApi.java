@@ -44,6 +44,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
 
 import java.util.*;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 
@@ -948,7 +949,16 @@ public class AliyunSyncCloudApi {
                             .setInstanceChargeType(AliyunChargeType.POSTPAID.getId());
                     client.modifyInstanceChargeType(request);
                 }
-                client.deleteInstances(deleteInstancesRequest);
+
+                loopExecute((DeleteInstancesRequest req) -> {
+                    try {
+                        client.deleteInstances(req);
+                    } catch (Exception e) {
+                        throw new RuntimeException(e);
+                    }
+                    return null;
+                }, deleteInstancesRequest, 5, 5000L);
+
                 return true;
             } catch (TeaException error) {
                 throw new Fit2cloudException(ErrorCodeConstants.VM_DELETE_FAIL.getCode(), error.getMessage());
@@ -958,6 +968,26 @@ public class AliyunSyncCloudApi {
             }
         }
         return false;
+    }
+
+    private static <T> void loopExecute(Function<T, Object> func, T req, int loopTimes, Long waitTime) {
+        int count = 0;
+        while (true) {
+            try {
+                func.apply(req);
+                break;
+            } catch (Exception e) {
+                if (count < loopTimes) {
+                    try {
+                        Thread.sleep(waitTime);
+                    } catch (InterruptedException ex) {
+                        ex.printStackTrace();
+                    }
+                } else {
+                    throw e;
+                }
+            }
+        }
     }
 
     private static void checkStatus(Client client, String status, DescribeInstanceStatusRequest describeInstanceStatusRequest) throws Exception {
