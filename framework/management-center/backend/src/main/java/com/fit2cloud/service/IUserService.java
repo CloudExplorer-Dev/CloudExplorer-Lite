@@ -32,4 +32,5 @@ public interface IUserService extends IService<User> {
 
     Boolean addUserRole(UserBatchAddRoleRequest userBatchAddRoleRequest);
 
+    long countUser();
 }

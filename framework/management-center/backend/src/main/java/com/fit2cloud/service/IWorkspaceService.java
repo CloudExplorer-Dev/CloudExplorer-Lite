@@ -34,4 +34,5 @@ public interface IWorkspaceService extends IService<Workspace> {
 
     Boolean batch(WorkspaceBatchCreateRequest request);
 
+    long countWorkspace();
 }

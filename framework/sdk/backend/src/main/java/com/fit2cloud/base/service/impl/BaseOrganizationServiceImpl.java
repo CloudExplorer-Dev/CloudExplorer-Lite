@@ -147,6 +147,12 @@ public class BaseOrganizationServiceImpl extends ServiceImpl<BaseOrganizationMap
         return res;
     }
 
+
+    @Override
+    public List<Organization> getDownOrganization(String orgId, List<Organization> allOrgTree) {
+        return getDownOrganization(orgId, new ArrayList<>(), allOrgTree);
+    }
+
     /**
      * 获取下级组织
      *

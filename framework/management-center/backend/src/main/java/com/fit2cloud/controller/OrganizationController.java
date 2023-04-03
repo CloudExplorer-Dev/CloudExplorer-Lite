@@ -52,7 +52,7 @@ public class OrganizationController {
     @GetMapping("/count")
     @PreAuthorize("hasAnyCePermission('ORGANIZATION:READ')")
     public ResultHolder<Long> count() {
-        return ResultHolder.success(organizationService.count());
+        return ResultHolder.success(organizationService.countOrganization());
     }
 
     @GetMapping("/{organizationId}")

@@ -1,195 +1,209 @@
 <template>
-  <el-button
-    @click="dialogVisible = true"
-    class="el-button--primary"
-    :disabled="loading"
-    >本地安装</el-button
-  >
+  <layout-content>
+    <template #breadcrumb>
+      <breadcrumb
+        :auto="true"
+        :excludes="[{ field: 'name', value: 'module_manage_page' }]"
+      ></breadcrumb>
+    </template>
 
-  <el-dialog
-    v-model="dialogVisible"
-    title="上传模块包"
-    width="50%"
-    destroy-on-close
-  >
-    <el-upload
-      ref="uploadInstance"
-      drag
-      :limit="1"
-      :headers="header"
-      name="file"
-      action="management-center/api/module_manage/upload"
-      :on-error="onError"
-      :on-success="onSuccess"
+    <el-button
+      @click="dialogVisible = true"
+      class="el-button--primary"
+      :disabled="loading"
+      >本地安装</el-button
     >
-      <el-icon class="el-icon--upload"><upload-filled /></el-icon>
-      <div class="el-upload__text">拖拽文件或 <em>点击上传</em></div>
-      <template #tip>
-        <div class="el-upload__tip">上传tar.gz</div>
-      </template>
-    </el-upload>
-  </el-dialog>
 
-  <el-space wrap class="catalog-container" size="large" v-loading="loading">
-    <template v-for="m in list?.modules" :key="m.name">
-      <el-card
-        :body-style="{
-          padding: 0,
-          position: 'relative',
-        }"
-        class="catalog-container-card"
+    <el-dialog
+      v-model="dialogVisible"
+      title="上传模块包"
+      width="50%"
+      destroy-on-close
+    >
+      <el-upload
+        ref="uploadInstance"
+        drag
+        :limit="1"
+        :headers="header"
+        name="file"
+        action="management-center/api/module_manage/upload"
+        :on-error="onError"
+        :on-success="onSuccess"
       >
-        <div
-          class="right-top-tip"
-          :class="{
-            'm-tip-primary': m.installed && m.version === m.currentVersion,
-            'm-tip-secondary': !m.installed,
-            'm-tip-warning':
-              m.installed && m.currentVersion && m.currentVersion !== m.version,
+        <el-icon class="el-icon--upload"><upload-filled /></el-icon>
+        <div class="el-upload__text">拖拽文件或 <em>点击上传</em></div>
+        <template #tip>
+          <div class="el-upload__tip">上传tar.gz</div>
+        </template>
+      </el-upload>
+    </el-dialog>
+
+    <el-space wrap class="catalog-container" size="large" v-loading="loading">
+      <template v-for="m in list?.modules" :key="m.name">
+        <el-card
+          :body-style="{
+            padding: 0,
+            position: 'relative',
           }"
+          class="catalog-container-card"
         >
-          <span v-if="!m.installed">未安装</span>
-          <span v-else-if="m.version === m.currentVersion">已安装</span>
-          <span v-else>可升级 {{ m.version }}</span>
-        </div>
-        <div style="height: 110px; display: flex; flex-direction: row">
-          <CeIcon
-            :code="m.icon"
-            size="60px"
-            style="height: 66px; width: 66px; padding: 17px"
-          />
-          <div style="flex: 1; padding: 17px">
-            <div style="padding-top: 20px; padding-bottom: 10px">
-              <span style="font-weight: bolder; font-size: 1.2em">
-                {{ m.display_name }}
-              </span>
+          <div
+            class="right-top-tip"
+            :class="{
+              'm-tip-primary': m.installed && m.version === m.currentVersion,
+              'm-tip-secondary': !m.installed,
+              'm-tip-warning':
+                m.installed &&
+                m.currentVersion &&
+                m.currentVersion !== m.version,
+            }"
+          >
+            <span v-if="!m.installed">未安装</span>
+            <span v-else-if="m.version === m.currentVersion">已安装</span>
+            <span v-else>可升级 {{ m.version }}</span>
+          </div>
+          <div style="height: 110px; display: flex; flex-direction: row">
+            <CeIcon
+              :code="m.icon"
+              size="60px"
+              style="height: 66px; width: 66px; padding: 17px"
+            />
+            <div style="flex: 1; padding: 17px">
+              <div style="padding-top: 20px; padding-bottom: 10px">
+                <span style="font-weight: bolder; font-size: 1.2em">
+                  {{ m.display_name }}
+                </span>
+                <div
+                  style="
+                    margin-left: 6px;
+                    line-height: 1.2em;
+                    display: inline-block;
+                    text-align: center;
+                    vertical-align: middle;
+                  "
+                >
+                  <div
+                    :class="{
+                      'm-tip-warning': m.status === 'UNHEALTHY',
+                      'm-tip-success': m.status === 'HEALTHY',
+                      'm-tip-secondary':
+                        m.status === 'NOT_RUNNING' || !m.installed,
+                    }"
+                    style="width: 4px; height: 4px"
+                  ></div>
+                </div>
+                <span
+                  style="
+                    padding-left: 16px;
+                    font-size: smaller;
+                    font-weight: bold;
+                    color: var(--el-text-color-secondary);
+                  "
+                >
+                  {{ m.currentVersion ? m.currentVersion : m.version }}
+                </span>
+              </div>
               <div
                 style="
-                  margin-left: 6px;
-                  line-height: 1.2em;
-                  display: inline-block;
-                  text-align: center;
-                  vertical-align: middle;
-                "
-              >
-                <div
-                  :class="{
-                    'm-tip-warning': m.status === 'UNHEALTHY',
-                    'm-tip-success': m.status === 'HEALTHY',
-                    'm-tip-secondary':
-                      m.status === 'NOT_RUNNING' || !m.installed,
-                  }"
-                  style="width: 4px; height: 4px"
-                ></div>
-              </div>
-              <span
-                style="
-                  padding-left: 16px;
                   font-size: smaller;
-                  font-weight: bold;
                   color: var(--el-text-color-secondary);
                 "
               >
-                {{ m.currentVersion ? m.currentVersion : m.version }}
-              </span>
-            </div>
-            <div
-              style="font-size: smaller; color: var(--el-text-color-secondary)"
-            >
-              {{ m.description }}
+                {{ m.description }}
+              </div>
             </div>
           </div>
-        </div>
-        <div style="height: 78px; padding: 0 17px">
-          <div style="padding: 6px 0; font-size: 14px; font-weight: bold">
-            更新信息
-          </div>
-          <el-scrollbar
-            style="height: 40px"
-            height="40px"
-            v-if="m.update_infos && m.update_infos.length > 0"
-          >
-            <div
-              v-for="(i, index) in m.update_infos"
-              :key="index"
-              style="padding: 4px; font-size: smaller"
-            >
-              {{ i }}
+          <div style="height: 78px; padding: 0 17px">
+            <div style="padding: 6px 0; font-size: 14px; font-weight: bold">
+              更新信息
             </div>
-          </el-scrollbar>
-          <div v-else style="padding: 4px; font-size: smaller">无</div>
-        </div>
+            <el-scrollbar
+              style="height: 40px"
+              height="40px"
+              v-if="m.update_infos && m.update_infos.length > 0"
+            >
+              <div
+                v-for="(i, index) in m.update_infos"
+                :key="index"
+                style="padding: 4px; font-size: smaller"
+              >
+                {{ i }}
+              </div>
+            </el-scrollbar>
+            <div v-else style="padding: 4px; font-size: smaller">无</div>
+          </div>
 
-        <div style="height: 32px; float: right; padding-right: 10px">
-          <el-tooltip effect="dark" content="安装" placement="bottom">
-            <span>
-              <el-button
-                text
-                size="small"
-                v-if="!m.installed"
-                @click="install(m)"
-              >
-                <CeIcon size="20px" code="download" />
-              </el-button>
-            </span>
-          </el-tooltip>
-          <el-tooltip effect="dark" content="升级" placement="bottom">
-            <span>
-              <el-button
-                text
-                size="small"
-                v-if="m.installed"
-                :disabled="m.version === m.currentVersion"
-                @click="install(m)"
-              >
-                <CeIcon size="18px" code="update" />
-              </el-button>
-            </span>
-          </el-tooltip>
-          <el-tooltip
-            effect="dark"
-            :content="m.status === 'NOT_RUNNING' ? '启动' : '重启'"
-            placement="bottom"
-          >
-            <span>
-              <el-button
-                text
-                size="small"
-                :disabled="!m.installed"
-                @click="restart(m)"
-              >
-                <CeIcon size="20px" code="play" />
-              </el-button>
-            </span>
-          </el-tooltip>
-          <el-tooltip effect="dark" content="停止" placement="bottom">
-            <span>
-              <el-button
-                text
-                size="small"
-                :disabled="!m.installed || m.status === 'NOT_RUNNING'"
-                @click="stop(m)"
-              >
-                <CeIcon size="20px" code="stopcircle" />
-              </el-button>
-            </span>
-          </el-tooltip>
-          <el-tooltip effect="dark" content="卸载" placement="bottom">
-            <span>
-              <el-button
-                text
-                size="small"
-                :disabled="!m.installed"
-                @click="uninstall(m)"
-              >
-                <CeIcon size="20px" code="delete" />
-              </el-button>
-            </span>
-          </el-tooltip>
-        </div>
-      </el-card>
-    </template>
-  </el-space>
+          <div style="height: 32px; float: right; padding-right: 10px">
+            <el-tooltip effect="dark" content="安装" placement="bottom">
+              <span>
+                <el-button
+                  text
+                  size="small"
+                  v-if="!m.installed"
+                  @click="install(m)"
+                >
+                  <CeIcon size="20px" code="download" />
+                </el-button>
+              </span>
+            </el-tooltip>
+            <el-tooltip effect="dark" content="升级" placement="bottom">
+              <span>
+                <el-button
+                  text
+                  size="small"
+                  v-if="m.installed"
+                  :disabled="m.version === m.currentVersion"
+                  @click="install(m)"
+                >
+                  <CeIcon size="18px" code="update" />
+                </el-button>
+              </span>
+            </el-tooltip>
+            <el-tooltip
+              effect="dark"
+              :content="m.status === 'NOT_RUNNING' ? '启动' : '重启'"
+              placement="bottom"
+            >
+              <span>
+                <el-button
+                  text
+                  size="small"
+                  :disabled="!m.installed"
+                  @click="restart(m)"
+                >
+                  <CeIcon size="20px" code="play" />
+                </el-button>
+              </span>
+            </el-tooltip>
+            <el-tooltip effect="dark" content="停止" placement="bottom">
+              <span>
+                <el-button
+                  text
+                  size="small"
+                  :disabled="!m.installed || m.status === 'NOT_RUNNING'"
+                  @click="stop(m)"
+                >
+                  <CeIcon size="20px" code="stopcircle" />
+                </el-button>
+              </span>
+            </el-tooltip>
+            <el-tooltip effect="dark" content="卸载" placement="bottom">
+              <span>
+                <el-button
+                  text
+                  size="small"
+                  :disabled="!m.installed"
+                  @click="uninstall(m)"
+                >
+                  <CeIcon size="20px" code="delete" />
+                </el-button>
+              </span>
+            </el-tooltip>
+          </div>
+        </el-card>
+      </template>
+    </el-space>
+  </layout-content>
 </template>
 
 <script setup lang="ts">

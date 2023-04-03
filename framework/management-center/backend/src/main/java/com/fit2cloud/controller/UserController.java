@@ -51,7 +51,7 @@ public class UserController {
     @PreAuthorize("hasAnyCePermission('USER:READ')")
     @GetMapping("/count")
     public ResultHolder<Long> count() {
-        return ResultHolder.success(userService.count());
+        return ResultHolder.success(userService.countUser());
     }
 
     @ApiOperation(value = "添加用户")
