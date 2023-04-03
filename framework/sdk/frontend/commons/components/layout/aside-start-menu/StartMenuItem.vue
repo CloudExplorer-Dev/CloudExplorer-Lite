@@ -24,6 +24,7 @@ const props = withDefaults(
      * 是否是服务目录
      */
     rootItem?: boolean;
+    active?: boolean;
   }>(),
   {
     hover: false,
@@ -43,11 +44,13 @@ const props = withDefaults(
     <div class="icon">
       <CeIcon
         size="var(--ce-star-menu-icon-width, 18px)"
-        color="#1F2329"
         :code="props.startMenuItem.icon"
+        :color="active ? 'var(--ce-star-menu-active-icon-color)' : '#1F2329'"
       />
     </div>
-    <div class="text">{{ props.startMenuItem.name }}</div>
+    <div class="text" :class="active ? 'active' : undefined">
+      {{ props.startMenuItem.name }}
+    </div>
     <div class="handle">
       <slot></slot>
     </div>
@@ -83,6 +86,10 @@ const props = withDefaults(
     line-height: var(--ce-star-menu-item-height);
     width: 50%;
   }
+  .text.active {
+    color: var(--ce-star-menu-active-icon-color);
+  }
+
   .handle {
     display: none;
     flex-wrap: nowrap;

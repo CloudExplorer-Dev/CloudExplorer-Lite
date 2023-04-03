@@ -20,21 +20,22 @@ defineProps({
         class="icon"
         :code="menuInfo.icon"
         :size="'var(--ce-menu-icon-size,14px)'"
-      ></CeIcon>
-      <span>{{ menuInfo.title }}</span></template
-    >
+      />
+      <span>{{ menuInfo.title }}</span>
+    </template>
     <template v-for="item in menuInfo.children" :key="item.name">
       <template v-if="!item.children || item.children.length === 0">
         <el-menu-item
           v-hasPermission="item.requiredPermissions"
           :index="item.path"
           :key="item.name"
+          class="mMenuItem mSubMenuItem"
         >
           <CeIcon
             class="icon"
             :code="item.icon"
             :size="'var(--ce-menu-icon-size,14px)'"
-          ></CeIcon>
+          />
           <span>{{ item.title }}</span>
         </el-menu-item>
       </template>
@@ -47,17 +48,27 @@ defineProps({
     v-else
     v-hasPermission="menuInfo.requiredPermissions"
     :index="menuInfo.path"
+    class="mMenuItem"
   >
     <CeIcon
       class="icon"
       :code="menuInfo.icon"
       :size="'var(--ce-menu-icon-size,14px)'"
-    ></CeIcon>
+    />
     <span>{{ menuInfo.title }}</span>
   </el-menu-item>
 </template>
 <style lang="scss" scoped>
 .icon {
   width: var(--ce-menu-icon-width, 30px);
+}
+.mMenuItem.is-active {
+  border-left-width: 4px;
+  border-left-color: var(--ce-star-menu-active-icon-color);
+  border-left-style: solid;
+  padding-left: 16px !important;
+}
+.mSubMenuItem.is-active {
+  padding-left: 36px !important;
 }
 </style>

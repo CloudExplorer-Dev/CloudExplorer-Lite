@@ -119,6 +119,7 @@ const getCurrentModuleByMicroApp = () => {
         :root-item="false"
         v-hasPermission="item.requiredPermissions"
         :class="item.id === currentModule ? 'active' : ''"
+        :active="item.id === currentModule"
       >
         <div class="move">
           <CeIcon
@@ -140,7 +141,7 @@ const getCurrentModuleByMicroApp = () => {
   border-right: 1px solid var(--ce-star-menu-border-color);
 
   .active {
-    background-color: var(--ce-star-menu-active-bg-color);
+    //background-color: var(--ce-star-menu-active-bg-color);
     .icon {
       .el-icon {
         color: var(--ce-star-menu-active-icon-color);
