@@ -1,8 +1,10 @@
 package com.fit2cloud.service;
 
+import com.fit2cloud.constants.CalendarConstants;
 import com.fit2cloud.controller.request.BillExpensesRequest;
 import com.fit2cloud.controller.request.HistoryTrendRequest;
 import com.fit2cloud.controller.response.BillView;
+import com.fit2cloud.controller.response.ExpensesResponse;
 import com.fit2cloud.controller.response.Trend;
 
 import java.math.BigDecimal;
@@ -26,7 +28,7 @@ public interface BillViewService {
      * @param billExpensesRequest 请求过滤参数
      * @return 聚合数据数据
      */
-    BigDecimal getBillExpenses(String type, String value, BillExpensesRequest billExpensesRequest);
+    ExpensesResponse getBillExpenses(CalendarConstants type, String value, BillExpensesRequest billExpensesRequest);
 
     /**
      * @param type                类型
@@ -34,7 +36,7 @@ public interface BillViewService {
      * @param historyTrendRequest 请求过滤参数
      * @return 历史趋势
      */
-    List<Trend> getTrend(String type, Integer historyNum, HistoryTrendRequest historyTrendRequest);
+    List<Trend> getTrend(CalendarConstants type, Integer historyNum, HistoryTrendRequest historyTrendRequest);
 
     /**
      * 获取账单分账信息
@@ -44,13 +46,6 @@ public interface BillViewService {
      * @return 账单xx
      */
     Map<String, List<BillView>> billViewByRuleId(String ruleId, String month);
-
-
-    /**
-     * 获取账单云账号分账信息
-     * @return 账单云账号分账
-     */
-    Map<String, List<BillView>> billViewByCloudAccount();
 
     Map<String, List<BillView>> currentMonthBillViewByCloudAccount();
 }

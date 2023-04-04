@@ -2,23 +2,43 @@
   <div class="info-card view-expenses-aggs-card" v-loading="loading">
     <span class="title">{{ title }}</span>
     <div class="money">
-      {{ CurrencyFormat.format(expenses) }}
+      {{ CurrencyFormat.format(expenses.current) }}
     </div>
-    <div class="compare">较上月 <span class="up"></span></div>
+    <div class="compare">
+      {{ compareTitle }}
+      <span :class="expenses.current > expenses.up ? 'up' : 'down'"
+        >{{ scale }}
+      </span>
+    </div>
   </div>
 </template>
 <script setup lang="ts">
 import { ref, onMounted } from "vue";
-const loading = ref<boolean>(false);
-const expenses = ref<number>(0);
+import _ from "lodash";
+import { computed } from "vue";
 import CurrencyFormat from "@commons/utils/currencyFormat";
-
+const loading = ref<boolean>(false);
+const expenses = ref<{ current: number; up: number }>({ current: 0, up: 0 });
 const props = defineProps<{
   // 获取数据
-  getAggsCount: () => Promise<number>;
+  getAggsCount: () => Promise<{ current: number; up: number }>;
   // 标题
   title: string;
+  /**
+   * 比较标题
+   */
+  compareTitle: string;
 }>();
+const scale = computed(() => {
+  const s =
+    expenses.value.up == 0
+      ? CurrencyFormat.format(expenses.value.current)
+      : (
+          ((expenses.value.current - expenses.value.up) / expenses.value.up) *
+          100
+        ).toFixed(2) + "%";
+  return expenses.value.current > expenses.value.up ? "+" + s : s;
+});
 onMounted(() => {
   loading.value = true;
   props
@@ -60,5 +80,17 @@ onMounted(() => {
     color: #1f2329;
     line-height: 22px;
   }
+}
+.up {
+  color: rgba(245, 74, 69, 1);
+  font-weight: 400;
+  font-size: 16px;
+  line-height: 24px;
+}
+.down {
+  color: rgba(52, 199, 36, 1);
+  font-weight: 400;
+  font-size: 16px;
+  line-height: 24px;
 }
 </style>

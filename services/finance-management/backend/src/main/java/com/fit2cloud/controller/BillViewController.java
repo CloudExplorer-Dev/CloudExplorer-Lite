@@ -2,10 +2,12 @@ package com.fit2cloud.controller;
 
 import com.fit2cloud.common.validator.annnotaion.CustomValidated;
 import com.fit2cloud.common.validator.handler.ExistHandler;
+import com.fit2cloud.constants.CalendarConstants;
 import com.fit2cloud.controller.handler.ResultHolder;
 import com.fit2cloud.controller.request.BillExpensesRequest;
 import com.fit2cloud.controller.request.HistoryTrendRequest;
 import com.fit2cloud.controller.response.BillView;
+import com.fit2cloud.controller.response.ExpensesResponse;
 import com.fit2cloud.controller.response.Trend;
 import com.fit2cloud.dao.mapper.BillRuleMapper;
 import com.fit2cloud.service.BillViewService;
@@ -13,7 +15,6 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiModelProperty;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
-import org.springframework.cache.annotation.Cacheable;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -24,7 +25,6 @@ import org.springframework.web.bind.annotation.RestController;
 import javax.annotation.Resource;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Pattern;
-import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
 
@@ -45,11 +45,10 @@ public class BillViewController {
     @GetMapping("/expenses/{type}/{value}")
     @ApiOperation(value = "获取账单花费,可以按月,按年", notes = "获取账单花费")
     @PreAuthorize("hasAnyCePermission('BILL_ViEW:READ')")
-    public ResultHolder<BigDecimal> getBillExpenses(@Pattern(regexp = "MONTH|YEAR", message = "类型,支持MONTH,YEAR") @ApiParam("类型,支持MONTH,YEAR") @PathVariable("type") String type,
-                                                    @ApiParam("如果类型是MONTH yyyy-mm格式,YEAR yyyy") @PathVariable("value") String value,
-                                                    BillExpensesRequest billExpensesRequest) {
-
-        return ResultHolder.success(billViewService.getBillExpenses(type, value, billExpensesRequest));
+    public ResultHolder<ExpensesResponse> getBillExpenses(@Pattern(regexp = "MONTH|YEAR", message = "类型,支持MONTH,YEAR") @ApiParam("类型,支持MONTH,YEAR") @PathVariable("type") String type,
+                                                          @ApiParam("如果类型是MONTH yyyy-mm格式,YEAR yyyy") @PathVariable("value") String value,
+                                                          BillExpensesRequest billExpensesRequest) {
+        return ResultHolder.success(billViewService.getBillExpenses(CalendarConstants.valueOf(type), value, billExpensesRequest));
     }
 
     @GetMapping("/history_trend/{type}/{history_num}")
@@ -58,7 +57,7 @@ public class BillViewController {
     public ResultHolder<List<Trend>> historyTrend(@PathVariable("type") @Pattern(regexp = "MONTH|YEAR", message = "类型,支持MONTH,YEAR") String type,
                                                   @PathVariable("history_num") Integer historyNum,
                                                   HistoryTrendRequest historyTrendRequest) {
-        List<Trend> trends = billViewService.getTrend(type, historyNum, historyTrendRequest);
+        List<Trend> trends = billViewService.getTrend(CalendarConstants.valueOf(type), historyNum, historyTrendRequest);
         return ResultHolder.success(trends);
     }
 
@@ -70,12 +69,6 @@ public class BillViewController {
         return ResultHolder.success(billViewService.billViewByRuleId(ruleId, month));
     }
 
-    @GetMapping("/cloud_account")
-    @ApiModelProperty(value = "获取半年云账号聚合账单", notes = "获取半年云账号聚合账单")
-    @PreAuthorize("hasAnyCePermission('BILL_ViEW:READ')")
-    public ResultHolder<Map<String, List<BillView>>> billViewByCloudAccount() {
-        return ResultHolder.success(billViewService.billViewByCloudAccount());
-    }
     @GetMapping("/cloud_account/current_month")
     @ApiModelProperty(value = "获取当月云账号聚合账单", notes = "获取当月云账号聚合账单")
     @PreAuthorize("hasAnyCePermission('BILL_ViEW:READ')")

@@ -129,4 +129,11 @@ public class CloudBill {
     @BillField(label = "优惠后总价")
     @Field(type = FieldType.Double)
     private BigDecimal realTotalCost;
+
+    /**
+     * 使用runtime_mappings聚合查询太慢, 将聚合数据冗余起来
+     */
+    @BillField(label = "聚合字段")
+    @Field(type = FieldType.Object)
+    private Map<String, String> aggregations;
 }

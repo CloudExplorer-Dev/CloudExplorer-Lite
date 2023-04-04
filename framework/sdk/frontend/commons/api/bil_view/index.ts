@@ -13,7 +13,7 @@ function getExpenses(
   type: "MONTH" | "YEAR",
   value: string,
   loading?: Ref<boolean>
-): Promise<Result<number>> {
+): Promise<Result<{ current: number; up: number }>> {
   return get(
     (import.meta.env.VITE_APP_NAME === "finance-management"
       ? ""

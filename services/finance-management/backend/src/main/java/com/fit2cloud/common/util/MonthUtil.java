@@ -2,11 +2,19 @@ package com.fit2cloud.common.util;
 
 import com.fit2cloud.common.exception.Fit2cloudException;
 import com.fit2cloud.common.provider.util.CommonUtil;
+import com.fit2cloud.constants.CalendarConstants;
 import com.fit2cloud.constants.ErrorCodeConstants;
+import lombok.SneakyThrows;
 import org.apache.commons.lang.StringUtils;
 
+import java.text.DateFormat;
 import java.text.ParseException;
+import java.text.ParsePosition;
 import java.text.SimpleDateFormat;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
+import java.time.format.DateTimeFormatter;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
@@ -103,5 +111,53 @@ public class MonthUtil {
     public static String getCurrentMonth() {
         Calendar instance = Calendar.getInstance();
         return String.format("%04d-%02d", instance.get(Calendar.YEAR), instance.get(Calendar.MONTH) + 1);
+    }
+
+    /**
+     * 获取开始时间
+     *
+     * @param type       类型
+     * @param historyNum 距离当前的历史多少个 calendar
+     * @return 开始时间 根据calendarConstants返回的格式分别对应
+     */
+    public static String getStartTime(CalendarConstants type, Integer historyNum) {
+        return getStartTime(type, historyNum, null);
+    }
+
+    @SneakyThrows
+    public static String getStartTime(CalendarConstants type, Integer historyNum, String endTime) {
+        Calendar calendar = getCalendar(type, endTime);
+        calendar.add(type.equals(CalendarConstants.MONTH) ? Calendar.MONTH : Calendar.YEAR, historyNum * -1);
+        return type.equals(CalendarConstants.MONTH) ? String.format("%04d-%02d", calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH) + 1) : String.format("%04d", calendar.get(Calendar.YEAR));
+    }
+
+    @SneakyThrows
+    public static String addCalender(CalendarConstants calendarConstants, String value) {
+        Calendar calendar = getCalendar(calendarConstants, value);
+        calendar.add(calendarConstants.equals(CalendarConstants.MONTH) ? Calendar.MONTH : Calendar.YEAR, 1);
+        return calendarConstants.equals(CalendarConstants.MONTH) ? String.format("%04d-%02d", calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH) + 1) : String.format("%04d", calendar.get(Calendar.YEAR));
+    }
+
+    /**
+     * 获取指定时间的日期对象
+     *
+     * @param type 类型
+     * @param date 时间
+     * @return 日期对象
+     */
+    private static Calendar getCalendar(CalendarConstants type, String date) {
+        Calendar instance = Calendar.getInstance();
+        if (StringUtils.isEmpty(date)) {
+            return instance;
+        }
+        SimpleDateFormat simpleDateFormat = new SimpleDateFormat(type.equals(CalendarConstants.MONTH) ? "yyyy-MM" : "yyyy");
+        Date parse = null;
+        try {
+            parse = simpleDateFormat.parse(date);
+        } catch (ParseException e) {
+            throw new Fit2cloudException(111, "时间格式不正确");
+        }
+        instance.setTime(parse);
+        return instance;
     }
 }

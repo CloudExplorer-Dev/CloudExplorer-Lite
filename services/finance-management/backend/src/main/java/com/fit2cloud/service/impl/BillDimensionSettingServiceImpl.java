@@ -2,10 +2,10 @@ package com.fit2cloud.service.impl;
 
 import co.elastic.clients.elasticsearch.ElasticsearchClient;
 import co.elastic.clients.elasticsearch._types.FieldValue;
+import co.elastic.clients.elasticsearch._types.InlineScript;
 import co.elastic.clients.elasticsearch._types.Script;
 import co.elastic.clients.elasticsearch._types.aggregations.*;
 import co.elastic.clients.elasticsearch._types.mapping.FieldType;
-import co.elastic.clients.elasticsearch._types.mapping.RuntimeFieldType;
 import co.elastic.clients.elasticsearch._types.query_dsl.*;
 import co.elastic.clients.elasticsearch.core.SearchRequest;
 import co.elastic.clients.elasticsearch.core.SearchResponse;
@@ -24,10 +24,10 @@ import com.fit2cloud.base.service.IBaseWorkspaceService;
 import com.fit2cloud.common.cache.CloudAccountCache;
 import com.fit2cloud.common.constants.RoleConstants;
 import com.fit2cloud.common.exception.Fit2cloudException;
-import com.fit2cloud.common.log.utils.LogUtil;
 import com.fit2cloud.common.query.convert.QueryFieldValueConvert;
 import com.fit2cloud.common.util.AuthUtil;
 import com.fit2cloud.common.util.EsFieldUtil;
+import com.fit2cloud.common.util.EsScriptUtil;
 import com.fit2cloud.common.util.MappingUtil;
 import com.fit2cloud.common.utils.QueryUtil;
 import com.fit2cloud.constants.*;
@@ -78,8 +78,6 @@ public class BillDimensionSettingServiceImpl extends ServiceImpl<BillDimensionSe
     private IBaseOrganizationService organizationService;
     @Resource
     private IBaseCloudAccountService cloudAccountService;
-    @Resource
-    private Redisson redisson;
 
 
     @Override
@@ -136,21 +134,12 @@ public class BillDimensionSettingServiceImpl extends ServiceImpl<BillDimensionSe
             billDimensionSetting.setType(AuthorizeTypeConstants.valueOf(type));
             billDimensionSetting.setAuthorizeRule(authorizeRule);
             save(billDimensionSetting);
-            if (CollectionUtils.isNotEmpty(authorizeRule.getBillAuthorizeRuleSettingGroups())) {
-                // 授权
-                authorize(billDimensionSetting);
-            }
             return billDimensionSetting;
         } else {
-            // 清除授权数据
-            clearAuthorize(authorizeId, AuthorizeTypeConstants.valueOf(type));
             res.setAuthorizeRule(authorizeRule);
             updateById(res);
         }
-        if (CollectionUtils.isNotEmpty(res.getAuthorizeRule().getBillAuthorizeRuleSettingGroups())) {
-            // 授权
-            authorize(res);
-        }
+
         return res;
     }
 
@@ -166,12 +155,25 @@ public class BillDimensionSettingServiceImpl extends ServiceImpl<BillDimensionSe
 
     @Override
     public void authorize(BillDimensionSetting billDimensionSetting) {
+        authorize(billDimensionSetting, null, null);
+    }
+
+    /**
+     * 授权
+     *
+     * @param billDimensionSetting 授权规则
+     * @param month                月份
+     * @param cloudAccountId       云账号id
+     */
+    private void authorize(BillDimensionSetting billDimensionSetting, String month, String cloudAccountId) {
         synchronized (EsWriteLockConstants.WRITE_LOCK) {
-            BillAuthorizeRule authorizeRule = billDimensionSetting.getAuthorizeRule();
-            if (CollectionUtils.isNotEmpty(authorizeRule.getBillAuthorizeRuleSettingGroups())) {
+            if (CollectionUtils.isNotEmpty(billDimensionSetting.getAuthorizeRule().getBillAuthorizeRuleSettingGroups())) {
                 if (verification(billDimensionSetting.getAuthorizeId(), billDimensionSetting.getType())) {
-                    Query query = analysisBillAuthorizeRule(authorizeRule);
-                    UpdateByQueryRequest build = new UpdateByQueryRequest.Builder().index(CloudBill.class.getAnnotation(Document.class).indexName()).refresh(true).query(query).script(getAuthorizeScript(billDimensionSetting)).build();
+                    Query query = analysisBillAuthorizeRule(billDimensionSetting.getAuthorizeRule(), cloudAccountId, month);
+                    UpdateByQueryRequest build = new UpdateByQueryRequest.Builder()
+                            .index(CloudBill.class.getAnnotation(Document.class).indexName())
+                            .refresh(true).query(query)
+                            .script(getAuthorizeScript(billDimensionSetting)).build();
                     try {
                         elasticsearchClient.updateByQuery(build);
                     } catch (Exception e) {
@@ -180,24 +182,34 @@ public class BillDimensionSettingServiceImpl extends ServiceImpl<BillDimensionSe
                 }
             }
         }
+    }
 
+    @Override
+    public void authorize(String billDimensionSettingId, String month, String cloudAccountId) {
+        BillDimensionSetting billDimensionSetting = getById(billDimensionSettingId);
+        authorize(billDimensionSetting, month, cloudAccountId);
     }
 
     @SneakyThrows
     @Override
     public Page<AuthorizeResourcesResponse> getAuthorizeResources(Integer page, Integer limit, AuthorizeResourcesRequest request) {
-        String source = "emit(%s)".formatted(String.join("+", getBurstField("projectId"), getBurstField("productId"), getBurstField("resourceId"), findTags().stream().map(t -> getBurstField(t.getValue() + "." + FieldType.Keyword.jsonValue())).collect(Collectors.joining("+"))));
         SearchRequest searchRequest = new SearchRequest.Builder()
-                .runtimeMappings("productIdAndProjectIdAndResourceId", s -> s.type(RuntimeFieldType.Keyword).script(a -> a.inline(s1 -> s1.source(source))))
-                .aggregations(getAuthorizeResourcesAggregation(page, limit)).query(getQueryByAuthorizeResourcesRequest(request)).build();
+                .aggregations(getAuthorizeResourcesAggregation(page, limit))
+                .query(getQueryByAuthorizeResourcesRequest(request))
+                .index(CloudBill.class.getAnnotation(Document.class)
+                        .indexName())
+                .build();
         return getAuthorizeResourcesResponsePage(page, limit, searchRequest);
     }
 
     @Override
     @SneakyThrows
     public Page<AuthorizeResourcesResponse> getNotAuthorizeResources(Integer page, Integer limit, NotAuthorizeResourcesRequest request) {
-        String source = "emit(%s)".formatted(String.join("+", getBurstField("projectId"), getBurstField("productId"), getBurstField("resourceId"), findTags().stream().map(t -> getBurstField(t.getValue() + "." + FieldType.Keyword.jsonValue())).collect(Collectors.joining("+"))));
-        SearchRequest searchRequest = new SearchRequest.Builder().runtimeMappings("productIdAndProjectIdAndResourceId", s -> s.type(RuntimeFieldType.Keyword).script(a -> a.inline(s1 -> s1.source(source)))).aggregations(getAuthorizeResourcesAggregation(page, limit)).query(getQueryByNotAuthorizeResourcesRequest(request)).build();
+        SearchRequest searchRequest = new SearchRequest.Builder()
+                .aggregations(getAuthorizeResourcesAggregation(page, limit))
+                .query(getQueryByNotAuthorizeResourcesRequest(request))
+                .index(CloudBill.class.getAnnotation(Document.class).indexName())
+                .build();
         return getAuthorizeResourcesResponsePage(page, limit, searchRequest);
 
     }
@@ -280,7 +292,25 @@ public class BillDimensionSettingServiceImpl extends ServiceImpl<BillDimensionSe
         Aggregate count = aggregations.get("count");
         Aggregate group = aggregations.get("group");
         long total = count.cardinality().value();
-        List<AuthorizeResourcesResponse> authorizeResourcesResponses = group.sterms().buckets().array().stream().map(this::toAuthorizeResources).filter(Objects::nonNull).toList();
+
+        Aggregation.Builder.ContainerBuilder terms = new Aggregation.Builder().terms(new TermsAggregation.Builder().field("aggregations.ledgerResource.keyword").size(limit).build());
+        terms.aggregations("hits", new Aggregation.Builder().topHits(new TopHitsAggregation.Builder().size(1).build()).build());
+        // 所有的聚合key
+        List<String> keys = group.sterms().buckets().array().stream().map(StringTermsBucket::key).filter(Objects::nonNull).toList();
+        SearchRequest hitSearch = new SearchRequest.Builder().query(
+                new Query.Builder().bool(new BoolQuery.Builder().must(new TermsQuery.Builder().field("aggregations.ledgerResource.keyword")
+                                .terms(new TermsQueryField.Builder()
+                                        .value(keys.stream()
+                                                .map(k -> new FieldValue.Builder()
+                                                        .stringValue(k)
+                                                        .build())
+                                                .toList())
+                                        .build()).build()._toQuery())
+                        .build()).build()
+        ).aggregations("group", terms.build()).build();
+        SearchResponse<CloudBill> hitsRes = elasticsearchClient.search(hitSearch, CloudBill.class);
+        Aggregate histGroup = hitsRes.aggregations().get("group");
+        List<AuthorizeResourcesResponse> authorizeResourcesResponses = histGroup.sterms().buckets().array().stream().map(this::toAuthorizeResources).filter(Objects::nonNull).toList();
         Page<AuthorizeResourcesResponse> authorizeResourcesResponsePage = Page.of(page, limit, total);
         authorizeResourcesResponsePage.setRecords(authorizeResourcesResponses);
         return authorizeResourcesResponsePage;
@@ -302,7 +332,7 @@ public class BillDimensionSettingServiceImpl extends ServiceImpl<BillDimensionSe
         if (Objects.nonNull(auth)) {
             qs.add(auth);
         }
-        return new Query.Builder().bool(new BoolQuery.Builder().must(qs).build()).build();
+        return new Query.Builder().bool(new BoolQuery.Builder().filter(qs).build()).build();
     }
 
     /**
@@ -340,15 +370,53 @@ public class BillDimensionSettingServiceImpl extends ServiceImpl<BillDimensionSe
 
     /**
      * 获取授权资源聚合对象
+     * todo 如果使用一个语句聚合数据会很慢
+     * {
+     * 	"aggregations": {
+     * 		"count": {
+     * 			"cardinality": {
+     * 				"field": "aggregations.ledgerResource.keyword"
+     *                        }* 		},
+     * 		"group": {
+     * 			"aggregations": {
+     * 				"hits": {
+     * 					"top_hits": {
+     * 						"size": 1
+     *                    }
+     *                },
+     * 				"bucket_sort": {
+     * 					"bucket_sort": {
+     * 						"from": 50,
+     * 						"size": 10
+     *                    }
+     *                }
+     *            },
+     * 			"terms": {
+     * 				"field": "aggregations.ledgerResource.keyword",
+     * 				"size": 2147483647
+     *            }
+     *        }
+     *    },
+     * 	"query": {
+     * 		"bool": {
+     * 			"must": [],
+     * 			"must_not": [{
+     * 				"exists": {
+     * 					"field": "organizationId"
+     *                }
+     *            }]
+     *        }
+     *    }
+     * }
+     * 当前查询携带top_hits会很慢,所以俩次查询 反而很快
      *
      * @param currentPage 当前页
      * @param limit       每页多少条
      * @return es聚合对象
      */
     private Map<String, Aggregation> getAuthorizeResourcesAggregation(Integer currentPage, Integer limit) {
-        Aggregation count = new Aggregation.Builder().cardinality(CardinalityAggregation.of(s -> s.field("productIdAndProjectIdAndResourceId"))).build();
-        Aggregation.Builder.ContainerBuilder group = new Aggregation.Builder().terms(new TermsAggregation.Builder().field("productIdAndProjectIdAndResourceId").size(Integer.MAX_VALUE).build());
-        group.aggregations("hits", new Aggregation.Builder().topHits(TopHitsAggregation.of(s -> s.size(1))).build());
+        Aggregation count = new Aggregation.Builder().cardinality(CardinalityAggregation.of(s -> s.field("aggregations.ledgerResource.keyword"))).build();
+        Aggregation.Builder.ContainerBuilder group = new Aggregation.Builder().terms(new TermsAggregation.Builder().field("aggregations.ledgerResource.keyword").size(Integer.MAX_VALUE).build());
         group.aggregations("bucket_sort", new Aggregation.Builder().bucketSort(BucketSortAggregation.of(s -> s.from(currentPage <= 0 ? 0 : (currentPage - 1) * limit).size(limit))).build());
         HashMap<String, Aggregation> aggregationHashMap = new HashMap<>();
         aggregationHashMap.put("count", count);
@@ -468,14 +536,35 @@ public class BillDimensionSettingServiceImpl extends ServiceImpl<BillDimensionSe
      * @return es查询对象
      */
     public Query analysisBillAuthorizeRule(BillAuthorizeRule authorizeRule) {
+        return analysisBillAuthorizeRule(authorizeRule, null, null);
+    }
+
+    /**
+     * 解析账单授权规则
+     *
+     * @param authorizeRule  账单授权规则
+     * @param cloudAccountId 云账号id
+     * @param month          月份 yyyy-MM-dd
+     * @return es查询对象
+     */
+    public Query analysisBillAuthorizeRule(BillAuthorizeRule authorizeRule, String cloudAccountId, String month) {
         BillAuthorizeConditionTypeConstants conditionType = authorizeRule.getConditionType();
         List<Query> queries = authorizeRule.getBillAuthorizeRuleSettingGroups().stream().map(this::groupToQuery).toList();
-        if (conditionType.equals(BillAuthorizeConditionTypeConstants.OR)) {
-            return new Query.Builder().bool(new BoolQuery.Builder().should(queries).build()).build();
-        } else {
-            return new Query.Builder().bool(new BoolQuery.Builder().must(queries).build()).build();
+        List<Query> qs = new ArrayList<>();
+        if (StringUtils.isNotEmpty(cloudAccountId)) {
+            Query cloudAccountQuery = new Query.Builder().term(new TermQuery.Builder().field("cloudAccountId").value(cloudAccountId).build()).build();
+            qs.add(cloudAccountQuery);
         }
-
+        if (StringUtils.isNotEmpty(month)) {
+            Query monthQuery = new Query.Builder().script(new ScriptQuery.Builder().script(s -> EsScriptUtil.getMonthOrYearScript(s, "MONTH", month)).build()).build();
+            qs.add(monthQuery);
+        }
+        if (conditionType.equals(BillAuthorizeConditionTypeConstants.OR)) {
+            qs.add(new Query.Builder().bool(new BoolQuery.Builder().should(queries).build()).build());
+        } else {
+            qs.addAll(queries);
+        }
+        return new Query.Builder().bool(new BoolQuery.Builder().must(qs).build()).build();
     }
 
     /**
