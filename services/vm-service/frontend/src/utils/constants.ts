@@ -61,7 +61,6 @@ export const getTextByValue = (
   valueField?: string,
   textField?: string
 ) => {
-  debugger;
   if (value == undefined) {
     return value;
   }
