@@ -10,8 +10,8 @@ const props = withDefaults(
   }
 );
 const comparisonSymbolMap = new Map<string, string>();
-comparisonSymbolMap.set("derating", "<=");
-comparisonSymbolMap.set("upgrade", ">=");
+comparisonSymbolMap.set("derating", "< =");
+comparisonSymbolMap.set("upgrade", "> =");
 const comparisonSymbol = computed<string>(() => {
   return comparisonSymbolMap.get(props.code)!;
 });
@@ -39,7 +39,7 @@ const formReq = computed(() => {
     </el-form-item>
     <div class="main-center">
       <el-form-item>
-        <el-select style="width: 236px" v-model="formReq.req.cpuMaxRate">
+        <el-select style="width: 230px" v-model="formReq.req.cpuMaxRate">
           <el-option label="CPU平均使用率" value="false" />
           <el-option label="CPU最大使用率" value="true" />
         </el-select>
@@ -60,7 +60,7 @@ const formReq = computed(() => {
         </el-form-item>
       </el-form-item>
       <el-form-item>
-        <el-select style="width: 236px" v-model="formReq.req.memoryMaxRate">
+        <el-select style="width: 230px" v-model="formReq.req.memoryMaxRate">
           <el-option label="内存平均使用率" value="false" />
           <el-option label="内存最大使用率" value="true" />
         </el-select>

@@ -18,41 +18,46 @@ onMounted(() => {
 });
 </script>
 <template>
-  <div class="base-view" v-loading="loading">
-    <div class="info-card about-card">
-      <div class="licence-header">
-        <el-image
-          :src="CELogo"
-          fit="scale-down"
-          style="width: 300px; height: 100px; display: block"
-        />
-      </div>
-      <div class="licence-content">
-        <table>
-          <tr>
-            <th>授权给</th>
-            <td></td>
-          </tr>
-          <tr>
-            <th>过期时间</th>
-            <td></td>
-          </tr>
-          <tr>
-            <th>授权数量</th>
-            <td></td>
-          </tr>
-          <tr>
-            <th>版本</th>
-            <td>标准版</td>
-          </tr>
-          <tr>
-            <th>版本号</th>
-            <td>{{ version }}</td>
-          </tr>
-        </table>
+  <layout-content>
+    <template #breadcrumb>
+      <breadcrumb :auto="true"></breadcrumb>
+    </template>
+    <div class="base-view" v-loading="loading">
+      <div class="info-card about-card">
+        <div class="licence-header">
+          <el-image
+            :src="CELogo"
+            fit="scale-down"
+            style="width: 300px; height: 100px; display: block"
+          />
+        </div>
+        <div class="licence-content">
+          <table>
+            <tr>
+              <td>授权给</td>
+              <td></td>
+            </tr>
+            <tr>
+              <td>过期时间</td>
+              <td></td>
+            </tr>
+            <tr>
+              <td>授权数量</td>
+              <td></td>
+            </tr>
+            <tr>
+              <td>版本</td>
+              <td></td>
+            </tr>
+            <tr>
+              <td>版本号</td>
+              <td>{{ version }}</td>
+            </tr>
+          </table>
+        </div>
       </div>
     </div>
-  </div>
+  </layout-content>
 </template>
 
 <style scoped lang="scss">
@@ -70,10 +75,11 @@ onMounted(() => {
 }
 
 .about-card {
-  margin-top: 5%;
   width: 640px;
   min-width: 640px;
   height: 400px;
+  margin-top: 80px;
+  box-shadow: 0 4px 21px rgba(4, 45, 107, 0.06);
 
   .licence-header {
     display: flex;
@@ -87,14 +93,14 @@ onMounted(() => {
   }
   .licence-content {
     font-size: 16px;
-    padding: 50px;
+    padding: 50px 120px;
 
     table {
       width: 100%;
 
       th {
         text-align: left;
-        width: 45%;
+        width: 60%;
       }
       td {
         display: table-cell;

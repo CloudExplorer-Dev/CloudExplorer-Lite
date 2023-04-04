@@ -19,6 +19,7 @@ import Grant from "@/views/vm_cloud_server/grant.vue";
 import RecycleBinsApi from "@/api/recycle_bin";
 import BaseCloudAccountApi from "@commons/api/cloud_account";
 import OrgTreeFilter from "@commons/components/table-filter/OrgTreeFilter.vue";
+import { DISK_TYPE, DISK_STATUS, getTextByValue } from "@/utils/constants";
 
 const { t } = useI18n();
 const permissionStore = usePermissionStore();
@@ -63,45 +64,6 @@ const clearCondition = (field: string) => {
   }
 };
 
-//硬盘状态
-const diskStatus = ref<Array<SimpleMap<string>>>([
-  { text: "已删除", value: "deleted" },
-  { text: "已挂载", value: "in_use" },
-  { text: "可用", value: "available" },
-  { text: "挂载中", value: "attaching" },
-  { text: "卸载中", value: "detaching" },
-  { text: "创建中", value: "creating" },
-  { text: "初始化中", value: "reiniting" },
-  { text: "未知", value: "unknown" },
-  { text: "错误", value: "error" },
-  { text: "删除中", value: "deleting" },
-  { text: "扩容中", value: "enlarging" },
-  { text: "待回收", value: "ToBeRecycled" },
-]);
-//硬盘类型
-const diskTypes = ref<Array<SimpleMap<string>>>([
-  { text: "高效云盘", value: "cloud_efficiency" },
-  { text: "ESSD云盘", value: "cloud_essd" },
-  { text: "SSD云盘", value: "cloud_ssd" },
-  { text: "普通云盘", value: "cloud" },
-  { text: "通用型SSD", value: "GPSSD" },
-  { text: "极速型SSD", value: "ESSD" },
-  { text: "超高IO", value: "SSD" },
-  { text: "高IO", value: "SAS" },
-  { text: "高性能云硬盘", value: "CLOUD_PREMIUM" },
-  { text: "增强型SSD云硬盘", value: "CLOUD_HSSD" },
-  { text: "通用型SSD云硬盘", value: "CLOUD_BSSD" },
-  { text: "ESSD AutoPL云盘", value: "cloud_auto" },
-  { text: "精简置备", value: "THIN" },
-  { text: "厚置备置零", value: "THICK_EAGER_ZEROED" },
-  { text: "厚置备延迟置零", value: "THICK_LAZY_ZEROED" },
-  { text: "稀疏型", value: "SPARSE" },
-  { text: "lvmdriver-1", value: "lvmdriver-1" },
-  { text: "__DEFAULT__", value: "__DEFAULT__" },
-  { text: "未知", value: "NA" },
-  { text: "待回收", value: "ToBeRecycled" },
-]);
-
 // 表格头中显示的筛选状态
 const diskStatusForTableSelect = [
   { text: t("vm_cloud_disk.status.creating", "创建中"), value: "creating" },
@@ -132,25 +94,11 @@ const searchCloudAccount = () => {
 const notSupportPlatforms = ref(["fit2cloud_vsphere_platform"]);
 
 const filterType = (value: string) => {
-  let status = value;
-  diskTypes.value.forEach((v) => {
-    if (v.value == value) {
-      status = v.text;
-      return;
-    }
-  });
-  return status;
+  return getTextByValue(DISK_TYPE.value, value);
 };
 
 const filterStatus = (value: string) => {
-  let status = "";
-  diskStatus.value.forEach((v) => {
-    if (v.value == value) {
-      status = v.text;
-      return;
-    }
-  });
-  return status;
+  return getTextByValue(DISK_STATUS.value, value);
 };
 
 /**
@@ -850,7 +798,7 @@ const buttons = ref([
       prop="diskType"
       column-key="diskType"
       :label="$t('vm_cloud_disk.label.disk_type')"
-      :filters="diskTypes"
+      :filters="DISK_TYPE"
       min-width="120px"
     >
       <template #default="scope">

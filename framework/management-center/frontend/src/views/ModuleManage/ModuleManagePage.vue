@@ -1,18 +1,26 @@
 <template>
-  <layout-content>
+  <layout-content
+    :style="{
+      'background-color': 'transparent',
+      padding: 0,
+      width:
+        'calc(100% - var(--ce-main-content-padding-left, 30px) - var(--ce-main-content-padding-right, 30px))',
+    }"
+  >
     <template #breadcrumb>
-      <breadcrumb
-        :auto="true"
-        :excludes="[{ field: 'name', value: 'module_manage_page' }]"
-      ></breadcrumb>
+      <breadcrumb :auto="true">
+        <div
+          style="
+            height: 100%;
+            display: flex;
+            align-items: center;
+            padding-right: 24px;
+          "
+        >
+          <ce-radio :dataList="typeList" v-model:activeValue="currentType" />
+        </div>
+      </breadcrumb>
     </template>
-
-    <el-button
-      @click="dialogVisible = true"
-      class="el-button--primary"
-      :disabled="loading"
-      >本地安装</el-button
-    >
 
     <el-dialog
       v-model="dialogVisible"
@@ -38,171 +46,103 @@
       </el-upload>
     </el-dialog>
 
-    <el-space wrap class="catalog-container" size="large" v-loading="loading">
-      <template v-for="m in list?.modules" :key="m.name">
-        <el-card
-          :body-style="{
-            padding: 0,
-            position: 'relative',
-          }"
-          class="catalog-container-card"
-        >
+    <div v-loading="loading">
+      <el-row :gutter="16" v-for="(group, i) in groups" :key="i">
+        <el-col v-for="(m, j) in group" :key="j" :span="8">
           <div
-            class="right-top-tip"
-            :class="{
-              'm-tip-primary': m.installed && m.version === m.currentVersion,
-              'm-tip-secondary': !m.installed,
-              'm-tip-warning':
-                m.installed &&
-                m.currentVersion &&
-                m.currentVersion !== m.version,
-            }"
+            class="module-card upload-card"
+            v-if="m.upload"
+            @click="openDialog"
           >
-            <span v-if="!m.installed">未安装</span>
-            <span v-else-if="m.version === m.currentVersion">已安装</span>
-            <span v-else>可升级 {{ m.version }}</span>
+            <CeIcon code="icon_add_outlined" color="#3370FF" />
+            <div class="content">点击上传模块包</div>
           </div>
-          <div style="height: 110px; display: flex; flex-direction: row">
-            <CeIcon
-              :code="m.icon"
-              size="60px"
-              style="height: 66px; width: 66px; padding: 17px"
-            />
-            <div style="flex: 1; padding: 17px">
-              <div style="padding-top: 20px; padding-bottom: 10px">
-                <span style="font-weight: bolder; font-size: 1.2em">
-                  {{ m.display_name }}
-                </span>
-                <div
-                  style="
-                    margin-left: 6px;
-                    line-height: 1.2em;
-                    display: inline-block;
-                    text-align: center;
-                    vertical-align: middle;
-                  "
-                >
-                  <div
-                    :class="{
-                      'm-tip-warning': m.status === 'UNHEALTHY',
-                      'm-tip-success': m.status === 'HEALTHY',
-                      'm-tip-secondary':
-                        m.status === 'NOT_RUNNING' || !m.installed,
-                    }"
-                    style="width: 4px; height: 4px"
-                  ></div>
-                </div>
-                <span
-                  style="
-                    padding-left: 16px;
-                    font-size: smaller;
-                    font-weight: bold;
-                    color: var(--el-text-color-secondary);
-                  "
-                >
-                  {{ m.currentVersion ? m.currentVersion : m.version }}
-                </span>
-              </div>
+          <div class="module-card" v-else>
+            <div
+              class="right-top-tip"
+              :class="{
+                'm-tip-not-installed': !m.installed,
+                'm-tip-running': m.status === 'HEALTHY',
+                'm-tip-starting': m.status === 'UNHEALTHY',
+                'm-tip-stopped': m.status === 'NOT_RUNNING' && m.installed,
+              }"
+            >
+              <span v-if="!m.installed">未安装</span>
+              <span v-else-if="m.status === 'HEALTHY'">运行中</span>
+              <span v-else-if="m.status === 'UNHEALTHY'">启动中</span>
+              <span v-else-if="m.status === 'NOT_RUNNING' && m.installed">
+                已停止
+              </span>
+            </div>
+
+            <div class="info">
               <div
-                style="
-                  font-size: smaller;
-                  color: var(--el-text-color-secondary);
-                "
+                style="display: flex; flex-direction: row; flex-wrap: nowrap"
               >
+                <div class="icon" :class="{ installed: m.installed }">
+                  <CeIcon
+                    :color="m.installed ? '#3370FF' : '#767B82'"
+                    :code="m.icon"
+                    size="38px"
+                  />
+                </div>
+                <div class="title">
+                  <div class="title-name">
+                    {{ m.display_name }}
+                  </div>
+                  <div class="version-tip-group">
+                    <div class="version-tip">
+                      {{ m.currentVersion ? m.currentVersion : m.version }}
+                    </div>
+                    <div
+                      class="version-tip has-update"
+                      v-if="m.installed && m.version !== m.currentVersion"
+                    >
+                      可升级至 {{ m.version }}
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="description">
                 {{ m.description }}
               </div>
             </div>
-          </div>
-          <div style="height: 78px; padding: 0 17px">
-            <div style="padding: 6px 0; font-size: 14px; font-weight: bold">
-              更新信息
-            </div>
-            <el-scrollbar
-              style="height: 40px"
-              height="40px"
-              v-if="m.update_infos && m.update_infos.length > 0"
+            <div
+              style="
+                height: 60px;
+                padding: 0 16px;
+                display: flex;
+                flex-direction: row;
+                flex-wrap: nowrap;
+                align-items: center;
+                justify-content: space-between;
+              "
             >
-              <div
-                v-for="(i, index) in m.update_infos"
-                :key="index"
-                style="padding: 4px; font-size: smaller"
-              >
-                {{ i }}
-              </div>
-            </el-scrollbar>
-            <div v-else style="padding: 4px; font-size: smaller">无</div>
-          </div>
-
-          <div style="height: 32px; float: right; padding-right: 10px">
-            <el-tooltip effect="dark" content="安装" placement="bottom">
-              <span>
+              <div style="display: flex">
                 <el-button
-                  text
-                  size="small"
+                  style="color: #3370ff; border-color: #3370ff"
+                  @click="install(m)"
+                  v-if="m.installed && m.version !== m.currentVersion"
+                >
+                  升级
+                </el-button>
+                <el-button
+                  type="primary"
+                  @click="install(m)"
                   v-if="!m.installed"
-                  @click="install(m)"
                 >
-                  <CeIcon size="20px" code="download" />
+                  安装
                 </el-button>
-              </span>
-            </el-tooltip>
-            <el-tooltip effect="dark" content="升级" placement="bottom">
-              <span>
-                <el-button
-                  text
-                  size="small"
-                  v-if="m.installed"
-                  :disabled="m.version === m.currentVersion"
-                  @click="install(m)"
-                >
-                  <CeIcon size="18px" code="update" />
+                <el-button @click="uninstall(m)" v-if="m.installed">
+                  卸载
                 </el-button>
-              </span>
-            </el-tooltip>
-            <el-tooltip
-              effect="dark"
-              :content="m.status === 'NOT_RUNNING' ? '启动' : '重启'"
-              placement="bottom"
-            >
-              <span>
-                <el-button
-                  text
-                  size="small"
-                  :disabled="!m.installed"
-                  @click="restart(m)"
-                >
-                  <CeIcon size="20px" code="play" />
-                </el-button>
-              </span>
-            </el-tooltip>
-            <el-tooltip effect="dark" content="停止" placement="bottom">
-              <span>
-                <el-button
-                  text
-                  size="small"
-                  :disabled="!m.installed || m.status === 'NOT_RUNNING'"
-                  @click="stop(m)"
-                >
-                  <CeIcon size="20px" code="stopcircle" />
-                </el-button>
-              </span>
-            </el-tooltip>
-            <el-tooltip effect="dark" content="卸载" placement="bottom">
-              <span>
-                <el-button
-                  text
-                  size="small"
-                  :disabled="!m.installed"
-                  @click="uninstall(m)"
-                >
-                  <CeIcon size="20px" code="delete" />
-                </el-button>
-              </span>
-            </el-tooltip>
+              </div>
+              <el-switch v-model="m.running" @click="runOrStop(m)" />
+            </div>
           </div>
-        </el-card>
-      </template>
-    </el-space>
+        </el-col>
+      </el-row>
+    </div>
   </layout-content>
 </template>
 
@@ -216,6 +156,7 @@ import { useI18n } from "vue-i18n";
 import { useUserStore } from "@commons/stores/modules/user";
 import { UploadFilled } from "@element-plus/icons-vue";
 import CeIcon from "@commons/components/ce-icon/index.vue";
+import _ from "lodash";
 
 const uploadInstance = ref<UploadInstance>();
 
@@ -227,7 +168,75 @@ const { t } = useI18n();
 
 const loading = ref<boolean>(false);
 
+const uploadObj = { upload: true };
+
+const currentType = ref<string>("all");
+
+const typeList = computed(() => {
+  const installedCount = _.defaultTo(
+    _.filter(list.value.modules, (m) => m.installed)?.length,
+    0
+  );
+  const notInstalledCount = _.defaultTo(
+    _.filter(list.value.modules, (m) => !m.installed)?.length,
+    0
+  );
+  const hasUpdateCount = _.defaultTo(
+    _.filter(
+      list.value.modules,
+      (m) => m.installed && m.version !== m.currentVersion
+    )?.length,
+    0
+  );
+
+  return [
+    { label: "全部", value: "all" },
+    { label: `已安装(${installedCount})`, value: "installed" },
+    { label: `未安装(${notInstalledCount})`, value: "notInstalled" },
+    { label: `待升级(${hasUpdateCount})`, value: "hasUpdate" },
+  ];
+});
+
 const list = ref<any>({});
+
+const groups = computed(() => {
+  const _obj = list.value;
+  if (_obj.modules === undefined) {
+    _obj.modules = [];
+  }
+
+  const _list = _.filter(_obj.modules, (m) => {
+    if (currentType.value === "installed") {
+      return m.installed;
+    }
+    if (currentType.value === "notInstalled") {
+      return !m.installed;
+    }
+    if (currentType.value === "hasUpdate") {
+      return m.installed && m.version !== m.currentVersion;
+    }
+    return true;
+  });
+
+  _list.splice(0, 0, uploadObj);
+  const group: Array<Array<any>> = [];
+  _.forEach(_list, (o, index: any) => {
+    const i = _.floor(index / 3);
+    if (group.length === i) {
+      group.push([]);
+    }
+    o.running = o.status === "HEALTHY" || o.status === "UNHEALTHY";
+    group[i].push(o);
+  });
+  return group;
+});
+
+function openDialog() {
+  if (loading.value) {
+    return;
+  }
+  dialogVisible.value = true;
+}
 
 const header = computed(() => {
   const h: Record<string, any> = {};
@@ -267,36 +276,53 @@ function uninstall(m: any) {
       });
   });
 }
+
+function runOrStop(m: any) {
+  if (m.status === "HEALTHY" || m.status === "UNHEALTHY") {
+    stop(m);
+  } else {
+    restart(m);
+  }
+}
+
 function restart(m: any) {
   const action = m.status === "NOT_RUNNING" ? "启动" : "重启";
   ElMessageBox.confirm(`确认${action}:  ${m.display_name}`, "提示", {
     confirmButtonText: action,
     cancelButtonText: "取消",
     type: "warning",
-  }).then((ok) => {
-    ModuleManageApi.start(m.name, loading)
-      .then((res) => {
-        getList();
-      })
-      .catch((err) => {
-        ElMessage.error(err.response.data.message);
-      });
-  });
+  })
+    .then((ok) => {
+      ModuleManageApi.start(m.name, loading)
+        .then((res) => {
+          getList();
+        })
+        .catch((err) => {
+          ElMessage.error(err.response.data.message);
+        });
+    })
+    .finally(() => {
+      getList();
+    });
 }
 function stop(m: any) {
   ElMessageBox.confirm(`确认停止:  ${m.display_name}`, "提示", {
     confirmButtonText: "停止",
     cancelButtonText: "取消",
     type: "warning",
-  }).then((ok) => {
-    ModuleManageApi.stop(m.name, loading)
-      .then((res) => {
-        getList();
-      })
-      .catch((err) => {
-        ElMessage.error(err.response.data.message);
-      });
-  });
+  })
+    .then((ok) => {
+      ModuleManageApi.stop(m.name, loading)
+        .then((res) => {
+          getList();
+        })
+        .catch((err) => {
+          ElMessage.error(err.response.data.message);
+        });
+    })
+    .finally(() => {
+      getList();
+    });
 }
 
 function getList(load?: boolean) {
@@ -340,6 +366,110 @@ onBeforeUnmount(() => {
 </script>
 
 <style lang="scss" scoped>
+.radio_content {
+  background-color: #ffffff;
+}
+
+.module-card {
+  height: 184px;
+  background-color: #ffffff;
+  border-radius: 4px;
+  position: relative;
+
+  .info {
+    height: 91px;
+    border-bottom: #dddedf 1px solid;
+    padding: 16px;
+
+    .icon {
+      width: 48px;
+      height: 48px;
+      background-color: #eff0f1;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      margin-right: 12px;
+    }
+
+    .icon.installed {
+      background-color: #ebf1ff;
+    }
+
+    .description {
+      height: 32px;
+      padding-top: 10px;
+      font-style: normal;
+      font-weight: 400;
+      font-size: 12px;
+      line-height: 16px;
+      color: #646a73;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .title {
+      display: flex;
+      flex-direction: column;
+      flex-wrap: nowrap;
+      justify-content: space-between;
+      align-items: flex-start;
+
+      .title-name {
+        font-style: normal;
+        font-weight: 500;
+        font-size: 14px;
+        line-height: 22px;
+      }
+    }
+
+    .version-tip-group {
+      display: flex;
+      flex-direction: row;
+      flex-wrap: nowrap;
+    }
+
+    .version-tip {
+      background-color: #eff0f1;
+      font-style: normal;
+      font-weight: 400;
+      font-size: 12px;
+      line-height: 12px;
+      color: #85898f;
+      padding: 4px 10px;
+    }
+
+    .version-tip.has-update {
+      margin-left: 8px;
+      background-color: #fff5eb;
+      color: #ffa53d;
+    }
+  }
+}
+
+.upload-card {
+  border: 1px dashed #3370ff;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+  cursor: pointer;
+
+  .content {
+    font-style: normal;
+    font-weight: 400;
+    font-size: 14px;
+    line-height: 22px;
+    padding: 14px;
+  }
+}
+
+.el-row {
+  margin-bottom: 16px;
+}
+.el-row:last-child {
+  margin-bottom: 0;
+}
+
 .catalog-container {
   margin-top: 20px;
   width: 100%;
@@ -350,27 +480,33 @@ onBeforeUnmount(() => {
   }
 }
 .right-top-tip {
-  padding: 8px;
-  font-weight: bold;
-  font-size: small;
+  height: 24px;
+  width: 54px;
   position: absolute;
+  padding: 1px 6px;
+  align-items: center;
+  text-align: center;
+  line-height: 22px;
+  font-style: normal;
+  font-weight: 400;
+  font-size: 14px;
   right: 0;
 }
 
-.m-tip-primary {
-  background-color: var(--el-color-primary);
-  color: var(--el-color-white);
+.m-tip-not-installed {
+  background-color: #eff0f1;
+  color: #767b82;
 }
-.m-tip-secondary {
-  background-color: var(--el-color-info);
-  color: var(--el-color-white);
+.m-tip-running {
+  background-color: #d6f4d3;
+  color: #2ea121;
 }
-.m-tip-warning {
-  background-color: var(--el-color-warning);
-  color: var(--el-color-white);
+.m-tip-starting {
+  background-color: #ebf1ff;
+  color: #3370ff;
 }
-.m-tip-success {
-  background-color: var(--el-color-success);
-  color: var(--el-color-white);
+.m-tip-stopped {
+  background-color: #feecec;
+  color: #f54a45;
 }
 </style>

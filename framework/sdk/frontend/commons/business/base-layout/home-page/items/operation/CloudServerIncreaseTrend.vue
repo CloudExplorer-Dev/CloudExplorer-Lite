@@ -241,6 +241,34 @@ const defaultSpeedOptions = {
         backgroundColor: "#6a7985",
       },
     },
+    //无视容器，超出显示
+    appendToBody: true,
+    //是否可以鼠标悬浮
+    enterable: true,
+    //设置能够滚动显示样式
+    formatter: function (params: any) {
+      let htmlStr =
+        '<div style="height: auto;max-height: 140px;width:300px;overflow-y: auto;"><span style="padding:0 0 0 0;">' +
+        params[0].axisValue +
+        "</span>";
+      for (let i = 0; i < params.length; i++) {
+        const seriesName = params[i].seriesName;
+        if (seriesName.length > 12) {
+          //seriesName = seriesName.substring(0, 12) + "...";
+        }
+        htmlStr +=
+          '<div style="display: flex"><span style="float:left;width: 90%;">' +
+          params[i].marker +
+          seriesName +
+          '<span/><span style="float:right; text-align: right; width:80px;">' +
+          params[i].value[1] +
+          "</span></div>";
+      }
+      htmlStr += "</div>";
+      return htmlStr;
+    },
+    // 文本太长自动换行
+    extraCssText: "white-space: normal; word-break: break-all;",
   },
   legend: {
     type: "scroll",
@@ -339,5 +367,13 @@ const defaultSpeedOptions = {
   position: absolute;
   z-index: 10;
   cursor: pointer;
+}
+
+.tooltip-box {
+  width: 100%;
+  /* 因为 content 会另起一行，影响样式的话，height 设置为具体的值可以避免高度变高的情况 */
+  height: 100%;
+  /* 设置元素两端对齐 */
+  text-align: justify;
 }
 </style>

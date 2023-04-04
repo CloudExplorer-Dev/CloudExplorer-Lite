@@ -178,28 +178,28 @@ export const paramOptimizationRequestMap: Map<string, any> = new Map([
 
 export const baseOptimizeSuggests: Array<OptimizeSuggest> = [
   {
-    name: "建议降配云主机",
+    name: "建议降配",
     id: 1,
     code: "derating",
     value: 0,
     data: [],
   },
   {
-    name: "建议升配云主机",
+    name: "建议升配",
     id: 2,
     code: "upgrade",
     value: 0,
     data: [],
   },
   {
-    name: "建议变更付费方式云主机",
+    name: "建议变更付费方式",
     id: 3,
     code: "payment",
     value: 0,
     data: [],
   },
   {
-    name: "建议回收云主机",
+    name: "建议回收",
     id: 4,
     code: "recovery",
     value: 0,

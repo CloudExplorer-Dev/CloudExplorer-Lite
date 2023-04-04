@@ -94,6 +94,7 @@ const showConditionDialog = (req: ListOptimizationRequest) => {
 };
 
 const getSearchParams = (o: OptimizeSuggest) => {
+  //从数据库中获取数据
   if (localStorage.getItem(o.code)) {
     const str = localStorage.getItem(o.code);
     if (str) {
@@ -134,9 +135,9 @@ const checkedId = computed({
 });
 
 function changeParam(req: any) {
-  // getSearchParams(req);
-  // emit("update:checkId", checkedId.value);
-  // emit("change", checkedId.value);
+  getSearchParams(req);
+  emit("update:checkId", checkedId.value);
+  emit("change", checkedId.value);
 }
 
 function checkDiv(req: ListOptimizationRequest) {
