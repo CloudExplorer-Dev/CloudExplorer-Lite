@@ -62,7 +62,7 @@ const option = computed<ECBasicOption>(() => {
               normal: {
                 //这里就是根据不同的值显示不同球体的颜色
                 color: eval(
-                  "if(value<0.8){'rgba(170, 201, 255, 1)'}else if(value<0.9){'rgba(254, 210, 126, 1)'}else{'rgba(254, 178, 170, 1)'}"
+                  "if(value<0.6){'rgba(170, 201, 255, 1)'}else if(value<0.8){'rgba(254, 210, 126, 1)'}else{'rgba(254, 178, 170, 1)'}"
                 ),
               },
             },
@@ -74,7 +74,7 @@ const option = computed<ECBasicOption>(() => {
               normal: {
                 //这里就是根据不同的值显示不同球体的颜色
                 color: eval(
-                  "if(value<0.8){'rgba(97, 145, 254, 1)'}else if(value<0.9){'rgba(254, 174, 75, 1)'}else{'rgba(248, 120, 114, 1)'}"
+                  "if(value<0.6){'rgba(97, 145, 254, 1)'}else if(value<0.8){'rgba(254, 174, 75, 1)'}else{'rgba(248, 120, 114, 1)'}"
                 ),
               },
             },
@@ -86,7 +86,7 @@ const option = computed<ECBasicOption>(() => {
           itemStyle: {
             //这里就是根据不同的值显示不同边框的颜色
             borderColor: eval(
-              "if(value<0.8){'rgba(191, 209, 254, 1)'}else if(value<0.9){'rgba(252, 225, 196, 1)'}else{'rgba(250, 207, 208, 1)'}"
+              "if(value<0.6){'rgba(191, 209, 254, 1)'}else if(value<0.8){'rgba(252, 225, 196, 1)'}else{'rgba(250, 207, 208, 1)'}"
             ), // 边框的颜色
             borderWidth: 3, // 边框的宽度
             // shadowBlur: 5 , //外部轮廓的阴影范围 一旦设置了内外都有阴影

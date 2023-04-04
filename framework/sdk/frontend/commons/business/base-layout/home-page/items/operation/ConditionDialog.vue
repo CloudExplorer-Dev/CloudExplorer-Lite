@@ -19,15 +19,17 @@ const handleCancel = () => {
   dialogVisible.value = false;
 };
 const emit = defineEmits(["changeParam"]);
+
 const handleSave = () => {
   dialogVisible.value = false;
-  const obj = window.localStorage.getItem(props.optimizationSearchReq?.code);
-  if (obj) {
+  let obj=  window.localStorage.getItem(props.optimizationSearchReq?.code);
+  if(obj){
     window.localStorage.setItem(
-      props.optimizationSearchReq?.code,
-      JSON.stringify(props.optimizationSearchReq)
-    );
+        props.optimizationSearchReq?.code,
+        JSON.stringify(props.optimizationSearchReq))
   }
+  debugger;
+  //更新数据库
   emit("changeParam", props.optimizationSearchReq);
 };
 </script>
@@ -35,7 +37,7 @@ const handleSave = () => {
 <template>
   <el-dialog
     v-model="dialogVisible"
-    :title="props.optimizationSearchReq?.name + '查询策略'"
+    :title="props.optimizationSearchReq?.name"
     width="25%"
     destroy-on-close
     :close-on-click-modal="false"
