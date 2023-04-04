@@ -35,13 +35,6 @@
           >
             <el-input v-model="item.hostName" minlength="1" maxlength="65" />
           </el-form-item>
-          <el-form-item :prop="'[' + index + '].authReboot'">
-            <div style="width: 100%; height: 30px; text-align: center">
-              <el-checkbox v-model="item.authReboot"
-                >重启生效Hostname</el-checkbox
-              >
-            </div>
-          </el-form-item>
         </el-tab-pane>
       </el-tabs>
     </el-form>
@@ -54,9 +47,6 @@
         </el-descriptions-item>
         <el-descriptions-item label="Hostname">
           {{ o.hostName }}
-        </el-descriptions-item>
-        <el-descriptions-item label="自动重启">
-          {{ o.authReboot ? "是" : "否" }}
         </el-descriptions-item>
       </el-descriptions>
     </template>
@@ -118,7 +108,7 @@ function setServers(count: number | undefined) {
       } else if (_data.value.length < count) {
         const temp = [];
         for (let i = 0; i < count - _data.value.length; i++) {
-          temp.push({});
+          temp.push({authReboot:true});
         }
         _data.value = _.concat(_data.value, temp);
       }
