@@ -37,19 +37,6 @@
                 v-model="details.cronExpression"
               ></cron-in-view>
             </div>
-
-            <div
-              @click.stop.prevent
-              style="
-                height: 42px;
-                text-align: center;
-                line-height: 42px;
-                margin-left: 20px;
-                cursor: default;
-              "
-            >
-              <span>{{ jobTypeDescription + "一次" }}</span>
-            </div>
           </div>
         </el-checkbox>
       </div></template
