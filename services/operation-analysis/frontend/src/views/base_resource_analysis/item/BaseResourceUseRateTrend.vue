@@ -2,7 +2,7 @@
   <el-card shadow="never" class="info-card">
     <el-row :gutter="16">
       <el-col :span="8">
-        <div class="title">计算资源按使用率分布</div>
+        <div class="title">基础资源按使用率分布</div>
       </el-col>
       <el-col :span="16" style="text-align: right">
         <div class="search-box">
