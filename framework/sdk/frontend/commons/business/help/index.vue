@@ -2,7 +2,7 @@
 import { ref } from "vue";
 import { findHelpLink } from "@commons/api/system_parameter";
 
-const helpLink = ref("https://cloudexplorer.io/docs/");
+const helpLink = ref("https://fit2cloud.com/cloudexplorer-lite/docs/");
 findHelpLink().then((res) => {
   if (res.data) {
     helpLink.value = res.data;
