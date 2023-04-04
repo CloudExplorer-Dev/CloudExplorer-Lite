@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import SwitchLang from "@commons/business/switch-lang/index.vue";
+import Help from "@commons/business/help/index.vue";
 import PersonSetting from "@commons/business/person-setting/index.vue";
 import { useUserStore } from "@commons/stores/modules/user";
 import { useRouter } from "vue-router";
@@ -68,7 +68,9 @@ function roleSelectVisibleChange(visible: boolean) {
       </template>
     </el-dropdown>
     <div class="flex-auto"></div>
-    <SwitchLang />
+    <div class="help-doc">
+      <Help />
+    </div>
     <PersonSetting />
   </div>
 </template>
@@ -111,6 +113,10 @@ function roleSelectVisibleChange(visible: boolean) {
 
   .flex-auto {
     flex: 1 1 auto;
+  }
+
+  .help-doc {
+    margin-right: 12px;
   }
 }
 </style>
