@@ -22,13 +22,12 @@ const emit = defineEmits(["changeParam"]);
 
 const handleSave = () => {
   dialogVisible.value = false;
-  let obj=  window.localStorage.getItem(props.optimizationSearchReq?.code);
-  if(obj){
-    window.localStorage.setItem(
-        props.optimizationSearchReq?.code,
-        JSON.stringify(props.optimizationSearchReq))
-  }
-  debugger;
+
+  window.localStorage.setItem(
+    props.optimizationSearchReq?.code,
+    JSON.stringify(props.optimizationSearchReq)
+  );
+
   //更新数据库
   emit("changeParam", props.optimizationSearchReq);
 };

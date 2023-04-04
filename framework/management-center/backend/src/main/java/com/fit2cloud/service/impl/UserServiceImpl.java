@@ -419,15 +419,10 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
 
     @Override
     public long countUser() {
-        QueryWrapper<User> wrapper = new QueryWrapper<>();
-        // 根据当前所在角色过滤
-        if (CurrentUserUtils.isOrgAdmin()) {
-            List<String> orgIds = organizationCommonService.getOrgIdsByParentId(CurrentUserUtils.getOrganizationId());
-            List<String> resourceIds = workspaceCommonService.getWorkspaceIdsByOrgIds(orgIds);
-            resourceIds.addAll(orgIds);
-            wrapper.in(CollectionUtils.isNotEmpty(resourceIds), ColumnNameUtil.getColumnName(UserRole::getSource, true), resourceIds);
-        }
-        return baseMapper.selectCount(wrapper);
+        PageUserRequest request =new PageUserRequest();
+        request.setCurrentPage(1);
+        request.setPageSize(1);
+        return pageUser(request).getTotal();
     }
 
     /**

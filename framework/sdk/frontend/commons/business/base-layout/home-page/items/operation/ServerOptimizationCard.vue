@@ -55,6 +55,8 @@ const emit = defineEmits(["showConditionDialog", "changeParam"]);
 const showConditionDialog = (req: ListOptimizationRequest) => {
   emit("showConditionDialog", props.req);
 };
+
+defineExpose({ getOptimizeSuggests });
 </script>
 <template>
   <div class="div-card" :class="{ checked: checked }" v-loading="loading">

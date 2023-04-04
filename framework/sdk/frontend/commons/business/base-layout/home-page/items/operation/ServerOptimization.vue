@@ -15,6 +15,8 @@ import ServerOptimizationCard from "@commons/business/base-layout/home-page/item
 import { useRouter } from "vue-router";
 import MicroAppRouterUtil from "@commons/router/MicroAppRouterUtil";
 
+const socRef = ref<Array<InstanceType<typeof ServerOptimizationCard>>>([]);
+
 const props = withDefaults(
   defineProps<{
     needRoles?: Array<"ADMIN" | "ORGADMIN" | "USER">;
@@ -138,6 +140,9 @@ function changeParam(req: any) {
   getSearchParams(req);
   emit("update:checkId", checkedId.value);
   emit("change", checkedId.value);
+  if (checkedId.value !== undefined) {
+    socRef.value[checkedId.value - 1]?.getOptimizeSuggests();
+  }
 }
 
 function checkDiv(req: ListOptimizationRequest) {
@@ -196,6 +201,7 @@ defineExpose({
     <el-row :gutter="16" :class="{ 'div-content': !noTitle }">
       <el-col :span="6" v-for="o in optimizeSuggests" :key="o.code">
         <ServerOptimizationCard
+          ref="socRef"
           :req="o"
           :show="show"
           :show-setting-icon="showSettingIcon"

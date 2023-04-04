@@ -199,9 +199,9 @@ const search = (condition: TableSearch) => {
       TableSearch.toSearchParams(condition)
     );
   //讲云账号查询条件下传到卡片
-  if(_.has(TableSearch.toSearchParams(condition),"accountIds")){
+  if (_.has(TableSearch.toSearchParams(condition), "accountIds")) {
     checkedAccountIds.value = TableSearch.toSearchParams(condition)?.accountIds;
-  }else{
+  } else {
     checkedAccountIds.value = [];
   }
   ResourceOptimizationViewApi.listServer(

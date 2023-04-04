@@ -156,7 +156,7 @@ const option = computed<ECBasicOption>(() => {
       },
     },
     axisLabel: {
-      formatter: function (value:any) {
+      formatter: function (value: any) {
         let valueTxt;
         if (value.length > 12) {
           valueTxt = value.substring(0, 12) + "...";

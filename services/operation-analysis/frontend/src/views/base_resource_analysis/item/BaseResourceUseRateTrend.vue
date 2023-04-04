@@ -261,9 +261,9 @@ const defaultTrendOptions = {
   yAxis: [
     {
       type: "value",
-      splitLine:{
-        show:false
-      }
+      splitLine: {
+        show: false,
+      },
     },
   ],
   series: [],

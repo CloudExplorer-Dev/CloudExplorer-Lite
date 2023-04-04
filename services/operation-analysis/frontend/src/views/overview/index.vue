@@ -1,7 +1,7 @@
 <template>
   <layout-auto-height-content
-      :style="{ backgroundColor: '#f2f2f2', height: 'auto' }"
-      style="
+    :style="{ backgroundColor: '#f2f2f2', height: 'auto' }"
+    style="
       --ce-main-content-padding-top: 0;
       --ce-main-content-padding-left: 0;
       --ce-main-content-padding-right: 0;
@@ -11,20 +11,20 @@
     <template #breadcrumb>
       <breadcrumb :auto="true"></breadcrumb>
       <div
-          style="
-            height: 100%;
-            display: flex;
-            align-items: center;
-            margin-right: 50px;
-          "
+        style="
+          height: 100%;
+          display: flex;
+          align-items: center;
+          margin-right: 50px;
+        "
       >
         <el-select v-model="currentAccountId">
           <el-option label="全部云账号" value="all" />
           <el-option
-              v-for="item in accounts"
-              :key="item.id"
-              :label="item.name"
-              :value="item.id"
+            v-for="item in accounts"
+            :key="item.id"
+            :label="item.name"
+            :value="item.id"
           />
         </el-select>
       </div>
@@ -36,7 +36,11 @@
           <Detailed :cloud-account-id="currentAccountId" />
         </el-col>
       </el-row>
-      <el-row class="row" :gutter="16" v-show="userStore.currentRole==='ADMIN'">
+      <el-row
+        class="row"
+        :gutter="16"
+        v-show="userStore.currentRole === 'ADMIN'"
+      >
         <el-col :span="12">
           <ComputerResourceAllocatedRate
             style="height: 198px"
