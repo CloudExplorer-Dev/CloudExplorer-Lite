@@ -205,19 +205,28 @@ const defaultSpeedOptions = {
     enterable: true,
     //设置能够滚动显示样式
     formatter: function (params: any) {
-      let htmlStr = '<div style="height: auto;max-height: 140px;width:300px;overflow-y: auto;"><span style="padding:0 0 0 0;">' + params[0].axisValue + '</span>';
+      let htmlStr =
+        '<div style="height: auto;max-height: 140px;width:300px;overflow-y: auto;"><span style="padding:0 0 0 0;">' +
+        params[0].axisValue +
+        "</span>";
       for (let i = 0; i < params.length; i++) {
-        let seriesName = params[i].seriesName;
-        if(seriesName.length>12){
+        const seriesName = params[i].seriesName;
+        if (seriesName.length > 12) {
           //seriesName = seriesName.substring(0, 12) + "...";
         }
-        htmlStr += '<div style="display: flex"><span style="float:left;width: 90%;">' + params[i].marker + seriesName + '<span/><span style="float:right; text-align: right; width:80px;">'+ params[i].value[1] +'</span></div>';
+        htmlStr +=
+          '<div style="display: flex"><span style="float:left;width: 90%;">' +
+          params[i].marker +
+          seriesName +
+          '<span/><span style="float:right; text-align: right; width:80px;">' +
+          params[i].value[1] +
+          "</span></div>";
       }
-      htmlStr += '</div>'
-      return htmlStr
+      htmlStr += "</div>";
+      return htmlStr;
     },
     // 文本太长自动换行
-    extraCssText: 'white-space: normal; word-break: break-all;',
+    extraCssText: "white-space: normal; word-break: break-all;",
   },
   legend: {
     type: "scroll",
@@ -250,9 +259,9 @@ const defaultSpeedOptions = {
   yAxis: [
     {
       type: "value",
-      splitLine:{
-        show:false
-      }
+      splitLine: {
+        show: false,
+      },
     },
   ],
   series: [
