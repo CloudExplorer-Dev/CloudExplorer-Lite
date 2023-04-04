@@ -4,9 +4,7 @@ import co.elastic.clients.elasticsearch.ElasticsearchClient;
 import co.elastic.clients.elasticsearch._types.FieldValue;
 import co.elastic.clients.elasticsearch._types.query_dsl.*;
 import co.elastic.clients.elasticsearch.core.DeleteByQueryRequest;
-import co.elastic.clients.elasticsearch.core.DeleteByQueryResponse;
 import co.elastic.clients.json.JsonData;
-import co.elastic.clients.util.ObjectBuilder;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.fit2cloud.base.entity.CloudAccount;
 import com.fit2cloud.base.entity.JobRecord;
@@ -30,10 +28,8 @@ import com.fit2cloud.service.IBillDimensionSettingService;
 import com.fit2cloud.service.SyncService;
 import io.reactivex.rxjava3.functions.BiFunction;
 import io.reactivex.rxjava3.functions.Consumer;
-import lombok.SneakyThrows;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.elasticsearch.index.reindex.DeleteByQueryRequestBuilder;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Caching;
 import org.springframework.data.elasticsearch.annotations.Document;
@@ -65,6 +61,10 @@ public class SyncServiceImpl extends BaseSyncService implements SyncService {
     private ElasticsearchClient elasticsearchClient;
     @Resource
     private IBillDimensionSettingService billDimensionSettingService;
+    /**
+     * 分账字段分割
+     */
+    private static final String ledgerSeparator = "::";
     /**
      * 任务描述
      */
@@ -187,6 +187,11 @@ public class SyncServiceImpl extends BaseSyncService implements SyncService {
     }
 
 
+    public List<CloudBill> appendParams(List<CloudBill> cloudBills, String cloudAccountId) {
+        return cloudBills.stream().map(cloudBill -> appendSystemParams(cloudBill, cloudAccountId))
+                .map(cloudBill -> appendAggregationsParams(cloudBill, cloudAccountId)).toList();
+    }
+
     /**
      * 同步账单
      *
@@ -196,17 +201,30 @@ public class SyncServiceImpl extends BaseSyncService implements SyncService {
      * @return 账单数据
      */
     private List<CloudBill> syncBill(ICloudProvider cloudProvider, String request, String cloudAccountId) {
-        return cloudProvider.syncBill(request).stream().map(cloudBill -> appendSystemParams(cloudBill, cloudAccountId)).map(cloudBill -> appendSplitBillParams(cloudBill, cloudAccountId)).toList();
+        return cloudProvider.syncBill(request).stream()
+                .map(cloudBill -> appendSystemParams(cloudBill, cloudAccountId))
+                .map(cloudBill -> appendAggregationsParams(cloudBill, cloudAccountId)).toList();
     }
 
     /**
-     * 添加分账信息
+     * 添加聚合参数 用于冗余聚合 注意 使用runtime_mapping聚合很慢 所以将需要聚合的冗余起来
      *
-     * @param cloudBill      云账单
+     * @param cloudBill      账单对象
      * @param cloudAccountId 云账号id
-     * @return 云账单
+     * @return 账单对象
      */
-    private CloudBill appendSplitBillParams(CloudBill cloudBill, String cloudAccountId) {
+    private CloudBill appendAggregationsParams(CloudBill cloudBill, String cloudAccountId) {
+        // 分账资源
+        String ledgerResource =
+                cloudBill.getResourceId() + ledgerSeparator +
+                        cloudAccountId + ledgerSeparator +
+                        cloudBill.getProjectId() + ledgerSeparator +
+                        cloudBill.getTags().values().stream()
+                                .filter(Objects::nonNull)
+                                .map(Objects::toString)
+                                .sorted(String::compareTo)
+                                .collect(Collectors.joining(","));
+        cloudBill.setAggregations(Map.of("ledgerResource", ledgerResource));
         return cloudBill;
     }
 
@@ -261,7 +279,7 @@ public class SyncServiceImpl extends BaseSyncService implements SyncService {
             elasticsearchTemplate.delete(new NativeQueryBuilder().withQuery(new Query.Builder().script(scriptQuery).build()).build(), CloudBill.class, IndexCoordinates.of(CloudBill.class.getAnnotation(Document.class).indexName()));
             //todo 插入数据
             List<CloudBill> syncRecord = saveBatchOrUpdateParams.getSyncRecord();
-            List<List<CloudBill>> lists = CommonUtil.averageAssign(syncRecord, 1000);
+            List<List<CloudBill>> lists = CommonUtil.averageAssign(syncRecord, 5000);
             for (List<CloudBill> list : lists) {
                 cloudBillRepository.saveAll(list);
             }

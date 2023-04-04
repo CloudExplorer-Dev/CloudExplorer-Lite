@@ -1,12 +1,12 @@
 package com.fit2cloud.service;
 
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.baomidou.mybatisplus.extension.service.IService;
 import com.fit2cloud.constants.AuthorizeTypeConstants;
 import com.fit2cloud.controller.request.AuthorizeResourcesRequest;
 import com.fit2cloud.controller.request.NotAuthorizeResourcesRequest;
 import com.fit2cloud.controller.response.AuthorizeResourcesResponse;
 import com.fit2cloud.dao.entity.BillDimensionSetting;
-import com.baomidou.mybatisplus.extension.service.IService;
 import com.fit2cloud.dao.jentity.BillAuthorizeRule;
 import org.apache.commons.collections4.keyvalue.DefaultKeyValue;
 
@@ -51,7 +51,7 @@ public interface IBillDimensionSettingService extends IService<BillDimensionSett
      * @param authorizeId   授权对象id
      * @param type          授权对象类型
      * @param authorizeRule 授权规则
-     * @return
+     * @return 插入授权对象
      */
     BillDimensionSetting saveOrUpdate(String authorizeId, String type, BillAuthorizeRule authorizeRule);
 
@@ -61,11 +61,20 @@ public interface IBillDimensionSettingService extends IService<BillDimensionSett
     void authorize();
 
     /**
-     * 授权
+     * 授权 todo 当前为整体授权 后期需要优化
      *
      * @param billDimensionSetting 授权规则设置对象
      */
     void authorize(BillDimensionSetting billDimensionSetting);
+
+    /**
+     * 授权
+     *
+     * @param billDimensionSettingId 授权规则id
+     * @param month                  月份 yyyy-MM
+     * @param cloudAccountId         云账号id
+     */
+    void authorize(String billDimensionSettingId, String month, String cloudAccountId);
 
     /**
      * 清除授权

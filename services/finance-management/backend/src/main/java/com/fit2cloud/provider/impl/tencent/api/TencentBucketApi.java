@@ -47,6 +47,19 @@ public class TencentBucketApi {
      */
     private final static Pattern billMonthPattern = Pattern.compile("-\\d{6}-按扣费周期-明细账单.zip$");
 
+    public static List<CloudBill> loadLocal(List<Credential.Region> regions, String month, String filePathPrefix) {
+        SyncBillRequest request = new SyncBillRequest();
+        request.setMonth(month);
+        File[] files = new File(filePathPrefix).listFiles();
+        // 是否存在月账单
+        boolean exitsMonthFile = Arrays.stream(files).anyMatch(file -> billMonthPattern.matcher(file.getName().trim()).find() && file.getName().contains(request.getMonth().replace("-", "").trim()));
+        // 是否可读日账单
+        boolean readDayBillFile = isReadDayBillFile(request.getMonth());
+        return Arrays.stream(files).filter(file -> (exitsMonthFile && billMonthPattern.matcher(file.getName()).find()) || (!exitsMonthFile && readDayBillFile && billDayPattern.matcher(file.getName()).find()))
+                .filter(file -> file.getName().contains(request.getMonth().replace("-", "").trim())).filter(file -> billMonthPattern.matcher(file.getName()).find())
+                .map(file -> fileToCloudBill(file, request, regions))
+                .flatMap(Collection::stream).toList();
+    }
 
     /**
      * 获取账单 从桶中获取账单
@@ -171,7 +184,11 @@ public class TencentBucketApi {
                                 stringValues.put(titles.get(tagIndex).replace("标签键:", ""), value);
                                 return new DefaultKeyValue<>(key, stringValues);
                             }).filter(Objects::nonNull)
-                            .collect(Collectors.toMap(DefaultKeyValue::getKey, DefaultKeyValue::getValue)).entrySet().stream();
+                            .collect(Collectors.toMap(DefaultKeyValue::getKey, DefaultKeyValue::getValue, (e1, e2) -> {
+                                e1.putAll(e2);
+                                return e1;
+                            }))
+                            .entrySet().stream();
                 }).filter(Objects::nonNull).collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue, (e1, e2) -> {
                     e1.putAll(e2);
                     return e1;

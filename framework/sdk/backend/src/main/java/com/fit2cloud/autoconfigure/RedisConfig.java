@@ -163,6 +163,7 @@ public class RedisConfig {
             objectMapper.registerModule((new SimpleModule()).addSerializer(new CeGenericJackson2JsonRedisSerializer.NullValueSerializer(classPropertyTypeName)));
         }
 
+        @Override
         public byte[] serialize(@Nullable Object source) throws SerializationException {
             if (source == null) {
                 return EMPTY_ARRAY;
@@ -175,6 +176,7 @@ public class RedisConfig {
             }
         }
 
+        @Override
         public Object deserialize(@Nullable byte[] source) throws SerializationException {
             return this.deserialize(source, Object.class);
         }
@@ -198,10 +200,12 @@ public class RedisConfig {
                 super(t, ptv);
             }
 
+            @Override
             public ObjectMapper.DefaultTypeResolverBuilder withDefaultImpl(Class<?> defaultImpl) {
                 return this;
             }
 
+            @Override
             public boolean useForType(JavaType t) {
                 if (t.isJavaLangObject()) {
                     return true;
@@ -244,12 +248,14 @@ public class RedisConfig {
                 this.classIdentifier = StringUtils.hasText(classIdentifier) ? classIdentifier : "@class";
             }
 
+            @Override
             public void serialize(NullValue value, JsonGenerator jgen, SerializerProvider provider) throws IOException {
                 jgen.writeStartObject();
                 jgen.writeStringField(this.classIdentifier, NullValue.class.getName());
                 jgen.writeEndObject();
             }
 
+            @Override
             public void serializeWithType(NullValue value, JsonGenerator gen, SerializerProvider serializers, TypeSerializer typeSer) throws IOException {
                 this.serialize(value, gen, serializers);
             }

@@ -82,6 +82,17 @@ const getTrendViewOption = (
       axisLabel: {
         color: "rgba(143, 149, 158, 1)",
         fontSize: 12,
+        formatter: function (value: number) {
+          value / 1000 > 0;
+          if (value / 1000 < 1) {
+            return _.round(value, 2);
+          } else if (value / 10000 > 1) {
+            return _.round(value / 10000, 2) + "w";
+          } else if (value / 1000 >= 1) {
+            return _.round(value / 1000, 2) + "k";
+          }
+          return _.round(value / 10000, 2) + "w";
+        },
       },
     },
     series: [

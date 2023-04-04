@@ -18,6 +18,7 @@
           <el-col :spam="24">
             <ViewExpensesAggsCard
               :get-aggs-count="getMonthExpenses"
+              compare-title="较上月"
               title="本月花费"
             />
           </el-col>
@@ -26,6 +27,7 @@
           <el-col :spam="24">
             <ViewExpensesAggsCard
               :get-aggs-count="getYearExpenses"
+              compare-title="较上周期"
               title="本年总花费"
             />
           </el-col>

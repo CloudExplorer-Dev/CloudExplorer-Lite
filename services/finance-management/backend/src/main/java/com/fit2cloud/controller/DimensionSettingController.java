@@ -23,7 +23,6 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
-import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Pattern;
 import java.util.List;
@@ -100,5 +99,15 @@ public class DimensionSettingController {
                                                                                 @ApiParam("每页多少条") @NotNull(message = "每页显示多少条必填") @NotNull @PathVariable("limit") Integer limit,
                                                                                 NotAuthorizeResourcesRequest request) {
         return ResultHolder.success(billDimensionSettingService.getNotAuthorizeResources(page, limit, request));
+    }
+
+    @GetMapping("/authorize")
+    @ApiOperation(value = "授权数据", notes = "授权数据")
+    @PreAuthorize("hasAnyCePermission('DIMENSION_SETTING:READ')")
+    public ResultHolder<Boolean> authorize(@RequestParam("bill_dimension_setting_id") String billDimensionSettingId,
+                                           @RequestParam("month") String month,
+                                           @RequestParam("cloudAccountId") String cloudAccountId) {
+        billDimensionSettingService.authorize(billDimensionSettingId, month, cloudAccountId);
+        return ResultHolder.success(true);
     }
 }

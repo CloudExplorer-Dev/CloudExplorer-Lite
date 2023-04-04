@@ -18,6 +18,28 @@ import java.util.function.Function;
  */
 public class AuthUtil {
     /**
+     * 获取当前角色
+     *
+     * @return 角色
+     */
+    public static String currentRule() {
+        SecurityContext context = SecurityContextHolder.getContext();
+        UserDto userDto = (UserDto) context.getAuthentication().getPrincipal();
+        return userDto.getCurrentRole().name();
+    }
+
+    /**
+     * 当前用户所属id
+     *
+     * @return 组织/工作空间id
+     */
+    public static String currentSource() {
+        SecurityContext context = SecurityContextHolder.getContext();
+        UserDto userDto = (UserDto) context.getAuthentication().getPrincipal();
+        return userDto.getCurrentSource();
+    }
+
+    /**
      * 获取当前用户角色的查询Query
      *
      * @return 获取当前用户角色查询Query
