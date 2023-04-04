@@ -8,6 +8,7 @@ import { useI18n } from "vue-i18n";
 import { filterChargeType } from "@commons/utils/util";
 import PlatformIcon from "@commons/components/detail-page/PlatformIcon.vue";
 import VmLink from "@commons/components/detail-page/VmLink.vue";
+import { DISK_TYPE, DISK_STATUS, getTextByValue } from "@/utils/constants";
 
 const { t } = useI18n();
 const router = useRouter();
@@ -43,7 +44,10 @@ onMounted(() => {
       },
       {
         label: t("commons.status", "状态"),
-        value: vmCloudDiskDetail.value.status,
+        value: getTextByValue(
+          DISK_STATUS.value,
+          vmCloudDiskDetail.value.status
+        ),
       },
       {
         label: t("vm_cloud_disk.label.size", "磁盘大小"),
@@ -57,7 +61,10 @@ onMounted(() => {
       },
       {
         label: t("vm_cloud_disk.label.disk_type", "磁盘类型"),
-        value: vmCloudDiskDetail.value.diskType,
+        value: getTextByValue(
+          DISK_TYPE.value,
+          vmCloudDiskDetail.value.diskType
+        ),
       },
       {
         label:
