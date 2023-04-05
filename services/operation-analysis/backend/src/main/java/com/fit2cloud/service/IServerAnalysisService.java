@@ -7,6 +7,7 @@ import com.fit2cloud.controller.request.server.PageServerRequest;
 import com.fit2cloud.controller.request.server.ResourceAnalysisRequest;
 import com.fit2cloud.controller.response.BarTreeChartData;
 import com.fit2cloud.controller.response.ChartData;
+import com.fit2cloud.controller.response.TreeNode;
 import com.fit2cloud.dto.AnalysisServerDTO;
 import com.fit2cloud.dto.KeyValue;
 
@@ -45,16 +46,14 @@ public interface IServerAnalysisService {
 
     List<ChartData> getResourceTrendData(ResourceAnalysisRequest request);
 
-    Map<String,List<BarTreeChartData>> analysisVmCloudServerByOrgWorkspace(ResourceAnalysisRequest request);
+    Map<String,List<TreeNode>> analysisVmCloudServerByOrgWorkspace(ResourceAnalysisRequest request);
 
     Map<String,CloudAccount> getAllAccountIdMap();
 
     List<BarTreeChartData> getChildren(BarTreeChartData barTreeChartData,List<BarTreeChartData> list,Map<String,List<BarTreeChartData>> workspaceMap);
 
-    List<BarTreeChartData> initWorkspaceChartData();
-
-    List<BarTreeChartData> initOrgChartData();
-
+    List<TreeNode> workspaceToTreeNode();
+    List<TreeNode> orgToTreeNode();
     List<String> getRangeDateStrList(Long day);
 
     Long getResourceTotalDateBefore(Map<String, Long> monthTreeMap, String dateStr);

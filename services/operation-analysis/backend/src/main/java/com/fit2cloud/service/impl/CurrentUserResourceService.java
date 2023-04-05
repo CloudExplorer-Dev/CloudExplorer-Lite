@@ -1,8 +1,10 @@
 package com.fit2cloud.service.impl;
 
 import com.fit2cloud.base.entity.CloudAccount;
+import com.fit2cloud.base.entity.VmCloudDisk;
 import com.fit2cloud.base.entity.VmCloudServer;
 import com.fit2cloud.base.service.IBaseCloudAccountService;
+import com.fit2cloud.base.service.IBaseVmCloudDiskService;
 import com.fit2cloud.base.service.IBaseVmCloudServerService;
 import com.fit2cloud.common.utils.CurrentUserUtils;
 import com.fit2cloud.constants.SpecialAttributesConstants;
@@ -27,6 +29,8 @@ public class CurrentUserResourceService {
     @Resource
     private IBaseVmCloudServerService iBaseVmCloudServerService;
     @Resource
+    private IBaseVmCloudDiskService iBaseVmCloudDiskService;
+    @Resource
     private IBaseCloudAccountService iBaseCloudAccountService;
 
     /**
@@ -50,6 +54,14 @@ public class CurrentUserResourceService {
         wrapper.in(!CurrentUserUtils.isAdmin() && CollectionUtils.isNotEmpty(sourceIds),VmCloudServer::getSourceId,sourceIds);
         wrapper.notIn(true, VmCloudServer::getInstanceStatus, List.of(SpecialAttributesConstants.StatusField.VM_DELETE,SpecialAttributesConstants.StatusField.FAILED));
         return iBaseVmCloudServerService.list(wrapper);
+    }
+
+    public List<VmCloudDisk> currentUserCloudDiskList(){
+        List<String> sourceIds = permissionService.getSourceIds();
+        MPJLambdaWrapper<VmCloudDisk> wrapper = new MPJLambdaWrapper<>();
+        wrapper.in(!CurrentUserUtils.isAdmin() && CollectionUtils.isNotEmpty(sourceIds),VmCloudServer::getSourceId,sourceIds);
+        wrapper.notIn(true, VmCloudDisk::getStatus, List.of(SpecialAttributesConstants.StatusField.DISK_DELETE,SpecialAttributesConstants.StatusField.FAILED));
+        return iBaseVmCloudDiskService.list(wrapper);
     }
 
 

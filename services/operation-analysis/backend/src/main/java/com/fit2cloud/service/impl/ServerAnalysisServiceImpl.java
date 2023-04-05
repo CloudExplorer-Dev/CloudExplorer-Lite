@@ -10,11 +10,9 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.fit2cloud.base.entity.CloudAccount;
-import com.fit2cloud.base.entity.VmCloudDisk;
 import com.fit2cloud.base.entity.VmCloudHost;
 import com.fit2cloud.base.entity.VmCloudServer;
 import com.fit2cloud.base.mapper.BaseVmCloudServerMapper;
-import com.fit2cloud.base.service.IBaseCloudAccountService;
 import com.fit2cloud.base.service.IBaseOrganizationService;
 import com.fit2cloud.base.service.IBaseVmCloudHostService;
 import com.fit2cloud.base.service.IBaseWorkspaceService;
@@ -28,6 +26,7 @@ import com.fit2cloud.controller.request.server.PageServerRequest;
 import com.fit2cloud.controller.request.server.ResourceAnalysisRequest;
 import com.fit2cloud.controller.response.BarTreeChartData;
 import com.fit2cloud.controller.response.ChartData;
+import com.fit2cloud.controller.response.TreeNode;
 import com.fit2cloud.dao.entity.OrgWorkspace;
 import com.fit2cloud.dao.mapper.OrgWorkspaceMapper;
 import com.fit2cloud.dto.AnalysisServerDTO;
@@ -68,8 +67,6 @@ public class ServerAnalysisServiceImpl implements IServerAnalysisService {
     @Resource
     private OrgWorkspaceMapper orgWorkspaceMapper;
     @Resource
-    private IBaseCloudAccountService iBaseCloudAccountService;
-    @Resource
     private IBaseVmCloudHostService iBaseVmCloudHostService;
     @Resource
     private ElasticsearchTemplate elasticsearchTemplate;
@@ -96,8 +93,10 @@ public class ServerAnalysisServiceImpl implements IServerAnalysisService {
         // 构建查询参数
         MPJLambdaWrapper<VmCloudServer> wrapper = addServerPageQuery(request);
         IPage<AnalysisServerDTO> result = baseVmCloudServerMapper.selectJoinPage(page,AnalysisServerDTO.class, wrapper);
-        //设置监控数据
-        getVmPerfMetric(result.getRecords());
+        if(CollectionUtils.isNotEmpty(result.getRecords())){
+            //设置监控数据
+            getVmPerfMetric(result.getRecords());
+        }
         return result;
     }
 
@@ -231,7 +230,7 @@ public class ServerAnalysisServiceImpl implements IServerAnalysisService {
                     chartData.setGroupName(resourceGroup.get(resourceId).get(0).getAccountName());
                 }
                 BigDecimal v = new BigDecimal(getResourceTotalDateBefore(month,dateStr)-getResourceTotalDateBefore(delMonth,dateStr));
-                chartData.setYAxis(v.compareTo(BigDecimal.ZERO)==-1?BigDecimal.ZERO:v);
+                chartData.setYAxis(v.compareTo(BigDecimal.ZERO) < 0 ?BigDecimal.ZERO:v);
                 tempChartDataList.add(chartData);
             });
         });
@@ -444,12 +443,12 @@ public class ServerAnalysisServiceImpl implements IServerAnalysisService {
      * 云主机在组织工作空间上分布
      */
     @Override
-    public Map<String,List<BarTreeChartData>> analysisVmCloudServerByOrgWorkspace(ResourceAnalysisRequest request){
-        Map<String,List<BarTreeChartData>> result = new HashMap<>(2);
+    public Map<String,List<TreeNode>> analysisVmCloudServerByOrgWorkspace(ResourceAnalysisRequest request){
+        Map<String,List<TreeNode>> result = new HashMap<>(2);
         if(CollectionUtils.isEmpty(request.getAccountIds())){
             request.setAccountIds(currentUserResourceService.currentUserCloudAccountList().stream().map(CloudAccount::getId).toList());
         }
-        List<BarTreeChartData> workspaceList = workspaceSpread(request);
+        List<TreeNode> workspaceList = workspaceSpread(request);
         if(request.isAnalysisWorkspace()){
             result.put("all",workspaceList);
             result.put("tree",workspaceList);
@@ -462,51 +461,67 @@ public class ServerAnalysisServiceImpl implements IServerAnalysisService {
     /**
      * 组织分布
      */
-    private Map<String,List<BarTreeChartData>> orgSpread(ResourceAnalysisRequest request, List<BarTreeChartData> workspaceList){
-        Map<String,List<BarTreeChartData>> result = new HashMap<>(1);
-        //组织下工作空间添加标识
+    private Map<String,List<TreeNode>> orgSpread(ResourceAnalysisRequest request, List<TreeNode> workspaceList){
+        Map<String,List<TreeNode>> result = new HashMap<>(1);
+        result.put("all",new ArrayList<>());
+        result.put("tree",new ArrayList<>());
+        //工作空间添加标识
         workspaceList.forEach(v-> v.setName(v.getName()+"(工作空间)"));
         //工作空间按照父级ID分组
-        Map<String,List<BarTreeChartData>> workspaceMap = workspaceList.stream().collect(Collectors.groupingBy(BarTreeChartData::getPId));
+        Map<String,List<TreeNode>> workspaceGroupByPid = workspaceList.stream().collect(Collectors.groupingBy(TreeNode::getPid));
         //查询所有组织，初始化为chart数据
-        List<BarTreeChartData> orgList = initOrgChartData();
-        //查询组织授权数据
-        List<String> sourceIds = permissionService.getSourceIds();
-        MPJLambdaWrapper<OrgWorkspace> orgWrapper = new MPJLambdaWrapper<>();
-        orgWrapper.selectAll(OrgWorkspace.class);
-        orgWrapper.selectCount(VmCloudServer::getId,BarTreeChartData::getValue);
-        orgWrapper.eq(true, OrgWorkspace::getType,"org");
-        orgWrapper.in(!CurrentUserUtils.isAdmin() && CollectionUtils.isNotEmpty(sourceIds),OrgWorkspace::getId,sourceIds);
-        orgWrapper.in(CollectionUtils.isNotEmpty(request.getAccountIds()),VmCloudServer::getAccountId,request.getAccountIds());
-        orgWrapper.in(CollectionUtils.isNotEmpty(request.getHostIds()),VmCloudServer::getHostId,request.getHostIds());
-        orgWrapper.notIn(true,VmCloudServer::getInstanceStatus, List.of(SpecialAttributesConstants.StatusField.VM_DELETE,SpecialAttributesConstants.StatusField.FAILED));
-        orgWrapper.groupBy(OrgWorkspace::getId,OrgWorkspace::getName);
-        orgWrapper.leftJoin(VmCloudServer.class,VmCloudServer::getSourceId,OrgWorkspace::getId);
-        List<BarTreeChartData> list = orgWorkspaceMapper.selectJoinList(BarTreeChartData.class,orgWrapper);
-        OperationUtils.initOrgWorkspaceAnalysisData(orgList,list);
-        //初始化子级
-        orgList.forEach(OperationUtils::setSelfToChildren);
+        List<TreeNode> orgList = orgToTreeNode();
+        if(CollectionUtils.isEmpty(orgList)){
+            return result;
+        }
+        //id集合
+        List<String> orgIds = orgList.stream().map(TreeNode::getId).toList();
+        //设置资源统计数量
+        List<TreeNode> chartDateWorkspaceList = getTreeNodeValueData(request, orgIds,"org");
+        if(CollectionUtils.isEmpty(chartDateWorkspaceList)){
+            return result;
+        }
+        Map<String,TreeNode> dataMap = chartDateWorkspaceList.stream().collect(Collectors.toMap(TreeNode::getId,o->o));
+        orgList.forEach(v->{
+            if(dataMap.containsKey(v.getId())){
+                v.setValue(dataMap.get(v.getId()).getValue());
+            }
+        });
+        // 设置子级
+        Map<String,TreeNode> childrenMap = orgList.stream().collect(Collectors.toMap(TreeNode::getId,o->o));
+        List<TreeNode> childrenList = new ArrayList<>();
+        orgList.forEach(v->{
+            // 自己没有资源的就不要
+            childrenList.add(new TreeNode(v.getId(), v.getName() + "(未授权)", v.getValue(), v.getGroupName(), v.getPid()));
+            // 父组织工作空间下资源数量
+            int workspaceResourceNumber = getWorkspaceResourceNumber(workspaceGroupByPid, childrenList, v);
+            v.setValue(v.getValue()+workspaceResourceNumber);
+            if(childrenMap.containsKey(v.getPid())){
+                TreeNode node = childrenMap.get(v.getPid());
+                // 子组织工作空间下资源数量
+                workspaceResourceNumber = getWorkspaceResourceNumber(workspaceGroupByPid, childrenList, node);
+                v.setValue(v.getValue()+node.getValue()+workspaceResourceNumber);
+                childrenList.add(node);
+            }
+            // 只显示有资源的
+            v.setChildren(childrenList.stream().filter(c->c.getValue()>0).toList());
+            childrenList.clear();
+        });
         //扁平数据
         result.put("all",orgList);
-        //树结构
-        List<BarTreeChartData> chartDataList = new ArrayList<>();
-        orgList.stream().filter(o->StringUtils.isEmpty(o.getPId())).forEach(v->{
-            v.setGroupName("org");
-            v.setName(v.getName()+"(组织)");
-            v.getChildren().addAll(getChildren(v,orgList,workspaceMap));
-            chartDataList.add(v);
-        });
-        //组织管理员的话，只有一个跟节点，然后只返回他的子集
-        if (CurrentUserUtils.isOrgAdmin()) {
-            result.put("tree",chartDataList.get(0).getChildren().stream().filter(this::childrenHasValue).toList());
-        }else{
-            result.put("tree",chartDataList.stream().filter(this::childrenHasValue).toList());
-        }
+        // 获取所有父节点,pid为空表示顶级，或者pid不在当前集合中，则也作为顶级
+        List<TreeNode> parentNodeList = orgList.stream().filter(v->StringUtils.isEmpty(v.getPid()) || !orgIds.contains(v.getPid())).toList();
+        result.put("tree", parentNodeList.stream().filter(v->v.getValue()>0).toList());
         return result;
     }
 
-    private boolean childrenHasValue(BarTreeChartData parent){
-        return parent.getValue()>0;
+    private static int getWorkspaceResourceNumber(Map<String, List<TreeNode>> workspaceGroupByPid, List<TreeNode> childrenList, TreeNode v) {
+        int workspaceResourceNumber = 0;
+        if(workspaceGroupByPid.containsKey(v.getId())){
+            childrenList.addAll(workspaceGroupByPid.get(v.getId()));
+            workspaceResourceNumber = workspaceGroupByPid.get(v.getId()).stream().mapToInt(TreeNode::getValue).sum();
+        }
+        return workspaceResourceNumber;
     }
 
     /**
@@ -514,57 +529,65 @@ public class ServerAnalysisServiceImpl implements IServerAnalysisService {
      * @param request 云主机分析查询条件
      * @return List<BarTreeChartData>
      */
-    private List<BarTreeChartData> workspaceSpread(ResourceAnalysisRequest request){
-        List<String> sourceIds = permissionService.getSourceIds();
+    private List<TreeNode> workspaceSpread(ResourceAnalysisRequest request){
+        // 当前用户拥有的工作空间
+        List<String> workspaceIds = workspaceToTreeNode().stream().map(TreeNode::getId).toList();
+        if(!CurrentUserUtils.isAdmin() && CollectionUtils.isEmpty(workspaceIds)){
+            return new ArrayList<>();
+        }
+        List<TreeNode> chartDateWorkspaceList = getTreeNodeValueData(request, workspaceIds,"workspace");
+        return chartDateWorkspaceList.stream().filter(v->v.getValue()!=0).toList();
+    }
+
+    /**
+     * 查询组织或工作空间下的云主机数量
+     * @param type 组织(org)或工作空间(workspace)
+     */
+    private List<TreeNode> getTreeNodeValueData(ResourceAnalysisRequest request, List<String> orgWorkspaceIds , String type) {
+        // 查询组织或工作空间下云主机数量
         MPJLambdaWrapper<OrgWorkspace> wrapper = new MPJLambdaWrapper<>();
-        wrapper.selectAll(OrgWorkspace.class);
-        wrapper.selectCount(VmCloudServer::getId,BarTreeChartData::getValue);
-        wrapper.eq(true, OrgWorkspace::getType,"workspace");
-        wrapper.in(!CurrentUserUtils.isAdmin() && CollectionUtils.isNotEmpty(sourceIds),OrgWorkspace::getId,sourceIds);
-        wrapper.in(CollectionUtils.isNotEmpty(request.getAccountIds()),VmCloudServer::getAccountId,request.getAccountIds());
-        wrapper.in(CollectionUtils.isNotEmpty(request.getHostIds()),VmCloudServer::getHostId,request.getHostIds());
+        // 返回内容
+        wrapper.selectAs(OrgWorkspace::getId,TreeNode::getId);
+        wrapper.selectAs(OrgWorkspace::getName,TreeNode::getName);
+        wrapper.selectAs(OrgWorkspace::getPid,TreeNode::getPid);
+        wrapper.selectAs(OrgWorkspace::getType,TreeNode::getGroupName);
+        wrapper.selectCount(VmCloudServer::getId,TreeNode::getValue);
+        // 查询条件
+        wrapper.eq(true, OrgWorkspace::getType,type);
+        boolean filterOrgWorkspace = !CurrentUserUtils.isAdmin() && CollectionUtils.isNotEmpty(orgWorkspaceIds);
+        wrapper.in(filterOrgWorkspace,OrgWorkspace::getId, orgWorkspaceIds);
+        boolean filterAccount = CollectionUtils.isNotEmpty(request.getAccountIds());
+        wrapper.in(filterAccount,VmCloudServer::getAccountId, request.getAccountIds());
+        boolean filterHost = CollectionUtils.isNotEmpty(request.getHostIds());
+        wrapper.in(filterHost,VmCloudServer::getHostId, request.getHostIds());
         wrapper.notIn(true,VmCloudServer::getInstanceStatus, List.of(SpecialAttributesConstants.StatusField.VM_DELETE,SpecialAttributesConstants.StatusField.FAILED));
         wrapper.leftJoin(VmCloudServer.class,VmCloudServer::getSourceId,OrgWorkspace::getId);
-        wrapper.groupBy(OrgWorkspace::getId,OrgWorkspace::getName);
-        List<BarTreeChartData> chartDateWorkspaceList = orgWorkspaceMapper.selectJoinList(BarTreeChartData.class, wrapper);
-        List<BarTreeChartData> workspaceList = initWorkspaceChartData();
-        OperationUtils.initOrgWorkspaceAnalysisData(workspaceList,chartDateWorkspaceList);
-        return workspaceList.stream().filter(v->v.getValue()!=0).toList();
+        wrapper.groupBy(true,OrgWorkspace::getId,OrgWorkspace::getName);
+        return orgWorkspaceMapper.selectJoinList(TreeNode.class, wrapper);
     }
 
     /**
-     * 初始化工作空间柱状图数据
-     * @return List<BarTreeChartData>
+     * 当前用户拥有权限的所有工作空间转为树节点
      */
     @Override
-    public List<BarTreeChartData> initWorkspaceChartData(){
+    public List<TreeNode> workspaceToTreeNode(){
         List<String> sourceIds = permissionService.getSourceIds();
-        return iBaseWorkspaceService.list().stream().map(v->{
-            BarTreeChartData barTreeChartData = new BarTreeChartData();
-            barTreeChartData.setId(v.getId());
-            barTreeChartData.setName(v.getName());
-            barTreeChartData.setValue(0L);
-            barTreeChartData.setPId(v.getOrganizationId());
-            return barTreeChartData;
-        }).toList().stream().filter(v->checkSourceId(sourceIds,v.getId())).toList();
+        return iBaseWorkspaceService.list().stream()
+                .filter(v->checkSourceId(sourceIds,v.getId()))
+                .map(v->new TreeNode(v.getId(),v.getName(),0,"workspace",v.getOrganizationId()))
+                .toList();
     }
 
     /**
-     * 初始化工作空间柱状图数据
-     * @return List<BarTreeChartData>
+     * 当前用户拥有权限的所有组织转为树节点
      */
     @Override
-    public List<BarTreeChartData> initOrgChartData(){
+    public List<TreeNode> orgToTreeNode(){
         List<String> sourceIds = permissionService.getSourceIds();
-        return iBaseOrganizationService.list().stream().map(v->{
-            BarTreeChartData barTreeChartData = new BarTreeChartData();
-            barTreeChartData.setId(v.getId());
-            barTreeChartData.setName(v.getName());
-            barTreeChartData.setValue(0L);
-            barTreeChartData.setPId(v.getPid());
-            barTreeChartData.setChildren(new ArrayList<>());
-            return barTreeChartData;
-        }).toList().stream().filter(v->checkSourceId(sourceIds,v.getId())).toList();
+        return iBaseOrganizationService.list().stream()
+                .filter(v->checkSourceId(sourceIds,v.getId()))
+                .map(v->new TreeNode(v.getId(),v.getName(),0,"org",v.getPid()))
+                .toList();
     }
 
     private boolean checkSourceId(List<String> sourceIds,String id){

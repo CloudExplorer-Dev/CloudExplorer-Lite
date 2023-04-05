@@ -40,7 +40,7 @@ interface EchartsValue {
 }
 const data = computed<Array<EchartsValue>>(() => {
   const result: Array<EchartsValue> = [];
-  if (props.apiData && props.apiData?.[props.type].length > 0) {
+  if (props.apiData && props.apiData?.[props.type]?.length > 0) {
     _.forEach(props.apiData?.[props.type], (v) => {
       result.push({ name: v.name, value: v.value });
     });
@@ -157,7 +157,7 @@ const option = computed<ECBasicOption>(() => {
           },
         },
         emphasis: {
-          disabled: props.apiData?.[props.type].length === 0,
+          disabled: props.apiData?.[props.type]?.length === 0,
           label: {
             show: true,
             width: 110,

@@ -6,8 +6,8 @@ import com.fit2cloud.base.entity.VmCloudHost;
 import com.fit2cloud.controller.handler.ResultHolder;
 import com.fit2cloud.controller.request.server.PageServerRequest;
 import com.fit2cloud.controller.request.server.ResourceAnalysisRequest;
-import com.fit2cloud.controller.response.BarTreeChartData;
 import com.fit2cloud.controller.response.ChartData;
+import com.fit2cloud.controller.response.TreeNode;
 import com.fit2cloud.dto.AnalysisServerDTO;
 import com.fit2cloud.dto.KeyValue;
 import com.fit2cloud.service.IServerAnalysisService;
@@ -83,7 +83,7 @@ public class ServerAnalysisController {
     @ApiOperation(value="组织或工作空间云主机分布",notes = "组织或工作空间云主机分布")
     @GetMapping("/org_workspace_vm_count_bar")
     @PreAuthorize("hasAnyCePermission('SERVER_ANALYSIS:READ')")
-    public ResultHolder<Map<String,List<BarTreeChartData>>> analysisVmCloudServerByOrgWorkspace(
+    public ResultHolder<Map<String,List<TreeNode>>> analysisVmCloudServerByOrgWorkspace(
             @Validated ResourceAnalysisRequest request) {
         return ResultHolder.success(iServerAnalysisService.analysisVmCloudServerByOrgWorkspace(request));
     }

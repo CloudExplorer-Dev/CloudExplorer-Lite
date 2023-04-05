@@ -4,8 +4,8 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.fit2cloud.base.entity.CloudAccount;
 import com.fit2cloud.controller.request.disk.PageDiskRequest;
 import com.fit2cloud.controller.request.disk.ResourceAnalysisRequest;
-import com.fit2cloud.controller.response.BarTreeChartData;
 import com.fit2cloud.controller.response.ChartData;
+import com.fit2cloud.controller.response.TreeNode;
 import com.fit2cloud.dto.AnalysisDiskDTO;
 import com.fit2cloud.dto.KeyValue;
 
@@ -35,7 +35,7 @@ public interface IDiskAnalysisService {
 
     List<ChartData> diskIncreaseTrend(ResourceAnalysisRequest request);
 
-    Map<String,List<BarTreeChartData>> analysisCloudDiskByOrgWorkspace(ResourceAnalysisRequest request);
+    Map<String,List<TreeNode>> analysisCloudDiskByOrgWorkspace(ResourceAnalysisRequest request);
 
     long countDiskByCloudAccount(String cloudAccountId);
 

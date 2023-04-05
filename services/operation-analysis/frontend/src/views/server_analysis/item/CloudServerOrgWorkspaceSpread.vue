@@ -57,6 +57,7 @@ const loading = ref<boolean>(false);
 const apiData = ref<any>();
 const showBack = ref<boolean>(false);
 const parentItem = ref<any>({});
+const optionsTree = ref<any>();
 const getSpreadByDepartmentData = () => {
   showBack.value = false;
   _.set(params, "analysisWorkspace", paramDepartmentType.value === "workspace");
@@ -69,15 +70,20 @@ const getSpreadByDepartmentData = () => {
     ? _.set(params, "hostIds", props.hostId === "all" ? [] : [props.hostId])
     : "";
   CloudServerViewApi.getAnalysisOrgWorkspaceVmCount(params, loading).then(
-    (res) => (apiData.value = res.data)
+    (res) => {
+      apiData.value = res.data;
+      optionsTree.value = undefined;
+    }
   );
 };
-
 const options = computed<ECBasicOption>(() => {
   const obj = apiData.value;
   const options = _.cloneDeep(defaultSpeedOptions);
   if (obj) {
-    const tree = apiData.value.tree;
+    if(!optionsTree.value){
+      optionsTree.value = _.cloneDeep(apiData.value.tree);
+    }
+    const tree = optionsTree.value;
     if (tree.length === 0) {
       return {
         title: {
@@ -129,21 +135,19 @@ watch(
 );
 
 const handleBackClick = () => {
-  const item = apiData.value.all.find(
-    (v: any) => v.name === parentItem.value.name
-  );
-  if (!item) return;
-  if (!item.pid) {
+  if(!parentItem.value){
     showBack.value = false;
-    apiData.value.tree = [item];
-  } else {
-    //父节点的父节点
-    const ppItem = apiData.value.all.find((v: any) => v.id === item.pid);
-    const children = ppItem.children;
-    if (children && children.length > 0) {
-      showBack.value = true;
+    parentItem.value = undefined;
+    optionsTree.value = undefined;
+  }else{
+    const ppItem = apiData.value.all.find((v: any) => v.id === parentItem.value.pid);
+    if (parentItem.value && ppItem) {
+      optionsTree.value = ppItem.children;
       parentItem.value = ppItem;
-      apiData.value.tree = children;
+    }else{
+      showBack.value = false;
+      parentItem.value = undefined;
+      optionsTree.value = undefined;
     }
   }
 };
@@ -154,7 +158,7 @@ const onClick = (params: any) => {
   if (children && children.length > 0) {
     showBack.value = true;
     parentItem.value = item;
-    apiData.value.tree = children;
+    optionsTree.value = children;
   }
 };
 

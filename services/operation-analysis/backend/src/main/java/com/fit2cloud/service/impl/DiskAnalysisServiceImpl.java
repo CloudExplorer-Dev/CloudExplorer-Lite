@@ -13,8 +13,8 @@ import com.fit2cloud.constants.DiskTypeConstants;
 import com.fit2cloud.constants.SpecialAttributesConstants;
 import com.fit2cloud.controller.request.disk.PageDiskRequest;
 import com.fit2cloud.controller.request.disk.ResourceAnalysisRequest;
-import com.fit2cloud.controller.response.BarTreeChartData;
 import com.fit2cloud.controller.response.ChartData;
+import com.fit2cloud.controller.response.TreeNode;
 import com.fit2cloud.dao.entity.OrgWorkspace;
 import com.fit2cloud.dao.mapper.OrgWorkspaceMapper;
 import com.fit2cloud.dto.AnalysisDiskDTO;
@@ -22,10 +22,8 @@ import com.fit2cloud.dto.KeyValue;
 import com.fit2cloud.service.IDiskAnalysisService;
 import com.fit2cloud.service.IPermissionService;
 import com.fit2cloud.service.IServerAnalysisService;
-import com.fit2cloud.utils.OperationUtils;
 import com.github.yulichang.wrapper.MPJLambdaWrapper;
 import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.collections4.list.TreeList;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
@@ -246,17 +244,21 @@ public class DiskAnalysisServiceImpl implements IDiskAnalysisService {
      * 磁盘在组织工作空间上的分布
      */
     @Override
-    public Map<String,List<BarTreeChartData>> analysisCloudDiskByOrgWorkspace(ResourceAnalysisRequest request){
-        Map<String,List<BarTreeChartData>> result = new HashMap<>(2);
+    public Map<String,List<TreeNode>> analysisCloudDiskByOrgWorkspace(ResourceAnalysisRequest request){
+        Map<String,List<TreeNode>> result = new HashMap<>(2);
+        // 当前用户所拥有的磁盘所属云账号集合
         if(CollectionUtils.isEmpty(request.getAccountIds())){
-            request.setAccountIds(currentUserResourceService.currentUserCloudAccountList().stream().map(CloudAccount::getId).toList());
+            request.setAccountIds(currentUserResourceService.currentUserCloudDiskList().stream()
+                    .filter(v->StringUtils.isNotEmpty(v.getAccountId()))
+                    .map(VmCloudDisk::getAccountId).distinct().toList());
         }
-        List<BarTreeChartData> workspaceList =  workspaceSpread(request);
+        List<TreeNode> workspaceList =  workspaceSpread(request);
         if(request.isAnalysisWorkspace()){
+            //result.put("all",workspaceList);
             result.put("tree",workspaceList);
-            return result;
         }else{
-            orgSpread(request,workspaceList,result);
+            result = orgSpread(request,workspaceList);
+
         }
         return result;
     }
@@ -264,36 +266,67 @@ public class DiskAnalysisServiceImpl implements IDiskAnalysisService {
     /**
      * 组织上的分布
      */
-    private void orgSpread(ResourceAnalysisRequest request, List<BarTreeChartData> workspaceList, Map<String,List<BarTreeChartData>> result){
-        //组织下工作空间添加标识
+    private Map<String,List<TreeNode>> orgSpread(ResourceAnalysisRequest request, List<TreeNode> workspaceList){
+        Map<String,List<TreeNode>> result = new HashMap<>(2);
+        result.put("all",new ArrayList<>());
+        result.put("tree",new ArrayList<>());
+        //工作空间添加标识
         workspaceList.forEach(v-> v.setName(v.getName()+"(工作空间)"));
-        //工作空间按组织ID分组
-        Map<String,List<BarTreeChartData>> workspaceMap = workspaceList.stream().collect(Collectors.groupingBy(BarTreeChartData::getPId));
-        //查询所有组织初始化为chart数据
-        List<BarTreeChartData> orgList = iServerAnalysisService.initOrgChartData();
-        MPJLambdaWrapper<OrgWorkspace> wrapper = new MPJLambdaWrapper<>();
-        wrapper.selectAll(OrgWorkspace.class);
-        wrapper.in(CollectionUtils.isNotEmpty(request.getAccountIds()),VmCloudDisk::getAccountId,request.getAccountIds());
-        //查询所有有授权磁盘的组织
-        OperationUtils.initOrgWorkspaceAnalysisData(orgList, getSpreadForType(request.isStatisticalBlock(), "org" , wrapper));
-        //初始化子级
-        orgList.forEach(OperationUtils::setSelfToChildren);
-        //扁平数据
-        result.put("all",orgList);
-        //树结构
-        List<BarTreeChartData> chartDataList = new TreeList<>();
-        orgList.stream().filter(o->StringUtils.isEmpty(o.getPId())).forEach(v->{
-            v.setGroupName("org");
-            v.setName(v.getName()+"(组织)");
-            v.getChildren().addAll(iServerAnalysisService.getChildren(v,orgList,workspaceMap));
-            chartDataList.add(v);
-        });
-        //组织管理员的话，只有一个跟节点，然后只返回他的子集
-        if (CurrentUserUtils.isOrgAdmin()) {
-            result.put("tree",chartDataList.get(0).getChildren().stream().filter(v->v.getValue()>0).toList());
-        }else{
-            result.put("tree",chartDataList.stream().filter(v->v.getValue()>0).toList());
+        //工作空间按照父级ID分组
+        Map<String,List<TreeNode>> workspaceGroupByPid = workspaceList.stream().collect(Collectors.groupingBy(TreeNode::getPid));
+        //查询所有组织，初始化为chart数据
+        List<TreeNode> orgList = iServerAnalysisService.orgToTreeNode();
+        if(CollectionUtils.isEmpty(orgList)){
+            return result;
         }
+        //id集合
+        List<String> orgIds = orgList.stream().map(TreeNode::getId).toList();
+        //设置资源统计数量
+        List<TreeNode> chartDateWorkspaceList = getTreeNodeValueDataForType(request, orgIds,"org");
+        if(CollectionUtils.isEmpty(chartDateWorkspaceList)){
+            return result;
+        }
+        Map<String,TreeNode> dataMap = chartDateWorkspaceList.stream().collect(Collectors.toMap(TreeNode::getId,o->o));
+        orgList.forEach(v->{
+            if(dataMap.containsKey(v.getId())){
+                v.setValue(dataMap.get(v.getId()).getValue());
+            }
+        });
+        Map<String,TreeNode> childrenMap = orgList.stream().collect(Collectors.toMap(TreeNode::getId,o->o));
+        List<TreeNode> childrenList = new ArrayList<>();
+        //设置子级并累加值
+        orgList.forEach(v->{
+            // 自己没有资源的就不要
+            childrenList.add(new TreeNode(v.getId(), v.getName() + "(未授权)", v.getValue(), v.getGroupName(), v.getPid()));
+            // 父组织工作空间下资源数量
+            int workspaceResourceNumber = getWorkspaceResourceNumber(workspaceGroupByPid, childrenList, v);
+            v.setValue(v.getValue()+workspaceResourceNumber);
+            if(childrenMap.containsKey(v.getPid())){
+                TreeNode node = childrenMap.get(v.getPid());
+                // 子组织工作空间下资源数量
+                workspaceResourceNumber = getWorkspaceResourceNumber(workspaceGroupByPid, childrenList, node);
+                v.setValue(v.getValue()+node.getValue()+workspaceResourceNumber);
+                childrenList.add(node);
+            }
+            // 只显示有资源的
+            v.setChildren(childrenList.stream().filter(c->c.getValue()>0).toList());
+            childrenList.clear();
+        });
+        // 扁平数据
+        result.put("all",orgList);
+        // 获取所有父节点,pid为空表示顶级，或者pid不在当前集合中，则也作为顶级
+        List<TreeNode> parentNodeList = orgList.stream().filter(v->StringUtils.isEmpty(v.getPid()) || !orgIds.contains(v.getPid())).toList();
+        result.put("tree", parentNodeList.stream().filter(v->v.getValue()>0).toList());
+        return result;
+    }
+
+    private static int getWorkspaceResourceNumber(Map<String, List<TreeNode>> workspaceGroupByPid, List<TreeNode> childrenList, TreeNode v) {
+        int workspaceResourceNumber = 0;
+        if(workspaceGroupByPid.containsKey(v.getId())){
+            childrenList.addAll(workspaceGroupByPid.get(v.getId()));
+            workspaceResourceNumber = workspaceGroupByPid.get(v.getId()).stream().mapToInt(TreeNode::getValue).sum();
+        }
+        return workspaceResourceNumber;
     }
 
     /**
@@ -301,30 +334,38 @@ public class DiskAnalysisServiceImpl implements IDiskAnalysisService {
      * @param request 磁盘分析参数
      * @return List<BarTreeChartData>
      */
-    private List<BarTreeChartData> workspaceSpread(ResourceAnalysisRequest request){
-        MPJLambdaWrapper<OrgWorkspace> wrapper = new MPJLambdaWrapper<>();
-        wrapper.selectAll(OrgWorkspace.class);
-        wrapper.in(CollectionUtils.isNotEmpty(request.getAccountIds()),VmCloudDisk::getAccountId,request.getAccountIds());
-        List<BarTreeChartData> workspaceList = iServerAnalysisService.initWorkspaceChartData();
-        OperationUtils.initOrgWorkspaceAnalysisData(workspaceList, getSpreadForType(request.isStatisticalBlock(),"workspace",wrapper));
-        return workspaceList.stream().filter(v->v.getValue()!=0).toList();
+    private List<TreeNode> workspaceSpread(ResourceAnalysisRequest request){
+        List<String> workspaceIds = iServerAnalysisService.workspaceToTreeNode().stream().map(TreeNode::getId).toList();
+        if(!CurrentUserUtils.isAdmin() && CollectionUtils.isEmpty(workspaceIds)){
+            return new ArrayList<>();
+        }
+        List<TreeNode> result = getTreeNodeValueDataForType(request,workspaceIds,"workspace");
+        return result;
     }
 
-    private List<BarTreeChartData> getSpreadForType(boolean isBlock, String type, MPJLambdaWrapper<OrgWorkspace> wrapper){
-        List<String> sourceIds = permissionService.getSourceIds();
-        wrapper.in(!CurrentUserUtils.isAdmin() && CollectionUtils.isNotEmpty(sourceIds),OrgWorkspace::getId,sourceIds);
-        wrapper.eq(OrgWorkspace::getType,type);
-        wrapper.notIn(true, VmCloudDisk::getStatus, List.of("deleted"));
-        wrapper.leftJoin(VmCloudDisk.class,VmCloudDisk::getSourceId,OrgWorkspace::getId);
-        wrapper.groupBy(OrgWorkspace::getId,OrgWorkspace::getName);
-        List<BarTreeChartData> list;
-        if (isBlock){
-            wrapper.selectCount(VmCloudDisk::getId,BarTreeChartData::getValue);
+    private List<TreeNode> getTreeNodeValueDataForType(ResourceAnalysisRequest request, List<String> orgWorkspaceIds , String type){
+        // 查询组织或工作空间下磁盘统计数
+        MPJLambdaWrapper<OrgWorkspace> wrapper = new MPJLambdaWrapper<>();
+        // 返回内容
+        wrapper.selectAs(OrgWorkspace::getId,TreeNode::getId);
+        wrapper.selectAs(OrgWorkspace::getName,TreeNode::getName);
+        wrapper.selectAs(OrgWorkspace::getPid,TreeNode::getPid);
+        wrapper.selectAs(OrgWorkspace::getType,TreeNode::getGroupName);
+        if(request.isStatisticalBlock()){
+            wrapper.selectCount(VmCloudDisk::getId,TreeNode::getValue);
         }else{
-            wrapper.selectSum(VmCloudDisk::getSize,BarTreeChartData::getValue);
+            wrapper.selectSum(VmCloudDisk::getSize,TreeNode::getValue);
         }
-        list = orgWorkspaceMapper.selectJoinList(BarTreeChartData.class,wrapper);
-        return list;
+        // 查询条件
+        wrapper.eq(true, OrgWorkspace::getType,type);
+        boolean filterOrgWorkspace = !CurrentUserUtils.isAdmin() && CollectionUtils.isNotEmpty(orgWorkspaceIds);
+        wrapper.in(filterOrgWorkspace,OrgWorkspace::getId, orgWorkspaceIds);
+        boolean filterAccount = CollectionUtils.isNotEmpty(request.getAccountIds());
+        wrapper.in(filterAccount,VmCloudDisk::getAccountId, request.getAccountIds());
+        wrapper.notIn(true,VmCloudDisk::getStatus, List.of(SpecialAttributesConstants.StatusField.DISK_DELETE,SpecialAttributesConstants.StatusField.FAILED));
+        wrapper.leftJoin(VmCloudDisk.class,VmCloudDisk::getSourceId,OrgWorkspace::getId);
+        wrapper.groupBy(true,OrgWorkspace::getId,OrgWorkspace::getName);
+        return orgWorkspaceMapper.selectJoinList(TreeNode.class, wrapper);
     }
 
     @Override

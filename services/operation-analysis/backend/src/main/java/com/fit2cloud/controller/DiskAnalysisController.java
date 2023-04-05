@@ -5,10 +5,10 @@ import com.fit2cloud.base.entity.CloudAccount;
 import com.fit2cloud.controller.handler.ResultHolder;
 import com.fit2cloud.controller.request.disk.PageDiskRequest;
 import com.fit2cloud.controller.request.disk.ResourceAnalysisRequest;
-import com.fit2cloud.controller.response.BarTreeChartData;
 import com.fit2cloud.controller.response.ChartData;
-import com.fit2cloud.dto.KeyValue;
+import com.fit2cloud.controller.response.TreeNode;
 import com.fit2cloud.dto.AnalysisDiskDTO;
+import com.fit2cloud.dto.KeyValue;
 import com.fit2cloud.service.IDiskAnalysisService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -67,7 +67,7 @@ public class DiskAnalysisController {
     @ApiOperation(value="组织或工作空间磁盘分布",notes = "组织或工作空间磁盘分布")
     @GetMapping("/org_workspace_disk_count_bar")
     @PreAuthorize("hasAnyCePermission('DISK_ANALYSIS:READ')")
-    public ResultHolder<Map<String,List<BarTreeChartData>>> analysisCloudDiskByOrgWorkspace(
+    public ResultHolder<Map<String,List<TreeNode>>> analysisCloudDiskByOrgWorkspace(
             @Validated ResourceAnalysisRequest request) {
         return ResultHolder.success(iDiskAnalysisService.analysisCloudDiskByOrgWorkspace(request));
     }
