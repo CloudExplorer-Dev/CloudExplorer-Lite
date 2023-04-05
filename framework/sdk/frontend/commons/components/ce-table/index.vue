@@ -362,7 +362,7 @@ defineExpose({
 
 .fu-table-header {
   th {
-    background-color: #F5F6F7 !important;
+    background-color: #f5f6f7 !important;
   }
 }
 

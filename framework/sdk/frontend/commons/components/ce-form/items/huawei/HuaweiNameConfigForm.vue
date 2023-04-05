@@ -108,7 +108,7 @@ function setServers(count: number | undefined) {
       } else if (_data.value.length < count) {
         const temp = [];
         for (let i = 0; i < count - _data.value.length; i++) {
-          temp.push({authReboot:true});
+          temp.push({ authReboot: true });
         }
         _data.value = _.concat(_data.value, temp);
       }
