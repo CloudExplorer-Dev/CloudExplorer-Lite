@@ -64,7 +64,7 @@ function getMonthCost() {
   }
   BillViewApi.getExpenses("MONTH", currentMonth.value, loading1).then(
     (data) => {
-      currentMonthCost.value = data.data;
+      currentMonthCost.value = data.data.current;
     }
   );
 }
@@ -77,7 +77,7 @@ function getYearCost() {
     new Date().getFullYear().toString(),
     loading2
   ).then((data) => {
-    currentYearCost.value = data.data;
+    currentYearCost.value = data.data.current;
   });
 }
 
