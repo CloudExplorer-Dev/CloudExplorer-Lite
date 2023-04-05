@@ -34,6 +34,17 @@ public class OrganizationUtil {
      * 将数据转换为树状数据
      *
      * @param source 组织原始数据
+     * @param rootId rootId
+     * @return 组织树妆数据
+     */
+    public static List<OrganizationTree> toTree(List<Organization> source, String rootId) {
+        return toTree(source, (organizationTrees -> organizationTrees.stream().filter(organizationTree -> StringUtils.equals(organizationTree.getId(), rootId)).toList()));
+    }
+
+    /**
+     * 将数据转换为树状数据
+     *
+     * @param source 组织原始数据
      * @return 组织树状数据
      */
     @SneakyThrows

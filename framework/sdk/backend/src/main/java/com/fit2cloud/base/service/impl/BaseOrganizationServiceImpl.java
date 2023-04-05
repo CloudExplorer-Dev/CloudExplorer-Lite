@@ -98,10 +98,14 @@ public class BaseOrganizationServiceImpl extends ServiceImpl<BaseOrganizationMap
     public List<OrganizationTree> tree(String type) {
         UserDto credentials = (UserDto) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         List<Organization> organizationList = list();
+        List<OrganizationTree> organizationTree = new ArrayList<>();
         if (Objects.equals(credentials.getCurrentRole(), RoleConstants.ROLE.ORGADMIN) && StringUtils.isNotEmpty(credentials.getCurrentSource())) {
             organizationList = getDownOrganization(credentials.getCurrentSource(), new ArrayList<>(), organizationList);
+            organizationTree = OrganizationUtil.toTree(organizationList, credentials.getCurrentSource());
+        } else if (Objects.equals(credentials.getCurrentRole(), RoleConstants.ROLE.ADMIN)) {
+            organizationTree = OrganizationUtil.toTree(organizationList);
         }
-        List<OrganizationTree> organizationTree = OrganizationUtil.toTree(organizationList);
+
         if (StringUtils.isEmpty(type) || StringUtils.equals(type, TreeTypeOrganization)) {
             return organizationTree;
         }

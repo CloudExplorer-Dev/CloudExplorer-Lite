@@ -68,9 +68,6 @@ public class OrganizationServiceImpl extends ServiceImpl<OrganizationMapper, Org
         wrapper.like(StringUtils.isNotEmpty(request.getName()), "name", request.getName())
                 .between(CollectionUtils.isNotEmpty(request.getUpdateTime()), "update_time", CollectionUtils.isNotEmpty(request.getUpdateTime()) ? simpleDateFormat.format(request.getUpdateTime().get(0)) : "", CollectionUtils.isNotEmpty(request.getUpdateTime()) ? simpleDateFormat.format(request.getUpdateTime().get(1)) : "")
                 .between(CollectionUtils.isNotEmpty(request.getCreateTime()), "create_time", CollectionUtils.isNotEmpty(request.getUpdateTime()) ? simpleDateFormat.format(request.getCreateTime().get(0)) : "", CollectionUtils.isNotEmpty(request.getUpdateTime()) ? simpleDateFormat.format(request.getCreateTime().get(1)) : "");
-        if (credentials.getCurrentRole().equals(RoleConstants.ROLE.ORGADMIN)) {
-            wrapper.eq(StringUtils.isNotEmpty(credentials.getCurrentSource()), "id", credentials.getCurrentSource());
-        }
         if (request.getOrder() != null && StringUtils.isNotEmpty(request.getOrder().getColumn())) {
             wrapper.orderBy(true, request.getOrder().isAsc(), ColumnNameUtil.getColumnName(request.getOrder().getColumn(), Organization.class));
         } else {
@@ -78,19 +75,24 @@ public class OrganizationServiceImpl extends ServiceImpl<OrganizationMapper, Org
         }
         QueryWrapper<Organization> pageWrapper = wrapper.clone();
         pageWrapper.last("limit " + ((request.getCurrentPage() - 1) * request.getPageSize()) + "," + request.getPageSize());
-        List<Organization> organizations = baseMapper.pageOrganization(pageWrapper);
+        List<Organization> organizations = credentials.getCurrentRole().equals(RoleConstants.ROLE.ORGADMIN) ? baseMapper.pageOrganization(pageWrapper, credentials.getCurrentSource()) : baseMapper.pageOrganization(pageWrapper, null);
         if (request.getOrder() != null && StringUtils.isNotEmpty(request.getOrder().getColumn())) {
             if (request.getOrder().isAsc()) {
-                organizations = organizations.stream().sorted(Comparator.comparing(organization -> {
-                    return getValueByField(organization, request.getOrder().getColumn()).toString();
-                })).toList();
+                organizations = organizations
+                        .stream()
+                        .sorted(Comparator
+                                .comparing(organization -> getValueByField(organization, request.getOrder().getColumn()).toString()))
+                        .toList();
             } else {
-                organizations = organizations.stream().sorted(Comparator.comparing(organization -> {
-                    return getValueByField(organization, request.getOrder().getColumn()).toString();
-                }).reversed()).toList();
+                organizations = organizations
+                        .stream()
+                        .sorted(Comparator
+                                .comparing(organization -> getValueByField(organization, request.getOrder().getColumn()).toString())
+                                .reversed())
+                        .toList();
             }
         }
-        int total = baseMapper.listRootOrganizationIds(wrapper).size();
+        int total = credentials.getCurrentRole().equals(RoleConstants.ROLE.ORGADMIN) ? 1 : baseMapper.listRootOrganizationIds(wrapper).size();
         page.setRecords(organizations);
         page.setTotal(total);
         return page;

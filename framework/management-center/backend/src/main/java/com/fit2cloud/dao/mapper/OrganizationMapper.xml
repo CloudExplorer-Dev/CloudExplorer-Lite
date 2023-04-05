@@ -25,13 +25,26 @@
                     GROUP_CONCAT(
                             GET_CHILDREN_ID ( id )) AS ids
                 FROM
-                    (
+                   <if test="rootId != null">
+                       (
+                       SELECT DISTINCT
+                       id AS id
+                       FROM
+                       organization
+                       where id = #{rootId}
+                       ) t1
+                   </if>
+                   <if test="rootId ==null">
+                        (
                         SELECT DISTINCT
-                            GET_ROOT_ORG_ID ( id ) AS id
+                        GET_ROOT_ORG_ID ( id ) AS id
                         FROM
-                            organization
-                                ${ew.customSqlSegment}
-                    ) t1
+                        organization
+                        ${ew.customSqlSegment}
+                        ) t1
+
+                   </if>
+
             ) t2
         WHERE
             FIND_IN_SET(

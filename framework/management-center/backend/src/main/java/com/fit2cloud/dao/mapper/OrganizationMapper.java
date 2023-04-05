@@ -21,10 +21,11 @@ public interface OrganizationMapper extends BaseMapper<Organization> {
     /**
      * 分页查询
      *
-     * @param wrapper
-     * @return
+     * @param wrapper 查询条件
+     * @param rootId  父级id
+     * @return 组织列表
      */
-    List<Organization> pageOrganization(@Param(Constants.WRAPPER) Wrapper<Organization> wrapper);
+    List<Organization> pageOrganization(@Param(Constants.WRAPPER) Wrapper<Organization> wrapper, @Param("rootId") String rootId);
 
     @Select("SELECT DISTINCT GET_ROOT_ORG_ID (id) AS id FROM organization ${ew.customSqlSegment}")
     List<String> listRootOrganizationIds(@Param(Constants.WRAPPER) Wrapper<Organization> wrapper);

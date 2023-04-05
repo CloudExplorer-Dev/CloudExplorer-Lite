@@ -58,6 +58,7 @@ const findOpenTree = (
   const filterOrganizations = organizations.filter((item: any) => {
     return item[field].indexOf(value) >= 0;
   });
+
   filterOrganizations.forEach((filterItem) => {
     findUpOrgTree(organizations, [], filterItem.pid).forEach((id: string) => {
       expandKeys.add(id);
@@ -104,6 +105,8 @@ const resetData = (organizations: Array<Organization>) => {
       });
       if (parentOrganization) {
         parentOrganization.children.push(item);
+      } else {
+        result.push(item);
       }
     } else {
       result.push(item);
@@ -142,11 +145,11 @@ const search = (condition: TableSearch) => {
         sort(tableData.value);
       }
       if (condition.search) {
-        const searchValue: unknown = condition.search.value;
+        const searchValue: any = condition.search.name;
         findOpenTree(
           ok.data.records,
-          condition.search.field,
-          searchValue as string
+          searchValue.field as string,
+          searchValue.value as string
         );
       }
 
