@@ -34,6 +34,8 @@
     </ce-table>
   </layout-content>
   <el-dialog
+    :close-on-click-modal="false"
+    :close-on-press-escape="false"
     v-model="billRuleDialogVisible"
     :title="billRuleFormType === 'ADD' ? '创建自定义账单' : '编辑自定义账单'"
     width="60%"
