@@ -2,7 +2,6 @@ package com.fit2cloud.service.impl;
 
 import co.elastic.clients.elasticsearch.ElasticsearchClient;
 import co.elastic.clients.elasticsearch._types.FieldValue;
-import co.elastic.clients.elasticsearch._types.InlineScript;
 import co.elastic.clients.elasticsearch._types.Script;
 import co.elastic.clients.elasticsearch._types.aggregations.*;
 import co.elastic.clients.elasticsearch._types.mapping.FieldType;
@@ -44,7 +43,6 @@ import lombok.SneakyThrows;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.keyvalue.DefaultKeyValue;
 import org.apache.commons.lang3.StringUtils;
-import org.redisson.Redisson;
 import org.springframework.data.elasticsearch.annotations.Document;
 import org.springframework.data.elasticsearch.client.elc.ElasticsearchAggregations;
 import org.springframework.data.elasticsearch.client.elc.ElasticsearchTemplate;

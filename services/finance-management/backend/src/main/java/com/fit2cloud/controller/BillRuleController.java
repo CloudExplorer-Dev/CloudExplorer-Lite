@@ -63,7 +63,6 @@ public class BillRuleController {
 
     @GetMapping("/group_child_keys")
     @ApiOperation(value = "获取可分组的子分组", notes = "获取可分组的子分组")
-    @Cacheable(value = "bill_rule", keyGenerator = "notAuthKeyGenerator")
     @PreAuthorize("hasAnyCePermission('CUSTOM_BILL:READ')")
     public ResultHolder<List<DefaultKeyValue<String, String>>> groupChildKeys(@ApiParam("可分租的父级key") @RequestParam("parentKey") String parentKey) {
         return ResultHolder.success(BillFieldConstants.BILL_FIELD.entrySet().stream()

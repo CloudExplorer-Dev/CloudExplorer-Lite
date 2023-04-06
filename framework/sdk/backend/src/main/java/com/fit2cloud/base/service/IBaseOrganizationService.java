@@ -45,5 +45,12 @@ public interface IBaseOrganizationService extends IService<Organization> {
      */
     int getOrgLevel(String orgId);
 
+    /**
+     * 获取组织的层级
+     *
+     * @return 组织层级
+     */
+    int getOrgLevel();
+
     List<Organization> getDownOrganization(String orgId, List<Organization> allOrgTree);
 }
