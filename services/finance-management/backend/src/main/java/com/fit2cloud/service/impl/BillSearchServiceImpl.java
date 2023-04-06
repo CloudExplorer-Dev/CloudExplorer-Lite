@@ -56,7 +56,6 @@ public class BillSearchServiceImpl implements BillSearchService {
         return appendDefaultTreed(trend(calendarConstants, historyNum, null, request.toQuery()), historyNum);
     }
 
-
     /**
      * @param calendarConstants 日期类型
      * @param historyNum        历史num
@@ -158,13 +157,13 @@ public class BillSearchServiceImpl implements BillSearchService {
      */
     private Query getExpensesQuery(CalendarConstants calendarConstants) {
         String script = calendarConstants.equals(CalendarConstants.MONTH) ?
-                "doc['deductionDate'].value.year==params['year']&&doc['deductionDate'].value.monthValue==params['month']?" +
+                "doc['billingCycle'].value.year==params['year']&&doc['billingCycle'].value.monthValue==params['month']?" +
                         "true:" +
                         "doc['deductionDate'].value.dayOfMonth<params['day']" :
-                "doc['deductionDate'].value.year==params['year']?" +
+                "doc['billingCycle'].value.year==params['year']?" +
                         "true:" +
-                        "doc['deductionDate'].value.monthValue<=params['month']" +
-                        "&&(doc['deductionDate'].value.monthValue==params['month']?doc['deductionDate'].value.dayOfMonth<params['day']:true)";
+                        "doc['billingCycle'].value.monthValue<=params['month']" +
+                        "&&(doc['billingCycle'].value.monthValue==params['month']?doc['deductionDate'].value.dayOfMonth<params['day']:true)";
         return new ScriptQuery.Builder().script(new Script.Builder()
                 .inline(new InlineScript.Builder().source(script)
                         .params(

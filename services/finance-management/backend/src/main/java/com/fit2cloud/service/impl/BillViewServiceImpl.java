@@ -5,7 +5,6 @@ import co.elastic.clients.elasticsearch._types.aggregations.*;
 import co.elastic.clients.elasticsearch._types.query_dsl.BoolQuery;
 import co.elastic.clients.elasticsearch._types.query_dsl.Query;
 import co.elastic.clients.elasticsearch._types.query_dsl.RangeQuery;
-import co.elastic.clients.elasticsearch._types.query_dsl.ScriptQuery;
 import co.elastic.clients.json.JsonData;
 import co.elastic.clients.util.ObjectBuilder;
 import com.fit2cloud.base.service.IBaseOrganizationService;
@@ -159,7 +158,7 @@ public class BillViewServiceImpl implements BillViewService {
         String startTime = MonthUtil.getStartTime(CalendarConstants.MONTH, historyNum - 1);
         Query q = new RangeQuery.Builder()
                 .gte(JsonData.of(startTime))
-                .lte(StringUtils.isEmpty(monthValue) ? null : JsonData.of(monthValue))
+                .lt(StringUtils.isEmpty(monthValue) ? null : JsonData.of(MonthUtil.addCalender(CalendarConstants.MONTH, monthValue)))
                 .field("billingCycle")
                 .format("yyyy-MM").build()._toQuery();
         Query authQuery = AuthUtil.getAuthQuery(org -> organizationService.getOrgLevel(org));
