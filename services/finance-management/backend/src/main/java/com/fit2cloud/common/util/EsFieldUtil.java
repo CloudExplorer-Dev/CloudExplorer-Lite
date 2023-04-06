@@ -68,6 +68,9 @@ public class EsFieldUtil {
     public static List<DefaultKeyValue<String, String>> getChildEsField(Map<String, Object> mapping, String parentName) {
         Map<String, Map<String, Object>> properties = (Map<String, Map<String, Object>>) mapping.get("properties");
         if (properties.containsKey(parentName)) {
+            if (!properties.get(parentName).containsKey("properties")) {
+                return new ArrayList<>();
+            }
             return getEsField((Map<String, Map<String, Object>>) properties.get(parentName).get("properties"), null).stream().map(field -> new DefaultKeyValue<>(field, parentName + "." + field)).toList();
         }
         return new ArrayList<>();

@@ -123,6 +123,22 @@ public class BaseOrganizationServiceImpl extends ServiceImpl<BaseOrganizationMap
         return upOrganization.size();
     }
 
+    @Override
+    public int getOrgLevel() {
+        return getOrgLevel(tree(), new ArrayList<>(), 0);
+    }
+
+    public int getOrgLevel(List<OrganizationTree> source, List<Integer> levels, int currentLevel) {
+        currentLevel++;
+        for (OrganizationTree organizationTree : source) {
+            levels.add(currentLevel);
+            if (CollectionUtils.isNotEmpty(organizationTree.getChildren())) {
+                getOrgLevel(organizationTree.getChildren(), levels, currentLevel);
+            }
+        }
+        return levels.stream().max(Integer::compareTo).orElse(0);
+    }
+
     /**
      * 获取上级组织
      *
