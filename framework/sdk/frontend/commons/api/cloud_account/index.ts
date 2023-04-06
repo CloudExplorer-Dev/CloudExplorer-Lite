@@ -48,7 +48,7 @@ const getPlatformAll: (
   return get(
     (import.meta.env.VITE_APP_NAME === "management-center"
       ? ""
-      : "/management-center/") + "/api/cloud_account/platform",
+      : "/management-center/") + "api/cloud_account/platform",
     null,
     loading
   );
