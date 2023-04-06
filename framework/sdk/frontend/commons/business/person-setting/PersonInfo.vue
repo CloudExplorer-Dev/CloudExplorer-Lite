@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { updateUser } from "@commons/api/user";
 import { ref } from "vue";
-import { ElMessage } from "element-plus";
+import { ElMessage, type FormInstance, type FormRules } from "element-plus";
 import { useI18n } from "vue-i18n";
 
 import { useUserStore } from "@commons/stores/modules/user";
@@ -22,15 +22,40 @@ const form = ref(defaultUser);
 
 const loading = ref<boolean>(false);
 
-const saveUserInfo = (userInfo: User) => {
-  updateUser(userInfo, loading)
-    .then(() => {
-      dialogVisible.value = false;
-      ElMessage.success(t("commons.msg.save_success"));
-    })
-    .catch((err) => {
-      ElMessage.error(err.response.data.message);
-    });
+const formRef = ref<FormInstance | undefined>();
+
+// 表单校验规则
+const rules: FormRules = {
+  name: [
+    {
+      required: true,
+      message: t("commons.validate.required", [t("commons.personal.username")]),
+      trigger: "blur",
+    },
+  ],
+  email: [
+    {
+      required: true,
+      message: t("commons.validate.required", [t("commons.personal.email")]),
+      trigger: "blur",
+    },
+  ],
+};
+
+const saveUserInfo = (formEl: FormInstance | undefined, userInfo: User) => {
+  if (!formEl) return;
+  formEl.validate((valid) => {
+    if (valid) {
+      updateUser(userInfo, loading)
+        .then(() => {
+          dialogVisible.value = false;
+          ElMessage.success(t("commons.msg.save_success"));
+        })
+        .catch((err) => {
+          ElMessage.error(err.response.data.message);
+        });
+    }
+  });
 };
 
 function onOpen() {
@@ -51,6 +76,8 @@ function onOpen() {
   >
     <el-form
       :model="form"
+      :rules="rules"
+      ref="formRef"
       label-width="auto"
       label-position="right"
       v-loading="loading"
@@ -58,35 +85,35 @@ function onOpen() {
       <el-form-item label="ID">
         <el-input v-model="form.username" type="text" disabled />
       </el-form-item>
-      <el-form-item :label="$t('commons.personal.username')">
+      <el-form-item :label="$t('commons.personal.username')" prop="name">
         <el-input
-          v-model="form.name"
+          v-model.trim="form.name"
           type="text"
           maxlength="30"
           show-word-limit
         />
       </el-form-item>
-      <el-form-item label="Email">
+      <el-form-item :label="$t('commons.personal.email')" prop="email">
         <el-input
-          v-model="form.email"
+          v-model.trim="form.email"
           type="text"
           maxlength="50"
           show-word-limit
         />
       </el-form-item>
       <el-form-item :label="$t('commons.personal.phone')">
-        <el-input v-model="form.phone" />
+        <el-input v-model.trim="form.phone" />
       </el-form-item>
     </el-form>
 
     <template #footer>
       <span class="dialog-footer">
-        <el-button @click="dialogVisible = false">{{
-          $t("commons.btn.cancel")
-        }}</el-button>
-        <el-button type="primary" @click="saveUserInfo(form)">{{
-          $t("commons.btn.save")
-        }}</el-button>
+        <el-button @click="dialogVisible = false">
+          {{ $t("commons.btn.cancel") }}
+        </el-button>
+        <el-button type="primary" @click="saveUserInfo(formRef, form)">
+          {{ $t("commons.btn.save") }}
+        </el-button>
       </span>
     </template>
   </el-dialog>

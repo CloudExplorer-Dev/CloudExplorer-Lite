@@ -1,14 +1,6 @@
 <script setup lang="ts">
-import {
-  computed,
-  onBeforeMount,
-  onUnmounted,
-  reactive,
-  ref,
-  watch,
-} from "vue";
-import type { LocationQuery } from "vue-router";
-import { useRoute, useRouter } from "vue-router";
+import { computed, onBeforeMount, onUnmounted, reactive, ref } from "vue";
+import { useRouter } from "vue-router";
 import { useUserStore } from "@commons/stores/modules/user";
 import type { FormInstance, FormRules } from "element-plus";
 import type { LoginRequest } from "@commons/api/user/type";
@@ -113,7 +105,7 @@ const submitForm = (formEl: FormInstance | undefined) => {
             <div class="login-form-item-container">
               <el-form-item prop="username" style="margin-bottom: 28px">
                 <el-input
-                  v-model="form.username"
+                  v-model.trim="form.username"
                   :placeholder="$t('commons.login.username')"
                   autofocus
                   class="login-form-input"
@@ -121,7 +113,7 @@ const submitForm = (formEl: FormInstance | undefined) => {
               </el-form-item>
               <el-form-item prop="password">
                 <el-input
-                  v-model="form.password"
+                  v-model.trim="form.password"
                   :placeholder="$t('commons.login.password')"
                   show-password
                   maxlength="30"

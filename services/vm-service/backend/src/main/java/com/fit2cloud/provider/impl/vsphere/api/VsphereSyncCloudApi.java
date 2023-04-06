@@ -195,10 +195,14 @@ public class VsphereSyncCloudApi {
             List<HostSystem> hosts = client.listHosts();
             list = new ArrayList<>();
             for (HostSystem hs : hosts) {
-                list.add(VsphereUtil.toF2CHost(hs, client));
+                try {
+                    list.add(VsphereUtil.toF2CHost(hs, client));
+                } catch (Exception e) {
+                    log.error("同步单台宿主机异常。Host name ：" + hs.getName() + ".异常信息：" + ExceptionUtils.getStackTrace(e), e);
+                }
             }
         } catch (Exception e) {
-            log.error(ExceptionUtils.getStackTrace(e));
+            log.error("同步宿主机异常：" + ExceptionUtils.getStackTrace(e));
             throw new RuntimeException(e);
         } finally {
             closeConnection(client);

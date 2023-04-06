@@ -132,6 +132,7 @@ const message = {
       confirm_password: "Confirm Password",
       login_identifier: "Login Identifier",
       username: "Username",
+      email: "Email",
       phone: "Phone",
       wechat: "Wechat",
     },
