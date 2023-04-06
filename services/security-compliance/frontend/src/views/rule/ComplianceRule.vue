@@ -263,7 +263,7 @@ const deleteItem = (row: ComplianceRule) => {
     type: "warning",
   }).then(() => {
     complianceRuleApi.deleteComplianceRule(row.id).then(() => {
-      table.value.search(table?.value.getTableSearch());
+      refresh();
       ElMessage.success("删除成功");
     });
   });

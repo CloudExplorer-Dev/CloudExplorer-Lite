@@ -83,7 +83,7 @@ const openUpdateComplianceRuleGroup = (row: ComplianceRuleGroup) => {
  * 刷新表格数据
  */
 const refreshTable = () => {
-  table.value.search(table?.value.getTableSearch());
+  table.value.search();
 };
 
 /**
@@ -128,7 +128,7 @@ const deleteItem = (row: ComplianceRuleGroup) => {
   }).then(() => {
     complianceRuleGroupApi.deleteById(row.id).then(() => {
       ElMessage.success("删除成功");
-      table.value.search(table?.value.getTableSearch());
+      refreshTable();
     });
   });
 };
@@ -142,7 +142,7 @@ const tableConfig = ref<TableConfig>({
     search: search,
     quickPlaceholder: "搜索",
     components: [],
-    searchOptions: [{ label: "规则名称", value: "name" }],
+    searchOptions: [{ label: "规则组名称", value: "name" }],
   },
   paginationConfig: new PaginationConfig(),
   tableOperations: new TableOperations([
