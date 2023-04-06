@@ -67,7 +67,7 @@ const save: (
   return post(
     (import.meta.env.VITE_APP_NAME === "management-center"
       ? ""
-      : "/management-center/") + "/api/cloud_account",
+      : "/management-center/") + "api/cloud_account",
     null,
     createAccount,
     loading
