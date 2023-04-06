@@ -198,9 +198,11 @@ const cloudServerInterval = ref<any>();
 //启动定时器
 const startOperateInterval = () => {
   cloudServerInterval.value = setInterval(() => {
-    VmCloudServerApi.getVmCloudServerByIds(
-      tableData.value.map((r) => r.id)
-    ).then((res) => {
+    const list = _.map(tableData.value, (r) => r.id);
+    if (list.length === 0) {
+      return;
+    }
+    VmCloudServerApi.getVmCloudServerByIds(list).then((res) => {
       if (res) {
         for (let i = 0; i < res.data.length; i++) {
           _.forEach(tableData.value, function (vm) {
