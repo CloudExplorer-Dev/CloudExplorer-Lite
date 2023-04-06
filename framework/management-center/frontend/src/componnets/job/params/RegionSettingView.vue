@@ -21,7 +21,7 @@
           @change="handleCheckAllChange"
           >全选</el-checkbox
         >
-        <el-checkbox-group @change="change" v-model="checkedRegionIds">
+        <el-checkbox-group v-model="checkedRegionIds">
           <el-checkbox
             :title="region.name"
             v-for="region in regions"
@@ -47,7 +47,7 @@
 </template>
 <script setup lang="ts">
 import type { JobDetails, Region } from "@/api/cloud_account/type";
-import { ref, watch } from "vue";
+import { computed } from "vue";
 import { useI18n } from "vue-i18n";
 const { t } = useI18n();
 const props = defineProps<{
@@ -68,21 +68,40 @@ const props = defineProps<{
 /**
  * 选中的区域id
  */
-const checkedRegionIds = ref<Array<string>>(
-  props.jobDetails[0].params["REGIONS"]
-    ? (props.jobDetails[0].params["REGIONS"].map(
-        (r: Region) => r.regionId
-      ) as Array<string>)
-    : []
-);
+const checkedRegionIds = computed({
+  get: () => {
+    return props.jobDetails[0].params["REGIONS"]
+      ? (props.jobDetails[0].params["REGIONS"].map(
+          (r: Region) => r.regionId
+        ) as Array<string>)
+      : [];
+  },
+  set: (selectRegion: Array<string>) => {
+    props.jobDetails.forEach((job) => {
+      job.params["REGIONS"] = props.regions.filter((r) =>
+        selectRegion.includes(r.regionId)
+      );
+    });
+  },
+});
 
-/**
- * 全选
- */
-const checkAll = ref<boolean>(
-  new Set(props.regions.map((r) => r.regionId)).size ===
-    checkedRegionIds.value.length
-);
+const checkAll = computed({
+  get: () => {
+    return (
+      new Set(props.regions.map((r) => r.regionId)).size ===
+      checkedRegionIds.value.length
+    );
+  },
+  set: (selected: boolean) => {
+    props.jobDetails.forEach((job) => {
+      job.params["REGIONS"] = selected
+        ? props.regions.filter((r) =>
+            checkedRegionIds.value.includes(r.regionId)
+          )
+        : [];
+    });
+  },
+});
 
 /**
  *是否全选处理函数
@@ -95,52 +114,5 @@ const handleCheckAllChange = (selected: boolean) => {
     checkedRegionIds.value = [];
   }
 };
-/**
- * 改变后的值
- * @param selectRegion 改变后的值
- */
-const change = (selectRegion: Array<string>) => {
-  if (checkedRegionIds.value) {
-    checkedRegionIds.value = selectRegion;
-  }
-  checkAll.value =
-    new Set(props.regions.map((r) => r.regionId)).size === selectRegion.length;
-};
-/**
- * 监听数据,并且修改里面的区域值
- */
-watch(checkedRegionIds, () => {
-  props.jobDetails.forEach((job) => {
-    job.params["REGIONS"] = props.regions.filter((r) =>
-      checkedRegionIds.value.includes(r.regionId)
-    );
-  });
-});
-
-watch(
-  () => props.jobDetails,
-  () => {
-    if (props.jobDetails.length > 0) {
-      checkedRegionIds.value = props.jobDetails[0].params["REGIONS"].map(
-        (r: Region) => r.regionId
-      ) as Array<string>;
-    }
-  },
-  {
-    immediate: true,
-  }
-);
-
-watch(
-  () => props.regions,
-  () => {
-    checkAll.value = props.regions.every((region) =>
-      checkedRegionIds.value.includes(region.regionId)
-    );
-  },
-  {
-    immediate: true,
-  }
-);
 </script>
 <style lang="scss"></style>

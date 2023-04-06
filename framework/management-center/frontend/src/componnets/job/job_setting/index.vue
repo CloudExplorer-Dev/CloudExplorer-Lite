@@ -38,9 +38,8 @@
               ></cron-in-view>
             </div>
           </div>
-        </el-checkbox>
-      </div></template
-    >
+        </el-checkbox></div
+    ></template>
   </base-container>
 </template>
 <script setup lang="ts">
@@ -66,7 +65,7 @@ const props = withDefaults(
      *定时任务信息
      */
     jobDetails: Array<JobDetails>;
-    jobTypeDescription: string;
+    jobTypeDescription?: string;
   }>(),
   { readOnly: false, jobTypeDescription: "同步" }
 );

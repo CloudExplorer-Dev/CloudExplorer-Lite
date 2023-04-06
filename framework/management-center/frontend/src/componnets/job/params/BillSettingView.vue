@@ -43,7 +43,7 @@ const props = defineProps<{
   /**
    * 是有有boder
    */
-  border: boolean;
+  border?: boolean;
 }>();
 
 /**

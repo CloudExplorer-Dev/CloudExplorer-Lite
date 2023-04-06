@@ -25,11 +25,8 @@
   </div>
 </template>
 <script setup lang="ts">
-defineProps({
-  border: {
-    type: Boolean,
-    default: true,
-  },
+withDefaults(defineProps<{ border?: boolean }>(), {
+  border: true,
 });
 </script>
 <style lang="scss" scoped>

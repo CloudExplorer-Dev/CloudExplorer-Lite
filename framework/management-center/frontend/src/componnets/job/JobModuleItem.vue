@@ -59,7 +59,7 @@ const props = withDefaults(
     /**
      * 是否有border
      */
-    border: boolean;
+    border?: boolean;
     /**
      * 是否可读
      */

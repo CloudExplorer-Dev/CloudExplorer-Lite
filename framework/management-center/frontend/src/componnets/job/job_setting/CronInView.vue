@@ -128,7 +128,7 @@ const props = withDefaults(
   defineProps<{
     modelValue?: string;
     // 指定可定是同步类型 2:按小时 3:按天 4:按月 5:按周
-    usableCronType: Array<2 | 3 | 4 | 5>;
+    usableCronType?: Array<2 | 3 | 4 | 5>;
     /**
      * 定时任务类型
      */

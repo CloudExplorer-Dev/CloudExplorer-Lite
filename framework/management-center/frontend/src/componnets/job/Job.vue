@@ -133,6 +133,7 @@ const props = defineProps({
     default: false,
   },
   border: {
+    required: false,
     type: Boolean,
     default: true,
   },
