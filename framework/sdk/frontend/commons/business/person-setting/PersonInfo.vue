@@ -42,14 +42,18 @@ const rules: FormRules = {
     {
       required: true,
       pattern: /^[a-zA-Z0-9_._-]+@[a-zA-Z0-9_-]+(\.[a-zA-Z0-9_-]+)+$/,
-      message: t("user.validate.email_format"),
+      message: t("commons.validate.format_error", [
+        t("commons.personal.email"),
+      ]),
       trigger: "blur",
     },
   ],
   phone: [
     {
       pattern: /^1[3|4|5|7|8][0-9]{9}$/,
-      message: t("user.validate.phone_format"),
+      message: t("commons.validate.format_error", [
+        t("commons.personal.phone"),
+      ]),
       trigger: "blur",
     },
   ],
@@ -114,7 +118,7 @@ function onOpen() {
           show-word-limit
         />
       </el-form-item>
-      <el-form-item :label="$t('commons.personal.phone')">
+      <el-form-item :label="$t('commons.personal.phone')" prop="phone">
         <el-input v-model.trim="form.phone" />
       </el-form-item>
     </el-form>

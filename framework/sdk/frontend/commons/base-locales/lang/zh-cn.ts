@@ -116,6 +116,7 @@ const message = {
     },
     validate: {
       required: "{0}必填",
+      format_error: "{0}格式错误",
       limit: "长度在 {0} 到 {1} 个字符",
       input: "请输入{0}",
       select: "请选择{0}",
