@@ -107,7 +107,23 @@
               <div class="description">
                 {{ m.description }}
               </div>
+
+              <div class="detail-info">
+                <p class="detail-text-title">{{ m.display_name }}</p>
+                <p class="detail-text">
+                  {{ m.description }}
+                </p>
+                <p class="update-info-title">更新内容:</p>
+                <p
+                  v-for="(i, index) in m.update_infos"
+                  :key="index"
+                  class="update-info"
+                >
+                  {{ i }}
+                </p>
+              </div>
             </div>
+
             <div
               style="
                 height: 60px;
@@ -381,6 +397,58 @@ onBeforeUnmount(() => {
     height: 91px;
     border-bottom: #dddedf 1px solid;
     padding: 16px;
+    position: relative;
+
+    .detail-info {
+      left: 0;
+      top: 0;
+      padding: 16px 0;
+      height: 91px;
+      width: 100%;
+      background-color: #1f2329;
+      opacity: 0.8;
+      position: absolute;
+      overflow-y: auto;
+      display: none;
+      border-top-left-radius: 4px;
+      border-top-right-radius: 4px;
+
+      .update-info-title {
+        font-style: normal;
+        font-weight: 500;
+        font-size: 13px;
+        line-height: 16px;
+        color: #ffffff;
+        padding: 0 16px;
+      }
+
+      .update-info {
+        font-style: normal;
+        font-weight: 400;
+        font-size: 12px;
+        line-height: 16px;
+        color: #ffffff;
+        padding: 0 16px;
+      }
+
+      .detail-text-title {
+        font-style: normal;
+        font-weight: 700;
+        font-size: 15px;
+        line-height: 16px;
+        color: #ffffff;
+        padding: 0 16px;
+      }
+
+      .detail-text {
+        font-style: normal;
+        font-weight: 400;
+        font-size: 12px;
+        line-height: 16px;
+        color: #ffffff;
+        padding: 0 16px;
+      }
+    }
 
     .icon {
       width: 48px;
@@ -443,6 +511,12 @@ onBeforeUnmount(() => {
       margin-left: 8px;
       background-color: #fff5eb;
       color: #ffa53d;
+    }
+  }
+
+  .info:hover {
+    .detail-info {
+      display: block;
     }
   }
 }
