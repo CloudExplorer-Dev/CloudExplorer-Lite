@@ -25,7 +25,7 @@
             label="云主机名称"
             :prop="'[' + index + '].name'"
           >
-            <el-input v-model="item.name" style="width: 100%" />
+            <el-input v-model.trim="item.name" style="width: 100%" />
           </el-form-item>
 
           <el-form-item
@@ -33,7 +33,11 @@
             label="Hostname"
             :prop="'[' + index + '].hostName'"
           >
-            <el-input v-model="item.hostName" minlength="1" maxlength="65" />
+            <el-input
+              v-model.trim="item.hostName"
+              minlength="1"
+              maxlength="65"
+            />
           </el-form-item>
         </el-tab-pane>
       </el-tabs>

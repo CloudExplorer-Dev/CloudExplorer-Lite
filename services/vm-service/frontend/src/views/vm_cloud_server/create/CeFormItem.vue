@@ -22,7 +22,7 @@
           <component
             ref="formItemRef"
             :is="item.inputType"
-            v-model="_data[item.field]"
+            v-model.trim="_data[item.field]"
             :all-data="allData"
             :all-form-view-data="allFormViewData"
             :field="item.field"
@@ -40,7 +40,7 @@
         <component
           ref="formItemRef"
           :is="item.inputType"
-          v-model="_data[item.field]"
+          v-model.trim="_data[item.field]"
           :all-data="allData"
           :all-form-view-data="allFormViewData"
           :field="item.field"
