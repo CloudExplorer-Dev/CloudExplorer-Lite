@@ -132,6 +132,7 @@ const message = {
       confirm_password: "确认密码",
       login_identifier: "登录标识",
       username: "用户名",
+      email: "邮箱",
       phone: "手机号码",
       wechat: "企业微信号码",
     },

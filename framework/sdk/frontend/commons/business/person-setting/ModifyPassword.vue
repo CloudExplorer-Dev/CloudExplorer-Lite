@@ -110,7 +110,7 @@ const submitForm = (formEl: FormInstance | undefined) => {
         prop="oldPassword"
       >
         <el-input
-          v-model="form.oldPassword"
+          v-model.trim="form.oldPassword"
           type="password"
           show-password
           autocomplete="new-password"
@@ -122,7 +122,7 @@ const submitForm = (formEl: FormInstance | undefined) => {
         prop="newPassword"
       >
         <el-input
-          v-model="form.newPassword"
+          v-model.trim="form.newPassword"
           type="password"
           show-password
           autocomplete="new-password"
@@ -133,7 +133,7 @@ const submitForm = (formEl: FormInstance | undefined) => {
         prop="confirmPassword"
       >
         <el-input
-          v-model="form.confirmPassword"
+          v-model.trim="form.confirmPassword"
           type="password"
           show-password
           autocomplete="new-password"
