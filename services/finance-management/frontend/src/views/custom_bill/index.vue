@@ -42,6 +42,7 @@
     style="min-width: 600px"
   >
     <el-form
+      @submit.prevent
       label-position="top"
       :model="billRuleForm"
       ref="ruleFormRef"
