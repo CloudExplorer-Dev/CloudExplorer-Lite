@@ -23,6 +23,6 @@ public class ComplianceResourceRequest {
     @ApiModelProperty(value = "合规状态", example = "COMPLIANCE:合规,NOT_COMPLIANCE:不合规")
     private ComplianceStatus complianceStatus;
     @ApiModelProperty(value = "资源名称")
-    @Query(field = "resourceName", compareType = QueryUtil.CompareType.LIKE)
+    @Query(field = "resourceName", compareType = QueryUtil.CompareType.WILDCARD)
     private String resourceName;
 }

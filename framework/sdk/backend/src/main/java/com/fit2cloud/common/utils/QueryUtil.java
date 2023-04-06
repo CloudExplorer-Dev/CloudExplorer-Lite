@@ -27,7 +27,7 @@ import java.util.Optional;
 public class QueryUtil {
 
     public enum CompareType {
-        LT, LTE, GT, GTE, EQ, NOT_EQ, IN, NOT_IN, LIKE, NOT_EXIST
+        LT, LTE, GT, GTE, EQ, NOT_EQ, IN, NOT_IN, LIKE, NOT_EXIST, WILDCARD
     }
 
     @Data
@@ -154,6 +154,8 @@ public class QueryUtil {
                         break;
                     case NOT_EXIST:
                         boolQueryBuilder.must(new Query.Builder().exists(new ExistsQuery.Builder().field(queryCondition.field).build()).build());
+                    case WILDCARD:
+                        boolQueryBuilder.must(new Query.Builder().wildcard(new WildcardQuery.Builder().field(queryCondition.field).wildcard("*" + queryCondition.value + "*").build()).build());
                         break;
                 }
             }
@@ -190,7 +192,8 @@ public class QueryUtil {
             case NOT_IN ->
                     new Query.Builder().bool(new BoolQuery.Builder().mustNot(new Query.Builder().terms(new TermsQuery.Builder().field(field).terms(getTermsQueryField(value)).build()).build()).build()).build();
             case NOT_EXIST -> new Query.Builder().exists(new ExistsQuery.Builder().field(field).build()).build();
-            default -> throw new RuntimeException("不支持的查询");
+            case WILDCARD ->
+                    new Query.Builder().wildcard(new WildcardQuery.Builder().field(field).wildcard("*" + value + "*").build()).build();
         };
 
     }
