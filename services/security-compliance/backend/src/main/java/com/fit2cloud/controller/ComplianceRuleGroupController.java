@@ -83,7 +83,7 @@ public class ComplianceRuleGroupController {
             resourceId = "#request.id",
             content = "'创建合规规则组['+#request.name+']'",
             param = "#request")
-    public ResultHolder<ComplianceRuleGroupResponse> save(@Validated(ValidationGroup.SELECT.class)
+    public ResultHolder<ComplianceRuleGroupResponse> save(@Validated(ValidationGroup.SAVE.class)
                                                           @RequestBody ComplianceRuleGroupRequest request) {
         ComplianceRuleGroupResponse complianceRuleGroupResponse = complianceRuleGroupService.save(request);
         return ResultHolder.success(complianceRuleGroupResponse);

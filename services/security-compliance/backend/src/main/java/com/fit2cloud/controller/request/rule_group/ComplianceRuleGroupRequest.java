@@ -1,9 +1,12 @@
 package com.fit2cloud.controller.request.rule_group;
 
+import com.fit2cloud.common.validator.annnotaion.CustomQueryWrapperValidated;
 import com.fit2cloud.common.validator.annnotaion.CustomValidated;
 import com.fit2cloud.common.validator.group.ValidationGroup;
 import com.fit2cloud.common.validator.handler.ExistHandler;
+import com.fit2cloud.common.validator.handler.ExistQueryWrapperValidatedHandler;
 import com.fit2cloud.dao.mapper.ComplianceRuleGroupMapper;
+import com.fit2cloud.dao.mapper.ComplianceRuleMapper;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
@@ -17,6 +20,11 @@ import javax.validation.constraints.Null;
  * {@code @注释: }
  */
 @Data
+@CustomQueryWrapperValidated(groups = ValidationGroup.UPDATE.class,
+        handler = ExistQueryWrapperValidatedHandler.class,
+        el = "#getQueryWrapper().ne(\"id\",#this.id).eq(\"name\",#this.name)",
+        message = "规则组名称不能重复", exist = true,
+        mapper = ComplianceRuleGroupMapper.class)
 public class ComplianceRuleGroupRequest {
 
     @ApiModelProperty(value = "规则组id", notes = "规则组id")
@@ -27,6 +35,7 @@ public class ComplianceRuleGroupRequest {
 
     @ApiModelProperty(value = "规则组名称", notes = "规则组名称")
     @NotNull(message = "规则组名称不能为空", groups = ValidationGroup.SAVE.class)
+    @CustomValidated(groups = ValidationGroup.SAVE.class, mapper = ComplianceRuleGroupMapper.class, field = "name", handler = ExistHandler.class, message = "规则组名称不能重复", exist = true)
     private String name;
 
     @ApiModelProperty(value = "规则组描述", notes = "规则组描述")
