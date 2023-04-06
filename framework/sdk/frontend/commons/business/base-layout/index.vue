@@ -68,7 +68,7 @@ watch(hasCreateAccountPermission, (v) => {
     class="create-account-show"
     v-model="showCreateAccount"
     destroy-on-close
-    top="3.5vh"
+    top="60px"
     width="1200px"
     :show-close="false"
     :close-on-click-modal="false"
@@ -99,7 +99,7 @@ watch(hasCreateAccountPermission, (v) => {
 
 <style lang="scss">
 .create-account-show {
-  height: 780px;
+  height: calc(100vh - 120px);
 
   .el-dialog__header {
     padding: 0;
