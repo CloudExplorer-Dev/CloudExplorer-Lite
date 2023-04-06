@@ -15,7 +15,7 @@
           height: 100%;
           display: flex;
           align-items: center;
-          margin-right: 50px;
+          margin-right: 24px;
         "
       >
         <el-select v-model="currentAccountId">
@@ -127,15 +127,7 @@ onMounted(() => {
   margin-left: var(--ce-main-breadcrumb-margin-right, 30px);
 }
 .content {
-  padding: var(--ce-main-content-margin-top, 10px)
-    var(--ce-main-content-margin-left, 30px)
-    var(--ce-main-content-margin-right, 30px)
-    var(--ce-main-content-margin-bottom, 30px);
   height: calc(100% - var(--ce-main-breadcrumb-height, 50px));
-  width: calc(
-    100% - var(--ce-main-content-margin-left, 30px) -
-      var(--ce-main-content-margin-right, 30px)
-  );
   overflow: hidden;
   &:hover {
     overflow-y: auto;
