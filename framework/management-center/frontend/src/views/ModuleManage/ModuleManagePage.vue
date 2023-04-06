@@ -5,6 +5,7 @@
       padding: 0,
       width:
         'calc(100% - var(--ce-main-content-padding-left, 30px) - var(--ce-main-content-padding-right, 30px))',
+      'border-radius': 0,
     }"
   >
     <template #breadcrumb>
@@ -491,6 +492,7 @@ onBeforeUnmount(() => {
   font-weight: 400;
   font-size: 14px;
   right: 0;
+  border-top-right-radius: 4px;
 }
 
 .m-tip-not-installed {
