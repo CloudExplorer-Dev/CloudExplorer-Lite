@@ -95,7 +95,7 @@ function jumpTo(url: string) {
       :rules="rules.name"
     >
       <el-input
-        v-model="form.name"
+        v-model.trim="form.name"
         autocomplete="new-password"
         :placeholder="t('cloud_account.name_placeholder', '请输入云账号名称')"
       />
@@ -143,7 +143,7 @@ function jumpTo(url: string) {
       </template>
 
       <el-input
-        v-model="form.credential[item.field]"
+        v-model.trim="form.credential[item.field]"
         :type="item.inputType === 'Text' ? 'text' : ''"
         :show-password="item.inputType === 'Password'"
         autocomplete="new-password"
