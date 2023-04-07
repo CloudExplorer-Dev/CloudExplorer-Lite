@@ -690,11 +690,10 @@ const tableConfig = ref<TableConfig>({
 });
 
 const syncAll = () => {
-  if (
-    cloudAccountList.value
-      .filter((a) => multipleSelectionIds.value.includes(a.id))
-      .every((a) => a.state)
-  ) {
+  const _list = cloudAccountList.value.filter((a) =>
+    multipleSelectionIds.value.includes(a.id)
+  );
+  if (_list && _list.length > 0 && _list.every((a) => a.state)) {
     cloudAccountApi.syncAll(multipleSelectionIds.value).then((ok) => {
       ElMessage.success("发送同步任务成功");
     });
