@@ -24,11 +24,6 @@ import java.util.List;
  * {@code @注释: }
  */
 @Data
-@CustomQueryWrapperValidated(groups = ValidationGroup.UPDATE.class,
-        handler = ExistQueryWrapperValidatedHandler.class,
-        el = "#getQueryWrapper().ne(\"id\",#this.id).eq(\"name\",#this.name)",
-        message = "规则名称不能重复", exist = true,
-        mapper = ComplianceRuleMapper.class)
 public class ComplianceRuleRequest {
     @ApiModelProperty(value = "规则组id", notes = "规则组id")
     @NotNull(message = "规则id不能为空", groups = ValidationGroup.UPDATE.class)
@@ -38,7 +33,6 @@ public class ComplianceRuleRequest {
 
     @ApiModelProperty(value = "规则名称", notes = "规则名称")
     @NotNull(message = "规则名称不能为空", groups = ValidationGroup.SAVE.class)
-    @CustomValidated(groups = ValidationGroup.SAVE.class, mapper = ComplianceRuleMapper.class, field = "name", handler = ExistHandler.class, message = "规则名称不能重复", exist = true)
     private String name;
 
     @ApiModelProperty(value = "规则组id", notes = "规则组id")

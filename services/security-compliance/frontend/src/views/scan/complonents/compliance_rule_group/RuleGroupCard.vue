@@ -150,6 +150,7 @@ const proportions = computed(() => {
   .title_row {
     overflow: hidden;
     text-overflow: ellipsis;
+    white-space: nowrap;
     .title {
       height: 22px;
       font-weight: 500;

@@ -126,10 +126,7 @@ public class TencentInstanceSearchFieldApi {
                         new DefaultKeyValue<>("带宽包用户", "BANDWIDTH_PACKAGE")))
                 .resetInstanceField(PlatformConstants.fit2cloud_tencent_platform, ResourceTypeConstants.ECS);
 
-        InstanceSearchField internetAccessiblePublicIpAssigned = new InstanceSearchField("是否分配公网IP", "internetAccessible.publicIpAssigned", InstanceFieldType.Enum,
-                List.of(new DefaultKeyValue<>("分配公网IP", true),
-                        new DefaultKeyValue<>("不分配公网IP", false)
-                ))
+        InstanceSearchField internetAccessiblePublicIpAssigned = new InstanceSearchField("实例主网卡的公网IP列表", "publicIpAddresses", InstanceFieldType.ArrayString)
                 .resetInstanceField(PlatformConstants.fit2cloud_tencent_platform, ResourceTypeConstants.ECS);
 
         InstanceSearchField internetAccessibleInternetAccessible = new InstanceSearchField("公网出带宽上限", "internetAccessible.internetMaxBandwidthOut", InstanceFieldType.Number)
@@ -491,7 +488,7 @@ public class TencentInstanceSearchFieldApi {
                 ))
                 .resetInstanceField(PlatformConstants.fit2cloud_tencent_platform, ResourceTypeConstants.MYSQL);
 
-            InstanceSearchField protectMode = new InstanceSearchField("数据复制方式", "protectMode", InstanceFieldType.Enum,
+        InstanceSearchField protectMode = new InstanceSearchField("数据复制方式", "protectMode", InstanceFieldType.Enum,
                 List.of(new DefaultKeyValue<>("异步复制", 0),
                         new DefaultKeyValue<>("半同步复制", 1),
                         new DefaultKeyValue<>("强同步复制", 2)
