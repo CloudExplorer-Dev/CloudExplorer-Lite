@@ -211,14 +211,15 @@ defineExpose({
         />
       </el-col>
     </el-row>
+
+    <ConditionDialog
+      ref="modifyConditionRef"
+      :optimization-search-req="optimizationSearchReq"
+      @changeParam="changeParam"
+      @showConditionDialog="showConditionDialog"
+      style="min-width: 600px"
+    />
   </div>
-  <ConditionDialog
-    ref="modifyConditionRef"
-    :optimization-search-req="optimizationSearchReq"
-    @changeParam="changeParam"
-    @showConditionDialog="showConditionDialog"
-    style="min-width: 600px"
-  />
 </template>
 
 <style scoped lang="scss">
