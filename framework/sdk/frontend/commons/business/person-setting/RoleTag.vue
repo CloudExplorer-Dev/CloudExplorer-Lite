@@ -34,6 +34,7 @@ const props = withDefaults(
   cursor: default;
   border-radius: 2px;
   line-height: 20px;
+  height: 20px;
   font-size: 12px;
   margin-left: 4px;
   padding: 1px 6px;
