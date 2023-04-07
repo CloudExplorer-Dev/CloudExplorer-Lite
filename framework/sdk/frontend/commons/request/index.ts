@@ -7,9 +7,9 @@ import type { Result } from "@commons/request/Result";
 import { store } from "@commons/stores";
 import { useUserStore } from "@commons/stores/modules/user";
 import Config from "@commons/utils/constants";
-import { setToken } from "@commons/utils/authStorage";
 import _ from "lodash";
 import route from "@commons/router";
+import { ref } from "vue";
 
 const axiosConfig = {
   baseURL: import.meta.env.VITE_BASE_PATH,
@@ -135,7 +135,7 @@ export const request = instance;
 const promise: (
   request: Promise<any>,
   loading?: NProgress | Ref<boolean>
-) => Promise<Result<any>> = (request, loading = nProgress) => {
+) => Promise<Result<any>> = (request, loading = ref(false)) => {
   return new Promise((resolve, reject) => {
     if ((loading as NProgress).start) {
       (loading as NProgress).start();
