@@ -125,9 +125,7 @@ public class PermissionConstants {
                                     new Permission.Builder()
                                             .operate(OPERATE.READ)
                                             .name("permission.bill.custom_bill.read")
-                                            .role(RoleConstants.ROLE.ADMIN,
-                                                    RoleConstants.ROLE.ORGADMIN,
-                                                    RoleConstants.ROLE.USER))
+                                            .role(RoleConstants.ROLE.ADMIN))
                             .permission(new Permission.Builder()
                                     .operate(OPERATE.CREATE)
                                     .name("permission.bill.dimension_setting.create")
