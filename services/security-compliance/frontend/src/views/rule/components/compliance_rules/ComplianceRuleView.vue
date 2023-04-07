@@ -83,17 +83,21 @@ watch(
 </script>
 <style lang="scss" scoped>
 .content {
+  white-space: normal;
   display: flex;
   flex-wrap: wrap;
   width: 100%;
   .item {
+    &:first-child {
+      margin-top: 0;
+    }
+    margin-top: 10px;
     display: flex;
     flex-wrap: nowrap;
     width: 100%;
     justify-content: space-between;
     div {
-      width: 100%;
-      width: 70px;
+      width: 30%;
       overflow: hidden;
       text-overflow: ellipsis;
       text-align: center;

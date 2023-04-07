@@ -8,6 +8,7 @@
       :columns="columns"
       :data="dataList"
       :tableConfig="tableConfig"
+      cell-class-name="table_cell"
       row-key="id"
     >
       <template #toolbar>
@@ -16,12 +17,22 @@
         ></template
       >
       <el-table-column type="selection" />
-      <el-table-column prop="name" label="规则名称" />
-      <el-table-column prop="ruleGroupName" label="规则组" />
+      <el-table-column
+        prop="name"
+        show-overflow-tooltip
+        label="规则名称"
+        min-width="120"
+      />
+      <el-table-column
+        prop="ruleGroupName"
+        show-overflow-tooltip
+        min-width="120"
+        label="规则组"
+      />
       <el-table-column
         prop="platform"
         label="云平台"
-        width="120"
+        min-width="120"
         :column-key="'platform'"
         :filters="
           Object.keys(platformIcon).map((key) => ({
@@ -42,7 +53,8 @@
         prop="resourceType"
         :column-key="'resourceType'"
         label="资源类型"
-        width="130"
+        show-overflow-tooltip
+        min-width="130"
         :filters="
           resourceTypeList.map((resource) => ({
             text: resource.key,
@@ -58,7 +70,7 @@
           }}
         </template>
       </el-table-column>
-      <el-table-column prop="rules" label="合规判断条件" width="210px">
+      <el-table-column prop="rules" label="合规判断条件" width="300">
         <template #default="scope">
           <compliance_rule_view
             :platform="scope.row.platform"
@@ -70,7 +82,7 @@
       <el-table-column
         prop="riskLevel"
         label="风险等级"
-        width="120"
+        min-width="120"
         :column-key="'riskLevel'"
         :filters="
           riskLevelOptionList.map((level) => ({
@@ -88,23 +100,21 @@
           ></div>
         </template>
       </el-table-column>
-      <el-table-column prop="description" label="规则描述" width="150">
+      <el-table-column
+        prop="description"
+        show-overflow-tooltip
+        label="规则描述"
+        width="200px"
+      >
         <template #default="scope">
-          <el-tooltip class="box-item" effect="dark" placement="top-start">
-            <template #content>
-              <div style="max-width: 500px">{{ scope.row.description }}</div>
-            </template>
-            <div class="table_content_ellipsis">
-              {{ scope.row.description }}
-            </div></el-tooltip
-          >
+          {{ scope.row.description }}
         </template>
       </el-table-column>
       <el-table-column
         prop="enable"
         column-key="enable"
         label="是否启用"
-        width="120"
+        min-width="120"
         :filters="[
           { text: '启用', value: true },
           { text: '禁用', value: false },
@@ -315,4 +325,10 @@ const refresh = () => {
 };
 defineExpose({ refresh });
 </script>
-<style lang="scss"></style>
+<style lang="scss" scoped>
+:deep(.table_cell) {
+  .cell {
+    white-space: nowrap;
+  }
+}
+</style>
