@@ -221,6 +221,8 @@ const defaultTrendOptions = {
   title: {},
   tooltip: {
     trigger: "axis",
+    //无视容器，超出显示
+    appendToBody: true,
     axisPointer: {
       lineStyle: {
         type: "solid",

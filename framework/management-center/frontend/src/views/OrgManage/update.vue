@@ -118,17 +118,6 @@ const rules = reactive<FormRules>({
       required: true,
     },
   ],
-  description: [
-    {
-      message: t(
-        "org_manage.organization_description_is_not_empty",
-        "组织描述不为空"
-      ),
-      trigger: "blur",
-      type: "string",
-      required: true,
-    },
-  ],
 });
 // 表单数据
 const from = ref<OrgUpdateForm>({

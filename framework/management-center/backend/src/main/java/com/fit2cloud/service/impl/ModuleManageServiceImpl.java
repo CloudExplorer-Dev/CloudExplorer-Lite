@@ -1,10 +1,10 @@
 package com.fit2cloud.service.impl;
 
+import com.fit2cloud.common.utils.FileUtils;
 import com.fit2cloud.common.utils.JsonUtil;
 import com.fit2cloud.dao.entity.ExtraModule;
 import com.fit2cloud.dao.entity.ExtraModules;
 import com.fit2cloud.service.IModuleManageService;
-import com.fit2cloud.utils.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;

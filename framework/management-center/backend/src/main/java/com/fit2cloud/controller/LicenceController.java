@@ -1,7 +1,7 @@
 package com.fit2cloud.controller;
 
+import com.fit2cloud.common.utils.FileUtils;
 import com.fit2cloud.controller.handler.ResultHolder;
-import com.fit2cloud.utils.FileUtils;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.apache.commons.lang3.StringUtils;
