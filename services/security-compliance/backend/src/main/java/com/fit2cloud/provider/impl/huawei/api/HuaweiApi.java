@@ -4,7 +4,6 @@ import com.fit2cloud.common.exception.Fit2cloudException;
 import com.fit2cloud.common.provider.exception.ReTryException;
 import com.fit2cloud.common.provider.exception.SkipPageException;
 import com.fit2cloud.common.provider.util.PageUtil;
-import com.fit2cloud.common.utils.JsonUtil;
 import com.fit2cloud.provider.impl.huawei.entity.request.*;
 import com.fit2cloud.provider.util.ResourceUtil;
 import com.huaweicloud.sdk.css.v1.CssClient;
@@ -17,15 +16,17 @@ import com.huaweicloud.sdk.dds.v3.model.QueryInstanceResponse;
 import com.huaweicloud.sdk.ecs.v2.EcsClient;
 import com.huaweicloud.sdk.ecs.v2.model.ListServersDetailsResponse;
 import com.huaweicloud.sdk.ecs.v2.model.ServerDetail;
-import com.huaweicloud.sdk.eip.v3.model.ListPublicipsResponse;
 import com.huaweicloud.sdk.eip.v3.EipClient;
+import com.huaweicloud.sdk.eip.v3.model.ListPublicipsResponse;
 import com.huaweicloud.sdk.eip.v3.model.PublicipSingleShowResp;
+import com.huaweicloud.sdk.elb.v3.ElbClient;
+import com.huaweicloud.sdk.elb.v3.model.ListLoadBalancersResponse;
+import com.huaweicloud.sdk.elb.v3.model.LoadBalancer;
 import com.huaweicloud.sdk.evs.v2.EvsClient;
 import com.huaweicloud.sdk.evs.v2.model.ListVolumesResponse;
 import com.huaweicloud.sdk.evs.v2.model.VolumeDetail;
 import com.huaweicloud.sdk.iam.v3.IamClient;
 import com.huaweicloud.sdk.iam.v3.model.KeystoneListUsersRequest;
-import com.huaweicloud.sdk.iam.v3.model.KeystoneListUsersResponse;
 import com.huaweicloud.sdk.iam.v3.model.KeystoneListUsersResult;
 import com.huaweicloud.sdk.iam.v3.model.LoginProtectResult;
 import com.huaweicloud.sdk.rds.v3.RdsClient;
@@ -35,10 +36,11 @@ import com.huaweicloud.sdk.rds.v3.model.ListInstancesResponse;
 import com.huaweicloud.sdk.vpc.v3.VpcClient;
 import com.huaweicloud.sdk.vpc.v3.model.*;
 import com.obs.services.ObsClient;
-import com.obs.services.model.*;
+import com.obs.services.model.AccessControlList;
+import com.obs.services.model.BucketEncryption;
+import com.obs.services.model.ListBucketsRequest;
+import com.obs.services.model.ObsBucket;
 import org.apache.commons.lang3.StringUtils;
-import com.huaweicloud.sdk.elb.v3.*;
-import com.huaweicloud.sdk.elb.v3.model.*;
 import org.springframework.beans.BeanUtils;
 
 import java.util.HashMap;
@@ -131,7 +133,7 @@ public class HuaweiApi {
                 },
                 ListInstancesResponse::getInstances,
                 (req, res) -> req.getLimit() <= res.getInstances().size(),
-                req -> req.setOffset(req.getOffset() + 1));
+                req -> req.setOffset((req.getOffset() + 1) * PageUtil.DefaultPageSize));
 
     }
 
@@ -156,7 +158,7 @@ public class HuaweiApi {
                 },
                 com.huaweicloud.sdk.dcs.v2.model.ListInstancesResponse::getInstances,
                 (req, res) -> req.getLimit() <= res.getInstances().size(),
-                req -> req.setOffset(req.getOffset() + 1));
+                req -> req.setOffset((req.getOffset() + 1) * PageUtil.DefaultPageSize));
     }
 
     /**
@@ -180,7 +182,7 @@ public class HuaweiApi {
                 },
                 com.huaweicloud.sdk.dds.v3.model.ListInstancesResponse::getInstances,
                 (req, res) -> req.getLimit() <= res.getInstances().size(),
-                req -> req.setOffset(req.getOffset() + 1));
+                req -> req.setOffset((req.getOffset() + 1) * PageUtil.DefaultPageSize));
     }
 
     /**
@@ -216,7 +218,7 @@ public class HuaweiApi {
     public static List<VolumeDetail> listDiskInstance(ListDiskInstanceRequest request) {
         EvsClient evsClient = request.getCredential().getEvsClient(request.getRegionId());
         request.setLimit(PageUtil.DefaultPageSize);
-        request.setOffset(PageUtil.DefaultCurrentPage);
+        request.setOffset(0);
         return PageUtil.page(request, req -> {
                     try {
                         return evsClient.listVolumes(request);
@@ -228,7 +230,7 @@ public class HuaweiApi {
                 },
                 ListVolumesResponse::getVolumes,
                 (req, res) -> req.getLimit() <= res.getVolumes().size(),
-                req -> req.setOffset(req.getOffset() + 1));
+                req -> req.setOffset((req.getOffset() + 1) * PageUtil.DefaultPageSize));
     }
 
     /**
