@@ -205,7 +205,7 @@ export const useUserStore = defineStore({
 
         const permissionStore = usePermissionStore();
         //刷新权限
-        await permissionStore.refreshPermissions();
+        await permissionStore.refreshPermissions(loading);
 
         return this.currentUser;
       } catch (err) {

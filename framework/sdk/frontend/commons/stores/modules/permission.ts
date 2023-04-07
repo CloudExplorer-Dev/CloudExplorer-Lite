@@ -3,6 +3,7 @@ import { useUserStore } from "./user";
 import { getCurrentUserPlainPermissions } from "@commons/api/permission";
 import { hasRolePermission } from "@commons/base-directives/hasPermission";
 import type { RequiredPermissions } from "@commons/api/menu/type";
+import type { Ref } from "vue";
 
 interface PermissionObject {
   permissions?: Array<string>;
@@ -19,7 +20,7 @@ export const usePermissionStore = defineStore({
     },
   },
   actions: {
-    async refreshPermissions() {
+    async refreshPermissions(loading?: Ref<boolean>) {
       //console.log("调用");
       const userStore = useUserStore();
       if (!userStore.isLogin) {
@@ -28,7 +29,7 @@ export const usePermissionStore = defineStore({
       if (!userStore.currentRole) {
         return;
       }
-      const permissions = (await getCurrentUserPlainPermissions()).data;
+      const permissions = (await getCurrentUserPlainPermissions(loading)).data;
       this.permissions = permissions ? permissions : [];
     },
     hasPermission(binding: any) {
