@@ -8,7 +8,7 @@ public enum AliyunOSType {
     AlibabaCloudLinux("Alibaba Cloud Linux"),
     AnolisOS("Anolis OS"),
     CentOS("CentOS"),
-    WindowsServer(" Windows Server"),
+    WindowsServer("Windows Server"),
     SUSE("SUSE"),
     Ubuntu("Ubuntu"),
     Debian("Debian"),
