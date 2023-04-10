@@ -1,5 +1,12 @@
 <script setup lang="ts">
-import { computed, onBeforeMount, onUnmounted, reactive, ref } from "vue";
+import {
+  computed,
+  onBeforeMount,
+  onMounted,
+  onUnmounted,
+  reactive,
+  ref,
+} from "vue";
 import { useRouter } from "vue-router";
 import { useUserStore } from "@commons/stores/modules/user";
 import type { FormInstance, FormRules } from "element-plus";
@@ -7,6 +14,7 @@ import type { LoginRequest } from "@commons/api/user/type";
 import { useI18n } from "vue-i18n";
 import _ from "lodash";
 import { ElMessage } from "element-plus";
+import { get } from "@commons/request";
 
 const { t } = useI18n();
 
@@ -84,6 +92,20 @@ const submitForm = (formEl: FormInstance | undefined) => {
     }
   });
 };
+
+const loginHint = ref();
+
+function getHint() {
+  if (import.meta.env.VITE_APP_NAME === "base") {
+    get("login-hint", {}, loading).then((res) => {
+      loginHint.value = res.data;
+    });
+  }
+}
+
+onMounted(() => {
+  getHint();
+});
 </script>
 
 <template>
@@ -133,6 +155,7 @@ const submitForm = (formEl: FormInstance | undefined) => {
                 <span>{{ $t("commons.btn.login") }}</span>
               </el-button>
             </div>
+            <div class="login-hint" v-html="loginHint"></div>
           </el-form>
         </el-col>
         <el-col :span="12">
@@ -176,6 +199,16 @@ const submitForm = (formEl: FormInstance | undefined) => {
   }
 
   .login-welcome {
+    margin-top: 12px;
+    font-style: normal;
+    font-weight: 400;
+    font-size: 14px;
+    line-height: 20px;
+    color: #646a73;
+    text-align: center;
+  }
+
+  .login-hint {
     margin-top: 12px;
     font-style: normal;
     font-weight: 400;

@@ -6,6 +6,7 @@ import com.fit2cloud.base.service.IBaseUserService;
 import com.fit2cloud.common.log.annotation.OperatedLog;
 import com.fit2cloud.common.log.constants.OperatedTypeEnum;
 import com.fit2cloud.common.log.constants.ResourceTypeEnum;
+import com.fit2cloud.common.utils.FileUtils;
 import com.fit2cloud.common.utils.JwtTokenUtils;
 import com.fit2cloud.controller.handler.ResultHolder;
 import com.fit2cloud.dto.UserDto;
@@ -29,6 +30,7 @@ import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Mono;
 
 import javax.annotation.Resource;
+import java.io.File;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -79,6 +81,15 @@ public class LoginController {
     @OperatedLog(resourceType = ResourceTypeEnum.SYSTEM, operated = OperatedTypeEnum.LOGOUT)
     public Mono<String> logout() {
         return Mono.just("test");
+    }
+
+    @GetMapping("login-hint")
+    public Mono<ResponseEntity<ResultHolder<Object>>> getHint() {
+        File versionFile = new File("/opt/cloudexplorer/conf/LOGIN_HINT");
+        String ceLoginHint = FileUtils.txt2String(versionFile);
+        return Mono.just(ResponseEntity.ok()
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(ResultHolder.success(ceLoginHint)));
     }
 
     @GetMapping("api/user/current")
