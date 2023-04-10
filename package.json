@@ -1,6 +1,6 @@
 {
   "name": "cloudexplorer-lite",
-  "version": "v0.4.0",
+  "version": "v0.4.1",
   "packageManager": "yarn@3.2.2",
   "private": true,
   "workspaces": [
