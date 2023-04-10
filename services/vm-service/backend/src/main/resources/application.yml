@@ -44,8 +44,8 @@ eureka:
   instance:
     metadata-map:
       order: 2
-      name_zh-cn: 云主机服务
-      name_zh-tw: 云主机服务
+      name_zh-cn: 云主机管理
+      name_zh-tw: 云主机管理
       name_en: Virtual Machine Service
       basePath: ${server.servlet.context-path}/
       icon: icon_ecs_outlined

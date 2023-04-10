@@ -1,5 +1,5 @@
 name: vm-service
 version: APP_VERSION
 port: APP_PORT
-display_name: 云主机服务
+display_name: 云主机管理
 icon: yunzhuji2
