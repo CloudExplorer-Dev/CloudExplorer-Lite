@@ -154,6 +154,7 @@ public class QueryUtil {
                         break;
                     case NOT_EXIST:
                         boolQueryBuilder.must(new Query.Builder().exists(new ExistsQuery.Builder().field(queryCondition.field).build()).build());
+                        break;
                     case WILDCARD:
                         boolQueryBuilder.must(new Query.Builder().wildcard(new WildcardQuery.Builder().field(queryCondition.field).wildcard("*" + queryCondition.value + "*").build()).build());
                         break;
