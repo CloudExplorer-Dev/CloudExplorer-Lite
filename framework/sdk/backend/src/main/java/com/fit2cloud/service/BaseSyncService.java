@@ -2,7 +2,6 @@ package com.fit2cloud.service;
 
 import com.baomidou.mybatisplus.core.conditions.Wrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
-import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.fit2cloud.base.entity.CloudAccount;
 import com.fit2cloud.base.entity.JobRecord;
@@ -19,6 +18,7 @@ import io.reactivex.rxjava3.functions.Consumer;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.SneakyThrows;
 import org.redisson.api.RLock;
 import org.redisson.api.RedissonClient;
 import org.springframework.stereotype.Service;
@@ -64,6 +64,7 @@ public abstract class BaseSyncService {
      * @param <T>               同步数据泛型
      * @param <P>               执行器泛型
      */
+    @SneakyThrows
     protected <T, P> void proxy(String cloudAccountId,
                                 String jobDescription,
                                 List<String> months,
@@ -80,10 +81,6 @@ public abstract class BaseSyncService {
             if (lock.tryLock()) {
                 CloudAccount cloudAccount = cloudAccountService.getById(cloudAccountId);
                 if (Objects.nonNull(cloudAccount)) {
-                    // 如果云账号无效 跳过执行
-                    if (!cloudAccount.getState()) {
-                        return;
-                    }
                     Credential credential = Credential.of(cloudAccount.getPlatform(), cloudAccount.getCredential());
                     // 如果云账号无效 跳过执行
                     if (!credential.verification()) {
@@ -104,6 +101,12 @@ public abstract class BaseSyncService {
                                 // 同步数据
                                 List<T> syncRecord = CommonUtil.exec(cloudProvider, params, execMethod);
                                 BiSaveBatchOrUpdateParams<T> tSaveBillBatchOrUpdateParams = new BiSaveBatchOrUpdateParams<>(cloudAccount, syncTime, params, syncRecord, jobRecord);
+                                // 因为账单数据量比较大,如果在同步的过程中删除了云账号,那么直接不进行插入并且跳过同步循环
+                                CloudAccount c = cloudAccountService.getById(cloudAccountId);
+                                if (Objects.isNull(c)) {
+                                    remote.accept(cloudAccountId);
+                                    break;
+                                }
                                 // 插入并且更新数据
                                 saveBatchOrUpdate.accept(tSaveBillBatchOrUpdateParams);
                                 // 记录同步日志
@@ -131,7 +134,12 @@ public abstract class BaseSyncService {
                 }
             }
         } finally {
-
+            CloudAccount c = cloudAccountService.getById(cloudAccountId);
+            if (Objects.isNull(c)) {
+                if (Objects.nonNull(remote)) {
+                    remote.accept(cloudAccountId);
+                }
+            }
             if (lock.isLocked()) {
                 lock.unlock();
             }
@@ -198,10 +206,6 @@ public abstract class BaseSyncService {
                 CloudAccount cloudAccount = cloudAccountService.getById(cloudAccountId);
 
                 if (Objects.nonNull(cloudAccount)) {
-                    // 如果云账号无效 跳过执行
-                    if (!cloudAccount.getState()) {
-                        return;
-                    }
                     Credential credential = Credential.of(cloudAccount.getPlatform(), cloudAccount.getCredential());
                     // 如果云账号无效 跳过执行
                     if (!credential.verification()) {
@@ -245,6 +249,12 @@ public abstract class BaseSyncService {
                 }
             }
         } finally {
+            // todo 同步中删除云账号,数据入库问题
+            CloudAccount cloudAccount = cloudAccountService.getById(cloudAccountId);
+            if (Objects.isNull(cloudAccount)) {
+                remote.run();
+            }
+            // 解锁
             if (lock.isLocked()) {
                 lock.unlock();
             }
