@@ -29,6 +29,7 @@ import com.fit2cloud.controller.response.ChartData;
 import com.fit2cloud.controller.response.TreeNode;
 import com.fit2cloud.dao.entity.OrgWorkspace;
 import com.fit2cloud.dao.mapper.OrgWorkspaceMapper;
+import com.fit2cloud.dto.AnalysisDiskDTO;
 import com.fit2cloud.dto.AnalysisServerDTO;
 import com.fit2cloud.dto.KeyValue;
 import com.fit2cloud.es.entity.PerfMetricMonitorData;
@@ -452,14 +453,18 @@ public class ServerAnalysisServiceImpl implements IServerAnalysisService {
         MPJLambdaWrapper<VmCloudServer> queryWrapper = addServerAnalysisQuery(request);
         queryWrapper.notIn(true,VmCloudServer::getInstanceStatus, List.of(SpecialAttributesConstants.StatusField.VM_DELETE,SpecialAttributesConstants.StatusField.FAILED));
         List<AnalysisServerDTO> vmList = baseVmCloudServerMapper.selectJoinList(AnalysisServerDTO.class,queryWrapper);
-        Integer unauthorizedNumber = vmList.size();
+        int unauthorizedNumber = 0;
+        if(CollectionUtils.isNotEmpty(vmList)){
+            unauthorizedNumber = vmList.size();
+        }
         List<TreeNode> workspaceList = workspaceSpread(request);
         if(request.isAnalysisWorkspace()){
-            if(workspaceList.size()>0){
+            if(unauthorizedNumber>0){
                 TreeNode unauthorizedNode = new TreeNode();
                 unauthorizedNode.setName("未授权");
                 unauthorizedNode.setId("unauthorized");
                 unauthorizedNode.setGroupName("workspace");
+                unauthorizedNode.setValue(unauthorizedNumber);
                 unauthorizedNode.setValue(( unauthorizedNumber - Integer.parseInt(String.valueOf(workspaceList.stream().mapToLong(TreeNode::getValue).sum()))));
                 workspaceList.add(unauthorizedNode);
             }
@@ -484,6 +489,15 @@ public class ServerAnalysisServiceImpl implements IServerAnalysisService {
         Map<String,List<TreeNode>> workspaceGroupByPid = workspaceList.stream().collect(Collectors.groupingBy(TreeNode::getPid));
         //查询所有组织，初始化为chart数据
         List<TreeNode> orgList = orgToTreeNode();
+        TreeNode unauthorizedNode = new TreeNode();
+        if(unauthorizedNumber>0){
+            unauthorizedNode.setName("未授权");
+            unauthorizedNode.setId("unauthorized");
+            unauthorizedNode.setGroupName("org");
+            unauthorizedNode.setValue(unauthorizedNumber);
+            result.put("all", List.of(unauthorizedNode));
+            result.put("tree", List.of(unauthorizedNode));
+        }
         if(CollectionUtils.isEmpty(orgList)){
             return result;
         }
@@ -520,10 +534,7 @@ public class ServerAnalysisServiceImpl implements IServerAnalysisService {
             v.setChildren(childrenList.stream().filter(c->c.getValue()>0).toList());
             childrenList.clear();
         });
-        TreeNode unauthorizedNode = new TreeNode();
-        unauthorizedNode.setName("未授权");
-        unauthorizedNode.setId("unauthorized");
-        unauthorizedNode.setGroupName("org");
+        //所有-已授权=未授权
         unauthorizedNode.setValue(( unauthorizedNumber - Integer.parseInt(String.valueOf(orgList.stream().mapToLong(TreeNode::getValue).sum()))));
         orgList.add(unauthorizedNode);
         //扁平数据

@@ -259,18 +259,21 @@ public class DiskAnalysisServiceImpl implements IDiskAnalysisService {
             queryWrapper.selectSum(VmCloudDisk::getSize,AnalysisDiskDTO::getValue);
         }
         List<AnalysisDiskDTO> diskList = baseVmCloudDiskMapper.selectJoinList(AnalysisDiskDTO.class, queryWrapper);
-        Integer unauthorizedNumber = diskList.stream().mapToInt(AnalysisDiskDTO::getValue).sum();
+        int unauthorizedNumber = 0;
+        if(CollectionUtils.isNotEmpty(diskList)){
+            unauthorizedNumber = diskList.stream().filter(Objects::nonNull).mapToInt(AnalysisDiskDTO::getValue).sum();
+        }
         List<TreeNode> workspaceList =  workspaceSpread(request);
         if(request.isAnalysisWorkspace()){
-            if(workspaceList.size()>0){
+            if(unauthorizedNumber>0){
                 TreeNode unauthorizedNode = new TreeNode();
                 unauthorizedNode.setName("未授权");
                 unauthorizedNode.setId("unauthorized");
                 unauthorizedNode.setGroupName("workspace");
+                unauthorizedNode.setValue(unauthorizedNumber);
                 unauthorizedNode.setValue(( unauthorizedNumber - Integer.parseInt(String.valueOf(workspaceList.stream().mapToLong(TreeNode::getValue).sum()))));
                 workspaceList.add(unauthorizedNode);
             }
-            //result.put("all",workspaceList);
             result.put("tree",workspaceList);
         }else{
             result = orgSpread(request,workspaceList,unauthorizedNumber);
@@ -292,6 +295,15 @@ public class DiskAnalysisServiceImpl implements IDiskAnalysisService {
         Map<String,List<TreeNode>> workspaceGroupByPid = workspaceList.stream().collect(Collectors.groupingBy(TreeNode::getPid));
         //查询所有组织，初始化为chart数据
         List<TreeNode> orgList = iServerAnalysisService.orgToTreeNode();
+        TreeNode unauthorizedNode = new TreeNode();
+        if(unauthorizedNumber>0){
+            unauthorizedNode.setName("未授权");
+            unauthorizedNode.setId("unauthorized");
+            unauthorizedNode.setGroupName("org");
+            unauthorizedNode.setValue(unauthorizedNumber);
+            result.put("all", List.of(unauthorizedNode));
+            result.put("tree", List.of(unauthorizedNode));
+        }
         if(CollectionUtils.isEmpty(orgList)){
             return result;
         }
@@ -328,10 +340,7 @@ public class DiskAnalysisServiceImpl implements IDiskAnalysisService {
             v.setChildren(childrenList.stream().filter(c->c.getValue()>0).toList());
             childrenList.clear();
         });
-        TreeNode unauthorizedNode = new TreeNode();
-        unauthorizedNode.setName("未授权");
-        unauthorizedNode.setId("unauthorized");
-        unauthorizedNode.setGroupName("org");
+        //所有-已授权=未授权
         unauthorizedNode.setValue(( unauthorizedNumber - Integer.parseInt(String.valueOf(orgList.stream().mapToLong(TreeNode::getValue).sum()))));
         orgList.add(unauthorizedNode);
         // 扁平数据
