@@ -42,10 +42,10 @@ export const useUserStore = defineStore({
       return state.userStoreObject?.user;
     },
     currentToken(state: any): string | null {
-      /*return state.userStoreObject?.token
+      return state.userStoreObject?.token
         ? state.userStoreObject?.token
-        : authStorage.getToken();*/
-      return authStorage.getToken();
+        : authStorage.getToken();
+      //return authStorage.getToken();
     },
     isLogin(state: any): boolean {
       return state.login;
