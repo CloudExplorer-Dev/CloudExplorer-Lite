@@ -138,10 +138,10 @@ const checkedId = computed({
 
 function changeParam(req: any) {
   getSearchParams(req);
-  emit("update:checkId", checkedId.value);
-  emit("change", checkedId.value);
-  if (checkedId.value !== undefined) {
-    socRef.value[checkedId.value - 1]?.getOptimizeSuggests();
+  emit("update:checkId", req.id);
+  emit("change", req.id);
+  if (req.id !== undefined) {
+    socRef.value[req.id - 1]?.getOptimizeSuggests();
   }
 }
 

@@ -4,7 +4,7 @@
     no-padding
     v-model:check-id="checkedId"
     checkable
-    showSettingIcon
+    :show-setting-icon="showSettingIcon"
     @change="selectChange"
     :req="searchParams"
     ref="optimizeDivRef"
@@ -154,6 +154,10 @@ import { useRouter } from "vue-router";
 import ServerOptimization from "@commons/business/base-layout/home-page/items/operation/ServerOptimization.vue";
 import _ from "lodash";
 import MicroAppRouterUtil from "@commons/router/MicroAppRouterUtil";
+import { usePermissionStore } from "@commons/stores/modules/permission";
+import { useUserStore } from "@commons/stores/modules/user";
+const permissionStore = usePermissionStore();
+const userStore = useUserStore();
 
 const optimizeDivRef = ref<InstanceType<typeof ServerOptimization> | null>();
 
@@ -281,6 +285,11 @@ const showDetail = (row: VmCloudServerVO) => {
     router
   );
 };
+const needRoles = ref<Array<string>>(["ADMIN"]);
+const showSettingIcon = computed<boolean>(
+    () =>
+        _.includes(needRoles.value, userStore.currentRole)
+);
 </script>
 
 <style scoped lang="scss">

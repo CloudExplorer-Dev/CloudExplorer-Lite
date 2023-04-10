@@ -4,7 +4,7 @@
    <resultMap id="BaseResultMap" type="com.fit2cloud.dao.entity.CloudAccount">
        <id column="id" property="id" />
        <result column="name" property="name"/>
-       <result column="credential" property="credential" typeHandler="com.fit2cloud.dao.handler.CredentialTypeHandler"/>
+       <result column="credential" property="credential" typeHandler="com.fit2cloud.base.handler.CredentialTypeHandler"/>
        <result column="platform" property="platform"  />
        <result column="create_time" property="createTime"  />
        <result column="update_time" property="updateTime"  />
@@ -26,7 +26,7 @@
     <resultMap id="CloudPageResultMap" type="com.fit2cloud.controller.response.cloud_account.CloudAccountResponse">
         <id column="id" property="id" />
         <result column="name" property="name"/>
-        <result column="credential" property="credential" typeHandler="com.fit2cloud.dao.handler.CredentialTypeHandler"/>
+        <result column="credential" property="credential" typeHandler="com.fit2cloud.base.handler.CredentialTypeHandler"/>
         <result column="platform" property="platform"  />
         <result column="state" property="state"  />
         <result column="status" property="status"  />
