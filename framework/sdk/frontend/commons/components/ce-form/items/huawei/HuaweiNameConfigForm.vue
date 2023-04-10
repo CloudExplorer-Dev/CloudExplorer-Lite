@@ -100,6 +100,7 @@ const activeTab = ref(0);
 watch(
   () => props.allData.count,
   (count) => {
+    activeTab.value = count-1;
     setServers(count);
   }
 );
