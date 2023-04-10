@@ -212,7 +212,7 @@ public class VsphereCloudProvider extends AbstractCloudProvider<VsphereCredentia
         List<Map<String, String>> result = new ArrayList<>();
         Map<String, String> map = new HashMap<>();
         map.put("id", "only-a-flag");
-        map.put("name", "与虚拟机同目录");
+        map.put("name", "与云主机同目录");
         result.add(map);
         map = new HashMap<>();
         map.put("id", "customize");
@@ -291,12 +291,12 @@ public class VsphereCloudProvider extends AbstractCloudProvider<VsphereCredentia
         return VsphereSyncCloudApi.getVmF2CDisks(JsonUtil.parseObject(req, VsphereDiskRequest.class));
     }
 
-    public List<VsphereHost> getHostCurrentResourceUsedInfo(String req){
-        return VsphereSyncCloudApi.getHostCurrentResourceUsedInfo(JsonUtil.parseObject(req,VsphereHostRequest.class));
+    public List<VsphereHost> getHostCurrentResourceUsedInfo(String req) {
+        return VsphereSyncCloudApi.getHostCurrentResourceUsedInfo(JsonUtil.parseObject(req, VsphereHostRequest.class));
     }
 
-    public List<VsphereDatastore> getDatastoreCurrentResourceUsedInfo(String req){
-        return VsphereSyncCloudApi.getDatastoreCurrentResourceUsedInfo(JsonUtil.parseObject(req,VsphereDatastoreRequest.class));
+    public List<VsphereDatastore> getDatastoreCurrentResourceUsedInfo(String req) {
+        return VsphereSyncCloudApi.getDatastoreCurrentResourceUsedInfo(JsonUtil.parseObject(req, VsphereDatastoreRequest.class));
     }
 
 }
