@@ -308,7 +308,8 @@ public class ServerAnalysisServiceImpl implements IServerAnalysisService {
      * 获取虚拟机最近一次的监控数据 CPU、内存
      * @param list 每页查询的虚拟机数据
      */
-    private void getVmPerfMetric(List<AnalysisServerDTO> list){
+    @Override
+    public void getVmPerfMetric(List<AnalysisServerDTO> list){
         List<String> instanceUuids = list.stream().map(AnalysisServerDTO::getInstanceUuid).filter(StringUtils::isNotEmpty).toList();
         try{
             Query query = getVmPerfMetricQuery(instanceUuids);
@@ -448,12 +449,24 @@ public class ServerAnalysisServiceImpl implements IServerAnalysisService {
         if(CollectionUtils.isEmpty(request.getAccountIds())){
             request.setAccountIds(currentUserResourceService.currentUserCloudAccountList().stream().map(CloudAccount::getId).toList());
         }
+        MPJLambdaWrapper<VmCloudServer> queryWrapper = addServerAnalysisQuery(request);
+        queryWrapper.notIn(true,VmCloudServer::getInstanceStatus, List.of(SpecialAttributesConstants.StatusField.VM_DELETE,SpecialAttributesConstants.StatusField.FAILED));
+        List<AnalysisServerDTO> vmList = baseVmCloudServerMapper.selectJoinList(AnalysisServerDTO.class,queryWrapper);
+        Integer unauthorizedNumber = vmList.size();
         List<TreeNode> workspaceList = workspaceSpread(request);
         if(request.isAnalysisWorkspace()){
+            if(workspaceList.size()>0){
+                TreeNode unauthorizedNode = new TreeNode();
+                unauthorizedNode.setName("未授权");
+                unauthorizedNode.setId("unauthorized");
+                unauthorizedNode.setGroupName("workspace");
+                unauthorizedNode.setValue(( unauthorizedNumber - Integer.parseInt(String.valueOf(workspaceList.stream().mapToLong(TreeNode::getValue).sum()))));
+                workspaceList.add(unauthorizedNode);
+            }
             result.put("all",workspaceList);
             result.put("tree",workspaceList);
         }else{
-            result = orgSpread(request,workspaceList);
+            result = orgSpread(request,workspaceList,unauthorizedNumber);
         }
         return result;
     }
@@ -461,7 +474,7 @@ public class ServerAnalysisServiceImpl implements IServerAnalysisService {
     /**
      * 组织分布
      */
-    private Map<String,List<TreeNode>> orgSpread(ResourceAnalysisRequest request, List<TreeNode> workspaceList){
+    private Map<String,List<TreeNode>> orgSpread(ResourceAnalysisRequest request, List<TreeNode> workspaceList, Integer unauthorizedNumber){
         Map<String,List<TreeNode>> result = new HashMap<>(1);
         result.put("all",new ArrayList<>());
         result.put("tree",new ArrayList<>());
@@ -507,6 +520,12 @@ public class ServerAnalysisServiceImpl implements IServerAnalysisService {
             v.setChildren(childrenList.stream().filter(c->c.getValue()>0).toList());
             childrenList.clear();
         });
+        TreeNode unauthorizedNode = new TreeNode();
+        unauthorizedNode.setName("未授权");
+        unauthorizedNode.setId("unauthorized");
+        unauthorizedNode.setGroupName("org");
+        unauthorizedNode.setValue(( unauthorizedNumber - Integer.parseInt(String.valueOf(orgList.stream().mapToLong(TreeNode::getValue).sum()))));
+        orgList.add(unauthorizedNode);
         //扁平数据
         result.put("all",orgList);
         // 获取所有父节点,pid为空表示顶级，或者pid不在当前集合中，则也作为顶级
@@ -536,7 +555,7 @@ public class ServerAnalysisServiceImpl implements IServerAnalysisService {
             return new ArrayList<>();
         }
         List<TreeNode> chartDateWorkspaceList = getTreeNodeValueData(request, workspaceIds,"workspace");
-        return chartDateWorkspaceList.stream().filter(v->v.getValue()!=0).toList();
+        return chartDateWorkspaceList.stream().filter(v->v.getValue()!=0).collect(Collectors.toList());
     }
 
     /**
@@ -587,7 +606,7 @@ public class ServerAnalysisServiceImpl implements IServerAnalysisService {
         return iBaseOrganizationService.list().stream()
                 .filter(v->checkSourceId(sourceIds,v.getId()))
                 .map(v->new TreeNode(v.getId(),v.getName(),0,"org",v.getPid()))
-                .toList();
+                .collect(Collectors.toList());
     }
 
     private boolean checkSourceId(List<String> sourceIds,String id){

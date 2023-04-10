@@ -28,4 +28,8 @@ public class AnalysisDiskDTO extends VmCloudDisk {
 
     private String createMonth;
     private String deleteMonth;
+    /**
+     * 统计个数或者size
+     */
+    private Integer value;
 }

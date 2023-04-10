@@ -60,5 +60,7 @@ public interface IServerAnalysisService {
 
     long countCloudServerByCloudAccount(String cloudAccountId);
 
+    void getVmPerfMetric(List<AnalysisServerDTO> list);
+
 
 }

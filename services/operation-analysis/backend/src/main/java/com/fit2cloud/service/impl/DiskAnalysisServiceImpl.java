@@ -252,12 +252,28 @@ public class DiskAnalysisServiceImpl implements IDiskAnalysisService {
                     .filter(v->StringUtils.isNotEmpty(v.getAccountId()))
                     .map(VmCloudDisk::getAccountId).distinct().toList());
         }
+        MPJLambdaWrapper<VmCloudDisk> queryWrapper = addDiskAnalysisQuery(request);
+        if(request.isStatisticalBlock()){
+            queryWrapper.selectCount(VmCloudDisk::getId,AnalysisDiskDTO::getValue);
+        }else{
+            queryWrapper.selectSum(VmCloudDisk::getSize,AnalysisDiskDTO::getValue);
+        }
+        List<AnalysisDiskDTO> diskList = baseVmCloudDiskMapper.selectJoinList(AnalysisDiskDTO.class, queryWrapper);
+        Integer unauthorizedNumber = diskList.stream().mapToInt(AnalysisDiskDTO::getValue).sum();
         List<TreeNode> workspaceList =  workspaceSpread(request);
         if(request.isAnalysisWorkspace()){
+            if(workspaceList.size()>0){
+                TreeNode unauthorizedNode = new TreeNode();
+                unauthorizedNode.setName("未授权");
+                unauthorizedNode.setId("unauthorized");
+                unauthorizedNode.setGroupName("workspace");
+                unauthorizedNode.setValue(( unauthorizedNumber - Integer.parseInt(String.valueOf(workspaceList.stream().mapToLong(TreeNode::getValue).sum()))));
+                workspaceList.add(unauthorizedNode);
+            }
             //result.put("all",workspaceList);
             result.put("tree",workspaceList);
         }else{
-            result = orgSpread(request,workspaceList);
+            result = orgSpread(request,workspaceList,unauthorizedNumber);
 
         }
         return result;
@@ -266,7 +282,7 @@ public class DiskAnalysisServiceImpl implements IDiskAnalysisService {
     /**
      * 组织上的分布
      */
-    private Map<String,List<TreeNode>> orgSpread(ResourceAnalysisRequest request, List<TreeNode> workspaceList){
+    private Map<String,List<TreeNode>> orgSpread(ResourceAnalysisRequest request, List<TreeNode> workspaceList, Integer unauthorizedNumber){
         Map<String,List<TreeNode>> result = new HashMap<>(2);
         result.put("all",new ArrayList<>());
         result.put("tree",new ArrayList<>());
@@ -312,6 +328,12 @@ public class DiskAnalysisServiceImpl implements IDiskAnalysisService {
             v.setChildren(childrenList.stream().filter(c->c.getValue()>0).toList());
             childrenList.clear();
         });
+        TreeNode unauthorizedNode = new TreeNode();
+        unauthorizedNode.setName("未授权");
+        unauthorizedNode.setId("unauthorized");
+        unauthorizedNode.setGroupName("org");
+        unauthorizedNode.setValue(( unauthorizedNumber - Integer.parseInt(String.valueOf(orgList.stream().mapToLong(TreeNode::getValue).sum()))));
+        orgList.add(unauthorizedNode);
         // 扁平数据
         result.put("all",orgList);
         // 获取所有父节点,pid为空表示顶级，或者pid不在当前集合中，则也作为顶级

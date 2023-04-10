@@ -2,7 +2,7 @@
   <div class="info-card">
     <el-row>
       <el-col :span="10">
-        <div class="title">云主机分布</div>
+        <div class="title">组织架构分布</div>
       </el-col>
       <el-col :span="14" style="text-align: right">
         <el-radio-group

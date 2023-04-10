@@ -26,6 +26,7 @@ import com.fit2cloud.controller.request.optimize.PageOptimizationRequest;
 import com.fit2cloud.dto.AnalysisServerDTO;
 import com.fit2cloud.service.IOptimizeAnalysisService;
 import com.fit2cloud.service.IPermissionService;
+import com.fit2cloud.service.IServerAnalysisService;
 import com.github.yulichang.wrapper.MPJLambdaWrapper;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -69,6 +70,8 @@ public class OptimizeAnalysisServiceImpl implements IOptimizeAnalysisService {
     private BaseRecycleBinMapper baseRecycleBinMapper;
     @Resource
     private CurrentUserResourceService currentUserResourceService;
+    @Resource
+    private IServerAnalysisService iServerAnalysisService;
 
     @Override
     public  IPage<AnalysisServerDTO> pageServer(PageOptimizationRequest request) {
@@ -158,6 +161,7 @@ public class OptimizeAnalysisServiceImpl implements IOptimizeAnalysisService {
                 }
                 vm.setContent(sj.toString());
             });
+            iServerAnalysisService.getVmPerfMetric(pageData.getRecords());
             return pageData;
         }
         return new Page<>();
@@ -209,6 +213,7 @@ public class OptimizeAnalysisServiceImpl implements IOptimizeAnalysisService {
                         }
                     }
                     );
+            iServerAnalysisService.getVmPerfMetric(pageData.getRecords());
             return pageData;
         }
         return new Page<>();
