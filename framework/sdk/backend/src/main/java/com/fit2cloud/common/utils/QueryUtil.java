@@ -84,11 +84,13 @@ public class QueryUtil {
                         break;
                     case GTE:
                         boolQueryBuilder.must(QueryBuilders.rangeQuery(queryCondition.field).gte(queryCondition.value));
+                        break;
                     case EQ:
                         boolQueryBuilder.must(QueryBuilders.termQuery(queryCondition.field, queryCondition.value));
                         break;
                     case LIKE:
                         boolQueryBuilder.must(QueryBuilders.matchQuery(queryCondition.field, queryCondition.value));
+                        break;
                     case NOT_EQ:
                         boolQueryBuilder.mustNot(QueryBuilders.matchPhraseQuery(queryCondition.field, queryCondition.value));
                         break;
