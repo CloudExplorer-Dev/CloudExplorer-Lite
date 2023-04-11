@@ -17,7 +17,6 @@ import com.fit2cloud.base.entity.JobRecord;
 import com.fit2cloud.base.entity.JobRecordResourceMapping;
 import com.fit2cloud.base.service.IBaseCloudAccountService;
 import com.fit2cloud.base.service.IBaseJobRecordResourceMappingService;
-import com.fit2cloud.common.constants.JobConstants;
 import com.fit2cloud.common.constants.JobStatusConstants;
 import com.fit2cloud.common.constants.JobTypeConstants;
 import com.fit2cloud.common.job_record.JobLink;
@@ -27,11 +26,10 @@ import com.fit2cloud.common.platform.credential.Credential;
 import com.fit2cloud.common.provider.exception.SkipPageException;
 import com.fit2cloud.common.provider.util.CommonUtil;
 import com.fit2cloud.common.utils.JsonUtil;
-import com.fit2cloud.common.utils.SpringUtil;
 import com.fit2cloud.constants.ResourceTypeConstants;
 import com.fit2cloud.constants.SyncDimensionConstants;
-import com.fit2cloud.controller.response.compliance_scan.SupportCloudAccountResourceResponse;
 import com.fit2cloud.dao.entity.ComplianceRule;
+import com.fit2cloud.dao.entity.ComplianceRuleGroup;
 import com.fit2cloud.dao.entity.ComplianceScanResourceResult;
 import com.fit2cloud.dao.entity.ComplianceScanResult;
 import com.fit2cloud.es.entity.ResourceInstance;
@@ -42,10 +40,9 @@ import io.reactivex.rxjava3.functions.Action;
 import lombok.SneakyThrows;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.keyvalue.DefaultKeyValue;
+import org.redisson.Redisson;
 import org.redisson.api.RLock;
 import org.springframework.data.elasticsearch.annotations.Document;
-import org.springframework.data.elasticsearch.client.elc.ElasticsearchTemplate;
-import org.springframework.data.elasticsearch.core.mapping.IndexCoordinates;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
@@ -54,8 +51,7 @@ import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
+import java.util.function.Supplier;
 
 /**
  * {@code @Author:张少虎}
@@ -76,7 +72,9 @@ public class SyncServiceImpl extends BaseSyncService implements ISyncService {
     @Resource
     private IBaseJobRecordResourceMappingService jobRecordResourceMappingService;
     @Resource
-    private ThreadPoolExecutor workThreadPool;
+    private IComplianceRuleGroupService complianceRuleGroupService;
+    @Resource
+    private Redisson redisson;
     @Resource
     private IComplianceScanResultService complianceScanResultService;
     @Resource
@@ -91,25 +89,18 @@ public class SyncServiceImpl extends BaseSyncService implements ISyncService {
         if (!lock.tryLock()) {
             return;
         }
-        CloudAccount cloudAccount = cloudAccountService.getById(cloudAccountId);
-        // 如果云账号没删除 没查询到
-        if (Objects.isNull(cloudAccount)) {
-            // 删除资源数据
-            deleteResourceDataByCloudAccountId(cloudAccountId);
-            // 删除定时任务
-            cloudAccountService.deleteJobByCloudAccountId(cloudAccountId);
-            return;
-        } else {
-            Credential credential = Credential.of(cloudAccount.getPlatform(), cloudAccount.getCredential());
-            // 如果云账号无效 修改状态 并且跳过执行
-            if (!credential.verification()) {
-                cloudAccount.setState(false);
-                cloudAccountService.updateById(cloudAccount);
+        try {
+
+            CloudAccount cloudAccount = cloudAccountService.getById(cloudAccountId);
+            // 如果云账号没删除 没查询到
+            if (Objects.isNull(cloudAccount)) {
+                // 删除资源数据
+                deleteResourceDataByCloudAccountId(cloudAccountId);
+                // 删除定时任务
+                cloudAccountService.deleteJobByCloudAccountId(cloudAccountId);
                 return;
             }
-        }
-        try {
-            LocalDateTime syncTime = getSyncTime();
+
             ArrayList<ResourceInstance> resourceInstancesAll = new ArrayList<>();
             Class<? extends ICloudProvider> iCloudProviderClazz = ICloudProvider.of(cloudAccount.getPlatform());
             List<DefaultKeyValue<ResourceTypeConstants, SyncDimensionConstants>> map = CommonUtil.exec(iCloudProviderClazz, ICloudProvider::getResourceSyncDimensionConstants);
@@ -118,7 +109,20 @@ public class SyncServiceImpl extends BaseSyncService implements ISyncService {
             if (first.isEmpty()) {
                 return;
             }
+            LocalDateTime syncTime = getSyncTime();
             JobRecord jobRecord = initJobRecord("扫描" + instanceType.getMessage(), syncTime, cloudAccountId, instanceType);
+            // todo 校验云账号
+            if (!proxyJob(jobRecord, new JobLink("校验云账号", JobLinkTypeConstants.VERIFICATION_CLOUD_ACCOUNT), () -> verification(cloudAccount), null)) {
+                // todo 更新缓存
+                proxyJob(jobRecord, new JobLink("扫描历史数据", JobLinkTypeConstants.SYSTEM_SAVE_DATA), () -> scan(instanceType, cloudAccountId), null);
+                // todo 更新扫描时间
+                proxyJob(jobRecord, new JobLink("更新扫描时间", JobLinkTypeConstants.SYSTEM_SAVE_DATA), () ->
+                                complianceRuleService.update(new LambdaUpdateWrapper<ComplianceRule>().eq(ComplianceRule::getResourceType, instanceType.name()).set(ComplianceRule::getUpdateTime, syncTime))
+                        , null);
+                jobRecord.setStatus(JobStatusConstants.FAILED);
+                updateJobRecord(jobRecord, JobRecordParam.success(new JobLink("任务执行结束", JobLinkTypeConstants.JOB_END), null));
+                return;
+            }
             SyncDimensionConstants syncDimensionConstants = first.get().getValue();
             List<Map<String, Object>> dimension = syncDimensionConstants.getDimensionExecParams().apply(cloudAccount, null);
             for (Map<String, Object> execParams : dimension) {
@@ -150,11 +154,26 @@ public class SyncServiceImpl extends BaseSyncService implements ISyncService {
             jobRecord.setStatus(jobRecordStatus);
             updateJobRecord(jobRecord, JobRecordParam.success(new JobLink("任务执行结束", JobLinkTypeConstants.JOB_END), null));
         } finally {
+            // 清除不存在的云账号数据
+            deleteNotFountCloudAccountData();
             if (lock.isLocked()) {
                 lock.unlock();
             }
-            // 清除不存在的云账号数据
-            deleteNotFountCloudAccountData();
+        }
+    }
+
+    /**
+     * 校验云账号
+     *
+     * @param cloudAccount 云账号对象
+     */
+    private void verification(CloudAccount cloudAccount) {
+        Credential credential = Credential.of(cloudAccount.getPlatform(), cloudAccount.getCredential());
+        // 如果云账号无效 修改状态 并且跳过执行
+        if (!credential.verification()) {
+            cloudAccount.setState(false);
+            cloudAccountService.updateById(cloudAccount);
+            throw new RuntimeException("云账号无效!");
         }
     }
 
@@ -248,40 +267,80 @@ public class SyncServiceImpl extends BaseSyncService implements ISyncService {
      * @param runnable  任务执行器
      * @param jobParams 当前环节额外参数
      */
-    public void proxyJob(JobRecord record, JobLink jobLink, Action runnable, Map<String, Object> jobParams) {
+    public boolean proxyJob(JobRecord record, JobLink jobLink, Action runnable, Map<String, Object> jobParams) {
         try {
             runnable.run();
             updateJobRecord(record, JobRecordParam.success(jobLink, jobParams));
+            return true;
         } catch (Throwable e) {
             updateJobRecord(record, JobRecordParam.error(jobLink, e.getMessage()));
+            return false;
         }
     }
 
     @Override
-    public void syncInstance(String cloudAccountId, List<String> instanceType) {
-        // todo 每四个任务开启一个异步任务执行
-        List<List<String>> jobs = splitArr(instanceType, 4);
-        for (List<String> job : jobs) {
-            CloudAccountSyncJob.SyncScanJob.run((() -> {
-                for (String type : job) {
-                    syncInstance(cloudAccountId, ResourceTypeConstants.valueOf(type));
-                }
-            }));
+    public void syncInstanceByInstanceType(String cloudAccountId, List<String> instanceType) {
+        for (String type : instanceType) {
+            syncInstance(cloudAccountId, ResourceTypeConstants.valueOf(type));
         }
+    }
+
+    @Override
+    public void syncInstance(String cloudAccountId, List<String> ruleGroupId) {
+        syncInstance(cloudAccountId, ruleGroupId, () -> cloudAccountId + ":RULE_GROUP");
+    }
+
+
+    public void syncInstance(String cloudAccountId, List<String> ruleGroupId, Supplier<String> getLockKey) {
+        RLock lock = redisson.getLock(getLockKey.get());
+        if (lock.isLocked()) {
+            return;
+        }
+        CloudAccountSyncJob.SyncScanJob.run(() -> {
+            if (lock.tryLock()) {
+                try {
+                    CloudAccount cloudAccount = cloudAccountService.getById(cloudAccountId);
+                    // 获取同步资源
+                    List<String> instanceTypes = complianceRuleService.list(new LambdaQueryWrapper<ComplianceRule>()
+                                    .in(ComplianceRule::getRuleGroupId, ruleGroupId)
+                                    .eq(Objects.nonNull(cloudAccount), ComplianceRule::getPlatform, Objects.nonNull(cloudAccount) ? cloudAccount.getPlatform() : null))
+                            .stream()
+                            .map(ComplianceRule::getResourceType)
+                            .distinct()
+                            .toList();
+
+                    // 一个云账号最多使用三个线程
+                    List<List<String>> lists = split(instanceTypes, 3);
+                    List<CompletableFuture<Void>> completableFutures = lists.stream()
+                            .filter(CollectionUtils::isNotEmpty)
+                            .map(group -> CloudAccountSyncJob.SyncScanJob.run(() -> syncInstanceByInstanceType(cloudAccountId, group)))
+                            .toList();
+                    completableFutures.forEach(CompletableFuture::join);
+                } finally {
+                    if (lock.isLocked()) {
+                        lock.unlock();
+                    }
+                }
+            }
+        });
+
     }
 
     @Override
     public void syncInstance(String cloudAccountId) {
-        IComplianceScanService complianceScanService = SpringUtil.getBean(IComplianceScanService.class);
-        List<SupportCloudAccountResourceResponse> supportCloudAccountResourceResponses = complianceScanService.listSupportCloudAccountResource();
-        for (SupportCloudAccountResourceResponse supportCloudAccountResource : supportCloudAccountResourceResponses) {
-            if (supportCloudAccountResource.getCloudAccount().getId().equals(cloudAccountId)) {
-                syncInstance(supportCloudAccountResource.getCloudAccount().getId(), supportCloudAccountResource.getResourceTypes()
-                        .stream().map(DefaultKeyValue::getValue).toList());
-            }
-        }
+        List<ComplianceRuleGroup> list = complianceRuleGroupService.list();
+        // 指定云账号同步的 与 指定云账号和规则组同步 不适用一个lock
+        syncInstance(cloudAccountId, list.stream().map(ComplianceRuleGroup::getId).toList(), () -> cloudAccountId);
     }
 
+    /**
+     * 指定多少个数据拆分为一个数组
+     *
+     * @param array 原始数据
+     * @param num   指定数据
+     * @param <T>   数据泛型
+     * @return 拆分后的二维数组
+     */
     private <T> List<List<T>> splitArr(List<T> array, int num) {
         int count = array.size() % num == 0 ? array.size() / num : array.size() / num + 1;
         List<List<T>> arrayList = new ArrayList<>();
@@ -298,6 +357,24 @@ public class SyncServiceImpl extends BaseSyncService implements ISyncService {
         return arrayList;
     }
 
+    /**
+     * 拆分为指定长度的二维数组
+     *
+     * @param sourceDataList 元数据
+     * @param splitNum       指定的长度
+     * @param <T>            数据泛型
+     * @return 拆分后的二维数组
+     */
+    private <T> List<List<T>> split(List<T> sourceDataList, int splitNum) {
+        List<List<T>> splitRes = new ArrayList<>();
+        for (int i = 0; i < splitNum; i++) {
+            splitRes.add(new ArrayList<>());
+        }
+        for (int index = 0; index < sourceDataList.size(); index++) {
+            splitRes.get(index % splitNum).add(sourceDataList.get(index));
+        }
+        return splitRes;
+    }
 
     /**
      * 初始化任务记录

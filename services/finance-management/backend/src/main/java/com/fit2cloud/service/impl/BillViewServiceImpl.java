@@ -155,7 +155,7 @@ public class BillViewServiceImpl implements BillViewService {
     private NativeQuery getSearchBillViewQueryByRule(BillRule billRule, String monthValue, Integer historyNum, String realTotalCostKey) {
         // todo 根据趋势月份构建查询条件
         // 构建区域查询
-        String startTime = MonthUtil.getStartTime(CalendarConstants.MONTH, historyNum - 1);
+        String startTime = MonthUtil.getStartTime(CalendarConstants.MONTH, historyNum - 1, monthValue);
         Query q = new RangeQuery.Builder()
                 .gte(JsonData.of(startTime))
                 .lt(StringUtils.isEmpty(monthValue) ? null : JsonData.of(MonthUtil.addCalender(CalendarConstants.MONTH, monthValue)))

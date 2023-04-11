@@ -189,8 +189,7 @@ public class OptimizeAnalysisServiceImpl implements IOptimizeAnalysisService {
             recycleBinServer = recycleBinServer.stream().filter(v->v.getInstanceName().contains(request.getInstanceName())).toList();
         }
         if(CollectionUtils.isNotEmpty(recycleBinServer)){
-            List<String> sourceIds = permissionService.getSourceIds();
-            recycleBinServerIds.addAll(recycleBinServer.stream().filter(v->sourceIds.contains(v.getSourceId())).filter(v->!StringUtils.equalsIgnoreCase("Deleted",v.getInstanceStatus())).map(VmCloudServer::getId).toList());
+            recycleBinServerIds.addAll(recycleBinServer.stream().filter(this::filterRecycleBinServer).filter(v->!StringUtils.equalsIgnoreCase("Deleted",v.getInstanceStatus())).map(VmCloudServer::getId).toList());
         }
         OptimizationConstants optimizationConstants = OptimizationConstants.getByCode(request.getOptimizeSuggest());
         Page<AnalysisServerDTO> page = PageUtil.of(request, AnalysisServerDTO.class, null, true);
@@ -217,6 +216,23 @@ public class OptimizeAnalysisServiceImpl implements IOptimizeAnalysisService {
             return pageData;
         }
         return new Page<>();
+    }
+
+    /**
+     * 过滤回收站云主机
+     * 是否拥有资源相同目录权限
+     * 自己的资源
+     * 管理员
+     */
+    private boolean filterRecycleBinServer(VmCloudServer server){
+        List<String> sourceIds = permissionService.getSourceIds();
+        //拥有权限
+        boolean source = sourceIds.contains(server.getSourceId());
+        //自己的机器
+        boolean self = StringUtils.equalsIgnoreCase(server.getApplyUser(),CurrentUserUtils.getUser().getId());
+        //管理员
+        boolean isAdmin = CurrentUserUtils.isAdmin();
+        return source || self || isAdmin;
     }
 
 
@@ -326,7 +342,7 @@ public class OptimizeAnalysisServiceImpl implements IOptimizeAnalysisService {
         Map<String,Boolean> compareResult = new HashMap<>(1);
         compareResult.put(SpecialAttributesConstants.ResourceField.MEMORY,false);
         if(!memoryIsNull){
-            if(request.isCpuMaxRate()){
+            if(request.isMemoryMaxRate()){
                 compareResult.put(SpecialAttributesConstants.ResourceField.MEMORY,vo.getMemoryMaximum().compareTo(BigDecimal.valueOf(request.getMemoryRate())) == containValue.get(isDerating));
             }else{
                 compareResult.put(SpecialAttributesConstants.ResourceField.MEMORY,vo.getMemoryAverage().compareTo(BigDecimal.valueOf(request.getMemoryRate())) == containValue.get(isDerating));

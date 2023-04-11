@@ -54,8 +54,6 @@ public class ComplianceRuleServiceImpl extends ServiceImpl<ComplianceRuleMapper,
     private IComplianceScanResultService complianceScanResultService;
     @Resource
     private IComplianceScanResourceResultService complianceScanResourceResultService;
-    @Resource
-    private IBaseCloudAccountService cloudAccountService;
 
     @Override
     public List<ComplianceRuleSearchFieldResponse> listInstanceSearchField(String platform, String resourceType) {
@@ -119,6 +117,8 @@ public class ComplianceRuleServiceImpl extends ServiceImpl<ComplianceRuleMapper,
         }
         ComplianceRuleResponse complianceRuleResponse = new ComplianceRuleResponse();
         BeanUtils.copyProperties(complianceRule, complianceRuleResponse);
+        IComplianceScanService complianceScanService = SpringUtil.getBean(IComplianceScanService.class);
+        complianceScanService.scanComplianceOrSave(complianceRule);
         return complianceRuleResponse;
     }
 

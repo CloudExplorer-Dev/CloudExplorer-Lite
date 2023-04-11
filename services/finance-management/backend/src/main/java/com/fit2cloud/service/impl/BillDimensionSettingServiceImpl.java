@@ -52,6 +52,7 @@ import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
 import java.io.IOException;
+import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -135,6 +136,7 @@ public class BillDimensionSettingServiceImpl extends ServiceImpl<BillDimensionSe
             return billDimensionSetting;
         } else {
             res.setAuthorizeRule(authorizeRule);
+            res.setUpdateTime(LocalDateTime.now());
             updateById(res);
         }
 
