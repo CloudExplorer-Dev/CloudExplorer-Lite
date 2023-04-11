@@ -253,7 +253,7 @@ const barSeriesItemStyle = {
   borderRadius: [2, 2, 0, 0],
 };
 const barSeriesLabel = {
-  show: false, //开启显示
+  show: true, //开启显示
   position: "top", //在上方显示
   //数值样式
   color: "black",
