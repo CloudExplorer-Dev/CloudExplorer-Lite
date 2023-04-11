@@ -16,15 +16,15 @@ CloudExplorer-Lite 脱胎于飞致云创始软件产品 CloudExplorer 多云管�
 
 ## CloudExplorer-Lite 产品特性
 
-**多云对接**
+- **多云对接**
   
 CloudExplorer-Lite支持对接纳管市场上主流的公有云和私有云基础设施，包括阿里云、腾讯云、华为云、VMware、OpenStack等。
 
-**开箱即用**
+- **开箱即用**
 
 CloudExplorer-Lite提供了诸多开箱即用的功能，比如云主机管理、云账单、运营分析和安全合规等，能够满足大部分企业在云基础设施管理方面的基本需求。
 
-**扩展能力**
+- **扩展能力**
 
 CloudExplorer Lite提供了强大的多租户体系和模块化能力，可以满足企业的定制化需求。
 
