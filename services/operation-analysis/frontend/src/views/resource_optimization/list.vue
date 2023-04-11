@@ -286,9 +286,8 @@ const showDetail = (row: VmCloudServerVO) => {
   );
 };
 const needRoles = ref<Array<string>>(["ADMIN"]);
-const showSettingIcon = computed<boolean>(
-    () =>
-        _.includes(needRoles.value, userStore.currentRole)
+const showSettingIcon = computed<boolean>(() =>
+  _.includes(needRoles.value, userStore.currentRole)
 );
 </script>
 

@@ -57,6 +57,7 @@ const loading = ref<boolean>(false);
 const apiData = ref<any>();
 const showBack = ref<boolean>(false);
 const parentItem = ref<any>({});
+const options = ref<ECBasicOption>();
 const optionsTree = ref<any>();
 const getSpreadByDepartmentData = () => {
   showBack.value = false;
@@ -73,14 +74,15 @@ const getSpreadByDepartmentData = () => {
     (res) => {
       apiData.value = res.data;
       optionsTree.value = undefined;
+      options.value = getOptions();
     }
   );
 };
-const options = computed<ECBasicOption>(() => {
+const getOptions = () => {
   const obj = apiData.value;
   const options = _.cloneDeep(defaultSpeedOptions);
   if (obj) {
-    if(!optionsTree.value){
+    if (!optionsTree.value) {
       optionsTree.value = _.cloneDeep(apiData.value.tree);
     }
     const tree = optionsTree.value;
@@ -124,7 +126,7 @@ const options = computed<ECBasicOption>(() => {
     _.set(options, "dataZoom.[0].show", showEcharts);
   }
   return options;
-});
+};
 
 watch(
   props,
@@ -135,21 +137,24 @@ watch(
 );
 
 const handleBackClick = () => {
-  if(!parentItem.value){
+  if (!parentItem.value) {
     showBack.value = false;
     parentItem.value = undefined;
     optionsTree.value = undefined;
-  }else{
-    const ppItem = apiData.value.all.find((v: any) => v.id === parentItem.value.pid);
+  } else {
+    const ppItem = apiData.value.all.find(
+      (v: any) => v.id === parentItem.value.pid
+    );
     if (parentItem.value && ppItem) {
       optionsTree.value = ppItem.children;
       parentItem.value = ppItem;
-    }else{
+    } else {
       showBack.value = false;
       parentItem.value = undefined;
       optionsTree.value = undefined;
     }
   }
+  options.value = getOptions();
 };
 const onClick = (params: any) => {
   const item = apiData.value.all.find((v: any) => v.name === params.name);
@@ -159,6 +164,7 @@ const onClick = (params: any) => {
     showBack.value = true;
     parentItem.value = item;
     optionsTree.value = children;
+    options.value = getOptions();
   }
 };
 
