@@ -30,7 +30,7 @@
       <div
         style="margin: 14px 0"
         v-for="(rule, index) in modelValue.rules"
-        :key="rule.field"
+        :key="index"
       >
         <compliance_rule_item
           ref="ruleItem"

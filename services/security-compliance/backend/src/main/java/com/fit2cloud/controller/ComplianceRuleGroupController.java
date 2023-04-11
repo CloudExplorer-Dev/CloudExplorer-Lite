@@ -42,7 +42,7 @@ public class ComplianceRuleGroupController {
 
     @GetMapping
     @ApiOperation("获取所有规则组")
-    @PreAuthorize("hasAnyCePermission('RULE:READ')")
+    @PreAuthorize("hasAnyCePermission('RULE:READ','SCAN:READ')")
     public ResultHolder<List<ComplianceRuleGroupResponse>> list() {
         return ResultHolder.success(complianceRuleGroupService.list().stream().map(item -> {
             ComplianceRuleGroupResponse complianceRuleGroupResponse = new ComplianceRuleGroupResponse();
@@ -53,7 +53,7 @@ public class ComplianceRuleGroupController {
 
     @GetMapping("/{complianceRuleGroupId}")
     @ApiOperation("根据合规规则组id获取规则组信息")
-    @PreAuthorize("hasAnyCePermission('RULE:READ')")
+    @PreAuthorize("hasAnyCePermission('RULE:READ','SCAN:READ')")
     public ResultHolder<ComplianceRuleGroupResponse> one(@PathVariable("complianceRuleGroupId") String complianceRuleGroupId) {
         ComplianceRuleGroup complianceRuleGroup = complianceRuleGroupService.getById(complianceRuleGroupId);
         ComplianceRuleGroupResponse complianceRuleGroupResponse = new ComplianceRuleGroupResponse();

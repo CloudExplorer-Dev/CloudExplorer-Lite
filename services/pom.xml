@@ -19,6 +19,7 @@
         <module>finance-management</module>
         <module>security-compliance</module>
         <module>operation-analysis</module>
+        <!--NEW_MODULE_PLACE_HOLDER-->
     </modules>
 
 </project>

@@ -5,8 +5,7 @@
   "private": true,
   "workspaces": [
     "framework/**",
-    "services/**",
-    "extends/**"
+    "services/**"
   ],
   "scripts": {
     "dev": "yarn workspaces foreach -pvi run dev",

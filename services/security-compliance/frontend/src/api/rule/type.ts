@@ -175,6 +175,17 @@ interface UpdateComplianceRuleRequest {
    */
   enable?: boolean;
 }
+
+interface SupportPlatformResourceResponse {
+  /**
+   * 云账号
+   */
+  platform: string;
+  /**
+   * 资源类型
+   */
+  resourceTypes: Array<KeyValue<string, string>>;
+}
 export type {
   Rules,
   Rule,
@@ -182,4 +193,5 @@ export type {
   InstanceSearchField,
   SaveComplianceRuleRequest,
   UpdateComplianceRuleRequest,
+  SupportPlatformResourceResponse,
 };

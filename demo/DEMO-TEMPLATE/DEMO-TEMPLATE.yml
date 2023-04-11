@@ -1,0 +1,5 @@
+name: DEMO-TEMPLATE
+version: APP_VERSION
+port: APP_PORT
+display_name: DEMO-DISPLAY-NAME
+icon: project_space
