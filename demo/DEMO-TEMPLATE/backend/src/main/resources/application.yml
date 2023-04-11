@@ -1,0 +1,51 @@
+spring:
+  application:
+    name: DEMO-TEMPLATE
+  mvc:
+    pathmatch:
+       matching-strategy: ANT_PATH_MATCHER
+  #       国际化配置
+  messages:
+    basename: i18n.messages,i18n.commons
+    encoding: UTF-8
+  quartz:
+    jdbc:
+      initialize-schema: always
+      schema: classpath:/quartz/tables.sql
+    properties:
+      org:
+        quartz:
+          scheduler:
+            instanceName: ${spring.application.name}
+            instanceId: ${spring.application.name}
+  flyway:
+    enabled: true
+    table: db_DEMO-TEMPLATE_version
+
+server:
+  port: @service.port@
+  servlet:
+    context-path: /${spring.application.name}
+
+#监控，访问路径 {ip}:{port}/actuator
+management:
+  server:
+    port: @service.management.port@
+  health:
+      elasticsearch:
+        enabled: false
+
+logging:
+  file:
+    path: @ce.log.base.dir@/${spring.application.name}
+  config: classpath:logback-spring.xml
+
+eureka:
+  instance:
+    metadata-map:
+      order: 10 #影响菜单排序，根据需要修改
+      name_zh-cn: DEMO-DISPLAY-NAME
+      name_zh-tw: DEMO-DISPLAY-NAME-TW
+      name_en: DEMO-DISPLAY-NAME-EN
+      basePath: ${server.servlet.context-path}/
+      icon: project_space #模块icon，根据需要修改

@@ -10,16 +10,17 @@
     </parent>
 
     <packaging>pom</packaging>
-    <artifactId>services</artifactId>
+    <artifactId>demo</artifactId>
     <version>${revision}</version>
     <description>CE services</description>
 
-    <modules>
-        <module>vm-service</module>
-        <module>finance-management</module>
-        <module>security-compliance</module>
-        <module>operation-analysis</module>
-        <!--NEW_MODULE_PLACE_HOLDER-->
-    </modules>
+    <dependencies>
+        <dependency>
+            <groupId>com.fit2cloud</groupId>
+            <artifactId>sdk</artifactId>
+            <version>${revision}</version>
+        </dependency>
+    </dependencies>
+
 
 </project>
