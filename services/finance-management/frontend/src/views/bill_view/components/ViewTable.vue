@@ -129,9 +129,9 @@ const sort = (
   order: "ascending" | "descending"
 ) => {
   if (order === "ascending") {
-    viewData.sort((pre, next) => next[field] - pre[field]);
+    viewData.sort((pre, next) => next[field].value - pre[field].value);
   } else {
-    viewData.sort((pre, next) => pre[field] - next[field]);
+    viewData.sort((pre, next) => pre[field].value - next[field].value);
   }
 };
 /**
