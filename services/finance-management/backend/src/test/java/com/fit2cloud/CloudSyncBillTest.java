@@ -57,6 +57,11 @@ public class CloudSyncBillTest {
     IBillDimensionSettingService iBillDimensionSettingService;
 
     @Test
+    public void auth() {
+        iBillDimensionSettingService.authorEditSetting();
+    }
+
+    @Test
     public void sync() {
         CompletableFuture<Void> jobhw = CompletableFuture.runAsync(() -> {
             syncService.syncBill("1ee96fe1a53705d20913cde12defab31", "2022-09", "2022-08", "2022-07", "2022-06", "2022-05", "2022-04", "2022-03");
@@ -98,17 +103,9 @@ public class CloudSyncBillTest {
         System.out.println(group);
     }
 
-    @Test
-    public void test() {
-        BigDecimal month = billViewService.getBillExpenses("MONTH", "2022-10", new BillExpensesRequest());
-        System.out.println(month.doubleValue());
-    }
 
-    @Test
-    public void test1() {
-        List<Trend> month = billViewService.getTrend("YEAR", 10, new HistoryTrendRequest());
-        System.out.println(month);
-    }
+
+
 
     @Test
     public void saveRule() {

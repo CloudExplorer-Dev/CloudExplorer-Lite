@@ -6,10 +6,7 @@ import com.fit2cloud.common.scheduler.util.CronUtils;
 import com.fit2cloud.dto.job.JobSetting;
 import com.fit2cloud.quartz.CloudAccountSyncJob;
 
-import java.util.Arrays;
-import java.util.Calendar;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 
 /**
  * @Author:张少虎
@@ -39,6 +36,10 @@ public class JobConstants implements JobSettingConfig.JobConfig {
      * 同步账单
      */
     private static final String SYNC_BILL = "SYNC_BILL";
+    /**
+     * 账单授权定时任务
+     */
+    private static final String AUTH_BILL = "AUTH_BILL";
 
     @Override
     public List<JobSetting> listJobInitSetting() {
@@ -47,6 +48,8 @@ public class JobConstants implements JobSettingConfig.JobConfig {
                 com.fit2cloud.common.constants.JobConstants.Group.CLOUD_ACCOUNT_BILL_SYNC_GROUP.name(),
                 "同步账单", null, CronUtils.create(new Integer[]{0}, Calendar.HOUR),
                 p -> Arrays.stream(PlatformConstants.values()).filter(platformConstants -> platformConstants.name().equals(p)).map(PlatformConstants::getBillClass).allMatch(Objects::nonNull), (p) -> false, (p) -> false);
-        return List.of(syncBill);
+        JobSetting authBill = new JobSetting(CloudAccountSyncJob.BillAuthJob.class, AUTH_BILL, com.fit2cloud.common.constants.JobConstants.Group.SYSTEM_GROUP.name()
+                , "账单授权", Map.of(), "0 0 0 * * ? *", s -> false, s -> false, s -> false);
+        return List.of(syncBill, authBill);
     }
 }

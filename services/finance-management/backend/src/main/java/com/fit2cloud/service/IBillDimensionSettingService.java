@@ -70,11 +70,25 @@ public interface IBillDimensionSettingService extends IService<BillDimensionSett
     /**
      * 授权
      *
+     * @param billDimensionSetting 授权规则对象
+     * @param month                月份
+     * @param cloudAccountId       云账号id
+     */
+    void authorize(BillDimensionSetting billDimensionSetting, String month, String cloudAccountId);
+
+    /**
+     * 授权
+     *
      * @param billDimensionSettingId 授权规则id
      * @param month                  月份 yyyy-MM
      * @param cloudAccountId         云账号id
      */
     void authorize(String billDimensionSettingId, String month, String cloudAccountId);
+
+    /**
+     * 授权编辑过的规则
+     */
+    void authorEditSetting();
 
     /**
      * 清除授权
@@ -84,6 +98,9 @@ public interface IBillDimensionSettingService extends IService<BillDimensionSett
      */
     void clearAuthorize(String authorizeId, AuthorizeTypeConstants type);
 
+    void clearAuthorize(String billDimensionSettingId, String month, String cloudAccountId);
+
+    void clearAuthorize(BillDimensionSetting billDimensionSetting, String month, String cloudAccountId);
 
     /**
      * 获取授权的资源

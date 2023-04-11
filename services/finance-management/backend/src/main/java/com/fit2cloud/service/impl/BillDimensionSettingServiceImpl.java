@@ -49,6 +49,7 @@ import org.springframework.data.elasticsearch.client.elc.ElasticsearchTemplate;
 import org.springframework.data.elasticsearch.client.elc.NativeQueryBuilder;
 import org.springframework.data.elasticsearch.core.SearchHits;
 import org.springframework.stereotype.Service;
+import org.springframework.validation.annotation.Validated;
 
 import javax.annotation.Resource;
 import java.io.IOException;
@@ -132,11 +133,13 @@ public class BillDimensionSettingServiceImpl extends ServiceImpl<BillDimensionSe
             billDimensionSetting.setAuthorizeId(authorizeId);
             billDimensionSetting.setType(AuthorizeTypeConstants.valueOf(type));
             billDimensionSetting.setAuthorizeRule(authorizeRule);
+            billDimensionSetting.setUpdateFlag(true);
             save(billDimensionSetting);
             return billDimensionSetting;
         } else {
             res.setAuthorizeRule(authorizeRule);
             res.setUpdateTime(LocalDateTime.now());
+            res.setUpdateFlag(true);
             updateById(res);
         }
 
@@ -165,7 +168,8 @@ public class BillDimensionSettingServiceImpl extends ServiceImpl<BillDimensionSe
      * @param month                月份
      * @param cloudAccountId       云账号id
      */
-    private void authorize(BillDimensionSetting billDimensionSetting, String month, String cloudAccountId) {
+    @Override
+    public void authorize(BillDimensionSetting billDimensionSetting, String month, String cloudAccountId) {
         synchronized (EsWriteLockConstants.WRITE_LOCK) {
             if (CollectionUtils.isNotEmpty(billDimensionSetting.getAuthorizeRule().getBillAuthorizeRuleSettingGroups())) {
                 if (verification(billDimensionSetting.getAuthorizeId(), billDimensionSetting.getType())) {
@@ -187,7 +191,27 @@ public class BillDimensionSettingServiceImpl extends ServiceImpl<BillDimensionSe
     @Override
     public void authorize(String billDimensionSettingId, String month, String cloudAccountId) {
         BillDimensionSetting billDimensionSetting = getById(billDimensionSettingId);
+        // 清除历史授权
+        clearAuthorize(billDimensionSetting.getAuthorizeId(), billDimensionSetting.getType(), month, cloudAccountId);
+        // 使用最新授权
         authorize(billDimensionSetting, month, cloudAccountId);
+    }
+
+    @Override
+    public void authorEditSetting() {
+        List<BillDimensionSetting> billDimensionSettings = list(new LambdaQueryWrapper<BillDimensionSetting>().eq(BillDimensionSetting::getUpdateFlag, true))
+                .stream()
+                .sorted(Comparator.comparing(BillDimensionSetting::getUpdateTime))
+                .toList();
+        for (BillDimensionSetting billDimensionSetting : billDimensionSettings) {
+            // 清除历史授权数据
+            clearAuthorize(billDimensionSetting, null, null);
+            // 授权
+            authorize(billDimensionSetting);
+            // 设置未修改
+            billDimensionSetting.setUpdateFlag(false);
+            updateById(billDimensionSetting);
+        }
     }
 
     @SneakyThrows
@@ -223,18 +247,49 @@ public class BillDimensionSettingServiceImpl extends ServiceImpl<BillDimensionSe
      */
     @Override
     public void clearAuthorize(String authorizeId, AuthorizeTypeConstants type) {
-        Query auth = QueryUtil.getQuery(QueryUtil.CompareType.EQ, type.equals(AuthorizeTypeConstants.ORGANIZATION) ? "organizationId" : "workspaceId", authorizeId);
-        if (type.equals(AuthorizeTypeConstants.ORGANIZATION)) {
-            auth = new Query.Builder().bool(new BoolQuery.Builder().must(auth).mustNot(new Query.Builder().exists(new ExistsQuery.Builder().field("workspaceId").build()).build()).build()).build();
+        clearAuthorize(authorizeId, type, null, null);
+    }
+
+    private void clearAuthorize(String authorizeId, AuthorizeTypeConstants type, String month, String cloudAccountId) {
+        synchronized (EsWriteLockConstants.WRITE_LOCK) {
+            List<Query> authQueryList = new ArrayList<>();
+            Query auth = QueryUtil.getQuery(QueryUtil.CompareType.EQ, type.equals(AuthorizeTypeConstants.ORGANIZATION) ? "organizationId" : "workspaceId", authorizeId);
+            if (StringUtils.isNotEmpty(month)) {
+                Query monthQuery = new Query.Builder().script(new ScriptQuery.Builder().script(s -> EsScriptUtil.getMonthOrYearScript(s, "MONTH", month)).build()).build();
+                authQueryList.add(monthQuery);
+            }
+            if (StringUtils.isNotEmpty(cloudAccountId)) {
+                Query cloudAccountQuery = new Query.Builder().term(new TermQuery.Builder().field("cloudAccountId").value(cloudAccountId).build()).build();
+                authQueryList.add(cloudAccountQuery);
+            }
+            if (type.equals(AuthorizeTypeConstants.ORGANIZATION)) {
+                auth = new Query.Builder().bool(new BoolQuery.Builder().must(auth).mustNot(new Query.Builder().exists(new ExistsQuery.Builder().field("workspaceId").build()).build()).build()).build();
+            }
+            authQueryList.add(auth);
+            UpdateByQueryRequest.Builder orgTree = new UpdateByQueryRequest.Builder()
+                    .query(new BoolQuery.Builder().must(authQueryList).build()._toQuery())
+                    .index(CloudBill.class.getAnnotation(Document.class).indexName())
+                    .script(s -> s.inline(s1 -> s1.source("ctx._source['workspaceId']=null;ctx._source['organizationId']=null;ctx._source['orgTree']=params.orgTree;")
+                            .params(new HashMap<>() {{
+                                put("orgTree", JsonData.of(new HashMap<>()));
+                            }})));
+            try {
+                elasticsearchClient.updateByQuery(orgTree.refresh(true).build());
+            } catch (Exception e) {
+                throw new Fit2cloudException(1000, e.getMessage());
+            }
         }
-        UpdateByQueryRequest.Builder orgTree = new UpdateByQueryRequest.Builder().query(auth).index(CloudBill.class.getAnnotation(Document.class).indexName()).script(s -> s.inline(s1 -> s1.source("ctx._source['workspaceId']=null;ctx._source['organizationId']=null;ctx._source['orgTree']=params.orgTree;").params(new HashMap<>() {{
-            put("orgTree", JsonData.of(new HashMap<>()));
-        }})));
-        try {
-            elasticsearchClient.updateByQuery(orgTree.refresh(true).build());
-        } catch (IOException e) {
-            throw new Fit2cloudException(1000, e.getMessage());
-        }
+    }
+
+    @Override
+    public void clearAuthorize(String billDimensionSettingId, String month, String cloudAccountId) {
+        BillDimensionSetting billDimensionSetting = getById(billDimensionSettingId);
+        clearAuthorize(billDimensionSetting.getAuthorizeId(), billDimensionSetting.getType(), month, cloudAccountId);
+    }
+
+    @Override
+    public void clearAuthorize(BillDimensionSetting billDimensionSetting, String month, String cloudAccountId) {
+        clearAuthorize(billDimensionSetting.getAuthorizeId(), billDimensionSetting.getType(), month, cloudAccountId);
     }
 
 

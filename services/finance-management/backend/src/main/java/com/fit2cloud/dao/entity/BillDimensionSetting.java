@@ -56,6 +56,12 @@ public class BillDimensionSetting implements Serializable {
     private String authorizeId;
 
     /**
+     * 当前规则组是否修改
+     */
+    @TableField("update_flag")
+    private Boolean updateFlag;
+
+    /**
      * 0组织1工作空间
      */
     @TableField("type")

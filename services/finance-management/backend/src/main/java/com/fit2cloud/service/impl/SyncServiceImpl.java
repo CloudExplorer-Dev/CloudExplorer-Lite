@@ -20,6 +20,7 @@ import com.fit2cloud.common.util.MonthUtil;
 import com.fit2cloud.common.utils.JsonUtil;
 import com.fit2cloud.constants.ErrorCodeConstants;
 import com.fit2cloud.constants.EsWriteLockConstants;
+import com.fit2cloud.dao.entity.BillDimensionSetting;
 import com.fit2cloud.es.entity.CloudBill;
 import com.fit2cloud.es.repository.CloudBillRepository;
 import com.fit2cloud.provider.ICloudProvider;
@@ -374,9 +375,29 @@ public class SyncServiceImpl extends BaseSyncService implements SyncService {
      * @param <T>               账单
      */
     private <T> void proxy(String cloudAccountId, List<String> months, BiFunction<ICloudProvider, String, List<T>> execMethod, BiFunction<CloudAccount, String, String> getExecMethodArgs, Consumer<BiSaveBatchOrUpdateParams<T>> saveBatchOrUpdate, Consumer<BiSaveBatchOrUpdateParams<T>> writeJobRecord, Consumer<String> remote) {
-        proxy(cloudAccountId, jobDescription, months, ICloudProvider::of, syncTime -> initJobRecord(syncTime, cloudAccountId), execMethod, getExecMethodArgs, saveBatchOrUpdate, writeJobRecord, () -> billDimensionSettingService.authorize(), remote);
-
+        proxy(cloudAccountId, jobDescription, months, ICloudProvider::of, syncTime -> initJobRecord(syncTime, cloudAccountId), execMethod, getExecMethodArgs, saveBatchOrUpdate, writeJobRecord, () -> auth(months, cloudAccountId), remote);
     }
 
+    /**
+     * 账单授权
+     *
+     * @param months         需要授权的月份
+     * @param cloudAccountId 需要授权的云账号id
+     */
+    private void auth(List<String> months, String cloudAccountId) {
+        List<BillDimensionSetting> billDimensionSettings = billDimensionSettingService.list()
+                .stream()
+                .sorted(Comparator.comparing(BillDimensionSetting::getUpdateTime))
+                .toList();
+        for (BillDimensionSetting billDimensionSetting : billDimensionSettings) {
+            for (String month : months) {
+                if (billDimensionSetting.getUpdateFlag()) {
+                    billDimensionSettingService.clearAuthorize(billDimensionSetting, month, cloudAccountId);
+                }
+                billDimensionSettingService.authorize(billDimensionSetting, month, cloudAccountId);
+            }
+        }
+
+    }
 
 }
