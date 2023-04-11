@@ -27,24 +27,15 @@ CloudExplorer-Lite支持对接纳管市场上主流的公有云和私有云基�
 CloudExplorer-Lite提供了诸多开箱即用的功能，比如云主机管理、云账单、运营分析和安全合规等，能够满足大部分企业在云基础设施管理方面的基本需求。
 
  - **云主机：** CloudExplorer-Lite提供统一的云主机的生命周期管理操作界面；基于用户管理体系，用户可创建、可操作的资源都具备隔离性。
-  ![ce-云主机管理](https://fit2cloud.com/cloudexplorer-lite/docs/img/index/云主机管理.png)
  - **云账单：** CloudExplorer-Lite提供统一的费用管理、费用分摊、自定义多维度账单功能，可以作为企业的云资源成本分析中心，帮助企业用户有效降低云上资源的成本管理难度。
-   ![ce-云账单](https://fit2cloud.com/cloudexplorer-lite/docs/img/index/云账单.png)
  - **运营分析：** CloudExplorer-Lite能够对企业现有的云资源从分布、容量、使用情况等多个维度进行分析，并提供资源优化建议。
-   ![ce-运营分析](https://fit2cloud.com/cloudexplorer-lite/docs/img/index/运营分析.png)
  - **安全合规：** CloudExplorer-Lite支持一键扫描多个云平台的多种云资源，可灵活定义规则。
-   ![ce-安全合规-一键扫描](https://fit2cloud.com/cloudexplorer-lite/docs/img/index/安全合规-一键扫描.png)
-   ![ce-安全合规-总览](https://fit2cloud.com/cloudexplorer-lite/docs/img/index/安全合规-总览.png)
 
 **扩展能力**
 
 CloudExplorer Lite提供了强大的多租户体系和模块化能力，可以满足企业的定制化需求。
  - **多租户体系：** 作为云管平台的核心能力之一，CloudExplorer-Lite为用户提供多租户、多角色的管理模型。系统初始化了三种内置角色，分别为系统管理员、组织管理员和普通用户，用户可以根据企业的实际情况进行灵活的租户体系映射。
-![ce-管理模型](https://fit2cloud.com/cloudexplorer-lite/docs/img/index/管理模型.png)
  - **模块化设计：** CloudExplorer-Lite 采用模块化设计，即插即用，企业可以轻松部署不同模块，从而扩大对云基础设施的管理范围。
-![ce-模块管理](https://fit2cloud.com/cloudexplorer-lite/docs/img/index/模块管理.png)
-
-
 
 ## 5 快速开始
 
