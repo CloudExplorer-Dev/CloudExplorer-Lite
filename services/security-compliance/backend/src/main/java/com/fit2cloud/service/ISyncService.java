@@ -25,7 +25,20 @@ public interface ISyncService {
      * @param cloudAccountId 云账户id
      * @param instanceType   实例类型
      */
-    void syncInstance(String cloudAccountId, List<String> instanceType);
+    void syncInstanceByInstanceType(String cloudAccountId, List<String> instanceType);
 
+    /**
+     * 同步实例数据
+     *
+     * @param cloudAccountId 云账号id
+     * @param ruleGroupId    规则组id
+     */
+    void syncInstance(String cloudAccountId, List<String> ruleGroupId);
+
+    /**
+     * 根据云账号同步实例数据
+     *
+     * @param cloudAccountId 云账号id
+     */
     void syncInstance(String cloudAccountId);
 }

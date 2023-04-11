@@ -4,10 +4,8 @@ import co.elastic.clients.elasticsearch.ElasticsearchClient;
 import co.elastic.clients.elasticsearch._types.FieldValue;
 import co.elastic.clients.elasticsearch._types.InlineScript;
 import co.elastic.clients.elasticsearch._types.Script;
-import co.elastic.clients.elasticsearch._types.Time;
 import co.elastic.clients.elasticsearch._types.aggregations.*;
 import co.elastic.clients.elasticsearch._types.query_dsl.*;
-import co.elastic.clients.elasticsearch.core.ScrollRequest;
 import co.elastic.clients.elasticsearch.core.SearchRequest;
 import co.elastic.clients.elasticsearch.core.SearchResponse;
 import co.elastic.clients.elasticsearch.core.UpdateByQueryRequest;
@@ -20,8 +18,8 @@ import com.fit2cloud.base.entity.CloudAccount;
 import com.fit2cloud.base.mapper.BaseJobRecordResourceMappingMapper;
 import com.fit2cloud.base.service.IBaseCloudAccountService;
 import com.fit2cloud.common.constants.JobTypeConstants;
+import com.fit2cloud.common.exception.Fit2cloudException;
 import com.fit2cloud.common.provider.util.CommonUtil;
-import com.fit2cloud.common.provider.util.PageUtil;
 import com.fit2cloud.common.utils.QueryUtil;
 import com.fit2cloud.common.utils.SpringUtil;
 import com.fit2cloud.constants.ConditionTypeConstants;
@@ -30,13 +28,10 @@ import com.fit2cloud.constants.ScanRuleConstants;
 import com.fit2cloud.constants.SyncDimensionConstants;
 import com.fit2cloud.controller.request.compliance_scan.ComplianceResourceRequest;
 import com.fit2cloud.controller.request.compliance_scan.ComplianceSyncRequest;
-import com.fit2cloud.controller.request.view.ComplianceGroupRequest;
 import com.fit2cloud.controller.response.compliance_scan.ComplianceResourceResponse;
 import com.fit2cloud.controller.response.compliance_scan.SupportCloudAccountResourceResponse;
 import com.fit2cloud.controller.response.compliance_scan.SupportPlatformResourceResponse;
-import com.fit2cloud.controller.response.compliance_scan_result.ComplianceScanResultResponse;
 import com.fit2cloud.dao.constants.ComplianceStatus;
-import com.fit2cloud.dao.constants.ResourceType;
 import com.fit2cloud.dao.entity.ComplianceRule;
 import com.fit2cloud.dao.entity.ComplianceScanResourceResult;
 import com.fit2cloud.dao.entity.ComplianceScanResult;
@@ -46,25 +41,20 @@ import com.fit2cloud.es.entity.ResourceInstance;
 import com.fit2cloud.provider.ICloudProvider;
 import com.fit2cloud.provider.constants.ProviderConstants;
 import com.fit2cloud.provider.entity.InstanceFieldCompare;
-import com.fit2cloud.provider.entity.InstanceFieldType;
 import com.fit2cloud.response.JobRecordResourceResponse;
 import com.fit2cloud.service.*;
 import lombok.SneakyThrows;
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.keyvalue.DefaultKeyValue;
 import org.apache.commons.lang.StringUtils;
-import org.elasticsearch.client.transform.transforms.QueryConfig;
-import org.elasticsearch.client.transform.transforms.SourceConfig;
+import org.redisson.Redisson;
 import org.springframework.beans.BeanUtils;
 import org.springframework.data.elasticsearch.annotations.Document;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
-import java.io.IOException;
 import java.util.*;
 import java.util.stream.Collectors;
-
-import static com.fit2cloud.provider.entity.InstanceFieldCompare.*;
-import static com.fit2cloud.provider.entity.InstanceFieldCompare.NOT_EXIST;
 
 /**
  * {@code @Author:张少虎}
@@ -86,6 +76,8 @@ public class ComplianceScanServiceImpl implements IComplianceScanService {
     private IComplianceScanResultService complianceScanResultService;
     @Resource
     private IComplianceScanResourceResultService complianceScanResourceResultService;
+    @Resource
+    private Redisson redisson;
 
 
     @SneakyThrows
@@ -221,10 +213,19 @@ public class ComplianceScanServiceImpl implements IComplianceScanService {
 
     @Override
     public void scan(ComplianceSyncRequest request) {
-        List<ComplianceRule> complianceRules = complianceRuleService.list(new LambdaQueryWrapper<ComplianceRule>().in(ComplianceRule::getRuleGroupId, request.getRuleGroupIds()));
+        List<String> lockCloudAccountList = request.getCloudAccountIds()
+                .stream().
+                distinct()
+                .filter(cloudAccountId -> redisson.getLock(cloudAccountId + ":RULE_GROUP").isLocked() || redisson.getLock(cloudAccountId).isLocked())
+                .toList();
+        if (CollectionUtils.isNotEmpty(lockCloudAccountList)) {
+            String lockCloudAccountNames = cloudAccountService.list(new LambdaQueryWrapper<CloudAccount>().in(CloudAccount::getId, lockCloudAccountList))
+                    .stream().map(CloudAccount::getName).collect(Collectors.joining(","));
+            throw new Fit2cloudException(10000, "云账号:" + lockCloudAccountNames + "正在扫描中,请勿重复扫描");
+        }
         for (String cloudAccountId : request.getCloudAccountIds()) {
             ISyncService syncService = SpringUtil.getBean(ISyncService.class);
-            syncService.syncInstance(cloudAccountId, complianceRules.stream().map(ComplianceRule::getResourceType).distinct().toList());
+            syncService.syncInstance(cloudAccountId, request.getRuleGroupIds());
         }
     }
 

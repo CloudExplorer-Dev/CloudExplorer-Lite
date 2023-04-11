@@ -43,6 +43,10 @@ public enum JobLinkTypeConstants {
      * 变更云资源
      */
     CLOUD_ACTION_UPDATE_RESOURCE(104),
+    /**
+     * 校验云账号
+     */
+    VERIFICATION_CLOUD_ACCOUNT(105),
 
     /**
      * 插入数据
