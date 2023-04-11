@@ -47,7 +47,7 @@
           ></el-button>
         </el-card>
 
-        <div style="width: 100%; height: 30px; text-align: center">
+        <div style="width: 100%; height: 30px; text-align: center" v-show="false">
           <el-checkbox v-model="obj.deleteWithInstance">随实例删除</el-checkbox>
         </div>
       </div>
@@ -70,7 +70,7 @@
         v-for="(disk, i) in modelValue"
         :key="i"
       >
-        {{ disk.size }}GB{{ disk.deleteWithInstance ? " (随实例删除)" : "" }}
+        {{ disk.size }}GB
       </el-descriptions-item>
     </el-descriptions>
   </template>
