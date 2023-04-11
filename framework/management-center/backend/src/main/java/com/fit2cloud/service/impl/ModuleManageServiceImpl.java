@@ -159,6 +159,11 @@ public class ModuleManageServiceImpl implements IModuleManageService {
     @Override
     public void upload(MultipartFile file) {
         String filePath = "/opt/cloudexplorer/downloads/";
+
+        if (StringUtils.contains(file.getOriginalFilename(), "/") || StringUtils.contains(file.getOriginalFilename(), "../")) {
+            throw new RuntimeException("文件名非法");
+        }
+
         String fileName = System.currentTimeMillis() + "_" + file.getOriginalFilename();
         try {
 
@@ -221,8 +226,6 @@ public class ModuleManageServiceImpl implements IModuleManageService {
         }
         return result.toString();
     }
-
-
 
 
     //同步执行

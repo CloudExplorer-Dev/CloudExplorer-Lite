@@ -5,21 +5,18 @@
 
     <parent>
         <groupId>com.fit2cloud</groupId>
-        <artifactId>cloudexplorer-lite</artifactId>
+        <artifactId>services</artifactId>
         <version>${revision}</version>
     </parent>
 
     <packaging>pom</packaging>
-    <artifactId>services</artifactId>
+    <artifactId>DEMO-TEMPLATE-parent</artifactId>
     <version>${revision}</version>
-    <description>CE services</description>
+    <description>CE framework</description>
 
     <modules>
-        <module>vm-service</module>
-        <module>finance-management</module>
-        <module>security-compliance</module>
-        <module>operation-analysis</module>
-        <!--NEW_MODULE_PLACE_HOLDER-->
+        <module>frontend</module>
+        <module>backend</module>
     </modules>
 
 </project>
