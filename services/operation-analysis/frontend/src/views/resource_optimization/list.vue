@@ -146,7 +146,7 @@ import {
 import { useI18n } from "vue-i18n";
 import type { SimpleMap } from "@commons/api/base/type";
 import { platformIcon } from "@commons/utils/platform";
-import BaseCloudAccountApi from "@commons/api/cloud_account";
+import CommonApi from "@/api/common/index";
 import type { VmCloudServerVO } from "@/api/server_analysis/type";
 import ResourceOptimizationViewApi from "@/api/resource_optimization";
 import type { ListOptimizationRequest } from "@commons/api/resource_optimization/type";
@@ -239,7 +239,7 @@ onMounted(() => {
 });
 
 const searchCloudAccount = () => {
-  BaseCloudAccountApi.listAll().then((result) => {
+  CommonApi.listAll().then((result) => {
     if (result.data.length > 0) {
       result.data.forEach(function (v) {
         const ca = { text: v.name, value: v.id };

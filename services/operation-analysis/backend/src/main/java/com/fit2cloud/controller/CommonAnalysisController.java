@@ -41,7 +41,7 @@ public class CommonAnalysisController {
     }
     @ApiOperation(value = "查询云账号", notes = "查询云账号")
     @GetMapping("/cloud_account/list")
-    @PreAuthorize("hasAnyCePermission('OVERVIEW:READ')")
+    @PreAuthorize("hasAnyCePermission('OVERVIEW:READ','DISK_ANALYSIS:READ','SERVER_ANALYSIS:READ','SERVER_OPTIMIZATION:READ')")
     public ResultHolder<List<CloudAccount>> cloudAccountList() {
         return ResultHolder.success(currentUserResourceService.currentUserCloudAccountList());
     }
