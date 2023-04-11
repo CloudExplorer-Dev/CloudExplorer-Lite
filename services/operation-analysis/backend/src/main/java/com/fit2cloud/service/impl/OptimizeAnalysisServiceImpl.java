@@ -326,7 +326,7 @@ public class OptimizeAnalysisServiceImpl implements IOptimizeAnalysisService {
         Map<String,Boolean> compareResult = new HashMap<>(1);
         compareResult.put(SpecialAttributesConstants.ResourceField.MEMORY,false);
         if(!memoryIsNull){
-            if(request.isCpuMaxRate()){
+            if(request.isMemoryMaxRate()){
                 compareResult.put(SpecialAttributesConstants.ResourceField.MEMORY,vo.getMemoryMaximum().compareTo(BigDecimal.valueOf(request.getMemoryRate())) == containValue.get(isDerating));
             }else{
                 compareResult.put(SpecialAttributesConstants.ResourceField.MEMORY,vo.getMemoryAverage().compareTo(BigDecimal.valueOf(request.getMemoryRate())) == containValue.get(isDerating));
