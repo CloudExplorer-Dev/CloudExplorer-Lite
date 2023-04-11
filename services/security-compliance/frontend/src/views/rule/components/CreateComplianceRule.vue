@@ -167,10 +167,11 @@
 import { ref, onMounted, computed } from "vue";
 import compliance_rules from "@/views/rule/components/compliance_rules/index.vue";
 import type { FormRules, FormInstance } from "element-plus";
-import type { SaveComplianceRuleRequest } from "@/api/rule/type";
+import type {
+  SaveComplianceRuleRequest,
+  SupportPlatformResourceResponse,
+} from "@/api/rule/type";
 import complianceRuleApi from "@/api/rule";
-import complianceScanApi from "@/api/compliance_scan";
-import type { SupportPlatformResourceResponse } from "@/api/compliance_scan/type";
 import type { ComplianceRuleGroup } from "@/api/rule_group/type";
 import { platformIcon } from "@commons/utils/platform";
 import type { KeyValue } from "@commons/api/base/type";
@@ -374,7 +375,7 @@ onMounted(() => {
     .then((ok) => {
       complianceInsuranceStatuteList.value = ok.data;
     });
-  complianceScanApi.listSupportPlatformResource().then((ok) => {
+  complianceRuleApi.listSupportPlatformResource().then((ok) => {
     supportPlatformResourceList.value = ok.data;
   });
 });

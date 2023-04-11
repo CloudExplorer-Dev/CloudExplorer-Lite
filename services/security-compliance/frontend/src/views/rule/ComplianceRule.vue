@@ -12,7 +12,10 @@
       row-key="id"
     >
       <template #toolbar>
-        <el-button type="primary" @click="openCreateComplianceRule"
+        <el-button
+          type="primary"
+          @click="openCreateComplianceRule"
+          v-hasPermission="'[security-compliance]RULE:CREATE'"
           >创建</el-button
         ></template
       >
@@ -173,7 +176,8 @@ import compliance_rule_view from "@/views/rule/components/compliance_rules/Compl
 import create_compliance_rule from "@/views/rule/components/CreateComplianceRule.vue";
 import update_compliance_rule from "@/views/rule/components/UpdateComplianceRule.vue";
 import compliance_rule_switch from "@/views/rule/components/ComplianceRuleSwitch.vue";
-
+import { usePermissionStore } from "@commons/stores/modules/permission";
+const permissionStore = usePermissionStore();
 /**
  * 表格数据
  */
@@ -301,13 +305,17 @@ const tableConfig = ref<TableConfig>({
       "编辑",
       "primary",
       openUpdateComplianceRule,
-      "EditPen"
+      "EditPen",
+      undefined,
+      permissionStore.hasPermission("[security-compliance]RULE:EDIT")
     ),
     TableOperations.buildButtons().newInstance(
       "删除",
       "primary",
       deleteItem,
-      "Delete"
+      "Delete",
+      undefined,
+      permissionStore.hasPermission("[security-compliance]RULE:DELETE")
     ),
   ]),
 });

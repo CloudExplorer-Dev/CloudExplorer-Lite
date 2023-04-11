@@ -52,7 +52,7 @@ public class ComplianceInsuranceStatuteController {
 
     @ApiOperation("获取所有的等保条例")
     @GetMapping
-    @PreAuthorize("hasAnyCePermission('INSURANCE:READ')")
+    @PreAuthorize("hasAnyCePermission('INSURANCE:READ','RULE:READ','SCAN:READ')")
     public ResultHolder<List<ComplianceInsuranceStatuteResponse>> list(ComplianceInsuranceStatuteRequest request) {
         return ResultHolder.success(complianceInsuranceStatuteService.list(request));
     }

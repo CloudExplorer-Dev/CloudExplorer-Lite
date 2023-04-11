@@ -80,14 +80,6 @@ public class ComplianceScanController {
         return ResultHolder.success(list);
     }
 
-    @ApiOperation("获取支持的云平台以及对应的资源")
-    @GetMapping("/support_platform")
-    @PreAuthorize("hasAnyCePermission('SCAN:READ')")
-    public ResultHolder<List<SupportPlatformResourceResponse>> listSupportPlatformResource() {
-        List<SupportPlatformResourceResponse> list = complianceScanService.listSupportPlatformResource();
-        return ResultHolder.success(list);
-    }
-
     @ApiOperation("获取资源类型同步情况")
     @GetMapping("job_record")
     @PreAuthorize("hasAnyCePermission('SCAN:READ')")

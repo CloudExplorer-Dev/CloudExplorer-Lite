@@ -169,9 +169,9 @@ import type { FormRules, FormInstance } from "element-plus";
 import type {
   ComplianceRule,
   UpdateComplianceRuleRequest,
+  SupportPlatformResourceResponse,
 } from "@/api/rule/type";
-import complianceScanApi from "@/api/compliance_scan/index";
-import type { SupportPlatformResourceResponse } from "@/api/compliance_scan/type";
+
 import complianceRuleApi from "@/api/rule";
 import type { ComplianceRuleGroup } from "@/api/rule_group/type";
 import { platformIcon } from "@commons/utils/platform";
@@ -379,7 +379,7 @@ onMounted(() => {
     .then((ok) => {
       complianceInsuranceStatuteList.value = ok.data;
     });
-  complianceScanApi.listSupportPlatformResource().then((ok) => {
+  complianceRuleApi.listSupportPlatformResource().then((ok) => {
     supportPlatformResourceList.value = ok.data;
   });
 });
