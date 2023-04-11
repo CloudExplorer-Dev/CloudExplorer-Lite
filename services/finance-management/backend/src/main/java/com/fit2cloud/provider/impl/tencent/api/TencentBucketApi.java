@@ -13,6 +13,7 @@ import com.fit2cloud.provider.impl.tencent.entity.csv.TencentCsvModel;
 import com.fit2cloud.provider.impl.tencent.entity.request.ListBucketMonthRequest;
 import com.fit2cloud.provider.impl.tencent.entity.request.SyncBillRequest;
 import com.fit2cloud.provider.impl.tencent.util.TencentMappingUtil;
+import com.opencsv.CSVReader;
 import com.qcloud.cos.COSClient;
 import com.qcloud.cos.model.COSObject;
 import com.qcloud.cos.model.COSObjectSummary;
@@ -208,12 +209,10 @@ public class TencentBucketApi {
      * @throws IOException
      */
     public static List<List<String>> readCsvFile(InputStream inputStream) throws IOException {
-        BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(inputStream));
-        String tmp = null;
-        List<List<String>> response = new ArrayList<>();
-        while ((tmp = bufferedReader.readLine()) != null) {
-            String[] split = tmp.split(",");
-            response.add(Arrays.stream(split).collect(Collectors.toList()));
+        ArrayList<List<String>> response = new ArrayList<>();
+        CSVReader strings = new CSVReader(new InputStreamReader(inputStream));
+        for (String[] string : strings) {
+            response.add(Arrays.stream(string).collect(Collectors.toList()));
         }
         return response;
     }
