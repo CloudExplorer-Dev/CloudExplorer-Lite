@@ -10,6 +10,7 @@ import com.fit2cloud.common.validator.handler.ExistHandler;
 import com.fit2cloud.controller.handler.ResultHolder;
 import com.fit2cloud.controller.request.rule.ComplianceRuleRequest;
 import com.fit2cloud.controller.request.rule.PageComplianceRuleRequest;
+import com.fit2cloud.controller.response.compliance_scan.SupportPlatformResourceResponse;
 import com.fit2cloud.controller.response.rule.ComplianceRuleResponse;
 import com.fit2cloud.controller.response.rule.ComplianceRuleSearchFieldResponse;
 import com.fit2cloud.dao.entity.ComplianceRule;
@@ -61,7 +62,7 @@ public class ComplianceRuleController {
 
     @ApiModelProperty("根据规则id获取合规规则")
     @GetMapping("/{complianceRuleId}")
-    @PreAuthorize("hasAnyCePermission('RULE:READ')")
+    @PreAuthorize("hasAnyCePermission('RULE:READ','SCAN:READ')")
     public ResultHolder<ComplianceRuleResponse> one(@PathVariable("complianceRuleId") String complianceRuleId) {
         ComplianceRule complianceRule = complianceRuleService.getById(complianceRuleId);
         ComplianceRuleResponse complianceRuleResponse = new ComplianceRuleResponse();
@@ -96,7 +97,7 @@ public class ComplianceRuleController {
 
     @ApiOperation("获取规则实例类型")
     @GetMapping("/resource_type")
-    @PreAuthorize("hasAnyCePermission('RULE:READ')")
+    @PreAuthorize("hasAnyCePermission('RULE:READ','SCAN:READ')")
     public ResultHolder<List<DefaultKeyValue<String, String>>> listResourceType() {
         List<DefaultKeyValue<String, String>> resourceTypes = complianceRuleService.listResourceType();
         return ResultHolder.success(resourceTypes);
@@ -129,5 +130,13 @@ public class ComplianceRuleController {
                                                       String id) {
         complianceRuleService.remove(id);
         return ResultHolder.success(true);
+    }
+
+    @ApiOperation("获取支持的云平台以及对应的资源")
+    @GetMapping("/support_platform")
+    @PreAuthorize("hasAnyCePermission('RULE:READ')")
+    public ResultHolder<List<SupportPlatformResourceResponse>> listSupportPlatformResource() {
+        List<SupportPlatformResourceResponse> list = complianceRuleService.listSupportPlatformResource();
+        return ResultHolder.success(list);
     }
 }

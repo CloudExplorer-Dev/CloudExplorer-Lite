@@ -45,7 +45,6 @@ public interface IComplianceScanService {
      */
     List<ComplianceScanResult> scanCompliance();
 
-
     /**
      * 扫描一个资源类型
      *
@@ -134,13 +133,6 @@ public interface IComplianceScanService {
      * @return 扫描任务
      */
     List<JobRecordResourceResponse> listJobRecord();
-
-    /**
-     * 获取支持的云平台 资源数据
-     *
-     * @return 云平台以及对应的资源数据
-     */
-    List<SupportPlatformResourceResponse> listSupportPlatformResource();
 
     /**
      * 扫描

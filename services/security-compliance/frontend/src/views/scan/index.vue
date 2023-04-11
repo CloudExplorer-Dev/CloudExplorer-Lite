@@ -15,7 +15,10 @@
               :value="item.value"
             />
           </el-select>
-          <el-button class="scan" @click="() => jobScan?.open()"
+          <el-button
+            class="scan"
+            @click="() => jobScan?.open()"
+            v-hasPermission="'[security-compliance]SCAN:SEND_JOB'"
             >一键扫描</el-button
           >
           <JobScan

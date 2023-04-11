@@ -15,8 +15,10 @@ import com.fit2cloud.common.provider.util.CommonUtil;
 import com.fit2cloud.common.utils.ColumnNameUtil;
 import com.fit2cloud.common.utils.SpringUtil;
 import com.fit2cloud.constants.ResourceTypeConstants;
+import com.fit2cloud.constants.SyncDimensionConstants;
 import com.fit2cloud.controller.request.rule.ComplianceRuleRequest;
 import com.fit2cloud.controller.request.rule.PageComplianceRuleRequest;
+import com.fit2cloud.controller.response.compliance_scan.SupportPlatformResourceResponse;
 import com.fit2cloud.controller.response.rule.ComplianceRuleResponse;
 import com.fit2cloud.controller.response.rule.ComplianceRuleSearchFieldResponse;
 import com.fit2cloud.dao.constants.RiskLevel;
@@ -26,6 +28,7 @@ import com.fit2cloud.dao.entity.ComplianceScanResourceResult;
 import com.fit2cloud.dao.entity.ComplianceScanResult;
 import com.fit2cloud.dao.mapper.ComplianceRuleMapper;
 import com.fit2cloud.provider.ICloudProvider;
+import com.fit2cloud.provider.constants.ProviderConstants;
 import com.fit2cloud.service.*;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.keyvalue.DefaultKeyValue;
@@ -129,5 +132,18 @@ public class ComplianceRuleServiceImpl extends ServiceImpl<ComplianceRuleMapper,
                 .eq(ComplianceScanResourceResult::getComplianceRuleId, id));
         complianceScanResultService.remove(new LambdaQueryWrapper<ComplianceScanResult>()
                 .eq(ComplianceScanResult::getComplianceRuleId, id));
+    }
+
+    @Override
+    public List<SupportPlatformResourceResponse> listSupportPlatformResource() {
+        return Arrays.stream(ProviderConstants.values()).map(platform -> {
+            List<DefaultKeyValue<ResourceTypeConstants, SyncDimensionConstants>> exec = CommonUtil.exec(ICloudProvider.of(platform.name()), ICloudProvider::getResourceSyncDimensionConstants);
+            List<DefaultKeyValue<String, String>> resourceTypes = exec.stream().map(resourceTypeConstants -> new DefaultKeyValue<>(resourceTypeConstants.getKey().getMessage(), resourceTypeConstants.getKey().name())).toList();
+            SupportPlatformResourceResponse supportPlatformResourceResponse = new SupportPlatformResourceResponse();
+            supportPlatformResourceResponse.setPlatform(platform.name());
+            supportPlatformResourceResponse.setResourceTypes(resourceTypes);
+            return supportPlatformResourceResponse;
+        }).toList();
+
     }
 }

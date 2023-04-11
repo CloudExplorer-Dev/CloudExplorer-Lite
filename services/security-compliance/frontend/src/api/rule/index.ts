@@ -7,6 +7,7 @@ import type {
   InstanceSearchField,
   SaveComplianceRuleRequest,
   UpdateComplianceRuleRequest,
+  SupportPlatformResourceResponse,
 } from "@/api/rule/type";
 import type { KeyValue } from "@commons/api/base/type";
 
@@ -138,6 +139,16 @@ const getComplianceRuleById: (
 ) => Promise<Result<ComplianceRule>> = (complianceRuleId, loading) => {
   return get(`/api/compliance_rule/${complianceRuleId}`, {}, loading);
 };
+
+/**
+ *
+ * @returns 获取支持的云平台以及对应的资源
+ */
+const listSupportPlatformResource: (
+  loading?: Ref<boolean>
+) => Promise<Result<Array<SupportPlatformResourceResponse>>> = (loading) => {
+  return get("/api/compliance_rule/support_platform", undefined, loading);
+};
 export default {
   page,
   listInstanceSearchField,
@@ -147,4 +158,5 @@ export default {
   deleteComplianceRule,
   switchEnable,
   getComplianceRuleById,
+  listSupportPlatformResource,
 };

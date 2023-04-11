@@ -198,18 +198,6 @@ public class ComplianceScanServiceImpl implements IComplianceScanService {
 
     }
 
-    @Override
-    public List<SupportPlatformResourceResponse> listSupportPlatformResource() {
-        return Arrays.stream(ProviderConstants.values()).map(platform -> {
-            List<DefaultKeyValue<ResourceTypeConstants, SyncDimensionConstants>> exec = CommonUtil.exec(ICloudProvider.of(platform.name()), ICloudProvider::getResourceSyncDimensionConstants);
-            List<DefaultKeyValue<String, String>> resourceTypes = exec.stream().map(resourceTypeConstants -> new DefaultKeyValue<>(resourceTypeConstants.getKey().getMessage(), resourceTypeConstants.getKey().name())).toList();
-            SupportPlatformResourceResponse supportPlatformResourceResponse = new SupportPlatformResourceResponse();
-            supportPlatformResourceResponse.setPlatform(platform.name());
-            supportPlatformResourceResponse.setResourceTypes(resourceTypes);
-            return supportPlatformResourceResponse;
-        }).toList();
-
-    }
 
     @Override
     public void scan(ComplianceSyncRequest request) {

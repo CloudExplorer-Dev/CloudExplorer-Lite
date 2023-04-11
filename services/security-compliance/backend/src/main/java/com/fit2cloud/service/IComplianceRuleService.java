@@ -5,6 +5,7 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.fit2cloud.controller.request.rule.ComplianceRuleRequest;
 import com.fit2cloud.controller.request.rule.PageComplianceRuleRequest;
+import com.fit2cloud.controller.response.compliance_scan.SupportPlatformResourceResponse;
 import com.fit2cloud.controller.response.rule.ComplianceRuleResponse;
 import com.fit2cloud.controller.response.rule.ComplianceRuleSearchFieldResponse;
 import com.fit2cloud.dao.entity.ComplianceRule;
@@ -64,4 +65,11 @@ public interface IComplianceRuleService extends IService<ComplianceRule> {
     ComplianceRuleResponse update(ComplianceRuleRequest complianceRuleRequest);
 
     void remove(String id);
+
+    /**
+     * 获取云平台支持的资源类型
+     *
+     * @return 不同云平台所支持的资源类型
+     */
+    List<SupportPlatformResourceResponse> listSupportPlatformResource();
 }

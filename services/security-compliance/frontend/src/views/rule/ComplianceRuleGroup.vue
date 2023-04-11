@@ -11,7 +11,10 @@
       row-key="id"
     >
       <template #toolbar>
-        <el-button type="primary" @click="openCreateComplianceRuleGroup"
+        <el-button
+          type="primary"
+          @click="openCreateComplianceRuleGroup"
+          v-hasPermission="'[security-compliance]RULE:CREATE'"
           >创建</el-button
         ></template
       >
@@ -49,6 +52,8 @@ import type { ComplianceRuleGroup } from "@/api/rule_group/type";
 import complianceRuleGroupApi from "@/api/rule_group";
 import create_compliacne_rule_group from "@/views/rule/components/CreateComplianceRuleGroup.vue";
 import update_compliance_rule_group from "@/views/rule/components/UpdateComplianceRuleGroup.vue";
+import { usePermissionStore } from "@commons/stores/modules/permission";
+const permissionStore = usePermissionStore();
 onMounted(() => {
   // 挂载查询
   search(new TableSearch());
@@ -150,13 +155,17 @@ const tableConfig = ref<TableConfig>({
       "编辑",
       "primary",
       openUpdateComplianceRuleGroup,
-      "EditPen"
+      "EditPen",
+      undefined,
+      permissionStore.hasPermission("[security-compliance]RULE:EDIT")
     ),
     TableOperations.buildButtons().newInstance(
       "删除",
       "primary",
       deleteItem,
-      "Delete"
+      "Delete",
+      undefined,
+      permissionStore.hasPermission("[security-compliance]RULE:DELETE")
     ),
   ]),
 });
