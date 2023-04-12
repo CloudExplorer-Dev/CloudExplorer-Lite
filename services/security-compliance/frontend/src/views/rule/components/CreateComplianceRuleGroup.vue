@@ -16,7 +16,7 @@
       label-width="120px"
       @submit.prevent
     >
-      <el-form-item label="规则名称" prop="name">
+      <el-form-item label="规则组名称" prop="name">
         <el-input type="input" v-model="createComplianceRuleGroupForm.name" />
       </el-form-item>
       <el-form-item label="规则组描述" prop="description">

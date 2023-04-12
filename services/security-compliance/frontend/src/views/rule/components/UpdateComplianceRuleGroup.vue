@@ -15,7 +15,7 @@
       ref="ruleFormRef"
       label-width="120px"
     >
-      <el-form-item label="规则名称" prop="name">
+      <el-form-item label="规则组名称" prop="name">
         <el-input v-model="updateComplianceRuleGroupForm.name" />
       </el-form-item>
       <el-form-item label="规则组描述" prop="description">
