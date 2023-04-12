@@ -9,7 +9,7 @@ function getServices() {
   for _dir in $(ls -l services/ |awk '/^d/ {print $NF}')
   do
     f2c_moduleNames["$_dir"]=$_dir
-    f2c_modules["$_dir"]="/services/"$_dir
+    f2c_modules["$_dir"]=$BUILD_PATH"/services/"$_dir
   done
 }
 
