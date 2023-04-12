@@ -110,7 +110,7 @@ public class CreateModuleUtil {
 
         //添加到基座的代理中
         File file2 = new File(parentPath + "/framework/sdk/frontend/vite.config.ts");
-        String data2 = FileUtils.readFileToString(file);
+        String data2 = FileUtils.readFileToString(file2);
         data2 = data2.replace("//PROXY_PLACEHOLDER", "proxyConf[ENV.VITE_BASE_PATH + \"" + NEW_MODULE_NAME + "/api\"] =\n" +
                 "    \"http://localhost:\" + Number(ENV.VITE_BASE_API_PORT);\n" +
                 "  proxyConf[ENV.VITE_BASE_PATH + \"" + NEW_MODULE_NAME + "\"] =\n" +
