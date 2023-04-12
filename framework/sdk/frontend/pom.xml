@@ -37,8 +37,8 @@
             <!-- optional: default phase is "generate-resources" -->
             <phase>generate-resources</phase>
             <configuration>
-              <nodeVersion>v16.16.0</nodeVersion>
-              <yarnVersion>v1.22.11</yarnVersion>
+              <nodeVersion>${node.version}</nodeVersion>
+              <yarnVersion>${yarn.version}</yarnVersion>
             </configuration>
           </execution>
           <!-- Install all project dependencies -->
