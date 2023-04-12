@@ -60,10 +60,13 @@ function build_services(){
     mkdir -p ${BUILD_PATH}/target/services
     tar czvf ${BUILD_PATH}/target/services/${APP_NAME}-${_APP_VERSION}.tar.gz ${APP_NAME}-${_APP_VERSION}.yml ${APP_NAME}-${_APP_VERSION}.jar
 
+    md5sum -b ${BUILD_PATH}/target/services/${APP_NAME}-${_APP_VERSION}.tar.gz | awk '{print $1}' > ${BUILD_PATH}/target/services/${APP_NAME}-${_APP_VERSION}.tar.gz.md5
+
   done
 
   tar czvf ${BUILD_PATH}/target/services/all-services-${_APP_VERSION}.tar.gz *.yml *.jar modules
 
+  md5sum -b ${BUILD_PATH}/target/services/all-services-${_APP_VERSION}.tar.gz | awk '{print $1}' > ${BUILD_PATH}/target/services/all-services-${_APP_VERSION}.tar.gz.md5
 }
 
 
