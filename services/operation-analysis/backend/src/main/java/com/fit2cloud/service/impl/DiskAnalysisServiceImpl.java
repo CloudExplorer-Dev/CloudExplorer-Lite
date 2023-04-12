@@ -354,9 +354,11 @@ public class DiskAnalysisServiceImpl implements IDiskAnalysisService {
 
     private static int getWorkspaceResourceNumber(Map<String, List<TreeNode>> workspaceGroupByPid, List<TreeNode> childrenList, TreeNode v) {
         int workspaceResourceNumber = 0;
-        if (workspaceGroupByPid.containsKey(v.getId())) {
-            childrenList.addAll(workspaceGroupByPid.get(v.getId()));
-            workspaceResourceNumber = workspaceGroupByPid.get(v.getId()).stream().mapToInt(TreeNode::getValue).sum();
+        for (String pid : workspaceGroupByPid.keySet()) {
+            if (StringUtils.equalsIgnoreCase(v.getId(), pid)) {
+                childrenList.addAll(workspaceGroupByPid.get(v.getId()));
+                workspaceResourceNumber = workspaceGroupByPid.get(v.getId()).stream().mapToInt(TreeNode::getValue).sum();
+            }
         }
         return workspaceResourceNumber;
     }
@@ -376,7 +378,8 @@ public class DiskAnalysisServiceImpl implements IDiskAnalysisService {
         return result;
     }
 
-    private List<TreeNode> getTreeNodeValueDataForType(ResourceAnalysisRequest request, List<String> orgWorkspaceIds, String type) {
+    private List<TreeNode> getTreeNodeValueDataForType(ResourceAnalysisRequest
+                                                               request, List<String> orgWorkspaceIds, String type) {
         // 查询组织或工作空间下磁盘统计数
         MPJLambdaWrapper<OrgWorkspace> wrapper = new MPJLambdaWrapper<>();
         // 返回内容

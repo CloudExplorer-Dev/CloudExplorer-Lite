@@ -546,9 +546,11 @@ public class ServerAnalysisServiceImpl implements IServerAnalysisService {
 
     private static int getWorkspaceResourceNumber(Map<String, List<TreeNode>> workspaceGroupByPid, List<TreeNode> childrenList, TreeNode v) {
         int workspaceResourceNumber = 0;
-        if(workspaceGroupByPid.containsKey(v.getId())){
-            childrenList.addAll(workspaceGroupByPid.get(v.getId()));
-            workspaceResourceNumber = workspaceGroupByPid.get(v.getId()).stream().mapToInt(TreeNode::getValue).sum();
+        for(String pid:workspaceGroupByPid.keySet()){
+            if(StringUtils.equalsIgnoreCase(v.getId(),pid)){
+                childrenList.addAll(workspaceGroupByPid.get(v.getId()));
+                workspaceResourceNumber = workspaceGroupByPid.get(v.getId()).stream().mapToInt(TreeNode::getValue).sum();
+            }
         }
         return workspaceResourceNumber;
     }
