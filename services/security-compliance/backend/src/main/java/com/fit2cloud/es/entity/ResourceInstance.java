@@ -2,10 +2,7 @@ package com.fit2cloud.es.entity;
 
 import lombok.Data;
 import org.springframework.data.annotation.Id;
-import org.springframework.data.elasticsearch.annotations.Document;
-import org.springframework.data.elasticsearch.annotations.Dynamic;
-import org.springframework.data.elasticsearch.annotations.Field;
-import org.springframework.data.elasticsearch.annotations.FieldType;
+import org.springframework.data.elasticsearch.annotations.*;
 
 import java.util.List;
 import java.util.Map;
@@ -40,7 +37,8 @@ public class ResourceInstance {
     /**
      * 资源名称
      */
-    @Field(type = FieldType.Text)
+    @MultiField(mainField = @Field(type = FieldType.Text),
+            otherFields = @InnerField(suffix = "keyword", type = FieldType.Keyword))
     private String resourceName;
     /**
      * 资源id
