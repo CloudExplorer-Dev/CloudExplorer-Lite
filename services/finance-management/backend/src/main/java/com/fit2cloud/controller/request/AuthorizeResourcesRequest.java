@@ -20,15 +20,15 @@ public class AuthorizeResourcesRequest {
     private String type;
 
     @ApiModelProperty(value = "产品名称", notes = "产品名称")
-    @Query(compareType = QueryUtil.CompareType.LIKE, field = "productName")
+    @Query(compareType = QueryUtil.CompareType.WILDCARD, field = "productName.keyword")
     private String productName;
 
     @ApiModelProperty(value = "资源名称", notes = "资源名称")
-    @Query(compareType = QueryUtil.CompareType.LIKE, field = "resourceName")
+    @Query(compareType = QueryUtil.CompareType.WILDCARD, field = "resourceName.keyword")
     private String resourceName;
 
     @ApiModelProperty(value = "企业项目名称", notes = "企业项目名称")
-    @Query(compareType = QueryUtil.CompareType.LIKE, field = "projectName")
+    @Query(compareType = QueryUtil.CompareType.WILDCARD, field = "projectName.keyword")
     private String projectName;
 
     @ApiModelProperty(value = "云账号名称", notes = "云账号名称")

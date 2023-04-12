@@ -17,13 +17,13 @@ public class PageBillDetailedRequest {
     @ApiModelProperty("云账号id")
     private String cloudAccountId;
     @ApiModelProperty("企业项目名称")
-    @Query(field = "projectName", compareType = QueryUtil.CompareType.LIKE)
+    @Query(field = "projectName.keyword", compareType = QueryUtil.CompareType.WILDCARD)
     private String projectName;
     @ApiModelProperty("产品名称")
-    @Query(field = "productName", compareType = QueryUtil.CompareType.LIKE)
+    @Query(field = "productName.keyword", compareType = QueryUtil.CompareType.WILDCARD)
     private String productName;
     @ApiModelProperty("资源名称")
-    @Query(field = "resourceName", compareType = QueryUtil.CompareType.LIKE)
+    @Query(field = "resourceName.keyword", compareType = QueryUtil.CompareType.WILDCARD)
     private String resourceName;
     @ApiModelProperty("排序")
     private OrderRequest order;
