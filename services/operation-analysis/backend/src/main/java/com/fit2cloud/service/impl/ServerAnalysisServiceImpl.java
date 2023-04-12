@@ -450,28 +450,12 @@ public class ServerAnalysisServiceImpl implements IServerAnalysisService {
         if(CollectionUtils.isEmpty(request.getAccountIds())){
             request.setAccountIds(currentUserResourceService.currentUserCloudAccountList().stream().map(CloudAccount::getId).toList());
         }
-        MPJLambdaWrapper<VmCloudServer> queryWrapper = addServerAnalysisQuery(request);
-        queryWrapper.notIn(true,VmCloudServer::getInstanceStatus, List.of(SpecialAttributesConstants.StatusField.VM_DELETE,SpecialAttributesConstants.StatusField.FAILED));
-        List<AnalysisServerDTO> vmList = baseVmCloudServerMapper.selectJoinList(AnalysisServerDTO.class,queryWrapper);
-        int unauthorizedNumber = 0;
-        if(CollectionUtils.isNotEmpty(vmList)){
-            unauthorizedNumber = vmList.size();
-        }
         List<TreeNode> workspaceList = workspaceSpread(request);
         if(request.isAnalysisWorkspace()){
-            if(unauthorizedNumber>0){
-                TreeNode unauthorizedNode = new TreeNode();
-                unauthorizedNode.setName("未授权");
-                unauthorizedNode.setId("unauthorized");
-                unauthorizedNode.setGroupName("workspace");
-                unauthorizedNode.setValue(unauthorizedNumber);
-                unauthorizedNode.setValue(( unauthorizedNumber - Integer.parseInt(String.valueOf(workspaceList.stream().mapToLong(TreeNode::getValue).sum()))));
-                workspaceList.add(unauthorizedNode);
-            }
             result.put("all",workspaceList);
             result.put("tree",workspaceList);
         }else{
-            result = orgSpread(request,workspaceList,unauthorizedNumber);
+            result = orgSpread(request,workspaceList);
         }
         return result;
     }
@@ -479,7 +463,7 @@ public class ServerAnalysisServiceImpl implements IServerAnalysisService {
     /**
      * 组织分布
      */
-    private Map<String,List<TreeNode>> orgSpread(ResourceAnalysisRequest request, List<TreeNode> workspaceList, Integer unauthorizedNumber){
+    private Map<String,List<TreeNode>> orgSpread(ResourceAnalysisRequest request, List<TreeNode> workspaceList){
         Map<String,List<TreeNode>> result = new HashMap<>(1);
         result.put("all",new ArrayList<>());
         result.put("tree",new ArrayList<>());
@@ -489,6 +473,14 @@ public class ServerAnalysisServiceImpl implements IServerAnalysisService {
         Map<String,List<TreeNode>> workspaceGroupByPid = workspaceList.stream().collect(Collectors.groupingBy(TreeNode::getPid));
         //查询所有组织，初始化为chart数据
         List<TreeNode> orgList = orgToTreeNode();
+        //所有拥有权限的云主机
+        MPJLambdaWrapper<VmCloudServer> queryWrapper = addServerAnalysisQuery(request);
+        queryWrapper.notIn(true,VmCloudServer::getInstanceStatus, List.of(SpecialAttributesConstants.StatusField.VM_DELETE,SpecialAttributesConstants.StatusField.FAILED));
+        List<AnalysisServerDTO> vmList = baseVmCloudServerMapper.selectJoinList(AnalysisServerDTO.class,queryWrapper);
+        int unauthorizedNumber = 0;
+        if(CollectionUtils.isNotEmpty(vmList)){
+            unauthorizedNumber = vmList.size();
+        }
         TreeNode unauthorizedNode = new TreeNode();
         if(unauthorizedNumber>0){
             unauthorizedNode.setName("未授权");
@@ -517,23 +509,25 @@ public class ServerAnalysisServiceImpl implements IServerAnalysisService {
         // 设置子级
         Map<String,TreeNode> childrenMap = orgList.stream().collect(Collectors.toMap(TreeNode::getId,o->o));
         List<TreeNode> childrenList = new ArrayList<>();
-        orgList.forEach(v->{
+        for(TreeNode v:orgList){
+            childrenList.clear();
             // 自己没有资源的就不要
             childrenList.add(new TreeNode(v.getId(), v.getName() + "(未授权)", v.getValue(), v.getGroupName(), v.getPid()));
             // 父组织工作空间下资源数量
             int workspaceResourceNumber = getWorkspaceResourceNumber(workspaceGroupByPid, childrenList, v);
             v.setValue(v.getValue()+workspaceResourceNumber);
-            if(childrenMap.containsKey(v.getPid())){
-                TreeNode node = childrenMap.get(v.getPid());
-                // 子组织工作空间下资源数量
-                workspaceResourceNumber = getWorkspaceResourceNumber(workspaceGroupByPid, childrenList, node);
-                v.setValue(v.getValue()+node.getValue()+workspaceResourceNumber);
-                childrenList.add(node);
+            for(String key:childrenMap.keySet()){
+                TreeNode node = childrenMap.get(key);
+                if(StringUtils.equalsIgnoreCase(node.getPid(),v.getId())){
+                    // 子组织工作空间下资源数量
+                    workspaceResourceNumber = getWorkspaceResourceNumber(workspaceGroupByPid, childrenList, node);
+                    v.setValue(v.getValue()+node.getValue()+workspaceResourceNumber);
+                    childrenList.add(node);
+                }
             }
             // 只显示有资源的
             v.setChildren(childrenList.stream().filter(c->c.getValue()>0).toList());
-            childrenList.clear();
-        });
+        }
         //所有-已授权=未授权
         unauthorizedNode.setValue(( unauthorizedNumber - Integer.parseInt(String.valueOf(orgList.stream().mapToLong(TreeNode::getValue).sum()))));
         orgList.add(unauthorizedNode);
@@ -541,7 +535,12 @@ public class ServerAnalysisServiceImpl implements IServerAnalysisService {
         result.put("all",orgList);
         // 获取所有父节点,pid为空表示顶级，或者pid不在当前集合中，则也作为顶级
         List<TreeNode> parentNodeList = orgList.stream().filter(v->StringUtils.isEmpty(v.getPid()) || !orgIds.contains(v.getPid())).toList();
-        result.put("tree", parentNodeList.stream().filter(v->v.getValue()>0).toList());
+        //组织管理员的话，只有一个跟节点，然后只返回他的子集
+        if (CurrentUserUtils.isOrgAdmin()) {
+            result.put("tree",parentNodeList.get(0).getChildren().stream().filter(v->v.getValue()>0).toList());
+        }else{
+            result.put("tree", parentNodeList.stream().filter(v->v.getValue()>0).toList());
+        }
         return result;
     }
 
