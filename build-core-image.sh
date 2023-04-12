@@ -31,6 +31,8 @@ EOF
 declare _APP_VERSION=`awk '/<revision>[^<]+<\/revision>/{gsub(/<revision>|<\/revision>/,"",$1);print $1;exit;}' pom.xml`
 declare APP_VERSION=${reversion:-$_APP_VERSION}
 
+echo ${APP_VERSION} > target/VERSION
+
 declare APP_EUREKA_PORT=`awk '/<service.port>[^<]+<\/service.port>/{gsub(/<service.port>|<\/service.port>/,"",$1);print $1;exit;}' framework/eureka/pom.xml`
 declare APP_GATEWAY_PORT=`awk '/<service.port>[^<]+<\/service.port>/{gsub(/<service.port>|<\/service.port>/,"",$1);print $1;exit;}' framework/gateway/pom.xml`
 declare APP_MANAGEMENT_PORT=`awk '/<service.port>[^<]+<\/service.port>/{gsub(/<service.port>|<\/service.port>/,"",$1);print $1;exit;}' framework/management-center/backend/pom.xml`
