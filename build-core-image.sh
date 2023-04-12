@@ -41,7 +41,7 @@ createCoreDockerfile
 
 cd target
 
-declare docker_build_command="docker buildx build ${build_with_platform} -t ${CE_IMAGE_REPOSITORY}cloudexplorer-core:${APP_VERSION} --push ."
+declare docker_build_command="docker buildx build --platform ${build_with_platform} -t ${CE_IMAGE_REPOSITORY}cloudexplorer-core:${APP_VERSION} --push ."
 
 echo $docker_build_command
 
