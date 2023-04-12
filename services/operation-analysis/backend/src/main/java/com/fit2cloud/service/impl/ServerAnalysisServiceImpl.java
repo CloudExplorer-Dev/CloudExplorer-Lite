@@ -520,7 +520,7 @@ public class ServerAnalysisServiceImpl implements IServerAnalysisService {
                 TreeNode node = childrenMap.get(key);
                 if(StringUtils.equalsIgnoreCase(node.getPid(),v.getId())){
                     // 子组织工作空间下资源数量
-                    workspaceResourceNumber = getWorkspaceResourceNumber(workspaceGroupByPid, childrenList, node);
+                   // workspaceResourceNumber = getWorkspaceResourceNumber(workspaceGroupByPid, childrenList, node);
                     v.setValue(v.getValue()+node.getValue()+workspaceResourceNumber);
                     childrenList.add(node);
                 }
@@ -529,7 +529,7 @@ public class ServerAnalysisServiceImpl implements IServerAnalysisService {
             v.setChildren(childrenList.stream().filter(c->c.getValue()>0).toList());
         }
         //所有-已授权=未授权
-        unauthorizedNode.setValue(( unauthorizedNumber - Integer.parseInt(String.valueOf(orgList.stream().mapToLong(TreeNode::getValue).sum()))));
+        unauthorizedNode.setValue(( unauthorizedNumber - Integer.parseInt(String.valueOf(orgList.stream().filter(s->Objects.isNull(s.pid)).mapToLong(TreeNode::getValue).sum()))));
         orgList.add(unauthorizedNode);
         //扁平数据
         result.put("all",orgList);
