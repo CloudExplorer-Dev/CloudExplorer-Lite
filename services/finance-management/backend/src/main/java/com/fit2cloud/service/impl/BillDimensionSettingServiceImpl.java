@@ -199,19 +199,45 @@ public class BillDimensionSettingServiceImpl extends ServiceImpl<BillDimensionSe
 
     @Override
     public void authorEditSetting() {
-        List<BillDimensionSetting> billDimensionSettings = list(new LambdaQueryWrapper<BillDimensionSetting>().eq(BillDimensionSetting::getUpdateFlag, true))
+        List<BillDimensionSetting> billDimensionSettings = list()
                 .stream()
                 .sorted(Comparator.comparing(BillDimensionSetting::getUpdateTime))
                 .toList();
+
         for (BillDimensionSetting billDimensionSetting : billDimensionSettings) {
-            // 清除历史授权数据
-            clearAuthorize(billDimensionSetting, null, null);
-            // 授权
-            authorize(billDimensionSetting);
-            // 设置未修改
-            billDimensionSetting.setUpdateFlag(false);
-            updateById(billDimensionSetting);
+            if (checkDimensionSetting(billDimensionSetting)) {
+                // 清除历史授权数据
+                clearAuthorize(billDimensionSetting, null, null);
+                // 授权
+                authorize(billDimensionSetting);
+                // 设置未修改
+                billDimensionSetting.setUpdateFlag(false);
+                updateById(billDimensionSetting);
+            }
         }
+    }
+
+
+    /**
+     * 校验当前授权规则是否可进行授权
+     *
+     * @param billDimensionSetting 授权规则
+     * @return 是否可授权 true 可进行授权,false 不可授权
+     */
+    private boolean checkDimensionSetting(BillDimensionSetting billDimensionSetting) {
+        if (billDimensionSetting.getType().equals(AuthorizeTypeConstants.ORGANIZATION)) {
+            Organization organization = organizationService.getById(billDimensionSetting.getAuthorizeId());
+            if (Objects.nonNull(organization)) {
+                return billDimensionSetting.getUpdateFlag().equals(true);
+            }
+        } else if (billDimensionSetting.getType().equals(AuthorizeTypeConstants.WORKSPACE)) {
+            Workspace workspace = workspaceService.getById(billDimensionSetting.getAuthorizeId());
+            if (Objects.nonNull(workspace)) {
+                return billDimensionSetting.getUpdateFlag().equals(true);
+            }
+        }
+        this.remove(new LambdaQueryWrapper<BillDimensionSetting>().eq(BillDimensionSetting::getAuthorizeId, billDimensionSetting.getAuthorizeId()));
+        return false;
     }
 
     @SneakyThrows
