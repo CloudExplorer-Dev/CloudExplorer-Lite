@@ -57,7 +57,7 @@
                 />
               </el-select>
             </el-form-item>
-            <el-form-item prop="riskLevel" style="width: 45%" label="规则等级">
+            <el-form-item prop="riskLevel" style="width: 45%" label="风险等级">
               <el-radio-group v-model="updateComplianceRuleForm.riskLevel">
                 <el-radio-button
                   v-for="level in riskLevelOptionList"
