@@ -1,5 +1,9 @@
 #!/usr/bin/env bash
 
+# 必须传入环境变量 build_with_platform   指定构建平台 linux/amd64,linux/arm64
+# 必须传入环境变量 CE_IMAGE_REPOSITORY   指定镜像仓库
+# 可选传入环境变量 reversion             指定打包后版本
+
 function createCoreDockerfile() {
   cat > target/Dockerfile << EOF
 FROM registry.cn-qingdao.aliyuncs.com/cloudexplorer/alpine-openjdk17:latest
@@ -40,5 +44,7 @@ cd target
 declare docker_build_command="docker buildx build ${build_with_platform} -t ${CE_IMAGE_REPOSITORY}cloudexplorer-core:${APP_VERSION} --push ."
 
 echo $docker_build_command
+
+`$docker_build_command` || exit 1;
 
 
