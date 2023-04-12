@@ -37,8 +37,8 @@
             </goals>
             <configuration>
               <!-- See https://nodejs.org/en/download/ for latest node and npm (lts) versions -->
-              <nodeVersion>v16.16.0</nodeVersion>
-              <yarnVersion>v1.22.11</yarnVersion>
+              <nodeVersion>${node.version}</nodeVersion>
+              <yarnVersion>${yarn.version}</yarnVersion>
             </configuration>
           </execution>
           <execution>
@@ -52,7 +52,7 @@
             </configuration>
           </execution>
           <execution>
-            <id>yarn build:base</id>
+            <id>yarn build:bill</id>
             <goals>
               <goal>yarn</goal>
             </goals>

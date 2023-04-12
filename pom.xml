@@ -28,6 +28,8 @@
 
         <revision>main</revision>
         <java.version>17</java.version>
+        <node.version>v19.8.1</node.version>
+        <yarn.version>v1.22.19</yarn.version>
         <spring-cloud.version>2021.0.5</spring-cloud.version>
         <spring-boot-thin.version>1.0.29.RELEASE</spring-boot-thin.version>
         <swagger.version>2.9.2</swagger.version>
