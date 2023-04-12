@@ -103,11 +103,19 @@ public class DimensionSettingController {
 
     @GetMapping("/authorize")
     @ApiOperation(value = "授权数据", notes = "授权数据")
-    @PreAuthorize("hasAnyCePermission('DIMENSION_SETTING:READ')")
+    @PreAuthorize("hasAnyCePermission('DIMENSION_SETTING:EDIT')")
     public ResultHolder<Boolean> authorize(@RequestParam("bill_dimension_setting_id") String billDimensionSettingId,
                                            @RequestParam("month") String month,
                                            @RequestParam("cloudAccountId") String cloudAccountId) {
         billDimensionSettingService.authorize(billDimensionSettingId, month, cloudAccountId);
+        return ResultHolder.success(true);
+    }
+
+    @GetMapping("/author_edit_setting")
+    @ApiOperation(value = "授权已修改的规则", notes = "授权已修改的规则")
+    @PreAuthorize("hasAnyCePermission('DIMENSION_SETTING:EDIT')")
+    public ResultHolder<Boolean> authorEditSetting() {
+        billDimensionSettingService.authorEditSetting();
         return ResultHolder.success(true);
     }
 }
