@@ -519,8 +519,9 @@ public class ServerAnalysisServiceImpl implements IServerAnalysisService {
             for(String key:childrenMap.keySet()){
                 TreeNode node = childrenMap.get(key);
                 if(StringUtils.equalsIgnoreCase(node.getPid(),v.getId())){
+                    List<TreeNode> nodeChildrenList = new ArrayList<>();
                     // 子组织工作空间下资源数量
-                    workspaceResourceNumber = getWorkspaceResourceNumber(workspaceGroupByPid, childrenList, node);
+                    workspaceResourceNumber = getWorkspaceResourceNumber(workspaceGroupByPid, nodeChildrenList, node);
                     v.setValue(v.getValue()+node.getValue()+workspaceResourceNumber);
                     childrenList.add(node);
                 }
@@ -546,9 +547,11 @@ public class ServerAnalysisServiceImpl implements IServerAnalysisService {
 
     private static int getWorkspaceResourceNumber(Map<String, List<TreeNode>> workspaceGroupByPid, List<TreeNode> childrenList, TreeNode v) {
         int workspaceResourceNumber = 0;
-        if(workspaceGroupByPid.containsKey(v.getId())){
-            childrenList.addAll(workspaceGroupByPid.get(v.getId()));
-            workspaceResourceNumber = workspaceGroupByPid.get(v.getId()).stream().mapToInt(TreeNode::getValue).sum();
+        for(String pid:workspaceGroupByPid.keySet()){
+            if(StringUtils.equalsIgnoreCase(v.getId(),pid)){
+                childrenList.addAll(workspaceGroupByPid.get(v.getId()));
+                workspaceResourceNumber = workspaceGroupByPid.get(v.getId()).stream().mapToInt(TreeNode::getValue).sum();
+            }
         }
         return workspaceResourceNumber;
     }
