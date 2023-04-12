@@ -10,25 +10,25 @@
 </p>
 <hr/>
 
-## 什么是 CloudExplorer-Lite？
-CloudExplorer-Lite 是开源的轻量版多云管理平台；   
-CloudExplorer-Lite 脱胎于飞致云创始软件产品 CloudExplorer 多云管理平台，支持对接纳管主流的公有云和私有云基础设施，提供开箱即用的云主机管理、云账单、运营分析和安全合规等基本功能，同时还可提供强大的扩展能力以满足企业的定制化需求。
+## 什么是 CloudExplorer Lite？
+CloudExplorer Lite 是开源的轻量版多云管理平台；   
+CloudExplorer Lite 脱胎于飞致云创始软件产品 CloudExplorer 多云管理平台，支持对接纳管主流的公有云和私有云基础设施，提供开箱即用的云主机管理、云账单、运营分析和安全合规等基本功能，同时还可提供强大的扩展能力以满足企业的定制化需求。
 
-## CloudExplorer-Lite 产品特性
+## CloudExplorer Lite 产品特性
 
 - **多云对接**
   
-CloudExplorer-Lite支持对接纳管市场上主流的公有云和私有云基础设施，包括阿里云、腾讯云、华为云、VMware、OpenStack等。
+CloudExplorer Lite 支持对接纳管市场上主流的公有云和私有云基础设施，包括阿里云、腾讯云、华为云、VMware、OpenStack等。
 
 - **开箱即用**
 
-CloudExplorer-Lite提供了诸多开箱即用的功能，比如云主机管理、云账单、运营分析和安全合规等，能够满足大部分企业在云基础设施管理方面的基本需求。
+CloudExplorer Lite 提供了诸多开箱即用的功能，比如云主机管理、云账单、运营分析和安全合规等，能够满足大部分企业在云基础设施管理方面的基本需求。
 
 - **扩展能力**
 
 CloudExplorer Lite提供了强大的多租户体系和模块化能力，可以满足企业的定制化需求。
 
-## CloudExplorer-Lite 云管平台主页面
+## CloudExplorer Lite 云管平台主页面
 ![ce-主页](https://fit2cloud.com/cloudexplorer-lite/docs/img/index/主页.png)
 
 ## 快速开始
@@ -41,7 +41,7 @@ CloudExplorer Lite提供了强大的多租户体系和模块化能力，可以�
 
 **一键安装**
 
-仅需两步快速安装 CloudExplorer-Lite：
+仅需两步快速安装 CloudExplorer Lite：
 
 1. 准备一台不小于 8C16G 的 Linux 主机；
 2. 以 root 用户执行如下命令一键安装 CloudExplorer-Lite。
@@ -62,7 +62,7 @@ CloudExplorer Lite提供了强大的多租户体系和模块化能力，可以�
 
 <img src="https://fit2cloud.com/cloudexplorer-lite/images/wechat-group.png" width="156" height="156"/>
 
-## CloudExplorer-Lite 的技术栈
+## CloudExplorer Lite 的技术栈
 
 -   前端：[Vue3.js](https://cn.vuejs.org/)、[Element Plus](https://element-plus.org/zh-CN/)、[TypeScript](https://www.tslang.cn/)
 -   图库：[Apache ECharts](https://github.com/apache/echarts)
