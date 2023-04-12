@@ -148,6 +148,12 @@ const handleBackClick = () => {
     if (parentItem.value && ppItem) {
       optionsTree.value = ppItem.children;
       parentItem.value = ppItem;
+      if (
+        userStore.currentRole != "ADMIN" &&
+        userStore.currentSource === ppItem.id
+      ) {
+        showBack.value = false;
+      }
     } else {
       showBack.value = false;
       parentItem.value = undefined;

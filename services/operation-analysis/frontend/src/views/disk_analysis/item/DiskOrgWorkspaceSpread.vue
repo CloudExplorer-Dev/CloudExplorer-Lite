@@ -57,7 +57,8 @@ const showBack = ref<boolean>(false);
 const parentItem = ref<any>({});
 const options = ref<ECBasicOption>();
 const optionsTree = ref<any>();
-const setParams = () => {
+const getSpreadByDepartmentData = () => {
+  showBack.value = false;
   props.cloudAccountId
     ? _.set(
         params,
@@ -67,10 +68,6 @@ const setParams = () => {
     : "";
   _.set(params, "statisticalBlock", props.currentUnit === "block");
   _.set(params, "analysisWorkspace", paramDepartmentType.value === "workspace");
-};
-const getSpreadByDepartmentData = () => {
-  showBack.value = false;
-  setParams();
   ResourceSpreadViewApi.getAnalysisOrgWorkspaceDiskCount(params, loading).then(
     (res) => {
       apiData.value = res.data;
@@ -148,6 +145,12 @@ const handleBackClick = () => {
     if (parentItem.value && ppItem) {
       optionsTree.value = ppItem.children;
       parentItem.value = ppItem;
+      if (
+        userStore.currentRole != "ADMIN" &&
+        userStore.currentSource === ppItem.id
+      ) {
+        showBack.value = false;
+      }
     } else {
       showBack.value = false;
       parentItem.value = undefined;

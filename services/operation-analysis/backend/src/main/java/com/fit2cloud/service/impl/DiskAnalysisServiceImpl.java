@@ -252,6 +252,30 @@ public class DiskAnalysisServiceImpl implements IDiskAnalysisService {
                     .filter(v->StringUtils.isNotEmpty(v.getAccountId()))
                     .map(VmCloudDisk::getAccountId).distinct().toList());
         }
+        List<TreeNode> workspaceList =  workspaceSpread(request);
+        if(request.isAnalysisWorkspace()){
+            result.put("all",workspaceList);
+            result.put("tree",workspaceList);
+        }else{
+            result = orgSpread(request,workspaceList);
+
+        }
+        return result;
+    }
+
+    /**
+     * 组织上的分布
+     */
+    private Map<String,List<TreeNode>> orgSpread(ResourceAnalysisRequest request, List<TreeNode> workspaceList){
+        Map<String,List<TreeNode>> result = new HashMap<>(2);
+        result.put("all",new ArrayList<>());
+        result.put("tree",new ArrayList<>());
+        //工作空间添加标识
+        workspaceList.forEach(v-> v.setName(v.getName()+"(工作空间)"));
+        //工作空间按照父级ID分组
+        Map<String,List<TreeNode>> workspaceGroupByPid = workspaceList.stream().collect(Collectors.groupingBy(TreeNode::getPid));
+        //查询所有组织，初始化为chart数据
+        List<TreeNode> orgList = iServerAnalysisService.orgToTreeNode();
         MPJLambdaWrapper<VmCloudDisk> queryWrapper = addDiskAnalysisQuery(request);
         if(request.isStatisticalBlock()){
             queryWrapper.selectCount(VmCloudDisk::getId,AnalysisDiskDTO::getValue);
@@ -263,38 +287,6 @@ public class DiskAnalysisServiceImpl implements IDiskAnalysisService {
         if(CollectionUtils.isNotEmpty(diskList)){
             unauthorizedNumber = diskList.stream().filter(Objects::nonNull).mapToInt(AnalysisDiskDTO::getValue).sum();
         }
-        List<TreeNode> workspaceList =  workspaceSpread(request);
-        if(request.isAnalysisWorkspace()){
-            if(unauthorizedNumber>0){
-                TreeNode unauthorizedNode = new TreeNode();
-                unauthorizedNode.setName("未授权");
-                unauthorizedNode.setId("unauthorized");
-                unauthorizedNode.setGroupName("workspace");
-                unauthorizedNode.setValue(unauthorizedNumber);
-                unauthorizedNode.setValue(( unauthorizedNumber - Integer.parseInt(String.valueOf(workspaceList.stream().mapToLong(TreeNode::getValue).sum()))));
-                workspaceList.add(unauthorizedNode);
-            }
-            result.put("tree",workspaceList);
-        }else{
-            result = orgSpread(request,workspaceList,unauthorizedNumber);
-
-        }
-        return result;
-    }
-
-    /**
-     * 组织上的分布
-     */
-    private Map<String,List<TreeNode>> orgSpread(ResourceAnalysisRequest request, List<TreeNode> workspaceList, Integer unauthorizedNumber){
-        Map<String,List<TreeNode>> result = new HashMap<>(2);
-        result.put("all",new ArrayList<>());
-        result.put("tree",new ArrayList<>());
-        //工作空间添加标识
-        workspaceList.forEach(v-> v.setName(v.getName()+"(工作空间)"));
-        //工作空间按照父级ID分组
-        Map<String,List<TreeNode>> workspaceGroupByPid = workspaceList.stream().collect(Collectors.groupingBy(TreeNode::getPid));
-        //查询所有组织，初始化为chart数据
-        List<TreeNode> orgList = iServerAnalysisService.orgToTreeNode();
         TreeNode unauthorizedNode = new TreeNode();
         if(unauthorizedNumber>0){
             unauthorizedNode.setName("未授权");
@@ -323,31 +315,38 @@ public class DiskAnalysisServiceImpl implements IDiskAnalysisService {
         Map<String,TreeNode> childrenMap = orgList.stream().collect(Collectors.toMap(TreeNode::getId,o->o));
         List<TreeNode> childrenList = new ArrayList<>();
         //设置子级并累加值
-        orgList.forEach(v->{
+        for(TreeNode v:orgList){
+            childrenList.clear();
             // 自己没有资源的就不要
             childrenList.add(new TreeNode(v.getId(), v.getName() + "(未授权)", v.getValue(), v.getGroupName(), v.getPid()));
             // 父组织工作空间下资源数量
             int workspaceResourceNumber = getWorkspaceResourceNumber(workspaceGroupByPid, childrenList, v);
             v.setValue(v.getValue()+workspaceResourceNumber);
-            if(childrenMap.containsKey(v.getPid())){
-                TreeNode node = childrenMap.get(v.getPid());
-                // 子组织工作空间下资源数量
-                workspaceResourceNumber = getWorkspaceResourceNumber(workspaceGroupByPid, childrenList, node);
-                v.setValue(v.getValue()+node.getValue()+workspaceResourceNumber);
-                childrenList.add(node);
+            for(String key:childrenMap.keySet()){
+                TreeNode node = childrenMap.get(key);
+                if(StringUtils.equalsIgnoreCase(node.getPid(),v.getId())){
+                    // 子组织工作空间下资源数量
+                    workspaceResourceNumber = getWorkspaceResourceNumber(workspaceGroupByPid, childrenList, node);
+                    v.setValue(v.getValue()+node.getValue()+workspaceResourceNumber);
+                    childrenList.add(node);
+                }
             }
             // 只显示有资源的
-            v.setChildren(childrenList.stream().filter(c->c.getValue()>0).toList());
-            childrenList.clear();
-        });
+            v.setChildren(childrenList.stream().filter(c->c.getValue()>0).collect(Collectors.toList()));
+        }
         //所有-已授权=未授权
         unauthorizedNode.setValue(( unauthorizedNumber - Integer.parseInt(String.valueOf(orgList.stream().mapToLong(TreeNode::getValue).sum()))));
         orgList.add(unauthorizedNode);
         // 扁平数据
         result.put("all",orgList);
         // 获取所有父节点,pid为空表示顶级，或者pid不在当前集合中，则也作为顶级
-        List<TreeNode> parentNodeList = orgList.stream().filter(v->StringUtils.isEmpty(v.getPid()) || !orgIds.contains(v.getPid())).toList();
-        result.put("tree", parentNodeList.stream().filter(v->v.getValue()>0).toList());
+        List<TreeNode> parentNodeList = orgList.stream().filter(v->StringUtils.isEmpty(v.getPid()) || !orgIds.contains(v.getPid())).collect(Collectors.toList());
+        //组织管理员的话，只有一个跟节点，然后只返回他的子集
+        if (CurrentUserUtils.isOrgAdmin()) {
+            result.put("tree",parentNodeList.get(0).getChildren().stream().filter(v->v.getValue()>0).collect(Collectors.toList()));
+        }else{
+            result.put("tree", parentNodeList.stream().filter(v->v.getValue()>0).collect(Collectors.toList()));
+        }
         return result;
     }
 
