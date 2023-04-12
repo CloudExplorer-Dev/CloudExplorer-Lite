@@ -53,7 +53,7 @@
             </configuration>
           </execution>
           <execution>
-            <id>yarn build:base</id>
+            <id>yarn build:vm</id>
             <goals>
               <goal>yarn</goal>
             </goals>

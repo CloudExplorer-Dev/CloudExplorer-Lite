@@ -53,13 +53,13 @@
             </configuration>
           </execution>
           <execution>
-            <id>yarn build:base</id>
+            <id>yarn workspace DEMO-TEMPLATE run build-only</id>
             <goals>
               <goal>yarn</goal>
             </goals>
             <configuration>
               <yarnInheritsProxyConfigFromMaven>false</yarnInheritsProxyConfigFromMaven>
-              <arguments>build:vm</arguments>
+              <arguments>workspace DEMO-TEMPLATE run build-only</arguments>
             </configuration>
           </execution>
         </executions>

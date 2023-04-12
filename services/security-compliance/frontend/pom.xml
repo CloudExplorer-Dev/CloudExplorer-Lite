@@ -52,7 +52,7 @@
             </configuration>
           </execution>
           <execution>
-            <id>yarn build:base</id>
+            <id>yarn build:security</id>
             <goals>
               <goal>yarn</goal>
             </goals>

@@ -106,6 +106,8 @@ export default defineConfig(({ mode }: ConfigEnv) => {
   proxyConf[ENV.VITE_BASE_PATH + "operation-analysis"] =
     "http://127.0.0.1:5005";
 
+  //PROXY_PLACEHOLDER
+
   //https://cn.vitejs.dev/config/server-options.html#server-host
   config.server = {
     cors: true,

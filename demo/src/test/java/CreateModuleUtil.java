@@ -108,6 +108,17 @@ public class CreateModuleUtil {
         data = data.replace("<!--NEW_MODULE_PLACE_HOLDER-->", "<module>" + NEW_MODULE_NAME + "</module>\n        <!--NEW_MODULE_PLACE_HOLDER-->");
         FileUtils.writeStringToFile(file, data);
 
+        //添加到基座的代理中
+        File file2 = new File(parentPath + "/framework/sdk/frontend/vite.config.ts");
+        String data2 = FileUtils.readFileToString(file);
+        data2 = data2.replace("//PROXY_PLACEHOLDER", "proxyConf[ENV.VITE_BASE_PATH + \"" + NEW_MODULE_NAME + "/api\"] =\n" +
+                "    \"http://localhost:\" + Number(ENV.VITE_BASE_API_PORT);\n" +
+                "  proxyConf[ENV.VITE_BASE_PATH + \"" + NEW_MODULE_NAME + "\"] =\n" +
+                "    \"http://127.0.0.1:" + NEW_MODULE_FRONTEND_PORT + "\";\n" +
+                "\n" +
+                "  //PROXY_PLACEHOLDER");
+        FileUtils.writeStringToFile(file2, data2);
+
         System.out.println("创建模块" + NEW_MODULE_NAME + "完成");
         System.out.println("要启动前端项目请先在项目根目录执行 yarn install\n" +
                 "然后执行yarn workspace " + NEW_MODULE_NAME + " run dev");
