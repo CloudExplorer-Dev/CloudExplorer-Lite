@@ -1016,13 +1016,11 @@ public class TencentSyncCloudApi {
         if (StringUtils.isNotEmpty(request.getCredential())) {
             TencentVmCredential credential = JsonUtil.parseObject(request.getCredential(), TencentVmCredential.class);
             CvmClient client = credential.getCvmClient(request.getRegionId());
-
-            Instance instance = getInstanceById(request.getUuid(), client);
-            if (F2CInstanceStatus.Stopped.name().equalsIgnoreCase(TencentMappingUtil.toF2CStatus(instance.getInstanceState()))) {
-                return true;
-            }
-
             try {
+                Instance instance = getInstanceById(request.getUuid(), client);
+                if (F2CInstanceStatus.Stopped.name().equalsIgnoreCase(TencentMappingUtil.toF2CStatus(instance.getInstanceState()))) {
+                    return true;
+                }
                 StopInstancesRequest stopInstancesRequest = new StopInstancesRequest();
                 stopInstancesRequest.setInstanceIds(new String[]{request.getUuid()});
                 stopInstancesRequest.setStopType(request.getForce() ? "HARD" : "SOFT");
@@ -1047,6 +1045,10 @@ public class TencentSyncCloudApi {
             TencentVmCredential credential = JsonUtil.parseObject(request.getCredential(), TencentVmCredential.class);
             CvmClient client = credential.getCvmClient(request.getRegionId());
             try {
+                Instance instance = getInstanceById(request.getUuid(), client);
+                if (F2CInstanceStatus.Running.name().equalsIgnoreCase(TencentMappingUtil.toF2CStatus(instance.getInstanceState()))) {
+                    return true;
+                }
                 StartInstancesRequest startInstancesRequest = new StartInstancesRequest();
                 startInstancesRequest.setInstanceIds(new String[]{request.getUuid()});
                 StartInstancesResponse response = client.StartInstances(startInstancesRequest);

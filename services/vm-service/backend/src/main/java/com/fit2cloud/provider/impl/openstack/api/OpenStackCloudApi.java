@@ -162,7 +162,9 @@ public class OpenStackCloudApi {
             if (server == null) {
                 throw new RuntimeException("server not exist");
             }
-
+            if (F2CInstanceStatus.Running.name().equalsIgnoreCase(OpenStackUtils.getStatus(server.getStatus()).name())) {
+                return true;
+            }
             ActionResponse response = osClient.compute().servers().action(request.getUuid(), Action.START);
             if (!response.isSuccess()) {
                 throw new RuntimeException(response.getFault());
