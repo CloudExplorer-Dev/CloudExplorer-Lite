@@ -1,6 +1,6 @@
 <p align="center"><a href="https://fit2cloud.com/cloudexplorer-lite/index.html
         "><img src="https://fit2cloud.com/cloudexplorer-lite/docs/img/CloudExplorer-Lite-logo.jpg" alt="cloudexplorer-lite" width="300px"  /></a></p>
-        <h3 align="center">开源的轻量版云管平台</h3>
+        <h3 align="center">开源的轻量级云管平台</h3>
         <p align="center">
           <a href="https://www.gnu.org/licenses/old-licenses/gpl-3.0"><img src="https://img.shields.io/github/license/CloudExplorer-Dev/CloudExplorer-Lite?color=%231890FF" alt="License: GPL v3"></a>
           <a href="https://app.codacy.com/gh/dataease/dataease?utm_source=github.com&utm_medium=referral&utm_content=dataease/dataease&utm_campaign=Badge_Grade_Dashboard"><img src="https://app.codacy.com/project/badge/Grade/da67574fd82b473992781d1386b937ef" alt="Codacy"></a>
@@ -11,7 +11,7 @@
 <hr/>
 
 ## 什么是 CloudExplorer Lite？
-CloudExplorer Lite 是开源的轻量版云管平台；   
+CloudExplorer Lite 是开源的轻量级云管平台；   
 CloudExplorer Lite 脱胎于飞致云创始软件产品 CloudExplorer 多云管理平台，支持对接纳管主流的公有云和私有云基础设施，提供开箱即用的云主机管理、云账单、运营分析和安全合规等基本功能，同时还可提供强大的扩展能力以满足企业的定制化需求。
 
 ## CloudExplorer Lite 产品特性
