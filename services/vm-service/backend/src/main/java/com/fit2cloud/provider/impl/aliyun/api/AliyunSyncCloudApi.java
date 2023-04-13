@@ -858,6 +858,10 @@ public class AliyunSyncCloudApi {
             stopInstancesRequest.setForceStop(aliyunInstanceRequest.getForce());
             stopInstancesRequest.setInstanceId(Arrays.asList(aliyunInstanceRequest.getUuid()));
             try {
+                DescribeInstancesResponseBody.DescribeInstancesResponseBodyInstancesInstance instance = getInstanceById(aliyunInstanceRequest.getUuid(), aliyunInstanceRequest.getRegionId(), client);
+                if(F2CInstanceStatus.Stopped.name().equalsIgnoreCase(instance.getStatus())){
+                    return true;
+                }
                 client.stopInstancesWithOptions(stopInstancesRequest, new RuntimeOptions());
                 DescribeInstanceStatusRequest describeInstanceStatusRequest = new DescribeInstanceStatusRequest();
                 describeInstanceStatusRequest.setRegionId(aliyunInstanceRequest.getRegionId());
@@ -885,6 +889,10 @@ public class AliyunSyncCloudApi {
             startInstancesRequest.setRegionId(aliyunInstanceRequest.getRegionId());
             startInstancesRequest.setInstanceId(Arrays.asList(aliyunInstanceRequest.getUuid()));
             try {
+                DescribeInstancesResponseBody.DescribeInstancesResponseBodyInstancesInstance instance = getInstanceById(aliyunInstanceRequest.getUuid(), aliyunInstanceRequest.getRegionId(), client);
+                if(F2CInstanceStatus.Running.name().equalsIgnoreCase(instance.getStatus())){
+                    return true;
+                }
                 client.startInstances(startInstancesRequest);
                 DescribeInstanceStatusRequest describeInstanceStatusRequest = new DescribeInstanceStatusRequest();
                 describeInstanceStatusRequest.setRegionId(aliyunInstanceRequest.getRegionId());

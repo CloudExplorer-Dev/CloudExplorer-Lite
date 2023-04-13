@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 # 必须传入环境变量 CE_IMAGE_REPOSITORY   指定镜像仓库
-# 可选传入环境变量 reversion             指定打包后版本
+# 可选传入环境变量 revision             指定打包后版本
 
 function createCoreDockerComposeFile() {
   cat > target/docker-compose-core.yml << EOF
@@ -37,7 +37,7 @@ EOF
 
 #获取版本号
 declare _APP_VERSION=`awk '/<revision>[^<]+<\/revision>/{gsub(/<revision>|<\/revision>/,"",$1);print $1;exit;}' pom.xml`
-declare APP_VERSION=${reversion:-$_APP_VERSION}
+declare APP_VERSION=${revision:-$_APP_VERSION}
 
 declare APP_EUREKA_PORT=`awk '/<service.port>[^<]+<\/service.port>/{gsub(/<service.port>|<\/service.port>/,"",$1);print $1;exit;}' framework/eureka/pom.xml`
 declare APP_GATEWAY_PORT=`awk '/<service.port>[^<]+<\/service.port>/{gsub(/<service.port>|<\/service.port>/,"",$1);print $1;exit;}' framework/gateway/pom.xml`

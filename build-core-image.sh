@@ -2,7 +2,7 @@
 
 # 必须传入环境变量 build_with_platform   指定构建平台 linux/amd64,linux/arm64
 # 必须传入环境变量 CE_IMAGE_REPOSITORY   指定镜像仓库
-# 可选传入环境变量 reversion             指定打包后版本
+# 可选传入环境变量 revision             指定打包后版本
 
 function createCoreDockerfile() {
   cat > target/Dockerfile << EOF
@@ -29,7 +29,7 @@ EOF
 
 #获取版本号
 declare _APP_VERSION=`awk '/<revision>[^<]+<\/revision>/{gsub(/<revision>|<\/revision>/,"",$1);print $1;exit;}' pom.xml`
-declare APP_VERSION=${reversion:-$_APP_VERSION}
+declare APP_VERSION=${revision:-$_APP_VERSION}
 
 echo ${APP_VERSION} > target/VERSION
 

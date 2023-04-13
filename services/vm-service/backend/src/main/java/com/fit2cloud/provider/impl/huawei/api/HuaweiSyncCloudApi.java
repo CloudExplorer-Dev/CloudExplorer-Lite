@@ -239,12 +239,11 @@ public class HuaweiSyncCloudApi {
             HuaweiVmCredential credential = JsonUtil.parseObject(request.getCredential(), HuaweiVmCredential.class);
             EcsClient client = credential.getEcsClient(request.getRegionId());
 
-            ServerDetail serverDetail = getInstanceById(request.getUuid(), client);
-            if (F2CInstanceStatus.Stopped.name().equalsIgnoreCase(HuaweiMappingUtil.toF2CInstanceStatus(serverDetail.getStatus()))) {
-                return true;
-            }
-
             try {
+                ServerDetail serverDetail = getInstanceById(request.getUuid(), client);
+                if (F2CInstanceStatus.Stopped.name().equalsIgnoreCase(HuaweiMappingUtil.toF2CInstanceStatus(serverDetail.getStatus()))) {
+                    return true;
+                }
                 BatchStopServersResponse batchStopServersResponse = client.batchStopServers(new BatchStopServersRequest()
                         .withBody(new BatchStopServersRequestBody()
                                 .withOsStop(
@@ -272,6 +271,10 @@ public class HuaweiSyncCloudApi {
             HuaweiVmCredential credential = JsonUtil.parseObject(request.getCredential(), HuaweiVmCredential.class);
             EcsClient client = credential.getEcsClient(request.getRegionId());
             try {
+                ServerDetail serverDetail = getInstanceById(request.getUuid(), client);
+                if (F2CInstanceStatus.Running.name().equalsIgnoreCase(HuaweiMappingUtil.toF2CInstanceStatus(serverDetail.getStatus()))) {
+                    return true;
+                }
                 BatchStartServersResponse batchStartServersResponse = client.batchStartServers(new BatchStartServersRequest()
                         .withBody(new BatchStartServersRequestBody()
                                 .withOsStart(

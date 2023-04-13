@@ -5,6 +5,7 @@ import com.fit2cloud.common.platform.credential.impl.VsphereCredential;
 import com.fit2cloud.common.provider.impl.vsphere.utils.ClsApiClient;
 import com.fit2cloud.common.provider.impl.vsphere.utils.VapiAuthenticationHelper;
 import com.fit2cloud.common.provider.impl.vsphere.utils.VsphereClient;
+import com.fit2cloud.provider.constants.F2CInstanceStatus;
 import com.fit2cloud.provider.impl.vsphere.entity.VsphereTemplate;
 import com.fit2cloud.provider.impl.vsphere.entity.request.VsphereVmCreateRequest;
 import com.vmware.vapi.bindings.StubConfiguration;
@@ -146,12 +147,11 @@ public class VsphereVmClient extends VsphereClient {
      * @return
      */
     public boolean powerOff(String uuid) {
-        VirtualMachine virtualMachine = getVirtualMachineByUuId(uuid);
-        //电源已是关闭状态
-        if (StringUtils.equalsIgnoreCase(VirtualMachinePowerState.poweredOff.name(), virtualMachine.getRuntime().getPowerState().name())) {
-            throw new RuntimeException("The current state of the virtual machine is power off!");
-        }
         try {
+            VirtualMachine virtualMachine = getVirtualMachineByUuId(uuid);
+            if (F2CInstanceStatus.Stopped.name().equalsIgnoreCase(VsphereUtil.getStatus(virtualMachine.getRuntime().getPowerState().name()).name())) {
+                return true;
+            }
             Task task = virtualMachine.powerOffVM_Task();
             String result = task.waitForTask();
             if (!StringUtils.equalsIgnoreCase(TaskInfoState.success.name(), result)) {
@@ -170,11 +170,11 @@ public class VsphereVmClient extends VsphereClient {
      * @return
      */
     public boolean powerOn(String uuid) {
-        VirtualMachine virtualMachine = getVirtualMachineByUuId(uuid);
-        if (StringUtils.equalsIgnoreCase(VirtualMachinePowerState.poweredOn.name(), virtualMachine.getRuntime().getPowerState().name())) {
-            throw new RuntimeException("The current state of the virtual machine is power on!");
-        }
         try {
+            VirtualMachine virtualMachine = getVirtualMachineByUuId(uuid);
+            if (F2CInstanceStatus.Running.name().equalsIgnoreCase(VsphereUtil.getStatus(virtualMachine.getRuntime().getPowerState().name()).name())) {
+                return true;
+            }
             HostSystem hostSystem = getHost(virtualMachine);
             Task task = virtualMachine.powerOnVM_Task(hostSystem);
             String result = task.waitForTask();
@@ -194,11 +194,11 @@ public class VsphereVmClient extends VsphereClient {
      * @return
      */
     public boolean shutdownInstance(String uuid) {
-        VirtualMachine virtualMachine = getVirtualMachineByUuId(uuid);
-        if (StringUtils.equalsIgnoreCase(VirtualMachinePowerState.poweredOff.name(), virtualMachine.getRuntime().getPowerState().name())) {
-            return true;
-        }
         try {
+            VirtualMachine virtualMachine = getVirtualMachineByUuId(uuid);
+            if (F2CInstanceStatus.Stopped.name().equalsIgnoreCase(VsphereUtil.getStatus(virtualMachine.getRuntime().getPowerState().name()).name())) {
+                return true;
+            }
             virtualMachine.shutdownGuest();
             return true;
         } catch (Exception e) {
@@ -213,11 +213,11 @@ public class VsphereVmClient extends VsphereClient {
      * @return
      */
     public boolean reboot(String uuid) {
-        VirtualMachine virtualMachine = getVirtualMachineByUuId(uuid);
-        if (StringUtils.equalsIgnoreCase(VirtualMachinePowerState.poweredOff.name(), virtualMachine.getRuntime().getPowerState().name())) {
-            throw new RuntimeException("The current state of the virtual machine is shutdown!");
-        }
         try {
+            VirtualMachine virtualMachine = getVirtualMachineByUuId(uuid);
+            if (F2CInstanceStatus.Stopped.name().equalsIgnoreCase(VsphereUtil.getStatus(virtualMachine.getRuntime().getPowerState().name()).name())) {
+                throw new RuntimeException("The current state of the virtual machine is shutdown!");
+            }
             virtualMachine.rebootGuest();
             return true;
         } catch (Exception e) {
@@ -232,11 +232,11 @@ public class VsphereVmClient extends VsphereClient {
      * @return
      */
     public boolean deleteInstance(String uuid) {
-        VirtualMachine virtualMachine = getVirtualMachineByUuId(uuid);
-        if (StringUtils.equalsIgnoreCase(VirtualMachinePowerState.poweredOn.name(), virtualMachine.getRuntime().getPowerState().name())) {
-            throw new RuntimeException("The current state of the virtual machine is running!");
-        }
         try {
+            VirtualMachine virtualMachine = getVirtualMachineByUuId(uuid);
+            if (F2CInstanceStatus.Running.name().equalsIgnoreCase(VsphereUtil.getStatus(virtualMachine.getRuntime().getPowerState().name()).name())) {
+                throw new RuntimeException("The current state of the virtual machine is running!");
+            }
             Task task = virtualMachine.destroy_Task();
             String result = task.waitForTask();
             if (!StringUtils.equalsIgnoreCase(TaskInfoState.success.name(), result)) {
@@ -256,11 +256,11 @@ public class VsphereVmClient extends VsphereClient {
      * @return
      */
     public boolean hardReboot(String uuid) {
-        VirtualMachine virtualMachine = getVirtualMachineByUuId(uuid);
-        if (StringUtils.equalsIgnoreCase(VirtualMachinePowerState.poweredOff.name(), virtualMachine.getRuntime().getPowerState().name())) {
-            throw new RuntimeException("The current state of the virtual machine is shutdown!");
-        }
         try {
+            VirtualMachine virtualMachine = getVirtualMachineByUuId(uuid);
+            if (F2CInstanceStatus.Stopped.name().equalsIgnoreCase(VsphereUtil.getStatus(virtualMachine.getRuntime().getPowerState().name()).name())) {
+                throw new RuntimeException("The current state of the virtual machine is shutdown!");
+            }
             Task powerOffTask = virtualMachine.powerOffVM_Task();
             String powerOffResult = powerOffTask.waitForTask();
             if (!StringUtils.equalsIgnoreCase(TaskInfoState.success.name(), powerOffResult)) {
