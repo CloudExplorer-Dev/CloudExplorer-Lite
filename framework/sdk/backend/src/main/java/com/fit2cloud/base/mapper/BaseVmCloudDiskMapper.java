@@ -22,4 +22,7 @@ import java.util.List;
 public interface BaseVmCloudDiskMapper extends MPJBaseMapper<VmCloudDisk> {
     @Select("SELECT source_id as `key`,count(*) as `value` FROM  vm_cloud_disk  ${ew.customSqlSegment} GROUP BY source_id")
     List<DefaultKeyValue<String, Integer>> groupSourceId(@Param(Constants.WRAPPER) Wrapper<VmCloudDisk> wrapper);
+
+    @Select("SELECT source_id as `key`,sum(size) as `value` FROM  vm_cloud_disk  ${ew.customSqlSegment} GROUP BY source_id")
+    List<DefaultKeyValue<String, Integer>> groupSourceIdBySize(@Param(Constants.WRAPPER) Wrapper<VmCloudDisk> wrapper);
 }

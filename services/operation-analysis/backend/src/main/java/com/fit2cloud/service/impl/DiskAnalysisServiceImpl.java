@@ -266,7 +266,7 @@ public class DiskAnalysisServiceImpl implements IDiskAnalysisService {
             result.put("all", workspaceList);
             result.put("tree", workspaceList);
         } else {
-            result = orgSpread();
+            result = orgSpread(request);
 
         }
         return result;
@@ -275,8 +275,8 @@ public class DiskAnalysisServiceImpl implements IDiskAnalysisService {
     /**
      * 组织上的分布
      */
-    private Map<String, List<TreeNode>> orgSpread() {
-        List<DefaultKeyValue<String, Integer>> groupSource = baseVmCloudDiskMapper.groupSourceId(new LambdaQueryWrapper<VmCloudDisk>().notIn(VmCloudDisk::getStatus, List.of("Deleted", "Failed")));
+    private Map<String, List<TreeNode>> orgSpread(ResourceAnalysisRequest request) {
+        List<DefaultKeyValue<String, Integer>> groupSource = groupSource(request);
         // 获取获取组织工作空间树
         List<OrganizationTree> tree = iBaseOrganizationService.tree("ORGANIZATION_AND_WORKSPACE");
         List<TreeNode> treeNodes = OperationUtils.orgCount(tree, (orgId, workspaceIds) -> getCount(orgId, workspaceIds, groupSource), groupSource.stream().mapToInt(DefaultKeyValue::getValue).sum());
@@ -285,6 +285,16 @@ public class DiskAnalysisServiceImpl implements IDiskAnalysisService {
             treeNodes = treeNodes.stream().filter(t -> StringUtils.equals(t.getId(), CurrentUserUtils.getOrganizationId())).map(TreeNode::getChildren).filter(Objects::nonNull).flatMap(List::stream).toList();
         }
         return Map.of("tree", treeNodes);
+    }
+
+    private List<DefaultKeyValue<String, Integer>> groupSource(ResourceAnalysisRequest request){
+        LambdaQueryWrapper<VmCloudDisk> wrapper = new LambdaQueryWrapper<VmCloudDisk>().notIn(VmCloudDisk::getStatus, List.of("Deleted", "Failed"));
+        wrapper.in(CollectionUtils.isNotEmpty(request.getAccountIds()),VmCloudDisk::getAccountId,request.getAccountIds());
+        if(request.isStatisticalBlock()){
+            return baseVmCloudDiskMapper.groupSourceId(wrapper);
+        }else{
+            return baseVmCloudDiskMapper.groupSourceIdBySize(wrapper);
+        }
     }
 
     /**

@@ -474,8 +474,10 @@ public class ServerAnalysisServiceImpl implements IServerAnalysisService {
      */
     private Map<String, List<TreeNode>> orgSpread(ResourceAnalysisRequest request) {
         Map<String, List<TreeNode>> result = new HashMap<>(1);
-
-        List<DefaultKeyValue<String, Integer>> groupSource = baseVmCloudServerMapper.groupSourceId(new LambdaQueryWrapper<VmCloudServer>().notIn(VmCloudServer::getInstanceStatus, List.of(SpecialAttributesConstants.StatusField.VM_DELETE, SpecialAttributesConstants.StatusField.FAILED)));
+        LambdaQueryWrapper<VmCloudServer> wrapper = new LambdaQueryWrapper<VmCloudServer>().notIn(VmCloudServer::getInstanceStatus, List.of(SpecialAttributesConstants.StatusField.VM_DELETE, SpecialAttributesConstants.StatusField.FAILED));
+        wrapper.in(CollectionUtils.isNotEmpty(request.getAccountIds()),VmCloudServer::getAccountId,request.getAccountIds());
+        wrapper.in(CollectionUtils.isNotEmpty(request.getHostIds()),VmCloudServer::getHostId,request.getHostIds());
+        List<DefaultKeyValue<String, Integer>> groupSource = baseVmCloudServerMapper.groupSourceId(wrapper);
         // 获取获取组织工作空间树
         List<OrganizationTree> tree = iBaseOrganizationService.tree("ORGANIZATION_AND_WORKSPACE");
         List<TreeNode> treeNodes = OperationUtils.orgCount(tree, (orgId, workspaceIds) ->
