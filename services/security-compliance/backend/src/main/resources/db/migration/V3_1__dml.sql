@@ -1,5 +1,4 @@
 SET SESSION innodb_lock_wait_timeout = 7200;
-
 INSERT INTO `compliance_rule` (id, `name`, rule_group_id, platform, resource_type, rules, risk_level, `description`,
                                `enable`)
 VALUES ('0025b4151ec878fbbff1579652f5ef48', '使用专有网络类型的Redis实例', '5536b282b21ce92d9b44164ee0f95f50',
@@ -107,7 +106,7 @@ INSERT INTO `compliance_rule` (id, `name`, rule_group_id, platform, resource_typ
                                `enable`)
 VALUES ('237569e8019abbe09dca8c2e57eaa34a', 'CVM实例未绑定公网地址', '7d0f1173c4d681f81bb2243950c1b9c5',
         'fit2cloud_tencent_platform', 'ECS',
-        '{\"rules\": [{\"field\": \"instance.fit2cloud_tencent_platform_ECS.internetAccessible.publicIpAssigned\", \"value\": false, \"compare\": \"EQ\"}], \"scanRule\": \"COMPLIANCE\", \"conditionType\": \"AND\"}',
+        '{\"rules\": [{\"field\": \"instance.fit2cloud_tencent_platform_ECS.publicIpAddresses\", \"value\": \"1\", \"compare\": \"NOT_EXIST\"}], \"scanRule\": \"COMPLIANCE\", \"conditionType\": \"AND\"}',
         '0', 'CVM实例未直接绑定IPv4公网IP或弹性公网IP，视为“合规”。 CVM实例已绑定IPv4公网IP或弹性公网IP，视为“不合规”。',
         '1');
 INSERT INTO `compliance_rule` (id, `name`, rule_group_id, platform, resource_type, rules, risk_level, `description`,
@@ -154,9 +153,9 @@ VALUES ('306d7b61464d8cf831ba31d9fd54ac3a', 'Redis实例的节点类型为双副
         '1', 'Redis实例的节点类型为双副本，视为“合规”。 Redis实例的节点类型为单副本，视为“不合规”。', '1');
 INSERT INTO `compliance_rule` (id, `name`, rule_group_id, platform, resource_type, rules, risk_level, `description`,
                                `enable`)
-VALUES ('3120aef9bb05cbf75681fde2dbd00790', 'ECS实例CPU核数满足最低要求', '7d0f1173c4d681f81bb2243950c1b9c5',
+VALUES ('3120aef9bb05cbf75681fde2dbd00790', 'ECS实例CPU核数满足最低要求_阿里', '7d0f1173c4d681f81bb2243950c1b9c5',
         'fit2cloud_ali_platform', 'ECS',
-        '{\"rules\": [{\"field\": \"instance.fit2cloud_ali_platform_ECS.cpu\", \"value\": 4, \"compare\": \"GE\"}], \"scanRule\": \"COMPLIANCE\", \"conditionType\": \"AND\"}',
+        '{\"rules\": [{\"field\": \"instance.fit2cloud_ali_platform_ECS.cpu\", \"value\": 4, \"compare\": \"GE\"}], \"scanRule\": \"NOT_COMPLIANCE\", \"conditionType\": \"AND\"}',
         '-1', 'ECS实例的CPU核数大于等于您设置的期望值，视为“合规”。', '1');
 INSERT INTO `compliance_rule` (id, `name`, rule_group_id, platform, resource_type, rules, risk_level, `description`,
                                `enable`)
@@ -501,7 +500,7 @@ INSERT INTO `compliance_rule` (id, `name`, rule_group_id, platform, resource_typ
                                `enable`)
 VALUES ('788e03669955b4fbf98ce93c27905d54', 'RDS实例未申请外网地址-SQL Server', '5536b282b21ce92d9b44164ee0f95f50',
         'fit2cloud_ali_platform', 'SQL_SERVER',
-        '{\"rules\": [{\"field\": \"instance.fit2cloud_ali_platform_SQL_SERVER.networkObj.dbinstanceNetInfos.dbinstanceNetInfo.iptype\", \"value\": \"Public\", \"compare\": \"NOT_EQ\"}], \"scanRule\": \"COMPLIANCE\", \"conditionType\": \"OR\"}',
+        '{\"rules\": [{\"field\": \"instance.fit2cloud_ali_platform_SQL_SERVER.networkObj.dbinstanceNetInfos.dbinstanceNetInfo.iptype\", \"value\": \"Public\", \"compare\": \"EQ\"}], \"scanRule\": \"NOT_COMPLIANCE\", \"conditionType\": \"OR\"}',
         '1', 'RDS实例未申请外网地址，视为“合规”。 RDS实例已申请外网地址，视为“不合规”。', '1');
 INSERT INTO `compliance_rule` (id, `name`, rule_group_id, platform, resource_type, rules, risk_level, `description`,
                                `enable`)
@@ -686,7 +685,7 @@ INSERT INTO `compliance_rule` (id, `name`, rule_group_id, platform, resource_typ
                                `enable`)
 VALUES ('9ec821b3278b5550884b75d6ce6bba05', 'RDS实例未申请外网地址-MariaDB', 'a46779e112b01a0f20b13cfbd73b8400',
         'fit2cloud_ali_platform', 'MARIA_DB',
-        '{\"rules\": [{\"field\": \"instance.fit2cloud_ali_platform_MARIA_DB.networkObj.dbinstanceNetInfos.dbinstanceNetInfo.iptype\", \"value\": \"Public\", \"compare\": \"NOT_EQ\"}], \"scanRule\": \"COMPLIANCE\", \"conditionType\": \"OR\"}',
+        '{\"rules\": [{\"field\": \"instance.fit2cloud_ali_platform_MARIA_DB.networkObj.dbinstanceNetInfos.dbinstanceNetInfo.iptype\", \"value\": \"Public\", \"compare\": \"EQ\"}], \"scanRule\": \"NOT_COMPLIANCE\", \"conditionType\": \"OR\"}',
         '1', 'RDS实例未申请外网地址，视为“合规”。', '1');
 INSERT INTO `compliance_rule` (id, `name`, rule_group_id, platform, resource_type, rules, risk_level, `description`,
                                `enable`)
@@ -734,9 +733,9 @@ VALUES ('a93c063af9238d63af7c2a5d79e3e7b1', 'OpenStack 安全组出方向未设�
         '1', '安全组出网方向未设置为全通，视为“合规”。 安全组出网方向设置为全通，视为“不合规”。', '1');
 INSERT INTO `compliance_rule` (id, `name`, rule_group_id, platform, resource_type, rules, risk_level, `description`,
                                `enable`)
-VALUES ('aafefa48a8ee97ff476b5f6b5172baa4', 'ECS实例CPU核数满足最低要求', '7d0f1173c4d681f81bb2243950c1b9c5',
+VALUES ('aafefa48a8ee97ff476b5f6b5172baa4', 'ECS实例CPU核数满足最低要求-华为', '7d0f1173c4d681f81bb2243950c1b9c5',
         'fit2cloud_huawei_platform', 'ECS',
-        '{\"rules\": [{\"field\": \"instance.fit2cloud_huawei_platform_ECS.flavor.vcpus\", \"value\": 2, \"compare\": \"GE\"}], \"scanRule\": \"COMPLIANCE\", \"conditionType\": \"AND\"}',
+        '{\"rules\": [{\"field\": \"instance.fit2cloud_huawei_platform_ECS.flavor.vcpus\", \"value\": 2, \"compare\": \"GE\"}], \"scanRule\": \"NOT_COMPLIANCE\", \"conditionType\": \"AND\"}',
         '-1', 'ECS实例的CPU核数大于等于您设置的期望值，视为“合规”。 ECS实例的CPU核数小于您设置的期望值，视为“不合规”。',
         '1');
 INSERT INTO `compliance_rule` (id, `name`, rule_group_id, platform, resource_type, rules, risk_level, `description`,
@@ -977,7 +976,7 @@ INSERT INTO `compliance_rule` (id, `name`, rule_group_id, platform, resource_typ
                                `enable`)
 VALUES ('edbe4df71ebe50e0b7da5a5213271394', 'RDS实例未申请外网地址-MySQL', '5536b282b21ce92d9b44164ee0f95f50',
         'fit2cloud_ali_platform', 'MYSQL',
-        '{\"rules\": [{\"field\": \"instance.fit2cloud_ali_platform_MYSQL.networkObj.dbinstanceNetInfos.dbinstanceNetInfo.iptype\", \"value\": \"Public\", \"compare\": \"NOT_EQ\"}], \"scanRule\": \"COMPLIANCE\", \"conditionType\": \"OR\"}',
+        '{\"rules\": [{\"field\": \"instance.fit2cloud_ali_platform_MYSQL.networkObj.dbinstanceNetInfos.dbinstanceNetInfo.iptype\", \"value\": \"Public\", \"compare\": \"EQ\"}, {\"field\": \"instance.fit2cloud_ali_platform_MYSQL.networkObj.dbinstanceNetInfos.dbinstanceNetInfo.iptype\", \"compare\": \"EXIST\"}], \"scanRule\": \"NOT_COMPLIANCE\", \"conditionType\": \"AND\"}',
         '1', 'RDS实例未申请外网地址，视为“合规”。 RDS实例已申请外网地址，视为“不合规”。', '1');
 INSERT INTO `compliance_rule` (id, `name`, rule_group_id, platform, resource_type, rules, risk_level, `description`,
                                `enable`)
@@ -1061,6 +1060,12 @@ VALUES ('fde1fb3796ac8dad1b68ffd561fd8bdc', '安全组入网设置不能有对�
         '-1',
         '安全组入方向授权策略为允许，当端口的协议类型未设置为ALL时，视为“合规”；如果端口的协议类型设置为ALL，但被优先级更高的授权策略拒绝，视为“合规”。 安全组入方向授权策略为允许，当端口的协议类型设置为ALL，且未被优先级更高的授权策略拒绝时，视为“不合规”。关于如何修正该问题，请参见修正指导。 除CVM外的云服务（例如：云防火墙、NAT网关等）或虚商所使用的安全组不适用本规则，视为“不适用”。',
         '1');
+INSERT INTO `compliance_rule` (id, `name`, rule_group_id, platform, resource_type, rules, risk_level, `description`,
+                               `enable`)
+VALUES ('fed667fc76ba5dcf65fec17b01564b73', 'ECS数据盘是否加密', '7d0f1173c4d681f81bb2243950c1b9c5',
+        'fit2cloud_ali_platform', 'DISK',
+        '{\"rules\": [{\"field\": \"instance.fit2cloud_ali_platform_DISK.encrypted\", \"value\": true, \"compare\": \"EQ\"}], \"scanRule\": \"COMPLIANCE\", \"conditionType\": \"AND\"}',
+        '1', '数据盘加密为“合规”，未加密为“不合规”', '1');
 INSERT INTO `compliance_rule` (id, `name`, rule_group_id, platform, resource_type, rules, risk_level, `description`,
                                `enable`)
 VALUES ('ff9b18d68d70fa83d370a4a941f2e71a', '使用专有网络类型的RDS实例-Mysql', 'a46779e112b01a0f20b13cfbd73b8400',
