@@ -32,8 +32,6 @@ public class ModuleManageServiceImpl implements IModuleManageService {
         File versionFile = new File("/opt/cloudexplorer/VERSION");
         String version = StringUtils.trim(FileUtils.txt2String(versionFile));
 
-        String[] vList = StringUtils.split(version, ".");
-
         File installedModulesFile = new File("/opt/cloudexplorer/apps/extra/modules");
 
         Map<String, ExtraModule> installedModuleMap = new HashMap<>();
@@ -64,7 +62,10 @@ public class ModuleManageServiceImpl implements IModuleManageService {
 
         ExtraModules modules = new ExtraModules();
         try {
-            String repositoryUrl = repositoryPath + "modules_" + vList[0] + "." + vList[1] + ".x.yml";
+
+//            String[] vList = StringUtils.split(version, ".");
+//            String repositoryUrl = repositoryPath + "modules_" + vList[0] + "." + vList[1] + ".x.yml";
+            String repositoryUrl = repositoryPath + "modules_" + version + ".yml";
 
             modules = JsonUtil.parseObject(JsonUtil.toJSONString(yaml.load(downloadTxt2String(repositoryUrl))), ExtraModules.class);
             if (modules == null) {
