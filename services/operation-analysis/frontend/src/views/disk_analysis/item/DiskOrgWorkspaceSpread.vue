@@ -37,7 +37,7 @@
 </template>
 <script setup lang="ts">
 import VChart from "vue-echarts";
-import { computed, ref, watch } from "vue";
+import { ref, watch } from "vue";
 import _ from "lodash";
 import type { ResourceAnalysisRequest } from "@/api/disk_analysis/type";
 import type { ECBasicOption } from "echarts/types/src/util/types";
@@ -83,7 +83,9 @@ const getOptions = () => {
     if (!optionsTree.value) {
       optionsTree.value = _.cloneDeep(apiData.value.tree);
     }
-    const tree = optionsTree.value;
+    const tree = optionsTree.value
+      ? optionsTree.value.filter((o: any) => o.value > 0)
+      : [];
     if (tree.length === 0) {
       return {
         title: {
@@ -106,7 +108,12 @@ const getOptions = () => {
     _.set(options, "series[0].label", barSeriesLabel);
     const seriesData = ref<any>([]);
     _.forEach(tree, (v) => {
-      seriesData.value.push({ value: v.value, groupName: v.groupName });
+      seriesData.value.push({
+        value: v.value,
+        groupName: v.groupName,
+        id: v.id,
+        children: v.children,
+      });
     });
     _.set(options, "series[0].data", seriesData.value);
     // _.set(options, "series[0].name", "磁盘");
@@ -134,38 +141,18 @@ watch(
 );
 
 const handleBackClick = () => {
-  if (!parentItem.value) {
-    showBack.value = false;
-    parentItem.value = undefined;
-    optionsTree.value = undefined;
-  } else {
-    const ppItem = apiData.value.all.find(
-      (v: any) => v.id === parentItem.value.pid
-    );
-    if (parentItem.value && ppItem) {
-      optionsTree.value = ppItem.children;
-      parentItem.value = ppItem;
-      if (
-        userStore.currentRole != "ADMIN" &&
-        userStore.currentSource === ppItem.id
-      ) {
-        showBack.value = false;
-      }
-    } else {
-      showBack.value = false;
-      parentItem.value = undefined;
-      optionsTree.value = undefined;
-    }
-  }
+  showBack.value = false;
+  parentItem.value = undefined;
+  optionsTree.value = undefined;
   options.value = getOptions();
 };
+
 const onClick = (params: any) => {
-  const item = apiData.value.all.find((v: any) => v.name === params.name);
-  if (!item) return;
-  const children = item.children;
+  if (!params.data.children) return;
+  const children = params.data.children;
   if (children && children.length > 0) {
     showBack.value = true;
-    parentItem.value = item;
+    parentItem.value = params.data;
     optionsTree.value = children;
     options.value = getOptions();
   }

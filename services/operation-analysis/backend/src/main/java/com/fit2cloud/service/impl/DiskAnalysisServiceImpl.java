@@ -1,5 +1,6 @@
 package com.fit2cloud.service.impl;
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.fit2cloud.base.entity.CloudAccount;
@@ -7,6 +8,7 @@ import com.fit2cloud.base.entity.VmCloudDisk;
 import com.fit2cloud.base.entity.VmCloudServer;
 import com.fit2cloud.base.mapper.BaseVmCloudDiskMapper;
 import com.fit2cloud.base.mapper.BaseVmCloudServerMapper;
+import com.fit2cloud.base.service.IBaseOrganizationService;
 import com.fit2cloud.common.utils.CurrentUserUtils;
 import com.fit2cloud.common.utils.PageUtil;
 import com.fit2cloud.constants.DiskTypeConstants;
@@ -19,11 +21,14 @@ import com.fit2cloud.dao.entity.OrgWorkspace;
 import com.fit2cloud.dao.mapper.OrgWorkspaceMapper;
 import com.fit2cloud.dto.AnalysisDiskDTO;
 import com.fit2cloud.dto.KeyValue;
+import com.fit2cloud.response.OrganizationTree;
 import com.fit2cloud.service.IDiskAnalysisService;
 import com.fit2cloud.service.IPermissionService;
 import com.fit2cloud.service.IServerAnalysisService;
+import com.fit2cloud.utils.OperationUtils;
 import com.github.yulichang.wrapper.MPJLambdaWrapper;
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.collections4.keyvalue.DefaultKeyValue;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
@@ -54,6 +59,8 @@ public class DiskAnalysisServiceImpl implements IDiskAnalysisService {
 
     @Resource
     private BaseVmCloudServerMapper baseVmCloudServerMapper;
+    @Resource
+    private IBaseOrganizationService iBaseOrganizationService;
 
     /**
      * 分页查询磁盘明细
@@ -259,7 +266,7 @@ public class DiskAnalysisServiceImpl implements IDiskAnalysisService {
             result.put("all", workspaceList);
             result.put("tree", workspaceList);
         } else {
-            result = orgSpread(request, workspaceList);
+            result = orgSpread();
 
         }
         return result;
@@ -268,88 +275,28 @@ public class DiskAnalysisServiceImpl implements IDiskAnalysisService {
     /**
      * 组织上的分布
      */
-    private Map<String, List<TreeNode>> orgSpread(ResourceAnalysisRequest request, List<TreeNode> workspaceList) {
-        Map<String, List<TreeNode>> result = new HashMap<>(2);
-        result.put("all", new ArrayList<>());
-        result.put("tree", new ArrayList<>());
-        //工作空间添加标识
-        workspaceList.forEach(v -> v.setName(v.getName() + "(工作空间)"));
-        //工作空间按照父级ID分组
-        Map<String, List<TreeNode>> workspaceGroupByPid = workspaceList.stream().collect(Collectors.groupingBy(TreeNode::getPid));
-        //查询所有组织，初始化为chart数据
-        List<TreeNode> orgList = iServerAnalysisService.orgToTreeNode();
-        MPJLambdaWrapper<VmCloudDisk> queryWrapper = addDiskAnalysisQuery(request);
-        if (request.isStatisticalBlock()) {
-            queryWrapper.selectCount(VmCloudDisk::getId, AnalysisDiskDTO::getValue);
-        } else {
-            queryWrapper.selectSum(VmCloudDisk::getSize, AnalysisDiskDTO::getValue);
-        }
-        List<AnalysisDiskDTO> diskList = baseVmCloudDiskMapper.selectJoinList(AnalysisDiskDTO.class, queryWrapper);
-        int unauthorizedNumber = 0;
-        if (CollectionUtils.isNotEmpty(diskList)) {
-            unauthorizedNumber = diskList.stream().filter(Objects::nonNull).mapToInt(AnalysisDiskDTO::getValue).sum();
-        }
-        TreeNode unauthorizedNode = new TreeNode();
-        if (unauthorizedNumber > 0) {
-            unauthorizedNode.setName("未授权");
-            unauthorizedNode.setId("unauthorized");
-            unauthorizedNode.setGroupName("org");
-            unauthorizedNode.setValue(unauthorizedNumber);
-            result.put("all", List.of(unauthorizedNode));
-            result.put("tree", List.of(unauthorizedNode));
-        }
-        if (CollectionUtils.isEmpty(orgList)) {
-            return result;
-        }
-        //id集合
-        List<String> orgIds = orgList.stream().map(TreeNode::getId).toList();
-        //设置资源统计数量
-        List<TreeNode> chartDateWorkspaceList = getTreeNodeValueDataForType(request, orgIds, "org");
-        if (CollectionUtils.isEmpty(chartDateWorkspaceList)) {
-            return result;
-        }
-        Map<String, TreeNode> dataMap = chartDateWorkspaceList.stream().collect(Collectors.toMap(TreeNode::getId, o -> o));
-        orgList.forEach(v -> {
-            if (dataMap.containsKey(v.getId())) {
-                v.setValue(dataMap.get(v.getId()).getValue());
-            }
-        });
-        Map<String, TreeNode> childrenMap = orgList.stream().collect(Collectors.toMap(TreeNode::getId, o -> o));
-        List<TreeNode> childrenList = new ArrayList<>();
-        //设置子级并累加值
-        for (TreeNode v : orgList) {
-            childrenList.clear();
-            // 自己没有资源的就不要
-            childrenList.add(new TreeNode(v.getId(), v.getName() + "(未授权)", v.getValue(), v.getGroupName(), v.getPid()));
-            // 父组织工作空间下资源数量
-            int workspaceResourceNumber = getWorkspaceResourceNumber(workspaceGroupByPid, childrenList, v);
-            v.setValue(v.getValue() + workspaceResourceNumber);
-            for (String key : childrenMap.keySet()) {
-                TreeNode node = childrenMap.get(key);
-                if (StringUtils.equalsIgnoreCase(node.getPid(), v.getId())) {
-                    // 子组织工作空间下资源数量
-                    //  workspaceResourceNumber = getWorkspaceResourceNumber(workspaceGroupByPid, childrenList, node);
-                    v.setValue(v.getValue() + node.getValue() + workspaceResourceNumber);
-                    childrenList.add(node);
-                }
-            }
-            // 只显示有资源的
-            v.setChildren(childrenList.stream().filter(c -> c.getValue() > 0).collect(Collectors.toList()));
-        }
-        //所有-已授权=未授权
-        unauthorizedNode.setValue((unauthorizedNumber - Integer.parseInt(String.valueOf(orgList.stream().filter(s -> Objects.isNull(s.getPid())).mapToLong(TreeNode::getValue).sum()))));
-        orgList.add(unauthorizedNode);
-        // 扁平数据
-        result.put("all", orgList);
-        // 获取所有父节点,pid为空表示顶级，或者pid不在当前集合中，则也作为顶级
-        List<TreeNode> parentNodeList = orgList.stream().filter(v -> StringUtils.isEmpty(v.getPid()) || !orgIds.contains(v.getPid())).collect(Collectors.toList());
-        //组织管理员的话，只有一个跟节点，然后只返回他的子集
+    private Map<String, List<TreeNode>> orgSpread() {
+        List<DefaultKeyValue<String, Integer>> groupSource = baseVmCloudDiskMapper.groupSourceId(new LambdaQueryWrapper<VmCloudDisk>().notIn(VmCloudDisk::getStatus, List.of("Deleted", "Failed")));
+        // 获取获取组织工作空间树
+        List<OrganizationTree> tree = iBaseOrganizationService.tree("ORGANIZATION_AND_WORKSPACE");
+        List<TreeNode> treeNodes = OperationUtils.orgCount(tree, (orgId, workspaceIds) -> getCount(orgId, workspaceIds, groupSource), groupSource.stream().mapToInt(DefaultKeyValue::getValue).sum());
+        // 如果是组织管理员,只展示当前组织管理员下面的数据
         if (CurrentUserUtils.isOrgAdmin()) {
-            result.put("tree", parentNodeList.get(0).getChildren().stream().filter(v -> v.getValue() > 0).collect(Collectors.toList()));
-        } else {
-            result.put("tree", parentNodeList.stream().filter(v -> v.getValue() > 0).collect(Collectors.toList()));
+            treeNodes = treeNodes.stream().filter(t -> StringUtils.equals(t.getId(), CurrentUserUtils.getOrganizationId())).map(TreeNode::getChildren).filter(Objects::nonNull).flatMap(List::stream).toList();
         }
-        return result;
+        return Map.of("tree", treeNodes);
+    }
+
+    /**
+     * 获取组织或者工作空间统计
+     *
+     * @param orgId        组织id
+     * @param workspaceIds 工作空间ids
+     * @param groupSource  磁盘统计数据
+     * @return 指定组织和工作空间的数量
+     */
+    private int getCount(String orgId, List<String> workspaceIds, List<DefaultKeyValue<String, Integer>> groupSource) {
+        return groupSource.stream().filter(v -> StringUtils.equals(orgId, v.getKey()) || workspaceIds.contains(v.getKey())).mapToInt(DefaultKeyValue::getValue).sum();
     }
 
     private static int getWorkspaceResourceNumber(Map<String, List<TreeNode>> workspaceGroupByPid, List<TreeNode> childrenList, TreeNode v) {
