@@ -12,7 +12,7 @@
     <packaging>pom</packaging>
     <artifactId>DEMO-TEMPLATE-parent</artifactId>
     <version>${revision}</version>
-    <description>CE framework</description>
+    <description>DEMO-TEMPLATE-parent</description>
 
     <modules>
         <module>frontend</module>

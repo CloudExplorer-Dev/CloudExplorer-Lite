@@ -10,7 +10,7 @@ import java.util.random.RandomGenerator;
 @Service
 public class DemoServiceImpl implements IDemoService {
 
-    private static DemoObject object = new DemoObject().setKey("demo").setValue(String.valueOf(RandomGenerator.getDefault().nextDouble()));
+    private static DemoObject object = new DemoObject().setKey("demo").setValue("value");
 
     @Override
     public DemoObject getDemoObject() {

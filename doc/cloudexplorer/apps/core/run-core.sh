@@ -249,6 +249,47 @@ function install() {
   echo "install $_module"
   echo "$_module|$_port|$_version" >> /opt/cloudexplorer/apps/extra/modules
 
+  echo "prepare ${module_name}"
+
+  rm -rf META-INF/maven/com.fit2cloud/${_module}
+  jar xf sample-module-v1.0.0.jar META-INF/maven/com.fit2cloud/${_module}/pom.xml
+
+  declare _parent_name=`xmllint --xpath '/*[local-name()="project"]/*[local-name()="parent"]/*[local-name()="artifactId"]/text()' /opt/cloudexplorer/apps/extra/META-INF/maven/com.fit2cloud/${_module}/pom.xml`
+  declare _parent_version=`xmllint --xpath '/*[local-name()="project"]/*[local-name()="parent"]/*[local-name()="version"]/text()' /opt/cloudexplorer/apps/extra/META-INF/maven/com.fit2cloud/${_module}/pom.xml`
+
+  mkdir -p /opt/cloudexplorer/apps/core/repository/com/fit2cloud/${_parent_name}/${_parent_version}
+
+  _main_version=`cat /opt/cloudexplorer/VERSION`
+
+  cat > /opt/cloudexplorer/apps/core/repository/com/fit2cloud/${_parent_name}/${_parent_version}/${_parent_name}-${_parent_version}.pom << EOF
+<?xml version="1.0" encoding="UTF-8"?>
+<project xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd" xmlns="http://maven.apache.org/POM/4.0.0"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <modelVersion>4.0.0</modelVersion>
+  <parent>
+    <groupId>com.fit2cloud</groupId>
+    <artifactId>services</artifactId>
+    <version>${_main_version}</version>
+  </parent>
+  <groupId>com.fit2cloud</groupId>
+  <artifactId>${_parent_name}</artifactId>
+  <version>${_parent_version}</version>
+  <packaging>pom</packaging>
+  <description>${_parent_name}</description>
+  <licenses>
+    <license>
+      <name>Apache License, Version 2.0</name>
+      <url>https://www.apache.org/licenses/LICENSE-2.0</url>
+    </license>
+  </licenses>
+  <modules>
+    <module>frontend</module>
+    <module>backend</module>
+  </modules>
+</project>
+
+EOF
+
   start $_module
 
 }
