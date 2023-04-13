@@ -4,7 +4,7 @@
     v-bind:modelValue="active"
     :before-leave="beforeLeave"
     @tab-change="tabsChange"
-    style="width: 100%"
+    style="width: 100%;margin-top: 16px"
   >
     <el-tab-pane
       v-for="rule in tabsRuleList"
@@ -18,11 +18,6 @@
         <el-dropdown
           @command="dropdownChange"
           trigger="click"
-          style="
-            display: inline-flex;
-            height: 100%;
-            transform: translateY(10px);
-          "
         >
           <span class="el-dropdown-link">
             更多
@@ -249,7 +244,7 @@ defineExpose({ sortLocal });
 }
 :deep(.el-tabs__item) {
   @include tabs_text;
-  margin-bottom: 20px;
+  margin-bottom: 9px;
 }
 :deep(.el-dropdown-link) {
   @include tabs_text;
