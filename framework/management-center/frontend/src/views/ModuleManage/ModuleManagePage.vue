@@ -211,7 +211,11 @@ const typeList = computed(() => {
   const hasUpdateCount = _.defaultTo(
     _.filter(
       list.value.modules,
-      (m) => m.installed && m.version !== m.currentVersion
+      (m) =>
+        m.installed &&
+        m.version &&
+        m.version.length > 0 &&
+        m.version !== m.currentVersion
     )?.length,
     0
   );
