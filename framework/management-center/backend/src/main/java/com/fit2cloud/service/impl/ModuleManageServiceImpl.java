@@ -46,7 +46,7 @@ public class ModuleManageServiceImpl implements IModuleManageService {
                         File moduleYml = new File("/opt/cloudexplorer/apps/extra/" + ss[0] + "-" + ss[2] + ".yml");
                         if (moduleYml.exists()) {
                             ExtraModule m = JsonUtil.parseObject(JsonUtil.toJSONString(yaml.load(FileUtils.txt2String(moduleYml))), ExtraModule.class);
-                            module.setDescription(m.getDescription()).setDisplayName(m.getDisplayName());
+                            module.setDescription(m.getDescription()).setDisplayName(m.getDisplayName()).setIcon(m.getIcon());
                         }
                     } catch (Exception e) {
                         e.printStackTrace();

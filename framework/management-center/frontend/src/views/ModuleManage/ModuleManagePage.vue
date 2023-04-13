@@ -97,7 +97,12 @@
                     </div>
                     <div
                       class="version-tip has-update"
-                      v-if="m.installed && m.version !== m.currentVersion"
+                      v-if="
+                        m.installed &&
+                        m.version &&
+                        m.version.length > 0 &&
+                        m.version !== m.currentVersion
+                      "
                     >
                       可升级至 {{ m.version }}
                     </div>
@@ -139,7 +144,12 @@
                 <el-button
                   style="color: #3370ff; border-color: #3370ff"
                   @click="install(m)"
-                  v-if="m.installed && m.version !== m.currentVersion"
+                  v-if="
+                    m.installed &&
+                    m.version &&
+                    m.version.length > 0 &&
+                    m.version !== m.currentVersion
+                  "
                 >
                   升级
                 </el-button>
