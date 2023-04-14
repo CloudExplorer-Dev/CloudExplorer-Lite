@@ -94,7 +94,7 @@ import type { FormView } from "@commons/components/ce-form/type";
 import { CloseBold } from "@element-plus/icons-vue";
 
 /**
- * 模版默认应该有的盘
+ * 模板默认应该有的盘
  */
 const templateDisks = computed(() => {
   const templateFormView = _.find(props.allFormViewData, (formViewData) => {
@@ -176,7 +176,7 @@ function validate(): Promise<boolean> {
 }
 
 /**
- * 监听模版变化，获取值
+ * 监听模板变化，获取值
  */
 if (!props.confirm) {
   watch(
