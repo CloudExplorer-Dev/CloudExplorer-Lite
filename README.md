@@ -3,7 +3,7 @@
         <h3 align="center">开源的轻量级云管平台</h3>
         <p align="center">
           <a href="https://www.gnu.org/licenses/old-licenses/gpl-3.0"><img src="https://img.shields.io/github/license/CloudExplorer-Dev/CloudExplorer-Lite?color=%231890FF" alt="License: GPL v3"></a>
-          <a href="https://app.codacy.com/gh/dataease/dataease?utm_source=github.com&utm_medium=referral&utm_content=dataease/dataease&utm_campaign=Badge_Grade_Dashboard"><img src="https://app.codacy.com/project/badge/Grade/da67574fd82b473992781d1386b937ef" alt="Codacy"></a>
+          <a href="https://app.codacy.com/gh/CloudExplorer-Dev/CloudExplorer-Lite?utm_source=github.com&utm_medium=referral&utm_content=CloudExplorer-Dev/CloudExplorer-Lite&utm_campaign=Badge_Grade_Dashboard"><img src="https://app.codacy.com/project/badge/Grade/da67574fd82b473992781d1386b937ef" alt="Codacy"></a>
           <a href="https://github.com/CloudExplorer-Dev/CloudExplorer-Lite/releases/latest"><img src="https://img.shields.io/github/v/release/CloudExplorer-Dev/CloudExplorer-Lite" alt="Latest release"></a>
           <a href="https://github.com/CloudExplorer-Dev/CloudExplorer-Lite"><img src="https://img.shields.io/github/stars/CloudExplorer-Dev/CloudExplorer-Lite?color=%231890FF&style=flat-square" alt="Stars"></a>
         
