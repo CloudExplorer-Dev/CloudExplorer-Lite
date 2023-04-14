@@ -30,7 +30,6 @@ import com.fit2cloud.controller.request.compliance_scan.ComplianceResourceReques
 import com.fit2cloud.controller.request.compliance_scan.ComplianceSyncRequest;
 import com.fit2cloud.controller.response.compliance_scan.ComplianceResourceResponse;
 import com.fit2cloud.controller.response.compliance_scan.SupportCloudAccountResourceResponse;
-import com.fit2cloud.controller.response.compliance_scan.SupportPlatformResourceResponse;
 import com.fit2cloud.dao.constants.ComplianceStatus;
 import com.fit2cloud.dao.entity.ComplianceRule;
 import com.fit2cloud.dao.entity.ComplianceScanResourceResult;
