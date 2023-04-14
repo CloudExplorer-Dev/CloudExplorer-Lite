@@ -339,7 +339,7 @@ public class VsphereVmClient extends VsphereClient {
 
                 return reconfigVm(vm, cpu, memory, diskSize, diskType, true, true, "Created-by-FIT2CLOUD-from-template:" + templateName, null, null, null);
             } else if (template == null && !templateName.contains(VsphereTemplate.SEPARATOR)) {
-                throw new RuntimeException("模版不存在");
+                throw new RuntimeException("模板不存在");
             }
 
             VirtualMachineConfigInfo templateConfig = template.getConfig();

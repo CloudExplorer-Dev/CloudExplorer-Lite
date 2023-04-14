@@ -1426,7 +1426,7 @@ public class VsphereSyncCloudApi {
 
             String template = request.getTemplate();
             if (StringUtils.isBlank(template)) {
-                return CheckCreateServerResult.fail("模版不能为空");
+                return CheckCreateServerResult.fail("模板不能为空");
             }
 
             for (VsphereVmCreateRequest.NetworkConfig networkConfig : request.getNetworkConfigs()) {
