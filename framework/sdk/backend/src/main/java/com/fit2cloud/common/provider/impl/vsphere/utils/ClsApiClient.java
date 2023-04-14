@@ -29,20 +29,20 @@ public class ClsApiClient {
     private final Image isoImageService;
 
     public ClsApiClient(StubFactory stubFactory, StubConfiguration stubConfig) {
-        this.libraryService = (Library)stubFactory.createStub(Library.class, stubConfig);
-        this.localLibraryService = (LocalLibrary)stubFactory.createStub(LocalLibrary.class, stubConfig);
-        this.subscribedLibraryService = (SubscribedLibrary)stubFactory.createStub(SubscribedLibrary.class, stubConfig);
-        this.itemService = (Item)stubFactory.createStub(Item.class, stubConfig);
-        this.subscribedItemService = (SubscribedItem)stubFactory.createStub(SubscribedItem.class, stubConfig);
-        this.storageService = (Storage)stubFactory.createStub(Storage.class, stubConfig);
-        this.downloadSessionService = (DownloadSession)stubFactory.createStub(DownloadSession.class, stubConfig);
-        this.downloadSessionFileService = (File)stubFactory.createStub(File.class, stubConfig);
-        this.updateSessionService = (UpdateSession)stubFactory.createStub(UpdateSession.class, stubConfig);
-        this.updateSessionFileService = (com.vmware.content.library.item.updatesession.File)stubFactory.createStub(com.vmware.content.library.item.updatesession.File.class, stubConfig);
-        this.configurationService = (Configuration)stubFactory.createStub(Configuration.class, stubConfig);
-        this.typeService = (Type)stubFactory.createStub(Type.class, stubConfig);
-        this.ovfLibraryItemService = (LibraryItem)stubFactory.createStub(LibraryItem.class, stubConfig);
-        this.isoImageService = (Image)stubFactory.createStub(Image.class, stubConfig);
+        this.libraryService = (Library) stubFactory.createStub(Library.class, stubConfig);
+        this.localLibraryService = (LocalLibrary) stubFactory.createStub(LocalLibrary.class, stubConfig);
+        this.subscribedLibraryService = (SubscribedLibrary) stubFactory.createStub(SubscribedLibrary.class, stubConfig);
+        this.itemService = (Item) stubFactory.createStub(Item.class, stubConfig);
+        this.subscribedItemService = (SubscribedItem) stubFactory.createStub(SubscribedItem.class, stubConfig);
+        this.storageService = (Storage) stubFactory.createStub(Storage.class, stubConfig);
+        this.downloadSessionService = (DownloadSession) stubFactory.createStub(DownloadSession.class, stubConfig);
+        this.downloadSessionFileService = (File) stubFactory.createStub(File.class, stubConfig);
+        this.updateSessionService = (UpdateSession) stubFactory.createStub(UpdateSession.class, stubConfig);
+        this.updateSessionFileService = (com.vmware.content.library.item.updatesession.File) stubFactory.createStub(com.vmware.content.library.item.updatesession.File.class, stubConfig);
+        this.configurationService = (Configuration) stubFactory.createStub(Configuration.class, stubConfig);
+        this.typeService = (Type) stubFactory.createStub(Type.class, stubConfig);
+        this.ovfLibraryItemService = (LibraryItem) stubFactory.createStub(LibraryItem.class, stubConfig);
+        this.isoImageService = (Image) stubFactory.createStub(Image.class, stubConfig);
     }
 
     public Library libraryService() {

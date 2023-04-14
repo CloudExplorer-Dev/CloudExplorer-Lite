@@ -8,6 +8,6 @@ import lombok.Data;
  * @date 2022/11/17 10:38
  **/
 @Data
-public class DiskConfigForm extends Form  {
+public class DiskConfigForm extends Form {
 
 }

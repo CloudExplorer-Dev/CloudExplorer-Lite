@@ -35,32 +35,33 @@ public class CurrentUserResourceService {
 
     /**
      * 根据当前用户拥有的云主机获取云账号
+     *
      * @return 云账号集合
      */
     public List<CloudAccount> currentUserCloudAccountList() {
         List<CloudAccount> resultList = new ArrayList<>();
         List<String> cloudAccountIds = currentUserCloudServerList().stream().map(VmCloudServer::getAccountId).toList();
-        if(CollectionUtils.isNotEmpty(cloudAccountIds)){
+        if (CollectionUtils.isNotEmpty(cloudAccountIds)) {
             MPJLambdaWrapper<CloudAccount> accountWrapper = new MPJLambdaWrapper<>();
-            accountWrapper.in(!CurrentUserUtils.isAdmin(),CloudAccount::getId,cloudAccountIds);
+            accountWrapper.in(!CurrentUserUtils.isAdmin(), CloudAccount::getId, cloudAccountIds);
             resultList = iBaseCloudAccountService.list(accountWrapper);
         }
         return resultList;
     }
 
-    public List<VmCloudServer> currentUserCloudServerList(){
+    public List<VmCloudServer> currentUserCloudServerList() {
         List<String> sourceIds = permissionService.getSourceIds();
         MPJLambdaWrapper<VmCloudServer> wrapper = new MPJLambdaWrapper<>();
-        wrapper.in(!CurrentUserUtils.isAdmin() && CollectionUtils.isNotEmpty(sourceIds),VmCloudServer::getSourceId,sourceIds);
-        wrapper.notIn(true, VmCloudServer::getInstanceStatus, List.of(SpecialAttributesConstants.StatusField.VM_DELETE,SpecialAttributesConstants.StatusField.FAILED));
+        wrapper.in(!CurrentUserUtils.isAdmin() && CollectionUtils.isNotEmpty(sourceIds), VmCloudServer::getSourceId, sourceIds);
+        wrapper.notIn(true, VmCloudServer::getInstanceStatus, List.of(SpecialAttributesConstants.StatusField.VM_DELETE, SpecialAttributesConstants.StatusField.FAILED));
         return iBaseVmCloudServerService.list(wrapper);
     }
 
-    public List<VmCloudDisk> currentUserCloudDiskList(){
+    public List<VmCloudDisk> currentUserCloudDiskList() {
         List<String> sourceIds = permissionService.getSourceIds();
         MPJLambdaWrapper<VmCloudDisk> wrapper = new MPJLambdaWrapper<>();
-        wrapper.in(!CurrentUserUtils.isAdmin() && CollectionUtils.isNotEmpty(sourceIds),VmCloudServer::getSourceId,sourceIds);
-        wrapper.notIn(true, VmCloudDisk::getStatus, List.of(SpecialAttributesConstants.StatusField.DISK_DELETE,SpecialAttributesConstants.StatusField.FAILED));
+        wrapper.in(!CurrentUserUtils.isAdmin() && CollectionUtils.isNotEmpty(sourceIds), VmCloudServer::getSourceId, sourceIds);
+        wrapper.notIn(true, VmCloudDisk::getStatus, List.of(SpecialAttributesConstants.StatusField.DISK_DELETE, SpecialAttributesConstants.StatusField.FAILED));
         return iBaseVmCloudDiskService.list(wrapper);
     }
 

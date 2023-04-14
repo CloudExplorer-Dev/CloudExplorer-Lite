@@ -32,44 +32,44 @@ public class PerfMonitorService {
     @Resource
     private ElasticsearchProvide elasticsearchProvide;
 
-    public Map<String,List<PerfMonitorEchartsDTO>> getPerfMonitorData(PerfMonitorRequest request) {
-        Map<String,List<PerfMonitorEchartsDTO>> resultMap = new HashMap<>();
+    public Map<String, List<PerfMonitorEchartsDTO>> getPerfMonitorData(PerfMonitorRequest request) {
+        Map<String, List<PerfMonitorEchartsDTO>> resultMap = new HashMap<>();
         List<PerfMetricMonitorData> esList = elasticsearchProvide.searchByQuery(IndexConstants.CE_PERF_METRIC_MONITOR_DATA.getCode(), getSearchQuery(request), PerfMetricMonitorData.class);
         if (esList.size() > 0) {
             Long startTime = request.getStartTime();
             Long endTime = request.getEndTime();
             //对没有数据的时间点进行补全
-            Integer period = esList.get(0).getPeriod()*1000;
-            Long statPeriodTime = startTime%period;
-            startTime = startTime-statPeriodTime;
+            Integer period = esList.get(0).getPeriod() * 1000;
+            Long statPeriodTime = startTime % period;
+            startTime = startTime - statPeriodTime;
             List<Long> timeList = new ArrayList<>();
             while (startTime <= endTime) {
                 timeList.add(startTime);
                 startTime = startTime + period;
             }
-            if(StringUtils.equalsIgnoreCase(request.getMetricName(),"DISK_USED_UTILIZATION")){
-                Map<String,List<PerfMetricMonitorData>> diskMap = esList.stream().filter(v->StringUtils.isNotEmpty(v.getDevice())).collect(Collectors.groupingBy(PerfMetricMonitorData::getDevice));
-                diskMap.forEach((k,v)->{
+            if (StringUtils.equalsIgnoreCase(request.getMetricName(), "DISK_USED_UTILIZATION")) {
+                Map<String, List<PerfMetricMonitorData>> diskMap = esList.stream().filter(v -> StringUtils.isNotEmpty(v.getDevice())).collect(Collectors.groupingBy(PerfMetricMonitorData::getDevice));
+                diskMap.forEach((k, v) -> {
                     // 补全
                     List<PerfMetricMonitorData> diskDeviceList = new ArrayList<>();
-                    if(CollectionUtils.isNotEmpty(v)){
+                    if (CollectionUtils.isNotEmpty(v)) {
                         extracted(timeList, v, diskDeviceList);
                     }
-                    if(CollectionUtils.isNotEmpty(diskDeviceList)){
+                    if (CollectionUtils.isNotEmpty(diskDeviceList)) {
                         v.addAll(diskDeviceList);
                     }
-                    resultMap.put(k,getObjetData(request,v.stream().sorted((u1, u2) -> u1.getTimestamp().compareTo(u2.getTimestamp())).collect(Collectors.toList())));
+                    resultMap.put(k, getObjetData(request, v.stream().sorted((u1, u2) -> u1.getTimestamp().compareTo(u2.getTimestamp())).collect(Collectors.toList())));
                 });
-            }else{
+            } else {
                 // 补全
                 List<PerfMetricMonitorData> resultList = new ArrayList<>();
                 resultList.addAll(esList);
                 List<PerfMetricMonitorData> completionList = new ArrayList<>();
-                timeList.forEach(time->{
-                    List<PerfMetricMonitorData> tList = esList.stream().filter(v->v.getTimestamp().longValue()==time).toList();
-                    if(CollectionUtils.isEmpty(tList)){
+                timeList.forEach(time -> {
+                    List<PerfMetricMonitorData> tList = esList.stream().filter(v -> v.getTimestamp().longValue() == time).toList();
+                    if (CollectionUtils.isEmpty(tList)) {
                         PerfMetricMonitorData source = new PerfMetricMonitorData();
-                        BeanUtils.copyProperties(source,source);
+                        BeanUtils.copyProperties(source, source);
                         source.setAverage(null);
                         source.setTimestamp(time);
                         completionList.add(source);
@@ -77,7 +77,7 @@ public class PerfMonitorService {
                 });
                 resultList.addAll(completionList);
                 List<PerfMetricMonitorData> list = resultList.stream().sorted((u1, u2) -> u1.getTimestamp().compareTo(u2.getTimestamp())).collect(Collectors.toList());
-                resultMap.put("other",getObjetData(request, list));
+                resultMap.put("other", getObjetData(request, list));
             }
         }
         return resultMap;
@@ -87,12 +87,12 @@ public class PerfMonitorService {
      * 时间点空数据补全
      */
     private static void extracted(List<Long> timeList, List<PerfMetricMonitorData> v, List<PerfMetricMonitorData> resultList) {
-        timeList.forEach(time->{
-            List<PerfMetricMonitorData> tList = v.stream().filter(d->d.getTimestamp().longValue()==time).toList();
-            if(CollectionUtils.isEmpty(tList)){
+        timeList.forEach(time -> {
+            List<PerfMetricMonitorData> tList = v.stream().filter(d -> d.getTimestamp().longValue() == time).toList();
+            if (CollectionUtils.isEmpty(tList)) {
                 PerfMetricMonitorData source = v.get(0);
                 PerfMetricMonitorData vo = new PerfMetricMonitorData();
-                BeanUtils.copyProperties(source,vo);
+                BeanUtils.copyProperties(source, vo);
                 vo.setAverage(null);
                 vo.setTimestamp(time);
                 resultList.add(vo);
@@ -127,7 +127,7 @@ public class PerfMonitorService {
      * @return 复合查询对象
      */
     private org.springframework.data.elasticsearch.core.query.Query getSearchQuery(PerfMonitorRequest request) {
-        List<QueryUtil.QueryCondition> queryConditions = elasticsearchProvide.getDefaultQueryConditions(List.of(request.getCloudAccountId()),request.getMetricName(),request.getEntityType(),request.getStartTime(), request.getEndTime());
+        List<QueryUtil.QueryCondition> queryConditions = elasticsearchProvide.getDefaultQueryConditions(List.of(request.getCloudAccountId()), request.getMetricName(), request.getEntityType(), request.getStartTime(), request.getEndTime());
         QueryUtil.QueryCondition instanceId = new QueryUtil.QueryCondition(true, "instanceId.keyword", request.getInstanceId(), QueryUtil.CompareType.EQ);
         queryConditions.add(instanceId);
         QueryUtil.QueryCondition metricName = new QueryUtil.QueryCondition(true, "metricName.keyword", request.getMetricName(), QueryUtil.CompareType.EQ);
@@ -139,8 +139,7 @@ public class PerfMonitorService {
         NativeQueryBuilder query = new NativeQueryBuilder()
                 .withPageable(PageRequest.of(0, 10000))
                 .withQuery(new co.elastic.clients.elasticsearch._types.query_dsl.Query.Builder().bool(boolQuery.build()).build())
-                .withSourceFilter(new FetchSourceFilter(new String[]{}, new String[]{"@version", "@timestamp", "host", "tags"}))
-                ;
+                .withSourceFilter(new FetchSourceFilter(new String[]{}, new String[]{"@version", "@timestamp", "host", "tags"}));
         return query.build();
     }
 

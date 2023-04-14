@@ -11,7 +11,7 @@ import lombok.Data;
 @Data
 public class TencentResizeDiskRequest extends BaseDiskResizeRequest {
 
-    public ResizeDiskRequest toResizeDiskRequest(){
+    public ResizeDiskRequest toResizeDiskRequest() {
         ResizeDiskRequest request = new ResizeDiskRequest();
         request.setDiskId(super.getDiskId());
         request.setDiskSize(super.getNewDiskSize());

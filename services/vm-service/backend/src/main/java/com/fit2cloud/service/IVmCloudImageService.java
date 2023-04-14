@@ -10,11 +10,11 @@ import java.util.List;
 
 /**
  * <p>
- *  服务类
+ * 服务类
  * </p>
  *
  * @author fit2cloud
- * @since 
+ * @since
  */
 public interface IVmCloudImageService extends IService<VmCloudImage> {
     IPage<VmCloudImageDTO> pageVmCloudImage(PageVmCloudImageRequest request);

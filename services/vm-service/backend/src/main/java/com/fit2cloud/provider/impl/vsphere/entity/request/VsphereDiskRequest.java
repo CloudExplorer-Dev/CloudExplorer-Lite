@@ -7,7 +7,7 @@ import lombok.Data;
  * Date: 2022/10/16 8:18 PM
  */
 @Data
-public class VsphereDiskRequest extends VsphereVmBaseRequest{
+public class VsphereDiskRequest extends VsphereVmBaseRequest {
     private String instanceUuid;
 
     private String diskId;

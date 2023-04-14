@@ -1,7 +1,4 @@
-package com.fit2cloud.provider.constants;//
-// Source code recreated from a .class file by IntelliJ IDEA
-// (powered by FernFlower decompiler)
-//
+package com.fit2cloud.provider.constants;
 
 public class F2CDiskStatus {
     public static final String IN_USE = "in_use";

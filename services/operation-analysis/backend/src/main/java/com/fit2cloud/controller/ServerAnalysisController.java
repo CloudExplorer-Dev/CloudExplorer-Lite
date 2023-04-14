@@ -60,11 +60,11 @@ public class ServerAnalysisController {
     @ApiOperation(value = "根据分布类型查询云主机分布情况", notes = "根据分布类型查询云主机分布情况")
     @GetMapping("/spread")
     @PreAuthorize("hasAnyCePermission('SERVER_ANALYSIS:READ','OVERVIEW:READ')")
-    public ResultHolder<Map<String,List<KeyValue>>> getVmSpreadInfo(@Validated ResourceAnalysisRequest request) {
+    public ResultHolder<Map<String, List<KeyValue>>> getVmSpreadInfo(@Validated ResourceAnalysisRequest request) {
         return ResultHolder.success(iServerAnalysisService.spread(request));
     }
 
-    @ApiOperation(value="查询云主机趋势",notes = "查询云主机趋势")
+    @ApiOperation(value = "查询云主机趋势", notes = "查询云主机趋势")
     @GetMapping("/increase_trend")
     @PreAuthorize("hasAnyCePermission('SERVER_ANALYSIS:READ','OVERVIEW:READ')")
     public ResultHolder<List<ChartData>> getVmIncreaseTrendData(
@@ -72,7 +72,7 @@ public class ServerAnalysisController {
         return ResultHolder.success(iServerAnalysisService.vmIncreaseTrend(request));
     }
 
-    @ApiOperation(value="查询云主机资源使用趋势",notes = "查询云主机资源使用趋势")
+    @ApiOperation(value = "查询云主机资源使用趋势", notes = "查询云主机资源使用趋势")
     @GetMapping("/resource_used_trend")
     @PreAuthorize("hasAnyCePermission('SERVER_ANALYSIS:READ')")
     public ResultHolder<List<ChartData>> getResourceUsedTrendData(
@@ -80,10 +80,10 @@ public class ServerAnalysisController {
         return ResultHolder.success(iServerAnalysisService.getResourceTrendData(request));
     }
 
-    @ApiOperation(value="组织或工作空间云主机分布",notes = "组织或工作空间云主机分布")
+    @ApiOperation(value = "组织或工作空间云主机分布", notes = "组织或工作空间云主机分布")
     @GetMapping("/org_workspace_vm_count_bar")
     @PreAuthorize("hasAnyCePermission('SERVER_ANALYSIS:READ')")
-    public ResultHolder<Map<String,List<TreeNode>>> analysisVmCloudServerByOrgWorkspace(
+    public ResultHolder<Map<String, List<TreeNode>>> analysisVmCloudServerByOrgWorkspace(
             @Validated ResourceAnalysisRequest request) {
         return ResultHolder.success(iServerAnalysisService.analysisVmCloudServerByOrgWorkspace(request));
     }

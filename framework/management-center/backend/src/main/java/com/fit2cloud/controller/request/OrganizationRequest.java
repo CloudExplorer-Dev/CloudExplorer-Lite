@@ -6,7 +6,6 @@ import com.fit2cloud.common.validator.annnotaion.CustomValidated;
 import com.fit2cloud.common.validator.group.ValidationGroup;
 import com.fit2cloud.common.validator.handler.ExistHandler;
 import com.fit2cloud.common.validator.handler.ExistQueryWrapperValidatedHandler;
-import com.fit2cloud.dao.mapper.CloudAccountMapper;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
@@ -30,7 +29,7 @@ public class OrganizationRequest {
     @ApiModelProperty("主键id,修改的时候必填")
     @NotNull(groups = ValidationGroup.UPDATE.class, message = "{i18n.organization.id.is.not.empty}")
     @Null(groups = ValidationGroup.SAVE.class, message = "{i18n.organization.id.is.null}")
-    @CustomValidated(groups = {ValidationGroup.UPDATE.class },mapper = BaseOrganizationMapper.class,handler = ExistHandler.class,message = "{i18n.organization.id.is.not.existent}",exist = false)
+    @CustomValidated(groups = {ValidationGroup.UPDATE.class}, mapper = BaseOrganizationMapper.class, handler = ExistHandler.class, message = "{i18n.organization.id.is.not.existent}", exist = false)
     private String id;
 
     @ApiModelProperty(value = "组织名称", required = true)

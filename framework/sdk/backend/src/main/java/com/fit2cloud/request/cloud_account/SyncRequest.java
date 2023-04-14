@@ -1,6 +1,5 @@
 package com.fit2cloud.request.cloud_account;
 
-import com.fit2cloud.common.platform.credential.Credential;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.AllArgsConstructor;
 import lombok.Data;

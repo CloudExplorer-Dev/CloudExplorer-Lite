@@ -13,7 +13,7 @@ import lombok.Data;
 public class TencentCreateDiskForm {
     @Form(inputType = InputType.Text, label = "名称")
     private String diskName;
-    @Form(inputType = InputType.Number, label = "磁盘大小", defaultValue = "50", attrs = "{\"min\":20,\"max\":32000,\"step\":1}",unit = "GB")
+    @Form(inputType = InputType.Number, label = "磁盘大小", defaultValue = "50", attrs = "{\"min\":20,\"max\":32000,\"step\":1}", unit = "GB")
     private Long size;
     @Form(inputType = InputType.Radio, label = "磁盘类型", defaultValue = "CLOUD_PREMIUM", textField = "diskTypeName", valueField = "diskType", method = "getDiskTypesForCreateDisk", clazz = TencentCloudProvider.class)
     private String diskType;

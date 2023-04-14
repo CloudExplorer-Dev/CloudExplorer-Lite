@@ -20,9 +20,10 @@ public class EsScriptUtil {
 
     /**
      * 获取月份
-     * @param type    类型 MONTH 或者 YEAR
-     * @param value   月份或者年的值
-     * @return       脚本对于参数
+     *
+     * @param type  类型 MONTH 或者 YEAR
+     * @param value 月份或者年的值
+     * @return 脚本对于参数
      */
     public static Map<String, JsonData> getMonthOrYearParams(String type, String value) {
         if (type.equals("MONTH")) {

@@ -18,7 +18,6 @@ import com.fit2cloud.controller.request.workspace.PageWorkspaceRequest;
 import com.fit2cloud.controller.request.workspace.WorkspaceBatchCreateRequest;
 import com.fit2cloud.controller.request.workspace.WorkspaceRequest;
 import com.fit2cloud.dao.entity.Workspace;
-import com.fit2cloud.dao.mapper.OrganizationMapper;
 import com.fit2cloud.dao.mapper.WorkspaceMapper;
 import com.fit2cloud.dto.WorkspaceDTO;
 import com.fit2cloud.service.IWorkspaceService;

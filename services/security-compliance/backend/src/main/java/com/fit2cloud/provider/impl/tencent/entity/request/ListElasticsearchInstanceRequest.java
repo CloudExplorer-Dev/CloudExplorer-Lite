@@ -1,7 +1,7 @@
 package com.fit2cloud.provider.impl.tencent.entity.request;
 
 import com.fit2cloud.provider.impl.tencent.entity.credential.TencentSecurityComplianceCredential;
-import com.tencentcloudapi.es.v20180416.models.*;
+import com.tencentcloudapi.es.v20180416.models.DescribeInstancesRequest;
 import lombok.Getter;
 import lombok.Setter;
 

@@ -4,14 +4,13 @@ import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 import lombok.experimental.Accessors;
 
-
 import java.io.Serial;
 import java.io.Serializable;
 
 
 @Accessors(chain = true)
 @Data
-public class VmCloudImageRequest  implements Serializable {
+public class VmCloudImageRequest implements Serializable {
 
     @Serial
     private static final long serialVersionUID = 6121940016880656998L;

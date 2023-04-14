@@ -10,16 +10,12 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.SneakyThrows;
-import org.apache.commons.collections4.CollectionUtils;
 import org.openstack4j.api.OSClient;
-import org.openstack4j.api.types.ServiceType;
 import org.openstack4j.model.common.Identifier;
-import org.openstack4j.model.identity.v3.Service;
 import org.openstack4j.openstack.OSFactory;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Data
 @NoArgsConstructor

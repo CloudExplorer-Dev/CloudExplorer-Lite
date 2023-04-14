@@ -164,14 +164,17 @@ public class Menu extends CeBaseObject {
             this.menu.saveRecent = saveRecent;
             return this;
         }
+
         public Builder quickAccess(boolean quickAccess) {
             this.menu.quickAccess = quickAccess;
             return this;
         }
+
         public Builder quickAccessName(String quickAccessName) {
             this.menu.quickAccessName = quickAccessName;
             return this;
         }
+
         public Builder quickAccessIcon(String quickAccessIcon) {
             this.menu.quickAccessIcon = quickAccessIcon;
             return this;

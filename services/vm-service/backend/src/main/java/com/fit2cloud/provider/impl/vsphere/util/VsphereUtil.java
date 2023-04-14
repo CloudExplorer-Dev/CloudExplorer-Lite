@@ -300,7 +300,7 @@ public class VsphereUtil {
                     }
                 }
                 VirtualHardware hardware = vmConfig.getHardware();
-                if(hardware != null){
+                if (hardware != null) {
                     vmCpuMHz += vm.getSummary().getQuickStats().getOverallCpuUsage();
                 }
 

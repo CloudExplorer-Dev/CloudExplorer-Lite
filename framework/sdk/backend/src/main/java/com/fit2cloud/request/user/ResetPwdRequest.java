@@ -14,10 +14,10 @@ import javax.validation.constraints.NotNull;
 public class ResetPwdRequest {
     @ApiModelProperty("原密码")
     @NotNull(message = "原密码不能为空")
-    @Length( min = 1, message = "原密码不能为空字符串")
+    @Length(min = 1, message = "原密码不能为空字符串")
     private String oldPassword;
     @ApiModelProperty("新密码")
     @NotNull(message = "新密码不能为空")
-    @Length( min = 1, message = "新密码不能为空字符串")
+    @Length(min = 1, message = "新密码不能为空字符串")
     private String newPassword;
 }

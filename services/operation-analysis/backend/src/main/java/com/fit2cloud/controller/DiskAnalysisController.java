@@ -52,11 +52,11 @@ public class DiskAnalysisController {
     @ApiOperation(value = "根据分布类型查询磁盘分布情况", notes = "根据分布类型查询磁盘分布情况")
     @GetMapping("/spread")
     @PreAuthorize("hasAnyCePermission('DISK_ANALYSIS:READ','OVERVIEW:READ')")
-    public ResultHolder<Map<String,List<KeyValue>>> getDiskSpreadInfo(@Validated ResourceAnalysisRequest request) {
+    public ResultHolder<Map<String, List<KeyValue>>> getDiskSpreadInfo(@Validated ResourceAnalysisRequest request) {
         return ResultHolder.success(iDiskAnalysisService.spread(request));
     }
 
-    @ApiOperation(value="查询磁盘趋势",notes = "查询磁盘趋势")
+    @ApiOperation(value = "查询磁盘趋势", notes = "查询磁盘趋势")
     @GetMapping("/increase_trend")
     @PreAuthorize("hasAnyCePermission('DISK_ANALYSIS:READ')")
     public ResultHolder<List<ChartData>> getDiskIncreaseTrendData(
@@ -64,10 +64,10 @@ public class DiskAnalysisController {
         return ResultHolder.success(iDiskAnalysisService.diskIncreaseTrend(request));
     }
 
-    @ApiOperation(value="组织或工作空间磁盘分布",notes = "组织或工作空间磁盘分布")
+    @ApiOperation(value = "组织或工作空间磁盘分布", notes = "组织或工作空间磁盘分布")
     @GetMapping("/org_workspace_disk_count_bar")
     @PreAuthorize("hasAnyCePermission('DISK_ANALYSIS:READ')")
-    public ResultHolder<Map<String,List<TreeNode>>> analysisCloudDiskByOrgWorkspace(
+    public ResultHolder<Map<String, List<TreeNode>>> analysisCloudDiskByOrgWorkspace(
             @Validated ResourceAnalysisRequest request) {
         return ResultHolder.success(iDiskAnalysisService.analysisCloudDiskByOrgWorkspace(request));
     }

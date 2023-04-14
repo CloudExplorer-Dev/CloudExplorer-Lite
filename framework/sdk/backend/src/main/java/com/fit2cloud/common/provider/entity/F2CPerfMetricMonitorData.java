@@ -6,6 +6,7 @@ import java.math.BigDecimal;
 
 /**
  * 性能指标监控数据
+ *
  * @author jianneng
  **/
 @Data

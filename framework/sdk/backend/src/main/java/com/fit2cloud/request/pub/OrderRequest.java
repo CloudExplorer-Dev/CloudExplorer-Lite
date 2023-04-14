@@ -3,7 +3,6 @@ package com.fit2cloud.request.pub;
 import com.baomidou.mybatisplus.core.metadata.OrderItem;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
-import lombok.experimental.Accessors;
 
 import java.io.Serial;
 
@@ -30,7 +29,7 @@ public class OrderRequest extends OrderItem {
     @ApiModelProperty("asc 是否顺序")
     private boolean asc;
 
-    public OrderRequest resetColumn(String column){
+    public OrderRequest resetColumn(String column) {
         this.column = column;
         return this;
     }

@@ -1,6 +1,5 @@
 package com.fit2cloud.common.constants;
 
-import com.fit2cloud.base.entity.CloudAccount;
 import com.fit2cloud.common.platform.bill.Bill;
 import com.fit2cloud.common.platform.credential.Credential;
 import org.apache.commons.lang3.StringUtils;

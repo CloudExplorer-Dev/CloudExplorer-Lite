@@ -12,7 +12,7 @@ import lombok.Data;
 @Data
 public class TencentAttachDiskRequest extends BaseDiskAttachRequest {
 
-    public AttachDisksRequest toAttachDisksRequest(){
+    public AttachDisksRequest toAttachDisksRequest() {
         AttachDisksRequest request = new AttachDisksRequest();
         request.setAttachMode(super.getAttachMode());
         request.setDiskIds(new String[]{super.getDiskId()});

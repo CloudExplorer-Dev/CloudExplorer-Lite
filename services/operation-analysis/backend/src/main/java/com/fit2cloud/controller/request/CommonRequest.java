@@ -9,5 +9,5 @@ import lombok.Data;
 @Data
 public class CommonRequest {
 
-   private String cloudAccountId;
+    private String cloudAccountId;
 }

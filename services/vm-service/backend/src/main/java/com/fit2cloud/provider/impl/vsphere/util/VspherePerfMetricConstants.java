@@ -2,6 +2,7 @@ package com.fit2cloud.provider.impl.vsphere.util;
 
 /**
  * 监控相关常量
+ *
  * @author jianneng
  * @date 2022/10/28 12:07
  **/
@@ -12,40 +13,40 @@ public class VspherePerfMetricConstants {
      * 目前VM监控只获取CPU内存这些，其他监控后面再弄，api获取数据有问题，暂停
      */
     public enum CloudServerPerfMetricEnum {
-        CPU_USED_UTILIZATION("2", "CPU使用率","%",100L),
-        MEMORY_USED_UTILIZATION("24", "内存使用率","%",100L),
+        CPU_USED_UTILIZATION("2", "CPU使用率", "%", 100L),
+        MEMORY_USED_UTILIZATION("24", "内存使用率", "%", 100L),
         /**
          * 虚拟磁盘读取速度
          */
-        DISK_READ_BPS("180", "虚拟磁盘读取速度","KBps",1L),
+        DISK_READ_BPS("180", "虚拟磁盘读取速度", "KBps", 1L),
         /**
          * 虚拟磁盘写入速度
          */
-        DISK_WRITE_BPS("181", "虚拟磁盘写入速度","KBps",1L),
+        DISK_WRITE_BPS("181", "虚拟磁盘写入速度", "KBps", 1L),
         /**
          * 平均每秒读取请求数
          */
-        DISK_READ_IOPS("178", "平均每秒读取请求数","Count/Second",1L),
+        DISK_READ_IOPS("178", "平均每秒读取请求数", "Count/Second", 1L),
         /**
          * 平均每秒写入请求数
          */
-        DISK_WRITE_IOPS("179", "平均每秒写入请求数","Count/Second",1L),
+        DISK_WRITE_IOPS("179", "平均每秒写入请求数", "Count/Second", 1L),
         /**
          * 这个指标是查询存储器实际使用量
          * disk.used.latest 这个指标返回的是kb
          * 一个小时只会返回两个时间点，25分钟、55分钟两个
          */
-        DATASTORE_USED_UTILIZATION("275", "存储器使用率","%",1L),
+        DATASTORE_USED_UTILIZATION("275", "存储器使用率", "%", 1L),
 
         /**
          * 查询的时间参数，只能是过去30分钟内（不包含30分钟）才有数据返回，返回只返回5个点的数据，间隔是5分钟一个点
          * 平均每秒接收的数据量
          */
-        INTRANET_IN_RATE("494", "内网流入带宽","KBps",1L),
+        INTRANET_IN_RATE("494", "内网流入带宽", "KBps", 1L),
         /**
          * 平均每秒传输的数据量
          */
-        INTRANET_OUT_RATE("495", "内网流出带宽","KBps",1L),
+        INTRANET_OUT_RATE("495", "内网流出带宽", "KBps", 1L),
 
 
 //        DISK_READ_BPS("180", "虚拟磁盘读取速度","KBps",1L),
@@ -97,7 +98,9 @@ public class VspherePerfMetricConstants {
             return unit;
         }
 
-        public Long getDivisor() { return divisor; }
+        public Long getDivisor() {
+            return divisor;
+        }
 
     }
 }

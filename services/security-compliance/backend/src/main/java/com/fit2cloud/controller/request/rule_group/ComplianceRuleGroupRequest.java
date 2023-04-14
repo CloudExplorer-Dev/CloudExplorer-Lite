@@ -6,7 +6,6 @@ import com.fit2cloud.common.validator.group.ValidationGroup;
 import com.fit2cloud.common.validator.handler.ExistHandler;
 import com.fit2cloud.common.validator.handler.ExistQueryWrapperValidatedHandler;
 import com.fit2cloud.dao.mapper.ComplianceRuleGroupMapper;
-import com.fit2cloud.dao.mapper.ComplianceRuleMapper;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 

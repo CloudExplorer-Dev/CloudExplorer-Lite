@@ -3,7 +3,6 @@ package com.fit2cloud.controller.request.cloud_account;
 import com.fit2cloud.common.platform.credential.Credential;
 import com.fit2cloud.common.validator.annnotaion.CustomValidated;
 import com.fit2cloud.common.validator.handler.ExistHandler;
-import com.fit2cloud.controller.response.cloud_account.CloudAccountJobDetailsResponse;
 import com.fit2cloud.dao.mapper.CloudAccountMapper;
 import com.fit2cloud.request.cloud_account.CloudAccountModuleJob;
 import io.swagger.annotations.ApiModelProperty;

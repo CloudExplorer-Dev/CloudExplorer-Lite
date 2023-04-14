@@ -5,7 +5,10 @@ import com.baomidou.mybatisplus.extension.service.IService;
 import com.fit2cloud.base.entity.VmCloudServer;
 import com.fit2cloud.common.form.vo.FormObject;
 import com.fit2cloud.controller.request.GrantRequest;
-import com.fit2cloud.controller.request.vm.*;
+import com.fit2cloud.controller.request.vm.BatchOperateVmRequest;
+import com.fit2cloud.controller.request.vm.ChangeServerConfigRequest;
+import com.fit2cloud.controller.request.vm.CreateServerRequest;
+import com.fit2cloud.controller.request.vm.PageVmCloudServerRequest;
 import com.fit2cloud.dto.VmCloudServerDTO;
 import com.fit2cloud.response.JobRecordResourceResponse;
 
@@ -56,7 +59,7 @@ public interface IVmCloudServerService extends IService<VmCloudServer> {
 
     FormObject getConfigUpdateForm(String platform);
 
-    String calculateConfigUpdatePrice(String platform,Map<String, Object> params);
+    String calculateConfigUpdatePrice(String platform, Map<String, Object> params);
 
     boolean grant(GrantRequest grantServerRequest);
 

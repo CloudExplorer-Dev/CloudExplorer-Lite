@@ -29,5 +29,4 @@ public class ResourceAnalysisRequest {
     private List<String> sourceIds;
 
 
-
 }

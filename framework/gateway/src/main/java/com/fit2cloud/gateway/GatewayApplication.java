@@ -1,7 +1,6 @@
 package com.fit2cloud.gateway;
 
 import com.fit2cloud.autoconfigure.*;
-import com.fit2cloud.common.scheduler.impl.QuartzSchedulerServiceImpl;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.web.servlet.ServletWebServerFactoryAutoConfiguration;

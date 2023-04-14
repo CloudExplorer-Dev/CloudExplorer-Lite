@@ -1,6 +1,5 @@
 package com.fit2cloud.common.provider.impl.openstack.utils;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.apache.commons.collections4.CollectionUtils;
 import org.openstack4j.api.OSClient;
 import org.openstack4j.api.types.ServiceType;

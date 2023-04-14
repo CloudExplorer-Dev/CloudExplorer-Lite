@@ -19,17 +19,18 @@ import java.util.List;
 @Data
 public class OrganizationBatchRequest {
     @ApiModelProperty("所属组织id")
-    @CustomValidated(groups = {ValidationGroup.UPDATE.class },mapper = BaseOrganizationMapper.class,handler = ExistHandler.class,message = "{i18n.organization.id.is.not.existent}",exist = false)
+    @CustomValidated(groups = {ValidationGroup.UPDATE.class}, mapper = BaseOrganizationMapper.class, handler = ExistHandler.class, message = "{i18n.organization.id.is.not.existent}", exist = false)
     private String pid;
 
-    @Size(min = 1,message = "{i18m.organization.is.not.empty}")
+    @Size(min = 1, message = "{i18m.organization.is.not.empty}")
     @ApiModelProperty("组织数据")
     private List<OriginDetails> orgDetails;
+
     @Data
-    public static class OriginDetails{
-        @ApiModelProperty(value = "组织名称",notes = "组织名称")
+    public static class OriginDetails {
+        @ApiModelProperty(value = "组织名称", notes = "组织名称")
         private String name;
-        @ApiModelProperty(value = "组织描述",notes = "组织描述")
+        @ApiModelProperty(value = "组织描述", notes = "组织描述")
         private String description;
     }
 

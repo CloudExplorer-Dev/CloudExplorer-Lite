@@ -1,6 +1,5 @@
 package com.fit2cloud.provider.impl.huawei.entity.request;
 
-import com.aliyun.ecs20140526.models.DescribeDisksRequest;
 import com.huaweicloud.sdk.evs.v2.model.ListVolumesRequest;
 import lombok.Data;
 

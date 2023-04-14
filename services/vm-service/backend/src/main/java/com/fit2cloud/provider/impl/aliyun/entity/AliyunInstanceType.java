@@ -38,7 +38,7 @@ public class AliyunInstanceType {
 
     private int memory;
 
-    public AliyunInstanceType(String instanceType){
+    public AliyunInstanceType(String instanceType) {
         this.instanceType = instanceType;
     }
 

@@ -10,7 +10,6 @@ import com.fit2cloud.base.entity.CloudAccount;
 import com.fit2cloud.base.entity.VmCloudImage;
 import com.fit2cloud.base.mapper.BaseVmCloudImageMapper;
 import com.fit2cloud.common.utils.ColumnNameUtil;
-import com.fit2cloud.common.utils.CurrentUserUtils;
 import com.fit2cloud.common.utils.JsonUtil;
 import com.fit2cloud.common.utils.PageUtil;
 import com.fit2cloud.controller.request.images.PageVmCloudImageRequest;
@@ -20,7 +19,6 @@ import com.fit2cloud.dto.VmCloudImageDTO;
 import com.fit2cloud.provider.impl.huawei.entity.OsConfig;
 import com.fit2cloud.provider.impl.huawei.entity.request.HuaweiBaseRequest;
 import com.fit2cloud.service.IVmCloudImageService;
-import com.fit2cloud.service.OrganizationCommonService;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 

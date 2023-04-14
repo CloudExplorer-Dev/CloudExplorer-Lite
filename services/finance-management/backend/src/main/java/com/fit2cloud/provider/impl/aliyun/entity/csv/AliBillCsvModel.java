@@ -1,7 +1,9 @@
 package com.fit2cloud.provider.impl.aliyun.entity.csv;
 
 import com.fit2cloud.provider.convert.EmptyNumberConvert;
-import com.opencsv.bean.*;
+import com.opencsv.bean.CsvBindByName;
+import com.opencsv.bean.CsvCustomBindByName;
+import com.opencsv.bean.CsvDate;
 import lombok.Data;
 
 import java.util.Date;

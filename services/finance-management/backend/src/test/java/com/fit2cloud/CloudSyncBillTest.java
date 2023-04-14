@@ -3,11 +3,8 @@ package com.fit2cloud;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.fit2cloud.constants.AuthorizeTypeConstants;
 import com.fit2cloud.controller.request.AuthorizeResourcesRequest;
-import com.fit2cloud.controller.request.BillExpensesRequest;
-import com.fit2cloud.controller.request.HistoryTrendRequest;
 import com.fit2cloud.controller.response.AuthorizeResourcesResponse;
 import com.fit2cloud.controller.response.BillView;
-import com.fit2cloud.controller.response.Trend;
 import com.fit2cloud.dao.entity.BillDimensionSetting;
 import com.fit2cloud.dao.entity.BillRule;
 import com.fit2cloud.dao.jentity.Group;
@@ -23,7 +20,6 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.test.context.TestPropertySource;
 
 import javax.annotation.Resource;
-import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -102,9 +98,6 @@ public class CloudSyncBillTest {
         List<DefaultKeyValue<String, String>> group = billDimensionSettingService.authorizeKeys();
         System.out.println(group);
     }
-
-
-
 
 
     @Test

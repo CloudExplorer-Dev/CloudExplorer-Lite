@@ -2,7 +2,6 @@ package com.fit2cloud.provider.impl.huawei;
 
 import com.fit2cloud.common.constants.PlatformConstants;
 import com.fit2cloud.common.provider.impl.huawei.entity.credential.HuaweiBaseCredential;
-import com.fit2cloud.common.provider.util.PageUtil;
 import com.fit2cloud.common.utils.JsonUtil;
 import com.fit2cloud.constants.ResourceTypeConstants;
 import com.fit2cloud.constants.SyncDimensionConstants;
@@ -31,7 +30,9 @@ import org.apache.commons.collections4.keyvalue.DefaultKeyValue;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
 
-import java.util.*;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
 
 /**
  * {@code @Author:张少虎}

@@ -91,7 +91,7 @@ public class JobRecordServiceImpl implements IJobRecordService {
         wrapper.like(StringUtils.isNotEmpty(request.getResourceName()), "resource.resource_name", request.getResourceName());
         wrapper.like(StringUtils.isNotEmpty(request.getOperateUserName()), "user._name", request.getOperateUserName());
 
-        if (CollectionUtils.isNotEmpty(request.getWorkspaceIds())){
+        if (CollectionUtils.isNotEmpty(request.getWorkspaceIds())) {
             wrapper.and(wrapperInner1 -> wrapperInner1.in("org_workspace.id", request.getWorkspaceIds())
                     .and(wrapperInner2 -> wrapperInner2.eq("org_workspace.type", "workspace")));
         }

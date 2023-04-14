@@ -11,7 +11,6 @@ import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
 import java.time.LocalDateTime;
-import java.util.List;
 import java.util.Map;
 
 /**
@@ -27,7 +26,7 @@ public class JobRecordResourceResponse {
     @ApiModelProperty(value = "资源类型", notes = "资源类型")
     private String resourceType;
 
-    @ApiModelProperty(value = "任务记录id",notes = "任务记录id")
+    @ApiModelProperty(value = "任务记录id", notes = "任务记录id")
     private String jobRecordId;
     @ApiModelProperty(value = "定时任务类型", notes = "定时任务类型")
     private JobTypeConstants type;

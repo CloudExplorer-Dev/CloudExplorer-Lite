@@ -23,6 +23,7 @@ public interface VmCloudServerMapper extends BaseMapper<VmCloudServerDTO> {
 
     /**
      * TODO 这个地方慢慢累加查询条件
+     *
      * @param page
      * @param queryWrapper
      * @return
@@ -31,6 +32,7 @@ public interface VmCloudServerMapper extends BaseMapper<VmCloudServerDTO> {
 
     /**
      * 根据条件查询云主机列表
+     *
      * @param queryWrapper
      * @return
      */
@@ -38,6 +40,7 @@ public interface VmCloudServerMapper extends BaseMapper<VmCloudServerDTO> {
 
     /**
      * 根据ID查询云主机
+     *
      * @param queryWrapper
      * @return
      */
@@ -45,6 +48,7 @@ public interface VmCloudServerMapper extends BaseMapper<VmCloudServerDTO> {
 
     /**
      * 根据IDS查询云主机
+     *
      * @param queryWrapper
      * @return
      */

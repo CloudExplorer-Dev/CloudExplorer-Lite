@@ -21,14 +21,14 @@ public class WorkspaceRequest {
     private String id;
 
     @ApiModelProperty(value = "工作空间名称", required = true)
-    @NotNull(groups = {ValidationGroup.SAVE.class,ValidationGroup.UPDATE.class}, message = "{i18n.workspace.name.is.not.empty}")
+    @NotNull(groups = {ValidationGroup.SAVE.class, ValidationGroup.UPDATE.class}, message = "{i18n.workspace.name.is.not.empty}")
     private String name;
 
     @ApiModelProperty(value = "工作空间描述", required = false)
     private String description;
 
-    @ApiModelProperty(value = "父级组织ID",required = true)
-    @NotNull(groups = {ValidationGroup.SAVE.class,ValidationGroup.UPDATE.class}, message = "{i18n.workspace.organization.is.not.empty}")
+    @ApiModelProperty(value = "父级组织ID", required = true)
+    @NotNull(groups = {ValidationGroup.SAVE.class, ValidationGroup.UPDATE.class}, message = "{i18n.workspace.organization.is.not.empty}")
     private String organizationId;
 
 }

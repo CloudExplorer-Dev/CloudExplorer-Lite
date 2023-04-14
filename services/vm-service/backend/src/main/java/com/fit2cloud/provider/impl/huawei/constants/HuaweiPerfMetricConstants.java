@@ -10,17 +10,17 @@ public class HuaweiPerfMetricConstants {
      * 云主机性能指标枚举
      */
     public enum CloudServerPerfMetricEnum {
-        CPU_USED_UTILIZATION("cpu_util", "CPU使用率","%"),
-        MEMORY_USED_UTILIZATION("mem_usedPercent", "内存使用率","%"),
-        DISK_READ_BPS("disk_read_bytes_rate", "所有磁盘读取BPS","Byte/s"),
-        DISK_WRITE_BPS("disk_write_bytes_rate", "所有磁盘写入BPS","Byte/s"),
-        DISK_READ_IOPS("disk_read_requests_rate", "所有磁盘每秒读取次数","Count/Second"),
-        DISK_WRITE_IOPS("disk_write_requests_rate", "所有磁盘每秒写入次数","Count/Second"),
-        INTERNET_IN_RATE("network_incoming_bytes_aggregate_rate", "公网流入带宽","Byte/s"),
-        INTERNET_OUT_RATE("network_outgoing_bytes_aggregate_rate", "公网流出带宽","Byte/s"),
-        INTRANET_IN_RATE("network_vm_bandwidth_in", "内网流入带宽","KB/s"),
-        INTRANET_OUT_RATE("network_vm_bandwidth_out", "内网流出带宽","KB/s"),
-        DISK_USED_UTILIZATION("disk_util_inband","磁盘使用率","%"),
+        CPU_USED_UTILIZATION("cpu_util", "CPU使用率", "%"),
+        MEMORY_USED_UTILIZATION("mem_usedPercent", "内存使用率", "%"),
+        DISK_READ_BPS("disk_read_bytes_rate", "所有磁盘读取BPS", "Byte/s"),
+        DISK_WRITE_BPS("disk_write_bytes_rate", "所有磁盘写入BPS", "Byte/s"),
+        DISK_READ_IOPS("disk_read_requests_rate", "所有磁盘每秒读取次数", "Count/Second"),
+        DISK_WRITE_IOPS("disk_write_requests_rate", "所有磁盘每秒写入次数", "Count/Second"),
+        INTERNET_IN_RATE("network_incoming_bytes_aggregate_rate", "公网流入带宽", "Byte/s"),
+        INTERNET_OUT_RATE("network_outgoing_bytes_aggregate_rate", "公网流出带宽", "Byte/s"),
+        INTRANET_IN_RATE("network_vm_bandwidth_in", "内网流入带宽", "KB/s"),
+        INTRANET_OUT_RATE("network_vm_bandwidth_out", "内网流出带宽", "KB/s"),
+        DISK_USED_UTILIZATION("disk_util_inband", "磁盘使用率", "%"),
         ;
 
         /**
@@ -56,15 +56,16 @@ public class HuaweiPerfMetricConstants {
         }
 
     }
+
     /**
      * 磁盘的无法获取
      * 磁盘枚举
      */
     public enum CloudDiskPerfMetricEnum {
-        DISK_READ_BPS("DiskReadBytes", "磁盘读取BPS","Bytes/s"),
-        DISK_WRITE_BPS("DiskWriteBytes", "磁盘写入BPS","Bytes/s"),
-        DISK_READ_IOPS("DiskIOPSRead", "磁盘每秒读取次数","Count/Second"),
-        DISK_WRITE_IOPS("DiskIOPSWrite", "磁盘每秒写入次数","Count/Second"),
+        DISK_READ_BPS("DiskReadBytes", "磁盘读取BPS", "Bytes/s"),
+        DISK_WRITE_BPS("DiskWriteBytes", "磁盘写入BPS", "Bytes/s"),
+        DISK_READ_IOPS("DiskIOPSRead", "磁盘每秒读取次数", "Count/Second"),
+        DISK_WRITE_IOPS("DiskIOPSWrite", "磁盘每秒写入次数", "Count/Second"),
         ;
         /**
          * 名称
@@ -85,12 +86,15 @@ public class HuaweiPerfMetricConstants {
             this.description = description;
             this.unit = unit;
         }
+
         public String getMetricName() {
             return metricName;
         }
+
         public String getDescription() {
             return description;
         }
+
         public String getUnit() {
             return unit;
         }

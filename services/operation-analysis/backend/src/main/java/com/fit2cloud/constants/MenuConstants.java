@@ -1,10 +1,10 @@
 package com.fit2cloud.constants;
 
 import com.fit2cloud.common.constants.RoleConstants;
-import com.fit2cloud.dto.module.Menu;
-import com.fit2cloud.dto.module.MenuPermission;
 import com.fit2cloud.constants.PermissionConstants.GROUP;
 import com.fit2cloud.constants.PermissionConstants.OPERATE;
+import com.fit2cloud.dto.module.Menu;
+import com.fit2cloud.dto.module.MenuPermission;
 import com.fit2cloud.dto.module.Menus;
 import com.fit2cloud.service.MenuService;
 import org.springframework.beans.factory.annotation.Value;

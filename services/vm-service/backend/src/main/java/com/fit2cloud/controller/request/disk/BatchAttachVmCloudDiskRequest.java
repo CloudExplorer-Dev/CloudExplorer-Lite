@@ -7,7 +7,7 @@ import lombok.Data;
  * Date: 2022/10/27 10:35 AM
  */
 @Data
-public class BatchAttachVmCloudDiskRequest{
+public class BatchAttachVmCloudDiskRequest {
     /**
      * vm_cloud_disk表主键数组
      */

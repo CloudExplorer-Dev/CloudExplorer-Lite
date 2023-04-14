@@ -13,8 +13,8 @@ public class OpenStackPerfMetricConstants {
         MEMORY_USED_UTILIZATION("memory.usage", "内存使用率", "%", 100L),
         DATASTORE_USED_UTILIZATION("datastore.usage", "存储器使用率", "%", 100L),
 
-        INTERNET_IN_RATE("network.incoming.bytes.rate", "流入带宽","Byte/s", 1L),
-        INTERNET_OUT_RATE("network.outgoing.bytes.rate", "流出带宽","Byte/s", 1L),
+        INTERNET_IN_RATE("network.incoming.bytes.rate", "流入带宽", "Byte/s", 1L),
+        INTERNET_OUT_RATE("network.outgoing.bytes.rate", "流出带宽", "Byte/s", 1L),
 
         ;
 

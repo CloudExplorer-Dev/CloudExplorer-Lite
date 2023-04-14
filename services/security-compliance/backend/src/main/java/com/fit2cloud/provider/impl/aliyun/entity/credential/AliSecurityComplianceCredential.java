@@ -7,7 +7,6 @@ import com.aliyun.sdk.service.oss20190517.AsyncClient;
 import com.aliyun.teaopenapi.models.Config;
 import com.fit2cloud.common.exception.Fit2cloudException;
 import com.fit2cloud.common.provider.impl.aliyun.entity.credential.AliyunBaseCredential;
-import darabonba.core.client.ClientOverrideConfiguration;
 
 /**
  * {@code @Author:张少虎}

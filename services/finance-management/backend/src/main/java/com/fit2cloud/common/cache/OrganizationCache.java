@@ -1,16 +1,12 @@
 package com.fit2cloud.common.cache;
 
 import com.fit2cloud.base.entity.Organization;
-import com.fit2cloud.base.entity.Workspace;
 import com.fit2cloud.base.mapper.BaseOrganizationMapper;
-import com.fit2cloud.base.mapper.BaseWorkspaceMapper;
 import com.fit2cloud.common.utils.SpringUtil;
-import com.mchange.v2.lang.StringUtils;
 import jodd.util.StringUtil;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.collections4.keyvalue.DefaultKeyValue;
 
-import javax.swing.*;
 import java.lang.ref.SoftReference;
 import java.util.HashMap;
 import java.util.List;

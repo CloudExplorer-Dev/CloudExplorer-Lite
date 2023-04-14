@@ -31,11 +31,11 @@ public class VapiAuthenticationHelper {
             this.stubFactory = this.createApiStubFactory(server, httpConfig);
             ExecutionContext.SecurityContext securityContext = SecurityContextFactory.createUserPassSecurityContext(username, password.toCharArray());
             StubConfiguration stubConfig = new StubConfiguration(securityContext);
-            Session session = (Session)this.stubFactory.createStub(Session.class, stubConfig);
+            Session session = (Session) this.stubFactory.createStub(Session.class, stubConfig);
             char[] sessionId = session.create();
             SessionSecurityContext sessionSecurityContext = new SessionSecurityContext(sessionId);
             stubConfig.setSecurityContext(sessionSecurityContext);
-            this.sessionSvc = (Session)this.stubFactory.createStub(Session.class, stubConfig);
+            this.sessionSvc = (Session) this.stubFactory.createStub(Session.class, stubConfig);
             return stubConfig;
         }
     }
@@ -45,13 +45,13 @@ public class VapiAuthenticationHelper {
             throw new Exception("Session already created");
         } else {
             this.stubFactory = this.createApiStubFactory(server, httpConfig);
-            ExecutionContext.SecurityContext samlSecurityContext = SecurityContextFactory.createSamlSecurityContext(samlBearerToken, (PrivateKey)null);
+            ExecutionContext.SecurityContext samlSecurityContext = SecurityContextFactory.createSamlSecurityContext(samlBearerToken, (PrivateKey) null);
             StubConfiguration stubConfig = new StubConfiguration(samlSecurityContext);
-            Session session = (Session)this.stubFactory.createStub(Session.class, stubConfig);
+            Session session = (Session) this.stubFactory.createStub(Session.class, stubConfig);
             char[] sessionId = session.create();
             SessionSecurityContext sessionSecurityContext = new SessionSecurityContext(sessionId);
             stubConfig.setSecurityContext(sessionSecurityContext);
-            this.sessionSvc = (Session)this.stubFactory.createStub(Session.class, stubConfig);
+            this.sessionSvc = (Session) this.stubFactory.createStub(Session.class, stubConfig);
             return stubConfig;
         }
     }
@@ -66,7 +66,7 @@ public class VapiAuthenticationHelper {
     private StubFactory createApiStubFactory(String server, HttpConfiguration httpConfig) throws Exception {
         ProtocolFactory pf = new ProtocolFactory();
         String apiUrl = "https://" + server + "/api";
-        ProtocolConnection connection = pf.getHttpConnection(apiUrl, (ClientConfiguration)null, httpConfig);
+        ProtocolConnection connection = pf.getHttpConnection(apiUrl, (ClientConfiguration) null, httpConfig);
         ApiProvider provider = connection.getApiProvider();
         StubFactory stubFactory = new StubFactory(provider);
         return stubFactory;

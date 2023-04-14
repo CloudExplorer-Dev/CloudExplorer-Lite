@@ -1,9 +1,6 @@
 package com.fit2cloud.provider.impl.aliyun.entity.request;
 
 import com.aliyun.ecs20140526.models.DescribeInstancesRequest;
-import com.aliyun.tea.NameInMap;
-import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 

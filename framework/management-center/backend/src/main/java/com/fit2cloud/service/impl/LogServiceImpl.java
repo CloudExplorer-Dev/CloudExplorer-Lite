@@ -2,7 +2,10 @@ package com.fit2cloud.service.impl;
 
 import co.elastic.clients.elasticsearch._types.aggregations.Aggregation;
 import co.elastic.clients.elasticsearch._types.aggregations.ValueCountAggregation;
-import co.elastic.clients.elasticsearch._types.query_dsl.*;
+import co.elastic.clients.elasticsearch._types.query_dsl.BoolQuery;
+import co.elastic.clients.elasticsearch._types.query_dsl.Query;
+import co.elastic.clients.elasticsearch._types.query_dsl.RangeQuery;
+import co.elastic.clients.elasticsearch._types.query_dsl.WildcardQuery;
 import co.elastic.clients.json.JsonData;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -58,17 +61,17 @@ public class LogServiceImpl implements ILogService {
 
     private org.springframework.data.elasticsearch.core.query.Query getSearchQueryFroOperation(Integer currentPage, Integer pageSize, PageOperatedLogRequest request, OrderRequest order) {
         NativeQueryBuilder query = new NativeQueryBuilder()
-                .withPageable(PageRequest.of(currentPage-1, pageSize))
+                .withPageable(PageRequest.of(currentPage - 1, pageSize))
                 .withQuery(buildQueryForOperation(request))
                 .withSourceFilter(new FetchSourceFilter(new String[]{}, new String[]{"@version", "@timestamp", "host", "tags"}))
                 .withAggregation("count", new Aggregation.Builder().valueCount(new ValueCountAggregation.Builder().field("_id").build()).build());
         if (order != null && StringUtils.isNotEmpty(order.getColumn())) {
-            if(StringUtils.equalsIgnoreCase(order.getColumn(),"createTime") || StringUtils.equalsIgnoreCase(order.getColumn(),"date")){
+            if (StringUtils.equalsIgnoreCase(order.getColumn(), "createTime") || StringUtils.equalsIgnoreCase(order.getColumn(), "date")) {
                 query.withSort(Sort.by(order.isAsc() ? Sort.Order.asc("@timestamp") : Sort.Order.desc("@timestamp")));
-            }else{
+            } else {
                 query.withSort(Sort.by(order.isAsc() ? Sort.Order.asc(order.getColumn()) : Sort.Order.desc(order.getColumn())));
             }
-        }else{
+        } else {
             query.withSort(Sort.by(Sort.Order.desc("@timestamp")));
         }
         return query.build();
@@ -87,25 +90,24 @@ public class LogServiceImpl implements ILogService {
         request.setType(null);
         List<QueryUtil.QueryCondition> queryConditions = new ArrayList<>();
         //平台管理日志，把登录日志以及资产资源过滤掉，云主机、磁盘
-        if(Objects.isNull(request.getResourceType())){
+        if (Objects.isNull(request.getResourceType())) {
             queryConditions.add(new QueryUtil.QueryCondition(true, "operated", OperatedTypeEnum.LOGIN.getOperate(), QueryUtil.CompareType.NOT_EQ));
-            queryConditions.add(new QueryUtil.QueryCondition(true, "resourceType.keyword", Arrays.asList(ResourceTypeEnum.CLOUD_SERVER.getName(),ResourceTypeEnum.CLOUD_DISK.getName()), QueryUtil.CompareType.NOT_IN));
-        }else{
+            queryConditions.add(new QueryUtil.QueryCondition(true, "resourceType.keyword", Arrays.asList(ResourceTypeEnum.CLOUD_SERVER.getName(), ResourceTypeEnum.CLOUD_DISK.getName()), QueryUtil.CompareType.NOT_IN));
+        } else {
             queryConditions.add(new QueryUtil.QueryCondition(true, "resourceType.keyword", request.getResourceType(), QueryUtil.CompareType.EQ));
         }
         //不查询没有等级的数据
         queryConditions.add(new QueryUtil.QueryCondition(true, "level", null, QueryUtil.CompareType.NOT_EXIST));
         BoolQuery.Builder query = QueryUtil.getQuery(queryConditions);
         query.must(new Query.Builder().wildcard(new WildcardQuery.Builder().field("module").value("*").build()).build());
-        if(StringUtils.isNotEmpty(request.getResourceName())){
-            query.must(new Query.Builder().wildcard(new WildcardQuery.Builder().field("resourceName.keyword").value("*"+request.getResourceName()+"*").build()).build());
+        if (StringUtils.isNotEmpty(request.getResourceName())) {
+            query.must(new Query.Builder().wildcard(new WildcardQuery.Builder().field("resourceName.keyword").value("*" + request.getResourceName() + "*").build()).build());
         }
-        if(StringUtils.isNotEmpty(request.getUser())){
-            query.must(new Query.Builder().wildcard(new WildcardQuery.Builder().field("user.keyword").value("*"+request.getUser()+"*").build()).build());
+        if (StringUtils.isNotEmpty(request.getUser())) {
+            query.must(new Query.Builder().wildcard(new WildcardQuery.Builder().field("user.keyword").value("*" + request.getUser() + "*").build()).build());
         }
         return new Query.Builder().bool(query.build()).build();
     }
-
 
 
     /**
@@ -119,17 +121,17 @@ public class LogServiceImpl implements ILogService {
      */
     private org.springframework.data.elasticsearch.core.query.Query getSearchQuery(Integer currentPage, Integer pageSize, String request, OrderRequest order) {
         NativeQueryBuilder query = new NativeQueryBuilder()
-                .withPageable(PageRequest.of(currentPage-1, pageSize))
+                .withPageable(PageRequest.of(currentPage - 1, pageSize))
                 .withQuery(buildQuery(request))
                 .withSourceFilter(new FetchSourceFilter(new String[]{}, new String[]{"@version", "@timestamp", "host", "tags"}))
                 .withAggregation("count", new Aggregation.Builder().valueCount(new ValueCountAggregation.Builder().field("_id").build()).build());
         if (order != null && StringUtils.isNotEmpty(order.getColumn())) {
-            if(StringUtils.equalsIgnoreCase(order.getColumn(),"createTime") || StringUtils.equalsIgnoreCase(order.getColumn(),"date")){
+            if (StringUtils.equalsIgnoreCase(order.getColumn(), "createTime") || StringUtils.equalsIgnoreCase(order.getColumn(), "date")) {
                 query.withSort(Sort.by(order.isAsc() ? Sort.Order.asc("@timestamp") : Sort.Order.desc("@timestamp")));
-            }else{
+            } else {
                 query.withSort(Sort.by(order.isAsc() ? Sort.Order.asc(order.getColumn()) : Sort.Order.desc(order.getColumn())));
             }
-        }else{
+        } else {
             query.withSort(Sort.by(Sort.Order.desc("@timestamp")));
         }
         return query.build();
@@ -162,15 +164,15 @@ public class LogServiceImpl implements ILogService {
     }
 
     @Override
-    public void deleteEsData(String index,int m,Class<?> clazz){
+    public void deleteEsData(String index, int m, Class<?> clazz) {
         //provide.delete(5,"ce-file-system-logs", SystemLog.class);
         RangeQuery.Builder rangeQuery = new RangeQuery.Builder();
         rangeQuery.field("@timestamp");
-        rangeQuery.lt(JsonData.of("now-"+m+"m"));
+        rangeQuery.lt(JsonData.of("now-" + m + "m"));
         rangeQuery.format("epoch_millis");
         Query query = new Query.Builder().range(rangeQuery.build()).build();
         NativeQueryBuilder builder = new NativeQueryBuilder();
         builder.withQuery(query);
-        provide.delete(index,builder.build(), clazz);
+        provide.delete(index, builder.build(), clazz);
     }
 }

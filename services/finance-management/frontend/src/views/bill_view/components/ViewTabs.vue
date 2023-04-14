@@ -4,7 +4,7 @@
     v-bind:modelValue="active"
     :before-leave="beforeLeave"
     @tab-change="tabsChange"
-    style="width: 100%;margin-top: 16px"
+    style="width: 100%; margin-top: 16px"
   >
     <el-tab-pane
       v-for="rule in tabsRuleList"
@@ -15,10 +15,7 @@
     </el-tab-pane>
     <el-tab-pane label="other" name="other" v-if="tabs.length > maxNum">
       <template #label>
-        <el-dropdown
-          @command="dropdownChange"
-          trigger="click"
-        >
+        <el-dropdown @command="dropdownChange" trigger="click">
           <span class="el-dropdown-link">
             更多
             <el-icon class="el-icon--right">

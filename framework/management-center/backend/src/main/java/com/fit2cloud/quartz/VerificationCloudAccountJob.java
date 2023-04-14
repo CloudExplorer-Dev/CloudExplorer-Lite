@@ -1,7 +1,6 @@
 package com.fit2cloud.quartz;
 
 import com.fit2cloud.common.constants.PlatformConstants;
-import com.fit2cloud.common.platform.credential.Credential;
 import com.fit2cloud.common.scheduler.handler.AsyncJob;
 import com.fit2cloud.dao.entity.CloudAccount;
 import com.fit2cloud.service.ICloudAccountService;

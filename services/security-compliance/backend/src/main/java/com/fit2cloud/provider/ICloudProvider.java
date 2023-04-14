@@ -5,13 +5,10 @@ import com.fit2cloud.constants.SyncDimensionConstants;
 import com.fit2cloud.es.entity.ResourceInstance;
 import com.fit2cloud.provider.constants.ProviderConstants;
 import com.fit2cloud.provider.entity.InstanceSearchField;
-import com.vmware.vcenter.ResourcePool;
-import org.apache.commons.collections4.KeyValue;
 import org.apache.commons.collections4.keyvalue.DefaultKeyValue;
 
 import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
 
 /**
  * {@code @Author:张少虎}

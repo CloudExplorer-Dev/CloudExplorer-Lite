@@ -1,8 +1,8 @@
 package com.fit2cloud.common.provider.impl.openstack.api;
 
 import com.fit2cloud.common.platform.credential.Credential;
-import com.fit2cloud.common.provider.impl.openstack.entity.request.OpenStackBaseRequest;
 import com.fit2cloud.common.provider.impl.openstack.entity.Zone;
+import com.fit2cloud.common.provider.impl.openstack.entity.request.OpenStackBaseRequest;
 import org.openstack4j.api.OSClient;
 import org.openstack4j.model.compute.ext.AvailabilityZone;
 

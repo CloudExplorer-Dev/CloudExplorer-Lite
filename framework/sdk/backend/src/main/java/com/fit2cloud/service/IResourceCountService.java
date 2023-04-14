@@ -11,6 +11,7 @@ import java.util.List;
 public interface IResourceCountService {
     /**
      * 获取资源计数
+     *
      * @param accountId
      * @return
      */

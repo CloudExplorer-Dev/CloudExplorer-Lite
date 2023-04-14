@@ -1,9 +1,7 @@
 package com.fit2cloud.provider.impl.vsphere.entity.request;
 
 import com.fit2cloud.common.constants.Language;
-import com.fit2cloud.common.provider.impl.vsphere.entity.request.BaseRequest;
 import com.fit2cloud.provider.impl.vsphere.entity.credential.VsphereComplianceCredential;
-import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -15,7 +13,7 @@ import lombok.Setter;
  */
 @Getter
 @Setter
-public class ListDataStoreInstanceRequest   {
+public class ListDataStoreInstanceRequest {
     /**
      * 数据中心ID
      */

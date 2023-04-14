@@ -6,21 +6,21 @@ package com.fit2cloud.provider.impl.aliyun.constants;
  */
 public enum AliyunBandwidthType {
 
-    PayByBandwidth("PayByBandwidth","按固定带宽"),
-    PayByTraffic("PayByTraffic","按使用流量");
+    PayByBandwidth("PayByBandwidth", "按固定带宽"),
+    PayByTraffic("PayByTraffic", "按使用流量");
 
     private String id;
     private String name;
 
-    public String getId(){
+    public String getId() {
         return id;
     }
 
-    public String getName(){
+    public String getName() {
         return name;
     }
 
-    AliyunBandwidthType(String id,String name){
+    AliyunBandwidthType(String id, String name) {
         this.id = id;
         this.name = name;
     }

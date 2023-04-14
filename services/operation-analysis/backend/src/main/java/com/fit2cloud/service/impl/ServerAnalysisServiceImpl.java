@@ -10,7 +10,9 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import com.fit2cloud.base.entity.*;
+import com.fit2cloud.base.entity.CloudAccount;
+import com.fit2cloud.base.entity.VmCloudHost;
+import com.fit2cloud.base.entity.VmCloudServer;
 import com.fit2cloud.base.mapper.BaseVmCloudServerMapper;
 import com.fit2cloud.base.service.IBaseOrganizationService;
 import com.fit2cloud.base.service.IBaseVmCloudHostService;
@@ -50,15 +52,12 @@ import org.springframework.data.elasticsearch.core.mapping.IndexCoordinates;
 import org.springframework.data.elasticsearch.core.query.Query;
 import org.springframework.stereotype.Service;
 
-import javax.annotation.Nonnull;
 import javax.annotation.Resource;
-import javax.validation.constraints.Null;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.text.SimpleDateFormat;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
-import java.util.function.BiFunction;
 import java.util.stream.Collectors;
 
 /**
@@ -475,8 +474,8 @@ public class ServerAnalysisServiceImpl implements IServerAnalysisService {
     private Map<String, List<TreeNode>> orgSpread(ResourceAnalysisRequest request) {
         Map<String, List<TreeNode>> result = new HashMap<>(1);
         LambdaQueryWrapper<VmCloudServer> wrapper = new LambdaQueryWrapper<VmCloudServer>().notIn(VmCloudServer::getInstanceStatus, List.of(SpecialAttributesConstants.StatusField.VM_DELETE, SpecialAttributesConstants.StatusField.FAILED));
-        wrapper.in(CollectionUtils.isNotEmpty(request.getAccountIds()),VmCloudServer::getAccountId,request.getAccountIds());
-        wrapper.in(CollectionUtils.isNotEmpty(request.getHostIds()),VmCloudServer::getHostId,request.getHostIds());
+        wrapper.in(CollectionUtils.isNotEmpty(request.getAccountIds()), VmCloudServer::getAccountId, request.getAccountIds());
+        wrapper.in(CollectionUtils.isNotEmpty(request.getHostIds()), VmCloudServer::getHostId, request.getHostIds());
         List<DefaultKeyValue<String, Integer>> groupSource = baseVmCloudServerMapper.groupSourceId(wrapper);
         // 获取获取组织工作空间树
         List<OrganizationTree> tree = iBaseOrganizationService.tree("ORGANIZATION_AND_WORKSPACE");

@@ -1,11 +1,11 @@
 package com.fit2cloud.service;
 
 import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.service.IService;
+import com.fit2cloud.base.entity.Organization;
 import com.fit2cloud.controller.request.OrganizationBatchRequest;
 import com.fit2cloud.controller.request.OrganizationRequest;
 import com.fit2cloud.controller.request.PageOrganizationRequest;
-import com.fit2cloud.base.entity.Organization;
-import com.baomidou.mybatisplus.extension.service.IService;
 
 import java.util.List;
 
@@ -63,10 +63,11 @@ public interface IOrganizationService extends IService<Organization> {
 
     /**
      * 更新一条数据
+     *
      * @param request 请求对象
-     * @return        是否更新成功
+     * @return 是否更新成功
      */
-     boolean update(OrganizationRequest request);
+    boolean update(OrganizationRequest request);
 
     long countOrganization();
 }

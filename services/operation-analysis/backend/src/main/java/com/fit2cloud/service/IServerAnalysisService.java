@@ -22,6 +22,7 @@ public interface IServerAnalysisService {
 
     /**
      * 云主机明细
+     *
      * @param request 分页查询云主机参数
      * @return IPage<AnalysisServerDTO>
      */
@@ -29,31 +30,35 @@ public interface IServerAnalysisService {
 
     /**
      * 所有云账号
+     *
      * @return List<CloudAccount>
      */
     List<CloudAccount> getAllCloudAccount();
 
     /**
      * 获取宿主机
+     *
      * @param request 云主机分析参数
      * @return List<VmCloudHost>
      */
     List<VmCloudHost> getVmHost(ResourceAnalysisRequest request);
 
-    Map<String,List<KeyValue>> spread(ResourceAnalysisRequest request);
+    Map<String, List<KeyValue>> spread(ResourceAnalysisRequest request);
 
     List<ChartData> vmIncreaseTrend(ResourceAnalysisRequest request);
 
     List<ChartData> getResourceTrendData(ResourceAnalysisRequest request);
 
-    Map<String,List<TreeNode>> analysisVmCloudServerByOrgWorkspace(ResourceAnalysisRequest request);
+    Map<String, List<TreeNode>> analysisVmCloudServerByOrgWorkspace(ResourceAnalysisRequest request);
 
-    Map<String,CloudAccount> getAllAccountIdMap();
+    Map<String, CloudAccount> getAllAccountIdMap();
 
-    List<BarTreeChartData> getChildren(BarTreeChartData barTreeChartData,List<BarTreeChartData> list,Map<String,List<BarTreeChartData>> workspaceMap);
+    List<BarTreeChartData> getChildren(BarTreeChartData barTreeChartData, List<BarTreeChartData> list, Map<String, List<BarTreeChartData>> workspaceMap);
 
     List<TreeNode> workspaceToTreeNode();
+
     List<TreeNode> orgToTreeNode();
+
     List<String> getRangeDateStrList(Long day);
 
     Long getResourceTotalDateBefore(Map<String, Long> monthTreeMap, String dateStr);

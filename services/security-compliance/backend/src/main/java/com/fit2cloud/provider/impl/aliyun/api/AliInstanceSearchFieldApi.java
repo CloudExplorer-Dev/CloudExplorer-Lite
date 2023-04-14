@@ -6,8 +6,6 @@ import com.fit2cloud.provider.entity.InstanceFieldType;
 import com.fit2cloud.provider.entity.InstanceSearchField;
 import org.apache.commons.collections4.keyvalue.DefaultKeyValue;
 
-import java.sql.Array;
-import java.util.ArrayList;
 import java.util.List;
 
 /**

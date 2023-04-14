@@ -2,7 +2,6 @@ package com.fit2cloud.provider.util;
 
 import com.fit2cloud.common.constants.PlatformConstants;
 import com.fit2cloud.constants.ResourceTypeConstants;
-import com.fit2cloud.provider.entity.InstanceFieldType;
 import com.fit2cloud.provider.entity.InstanceSearchField;
 
 import java.util.List;

@@ -15,10 +15,8 @@ import com.fit2cloud.provider.impl.openstack.entity.request.ListEcsInstanceReque
 import com.fit2cloud.provider.impl.openstack.entity.request.ListSecurityGroupInstanceRequest;
 import com.fit2cloud.provider.util.ResourceUtil;
 import org.apache.commons.collections4.keyvalue.DefaultKeyValue;
-import org.apache.commons.lang3.StringUtils;
 
 import java.util.List;
-import java.util.Map;
 
 /**
  * {@code @Author:张少虎}

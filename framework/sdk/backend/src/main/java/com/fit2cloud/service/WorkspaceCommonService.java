@@ -22,7 +22,7 @@ public class WorkspaceCommonService {
 
     public List<String> getWorkspaceIdsByOrgIds(List<String> orgIds) {
         QueryWrapper<Workspace> wrapper = Wrappers.query();
-        wrapper.lambda().in(Workspace::getOrganizationId,orgIds);
+        wrapper.lambda().in(Workspace::getOrganizationId, orgIds);
 
         return workspaceBaseMapper.selectList(wrapper).stream().map(Workspace::getId).collect(Collectors.toList());
     }

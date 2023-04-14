@@ -19,7 +19,6 @@ import lombok.Data;
 import org.apache.commons.lang.StringUtils;
 
 import javax.validation.constraints.NotNull;
-import java.io.DataInput;
 import java.io.IOException;
 import java.util.Arrays;
 

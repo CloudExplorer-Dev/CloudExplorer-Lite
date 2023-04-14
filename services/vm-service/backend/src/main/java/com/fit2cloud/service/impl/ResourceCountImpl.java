@@ -11,7 +11,6 @@ import com.fit2cloud.base.service.IBaseVmCloudServerService;
 import com.fit2cloud.common.utils.LocaleUtil;
 import com.fit2cloud.response.cloud_account.ResourceCountResponse;
 import com.fit2cloud.service.IResourceCountService;
-import org.springframework.cglib.core.Local;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
@@ -37,19 +36,19 @@ public class ResourceCountImpl implements IResourceCountService {
         // 云主机
         QueryWrapper<VmCloudServer> vmQueryWrapper = Wrappers.query();
         vmQueryWrapper.lambda().ne(VmCloudServer::getInstanceStatus, "deleted").eq(VmCloudServer::getAccountId, accountId);
-        ResourceCountResponse vm = new ResourceCountResponse("xuniyunzhuji", LocaleUtil.getMessage("i18n.resource.vm","云主机"), cloudServerService.count(vmQueryWrapper));
+        ResourceCountResponse vm = new ResourceCountResponse("xuniyunzhuji", LocaleUtil.getMessage("i18n.resource.vm", "云主机"), cloudServerService.count(vmQueryWrapper));
         list.add(vm);
 
         // 磁盘
         QueryWrapper<VmCloudDisk> diskQueryWrapper = Wrappers.query();
         diskQueryWrapper.lambda().ne(VmCloudDisk::getStatus, "deleted").eq(VmCloudDisk::getAccountId, accountId);
-        ResourceCountResponse disk = new ResourceCountResponse("yuncunchu", LocaleUtil.getMessage("i18n.resource.disk","磁盘"), cloudDiskService.count(diskQueryWrapper));
+        ResourceCountResponse disk = new ResourceCountResponse("yuncunchu", LocaleUtil.getMessage("i18n.resource.disk", "磁盘"), cloudDiskService.count(diskQueryWrapper));
         list.add(disk);
 
         // 镜像
         QueryWrapper<VmCloudImage> imageQueryWrapper = Wrappers.query();
         imageQueryWrapper.lambda().ne(VmCloudImage::getStatus, "deleted").eq(VmCloudImage::getAccountId, accountId);
-        ResourceCountResponse image = new ResourceCountResponse("jingxiang", LocaleUtil.getMessage("i18n.resource.image","镜像"), cloudImageService.count(imageQueryWrapper));
+        ResourceCountResponse image = new ResourceCountResponse("jingxiang", LocaleUtil.getMessage("i18n.resource.image", "镜像"), cloudImageService.count(imageQueryWrapper));
         list.add(image);
 
         return list;

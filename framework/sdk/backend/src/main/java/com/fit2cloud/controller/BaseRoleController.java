@@ -9,7 +9,6 @@ import com.fit2cloud.controller.handler.ResultHolder;
 import com.fit2cloud.request.pub.OrderRequest;
 import com.fit2cloud.request.role.RolePageRequest;
 import com.fit2cloud.request.role.RoleRequest;
-import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiParam;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.WebDataBinder;

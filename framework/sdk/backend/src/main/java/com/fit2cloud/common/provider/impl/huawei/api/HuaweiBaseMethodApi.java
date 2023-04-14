@@ -6,9 +6,7 @@ import com.fit2cloud.common.provider.impl.huawei.entity.request.GetBucketsReques
 import com.fit2cloud.common.provider.impl.huawei.entity.request.GetRegionsRequest;
 import com.fit2cloud.common.utils.JsonUtil;
 import com.obs.services.ObsClient;
-import com.obs.services.model.ListBucketsRequest;
 import com.obs.services.model.ObsBucket;
-import com.obs.services.model.S3Bucket;
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.ArrayList;

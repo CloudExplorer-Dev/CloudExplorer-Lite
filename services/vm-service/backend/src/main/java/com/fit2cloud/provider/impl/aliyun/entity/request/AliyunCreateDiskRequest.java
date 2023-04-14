@@ -27,13 +27,13 @@ public class AliyunCreateDiskRequest extends AliyunBaseRequest {
         CreateDiskRequest createDiskRequest = new CreateDiskRequest();
         createDiskRequest.setRegionId(super.getRegionId());
         createDiskRequest.setDiskName(this.diskName);
-        createDiskRequest.setSize( this.size);
+        createDiskRequest.setSize(this.size);
         createDiskRequest.setDiskCategory(this.diskType);
         createDiskRequest.setZoneId(this.zone);
         return createDiskRequest;
     }
 
-    public  DescribeDisksRequest toDescribeDisksRequest(String diskId) {
+    public DescribeDisksRequest toDescribeDisksRequest(String diskId) {
         DescribeDisksRequest describeDisksRequest = new DescribeDisksRequest();
         describeDisksRequest.setRegionId(super.getRegionId());
         describeDisksRequest.setZoneId(this.zone);

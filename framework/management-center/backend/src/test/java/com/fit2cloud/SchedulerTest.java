@@ -1,6 +1,5 @@
 package com.fit2cloud;
 
-import com.fit2cloud.common.platform.credential.Credential;
 import com.fit2cloud.common.scheduler.SchedulerService;
 import org.junit.jupiter.api.Test;
 import org.quartz.Scheduler;
@@ -9,8 +8,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.TestPropertySource;
 
 import javax.annotation.Resource;
-import java.util.ArrayList;
-import java.util.HashMap;
 
 /**
  * @Author:张少虎

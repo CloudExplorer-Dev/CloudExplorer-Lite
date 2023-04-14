@@ -6,20 +6,20 @@ package com.fit2cloud.provider.impl.tencent.constants;
  */
 public enum TencentLoginType {
 
-    Password("password","自定义密码");
+    Password("password", "自定义密码");
 
     private String id;
     private String name;
 
-    public String getId(){
+    public String getId() {
         return id;
     }
 
-    public String getName(){
+    public String getName() {
         return name;
     }
 
-    TencentLoginType(String id, String name){
+    TencentLoginType(String id, String name) {
         this.id = id;
         this.name = name;
     }

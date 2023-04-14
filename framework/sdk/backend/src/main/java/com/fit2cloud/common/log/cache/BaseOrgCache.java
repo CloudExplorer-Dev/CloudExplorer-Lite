@@ -41,7 +41,7 @@ public class BaseOrgCache {
     }
 
     public synchronized static String getCache(String id) {
-        Map<String, String> map= orgCache.get();
+        Map<String, String> map = orgCache.get();
         return MapUtils.isEmpty(map) ? null : map.get(id);
     }
 

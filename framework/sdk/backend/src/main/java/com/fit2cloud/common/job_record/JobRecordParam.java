@@ -1,6 +1,5 @@
 package com.fit2cloud.common.job_record;
 
-import com.fit2cloud.request.pub.PageRequest;
 import lombok.Data;
 import org.springframework.http.HttpStatus;
 

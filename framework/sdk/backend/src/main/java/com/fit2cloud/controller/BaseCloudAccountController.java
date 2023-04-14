@@ -13,13 +13,11 @@ import com.fit2cloud.response.cloud_account.ResourceCountResponse;
 import com.fit2cloud.response.cloud_account.SyncResource;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
 import javax.validation.constraints.NotNull;
 import java.util.List;
-import java.util.Map;
 
 /**
  * @Author:张少虎

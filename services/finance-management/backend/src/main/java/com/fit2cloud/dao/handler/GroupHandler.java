@@ -1,7 +1,6 @@
 package com.fit2cloud.dao.handler;
 
 import com.fit2cloud.common.utils.JsonUtil;
-import com.fit2cloud.dao.jentity.Filter;
 import com.fit2cloud.dao.jentity.Group;
 import org.apache.ibatis.type.JdbcType;
 import org.apache.ibatis.type.TypeHandler;

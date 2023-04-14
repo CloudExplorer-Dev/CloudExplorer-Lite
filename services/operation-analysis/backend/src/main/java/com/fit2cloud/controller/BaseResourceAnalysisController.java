@@ -6,14 +6,14 @@ import com.fit2cloud.base.entity.VmCloudDatastore;
 import com.fit2cloud.base.entity.VmCloudHost;
 import com.fit2cloud.controller.handler.ResultHolder;
 import com.fit2cloud.controller.request.base.resource.analysis.ResourceAnalysisRequest;
+import com.fit2cloud.controller.request.base.resource.analysis.ResourceUsedTrendRequest;
 import com.fit2cloud.controller.request.datastore.PageDatastoreRequest;
 import com.fit2cloud.controller.request.host.PageHostRequest;
+import com.fit2cloud.controller.response.ChartData;
 import com.fit2cloud.controller.response.ResourceAllocatedInfo;
-import com.fit2cloud.dto.KeyValue;
 import com.fit2cloud.dto.AnalysisDatastoreDTO;
 import com.fit2cloud.dto.AnalysisHostDTO;
-import com.fit2cloud.controller.response.ChartData;
-import com.fit2cloud.controller.request.base.resource.analysis.ResourceUsedTrendRequest;
+import com.fit2cloud.dto.KeyValue;
 import com.fit2cloud.service.IBaseResourceAnalysisService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -30,6 +30,7 @@ import java.util.Map;
 
 /**
  * 基础资源分析
+ *
  * @author jianneng
  * @date 2022/12/11 18:42
  **/
@@ -38,7 +39,6 @@ import java.util.Map;
 @Validated
 @Api("基础资源分析相关接口")
 public class BaseResourceAnalysisController {
-
 
 
     @Resource
@@ -110,12 +110,12 @@ public class BaseResourceAnalysisController {
     @ApiOperation(value = "查询资源分布情况", notes = "查询云账号下资源分布情况")
     @GetMapping("/spread_info")
     @PreAuthorize("hasAnyCePermission('BASE_RESOURCE_ANALYSIS:READ','OVERVIEW:READ')")
-    public ResultHolder<Map<String,List<KeyValue>>> getResourceSpreadInfo(@Validated ResourceAnalysisRequest request) {
+    public ResultHolder<Map<String, List<KeyValue>>> getResourceSpreadInfo(@Validated ResourceAnalysisRequest request) {
         return ResultHolder.success(iBaseResourceAnalysisService.getResourceSpreadInfo(request));
     }
 
 
-    @ApiOperation(value="查询资源使用趋势",notes = "查询资源使用趋势")
+    @ApiOperation(value = "查询资源使用趋势", notes = "查询资源使用趋势")
     @GetMapping("/resource_trend")
     @PreAuthorize("hasAnyCePermission('BASE_RESOURCE_ANALYSIS:READ')")
     public ResultHolder<List<ChartData>> getResourceUsedTrendData(

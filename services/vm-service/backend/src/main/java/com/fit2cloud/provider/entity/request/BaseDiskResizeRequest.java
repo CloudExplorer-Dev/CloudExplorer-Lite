@@ -7,7 +7,7 @@ import lombok.Data;
  * Date: 2022/10/15 9:24 PM
  */
 @Data
-public class BaseDiskResizeRequest extends BaseDiskRequest{
+public class BaseDiskResizeRequest extends BaseDiskRequest {
     /**
      * 新磁盘大小
      */

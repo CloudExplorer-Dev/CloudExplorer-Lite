@@ -27,6 +27,7 @@ public interface IVmCloudDiskService extends IService<VmCloudDisk> {
 
     /**
      * 根据云账号ID获取虚拟机列表
+     *
      * @param req
      * @return
      */
@@ -42,6 +43,7 @@ public interface IVmCloudDiskService extends IService<VmCloudDisk> {
 
     /**
      * 根据云平台获取获取创建磁盘的表单数据
+     *
      * @param platform
      * @return
      */
@@ -117,6 +119,7 @@ public interface IVmCloudDiskService extends IService<VmCloudDisk> {
 
     /**
      * 批量授权磁盘
+     *
      * @param grantDiskRequest
      * @return
      */
@@ -124,6 +127,7 @@ public interface IVmCloudDiskService extends IService<VmCloudDisk> {
 
     /**
      * 批量将磁盘放入回收站
+     *
      * @param ids
      * @return
      */
@@ -131,6 +135,7 @@ public interface IVmCloudDiskService extends IService<VmCloudDisk> {
 
     /**
      * 将磁盘放入回收站
+     *
      * @param id
      * @return
      */

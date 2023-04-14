@@ -156,11 +156,12 @@ public class ElasticsearchProvide {
     /**
      * 删除index下数据
      * clazz 数据对象
+     *
      * @param index 索引名称
      * @param query 查询条件
      * @param clazz 对象类型
      */
-    public void delete(String index, Query query, Class<?> clazz){
+    public void delete(String index, Query query, Class<?> clazz) {
         IndexCoordinates indexCoordinates = IndexCoordinates.of(index);
         // 删除索引
         try {
@@ -173,11 +174,12 @@ public class ElasticsearchProvide {
 
     /**
      * 默认的查询条件
+     *
      * @param accountIds 云账号
      * @param metricName 指标名称
      * @param entityType 资源类型
-     * @param startTime 开始时间
-     * @param endTime 结束时间
+     * @param startTime  开始时间
+     * @param endTime    结束时间
      * @return List<QueryUtil.QueryCondition>
      */
     public List<QueryUtil.QueryCondition> getDefaultQueryConditions(List<String> accountIds, String metricName, String entityType, Long startTime, Long endTime) {

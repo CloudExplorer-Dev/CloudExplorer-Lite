@@ -20,7 +20,6 @@ import com.fit2cloud.provider.entity.request.BaseDiskRequest;
 import com.fit2cloud.provider.entity.request.GetMetricsRequest;
 import com.fit2cloud.provider.impl.huawei.constants.HuaweiDiskType;
 import com.fit2cloud.provider.impl.huawei.constants.HuaweiPerfMetricConstants;
-import com.fit2cloud.provider.impl.huawei.constants.HuaweiPeriodOption;
 import com.fit2cloud.provider.impl.huawei.entity.*;
 import com.fit2cloud.provider.impl.huawei.entity.credential.HuaweiVmCredential;
 import com.fit2cloud.provider.impl.huawei.entity.request.*;
@@ -126,7 +125,7 @@ public class HuaweiSyncCloudApi {
                 ListVolumesResponse listVolumesResponse = evsClient.listVolumes(request);
                 List<VolumeDetail> volumes = listVolumesResponse.getVolumes();
                 return volumes.stream().map(HuaweiMappingUtil::toF2CDisk).toList();
-            }catch (Exception e) {
+            } catch (Exception e) {
                 ReTryException.throwHuaweiReTry(e);
                 SkipPageException.throwHuaweiSkip(e);
                 throw new Fit2cloudException(10000, "获取数据失败" + e.getMessage());
@@ -145,13 +144,13 @@ public class HuaweiSyncCloudApi {
         if (StringUtils.isNotEmpty(request.getCredential())) {
             HuaweiVmCredential credential = JsonUtil.parseObject(request.getCredential(), HuaweiVmCredential.class);
             ImsClient imsClient = credential.getImsClient(request.getRegionId());
-            try{
+            try {
                 // 只查询公共镜像gold
                 request.setImagetype(ListImagesRequest.ImagetypeEnum.GOLD);
                 ListImagesResponse listImagesResponse = imsClient.listImages(request);
                 List<ImageInfo> images = listImagesResponse.getImages();
                 return images.stream().map(imageInfo -> HuaweiMappingUtil.toF2CImage(imageInfo, request.getRegionId())).filter(Objects::nonNull).toList();
-            }catch (Exception e) {
+            } catch (Exception e) {
                 ReTryException.throwHuaweiReTry(e);
                 SkipPageException.throwHuaweiSkip(e);
                 throw new Fit2cloudException(10000, "获取数据失败" + e.getMessage());

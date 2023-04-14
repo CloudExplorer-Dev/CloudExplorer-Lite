@@ -84,7 +84,7 @@ public class PageOperatedLogRequest extends PageRequest implements PageOrderRequ
      */
     private String sourceIp;
 
-    @ApiModelProperty(value = "排序",example = " {\"column\":\"createTime\",\"asc\":false}")
+    @ApiModelProperty(value = "排序", example = " {\"column\":\"createTime\",\"asc\":false}")
     private OrderRequest order;
 
 }

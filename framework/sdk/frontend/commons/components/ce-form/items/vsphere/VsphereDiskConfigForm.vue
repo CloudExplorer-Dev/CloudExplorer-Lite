@@ -47,7 +47,10 @@
           ></el-button>
         </el-card>
 
-        <div style="width: 100%; height: 30px; text-align: center" v-show="false">
+        <div
+          style="width: 100%; height: 30px; text-align: center"
+          v-show="false"
+        >
           <el-checkbox v-model="obj.deleteWithInstance">随实例删除</el-checkbox>
         </div>
       </div>

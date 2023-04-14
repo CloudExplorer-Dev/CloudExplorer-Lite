@@ -30,6 +30,7 @@ public enum ResourcePerfMetricEnum {
      * 描述
      */
     private final String description;
+
     ResourcePerfMetricEnum(String metricName, String description) {
         this.metricName = metricName;
         this.description = description;

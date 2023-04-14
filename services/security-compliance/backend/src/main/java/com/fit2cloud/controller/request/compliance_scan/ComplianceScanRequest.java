@@ -5,7 +5,6 @@ import com.fit2cloud.common.utils.QueryUtil;
 import com.fit2cloud.dao.constants.ComplianceStatus;
 import com.fit2cloud.request.pub.OrderRequest;
 import io.swagger.annotations.ApiModelProperty;
-import io.swagger.models.auth.In;
 import lombok.Data;
 
 /**

@@ -17,7 +17,7 @@ import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
         prefix = "quartz",
         ignoreUnknownFields = true
 )
-@MapperScan(basePackages = { "com.fit2cloud.common.scheduler.mapper"}, sqlSessionFactoryRef = "quartzSqlSessionFactory")
+@MapperScan(basePackages = {"com.fit2cloud.common.scheduler.mapper"}, sqlSessionFactoryRef = "quartzSqlSessionFactory")
 @Data
 public class QuartzConfig {
 

@@ -5,7 +5,6 @@ import com.fit2cloud.constants.ResourceTypeConstants;
 import lombok.Data;
 import org.apache.commons.collections4.keyvalue.DefaultKeyValue;
 
-import java.util.Arrays;
 import java.util.List;
 
 /**

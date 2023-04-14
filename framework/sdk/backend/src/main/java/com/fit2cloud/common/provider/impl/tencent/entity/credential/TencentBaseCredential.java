@@ -6,8 +6,6 @@ import com.qcloud.cos.COSClient;
 import com.qcloud.cos.ClientConfig;
 import com.qcloud.cos.auth.BasicCOSCredentials;
 import com.qcloud.cos.auth.COSCredentials;
-import com.qcloud.cos.model.ListObjectsRequest;
-import com.qcloud.cos.region.Region;
 import com.tencentcloudapi.billing.v20180709.BillingClient;
 import com.tencentcloudapi.common.profile.ClientProfile;
 import com.tencentcloudapi.common.profile.HttpProfile;

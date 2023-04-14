@@ -6,15 +6,20 @@ import com.fit2cloud.common.provider.util.PageUtil;
 import com.fit2cloud.common.utils.JsonUtil;
 import com.fit2cloud.provider.impl.tencent.client.CeCosClient;
 import com.fit2cloud.provider.impl.tencent.entity.request.*;
-import com.fit2cloud.provider.impl.tencent.entity.request.GetBucketAclRequest;
 import com.fit2cloud.provider.impl.tencent.entity.response.BucketEncryptionResponse;
 import com.fit2cloud.provider.impl.tencent.parser.CeXmlResponseSaxParser;
 import com.fit2cloud.provider.util.ResourceUtil;
 import com.qcloud.cos.COSClient;
 import com.qcloud.cos.exception.CosServiceException;
-import com.qcloud.cos.http.*;
+import com.qcloud.cos.http.CosHttpRequest;
+import com.qcloud.cos.http.CosHttpResponse;
+import com.qcloud.cos.http.HttpMethodName;
+import com.qcloud.cos.http.HttpResponseHandler;
 import com.qcloud.cos.internal.CosServiceResponse;
-import com.qcloud.cos.model.*;
+import com.qcloud.cos.model.AccessControlList;
+import com.qcloud.cos.model.Bucket;
+import com.qcloud.cos.model.BucketRefererConfiguration;
+import com.qcloud.cos.model.GenericBucketRequest;
 import com.tencentcloudapi.cam.v20190116.CamClient;
 import com.tencentcloudapi.cam.v20190116.models.DescribeSafeAuthFlagCollRequest;
 import com.tencentcloudapi.cam.v20190116.models.DescribeSafeAuthFlagCollResponse;
@@ -44,9 +49,11 @@ import com.tencentcloudapi.sqlserver.v20180328.models.DBInstance;
 import com.tencentcloudapi.vpc.v20170312.VpcClient;
 import com.tencentcloudapi.vpc.v20170312.models.*;
 import org.springframework.beans.BeanUtils;
-import org.springframework.context.annotation.Bean;
 
-import java.util.*;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * {@code @Author:张少虎}

@@ -7,7 +7,7 @@ import lombok.Data;
  * Date: 2022/11/16 3:40 PM
  */
 @Data
-public class AliyunGetVSwitchRequest extends AliyunBaseRequest{
+public class AliyunGetVSwitchRequest extends AliyunBaseRequest {
 
     private String zoneId;
 

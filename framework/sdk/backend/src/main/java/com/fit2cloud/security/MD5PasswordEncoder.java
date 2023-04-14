@@ -11,6 +11,7 @@ public class MD5PasswordEncoder implements PasswordEncoder {
     public String encode(CharSequence rawPassword) {
         return MD5Util.md5(rawPassword.toString());
     }
+
     //进行密码比对
     @Override
     public boolean matches(CharSequence rawPassword, String encodedPassword) {

@@ -21,7 +21,7 @@ public class PageComplianceRuleRequest {
     @ApiModelProperty(name = "资源类型", notes = "资源类型")
     private String resourceType;
     @ApiModelProperty(name = "风险等级", notes = "风险等级")
-    @Pattern(regexp = "HIGH|MIDDLE|LOW",message = "风险等级只支持HIGH,MIDDLE,LOW")
+    @Pattern(regexp = "HIGH|MIDDLE|LOW", message = "风险等级只支持HIGH,MIDDLE,LOW")
     private String riskLevel;
     @ApiModelProperty(name = "规则组id", notes = "规则组id")
     private String ruleGroupId;

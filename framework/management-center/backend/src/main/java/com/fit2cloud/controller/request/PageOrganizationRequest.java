@@ -19,14 +19,14 @@ public class PageOrganizationRequest extends PageRequest {
     @ApiModelProperty("组织名称")
     private String name;
 
-    @Size(min = 2,max = 2,message = "{i18n.request.date.message}")
-    @ApiModelProperty(value="创建时间",example ="createTime[]=2121&createTime[]=21212")
+    @Size(min = 2, max = 2, message = "{i18n.request.date.message}")
+    @ApiModelProperty(value = "创建时间", example = "createTime[]=2121&createTime[]=21212")
     private List<Long> createTime;
 
-    @Size(min = 2,max = 2,message = "{i18n.request.date.message}")
-    @ApiModelProperty(value = "修改时间",example ="updateTime[]=2121&updateTime[]=21212" )
+    @Size(min = 2, max = 2, message = "{i18n.request.date.message}")
+    @ApiModelProperty(value = "修改时间", example = "updateTime[]=2121&updateTime[]=21212")
     private List<Long> updateTime;
 
-    @ApiModelProperty(value = "排序",example = " {\"column\":\"createTime\",\"asc\":false}")
+    @ApiModelProperty(value = "排序", example = " {\"column\":\"createTime\",\"asc\":false}")
     private OrderRequest order;
 }

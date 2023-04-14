@@ -1,6 +1,5 @@
 package com.fit2cloud.controller.request.optimize;
 
-import com.fit2cloud.controller.request.server.ServerRequest;
 import com.fit2cloud.request.pub.OrderRequest;
 import com.fit2cloud.request.pub.PageOrderRequestInterface;
 import io.swagger.annotations.ApiModelProperty;

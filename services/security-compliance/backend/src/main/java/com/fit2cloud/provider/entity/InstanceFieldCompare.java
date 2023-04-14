@@ -3,8 +3,6 @@ package com.fit2cloud.provider.entity;
 import lombok.SneakyThrows;
 import org.springframework.core.io.ClassPathResource;
 
-import java.io.File;
-import java.io.FileInputStream;
 import java.io.InputStream;
 import java.nio.charset.Charset;
 

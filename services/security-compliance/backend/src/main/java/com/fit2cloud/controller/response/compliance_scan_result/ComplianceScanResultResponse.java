@@ -7,7 +7,6 @@ import com.fasterxml.jackson.datatype.jsr310.deser.LocalDateTimeDeserializer;
 import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateTimeSerializer;
 import com.fit2cloud.constants.ResourceTypeConstants;
 import com.fit2cloud.dao.constants.ComplianceStatus;
-import com.fit2cloud.dao.constants.ResourceType;
 import com.fit2cloud.dao.constants.RiskLevel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
