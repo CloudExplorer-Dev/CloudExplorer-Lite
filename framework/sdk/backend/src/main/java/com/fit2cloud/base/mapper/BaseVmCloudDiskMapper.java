@@ -3,7 +3,6 @@ package com.fit2cloud.base.mapper;
 import com.baomidou.mybatisplus.core.conditions.Wrapper;
 import com.baomidou.mybatisplus.core.toolkit.Constants;
 import com.fit2cloud.base.entity.VmCloudDisk;
-import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.github.yulichang.base.MPJBaseMapper;
 import org.apache.commons.collections4.keyvalue.DefaultKeyValue;
 import org.apache.ibatis.annotations.Param;

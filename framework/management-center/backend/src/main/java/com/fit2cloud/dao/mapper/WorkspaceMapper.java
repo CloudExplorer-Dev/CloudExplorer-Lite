@@ -1,24 +1,21 @@
 package com.fit2cloud.dao.mapper;
 
 import com.baomidou.mybatisplus.core.conditions.Wrapper;
+import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
-import com.baomidou.mybatisplus.core.toolkit.Constants;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.fit2cloud.dao.entity.Workspace;
-import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.fit2cloud.dto.WorkspaceDTO;
 import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.Select;
 
-import java.util.Map;
-
 /**
  * <p>
- *  Mapper 接口
+ * Mapper 接口
  * </p>
  *
  * @author fit2cloud
- * @since 
+ * @since
  */
 public interface WorkspaceMapper extends BaseMapper<Workspace> {
     @Select("SELECT " +

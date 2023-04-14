@@ -1,17 +1,15 @@
 package com.fit2cloud.base.service;
 
-import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.fit2cloud.base.entity.SystemParameter;
 import com.baomidou.mybatisplus.extension.service.IService;
-import org.apache.commons.lang3.StringUtils;
+import com.fit2cloud.base.entity.SystemParameter;
 
 /**
  * <p>
- *  服务类
+ * 服务类
  * </p>
  *
  * @author fit2cloud
- * @since 
+ * @since
  */
 public interface IBaseSystemParameterService extends IService<SystemParameter> {
 
