@@ -11,6 +11,9 @@
 <hr/>
 
 ## 什么是 CloudExplorer Lite？
+
+[![Codacy Badge](https://api.codacy.com/project/badge/Grade/32c3d4e4a45744809b2f607309eb459f)](https://app.codacy.com/gh/CloudExplorer-Dev/CloudExplorer-Lite?utm_source=github.com&utm_medium=referral&utm_content=CloudExplorer-Dev/CloudExplorer-Lite&utm_campaign=Badge_Grade)
+
 CloudExplorer Lite 是开源的轻量级云管平台；   
 CloudExplorer Lite 脱胎于飞致云创始软件产品 CloudExplorer 多云管理平台，支持对接纳管主流的公有云和私有云基础设施，提供开箱即用的云主机管理、云账单、运营分析和安全合规等基本功能，同时还可提供强大的扩展能力以满足企业的定制化需求。
 
