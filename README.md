@@ -22,7 +22,7 @@ CloudExplorer Lite 提供了诸多开箱即用的功能，比如云主机管理�
 
 - **扩展能力**
 
-CloudExplorer Lite提供了强大的多租户体系和模块化能力，可以满足企业的定制化需求。
+CloudExplorer Lite 提供了强大的多租户体系和模块化能力，可以满足企业的定制化需求。
 
 ## UI 展示
 
@@ -54,7 +54,9 @@ CloudExplorer Lite提供了强大的多租户体系和模块化能力，可以�
 
 ## 社区
 
-如果您在使用过程中有任何疑问或建议，欢迎提交 GitHub Issue 或加入到我们微信交流群进行交流沟通。扫码加入交流群：
+如果您在使用过程中有任何疑问或建议，欢迎提交 GitHub Issue 或加入到我们微信交流群进行交流沟通。
+
+**微信交流群**
 
 <img src="https://fit2cloud.com/cloudexplorer-lite/images/wechat-group.png" width="156" height="156"/>
 
