@@ -10,11 +10,7 @@
 </p>
 <hr/>
 
-## 什么是 CloudExplorer Lite？
-CloudExplorer Lite 是开源的轻量级云管平台；   
-CloudExplorer Lite 脱胎于飞致云创始软件产品 CloudExplorer 多云管理平台，支持对接纳管主流的公有云和私有云基础设施，提供开箱即用的云主机管理、云账单、运营分析和安全合规等基本功能，同时还可提供强大的扩展能力以满足企业的定制化需求。
-
-## CloudExplorer Lite 产品特性
+CloudExplorer Lite 脱胎于飞致云创始软件产品 CloudExplorer 多云管理平台，支持对接纳管主流的公有云和私有云基础设施，提供开箱即用的云主机管理、云账单、运营分析和安全合规等基本功能，同时还可提供强大的扩展能力以满足企业的定制化需求。CloudExplorer Lite 的产品特性是：
 
 - **多云对接**
   
@@ -28,7 +24,8 @@ CloudExplorer Lite 提供了诸多开箱即用的功能，比如云主机管理�
 
 CloudExplorer Lite提供了强大的多租户体系和模块化能力，可以满足企业的定制化需求。
 
-## CloudExplorer Lite 云管平台主页面
+## UI 展示
+
 ![ce-主页](https://fit2cloud.com/cloudexplorer-lite/docs/img/index/主页.png)
 
 ## 快速开始
@@ -56,21 +53,17 @@ CloudExplorer Lite提供了强大的多租户体系和模块化能力，可以�
 
 ## 社区
 
-如果您在使用过程中有任何疑问或对建议，欢迎提交 GitHub Issue 或加入到我们微信交流群进行交流沟通。
-
-**加入微信交流群**
+如果您在使用过程中有任何疑问或对建议，欢迎提交 GitHub Issue 或加入到我们微信交流群进行交流沟通。扫码加入交流群：
 
 <img src="https://fit2cloud.com/cloudexplorer-lite/images/wechat-group.png" width="156" height="156"/>
 
-## CloudExplorer Lite 的技术栈
+## 技术栈
 
 -   前端：[Vue3.js](https://cn.vuejs.org/)、[Element Plus](https://element-plus.org/zh-CN/)、[TypeScript](https://www.tslang.cn/)
 -   图库：[Apache ECharts](https://github.com/apache/echarts)
 -   后端：[Spring Boot](https://spring.io/projects/spring-boot)
 -   中间件：[MySQL](https://www.mysql.com/)  
 -   基础设施：[Docker](https://www.docker.com/)
-
-
 
 ## License
 
