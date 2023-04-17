@@ -147,7 +147,9 @@ export function setupMicroApp(app: App<Element>) {
   const moduleStore = useModuleStore(store);
   app.use(
     new RootMicroApp(async () => {
-      await moduleStore.refreshModules();
+      if (!moduleStore.modules) {
+        await moduleStore.refreshModules("microApp");
+      }
       console.debug(moduleStore.runningModules);
       return moduleStore.runningModules;
     }, microApp)

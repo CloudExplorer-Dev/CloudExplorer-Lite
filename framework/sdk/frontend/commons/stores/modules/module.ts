@@ -75,7 +75,8 @@ export const useModuleStore = defineStore({
     },
   },
   actions: {
-    async refreshModules() {
+    async refreshModules(source?: string) {
+      console.debug("refreshModules source: " + source);
       const userStore = useUserStore();
       await userStore.getCurrentUser();
 

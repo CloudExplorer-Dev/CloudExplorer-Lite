@@ -77,15 +77,19 @@ const watchEnter = (e: KeyboardEvent) => {
 const submitForm = (formEl: FormInstance | undefined) => {
   if (!formEl) return;
   formEl.validate((valid: boolean) => {
+    loading.value = true;
     if (valid) {
       userStore
-        .doLogin(form, loading)
+        .doLogin(form)
         .then(() => {
           router.push(redirect.value);
         })
         .catch((error: any) => {
           msg.value = error.response.data.message;
           ElMessage.error(msg.value);
+        })
+        .finally(() => {
+          loading.value = false;
         });
     } else {
       return false;

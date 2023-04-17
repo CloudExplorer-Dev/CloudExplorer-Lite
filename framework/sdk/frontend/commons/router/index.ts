@@ -98,7 +98,7 @@ export async function initRouteObj(): Promise<RouteObj> {
       async () => {
         const moduleStore = useModuleStore(store);
         if (!moduleStore.modules) {
-          await moduleStore.refreshModules();
+          await moduleStore.refreshModules("route base");
         }
         const route: RouteItem = { home: moduleStore.routeModules };
         return route;
@@ -149,7 +149,7 @@ export async function initRouteObj(): Promise<RouteObj> {
       async () => {
         const moduleStore = useModuleStore(store);
         if (!moduleStore.modules) {
-          await moduleStore.refreshModules();
+          await moduleStore.refreshModules("route");
         }
 
         return moduleStore.currentModuleMenu;

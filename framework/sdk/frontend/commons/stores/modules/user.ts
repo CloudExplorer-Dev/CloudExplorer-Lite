@@ -15,6 +15,7 @@ import { usePermissionStore } from "@commons/stores/modules/permission";
 import type { SimpleMap } from "@commons/api/base/type";
 import type { SourceTreeObject } from "@commons/api/organization/type";
 import type { Router } from "vue-router";
+import { useModuleStore } from "@commons/stores/modules/module";
 
 export const languages: SimpleMap<string> = {
   "zh-cn": "中文(简体)",
@@ -116,7 +117,10 @@ export const useUserStore = defineStore({
         return;
       }
       this.userStoreObject.token = authStorage.getToken();
-      await this.getCurrentUser();
+      await this.getCurrentUser(loading);
+
+      const moduleStore = useModuleStore();
+      await moduleStore.refreshModules("login");
     },
     setToken(token: string) {
       authStorage.setToken(token);
