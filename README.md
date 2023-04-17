@@ -50,13 +50,11 @@ CloudExplorer Lite 提供了强大的多租户体系和模块化能力，可以�
 **学习资料**
 
 -   [在线文档](https://fit2cloud.com/cloudexplorer-lite/docs/)
--   [教程视频](https://space.bilibili.com/510493147/channel/collectiondetail?sid=1296108)
+-   [教学视频](https://space.bilibili.com/510493147/channel/collectiondetail?sid=1296108)
 
 ## 社区
 
-如果您在使用过程中有任何疑问或建议，欢迎提交 GitHub Issue 或加入到我们微信交流群进行交流沟通。
-
-**微信交流群**
+如果您在使用过程中有任何疑问或建议，欢迎提交 GitHub Issue 或加入到我们微信交流群进行交流沟通。扫码加入交流群：
 
 <img src="https://fit2cloud.com/cloudexplorer-lite/images/wechat-group.png" width="156" height="156"/>
 
