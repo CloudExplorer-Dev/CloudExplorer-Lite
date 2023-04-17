@@ -50,6 +50,7 @@ CloudExplorer Lite提供了强大的多租户体系和模块化能力，可以�
 **学习资料**
 
 -   [在线文档](https://fit2cloud.com/cloudexplorer-lite/docs/)
+-   [教程视频](https://space.bilibili.com/510493147/channel/collectiondetail?sid=1296108)
 
 ## 社区
 
