@@ -1,7 +1,7 @@
 name: BUG 提交
 description: 提交产品缺陷帮助我们更好的改进
 title: "[BUG]"
-labels: "类型: 缺陷"
+labels: 类型:bug
 assignees: Shenguobin0102
 body:
   - type: markdown
