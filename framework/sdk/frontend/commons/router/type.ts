@@ -175,6 +175,9 @@ export class RouteObj {
     const routeItemKeys = Object.keys(routeItem);
     // 排序
     routeItemKeys.sort((key1: string) => {
+      if (key1 === "home") {
+        return -1;
+      }
       if (key1 === rootRouteName) {
         return -1;
       }
