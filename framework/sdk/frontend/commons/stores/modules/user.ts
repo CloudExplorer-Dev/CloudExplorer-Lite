@@ -2,7 +2,7 @@ import { defineStore } from "pinia";
 import authStorage from "@commons/utils/authStorage";
 import type { Ref } from "vue";
 import _ from "lodash";
-import { fetchCurrentUser, login } from "@commons/api/user";
+import { fetchCurrentUser, login, logout } from "@commons/api/user";
 import { sourceTree } from "@commons/api/organization";
 import type {
   LoginRequest,
@@ -125,25 +125,28 @@ export const useUserStore = defineStore({
       }
     },
     doLogout(redirect?: string) {
-      this.clear();
+      //logout
+      logout(this.userStoreObject?.user.username).finally(() => {
+        this.clear();
 
-      if (
-        import.meta.env.VITE_APP_NAME === "base" ||
-        !window.__MICRO_APP_ENVIRONMENT__
-      ) {
-        window.location.href =
-          window.location.protocol +
-          "//" +
-          window.location.host +
-          "/signin" +
-          (redirect ? "?redirect=" + encodeURI(redirect) : "");
-      } else {
-        const rObj: any = { name: "signin" };
-        if (redirect) {
-          rObj.query = { redirect: encodeURI(redirect) };
+        if (
+          import.meta.env.VITE_APP_NAME === "base" ||
+          !window.__MICRO_APP_ENVIRONMENT__
+        ) {
+          window.location.href =
+            window.location.protocol +
+            "//" +
+            window.location.host +
+            "/signin" +
+            (redirect ? "?redirect=" + encodeURI(redirect) : "");
+        } else {
+          const rObj: any = { name: "signin" };
+          if (redirect) {
+            rObj.query = { redirect: encodeURI(redirect) };
+          }
+          (window.microApp.router.getBaseAppRouter() as Router)?.push(rObj);
         }
-        (window.microApp.router.getBaseAppRouter() as Router)?.push(rObj);
-      }
+      });
     },
     clear() {
       this.login = false;

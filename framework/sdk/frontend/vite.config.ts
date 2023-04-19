@@ -75,6 +75,8 @@ export default defineConfig(({ mode }: ConfigEnv) => {
     "http://localhost:" + Number(ENV.VITE_BASE_API_PORT);
   proxyConf[ENV.VITE_BASE_PATH + "login"] =
     "http://localhost:" + Number(ENV.VITE_BASE_API_PORT);
+  proxyConf[ENV.VITE_BASE_PATH + "logout"] =
+    "http://localhost:" + Number(ENV.VITE_BASE_API_PORT);
 
   //management-center
   proxyConf[ENV.VITE_BASE_PATH + "management-center/api"] =

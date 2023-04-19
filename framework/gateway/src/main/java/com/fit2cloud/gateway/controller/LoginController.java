@@ -19,6 +19,8 @@ import com.fit2cloud.response.SourceTreeObject;
 import com.fit2cloud.service.BasePermissionService;
 import com.fit2cloud.service.CommonService;
 import com.fit2cloud.service.MenuService;
+import com.fit2cloud.service.TokenPoolService;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -51,6 +53,8 @@ public class LoginController {
     private IBaseOrganizationService organizationService;
     @Resource
     private IBaseUserService userService;
+    @Resource
+    private TokenPoolService tokenPoolService;
 
     @PostMapping("login")
     @OperatedLog(resourceType = ResourceTypeEnum.SYSTEM, operated = OperatedTypeEnum.LOGIN)
@@ -77,10 +81,18 @@ public class LoginController {
         return Mono.empty();
     }
 
-    @GetMapping("logout")
+    @PostMapping("logout")
     @OperatedLog(resourceType = ResourceTypeEnum.SYSTEM, operated = OperatedTypeEnum.LOGOUT)
-    public Mono<String> logout() {
-        return Mono.just("test");
+    public Mono<ResponseEntity<ResultHolder<Object>>> logout(@RequestBody LoginRequest loginRequest, ServerWebExchange exchange) {
+        ServerHttpRequest request = exchange.getRequest();
+        String token = request.getHeaders().getFirst(JwtTokenUtils.TOKEN_NAME);
+
+        if (StringUtils.isNotBlank(token)) {
+            Map<String, String> map = JwtTokenUtils.renewalToken(token);
+            tokenPoolService.removeJwt(map.get("userId"), map.get("jwtId"));
+        }
+
+        return Mono.just(ResponseEntity.ok().contentType(MediaType.APPLICATION_JSON).body(null));
     }
 
     @GetMapping("login-hint")

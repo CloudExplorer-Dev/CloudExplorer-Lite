@@ -11,6 +11,8 @@ import com.fit2cloud.dto.UserDto;
 import com.fit2cloud.security.CeGrantedAuthority;
 import com.fit2cloud.security.CeUsernamePasswordAuthenticationToken;
 import com.fit2cloud.service.BasePermissionService;
+import com.fit2cloud.service.TokenPoolService;
+import org.apache.commons.collections4.KeyValue;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -33,13 +35,15 @@ public class JwtTokenAuthFilter extends BasicAuthenticationFilter {
     private final BasePermissionService basePermissionService;
 
     private final IBaseUserRoleService userRoleService;
+    private final TokenPoolService tokenPoolService;
 
     public final static String CE_SOURCE_TOKEN = "CE-SOURCE";
 
-    public JwtTokenAuthFilter(AuthenticationManager authenticationManager, BasePermissionService basePermissionService, IBaseUserRoleService userRoleService) {
+    public JwtTokenAuthFilter(AuthenticationManager authenticationManager, BasePermissionService basePermissionService, IBaseUserRoleService userRoleService, TokenPoolService tokenPoolService) {
         super(authenticationManager);
         this.basePermissionService = basePermissionService;
         this.userRoleService = userRoleService;
+        this.tokenPoolService = tokenPoolService;
     }
 
     @Override
@@ -52,18 +56,20 @@ public class JwtTokenAuthFilter extends BasicAuthenticationFilter {
             role = RoleConstants.ROLE.valueOf(request.getHeader(RoleConstants.ROLE_TOKEN));
         } catch (Exception ignore) {
         }
+        boolean tokenIdValid = false;
         if (StringUtils.isNotBlank(token)) {
             try {
-                userDtoFromToken = JwtTokenUtils.parseJwtToken(token);
+                KeyValue<String, UserDto> keyValue = JwtTokenUtils.parseJwtToken(token);
+                userDtoFromToken = keyValue.getValue();
+                if (userDtoFromToken != null) {
+                    tokenIdValid = tokenPoolService.JWTValid(userDtoFromToken.getId(), keyValue.getKey());
+                }
             } catch (Exception ignore) {
             }
         }
-        if (userDtoFromToken != null) {
+        if (userDtoFromToken != null && tokenIdValid) {
             //获取角色
             userDtoFromToken.setCurrentRole(role);
-
-            //信任jwt，直接从jwt内取授权的角色
-            //List<UserRoleDto> userRoleDtos = userDtoFromToken.getRoleMap().getOrDefault(userDtoFromToken.getCurrentRole(), new ArrayList<>());
 
             //为了防止用户编辑后与token中角色不同，从redis读取授权的角色
             userDtoFromToken.setRoleMap(userRoleService.getCachedUserRoleMap(userDtoFromToken.getId()));
