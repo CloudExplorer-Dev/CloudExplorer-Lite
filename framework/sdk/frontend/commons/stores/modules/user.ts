@@ -41,12 +41,6 @@ export const useUserStore = defineStore({
       }
       return state.userStoreObject?.user;
     },
-    currentToken(state: any): string | null {
-      return state.userStoreObject?.token
-        ? state.userStoreObject?.token
-        : authStorage.getToken();
-      //return authStorage.getToken();
-    },
     isLogin(state: any): boolean {
       return state.login;
     },
@@ -110,6 +104,13 @@ export const useUserStore = defineStore({
     },
   },
   actions: {
+    currentToken(): string | null {
+      // return state.userStoreObject?.token
+      //   ? state.userStoreObject?.token
+      //   : authStorage.getToken();
+      return authStorage.getToken();
+      //return localStorage.getItem(Config.CE_TOKEN_KEY);
+    },
     async doLogin(loginRequest: LoginRequest, loading?: Ref<boolean>) {
       await login(loginRequest, loading);
       if (authStorage.getToken() == null) {
