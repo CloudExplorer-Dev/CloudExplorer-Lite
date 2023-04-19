@@ -5,6 +5,7 @@ import com.fit2cloud.security.MD5PasswordEncoder;
 import com.fit2cloud.security.UserAuthDetailsService;
 import com.fit2cloud.security.permission.CeMethodSecurityExpressionHandler;
 import com.fit2cloud.service.BasePermissionService;
+import com.fit2cloud.service.TokenPoolService;
 import org.springframework.context.annotation.Bean;
 import org.springframework.security.access.expression.method.MethodSecurityExpressionHandler;
 import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
@@ -29,6 +30,8 @@ public class SecurityConfig extends GlobalMethodSecurityConfiguration {
     private BasePermissionService basePermissionService;
     @Resource
     private IBaseUserRoleService userRoleService;
+    @Resource
+    private TokenPoolService tokenPoolService;
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
@@ -55,7 +58,7 @@ public class SecurityConfig extends GlobalMethodSecurityConfiguration {
                 //logout url
                 .logout(logout -> logout.logoutUrl("/logout"));
 
-        http.apply(securityDSL(basePermissionService, userRoleService));
+        http.apply(securityDSL(basePermissionService, userRoleService, tokenPoolService));
 
         return http.build();
     }

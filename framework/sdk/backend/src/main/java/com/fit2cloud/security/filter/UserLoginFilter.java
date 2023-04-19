@@ -2,9 +2,12 @@ package com.fit2cloud.security.filter;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fit2cloud.common.utils.JwtTokenUtils;
+import com.fit2cloud.common.utils.SpringUtil;
 import com.fit2cloud.controller.handler.ResultHolder;
 import com.fit2cloud.dto.UserDto;
 import com.fit2cloud.dto.security.SecurityUser;
+import com.fit2cloud.service.TokenPoolService;
+import org.apache.commons.collections4.KeyValue;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -52,10 +55,12 @@ public class UserLoginFilter extends UsernamePasswordAuthenticationFilter {
     protected void successfulAuthentication(HttpServletRequest request, HttpServletResponse response, FilterChain chain, Authentication authResult) throws IOException, ServletException {
         SecurityUser securityUser = (SecurityUser) authResult.getPrincipal();
 
-        String token = JwtTokenUtils.createJwtToken(securityUser.getCurrentUserInfoDto());
+        KeyValue<String, String> jwt = JwtTokenUtils.createJwtToken(securityUser.getCurrentUserInfoDto());
+
+        SpringUtil.getBean(TokenPoolService.class).saveJwt(securityUser.getCurrentUserInfoDto().getId(), jwt.getKey());
 
         //将token放入header
-        response.setHeader(JwtTokenUtils.TOKEN_NAME, token);
+        response.setHeader(JwtTokenUtils.TOKEN_NAME, jwt.getValue());
 
         //返回登录成功json
         response.setStatus(HttpStatus.OK.value());

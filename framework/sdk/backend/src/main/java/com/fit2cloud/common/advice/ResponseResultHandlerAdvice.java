@@ -2,6 +2,8 @@ package com.fit2cloud.common.advice;
 
 import com.fit2cloud.common.advice.annnotaion.TokenRenewal;
 import com.fit2cloud.common.utils.JwtTokenUtils;
+import com.fit2cloud.common.utils.SpringUtil;
+import com.fit2cloud.service.TokenPoolService;
 import lombok.extern.slf4j.Slf4j;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.core.MethodParameter;
@@ -15,6 +17,7 @@ import org.springframework.web.servlet.mvc.method.annotation.ResponseBodyAdvice;
 
 import java.lang.annotation.Annotation;
 import java.util.Arrays;
+import java.util.Map;
 import java.util.Optional;
 
 /**
@@ -43,8 +46,14 @@ public class ResponseResultHandlerAdvice implements ResponseBodyAdvice<Object> {
         HttpHeaders headers = request.getHeaders();
         if (headers.containsKey(JwtTokenUtils.TOKEN_NAME)) {
             String token = headers.getFirst(JwtTokenUtils.TOKEN_NAME);
-            String newToken = JwtTokenUtils.renewalToken(token);
+            Map<String, String> map = JwtTokenUtils.renewalToken(token);
+            String newToken = map.get("jwt");
             response.getHeaders().add(JwtTokenUtils.TOKEN_NAME, newToken);
+            try {
+                SpringUtil.getBean(TokenPoolService.class).saveJwt(map.get("userId"), map.get("jwtId"));
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
         }
         return body;
     }
