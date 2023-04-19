@@ -126,7 +126,7 @@ export const useUserStore = defineStore({
     },
     doLogout(redirect?: string) {
       //logout
-      logout(this.userStoreObject?.user.username).finally(() => {
+      logout(this.userStoreObject?.user?.username).finally(() => {
         this.clear();
 
         if (
