@@ -248,6 +248,8 @@ export class RouteObj {
     from: RouteLocationNormalized,
     next: NavigationGuardNext
   ) => {
+    console.debug(import.meta.env.VITE_APP_NAME, "to", to);
+
     if (!getToken()) {
       if (to.name !== "signin") {
         next({ name: "signin" });
@@ -323,7 +325,14 @@ export class RouteObj {
       }
     } else {
       // 没有权限 路由到没权限页面
-      next({ name: "noPermission" });
+      console.debug(import.meta.env.VITE_APP_NAME, "noPermission", to);
+      if (window.__MICRO_APP_ENVIRONMENT__) {
+        //发消息给基座，跳转首页
+        console.debug("noPermission, jump to home");
+        (window.microApp.router.getBaseAppRouter() as Router)?.push("/");
+      } else {
+        next({ name: "noPermission" });
+      }
     }
   };
 
@@ -345,9 +354,6 @@ export class RouteObj {
       permissionStore.userPermissions,
       requiredPermissions
     );
-
-    //console.log(requiredPermissions);
-    //console.log(hasPermission);
 
     return hasPermission;
   };
@@ -407,7 +413,12 @@ export class RouteObj {
     from: RouteLocationNormalized,
     failure?: NavigationFailure | void
   ) => {
-    console.log(to.meta);
+    console.debug("defaultAfterEach", import.meta.env.VITE_APP_NAME, to);
+    console.debug(
+      "routeAfterEach failure",
+      import.meta.env.VITE_APP_NAME,
+      failure
+    );
 
     if (
       import.meta.env.VITE_APP_NAME !== "base" &&

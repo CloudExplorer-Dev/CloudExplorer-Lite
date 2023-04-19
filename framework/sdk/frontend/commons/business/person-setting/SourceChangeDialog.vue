@@ -14,7 +14,6 @@ import type { Role } from "@commons/api/role/type";
 import RoleTag from "@commons/business/person-setting/RoleTag.vue";
 
 const userStore = useUserStore();
-const homeStore = useHomeStore();
 
 const router = useRouter();
 
@@ -51,16 +50,7 @@ function click(data: SourceTreeObject) {
     userStore.changeRole("ANONYMOUS");
   }
 
-  //只有基座有首页
-  if (homeStore.isBase) {
-    router.push("/").then(() => {
-      //刷新页面
-      window.location.reload();
-    });
-  } else {
-    //刷新页面
-    window.location.reload();
-  }
+  window.location.reload();
 }
 
 const adminRoleName = computed<Role[] | undefined>(() => {
