@@ -10,6 +10,13 @@ export function login(
   return post("/login", null, data, loading);
 }
 
+export function logout(
+  username?: string,
+  loading?: Ref<boolean>
+): Promise<Result<any>> {
+  return post("/logout", null, { username: username }, loading);
+}
+
 export function fetchCurrentUser(
   loading?: Ref<boolean>
 ): Promise<Result<User>> {

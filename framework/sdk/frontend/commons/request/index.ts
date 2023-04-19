@@ -1,7 +1,6 @@
 import axios, { type AxiosRequestConfig } from "axios";
 import { ElMessage } from "element-plus";
 import type { NProgress } from "nprogress";
-import nProgress from "nprogress";
 import type { Ref } from "vue";
 import type { Result } from "@commons/request/Result";
 import { store } from "@commons/stores";
@@ -27,7 +26,10 @@ instance.interceptors.request.use(
     if (config.headers === undefined) {
       config.headers = {};
     }
-    config.headers[Config.CE_TOKEN_KEY] = userStore.currentToken;
+    config.headers[Config.CE_TOKEN_KEY] = userStore.currentToken();
+    // config.headers[Config.CE_TOKEN_KEY] = localStorage.getItem(
+    //   Config.CE_TOKEN_KEY
+    // ) as string;
     config.headers[Config.CE_ROLE_KEY] = userStore.currentRole;
     config.headers[Config.CE_SOURCE_KEY] = userStore.currentSource;
 

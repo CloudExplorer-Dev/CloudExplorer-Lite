@@ -8,6 +8,8 @@ import io.jsonwebtoken.*;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.io.Encoders;
 import io.jsonwebtoken.security.Keys;
+import org.apache.commons.collections4.KeyValue;
+import org.apache.commons.collections4.keyvalue.DefaultKeyValue;
 import org.apache.commons.lang3.time.DateUtils;
 
 import javax.crypto.SecretKey;
@@ -23,9 +25,9 @@ public class JwtTokenUtils {
     public static int JWT_EXPIRE_MINUTES;
 
     public static void setJwtExpireMinutes(int jwtExpireMinutes) {
-//        if (jwtExpireMinutes <= 10) {
-//            jwtExpireMinutes = 10;
-//        }
+        if (jwtExpireMinutes <= 10) {
+            jwtExpireMinutes = 10;
+        }
         JwtTokenUtils.JWT_EXPIRE_MINUTES = jwtExpireMinutes;
     }
 
@@ -49,7 +51,7 @@ public class JwtTokenUtils {
     }
 
 
-    public static String createJwtToken(UserDto userDto) {
+    public static KeyValue<String, String> createJwtToken(UserDto userDto) {
 
         Date now = new Date();
         Date expirationDate = DateUtils.addMinutes(now, JWT_EXPIRE_MINUTES);
@@ -66,33 +68,40 @@ public class JwtTokenUtils {
             throw new RuntimeException(e);
         }
 
+        String id = UUID.randomUUID().toString();
+
         JwtBuilder builder = Jwts.builder()
                 .setClaims(claims)
-                .setId(UUID.randomUUID().toString())
+                .setId(id)
                 .setSubject(KEY_SUBJECT)
                 .setIssuedAt(now)
                 .setExpiration(expirationDate)
                 .signWith(JWT_KEY)
                 .compressWith(CompressionCodecs.GZIP);
 
-        return builder.compact();
+        return new DefaultKeyValue<>(id, builder.compact());
     }
 
-    public static UserDto parseJwtToken(String token) {
-
-        String userStr = (String) Jwts.parserBuilder()
+    public static KeyValue<String, UserDto> parseJwtToken(String token) {
+        Jws<Claims> claimsJws = Jwts.parserBuilder()
                 .setSigningKey(JWT_KEY)
                 .requireSubject(KEY_SUBJECT)
                 .build()
-                .parseClaimsJws(token)
+                .parseClaimsJws(token);
+        String claimId = (String) claimsJws.getBody().get(Claims.ID);
+
+        String userStr = (String) claimsJws
                 .getBody()
                 .get(KEY_CLAIMS);
+
+        UserDto userDto = null;
         try {
-            return objectMapper.readValue(userStr, UserDto.class);
+            userDto = objectMapper.readValue(userStr, UserDto.class);
         } catch (JsonProcessingException e) {
             e.printStackTrace();
         }
-        return null;
+
+        return new DefaultKeyValue<>(claimId, userDto);
     }
 
     /**
@@ -101,7 +110,7 @@ public class JwtTokenUtils {
      * @param token 需要续期的token
      * @return 续期后的token
      */
-    public static String renewalToken(String token) {
+    public static Map<String, String> renewalToken(String token) {
         Date now = new Date();
         Date expirationDate = DateUtils.addMinutes(now, JWT_EXPIRE_MINUTES);
         Jws<Claims> claimsJws = Jwts.parserBuilder()
@@ -109,15 +118,27 @@ public class JwtTokenUtils {
                 .requireSubject(KEY_SUBJECT)
                 .build()
                 .parseClaimsJws(token);
+        String id = (String) claimsJws.getBody().get(Claims.ID);
         JwtBuilder builder = Jwts.builder()
                 .setClaims(claimsJws.getBody())
-                .setId(UUID.randomUUID().toString())
+                .setId(id)
                 .setSubject(KEY_SUBJECT)
                 .setIssuedAt(now)
                 .setExpiration(expirationDate)
                 .signWith(JWT_KEY)
                 .compressWith(CompressionCodecs.GZIP);
-        return builder.compact();
+
+        String userId = null;
+        try {
+            UserDto userDto = objectMapper.readValue((String) claimsJws
+                    .getBody()
+                    .get(KEY_CLAIMS), UserDto.class);
+            userId = userDto.getId();
+        } catch (JsonProcessingException e) {
+            e.printStackTrace();
+        }
+
+        return Map.of("jwt", builder.compact(), "userId", userId, "jwtId", id);
     }
 
 }
