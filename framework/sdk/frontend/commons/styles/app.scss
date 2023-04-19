@@ -41,7 +41,7 @@ a:hover {
 // 滑块
 ::-webkit-scrollbar-thumb {
   border-radius: 5px;
-  background-color: #4A4B4D;
+  background-color: var(--ce-webkit-scrollbar-background-color, rgba(31, 35, 41, 0.3));
 }
 
 // 轨道

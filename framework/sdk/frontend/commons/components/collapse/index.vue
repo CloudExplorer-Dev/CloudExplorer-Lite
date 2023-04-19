@@ -16,7 +16,9 @@ const props = defineProps({
   <div class="collapseContainer">
     <div class="openBtn" @click="props.changeCollapse()">
       <CeIcon
-        :type="'svg'"
+        :type="'code'"
+        size="var(--ce-menu-collapse-font-size, 9px)"
+        color="rgba(31, 35, 41, 1)"
         :code="collapse ? 'xiangzuojiantou' : 'xiangyoujiantou'"
       ></CeIcon>
     </div>
@@ -30,14 +32,22 @@ const props = defineProps({
   display: flex;
   align-items: center;
   .openBtn {
-    height: 100px;
-    width: 10px;
+    height: var(--ce-menu-collapse-height, 60px);
+    width: var(--ce-menu-collapse-width, 16px);
     display: flex;
     align-items: center;
+    justify-content: center;
     position: absolute;
-    background-color: var(--ce-menu-collapse-bg-color);
-    border-bottom-right-radius: 4px;
-    border-top-right-radius: 4px;
+    background-color: var(--ce-menu-collapse-bg-color, #fff);
+    border-bottom-right-radius: var(
+      --ce-menu-collapse-border-bottom-right-radius,
+      4px
+    );
+    font-size: var(--ce-menu-collapse-font-size, 9px);
+    border-top-right-radius: var(
+      --ce-menu-collapse-border-top-right-radius,
+      4px
+    );
     transition: 0.5s;
     cursor: pointer;
     &:hover {

@@ -28,7 +28,6 @@ const collapse = ref<boolean>(true);
 }
 .menuContainer {
   z-index: 100;
-  --el-aside-width: 200px;
   position: relative;
   height: 100%;
   overflow: hidden;
