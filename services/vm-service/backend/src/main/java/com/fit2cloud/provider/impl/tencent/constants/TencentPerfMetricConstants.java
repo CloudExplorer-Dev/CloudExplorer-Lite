@@ -10,17 +10,17 @@ public class TencentPerfMetricConstants {
      * 云主机性能指标枚举
      */
     public enum CloudServerPerfMetricEnum {
-        CPU_USED_UTILIZATION("CPUUsage", "CPU使用率","%"),
-        MEMORY_USED_UTILIZATION("MemUsage", "内存使用率","%"),
-        INTERNET_IN_RATE("WanIntraffic", "公网流入带宽","Mbps"),
-        INTERNET_OUT_RATE("WanOuttraffic", "公网流出带宽","Mbps"),
-        INTRANET_IN_RATE("LanIntraffic", "内网流入带宽","Mbps"),
-        INTRANET_OUT_RATE("LanOuttraffic", "内网流出带宽","Mbps"),
+        CPU_USED_UTILIZATION("CPUUsage", "CPU使用率", "%"),
+        MEMORY_USED_UTILIZATION("MemUsage", "内存使用率", "%"),
+        INTERNET_IN_RATE("WanIntraffic", "公网流入带宽", "Mbps"),
+        INTERNET_OUT_RATE("WanOuttraffic", "公网流出带宽", "Mbps"),
+        INTRANET_IN_RATE("LanIntraffic", "内网流入带宽", "Mbps"),
+        INTRANET_OUT_RATE("LanOuttraffic", "内网流出带宽", "Mbps"),
         /**
          * 磁盘已使用容量占总容量的百分比(所有磁盘)
          * https://cloud.tencent.com/document/product/248/6843#.E7.A3.81.E7.9B.98.E7.9B.91.E6.8E.A7
          */
-        DISK_USED_UTILIZATION("CvmDiskUsage","所有磁盘使用率","%"),
+        DISK_USED_UTILIZATION("CvmDiskUsage", "所有磁盘使用率", "%"),
         ;
         /**
          * 名称
@@ -41,12 +41,15 @@ public class TencentPerfMetricConstants {
             this.description = description;
             this.unit = unit;
         }
+
         public String getMetricName() {
             return metricName;
         }
+
         public String getDescription() {
             return description;
         }
+
         public String getUnit() {
             return unit;
         }
@@ -57,10 +60,10 @@ public class TencentPerfMetricConstants {
      * 磁盘枚举
      */
     public enum CloudDiskPerfMetricEnum {
-        DISK_READ_BPS("DiskReadTraffic", "所有磁盘读取BPS","KB/s"),
-        DISK_WRITE_BPS("DiskWriteTraffic", "所有磁盘写入BPS","KB/s"),
-        DISK_READ_IOPS("DiskReadIops", "所有磁盘每秒读取次数","Count/Second"),
-        DISK_WRITE_IOPS("DiskWriteIops", "所有磁盘每秒写入次数","Count/Second"),
+        DISK_READ_BPS("DiskReadTraffic", "所有磁盘读取BPS", "KB/s"),
+        DISK_WRITE_BPS("DiskWriteTraffic", "所有磁盘写入BPS", "KB/s"),
+        DISK_READ_IOPS("DiskReadIops", "所有磁盘每秒读取次数", "Count/Second"),
+        DISK_WRITE_IOPS("DiskWriteIops", "所有磁盘每秒写入次数", "Count/Second"),
         //这个指标不行
         //DISK_USED_UTILIZATION("disk_usage","磁盘使用率","%"),
         ;
@@ -83,12 +86,15 @@ public class TencentPerfMetricConstants {
             this.description = description;
             this.unit = unit;
         }
+
         public String getMetricName() {
             return metricName;
         }
+
         public String getDescription() {
             return description;
         }
+
         public String getUnit() {
             return unit;
         }

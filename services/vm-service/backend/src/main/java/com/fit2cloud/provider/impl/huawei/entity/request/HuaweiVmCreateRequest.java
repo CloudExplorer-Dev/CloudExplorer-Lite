@@ -10,7 +10,6 @@ import com.fit2cloud.common.provider.impl.huawei.HuaweiBaseCloudProvider;
 import com.fit2cloud.provider.ICreateServerRequest;
 import com.fit2cloud.provider.impl.huawei.HuaweiCloudProvider;
 import com.fit2cloud.provider.impl.huawei.entity.*;
-import com.fit2cloud.provider.impl.tencent.TencentCloudProvider;
 import lombok.Data;
 
 import java.util.List;
@@ -31,7 +30,7 @@ import java.util.List;
 @FormGroupInfo(group = 4, name = "操作系统")
 @FormGroupInfo(group = 5, name = "磁盘配置")
 @FormGroupInfo(group = 6, name = "网络与安全")
-@FormGroupInfo(group = 7, name = "公网IP",description="可以公网访问的公网IP")
+@FormGroupInfo(group = 7, name = "公网IP", description = "可以公网访问的公网IP")
 @FormGroupInfo(group = 8, name = "登录凭证")
 @FormGroupInfo(group = 9, name = "主机命名")
 public class HuaweiVmCreateRequest extends HuaweiBaseRequest implements ICreateServerRequest {
@@ -104,7 +103,7 @@ public class HuaweiVmCreateRequest extends HuaweiBaseRequest implements ICreateS
             confirmSpecial = true,
             defaultJsonValue = true,
             method = "listOsVersion",
-            relationTrigger = {"os","instanceSpecConfig"},
+            relationTrigger = {"os", "instanceSpecConfig"},
             textField = "osVersion",
             valueField = "id",
             group = 4,
@@ -118,7 +117,7 @@ public class HuaweiVmCreateRequest extends HuaweiBaseRequest implements ICreateS
             defaultValue = "{}",
             confirmSpecial = true,
             defaultJsonValue = true,
-            relationTrigger = {"availabilityZone","billingMode"},
+            relationTrigger = {"availabilityZone", "billingMode"},
             group = 3,
             step = 1,
             confirmGroup = 1,
@@ -135,7 +134,7 @@ public class HuaweiVmCreateRequest extends HuaweiBaseRequest implements ICreateS
             method = "getAllDiskTypes",
             defaultValue = "[]",
             defaultJsonValue = true,
-            relationTrigger = {"availabilityZone","billingMode"},
+            relationTrigger = {"availabilityZone", "billingMode"},
             confirmGroup = 1,
             confirmSpecial = true
     )
@@ -203,8 +202,8 @@ public class HuaweiVmCreateRequest extends HuaweiBaseRequest implements ICreateS
             unit = "Mbit/s",
             defaultJsonValue = true,
             attrs = "{\"min\":1,\"max\":2000,\"step\":1}",
-            relationShows = {"usePublicIp","chargeMode"},
-            relationShowValues = {"true","noTraffic"},
+            relationShows = {"usePublicIp", "chargeMode"},
+            relationShowValues = {"true", "noTraffic"},
             defaultValue = "1",
             confirmGroup = 2,
             step = 2,
@@ -220,8 +219,8 @@ public class HuaweiVmCreateRequest extends HuaweiBaseRequest implements ICreateS
             unit = "Mbit/s",
             defaultJsonValue = true,
             attrs = "{\"min\":1,\"max\":300,\"step\":1}",
-            relationShows = {"usePublicIp","chargeMode"},
-            relationShowValues = {"true","traffic"},
+            relationShows = {"usePublicIp", "chargeMode"},
+            relationShowValues = {"true", "traffic"},
             defaultValue = "1",
             confirmGroup = 2,
             step = 2,
@@ -333,7 +332,7 @@ public class HuaweiVmCreateRequest extends HuaweiBaseRequest implements ICreateS
             attrs = "{\"style\":\"color: red; font-size: large\"}",
             confirmGroup = 1,
             footerLocation = 1,
-            relationTrigger = {"billingMode","periodNum","availabilityZone","instanceSpecConfig","disks","count"},
+            relationTrigger = {"billingMode", "periodNum", "availabilityZone", "instanceSpecConfig", "disks", "count"},
             confirmSpecial = true,
             required = false
     )

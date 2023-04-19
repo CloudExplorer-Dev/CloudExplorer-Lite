@@ -1,9 +1,9 @@
 package com.fit2cloud.service;
 
-import com.fit2cloud.autoconfigure.ServerInfo;
 import com.fit2cloud.autoconfigure.JobSettingConfig;
-import com.fit2cloud.dto.module.Module;
+import com.fit2cloud.autoconfigure.ServerInfo;
 import com.fit2cloud.dto.job.JobModuleInfo;
+import com.fit2cloud.dto.module.Module;
 import org.apache.commons.lang3.StringUtils;
 import org.redisson.api.RedissonClient;
 import org.springframework.cloud.client.ServiceInstance;

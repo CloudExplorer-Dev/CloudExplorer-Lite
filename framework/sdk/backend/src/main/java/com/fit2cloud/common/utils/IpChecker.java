@@ -16,18 +16,20 @@ public class IpChecker {
     }
 
     public static boolean isIpv4(String ipaddress) {
-        try{
+        try {
             IPAddressString ip = new IPAddressString(ipaddress);
             return ip.isIPv4();
-        }catch (Exception ignore){}
+        } catch (Exception ignore) {
+        }
         return false;
     }
 
     public static boolean isIpv6(String ipaddress) {
-        try{
+        try {
             IPAddressString ip = new IPAddressString(ipaddress);
             return ip.isIPv6();
-        }catch (Exception ignore){}
+        } catch (Exception ignore) {
+        }
         return false;
     }
 

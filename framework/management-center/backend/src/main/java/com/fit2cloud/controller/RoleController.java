@@ -68,7 +68,7 @@ public class RoleController {
         Role role = new Role();
         BeanUtils.copyProperties(request, role);
         roleService.updateRole(role);
-        if(request.getPermissions() !=null) {
+        if (request.getPermissions() != null) {
             rolePermissionService.savePermissionsByRole(role.getId(), request.getPermissions());
         }
         return ResultHolder.success(roleService.getById(role.getId()));

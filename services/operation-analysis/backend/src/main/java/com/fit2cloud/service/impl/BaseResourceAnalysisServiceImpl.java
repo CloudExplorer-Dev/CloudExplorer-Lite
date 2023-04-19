@@ -18,7 +18,10 @@ import com.fit2cloud.common.es.ElasticsearchProvide;
 import com.fit2cloud.common.es.constants.IndexConstants;
 import com.fit2cloud.common.log.utils.LogUtil;
 import com.fit2cloud.common.provider.entity.F2CEntityType;
-import com.fit2cloud.common.utils.*;
+import com.fit2cloud.common.utils.ColumnNameUtil;
+import com.fit2cloud.common.utils.DateUtil;
+import com.fit2cloud.common.utils.PageUtil;
+import com.fit2cloud.common.utils.QueryUtil;
 import com.fit2cloud.constants.SpecialAttributesConstants;
 import com.fit2cloud.controller.request.base.resource.analysis.ResourceAnalysisRequest;
 import com.fit2cloud.controller.request.base.resource.analysis.ResourceUsedTrendRequest;
@@ -31,7 +34,6 @@ import com.fit2cloud.dto.AnalysisHostDTO;
 import com.fit2cloud.dto.KeyValue;
 import com.fit2cloud.es.entity.PerfMetricMonitorData;
 import com.fit2cloud.service.IBaseResourceAnalysisService;
-import com.fit2cloud.service.IPermissionService;
 import com.fit2cloud.utils.OperationUtils;
 import com.github.yulichang.wrapper.MPJLambdaWrapper;
 import org.apache.commons.collections.CollectionUtils;
@@ -85,12 +87,12 @@ public class BaseResourceAnalysisServiceImpl implements IBaseResourceAnalysisSer
         Page<AnalysisHostDTO> page = PageUtil.of(request, AnalysisHostDTO.class, null, true);
         // 构建查询参数
         MPJLambdaWrapper<VmCloudHost> wrapper = new MPJLambdaWrapper<VmCloudHost>().selectAll(VmCloudHost.class);
-        wrapper.like(StringUtils.isNotBlank(request.getHostName()),VmCloudHost::getHostName,request.getHostName());
-        wrapper.selectAs(CloudAccount::getName,AnalysisHostDTO::getAccountName);
-        wrapper.selectAs(CloudAccount::getPlatform,AnalysisDatastoreDTO::getPlatform);
-        wrapper.leftJoin(CloudAccount.class,CloudAccount::getId,AnalysisDatastoreDTO::getAccountId);
+        wrapper.like(StringUtils.isNotBlank(request.getHostName()), VmCloudHost::getHostName, request.getHostName());
+        wrapper.selectAs(CloudAccount::getName, AnalysisHostDTO::getAccountName);
+        wrapper.selectAs(CloudAccount::getPlatform, AnalysisDatastoreDTO::getPlatform);
+        wrapper.leftJoin(CloudAccount.class, CloudAccount::getId, AnalysisDatastoreDTO::getAccountId);
         wrapper.orderByDesc(CloudAccount::getCreateTime);
-        return baseVmCloudHostMapper.selectJoinPage(page,AnalysisHostDTO.class, wrapper);
+        return baseVmCloudHostMapper.selectJoinPage(page, AnalysisHostDTO.class, wrapper);
     }
 
     @Override
@@ -101,7 +103,7 @@ public class BaseResourceAnalysisServiceImpl implements IBaseResourceAnalysisSer
     @Override
     public long countHost(String cloudAccountId) {
         MPJLambdaWrapper<VmCloudHost> wrapper = new MPJLambdaWrapper<>();
-        wrapper.eq(StringUtils.isNotEmpty(cloudAccountId),VmCloudHost::getAccountId,cloudAccountId);
+        wrapper.eq(StringUtils.isNotEmpty(cloudAccountId), VmCloudHost::getAccountId, cloudAccountId);
         return iBaseVmCloudHostService.count(wrapper);
     }
 
@@ -113,17 +115,17 @@ public class BaseResourceAnalysisServiceImpl implements IBaseResourceAnalysisSer
         Page<AnalysisDatastoreDTO> page = PageUtil.of(request, AnalysisDatastoreDTO.class, null, false);
         // 构建查询参数
         MPJLambdaWrapper<VmCloudDatastore> wrapper = addQueryDatastore(request);
-        wrapper.selectAs(CloudAccount::getName,AnalysisDatastoreDTO::getAccountName);
-        wrapper.selectAs(CloudAccount::getPlatform,AnalysisDatastoreDTO::getPlatform);
-        wrapper.leftJoin(CloudAccount.class,CloudAccount::getId,AnalysisDatastoreDTO::getAccountId);
+        wrapper.selectAs(CloudAccount::getName, AnalysisDatastoreDTO::getAccountName);
+        wrapper.selectAs(CloudAccount::getPlatform, AnalysisDatastoreDTO::getPlatform);
+        wrapper.leftJoin(CloudAccount.class, CloudAccount::getId, AnalysisDatastoreDTO::getAccountId);
         wrapper.orderByDesc(VmCloudDatastore::getCreateTime);
-        IPage<AnalysisDatastoreDTO> result = baseVmCloudDatastoreMapper.selectJoinPage(page,AnalysisDatastoreDTO.class,wrapper);
+        IPage<AnalysisDatastoreDTO> result = baseVmCloudDatastoreMapper.selectJoinPage(page, AnalysisDatastoreDTO.class, wrapper);
         //计算
-        result.getRecords().forEach(v->{
-            v.setAllocated(String.valueOf(v.getCapacity()-v.getFreeSpace()));
-            BigDecimal useRate = new BigDecimal(v.getCapacity()).subtract(new BigDecimal(v.getFreeSpace())).multiply(new BigDecimal(100)).divide(new BigDecimal(v.getCapacity()),2,RoundingMode.UP);
+        result.getRecords().forEach(v -> {
+            v.setAllocated(String.valueOf(v.getCapacity() - v.getFreeSpace()));
+            BigDecimal useRate = new BigDecimal(v.getCapacity()).subtract(new BigDecimal(v.getFreeSpace())).multiply(new BigDecimal(100)).divide(new BigDecimal(v.getCapacity()), 2, RoundingMode.UP);
             v.setUseRate(String.valueOf(useRate));
-            BigDecimal freeRate = new BigDecimal(v.getFreeSpace()).multiply(new BigDecimal(100)).divide(new BigDecimal(v.getCapacity()),2,RoundingMode.UP);
+            BigDecimal freeRate = new BigDecimal(v.getFreeSpace()).multiply(new BigDecimal(100)).divide(new BigDecimal(v.getCapacity()), 2, RoundingMode.UP);
             v.setFreeRate(String.valueOf(freeRate));
         });
         return result;
@@ -137,7 +139,7 @@ public class BaseResourceAnalysisServiceImpl implements IBaseResourceAnalysisSer
     @Override
     public long countDatastore(String cloudAccountId) {
         MPJLambdaWrapper<VmCloudDatastore> wrapper = new MPJLambdaWrapper<>();
-        wrapper.eq(StringUtils.isNotEmpty(cloudAccountId),VmCloudDatastore::getAccountId,cloudAccountId);
+        wrapper.eq(StringUtils.isNotEmpty(cloudAccountId), VmCloudDatastore::getAccountId, cloudAccountId);
         return iBaseVmCloudDatastoreService.count(wrapper);
     }
 
@@ -233,16 +235,16 @@ public class BaseResourceAnalysisServiceImpl implements IBaseResourceAnalysisSer
         List<VmCloudHost> hosts = getVmHost(request);
         if (CollectionUtils.isNotEmpty(hosts)) {
             hosts = hosts.stream().filter(v -> !CollectionUtils.isNotEmpty(request.getHostIds()) || request.getHostIds().contains(v.getId())).toList();
-            BigDecimal cpuTotal = new BigDecimal(hosts.stream().filter(v->Objects.nonNull(v.getCpuTotal())).mapToLong(VmCloudHost::getCpuTotal).sum());
-            BigDecimal cpuAllocated = new BigDecimal(hosts.stream().filter(v->Objects.nonNull(v.getCpuAllocated())).mapToLong(VmCloudHost::getCpuAllocated).sum());
+            BigDecimal cpuTotal = new BigDecimal(hosts.stream().filter(v -> Objects.nonNull(v.getCpuTotal())).mapToLong(VmCloudHost::getCpuTotal).sum());
+            BigDecimal cpuAllocated = new BigDecimal(hosts.stream().filter(v -> Objects.nonNull(v.getCpuAllocated())).mapToLong(VmCloudHost::getCpuAllocated).sum());
             BigDecimal cpuAllocatedRate = cpuAllocated.divide(cpuTotal, 2, RoundingMode.HALF_UP).multiply(new BigDecimal(100));
             result.put(SpecialAttributesConstants.ResourceField.CPU, ResourceAllocatedInfo.builder()
                     .total(cpuTotal)
                     .allocated(cpuAllocated)
                     .allocatedRate(cpuAllocatedRate.compareTo(new BigDecimal(100)) > 0 ? new BigDecimal(100) : cpuAllocatedRate)
                     .build());
-            BigDecimal memoryTotal = new BigDecimal(hosts.stream().filter(v->Objects.nonNull(v.getMemoryTotal())).mapToLong(VmCloudHost::getMemoryTotal).sum());
-            BigDecimal memoryAllocated = new BigDecimal(hosts.stream().filter(v->Objects.nonNull(v.getMemoryAllocated())).mapToLong(VmCloudHost::getMemoryAllocated).sum());
+            BigDecimal memoryTotal = new BigDecimal(hosts.stream().filter(v -> Objects.nonNull(v.getMemoryTotal())).mapToLong(VmCloudHost::getMemoryTotal).sum());
+            BigDecimal memoryAllocated = new BigDecimal(hosts.stream().filter(v -> Objects.nonNull(v.getMemoryAllocated())).mapToLong(VmCloudHost::getMemoryAllocated).sum());
             BigDecimal memoryAllocatedRate = memoryAllocated.divide(memoryTotal, 2, RoundingMode.HALF_UP).multiply(new BigDecimal(100));
             result.put(SpecialAttributesConstants.ResourceField.MEMORY, ResourceAllocatedInfo.builder()
                     .total(memoryTotal.divide(new BigDecimal(1024), RoundingMode.HALF_UP))
@@ -254,8 +256,8 @@ public class BaseResourceAnalysisServiceImpl implements IBaseResourceAnalysisSer
         List<VmCloudDatastore> datastoreList = getVmCloudDatastore(request);
         if (CollectionUtils.isNotEmpty(datastoreList)) {
             datastoreList = datastoreList.stream().filter(v -> !CollectionUtils.isNotEmpty(request.getDatastoreIds()) || request.getDatastoreIds().contains(v.getId())).toList();
-            BigDecimal capacity = new BigDecimal(datastoreList.stream().filter(v->Objects.nonNull(v.getCapacity())).mapToLong(VmCloudDatastore::getCapacity).sum());
-            BigDecimal allocatedSpace = new BigDecimal(datastoreList.stream().filter(v->Objects.nonNull(v.getAllocatedSpace())).mapToLong(VmCloudDatastore::getAllocatedSpace).sum());
+            BigDecimal capacity = new BigDecimal(datastoreList.stream().filter(v -> Objects.nonNull(v.getCapacity())).mapToLong(VmCloudDatastore::getCapacity).sum());
+            BigDecimal allocatedSpace = new BigDecimal(datastoreList.stream().filter(v -> Objects.nonNull(v.getAllocatedSpace())).mapToLong(VmCloudDatastore::getAllocatedSpace).sum());
             BigDecimal memoryAllocatedRate = capacity.subtract(allocatedSpace).divide(capacity, 2, RoundingMode.HALF_UP).multiply(new BigDecimal(100));
             result.put(SpecialAttributesConstants.ResourceField.DATASTORE, ResourceAllocatedInfo.builder()
                     .total(capacity)
@@ -297,7 +299,7 @@ public class BaseResourceAnalysisServiceImpl implements IBaseResourceAnalysisSer
         hosts.forEach(v -> {
             KeyValue kv = new KeyValue();
             kv.setName(v.getHostName());
-            switch (StringUtils.isEmpty(request.getVmStatus())?"":request.getVmStatus()) {
+            switch (StringUtils.isEmpty(request.getVmStatus()) ? "" : request.getVmStatus()) {
                 case "running" -> kv.setValue(v.getVmRunning());
                 case "stopped" -> kv.setValue(v.getVmStopped());
                 default -> kv.setValue(v.getVmTotal());
@@ -317,7 +319,7 @@ public class BaseResourceAnalysisServiceImpl implements IBaseResourceAnalysisSer
         CalendarInterval intervalUnit = OperationUtils.getCalendarIntervalUnit(request.getStartTime(), request.getEndTime());
         try {
             request.setIntervalPosition(intervalUnit);
-            if(CollectionUtils.isEmpty(request.getAccountIds())){
+            if (CollectionUtils.isEmpty(request.getAccountIds())) {
                 request.setAccountIds(currentUserResourceService.currentUserCloudAccountList().stream().map(CloudAccount::getId).toList());
             }
             SearchHits<PerfMetricMonitorData> response = elasticsearchTemplate.search(getSearchResourceTrendDataQuery(request), PerfMetricMonitorData.class, IndexCoordinates.of(IndexConstants.CE_PERF_METRIC_MONITOR_DATA.getCode()));
@@ -438,7 +440,8 @@ public class BaseResourceAnalysisServiceImpl implements IBaseResourceAnalysisSer
                         resourceIds = vmCloudDatastoreList.stream().map(VmCloudDatastore::getDatastoreId).toList();
                     }
                 }
-                default -> {}
+                default -> {
+                }
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -448,6 +451,7 @@ public class BaseResourceAnalysisServiceImpl implements IBaseResourceAnalysisSer
 
     /**
      * 使用情况
+     *
      * @return Map<String, ResourceAllocatedInfo>
      */
     @Override
@@ -456,16 +460,16 @@ public class BaseResourceAnalysisServiceImpl implements IBaseResourceAnalysisSer
         List<VmCloudHost> hosts = getVmHost(request);
         if (CollectionUtils.isNotEmpty(hosts)) {
             hosts = hosts.stream().filter(v -> !CollectionUtils.isNotEmpty(request.getHostIds()) || request.getHostIds().contains(v.getId())).toList();
-            BigDecimal cpuTotal = new BigDecimal(hosts.stream().filter(v->Objects.nonNull(v.getCpuTotal())).mapToLong(VmCloudHost::getCpuTotal).sum());
-            BigDecimal cpuUsed = new BigDecimal(hosts.stream().filter(v->Objects.nonNull(v.getCpuUsed())).mapToLong(VmCloudHost::getCpuUsed).sum());
+            BigDecimal cpuTotal = new BigDecimal(hosts.stream().filter(v -> Objects.nonNull(v.getCpuTotal())).mapToLong(VmCloudHost::getCpuTotal).sum());
+            BigDecimal cpuUsed = new BigDecimal(hosts.stream().filter(v -> Objects.nonNull(v.getCpuUsed())).mapToLong(VmCloudHost::getCpuUsed).sum());
             BigDecimal cpuUsedRate = cpuUsed.divide(cpuTotal, 2, RoundingMode.HALF_UP).multiply(new BigDecimal(100));
             result.put("cpu", ResourceAllocatedInfo.builder()
                     .total(cpuTotal)
                     .used(cpuUsed)
                     .usedRate(cpuUsedRate.compareTo(new BigDecimal(100)) > 0 ? new BigDecimal(100) : cpuUsedRate)
                     .build());
-            BigDecimal memoryTotal = new BigDecimal(hosts.stream().filter(v->Objects.nonNull(v.getMemoryTotal())).mapToLong(VmCloudHost::getMemoryTotal).sum());
-            BigDecimal memoryUsed = new BigDecimal(hosts.stream().filter(v->Objects.nonNull(v.getMemoryUsed())).mapToLong(VmCloudHost::getMemoryUsed).sum());
+            BigDecimal memoryTotal = new BigDecimal(hosts.stream().filter(v -> Objects.nonNull(v.getMemoryTotal())).mapToLong(VmCloudHost::getMemoryTotal).sum());
+            BigDecimal memoryUsed = new BigDecimal(hosts.stream().filter(v -> Objects.nonNull(v.getMemoryUsed())).mapToLong(VmCloudHost::getMemoryUsed).sum());
             BigDecimal memoryUsedRate = memoryUsed.divide(memoryTotal, 2, RoundingMode.HALF_UP).multiply(new BigDecimal(100));
             result.put("memory", ResourceAllocatedInfo.builder()
                     .total(memoryTotal.divide(new BigDecimal(1024), RoundingMode.HALF_UP))
@@ -477,15 +481,15 @@ public class BaseResourceAnalysisServiceImpl implements IBaseResourceAnalysisSer
         List<VmCloudDatastore> datastoreList = getVmCloudDatastore(request);
         if (CollectionUtils.isNotEmpty(datastoreList)) {
             datastoreList = datastoreList.stream().filter(v -> !CollectionUtils.isNotEmpty(request.getDatastoreIds()) || request.getDatastoreIds().contains(v.getId())).toList();
-            BigDecimal capacity = new BigDecimal(datastoreList.stream().filter(v->Objects.nonNull(v.getCapacity())).mapToLong(VmCloudDatastore::getCapacity).sum());
-            BigDecimal freeSpace = new BigDecimal(datastoreList.stream().filter(v->Objects.nonNull(v.getFreeSpace())).mapToLong(VmCloudDatastore::getFreeSpace).sum());
+            BigDecimal capacity = new BigDecimal(datastoreList.stream().filter(v -> Objects.nonNull(v.getCapacity())).mapToLong(VmCloudDatastore::getCapacity).sum());
+            BigDecimal freeSpace = new BigDecimal(datastoreList.stream().filter(v -> Objects.nonNull(v.getFreeSpace())).mapToLong(VmCloudDatastore::getFreeSpace).sum());
             BigDecimal memoryUsedRate = capacity.subtract(freeSpace).divide(capacity, 2, RoundingMode.HALF_UP).multiply(new BigDecimal(100));
             result.put("datastore", ResourceAllocatedInfo.builder()
                     .total(capacity)
                     .used(capacity.subtract(freeSpace))
                     .usedRate(memoryUsedRate)
                     .build());
-        }else{
+        } else {
             result.put("datastore", ResourceAllocatedInfo.builder()
                     .total(BigDecimal.ZERO)
                     .used(BigDecimal.ZERO)

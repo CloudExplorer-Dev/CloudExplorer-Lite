@@ -1,19 +1,13 @@
 package com.fit2cloud.quartz;
 
-import com.fit2cloud.base.entity.CloudAccount;
-import com.fit2cloud.base.service.IBaseCloudAccountService;
 import com.fit2cloud.common.constants.JobConstants;
 import com.fit2cloud.common.log.utils.LogUtil;
 import com.fit2cloud.common.scheduler.handler.AsyncJob;
 import com.fit2cloud.common.utils.SpringUtil;
-import com.fit2cloud.controller.response.compliance_scan.SupportCloudAccountResourceResponse;
-import com.fit2cloud.service.IComplianceScanService;
 import com.fit2cloud.service.ISyncService;
 import jdk.jfr.Name;
-import org.apache.commons.collections4.keyvalue.DefaultKeyValue;
 import org.quartz.Job;
 
-import java.util.List;
 import java.util.Map;
 
 /**

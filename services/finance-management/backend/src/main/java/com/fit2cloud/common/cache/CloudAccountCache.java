@@ -1,9 +1,7 @@
 package com.fit2cloud.common.cache;
 
 import com.fit2cloud.base.entity.CloudAccount;
-import com.fit2cloud.base.entity.Organization;
 import com.fit2cloud.base.mapper.BaseCloudAccountMapper;
-import com.fit2cloud.base.mapper.BaseOrganizationMapper;
 import com.fit2cloud.common.utils.SpringUtil;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.collections4.keyvalue.DefaultKeyValue;

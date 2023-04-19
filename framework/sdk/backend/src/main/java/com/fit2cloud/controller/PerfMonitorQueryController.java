@@ -17,20 +17,21 @@ import java.util.Map;
 
 /**
  * 性能监控数据查询
+ *
  * @author jianneng
  **/
 @Validated
 @RestController
 @RequestMapping("/api/base/monitor")
-@Api(value = "公共监控相关接口",tags = "公共监控相关接口")
+@Api(value = "公共监控相关接口", tags = "公共监控相关接口")
 public class PerfMonitorQueryController {
 
     @Resource
     private PerfMonitorService perfMonitorService;
 
-    @ApiOperation(value="查询监控数据",notes = "查询监控数据")
+    @ApiOperation(value = "查询监控数据", notes = "查询监控数据")
     @GetMapping("/list")
-    public ResultHolder<Map<String,List<PerfMonitorEchartsDTO>>> list(
+    public ResultHolder<Map<String, List<PerfMonitorEchartsDTO>>> list(
             @Validated PerfMonitorRequest perfMonitorRequest) {
         return ResultHolder.success(perfMonitorService.getPerfMonitorData(perfMonitorRequest));
     }

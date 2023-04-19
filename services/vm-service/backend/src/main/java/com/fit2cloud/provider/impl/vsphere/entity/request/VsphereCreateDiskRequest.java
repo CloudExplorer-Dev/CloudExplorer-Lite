@@ -48,7 +48,7 @@ public class VsphereCreateDiskRequest extends VsphereVmBaseRequest {
         disk.setDiskType(this.diskType);
         disk.setDiskMode(this.diskMode);
         disk.setSize(this.size);
-        disk.setDatastoreName(this.datastore == null ? "only-a-flag":this.datastore);
+        disk.setDatastoreName(this.datastore == null ? "only-a-flag" : this.datastore);
         disk.setDeleteWithInstance(DeleteWithInstance.YES.name());
         req.setDisks(Arrays.asList(disk));
 

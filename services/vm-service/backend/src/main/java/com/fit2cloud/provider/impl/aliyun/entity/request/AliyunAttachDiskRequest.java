@@ -15,7 +15,7 @@ import lombok.Data;
 @Data
 public class AliyunAttachDiskRequest extends BaseDiskAttachRequest {
 
-    public AttachDiskRequest toAttachDiskRequest(){
+    public AttachDiskRequest toAttachDiskRequest() {
         AttachDiskRequest request = new AttachDiskRequest();
         request.setDiskId(super.getDiskId());
         request.setInstanceId(super.getInstanceUuid());

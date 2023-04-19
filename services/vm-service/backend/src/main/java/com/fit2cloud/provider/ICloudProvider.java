@@ -240,6 +240,7 @@ public interface ICloudProvider {
 
     /**
      * 创建云主机询价
+     *
      * @param req
      * @return
      */
@@ -247,6 +248,7 @@ public interface ICloudProvider {
 
     /**
      * 配置变更
+     *
      * @return
      */
     F2CVirtualMachine changeVmConfig(String req);
@@ -255,14 +257,16 @@ public interface ICloudProvider {
 
     /**
      * 云主机配置变更询价
+     *
      * @return
      */
     String calculateConfigUpdatePrice(String req);
 
     /**
      * 获取云主机关联的云磁盘
+     *
      * @param req
      * @return
      */
-    List<F2CDisk> getVmF2CDisks(String req) ;
+    List<F2CDisk> getVmF2CDisks(String req);
 }

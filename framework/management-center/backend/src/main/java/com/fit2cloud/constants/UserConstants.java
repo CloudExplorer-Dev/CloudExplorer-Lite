@@ -10,7 +10,7 @@ public interface UserConstants {
 
     public enum Source implements UserConstants {
 
-        LOCAL("local"),  EXTRA("extra");
+        LOCAL("local"), EXTRA("extra");
 
         private String value;
 

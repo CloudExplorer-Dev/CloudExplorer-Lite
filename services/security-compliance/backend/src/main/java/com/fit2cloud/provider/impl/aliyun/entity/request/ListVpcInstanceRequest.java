@@ -1,6 +1,6 @@
 package com.fit2cloud.provider.impl.aliyun.entity.request;
 
-import com.aliyun.vpc20160428.models.*;
+import com.aliyun.vpc20160428.models.DescribeVpcsRequest;
 import com.fit2cloud.provider.impl.aliyun.entity.credential.AliSecurityComplianceCredential;
 import lombok.Getter;
 import lombok.Setter;

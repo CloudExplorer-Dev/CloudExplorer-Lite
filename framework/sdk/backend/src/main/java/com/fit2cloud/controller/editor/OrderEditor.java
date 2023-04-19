@@ -2,7 +2,6 @@ package com.fit2cloud.controller.editor;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.json.JsonMapper;
 import com.fit2cloud.request.pub.OrderRequest;
 
 import java.beans.PropertyEditorSupport;
@@ -24,7 +23,6 @@ public class OrderEditor extends PropertyEditorSupport {
         }
         setValue(orderRequest);
     }
-
 
 
 }

@@ -53,7 +53,7 @@ public class CreateModuleUtil {
         String targetPath = parentPath + "/services/" + NEW_MODULE_NAME;
 
         System.out.println(currentPath);
-        //复制模版
+        //复制模板
         FileUtils.copyDirectory(new File(sourcePath), new File(targetPath));
 
         //替换文件内占位符

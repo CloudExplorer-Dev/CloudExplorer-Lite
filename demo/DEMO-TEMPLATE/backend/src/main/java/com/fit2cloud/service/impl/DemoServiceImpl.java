@@ -4,8 +4,6 @@ import com.fit2cloud.dto.DemoObject;
 import com.fit2cloud.service.IDemoService;
 import org.springframework.stereotype.Service;
 
-import java.util.random.RandomGenerator;
-
 
 @Service
 public class DemoServiceImpl implements IDemoService {

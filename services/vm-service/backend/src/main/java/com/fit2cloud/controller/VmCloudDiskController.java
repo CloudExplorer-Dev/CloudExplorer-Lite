@@ -158,7 +158,7 @@ public class VmCloudDiskController {
     @ApiOperation(value = "批量删除磁盘")
     @DeleteMapping("batchDelete")
     @PreAuthorize("hasAnyCePermission('CLOUD_DISK:DELETE')")
-    @OperatedLog(resourceType = ResourceTypeEnum.CLOUD_DISK, operated = OperatedTypeEnum.BATCH_DELETE, content = "'批量删除磁盘'",  param = "#ids")
+    @OperatedLog(resourceType = ResourceTypeEnum.CLOUD_DISK, operated = OperatedTypeEnum.BATCH_DELETE, content = "'批量删除磁盘'", param = "#ids")
     public ResultHolder<Boolean> batchDelete(@RequestBody String[] ids) {
         return ResultHolder.success(diskService.batchDelete(ids));
     }

@@ -42,7 +42,7 @@ public class BaseCloudDiskCache {
     }
 
     public synchronized static String getCache(String id) {
-        Map<String, String> map= cloudDiskCache.get();
+        Map<String, String> map = cloudDiskCache.get();
         return MapUtils.isEmpty(map) ? null : map.get(id);
     }
 

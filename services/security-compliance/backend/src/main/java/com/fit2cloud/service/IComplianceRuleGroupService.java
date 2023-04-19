@@ -7,8 +7,6 @@ import com.fit2cloud.controller.request.rule_group.PageComplianceRuleGroupReques
 import com.fit2cloud.controller.response.rule_group.ComplianceRuleGroupResponse;
 import com.fit2cloud.dao.entity.ComplianceRuleGroup;
 
-import java.util.List;
-
 /**
  * <p>
  * 服务类

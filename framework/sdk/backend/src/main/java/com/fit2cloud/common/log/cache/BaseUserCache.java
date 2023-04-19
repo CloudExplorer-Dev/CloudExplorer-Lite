@@ -41,7 +41,7 @@ public class BaseUserCache {
     }
 
     public synchronized static String getCache(String id) {
-        Map<String, String> map= userCache.get();
+        Map<String, String> map = userCache.get();
         return MapUtils.isEmpty(map) ? null : map.get(id);
     }
 

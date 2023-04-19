@@ -1,7 +1,7 @@
 package com.fit2cloud.provider.impl.huawei.entity.request;
 
 import com.fit2cloud.provider.impl.huawei.entity.credential.HuaweiSecurityComplianceCredential;
-import com.huaweicloud.sdk.dcs.v2.model.*;
+import com.huaweicloud.sdk.dcs.v2.model.ListInstancesRequest;
 import lombok.Getter;
 import lombok.Setter;
 

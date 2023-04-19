@@ -21,14 +21,14 @@ public class VsphereTemplate {
         this.name = name;
         this.description = name;
         this.hasVmTools = hasVmTools;
-        if(!hasVmTools) {
+        if (!hasVmTools) {
             this.description += " [未安装VmTools]";
         }
         this.size = size;
     }
 
-    public VsphereTemplate(String libraryId, String id, String name, boolean hasVmTools, int size){
-        this(name,hasVmTools,size);
+    public VsphereTemplate(String libraryId, String id, String name, boolean hasVmTools, int size) {
+        this(name, hasVmTools, size);
         this.name = libraryId + SEPARATOR + id;
         this.description = name + "[内容库]";
     }

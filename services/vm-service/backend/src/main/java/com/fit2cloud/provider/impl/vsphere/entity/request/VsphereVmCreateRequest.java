@@ -96,9 +96,9 @@ public class VsphereVmCreateRequest extends VsphereVmBaseRequest implements ICre
     )
     private String cluster;
 
-    //模版
+    //模板
     @Form(inputType = InputType.SingleSelect,
-            label = "模版",
+            label = "模板",
             clazz = VmCloudImageServiceImpl.class,
             serviceMethod = true,
             method = "listVmCloudImage",

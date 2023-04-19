@@ -1,10 +1,8 @@
 package com.fit2cloud.controller.request.rule;
 
-import com.fit2cloud.common.validator.annnotaion.CustomQueryWrapperValidated;
 import com.fit2cloud.common.validator.annnotaion.CustomValidated;
 import com.fit2cloud.common.validator.group.ValidationGroup;
 import com.fit2cloud.common.validator.handler.ExistHandler;
-import com.fit2cloud.common.validator.handler.ExistQueryWrapperValidatedHandler;
 import com.fit2cloud.dao.constants.RiskLevel;
 import com.fit2cloud.dao.jentity.Rules;
 import com.fit2cloud.dao.mapper.ComplianceRuleGroupMapper;

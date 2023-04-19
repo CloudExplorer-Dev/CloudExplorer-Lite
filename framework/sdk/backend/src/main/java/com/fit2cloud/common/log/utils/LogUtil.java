@@ -9,6 +9,7 @@ import java.io.StringWriter;
 
 /**
  * 日志工具类
+ *
  * @date 2022/9/8 15:44
  **/
 public class LogUtil {

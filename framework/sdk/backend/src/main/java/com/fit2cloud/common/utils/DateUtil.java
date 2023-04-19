@@ -17,8 +17,10 @@ public class DateUtil extends DateUtils {
     public static final String YYYY_MM_DD_HH_MM = "yyyy-MM-dd HH:mm";
     public static final String YYYY_MM_DD_HH = "yyyy-MM-dd HH";
     public static final String YYYY_MM_DD = "yyyy-MM-dd";
+
     /**
      * 获取当前时间,精确到秒
+     *
      * @return
      */
     public static LocalDateTime getSyncTime() {
@@ -29,6 +31,7 @@ public class DateUtil extends DateUtils {
 
     /**
      * 获取过去n个小时的时间戳
+     *
      * @param n
      * @return
      */
@@ -39,12 +42,13 @@ public class DateUtil extends DateUtils {
     }
 
     public static String dateToString(long l, String format) {
-        SimpleDateFormat dateFormat = new SimpleDateFormat(format == null ?YYYY_MM_DD_HH_MM_SS:format);
+        SimpleDateFormat dateFormat = new SimpleDateFormat(format == null ? YYYY_MM_DD_HH_MM_SS : format);
         return dateFormat.format(new Date(l));
     }
 
     /**
      * 获取过去n分钟的时间戳
+     *
      * @param n
      * @return
      */
@@ -56,26 +60,28 @@ public class DateUtil extends DateUtils {
 
     /**
      * 2022-01-01T00:00:00+08:00
+     *
      * @param timestamp
      * @return
      */
-    public static String getISO8601TimestampFromDateStr(String timestamp){
+    public static String getISO8601TimestampFromDateStr(String timestamp) {
         java.time.format.DateTimeFormatter dtf1 = java.time.format.DateTimeFormatter.ofPattern(YYYY_MM_DD_HH_MM_SS);
-        LocalDateTime ldt = LocalDateTime.parse(timestamp,dtf1);
+        LocalDateTime ldt = LocalDateTime.parse(timestamp, dtf1);
         ZoneOffset offset = ZoneOffset.of("+08:00");
-        OffsetDateTime date = OffsetDateTime.of(ldt ,offset);
+        OffsetDateTime date = OffsetDateTime.of(ldt, offset);
         java.time.format.DateTimeFormatter dtf2 = java.time.format.DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ssXXX");
 
-        return date.format(dtf2 );
+        return date.format(dtf2);
     }
 
-    public static LocalDateTime timestampToDatetime(long timestamp){
+    public static LocalDateTime timestampToDatetime(long timestamp) {
         Instant instant = Instant.ofEpochMilli(timestamp);
         return LocalDateTime.ofInstant(instant, ZoneId.systemDefault());
     }
 
     /**
      * 获取当前时间过去一个小时的时间
+     *
      * @param timestamp
      * @return
      */
@@ -87,9 +93,5 @@ public class DateUtil extends DateUtils {
         return calendar.getTime().getTime();
     }
 
-    public static void main(String[] args) {
-
-        System.out.println(getISO8601TimestampFromDateStr(dateToString(1667528700000L,null)));
-    }
 
 }

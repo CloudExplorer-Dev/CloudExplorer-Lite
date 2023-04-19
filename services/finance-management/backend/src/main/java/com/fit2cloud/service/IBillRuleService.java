@@ -1,12 +1,11 @@
 package com.fit2cloud.service;
 
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import com.fit2cloud.controller.handler.ResultHolder;
+import com.baomidou.mybatisplus.extension.service.IService;
 import com.fit2cloud.controller.request.AddBillRuleRequest;
 import com.fit2cloud.controller.request.BillRuleRequest;
 import com.fit2cloud.controller.request.UpdateBillRuleRequest;
 import com.fit2cloud.dao.entity.BillRule;
-import com.baomidou.mybatisplus.extension.service.IService;
 
 /**
  * <p>

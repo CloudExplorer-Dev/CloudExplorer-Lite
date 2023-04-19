@@ -1,13 +1,11 @@
 package com.fit2cloud.service.impl;
 
-import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
+import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.fit2cloud.constants.ResourceTypeConstants;
 import com.fit2cloud.dao.entity.ComplianceScanResourceResult;
 import com.fit2cloud.dao.mapper.ComplianceScanResourceResultMapper;
-import com.fit2cloud.es.entity.ResourceInstance;
 import com.fit2cloud.service.IComplianceScanResourceResultService;
-import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.springframework.stereotype.Service;
 
 import java.util.List;

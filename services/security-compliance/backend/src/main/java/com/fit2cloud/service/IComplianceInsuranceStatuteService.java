@@ -1,11 +1,10 @@
 package com.fit2cloud.service;
 
 import com.baomidou.mybatisplus.core.metadata.IPage;
-import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.baomidou.mybatisplus.extension.service.IService;
 import com.fit2cloud.controller.request.compliance_insurance_statute.ComplianceInsuranceStatuteRequest;
 import com.fit2cloud.controller.response.compliance_insurance_statute.ComplianceInsuranceStatuteResponse;
 import com.fit2cloud.dao.entity.ComplianceInsuranceStatute;
-import com.baomidou.mybatisplus.extension.service.IService;
 
 import java.util.List;
 

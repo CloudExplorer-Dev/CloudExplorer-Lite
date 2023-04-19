@@ -11,7 +11,7 @@ import lombok.Data;
 @Data
 public class TencentDetachDiskRequest extends BaseDiskRequest {
 
-    public DetachDisksRequest toDetachDisksRequest(){
+    public DetachDisksRequest toDetachDisksRequest() {
         DetachDisksRequest request = new DetachDisksRequest();
         request.setDiskIds(new String[]{super.getDiskId()});
         request.setInstanceId(super.getInstanceUuid());

@@ -41,7 +41,7 @@ public class BaseRoleCache {
     }
 
     public synchronized static String getCache(String id) {
-        Map<String, String> map= roleCache.get();
+        Map<String, String> map = roleCache.get();
         return MapUtils.isEmpty(map) ? null : map.get(id);
     }
 

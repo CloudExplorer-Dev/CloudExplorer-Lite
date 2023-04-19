@@ -199,7 +199,7 @@ public abstract class AbstractCloudProvider<C extends Credential> implements ICl
      * @return
      */
     @Override
-    public List<F2CPerfMetricMonitorData> getF2CHostPerfMetricMonitorData(String req){
+    public List<F2CPerfMetricMonitorData> getF2CHostPerfMetricMonitorData(String req) {
         return new ArrayList<>();
     }
 
@@ -210,7 +210,7 @@ public abstract class AbstractCloudProvider<C extends Credential> implements ICl
      * @return
      */
     @Override
-    public List<F2CPerfMetricMonitorData> getF2CDiskPerfMetricMonitorData(String req){
+    public List<F2CPerfMetricMonitorData> getF2CDiskPerfMetricMonitorData(String req) {
         return new ArrayList<>();
     }
 
@@ -221,7 +221,7 @@ public abstract class AbstractCloudProvider<C extends Credential> implements ICl
      * @return
      */
     @Override
-    public List<F2CPerfMetricMonitorData> getF2CDatastorePerfMetricMonitorData(String req){
+    public List<F2CPerfMetricMonitorData> getF2CDatastorePerfMetricMonitorData(String req) {
         return new ArrayList<>();
     }
 
@@ -236,7 +236,7 @@ public abstract class AbstractCloudProvider<C extends Credential> implements ICl
     }
 
     @Override
-    public String calculateConfigUpdatePrice(String req){
+    public String calculateConfigUpdatePrice(String req) {
         return null;
     }
 

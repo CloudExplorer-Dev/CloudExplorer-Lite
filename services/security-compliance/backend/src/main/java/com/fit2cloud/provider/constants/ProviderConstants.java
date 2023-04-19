@@ -1,8 +1,6 @@
 package com.fit2cloud.provider.constants;
 
 
-import com.fit2cloud.common.platform.credential.impl.OpenStackCredential;
-import com.fit2cloud.common.platform.credential.impl.VsphereCredential;
 import com.fit2cloud.provider.ICloudProvider;
 import com.fit2cloud.provider.impl.aliyun.AliCloudProvider;
 import com.fit2cloud.provider.impl.huawei.HuaweiCloudProvider;

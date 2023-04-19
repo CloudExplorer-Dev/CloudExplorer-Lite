@@ -13,20 +13,21 @@ public class ValidationGroup {
     public interface SELECT extends Default {
     }
 
-    ;
-   // 插入
-   public interface SAVE extends Default  {
+
+    // 插入
+    public interface SAVE extends Default {
     }
 
-    ;
+
     // 修改
-    public interface UPDATE extends Default  {
+    public interface UPDATE extends Default {
     }
 
-    ;
-   // 删除
-   public  interface DELETE extends Default {
+
+    // 删除
+    public interface DELETE extends Default {
     }
-    ;
+
+
 }
 

@@ -37,7 +37,7 @@ public class SkipPageException extends RuntimeException {
                 throw new SkipPageException(1001, e.getMessage());
             }
         }
-        throw new SkipPageException(1001,e.getMessage());
+        throw new SkipPageException(1001, e.getMessage());
     }
 
     /**

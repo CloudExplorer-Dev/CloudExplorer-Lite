@@ -1,6 +1,5 @@
 package com.fit2cloud.common.query.convert;
 
-import co.elastic.clients.elasticsearch._types.FieldValue;
 import lombok.Builder;
 import lombok.Data;
 

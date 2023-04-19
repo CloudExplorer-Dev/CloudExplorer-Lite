@@ -41,7 +41,7 @@ public class BaseWorkspaceCache {
     }
 
     public synchronized static String getCache(String id) {
-        Map<String, String> map= workspaceCache.get();
+        Map<String, String> map = workspaceCache.get();
         return MapUtils.isEmpty(map) ? null : map.get(id);
     }
 

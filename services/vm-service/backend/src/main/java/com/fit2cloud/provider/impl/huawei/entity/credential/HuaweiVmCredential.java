@@ -136,6 +136,7 @@ public class HuaweiVmCredential extends HuaweiCredential implements Credential {
 
     /**
      * IAM ,与云账号认证不同，云账号使用的ecs的区域
+     *
      * @param region
      * @return
      */
@@ -151,6 +152,7 @@ public class HuaweiVmCredential extends HuaweiCredential implements Credential {
     /**
      * 费用
      * 客户端只认cn-north-1
+     *
      * @return
      */
     public BssClient getBssClient() {

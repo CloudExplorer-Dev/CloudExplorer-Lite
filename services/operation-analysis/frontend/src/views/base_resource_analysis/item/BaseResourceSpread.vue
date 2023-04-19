@@ -16,10 +16,10 @@
         <div class="echarts">
           <div class="echarts-content">
             <v-chart
-              class="chart"
-              :option="option"
-              v-loading="loading"
-              autoresize
+                class="chart"
+                :option="option"
+                v-loading="loading"
+                autoresize
             />
           </div>
         </div>
@@ -48,35 +48,35 @@ const loading = ref<boolean>(false);
 const apiData = ref<any>();
 const setParams = () => {
   props.cloudAccountId
-    ? _.set(
-        params,
-        "accountIds",
-        props.cloudAccountId === "all" ? [] : [props.cloudAccountId]
+      ? _.set(
+          params,
+          "accountIds",
+          props.cloudAccountId === "all" ? [] : [props.cloudAccountId]
       )
-    : "";
+      : "";
   props.clusterId
-    ? _.set(
-        params,
-        "clusterIds",
-        props.clusterId === "all" ? [] : [props.clusterId]
+      ? _.set(
+          params,
+          "clusterIds",
+          props.clusterId === "all" ? [] : [props.clusterId]
       )
-    : "";
+      : "";
   props.datastoreId
-    ? _.set(
-        params,
-        "datastoreIds",
-        props.datastoreId === "all" ? [] : [props.datastoreId]
+      ? _.set(
+          params,
+          "datastoreIds",
+          props.datastoreId === "all" ? [] : [props.datastoreId]
       )
-    : "";
+      : "";
   props.hostId
-    ? _.set(params, "hostIds", props.hostId === "all" ? [] : [props.hostId])
-    : "";
+      ? _.set(params, "hostIds", props.hostId === "all" ? [] : [props.hostId])
+      : "";
 };
 //获取数宿主机按云账号分布
 const getSpreadInfo = () => {
   setParams();
   ResourceSpreadViewApi.getSpreadInfo(params, loading).then(
-    (res) => (apiData.value = res.data)
+      (res) => (apiData.value = res.data)
   );
 };
 interface EchartsValue {
@@ -93,13 +93,25 @@ const data = computed<Array<EchartsValue>>(() => {
 });
 const option = computed<ECBasicOption>(() => {
   const selected = data.value
-    .map((b) => {
-      return { [b.name]: true };
-    })
-    .reduce((pre, next) => {
-      return { ...pre, ...next };
-    }, {});
-
+      .map((b) => {
+        return { [b.name]: true };
+      })
+      .reduce((pre, next) => {
+        return { ...pre, ...next };
+      }, {});
+  if (data.value.length === 0) {
+    return {
+      title: {
+        text: "暂无数据",
+        x: "center",
+        y: "center",
+        textStyle: {
+          fontSize: 12,
+          fontWeight: "normal",
+        },
+      },
+    };
+  }
   return {
     tooltip: {
       trigger: "item",
@@ -154,9 +166,9 @@ const option = computed<ECBasicOption>(() => {
         const dataItem = data.value.find((b) => b.name === name);
 
         return `{oneone|${
-          (dataItem?.name as string).length < 8
-            ? dataItem?.name
-            : dataItem?.name.substring(0, 7) + "..."
+            (dataItem?.name as string).length < 8
+                ? dataItem?.name
+                : dataItem?.name.substring(0, 7) + "..."
         }}  {twotwo|${dataItem?.value}}`;
       },
     },
@@ -182,11 +194,11 @@ const option = computed<ECBasicOption>(() => {
           color: "rgba(100, 106, 115, 1)",
           formatter: () => {
             const sum = data.value
-              .filter((d) => (selected as SimpleMap<boolean>)[d.name])
-              .map((a) => a.value)
-              .reduce((p, n) => p + n, 0);
+                .filter((d) => (selected as SimpleMap<boolean>)[d.name])
+                .map((a) => a.value)
+                .reduce((p, n) => p + n, 0);
             return `{title|总数（${
-              spreadType.value === "host" ? "台" : "块"
+                spreadType.value === "host" ? "台" : "块"
             }）}\r\n{value|${sum}}`;
           },
           rich: {
@@ -220,47 +232,47 @@ const option = computed<ECBasicOption>(() => {
         },
         data: data.value,
         color:
-          apiData.value?.[spreadType.value].length === 0
-            ? ["rgba(187, 191, 196, 1)", "rgba(187, 191, 196, 1)"]
-            : interpolationColor(
-                [
-                  "rgb(79, 131, 253, 1)",
-                  "rgb(150, 189, 255, 1)",
-                  "rgb(250, 211, 85, 1)",
-                  "rgb(255, 230, 104, 1)",
-                  "rgb(22, 225, 198, 1)",
-                  "rgb(76, 253, 224, 1)",
-                  "rgb(81, 206, 251, 1)",
-                  "rgb(118, 240, 255, 1)",
-                  "rgb(148, 90, 246, 1)",
-                  "rgb(220, 155, 255, 1)",
-                  "rgb(255, 165, 61, 1)",
-                  "rgb(255, 199, 94, 1)",
-                  "rgb(241, 75, 169, 1)",
-                  "rgb(255, 137, 227, 1)",
-                  "rgb(247, 105, 101, 1)",
-                  "rgb(255, 158, 149, 1)",
-                  "rgb(219, 102, 219, 1)",
-                  "rgb(254, 157, 254, 1)",
-                  "rgb(195, 221, 65, 1)",
-                  "rgb(217, 244, 87, 1)",
-                  "rgb(97, 106, 229, 1)",
-                  "rgb(172, 173, 255, 1)",
-                  "rgb(98, 210, 85, 1)",
-                  "rgb(134, 245, 120, 1)",
-                ],
-                data.value.length
-              ),
+            apiData.value?.[spreadType.value].length === 0
+                ? ["rgba(187, 191, 196, 1)", "rgba(187, 191, 196, 1)"]
+                : interpolationColor(
+                    [
+                      "rgb(79, 131, 253, 1)",
+                      "rgb(150, 189, 255, 1)",
+                      "rgb(250, 211, 85, 1)",
+                      "rgb(255, 230, 104, 1)",
+                      "rgb(22, 225, 198, 1)",
+                      "rgb(76, 253, 224, 1)",
+                      "rgb(81, 206, 251, 1)",
+                      "rgb(118, 240, 255, 1)",
+                      "rgb(148, 90, 246, 1)",
+                      "rgb(220, 155, 255, 1)",
+                      "rgb(255, 165, 61, 1)",
+                      "rgb(255, 199, 94, 1)",
+                      "rgb(241, 75, 169, 1)",
+                      "rgb(255, 137, 227, 1)",
+                      "rgb(247, 105, 101, 1)",
+                      "rgb(255, 158, 149, 1)",
+                      "rgb(219, 102, 219, 1)",
+                      "rgb(254, 157, 254, 1)",
+                      "rgb(195, 221, 65, 1)",
+                      "rgb(217, 244, 87, 1)",
+                      "rgb(97, 106, 229, 1)",
+                      "rgb(172, 173, 255, 1)",
+                      "rgb(98, 210, 85, 1)",
+                      "rgb(134, 245, 120, 1)",
+                    ],
+                    data.value.length
+                ),
       },
     ],
   };
 });
 watch(
-  props,
-  () => {
-    getSpreadInfo();
-  },
-  { immediate: true }
+    props,
+    () => {
+      getSpreadInfo();
+    },
+    { immediate: true }
 );
 </script>
 <style scoped lang="scss">

@@ -8,7 +8,7 @@ import lombok.Data;
  */
 @Data
 public class VsphereResizeDiskRequest extends VsphereVmBaseRequest {
-   private String diskId;
-   private String instanceUuid;
-   private Integer newDiskSize;
+    private String diskId;
+    private String instanceUuid;
+    private Integer newDiskSize;
 }

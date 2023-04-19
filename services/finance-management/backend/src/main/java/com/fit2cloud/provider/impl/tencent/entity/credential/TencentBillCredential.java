@@ -1,7 +1,6 @@
 package com.fit2cloud.provider.impl.tencent.entity.credential;
 
 import com.fit2cloud.common.platform.credential.Credential;
-import com.fit2cloud.common.platform.credential.impl.AliCredential;
 import com.fit2cloud.common.platform.credential.impl.TencentCredential;
 import com.qcloud.cos.COSClient;
 import com.qcloud.cos.ClientConfig;

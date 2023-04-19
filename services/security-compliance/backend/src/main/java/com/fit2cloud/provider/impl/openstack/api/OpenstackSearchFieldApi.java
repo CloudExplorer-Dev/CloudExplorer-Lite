@@ -62,10 +62,10 @@ public class OpenstackSearchFieldApi {
 
 
         InstanceSearchField port_range_max = new InstanceSearchField("结束端口", "port_range_max", InstanceFieldType.NestedArrayNumber)
-                .resetFilterArrayField(PlatformConstants.fit2cloud_openstack_platform, ResourceTypeConstants.SECURITY_GROUP, "group_rule",false);
+                .resetFilterArrayField(PlatformConstants.fit2cloud_openstack_platform, ResourceTypeConstants.SECURITY_GROUP, "group_rule", false);
 
         InstanceSearchField port_range_min = new InstanceSearchField("开始端口", "port_range_min", InstanceFieldType.NestedArrayNumber)
-                .resetFilterArrayField(PlatformConstants.fit2cloud_openstack_platform, ResourceTypeConstants.SECURITY_GROUP, "group_rule",false);
+                .resetFilterArrayField(PlatformConstants.fit2cloud_openstack_platform, ResourceTypeConstants.SECURITY_GROUP, "group_rule", false);
 
         InstanceSearchField remote_ip_prefix = new InstanceSearchField("CIDR", "remote_ip_prefix", InstanceFieldType.NestedArrayString)
                 .resetFilterArrayField(PlatformConstants.fit2cloud_openstack_platform, ResourceTypeConstants.SECURITY_GROUP, "group_rule");

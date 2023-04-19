@@ -1,5 +1,4 @@
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fit2cloud.common.utils.MD5Util;
 import io.jsonwebtoken.CompressionCodecs;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
@@ -97,7 +96,7 @@ public class Test {
     }
 
     @org.junit.jupiter.api.Test
-    public void test3(){
+    public void test3() {
 
         System.out.println(Base64.encodeBase64String(Keys.secretKeyFor(SignatureAlgorithm.HS512).getEncoded()));
 

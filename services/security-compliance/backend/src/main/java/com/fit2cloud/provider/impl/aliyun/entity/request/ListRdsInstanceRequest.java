@@ -1,6 +1,6 @@
 package com.fit2cloud.provider.impl.aliyun.entity.request;
 
-import com.aliyun.rds20140815.models.*;
+import com.aliyun.rds20140815.models.DescribeDBInstancesRequest;
 import com.fit2cloud.provider.impl.aliyun.entity.credential.AliSecurityComplianceCredential;
 import lombok.Data;
 

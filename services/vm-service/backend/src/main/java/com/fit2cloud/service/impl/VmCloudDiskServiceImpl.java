@@ -227,7 +227,7 @@ public class VmCloudDiskServiceImpl extends ServiceImpl<BaseVmCloudDiskMapper, V
                 queryWrapper.lambda().eq(VmCloudServer::getAccountId, request.getAccountId())
                         .eq(VmCloudServer::getInstanceUuid, request.getInstanceUuid());
                 VmCloudServer vmCloudServer = vmCloudServerService.getOne(queryWrapper);
-                if(Objects.nonNull(vmCloudServer)){
+                if (Objects.nonNull(vmCloudServer)) {
                     params.put("diskChargeType", vmCloudServer.getInstanceChargeType());
                 }
             }

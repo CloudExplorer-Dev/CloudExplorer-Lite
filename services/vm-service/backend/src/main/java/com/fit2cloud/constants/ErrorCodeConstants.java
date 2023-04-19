@@ -1,9 +1,6 @@
 package com.fit2cloud.constants;
 
 import com.fit2cloud.common.utils.LocaleUtil;
-import org.springframework.lang.Nullable;
-
-import java.util.List;
 
 /**
  * @Author:张少虎
@@ -49,7 +46,7 @@ public enum ErrorCodeConstants {
     VM_NOT_EXIST(200100101, "云主机不存在"),
     VM_OPERATE_FAIL(200100102, "云主机操作失败"),
     VM_BATCH_OPERATE_FAIL(200100103, "云主机批量操作失败"),
-    SELECT_AT_LEAST_ONE_VM(200100104,"至少选择一个云主机"),
+    SELECT_AT_LEAST_ONE_VM(200100104, "至少选择一个云主机"),
     NOT_SUPPORTED_TEMPORARILY(200100105, "暂不支持该操作"),
     VM_POWER_ON_FAIL(200100106, "云主机开机失败"),
     VM_POWER_OFF_FAIL(200100107, "云主机关机失败"),
@@ -59,7 +56,6 @@ public enum ErrorCodeConstants {
     DISK_DELETE_FAIL(200100209, "磁盘删除失败"),
 
     NOT_IMPLEMENTED(10001, "未实现");
-
 
 
     /**

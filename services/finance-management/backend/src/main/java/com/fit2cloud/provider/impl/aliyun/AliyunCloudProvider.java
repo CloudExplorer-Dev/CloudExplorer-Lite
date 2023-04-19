@@ -1,6 +1,5 @@
 package com.fit2cloud.provider.impl.aliyun;
 
-import com.aliyun.bssopenapi20171214.models.DescribeInstanceBillResponseBody;
 import com.fit2cloud.common.utils.JsonUtil;
 import com.fit2cloud.es.entity.CloudBill;
 import com.fit2cloud.provider.AbstractCloudProvider;

@@ -5,7 +5,6 @@ import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.core.toolkit.Constants;
 import com.fit2cloud.dao.entity.ComplianceInsuranceStatute;
-import com.fit2cloud.dao.entity.ComplianceRuleCloudAccount;
 import org.apache.ibatis.annotations.Param;
 
 import java.util.List;

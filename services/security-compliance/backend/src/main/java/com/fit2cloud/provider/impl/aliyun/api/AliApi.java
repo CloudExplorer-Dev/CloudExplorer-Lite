@@ -13,16 +13,15 @@ import com.aliyun.ram20150501.models.GetLoginProfileRequest;
 import com.aliyun.ram20150501.models.GetLoginProfileResponse;
 import com.aliyun.ram20150501.models.ListUsersResponseBody;
 import com.aliyun.rds20140815.models.DescribeDBInstanceNetInfoResponseBody;
-import com.aliyun.sdk.gateway.oss.exception.OSSServerException;
 import com.aliyun.sdk.service.oss20190517.AsyncClient;
 import com.aliyun.sdk.service.oss20190517.models.*;
 import com.aliyun.slb20140515.models.DescribeLoadBalancersResponseBody;
 import com.aliyun.teautil.models.RuntimeOptions;
-import com.aliyun.vpc20160428.models.*;
 import com.aliyun.vpc20160428.models.DescribeEipAddressesResponseBody;
 import com.aliyun.vpc20160428.models.DescribeVSwitchesRequest;
 import com.aliyun.vpc20160428.models.DescribeVSwitchesResponseBody;
 import com.aliyun.vpc20160428.models.DescribeVpcsResponseBody;
+import com.aliyun.vpc20160428.models.*;
 import com.fit2cloud.common.exception.Fit2cloudException;
 import com.fit2cloud.common.provider.exception.ReTryException;
 import com.fit2cloud.common.provider.exception.SkipPageException;
@@ -33,12 +32,10 @@ import com.fit2cloud.provider.impl.aliyun.entity.request.*;
 import com.fit2cloud.provider.util.ResourceUtil;
 import jodd.util.StringUtil;
 import org.apache.commons.collections4.CollectionUtils;
-import org.openstack4j.model.heat.Resource;
 import org.springframework.beans.BeanUtils;
 
 import javax.validation.constraints.NotNull;
 import java.util.*;
-import java.util.concurrent.CompletableFuture;
 
 /**
  * {@code @Author:张少虎}

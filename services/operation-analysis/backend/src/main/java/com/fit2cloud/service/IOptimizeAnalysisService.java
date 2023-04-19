@@ -12,6 +12,7 @@ public interface IOptimizeAnalysisService {
 
     /**
      * 云主机优化建议
+     *
      * @param request 分页查询云主机参数
      * @return IPage<AnalysisServerDTO>
      */

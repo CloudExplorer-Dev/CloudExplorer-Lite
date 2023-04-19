@@ -13,7 +13,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @Data
 @NoArgsConstructor
-public class Fit2cloudException  extends RuntimeException{
+public class Fit2cloudException extends RuntimeException {
     /**
      * 异常状态码
      */

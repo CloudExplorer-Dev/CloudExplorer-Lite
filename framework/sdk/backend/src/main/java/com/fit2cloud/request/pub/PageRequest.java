@@ -22,13 +22,13 @@ public class PageRequest implements Serializable {
     @Serial
     private static final long serialVersionUID = -2264727710892316792L;
 
-    @ApiModelProperty(value = "当前页",required = true)
-    @Min(value = 0,message = "{i18n.page.current_page.min}")
+    @ApiModelProperty(value = "当前页", required = true)
+    @Min(value = 0, message = "{i18n.page.current_page.min}")
     @NotNull(message = "{i18n.page.current_page.is.not.empty}")
     private Integer currentPage;
 
-    @ApiModelProperty(value = "每页大小",required = true)
-    @Min(value =0,message = "{i18n.page.page.size.min}")
+    @ApiModelProperty(value = "每页大小", required = true)
+    @Min(value = 0, message = "{i18n.page.page.size.min}")
     @NotNull(message = "{i18n.page.page.size.is.not.empty}")
     private Integer pageSize;
 }

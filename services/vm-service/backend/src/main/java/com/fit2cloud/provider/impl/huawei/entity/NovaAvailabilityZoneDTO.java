@@ -14,6 +14,7 @@ public class NovaAvailabilityZoneDTO extends NovaAvailabilityZone {
 
     public NovaAvailabilityZoneDTO() {
     }
+
     public NovaAvailabilityZoneDTO(NovaAvailabilityZone zone) {
         setHosts(zone.getHosts());
         setZoneName(zone.getZoneName());

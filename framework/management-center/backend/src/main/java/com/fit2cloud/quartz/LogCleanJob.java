@@ -22,20 +22,21 @@ public class LogCleanJob {
     private IBaseSystemParameterService baseSystemParameterService;
     @Resource
     private ILogService logService;
+
     @Scheduled(cron = "0 30 1 * * ?")
     public void cleanApiLog() {
         String operatedLogValue = baseSystemParameterService.getValue(ParamConstants.Log.KEEP_API_MONTHS.getValue());
         String loginLogValue = baseSystemParameterService.getValue(ParamConstants.Log.KEEP_LOGIN_MONTHS.getValue());
         String systemLogValue = baseSystemParameterService.getValue(ParamConstants.Log.KEEP_SYSTEM_MONTHS.getValue());
-        cleanOperatedLog(operatedLogValue,"操作","ce-file-api-logs",OperatedLog.class);
-        cleanOperatedLog(loginLogValue,"登录","ce-file-api-logs",OperatedLog.class);
-        cleanOperatedLog(systemLogValue,"系统","ce-file-system-logs",SystemLog.class);
+        cleanOperatedLog(operatedLogValue, "操作", "ce-file-api-logs", OperatedLog.class);
+        cleanOperatedLog(loginLogValue, "登录", "ce-file-api-logs", OperatedLog.class);
+        cleanOperatedLog(systemLogValue, "系统", "ce-file-system-logs", SystemLog.class);
     }
 
-    private void cleanOperatedLog(String m,String logType,String index,Class<?> clazz){
+    private void cleanOperatedLog(String m, String logType, String index, Class<?> clazz) {
         int months = 3;
         if (StringUtils.isBlank(m)) {
-            LogUtil.info("未设置{}日志保存月数，使用默认值: {}", logType,months);
+            LogUtil.info("未设置{}日志保存月数，使用默认值: {}", logType, months);
         } else {
             months = Integer.valueOf(m);
         }
@@ -44,14 +45,13 @@ public class LogCleanJob {
             months = 3;
         }
         if (LogUtil.getLogger().isDebugEnabled()) {
-            LogUtil.getLogger().debug("开始清理{}个月前的{}日志.", months,logType);
+            LogUtil.getLogger().debug("开始清理{}个月前的{}日志.", months, logType);
         }
-        logService.deleteEsData(index,months, clazz);
+        logService.deleteEsData(index, months, clazz);
         if (LogUtil.getLogger().isDebugEnabled()) {
-            LogUtil.getLogger().debug("{}日志清理完成.",logType);
+            LogUtil.getLogger().debug("{}日志清理完成.", logType);
         }
     }
-
 
 
 }

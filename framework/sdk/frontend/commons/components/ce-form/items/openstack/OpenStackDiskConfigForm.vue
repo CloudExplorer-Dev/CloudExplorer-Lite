@@ -258,7 +258,7 @@ function setDisks() {
 }
 
 /**
- * 监听模版变化，获取值
+ * 监听模板变化，获取值
  */
 if (!props.confirm) {
   watch(

@@ -1,6 +1,5 @@
 package com.fit2cloud.controller.request.compliance_scan;
 
-import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 

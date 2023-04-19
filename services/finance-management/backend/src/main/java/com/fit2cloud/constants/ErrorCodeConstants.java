@@ -1,9 +1,6 @@
 package com.fit2cloud.constants;
 
 import com.fit2cloud.common.utils.LocaleUtil;
-import org.springframework.lang.Nullable;
-
-import java.util.List;
 
 /**
  * {@code  @Author:张少虎}

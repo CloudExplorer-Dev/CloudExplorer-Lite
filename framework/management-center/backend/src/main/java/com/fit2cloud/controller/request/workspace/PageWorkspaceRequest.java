@@ -6,7 +6,6 @@ import com.fit2cloud.request.pub.PageRequest;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
-import javax.validation.constraints.Size;
 import java.util.List;
 
 /**
@@ -25,6 +24,6 @@ public class PageWorkspaceRequest extends PageRequest implements PageOrderReques
     @ApiModelProperty("组织名称")
     private String organizationName;
 
-    @ApiModelProperty(value = "排序",example = " {\"column\":\"createTime\",\"asc\":false}")
+    @ApiModelProperty(value = "排序", example = " {\"column\":\"createTime\",\"asc\":false}")
     private OrderRequest order;
 }

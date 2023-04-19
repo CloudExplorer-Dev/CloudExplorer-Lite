@@ -1,7 +1,6 @@
 package com.fit2cloud.provider.impl.openstack.entity.credential;
 
 import com.fit2cloud.common.platform.credential.impl.OpenStackCredential;
-import org.openstack4j.api.OSClient;
 
 /**
  * {@code @Author:张少虎}

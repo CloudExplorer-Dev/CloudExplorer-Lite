@@ -15,6 +15,7 @@ import java.lang.reflect.Method;
 
 /**
  * SpEL解析工具
+ *
  * @author jianneng
  * @date 2022/9/15 10:46
  **/
@@ -34,7 +35,7 @@ public class SpelUtil {
                 return expression.getValue(context, String.class);
             }
             for (int i = 0; i < param.length; i++) {
-                context.setVariable(parameterNames[i],JsonUtil.parseObject(JsonUtil.toJSONString(param[i]),param[i].getClass()));
+                context.setVariable(parameterNames[i], JsonUtil.parseObject(JsonUtil.toJSONString(param[i]), param[i].getClass()));
             }
             return expression.getValue(context).toString();
         } catch (Exception e) {
@@ -42,15 +43,15 @@ public class SpelUtil {
         }
     }
 
-    public static String getElValueByKey(ProceedingJoinPoint pjd,String spel){
+    public static String getElValueByKey(ProceedingJoinPoint pjd, String spel) {
         // 通过SpEL获取接口参数对象属性值
         StandardEvaluationContext standardEvaluationContext = new StandardEvaluationContext(pjd.getArgs());
         standardEvaluationContext = setContextVariables(standardEvaluationContext, pjd);
-        return getElValue(spel,standardEvaluationContext);
+        return getElValue(spel, standardEvaluationContext);
     }
 
     public static StandardEvaluationContext setContextVariables(StandardEvaluationContext standardEvaluationContext,
-                                                          ProceedingJoinPoint joinPoint) {
+                                                                ProceedingJoinPoint joinPoint) {
         Object[] args = joinPoint.getArgs();
         MethodSignature methodSignature = (MethodSignature) joinPoint.getSignature();
         Method targetMethod = methodSignature.getMethod();
@@ -62,9 +63,9 @@ public class SpelUtil {
             return standardEvaluationContext;
         }
         for (int i = 0; i < args.length; i++) {
-            try{
+            try {
                 standardEvaluationContext.setVariable(parametersName[i], args[i]);
-            }catch (Exception e){
+            } catch (Exception e) {
                 e.printStackTrace();
             }
         }

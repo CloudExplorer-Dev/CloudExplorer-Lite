@@ -6,8 +6,6 @@ import org.springframework.data.elasticsearch.annotations.Document;
 import org.springframework.data.elasticsearch.annotations.Field;
 import org.springframework.data.elasticsearch.annotations.FieldType;
 
-import java.util.Date;
-
 /**
  * @Author:张少虎
  * @Date: 2022/9/28  9:00 AM

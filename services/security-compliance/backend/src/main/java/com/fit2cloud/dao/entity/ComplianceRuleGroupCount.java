@@ -1,7 +1,5 @@
 package com.fit2cloud.dao.entity;
 
-import com.fit2cloud.dao.constants.RiskLevel;
-import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
 

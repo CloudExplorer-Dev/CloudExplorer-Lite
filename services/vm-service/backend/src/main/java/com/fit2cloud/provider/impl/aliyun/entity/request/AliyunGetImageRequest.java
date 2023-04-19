@@ -31,7 +31,7 @@ public class AliyunGetImageRequest extends AliyunVmCreateRequest {
         }
 
         if (this.getOs() != null) {
-            describeImagesRequest.setOSType(AliyunOSType.WindowsServer.getDisplayValue().equalsIgnoreCase(this.getOs())?"windows":"linux");
+            describeImagesRequest.setOSType(AliyunOSType.WindowsServer.getDisplayValue().equalsIgnoreCase(this.getOs()) ? "windows" : "linux");
         }
 
         return describeImagesRequest;

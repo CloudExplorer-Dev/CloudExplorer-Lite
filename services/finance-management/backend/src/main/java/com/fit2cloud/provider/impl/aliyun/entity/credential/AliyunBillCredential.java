@@ -2,7 +2,6 @@ package com.fit2cloud.provider.impl.aliyun.entity.credential;
 
 import com.aliyun.auth.credentials.provider.StaticCredentialProvider;
 import com.aliyun.bssopenapi20171214.Client;
-
 import com.aliyun.sdk.service.oss20190517.AsyncClient;
 import com.aliyun.teaopenapi.models.Config;
 import com.fit2cloud.common.platform.credential.Credential;

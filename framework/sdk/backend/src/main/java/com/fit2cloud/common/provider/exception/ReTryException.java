@@ -4,7 +4,6 @@ import com.aliyun.tea.TeaException;
 import com.aliyun.tea.TeaUnretryableException;
 import com.huaweicloud.sdk.core.exception.ConnectionException;
 import com.huaweicloud.sdk.core.exception.ServiceResponseException;
-import com.tencentcloudapi.common.exception.TencentCloudSDKException;
 import jodd.util.StringUtil;
 
 /**

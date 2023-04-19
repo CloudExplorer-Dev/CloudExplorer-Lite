@@ -1,6 +1,5 @@
 package com.fit2cloud.controller.response;
 
-import com.fit2cloud.dao.jentity.Group;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 import org.apache.commons.collections4.keyvalue.DefaultKeyValue;

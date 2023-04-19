@@ -9,7 +9,9 @@ import com.qcloud.cos.auth.COSStaticCredentialsProvider;
 import com.qcloud.cos.exception.CosClientException;
 import com.qcloud.cos.exception.CosServiceException;
 import com.qcloud.cos.http.*;
-import com.qcloud.cos.internal.*;
+import com.qcloud.cos.internal.CIWorkflowServiceRequest;
+import com.qcloud.cos.internal.CosServiceRequest;
+import com.qcloud.cos.internal.CosServiceResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

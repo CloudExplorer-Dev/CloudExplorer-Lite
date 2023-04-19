@@ -7,7 +7,6 @@ import com.huaweicloud.sdk.bss.v2.region.BssRegion;
 import com.huaweicloud.sdk.core.auth.GlobalCredentials;
 import com.huaweicloud.sdk.core.auth.ICredential;
 import com.obs.services.ObsClient;
-import com.obs.services.ObsConfiguration;
 
 /**
  * {@code @Author:张少虎}

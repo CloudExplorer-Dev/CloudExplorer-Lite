@@ -19,8 +19,8 @@ public class SensitiveFieldUtils {
     private static List<String> sensitiveFields = new ArrayList<String>();
 
     static {
-        synchronized(SensitiveFieldUtils.class){
-            if(CollectionUtils.isEmpty(sensitiveFields)){
+        synchronized (SensitiveFieldUtils.class) {
+            if (CollectionUtils.isEmpty(sensitiveFields)) {
                 SensitiveFieldConstants[] fieldConstants = SensitiveFieldConstants.values();
                 sensitiveFields.addAll(Arrays.stream(fieldConstants).map(SensitiveFieldConstants::name).toList());
             }
@@ -31,20 +31,20 @@ public class SensitiveFieldUtils {
     /**
      * 敏感字段值特殊处理
      */
-    public static String desensitization(String jsonString){
-        try{
+    public static String desensitization(String jsonString) {
+        try {
             ObjectMapper mapper = new ObjectMapper();
-            Object node = mapper.readValue(jsonString,Object.class);
-            if(node instanceof ArrayList<?>){
+            Object node = mapper.readValue(jsonString, Object.class);
+            if (node instanceof ArrayList<?>) {
                 ArrayNode resultArrayNode = JsonUtil.parseArray("[]");
                 ArrayNode arrayNode = mapper.readValue(jsonString, ArrayNode.class);
-                arrayNode.forEach(v->{
+                arrayNode.forEach(v -> {
                     ObjectNode objectNode = (ObjectNode) v;
-                    for(String sf : sensitiveFields){
-                        if(v.has(sf)) {
+                    for (String sf : sensitiveFields) {
+                        if (v.has(sf)) {
                             String value = v.get(sf).textValue();
-                            if(value!=null){
-                                objectNode.put(sf,"********");
+                            if (value != null) {
+                                objectNode.put(sf, "********");
                             }
                         }
                     }
@@ -52,19 +52,19 @@ public class SensitiveFieldUtils {
                 });
                 return JsonUtil.toJSONString(resultArrayNode);
             }
-            if(node instanceof LinkedHashMap<?,?>){
+            if (node instanceof LinkedHashMap<?, ?>) {
                 ObjectNode nodeObject = mapper.readValue(jsonString, ObjectNode.class);
-                    for(String sf : sensitiveFields){
-                        if(nodeObject.has(sf)) {
-                            String value = nodeObject.get(sf).textValue();
-                            if(value!=null){
-                                nodeObject.put(sf,"********");
-                            }
+                for (String sf : sensitiveFields) {
+                    if (nodeObject.has(sf)) {
+                        String value = nodeObject.get(sf).textValue();
+                        if (value != null) {
+                            nodeObject.put(sf, "********");
                         }
                     }
-                    return JsonUtil.toJSONString(nodeObject);
+                }
+                return JsonUtil.toJSONString(nodeObject);
             }
-        }catch (Exception e){
+        } catch (Exception e) {
             e.printStackTrace();
         }
         return jsonString;

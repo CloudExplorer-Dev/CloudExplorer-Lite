@@ -339,7 +339,7 @@ public class VsphereVmClient extends VsphereClient {
 
                 return reconfigVm(vm, cpu, memory, diskSize, diskType, true, true, "Created-by-FIT2CLOUD-from-template:" + templateName, null, null, null);
             } else if (template == null && !templateName.contains(VsphereTemplate.SEPARATOR)) {
-                throw new RuntimeException("模版不存在");
+                throw new RuntimeException("模板不存在");
             }
 
             VirtualMachineConfigInfo templateConfig = template.getConfig();
@@ -519,8 +519,8 @@ public class VsphereVmClient extends VsphereClient {
 
 
             // 网络设置
-            //当在存储群集中创建虚拟机时，网络选择为模版的网络时需注意，当网络不合法时，创建虚拟机将会失败，错误提示形如：无法访问虚拟机配置，无法访问文件[datastore1 (35)]
-            //当时出现该错误提示时使用的模版的网络为vCenter的管理网络，不知道这个网络和datastore1 (35)有啥关系
+            //当在存储群集中创建虚拟机时，网络选择为模板的网络时需注意，当网络不合法时，创建虚拟机将会失败，错误提示形如：无法访问虚拟机配置，无法访问文件[datastore1 (35)]
+            //当时出现该错误提示时使用的模板的网络为vCenter的管理网络，不知道这个网络和datastore1 (35)有啥关系
             VirtualDevice[] virtualDevices = templateConfig.getHardware().getDevice();
             List<VirtualEthernetCard> virtualEthernetCards = new ArrayList<>();
             for (VirtualDevice virtualDevice : virtualDevices) {
@@ -1025,8 +1025,8 @@ public class VsphereVmClient extends VsphereClient {
 
     /**
      * 网络设置
-     * //当在存储群集中创建虚拟机时，网络选择为模版的网络时需注意，当网络不合法时，创建虚拟机将会失败，错误提示形如：无法访问虚拟机配置，无法访问文件[datastore1 (35)]
-     * //当时出现该错误提示时使用的模版的网络为vCenter的管理网络，不知道这个网络和datastore1 (35)有啥关系
+     * //当在存储群集中创建虚拟机时，网络选择为模板的网络时需注意，当网络不合法时，创建虚拟机将会失败，错误提示形如：无法访问虚拟机配置，无法访问文件[datastore1 (35)]
+     * //当时出现该错误提示时使用的模板的网络为vCenter的管理网络，不知道这个网络和datastore1 (35)有啥关系
      *
      * @param machineSpecs
      * @param template
@@ -1282,7 +1282,7 @@ public class VsphereVmClient extends VsphereClient {
     }
 
     /**
-     * @param templateVirtualEthernetCards 镜像模版网卡
+     * @param templateVirtualEthernetCards 镜像模板网卡
      * @param adapters                     网卡
      * @param computeType                  计算资源类型
      * @param hostSystem                   宿主机
@@ -1333,7 +1333,7 @@ public class VsphereVmClient extends VsphereClient {
             return nicSpec;
         }).filter(Objects::nonNull).toList();
 
-        // 删除模版的网卡
+        // 删除模板的网卡
         List<VirtualDeviceConfigSpec> collect = templateVirtualEthernetCards.stream().map(templateVirtualEthernetCard -> {
             VirtualDeviceConfigSpec nicSpec = new VirtualDeviceConfigSpec();
             nicSpec.setDevice(templateVirtualEthernetCard);

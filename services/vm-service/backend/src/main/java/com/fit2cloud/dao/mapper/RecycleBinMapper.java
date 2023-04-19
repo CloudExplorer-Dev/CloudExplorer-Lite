@@ -21,6 +21,6 @@ public interface RecycleBinMapper extends BaseMapper<RecycleBinDTO> {
      * @param page
      * @return
      */
-    IPage<RecycleBinDTO> pageRecycleBin(Page page,@Param("ew") Wrapper queryWrapper);
+    IPage<RecycleBinDTO> pageRecycleBin(Page page, @Param("ew") Wrapper queryWrapper);
 
 }

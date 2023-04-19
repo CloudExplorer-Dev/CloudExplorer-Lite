@@ -12,11 +12,11 @@ import java.util.List;
 
 /**
  * <p>
- *  服务类
+ * 服务类
  * </p>
  *
  * @author fit2cloud
- * @since 
+ * @since
  */
 public interface IWorkspaceService extends IService<Workspace> {
 

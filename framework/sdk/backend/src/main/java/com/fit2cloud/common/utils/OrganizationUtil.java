@@ -2,7 +2,6 @@ package com.fit2cloud.common.utils;
 
 import com.fit2cloud.base.entity.Organization;
 import com.fit2cloud.response.OrganizationTree;
-import io.reactivex.rxjava3.functions.Consumer;
 import io.reactivex.rxjava3.functions.Function;
 import lombok.SneakyThrows;
 import org.apache.commons.collections4.CollectionUtils;

@@ -8,7 +8,7 @@ import java.util.List;
 
 public class BaseChildKey implements ChildKey {
     @Override
-    public List<DefaultKeyValue<String, String>> childKeys( ) {
+    public List<DefaultKeyValue<String, String>> childKeys() {
         return new ArrayList<>();
     }
 }

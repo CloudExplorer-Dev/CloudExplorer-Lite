@@ -168,17 +168,6 @@ public class CronUtils {
                 new Integer[]{calendar.get(Calendar.YEAR)});
     }
 
-    public static void main(String[] args) {
-        String cronText = create(new Integer[]{22}, new Integer[]{20}, new Integer[]{1}, new Integer[]{3}, new Integer[]{4}, new Integer[]{}, new Integer[]{});
-        String nextExecDateString = getNextExecDateString(cronText);
-        System.out.println(cronText + " 下一次执行时间:" + nextExecDateString);
-        Calendar calendar = Calendar.getInstance();
-        calendar.setTime(new Date());
-        calendar.add(Calendar.MONTH, 1);
-        String cronText1 = create(calendar.getTime());
-        System.out.println(cronText1 + " 下一次执行时间:" + getNextExecDateString(cronText1));
-    }
-
     /**
      * 获取默认值
      *

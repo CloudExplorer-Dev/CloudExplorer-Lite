@@ -51,11 +51,13 @@ public @interface Form {
 
     /**
      * 正则验证
+     *
      * @return
      */
     String regexp() default "";
 
     String regexpDescription() default "";
+
     /**
      * 默认值
      *
@@ -86,6 +88,7 @@ public @interface Form {
 
     /**
      * 针对格式化情况，需要有个默认的展示
+     *
      * @return
      */
     String baseTextField() default "";
@@ -137,6 +140,7 @@ public @interface Form {
 
     /**
      * 选中 relationShows 中某个属性的某个固定值时，显示当前节点
+     *
      * @return
      */
     String[] relationShowValues() default {};
@@ -150,6 +154,7 @@ public @interface Form {
 
     /**
      * 页脚位置，0左1中2右
+     *
      * @return
      */
     int footerLocation() default 0;

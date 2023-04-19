@@ -1,6 +1,5 @@
 package com.fit2cloud.provider.impl.aliyun.entity.request;
 
-import com.aliyun.ram20150501.models.GetLoginProfileRequest;
 import com.fit2cloud.provider.impl.aliyun.entity.credential.AliSecurityComplianceCredential;
 import lombok.Getter;
 import lombok.Setter;

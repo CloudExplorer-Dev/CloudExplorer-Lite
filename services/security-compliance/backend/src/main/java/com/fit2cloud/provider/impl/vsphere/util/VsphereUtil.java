@@ -338,8 +338,6 @@ public class VsphereUtil {
     }
 
 
-
-
     /**
      * 获取云主机备注信息
      *

@@ -16,12 +16,12 @@ import java.util.List;
 @Data
 public class UserInfoResponse {
 
-    @ApiModelProperty(value = "用户拥有的所有角色",notes = "用户拥有的所有角色")
+    @ApiModelProperty(value = "用户拥有的所有角色", notes = "用户拥有的所有角色")
     private List<Role> roles;
 
-    @ApiModelProperty(value = "当前角色",notes = "当前角色")
+    @ApiModelProperty(value = "当前角色", notes = "当前角色")
     private Role currentRole;
 
-    @ApiModelProperty(value = "当前角色权限",notes = "当前角色权限")
+    @ApiModelProperty(value = "当前角色权限", notes = "当前角色权限")
     private Permission permission;
 }

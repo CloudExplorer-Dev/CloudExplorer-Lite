@@ -29,11 +29,11 @@ public class PageSystemLogRequest extends PageRequest implements PageOrderReques
     @ApiModelProperty("等级")
     private String level;
 
-    @Size(min = 2,max = 2,message = "{i18n.request.date.message}")
-    @ApiModelProperty(value="创建时间",example ="createTime[]=2121&createTime[]=21212")
+    @Size(min = 2, max = 2, message = "{i18n.request.date.message}")
+    @ApiModelProperty(value = "创建时间", example = "createTime[]=2121&createTime[]=21212")
     private List<Long> createTime;
 
-    @ApiModelProperty(value = "排序",example = " {\"column\":\"createTime\",\"asc\":false}")
+    @ApiModelProperty(value = "排序", example = " {\"column\":\"createTime\",\"asc\":false}")
     private OrderRequest order;
 
 }

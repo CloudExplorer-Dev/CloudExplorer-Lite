@@ -27,15 +27,15 @@ import java.util.stream.Collectors;
 public class CloudResourceConvert implements ResourceConvert {
     @Override
     public String conver(String resourceId) {
-        if(StringUtils.isEmpty(resourceId)){
+        if (StringUtils.isEmpty(resourceId)) {
             return "";
         }
         String[] resource = resourceId.split("@");
-        if(resource.length>1){
+        if (resource.length > 1) {
             String id = resource[0];
             String name = "";
             ResourceTypeEnum resourceTypeEnum = ResourceTypeEnum.codeOf(resource[1]);
-            switch (resourceTypeEnum){
+            switch (resourceTypeEnum) {
                 case CLOUD_DISK -> name = getVmCloudDiskName(id);
                 case CLOUD_SERVER -> name = getVmCloudServerName(id);
                 case CLOUD_ACCOUNT -> name = getCloudAccountName(id);
@@ -49,15 +49,15 @@ public class CloudResourceConvert implements ResourceConvert {
         return resourceId;
     }
 
-    private String getVmCloudServerName(String resourceId){
+    private String getVmCloudServerName(String resourceId) {
         List<String> names = new ArrayList<>();
         List<String> ids = splitIds(resourceId);
-        for(String id:ids){
+        for (String id : ids) {
             String cache = null;// BaseCloudServerCache.getCache(id);
             if (StringUtils.isEmpty(cache)) {
                 BaseVmCloudServerMapper cloudServerMapper = SpringUtil.getBean(BaseVmCloudServerMapper.class);
                 QueryWrapper<VmCloudServer> wrapper = new QueryWrapper<>();
-                wrapper.eq(true, ColumnNameUtil.getColumnName(VmCloudServer::getId,true),id).or().eq(true, ColumnNameUtil.getColumnName(VmCloudServer::getInstanceUuid,true),id);
+                wrapper.eq(true, ColumnNameUtil.getColumnName(VmCloudServer::getId, true), id).or().eq(true, ColumnNameUtil.getColumnName(VmCloudServer::getInstanceUuid, true), id);
                 VmCloudServer cloudServer = cloudServerMapper.selectOneDeep(wrapper);
                 if (Objects.nonNull(cloudServer)) {
                     //BaseCloudServerCache.updateCache();
@@ -70,10 +70,10 @@ public class CloudResourceConvert implements ResourceConvert {
         return names.stream().map(String::valueOf).collect(Collectors.joining(","));
     }
 
-    private String getVmCloudDiskName(String resourceId){
+    private String getVmCloudDiskName(String resourceId) {
         List<String> names = new ArrayList<>();
         List<String> ids = splitIds(resourceId);
-        for(String id:ids){
+        for (String id : ids) {
             String cache = null;// BaseCloudDiskCache.getCache(id);
             if (StringUtils.isEmpty(cache)) {
                 BaseVmCloudDiskMapper mapper = SpringUtil.getBean(BaseVmCloudDiskMapper.class);
@@ -89,10 +89,10 @@ public class CloudResourceConvert implements ResourceConvert {
         return names.stream().map(String::valueOf).collect(Collectors.joining(","));
     }
 
-    private String getCloudAccountName(String resourceId){
+    private String getCloudAccountName(String resourceId) {
         List<String> names = new ArrayList<>();
         List<String> ids = splitIds(resourceId);
-        for(String id:ids){
+        for (String id : ids) {
             String cache = null;// BaseCloudAccountCache.getCache(id);
             if (StringUtils.isEmpty(cache)) {
                 BaseCloudAccountMapper mapper = SpringUtil.getBean(BaseCloudAccountMapper.class);
@@ -107,10 +107,11 @@ public class CloudResourceConvert implements ResourceConvert {
         }
         return names.stream().map(String::valueOf).collect(Collectors.joining(","));
     }
-    private String getOrgName(String resourceId){
+
+    private String getOrgName(String resourceId) {
         List<String> names = new ArrayList<>();
         List<String> ids = splitIds(resourceId);
-        for(String id:ids){
+        for (String id : ids) {
             String cache = null;// BaseOrgCache.getCache(id);
             if (StringUtils.isEmpty(cache)) {
                 BaseOrganizationMapper mapper = SpringUtil.getBean(BaseOrganizationMapper.class);
@@ -125,28 +126,30 @@ public class CloudResourceConvert implements ResourceConvert {
         }
         return names.stream().map(String::valueOf).collect(Collectors.joining(","));
     }
-    private String getWorkspaceName(String resourceId){
+
+    private String getWorkspaceName(String resourceId) {
         List<String> names = new ArrayList<>();
         List<String> ids = splitIds(resourceId);
-        for(String id:ids){
-           String cache = null;// BaseWorkspaceCache.getCache(id);
-           if (StringUtils.isEmpty(cache)) {
-               BaseWorkspaceMapper mapper = SpringUtil.getBean(BaseWorkspaceMapper.class);
-               Workspace vo = mapper.selectById(id);
-               if (Objects.nonNull(vo)) {
-                   //BaseWorkspaceCache.updateCache();
-                   names.add(vo.getName());
-               }
-           } else {
-               names.add(cache);
-           }
+        for (String id : ids) {
+            String cache = null;// BaseWorkspaceCache.getCache(id);
+            if (StringUtils.isEmpty(cache)) {
+                BaseWorkspaceMapper mapper = SpringUtil.getBean(BaseWorkspaceMapper.class);
+                Workspace vo = mapper.selectById(id);
+                if (Objects.nonNull(vo)) {
+                    //BaseWorkspaceCache.updateCache();
+                    names.add(vo.getName());
+                }
+            } else {
+                names.add(cache);
+            }
         }
         return names.stream().map(String::valueOf).collect(Collectors.joining(","));
     }
-    private String getRoleName(String resourceId){
+
+    private String getRoleName(String resourceId) {
         List<String> names = new ArrayList<>();
         List<String> ids = splitIds(resourceId);
-        for(String id:ids){
+        for (String id : ids) {
             String cache = null;// BaseRoleCache.getCache(id);
             if (StringUtils.isEmpty(cache)) {
                 BaseRoleMapper mapper = SpringUtil.getBean(BaseRoleMapper.class);
@@ -161,10 +164,11 @@ public class CloudResourceConvert implements ResourceConvert {
         }
         return names.stream().map(String::valueOf).collect(Collectors.joining(","));
     }
-    private String getUserName(String resourceId){
+
+    private String getUserName(String resourceId) {
         List<String> names = new ArrayList<>();
         List<String> ids = splitIds(resourceId);
-        for(String id:ids){
+        for (String id : ids) {
             String cache = null;// BaseUserCache.getCache(id);
             if (StringUtils.isEmpty(cache)) {
                 BaseUserMapper mapper = SpringUtil.getBean(BaseUserMapper.class);
@@ -180,7 +184,7 @@ public class CloudResourceConvert implements ResourceConvert {
         return names.stream().map(String::valueOf).collect(Collectors.joining(","));
     }
 
-    private List<String> splitIds(String id){
+    private List<String> splitIds(String id) {
         return Arrays.asList(id.split(",")).stream().distinct().toList();
     }
 

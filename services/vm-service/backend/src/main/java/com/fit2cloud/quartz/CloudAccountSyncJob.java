@@ -85,7 +85,7 @@ public class CloudAccountSyncJob {
             LogUtil.info("开始同步监控数据...");
             List<CloudAccount> cloudAccounts = SpringUtil.getBean(IBaseCloudAccountService.class).list();
             for (CloudAccount cloudAccount : cloudAccounts) {
-                LogUtil.info("开始同步:"+cloudAccount.getName());
+                LogUtil.info("开始同步:" + cloudAccount.getName());
                 // 云主机监控
                 new SyncCloudServerPerfMetricMonitor().exec(cloudAccount);
                 //  宿主机监控
@@ -94,7 +94,7 @@ public class CloudAccountSyncJob {
                 new SyncCloudDiskPerfMetricMonitor().exec(cloudAccount);
                 // 存储器监控
                 new SyncCloudDatastorePerfMetricMonitor().exec(cloudAccount);
-                LogUtil.info("结束同步:"+cloudAccount.getName());
+                LogUtil.info("结束同步:" + cloudAccount.getName());
             }
             LogUtil.info("结束同步监控数据...");
 
@@ -138,8 +138,8 @@ public class CloudAccountSyncJob {
                 try {
                     List<Credential.Region> regions = Credential.of(cloudAccount.getPlatform(), cloudAccount.getCredential()).regions();
                     exec(JobConstants.CloudAccount.getCloudAccountJobParams(cloudAccount.getId(), regions));
-                }catch (Exception e){
-                    LogUtil.error(cloudAccount.getName()+"-"+e.getMessage());
+                } catch (Exception e) {
+                    LogUtil.error(cloudAccount.getName() + "-" + e.getMessage());
                 }
             }
         }
@@ -163,8 +163,8 @@ public class CloudAccountSyncJob {
                 try {
                     List<Credential.Region> regions = Credential.of(cloudAccount.getPlatform(), cloudAccount.getCredential()).regions();
                     exec(JobConstants.CloudAccount.getCloudAccountJobParams(cloudAccount.getId(), regions));
-                }catch (Exception e){
-                    LogUtil.error(cloudAccount.getName()+"-"+e.getMessage());
+                } catch (Exception e) {
+                    LogUtil.error(cloudAccount.getName() + "-" + e.getMessage());
                 }
             }
         }
@@ -188,8 +188,8 @@ public class CloudAccountSyncJob {
                 try {
                     List<Credential.Region> regions = Credential.of(cloudAccount.getPlatform(), cloudAccount.getCredential()).regions();
                     exec(JobConstants.CloudAccount.getCloudAccountJobParams(cloudAccount.getId(), regions));
-                }catch (Exception e){
-                    LogUtil.error(cloudAccount.getName()+"-"+e.getMessage());
+                } catch (Exception e) {
+                    LogUtil.error(cloudAccount.getName() + "-" + e.getMessage());
                 }
             }
         }
@@ -213,8 +213,8 @@ public class CloudAccountSyncJob {
                 try {
                     List<Credential.Region> regions = Credential.of(cloudAccount.getPlatform(), cloudAccount.getCredential()).regions();
                     exec(JobConstants.CloudAccount.getCloudAccountJobParams(cloudAccount.getId(), regions));
-                }catch (Exception e){
-                    LogUtil.error(cloudAccount.getName()+"-"+e.getMessage());
+                } catch (Exception e) {
+                    LogUtil.error(cloudAccount.getName() + "-" + e.getMessage());
                 }
             }
         }

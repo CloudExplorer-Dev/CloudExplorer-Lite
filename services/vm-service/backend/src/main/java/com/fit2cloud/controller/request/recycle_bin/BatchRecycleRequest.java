@@ -18,7 +18,7 @@ public class BatchRecycleRequest {
     /**
      * 资源 ID 集合
      */
-    private  List<String> resourceIds;
+    private List<String> resourceIds;
     /**
      * 资源类型
      */

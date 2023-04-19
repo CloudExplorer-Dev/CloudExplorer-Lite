@@ -43,7 +43,7 @@ public class BaseCloudAccountCache {
     }
 
     public synchronized static String getCache(String id) {
-        Map<String, String> map= cloudAccountCache.get();
+        Map<String, String> map = cloudAccountCache.get();
         return MapUtils.isEmpty(map) ? null : map.get(id);
     }
 

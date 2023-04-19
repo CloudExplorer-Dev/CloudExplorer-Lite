@@ -419,7 +419,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
 
     @Override
     public long countUser() {
-        PageUserRequest request =new PageUserRequest();
+        PageUserRequest request = new PageUserRequest();
         request.setCurrentPage(1);
         request.setPageSize(1);
         return pageUser(request).getTotal();

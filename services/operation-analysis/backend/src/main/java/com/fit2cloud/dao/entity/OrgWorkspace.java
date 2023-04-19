@@ -2,19 +2,18 @@ package com.fit2cloud.dao.entity;
 
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableName;
-import java.io.Serializable;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.Accessors;
+
 import java.io.Serial;
+import java.io.Serializable;
 
 
 /**
  * <p>
  * VIEW
  * </p>
- *
- *
  */
 @Getter
 @Setter

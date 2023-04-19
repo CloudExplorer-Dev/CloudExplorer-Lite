@@ -11,6 +11,7 @@ import java.util.Map;
 
 /**
  * 初始化任务实体
+ *
  * @author jianneng
  * @date 2022/10/13 11:20
  **/

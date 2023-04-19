@@ -7,7 +7,7 @@ import lombok.Data;
  * Date: 2022/9/27 6:31 PM
  */
 @Data
-public class GetAccountBalanceRequest{
+public class GetAccountBalanceRequest {
     /**
      * 认证信息
      */

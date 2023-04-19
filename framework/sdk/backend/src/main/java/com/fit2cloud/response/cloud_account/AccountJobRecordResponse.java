@@ -25,7 +25,7 @@ public class AccountJobRecordResponse {
     @ApiModelProperty(value = "云账户id", notes = "云账户id")
     private String accountId;
 
-    @ApiModelProperty(value = "任务记录id",notes = "任务记录id")
+    @ApiModelProperty(value = "任务记录id", notes = "任务记录id")
     private String jobRecordId;
     @ApiModelProperty(value = "定时任务类型", notes = "定时任务类型")
     private JobTypeConstants type;

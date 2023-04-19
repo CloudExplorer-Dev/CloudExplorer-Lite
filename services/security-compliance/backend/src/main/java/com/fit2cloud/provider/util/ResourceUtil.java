@@ -1,10 +1,8 @@
 package com.fit2cloud.provider.util;
 
-import com.fit2cloud.common.constants.PlatformConstants;
 import com.fit2cloud.common.utils.JsonUtil;
 import com.fit2cloud.constants.ResourceTypeConstants;
 import com.fit2cloud.es.entity.ResourceInstance;
-import com.huaweicloud.sdk.css.v1.model.ShowTagsTagsResp;
 import org.apache.commons.lang.StringUtils;
 
 import java.util.*;

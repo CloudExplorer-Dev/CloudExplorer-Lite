@@ -20,6 +20,7 @@ public interface IDiskAnalysisService {
 
     /**
      * 磁盘明细
+     *
      * @param request 分页查询磁盘参数
      * @return IPage<AnalysisDiskDTO>
      */
@@ -27,15 +28,16 @@ public interface IDiskAnalysisService {
 
     /**
      * 所有云账号
+     *
      * @return List<CloudAccount>
      */
     List<CloudAccount> getAllCloudAccount();
 
-    Map<String,List<KeyValue>> spread(ResourceAnalysisRequest request);
+    Map<String, List<KeyValue>> spread(ResourceAnalysisRequest request);
 
     List<ChartData> diskIncreaseTrend(ResourceAnalysisRequest request);
 
-    Map<String,List<TreeNode>> analysisCloudDiskByOrgWorkspace(ResourceAnalysisRequest request);
+    Map<String, List<TreeNode>> analysisCloudDiskByOrgWorkspace(ResourceAnalysisRequest request);
 
     long countDiskByCloudAccount(String cloudAccountId);
 

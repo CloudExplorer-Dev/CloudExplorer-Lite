@@ -14,10 +14,10 @@ import lombok.Data;
 @Data
 public class AliyunResizeDiskRequest extends BaseDiskResizeRequest {
 
-    public ResizeDiskRequest toResizeDiskRequest(){
+    public ResizeDiskRequest toResizeDiskRequest() {
         ResizeDiskRequest request = new ResizeDiskRequest();
         request.setDiskId(super.getDiskId());
-        request.setNewSize((int)super.getNewDiskSize());
+        request.setNewSize((int) super.getNewDiskSize());
         return request;
     }
 
