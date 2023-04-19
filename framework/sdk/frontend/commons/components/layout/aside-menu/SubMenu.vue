@@ -29,9 +29,10 @@ defineProps({
           v-hasPermission="item.requiredPermissions"
           :index="item.path"
           :key="item.name"
-          class="mMenuItem mSubMenuItem"
+          class="cMenuItem mMenuItem mSubMenuItem"
         >
           <CeIcon
+            v-if="item.icon"
             class="icon"
             :code="item.icon"
             :size="'var(--ce-menu-icon-size,14px)'"
@@ -53,22 +54,28 @@ defineProps({
     <CeIcon
       class="icon"
       :code="menuInfo.icon"
-      :size="'var(--ce-menu-icon-size,14px)'"
+      :size="'var(--ce-menu-icon-size,16px)'"
     />
     <span>{{ menuInfo.title }}</span>
   </el-menu-item>
 </template>
 <style lang="scss" scoped>
 .icon {
-  width: var(--ce-menu-icon-width, 30px);
+  width: var(--ce-menu-icon-width, 16px);
+  margin-right: 8px;
 }
+
 .mMenuItem.is-active {
   border-left-width: 4px;
   border-left-color: var(--ce-star-menu-active-icon-color);
   border-left-style: solid;
-  padding-left: 16px !important;
+  padding-left: calc(
+    var(--el-menu-base-level-padding) + var(--el-menu-level) *
+      var(--el-menu-level-padding) - 4px
+  ) !important;
 }
-.mSubMenuItem.is-active {
-  padding-left: 36px !important;
+
+.cMenuItem {
+  --el-menu-base-level-padding: 20px;
 }
 </style>

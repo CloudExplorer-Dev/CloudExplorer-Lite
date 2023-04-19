@@ -12,6 +12,8 @@ import _ from "lodash";
 interface ModuleStoreObject {
   modules?: Array<Module>;
   menus: SimpleMap<Array<Menu>>;
+  // 当前模块的名称 注意当前变量只会在基座进行修改,如果单启 子模块currentModuleName就是当前模块名称
+  currentModuleName?: string;
 }
 
 export function getUrl(module: Module): string {
@@ -28,6 +30,7 @@ export const useModuleStore = defineStore({
   state: (): ModuleStoreObject => ({
     modules: undefined,
     menus: <SimpleMap<Array<Menu>>>{},
+    currentModuleName: import.meta.env.VITE_APP_NAME,
   }),
   getters: {
     runningModules(state: any): Array<Module> {
@@ -65,16 +68,20 @@ export const useModuleStore = defineStore({
       });
     },
     currentModule(state: any): Module | undefined {
+      // 如果是基座
       return _.find(
         state.modules,
-        (module: Module) => module.id === import.meta.env.VITE_APP_NAME
+        (module: Module) => module.id === state.currentModuleName
       );
     },
     currentModuleMenu(state: any): Array<Menu> {
-      return _.get(state.menus, import.meta.env.VITE_APP_NAME, []);
+      return _.get(state.menus, state.currentModuleName, []);
     },
   },
   actions: {
+    updateCurrentModuleName(moduleName: string) {
+      this.currentModuleName = moduleName;
+    },
     async refreshModules(source?: string) {
       console.debug("refreshModules source: " + source);
       const userStore = useUserStore();

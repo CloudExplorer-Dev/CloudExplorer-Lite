@@ -1,16 +1,15 @@
 <script setup lang="ts">
-import { onMounted, ref, watch } from "vue";
+import { ref, computed } from "vue";
 import type { Menu } from "@commons/api/menu/type";
 import type { Module } from "@commons/api/module/type";
 import { flatMenu } from "@commons/router";
 import { hasRolePermission } from "@commons/base-directives/hasPermission";
 import { Search } from "@element-plus/icons-vue";
-import CeIcon from "@commons/components/ce-icon/index.vue";
 import type { SimpleMap } from "@commons/api/base/type";
 import _ from "lodash";
 import { useRouter } from "vue-router";
 import MicroAppRouterUtil from "@commons/router/MicroAppRouterUtil";
-
+const emit = defineEmits(["close"]);
 interface ModuleContainer extends Module {
   /**
    * 子菜单
@@ -23,8 +22,6 @@ interface ModuleContainer extends Module {
 }
 
 const props = defineProps<{
-  // 是否展开
-  collapse: boolean;
   // 运行中的模块菜单
   runningModuleMenus: SimpleMap<Array<Menu>>;
   // 运行中的所有模块
@@ -36,14 +33,11 @@ const props = defineProps<{
 }>();
 // 搜索内容
 const searchText = ref<string>("");
-// 模块菜单信息
-const moduleMenus = ref<Array<Array<ModuleContainer>>>([[], [], []]);
 
-const router = useRouter();
-
-onMounted(() => {
-  moduleMenus.value = resetMenus();
+const moduleMenus = computed(() => {
+  return resetMenus();
 });
+const router = useRouter();
 
 /**
  * 将数据重新组合为可用数据
@@ -74,9 +68,6 @@ const flatMapMenus = (
   runningModulePermissions: Array<string>
 ) => {
   return runningModules.map((module) => {
-    // console.log(module);
-    // console.log(runningModuleMenus);
-    // console.log(runningModuleMenus[module.id]);
     const newMenu = flatMenu(runningModuleMenus[module.id], [], false);
     const moduleContainer: ModuleContainer = {
       ...module,
@@ -150,12 +141,6 @@ const filterMenu = (
     return service.childrenMenu.length > 0;
   });
 };
-/**
- * 搜索框改变事件
- */
-const searchChange = () => {
-  moduleMenus.value = resetMenus();
-};
 
 function jumpMenu(menu: Menu) {
   console.debug(menu);
@@ -165,156 +150,122 @@ function jumpMenu(menu: Menu) {
   }
   const path = _.replace(module.basePath + menu.path, "//", "/");
   MicroAppRouterUtil.jumpToChildrenPath(module.id, path, router);
+  close();
 }
 
-/**
- * 监控打开状态
- */
-watch(
-  () => props.collapse,
-  (newValue: boolean) => {
-    if (newValue) {
-      moduleMenus.value = resetMenus();
-    }
-  }
-);
+const close = () => {
+  emit("close");
+};
 </script>
 
 <template>
-  <transition name="collectMenu">
-    <div class="collectMenu" v-show="collapse">
-      <div class="search">
-        <el-input
-          v-model="searchText"
-          placeholder="请输入需要查询的内容"
-          :suffix-icon="Search"
-          @input="searchChange"
-        />
-      </div>
-      <div class="menuContainer">
+  <div class="collectMenu">
+    <div class="close" @click.stop="close">
+      <el-icon><CloseBold /></el-icon>
+    </div>
+    <el-input
+      v-model="searchText"
+      placeholder="请输入功能名称"
+      style="height: 32px; width: 676px"
+    >
+      <template #prepend>
+        <el-button :icon="Search" />
+      </template>
+    </el-input>
+    <div class="menuContainer">
+      <div
+        class="childMenuContainer"
+        v-for="(moduleSplitItem, index) in moduleMenus"
+        :key="index"
+      >
         <div
-          class="childMenuContainer"
-          v-for="(moduleSplitItem, index) in moduleMenus"
-          :key="index"
+          class="moduleItem"
+          v-for="moduleItem in moduleSplitItem"
+          v-hasPermission="moduleItem.requiredPermissions"
+          :key="moduleItem.name"
         >
+          <div class="moduleTitle">
+            <span>{{ moduleItem.name }}</span>
+          </div>
           <div
-            class="moduleItem"
-            v-for="moduleItem in moduleSplitItem"
-            v-hasPermission="moduleItem.requiredPermissions"
-            :key="moduleItem.name"
+            class="menuItem"
+            v-for="menuItem in moduleItem.childrenMenu"
+            v-hasPermission="menuItem.requiredPermissions"
+            :key="menuItem.name"
           >
-            <div class="moduleTitle">
-              <span>{{ moduleItem.name }}</span>
+            <div class="title" @click="jumpMenu(menuItem)">
+              <span>{{ menuItem.title }}</span>
             </div>
-            <div
-              class="menuItem"
-              v-for="menuItem in moduleItem.childrenMenu"
-              v-hasPermission="menuItem.requiredPermissions"
-              :key="menuItem.name"
-            >
-              <!--              <div class="icon">
-                <CeIcon size="15px" :code="menuItem.icon"></CeIcon>
-              </div>-->
-              <div class="title" @click="jumpMenu(menuItem)">
-                <span>{{ menuItem.title }}</span>
-              </div>
-              <div style="flex: auto"></div>
-            </div>
+            <div style="flex: auto"></div>
           </div>
         </div>
       </div>
     </div>
-  </transition>
+  </div>
 </template>
 
 <style lang="scss" scope>
 .collectMenu {
+  box-sizing: border-box;
   height: 100%;
-  width: 750px;
+  width: 100%;
   flex-wrap: wrap;
-  overflow-y: hidden;
-  overflow-x: hidden;
-  position: fixed;
-  cursor: default;
-  top: var(--ce-header-height);
-  left: var(--ce-star-menu-hover-width);
   background-color: var(--ce-collect-menu-bg-color);
   color: var(--ce-collect-menu-color);
-  z-index: 10000;
-  .search {
-    height: 10%;
-    width: 750px;
-    display: flex;
-    align-items: center;
-    .el-input {
-      --el-input-text-color: var(--ce-collect-menu-color);
-      --el-input-bg-color: var(--ce-collect-menu-bg-color);
-    }
-    div {
-      width: 80%;
-      margin-left: 20px;
-    }
-  }
+  padding: 24px 32px 24px 32px;
+
   &:hover {
     overflow-y: auto;
   }
+  .close {
+    position: absolute;
+    right: 20px;
+    top: 20px;
+    color: #646a73;
+    cursor: pointer;
+  }
+
   .menuContainer {
     width: 100%;
     display: flex;
-    justify-content: space-around;
+    justify-content: space-between;
+    margin-top: -12px;
     .childMenuContainer {
-      width: 200px;
+      width: 225px;
       display: flex;
       flex-wrap: wrap;
       .moduleItem {
+        margin-top: 36px;
         width: 100%;
-        margin: 10px 0 0 0;
         .moduleTitle {
-          font-size: 20px;
-          font-weight: 7000;
-          margin-left: 10px;
+          font-weight: 500;
+          font-size: 14px;
+          line-height: 24px;
+          padding-left: 12px;
         }
         .menuItem {
-          height: 35px;
+          font-weight: 400;
+          margin-top: 8px;
+          color: rgba(100, 106, 115, 1);
+          height: 32px;
           display: flex;
           align-items: center;
           align-content: center;
-          margin: 0 0 0 5px;
           .title {
-            margin-left: 8px;
+            align-content: center;
+            padding-left: 12px;
             cursor: pointer;
             height: 100%;
             overflow: hidden;
             &:hover {
-              border-bottom: 1px solid;
+              background-color: rgba(239, 240, 241, 1);
+              color: rgba(31, 35, 41, 1);
+              border-radius: 4px;
             }
           }
         }
       }
     }
-    margin-bottom: 10%;
   }
-}
-
-/** 动画进行时的class **/
-.collectMenu-enter-active,
-.collectMenu-leave-active {
-  transition: 0.3s;
-}
-
-.collectMenu-enter-from {
-  width: 0;
-}
-
-.collectMenu-leave-to {
-  width: 0;
-}
-.collectMenu-enter-form {
-  width: 100%;
-  height: 100%;
-}
-.collectMenu-leave-form {
-  width: 100%;
-  height: 100%;
 }
 </style>

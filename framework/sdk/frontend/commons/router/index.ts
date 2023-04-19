@@ -8,6 +8,13 @@ import { useModuleStore } from "@commons/stores/modules/module";
 import type { RouteItem } from "@commons/router/type";
 import { RouteObj } from "@commons/router/type";
 import { usePermissionStore } from "@commons/stores/modules/permission";
+import microApp from "@micro-zoe/micro-app";
+microApp.router.afterEach((module) => {
+  if (import.meta.env.VITE_APP_NAME === "base") {
+    const m = useModuleStore();
+    m.updateCurrentModuleName(module.name);
+  }
+});
 /**
  * 扁平化菜单
  * @param menus

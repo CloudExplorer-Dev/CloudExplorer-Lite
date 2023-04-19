@@ -1,3 +1,4 @@
+import { useModuleStore } from "@commons/stores/modules/module";
 import type { RouteRecordRaw } from "vue-router";
 import { createRouter } from "vue-router";
 import type {
@@ -260,6 +261,10 @@ export class RouteObj {
         next();
       }
       return;
+    }
+    if (import.meta.env.VITE_APP_NAME === "base" && to.name === "home") {
+      const m = useModuleStore();
+      m.updateCurrentModuleName("home");
     }
     if (this.beforeEachAppend) {
       await this.beforeEachAppend(to, from, next);

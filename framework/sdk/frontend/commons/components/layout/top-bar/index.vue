@@ -7,7 +7,7 @@ import { useHomeStore } from "@commons/stores/modules/home";
 import CeIcon from "@commons/components/ce-icon/index.vue";
 import SourceChangeDialog from "@commons/business/person-setting/SourceChangeDialog.vue";
 import RoleTag from "@commons/business/person-setting/RoleTag.vue";
-
+import ModuleDownMenu from "@commons/business/module-down-menu/index.vue";
 import CeMainLogo from "@commons/assets/CloudExplorer-Lite-02.svg";
 import { ref } from "vue";
 
@@ -24,7 +24,7 @@ function goHome() {
 }
 
 const roleSelectOpen = ref<boolean>(false);
-
+const serviceCatalogActive = ref<boolean>(false);
 function roleSelectVisibleChange(visible: boolean) {
   roleSelectOpen.value = visible;
 }
@@ -34,6 +34,21 @@ function roleSelectVisibleChange(visible: boolean) {
   <div class="top-nav">
     <el-image :src="CeMainLogo" fit="contain" style="width: 145px" />
     <el-divider direction="vertical" class="header-divider" />
+    <div
+      class="service_catalog"
+      :class="serviceCatalogActive ? 'active' : ''"
+      @click="serviceCatalogActive = !serviceCatalogActive"
+    >
+      <CeIcon code="icon_view-list_outlined" size="16px" />
+      <span class="catalog">产品服务</span>
+      <el-icon
+        ><CaretTop v-if="serviceCatalogActive" /> <CaretBottom v-else
+      /></el-icon>
+      <ModuleDownMenu
+        v-model="serviceCatalogActive"
+        @click.stop
+      ></ModuleDownMenu>
+    </div>
     <div class="header-button home-button" @click="goHome">
       <CeIcon code="icon_home_outlined" size="16px" /> 首页
     </div>
@@ -81,6 +96,24 @@ function roleSelectVisibleChange(visible: boolean) {
   display: flex;
   color: white;
   align-items: center;
+  .service_catalog {
+    height: 100%;
+    width: 120px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    &.active {
+      background-color: rgba(72, 79, 91, 1);
+    }
+    &:hover {
+      background-color: rgba(72, 79, 91, 1);
+    }
+    .catalog {
+      margin-left: 5px;
+      margin-right: 9px;
+    }
+  }
 
   .header-divider {
     border-color: rgba(255, 255, 255, 0.15);
