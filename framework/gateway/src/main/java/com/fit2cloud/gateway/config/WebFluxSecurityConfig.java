@@ -28,7 +28,8 @@ public class WebFluxSecurityConfig {
                 .headers().frameOptions().mode(XFrameOptionsServerHttpHeadersWriter.Mode.SAMEORIGIN)
                 .and()
                 .httpBasic().disable()
-                .formLogin().disable();
+                .formLogin().disable()
+                .logout().disable();
 
         return http.build();
     }

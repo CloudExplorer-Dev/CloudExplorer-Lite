@@ -14,6 +14,8 @@ import com.fit2cloud.dto.UserDto;
 import com.fit2cloud.request.LoginRequest;
 import com.fit2cloud.request.user.EditUserRequest;
 import com.fit2cloud.request.user.ResetPwdRequest;
+import com.fit2cloud.service.TokenPoolService;
+import org.apache.commons.collections4.KeyValue;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.http.server.reactive.ServerHttpRequest;
@@ -36,6 +38,8 @@ public class BaseUserServiceImpl extends ServiceImpl<BaseUserMapper, User> imple
 
     @Resource
     private IBaseUserRoleService userRoleService;
+    @Resource
+    private TokenPoolService tokenPoolService;
 
     @Override
     public String login(ServerHttpRequest request, LoginRequest loginRequest) {
@@ -68,7 +72,11 @@ public class BaseUserServiceImpl extends ServiceImpl<BaseUserMapper, User> imple
         user.setIp(IpUtil.getIpAddress(request));
         user.setLoginTime(LocalDateTime.now());
 
-        return JwtTokenUtils.createJwtToken(user);
+        KeyValue<String, String> jwt = JwtTokenUtils.createJwtToken(user);
+
+        tokenPoolService.saveJwt(user.getId(), jwt.getKey());
+
+        return jwt.getValue();
     }
 
     @Override
