@@ -1,5 +1,6 @@
 package com.fit2cloud.service.impl;
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
@@ -428,6 +429,16 @@ public class VmCloudServerServiceImpl extends ServiceImpl<BaseVmCloudServerMappe
     }
 
     private void modifyResource(VmCloudServer vmCloudServer) {
+        //处理可能同步到的数据，会影响更新操作
+        if (StringUtils.isNotBlank(vmCloudServer.getInstanceUuid()) && StringUtils.isNotBlank(vmCloudServer.getAccountId())) {
+            //需要删除自己以外的机器同uuid机器，防止更新失败
+            LambdaQueryWrapper<VmCloudServer> wrapper = new LambdaQueryWrapper<VmCloudServer>()
+                    .ne(VmCloudServer::getId, vmCloudServer.getId())
+                    .eq(VmCloudServer::getInstanceUuid, vmCloudServer.getInstanceUuid())
+                    .eq(VmCloudServer::getAccountId, vmCloudServer.getAccountId());
+            this.remove(wrapper);
+        }
+
         this.updateById(vmCloudServer);
 
         if (F2CInstanceStatus.Deleted.name().equalsIgnoreCase(vmCloudServer.getInstanceStatus())) {
@@ -569,16 +580,31 @@ public class VmCloudServerServiceImpl extends ServiceImpl<BaseVmCloudServerMappe
                     e.printStackTrace();
                 }
 
-                // 保存云主机上的磁盘信息
                 if (StringUtils.isEmpty(vmCloudServer.getSourceId())) {
                     vmCloudServer.setSourceId(sourceId);
                 }
                 if (StringUtils.isEmpty(vmCloudServer.getRegion())) {
                     vmCloudServer.setRegion(regionId);
                 }
-                saveCloudServerDisks(vmCloudServer);
+                try {
+                    // 保存云主机上的磁盘信息
+                    saveCloudServerDisks(vmCloudServer);
+                } catch (Exception e) {
+                    //更新磁盘信息不影响创建任务
+                    //todo 后续如何加日志
+                    e.printStackTrace();
+                }
 
-                modifyResource.accept(vmCloudServer);
+                try {
+                    //如果真的更新信息失败了，怎么把最后状态修改为失败？
+                    modifyResource.accept(vmCloudServer);
+                } catch (Exception e) {
+                    jobRecord.setStatus(JobStatusConstants.FAILED);
+                    jobRecord.setResult(e.getMessage());
+                    LogUtil.error("Create Cloud server fail - {}", e.getMessage());
+                    e.printStackTrace();
+                }
+
                 jobRecord.setFinishTime(DateUtil.getSyncTime());
                 modifyJobRecord.accept(jobRecord);
             } catch (Throwable e) {
