@@ -318,32 +318,34 @@ public class ServerAnalysisServiceImpl implements IServerAnalysisService {
     public void getVmPerfMetric(List<AnalysisServerDTO> list) {
         List<String> instanceUuids = list.stream().map(AnalysisServerDTO::getInstanceUuid).filter(StringUtils::isNotEmpty).toList();
         try {
-            Query query = getVmPerfMetricQuery(instanceUuids);
-            SearchHits<Object> response = elasticsearchTemplate.search(query, Object.class, IndexCoordinates.of(IndexConstants.CE_PERF_METRIC_MONITOR_DATA.getCode()));
-            ElasticsearchAggregations aggregations = (ElasticsearchAggregations) response.getAggregations();
-            assert aggregations != null;
-            List<StringTermsBucket> lastData = aggregations.aggregations().get(0).aggregation().getAggregate().sterms().buckets().array();
-            List<PerfMetricMonitorData> metricMonitorDataList = new ArrayList<>();
-            lastData.forEach(data -> data.aggregations().get("lastData").sterms().buckets().array().forEach(m -> {
-                PerfMetricMonitorData vo = JsonUtil.parseObject(Objects.requireNonNull(m.aggregations().get("top1").topHits().hits().hits().get(0).source()).toString(), PerfMetricMonitorData.class);
-                metricMonitorDataList.add(vo);
-            }));
-            list.forEach(v -> metricMonitorDataList.stream().filter(d -> StringUtils.equalsIgnoreCase(v.getInstanceUuid(), d.getInstanceId())
-                    && StringUtils.equalsIgnoreCase(v.getAccountId(), d.getCloudAccountId())).forEach(m -> {
-                if (StringUtils.equalsIgnoreCase(ResourcePerfMetricEnum.CPU_USED_UTILIZATION.name(), m.getMetricName())) {
-                    v.setCpuAverage(m.getAverage().setScale(3, RoundingMode.HALF_UP));
-                    v.setCpuMaximum(m.getMaximum().setScale(3, RoundingMode.HALF_UP));
-                    v.setCpuMinimum(m.getMinimum().setScale(3, RoundingMode.HALF_UP));
-                }
-                if (StringUtils.equalsIgnoreCase(ResourcePerfMetricEnum.MEMORY_USED_UTILIZATION.name(), m.getMetricName())) {
-                    v.setMemoryAverage(m.getAverage().setScale(3, RoundingMode.HALF_UP));
-                    v.setMemoryMaximum(m.getMaximum().setScale(3, RoundingMode.HALF_UP));
-                    v.setMemoryMinimum(m.getMinimum().setScale(3, RoundingMode.HALF_UP));
-                }
-                if (StringUtils.equalsIgnoreCase(ResourcePerfMetricEnum.DISK_USED_UTILIZATION.name(), m.getMetricName())) {
-                    v.setDiskAverage(m.getAverage().setScale(3, RoundingMode.HALF_UP));
-                }
-            }));
+            if (elasticsearchTemplate.indexOps(IndexCoordinates.of(IndexConstants.CE_PERF_METRIC_MONITOR_DATA.getCode())).exists()) {
+                Query query = getVmPerfMetricQuery(instanceUuids);
+                SearchHits<Object> response = elasticsearchTemplate.search(query, Object.class, IndexCoordinates.of(IndexConstants.CE_PERF_METRIC_MONITOR_DATA.getCode()));
+                ElasticsearchAggregations aggregations = (ElasticsearchAggregations) response.getAggregations();
+                assert aggregations != null;
+                List<StringTermsBucket> lastData = aggregations.aggregations().get(0).aggregation().getAggregate().sterms().buckets().array();
+                List<PerfMetricMonitorData> metricMonitorDataList = new ArrayList<>();
+                lastData.forEach(data -> data.aggregations().get("lastData").sterms().buckets().array().forEach(m -> {
+                    PerfMetricMonitorData vo = JsonUtil.parseObject(Objects.requireNonNull(m.aggregations().get("top1").topHits().hits().hits().get(0).source()).toString(), PerfMetricMonitorData.class);
+                    metricMonitorDataList.add(vo);
+                }));
+                list.forEach(v -> metricMonitorDataList.stream().filter(d -> StringUtils.equalsIgnoreCase(v.getInstanceUuid(), d.getInstanceId())
+                        && StringUtils.equalsIgnoreCase(v.getAccountId(), d.getCloudAccountId())).forEach(m -> {
+                    if (StringUtils.equalsIgnoreCase(ResourcePerfMetricEnum.CPU_USED_UTILIZATION.name(), m.getMetricName())) {
+                        v.setCpuAverage(m.getAverage().setScale(3, RoundingMode.HALF_UP));
+                        v.setCpuMaximum(m.getMaximum().setScale(3, RoundingMode.HALF_UP));
+                        v.setCpuMinimum(m.getMinimum().setScale(3, RoundingMode.HALF_UP));
+                    }
+                    if (StringUtils.equalsIgnoreCase(ResourcePerfMetricEnum.MEMORY_USED_UTILIZATION.name(), m.getMetricName())) {
+                        v.setMemoryAverage(m.getAverage().setScale(3, RoundingMode.HALF_UP));
+                        v.setMemoryMaximum(m.getMaximum().setScale(3, RoundingMode.HALF_UP));
+                        v.setMemoryMinimum(m.getMinimum().setScale(3, RoundingMode.HALF_UP));
+                    }
+                    if (StringUtils.equalsIgnoreCase(ResourcePerfMetricEnum.DISK_USED_UTILIZATION.name(), m.getMetricName())) {
+                        v.setDiskAverage(m.getAverage().setScale(3, RoundingMode.HALF_UP));
+                    }
+                }));
+            }
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -385,6 +387,9 @@ public class ServerAnalysisServiceImpl implements IServerAnalysisService {
     @Override
     public List<ChartData> getResourceTrendData(ResourceAnalysisRequest request) {
         List<ChartData> result = new ArrayList<>();
+        if (!elasticsearchTemplate.indexOps(IndexCoordinates.of(IndexConstants.CE_PERF_METRIC_MONITOR_DATA.getCode())).exists()) {
+            return result;
+        }
         if (CollectionUtils.isEmpty(request.getAccountIds())) {
             request.setAccountIds(currentUserResourceService.currentUserCloudAccountList().stream().map(CloudAccount::getId).toList());
         }
