@@ -52,7 +52,7 @@ const open = (treed: Array<TrendData>, row: BillSummary) => {
   option["tooltip"] = {
     trigger: "item",
     formatter: (p: any) => {
-      return `<div>月份:${p.name}</div><div>金额:${_.round(p.data, 2).toFixed(
+      return `<div>月份:${p.name}</div><div>金额:${_.round(p.value, 2).toFixed(
         2
       )}</div>`;
     },
