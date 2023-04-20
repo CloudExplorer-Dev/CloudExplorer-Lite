@@ -1,6 +1,6 @@
 name: 需求建议
 description: 提出针对本项目的想法和建议
-title: "[FEATURE]"
+title: "[FEATURE][模块名称][云厂商][功能菜单]需求描述"
 labels: "类型:需求"
 assignees: baixin513
 body:

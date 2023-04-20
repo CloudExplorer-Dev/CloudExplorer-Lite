@@ -1,6 +1,6 @@
 name: BUG 提交
 description: 提交产品缺陷帮助我们更好的改进
-title: "[BUG]"
+title: "[BUG][模块名称][云厂商][功能菜单]缺陷描述"
 labels: "类型:缺陷"
 assignees: Shenguobin0102
 body:

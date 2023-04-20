@@ -1,6 +1,6 @@
 name: 问题咨询
 description: 提出针对本项目安装部署、使用及其他方面的相关问题
-title: "[QUESTION]"
+title: "[QUESTION][模块名称][云厂商][功能菜单]问题描述"
 labels: "类型:提问"
 assignees: baixin513
 body:
