@@ -22,10 +22,12 @@ import org.aspectj.lang.reflect.MethodSignature;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.MDC;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.web.server.context.SecurityContextServerWebExchange;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
 
 import java.lang.reflect.Method;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.Optional;
 import java.util.UUID;
@@ -91,8 +93,14 @@ public class LoginLogAspect {
                 logVO.setOperatedName(OperatedTypeEnum.getDescriptionByOperate(logVO.getOperated()));
                 // 资源类型
                 logVO.setResourceType(annotation.resourceType().getCode());
-                // 配置请求信息
-                logVO.setSourceIp(IpUtil.getHostIp());
+                // 请求地址
+                Arrays.stream(args).filter(c -> c instanceof SecurityContextServerWebExchange)
+                        .map(c -> (SecurityContextServerWebExchange) c)
+                        .findFirst()
+                        .ifPresent(s -> {
+                            String ipAddress = IpUtil.getIpAddress(s.getDelegate().getRequest());
+                            logVO.setSourceIp(ipAddress);
+                        });
                 // 上下文设置
                 setMDC(logVO);
                 LogUtil.info(logVO);
