@@ -318,7 +318,7 @@ public class ServerAnalysisServiceImpl implements IServerAnalysisService {
     public void getVmPerfMetric(List<AnalysisServerDTO> list) {
         List<String> instanceUuids = list.stream().map(AnalysisServerDTO::getInstanceUuid).filter(StringUtils::isNotEmpty).toList();
         try {
-            if(elasticsearchTemplate.indexOps(IndexCoordinates.of(IndexConstants.CE_PERF_METRIC_MONITOR_DATA.getCode())).exists()){
+            if (elasticsearchTemplate.indexOps(IndexCoordinates.of(IndexConstants.CE_PERF_METRIC_MONITOR_DATA.getCode())).exists()) {
                 Query query = getVmPerfMetricQuery(instanceUuids);
                 SearchHits<Object> response = elasticsearchTemplate.search(query, Object.class, IndexCoordinates.of(IndexConstants.CE_PERF_METRIC_MONITOR_DATA.getCode()));
                 ElasticsearchAggregations aggregations = (ElasticsearchAggregations) response.getAggregations();
@@ -387,7 +387,7 @@ public class ServerAnalysisServiceImpl implements IServerAnalysisService {
     @Override
     public List<ChartData> getResourceTrendData(ResourceAnalysisRequest request) {
         List<ChartData> result = new ArrayList<>();
-        if(!elasticsearchTemplate.indexOps(IndexCoordinates.of(IndexConstants.CE_PERF_METRIC_MONITOR_DATA.getCode())).exists()){
+        if (!elasticsearchTemplate.indexOps(IndexCoordinates.of(IndexConstants.CE_PERF_METRIC_MONITOR_DATA.getCode())).exists()) {
             return result;
         }
         if (CollectionUtils.isEmpty(request.getAccountIds())) {
