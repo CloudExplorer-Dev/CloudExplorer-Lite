@@ -34,7 +34,7 @@ public class PerfMonitorService {
 
     public Map<String, List<PerfMonitorEchartsDTO>> getPerfMonitorData(PerfMonitorRequest request) {
         Map<String, List<PerfMonitorEchartsDTO>> resultMap = new HashMap<>();
-        if(!elasticsearchProvide.existsIndex(IndexConstants.CE_PERF_METRIC_MONITOR_DATA.getCode())){
+        if (!elasticsearchProvide.existsIndex(IndexConstants.CE_PERF_METRIC_MONITOR_DATA.getCode())) {
             return resultMap;
         }
         List<PerfMetricMonitorData> esList = elasticsearchProvide.searchByQuery(IndexConstants.CE_PERF_METRIC_MONITOR_DATA.getCode(), getSearchQuery(request), PerfMetricMonitorData.class);

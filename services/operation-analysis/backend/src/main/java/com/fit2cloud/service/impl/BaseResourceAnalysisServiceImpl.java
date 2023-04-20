@@ -316,7 +316,7 @@ public class BaseResourceAnalysisServiceImpl implements IBaseResourceAnalysisSer
     @Override
     public List<ChartData> getResourceUsedTrendData(ResourceUsedTrendRequest request) {
         List<ChartData> result = new ArrayList<>();
-        if(!elasticsearchProvide.existsIndex(IndexConstants.CE_PERF_METRIC_MONITOR_DATA.getCode())){
+        if (!elasticsearchProvide.existsIndex(IndexConstants.CE_PERF_METRIC_MONITOR_DATA.getCode())) {
             return result;
         }
         CalendarInterval intervalUnit = OperationUtils.getCalendarIntervalUnit(request.getStartTime(), request.getEndTime());

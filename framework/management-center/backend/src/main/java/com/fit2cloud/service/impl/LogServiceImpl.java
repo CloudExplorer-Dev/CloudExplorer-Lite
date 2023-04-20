@@ -49,7 +49,7 @@ public class LogServiceImpl implements ILogService {
     @Override
     public IPage<SystemLogVO> systemLogs(PageSystemLogRequest request) {
         Page<SystemLogVO> page = PageUtil.of(request, SystemLogVO.class, true);
-        if(!provide.existsIndex(CE_FILE_SYSTEM_LOGS)){
+        if (!provide.existsIndex(CE_FILE_SYSTEM_LOGS)) {
             return page;
         }
         return provide.searchByQuery(CE_FILE_SYSTEM_LOGS, getSearchQuery(request.getCurrentPage(), request.getPageSize(), JsonUtil.toJSONString(request), request.getOrder()), SystemLogVO.class, page);
@@ -59,7 +59,7 @@ public class LogServiceImpl implements ILogService {
     @Override
     public IPage<OperatedLogVO> operatedLogs(PageOperatedLogRequest request) {
         Page<OperatedLogVO> page = PageUtil.of(request, OperatedLogVO.class, true);
-        if(!provide.existsIndex(CE_FILE_API_LOGS)){
+        if (!provide.existsIndex(CE_FILE_API_LOGS)) {
             return page;
         }
         return provide.searchByQuery(CE_FILE_API_LOGS, getSearchQueryFroOperation(request.getCurrentPage(), request.getPageSize(), request, request.getOrder()), OperatedLogVO.class, page);
