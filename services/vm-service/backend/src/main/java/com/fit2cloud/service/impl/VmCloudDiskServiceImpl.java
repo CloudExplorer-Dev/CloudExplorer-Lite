@@ -586,7 +586,7 @@ public class VmCloudDiskServiceImpl extends ServiceImpl<BaseVmCloudDiskMapper, V
                 vmCloudDisk.setCreateTime(LocalDateTime.now());
             }
             String diskId = UUID.randomUUID().toString().replace("-", "");
-            QueryWrapper<VmCloudDisk> queryWrapper = new QueryWrapper();
+            QueryWrapper<VmCloudDisk> queryWrapper = new QueryWrapper<>();
             queryWrapper.lambda()
                     .eq(VmCloudDisk::getAccountId, accountId)
                     .eq(VmCloudDisk::getRegion, f2cDisk.getRegion())
