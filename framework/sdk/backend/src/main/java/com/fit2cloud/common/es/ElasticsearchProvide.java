@@ -6,7 +6,6 @@ import com.fit2cloud.common.es.constants.EsErrorCodeConstants;
 import com.fit2cloud.common.exception.Fit2cloudException;
 import com.fit2cloud.common.log.utils.LogUtil;
 import com.fit2cloud.common.utils.QueryUtil;
-import com.fit2cloud.es.entity.PerfMetricMonitorData;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.data.elasticsearch.client.elc.ElasticsearchAggregations;
@@ -14,8 +13,6 @@ import org.springframework.data.elasticsearch.client.elc.ElasticsearchTemplate;
 import org.springframework.data.elasticsearch.core.SearchHit;
 import org.springframework.data.elasticsearch.core.SearchHits;
 import org.springframework.data.elasticsearch.core.mapping.IndexCoordinates;
-import org.springframework.data.elasticsearch.core.query.IndexQuery;
-import org.springframework.data.elasticsearch.core.query.IndexQueryBuilder;
 import org.springframework.data.elasticsearch.core.query.Query;
 import org.springframework.stereotype.Component;
 
@@ -101,55 +98,6 @@ public class ElasticsearchProvide {
         } catch (Exception e) {
             LogUtil.error("[ elasticsearch ]CODE[{}] >>{}", EsErrorCodeConstants.SEARCH_FAILED.getCode(), e.getMessage() + " " + e.getMessage());
             throw new Fit2cloudException(100010, e.getMessage());
-        }
-    }
-
-    /**
-     * 批量存储监控数据
-     *
-     * @param perfMetricMonitorDataList 监控数据
-     */
-    public void bulkInsert(List<PerfMetricMonitorData> perfMetricMonitorDataList, String index) {
-        int counter = 0;
-        try {
-            List<IndexQuery> queries = new ArrayList<>();
-            System.out.println("完成批量插入数据!");
-            for (PerfMetricMonitorData perfMetricMonitorData : perfMetricMonitorDataList) {
-                //数据索引ID，使用云账号ID+资源类型+资源ID+指标+时间点做为索引
-                StringBuilder idSB = new StringBuilder();
-                idSB.append(perfMetricMonitorData.getCloudAccountId());
-                idSB.append("-");
-                idSB.append(perfMetricMonitorData.getEntityType());
-                idSB.append("-");
-                idSB.append(perfMetricMonitorData.getInstanceId());
-                idSB.append("-");
-                idSB.append(perfMetricMonitorData.getMetricName());
-                idSB.append("-");
-                idSB.append(perfMetricMonitorData.getTimestamp());
-                idSB.append(perfMetricMonitorData.getDevice());
-                perfMetricMonitorData.setId(idSB.toString());
-                IndexQuery indexQuery = new IndexQueryBuilder()
-                        .withId(idSB.toString())
-                        .withObject(perfMetricMonitorData)
-                        .withIndex(index).build();
-                queries.add(indexQuery);
-                if (counter % 1000 == 0) {
-                    elasticsearchTemplate.bulkIndex(queries, PerfMetricMonitorData.class);
-                    queries.clear();
-                }
-                counter++;
-            }
-            System.out.println("批次总计：" + counter);
-            if (queries.size() > 0) {
-                elasticsearchTemplate.bulkIndex(queries, PerfMetricMonitorData.class);
-                System.out.println("插入总计：" + queries.size());
-            } else {
-                System.out.println("插入总计：" + (counter * 1000));
-            }
-            System.out.println("完成批量插入数据!");
-        } catch (Exception e) {
-            System.out.println("数据批量插入ES失败:" + e.getMessage());
-            throw e;
         }
     }
 
