@@ -1114,25 +1114,25 @@ public class TencentSyncCloudApi {
         DescribeInstancesRequest req = new DescribeInstancesRequest();
         int count = 0;
         while (true) {
-            req.setInstanceIds(new String[]{uuid});
-            DescribeInstancesResponse resp = client.DescribeInstances(req);
-            if (resp.getInstanceSet().length == 0) {
-                throw new RuntimeException("Not found instance - " + uuid);
-            }
-            Instance instance = Arrays.stream(resp.getInstanceSet()).toList().get(0);
-            if (Optional.ofNullable(instance).isPresent()) {
-                if (StringUtils.equalsIgnoreCase(instance.getLatestOperationRequestId(), requestId) && StringUtils.equalsIgnoreCase(instance.getLatestOperationState(), "SUCCESS")) {
-                    break;
+            try {
+                Thread.sleep(5000);
+                req.setInstanceIds(new String[]{uuid});
+                DescribeInstancesResponse resp = client.DescribeInstances(req);
+                if (resp.getInstanceSet().length == 0) {
+                    throw new RuntimeException("Not found instance - " + uuid);
                 }
-            }
-            if (count < 40) {
-                try {
-                    Thread.sleep(5000);
-                } catch (Exception e) {
-                    throw new RuntimeException(e.getMessage());
+                Instance instance = Arrays.stream(resp.getInstanceSet()).toList().get(0);
+                if (Optional.ofNullable(instance).isPresent()) {
+                    if (StringUtils.equalsIgnoreCase(instance.getLatestOperationRequestId(), requestId) && StringUtils.equalsIgnoreCase(instance.getLatestOperationState(), "SUCCESS")) {
+                        break;
+                    }
                 }
-            } else {
-                break;
+                if (count >= 40) {
+                    throw new RuntimeException("check status timeout - " + uuid);
+                }
+                count++;
+            } catch (Exception e) {
+                throw new RuntimeException("check status fail - " + uuid + "-" + e.getMessage());
             }
         }
     }
@@ -1145,8 +1145,6 @@ public class TencentSyncCloudApi {
         //设置时间，根据syncTimeStampStr,默认一个小时
         getMetricsRequest.setStartTime(String.valueOf(DateUtil.beforeOneHourToTimestamp(Long.valueOf(getMetricsRequest.getSyncTimeStampStr()))));
         getMetricsRequest.setEndTime(getMetricsRequest.getSyncTimeStampStr());
-        System.out.println("开始时间：" + getMetricsRequest.getStartTime());
-        System.out.println("结束时间：" + getMetricsRequest.getEndTime());
         try {
             getMetricsRequest.setRegionId(getMetricsRequest.getRegionId());
             TencentVmCredential credential = JsonUtil.parseObject(getMetricsRequest.getCredential(), TencentVmCredential.class);
@@ -1340,7 +1338,6 @@ public class TencentSyncCloudApi {
                 });
             }
         } catch (Exception e) {
-            System.out.println(req.getMetricName() + "-" + e.getMessage());
             LogUtil.error("{}-{}", req.getMetricName(), e.getMessage());
         }
         return map;
@@ -1364,7 +1361,6 @@ public class TencentSyncCloudApi {
                 });
             }
         } catch (Exception e) {
-            System.out.println(req.getMetricName() + "-" + e.getMessage());
             LogUtil.error("{}-{}", req.getMetricName(), e.getMessage());
         }
         return result;
