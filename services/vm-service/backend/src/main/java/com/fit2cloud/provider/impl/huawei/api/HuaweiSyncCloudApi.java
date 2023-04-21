@@ -68,8 +68,9 @@ import java.util.stream.Collectors;
  * @注释:
  */
 public class HuaweiSyncCloudApi {
-    private static Logger logger = LoggerFactory.getLogger(HuaweiSyncCloudApi.class);
+    private static final Logger logger = LoggerFactory.getLogger(HuaweiSyncCloudApi.class);
     private static final int WAIT_COUNT = 50;
+    private static final int SLEEP_TIME = 10000;
 
     /**
      * 获取华为云云主机数据
@@ -100,10 +101,10 @@ public class HuaweiSyncCloudApi {
                                 appendExpiredTime(credential, server, virtualMachine);
                             }
                             return virtualMachine;
-                        }).map(f2CVirtualMachine -> {
-                            f2CVirtualMachine.setRegion(listVirtualMachineRequest.getRegionId());
-                            return f2CVirtualMachine;
-                        }).map(f2CVirtualMachine -> appendDisk(listVirtualMachineRequest.getCredential(), listVirtualMachineRequest.getRegionId(), f2CVirtualMachine))
+                        }).map(virtualMachine -> {
+                            virtualMachine.setRegion(listVirtualMachineRequest.getRegionId());
+                            return virtualMachine;
+                        }).map(virtualMachine -> appendDisk(listVirtualMachineRequest.getCredential(), listVirtualMachineRequest.getRegionId(), virtualMachine))
                         .toList();
             }
         }
@@ -162,19 +163,19 @@ public class HuaweiSyncCloudApi {
     /**
      * 给云主机添加磁盘数据
      *
-     * @param credential        认证信息
-     * @param regionId          区域信息
-     * @param f2CVirtualMachine 云主机对象
+     * @param credential     认证信息
+     * @param regionId       区域信息
+     * @param virtualMachine 云主机对象
      * @return 云主机对象
      */
-    private static F2CVirtualMachine appendDisk(String credential, String regionId, F2CVirtualMachine f2CVirtualMachine) {
+    private static F2CVirtualMachine appendDisk(String credential, String regionId, F2CVirtualMachine virtualMachine) {
         ListDisksRequest listDisksRequest = new ListDisksRequest();
         listDisksRequest.setCredential(credential);
         listDisksRequest.setRegionId(regionId);
         List<F2CDisk> disks = listDisk(listDisksRequest);
         long sum = disks.stream().mapToLong(F2CDisk::getSize).sum();
-        f2CVirtualMachine.setDisk((int) sum);
-        return f2CVirtualMachine;
+        virtualMachine.setDisk((int) sum);
+        return virtualMachine;
     }
 
     /**
@@ -182,9 +183,9 @@ public class HuaweiSyncCloudApi {
      *
      * @param credential
      * @param serverDetail
-     * @param f2CVirtualMachine
+     * @param virtualMachine
      */
-    private static void appendExpiredTime(HuaweiVmCredential credential, ServerDetail serverDetail, F2CVirtualMachine f2CVirtualMachine) {
+    private static void appendExpiredTime(HuaweiVmCredential credential, ServerDetail serverDetail, F2CVirtualMachine virtualMachine) {
         String orderId = serverDetail.getMetadata().get("metering.order_id");
         String productId = serverDetail.getMetadata().get("metering.product_id");
         ShowCustomerOrderDetailsResponse response = getOrderDetailsById(orderId, credential.getBssClient());
@@ -192,7 +193,7 @@ public class HuaweiSyncCloudApi {
             String expireTime = response.getOrderLineItems().stream().filter(orderLineItemEntityV2 ->
                     orderLineItemEntityV2.getProductId().equalsIgnoreCase(productId)
             ).collect(Collectors.toList()).get(0).getExpireTime();
-            f2CVirtualMachine.setExpiredTime(new Date(CommonUtil.getUTCTime(expireTime, "yyyy-MM-dd'T'HH:mm:ss'Z'")).getTime());
+            virtualMachine.setExpiredTime(new Date(CommonUtil.getUTCTime(expireTime, "yyyy-MM-dd'T'HH:mm:ss'Z'")).getTime());
         }
     }
 
@@ -252,10 +253,10 @@ public class HuaweiSyncCloudApi {
 
                 checkEcsJobStatus(client, batchStopServersResponse.getJobId());
                 return true;
-            } catch (TeaException error) {
-                throw new Fit2cloudException(ErrorCodeConstants.VM_POWER_OFF_FAIL.getCode(), error.getMessage());
-            } catch (Exception _error) {
-                TeaException error = new TeaException(_error.getMessage(), _error);
+            } catch (TeaException teaException) {
+                throw new Fit2cloudException(ErrorCodeConstants.VM_POWER_OFF_FAIL.getCode(), teaException.getMessage());
+            } catch (Exception e) {
+                TeaException error = new TeaException(e.getMessage(), e);
                 throw new Fit2cloudException(ErrorCodeConstants.VM_POWER_OFF_FAIL.getCode(), error.getMessage());
             }
         }
@@ -281,10 +282,10 @@ public class HuaweiSyncCloudApi {
                                                 .withServers(Arrays.asList(new ServerId().withId(request.getUuid()))))));
                 checkEcsJobStatus(client, batchStartServersResponse.getJobId());
                 return true;
-            } catch (TeaException error) {
-                throw new Fit2cloudException(ErrorCodeConstants.VM_POWER_ON_FAIL.getCode(), error.getMessage());
-            } catch (Exception _error) {
-                TeaException error = new TeaException(_error.getMessage(), _error);
+            } catch (TeaException teaError) {
+                throw new Fit2cloudException(ErrorCodeConstants.VM_POWER_ON_FAIL.getCode(), teaError.getMessage());
+            } catch (Exception e) {
+                TeaException error = new TeaException(e.getMessage(), e);
                 throw new Fit2cloudException(ErrorCodeConstants.VM_POWER_ON_FAIL.getCode(), error.getMessage());
             }
         }
@@ -307,10 +308,10 @@ public class HuaweiSyncCloudApi {
                                                 .withType(request.getForce() ? BatchRebootSeversOption.TypeEnum.HARD : BatchRebootSeversOption.TypeEnum.SOFT))));
                 checkEcsJobStatus(client, batchRebootServersResponse.getJobId());
                 return true;
-            } catch (TeaException error) {
-                throw new Fit2cloudException(ErrorCodeConstants.VM_REBOOT_FAIL.getCode(), error.getMessage());
-            } catch (Exception _error) {
-                TeaException error = new TeaException(_error.getMessage(), _error);
+            } catch (TeaException teaException) {
+                throw new Fit2cloudException(ErrorCodeConstants.VM_REBOOT_FAIL.getCode(), teaException.getMessage());
+            } catch (Exception e) {
+                TeaException error = new TeaException(e.getMessage(), e);
                 throw new Fit2cloudException(ErrorCodeConstants.VM_REBOOT_FAIL.getCode(), error.getMessage());
             }
         }
@@ -347,35 +348,35 @@ public class HuaweiSyncCloudApi {
                     checkEcsJobStatus(client, batchStartServersResponse.getJobId());
                     return true;
                 }
-            } catch (TeaException error) {
-                throw new Fit2cloudException(ErrorCodeConstants.VM_DELETE_FAIL.getCode(), error.getMessage());
-            } catch (Exception _error) {
-                TeaException error = new TeaException(_error.getMessage(), _error);
+            } catch (TeaException teaException) {
+                throw new Fit2cloudException(ErrorCodeConstants.VM_DELETE_FAIL.getCode(), teaException.getMessage());
+            } catch (Exception e) {
+                TeaException error = new TeaException(e.getMessage(), e);
                 throw new Fit2cloudException(ErrorCodeConstants.VM_DELETE_FAIL.getCode(), error.getMessage());
             }
         }
         return false;
     }
 
-    private static void checkEcsJobStatus(EcsClient client, String jobId) throws Exception {
+    private static void checkEcsJobStatus(EcsClient client, String jobId) {
         int count = 0;
         while (true) {
-            com.huaweicloud.sdk.ecs.v2.model.ShowJobResponse jobResponse = client.showJob(new com.huaweicloud.sdk.ecs.v2.model.ShowJobRequest().withJobId(jobId));
-            com.huaweicloud.sdk.ecs.v2.model.ShowJobResponse.StatusEnum status = jobResponse.getStatus();
-            if (ShowJobResponse.StatusEnum.SUCCESS.getValue().equals(status.getValue())) {
-                break;
-            }
-            if (ShowJobResponse.StatusEnum.FAIL.getValue().equals(status.getValue())) {
-                throw new RuntimeException(jobResponse.getFailReason());
-            }
-            if (count < 40) {
-                try {
-                    Thread.sleep(5000);
-                } catch (InterruptedException e) {
-                    throw new RuntimeException(e.getMessage());
+            try {
+                Thread.sleep(SLEEP_TIME);
+                com.huaweicloud.sdk.ecs.v2.model.ShowJobResponse jobResponse = client.showJob(new com.huaweicloud.sdk.ecs.v2.model.ShowJobRequest().withJobId(jobId));
+                com.huaweicloud.sdk.ecs.v2.model.ShowJobResponse.StatusEnum status = jobResponse.getStatus();
+                if (ShowJobResponse.StatusEnum.SUCCESS.getValue().equals(status.getValue())) {
+                    break;
                 }
-            } else {
-                break;
+                if (ShowJobResponse.StatusEnum.FAIL.getValue().equals(status.getValue())) {
+                    throw new RuntimeException(jobResponse.getFailReason());
+                }
+                if (count >= WAIT_COUNT) {
+                    throw new RuntimeException("Check cloud server status timeout！");
+                }
+                count++;
+            } catch (Exception e) {
+                throw new RuntimeException("Check cloud server status error: " + e.getMessage());
             }
         }
     }
@@ -442,9 +443,6 @@ public class HuaweiSyncCloudApi {
 
     /**
      * 创建磁盘
-     *
-     * @param request
-     * @return
      */
     public static F2CDisk createDisk(HuaweiCreateDiskRequest request) {
         HuaweiVmCredential huaweiVmCredential = JsonUtil.parseObject(request.getCredential(), HuaweiVmCredential.class);
@@ -452,7 +450,8 @@ public class HuaweiSyncCloudApi {
         try {
             CreateVolumeResponse response = evsClient.createVolume(request.toCreateVolumeRequest());
             String volumeId;
-            String status = request.getInstanceUuid() == null ? F2CDiskStatus.AVAILABLE : "in-use"; //华为云的 in-use 是中划线😭
+            // 华为云的 in-use 是中划线😭
+            String status = request.getInstanceUuid() == null ? F2CDiskStatus.AVAILABLE : "in-use";
             if (StringUtils.isNotEmpty(response.getOrderId())) {
                 volumeId = checkOrderResourceId(response.getOrderId(), huaweiVmCredential.getBssClient());
             } else {
@@ -528,7 +527,7 @@ public class HuaweiSyncCloudApi {
             }
             String status = volume.getStatus();
             evsClient.resizeVolume(request.toResizeVolumeRequest());
-            if (status.equalsIgnoreCase("in-use") || status.equalsIgnoreCase(F2CDiskStatus.AVAILABLE)) {
+            if ("in-use".equalsIgnoreCase(status) || status.equalsIgnoreCase(F2CDiskStatus.AVAILABLE)) {
                 checkVolumeStatus(diskId, evsClient, status);
             }
             return true;
@@ -674,15 +673,14 @@ public class HuaweiSyncCloudApi {
         showJobRequest.setJobId(jobId);
         try {
             int count = 0;
-            ShowJobResponse showJobResponse = null;
             while (true) {
                 Thread.sleep(2000);
                 count++;
-                showJobResponse = evsClient.showJob(showJobRequest);
-                if (showJobResponse.getStatus().getValue().equalsIgnoreCase("FAIL")) {
+                ShowJobResponse showJobResponse = evsClient.showJob(showJobRequest);
+                if ("FAIL".equalsIgnoreCase(showJobResponse.getStatus().getValue())) {
                     throw new RuntimeException(new Gson().toJson(showJobResponse));
                 }
-                if (showJobResponse != null && showJobResponse.getStatus().getValue().equalsIgnoreCase("SUCCESS")) {
+                if ("SUCCESS".equalsIgnoreCase(showJobResponse.getStatus().getValue())) {
                     return showJobResponse;
                 }
                 if (count >= WAIT_COUNT) {
@@ -695,9 +693,7 @@ public class HuaweiSyncCloudApi {
     }
 
     public static List<F2CPerfMetricMonitorData> getF2CPerfMetricList(GetMetricsRequest getMetricsRequest) {
-        if (StringUtils.isEmpty(getMetricsRequest.getRegionId())) {
-            throw new Fit2cloudException(10002, "区域为必填参数");
-        }
+        existRegion(getMetricsRequest);
         List<F2CPerfMetricMonitorData> result = new ArrayList<>();
         //设置时间，根据syncTimeStampStr,默认一个小时
         getMetricsRequest.setStartTime(String.valueOf(DateUtil.beforeOneHourToTimestamp(Long.valueOf(getMetricsRequest.getSyncTimeStampStr()))));
@@ -706,29 +702,31 @@ public class HuaweiSyncCloudApi {
             getMetricsRequest.setRegionId(getMetricsRequest.getRegionId());
             result.addAll(getVmPerfMetric(getMetricsRequest));
         } catch (Exception e) {
-            System.out.println("区域" + getMetricsRequest.getRegionId());
             throw new SkipPageException(100021, "获取监控数据失败-" + getMetricsRequest.getRegionId() + "-" + e.getMessage());
         }
         return result;
     }
 
-    /**
-     * 需要通过云主机查询
-     *
-     * @param getMetricsRequest
-     * @return
-     */
-    public static List<F2CPerfMetricMonitorData> getF2CDiskPerfMetricList(GetMetricsRequest getMetricsRequest) {
+    private static void existRegion(GetMetricsRequest getMetricsRequest) {
         if (StringUtils.isEmpty(getMetricsRequest.getRegionId())) {
             throw new Fit2cloudException(10002, "区域为必填参数");
         }
+    }
+
+    /**
+     * 需要通过云主机查询
+     *
+     * @param getMetricsRequest 监控查询参数
+     * @return 监控数据
+     */
+    public static List<F2CPerfMetricMonitorData> getF2CDiskPerfMetricList(GetMetricsRequest getMetricsRequest) {
+        existRegion(getMetricsRequest);
         List<F2CPerfMetricMonitorData> result = new ArrayList<>();
         //设置时间，根据syncTimeStampStr,默认一个小时
         getMetricsRequest.setStartTime(String.valueOf(DateUtil.beforeOneHourToTimestamp(Long.valueOf(getMetricsRequest.getSyncTimeStampStr()))));
         getMetricsRequest.setEndTime(getMetricsRequest.getSyncTimeStampStr());
         try {
             getMetricsRequest.setRegionId(getMetricsRequest.getRegionId());
-            //result.addAll(getVmPerfMetric(getMetricsRequest));
         } catch (Exception e) {
             e.printStackTrace();
             SkipPageException.throwSkipPageException(e);
@@ -740,8 +738,8 @@ public class HuaweiSyncCloudApi {
     /**
      * 获取虚拟机监控指标数据
      *
-     * @param getMetricsRequest
-     * @return
+     * @param getMetricsRequest 监控查询参数
+     * @return 监控数据
      */
     private static List<F2CPerfMetricMonitorData> getVmPerfMetric(GetMetricsRequest getMetricsRequest) {
         HuaweiVmCredential credential = JsonUtil.parseObject(getMetricsRequest.getCredential(), HuaweiVmCredential.class);
@@ -912,12 +910,7 @@ public class HuaweiSyncCloudApi {
             }
             //安全组
             List<PrePaidServerSecurityGroup> listServerSecurityGroups = new ArrayList<>();
-            request.getSecurityGroups().forEach(v -> {
-                listServerSecurityGroups.add(
-                        new PrePaidServerSecurityGroup()
-                                .withId(v)
-                );
-            });
+            request.getSecurityGroups().forEach(v -> listServerSecurityGroups.add(new PrePaidServerSecurityGroup().withId(v)));
 
             //系统盘
             DiskConfig systemDisk = request.getDisks().get(0);
@@ -947,7 +940,7 @@ public class HuaweiSyncCloudApi {
             PrePaidServerPublicip publicipServer = null;
             if (request.isUsePublicIp()) {
                 PrePaidServerEipExtendParam extendparamEip = new PrePaidServerEipExtendParam();
-                extendparamEip.withChargingMode(PrePaidServerEipExtendParam.ChargingModeEnum.fromValue(request.getBillingMode() == "1" ? "prePaid" : "postPaid"));
+                extendparamEip.withChargingMode(PrePaidServerEipExtendParam.ChargingModeEnum.fromValue(Objects.equals(request.getBillingMode(), "1") ? "prePaid" : "postPaid"));
                 PrePaidServerEipBandwidth bandwidthEip = new PrePaidServerEipBandwidth();
                 boolean isTraffic = StringUtils.equalsIgnoreCase("traffic", request.getChargeMode());
                 bandwidthEip.withSize(isTraffic ? request.getTrafficBandwidthSize() : request.getBandwidthSize())
@@ -1080,35 +1073,35 @@ public class HuaweiSyncCloudApi {
 
     private static ServerDetail getJobEntities(EcsClient client, String jobId) {
         int count = 0;
-        ServerDetail result = null;
         while (true) {
-            com.huaweicloud.sdk.ecs.v2.model.ShowJobResponse jobResponse = client.showJob(new com.huaweicloud.sdk.ecs.v2.model.ShowJobRequest().withJobId(jobId));
-            com.huaweicloud.sdk.ecs.v2.model.ShowJobResponse.StatusEnum status = jobResponse.getStatus();
-            if (ShowJobResponse.StatusEnum.SUCCESS.getValue().equals(status.getValue())) {
-                String id = jobResponse.getEntities().getSubJobs().get(0).getEntities().getServerId();
-                ShowServerRequest request = new ShowServerRequest();
-                request.setServerId(id);
-                ShowServerResponse response = client.showServer(request);
-                result = response.getServer();
-                break;
-            }
-            if (ShowJobResponse.StatusEnum.FAIL.equals(status)) {
-                throw new RuntimeException(jobResponse.getFailReason());
-            }
-            if (count < 40) {
-                try {
-                    Thread.sleep(5000);
-                } catch (InterruptedException e) {
-                    throw new RuntimeException(e.getMessage());
+            try {
+                Thread.sleep(SLEEP_TIME);
+                com.huaweicloud.sdk.ecs.v2.model.ShowJobResponse jobResponse = client.showJob(new com.huaweicloud.sdk.ecs.v2.model.ShowJobRequest().withJobId(jobId));
+                com.huaweicloud.sdk.ecs.v2.model.ShowJobResponse.StatusEnum status = jobResponse.getStatus();
+                if (ShowJobResponse.StatusEnum.SUCCESS.getValue().equals(status.getValue())) {
+                    String id = jobResponse.getEntities().getSubJobs().get(0).getEntities().getServerId();
+                    ShowServerRequest request = new ShowServerRequest();
+                    request.setServerId(id);
+                    ShowServerResponse response = client.showServer(request);
+                    return response.getServer();
                 }
-            } else {
-                break;
+                if (ShowJobResponse.StatusEnum.FAIL.getValue().equalsIgnoreCase(status.getValue())) {
+                    String errorMsg = jobResponse.getFailReason();
+                    try {
+                        errorMsg = jobResponse.getEntities().getSubJobs().get(0).getEntities().getErrorcodeMessage();
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                    throw new RuntimeException(errorMsg);
+                }
+                if (count >= WAIT_COUNT) {
+                    throw new RuntimeException("check create server status timeout！");
+                }
+                count++;
+            } catch (Exception e) {
+                throw new RuntimeException("getJobEntities fail jobId - " + jobId + "-" + e.getMessage());
             }
         }
-        if (result == null) {
-            throw new RuntimeException("getJobEntities fail jobId - " + jobId);
-        }
-        return result;
     }
 
 
@@ -1247,7 +1240,9 @@ public class HuaweiSyncCloudApi {
             if (StringUtils.isEmpty(request.getAvailabilityZone())) {
                 return result.toString();
             }
-            if (request.getCount() == 0) request.setCount(1);
+            if (request.getCount() == 0) {
+                request.setCount(1);
+            }
             HuaweiVmCredential credential = JsonUtil.parseObject(request.getCredential(), HuaweiVmCredential.class);
             //查询项目
             KeystoneListAuthProjectsRequest projectsRequest = new KeystoneListAuthProjectsRequest();
@@ -1531,11 +1526,6 @@ public class HuaweiSyncCloudApi {
      * 19_share:按带宽计费共享带宽
      * IP:5_bgp:动态BGP公网
      * IP5_sbgp:静态BGP公网IP
-     *
-     * @param createRequest
-     * @param credential
-     * @param projectId
-     * @return
      */
     private static Double bandwidthInquiryPriceForHour(HuaweiVmCreateRequest createRequest, HuaweiVmCredential credential, String projectId) {
         if (StringUtils.isEmpty(createRequest.getChargeMode())) {
@@ -1621,7 +1611,7 @@ public class HuaweiSyncCloudApi {
     }
 
     public static List<Map<String, String>> listOs(String request) {
-        List<Map<String, String>> result = new ArrayList<>();
+        List<Map<String, String>> result = new ArrayList<>(14);
         List<String> osList = Arrays.asList("Windows", "RedHat", "CentOS", "SUSE", "Debian", "OpenSUSE", "Oracle Linux", "Fedora", "Ubuntu", "EulerOS", "CoreOS", "ESXi", "Other", "openEuler");
         osList.stream().sorted().forEach(v -> {
             Map<String, String> m = new HashMap<>();

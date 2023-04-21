@@ -1001,18 +1001,18 @@ public class AliyunSyncCloudApi {
     private static void checkStatus(Client client, String status, DescribeInstanceStatusRequest describeInstanceStatusRequest) throws Exception {
         int count = 0;
         while (true) {
-            DescribeInstanceStatusResponse response = client.describeInstanceStatus(describeInstanceStatusRequest);
-            if (StringUtils.equalsIgnoreCase(response.getBody().getInstanceStatuses().getInstanceStatus().get(0).getStatus(), status)) {
-                break;
-            }
-            if (count < 40) {
-                try {
-                    Thread.sleep(5000);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
+            try {
+                Thread.sleep(5000);
+                DescribeInstanceStatusResponse response = client.describeInstanceStatus(describeInstanceStatusRequest);
+                if (StringUtils.equalsIgnoreCase(response.getBody().getInstanceStatuses().getInstanceStatus().get(0).getStatus(), status)) {
+                    break;
                 }
-            } else {
-                break;
+                if (count >= 40) {
+                    throw new Exception("Check cloud status timeout！");
+                }
+                count++;
+            } catch (Exception e) {
+                throw new Exception("Check cloud status fail！" + e.getMessage());
             }
         }
     }
@@ -1166,6 +1166,7 @@ public class AliyunSyncCloudApi {
                 if (disks.size() > 0 && disks.get(0).getStatus().equalsIgnoreCase(expectStatus)) {
                     return AliyunMappingUtil.toF2CDisk(disks.get(0));
                 }
+                count++;
                 if (count >= 40) {
                     throw new Exception("Check cloud disk status timeout！");
                 }
@@ -1475,6 +1476,7 @@ public class AliyunSyncCloudApi {
                 if (count >= 40) {
                     throw new Exception("Check cloud disk status timeout！");
                 }
+                count++;
             }
         } catch (Exception e) {
             throw new RuntimeException(e);
