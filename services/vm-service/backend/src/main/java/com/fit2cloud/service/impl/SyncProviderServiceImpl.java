@@ -9,14 +9,14 @@ import com.fit2cloud.base.service.IBaseVmCloudHostService;
 import com.fit2cloud.common.constants.JobConstants;
 import com.fit2cloud.common.constants.JobStatusConstants;
 import com.fit2cloud.common.constants.JobTypeConstants;
-import com.fit2cloud.common.es.ElasticsearchProvide;
-import com.fit2cloud.common.es.constants.IndexConstants;
 import com.fit2cloud.common.log.utils.LogUtil;
 import com.fit2cloud.common.platform.credential.Credential;
 import com.fit2cloud.common.provider.entity.F2CPerfMetricMonitorData;
+import com.fit2cloud.common.provider.util.CommonUtil;
 import com.fit2cloud.common.utils.DateUtil;
 import com.fit2cloud.common.utils.JsonUtil;
 import com.fit2cloud.es.entity.PerfMetricMonitorData;
+import com.fit2cloud.es.repository.PerfMetricMonitorDataRepository;
 import com.fit2cloud.provider.ICloudProvider;
 import com.fit2cloud.provider.constants.F2CDiskStatus;
 import com.fit2cloud.provider.constants.F2CImageStatus;
@@ -24,6 +24,7 @@ import com.fit2cloud.provider.constants.F2CInstanceStatus;
 import com.fit2cloud.provider.constants.ProviderConstants;
 import com.fit2cloud.provider.entity.*;
 import com.fit2cloud.service.*;
+import com.google.common.base.Joiner;
 import io.reactivex.rxjava3.functions.BiFunction;
 import io.reactivex.rxjava3.functions.Consumer;
 import org.apache.commons.collections4.CollectionUtils;
@@ -31,6 +32,7 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
+import java.io.Serializable;
 import java.time.LocalDateTime;
 import java.util.*;
 
@@ -55,7 +57,7 @@ public class SyncProviderServiceImpl extends BaseSyncService implements ISyncPro
     @Resource
     private IBaseJobRecordResourceMappingService jobRecordResourceMappingService;
     @Resource
-    private ElasticsearchProvide elasticsearchProvide;
+    private PerfMetricMonitorDataRepository perfMetricMonitorDataRepository;
 
     @Override
     public void syncCloudServer(String cloudAccountId) {
@@ -373,9 +375,16 @@ public class SyncProviderServiceImpl extends BaseSyncService implements ISyncPro
             PerfMetricMonitorData perfMetricMonitorData = new PerfMetricMonitorData();
             BeanUtils.copyProperties(v, perfMetricMonitorData);
             perfMetricMonitorData.setCloudAccountId(saveBatchOrUpdateParams.getCloudAccountId());
+            //数据索引ID，使用云账号ID+资源类型+资源ID+指标+时间点做为索引
+            List<? extends Serializable> ids = Arrays.asList(perfMetricMonitorData.getCloudAccountId(), perfMetricMonitorData.getEntityType(), perfMetricMonitorData.getInstanceId(), perfMetricMonitorData.getMetricName(), perfMetricMonitorData.getTimestamp(), Objects.isNull(perfMetricMonitorData.getDevice()) ? "" : perfMetricMonitorData.getDevice());
+            perfMetricMonitorData.setId(Joiner.on("-").join(ids));
             perfMetricMonitorDataList.add(perfMetricMonitorData);
         });
-        elasticsearchProvide.bulkInsert(perfMetricMonitorDataList, IndexConstants.CE_PERF_METRIC_MONITOR_DATA.getCode());
+        perfMetricMonitorDataRepository.deleteAll(perfMetricMonitorDataList);
+        List<List<PerfMetricMonitorData>> lists = CommonUtil.averageAssign(perfMetricMonitorDataList, 5000);
+        for (List<PerfMetricMonitorData> list : lists) {
+            perfMetricMonitorDataRepository.saveAll(list);
+        }
     }
 
     /**
