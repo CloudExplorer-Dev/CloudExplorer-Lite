@@ -1147,10 +1147,7 @@ public class VsphereSyncCloudApi {
             vms.forEach(vm -> {
                 VirtualMachineRuntimeInfo runtime = vm.getRuntime();
                 Arrays.stream(VspherePerfMetricConstants.CloudServerPerfMetricEnum.values()).sorted().toList().forEach(perfMetric -> {
-                    System.out.println("开始：" + perfMetric.getDescription());
-                    System.out.println("MetricId：" + perfMetric.getMetricName());
                     Map<String, Map<String, Long>> dataMap = getPerfData(vm.getMOR(), client, getMetricsRequest, perfMetric.getMetricName(), getMetricsRequest.getInterval());
-                    System.out.println("结果：" + JsonUtil.toJSONString(dataMap));
                     /// TODO 没有最大最小值，可能需要自己算？
                     //最大最小值去时间段内的，因为接口拿不到
                     Long max = dataMap.values().stream().toList().stream().map(map -> map.get("Average"))
@@ -1192,10 +1189,7 @@ public class VsphereSyncCloudApi {
             hosts.forEach(host -> {
                 ComputeResource clusterResource = client.getComputeResource(host);
                 Arrays.stream(VspherePerfMetricConstants.CloudServerPerfMetricEnum.values()).sorted().toList().forEach(perfMetric -> {
-                    System.out.println("开始：" + perfMetric.getDescription());
-                    System.out.println("MetricId：" + perfMetric.getMetricName());
                     Map<String, Map<String, Long>> dataMap = getPerfData(host.getMOR(), client, getMetricsRequest, perfMetric.getMetricName(), getMetricsRequest.getInterval());
-                    System.out.println("结果：" + JsonUtil.toJSONString(dataMap));
                     dataMap.values().forEach((data) -> {
                         F2CPerfMetricMonitorData f2CEntityPerfMetric = new F2CPerfMetricMonitorData();
                         f2CEntityPerfMetric.setTimestamp(data.get("timestamp"));
@@ -1249,7 +1243,7 @@ public class VsphereSyncCloudApi {
             }
             //网络的，只能获取过去30分钟内的数据，小于30分
             if (StringUtils.equalsIgnoreCase(metricName, "494") || StringUtils.equalsIgnoreCase(metricName, "495")) {
-                calBegin.setTime(new Date((Long.valueOf(request.getStartTime()) + 1900000)));
+                calBegin.setTime(new Date((Long.valueOf(request.getStartTime()) + 1920000)));
             }
         }
         Calendar calEnd = Calendar.getInstance();
@@ -1290,9 +1284,6 @@ public class VsphereSyncCloudApi {
             if (!ObjectUtils.isEmpty(infos)) {
                 //数据值
                 long[] values = ((PerfMetricIntSeries) pem.getValue()[0]).getValue();
-                System.out.println("时间数据数量：" + infos.length);
-                System.out.println("数据数量：" + values.length);
-                System.out.println("\nSample values:");
                 F2CPerfMetricMonitorData data = new F2CPerfMetricMonitorData();
                 for (int j = 0; values != null && j < values.length; ++j) {
                     Map<String, Long> map = new HashMap<>();
@@ -1322,10 +1313,7 @@ public class VsphereSyncCloudApi {
         if (datastores.size() != 0) {
             datastores.forEach(datastore -> {
                 VspherePerfMetricConstants.CloudServerPerfMetricEnum perfMetric = VspherePerfMetricConstants.CloudServerPerfMetricEnum.DATASTORE_USED_UTILIZATION;
-                System.out.println("开始：" + perfMetric.getDescription());
-                System.out.println("MetricId：" + perfMetric.getMetricName());
                 Map<String, Map<String, Long>> dataMap = getPerfData(datastore.getMor(), client, getMetricsRequest, perfMetric.getMetricName(), getMetricsRequest.getInterval());
-                System.out.println("结果：" + JsonUtil.toJSONString(dataMap));
                 dataMap.values().forEach((data) -> {
                     F2CPerfMetricMonitorData f2CEntityPerfMetric = new F2CPerfMetricMonitorData();
                     f2CEntityPerfMetric.setTimestamp(data.get("timestamp"));
@@ -1521,22 +1509,6 @@ public class VsphereSyncCloudApi {
             return CheckCreateServerResult.fail(e.getMessage());
         } finally {
             closeConnection(client);
-        }
-    }
-
-    public static void getMircId(VsphereVmBaseRequest request) {
-        VsphereVmClient client = request.getVsphereVmClient();
-        PerformanceManager perfMgr = client.getSi().getPerformanceManager();
-        PerfCounterInfo[] pcis = perfMgr.getPerfCounter();
-
-        for (PerfCounterInfo pci : pcis) {
-            StringBuffer perfCounterBuffer = new StringBuffer();
-            perfCounterBuffer.append(pci.getGroupInfo().getKey());
-            perfCounterBuffer.append(".");
-            perfCounterBuffer.append(pci.getNameInfo().getKey());
-            perfCounterBuffer.append(".");
-            perfCounterBuffer.append(pci.getRollupType());
-            System.out.println(perfCounterBuffer.toString() + "----" + pci.getKey());
         }
     }
 
