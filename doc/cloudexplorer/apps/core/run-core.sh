@@ -28,13 +28,13 @@ function runMain() {
     echo "eureka-$_version.jar not exist" 1>&2
     exit 1
   fi
-  nohup java -jar /opt/cloudexplorer/apps/core/eureka-$_version.jar --thin.root=/opt/cloudexplorer/apps/core -Dfile.encoding=utf-8 > /opt/cloudexplorer/apps/core/eureka-console.log 2>&1 &
+  nohup java -jar /opt/cloudexplorer/apps/core/eureka-$_version.jar --thin.root=/opt/cloudexplorer/apps/core -Dfile.encoding=utf-8 > /opt/cloudexplorer/logs/eureka-console.log 2>&1 &
   echo "run management-center"
   if [ ! -f /opt/cloudexplorer/apps/core/management-center-$_version.jar ]; then
     echo "management-center-$_version.jar not exist" 1>&2
     exit 1
   fi
-  nohup java -jar /opt/cloudexplorer/apps/core/management-center-$_version.jar --thin.root=/opt/cloudexplorer/apps/core -Dfile.encoding=utf-8 > /opt/cloudexplorer/apps/core/management-center-console.log 2>&1 &
+  nohup java -jar /opt/cloudexplorer/apps/core/management-center-$_version.jar --thin.root=/opt/cloudexplorer/apps/core -Dfile.encoding=utf-8 > /opt/cloudexplorer/logs/management-center-console.log 2>&1 &
 }
 
 function runGateway() {
@@ -44,7 +44,7 @@ function runGateway() {
     echo "gateway-$_version.jar not exist" 1>&2
     exit 1
   fi
-  nohup java -jar /opt/cloudexplorer/apps/core/gateway-$_version.jar --thin.root=/opt/cloudexplorer/apps/core -Dfile.encoding=utf-8 > /opt/cloudexplorer/apps/core/gateway-console.log 2>&1 &
+  nohup java -jar /opt/cloudexplorer/apps/core/gateway-$_version.jar --thin.root=/opt/cloudexplorer/apps/core -Dfile.encoding=utf-8 > /opt/cloudexplorer/logs/gateway-console.log 2>&1 &
 }
 
 
@@ -63,7 +63,7 @@ function runExtra() {
         echo "${name_version[0]}-${name_version[2]}.jar not exist" 1>&2
         continue
       fi
-      nohup java -jar /opt/cloudexplorer/apps/extra/${name_version[0]}-${name_version[2]}.jar --thin.root=/opt/cloudexplorer/apps/core -Dfile.encoding=utf-8 > /opt/cloudexplorer/apps/extra/${name_version[0]}-console.log 2>&1 &
+      nohup java -jar /opt/cloudexplorer/apps/extra/${name_version[0]}-${name_version[2]}.jar --thin.root=/opt/cloudexplorer/apps/core -Dfile.encoding=utf-8 > /opt/cloudexplorer/logs/${name_version[0]}-console.log 2>&1 &
     done
 
     if [ $_err -ne 0 ]; then
@@ -167,7 +167,7 @@ function start() {
         if [[ "${module_name}" =~ ^"$_target" ]]; then
           echo "run ${module_name}"
           name_version=(${module_name//|/ })
-          nohup java -jar /opt/cloudexplorer/apps/extra/${name_version[0]}-${name_version[2]}.jar --thin.root=/opt/cloudexplorer/apps/core -Dfile.encoding=utf-8 > /opt/cloudexplorer/apps/extra/${name_version[0]}-console.log 2>&1 &
+          nohup java -jar /opt/cloudexplorer/apps/extra/${name_version[0]}-${name_version[2]}.jar --thin.root=/opt/cloudexplorer/apps/core -Dfile.encoding=utf-8 > /opt/cloudexplorer/logs/${name_version[0]}-console.log 2>&1 &
           break
         fi
       done
