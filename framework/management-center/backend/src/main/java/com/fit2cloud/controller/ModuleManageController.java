@@ -62,6 +62,7 @@ public class ModuleManageController {
 
     @ResponseBody
     @RequestMapping("upload")
+    @PreAuthorize("hasAnyCePermission('MODULE_MANAGE:EDIT')")
     public ResultHolder<Boolean> uploadFile(@RequestParam("file") MultipartFile file) {
         iModuleManageService.upload(file);
         return ResultHolder.success(true);
