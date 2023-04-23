@@ -133,6 +133,7 @@ public class BaseUserServiceImpl extends ServiceImpl<BaseUserMapper, User> imple
         }
         User user = new User();
         BeanUtils.copyProperties(request, user);
+        user.setUpdateTime(null);
         baseMapper.updateById(user);
         return true;
     }
@@ -157,6 +158,7 @@ public class BaseUserServiceImpl extends ServiceImpl<BaseUserMapper, User> imple
         }
 
         user.setPassword(MD5Util.md5(request.getNewPassword()));
+        user.setUpdateTime(null);
         this.updateById(user);
         return true;
     }
