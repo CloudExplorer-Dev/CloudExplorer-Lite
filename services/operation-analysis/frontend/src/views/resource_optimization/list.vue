@@ -107,27 +107,59 @@
         :label="$t('commons.cloud_server.instance_type')"
       ></el-table-column>
       <el-table-column
+        align="right"
         min-width="150"
         prop="cpuAverage"
-        label="CPU平均使用率(%)"
-      ></el-table-column>
+        label="CPU平均使用率"
+      >
+        <template #default="scope">
+          {{
+            scope.row.cpuAverage ? scope.row.cpuAverage.toFixed(2) + "%" : "-"
+          }}
+        </template>
+      </el-table-column>
       <el-table-column
+        align="right"
         min-width="150"
         prop="cpuMaximum"
-        label="CPU最大使用率(%)"
+        label="CPU最大使用率"
         :show="false"
-      ></el-table-column>
+      >
+        <template #default="scope">
+          {{
+            scope.row.cpuMaximum ? scope.row.cpuMaximum.toFixed(2) + "%" : "-"
+          }}
+        </template>
+      </el-table-column>
       <el-table-column
+        align="right"
         min-width="150"
         prop="memoryAverage"
-        label="内存平均使用率(%)"
-      ></el-table-column>
+        label="内存平均使用率"
+      >
+        <template #default="scope">
+          {{
+            scope.row.memoryAverage
+              ? scope.row.memoryAverage.toFixed(2) + "%"
+              : "-"
+          }}
+        </template>
+      </el-table-column>
       <el-table-column
+        align="right"
         min-width="150"
         prop="memoryMaximum"
-        label="内存最大使用率(%)"
+        label="内存最大使用率"
         :show="false"
-      ></el-table-column>
+      >
+        <template #default="scope">
+          {{
+            scope.row.memoryMaximum
+              ? scope.row.memoryMaximum.toFixed(2) + "%"
+              : "-"
+          }}
+        </template>
+      </el-table-column>
       <template #buttons>
         <CeTableColumnSelect :columns="columns" />
       </template>
