@@ -170,10 +170,12 @@ public class SyncServiceImpl extends BaseSyncService implements ISyncService {
     private void verification(CloudAccount cloudAccount) {
         Credential credential = Credential.of(cloudAccount.getPlatform(), cloudAccount.getCredential());
         // 如果云账号无效 修改状态 并且跳过执行
-        if (!credential.verification()) {
+        try {
+            credential.verification();
+        } catch (Exception e) {
             cloudAccount.setState(false);
             cloudAccountService.updateById(cloudAccount);
-            throw new RuntimeException("云账号无效!");
+            throw new RuntimeException(e.getMessage());
         }
     }
 

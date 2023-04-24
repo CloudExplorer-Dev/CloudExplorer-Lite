@@ -37,7 +37,7 @@ public class AliCredential implements Credential {
         try {
             regions();
         } catch (Exception e) {
-            return false;
+            throw new Fit2cloudException(100001, "云账号校验失败:" + e.getMessage());
         }
         return true;
     }
@@ -60,7 +60,7 @@ public class AliCredential implements Credential {
                 return result;
             }).toList();
         } catch (Exception e) {
-            throw new Fit2cloudException(100001, "云账号校验失败");
+            throw new RuntimeException(e.getMessage());
         }
     }
 }
