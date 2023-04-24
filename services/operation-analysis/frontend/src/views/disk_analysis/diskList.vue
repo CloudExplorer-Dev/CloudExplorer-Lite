@@ -130,7 +130,7 @@ const tableConfig = ref<TableConfig>({
       height="100%"
       ref="table"
     >
-      <template #toolbar> </template>
+      <template #toolbar></template>
       <el-table-column type="selection" />
       <el-table-column
         min-width="150"
@@ -213,6 +213,7 @@ const tableConfig = ref<TableConfig>({
         </template>
       </el-table-column>
       <el-table-column
+        align="right"
         min-width="150"
         prop="size"
         label="大小(G)"
@@ -233,6 +234,7 @@ const tableConfig = ref<TableConfig>({
   width: 100%;
   height: calc(100vh - 270px);
 }
+
 .text-overflow {
   max-width: 100px;
   overflow: hidden;
