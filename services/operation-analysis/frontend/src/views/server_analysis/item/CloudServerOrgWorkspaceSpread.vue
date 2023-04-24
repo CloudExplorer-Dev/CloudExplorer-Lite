@@ -182,7 +182,7 @@ const defaultSpeedOptions = {
     },
     {
       type: "inside", // 支持内部鼠标滚动平移
-      disabled:true, // 停止组件内功能
+      disabled: true, // 停止组件内功能
       start: 0,
       end: 100,
       zoomOnMouseWheel: false, // 关闭滚轮缩放

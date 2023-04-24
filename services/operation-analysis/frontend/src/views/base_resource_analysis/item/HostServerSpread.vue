@@ -10,10 +10,10 @@
         <div class="echarts">
           <div class="echarts-content">
             <v-chart
-                class="chart"
-                :option="option"
-                v-loading="loading"
-                autoresize
+              class="chart"
+              :option="option"
+              v-loading="loading"
+              autoresize
             />
           </div>
         </div>
@@ -38,29 +38,29 @@ const params = ref<ResourceAnalysisRequest>();
 const loading = ref<boolean>(false);
 const setParams = () => {
   props.cloudAccountId
-      ? _.set(
-          params,
-          "accountIds",
-          props.cloudAccountId === "all" ? [] : [props.cloudAccountId]
+    ? _.set(
+        params,
+        "accountIds",
+        props.cloudAccountId === "all" ? [] : [props.cloudAccountId]
       )
-      : "";
+    : "";
   props.clusterId
-      ? _.set(
-          params,
-          "clusterIds",
-          props.clusterId === "all" ? [] : [props.clusterId]
+    ? _.set(
+        params,
+        "clusterIds",
+        props.clusterId === "all" ? [] : [props.clusterId]
       )
-      : "";
+    : "";
   props.datastoreId
-      ? _.set(
-          params,
-          "datastoreIds",
-          props.datastoreId === "all" ? [] : [props.datastoreId]
+    ? _.set(
+        params,
+        "datastoreIds",
+        props.datastoreId === "all" ? [] : [props.datastoreId]
       )
-      : "";
+    : "";
   props.hostId
-      ? _.set(params, "hostIds", props.hostId === "all" ? [] : [props.hostId])
-      : "";
+    ? _.set(params, "hostIds", props.hostId === "all" ? [] : [props.hostId])
+    : "";
 };
 //获取数宿主机按云账号分布
 const apiDataStopped = ref<any>();
@@ -72,7 +72,7 @@ const getSpreadInfo = () => {
     apiDataStopped.value = res.data;
     _.set(params, "vmStatus", "running");
     ResourceSpreadViewApi.getSpreadInfo(params, loading).then(
-        (res) => (apiDataRunning.value = res.data)
+      (res) => (apiDataRunning.value = res.data)
     );
   });
 };
@@ -92,9 +92,9 @@ const data = computed<EchartsValue>(() => {
   const running: Array<number> = [];
   const stopped: Array<number> = [];
   const hosts: Array<any> = _.unionBy(
-      apiDataRunning.value?.vm,
-      apiDataRunning.value?.vm,
-      "name"
+    apiDataRunning.value?.vm,
+    apiDataRunning.value?.vm,
+    "name"
   );
   _.forEach(hosts, (v: ApiDataVO) => {
     names.push(v.name);
@@ -153,7 +153,7 @@ const option = computed<ECBasicOption>(() => {
       },
       {
         type: "inside", // 支持内部鼠标滚动平移
-        disabled:true, // 停止组件内功能
+        disabled: true, // 停止组件内功能
         start: 0,
         end: 100,
         zoomOnMouseWheel: false, // 关闭滚轮缩放
@@ -254,11 +254,11 @@ const option = computed<ECBasicOption>(() => {
   return options;
 });
 watch(
-    props,
-    () => {
-      getSpreadInfo();
-    },
-    { immediate: true }
+  props,
+  () => {
+    getSpreadInfo();
+  },
+  { immediate: true }
 );
 </script>
 <style scoped lang="scss">
