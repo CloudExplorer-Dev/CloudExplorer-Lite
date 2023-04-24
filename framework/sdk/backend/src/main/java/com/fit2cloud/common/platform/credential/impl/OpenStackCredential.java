@@ -2,6 +2,7 @@ package com.fit2cloud.common.platform.credential.impl;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fit2cloud.common.exception.Fit2cloudException;
 import com.fit2cloud.common.form.annotaion.Form;
 import com.fit2cloud.common.form.constants.InputType;
 import com.fit2cloud.common.platform.credential.Credential;
@@ -47,7 +48,7 @@ public class OpenStackCredential implements Credential {
         try {
             getOSClient();
         } catch (Exception e) {
-            return false;
+            throw new Fit2cloudException(100001, "云账号校验失败:" + e.getMessage());
         }
         return true;
     }

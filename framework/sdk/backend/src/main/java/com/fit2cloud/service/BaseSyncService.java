@@ -83,7 +83,9 @@ public abstract class BaseSyncService {
                 if (Objects.nonNull(cloudAccount)) {
                     Credential credential = Credential.of(cloudAccount.getPlatform(), cloudAccount.getCredential());
                     // 如果云账号无效 跳过执行
-                    if (!credential.verification()) {
+                    try {
+                        credential.verification();
+                    } catch (Exception e) {
                         cloudAccount.setState(false);
                         cloudAccountService.updateById(cloudAccount);
                         return;
@@ -208,7 +210,9 @@ public abstract class BaseSyncService {
                 if (Objects.nonNull(cloudAccount)) {
                     Credential credential = Credential.of(cloudAccount.getPlatform(), cloudAccount.getCredential());
                     // 如果云账号无效 跳过执行
-                    if (!credential.verification()) {
+                    try {
+                        credential.verification();
+                    } catch (Exception e) {
                         cloudAccount.setState(false);
                         cloudAccountService.updateById(cloudAccount);
                         return;
