@@ -326,9 +326,7 @@ public class CloudAccountServiceImpl extends ServiceImpl<CloudAccountMapper, Clo
      */
     private void checkCredential(Credential credential) {
         // 校验ak sk
-        if (!credential.verification()) {
-            throw new Fit2cloudException(ErrorCodeConstants.CLOUD_ACCOUNT_VERIFICATION_ERROR.getCode(), ErrorCodeConstants.CLOUD_ACCOUNT_VERIFICATION_ERROR.getMessage());
-        }
+        credential.verification();
     }
 
     @Override
