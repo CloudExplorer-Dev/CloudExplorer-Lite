@@ -135,6 +135,10 @@ onMounted(() => {
       ></el-table-column>
       <el-table-column prop="vmCpuCores" label="CPU已分配(核)" min-width="150">
       </el-table-column>
+      <el-table-column prop="cpuTotal" label="CPU总量(MHz)" min-width="150">
+      </el-table-column>
+      <el-table-column prop="cpuUsed" label="CPU已使用(MHz)" min-width="150">
+      </el-table-column>
       <el-table-column prop="memoryTotal" label="内存总量(GB)" min-width="150">
         <template #default="scope">
           {{ (scope.row.memoryTotal / 1024).toFixed(2) }}
@@ -147,6 +151,11 @@ onMounted(() => {
       >
         <template #default="scope">
           {{ (scope.row.memoryAllocated / 1024).toFixed(2) }}
+        </template>
+      </el-table-column>
+      <el-table-column prop="cpuUsed" label="内存已使用(GB)" min-width="150">
+        <template #default="scope">
+          {{ (scope.row.cpuUsed / 1024).toFixed(2) }}
         </template>
       </el-table-column>
       <el-table-column
