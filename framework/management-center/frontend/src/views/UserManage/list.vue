@@ -1,8 +1,9 @@
 <script setup lang="ts">
 import { ref, onMounted } from "vue";
-import { deleteUserById, listUser, changeUserStatus } from "@/api/user";
+import { deleteUserById, listUser } from "@/api/user";
 import { useRouter } from "vue-router";
-import type { User } from "@/api/user/type";
+import { User, UserRole } from "@/api/user/type";
+import type { SimpleMap } from "@commons/api/base/type";
 import {
   PaginationConfig,
   SearchConfig,
@@ -16,6 +17,11 @@ import MsgConfig from "@/views/UserManage/MsgConfig.vue";
 import { useI18n } from "vue-i18n";
 import { ElMessageBox, ElMessage } from "element-plus/es";
 import { usePermissionStore } from "@commons/stores/modules/permission";
+import CeIcon from "@commons/components/ce-icon/index.vue";
+import EnableUserSwitch from "./EnableUserSwitch.vue";
+import MoreOptionsButton from "./MoreOptionsButton.vue";
+import _ from "lodash";
+import { sourceIdNames } from "@commons/api/organization";
 
 const { t } = useI18n();
 const useRoute = useRouter();
@@ -28,6 +34,9 @@ const selectedUserIds: string[] = [];
 const activeUserId = ref<string>();
 const batchAddRoleDialogVisible = ref<boolean>(false);
 const msgConfigDialogVisible = ref<boolean>(false);
+const sourceNames = ref<SimpleMap<string>>({});
+
+const loading = ref<boolean>(false);
 
 onMounted(() => {
   search(new TableSearch());
@@ -45,11 +54,14 @@ const search = (condition: TableSearch) => {
     params["workspaceId"] = workspaceId;
     useRoute.currentRoute.value.query.workspaceId = null;
   }
-  listUser({
-    currentPage: tableConfig.value.paginationConfig.currentPage,
-    pageSize: tableConfig.value.paginationConfig.pageSize,
-    ...params,
-  }).then((res) => {
+  listUser(
+    {
+      currentPage: tableConfig.value.paginationConfig.currentPage,
+      pageSize: tableConfig.value.paginationConfig.pageSize,
+      ...params,
+    },
+    loading
+  ).then((res) => {
     tableData.value = res.data.records;
     tableConfig.value.paginationConfig?.setTotal(
       res.data.total,
@@ -116,19 +128,52 @@ const addRole = () => {
   batchAddRoleDialogVisible.value = true;
 };
 
-/**
- * 启停用户
- * @param row
- */
-const handleSwitchStatus = (row: User) => {
-  changeUserStatus(row)
-    .then(() => {
-      ElMessage.success(t("commons.msg.op_success"));
-    })
-    .catch(() => {
-      refresh();
+sourceIdNames().then((res) => {
+  sourceNames.value = res.data;
+});
+
+function getFirstRoleName(list: Array<UserRole>) {
+  if (list.length > 0) {
+    return list[0].roles[0].name;
+  }
+  return "";
+}
+
+function getUserRoleList(map: SimpleMap<Array<UserRole>>): Array<UserRole> {
+  const _list: Array<UserRole> = [];
+  _.forEach(map["ADMIN"], (value) => {
+    _list.push(value);
+  });
+  _.forEach(map["ORGADMIN"], (value) => {
+    _list.push(value);
+  });
+  _.forEach(map["USER"], (value) => {
+    _list.push(value);
+  });
+  return _list;
+}
+
+function convertUserRoleSourceList(list: Array<UserRole>) {
+  const _list: Array<any> = [];
+  _.forEach(list, (userRole) => {
+    _.forEach(userRole.roles, (role) => {
+      _list.push({
+        source: userRole.source,
+        roleId: role.id,
+        roleName: role.name,
+      });
     });
-};
+  });
+
+  const map = _.groupBy(_list, "roleId");
+
+  const result: Array<any> = [];
+  _.forIn(map, function (value, key) {
+    result.push({ roleId: key, roleName: value[0].roleName, list: value });
+  });
+
+  return result;
+}
 
 const showMsgConfigDialog = (row: User) => {
   activeUserId.value = row.id;
@@ -175,23 +220,15 @@ const tableConfig = ref<TableConfig>({
       t("commons.btn.edit"),
       "primary",
       edit,
-      "EditPen",
+      undefined,
       undefined,
       permissionStore.hasPermission("[management-center]USER:EDIT")
-    ),
-    TableOperations.buildButtons().newInstance(
-      t("commons.btn.delete"),
-      "danger",
-      deleteUser,
-      "Delete",
-      undefined,
-      permissionStore.hasPermission("[management-center]USER:DELETE")
     ),
     TableOperations.buildButtons().newInstance(
       t("commons.personal.edit_pwd"),
       "primary",
       showPwdDialog,
-      "Lock",
+      undefined,
       undefined,
       permissionStore.hasPermission("[management-center]USER:EDIT_PASSWORD")
     ),
@@ -199,11 +236,20 @@ const tableConfig = ref<TableConfig>({
       t("user.notify_setting"),
       "primary",
       showMsgConfigDialog,
-      "Bell",
+      undefined,
       undefined,
       permissionStore.hasPermission(
         "[management-center]USER:NOTIFICATION_SETTING"
       )
+    ),
+    TableOperations.buildButtons().newInstance(
+      t("commons.btn.delete"),
+      "danger",
+      deleteUser,
+      undefined,
+      undefined,
+      permissionStore.hasPermission("[management-center]USER:DELETE"),
+      "#F54A45"
     ),
   ]),
 });
@@ -217,9 +263,11 @@ const tableConfig = ref<TableConfig>({
     :data="tableData"
     :tableConfig="tableConfig"
     @selection-change="handleSelectionChange"
+    :show-selected-count="true"
     row-key="id"
     height="100%"
     table-layout="auto"
+    v-loading="loading"
   >
     <template #toolbar>
       <el-button
@@ -227,7 +275,7 @@ const tableConfig = ref<TableConfig>({
         type="primary"
         v-hasPermission="'[management-center]USER:CREATE'"
       >
-        {{ $t("commons.btn.create") }}
+        {{ $t("commons.btn.create") }}{{ $t("user.user") }}
       </el-button>
       <el-button
         @click="addRole"
@@ -237,7 +285,7 @@ const tableConfig = ref<TableConfig>({
       </el-button>
     </template>
     <el-table-column type="selection" />
-    <el-table-column prop="username" label="ID" fixed>
+    <el-table-column prop="username" :label="$t('user.username')" fixed>
       <template #default="scope">
         <span
           style="cursor: pointer; color: var(--el-color-primary)"
@@ -247,15 +295,68 @@ const tableConfig = ref<TableConfig>({
         </span>
       </template>
     </el-table-column>
+    <el-table-column
+      prop="enabled"
+      :label="$t('user.status')"
+      sortable
+      min-width="160px"
+    >
+      <template #default="scope">
+        <CeIcon
+          :code="scope.row.enabled ? 'success' : 'icon_disable'"
+          :color="scope.row.enabled ? '#34C724' : '#D2D3D4'"
+          size="1em"
+        />
+
+        {{ scope.row.enabled ? "正常" : "禁用" }}
+      </template>
+    </el-table-column>
     <el-table-column prop="name" :label="$t('user.name')" />
     <el-table-column prop="email" :label="$t('user.email')" min-width="160px" />
     <el-table-column prop="roles" :label="$t('user.role')">
       <template #default="scope">
-        <div v-for="role in scope.row.roles" :key="role.id">
-          <span style="color: var(--el-color-primary)">
-            {{ role.name }}
-            <br />
-          </span>
+        <div
+          class="role_display"
+          :data-var="(scope._list = getUserRoleList(scope.row.roleMap))"
+        >
+          {{ getFirstRoleName(scope._list) }}
+          <el-popover
+            v-if="scope.row.roles?.length > 1"
+            placement="right"
+            :width="400"
+            trigger="hover"
+            :data-var="(scope._table = convertUserRoleSourceList(scope._list))"
+          >
+            <template #reference>
+              <span class="role_numbers">
+                +{{ scope.row.roles.length - 1 }}
+              </span>
+            </template>
+            <table width="100%">
+              <tr>
+                <th class="inner-table-padding inner-table-th">角色</th>
+                <th class="inner-table-padding inner-table-th">
+                  组织/工作空间
+                </th>
+              </tr>
+              <tr v-for="_row in scope._table" :key="_row.roleId">
+                <td width="40%" class="inner-table-padding inner-table-role">
+                  {{ _row.roleName }}
+                </td>
+                <td width="60%" class="inner-table-padding inner-table-source">
+                  <div v-for="s in _row.list" :key="s.source">
+                    {{
+                      s.source
+                        ? sourceNames[s.source]
+                          ? sourceNames[s.source]
+                          : s.source
+                        : "云管理平台"
+                    }}
+                  </div>
+                </td>
+              </tr>
+            </table>
+          </el-popover>
         </div>
       </template>
     </el-table-column>
@@ -269,27 +370,44 @@ const tableConfig = ref<TableConfig>({
         <span>{{ sourceFilter(scope.row.source) }}</span>
       </template>
     </el-table-column>
-    <el-table-column
-      prop="enabled"
-      :label="$t('user.status')"
-      sortable
-      min-width="160px"
-    >
+
+    <el-table-column prop="phone" :label="$t('commons.personal.phone')">
       <template #default="scope">
-        <el-switch
-          v-model="scope.row.enabled"
-          @change="handleSwitchStatus(scope.row)"
-        />
+        <span>{{ scope.row.phone ? scope.row.phone : "-" }}</span>
       </template>
     </el-table-column>
-    <el-table-column prop="phone" :label="$t('commons.personal.phone')" />
     <el-table-column
       prop="createTime"
       :label="$t('commons.create_time')"
       sortable
       min-width="200px"
     />
-    <fu-table-operations v-bind="tableConfig.tableOperations" fixed="right" />
+    <!--    <fu-table-operations
+      v-bind="tableConfig.tableOperations"
+      fixed="right"
+      :ellipsis="1"
+    />-->
+    <el-table-column label="操作" fixed="right">
+      <template #default="scope">
+        <el-space wrap>
+          <!--          <el-switch
+            v-model="scope.row.enabled"
+            :loading="scope.switch_loading"
+            @change="handleSwitchStatus(scope.row)"
+          />-->
+          <EnableUserSwitch
+            v-model="scope.row.enabled"
+            :final-function="listUser"
+            :function-props="scope.row"
+          />
+
+          <MoreOptionsButton
+            :buttons="tableConfig.tableOperations.buttons"
+            :row="scope.row"
+          />
+        </el-space>
+      </template>
+    </el-table-column>
     <template #buttons>
       <CeTableColumnSelect :columns="columns" />
     </template>
@@ -340,5 +458,48 @@ const tableConfig = ref<TableConfig>({
   .el-table__placeholder {
     display: none;
   }
+}
+
+.role_display {
+  height: 24px;
+  line-height: 24px;
+  display: flex;
+  .role_numbers {
+    cursor: pointer;
+    margin-left: 8px;
+    border-radius: 2px;
+    padding: 0 6px;
+    height: 24px;
+    font-size: 14px;
+    background-color: rgba(31, 35, 41, 0.1);
+  }
+  .role_numbers:hover {
+    background-color: #ebf1ff;
+    color: #3370ff;
+  }
+}
+
+.inner-table-th {
+  border-bottom: 1px dashed #eff0f1;
+  font-style: normal;
+  font-weight: 400;
+  font-size: 12px;
+  color: #646a73;
+}
+
+.inner-table-padding {
+  padding: 8px;
+}
+
+.inner-table-role {
+  font-style: normal;
+  font-weight: 400;
+  font-size: 12px;
+}
+
+.inner-table-source {
+  font-style: normal;
+  font-weight: 500;
+  font-size: 12px;
 }
 </style>

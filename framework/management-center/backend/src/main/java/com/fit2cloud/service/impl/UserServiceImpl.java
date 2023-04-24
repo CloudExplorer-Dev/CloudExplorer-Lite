@@ -19,16 +19,14 @@ import com.fit2cloud.common.utils.CurrentUserUtils;
 import com.fit2cloud.common.utils.MD5Util;
 import com.fit2cloud.common.utils.PageUtil;
 import com.fit2cloud.constants.ErrorCodeConstants;
+import com.fit2cloud.constants.UserConstants;
 import com.fit2cloud.controller.request.user.CreateUserRequest;
 import com.fit2cloud.controller.request.user.PageUserRequest;
 import com.fit2cloud.controller.request.user.UpdateUserRequest;
 import com.fit2cloud.controller.request.user.UserBatchAddRoleRequest;
 import com.fit2cloud.dao.entity.UserNotificationSetting;
 import com.fit2cloud.dao.mapper.UserMapper;
-import com.fit2cloud.dto.RoleInfo;
-import com.fit2cloud.dto.UserDto;
-import com.fit2cloud.dto.UserNotifySettingDTO;
-import com.fit2cloud.dto.UserOperateDto;
+import com.fit2cloud.dto.*;
 import com.fit2cloud.service.IUserService;
 import com.fit2cloud.service.OrganizationCommonService;
 import com.fit2cloud.service.WorkspaceCommonService;
@@ -44,6 +42,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * <p>
@@ -110,11 +109,25 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
         if (CollectionUtils.isNotEmpty(resourceIds)) {
             param.put("resourceIds", resourceIds);
         }
+
+        List<String> finalResourceIds = resourceIds;
         return userIPage.convert(user -> {
             param.put("userId", user.getId());
             UserDto userDto = new UserDto();
             userDto.setRoles(roleServiceImpl.getRolesByResourceIds(param));
             BeanUtils.copyProperties(user, userDto);
+
+            Map<RoleConstants.ROLE, List<UserRoleDto>> userRoleMap = userRoleService.getUserRoleMap(user.getId());
+
+            if (CollectionUtils.isNotEmpty(finalResourceIds)) {
+                userRoleMap.entrySet().forEach(map -> {
+                    map.setValue(map.getValue().stream().filter(userRoleDto -> finalResourceIds.contains(userRoleDto.getSource())).toList());
+                });
+                userRoleMap = userRoleMap.entrySet().stream().filter(map -> map.getValue().size() > 0).collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+            }
+
+            userDto.setRoleMap(userRoleMap);
+
             return userDto;
         });
     }
@@ -205,6 +218,9 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
         UserOperateDto user = new UserOperateDto();
         BeanUtils.copyProperties(request, user);
 
+        if (!UserConstants.Source.LOCAL.getValue().equalsIgnoreCase(user.getSource()) && !UserConstants.Source.EXTRA.getValue().equalsIgnoreCase(user.getSource())) {
+            user.setSource(UserConstants.Source.LOCAL.getValue());
+        }
 
         user.setPassword(MD5Util.md5(user.getPassword()));
         baseMapper.insert(user);

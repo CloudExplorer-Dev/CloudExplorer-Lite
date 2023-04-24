@@ -173,6 +173,18 @@ public class BaseOrganizationServiceImpl extends ServiceImpl<BaseOrganizationMap
         return getDownOrganization(orgId, new ArrayList<>(), allOrgTree);
     }
 
+    @Override
+    public Map<String, String> sourceIdNameMap() {
+        Map<String, String> map = new HashMap<>();
+        this.list().forEach(organization -> {
+            map.put(organization.getId(), organization.getName());
+        });
+        workspaceService.list().forEach(workspace -> {
+            map.put(workspace.getId(), workspace.getName());
+        });
+        return map;
+    }
+
     /**
      * 获取下级组织
      *
@@ -245,4 +257,6 @@ public class BaseOrganizationServiceImpl extends ServiceImpl<BaseOrganizationMap
             }
         }
     }
+
+
 }

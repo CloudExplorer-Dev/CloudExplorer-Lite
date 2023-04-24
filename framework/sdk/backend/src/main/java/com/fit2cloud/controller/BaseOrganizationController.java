@@ -47,4 +47,10 @@ public class BaseOrganizationController {
         return ResultHolder.success(organizationService.sourceTree(roleListMap));
     }
 
+    @GetMapping("/sourceIdNames")
+    @ApiOperation(value = "获取组织工作空间id名称映射", notes = "获取组织工作空间id名称映射")
+    public ResultHolder<Map<String, String>> sourceIdNameMap() {
+        return ResultHolder.success(organizationService.sourceIdNameMap());
+    }
+
 }
