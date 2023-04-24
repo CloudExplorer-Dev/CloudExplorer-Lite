@@ -7,33 +7,33 @@
       <el-col :span="16" style="text-align: right">
         <div class="search-box">
           <el-date-picker
-              style="width: 200px; height: 32px; margin-right: 16px"
-              v-model="trendTime"
-              type="daterange"
-              v-if="showTrendTime"
-              unlink-panels
-              range-separator="至"
-              start-placeholder="开始时间"
-              end-placeholder="结束时间"
-              :shortcuts="shortcuts"
-              size="small"
-              @change="changeTimestamp"
-              @input="changeTimestamp"
+            style="width: 200px; height: 32px; margin-right: 16px"
+            v-model="trendTime"
+            type="daterange"
+            v-if="showTrendTime"
+            unlink-panels
+            range-separator="至"
+            start-placeholder="开始时间"
+            end-placeholder="结束时间"
+            :shortcuts="shortcuts"
+            size="small"
+            @change="changeTimestamp"
+            @input="changeTimestamp"
           />
           <el-radio-group
-              style="min-width: 300px"
-              class="custom-radio-group"
-              v-model="basicResourceType"
-              :on-change="getResourceTrendData()"
+            style="min-width: 300px"
+            class="custom-radio-group"
+            v-model="basicResourceType"
+            :on-change="getResourceTrendData()"
           >
             <el-radio-button label="CPU_USED_UTILIZATION"
-            >CPU使用率</el-radio-button
+              >CPU使用率</el-radio-button
             >
             <el-radio-button label="MEMORY_USED_UTILIZATION"
-            >内存使用率</el-radio-button
+              >内存使用率</el-radio-button
             >
             <el-radio-button label="DATASTORE_USED_UTILIZATION"
-            >存储器使用率</el-radio-button
+              >存储器使用率</el-radio-button
             >
           </el-radio-group>
         </div>
@@ -44,10 +44,10 @@
         <div class="echarts">
           <div class="echarts-content">
             <v-chart
-                class="chart"
-                :option="options"
-                v-loading="loading"
-                autoresize
+              class="chart"
+              :option="options"
+              v-loading="loading"
+              autoresize
             />
           </div>
         </div>
@@ -84,29 +84,29 @@ const apiData = ref<any>();
 
 const setParams = () => {
   props.cloudAccountId
-      ? _.set(
-          params,
-          "accountIds",
-          props.cloudAccountId === "all" ? [] : [props.cloudAccountId]
+    ? _.set(
+        params,
+        "accountIds",
+        props.cloudAccountId === "all" ? [] : [props.cloudAccountId]
       )
-      : "";
+    : "";
   props.clusterId
-      ? _.set(
-          params,
-          "clusterIds",
-          props.clusterId === "all" ? [] : [props.clusterId]
+    ? _.set(
+        params,
+        "clusterIds",
+        props.clusterId === "all" ? [] : [props.clusterId]
       )
-      : "";
+    : "";
   props.datastoreId
-      ? _.set(
-          params,
-          "datastoreIds",
-          props.datastoreId === "all" ? [] : [props.datastoreId]
+    ? _.set(
+        params,
+        "datastoreIds",
+        props.datastoreId === "all" ? [] : [props.datastoreId]
       )
-      : "";
+    : "";
   props.hostId
-      ? _.set(params, "resourceIds", props.hostId === "all" ? [] : [props.hostId])
-      : "";
+    ? _.set(params, "resourceIds", props.hostId === "all" ? [] : [props.hostId])
+    : "";
   _.set(params, "entityType", "HOST");
   _.set(params, "metricName", basicResourceType.value);
   _.set(params, "startTime", timestampData.value[0].getTime());
@@ -114,9 +114,9 @@ const setParams = () => {
   if (basicResourceType.value === "DATASTORE_USED_UTILIZATION") {
     _.set(params, "entityType", "DATASTORE");
     _.set(
-        params,
-        "resourceIds",
-        props.datastoreId === "all" ? [] : [props.datastoreId]
+      params,
+      "resourceIds",
+      props.datastoreId === "all" ? [] : [props.datastoreId]
     );
   }
 };
@@ -132,8 +132,8 @@ const options = computed<ECBasicOption>(() => {
   const trendInfo = apiData.value;
   const options = _.cloneDeep(defaultTrendOptions);
   let legend: any[] = [],
-      series: any = {},
-      xAxis: any[] = [];
+    series: any = {},
+    xAxis: any[] = [];
   const seriesData: any[] = [];
   if (!trendInfo || trendInfo.length === 0) {
     return {
@@ -203,11 +203,11 @@ const options = computed<ECBasicOption>(() => {
 });
 
 watch(
-    props,
-    () => {
-      getResourceTrendData();
-    },
-    { immediate: true }
+  props,
+  () => {
+    getResourceTrendData();
+  },
+  { immediate: true }
 );
 const color: Array<string> = [
   "rgb(98, 210, 85, 1)",
