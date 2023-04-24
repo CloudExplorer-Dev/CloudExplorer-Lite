@@ -1,7 +1,9 @@
 const message = {
   user: {
+    user: "用戶",
     type: "用戶類型",
-    name: "姓名",
+    username: "用戶名",
+    name: "顯示名稱",
     email: "郵箱",
     phone: "手機號碼",
     wechatAccount: "企業微信賬號",

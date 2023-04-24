@@ -72,9 +72,16 @@ export class User {
   phone?: string;
   password?: string;
   roleMap?: SimpleMap<Array<UserRole>>;
+  roles?: Array<Role>;
 
   ip?: string;
   loginTime?: string;
+
+  createTime?: number;
+
+  source?: string;
+
+  enabled?: boolean;
 
   constructor(
     id: string,

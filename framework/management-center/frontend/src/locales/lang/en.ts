@@ -1,7 +1,9 @@
 const message = {
   user: {
+    user: "User",
     type: "User Type",
-    name: "Name",
+    username: "UserName",
+    name: "DisPlayName",
     email: "Email",
     phone: "Phone",
     wechatAccount: "Wechat Account",

@@ -5,6 +5,7 @@ import type {
   SourceTreeObject,
 } from "@commons/api/organization/type";
 import { get } from "@commons/request";
+import type { SimpleMap } from "@commons/api/base/type";
 
 export function tree(
   treeType?: string,
@@ -17,6 +18,11 @@ export function sourceTree(
   loading?: Ref<boolean>
 ): Promise<Result<Array<SourceTreeObject>>> {
   return get("/api/organization/sourceTree", {}, loading);
+}
+export function sourceIdNames(
+  loading?: Ref<boolean>
+): Promise<Result<SimpleMap<string>>> {
+  return get("/api/organization/sourceIdNames", {}, loading);
 }
 
 const BaseOrganizationApi = {

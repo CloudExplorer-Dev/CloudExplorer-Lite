@@ -50,6 +50,7 @@
         header-cell-class-name="table-handler"
         @sort-change="sortChange"
         @filter-change="filterChange"
+        @selection-change="_handleSelectionChange"
       >
         <slot></slot>
       </fu-table>
@@ -57,17 +58,28 @@
 
     <div
       class="complex-table__pagination"
-      v-if="$slots.pagination || tableConfig.paginationConfig"
+      v-if="
+        $slots.pagination || tableConfig.paginationConfig || showSelectedCount
+      "
     >
-      <!-- 外部可以指定分页组建 -->
-      <slot name="pagination">
-        <fu-table-pagination
-          v-bind="tableConfig.paginationConfig"
-          @update:pageSize="updatePageSize"
-          @update:currentPage="updateCurrentPage"
-          background
-        />
-      </slot>
+      <div class="selected-count" v-if="showSelectedCount">
+        已选&nbsp;<span class="count">{{ selected.length }}</span
+        >&nbsp;条
+      </div>
+
+      <div></div>
+
+      <div v-if="$slots.pagination || tableConfig.paginationConfig">
+        <!-- 外部可以指定分页组建 -->
+        <slot name="pagination">
+          <fu-table-pagination
+            v-bind="tableConfig.paginationConfig"
+            @update:pageSize="updatePageSize"
+            @update:currentPage="updateCurrentPage"
+            background
+          />
+        </slot>
+      </div>
     </div>
   </div>
 </template>
@@ -87,6 +99,7 @@ import CeFilter from "@commons/components/ce-table/CeFilter.vue";
 const props = defineProps<{
   header?: string;
   tableConfig: TableConfig;
+  showSelectedCount?: boolean;
 }>();
 
 const emit = defineEmits(["clearCondition"]);
@@ -96,6 +109,12 @@ const condition = ref<Conditions>({}); // 自定义的筛选条件
 const searchCondition = ref<Conditions>({}); // 搜索框筛选条件
 const tableHeaderFilter = ref<Conditions>({}); // 表头筛选条件
 const order = ref<Order | undefined>(undefined); // 排序
+
+const selected = ref<Array<any>>([]);
+
+function _handleSelectionChange(val: any[]) {
+  selected.value = val;
+}
 
 const sortChange = (sortObj: any) => {
   if (sortObj.order) {
@@ -402,9 +421,21 @@ defineExpose({
     }
   }
 
+  .selected-count {
+    display: flex;
+    align-items: center;
+    font-style: normal;
+    font-weight: 400;
+    font-size: 14px;
+    color: #646a73;
+    .count {
+      color: #3370ff;
+    }
+  }
+
   .complex-table__pagination {
     margin-top: 16px;
-    @include flex-row(flex-end);
+    @include flex-row(space-between);
   }
 }
 

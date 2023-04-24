@@ -9,11 +9,13 @@ import type {
   UpdateUserStatusRequest,
   UpdateUserRequest,
 } from "./type";
+import type { Ref } from "vue";
 
-export const listUser: (req: ListUserRequest) => Promise<Result<Page<User>>> = (
-  req
-) => {
-  return get("/api/user/page", req);
+export const listUser: (
+  req: ListUserRequest,
+  loading?: Ref<boolean>
+) => Promise<Result<Page<User>>> = (req, loading) => {
+  return get("/api/user/page", req, loading);
 };
 
 export const createUser = (req: CreateUserRequest) => {
@@ -40,8 +42,11 @@ export const getRoleInfo = (userId: string) => {
  * 启停用户
  * @param req
  */
-export const changeUserStatus = (req: UpdateUserStatusRequest) => {
-  return post("/api/user/changeStatus", "", req);
+export const changeUserStatus = (
+  req: UpdateUserStatusRequest,
+  loading?: Ref<boolean>
+) => {
+  return post("/api/user/changeStatus", "", req, loading);
 };
 
 /**

@@ -251,7 +251,7 @@ export class Condition {
   static toSearchObj(condition?: Condition) {
     if (
       !condition ||
-      condition.value == null ||
+      condition.value === null ||
       condition.value === undefined ||
       condition.value === ""
     ) {
@@ -314,7 +314,7 @@ export class SearchConfig {
   }
 }
 
-class Button {
+export class Button {
   /**
    *按钮文字提示
    */
@@ -339,13 +339,16 @@ class Button {
    *是否展示
    */
   show?: ((row: any) => boolean) | boolean;
+
+  color?: string;
   constructor(
     label: string,
     type: string,
     click: (row: any) => void,
     icon?: string,
     disabled?: ((row: any) => boolean) | boolean,
-    show?: ((row: any) => boolean) | boolean
+    show?: ((row: any) => boolean) | boolean,
+    color?: string
   ) {
     this.label = label;
     this.type = type;
@@ -353,6 +356,7 @@ class Button {
     this.icon = icon;
     this.disabled = disabled;
     this.show = show;
+    this.color = color;
   }
 
   static newInstance(
@@ -361,9 +365,10 @@ class Button {
     click: (row: any) => void,
     icon?: string,
     disabled: ((row: any) => boolean) | boolean = false,
-    show: ((row: any) => boolean) | boolean = true
+    show: ((row: any) => boolean) | boolean = true,
+    color?: string
   ) {
-    return new Button(label, type, click, icon, disabled, show);
+    return new Button(label, type, click, icon, disabled, show, color);
   }
 }
 

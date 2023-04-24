@@ -1,22 +1,9 @@
-interface User {
-  id: string;
-  username: string;
-  name: string;
-  email: string;
-  createTime: number;
-  source: string;
-  password: string;
-  enabled: boolean;
-  phone: string;
-  roles: Role[];
-}
+import * as RoleTypes from "@commons/api/role/type";
+import * as UserTypes from "@commons/api/user/type";
 
-interface Role {
-  id: string;
-  name: string;
-  type: string;
-  parentRoleId: string;
-}
+export class Role extends RoleTypes.Role {}
+export class User extends UserTypes.User {}
+export class UserRole extends UserTypes.UserRole {}
 
 interface RoleInfo {
   roleId: string;
@@ -61,8 +48,6 @@ interface UpdateUserStatusRequest {
 }
 
 export type {
-  User,
-  Role,
   RoleInfo,
   ListUserRequest,
   CreateUserRequest,
