@@ -251,7 +251,7 @@ const deleteBillRule = (row: BillRule) => {
     confirmButtonText: "删除",
     cancelButtonText: "取消",
     type: "warning",
-  }).then((ok) => {
+  }).then(() => {
     billRuleApi.deleteBillRule(row.id).then(() => {
       ElMessage.success("删除成功");
       table.value?.search();

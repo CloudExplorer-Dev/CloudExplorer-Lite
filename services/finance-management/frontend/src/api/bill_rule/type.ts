@@ -24,6 +24,7 @@ interface BillRule {
    */
   updateTime: string;
 }
+
 interface Group {
   /**
    *分组唯一id 用于前端循环

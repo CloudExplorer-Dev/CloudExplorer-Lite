@@ -351,6 +351,7 @@ defineExpose({
   handleClear,
   table,
   filterChange,
+  clearAll,
 });
 </script>
 

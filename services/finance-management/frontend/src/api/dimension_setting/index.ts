@@ -5,7 +5,7 @@ import type { SimpleMap } from "@commons/api/base/type";
 
 import type {
   BillDimensionSetting,
-  BillAuthorizeRule,
+  BillAuthorizeRuleTree,
   AuthorizeResourcesRequest,
   AuthorizeResourcesResponse,
   NotAuthorizeResourcesRequest,
@@ -55,7 +55,7 @@ const getBillDimensionSetting: (
 const saveOrUpdate: (
   authorizeId: string,
   type: "WORKSPACE" | "ORGANIZATION",
-  billAuthorizeRule: BillAuthorizeRule,
+  billAuthorizeRule?: BillAuthorizeRuleTree,
   loading?: Ref<boolean>
 ) => Promise<Result<BillDimensionSetting>> = (
   authorizeId,
