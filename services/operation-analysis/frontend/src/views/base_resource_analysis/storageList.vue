@@ -10,6 +10,7 @@ import {
   TableSearch,
 } from "@commons/components/ce-table/type";
 import { useI18n } from "vue-i18n";
+
 const { t } = useI18n();
 const table = ref<any>(null);
 const columns = ref([]);
@@ -83,7 +84,7 @@ onMounted(() => {
       height="100%"
       ref="table"
     >
-      <template #toolbar> </template>
+      <template #toolbar></template>
       <el-table-column type="selection" />
       <el-table-column
         :show-overflow-tooltip="true"
@@ -121,11 +122,43 @@ onMounted(() => {
         :show="false"
       ></el-table-column>
       <el-table-column prop="zone" label="集群" :show="false"></el-table-column>
-      <el-table-column prop="capacity" label="总容量(GB)"></el-table-column>
-      <el-table-column prop="allocated" label="已分配(GB)"> </el-table-column>
-      <el-table-column prop="freeSpace" label="剩余(GB)"></el-table-column>
-      <el-table-column prop="freeRate" label="剩余率(%)"></el-table-column>
-      <el-table-column prop="type" label="类型" :show="false"></el-table-column>
+      <el-table-column
+        align="right"
+        prop="capacity"
+        label="总容量(GB)"
+      ></el-table-column>
+      <el-table-column align="right" label="已使用(GB)">
+        <template #default="scope">
+          {{ scope.row.capacity - scope.row.freeSpace }}
+        </template>
+      </el-table-column>
+      <el-table-column align="right" prop="useRate" label="使用率">
+        <template #default="scope"> {{ scope.row.useRate }}% </template>
+      </el-table-column>
+      <el-table-column
+        align="right"
+        prop="freeSpace"
+        label="剩余(GB)"
+      ></el-table-column>
+      <el-table-column align="right" prop="freeRate" label="剩余率">
+        <template #default="scope"> {{ scope.row.freeRate }}% </template>
+      </el-table-column>
+      <el-table-column
+        align="right"
+        prop="allocated"
+        label="已分配(GB)"
+      ></el-table-column>
+      <el-table-column align="right" label="分配率">
+        <template #default="scope">
+          {{ (scope.row.allocated / scope.row.capacity).toFixed(2) * 100 }}%
+        </template>
+      </el-table-column>
+      <el-table-column
+        align="right"
+        prop="type"
+        label="类型"
+        :show="false"
+      ></el-table-column>
       <template #buttons>
         <CeTableColumnSelect :columns="columns" />
       </template>

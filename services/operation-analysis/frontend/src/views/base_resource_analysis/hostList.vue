@@ -10,6 +10,7 @@ import {
   TableSearch,
 } from "@commons/components/ce-table/type";
 import { useI18n } from "vue-i18n";
+
 const { t } = useI18n();
 const table = ref<any>(null);
 const columns = ref([]);
@@ -83,7 +84,7 @@ onMounted(() => {
       height="100%"
       ref="table"
     >
-      <template #toolbar> </template>
+      <template #toolbar></template>
       <el-table-column type="selection" />
       <el-table-column
         :show-overflow-tooltip="true"
@@ -122,20 +123,74 @@ onMounted(() => {
         label="数据中心"
         :show="false"
       ></el-table-column>
-      <el-table-column prop="zone" label="集群" :show="false"></el-table-column>
+      <el-table-column prop="zone" label="集群" :show="false">
+      </el-table-column>
       <el-table-column
         prop="hostIp"
         label="IP地址"
         :show="false"
       ></el-table-column>
       <el-table-column
+        align="right"
         prop="numCpuCores"
         label="CPU总量(核)"
         width="120"
       ></el-table-column>
-      <el-table-column prop="vmCpuCores" label="CPU已分配(核)" min-width="150">
+      <el-table-column
+        align="right"
+        prop="vmCpuCores"
+        label="CPU已分配(核)"
+        min-width="150"
+      >
       </el-table-column>
-      <el-table-column prop="memoryTotal" label="内存总量(GB)" min-width="150">
+      <el-table-column
+        :show="false"
+        align="right"
+        prop="memoryTotal"
+        label="CPU分配率"
+        min-width="150"
+      >
+        <template #default="scope">
+          {{ (scope.row.vmCpuCores / scope.row.numCpuCores).toFixed(2) * 100 }}%
+        </template>
+      </el-table-column>
+      <el-table-column
+        align="right"
+        prop="cpuTotal"
+        label="CPU总量(MHz)"
+        min-width="150"
+      >
+      </el-table-column>
+      <el-table-column
+        align="right"
+        prop="cpuUsed"
+        label="CPU已使用(MHz)"
+        min-width="150"
+      >
+        <template #default="scope">
+          {{ scope.row.cpuUsed ? scope.row.cpuUsed : "-" }}
+        </template>
+      </el-table-column>
+      <el-table-column
+        :show="false"
+        align="right"
+        label="CPU使用率"
+        min-width="150"
+      >
+        <template #default="scope">
+          {{
+            scope.row.cpuUsed
+              ? (scope.row.cpuUsed / scope.row.cpuTotal).toFixed(2) * 100 + "%"
+              : "-"
+          }}
+        </template>
+      </el-table-column>
+      <el-table-column
+        align="right"
+        prop="memoryTotal"
+        label="内存总量(GB)"
+        min-width="150"
+      >
         <template #default="scope">
           {{ (scope.row.memoryTotal / 1024).toFixed(2) }}
         </template>
@@ -144,17 +199,64 @@ onMounted(() => {
         prop="memoryAllocated"
         label="内存已分配(GB)"
         min-width="150"
+        align="right"
       >
         <template #default="scope">
           {{ (scope.row.memoryAllocated / 1024).toFixed(2) }}
         </template>
       </el-table-column>
       <el-table-column
+        :show="false"
+        align="right"
+        prop="memoryTotal"
+        label="内存分配率"
+        min-width="150"
+      >
+        <template #default="scope">
+          {{
+            (scope.row.memoryAllocated / scope.row.memoryTotal).toFixed(2) *
+            100
+          }}%
+        </template>
+      </el-table-column>
+      <el-table-column
+        align="right"
+        prop="memoryUsed"
+        label="内存已使用(GB)"
+        min-width="150"
+      >
+        <template #default="scope">
+          {{
+            scope.row.memoryUsed
+              ? (scope.row.memoryUsed / 1024).toFixed(2)
+              : "-"
+          }}
+        </template>
+      </el-table-column>
+      <el-table-column
+        :show="false"
+        align="right"
+        label="内存使用率"
+        min-width="150"
+      >
+        <template #default="scope">
+          {{
+            scope.row.memoryUsed
+              ? (scope.row.memoryUsed / scope.row.memoryTotal).toFixed(2) *
+                  100 +
+                "%"
+              : "-"
+          }}
+        </template>
+      </el-table-column>
+      <el-table-column
+        align="right"
         prop="vmTotal"
         label="云主机总数"
         min-width="150"
       ></el-table-column>
       <el-table-column
+        align="right"
         prop="vmRunning"
         label="运行中云主机"
         min-width="150"

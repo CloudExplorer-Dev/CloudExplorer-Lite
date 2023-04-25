@@ -178,7 +178,7 @@ const getData = () => {
             }
             d[0].deviceData = res.data;
             d[0].xData = xData.value;
-            d[0].series[0].connectNulls = true;
+            d[0].series[0].connectNulls = false;
             d[0].series[0].data = yData.value;
           }
         }
@@ -188,7 +188,7 @@ const getData = () => {
         });
         if (d[0]) {
           d[0].xData = xData.value;
-          d[0].series[0].connectNulls = true;
+          d[0].series[0].connectNulls = false;
           d[0].series[0].data = yData.value;
         }
       }
@@ -216,7 +216,7 @@ const setXData = (
   });
   if (d[0]) {
     d[0].xData = res;
-    d[0].series[0].connectNulls = true;
+    d[0].series[0].connectNulls = false;
     d[0].series.forEach(function (s: any) {
       if (s.name === PerfMetricConst[metricName].name) {
         s.data = yData;
@@ -316,7 +316,7 @@ const initEchartsData = () => {
       data: [],
       type: "line",
       smooth: false,
-      connectNulls: true,
+      connectNulls: false,
     };
 
     const yUnit = PerfMetricConst[perfMetric].unit;

@@ -61,7 +61,7 @@ public class VsphereCredential implements Credential {
             return true;
         } catch (Exception e) {
             log.error("Cloud Account Verification failed!" + e.getMessage(), e);
-            return false;
+            throw new Fit2cloudException(100001, "云账号校验失败:" + e.getMessage());
         } finally {
             closeConnection(serviceInstance);
         }
@@ -83,7 +83,7 @@ public class VsphereCredential implements Credential {
             return datacenters.stream().map(this::toRegion).toList();
         } catch (Exception e) {
             log.error("Failed to Get Regions!" + e.getMessage(), e);
-            throw new Fit2cloudException(100001, "云账号校验失败!");
+            throw new RuntimeException(e.getMessage());
         } finally {
             closeConnection(serviceInstance);
         }

@@ -1,6 +1,7 @@
 package com.fit2cloud.quartz;
 
 import com.fit2cloud.common.constants.PlatformConstants;
+import com.fit2cloud.common.platform.credential.Credential;
 import com.fit2cloud.common.scheduler.handler.AsyncJob;
 import com.fit2cloud.dao.entity.CloudAccount;
 import com.fit2cloud.service.ICloudAccountService;
@@ -31,9 +32,11 @@ public class VerificationCloudAccountJob extends AsyncJob implements Job {
         List<CloudAccount> list = cloudAccountService.list();
         for (CloudAccount cloudAccount : list) {
             PlatformConstants platformConstants = PlatformConstants.valueOf(cloudAccount.getPlatform());
-            boolean verification = platformConstants.getCredentialClass().getConstructor().newInstance().deCode(cloudAccount.getCredential()).verification();
-            if (!cloudAccount.getState().equals(verification)) {
-                cloudAccount.setState(verification);
+            Credential verification = platformConstants.getCredentialClass().getConstructor().newInstance().deCode(cloudAccount.getCredential());
+            try {
+                verification.verification();
+            } catch (Exception e) {
+                cloudAccount.setState(false);
                 cloudAccountService.updateById(cloudAccount);
             }
         }
