@@ -138,8 +138,16 @@ public class VmCloudServerServiceImpl extends ServiceImpl<BaseVmCloudServerMappe
     @Override
     public IPage<VmCloudServerDTO> pageVmCloudServer(PageVmCloudServerRequest request) {
         setCurrentInfos(request);
-
-        Page<VmCloudServerDTO> page = PageUtil.of(request, VmCloudServerDTO.class, new OrderItem(ColumnNameUtil.getColumnName(VmCloudServerDTO::getCreateTime, true), false), true);
+        List<OrderItem> orderItemList = new ArrayList<>();
+        if (Objects.nonNull(request.getOrder())) {
+            orderItemList.add(request.getOrder());
+        } else {
+            orderItemList.add(new OrderItem(ColumnNameUtil.getColumnName(VmCloudServerDTO::getCreateTime, true), false));
+        }
+        // 加上唯一的ID,不然order by会错乱
+        orderItemList.add(new OrderItem(ColumnNameUtil.getColumnName(VmCloudServerDTO::getId, true), true));
+        Page<VmCloudServerDTO> page = PageUtil.of(request, VmCloudServerDTO.class, true);
+        page.setOrders(orderItemList);
         // 构建查询参数
         QueryWrapper<VmCloudServerDTO> wrapper = addQuery(request);
         return vmCloudServerMapper.pageVmCloudServer(page, wrapper);
