@@ -476,7 +476,7 @@ public class BaseResourceAnalysisServiceImpl implements IBaseResourceAnalysisSer
             BigDecimal memoryUsedRate = memoryUsed.divide(memoryTotal, 2, RoundingMode.HALF_UP).multiply(new BigDecimal(100));
             result.put("memory", ResourceAllocatedInfo.builder()
                     .total(memoryTotal.divide(new BigDecimal(1024), RoundingMode.HALF_UP))
-                    .allocated(memoryUsedRate.divide(new BigDecimal(1024), RoundingMode.HALF_UP))
+                    .used(memoryUsed)
                     .usedRate(memoryUsedRate.compareTo(new BigDecimal(100)) > 0 ? new BigDecimal(100) : memoryUsedRate)
                     .build());
 

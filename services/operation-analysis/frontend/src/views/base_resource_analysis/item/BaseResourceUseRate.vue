@@ -11,6 +11,7 @@
           :api-data="apiData"
           :type="'cpu'"
           :type-text="'CPU'"
+          :unit="'MHz'"
           :loading="loading"
         ></UsedRate>
       </el-col>
@@ -19,6 +20,7 @@
           :api-data="apiData"
           :type="'memory'"
           :type-text="'内存'"
+          :unit="'GB'"
           :loading="loading"
         ></UsedRate>
       </el-col>
@@ -27,6 +29,7 @@
           :api-data="apiData"
           :type="'datastore'"
           :type-text="'存储'"
+          :unit="'GB'"
           :loading="loading"
         ></UsedRate>
       </el-col>
