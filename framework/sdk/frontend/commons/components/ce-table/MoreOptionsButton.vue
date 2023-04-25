@@ -7,6 +7,7 @@ import _ from "lodash";
 
 const props = defineProps<{
   buttons: Array<Button>;
+  name?: string;
   row?: any;
 }>();
 
@@ -29,10 +30,14 @@ function handleCommand(btn: any) {
 
 <template>
   <el-dropdown @command="handleCommand">
-    <div class="more-operation">
+    <div class="more-operation" v-if="!name">
       <el-icon>
         <MoreFilled />
       </el-icon>
+    </div>
+    <div class="more-operation-text" v-if="name">
+      {{ name }}&nbsp;
+      <el-icon><ArrowDown /></el-icon>
     </div>
     <template #dropdown>
       <el-dropdown-menu>
@@ -64,5 +69,30 @@ function handleCommand(btn: any) {
 
 .more-operation:hover {
   background-color: rgba(51, 112, 255, 0.1);
+}
+.more-operation-text {
+  display: flex;
+  cursor: pointer;
+  color: #3370ff;
+  height: 24px;
+  border-radius: 4px;
+  padding: 0 16px;
+  text-align: center;
+  border: #3370ff solid 1px;
+  font-style: normal;
+  font-weight: 400;
+  font-size: 14px;
+  line-height: 22px;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  align-items: center;
+}
+.more-operation-text:hover {
+  background: linear-gradient(
+      0deg,
+      rgba(51, 112, 255, 0.15),
+      rgba(51, 112, 255, 0.15)
+    ),
+    #ffffff;
 }
 </style>

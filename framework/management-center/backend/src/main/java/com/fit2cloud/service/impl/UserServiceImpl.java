@@ -133,6 +133,41 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
     }
 
     @Override
+    public UserDto getUser(String userId) {
+        User user = this.getById(userId);
+        // 根据当前所在角色过滤
+        List<String> resourceIds = new ArrayList<>();
+        if (CurrentUserUtils.isOrgAdmin()) {
+            List<String> orgIds = organizationCommonService.getOrgIdsByParentId(CurrentUserUtils.getOrganizationId());
+            resourceIds = workspaceCommonService.getWorkspaceIdsByOrgIds(orgIds);
+            resourceIds.addAll(orgIds);
+        }
+        Map<String, Object> param = new HashMap<>();
+        if (CollectionUtils.isNotEmpty(resourceIds)) {
+            param.put("resourceIds", resourceIds);
+        }
+
+        param.put("userId", user.getId());
+        UserDto userDto = new UserDto();
+        userDto.setRoles(roleServiceImpl.getRolesByResourceIds(param));
+        BeanUtils.copyProperties(user, userDto);
+
+        Map<RoleConstants.ROLE, List<UserRoleDto>> userRoleMap = userRoleService.getUserRoleMap(user.getId());
+
+        if (CollectionUtils.isNotEmpty(resourceIds)) {
+            List<String> finalResourceIds = resourceIds;
+            userRoleMap.entrySet().forEach(map -> {
+                map.setValue(map.getValue().stream().filter(userRoleDto -> finalResourceIds.contains(userRoleDto.getSource())).toList());
+            });
+            userRoleMap = userRoleMap.entrySet().stream().filter(map -> map.getValue().size() > 0).collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+        }
+
+        userDto.setRoleMap(userRoleMap);
+
+        return userDto;
+    }
+
+    @Override
     public boolean deleteUser(String userId) {
         String currentLoginUserId = CurrentUserUtils.getUser().getId();
         User user = baseMapper.selectById(userId);

@@ -10,6 +10,9 @@ import type {
   UpdateUserRequest,
 } from "./type";
 import type { Ref } from "vue";
+import type { UserRole } from "./type";
+import _ from "lodash";
+import type { SimpleMap } from "@commons/api/base/type";
 
 export const listUser: (
   req: ListUserRequest,
@@ -30,13 +33,20 @@ export const updatePwd = (req: UpdateUserPwdRequest) => {
   return post("/api/user/updatePwd", "", req);
 };
 
-export const deleteUserById = (userId: string) => {
-  return del("/api/user/" + userId);
+export const deleteUserById = (userId: string, loading?: Ref<boolean>) => {
+  return del("/api/user/" + userId, undefined, undefined, loading);
 };
 
 export const getRoleInfo = (userId: string) => {
   return get("/api/user/role/info/" + userId);
 };
+
+export function getUser(
+  userId: string,
+  loading?: Ref<boolean>
+): Promise<Result<User>> {
+  return get("/api/user/" + userId, undefined, loading);
+}
 
 /**
  * 启停用户
@@ -64,3 +74,47 @@ export const findUserNotification = (userId: string) => {
 export const userAddRole = (req: any) => {
   return post("/api/user/addRole", "", req);
 };
+
+export function getUserRoleList(
+  map: SimpleMap<Array<UserRole>>
+): Array<UserRole> {
+  const _list: Array<UserRole> = [];
+  _.forEach(map["ADMIN"], (value) => {
+    _list.push(value);
+  });
+  _.forEach(map["ORGADMIN"], (value) => {
+    _list.push(value);
+  });
+  _.forEach(map["USER"], (value) => {
+    _list.push(value);
+  });
+  return _list;
+}
+
+export function convertUserRoleSourceList(list: Array<UserRole>) {
+  const _list: Array<any> = [];
+  _.forEach(list, (userRole) => {
+    _.forEach(userRole.roles, (role) => {
+      _list.push({
+        source: userRole.source,
+        roleId: role.id,
+        roleName: role.name,
+        parentRole: role.parentRoleId,
+      });
+    });
+  });
+
+  const map = _.groupBy(_list, "roleId");
+
+  const result: Array<any> = [];
+  _.forIn(map, function (value, key) {
+    result.push({
+      roleId: key,
+      roleName: value[0].roleName,
+      parentRole: value[0].parentRole,
+      list: value,
+    });
+  });
+
+  return result;
+}
