@@ -85,6 +85,16 @@ public class UserController {
         return ResultHolder.success(userService.updatePwd(user));
     }
 
+    @ApiOperation(value = "查询用户")
+    @PreAuthorize("hasAnyCePermission('USER:READ')")
+    @GetMapping("/{id}")
+    public ResultHolder<UserDto> getUser(@ApiParam("主键 ID")
+                                         @NotNull(message = "{i18n.user.id.cannot.be.null}")
+                                         @CustomValidated(mapper = BaseUserMapper.class, handler = ExistHandler.class, message = "{i18n.primary.key.not.exist}", exist = false)
+                                         @PathVariable("id") String id) {
+        return ResultHolder.success(userService.getUser(id));
+    }
+
     @ApiOperation(value = "删除用户")
     @PreAuthorize("hasAnyCePermission('USER:DELETE')")
     @DeleteMapping("/{id}")

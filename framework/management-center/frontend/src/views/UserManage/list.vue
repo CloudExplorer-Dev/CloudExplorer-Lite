@@ -1,6 +1,11 @@
 <script setup lang="ts">
 import { ref, onMounted } from "vue";
-import { deleteUserById, listUser } from "@/api/user";
+import {
+  deleteUserById,
+  listUser,
+  getUserRoleList,
+  convertUserRoleSourceList,
+} from "@/api/user";
 import { useRouter } from "vue-router";
 import { User, UserRole } from "@/api/user/type";
 import type { SimpleMap } from "@commons/api/base/type";
@@ -19,7 +24,7 @@ import { ElMessageBox, ElMessage } from "element-plus/es";
 import { usePermissionStore } from "@commons/stores/modules/permission";
 import CeIcon from "@commons/components/ce-icon/index.vue";
 import EnableUserSwitch from "./EnableUserSwitch.vue";
-import MoreOptionsButton from "./MoreOptionsButton.vue";
+import MoreOptionsButton from "@commons/components/ce-table/MoreOptionsButton.vue";
 import _ from "lodash";
 import { sourceIdNames } from "@commons/api/organization";
 
@@ -82,8 +87,10 @@ const handleSelectionChange = (val: User[]) => {
 // 用户详情
 const showUserDetail = (row: User) => {
   useRoute.push({
-    path: useRoute.currentRoute.value.path.replace("/list", "/detail"),
-    query: { id: row.id },
+    path: useRoute.currentRoute.value.path.replace(
+      "/list",
+      `/detail/${row.id}`
+    ),
   });
 };
 
@@ -107,7 +114,7 @@ const deleteUser = (row: User) => {
     type: "warning",
   })
     .then(() => {
-      deleteUserById(row.id).then(() => {
+      deleteUserById(row.id, loading).then(() => {
         refresh();
         ElMessage.success(t("commons.msg.delete_success"));
       });
@@ -137,42 +144,6 @@ function getFirstRoleName(list: Array<UserRole>) {
     return list[0].roles[0].name;
   }
   return "";
-}
-
-function getUserRoleList(map: SimpleMap<Array<UserRole>>): Array<UserRole> {
-  const _list: Array<UserRole> = [];
-  _.forEach(map["ADMIN"], (value) => {
-    _list.push(value);
-  });
-  _.forEach(map["ORGADMIN"], (value) => {
-    _list.push(value);
-  });
-  _.forEach(map["USER"], (value) => {
-    _list.push(value);
-  });
-  return _list;
-}
-
-function convertUserRoleSourceList(list: Array<UserRole>) {
-  const _list: Array<any> = [];
-  _.forEach(list, (userRole) => {
-    _.forEach(userRole.roles, (role) => {
-      _list.push({
-        source: userRole.source,
-        roleId: role.id,
-        roleName: role.name,
-      });
-    });
-  });
-
-  const map = _.groupBy(_list, "roleId");
-
-  const result: Array<any> = [];
-  _.forIn(map, function (value, key) {
-    result.push({ roleId: key, roleName: value[0].roleName, list: value });
-  });
-
-  return result;
 }
 
 const showMsgConfigDialog = (row: User) => {
@@ -387,7 +358,7 @@ const tableConfig = ref<TableConfig>({
       fixed="right"
       :ellipsis="1"
     />-->
-    <el-table-column label="操作" fixed="right">
+    <el-table-column min-width="150px" label="操作" fixed="right">
       <template #default="scope">
         <el-space wrap>
           <!--          <el-switch

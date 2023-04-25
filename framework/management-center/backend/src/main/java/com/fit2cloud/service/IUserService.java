@@ -14,6 +14,8 @@ import com.fit2cloud.dto.UserOperateDto;
 public interface IUserService extends IService<User> {
     IPage<UserDto> pageUser(PageUserRequest pageUserRequest);
 
+    UserDto getUser(String userId);
+
     boolean createUser(CreateUserRequest request);
 
     boolean updateUser(UpdateUserRequest request);

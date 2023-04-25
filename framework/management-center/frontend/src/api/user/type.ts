@@ -8,8 +8,8 @@ export class UserRole extends UserTypes.UserRole {}
 interface RoleInfo {
   roleId: string;
   roleType: string | null; //角色类型：系统管理员、组织管理员、工作空间用户
-  organizationIds: [];
-  workspaceIds: [];
+  organizationIds: string[];
+  workspaceIds: string[];
   selectedRoleIds?: string[] | undefined; // 已选择的角色ID集合
 }
 

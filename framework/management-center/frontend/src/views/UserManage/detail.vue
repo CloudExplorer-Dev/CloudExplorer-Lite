@@ -1,241 +1,43 @@
 <script setup lang="ts">
 import { useRouter } from "vue-router";
 import { useI18n } from "vue-i18n";
-import { onMounted, reactive, ref } from "vue";
-import { tree } from "@commons/api/organization";
-import type { OrganizationTree } from "@/api/organization/type";
-import { workspaceTree } from "@commons/api/workspace";
-import type { WorkspaceTree } from "@commons/api/workspace/type";
-import { getRoleInfo, updateUser } from "@/api/user";
-import type { Role, RoleInfo } from "@/api/user/type";
-import { listRoles } from "@commons/api/role";
-import { useUserStore } from "@commons/stores/modules/user";
+import { computed, onMounted, ref } from "vue";
+import {
+  changeUserStatus,
+  convertUserRoleSourceList,
+  deleteUserById,
+  getUser,
+  getUserRoleList,
+} from "@/api/user";
+
 import { roleConst } from "@commons/utils/constants";
 import _ from "lodash";
-import type { UpdateUserForm } from "@/views/UserManage/type";
-import type { FormInstance, FormRules } from "element-plus";
-import { ElMessage } from "element-plus";
-import CeIcon from "@commons/components/ce-icon/index.vue";
-import FormTitle from "@/componnets/from_title/FormTitle.vue";
+import { TableOperations } from "@commons/components/ce-table/type";
+import type { SimpleMap } from "@commons/api/base/type";
+import { sourceIdNames } from "@commons/api/organization";
+import DetailFormTitle from "@/componnets/DetailFormTitle.vue";
+import DetailFormLabel from "@/componnets/DetailFormLabel.vue";
+import DetailFormValue from "@/componnets/DetailFormValue.vue";
+import MoreOptionsButton from "@commons/components/ce-table/MoreOptionsButton.vue";
+import ModifyPwd from "@/views/UserManage/ModifyPwd.vue";
+import MsgConfig from "@/views/UserManage/MsgConfig.vue";
+import { type UpdateUserStatusRequest, User, UserRole } from "@/api/user/type";
+import { usePermissionStore } from "@commons/stores/modules/permission";
+import { ElMessage, ElMessageBox } from "element-plus";
+
+const props = defineProps<{
+  id: string;
+}>();
 
 const router = useRouter();
 const { t } = useI18n();
-const basicEditable = ref(false);
-const roleEditable = ref(false);
-const roles = ref<Role[]>([]);
-const orgTreeData = ref<OrganizationTree[]>();
-const workspaceTreeData = ref<WorkspaceTree[]>();
-const isAddLineAble = ref(true);
-const formRef = ref<FormInstance | undefined>();
-const originUserBasicData = ref();
-const originUserRoleData = ref<RoleInfo[]>();
-// 资源分类：基本信息/角色信息
-const resourceConst = {
-  basic: "BASIC",
-  role: "ROLE",
-};
-const form = ref<UpdateUserForm>({
-  id: "", // ID
-  username: "", // 用户ID
-  name: "", // 姓名
-  email: "",
-  phone: "",
-  enabled: true,
-  source: "", // 账号类型
-  createTime: "",
-  roleInfoList: [],
-});
+const user = ref<User>();
+const sourceNames = ref<SimpleMap<string>>({});
+const permissionStore = usePermissionStore();
+const msgConfigDialogVisible = ref<boolean>(false);
+const modifyPwdRef = ref();
 
-// 校验用户角色信息;
-const validateRoleInfoList = (): boolean => {
-  let result = true;
-  if (!form.value.roleInfoList || form.value.roleInfoList.length < 1) {
-    ElMessage.error(t("user.validate.role_empty"));
-    result = false;
-  } else {
-    form.value.roleInfoList.forEach((roleInfo: RoleInfo) => {
-      if (roleInfo.roleId === "") {
-        ElMessage.error(t("user.validate.user_type_empty"));
-        result = false;
-      }
-      if (
-        roleInfo.roleType === roleConst.orgAdmin &&
-        roleInfo.organizationIds.length < 1
-      ) {
-        ElMessage.error(t("user.validate.org"));
-        result = false;
-      }
-      if (
-        roleInfo.roleType === roleConst.user &&
-        roleInfo.workspaceIds.length < 1
-      ) {
-        ElMessage.error(t("user.validate.workspace"));
-        result = false;
-      }
-    });
-  }
-  return result;
-};
-
-// 表单校验规则
-const rule = reactive<FormRules>({
-  name: [
-    {
-      required: true,
-      message: t("commons.validate.required", [t("user.name")]),
-      trigger: "blur",
-    },
-    {
-      min: 2,
-      max: 30,
-      message: t("commons.validate.limit", ["2", "30"]),
-      trigger: "blur",
-    },
-  ],
-  phone: [
-    {
-      pattern: /^1[3|4|5|7|8][0-9]{9}$/,
-      message: t("user.validate.phone_format"),
-      trigger: "blur",
-    },
-  ],
-  email: [
-    {
-      required: true,
-      message: t("commons.validate.required", [t("user.email")]),
-      trigger: "blur",
-    },
-    {
-      required: true,
-      pattern: /^[a-zA-Z0-9_._-]+@[a-zA-Z0-9_-]+(\.[a-zA-Z0-9_-]+)+$/,
-      message: t("user.validate.email_format"),
-      trigger: "blur",
-    },
-  ],
-});
-
-const edit = (resource: string) => {
-  if (resource === resourceConst.basic) {
-    basicEditable.value = true;
-  } else {
-    roleEditable.value = true;
-  }
-};
-
-const save = (resource: string, formEl: FormInstance) => {
-  if (!formEl) return;
-
-  // 校验基本信息
-  if (resource === resourceConst.basic) {
-    formEl.validate((valid) => {
-      if (valid) {
-        // 更新基本信息数据,不更新角色信息
-        const param = JSON.parse(JSON.stringify(form.value));
-        param.roleInfoList = [];
-        updateUser(param).then(() => {
-          ElMessage.success(t("commons.msg.save_success"));
-          basicEditable.value = false;
-          originUserBasicData.value = JSON.parse(JSON.stringify(form.value));
-        });
-      } else {
-        ElMessage.error(t("user.validate.param"));
-        return false;
-      }
-    });
-  }
-
-  // 校验角色信息
-  if (resource === resourceConst.role && validateRoleInfoList()) {
-    // 更新角色信息，保持基本信息不变
-    const param = JSON.parse(JSON.stringify(originUserBasicData.value));
-    param.roleInfoList = JSON.parse(JSON.stringify(form.value.roleInfoList));
-    updateUser(param).then(() => {
-      ElMessage.success(t("commons.msg.save_success"));
-      roleEditable.value = false;
-      originUserRoleData.value = JSON.parse(
-        JSON.stringify(form.value.roleInfoList)
-      );
-    });
-  }
-};
-
-const cancel = (resource: string, formEl: FormInstance) => {
-  if (resource === resourceConst.basic) {
-    // 还原数据
-    form.value = JSON.parse(JSON.stringify(originUserBasicData.value));
-    basicEditable.value = false;
-    formEl.validate();
-  } else {
-    // 还原数据
-    if (originUserRoleData.value) {
-      form.value.roleInfoList = JSON.parse(
-        JSON.stringify(originUserRoleData.value)
-      );
-    }
-    roleEditable.value = false;
-  }
-};
-
-const getParentRoleId = (roleId: string) => {
-  let parentRoleId = null;
-  roles.value.forEach((role: Role) => {
-    if (role.id === roleId) {
-      parentRoleId = role.parentRoleId;
-    }
-  });
-  return parentRoleId;
-};
-
-// 添加用户角色选项
-const addLine = () => {
-  const roleInfo: RoleInfo = {
-    roleId: "",
-    roleType: "",
-    organizationIds: [],
-    workspaceIds: [],
-    selectedRoleIds: [],
-  };
-  form.value.roleInfoList.forEach((item: RoleInfo) => {
-    if (roleInfo.selectedRoleIds) {
-      roleInfo.selectedRoleIds.push(item.roleId);
-    }
-  });
-  form.value.roleInfoList.push(roleInfo);
-  if (form.value.roleInfoList && roles) {
-    if (form.value.roleInfoList.length === roles.value.length) {
-      isAddLineAble.value = false;
-    }
-  }
-};
-
-// 清除用户角色选项
-const subtractLine = (roleInfo: RoleInfo) => {
-  _.remove(form.value.roleInfoList, (item) => {
-    return item === roleInfo;
-  });
-  if (form.value.roleInfoList.length !== roles.value.length) {
-    isAddLineAble.value = true;
-  }
-};
-
-const filterRole = (role: Role, roleInfo: RoleInfo) => {
-  if (!roleInfo.selectedRoleIds) return;
-  let value = true;
-  if (roleInfo.selectedRoleIds.length === 0) {
-    value = true;
-  } else {
-    roleInfo.selectedRoleIds.forEach((roleId) => {
-      if (role.id === roleId) {
-        value = false;
-      }
-    });
-  }
-  return value;
-};
-
-const setRoleType = (roleInfo: RoleInfo, roleId: string) => {
-  roleInfo.roleType = getParentRoleId(roleId);
-};
+const loading = ref<boolean>(false);
 
 const enabledFilter = (enabled: boolean) => {
   if (enabled) {
@@ -246,307 +48,337 @@ const enabledFilter = (enabled: boolean) => {
 };
 
 const sourceFilter = (userSource: string) => {
-  if (userSource.toLowerCase() === "local") {
+  if (userSource?.toLowerCase() === "local") {
     return t("user.local");
   }
-  if (userSource.toLowerCase() === "extra") {
+  if (userSource?.toLowerCase() === "extra") {
     return t("user.extra");
   }
   return userSource;
 };
 
-onMounted(() => {
-  const getOrgTree = tree().then((res) => {
-    orgTreeData.value = res.data;
-  });
+const itemWidth = computed(() => {
+  return 100 / 3.0 + "%";
+});
 
-  const getWsTree = workspaceTree().then((res) => {
-    workspaceTreeData.value = res.data;
-  });
-
-  const getRoles = listRoles({ baseRole: useUserStore().currentRole }).then(
-    (res) => {
-      roles.value = res.data;
-    }
-  );
-
-  const userId = router.currentRoute.value.query.id;
-  if (userId) {
-    Promise.all([getOrgTree, getWsTree, getRoles]).then(() => {
-      getRoleInfo(userId as string).then((res) => {
-        res.data.roleInfoList.forEach((roleInfo: RoleInfo) => {
-          roleInfo.roleType = getParentRoleId(roleInfo.roleId);
-          roleInfo.selectedRoleIds = [];
-        });
-        originUserBasicData.value = res.data;
-        originUserRoleData.value = res.data.roleInfoList;
-        form.value = JSON.parse(JSON.stringify(res.data));
-        if (form.value.roleInfoList.length === roles.value.length) {
-          isAddLineAble.value = false;
-        }
-      });
-    });
+const userRoleList = computed<Array<UserRole>>(() => {
+  if (user.value?.roleMap) {
+    return getUserRoleList(user.value?.roleMap);
+  } else {
+    return [];
   }
+});
+
+const roleList = computed(() => {
+  return convertUserRoleSourceList(userRoleList.value);
+});
+
+function filterSourceList(objs: any[]) {
+  const _list: string[] = [];
+  _.forEach(objs, (obj) => {
+    if (sourceNames.value[obj.source]) {
+      _list.push(sourceNames.value[obj.source]);
+    } else {
+      _list.push(obj.source);
+    }
+  });
+
+  return _list;
+}
+
+const edit = (row: User) => {};
+
+const showMsgConfigDialog = () => {
+  msgConfigDialogVisible.value = true;
+};
+
+const showPwdDialog = () => {
+  modifyPwdRef.value.dialogVisible = true;
+};
+
+const deleteUser = (row: User) => {
+  ElMessageBox.confirm(t("user.delete_confirm"), {
+    confirmButtonText: t("commons.message_box.confirm"),
+    cancelButtonText: t("commons.btn.cancel"),
+    type: "warning",
+  })
+    .then(() => {
+      deleteUserById(row.id, loading).then(() => {
+        ElMessage.success(t("commons.msg.delete_success"));
+        router.push({ name: "user" });
+      });
+    })
+    .catch(() => {
+      ElMessage.info(t("commons.msg.delete_canceled"));
+    });
+};
+
+const handleSwitchStatus = (row: User) => {
+  loading.value = true;
+  const req: UpdateUserStatusRequest = _.cloneDeep(
+    row as UpdateUserStatusRequest
+  );
+  req.enabled = !req.enabled;
+  changeUserStatus(req)
+    .then((res) => {
+      if (user.value) {
+        user.value.enabled = !user.value.enabled;
+      }
+      ElMessage.success(t("commons.msg.op_success"));
+    })
+    .catch((e) => {
+      console.error(e);
+    })
+    .finally(() => {
+      loading.value = false;
+    });
+};
+
+const tableOperations = computed(
+  () =>
+    new TableOperations([
+      TableOperations.buildButtons().newInstance(
+        "启用",
+        "primary",
+        handleSwitchStatus,
+        undefined,
+        undefined,
+        permissionStore.hasPermission("[management-center]USER:EDIT") &&
+          user.value &&
+          !user.value?.enabled
+      ),
+      TableOperations.buildButtons().newInstance(
+        "禁用",
+        "primary",
+        handleSwitchStatus,
+        undefined,
+        undefined,
+        permissionStore.hasPermission("[management-center]USER:EDIT") &&
+          user.value &&
+          user.value?.enabled
+      ),
+      TableOperations.buildButtons().newInstance(
+        t("commons.btn.edit"),
+        "primary",
+        edit,
+        undefined,
+        undefined,
+        permissionStore.hasPermission("[management-center]USER:EDIT")
+      ),
+      TableOperations.buildButtons().newInstance(
+        t("commons.personal.edit_pwd"),
+        "primary",
+        showPwdDialog,
+        undefined,
+        undefined,
+        permissionStore.hasPermission("[management-center]USER:EDIT_PASSWORD")
+      ),
+      TableOperations.buildButtons().newInstance(
+        t("user.notify_setting"),
+        "primary",
+        showMsgConfigDialog,
+        undefined,
+        undefined,
+        permissionStore.hasPermission(
+          "[management-center]USER:NOTIFICATION_SETTING"
+        )
+      ),
+      TableOperations.buildButtons().newInstance(
+        t("commons.btn.delete"),
+        "danger",
+        deleteUser,
+        undefined,
+        undefined,
+        permissionStore.hasPermission("[management-center]USER:DELETE"),
+        "#F54A45"
+      ),
+    ])
+);
+
+onMounted(() => {
+  getUser(props.id, loading).then((res) => {
+    user.value = res.data;
+  });
+
+  sourceIdNames().then((res) => {
+    sourceNames.value = res.data;
+  });
 });
 </script>
 
 <template>
-  <el-container class="create-catalog-container">
-    <el-main ref="create-catalog-container">
-      <div class="form-div">
-        <el-form
-          :model="form"
-          :rules="rule"
-          ref="formRef"
-          label-width="100px"
-          label-position="top"
-          require-asterisk-position="right"
-        >
-          <el-row :gutter="10">
-            <el-col :span="12">
-              <FormTitle>{{ t("commons.basic_info", "基本信息") }}</FormTitle>
-            </el-col>
-            <el-col :span="11" style="text-align: end">
-              <el-button
-                key="edit"
-                type="primary"
-                text
-                v-if="!basicEditable"
-                @click="edit(resourceConst.basic)"
-                v-hasPermission="'[management-center]USER:EDIT'"
-              >
-                {{ $t("commons.btn.edit") }}
-              </el-button>
-
-              <el-button
-                class="cancel-btn"
-                v-if="basicEditable"
-                @click="cancel(resourceConst.basic, formRef)"
-              >
-                {{ $t("commons.btn.cancel") }}
-              </el-button>
-              <el-button
-                class="save-btn"
-                type="primary"
-                v-if="basicEditable"
-                @click="save(resourceConst.basic, formRef)"
-              >
-                {{ $t("commons.btn.save") }}
-              </el-button>
-            </el-col>
-          </el-row>
-          <el-row>
-            <el-col :span="10">
-              <el-form-item label="ID" prop="username">
-                <span>{{ form.username }}</span>
-              </el-form-item>
-            </el-col>
-            <el-col :span="10">
-              <el-form-item
-                :label="$t('user.name')"
-                prop="name"
-                style="width: 60%"
-              >
-                <el-input v-model="form.name" v-if="basicEditable" />
-                <span v-if="!basicEditable">{{ form.name }}</span>
-              </el-form-item>
-            </el-col>
-            <el-col :span="4">
-              <el-form-item :label="$t('user.status')" prop="enabled">
-                <el-switch v-model="form.enabled" v-if="basicEditable" />
-                <span v-if="!basicEditable">
-                  {{ enabledFilter(form.enabled) }}
-                </span>
-              </el-form-item>
-            </el-col>
-          </el-row>
-          <el-row>
-            <el-col :span="10">
-              <el-form-item
-                :label="$t('user.email')"
-                prop="email"
-                style="width: 60%"
-              >
-                <el-input v-model="form.email" v-if="basicEditable" />
-                <span v-if="!basicEditable">{{ form.email }}</span>
-              </el-form-item>
-            </el-col>
-            <el-col :span="10">
-              <el-form-item
-                :label="$t('user.phone')"
-                prop="phone"
-                style="width: 60%"
-              >
-                <el-input v-model="form.phone" v-if="basicEditable" />
-                <span v-if="!basicEditable">{{ form.phone }}</span>
-              </el-form-item>
-            </el-col>
-          </el-row>
-          <el-row>
-            <el-col :span="10">
-              <el-form-item :label="$t('user.source')" prop="source">
-                <span>{{ sourceFilter(form.source) }}</span>
-              </el-form-item>
-            </el-col>
-            <el-col :span="10">
-              <el-form-item
-                :label="$t('commons.create_time')"
-                prop="createTime"
-              >
-                <span>{{ form.createTime }}</span>
-              </el-form-item>
-            </el-col>
-          </el-row>
-          <el-row :gutter="10">
-            <el-col :span="12">
-              <FormTitle>{{ $t("user.has_role") }}</FormTitle>
-            </el-col>
-            <el-col :span="11" style="text-align: end">
-              <el-button
-                key="edit"
-                type="primary"
-                text
-                v-if="!roleEditable"
-                @click="edit(resourceConst.role)"
-                v-hasPermission="'[management-center]USER:EDIT'"
-              >
-                {{ $t("commons.btn.edit") }}
-              </el-button>
-              <el-button
-                class="cancel-btn"
-                v-if="roleEditable"
-                @click="cancel(resourceConst.role)"
-              >
-                {{ $t("commons.btn.cancel") }}
-              </el-button>
-              <el-button
-                class="save-btn"
-                type="primary"
-                v-if="roleEditable"
-                @click="save(resourceConst.role, formRef)"
-                >{{ $t("commons.btn.save") }}</el-button
-              >
-            </el-col>
-          </el-row>
-          <el-row v-for="(roleInfo, index) in form.roleInfoList" :key="index">
-            <!-- 用户角色 -->
-            <el-row style="width: 100%">
-              <el-col :span="23">
-                <el-form-item :label="$t('user.type')">
-                  <el-select
-                    v-model="roleInfo.roleId"
-                    @change="setRoleType(roleInfo, roleInfo.roleId)"
-                    :placeholder="$t('user.type')"
-                    style="width: 100%"
-                    :disabled="!roleEditable"
-                  >
-                    <el-option
-                      v-for="role in roles"
-                      :key="role.id"
-                      :label="role.name"
-                      :value="role.id"
-                      v-show="filterRole(role, roleInfo)"
-                    />
-                  </el-select>
-                </el-form-item>
-              </el-col>
-              <el-col :span="1" class="padding-top-40">
-                <el-tooltip
-                  class="box-item"
-                  effect="dark"
-                  :content="$t('user.delete_role')"
-                  placement="bottom"
-                  v-if="form.roleInfoList.length > 1 && roleEditable"
-                >
-                  <div
-                    class="delete-button-class"
-                    @click="subtractLine(roleInfo)"
-                  >
-                    <CeIcon
-                      size="var(--ce-star-menu-icon-width,13.33px)"
-                      code="icon_delete-trash_outlined1"
-                    ></CeIcon>
-                  </div>
-                </el-tooltip>
-              </el-col>
-            </el-row>
-
-            <!-- 选择组织 -->
-            <el-row
-              style="width: 100%"
-              v-if="roleInfo.roleType === roleConst.orgAdmin"
-            >
-              <el-col :span="23">
-                <el-form-item :label="$t('user.add_org')">
-                  <el-tree-select
-                    v-model="roleInfo.organizationIds"
-                    node-key="id"
-                    :props="{ label: 'name' }"
-                    :data="orgTreeData"
-                    :render-after-expand="false"
-                    :disabled="!roleEditable"
-                    filterable
-                    multiple
-                    show-checkbox
-                    check-strictly
-                    style="width: 100%"
-                  />
-                </el-form-item>
-              </el-col>
-            </el-row>
-
-            <!-- 选择工作空间 -->
-            <el-row
-              style="width: 100%"
-              v-if="roleInfo.roleType === roleConst.user"
-            >
-              <el-col :span="23">
-                <el-form-item :label="$t('user.add_workspace')">
-                  <el-tree-select
-                    v-model="roleInfo.workspaceIds"
-                    node-key="id"
-                    :props="{ label: 'name' }"
-                    :data="workspaceTreeData"
-                    :render-after-expand="false"
-                    :disabled="!roleEditable"
-                    filterable
-                    multiple
-                    show-checkbox
-                    style="width: 100%"
-                  />
-                </el-form-item>
-              </el-col>
-            </el-row>
-          </el-row>
-          <el-row :gutter="10">
-            <el-col :span="24">
-              <el-form-item>
-                <el-tooltip
-                  class="box-item"
-                  effect="dark"
-                  :content="$t('user.add_role')"
-                  placement="bottom"
-                  v-if="roleEditable"
-                >
-                  <div
-                    class="add-button-class"
-                    @click="addLine"
-                    :disabled="!isAddLineAble"
-                  >
-                    <CeIcon
-                      size="var(--ce-star-menu-icon-width,13.33px)"
-                      code="icon_add_outlined"
-                    ></CeIcon>
-                    <span class="span-class">
-                      {{ t("commons.btn.add", "添加") }}
-                    </span>
-                  </div>
-                </el-tooltip>
-              </el-form-item>
-            </el-col>
-          </el-row>
-        </el-form>
+  <el-container v-loading="loading">
+    <el-header>
+      <div class="header">
+        <span>{{ user?.name }} 详情</span>
+        <MoreOptionsButton
+          :buttons="tableOperations.buttons"
+          :row="user"
+          name="操作"
+        />
       </div>
+    </el-header>
+    <el-main ref="create-catalog-container">
+      <el-descriptions direction="vertical" :column="3">
+        <template #title>
+          <DetailFormTitle :title="t('commons.basic_info', '基本信息')" />
+        </template>
+        <el-descriptions-item :width="itemWidth">
+          <template #label>
+            <DetailFormLabel :label="$t('user.username')" />
+          </template>
+          <DetailFormValue :value="user?.username" />
+        </el-descriptions-item>
+        <el-descriptions-item :width="itemWidth">
+          <template #label>
+            <DetailFormLabel :label="$t('user.name')" />
+          </template>
+          <DetailFormValue :value="user?.name" />
+        </el-descriptions-item>
+        <el-descriptions-item :width="itemWidth">
+          <template #label>
+            <DetailFormLabel :label="$t('user.status')" />
+          </template>
+          <DetailFormValue :value="enabledFilter(user?.enabled)" />
+        </el-descriptions-item>
+        <el-descriptions-item :width="itemWidth">
+          <template #label>
+            <DetailFormLabel :label="$t('user.email')" />
+          </template>
+          <DetailFormValue :value="user?.email" />
+        </el-descriptions-item>
+        <el-descriptions-item :width="itemWidth">
+          <template #label>
+            <DetailFormLabel :label="$t('user.phone')" />
+          </template>
+          <DetailFormValue :value="user?.phone ? user?.phone : '-'" />
+        </el-descriptions-item>
+        <el-descriptions-item :width="itemWidth">
+          <template #label>
+            <DetailFormLabel :label="$t('user.source')" />
+          </template>
+          <DetailFormValue :value="sourceFilter(user?.source)" />
+        </el-descriptions-item>
+        <el-descriptions-item :width="itemWidth">
+          <template #label>
+            <DetailFormLabel :label="$t('commons.create_time')" />
+          </template>
+          <DetailFormValue :value="user?.createTime" />
+        </el-descriptions-item>
+      </el-descriptions>
+
+      <DetailFormTitle
+        class="margin-top margin-bottom"
+        :title="t('user.has_role')"
+      />
+
+      <template v-for="(roleInfo, index) in roleList" :key="index">
+        <el-descriptions direction="vertical" :column="1">
+          <template #title>
+            <div class="role-title">角色{{ index + 1 }}</div>
+          </template>
+          <el-descriptions-item>
+            <template #label>
+              <DetailFormLabel :label="$t('user.type')" />
+            </template>
+            <DetailFormValue :value="roleInfo.roleName" />
+          </el-descriptions-item>
+          <el-descriptions-item
+            v-if="
+              roleInfo.parentRole === roleConst.orgAdmin ||
+              roleInfo.parentRole === roleConst.user
+            "
+          >
+            <template #label>
+              <DetailFormLabel
+                v-if="roleInfo.parentRole === roleConst.orgAdmin"
+                :label="$t('user.add_org')"
+              />
+              <DetailFormLabel
+                v-else-if="roleInfo.parentRole === roleConst.user"
+                :label="$t('user.add_workspace')"
+              />
+            </template>
+            <DetailFormValue>
+              <el-space wrap>
+                <div
+                  class="source-tip"
+                  v-for="(s, j) in filterSourceList(roleInfo.list)"
+                  :key="j"
+                >
+                  {{ s }}
+                </div>
+              </el-space>
+            </DetailFormValue>
+          </el-descriptions-item>
+        </el-descriptions>
+      </template>
     </el-main>
+
+    <!-- 修改密码弹出框 -->
+    <ModifyPwd ref="modifyPwdRef" :userId="id" style="min-width: 600px" />
+
+    <!-- 通知设置弹出框 -->
+    <el-dialog
+      v-model="msgConfigDialogVisible"
+      :title="$t('user.notify_setting')"
+      width="25%"
+      destroy-on-close
+      :close-on-click-modal="false"
+      class="custom-dialog"
+      style="min-width: 600px"
+    >
+      <MsgConfig :userId="id" v-model:visible="msgConfigDialogVisible" />
+    </el-dialog>
   </el-container>
 </template>
+
+<style lang="scss" scoped>
+.el-main {
+  padding: 16px 0;
+}
+
+.margin-top {
+  margin-top: 16px;
+}
+.margin-bottom {
+  margin-bottom: 16px;
+}
+.role-title {
+  font-style: normal;
+  font-weight: 500;
+  font-size: 14px;
+  line-height: 22px;
+  color: #1f2329;
+}
+
+.source-tip {
+  height: 24px;
+  background: rgba(31, 35, 41, 0.1);
+  border-radius: 2px;
+  font-style: normal;
+  font-weight: 400;
+  font-size: 14px;
+  color: #646a73;
+  line-height: 22px;
+  padding: 1px 6px;
+}
+
+.el-header {
+  --el-header-height: 52px;
+  --el-header-padding: 0;
+  border-bottom: var(--el-border-color) 1px solid;
+  color: #1f2329;
+
+  .header {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    font-style: normal;
+    font-weight: 500;
+    font-size: 16px;
+    line-height: 24px;
+    padding-top: 4px;
+  }
+}
+</style>
