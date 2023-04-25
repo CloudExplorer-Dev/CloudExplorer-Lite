@@ -32,6 +32,7 @@ interface EchartsObj {
   code: string;
   footerName: string;
   options: any;
+  obj: any;
 }
 const props = defineProps<{
   cloudAccountId?: string | undefined;
@@ -81,18 +82,70 @@ const data = computed<Array<EchartsObj>>(() => {
   let options = _.cloneDeep(defaultSpeedOptions);
   if (obj) {
     _.set(options, "series[0].data[0].value", obj["cpu"]?.allocatedRate);
-    result.push({ code: "cpu", footerName: "CPU分配率", options: options });
+    result.push({
+      code: "cpu",
+      footerName: "CPU分配率",
+      options: options,
+      obj: obj["cpu"],
+    });
     options = _.cloneDeep(defaultSpeedOptions);
     _.set(options, "series[0].data[0].value", obj["memory"]?.allocatedRate);
-    result.push({ code: "memory", footerName: "内存分配率", options: options });
+    result.push({
+      code: "memory",
+      footerName: "内存分配率",
+      options: options,
+      obj: obj["memory"],
+    });
     options = _.cloneDeep(defaultSpeedOptions);
     _.set(options, "series[0].data[0].value", obj["datastore"]?.allocatedRate);
     result.push({
       code: "datastore",
       footerName: "存储分配率",
       options: options,
+      obj: obj["datastore"],
     });
   }
+  result.forEach((param) => {
+    const total = param.obj.total;
+    const allocated = param.obj.allocated;
+    const free = total - allocated;
+    const unit = param.code === "cpu" ? " 核" : " GB";
+    const tooltip = {
+      trigger: "item", // 触发类型, 数据项图形触发，主要在散点图，饼图等无类目轴的图表中使用。
+      //无视容器，超出显示
+      appendToBody: true,
+      textStyle: {
+        //color: '#fff' // 文字颜色
+      },
+      extraCssText: "width:169px;",
+      formatter: ``,
+    };
+    let tooltipFormatter = `<div><p style="font-weight:bold;margin:0 8px 5px;">${param.footerName}</p></div>`;
+    tooltipFormatter += `<div>
+          <div style="margin: 0 8px;">
+            <span style="display:inline-block;border-radius: 10px;margin-right:5px;width:10px;height:10px;background-color: rgb(223,224,227)"></span>
+            <span>总量</span>
+            <span style="float:right;color:#000000;">${total + unit}</span>
+          </div>
+        </div>`;
+    tooltipFormatter += `<p style="padding: 0 8px 0 0;left: 79.46%;right: 14.2%;top: 23.37%;border: 1px dashed #EFF0F1;"></p>`;
+    tooltipFormatter += `<div style="padding: 0 0 8px 0;">
+          <div style="margin: 0 8px;">
+            <span style="display:inline-block;border-radius: 10px;margin-right:5px;width:10px;height:10px;background-color: rgb(52,199,36)"></span>
+            <span>未分配</span>
+            <span style="float:right;color:#000000;">${free + unit}</span>
+          </div>
+        </div>`;
+    tooltipFormatter += `<div>
+          <div style="margin: 0 8px;">
+            <span style="display:inline-block;border-radius: 10px;margin-right:5px;width:10px;height:10px;background-color: rgb(223,224,227)"></span>
+            <span>已分配</span>
+            <span style="float:right;color:#000000;">${allocated + unit}</span>
+          </div>
+        </div>`;
+    tooltip.formatter = tooltipFormatter;
+    _.set(param.options, "tooltip", tooltip);
+  });
   return result;
 });
 watch(
@@ -141,7 +194,7 @@ const defaultSpeedOptions = {
       anchor: {
         show: true,
         showAbove: true,
-        size: 10,
+        size: 5,
         itemStyle: {
           borderWidth: 4,
           borderColor: "rgba(77,83,105)",
@@ -154,7 +207,7 @@ const defaultSpeedOptions = {
         color: "rgba(77,83,105)",
         //默认透明
         shadowBlur: 50,
-        width: 3,
+        width: 5,
       },
       title: {
         offsetCenter: [0, "100%"],
