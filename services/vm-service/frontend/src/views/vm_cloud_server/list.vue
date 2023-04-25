@@ -983,14 +983,6 @@ const moreActions = ref<Array<ButtonAction>>([
       min-width="120px"
       :show="false"
     ></el-table-column>
-    <el-table-column
-      prop="deleteTime"
-      column-key="deleteTime"
-      sortable
-      :label="$t('commons.delete_time', '删除时间')"
-      :show="false"
-      min-width="180px"
-    ></el-table-column>
     <fu-table-operations
       :ellipsis="2"
       :columns="columns"
