@@ -172,6 +172,7 @@ function getList() {
         selectRowId.value = undefined;
         currentRow.value = undefined;
       }
+      handleQueryClick();
       emit("change");
     });
 }
