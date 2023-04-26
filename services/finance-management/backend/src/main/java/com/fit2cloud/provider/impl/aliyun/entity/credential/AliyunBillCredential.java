@@ -6,7 +6,6 @@ import com.aliyun.sdk.service.oss20190517.AsyncClient;
 import com.aliyun.teaopenapi.models.Config;
 import com.fit2cloud.common.platform.credential.Credential;
 import com.fit2cloud.common.platform.credential.impl.AliCredential;
-import darabonba.core.client.ClientOverrideConfiguration;
 
 /**
  * {@code @Author:张少虎}
@@ -18,9 +17,7 @@ public class AliyunBillCredential extends AliCredential implements Credential {
 
     public Client getClient() {
         Config config = new com.aliyun.teaopenapi.models.Config()
-                // 您的 AccessKey ID
                 .setAccessKeyId(getAccessKeyId())
-                // 您的 AccessKey Secret
                 .setAccessKeySecret(getAccessKeySecret());
         // 访问的域名
         config.endpoint = "business.aliyuncs.com";
@@ -33,21 +30,14 @@ public class AliyunBillCredential extends AliCredential implements Credential {
         return client;
     }
 
-    public AsyncClient getOssClient() {
+    public AsyncClient getOssClient(String region) {
         StaticCredentialProvider provider = StaticCredentialProvider.create(com.aliyun.auth.credentials.Credential.builder()
                 .accessKeyId(getAccessKeyId())
                 .accessKeySecret(getAccessKeySecret())
                 .build());
         return AsyncClient.builder()
-                //.httpClient(httpClient) // Use the configured HttpClient, otherwise use the default HttpClient (Apache HttpClient)
                 .credentialsProvider(provider)
-                //.serviceConfiguration(Configuration.create()) // Service-level configuration
-                // Client-level configuration rewrite, can set Endpoint, Http request parameters, etc.
-                .overrideConfiguration(
-                        ClientOverrideConfiguration.create()
-                                .setEndpointOverride("oss-cn-qingdao.aliyuncs.com")
-                        //.setConnectTimeout(Duration.ofSeconds(30))
-                )
+                .region(region)
                 .build();
 
     }
