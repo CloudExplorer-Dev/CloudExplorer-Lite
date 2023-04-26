@@ -34,8 +34,8 @@ public class AliBucketApi {
      * @param aliyunBillCredential 阿里云认证信息
      * @return 获取所有的桶
      */
-    public static List<Bucket> listBucket(AliyunBillCredential aliyunBillCredential) {
-        AsyncClient ossClient = aliyunBillCredential.getOssClient();
+    public static List<Bucket> listBucket(AliyunBillCredential aliyunBillCredential, String region) {
+        AsyncClient ossClient = aliyunBillCredential.getOssClient(region);
         ListBucketsRequest listBucketsRequest = ListBucketsRequest.builder().maxKeys(100L).build();
         return PageUtil.pageNextF(listBucketsRequest,
                 ossClient::listBuckets,
@@ -54,7 +54,7 @@ public class AliBucketApi {
      * @return 阿里云桶对象
      */
     public static Bucket getBucket(AliyunBillCredential aliyunBillCredential, String bucketName, String regionId) {
-        AsyncClient ossClient = aliyunBillCredential.getOssClient();
+        AsyncClient ossClient = aliyunBillCredential.getOssClient(regionId);
         ListBucketsRequest listBucketsRequest = ListBucketsRequest.builder().prefix(bucketName).maxKeys(100L).build();
         ListBucketsResponse listBucketsResponse = ossClient.listBuckets(listBucketsRequest).join();
         List<Bucket> buckets = listBucketsResponse.getBody().getBuckets();
@@ -71,24 +71,14 @@ public class AliBucketApi {
      *
      * @param aliBillCredential 阿里云认证
      * @param bucketName        桶名称
-     * @param regionId          区域id
+     * @param region            区域id
      * @return 文件对象
      */
-    public static List<ObjectSummary> listObjectSummary(AliyunBillCredential aliBillCredential, String bucketName, String regionId) {
-        return listObjectSummary(aliBillCredential, bucketName);
-    }
-
-    /**
-     * 获取桶中的文件对象
-     *
-     * @param aliBillCredential 阿里云认证信息
-     * @param bucketName        桶名称
-     * @return 存储桶中所有的文件
-     */
-    public static List<ObjectSummary> listObjectSummary(AliyunBillCredential aliBillCredential, String bucketName) {
-        AsyncClient ossClient = aliBillCredential.getOssClient();
+    public static List<ObjectSummary> listObjectSummary(AliyunBillCredential aliBillCredential, String bucketName, String region) {
+        AsyncClient ossClient = aliBillCredential.getOssClient(region);
         return listObjectSummary(ossClient, bucketName);
     }
+
 
     /**
      * 获取桶中的文件对象
@@ -118,7 +108,7 @@ public class AliBucketApi {
      * @return 云管账单数据
      */
     public static List<CloudBill> listBill(SyncBillRequest syncBillRequest) {
-        AsyncClient ossClient = syncBillRequest.getCredential().getOssClient();
+        AsyncClient ossClient = syncBillRequest.getCredential().getOssClient(syncBillRequest.getBill().getRegionId());
         List<ObjectSummary> objectSummaryList = listObjectSummary(ossClient, syncBillRequest.getBill().getBucketId());
         // todo 获取阿里云桶账单文件并且读取
         List<AliBillCsvModel> aliBillCsvModels = objectSummaryList.stream()
@@ -154,7 +144,7 @@ public class AliBucketApi {
      * @return 桶中制定月份的文件
      */
     public static List<String> listBucketFileMonth(ListBucketMonthRequest listBucketMonthRequest) {
-        List<ObjectSummary> objectSummaryList = listObjectSummary(listBucketMonthRequest.getCredential(), listBucketMonthRequest.getBill().getBucketId());
+        List<ObjectSummary> objectSummaryList = listObjectSummary(listBucketMonthRequest.getCredential(), listBucketMonthRequest.getBill().getBucketId(), listBucketMonthRequest.getBill().getRegionId());
         return objectSummaryList.stream().filter(objectSummary -> monthPattern.matcher(objectSummary.getKey()).find()).map(ObjectSummary::getKey).map(fileName -> {
             String month = fileName.substring(fileName.length() - 6);
             return month.substring(0, 4) + "-" + month.substring(4, 6);
