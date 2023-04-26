@@ -29,7 +29,7 @@ function handleCommand(btn: any) {
 </script>
 
 <template>
-  <el-dropdown @command="handleCommand">
+  <el-dropdown @command="handleCommand" v-if="_buttons && _buttons.length > 0">
     <div class="more-operation" v-if="!name">
       <el-icon>
         <MoreFilled />

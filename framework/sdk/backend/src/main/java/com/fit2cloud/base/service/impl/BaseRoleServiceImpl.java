@@ -10,16 +10,16 @@ import com.fit2cloud.base.entity.Role;
 import com.fit2cloud.base.mapper.BaseRoleMapper;
 import com.fit2cloud.base.service.IBaseRoleService;
 import com.fit2cloud.common.constants.RoleConstants;
+import com.fit2cloud.common.utils.CurrentUserUtils;
 import com.fit2cloud.common.utils.PageUtil;
+import com.fit2cloud.dto.UserRoleDto;
 import com.fit2cloud.request.role.RolePageRequest;
 import com.fit2cloud.request.role.RoleRequest;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
 
 /**
  * <p>
@@ -56,6 +56,53 @@ public class BaseRoleServiceImpl extends ServiceImpl<BaseRoleMapper, Role> imple
         if (CollectionUtils.isNotEmpty(roleRequest.getUpdateTime())) {
             wrapper.between(Role::getUpdateTime, roleRequest.getUpdateTime().get(0), roleRequest.getUpdateTime().get(1));
         }
+
+        List<UserRoleDto> roles = CurrentUserUtils.getUser().getRoleMap().get(CurrentUserUtils.getUser().getCurrentRole());
+        if (CurrentUserUtils.isAdmin()) {
+            boolean isSystemAdmin = false;
+            Set<String> roleIds = new HashSet<>();
+            for (UserRoleDto userRoleDto : roles) {
+                for (Role role : userRoleDto.getRoles()) {
+                    if (StringUtils.equals(role.getId(), RoleConstants.ROLE.ADMIN.name())) {
+                        isSystemAdmin = true;
+                    }
+                    roleIds.add(role.getId());
+                }
+            }
+            if (isSystemAdmin) {
+                wrapper.in(Role::getParentRoleId, getRoleList(RoleConstants.ROLE.ADMIN));
+            } else {
+                wrapper.and(w -> w
+                        .in(Role::getParentRoleId, getRoleList(RoleConstants.ROLE.ORGADMIN))
+                        .or()
+                        .in(Role::getId, roleIds)
+                );
+            }
+
+        }
+        if (CurrentUserUtils.isOrgAdmin()) {
+            boolean isSystemOrgAdmin = false;
+            Set<String> roleIds = new HashSet<>();
+            for (UserRoleDto userRoleDto : roles) {
+                for (Role role : userRoleDto.getRoles()) {
+                    if (StringUtils.equals(role.getId(), RoleConstants.ROLE.ORGADMIN.name())) {
+                        isSystemOrgAdmin = true;
+                    }
+                    roleIds.add(role.getId());
+                }
+            }
+            if (isSystemOrgAdmin) {
+                wrapper.in(Role::getParentRoleId, getRoleList(RoleConstants.ROLE.ORGADMIN));
+            } else {
+                wrapper.and(w -> w
+                        .in(Role::getParentRoleId, getRoleList(RoleConstants.ROLE.USER))
+                        .or()
+                        .in(Role::getId, roleIds)
+                );
+            }
+
+        }
+
 
         if (defaultSort) {
             wrapper.orderBy(true, true, Role::getType, Role::getSort, Role::getParentRoleId);

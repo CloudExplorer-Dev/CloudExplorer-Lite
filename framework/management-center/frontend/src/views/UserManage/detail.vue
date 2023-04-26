@@ -24,7 +24,7 @@ import MsgConfig from "@/views/UserManage/MsgConfig.vue";
 import { type UpdateUserStatusRequest, User, UserRole } from "@/api/user/type";
 import { usePermissionStore } from "@commons/stores/modules/permission";
 import { ElMessage, ElMessageBox } from "element-plus";
-import CreateOrEdit from "./CreateOrEdit.vue";
+import CreateOrEdit from "@/views/UserManage/CreateOrEdit.vue";
 
 const props = defineProps<{
   id: string;

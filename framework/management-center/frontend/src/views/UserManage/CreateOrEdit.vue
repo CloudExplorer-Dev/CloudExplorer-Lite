@@ -241,7 +241,7 @@ function open() {
   getOrgTree();
   getWorkspaceTree();
 
-  listRoles({ baseRole: useUserStore().currentRole }).then((res) => {
+  listRoles().then((res) => {
     roles.value = res.data;
   });
 }

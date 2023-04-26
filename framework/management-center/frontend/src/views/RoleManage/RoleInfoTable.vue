@@ -14,29 +14,30 @@
           <el-input v-model="_roleFormData.name" v-if="editInfo" />
           <span v-if="!editInfo">{{ _roleData.name }}</span>
         </el-form-item>
-      </el-col>
-    </el-row>
-    <el-row :gutter="10">
+      </el-col> </el-row
+    ><!--    <el-row :gutter="10">
       <el-col :span="24">
         <el-form-item label="描述" label-width="100px" prop="description">
           <el-input v-model="_roleFormData.description" v-if="editInfo" />
           <span v-if="!editInfo">{{ _roleData.description }}</span>
         </el-form-item>
       </el-col>
-    </el-row>
-    <el-row :gutter="10">
+    </el-row>-->
+
+    <el-row :gutter="10" v-if="createNew">
       <el-col :span="24">
         <el-form-item label="继承角色" label-width="100px" prop="parentRoleId">
-          <el-radio-group v-model="_roleData.parentRoleId">
-            <el-radio
+          <el-select style="width: 100%" v-model="_roleData.parentRoleId">
+            <el-option
               v-for="baseRole in originRoles"
               :key="baseRole.id"
-              :label="baseRole.id"
+              :label="baseRole.name"
+              :value="baseRole.id"
               :disabled="!createNew && baseRole.id !== _roleData.parentRoleId"
             >
               {{ baseRole.name }}
-            </el-radio>
-          </el-radio-group>
+            </el-option>
+          </el-select>
         </el-form-item>
       </el-col>
     </el-row>
@@ -150,5 +151,7 @@ function init() {
     });
   }
 }
+
+defineExpose({ init });
 </script>
 <style lang="scss"></style>

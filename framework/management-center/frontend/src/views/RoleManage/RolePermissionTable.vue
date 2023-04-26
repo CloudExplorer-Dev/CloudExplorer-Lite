@@ -267,14 +267,21 @@ watch(
   },
   { immediate: true }
 );
+watch(
+  () => props.id,
+  (id) => {
+    console.log("current role id:" + id);
+    if (id) {
+      RoleApi.getRolePermissions(id, _loading).then((ok) => {
+        _permissionData.value = ok.data;
+      });
+    }
+  },
+  { immediate: true }
+);
 
 const init = () => {
-  //权限
-  if (props.id) {
-    RoleApi.getRolePermissions(props.id, _loading).then((ok) => {
-      _permissionData.value = ok.data;
-    });
-  }
+  console.log("init", props.id);
   //模块
   listModules(_loading).then((ok) => {
     modules.value = ok.data;
@@ -284,6 +291,8 @@ const init = () => {
 onMounted(() => {
   init();
 });
+
+defineExpose({ init });
 </script>
 <style lang="scss">
 .edit-button-container {
