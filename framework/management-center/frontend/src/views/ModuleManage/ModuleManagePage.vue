@@ -271,7 +271,7 @@ function openDialog() {
 
 const header = computed(() => {
   const h: Record<string, any> = {};
-  h[Config.CE_TOKEN_KEY] = userStore.currentToken;
+  h[Config.CE_TOKEN_KEY] = userStore.currentToken();
   h[Config.CE_ROLE_KEY] = userStore.currentRole;
   h[Config.CE_SOURCE_KEY] = userStore.currentSource;
   return h;
