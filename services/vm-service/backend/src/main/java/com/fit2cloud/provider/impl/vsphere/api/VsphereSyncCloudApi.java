@@ -1233,6 +1233,10 @@ public class VsphereSyncCloudApi {
         PerfMetricId perfMetricId = new PerfMetricId();
         //这个是必须的，不然查询会报错
         perfMetricId.setInstance("");
+        //CPU内存，多获取过去30分钟的，不然当30分钟同步的时候，无法获取25 30 分的数据，因为API没有返回这两个点的数据
+        if (StringUtils.equalsIgnoreCase(metricName, "2") || StringUtils.equalsIgnoreCase(metricName, "24")) {
+            calBegin.setTime(new Date((Long.valueOf(request.getStartTime()) - 1800000)));
+        }
         if (StringUtils.equalsIgnoreCase(managedObjectReference.getType(), "VirtualMachine")) {
             //磁盘的，只能获取过去40分钟内的数据
             if (StringUtils.equalsIgnoreCase(metricName, "181") || StringUtils.equalsIgnoreCase(metricName, "180") ||
