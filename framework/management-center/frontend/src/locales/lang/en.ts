@@ -142,7 +142,7 @@ const message = {
         recycle_strategy: "Recycle Bin Policy",
         tips: "Note:",
         tips_1:
-          "After the Recycle Bin function is enabled, users will put the deleted resources into the Recycle Bin when deleting virtual machines, cloud disks and other resources, and will not delete them immediately.",
+          "After the Recycle Bin function is enabled, when you delete the cloud host or cloud disk resources, the deleted resources will be put into the Recycle Bin. Force delete function is in  the Recycle Bin",
         tips_2:
           "After the Recycle Bin function is turned off, the user will delete the virtual machine, cloud disk and other resources immediately and cannot be recovered.",
       },
