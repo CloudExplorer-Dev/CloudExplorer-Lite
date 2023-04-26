@@ -21,16 +21,19 @@ export const listUser: (
   return get("/api/user/page", req, loading);
 };
 
-export const createUser = (req: CreateUserRequest) => {
-  return post("/api/user/add", "", req);
+export const createUser = (req: CreateUserRequest, loading?: Ref<boolean>) => {
+  return post("/api/user/add", "", req, loading);
 };
 
-export const updateUser = (req: UpdateUserRequest) => {
-  return post("/api/user/update", "", req);
+export const updateUser = (req: UpdateUserRequest, loading?: Ref<boolean>) => {
+  return post("/api/user/update", "", req, loading);
 };
 
-export const updatePwd = (req: UpdateUserPwdRequest) => {
-  return post("/api/user/updatePwd", "", req);
+export const updatePwd = (
+  req: UpdateUserPwdRequest,
+  loading?: Ref<boolean>
+) => {
+  return post("/api/user/updatePwd", "", req, loading);
 };
 
 export const deleteUserById = (userId: string, loading?: Ref<boolean>) => {

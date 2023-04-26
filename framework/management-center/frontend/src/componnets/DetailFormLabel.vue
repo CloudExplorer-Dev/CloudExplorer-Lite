@@ -5,10 +5,10 @@ const props = defineProps<{
 </script>
 
 <template>
-  <div class="label">
+  <span class="label">
     {{ label }}
     <slot />
-  </div>
+  </span>
 </template>
 <style scoped lang="scss">
 .label {

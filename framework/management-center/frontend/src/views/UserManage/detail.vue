@@ -24,6 +24,7 @@ import MsgConfig from "@/views/UserManage/MsgConfig.vue";
 import { type UpdateUserStatusRequest, User, UserRole } from "@/api/user/type";
 import { usePermissionStore } from "@commons/stores/modules/permission";
 import { ElMessage, ElMessageBox } from "element-plus";
+import CreateOrEdit from "./CreateOrEdit.vue";
 
 const props = defineProps<{
   id: string;
@@ -38,6 +39,8 @@ const msgConfigDialogVisible = ref<boolean>(false);
 const modifyPwdRef = ref();
 
 const loading = ref<boolean>(false);
+
+const editFormRef = ref<InstanceType<typeof CreateOrEdit>>();
 
 const enabledFilter = (enabled: boolean) => {
   if (enabled) {
@@ -86,7 +89,14 @@ function filterSourceList(objs: any[]) {
   return _list;
 }
 
-const edit = (row: User) => {};
+const edit = (row: User) => {
+  editFormRef.value?.open();
+  editFormRef.value?.refreshUser();
+};
+
+function editConfirmed() {
+  refreshUser();
+}
 
 const showMsgConfigDialog = () => {
   msgConfigDialogVisible.value = true;
@@ -195,10 +205,14 @@ const tableOperations = computed(
     ])
 );
 
-onMounted(() => {
+function refreshUser() {
   getUser(props.id, loading).then((res) => {
     user.value = res.data;
   });
+}
+
+onMounted(() => {
+  refreshUser();
 
   sourceIdNames().then((res) => {
     sourceNames.value = res.data;
@@ -322,7 +336,7 @@ onMounted(() => {
     <el-dialog
       v-model="msgConfigDialogVisible"
       :title="$t('user.notify_setting')"
-      width="25%"
+      width="840px"
       destroy-on-close
       :close-on-click-modal="false"
       class="custom-dialog"
@@ -330,6 +344,8 @@ onMounted(() => {
     >
       <MsgConfig :userId="id" v-model:visible="msgConfigDialogVisible" />
     </el-dialog>
+
+    <CreateOrEdit ref="editFormRef" @confirm="editConfirmed" :id="id" />
   </el-container>
 </template>
 
