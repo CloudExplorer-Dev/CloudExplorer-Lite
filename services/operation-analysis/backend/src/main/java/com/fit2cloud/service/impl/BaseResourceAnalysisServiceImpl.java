@@ -477,8 +477,7 @@ public class BaseResourceAnalysisServiceImpl implements IBaseResourceAnalysisSer
             BigDecimal memoryUsedRate = memoryUsed.divide(memoryTotal, 2, RoundingMode.HALF_UP).multiply(new BigDecimal(100));
             result.put("memory", ResourceAllocatedInfo.builder()
                     .total(memoryTotal.divide(new BigDecimal(1024), RoundingMode.HALF_UP))
-                    .allocated(memoryUsedRate.divide(new BigDecimal(1024), RoundingMode.HALF_UP))
-                    .used(memoryUsed)
+                    .used(memoryUsed.divide(new BigDecimal(1024), RoundingMode.HALF_UP))
                     .usedRate(memoryUsedRate.compareTo(new BigDecimal(100)) > 0 ? new BigDecimal(100) : memoryUsedRate)
                     .build());
 
@@ -488,11 +487,11 @@ public class BaseResourceAnalysisServiceImpl implements IBaseResourceAnalysisSer
             datastoreList = datastoreList.stream().filter(v -> !CollectionUtils.isNotEmpty(request.getDatastoreIds()) || request.getDatastoreIds().contains(v.getId())).toList();
             BigDecimal capacity = new BigDecimal(datastoreList.stream().filter(v -> Objects.nonNull(v.getCapacity())).mapToLong(VmCloudDatastore::getCapacity).sum());
             BigDecimal freeSpace = new BigDecimal(datastoreList.stream().filter(v -> Objects.nonNull(v.getFreeSpace())).mapToLong(VmCloudDatastore::getFreeSpace).sum());
-            BigDecimal memoryUsedRate = capacity.subtract(freeSpace).divide(capacity, 2, RoundingMode.HALF_UP).multiply(new BigDecimal(100));
+            BigDecimal usedRate = capacity.subtract(freeSpace).divide(capacity, 2, RoundingMode.HALF_UP).multiply(new BigDecimal(100));
             result.put("datastore", ResourceAllocatedInfo.builder()
                     .total(capacity)
                     .used(capacity.subtract(freeSpace))
-                    .usedRate(memoryUsedRate)
+                    .usedRate(usedRate)
                     .build());
         } else {
             result.put("datastore", ResourceAllocatedInfo.builder()
