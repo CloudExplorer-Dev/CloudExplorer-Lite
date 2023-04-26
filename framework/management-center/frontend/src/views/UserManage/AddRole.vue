@@ -136,11 +136,9 @@ onMounted(() => {
     workspaceTreeData.value = res.data;
   });
 
-  const getRoles = listRoles({ baseRole: useUserStore().currentRole }).then(
-    (res) => {
-      roles.value = res.data;
-    }
-  );
+  const getRoles = listRoles().then((res) => {
+    roles.value = res.data;
+  });
 
   Promise.all([getOrgTree, getWsTree, getRoles]).then(() => {
     addLine();

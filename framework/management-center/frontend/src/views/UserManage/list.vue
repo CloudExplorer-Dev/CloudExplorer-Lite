@@ -25,7 +25,7 @@ import { usePermissionStore } from "@commons/stores/modules/permission";
 import CeIcon from "@commons/components/ce-icon/index.vue";
 import EnableUserSwitch from "./EnableUserSwitch.vue";
 import MoreOptionsButton from "@commons/components/ce-table/MoreOptionsButton.vue";
-import CreateOrEdit from "./CreateOrEdit.vue";
+import CreateOrEdit from "@/views/UserManage/CreateOrEdit.vue";
 import { sourceIdNames } from "@commons/api/organization";
 
 const { t } = useI18n();

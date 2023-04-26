@@ -67,6 +67,7 @@ public class RoleController {
     public ResultHolder<Role> update(@RequestBody @Validated(ValidationGroup.UPDATE.class) UpdateRoleRequest request) {
         Role role = new Role();
         BeanUtils.copyProperties(request, role);
+        role.setUpdateTime(null);
         roleService.updateRole(role);
         if (request.getPermissions() != null) {
             rolePermissionService.savePermissionsByRole(role.getId(), request.getPermissions());
