@@ -94,6 +94,21 @@ onMounted(() => {
 </script>
 
 <template>
+  <div class="notification_title">
+    <el-icon style="margin-right: 1em" color="#3370FF">
+      <InfoFilled />
+    </el-icon>
+    <span>
+      {{ $t("user.notify_tips") }}:<a
+        href="https://work.weixin.qq.com/api/doc/90000/90135/90665"
+        target="_blank"
+        style="color: var(--el-color-primary)"
+      >
+        https://work.weixin.qq.com/api/doc/90000/90135/90665</a
+      ></span
+    >
+  </div>
+
   <el-form
     :model="form"
     :rules="rules"
@@ -113,21 +128,6 @@ onMounted(() => {
     </el-form-item>
   </el-form>
 
-  <div class="notification_title">
-    <span style="font-size: 12px">
-      <el-icon>
-        <InfoFilled />
-      </el-icon>
-      {{ $t("user.notify_tips") }}:<a
-        href="https://work.weixin.qq.com/api/doc/90000/90135/90665"
-        target="_blank"
-        style="color: var(--el-color-primary)"
-      >
-        https://work.weixin.qq.com/api/doc/90000/90135/90665</a
-      ></span
-    >
-  </div>
-
   <div class="dialog_footer footer-btn">
     <el-button @click="handleCancel(formRef)">{{
       $t("commons.btn.cancel")
@@ -140,9 +140,24 @@ onMounted(() => {
 
 <style lang="scss">
 .notification_title {
+  background: linear-gradient(
+      0deg,
+      rgba(51, 112, 255, 0.08),
+      rgba(51, 112, 255, 0.08)
+    ),
+    #ffffff;
+  border: 1px solid #3370ff;
   border-radius: 4px;
-  background: #dcdfe6;
-  padding: 5px;
+  padding: 16px 20px;
+  display: flex;
+  align-items: center;
+  flex-wrap: nowrap;
+  font-style: normal;
+  font-weight: 500;
+  font-size: 14px;
+  line-height: 22px;
+  color: #1f2329;
+  margin-bottom: 24px;
 }
 .dialog_footer {
   text-align: right;

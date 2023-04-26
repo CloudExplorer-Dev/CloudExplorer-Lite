@@ -25,7 +25,7 @@ import { usePermissionStore } from "@commons/stores/modules/permission";
 import CeIcon from "@commons/components/ce-icon/index.vue";
 import EnableUserSwitch from "./EnableUserSwitch.vue";
 import MoreOptionsButton from "@commons/components/ce-table/MoreOptionsButton.vue";
-import _ from "lodash";
+import CreateOrEdit from "./CreateOrEdit.vue";
 import { sourceIdNames } from "@commons/api/organization";
 
 const { t } = useI18n();
@@ -40,6 +40,9 @@ const activeUserId = ref<string>();
 const batchAddRoleDialogVisible = ref<boolean>(false);
 const msgConfigDialogVisible = ref<boolean>(false);
 const sourceNames = ref<SimpleMap<string>>({});
+const createEditFormRef = ref<InstanceType<typeof CreateOrEdit>>();
+const selectedId = ref<string | undefined>();
+const operateType = ref<"edit" | "create">();
 
 const loading = ref<boolean>(false);
 
@@ -95,17 +98,25 @@ const showUserDetail = (row: User) => {
 };
 
 const create = () => {
-  useRoute.push({
-    path: useRoute.currentRoute.value.path.replace("/list", "/create"),
-  });
+  selectedId.value = undefined;
+  createEditFormRef.value?.open();
 };
 
 const edit = (row: User) => {
-  useRoute.push({
-    path: useRoute.currentRoute.value.path.replace("/list", "/update"),
-    query: { id: row.id },
-  });
+  let needRefresh = false;
+  if (selectedId.value === row.id) {
+    needRefresh = true;
+  }
+  selectedId.value = row.id;
+  createEditFormRef.value?.open();
+  if (needRefresh) {
+    createEditFormRef.value?.refreshUser();
+  }
 };
+
+function editConfirmed() {
+  refresh();
+}
 
 const deleteUser = (row: User) => {
   ElMessageBox.confirm(t("user.delete_confirm"), {
@@ -422,6 +433,12 @@ const tableConfig = ref<TableConfig>({
       @refresh="refresh"
     />
   </el-dialog>
+
+  <CreateOrEdit
+    ref="createEditFormRef"
+    @confirm="editConfirmed"
+    :id="selectedId"
+  />
 </template>
 
 <style lang="scss" scoped>
