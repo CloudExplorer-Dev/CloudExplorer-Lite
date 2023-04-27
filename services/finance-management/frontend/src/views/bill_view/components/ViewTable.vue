@@ -24,18 +24,14 @@
       sortable
     >
       <template #default="scope">
-        {{ _.round(scope.row.value, 2).toFixed(2) }}
+        {{ DecimalFormat.format(scope.row.value, 2) }}
       </template>
     </el-table-column>
     <el-table-column fixed="right" min-width="80" label="占比">
       <template #default="scope">{{
-        Math.floor(
-          (scope.row.value /
-            viewData.map((b) => b.value).reduce((p, n) => p + n)) *
-            10000
-        ) /
-          100 +
-        "%"
+        PercentFormat.format(
+          scope.row.value / viewData.map((b) => b.value).reduce((p, n) => p + n)
+        )
       }}</template></el-table-column
     >
     <el-table-column width="200" fixed="right" label="趋势">
@@ -58,10 +54,11 @@
 </template>
 <script setup lang="ts">
 import { ref, computed } from "vue";
-import _ from "lodash";
 import type { BillSummary } from "@/echarts/bill_view/type";
 import type { BillRule } from "@/api/bill_rule/type";
 import ViewTrend from "@/views/bill_view/components/ViewTrendChart.vue";
+import PercentFormat from "@commons/utils/percentFormat";
+import DecimalFormat from "@commons/utils/decimalFormat";
 
 const props = withDefaults(
   defineProps<{

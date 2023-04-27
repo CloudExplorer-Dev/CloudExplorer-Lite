@@ -114,7 +114,9 @@
       >
         <template #default="scope">
           {{
-            scope.row.cpuAverage ? scope.row.cpuAverage.toFixed(2) + "%" : "-"
+            scope.row.cpuAverage
+              ? PercentFormat.format(scope.row.cpuAverage / 100)
+              : "-"
           }}
         </template>
       </el-table-column>
@@ -127,7 +129,9 @@
       >
         <template #default="scope">
           {{
-            scope.row.cpuMaximum ? scope.row.cpuMaximum.toFixed(2) + "%" : "-"
+            scope.row.cpuMaximum
+              ? PercentFormat.format(scope.row.cpuMaximum / 100)
+              : "-"
           }}
         </template>
       </el-table-column>
@@ -140,7 +144,7 @@
         <template #default="scope">
           {{
             scope.row.memoryAverage
-              ? scope.row.memoryAverage.toFixed(2) + "%"
+              ? PercentFormat.format(scope.row.memoryAverage / 100)
               : "-"
           }}
         </template>
@@ -155,7 +159,7 @@
         <template #default="scope">
           {{
             scope.row.memoryMaximum
-              ? scope.row.memoryMaximum.toFixed(2) + "%"
+              ? PercentFormat.format(scope.row.memoryMaximum / 100)
               : "-"
           }}
         </template>
@@ -186,9 +190,8 @@ import { useRouter } from "vue-router";
 import ServerOptimization from "@commons/business/base-layout/home-page/items/operation/ServerOptimization.vue";
 import _ from "lodash";
 import MicroAppRouterUtil from "@commons/router/MicroAppRouterUtil";
-import { usePermissionStore } from "@commons/stores/modules/permission";
 import { useUserStore } from "@commons/stores/modules/user";
-const permissionStore = usePermissionStore();
+import PercentFormat from "@commons/utils/percentFormat";
 const userStore = useUserStore();
 
 const optimizeDivRef = ref<InstanceType<typeof ServerOptimization> | null>();

@@ -12,6 +12,7 @@ import type { SimpleMap } from "@commons/api/base/type";
 import { platformIcon } from "@commons/utils/platform";
 import BaseCloudAccountApi from "@commons/api/cloud_account";
 import type { VmCloudServerVO } from "@/api/server_analysis/type";
+import PercentFormat from "@commons/utils/percentFormat";
 
 const { t } = useI18n();
 const table = ref<any>(null);
@@ -128,7 +129,7 @@ const tableConfig = ref<TableConfig>({
               :color="platformIcon[scope.row.platform]?.color"
               size="16px"
               v-if="scope.row.platform"
-            ></component>
+            />
             <span style="margin-left: 10px">{{ scope.row.accountName }}</span>
           </div>
         </template>
@@ -140,29 +141,30 @@ const tableConfig = ref<TableConfig>({
       ></el-table-column>
       <el-table-column min-width="150" prop="ipArray" label="IP地址">
         <template #default="scope">
-          <span v-show="scope.row.ipArray?.length > 2">{{
-            JSON.parse(scope.row.ipArray)[0]
-          }}</span>
-          <el-dropdown
-            class="dropdown_box"
-            :hide-on-click="false"
-            v-if="scope.row.ipArray.length > 2"
-            max-height="100px"
-          >
-            <span>
-              {{ t("commons.cloud_server.more", "更多")
-              }}<el-icon class="el-icon--right"><arrow-down /></el-icon>
-            </span>
-            <template #dropdown>
-              <el-dropdown-menu>
-                <el-dropdown-item
-                  v-for="(item, index) in JSON.parse(scope.row.ipArray)"
-                  :key="index"
-                  >{{ item }}</el-dropdown-item
-                >
-              </el-dropdown-menu>
-            </template>
-          </el-dropdown>
+          <div :data-var="(_array = JSON.parse(scope.row.ipArray))">
+            <span v-show="scope.row.ipArray?.length > 2">{{ _array[0] }}</span>
+            <el-dropdown
+              class="dropdown_box"
+              :hide-on-click="false"
+              v-if="scope.row.ipArray.length > 2"
+              max-height="100px"
+            >
+              <span>
+                {{ t("commons.cloud_server.more", "更多")
+                }}<el-icon class="el-icon--right"><arrow-down /></el-icon>
+              </span>
+              <template #dropdown>
+                <el-dropdown-menu>
+                  <el-dropdown-item
+                    v-for="(item, index) in _array"
+                    :key="index"
+                  >
+                    {{ item }}
+                  </el-dropdown-item>
+                </el-dropdown-menu>
+              </template>
+            </el-dropdown>
+          </div>
         </template>
       </el-table-column>
       <el-table-column
@@ -187,7 +189,9 @@ const tableConfig = ref<TableConfig>({
       >
         <template #default="scope">
           {{
-            scope.row.cpuAverage ? scope.row.cpuAverage.toFixed(2) + "%" : "-"
+            scope.row.cpuAverage
+              ? PercentFormat.format(scope.row.cpuAverage / 100)
+              : "-"
           }}
         </template>
       </el-table-column>
@@ -199,7 +203,9 @@ const tableConfig = ref<TableConfig>({
       >
         <template #default="scope">
           {{
-            scope.row.cpuMaximum ? scope.row.cpuMaximum.toFixed(2) + "%" : "-"
+            scope.row.cpuMaximum
+              ? PercentFormat.format(scope.row.cpuMaximum / 100)
+              : "-"
           }}
         </template>
       </el-table-column>
@@ -212,7 +218,7 @@ const tableConfig = ref<TableConfig>({
         <template #default="scope">
           {{
             scope.row.memoryAverage
-              ? scope.row.memoryAverage.toFixed(2) + "%"
+              ? PercentFormat.format(scope.row.memoryAverage / 100)
               : "-"
           }}
         </template>
@@ -226,7 +232,7 @@ const tableConfig = ref<TableConfig>({
         <template #default="scope">
           {{
             scope.row.memoryMaximum
-              ? scope.row.memoryMaximum.toFixed(2) + "%"
+              ? PercentFormat.format(scope.row.memoryMaximum / 100)
               : "-"
           }}
         </template>

@@ -63,7 +63,12 @@
                 <div class="usage-bar-top-text">
                   <span>
                     可用:
-                    {{ (scope.row.totalCpu - scope.row.usedCpu).toFixed(2) }}GHz
+                    {{
+                      DecimalFormat.format(
+                        scope.row.totalCpu - scope.row.usedCpu,
+                        2
+                      )
+                    }}GHz
                   </span>
                 </div>
                 <el-progress
@@ -89,7 +94,10 @@
                 <div class="usage-bar-top-text">
                   <span
                     >可用:{{
-                      (scope.row.totalMemory - scope.row.usedMemory).toFixed(2)
+                      DecimalFormat.format(
+                        scope.row.totalMemory - scope.row.usedMemory,
+                        2
+                      )
                     }}GB</span
                   >
                 </div>
@@ -155,6 +163,7 @@ import formApi from "@commons/api/form_resource_api";
 import { computed, onMounted, ref, watch } from "vue";
 import _ from "lodash";
 import { ElTable, type FormInstance } from "element-plus";
+import DecimalFormat from "@commons/utils/decimalFormat";
 
 interface ComputeConfig {
   location: string;
