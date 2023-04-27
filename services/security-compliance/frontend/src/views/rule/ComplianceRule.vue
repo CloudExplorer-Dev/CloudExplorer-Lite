@@ -47,7 +47,7 @@
       >
         <template #default="scope">
           <div style="display: flex; align-items: center">
-            <PlatformIcon :platform="scope.row.platform"/>
+            <PlatformIcon :platform="scope.row.platform" />
             <span>{{ platformIcon[scope.row.platform].name }}</span>
           </div>
         </template>

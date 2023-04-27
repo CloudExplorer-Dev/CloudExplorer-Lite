@@ -97,7 +97,7 @@
                 >
                   <template #default="scope">
                     <div style="display: flex; align-items: center">
-                      <PlatformIcon :platform="scope.row.provider"/>
+                      <PlatformIcon :platform="scope.row.provider" />
                       <div>{{ scope.row.cloudAccountName }}</div>
                     </div>
                   </template>

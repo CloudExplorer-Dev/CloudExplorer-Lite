@@ -132,7 +132,7 @@
             >
               <template #default="scope">
                 <div style="display: flex">
-                  <PlatformIcon :platform="scope.row.platform"/>
+                  <PlatformIcon :platform="scope.row.platform" />
                   {{ scope.row.cloudAccountName }}
                 </div>
               </template></el-table-column
