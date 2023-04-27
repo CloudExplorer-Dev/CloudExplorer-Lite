@@ -196,7 +196,6 @@ import billDetailApi from "@/api/bill_detailed";
 import PlatformIcon from "@commons/components/platform-icon/index.vue";
 import cloudAccountApi from "@commons/api/cloud_account/index";
 import type { CloudAccount } from "@commons/api/cloud_account/type";
-import _ from "lodash";
 import DecimalFormat from "@commons/utils/decimalFormat";
 /**
  *当前月份

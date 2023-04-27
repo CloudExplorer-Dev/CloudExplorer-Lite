@@ -358,9 +358,7 @@ const paramAccountId = ref<string>("all_list");
 const optimizeParam = ref<any>();
 //下拉框数据
 const accounts = ref<any>();
-const clusters = ref<any>();
 const hosts = ref<any>();
-const datastroes = ref<any>();
 
 // 所有图表集合
 const childRefMap: Map<string, any> = new Map();
@@ -511,11 +509,7 @@ const getComputerSpreadInfo = (chartTitle: string, chartName: string) => {
 const getSpreadByDepartmentData = (chartName: string) => {
   childRefMap.get(chartName + "-chart").echartsClear();
   childRefMap.get(chartName + "-chart").echartsLoading();
-  _.set(
-    params,
-    "analysisWorkspace",
-    paramDepartmentType.value === "workspace" ? true : false
-  );
+  _.set(params, "analysisWorkspace", paramDepartmentType.value === "workspace");
   CloudServerViewApi.getAnalysisOrgWorkspaceVmCount(params)
     .then((res) => {
       const options = _.cloneDeep(defaultBarOptions);
@@ -714,16 +708,6 @@ const getSearchParams = (o: any) => {
     optimizeParam.value = paramOptimizationRequestMap.get(o.code);
   }
 };
-
-/**
- * 默认时间当前时间过去7天
- */
-const timestampData = ref<[Date, Date]>([
-  new Date(new Date().getTime() - 3600 * 1000 * 24 * 7),
-  new Date(),
-]);
-const trendTime = ref(timestampData);
-const showTrendTime = ref<boolean>(true);
 
 onMounted(() => {
   getAccounts();

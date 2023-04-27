@@ -35,13 +35,12 @@ import ResourceSpreadViewApi from "@/api/disk_analysis/index";
 import _ from "lodash";
 import type { ResourceAnalysisRequest } from "@/api/disk_analysis/type";
 import DoughnutChartSpread from "./DoughnutChartSpread.vue";
-import { useUserStore } from "@commons/stores/modules/user";
-const userStore = useUserStore();
-const adminRole = ref<boolean>(userStore.currentRole === "ADMIN");
+
 const props = defineProps<{
   cloudAccountId?: string | undefined;
   currentUnit: string;
 }>();
+
 const params = ref<ResourceAnalysisRequest>();
 const loading = ref<boolean>(false);
 const apiData = ref<any>();

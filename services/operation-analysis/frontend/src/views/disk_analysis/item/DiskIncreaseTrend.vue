@@ -40,14 +40,12 @@ import _ from "lodash";
 import type { ResourceAnalysisRequest } from "@/api/disk_analysis/type";
 import type { ECBasicOption } from "echarts/types/src/util/types";
 import ResourceSpreadViewApi from "@/api/disk_analysis/index";
-import * as echarts from "echarts";
-import { useUserStore } from "@commons/stores/modules/user";
-const userStore = useUserStore();
-const adminRole = ref<boolean>(userStore.currentRole === "ADMIN");
+
 const props = defineProps<{
   cloudAccountId?: string | undefined;
   currentUnit?: string | undefined;
 }>();
+
 const params = ref<ResourceAnalysisRequest>();
 const paramDiskIncreaseTrendMonth = ref<string>("7");
 const loading = ref<boolean>(false);

@@ -97,8 +97,7 @@
                 >
                   <template #default="scope">
                     <div style="display: flex; align-items: center">
-                      <platform_icon :platform="scope.row.provider">
-                      </platform_icon>
+                      <PlatformIcon :platform="scope.row.provider"/>
                       <div>{{ scope.row.cloudAccountName }}</div>
                     </div>
                   </template>
@@ -141,7 +140,7 @@ import {
 } from "@commons/components/ce-table/type";
 import cloudAccountApi from "@commons/api/cloud_account/index";
 import type { CloudAccount } from "@commons/api/cloud_account/type";
-import platform_icon from "@commons/components/platform-icon/index.vue";
+import PlatformIcon from "@commons/components/platform-icon/index.vue";
 import BillAuthRule from "@/views/dimension_setting/components/bill_auth_rule/index.vue";
 import CeTree from "@commons/components/ce-tree/index.vue";
 import type { TreeNode } from "@commons/components/ce-tree/type";

@@ -132,8 +132,7 @@
             >
               <template #default="scope">
                 <div style="display: flex">
-                  <platform_icon :platform="scope.row.platform">
-                  </platform_icon>
+                  <PlatformIcon :platform="scope.row.platform"/>
                   {{ scope.row.cloudAccountName }}
                 </div>
               </template></el-table-column
@@ -210,7 +209,7 @@ import {
   TableSearch,
 } from "@commons/components/ce-table/type";
 import cloudAccountApi from "@commons/api/cloud_account";
-import platform_icon from "@commons/components/platform-icon/index.vue";
+import PlatformIcon from "@commons/components/platform-icon/index.vue";
 import type { CloudAccount } from "@commons/api/cloud_account/type";
 import type { KeyValue } from "@commons/api/base/type";
 // 路由对象

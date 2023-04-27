@@ -1,6 +1,6 @@
 <script lang="ts" setup>
 import { get } from "@commons/request";
-import { onMounted, watch, ref } from "vue";
+import { watch, ref } from "vue";
 import Result from "@commons/request/Result";
 
 const props = defineProps<{

@@ -1,9 +1,9 @@
 <template>
   <el-popover placement="right" :width="800" trigger="click">
     <template #reference>
-      <scan_job_status_icon
+      <ScanJobStatusIcon
         :status="scanStatus(complainceScanResult.resourceType)"
-      ></scan_job_status_icon>
+      />
     </template>
     <el-table :data="accountJobRecords">
       <el-table-column property="resourceId" label="云账号">
@@ -17,13 +17,13 @@
       <el-table-column label="云平台">
         <template #default="scope">
           <div style="display: flex; align-items: center">
-            <platform_icon
+            <PlatformIcon
               :platform="
                 cloudAccountSourceList.find(
                   (c) => c.id === scope.row.resourceId
                 )?.platform || '-'
               "
-            ></platform_icon>
+            />
             <span>{{
               platformIcon[
                 orElse(
@@ -39,7 +39,7 @@
       <el-table-column property="description" label="任务描述" />
       <el-table-column property="status" label="任务状态">
         <template #default="scope">
-          <scan_job_status_icon
+          <ScanJobStatusIcon
             :status="
               scanStatus(
                 complainceScanResult.resourceType,
@@ -47,7 +47,7 @@
               )
             "
             :show-text="true"
-          ></scan_job_status_icon>
+          />
         </template>
       </el-table-column>
       <el-table-column property="createTime" label="扫描时间" width="160px" />
@@ -71,8 +71,8 @@ import type {
   CloudAccount,
 } from "@commons/api/cloud_account/type";
 import { platformIcon } from "@commons/utils/platform";
-import scan_job_status_icon from "@/views/scan/complonents/compliance_rule/ScanJobStatusIcon.vue";
-import platform_icon from "@commons/components/platform-icon/index.vue";
+import ScanJobStatusIcon from "@/views/scan/complonents/compliance_rule/ScanJobStatusIcon.vue";
+import PlatformIcon from "@commons/components/platform-icon/index.vue";
 const props = defineProps<{
   /**
    * 扫描结果

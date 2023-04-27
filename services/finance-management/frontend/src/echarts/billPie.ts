@@ -1,4 +1,4 @@
-interface PieType {
+export interface PieType {
   /**
    * 值
    */

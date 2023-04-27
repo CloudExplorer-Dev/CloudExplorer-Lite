@@ -6,7 +6,6 @@ import type {
   ComplianceResourceResponse,
   SyncScanResourceRequest,
   SupportCloudAccountResourceResponse,
-  SupportPlatformResourceResponse,
   ComplianceResourceRequest,
 } from "@/api/compliance_scan/type";
 import type { AccountJobRecord } from "@commons/api/cloud_account/type";

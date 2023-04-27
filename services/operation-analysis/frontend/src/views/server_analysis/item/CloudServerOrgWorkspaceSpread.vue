@@ -37,7 +37,7 @@
 </template>
 <script setup lang="ts">
 import VChart from "vue-echarts";
-import { computed, ref, watch } from "vue";
+import { ref, watch } from "vue";
 import CloudServerViewApi from "@/api/server_analysis/index";
 import _ from "lodash";
 import type { ResourceAnalysisRequest } from "@/api/server_analysis/type";

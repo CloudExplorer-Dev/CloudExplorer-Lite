@@ -12,11 +12,11 @@
           :class="selected[cloudAccount.id] ? 'active' : ''"
           @click="changeValue(cloudAccount.id)"
         >
-          <platform_icon
+          <PlatformIcon
             style="margin-right: 0"
             class="icon"
             :platform="cloudAccount.platform"
-          ></platform_icon>
+          />
           <div class="text">{{ cloudAccount.name }}</div>
           <el-checkbox
             v-model="selected[cloudAccount.id]"
@@ -31,9 +31,9 @@
 </template>
 <script setup lang="ts">
 import { computed } from "vue";
-import platform_icon from "@commons/components/platform-icon/index.vue";
+import PlatformIcon from "@commons/components/platform-icon/index.vue";
 import type { CloudAccount } from "@commons/api/cloud_account/type";
-import { split } from "@commons/utils/commons.ts";
+import { split } from "@commons/utils/commons";
 import type { SimpleMap } from "@commons/api/base/type";
 const props = defineProps<{
   /**

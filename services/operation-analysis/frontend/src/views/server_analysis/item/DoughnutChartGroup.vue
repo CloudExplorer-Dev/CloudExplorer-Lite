@@ -32,9 +32,7 @@ import ResourceSpreadViewApi from "@/api/server_analysis/index";
 import _ from "lodash";
 import type { ResourceAnalysisRequest } from "@commons/api/server_analysis/type";
 import DoughnutChartSpread from "./DoughnutChartSpread.vue";
-import { useUserStore } from "@commons/stores/modules/user";
-const userStore = useUserStore();
-const adminRole = ref<boolean>(userStore.currentRole === "ADMIN");
+
 const props = defineProps<{
   cloudAccountId?: string | undefined;
   clusterId?: string | undefined;
