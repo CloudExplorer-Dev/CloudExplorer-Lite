@@ -39,7 +39,12 @@
             <div class="usage-bar-bottom-text">
               <span>
                 已用:
-                {{ (scope.row.totalDisk - scope.row.freeDisk).toFixed(2) }}GB
+                {{
+                  DecimalFormat.format(
+                    scope.row.totalDisk - scope.row.freeDisk,
+                    2
+                  )
+                }}GB
               </span>
               <span>总量: {{ scope.row.totalDisk }}GB</span>
             </div>
@@ -60,9 +65,10 @@
 </template>
 <script setup lang="ts">
 import type { FormView } from "@commons/components/ce-form/type";
-import { computed, onMounted, ref } from "vue";
+import { computed, ref } from "vue";
 import _ from "lodash";
 import type { ElTable } from "element-plus";
+import DecimalFormat from "@commons/utils/decimalFormat";
 
 interface DataStore {
   mor: string;

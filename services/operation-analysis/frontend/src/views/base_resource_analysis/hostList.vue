@@ -10,12 +10,13 @@ import {
   TableSearch,
 } from "@commons/components/ce-table/type";
 import { useI18n } from "vue-i18n";
+import PercentFormat from "@commons/utils/percentFormat";
+import DecimalFormat from "@commons/utils/decimalFormat";
 
 const { t } = useI18n();
 const table = ref<any>(null);
 const columns = ref([]);
 const tableData = ref<Array<VmCloudHostVO>>([]);
-const selectedRowData = ref<Array<VmCloudHostVO>>([]);
 const tableLoading = ref<boolean>(false);
 
 /**
@@ -135,13 +136,20 @@ onMounted(() => {
         prop="numCpuCores"
         label="CPU总量(核)"
         width="120"
-      ></el-table-column>
+      >
+        <template #default="scope">
+          {{ DecimalFormat.format(scope.row.numCpuCores) }}
+        </template>
+      </el-table-column>
       <el-table-column
         align="right"
         prop="vmCpuCores"
         label="CPU已分配(核)"
         min-width="150"
       >
+        <template #default="scope">
+          {{ DecimalFormat.format(scope.row.vmCpuCores) }}
+        </template>
       </el-table-column>
       <el-table-column
         :show="false"
@@ -151,7 +159,9 @@ onMounted(() => {
         min-width="150"
       >
         <template #default="scope">
-          {{ (scope.row.vmCpuCores / scope.row.numCpuCores).toFixed(2) * 100 }}%
+          {{
+            PercentFormat.format(scope.row.vmCpuCores / scope.row.numCpuCores)
+          }}
         </template>
       </el-table-column>
       <el-table-column
@@ -160,6 +170,9 @@ onMounted(() => {
         label="CPU总量(MHz)"
         min-width="150"
       >
+        <template #default="scope">
+          {{ DecimalFormat.format(scope.row.cpuTotal) }}
+        </template>
       </el-table-column>
       <el-table-column
         align="right"
@@ -168,7 +181,9 @@ onMounted(() => {
         min-width="150"
       >
         <template #default="scope">
-          {{ scope.row.cpuUsed ? scope.row.cpuUsed : "-" }}
+          {{
+            scope.row.cpuUsed ? DecimalFormat.format(scope.row.cpuUsed) : "-"
+          }}
         </template>
       </el-table-column>
       <el-table-column
@@ -180,7 +195,7 @@ onMounted(() => {
         <template #default="scope">
           {{
             scope.row.cpuUsed
-              ? (scope.row.cpuUsed / scope.row.cpuTotal).toFixed(2) * 100 + "%"
+              ? PercentFormat.format(scope.row.cpuUsed / scope.row.cpuTotal)
               : "-"
           }}
         </template>
@@ -192,7 +207,7 @@ onMounted(() => {
         min-width="150"
       >
         <template #default="scope">
-          {{ (scope.row.memoryTotal / 1024).toFixed(2) }}
+          {{ DecimalFormat.format(scope.row.memoryTotal / 1024) }}
         </template>
       </el-table-column>
       <el-table-column
@@ -202,7 +217,7 @@ onMounted(() => {
         align="right"
       >
         <template #default="scope">
-          {{ (scope.row.memoryAllocated / 1024).toFixed(2) }}
+          {{ DecimalFormat.format(scope.row.memoryAllocated / 1024) }}
         </template>
       </el-table-column>
       <el-table-column
@@ -214,9 +229,10 @@ onMounted(() => {
       >
         <template #default="scope">
           {{
-            (scope.row.memoryAllocated / scope.row.memoryTotal).toFixed(2) *
-            100
-          }}%
+            PercentFormat.format(
+              scope.row.memoryAllocated / scope.row.memoryTotal
+            )
+          }}
         </template>
       </el-table-column>
       <el-table-column
@@ -228,7 +244,7 @@ onMounted(() => {
         <template #default="scope">
           {{
             scope.row.memoryUsed
-              ? (scope.row.memoryUsed / 1024).toFixed(2)
+              ? DecimalFormat.format(scope.row.memoryUsed / 1024)
               : "-"
           }}
         </template>
@@ -242,9 +258,9 @@ onMounted(() => {
         <template #default="scope">
           {{
             scope.row.memoryUsed
-              ? (scope.row.memoryUsed / scope.row.memoryTotal).toFixed(2) *
-                  100 +
-                "%"
+              ? PercentFormat.format(
+                  scope.row.memoryUsed / scope.row.memoryTotal
+                )
               : "-"
           }}
         </template>
@@ -254,13 +270,21 @@ onMounted(() => {
         prop="vmTotal"
         label="云主机总数"
         min-width="150"
-      ></el-table-column>
+      >
+        <template #default="scope">
+          {{ DecimalFormat.format(scope.row.vmTotal) }}
+        </template>
+      </el-table-column>
       <el-table-column
         align="right"
         prop="vmRunning"
         label="运行中云主机"
         min-width="150"
-      ></el-table-column>
+      >
+        <template #default="scope">
+          {{ DecimalFormat.format(scope.row.vmRunning) }}
+        </template>
+      </el-table-column>
       <template #buttons>
         <CeTableColumnSelect :columns="columns" />
       </template>

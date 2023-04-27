@@ -16,6 +16,7 @@
 import { ref, onMounted } from "vue";
 import { computed } from "vue";
 import CurrencyFormat from "@commons/utils/currencyFormat";
+import DecimalFormat from "@commons/utils/decimalFormat";
 const loading = ref<boolean>(false);
 const expenses = ref<{ current: number; up: number }>({ current: 0, up: 0 });
 const props = defineProps<{
@@ -32,10 +33,10 @@ const scale = computed(() => {
   const s =
     expenses.value.up == 0
       ? CurrencyFormat.format(expenses.value.current)
-      : (
-          ((expenses.value.current - expenses.value.up) / expenses.value.up) *
-          100
-        ).toFixed(2) + "%";
+      : DecimalFormat.format(
+          (expenses.value.current - expenses.value.up) / expenses.value.up,
+          2
+        );
   return expenses.value.current > expenses.value.up ? "+" + s : s;
 });
 onMounted(() => {
