@@ -78,7 +78,7 @@
       >
         <template #default="scope">
           <div style="display: flex; align-items: center">
-            <platform_icon :platform="scope.row.provider"> </platform_icon>
+            <PlatformIcon :platform="scope.row.provider"> </PlatformIcon>
             <div class="table_overflow">{{ scope.row.cloudAccountName }}</div>
           </div>
         </template>
@@ -163,7 +163,7 @@
       >
         <template #default="scope">
           <span :title="scope.row.totalCost + '元'">
-            {{ _.round(scope.row.totalCost, 2).toFixed(2) }}元
+            {{ DecimalFormat.format(scope.row.totalCost, 2) }}元
           </span>
         </template>
       </el-table-column>
@@ -175,7 +175,7 @@
       >
         <template #default="scope">
           <span :title="scope.row.realTotalCost + '元'">
-            {{ _.round(scope.row.realTotalCost, 2).toFixed(2) }}元
+            {{ DecimalFormat.format(scope.row.realTotalCost, 2) }}元
           </span>
         </template>
       </el-table-column>
@@ -193,10 +193,11 @@ import {
   TableSearch,
 } from "@commons/components/ce-table/type";
 import billDetailApi from "@/api/bill_detailed";
-import platform_icon from "@commons/components/platform-icon/index.vue";
+import PlatformIcon from "@commons/components/platform-icon/index.vue";
 import cloudAccountApi from "@commons/api/cloud_account/index";
 import type { CloudAccount } from "@commons/api/cloud_account/type";
 import _ from "lodash";
+import DecimalFormat from "@commons/utils/decimalFormat";
 /**
  *当前月份
  */

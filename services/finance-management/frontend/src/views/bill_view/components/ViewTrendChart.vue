@@ -8,24 +8,24 @@
     <template #default>
       <div class="content">
         <div class="title">
-          {{ props.billSummary.group1
-          }}<span class="child_title">的费用趋势</span>
+          {{ props.billSummary.group1 }}
+          <span class="child_title">的费用趋势</span>
         </div>
         <div ref="tree" class="tree"></div>
       </div>
     </template>
     <template #reference>
-      <TableTrend :trend="props.billSummary.treed"></TableTrend
-    ></template>
+      <TableTrend :trend="props.billSummary.treed" />
+    </template>
   </el-popover>
 </template>
 <script setup lang="ts">
 import type { BillSummary, TrendData } from "@/echarts/bill_view/type";
 import type { ECharts } from "echarts";
 import { ref, inject, nextTick } from "vue";
-import { getTrendViewOption } from "@/echarts/bill_view/index";
-import _ from "lodash";
+import { getTrendViewOption } from "@/echarts/bill_view";
 import TableTrend from "@/views/bill_view/components/TableTrend.vue";
+import CurrencyFormat from "@commons/utils/currencyFormat";
 
 const echarts: any = inject("echarts");
 const title = ref<string>();
@@ -52,8 +52,8 @@ const open = (treed: Array<TrendData>, row: BillSummary) => {
   option["tooltip"] = {
     trigger: "item",
     formatter: (p: any) => {
-      return `<div>月份:${p.name}</div><div>金额:${_.round(p.value, 2).toFixed(
-        2
+      return `<div>月份:${p.name}</div><div>金额:${CurrencyFormat.format(
+        p.value
       )}</div>`;
     },
   };

@@ -2,6 +2,7 @@
 import { onMounted, ref, watch } from "vue";
 import * as echarts from "echarts";
 import _ from "lodash";
+import DecimalFormat from "@commons/utils/decimalFormat";
 
 const props = defineProps({
   data: {
@@ -246,13 +247,13 @@ const timestampToTime = (timestamp: any) => {
 const changeByte = (byte: number) => {
   let size: string;
   if (byte < 1024) {
-    size = `${byte.toFixed(2)}Byte`;
+    size = `${DecimalFormat.format(byte, 2)}Byte`;
   } else if (byte < 1024 * 1024) {
-    size = `${(byte / 1024).toFixed(2)}KB`;
+    size = `${DecimalFormat.format(byte / 1024, 2)}KB`;
   } else if (byte < 1024 * 1024 * 1024) {
-    size = `${(byte / (1024 * 1024)).toFixed(2)}MB`;
+    size = `${DecimalFormat.format(byte / (1024 * 1024), 2)}MB`;
   } else {
-    size = `${(byte / (1024 * 1024 * 1024)).toFixed(2)}GB`;
+    size = `${DecimalFormat.format(byte / (1024 * 1024 * 1024), 2)}GB`;
   }
   // 转成字符串
   const sizeStr = `${size}`;

@@ -9,6 +9,7 @@ import BillViewAPI from "@commons/api/bil_view/index";
 import { useUserStore } from "@commons/stores/modules/user";
 import type { ECharts } from "echarts";
 import type { Result } from "@commons/request/Result";
+import DecimalFormat from "@commons/utils/decimalFormat";
 
 import * as echarts from "echarts";
 
@@ -152,17 +153,16 @@ const historyTrend = async (historyNum: number, active: string) => {
           color: "black",
           fontSize: 12,
           formatter: function (param: any) {
-            return _.round(param.value, 2).toFixed(2);
+            return DecimalFormat.format(param.value, 2);
           },
         },
       };
       option["tooltip"] = {
         trigger: "item",
         formatter: (p: any) => {
-          return `<div>月份:${p.name}</div><div>金额:${_.round(
-            p.value,
-            2
-          ).toFixed(2)}</div>`;
+          return `<div>月份:${p.name}</div><div>金额:${CurrencyFormat.format(
+            p.value
+          )}</div>`;
         },
       };
       historyTrendChart?.setOption(option);
