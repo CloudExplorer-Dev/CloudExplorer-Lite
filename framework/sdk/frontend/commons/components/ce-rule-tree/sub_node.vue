@@ -82,6 +82,14 @@ const getVerticalBottom = (ts: Array<Tree>) => {
       [ts[0].children[ts[0].children.length - 1]],
       [0]
     );
+    if (
+      ts.length > 0 &&
+      ts[0].children &&
+      ts[0].children.length === 1 &&
+      (!ts[0].items || ts[0].items.length === 0)
+    ) {
+      return level * (props.leftHeight / 2) + "px";
+    }
     return level * (props.leftHeight / 2) + props.leftHeight / 2 + "px";
   }
   if (ts[0].items && ts[0].items?.length > 1) {

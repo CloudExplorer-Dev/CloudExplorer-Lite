@@ -4,7 +4,11 @@
     v-bind:modelValue="active"
     :before-leave="beforeLeave"
     @tab-change="tabsChange"
-    style="width: 100%; margin-top: 16px"
+    style="
+      width: 100%;
+      margin-top: 16px;
+      --el-color-primary: rgba(51, 112, 255, 1);
+    "
   >
     <el-tab-pane
       v-for="rule in tabsRuleList"
@@ -28,22 +32,20 @@
                 v-for="item in dropdownRuleList"
                 :key="item[labelField]"
                 :command="item[valueField]"
-                :class="{ selected: active == item[valueField] }"
+                :style="{
+                  '--el-text-color-regular':
+                    props.active === item[valueField]
+                      ? 'rgba(51, 112, 255, 1)'
+                      : 'rgba(31, 35, 41, 1)',
+                }"
               >
                 <div style="width: 120px; display: flex; align-items: center">
-                  <div
-                    style="
-                      width: 80%;
-                      text-overflow: ellipsis;
-                      overflow: hidden;
-                      color: rgba(31, 35, 41, 1);
-                    "
-                  >
+                  <div class="item">
                     {{ item[labelField] }}
                   </div>
                   <el-icon
                     style="width: 20%"
-                    v-show="active == item[valueField]"
+                    v-show="props.active === item[valueField]"
                     ><Check
                   /></el-icon>
                 </div>
@@ -196,7 +198,9 @@ const sortData = (tabs: Array<any>) => {
       tabs.sort((pre, next) => pre.order - next.order);
     }
     if (tabs && tabs.length > 0) {
-      emit("update:active", tabs[0][props.valueField]);
+      if (!props.active) {
+        emit("update:active", tabs[0][props.valueField]);
+      }
     }
   }
 };
@@ -237,7 +241,12 @@ defineExpose({ sortLocal });
   font-size: 14px;
 }
 .selected {
-  color: #409eff;
+  color: #409eff !important;
+}
+.item {
+  width: 80%;
+  text-overflow: ellipsis;
+  overflow: hidden;
 }
 :deep(.el-tabs__item) {
   @include tabs_text;

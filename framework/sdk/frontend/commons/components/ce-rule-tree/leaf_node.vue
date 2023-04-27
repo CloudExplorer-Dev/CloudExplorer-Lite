@@ -32,7 +32,7 @@ withDefaults(
   }
 );
 </script>
-<style lang="scss">
+<style lang="scss" scoped>
 .rule-tree-node {
   position: relative;
   height: var(--tree-node-leaf-height, 48px);

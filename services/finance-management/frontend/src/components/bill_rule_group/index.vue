@@ -10,7 +10,7 @@
     :selected-group-fields="groups"
   ></BillRuleItem>
   <div @click="addRuleGroup" class="add">
-    <ce-icon code="icon_add_outlined" size="12px"></ce-icon>添加字段
+    <ce-icon code="icon_add_outlined" size="12px"></ce-icon>添加统计字段
   </div>
 </template>
 <script setup lang="ts">
@@ -75,6 +75,7 @@ defineExpose({ validate });
 </script>
 <style lang="scss" scoped>
 .add {
+  cursor: pointer;
   color: rgba(51, 112, 255, 1);
 }
 </style>

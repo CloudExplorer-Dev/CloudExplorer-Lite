@@ -53,7 +53,7 @@
         collapse-tags
         collapse-tags-tooltip
         placeholder="请选择"
-        style="width: 140px"
+        style="width: 160px"
       >
         <el-option
           v-for="item in dimensionSettingValues"
@@ -223,6 +223,29 @@ defineExpose({ validate });
 :deep(.el-form-item__content) {
   .el-select__tags {
     flex-wrap: nowrap;
+  }
+}
+:deep(.el-select__tags) {
+  .el-select-tags-wrapper {
+    display: flex;
+    flex-wrap: nowrap;
+    span {
+      &:nth-child(1) {
+        max-width: 70px;
+        padding: 0;
+        .el-tag__content {
+          .el-select__tags-text {
+            max-width: 50px !important;
+          }
+        }
+      }
+      &:nth-child(2) {
+        max-width: 20px;
+      }
+    }
+  }
+  .el-select__input {
+    margin-left: 5px;
   }
 }
 </style>

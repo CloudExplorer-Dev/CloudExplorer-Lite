@@ -114,6 +114,8 @@ import BillTrend from "@commons/business/base-layout/home-page/items/bill/BillTr
 import ViewTabs from "@/views/bill_view/components/ViewTabs.vue";
 import ViewExpensesAggsCard from "@/views/bill_view/components/ViewExpensesAggsCard.vue";
 import ViewPieChart from "@/views/bill_view/components/ViewPieChart.vue";
+import { useRoute } from "vue-router";
+const route = useRoute();
 // tabs组建
 const viewTabs = ref<InstanceType<typeof ViewTabs> | null>(null);
 // 当前选中账单规则
@@ -130,7 +132,6 @@ const reSize = () => {
 };
 // 账单规则接口获取加载器
 const bullRuleViewDataLoading = ref<boolean>(false);
-
 /**
  *当前月份
  */
@@ -193,6 +194,9 @@ const getYearExpenses = () => {
 onMounted(() => {
   billRuleApi.listBillRules().then((ok) => {
     billRules.value = ok.data;
+    if (route.query.bill_rule_id) {
+      activeBillRule.value = route.query.bill_rule_id as string;
+    }
   });
 });
 /**
