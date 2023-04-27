@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted, computed } from "vue";
+import { ref, onMounted, computed, watch } from "vue";
 import _ from "lodash";
 import type { SimpleMap } from "@commons/api/base/type";
 import { RolePageRequest } from "@commons/api/role/type";
@@ -51,6 +51,8 @@ const ruleFormRef = ref<FormInstance>();
 
 const selectedRole = ref<Role>();
 
+const editPermission = ref<boolean>(false);
+
 const systemRoles = computed<Array<Role>>(() => {
   return _.filter(roles.value, (r) => r.type === "origin");
 });
@@ -59,6 +61,7 @@ const inheritRoles = computed<Array<Role>>(() => {
 });
 
 function select(role: Role) {
+  editPermission.value = false;
   selectedRole.value = role;
   //rolePermissionTableRef.value?.init();
 }
@@ -71,14 +74,39 @@ const typeMap = ref<Array<SimpleMap<string>>>([
 
 const id = ref<string>();
 
+const roleFormData = ref<Role>(new Role("", "", "", ""));
+
+const permissionData = ref<Array<string>>([]);
+
 function addRole() {
   id.value = undefined;
   showAddDialog.value = true;
 }
 
-const roleFormData = ref<Role>(new Role("", "", "", ""));
+function changeToEditPermission() {
+  editPermission.value = true;
+}
 
-const permissionData = ref<Array<string>>([]);
+const cancelEditPermission = () => {
+  editPermission.value = false;
+};
+
+const submitRolePermission = (permissionIds: Array<string>) => {
+  console.log(selectedRole.value?.id, permissionIds);
+  if (!selectedRole.value?.id) {
+    return;
+  }
+  console.log(permissionIds);
+  RoleApi.updateRolePermissions(
+    selectedRole.value.id,
+    permissionIds,
+    permissionLoading
+  ).then((ok) => {
+    permissionData.value = ok.data;
+    cancelEditPermission();
+    ElMessage.success(t("commons.msg.save_success"));
+  });
+};
 
 function cancelAddRole() {
   roleFormData.value = new Role("", "", "", "");
@@ -170,7 +198,7 @@ const submitForm = (formEl: FormInstance | undefined) => {
         ).then((response) => {
           cancelAddRole();
           listRoles(response.data);
-
+          editPermission.value = true;
           ElMessage.success(t("commons.msg.save_success"));
         });
       } else {
@@ -186,6 +214,10 @@ const submitForm = (formEl: FormInstance | undefined) => {
     }
   });
 };
+
+watch(permissionLoading, (re) => {
+  console.log(re);
+});
 
 onMounted(() => {
   listRoles();
@@ -239,21 +271,51 @@ onMounted(() => {
         />
       </div>
     </el-aside>
-    <el-main>
-      {{ selectedRole }}
-
-      <RolePermissionTable
-        :id="selectedRole?.id"
-        :loading="permissionLoading"
-        :parent-role-id="selectedRole?.parentRoleId"
-        :edit-permission="
+    <el-container direction="vertical">
+      <el-header>header</el-header>
+      <el-main class="permission-main" v-loading="permissionLoading">
+        <RolePermissionTable
+          :id="selectedRole?.id"
+          :loading="permissionLoading"
+          :parent-role-id="selectedRole?.parentRoleId"
+          :edit-permission="editPermission && selectedRole?.type === 'inherit'"
+          v-model:permission-data="permissionData"
+          ref="rolePermissionTableRef"
+        />
+      </el-main>
+      <el-footer
+        class="permission-footer"
+        v-if="
           permissionStore.hasPermission('[management-center]ROLE:EDIT') &&
           selectedRole?.type === 'inherit'
         "
-        v-model:permission-data="permissionData"
-        ref="rolePermissionTableRef"
-      />
-    </el-main>
+      >
+        <el-button
+          key="edit"
+          type="primary"
+          @click="changeToEditPermission"
+          v-if="!editPermission && selectedRole?.type === 'inherit'"
+          v-hasPermission="'[management-center]ROLE:EDIT'"
+        >
+          修改
+        </el-button>
+        <el-button
+          class="cancel-btn"
+          v-if="editPermission"
+          @click="cancelEditPermission"
+        >
+          取消
+        </el-button>
+        <el-button
+          class="save-btn"
+          type="primary"
+          v-if="editPermission"
+          @click="submitRolePermission(permissionData)"
+        >
+          保存
+        </el-button>
+      </el-footer>
+    </el-container>
 
     <el-dialog
       v-model="showAddDialog"
@@ -274,7 +336,7 @@ onMounted(() => {
         :create-new="!id"
       />
       <template #footer>
-        <el-button @click="cancelAddRole">取消</el-button>
+        <el-button @click="cancelAddRole"> 取消 </el-button>
         <el-button type="primary" @click="submitForm(ruleFormRef)">
           创建
         </el-button>
@@ -364,5 +426,21 @@ onMounted(() => {
       }
     }
   }
+}
+
+.permission-main {
+  padding: 24px 24px 4px;
+}
+
+.permission-footer {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  align-items: center;
+  justify-content: flex-end;
+  height: 80px;
+  box-shadow: 0px -1px 4px rgba(31, 35, 41, 0.1);
+
+  --el-footer-padding: 24px;
 }
 </style>

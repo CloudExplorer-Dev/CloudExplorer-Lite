@@ -8,7 +8,7 @@ import { useUserStore } from "@commons/stores/modules/user";
 import Config from "@commons/utils/constants";
 import _ from "lodash";
 import route from "@commons/router";
-import { ref } from "vue";
+import { ref, type WritableComputedRef } from "vue";
 
 const axiosConfig = {
   baseURL: import.meta.env.VITE_BASE_PATH,
@@ -136,7 +136,7 @@ export const request = instance;
 /* 简化请求方法，统一处理返回结果，并增加loading处理，这里以{success,data,message}格式的返回值为例，具体项目根据实际需求修改 */
 const promise: (
   request: Promise<any>,
-  loading?: NProgress | Ref<boolean>
+  loading?: NProgress | Ref<boolean> | WritableComputedRef<boolean>
 ) => Promise<Result<any>> = (request, loading = ref(false)) => {
   return new Promise((resolve, reject) => {
     if ((loading as NProgress).start) {

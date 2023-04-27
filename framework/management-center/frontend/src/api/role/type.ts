@@ -78,6 +78,7 @@ export class GroupPermission {
   name: string;
   permissions: Array<Permission>;
   checked?: WritableComputedRef<boolean>;
+  indeterminate?: WritableComputedRef<boolean>;
 
   constructor(
     id: string,
