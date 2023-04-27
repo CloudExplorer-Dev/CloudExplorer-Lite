@@ -10,12 +10,13 @@ import {
   TableSearch,
 } from "@commons/components/ce-table/type";
 import { useI18n } from "vue-i18n";
+import PercentFormat from "@commons/utils/percentFormat";
+import DecimalFormat from "@commons/utils/decimalFormat";
 
 const { t } = useI18n();
 const table = ref<any>(null);
 const columns = ref([]);
 const tableData = ref<Array<VmCloudDatastoreVO>>([]);
-const selectedRowData = ref<Array<VmCloudDatastoreVO>>([]);
 const tableLoading = ref<boolean>(false);
 
 /**
@@ -122,35 +123,43 @@ onMounted(() => {
         :show="false"
       ></el-table-column>
       <el-table-column prop="zone" label="集群" :show="false"></el-table-column>
-      <el-table-column
-        align="right"
-        prop="capacity"
-        label="总容量(GB)"
-      ></el-table-column>
+      <el-table-column align="right" prop="capacity" label="总容量(GB)">
+        <template #default="scope">
+          {{ DecimalFormat.format(scope.row.capacity) }}
+        </template>
+      </el-table-column>
       <el-table-column align="right" label="已使用(GB)">
         <template #default="scope">
-          {{ scope.row.capacity - scope.row.freeSpace }}
+          {{ DecimalFormat.format(scope.row.capacity - scope.row.freeSpace) }}
         </template>
       </el-table-column>
       <el-table-column align="right" prop="useRate" label="使用率">
-        <template #default="scope"> {{ scope.row.useRate }}% </template>
+        <template #default="scope">
+          {{
+            PercentFormat.format(
+              (scope.row.capacity - scope.row.freeSpace) / scope.row.capacity
+            )
+          }}
+        </template>
       </el-table-column>
-      <el-table-column
-        align="right"
-        prop="freeSpace"
-        label="剩余(GB)"
-      ></el-table-column>
+      <el-table-column align="right" prop="freeSpace" label="剩余(GB)">
+        <template #default="scope">
+          {{ DecimalFormat.format(scope.row.freeSpace) }}
+        </template>
+      </el-table-column>
       <el-table-column align="right" prop="freeRate" label="剩余率">
-        <template #default="scope"> {{ scope.row.freeRate }}% </template>
+        <template #default="scope">
+          {{ PercentFormat.format(scope.row.freeSpace / scope.row.capacity) }}
+        </template>
       </el-table-column>
-      <el-table-column
-        align="right"
-        prop="allocated"
-        label="已分配(GB)"
-      ></el-table-column>
+      <el-table-column align="right" prop="allocated" label="已分配(GB)">
+        <template #default="scope">
+          {{ DecimalFormat.format(parseInt(scope.row.allocated)) }}
+        </template>
+      </el-table-column>
       <el-table-column align="right" label="分配率">
         <template #default="scope">
-          {{ (scope.row.allocated / scope.row.capacity).toFixed(2) * 100 }}%
+          {{ PercentFormat.format(scope.row.allocated / scope.row.capacity) }}
         </template>
       </el-table-column>
       <el-table-column

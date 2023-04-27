@@ -13,6 +13,7 @@ import type { SimpleMap } from "@commons/api/base/type";
 import { platformIcon } from "@commons/utils/platform";
 import BaseCloudAccountApi from "@commons/api/cloud_account";
 import _ from "lodash";
+import DecimalFormat from "@commons/utils/decimalFormat";
 
 const { t } = useI18n();
 const columns = ref([]);
@@ -217,7 +218,11 @@ const tableConfig = ref<TableConfig>({
         min-width="150"
         prop="size"
         label="大小(G)"
-      ></el-table-column>
+      >
+        <template #default="scope">
+          {{ DecimalFormat.format(scope.row.size) }}
+        </template>
+      </el-table-column>
       <el-table-column min-width="150" prop="diskChargeType" label="付费方式">
         <template #default="scope">
           {{ filterChargeType(scope.row.diskChargeType) }}
