@@ -18,7 +18,7 @@
         style="width: 100%"
         v-model="form.field"
         class="m-2"
-        placeholder="请选择"
+        placeholder="选择统计字段"
       >
         <el-option
           v-for="item in billKeys"
@@ -52,16 +52,8 @@
           /> </el-select
       ></el-form-item>
     </template>
-    <div style="flex: auto"></div>
-    <div
-      style="
-        color: var(--el-color-primary);
-        margin-right: 20px;
-        cursor: pointer;
-        white-space: nowrap;
-      "
-      @click="deleteItem(item.id)"
-    >
+
+    <div class="delete_icon" @click="deleteItem(item.id)">
       <ce-icon
         code="icon_delete-trash_outlined"
         size="16px"
@@ -71,15 +63,11 @@
   </el-form>
 </template>
 <script setup lang="ts">
-import { ref, watch, onMounted } from "vue";
+import { ref, watch, onMounted, computed } from "vue";
 import type { SimpleMap } from "@commons/api/base/type";
 import type { BillGroupRule } from "@/api/bill_rule/type";
 import billRuleApi from "@/api/bill_rule";
 import type { FormInstance } from "element-plus";
-/**
- * 账单规则标签Key
- */
-const billChildKeys = ref<Array<SimpleMap<string>>>([]);
 
 /**
  * 校验实例对象
@@ -110,8 +98,28 @@ const props = defineProps<{
   updateRule: (id: string, field: string, name: string) => void;
 }>();
 
-const billKeys = ref<Array<SimpleMap<string>>>();
-
+const billKeys = computed(() => {
+  if (props.item.name) {
+    return props.billRuleGroupKeys.filter((b) => {
+      return (
+        !props.selectedGroupFields.some((s) => s.field === b.value) ||
+        props.item.field === b.value
+      );
+    });
+  } else {
+    return props.billRuleGroupKeys.filter((b) => {
+      return !props.selectedGroupFields.some((s) => s.field === b.value);
+    });
+  }
+});
+const billChildKeys = computed(() => {
+  return billChildKeyList.value.filter((b) => {
+    return (
+      !props.selectedGroupFields.some((s) => s.field === b.value) ||
+      b.value === props.item.field
+    );
+  });
+});
 /**
  * 加载器
  */
@@ -149,6 +157,7 @@ const getLabelByField = (field: string) => {
   }
   return "";
 };
+const billChildKeyList = ref<Array<SimpleMap<string>>>([]);
 
 watch(
   () => form.value.field,
@@ -156,12 +165,7 @@ watch(
     if (form.value.field) {
       if (form.value.field === "tags" || form.value.field === "orgTree") {
         billRuleApi.getGroupChildKeys(form.value.field, loading).then((ok) => {
-          billChildKeys.value = ok.data.filter((b) => {
-            return (
-              !props.selectedGroupFields.some((s) => s.field === b.value) ||
-              b.value === props.item.field
-            );
-          });
+          billChildKeyList.value = ok.data;
         });
       } else {
         if (props.billRuleGroupKeys.length > 0) {
@@ -198,24 +202,6 @@ watch(
     }
   }
 );
-watch(
-  () => props.billRuleGroupKeys,
-  () => {
-    if (props.item.name) {
-      billKeys.value = props.billRuleGroupKeys.filter((b) => {
-        return (
-          !props.selectedGroupFields.some((s) => s.field === b.value) ||
-          props.item.field === b.value
-        );
-      });
-    } else {
-      billKeys.value = props.billRuleGroupKeys.filter((b) => {
-        return !props.selectedGroupFields.some((s) => s.field === b.value);
-      });
-    }
-  },
-  { immediate: true }
-);
 
 onMounted(() => {
   if (props.item.field.startsWith("tags.")) {
@@ -238,7 +224,7 @@ const validate = () => {
 
 defineExpose({ validate });
 </script>
-<style lang="scss">
+<style lang="scss" scoped>
 :deep(.el-form-item) {
   margin-bottom: 0;
 }
@@ -250,5 +236,12 @@ defineExpose({ validate });
   margin-top: 5px;
   background: #edf2f5;
   border-radius: 4px;
+}
+.delete_icon {
+  margin-left: 10px;
+  color: var(--el-color-primary);
+  margin-right: 20px;
+  cursor: pointer;
+  white-space: nowrap;
 }
 </style>

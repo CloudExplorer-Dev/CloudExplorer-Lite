@@ -35,7 +35,7 @@ import com.fit2cloud.controller.request.NotAuthorizeResourcesRequest;
 import com.fit2cloud.controller.response.AuthorizeResourcesResponse;
 import com.fit2cloud.dao.entity.BillDimensionSetting;
 import com.fit2cloud.dao.jentity.BillAuthorizeRule;
-import com.fit2cloud.dao.jentity.BillAuthorizeRuleGroup;
+import com.fit2cloud.dao.jentity.BillAuthorizeRuleCondition;
 import com.fit2cloud.dao.mapper.BillDimensionSettingMapper;
 import com.fit2cloud.es.entity.CloudBill;
 import com.fit2cloud.service.IBillDimensionSettingService;
@@ -141,7 +141,6 @@ public class BillDimensionSettingServiceImpl extends ServiceImpl<BillDimensionSe
             res.setUpdateFlag(true);
             updateById(res);
         }
-
         return res;
     }
 
@@ -170,7 +169,7 @@ public class BillDimensionSettingServiceImpl extends ServiceImpl<BillDimensionSe
     @Override
     public void authorize(BillDimensionSetting billDimensionSetting, String month, String cloudAccountId) {
         synchronized (EsWriteLockConstants.WRITE_LOCK) {
-            if (CollectionUtils.isNotEmpty(billDimensionSetting.getAuthorizeRule().getBillAuthorizeRuleSettingGroups())) {
+            if (isAuth(List.of(billDimensionSetting.getAuthorizeRule()))) {
                 if (verification(billDimensionSetting.getAuthorizeId(), billDimensionSetting.getType())) {
                     Query query = analysisBillAuthorizeRule(billDimensionSetting.getAuthorizeRule(), cloudAccountId, month);
                     UpdateByQueryRequest build = new UpdateByQueryRequest.Builder()
@@ -185,6 +184,23 @@ public class BillDimensionSettingServiceImpl extends ServiceImpl<BillDimensionSe
                 }
             }
         }
+    }
+
+    public boolean isAuth(List<BillAuthorizeRule> billAuthorizeRuleList) {
+        for (BillAuthorizeRule billAuthorizeRule : billAuthorizeRuleList) {
+            if (CollectionUtils.isNotEmpty(billAuthorizeRule.getConditions())) {
+                return true;
+            } else {
+                if (CollectionUtils.isNotEmpty(billAuthorizeRule.getChildren())) {
+                    boolean auth = isAuth(billAuthorizeRule.getChildren());
+                    if (auth) {
+                        return true;
+                    }
+                }
+            }
+        }
+        return false;
+
     }
 
     @Override
@@ -629,7 +645,8 @@ public class BillDimensionSettingServiceImpl extends ServiceImpl<BillDimensionSe
      */
     public Query analysisBillAuthorizeRule(BillAuthorizeRule authorizeRule, String cloudAccountId, String month) {
         BillAuthorizeConditionTypeConstants conditionType = authorizeRule.getConditionType();
-        List<Query> queries = authorizeRule.getBillAuthorizeRuleSettingGroups().stream().map(this::groupToQuery).toList();
+        // todo 修改
+        List<Query> queries = toQuery(authorizeRule);
         List<Query> qs = new ArrayList<>();
         if (StringUtils.isNotEmpty(cloudAccountId)) {
             Query cloudAccountQuery = new Query.Builder().term(new TermQuery.Builder().field("cloudAccountId").value(cloudAccountId).build()).build();
@@ -648,18 +665,64 @@ public class BillDimensionSettingServiceImpl extends ServiceImpl<BillDimensionSe
     }
 
     /**
-     * 将规则组 转换为
+     * 转换为Query
      *
-     * @param group 组织组
-     * @return es查询对象
+     * @param billAuthorizeRuleConditionList 授权数组
+     * @return Query对象
      */
-    public Query groupToQuery(BillAuthorizeRuleGroup group) {
-        BillAuthorizeConditionTypeConstants conditionType = group.getConditionType();
-        List<Query> queries = group.getBillAuthorizeRules().stream().map(billAuthorizeRuleCondition -> new Query.Builder().terms(new TermsQuery.Builder().field(billAuthorizeRuleCondition.getField().startsWith("tags") ? billAuthorizeRuleCondition.getField() + "." + FieldType.Keyword.jsonValue() : EsFieldUtil.getGroupKeyByField(billAuthorizeRuleCondition.getField())).terms(TermsQueryField.of(s -> s.value(billAuthorizeRuleCondition.getValue().stream().map(FieldValue::of).toList()))).build()).build()).toList();
-        if (conditionType.equals(BillAuthorizeConditionTypeConstants.OR)) {
-            return new Query.Builder().bool(new BoolQuery.Builder().should(queries).build()).build();
+    public List<Query> groupToQuery(List<BillAuthorizeRuleCondition> billAuthorizeRuleConditionList) {
+        return billAuthorizeRuleConditionList
+                .stream().map(billAuthorizeRuleCondition -> new Query.Builder().terms(new TermsQuery.Builder().field(billAuthorizeRuleCondition.getField().startsWith("tags") ? billAuthorizeRuleCondition.getField() + "." + FieldType.Keyword.jsonValue() : EsFieldUtil.getGroupKeyByField(billAuthorizeRuleCondition.getField())).terms(TermsQueryField.of(s -> s.value(billAuthorizeRuleCondition.getValue().stream().map(FieldValue::of).toList()))).build()).build()).toList();
+
+    }
+
+    /**
+     * 转换为查询条件
+     *
+     * @param billAuthorizeRule 授权对象
+     * @return 查询条件
+     */
+    private List<Query> toQuery(BillAuthorizeRule billAuthorizeRule) {
+        List<Query> queries = new ArrayList<>(groupToQuery(billAuthorizeRule.getConditions()));
+        if (CollectionUtils.isNotEmpty(billAuthorizeRule.getChildren())) {
+            Query query = toQuery(billAuthorizeRule.getChildren(), billAuthorizeRule.getConditionType());
+            queries.add(query);
+        }
+        return queries;
+    }
+
+    /**
+     * 转换为查询条件
+     *
+     * @param billAuthorizeRuleList  授权数组
+     * @param conditionTypeConstants 类型
+     * @return 查询条件
+     */
+    public Query toQuery(List<BillAuthorizeRule> billAuthorizeRuleList, BillAuthorizeConditionTypeConstants conditionTypeConstants) {
+        List<Query> q = billAuthorizeRuleList.stream().map(authorizeRule -> {
+            List<Query> allQueryList = new ArrayList<>();
+            if (CollectionUtils.isNotEmpty(authorizeRule.getConditions())) {
+                List<Query> queries = groupToQuery(authorizeRule.getConditions());
+                allQueryList.addAll(queries);
+            }
+            if (CollectionUtils.isNotEmpty(authorizeRule.getChildren())) {
+                Query query = toQuery(authorizeRule.getChildren(), conditionTypeConstants);
+                allQueryList.add(query);
+            }
+            if (CollectionUtils.isEmpty(allQueryList)) {
+                return null;
+            }
+            if (authorizeRule.getConditionType().equals(BillAuthorizeConditionTypeConstants.OR)) {
+                return new Query.Builder().bool(new BoolQuery.Builder().should(allQueryList).build()).build();
+            } else {
+                return new Query.Builder().bool(new BoolQuery.Builder().must(allQueryList).build()).build();
+            }
+
+        }).filter(Objects::nonNull).toList();
+        if (conditionTypeConstants.equals(BillAuthorizeConditionTypeConstants.OR)) {
+            return new Query.Builder().bool(new BoolQuery.Builder().should(q).build()).build();
         } else {
-            return new Query.Builder().bool(new BoolQuery.Builder().must(queries).build()).build();
+            return new Query.Builder().bool(new BoolQuery.Builder().must(q).build()).build();
         }
     }
 

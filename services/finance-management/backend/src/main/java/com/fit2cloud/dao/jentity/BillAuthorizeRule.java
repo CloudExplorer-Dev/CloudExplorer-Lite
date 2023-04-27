@@ -14,9 +14,13 @@ import java.util.List;
 @Data
 public class BillAuthorizeRule {
     /**
-     * 账单授权组
+     * 树
      */
-    private List<BillAuthorizeRuleGroup> billAuthorizeRuleSettingGroups;
+    private List<BillAuthorizeRule> children;
+    /*
+     * 账单授权条件
+     */
+    private List<BillAuthorizeRuleCondition> conditions;
     /**
      * 类型
      */

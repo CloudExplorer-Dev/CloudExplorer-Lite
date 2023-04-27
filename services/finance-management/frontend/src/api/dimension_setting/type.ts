@@ -5,13 +5,13 @@ import type { SimpleMap } from "@commons/api/base/type";
  */
 interface BillAuthorizeRuleCondition {
   /**
-   * 唯一id
-   */
-  id: string;
-  /**
    *授权字段
    */
   field: string;
+  /**
+   * 比较器 默认EQ
+   */
+  compare: string;
   /**
    *授权字段值
    */
@@ -48,6 +48,21 @@ interface BillAuthorizeRule {
    */
   conditionType: string;
 }
+interface BillAuthorizeRuleTree {
+  /**
+   * 子组件
+   */
+  children: Array<BillAuthorizeRuleTree>;
+
+  /**
+   *条件与或
+   */
+  conditionType: string;
+  /**
+   *  条件
+   */
+  conditions: Array<BillAuthorizeRuleCondition>;
+}
 
 /**
  * 分账设置对象
@@ -60,7 +75,7 @@ interface BillDimensionSetting {
   /**
    *分账设置规则
    */
-  authorizeRule: BillAuthorizeRule;
+  authorizeRule: BillAuthorizeRuleTree;
   /**
    *授权id
    */
@@ -180,4 +195,5 @@ export type {
   AuthorizeResourcesResponse,
   AuthorizeResourcesRequest,
   NotAuthorizeResourcesRequest,
+  BillAuthorizeRuleTree,
 };

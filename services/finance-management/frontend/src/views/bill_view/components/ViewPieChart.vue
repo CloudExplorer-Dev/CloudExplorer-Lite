@@ -20,7 +20,7 @@
   </div>
 </template>
 <script setup lang="ts">
-import { ref, inject, nextTick, onMounted } from "vue";
+import { ref, inject, nextTick } from "vue";
 import type { BillSummary } from "@/echarts/bill_view/type";
 import type { ECharts } from "echarts";
 import type { SimpleMap } from "@commons/api/base/type";

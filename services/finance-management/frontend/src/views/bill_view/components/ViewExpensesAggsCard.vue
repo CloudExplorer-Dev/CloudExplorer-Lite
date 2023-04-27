@@ -14,7 +14,6 @@
 </template>
 <script setup lang="ts">
 import { ref, onMounted } from "vue";
-import _ from "lodash";
 import { computed } from "vue";
 import CurrencyFormat from "@commons/utils/currencyFormat";
 const loading = ref<boolean>(false);

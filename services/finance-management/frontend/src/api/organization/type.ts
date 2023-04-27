@@ -4,7 +4,10 @@ import type {
 } from "@commons/api/organization/type";
 import type { Workspace } from "@commons/api/workspace/type";
 
-interface OrganizationWorkspace {
+/**
+ *树节点
+ */
+interface TreeNode {
   /**
    *主键id
    */
@@ -16,18 +19,12 @@ interface OrganizationWorkspace {
   /**
    * 组织或者工作空间
    */
-  type: "WORKSPACE" | "ORGANIZATION";
+  type: "WORKSPACE" | "ORGANIZATION" | string;
 }
 /**
- * 组织或者工作空间树
+ * 树
  */
-interface OrganizationWorkspaceTree extends OrganizationWorkspace {
-  children?: Array<OrganizationWorkspaceTree>;
+interface Tree {
+  children?: Array<TreeNode>;
 }
-export type {
-  Organization,
-  OrganizationTree,
-  Workspace,
-  OrganizationWorkspaceTree,
-  OrganizationWorkspace,
-};
+export type { Organization, OrganizationTree, Workspace, TreeNode, Tree };

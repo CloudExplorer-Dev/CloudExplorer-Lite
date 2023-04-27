@@ -12,11 +12,14 @@ import java.util.List;
  */
 @Data
 public class BillAuthorizeRuleCondition {
-    private String id;
     /**
      * 条件key
      */
     private String field;
+    /**
+     * 比较器
+     */
+    private String compare;
     /**
      * 条件值
      */

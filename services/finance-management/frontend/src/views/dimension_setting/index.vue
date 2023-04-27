@@ -1,267 +1,85 @@
 <template>
-  <layout-content>
+  <layout-content :style="{ '--ce-main-top-height': topHeight + 'px' }">
     <template #breadcrumb>
       <breadcrumb :auto="true"></breadcrumb>
     </template>
+    <template #top>
+      <el-alert
+        style="--el-alert-bg-color: rgba(51, 112, 255, 0.15)"
+        title="各云账号的账单费用按照分账规则分摊到云管中的组织/工作空间上。"
+        type="info"
+        show-icon
+        @close="topHeight = 0"
+    /></template>
     <div
       class="contentWapper"
       style="--el-tree-node-hover-bg-color: rgba(51, 112, 255, 0.1)"
     >
       <div class="content">
-        <div
-          class="leftMenu"
-          v-loading="orgLoading"
-          style="--el-font-size-base: 14px"
-        >
-          <div class="top">
-            <div class="search">
-              <el-input
-                v-model="filterText"
-                placeholder="搜索关键词"
-                size="small"
-                :prefix-icon="Search"
-                class="input"
-              />
-            </div>
-            <div
-              class="tree-item-content"
-              :class="activeUnassignedResource ? 'active' : ''"
-              @click="handleUnassignedResource"
-            >
-              未分账资源
-            </div>
-          </div>
-          <div class="tree">
-            <el-tree
-              ref="treeRef"
-              :data="organizationWorkspaceTreeData"
-              :props="defaultProps"
-              node-key="id"
-              :accordion="true"
-              :expand-on-click-node="false"
-              @node-click="handleNodeClick"
-              :filter-node-method="filterNode"
-              :highlight-current="true"
-            >
-              <template #default="{ node, data }">
-                <div>
-                  <ce-icon
-                    style="color: black"
-                    :code="`${
-                      data.type === 'ORGANIZATION'
-                        ? 'zuzhijiagou1'
-                        : 'project_space'
-                    }`"
-                    size="3px"
-                  ></ce-icon>
-                  <span style="margin-left: 8px">{{ node.label }}</span>
-                </div>
-              </template>
-            </el-tree>
-          </div>
-        </div>
-        <div class="rightContent">
-          <div class="title" v-if="!activeUnassignedResource">
-            <span>{{
-              activeUnassignedResource
-                ? "未分账资源"
-                : activeWorkSpaceOrOrg?.name
-            }}</span>
-            <el-popover
-              placement="top-start"
-              :width="500"
-              trigger="hover"
-              content="各云账号的账单费用按照分账规则分摊到云管中的组织/工作空间上。"
-            >
-              <template #reference>
+        <div class="left_content">
+          <ce-tree
+            v-model="activeTreeNode"
+            :reset-data="
+              (tree) => [
+                { id: 'NOT_AUTH', name: '未分账资源', type: 'NOT_AUTH' },
+                ...tree,
+              ]
+            "
+            ><template #default="treeNode">
+              <div>
                 <ce-icon
-                  code="icon-maybe_outlined"
-                  size="16px"
-                  color="#646A73"
+                  type="code"
+                  :code="`${
+                    treeNode.data.type === 'ORGANIZATION'
+                      ? 'zuzhijiagou1'
+                      : treeNode.data.type === 'WORKSPACE'
+                      ? 'project_space'
+                      : 'icon_bill_allocation'
+                  }`"
+                  size="10px"
                 ></ce-icon>
-              </template>
-            </el-popover>
-          </div>
-
+                <span style="margin-left: 8px">{{ treeNode.node.label }}</span>
+              </div></template
+            >
+          </ce-tree>
+        </div>
+        <div class="table_content">
           <div class="content">
-            <div v-if="activeWorkSpaceOrOrg" class="share-resource">
-              <el-tabs
-                v-model="activeTab"
-                @tab-click="handleClick"
-                style="width: 100%"
-              >
-                <el-tab-pane
-                  label="分账规则"
-                  name="dimension_rules"
-                  class="dimension_rules"
-                >
-                  <el-alert
-                    style="--el-alert-bg-color: rgba(51, 112, 255, 0.15)"
-                    title="设置分账规则或修改分账规则,自变更时刻后延迟24小时更新已分账资源"
-                    type="info"
-                    :closable="false"
-                    show-icon
-                  />
-                  <BillRuleItemVue
-                    v-if="activeWorkSpaceOrOrg"
-                    :organization-workspace="activeWorkSpaceOrOrg"
-                  ></BillRuleItemVue>
-                </el-tab-pane>
-                <el-tab-pane label="已分账资源" name="allocated"
-                  ><ce-table
-                    localKey="allocatedResourceTable"
-                    v-loading="resourceLoading"
-                    height="100%"
-                    ref="table"
-                    :columns="columns"
-                    :data="dataList"
-                    :tableConfig="tableConfig"
-                    row-key="id"
-                  >
-                    <el-table-column type="selection" />
-                    <el-table-column prop="resourceName" label="资源名称">
-                      <template #default="scope">
-                        <el-tooltip
-                          :content="
-                            scope.row.resourceId + '/' + scope.row.resourceName
-                          "
-                          placement="top"
-                        >
-                          <div
-                            style="
-                              white-space: nowrap;
-                              text-overflow: ellipsis;
-                              overflow: hidden;
-                            "
-                          >
-                            {{ scope.row.resourceId }} /
-                            {{ scope.row.resourceName }}
-                          </div></el-tooltip
-                        >
-                      </template>
-                    </el-table-column>
-                    <el-table-column
-                      :filters="
-                        cloudAccountList.map((item) => ({
-                          text: item.name,
-                          value: item.id,
-                        }))
-                      "
-                      :filter-multiple="false"
-                      column-key="cloudAccountId"
-                      prop="cloudAccountName"
-                      label="云账号"
-                      label-width="150px"
-                    >
-                      <template #default="scope">
-                        <div style="display: flex; align-items: center">
-                          <platform_icon :platform="scope.row.provider">
-                          </platform_icon>
-                          <div>{{ scope.row.cloudAccountName }}</div>
-                        </div>
-                      </template>
-                    </el-table-column>
-                    <el-table-column prop="productName" label="产品名称" />
-                    <el-table-column prop="tags" label="标签">
-                      <template #default="scope">
-                        <el-tooltip
-                          raw-content
-                          :content="
-                            scope.row.tags
-                              ? Object.keys(scope.row.tags).length > 0
-                                ? Object.keys(scope.row.tags)
-                                    .map(
-                                      (key) =>
-                                        '<div>' +
-                                        key +
-                                        '=' +
-                                        scope.row.tags[key] +
-                                        '</div>'
-                                    )
-                                    .join('')
-                                : 'N/A'
-                              : 'N/A'
-                          "
-                          placement="top"
-                        >
-                          <div
-                            style="
-                              white-space: nowrap;
-                              text-overflow: ellipsis;
-                              overflow: hidden;
-                            "
-                          >
-                            {{
-                              scope.row.tags
-                                ? Object.keys(scope.row.tags).length > 0
-                                  ? Object.keys(scope.row.tags)
-                                      .map(
-                                        (key) => key + "=" + scope.row.tags[key]
-                                      )
-                                      .join(",")
-                                  : "N/A"
-                                : "N/A"
-                            }}
-                          </div>
-                        </el-tooltip>
-                      </template>
-                    </el-table-column>
-                    <el-table-column
-                      prop="projectName"
-                      label="企业项目"
-                    /> </ce-table
-                ></el-tab-pane>
-              </el-tabs>
-            </div>
-            <div v-else class="not-share-resource">
+            <div class="share_resource">
               <ce-table
-                localKey="notShareResourceTable"
+                localKey="shareResourceTable"
                 v-loading="resourceLoading"
+                cell-class-name="table_cell"
                 height="100%"
                 ref="table"
                 :columns="columns"
                 :data="dataList"
                 :tableConfig="tableConfig"
                 row-key="id"
+                :empty-text="
+                  activeTreeNode.type === 'NOT_AUTH'
+                    ? '暂无数据'
+                    : '暂无数据，请先去设置 分账规则'
+                "
               >
                 <template #toolbar>
-                  <div class="title" v-if="activeUnassignedResource">
-                    <span>未分账资源</span>
-                    <el-popover
-                      placement="top-start"
-                      :width="500"
-                      trigger="hover"
-                      content="各云账号的账单费用按照分账规则分摊到云管中的组织/工作空间上。"
-                    >
-                      <template #reference>
-                        <ce-icon
-                          code="icon-maybe_outlined"
-                          size="16px"
-                          color="#646A73"
-                        ></ce-icon>
-                      </template>
-                    </el-popover></div
-                ></template>
-                <el-table-column type="selection" />
-                <el-table-column prop="resourceName" label="资源名称">
+                  <div class="title">
+                    <span>{{ activeTreeNode.name }}</span>
+                  </div></template
+                >
+                <template #buttons v-if="activeTreeNode.type != 'NOT_AUTH'">
+                  <el-button @click="openSplitBillSetting" type="primary"
+                    >分账规则</el-button
+                  ></template
+                >
+                <el-table-column
+                  prop="resourceName"
+                  label="资源名称"
+                  show-overflow-tooltip
+                  min-width="100"
+                >
                   <template #default="scope">
-                    <el-tooltip
-                      :content="
-                        scope.row.resourceId + '/' + scope.row.resourceName
-                      "
-                      placement="top"
-                    >
-                      <div
-                        style="
-                          white-space: nowrap;
-                          text-overflow: ellipsis;
-                          overflow: hidden;
-                        "
-                      >
-                        {{ scope.row.resourceId }} /
-                        {{ scope.row.resourceName }}
-                      </div></el-tooltip
-                    >
+                    {{ scope.row.resourceId }} /{{ scope.row.resourceName }}
                   </template>
                 </el-table-column>
                 <el-table-column
@@ -286,46 +104,17 @@
                   </template>
                 </el-table-column>
                 <el-table-column prop="productName" label="产品名称" />
-                <el-table-column prop="tags" label="标签">
+                <el-table-column prop="tags" label="标签" show-overflow-tooltip>
                   <template #default="scope">
-                    <el-tooltip
-                      raw-content
-                      :content="
-                        scope.row.tags
-                          ? Object.keys(scope.row.tags).length > 0
-                            ? Object.keys(scope.row.tags)
-                                .map(
-                                  (key) =>
-                                    '<div>' +
-                                    key +
-                                    '=' +
-                                    scope.row.tags[key] +
-                                    '</div>'
-                                )
-                                .join('')
-                            : 'N/A'
-                          : 'N/A'
-                      "
-                      placement="top"
-                    >
-                      <div
-                        style="
-                          white-space: nowrap;
-                          text-overflow: ellipsis;
-                          overflow: hidden;
-                        "
-                      >
-                        {{
-                          scope.row.tags
-                            ? Object.keys(scope.row.tags).length > 0
-                              ? Object.keys(scope.row.tags)
-                                  .map((key) => key + "=" + scope.row.tags[key])
-                                  .join(",")
-                              : "N/A"
-                            : "N/A"
-                        }}
-                      </div>
-                    </el-tooltip>
+                    {{
+                      scope.row.tags
+                        ? Object.keys(scope.row.tags).length > 0
+                          ? Object.keys(scope.row.tags)
+                              .map((key) => key + "=" + scope.row.tags[key])
+                              .join(",")
+                          : "N/A"
+                        : "N/A"
+                    }}
                   </template>
                 </el-table-column>
                 <el-table-column prop="projectName" label="企业项目" />
@@ -335,19 +124,15 @@
         </div>
       </div>
     </div>
+    <BillAuthRule
+      :organization-workspace="activeTreeNode"
+      ref="billAuthRuleRef"
+    ></BillAuthRule>
   </layout-content>
 </template>
 <script setup lang="ts">
-import BaseOrganizationApi from "@commons//api/organization/index";
-import type {
-  OrganizationTree,
-  OrganizationWorkspaceTree,
-} from "@/api/organization/type";
 import dimensionSettingApi from "@/api/dimension_setting";
 import { onMounted, ref, watch } from "vue";
-import { ElTree } from "element-plus";
-import type { TabsPaneContext } from "element-plus";
-import BillRuleItemVue from "@/components/split_bill_rule_group/index.vue";
 import type { AuthorizeResourcesResponse } from "@/api/dimension_setting/type";
 import {
   PaginationConfig,
@@ -357,137 +142,34 @@ import {
 import cloudAccountApi from "@commons/api/cloud_account/index";
 import type { CloudAccount } from "@commons/api/cloud_account/type";
 import platform_icon from "@commons/components/platform-icon/index.vue";
-import { Search } from "@element-plus/icons-vue";
-const cloudAccountList = ref<Array<CloudAccount>>([]);
-/**
- * 树对象
- */
-const treeRef = ref<InstanceType<typeof ElTree>>();
-/**
- * 当前选中的table
- */
-const activeTab = ref<string>("dimension_rules");
+import BillAuthRule from "@/views/dimension_setting/components/bill_auth_rule/index.vue";
+import CeTree from "@commons/components/ce-tree/index.vue";
+import type { TreeNode } from "@commons/components/ce-tree/type";
 
-/**
- * 切换tab触发函数
- * @param tab table对象
- */
-const handleClick = (tab: TabsPaneContext) => {
-  activeTab.value = tab.props.name as string;
-};
-
-/**
- *过滤文本
- */
-const filterText = ref("");
-/**
- *监听过滤文本变化
- */
-watch(filterText, (val) => {
-  treeRef.value?.filter(val);
+const topHeight = ref<number>(40);
+// 选中的树节点
+const activeTreeNode = ref<TreeNode>({
+  id: "NOT_AUTH",
+  name: "未分账资源",
+  type: "NOT_AUTH",
 });
-/**
- * 过滤节点
- * @param value
- * @param data
- */
-const filterNode = (value: string, data: OrganizationTree | any) => {
-  if (!value) return true;
-  return data.name.includes(value);
+const cloudAccountList = ref<Array<CloudAccount>>([]);
+
+const billAuthRuleRef = ref<InstanceType<typeof BillAuthRule>>();
+
+// 打开授权规则设置
+const openSplitBillSetting = () => {
+  billAuthRuleRef.value?.open();
 };
 
-/**
- * 合并
- * @param orgData 组织数据
- * @param res    返回值
- */
-const mergeTree = (
-  orgData: Array<OrganizationTree>,
-  res: Array<OrganizationWorkspaceTree>
-) => {
-  return orgData.map((item) => {
-    const itemP: OrganizationWorkspaceTree = {
-      id: item.id,
-      name: item.name,
-      type: "ORGANIZATION",
-      children: [],
-    };
-    res.push(itemP);
-    if (item.workspaces) {
-      item.workspaces.forEach((w) =>
-        itemP.children?.push({
-          id: w.id,
-          name: w.name,
-          type: "WORKSPACE",
-          children: [],
-        })
-      );
-    }
-    if (item.children) {
-      mergeTree(
-        item.children,
-        itemP.children as Array<OrganizationWorkspaceTree>
-      );
-    }
-    return itemP;
-  });
-};
-/**
- * 组织加载器
- */
-const orgLoading = ref<boolean>(false);
+const table = ref();
 
 onMounted(() => {
-  BaseOrganizationApi.tree("ORGANIZATION_AND_WORKSPACE", orgLoading).then(
-    (ok) => {
-      organizationWorkspaceTreeData.value = JSON.parse(
-        JSON.stringify(mergeTree(ok.data, []))
-      );
-    }
-  );
   search(new TableSearch());
   cloudAccountApi.listAll().then((ok) => {
     cloudAccountList.value = ok.data;
   });
 });
-
-/**
- * 选中的组织
- */
-const activeWorkSpaceOrOrg = ref<OrganizationWorkspaceTree>();
-/**
- * 选中未分账资源
- */
-const activeUnassignedResource = ref<boolean>(true);
-/**
- * 选中树节点触发函数
- * @param data 数节点
- */
-const handleNodeClick = (data: OrganizationWorkspaceTree) => {
-  activeWorkSpaceOrOrg.value = data;
-  activeUnassignedResource.value = false;
-};
-
-/**
- * 选中未出账资源处理函数
- */
-const handleUnassignedResource = () => {
-  activeUnassignedResource.value = true;
-  activeWorkSpaceOrOrg.value = undefined;
-  treeRef.value?.setCurrentKey(undefined, false);
-};
-
-/**
- * 组织书对象
- */
-const organizationWorkspaceTreeData = ref<Array<OrganizationWorkspaceTree>>([]);
-
-/**
- * 组织树配置
- */
-const defaultProps = {
-  label: "name",
-};
 
 // table ---------- start ------
 // 列表字段数据
@@ -503,15 +185,15 @@ const dataList = ref<Array<AuthorizeResourcesResponse>>([]);
  */
 const search = (condition: TableSearch) => {
   const params = TableSearch.toSearchParams(condition);
-  (activeUnassignedResource.value
+  (activeTreeNode.value.type === "NOT_AUTH"
     ? dimensionSettingApi.pageNotAuthorizeResource
     : dimensionSettingApi.pageAuthorizeResources)(
     tableConfig.value.paginationConfig.currentPage,
     tableConfig.value.paginationConfig.pageSize,
     {
       ...params,
-      authorizeId: activeWorkSpaceOrOrg.value?.id,
-      type: activeWorkSpaceOrOrg.value?.type,
+      authorizeId: activeTreeNode.value?.id,
+      type: activeTreeNode.value?.type,
     },
     resourceLoading
   ).then((ok) => {
@@ -527,19 +209,8 @@ const search = (condition: TableSearch) => {
   });
 };
 
-watch(activeWorkSpaceOrOrg, () => {
-  if (activeTab.value === "allocated" && activeWorkSpaceOrOrg) {
-    search(new TableSearch());
-  }
-  if (!activeWorkSpaceOrOrg.value) {
-    search(new TableSearch());
-  }
-});
-
-watch(activeTab, () => {
-  if (activeTab.value === "allocated" && activeWorkSpaceOrOrg) {
-    search(new TableSearch());
-  }
+watch(activeTreeNode, () => {
+  table.value?.clearAll();
 });
 
 /**
@@ -564,72 +235,29 @@ const tableConfig = ref<TableConfig>({
 });
 </script>
 <style lang="scss" scoped>
-// 选中样式
-@mixin active() {
-  background-color: var(--el-tree-node-hover-bg-color);
-  color: rgba(51, 112, 255, 1); //节点的字体颜色
-  font-weight: 500;
-}
-.active {
-  @include active;
-}
-:deep(.el-tab-pane) {
-  height: 100%;
-}
 .contentWapper {
   font-weight: 400;
   font-size: 14px;
   line-height: 22px;
   color: #1f2329;
-  height: calc(100% - 2px);
+  height: 100%;
   width: 100%;
   display: flex;
   flex-wrap: wrap;
-  border: 1px solid var(--el-border-color);
-  border-radius: 2px;
-  .tips {
-    height: 40px;
-    width: 100%;
-    line-height: 40px;
-    border: 1px solid var(--el-border-color);
-  }
+
   .content {
     display: flex;
     justify-content: space-between;
     height: 100%;
     width: 100%;
-
-    .leftMenu {
-      height: 100%;
-      width: 250px;
-      border-right: 1px solid var(--el-border-color);
-
-      .top {
-        height: 100px;
-        .search {
-          width: 100%;
-          height: 44px;
-          margin-bottom: 13px;
-          display: flex;
-          justify-content: center;
-          align-items: flex-end;
-          align-content: flex-end;
-          .input {
-            margin: 0 13px;
-            height: 28px;
-          }
-        }
-      }
-      .tree {
-        height: calc(100% - 100px);
-        width: 250px;
-        overflow: hidden;
-        &:hover {
-          overflow: auto;
-        }
-      }
+    .left_content {
+      width: 240px;
+      height: calc(100% - 24px);
+      padding: 0 24px 24px 0;
+      border-right: 1px solid rgba(31, 35, 41, 0.15);
+      margin-right: 24px;
     }
-    .rightContent {
+    .table_content {
       width: calc(100% - 270px);
       height: 100%;
       box-sizing: border-box;
@@ -638,8 +266,12 @@ const tableConfig = ref<TableConfig>({
         height: 32px;
         display: flex;
         align-items: center;
-
+        width: 100%;
         span {
+          width: 100%;
+          overflow: hidden;
+          white-space: nowrap;
+          text-overflow: ellipsis;
           margin-right: 10px;
         }
       }
@@ -647,78 +279,19 @@ const tableConfig = ref<TableConfig>({
         box-sizing: border-box;
         height: calc(100% - 20px);
         width: 100%;
-        .not-share-resource {
+        .share_resource {
           margin-top: 10px;
           width: 100%;
           height: 100%;
           padding-right: 20px;
         }
-        .share-resource {
-          width: 100%;
-          height: calc(100% - 30px);
-          padding-right: 20px;
-          .el-tabs {
-            height: 100%;
-          }
-          .dimension_rules {
-            width: 100%;
-            height: 100%;
-            &:hover {
-              overflow-y: auto;
-              overflow-x: auto;
-            }
-          }
-        }
       }
     }
   }
 }
-:deep(.el-tabs__content) {
-  height: calc(100% - 40px);
-}
-:deep(.el-tree) {
-  --el-tree-node-hover-bg-color: rgba(51, 112, 255, 0.1);
-  --el-tree-text-color: rgba(31, 35, 41, 1);
-  --el-tree-expand-icon-color: rgba(100, 106, 115, 1);
-  color: #1f2329;
-  width: 100%;
-  height: calc(100% - 90px);
-
-  > .el-tree-node {
-    display: inline-block;
-    min-width: 100%;
-  }
-}
-
-@mixin tree-item-content() {
-  margin: 0 13px;
-  box-sizing: border-box;
-  height: 40px;
-  border-radius: 4px;
-  cursor: pointer;
-  line-height: 40px;
-  padding-left: 10px;
-}
-.tree-item-content {
-  @include tree-item-content;
-  &:hover {
-    background-color: var(--el-tree-node-hover-bg-color);
-  }
-}
-:deep(.el-tree-node__content) {
-  @include tree-item-content;
-}
-
-:deep(.el-tree--highlight-current) {
-  .el-tree-node.is-current {
-    > .el-tree-node__content {
-      @include active;
-    }
-  }
-}
-:deep(.el-alert) {
-  .el-alert__icon {
-    color: rgba(51, 112, 255, 1);
+:deep(.table_cell) {
+  .cell {
+    white-space: nowrap;
   }
 }
 </style>

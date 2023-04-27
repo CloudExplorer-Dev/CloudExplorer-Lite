@@ -1,4 +1,3 @@
-import type { SimpleMap } from "@commons/api/base/type";
 interface BillView {
   /**
    * 账单分组详情

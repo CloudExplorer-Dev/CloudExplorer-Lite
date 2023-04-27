@@ -27,7 +27,12 @@
           }}</span>
         </template>
       </el-table-column>
-      <fu-table-operations v-bind="tableConfig.tableOperations" fix />
+      <fu-table-operations
+        width="180px"
+        fixed="right"
+        v-bind="tableConfig.tableOperations"
+        fix
+      />
       <template #buttons>
         <CeTableColumnSelect :columns="columns" />
       </template>
@@ -38,10 +43,10 @@
     :close-on-press-escape="false"
     v-model="billRuleDialogVisible"
     :title="billRuleFormType === 'ADD' ? '创建自定义账单' : '编辑自定义账单'"
-    width="60%"
-    style="min-width: 600px"
+    width="840px"
   >
     <el-form
+      require-asterisk-position="right"
       @submit.prevent
       label-position="top"
       :model="billRuleForm"
@@ -86,7 +91,7 @@
           取消
         </el-button>
         <el-button type="primary" @click="saveOrUpdate(billRuleFormType)">
-          保存
+          {{ billRuleFormType === "ADD" ? "创建" : "修改" }}
         </el-button>
       </span>
     </template>
@@ -106,7 +111,8 @@ import BillRuleGroup from "@/components/bill_rule_group/index.vue";
 import { nanoid } from "nanoid";
 import type { FormInstance } from "element-plus";
 import { ElMessage, ElMessageBox } from "element-plus";
-
+import { useRouter } from "vue-router";
+const router = useRouter();
 /**
  *加载器
  */
@@ -251,7 +257,7 @@ const deleteBillRule = (row: BillRule) => {
     confirmButtonText: "删除",
     cancelButtonText: "取消",
     type: "warning",
-  }).then((ok) => {
+  }).then(() => {
     billRuleApi.deleteBillRule(row.id).then(() => {
       ElMessage.success("删除成功");
       table.value?.search();
@@ -271,6 +277,9 @@ const addBillRule = () => {
     },
   ];
 };
+const goView = (row: BillRule) => {
+  router.push({ name: "bill_view", query: { bill_rule_id: row.id } });
+};
 /**
  * 表单配置
  */
@@ -284,20 +293,29 @@ const tableConfig = ref<TableConfig>({
     searchOptions: [{ label: "规则名称", value: "name" }],
   },
   paginationConfig: new PaginationConfig(),
-  tableOperations: new TableOperations([
-    TableOperations.buildButtons().newInstance(
-      "编辑",
-      "primary",
-      editBillRule,
-      "EditPen"
-    ),
-    TableOperations.buildButtons().newInstance(
-      "删除",
-      "primary",
-      deleteBillRule,
-      "Delete"
-    ),
-  ]),
+  tableOperations: new TableOperations(
+    [
+      TableOperations.buildButtons().newInstance(
+        "查看报表",
+        "primary",
+        goView,
+        "EditPen"
+      ),
+      TableOperations.buildButtons().newInstance(
+        "编辑",
+        "primary",
+        editBillRule,
+        "EditPen"
+      ),
+      TableOperations.buildButtons().newInstance(
+        "删除",
+        "primary",
+        deleteBillRule,
+        "Delete"
+      ),
+    ],
+    "text"
+  ),
 });
 
 onMounted(() => {
