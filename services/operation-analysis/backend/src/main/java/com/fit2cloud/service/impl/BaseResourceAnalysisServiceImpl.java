@@ -259,11 +259,11 @@ public class BaseResourceAnalysisServiceImpl implements IBaseResourceAnalysisSer
             datastoreList = datastoreList.stream().filter(v -> !CollectionUtils.isNotEmpty(request.getDatastoreIds()) || request.getDatastoreIds().contains(v.getId())).toList();
             BigDecimal capacity = new BigDecimal(datastoreList.stream().filter(v -> Objects.nonNull(v.getCapacity())).mapToLong(VmCloudDatastore::getCapacity).sum());
             BigDecimal allocatedSpace = new BigDecimal(datastoreList.stream().filter(v -> Objects.nonNull(v.getAllocatedSpace())).mapToLong(VmCloudDatastore::getAllocatedSpace).sum());
-            BigDecimal memoryAllocatedRate = allocatedSpace.divide(capacity, 2, RoundingMode.HALF_UP).multiply(new BigDecimal(100));
+            BigDecimal allocatedRate = allocatedSpace.divide(capacity, 2, RoundingMode.HALF_UP).multiply(new BigDecimal(100));
             result.put(SpecialAttributesConstants.ResourceField.DATASTORE, ResourceAllocatedInfo.builder()
                     .total(capacity)
                     .allocated(allocatedSpace)
-                    .allocatedRate(memoryAllocatedRate)
+                    .allocatedRate(allocatedRate.compareTo(new BigDecimal(100)) > 0 ? new BigDecimal(100) : allocatedRate)
                     .build());
         }
         return result;
