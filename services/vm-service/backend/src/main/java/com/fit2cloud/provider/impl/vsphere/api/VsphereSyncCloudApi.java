@@ -224,6 +224,7 @@ public class VsphereSyncCloudApi {
                         for (Datastore ds : list) {
                             Datacenter dc = client.getDataCenter(ds);
                             F2CDatastore f2cDs = new F2CDatastore();
+                            f2cDs.setAllocatedSpace(getDatastoreVmsDiskSizeTotal(ds.getVms()));
                             f2cDs.setDataCenterId(dc.getName());
                             f2cDs.setDataCenterName(dc.getName());
                             f2cDs.setRegion(dc.getName());
@@ -270,18 +271,7 @@ public class VsphereSyncCloudApi {
                 if (updated != null) {
                     f2cDs.setLastUpdate(updated.getTimeInMillis() / 1000);
                 }
-                VirtualMachine[] vms = ds.getVms();
-                int vmDiskSize = 0;
-                if (vms != null) {
-                    for (VirtualMachine vm : vms) {
-                        VirtualMachineConfigInfo vmConfig = vm.getConfig();
-                        if (vmConfig != null && vmConfig.isTemplate()) {
-                            continue;
-                        }
-                        vmDiskSize += VsphereUtil.getDiskSizeInGB(vmConfig);
-                    }
-                }
-                f2cDs.setAllocatedSpace(vmDiskSize);
+                f2cDs.setAllocatedSpace(getDatastoreVmsDiskSizeTotal(ds.getVms()));
                 datastoreList.add(f2cDs);
             }
         } catch (Exception e) {
@@ -290,6 +280,20 @@ public class VsphereSyncCloudApi {
             closeConnection(client);
         }
         return datastoreList;
+    }
+
+    private static int getDatastoreVmsDiskSizeTotal(VirtualMachine[] vms) {
+        int vmDiskSize = 0;
+        if (vms != null) {
+            for (VirtualMachine vm : vms) {
+                VirtualMachineConfigInfo vmConfig = vm.getConfig();
+                if (vmConfig != null && vmConfig.isTemplate()) {
+                    continue;
+                }
+                vmDiskSize += VsphereUtil.getDiskSizeInGB(vmConfig);
+            }
+        }
+        return vmDiskSize;
     }
 
     /**
