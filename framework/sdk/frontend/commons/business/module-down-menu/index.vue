@@ -56,7 +56,8 @@ const close = () => {
 <style lang="scss" scoped>
 .module_content {
   width: 860px;
-  height: 790px;
+  min-height: 500px;
+  height: calc(100% - 100px);
   overflow-y: hidden;
   overflow-x: hidden;
   position: fixed;
