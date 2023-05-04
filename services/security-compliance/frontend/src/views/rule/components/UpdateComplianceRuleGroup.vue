@@ -16,12 +16,18 @@
       label-width="120px"
     >
       <el-form-item label="规则组名称" prop="name">
-        <el-input v-model="updateComplianceRuleGroupForm.name" />
+        <el-input
+          v-model="updateComplianceRuleGroupForm.name"
+          maxlength="64"
+          show-word-limit
+        />
       </el-form-item>
       <el-form-item label="规则组描述" prop="description">
         <el-input
           type="textarea"
           style="height: 100px"
+          maxlength="255"
+          show-word-limit
           v-model="updateComplianceRuleGroupForm.description"
         />
       </el-form-item>

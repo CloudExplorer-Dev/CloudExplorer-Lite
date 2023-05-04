@@ -69,7 +69,7 @@ interface Rules {
   /**
    * 条件类型 AND:并且  OR:或者
    */
-  conditionType: "AND" | "OR";
+  conditionType: "AND" | "OR" | string;
   /**
    * 扫描规则 COMPLIANCE:视为合规 NOT_COMPLIANCE:视为不合规
    */

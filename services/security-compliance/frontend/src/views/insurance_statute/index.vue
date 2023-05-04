@@ -12,11 +12,36 @@
       :data="dataList"
       :tableConfig="tableConfig"
     >
-      <el-table-column prop="id" label="序号" width="80px"></el-table-column>
-      <el-table-column prop="securityLevel" label="安全层面" width="150px" />
-      <el-table-column prop="controlPoint" label="控制点" width="150px" />
-      <el-table-column prop="baseClause" label="等级保护基本要求条款" />
-      <el-table-column prop="improvementProposal" label="改进建议" />
+      <el-table-column
+        prop="id"
+        label="序号"
+        min-width="40"
+        show-overflow-tooltip
+      ></el-table-column>
+      <el-table-column
+        prop="securityLevel"
+        label="安全层面"
+        show-overflow-tooltip
+        min-width="100px"
+      />
+      <el-table-column
+        prop="controlPoint"
+        label="控制点"
+        show-overflow-tooltip
+        min-width="80px"
+      />
+      <el-table-column
+        prop="baseClause"
+        show-overflow-tooltip
+        min-width="300px"
+        label="等级保护基本要求条款"
+      />
+      <el-table-column
+        prop="improvementProposal"
+        show-overflow-tooltip
+        min-width="300px"
+        label="改进建议"
+      />
     </ce-table>
   </layout-auto-height-content>
 </template>
@@ -87,4 +112,10 @@ onMounted(() => {
   search(new TableSearch());
 });
 </script>
-<style lang="scss"></style>
+<style lang="scss" scoped>
+:deep(.el-table__cell) {
+  .cell {
+    white-space: nowrap;
+  }
+}
+</style>

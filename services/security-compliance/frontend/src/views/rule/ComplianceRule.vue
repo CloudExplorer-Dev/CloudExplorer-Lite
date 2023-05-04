@@ -19,7 +19,6 @@
           >创建</el-button
         ></template
       >
-      <el-table-column type="selection" />
       <el-table-column
         prop="name"
         show-overflow-tooltip
@@ -58,28 +57,20 @@
         label="资源类型"
         show-overflow-tooltip
         min-width="130"
-        :filters="
-          resourceTypeList.map((resource) => ({
-            text: resource.key,
-            value: resource.value,
-          }))
-        "
+        :filters="resourceTypeFilterList"
         :filter-multiple="false"
       >
         <template #default="scope">
-          {{
-            resourceTypeList.find((r) => r.value === scope.row.resourceType)
-              ?.key
-          }}
+          {{ getResourceTypeLebel(scope.row) }}
         </template>
       </el-table-column>
-      <el-table-column prop="rules" label="合规判断条件" width="300">
+      <el-table-column prop="rules" label="合规判断条件" min-width="250">
         <template #default="scope">
-          <compliance_rule_view
+          <ComplianceRuleView
             :platform="scope.row.platform"
             :resource-type="scope.row.resourceType"
             :rules="scope.row.rules"
-          ></compliance_rule_view>
+          ></ComplianceRuleView>
         </template>
       </el-table-column>
       <el-table-column
@@ -87,19 +78,14 @@
         label="风险等级"
         min-width="120"
         :column-key="'riskLevel'"
-        :filters="
-          riskLevelOptionList.map((level) => ({
-            text: level.key,
-            value: level.value,
-          }))
-        "
+        :filters="riskLevelFilterList"
         :filter-multiple="false"
       >
         <template #default="scope">
           <div
             v-html="riskLevelOptionList.find((r: KeyValue<string, string>) => r.value ===
               scope.row.riskLevel) ? riskLevelOptionList.find((r: KeyValue<string, string>) => r.value ===
-                scope.row.riskLevel)?.key : 'N/A'"
+                scope.row.riskLevel)?.key : '-'"
           ></div>
         </template>
       </el-table-column>
@@ -113,51 +99,49 @@
           {{ scope.row.description }}
         </template>
       </el-table-column>
-      <el-table-column
-        prop="enable"
-        column-key="enable"
-        label="是否启用"
-        min-width="120"
-        :filters="[
-          { text: '启用', value: true },
-          { text: '禁用', value: false },
-        ]"
-        :filter-multiple="false"
-      >
+
+      <el-table-column label="操作" fixed="right" width="100px">
         <template #default="scope">
-          <compliance_rule_switch
-            :compliance-rule-id="scope.row.id"
-            v-model="scope.row.enable"
-          ></compliance_rule_switch>
+          <div style="display: flex; align-items: center">
+            <ComplianceRuleSwitch
+              :compliance-rule-id="scope.row.id"
+              v-model="scope.row.enable"
+            ></ComplianceRuleSwitch>
+            <MoreOptionsButton
+              style="margin-left: 25px"
+              :row="scope.row"
+              :buttons="
+                tableConfig.tableOperations
+                  ? tableConfig.tableOperations.buttons
+                  : []
+              "
+            ></MoreOptionsButton>
+          </div>
         </template>
       </el-table-column>
-      <fu-table-operations
-        fixed="right"
-        v-bind="tableConfig.tableOperations"
-        fix
-      />
+
       <template #buttons>
         <CeTableColumnSelect :columns="columns" />
       </template>
     </ce-table>
-    <create_compliance_rule
+    <CreateComplianceRule
       ref="create_compliance_rule_ref"
       :refresh="refreshTable"
       :compliance-rule-group-list="complianceRuleGroupList"
       :risk-level-option-list="riskLevelOptionList"
       :resource-type-option-list="resourceTypeList"
-    ></create_compliance_rule>
-    <update_compliance_rule
+    ></CreateComplianceRule>
+    <UpdateComplianceRule
       ref="update_compliance_rule_ref"
       :refresh="refreshTable"
       :compliance-rule-group-list="complianceRuleGroupList"
       :risk-level-option-list="riskLevelOptionList"
       :resource-type-option-list="resourceTypeList"
-    ></update_compliance_rule>
+    ></UpdateComplianceRule>
   </div>
 </template>
 <script setup lang="ts">
-import { ref, onMounted } from "vue";
+import { ref, onMounted, computed } from "vue";
 import PlatformIcon from "@commons/components/platform-icon/index.vue";
 import type { KeyValue } from "@commons/api/base/type";
 import {
@@ -166,17 +150,19 @@ import {
   TableSearch,
   TableOperations,
 } from "@commons/components/ce-table/type";
+import MoreOptionsButton from "@commons/components/ce-table/MoreOptionsButton.vue";
 import type { ComplianceRule } from "@/api/rule/type";
 import complianceRuleApi from "@/api/rule";
 import complianceRuleGroupApi from "@/api/rule_group";
 import type { ComplianceRuleGroup } from "@/api/rule_group/type";
 import { platformIcon } from "@commons/utils/platform";
 import { ElMessage, ElMessageBox } from "element-plus";
-import compliance_rule_view from "@/views/rule/components/compliance_rules/ComplianceRuleView.vue";
-import create_compliance_rule from "@/views/rule/components/CreateComplianceRule.vue";
-import update_compliance_rule from "@/views/rule/components/UpdateComplianceRule.vue";
-import compliance_rule_switch from "@/views/rule/components/ComplianceRuleSwitch.vue";
+import ComplianceRuleView from "@/views/rule/components/compliance_rule_view/index.vue";
+import CreateComplianceRule from "@/views/rule/components/CreateComplianceRule.vue";
+import UpdateComplianceRule from "@/views/rule/components/UpdateComplianceRule.vue";
+import ComplianceRuleSwitch from "@/views/rule/components/ComplianceRuleSwitch.vue";
 import { usePermissionStore } from "@commons/stores/modules/permission";
+
 const permissionStore = usePermissionStore();
 /**
  * 表格数据
@@ -200,7 +186,7 @@ const complianceRuleGroupList = ref<Array<ComplianceRuleGroup>>([]);
 const resourceTypeList = ref<Array<KeyValue<string, string>>>([]);
 // 创建规则对象
 const create_compliance_rule_ref =
-  ref<InstanceType<typeof create_compliance_rule>>();
+  ref<InstanceType<typeof CreateComplianceRule>>();
 /**
  * 打开创建合规规则弹框
  */
@@ -209,7 +195,7 @@ const openCreateComplianceRule = () => {
 };
 // 编辑合规规则对象
 const update_compliance_rule_ref =
-  ref<InstanceType<typeof update_compliance_rule>>();
+  ref<InstanceType<typeof UpdateComplianceRule>>();
 
 /**
  * 打开编辑合规规则弹框
@@ -239,7 +225,33 @@ const riskLevelOptionList: Array<KeyValue<string, string>> = [
 ];
 
 // 表单结束
-
+/**
+ * 风险等级过滤下拉数据
+ */
+const riskLevelFilterList = computed(() => {
+  return riskLevelOptionList.map((level: KeyValue<string, string>) => ({
+    text: level.key,
+    value: level.value,
+  }));
+});
+// 资源类型过滤下拉数据
+const resourceTypeFilterList = computed(() => {
+  return resourceTypeList.value.map((resource: KeyValue<string, string>) => ({
+    text: resource.key,
+    value: resource.value,
+  }));
+});
+/**
+ * 获取资源类型Label
+ * @param row 当前这一行
+ */
+const getResourceTypeLebel = (row: ComplianceRule) => {
+  return (
+    resourceTypeList.value.find(
+      (r: KeyValue<string, string>) => r.value === row.resourceType
+    )?.key || "-"
+  );
+};
 /**
  * 搜索函数
  * @param condition 搜索条件

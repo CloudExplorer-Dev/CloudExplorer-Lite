@@ -1,27 +1,59 @@
 <template>
-  <div class="content" v-loading="loading">
-    <div class="item" v-for="(rule, index) in rules.rules" :key="index">
-      <div class="field">{{ getField(rule) }}</div>
-      <div class="compare">{{ getCompare(rule) }}</div>
-      <div class="value">{{ getValue(rule) }}</div>
+  <div class="rule-group-content" v-loading="loading">
+    <div class="view" v-if="firstLabel">
+      {{ firstLabel }}
+    </div>
+    <el-popover
+      v-if="firstLabel"
+      placement="top-start"
+      :width="200"
+      trigger="hover"
+    >
+      <template #reference>
+        <div class="item-size">+{{ rules.rules.length }}</div>
+      </template>
+
+      <div class="item" v-for="(rule, index) in rules.rules" :key="index">
+        <Item
+          :field="getField(rule)"
+          :compare="getCompare(rule)"
+          :value="getValue(rule)"
+        ></Item>
+        <el-divider
+          v-if="index < rules.rules.length - 1"
+          border-style="dashed"
+        />
+      </div>
+    </el-popover>
+    <div class="error" v-if="!firstLabel && fields.length > 0">
+      规则解析失败,请重新编辑规则
     </div>
   </div>
 </template>
 <script setup lang="ts">
-import { ref, watch } from "vue";
+import { ref, watch, computed } from "vue";
 import type { KeyValue } from "@commons/api/base/type";
 import complianceRuleApi from "@/api/rule";
+import Item from "@/views/rule/components/compliance_rule_view/Item.vue";
 import type { InstanceSearchField, Rule, Rules } from "@/api/rule/type";
 
 const fields = ref<Array<InstanceSearchField>>([]);
+
 const loading = ref<boolean>(false);
+
+const firstLabel = computed(() => {
+  if (props.rules.rules.length > 0) {
+    return getField(props.rules.rules[0]);
+  }
+  return "";
+});
 /**
  * 获取字段名称
  * @param rule 规则
  */
 const getField = (rule: Rule) => {
   const f = fields.value.find((f) => f.field === rule.field);
-  return f?.label;
+  return f ? f.label : "";
 };
 
 /**
@@ -82,16 +114,42 @@ watch(
 );
 </script>
 <style lang="scss" scoped>
-.content {
-  white-space: normal;
-  display: flex;
-  flex-wrap: wrap;
+:deep(.el-divider--horizontal) {
+  margin: 8px 0;
+}
+.rule-group-content {
   width: 100%;
+  height: 100%;
+  display: inline-flex;
+  overflow: hidden;
+  .view {
+    text-align: center;
+
+    display: inline-block;
+    text-overflow: ellipsis;
+    overflow: hidden;
+    height: 24px;
+  }
+
+  .item-size {
+    width: 29px;
+    height: 24px;
+    border-radius: 2px;
+    display: inline-block;
+    background: rgba(31, 35, 41, 0.1);
+    text-align: center;
+    cursor: pointer;
+    margin-left: 8px;
+    &:hover {
+      background: #ebf1ff;
+      color: #3370ff;
+    }
+  }
   .item {
     &:first-child {
       margin-top: 0;
     }
-    margin-top: 10px;
+
     display: flex;
     flex-wrap: nowrap;
     width: 100%;
