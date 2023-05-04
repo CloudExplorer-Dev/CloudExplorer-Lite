@@ -21,6 +21,7 @@ const message = {
     add_org: "組織",
     add_workspace: "工作空間",
     delete_confirm: "確認刪除用戶",
+    delete_role_confirm: "確認刪除用戶角色",
     notify_setting: "通知設置",
     notify_tips:
       "郵箱、手機號設置後將與用戶基本信息關聯。手機號將做為釘釘平臺推送標識。企業微信賬號參考",

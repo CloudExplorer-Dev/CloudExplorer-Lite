@@ -21,6 +21,7 @@ const message = {
     add_org: "组织",
     add_workspace: "工作空间",
     delete_confirm: "确认删除用户",
+    delete_role_confirm: "确认删除用户角色",
     notify_setting: "通知设置",
     notify_tips:
       "邮箱、手机号设置后将与用户基本信息关联。手机号将做为钉钉平台推送标识。企业微信账号参考",

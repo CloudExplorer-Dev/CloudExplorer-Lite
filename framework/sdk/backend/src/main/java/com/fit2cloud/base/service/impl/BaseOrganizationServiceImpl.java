@@ -185,6 +185,34 @@ public class BaseOrganizationServiceImpl extends ServiceImpl<BaseOrganizationMap
         return map;
     }
 
+    @Override
+    public Map<String, String> idFullNameMap() {
+
+        Map<String, Organization> orgMap = this.list().stream().collect(Collectors.toMap(Organization::getId, o -> o));
+        Map<String, String> map = new HashMap<>();
+
+        orgMap.forEach((key, value) -> {
+            map.put(key, getFullName(null, value, orgMap));
+        });
+
+        return map;
+    }
+
+    private String getFullName(String name, Organization org, Map<String, Organization> orgMap) {
+        if (name == null) {
+            name = org.getName();
+        } else {
+            name = org.getName() + "/" + name;
+        }
+        if (StringUtils.isNotEmpty(org.getPid())) {
+            Organization parent = orgMap.get(org.getPid());
+            if (parent != null) {
+                return getFullName(name, parent, orgMap);
+            }
+        }
+        return name;
+    }
+
     /**
      * 获取下级组织
      *

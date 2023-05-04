@@ -24,10 +24,17 @@ export function sourceIdNames(
 ): Promise<Result<SimpleMap<string>>> {
   return get("/api/organization/sourceIdNames", {}, loading);
 }
+export function idFullNames(
+  loading?: Ref<boolean>
+): Promise<Result<SimpleMap<string>>> {
+  return get("/api/organization/idFullNames", {}, loading);
+}
 
 const BaseOrganizationApi = {
   tree,
   sourceTree,
+  sourceIdNames,
+  idFullNames,
 };
 
 export default BaseOrganizationApi;

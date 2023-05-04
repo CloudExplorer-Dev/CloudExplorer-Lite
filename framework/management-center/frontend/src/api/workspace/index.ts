@@ -30,7 +30,7 @@ export function listWorkspace(
   req: ListWorkspaceRequest,
   loading?: Ref<boolean>
 ): Promise<Result<Page<WorkspaceDetail>>> {
-  return get("api/workspace/list", req, loading);
+  return get("api/workspace/page", req, loading);
 }
 
 /**

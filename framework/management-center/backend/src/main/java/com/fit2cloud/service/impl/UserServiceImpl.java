@@ -469,6 +469,16 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
     }
 
     @Override
+    public boolean removeUserRole(String userId, String roleId, String sourceId) {
+
+        userRoleService.removeUserRoleByUserIdAndRoleId(userId, roleId, sourceId);
+        //更新redis中该用户的角色
+        userRoleService.saveCachedUserRoleMap(userId);
+
+        return true;
+    }
+
+    @Override
     public long countUser() {
         PageUserRequest request = new PageUserRequest();
         request.setCurrentPage(1);

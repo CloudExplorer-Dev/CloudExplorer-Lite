@@ -29,7 +29,7 @@ import CreateOrEdit from "@/views/UserManage/CreateOrEdit.vue";
 import { sourceIdNames } from "@commons/api/organization";
 
 const { t } = useI18n();
-const useRoute = useRouter();
+const router = useRouter();
 const permissionStore = usePermissionStore();
 const columns = ref([]);
 const tableData = ref<Array<User>>();
@@ -42,7 +42,6 @@ const msgConfigDialogVisible = ref<boolean>(false);
 const sourceNames = ref<SimpleMap<string>>({});
 const createEditFormRef = ref<InstanceType<typeof CreateOrEdit>>();
 const selectedId = ref<string | undefined>();
-const operateType = ref<"edit" | "create">();
 
 const loading = ref<boolean>(false);
 
@@ -57,10 +56,10 @@ const refresh = () => {
 
 const search = (condition: TableSearch) => {
   const params = TableSearch.toSearchParams(condition);
-  const workspaceId = useRoute.currentRoute.value.query.workspaceId;
+  const workspaceId = router.currentRoute.value.query.workspaceId;
   if (workspaceId) {
     params["workspaceId"] = workspaceId;
-    useRoute.currentRoute.value.query.workspaceId = null;
+    router.currentRoute.value.query.workspaceId = null;
   }
   listUser(
     {
@@ -89,12 +88,7 @@ const handleSelectionChange = (val: User[]) => {
 
 // 用户详情
 const showUserDetail = (row: User) => {
-  useRoute.push({
-    path: useRoute.currentRoute.value.path.replace(
-      "/list",
-      `/detail/${row.id}`
-    ),
-  });
+  router.push({ name: "user_detail", params: { id: row.id } });
 };
 
 const create = () => {
@@ -190,7 +184,7 @@ const tableConfig = ref<TableConfig>({
       ),
     ],
     searchOptions: [
-      { label: "ID", value: "username" },
+      { label: t("user.username"), value: "username" },
       { label: t("user.name"), value: "name" },
       { label: t("user.role"), value: "roleName" },
       { label: t("user.email"), value: "email" },

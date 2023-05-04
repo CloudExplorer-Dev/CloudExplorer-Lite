@@ -38,7 +38,7 @@ public class WorkspaceController {
     private IWorkspaceService workspaceService;
 
     @ApiOperation(value = "分页查询工作空间", notes = "分页查询工作空间")
-    @GetMapping("/list")
+    @GetMapping("/page")
     @PreAuthorize("hasAnyCePermission('WORKSPACE:READ')")
     public ResultHolder<IPage<WorkspaceDTO>> listByPage(@Validated PageWorkspaceRequest pageWorkspaceRequest) {
         return ResultHolder.success(workspaceService.pageWorkspace(pageWorkspaceRequest));

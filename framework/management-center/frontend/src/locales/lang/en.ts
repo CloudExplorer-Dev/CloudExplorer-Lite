@@ -21,6 +21,7 @@ const message = {
     add_org: "Organization",
     add_workspace: "Workspace",
     delete_confirm: "Sure To Delete",
+    delete_role_confirm: "Sure To Delete User Role",
     notify_setting: "Notify Setting",
     notify_tips:
       "The email address and mobile phone number are associated with the user's basic information. The mobile phone number will be used as the push identifier of Dingding platform. Enterprise wechat account for reference",

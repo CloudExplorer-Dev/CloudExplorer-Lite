@@ -15,6 +15,7 @@ const props = withDefaults(
 
 <template>
   <div
+    v-if="props.role"
     class="role-tag"
     :class="{
       'extend-role': props.role.type !== 'origin' && !defaultTag,

@@ -1,6 +1,6 @@
 import type { Ref } from "vue";
 import type Result from "@commons/request/Result";
-import type { WorkspaceTree } from "@commons/api/workspace/type";
+import type { WorkspaceTree, Workspace } from "@commons/api/workspace/type";
 import { get } from "@commons/request";
 
 export function workspaceTree(
@@ -15,9 +15,16 @@ export function workspaceOrgTree(
   return get("/api/workspace/orgTree", {}, loading);
 }
 
+export function workspaces(
+  loading?: Ref<boolean>
+): Promise<Result<Array<Workspace>>> {
+  return get("/api/workspace/list", {}, loading);
+}
+
 const BaseWorkspaceApi = {
   workspaceTree,
   workspaceOrgTree,
+  workspaces,
 };
 
 export default BaseWorkspaceApi;

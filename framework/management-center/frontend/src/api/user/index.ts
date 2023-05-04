@@ -53,7 +53,6 @@ export function getUser(
 
 /**
  * 启停用户
- * @param req
  */
 export const changeUserStatus = (
   req: UpdateUserStatusRequest,
@@ -78,6 +77,24 @@ export const userAddRole = (req: any) => {
   return post("/api/user/addRole", "", req);
 };
 
+export function removeUserRole(
+  userId: string,
+  roleId: string,
+  sourceId?: string,
+  loading?: Ref<boolean>
+) {
+  return del(
+    `/api/user/removeRole`,
+    undefined,
+    {
+      userId: userId,
+      roleId: roleId,
+      sourceId: sourceId,
+    },
+    loading
+  );
+}
+
 export function getUserRoleList(
   map: SimpleMap<Array<UserRole>>
 ): Array<UserRole> {
@@ -94,7 +111,7 @@ export function getUserRoleList(
   return _list;
 }
 
-export function convertUserRoleSourceList(list: Array<UserRole>) {
+export function getUserRoleSourceList(list: Array<UserRole>) {
   const _list: Array<any> = [];
   _.forEach(list, (userRole) => {
     _.forEach(userRole.roles, (role) => {
@@ -106,6 +123,11 @@ export function convertUserRoleSourceList(list: Array<UserRole>) {
       });
     });
   });
+  return _list;
+}
+
+export function convertUserRoleSourceList(list: Array<UserRole>) {
+  const _list: Array<any> = getUserRoleSourceList(list);
 
   const map = _.groupBy(_list, "roleId");
 
@@ -121,3 +143,20 @@ export function convertUserRoleSourceList(list: Array<UserRole>) {
 
   return result;
 }
+
+export default {
+  listUser,
+  createUser,
+  updateUser,
+  updatePwd,
+  deleteUserById,
+  getRoleInfo,
+  getUser,
+  changeUserStatus,
+  userNotificationSetting,
+  findUserNotification,
+  userAddRole,
+  removeUserRole,
+  getUserRoleList,
+  getUserRoleSourceList,
+};

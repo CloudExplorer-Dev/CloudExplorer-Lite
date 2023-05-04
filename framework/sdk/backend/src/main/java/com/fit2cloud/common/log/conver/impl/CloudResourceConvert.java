@@ -43,6 +43,7 @@ public class CloudResourceConvert implements ResourceConvert {
                 case ORGANIZATION -> name = getOrgName(id);
                 case USER -> name = getUserName(id);
                 case ROLE -> name = getRoleName(id);
+                case USER_ROLE -> name = getUserName(id);
             }
             return name;
         }

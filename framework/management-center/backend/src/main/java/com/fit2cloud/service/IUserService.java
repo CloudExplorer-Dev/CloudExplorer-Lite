@@ -34,5 +34,7 @@ public interface IUserService extends IService<User> {
 
     Boolean addUserRole(UserBatchAddRoleRequest userBatchAddRoleRequest);
 
+    boolean removeUserRole(String userId, String roleId, String sourceId);
+
     long countUser();
 }

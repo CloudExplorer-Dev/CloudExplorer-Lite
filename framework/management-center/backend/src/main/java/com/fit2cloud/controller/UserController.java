@@ -10,10 +10,7 @@ import com.fit2cloud.common.validator.annnotaion.CustomValidated;
 import com.fit2cloud.common.validator.group.ValidationGroup;
 import com.fit2cloud.common.validator.handler.ExistHandler;
 import com.fit2cloud.controller.handler.ResultHolder;
-import com.fit2cloud.controller.request.user.CreateUserRequest;
-import com.fit2cloud.controller.request.user.PageUserRequest;
-import com.fit2cloud.controller.request.user.UpdateUserRequest;
-import com.fit2cloud.controller.request.user.UserBatchAddRoleRequest;
+import com.fit2cloud.controller.request.user.*;
 import com.fit2cloud.dto.UserDto;
 import com.fit2cloud.dto.UserNotifySettingDTO;
 import com.fit2cloud.dto.UserOperateDto;
@@ -149,11 +146,24 @@ public class UserController {
     @ApiOperation(value = "批量添加用户角色")
     @PreAuthorize("hasAnyCePermission('USER:EDIT')")
     @PostMapping(value = "/addRole")
-    @OperatedLog(resourceType = ResourceTypeEnum.USER, operated = OperatedTypeEnum.BATCH_ADD,
+    @OperatedLog(resourceType = ResourceTypeEnum.USER_ROLE, operated = OperatedTypeEnum.BATCH_ADD,
             resourceId = "#userBatchAddRoleRequest.userIdList",
             content = "'批量添加用户角色['+#userBatchAddRoleRequest.roleInfoList.![roleId]+']'",
             param = "#userBatchAddRoleRequest")
     public ResultHolder<Boolean> addUserRole(@Validated @RequestBody UserBatchAddRoleRequest userBatchAddRoleRequest) {
         return ResultHolder.success(userService.addUserRole(userBatchAddRoleRequest));
     }
+
+    @ApiOperation(value = "移除用户角色")
+    @PreAuthorize("hasAnyCePermission('USER:EDIT')")
+    @DeleteMapping(value = "/removeRole")
+    @OperatedLog(resourceType = ResourceTypeEnum.USER_ROLE, operated = OperatedTypeEnum.DELETE,
+            resourceId = "#request.userId",
+            content = "'移除用户角色'",
+            param = "#request")
+    public ResultHolder<Boolean> removeUserRole(@Validated @RequestBody RemoveUserRoleRequest request) {
+        return ResultHolder.success(userService.removeUserRole(request.getUserId(), request.getRoleId(), request.getSourceId()));
+    }
+
+
 }

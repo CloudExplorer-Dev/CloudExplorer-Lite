@@ -291,11 +291,11 @@ const currentParentRoleId = computed(() => {
 watch(
   currentParentRoleId,
   (parentRoleId) => {
-    console.log("parentRoleId:" + parentRoleId);
+    console.debug("parentRoleId:" + parentRoleId);
     if (parentRoleId) {
       RoleApi.getModulePermissions(parentRoleId, _loading).then((ok) => {
         originPermissions.value = ok.data;
-        console.log(originPermissions.value);
+        console.debug(originPermissions.value);
       });
     }
   },

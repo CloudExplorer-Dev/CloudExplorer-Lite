@@ -1,5 +1,6 @@
 package com.fit2cloud.controller;
 
+import com.fit2cloud.base.entity.Workspace;
 import com.fit2cloud.base.service.IBaseWorkspaceService;
 import com.fit2cloud.controller.handler.ResultHolder;
 import com.fit2cloud.response.NodeTree;
@@ -31,5 +32,11 @@ public class BaseWorkspaceController {
     @ApiOperation(value = "获取工作空间树,包含没有工作空间的组织节点")
     public ResultHolder<List<NodeTree>> workspaceOrgTree() {
         return ResultHolder.success(workspaceService.workspaceTree(true));
+    }
+
+    @GetMapping("/list")
+    @ApiOperation(value = "获取工作空间列表")
+    public ResultHolder<List<Workspace>> workspaces() {
+        return ResultHolder.success(workspaceService.list());
     }
 }
