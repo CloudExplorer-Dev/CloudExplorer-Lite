@@ -37,9 +37,9 @@
               {
                 message:
                   'Hostname' +
-                  '只能包含小写字母、大写字母、数字、点或横线且是合法的FQDN',
+                  '只能包含小写字母、大写字母、数字、横线且是合法的FQDN',
                 trigger: 'blur',
-                pattern: /^[A-Za-z]+[A-Za-z0-9\.\-]*[A-Za-z0-9]$/,
+                pattern: /^[A-Za-z]+[A-Za-z0-9\-]*[A-Za-z0-9]$/,
               },
             ]"
             label="Hostname"

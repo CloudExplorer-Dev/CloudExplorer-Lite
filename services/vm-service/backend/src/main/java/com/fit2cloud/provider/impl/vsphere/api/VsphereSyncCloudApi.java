@@ -999,42 +999,36 @@ public class VsphereSyncCloudApi {
 
                         GuestInfo guest = vm.getGuest();
                         if (guest != null) {
-                            //todo 多网卡？ 现在只看了第一张网卡
-                            if (!request.getNetworkConfigs().get(index).getAdapters().get(0).isDhcp()) {
-                                if ("guestToolsRunning".equalsIgnoreCase(guest.getToolsRunningStatus())) {
-                                    break;
-                                }
-                            }
-                            // DHCP 的处理
-                            else {
-                                GuestNicInfo[] nets = guest.getNet();
-                                if (nets != null && nets.length > 0) {
-                                    List<String> ipArray = f2CVirtualMachine.getIpArray();
-                                    for (GuestNicInfo nicInfo : nets) {
-                                        String[] ips = nicInfo.getIpAddress();
-                                        if (ips != null && ips.length > 0) {
-                                            for (String ip : ips) {
-                                                if (ip.startsWith("169.254")) {
-                                                    flag = true;
-                                                    break;
-                                                }
-                                                if (ip.contains(".")) {
-                                                    f2CVirtualMachine.setLocalIP(ip);
-                                                    ipArray.add(ip);
-                                                }
+                            GuestNicInfo[] nets = guest.getNet();
+                            if (nets != null && nets.length > 0) {
+                                List<String> ipArray = f2CVirtualMachine.getIpArray();
+                                for (GuestNicInfo nicInfo : nets) {
+                                    String[] ips = nicInfo.getIpAddress();
+                                    if (ips != null && ips.length > 0) {
+                                        for (String ip : ips) {
+                                            if (ip.startsWith("169.254")) {
+                                                flag = true;
+                                                break;
+                                            }
+                                            if (ip.contains(".")) {
+                                                f2CVirtualMachine.setLocalIP(ip);
+                                                ipArray.add(ip);
                                             }
                                         }
-                                        if (flag) {
-                                            break;
-                                        }
                                     }
-                                    // 查询到 169.254.x.x IP 继续查询
                                     if (flag) {
-                                        continue;
-                                    }
-                                    if (ipArray.size() > 0) {
                                         break;
                                     }
+                                }
+                                // 查询到 169.254.x.x IP 继续查询
+                                if (flag) {
+                                    continue;
+                                }
+                                // 都是这种fe80开头的ipv6链路本地地址，继续查询
+                                // TODO 多网卡时，取到一个真实IP就返回，都是DHCP的话继续查询，直到获取到自动分配的IP为止
+                                List<String> ipList = ipArray.stream().filter(v -> !v.startsWith("fe80")).collect(Collectors.toList());
+                                if (ipArray.size() > 0 && ipList.size() > 0) {
+                                    break;
                                 }
                             }
                         }
@@ -1042,6 +1036,24 @@ public class VsphereSyncCloudApi {
                     if (count > 60) {
                         log.error("Get private IP timeout!");
                     }
+                    // 超时都没拿到IP,就直接从参数中获取IP,DHCP除外
+                    if (f2CVirtualMachine.getIpArray().size() == 0) {
+                        // 从参数中获取IP地址
+                        List<VsphereVmCreateRequest.NetworkAdapter> networkAdapters = request.getNetworkConfigs().get(index).getAdapters();
+                        if (networkAdapters != null && networkAdapters.size() > 0) {
+                            List<String> ipArray = f2CVirtualMachine.getIpArray();
+                            // 多网卡的IP地址
+                            for (VsphereVmCreateRequest.NetworkAdapter networkAdapter : networkAdapters) {
+                                // 手动设置的IP地址
+                                if (!networkAdapter.isDhcp()) {
+                                    // 参数中的IP地址
+                                    ipArray.add(networkAdapter.getIpAddr());
+                                }
+                            }
+                        }
+                    }
+                    // 去重
+                    f2CVirtualMachine.setIpArray(f2CVirtualMachine.getIpArray().stream().filter(StringUtils::isNotEmpty).distinct().collect(Collectors.toList()));
                 }
             }
         } finally {
@@ -1670,4 +1682,5 @@ public class VsphereSyncCloudApi {
             closeConnection(client);
         }
     }
+
 }
