@@ -207,8 +207,7 @@ const startOperateInterval = () => {
         for (let i = 0; i < res.data.length; i++) {
           _.forEach(tableData.value, function (vm) {
             if (vm.id === res.data[i].id) {
-              vm.instanceStatus = res.data[i].instanceStatus;
-              vm.ipArray = res.data[i].ipArray;
+              _.assign(vm, res.data[i]);
             }
           });
         }
@@ -770,6 +769,7 @@ const moreActions = ref<Array<ButtonAction>>([
       :label="$t('commons.status')"
       :filters="instanceStatusForTableSelect"
       :filter-multiple="false"
+      min-width="120px"
     >
       <template #default="scope">
         <div style="display: flex; align-items: center">
@@ -785,7 +785,8 @@ const moreActions = ref<Array<ButtonAction>>([
               scope.row.instanceStatus === 'Stopping' ||
               scope.row.instanceStatus === 'Rebooting' ||
               scope.row.instanceStatus === 'Deleting' ||
-              scope.row.instanceStatus === 'Creating'
+              scope.row.instanceStatus === 'Creating' ||
+              scope.row.instanceStatus === 'ConfigChanging'
             "
             class="is-loading"
             :style="{
@@ -913,11 +914,11 @@ const moreActions = ref<Array<ButtonAction>>([
       min-width="160px"
     >
       <template #default="scope">
-        <span style="display: inline-block">{{
+        <span style="display: flex">{{
           scope.row.instanceTypeDescription
         }}</span>
         <span
-          style="display: inline-block"
+          style="display: flex"
           v-if="scope.row.instanceType !== scope.row.instanceTypeDescription"
           >{{ scope.row.instanceType }}</span
         >
