@@ -6,7 +6,6 @@ import { useI18n } from "vue-i18n";
 import type { RoleInfo, Role } from "@/api/user/type";
 import { userAddRole } from "@/api/user";
 import { listRoles } from "@commons/api/role";
-import { useUserStore } from "@commons/stores/modules/user";
 import { ElMessage } from "element-plus/es";
 import { tree } from "@commons/api/organization";
 import type { OrganizationTree } from "@/api/organization/type";
@@ -118,7 +117,7 @@ const handleCreate = (formEl: FormInstance) => {
 };
 
 const getParentRoleId = (roleId: string) => {
-  let parentRoleId = null;
+  let parentRoleId = undefined;
   roles.value.forEach((role: Role) => {
     if (role.id === roleId) {
       parentRoleId = role.parentRoleId;

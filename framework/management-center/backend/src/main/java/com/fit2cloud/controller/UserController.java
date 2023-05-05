@@ -24,6 +24,7 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
 import javax.validation.constraints.NotNull;
+import java.util.List;
 
 /**
  * Author: LiuDi
@@ -42,6 +43,13 @@ public class UserController {
     @GetMapping("/page")
     public ResultHolder<IPage<UserDto>> listUser(PageUserRequest pageUserRequest) {
         return ResultHolder.success(userService.pageUser(pageUserRequest));
+    }
+
+    @ApiOperation(value = "管理员/组织管理员获取可管理的用户列表")
+    @PreAuthorize("hasAnyCePermission('USER:READ')")
+    @GetMapping("/manage/list")
+    public ResultHolder<List<User>> listUser() {
+        return ResultHolder.success(userService.getManageUserSimpleList());
     }
 
     @ApiOperation(value = "查询用户总数")
@@ -152,6 +160,17 @@ public class UserController {
             param = "#userBatchAddRoleRequest")
     public ResultHolder<Boolean> addUserRole(@Validated @RequestBody UserBatchAddRoleRequest userBatchAddRoleRequest) {
         return ResultHolder.success(userService.addUserRole(userBatchAddRoleRequest));
+    }
+
+    @ApiOperation(value = "批量添加用户角色V2")
+    @PreAuthorize("hasAnyCePermission('USER:EDIT')")
+    @PostMapping(value = "/addRole/v2")
+    @OperatedLog(resourceType = ResourceTypeEnum.USER_ROLE, operated = OperatedTypeEnum.BATCH_ADD,
+            resourceId = "#userBatchAddRoleRequest.userIdList.userIds",
+            content = "'批量添加用户角色['+#userBatchAddRoleRequest.roleId+']'",
+            param = "#userBatchAddRoleRequest")
+    public ResultHolder<Boolean> addUserRoleV2(@Validated @RequestBody UserBatchAddRoleRequestV2 userBatchAddRoleRequest) {
+        return ResultHolder.success(userService.addUserRoleV2(userBatchAddRoleRequest));
     }
 
     @ApiOperation(value = "移除用户角色")

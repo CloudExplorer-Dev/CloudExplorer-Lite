@@ -8,18 +8,23 @@ import type {
   UpdateUserPwdRequest,
   UpdateUserStatusRequest,
   UpdateUserRequest,
+  AddUserRoleRequest,
 } from "./type";
 import type { Ref } from "vue";
 import type { UserRole } from "./type";
 import _ from "lodash";
 import type { SimpleMap } from "@commons/api/base/type";
 
-export const listUser: (
+export const pageUser: (
   req: ListUserRequest,
   loading?: Ref<boolean>
 ) => Promise<Result<Page<User>>> = (req, loading) => {
   return get("/api/user/page", req, loading);
 };
+
+export function listUser(loading?: Ref<boolean>): Promise<Result<Array<User>>> {
+  return get("/api/user/manage/list", undefined, loading);
+}
 
 export const createUser = (req: CreateUserRequest, loading?: Ref<boolean>) => {
   return post("/api/user/add", "", req, loading);
@@ -75,6 +80,13 @@ export const findUserNotification = (userId: string) => {
 
 export const userAddRole = (req: any) => {
   return post("/api/user/addRole", "", req);
+};
+
+export const userAddRoleV2 = (
+  req: AddUserRoleRequest,
+  loading?: Ref<boolean>
+) => {
+  return post("/api/user/addRole/v2", "", req, loading);
 };
 
 export function removeUserRole(
@@ -145,6 +157,7 @@ export function convertUserRoleSourceList(list: Array<UserRole>) {
 }
 
 export default {
+  pageUser,
   listUser,
   createUser,
   updateUser,
@@ -156,6 +169,7 @@ export default {
   userNotificationSetting,
   findUserNotification,
   userAddRole,
+  userAddRoleV2,
   removeUserRole,
   getUserRoleList,
   getUserRoleSourceList,

@@ -5,8 +5,14 @@ import type { SimpleMap } from "@commons/api/base/type";
 import { idFullNames } from "@commons/api/organization";
 import { workspaces } from "@commons/api/workspace";
 import RoleApi from "@/api/role";
-import UserApi from "@/api/user";
-
+import UserApi, { userAddRoleV2 } from "@/api/user";
+import CeDrawer from "@commons/components/ce-drawer/index.vue";
+import CeIcon from "@commons/components/ce-icon/index.vue";
+import { roleConst } from "@commons/utils/constants";
+import { workspaceTree } from "@commons/api/workspace";
+import { tree as orgTree } from "@commons/api/organization";
+import type { OrganizationTree } from "@commons/api/organization/type";
+import type { WorkspaceTree, Workspace } from "@commons/api/workspace/type";
 import {
   PaginationConfig,
   TableConfig,
@@ -20,7 +26,6 @@ import {
   type MessageBoxData,
 } from "element-plus";
 import { useI18n } from "vue-i18n";
-
 import { Role } from "@commons/api/role/type";
 import { usePermissionStore } from "@commons/stores/modules/permission";
 import MoreOptionsButton from "@commons/components/ce-table/MoreOptionsButton.vue";
@@ -29,13 +34,10 @@ import RolePermissionTable from "./RolePermissionTable.vue";
 import { CreateRoleRequest, UpdateRoleRequest } from "@/api/role/type";
 import RoleTag from "@commons/business/person-setting/RoleTag.vue";
 import {
-  deleteUserById,
-  getUserRoleList,
-  getUserRoleSourceList,
-  listUser,
-} from "@/api/user";
-import { User } from "@/api/user/type";
-import type { Workspace } from "@/api/workspace/type";
+  User,
+  type AddUserRoleObject,
+  type AddUserRoleRequest,
+} from "@/api/user/type";
 import { useRouter } from "vue-router";
 
 class MUser extends User {
@@ -55,14 +57,16 @@ class MUser extends User {
     this.rowSpan = 0;
     this.roleTable = [];
     if (!skipParseRoleMap) {
-      this.roleTable = getUserRoleSourceList(
-        getUserRoleList(_.defaultTo(user.roleMap, {}))
+      this.roleTable = UserApi.getUserRoleSourceList(
+        UserApi.getUserRoleList(_.defaultTo(user.roleMap, {}))
       );
     }
   }
 }
 
 const { t } = useI18n();
+
+const ceDrawerRef = ref<InstanceType<typeof CeDrawer>>();
 
 const router = useRouter();
 const permissionStore = usePermissionStore();
@@ -111,7 +115,7 @@ const permissionData = ref<Array<string>>([]);
 const search = (condition: TableSearch) => {
   const params = TableSearch.toSearchParams(condition);
   params.roleId = selectedRole.value?.id;
-  listUser(
+  UserApi.pageUser(
     {
       currentPage: tableConfig.value.paginationConfig.currentPage,
       pageSize: tableConfig.value.paginationConfig.pageSize,
@@ -191,10 +195,11 @@ const tableConfig = ref<TableConfig>({
   paginationConfig: new PaginationConfig(),
 });
 
-function addUser() {}
+function addUser() {
+  openAddUser();
+}
 
 function removeUserRole(user: MUser) {
-  console.log(user);
   ElMessageBox.confirm(t("user.delete_role_confirm"), {
     confirmButtonText: t("commons.message_box.confirm"),
     cancelButtonText: t("commons.btn.cancel"),
@@ -362,6 +367,76 @@ const submitForm = (formEl: FormInstance | undefined) => {
   });
 };
 
+const addUserFormRef = ref<FormInstance | undefined>();
+const addUserLoading = ref<boolean>(false);
+
+const addUserList = ref<Array<User>>([]);
+
+const addUserData = ref<Array<AddUserRoleObject>>([{}]);
+
+const treeData = ref<Array<OrganizationTree | WorkspaceTree>>();
+
+const sourceType = computed<string>(() => {
+  if (selectedRole.value?.parentRoleId === roleConst.orgAdmin) {
+    return "组织";
+  }
+  if (selectedRole.value?.parentRoleId === roleConst.user) {
+    return "工作空间";
+  }
+
+  return "";
+});
+
+function addUserRow() {
+  addUserData.value.push({});
+}
+
+function removeAddUserRow(index: number) {
+  _.remove(addUserData.value, (n, i) => index === i);
+}
+
+function openAddUser() {
+  ceDrawerRef.value?.open();
+  addUserData.value = [{}];
+  UserApi.listUser(addUserLoading).then((res) => {
+    addUserList.value = res.data;
+  });
+
+  if (selectedRole.value?.parentRoleId === roleConst.orgAdmin) {
+    orgTree(undefined, addUserLoading).then((res) => {
+      treeData.value = res.data;
+    });
+  }
+  if (selectedRole.value?.parentRoleId === roleConst.user) {
+    workspaceTree(addUserLoading).then((res) => {
+      treeData.value = res.data;
+    });
+  }
+}
+
+function confirmAddUser() {
+  if (!addUserFormRef.value) return;
+  addUserFormRef.value.validate((valid) => {
+    if (valid) {
+      const addUserReq: AddUserRoleRequest = {
+        roleId: selectedRole.value?.id,
+        userSourceMappings: addUserData.value,
+      };
+      console.log(addUserReq);
+      UserApi.userAddRoleV2(addUserReq, addUserLoading).then((res) => {
+        search(new TableSearch());
+        cancelAddUser();
+      });
+    }
+  });
+}
+
+function cancelAddUser() {
+  ceDrawerRef.value?.close();
+  treeData.value = [];
+  addUserList.value = [];
+}
+
 watch(
   selectedRole,
   (role) => {
@@ -502,7 +577,8 @@ onMounted(() => {
                 <div
                   class="custom-column"
                   v-if="
-                    r.roleId === selectedRole.id && r.parentRole === 'ORGADMIN'
+                    r.roleId === selectedRole.id &&
+                    r.parentRole === roleConst.orgAdmin
                   "
                 >
                   {{
@@ -514,7 +590,8 @@ onMounted(() => {
                 <div
                   class="custom-column"
                   v-else-if="
-                    r.roleId === selectedRole.id && r.parentRole === 'USER'
+                    r.roleId === selectedRole.id &&
+                    r.parentRole === roleConst.user
                   "
                 >
                   {{
@@ -537,7 +614,10 @@ onMounted(() => {
               <template v-for="(r, i) in scope.row.roleTable" :key="i">
                 <div
                   class="custom-column"
-                  v-if="r.roleId === selectedRole.id && r.parentRole === 'USER'"
+                  v-if="
+                    r.roleId === selectedRole.id &&
+                    r.parentRole === roleConst.user
+                  "
                 >
                   {{
                     r.source
@@ -652,6 +732,108 @@ onMounted(() => {
         </el-button>
       </template>
     </el-dialog>
+
+    <CeDrawer
+      ref="ceDrawerRef"
+      title="添加用户"
+      confirm-btn-name="添加"
+      @confirm="confirmAddUser"
+      @cancel="cancelAddUser"
+      :disable-btn="addUserLoading"
+    >
+      <el-container direction="vertical" v-loading="addUserLoading">
+        {{ addUserData }}
+        <el-form
+          :model="addUserData"
+          ref="addUserFormRef"
+          style="width: 100%"
+          scroll-to-error
+        >
+          <template v-for="(o, i) in addUserData" :key="i">
+            <div class="add-user-form-item">
+              <el-form-item
+                label="用户"
+                class="form-item"
+                :prop="'[' + i + '].userIds'"
+                :rules="{
+                  message: '用户' + '不能为空',
+                  type: 'array',
+                  trigger: 'change',
+                  required: true,
+                }"
+              >
+                <el-select
+                  v-model="o.userIds"
+                  multiple
+                  filterable
+                  collapse-tags
+                  collapse-tags-tooltip
+                  :max-collapse-tags="2"
+                  style="width: 280px"
+                >
+                  <el-option
+                    v-for="u in addUserList"
+                    :key="u.id"
+                    :label="u.name"
+                    :value="u.id"
+                  />
+                </el-select>
+              </el-form-item>
+
+              <el-form-item
+                v-if="selectedRole?.parentRoleId !== roleConst.admin"
+                :label="sourceType"
+                class="form-item"
+                :prop="'[' + i + '].sourceIds'"
+                :rules="{
+                  message: sourceType + '不能为空',
+                  type: 'array',
+                  trigger: 'change',
+                  required: true,
+                }"
+              >
+                <el-tree-select
+                  v-model="o.sourceIds"
+                  node-key="id"
+                  :props="{ label: 'name' }"
+                  :data="treeData"
+                  :render-after-expand="false"
+                  filterable
+                  multiple
+                  show-checkbox
+                  collapse-tags
+                  collapse-tags-tooltip
+                  :max-collapse-tags="2"
+                  :check-strictly="
+                    selectedRole?.parentRoleId === roleConst.orgAdmin
+                  "
+                  style="width: 320px"
+                />
+              </el-form-item>
+
+              <div
+                v-if="addUserData.length <= 1"
+                style="width: 16px; height: 16px"
+              ></div>
+              <CeIcon
+                style="cursor: pointer"
+                size="16px"
+                code="icon_delete-trash_outlined1"
+                v-if="addUserData.length > 1"
+                @click="removeAddUserRow(i)"
+              />
+            </div>
+          </template>
+
+          <el-button
+            v-if="selectedRole.parentRoleId !== roleConst.admin"
+            @click="addUserRow"
+          >
+            + 添加用户
+          </el-button>
+        </el-form>
+      </el-container>
+    </CeDrawer>
   </el-container>
 </template>
 
@@ -781,5 +963,26 @@ onMounted(() => {
   box-shadow: 0px -1px 4px rgba(31, 35, 41, 0.1);
 
   --el-footer-padding: 24px;
+}
+.add-user-form-item {
+  width: calc(100% - 24px);
+  background: #f7f9fc;
+  border-radius: 4px;
+  padding: 12px;
+  margin-top: 28px;
+  margin-bottom: 14px;
+  display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  align-items: center;
+  justify-content: space-between;
+
+  .form-item {
+    margin-bottom: 0;
+  }
+
+  &:first-child {
+    margin-top: 0;
+  }
 }
 </style>

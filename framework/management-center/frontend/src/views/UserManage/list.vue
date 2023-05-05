@@ -2,7 +2,7 @@
 import { ref, onMounted } from "vue";
 import {
   deleteUserById,
-  listUser,
+  pageUser,
   getUserRoleList,
   convertUserRoleSourceList,
 } from "@/api/user";
@@ -61,7 +61,7 @@ const search = (condition: TableSearch) => {
     params["workspaceId"] = workspaceId;
     router.currentRoute.value.query.workspaceId = null;
   }
-  listUser(
+  pageUser(
     {
       currentPage: tableConfig.value.paginationConfig.currentPage,
       pageSize: tableConfig.value.paginationConfig.pageSize,

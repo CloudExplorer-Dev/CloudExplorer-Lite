@@ -7,6 +7,7 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.fit2cloud.base.entity.Organization;
 import com.fit2cloud.base.entity.Role;
 import com.fit2cloud.base.entity.User;
 import com.fit2cloud.base.entity.UserRole;
@@ -20,16 +21,12 @@ import com.fit2cloud.common.utils.MD5Util;
 import com.fit2cloud.common.utils.PageUtil;
 import com.fit2cloud.constants.ErrorCodeConstants;
 import com.fit2cloud.constants.UserConstants;
-import com.fit2cloud.controller.request.user.CreateUserRequest;
-import com.fit2cloud.controller.request.user.PageUserRequest;
-import com.fit2cloud.controller.request.user.UpdateUserRequest;
-import com.fit2cloud.controller.request.user.UserBatchAddRoleRequest;
+import com.fit2cloud.controller.request.user.*;
 import com.fit2cloud.dao.entity.UserNotificationSetting;
+import com.fit2cloud.dao.entity.Workspace;
 import com.fit2cloud.dao.mapper.UserMapper;
 import com.fit2cloud.dto.*;
-import com.fit2cloud.service.IUserService;
-import com.fit2cloud.service.OrganizationCommonService;
-import com.fit2cloud.service.WorkspaceCommonService;
+import com.fit2cloud.service.*;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
@@ -38,10 +35,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -64,6 +58,12 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
 
     @Resource
     BaseMapper<Role> roleMapper;
+
+    @Resource
+    IOrganizationService organizationService;
+
+    @Resource
+    IWorkspaceService workspaceService;
 
     @Resource
     BaseMapper<UserNotificationSetting> userNotificationSettingMapper;
@@ -130,6 +130,18 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
 
             return userDto;
         });
+    }
+
+    public List<User> getManageUserSimpleList() {
+        QueryWrapper<User> wrapper = new QueryWrapper<>();
+        // 根据当前所在角色过滤
+        if (CurrentUserUtils.isOrgAdmin()) {
+            List<String> orgIds = organizationCommonService.getOrgIdsByParentId(CurrentUserUtils.getOrganizationId());
+            List<String> resourceIds = workspaceCommonService.getWorkspaceIdsByOrgIds(orgIds);
+            resourceIds.addAll(orgIds);
+            wrapper.in(CollectionUtils.isNotEmpty(resourceIds), ColumnNameUtil.getColumnName(UserRole::getSource, true), resourceIds);
+        }
+        return baseMapper.listUser(wrapper);
     }
 
     @Override
@@ -376,7 +388,11 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
     private void insertUserRoleInfo(UserRole userRole, String sourceId) {
         userRole.setId(null);
         userRole.setSource(sourceId);
-        userRoleService.save(userRole);
+        userRoleService.saveOrUpdate(userRole, new LambdaQueryWrapper<UserRole>()
+                .eq(UserRole::getRoleId, userRole.getRoleId())
+                .eq(UserRole::getUserId, userRole.getUserId())
+                .eq(UserRole::getSource, userRole.getSource())
+        );
     }
 
     public RoleConstants.ROLE getParentRoleId(String roleId) {
@@ -429,7 +445,8 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
     }
 
     @Transactional
-    public Boolean addUserRole(UserBatchAddRoleRequest userBatchAddRoleRequest) {
+    @Override
+    public boolean addUserRole(UserBatchAddRoleRequest userBatchAddRoleRequest) {
         userBatchAddRoleRequest.getUserIdList().forEach(userId -> {
             userBatchAddRoleRequest.getRoleInfoList().forEach(roleInfo -> {
                 UserRole userRole = new UserRole();
@@ -462,6 +479,54 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
 
         //更新完数据库后再更新redis
         userBatchAddRoleRequest.getUserIdList().forEach(userId -> {
+            userRoleService.saveCachedUserRoleMap(userId);
+        });
+
+        return true;
+    }
+
+    @Transactional
+    @Override
+    public boolean addUserRoleV2(UserBatchAddRoleRequestV2 userBatchAddRoleRequest) {
+
+        Role role = roleMapper.selectById(userBatchAddRoleRequest.getRoleId());
+
+        Set<String> allUsers = new HashSet<>();
+
+        for (UserBatchAddRoleObjectV2 map : userBatchAddRoleRequest.getUserSourceMappings()) {
+            if (RoleConstants.ROLE.ORGADMIN.equals(role.getParentRoleId()) || RoleConstants.ROLE.USER.equals(role.getParentRoleId())) {
+                if (CollectionUtils.isEmpty(map.getSourceIds())) {
+                    throw new RuntimeException("组织/工作空间ID列表不能为空");
+                }
+            }
+            List<String> filteredUserIds = this.listByIds(map.getUserIds()).stream().map(User::getId).toList();
+            if (CollectionUtils.isEmpty(filteredUserIds)) {
+                continue;
+            }
+            List<String> sourceIds = null;
+            if (RoleConstants.ROLE.ORGADMIN.equals(role.getParentRoleId())) {
+                sourceIds = organizationService.listByIds(map.getSourceIds()).stream().map(Organization::getId).toList();
+            } else if (RoleConstants.ROLE.USER.equals(role.getParentRoleId())) {
+                sourceIds = workspaceService.listByIds(map.getSourceIds()).stream().map(Workspace::getId).toList();
+            }
+            if (!RoleConstants.ROLE.ADMIN.equals(role.getParentRoleId()) && CollectionUtils.isEmpty(sourceIds)) {
+                continue;
+            }
+            allUsers.addAll(filteredUserIds);
+
+            for (String userId : filteredUserIds) {
+                if (sourceIds == null) {
+                    insertUserRoleInfo(new UserRole().setRoleId(role.getId()).setUserId(userId), null);
+                } else {
+                    for (String sourceId : sourceIds) {
+                        insertUserRoleInfo(new UserRole().setRoleId(role.getId()).setUserId(userId), sourceId);
+                    }
+                }
+            }
+        }
+
+        //更新完数据库后再更新redis
+        allUsers.forEach(userId -> {
             userRoleService.saveCachedUserRoleMap(userId);
         });
 

@@ -6,9 +6,7 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.fit2cloud.base.entity.Organization;
-import com.fit2cloud.base.entity.Workspace;
 import com.fit2cloud.base.service.IBaseUserRoleService;
-import com.fit2cloud.base.service.IBaseWorkspaceService;
 import com.fit2cloud.common.constants.RoleConstants;
 import com.fit2cloud.common.exception.Fit2cloudException;
 import com.fit2cloud.common.utils.ColumnNameUtil;
@@ -19,10 +17,12 @@ import com.fit2cloud.constants.ErrorCodeConstants;
 import com.fit2cloud.controller.request.OrganizationBatchRequest;
 import com.fit2cloud.controller.request.OrganizationRequest;
 import com.fit2cloud.controller.request.PageOrganizationRequest;
+import com.fit2cloud.dao.entity.Workspace;
 import com.fit2cloud.dao.mapper.OrganizationMapper;
 import com.fit2cloud.dto.UserDto;
 import com.fit2cloud.response.OrganizationTree;
 import com.fit2cloud.service.IOrganizationService;
+import com.fit2cloud.service.IWorkspaceService;
 import lombok.SneakyThrows;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -52,7 +52,7 @@ import java.util.stream.Collectors;
 public class OrganizationServiceImpl extends ServiceImpl<OrganizationMapper, Organization> implements IOrganizationService {
     SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
     @Resource
-    private IBaseWorkspaceService workspaceService;
+    private IWorkspaceService workspaceService;
 
     @Resource
     private IBaseUserRoleService userRoleService;

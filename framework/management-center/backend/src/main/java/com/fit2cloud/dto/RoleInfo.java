@@ -3,6 +3,7 @@ package com.fit2cloud.dto;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
+import java.io.Serial;
 import java.io.Serializable;
 import java.util.List;
 
@@ -12,6 +13,9 @@ import java.util.List;
  */
 @Data
 public class RoleInfo implements Serializable {
+
+    @Serial
+    private static final long serialVersionUID = -6403922661617397034L;
 
     @ApiModelProperty("组织 ID 集合")
     private List<String> organizationIds;

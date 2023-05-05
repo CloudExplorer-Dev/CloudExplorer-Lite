@@ -10,7 +10,7 @@ export class UserRole extends UserTypes.UserRole {}
 interface RoleInfo {
   roleId: string;
   roleName?: string;
-  roleType: "ADMIN" | "ORGADMIN" | "USER" | string; //角色类型：系统管理员、组织管理员、工作空间用户
+  roleType?: "ADMIN" | "ORGADMIN" | "USER" | string; //角色类型：系统管理员、组织管理员、工作空间用户
   organizationIds: string[];
   workspaceIds: string[];
   selectedRoleIds?: string[]; // 已选择的角色ID集合
@@ -75,9 +75,21 @@ interface UpdateUserStatusRequest {
   enabled: boolean;
 }
 
+interface AddUserRoleObject {
+  userIds?: Array<string>;
+  sourceIds?: Array<string>;
+}
+
+interface AddUserRoleRequest {
+  roleId?: string;
+  userSourceMappings: Array<AddUserRoleObject>;
+}
+
 export type {
   RoleInfo,
   ListUserRequest,
   UpdateUserPwdRequest,
   UpdateUserStatusRequest,
+  AddUserRoleObject,
+  AddUserRoleRequest,
 };

@@ -47,7 +47,7 @@ public class BaseWorkspaceServiceImpl extends ServiceImpl<BaseWorkspaceMapper, W
 
         // 当前角色如果是组织管理员
         if (CurrentUserUtils.isOrgAdmin()) {
-            List<String> orgIdList = new ArrayList();
+            List<String> orgIdList = new ArrayList<>();
             orgIdList.add(CurrentUserUtils.getOrganizationId());
             orgIdList.addAll(organizationCommonService.getOrgIdsByParentId(CurrentUserUtils.getOrganizationId()));
 
