@@ -20,6 +20,8 @@ public interface IBaseRoleService extends IService<Role> {
 
     List<Role> roles(RoleRequest roleRequest);
 
+    List<Role> listOriginRoles();
+
     IPage<Role> pages(RolePageRequest roleRequest);
 
 }

@@ -93,6 +93,8 @@ const selectedRole = ref<Role>();
 
 const editPermission = ref<boolean>(false);
 
+const originRoles = ref<Array<Role>>([]);
+
 const systemRoles = computed<Array<Role>>(() => {
   return _.filter(roles.value, (r) => r.type === "origin");
 });
@@ -461,6 +463,10 @@ onMounted(() => {
     });
     workspaceIdMap.value = _map;
   });
+
+  RoleApi.listOriginRoles().then((res) => {
+    originRoles.value = res.data;
+  });
 });
 </script>
 <template>
@@ -507,7 +513,7 @@ onMounted(() => {
             style="padding-left: 6px; color: #8f959e"
             :data-var="
               (_parent = _.find(
-                systemRoles,
+                originRoles,
                 (r) => r.id === role.parentRoleId
               )?.name)
             "
@@ -726,7 +732,7 @@ onMounted(() => {
         :create-new="!id"
       />
       <template #footer>
-        <el-button @click="cancelAddRole"> 取消 </el-button>
+        <el-button @click="cancelAddRole"> 取消</el-button>
         <el-button type="primary" @click="submitForm(ruleFormRef)">
           创建
         </el-button>
@@ -742,7 +748,6 @@ onMounted(() => {
       :disable-btn="addUserLoading"
     >
       <el-container direction="vertical" v-loading="addUserLoading">
-        {{ addUserData }}
         <el-form
           :model="addUserData"
           ref="addUserFormRef"
@@ -857,6 +862,7 @@ onMounted(() => {
 
   .divider-container {
     padding: 8px;
+
     .divider {
       height: 1px;
       width: 100%;
@@ -922,6 +928,7 @@ onMounted(() => {
 
 .permission-main {
   padding: 10px 24px 4px 24px;
+
   .permission-title {
     height: 24px;
     padding-bottom: 20px;
@@ -938,11 +945,13 @@ onMounted(() => {
     flex-wrap: nowrap;
     align-items: center;
   }
+
   .permission-table {
     position: relative;
     height: calc(100% - 44px);
   }
 }
+
 .role-tab {
   margin-top: 10px;
   --el-tabs-header-height: 40px;
@@ -964,6 +973,7 @@ onMounted(() => {
 
   --el-footer-padding: 24px;
 }
+
 .add-user-form-item {
   width: calc(100% - 24px);
   background: #f7f9fc;
