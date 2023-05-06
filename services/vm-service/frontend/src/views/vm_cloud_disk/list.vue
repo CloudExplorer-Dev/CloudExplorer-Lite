@@ -20,7 +20,7 @@ import RecycleBinsApi from "@/api/recycle_bin";
 import BaseCloudAccountApi from "@commons/api/cloud_account";
 import OrgTreeFilter from "@commons/components/table-filter/OrgTreeFilter.vue";
 import { DISK_TYPE, DISK_STATUS, getTextByValue } from "@/utils/constants";
-
+import Enlarge from "@/views/vm_cloud_disk/enlarge.vue";
 const { t } = useI18n();
 const permissionStore = usePermissionStore();
 const columns = ref([]);
@@ -32,12 +32,14 @@ const multipleSelectedRowData = ref<Array<VmCloudDiskVO>>([]);
 const isBatchAttach = ref(false);
 const cloudAccount = ref<Array<SimpleMap<string>>>([]);
 const tableLoading = ref<boolean>(false);
+
 import { platformIcon } from "@commons/utils/platform";
 
 /**
  * 表头：组织树筛选
  */
 const orgTreeRef = ref();
+const enlargeRef = ref<InstanceType<typeof Enlarge>>();
 const orgPopRef = ref<any>();
 const selectedOrganizationIds = computed(() =>
   orgTreeRef.value?.getSelectedIds(false)
@@ -212,7 +214,7 @@ const tableConfig = ref<TableConfig>({
  * @param row
  */
 const handleEnlarge = (row: VmCloudDiskVO) => {
-  router.push({ name: "enlarge", params: { id: row.id } });
+  enlargeRef.value?.open(row.id);
 };
 
 /**
@@ -928,10 +930,11 @@ const buttons = ref([
     <Grant
       :ids="selectedDiskIds"
       resource-type="disk"
-      v-model:visible="grantDialogVisible"
+      v-model:dialogVisible="grantDialogVisible"
       @refresh="refresh"
     />
   </el-dialog>
+  <Enlarge ref="enlargeRef"></Enlarge>
 </template>
 <style lang="scss" scoped>
 .text-overflow {

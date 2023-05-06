@@ -528,7 +528,6 @@ public class AliyunSyncCloudApi {
         try {
             DescribeAvailableResourceResponse describeAvailableResourceResponse = client.describeAvailableResource(req);
             List<DescribeAvailableResourceResponseBody.DescribeAvailableResourceResponseBodyAvailableZonesAvailableZone> availableZones = describeAvailableResourceResponse.body.availableZones.availableZone;
-
             if (CollectionUtils.isNotEmpty(availableZones)
                     && CollectionUtils.isNotEmpty(availableZones.get(0).availableResources.availableResource)
                     && CollectionUtils.isNotEmpty(availableZones.get(0).availableResources.availableResource.get(0).supportedResources.supportedResource)) {

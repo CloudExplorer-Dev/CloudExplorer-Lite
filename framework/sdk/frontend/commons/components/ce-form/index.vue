@@ -1,13 +1,16 @@
 <script setup lang="ts">
-import { ref, watch } from "vue";
+import { ref, type Ref, watch } from "vue";
 import type { FormView } from "@commons/components/ce-form/type";
 import formApi from "@commons/api/form_resource_api/index";
 import type { FormInstance } from "element-plus";
 import type { SimpleMap } from "@commons/api/base/type";
-// 表单数据
-const formData = ref<SimpleMap<any>>({});
+import CeFormItem from "@commons/components/ce-form/CeFormItem.vue";
+const emit = defineEmits(["update:modelValue"]);
+
 // 校验实例对象
 const ruleFormRef = ref<FormInstance>();
+
+// 资源加载器
 const resourceLoading = ref<boolean>(false);
 
 const props = withDefaults(
@@ -17,32 +20,57 @@ const props = withDefaults(
     // 调用接口所需要的其他参数
     otherParams: any;
     // 是否只读
-    readOnly: boolean;
-    // 表单 label 的展示位置
-    labelPosition: "left" | "right" | "top";
+    readOnly?: boolean;
+    // 收集到的数据
+    modelValue: SimpleMap<any>;
   }>(),
-  { readOnly: false, labelPosition: "left" }
+  { readOnly: false }
 );
+// 因为emit是异步的 发送后数据未更新,所有需要一个本地变量桥接
+const cacheModelValue = ref<SimpleMap<any>>(props.modelValue);
 
 // 发生变化
-const change = (formItem: FormView) => {
+const change = (formItem: FormView, value: any) => {
+  // 这里需要注意,emit是异步的 调用emit后 modelValue不会及时变为最新,所以使用 changeEndValue记录最新数据
+  cacheModelValue.value = {
+    ...cacheModelValue.value,
+    [formItem.field]: value,
+  };
+  // 修改值
+  emit("update:modelValue", cacheModelValue.value);
+  // 修改关联值,并且获取初始化关联OptionList
+  relationChange(formItem);
+};
+
+/**
+ *
+ * @param formItem  某一个表单Item的变化,影响到其他的表单的
+ */
+const relationChange = (formItem: FormView) => {
+  // 找到受影响的Item
   const relationForms = props.formViewData.filter((item) =>
     item.relationTrigger.includes(formItem.field)
   );
   relationForms.forEach((relationItem) => {
+    cacheModelValue.value = {
+      ...cacheModelValue.value,
+      [relationItem.field]: undefined,
+    };
     // 修改当前的值为null
-    formData.value[relationItem.field] = undefined;
+    emit("update:modelValue", cacheModelValue.value);
     if (
       relationItem.clazz &&
       relationItem.method &&
-      relationItem.relationTrigger.every((r) => formData.value[r])
+      relationItem.relationTrigger.every((r) => cacheModelValue.value[r]) &&
+      // relationShows是哪个组件有值了,才出现当前按钮,子组件挂载的时候,会初始化数据
+      !relationItem.relationShows.includes(formItem.field)
     ) {
       formApi
         .getResourceMyMethod(
           relationItem.clazz,
           relationItem.method,
           {
-            ...formData.value,
+            ...cacheModelValue.value,
             ...props.otherParams,
           },
           resourceLoading
@@ -51,175 +79,92 @@ const change = (formItem: FormView) => {
           relationItem.optionList = ok.data;
         });
     }
+    relationChange(relationItem);
   });
 };
 
 /**
- * 表单数据初始化,调用函数
- * @param formItem 表单item
+ * 获取列表数据
+ * @param formItem
  */
-const initFormItem = (formItem: FormView) => {
-  const relationForms = props.formViewData.filter((item) =>
-    item.relationTrigger.includes(formItem.field)
-  );
-  relationForms.forEach((relationItem) => {
-    if (
-      relationItem.clazz &&
-      relationItem.method &&
-      relationItem.relationTrigger.every((r) => formData.value[r])
-    ) {
-      formApi
-        .getResourceMyMethod(
-          relationItem.clazz,
-          relationItem.method,
-          {
-            ...formData.value,
-            ...props.otherParams,
-          },
-          resourceLoading
-        )
-        .then((ok) => {
-          relationItem.optionList = ok.data;
-        });
-    }
-  });
-};
-
-/**
- * 初始化表单显示数据,设置默认值
- */
-const initDefaultData = () => {
-  // 初始化默认值 defaultValue后端只能传入string,所以只能是string
-  props.formViewData.forEach((item) => {
-    if (item.defaultValue && !formData.value[item.field]) {
-      if (item.defaultJsonValue) {
-        formData.value[item.field] = JSON.parse(item.defaultValue);
-      } else {
-        formData.value[item.field] = item.defaultValue;
-      }
-    }
-    if (
-      item.clazz &&
-      item.method &&
-      item.relationTrigger.every((r) => formData.value[r])
-    ) {
-      formApi
-        .getResourceMyMethod(item.clazz, item.method, {
-          ...formData.value,
+const listOptions = (formItem: FormView, loading: Ref<boolean>) => {
+  if (
+    // 执行类
+    formItem.clazz &&
+    // 执行函数
+    formItem.method &&
+    // 获取当前Options时,需要的关联数据已经有值
+    formItem.relationTrigger.every((r) => props.modelValue[r])
+  ) {
+    return formApi
+      .getResourceMyMethod(
+        formItem.clazz,
+        formItem.method,
+        {
+          ...props.modelValue,
           ...props.otherParams,
-        })
-        .then((ok) => {
-          item.optionList = ok.data;
-        });
-    }
-  });
-};
-
-// 提交表单
-const submit = (exec: (formData: any) => void) => {
-  if (!ruleFormRef.value) return;
-  ruleFormRef.value.validate((valid) => {
-    if (exec && valid) {
-      exec(formData.value);
-    }
-  });
-};
-
-const validate = () => {
-  if (!ruleFormRef.value) return;
-  return ruleFormRef.value.validate();
-};
-
-// 监控formViewData 用于初始化数据
-watch(
-  () => props.formViewData,
-  (pre) => {
-    if (pre) {
-      initDefaultData();
-      Object.keys(formData.value).forEach((key: string) => {
-        const form = pre.find((f) => f.field === key);
-        if (form) {
-          initFormItem(form);
-        }
+        },
+        loading
+      )
+      .then((ok) => {
+        formItem.optionList = ok.data;
       });
-    }
-  },
-  {
-    immediate: true,
   }
-);
-/**
- * 获取数据
- */
-const getFormData = () => {
-  return formData.value;
+  return Promise.resolve();
 };
 
 /**
- * 设置表单数据
- * @param data 表单数据
+ * 初始化默认值函数
+ * @param formItem 指定需要初始化的表单Item
  */
-const setData = (data: any) => {
-  const dataKeys = Object.keys(data);
-  dataKeys.forEach((key: string) => {
-    try {
-      formData.value[key] = JSON.parse(data[key]);
-    } catch (e) {
-      formData.value[key] = data[key];
-    }
-  });
+const initDefaultData = (formItem: FormView) => {
+  if (formItem.defaultValue && !props.modelValue[formItem.field]) {
+    cacheModelValue.value = {
+      ...cacheModelValue.value,
+      [formItem.field]: formItem.defaultJsonValue
+        ? JSON.parse(formItem.defaultValue)
+        : formItem.defaultValue,
+    };
+    emit("update:modelValue", cacheModelValue.value);
+  }
 };
+
 /**
- * 清除表单数据
+ * 校验函数
  */
-const clearData = () => {
-  formData.value = {};
+const validate = () => {
+  if (!ruleFormRef.value) return Promise.resolve();
+  return ruleFormRef.value.validate();
 };
 
 // 暴露获取当前表单数据函数
 defineExpose({
-  getFormData,
-  submit,
-  clearData,
   initDefaultData,
-  setData,
   validate,
+  ruleFormRef,
 });
 </script>
 <template>
   <el-form
-    style="width: 100%"
     ref="ruleFormRef"
     label-width="130px"
     label-suffix=":"
-    :label-position="labelPosition"
-    :model="formData"
+    :model="modelValue"
     v-loading="resourceLoading"
+    v-bind="$attrs"
   >
     <div v-for="item in formViewData" :key="item.field" style="width: 100%">
-      <el-form-item
-        style="width: 100%"
-        v-if="item.relationShowValues? item.relationShows.every((i:string) => item.relationShowValues.includes(formData[i])):item.relationShows.every((i:string) => formData[i])"
-        :label="item.label"
-        :prop="item.field"
-        :rules="{
-          message: item.label + '不能为空',
-          trigger: 'blur',
-          required: item.required,
-        }"
+      <CeFormItem
+        :key="item.field"
+        v-if="item.relationShowValues? item.relationShows.every((i:string) => item.relationShowValues.includes(modelValue[i])):item.relationShows.every((i:string) => formData[i])"
+        @change="change(item, $event)"
+        v-bind:modelValue="modelValue[item.field]"
+        :formItem="item"
+        :listOptions="listOptions"
+        :readOnly="readOnly"
+        :initDefaultData="initDefaultData"
       >
-        <component
-          :disabled="readOnly"
-          style="width: 75%"
-          @change="change(item)"
-          v-model="formData[item.field]"
-          :is="item.inputType"
-          :formItem="item"
-          :field="item.field"
-          v-bind="{ ...JSON.parse(item.attrs) }"
-        ></component>
-        <span v-if="item.unit" style="padding-left: 15px">{{ item.unit }}</span>
-      </el-form-item>
+      </CeFormItem>
     </div>
   </el-form>
 </template>

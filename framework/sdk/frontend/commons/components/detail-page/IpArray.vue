@@ -4,7 +4,7 @@ import { useI18n } from "vue-i18n";
 
 const { t } = useI18n();
 const props = defineProps<{
-  ipArray: string;
+  ipArray: string | Array<string>;
   remoteIp: string;
 }>();
 </script>

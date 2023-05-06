@@ -1,0 +1,19 @@
+
+// 抽屉样式整体修改
+.el-drawer{
+    
+    .el-drawer__header{
+     padding: 0;
+     margin: 0 24px;
+     .el-drawer__title {
+        color: #1f2329;
+        font-weight: 500;
+        font-size: 16px;
+        line-height: 24px;
+      }
+      
+    }
+    .el-drawer__body{
+      --el-drawer-padding-primary:24px
+    }
+  }

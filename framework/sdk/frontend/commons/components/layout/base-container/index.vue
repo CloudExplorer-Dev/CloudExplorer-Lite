@@ -43,10 +43,11 @@ const props = withDefaults(
 </template>
 <style lang="scss" scoped>
 .base-container {
-  margin: 0 0 20px 0;
   overflow-y: hidden;
   overflow-x: hidden;
-  height: calc(100% - 20px);
+  height: var(--ce-base-container-height,calc(100% - 20px));
+  );
+  margin-bottom:  20px;
   .header {
     display: flex;
     margin-bottom: 16px;
@@ -85,7 +86,7 @@ const props = withDefaults(
     border: 1px solid var(--el-border-color);
   }
   .form {
-    width: 800px;
+    width: var(--ce-base-container-form-width, 800px);
     margin-left: auto;
     margin-right: auto;
   }

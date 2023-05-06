@@ -16,7 +16,7 @@ public class AliyunGetDiskTypeRequest extends AliyunVmCreateRequest {
                 .setRegionId(this.getRegionId())
                 .setZoneId(this.getZoneId())
                 .setInstanceChargeType(this.getInstanceChargeType())
-                .setResourceType("instance")
+                .setResourceType("disk")
                 .setDestinationResource(this.diskUsage);
 
         if (this.getInstanceTypeDTO() != null && this.getInstanceTypeDTO().getInstanceType() != null) {

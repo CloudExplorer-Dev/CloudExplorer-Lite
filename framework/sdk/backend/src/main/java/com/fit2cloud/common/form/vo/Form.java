@@ -4,6 +4,7 @@ import com.fit2cloud.common.form.constants.InputType;
 import lombok.Data;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * @Author:张少虎
@@ -95,5 +96,9 @@ public class Form {
 
     private String extraInfo;
     private String hint;
+    /**
+     * 配置信息
+     */
+    private Map<String, Object> propsInfo;
 
 }

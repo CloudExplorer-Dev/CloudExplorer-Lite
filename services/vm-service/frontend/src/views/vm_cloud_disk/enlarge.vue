@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onMounted, ref } from "vue";
+import { ref } from "vue";
 import { useRouter } from "vue-router";
 import VmCloudDiskApi from "@/api/vm_cloud_disk";
 import type {
@@ -13,13 +13,9 @@ import DetailPage from "@commons/components/detail-page/index.vue";
 const router = useRouter();
 const { t } = useI18n();
 const id = ref<string>(router.currentRoute.value.params.id as string);
-const diskInfo = ref<VmCloudDiskVO | unknown>({});
+const diskInfo = ref<VmCloudDiskVO | any>({});
 const newDiskSize = ref<number>();
 const instanceUuid = ref<string>();
-
-const backToDiskList = () => {
-  router.push({ name: "vm_cloud_disk" });
-};
 
 const handleSave = () => {
   if (newDiskSize.value) {
@@ -29,7 +25,7 @@ const handleSave = () => {
       newDiskSize: newDiskSize.value,
     };
     VmCloudDiskApi.enlarge(req).then(() => {
-      backToDiskList();
+      close();
       ElMessage.success(t("commons.msg.op_success"));
     });
   }
@@ -37,9 +33,12 @@ const handleSave = () => {
 
 const loading = ref(false);
 const info = ref();
-onMounted(async () => {
-  if (router.currentRoute.value.params.id) {
-    const res = await VmCloudDiskApi.showCloudDiskById(id.value, loading);
+
+const drawer = ref<boolean>(false);
+const open = (diskId: string) => {
+  drawer.value = true;
+  id.value = diskId;
+  VmCloudDiskApi.showCloudDiskById(id.value, loading).then((res) => {
     diskInfo.value = res.data;
     newDiskSize.value = res.data.size;
     instanceUuid.value = res.data.instanceUuid;
@@ -61,152 +60,114 @@ onMounted(async () => {
         components: ["PlatformIcon"],
       },
       {
-        label: t("commons.workspace", "工作空间"),
-        value: res.data.workspaceName,
+        label: "磁盘大小",
+        value: res.data.size + " GB",
       },
     ];
-  }
-});
+  });
+};
+const close = () => {
+  drawer.value = false;
+};
+defineExpose({ open, close });
 </script>
 
 <template>
-  <base-container v-loading="loading">
-    <template #form>
-      <base-container>
-        <template #header>
-          <span>{{ $t("vm_cloud_disk.label.disk_info", "磁盘信息") }}</span>
-        </template>
-        <template #content>
-          <DetailPage :content="info" />
-        </template>
-      </base-container>
+  <div>
+    <el-drawer
+      style="--ce-base-container-form-width: 100%"
+      v-model="drawer"
+      title="扩容"
+      direction="rtl"
+      size="840"
+      :before-close="close"
+    >
+      <base-container
+        v-loading="loading"
+        style="--ce-base-container-height: auto"
+      >
+        <template #form>
+          <base-container>
+            <template #header>
+              <span>{{ $t("vm_cloud_disk.label.disk_info", "磁盘信息") }}</span>
+            </template>
+            <template #content>
+              <DetailPage :content="info" />
+            </template>
+          </base-container>
 
-      <base-container>
-        <template #header>
-          <span>{{ $t("vm_cloud_disk.label.change_config", "配置变更") }}</span>
-        </template>
+          <base-container>
+            <template #header>
+              <span>{{
+                $t("vm_cloud_disk.label.change_config", "配置变更")
+              }}</span>
+            </template>
 
-        <template #content>
-          <div class="div-flex">
-            <div
-              class="config_card"
-              style="margin-right: var(--ce-main-content-margin-right, 24px)"
-            >
-              <div class="header">
-                <span>{{
-                  $t("vm_cloud_disk.label.current_config", "当前配置")
-                }}</span>
-              </div>
-              <div class="line"></div>
-              <div class="div-flex content">
-                <div class="label margin">
-                  <label
-                    >{{
-                      $t("vm_cloud_disk.label.disk_size", "磁盘大小")
-                    }}：</label
+            <template #content>
+              <el-form>
+                <div class="title">
+                  数据盘
+                  <span class="unit">(GB)</span>
+                </div>
+
+                <el-form-item class="disk-size-content">
+                  <el-input-number
+                    v-model.number="newDiskSize"
+                    :min="diskInfo.size"
+                    style="width: 200px"
+                    controls-position="right"
+                    placeholder="磁盘大小"
                   >
-                </div>
-                <div class="margin">{{ diskInfo.size }}GB</div>
+                  </el-input-number>
+                </el-form-item>
+              </el-form>
+              <div class="active">
+                当前数据盘大小
+                <span class="active-value">{{ newDiskSize }}GB</span>
               </div>
-            </div>
-            <div class="config_card">
-              <div class="header">
-                <span>{{
-                  $t("vm_cloud_disk.label.after_config", "变更后配置")
-                }}</span>
-              </div>
-              <div class="line"></div>
-              <div class="div-flex content">
-                <div class="label margin">
-                  <label
-                    >{{
-                      $t("vm_cloud_disk.label.disk_size", "磁盘大小")
-                    }}：</label
-                  >
-                </div>
-                <div class="div-flex">
-                  <el-form>
-                    <el-form-item>
-                      <el-input-number
-                        v-model="newDiskSize"
-                        :min="diskInfo.size"
-                      />
-                      <span style="padding: 0 10px">GB</span>
-                    </el-form-item>
-                  </el-form>
-                </div>
-              </div>
-            </div>
-          </div>
+            </template>
+          </base-container>
         </template>
-      </base-container>
-    </template>
 
-    <template #formFooter>
-      <el-button @click="backToDiskList()"
-        >{{ $t("commons.btn.cancel") }}
-      </el-button>
-      <el-button
-        type="primary"
-        @click="handleSave()"
-        :disabled="diskInfo.size >= newDiskSize"
-        >{{ $t("commons.btn.ok") }}
-      </el-button>
-    </template>
-  </base-container>
+        <template #formFooter>
+          <el-button @click="close()"
+            >{{ $t("commons.btn.cancel") }}
+          </el-button>
+          <el-button
+            type="primary"
+            @click="handleSave()"
+            :disabled="diskInfo.size >= (newDiskSize || -1)"
+            >确认变更
+          </el-button>
+        </template>
+      </base-container></el-drawer
+    >
+  </div>
 </template>
 
 <style lang="scss" scoped>
-.div-flex {
-  display: flex;
+.title {
+  color: #1f2329;
+  font-weight: 400;
+  font-size: 14px;
+  line-height: 22px;
+  .unit {
+    color: rgba(143, 149, 158, 1);
+  }
 }
-
-.disk_info_container {
+.active {
+  font-weight: 400;
+  font-size: 14px;
+  line-height: 22px;
+  color: #646a73;
+  .active-value {
+    color: rgba(51, 112, 255, 1);
+  }
+}
+.disk-size-content {
+  height: 56px;
   width: 100%;
-  padding: 0 20px;
-  overflow: auto;
-
-  .item {
-    width: 25%;
-    padding: 0 20px;
-  }
-}
-
-.label {
-  padding-right: 10px;
-}
-
-.margin {
-  margin-bottom: 18px;
-}
-
-.value {
-  width: 50%;
-}
-
-.config_card {
-  width: 50%;
-  height: 100%;
-  border: 1px solid var(--el-border-color);
-
-  .header {
-    height: 50px;
-    display: flex;
-    justify-content: space-around;
-    align-items: center;
-    font-size: 15px;
-    background-color: var(--el-menu-hover-bg-color);
-  }
-
-  .line {
-    height: 1px;
-    background-color: var(--el-border-color);
-  }
-
-  .content {
-    align-items: center;
-    justify-content: center;
-    height: 200px;
-  }
+  background: #f7f9fc;
+  border-radius: 4px;
 }
 </style>
