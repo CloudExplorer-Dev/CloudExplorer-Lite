@@ -1143,7 +1143,9 @@ public class TencentSyncCloudApi {
         }
         List<F2CPerfMetricMonitorData> result = new ArrayList<>();
         //设置时间，根据syncTimeStampStr,默认一个小时
-        getMetricsRequest.setStartTime(String.valueOf(DateUtil.beforeOneHourToTimestamp(Long.valueOf(getMetricsRequest.getSyncTimeStampStr()))));
+        Long startTime = DateUtil.beforeOneHourToTimestamp(Long.valueOf(getMetricsRequest.getSyncTimeStampStr()));
+        //多获取过去30分钟的数据，防止同步线程时间不固定，导致数据不全的问题
+        getMetricsRequest.setStartTime(String.valueOf(startTime-1800000L));
         getMetricsRequest.setEndTime(getMetricsRequest.getSyncTimeStampStr());
         try {
             getMetricsRequest.setRegionId(getMetricsRequest.getRegionId());
@@ -1155,33 +1157,6 @@ public class TencentSyncCloudApi {
             result.addAll(getVmDiskPerfMetric(monitorClient, request, getMetricsRequest));
         } catch (Exception e) {
             throw new SkipPageException(100021, "获取监控数据失败-" + getMetricsRequest.getRegionId() + "-" + e.getMessage());
-        }
-        return result;
-    }
-
-    /**
-     * 暂时不实现
-     *
-     * @param getMetricsRequest
-     * @return
-     */
-    public static List<F2CPerfMetricMonitorData> getF2CDiskPerfMetricList(GetMetricsRequest getMetricsRequest) {
-        if (StringUtils.isEmpty(getMetricsRequest.getRegionId())) {
-            throw new Fit2cloudException(10002, "区域为必填参数");
-        }
-        List<F2CPerfMetricMonitorData> result = new ArrayList<>();
-        //设置时间，根据syncTimeStampStr,默认一个小时
-        getMetricsRequest.setStartTime(String.valueOf(DateUtil.beforeOneHourToTimestamp(Long.valueOf(getMetricsRequest.getSyncTimeStampStr()))));
-        getMetricsRequest.setEndTime(getMetricsRequest.getSyncTimeStampStr());
-        try {
-            getMetricsRequest.setRegionId(getMetricsRequest.getRegionId());
-            TencentVmCredential credential = JsonUtil.parseObject(getMetricsRequest.getCredential(), TencentVmCredential.class);
-            GetMonitorDataRequest request = getShowMetricDataRequest(getMetricsRequest);
-            MonitorClient monitorClient = credential.getMonitorClient(getMetricsRequest.getRegionId());
-            //result.addAll(getDiskPerfMetric(monitorClient, request, getMetricsRequest));
-        } catch (Exception e) {
-            SkipPageException.throwSkipPageException(e);
-            throw new Fit2cloudException(100021, "获取监控数据失败-" + getMetricsRequest.getRegionId() + "-" + e.getMessage());
         }
         return result;
     }

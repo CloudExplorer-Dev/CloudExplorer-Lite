@@ -368,7 +368,7 @@ public class AliyunCloudProvider extends AbstractCloudProvider<AliyunVmCredentia
 
     @Override
     public List<F2CPerfMetricMonitorData> getF2CDiskPerfMetricMonitorData(String req) {
-        return AliyunSyncCloudApi.getF2CDiskPerfMetricList(JsonUtil.parseObject(req, GetMetricsRequest.class));
+        return new ArrayList<>();
     }
 
     @Override

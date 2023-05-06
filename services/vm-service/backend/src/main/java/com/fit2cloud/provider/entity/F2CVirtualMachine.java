@@ -225,4 +225,9 @@ public class F2CVirtualMachine {
      * 安全组IDS
      */
     private List<String> securityGroupIds;
+
+    /**
+     * 监控插件(Agent)状态为运行中
+     */
+    private boolean agentRunning;
 }

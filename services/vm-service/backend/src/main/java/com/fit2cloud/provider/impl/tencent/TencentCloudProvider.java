@@ -364,7 +364,7 @@ public class TencentCloudProvider extends AbstractCloudProvider<TencentCredentia
 
     @Override
     public List<F2CPerfMetricMonitorData> getF2CDiskPerfMetricMonitorData(String req) {
-        return TencentSyncCloudApi.getF2CDiskPerfMetricList(JsonUtil.parseObject(req, GetMetricsRequest.class));
+        return new ArrayList<>();
     }
 
     @Override
