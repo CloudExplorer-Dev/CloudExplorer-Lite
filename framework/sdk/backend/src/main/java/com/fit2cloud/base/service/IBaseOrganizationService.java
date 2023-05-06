@@ -55,5 +55,6 @@ public interface IBaseOrganizationService extends IService<Organization> {
     List<Organization> getDownOrganization(String orgId, List<Organization> allOrgTree);
 
     Map<String, String> sourceIdNameMap();
+
     Map<String, String> idFullNameMap();
 }

@@ -222,9 +222,7 @@ public class BaseOrganizationServiceImpl extends ServiceImpl<BaseOrganizationMap
      * @return 当前组织的下级组织 包含当前组织
      */
     private List<Organization> getDownOrganization(String orgId, List<Organization> res, List<Organization> allOrgTree) {
-        allOrgTree.stream().filter(organization -> StringUtils.equals(organization.getId(), orgId)).findFirst().ifPresent(org -> {
-            res.add(org);
-        });
+        allOrgTree.stream().filter(organization -> StringUtils.equals(organization.getId(), orgId)).findFirst().ifPresent(res::add);
         return getDownOrganization(orgId, res, (pid) -> allOrgTree.stream().filter(organization -> StringUtils.equals(organization.getPid(), pid)).toList());
     }
 

@@ -17,7 +17,7 @@ public interface IUserService extends IService<User> {
      * 管理员/组织管理员获取可管理的用户列表
      * @return
      */
-    List<User> getManageUserSimpleList();
+    List<User> getManageUserSimpleList(List<String> userIds);
 
     UserDto getUser(String userId);
 
@@ -37,7 +37,18 @@ public interface IUserService extends IService<User> {
 
     UserNotifySettingDTO findUserNotification(String userId);
 
+    /**
+     * 为指定用户添加角色关联关系
+     * @param userBatchAddRoleRequest
+     * @return
+     */
     boolean addUserRole(UserBatchAddRoleRequest userBatchAddRoleRequest);
+
+    /**
+     * 为指定角色添加用户关联关系
+     * @param userBatchAddRoleRequest
+     * @return
+     */
     boolean addUserRoleV2(UserBatchAddRoleRequestV2 userBatchAddRoleRequest);
 
     boolean removeUserRole(String userId, String roleId, String sourceId);

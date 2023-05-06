@@ -11,6 +11,7 @@ import com.fit2cloud.base.entity.Organization;
 import com.fit2cloud.base.entity.Role;
 import com.fit2cloud.base.entity.User;
 import com.fit2cloud.base.entity.UserRole;
+import com.fit2cloud.base.service.IBaseOrganizationService;
 import com.fit2cloud.base.service.IBaseUserRoleService;
 import com.fit2cloud.common.constants.RoleConstants;
 import com.fit2cloud.common.constants.SystemUserConstants;
@@ -26,7 +27,10 @@ import com.fit2cloud.dao.entity.UserNotificationSetting;
 import com.fit2cloud.dao.entity.Workspace;
 import com.fit2cloud.dao.mapper.UserMapper;
 import com.fit2cloud.dto.*;
-import com.fit2cloud.service.*;
+import com.fit2cloud.service.IUserService;
+import com.fit2cloud.service.IWorkspaceService;
+import com.fit2cloud.service.OrganizationCommonService;
+import com.fit2cloud.service.WorkspaceCommonService;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
@@ -52,7 +56,6 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
     @Resource
     RoleServiceImpl roleServiceImpl;
 
-
     @Resource
     IBaseUserRoleService userRoleService;
 
@@ -60,7 +63,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
     BaseMapper<Role> roleMapper;
 
     @Resource
-    IOrganizationService organizationService;
+    IBaseOrganizationService baseOrganizationService;
 
     @Resource
     IWorkspaceService workspaceService;
@@ -132,7 +135,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
         });
     }
 
-    public List<User> getManageUserSimpleList() {
+    public List<User> getManageUserSimpleList(List<String> userIds) {
         QueryWrapper<User> wrapper = new QueryWrapper<>();
         // 根据当前所在角色过滤
         if (CurrentUserUtils.isOrgAdmin()) {
@@ -140,6 +143,13 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
             List<String> resourceIds = workspaceCommonService.getWorkspaceIdsByOrgIds(orgIds);
             resourceIds.addAll(orgIds);
             wrapper.in(CollectionUtils.isNotEmpty(resourceIds), ColumnNameUtil.getColumnName(UserRole::getSource, true), resourceIds);
+        }
+        if (userIds != null) {
+            if (CollectionUtils.isEmpty(userIds)) {
+                return new ArrayList<>();
+            } else {
+                wrapper.in(ColumnNameUtil.getColumnName(User::getId, true), userIds);
+            }
         }
         return baseMapper.listUser(wrapper);
     }
@@ -499,15 +509,35 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
                     throw new RuntimeException("组织/工作空间ID列表不能为空");
                 }
             }
-            List<String> filteredUserIds = this.listByIds(map.getUserIds()).stream().map(User::getId).toList();
+            //根据当前用户查询
+            List<String> filteredUserIds = this.getManageUserSimpleList(map.getUserIds()).stream().map(User::getId).toList();
             if (CollectionUtils.isEmpty(filteredUserIds)) {
                 continue;
             }
             List<String> sourceIds = null;
+            List<String> organizationIdsForSearch = new ArrayList<>();
+            if (CurrentUserUtils.isOrgAdmin()) {
+                String currentOrganizationId = CurrentUserUtils.getOrganizationId();
+                if (StringUtils.isNotEmpty(currentOrganizationId)) {
+                    organizationIdsForSearch.add(currentOrganizationId);
+                    organizationIdsForSearch.addAll(baseOrganizationService.getDownOrganization(currentOrganizationId, baseOrganizationService.list()).stream().map(Organization::getId).toList());
+                }
+            }
+
             if (RoleConstants.ROLE.ORGADMIN.equals(role.getParentRoleId())) {
-                sourceIds = organizationService.listByIds(map.getSourceIds()).stream().map(Organization::getId).toList();
+                //根据当前用户查询
+                if (CurrentUserUtils.isAdmin()) {
+                    sourceIds = baseOrganizationService.listByIds(map.getSourceIds()).stream().map(Organization::getId).toList();
+                } else if (CurrentUserUtils.isOrgAdmin()) {
+                    sourceIds = organizationIdsForSearch;
+                }
             } else if (RoleConstants.ROLE.USER.equals(role.getParentRoleId())) {
-                sourceIds = workspaceService.listByIds(map.getSourceIds()).stream().map(Workspace::getId).toList();
+                //根据当前用户查询
+                if (CurrentUserUtils.isAdmin()) {
+                    sourceIds = workspaceService.listByIds(map.getSourceIds()).stream().map(Workspace::getId).toList();
+                } else if (CurrentUserUtils.isOrgAdmin()) {
+                    sourceIds = workspaceCommonService.getWorkspaceIdsByOrgIds(organizationIdsForSearch);
+                }
             }
             if (!RoleConstants.ROLE.ADMIN.equals(role.getParentRoleId()) && CollectionUtils.isEmpty(sourceIds)) {
                 continue;

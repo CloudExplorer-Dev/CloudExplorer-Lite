@@ -49,7 +49,7 @@ public class UserController {
     @PreAuthorize("hasAnyCePermission('USER:READ')")
     @GetMapping("/manage/list")
     public ResultHolder<List<User>> listUser() {
-        return ResultHolder.success(userService.getManageUserSimpleList());
+        return ResultHolder.success(userService.getManageUserSimpleList(null));
     }
 
     @ApiOperation(value = "查询用户总数")
