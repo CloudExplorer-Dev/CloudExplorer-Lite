@@ -6,6 +6,7 @@ import type {
 } from "@commons/api/organization/type";
 import { get } from "@commons/request";
 import type { SimpleMap } from "@commons/api/base/type";
+import type { Tree } from "@commons/components/ce-tree/type";
 
 export function tree(
   treeType?: string,
@@ -30,11 +31,43 @@ export function idFullNames(
   return get("/api/organization/idFullNames", {}, loading);
 }
 
+/**
+ * 转换为Tree
+ * @param organizationWorkspaceTreeData 组织工作空间树对象
+ */
+export const toTree = (
+  organizationWorkspaceTreeData: Array<OrganizationTree>
+): Array<Tree> => {
+  return organizationWorkspaceTreeData.map((item) => {
+    const children: Array<Tree> = item.workspaces
+      ? item.workspaces.map((workspace) => ({
+          id: workspace.id,
+          name: workspace.name,
+          type: "WORKSPACE",
+        }))
+      : [];
+
+    if (item.children && item.children.length > 0) {
+      const childrenTree = toTree(item.children);
+      childrenTree.forEach((i) => {
+        children.push(i);
+      });
+    }
+    return {
+      id: item.id,
+      name: item.name,
+      type: "ORGANIZATION",
+      children,
+    };
+  });
+};
+
 const BaseOrganizationApi = {
   tree,
   sourceTree,
   sourceIdNames,
   idFullNames,
+  toTree,
 };
 
 export default BaseOrganizationApi;

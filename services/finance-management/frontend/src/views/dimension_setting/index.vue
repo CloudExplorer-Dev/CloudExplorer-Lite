@@ -10,9 +10,10 @@
         type="info"
         show-icon
         @close="topHeight = 0"
-    /></template>
+      />
+    </template>
     <div
-      class="contentWapper"
+      class="contentWrapper"
       style="--el-tree-node-hover-bg-color: rgba(51, 112, 255, 0.1)"
     >
       <div class="content">
@@ -25,7 +26,8 @@
                 ...tree,
               ]
             "
-            ><template #default="treeNode">
+          >
+            <template #default="treeNode">
               <div>
                 <ce-icon
                   type="code"
@@ -37,10 +39,10 @@
                       : 'icon_bill_allocation'
                   }`"
                   size="10px"
-                ></ce-icon>
+                />
                 <span style="margin-left: 8px">{{ treeNode.node.label }}</span>
-              </div></template
-            >
+              </div>
+            </template>
           </ce-tree>
         </div>
         <div class="table_content">
@@ -65,13 +67,13 @@
                 <template #toolbar>
                   <div class="title">
                     <span>{{ activeTreeNode.name }}</span>
-                  </div></template
-                >
-                <template #buttons v-if="activeTreeNode.type != 'NOT_AUTH'">
+                  </div>
+                </template>
+                <template #buttons v-if="activeTreeNode.type !== 'NOT_AUTH'">
                   <el-button @click="openSplitBillSetting" type="primary"
                     >分账规则</el-button
-                  ></template
-                >
+                  >
+                </template>
                 <el-table-column
                   prop="resourceName"
                   label="资源名称"
@@ -234,7 +236,7 @@ const tableConfig = ref<TableConfig>({
 });
 </script>
 <style lang="scss" scoped>
-.contentWapper {
+.contentWrapper {
   font-weight: 400;
   font-size: 14px;
   line-height: 22px;

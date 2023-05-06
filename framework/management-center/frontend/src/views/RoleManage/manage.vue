@@ -5,7 +5,7 @@ import type { SimpleMap } from "@commons/api/base/type";
 import { idFullNames } from "@commons/api/organization";
 import { workspaces } from "@commons/api/workspace";
 import RoleApi from "@/api/role";
-import UserApi, { userAddRoleV2 } from "@/api/user";
+import UserApi from "@/api/user";
 import CeDrawer from "@commons/components/ce-drawer/index.vue";
 import CeIcon from "@commons/components/ce-icon/index.vue";
 import { roleConst } from "@commons/utils/constants";
@@ -528,190 +528,194 @@ onMounted(() => {
         />
       </div>
     </el-aside>
-    <el-container direction="vertical">
-      <el-header>
-        <el-tabs v-model="activeTab" class="role-tab">
-          <el-tab-pane label="用户成员" name="user"></el-tab-pane>
-          <el-tab-pane label="权限配置" name="permission"></el-tab-pane>
-        </el-tabs>
-      </el-header>
-      <el-main v-show="activeTab === 'user'">
-        <ce-table
-          localKey="userManageTable"
-          ref="table"
-          :columns="columns"
-          :data="tableData"
-          :tableConfig="tableConfig"
-          height="100%"
-          table-layout="auto"
-          :span-method="rowSpanSetter"
-          v-loading="userLoading"
-        >
-          <template #toolbar>
-            <el-button
-              @click="addUser"
-              type="primary"
-              v-if="
-                permissionStore.hasPermission('[management-center]USER:EDIT')
-              "
-            >
-              添加用户
-            </el-button>
-          </template>
-          <el-table-column prop="username" :label="$t('user.username')" fixed>
-            <template #default="scope">
-              <div class="custom-column">
-                <a
-                  style="cursor: pointer; color: var(--el-color-primary)"
-                  @click="showUserDetail(scope.row)"
-                >
-                  {{ scope.row.username }}
-                </a>
-              </div>
-            </template>
-          </el-table-column>
-          <el-table-column prop="name" :label="$t('user.name')">
-            <template #default="scope">
-              <div class="custom-column">
-                {{ scope.row.name }}
-              </div>
-            </template>
-          </el-table-column>
-          <el-table-column label="组织">
-            <template #default="scope">
-              <template v-for="(r, i) in scope.row.roleTable" :key="i">
-                <div
-                  class="custom-column"
-                  v-if="
-                    r.roleId === selectedRole.id &&
-                    r.parentRole === roleConst.orgAdmin
-                  "
-                >
-                  {{
-                    r.source
-                      ? _.defaultTo(orgIdFullNameMap[r.source], r.source)
-                      : "-"
-                  }}
-                </div>
-                <div
-                  class="custom-column"
-                  v-else-if="
-                    r.roleId === selectedRole.id &&
-                    r.parentRole === roleConst.user
-                  "
-                >
-                  {{
-                    r.source && workspaceIdMap[r.source]?.organizationId
-                      ? _.defaultTo(
-                          orgIdFullNameMap[
-                            workspaceIdMap[r.source]?.organizationId
-                          ],
-                          workspaceIdMap[r.source]?.organizationId
-                        )
-                      : "-"
-                  }}
-                </div>
-                <div class="custom-column" v-else>-</div>
-              </template>
-            </template>
-          </el-table-column>
-          <el-table-column label="工作空间">
-            <template #default="scope">
-              <template v-for="(r, i) in scope.row.roleTable" :key="i">
-                <div
-                  class="custom-column"
-                  v-if="
-                    r.roleId === selectedRole.id &&
-                    r.parentRole === roleConst.user
-                  "
-                >
-                  {{
-                    r.source
-                      ? _.defaultTo(workspaceIdMap[r.source]?.name, r.source)
-                      : "-"
-                  }}
-                </div>
-                <div class="custom-column" v-else>-</div>
-              </template>
-            </template>
-          </el-table-column>
-          <el-table-column label="操作" fixed="right">
-            <template #default="scope">
+    <el-main style="padding: 0">
+      <el-container direction="vertical" style="height: 100%">
+        <el-header>
+          <el-tabs v-model="activeTab" class="role-tab">
+            <el-tab-pane label="用户成员" name="user"></el-tab-pane>
+            <el-tab-pane label="权限配置" name="permission"></el-tab-pane>
+          </el-tabs>
+        </el-header>
+        <el-main v-show="activeTab === 'user'">
+          <ce-table
+            localKey="userManageTable"
+            ref="table"
+            :columns="columns"
+            :data="tableData"
+            :tableConfig="tableConfig"
+            height="100%"
+            table-layout="auto"
+            :span-method="rowSpanSetter"
+            v-loading="userLoading"
+          >
+            <template #toolbar>
               <el-button
-                text
+                @click="addUser"
                 type="primary"
                 v-if="
                   permissionStore.hasPermission('[management-center]USER:EDIT')
                 "
-                @click="removeUserRole(scope.row)"
               >
-                移除用户
+                添加用户
               </el-button>
             </template>
-          </el-table-column>
-        </ce-table>
-      </el-main>
-      <el-main
-        class="permission-main"
-        v-loading="permissionLoading"
-        v-show="activeTab === 'permission'"
-      >
-        <div class="permission-title">
-          角色权限
-          <RoleTag
-            :clickable="false"
-            :role="
-              _.find(systemRoles, (r) => r.id === selectedRole?.parentRoleId)
-            "
-          />
-        </div>
-        <div class="permission-table">
-          <RolePermissionTable
-            :id="selectedRole?.id"
-            :loading="permissionLoading"
-            :parent-role-id="selectedRole?.parentRoleId"
-            :edit-permission="
-              editPermission && selectedRole?.type === 'inherit'
-            "
-            v-model:permission-data="permissionData"
-            ref="rolePermissionTableRef"
-          />
-        </div>
-      </el-main>
-      <el-footer
-        v-show="activeTab === 'permission'"
-        class="permission-footer"
-        v-if="
-          permissionStore.hasPermission('[management-center]ROLE:EDIT') &&
-          selectedRole?.type === 'inherit'
-        "
-      >
-        <el-button
-          key="edit"
-          type="primary"
-          @click="changeToEditPermission"
-          v-if="!editPermission && selectedRole?.type === 'inherit'"
-          v-hasPermission="'[management-center]ROLE:EDIT'"
+            <el-table-column prop="username" :label="$t('user.username')" fixed>
+              <template #default="scope">
+                <div class="custom-column">
+                  <a
+                    style="cursor: pointer; color: var(--el-color-primary)"
+                    @click="showUserDetail(scope.row)"
+                  >
+                    {{ scope.row.username }}
+                  </a>
+                </div>
+              </template>
+            </el-table-column>
+            <el-table-column prop="name" :label="$t('user.name')">
+              <template #default="scope">
+                <div class="custom-column">
+                  {{ scope.row.name }}
+                </div>
+              </template>
+            </el-table-column>
+            <el-table-column label="组织">
+              <template #default="scope">
+                <template v-for="(r, i) in scope.row.roleTable" :key="i">
+                  <div
+                    class="custom-column"
+                    v-if="
+                      r.roleId === selectedRole.id &&
+                      r.parentRole === roleConst.orgAdmin
+                    "
+                  >
+                    {{
+                      r.source
+                        ? _.defaultTo(orgIdFullNameMap[r.source], r.source)
+                        : "-"
+                    }}
+                  </div>
+                  <div
+                    class="custom-column"
+                    v-else-if="
+                      r.roleId === selectedRole.id &&
+                      r.parentRole === roleConst.user
+                    "
+                  >
+                    {{
+                      r.source && workspaceIdMap[r.source]?.organizationId
+                        ? _.defaultTo(
+                            orgIdFullNameMap[
+                              workspaceIdMap[r.source]?.organizationId
+                            ],
+                            workspaceIdMap[r.source]?.organizationId
+                          )
+                        : "-"
+                    }}
+                  </div>
+                  <div class="custom-column" v-else>-</div>
+                </template>
+              </template>
+            </el-table-column>
+            <el-table-column label="工作空间">
+              <template #default="scope">
+                <template v-for="(r, i) in scope.row.roleTable" :key="i">
+                  <div
+                    class="custom-column"
+                    v-if="
+                      r.roleId === selectedRole.id &&
+                      r.parentRole === roleConst.user
+                    "
+                  >
+                    {{
+                      r.source
+                        ? _.defaultTo(workspaceIdMap[r.source]?.name, r.source)
+                        : "-"
+                    }}
+                  </div>
+                  <div class="custom-column" v-else>-</div>
+                </template>
+              </template>
+            </el-table-column>
+            <el-table-column label="操作" fixed="right">
+              <template #default="scope">
+                <el-button
+                  text
+                  type="primary"
+                  v-if="
+                    permissionStore.hasPermission(
+                      '[management-center]USER:EDIT'
+                    )
+                  "
+                  @click="removeUserRole(scope.row)"
+                >
+                  移除用户
+                </el-button>
+              </template>
+            </el-table-column>
+          </ce-table>
+        </el-main>
+        <el-main
+          class="permission-main"
+          v-loading="permissionLoading"
+          v-show="activeTab === 'permission'"
         >
-          修改
-        </el-button>
-        <el-button
-          class="cancel-btn"
-          v-if="editPermission"
-          @click="cancelEditPermission"
+          <div class="permission-title">
+            角色权限
+            <RoleTag
+              :clickable="false"
+              :role="
+                _.find(systemRoles, (r) => r.id === selectedRole?.parentRoleId)
+              "
+            />
+          </div>
+          <div class="permission-table">
+            <RolePermissionTable
+              :id="selectedRole?.id"
+              :loading="permissionLoading"
+              :parent-role-id="selectedRole?.parentRoleId"
+              :edit-permission="
+                editPermission && selectedRole?.type === 'inherit'
+              "
+              v-model:permission-data="permissionData"
+              ref="rolePermissionTableRef"
+            />
+          </div>
+        </el-main>
+        <el-footer
+          v-show="activeTab === 'permission'"
+          class="permission-footer"
+          v-if="
+            permissionStore.hasPermission('[management-center]ROLE:EDIT') &&
+            selectedRole?.type === 'inherit'
+          "
         >
-          取消
-        </el-button>
-        <el-button
-          class="save-btn"
-          type="primary"
-          v-if="editPermission"
-          @click="submitRolePermission(permissionData)"
-        >
-          保存
-        </el-button>
-      </el-footer>
-    </el-container>
+          <el-button
+            key="edit"
+            type="primary"
+            @click="changeToEditPermission"
+            v-if="!editPermission && selectedRole?.type === 'inherit'"
+            v-hasPermission="'[management-center]ROLE:EDIT'"
+          >
+            修改
+          </el-button>
+          <el-button
+            class="cancel-btn"
+            v-if="editPermission"
+            @click="cancelEditPermission"
+          >
+            取消
+          </el-button>
+          <el-button
+            class="save-btn"
+            type="primary"
+            v-if="editPermission"
+            @click="submitRolePermission(permissionData)"
+          >
+            保存
+          </el-button>
+        </el-footer>
+      </el-container>
+    </el-main>
 
     <el-dialog
       v-model="showAddDialog"

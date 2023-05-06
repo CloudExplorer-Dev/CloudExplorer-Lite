@@ -373,7 +373,7 @@ const tableConfig = ref<TableConfig>({
           />-->
           <EnableUserSwitch
             v-model="scope.row.enabled"
-            :final-function="listUser"
+            :final-function="refresh"
             :function-props="scope.row"
           />
 
