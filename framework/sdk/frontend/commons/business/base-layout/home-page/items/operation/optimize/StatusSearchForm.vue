@@ -1,22 +1,59 @@
 <script setup lang="ts">
-import { computed } from "vue";
-
+import { computed, ref } from "vue";
+import _ from "lodash";
+import type { OptimizeStrategyBaseReq } from "@commons/api/optimize/type";
 const props = withDefaults(
   defineProps<{
-    code?: string;
-    req?: any;
+    code: string;
+    optimizeStrategy: any;
   }>(),
   {
     code: "",
   }
 );
-const formReq = computed(() => {
-  return props;
+interface StatusStrategyObj {
+  continuedDays: any;
+  continuedRunning: any;
+  [props: symbol]: any;
+}
+interface OptimizeStrategyReq {
+  cycle: StatusStrategyObj;
+  volume: StatusStrategyObj;
+  recovery: StatusStrategyObj;
+  [props: symbol]: any;
+}
+
+const formReq = computed<OptimizeStrategyReq>(() => {
+  const result: OptimizeStrategyReq = {
+    cycle: { continuedDays: undefined, continuedRunning: undefined },
+    volume: { continuedDays: undefined, continuedRunning: undefined },
+    recovery: { continuedDays: undefined, continuedRunning: undefined },
+  };
+  if (props.optimizeStrategy.cycle) {
+    _.assign(result.cycle, props.optimizeStrategy.cycle);
+  }
+  if (props.optimizeStrategy.volume) {
+    _.assign(result.volume, props.optimizeStrategy.volume);
+  }
+  if (props.optimizeStrategy.recovery) {
+    _.assign(result.recovery, props.optimizeStrategy.recovery);
+  }
+  return result;
+});
+const getNewFormData = () => {
+  const req = ref<OptimizeStrategyBaseReq>({
+    optimizeSuggestCode: props.code,
+    statusRequest: formReq.value,
+  });
+  return req.value;
+};
+defineExpose({
+  getNewFormData,
 });
 </script>
 <template>
   <el-form class="form-box">
-    <div v-show="formReq.code === 'payment'">
+    <div v-show="props.code === 'payment'">
       <div class="box-title">包年包月资源</div>
       <div class="main-center">
         <el-form-item>
@@ -24,7 +61,7 @@ const formReq = computed(() => {
             <span style="padding: 0 8px 0 8px">持续关机</span>
             <span style="padding: 0 8px 0 0"> > </span>
             <el-input-number
-              v-model="formReq.req.cycleContinuedDays"
+              v-model="formReq.cycle.continuedDays"
               style="width: 276px"
               :min="1"
               :max="100"
@@ -44,7 +81,7 @@ const formReq = computed(() => {
             <span style="padding: 0 8px 0 8px">持续开机</span>
             <span style="padding: 0 8px 0 0"> > </span>
             <el-input-number
-              v-model="formReq.req.volumeContinuedDays"
+              v-model="formReq.volume.continuedDays"
               style="width: 276px"
               :min="1"
               :max="100"
@@ -58,7 +95,7 @@ const formReq = computed(() => {
         </el-form-item>
       </div>
     </div>
-    <div v-show="formReq.code === 'recovery'">
+    <div v-show="props.code === 'recovery'">
       <div class="box-title">闲置资源</div>
       <div class="main-center">
         <el-form-item>
@@ -66,7 +103,7 @@ const formReq = computed(() => {
             <span style="padding: 0 8px 0 8px">持续关机</span>
             <span style="padding: 0 8px 0 0"> > </span>
             <el-input-number
-              v-model="formReq.req.continuedDays"
+              v-model="formReq.recovery.continuedDays"
               style="width: 276px"
               :min="1"
               :max="100"

@@ -1,13 +1,18 @@
 <script lang="ts" setup>
 import { ref, watch } from "vue";
-import type { ListOptimizationRequest } from "@commons/api/resource_optimization/type";
-import ResourceOptimizationViewApi from "@commons/api/resource_optimization";
+import OptimizeViewApi from "@commons/api/optimize";
+import type {
+  OptimizeSuggest,
+  PageOptimizeBaseRequest,
+} from "@commons/api/optimize/type";
 import CeIcon from "@commons/components/ce-icon/index.vue";
 import _ from "lodash";
+import type { OptimizeBaseRequest } from "@commons/api/optimize/type";
 
 const props = withDefaults(
   defineProps<{
-    req: ListOptimizationRequest;
+    optimizeSuggest: OptimizeSuggest;
+    tableSearchParams?: OptimizeBaseRequest;
     show?: boolean;
     checked?: boolean;
     showSettingIcon?: boolean;
@@ -23,47 +28,58 @@ const loading = ref(false);
 
 const value = ref(0);
 
-function getOptimizeSuggests() {
+function getOptimizeServerList() {
   if (!props.show) {
     return;
   }
-  ResourceOptimizationViewApi.listServer(props.req, loading).then((res) => {
+  const params: PageOptimizeBaseRequest = { pageSize: 10, currentPage: 1 };
+  _.assign(params, props.optimizeSuggest);
+  _.assign(params, props.tableSearchParams);
+  OptimizeViewApi.listOptimizeServer(params, loading).then((res) => {
     value.value = res.data.total;
   });
 }
 
 watch(
   () => {
-    return { req: props.req, show: props.show };
+    return {
+      optimizeSuggest: props.optimizeSuggest,
+      show: props.show,
+      tableSearchParams: props.tableSearchParams,
+    };
   },
   (data, old) => {
     //防止重复查询
     if (
       data.show === old?.show &&
       _.isEqual(
-        JSON.parse(JSON.stringify(data.req)),
-        JSON.parse(JSON.stringify(_.defaultTo(old?.req, {})))
+        JSON.parse(JSON.stringify(data.optimizeSuggest)),
+        JSON.parse(JSON.stringify(_.defaultTo(old?.optimizeSuggest, {})))
+      ) &&
+      _.isEqual(
+        JSON.parse(JSON.stringify(data.tableSearchParams)),
+        JSON.parse(JSON.stringify(_.defaultTo(old?.tableSearchParams, {})))
       )
     ) {
       return;
     }
-    getOptimizeSuggests();
+    getOptimizeServerList();
   },
   { immediate: true, deep: true }
 );
-const emit = defineEmits(["showConditionDialog", "changeParam"]);
-const showConditionDialog = (req: ListOptimizationRequest) => {
-  emit("showConditionDialog", props.req);
+const emit = defineEmits(["showStrategyDialog"]);
+const showOptimizeStrategyDialog = (o: OptimizeSuggest) => {
+  emit("showStrategyDialog", o);
 };
 
-defineExpose({ getOptimizeSuggests });
+defineExpose({ getOptimizeServerList });
 </script>
 <template>
   <div class="div-card" :class="{ checked: checked }" v-loading="loading">
     <div class="text">
       <div class="card-header">
         <span class="left">
-          {{ req.name }}
+          {{ props.optimizeSuggest.name }}
         </span>
         <el-tooltip class="box-item" effect="dark" content="查询策略">
           <span class="right" v-show="props.showSettingIcon">
@@ -71,7 +87,7 @@ defineExpose({ getOptimizeSuggests });
               size="14px"
               color="#646A73"
               code="icon-setting"
-              @click.stop="showConditionDialog(req)"
+              @click.stop="showOptimizeStrategyDialog(props.optimizeSuggest)"
             />
           </span>
         </el-tooltip>

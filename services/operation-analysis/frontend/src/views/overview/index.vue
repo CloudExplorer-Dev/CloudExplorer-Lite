@@ -86,7 +86,7 @@ import ComputerResourceAllocatedRate from "@/views/base_resource_analysis/item/B
 import CloudServerOrgWorkspaceSpread from "@/views/server_analysis/item/CloudServerOrgWorkspaceSpread.vue";
 import CloudServerIncreaseTrend from "@commons/business/base-layout/home-page/items/operation/CloudServerIncreaseTrend.vue";
 import ComputerResourceUseRate from "@/views/base_resource_analysis/item/BaseResourceUseRate.vue";
-import ServerOptimization from "@commons/business/base-layout/home-page/items/operation/ServerOptimization.vue";
+import ServerOptimization from "@commons/business/base-layout/home-page/items/operation/optimize/ServerOptimization.vue";
 import { ref, onMounted } from "vue";
 import CommonApi from "@/api/common/index";
 import { useUserStore } from "@commons/stores/modules/user";
