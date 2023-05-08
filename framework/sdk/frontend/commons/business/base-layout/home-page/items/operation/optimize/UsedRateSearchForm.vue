@@ -28,6 +28,15 @@ const formData = ref<any>({
 });
 
 const getNewFormData = () => {
+  if (!formData.value.days) {
+    formData.value.days = 1;
+  }
+  if (!formData.value.cpuValue) {
+    formData.value.cpuValue = 1;
+  }
+  if (!formData.value.memoryValue) {
+    formData.value.memoryValue = 1;
+  }
   const req = ref<OptimizeStrategyBaseReq>({
     optimizeSuggestCode: props.code,
     usedRateRequest: formData,
@@ -65,6 +74,8 @@ onMounted(() => {
             style="width: 168px !important"
             controls-position="right"
             autocomplete="off"
+            :value-on-clear="1"
+            :step-strictly="true"
           >
           </el-input-number>
         </div>
@@ -88,6 +99,8 @@ onMounted(() => {
               :step="1"
               controls-position="right"
               autocomplete="off"
+              :value-on-clear="1"
+              :step-strictly="true"
             />
             <span class="unit-label">%</span>
           </div>
@@ -112,6 +125,8 @@ onMounted(() => {
               :step="1"
               controls-position="right"
               autocomplete="off"
+              :value-on-clear="1"
+              :step-strictly="true"
             />
             <span class="unit-label">%</span>
           </div>

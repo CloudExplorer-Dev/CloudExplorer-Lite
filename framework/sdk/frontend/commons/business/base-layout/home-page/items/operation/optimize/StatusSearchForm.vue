@@ -41,6 +41,15 @@ const formReq = computed<OptimizeStrategyReq>(() => {
   return result;
 });
 const getNewFormData = () => {
+  if (!formReq.value.cycle.continuedDays) {
+    formReq.value.cycle.continuedDays = 1;
+  }
+  if (!formReq.value.volume.continuedDays) {
+    formReq.value.volume.continuedDays = 1;
+  }
+  if (!formReq.value.recovery.continuedDays) {
+    formReq.value.recovery.continuedDays = 1;
+  }
   const req = ref<OptimizeStrategyBaseReq>({
     optimizeSuggestCode: props.code,
     statusRequest: formReq.value,
@@ -68,6 +77,8 @@ defineExpose({
               :step="1"
               controls-position="right"
               autocomplete="off"
+              :value-on-clear="1"
+              :step-strictly="true"
             />
             <span class="unit-label">天</span>
           </div>
@@ -88,6 +99,8 @@ defineExpose({
               :step="1"
               controls-position="right"
               autocomplete="off"
+              :value-on-clear="1"
+              :step-strictly="true"
             />
             <span class="unit-label">天</span>
           </div>
@@ -110,6 +123,8 @@ defineExpose({
               :step="1"
               controls-position="right"
               autocomplete="off"
+              :value-on-clear="1"
+              :step-strictly="true"
             />
             <span class="unit-label">天</span>
           </div>

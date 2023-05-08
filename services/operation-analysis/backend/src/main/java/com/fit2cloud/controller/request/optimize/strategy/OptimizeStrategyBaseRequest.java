@@ -5,6 +5,7 @@ import lombok.Getter;
 import lombok.Setter;
 import org.springframework.validation.annotation.Validated;
 
+import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 
 /**
@@ -26,6 +27,7 @@ public class OptimizeStrategyBaseRequest {
     @NotNull(message = "优化建议策略code不能为空")
     private String optimizeSuggestCode;
     @ApiModelProperty("资源使用率策略升降配参数")
+    @Valid
     private ByResourceUsedRateRequest usedRateRequest;
     @ApiModelProperty("资源状态策略参数")
     private ByResourceStatusRequest statusRequest;

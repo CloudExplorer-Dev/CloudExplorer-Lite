@@ -6,7 +6,6 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Getter;
 import lombok.Setter;
-import org.springframework.validation.annotation.Validated;
 
 /**
  * 按资源状态进行优化建议
@@ -16,7 +15,6 @@ import org.springframework.validation.annotation.Validated;
  **/
 @Getter
 @Setter
-@Validated
 @JsonIgnoreProperties(ignoreUnknown = true)
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class ByResourceStatusRequest {

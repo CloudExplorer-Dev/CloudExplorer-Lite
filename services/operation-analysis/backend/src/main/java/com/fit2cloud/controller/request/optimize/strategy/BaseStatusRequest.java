@@ -3,7 +3,6 @@ package com.fit2cloud.controller.request.optimize.strategy;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Getter;
 import lombok.Setter;
-import org.springframework.validation.annotation.Validated;
 
 /**
  * @author jianneng
@@ -11,7 +10,6 @@ import org.springframework.validation.annotation.Validated;
  **/
 @Getter
 @Setter
-@Validated
 public class BaseStatusRequest {
     @ApiModelProperty("持续开机")
     private boolean continuedRunning;
