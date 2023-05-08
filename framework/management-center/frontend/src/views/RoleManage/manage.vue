@@ -73,7 +73,7 @@ const permissionStore = usePermissionStore();
 const columns = ref([]);
 
 const table = ref();
-const tableData = ref<Array<User>>();
+const tableData = ref<Array<MUser>>();
 const orgIdFullNameMap = ref<SimpleMap<string>>({});
 const workspaceIdMap = ref<SimpleMap<Workspace>>({});
 

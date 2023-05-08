@@ -90,11 +90,12 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
                 .like(StringUtils.isNotBlank(pageUserRequest.getRoleName()), ColumnNameUtil.getColumnName(Role::getName, true), pageUserRequest.getRoleName())
                 .eq(StringUtils.isNotBlank(pageUserRequest.getWorkspaceId()), ColumnNameUtil.getColumnName(UserRole::getSource, true), pageUserRequest.getWorkspaceId());
 
+        if (pageUserRequest.getParentRole() != null) {
+            wrapper.eq(ColumnNameUtil.getColumnName(Role::getParentRoleId, true), pageUserRequest.getParentRole().name());
+        }
+
         if (StringUtils.isNotBlank(pageUserRequest.getOrganizationId())) {
-            List<String> orgIds = organizationCommonService.getOrgIdsByParentId(CurrentUserUtils.getOrganizationId());
-            List<String> sourceIds = new ArrayList<>(workspaceCommonService.getWorkspaceIdsByOrgIds(orgIds));
-            sourceIds.addAll(orgIds);
-            wrapper.in(CollectionUtils.isNotEmpty(sourceIds), ColumnNameUtil.getColumnName(UserRole::getSource, true), sourceIds);
+            wrapper.eq(ColumnNameUtil.getColumnName(UserRole::getSource, true), pageUserRequest.getOrganizationId());
         }
 
         if (CollectionUtils.isNotEmpty(pageUserRequest.getUpdateTime())) {

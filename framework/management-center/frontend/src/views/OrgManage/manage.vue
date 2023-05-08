@@ -8,6 +8,7 @@ import MoreOptionsButton from "@commons/components/ce-table/MoreOptionsButton.vu
 import CeTree from "@commons/components/ce-tree/index.vue";
 import { TableOperations } from "@commons/components/ce-table/type";
 import type Node from "element-plus/es/components/tree/src/model/node";
+import UserManageTab from "@/views/OrgManage/manage/UserManageTab.vue";
 
 const defaultAdminTreeNode = {
   id: "CE_BASE",
@@ -139,8 +140,12 @@ const addOperations = computed(
     ])
 );
 
+const selectedType = ref<"WORKSPACE" | "ORGANIZATION" | "CE_BASE">();
+const selectedSource = ref<string | undefined>();
 function onSelectNodeChange(data: any, node: Node) {
   console.log(data, node);
+  selectedType.value = data.type;
+  selectedSource.value = data.id;
 }
 
 onMounted(() => {});
@@ -238,6 +243,13 @@ onMounted(() => {});
             ></el-tab-pane>
           </el-tabs>
         </el-header>
+        <el-main>
+          <UserManageTab
+            :type="selectedType"
+            :source-id="selectedSource"
+            style="height: 100%"
+          />
+        </el-main>
       </el-container>
     </el-main>
   </el-container>
@@ -248,53 +260,72 @@ onMounted(() => {});
   height: 100%;
   padding: 24px 16px;
   border-right: rgba(31, 35, 41, 0.15) solid 1px;
-}
 
-.org-title {
-  margin-bottom: 16px;
-  padding: 0 8px;
-  font-style: normal;
-  font-weight: 500;
-  font-size: 14px;
-  line-height: 22px;
-  color: #1f2329;
-}
-
-.org-tree {
-  height: calc(100% - 22px - 16px);
-}
-
-.menu-item {
-  width: 100%;
-  display: flex;
-  flex-direction: row;
-  flex-wrap: nowrap;
-  align-items: center;
-
-  .more-btn {
-    display: none;
-  }
-
-  &:hover {
-    .more-btn {
-      display: block;
-    }
-  }
-
-  .node-text {
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    margin-left: 8px;
+  .org-title {
+    margin-bottom: 16px;
+    padding: 0 8px;
     font-style: normal;
-    font-weight: 400;
+    font-weight: 500;
     font-size: 14px;
     line-height: 22px;
-    max-width: 130px;
+    color: #1f2329;
   }
 
-  .base-node {
-    font-weight: 500;
+  .org-tree {
+    height: calc(100% - 22px - 16px);
   }
+
+  .menu-item {
+    width: 100%;
+    display: flex;
+    flex-direction: row;
+    flex-wrap: nowrap;
+    align-items: center;
+
+    .more-btn {
+      display: none;
+    }
+
+    &:hover {
+      .more-btn {
+        display: block;
+      }
+    }
+
+    .node-text {
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      margin-left: 8px;
+      font-style: normal;
+      font-weight: 400;
+      font-size: 14px;
+      line-height: 22px;
+      max-width: 130px;
+    }
+
+    .base-node {
+      font-weight: 500;
+    }
+  }
+}
+
+.el-header {
+  --el-header-padding: 24px 24px 0 24px;
+  --el-header-height: 90px;
+
+  .title-name {
+    font-style: normal;
+    font-weight: 500;
+    font-size: 16px;
+    line-height: 22px;
+    height: 22px;
+    color: #1f2329;
+    margin-bottom: 4px;
+  }
+}
+
+.el-main {
+  --el-main-padding: 24px;
 }
 </style>
