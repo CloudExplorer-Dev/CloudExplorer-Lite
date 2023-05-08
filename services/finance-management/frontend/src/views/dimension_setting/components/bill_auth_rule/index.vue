@@ -1,6 +1,5 @@
 <template>
   <el-drawer
-    style="--el-drawer-padding-primary: 0px 24px 24px 24px"
     size="860px"
     v-model="drawer"
     direction="rtl"
@@ -8,7 +7,7 @@
     :before-close="close"
   >
     <template #header>
-      <div class="title">分账规则设置 (实施)</div>
+      <div>分账规则设置 (实施)</div>
     </template>
     <el-alert
       style="--el-alert-bg-color: rgba(51, 112, 255, 0.15)"
@@ -166,23 +165,11 @@ const save = () => {
 defineExpose({ open, close });
 </script>
 <style lang="scss" scoped>
-.title {
-  font-size: 16px;
-  line-height: 24px;
-  height: 24px;
-  margin-top: 24px;
-  color: #1f2329;
-}
 .rule_tree_content {
   border: 1px solid #dee0e3;
   border-radius: 4px;
   box-sizing: border-box;
   padding: 8px 16px 8px 16px;
   margin-top: 24px;
-}
-:deep(.el-drawer) {
-  .el-drawer__header {
-    margin-bottom: 24px !important;
-  }
 }
 </style>
