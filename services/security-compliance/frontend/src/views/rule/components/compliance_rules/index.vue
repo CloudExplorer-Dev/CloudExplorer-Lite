@@ -1,58 +1,26 @@
 <template>
-  <el-form
-    style="width: 100%; display: flex; flex-wrap: wrap"
-    :model="modelValue"
-  >
-    <div style="width: 60px" v-if="modelValue.rules.length > 0">
-      <el-form-item
-        style="width: 60px; display: inline-flex; height: 100%"
-        prop="conditionType"
-      >
-        <el-select
-          v-bind:modelValue="modelValue.conditionType"
-          @update:modelValue="updateConditionType($event)"
-          class="m-2"
-          size="small"
-        >
-          <el-option
-            v-for="item in [
-              { label: '并且', value: 'AND' },
-              { label: '或者', value: 'OR' },
-            ]"
-            :key="item.value"
-            :label="item.label"
-            :value="item.value"
-          />
-        </el-select>
-      </el-form-item>
-    </div>
-    <div style="width: 90%">
-      <div
-        style="margin: 14px 0"
-        v-for="(rule, index) in modelValue.rules"
-        :key="index"
-      >
-        <compliance_rule_item
-          ref="ruleItem"
-          :fields="fields"
-          v-bind:modelValue="modelValue.rules[index]"
-          @update:modelValue="update(index, $event)"
-        ></compliance_rule_item>
-      </div>
-    </div>
-
-    <div style="display: flex; width: 100%; justify-content: space-between">
-      <div @click="addRule" class="add">
-        <ce-icon code="icon_add_outlined" size="12px"></ce-icon>添加规则
-      </div>
-    </div>
-  </el-form>
+  <div class="rule_tree_content">
+    <ce-rule-tree
+      :left-height="48"
+      :component="compliance_rule_item"
+      :operate="operate"
+      ref="ruleTreeRef"
+      :store="fields"
+    ></ce-rule-tree>
+  </div>
 </template>
 <script setup lang="ts">
 import { ref, watch } from "vue";
 import compliance_rule_item from "@/views/rule/components/compliance_rules/ComplianceRuleItem.vue";
+import type { Tree } from "@commons/components/ce-rule-tree/type";
+import operate from "@/views/rule/components/compliance_rules/Operate.vue";
+import CeRuleTree from "@commons/components/ce-rule-tree/index.vue";
 import complianceRuleApi from "@/api/rule";
-import type { InstanceSearchField, Rules, Rule } from "@/api/rule/type";
+import type { InstanceSearchField, Rules } from "@/api/rule/type";
+import { nanoid } from "nanoid";
+const ruleTreeRef = ref<InstanceType<typeof CeRuleTree>>();
+
+const emit = defineEmits(["update:modelValue"]);
 const props = defineProps<{
   /**
    * 资源类型
@@ -67,71 +35,59 @@ const props = defineProps<{
    */
   modelValue: Rules;
 }>();
-const ruleItem = ref<Array<InstanceType<typeof compliance_rule_item>>>([]);
-const emit = defineEmits(["update:modelValue"]);
 
-const updateConditionType = (conditionType: "AND" | "OR") => {
-  const rules = {
-    rules: props.modelValue.rules,
-    conditionType: conditionType,
+/**
+ *转换为Rule
+ * @param tree Rule对象
+ */
+const toRules = (tree?: Array<Tree>): Rules => {
+  return {
+    conditionType: tree && tree.length > 0 && tree[0].value,
     scanRule: props.modelValue.scanRule
       ? props.modelValue.scanRule
       : "COMPLIANCE",
+    rules:
+      tree && tree.length > 0 && tree[0].items
+        ? tree[0].items
+            ?.filter((v) => v.value)
+            .map((item: any) => ({
+              field: item.value.field,
+              compare: item.value.compare,
+              value: item.value.value,
+            }))
+        : [],
   };
-  emit("update:modelValue", rules);
 };
 
-const updateScanRule = (scanRule: "COMPLIANCE" | "NOT_COMPLIANCE") => {
-  const rules = {
-    rules: props.modelValue.rules,
-    conditionType: props.modelValue.conditionType,
-    scanRule: scanRule,
-  };
-  emit("update:modelValue", rules);
-};
 /**
- * 双向绑定修改数据
- * @param index 需要修改的index
- * @param rule  需要修改的对象
+ *转换为Tree
+ * @param rule 规则
  */
-const update = (index: number, rule: Rule | string) => {
-  if (typeof rule === "string") {
-    deleteRule(index);
-  } else {
-    const rules = {
-      rules: props.modelValue.rules.map((item, i) => {
-        if (i === index) {
-          return rule;
-        }
-        return item;
-      }),
-      conditionType: props.modelValue.conditionType
-        ? props.modelValue.conditionType
-        : "AND",
-      scanRule: props.modelValue.scanRule
-        ? props.modelValue.scanRule
-        : "COMPLIANCE",
-    };
-    emit("update:modelValue", rules);
-  }
-};
-/**
- * 删除数据
- * @param index 需要修改的index
- * @param rule  需要修改的对象
- */
-const deleteRule = (index: number) => {
-  emit("update:modelValue", {
-    rules: props.modelValue.rules.filter((item, tindex) => tindex !== index),
-    conditionType: props.modelValue.conditionType,
-    scanRule: props.modelValue.scanRule,
-  });
+const toTree = (rule: Rules): Array<Tree> => {
+  return [
+    {
+      id: nanoid(),
+      value: rule.conditionType,
+      items: rule.rules.map((item) => ({ id: nanoid(), value: item })),
+    },
+  ];
 };
 
 const loading = ref<boolean>(false);
 
 const fields = ref<Array<InstanceSearchField>>([]);
 
+const initDefaultTree = () => {
+  ruleTreeRef.value?.setTree(
+    toTree({
+      conditionType: "AND",
+      rules: [{ field: "", compare: "", value: "" }],
+      scanRule: props.modelValue.scanRule
+        ? props.modelValue.scanRule
+        : "COMPLIANCE",
+    })
+  );
+};
 watch(
   () => props.resourceType,
   () => {
@@ -142,13 +98,7 @@ watch(
           fields.value = ok.data;
         });
     }
-    emit("update:modelValue", {
-      conditionType: "AND",
-      rules: [{ field: "", compare: "", value: "" }],
-      scanRule: props.modelValue.scanRule
-        ? props.modelValue.scanRule
-        : "COMPLIANCE",
-    });
+    initDefaultTree();
   },
   {
     immediate: true,
@@ -165,47 +115,33 @@ watch(
           fields.value = ok.data;
         });
     }
-    emit("update:modelValue", {
-      conditionType: "AND",
-      rules: [{ field: "", compare: "", value: "" }],
-      scanRule: props.modelValue.scanRule
-        ? props.modelValue.scanRule
-        : "COMPLIANCE",
-    });
+    initDefaultTree();
   }
 );
-/**
- * 添加规则
- */
-const addRule = () => {
-  const rules: Rules = {
-    rules: [
-      ...(props.modelValue.rules ? props.modelValue.rules : []),
-      { field: "", compare: "", value: "" },
-    ],
-    conditionType: props.modelValue.conditionType
-      ? props.modelValue.conditionType
-      : "AND",
-    scanRule: props.modelValue.scanRule
-      ? props.modelValue.scanRule
-      : "COMPLIANCE",
-  };
-
-  emit("update:modelValue", rules);
-};
 // 校验函数
 const validate = () => {
-  return Promise.all(ruleItem.value.map((item) => item.validate())).catch(
-    // eslint-disable-next-line @typescript-eslint/no-empty-function
-    () => {}
-  );
+  if (ruleTreeRef.value) {
+    return ruleTreeRef.value.validate().then(() => {
+      emit("update:modelValue", toRules(ruleTreeRef.value?.getTree()));
+    });
+  }
+  return Promise.resolve();
 };
-defineExpose({ validate });
+/**
+ *回显数据
+ */
+const echo = (rule: Rules) => {
+  ruleTreeRef.value?.setTree(toTree(rule));
+};
+defineExpose({ validate, echo });
 </script>
 
-<style lang="scss">
-.add {
-  color: rgba(51, 112, 255, 1);
-  cursor: pointer;
+<style lang="scss" scoped>
+.rule_tree_content {
+  width: 100%;
+  border: 1px solid #dee0e3;
+  border-radius: 4px;
+  box-sizing: border-box;
+  padding: 8px 16px 8px 16px;
 }
 </style>

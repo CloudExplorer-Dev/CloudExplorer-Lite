@@ -17,13 +17,19 @@
       @submit.prevent
     >
       <el-form-item label="规则组名称" prop="name">
-        <el-input type="input" v-model="createComplianceRuleGroupForm.name" />
+        <el-input
+          v-model="createComplianceRuleGroupForm.name"
+          maxlength="64"
+          show-word-limit
+        />
       </el-form-item>
       <el-form-item label="规则组描述" prop="description">
         <el-input
           type="textarea"
           style="height: 100px"
           v-model="createComplianceRuleGroupForm.description"
+          maxlength="255"
+          show-word-limit
         />
       </el-form-item>
     </el-form>
@@ -32,7 +38,7 @@
         <el-button @click="createComplianceRuleGroupVisible = false"
           >取消</el-button
         >
-        <el-button type="primary" @click="submit"> 提交 </el-button>
+        <el-button type="primary" @click="submit"> 创建 </el-button>
       </span>
     </template>
   </el-dialog>

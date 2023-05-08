@@ -54,11 +54,16 @@ const props = withDefaults(
      *叶子高度
      */
     leftHeight?: number;
+    /**
+     *存储公共参数
+     */
+    store: any;
   }>(),
   {
     leftHeight: 48,
     component: defaultComponent,
     operate: defaultOperate,
+    stroe: {},
   }
 );
 
@@ -79,6 +84,7 @@ const validate = () => {
 const reader = (treeItem: TreeItem) => {
   return createVNode(props.component, {
     modelValue: treeItem.value,
+    store: props.store,
     "onUpdate:modelValue": (v: any) => {
       treeItem.value = v;
     },
@@ -97,6 +103,7 @@ const readerOperate = (prop: {
     addCondition: prop.addCondition,
     addRelation: prop.addRelation,
     tree: prop.tree,
+    store: props.store,
     root: tree.value,
   });
 };

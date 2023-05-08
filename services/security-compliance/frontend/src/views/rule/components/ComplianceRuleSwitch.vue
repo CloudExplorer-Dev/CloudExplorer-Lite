@@ -2,7 +2,8 @@
   <el-switch
     v-loading="loading"
     :modelValue="modelValue"
-    size="large"
+    size="small"
+    width="28px"
     @change="switchEnable($event)"
   ></el-switch>
 </template>

@@ -191,7 +191,6 @@ onMounted(() => {
  */
 const getTooltipFormatter = (title: string, titleName: string, data: any) => {
   return `<div>
-              ${titleName}
               <div style='display:flex;justify-content: space-between;width:200px'><div>${titleName}</div><div>不合规/总数</div></div>
               <div style='display:flex;justify-content: space-between;width:200px'><div>${
                 data.name.length > 6
