@@ -15,7 +15,7 @@
           type="primary"
           @click="openCreateComplianceRuleGroup"
           v-hasPermission="'[security-compliance]RULE:CREATE'"
-          >创建</el-button
+          >创建规则组</el-button
         ></template
       >
       <el-table-column type="selection" />

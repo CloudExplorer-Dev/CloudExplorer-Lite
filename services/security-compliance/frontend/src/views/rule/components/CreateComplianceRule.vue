@@ -169,7 +169,7 @@
     <template #footer>
       <span class="dialog-footer">
         <el-button @click="createComplianceRuleVisible = false">取消</el-button>
-        <el-button type="primary" @click="submit"> 提交 </el-button>
+        <el-button type="primary" @click="submit"> 创建 </el-button>
       </span>
     </template>
   </el-drawer>

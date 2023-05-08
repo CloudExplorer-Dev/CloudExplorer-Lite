@@ -16,7 +16,7 @@
           type="primary"
           @click="openCreateComplianceRule"
           v-hasPermission="'[security-compliance]RULE:CREATE'"
-          >创建</el-button
+          >创建规则</el-button
         ></template
       >
       <el-table-column
@@ -82,11 +82,26 @@
         :filter-multiple="false"
       >
         <template #default="scope">
-          <div
-            v-html="riskLevelOptionList.find((r: KeyValue<string, string>) => r.value ===
-              scope.row.riskLevel) ? riskLevelOptionList.find((r: KeyValue<string, string>) => r.value ===
-                scope.row.riskLevel)?.key : '-'"
-          ></div>
+          <div class="risk_level">
+            <el-tag
+              disable-transitions
+              :class="
+                scope.row.riskLevel === 'HIGH'
+                  ? 'high'
+                  : scope.row.riskLevel === 'MIDDLE'
+                  ? 'middle'
+                  : 'low'
+              "
+            >
+              {{
+                scope.row.riskLevel === "HIGH"
+                  ? "高风险"
+                  : scope.row.riskLevel === "MIDDLE"
+                  ? "中风险"
+                  : "低风险"
+              }}
+            </el-tag>
+          </div>
         </template>
       </el-table-column>
       <el-table-column
@@ -349,6 +364,26 @@ defineExpose({ refresh });
 :deep(.table_cell) {
   .cell {
     white-space: nowrap;
+  }
+}
+.risk_level {
+  .high {
+    background: rgba(245, 74, 69, 0.2);
+    border-radius: 2px;
+    color: rgba(216, 57, 49, 1);
+    border: none;
+  }
+  .middle {
+    background: rgba(255, 136, 0, 0.2);
+    border-radius: 2px;
+    color: rgba(222, 120, 2, 1);
+    border: none;
+  }
+  .low {
+    background: rgba(52, 199, 36, 0.2);
+    border-radius: 2px;
+    color: rgba(46, 161, 33, 1);
+    border: none;
   }
 }
 </style>
