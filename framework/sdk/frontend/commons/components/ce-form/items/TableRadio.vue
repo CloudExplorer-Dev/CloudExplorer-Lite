@@ -107,7 +107,9 @@ const tableData = computed(() => {
         )
       );
     } else {
-      return props.formItem.optionList;
+      return props.formItem.optionList.filter(
+        (item: any) => item[props.formItem.valueField || "name"]
+      );
     }
   }
   return [];
