@@ -1,5 +1,5 @@
 <script setup lang="ts">
-const props = withDefaults(
+withDefaults(
   defineProps<{
     contentBorder?: boolean;
   }>(),
@@ -45,9 +45,8 @@ const props = withDefaults(
 .base-container {
   overflow-y: hidden;
   overflow-x: hidden;
-  height: var(--ce-base-container-height,calc(100% - 20px));
-  );
-  margin-bottom:  20px;
+  height: var(--ce-base-container-height, calc(100% - 20px));
+  margin-bottom: 20px;
   .header {
     display: flex;
     margin-bottom: 16px;

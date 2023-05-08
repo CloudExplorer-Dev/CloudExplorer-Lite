@@ -56,7 +56,6 @@ const open = (diskId: string) => {
   // 初始化磁盘数据
   diskFormData.value = {};
   createDiskFormData.value = {};
-
   // 打开抽屉
   drawer.value = true;
   // 设置需要的磁盘id
@@ -72,22 +71,18 @@ const open = (diskId: string) => {
       // 获取云账号详情
       return BaseCloudAccountApi.getCloudAccount(
         cloudServer.accountId as string
-      )
-        .then((res) => {
-          cloudAccount.value = res.data;
-          // 获取相应云平台创建磁盘表单数据
-          VmCloudDiskApi.getCreateDiskForm(
-            cloudAccount.value.platform,
-            loading
-          ).then((res) => {
-            createDiskFormData.value = res.data;
-          });
-        })
-        .finally(() => {
-          loading.value = false;
-        });
+      ).then((res) => {
+        cloudAccount.value = res.data;
+        return res;
+      });
     })
-    .catch(() => {
+    .then((res) => {
+      // 获取相应云平台创建磁盘表单数据
+      return VmCloudDiskApi.getCreateDiskForm(res.data.platform).then((res) => {
+        createDiskFormData.value = res.data;
+      });
+    })
+    .finally(() => {
       loading.value = false;
     });
 };

@@ -95,61 +95,74 @@ const open = (cloudServerId: string) => {
   changeConfigData.value = {};
   // 初始化渲染对象
   configUpdateFormData.value = {};
+  // 初始化配置费用数据
+  configUpdatePrice.value = undefined;
+  // 初始化云账号数据
+  cloudAccount.value = undefined;
   // 打开抽屉
   drawer.value = true;
-
+  // 保存虚拟机id
   id.value = cloudServerId;
+  // 打开转圈
+  loading.value = true;
   // 获取云主机详情
-  VmCloudServerApi.getVmCloudServerById(id.value, loading).then((res) => {
-    vmCloudServer.value = res.data;
-    // 主机信息要展示的内容
-    vmInfo.value = [
-      {
-        label: t("vm_cloud_server.label.cloudVm", "云主机"),
-        value: vmCloudServer.value.instanceName,
-      },
-      {
-        label: "云账号",
-        value: vmCloudServer.value.accountName,
-        render: () => {
-          return h(PlatformIcon, {
-            platform: res.data.platform as string,
-          });
+  VmCloudServerApi.getVmCloudServerById(id.value)
+    .then((res) => {
+      vmCloudServer.value = res.data;
+      // 主机信息要展示的内容
+      vmInfo.value = [
+        {
+          label: t("vm_cloud_server.label.cloudVm", "云主机"),
+          value: vmCloudServer.value.instanceName,
         },
-      },
-      {
-        label: "实例规格",
-        value: `${vmCloudServer.value.instanceType}(${vmCloudServer.value.instanceTypeDescription})`,
-      },
-      {
-        label: "IP地址",
-        value: vmCloudServer.value.ipArray,
-        hideValue: true,
-        render: () => {
-          return h(IpArray, {
-            ipArray: vmCloudServer.value?.ipArray || [],
-            remoteIp: vmCloudServer.value?.remoteIp || "",
-          });
+        {
+          label: "云账号",
+          value: vmCloudServer.value.accountName,
+          render: () => {
+            return h(PlatformIcon, {
+              platform: res.data.platform as string,
+            });
+          },
         },
-      },
-    ];
-
-    // 获取云账号详情
-    BaseCloudAccountApi.getCloudAccount(
-      vmCloudServer.value.accountId as string,
-      loading
-    ).then((res) => {
-      cloudAccount.value = res.data;
-
+        {
+          label: "实例规格",
+          value: `${vmCloudServer.value.instanceType}(${vmCloudServer.value.instanceTypeDescription})`,
+        },
+        {
+          label: "IP地址",
+          value: vmCloudServer.value.ipArray,
+          hideValue: true,
+          render: () => {
+            return h(IpArray, {
+              ipArray: vmCloudServer.value?.ipArray || [],
+              remoteIp: vmCloudServer.value?.remoteIp || "",
+            });
+          },
+        },
+      ];
+      return res;
+    })
+    .then((res) => {
+      // 获取云账号详情
+      return BaseCloudAccountApi.getCloudAccount(
+        res.data.accountId as string
+      ).then((res) => {
+        cloudAccount.value = res.data;
+        return res;
+      });
+    })
+    .then((res) => {
       // 获取相应云平台配置变更表单数据
-      VmCloudServerApi.getConfigUpdateForm(
-        cloudAccount.value.platform,
+      return VmCloudServerApi.getConfigUpdateForm(
+        res.data.platform,
         loadingInstanceType
       ).then((res) => {
         configUpdateFormData.value = res.data;
       });
+    })
+    .finally(() => {
+      loading.value = false;
     });
-  });
 };
 defineExpose({ open, close });
 </script>

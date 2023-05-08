@@ -28,14 +28,16 @@
           _data = $event[formItem.valueField ? formItem.valueField : 'name']
         "
       >
-        <el-table-column width="40px">
+        <el-table-column width="50px">
           <template #default="scope">
             <el-radio
               :label="
                 scope.row[formItem.valueField ? formItem.valueField : 'name']
               "
             >
-              <template #default>&nbsp;</template>
+              <span v-show="false">{{
+                scope.row[formItem.valueField ? formItem.valueField : "name"]
+              }}</span>
             </el-radio>
           </template>
         </el-table-column>
