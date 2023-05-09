@@ -33,7 +33,7 @@ public interface IOrganizationService extends IService<Organization> {
      * @param request 批量添加的请求参数
      * @return 是否添加成功
      */
-    Boolean batch(OrganizationBatchRequest request);
+    List<Organization> batch(OrganizationBatchRequest request);
 
 
     /**

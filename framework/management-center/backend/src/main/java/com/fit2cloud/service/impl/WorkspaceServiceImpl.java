@@ -149,7 +149,7 @@ public class WorkspaceServiceImpl extends ServiceImpl<WorkspaceMapper, Workspace
     }
 
     @Override
-    public Boolean batch(WorkspaceBatchCreateRequest request) {
+    public List<Workspace> batch(WorkspaceBatchCreateRequest request) {
         List<String> names = request.getWorkspaceDetails().stream().map(WorkspaceBatchCreateRequest.WorkspaceDetails::getName).toList();
         List<Workspace> list = list(new LambdaQueryWrapper<Workspace>().in(Workspace::getName, names));
         if (CollectionUtils.isNotEmpty(list)) {
@@ -164,7 +164,8 @@ public class WorkspaceServiceImpl extends ServiceImpl<WorkspaceMapper, Workspace
             workspace.setUpdateTime(LocalDateTime.now());
             return workspace;
         }).toList();
-        return saveBatch(workspaces);
+        saveBatch(workspaces);
+        return workspaces;
     }
 
     @Override
