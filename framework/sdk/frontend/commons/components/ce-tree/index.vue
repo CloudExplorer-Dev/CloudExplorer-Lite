@@ -192,13 +192,7 @@ function reloadTree() {
           : undefined;
 
         //选择
-        treeRef.value?.setCurrentKey(id);
-
-        //将选中的值返回
-        const data = treeRef.value?.getCurrentNode();
-        if (data) {
-          emit("update:modelValue", data);
-        }
+        select(id);
       });
     })
     .finally(() => {
@@ -206,7 +200,20 @@ function reloadTree() {
     });
 }
 
-defineExpose({ reloadTree });
+function select(id?: string) {
+  treeRef.value?.setCurrentKey(id);
+  //将选中的值返回
+  const data = treeRef.value?.getCurrentNode();
+  if (data) {
+    emit("update:modelValue", data);
+  }
+}
+
+function selectFirst() {
+  select(_.head(localTreeData.value)?.id);
+}
+
+defineExpose({ reloadTree, select, selectFirst });
 
 onMounted(() => {
   reloadTree();

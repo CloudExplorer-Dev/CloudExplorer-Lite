@@ -19,6 +19,7 @@ import com.fit2cloud.controller.request.OrganizationRequest;
 import com.fit2cloud.controller.request.PageOrganizationRequest;
 import com.fit2cloud.dao.entity.Workspace;
 import com.fit2cloud.dao.mapper.OrganizationMapper;
+import com.fit2cloud.dto.OrganizationDTO;
 import com.fit2cloud.dto.UserDto;
 import com.fit2cloud.response.OrganizationTree;
 import com.fit2cloud.service.IOrganizationService;
@@ -58,10 +59,10 @@ public class OrganizationServiceImpl extends ServiceImpl<OrganizationMapper, Org
     private IBaseUserRoleService userRoleService;
 
     @Override
-    public IPage<Organization> pageOrganization(PageOrganizationRequest request) {
+    public IPage<OrganizationDTO> pageOrganization(PageOrganizationRequest request) {
         // 用户信息
         UserDto credentials = CurrentUserUtils.getUser();
-        Page<Organization> page = new Page<>(request.getCurrentPage(), request.getPageSize(), false);
+        Page<OrganizationDTO> page = new Page<>(request.getCurrentPage(), request.getPageSize(), false);
         // 构建查询参数
         QueryWrapper<Organization> wrapper = new QueryWrapper<>();
         wrapper.like(StringUtils.isNotEmpty(request.getName()), "name", request.getName())
@@ -74,7 +75,29 @@ public class OrganizationServiceImpl extends ServiceImpl<OrganizationMapper, Org
         }
         QueryWrapper<Organization> pageWrapper = wrapper.clone();
         pageWrapper.last("limit " + ((request.getCurrentPage() - 1) * request.getPageSize()) + "," + request.getPageSize());
-        List<Organization> organizations = credentials.getCurrentRole().equals(RoleConstants.ROLE.ORGADMIN) ? baseMapper.pageOrganization(pageWrapper, credentials.getCurrentSource()) : baseMapper.pageOrganization(pageWrapper, null);
+
+        String rootId = request.getRootId();
+
+        boolean removeRoot = false;
+        if (request.getRootId() != null) {
+            //当指定根节点查询时，只需要返回根节点的所有子节点，不需要包括自己
+            removeRoot = true;
+        }
+
+        if (CurrentUserUtils.isOrgAdmin()) {
+            if (rootId == null) {
+                rootId = CurrentUserUtils.getOrganizationId();
+            } else {
+                //判断组织管理员是否能管理到这个组织id
+
+            }
+        }
+        String finalRootId = rootId;
+
+        List<OrganizationDTO> organizations = baseMapper.pageOrganization(pageWrapper, rootId);
+        if (removeRoot) {
+            organizations = organizations.stream().filter(organizationDTO -> !StringUtils.equals(organizationDTO.getId(), finalRootId)).toList();
+        }
         if (request.getOrder() != null && StringUtils.isNotEmpty(request.getOrder().getColumn())) {
             if (request.getOrder().isAsc()) {
                 organizations = organizations
@@ -91,7 +114,18 @@ public class OrganizationServiceImpl extends ServiceImpl<OrganizationMapper, Org
                         .toList();
             }
         }
-        int total = credentials.getCurrentRole().equals(RoleConstants.ROLE.ORGADMIN) ? 1 : baseMapper.listRootOrganizationIds(wrapper).size();
+        int total = 0;
+        if (rootId != null) {
+            if (removeRoot) {
+                total = organizations.stream().filter(organizationDTO -> StringUtils.equals(organizationDTO.getPid(), finalRootId)).toList().size();
+            } else {
+                total = 1;
+            }
+        } else {
+            total = baseMapper.listRootOrganizationIds(wrapper).size();
+        }
+
+        //int total = credentials.getCurrentRole().equals(RoleConstants.ROLE.ORGADMIN) ? 1 : baseMapper.listRootOrganizationIds(wrapper).size();
         page.setRecords(organizations);
         page.setTotal(total);
         return page;

@@ -50,7 +50,7 @@
       <el-table-column label="操作" fixed="right">
         <template #default="scope">
           <el-button
-            text
+            link
             type="primary"
             v-if="permissionStore.hasPermission('[management-center]USER:EDIT')"
             @click="removeUserRole(scope.row)"
@@ -67,26 +67,15 @@ import { usePermissionStore } from "@commons/stores/modules/permission";
 import { useI18n } from "vue-i18n";
 import { ref, watch } from "vue";
 import { useRouter } from "vue-router";
-import CeDrawer from "@commons/components/ce-drawer/index.vue";
 import UserApi from "@/api/user";
 import { roleConst } from "@commons/utils/constants";
-import {
-  User,
-  type AddUserRoleObject,
-  type AddUserRoleRequest,
-} from "@/api/user/type";
+import { User } from "@/api/user/type";
 import {
   PaginationConfig,
   TableConfig,
-  TableOperations,
   TableSearch,
 } from "@commons/components/ce-table/type";
-import {
-  ElMessage,
-  ElMessageBox,
-  type FormInstance,
-  type MessageBoxData,
-} from "element-plus";
+import { ElMessage, ElMessageBox } from "element-plus";
 import _ from "lodash";
 
 const props = defineProps<{
@@ -120,7 +109,6 @@ class MUser extends User {
 
 const permissionStore = usePermissionStore();
 const { t } = useI18n();
-const ceDrawerRef = ref<InstanceType<typeof CeDrawer>>();
 const router = useRouter();
 const table = ref();
 const tableData = ref<Array<MUser>>();
@@ -282,4 +270,4 @@ watch(
 
 defineExpose({ refreshList });
 </script>
-<style lang="scss"></style>
+<style lang="scss" scoped></style>

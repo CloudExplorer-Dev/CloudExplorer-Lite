@@ -10,6 +10,7 @@ import CeIcon from "@commons/components/ce-icon/index.vue";
 import { TableOperations } from "@commons/components/ce-table/type";
 import type Node from "element-plus/es/components/tree/src/model/node";
 import UserManageTab from "@/views/OrgManage/manage/UserManageTab.vue";
+import OrgManageTab from "@/views/OrgManage/manage/OrgManageTab.vue";
 import CeDrawer from "@commons/components/ce-drawer/index.vue";
 import {
   User,
@@ -21,6 +22,9 @@ import UserApi from "@/api/user";
 import type { FormInstance } from "element-plus";
 import _ from "lodash";
 import RoleApi from "@/api/role";
+import { ElMessage, ElMessageBox } from "element-plus";
+import organizationApi from "@/api/organization";
+import { useI18n } from "vue-i18n";
 
 const defaultAdminTreeNode = {
   id: "CE_BASE",
@@ -37,19 +41,44 @@ const activeTab = ref<"user" | "organization" | "workspace">("user");
 const userStore = useUserStore();
 const permissionStore = usePermissionStore();
 
+const { t } = useI18n();
+
 function editSource(source: TreeNode) {
   console.log(source);
 }
 
-function deleteSource(source: TreeNode) {
+function deleteSource(source: { type: string; id: string; inTab: boolean }) {
   console.log(source);
+  if (source.type === "ORGANIZATION") {
+    ElMessageBox.confirm(
+      t("commons.message_box.confirm_delete", "确认删除"),
+      t("commons.message_box.prompt", "提示"),
+      {
+        confirmButtonText: t("commons.btn.delete", "删除"),
+        cancelButtonText: t("commons.btn.cancel", "取消"),
+        type: "warning",
+      }
+    ).then(() => {
+      organizationApi.deleteOrg(source.id).then(() => {
+        if (source.inTab) {
+          orgManageTabRef.value?.refreshList();
+        }
+        orgTreeRef.value?.reloadTree();
+        if (!source.inTab) {
+          orgTreeRef.value?.selectFirst();
+        }
+        ElMessage.success(t("commons.msg.delete_success", "删除成功"));
+      });
+    });
+  } else if (source.type === "WORKSPACE") {
+  }
 }
 
 const moreOperations = computed(
   () =>
     new TableOperations([
       TableOperations.buildButtons().newInstance(
-        "重命名",
+        "编辑",
         "primary",
         editSource,
         undefined,
@@ -100,11 +129,12 @@ function onSelectNodeChange(data: any, node: Node) {
   selectedSource.value = data.id;
 }
 
-// addUser start
+/** addUser start **/
 
 const addUserFormRef = ref<FormInstance | undefined>();
 const addUserDrawerRef = ref<InstanceType<typeof CeDrawer>>();
 const userManageTabRef = ref<InstanceType<typeof UserManageTab>>();
+const orgManageTabRef = ref<InstanceType<typeof OrgManageTab>>();
 const addUserList = ref<Array<User>>([]);
 const addRoleList = ref<Array<Role>>([]);
 const addUserData = ref<Array<AddUserRoleObjectBySourceId>>([{}]);
@@ -164,8 +194,20 @@ function confirmAddUser() {
   });
 }
 
+/** addUser end **/
+
 function addOrganization(source: TreeNode) {
   console.log(source);
+}
+
+function jumpToWorkspace(obj: any) {
+  orgTreeRef.value?.select(obj.id);
+  activeTab.value = "workspace";
+}
+
+function jumpToUser(obj: any) {
+  orgTreeRef.value?.select(obj.id);
+  activeTab.value = "user";
 }
 
 function addWorkspace(source: TreeNode) {
@@ -219,8 +261,6 @@ const addOperations = computed(
       ),
     ])
 );
-
-onMounted(() => {});
 </script>
 <template>
   <el-container style="height: 100%">
@@ -319,10 +359,20 @@ onMounted(() => {});
         </el-header>
         <el-main>
           <UserManageTab
+            v-if="activeTab === 'user'"
             ref="userManageTabRef"
             :type="selectedType"
             :source-id="selectedSource"
             @add-user="addUser"
+            style="height: 100%"
+          />
+          <OrgManageTab
+            v-if="activeTab === 'organization'"
+            ref="orgManageTabRef"
+            :id="selectedSource"
+            @jump-to-workspace="jumpToWorkspace"
+            @jump-to-user="jumpToUser"
+            @delete-org="deleteSource"
             style="height: 100%"
           />
         </el-main>
