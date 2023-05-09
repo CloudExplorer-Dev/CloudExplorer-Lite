@@ -255,23 +255,31 @@ function removeUserRole(user: MUser) {
     });
 }
 
+const emit = defineEmits(["addUser"]);
+
 function addUser() {
-  //openAddUser();
+  emit("addUser", { id: props.sourceId, type: props.type });
 }
 
 function showUserDetail(user: MUser) {
   router.push({ name: "user_detail", params: { id: user.id } });
 }
 
+function refreshList() {
+  search(new TableSearch());
+}
+
 watch(
   () => [props.sourceId, props.type],
   ([sourceId, type]) => {
-    console.log([sourceId, type]);
+    //console.log([sourceId, type]);
     if (type) {
-      search(new TableSearch());
+      refreshList();
     }
   },
   { immediate: true }
 );
+
+defineExpose({ refreshList });
 </script>
 <style lang="scss"></style>

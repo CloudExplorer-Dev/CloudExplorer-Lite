@@ -49,9 +49,17 @@ public interface IUserService extends IService<User> {
      * @param userBatchAddRoleRequest
      * @return
      */
-    boolean addUserRoleV2(UserBatchAddRoleRequestV2 userBatchAddRoleRequest);
+    int addUserRoleV2(UserBatchAddRoleRequestV2 userBatchAddRoleRequest);
+
+    /**
+     * 为指定source添加用户角色关联关系
+     * @param userBatchAddRoleRequest
+     * @return
+     */
+    int addUserRoleV3(UserBatchAddRoleRequestV3 userBatchAddRoleRequest);
 
     boolean removeUserRole(String userId, String roleId, String sourceId);
 
     long countUser();
+
 }

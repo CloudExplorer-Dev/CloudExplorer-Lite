@@ -5,11 +5,15 @@ import { useI18n } from "vue-i18n";
 const { t } = useI18n();
 import _ from "lodash";
 
-const props = defineProps<{
-  buttons: Array<Button>;
-  name?: string;
-  row?: any;
-}>();
+const props = withDefaults(
+  defineProps<{
+    buttons: Array<Button>;
+    name?: string;
+    row?: any;
+    trigger?: "hover" | "click";
+  }>(),
+  { trigger: "hover" }
+);
 
 const _buttons = computed(() => {
   return _.filter(props.buttons, (b) => {
@@ -33,7 +37,11 @@ function handleCommand(btn: any) {
 </script>
 
 <template>
-  <el-dropdown @command="handleCommand" v-if="_buttons && _buttons.length > 0">
+  <el-dropdown
+    :trigger="trigger"
+    @command="handleCommand"
+    v-if="_buttons && _buttons.length > 0"
+  >
     <div class="more-operation" v-if="!name">
       <slot name="icon">
         <el-icon>

@@ -85,6 +85,19 @@ interface AddUserRoleRequest {
   userSourceMappings: Array<AddUserRoleObject>;
 }
 
+interface AddUserRoleObjectBySourceId {
+  userIds?: Array<string>;
+  roleIds?: Array<string>;
+}
+
+interface AddUserRoleRequestBySourceId {
+  sourceId?: string;
+
+  type?: "CE_BASE" | "WORKSPACE" | "ORGANIZATION";
+
+  userRoleMappings: Array<AddUserRoleObjectBySourceId>;
+}
+
 export type {
   RoleInfo,
   ListUserRequest,
@@ -92,4 +105,6 @@ export type {
   UpdateUserStatusRequest,
   AddUserRoleObject,
   AddUserRoleRequest,
+  AddUserRoleObjectBySourceId,
+  AddUserRoleRequestBySourceId,
 };

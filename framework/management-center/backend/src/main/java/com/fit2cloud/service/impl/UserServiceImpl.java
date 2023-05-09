@@ -12,6 +12,7 @@ import com.fit2cloud.base.entity.Role;
 import com.fit2cloud.base.entity.User;
 import com.fit2cloud.base.entity.UserRole;
 import com.fit2cloud.base.service.IBaseOrganizationService;
+import com.fit2cloud.base.service.IBaseRoleService;
 import com.fit2cloud.base.service.IBaseUserRoleService;
 import com.fit2cloud.common.constants.RoleConstants;
 import com.fit2cloud.common.constants.SystemUserConstants;
@@ -27,10 +28,8 @@ import com.fit2cloud.dao.entity.UserNotificationSetting;
 import com.fit2cloud.dao.entity.Workspace;
 import com.fit2cloud.dao.mapper.UserMapper;
 import com.fit2cloud.dto.*;
-import com.fit2cloud.service.IUserService;
-import com.fit2cloud.service.IWorkspaceService;
-import com.fit2cloud.service.OrganizationCommonService;
-import com.fit2cloud.service.WorkspaceCommonService;
+import com.fit2cloud.request.role.RoleRequest;
+import com.fit2cloud.service.*;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
@@ -54,7 +53,10 @@ import java.util.stream.Collectors;
 public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IUserService {
 
     @Resource
-    RoleServiceImpl roleServiceImpl;
+    IRoleService roleService;
+
+    @Resource
+    IBaseRoleService baseRoleService;
 
     @Resource
     IBaseUserRoleService userRoleService;
@@ -125,7 +127,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
         return userIPage.convert(user -> {
             param.put("userId", user.getId());
             UserDto userDto = new UserDto();
-            userDto.setRoles(roleServiceImpl.getRolesByResourceIds(param));
+            userDto.setRoles(roleService.getRolesByResourceIds(param));
             BeanUtils.copyProperties(user, userDto);
 
             Map<RoleConstants.ROLE, List<UserRoleDto>> userRoleMap = userRoleService.getUserRoleMap(user.getId());
@@ -179,7 +181,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
 
         param.put("userId", user.getId());
         UserDto userDto = new UserDto();
-        userDto.setRoles(roleServiceImpl.getRolesByResourceIds(param));
+        userDto.setRoles(roleService.getRolesByResourceIds(param));
         BeanUtils.copyProperties(user, userDto);
 
         Map<RoleConstants.ROLE, List<UserRoleDto>> userRoleMap = userRoleService.getUserRoleMap(user.getId());
@@ -505,9 +507,16 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
 
     @Transactional
     @Override
-    public boolean addUserRoleV2(UserBatchAddRoleRequestV2 userBatchAddRoleRequest) {
+    public int addUserRoleV2(UserBatchAddRoleRequestV2 userBatchAddRoleRequest) {
+        int count = 0;
 
-        Role role = roleMapper.selectById(userBatchAddRoleRequest.getRoleId());
+        //校验组织管理员或继承的管理员是否能添加该角色
+        List<Role> roles = baseRoleService.roles(new RoleRequest().setId(userBatchAddRoleRequest.getRoleId()));
+        if (CollectionUtils.isEmpty(roles)) {
+            throw new RuntimeException("没有权限添加该角色");
+        }
+
+        Role role = roles.get(0);
 
         Set<String> allUsers = new HashSet<>();
 
@@ -555,9 +564,11 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
             for (String userId : filteredUserIds) {
                 if (sourceIds == null) {
                     insertUserRoleInfo(new UserRole().setRoleId(role.getId()).setUserId(userId), null);
+                    count++;
                 } else {
                     for (String sourceId : sourceIds) {
                         insertUserRoleInfo(new UserRole().setRoleId(role.getId()).setUserId(userId), sourceId);
+                        count++;
                     }
                 }
             }
@@ -568,7 +579,68 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
             userRoleService.saveCachedUserRoleMap(userId);
         });
 
-        return true;
+        return count;
+    }
+
+    @Transactional
+    @Override
+    public int addUserRoleV3(UserBatchAddRoleRequestV3 userBatchAddRoleRequest) {
+        int count = 0;
+
+        RoleConstants.ROLE parentRole;
+        String sourceId = null;
+        if (StringUtils.equals(userBatchAddRoleRequest.getType(), "WORKSPACE")) {
+            if (StringUtils.isBlank(userBatchAddRoleRequest.getSourceId())) {
+                throw new RuntimeException("工作空间ID不能为空");
+            }
+            parentRole = RoleConstants.ROLE.USER;
+            sourceId = userBatchAddRoleRequest.getSourceId();
+        } else if (StringUtils.equals(userBatchAddRoleRequest.getType(), "ORGANIZATION")) {
+            if (StringUtils.isBlank(userBatchAddRoleRequest.getSourceId())) {
+                throw new RuntimeException("组织ID不能为空");
+            }
+            parentRole = RoleConstants.ROLE.ORGADMIN;
+            sourceId = userBatchAddRoleRequest.getSourceId();
+        } else {
+            //系统管理员
+            parentRole = RoleConstants.ROLE.ADMIN;
+        }
+
+        Set<String> allUsers = new HashSet<>();
+
+        //获取可以添加的角色列表
+        List<String> roles = baseRoleService.roles(new RoleRequest().setParentRoleId(List.of(parentRole))).stream().map(Role::getId).toList();
+        if (CollectionUtils.isEmpty(roles)) {
+            throw new RuntimeException("没有可以添加的角色");
+        }
+
+        for (UserBatchAddRoleObjectV3 map : userBatchAddRoleRequest.getUserRoleMappings()) {
+            //获取可以添加的用户列表
+            //根据当前用户查询
+            List<String> filteredUserIds = this.getManageUserSimpleList(map.getUserIds()).stream().map(User::getId).toList();
+            if (CollectionUtils.isEmpty(filteredUserIds)) {
+                continue;
+            }
+            List<String> filteredRoleIds = map.getRoleIds().stream().filter(roles::contains).toList();
+            if (CollectionUtils.isEmpty(filteredRoleIds)) {
+                continue;
+            }
+            allUsers.addAll(filteredUserIds);
+
+            for (String filteredUserId : filteredUserIds) {
+                for (String filteredRoleId : filteredRoleIds) {
+                    insertUserRoleInfo(new UserRole().setRoleId(filteredRoleId).setUserId(filteredUserId), sourceId);
+                    count++;
+                }
+            }
+        }
+
+        //更新完数据库后再更新redis
+        allUsers.forEach(userId -> {
+            userRoleService.saveCachedUserRoleMap(userId);
+        });
+
+        return count;
     }
 
     @Override

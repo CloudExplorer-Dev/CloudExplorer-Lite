@@ -837,6 +837,8 @@ onMounted(() => {
           <el-button
             v-if="selectedRole.parentRoleId !== roleConst.admin"
             @click="addUserRow"
+            text
+            type="primary"
           >
             + 添加用户
           </el-button>

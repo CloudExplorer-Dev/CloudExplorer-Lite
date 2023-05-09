@@ -169,8 +169,19 @@ public class UserController {
             resourceId = "#userBatchAddRoleRequest.userIdList.userIds",
             content = "'批量添加用户角色['+#userBatchAddRoleRequest.roleId+']'",
             param = "#userBatchAddRoleRequest")
-    public ResultHolder<Boolean> addUserRoleV2(@Validated @RequestBody UserBatchAddRoleRequestV2 userBatchAddRoleRequest) {
+    public ResultHolder<Integer> addUserRoleV2(@Validated @RequestBody UserBatchAddRoleRequestV2 userBatchAddRoleRequest) {
         return ResultHolder.success(userService.addUserRoleV2(userBatchAddRoleRequest));
+    }
+
+    @ApiOperation(value = "批量添加用户角色V3")
+    @PreAuthorize("hasAnyCePermission('USER:EDIT')")
+    @PostMapping(value = "/addRole/v3")
+    @OperatedLog(resourceType = ResourceTypeEnum.USER_ROLE, operated = OperatedTypeEnum.BATCH_ADD,
+            resourceId = "#userBatchAddRoleRequest.userIdList.userIds",
+            content = "'批量添加用户角色'",
+            param = "#userBatchAddRoleRequest")
+    public ResultHolder<Integer> addUserRoleV3(@Validated @RequestBody UserBatchAddRoleRequestV3 userBatchAddRoleRequest) {
+        return ResultHolder.success(userService.addUserRoleV3(userBatchAddRoleRequest));
     }
 
     @ApiOperation(value = "移除用户角色")

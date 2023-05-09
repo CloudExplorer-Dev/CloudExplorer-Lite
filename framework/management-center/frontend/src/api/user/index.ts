@@ -9,6 +9,7 @@ import type {
   UpdateUserStatusRequest,
   UpdateUserRequest,
   AddUserRoleRequest,
+  AddUserRoleRequestBySourceId,
 } from "./type";
 import type { Ref } from "vue";
 import type { UserRole } from "./type";
@@ -87,6 +88,12 @@ export const userAddRoleV2 = (
   loading?: Ref<boolean>
 ) => {
   return post("/api/user/addRole/v2", "", req, loading);
+};
+export const userAddRoleV3 = (
+  req: AddUserRoleRequestBySourceId,
+  loading?: Ref<boolean>
+) => {
+  return post("/api/user/addRole/v3", "", req, loading);
 };
 
 export function removeUserRole(
@@ -170,6 +177,7 @@ export default {
   findUserNotification,
   userAddRole,
   userAddRoleV2,
+  userAddRoleV3,
   removeUserRole,
   getUserRoleList,
   getUserRoleSourceList,
