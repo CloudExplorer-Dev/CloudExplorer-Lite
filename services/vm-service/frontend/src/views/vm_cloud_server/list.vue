@@ -20,9 +20,14 @@ import RecycleBinsApi from "@/api/recycle_bin";
 import Grant from "@/views/vm_cloud_server/grant.vue";
 import { usePermissionStore } from "@commons/stores/modules/permission";
 import ButtonToolBar from "@commons/components/button-tool-bar/ButtonToolBar.vue";
-import { ButtonAction } from "@commons/components/button-tool-bar/type";
+import {
+  ButtonAction,
+  type ButtonActionType,
+} from "@commons/components/button-tool-bar/type";
 import OrgTreeFilter from "@commons/components/table-filter/OrgTreeFilter.vue";
 import IpArray from "@commons/components/detail-page/IpArray.vue";
+import AddDisk from "@/views/vm_cloud_server/AddDisk.vue";
+import ChangeConfig from "@/views/vm_cloud_server/ChangeConfig.vue";
 
 const { t } = useI18n();
 const permissionStore = usePermissionStore();
@@ -33,7 +38,8 @@ const tableData = ref<Array<VmCloudServerVO>>([]);
 const selectedRowData = ref<Array<VmCloudServerVO>>([]);
 const tableLoading = ref<boolean>(false);
 const cloudAccount = ref<Array<SimpleMap<string>>>([]);
-
+const addDiskRef = ref<InstanceType<typeof AddDisk>>();
+const changeConfigRef = ref<InstanceType<typeof ChangeConfig>>();
 import InstanceStatusUtils from "@commons/utils/vm_cloud_server/InstanceStatusUtils";
 
 /**
@@ -285,7 +291,7 @@ const gotoCatalog = () => {
  * @param row
  */
 const createDisk = (row: VmCloudServerVO) => {
-  useRoute.push({ name: "add_disk", params: { id: row.id } });
+  addDiskRef.value?.open(row.id);
 };
 
 /**
@@ -293,20 +299,7 @@ const createDisk = (row: VmCloudServerVO) => {
  * @param row
  */
 const changeVmConfig = (row: VmCloudServerVO) => {
-  ElMessageBox.confirm(
-    t(
-      "vm_cloud_server.message_box.confirm_config_update",
-      "配置变更将会对实例执行关机操作，确认继续"
-    ),
-    t("commons.message_box.prompt", "提示"),
-    {
-      confirmButtonText: t("commons.message_box.confirm", "确认"),
-      cancelButtonText: t("commons.btn.cancel", "取消"),
-      type: "warning",
-    }
-  ).then(() => {
-    useRoute.push({ name: "change_config", params: { id: row.id } });
-  });
+  changeConfigRef.value?.open(row.id);
 };
 
 /**
@@ -669,7 +662,7 @@ const disableBatch = computed<boolean>(() => {
     selectedRowData.value.some((row) => row.instanceStatus === "ToBeRecycled")
   );
 });
-const moreActions = ref<Array<ButtonAction>>([
+const moreActions = ref<Array<ButtonActionType>>([
   new ButtonAction(
     t("commons.btn.create", "创建"),
     "primary",
@@ -733,7 +726,7 @@ const moreActions = ref<Array<ButtonAction>>([
     ref="table"
   >
     <template #toolbar>
-      <ButtonToolBar :actions="moreActions" :ellipsis="4" />
+      <ButtonToolBar :actions="moreActions || []" :ellipsis="4" />
     </template>
     <el-table-column type="selection" />
     <el-table-column
@@ -1005,12 +998,14 @@ const moreActions = ref<Array<ButtonAction>>([
     :close-on-click-modal="false"
   >
     <Grant
-      :ids="selectedServerIds"
+      :ids="selectedServerIds || []"
       resource-type="vm"
-      v-model:visible="grantDialogVisible"
+      v-model:dialogVisible="grantDialogVisible"
       @refresh="refresh"
     />
   </el-dialog>
+  <AddDisk ref="addDiskRef"></AddDisk>
+  <ChangeConfig ref="changeConfigRef"></ChangeConfig>
 </template>
 <style lang="scss" scoped>
 .name-span-class {

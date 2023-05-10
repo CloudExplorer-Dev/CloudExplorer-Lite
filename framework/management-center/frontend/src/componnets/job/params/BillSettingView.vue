@@ -3,11 +3,13 @@
     <template #header> <span>账单获取方式</span></template>
     <template #content>
       <CeForm
+        require-asterisk-position="right"
+        label-position="top"
         :readOnly="readOnly"
         :formViewData="BillFrom"
         ref="ceform"
         :otherParams="cloudAccount"
-        labelPosition="top"
+        v-model="billData"
       ></CeForm>
     </template>
   </base-container>
@@ -18,10 +20,12 @@ import cloudAccountApi from "@/api/cloud_account";
 import { ref, watch } from "vue";
 import type { CloudAccount } from "@/api/cloud_account/type";
 import type { FormView } from "@commons/components/ce-form/type";
+import type { SimpleMap } from "../../../../../../sdk/frontend/commons/api/base/type";
 /**
  * 账单设置form表单
  */
 const BillFrom = ref<Array<FormView>>([]);
+const billData = ref<SimpleMap<any>>({});
 /**
  * 表单对象
  */
@@ -51,7 +55,7 @@ const props = defineProps<{
  */
 const validate = () => {
   props.jobDetails.forEach((item) => {
-    item.params["BILL_SETTING"] = ceform.value?.getFormData();
+    item.params["BILL_SETTING"] = billData.value;
   });
   return ceform.value?.validate();
 };
@@ -61,15 +65,14 @@ const validate = () => {
  * @param cloud_account 云账号
  */
 const initBillSetting = (cloud_account: CloudAccount) => {
-  BillFrom.value = [];
-  ceform.value?.clearData();
   cloudAccountApi.getBillFormByPlatform(cloud_account.platform).then((ok) => {
     BillFrom.value = ok.data;
     if (
       props.jobDetails.length > 0 &&
       props.jobDetails[0].params["BILL_SETTING"]
     ) {
-      ceform.value.setData(props.jobDetails[0].params["BILL_SETTING"]);
+      console.log("赋值", props.jobDetails[0].params["BILL_SETTING"]);
+      billData.value = props.jobDetails[0].params["BILL_SETTING"];
     }
   });
 };

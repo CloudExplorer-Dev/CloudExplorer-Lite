@@ -11,12 +11,37 @@ import lombok.Data;
  */
 @Data
 public class TencentCreateDiskForm {
-    @Form(inputType = InputType.Text, label = "名称")
+
+    @Form(inputType = InputType.Text,
+            label = "名称",
+            propsInfo = "{\"style\":{\"width\":\"100%\"}}")
     private String diskName;
-    @Form(inputType = InputType.Number, label = "磁盘大小", defaultValue = "50", attrs = "{\"min\":20,\"max\":32000,\"step\":1}", unit = "GB")
+
+    @Form(inputType = InputType.Number,
+            label = "磁盘大小",
+            defaultValue = "20",
+            defaultJsonValue = true,
+            attrs = "{\"min\":20,\"max\":32000,\"step\":10}",
+            propsInfo = "{\"style\":{\"width\":\"120px\"}}",
+            unit = "GB")
     private Long size;
-    @Form(inputType = InputType.Radio, label = "磁盘类型", defaultValue = "CLOUD_PREMIUM", textField = "diskTypeName", valueField = "diskType", method = "getDiskTypesForCreateDisk", clazz = TencentCloudProvider.class)
+
+    @Form(inputType = InputType.Radio,
+            label = "磁盘类型",
+            propsInfo = "{\"radioType\":\"radio\",\"style\":{\"width\":\"100%\"}}",
+            defaultValue = "CLOUD_PREMIUM",
+            textField = "diskTypeName",
+            valueField = "diskType",
+            method = "getDiskTypesForCreateDisk",
+            clazz = TencentCloudProvider.class)
     private String diskType;
-    @Form(inputType = InputType.Radio, label = "随实例删除", defaultValue = "YES", textField = "name", valueField = "id", method = "getDeleteWithInstance", clazz = TencentCloudProvider.class)
+
+    @Form(inputType = InputType.SwitchBtn,
+            label = "随实例删除",
+            defaultValue = "YES",
+            textField = "name",
+            valueField = "id",
+            method = "getDeleteWithInstance",
+            clazz = TencentCloudProvider.class)
     private String deleteWithInstance;
 }

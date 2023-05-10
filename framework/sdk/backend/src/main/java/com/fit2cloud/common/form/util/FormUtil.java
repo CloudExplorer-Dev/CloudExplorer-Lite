@@ -84,6 +84,7 @@ public class FormUtil {
             map.put("relationShowValues", annotation.relationShowValues().length == 0 ? null : annotation.relationShowValues());
             map.put("footerLocation", annotation.footerLocation());
             map.put("relationTrigger", annotation.relationTrigger());
+            map.put("propsInfo", JsonUtil.parseObject(annotation.propsInfo()));
             map.put("index", atomicInteger.getAndIncrement());
             map.put("regexp", annotation.regexp());
             map.put("regexpDescription", annotation.regexpDescription());

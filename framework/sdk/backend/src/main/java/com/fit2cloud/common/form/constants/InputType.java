@@ -51,6 +51,10 @@ public enum InputType {
      * 开关
      */
     SwitchBtn(SwitchForm.class),
+    /**
+     * 表格单选
+     */
+    TableRadio(TableRadioForm.class),
 
     AliyunInstanceTypeForm(com.fit2cloud.common.form.vo.aliyun.AliyunInstanceType.class),
     AliyunDiskConfigForm(com.fit2cloud.common.form.vo.aliyun.AliyunDiskConfig.class),

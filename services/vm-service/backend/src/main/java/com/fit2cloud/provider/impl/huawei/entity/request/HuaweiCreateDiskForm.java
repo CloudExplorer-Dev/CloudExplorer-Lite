@@ -11,12 +11,36 @@ import lombok.Data;
  */
 @Data
 public class HuaweiCreateDiskForm {
-    @Form(inputType = InputType.Text, label = "名称")
+    @Form(inputType = InputType.Text,
+            label = "名称",
+            propsInfo = "{\"style\":{\"width\":\"100%\"}}")
     private String diskName;
-    @Form(inputType = InputType.Number, label = "磁盘大小", defaultValue = "10", attrs = "{\"min\":10,\"max\":32728,\"step\":10}", unit = "GB")
+
+    @Form(inputType = InputType.Number,
+            label = "磁盘大小",
+            defaultValue = "20",
+            defaultJsonValue = true,
+            attrs = "{\"min\":20,\"max\":32728,\"step\":10}",
+            propsInfo = "{\"style\":{\"width\":\"120px\"}}",
+            unit = "GB")
     private Long size;
-    @Form(inputType = InputType.Radio, label = "磁盘类型", defaultValue = "GPSSD", textField = "name", valueField = "id", method = "getDiskTypes", clazz = HuaweiCloudProvider.class)
+
+    @Form(inputType = InputType.Radio,
+            label = "磁盘类型",
+            defaultValue = "GPSSD",
+            propsInfo = "{\"radioType\":\"radio\",\"style\":{\"width\":\"100%\"}}",
+            textField = "name",
+            valueField = "id",
+            method = "getDiskTypes",
+            clazz = HuaweiCloudProvider.class)
     private String diskType;
-    @Form(inputType = InputType.Radio, label = "随实例删除", defaultValue = "YES", textField = "name", valueField = "id", method = "getDeleteWithInstance", clazz = HuaweiCloudProvider.class)
+
+    @Form(inputType = InputType.SwitchBtn,
+            label = "随实例删除",
+            defaultValue = "YES",
+            textField = "name",
+            valueField = "id",
+            method = "getDeleteWithInstance",
+            clazz = HuaweiCloudProvider.class)
     private String deleteWithInstance;
 }

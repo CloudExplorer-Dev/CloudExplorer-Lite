@@ -19,6 +19,7 @@ public class VsphereConfigUpdateForm {
             defaultValue = "1",
             defaultJsonValue = true,
             attrs = "{\"min\":1,\"max\":128,\"step\":1}",
+            propsInfo = "{\"style\":{\"width\":\"120px\"}}",
             confirmGroup = 1
     )
     private int cpu;
@@ -32,6 +33,7 @@ public class VsphereConfigUpdateForm {
             defaultValue = "1",
             defaultJsonValue = true,
             attrs = "{\"min\":1,\"max\":512,\"step\":1}",
+            propsInfo = "{\"style\":{\"width\":\"120px\"}}",
             confirmGroup = 1
     )
     private int memory;

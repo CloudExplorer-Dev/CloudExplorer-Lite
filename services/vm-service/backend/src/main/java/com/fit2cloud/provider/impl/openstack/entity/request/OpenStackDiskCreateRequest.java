@@ -14,22 +14,24 @@ public class OpenStackDiskCreateRequest extends OpenStackBaseRequest {
 
     // private String zone;
 
-    @Form(inputType = InputType.Text, label = "名称")
+    @Form(inputType = InputType.Text, label = "名称", propsInfo = "{\"style\":{\"width\":\"100%\"}}")
     private String diskName;
 
     @Form(inputType = InputType.Radio,
             label = "磁盘类型",
             textField = "name",
             valueField = "name",
+            propsInfo = "{\"radioType\":\"radio\",\"style\":{\"width\":\"100%\"}}",
             method = "listVolumeType",
             clazz = OpenStackCloudProvider.class)
     private String diskType;
 
     @Form(inputType = InputType.Number,
             label = "磁盘大小",
-            defaultValue = "1",
+            defaultValue = "20",
             defaultJsonValue = true,
-            attrs = "{\"min\":10,\"max\":32728,\"step\":1}",
+            attrs = "{\"min\":1,\"max\":32728,\"step\":10}",
+            propsInfo = "{\"style\":{\"width\":\"120px\"}}",
             unit = "GB")
     private int size;
 
