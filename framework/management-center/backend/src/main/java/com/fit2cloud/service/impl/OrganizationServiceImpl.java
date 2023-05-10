@@ -7,8 +7,6 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.fit2cloud.base.entity.Organization;
 import com.fit2cloud.base.service.IBaseUserRoleService;
-import com.fit2cloud.common.constants.RoleConstants;
-import com.fit2cloud.common.event.impl.EmitTemplate;
 import com.fit2cloud.common.exception.Fit2cloudException;
 import com.fit2cloud.common.utils.ColumnNameUtil;
 import com.fit2cloud.common.utils.CurrentUserUtils;
@@ -56,9 +54,6 @@ public class OrganizationServiceImpl extends ServiceImpl<OrganizationMapper, Org
 
     @Resource
     private IWorkspaceService workspaceService;
-
-    @Resource
-    private EmitTemplate emitTemplate;
 
     @Resource
     private IBaseUserRoleService userRoleService;
