@@ -234,10 +234,6 @@ const search = (condition: TableSearch) => {
     });
 };
 
-function create() {}
-
-function edit(row: Organization) {}
-
 const tableConfig = ref<TableConfig>({
   searchConfig: {
     showEmpty: false,
@@ -249,7 +245,21 @@ const tableConfig = ref<TableConfig>({
   paginationConfig: new PaginationConfig(),
 });
 
-const emit = defineEmits(["jumpToWorkspace", "jumpToUser", "deleteOrg"]);
+const emit = defineEmits([
+  "jumpToWorkspace",
+  "jumpToUser",
+  "deleteOrg",
+  "create",
+  "edit",
+]);
+
+function create() {
+  emit("create", { id: props.id });
+}
+
+function edit(row: Organization) {
+  emit("edit", { id: row.id });
+}
 
 function jumpToWorkspace(row: Organization) {
   emit("jumpToWorkspace", { type: "ORGANIZATION", id: row.id });

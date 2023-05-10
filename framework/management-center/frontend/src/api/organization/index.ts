@@ -25,8 +25,8 @@ const listAllOrganization: (
   return get("/api/listAll/org", null, loading);
 };
 
-const batchSave = (data: CreateOrgFrom) => {
-  return post("/api/organization/batch", null, data);
+const batchSave = (data: CreateOrgFrom, loading?: Ref<boolean>) => {
+  return post("/api/organization/batch", null, data, loading);
 };
 const deleteOrg = (id: string, loading?: Ref<boolean>) => {
   return del("/api/organization/" + id, undefined, undefined, loading);

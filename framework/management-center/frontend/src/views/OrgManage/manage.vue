@@ -12,6 +12,7 @@ import type Node from "element-plus/es/components/tree/src/model/node";
 import UserManageTab from "@/views/OrgManage/manage/UserManageTab.vue";
 import OrgManageTab from "@/views/OrgManage/manage/OrgManageTab.vue";
 import WorkspaceManageTab from "@/views/OrgManage/manage/WorkspaceManageTab.vue";
+import OrgCreateDrawer from "@/views/OrgManage/manage/OrgCreateDrawer.vue";
 import CeDrawer from "@commons/components/ce-drawer/index.vue";
 import {
   User,
@@ -46,11 +47,15 @@ const permissionStore = usePermissionStore();
 const { t } = useI18n();
 
 function editSource(source: TreeNode) {
-  console.log(source);
+  //console.log(source);
+  if (source.type === "ORGANIZATION") {
+    editOrganization(source);
+  } else if (source.type === "WORKSPACE") {
+  }
 }
 
 function deleteSource(source: { type: string; id: string; inTab: boolean }) {
-  console.log(source);
+  //console.log(source);
   if (source.type === "ORGANIZATION") {
     ElMessageBox.confirm(
       t("commons.message_box.confirm_delete", "确认删除"),
@@ -163,6 +168,7 @@ const addUserFormRef = ref<FormInstance | undefined>();
 const addUserDrawerRef = ref<InstanceType<typeof CeDrawer>>();
 const userManageTabRef = ref<InstanceType<typeof UserManageTab>>();
 const orgManageTabRef = ref<InstanceType<typeof OrgManageTab>>();
+const orgCreateDrawerRef = ref<InstanceType<typeof OrgCreateDrawer>>();
 const workspaceManageTabRef = ref<InstanceType<typeof WorkspaceManageTab>>();
 const addUserList = ref<Array<User>>([]);
 const addRoleList = ref<Array<Role>>([]);
@@ -177,7 +183,7 @@ function removeAddUserRow(index: number) {
 }
 
 function addUser(source: TreeNode) {
-  console.log(source);
+  //console.log(source);
   addUserDrawerRef.value?.open();
   addUserData.value = [{}];
   UserApi.listUser(addUserLoading).then((res) => {
@@ -227,8 +233,25 @@ function confirmAddUser() {
 
 /** addUser end **/
 
-function addOrganization(source: TreeNode) {
+function addOrganization(source: { id: string }) {
   console.log(source);
+  orgCreateDrawerRef.value?.open();
+  if (source.id !== "CE_BASE") {
+    orgCreateDrawerRef.value?.setPid(source.id);
+  }
+}
+
+function afterSubmitOrganization() {
+  orgManageTabRef.value?.refreshList();
+  orgTreeRef.value?.reloadTree();
+}
+
+function editOrganization(source: { id: string }) {
+  console.log(source);
+  orgCreateDrawerRef.value?.open();
+  if (source.id !== "CE_BASE") {
+    orgCreateDrawerRef.value?.setPid(source.id);
+  }
 }
 
 function jumpToWorkspace(obj: any) {
@@ -408,6 +431,8 @@ const addOperations = computed(
             @jump-to-workspace="jumpToWorkspace"
             @jump-to-user="jumpToUser"
             @delete-org="deleteSource"
+            @create="addOrganization"
+            @edit="editOrganization"
             style="height: 100%"
           />
           <WorkspaceManageTab
@@ -518,6 +543,11 @@ const addOperations = computed(
         </el-form>
       </el-container>
     </CeDrawer>
+
+    <OrgCreateDrawer
+      ref="orgCreateDrawerRef"
+      @submit="afterSubmitOrganization"
+    />
   </el-container>
 </template>
 
