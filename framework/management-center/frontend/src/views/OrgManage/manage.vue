@@ -13,6 +13,7 @@ import UserManageTab from "@/views/OrgManage/manage/UserManageTab.vue";
 import OrgManageTab from "@/views/OrgManage/manage/OrgManageTab.vue";
 import WorkspaceManageTab from "@/views/OrgManage/manage/WorkspaceManageTab.vue";
 import OrgCreateDrawer from "@/views/OrgManage/manage/OrgCreateDrawer.vue";
+import OrgEditDrawer from "@/views/OrgManage/manage/OrgEditDrawer.vue";
 import CeDrawer from "@commons/components/ce-drawer/index.vue";
 import {
   User,
@@ -169,6 +170,7 @@ const addUserDrawerRef = ref<InstanceType<typeof CeDrawer>>();
 const userManageTabRef = ref<InstanceType<typeof UserManageTab>>();
 const orgManageTabRef = ref<InstanceType<typeof OrgManageTab>>();
 const orgCreateDrawerRef = ref<InstanceType<typeof OrgCreateDrawer>>();
+const orgEditDrawerRef = ref<InstanceType<typeof OrgEditDrawer>>();
 const workspaceManageTabRef = ref<InstanceType<typeof WorkspaceManageTab>>();
 const addUserList = ref<Array<User>>([]);
 const addRoleList = ref<Array<Role>>([]);
@@ -248,9 +250,9 @@ function afterSubmitOrganization() {
 
 function editOrganization(source: { id: string }) {
   console.log(source);
-  orgCreateDrawerRef.value?.open();
+  orgEditDrawerRef.value?.open();
   if (source.id !== "CE_BASE") {
-    orgCreateDrawerRef.value?.setPid(source.id);
+    orgEditDrawerRef.value?.setData(source.id);
   }
 }
 
@@ -548,6 +550,7 @@ const addOperations = computed(
       ref="orgCreateDrawerRef"
       @submit="afterSubmitOrganization"
     />
+    <OrgEditDrawer ref="orgEditDrawerRef" @submit="afterSubmitOrganization" />
   </el-container>
 </template>
 

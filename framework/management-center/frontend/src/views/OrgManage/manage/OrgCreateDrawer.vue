@@ -10,95 +10,88 @@
     <el-form
       :model="from"
       ref="ruleFormRef"
-      label-width="80px"
       status-icon
       label-position="top"
       require-asterisk-position="right"
       scroll-to-error
       v-loading="loading"
     >
-      <el-row>
-        <el-col :span="24">
-          <FormTitle>{{ t("commons.basic_info", "基本信息") }}</FormTitle>
-        </el-col>
-      </el-row>
-      <el-row :gutter="10" v-for="(org, index) in from.orgDetails" :key="index">
-        <el-col :span="11">
-          <el-form-item
-            :label="t('commons.name', '名称')"
-            :prop="'orgDetails[' + index + '].name'"
-            :rules="rules.name"
-          >
-            <el-input v-model="org.name" />
-          </el-form-item>
-        </el-col>
-        <el-col :span="12">
-          <el-form-item
-            :label="t('commons.description', '描述')"
-            :prop="'orgDetails[' + index + '].description'"
-            :rules="rules.description"
-          >
-            <el-input v-model="org.description" />
-          </el-form-item>
-        </el-col>
-        <el-col :span="1" class="padding-top-30">
-          <el-form-item v-if="from.orgDetails.length > 1">
-            <div
-              class="delete-button-class"
-              @click="deleteOrgItem(ruleFormRef, org, index)"
+      <FormTitle>{{ t("commons.basic_info", "基本信息") }}</FormTitle>
+      <div style="margin-bottom: 32px">
+        <template v-for="(org, index) in from.orgDetails" :key="index">
+          <div class="add-org-form-item">
+            <el-form-item
+              class="form-item"
+              :prop="'orgDetails[' + index + '].name'"
+              :rules="rules.name"
             >
-              <CeIcon
-                size="var(--ce-star-menu-icon-width,13.33px)"
-                code="icon_delete-trash_outlined1"
-              />
-            </div>
-          </el-form-item>
-        </el-col>
-      </el-row>
-      <el-row :gutter="10">
-        <el-col :span="24">
-          <el-form-item>
-            <el-button @click="addOrgItem(ruleFormRef)" link type="primary">
-              + 添加组织
-            </el-button>
-          </el-form-item>
-        </el-col>
-      </el-row>
-      <el-row>
-        <el-col :span="24">
-          <FormTitle>
-            {{ t("org_manage.affiliated_organization", "所属组织") }}
-          </FormTitle>
-        </el-col>
-      </el-row>
-      <el-row>
-        <el-col :span="23">
-          <el-form-item :label="t('commons.org', '组织')">
-            <el-tree-select
-              filterable
-              :filter-method="filterMethod"
-              :props="{ label: 'name' }"
-              node-key="id"
-              v-model="from.pid"
-              :data="orientationData"
-              show-checkbox
-              style="width: 100%"
-              :render-after-expand="false"
-              check-strictly
+              <el-input v-model="org.name" style="width: 320px">
+                <template #prepend>
+                  <span class="label-required">
+                    {{ t("commons.name", "名称") }}
+                  </span>
+                </template>
+              </el-input>
+            </el-form-item>
+            <el-form-item
+              class="form-item"
+              :prop="'orgDetails[' + index + '].description'"
+              :rules="rules.description"
+            >
+              <el-input v-model="org.description" style="width: 360px">
+                <template #prepend>
+                  <span>
+                    {{ t("commons.description", "描述") }}
+                  </span>
+                </template>
+              </el-input>
+            </el-form-item>
+
+            <div
+              v-if="from.orgDetails.length <= 1"
+              style="width: 16px; height: 16px"
+            ></div>
+            <CeIcon
+              style="cursor: pointer"
+              size="16px"
+              code="icon_delete-trash_outlined1"
+              v-if="from.orgDetails.length > 1"
+              @click="deleteOrgItem(ruleFormRef, org, index)"
             />
-          </el-form-item>
-        </el-col>
-      </el-row>
-      {{ from }}
+          </div>
+        </template>
+
+        <el-button @click="addOrgItem(ruleFormRef)" link type="primary">
+          + 添加组织
+        </el-button>
+      </div>
+
+      <FormTitle>
+        {{ t("org_manage.affiliated_organization", "所属组织") }}
+      </FormTitle>
+
+      <el-form-item :label="t('commons.org', '组织')">
+        <el-tree-select
+          filterable
+          :filter-method="filterMethod"
+          :props="{ label: 'name' }"
+          node-key="id"
+          v-model="from.pid"
+          :data="orientationData"
+          show-checkbox
+          style="width: 100%"
+          check-strictly
+          :render-after-expand="false"
+        />
+      </el-form-item>
     </el-form>
   </CeDrawer>
 </template>
 <script setup lang="ts">
 import { ElMessage } from "element-plus";
-import { ref, onMounted, reactive } from "vue";
+import { ref, reactive } from "vue";
 import organizationApi from "@/api/organization";
 import type { OrganizationTree, CreateOrgFrom } from "@/api/organization/type";
-import { useRouter } from "vue-router";
 import type { FormInstance, FormRules } from "element-plus";
 import CeIcon from "@commons/components/ce-icon/index.vue";
 import { useI18n } from "vue-i18n";
@@ -108,8 +101,6 @@ import CeDrawer from "@commons/components/ce-drawer/index.vue";
 const loading = ref<boolean>(false);
 
 const { t } = useI18n();
-// 路由对象
-const router = useRouter();
 // 校验实例对象
 const ruleFormRef = ref<FormInstance>();
 // 组织树数据
@@ -142,14 +133,6 @@ function clear() {
 
 const addOrgDrawerRef = ref<InstanceType<typeof CeDrawer>>();
 
-// 组建挂载生命周期钩子
-onMounted(() => {
-  organizationApi.tree().then((data) => {
-    orientationData.value = data.data;
-    sourceData.value = [...orientationData.value];
-  });
-});
-
 const emit = defineEmits(["submit"]);
 
 /**
@@ -161,7 +144,6 @@ const submitForm = () => {
   ruleFormRef.value?.validate((valid) => {
     if (valid) {
       organizationApi.batchSave(from.value, loading).then(() => {
-        router.push({ name: "org" });
         ElMessage.success(t("commons.msg.save_success"));
         cancelAddOrg();
         emit("submit");
@@ -172,6 +154,10 @@ const submitForm = () => {
 
 function open() {
   addOrgDrawerRef.value?.open();
+  organizationApi.tree().then((data) => {
+    orientationData.value = data.data;
+    sourceData.value = [...orientationData.value];
+  });
 }
 
 function cancelAddOrg() {
@@ -222,4 +208,32 @@ function setPid(id?: string) {
 
 defineExpose({ open, clear, setPid });
 </script>
-<style lang="scss" scoped></style>
+<style lang="scss" scoped>
+.add-org-form-item {
+  width: calc(100% - 24px);
+  background: #f7f9fc;
+  border-radius: 4px;
+  padding: 12px;
+  margin-top: 28px;
+  margin-bottom: 14px;
+  display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  align-items: center;
+  justify-content: space-between;
+
+  .form-item {
+    margin-bottom: 0;
+  }
+
+  &:first-child {
+    margin-top: 0;
+  }
+}
+
+.label-required:after {
+  content: "*";
+  color: var(--el-color-danger);
+  margin-left: 4px;
+}
+</style>
