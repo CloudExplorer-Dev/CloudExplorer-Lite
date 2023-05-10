@@ -25,4 +25,16 @@ public interface SyncService {
      * @param params 账单参数
      */
     void syncBill(Map<String, Object> params);
+
+    /**
+     * 删除账单数据
+     *
+     * @param cloudAccountId 云账号id
+     */
+    void deleteDataSource(String cloudAccountId);
+
+    /**
+     * 删除不存在的云账号数据
+     */
+    void deleteNotFountCloudAccountData();
 }

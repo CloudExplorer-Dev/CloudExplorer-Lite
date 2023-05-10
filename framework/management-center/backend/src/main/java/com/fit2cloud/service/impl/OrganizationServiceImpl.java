@@ -10,6 +10,7 @@ import com.fit2cloud.base.entity.Workspace;
 import com.fit2cloud.base.service.IBaseUserRoleService;
 import com.fit2cloud.base.service.IBaseWorkspaceService;
 import com.fit2cloud.common.constants.RoleConstants;
+import com.fit2cloud.common.event.impl.EmitTemplate;
 import com.fit2cloud.common.exception.Fit2cloudException;
 import com.fit2cloud.common.utils.ColumnNameUtil;
 import com.fit2cloud.common.utils.CurrentUserUtils;
@@ -53,6 +54,8 @@ public class OrganizationServiceImpl extends ServiceImpl<OrganizationMapper, Org
     SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
     @Resource
     private IBaseWorkspaceService workspaceService;
+    @Resource
+    private EmitTemplate emitTemplate;
 
     @Resource
     private IBaseUserRoleService userRoleService;
@@ -110,7 +113,7 @@ public class OrganizationServiceImpl extends ServiceImpl<OrganizationMapper, Org
     }
 
     @Override
-    public Boolean batch(OrganizationBatchRequest request) {
+    public List<Organization> batch(OrganizationBatchRequest request) {
         List<String> names = request.getOrgDetails().stream().map(OrganizationBatchRequest.OriginDetails::getName).toList();
         List<Organization> list = list(new LambdaQueryWrapper<Organization>().in(Organization::getName, names));
         if (CollectionUtils.isNotEmpty(list) || new HashSet<>(names).size() != names.size()) {
@@ -123,8 +126,8 @@ public class OrganizationServiceImpl extends ServiceImpl<OrganizationMapper, Org
             organization.setPid(request.getPid());
             return organization;
         }).toList();
-        return saveBatch(organizations);
-
+        saveBatch(organizations);
+        return organizations;
     }
 
     @Override

@@ -1,6 +1,7 @@
 package com.fit2cloud.controller;
 
 import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.fit2cloud.common.event.annotaion.Emit;
 import com.fit2cloud.common.log.annotation.OperatedLog;
 import com.fit2cloud.common.log.constants.OperatedTypeEnum;
 import com.fit2cloud.common.log.constants.ResourceTypeEnum;
@@ -23,6 +24,7 @@ import javax.annotation.Resource;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 import java.util.ArrayList;
+import java.util.List;
 
 /**
  * @author jianneng
@@ -57,6 +59,7 @@ public class WorkspaceController {
     @OperatedLog(resourceType = ResourceTypeEnum.WORKSPACE, operated = OperatedTypeEnum.ADD,
             content = "'创建了名为'+#workspaceRequest.name+'的工作空间'",
             param = "#workspaceRequest")
+    @Emit(value = "CREATE::WORKSPACE", el = "#workspaceRequest.id")
     public ResultHolder<Boolean> create(
             @RequestBody
             @Validated(ValidationGroup.SAVE.class) WorkspaceRequest workspaceRequest) {
@@ -71,6 +74,7 @@ public class WorkspaceController {
             resourceId = "#workspaceRequest.id",
             content = "'更新了['+#workspaceRequest.name+']'",
             param = "#workspaceRequest")
+    @Emit(value = "UPDATE::WORKSPACE", el = "#workspaceRequest.id")
     public ResultHolder<Boolean> update(
             @RequestBody
             @Validated(ValidationGroup.UPDATE.class) WorkspaceRequest workspaceRequest) {
@@ -94,6 +98,7 @@ public class WorkspaceController {
             content = "'删除工作空间'",
             param = "#workspaceId")
     @PreAuthorize("hasAnyCePermission('WORKSPACE:DELETE')")
+    @Emit(value = "DELETE::WORKSPACE")
     public ResultHolder<Boolean> delete(
             @ApiParam("工作空间ID")
             @NotNull(message = "{i18n.workspace.id.is.not.empty}")
@@ -108,6 +113,7 @@ public class WorkspaceController {
             resourceId = "#workspaces.![id]",
             content = "'批量删除了'+#workspaces.size+'个工作空间'",
             param = "#workspaces")
+    @Emit(value = "DELETE_BATCH::WORKSPACE", el = "#arrayOf(#workspaces).map(\"#root.id\")")
     public ResultHolder<Boolean> batchDelete(
             @ApiParam("批量删除工作空间")
             @Size(min = 1, message = "{i18n.workspace.is.required}")
@@ -121,8 +127,9 @@ public class WorkspaceController {
             content = "'批量创建了'+#request.workspaceDetails.size+'个工作空间['+#request.workspaceDetails.![name]+']'",
             param = "#request")
     @PreAuthorize("hasAnyCePermission('WORKSPACE:CREATE')")
-    public ResultHolder<Boolean> batch(@RequestBody @Validated(ValidationGroup.SAVE.class) WorkspaceBatchCreateRequest request) {
-        Boolean batch = workspaceService.batch(request);
+    @Emit(value = "CREATE_BATCH::WORKSPACE", el = "#arrayOf(#result.data).map(\"#root.id\")")
+    public ResultHolder<List<Workspace>> batch(@RequestBody @Validated(ValidationGroup.SAVE.class) WorkspaceBatchCreateRequest request) {
+        List<Workspace> batch = workspaceService.batch(request);
         return ResultHolder.success(batch);
     }
 

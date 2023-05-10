@@ -21,8 +21,6 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import org.apache.commons.collections4.keyvalue.DefaultKeyValue;
-import org.springframework.cache.annotation.CacheEvict;
-import org.springframework.cache.annotation.Cacheable;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -55,7 +53,6 @@ public class BillRuleController {
 
     @GetMapping("/group_keys")
     @ApiOperation(value = "获取可分组字段", notes = "获取可分组字段")
-    @Cacheable(value = "bill_rule", keyGenerator = "notAuthKeyGenerator")
     @PreAuthorize("hasAnyCePermission('CUSTOM_BILL:READ')")
     public ResultHolder<List<DefaultKeyValue<String, String>>> groupKeys() {
         return ResultHolder.success(BillFieldConstants.BILL_FIELD.entrySet().stream().filter(field -> field.getValue().group()).map(field -> new DefaultKeyValue<>(field.getValue().label(), field.getKey())).toList());
@@ -100,7 +97,6 @@ public class BillRuleController {
     }
 
     @PutMapping
-    @CacheEvict(value = "bill_view", allEntries = true)
     @ApiOperation(value = "修改账单规则", notes = "修改账单规则")
     @PreAuthorize("hasAnyCePermission('CUSTOM_BILL:EDIT')")
     @OperatedLog(resourceType = ResourceTypeEnum.BILL_RULE, operated = OperatedTypeEnum.MODIFY,

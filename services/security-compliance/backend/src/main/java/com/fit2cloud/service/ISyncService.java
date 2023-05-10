@@ -41,4 +41,9 @@ public interface ISyncService {
      * @param cloudAccountId 云账号id
      */
     void syncInstance(String cloudAccountId);
+
+    /**
+     * 删除不存在的云账号数据
+     */
+    void deleteNotFountCloudAccountData();
 }

@@ -25,6 +25,9 @@ import java.util.Map;
  * @注释:
  */
 public abstract class AbstractCloudProvider<C extends Credential> implements ICloudProvider {
+    public static class NotSupportException extends RuntimeException {
+
+    }
 
     @Override
     public FormObject getCreateServerForm() {
@@ -64,12 +67,12 @@ public abstract class AbstractCloudProvider<C extends Credential> implements ICl
 
     @Override
     public List<F2CHost> listHost(String req) {
-        return null;
+        throw new NotSupportException();
     }
 
     @Override
     public List<F2CDatastore> listDataStore(String req) {
-        return null;
+        throw new NotSupportException();
     }
 
     @Override

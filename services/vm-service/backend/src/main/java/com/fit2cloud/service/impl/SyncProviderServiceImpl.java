@@ -1,5 +1,11 @@
 package com.fit2cloud.service.impl;
 
+import co.elastic.clients.elasticsearch.ElasticsearchClient;
+import co.elastic.clients.elasticsearch._types.FieldValue;
+import co.elastic.clients.elasticsearch._types.query_dsl.Query;
+import co.elastic.clients.elasticsearch._types.query_dsl.TermsQuery;
+import co.elastic.clients.elasticsearch._types.query_dsl.TermsQueryField;
+import co.elastic.clients.elasticsearch.core.DeleteByQueryRequest;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.fit2cloud.base.entity.*;
@@ -13,6 +19,7 @@ import com.fit2cloud.common.log.utils.LogUtil;
 import com.fit2cloud.common.platform.credential.Credential;
 import com.fit2cloud.common.provider.entity.F2CPerfMetricMonitorData;
 import com.fit2cloud.common.provider.util.CommonUtil;
+import com.fit2cloud.common.scheduler.handler.AsyncJob;
 import com.fit2cloud.common.utils.DateUtil;
 import com.fit2cloud.common.utils.JsonUtil;
 import com.fit2cloud.es.entity.PerfMetricMonitorData;
@@ -29,9 +36,11 @@ import io.reactivex.rxjava3.functions.BiFunction;
 import io.reactivex.rxjava3.functions.Consumer;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.beans.BeanUtils;
+import org.springframework.data.elasticsearch.annotations.Document;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
+import java.io.IOException;
 import java.io.Serializable;
 import java.time.LocalDateTime;
 import java.util.*;
@@ -58,6 +67,8 @@ public class SyncProviderServiceImpl extends BaseSyncService implements ISyncPro
     private IBaseJobRecordResourceMappingService jobRecordResourceMappingService;
     @Resource
     private PerfMetricMonitorDataRepository perfMetricMonitorDataRepository;
+    @Resource
+    private ElasticsearchClient elasticsearchClient;
 
     @Override
     public void syncCloudServer(String cloudAccountId) {
@@ -361,6 +372,57 @@ public class SyncProviderServiceImpl extends BaseSyncService implements ISyncPro
         } catch (Exception e) {
             LogUtil.error("同步存储器监控失败:" + e.getMessage());
         }
+    }
+
+    @Override
+    public void syncCloudDatastorePerfMetricMonitor(String cloudAccountId) {
+        syncCloudDatastorePerfMetricMonitor(Map.of(JobConstants.CloudAccount.CLOUD_ACCOUNT_ID.name(), cloudAccountId));
+    }
+
+    @Override
+    public void syncCloudDiskPerfMetricMonitor(String cloudAccountId) {
+        syncCloudDiskPerfMetricMonitor(Map.of(JobConstants.CloudAccount.CLOUD_ACCOUNT_ID.name(), cloudAccountId));
+    }
+
+    @Override
+    public void syncCloudHostPerfMetricMonitor(String cloudAccountId) {
+        syncCloudHostPerfMetricMonitor(Map.of(JobConstants.CloudAccount.CLOUD_ACCOUNT_ID.name(), cloudAccountId));
+    }
+
+    @Override
+    public void syncCloudServerPerfMetricMonitor(String cloudAccountId) {
+        syncCloudServerPerfMetricMonitor(Map.of(JobConstants.CloudAccount.CLOUD_ACCOUNT_ID.name(), cloudAccountId));
+    }
+
+    @Override
+    public void deleteDataSource(List<String> cloudAccountIds) {
+        // 删除虚拟机数据
+        AsyncJob.run(() -> vmCloudServerService.remove(new LambdaUpdateWrapper<VmCloudServer>().in(VmCloudServer::getAccountId, cloudAccountIds)));
+        // 删除磁盘
+        AsyncJob.run(() -> vmCloudDiskService.remove(new LambdaUpdateWrapper<VmCloudDisk>().in(VmCloudDisk::getAccountId, cloudAccountIds)));
+        // 删除镜像
+        AsyncJob.run(() -> vmCloudImageService.remove(new LambdaUpdateWrapper<VmCloudImage>().in(VmCloudImage::getAccountId, cloudAccountIds)));
+        // 删除监控数据
+        AsyncJob.run(() -> {
+            DeleteByQueryRequest queryRequest = new DeleteByQueryRequest.Builder().index(PerfMetricMonitorData.class.getAnnotation(Document.class).indexName())
+                    .query(new Query.Builder()
+                            .terms(new TermsQuery.Builder().field("cloudAccountId.keyword")
+                                    .terms(new TermsQueryField.Builder()
+                                            .value(cloudAccountIds
+                                                    .stream()
+                                                    .map(FieldValue::of).toList())
+                                            .build()).build()).build()).build();
+            try {
+                elasticsearchClient.deleteByQuery(queryRequest);
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+        });
+    }
+
+    @Override
+    public void deleteDataSource(String cloudAccountId) {
+        deleteDataSource(List.of(cloudAccountId));
     }
 
     /**

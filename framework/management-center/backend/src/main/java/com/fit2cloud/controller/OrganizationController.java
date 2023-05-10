@@ -3,6 +3,7 @@ package com.fit2cloud.controller;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.fit2cloud.base.entity.Organization;
 import com.fit2cloud.base.mapper.BaseOrganizationMapper;
+import com.fit2cloud.common.event.annotaion.Emit;
 import com.fit2cloud.common.log.annotation.OperatedLog;
 import com.fit2cloud.common.log.constants.OperatedTypeEnum;
 import com.fit2cloud.common.log.constants.ResourceTypeEnum;
@@ -26,6 +27,7 @@ import javax.annotation.Resource;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 import java.util.ArrayList;
+import java.util.List;
 
 /**
  * @Author:张少虎
@@ -70,6 +72,7 @@ public class OrganizationController {
     @OperatedLog(resourceType = ResourceTypeEnum.ORGANIZATION, operated = OperatedTypeEnum.ADD,
             content = "'添加组织['+#request.name+']'",
             param = "#request")
+    @Emit(value = "CREATE::ORGANIZATION", el = "#request.id")
     public ResultHolder<Organization> save(@RequestBody
                                            @Validated(ValidationGroup.SAVE.class) OrganizationRequest request) {
         Organization organization = new Organization();
@@ -84,10 +87,11 @@ public class OrganizationController {
     @OperatedLog(resourceType = ResourceTypeEnum.ORGANIZATION, operated = OperatedTypeEnum.BATCH_ADD,
             content = "'批量添加组织['+#request.orgDetails.![name]+']'",
             param = "#request")
-    public ResultHolder<Boolean> batch(@RequestBody
-                                       @Validated(ValidationGroup.SAVE.class) OrganizationBatchRequest request) {
-        Boolean batch = organizationService.batch(request);
-        return ResultHolder.success(batch);
+    @Emit(value = "CREATE_BATCH::ORGANIZATION", el = "#arrayOf(#result.data).map(\"#root.id\")")
+    public ResultHolder<List<Organization>> batch(@RequestBody
+                                                  @Validated(ValidationGroup.SAVE.class) OrganizationBatchRequest request) {
+        List<Organization> organizations = organizationService.batch(request);
+        return ResultHolder.success(organizations);
     }
 
     @ApiOperation(value = "修改组织", notes = "修改组织")
@@ -97,6 +101,7 @@ public class OrganizationController {
             resourceId = "#request.id",
             content = "'修改组织['+#request.name+']'",
             param = "#request")
+    @Emit(value = "UPDATE::ORGANIZATION", el = "#request.id")
     public ResultHolder<Organization> update(@RequestBody
                                              @Validated(ValidationGroup.UPDATE.class) OrganizationRequest request) {
         organizationService.update(request);
@@ -110,6 +115,7 @@ public class OrganizationController {
             resourceId = "#id",
             content = "'删除组织'",
             param = "#id")
+    @Emit("DELETE::ORGANIZATION")
     public ResultHolder<Boolean> delete(@ApiParam("组织id")
                                         @NotNull(message = "{i18n.organization.name.is.not.empty}")
                                         @CustomValidated(mapper = BaseOrganizationMapper.class, handler = ExistHandler.class, message = "{i18n.organization.id.is.not.existent}", exist = false)
@@ -124,6 +130,7 @@ public class OrganizationController {
             resourceId = "#organizationIds.![id]",
             content = "'批量删除了['+#organizationIds.size+']个组织'",
             param = "#organizationIds")
+    @Emit(value = "DELETE_BATCH::ORGANIZATION", el = "#arrayOf(#organizationIds).map(\"#root.id\")")
     public ResultHolder<Boolean> deleteBatch(@ApiParam("批量删除组织")
                                              @Size(min = 1, message = "{i18n.organization.id.size.gt.one}")
                                              @NotNull(message = "{i18n.organization.id.is.not.empty}")
