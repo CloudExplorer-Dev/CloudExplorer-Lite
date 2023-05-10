@@ -14,6 +14,7 @@ import OrgManageTab from "@/views/OrgManage/manage/OrgManageTab.vue";
 import WorkspaceManageTab from "@/views/OrgManage/manage/WorkspaceManageTab.vue";
 import OrgCreateDrawer from "@/views/OrgManage/manage/OrgCreateDrawer.vue";
 import OrgEditDrawer from "@/views/OrgManage/manage/OrgEditDrawer.vue";
+import WorkspaceEditOrCreateDrawer from "@/views/OrgManage/manage/WorkspaceEditOrCreateDrawer.vue";
 import CeDrawer from "@commons/components/ce-drawer/index.vue";
 import {
   User,
@@ -52,6 +53,7 @@ function editSource(source: TreeNode) {
   if (source.type === "ORGANIZATION") {
     editOrganization(source);
   } else if (source.type === "WORKSPACE") {
+    editWorkspace(source);
   }
 }
 
@@ -171,6 +173,8 @@ const userManageTabRef = ref<InstanceType<typeof UserManageTab>>();
 const orgManageTabRef = ref<InstanceType<typeof OrgManageTab>>();
 const orgCreateDrawerRef = ref<InstanceType<typeof OrgCreateDrawer>>();
 const orgEditDrawerRef = ref<InstanceType<typeof OrgEditDrawer>>();
+const workspaceDrawerRef =
+  ref<InstanceType<typeof WorkspaceEditOrCreateDrawer>>();
 const workspaceManageTabRef = ref<InstanceType<typeof WorkspaceManageTab>>();
 const addUserList = ref<Array<User>>([]);
 const addRoleList = ref<Array<Role>>([]);
@@ -236,7 +240,7 @@ function confirmAddUser() {
 /** addUser end **/
 
 function addOrganization(source: { id: string }) {
-  console.log(source);
+  //console.log(source);
   orgCreateDrawerRef.value?.open();
   if (source.id !== "CE_BASE") {
     orgCreateDrawerRef.value?.setPid(source.id);
@@ -270,8 +274,24 @@ function jumpToOrg(obj: any) {
   orgTreeRef.value?.select(obj.id);
 }
 
-function addWorkspace(source: TreeNode) {
+function addWorkspace(source: { id: string }) {
   console.log(source);
+  workspaceDrawerRef.value?.open();
+  if (source.id !== "CE_BASE") {
+    workspaceDrawerRef.value?.setOrgId(source.id);
+  }
+}
+
+function editWorkspace(source: { id: string }) {
+  console.log(source);
+  if (source.id) {
+    workspaceDrawerRef.value?.open(source.id);
+  }
+}
+
+function afterSubmitWorkspace() {
+  workspaceManageTabRef.value?.refreshList();
+  orgTreeRef.value?.reloadTree();
 }
 
 const addOperations = computed(
@@ -444,6 +464,8 @@ const addOperations = computed(
             @jump-to-user="jumpToUser"
             @jump-to-org="jumpToOrg"
             @delete-workspace="deleteSource"
+            @create="addWorkspace"
+            @edit="editWorkspace"
             style="height: 100%"
           />
         </el-main>
@@ -551,6 +573,10 @@ const addOperations = computed(
       @submit="afterSubmitOrganization"
     />
     <OrgEditDrawer ref="orgEditDrawerRef" @submit="afterSubmitOrganization" />
+    <WorkspaceEditOrCreateDrawer
+      ref="workspaceDrawerRef"
+      @submit="afterSubmitWorkspace"
+    />
   </el-container>
 </template>
 

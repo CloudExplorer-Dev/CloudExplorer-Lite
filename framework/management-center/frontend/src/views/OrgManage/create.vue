@@ -121,12 +121,12 @@
 import { ElMessage } from "element-plus";
 import { ref, onMounted, reactive } from "vue";
 import organizationApi from "@/api/organization";
-import type { OrganizationTree, CreateOrgFrom } from "@/api/organization/type";
+import type { OrganizationTree, CreateOrgForm } from "@/api/organization/type";
 import { useRouter } from "vue-router";
 import type { FormInstance, FormRules } from "element-plus";
 import CeIcon from "@commons/components/ce-icon/index.vue";
 import { useI18n } from "vue-i18n";
-import FormTitle from "@/componnets/from_title/FormTitle.vue";
+import FormTitle from "@/componnets/form_title/FormTitle.vue";
 const { t } = useI18n();
 // 路由对象
 const router = useRouter();
@@ -148,7 +148,7 @@ const rules = reactive<FormRules>({
   ],
 });
 // 表单数据初始化
-const from = ref<CreateOrgFrom>({
+const from = ref<CreateOrgForm>({
   pid: undefined,
   orgDetails: [{ name: "", description: "" }],
 });

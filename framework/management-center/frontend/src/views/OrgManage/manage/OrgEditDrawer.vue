@@ -9,10 +9,11 @@
   >
     <el-form
       :rules="rules"
-      :model="from"
+      :model="form"
       ref="ruleFormRef"
       status-icon
       require-asterisk-position="right"
+      scroll-to-error
       v-loading="loading"
     >
       <FormTitle>{{ t("commons.basic_info", "基本信息") }}</FormTitle>
@@ -20,7 +21,7 @@
       <div style="margin-bottom: 32px">
         <div class="edit-org-form-item">
           <el-form-item :prop="'name'" class="form-item">
-            <el-input v-model="from.name" style="width: 320px">
+            <el-input v-model="form.name" style="width: 320px">
               <template #prepend>
                 <span class="label-required">
                   {{ t("commons.name", "名称") }}
@@ -34,7 +35,7 @@
             :rules="rules.description"
             class="form-item"
           >
-            <el-input v-model="from.description" style="width: 360px">
+            <el-input v-model="form.description" style="width: 360px">
               <template #prepend>
                 <span>
                   {{ t("commons.description", "描述") }}
@@ -57,7 +58,7 @@
           :filter-method="filterMethod"
           :props="{ label: 'name' }"
           node-key="id"
-          v-model="from.pid"
+          v-model="form.pid"
           :data="orientationData"
           show-checkbox
           style="width: 100%"
@@ -75,7 +76,7 @@ import { ElMessage } from "element-plus";
 import organizationApi from "@/api/organization";
 import type { OrganizationTree, OrgUpdateForm } from "@/api/organization/type";
 import { useI18n } from "vue-i18n";
-import FormTitle from "@/componnets/from_title/FormTitle.vue";
+import FormTitle from "@/componnets/form_title/FormTitle.vue";
 import CeDrawer from "@commons/components/ce-drawer/index.vue";
 
 // 国际化实例
@@ -113,7 +114,7 @@ const rules = reactive<FormRules>({
   ],
 });
 // 表单数据
-const from = ref<OrgUpdateForm>({
+const form = ref<OrgUpdateForm>({
   pid: undefined,
   name: "",
   id: "",
@@ -121,7 +122,7 @@ const from = ref<OrgUpdateForm>({
 });
 
 function clear() {
-  from.value = {
+  form.value = {
     pid: undefined,
     name: "",
     id: "",
@@ -131,7 +132,7 @@ function clear() {
 
 function setData(id: string) {
   organizationApi.getOrgById(id as string).then((data) => {
-    from.value = data.data;
+    form.value = data.data;
   });
   organizationApi.tree().then((data) => {
     orientationData.value = resetData(data.data, id as string, false);
@@ -175,7 +176,7 @@ const submitForm = () => {
   if (!ruleFormRef.value) return;
   ruleFormRef.value?.validate((valid) => {
     if (valid) {
-      organizationApi.updateOrg(from.value).then(() => {
+      organizationApi.updateOrg(form.value).then(() => {
         ElMessage.success(t("commons.msg.save_success"));
         cancelEditOrg();
         emit("submit");

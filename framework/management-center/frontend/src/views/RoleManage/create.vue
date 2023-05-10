@@ -66,7 +66,7 @@ import RoleApi from "@/api/role";
 import { useI18n } from "vue-i18n";
 import RoleInfoTable from "./RoleInfoTable.vue";
 import RolePermissionTable from "./RolePermissionTable.vue";
-import FormTitle from "@/componnets/from_title/FormTitle.vue";
+import FormTitle from "@/componnets/form_title/FormTitle.vue";
 
 const { t } = useI18n();
 

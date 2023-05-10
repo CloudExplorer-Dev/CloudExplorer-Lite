@@ -8,7 +8,7 @@
     :disable-btn="loading"
   >
     <el-form
-      :model="from"
+      :model="form"
       ref="ruleFormRef"
       status-icon
       label-position="top"
@@ -18,7 +18,7 @@
     >
       <FormTitle>{{ t("commons.basic_info", "基本信息") }}</FormTitle>
       <div style="margin-bottom: 32px">
-        <template v-for="(org, index) in from.orgDetails" :key="index">
+        <template v-for="(org, index) in form.orgDetails" :key="index">
           <div class="add-org-form-item">
             <el-form-item
               class="form-item"
@@ -48,14 +48,14 @@
             </el-form-item>
 
             <div
-              v-if="from.orgDetails.length <= 1"
+              v-if="form.orgDetails.length <= 1"
               style="width: 16px; height: 16px"
             ></div>
             <CeIcon
               style="cursor: pointer"
               size="16px"
               code="icon_delete-trash_outlined1"
-              v-if="from.orgDetails.length > 1"
+              v-if="form.orgDetails.length > 1"
               @click="deleteOrgItem(ruleFormRef, org, index)"
             />
           </div>
@@ -72,16 +72,19 @@
 
       <el-form-item :label="t('commons.org', '组织')">
         <el-tree-select
+          ref="workspaceOrgSelectTree"
           filterable
           :filter-method="filterMethod"
           :props="{ label: 'name' }"
           node-key="id"
-          v-model="from.pid"
+          v-model="form.pid"
           :data="orientationData"
           show-checkbox
           style="width: 100%"
           check-strictly
           :render-after-expand="false"
+          :default-checked-keys="defaultCheckedKeys"
+          :default-expanded-keys="defaultCheckedKeys"
         />
       </el-form-item>
     </el-form>
@@ -89,16 +92,18 @@
 </template>
 <script setup lang="ts">
 import { ElMessage } from "element-plus";
-import { ref, reactive } from "vue";
+import { ref, reactive, nextTick } from "vue";
 import organizationApi from "@/api/organization";
-import type { OrganizationTree, CreateOrgFrom } from "@/api/organization/type";
+import type { OrganizationTree, CreateOrgForm } from "@/api/organization/type";
 import type { FormInstance, FormRules } from "element-plus";
 import CeIcon from "@commons/components/ce-icon/index.vue";
 import { useI18n } from "vue-i18n";
-import FormTitle from "@/componnets/from_title/FormTitle.vue";
+import FormTitle from "@/componnets/form_title/FormTitle.vue";
 import CeDrawer from "@commons/components/ce-drawer/index.vue";
 
 const loading = ref<boolean>(false);
+const defaultCheckedKeys = ref<Array<string>>([]);
+const workspaceOrgSelectTree = ref();
 
 const { t } = useI18n();
 // 校验实例对象
@@ -119,13 +124,13 @@ const rules = reactive<FormRules>({
   ],
 });
 // 表单数据初始化
-const from = ref<CreateOrgFrom>({
+const form = ref<CreateOrgForm>({
   pid: undefined,
   orgDetails: [{ name: "", description: "" }],
 });
 
 function clear() {
-  from.value = {
+  form.value = {
     pid: undefined,
     orgDetails: [{ name: "", description: "" }],
   };
@@ -143,7 +148,7 @@ const submitForm = () => {
   if (!ruleFormRef.value) return;
   ruleFormRef.value?.validate((valid) => {
     if (valid) {
-      organizationApi.batchSave(from.value, loading).then(() => {
+      organizationApi.batchSave(form.value, loading).then(() => {
         ElMessage.success(t("commons.msg.save_success"));
         cancelAddOrg();
         emit("submit");
@@ -175,7 +180,7 @@ const deleteOrgItem = (
   org: { name: string; description: string },
   index: number
 ) => {
-  from.value.orgDetails.splice(index, 1);
+  form.value.orgDetails.splice(index, 1);
 };
 /**
  * 在form表单里面添加一个组织
@@ -184,7 +189,7 @@ const deleteOrgItem = (
 const addOrgItem = (formEl: FormInstance | undefined) => {
   formEl?.validate((valid) => {
     if (valid) {
-      from.value.orgDetails.push({ name: "", description: "" });
+      form.value.orgDetails.push({ name: "", description: "" });
     }
   });
 };
@@ -202,7 +207,15 @@ const filterMethod = (value: string) => {
 
 function setPid(id?: string) {
   if (id) {
-    from.value.pid = id;
+    form.value.pid = id;
+    defaultCheckedKeys.value = [form.value.pid];
+
+    nextTick(() => {
+      workspaceOrgSelectTree.value?.setCheckedKeys(
+        defaultCheckedKeys.value,
+        true
+      );
+    });
   }
 }
 

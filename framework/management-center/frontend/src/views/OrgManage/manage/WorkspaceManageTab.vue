@@ -159,7 +159,13 @@ const tableConfig = ref<TableConfig>({
   paginationConfig: new PaginationConfig(),
 });
 
-const emit = defineEmits(["jumpToUser", "deleteWorkspace", "jumpToOrg"]);
+const emit = defineEmits([
+  "jumpToUser",
+  "deleteWorkspace",
+  "jumpToOrg",
+  "create",
+  "edit",
+]);
 
 function jumpToUser(row: WorkspaceDetail) {
   emit("jumpToUser", { type: "WORKSPACE", id: row.id });
@@ -168,8 +174,13 @@ function jumpToOrg(row: WorkspaceDetail) {
   emit("jumpToOrg", { id: row.organizationId });
 }
 
-function create() {}
-function edit(row: WorkspaceDetail) {}
+function create() {
+  console.log("create");
+  emit("create", { id: props.orgId });
+}
+function edit(row: WorkspaceDetail) {
+  emit("edit", { id: row.id });
+}
 function deleteItem(row: WorkspaceDetail) {
   emit("deleteWorkspace", { id: row.id, type: "WORKSPACE", inTab: true });
 }

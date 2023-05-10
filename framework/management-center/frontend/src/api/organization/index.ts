@@ -2,7 +2,7 @@ import { get, post, del, put } from "@commons/request";
 import type { Ref } from "vue";
 import type Result from "@commons/request/Result";
 import type { Page } from "@commons/request/Result";
-import type { CreateOrgFrom, OrgUpdateForm } from "@/api/organization/type";
+import type { CreateOrgForm, OrgUpdateForm } from "@/api/organization/type";
 import BaseOrganizationApi from "@commons/api/organization";
 import type { Organization, ListOrganizationRequest } from "./type";
 /**
@@ -25,7 +25,7 @@ const listAllOrganization: (
   return get("/api/listAll/org", null, loading);
 };
 
-const batchSave = (data: CreateOrgFrom, loading?: Ref<boolean>) => {
+const batchSave = (data: CreateOrgForm, loading?: Ref<boolean>) => {
   return post("/api/organization/batch", null, data, loading);
 };
 const deleteOrg = (id: string, loading?: Ref<boolean>) => {
