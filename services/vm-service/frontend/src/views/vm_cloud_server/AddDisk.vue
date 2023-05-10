@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onMounted, ref } from "vue";
+import { computed, ref } from "vue";
 import VmCloudDiskApi from "@/api/vm_cloud_disk";
 import VmCloudServerApi from "@/api/vm_cloud_server";
 import BaseCloudAccountApi from "@commons/api/cloud_account";
@@ -111,9 +111,10 @@ defineExpose({ open, close });
             <span>{{ $t("vm_cloud_disk.label.vm", "所属云主机") }}</span>
           </template>
           <template #content>
-            {{ $t("vm_cloud_disk.label.cloudVm", "云主机") }}：{{
-              vmCloudServer?.instanceName
-            }}
+            <div class="label">
+              {{ $t("vm_cloud_disk.label.cloudVm", "云主机") }}
+            </div>
+            <div class="content">{{ vmCloudServer?.instanceName }}</div>
           </template>
         </base-container>
 
@@ -126,6 +127,7 @@ defineExpose({ open, close });
               ref="ceFormRef"
               require-asterisk-position="right"
               label-position="top"
+              label-suffix=""
               width="600px"
               :formViewData="createDiskFormData.forms"
               :otherParams="otherParams"
@@ -141,4 +143,20 @@ defineExpose({ open, close });
     </template>
   </el-drawer>
 </template>
-<style lang="scss" scoped></style>
+<style lang="scss" scoped>
+.label {
+  font-weight: 400;
+  font-size: 14px;
+  line-height: 22px;
+
+  color: #8f959e;
+}
+.content {
+  margin-top: 8px;
+  font-weight: 400;
+  font-size: 14px;
+  line-height: 22px;
+
+  color: #1f2329;
+}
+</style>

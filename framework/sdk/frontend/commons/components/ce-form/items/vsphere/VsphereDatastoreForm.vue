@@ -9,17 +9,17 @@
           style="width: 100%"
           @current-change="handleCurrentChange"
         >
-          <el-table-column width="40px">
+          <el-table-column width="50px">
             <template #default="scope">
               <el-radio :label="scope.row.name">
                 <template #default>{{}}</template>
               </el-radio>
             </template>
           </el-table-column>
-          <el-table-column property="name" label="名称" min-width="200px" />
-          <el-table-column label="存储使用量" min-width="300px">
+          <el-table-column property="name" label="名称" min-width="120px" />
+          <el-table-column label="存储使用量" min-width="200px">
             <template #default="scope">
-              <div style="height: 12px">
+              <div>
                 <el-popover
                   placement="top-start"
                   :title="scope.row.name"

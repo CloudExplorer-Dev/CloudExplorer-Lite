@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref } from "vue";
+import { ref, h } from "vue";
 import { useRouter } from "vue-router";
 import VmCloudDiskApi from "@/api/vm_cloud_disk";
 import type {
@@ -9,7 +9,7 @@ import type {
 import { ElMessage } from "element-plus";
 import { useI18n } from "vue-i18n";
 import DetailPage from "@commons/components/detail-page/index.vue";
-
+import PlatformIcon from "@commons/components/detail-page/PlatformIcon.vue";
 const router = useRouter();
 const { t } = useI18n();
 const id = ref<string>(router.currentRoute.value.params.id as string);
@@ -55,9 +55,27 @@ const open = (diskId: string) => {
       },
       {
         label: t("commons.cloud_account.native", "云账号"),
-        value: res.data.accountName,
-        platform: res.data.platform,
-        components: ["PlatformIcon"],
+
+        render: () => {
+          return h(
+            "div",
+            {
+              style:
+                "display:flex;overflow: hidden;white-space: nowrap;text-overflow: ellipsis;",
+            },
+            [
+              h(PlatformIcon, {
+                platform: res.data.platform as string,
+                style: "margin-left:0",
+              }),
+              h("div", {
+                style:
+                  "margin:0 14px;overflow: hidden;text-overflow: ellipsis;",
+                innerHTML: res.data.accountName,
+              }),
+            ]
+          );
+        },
       },
       {
         label: "磁盘大小",

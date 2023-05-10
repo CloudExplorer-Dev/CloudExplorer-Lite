@@ -117,11 +117,25 @@ const open = (cloudServerId: string) => {
         },
         {
           label: "云账号",
-          value: vmCloudServer.value.accountName,
           render: () => {
-            return h(PlatformIcon, {
-              platform: res.data.platform as string,
-            });
+            return h(
+              "div",
+              {
+                style:
+                  "display:flex;overflow: hidden;white-space: nowrap;text-overflow: ellipsis;",
+              },
+              [
+                h(PlatformIcon, {
+                  platform: res.data.platform as string,
+                  style: "margin-left:0",
+                }),
+                h("div", {
+                  style:
+                    "margin:0 14px;overflow: hidden;text-overflow: ellipsis;",
+                  innerHTML: cloudAccount.value?.name,
+                }),
+              ]
+            );
           },
         },
         {
@@ -164,6 +178,12 @@ const open = (cloudServerId: string) => {
       loading.value = false;
     });
 };
+const labelPosition = computed(() => {
+  if (cloudAccount.value?.platform === "fit2cloud_vsphere_platform") {
+    return "left";
+  }
+  return "top";
+});
 defineExpose({ open, close });
 </script>
 
@@ -177,9 +197,17 @@ defineExpose({ open, close });
       size="840px"
       :before-close="close"
     >
+      <el-alert
+        title="配置变更将会对实例执行 关机 操作"
+        type="warning"
+        :closable="false"
+        style="height: 40px"
+        show-icon="true"
+      />
+
       <base-container
         v-loading="loading"
-        style="--ce-base-container-height: auto"
+        style="--ce-base-container-height: auto; margin-top: 24px"
       >
         <template #form>
           <base-container>
@@ -202,7 +230,9 @@ defineExpose({ open, close });
                 ref="formRef"
                 width="100%"
                 require-asterisk-position="right"
-                label-position="top"
+                label-suffix=""
+                label-width=""
+                :label-position="labelPosition"
                 v-if="configUpdateFormData?.forms"
                 v-model="changeConfigData"
                 :formViewData="configUpdateFormData.forms"

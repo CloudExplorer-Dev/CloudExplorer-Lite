@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, type Ref, watch } from "vue";
+import { ref, type Ref } from "vue";
 import type { FormView } from "@commons/components/ce-form/type";
 import formApi from "@commons/api/form_resource_api/index";
 import type { FormInstance } from "element-plus";

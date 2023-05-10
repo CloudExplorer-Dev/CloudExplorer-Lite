@@ -2,6 +2,7 @@ package com.fit2cloud.provider.impl.aliyun.entity.request;
 
 import com.aliyun.ecs20140526.models.DescribeAvailableResourceRequest;
 import lombok.Data;
+import org.apache.commons.lang3.StringUtils;
 
 /**
  * Author: LiuDi
@@ -16,7 +17,7 @@ public class AliyunGetDiskTypeRequest extends AliyunVmCreateRequest {
                 .setRegionId(this.getRegionId())
                 .setZoneId(this.getZoneId())
                 .setInstanceChargeType(this.getInstanceChargeType())
-                .setResourceType("disk")
+                .setResourceType(StringUtils.equals(this.diskUsage, "SystemDisk") ? "instance" : "disk")
                 .setDestinationResource(this.diskUsage);
 
         if (this.getInstanceTypeDTO() != null && this.getInstanceTypeDTO().getInstanceType() != null) {
