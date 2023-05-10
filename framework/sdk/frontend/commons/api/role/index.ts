@@ -10,6 +10,12 @@ export function listRoles(
   return get("/api/roles", request, loading);
 }
 
+export function listOriginRoles(
+  loading?: Ref<boolean>
+): Promise<Result<Array<Role>>> {
+  return get("/api/roles/origin", undefined, loading);
+}
+
 export function pageRoles(
   request: RolePageRequest,
   loading?: Ref<boolean>
@@ -25,6 +31,7 @@ export function getRoleById(
 }
 
 const BaseRoleApi = {
+  listOriginRoles,
   listRoles,
   pageRoles,
   getRoleById,

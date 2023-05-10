@@ -185,6 +185,34 @@ public class BaseOrganizationServiceImpl extends ServiceImpl<BaseOrganizationMap
         return map;
     }
 
+    @Override
+    public Map<String, String> idFullNameMap() {
+
+        Map<String, Organization> orgMap = this.list().stream().collect(Collectors.toMap(Organization::getId, o -> o));
+        Map<String, String> map = new HashMap<>();
+
+        orgMap.forEach((key, value) -> {
+            map.put(key, getFullName(null, value, orgMap));
+        });
+
+        return map;
+    }
+
+    private String getFullName(String name, Organization org, Map<String, Organization> orgMap) {
+        if (name == null) {
+            name = org.getName();
+        } else {
+            name = org.getName() + "/" + name;
+        }
+        if (StringUtils.isNotEmpty(org.getPid())) {
+            Organization parent = orgMap.get(org.getPid());
+            if (parent != null) {
+                return getFullName(name, parent, orgMap);
+            }
+        }
+        return name;
+    }
+
     /**
      * 获取下级组织
      *
@@ -194,9 +222,7 @@ public class BaseOrganizationServiceImpl extends ServiceImpl<BaseOrganizationMap
      * @return 当前组织的下级组织 包含当前组织
      */
     private List<Organization> getDownOrganization(String orgId, List<Organization> res, List<Organization> allOrgTree) {
-        allOrgTree.stream().filter(organization -> StringUtils.equals(organization.getId(), orgId)).findFirst().ifPresent(org -> {
-            res.add(org);
-        });
+        allOrgTree.stream().filter(organization -> StringUtils.equals(organization.getId(), orgId)).findFirst().ifPresent(res::add);
         return getDownOrganization(orgId, res, (pid) -> allOrgTree.stream().filter(organization -> StringUtils.equals(organization.getPid(), pid)).toList());
     }
 

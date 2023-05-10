@@ -41,3 +41,5 @@ export interface ListWorkspaceRequest {
   pageSize: number;
   currentPage: number;
 }
+
+export type { Workspace };

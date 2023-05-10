@@ -5,6 +5,8 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.Accessors;
 
+import java.io.Serial;
+
 /**
  * @author jianneng
  * @date 2022/8/30 22:52
@@ -13,6 +15,11 @@ import lombok.experimental.Accessors;
 @Getter
 @Setter
 public class WorkspaceDTO extends Workspace {
+
+    @Serial
+    private static final long serialVersionUID = -2729819800073166109L;
+
     private String userCount;
+
     private String organizationName;
 }

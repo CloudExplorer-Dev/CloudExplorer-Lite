@@ -30,7 +30,7 @@ interface OrgDetails {
 /**
  * 创建组织对象
  */
-interface CreateOrgFrom {
+interface CreateOrgForm {
   /**
    *所属组织
    */
@@ -66,6 +66,6 @@ export type {
   Organization,
   ListOrganizationRequest,
   OrganizationTree,
-  CreateOrgFrom,
+  CreateOrgForm,
   OrgUpdateForm,
 };

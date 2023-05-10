@@ -17,7 +17,7 @@ import type { WorkspaceTree } from "@commons/api/workspace/type";
 import { roleConst } from "@commons/utils/constants";
 import type { InternalRuleItem } from "async-validator/dist-types/interface";
 import CeIcon from "@commons/components/ce-icon/index.vue";
-import FormTitle from "@/componnets/from_title/FormTitle.vue";
+import FormTitle from "@/componnets/form_title/FormTitle.vue";
 const router = useRouter();
 const { t } = useI18n();
 const operationType = ref<string>("create");

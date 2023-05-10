@@ -104,6 +104,7 @@ public class WorkspaceServiceImpl extends ServiceImpl<WorkspaceMapper, Workspace
         QueryWrapper<Workspace> queryWrapper = new QueryWrapper<>();
         queryWrapper.like(StringUtils.isNotBlank(request.getOrganizationName()), ColumnNameUtil.getColumnName(WorkspaceDTO::getOrganizationName, false), request.getOrganizationName());
         queryWrapper.like(StringUtils.isNotBlank(request.getName()), ColumnNameUtil.getColumnName(Workspace::getName, true), request.getName());
+        queryWrapper.in(CollectionUtils.isNotEmpty(request.getOrganizationIds()), ColumnNameUtil.getColumnName(Workspace::getOrganizationId, true), request.getOrganizationIds());
 
         if (CurrentUserUtils.isOrgAdmin()) {
             QueryWrapper<Organization> wrapper = new QueryWrapper<>();

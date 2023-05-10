@@ -41,6 +41,25 @@
         desc, user.create_time desc, user._name
     </select>
 
+    <select id="listUser" resultMap="BaseResultMap">
+        SELECT user.*,
+               sum(case role.parent_role_id
+                       when 'ADMIN' then 100000
+                       when 'ORGADMIN' then 500
+                       when 'USER' then 1
+                       else 0 end) as roleSortNum,
+               role.parent_role_id AS parentRoleId
+        FROM user
+                 LEFT JOIN user_role ON user.id = user_role.user_id
+                 LEFT JOIN role ON role.id = user_role.role_id
+            ${ew.customSqlSegment}
+        GROUP BY
+            user.id
+        ORDER BY
+            roleSortNum
+        desc, user.create_time desc, user._name
+    </select>
+
     <select id="countActiveUsers" resultType="java.lang.Long">
         select count(user.id)
         from user

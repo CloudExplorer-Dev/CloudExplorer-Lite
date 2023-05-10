@@ -8,18 +8,24 @@ import type {
   UpdateUserPwdRequest,
   UpdateUserStatusRequest,
   UpdateUserRequest,
+  AddUserRoleRequest,
+  AddUserRoleRequestBySourceId,
 } from "./type";
 import type { Ref } from "vue";
 import type { UserRole } from "./type";
 import _ from "lodash";
 import type { SimpleMap } from "@commons/api/base/type";
 
-export const listUser: (
+export const pageUser: (
   req: ListUserRequest,
   loading?: Ref<boolean>
 ) => Promise<Result<Page<User>>> = (req, loading) => {
   return get("/api/user/page", req, loading);
 };
+
+export function listUser(loading?: Ref<boolean>): Promise<Result<Array<User>>> {
+  return get("/api/user/manage/list", undefined, loading);
+}
 
 export const createUser = (req: CreateUserRequest, loading?: Ref<boolean>) => {
   return post("/api/user/add", "", req, loading);
@@ -53,7 +59,6 @@ export function getUser(
 
 /**
  * 启停用户
- * @param req
  */
 export const changeUserStatus = (
   req: UpdateUserStatusRequest,
@@ -78,6 +83,37 @@ export const userAddRole = (req: any) => {
   return post("/api/user/addRole", "", req);
 };
 
+export const userAddRoleV2 = (
+  req: AddUserRoleRequest,
+  loading?: Ref<boolean>
+) => {
+  return post("/api/user/addRole/v2", "", req, loading);
+};
+export const userAddRoleV3 = (
+  req: AddUserRoleRequestBySourceId,
+  loading?: Ref<boolean>
+) => {
+  return post("/api/user/addRole/v3", "", req, loading);
+};
+
+export function removeUserRole(
+  userId: string,
+  roleId: string,
+  sourceId?: string,
+  loading?: Ref<boolean>
+) {
+  return del(
+    `/api/user/removeRole`,
+    undefined,
+    {
+      userId: userId,
+      roleId: roleId,
+      sourceId: sourceId,
+    },
+    loading
+  );
+}
+
 export function getUserRoleList(
   map: SimpleMap<Array<UserRole>>
 ): Array<UserRole> {
@@ -94,7 +130,7 @@ export function getUserRoleList(
   return _list;
 }
 
-export function convertUserRoleSourceList(list: Array<UserRole>) {
+export function getUserRoleSourceList(list: Array<UserRole>) {
   const _list: Array<any> = [];
   _.forEach(list, (userRole) => {
     _.forEach(userRole.roles, (role) => {
@@ -106,6 +142,11 @@ export function convertUserRoleSourceList(list: Array<UserRole>) {
       });
     });
   });
+  return _list;
+}
+
+export function convertUserRoleSourceList(list: Array<UserRole>) {
+  const _list: Array<any> = getUserRoleSourceList(list);
 
   const map = _.groupBy(_list, "roleId");
 
@@ -121,3 +162,23 @@ export function convertUserRoleSourceList(list: Array<UserRole>) {
 
   return result;
 }
+
+export default {
+  pageUser,
+  listUser,
+  createUser,
+  updateUser,
+  updatePwd,
+  deleteUserById,
+  getRoleInfo,
+  getUser,
+  changeUserStatus,
+  userNotificationSetting,
+  findUserNotification,
+  userAddRole,
+  userAddRoleV2,
+  userAddRoleV3,
+  removeUserRole,
+  getUserRoleList,
+  getUserRoleSourceList,
+};

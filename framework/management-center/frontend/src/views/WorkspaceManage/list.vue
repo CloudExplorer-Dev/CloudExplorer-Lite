@@ -108,7 +108,6 @@ const deleteOne = (row: WorkspaceDetail) => {
 
 //创建
 const create = () => {
-  console.log();
   useRoute.push({
     path: useRoute.currentRoute.value.path.replace("/list", "/create"),
   });

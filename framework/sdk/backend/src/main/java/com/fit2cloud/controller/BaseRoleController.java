@@ -38,6 +38,11 @@ public class BaseRoleController {
         return ResultHolder.success(roleService.roles(roleRequest));
     }
 
+    @GetMapping("roles/origin")
+    public ResultHolder<List<Role>> listOriginRoles() {
+        return ResultHolder.success(roleService.listOriginRoles());
+    }
+
     @GetMapping("role/pages")
     public ResultHolder<IPage<Role>> pages(@Validated RolePageRequest roleRequest) {
         return ResultHolder.success(roleService.pages(roleRequest));

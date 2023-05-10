@@ -53,4 +53,10 @@ public class BaseOrganizationController {
         return ResultHolder.success(organizationService.sourceIdNameMap());
     }
 
+    @GetMapping("/idFullNames")
+    @ApiOperation(value = "获取组织id名称映射", notes = "获取组织id名称映射")
+    public ResultHolder<Map<String, String>> idFullNameMap() {
+        return ResultHolder.success(organizationService.idFullNameMap());
+    }
+
 }

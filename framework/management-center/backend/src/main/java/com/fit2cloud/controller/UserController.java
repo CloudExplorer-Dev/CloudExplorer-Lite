@@ -10,10 +10,7 @@ import com.fit2cloud.common.validator.annnotaion.CustomValidated;
 import com.fit2cloud.common.validator.group.ValidationGroup;
 import com.fit2cloud.common.validator.handler.ExistHandler;
 import com.fit2cloud.controller.handler.ResultHolder;
-import com.fit2cloud.controller.request.user.CreateUserRequest;
-import com.fit2cloud.controller.request.user.PageUserRequest;
-import com.fit2cloud.controller.request.user.UpdateUserRequest;
-import com.fit2cloud.controller.request.user.UserBatchAddRoleRequest;
+import com.fit2cloud.controller.request.user.*;
 import com.fit2cloud.dto.UserDto;
 import com.fit2cloud.dto.UserNotifySettingDTO;
 import com.fit2cloud.dto.UserOperateDto;
@@ -27,6 +24,7 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
 import javax.validation.constraints.NotNull;
+import java.util.List;
 
 /**
  * Author: LiuDi
@@ -45,6 +43,13 @@ public class UserController {
     @GetMapping("/page")
     public ResultHolder<IPage<UserDto>> listUser(PageUserRequest pageUserRequest) {
         return ResultHolder.success(userService.pageUser(pageUserRequest));
+    }
+
+    @ApiOperation(value = "管理员/组织管理员获取可管理的用户列表")
+    @PreAuthorize("hasAnyCePermission('USER:READ')")
+    @GetMapping("/manage/list")
+    public ResultHolder<List<User>> listUser() {
+        return ResultHolder.success(userService.getManageUserSimpleList(null));
     }
 
     @ApiOperation(value = "查询用户总数")
@@ -149,11 +154,46 @@ public class UserController {
     @ApiOperation(value = "批量添加用户角色")
     @PreAuthorize("hasAnyCePermission('USER:EDIT')")
     @PostMapping(value = "/addRole")
-    @OperatedLog(resourceType = ResourceTypeEnum.USER, operated = OperatedTypeEnum.BATCH_ADD,
+    @OperatedLog(resourceType = ResourceTypeEnum.USER_ROLE, operated = OperatedTypeEnum.BATCH_ADD,
             resourceId = "#userBatchAddRoleRequest.userIdList",
             content = "'批量添加用户角色['+#userBatchAddRoleRequest.roleInfoList.![roleId]+']'",
             param = "#userBatchAddRoleRequest")
     public ResultHolder<Boolean> addUserRole(@Validated @RequestBody UserBatchAddRoleRequest userBatchAddRoleRequest) {
         return ResultHolder.success(userService.addUserRole(userBatchAddRoleRequest));
     }
+
+    @ApiOperation(value = "批量添加用户角色V2")
+    @PreAuthorize("hasAnyCePermission('USER:EDIT')")
+    @PostMapping(value = "/addRole/v2")
+    @OperatedLog(resourceType = ResourceTypeEnum.USER_ROLE, operated = OperatedTypeEnum.BATCH_ADD,
+            resourceId = "#userBatchAddRoleRequest.userIdList.userIds",
+            content = "'批量添加用户角色['+#userBatchAddRoleRequest.roleId+']'",
+            param = "#userBatchAddRoleRequest")
+    public ResultHolder<Integer> addUserRoleV2(@Validated @RequestBody UserBatchAddRoleRequestV2 userBatchAddRoleRequest) {
+        return ResultHolder.success(userService.addUserRoleV2(userBatchAddRoleRequest));
+    }
+
+    @ApiOperation(value = "批量添加用户角色V3")
+    @PreAuthorize("hasAnyCePermission('USER:EDIT')")
+    @PostMapping(value = "/addRole/v3")
+    @OperatedLog(resourceType = ResourceTypeEnum.USER_ROLE, operated = OperatedTypeEnum.BATCH_ADD,
+            resourceId = "#userBatchAddRoleRequest.userIdList.userIds",
+            content = "'批量添加用户角色'",
+            param = "#userBatchAddRoleRequest")
+    public ResultHolder<Integer> addUserRoleV3(@Validated @RequestBody UserBatchAddRoleRequestV3 userBatchAddRoleRequest) {
+        return ResultHolder.success(userService.addUserRoleV3(userBatchAddRoleRequest));
+    }
+
+    @ApiOperation(value = "移除用户角色")
+    @PreAuthorize("hasAnyCePermission('USER:EDIT')")
+    @DeleteMapping(value = "/removeRole")
+    @OperatedLog(resourceType = ResourceTypeEnum.USER_ROLE, operated = OperatedTypeEnum.DELETE,
+            resourceId = "#request.userId",
+            content = "'移除用户角色'",
+            param = "#request")
+    public ResultHolder<Boolean> removeUserRole(@Validated @RequestBody RemoveUserRoleRequest request) {
+        return ResultHolder.success(userService.removeUserRole(request.getUserId(), request.getRoleId(), request.getSourceId()));
+    }
+
+
 }

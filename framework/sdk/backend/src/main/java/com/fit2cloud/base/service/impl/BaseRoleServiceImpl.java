@@ -38,6 +38,14 @@ public class BaseRoleServiceImpl extends ServiceImpl<BaseRoleMapper, Role> imple
     }
 
     @Override
+    public List<Role> listOriginRoles() {
+        return this.list(new LambdaQueryWrapper<Role>()
+                .eq(Role::getType, RoleConstants.Type.origin)
+                .orderBy(true, true, Role::getType, Role::getSort, Role::getParentRoleId)
+        );
+    }
+
+    @Override
     public IPage<Role> pages(RolePageRequest roleRequest) {
         Page<Role> page = PageUtil.of(roleRequest, Role.class);
         return this.page(page, getQueryWrapper(roleRequest, CollectionUtils.isEmpty(((PageDTO<Role>) page).getOrders())));

@@ -13,6 +13,7 @@ public enum ResourceTypeEnum {
     ORGANIZATION("ORGANIZATION", "组织"),
     WORKSPACE("WORKSPACE", "工作空间"),
     USER("USER", "用户"),
+    USER_ROLE("USER_ROLE", "用户拥有角色"),
     ROLE("ROLE", "角色"),
     CLOUD_ACCOUNT("CLOUD_ACCOUNT", "云账号"),
     CLOUD_SERVER("CLOUD_SERVER", "云主机"),

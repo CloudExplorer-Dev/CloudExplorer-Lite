@@ -1,5 +1,6 @@
 package com.fit2cloud.controller.request.user;
 
+import com.fit2cloud.common.constants.RoleConstants;
 import com.fit2cloud.request.pub.OrderRequest;
 import com.fit2cloud.request.pub.PageOrderRequestInterface;
 import com.fit2cloud.request.pub.PageRequest;
@@ -33,6 +34,12 @@ public class PageUserRequest extends PageRequest implements PageOrderRequestInte
 
     @ApiModelProperty("工作空间ID，精确匹配")
     private String workspaceId;
+
+    @ApiModelProperty("组织ID，精确匹配")
+    private String organizationId;
+
+    @ApiModelProperty("父角色类型，精确匹配 ADMIN | ORGADMIN | USER")
+    private RoleConstants.ROLE parentRole;
 
     @Size(min = 2, max = 2, message = "{i18n.request.date.message}")
     @ApiModelProperty(value = "创建时间", example = "createTime[]=2121&createTime[]=21212")

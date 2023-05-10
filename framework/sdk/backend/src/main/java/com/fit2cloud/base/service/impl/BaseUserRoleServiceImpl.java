@@ -140,19 +140,41 @@ public class BaseUserRoleServiceImpl extends ServiceImpl<BaseUserRoleMapper, Use
     }
 
     @Override
-    public Boolean deleteUserRoleByRoleId(String roleId) {
+    public boolean deleteUserRoleByRoleId(String roleId) {
         QueryWrapper<UserRole> userRoleQueryWrapper = Wrappers.query();
         userRoleQueryWrapper.lambda().eq(UserRole::getRoleId, roleId);
         return remove(userRoleQueryWrapper);
     }
 
     @Override
-    public Boolean deleteUserRoleByOrgId(String orgId) {
+    public boolean removeUserRoleByUserIdAndRoleId(String userId, String roleId, String sourceId) {
+
+        Role role = roleService.getById(roleId);
+        if (!RoleConstants.ROLE.ADMIN.equals(role.getParentRoleId())) {
+            if (StringUtils.isEmpty(sourceId)) {
+                throw new RuntimeException("组织/工作空间ID不能为空");
+            }
+        }
+
+        return remove(new LambdaQueryWrapper<UserRole>()
+                .eq(UserRole::getUserId, userId)
+                .eq(UserRole::getRoleId, roleId)
+                .eq(StringUtils.isNotEmpty(sourceId), UserRole::getSource, sourceId)
+        );
+    }
+
+    @Override
+    public List<UserRole> searchByUsersAndRole(String roleId, List<String> userIds) {
+        return this.list(new LambdaQueryWrapper<UserRole>().eq(UserRole::getRoleId, roleId).in(UserRole::getUserId, userIds));
+    }
+
+    @Override
+    public boolean deleteUserRoleByOrgId(String orgId) {
         return deleteUserRoleBySource(orgId);
     }
 
     @Override
-    public Boolean deleteUserRoleByWorkspaceId(String workspaceId) {
+    public boolean deleteUserRoleByWorkspaceId(String workspaceId) {
         return deleteUserRoleBySource(workspaceId);
     }
 

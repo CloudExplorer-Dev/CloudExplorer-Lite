@@ -24,9 +24,13 @@ public interface IBaseUserRoleService extends IService<UserRole> {
 
     Map<RoleConstants.ROLE, List<UserRoleDto>> saveCachedUserRoleMap(String userId);
 
-    Boolean deleteUserRoleByOrgId(String orgId);
+    boolean deleteUserRoleByOrgId(String orgId);
 
-    Boolean deleteUserRoleByWorkspaceId(String workspaceId);
+    boolean deleteUserRoleByWorkspaceId(String workspaceId);
 
-    Boolean deleteUserRoleByRoleId(String roleId);
+    boolean deleteUserRoleByRoleId(String roleId);
+
+    boolean removeUserRoleByUserIdAndRoleId(String userId, String roleId, String sourceId);
+
+    List<UserRole> searchByUsersAndRole(String roleId, List<String> userIds);
 }

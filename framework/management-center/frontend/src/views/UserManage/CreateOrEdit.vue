@@ -17,7 +17,6 @@ import { useI18n } from "vue-i18n";
 import type { FormRules, FormInstance } from "element-plus";
 import _ from "lodash";
 
-import { useUserStore } from "@commons/stores/modules/user";
 import { roleConst } from "@commons/utils/constants";
 
 import { tree as orgTree } from "@commons/api/organization";
@@ -444,7 +443,7 @@ defineExpose({ open, refreshUser });
   </CeDrawer>
 </template>
 
-<style lang="scss">
+<style lang="scss" scoped>
 .role-title {
   font-style: normal;
   font-weight: 500;

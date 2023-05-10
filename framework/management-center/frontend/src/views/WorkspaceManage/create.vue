@@ -1,14 +1,13 @@
 <!--创建编辑工作空间-->
 <script setup lang="ts">
 import organizationApi from "@/api/organization";
-import FormTitle from "@/componnets/from_title/FormTitle.vue";
+import FormTitle from "@/componnets/form_title/FormTitle.vue";
 
 const props = defineProps<{
   id: string;
 }>();
 import { ref, onMounted, reactive, nextTick } from "vue";
 import type { OrganizationTree } from "@/api/organization/type";
-import { tree } from "@commons//api/organization";
 import WorkspaceApi from "@/api/workspace";
 import type { FormInstance, FormRules } from "element-plus";
 import { useRouter } from "vue-router";
@@ -58,7 +57,7 @@ onMounted(() => {
         //设置默认选中组织
         defaultCheckedKeys.value.push(form.value.organizationId);
         nextTick(() => {
-          workspaceOrgSelectTree.value.setCheckedKeys(
+          workspaceOrgSelectTree.value?.setCheckedKeys(
             defaultCheckedKeys.value,
             true
           );

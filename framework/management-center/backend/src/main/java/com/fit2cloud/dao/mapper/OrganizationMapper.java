@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.core.conditions.Wrapper;
 import com.baomidou.mybatisplus.core.toolkit.Constants;
 import com.fit2cloud.base.entity.Organization;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+import com.fit2cloud.dto.OrganizationDTO;
 import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.Select;
 
@@ -25,7 +26,7 @@ public interface OrganizationMapper extends BaseMapper<Organization> {
      * @param rootId  父级id
      * @return 组织列表
      */
-    List<Organization> pageOrganization(@Param(Constants.WRAPPER) Wrapper<Organization> wrapper, @Param("rootId") String rootId);
+    List<OrganizationDTO> pageOrganization(@Param(Constants.WRAPPER) Wrapper<Organization> wrapper, @Param("rootId") String rootId);
 
     @Select("SELECT DISTINCT GET_ROOT_ORG_ID (id) AS id FROM organization ${ew.customSqlSegment}")
     List<String> listRootOrganizationIds(@Param(Constants.WRAPPER) Wrapper<Organization> wrapper);

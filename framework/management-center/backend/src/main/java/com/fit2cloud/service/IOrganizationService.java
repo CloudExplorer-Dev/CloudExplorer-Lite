@@ -6,6 +6,7 @@ import com.fit2cloud.base.entity.Organization;
 import com.fit2cloud.controller.request.OrganizationBatchRequest;
 import com.fit2cloud.controller.request.OrganizationRequest;
 import com.fit2cloud.controller.request.PageOrganizationRequest;
+import com.fit2cloud.dto.OrganizationDTO;
 
 import java.util.List;
 
@@ -24,7 +25,7 @@ public interface IOrganizationService extends IService<Organization> {
      * @param request 查询请求对象
      * @return 分页对象
      */
-    IPage<Organization> pageOrganization(PageOrganizationRequest request);
+    IPage<OrganizationDTO> pageOrganization(PageOrganizationRequest request);
 
 
     /**
@@ -70,4 +71,6 @@ public interface IOrganizationService extends IService<Organization> {
     boolean update(OrganizationRequest request);
 
     long countOrganization();
+
+    Organization create(Organization organization);
 }

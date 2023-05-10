@@ -5,21 +5,29 @@ import { useI18n } from "vue-i18n";
 const { t } = useI18n();
 import _ from "lodash";
 
-const props = defineProps<{
-  buttons: Array<Button>;
-  name?: string;
-  row?: any;
-}>();
+const props = withDefaults(
+  defineProps<{
+    buttons: Array<Button>;
+    name?: string;
+    row?: any;
+    trigger?: "hover" | "click";
+  }>(),
+  { trigger: "hover" }
+);
 
 const _buttons = computed(() => {
-  return _.filter(props.buttons, (b) => b.show) as Array<Button>;
+  return _.filter(props.buttons, (b) => {
+    if (_.isFunction(b.show)) {
+      return b.show(props.row);
+    } else {
+      return b.show;
+    }
+  }) as Array<Button>;
 });
 
 const disabled = computed(() => {
   return function (btn: any) {
-    return typeof btn.disabled === "function"
-      ? btn.disabled(props.row)
-      : btn.disabled;
+    return _.isFunction(btn.disabled) ? btn.disabled(props.row) : btn.disabled;
   };
 });
 
@@ -29,11 +37,17 @@ function handleCommand(btn: any) {
 </script>
 
 <template>
-  <el-dropdown @command="handleCommand" v-if="_buttons && _buttons.length > 0">
+  <el-dropdown
+    :trigger="trigger"
+    @command="handleCommand"
+    v-if="_buttons && _buttons.length > 0"
+  >
     <div class="more-operation" v-if="!name">
-      <el-icon>
-        <MoreFilled />
-      </el-icon>
+      <slot name="icon">
+        <el-icon>
+          <MoreFilled />
+        </el-icon>
+      </slot>
     </div>
     <div class="more-operation-text" v-if="name">
       {{ name }}&nbsp;
@@ -63,8 +77,12 @@ function handleCommand(btn: any) {
   width: 24px;
   height: 24px;
   border-radius: 4px;
-  padding-top: 3px;
   text-align: center;
+  display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  align-items: center;
+  justify-content: center;
 }
 
 .more-operation:hover {

@@ -50,3 +50,16 @@ export const deleteApiKeys = (data: any) => {
 export const updateApiKeys = (data: any) => {
   return post("/api/key/update", null, data);
 };
+
+export default {
+  login,
+  logout,
+  fetchCurrentUser,
+  getUser,
+  updateUser,
+  updateUserPwd,
+  getApiKeys,
+  createApiKeys,
+  deleteApiKeys,
+  updateApiKeys,
+};

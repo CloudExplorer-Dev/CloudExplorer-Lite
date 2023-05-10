@@ -10,14 +10,21 @@
         <result column="update_time" jdbcType="DATE" property="updateTime" />
     </resultMap>
 
-    <select id="pageOrganization" resultMap="BaseResultMap">
+    <resultMap id="ExtResultMap" type="com.fit2cloud.dto.OrganizationDTO" extends="BaseResultMap">
+        <result column="workspaceCount" jdbcType="INTEGER" property="workspaceCount" />
+        <result column="userCount" jdbcType="INTEGER" property="userCount" />
+    </resultMap>
+
+    <select id="pageOrganization" resultMap="ExtResultMap">
         SELECT
             id,
             `name`,
             description,
             create_time,
             update_time,
-            pid
+            pid,
+            (select count(workspace.id) from workspace where workspace.organization_id = organization.id) as workspaceCount,
+            (select count(user_role.id) from user_role where user_role._source = organization.id) as userCount
         FROM
             organization
                 INNER JOIN (

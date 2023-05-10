@@ -6,11 +6,8 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.fit2cloud.base.entity.Organization;
-import com.fit2cloud.base.entity.Workspace;
+import com.fit2cloud.base.service.IBaseOrganizationService;
 import com.fit2cloud.base.service.IBaseUserRoleService;
-import com.fit2cloud.base.service.IBaseWorkspaceService;
-import com.fit2cloud.common.constants.RoleConstants;
-import com.fit2cloud.common.event.impl.EmitTemplate;
 import com.fit2cloud.common.exception.Fit2cloudException;
 import com.fit2cloud.common.utils.ColumnNameUtil;
 import com.fit2cloud.common.utils.CurrentUserUtils;
@@ -20,10 +17,13 @@ import com.fit2cloud.constants.ErrorCodeConstants;
 import com.fit2cloud.controller.request.OrganizationBatchRequest;
 import com.fit2cloud.controller.request.OrganizationRequest;
 import com.fit2cloud.controller.request.PageOrganizationRequest;
+import com.fit2cloud.dao.entity.Workspace;
 import com.fit2cloud.dao.mapper.OrganizationMapper;
+import com.fit2cloud.dto.OrganizationDTO;
 import com.fit2cloud.dto.UserDto;
 import com.fit2cloud.response.OrganizationTree;
 import com.fit2cloud.service.IOrganizationService;
+import com.fit2cloud.service.IWorkspaceService;
 import lombok.SneakyThrows;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -52,19 +52,21 @@ import java.util.stream.Collectors;
 @Service
 public class OrganizationServiceImpl extends ServiceImpl<OrganizationMapper, Organization> implements IOrganizationService {
     SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+
     @Resource
-    private IBaseWorkspaceService workspaceService;
-    @Resource
-    private EmitTemplate emitTemplate;
+    private IWorkspaceService workspaceService;
 
     @Resource
     private IBaseUserRoleService userRoleService;
 
+    @Resource
+    private IBaseOrganizationService baseOrganizationService;
+
     @Override
-    public IPage<Organization> pageOrganization(PageOrganizationRequest request) {
+    public IPage<OrganizationDTO> pageOrganization(PageOrganizationRequest request) {
         // 用户信息
         UserDto credentials = CurrentUserUtils.getUser();
-        Page<Organization> page = new Page<>(request.getCurrentPage(), request.getPageSize(), false);
+        Page<OrganizationDTO> page = new Page<>(request.getCurrentPage(), request.getPageSize(), false);
         // 构建查询参数
         QueryWrapper<Organization> wrapper = new QueryWrapper<>();
         wrapper.like(StringUtils.isNotEmpty(request.getName()), "name", request.getName())
@@ -77,7 +79,31 @@ public class OrganizationServiceImpl extends ServiceImpl<OrganizationMapper, Org
         }
         QueryWrapper<Organization> pageWrapper = wrapper.clone();
         pageWrapper.last("limit " + ((request.getCurrentPage() - 1) * request.getPageSize()) + "," + request.getPageSize());
-        List<Organization> organizations = credentials.getCurrentRole().equals(RoleConstants.ROLE.ORGADMIN) ? baseMapper.pageOrganization(pageWrapper, credentials.getCurrentSource()) : baseMapper.pageOrganization(pageWrapper, null);
+
+        String rootId = request.getRootId();
+
+        boolean removeRoot = false;
+        if (request.getRootId() != null) {
+            //当指定根节点查询时，只需要返回根节点的所有子节点，不需要包括自己
+            removeRoot = true;
+        }
+
+        if (CurrentUserUtils.isOrgAdmin()) {
+            if (rootId == null) {
+                rootId = CurrentUserUtils.getOrganizationId();
+            } else {
+                //判断组织管理员是否能管理到这个组织id
+                if (!getOrgAdminOrgIds().contains(rootId)) {
+                    throw new RuntimeException("没有权限查询ID为" + rootId + "的组织");
+                }
+            }
+        }
+        String finalRootId = rootId;
+
+        List<OrganizationDTO> organizations = baseMapper.pageOrganization(pageWrapper, rootId);
+        if (removeRoot) {
+            organizations = organizations.stream().filter(organizationDTO -> !StringUtils.equals(organizationDTO.getId(), finalRootId)).toList();
+        }
         if (request.getOrder() != null && StringUtils.isNotEmpty(request.getOrder().getColumn())) {
             if (request.getOrder().isAsc()) {
                 organizations = organizations
@@ -94,7 +120,18 @@ public class OrganizationServiceImpl extends ServiceImpl<OrganizationMapper, Org
                         .toList();
             }
         }
-        int total = credentials.getCurrentRole().equals(RoleConstants.ROLE.ORGADMIN) ? 1 : baseMapper.listRootOrganizationIds(wrapper).size();
+        int total = 0;
+        if (rootId != null) {
+            if (removeRoot) {
+                total = organizations.stream().filter(organizationDTO -> StringUtils.equals(organizationDTO.getPid(), finalRootId)).toList().size();
+            } else {
+                total = 1;
+            }
+        } else {
+            total = baseMapper.listRootOrganizationIds(wrapper).size();
+        }
+
+        //int total = credentials.getCurrentRole().equals(RoleConstants.ROLE.ORGADMIN) ? 1 : baseMapper.listRootOrganizationIds(wrapper).size();
         page.setRecords(organizations);
         page.setTotal(total);
         return page;
@@ -119,6 +156,15 @@ public class OrganizationServiceImpl extends ServiceImpl<OrganizationMapper, Org
         if (CollectionUtils.isNotEmpty(list) || new HashSet<>(names).size() != names.size()) {
             throw new Fit2cloudException(ErrorCodeConstants.ORGANIZATION_NAME_REPEAT.getCode(), ErrorCodeConstants.ORGANIZATION_NAME_REPEAT.getMessage(new Object[]{JsonUtil.toJSONString(list.stream().map(Organization::getName).collect(Collectors.toList()))}));
         }
+        if (CurrentUserUtils.isOrgAdmin()) {
+            if (StringUtils.isBlank(request.getPid())) {
+                throw new RuntimeException("没有权限在根节点下创建组织");
+            }
+            List<String> orgIds = getOrgAdminOrgIds();
+            if (!orgIds.contains(request.getPid())) {
+                throw new RuntimeException("没有权限在组织[" + this.getById(request.getPid()).getName() + "]下创建子组织");
+            }
+        }
         List<Organization> organizations = request.getOrgDetails().stream().map(originDetails -> {
             Organization organization = new Organization();
             organization.setName(originDetails.getName());
@@ -135,10 +181,20 @@ public class OrganizationServiceImpl extends ServiceImpl<OrganizationMapper, Org
     public boolean removeBatchTreeByIds(List<Organization> organizations) {
         // 因为是树形数据,如果父级别组织存在则不能删除, 根据树形组织,从子级开始排序
         List<OrganizationTree> organizationTrees = OrganizationUtil.toTree(organizations.stream().map(item -> {
-            com.fit2cloud.base.entity.Organization organization = new com.fit2cloud.base.entity.Organization();
+            Organization organization = new Organization();
             BeanUtils.copyProperties(item, organization);
             return organization;
         }).collect(Collectors.toList()), (t) -> t);
+
+        if (CurrentUserUtils.isOrgAdmin()) {
+            List<String> orgIds = getOrgAdminOrgIds();
+            for (OrganizationTree organizationTree : organizationTrees) {
+                if (!orgIds.contains(organizationTree.getId())) {
+                    throw new RuntimeException("没有权限删除组织[" + this.getById(organizationTree.getPid()).getName() + "]");
+                }
+            }
+        }
+
         return deleteTreeById(organizationTrees);
     }
 
@@ -152,7 +208,7 @@ public class OrganizationServiceImpl extends ServiceImpl<OrganizationMapper, Org
             if (CollectionUtils.isNotEmpty(organizationTree.getChildren())) {
                 deleteTreeById(organizationTree.getChildren());
             }
-            removeTreeById(organizationTree.getId());
+            removeTreeById(organizationTree.getId(), true);
         }
         return true;
     }
@@ -160,10 +216,24 @@ public class OrganizationServiceImpl extends ServiceImpl<OrganizationMapper, Org
 
     @Override
     public boolean removeTreeById(String id) {
+        return removeTreeById(id, false);
+    }
+
+    public boolean removeTreeById(String id, boolean skipCheck) {
         long count = count(new LambdaQueryWrapper<Organization>().eq(Organization::getPid, id));
         if (count > 0) {
             throw new Fit2cloudException(ErrorCodeConstants.ORGANIZATION_CANNOT_DELETE.getCode(), ErrorCodeConstants.ORGANIZATION_CANNOT_DELETE.getMessage());
         }
+
+        if (!skipCheck) {
+            if (CurrentUserUtils.isOrgAdmin()) {
+                List<String> orgIds = getOrgAdminOrgIds();
+                if (!orgIds.contains(id)) {
+                    throw new RuntimeException("没有权限删除该组织");
+                }
+            }
+        }
+
         // todo 校验当前组织是否存在工作空间
         List<Workspace> list = workspaceService.list(new LambdaQueryWrapper<Workspace>().eq(Workspace::getOrganizationId, id));
         if (CollectionUtils.isNotEmpty(list)) {
@@ -194,6 +264,20 @@ public class OrganizationServiceImpl extends ServiceImpl<OrganizationMapper, Org
         if (bottomOrganization.stream().anyMatch(item -> item.getId().equals(request.getPid())) || request.getId().equals(request.getPid())) {
             throw new Fit2cloudException(ErrorCodeConstants.ORGANIZATION_UPDATE_NOT_THIS_CHILD.getCode(), ErrorCodeConstants.ORGANIZATION_ID_AND_NAME_REQUIRED.getMessage());
         }
+
+        if (CurrentUserUtils.isOrgAdmin()) {
+            List<String> orgIds = getOrgAdminOrgIds();
+            //先判断原来的组织有没有权限改
+            if (!orgIds.contains(organization.getId())) {
+                throw new RuntimeException("没有权限编辑组织[" + organization.getName() + "]");
+            }
+            if (!StringUtils.equals(organization.getPid(), request.getPid())) {
+                if (!orgIds.contains(request.getPid())) {
+                    throw new RuntimeException("没有权限移动到目标组织");
+                }
+            }
+        }
+
         BeanUtils.copyProperties(request, organization);
         return updateById(organization);
     }
@@ -205,6 +289,30 @@ public class OrganizationServiceImpl extends ServiceImpl<OrganizationMapper, Org
             wrapper.eq(StringUtils.isNotEmpty(CurrentUserUtils.getOrganizationId()), "id", CurrentUserUtils.getOrganizationId());
         }
         return baseMapper.listRootOrganizationIds(wrapper).size();
+    }
+
+    private List<String> getOrgAdminOrgIds() {
+        List<String> orgIds = new ArrayList<>();
+        if (CurrentUserUtils.isOrgAdmin()) {
+            orgIds.add(CurrentUserUtils.getOrganizationId());
+            orgIds.addAll(baseOrganizationService.getDownOrganization(CurrentUserUtils.getOrganizationId(), baseOrganizationService.list()).stream().map(Organization::getId).toList());
+        }
+        return orgIds;
+    }
+
+    @Override
+    public Organization create(Organization organization) {
+        if (CurrentUserUtils.isOrgAdmin()) {
+            if (StringUtils.isBlank(organization.getPid())) {
+                throw new RuntimeException("没有权限在根节点下创建组织");
+            }
+            List<String> orgIds = getOrgAdminOrgIds();
+            if (!orgIds.contains(organization.getPid())) {
+                throw new RuntimeException("没有权限在组织[" + this.getById(organization.getPid()).getName() + "]下创建子组织");
+            }
+        }
+        this.save(organization);
+        return this.getById(organization.getId());
     }
 
     private List<Organization> getBottomOrganization(List<Organization> result, String pid) {
