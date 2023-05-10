@@ -696,7 +696,9 @@ public class HuaweiSyncCloudApi {
         existRegion(getMetricsRequest);
         List<F2CPerfMetricMonitorData> result = new ArrayList<>();
         //设置时间，根据syncTimeStampStr,默认一个小时
-        getMetricsRequest.setStartTime(String.valueOf(DateUtil.beforeOneHourToTimestamp(Long.valueOf(getMetricsRequest.getSyncTimeStampStr()))));
+        Long startTime = DateUtil.beforeOneHourToTimestamp(Long.valueOf(getMetricsRequest.getSyncTimeStampStr()));
+        //多获取过去30分钟的数据，防止同步线程时间不固定，导致数据不全的问题
+        getMetricsRequest.setStartTime(String.valueOf(startTime - 1800000L));
         getMetricsRequest.setEndTime(getMetricsRequest.getSyncTimeStampStr());
         try {
             getMetricsRequest.setRegionId(getMetricsRequest.getRegionId());
@@ -714,29 +716,8 @@ public class HuaweiSyncCloudApi {
     }
 
     /**
-     * 需要通过云主机查询
-     *
-     * @param getMetricsRequest 监控查询参数
-     * @return 监控数据
-     */
-    public static List<F2CPerfMetricMonitorData> getF2CDiskPerfMetricList(GetMetricsRequest getMetricsRequest) {
-        existRegion(getMetricsRequest);
-        List<F2CPerfMetricMonitorData> result = new ArrayList<>();
-        //设置时间，根据syncTimeStampStr,默认一个小时
-        getMetricsRequest.setStartTime(String.valueOf(DateUtil.beforeOneHourToTimestamp(Long.valueOf(getMetricsRequest.getSyncTimeStampStr()))));
-        getMetricsRequest.setEndTime(getMetricsRequest.getSyncTimeStampStr());
-        try {
-            getMetricsRequest.setRegionId(getMetricsRequest.getRegionId());
-        } catch (Exception e) {
-            e.printStackTrace();
-            SkipPageException.throwSkipPageException(e);
-            throw new Fit2cloudException(100021, "获取监控数据失败-" + getMetricsRequest.getRegionId() + "-" + e.getMessage());
-        }
-        return result;
-    }
-
-    /**
      * 获取虚拟机监控指标数据
+     * 除了CPU,内存，磁盘与网络都是基础指标的数据，因为API无法获取
      *
      * @param getMetricsRequest 监控查询参数
      * @return 监控数据
@@ -748,44 +729,22 @@ public class HuaweiSyncCloudApi {
         if (vms.size() == 0) {
             return result;
         }
-        //查询监控指标数据参数
-        ///TODO 由于我们只查询一个小时内的数据，时间间隔是5m,所以查询每台机器的监控数据的时候最多不过12条数据，所以不需要分页查询
         ShowMetricDataRequest request = getShowMetricDataRequest(getMetricsRequest);
         CesClient cesClient = credential.getCesClient(getMetricsRequest.getRegionId());
         vms.forEach(vm -> {
             request.setDim0("instance_id," + vm.getInstanceUUID());
             //监控指标
             Arrays.stream(HuaweiPerfMetricConstants.CloudServerPerfMetricEnum.values()).sorted().toList().forEach(perfMetric -> {
-                request.setMetricName(perfMetric.getMetricName());
-                if (HuaweiPerfMetricConstants.CloudServerPerfMetricEnum.MEMORY_USED_UTILIZATION == perfMetric) {
-                    request.setNamespace("AGT.ECS");
-                } else {
-                    request.setNamespace("SYS.ECS");
-                }
                 try {
-                    Map<Long, Datapoint> datapointMap = new HashMap<>();
-                    List.of("average", "max", "min").forEach(filter -> {
-                        request.withFilter(ShowMetricDataRequest.FilterEnum.fromValue(filter));
-                        //查询监控指标数据
-                        ShowMetricDataResponse response = cesClient.showMetricData(request);
-                        if (response.getHttpStatusCode() == 200 && CollectionUtils.isNotEmpty(response.getDatapoints())) {
-                            List<Datapoint> list = response.getDatapoints();
-                            list.forEach(v -> {
-                                if (!datapointMap.containsKey(v.getTimestamp())) {
-                                    datapointMap.put(v.getTimestamp(), v);
-                                }
-                                if (StringUtils.equalsIgnoreCase(filter, "average")) {
-                                    datapointMap.get(v.getTimestamp()).setAverage(v.getAverage());
-                                }
-                                if (StringUtils.equalsIgnoreCase(filter, "max")) {
-                                    datapointMap.get(v.getTimestamp()).setMax(v.getMax());
-                                }
-                                if (StringUtils.equalsIgnoreCase(filter, "min")) {
-                                    datapointMap.get(v.getTimestamp()).setMin(v.getMin());
-                                }
-                            });
-                        }
-                    });
+                    request.setNamespace("AGT.ECS");
+                    request.setMetricName(perfMetric.getAgentMetricName());
+                    Map<Long, Datapoint> datapointMap = getVmMonitoringData(cesClient, vm, perfMetric, request);
+                    // Agent监控无数据，则查询基本监控数据
+                    if (datapointMap.size() == 0) {
+                        request.setNamespace("SYS.ECS");
+                        request.setMetricName(perfMetric.getBaseMetricName());
+                        datapointMap = getVmMonitoringData(cesClient, vm, perfMetric, request);
+                    }
                     datapointMap.forEach((k, v) -> {
                         F2CPerfMetricMonitorData f2CEntityPerfMetric = HuaweiMappingUtil.toF2CPerfMetricMonitorData(v);
                         f2CEntityPerfMetric.setEntityType(F2CEntityType.VIRTUAL_MACHINE.name());
@@ -796,7 +755,7 @@ public class HuaweiSyncCloudApi {
                         result.add(f2CEntityPerfMetric);
                     });
                 } catch (Exception e) {
-                    e.printStackTrace();
+                    LogUtil.error("同步 华为 云主机 " + vm.getName() + " 监控指标 " + perfMetric.getDescription() + " 失败:" + e.getMessage());
                 }
             });
 
@@ -805,16 +764,54 @@ public class HuaweiSyncCloudApi {
     }
 
     /**
+     * 根据指标查询指定值的监控数据
+     *
+     * @param cesClient  查询客户端
+     * @param vm         要查询监控数据的云主机
+     * @param perfMetric 监控指标
+     * @param request    API参数
+     * @return 监控数据时间戳
+     */
+    private static Map<Long, Datapoint> getVmMonitoringData(CesClient cesClient, F2CVirtualMachine vm, HuaweiPerfMetricConstants.CloudServerPerfMetricEnum perfMetric, ShowMetricDataRequest request) {
+        Map<Long, Datapoint> datapointMap = new HashMap<>();
+        List.of("average", "max", "min").forEach(filter -> {
+            try {
+                request.withFilter(ShowMetricDataRequest.FilterEnum.fromValue(filter));
+                //查询监控指标数据
+                ShowMetricDataResponse response = cesClient.showMetricData(request);
+                if (response.getHttpStatusCode() == 200 && CollectionUtils.isNotEmpty(response.getDatapoints())) {
+                    List<Datapoint> list = response.getDatapoints();
+                    list.forEach(v -> {
+                        if (!datapointMap.containsKey(v.getTimestamp())) {
+                            datapointMap.put(v.getTimestamp(), v);
+                        }
+                        if (StringUtils.equalsIgnoreCase(filter, "average")) {
+                            datapointMap.get(v.getTimestamp()).setAverage(v.getAverage());
+                        }
+                        if (StringUtils.equalsIgnoreCase(filter, "max")) {
+                            datapointMap.get(v.getTimestamp()).setMax(v.getMax());
+                        }
+                        if (StringUtils.equalsIgnoreCase(filter, "min")) {
+                            datapointMap.get(v.getTimestamp()).setMin(v.getMin());
+                        }
+                    });
+                }
+            } catch (Exception e) {
+                LogUtil.error("查询 华为 云主机 " + vm.getName() + " 监控指标 " + perfMetric.getDescription() + " " + filter + "值失败:" + e.getMessage());
+            }
+        });
+        return datapointMap;
+    }
+
+    /**
      * 查询云主机监控数据参数
      *
-     * @param getMetricsRequest
-     * @return
+     * @param getMetricsRequest 全部参数
+     * @return API所需基本参数
      */
     @NotNull
     private static ShowMetricDataRequest getShowMetricDataRequest(GetMetricsRequest getMetricsRequest) {
         ShowMetricDataRequest request = new ShowMetricDataRequest();
-        request.setNamespace("SYS.ECS");
-        request.withFilter(ShowMetricDataRequest.FilterEnum.fromValue("average"));
         request.withPeriod(300);
         getMetricsRequest.setPeriod(request.getPeriod());
         request.withFrom(Long.valueOf(getMetricsRequest.getStartTime()));

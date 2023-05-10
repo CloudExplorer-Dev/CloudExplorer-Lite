@@ -133,10 +133,6 @@ public class PerfMonitorService {
         List<QueryUtil.QueryCondition> queryConditions = elasticsearchProvide.getDefaultQueryConditions(List.of(request.getCloudAccountId()), request.getMetricName(), request.getEntityType(), request.getStartTime(), request.getEndTime());
         QueryUtil.QueryCondition instanceId = new QueryUtil.QueryCondition(true, "instanceId.keyword", request.getInstanceId(), QueryUtil.CompareType.EQ);
         queryConditions.add(instanceId);
-        QueryUtil.QueryCondition metricName = new QueryUtil.QueryCondition(true, "metricName.keyword", request.getMetricName(), QueryUtil.CompareType.EQ);
-        queryConditions.add(metricName);
-        QueryUtil.QueryCondition accountId = new QueryUtil.QueryCondition(true, "cloudAccountId.keyword", request.getCloudAccountId(), QueryUtil.CompareType.EQ);
-        queryConditions.add(accountId);
         BoolQuery.Builder boolQuery = QueryUtil.getQuery(queryConditions);
         ///TODO 这个地方到时候可能要改，ES一次只能查询10000条数据，如果查询一年的监控数据，这里可能需要调整
         NativeQueryBuilder query = new NativeQueryBuilder()

@@ -9,27 +9,72 @@ package com.fit2cloud.provider.impl.aliyun.constants;
 public class AliyunPerfMetricConstants {
 
     /**
-     * 云主机性能指标枚举
+     * 云主机性能监控指标指标
+     * 监控数据粒度60秒
      */
     public enum CloudServerPerfMetricEnum {
-        CPU_USED_UTILIZATION("CPUUtilization", "CPU使用率", "%"),
-        MEMORY_USED_UTILIZATION("memory_usedutilization", "内存使用率", "%"),
-        DISK_READ_BPS("DiskReadBPS", "所有磁盘读取BPS", "Byte/s"),
-        DISK_WRITE_BPS("DiskWriteBPS", "所有磁盘写入BPS", "Byte/s"),
-        DISK_READ_IOPS("DiskReadIOPS", "所有磁盘每秒读取次数", "Count/Second"),
-        DISK_WRITE_IOPS("DiskWriteIOPS", "所有磁盘每秒写入次数", "Count/Second"),
-        INTERNET_IN_RATE("VPC_PublicIP_InternetInRate", "公网流入带宽", "bit/s"),
-        INTERNET_OUT_RATE("VPC_PublicIP_InternetOutRate", "公网流出带宽", "bit/s"),
-        INTRANET_IN_RATE("IntranetInRate", "内网流入带宽", "bit/s"),
-        INTRANET_OUT_RATE("IntranetOutRate", "内网流出带宽", "bit/s"),
-        DISK_USED_UTILIZATION("diskusage_utilization", "磁盘使用率", "%"),
+        /**
+         * CPU使用率
+         */
+        CPU_USED_UTILIZATION("CPUUtilization", "cpu_total", "CPU使用率", "%"),
+        /**
+         * 内存使用率
+         */
+        MEMORY_USED_UTILIZATION("", "memory_usedutilization", "内存使用率", "%"),
+        /**
+         * 磁盘读取BPS
+         * 如果是基础指标，表示针对所有磁盘，否则单个磁盘
+         */
+        DISK_READ_BPS("DiskReadBPS", "disk_readbytes", "磁盘读取BPS", "bytes/s"),
+        /**
+         * 磁盘写入BPS
+         * 如果是基础指标，表示针对所有磁盘，否则单个磁盘
+         */
+        DISK_WRITE_BPS("DiskWriteBPS", "disk_writebytes", "磁盘写入BPS", "bytes/s"),
+        /**
+         * 磁盘每秒读取次数
+         * 如果是基础指标，表示针对所有磁盘，否则单个磁盘
+         */
+        DISK_READ_IOPS("DiskReadIOPS", "disk_readiops", "磁盘每秒读取次数", "Count/Second"),
+        /**
+         * 磁盘每秒写入次数
+         * 如果是基础指标，表示针对所有磁盘，否则单个磁盘
+         */
+        DISK_WRITE_IOPS("DiskWriteIOPS", "disk_writeiops", "磁盘每秒写入次数", "Count/Second"),
+        /**
+         * 公网流入带宽
+         * 不区分基础跟Agent，因为Agent没找到对应的指标,直接使用基础的指标
+         */
+        INTERNET_IN_RATE("VPC_PublicIP_InternetInRate", "VPC_PublicIP_InternetInRate", "公网流入带宽", "bit/s"),
+        /**
+         * 公网流出带宽
+         * 不区分基础跟Agent，因为Agent没找到对应的指标,直接使用基础的指标
+         */
+        INTERNET_OUT_RATE("VPC_PublicIP_InternetOutRate", "VPC_PublicIP_InternetOutRate", "公网流出带宽", "bit/s"),
+        /**
+         * 内网流入带宽
+         * 不区分基础跟Agent，因为Agent没找到对应的指标,直接使用基础的指标
+         */
+        INTRANET_IN_RATE("IntranetInRate", "IntranetInRate", "内网流入带宽", "bit/s"),
+        /**
+         * 内网流出带宽
+         * 不区分基础跟Agent，因为Agent没找到对应的指标,直接使用基础的指标
+         */
+        INTRANET_OUT_RATE("IntranetOutRate", "IntranetOutRate", "内网流出带宽", "bit/s"),
+        /**
+         * 磁盘使用率
+         */
+        DISK_USED_UTILIZATION("", "diskusage_utilization", "磁盘使用率", "%"),
         ;
 
         /**
-         * 名称
+         * 基础监控指标名称
          */
-        private final String metricName;
-
+        private final String baseMetricName;
+        /**
+         * Agent监控指标名称
+         */
+        private final String agentMetricName;
         /**
          * 描述
          */
@@ -39,57 +84,19 @@ public class AliyunPerfMetricConstants {
          */
         private final String unit;
 
-        CloudServerPerfMetricEnum(String metricName, String description, String unit) {
-            this.metricName = metricName;
+        CloudServerPerfMetricEnum(String baseMetricName, String agentMetricName, String description, String unit) {
+            this.baseMetricName = baseMetricName;
+            this.agentMetricName = agentMetricName;
             this.description = description;
             this.unit = unit;
         }
 
-        public String getMetricName() {
-            return metricName;
+        public String getBaseMetricName() {
+            return baseMetricName;
         }
 
-        public String getDescription() {
-            return description;
-        }
-
-        public String getUnit() {
-            return unit;
-        }
-
-    }
-
-    /**
-     * 磁盘枚举
-     */
-    public enum CloudDiskPerfMetricEnum {
-        DISK_READ_BPS("DiskReadBytes", "磁盘读取BPS", "Bytes/s"),
-        DISK_WRITE_BPS("DiskWriteBytes", "磁盘写入BPS", "Bytes/s"),
-        DISK_READ_IOPS("DiskIOPSRead", "磁盘每秒读取次数", "Count/Second"),
-        DISK_WRITE_IOPS("DiskIOPSWrite", "磁盘每秒写入次数", "Count/Second"),
-        ;
-        /**
-         * 名称
-         */
-        private final String metricName;
-
-        /**
-         * 描述
-         */
-        private final String description;
-        /**
-         * 单位
-         */
-        private final String unit;
-
-        CloudDiskPerfMetricEnum(String metricName, String description, String unit) {
-            this.metricName = metricName;
-            this.description = description;
-            this.unit = unit;
-        }
-
-        public String getMetricName() {
-            return metricName;
+        public String getAgentMetricName() {
+            return agentMetricName;
         }
 
         public String getDescription() {
