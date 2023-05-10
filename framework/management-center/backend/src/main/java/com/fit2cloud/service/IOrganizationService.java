@@ -71,4 +71,6 @@ public interface IOrganizationService extends IService<Organization> {
     boolean update(OrganizationRequest request);
 
     long countOrganization();
+
+    Organization create(Organization organization);
 }

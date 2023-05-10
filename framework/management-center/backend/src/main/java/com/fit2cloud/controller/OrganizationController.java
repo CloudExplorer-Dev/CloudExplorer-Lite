@@ -78,8 +78,7 @@ public class OrganizationController {
                                            @Validated(ValidationGroup.SAVE.class) OrganizationRequest request) {
         Organization organization = new Organization();
         BeanUtils.copyProperties(request, organization);
-        organizationService.save(organization);
-        return ResultHolder.success(organizationService.getById(organization.getId()));
+        return ResultHolder.success(organizationService.create(organization));
     }
 
     @ApiOperation(value = "批量添加组织", notes = "批量添加组织")

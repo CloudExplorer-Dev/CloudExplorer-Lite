@@ -164,6 +164,11 @@ public class BaseUserRoleServiceImpl extends ServiceImpl<BaseUserRoleMapper, Use
     }
 
     @Override
+    public List<UserRole> searchByUsersAndRole(String roleId, List<String> userIds) {
+        return this.list(new LambdaQueryWrapper<UserRole>().eq(UserRole::getRoleId, roleId).in(UserRole::getUserId, userIds));
+    }
+
+    @Override
     public boolean deleteUserRoleByOrgId(String orgId) {
         return deleteUserRoleBySource(orgId);
     }

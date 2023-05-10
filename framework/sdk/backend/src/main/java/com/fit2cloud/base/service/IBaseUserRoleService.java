@@ -31,4 +31,6 @@ public interface IBaseUserRoleService extends IService<UserRole> {
     boolean deleteUserRoleByRoleId(String roleId);
 
     boolean removeUserRoleByUserIdAndRoleId(String userId, String roleId, String sourceId);
+
+    List<UserRole> searchByUsersAndRole(String roleId, List<String> userIds);
 }

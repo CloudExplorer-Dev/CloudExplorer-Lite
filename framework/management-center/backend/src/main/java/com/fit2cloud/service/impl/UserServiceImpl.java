@@ -646,6 +646,14 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
     @Override
     public boolean removeUserRole(String userId, String roleId, String sourceId) {
 
+        if (StringUtils.equals(RoleConstants.ROLE.ADMIN.name(), roleId)) {
+            //需要查询是否还有admin权限的角色，如果是最后一个，不允许删除
+            List<String> allUsers = this.list().stream().map(User::getId).toList();
+            if (userRoleService.searchByUsersAndRole(RoleConstants.ROLE.ADMIN.name(), allUsers).size() == 1) {
+                throw new RuntimeException("不能移除最后一个系统管理员");
+            }
+        }
+
         userRoleService.removeUserRoleByUserIdAndRoleId(userId, roleId, sourceId);
         //更新redis中该用户的角色
         userRoleService.saveCachedUserRoleMap(userId);
