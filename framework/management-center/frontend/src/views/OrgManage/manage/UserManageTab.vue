@@ -1,7 +1,7 @@
 <template>
   <el-container>
     <ce-table
-      localKey="userManageTable"
+      localKey="userTableInOrgManage"
       ref="table"
       :columns="columns"
       :data="tableData"

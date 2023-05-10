@@ -1,7 +1,7 @@
 <template>
   <el-container>
     <ce-table
-      localKey="orgManageTable"
+      localKey="orgTableInOrgManage"
       ref="table"
       :columns="columns"
       :data="tableData"
@@ -21,7 +21,7 @@
             )
           "
         >
-          添加组织
+          创建组织
         </el-button>
       </template>
       <el-table-column prop="name" :label="t('commons.org', '组织')" sortable />
@@ -278,7 +278,7 @@ function refreshList() {
 watch(
   () => props.id,
   (id) => {
-    console.log(id);
+    //console.log(id);
     refreshList();
   },
   { immediate: true }

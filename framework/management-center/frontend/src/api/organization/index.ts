@@ -28,8 +28,8 @@ const listAllOrganization: (
 const batchSave = (data: CreateOrgFrom) => {
   return post("/api/organization/batch", null, data);
 };
-const deleteOrg = (id: string) => {
-  return del("/api/organization/" + id);
+const deleteOrg = (id: string, loading?: Ref<boolean>) => {
+  return del("/api/organization/" + id, undefined, undefined, loading);
 };
 
 const deleteBatchOrg = (organizations: Array<Organization>) => {

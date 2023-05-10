@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onMounted, ref } from "vue";
+import { computed, ref } from "vue";
 import type { TreeNode } from "@commons/components/ce-tree/type";
 import { useUserStore } from "@commons/stores/modules/user";
 import { usePermissionStore } from "@commons/stores/modules/permission";
@@ -11,6 +11,7 @@ import { TableOperations } from "@commons/components/ce-table/type";
 import type Node from "element-plus/es/components/tree/src/model/node";
 import UserManageTab from "@/views/OrgManage/manage/UserManageTab.vue";
 import OrgManageTab from "@/views/OrgManage/manage/OrgManageTab.vue";
+import WorkspaceManageTab from "@/views/OrgManage/manage/WorkspaceManageTab.vue";
 import CeDrawer from "@commons/components/ce-drawer/index.vue";
 import {
   User,
@@ -25,6 +26,7 @@ import RoleApi from "@/api/role";
 import { ElMessage, ElMessageBox } from "element-plus";
 import organizationApi from "@/api/organization";
 import { useI18n } from "vue-i18n";
+import WorkspaceApi from "@/api/workspace";
 
 const defaultAdminTreeNode = {
   id: "CE_BASE",
@@ -59,7 +61,7 @@ function deleteSource(source: { type: string; id: string; inTab: boolean }) {
         type: "warning",
       }
     ).then(() => {
-      organizationApi.deleteOrg(source.id).then(() => {
+      organizationApi.deleteOrg(source.id, loading).then(() => {
         if (source.inTab) {
           orgManageTabRef.value?.refreshList();
         }
@@ -71,6 +73,28 @@ function deleteSource(source: { type: string; id: string; inTab: boolean }) {
       });
     });
   } else if (source.type === "WORKSPACE") {
+    ElMessageBox.confirm(
+      t("commons.message_box.confirm_delete"),
+      t("commons.message_box.prompt"),
+      {
+        confirmButtonText: t("commons.btn.delete"),
+        cancelButtonText: t("commons.btn.cancel"),
+        type: "warning",
+      }
+    ).then(() => {
+      //执行删除操作
+      WorkspaceApi.deleteWorkspaceById(source.id, loading).then(() => {
+        if (source.inTab) {
+          workspaceManageTabRef.value?.refreshList();
+        }
+        orgTreeRef.value?.reloadTree();
+        if (!source.inTab) {
+          orgTreeRef.value?.selectFirst();
+        }
+
+        ElMessage.success(t("commons.msg.delete_success", "删除成功"));
+      });
+    });
   }
 }
 
@@ -124,9 +148,13 @@ const moreOperations = computed(
 const selectedType = ref<"WORKSPACE" | "ORGANIZATION" | "CE_BASE">();
 const selectedSource = ref<string | undefined>();
 function onSelectNodeChange(data: any, node: Node) {
-  console.log(data, node);
+  //console.log(data, node);
   selectedType.value = data.type;
   selectedSource.value = data.id;
+  if (selectedType.value === "WORKSPACE") {
+    //选择工作空间需要把tab切到user页面
+    activeTab.value = "user";
+  }
 }
 
 /** addUser start **/
@@ -135,6 +163,7 @@ const addUserFormRef = ref<FormInstance | undefined>();
 const addUserDrawerRef = ref<InstanceType<typeof CeDrawer>>();
 const userManageTabRef = ref<InstanceType<typeof UserManageTab>>();
 const orgManageTabRef = ref<InstanceType<typeof OrgManageTab>>();
+const workspaceManageTabRef = ref<InstanceType<typeof WorkspaceManageTab>>();
 const addUserList = ref<Array<User>>([]);
 const addRoleList = ref<Array<Role>>([]);
 const addUserData = ref<Array<AddUserRoleObjectBySourceId>>([{}]);
@@ -175,6 +204,8 @@ function cancelAddUser() {
 }
 
 const addUserLoading = ref<boolean>(false);
+const loading = ref<boolean>(false);
+
 function confirmAddUser() {
   if (!addUserFormRef.value) return;
   addUserFormRef.value.validate((valid) => {
@@ -208,6 +239,10 @@ function jumpToWorkspace(obj: any) {
 function jumpToUser(obj: any) {
   orgTreeRef.value?.select(obj.id);
   activeTab.value = "user";
+}
+
+function jumpToOrg(obj: any) {
+  orgTreeRef.value?.select(obj.id);
 }
 
 function addWorkspace(source: TreeNode) {
@@ -375,6 +410,15 @@ const addOperations = computed(
             @delete-org="deleteSource"
             style="height: 100%"
           />
+          <WorkspaceManageTab
+            v-if="activeTab === 'workspace'"
+            ref="workspaceManageTabRef"
+            :org-id="selectedSource"
+            @jump-to-user="jumpToUser"
+            @jump-to-org="jumpToOrg"
+            @delete-workspace="deleteSource"
+            style="height: 100%"
+          />
         </el-main>
       </el-container>
     </el-main>
@@ -505,12 +549,12 @@ const addOperations = computed(
     align-items: center;
 
     .more-btn {
-      display: none;
+      opacity: 0;
     }
 
     &:hover {
       .more-btn {
-        display: block;
+        opacity: 1;
       }
     }
 
