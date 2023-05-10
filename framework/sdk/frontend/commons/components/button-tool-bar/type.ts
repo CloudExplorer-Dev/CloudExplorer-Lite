@@ -1,7 +1,7 @@
 import type { Ref } from "vue";
 import { ref } from "vue";
 
-export class ButtonAction {
+class ButtonAction {
   text: string;
   type?: string;
   arg?: any;
@@ -26,3 +26,5 @@ export class ButtonAction {
       disabled?.value === undefined ? ref<boolean>(false) : disabled;
   }
 }
+
+export { ButtonAction, type ButtonAction as ButtonActionType };

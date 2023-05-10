@@ -1,13 +1,15 @@
 <template>
   <!-- 创建 -->
-  <el-dialog
+  <el-drawer
     :close-on-press-escape="false"
     :close-on-click-modal="false"
     v-model="createComplianceRuleVisible"
-    title="修改规则"
-    width="60%"
+    size="840px"
     :before-close="close"
   >
+    <template #header>
+      <span class="title">修改规则</span>
+    </template>
     <el-form
       label-position="top"
       :inline="true"
@@ -21,13 +23,21 @@
         <template #header><span>基本信息</span> </template>
         <template #content>
           <div class="base_info">
-            <el-form-item prop="name" style="width: 45%" label="规则名称">
-              <el-input v-model="updateComplianceRuleForm.name" />
+            <el-form-item prop="name" style="width: 100%" label="规则名称">
+              <el-input
+                v-model="updateComplianceRuleForm.name"
+                maxlength="64"
+                show-word-limit
+              />
             </el-form-item>
-            <el-form-item prop="description" style="width: 45%" label="描述">
-              <el-input v-model="updateComplianceRuleForm.description" />
+            <el-form-item prop="description" style="width: 100%" label="描述">
+              <el-input
+                v-model="updateComplianceRuleForm.description"
+                maxlength="255"
+                show-word-limit
+              />
             </el-form-item>
-            <el-form-item prop="ruleGroupId" style="width: 45%" label="规则组">
+            <el-form-item prop="ruleGroupId" style="width: 100%" label="规则组">
               <el-select
                 style="width: 100%"
                 v-model="updateComplianceRuleForm.ruleGroupId"
@@ -42,33 +52,19 @@
                 />
               </el-select>
             </el-form-item>
-            <el-form-item prop="platform" style="width: 45%" label="云平台">
-              <el-select
-                style="width: 100%"
-                v-model="updateComplianceRuleForm.platform"
-                class="m-2"
-                :placeholder="'请选择云平台'"
-              >
-                <el-option
-                  v-for="item in supportPlatformList"
-                  :key="item.value"
-                  :label="item.key"
-                  :value="item.value"
-                />
-              </el-select>
-            </el-form-item>
-            <el-form-item prop="riskLevel" style="width: 45%" label="风险等级">
+
+            <el-form-item prop="riskLevel" style="width: 100%" label="风险等级">
               <el-radio-group v-model="updateComplianceRuleForm.riskLevel">
-                <el-radio-button
+                <el-radio
                   v-for="level in riskLevelOptionList"
                   :key="level.key"
                   :label="level.value"
-                  >{{ level.key }}</el-radio-button
+                  >{{ level.key }}</el-radio
                 >
               </el-radio-group>
             </el-form-item>
             <el-form-item
-              style="width: 45%"
+              style="width: 100%"
               prop="insuranceStatuteIds"
               v-loading="insuranceStatuteLoading"
               label="关联风险条例"
@@ -104,9 +100,24 @@
         <template #header><span>规则详情</span></template>
         <template #content>
           <div class="rule_details">
+            <el-form-item prop="platform" style="width: 100%" label="云平台">
+              <el-select
+                style="width: 100%"
+                v-model="updateComplianceRuleForm.platform"
+                class="m-2"
+                :placeholder="'请选择云平台'"
+              >
+                <el-option
+                  v-for="item in supportPlatformList"
+                  :key="item.value"
+                  :label="item.key"
+                  :value="item.value"
+                />
+              </el-select>
+            </el-form-item>
             <el-form-item
               prop="resourceType"
-              style="width: 45%"
+              style="width: 100%"
               label="资源类型"
             >
               <el-select
@@ -125,7 +136,7 @@
             </el-form-item>
             <el-form-item
               prop="rules.scanRule"
-              style="width: 45%"
+              style="width: 100%"
               label="规则类型"
             >
               <el-radio-group
@@ -160,7 +171,7 @@
         <el-button type="primary" @click="submit"> 提交 </el-button>
       </span>
     </template>
-  </el-dialog>
+  </el-drawer>
 </template>
 <script setup lang="ts">
 import { nextTick, ref, onMounted, computed, watch } from "vue";
@@ -360,16 +371,18 @@ const supportResourceTypeList = computed(() => {
  * 表单提交
  */
 const submit = () => {
-  ruleForm.value?.validate((v) => {
-    if (v) {
-      complianceRuleApi
-        .updateComplianceRule(updateComplianceRuleForm.value)
-        .then(() => {
-          ElMessage.success("修改成功");
-          props.refresh();
-          close();
-        });
-    }
+  rulesRef.value?.validate().then(() => {
+    ruleForm.value?.validate((v) => {
+      if (v) {
+        complianceRuleApi
+          .updateComplianceRule(updateComplianceRuleForm.value)
+          .then(() => {
+            ElMessage.success("修改成功");
+            props.refresh();
+            close();
+          });
+      }
+    });
   });
 };
 
@@ -398,11 +411,6 @@ const close = () => {
  * @param complianceRule 合规规则对象
  */
 const echoData = (complianceRule: ComplianceRule) => {
-  updateComplianceRuleForm.value.rules = {
-    conditionType: "AND",
-    rules: [],
-    scanRule: "COMPLIANCE",
-  };
   updateComplianceRuleForm.value = {
     ..._.cloneDeep(complianceRule),
     insuranceStatuteIds: [],
@@ -416,11 +424,18 @@ const echoData = (complianceRule: ComplianceRule) => {
     });
   nextTick(() => {
     updateComplianceRuleForm.value.rules = complianceRule.rules;
+    rulesRef.value?.echo(complianceRule.rules);
   });
 };
+const rulesRef = ref<InstanceType<typeof compliance_rules>>();
 defineExpose({ open, close, echoData });
 </script>
 <style lang="scss">
+.title {
+  color: rgba(31, 35, 41, 1);
+  font-size: 16px;
+  font-weight: 500;
+}
 .base_container {
   width: 100%;
   height: auto;

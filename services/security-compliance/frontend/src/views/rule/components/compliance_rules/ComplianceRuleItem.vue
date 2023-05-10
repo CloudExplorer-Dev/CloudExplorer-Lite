@@ -6,7 +6,7 @@
     ref="form"
     :rules="rules"
   >
-    <el-form-item class="avg spacing" prop="field">
+    <el-form-item class="field" prop="field">
       <el-select
         style="width: 100%"
         :modelValue="modelValue.field"
@@ -15,14 +15,14 @@
         @change="handler('field', $event)"
       >
         <el-option
-          v-for="item in fields"
+          v-for="item in store"
           :key="item.field"
           :label="item.label"
           :value="item.field"
         />
       </el-select>
     </el-form-item>
-    <el-form-item prop="compare" class="avg spacing">
+    <el-form-item prop="compare" class="compare">
       <el-select
         style="width: 100%"
         :modelValue="modelValue.compare"
@@ -38,7 +38,7 @@
         /> </el-select
     ></el-form-item>
     <el-form-item
-      class="avg spacing"
+      class="value"
       key="enum_value"
       prop="value"
       v-if="
@@ -64,7 +64,7 @@
       </el-select>
     </el-form-item>
     <el-form-item
-      class="avg spacing"
+      class="value"
       v-else-if="
         activeField &&
         ['ArrayNumber', 'Number'].includes(activeField.fieldType) &&
@@ -81,7 +81,7 @@
       />
     </el-form-item>
     <el-form-item
-      class="avg spacing"
+      class="value"
       v-else-if="!['EXIST', 'NOT_EXIST'].includes(modelValue.compare)"
       key="string_value"
       prop="value"
@@ -93,8 +93,6 @@
         placeholder="请输入"
       />
     </el-form-item>
-    <div style="flex: auto"></div>
-    <div @click="deleteRule" style="cursor: pointer">删除</div>
   </el-form>
 </template>
 <script setup lang="ts">
@@ -103,7 +101,9 @@ import type { InstanceSearchField, Rule } from "@/api/rule/type";
 import type { FormInstance, FormRules } from "element-plus";
 import { ref } from "vue";
 const props = defineProps<{
-  fields: Array<InstanceSearchField>;
+  // 规则下拉框
+  store: Array<InstanceSearchField>;
+  // 绑定数据
   modelValue: Rule;
 }>();
 
@@ -121,7 +121,7 @@ const compares = computed(() => {
  * 选中字段
  */
 const activeField = computed(() => {
-  return props.fields.find((f) => f.field === props.modelValue.field);
+  return props.store.find((f) => f.field === props.modelValue.field);
 });
 /**
  * 表单校验对象
@@ -154,10 +154,6 @@ const rules = ref<FormRules>({
 
 // 字段绑定
 const emit = defineEmits(["update:modelValue"]);
-
-const deleteRule = () => {
-  emit("update:modelValue", "delete");
-};
 /**
  * 输入处理器
  * @param field 字段
@@ -165,7 +161,7 @@ const deleteRule = () => {
  */
 const handler = (field: string, value: any) => {
   if (field === "field") {
-    const f = props.fields.find((f) => f.field === value);
+    const f = props.store.find((f) => f.field === value);
     if (f && ["ArrayNumber", "Number"].includes(f.fieldType)) {
       emit("update:modelValue", {
         ...props.modelValue,
@@ -195,14 +191,20 @@ defineExpose({ validate });
 </script>
 <style lang="scss" scoped>
 .content {
-  width: 100%;
   display: flex;
   flex-wrap: nowrap;
-}
-.avg {
-  width: 30%;
-}
-.spacing {
-  margin: 0 5px;
+  margin-left: 0;
+  .field {
+    width: 200px;
+    margin-right: 8px;
+  }
+  .compare {
+    width: 200px;
+    margin-right: 8px;
+  }
+  .value {
+    width: 200px;
+    margin-right: 0;
+  }
 }
 </style>

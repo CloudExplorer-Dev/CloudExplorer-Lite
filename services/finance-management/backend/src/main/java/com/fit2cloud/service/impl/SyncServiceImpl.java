@@ -140,6 +140,7 @@ public class SyncServiceImpl extends BaseSyncService implements SyncService {
         syncBill(cloudAccountId, months, billSetting);
     }
 
+
     /**
      * 同步账单
      *
@@ -156,7 +157,8 @@ public class SyncServiceImpl extends BaseSyncService implements SyncService {
      *
      * @param cloudAccountId 云账号id
      */
-    private void deleteDataSource(String cloudAccountId) {
+    @Override
+    public void deleteDataSource(String cloudAccountId) {
         synchronized (EsWriteLockConstants.WRITE_LOCK) {
             // 如果云账号不存在,删除es对应数据
             elasticsearchTemplate.delete(new NativeQueryBuilder()
@@ -169,8 +171,8 @@ public class SyncServiceImpl extends BaseSyncService implements SyncService {
     /**
      * 清理不存在的云账号数据
      */
-
-    private void deleteNotFountCloudAccountData() {
+    @Override
+    public void deleteNotFountCloudAccountData() {
         // 所有的云账号
         List<CloudAccount> cloudAccounts = cloudAccountService.list();
         synchronized (EsWriteLockConstants.WRITE_LOCK) {

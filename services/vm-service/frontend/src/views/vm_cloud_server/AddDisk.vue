@@ -1,14 +1,11 @@
 <script setup lang="ts">
-import { computed, onMounted, ref } from "vue";
+import { computed, ref } from "vue";
 import VmCloudDiskApi from "@/api/vm_cloud_disk";
 import VmCloudServerApi from "@/api/vm_cloud_server";
 import BaseCloudAccountApi from "@commons/api/cloud_account";
 import { useRouter } from "vue-router";
 import type { VmCloudServerVO } from "@/api/vm_cloud_server/type";
 import type { CloudAccount } from "@commons/api/cloud_account/type";
-import { ElMessage } from "element-plus";
-import { useI18n } from "vue-i18n";
-const { t } = useI18n();
 
 const router = useRouter();
 const id = ref<string>(router.currentRoute.value.params.id as string);
@@ -30,96 +27,136 @@ const otherParams = computed(() => {
   };
 });
 
-onMounted(() => {
-  if (router.currentRoute.value.params.id) {
-    // 获取云主机详情
-    VmCloudServerApi.getVmCloudServerById(id.value, loading).then((res) => {
-      vmCloudServer.value = res.data;
-
-      // 获取云账号详情
-      BaseCloudAccountApi.getCloudAccount(
-        vmCloudServer.value.accountId as string,
-        loading
-      ).then((res) => {
-        cloudAccount.value = res.data;
-
-        // 获取相应云平台创建磁盘表单数据
-        VmCloudDiskApi.getCreateDiskForm(
-          cloudAccount.value.platform,
-          loading
-        ).then((res) => {
-          createDiskFormData.value = res.data;
-        });
-      });
-    });
-  }
-});
-
-const handleCancel = () => {
-  router.push({ name: "vm_cloud_server" });
-};
-
+// 磁盘表单
+const diskFormData = ref<any>({});
+/**
+ * 创建磁盘
+ */
 const handleCreate = () => {
-  // 单独校验 vmware 存储器
-  if (
-    cloudAccount.value?.platform == "fit2cloud_vsphere_platform" &&
-    ceFormRef.value.getFormData().datastoreType !== "only-a-flag" &&
-    ceFormRef.value.getFormData().datastore == null
-  ) {
-    ElMessage.error(t("vm_cloud_disk.msg.vm", "存储器不能为空"));
-    return;
-  }
-
   ceFormRef.value.validate().then(() => {
     const dataInfo = {
       regionId: vmCloudServer.value?.region,
       ...vmCloudServer.value,
       ...cloudAccount.value,
-      ...ceFormRef.value.getFormData(),
+      ...diskFormData.value,
     };
-
     // 获取相应云平台创建磁盘API
     VmCloudDiskApi.createDisk(dataInfo, loading).then(() => {
-      router.push({ name: "vm_cloud_server" });
+      // 关闭
+      close();
     });
   });
 };
+const drawer = ref<boolean>(false);
+/**
+ * 打开弹框
+ * @param diskId 磁盘id
+ */
+const open = (diskId: string) => {
+  // 初始化磁盘数据
+  diskFormData.value = {};
+  createDiskFormData.value = {};
+  // 打开抽屉
+  drawer.value = true;
+  // 设置需要的磁盘id
+  id.value = diskId;
+  loading.value = true;
+  // 获取云主机详情
+  VmCloudServerApi.getVmCloudServerById(diskId)
+    .then((res) => {
+      vmCloudServer.value = res.data;
+      return res.data;
+    })
+    .then((cloudServer) => {
+      // 获取云账号详情
+      return BaseCloudAccountApi.getCloudAccount(
+        cloudServer.accountId as string
+      ).then((res) => {
+        cloudAccount.value = res.data;
+        return res;
+      });
+    })
+    .then((res) => {
+      // 获取相应云平台创建磁盘表单数据
+      return VmCloudDiskApi.getCreateDiskForm(res.data.platform).then((res) => {
+        createDiskFormData.value = res.data;
+      });
+    })
+    .finally(() => {
+      loading.value = false;
+    });
+};
+const close = () => {
+  drawer.value = false;
+};
+defineExpose({ open, close });
 </script>
 
 <template>
-  <base-container>
-    <template #form>
-      <base-container>
-        <template #header>
-          <span>{{ $t("vm_cloud_disk.label.vm", "所属云主机") }}</span>
-        </template>
-        <template #content>
-          {{ $t("vm_cloud_disk.label.cloudVm", "云主机") }}：{{
-            vmCloudServer?.instanceName
-          }}
-        </template>
-      </base-container>
+  <el-drawer
+    style="--ce-base-container-form-width: 100%"
+    v-model="drawer"
+    title="添加磁盘"
+    direction="rtl"
+    size="600px"
+    :before-close="close"
+  >
+    <base-container
+      v-loading="loading"
+      style="--ce-base-container-height: auto"
+    >
+      <template #form>
+        <base-container>
+          <template #header>
+            <span>{{ $t("vm_cloud_disk.label.vm", "所属云主机") }}</span>
+          </template>
+          <template #content>
+            <div class="label">
+              {{ $t("vm_cloud_disk.label.cloudVm", "云主机") }}
+            </div>
+            <div class="content">{{ vmCloudServer?.instanceName }}</div>
+          </template>
+        </base-container>
 
-      <base-container>
-        <template #header>
-          <span>{{ $t("vm_cloud_disk.label.disk_info", "磁盘信息") }}</span>
-        </template>
-        <template #content v-if="createDiskFormData?.forms">
-          <CeForm
-            ref="ceFormRef"
-            :formViewData="createDiskFormData.forms"
-            :otherParams="otherParams"
-          ></CeForm>
-        </template>
-      </base-container>
+        <base-container>
+          <template #header>
+            <span>{{ $t("vm_cloud_disk.label.disk_info", "磁盘信息") }}</span>
+          </template>
+          <template #content v-if="createDiskFormData?.forms">
+            <CeForm
+              ref="ceFormRef"
+              require-asterisk-position="right"
+              label-position="top"
+              label-suffix=""
+              width="600px"
+              :formViewData="createDiskFormData.forms"
+              :otherParams="otherParams"
+              v-model="diskFormData"
+            ></CeForm>
+          </template>
+        </base-container>
+      </template>
+    </base-container>
+    <template #footer>
+      <el-button @click="close()">{{ $t("commons.btn.cancel") }} </el-button>
+      <el-button type="primary" @click="handleCreate()"> 添加 </el-button>
     </template>
-    <template #formFooter>
-      <el-button @click="handleCancel()"
-        >{{ $t("commons.btn.cancel") }}
-      </el-button>
-      <el-button type="primary" @click="handleCreate()"
-        >{{ $t("commons.btn.save") }}
-      </el-button>
-    </template>
-  </base-container>
+  </el-drawer>
 </template>
+<style lang="scss" scoped>
+.label {
+  font-weight: 400;
+  font-size: 14px;
+  line-height: 22px;
+
+  color: #8f959e;
+}
+.content {
+  margin-top: 8px;
+  font-weight: 400;
+  font-size: 14px;
+  line-height: 22px;
+
+  color: #1f2329;
+}
+</style>

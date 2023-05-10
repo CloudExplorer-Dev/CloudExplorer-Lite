@@ -6,6 +6,8 @@ import com.fit2cloud.common.provider.IBaseCloudProvider;
 import java.lang.annotation.Documented;
 import java.lang.annotation.Retention;
 import java.lang.annotation.Target;
+import java.util.HashMap;
+import java.util.Map;
 
 import static java.lang.annotation.ElementType.FIELD;
 import static java.lang.annotation.RetentionPolicy.RUNTIME;
@@ -193,6 +195,16 @@ public @interface Form {
     String extraInfo() default "";
 
     String hint() default "";
+
+    /**
+     * 其他配置信息
+     * errMsg:           校验错误提示信息
+     * showLabel:        是否展示label
+     * style:            组件样式
+     * elFormItemStyle:  el-form-item 样式
+     * radioType:        只针对Radio组件 radio button
+     */
+    String propsInfo() default "{}";
 
     enum Position {
         TOP, BOTTOM

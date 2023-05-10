@@ -151,4 +151,46 @@ public interface ISyncProviderService {
      */
     void syncCloudDatastorePerfMetricMonitor(Map<String, Object> params);
 
+    /**
+     * 同步存储器性能监控数据
+     *
+     * @param cloudAccountId 云账号id
+     */
+    void syncCloudDatastorePerfMetricMonitor(String cloudAccountId);
+
+    /**
+     * 同步云磁盘监控数据
+     *
+     * @param cloudAccountId 云账号id
+     */
+    void syncCloudDiskPerfMetricMonitor(String cloudAccountId);
+
+    /**
+     * 同步宿主机性能监控数据
+     *
+     * @param cloudAccountId 云账号id
+     */
+    void syncCloudHostPerfMetricMonitor(String cloudAccountId);
+
+    /**
+     * 同步云主机性能监控数据
+     *
+     * @param cloudAccountId 云账号id
+     */
+    void syncCloudServerPerfMetricMonitor(String cloudAccountId);
+
+    /**
+     * 删除数据根据云账号id
+     *
+     * @param cloudAccountIds 云账号id
+     */
+    void deleteDataSource(List<String> cloudAccountIds);
+
+    /**
+     * 删除数据
+     *
+     * @param cloudAccountId 云账号id
+     */
+    void deleteDataSource(String cloudAccountId);
+
 }

@@ -32,7 +32,7 @@ public interface IWorkspaceService extends IService<Workspace> {
 
     Boolean batchDelete(List<Workspace> workspaces);
 
-    Boolean batch(WorkspaceBatchCreateRequest request);
+    List<Workspace> batch(WorkspaceBatchCreateRequest request);
 
     long countWorkspace();
 }

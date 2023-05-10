@@ -182,8 +182,8 @@ public class SyncServiceImpl extends BaseSyncService implements ISyncService {
     /**
      * 清理不存在的云账号数据
      */
-
-    private void deleteNotFountCloudAccountData() {
+    @Override
+    public void deleteNotFountCloudAccountData() {
         // 所有的云账号
         List<CloudAccount> cloudAccounts = cloudAccountService.list();
         Query query = new BoolQuery.Builder().mustNot(new Query.Builder().terms(new TermsQuery.Builder()

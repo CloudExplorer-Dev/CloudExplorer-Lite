@@ -10,7 +10,7 @@
       style="--el-button-border-color: rgba(51, 112, 255, 1)"
       @click="addRelation"
       plain
-      :disabled="relationDistabled"
+      v-if="!relationDistabled"
     >
       <el-icon><Plus /></el-icon
       ><span style="margin-left: 5px">添加关系</span></el-button
@@ -30,7 +30,7 @@ const props = defineProps<{
   // 顶级树
   root: Array<Tree>;
 }>();
-const maxLevel = ref<number>(3);
+const maxLevel = ref<number>(2);
 
 const getLevel = (tree: Tree, prentTree: Array<Tree>): number | undefined => {
   prentTree.push(tree);

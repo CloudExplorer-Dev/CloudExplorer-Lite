@@ -83,6 +83,7 @@ export interface FormView {
 
   extraInfo?: string;
   hint?: string;
+  style?: string;
   /**
    * 其他字段
    */

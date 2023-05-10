@@ -14,10 +14,12 @@
       row-key="id"
     >
       <template #toolbar>
-        <el-button type="primary" @click="addBillRule">创建</el-button>
+        <el-button type="primary" @click="addBillRule"
+          >创建自定义账单</el-button
+        >
       </template>
       <el-table-column type="selection" />
-      <el-table-column prop="name" label="规则名称"> </el-table-column>
+      <el-table-column prop="name" label="规则"> </el-table-column>
       <el-table-column prop="name" label="分组维度">
         <template #default="scope">
           <span>{{

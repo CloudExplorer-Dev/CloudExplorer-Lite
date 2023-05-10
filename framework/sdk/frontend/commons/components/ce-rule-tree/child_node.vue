@@ -7,21 +7,15 @@
     }"
   >
     <div class="child-node">
-      <div
-        class="select"
-        v-if="
-          ((tree.items && tree.items?.length > 0) ||
-            (tree.children && tree.children.length > 0)) &&
-          pid
-        "
-      >
-        <span>{{ condition === "AND" ? "并且" : "或者" }}</span>
-        <el-icon @click="deleteRelation"><Close /></el-icon>
+      <div class="select-content">
+        <select class="select" v-model="condition">
+          <option value="AND">并且</option>
+          <option value="OR">或者</option>
+        </select>
+        <div class="icon" v-if="pid" @click="deleteRelation">
+          <el-icon><Close /></el-icon>
+        </div>
       </div>
-      <select class="select" v-else v-model="condition">
-        <option value="AND">并且</option>
-        <option value="OR">或者</option>
-      </select>
     </div>
     <div class="left-node-warpper">
       <template v-if="tree.items && tree.items.length > 0">
@@ -111,26 +105,39 @@ const condition = computed({
 });
 </script>
 <style lang="scss" scoped>
-.select {
+.select-content {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  .el-icon {
-    cursor: pointer;
-  }
-  font-family: "PingFang SC";
-  font-style: normal;
-  font-weight: 500;
-  font-size: 12px;
-  line-height: 20px;
-  color: #1f2329;
-  height: 16px;
-  width: 48px;
-  border: none;
   background-color: #eff0f1;
-  border-radius: 2px;
-  opacity: 1;
+  height: 16px;
+  border-top-left-radius: 2px;
+  border-bottom-left-radius: 2px;
+  .select {
+    font-weight: 500;
+    font-size: 12px;
+    line-height: 20px;
+    color: #1f2329;
+    height: 16px;
+    width: 48px;
+    border: none;
+    background-color: #eff0f1;
+    border-top-left-radius: 2px;
+    border-bottom-left-radius: 2px;
+    opacity: 1;
+  }
+  .icon {
+    cursor: pointer;
+    display: flex;
+    justify-content: center;
+    border-left: #fff solid 1px;
+    height: 100%;
+    background-color: #eff0f1;
+    border-top-right-radius: 2px;
+    border-bottom-right-radius: 2px;
+  }
 }
+
 .delete {
   display: flex;
   align-items: center;

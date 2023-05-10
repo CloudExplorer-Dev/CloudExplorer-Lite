@@ -1,67 +1,104 @@
 <template>
-  <template v-if="!confirm">
-    <el-radio-group v-model="_data" style="width: 100%">
-      <el-table
-        ref="singleTableRef"
-        :data="formItem?.optionList"
-        highlight-current-row
-        style="width: 100%"
-        @current-change="handleCurrentChange"
-        height="340px"
-      >
-        <el-table-column width="55">
-          <template #default="scope">
-            <el-radio :label="scope.row.name">
-              <template #default>{{}}</template>
-            </el-radio>
-          </template>
-        </el-table-column>
-        <el-table-column property="name" label="名称" />
-        <el-table-column label="存储使用量">
-          <template #default="scope">
-            <div class="usage-bar-top-text">
-              <span>可用:{{ scope.row.freeDisk }}GB</span>
-            </div>
-            <el-progress
-              :color="customColors"
-              :percentage="
-                parseFloat(
-                  (
-                    ((scope.row.totalDisk - scope.row.freeDisk) /
-                      scope.row.totalDisk) *
-                    100
-                  ).toFixed(2)
-                )
-              "
-              :stroke-width="26"
-              :text-inside="true"
-            />
-            <div class="usage-bar-bottom-text">
-              <span>
-                已用:
-                {{
-                  DecimalFormat.format(
-                    scope.row.totalDisk - scope.row.freeDisk,
-                    2
-                  )
-                }}GB
-              </span>
-              <span>总量: {{ scope.row.totalDisk }}GB</span>
-            </div>
-          </template>
-        </el-table-column>
-      </el-table>
-    </el-radio-group>
-  </template>
-  <template v-else>
-    {{
-      _.get(
-        _.find(formItem?.optionList, (o) => o.name === modelValue),
-        "name",
-        modelValue
-      )
-    }}
-  </template>
+  <div>
+    <template v-if="!confirm">
+      <el-radio-group v-model="_data" style="width: 100%">
+        <el-table
+          ref="singleTableRef"
+          :data="formItem?.optionList"
+          highlight-current-row
+          style="width: 100%"
+          @current-change="handleCurrentChange"
+        >
+          <el-table-column width="50px">
+            <template #default="scope">
+              <el-radio :label="scope.row.name">
+                <template #default>{{}}</template>
+              </el-radio>
+            </template>
+          </el-table-column>
+          <el-table-column property="name" label="名称" min-width="120px" />
+          <el-table-column label="存储使用量" min-width="200px">
+            <template #default="scope">
+              <div>
+                <el-popover
+                  placement="top-start"
+                  :title="scope.row.name"
+                  :width="200"
+                  trigger="hover"
+                >
+                  <template #reference>
+                    <el-progress
+                      :color="customColors"
+                      :percentage="
+                        parseFloat(
+                          (
+                            ((scope.row.totalDisk - scope.row.freeDisk) /
+                              scope.row.totalDisk) *
+                            100
+                          ).toFixed(2)
+                        )
+                      "
+                      :stroke-width="7"
+                      width="120px"
+                      striped
+                    />
+                  </template>
+                  <div>
+                    <el-row
+                      ><el-col :span="6">总量</el-col
+                      ><el-col :span="18">
+                        <span class="value"
+                          >{{
+                            DecimalFormat.format(scope.row.totalDisk, 2)
+                          }}&nbsp;&nbsp;GB</span
+                        ></el-col
+                      ></el-row
+                    >
+                    <el-divider border-style="dashed" />
+                    <el-row
+                      ><el-col :span="6">可用</el-col
+                      ><el-col :span="18">
+                        <span class="value"
+                          >{{
+                            DecimalFormat.format(scope.row.freeDisk, 2)
+                          }}&nbsp;&nbsp;GB</span
+                        ></el-col
+                      ></el-row
+                    >
+                    <el-row style="margin-top: 8px"
+                      ><el-col :span="6">已用</el-col
+                      ><el-col :span="18">
+                        <span class="value">
+                          {{
+                            DecimalFormat.format(
+                              scope.row.totalDisk - scope.row.freeDisk,
+                              2
+                            )
+                          }}&nbsp;&nbsp;GB</span
+                        >
+                      </el-col></el-row
+                    >
+                  </div>
+                </el-popover>
+              </div>
+            </template>
+          </el-table-column>
+        </el-table>
+      </el-radio-group>
+      <span class="msg" v-show="props.modelValue">
+        当前选择存储器 <span class="active"> {{ props.modelValue }}</span>
+      </span>
+    </template>
+    <template v-else>
+      {{
+        _.get(
+          _.find(formItem?.optionList, (o) => o.name === modelValue),
+          "name",
+          modelValue
+        )
+      }}
+    </template>
+  </div>
 </template>
 <script setup lang="ts">
 import type { FormView } from "@commons/components/ce-form/type";
@@ -125,11 +162,37 @@ function handleCurrentChange(val: DataStore | undefined) {
  * 自定义进度条颜色
  */
 const customColors = [
-  { color: "#37ff00", percentage: 20 },
-  { color: "#049638", percentage: 40 },
-  { color: "#efa400", percentage: 60 },
-  { color: "#ff4400", percentage: 80 },
-  { color: "#ff0000", percentage: 100 },
+  { color: "rgba(52, 199, 36, 1)", percentage: 60 },
+  { color: "rgba(255, 136, 0, 1)", percentage: 80 },
+  { color: "rgba(245, 74, 69, 1)", percentage: 100 },
 ];
 </script>
-<style lang="scss" scoped></style>
+<style lang="scss" scoped>
+@mixin valueScss() {
+  color: rgba(31, 35, 41, 1);
+  font-weight: 500;
+  font-size: 12px;
+  line-height: 22px;
+  height: 22px;
+}
+:deep(.el-divider--horizontal) {
+  margin: 8px 0;
+}
+
+.value {
+  float: right;
+  @include valueScss;
+}
+
+.msg {
+  margin-top: 12px;
+  color: #646a73;
+  height: 22px;
+  font-weight: 400;
+  font-size: 14px;
+  line-height: 22px;
+  .active {
+    color: rgba(51, 112, 255, 1);
+  }
+}
+</style>

@@ -234,6 +234,7 @@ const close = () => {
       width: 225px;
       display: flex;
       flex-wrap: wrap;
+      align-content: flex-start;
       .moduleItem {
         margin-top: 36px;
         width: 100%;

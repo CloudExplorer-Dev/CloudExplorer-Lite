@@ -208,21 +208,7 @@ public class CloudAccountServiceImpl extends ServiceImpl<CloudAccountMapper, Clo
         cloudAccount.setName(addCloudAccountRequest.getName());
         cloudAccount.setState(addCloudAccountRequest.getCredential().verification());
         save(cloudAccount);
-        initCloudJob(cloudAccount.getId());
-        syncByCloudAccountId(cloudAccount.getId());
         return getById(cloudAccount.getId());
-    }
-
-
-    /**
-     * 启动定时任务
-     */
-    private void initCloudJob(String accountId) {
-        ServiceUtil.getServicesExcludeGatewayAndIncludeSelf(ServerInfo.module)
-                .stream()
-                .map(server -> CompletableFuture.runAsync(() -> this.initCLoudModuleJob(accountId, server), securityContextWorkThreadPool))
-                .map(CompletableFuture::join)
-                .toList();
     }
 
     @Override

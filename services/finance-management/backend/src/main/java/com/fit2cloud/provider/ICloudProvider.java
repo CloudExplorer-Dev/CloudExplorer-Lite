@@ -33,4 +33,15 @@ public interface ICloudProvider {
     static Class<? extends ICloudProvider> of(String platform) {
         return Arrays.stream(ProviderConstants.values()).filter(providerConstants -> providerConstants.name().equals(platform)).findFirst().orElseThrow(() -> new RuntimeException("不支持的云平台")).getCloudProvider();
     }
+
+    /**
+     * 当前云平台是否支持
+     *
+     * @param platform 云平台
+     * @return 是否支持
+     */
+    static boolean support(String platform) {
+        return Arrays.stream(ProviderConstants.values()).anyMatch(providerConstants -> providerConstants.name().equals(platform));
+
+    }
 }

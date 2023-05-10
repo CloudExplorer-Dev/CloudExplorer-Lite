@@ -2,6 +2,7 @@ package com.fit2cloud.controller;
 
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.fit2cloud.common.advice.annnotaion.TokenRenewal;
+import com.fit2cloud.common.event.annotaion.Emit;
 import com.fit2cloud.common.log.annotation.OperatedLog;
 import com.fit2cloud.common.log.constants.OperatedTypeEnum;
 import com.fit2cloud.common.log.constants.ResourceTypeEnum;
@@ -89,6 +90,7 @@ public class CloudAccountController {
     @OperatedLog(resourceType = ResourceTypeEnum.CLOUD_ACCOUNT, operated = OperatedTypeEnum.ADD,
             content = "'添加云账号['+#addCloudAccountRequest.name+']'",
             param = "#addCloudAccountRequest")
+    @Emit(value = "CREATE::CLOUD_ACCOUNT", el = "#result.data.id")
     public ResultHolder<CloudAccount> save(@Validated(ValidationGroup.SAVE.class) @RequestBody AddCloudAccountRequest addCloudAccountRequest) {
         CloudAccount cloudAccount = cloudAccountService.save(addCloudAccountRequest);
         return ResultHolder.success(cloudAccount);
@@ -102,6 +104,7 @@ public class CloudAccountController {
             resourceId = "#updateCloudAccountRequest.id",
             content = "'更新云账号['+#updateCloudAccountRequest.name+']'",
             param = "#updateCloudAccountRequest")
+    @Emit(value = "UPDATE::CLOUD_ACCOUNT", el = "#updateCloudAccountRequest.id")
     public ResultHolder<CloudAccount> update(@Validated(ValidationGroup.UPDATE.class) @RequestBody UpdateCloudAccountRequest updateCloudAccountRequest) {
         CloudAccount cloudAccount = cloudAccountService.update(updateCloudAccountRequest);
         return ResultHolder.success(cloudAccount);
@@ -114,6 +117,7 @@ public class CloudAccountController {
             resourceId = "#accountId",
             content = "'删除云账号'",
             param = "#accountId")
+    @Emit(value = "DELETE::CLOUD_ACCOUNT")
     public ResultHolder<Boolean> delete(@ApiParam("云账号id")
                                         @PathVariable("cloud_account_id")
                                         @CustomValidated(mapper = CloudAccountMapper.class, field = "id", handler = ExistHandler.class, message = "{i18n.cloud_account.id.is.not.existent}", exist = false)
@@ -128,6 +132,7 @@ public class CloudAccountController {
             resourceId = "#cloudAccountIds",
             content = "'批量删除云账号'",
             param = "#cloudAccountIds")
+    @Emit("DELETE_BATCH::CLOUD_ACCOUNT")
     public ResultHolder<Boolean> deleteBatch(@ApiParam("云账号id")
                                              @Size(min = 1, message = "{i18n.i18n.cloud_account.id.is.not.empty}")
                                              @RequestBody ArrayList<String> cloudAccountIds) {
