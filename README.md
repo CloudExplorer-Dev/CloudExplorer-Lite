@@ -66,6 +66,10 @@ CloudExplorer Lite 提供了强大的多租户体系和模块化能力，可以�
 -   中间件：[MySQL](https://www.mysql.com/)  
 -   基础设施：[Docker](https://www.docker.com/)
 
+## FOSSA Status
+
+[![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2FCloudExplorer-Dev%2FCloudExplorer-Lite.svg?type=large)](https://app.fossa.com/projects/git%2Bgithub.com%2FCloudExplorer-Dev%2FCloudExplorer-Lite?ref=badge_large)
+
 ## License
 
 Copyright (c) 2014-2023 飞致云 FIT2CLOUD, All rights reserved.
