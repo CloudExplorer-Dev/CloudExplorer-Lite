@@ -176,14 +176,6 @@ const tableOperations = computed(
         permissionStore.hasPermission("[management-center]USER:EDIT")
       ),
       TableOperations.buildButtons().newInstance(
-        t("commons.personal.edit_pwd"),
-        "primary",
-        showPwdDialog,
-        undefined,
-        undefined,
-        permissionStore.hasPermission("[management-center]USER:EDIT_PASSWORD")
-      ),
-      TableOperations.buildButtons().newInstance(
         t("user.notify_setting"),
         "primary",
         showMsgConfigDialog,
@@ -192,6 +184,14 @@ const tableOperations = computed(
         permissionStore.hasPermission(
           "[management-center]USER:NOTIFICATION_SETTING"
         )
+      ),
+      TableOperations.buildButtons().newInstance(
+        t("commons.personal.edit_pwd"),
+        "primary",
+        showPwdDialog,
+        undefined,
+        undefined,
+        permissionStore.hasPermission("[management-center]USER:EDIT_PASSWORD")
       ),
       TableOperations.buildButtons().newInstance(
         t("commons.btn.delete"),
@@ -281,51 +281,53 @@ onMounted(() => {
         </el-descriptions-item>
       </el-descriptions>
 
-      <DetailFormTitle
-        class="margin-top margin-bottom"
-        :title="t('user.has_role')"
-      />
+      <DetailFormTitle class="margin-top margin-bottom">
+        {{ t("user.has_role") }}
+        <span style="color: #8f959e">({{ roleList.length }})</span>
+      </DetailFormTitle>
 
       <template v-for="(roleInfo, index) in roleList" :key="index">
-        <el-descriptions direction="vertical" :column="1">
-          <template #title>
-            <div class="role-title">角色{{ index + 1 }}</div>
-          </template>
-          <el-descriptions-item>
-            <template #label>
-              <DetailFormLabel :label="$t('user.type')" />
+        <div class="role-card">
+          <el-descriptions direction="vertical" :column="1">
+            <template #title>
+              <div class="role-title">角色 {{ index + 1 }}</div>
             </template>
-            <DetailFormValue :value="roleInfo.roleName" />
-          </el-descriptions-item>
-          <el-descriptions-item
-            v-if="
-              roleInfo.parentRole === roleConst.orgAdmin ||
-              roleInfo.parentRole === roleConst.user
-            "
-          >
-            <template #label>
-              <DetailFormLabel
-                v-if="roleInfo.parentRole === roleConst.orgAdmin"
-                :label="$t('user.add_org')"
-              />
-              <DetailFormLabel
-                v-else-if="roleInfo.parentRole === roleConst.user"
-                :label="$t('user.add_workspace')"
-              />
-            </template>
-            <DetailFormValue>
-              <el-space wrap>
-                <div
-                  class="source-tip"
-                  v-for="(s, j) in filterSourceList(roleInfo.list)"
-                  :key="j"
-                >
-                  {{ s }}
-                </div>
-              </el-space>
-            </DetailFormValue>
-          </el-descriptions-item>
-        </el-descriptions>
+            <el-descriptions-item>
+              <template #label>
+                <DetailFormLabel :label="$t('user.type')" />
+              </template>
+              <DetailFormValue :value="roleInfo.roleName" />
+            </el-descriptions-item>
+            <el-descriptions-item
+              v-if="
+                roleInfo.parentRole === roleConst.orgAdmin ||
+                roleInfo.parentRole === roleConst.user
+              "
+            >
+              <template #label>
+                <DetailFormLabel
+                  v-if="roleInfo.parentRole === roleConst.orgAdmin"
+                  :label="$t('user.add_org')"
+                />
+                <DetailFormLabel
+                  v-else-if="roleInfo.parentRole === roleConst.user"
+                  :label="$t('user.add_workspace')"
+                />
+              </template>
+              <DetailFormValue>
+                <el-space wrap>
+                  <div
+                    class="source-tip"
+                    v-for="(s, j) in filterSourceList(roleInfo.list)"
+                    :key="j"
+                  >
+                    {{ s }}
+                  </div>
+                </el-space>
+              </DetailFormValue>
+            </el-descriptions-item>
+          </el-descriptions>
+        </div>
       </template>
     </el-main>
 
@@ -395,6 +397,17 @@ onMounted(() => {
     font-size: 16px;
     line-height: 24px;
     padding-top: 4px;
+  }
+}
+.role-card {
+  margin-bottom: 16px;
+
+  .el-descriptions {
+    padding: 12px;
+    background: #f7f9fc;
+    border-radius: 4px;
+
+    --el-fill-color-blank: transparent;
   }
 }
 </style>
