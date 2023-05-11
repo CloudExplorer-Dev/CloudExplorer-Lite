@@ -235,7 +235,6 @@ defineExpose({ open, clear, setOrgId });
     :confirm-btn-name="isEdit ? '编辑' : '创建'"
     @confirm="submitForm"
     @cancel="cancelWorkspace"
-    scroll-to-error
     :disable-btn="loading"
   >
     <el-form
@@ -243,9 +242,8 @@ defineExpose({ open, clear, setOrgId });
       :rules="rules"
       ref="ruleFormRef"
       status-icon
-      label-width="80px"
-      label-position="top"
-      require-asterisk-position="right"
+      scroll-to-error
+      v-loading="loading"
     >
       <FormTitle>{{ t("commons.basic_info", "基本信息") }}</FormTitle>
       <div style="margin-bottom: 32px">
@@ -255,39 +253,31 @@ defineExpose({ open, clear, setOrgId });
               class="form-item"
               :prop="'workspaceDetails[' + index + '].name'"
               :rules="rules.name"
+              :label="t('commons.name', '名称')"
             >
-              <el-input v-model="item.name" style="width: 320px">
-                <template #prepend>
-                  <span class="label-required">
-                    {{ t("commons.name", "名称") }}
-                  </span>
-                </template>
-              </el-input>
+              <el-input v-model="item.name" style="width: 280px" />
             </el-form-item>
             <el-form-item
+              class="form-item"
               :prop="'workspaceDetails[' + index + '].description'"
               :rules="rules.description"
+              :label="t('commons.description', '描述')"
             >
-              <el-input v-model="item.description" style="width: 360px">
-                <template #prepend>
-                  <span>
-                    {{ t("commons.description", "描述") }}
-                  </span>
-                </template>
-              </el-input>
+              <el-input v-model="item.description" style="width: 320px" />
             </el-form-item>
+
+            <div
+              v-if="form.workspaceDetails.length <= 1"
+              style="width: 16px; height: 16px"
+            ></div>
+            <CeIcon
+              style="cursor: pointer"
+              size="16px"
+              code="icon_delete-trash_outlined1"
+              v-if="form.workspaceDetails.length > 1"
+              @click="deleteItem(ruleFormRef, item, index)"
+            />
           </div>
-          <div
-            v-if="form.workspaceDetails.length <= 1"
-            style="width: 16px; height: 16px"
-          ></div>
-          <CeIcon
-            style="cursor: pointer"
-            size="16px"
-            code="icon_delete-trash_outlined1"
-            v-if="form.workspaceDetails.length > 1"
-            @click="deleteItem(ruleFormRef, item, index)"
-          />
         </template>
         <el-button
           @click="addItem(ruleFormRef)"
@@ -301,9 +291,11 @@ defineExpose({ open, clear, setOrgId });
 
       <FormTitle>{{ t("workspace.org") }}</FormTitle>
 
-      <el-form-item :label="$t('commons.org')" prop="org">
+      <div style="margin-bottom: 8px">{{ t("commons.org", "组织") }}</div>
+      <el-form-item>
         <el-tree-select
-          style="width: 100%"
+          ref="workspaceOrgSelectTree"
+          filterable
           :props="{ label: 'name' }"
           node-key="id"
           v-model="form.organizationId"
@@ -314,18 +306,13 @@ defineExpose({ open, clear, setOrgId });
           :render-after-expand="false"
           :default-checked-keys="defaultCheckedKeys"
           :default-expanded-keys="defaultCheckedKeys"
-          ref="workspaceOrgSelectTree"
+          style="width: 100%"
         />
       </el-form-item>
     </el-form>
   </CeDrawer>
 </template>
 <style lang="scss" scoped>
-//描述文字样式
-.desc-text-class {
-  font-size: 10px;
-  color: darkgray;
-}
 .add-workspace-form-item {
   width: calc(100% - 24px);
   background: #f7f9fc;

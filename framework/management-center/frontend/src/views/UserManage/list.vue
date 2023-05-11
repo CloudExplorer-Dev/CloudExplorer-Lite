@@ -201,14 +201,6 @@ const tableConfig = ref<TableConfig>({
       permissionStore.hasPermission("[management-center]USER:EDIT")
     ),
     TableOperations.buildButtons().newInstance(
-      t("commons.personal.edit_pwd"),
-      "primary",
-      showPwdDialog,
-      undefined,
-      undefined,
-      permissionStore.hasPermission("[management-center]USER:EDIT_PASSWORD")
-    ),
-    TableOperations.buildButtons().newInstance(
       t("user.notify_setting"),
       "primary",
       showMsgConfigDialog,
@@ -217,6 +209,14 @@ const tableConfig = ref<TableConfig>({
       permissionStore.hasPermission(
         "[management-center]USER:NOTIFICATION_SETTING"
       )
+    ),
+    TableOperations.buildButtons().newInstance(
+      t("commons.personal.edit_pwd"),
+      "primary",
+      showPwdDialog,
+      undefined,
+      undefined,
+      permissionStore.hasPermission("[management-center]USER:EDIT_PASSWORD")
     ),
     TableOperations.buildButtons().newInstance(
       t("commons.btn.delete"),
@@ -295,16 +295,23 @@ const tableConfig = ref<TableConfig>({
           class="role_display"
           :data-var="(scope._list = getUserRoleList(scope.row.roleMap))"
         >
-          {{ getFirstRoleName(scope._list) }}
+          <span v-if="scope.row.roles?.length > 1">
+            {{ getFirstRoleName(scope._list) }}
+          </span>
           <el-popover
-            v-if="scope.row.roles?.length > 1"
             placement="right"
             :width="400"
             trigger="hover"
             :data-var="(scope._table = convertUserRoleSourceList(scope._list))"
           >
             <template #reference>
-              <span class="role_numbers">
+              <span
+                style="cursor: pointer"
+                v-if="scope.row.roles?.length === 1"
+              >
+                {{ getFirstRoleName(scope._list) }}
+              </span>
+              <span class="role_numbers" v-if="scope.row.roles?.length > 1">
                 +{{ scope.row.roles.length - 1 }}
               </span>
             </template>

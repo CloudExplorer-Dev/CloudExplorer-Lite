@@ -9,10 +9,9 @@
   >
     <el-form
       :model="form"
+      :rules="rules"
       ref="ruleFormRef"
       status-icon
-      label-position="top"
-      require-asterisk-position="right"
       scroll-to-error
       v-loading="loading"
     >
@@ -24,27 +23,17 @@
               class="form-item"
               :prop="'orgDetails[' + index + '].name'"
               :rules="rules.name"
+              :label="t('commons.name', '名称')"
             >
-              <el-input v-model="org.name" style="width: 320px">
-                <template #prepend>
-                  <span class="label-required">
-                    {{ t("commons.name", "名称") }}
-                  </span>
-                </template>
-              </el-input>
+              <el-input v-model="org.name" style="width: 280px" />
             </el-form-item>
             <el-form-item
               class="form-item"
               :prop="'orgDetails[' + index + '].description'"
               :rules="rules.description"
+              :label="t('commons.description', '描述')"
             >
-              <el-input v-model="org.description" style="width: 360px">
-                <template #prepend>
-                  <span>
-                    {{ t("commons.description", "描述") }}
-                  </span>
-                </template>
-              </el-input>
+              <el-input v-model="org.description" style="width: 320px" />
             </el-form-item>
 
             <div
@@ -70,7 +59,8 @@
         {{ t("org_manage.affiliated_organization", "所属组织") }}
       </FormTitle>
 
-      <el-form-item :label="t('commons.org', '组织')">
+      <div style="margin-bottom: 8px">{{ t("commons.org", "组织") }}</div>
+      <el-form-item>
         <el-tree-select
           ref="workspaceOrgSelectTree"
           filterable
@@ -80,11 +70,11 @@
           v-model="form.pid"
           :data="orientationData"
           show-checkbox
-          style="width: 100%"
           check-strictly
           :render-after-expand="false"
           :default-checked-keys="defaultCheckedKeys"
           :default-expanded-keys="defaultCheckedKeys"
+          style="width: 100%"
         />
       </el-form-item>
     </el-form>

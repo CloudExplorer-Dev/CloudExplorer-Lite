@@ -227,7 +227,7 @@ function confirmAddUser() {
         sourceId: selectedSource.value,
         userRoleMappings: addUserData.value,
       };
-      console.log(addUserReq);
+      //console.log(addUserReq);
       UserApi.userAddRoleV3(addUserReq, addUserLoading).then((res) => {
         //orgTreeRef.value?.reloadTree();
         userManageTabRef.value?.refreshList();
@@ -275,7 +275,6 @@ function jumpToOrg(obj: any) {
 }
 
 function addWorkspace(source: { id: string }) {
-  console.log(source);
   workspaceDrawerRef.value?.open();
   if (source.id !== "CE_BASE") {
     workspaceDrawerRef.value?.setOrgId(source.id);
@@ -283,7 +282,6 @@ function addWorkspace(source: { id: string }) {
 }
 
 function editWorkspace(source: { id: string }) {
-  console.log(source);
   if (source.id) {
     workspaceDrawerRef.value?.open(source.id);
   }

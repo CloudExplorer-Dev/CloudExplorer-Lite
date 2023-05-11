@@ -175,7 +175,6 @@ function jumpToOrg(row: WorkspaceDetail) {
 }
 
 function create() {
-  console.log("create");
   emit("create", { id: props.orgId });
 }
 function edit(row: WorkspaceDetail) {
