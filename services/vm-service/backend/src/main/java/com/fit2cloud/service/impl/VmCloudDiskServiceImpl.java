@@ -237,11 +237,12 @@ public class VmCloudDiskServiceImpl extends ServiceImpl<BaseVmCloudDiskMapper, V
                     .beforeResource(initVmCloudDisk)
                     .processingResource(creatingVmCloudDisk)
                     .afterResource(finishedVmCloudDisk)
+                    .updateResourceMethodNeedTransfer(this::convertAndUpdateCloudDisk)
                     .updateResourceMethod(this::updateCloudDisk)
                     .deleteResourceMethod(this::deleteCloudDisk)
                     .saveResourceMethod(this::saveCloudDisk)
                     .build();
-            ExecProviderMethodRequest execProviderMethod = ExecProviderMethodRequest.builder().execMethod(ICloudProvider::createDisk).methodParams(params).platform(platform).build();
+            ExecProviderMethodRequest execProviderMethod = ExecProviderMethodRequest.builder().execMethod(ICloudProvider::createDisk).methodParams(params).platform(platform).resultNeedTransfer(true).build();
             CreateJobRecordRequest createJobRecordRequest = CreateJobRecordRequest.builder()
                     .resourceOperateType(OperatedTypeEnum.CREATE_DISK)
                     .resourceId(initVmCloudDisk.getId())
@@ -510,6 +511,22 @@ public class VmCloudDiskServiceImpl extends ServiceImpl<BaseVmCloudDiskMapper, V
      * @param
      */
     private void updateCloudDisk(VmCloudDisk vmCloudDisk) {
+        vmCloudDisk.setUpdateTime(LocalDateTime.now());
+        baseMapper.updateById(vmCloudDisk);
+    }
+
+    private void convertAndUpdateCloudDisk(VmCloudDisk vmCloudDisk, F2CDisk result) {
+        if (vmCloudDisk.getDiskName() == null) {
+            vmCloudDisk.setDiskName(result.getDiskName());
+        }
+        vmCloudDisk.setDiskId(result.getDiskId());
+        vmCloudDisk.setDevice(result.getDevice());
+        vmCloudDisk.setDatastoreId(result.getDatastoreUniqueId());
+        vmCloudDisk.setDiskChargeType(result.getDiskChargeType());
+        vmCloudDisk.setDiskType(result.getDiskType());
+        if (StringUtils.isEmpty(vmCloudDisk.getDeleteWithInstance())) {
+            vmCloudDisk.setDeleteWithInstance(result.getDeleteWithInstance());
+        }
         vmCloudDisk.setUpdateTime(LocalDateTime.now());
         baseMapper.updateById(vmCloudDisk);
     }

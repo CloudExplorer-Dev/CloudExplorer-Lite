@@ -47,11 +47,6 @@
             </span>
 
             <el-form-item
-              :rules="{
-                message: '磁盘类型' + '不能为空',
-                trigger: 'blur',
-                required: true,
-              }"
               label="磁盘类型"
               size="small"
               :prop="'[' + index + '].volumeType'"
@@ -60,6 +55,7 @@
                 filterable
                 v-model="obj.volumeType"
                 placeholder="磁盘类型"
+                clearable
                 style="width: 120px"
               >
                 <el-option
