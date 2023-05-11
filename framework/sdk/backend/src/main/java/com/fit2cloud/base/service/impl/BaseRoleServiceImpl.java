@@ -93,8 +93,12 @@ public class BaseRoleServiceImpl extends ServiceImpl<BaseRoleMapper, Role> imple
             Set<String> roleIds = new HashSet<>();
             for (UserRoleDto userRoleDto : roles) {
                 for (Role role : userRoleDto.getRoles()) {
+                    //针对判断是否是当前组织的内置组织管理员，继承组织管理员的只能看到自己的组织管理员角色
                     if (StringUtils.equals(role.getId(), RoleConstants.ROLE.ORGADMIN.name())) {
-                        isSystemOrgAdmin = true;
+                        if (StringUtils.equals(userRoleDto.getSource(), CurrentUserUtils.getOrganizationId())) {
+                            isSystemOrgAdmin = true;
+                        }
+                        continue;
                     }
                     roleIds.add(role.getId());
                 }

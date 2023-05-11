@@ -654,6 +654,12 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
             }
         }
 
+        //判断没有权限去移除
+        List<String> roles = baseRoleService.roles(new RoleRequest()).stream().map(Role::getId).toList();
+        if (!roles.contains(roleId)) {
+            throw new RuntimeException("不能移除该用户角色");
+        }
+
         userRoleService.removeUserRoleByUserIdAndRoleId(userId, roleId, sourceId);
         //更新redis中该用户的角色
         userRoleService.saveCachedUserRoleMap(userId);
