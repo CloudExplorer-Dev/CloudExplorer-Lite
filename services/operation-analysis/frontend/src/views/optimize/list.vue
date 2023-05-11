@@ -6,7 +6,7 @@
     checkable
     :show-setting-icon="showSettingIcon"
     @change="selectChange"
-    :req="searchParams"
+    :table-search-params="tableSearchParams"
     ref="optimizeDivRef"
     :table-loading="tableLoading"
     :cloud-account-ids="checkedAccountIds"
@@ -107,63 +107,27 @@
         :label="$t('commons.cloud_server.instance_type')"
       ></el-table-column>
       <el-table-column
-        align="right"
         min-width="150"
         prop="cpuAverage"
-        label="CPU平均使用率"
-      >
-        <template #default="scope">
-          {{
-            scope.row.cpuAverage
-              ? PercentFormat.format(scope.row.cpuAverage / 100)
-              : "-"
-          }}
-        </template>
-      </el-table-column>
+        label="CPU平均使用率(%)"
+      ></el-table-column>
       <el-table-column
-        align="right"
         min-width="150"
         prop="cpuMaximum"
-        label="CPU最大使用率"
+        label="CPU最大使用率(%)"
         :show="false"
-      >
-        <template #default="scope">
-          {{
-            scope.row.cpuMaximum
-              ? PercentFormat.format(scope.row.cpuMaximum / 100)
-              : "-"
-          }}
-        </template>
-      </el-table-column>
+      ></el-table-column>
       <el-table-column
-        align="right"
         min-width="150"
         prop="memoryAverage"
-        label="内存平均使用率"
-      >
-        <template #default="scope">
-          {{
-            scope.row.memoryAverage
-              ? PercentFormat.format(scope.row.memoryAverage / 100)
-              : "-"
-          }}
-        </template>
-      </el-table-column>
+        label="内存平均使用率(%)"
+      ></el-table-column>
       <el-table-column
-        align="right"
         min-width="150"
         prop="memoryMaximum"
-        label="内存最大使用率"
+        label="内存最大使用率(%)"
         :show="false"
-      >
-        <template #default="scope">
-          {{
-            scope.row.memoryMaximum
-              ? PercentFormat.format(scope.row.memoryMaximum / 100)
-              : "-"
-          }}
-        </template>
-      </el-table-column>
+      ></el-table-column>
       <template #buttons>
         <CeTableColumnSelect :columns="columns" />
       </template>
@@ -172,7 +136,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onBeforeMount, onMounted, ref } from "vue";
+import { computed, onMounted, ref } from "vue";
 import {
   PaginationConfig,
   TableConfig,
@@ -183,15 +147,16 @@ import { useI18n } from "vue-i18n";
 import type { SimpleMap } from "@commons/api/base/type";
 import { platformIcon } from "@commons/utils/platform";
 import CommonApi from "@/api/common/index";
-import type { VmCloudServerVO } from "@/api/server_analysis/type";
-import ResourceOptimizationViewApi from "@/api/resource_optimization";
-import type { ListOptimizationRequest } from "@commons/api/resource_optimization/type";
+import OptimizeViewApi from "@commons/api/optimize";
+import type {
+  PageOptimizeBaseRequest,
+  VmCloudServerVO,
+} from "@commons/api/optimize/type";
 import { useRouter } from "vue-router";
-import ServerOptimization from "@commons/business/base-layout/home-page/items/operation/ServerOptimization.vue";
+import ServerOptimization from "@commons/business/base-layout/home-page/items/operation/optimize/ServerOptimization.vue";
 import _ from "lodash";
 import MicroAppRouterUtil from "@commons/router/MicroAppRouterUtil";
 import { useUserStore } from "@commons/stores/modules/user";
-import PercentFormat from "@commons/utils/percentFormat";
 const userStore = useUserStore();
 
 const optimizeDivRef = ref<InstanceType<typeof ServerOptimization> | null>();
@@ -200,6 +165,12 @@ const router = useRouter();
 
 const checkedId = ref(
   _.defaultTo(_.parseInt(router.currentRoute.value.query?.checked as string), 1)
+);
+const optimizeSuggestCode = ref(
+  _.defaultTo(
+    _.parseInt(router.currentRoute.value.query?.optimizeSuggestCode as string),
+    "derating"
+  )
 );
 
 const checkedAccountIds = ref(
@@ -217,11 +188,11 @@ const tableData = ref<Array<VmCloudServerVO>>([]);
 const tableLoading = ref<boolean>(false);
 const cloudAccount = ref<Array<SimpleMap<string>>>([]);
 
-function selectChange(id: number) {
+function selectChange() {
   search(table?.value.getTableSearch());
 }
 
-const searchParams = computed(() => {
+const tableSearchParams = computed(() => {
   return table?.value
     ? TableSearch.toSearchParams(table?.value?.getTableSearch())
     : {};
@@ -232,18 +203,23 @@ const searchParams = computed(() => {
  * @param condition
  */
 const search = (condition: TableSearch) => {
-  const params: ListOptimizationRequest | undefined =
+  const params: PageOptimizeBaseRequest =
     optimizeDivRef.value?.getCheckedSearchParams(
       checkedId.value,
       TableSearch.toSearchParams(condition)
     );
-  //讲云账号查询条件下传到卡片
+  //默认降配
+  if (!_.has(params, "optimizeSuggestCode")) {
+    _.set(params, "optimizeSuggestCode", optimizeSuggestCode.value);
+  }
+  //云账号查询条件下传到卡片
   if (_.has(TableSearch.toSearchParams(condition), "accountIds")) {
     checkedAccountIds.value = TableSearch.toSearchParams(condition)?.accountIds;
   } else {
+    _.set(params, "accountIds", []);
     checkedAccountIds.value = [];
   }
-  ResourceOptimizationViewApi.listServer(
+  OptimizeViewApi.listOptimizeServer(
     {
       ...params,
       currentPage: tableConfig.value.paginationConfig.currentPage,
@@ -280,7 +256,6 @@ const searchCloudAccount = () => {
         const ca = { text: v.name, value: v.id };
         cloudAccount.value.push(ca);
       });
-
       if (checkedAccountIds.value) {
         table?.value?.filterChange({
           accountIds: checkedAccountIds.value,
@@ -405,7 +380,7 @@ const showSettingIcon = computed<boolean>(() =>
     width: 100%;
     height: 40px;
     position: absolute;
-    bottom: 0px;
+    bottom: 0;
     text-align: center;
     line-height: 40px;
   }

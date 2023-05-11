@@ -1,20 +1,19 @@
 <script lang="ts" setup>
-import { computed, ref } from "vue";
+import { computed, onMounted, ref, watch } from "vue";
 import _ from "lodash";
 import { useModuleStore } from "@commons/stores/modules/module";
 import { usePermissionStore } from "@commons/stores/modules/permission";
 import { useUserStore } from "@commons/stores/modules/user";
-import ConditionDialog from "./ConditionDialog.vue";
-import {
-  baseOptimizeSuggests,
-  type ListOptimizationRequest,
-  type OptimizeSuggest,
-  paramOptimizationRequestMap,
-} from "@commons/api/resource_optimization/type";
-import ServerOptimizationCard from "@commons/business/base-layout/home-page/items/operation/ServerOptimizationCard.vue";
+import type {
+  OptimizeSuggest,
+  PageOptimizeBaseRequest,
+  OptimizeBaseRequest,
+} from "@commons/api/optimize/type";
+import OptimizeViewApi from "@commons/api/optimize";
+import ServerOptimizationCard from "@commons/business/base-layout/home-page/items/operation/optimize/ServerOptimizationCard.vue";
+import OptimizeStrategyDialog from "@commons/business/base-layout/home-page/items/operation/optimize/OptimizeStrategyDialog.vue";
 import { useRouter } from "vue-router";
 import MicroAppRouterUtil from "@commons/router/MicroAppRouterUtil";
-
 const socRef = ref<Array<InstanceType<typeof ServerOptimizationCard>>>([]);
 
 const props = withDefaults(
@@ -31,7 +30,7 @@ const props = withDefaults(
     checkable?: boolean;
     showSettingIcon?: boolean;
     tableLoading?: boolean;
-    req?: ListOptimizationRequest;
+    tableSearchParams?: OptimizeBaseRequest;
   }>(),
   {
     needRoles: () => ["ADMIN", "ORGADMIN", "USER"],
@@ -55,20 +54,16 @@ const userStore = useUserStore();
 
 const router = useRouter();
 
-//优化建议
-const optimizeParam = ref<any>();
+//获取优化建议
+const apiOptimizeSuggestList = ref<Array<OptimizeSuggest>>();
 
-const simpleOptimizeSuggests = computed<Array<ListOptimizationRequest>>(() => {
-  return _.map(baseOptimizeSuggests, (s) => {
-    const v = _.clone(s);
-    getSearchParams(v);
-    _.assign(v, optimizeParam.value);
-    return { ...v, currentPage: 1, pageSize: 1 };
+const getOptimizeSuggests = () => {
+  OptimizeViewApi.getOptimizeSuggestList().then((res) => {
+    apiOptimizeSuggestList.value = res.data;
   });
-});
-
-const optimizeSuggests = computed<Array<ListOptimizationRequest>>(() => {
-  return _.map(simpleOptimizeSuggests.value, (s) => {
+};
+const optimizeSuggestList = computed<Array<OptimizeSuggest>>(() => {
+  return _.map(apiOptimizeSuggestList.value, (s) => {
     const v = _.clone(s);
     const accountIds = [];
     if (!(props.cloudAccountId === "all" || !props.cloudAccountId)) {
@@ -80,37 +75,12 @@ const optimizeSuggests = computed<Array<ListOptimizationRequest>>(() => {
       });
     }
     _.set(v, "accountIds", accountIds.length > 0 ? accountIds : []);
-
-    if (props.req) {
-      _.assign(v, props.req);
-    }
     return v;
   });
 });
-
-const modifyConditionRef = ref();
-const optimizationSearchReq = ref<ListOptimizationRequest>();
-const showConditionDialog = (req: ListOptimizationRequest) => {
-  optimizationSearchReq.value = req;
-  modifyConditionRef.value.dialogVisible = true;
-};
-
-const getSearchParams = (o: OptimizeSuggest) => {
-  //从数据库中获取数据
-  if (localStorage.getItem(o.code)) {
-    const str = localStorage.getItem(o.code);
-    if (str) {
-      try {
-        optimizeParam.value = JSON.parse(str);
-      } catch (e) {
-        console.error("get default dialogFormData error", e);
-        optimizeParam.value = paramOptimizationRequestMap.get(o.code);
-      }
-    }
-  } else {
-    optimizeParam.value = paramOptimizationRequestMap.get(o.code);
-  }
-};
+onMounted(() => {
+  getOptimizeSuggests();
+});
 
 const show = computed<boolean>(
   () =>
@@ -123,7 +93,17 @@ const show = computed<boolean>(
 );
 
 const emit = defineEmits(["update:checkId", "change"]);
-
+function changeStrategy(o: OptimizeSuggest) {
+  emit("update:checkId", o.index);
+  emit("change");
+  socRef.value[o.index - 1]?.getOptimizeServerList();
+}
+const modifyConditionRef = ref();
+const currentOptimizeSuggest = ref<OptimizeSuggest>();
+const showOptimizeStrategyDialog = (o: OptimizeSuggest) => {
+  currentOptimizeSuggest.value = o;
+  modifyConditionRef.value.dialogVisible = true;
+};
 const checkedId = computed({
   get() {
     return props.checkId;
@@ -131,45 +111,39 @@ const checkedId = computed({
   set(value) {
     if (checkedId.value !== value) {
       emit("update:checkId", value);
-      emit("change", value);
+      emit("change");
     }
   },
 });
 
-function changeParam(req: any) {
-  getSearchParams(req);
-  emit("update:checkId", req.id);
-  emit("change", req.id);
-  if (req.id !== undefined) {
-    socRef.value[req.id - 1]?.getOptimizeSuggests();
-  }
+function getCheckedSearchParams(
+  index: number,
+  tableSearchParams: any
+): PageOptimizeBaseRequest | undefined {
+  return _.assign(
+    _.clone(_.find(optimizeSuggestList.value, (s) => s.index === index)),
+    tableSearchParams
+  );
 }
 
-function checkDiv(req: ListOptimizationRequest) {
+defineExpose({
+  getCheckedSearchParams,
+});
+
+function checkDiv(req: OptimizeSuggest) {
   if (props.tableLoading) {
-    console.log("不要着急...");
     return;
   }
   if (!props.checkable) {
-    goTo(req.id);
+    goTo(req.index, req.optimizeSuggestCode);
     return;
   }
-  checkedId.value = req.id;
+  checkedId.value = req.index;
 }
 
 const showSettingIcon = computed<boolean>(() => props.showSettingIcon);
 
-function getCheckedSearchParams(
-  id: number,
-  req: ListOptimizationRequest
-): ListOptimizationRequest | undefined {
-  return _.assign(
-    _.clone(_.find(simpleOptimizeSuggests.value, (s) => s.id === id)),
-    req
-  );
-}
-
-function goTo(id: number) {
+function goTo(id: number, code: string) {
   const queryParam: any = { checked: id };
   if (props.cloudAccountId && props.cloudAccountId !== "all") {
     queryParam.accountIds = encodeURI(JSON.stringify([props.cloudAccountId]));
@@ -184,42 +158,47 @@ function goTo(id: number) {
       "operation-analysis",
       "/operation-analysis/server_optimization/list?checked=" +
         queryParam.checked +
+        (code ? "&optimizeSuggestCode=" + code : "") +
         (queryParam.accountIds ? "&accountIds=" + queryParam.accountIds : ""),
       router
     );
   }
 }
-
-defineExpose({
-  getCheckedSearchParams,
-});
 </script>
 <template>
-  <div class="info-card" :class="{ 'no-padding': noPadding }" v-if="show">
+  <div
+    class="info-card"
+    :class="{ 'no-padding': noPadding }"
+    v-if="show"
+    v-bind="$attrs"
+  >
     <div class="title" v-if="!noTitle">{{ title }}</div>
 
     <el-row :gutter="16" :class="{ 'div-content': !noTitle }">
-      <el-col :span="6" v-for="o in optimizeSuggests" :key="o.code">
+      <el-col
+        :span="6"
+        v-for="o in optimizeSuggestList"
+        :key="o.optimizeSuggestCode"
+      >
         <ServerOptimizationCard
           ref="socRef"
-          :req="o"
+          :optimize-suggest="o"
+          :table-search-params="props.tableSearchParams"
           :show="show"
           :show-setting-icon="showSettingIcon"
-          :checked="checkedId === o.id"
-          @showConditionDialog="showConditionDialog"
+          :checked="checkedId === o.index"
+          @showStrategyDialog="showOptimizeStrategyDialog"
           @click="checkDiv(o)"
         />
       </el-col>
     </el-row>
-
-    <ConditionDialog
-      ref="modifyConditionRef"
-      :optimization-search-req="optimizationSearchReq"
-      @changeParam="changeParam"
-      @showConditionDialog="showConditionDialog"
-      style="min-width: 600px"
-    />
   </div>
+  <OptimizeStrategyDialog
+    ref="modifyConditionRef"
+    :optimize-suggest="currentOptimizeSuggest"
+    @changeStrategy="changeStrategy"
+    style="min-width: 600px"
+  />
 </template>
 
 <style scoped lang="scss">

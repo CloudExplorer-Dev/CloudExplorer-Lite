@@ -10,7 +10,7 @@ import SecurityInfo from "./items/SecurityInfo.vue";
 
 import BillTrend from "./items/bill/BillTrend.vue";
 import CloudServerIncreaseTrend from "./items/operation/CloudServerIncreaseTrend.vue";
-import ServerOptimization from "./items/operation/ServerOptimization.vue";
+import ServerOptimization from "./items/operation/optimize/ServerOptimization.vue";
 import ServerStatusView from "./items/ServerStatusView.vue";
 </script>
 <template>

@@ -1,36 +1,81 @@
 <script setup lang="ts">
-import { computed } from "vue";
+import { computed, onMounted, ref, watch } from "vue";
+import _ from "lodash";
+import type { OptimizeStrategyBaseReq } from "@commons/api/optimize/type";
 const props = withDefaults(
   defineProps<{
     code?: string;
-    req?: any;
+    optimizeStrategy: any;
   }>(),
   {
     code: "",
   }
 );
+
 const comparisonSymbolMap = new Map<string, string>();
 comparisonSymbolMap.set("derating", "< =");
 comparisonSymbolMap.set("upgrade", "> =");
 const comparisonSymbol = computed<string>(() => {
   return comparisonSymbolMap.get(props.code)!;
 });
-const formReq = computed(() => {
-  return props;
+const formData = ref<any>({
+  days: 1,
+  cpuValue: 1,
+  cpuComparisonValue: "",
+  comparisonCondition: "",
+  memoryValue: 1,
+  memoryComparisonValue: "",
+});
+
+const getNewFormData = () => {
+  if (!formData.value.days) {
+    formData.value.days = 1;
+  }
+  if (!formData.value.cpuValue) {
+    formData.value.cpuValue = 1;
+  }
+  if (!formData.value.memoryValue) {
+    formData.value.memoryValue = 1;
+  }
+  const req = ref<OptimizeStrategyBaseReq>({
+    optimizeSuggestCode: props.code,
+    usedRateRequest: formData,
+  });
+  return req.value;
+};
+defineExpose({
+  getNewFormData,
+});
+
+watch(
+  () => props.optimizeStrategy,
+  () => {
+    if (props.optimizeStrategy) {
+      formData.value = _.cloneDeep(props.optimizeStrategy);
+    }
+  }
+);
+onMounted(() => {
+  if (props.optimizeStrategy) {
+    formData.value = _.cloneDeep(props.optimizeStrategy);
+  }
 });
 </script>
 
 <template>
-  <el-form class="form-box">
+  <el-form class="form-box" v-model="formData">
     <el-form-item>
       <div class="mo-input--number">
         <span>过去</span>
         <div style="width: 168px; padding: 0 0 0 8px">
           <el-input-number
-            v-model="formReq.req.days"
+            :min="1"
+            v-model="formData.days"
             style="width: 168px !important"
             controls-position="right"
             autocomplete="off"
+            :value-on-clear="1"
+            :step-strictly="true"
           >
           </el-input-number>
         </div>
@@ -39,42 +84,49 @@ const formReq = computed(() => {
     </el-form-item>
     <div class="main-center">
       <el-form-item>
-        <el-select style="width: 230px" v-model="formReq.req.cpuMaxRate">
-          <el-option label="CPU平均使用率" value="false" />
-          <el-option label="CPU最大使用率" value="true" />
+        <el-select style="width: 230px" v-model="formData.cpuComparisonValue">
+          <el-option label="CPU平均使用率" value="MAX" />
+          <el-option label="CPU最大使用率" value="AVG" />
         </el-select>
         <span style="padding: 0 8px 0 8px">{{ comparisonSymbol }}</span>
         <el-form-item>
           <div class="mo-input--number">
             <el-input-number
-              v-model="formReq.req.cpuRate"
+              v-model="formData.cpuValue"
               style="width: 220px"
               :min="1"
               :max="100"
               :step="1"
               controls-position="right"
               autocomplete="off"
+              :value-on-clear="1"
+              :step-strictly="true"
             />
             <span class="unit-label">%</span>
           </div>
         </el-form-item>
       </el-form-item>
       <el-form-item>
-        <el-select style="width: 230px" v-model="formReq.req.memoryMaxRate">
-          <el-option label="内存平均使用率" value="false" />
-          <el-option label="内存最大使用率" value="true" />
+        <el-select
+          style="width: 230px"
+          v-model="formData.memoryComparisonValue"
+        >
+          <el-option label="内存平均使用率" value="MAX" />
+          <el-option label="内存最大使用率" value="AVG" />
         </el-select>
         <span style="padding: 0 8px 0 8px">{{ comparisonSymbol }}</span>
         <el-form-item>
           <div class="mo-input--number">
             <el-input-number
-              v-model="formReq.req.memoryRate"
+              v-model="formData.memoryValue"
               style="width: 220px"
               :min="1"
               :max="100"
               :step="1"
               controls-position="right"
               autocomplete="off"
+              :value-on-clear="1"
+              :step-strictly="true"
             />
             <span class="unit-label">%</span>
           </div>
@@ -87,7 +139,7 @@ const formReq = computed(() => {
       </div>
       <el-form-item>
         <div>
-          <el-radio-group size="large" v-model="formReq.req.conditionOr">
+          <el-radio-group size="large" v-model="formData.comparisonCondition">
             <div style="display: block">
               <div style="height: 22px; display: flex">
                 <el-radio label="OR">OR</el-radio>
