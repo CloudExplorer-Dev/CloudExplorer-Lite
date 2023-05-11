@@ -77,8 +77,8 @@ const watchEnter = (e: KeyboardEvent) => {
 const submitForm = (formEl: FormInstance | undefined) => {
   if (!formEl) return;
   formEl.validate((valid: boolean) => {
-    loading.value = true;
     if (valid) {
+      loading.value = true;
       userStore
         .doLogin(form)
         .then(() => {
