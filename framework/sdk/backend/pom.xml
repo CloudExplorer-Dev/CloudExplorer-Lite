@@ -202,10 +202,10 @@
         </plugins>
     </build>
     <repositories>
-        <repository>
+        <!--<repository>
             <id>tencent</id>
             <name>tencent maven mirror</name>
             <url>https://mirrors.tencent.com/nexus/repository/maven-public/</url>
-        </repository>
+        </repository>-->
     </repositories>
 </project>
