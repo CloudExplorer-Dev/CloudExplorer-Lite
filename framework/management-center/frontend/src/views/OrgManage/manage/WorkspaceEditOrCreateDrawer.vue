@@ -291,8 +291,10 @@ defineExpose({ open, clear, setOrgId });
 
       <FormTitle>{{ t("workspace.org") }}</FormTitle>
 
-      <div style="margin-bottom: 8px">{{ t("commons.org", "组织") }}</div>
-      <el-form-item>
+      <div style="margin-bottom: 8px" class="label-required">
+        {{ t("commons.org", "组织") }}
+      </div>
+      <el-form-item prop="org">
         <el-tree-select
           ref="workspaceOrgSelectTree"
           filterable
