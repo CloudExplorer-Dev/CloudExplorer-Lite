@@ -24,11 +24,10 @@
           创建组织
         </el-button>
       </template>
-      <el-table-column prop="name" :label="t('commons.org', '组织')" sortable />
+      <el-table-column prop="name" :label="t('commons.org', '组织')" />
       <el-table-column
         prop="description"
         :label="t('commons.description', '描述')"
-        sortable
       />
       <el-table-column label="工作空间">
         <template #default="scope">

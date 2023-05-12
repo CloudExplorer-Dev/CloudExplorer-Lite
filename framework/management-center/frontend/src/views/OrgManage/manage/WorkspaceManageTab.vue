@@ -40,11 +40,7 @@
           </a>
         </template>
       </el-table-column>
-      <el-table-column
-        prop="userCount"
-        :label="$t('workspace.user_count')"
-        sortable
-      >
+      <el-table-column prop="userCount" :label="$t('workspace.user_count')">
         <template #default="scope">
           <a style="color: #3370ff" @click="jumpToUser(scope.row)">
             {{ scope.row.userCount }}
