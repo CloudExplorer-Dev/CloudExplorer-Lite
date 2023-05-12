@@ -1,5 +1,7 @@
 package com.fit2cloud.service;
 
+import com.fit2cloud.common.job.job.Job;
+import com.fit2cloud.common.job.job.SimpleJob;
 import com.fit2cloud.constants.ResourceTypeConstants;
 
 import java.util.List;
@@ -41,9 +43,4 @@ public interface ISyncService {
      * @param cloudAccountId 云账号id
      */
     void syncInstance(String cloudAccountId);
-
-    /**
-     * 删除不存在的云账号数据
-     */
-    void deleteNotFountCloudAccountData();
 }

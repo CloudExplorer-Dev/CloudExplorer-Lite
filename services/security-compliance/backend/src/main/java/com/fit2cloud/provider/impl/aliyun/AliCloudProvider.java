@@ -214,7 +214,7 @@ public class AliCloudProvider extends AbstractCloudProvider<AliSecurityComplianc
         List<DescribeEipAddressesResponseBody.DescribeEipAddressesResponseBodyEipAddressesEipAddress> instances = AliApi.listPublicIpInstance(listPublicIpInstanceRequest);
         return instances
                 .stream()
-                .map(instance -> ResourceUtil.toResourceInstance(PlatformConstants.fit2cloud_ali_platform.name(), ResourceTypeConstants.PUBLIC_IP, instance.getInstanceId(), instance.getName(), instance))
+                .map(instance -> ResourceUtil.toResourceInstance(PlatformConstants.fit2cloud_ali_platform.name(), ResourceTypeConstants.PUBLIC_IP, instance.getAllocationId(), instance.getName(), instance))
                 .toList();
     }
 
