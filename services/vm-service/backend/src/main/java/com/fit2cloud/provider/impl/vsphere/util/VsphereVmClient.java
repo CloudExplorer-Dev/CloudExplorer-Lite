@@ -1196,7 +1196,7 @@ public class VsphereVmClient extends VsphereClient {
         //todo windows 设置密码
         customizationPassword.setValue("password");
 
-        cgu.setPassword(customizationPassword);
+        //cgu.setPassword(customizationPassword);
         sysprep.setGuiUnattended(cgu);
         sysprep.setIdentification(ci);
         sysprep.setUserData(customizationUserData);
