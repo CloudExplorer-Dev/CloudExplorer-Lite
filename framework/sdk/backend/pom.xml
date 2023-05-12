@@ -207,27 +207,5 @@
             <name>tencent maven mirror</name>
             <url>https://mirrors.tencent.com/nexus/repository/maven-public/</url>
         </repository>
-        <repository>
-            <id>fit2cloud-enterprise-release</id>
-            <name>Fit2Cloud Enterprise Release</name>
-            <url>https://repository.fit2cloud.com/content/repositories/fit2cloud-enterprise-release/</url>
-            <releases>
-                <enabled>true</enabled>
-            </releases>
-            <snapshots>
-                <enabled>true</enabled>
-            </snapshots>
-        </repository>
-        <repository>
-            <id>fit2cloud</id>
-            <name>fit2cloud</name>
-            <url>https://repository.fit2cloud.com/content/groups/public/</url>
-            <releases>
-                <enabled>true</enabled>
-            </releases>
-            <snapshots>
-                <enabled>true</enabled>
-            </snapshots>
-        </repository>
     </repositories>
 </project>
