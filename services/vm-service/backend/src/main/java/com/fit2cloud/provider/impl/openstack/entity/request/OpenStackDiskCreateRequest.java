@@ -17,7 +17,8 @@ public class OpenStackDiskCreateRequest extends OpenStackBaseRequest {
     @Form(inputType = InputType.Text, label = "名称", propsInfo = "{\"style\":{\"width\":\"100%\"}}")
     private String diskName;
 
-    @Form(inputType = InputType.Radio,
+    @Form(inputType = InputType.SingleSelect,
+            required = false,
             label = "磁盘类型",
             textField = "name",
             valueField = "name",
