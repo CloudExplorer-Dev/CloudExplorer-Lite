@@ -68,7 +68,7 @@ public class VmCloudImageServiceImpl extends ServiceImpl<BaseVmCloudImageMapper,
                 .eq(StringUtils.isNotBlank(request.getRegionId()), VmCloudImage::getRegion, request.getRegionId())
                 .like(StringUtils.isNotBlank(request.getOs()), VmCloudImage::getOs, request.getOs())
                 .ne(VmCloudImage::getStatus, "DELETED");
-
+        queryWrapper.orderByAsc(VmCloudImage::getImageName);
         return list(queryWrapper);
     }
 
