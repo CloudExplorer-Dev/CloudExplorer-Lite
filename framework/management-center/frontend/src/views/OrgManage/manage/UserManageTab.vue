@@ -187,7 +187,6 @@ const tableConfig = ref<TableConfig>({
     searchOptions: [
       { label: t("user.username"), value: "username" },
       { label: t("user.name"), value: "name" },
-      { label: t("user.email"), value: "email" },
     ],
   },
   paginationConfig: new PaginationConfig(),
