@@ -52,11 +52,6 @@
         </dependency>
         <dependency>
             <groupId>com.aliyun</groupId>
-            <artifactId>tea-openapi</artifactId>
-            <version>0.2.2</version>
-        </dependency>
-        <dependency>
-            <groupId>com.aliyun</groupId>
             <artifactId>ecs20140526</artifactId>
             <version>3.0.0</version>
         </dependency>
