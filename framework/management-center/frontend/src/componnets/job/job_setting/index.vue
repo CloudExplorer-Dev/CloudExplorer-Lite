@@ -23,6 +23,7 @@
             >
             <div style="width: 550px">
               <cron-interval-view
+                ref="cronIntervalViewRef"
                 :readOnly="readOnly || details.cronReadOnly"
                 v-if="details.jobType === 'INTERVAL'"
                 v-model:unit="details.unit"
@@ -38,8 +39,9 @@
               ></cron-in-view>
             </div>
           </div>
-        </el-checkbox></div
-    ></template>
+        </el-checkbox>
+      </div>
+    </template>
   </base-container>
 </template>
 <script setup lang="ts">
@@ -48,11 +50,16 @@ import { useI18n } from "vue-i18n";
 import type { JobDetails } from "@/api/cloud_account/type";
 import CronInView from "@/componnets/job/job_setting/CronInView.vue";
 import CronIntervalView from "@/componnets/job/job_setting/CronIntervalView.vue";
+import _ from "lodash";
 
 const { t } = useI18n();
 // 校验实例对象
 const cronInViewRef = ref<
   Array<InstanceType<typeof CronInView>> | InstanceType<typeof CronInView>
+>();
+const cronIntervalViewRef = ref<
+  | Array<InstanceType<typeof CronIntervalView>>
+  | InstanceType<typeof CronIntervalView>
 >();
 
 const props = withDefaults(
@@ -80,18 +87,37 @@ watch(
 );
 // 校验
 const validate = () => {
+  const array: Array<any> = [];
   if (cronInViewRef.value) {
     if (Array.isArray(cronInViewRef.value)) {
-      return Promise.all(
-        (cronInViewRef.value as Array<InstanceType<typeof CronInView>>).map(
-          (c) => c.validate()
-        )
+      _.forEach(
+        cronInViewRef.value as Array<InstanceType<typeof CronInView>>,
+        (c) => array.push(c.validate())
       );
     } else {
-      return (
-        cronInViewRef.value as InstanceType<typeof CronInView>
-      ).validate();
+      array.push(
+        (cronInViewRef.value as InstanceType<typeof CronInView>).validate()
+      );
     }
+  }
+  if (cronIntervalViewRef.value) {
+    if (Array.isArray(cronIntervalViewRef.value)) {
+      _.forEach(
+        cronIntervalViewRef.value as Array<
+          InstanceType<typeof CronIntervalView>
+        >,
+        (c) => array.push(c.validate())
+      );
+    } else {
+      array.push(
+        (
+          cronIntervalViewRef.value as InstanceType<typeof CronIntervalView>
+        ).validate()
+      );
+    }
+  }
+  if (array.length > 0) {
+    return Promise.all(array);
   }
   return true;
 };

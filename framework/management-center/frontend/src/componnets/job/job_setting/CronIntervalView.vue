@@ -15,24 +15,32 @@
       间隔:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
     </div>
     <el-form-item
-      :rules="{
-        message: '请输入时间间隔',
-        trigger: 'bulr',
-        required: true,
-        type: 'number',
-      }"
+      prop="intervalF"
+      :rules="[
+        {
+          message: '请输入时间间隔',
+          trigger: 'blur',
+          required: true,
+          type: 'number',
+        },
+        {
+          message: '请输入时间间隔',
+          trigger: 'change',
+          type: 'number',
+          min: unit === 'MINUTE' ? 15 : 1,
+        },
+      ]"
     >
-      <el-input-number :disabled="readOnly" v-model="cronFrom.intervalF" />
+      <el-input-number
+        :disabled="readOnly"
+        v-model="cronFrom.intervalF"
+        :step="1"
+        :precision="0"
+        :value-on-clear="null"
+        :min="unit === 'MINUTE' ? 15 : 1"
+      />
     </el-form-item>
-    <el-form-item
-      :rules="{
-        message: '请选择时间',
-        trigger: 'change',
-        required: true,
-        type: 'array',
-        min: 1,
-      }"
-    >
+    <el-form-item prop="unitF">
       <el-select
         :disabled="readOnly"
         @click.stop.prevent
@@ -150,9 +158,13 @@ const ruleFormRef = ref<FormInstance>();
 // 监听同步类型变化,重置值
 watch(
   () => props.unit,
-  () => {
-    cronFrom.value.intervalF = 1;
-    emit("update:interval", 1);
+  (_unit) => {
+    if (_unit !== "MINUTE") {
+      cronFrom.value.intervalF = 1;
+    } else {
+      cronFrom.value.intervalF = 15;
+    }
+    emit("update:interval", cronFrom.value.intervalF);
   }
 );
 
