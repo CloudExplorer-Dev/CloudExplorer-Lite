@@ -416,7 +416,7 @@ const addOperations = computed(
         <el-header>
           <div class="title-name">{{ activeTreeNode?.name }}</div>
           <el-tabs v-model="activeTab" class="role-tab">
-            <el-tab-pane label="用户成员" name="user"></el-tab-pane>
+            <el-tab-pane label="成员" name="user"></el-tab-pane>
             <el-tab-pane
               label="组织"
               name="organization"

@@ -2,7 +2,7 @@
   <CeDrawer
     ref="editOrgDrawerRef"
     title="编辑组织"
-    confirm-btn-name="确定"
+    confirm-btn-name="保存"
     @confirm="submitForm"
     @cancel="cancelEditOrg"
     :disable-btn="loading"
@@ -12,7 +12,6 @@
       :model="form"
       ref="ruleFormRef"
       status-icon
-      require-asterisk-position="right"
       scroll-to-error
       v-loading="loading"
     >
@@ -20,28 +19,21 @@
 
       <div style="margin-bottom: 32px">
         <div class="edit-org-form-item">
-          <el-form-item :prop="'name'" class="form-item">
-            <el-input v-model="form.name" style="width: 320px">
-              <template #prepend>
-                <span class="label-required">
-                  {{ t("commons.name", "名称") }}
-                </span>
-              </template>
-            </el-input>
+          <el-form-item
+            :prop="'name'"
+            class="form-item"
+            :label="t('commons.name', '名称')"
+          >
+            <el-input v-model="form.name" style="width: 280px" />
           </el-form-item>
 
           <el-form-item
             :prop="'description'"
             :rules="rules.description"
             class="form-item"
+            :label="t('commons.description', '描述')"
           >
-            <el-input v-model="form.description" style="width: 360px">
-              <template #prepend>
-                <span>
-                  {{ t("commons.description", "描述") }}
-                </span>
-              </template>
-            </el-input>
+            <el-input v-model="form.description" style="width: 320px" />
           </el-form-item>
 
           <div style="width: 16px; height: 16px"></div>
@@ -52,7 +44,8 @@
         {{ t("org_manage.affiliated_organization", "所属组织") }}
       </FormTitle>
 
-      <el-form-item :label="t('commons.org', '组织')">
+      <div style="margin-bottom: 8px">{{ t("commons.org", "组织") }}</div>
+      <el-form-item>
         <el-tree-select
           filterable
           :filter-method="filterMethod"

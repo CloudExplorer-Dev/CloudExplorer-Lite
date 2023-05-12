@@ -232,7 +232,7 @@ defineExpose({ open, clear, setOrgId });
   <CeDrawer
     ref="workspaceDrawerRef"
     :title="(isEdit ? '编辑' : '创建') + '工作空间'"
-    :confirm-btn-name="isEdit ? '编辑' : '创建'"
+    :confirm-btn-name="isEdit ? '保存' : '创建'"
     @confirm="submitForm"
     @cancel="cancelWorkspace"
     :disable-btn="loading"

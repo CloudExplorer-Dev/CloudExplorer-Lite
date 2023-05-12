@@ -532,7 +532,7 @@ onMounted(() => {
       <el-container direction="vertical" style="height: 100%">
         <el-header>
           <el-tabs v-model="activeTab" class="role-tab">
-            <el-tab-pane label="用户成员" name="user"></el-tab-pane>
+            <el-tab-pane label="成员" name="user"></el-tab-pane>
             <el-tab-pane label="权限配置" name="permission"></el-tab-pane>
           </el-tabs>
         </el-header>
@@ -738,7 +738,7 @@ onMounted(() => {
       <template #footer>
         <el-button @click="cancelAddRole"> 取消</el-button>
         <el-button type="primary" @click="submitForm(ruleFormRef)">
-          创建
+          {{ id ? "保存" : "创建" }}
         </el-button>
       </template>
     </el-dialog>
