@@ -239,7 +239,7 @@ const tableConfig = ref<TableConfig>({
     search: search,
     quickPlaceholder: "搜索",
     components: [],
-    searchOptions: [{ label: "组织", value: "name" }],
+    searchOptions: [{ label: t("commons.name"), value: "name" }],
   },
   paginationConfig: new PaginationConfig(),
 });

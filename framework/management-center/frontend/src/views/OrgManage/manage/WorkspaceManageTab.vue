@@ -146,11 +146,7 @@ const tableConfig = ref<TableConfig>({
     search: search,
     quickPlaceholder: "搜索",
     components: [],
-    searchOptions: [
-      { label: t("user.username"), value: "username" },
-      { label: t("user.name"), value: "name" },
-      { label: t("user.email"), value: "email" },
-    ],
+    searchOptions: [{ label: t("commons.name"), value: "name" }],
   },
   paginationConfig: new PaginationConfig(),
 });

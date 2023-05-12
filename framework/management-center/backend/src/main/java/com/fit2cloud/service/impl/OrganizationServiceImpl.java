@@ -65,7 +65,6 @@ public class OrganizationServiceImpl extends ServiceImpl<OrganizationMapper, Org
     @Override
     public IPage<OrganizationDTO> pageOrganization(PageOrganizationRequest request) {
         // 用户信息
-        UserDto credentials = CurrentUserUtils.getUser();
         Page<OrganizationDTO> page = new Page<>(request.getCurrentPage(), request.getPageSize(), false);
         // 构建查询参数
         QueryWrapper<Organization> wrapper = new QueryWrapper<>();

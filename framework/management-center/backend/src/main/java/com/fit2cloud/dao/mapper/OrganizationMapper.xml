@@ -24,7 +24,7 @@
             update_time,
             pid,
             (select count(workspace.id) from workspace where workspace.organization_id = organization.id) as workspaceCount,
-            (select count(user_role.id) from user_role where user_role._source = organization.id) as userCount
+            (select count(DISTINCT user_role.user_id ) from user_role where user_role._source = organization.id) as userCount
         FROM
             organization
                 INNER JOIN (
@@ -41,7 +41,7 @@
                        where id = #{rootId}
                        ) t1
                    </if>
-                   <if test="rootId ==null">
+                   <if test="rootId == null">
                         (
                         SELECT DISTINCT
                         GET_ROOT_ORG_ID ( id ) AS id
