@@ -1,5 +1,6 @@
 package com.fit2cloud.service;
 
+import com.fit2cloud.common.job.actuator.JobActuator;
 import com.fit2cloud.constants.ResourceTypeConstants;
 
 import java.util.List;
@@ -28,6 +29,17 @@ public interface ISyncService {
     void syncInstanceByInstanceType(String cloudAccountId, List<String> instanceType);
 
     /**
+     * 同步资源
+     *
+     * @param cloudAccountId  云账号id
+     * @param instanceType    资源类型
+     * @param executeStepList 执行步骤
+     */
+    void syncInstance(String cloudAccountId, ResourceTypeConstants instanceType, List<JobActuator.ExecuteStepData> executeStepList);
+
+    void scanInstance(String complianceRuleId, List<JobActuator.ExecuteStepData> executeStepList);
+
+    /**
      * 同步实例数据
      *
      * @param cloudAccountId 云账号id
@@ -41,9 +53,4 @@ public interface ISyncService {
      * @param cloudAccountId 云账号id
      */
     void syncInstance(String cloudAccountId);
-
-    /**
-     * 删除不存在的云账号数据
-     */
-    void deleteNotFountCloudAccountData();
 }

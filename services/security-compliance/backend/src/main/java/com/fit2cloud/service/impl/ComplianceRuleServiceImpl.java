@@ -8,6 +8,7 @@ import com.baomidou.mybatisplus.core.metadata.OrderItem;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.fit2cloud.common.exception.Fit2cloudException;
+import com.fit2cloud.common.job.actuator.JobActuator;
 import com.fit2cloud.common.page.PageImpl;
 import com.fit2cloud.common.provider.util.CommonUtil;
 import com.fit2cloud.common.utils.ColumnNameUtil;
@@ -81,10 +82,11 @@ public class ComplianceRuleServiceImpl extends ServiceImpl<ComplianceRuleMapper,
         complianceRule.setEnable(true);
         save(complianceRule);
         complianceRuleInsuranceStatuteMappingService.save(complianceRule.getId(), complianceRuleRequest.getInsuranceStatuteIds());
-        ComplianceRuleResponse complianceRuleResponse = new ComplianceRuleResponse();
-        BeanUtils.copyProperties(complianceRule, complianceRuleResponse);
-        complianceScanResultService.initComplianceScanResultService(complianceRule);
-        return complianceRuleResponse;
+        ISyncService syncService = SpringUtil.getBean(ISyncService.class);
+        syncService.scanInstance(complianceRule.getId(),
+                List.of(JobActuator.ExecuteStepData.of("SCAN::RESOURCE"),
+                        JobActuator.ExecuteStepData.of("UPDATE::SCAN_TIME")));
+        return new ComplianceRuleResponse(complianceRule);
     }
 
     @Override
@@ -118,11 +120,11 @@ public class ComplianceRuleServiceImpl extends ServiceImpl<ComplianceRuleMapper,
         if (CollectionUtils.isNotEmpty(complianceRuleRequest.getInsuranceStatuteIds())) {
             complianceRuleInsuranceStatuteMappingService.update(complianceRule.getId(), complianceRuleRequest.getInsuranceStatuteIds());
         }
-        ComplianceRuleResponse complianceRuleResponse = new ComplianceRuleResponse();
-        BeanUtils.copyProperties(complianceRule, complianceRuleResponse);
-        IComplianceScanService complianceScanService = SpringUtil.getBean(IComplianceScanService.class);
-        complianceScanService.scanComplianceOrSave(complianceRule);
-        return complianceRuleResponse;
+        ISyncService syncService = SpringUtil.getBean(ISyncService.class);
+        syncService.scanInstance(complianceRule.getId(),
+                List.of(JobActuator.ExecuteStepData.of("SCAN::RESOURCE"),
+                        JobActuator.ExecuteStepData.of("UPDATE::SCAN_TIME")));
+        return new ComplianceRuleResponse(complianceRule);
     }
 
     @Override

@@ -6,9 +6,12 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.fasterxml.jackson.datatype.jsr310.deser.LocalDateTimeDeserializer;
 import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateTimeSerializer;
 import com.fit2cloud.dao.constants.RiskLevel;
+import com.fit2cloud.dao.entity.ComplianceRule;
 import com.fit2cloud.dao.jentity.Rules;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
+import lombok.NoArgsConstructor;
+import org.springframework.beans.BeanUtils;
 
 import java.time.LocalDateTime;
 
@@ -19,6 +22,7 @@ import java.time.LocalDateTime;
  * {@code @注释: }
  */
 @Data
+@NoArgsConstructor
 public class ComplianceRuleResponse {
 
     @ApiModelProperty(value = "主键id", notes = "主键id")
@@ -62,4 +66,8 @@ public class ComplianceRuleResponse {
     @JsonSerialize(using = LocalDateTimeSerializer.class)
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
     private LocalDateTime updateTime;
+
+    public ComplianceRuleResponse(ComplianceRule complianceRule) {
+        BeanUtils.copyProperties(complianceRule, this);
+    }
 }

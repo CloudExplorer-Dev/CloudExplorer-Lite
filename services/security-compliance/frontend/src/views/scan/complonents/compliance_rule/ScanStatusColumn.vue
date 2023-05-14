@@ -1,5 +1,5 @@
 <template>
-  <el-popover placement="right" :width="800" trigger="click">
+  <el-popover placement="top" :width="800" trigger="click">
     <template #reference>
       <ScanJobStatusIcon
         :status="scanStatus(complainceScanResult.resourceType)"
