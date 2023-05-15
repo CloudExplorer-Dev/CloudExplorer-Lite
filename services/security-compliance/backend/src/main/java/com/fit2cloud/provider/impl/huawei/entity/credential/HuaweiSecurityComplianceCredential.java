@@ -2,6 +2,8 @@ package com.fit2cloud.provider.impl.huawei.entity.credential;
 
 import com.fit2cloud.common.provider.exception.SkipPageException;
 import com.fit2cloud.common.provider.impl.huawei.entity.credential.HuaweiBaseCredential;
+import com.huaweicloud.sdk.cbr.v1.CbrClient;
+import com.huaweicloud.sdk.cbr.v1.region.CbrRegion;
 import com.huaweicloud.sdk.core.auth.BasicCredentials;
 import com.huaweicloud.sdk.core.auth.GlobalCredentials;
 import com.huaweicloud.sdk.core.auth.ICredential;
@@ -52,6 +54,24 @@ public class HuaweiSecurityComplianceCredential extends HuaweiBaseCredential {
     private ICredential getGlobalAuth() {
         try {
             return new GlobalCredentials().withAk(getAk()).withSk(getSk());
+        } catch (Exception e) {
+            SkipPageException.throwSkip(e);
+            throw e;
+        }
+    }
+
+    /**
+     * 获取云备份客户端
+     *
+     * @param regionId 区域id
+     * @return 云备份客户端
+     */
+    public CbrClient getCbrClient(String regionId) {
+        try {
+            return CbrClient.newBuilder()
+                    .withCredential(getAuth())
+                    .withRegion(CbrRegion.valueOf(regionId))
+                    .build();
         } catch (Exception e) {
             SkipPageException.throwSkip(e);
             throw e;

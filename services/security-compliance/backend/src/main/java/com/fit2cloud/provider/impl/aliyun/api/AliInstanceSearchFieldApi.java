@@ -202,7 +202,6 @@ public class AliInstanceSearchFieldApi {
                         new DefaultKeyValue<>("公共读写", "public-read-write")
                 ))
                 .resetInstanceField(PlatformConstants.fit2cloud_ali_platform, ResourceTypeConstants.OSS);
-
         return List.of(encryption, instanceSearchField, referer, refererAllowEmptyReferer);
     }
 
@@ -362,7 +361,14 @@ public class AliInstanceSearchFieldApi {
                         new DefaultKeyValue<>("否", false)))
                 .resetInstanceField(PlatformConstants.fit2cloud_ali_platform, ResourceTypeConstants.DISK);
 
-        return List.of(status, type, performanceLevel, deleteAutoSnapshot, encrypted, iops, size, diskChargeType, category, burstingEnabled);
+        InstanceSearchField enableAutomatedSnapshotPolicy = new InstanceSearchField("是否开启自动备份策略", "enableAutomatedSnapshotPolicy", InstanceFieldType.Enum,
+                List.of(new DefaultKeyValue<>("开启", true),
+                        new DefaultKeyValue<>("未开启", false)))
+                .resetInstanceField(PlatformConstants.fit2cloud_ali_platform, ResourceTypeConstants.DISK);
+
+        return List.of(status, type, performanceLevel, deleteAutoSnapshot, encrypted, iops, size, diskChargeType, category,
+                burstingEnabled
+                , enableAutomatedSnapshotPolicy);
     }
 
     /**

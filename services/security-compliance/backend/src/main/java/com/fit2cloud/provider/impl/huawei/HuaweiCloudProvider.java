@@ -12,6 +12,7 @@ import com.fit2cloud.provider.entity.InstanceSearchField;
 import com.fit2cloud.provider.impl.huawei.api.HuaweiApi;
 import com.fit2cloud.provider.impl.huawei.api.HuaweiInstanceSearchFieldApi;
 import com.fit2cloud.provider.impl.huawei.entity.request.*;
+import com.fit2cloud.provider.impl.huawei.entity.response.DiskInstanceResponse;
 import com.fit2cloud.provider.util.ResourceUtil;
 import com.huaweicloud.sdk.css.v1.model.ClusterList;
 import com.huaweicloud.sdk.dcs.v2.model.InstanceListInfo;
@@ -174,7 +175,7 @@ public class HuaweiCloudProvider extends AbstractCloudProvider<HuaweiBaseCredent
     @Override
     public List<ResourceInstance> listDiskInstance(String req) {
         ListDiskInstanceRequest listDiskInstanceRequest = JsonUtil.parseObject(req, ListDiskInstanceRequest.class);
-        List<VolumeDetail> volumeDetails = HuaweiApi.listDiskInstance(listDiskInstanceRequest);
+        List<DiskInstanceResponse> volumeDetails = HuaweiApi.listDiskInstanceCollection(listDiskInstanceRequest);
         return volumeDetails.stream()
                 .map(instance -> ResourceUtil.toResourceInstance(PlatformConstants.fit2cloud_huawei_platform.name(), ResourceTypeConstants.DISK, instance.getId(), instance.getName(), instance))
                 .toList();

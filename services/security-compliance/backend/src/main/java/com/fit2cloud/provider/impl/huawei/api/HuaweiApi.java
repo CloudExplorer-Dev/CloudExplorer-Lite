@@ -5,7 +5,13 @@ import com.fit2cloud.common.provider.exception.ReTryException;
 import com.fit2cloud.common.provider.exception.SkipPageException;
 import com.fit2cloud.common.provider.util.PageUtil;
 import com.fit2cloud.provider.impl.huawei.entity.request.*;
+import com.fit2cloud.provider.impl.huawei.entity.response.DiskInstanceResponse;
 import com.fit2cloud.provider.util.ResourceUtil;
+import com.huaweicloud.sdk.cbr.v1.CbrClient;
+import com.huaweicloud.sdk.cbr.v1.model.ListPoliciesResponse;
+import com.huaweicloud.sdk.cbr.v1.model.ListVaultResponse;
+import com.huaweicloud.sdk.cbr.v1.model.Policy;
+import com.huaweicloud.sdk.cbr.v1.model.Vault;
 import com.huaweicloud.sdk.css.v1.CssClient;
 import com.huaweicloud.sdk.css.v1.model.ClusterList;
 import com.huaweicloud.sdk.css.v1.model.ListClustersDetailsResponse;
@@ -231,6 +237,102 @@ public class HuaweiApi {
                 ListVolumesResponse::getVolumes,
                 (req, res) -> req.getLimit() <= res.getVolumes().size(),
                 req -> req.setOffset((req.getOffset() + 1) * PageUtil.DefaultPageSize));
+    }
+
+    /**
+     * 获取华为云 云磁盘 备份存储 存储策略集合列表
+     *
+     * @param request 请求对象
+     * @return 云磁盘 备份存储 存储策略集合列表
+     */
+    public static List<DiskInstanceResponse> listDiskInstanceCollection(ListDiskInstanceRequest request) {
+        // 获取云磁盘数据
+        List<VolumeDetail> volumeDetails = listDiskInstance(request);
+        // 获取备份存储库
+        ListVaultInstanceRequest listVaultInstanceRequest = new ListVaultInstanceRequest();
+        listVaultInstanceRequest.setCredential(request.getCredential());
+        listVaultInstanceRequest.setRegionId(request.getRegionId());
+        List<Vault> vaults = listVaultInstance(listVaultInstanceRequest);
+        // 获取备份策略
+        ListPoliciesInstanceRequest listPoliciesInstanceRequest = new ListPoliciesInstanceRequest();
+        listPoliciesInstanceRequest.setCredential(request.getCredential());
+        listPoliciesInstanceRequest.setRegionId(request.getRegionId());
+        List<Policy> policies = listPoliciesInstance(listPoliciesInstanceRequest);
+        return mergeDiskInstance(volumeDetails, vaults, policies);
+    }
+
+    /**
+     * 合并磁盘所需要的数据
+     *
+     * @param volumeDetails 磁盘详情
+     * @param vaults        备份存储库
+     * @param policies      策略
+     * @return 磁盘数据列表
+     */
+    private static List<DiskInstanceResponse> mergeDiskInstance(List<VolumeDetail> volumeDetails,
+                                                                List<Vault> vaults,
+                                                                List<Policy> policies) {
+        return volumeDetails.stream().map(volumeDetail -> {
+            DiskInstanceResponse diskInstanceResponse = new DiskInstanceResponse();
+            BeanUtils.copyProperties(volumeDetail, diskInstanceResponse);
+            vaults.stream()
+                    .filter(vault -> vault
+                            .getResources()
+                            .stream()
+                            .anyMatch(resourceResp -> StringUtils.equals(resourceResp.getId(), volumeDetail.getId())))
+                    .findFirst().ifPresent(
+                            vault -> {
+                                diskInstanceResponse.setVault(vault);
+                                policies.stream()
+                                        .filter(policy -> policy.getAssociatedVaults()
+                                                .stream()
+                                                .anyMatch(policyAssociateVault ->
+                                                        StringUtils.equals(policyAssociateVault.getVaultId(), vault.getId())))
+                                        .findFirst().ifPresent(diskInstanceResponse::setPolicy);
+                            }
+                    );
+            return diskInstanceResponse;
+        }).toList();
+    }
+
+    /**
+     * 获取云备份实例列表
+     *
+     * @param request 请求对象
+     * @return 云备份实例列表
+     */
+    public static List<Vault> listVaultInstance(ListVaultInstanceRequest request) {
+        CbrClient client = request.getCredential().getCbrClient(request.getRegionId());
+        request.setLimit(PageUtil.DefaultPageSize);
+        request.setOffset(0);
+        return PageUtil.page(request, req -> {
+                    try {
+                        return client.listVault(request);
+                    } catch (Exception e) {
+                        ReTryException.throwHuaweiReTry(e);
+                        SkipPageException.throwSkip(e);
+                        throw new Fit2cloudException(10000, "获取数据失败" + e.getMessage());
+                    }
+                },
+                ListVaultResponse::getVaults,
+                (req, res) -> req.getLimit() <= res.getVaults().size(),
+                req -> req.setOffset((req.getOffset() + 1) * PageUtil.DefaultPageSize));
+
+
+    }
+
+    /**
+     * 获取策略实例列表
+     *
+     * @param request 请求对象
+     * @return 备份策略列表
+     */
+    public static List<Policy> listPoliciesInstance(ListPoliciesInstanceRequest request) {
+        CbrClient client = request.getCredential().getCbrClient(request.getRegionId());
+        ListPoliciesResponse listPoliciesResponse = PageUtil.reTry(() -> client.listPolicies(request), 3);
+        assert listPoliciesResponse != null;
+        return listPoliciesResponse.getPolicies();
+
     }
 
     /**
