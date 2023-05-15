@@ -12,16 +12,13 @@ const props = defineProps<{
 }>();
 
 const loading = ref<boolean>(false);
-
-const _disable = ref<boolean>(false);
-watch(
-  () => props.functionProps.instanceStatus,
-  () => {
-    _disable.value =
-      props.functionProps.instanceStatus != "Running" &&
-      props.functionProps.instanceStatus != "Stopped";
-  }
-);
+const switchRef = ref();
+const checkDisable = () => {
+  return (
+    props.functionProps.instanceStatus != "Running" &&
+    props.functionProps.instanceStatus != "Stopped"
+  );
+};
 const _instanceStatus = computed(() => {
   return (
     props.functionProps.instanceStatus === "Running" ||
@@ -56,13 +53,12 @@ const powerOn = (row: VmCloudServerVO) => {
       VmCloudServerApi.powerOn(row.id as string)
         .then((res) => {
           ElMessage.success(t("commons.msg.op_success"));
-          _disable.value = true;
           loading.value = false;
-          refresh();
+          props.finalFunction();
         })
         .catch((err) => {
           loading.value = false;
-          ElMessage.error(err.response.data.message);
+          ElMessage.error(err.response?.data.message);
         });
     })
     .catch(() => {
@@ -89,24 +85,22 @@ const shutdown = (row: VmCloudServerVO) => {
       if (powerOff) {
         VmCloudServerApi.powerOff(row.id as string)
           .then((res) => {
-            _disable.value = true;
             loading.value = false;
-            refresh();
+            props.finalFunction();
           })
           .catch((err) => {
             loading.value = false;
-            ElMessage.error(err.response.data.message);
+            ElMessage.error(err.response?.data.message);
           });
       } else {
         VmCloudServerApi.shutdownInstance(row.id as string)
           .then((res) => {
-            _disable.value = true;
             loading.value = false;
-            refresh();
+            props.finalFunction();
           })
           .catch((err) => {
             loading.value = false;
-            ElMessage.error(err.response.data.message);
+            ElMessage.error(err.response?.data.message);
           });
       }
     })
@@ -118,7 +112,7 @@ const shutdown = (row: VmCloudServerVO) => {
  * 开关机
  */
 const handleSwitchStatus = (row: VmCloudServerVO) => {
-  if (!_disable.value) {
+  if (!checkDisable()) {
     loading.value = true;
     _instanceStatus.value ? shutdown(row) : powerOn(row);
   }
@@ -126,12 +120,15 @@ const handleSwitchStatus = (row: VmCloudServerVO) => {
 </script>
 
 <template>
-  <el-switch
-    :disabled="_disable"
-    v-model="_instanceStatus"
-    :loading="loading"
-    @click.prevent="handleSwitchStatus(functionProps)"
-  />
+  <div>
+    <el-switch
+      :disabled="checkDisable()"
+      ref="switchRef"
+      v-model="_instanceStatus"
+      :loading="loading"
+      @click.prevent="handleSwitchStatus(functionProps)"
+    />
+  </div>
 </template>
 
 <style lang="scss" scoped></style>
