@@ -42,7 +42,7 @@ public interface IUserService extends IService<User> {
      * @param userBatchAddRoleRequest
      * @return
      */
-    boolean addUserRole(UserBatchAddRoleRequest userBatchAddRoleRequest);
+    int addUserRole(UserBatchAddRoleRequest userBatchAddRoleRequest);
 
     /**
      * 为指定角色添加用户关联关系

@@ -158,7 +158,7 @@ public class UserController {
             resourceId = "#userBatchAddRoleRequest.userIdList",
             content = "'批量添加用户角色['+#userBatchAddRoleRequest.roleInfoList.![roleId]+']'",
             param = "#userBatchAddRoleRequest")
-    public ResultHolder<Boolean> addUserRole(@Validated @RequestBody UserBatchAddRoleRequest userBatchAddRoleRequest) {
+    public ResultHolder<Integer> addUserRole(@Validated @RequestBody UserBatchAddRoleRequest userBatchAddRoleRequest) {
         return ResultHolder.success(userService.addUserRole(userBatchAddRoleRequest));
     }
 
