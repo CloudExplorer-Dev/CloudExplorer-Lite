@@ -201,23 +201,5 @@
             </plugin>
         </plugins>
     </build>
-    <repositories>
-        <repository>
-            <id>public</id>
-            <url>https://maven.aliyun.com/repository/public</url>
-        </repository>
-        <repository>
-            <id>central</id>
-            <url>https://maven.aliyun.com/repository/central</url>
-        </repository>
-        <repository>
-            <id>spring</id>
-            <url>https://maven.aliyun.com/repository/spring</url>
-        </repository>
-        <repository>
-            <id>tencent</id>
-            <name>tencent maven mirror</name>
-            <url>https://mirrors.tencent.com/nexus/repository/maven-public/</url>
-        </repository>
-    </repositories>
+
 </project>
