@@ -166,6 +166,14 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
 
     @Override
     public UserDto getUser(String userId) {
+        if (CurrentUserUtils.isOrgAdmin()) {
+            List<String> filteredUserIds = this.getManageUserSimpleList(List.of(userId)).stream().map(User::getId).toList();
+            if (CollectionUtils.isEmpty(filteredUserIds)) {
+                throw new RuntimeException("没有权限查看该用户");
+            }
+        } else if (CurrentUserUtils.isUser() && !StringUtils.equals(CurrentUserUtils.getUser().getId(), userId)) {
+            throw new RuntimeException("没有权限查看该用户");
+        }
         User user = this.getById(userId);
         // 根据当前所在角色过滤
         List<String> resourceIds = new ArrayList<>();
@@ -262,6 +270,13 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
     }
 
     public boolean changeUserStatus(UserDto userDto) {
+        if (CurrentUserUtils.isOrgAdmin()) {
+            List<String> filteredUserIds = this.getManageUserSimpleList(List.of(userDto.getId())).stream().map(User::getId).toList();
+            if (CollectionUtils.isEmpty(filteredUserIds)) {
+                throw new RuntimeException("没有权限修改该用户");
+            }
+        }
+
         User userUpdate = new User();
         userUpdate.setId(userDto.getId());
         userUpdate.setEnabled(userDto.getEnabled());
@@ -407,8 +422,16 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
     }
 
     public boolean updatePwd(User user) {
+        if (CurrentUserUtils.isOrgAdmin()) {
+            List<String> filteredUserIds = this.getManageUserSimpleList(List.of(user.getId())).stream().map(User::getId).toList();
+            if (CollectionUtils.isEmpty(filteredUserIds)) {
+                throw new RuntimeException("没有权限查看该用户");
+            }
+        } else if (CurrentUserUtils.isUser() && !StringUtils.equals(CurrentUserUtils.getUser().getId(), user.getId())) {
+            throw new RuntimeException("没有权限查看该用户");
+        }
         // 非本地创建用户不允许修改密码
-        if (!"local".equalsIgnoreCase(CurrentUserUtils.getUser().getSource())) {
+        if (!"local".equalsIgnoreCase(this.getById(user.getId()).getSource())) {
             throw new Fit2cloudException(ErrorCodeConstants.USER_NOT_LOCAL_CAN_NOT_EDIT_PASSWORD.getCode(), ErrorCodeConstants.USER_NOT_LOCAL_CAN_NOT_EDIT_PASSWORD.getMessage());
         }
         User updateUser = new User();
