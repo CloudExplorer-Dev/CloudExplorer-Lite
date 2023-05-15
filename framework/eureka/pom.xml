@@ -64,7 +64,26 @@
                     <outputDirectory>../../target</outputDirectory>
                 </configuration>
             </plugin>
+
         </plugins>
+
+        <pluginManagement>
+            <plugins>
+                <plugin>
+                    <groupId>org.springframework.boot.experimental</groupId>
+                    <artifactId>spring-boot-thin-maven-plugin</artifactId>
+                    <version>${spring-boot-thin.version}</version>
+                    <dependencies>
+                        <dependency>
+                            <groupId>org.springframework.boot.experimental</groupId>
+                            <artifactId>spring-boot-thin-launcher</artifactId>
+                            <classifier>exec</classifier>
+                            <version>${spring-boot-thin.version}</version>
+                        </dependency>
+                    </dependencies>
+                </plugin>
+            </plugins>
+        </pluginManagement>
     </build>
 
 </project>
