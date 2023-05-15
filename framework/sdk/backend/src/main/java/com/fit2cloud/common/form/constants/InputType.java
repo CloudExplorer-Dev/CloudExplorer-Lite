@@ -55,6 +55,10 @@ public enum InputType {
      * 表格单选
      */
     TableRadio(TableRadioForm.class),
+    /**
+     * 实时验证正则组密码输入框
+     */
+    RegexInput(RegexInputForm.class),
 
     AliyunInstanceTypeForm(com.fit2cloud.common.form.vo.aliyun.AliyunInstanceType.class),
     AliyunDiskConfigForm(com.fit2cloud.common.form.vo.aliyun.AliyunDiskConfig.class),

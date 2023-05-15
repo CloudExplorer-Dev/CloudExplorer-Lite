@@ -1,105 +1,76 @@
 <template>
-  <layout-container v-for="group in groups" :key="group.group">
-    <template #header>
-      <h4>{{ group.name }}</h4>
-    </template>
-    <template #header_content>
-      <p class="description">
-        {{ group.description }}
-      </p>
-    </template>
-    <template #content>
-      <template v-for="form in group.forms" :key="form.index">
-        <template
-          v-if="
-            form.confirmSpecial && !form.label && form.confirmPosition === 'TOP'
-          "
-        >
-          <!--   无label的特殊组件           -->
-          <component
-            ref="formItemRef"
-            :is="form.inputType"
-            :model-value="getDisplayValue(form)"
-            :field="form.field"
-            :all-data="allData"
-            :form-item="form"
-            :otherParams="{}"
-            :confirm="true"
-          />
+  <base-container
+    v-loading="loading"
+    style="
+      --ce-base-container-height: auto;
+      margin-bottom: 0;
+      --ce-base-container-form-width: 100%;
+    "
+  >
+    <template #form>
+      <base-container v-for="group in groups" :key="group.group">
+        <template #header>
+          <span>
+            {{ group.name }}
+          </span>
         </template>
-      </template>
-      <el-descriptions :column="group.items">
-        <el-descriptions-item label="云账号" v-if="group.group === 0">
-          <!--          <el-image
-            style="margin-top: 3px; width: 16px; height: 16px"
-            :src="platformIcon[cloudAccount?.platform].icon"
-            v-if="cloudAccount?.platform"
-          />-->
-          <component
-            style="margin-top: 3px; width: 16px; height: 16px"
-            :is="platformIcon[cloudAccount?.platform]?.component"
-            v-bind="platformIcon[cloudAccount?.platform]?.icon"
-            :color="platformIcon[cloudAccount?.platform]?.color"
-            size="16px"
-            v-if="cloudAccount?.platform"
-          ></component>
-          <span style="margin-left: 10px">{{ cloudAccount?.name }}</span>
-        </el-descriptions-item>
-        <template v-for="form in group.forms" :key="form.index">
-          <template v-if="form.label && checkShow(form)">
-            <el-descriptions-item
-              :label="form.label"
-              :span="form.confirmItemSpan"
+        <template #header_content>
+          <p class="description">
+            {{ group.description }}
+          </p>
+        </template>
+        <template #content>
+          <template v-for="form in group.forms" :key="form.index">
+            <template
+              v-if="
+                form.confirmSpecial &&
+                !form.label &&
+                form.confirmPosition === 'TOP'
+              "
             >
-              <template v-if="!form.confirmSpecial">
-                <div class="description-inline">
-                  <span
-                    v-html="getDisplayValue(form)"
-                    :title="fieldValueMap[form.field]"
-                  />
-                </div>
-                <span v-if="form.unit">{{ form.unit }}</span>
-              </template>
-              <template v-else>
-                <!--   有label的特殊组件           -->
-                <component
-                  ref="formItemRef"
-                  :is="form.inputType"
-                  :model-value="getDisplayValue(form)"
-                  :all-data="allData"
-                  :field="form.field"
-                  :form-item="form"
-                  :otherParams="{}"
-                  :confirm="true"
-                />
-              </template>
-            </el-descriptions-item>
+              <!--   无label的特殊组件           -->
+              <component
+                ref="formItemRef"
+                :is="form.inputType"
+                :model-value="getDisplayValue(form)"
+                :field="form.field"
+                :all-data="allData"
+                :form-item="form"
+                :otherParams="{}"
+                :confirm="true"
+              />
+            </template>
+          </template>
+          <detail-page
+            :content="getGroupFormDetail(group)"
+            :item-width="'33.33%'"
+            :item-bottom="'28px'"
+          ></detail-page>
+          <template v-for="form in group.forms" :key="form.index">
+            <template
+              v-if="
+                form.confirmSpecial &&
+                !form.label &&
+                form.confirmPosition === 'BOTTOM'
+              "
+            >
+              <!--   无label的特殊组件           -->
+              <component
+                ref="formItemRef"
+                :is="form.inputType"
+                :model-value="getDisplayValue(form)"
+                :field="form.field"
+                :all-data="allData"
+                :form-item="form"
+                :otherParams="{}"
+                :confirm="true"
+              />
+            </template>
           </template>
         </template>
-      </el-descriptions>
-      <template v-for="form in group.forms" :key="form.index">
-        <template
-          v-if="
-            form.confirmSpecial &&
-            !form.label &&
-            form.confirmPosition === 'BOTTOM'
-          "
-        >
-          <!--   无label的特殊组件           -->
-          <component
-            ref="formItemRef"
-            :is="form.inputType"
-            :model-value="getDisplayValue(form)"
-            :field="form.field"
-            :all-data="allData"
-            :form-item="form"
-            :otherParams="{}"
-            :confirm="true"
-          />
-        </template>
-      </template>
+      </base-container>
     </template>
-  </layout-container>
+  </base-container>
 </template>
 
 <script setup lang="ts">
@@ -108,10 +79,10 @@ import type {
   ConfirmAnnotation,
   FormView,
 } from "@commons/components/ce-form/type";
-import { computed, ref } from "vue";
+import { computed, h, ref } from "vue";
 import _ from "lodash";
 import type { CloudAccount } from "@commons/api/cloud_account/type";
-import { platformIcon } from "@commons/utils/platform";
+import PlatformIcon from "@commons/components/detail-page/PlatformIcon.vue";
 
 const props = defineProps<{
   cloudAccount?: CloudAccount;
@@ -233,6 +204,31 @@ function getDisplayValue(form: FormView) {
   } else {
     return result;
   }
+}
+
+function getGroupFormDetail(group: any) {
+  const result: Array<any> = [];
+  const forms = group.forms;
+  if (group.group === 0) {
+    result.push({
+      label: "云账号",
+      value: props.cloudAccount?.name,
+      render: () => {
+        return h(PlatformIcon, {
+          platform: props.cloudAccount?.platform,
+        });
+      },
+    });
+  }
+  forms.forEach((form: any) => {
+    if (form.label && checkShow(form)) {
+      result.push({
+        label: form.label + (form.unit ? "(" + form.unit + ")" : ""),
+        value: getDisplayValue(form),
+      });
+    }
+  });
+  return result;
 }
 </script>
 

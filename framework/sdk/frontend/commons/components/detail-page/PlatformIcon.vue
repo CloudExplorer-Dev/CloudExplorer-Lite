@@ -6,7 +6,7 @@ const props = withDefaults(
     style?: string;
     size?: string;
   }>(),
-  { style: "margin-left: 5px; width: 16px; height: 16px", size: "16px" }
+  { style: "margin-right: 5px; width: 16px; height: 16px", size: "16px" }
 );
 </script>
 <template>

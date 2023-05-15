@@ -34,6 +34,7 @@ public class FormUtil {
                     objectMap.put("group", annotation.group());
                     objectMap.put("name", annotation.name());
                     objectMap.put("description", annotation.description());
+                    objectMap.put("inline",annotation.inline());
                     return objectMap;
                 }));
 
@@ -88,6 +89,8 @@ public class FormUtil {
             map.put("index", atomicInteger.getAndIncrement());
             map.put("regexp", annotation.regexp());
             map.put("regexpDescription", annotation.regexpDescription());
+            map.put("regexList", JsonUtil.parseArray(annotation.regexList()));
+            map.put("encrypted", annotation.encrypted());
             if (StringUtils.isNotEmpty(annotation.method())) {
                 map.put("method", annotation.method());
                 map.put("clazz", annotation.clazz().getName());

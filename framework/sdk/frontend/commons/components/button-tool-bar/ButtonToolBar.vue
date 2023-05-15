@@ -16,7 +16,7 @@
     v-if="moreActions.length > 0 && _.some(moreActions, 'show')"
   >
     <el-button>
-      {{ t("commons.btn.more_actions", "更多操作") }}
+      {{ t("commons.cloud_server.more", "更多") }}
       <el-icon class="el-icon--right"><arrow-down /></el-icon>
     </el-button>
     <template #dropdown>

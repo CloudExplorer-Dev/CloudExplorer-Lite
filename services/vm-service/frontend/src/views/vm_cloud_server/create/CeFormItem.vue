@@ -4,14 +4,20 @@
   <el-form
     ref="ruleFormRef"
     label-width="130px"
-    label-suffix=":"
-    label-position="left"
+    require-asterisk-position="right"
+    label-position="top"
     :model="_data"
     v-loading="_loading"
+    :inline="props.inline"
     @submit.prevent
-    size="small"
+    :scroll-to-error="true"
+    :size="props.size"
   >
-    <div v-for="item in formViewData" :key="item.field">
+    <div
+      v-for="item in formViewData"
+      :key="item.field"
+      :style="props.inline ? 'width:50%' : 'width:100%'"
+    >
       <template v-if="item.label">
         <el-form-item
           v-if="checkShow(item)"
@@ -23,10 +29,12 @@
             ref="formItemRef"
             :is="item.inputType"
             v-model.trim="_data[item.field]"
+            :style="getComponentStyle(item)"
             :all-data="allData"
             :all-form-view-data="allFormViewData"
             :field="item.field"
             :form-item="item"
+            :set-default-value="true"
             :otherParams="otherParams"
             v-bind="{ ...JSON.parse(item.attrs) }"
             @change="change(item)"
@@ -39,6 +47,7 @@
       <template v-else>
         <component
           ref="formItemRef"
+          :style="getComponentStyle(item)"
           :is="item.inputType"
           v-model.trim="_data[item.field]"
           :all-data="allData"
@@ -65,9 +74,13 @@ const props = withDefaults(
     modelValue: any;
     allData: any;
     groupId: string;
+    inline: boolean;
+    size?: string;
   }>(),
   {
     modelValue: {},
+    inline: false,
+    size: "default",
   }
 );
 const emit = defineEmits([
@@ -86,6 +99,16 @@ import type { FormInstance } from "element-plus";
 const _loading = ref<boolean>(false);
 
 const formItemRef = ref<InstanceType<any> | null>(null);
+
+/**
+ * 组件样式
+ * @param formItem
+ */
+function getComponentStyle(formItem: FormView): any {
+  return formItem.propsInfo?.style
+    ? formItem.propsInfo?.style
+    : { width: "100%" };
+}
 
 /**
  * 子组件可以修改data
@@ -130,10 +153,13 @@ function rules(currentItem: any) {
   const rules = [
     {
       message: currentItem.label + "不能为空",
-      trigger: "blur",
+      trigger: "change",
       required: currentItem.required,
     },
   ];
+  if (currentItem.propsInfo.rules) {
+    rules.push(currentItem.propsInfo.rules);
+  }
   if (currentItem.regexp) {
     //华为特殊处理,密码规则不通操作系统不一样
     if (
@@ -258,7 +284,6 @@ const change = (formItem: FormView) => {
       //console.log(formItem.field, "in", item.field);
       //设置空值
       _.set(_data.value, item.field, undefined);
-
       if (item.method === "calculateConfigPrice") {
         emit("optionListRefresh", item.field);
       } else {
@@ -286,7 +311,6 @@ function validate(): Array<Promise<boolean>> {
       list.push(formRef.validate());
     }
   });
-
   return list;
 }
 
@@ -309,4 +333,4 @@ defineExpose({
 });
 </script>
 
-<style lang="scss"></style>
+<style lang="scss" scoped></style>

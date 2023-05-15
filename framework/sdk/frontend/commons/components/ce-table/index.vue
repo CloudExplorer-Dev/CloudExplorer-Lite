@@ -67,7 +67,11 @@
         >&nbsp;条
       </div>
 
-      <div></div>
+      <div>
+        <div v-if="$slots.bottomToolBar" style="margin-bottom: 10px">
+          <slot name="bottomToolBar"></slot>
+        </div>
+      </div>
 
       <div v-if="$slots.pagination || tableConfig.paginationConfig">
         <!-- 外部可以指定分页组建 -->
@@ -100,6 +104,7 @@ const props = defineProps<{
   header?: string;
   tableConfig: TableConfig;
   showSelectedCount?: boolean;
+  bottomToolBar?: string;
 }>();
 
 const emit = defineEmits(["clearCondition"]);
@@ -428,6 +433,7 @@ defineExpose({
     font-weight: 400;
     font-size: 14px;
     color: #646a73;
+    margin-bottom: 10px;
     .count {
       color: #3370ff;
     }

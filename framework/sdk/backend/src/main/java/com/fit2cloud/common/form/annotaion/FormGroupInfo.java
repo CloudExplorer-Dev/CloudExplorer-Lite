@@ -20,4 +20,10 @@ public @interface FormGroupInfo {
     String name();
 
     String description() default "";
+
+    /**
+     * 行内表单模式
+     * @return
+     */
+    boolean inline() default false;
 }

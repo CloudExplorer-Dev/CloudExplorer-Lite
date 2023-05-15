@@ -101,4 +101,14 @@ public class Form {
      */
     private Map<String, Object> propsInfo;
 
+    /**
+     * 正则集合
+     */
+    private List<Object> regexList;
+
+    /**
+     * 加密，密码框之类的
+     */
+    private boolean encrypted;
+
 }
