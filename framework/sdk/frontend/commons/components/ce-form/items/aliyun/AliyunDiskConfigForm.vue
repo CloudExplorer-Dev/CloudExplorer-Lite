@@ -400,7 +400,7 @@ function getModelValueDetail(modelValue: any) {
     position: absolute;
     text-align: center;
     color: var(--el-input-icon-color, var(--el-text-color-placeholder));
-    padding: 5px 8px 0 8px;
+    padding: 0 8px 0 8px;
     border-left: 0;
     border-radius: 0 4px 4px 0;
     z-index: 1000;
