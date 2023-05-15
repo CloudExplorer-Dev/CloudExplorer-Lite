@@ -160,6 +160,12 @@
             <artifactId>huaweicloud-sdk-rds</artifactId>
             <version>3.1.20</version>
         </dependency>
+        <!--        华为云 云备份-->
+        <dependency>
+            <groupId>com.huaweicloud.sdk</groupId>
+            <artifactId>huaweicloud-sdk-cbr</artifactId>
+            <version>3.1.20</version>
+        </dependency>
         <!--        华为云 redis-->
         <dependency>
             <groupId>com.huaweicloud.sdk</groupId>

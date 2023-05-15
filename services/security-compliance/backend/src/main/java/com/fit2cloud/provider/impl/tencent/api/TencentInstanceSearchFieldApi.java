@@ -308,10 +308,13 @@ public class TencentInstanceSearchFieldApi {
                         new DefaultKeyValue<>("EKS", "EKS")))
                 .resetInstanceField(PlatformConstants.fit2cloud_tencent_platform, ResourceTypeConstants.DISK);
 
+        InstanceSearchField autoSnapshotPolicyIds = new InstanceSearchField("自动快照策略Id", "autoSnapshotPolicyIds", InstanceFieldType.ArrayString)
+                .resetInstanceField(PlatformConstants.fit2cloud_tencent_platform, ResourceTypeConstants.DISK);
+
         return List.of(deleteWithInstance, renewFlag, diskType, diskState
                 , snapshotCount, autoRenewFlagError, rollbacking, encrypt, backupDisk, throughputPerformance, migrating, snapshotSize, isReturnable,
                 attached, diskSize, diskUsage, diskChargeType, portable, snapshotAbility, deadlineError, differDaysOfDeadline, shareable, deleteSnapshot, diskBackupCount,
-                instanceType);
+                instanceType, autoSnapshotPolicyIds);
     }
 
     /**

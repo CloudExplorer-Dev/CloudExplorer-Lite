@@ -168,7 +168,14 @@ public class HuaweiInstanceSearchFieldApi {
                         new DefaultKeyValue<>("不加密", false)
                 )).resetInstanceField(PlatformConstants.fit2cloud_huawei_platform, ResourceTypeConstants.DISK);
 
-        return List.of(status, volume_type, size, bootable, encrypted);
+        InstanceSearchField policyEnabled = new InstanceSearchField("是否开启备份策略", "policy.enabled", InstanceFieldType.Enum,
+                List.of(new DefaultKeyValue<>("开启", true),
+                        new DefaultKeyValue<>("未开启", false)
+                )).resetInstanceField(PlatformConstants.fit2cloud_huawei_platform, ResourceTypeConstants.DISK);
+
+        InstanceSearchField policyId = new InstanceSearchField("备份策略id", "policy.id", InstanceFieldType.String)
+                .resetInstanceField(PlatformConstants.fit2cloud_huawei_platform, ResourceTypeConstants.DISK);
+        return List.of(status, volume_type, size, bootable, encrypted, policyEnabled, policyId);
     }
 
     /**

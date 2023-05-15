@@ -184,7 +184,7 @@ public class AliCloudProvider extends AbstractCloudProvider<AliSecurityComplianc
         List<DescribeDisksResponseBody.DescribeDisksResponseBodyDisksDisk> instances = AliApi.listDiskInstance(listDiskInstanceRequest);
         return instances
                 .stream()
-                .map(instance -> ResourceUtil.toResourceInstance(PlatformConstants.fit2cloud_ali_platform.name(), ResourceTypeConstants.DISK, instance.getInstanceId(), instance.getDescription(), instance))
+                .map(instance -> ResourceUtil.toResourceInstance(PlatformConstants.fit2cloud_ali_platform.name(), ResourceTypeConstants.DISK, instance.getDiskId(), instance.getDiskName(), instance))
                 .toList();
     }
 

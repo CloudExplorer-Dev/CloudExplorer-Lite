@@ -291,6 +291,7 @@ public class TencentApi {
      */
     public static List<Disk> listDiskInstance(ListDiskInstanceRequest request) {
         CbsClient cbsClient = request.getCredential().getCbsClient(request.getRegionId());
+        request.setReturnBindAutoSnapshotPolicy(true);
         request.setOffset(PageUtil.DefaultCurrentPage.longValue() - 1);
         request.setLimit(PageUtil.DefaultPageSize.longValue());
         return PageUtil.page(request,
