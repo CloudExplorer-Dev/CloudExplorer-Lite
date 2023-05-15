@@ -105,9 +105,7 @@ const formItemRef = ref<InstanceType<any> | null>(null);
  * @param formItem
  */
 function getComponentStyle(formItem: FormView): any {
-  return formItem.propsInfo?.style
-    ? formItem.propsInfo?.style
-    : { width: "100%" };
+  return formItem.propsInfo?.style ? formItem.propsInfo?.style : {};
 }
 
 /**
