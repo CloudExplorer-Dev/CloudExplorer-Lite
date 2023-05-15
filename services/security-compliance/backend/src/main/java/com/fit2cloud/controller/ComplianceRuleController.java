@@ -65,9 +65,7 @@ public class ComplianceRuleController {
     @PreAuthorize("hasAnyCePermission('RULE:READ','SCAN:READ')")
     public ResultHolder<ComplianceRuleResponse> one(@PathVariable("complianceRuleId") String complianceRuleId) {
         ComplianceRule complianceRule = complianceRuleService.getById(complianceRuleId);
-        ComplianceRuleResponse complianceRuleResponse = new ComplianceRuleResponse();
-        BeanUtils.copyProperties(complianceRule, complianceRuleResponse);
-        return ResultHolder.success(complianceRuleResponse);
+        return ResultHolder.success(new ComplianceRuleResponse(complianceRule));
     }
 
     @ApiOperation("获取可过滤的合规条件维度")

@@ -138,7 +138,7 @@
               </template></el-table-column
             >
             <el-table-column
-              prop="resourceTyppe"
+              prop="resourceType"
               min-width="100"
               label="资源类型"
             >
@@ -240,16 +240,16 @@ const resourceTypes = ref<Array<KeyValue<string, string>>>([]);
 const filterCloudAccountId = ref<Array<string>>([]);
 const getCloudAccountParams = () => {
   if (filterCloudAccountId.value.length > 0) {
-    const t = resourceTypes.value.find(
-      (type) => type.value === filterCloudAccountId.value[0]
+    const t = cloudAccountList.value.find(
+      (cloudAccount) => cloudAccount.id === filterCloudAccountId.value[0]
     );
     if (t) {
       return {
-        resourceType: {
-          field: "resourceType",
-          label: t.key,
-          value: t.value,
-          valueLabel: t.key,
+        cloudAccountId: {
+          field: "cloudAccountId",
+          label: "云账号名称",
+          value: t.id,
+          valueLabel: t.name,
         },
       };
     }
@@ -285,6 +285,7 @@ onMounted(() => {
           (p) => p.platform === data.platform
         );
         table.value?.getTableSearch(getCloudAccountParams());
+        console.log("xxx", getCloudAccountParams());
         // 查询列表
         table.value?.search();
       });
