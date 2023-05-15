@@ -8,6 +8,7 @@ import com.fit2cloud.base.mapper.BaseOrganizationMapper;
 import com.fit2cloud.base.service.IBaseOrganizationService;
 import com.fit2cloud.base.service.IBaseWorkspaceService;
 import com.fit2cloud.common.constants.RoleConstants;
+import com.fit2cloud.common.utils.CurrentUserUtils;
 import com.fit2cloud.common.utils.JsonUtil;
 import com.fit2cloud.common.utils.OrganizationUtil;
 import com.fit2cloud.dto.UserDto;
@@ -284,5 +285,14 @@ public class BaseOrganizationServiceImpl extends ServiceImpl<BaseOrganizationMap
         }
     }
 
+    @Override
+    public List<String> getOrgAdminOrgIds() {
+        List<String> orgIds = new ArrayList<>();
+        if (CurrentUserUtils.isOrgAdmin()) {
+            orgIds.add(CurrentUserUtils.getOrganizationId());
+            orgIds.addAll(getDownOrganization(CurrentUserUtils.getOrganizationId(), list()).stream().map(Organization::getId).toList());
+        }
+        return orgIds;
+    }
 
 }
