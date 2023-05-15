@@ -742,7 +742,7 @@ const getFirstIp = (list: Array<any>) => {
       prop="ipArray"
       column-key="ipArray"
       :label="$t('vm_cloud_server.label.ip_address')"
-      min-width="150px"
+      min-width="180px"
     >
       <template #default="scope">
         <div
