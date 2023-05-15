@@ -101,7 +101,11 @@ onMounted(() => {
         <span>基本信息</span>
       </template>
       <template #content>
-        <detail-page :content="basicInfo" />
+        <detail-page
+          :content="basicInfo"
+          :item-width="'33.33%'"
+          :item-bottom="'28px'"
+        />
       </template>
     </base-container>
     <base-container :border="false">
@@ -109,7 +113,11 @@ onMounted(() => {
         <span>网络信息</span>
       </template>
       <template #content>
-        <detail-page :content="networkInfo" />
+        <detail-page
+          :content="networkInfo"
+          :item-width="'33.33%'"
+          :item-bottom="'28px'"
+        />
       </template>
     </base-container>
   </div>

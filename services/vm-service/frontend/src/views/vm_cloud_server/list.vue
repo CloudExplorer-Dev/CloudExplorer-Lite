@@ -20,14 +20,16 @@ import RecycleBinsApi from "@/api/recycle_bin";
 import Grant from "@/views/vm_cloud_server/grant.vue";
 import { usePermissionStore } from "@commons/stores/modules/permission";
 import ButtonToolBar from "@commons/components/button-tool-bar/ButtonToolBar.vue";
+import MoreOptionsButton from "@commons/components/ce-table/MoreOptionsButton.vue";
 import {
   ButtonAction,
   type ButtonActionType,
 } from "@commons/components/button-tool-bar/type";
 import OrgTreeFilter from "@commons/components/table-filter/OrgTreeFilter.vue";
-import IpArray from "@commons/components/detail-page/IpArray.vue";
 import AddDisk from "@/views/vm_cloud_server/AddDisk.vue";
 import ChangeConfig from "@/views/vm_cloud_server/ChangeConfig.vue";
+import { classifyIP } from "@commons/utils/util";
+import CeIcon from "@commons/components/ce-icon/index.vue";
 
 const { t } = useI18n();
 const permissionStore = usePermissionStore();
@@ -41,6 +43,7 @@ const cloudAccount = ref<Array<SimpleMap<string>>>([]);
 const addDiskRef = ref<InstanceType<typeof AddDisk>>();
 const changeConfigRef = ref<InstanceType<typeof ChangeConfig>>();
 import InstanceStatusUtils from "@commons/utils/vm_cloud_server/InstanceStatusUtils";
+import EnableStatusSwitch from "@/views/vm_cloud_server/EnableStatusSwitch.vue";
 
 /**
  * 表头：组织树筛选
@@ -241,34 +244,7 @@ const stopOperateInterval = () => {
 const handleSelectionChange = (list: Array<VmCloudServerVO>) => {
   selectedRowData.value = list;
 };
-/**
- * 表单配置
- */
-const tableConfig = ref<TableConfig>({
-  searchConfig: {
-    showEmpty: false,
-    // 查询函数
-    search: search,
-    quickPlaceholder: t("commons.btn.search", "搜索"),
-    components: [],
-    searchOptions: [
-      {
-        label: t("commons.name", "名称"),
-        value: "instanceName",
-      },
-      {
-        label: t("vm_cloud_server.label.ip_address", "IP地址"),
-        value: "ipArray",
-      },
-      {
-        label: t("commons.os", "操作系统"),
-        value: "osInfo",
-      },
-    ],
-  },
-  paginationConfig: new PaginationConfig(),
-  tableOperations: new TableOperations([]),
-});
+
 /**
  * 详情
  */
@@ -301,100 +277,6 @@ const createDisk = (row: VmCloudServerVO) => {
 const changeVmConfig = (row: VmCloudServerVO) => {
   changeConfigRef.value?.open(row.id);
 };
-
-/**
- * 操作按钮
- */
-const buttons = ref([
-  {
-    label: t("vm_cloud_server.btn.power_on", "启动"),
-    icon: "",
-    click: (row: VmCloudServerVO) => {
-      powerOn(row);
-    },
-    show: permissionStore.hasPermission("[vm-service]CLOUD_SERVER:START"),
-    disabled: (row: { instanceStatus: string }) => {
-      return row.instanceStatus !== "Stopped";
-    },
-  },
-  {
-    label: t("vm_cloud_server.btn.shutdown", "关机"),
-    icon: "",
-    click: (row: VmCloudServerVO) => {
-      shutdown(row);
-    },
-    show: permissionStore.hasPermission("[vm-service]CLOUD_SERVER:STOP"),
-    disabled: (row: { instanceStatus: string }) => {
-      return row.instanceStatus !== "Running";
-    },
-  },
-  {
-    label: t("vm_cloud_server.btn.power_off", "关闭电源"),
-    icon: "",
-    click: (row: VmCloudServerVO) => {
-      powerOff(row);
-    },
-    show: permissionStore.hasPermission("[vm-service]CLOUD_SERVER:STOP"),
-    disabled: (row: { instanceStatus: string }) => {
-      return row.instanceStatus !== "Running";
-    },
-  },
-  {
-    label: t("vm_cloud_server.btn.reboot", "重启"),
-    icon: "",
-    click: (row: VmCloudServerVO) => {
-      reboot(row);
-    },
-    show: permissionStore.hasPermission("[vm-service]CLOUD_SERVER:RESTART"),
-    disabled: (row: { instanceStatus: string }) => {
-      return row.instanceStatus !== "Running";
-    },
-  },
-  {
-    label: t("commons.btn.delete", "删除"),
-    icon: "",
-    click: (row: VmCloudServerVO) => {
-      deleteInstance(row);
-    },
-    show: permissionStore.hasPermission("[vm-service]CLOUD_SERVER:DELETE"),
-    disabled: (row: { instanceStatus: string }) => {
-      return (
-        row.instanceStatus.toUpperCase() === "ToBeRecycled".toUpperCase() ||
-        row.instanceStatus.toUpperCase() === "Deleted".toUpperCase() ||
-        (row.instanceStatus.toUpperCase() !== "Running".toUpperCase() &&
-          row.instanceStatus.toUpperCase().indexOf("ING") > -1)
-      );
-    },
-  },
-  {
-    label: t("vm_cloud_disk.btn.create", "添加磁盘"),
-    icon: "",
-    click: createDisk,
-    show: permissionStore.hasPermission("[vm-service]CLOUD_DISK:CREATE"),
-    disabled: (row: { instanceStatus: string }) => {
-      return (
-        row.instanceStatus.toUpperCase() === "ToBeRecycled".toUpperCase() ||
-        row.instanceStatus.toUpperCase() === "Deleted".toUpperCase() ||
-        (row.instanceStatus.toUpperCase() !== "Running".toUpperCase() &&
-          row.instanceStatus.toUpperCase().indexOf("ING") > -1)
-      );
-    },
-  },
-  {
-    label: t("vm_cloud_server.btn.change_config", "配置变更"),
-    icon: "",
-    click: changeVmConfig,
-    show: permissionStore.hasPermission("[vm-service]CLOUD_SERVER:RESIZE"),
-    disabled: (row: { instanceStatus: string }) => {
-      return (
-        row.instanceStatus === "ToBeRecycled" ||
-        row.instanceStatus === "Deleted" ||
-        (row.instanceStatus.toLowerCase() != "running" &&
-          row.instanceStatus.toLowerCase().indexOf("ing") > -1)
-      );
-    },
-  },
-]);
 
 /**
  * 验证VMTools状态
@@ -657,25 +539,38 @@ const deleteBatch = async () => {
  * 禁用批量启动
  */
 const disableBatch = computed<boolean>(() => {
-  return (
-    selectedRowData.value.length > 0 &&
-    selectedRowData.value.some((row) => row.instanceStatus === "ToBeRecycled")
-  );
+  return selectedRowData.value.length === 0
+    ? true
+    : selectedRowData.value.length > 0 &&
+        selectedRowData.value.some(
+          (row) => row.instanceStatus === "ToBeRecycled"
+        );
 });
-const moreActions = ref<Array<ButtonActionType>>([
+const createAction = ref<Array<ButtonActionType>>([
   new ButtonAction(
-    t("commons.btn.create", "创建"),
+    t("commons.btn.create", "创建") +
+      t("vm_cloud_server.label.cloudVm", "云主机"),
     "primary",
     undefined,
     gotoCatalog,
     permissionStore.hasPermission("[vm-service]CLOUD_SERVER:CREATE")
   ),
+]);
+const moreActions = ref<Array<ButtonActionType>>([
   new ButtonAction(
     t("vm_cloud_server.btn.power_on", "启动"),
     undefined,
     "POWER_ON",
     batchOperate,
     permissionStore.hasPermission("[vm-service]CLOUD_SERVER:START"),
+    disableBatch
+  ),
+  new ButtonAction(
+    t("commons.btn.grant", "授权"),
+    undefined,
+    undefined,
+    authorizeBatch,
+    permissionStore.hasPermission("[vm-service]CLOUD_SERVER:AUTH"),
     disableBatch
   ),
   new ButtonAction(
@@ -695,14 +590,6 @@ const moreActions = ref<Array<ButtonActionType>>([
     disableBatch
   ),
   new ButtonAction(
-    t("commons.btn.grant", "授权"),
-    undefined,
-    undefined,
-    authorizeBatch,
-    permissionStore.hasPermission("[vm-service]CLOUD_SERVER:AUTH"),
-    disableBatch
-  ),
-  new ButtonAction(
     t("commons.btn.delete", "删除"),
     undefined,
     undefined,
@@ -711,6 +598,113 @@ const moreActions = ref<Array<ButtonActionType>>([
     disableBatch
   ),
 ]);
+
+/**
+ * 表单配置
+ */
+const tableConfig = ref<TableConfig>({
+  searchConfig: {
+    showEmpty: false,
+    // 查询函数
+    search: search,
+    quickPlaceholder: t("commons.btn.search", "搜索"),
+    components: [],
+    searchOptions: [
+      {
+        label: t("commons.name", "名称"),
+        value: "instanceName",
+      },
+      {
+        label: t("vm_cloud_server.label.ip_address", "IP地址"),
+        value: "ipArray",
+      },
+      {
+        label: t("commons.os", "操作系统"),
+        value: "osInfo",
+      },
+    ],
+  },
+  paginationConfig: new PaginationConfig(),
+  tableOperations: new TableOperations([
+    TableOperations.buildButtons().newInstance(
+      t("vm_cloud_server.btn.power_off", "关闭电源"),
+      "primary",
+      powerOff,
+      undefined,
+      (row: { instanceStatus: string }) => {
+        return row.instanceStatus !== "Running";
+      },
+      permissionStore.hasPermission("[vm-service]CLOUD_SERVER:STOP")
+    ),
+    TableOperations.buildButtons().newInstance(
+      t("vm_cloud_server.btn.reboot", "重启"),
+      "primary",
+      reboot,
+      undefined,
+      (row: { instanceStatus: string }) => {
+        return row.instanceStatus !== "Running";
+      },
+      permissionStore.hasPermission("[vm-service]CLOUD_SERVER:RESTART")
+    ),
+    TableOperations.buildButtons().newInstance(
+      t("commons.btn.delete", "删除"),
+      "primary",
+      deleteInstance,
+      undefined,
+      (row: { instanceStatus: string }) => {
+        return (
+          row.instanceStatus.toUpperCase() === "ToBeRecycled".toUpperCase() ||
+          row.instanceStatus.toUpperCase() === "Deleted".toUpperCase() ||
+          (row.instanceStatus.toUpperCase() !== "Running".toUpperCase() &&
+            row.instanceStatus.toUpperCase().indexOf("ING") > -1)
+        );
+      },
+      permissionStore.hasPermission("[vm-service]CLOUD_SERVER:DELETE"),
+      "#F54A45"
+    ),
+    TableOperations.buildButtons().newInstance(
+      t("vm_cloud_disk.btn.create", "添加磁盘"),
+      "primary",
+      createDisk,
+      undefined,
+      (row: { instanceStatus: string }) => {
+        return (
+          row.instanceStatus.toUpperCase() === "ToBeRecycled".toUpperCase() ||
+          row.instanceStatus.toUpperCase() === "Deleted".toUpperCase() ||
+          (row.instanceStatus.toUpperCase() !== "Running".toUpperCase() &&
+            row.instanceStatus.toUpperCase().indexOf("ING") > -1)
+        );
+      },
+      permissionStore.hasPermission("[vm-service]CLOUD_DISK:CREATE")
+    ),
+    TableOperations.buildButtons().newInstance(
+      t("vm_cloud_server.btn.change_config", "配置变更"),
+      "primary",
+      changeVmConfig,
+      undefined,
+      (row: { instanceStatus: string }) => {
+        return (
+          row.instanceStatus === "ToBeRecycled" ||
+          row.instanceStatus === "Deleted" ||
+          (row.instanceStatus.toLowerCase() != "running" &&
+            row.instanceStatus.toLowerCase().indexOf("ing") > -1)
+        );
+      },
+      permissionStore.hasPermission("[vm-service]CLOUD_SERVER:RESIZE")
+    ),
+  ]),
+});
+const getFirstIp = (list: Array<any>) => {
+  if (list) {
+    const publicIpItem = _.find(list, ["isPublicIp", true]);
+    if (publicIpItem) {
+      return publicIpItem.ip + "(公)";
+    }
+    return list[0].ip;
+  } else {
+    return "";
+  }
+};
 </script>
 <template>
   <ce-table
@@ -719,6 +713,7 @@ const moreActions = ref<Array<ButtonActionType>>([
     :columns="columns"
     :data="tableData"
     :tableConfig="tableConfig"
+    :show-selected-count="true"
     @selection-change="handleSelectionChange"
     @clearCondition="clearCondition"
     row-key="id"
@@ -726,7 +721,7 @@ const moreActions = ref<Array<ButtonActionType>>([
     ref="table"
   >
     <template #toolbar>
-      <ButtonToolBar :actions="moreActions || []" :ellipsis="4" />
+      <ButtonToolBar :actions="createAction || []" :ellipsis="4" />
     </template>
     <el-table-column type="selection" />
     <el-table-column
@@ -747,13 +742,33 @@ const moreActions = ref<Array<ButtonActionType>>([
       prop="ipArray"
       column-key="ipArray"
       :label="$t('vm_cloud_server.label.ip_address')"
-      min-width="270px"
+      min-width="150px"
     >
       <template #default="scope">
-        <IpArray
-          :ip-array="scope.row.ipArray"
-          :remote-ip="scope.row.remoteIp"
-        />
+        <div
+          class="role_display"
+          :data-var="
+            (scope._list = classifyIP(scope.row.ipArray, scope.row.remoteIp))
+          "
+        >
+          <span v-if="JSON.parse(scope.row.ipArray)?.length > 1">
+            {{ getFirstIp(scope._list) }}
+          </span>
+          <span v-if="JSON.parse(scope.row.ipArray)?.length === 1">
+            {{ getFirstIp(scope._list) }}
+          </span>
+          <el-popover placement="right" :width="200" trigger="hover">
+            <template #reference>
+              <span class="role_numbers" v-if="scope._list?.length > 1">
+                +{{ scope._list?.length - 1 }}
+              </span>
+            </template>
+            <div v-for="(item, index) in scope._list" :key="index">
+              <span>{{ item.ip }}</span>
+              <span v-if="item.isPublicIp"> (公) </span>
+            </div>
+          </el-popover>
+        </div>
       </template>
     </el-table-column>
     <el-table-column
@@ -766,14 +781,17 @@ const moreActions = ref<Array<ButtonActionType>>([
     >
       <template #default="scope">
         <div style="display: flex; align-items: center">
-          <span
-            :style="{
-              color: variables_server[scope.row.instanceStatus],
-            }"
-            >{{ InstanceStatusUtils.getStatusName(scope.row.instanceStatus) }}
-          </span>
-          <el-icon
-            v-show="
+          <CeIcon
+            :code="
+              InstanceStatusUtils.getInstanceStatus(scope.row.instanceStatus)
+                ?.icon
+            "
+            :color="
+              InstanceStatusUtils.getInstanceStatus(scope.row.instanceStatus)
+                ?.color
+            "
+            size="1em"
+            :is-loading="
               scope.row.instanceStatus === 'Starting' ||
               scope.row.instanceStatus === 'Stopping' ||
               scope.row.instanceStatus === 'Rebooting' ||
@@ -781,12 +799,11 @@ const moreActions = ref<Array<ButtonActionType>>([
               scope.row.instanceStatus === 'Creating' ||
               scope.row.instanceStatus === 'ConfigChanging'
             "
-            class="is-loading"
-            :style="{
-              color: variables_server[scope.row.instanceStatus],
-            }"
-            ><Loading
-          /></el-icon>
+          >
+          </CeIcon>
+          <span style="margin-left: 7px"
+            >{{ InstanceStatusUtils.getStatusName(scope.row.instanceStatus) }}
+          </span>
         </div>
       </template>
     </el-table-column>
@@ -977,15 +994,33 @@ const moreActions = ref<Array<ButtonActionType>>([
       min-width="120px"
       :show="false"
     ></el-table-column>
-    <fu-table-operations
-      :ellipsis="2"
-      :columns="columns"
-      :buttons="buttons"
-      :label="$t('commons.operation')"
-      fixed="right"
-    />
+    <!--    <fu-table-operations-->
+    <!--      :ellipsis="2"-->
+    <!--      :columns="columns"-->
+    <!--      :buttons="buttons"-->
+    <!--      :label="$t('commons.operation')"-->
+    <!--      fixed="right"-->
+    <!--    />-->
+    <el-table-column min-width="110px" label="操作" fixed="right">
+      <template #default="scope">
+        <el-space wrap>
+          <EnableStatusSwitch
+            :instance-status="scope.row.instanceStatus"
+            :final-function="refresh"
+            :function-props="scope.row"
+          />
+          <MoreOptionsButton
+            :buttons="tableConfig.tableOperations.buttons"
+            :row="scope.row"
+          />
+        </el-space>
+      </template>
+    </el-table-column>
     <template #buttons>
       <CeTableColumnSelect :columns="columns" />
+    </template>
+    <template #bottomToolBar>
+      <ButtonToolBar :actions="moreActions || []" :ellipsis="2" />
     </template>
   </ce-table>
 
@@ -1016,5 +1051,23 @@ const moreActions = ref<Array<ButtonActionType>>([
 }
 .highlight {
   color: var(--el-color-primary);
+}
+.role_display {
+  height: 24px;
+  line-height: 24px;
+  display: flex;
+  .role_numbers {
+    cursor: pointer;
+    margin-left: 8px;
+    border-radius: 2px;
+    padding: 0 6px;
+    height: 24px;
+    font-size: 14px;
+    background-color: rgba(31, 35, 41, 0.1);
+  }
+  .role_numbers:hover {
+    background-color: #ebf1ff;
+    color: #3370ff;
+  }
 }
 </style>

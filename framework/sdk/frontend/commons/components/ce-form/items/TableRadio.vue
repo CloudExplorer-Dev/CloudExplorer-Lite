@@ -69,12 +69,12 @@
 import type { FormView } from "@commons/components/ce-form/type";
 import { computed, ref } from "vue";
 import { Search } from "@element-plus/icons-vue";
-import _ from "lodash";
 import type { ElTable } from "element-plus";
 const filterText = ref<string>("");
 const props = defineProps<{
   modelValue?: string;
   formItem: FormView;
+  setDefaultValue?: boolean;
 }>();
 const evalF = (text: string, row: any) => {
   return eval(text);
@@ -89,6 +89,7 @@ const _data = computed({
   },
   set(value) {
     emit("update:modelValue", value);
+    emit("change", props.formItem);
   },
 });
 const tableColumns = computed(() => {
@@ -103,7 +104,7 @@ const tableData = computed(() => {
     if (filterText.value) {
       return props.formItem.optionList.filter((item: any) =>
         tableColumns.value.some(
-          (c: any) => item[c.property].indexOf(filterText.value) >= 0
+          (c: any) => item[c.property]?.indexOf(filterText.value) >= 0
         )
       );
     } else {
@@ -127,6 +128,16 @@ const activeText = computed(() => {
     } else if (props.formItem.textField) {
       return row[props.formItem.textField];
     }
+  }
+  // 设置默认值
+  if (!props.modelValue && props.setDefaultValue && props.formItem.optionList) {
+    const defaultValue =
+      props.formItem.optionList[0][
+        props.formItem.valueField ? props.formItem.valueField : "value"
+      ];
+    emit("update:modelValue", defaultValue);
+    emit("change", props.formItem);
+    return defaultValue;
   }
   return props.modelValue;
 });

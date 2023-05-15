@@ -30,7 +30,11 @@ const disabled = computed(() => {
     return _.isFunction(btn.disabled) ? btn.disabled(props.row) : btn.disabled;
   };
 });
-
+const dropdownDisabled = computed(() => {
+  return _buttons?.value?.every((btn) => {
+    return _.isFunction(btn.disabled) ? btn.disabled(props.row) : btn.disabled;
+  });
+});
 function handleCommand(btn: any) {
   btn.click(props.row);
 }
@@ -38,6 +42,7 @@ function handleCommand(btn: any) {
 
 <template>
   <el-dropdown
+    :disabled="dropdownDisabled"
     :trigger="trigger"
     @command="handleCommand"
     v-if="_buttons && _buttons.length > 0"

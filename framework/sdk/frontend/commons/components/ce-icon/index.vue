@@ -26,6 +26,10 @@ const props = defineProps({
     type: String,
   },
   src: {},
+  isLoading: {
+    type: Boolean,
+    default: false,
+  },
 });
 
 /**
@@ -36,7 +40,7 @@ const getCode = computed(() => {
 });
 </script>
 <template>
-  <el-icon :size="size" :color="color">
+  <el-icon :size="size" :color="color" :class="isLoading ? 'is-loading' : ''">
     <svg
       v-if="props.code && props.type === 'svg'"
       class="icon svg-icon"

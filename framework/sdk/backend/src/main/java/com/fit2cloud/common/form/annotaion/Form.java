@@ -206,6 +206,18 @@ public @interface Form {
      */
     String propsInfo() default "{}";
 
+    /**
+     * 正则组验证
+     *
+     */
+    String regexList() default "[]";
+
+    /**
+     * 是否加密输入内容
+     * @return
+     */
+    boolean encrypted() default false;
+
     enum Position {
         TOP, BOTTOM
     }

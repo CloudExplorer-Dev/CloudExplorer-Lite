@@ -4,10 +4,12 @@ import { ref } from "vue";
 const props = withDefaults(
   defineProps<{
     content: string;
+    itemWidth?: string | number;
+    itemBottom?: string | number;
     label?: string;
     value?: string;
   }>(),
-  { label: "label", value: "value" }
+  { label: "label", value: "value", itemWidth: "25%", itemBottom: "8px" }
 );
 
 const tooltipRef = ref();
@@ -26,12 +28,18 @@ const showTips = (index: number, e: Event) => {
 </script>
 <template>
   <div class="container">
-    <div v-for="(item, index) in content" :key="index" class="item">
+    <div
+      v-for="(item, index) in content"
+      :key="index"
+      class="item"
+      :style="{ width: props.itemWidth, 'margin-bottom': props.itemBottom }"
+    >
       <div>
         <p class="label">
           {{ item[label] }}
         </p>
         <div class="value">
+          <component v-bind:is="item.render" />
           <span
             v-if="!item.hideValue"
             class="truncate"
@@ -42,7 +50,6 @@ const showTips = (index: number, e: Event) => {
               item[value] === null || item[value] === "null" ? "-" : item[value]
             }}
           </span>
-          <component v-bind:is="item.render" />
         </div>
       </div>
     </div>
@@ -64,7 +71,6 @@ const showTips = (index: number, e: Event) => {
   width: 100%;
 
   .item {
-    width: 25%;
     margin-bottom: 8px;
 
     .label {
