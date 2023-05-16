@@ -7,6 +7,8 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.fit2cloud.dto.VmCloudDiskDTO;
 import org.apache.ibatis.annotations.Param;
 
+import java.util.List;
+
 /**
  * <p>
  * Mapper 接口
@@ -27,5 +29,6 @@ public interface VmCloudDiskMapper extends BaseMapper<VmCloudDiskDTO> {
      */
     IPage<VmCloudDiskDTO> pageList(Page page, @Param("ew") Wrapper queryWrapper);
 
-    VmCloudDiskDTO selectDiskDetailById(@Param("id") String id);
+    List<VmCloudDiskDTO> pageList(@Param("ew") Wrapper queryWrapper);
+
 }

@@ -5,6 +5,7 @@ import com.fit2cloud.request.pub.PageOrderRequestInterface;
 import com.fit2cloud.request.pub.PageRequest;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
+import lombok.experimental.Accessors;
 
 import javax.validation.constraints.Size;
 import java.io.Serial;
@@ -15,11 +16,19 @@ import java.util.List;
  * @date 2022/9/27 14:45
  **/
 @Data
+@Accessors(chain = true)
 public class PageVmCloudDiskRequest extends PageRequest implements PageOrderRequestInterface {
     @Serial
     private static final long serialVersionUID = -7824240660208325381L;
     @ApiModelProperty("名称")
     private String diskName;
+
+    @ApiModelProperty("ID")
+    private String id;
+
+    @ApiModelProperty("ID列表")
+    private List<String> ids;
+
     @ApiModelProperty("组织ID")
     private String organizationId;
     @ApiModelProperty("组织IDs")

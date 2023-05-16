@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 import javax.annotation.Resource;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -28,11 +29,11 @@ public class PermissionServiceImpl implements IPermissionService {
         List<String> sourceIds = new ArrayList<>();
         // 普通用户
         if (CurrentUserUtils.isUser() && StringUtils.isNotBlank(CurrentUserUtils.getWorkspaceId())) {
-            sourceIds = Arrays.asList(new String[]{CurrentUserUtils.getWorkspaceId()});
+            sourceIds = Collections.singletonList(CurrentUserUtils.getWorkspaceId());
         }
         // 组织管理员
         if (CurrentUserUtils.isOrgAdmin()) {
-            List orgWorkspaceList = new ArrayList();
+            List<String> orgWorkspaceList = new ArrayList<>();
             orgWorkspaceList.add(CurrentUserUtils.getOrganizationId());
             orgWorkspaceList.addAll(organizationCommonService.getOrgIdsByParentId(CurrentUserUtils.getOrganizationId()));
             orgWorkspaceList.addAll(workspaceCommonService.getWorkspaceIdsByOrgIds(orgWorkspaceList));
