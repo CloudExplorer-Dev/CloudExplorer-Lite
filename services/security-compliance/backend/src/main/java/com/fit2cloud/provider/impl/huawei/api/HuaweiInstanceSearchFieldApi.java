@@ -98,7 +98,12 @@ public class HuaweiInstanceSearchFieldApi {
                 ))
                 .resetInstanceField(PlatformConstants.fit2cloud_huawei_platform, ResourceTypeConstants.ECS);
 
-        return List.of(status, disk, vcpus, ram, diskConfig, charging_mode, imagetype, os_bit, os_type, __support_agent_list, delete_on_termination);
+        InstanceSearchField tagKey = new InstanceSearchField("标签键", "key", InstanceFieldType.NestedArrayString)
+                .resetFilterArrayField(PlatformConstants.fit2cloud_huawei_platform, ResourceTypeConstants.ECS, "tags");
+        InstanceSearchField tagValue = new InstanceSearchField("标签值", "value", InstanceFieldType.NestedArrayString)
+                .resetFilterArrayField(PlatformConstants.fit2cloud_huawei_platform, ResourceTypeConstants.ECS, "tags");
+        return List.of(status, disk, vcpus, ram, diskConfig, charging_mode, imagetype, os_bit, os_type, __support_agent_list, delete_on_termination
+                , tagKey, tagValue);
     }
 
     /**
@@ -175,7 +180,13 @@ public class HuaweiInstanceSearchFieldApi {
 
         InstanceSearchField policyId = new InstanceSearchField("备份策略id", "policy.id", InstanceFieldType.String)
                 .resetInstanceField(PlatformConstants.fit2cloud_huawei_platform, ResourceTypeConstants.DISK);
-        return List.of(status, volume_type, size, bootable, encrypted, policyEnabled, policyId);
+
+        InstanceSearchField tagKey = new InstanceSearchField("标签键", "key", InstanceFieldType.NestedArrayString)
+                .resetFilterArrayField(PlatformConstants.fit2cloud_huawei_platform, ResourceTypeConstants.DISK, "tags");
+        InstanceSearchField tagValue = new InstanceSearchField("标签值", "value", InstanceFieldType.NestedArrayString)
+                .resetFilterArrayField(PlatformConstants.fit2cloud_huawei_platform, ResourceTypeConstants.DISK, "tags");
+
+        return List.of(status, volume_type, size, bootable, encrypted, policyEnabled, policyId, tagKey, tagValue);
     }
 
     /**
@@ -192,7 +203,12 @@ public class HuaweiInstanceSearchFieldApi {
                         new DefaultKeyValue<>("创建中", "CREATING"),
                         new DefaultKeyValue<>("创建成功", "OK")
                 )).resetInstanceField(PlatformConstants.fit2cloud_huawei_platform, ResourceTypeConstants.VPC);
-        return List.of(status, cidr);
+        InstanceSearchField tagKey = new InstanceSearchField("标签键", "key", InstanceFieldType.NestedArrayString)
+                .resetFilterArrayField(PlatformConstants.fit2cloud_huawei_platform, ResourceTypeConstants.VPC, "tags");
+        InstanceSearchField tagValue = new InstanceSearchField("标签值", "value", InstanceFieldType.NestedArrayString)
+                .resetFilterArrayField(PlatformConstants.fit2cloud_huawei_platform, ResourceTypeConstants.VPC, "tags");
+
+        return List.of(status, cidr, tagKey, tagValue);
     }
 
     /**
@@ -261,7 +277,13 @@ public class HuaweiInstanceSearchFieldApi {
                 List.of(new DefaultKeyValue<>("开启", true),
                         new DefaultKeyValue<>("关闭", false)))
                 .resetInstanceField(PlatformConstants.fit2cloud_huawei_platform, ResourceTypeConstants.REDIS);
-        return List.of(charging_mode, enable_ssl, max_memory, used_memory, no_password_access, enable_publicip);
+
+        InstanceSearchField tagKey = new InstanceSearchField("标签键", "key", InstanceFieldType.NestedArrayString)
+                .resetFilterArrayField(PlatformConstants.fit2cloud_huawei_platform, ResourceTypeConstants.REDIS, "tags");
+        InstanceSearchField tagValue = new InstanceSearchField("标签值", "value", InstanceFieldType.NestedArrayString)
+                .resetFilterArrayField(PlatformConstants.fit2cloud_huawei_platform, ResourceTypeConstants.REDIS, "tags");
+
+        return List.of(charging_mode, enable_ssl, max_memory, used_memory, no_password_access, enable_publicip, tagKey, tagValue);
     }
 
     /**
@@ -311,7 +333,12 @@ public class HuaweiInstanceSearchFieldApi {
         InstanceSearchField public_ip = new InstanceSearchField("节点绑定的外网IP", "groups.nodes.public_ip", InstanceFieldType.ArrayString)
                 .resetInstanceField(PlatformConstants.fit2cloud_huawei_platform, ResourceTypeConstants.MONGO_DB);
 
-        return List.of(pay_mode, status, ssl, groupsType, groupsVolumeSize, groupsVolumeUsed, backupStrategyKeepDays, public_ip);
+        InstanceSearchField tagKey = new InstanceSearchField("标签键", "key", InstanceFieldType.NestedArrayString)
+                .resetFilterArrayField(PlatformConstants.fit2cloud_huawei_platform, ResourceTypeConstants.MONGO_DB, "tags");
+        InstanceSearchField tagValue = new InstanceSearchField("标签值", "value", InstanceFieldType.NestedArrayString)
+                .resetFilterArrayField(PlatformConstants.fit2cloud_huawei_platform, ResourceTypeConstants.MONGO_DB, "tags");
+
+        return List.of(pay_mode, status, ssl, groupsType, groupsVolumeSize, groupsVolumeUsed, backupStrategyKeepDays, public_ip, tagKey, tagValue);
     }
 
     public static List<InstanceSearchField> listMysqlInstanceSearchField() {
@@ -394,7 +421,15 @@ public class HuaweiInstanceSearchFieldApi {
 
         InstanceSearchField time_zone = new InstanceSearchField("时区", "time_zone", InstanceFieldType.String)
                 .resetInstanceField(PlatformConstants.fit2cloud_huawei_platform, resourceType);
-        return List.of(status, enable_ssl, type, switch_strategy, volumeType, volumeSize, charge_mode, backupStrategyKeepDays, cpu, mem, time_zone);
+
+
+        InstanceSearchField tagKey = new InstanceSearchField("标签键", "key", InstanceFieldType.NestedArrayString)
+                .resetFilterArrayField(PlatformConstants.fit2cloud_huawei_platform, resourceType, "tags");
+        InstanceSearchField tagValue = new InstanceSearchField("标签值", "value", InstanceFieldType.NestedArrayString)
+                .resetFilterArrayField(PlatformConstants.fit2cloud_huawei_platform, resourceType, "tags");
+
+        return List.of(status, enable_ssl, type, switch_strategy, volumeType, volumeSize, charge_mode, backupStrategyKeepDays, cpu, mem, time_zone,
+                tagKey, tagValue);
     }
 
 
@@ -463,8 +498,14 @@ public class HuaweiInstanceSearchFieldApi {
         InstanceSearchField instancesVolumeSize = new InstanceSearchField("节点磁盘大小", "instances.volume.size", InstanceFieldType.ArrayNumber)
                 .resetInstanceField(PlatformConstants.fit2cloud_huawei_platform, ResourceTypeConstants.ELASTIC_SEARCH);
 
+        InstanceSearchField tagKey = new InstanceSearchField("标签键", "key", InstanceFieldType.NestedArrayString)
+                .resetFilterArrayField(PlatformConstants.fit2cloud_huawei_platform, ResourceTypeConstants.ELASTIC_SEARCH, "tags");
+        InstanceSearchField tagValue = new InstanceSearchField("标签值", "value", InstanceFieldType.NestedArrayString)
+                .resetFilterArrayField(PlatformConstants.fit2cloud_huawei_platform, ResourceTypeConstants.ELASTIC_SEARCH, "tags");
+
+
         return List.of(status, bandwidthSize, httpsEnable, authorityEnable, diskEncrypted, backupAvailable, period, elbWhiteListEnableWhiteList, elbWhiteList, instancesStatus, instancesVolumeType
-                , instancesVolumeSize);
+                , instancesVolumeSize, tagKey, tagValue);
     }
 
     public static List<InstanceSearchField> listLoadBalancerInstanceSearchField() {
@@ -496,7 +537,14 @@ public class HuaweiInstanceSearchFieldApi {
         InstanceSearchField billing_info = new InstanceSearchField("计费模式", "billing_info", InstanceFieldType.Enum,
                 List.of(new DefaultKeyValue<>("按需计费", null)))
                 .resetInstanceField(PlatformConstants.fit2cloud_huawei_platform, ResourceTypeConstants.LOAD_BALANCER);
-        return List.of(status, operating_status, guaranteed, ip_target_enable, deletion_protection_enable, billing_info);
+
+        InstanceSearchField tagKey = new InstanceSearchField("标签键", "key", InstanceFieldType.NestedArrayString)
+                .resetFilterArrayField(PlatformConstants.fit2cloud_huawei_platform, ResourceTypeConstants.LOAD_BALANCER, "tags");
+        InstanceSearchField tagValue = new InstanceSearchField("标签值", "value", InstanceFieldType.NestedArrayString)
+                .resetFilterArrayField(PlatformConstants.fit2cloud_huawei_platform, ResourceTypeConstants.LOAD_BALANCER, "tags");
+
+        return List.of(status, operating_status, guaranteed, ip_target_enable, deletion_protection_enable, billing_info, tagKey
+                , tagValue);
     }
 
     public static List<InstanceSearchField> listPublicIpInstanceSearchField() {
@@ -551,8 +599,13 @@ public class HuaweiInstanceSearchFieldApi {
         InstanceSearchField bandwidth_size = new InstanceSearchField("带宽大小", "bandwidth.size", InstanceFieldType.Number)
                 .resetInstanceField(PlatformConstants.fit2cloud_huawei_platform, ResourceTypeConstants.PUBLIC_IP);
 
+        InstanceSearchField tagKey = new InstanceSearchField("标签键", "key", InstanceFieldType.NestedArrayString)
+                .resetFilterArrayField(PlatformConstants.fit2cloud_huawei_platform, ResourceTypeConstants.PUBLIC_IP, "tags");
+        InstanceSearchField tagValue = new InstanceSearchField("标签值", "value", InstanceFieldType.NestedArrayString)
+                .resetFilterArrayField(PlatformConstants.fit2cloud_huawei_platform, ResourceTypeConstants.PUBLIC_IP, "tags");
 
-        return List.of(status, type, associate_instance_type, cascade_delete_by_instance, bandwidth_charge_mode, bandwidth_share_type, bandwidth_size);
+        return List.of(status, type, associate_instance_type, cascade_delete_by_instance, bandwidth_charge_mode, bandwidth_share_type, bandwidth_size
+                , tagKey, tagValue);
     }
 
     public static List<InstanceSearchField> listSecurityGroupInstanceSearchField() {

@@ -204,6 +204,7 @@ public class TencentSecurityComplianceCredential extends TencentBaseCredential {
      * @param region 区域
      * @return Cos客户端对象
      */
+    @Override
     public COSClient getCOSClient(String region) {
         COSCredentials cred = new BasicCOSCredentials(getSecretId(), getSecretKey());
         return new COSClient(cred, new ClientConfig(new com.qcloud.cos.region.Region(region)));

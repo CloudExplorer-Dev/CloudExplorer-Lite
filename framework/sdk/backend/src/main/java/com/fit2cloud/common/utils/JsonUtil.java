@@ -3,6 +3,7 @@ package com.fit2cloud.common.utils;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.*;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.fasterxml.jackson.databind.node.ArrayNode;
@@ -17,10 +18,10 @@ import java.text.SimpleDateFormat;
 import java.util.List;
 
 /**
- * @Author:张少虎
- * @Date: 2022/8/30  2:43 PM
- * @Version 1.0
- * @注释:
+ * { @Author:张少虎}
+ * { @Date: 2022/8/30  2:43 PM}
+ * { @Version 1.0}
+ * { @注释:}
  */
 public class JsonUtil {
 
@@ -32,7 +33,7 @@ public class JsonUtil {
         // 声明一个简单Module 对象
         SimpleModule module = new SimpleModule();
         // 给Module 添加一个序列化器
-        module.addSerializer(GroupGrantee.class, new JsonSerializer<GroupGrantee>() {
+        module.addSerializer(GroupGrantee.class, new JsonSerializer<>() {
             @Override
             public void serialize(GroupGrantee value, JsonGenerator gen, SerializerProvider serializers) throws IOException {
                 // 开始写入对象
@@ -93,6 +94,15 @@ public class JsonUtil {
     public static <T> T parseObject(String json, Class<T> clazz) {
         try {
             return mapper.readValue(json, clazz);
+        } catch (Exception e) {
+            LOGGER.error(">> parseObject failed ", e);
+            throw new RuntimeException(e);
+        }
+    }
+
+    public static <T> T parseObject(String json, TypeReference<T> valueTypeRef) {
+        try {
+            return mapper.readValue(json, valueTypeRef);
         } catch (Exception e) {
             LOGGER.error(">> parseObject failed ", e);
             throw new RuntimeException(e);

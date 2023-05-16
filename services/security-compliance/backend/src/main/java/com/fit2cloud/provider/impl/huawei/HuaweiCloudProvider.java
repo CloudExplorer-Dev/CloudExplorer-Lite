@@ -12,6 +12,7 @@ import com.fit2cloud.provider.entity.InstanceSearchField;
 import com.fit2cloud.provider.impl.huawei.api.HuaweiApi;
 import com.fit2cloud.provider.impl.huawei.api.HuaweiInstanceSearchFieldApi;
 import com.fit2cloud.provider.impl.huawei.entity.request.*;
+import com.fit2cloud.provider.impl.huawei.entity.response.BucketInstanceResponse;
 import com.fit2cloud.provider.impl.huawei.entity.response.DiskInstanceResponse;
 import com.fit2cloud.provider.util.ResourceUtil;
 import com.huaweicloud.sdk.css.v1.model.ClusterList;
@@ -20,7 +21,6 @@ import com.huaweicloud.sdk.dds.v3.model.QueryInstanceResponse;
 import com.huaweicloud.sdk.ecs.v2.model.ServerDetail;
 import com.huaweicloud.sdk.eip.v3.model.PublicipSingleShowResp;
 import com.huaweicloud.sdk.elb.v3.model.LoadBalancer;
-import com.huaweicloud.sdk.evs.v2.model.VolumeDetail;
 import com.huaweicloud.sdk.iam.v3.model.KeystoneListUsersResult;
 import com.huaweicloud.sdk.iam.v3.model.LoginProtectResult;
 import com.huaweicloud.sdk.rds.v3.model.InstanceResponse;
@@ -31,9 +31,9 @@ import org.apache.commons.collections4.keyvalue.DefaultKeyValue;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
 
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 /**
  * {@code @Author:张少虎}
@@ -69,8 +69,27 @@ public class HuaweiCloudProvider extends AbstractCloudProvider<HuaweiBaseCredent
         ListEcsInstanceRequest listEcsInstanceRequest = JsonUtil.parseObject(req, ListEcsInstanceRequest.class);
         List<ServerDetail> serverDetails = HuaweiApi.listEcsInstance(listEcsInstanceRequest);
         return serverDetails.stream()
-                .map(instance -> ResourceUtil.toResourceInstance(PlatformConstants.fit2cloud_huawei_platform.name(), ResourceTypeConstants.ECS, instance.getId(), instance.getName(), Map.of("fit2cloud_huawei_platform_ECS.osExtendedVolumesVolumesAttached", Arrays.asList(instance.getOsExtendedVolumesVolumesAttached().toArray())), instance))
+                .map(instance -> ResourceUtil.toResourceInstance(PlatformConstants.fit2cloud_huawei_platform.name(),
+                        ResourceTypeConstants.ECS,
+                        instance.getId(),
+                        instance.getName(),
+                        Map.of("os-extended-volumes:volumes_attached", instance.getOsExtendedVolumesVolumesAttached(),
+                                "tags", instance.getTags().stream().map(this::mapTag).filter(Objects::nonNull).toList()),
+                        instance))
                 .toList();
+    }
+
+    private DefaultKeyValue<String, String> mapTag(String tag) {
+        //业务环境=开发环境
+        if (StringUtils.isNotEmpty(tag)) {
+            String[] split = tag.split("=");
+            if (split.length > 1) {
+                return new DefaultKeyValue<>(split[0], split[1]);
+            } else if (split.length > 0) {
+                return new DefaultKeyValue<>(split[0], split[0]);
+            }
+        }
+        return null;
     }
 
     @Override
@@ -83,7 +102,12 @@ public class HuaweiCloudProvider extends AbstractCloudProvider<HuaweiBaseCredent
         ListRedisInstanceRequest listRedisInstanceRequest = JsonUtil.parseObject(req, ListRedisInstanceRequest.class);
         List<InstanceListInfo> instanceListInfos = HuaweiApi.listRedisInstance(listRedisInstanceRequest);
         return instanceListInfos.stream()
-                .map(instance -> ResourceUtil.toResourceInstance(PlatformConstants.fit2cloud_huawei_platform.name(), ResourceTypeConstants.REDIS, instance.getInstanceId(), instance.getName(), instance))
+                .map(instance -> ResourceUtil.toResourceInstance(PlatformConstants.fit2cloud_huawei_platform.name(),
+                        ResourceTypeConstants.REDIS,
+                        instance.getInstanceId(),
+                        instance.getName(),
+                        Map.of("tags", instance.getTags()),
+                        instance))
                 .toList();
     }
 
@@ -97,7 +121,12 @@ public class HuaweiCloudProvider extends AbstractCloudProvider<HuaweiBaseCredent
         ListMongodbInstanceRequest listMongodbInstanceRequest = JsonUtil.parseObject(req, ListMongodbInstanceRequest.class);
         List<QueryInstanceResponse> queryInstanceResponses = HuaweiApi.listMongodbInstance(listMongodbInstanceRequest);
         return queryInstanceResponses.stream()
-                .map(instance -> ResourceUtil.toResourceInstance(PlatformConstants.fit2cloud_huawei_platform.name(), ResourceTypeConstants.MONGO_DB, instance.getId(), instance.getName(), instance))
+                .map(instance -> ResourceUtil.toResourceInstance(PlatformConstants.fit2cloud_huawei_platform.name(),
+                        ResourceTypeConstants.MONGO_DB,
+                        instance.getId(),
+                        instance.getName(),
+                        Map.of("tags", instance.getTags()),
+                        instance))
                 .toList();
     }
 
@@ -111,7 +140,12 @@ public class HuaweiCloudProvider extends AbstractCloudProvider<HuaweiBaseCredent
         ListRdsInstanceRequest listRdsInstanceRequest = JsonUtil.parseObject(req, ListRdsInstanceRequest.class);
         List<InstanceResponse> instanceResponses = HuaweiApi.listMysqlInstance(listRdsInstanceRequest);
         return instanceResponses.stream()
-                .map(instance -> ResourceUtil.toResourceInstance(PlatformConstants.fit2cloud_huawei_platform.name(), ResourceTypeConstants.MYSQL, instance.getId(), instance.getName(), instance))
+                .map(instance -> ResourceUtil.toResourceInstance(PlatformConstants.fit2cloud_huawei_platform.name(),
+                        ResourceTypeConstants.MYSQL,
+                        instance.getId(),
+                        instance.getName(),
+                        Map.of("tags", instance.getTags()),
+                        instance))
                 .toList();
     }
 
@@ -125,7 +159,12 @@ public class HuaweiCloudProvider extends AbstractCloudProvider<HuaweiBaseCredent
         ListRdsInstanceRequest listRdsInstanceRequest = JsonUtil.parseObject(req, ListRdsInstanceRequest.class);
         List<InstanceResponse> instanceResponses = HuaweiApi.listSqlServer(listRdsInstanceRequest);
         return instanceResponses.stream()
-                .map(instance -> ResourceUtil.toResourceInstance(PlatformConstants.fit2cloud_huawei_platform.name(), ResourceTypeConstants.SQL_SERVER, instance.getId(), instance.getName(), instance))
+                .map(instance -> ResourceUtil.toResourceInstance(PlatformConstants.fit2cloud_huawei_platform.name(),
+                        ResourceTypeConstants.SQL_SERVER,
+                        instance.getId(),
+                        instance.getName(),
+                        Map.of("tags", instance.getTags()),
+                        instance))
                 .toList();
     }
 
@@ -139,8 +178,14 @@ public class HuaweiCloudProvider extends AbstractCloudProvider<HuaweiBaseCredent
         ListRdsInstanceRequest listRdsInstanceRequest = JsonUtil.parseObject(req, ListRdsInstanceRequest.class);
         List<InstanceResponse> instanceResponses = HuaweiApi.listPostGreSqlInstance(listRdsInstanceRequest);
         return instanceResponses.stream()
-                .map(instance -> ResourceUtil.toResourceInstance(PlatformConstants.fit2cloud_huawei_platform.name(), ResourceTypeConstants.POST_GRE_SQL, instance.getId(), instance.getName(), instance))
+                .map(instance -> ResourceUtil.toResourceInstance(PlatformConstants.fit2cloud_huawei_platform.name(),
+                        ResourceTypeConstants.POST_GRE_SQL,
+                        instance.getId(),
+                        instance.getName(),
+                        Map.of("tags", instance.getTags()),
+                        instance))
                 .toList();
+
     }
 
     @Override
@@ -163,7 +208,12 @@ public class HuaweiCloudProvider extends AbstractCloudProvider<HuaweiBaseCredent
         ListElasticSearchInstanceRequest listElasticSearchInstanceRequest = JsonUtil.parseObject(req, ListElasticSearchInstanceRequest.class);
         List<ClusterList> clusterLists = HuaweiApi.listElasticSearchInstance(listElasticSearchInstanceRequest);
         return clusterLists.stream()
-                .map(instance -> ResourceUtil.toResourceInstance(PlatformConstants.fit2cloud_huawei_platform.name(), ResourceTypeConstants.ELASTIC_SEARCH, instance.getId(), instance.getName(), instance))
+                .map(instance -> ResourceUtil.toResourceInstance(PlatformConstants.fit2cloud_huawei_platform.name(),
+                        ResourceTypeConstants.ELASTIC_SEARCH,
+                        instance.getId(),
+                        instance.getName(),
+                        Map.of("tags", instance.getTags()),
+                        instance))
                 .toList();
     }
 
@@ -177,7 +227,12 @@ public class HuaweiCloudProvider extends AbstractCloudProvider<HuaweiBaseCredent
         ListDiskInstanceRequest listDiskInstanceRequest = JsonUtil.parseObject(req, ListDiskInstanceRequest.class);
         List<DiskInstanceResponse> volumeDetails = HuaweiApi.listDiskInstanceCollection(listDiskInstanceRequest);
         return volumeDetails.stream()
-                .map(instance -> ResourceUtil.toResourceInstance(PlatformConstants.fit2cloud_huawei_platform.name(), ResourceTypeConstants.DISK, instance.getId(), instance.getName(), instance))
+                .map(instance -> ResourceUtil.toResourceInstance(PlatformConstants.fit2cloud_huawei_platform.name(),
+                        ResourceTypeConstants.DISK,
+                        instance.getId(),
+                        instance.getName(),
+                        Map.of("tags", instance.getTags().entrySet().stream().map(entry -> new DefaultKeyValue<>(entry.getKey(), entry.getValue())).toList()),
+                        instance))
                 .toList();
     }
 
@@ -191,7 +246,13 @@ public class HuaweiCloudProvider extends AbstractCloudProvider<HuaweiBaseCredent
         ListLoadBalancerInstanceRequest listLoadBalancerInstanceRequest = JsonUtil.parseObject(req, ListLoadBalancerInstanceRequest.class);
         List<LoadBalancer> loadBalancers = HuaweiApi.listLoadBalancerInstance(listLoadBalancerInstanceRequest);
         return loadBalancers.stream()
-                .map(instance -> ResourceUtil.toResourceInstance(PlatformConstants.fit2cloud_huawei_platform.name(), ResourceTypeConstants.LOAD_BALANCER, instance.getId(), instance.getName(), instance))
+                .map(instance -> ResourceUtil.toResourceInstance(
+                        PlatformConstants.fit2cloud_huawei_platform.name(),
+                        ResourceTypeConstants.LOAD_BALANCER,
+                        instance.getId(),
+                        instance.getName(),
+                        Map.of("tags", instance.getTags()),
+                        instance))
                 .toList();
     }
 
@@ -205,7 +266,12 @@ public class HuaweiCloudProvider extends AbstractCloudProvider<HuaweiBaseCredent
         ListPublicIpInstanceRequest listPublicIpInstanceRequest = JsonUtil.parseObject(req, ListPublicIpInstanceRequest.class);
         List<PublicipSingleShowResp> publicIpSingleShowList = HuaweiApi.listPublicIpInstance(listPublicIpInstanceRequest);
         return publicIpSingleShowList.stream()
-                .map(instance -> ResourceUtil.toResourceInstance(PlatformConstants.fit2cloud_huawei_platform.name(), ResourceTypeConstants.PUBLIC_IP, instance.getId(), instance.getPublicipPoolName(), instance))
+                .map(instance -> ResourceUtil.toResourceInstance(PlatformConstants.fit2cloud_huawei_platform.name(),
+                        ResourceTypeConstants.PUBLIC_IP,
+                        instance.getId(),
+                        instance.getPublicipPoolName(),
+                        Map.of("tags", instance.getTags().stream().map(this::mapTag).filter(Objects::nonNull).toList()),
+                        instance))
                 .toList();
     }
 
@@ -219,7 +285,13 @@ public class HuaweiCloudProvider extends AbstractCloudProvider<HuaweiBaseCredent
         ListVpcInstanceRequest listVpcInstanceRequest = JsonUtil.parseObject(req, ListVpcInstanceRequest.class);
         List<Vpc> instances = HuaweiApi.listVpcInstance(listVpcInstanceRequest);
         return instances.stream()
-                .map(instance -> ResourceUtil.toResourceInstance(PlatformConstants.fit2cloud_huawei_platform.name(), ResourceTypeConstants.VPC, instance.getId(), instance.getName(), instance))
+                .map(instance -> ResourceUtil.toResourceInstance(
+                        PlatformConstants.fit2cloud_huawei_platform.name(),
+                        ResourceTypeConstants.VPC,
+                        instance.getId(),
+                        instance.getName(),
+                        Map.of("tags", instance.getTags()),
+                        instance))
                 .toList();
     }
 
@@ -238,7 +310,11 @@ public class HuaweiCloudProvider extends AbstractCloudProvider<HuaweiBaseCredent
         return instances.stream()
                 .map(instance -> ResourceUtil.toResourceInstance(PlatformConstants.fit2cloud_huawei_platform.name(),
                         ResourceTypeConstants.RAM, instance.getId(), instance.getName(), instance, "loginProfile",
-                        loginProtectResults.stream().filter(l -> l.getUserId().equals(instance.getId())).findFirst().orElse(new LoginProtectResult().withEnabled(false))))
+                        loginProtectResults
+                                .stream()
+                                .filter(l -> l.getUserId().equals(instance.getId()))
+                                .findFirst()
+                                .orElse(new LoginProtectResult().withEnabled(false))))
                 .toList();
     }
 
@@ -250,9 +326,10 @@ public class HuaweiCloudProvider extends AbstractCloudProvider<HuaweiBaseCredent
     @Override
     public List<ResourceInstance> listBucketInstance(String req) {
         ListBucketInstanceRequest listBucketInstanceRequest = JsonUtil.parseObject(req, ListBucketInstanceRequest.class);
-        List<Map<String, Object>> instances = HuaweiApi.listBucketInstance(listBucketInstanceRequest);
+        List<BucketInstanceResponse> instances = HuaweiApi.listBucketInstance(listBucketInstanceRequest);
         return instances.stream()
-                .map(instance -> ResourceUtil.toResourceInstance(PlatformConstants.fit2cloud_huawei_platform.name(), ResourceTypeConstants.OSS, instance.get("bucketName").toString(), instance.get("bucketName").toString(), instance))
+                .map(instance -> ResourceUtil.toResourceInstance(PlatformConstants.fit2cloud_huawei_platform.name(),
+                        ResourceTypeConstants.OSS, instance.getBucketName(), instance.getBucketName(), instance))
                 .toList();
     }
 
@@ -269,8 +346,11 @@ public class HuaweiCloudProvider extends AbstractCloudProvider<HuaweiBaseCredent
         BeanUtils.copyProperties(listSecurityGroupInstanceRequest, listSecurityGroupRuleInstanceRequest);
         List<SecurityGroupRule> securityGroupRules = HuaweiApi.listSecurityGroupRuleInstance(listSecurityGroupRuleInstanceRequest);
         return instances.stream()
-                .map(instance -> ResourceUtil.toResourceInstance(PlatformConstants.fit2cloud_huawei_platform.name(), ResourceTypeConstants.SECURITY_GROUP, instance.getId(), instance.getName(), instance))
-                .map(instance -> ResourceUtil.appendFilterArray(PlatformConstants.fit2cloud_huawei_platform.name(), ResourceTypeConstants.SECURITY_GROUP, "group_rule", instance, (List) securityGroupRules.stream().filter(rule -> StringUtils.equals(rule.getSecurityGroupId(), instance.getResourceId())).toList()))
+                .map(instance -> ResourceUtil.toResourceInstance(PlatformConstants.fit2cloud_huawei_platform.name(),
+                        ResourceTypeConstants.SECURITY_GROUP,
+                        instance.getId(), instance.getName(),
+                        Map.of("group_rule", securityGroupRules.stream().filter(rule -> StringUtils.equals(rule.getSecurityGroupId(), instance.getId())).toList()),
+                        instance))
                 .toList();
     }
 

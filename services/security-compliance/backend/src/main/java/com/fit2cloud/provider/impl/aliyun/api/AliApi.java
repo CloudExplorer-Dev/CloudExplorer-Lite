@@ -13,6 +13,8 @@ import com.aliyun.ram20150501.models.GetLoginProfileRequest;
 import com.aliyun.ram20150501.models.GetLoginProfileResponse;
 import com.aliyun.ram20150501.models.ListUsersResponseBody;
 import com.aliyun.rds20140815.models.DescribeDBInstanceNetInfoResponseBody;
+import com.aliyun.rds20140815.models.DescribeTagsResponse;
+import com.aliyun.rds20140815.models.DescribeTagsResponseBody;
 import com.aliyun.sdk.service.oss20190517.AsyncClient;
 import com.aliyun.sdk.service.oss20190517.models.*;
 import com.aliyun.slb20140515.models.DescribeLoadBalancersResponseBody;
@@ -29,13 +31,16 @@ import com.fit2cloud.common.provider.util.PageUtil;
 import com.fit2cloud.provider.constants.ProviderConstants;
 import com.fit2cloud.provider.impl.aliyun.entity.credential.AliSecurityComplianceCredential;
 import com.fit2cloud.provider.impl.aliyun.entity.request.*;
-import com.fit2cloud.provider.util.ResourceUtil;
+import com.fit2cloud.provider.impl.aliyun.entity.response.*;
 import jodd.util.StringUtil;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.beans.BeanUtils;
 
 import javax.validation.constraints.NotNull;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Objects;
 
 /**
  * {@code @Author:张少虎}
@@ -69,7 +74,7 @@ public class AliApi {
                 , req -> req.setPageNumber(req.getPageNumber() + 1), ProviderConstants.retryNum);
     }
 
-    public static List<Map<String, Object>> listECSInstanceCollection(ListEcsInstancesRequest request) {
+    public static List<EcsInstanceResponse> listECSInstanceCollection(ListEcsInstancesRequest request) {
         Client ecsClient = request.getCredential().getEcsClient(request.getRegionId());
         // 查询到ecs实例列表
         List<DescribeInstancesResponseBody.DescribeInstancesResponseBodyInstancesInstance> ecsInstances = listECSInstance(request);
@@ -91,37 +96,38 @@ public class AliApi {
     /**
      * 合并数据
      *
-     * @param ecs
-     * @param securityGroups
-     * @param disks
-     * @param autoRenews
-     * @param ecsClient
-     * @return
+     * @param ecs            ecs 基本信息
+     * @param securityGroups 安全性相关信息
+     * @param disks          磁盘相关信息
+     * @param autoRenews     自动续期相关信息
+     * @param ecsClient      ecs客户端
+     * @return Ecs组合数据
      */
-    private static Map<String, Object> mergeEcsInstance(DescribeInstancesResponseBody.DescribeInstancesResponseBodyInstancesInstance ecs,
+    private static EcsInstanceResponse mergeEcsInstance(DescribeInstancesResponseBody.DescribeInstancesResponseBodyInstancesInstance ecs,
                                                         List<DescribeSecurityGroupsResponseBody.DescribeSecurityGroupsResponseBodySecurityGroupsSecurityGroup> securityGroups,
                                                         List<DescribeDisksResponseBody.DescribeDisksResponseBodyDisksDisk> disks,
                                                         List<DescribeInstanceAutoRenewAttributeResponseBody.DescribeInstanceAutoRenewAttributeResponseBodyInstanceRenewAttributesInstanceRenewAttribute> autoRenews,
                                                         Client ecsClient) {
-        Map<String, Object> ecsInstance = ResourceUtil.objectToMap(ecs);
+        EcsInstanceResponse ecsInstanceResponse = new EcsInstanceResponse();
+        BeanUtils.copyProperties(ecs, ecsInstanceResponse);
         // 设置安全组属性
         if (Objects.nonNull(ecs.securityGroupIds) && CollectionUtils.isNotEmpty(ecs.securityGroupIds.securityGroupId)) {
-            List<Map<String, Object>> securityGroupRules = securityGroups.stream().filter(group -> ecs.securityGroupIds.securityGroupId.contains(group.securityGroupId))
+            List<SecurityGroupsSecurityGroupInstanceResponse> securityGroupsSecurityGroupInstanceResponses = securityGroups.stream().filter(group -> ecs.securityGroupIds.securityGroupId.contains(group.securityGroupId))
                     .map(group -> {
-                        Map<String, Object> sGroup = ResourceUtil.objectToMap(group);
-                        sGroup.put("rule", getSecurityGroupRuleInstance(ecsClient, group.securityGroupId));
-                        return sGroup;
+                        SecurityGroupsSecurityGroupInstanceResponse securityGroupsSecurityGroupInstanceResponse = new SecurityGroupsSecurityGroupInstanceResponse();
+                        BeanUtils.copyProperties(group, securityGroupsSecurityGroupInstanceResponse);
+                        securityGroupsSecurityGroupInstanceResponse.setRule(getSecurityGroupRuleInstance(ecsClient, group.securityGroupId));
+                        return securityGroupsSecurityGroupInstanceResponse;
                     }).toList();
-            ecsInstance.put("securityGroupRules", securityGroupRules);
+            ecsInstanceResponse.setSecurityGroupRules(securityGroupsSecurityGroupInstanceResponses);
         }
         // 设置磁盘属性
         List<DescribeDisksResponseBody.DescribeDisksResponseBodyDisksDisk> ecsDisks = disks.stream().filter(disk -> StringUtil.equals(disk.instanceId, ecs.instanceId)).toList();
-        ecsInstance.put("disks", ecsDisks);
+        ecsInstanceResponse.setDisks(ecsDisks);
         // 设置包年包月自动续费属性
         autoRenews.stream().filter(auto -> StringUtil.equals(auto.instanceId, ecs.instanceId)).findFirst()
-                .ifPresent(auto -> ecsInstance.put("autoRenew", auto));
-
-        return ecsInstance;
+                .ifPresent(ecsInstanceResponse::setAutoRenew);
+        return ecsInstanceResponse;
 
     }
 
@@ -218,14 +224,14 @@ public class AliApi {
      * @param request 请求对象
      * @return 阿里云redis redisNetwork 实例列表
      */
-    public static List<Map<String, Object>> listRedisInstanceCollection(ListRedisInstanceRequest request) {
+    public static List<RedisInstanceResponse> listRedisInstanceCollection(ListRedisInstanceRequest request) {
         List<com.aliyun.r_kvstore20150101.models.DescribeInstancesResponseBody.DescribeInstancesResponseBodyInstancesKVStoreInstance> describeInstancesResponseBodyInstancesKVStoreInstances = listRedisInstance(request);
         com.aliyun.r_kvstore20150101.Client rdsClient = request.getCredential().getRedisClient(request.getRegionId());
         return describeInstancesResponseBodyInstancesKVStoreInstances.stream().map(redis -> {
-            Map<String, Object> redisMap = ResourceUtil.objectsToMap(redis);
+            RedisInstanceResponse redisInstanceResponse = new RedisInstanceResponse(redis);
             com.aliyun.r_kvstore20150101.models.DescribeDBInstanceNetInfoResponseBody redisNetInfoInstance = getRedisNetInfoInstance(rdsClient, redis.getInstanceId());
-            redisMap.put("network", redisNetInfoInstance);
-            return redisMap;
+            redisInstanceResponse.setNetwork(redisNetInfoInstance);
+            return redisInstanceResponse;
         }).toList();
     }
 
@@ -295,14 +301,14 @@ public class AliApi {
      * @param request 请求对象
      * @return mongodb实例与网络信息
      */
-    public static List<Map<String, Object>> listMongoDBInstanceCollection(ListMongoDBRequest request) {
+    public static List<MongoDBInstanceResponse> listMongoDBInstanceCollection(ListMongoDBRequest request) {
         List<DescribeDBInstancesResponseBody.DescribeDBInstancesResponseBodyDBInstancesDBInstance> instances = listMongoDBInstance(request);
         com.aliyun.dds20151201.Client mongodbClient = request.getCredential().getMongodbClient(request.getRegionId());
         return instances.stream().map(mongo -> {
-            Map<String, Object> mongoMap = ResourceUtil.objectsToMap(mongo);
+            MongoDBInstanceResponse mongoDBInstanceResponse = new MongoDBInstanceResponse(mongo);
             DescribeShardingNetworkAddressResponseBody mongodbNetInfoInstance = getMongodbNetInfoInstance(mongodbClient, mongo.DBInstanceId);
-            mongoMap.put("networkObj", mongodbNetInfoInstance);
-            return mongoMap;
+            mongoDBInstanceResponse.setNetworkObj(mongodbNetInfoInstance);
+            return mongoDBInstanceResponse;
         }).toList();
     }
 
@@ -372,7 +378,7 @@ public class AliApi {
      * @param request 请求对象
      * @return 阿里云 云数据库 mysql实例列表
      */
-    public static List<Map<String, Object>> listMysqlInstanceCollection(ListRdsInstanceRequest request) {
+    public static List<RdsInstanceResponse> listMysqlInstanceCollection(ListRdsInstanceRequest request) {
         request.setEngine("MySQL");
         return listRdsInstanceCollection(request);
     }
@@ -394,7 +400,7 @@ public class AliApi {
      * @param request 请求对象
      * @return 阿里云 云数据库 SQLServer实例列表
      */
-    public static List<Map<String, Object>> listSqlServerInstanceCollection(ListRdsInstanceRequest request) {
+    public static List<RdsInstanceResponse> listSqlServerInstanceCollection(ListRdsInstanceRequest request) {
         request.setEngine("SQLServer");
         return listRdsInstanceCollection(request);
     }
@@ -416,7 +422,7 @@ public class AliApi {
      * @param request 请求对象
      * @return 阿里云 云数据库 PostgreSQL实例列表
      */
-    public static List<Map<String, Object>> listPostgreSqlInstanceCollection(ListRdsInstanceRequest request) {
+    public static List<RdsInstanceResponse> listPostgreSqlInstanceCollection(ListRdsInstanceRequest request) {
         request.setEngine("PostgreSQL");
         return listRdsInstanceCollection(request);
     }
@@ -438,7 +444,7 @@ public class AliApi {
      * @param request 请求对象
      * @return 阿里云 云数据库 MariaDB实例列表
      */
-    public static List<Map<String, Object>> listMariaDBInstanceCollection(ListRdsInstanceRequest request) {
+    public static List<RdsInstanceResponse> listMariaDBInstanceCollection(ListRdsInstanceRequest request) {
         request.setEngine("MariaDB");
         return listRdsInstanceCollection(request);
     }
@@ -488,15 +494,54 @@ public class AliApi {
      * @param request 请求对象
      * @return Rds实例集合
      */
-    public static List<Map<String, Object>> listRdsInstanceCollection(ListRdsInstanceRequest request) {
+    public static List<RdsInstanceResponse> listRdsInstanceCollection(ListRdsInstanceRequest request) {
         List<com.aliyun.rds20140815.models.DescribeDBInstancesResponseBody.DescribeDBInstancesResponseBodyItemsDBInstance> instances = listRdsInstance(request);
         com.aliyun.rds20140815.Client rdsClient = request.getCredential().getRdsClient(request.getRegionId());
         return instances.stream().map(rds -> {
-            Map<String, Object> rdsMap = ResourceUtil.objectsToMap(rds);
+            RdsInstanceResponse rdsInstanceResponse = new RdsInstanceResponse(rds);
             DescribeDBInstanceNetInfoResponseBody rdsNetInfoInstance = getRdsNetInfoInstance(rdsClient, rds.DBInstanceId);
-            rdsMap.put("networkObj", rdsNetInfoInstance);
-            return rdsMap;
+            List<DescribeTagsResponseBody.DescribeTagsResponseBodyItemsTagInfos> describeTagsResponseBodyItemsTagInfos = listTags(request);
+            List<DescribeInstancesResponseBody.DescribeInstancesResponseBodyInstancesInstanceTagsTag> tags = describeTagsResponseBodyItemsTagInfos.stream().filter(tag -> tag.getDBInstanceIds().DBInstanceIds.contains(rds.DBInstanceId))
+                    .map(tag -> {
+                        DescribeInstancesResponseBody.DescribeInstancesResponseBodyInstancesInstanceTagsTag t = new DescribeInstancesResponseBody.DescribeInstancesResponseBodyInstancesInstanceTagsTag();
+                        t.setTagKey(tag.getTagKey());
+                        t.setTagValue(tag.getTagValue());
+                        return t;
+                    }).toList();
+            rdsInstanceResponse.setTags(tags);
+            rdsInstanceResponse.setNetworkObj(rdsNetInfoInstance);
+            return rdsInstanceResponse;
         }).toList();
+    }
+
+    /**
+     * 获取Rds数据库标签
+     *
+     * @param request Rds请求数据
+     * @return Rds标签
+     */
+    public static List<DescribeTagsResponseBody.DescribeTagsResponseBodyItemsTagInfos> listTags(ListRdsInstanceRequest request) {
+        com.aliyun.rds20140815.Client rdsClient = request.getCredential().getRdsClient(request.getRegionId());
+        com.aliyun.rds20140815.models.DescribeTagsRequest describeTagsRequest = new com.aliyun.rds20140815.models.DescribeTagsRequest();
+        describeTagsRequest.setRegionId(request.getRegionId());
+        DescribeTagsResponse describeTagsResponse = PageUtil.reTry(() -> {
+            try {
+                return rdsClient.describeTagsWithOptions(describeTagsRequest, new RuntimeOptions());
+            } catch (Exception e) {
+                ReTryException.throwReTry(e);
+                SkipPageException.throwSkip(e);
+                throw new Fit2cloudException(10002, "获取Rds数据库标签错误" + e.getMessage());
+            }
+        }, 3);
+        if (Objects.nonNull(describeTagsResponse)
+                && Objects.nonNull(describeTagsResponse.getBody())
+                && Objects.nonNull(describeTagsResponse.getBody().getItems())
+                && CollectionUtils.isNotEmpty(describeTagsResponse.getBody().getItems().tagInfos)) {
+            return describeTagsResponse.getBody().getItems().tagInfos;
+        } else {
+            return new ArrayList<>();
+        }
+
     }
 
     /**
@@ -637,7 +682,7 @@ public class AliApi {
      * @param request 请求对象
      * @return vpc 数据合集列表
      */
-    public static List<Map<String, Object>> listVpcInstanceCollection(ListVpcInstanceRequest request) {
+    public static List<VpcInstanceResponse> listVpcInstanceCollection(ListVpcInstanceRequest request) {
         com.aliyun.vpc20160428.Client vpcClient = request.getCredential().getVpcClient(request.getRegionId());
 
         // vpc实例列表
@@ -671,23 +716,22 @@ public class AliApi {
      * @param vpnConnections vpn连接数据
      * @return vpc对象合集
      */
-    private static Map<String, Object> mergeVpcInstance(DescribeVpcsResponseBody.DescribeVpcsResponseBodyVpcsVpc vpc,
+    private static VpcInstanceResponse mergeVpcInstance(DescribeVpcsResponseBody.DescribeVpcsResponseBodyVpcsVpc vpc,
                                                         List<DescribeVpnGatewaysResponseBody.DescribeVpnGatewaysResponseBodyVpnGatewaysVpnGateway> gateways,
                                                         List<DescribeVpnConnectionsResponseBody.DescribeVpnConnectionsResponseBodyVpnConnectionsVpnConnection> vpnConnections,
                                                         List<DescribeFlowLogsResponseBody.DescribeFlowLogsResponseBodyFlowLogsFlowLog> flowLogsResponseBodyFlowLogsFlowLogs,
                                                         List<DescribeVSwitchesResponseBody.DescribeVSwitchesResponseBodyVSwitchesVSwitch> switches) {
-        Map<String, Object> collection = ResourceUtil.objectToMap(vpc);
+        VpcInstanceResponse vpcInstanceResponse = new VpcInstanceResponse(vpc);
         gateways.stream().filter(gateway -> StringUtil.equals(gateway.vpcId, vpc.getVpcId())).findFirst().ifPresent(gateway -> {
-            collection.put("vpnGateway", ResourceUtil.objectToMap(gateway));
+            vpcInstanceResponse.setVpnGateway(gateway);
+
             vpnConnections.stream().filter(vpnConnection -> StringUtil.equals(gateway.getVpnGatewayId(), vpnConnection.getVpnGatewayId())).findFirst()
-                    .ifPresent(vpnConnection -> collection.put("vpnConnection", ResourceUtil.objectToMap(vpnConnection)));
+                    .ifPresent(vpcInstanceResponse::setVpnConnection);
         });
-        flowLogsResponseBodyFlowLogsFlowLogs.stream().filter(flowLog -> StringUtil.equals(flowLog.resourceId, vpc.getVpcId())).findFirst().ifPresent(s -> {
-            collection.put("flowLog", ResourceUtil.objectToMap(s));
-        });
+        flowLogsResponseBodyFlowLogsFlowLogs.stream().filter(flowLog -> StringUtil.equals(flowLog.resourceId, vpc.getVpcId())).findFirst().ifPresent(vpcInstanceResponse::setFlowLog);
         List<DescribeVSwitchesResponseBody.DescribeVSwitchesResponseBodyVSwitchesVSwitch> switchesList = switches.stream().filter(s -> StringUtil.equals(s.getVpcId(), vpc.vpcId)).toList();
-        collection.put("switchesList", switchesList);
-        return collection;
+        vpcInstanceResponse.setSwitchesList(switchesList);
+        return vpcInstanceResponse;
     }
 
 
@@ -869,10 +913,11 @@ public class AliApi {
      * @param request 请求对象
      * @return 存储桶实例列表
      */
-    public static List<Map<String, Object>> listBucketCollectionInstance(ListBucketInstanceRequest request) {
+    public static List<BucketInstanceResponse> listBucketCollectionInstance(ListBucketInstanceRequest request) {
         List<Bucket> buckets = listBucket(request.getCredential());
         return buckets.stream().map(bucket -> {
             AsyncClient ossClient = request.getCredential().getOssClient(bucket.getRegion());
+            BucketInstanceResponse bucketInstanceResponse = new BucketInstanceResponse(bucket);
             GetBucketRefererResponseBody refererResponse = PageUtil.reTry(() -> {
                 try {
                     return ossClient.getBucketReferer(GetBucketRefererRequest.builder().bucket(bucket.getName()).build()).join().getBody();
@@ -900,11 +945,10 @@ public class AliApi {
                 }
 
             }, ProviderConstants.retryNum);
-            Map<String, Object> bucketMap = ResourceUtil.objectToMap(bucket);
-            bucketMap.put("acl", aclResponse);
-            bucketMap.put("referer", refererResponse);
-            bucketMap.put("encryption", encryptionResponse);
-            return bucketMap;
+            bucketInstanceResponse.setAcl(aclResponse);
+            bucketInstanceResponse.setReferer(refererResponse);
+            bucketInstanceResponse.setEncryption(encryptionResponse);
+            return bucketInstanceResponse;
         }).toList();
     }
 
@@ -916,12 +960,12 @@ public class AliApi {
      */
     public static List<Bucket> listBucket(AliSecurityComplianceCredential aliyunBillCredential) {
         AsyncClient ossClient = aliyunBillCredential.getOssClient();
-        ListBucketsRequest listBucketsRequest = ListBucketsRequest.builder().maxKeys(100l).build();
+        ListBucketsRequest listBucketsRequest = ListBucketsRequest.builder().maxKeys(100L).build();
         return PageUtil.pageNextF(listBucketsRequest,
                 ossClient::listBuckets,
                 res -> res.join().getBody().getBuckets(),
                 (req, res) -> StringUtil.isNotEmpty(res.join().getBody().getNextMarker()),
-                (req, res) -> ListBucketsRequest.builder().marker(res.join().getBody().getNextMarker()).maxKeys(100l).build());
+                (req, res) -> ListBucketsRequest.builder().marker(res.join().getBody().getNextMarker()).maxKeys(100L).build());
 
     }
 
@@ -932,14 +976,14 @@ public class AliApi {
      * @param request 请求对象
      * @return 安全组和安全组规则实例合集列表
      */
-    public static List<Map<String, Object>> listSecurityGroupCollectionInstance(ListSecurityGroupInstanceRequest request) {
+    public static List<SecurityGroupsSecurityGroupInstanceResponse> listSecurityGroupCollectionInstance(ListSecurityGroupInstanceRequest request) {
         List<DescribeSecurityGroupsResponseBody.DescribeSecurityGroupsResponseBodySecurityGroupsSecurityGroup> securityGroups = listSecurityGroupInstance(request);
         Client ecsClient = request.getCredential().getEcsClient(request.regionId);
         return securityGroups.stream().map(securityGroup -> {
-            Map<String, Object> securityGroupMap = ResourceUtil.objectToMap(securityGroup);
+            SecurityGroupsSecurityGroupInstanceResponse securityGroupsSecurityGroupInstanceResponse = new SecurityGroupsSecurityGroupInstanceResponse(securityGroup);
             DescribeSecurityGroupAttributeResponseBody securityGroupRuleInstance = getSecurityGroupRuleInstance(ecsClient, securityGroup.securityGroupId);
-            securityGroupMap.put("rule", securityGroupRuleInstance);
-            return securityGroupMap;
+            securityGroupsSecurityGroupInstanceResponse.setRule(securityGroupRuleInstance);
+            return securityGroupsSecurityGroupInstanceResponse;
         }).toList();
     }
 

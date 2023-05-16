@@ -5,6 +5,7 @@ import com.fit2cloud.common.provider.exception.ReTryException;
 import com.fit2cloud.common.provider.exception.SkipPageException;
 import com.fit2cloud.common.provider.util.PageUtil;
 import com.fit2cloud.provider.impl.huawei.entity.request.*;
+import com.fit2cloud.provider.impl.huawei.entity.response.BucketInstanceResponse;
 import com.fit2cloud.provider.impl.huawei.entity.response.DiskInstanceResponse;
 import com.fit2cloud.provider.util.ResourceUtil;
 import com.huaweicloud.sdk.cbr.v1.CbrClient;
@@ -49,7 +50,6 @@ import com.obs.services.model.ObsBucket;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
 
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -452,29 +452,28 @@ public class HuaweiApi {
      * @param request 请求对象
      * @return 桶实例列表
      */
-    public static List<Map<String, Object>> listBucketInstance(ListBucketInstanceRequest request) {
+    public static List<BucketInstanceResponse> listBucketInstance(ListBucketInstanceRequest request) {
         ObsClient obsClient = request.getCredential().getObsClient();
         List<ObsBucket> obsBuckets = obsClient.listBuckets(new ListBucketsRequest());
         return obsBuckets.stream().map(obsBucket -> {
-            Map<String, Object> bucketMap = ResourceUtil.objectToMap(obsBucket);
             ObsClient client = request.getCredential().getObsClient(obsBucket.getLocation());
-            bucketMap.putAll(getBucketAclEncryptionRefererCollection(client, obsBucket.getBucketName()));
-            return bucketMap;
+            return margeBucketInstanceResponse(obsBucket, client);
         }).toList();
     }
 
 
     /**
-     * 根据桶名称 获取访问控制与加密数据
+     * 合并数据
      *
-     * @param obsClient  客户端
-     * @param bucketName 桶名称
-     * @return 集合数据
+     * @param obsBucket 桶基本信息
+     * @param obsClient 客户端
+     * @return 桶实例数据
      */
-    private static Map<String, Object> getBucketAclEncryptionRefererCollection(ObsClient obsClient, String bucketName) {
+    private static BucketInstanceResponse margeBucketInstanceResponse(ObsBucket obsBucket, ObsClient obsClient) {
+        BucketInstanceResponse bucketInstanceResponse = new BucketInstanceResponse(obsBucket);
         AccessControlList bucketAcl = PageUtil.reTry(() -> {
             try {
-                return obsClient.getBucketAcl(bucketName);
+                return obsClient.getBucketAcl(obsBucket.getBucketName());
             } catch (Exception e) {
                 ReTryException.throwHuaweiReTry(e);
                 SkipPageException.throwSkip(e);
@@ -483,17 +482,16 @@ public class HuaweiApi {
         }, 5);
         BucketEncryption bucketEncryption = PageUtil.reTry(() -> {
             try {
-                return obsClient.getBucketEncryption(bucketName);
+                return obsClient.getBucketEncryption(obsBucket.getBucketName());
             } catch (Exception e) {
                 ReTryException.throwHuaweiReTry(e);
                 SkipPageException.throwSkip(e);
                 return null;
             }
         }, 5);
-        HashMap<String, Object> res = new HashMap<>();
-        res.put("acl", bucketAcl);
-        res.put("encryption", bucketEncryption);
-        return res;
+        bucketInstanceResponse.setAcl(bucketAcl);
+        bucketInstanceResponse.setEncryption(bucketEncryption);
+        return bucketInstanceResponse;
     }
 
     /**
