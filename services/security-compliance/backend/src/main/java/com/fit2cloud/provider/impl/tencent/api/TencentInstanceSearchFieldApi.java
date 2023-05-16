@@ -129,9 +129,14 @@ public class TencentInstanceSearchFieldApi {
         InstanceSearchField internetAccessibleInternetAccessible = new InstanceSearchField("公网出带宽上限", "internetAccessible.internetMaxBandwidthOut", InstanceFieldType.Number)
                 .resetInstanceField(PlatformConstants.fit2cloud_tencent_platform, ResourceTypeConstants.ECS);
 
+        InstanceSearchField tagKey = new InstanceSearchField("标签键", "key", InstanceFieldType.NestedArrayString)
+                .resetFilterArrayField(PlatformConstants.fit2cloud_tencent_platform, ResourceTypeConstants.ECS, "tags");
+        InstanceSearchField tagValue = new InstanceSearchField("标签值", "value", InstanceFieldType.NestedArrayString)
+                .resetFilterArrayField(PlatformConstants.fit2cloud_tencent_platform, ResourceTypeConstants.ECS, "tags");
+
         return List.of(instanceChargeType, instanceState, cpu, memory, renewFlag, restrictState, stopChargingMode, isolatedSource,
                 defaultLoginUser, defaultLoginPort, systemDiskType, systemDiskSize, dataDiskSize, dataDiskDeleteWithInstance, dataDiskEncrypt, dataDiskType
-                , internetAccessibleInternetChargeType, internetAccessiblePublicIpAssigned, internetAccessibleInternetAccessible);
+                , internetAccessibleInternetChargeType, internetAccessiblePublicIpAssigned, internetAccessibleInternetAccessible, tagKey, tagValue);
     }
 
     /**
@@ -311,10 +316,16 @@ public class TencentInstanceSearchFieldApi {
         InstanceSearchField autoSnapshotPolicyIds = new InstanceSearchField("自动快照策略Id", "autoSnapshotPolicyIds", InstanceFieldType.ArrayString)
                 .resetInstanceField(PlatformConstants.fit2cloud_tencent_platform, ResourceTypeConstants.DISK);
 
+        InstanceSearchField tagKey = new InstanceSearchField("标签键", "key", InstanceFieldType.NestedArrayString)
+                .resetFilterArrayField(PlatformConstants.fit2cloud_tencent_platform, ResourceTypeConstants.DISK, "tags");
+        InstanceSearchField tagValue = new InstanceSearchField("标签值", "value", InstanceFieldType.NestedArrayString)
+                .resetFilterArrayField(PlatformConstants.fit2cloud_tencent_platform, ResourceTypeConstants.DISK, "tags");
+
+
         return List.of(deleteWithInstance, renewFlag, diskType, diskState
                 , snapshotCount, autoRenewFlagError, rollbacking, encrypt, backupDisk, throughputPerformance, migrating, snapshotSize, isReturnable,
                 attached, diskSize, diskUsage, diskChargeType, portable, snapshotAbility, deadlineError, differDaysOfDeadline, shareable, deleteSnapshot, diskBackupCount,
-                instanceType, autoSnapshotPolicyIds);
+                instanceType, autoSnapshotPolicyIds, tagKey, tagValue);
     }
 
     /**
@@ -341,7 +352,12 @@ public class TencentInstanceSearchFieldApi {
                         new DefaultKeyValue<>("否", false)))
                 .resetInstanceField(PlatformConstants.fit2cloud_tencent_platform, ResourceTypeConstants.VPC);
 
-        return List.of(isDefault, enableMulticast, cidrBlock, enableDhcp);
+        InstanceSearchField tagKey = new InstanceSearchField("标签键", "key", InstanceFieldType.NestedArrayString)
+                .resetFilterArrayField(PlatformConstants.fit2cloud_tencent_platform, ResourceTypeConstants.VPC, "tags");
+        InstanceSearchField tagValue = new InstanceSearchField("标签值", "value", InstanceFieldType.NestedArrayString)
+                .resetFilterArrayField(PlatformConstants.fit2cloud_tencent_platform, ResourceTypeConstants.VPC, "tags");
+
+        return List.of(isDefault, enableMulticast, cidrBlock, enableDhcp, tagKey, tagValue);
     }
 
     /**
@@ -401,7 +417,15 @@ public class TencentInstanceSearchFieldApi {
                         new DefaultKeyValue<>("未知", null)))
                 .resetInstanceField(PlatformConstants.fit2cloud_tencent_platform, ResourceTypeConstants.PUBLIC_IP);
 
-        return List.of(addressStatus, isArrears, isBlocked, isEipDirectConnection, addressType, cascadeRelease, bandwidth, internetChargeType);
+
+        InstanceSearchField tagKey = new InstanceSearchField("标签键", "key", InstanceFieldType.NestedArrayString)
+                .resetFilterArrayField(PlatformConstants.fit2cloud_tencent_platform, ResourceTypeConstants.PUBLIC_IP, "tags");
+        InstanceSearchField tagValue = new InstanceSearchField("标签值", "value", InstanceFieldType.NestedArrayString)
+                .resetFilterArrayField(PlatformConstants.fit2cloud_tencent_platform, ResourceTypeConstants.PUBLIC_IP, "tags");
+
+
+        return List.of(addressStatus, isArrears, isBlocked, isEipDirectConnection, addressType, cascadeRelease, bandwidth, internetChargeType,
+                tagKey, tagValue);
 
     }
 
@@ -441,7 +465,12 @@ public class TencentInstanceSearchFieldApi {
         InstanceSearchField ruleEgressCidrBlock = new InstanceSearchField("安全组出站网段", "rule.egress.cidrBlock", InstanceFieldType.ArrayString)
                 .resetInstanceField(PlatformConstants.fit2cloud_tencent_platform, ResourceTypeConstants.SECURITY_GROUP);
 
-        return List.of(isDefault, ruleIngressProtocol, ruleIngressCidrBlock, ruleEgressProtocol, ruleEgressCidrBlock);
+        InstanceSearchField tagKey = new InstanceSearchField("标签键", "key", InstanceFieldType.NestedArrayString)
+                .resetFilterArrayField(PlatformConstants.fit2cloud_tencent_platform, ResourceTypeConstants.SECURITY_GROUP, "tags");
+        InstanceSearchField tagValue = new InstanceSearchField("标签值", "value", InstanceFieldType.NestedArrayString)
+                .resetFilterArrayField(PlatformConstants.fit2cloud_tencent_platform, ResourceTypeConstants.SECURITY_GROUP, "tags");
+
+        return List.of(isDefault, ruleIngressProtocol, ruleIngressCidrBlock, ruleEgressProtocol, ruleEgressCidrBlock, tagKey, tagValue);
     }
 
     public static List<InstanceSearchField> listUserInstanceSearchField() {
@@ -558,8 +587,14 @@ public class TencentInstanceSearchFieldApi {
         InstanceSearchField instanceNodes = new InstanceSearchField("节点数", "instanceNodes", InstanceFieldType.Number)
                 .resetInstanceField(PlatformConstants.fit2cloud_tencent_platform, ResourceTypeConstants.MYSQL);
 
+        InstanceSearchField tagKey = new InstanceSearchField("标签键", "tagKey", InstanceFieldType.NestedArrayString)
+                .resetFilterArrayField(PlatformConstants.fit2cloud_tencent_platform, ResourceTypeConstants.MYSQL, "tags");
+        InstanceSearchField tagValue = new InstanceSearchField("标签值", "tagValue", InstanceFieldType.NestedArrayString)
+                .resetFilterArrayField(PlatformConstants.fit2cloud_tencent_platform, ResourceTypeConstants.MYSQL, "tags");
+
+
         return List.of(wanStatus, initFlag, memory, status, volume, autoRenew, protectMode, instanceType, deployMode, taskStatus, deviceType, engineVersion, payType,
-                cdbError, cpu, qps, instanceNodes);
+                cdbError, cpu, qps, instanceNodes, tagKey, tagValue);
     }
 
     /**
@@ -656,8 +691,14 @@ public class TencentInstanceSearchFieldApi {
                 ))
                 .resetInstanceField(PlatformConstants.fit2cloud_tencent_platform, ResourceTypeConstants.SQL_SERVER);
 
+        InstanceSearchField tagKey = new InstanceSearchField("标签键", "tagKey", InstanceFieldType.NestedArrayString)
+                .resetFilterArrayField(PlatformConstants.fit2cloud_tencent_platform, ResourceTypeConstants.SQL_SERVER, "tags");
+        InstanceSearchField tagValue = new InstanceSearchField("标签值", "tagValue", InstanceFieldType.NestedArrayString)
+                .resetFilterArrayField(PlatformConstants.fit2cloud_tencent_platform, ResourceTypeConstants.SQL_SERVER, "tags");
+
+
         return List.of(status, vport, memory, usedStorage, storage, versionName, renewFlag, model, payMode, cpu, dnsPodDomain,
-                collation, timeZone, instanceType, backupSaveDays, crossBackupEnabled);
+                collation, timeZone, instanceType, backupSaveDays, crossBackupEnabled, tagKey, tagValue);
     }
 
     /**
@@ -736,8 +777,13 @@ public class TencentInstanceSearchFieldApi {
                 ))
                 .resetInstanceField(PlatformConstants.fit2cloud_tencent_platform, ResourceTypeConstants.MARIA_DB);
 
+        InstanceSearchField tagKey = new InstanceSearchField("标签键", "tagKey", InstanceFieldType.NestedArrayString)
+                .resetFilterArrayField(PlatformConstants.fit2cloud_tencent_platform, ResourceTypeConstants.MARIA_DB, "tags");
+        InstanceSearchField tagValue = new InstanceSearchField("标签值", "tagValue", InstanceFieldType.NestedArrayString)
+                .resetFilterArrayField(PlatformConstants.fit2cloud_tencent_platform, ResourceTypeConstants.MARIA_DB, "tags");
+
         return List.of(status, wanStatus, memory, wanDomain, storage, autoRenewFlag, nodeCount, isTmp, qps, cpu, isAuditSupported,
-                isEncryptSupported, instanceType);
+                isEncryptSupported, instanceType, tagKey, tagValue);
     }
 
     /**
@@ -813,8 +859,14 @@ public class TencentInstanceSearchFieldApi {
                         new DefaultKeyValue<>("基础网络或私有网络的外网地址", "public")
                 ))
                 .resetInstanceField(PlatformConstants.fit2cloud_tencent_platform, ResourceTypeConstants.POST_GRE_SQL);
+
+        InstanceSearchField tagKey = new InstanceSearchField("标签键", "tagKey", InstanceFieldType.NestedArrayString)
+                .resetFilterArrayField(PlatformConstants.fit2cloud_tencent_platform, ResourceTypeConstants.POST_GRE_SQL, "tags");
+        InstanceSearchField tagValue = new InstanceSearchField("标签值", "tagValue", InstanceFieldType.NestedArrayString)
+                .resetFilterArrayField(PlatformConstants.fit2cloud_tencent_platform, ResourceTypeConstants.POST_GRE_SQL, "tags");
+
         return List.of(status, dbinstanceMemory, dbinstanceStorage, dbinstanceCpu, dbinstanceType, dbcharset, dbversion, payType, autoRenew, supportIpv6,
-                dbinstanceNetInfoNetType);
+                dbinstanceNetInfoNetType, tagKey, tagValue);
     }
 
     /**
@@ -887,7 +939,13 @@ public class TencentInstanceSearchFieldApi {
         InstanceSearchField netLimit = new InstanceSearchField("分片带宽上限,单位MB", "netLimit", InstanceFieldType.Number)
                 .resetInstanceField(PlatformConstants.fit2cloud_tencent_platform, ResourceTypeConstants.REDIS);
 
-        return List.of(status, port, size, type, autoRenewFlag, productType, billingMode, noAuth, clientLimit, netLimit);
+        InstanceSearchField tagKey = new InstanceSearchField("标签键", "tagKey", InstanceFieldType.NestedArrayString)
+                .resetFilterArrayField(PlatformConstants.fit2cloud_tencent_platform, ResourceTypeConstants.REDIS, "tags");
+        InstanceSearchField tagValue = new InstanceSearchField("标签值", "tagValue", InstanceFieldType.NestedArrayString)
+                .resetFilterArrayField(PlatformConstants.fit2cloud_tencent_platform, ResourceTypeConstants.REDIS, "tags");
+
+        return List.of(status, port, size, type, autoRenewFlag, productType, billingMode, noAuth, clientLimit, netLimit,
+                tagKey, tagValue);
     }
 
     /**
@@ -958,8 +1016,13 @@ public class TencentInstanceSearchFieldApi {
                 ))
                 .resetInstanceField(PlatformConstants.fit2cloud_tencent_platform, ResourceTypeConstants.MONGO_DB);
 
+        InstanceSearchField tagKey = new InstanceSearchField("标签键", "tagKey", InstanceFieldType.NestedArrayString)
+                .resetFilterArrayField(PlatformConstants.fit2cloud_tencent_platform, ResourceTypeConstants.MONGO_DB, "tags");
+        InstanceSearchField tagValue = new InstanceSearchField("标签值", "tagValue", InstanceFieldType.NestedArrayString)
+                .resetFilterArrayField(PlatformConstants.fit2cloud_tencent_platform, ResourceTypeConstants.MONGO_DB, "tags");
+
         return List.of(status, payMode, clusterType, netType, autoRenewFlag, vport, mongoVersion, memory, volume, cpuNum,
-                secondaryNum, replicationSetNum, usedVolume, instanceType);
+                secondaryNum, replicationSetNum, usedVolume, instanceType, tagKey, tagValue);
     }
 
     /**
@@ -1092,9 +1155,15 @@ public class TencentInstanceSearchFieldApi {
                 ))
                 .resetInstanceField(PlatformConstants.fit2cloud_tencent_platform, ResourceTypeConstants.ELASTIC_SEARCH);
 
+        InstanceSearchField tagKey = new InstanceSearchField("标签键", "tagKey", InstanceFieldType.NestedArrayString)
+                .resetFilterArrayField(PlatformConstants.fit2cloud_tencent_platform, ResourceTypeConstants.ELASTIC_SEARCH, "tags");
+        InstanceSearchField tagValue = new InstanceSearchField("标签值", "tagValue", InstanceFieldType.NestedArrayString)
+                .resetFilterArrayField(PlatformConstants.fit2cloud_tencent_platform, ResourceTypeConstants.ELASTIC_SEARCH, "tags");
+
+
         return List.of(status, chargeType, chargePeriod, nodeType, nodeNum, cpuNum, memSize, diskSize, kibanaWhiteIpList, licenseType,
                 enableHotWarmMode, deployMode, publicAccess, kibanaPublicAccess, kibanaPrivateAccess, securityType, sceneType,
-                jdk, kibanaAlteringPublicAccess
+                jdk, kibanaAlteringPublicAccess, tagKey, tagValue
         );
 
     }
@@ -1181,8 +1250,14 @@ public class TencentInstanceSearchFieldApi {
                         new DefaultKeyValue<>("否", false)
                 ))
                 .resetInstanceField(PlatformConstants.fit2cloud_tencent_platform, ResourceTypeConstants.LOAD_BALANCER);
+
+        InstanceSearchField tagKey = new InstanceSearchField("标签键", "tagKey", InstanceFieldType.NestedArrayString)
+                .resetFilterArrayField(PlatformConstants.fit2cloud_tencent_platform, ResourceTypeConstants.LOAD_BALANCER, "tags");
+        InstanceSearchField tagValue = new InstanceSearchField("标签值", "tagValue", InstanceFieldType.NestedArrayString)
+                .resetFilterArrayField(PlatformConstants.fit2cloud_tencent_platform, ResourceTypeConstants.LOAD_BALANCER, "tags");
+
         return List.of(status, chargeType, loadBalancerType, forward, openBgp, isolation, isDDos, snatPro, isBlock, localBgp,
-                mixIpTarget);
+                mixIpTarget, tagKey, tagValue);
     }
 }
 

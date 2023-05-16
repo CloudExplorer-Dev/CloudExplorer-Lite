@@ -112,13 +112,11 @@ public class AliInstanceSearchFieldApi {
                         new DefaultKeyValue<>("设置上限价格的抢占式实例", "SpotWithPriceLimit"),
                         new DefaultKeyValue<>("系统自动出价", "SpotAsPriceGo")))
                 .resetInstanceField(PlatformConstants.fit2cloud_ali_platform, ResourceTypeConstants.ECS);
-        ;
 
         InstanceSearchField deviceAvailable = new InstanceSearchField("是否可挂载数据盘", "deviceAvailable", InstanceFieldType.Enum,
                 List.of(new DefaultKeyValue<>("可挂载数据盘", true),
                         new DefaultKeyValue<>("不可挂载数据盘", false)))
                 .resetInstanceField(PlatformConstants.fit2cloud_ali_platform, ResourceTypeConstants.ECS);
-        ;
 
         InstanceSearchField instanceNetworkType = new InstanceSearchField("网络类型", "instanceNetworkType", InstanceFieldType.Enum,
                 List.of(new DefaultKeyValue<>("经典网络", "classic"),
@@ -128,23 +126,19 @@ public class AliInstanceSearchFieldApi {
 
         InstanceSearchField internetMaxBandwidthOut = new InstanceSearchField("公网出带宽最大值", "internetMaxBandwidthOut", InstanceFieldType.Number)
                 .resetInstanceField(PlatformConstants.fit2cloud_ali_platform, ResourceTypeConstants.ECS);
-        ;
 
         InstanceSearchField internetMaxBandwidthIn = new InstanceSearchField("公网入带宽最大值", "internetMaxBandwidthIn", InstanceFieldType.Number)
                 .resetInstanceField(PlatformConstants.fit2cloud_ali_platform, ResourceTypeConstants.ECS);
-        ;
 
         InstanceSearchField instanceChargeType = new InstanceSearchField("计费方式", "instanceChargeType", InstanceFieldType.Enum,
                 List.of(new DefaultKeyValue<>("包年包月", "PrePaid"),
                         new DefaultKeyValue<>("按量付费", "PostPaid")))
                 .resetInstanceField(PlatformConstants.fit2cloud_ali_platform, ResourceTypeConstants.ECS);
-        ;
 
         InstanceSearchField ioOptimized = new InstanceSearchField("是否为I/O优化型实例", "ioOptimized", InstanceFieldType.Enum,
                 List.of(new DefaultKeyValue<>("是", true),
                         new DefaultKeyValue<>("否", false)))
                 .resetInstanceField(PlatformConstants.fit2cloud_ali_platform, ResourceTypeConstants.ECS);
-        ;
 
         InstanceSearchField internetChargeType = new InstanceSearchField("网络计费类型", "internetChargeType", InstanceFieldType.Enum,
                 List.of(new DefaultKeyValue<>("按固定带宽计费", "PayByBandwidth"),
@@ -167,11 +161,18 @@ public class AliInstanceSearchFieldApi {
                         new DefaultKeyValue<>("不支持停机不收费功能", "Not-applicable")))
                 .resetInstanceField(PlatformConstants.fit2cloud_ali_platform, ResourceTypeConstants.ECS);
 
+        InstanceSearchField tagKey = new InstanceSearchField("标签键", "tagKey", InstanceFieldType.NestedArrayString)
+                .resetFilterArrayField(PlatformConstants.fit2cloud_ali_platform, ResourceTypeConstants.ECS, "tags");
+
+        InstanceSearchField tagValue = new InstanceSearchField("标签值", "tagValue", InstanceFieldType.NestedArrayString)
+                .resetFilterArrayField(PlatformConstants.fit2cloud_ali_platform, ResourceTypeConstants.ECS, "tags");
+
         return List.of(cpu, memory, instanceStatus, spotStrategy, deviceAvailable, instanceNetworkType, internetMaxBandwidthOut,
                 internetMaxBandwidthIn, instanceChargeType, ioOptimized, internetChargeType, recyclable, deletionProtection,
                 stoppedMode, instanceType, gpu, publicIpAddress, lockReason, imageId, securityGroupName, securityGroupDirection, securityGroupIpProtocol
                 , securityGroupIpPolicy, securityGroupPortRange, securityGroupSourceCidrIp, securityGroupDestCidrIp, diskLockReason, autoRenewEnabled,
-                diskSize, diskType, securityGroupDescription, osType
+                diskSize, diskType, securityGroupDescription, osType,
+                tagKey, tagValue
         );
     }
 
@@ -256,7 +257,13 @@ public class AliInstanceSearchFieldApi {
 
         InstanceSearchField switchesAvailableIpAddressCount = new InstanceSearchField("交换机可用IP数量", "availableIpAddressCount", InstanceFieldType.NestedArrayNumber)
                 .resetFilterArrayField(PlatformConstants.fit2cloud_ali_platform, ResourceTypeConstants.VPC, "switchesList", false);
-        return List.of(status, isDefault, cidrBlock, flowLog, switchesAvailableIpAddressCount);
+
+        InstanceSearchField tagKey = new InstanceSearchField("标签键", "key", InstanceFieldType.NestedArrayString)
+                .resetFilterArrayField(PlatformConstants.fit2cloud_ali_platform, ResourceTypeConstants.VPC, "tags");
+        InstanceSearchField tagValue = new InstanceSearchField("标签值", "value", InstanceFieldType.NestedArrayString)
+                .resetFilterArrayField(PlatformConstants.fit2cloud_ali_platform, ResourceTypeConstants.VPC, "tags");
+
+        return List.of(status, isDefault, cidrBlock, flowLog, switchesAvailableIpAddressCount, tagKey, tagValue);
     }
 
     /**
@@ -291,7 +298,12 @@ public class AliInstanceSearchFieldApi {
         InstanceSearchField bandwidth = new InstanceSearchField("带宽峰值", "bandwidth", InstanceFieldType.Number)
                 .resetInstanceField(PlatformConstants.fit2cloud_ali_platform, ResourceTypeConstants.PUBLIC_IP);
 
-        return List.of(status, isDefault, deletionProtection, secondLimited, bandwidth);
+        InstanceSearchField tagKey = new InstanceSearchField("标签键", "key", InstanceFieldType.NestedArrayString)
+                .resetFilterArrayField(PlatformConstants.fit2cloud_ali_platform, ResourceTypeConstants.PUBLIC_IP, "tags");
+        InstanceSearchField tagValue = new InstanceSearchField("标签值", "value", InstanceFieldType.NestedArrayString)
+                .resetFilterArrayField(PlatformConstants.fit2cloud_ali_platform, ResourceTypeConstants.PUBLIC_IP, "tags");
+
+        return List.of(status, isDefault, deletionProtection, secondLimited, bandwidth, tagKey, tagValue);
     }
 
     /**
@@ -366,9 +378,16 @@ public class AliInstanceSearchFieldApi {
                         new DefaultKeyValue<>("未开启", false)))
                 .resetInstanceField(PlatformConstants.fit2cloud_ali_platform, ResourceTypeConstants.DISK);
 
+        InstanceSearchField tagKey = new InstanceSearchField("标签键", "tagKey", InstanceFieldType.NestedArrayString)
+                .resetFilterArrayField(PlatformConstants.fit2cloud_ali_platform, ResourceTypeConstants.DISK, "tags");
+
+        InstanceSearchField tagValue = new InstanceSearchField("标签值", "tagValue", InstanceFieldType.NestedArrayString)
+                .resetFilterArrayField(PlatformConstants.fit2cloud_ali_platform, ResourceTypeConstants.DISK, "tags");
+
         return List.of(status, type, performanceLevel, deleteAutoSnapshot, encrypted, iops, size, diskChargeType, category,
                 burstingEnabled
-                , enableAutomatedSnapshotPolicy);
+                , enableAutomatedSnapshotPolicy,
+                tagKey, tagValue);
     }
 
     /**
@@ -435,7 +454,12 @@ public class AliInstanceSearchFieldApi {
                         new DefaultKeyValue<>("专有网络", "2")))
                 .resetInstanceField(PlatformConstants.fit2cloud_ali_platform, ResourceTypeConstants.REDIS);
 
-        return List.of(status, chargeType, networkType, nodeType, editionType, engineVersion, bandwidth, capacity, DBInstanceNetType);
+        InstanceSearchField tagKey = new InstanceSearchField("标签键", "key", InstanceFieldType.NestedArrayString)
+                .resetFilterArrayField(PlatformConstants.fit2cloud_ali_platform, ResourceTypeConstants.REDIS, "tags");
+        InstanceSearchField tagValue = new InstanceSearchField("标签值", "value", InstanceFieldType.NestedArrayString)
+                .resetFilterArrayField(PlatformConstants.fit2cloud_ali_platform, ResourceTypeConstants.REDIS, "tags");
+
+        return List.of(status, chargeType, networkType, nodeType, editionType, engineVersion, bandwidth, capacity, DBInstanceNetType, tagKey, tagValue);
     }
 
 
@@ -630,8 +654,13 @@ public class AliInstanceSearchFieldApi {
 
         InstanceSearchField dedicatedHostZoneIdForSlave = new InstanceSearchField("Slave节点所在主机的可用区ID", "dedicatedHostZoneIdForSlave", InstanceFieldType.String)
                 .resetInstanceField(PlatformConstants.fit2cloud_ali_platform, resourceType);
+
+        InstanceSearchField tagKey = new InstanceSearchField("标签键", "tagKey", InstanceFieldType.NestedArrayString)
+                .resetFilterArrayField(PlatformConstants.fit2cloud_ali_platform, resourceType, "tags");
+        InstanceSearchField tagValue = new InstanceSearchField("标签值", "tagValue", InstanceFieldType.NestedArrayString)
+                .resetFilterArrayField(PlatformConstants.fit2cloud_ali_platform, resourceType, "tags");
         return List.of(payType, mutriORsignle, engineVersion, instanceNetworkType, dbinstanceType, tipsLevel, connectionMode,
-                lockMode, deletionProtection, dbinstanceNetInfosIpType, dedicatedHostZoneIdForSlave);
+                lockMode, deletionProtection, dbinstanceNetInfosIpType, dedicatedHostZoneIdForSlave, tagKey, tagValue);
 
     }
 
@@ -654,7 +683,11 @@ public class AliInstanceSearchFieldApi {
         InstanceSearchField ruleSourceCidrIp = new InstanceSearchField("源端IP地址段,用于入方向授权", "rule.permissions.permission.sourceCidrIp", InstanceFieldType.String)
                 .resetInstanceField(PlatformConstants.fit2cloud_ali_platform, ResourceTypeConstants.SECURITY_GROUP);
 
-        return List.of(securityGroupType, innerAccessPolicy, ruleSourceCidrIp);
+        InstanceSearchField tagKey = new InstanceSearchField("标签键", "tagKey", InstanceFieldType.NestedArrayString)
+                .resetFilterArrayField(PlatformConstants.fit2cloud_ali_platform, ResourceTypeConstants.SECURITY_GROUP, "tags");
+        InstanceSearchField tagValue = new InstanceSearchField("标签值", "tagValue", InstanceFieldType.NestedArrayString)
+                .resetFilterArrayField(PlatformConstants.fit2cloud_ali_platform, ResourceTypeConstants.SECURITY_GROUP, "tags");
+        return List.of(securityGroupType, innerAccessPolicy, ruleSourceCidrIp, tagKey, tagValue);
 
     }
 
@@ -730,8 +763,15 @@ public class AliInstanceSearchFieldApi {
         InstanceSearchField kibanaConfigurationDisk = new InstanceSearchField("Kibana节点存储空间大小,单位为GB", "kibanaConfiguration.disk", InstanceFieldType.Number)
                 .resetInstanceField(PlatformConstants.fit2cloud_ali_platform, ResourceTypeConstants.ELASTIC_SEARCH);
 
+        InstanceSearchField tagKey = new InstanceSearchField("标签键", "tagKey", InstanceFieldType.NestedArrayString)
+                .resetFilterArrayField(PlatformConstants.fit2cloud_ali_platform, ResourceTypeConstants.ELASTIC_SEARCH, "tags");
+        InstanceSearchField tagValue = new InstanceSearchField("标签值", "tagValue", InstanceFieldType.NestedArrayString)
+                .resetFilterArrayField(PlatformConstants.fit2cloud_ali_platform, ResourceTypeConstants.ELASTIC_SEARCH, "tags");
+
+
         return List.of(advancedDedicateMaster, nodeAmount, status, serviceVpc, paymentType, postpaidServiceStatus, esVersion, nodeSpecDisk, nodeSpecDiskEncryption
-                , nodeSpecDiskType, kibanaConfigurationAmount, kibanaConfigurationSpec, kibanaConfigurationDisk);
+                , nodeSpecDiskType, kibanaConfigurationAmount, kibanaConfigurationSpec, kibanaConfigurationDisk,
+                tagKey, tagValue);
     }
 
     /**
@@ -795,8 +835,13 @@ public class AliInstanceSearchFieldApi {
                 ))
                 .resetInstanceField(PlatformConstants.fit2cloud_ali_platform, ResourceTypeConstants.LOAD_BALANCER);
 
+        InstanceSearchField tagKey = new InstanceSearchField("标签键", "tagKey", InstanceFieldType.NestedArrayString)
+                .resetFilterArrayField(PlatformConstants.fit2cloud_ali_platform, ResourceTypeConstants.LOAD_BALANCER, "tags");
+        InstanceSearchField tagValue = new InstanceSearchField("标签值", "tagValue", InstanceFieldType.NestedArrayString)
+                .resetFilterArrayField(PlatformConstants.fit2cloud_ali_platform, ResourceTypeConstants.LOAD_BALANCER, "tags");
+
         return List.of(payType, addressType, networkType, bandwidth, internetChargeTypeAlias, loadBalancerStatus, internetChargeType, deleteProtection
-                , instanceChargeType);
+                , instanceChargeType, tagKey, tagValue);
 
 
     }

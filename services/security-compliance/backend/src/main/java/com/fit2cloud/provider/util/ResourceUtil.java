@@ -1,8 +1,10 @@
 package com.fit2cloud.provider.util;
 
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fit2cloud.common.utils.JsonUtil;
 import com.fit2cloud.constants.ResourceTypeConstants;
 import com.fit2cloud.es.entity.ResourceInstance;
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 
 import java.util.*;
@@ -25,7 +27,7 @@ public class ResourceUtil {
         return platform + "_" + resourceType;
     }
 
-    public static ResourceInstance toResourceInstance(String platform, ResourceTypeConstants resourceTypeConstants, String resourceId, String resourceName, Map<String, List<Object>> filterArray, Object instance) {
+    public static ResourceInstance toResourceInstance(String platform, ResourceTypeConstants resourceTypeConstants, String resourceId, String resourceName, Map<String, List<?>> filterArray, Object instance) {
         ResourceInstance resourceInstance = toResourceInstance(platform, resourceTypeConstants, resourceId, resourceName, instance, null, null);
         resourceInstance.setFilterArray(resetFilterArray(platform, resourceTypeConstants, filterArray));
         return resourceInstance;
@@ -39,17 +41,17 @@ public class ResourceUtil {
      * @param filterArray           嵌套Array过滤
      * @return 重置后的Array
      */
-    private static Map<String, List<Object>> resetFilterArray(String platform, ResourceTypeConstants resourceTypeConstants, Map<String, List<Object>> filterArray) {
+    private static Map<String, List<Object>> resetFilterArray(String platform, ResourceTypeConstants resourceTypeConstants, Map<String, List<?>> filterArray) {
         HashMap<String, List<Object>> filterArrayMap = new HashMap<>();
-        for (Map.Entry<String, List<Object>> stringListEntry : filterArray.entrySet()) {
-            filterArrayMap.put(platform + "_" + resourceTypeConstants.name() + "_" + stringListEntry.getKey(), stringListEntry.getValue());
+        for (Map.Entry<String, List<?>> stringListEntry : filterArray.entrySet()) {
+            filterArrayMap.put(platform + "_" + resourceTypeConstants.name() + "_" + stringListEntry.getKey(), CollectionUtils.isNotEmpty(stringListEntry.getValue()) ? stringListEntry.getValue().stream().map(s -> (Object) s).toList() : List.of());
         }
         return filterArrayMap;
     }
 
-    public static ResourceInstance appendFilterArray(String platform, ResourceTypeConstants resourceTypeConstants, String resourceField, ResourceInstance instance, List<Object> filterArray) {
+    public static ResourceInstance appendFilterArray(String platform, ResourceTypeConstants resourceTypeConstants, String resourceField, ResourceInstance instance, List<?> filterArray) {
         HashMap<String, List<Object>> filterArrayMap = new HashMap<>();
-        filterArrayMap.put(platform + "_" + resourceTypeConstants.name() + "_" + resourceField, filterArray);
+        filterArrayMap.put(platform + "_" + resourceTypeConstants.name() + "_" + resourceField, CollectionUtils.isNotEmpty(filterArray) ? filterArray.stream().map(s -> (Object) s).toList() : List.of());
         instance.setFilterArray(filterArrayMap);
         return instance;
     }
@@ -88,13 +90,14 @@ public class ResourceUtil {
         HashMap<String, Object> instanceTypeData = new HashMap<>();
 
         if (Objects.nonNull(otherData)) {
-            HashMap<String, Object> instanceData = new HashMap<>();
-            instanceData.putAll(JsonUtil.parseObject(JsonUtil.toJSONString(instance), Map.class));
+            HashMap<String, Object> instanceData = new HashMap<>(JsonUtil.parseObject(JsonUtil.toJSONString(instance), new TypeReference<Map<String, Object>>() {
+            }));
             if (StringUtils.isNotEmpty(otherDataKey)) {
                 instanceData.put(otherDataKey, JsonUtil.parseObject(JsonUtil.toJSONString(otherData), Map.class));
                 instanceTypeData.put(getResourceName(resourceTypeConstants.name(), platform), instanceData);
             } else {
-                instanceData.putAll(JsonUtil.parseObject(JsonUtil.toJSONString(otherData), Map.class));
+                instanceData.putAll(JsonUtil.parseObject(JsonUtil.toJSONString(otherData), new TypeReference<Map<String, Object>>() {
+                }));
                 instanceTypeData.put(getResourceName(resourceTypeConstants.name(), platform), instanceData);
             }
         } else {
@@ -111,7 +114,8 @@ public class ResourceUtil {
      * @return 转换后的Map
      */
     public static Map<String, Object> objectToMap(Object instance) {
-        return JsonUtil.parseObject(JsonUtil.toJSONString(instance), Map.class);
+        return JsonUtil.parseObject(JsonUtil.toJSONString(instance), new TypeReference<>() {
+        });
     }
 
     /**

@@ -1,5 +1,6 @@
 package com.fit2cloud.provider.impl.tencent.api;
 
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fit2cloud.common.provider.exception.ReTryException;
 import com.fit2cloud.common.provider.exception.SkipPageException;
 import com.fit2cloud.common.provider.util.PageUtil;
@@ -7,8 +8,10 @@ import com.fit2cloud.common.utils.JsonUtil;
 import com.fit2cloud.provider.impl.tencent.client.CeCosClient;
 import com.fit2cloud.provider.impl.tencent.entity.request.*;
 import com.fit2cloud.provider.impl.tencent.entity.response.BucketEncryptionResponse;
+import com.fit2cloud.provider.impl.tencent.entity.response.BucketInstanceResponse;
+import com.fit2cloud.provider.impl.tencent.entity.response.RamInstanceResponse;
+import com.fit2cloud.provider.impl.tencent.entity.response.SecurityGroupInstanceResponse;
 import com.fit2cloud.provider.impl.tencent.parser.CeXmlResponseSaxParser;
-import com.fit2cloud.provider.util.ResourceUtil;
 import com.qcloud.cos.COSClient;
 import com.qcloud.cos.exception.CosServiceException;
 import com.qcloud.cos.http.CosHttpRequest;
@@ -48,10 +51,10 @@ import com.tencentcloudapi.sqlserver.v20180328.SqlserverClient;
 import com.tencentcloudapi.sqlserver.v20180328.models.DBInstance;
 import com.tencentcloudapi.vpc.v20170312.VpcClient;
 import com.tencentcloudapi.vpc.v20170312.models.*;
+import lombok.SneakyThrows;
 import org.springframework.beans.BeanUtils;
 
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -96,6 +99,7 @@ public class TencentApi {
      * @param request 请求对象
      * @return redis实例列表
      */
+    @SneakyThrows
     public static List<InstanceSet> listRedisInstance(ListRedisInstanceRequest request) {
         RedisClient redisClient = request.getCredential().getRedisClient(request.getRegionId());
         request.setOffset(PageUtil.DefaultCurrentPage.longValue() - 1);
@@ -115,7 +119,9 @@ public class TencentApi {
                 res -> Arrays.stream(res.getInstanceSet()).toList(),
                 (req, res) -> req.getLimit() <= res.getInstanceSet().length,
                 req -> req.setOffset(req.getOffset() + req.getLimit()));
+
     }
+
 
     /**
      * 获取腾讯云 mongodb 实例列表
@@ -408,33 +414,32 @@ public class TencentApi {
     /**
      * 获取 bucket 桶实例(桶对象,加密数据,防盗链数据,)列表
      *
-     * @param request
-     * @return
+     * @param request 请求对象
+     * @return 对象存储桶实例数据
      */
-    public static List<Map<String, Object>> listBucketInstanceCollection(ListBucketInstanceRequest request) {
+    public static List<BucketInstanceResponse> listBucketInstanceCollection(ListBucketInstanceRequest request) {
         CeCosClient cosClient = request.getCredential().getCeCosClient(null);
         List<Bucket> buckets = cosClient.listBuckets(request);
         return buckets.stream().map(bucket -> {
             CeCosClient ceCosClient = request.getCredential().getCeCosClient(bucket.getLocation());
-            Map<String, Object> bucketMap = ResourceUtil.objectToMap(bucket);
-            HashMap<String, Object> bucketAclRefererEncryption = getBucketAclRefererEncryption(ceCosClient, bucket.getName());
-            bucketMap.putAll(bucketAclRefererEncryption);
-            return bucketMap;
+            return mergeBucketInstanceResponse(bucket, ceCosClient);
         }).toList();
 
     }
 
 
     /**
-     * @param cosClient  客户端
-     * @param bucketName 桶对象
-     * @return 集合数据
+     * 合并数据
+     *
+     * @param bucket    桶对象
+     * @param cosClient 客户端对象
+     * @return 对象桶实例数据信息
      */
-    private static HashMap<String, Object> getBucketAclRefererEncryption(CeCosClient cosClient, String bucketName) {
-        HashMap<String, Object> collection = new HashMap<>();
+    private static BucketInstanceResponse mergeBucketInstanceResponse(Bucket bucket, CeCosClient cosClient) {
+        BucketInstanceResponse bucketInstanceResponse = new BucketInstanceResponse(bucket);
         BucketRefererConfiguration bucketRefererConfiguration = PageUtil.reTry(() -> {
             try {
-                return cosClient.getBucketRefererConfiguration(bucketName);
+                return cosClient.getBucketRefererConfiguration(bucket.getName());
             } catch (Exception e) {
                 ReTryException.throwReTry(e);
                 return null;
@@ -443,7 +448,7 @@ public class TencentApi {
 
         AccessControlList accessControlList = PageUtil.reTry(() -> {
             try {
-                return cosClient.getBucketAcl(bucketName);
+                return cosClient.getBucketAcl(bucket.getName());
             } catch (Exception e) {
                 ReTryException.throwReTry(e);
                 return null;
@@ -451,17 +456,19 @@ public class TencentApi {
         }, 5);
         BucketEncryptionResponse.ServerSideEncryptionConfiguration serverSideEncryptionConfiguration = PageUtil.reTry(() -> {
             try {
-                return getBucketEncryption(cosClient, bucketName);
+                return getBucketEncryption(cosClient, bucket.getName());
             } catch (Exception e) {
                 ReTryException.throwReTry(e);
                 return null;
             }
         }, 5);
-        collection.put("referer", bucketRefererConfiguration);
-        collection.put("access", JsonUtil.parseObject(JsonUtil.toJSONString(accessControlList), Map.class));
-        collection.put("encryption", serverSideEncryptionConfiguration);
-        return collection;
+        bucketInstanceResponse.setEncryption(serverSideEncryptionConfiguration);
+        bucketInstanceResponse.setAccess(JsonUtil.parseObject(JsonUtil.toJSONString(accessControlList), new TypeReference<>() {
+        }));
+        bucketInstanceResponse.setReferer(bucketRefererConfiguration);
+        return bucketInstanceResponse;
     }
+
 
     /**
      * 获取桶访问权限
@@ -517,7 +524,7 @@ public class TencentApi {
     private static BucketEncryptionResponse.ServerSideEncryptionConfiguration getBucketEncryption(CeCosClient cosClient, String bucketName) {
         GenericBucketRequest getBucketEncryptionRequest = new GenericBucketRequest(bucketName);
         CosHttpRequest<GenericBucketRequest> request = cosClient.createRequest(bucketName, null, getBucketEncryptionRequest, HttpMethodName.GET);
-        request.addParameter("encryption", (String) null);
+        request.addParameter("encryption", null);
         try {
             return cosClient.invoke(request, new HttpResponseHandler<>() {
                 @Override
@@ -536,7 +543,7 @@ public class TencentApi {
             });
         } catch (Exception e) {
             if (e instanceof CosServiceException cosServiceException) {
-                if (cosServiceException.getErrorCode().equals("NoSuchEncryptionConfiguration")) {
+                if ("NoSuchEncryptionConfiguration".equals(cosServiceException.getErrorCode())) {
                     return null;
                 }
             }
@@ -551,13 +558,13 @@ public class TencentApi {
      * @param request 请求对象
      * @return 安全组 安全组规则合集实例
      */
-    public static List<Map<String, Object>> listSecurityGroupCollectionInstance(ListSecurityGroupInstanceRequest request) {
+    public static List<SecurityGroupInstanceResponse> listSecurityGroupCollectionInstance(ListSecurityGroupInstanceRequest request) {
         return listSecurityGroupInstance(request).stream().map(securityGroup -> {
-            Map<String, Object> securityGroupMap = ResourceUtil.objectToMap(securityGroup);
+            SecurityGroupInstanceResponse securityGroupInstanceResponse = new SecurityGroupInstanceResponse(securityGroup);
             String securityGroupId = securityGroup.getSecurityGroupId();
             DescribeSecurityGroupPoliciesResponse securityGroupRuleInstance = getSecurityGroupRuleInstance(request.getCredential().getVpcClient(request.getRegionId()), securityGroupId);
-            securityGroupMap.put("rule", ResourceUtil.objectToMap(securityGroupRuleInstance.getSecurityGroupPolicySet()));
-            return securityGroupMap;
+            securityGroupInstanceResponse.setRule(securityGroupRuleInstance.getSecurityGroupPolicySet());
+            return securityGroupInstanceResponse;
         }).toList();
     }
 
@@ -627,14 +634,14 @@ public class TencentApi {
      * @param request 请求对象
      * @return 子用户实例列表
      */
-    public static List<Map<String, Object>> listSubUserInstanceCollection(ListUsersInstanceRequest request) {
+    public static List<RamInstanceResponse> listSubUserInstanceCollection(ListUsersInstanceRequest request) {
         List<SubAccountInfo> subAccountInfos = listSubUserInstanceRequest(request);
         CamClient camClient = request.getCredential().getCamClient("");
         return subAccountInfos.stream().map(user -> {
-            Map<String, Object> userMap = ResourceUtil.objectsToMap(user);
+            RamInstanceResponse ramInstanceResponse = new RamInstanceResponse(user);
             DescribeSafeAuthFlagCollResponse userAuth = getUserAuthInstance(camClient, user.getUin());
-            userMap.put("userAuth", userAuth);
-            return userMap;
+            ramInstanceResponse.setUserAuth(userAuth);
+            return ramInstanceResponse;
         }).toList();
     }
 

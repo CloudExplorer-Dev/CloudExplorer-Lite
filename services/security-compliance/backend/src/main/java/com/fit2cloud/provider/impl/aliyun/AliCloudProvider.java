@@ -18,6 +18,7 @@ import com.fit2cloud.provider.impl.aliyun.api.AliApi;
 import com.fit2cloud.provider.impl.aliyun.api.AliInstanceSearchFieldApi;
 import com.fit2cloud.provider.impl.aliyun.entity.credential.AliSecurityComplianceCredential;
 import com.fit2cloud.provider.impl.aliyun.entity.request.*;
+import com.fit2cloud.provider.impl.aliyun.entity.response.*;
 import com.fit2cloud.provider.util.ResourceUtil;
 import org.apache.commons.collections4.keyvalue.DefaultKeyValue;
 
@@ -57,13 +58,16 @@ public class AliCloudProvider extends AbstractCloudProvider<AliSecurityComplianc
     @Override
     public List<ResourceInstance> listEcsInstance(String req) {
         ListEcsInstancesRequest listEcsInstancesRequest = JsonUtil.parseObject(req, ListEcsInstancesRequest.class);
-
-        List<Map<String, Object>> maps = AliApi.listECSInstanceCollection(listEcsInstancesRequest);
-        return maps
+        List<EcsInstanceResponse> ecsInstanceResponses = AliApi.listECSInstanceCollection(listEcsInstancesRequest);
+        return ecsInstanceResponses
                 .stream()
                 .map(instance -> ResourceUtil.toResourceInstance(PlatformConstants.fit2cloud_ali_platform.name(), ResourceTypeConstants.ECS,
-                        ResourceUtil.toString(instance.get("instanceId")), ResourceUtil.toString(instance.get("instanceName")),
-                        Map.of("disks", (List<Object>) instance.get("disks"), "securityGroupRules", (List<Object>) instance.get("securityGroupRules")),
+                        instance.getInstanceId(), instance.getInstanceName(),
+                        Map.of(
+                                "disks", instance.getDisks(),
+                                "securityGroupRules", instance.getSecurityGroupRules(),
+                                "tags", instance.getTags().tag
+                        ),
                         instance))
                 .toList();
     }
@@ -76,10 +80,15 @@ public class AliCloudProvider extends AbstractCloudProvider<AliSecurityComplianc
     @Override
     public List<ResourceInstance> listRedisInstance(String req) {
         ListRedisInstanceRequest listRdsInstanceRequest = JsonUtil.parseObject(req, ListRedisInstanceRequest.class);
-        List<Map<String, Object>> maps = AliApi.listRedisInstanceCollection(listRdsInstanceRequest);
-        return maps
+        List<RedisInstanceResponse> redisInstanceResponses = AliApi.listRedisInstanceCollection(listRdsInstanceRequest);
+        return redisInstanceResponses
                 .stream()
-                .map(instance -> ResourceUtil.toResourceInstance(PlatformConstants.fit2cloud_ali_platform.name(), ResourceTypeConstants.REDIS, ResourceUtil.toString(instance.get("instanceId")), ResourceUtil.toString(instance.get("instanceName")), instance))
+                .map(instance -> ResourceUtil.toResourceInstance(PlatformConstants.fit2cloud_ali_platform.name(),
+                        ResourceTypeConstants.REDIS,
+                        instance.getInstanceId(),
+                        instance.getInstanceName(),
+                        Map.of("tags", instance.getTags().tag),
+                        instance))
                 .toList();
     }
 
@@ -91,10 +100,11 @@ public class AliCloudProvider extends AbstractCloudProvider<AliSecurityComplianc
     @Override
     public List<ResourceInstance> listMongodbInstance(String req) {
         ListMongoDBRequest listMongoDBRequest = JsonUtil.parseObject(req, ListMongoDBRequest.class);
-        List<Map<String, Object>> instances = AliApi.listMongoDBInstanceCollection(listMongoDBRequest);
+        List<MongoDBInstanceResponse> instances = AliApi.listMongoDBInstanceCollection(listMongoDBRequest);
         return instances
                 .stream()
-                .map(instance -> ResourceUtil.toResourceInstance(PlatformConstants.fit2cloud_ali_platform.name(), ResourceTypeConstants.MONGO_DB, ResourceUtil.toString(instance.get("dbinstanceId")), ResourceUtil.toString(instance.get("DBInstanceDescription")), instance))
+                .map(instance -> ResourceUtil.toResourceInstance(PlatformConstants.fit2cloud_ali_platform.name(), ResourceTypeConstants.MONGO_DB, instance.getDBInstanceId(), instance.getDBInstanceDescription(),
+                        Map.of("tags", instance.getTags().tag), instance))
                 .toList();
     }
 
@@ -106,10 +116,15 @@ public class AliCloudProvider extends AbstractCloudProvider<AliSecurityComplianc
     @Override
     public List<ResourceInstance> listMysqlInstance(String req) {
         ListRdsInstanceRequest listRdsInstanceRequest = JsonUtil.parseObject(req, ListRdsInstanceRequest.class);
-        List<Map<String, Object>> instances = AliApi.listMysqlInstanceCollection(listRdsInstanceRequest);
+        List<RdsInstanceResponse> instances = AliApi.listMysqlInstanceCollection(listRdsInstanceRequest);
         return instances
                 .stream()
-                .map(instance -> ResourceUtil.toResourceInstance(PlatformConstants.fit2cloud_ali_platform.name(), ResourceTypeConstants.MYSQL, ResourceUtil.toString(instance.get("DBInstanceId")), ResourceUtil.toString(instance.get("DBInstanceDescription")), instance))
+                .map(instance -> ResourceUtil.toResourceInstance(PlatformConstants.fit2cloud_ali_platform.name(),
+                        ResourceTypeConstants.MYSQL,
+                        instance.getDBInstanceId(),
+                        instance.getDBInstanceDescription(),
+                        Map.of("tags", instance.getTags()),
+                        instance))
                 .toList();
     }
 
@@ -121,10 +136,15 @@ public class AliCloudProvider extends AbstractCloudProvider<AliSecurityComplianc
     @Override
     public List<ResourceInstance> listSqlServerInstance(String req) {
         ListRdsInstanceRequest listRdsInstanceRequest = JsonUtil.parseObject(req, ListRdsInstanceRequest.class);
-        List<Map<String, Object>> instances = AliApi.listSqlServerInstanceCollection(listRdsInstanceRequest);
+        List<RdsInstanceResponse> instances = AliApi.listSqlServerInstanceCollection(listRdsInstanceRequest);
         return instances
                 .stream()
-                .map(instance -> ResourceUtil.toResourceInstance(PlatformConstants.fit2cloud_ali_platform.name(), ResourceTypeConstants.SQL_SERVER, ResourceUtil.toString(instance.get("DBInstanceId")), ResourceUtil.toString(instance.get("DBInstanceDescription")), instance))
+                .map(instance -> ResourceUtil.toResourceInstance(PlatformConstants.fit2cloud_ali_platform.name(),
+                        ResourceTypeConstants.SQL_SERVER,
+                        instance.getDBInstanceId(),
+                        instance.getDBInstanceDescription(),
+                        Map.of("tags", instance.getTags()),
+                        instance))
                 .toList();
     }
 
@@ -136,10 +156,15 @@ public class AliCloudProvider extends AbstractCloudProvider<AliSecurityComplianc
     @Override
     public List<ResourceInstance> listPostGreSqlInstance(String req) {
         ListRdsInstanceRequest listRdsInstanceRequest = JsonUtil.parseObject(req, ListRdsInstanceRequest.class);
-        List<Map<String, Object>> instances = AliApi.listPostgreSqlInstanceCollection(listRdsInstanceRequest);
+        List<RdsInstanceResponse> instances = AliApi.listPostgreSqlInstanceCollection(listRdsInstanceRequest);
         return instances
                 .stream()
-                .map(instance -> ResourceUtil.toResourceInstance(PlatformConstants.fit2cloud_ali_platform.name(), ResourceTypeConstants.POST_GRE_SQL, ResourceUtil.toString(instance.get("DBInstanceId")), ResourceUtil.toString(instance.get("DBInstanceDescription")), instance))
+                .map(instance -> ResourceUtil.toResourceInstance(PlatformConstants.fit2cloud_ali_platform.name(),
+                        ResourceTypeConstants.POST_GRE_SQL,
+                        instance.getDBInstanceId(),
+                        instance.getDBInstanceDescription(),
+                        Map.of("tags", instance.getTags()),
+                        instance))
                 .toList();
     }
 
@@ -151,10 +176,15 @@ public class AliCloudProvider extends AbstractCloudProvider<AliSecurityComplianc
     @Override
     public List<ResourceInstance> listMariaDBInstance(String req) {
         ListRdsInstanceRequest listRdsInstanceRequest = JsonUtil.parseObject(req, ListRdsInstanceRequest.class);
-        List<Map<String, Object>> instances = AliApi.listMariaDBInstanceCollection(listRdsInstanceRequest);
+        List<RdsInstanceResponse> instances = AliApi.listMariaDBInstanceCollection(listRdsInstanceRequest);
         return instances
                 .stream()
-                .map(instance -> ResourceUtil.toResourceInstance(PlatformConstants.fit2cloud_ali_platform.name(), ResourceTypeConstants.MARIA_DB, ResourceUtil.toString(instance.get("DBInstanceId")), ResourceUtil.toString(instance.get("DBInstanceDescription")), instance))
+                .map(instance -> ResourceUtil.toResourceInstance(PlatformConstants.fit2cloud_ali_platform.name(),
+                        ResourceTypeConstants.MARIA_DB,
+                        instance.getDBInstanceId(),
+                        instance.getDBInstanceDescription(),
+                        Map.of("tags", instance.getTags()),
+                        instance))
                 .toList();
     }
 
@@ -169,7 +199,12 @@ public class AliCloudProvider extends AbstractCloudProvider<AliSecurityComplianc
         List<ListInstanceResponseBody.ListInstanceResponseBodyResult> instances = AliApi.listElasticsearchInstance(listElasticSearchInstanceRequest);
         return instances
                 .stream()
-                .map(instance -> ResourceUtil.toResourceInstance(PlatformConstants.fit2cloud_ali_platform.name(), ResourceTypeConstants.ELASTIC_SEARCH, instance.getInstanceId(), instance.getDescription(), instance))
+                .map(instance -> ResourceUtil.toResourceInstance(PlatformConstants.fit2cloud_ali_platform.name(),
+                        ResourceTypeConstants.ELASTIC_SEARCH,
+                        instance.getInstanceId(),
+                        instance.getDescription(),
+                        Map.of("tags", instance.getTags()),
+                        instance))
                 .toList();
     }
 
@@ -184,7 +219,9 @@ public class AliCloudProvider extends AbstractCloudProvider<AliSecurityComplianc
         List<DescribeDisksResponseBody.DescribeDisksResponseBodyDisksDisk> instances = AliApi.listDiskInstance(listDiskInstanceRequest);
         return instances
                 .stream()
-                .map(instance -> ResourceUtil.toResourceInstance(PlatformConstants.fit2cloud_ali_platform.name(), ResourceTypeConstants.DISK, instance.getDiskId(), instance.getDiskName(), instance))
+                .map(instance -> ResourceUtil.toResourceInstance(PlatformConstants.fit2cloud_ali_platform.name(),
+                        ResourceTypeConstants.DISK, instance.getDiskId(), instance.getDiskName()
+                        , Map.of("tags", instance.getTags().tag), instance))
                 .toList();
     }
 
@@ -199,7 +236,11 @@ public class AliCloudProvider extends AbstractCloudProvider<AliSecurityComplianc
         List<DescribeLoadBalancersResponseBody.DescribeLoadBalancersResponseBodyLoadBalancersLoadBalancer> instances = AliApi.listLoadBalancerInstance(listLoadBalancerInstanceRequest);
         return instances
                 .stream()
-                .map(instance -> ResourceUtil.toResourceInstance(PlatformConstants.fit2cloud_ali_platform.name(), ResourceTypeConstants.LOAD_BALANCER, instance.getLoadBalancerId(), instance.getLoadBalancerName(), instance))
+                .map(instance -> ResourceUtil.toResourceInstance(PlatformConstants.fit2cloud_ali_platform.name(), ResourceTypeConstants.LOAD_BALANCER,
+                        instance.getLoadBalancerId(),
+                        instance.getLoadBalancerName(),
+                        Map.of("tags", instance.getTags().tag),
+                        instance))
                 .toList();
     }
 
@@ -214,7 +255,12 @@ public class AliCloudProvider extends AbstractCloudProvider<AliSecurityComplianc
         List<DescribeEipAddressesResponseBody.DescribeEipAddressesResponseBodyEipAddressesEipAddress> instances = AliApi.listPublicIpInstance(listPublicIpInstanceRequest);
         return instances
                 .stream()
-                .map(instance -> ResourceUtil.toResourceInstance(PlatformConstants.fit2cloud_ali_platform.name(), ResourceTypeConstants.PUBLIC_IP, instance.getInstanceId(), instance.getName(), instance))
+                .map(instance -> ResourceUtil.toResourceInstance(PlatformConstants.fit2cloud_ali_platform.name(),
+                        ResourceTypeConstants.PUBLIC_IP,
+                        instance.getInstanceId(),
+                        instance.getName(),
+                        Map.of("tags", instance.getTags().tag),
+                        instance))
                 .toList();
     }
 
@@ -226,10 +272,15 @@ public class AliCloudProvider extends AbstractCloudProvider<AliSecurityComplianc
     @Override
     public List<ResourceInstance> listVpcInstance(String req) {
         ListVpcInstanceRequest listVpcInstanceRequest = JsonUtil.parseObject(req, ListVpcInstanceRequest.class);
-        List<Map<String, Object>> instances = AliApi.listVpcInstanceCollection(listVpcInstanceRequest);
+        List<VpcInstanceResponse> instances = AliApi.listVpcInstanceCollection(listVpcInstanceRequest);
         return instances
                 .stream()
-                .map(instance -> ResourceUtil.toResourceInstance(PlatformConstants.fit2cloud_ali_platform.name(), ResourceTypeConstants.VPC, ResourceUtil.toString(instance.get("vpcId")), ResourceUtil.toString(instance.get("vpcName")), Map.of("switchesList", (List<Object>) instance.get("switchesList")), instance))
+                .map(instance -> ResourceUtil.toResourceInstance(PlatformConstants.fit2cloud_ali_platform.name(),
+                        ResourceTypeConstants.VPC,
+                        instance.vpcId,
+                        instance.vpcName,
+                        Map.of("switchesList", instance.getSwitchesList(), "tags", instance.getTags().tag),
+                        instance))
                 .toList();
     }
 
@@ -261,10 +312,11 @@ public class AliCloudProvider extends AbstractCloudProvider<AliSecurityComplianc
     @Override
     public List<ResourceInstance> listBucketInstance(String req) {
         ListBucketInstanceRequest listBucketInstanceRequest = JsonUtil.parseObject(req, ListBucketInstanceRequest.class);
-        List<Map<String, Object>> instances = AliApi.listBucketCollectionInstance(listBucketInstanceRequest);
+        List<BucketInstanceResponse> instances = AliApi.listBucketCollectionInstance(listBucketInstanceRequest);
         return instances
                 .stream()
-                .map(instance -> ResourceUtil.toResourceInstance(PlatformConstants.fit2cloud_ali_platform.name(), ResourceTypeConstants.OSS, ResourceUtil.toString(instance.get("name")), ResourceUtil.toString(instance.get("name")), instance))
+                .map(instance -> ResourceUtil.toResourceInstance(PlatformConstants.fit2cloud_ali_platform.name(), ResourceTypeConstants.OSS,
+                        instance.getName(), instance.getName(), instance))
                 .toList();
     }
 
@@ -276,10 +328,15 @@ public class AliCloudProvider extends AbstractCloudProvider<AliSecurityComplianc
     @Override
     public List<ResourceInstance> listSecurityGroupInstance(String req) {
         ListSecurityGroupInstanceRequest listSecurityGroupInstanceRequest = JsonUtil.parseObject(req, ListSecurityGroupInstanceRequest.class);
-        List<Map<String, Object>> instances = AliApi.listSecurityGroupCollectionInstance(listSecurityGroupInstanceRequest);
+        List<SecurityGroupsSecurityGroupInstanceResponse> instances = AliApi.listSecurityGroupCollectionInstance(listSecurityGroupInstanceRequest);
         return instances
                 .stream()
-                .map(instance -> ResourceUtil.toResourceInstance(PlatformConstants.fit2cloud_ali_platform.name(), ResourceTypeConstants.SECURITY_GROUP, ResourceUtil.toString(instance.get("securityGroupId")), ResourceUtil.toString(instance.get("securityGroupName")), instance))
+                .map(instance -> ResourceUtil.toResourceInstance(PlatformConstants.fit2cloud_ali_platform.name(),
+                        ResourceTypeConstants.SECURITY_GROUP,
+                        instance.getSecurityGroupId(),
+                        instance.getSecurityGroupName(),
+                        Map.of("tags", instance.getTags().tag),
+                        instance))
                 .toList();
     }
 

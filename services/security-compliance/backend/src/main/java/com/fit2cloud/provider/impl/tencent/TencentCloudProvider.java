@@ -12,20 +12,27 @@ import com.fit2cloud.provider.entity.InstanceSearchField;
 import com.fit2cloud.provider.impl.tencent.api.TencentApi;
 import com.fit2cloud.provider.impl.tencent.api.TencentInstanceSearchFieldApi;
 import com.fit2cloud.provider.impl.tencent.entity.request.*;
+import com.fit2cloud.provider.impl.tencent.entity.response.BucketInstanceResponse;
+import com.fit2cloud.provider.impl.tencent.entity.response.RamInstanceResponse;
+import com.fit2cloud.provider.impl.tencent.entity.response.SecurityGroupInstanceResponse;
 import com.fit2cloud.provider.util.ResourceUtil;
 import com.tencentcloudapi.cbs.v20170312.models.Disk;
 import com.tencentcloudapi.cdb.v20170320.models.InstanceInfo;
 import com.tencentcloudapi.clb.v20180317.models.LoadBalancer;
 import com.tencentcloudapi.cvm.v20170312.models.Instance;
+import com.tencentcloudapi.cvm.v20170312.models.Tag;
 import com.tencentcloudapi.mongodb.v20190725.models.InstanceDetail;
 import com.tencentcloudapi.redis.v20180412.models.InstanceSet;
+import com.tencentcloudapi.redis.v20180412.models.InstanceTagInfo;
 import com.tencentcloudapi.sqlserver.v20180328.models.DBInstance;
 import com.tencentcloudapi.vpc.v20170312.models.Address;
 import com.tencentcloudapi.vpc.v20170312.models.Vpc;
 import org.apache.commons.collections4.keyvalue.DefaultKeyValue;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 /**
  * {@code @Author:张少虎}
@@ -62,9 +69,15 @@ public class TencentCloudProvider extends AbstractCloudProvider<TencentBaseCrede
         List<Instance> instances = TencentApi.listEcsInstance(listCvmInstanceRequest);
         return instances
                 .stream()
-                .map(instance -> ResourceUtil.toResourceInstance(PlatformConstants.fit2cloud_tencent_platform.name(), ResourceTypeConstants.ECS, instance.getInstanceId(), instance.getInstanceName(), instance))
+                .map(instance -> ResourceUtil.toResourceInstance(PlatformConstants.fit2cloud_tencent_platform.name(),
+                        ResourceTypeConstants.ECS,
+                        instance.getInstanceId(),
+                        instance.getInstanceName(),
+                        Map.of("tags", Arrays.stream(Objects.isNull(instance.getTags()) ? new Tag[]{} : instance.getTags()).toList()),
+                        instance))
                 .toList();
     }
+
 
     @Override
     public List<InstanceSearchField> listEcsInstanceSearchField() {
@@ -77,7 +90,12 @@ public class TencentCloudProvider extends AbstractCloudProvider<TencentBaseCrede
         List<InstanceSet> instances = TencentApi.listRedisInstance(listRedisInstanceRequest);
         return instances
                 .stream()
-                .map(instance -> ResourceUtil.toResourceInstance(PlatformConstants.fit2cloud_tencent_platform.name(), ResourceTypeConstants.REDIS, instance.getInstanceId(), instance.getInstanceName(), instance))
+                .map(instance -> ResourceUtil.toResourceInstance(PlatformConstants.fit2cloud_tencent_platform.name(),
+                        ResourceTypeConstants.REDIS,
+                        instance.getInstanceId(),
+                        instance.getInstanceName(),
+                        Map.of("tags", Arrays.stream(Objects.isNull(instance.getInstanceTags()) ? new InstanceTagInfo[]{} : instance.getInstanceTags()).toList()),
+                        instance))
                 .toList();
     }
 
@@ -92,7 +110,12 @@ public class TencentCloudProvider extends AbstractCloudProvider<TencentBaseCrede
         List<InstanceDetail> instances = TencentApi.listMongodbInstance(listMongoDBInstanceRequest);
         return instances
                 .stream()
-                .map(instance -> ResourceUtil.toResourceInstance(PlatformConstants.fit2cloud_tencent_platform.name(), ResourceTypeConstants.MONGO_DB, instance.getInstanceId(), instance.getInstanceName(), instance))
+                .map(instance -> ResourceUtil.toResourceInstance(PlatformConstants.fit2cloud_tencent_platform.name(),
+                        ResourceTypeConstants.MONGO_DB,
+                        instance.getInstanceId(),
+                        instance.getInstanceName(),
+                        Map.of("tags", Arrays.stream(Objects.isNull(instance.getTags()) ? new Tag[]{} : instance.getTags()).toList()),
+                        instance))
                 .toList();
     }
 
@@ -107,7 +130,12 @@ public class TencentCloudProvider extends AbstractCloudProvider<TencentBaseCrede
         List<InstanceInfo> instances = TencentApi.listMysqlInstance(listMysqlInstanceRequest);
         return instances
                 .stream()
-                .map(instance -> ResourceUtil.toResourceInstance(PlatformConstants.fit2cloud_tencent_platform.name(), ResourceTypeConstants.MYSQL, instance.getInstanceId(), instance.getInstanceName(), instance))
+                .map(instance -> ResourceUtil.toResourceInstance(PlatformConstants.fit2cloud_tencent_platform.name(),
+                        ResourceTypeConstants.MYSQL,
+                        instance.getInstanceId(),
+                        instance.getInstanceName(),
+                        Map.of("tags", Arrays.stream(Objects.isNull(instance.getTagList()) ? new Tag[]{} : instance.getTagList()).toList()),
+                        instance))
                 .toList();
     }
 
@@ -122,7 +150,12 @@ public class TencentCloudProvider extends AbstractCloudProvider<TencentBaseCrede
         List<DBInstance> instances = TencentApi.listSqlServerInstance(listSqlServerInstanceRequest);
         return instances
                 .stream()
-                .map(instance -> ResourceUtil.toResourceInstance(PlatformConstants.fit2cloud_tencent_platform.name(), ResourceTypeConstants.SQL_SERVER, instance.getInstanceId(), instance.getName(), instance))
+                .map(instance -> ResourceUtil.toResourceInstance(PlatformConstants.fit2cloud_tencent_platform.name(),
+                        ResourceTypeConstants.SQL_SERVER,
+                        instance.getInstanceId(),
+                        instance.getName(),
+                        Map.of("tags", Arrays.stream(Objects.isNull(instance.getResourceTags()) ? new Tag[]{} : instance.getResourceTags()).toList()),
+                        instance))
                 .toList();
     }
 
@@ -137,7 +170,12 @@ public class TencentCloudProvider extends AbstractCloudProvider<TencentBaseCrede
         List<com.tencentcloudapi.postgres.v20170312.models.DBInstance> instances = TencentApi.listPostGreSqlInstance(listPostGreSqlInstanceRequest);
         return instances
                 .stream()
-                .map(instance -> ResourceUtil.toResourceInstance(PlatformConstants.fit2cloud_tencent_platform.name(), ResourceTypeConstants.POST_GRE_SQL, instance.getDBInstanceId(), instance.getDBInstanceName(), instance))
+                .map(instance -> ResourceUtil.toResourceInstance(PlatformConstants.fit2cloud_tencent_platform.name(),
+                        ResourceTypeConstants.POST_GRE_SQL,
+                        instance.getDBInstanceId(),
+                        instance.getDBInstanceName(),
+                        Map.of("tags", Arrays.stream(Objects.isNull(instance.getTagList()) ? new Tag[]{} : instance.getTagList()).toList()),
+                        instance))
                 .toList();
     }
 
@@ -152,7 +190,12 @@ public class TencentCloudProvider extends AbstractCloudProvider<TencentBaseCrede
         List<com.tencentcloudapi.mariadb.v20170312.models.DBInstance> instances = TencentApi.listMariaDBInstance(listMariaDBInstanceRequest);
         return instances
                 .stream()
-                .map(instance -> ResourceUtil.toResourceInstance(PlatformConstants.fit2cloud_tencent_platform.name(), ResourceTypeConstants.MARIA_DB, instance.getInstanceId(), instance.getInstanceName(), instance))
+                .map(instance -> ResourceUtil.toResourceInstance(PlatformConstants.fit2cloud_tencent_platform.name(),
+                        ResourceTypeConstants.MARIA_DB,
+                        instance.getInstanceId(),
+                        instance.getInstanceName(),
+                        Map.of("tags", Arrays.stream(Objects.isNull(instance.getResourceTags()) ? new Tag[]{} : instance.getResourceTags()).toList()),
+                        instance))
                 .toList();
     }
 
@@ -167,7 +210,12 @@ public class TencentCloudProvider extends AbstractCloudProvider<TencentBaseCrede
         List<com.tencentcloudapi.es.v20180416.models.InstanceInfo> instances = TencentApi.listElasticSearchInstance(listElasticsearchInstanceRequest);
         return instances
                 .stream()
-                .map(instance -> ResourceUtil.toResourceInstance(PlatformConstants.fit2cloud_tencent_platform.name(), ResourceTypeConstants.ELASTIC_SEARCH, instance.getInstanceId(), instance.getInstanceName(), instance))
+                .map(instance -> ResourceUtil.toResourceInstance(PlatformConstants.fit2cloud_tencent_platform.name(),
+                        ResourceTypeConstants.ELASTIC_SEARCH,
+                        instance.getInstanceId(),
+                        instance.getInstanceName(),
+                        Map.of("tags", Arrays.stream(Objects.isNull(instance.getTagList()) ? new Tag[]{} : instance.getTagList()).toList()),
+                        instance))
                 .toList();
     }
 
@@ -182,7 +230,12 @@ public class TencentCloudProvider extends AbstractCloudProvider<TencentBaseCrede
         List<Disk> instances = TencentApi.listDiskInstance(listDiskInstanceRequest);
         return instances
                 .stream()
-                .map(instance -> ResourceUtil.toResourceInstance(PlatformConstants.fit2cloud_tencent_platform.name(), ResourceTypeConstants.DISK, instance.getDiskId(), instance.getDiskName(), instance))
+                .map(instance -> ResourceUtil.toResourceInstance(PlatformConstants.fit2cloud_tencent_platform.name(),
+                        ResourceTypeConstants.DISK,
+                        instance.getDiskId(),
+                        instance.getDiskName(),
+                        Map.of("tags", Arrays.stream(Objects.isNull(instance.getTags()) ? new Tag[]{} : instance.getTags()).toList()),
+                        instance))
                 .toList();
     }
 
@@ -197,7 +250,12 @@ public class TencentCloudProvider extends AbstractCloudProvider<TencentBaseCrede
         List<LoadBalancer> instances = TencentApi.listLoadBalancerInstance(listLoadBalancerInstanceRequest);
         return instances
                 .stream()
-                .map(instance -> ResourceUtil.toResourceInstance(PlatformConstants.fit2cloud_tencent_platform.name(), ResourceTypeConstants.LOAD_BALANCER, instance.getLoadBalancerId(), instance.getLoadBalancerName(), instance))
+                .map(instance -> ResourceUtil.toResourceInstance(PlatformConstants.fit2cloud_tencent_platform.name(),
+                        ResourceTypeConstants.LOAD_BALANCER,
+                        instance.getLoadBalancerId(),
+                        instance.getLoadBalancerName(),
+                        Map.of("tags", Arrays.stream(Objects.isNull(instance.getTags()) ? new Tag[]{} : instance.getTags()).toList()),
+                        instance))
                 .toList();
     }
 
@@ -212,7 +270,12 @@ public class TencentCloudProvider extends AbstractCloudProvider<TencentBaseCrede
         List<Address> instances = TencentApi.listPublicIpInstance(listPublicIpInstanceRequest);
         return instances
                 .stream()
-                .map(instance -> ResourceUtil.toResourceInstance(PlatformConstants.fit2cloud_tencent_platform.name(), ResourceTypeConstants.PUBLIC_IP, instance.getInstanceId(), instance.getAddressName(), instance))
+                .map(instance -> ResourceUtil.toResourceInstance(PlatformConstants.fit2cloud_tencent_platform.name(),
+                        ResourceTypeConstants.PUBLIC_IP,
+                        instance.getInstanceId(),
+                        instance.getAddressName(),
+                        Map.of("tags", Arrays.stream(Objects.isNull(instance.getTagSet()) ? new Tag[]{} : instance.getTagSet()).toList()),
+                        instance))
                 .toList();
     }
 
@@ -227,7 +290,12 @@ public class TencentCloudProvider extends AbstractCloudProvider<TencentBaseCrede
         List<Vpc> instances = TencentApi.listVpcInstance(listVpcInstanceRequest);
         return instances
                 .stream()
-                .map(instance -> ResourceUtil.toResourceInstance(PlatformConstants.fit2cloud_tencent_platform.name(), ResourceTypeConstants.VPC, instance.getVpcId(), instance.getVpcName(), instance))
+                .map(instance -> ResourceUtil.toResourceInstance(PlatformConstants.fit2cloud_tencent_platform.name(),
+                        ResourceTypeConstants.VPC,
+                        instance.getVpcId(),
+                        instance.getVpcName(),
+                        Map.of("tags", Arrays.stream(Objects.isNull(instance.getTagSet()) ? new Tag[]{} : instance.getTagSet()).toList()),
+                        instance))
                 .toList();
     }
 
@@ -239,10 +307,14 @@ public class TencentCloudProvider extends AbstractCloudProvider<TencentBaseCrede
     @Override
     public List<ResourceInstance> listRamInstance(String req) {
         ListUsersInstanceRequest listUsersInstanceRequest = JsonUtil.parseObject(req, ListUsersInstanceRequest.class);
-        List<Map<String, Object>> instances = TencentApi.listSubUserInstanceCollection(listUsersInstanceRequest);
+        List<RamInstanceResponse> instances = TencentApi.listSubUserInstanceCollection(listUsersInstanceRequest);
         return instances
                 .stream()
-                .map(instance -> ResourceUtil.toResourceInstance(PlatformConstants.fit2cloud_tencent_platform.name(), ResourceTypeConstants.RAM, ResourceUtil.toString(instance.get("uin")), ResourceUtil.toString(instance.get("name")), instance))
+                .map(instance -> ResourceUtil.toResourceInstance(PlatformConstants.fit2cloud_tencent_platform.name(),
+                        ResourceTypeConstants.RAM,
+                        instance.getUid().toString(),
+                        instance.getName(),
+                        instance))
                 .toList();
     }
 
@@ -254,10 +326,14 @@ public class TencentCloudProvider extends AbstractCloudProvider<TencentBaseCrede
     @Override
     public List<ResourceInstance> listBucketInstance(String req) {
         ListBucketInstanceRequest listBucketInstanceRequest = JsonUtil.parseObject(req, ListBucketInstanceRequest.class);
-        List<Map<String, Object>> instances = TencentApi.listBucketInstanceCollection(listBucketInstanceRequest);
+        List<BucketInstanceResponse> instances = TencentApi.listBucketInstanceCollection(listBucketInstanceRequest);
         return instances
                 .stream()
-                .map(instance -> ResourceUtil.toResourceInstance(PlatformConstants.fit2cloud_tencent_platform.name(), ResourceTypeConstants.OSS, instance.get("name").toString(), instance.get("name").toString(), instance))
+                .map(instance -> ResourceUtil.toResourceInstance(PlatformConstants.fit2cloud_tencent_platform.name(),
+                        ResourceTypeConstants.OSS,
+                        instance.getName(),
+                        instance.getName(),
+                        instance))
                 .toList();
     }
 
@@ -269,11 +345,15 @@ public class TencentCloudProvider extends AbstractCloudProvider<TencentBaseCrede
     @Override
     public List<ResourceInstance> listSecurityGroupInstance(String req) {
         ListSecurityGroupInstanceRequest listSecurityGroupInstanceRequest = JsonUtil.parseObject(req, ListSecurityGroupInstanceRequest.class);
-        List<Map<String, Object>> instances = TencentApi.listSecurityGroupCollectionInstance(listSecurityGroupInstanceRequest);
+        List<SecurityGroupInstanceResponse> instances = TencentApi.listSecurityGroupCollectionInstance(listSecurityGroupInstanceRequest);
         return instances
                 .stream()
                 .map(instance -> ResourceUtil.toResourceInstance(PlatformConstants.fit2cloud_tencent_platform.name(),
-                        ResourceTypeConstants.SECURITY_GROUP, instance.get("securityGroupId").toString(), instance.get("securityGroupName").toString(), instance))
+                        ResourceTypeConstants.SECURITY_GROUP,
+                        instance.getSecurityGroupId(),
+                        instance.getSecurityGroupName(),
+                        Map.of("tags", Arrays.stream(Objects.isNull(instance.getTagSet()) ? new Tag[]{} : instance.getTagSet()).toList()),
+                        instance))
                 .toList();
     }
 
