@@ -166,6 +166,14 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
 
     @Override
     public UserDto getUser(String userId) {
+        if (CurrentUserUtils.isOrgAdmin()) {
+            List<String> filteredUserIds = this.getManageUserSimpleList(List.of(userId)).stream().map(User::getId).toList();
+            if (CollectionUtils.isEmpty(filteredUserIds)) {
+                throw new RuntimeException("没有权限查看该用户");
+            }
+        } else if (CurrentUserUtils.isUser() && !StringUtils.equals(CurrentUserUtils.getUser().getId(), userId)) {
+            throw new RuntimeException("没有权限查看该用户");
+        }
         User user = this.getById(userId);
         // 根据当前所在角色过滤
         List<String> resourceIds = new ArrayList<>();
@@ -262,6 +270,13 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
     }
 
     public boolean changeUserStatus(UserDto userDto) {
+        if (CurrentUserUtils.isOrgAdmin()) {
+            List<String> filteredUserIds = this.getManageUserSimpleList(List.of(userDto.getId())).stream().map(User::getId).toList();
+            if (CollectionUtils.isEmpty(filteredUserIds)) {
+                throw new RuntimeException("没有权限修改该用户");
+            }
+        }
+
         User userUpdate = new User();
         userUpdate.setId(userDto.getId());
         userUpdate.setEnabled(userDto.getEnabled());
@@ -290,6 +305,41 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
         }
 
         user.setPassword(MD5Util.md5(user.getPassword()));
+
+        if (CollectionUtils.isNotEmpty(user.getRoleInfoList())) {
+            //获取可以添加的角色列表
+            List<String> roles = baseRoleService.roles(new RoleRequest()).stream().map(Role::getId).toList();
+
+            List<String> orgIds = null, workspaceIds = null;
+            if (CurrentUserUtils.isOrgAdmin()) {
+                // 删除要编辑的用户在当前组织下的 user_role 的信息，然后 reinsert
+                orgIds = baseOrganizationService.getOrgAdminOrgIds();
+                workspaceIds = workspaceCommonService.getWorkspaceIdsByOrgIds(orgIds);
+            }
+            for (RoleInfo roleInfo : user.getRoleInfoList()) {
+                if (!roles.contains(roleInfo.getRoleId())) {
+                    throw new RuntimeException("没有权限添加ID为[" + roleInfo.getRoleId() + "]的角色");
+                }
+                if (orgIds != null && workspaceIds != null) {
+                    //组织管理员
+                    RoleConstants.ROLE parentRoleId = getParentRoleId(roleInfo.getRoleId());
+                    if (RoleConstants.ROLE.USER.equals(parentRoleId)) {
+                        for (String workspaceId : roleInfo.getWorkspaceIds()) {
+                            if (!workspaceIds.contains(workspaceId)) {
+                                throw new RuntimeException("不能添加到ID为[" + workspaceId + "]的工作空间中");
+                            }
+                        }
+                    } else if (RoleConstants.ROLE.ORGADMIN.equals(parentRoleId)) {
+                        for (String organizationId : roleInfo.getOrganizationIds()) {
+                            if (!orgIds.contains(organizationId)) {
+                                throw new RuntimeException("不能添加到ID为[" + organizationId + "]的组织中");
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
         baseMapper.insert(user);
 
         if (CollectionUtils.isNotEmpty(user.getRoleInfoList())) {
@@ -310,25 +360,57 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
         UserOperateDto user = new UserOperateDto();
         BeanUtils.copyProperties(request, user);
         baseMapper.updateById(user);
-        QueryWrapper<UserRole> wrapper = Wrappers.query();
-        wrapper.lambda().eq(UserRole::getUserId, request.getId());
 
-        if (CollectionUtils.isNotEmpty(user.getRoleInfoList())) {
-            if (CurrentUserUtils.isAdmin()) {
-                // 校验系统是否还有系统管理员的角色，如果没有不允许本次修改
-                checkSystemAdmin(user);
-                // 删除要编辑的用户在 user_role 的信息，然后 reinsert
-                userRoleService.remove(wrapper);
+        if (user.getRoleInfoList() != null) {
+
+            QueryWrapper<UserRole> wrapper = Wrappers.query();
+            wrapper.lambda().eq(UserRole::getUserId, request.getId());
+
+            //获取可以添加的角色列表
+            List<String> roles = baseRoleService.roles(new RoleRequest()).stream().map(Role::getId).toList();
+            if (CollectionUtils.isEmpty(roles) && user.getRoleInfoList().size() > 0) {
+                throw new RuntimeException("没有权限添加角色");
             }
+            wrapper.lambda().in(UserRole::getRoleId, roles);
 
+            List<String> orgIds = null, workspaceIds = null;
             if (CurrentUserUtils.isOrgAdmin()) {
                 // 删除要编辑的用户在当前组织下的 user_role 的信息，然后 reinsert
-                List<String> orgIds = organizationCommonService.getOrgIdsByParentId(CurrentUserUtils.getOrganizationId());
-                List<String> workspaceIds = workspaceCommonService.getWorkspaceIdsByOrgIds(orgIds);
-
+                orgIds = baseOrganizationService.getOrgAdminOrgIds();
+                workspaceIds = workspaceCommonService.getWorkspaceIdsByOrgIds(orgIds);
+                // 删除要编辑的用户在当前组织下的 user_role 的信息，然后 reinsert
                 wrapper.lambda().in(true, UserRole::getSource, CollectionUtils.union(orgIds, workspaceIds));
-                userRoleService.remove(wrapper);
             }
+            for (RoleInfo roleInfo : user.getRoleInfoList()) {
+                if (!roles.contains(roleInfo.getRoleId())) {
+                    throw new RuntimeException("没有权限添加ID为[" + roleInfo.getRoleId() + "]的角色");
+                }
+                if (orgIds != null && workspaceIds != null) {
+                    //组织管理员
+                    RoleConstants.ROLE parentRoleId = getParentRoleId(roleInfo.getRoleId());
+                    if (RoleConstants.ROLE.USER.equals(parentRoleId)) {
+                        for (String workspaceId : roleInfo.getWorkspaceIds()) {
+                            if (!workspaceIds.contains(workspaceId)) {
+                                throw new RuntimeException("不能添加到ID为[" + workspaceId + "]的工作空间中");
+                            }
+                        }
+                    } else if (RoleConstants.ROLE.ORGADMIN.equals(parentRoleId)) {
+                        for (String organizationId : roleInfo.getOrganizationIds()) {
+                            if (!orgIds.contains(organizationId)) {
+                                throw new RuntimeException("不能添加到ID为[" + organizationId + "]的组织中");
+                            }
+                        }
+                    }
+                }
+            }
+
+            if (CurrentUserUtils.isAdmin() && roles.contains(RoleConstants.ROLE.ADMIN.name())) {
+                // 校验系统是否还有系统管理员的角色，如果没有不允许本次修改
+                checkSystemAdmin(user);
+            }
+
+            // 删除要编辑的用户在 user_role 的信息，然后 reinsert
+            userRoleService.remove(wrapper);
 
             insertUserRoleInfo(user);
         }
@@ -340,8 +422,16 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
     }
 
     public boolean updatePwd(User user) {
+        if (CurrentUserUtils.isOrgAdmin()) {
+            List<String> filteredUserIds = this.getManageUserSimpleList(List.of(user.getId())).stream().map(User::getId).toList();
+            if (CollectionUtils.isEmpty(filteredUserIds)) {
+                throw new RuntimeException("没有权限查看该用户");
+            }
+        } else if (CurrentUserUtils.isUser() && !StringUtils.equals(CurrentUserUtils.getUser().getId(), user.getId())) {
+            throw new RuntimeException("没有权限查看该用户");
+        }
         // 非本地创建用户不允许修改密码
-        if (!"local".equalsIgnoreCase(CurrentUserUtils.getUser().getSource())) {
+        if (!"local".equalsIgnoreCase(this.getById(user.getId()).getSource())) {
             throw new Fit2cloudException(ErrorCodeConstants.USER_NOT_LOCAL_CAN_NOT_EDIT_PASSWORD.getCode(), ErrorCodeConstants.USER_NOT_LOCAL_CAN_NOT_EDIT_PASSWORD.getMessage());
         }
         User updateUser = new User();
@@ -466,43 +556,83 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
 
     @Transactional
     @Override
-    public boolean addUserRole(UserBatchAddRoleRequest userBatchAddRoleRequest) {
-        userBatchAddRoleRequest.getUserIdList().forEach(userId -> {
-            userBatchAddRoleRequest.getRoleInfoList().forEach(roleInfo -> {
+    public int addUserRole(UserBatchAddRoleRequest userBatchAddRoleRequest) {
+        int count = 0;
+
+        //获取可以添加的角色列表
+        List<String> roles = baseRoleService.roles(new RoleRequest()).stream().map(Role::getId).toList();
+        if (CollectionUtils.isEmpty(roles)) {
+            throw new RuntimeException("没有权限添加角色");
+        }
+        List<String> orgIds = null, workspaceIds = null;
+        if (CurrentUserUtils.isOrgAdmin()) {
+            // 删除要编辑的用户在当前组织下的 user_role 的信息，然后 reinsert
+            orgIds = baseOrganizationService.getOrgAdminOrgIds();
+            workspaceIds = workspaceCommonService.getWorkspaceIdsByOrgIds(orgIds);
+        }
+        for (RoleInfo roleInfo : userBatchAddRoleRequest.getRoleInfoList()) {
+            if (!roles.contains(roleInfo.getRoleId())) {
+                throw new RuntimeException("没有权限添加ID为[" + roleInfo.getRoleId() + "]的角色");
+            }
+            if (orgIds != null && workspaceIds != null) {
+                //组织管理员
+                RoleConstants.ROLE parentRoleId = getParentRoleId(roleInfo.getRoleId());
+                if (RoleConstants.ROLE.USER.equals(parentRoleId)) {
+                    for (String workspaceId : roleInfo.getWorkspaceIds()) {
+                        if (!workspaceIds.contains(workspaceId)) {
+                            throw new RuntimeException("不能添加到ID为[" + workspaceId + "]的工作空间中");
+                        }
+                    }
+                } else if (RoleConstants.ROLE.ORGADMIN.equals(parentRoleId)) {
+                    for (String organizationId : roleInfo.getOrganizationIds()) {
+                        if (!orgIds.contains(organizationId)) {
+                            throw new RuntimeException("不能添加到ID为[" + organizationId + "]的组织中");
+                        }
+                    }
+                }
+            }
+        }
+
+        List<String> filteredUserIds = this.getManageUserSimpleList(userBatchAddRoleRequest.getUserIdList()).stream().map(User::getId).toList();
+        if (CollectionUtils.isEmpty(filteredUserIds)) {
+            return count;
+        }
+
+        for (String userId : filteredUserIds) {
+            for (RoleInfo roleInfo : userBatchAddRoleRequest.getRoleInfoList()) {
                 UserRole userRole = new UserRole();
                 userRole.setRoleId(roleInfo.getRoleId());
                 userRole.setUserId(userId);
                 RoleConstants.ROLE parentRoleId = getParentRoleId(roleInfo.getRoleId());
                 if (RoleConstants.ROLE.USER.equals(parentRoleId)) {
-                    roleInfo.getWorkspaceIds().forEach(workspaceId -> {
-                                if (!hasUserRole(userId, roleInfo.getRoleId(), workspaceId)) {
-                                    insertUserRoleInfo(userRole, workspaceId);
-                                }
-                            }
-                    );
-                }
-                if (RoleConstants.ROLE.ORGADMIN.equals(parentRoleId)) {
-                    roleInfo.getOrganizationIds().forEach(organizationId -> {
-                                if (!hasUserRole(userId, roleInfo.getRoleId(), organizationId)) {
-                                    insertUserRoleInfo(userRole, organizationId);
-                                }
-                            }
-                    );
-                }
-                if (RoleConstants.ROLE.ADMIN.equals(parentRoleId)) {
+                    for (String workspaceId : roleInfo.getWorkspaceIds()) {
+                        if (!hasUserRole(userId, roleInfo.getRoleId(), workspaceId)) {
+                            insertUserRoleInfo(userRole, workspaceId);
+                            count++;
+                        }
+                    }
+                } else if (RoleConstants.ROLE.ORGADMIN.equals(parentRoleId)) {
+                    for (String organizationId : roleInfo.getOrganizationIds()) {
+                        if (!hasUserRole(userId, roleInfo.getRoleId(), organizationId)) {
+                            insertUserRoleInfo(userRole, organizationId);
+                            count++;
+                        }
+                    }
+                } else if (RoleConstants.ROLE.ADMIN.equals(parentRoleId)) {
                     if (!hasUserRole(userId, roleInfo.getRoleId(), null)) {
                         insertUserRoleInfo(userRole, null);
+                        count++;
                     }
                 }
-            });
-        });
+            }
+        }
 
         //更新完数据库后再更新redis
         userBatchAddRoleRequest.getUserIdList().forEach(userId -> {
             userRoleService.saveCachedUserRoleMap(userId);
         });
 
-        return true;
+        return count;
     }
 
     @Transactional
@@ -532,28 +662,21 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
                 continue;
             }
             List<String> sourceIds = null;
-            List<String> organizationIdsForSearch = new ArrayList<>();
-            if (CurrentUserUtils.isOrgAdmin()) {
-                String currentOrganizationId = CurrentUserUtils.getOrganizationId();
-                if (StringUtils.isNotEmpty(currentOrganizationId)) {
-                    organizationIdsForSearch.add(currentOrganizationId);
-                    organizationIdsForSearch.addAll(baseOrganizationService.getDownOrganization(currentOrganizationId, baseOrganizationService.list()).stream().map(Organization::getId).toList());
-                }
-            }
+            List<String> organizationIdsForSearch = baseOrganizationService.getOrgAdminOrgIds();
 
             if (RoleConstants.ROLE.ORGADMIN.equals(role.getParentRoleId())) {
                 //根据当前用户查询
                 if (CurrentUserUtils.isAdmin()) {
                     sourceIds = baseOrganizationService.listByIds(map.getSourceIds()).stream().map(Organization::getId).toList();
                 } else if (CurrentUserUtils.isOrgAdmin()) {
-                    sourceIds = organizationIdsForSearch;
+                    sourceIds = organizationIdsForSearch.stream().filter(map.getSourceIds()::contains).toList();
                 }
             } else if (RoleConstants.ROLE.USER.equals(role.getParentRoleId())) {
                 //根据当前用户查询
                 if (CurrentUserUtils.isAdmin()) {
                     sourceIds = workspaceService.listByIds(map.getSourceIds()).stream().map(Workspace::getId).toList();
                 } else if (CurrentUserUtils.isOrgAdmin()) {
-                    sourceIds = workspaceCommonService.getWorkspaceIdsByOrgIds(organizationIdsForSearch);
+                    sourceIds = workspaceCommonService.getWorkspaceIdsByOrgIds(organizationIdsForSearch).stream().filter(map.getSourceIds()::contains).toList();
                 }
             }
             if (!RoleConstants.ROLE.ADMIN.equals(role.getParentRoleId()) && CollectionUtils.isEmpty(sourceIds)) {
@@ -589,18 +712,34 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
 
         RoleConstants.ROLE parentRole;
         String sourceId = null;
+
+        List<String> organizationIdsForSearch = baseOrganizationService.getOrgAdminOrgIds();
+
         if (StringUtils.equals(userBatchAddRoleRequest.getType(), "WORKSPACE")) {
             if (StringUtils.isBlank(userBatchAddRoleRequest.getSourceId())) {
                 throw new RuntimeException("工作空间ID不能为空");
             }
             parentRole = RoleConstants.ROLE.USER;
             sourceId = userBatchAddRoleRequest.getSourceId();
+
+            if (CurrentUserUtils.isOrgAdmin()) {
+                if (!workspaceCommonService.getWorkspaceIdsByOrgIds(organizationIdsForSearch).contains(sourceId)) {
+                    throw new RuntimeException("没有权限添加到该工作空间下");
+                }
+            }
+
         } else if (StringUtils.equals(userBatchAddRoleRequest.getType(), "ORGANIZATION")) {
             if (StringUtils.isBlank(userBatchAddRoleRequest.getSourceId())) {
                 throw new RuntimeException("组织ID不能为空");
             }
             parentRole = RoleConstants.ROLE.ORGADMIN;
             sourceId = userBatchAddRoleRequest.getSourceId();
+
+            if (CurrentUserUtils.isOrgAdmin()) {
+                if (!organizationIdsForSearch.contains(sourceId)) {
+                    throw new RuntimeException("没有权限添加到该组织下");
+                }
+            }
         } else {
             //系统管理员
             parentRole = RoleConstants.ROLE.ADMIN;
@@ -658,6 +797,20 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
         List<String> roles = baseRoleService.roles(new RoleRequest()).stream().map(Role::getId).toList();
         if (!roles.contains(roleId)) {
             throw new RuntimeException("不能移除该用户角色");
+        }
+
+        if (CurrentUserUtils.isOrgAdmin()) {
+            List<String> organizationIdsForSearch = baseOrganizationService.getOrgAdminOrgIds();
+            RoleConstants.ROLE parentRoleId = getParentRoleId(roleId);
+            if (RoleConstants.ROLE.USER.equals(parentRoleId)) {
+                if (!workspaceCommonService.getWorkspaceIdsByOrgIds(organizationIdsForSearch).contains(sourceId)) {
+                    throw new RuntimeException("不能在该工作空间下移除用户角色");
+                }
+            } else if (RoleConstants.ROLE.ORGADMIN.equals(parentRoleId)) {
+                if (!organizationIdsForSearch.contains(sourceId)) {
+                    throw new RuntimeException("不能在该组织下移除用户角色");
+                }
+            }
         }
 
         userRoleService.removeUserRoleByUserIdAndRoleId(userId, roleId, sourceId);
