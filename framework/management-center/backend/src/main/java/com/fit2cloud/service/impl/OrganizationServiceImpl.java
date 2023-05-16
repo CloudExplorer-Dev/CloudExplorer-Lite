@@ -92,7 +92,7 @@ public class OrganizationServiceImpl extends ServiceImpl<OrganizationMapper, Org
                 rootId = CurrentUserUtils.getOrganizationId();
             } else {
                 //判断组织管理员是否能管理到这个组织id
-                if (!getOrgAdminOrgIds().contains(rootId)) {
+                if (!baseOrganizationService.getOrgAdminOrgIds().contains(rootId)) {
                     throw new RuntimeException("没有权限查询ID为" + rootId + "的组织");
                 }
             }
@@ -159,7 +159,7 @@ public class OrganizationServiceImpl extends ServiceImpl<OrganizationMapper, Org
             if (StringUtils.isBlank(request.getPid())) {
                 throw new RuntimeException("没有权限在根节点下创建组织");
             }
-            List<String> orgIds = getOrgAdminOrgIds();
+            List<String> orgIds = baseOrganizationService.getOrgAdminOrgIds();
             if (!orgIds.contains(request.getPid())) {
                 throw new RuntimeException("没有权限在组织[" + this.getById(request.getPid()).getName() + "]下创建子组织");
             }
@@ -186,7 +186,7 @@ public class OrganizationServiceImpl extends ServiceImpl<OrganizationMapper, Org
         }).collect(Collectors.toList()), (t) -> t);
 
         if (CurrentUserUtils.isOrgAdmin()) {
-            List<String> orgIds = getOrgAdminOrgIds();
+            List<String> orgIds = baseOrganizationService.getOrgAdminOrgIds();
             for (OrganizationTree organizationTree : organizationTrees) {
                 if (!orgIds.contains(organizationTree.getId())) {
                     throw new RuntimeException("没有权限删除组织[" + this.getById(organizationTree.getPid()).getName() + "]");
@@ -226,7 +226,7 @@ public class OrganizationServiceImpl extends ServiceImpl<OrganizationMapper, Org
 
         if (!skipCheck) {
             if (CurrentUserUtils.isOrgAdmin()) {
-                List<String> orgIds = getOrgAdminOrgIds();
+                List<String> orgIds = baseOrganizationService.getOrgAdminOrgIds();
                 if (!orgIds.contains(id)) {
                     throw new RuntimeException("没有权限删除该组织");
                 }
@@ -265,7 +265,7 @@ public class OrganizationServiceImpl extends ServiceImpl<OrganizationMapper, Org
         }
 
         if (CurrentUserUtils.isOrgAdmin()) {
-            List<String> orgIds = getOrgAdminOrgIds();
+            List<String> orgIds = baseOrganizationService.getOrgAdminOrgIds();
             //先判断原来的组织有没有权限改
             if (!orgIds.contains(organization.getId())) {
                 throw new RuntimeException("没有权限编辑组织[" + organization.getName() + "]");
@@ -290,14 +290,6 @@ public class OrganizationServiceImpl extends ServiceImpl<OrganizationMapper, Org
         return baseMapper.listRootOrganizationIds(wrapper).size();
     }
 
-    private List<String> getOrgAdminOrgIds() {
-        List<String> orgIds = new ArrayList<>();
-        if (CurrentUserUtils.isOrgAdmin()) {
-            orgIds.add(CurrentUserUtils.getOrganizationId());
-            orgIds.addAll(baseOrganizationService.getDownOrganization(CurrentUserUtils.getOrganizationId(), baseOrganizationService.list()).stream().map(Organization::getId).toList());
-        }
-        return orgIds;
-    }
 
     @Override
     public Organization create(Organization organization) {
@@ -305,7 +297,7 @@ public class OrganizationServiceImpl extends ServiceImpl<OrganizationMapper, Org
             if (StringUtils.isBlank(organization.getPid())) {
                 throw new RuntimeException("没有权限在根节点下创建组织");
             }
-            List<String> orgIds = getOrgAdminOrgIds();
+            List<String> orgIds = baseOrganizationService.getOrgAdminOrgIds();
             if (!orgIds.contains(organization.getPid())) {
                 throw new RuntimeException("没有权限在组织[" + this.getById(organization.getPid()).getName() + "]下创建子组织");
             }

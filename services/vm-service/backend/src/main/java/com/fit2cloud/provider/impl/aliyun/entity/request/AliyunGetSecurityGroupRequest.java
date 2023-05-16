@@ -11,4 +11,6 @@ import lombok.Data;
 public class AliyunGetSecurityGroupRequest extends AliyunBaseRequest {
 
     private F2CNetwork f2CNetwork;
+
+    private String networkId;
 }

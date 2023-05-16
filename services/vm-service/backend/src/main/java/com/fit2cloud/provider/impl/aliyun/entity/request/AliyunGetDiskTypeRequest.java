@@ -20,8 +20,8 @@ public class AliyunGetDiskTypeRequest extends AliyunVmCreateRequest {
                 .setResourceType(StringUtils.equals(this.diskUsage, "SystemDisk") ? "instance" : "disk")
                 .setDestinationResource(this.diskUsage);
 
-        if (this.getInstanceTypeDTO() != null && this.getInstanceTypeDTO().getInstanceType() != null) {
-            describeAvailableResourceRequest.setInstanceType(this.getInstanceTypeDTO().getInstanceType());
+        if (getInstanceType() != null) {
+            describeAvailableResourceRequest.setInstanceType(getInstanceType());
         }
         return describeAvailableResourceRequest;
     }

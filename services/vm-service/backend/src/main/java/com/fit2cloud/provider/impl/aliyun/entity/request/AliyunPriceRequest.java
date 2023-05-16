@@ -144,12 +144,12 @@ public class AliyunPriceRequest extends AliyunVmCreateRequest {
 
         // 实例类型
         String imageOs = this.getOs().indexOf("win") > 0 ? "windows" : "linux";
-        if (this.getInstanceTypeDTO() != null) {
+        if (getInstanceType() != null) {
             String instanceTypeConfig = "ImageOs:" + imageOs + "," +
                     "IoOptimized:none" + "," +
                     "Region:" + this.getRegionId() + "," +
-                    "InstanceTypeFamily:" + this.getInstanceTypeDTO().getInstanceTypeFamily() + "," +
-                    "InstanceType:" + this.getInstanceTypeDTO().getInstanceType();
+                    //"InstanceTypeFamily:" + this.getInstanceTypeDTO().getInstanceTypeFamily() + "," +
+                    "InstanceType:" + getInstanceType();
             config.setInstanceTypeConfig(instanceTypeConfig);
         }
 

@@ -6,7 +6,11 @@
 <script setup lang="ts">
 import type { FormView } from "@commons/components/ce-form/type";
 import { computed } from "vue";
-const props = defineProps<{ formItem: FormView }>();
+const props = defineProps<{
+  formItem: FormView;
+  modelValue?: string;
+  confirm?: boolean;
+}>();
 const labelText = computed(() => {
   if (props.formItem) {
     return props.formItem.optionList;

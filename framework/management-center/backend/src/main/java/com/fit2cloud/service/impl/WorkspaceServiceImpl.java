@@ -20,6 +20,7 @@ import com.fit2cloud.controller.request.workspace.WorkspaceRequest;
 import com.fit2cloud.dao.entity.Workspace;
 import com.fit2cloud.dao.mapper.WorkspaceMapper;
 import com.fit2cloud.dto.WorkspaceDTO;
+import com.fit2cloud.service.IOrganizationService;
 import com.fit2cloud.service.IWorkspaceService;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -66,11 +67,34 @@ public class WorkspaceServiceImpl extends ServiceImpl<WorkspaceMapper, Workspace
         BeanUtils.copyProperties(request, workspace);
         workspace.setCreateTime(LocalDateTime.now());
         workspace.setUpdateTime(LocalDateTime.now());
+
+        if (CurrentUserUtils.isOrgAdmin()) {
+            List<String> orgIds = baseOrganizationService.getOrgAdminOrgIds();
+            if (!orgIds.contains(request.getOrganizationId())) {
+                throw new RuntimeException("没有权限在组织[" + this.getById(request.getOrganizationId()).getName() + "]下创建工作空间");
+            }
+        }
+
         return save(workspace);
     }
 
     @Override
     public Boolean update(WorkspaceRequest request) {
+
+        if (CurrentUserUtils.isOrgAdmin()) {
+            List<String> orgIds = baseOrganizationService.getOrgAdminOrgIds();
+            if (!orgIds.contains(request.getOrganizationId())) {
+                throw new RuntimeException("没有权限在将工作空间移动到组织[" + this.getById(request.getOrganizationId()).getName() + "]下");
+            }
+            if (CollectionUtils.isNotEmpty(orgIds)) {
+                if (!list(new LambdaQueryWrapper<Workspace>().in(Workspace::getOrganizationId, orgIds))
+                        .stream().map(Workspace::getId).toList()
+                        .contains(request.getId())) {
+                    throw new RuntimeException("没有权限修改该工作空间");
+                }
+            }
+        }
+
         List<Workspace> list = list(new LambdaQueryWrapper<Workspace>()
                 .eq(Workspace::getName, request.getName())
                 .ne(Workspace::getId, request.getId()));
@@ -84,6 +108,7 @@ public class WorkspaceServiceImpl extends ServiceImpl<WorkspaceMapper, Workspace
         }
         BeanUtils.copyProperties(request, workspace);
         workspace.setUpdateTime(LocalDateTime.now());
+
         return updateById(workspace);
     }
 
@@ -138,6 +163,17 @@ public class WorkspaceServiceImpl extends ServiceImpl<WorkspaceMapper, Workspace
 
     @Override
     public Boolean delete(String id) {
+        if (CurrentUserUtils.isOrgAdmin()) {
+            List<String> orgIds = baseOrganizationService.getOrgAdminOrgIds();
+            if (CollectionUtils.isNotEmpty(orgIds)) {
+                if (!list(new LambdaQueryWrapper<Workspace>().in(Workspace::getOrganizationId, orgIds))
+                        .stream().map(Workspace::getId).toList()
+                        .contains(id)) {
+                    throw new RuntimeException("没有权限删除该工作空间");
+                }
+            }
+        }
+
         userRoleService.deleteUserRoleByWorkspaceId(id);
         return removeById(id);
     }
@@ -145,12 +181,34 @@ public class WorkspaceServiceImpl extends ServiceImpl<WorkspaceMapper, Workspace
     @Override
     public Boolean batchDelete(List<Workspace> workspaces) {
         List<String> ids = Optional.ofNullable(workspaces).orElse(new ArrayList<>()).stream().map(Workspace::getId).collect(Collectors.toList());
+
+        if (CurrentUserUtils.isOrgAdmin()) {
+            List<String> orgIds = baseOrganizationService.getOrgAdminOrgIds();
+            if (CollectionUtils.isNotEmpty(orgIds)) {
+                for (String id : ids) {
+                    if (!list(new LambdaQueryWrapper<Workspace>().in(Workspace::getOrganizationId, orgIds))
+                            .stream().map(Workspace::getId).toList()
+                            .contains(id)) {
+                        throw new RuntimeException("没有权限删除ID为[" + id + "]的工作空间");
+                    }
+                }
+            }
+        }
+
         ids.forEach(id -> userRoleService.deleteUserRoleByWorkspaceId(id));
         return removeBatchByIds(ids);
     }
 
     @Override
     public List<Workspace> batch(WorkspaceBatchCreateRequest request) {
+
+        if (CurrentUserUtils.isOrgAdmin()) {
+            List<String> orgIds = baseOrganizationService.getOrgAdminOrgIds();
+            if (!orgIds.contains(request.getOrganizationId())) {
+                throw new RuntimeException("没有权限在组织[" + this.getById(request.getOrganizationId()).getName() + "]下创建工作空间");
+            }
+        }
+
         List<String> names = request.getWorkspaceDetails().stream().map(WorkspaceBatchCreateRequest.WorkspaceDetails::getName).toList();
         List<Workspace> list = list(new LambdaQueryWrapper<Workspace>().in(Workspace::getName, names));
         if (CollectionUtils.isNotEmpty(list)) {

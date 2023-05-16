@@ -257,7 +257,7 @@ public class AliCloudProvider extends AbstractCloudProvider<AliSecurityComplianc
                 .stream()
                 .map(instance -> ResourceUtil.toResourceInstance(PlatformConstants.fit2cloud_ali_platform.name(),
                         ResourceTypeConstants.PUBLIC_IP,
-                        instance.getInstanceId(),
+                        instance.getAllocationId(),
                         instance.getName(),
                         Map.of("tags", instance.getTags().tag),
                         instance))

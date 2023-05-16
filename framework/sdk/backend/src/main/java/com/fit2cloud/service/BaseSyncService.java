@@ -5,11 +5,15 @@ import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.fit2cloud.base.entity.CloudAccount;
 import com.fit2cloud.base.entity.JobRecord;
+import com.fit2cloud.base.entity.User;
 import com.fit2cloud.base.service.IBaseCloudAccountService;
 import com.fit2cloud.base.service.IBaseJobRecordService;
 import com.fit2cloud.common.constants.JobStatusConstants;
 import com.fit2cloud.common.constants.PlatformConstants;
 import com.fit2cloud.common.exception.Fit2cloudException;
+import com.fit2cloud.common.job.context.JobContext;
+import com.fit2cloud.common.job.result.Result;
+import com.fit2cloud.common.job.step.JobStep;
 import com.fit2cloud.common.platform.credential.Credential;
 import com.fit2cloud.common.provider.exception.SkipPageException;
 import com.fit2cloud.common.provider.util.CommonUtil;
@@ -302,6 +306,7 @@ public abstract class BaseSyncService {
             }
         }).orElseThrow(() -> new Fit2cloudException(10001, "获取区域错误"));
     }
+
 
     @Data
     @AllArgsConstructor

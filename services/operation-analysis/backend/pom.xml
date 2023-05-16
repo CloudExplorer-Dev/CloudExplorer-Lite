@@ -75,6 +75,24 @@
 
         </resources>
 
+        <pluginManagement>
+            <plugins>
+                <plugin>
+                    <groupId>org.springframework.boot.experimental</groupId>
+                    <artifactId>spring-boot-thin-maven-plugin</artifactId>
+                    <version>${spring-boot-thin.version}</version>
+                    <dependencies>
+                        <dependency>
+                            <groupId>org.springframework.boot.experimental</groupId>
+                            <artifactId>spring-boot-thin-launcher</artifactId>
+                            <classifier>exec</classifier>
+                            <version>${spring-boot-thin.version}</version>
+                        </dependency>
+                    </dependencies>
+                </plugin>
+            </plugins>
+        </pluginManagement>
+
         <plugins>
             <plugin>
                 <groupId>org.springframework.boot</groupId>
@@ -87,24 +105,7 @@
                     </dependency>
                 </dependencies>
             </plugin>
-            <plugin>
-                <groupId>org.springframework.boot.experimental</groupId>
-                <artifactId>spring-boot-thin-maven-plugin</artifactId>
-                <version>${spring-boot-thin.version}</version>
-                <executions>
-                    <execution>
-                        <!-- Download the dependencies at build time -->
-                        <id>resolve</id>
-                        <goals>
-                            <goal>resolve</goal>
-                        </goals>
-                        <inherited>false</inherited>
-                    </execution>
-                </executions>
-                <configuration>
-                    <outputDirectory>../../../target</outputDirectory>
-                </configuration>
-            </plugin>
+
             <plugin>
                 <artifactId>maven-clean-plugin</artifactId>
                 <configuration>
@@ -163,5 +164,72 @@
             </plugin>
         </plugins>
     </build>
+
+    <profiles>
+        <profile>
+            <id>Default package</id>
+            <activation>
+                <property>
+                    <name>activeProfile</name>
+                    <value>default</value>
+                </property>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.springframework.boot.experimental</groupId>
+                        <artifactId>spring-boot-thin-maven-plugin</artifactId>
+                        <version>${spring-boot-thin.version}</version>
+                        <executions>
+                            <execution>
+                                <!-- Download the dependencies at build time -->
+                                <id>resolve</id>
+                                <goals>
+                                    <goal>resolve</goal>
+                                </goals>
+                                <inherited>false</inherited>
+                            </execution>
+                        </executions>
+                        <configuration>
+                            <outputDirectory>../../../target</outputDirectory>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+        <profile>
+            <id>PRD package</id>
+            <activation>
+                <property>
+                    <name>prd</name>
+                </property>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-antrun-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>prd-install</id>
+                                <phase>install</phase>
+                                <configuration>
+                                    <target>
+                                        <echo message="*******************install*******************" />
+                                        <echo message="${project.build.directory}/${artifactId}-${revision}.jar" />
+                                        <move file="${project.build.directory}/${artifactId}-${revision}.jar"
+                                              tofile="../../../target/${artifactId}-${revision}.jar" />
+                                    </target>
+                                </configuration>
+                                <goals>
+                                    <goal>run</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
 
 </project>

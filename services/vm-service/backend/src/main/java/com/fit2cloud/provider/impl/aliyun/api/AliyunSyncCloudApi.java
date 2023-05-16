@@ -73,7 +73,7 @@ public class AliyunSyncCloudApi {
             describeInstanceStatusRequest.setInstanceId(Arrays.asList(new String[]{instanceId}));
             checkStatus(client, "Stopped", describeInstanceStatusRequest);
 
-            if (req.getF2CNetwork() != null && req.getF2CNetwork().getNetworkId() != null) {
+            if (req.getNetworkId() != null) {
                 if (req.getHasPublicIp()) {
                     try {
                         // 创建 弹性公网IP
@@ -146,9 +146,7 @@ public class AliyunSyncCloudApi {
                 .setId(request.getId())
                 .setName(request.getServerInfos().get(index).getName())
                 .setIpArray(new ArrayList<>())
-                .setInstanceType(request.getInstanceTypeDTO() == null ? "" : request.getInstanceTypeDTO().getInstanceType())
-                .setInstanceTypeDescription(request.getInstanceTypeDTO() == null ? "" : request.getInstanceTypeDTO().getCpuMemory());
-
+                .setInstanceType(request.getInstanceType());
         return virtualMachine;
     }
 
@@ -308,8 +306,17 @@ public class AliyunSyncCloudApi {
         DescribeSecurityGroupsRequest describeSecurityGroupsRequest = new DescribeSecurityGroupsRequest();
         describeSecurityGroupsRequest.setRegionId(req.getRegionId());
 
-        if (req.getF2CNetwork() != null && StringUtils.isNotBlank(req.getF2CNetwork().getVpcId())) {
-            describeSecurityGroupsRequest.setVpcId(req.getF2CNetwork().getVpcId());
+        if (req.getNetworkId() != null) {
+            AliyunGetVSwitchRequest aliyunGetVSwitchRequest = new AliyunGetVSwitchRequest();
+            aliyunGetVSwitchRequest.setRegionId(req.getRegionId());
+            aliyunGetVSwitchRequest.setCredential(req.getCredential());
+            List<F2CNetwork> networks = getNetworks(aliyunGetVSwitchRequest);
+            if (CollectionUtils.isNotEmpty(networks)) {
+                List<F2CNetwork> filterNetwork = networks.stream().filter(v -> StringUtils.equalsIgnoreCase(v.getNetworkId(), req.getNetworkId())).collect(Collectors.toList());
+                if (CollectionUtils.isNotEmpty(filterNetwork)) {
+                    describeSecurityGroupsRequest.setVpcId(filterNetwork.get(0).getVpcId());
+                }
+            }
         }
         try {
             List<DescribeSecurityGroupsResponseBody.DescribeSecurityGroupsResponseBodySecurityGroupsSecurityGroup> resultSecurityGroups = new ArrayList<>();
@@ -896,6 +903,7 @@ public class AliyunSyncCloudApi {
                 client.startInstances(startInstancesRequest);
                 DescribeInstanceStatusRequest describeInstanceStatusRequest = new DescribeInstanceStatusRequest();
                 describeInstanceStatusRequest.setRegionId(aliyunInstanceRequest.getRegionId());
+                describeInstanceStatusRequest.setInstanceId(Arrays.asList(aliyunInstanceRequest.getUuid()));
                 checkStatus(client, "Running", describeInstanceStatusRequest);
                 return true;
             } catch (TeaException error) {
@@ -924,6 +932,7 @@ public class AliyunSyncCloudApi {
                 client.rebootInstances(rebootInstancesRequest);
                 DescribeInstanceStatusRequest describeInstanceStatusRequest = new DescribeInstanceStatusRequest();
                 describeInstanceStatusRequest.setRegionId(aliyunInstanceRequest.getRegionId());
+                describeInstanceStatusRequest.setInstanceId(Arrays.asList(aliyunInstanceRequest.getUuid()));
                 checkStatus(client, "Running", describeInstanceStatusRequest);
                 return true;
             } catch (TeaException error) {
@@ -1744,7 +1753,7 @@ public class AliyunSyncCloudApi {
         AliyunPriceRequest priceRequest = new AliyunPriceRequest();
         BeanUtils.copyProperties(request, priceRequest);
         priceRequest.setCount(1);
-        priceRequest.setInstanceTypeDTO(new AliyunInstanceType(request.getNewInstanceType()));
+        priceRequest.setInstanceType(request.getNewInstanceType());
         priceRequest.setInstanceChargeType(instance.getInstanceChargeType());
         priceRequest.setOs(instance.OSType);
 

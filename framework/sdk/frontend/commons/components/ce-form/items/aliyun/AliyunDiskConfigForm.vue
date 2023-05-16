@@ -1,124 +1,93 @@
 <template>
   <template v-if="!confirm">
-    <div style="display: flex; flex-direction: row; flex-wrap: wrap">
-      <div
-        v-for="(obj, index) in data"
-        :key="index"
-        class="vs-disk-config-card"
-      >
-        <el-card
-          class="card"
-          :body-style="{
-            padding: 0,
-            'text-align': 'center',
-            display: 'flex',
-            'flex-direction': 'column',
-            'flex-wrap': 'nowrap',
-            'align-items': 'center',
-            'justify-content': 'space-evenly',
-            height: '100%',
-            position: 'relative',
-          }"
-        >
-          <span class="title">
-            {{ index === 0 ? "系统盘" : "数据盘 " + index }}
-            <span
-              style="font-size: smaller; color: var(--el-text-color-secondary)"
-            >
-              (GB)
-            </span>
-          </span>
+    <template v-for="(obj, index) in data" :key="index">
+      <div class="disk-title">
+        {{ index === 0 ? "系统盘" : "数据盘 " + index }}
+      </div>
+      <div class="disk-content">
+        <el-form-item :prop="obj.diskType + ''">
+          <el-select
+            style="width: 100%"
+            v-model="obj.diskType"
+            filterable
+            v-if="index === 0"
+          >
+            <template v-slot:prefix>
+              <span> 磁盘类型 </span>
+            </template>
+            <el-option
+              v-for="item in systemDiskTypeOptions"
+              :key="item.diskType"
+              :label="item.diskTypeName"
+              :value="item.diskType"
+            />
+          </el-select>
+          <el-select
+            style="width: 100%"
+            v-model="obj.diskType"
+            filterable
+            v-else
+          >
+            <template v-slot:prefix>
+              <span> 磁盘类型 </span>
+            </template>
+            <el-option
+              v-for="item in dataDiskTypeOptions"
+              :key="item.diskType"
+              :label="item.diskTypeName"
+              :value="item.diskType"
+            />
+          </el-select>
+        </el-form-item>
 
-          <div>
-            <div style="padding-bottom: 5px">
-              <span>磁盘类型：</span>
-              <el-select
-                style="width: 50%"
-                v-model="obj.diskType"
-                filterable
-                v-if="index === 0"
-              >
-                <el-option
-                  v-for="item in systemDiskTypeOptions"
-                  :key="item.diskType"
-                  :label="item.diskTypeName"
-                  :value="item.diskType"
-                />
-              </el-select>
-
-              <el-select
-                style="width: 50%"
-                v-model="obj.diskType"
-                filterable
-                v-else
-              >
-                <el-option
-                  v-for="item in dataDiskTypeOptions"
-                  :key="item.diskType"
-                  :label="item.diskTypeName"
-                  :value="item.diskType"
-                />
-              </el-select>
-            </div>
-            <div style="padding-bottom: 5px">
-              <span>磁盘大小：</span>
-              <el-input-number
-                v-model="obj.size"
-                :min="minSize(defaultDisks[index], index)"
-                :max="maxSize(defaultDisks[index], index)"
-                :step="1"
-                required
-                style="width: 50%"
-                value-on-clear="min"
-              />
-            </div>
+        <el-form-item :prop="obj.size + ''">
+          <div class="mo-input--number">
+            <span class="label">磁盘大小</span>
+            <el-input-number
+              v-model="obj.size"
+              style="width: 200px"
+              :min="minSize(defaultDisks[index], index)"
+              :max="maxSize(defaultDisks[index], index)"
+              :step="1"
+              controls-position="right"
+              autocomplete="off"
+            />
           </div>
-
-          <el-button
-            v-if="index > 0"
-            class="remove-button"
-            @click="remove(index)"
-            :icon="CloseBold"
-            type="info"
-            text
-          ></el-button>
-        </el-card>
-
-        <div style="width: 100%; height: 30px; text-align: center">
-          <el-checkbox v-model="obj.deleteWithInstance" :disabled="obj.readonly"
-            >随实例删除</el-checkbox
-          >
-        </div>
+        </el-form-item>
+        <el-form-item :prop="obj.deleteWithInstance + ''">
+          <div style="width: 100%; margin-left: 8px; text-align: center">
+            <el-switch
+              v-model="obj.deleteWithInstance"
+              :disabled="obj.readonly"
+              active-text="随实例删除"
+            />
+          </div>
+        </el-form-item>
+        <el-icon
+          v-if="index > 0"
+          size="17px"
+          color="#646A73"
+          class="delete-icon"
+          @click="remove(index)"
+        >
+          <Delete />
+        </el-icon>
       </div>
-      <div class="vs-disk-config-card">
-        <el-card class="card add-card">
-          <el-button
-            style="margin: auto"
-            class="el-button--primary"
-            @click="add"
-            >添加磁盘</el-button
-          >
-        </el-card>
-      </div>
-    </div>
+    </template>
+    <span class="add-btn" @click="add">+ 添加数据盘</span>
   </template>
   <template v-else>
-    <el-descriptions>
-      <el-descriptions-item
-        :label="i === 0 ? '系统盘' : '数据盘' + i"
-        v-for="(disk, i) in modelValue"
-        :key="i"
-      >
-        {{ disk.size }}GB{{ disk.deleteWithInstance ? " (随实例删除)" : "" }}
-      </el-descriptions-item>
-    </el-descriptions>
+    <detail-page
+      :content="getModelValueDetail(modelValue)"
+      :item-width="'33.33%'"
+      :item-bottom="'28px'"
+    ></detail-page>
   </template>
 </template>
 <script setup lang="ts">
 import { computed, watch, onMounted, ref } from "vue";
 import _ from "lodash";
 import type { FormView } from "@commons/components/ce-form/type";
-import { CloseBold } from "@element-plus/icons-vue";
 import { ElMessage } from "element-plus";
 
 interface DiskTypeConfig {
@@ -222,6 +191,8 @@ const maxSize = computed(() => (disk: DiskTypeConfig, index: number) => {
  */
 const defaultDisks = computed(() => [
   {
+    label: "系统盘",
+    valueField: "size",
     diskType: "cloud_essd",
     size: 40,
     deleteWithInstance: true,
@@ -297,6 +268,8 @@ function add() {
   if (dataDiskTypeOptions.value.length > 0) {
     const dataDiskItem = dataDiskTypeOptions.value[0];
     data.value?.push({
+      label: "数据盘",
+      valueField: "size",
       size: dataDiskItem.minDiskSize,
       diskType: dataDiskItem.diskType,
       deleteWithInstance: true,
@@ -336,29 +309,107 @@ onMounted(() => {
     data.value = defaultDisks.value;
   }
 });
-</script>
-<style lang="scss" scoped>
-.vs-disk-config-card {
-  height: 150px;
-  width: 300px;
-  margin-right: 20px;
-  margin-bottom: 30px;
-  .card {
-    height: 150px;
-    .title {
-      font-size: 14px;
-      font-weight: bold;
-    }
-    .remove-button {
-      position: absolute;
-      top: 0;
-      right: 0;
+function getModelValueDetail(modelValue: any) {
+  const result: Array<any> = [];
+  if (modelValue) {
+    for (let i = 0; i < modelValue.length; i++) {
+      result.push({
+        label: i === 0 ? "系统盘" : "数据盘" + i,
+        value:
+          modelValue[i].size +
+          "GB" +
+          (modelValue[i].deleteWithInstance ? " (随实例删除)" : ""),
+      });
     }
   }
-  .add-card {
-    display: flex;
-    align-items: center;
-    justify-content: center;
+  return result;
+}
+</script>
+<style lang="scss" scoped>
+.disk-title {
+  font-style: normal;
+  font-weight: 500;
+  font-size: 14px;
+  line-height: 22px;
+  color: #1f2329;
+  margin-top: 16px;
+}
+.disk-title:after {
+  content: "*";
+  color: var(--el-color-danger);
+  margin-left: 4px;
+}
+.disk-title:first-child {
+  margin-top: 16px;
+}
+.margin-top {
+  margin-top: 32px;
+}
+.el-form-item {
+  margin-bottom: 28px;
+}
+
+.disk-content {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  align-items: center;
+  padding: 12px;
+  background-color: #f7f9fc;
+  border-radius: 4px;
+  margin-bottom: 28px;
+
+  .el-form-item {
+    margin-bottom: 0;
+  }
+
+  .delete-icon {
+    cursor: pointer;
+    margin-left: 8px;
+  }
+}
+
+.add-btn {
+  cursor: pointer;
+  font-style: normal;
+  font-weight: 400;
+  font-size: 14px;
+  line-height: 32px;
+
+  color: #3370ff;
+}
+
+/* 自定义数字输入框append  */
+.mo-input--number {
+  display: flex;
+  height: 32px;
+  margin-left: 8px;
+  :deep(.el-input__wrapper) {
+    border-radius: 4px 4px 4px 4px;
+  }
+  :deep(.el-input-number__decrease) {
+    background-color: #ffffff;
+    --el-input-number-controls-height: 15px !important;
+  }
+  :deep(.el-input-number__increase) {
+    background-color: #ffffff;
+    --el-input-number-controls-height: 16px !important;
+    margin-bottom: -2px;
+  }
+  .label {
+    position: absolute;
+    text-align: center;
+    color: var(--el-input-icon-color, var(--el-text-color-placeholder));
+    padding: 0 8px 0 8px;
+    border-left: 0;
+    border-radius: 0 4px 4px 0;
+    z-index: 1000;
+  }
+}
+.detail-box {
+  margin-top: 8px;
+  :deep(.el-descriptions__header) {
+    margin-bottom: 0 !important;
   }
 }
 </style>

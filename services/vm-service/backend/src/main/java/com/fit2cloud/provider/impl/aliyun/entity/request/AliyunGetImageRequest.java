@@ -26,8 +26,8 @@ public class AliyunGetImageRequest extends AliyunVmCreateRequest {
         this.imageSource = this.imageSource == null ? "system" : this.imageSource;
         describeImagesRequest.setImageOwnerAlias(imageSource);
 
-        if (this.getInstanceTypeDTO() != null && this.getInstanceTypeDTO().getInstanceType() != null) {
-            describeImagesRequest.setInstanceType(this.getInstanceTypeDTO().getInstanceType());
+        if (getInstanceType() != null) {
+            describeImagesRequest.setInstanceType(getInstanceType());
         }
 
         if (this.getOs() != null) {

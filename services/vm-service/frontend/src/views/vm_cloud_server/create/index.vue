@@ -1,59 +1,79 @@
 <template>
-  <el-container class="catalog-container" v-loading="loading">
-    <el-header>
-      <el-steps :active="active" finish-status="success">
-        <el-step
-          v-for="step in stepInfos"
-          :key="step.step"
-          :title="step.name"
-        />
+  <el-container class="operation-wrapper">
+    <el-header class="el-header">
+      <el-steps :active="active" finish-status="success" align-centert="true">
+        <el-step v-for="step in stepInfos" :key="step.step" :title="step.name">
+        </el-step>
       </el-steps>
     </el-header>
-    <el-main ref="catalog_container">
-      <p class="description">{{ steps[active + 1]?.description }}</p>
-      <template v-if="steps[active + 1] && active !== steps.length - 2">
-        <layout-container
-          v-for="group in steps[active + 1]?.groups"
-          :key="group.group"
+    <el-main ref="catalog_container" class="el-main">
+      <div>
+        <p class="description">{{ steps[active + 1]?.description }}</p>
+        <base-container
+          v-loading="loading"
+          style="
+            --ce-base-container-height: auto;
+            margin-bottom: 0;
+            --ce-base-container-form-width: 100%;
+          "
         >
-          <template #header>
-            <h4>{{ group.name }}</h4>
+          <template
+            #form
+            v-if="steps[active + 1] && active !== steps.length - 2"
+          >
+            <base-container
+              v-for="group in steps[active + 1]?.groups"
+              :key="group.group"
+            >
+              <template #header>
+                <span>
+                  {{ group.name }}
+                </span>
+              </template>
+              <template #header_content>
+                <el-tooltip :content="group.description">
+                  <ce-icon
+                    v-if="group.description"
+                    class="maybe-icon"
+                    size="14px"
+                    code="icon-maybe_outlined"
+                  />
+                </el-tooltip>
+              </template>
+              <template #content>
+                <CeFormItem
+                  ref="ceForms"
+                  :inline="group.inline"
+                  :other-params="otherParams"
+                  :group-id="group.group.toFixed()"
+                  v-model:form-view-data="group.forms"
+                  v-model:all-form-view-data="formData.forms"
+                  v-model="data[group.group.toFixed()]"
+                  :all-data="formatData"
+                  @optionListRefresh="optionListRefresh"
+                ></CeFormItem>
+              </template>
+            </base-container>
           </template>
-          <template #header_content>
-            <p class="description">
-              {{ group.description }}
-            </p>
-          </template>
-          <template #content>
-            <CeFormItem
-              ref="ceForms"
-              :other-params="otherParams"
-              :group-id="group.group.toFixed()"
-              v-model:form-view-data="group.forms"
-              v-model:all-form-view-data="formData.forms"
-              v-model="data[group.group.toFixed()]"
-              :all-data="formatData"
-              @optionListRefresh="optionListRefresh"
-            ></CeFormItem>
-          </template>
-        </layout-container>
-      </template>
-
-      <template v-if="active === steps.length - 2">
-        <CreateConfirmStep
-          :cloud-account="cloudAccount"
-          :all-data="formatData"
-          :all-form-view-data="formData"
-        />
-      </template>
+        </base-container>
+        <template v-if="active === steps.length - 2">
+          <CreateConfirmStep
+            :cloud-account="cloudAccount"
+            :all-data="formatData"
+            :all-form-view-data="formData"
+          />
+        </template>
+      </div>
     </el-main>
-    <el-footer>
+    <el-footer class="el-footer">
       <div class="footer">
         <div class="footer-form">
           <template v-if="hasFooterForm">
             <CeFormItem
               ref="ceForms_0"
               :other-params="otherParams"
+              :inline="true"
+              :size="'small'"
               group-id="0"
               v-model:form-view-data="steps[0].groups[0].forms"
               v-model:all-form-view-data="formData.forms"
@@ -167,7 +187,6 @@ function next() {
     }
 
     //console.log(promises);
-
     Promise.all(_.flatten(promises)).then((ok) => {
       //console.log(ok);
       active.value++;
@@ -273,7 +292,7 @@ const stepInfos = computed<Array<StepObj>>(() => {
 const hasFooterForm = computed<boolean>(() => {
   return (
     steps.value[0]?.groups[0]?.forms !== undefined &&
-    active.value !== steps.value?.length - 2
+    active.value !== steps.value?.length - 1
   );
 });
 
@@ -335,41 +354,63 @@ onMounted(() => {
 </script>
 
 <style lang="scss" scoped>
-.catalog-container {
+.operation-wrapper {
   height: 100%;
-
-  .footer {
-    border-top: 1px solid var(--el-border-color);
-    padding-top: 10px;
-    padding-bottom: 10px;
-    display: flex;
-    justify-content: space-between;
-    flex-direction: row;
-    align-items: center;
-    flex-wrap: wrap;
-
-    .footer-form {
-      min-width: 400px;
-    }
-    .footer-center {
+  margin: 0 -24px 0 -24px;
+  .maybe-icon {
+    margin-left: 4.67px;
+  }
+  .el-header {
+    height: 60px;
+    // padding: 0 10% 0 10%;
+    .el-step__head {
       display: flex;
-      flex-direction: row;
-      flex-wrap: wrap;
-      justify-content: center;
+      align-items: center;
     }
-
-    .footer-btn {
-      display: flex;
-      flex-direction: row;
-      flex-wrap: wrap;
-      justify-content: flex-end;
+    .el-step__title {
+      margin-right: 10px;
+    }
+    .el-step__line {
+      flex: 1;
+      margin-left: 10px;
     }
   }
-
-  .description {
-    padding-left: 15px;
-    font-size: smaller;
-    color: #606266;
+  .el-main {
+    padding: 24px 24px !important;
+    height: calc(100vh - 120px); //61px为顶部header盒子高度
+    overflow-y: auto;
+    position: relative;
+  }
+  .el-footer {
+    border-top: 1px solid var(--el-border-color);
+    box-shadow: 0 -3px 4px rgba(30, 35, 41, 0.1);
+    z-index: 1000;
+    height: 65px;
+    width: 100%;
+    .footer {
+      padding-top: 10px;
+      display: flex;
+      justify-content: space-between;
+      flex-direction: row;
+      align-items: center;
+      flex-wrap: wrap;
+      .footer-form {
+        min-width: 400px;
+      }
+      .footer-center {
+        display: flex;
+        flex-direction: row;
+        flex-wrap: wrap;
+        justify-content: center;
+      }
+      .footer-btn {
+        width: 375px;
+        display: flex;
+        flex-direction: row;
+        flex-wrap: wrap;
+        justify-content: flex-end;
+      }
+    }
   }
 }
 </style>

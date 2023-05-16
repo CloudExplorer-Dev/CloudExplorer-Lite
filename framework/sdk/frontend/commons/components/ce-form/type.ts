@@ -79,6 +79,7 @@ export interface FormView {
   regexp?: string | null;
 
   regexpDescription?: string | null;
+  encrypted?: boolean;
   index: number;
 
   extraInfo?: string;
@@ -94,6 +95,7 @@ export interface GroupAnnotation {
   group: number;
   name: string;
   description: string;
+  inline?: boolean;
 }
 
 export interface StepAnnotation {

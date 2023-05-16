@@ -43,6 +43,12 @@
 </template>
 
 <script setup lang="ts">
+import _ from "lodash";
+import { computed, onBeforeMount, onMounted, ref } from "vue";
+import type { FormView } from "@commons/components/ce-form/type";
+import formApi from "@commons/api/form_resource_api";
+import type { FormInstance } from "element-plus";
+
 const props = withDefaults(
   defineProps<{
     // 页面渲染
@@ -64,12 +70,6 @@ const emit = defineEmits([
   "update:allFormViewData",
   "optionListRefresh",
 ]);
-
-import _ from "lodash";
-import { computed, onBeforeMount, onMounted, ref } from "vue";
-import type { FormView } from "@commons/components/ce-form/type";
-import formApi from "@commons/api/form_resource_api";
-import type { FormInstance } from "element-plus";
 
 const _loading = ref<boolean>(false);
 
@@ -259,4 +259,8 @@ defineExpose({
 });
 </script>
 
-<style lang="scss"></style>
+<style lang="scss" scoped>
+.el-form-item {
+  margin-bottom: 0 !important;
+}
+</style>

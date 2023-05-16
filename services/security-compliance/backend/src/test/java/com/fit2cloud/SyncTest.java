@@ -1,12 +1,21 @@
 package com.fit2cloud;
 
+import com.fit2cloud.common.constants.JobTypeConstants;
+import com.fit2cloud.common.job.actuator.JobActuator;
+import com.fit2cloud.common.job.job.Job;
+import com.fit2cloud.common.job.job.SimpleJob;
+import com.fit2cloud.common.utils.JsonUtil;
 import com.fit2cloud.constants.ResourceTypeConstants;
+import com.fit2cloud.service.IJobService;
+import com.fit2cloud.service.IJobStepService;
 import com.fit2cloud.service.ISyncService;
+import com.fit2cloud.service.impl.SyncServiceImpl;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.TestPropertySource;
 
 import javax.annotation.Resource;
+import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
 /**
@@ -21,6 +30,17 @@ public class SyncTest {
     @Resource
     private ISyncService syncService;
 
+    @Resource
+    private IJobService service;
+
+    @Test
+    public void test() {
+        Job<IJobStepService.Context> job = service.of("测试扫描");
+        JobActuator<IJobStepService.Context> contextJobActuator = service.ofJobActuator(job, JobTypeConstants.SECURITY_COMPLIANCE_CLOUD_ACCOUNT_SYNC_JOB, "9ed1ac42e90f2sss6adsss2c66d4bf4eeabbbd",
+                ResourceTypeConstants.ECS,
+                List.of(JobActuator.ExecuteStepData.of("VERIFICATION::CLOUD_ACCOUNT")));
+        contextJobActuator.run();
+    }
 
     @Test
     public void syncAll() {
