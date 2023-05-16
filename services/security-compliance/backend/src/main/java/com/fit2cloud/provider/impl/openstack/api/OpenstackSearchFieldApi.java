@@ -25,7 +25,7 @@ public class OpenstackSearchFieldApi {
         InstanceSearchField cpu = new InstanceSearchField("cpu", "cpu", InstanceFieldType.Number)
                 .resetInstanceField(PlatformConstants.fit2cloud_openstack_platform, ResourceTypeConstants.ECS);
 
-        InstanceSearchField memory = new InstanceSearchField("内存", "memory", InstanceFieldType.Number)
+        InstanceSearchField memory = new InstanceSearchField("内存(单位: GB)", "memory", InstanceFieldType.Number)
                 .resetInstanceField(PlatformConstants.fit2cloud_openstack_platform, ResourceTypeConstants.ECS);
 
         InstanceSearchField status = new InstanceSearchField("实例状态", "instanceStatus", InstanceFieldType.Enum,

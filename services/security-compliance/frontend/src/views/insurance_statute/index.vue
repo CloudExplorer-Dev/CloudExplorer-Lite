@@ -8,40 +8,72 @@
       v-loading="loading"
       height="100%"
       ref="table"
+      class="ce-table"
       :columns="columns"
       :data="dataList"
       :tableConfig="tableConfig"
     >
-      <el-table-column
-        prop="id"
-        label="序号"
-        min-width="40"
-        show-overflow-tooltip
-      ></el-table-column>
+      <el-table-column prop="id" label="序号" min-width="40"></el-table-column>
       <el-table-column
         prop="securityLevel"
         label="安全层面"
-        show-overflow-tooltip
         min-width="100px"
       />
-      <el-table-column
-        prop="controlPoint"
-        label="控制点"
-        show-overflow-tooltip
-        min-width="80px"
-      />
+      <el-table-column prop="controlPoint" label="控制点" min-width="80px" />
       <el-table-column
         prop="baseClause"
-        show-overflow-tooltip
         min-width="300px"
         label="等级保护基本要求条款"
-      />
+      >
+        <template #default="scope">
+          <el-popover
+            placement="top-start"
+            title="等级保护基本要求条款"
+            :width="400"
+            :popper-style="{
+              '--el-popover-title-font-size': '12px',
+              '--el-popover-title-text-color': '#646a73',
+              color: '#1F2329',
+              'font-size': '12px',
+            }"
+            trigger="hover"
+            :content="scope.row.improvementProposal"
+          >
+            <template #reference>
+              <span style="cursor: pointer">
+                {{ scope.row.improvementProposal }}</span
+              ></template
+            >
+          </el-popover>
+        </template>
+      </el-table-column>
       <el-table-column
         prop="improvementProposal"
-        show-overflow-tooltip
         min-width="300px"
         label="改进建议"
-      />
+      >
+        <template #default="scope">
+          <el-popover
+            placement="top-start"
+            title="改进建议"
+            :width="400"
+            :popper-style="{
+              '--el-popover-title-font-size': '12px',
+              '--el-popover-title-text-color': '#646a73',
+              color: '#1F2329',
+              'font-size': '12px',
+            }"
+            trigger="hover"
+            :content="scope.row.improvementProposal"
+          >
+            <template #reference>
+              <span style="cursor: pointer">{{
+                scope.row.improvementProposal
+              }}</span>
+            </template>
+          </el-popover>
+        </template>
+      </el-table-column>
     </ce-table>
   </layout-auto-height-content>
 </template>

@@ -5,6 +5,7 @@
     :close-on-click-modal="false"
     v-model="createComplianceRuleVisible"
     size="840px"
+    destroy-on-close
     :before-close="close"
   >
     <template #header>
@@ -26,7 +27,7 @@
             <el-form-item prop="name" style="width: 100%" label="规则名称">
               <el-input
                 v-model="createComplianceRuleForm.name"
-                maxlength="64"
+                maxlength="128"
                 show-word-limit
               />
             </el-form-item>
@@ -36,6 +37,17 @@
                 maxlength="255"
                 show-word-limit
               />
+            </el-form-item>
+
+            <el-form-item prop="riskLevel" style="width: 100%" label="风险等级">
+              <el-radio-group v-model="createComplianceRuleForm.riskLevel">
+                <el-radio
+                  v-for="level in riskLevelOptionList"
+                  :key="level.key"
+                  :label="level.value"
+                  >{{ level.key }}</el-radio
+                >
+              </el-radio-group>
             </el-form-item>
             <el-form-item prop="ruleGroupId" style="width: 100%" label="规则组">
               <el-select
@@ -51,17 +63,6 @@
                   :value="item.id"
                 />
               </el-select>
-            </el-form-item>
-
-            <el-form-item prop="riskLevel" style="width: 100%" label="风险等级">
-              <el-radio-group v-model="createComplianceRuleForm.riskLevel">
-                <el-radio
-                  v-for="level in riskLevelOptionList"
-                  :key="level.key"
-                  :label="level.value"
-                  >{{ level.key }}</el-radio
-                >
-              </el-radio-group>
             </el-form-item>
             <el-form-item
               style="width: 100%"

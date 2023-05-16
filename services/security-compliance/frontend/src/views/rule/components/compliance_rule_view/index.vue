@@ -20,9 +20,13 @@
           :value="getValue(rule)"
         ></Item>
         <el-divider
+          content-position="left"
           v-if="index < rules.rules.length - 1"
           border-style="dashed"
-        />
+          ><div class="condition-type">
+            {{ rules.conditionType === "AND" ? "并且" : "或者" }}
+          </div></el-divider
+        >
       </div>
     </el-popover>
     <div class="error" v-if="!firstLabel && fields.length > 0">
@@ -76,6 +80,9 @@ const getCompare = (rule: Rule) => {
  * @param rule 规则
  */
 const getValue = (rule: Rule) => {
+  if (["EXIST", "NOT_EXIST"].includes(rule.compare)) {
+    return "";
+  }
   const f = fields.value.find((f) => f.field === rule.field);
   if (f?.fieldType === "Enum" || f?.fieldType === "ArrayEnum") {
     return f.options?.find((o: KeyValue<string, any>) => o.value == rule.value)
@@ -115,7 +122,7 @@ watch(
 </script>
 <style lang="scss" scoped>
 :deep(.el-divider--horizontal) {
-  margin: 8px 0;
+  margin: 16px 0;
 }
 .rule-group-content {
   width: 100%;
@@ -164,5 +171,21 @@ watch(
       align-items: center;
     }
   }
+}
+.condition-type {
+  border-radius: 2px;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid #dddedf;
+  width: 26px;
+  height: 16px;
+  font-size: 12px;
+  line-height: 16px;
+  color: #8f959e;
+}
+:deep(.el-divider__text.is-left) {
+  left: 0px;
+  transform: translateY(-50%);
+  padding-left: 0;
+  padding-right: 4px;
 }
 </style>

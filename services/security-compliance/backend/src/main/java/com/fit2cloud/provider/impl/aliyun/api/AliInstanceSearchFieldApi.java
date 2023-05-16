@@ -25,7 +25,7 @@ public class AliInstanceSearchFieldApi {
         InstanceSearchField cpu = new InstanceSearchField("cpu", "cpu", InstanceFieldType.Number)
                 .resetInstanceField(PlatformConstants.fit2cloud_ali_platform, ResourceTypeConstants.ECS);
 
-        InstanceSearchField memory = new InstanceSearchField("内存", "memory", InstanceFieldType.Number)
+        InstanceSearchField memory = new InstanceSearchField("内存大小,单位为MiB", "memory", InstanceFieldType.Number)
                 .resetInstanceField(PlatformConstants.fit2cloud_ali_platform, ResourceTypeConstants.ECS);
 
         InstanceSearchField instanceStatus = new InstanceSearchField("实例状态", "status", InstanceFieldType.Enum,
@@ -93,7 +93,7 @@ public class AliInstanceSearchFieldApi {
                         new DefaultKeyValue<>("因为专有宿主机欠费导致ECS实例被锁定", "dedicatedhostfinancial")))
                 .resetFilterArrayField(PlatformConstants.fit2cloud_ali_platform, ResourceTypeConstants.ECS, "disks");
 
-        InstanceSearchField diskSize = new InstanceSearchField("磁盘大小", "size", InstanceFieldType.Number)
+        InstanceSearchField diskSize = new InstanceSearchField("磁盘大小,单位GiB", "size", InstanceFieldType.Number)
                 .resetFilterArrayField(PlatformConstants.fit2cloud_ali_platform, ResourceTypeConstants.ECS, "disks", false);
 
         InstanceSearchField diskType = new InstanceSearchField("磁盘类型", "type", InstanceFieldType.Enum,
@@ -124,10 +124,10 @@ public class AliInstanceSearchFieldApi {
                 .resetInstanceField(PlatformConstants.fit2cloud_ali_platform, ResourceTypeConstants.ECS);
 
 
-        InstanceSearchField internetMaxBandwidthOut = new InstanceSearchField("公网出带宽最大值", "internetMaxBandwidthOut", InstanceFieldType.Number)
+        InstanceSearchField internetMaxBandwidthOut = new InstanceSearchField("公网出带宽最大值,单位为Mbit/s", "internetMaxBandwidthOut", InstanceFieldType.Number)
                 .resetInstanceField(PlatformConstants.fit2cloud_ali_platform, ResourceTypeConstants.ECS);
 
-        InstanceSearchField internetMaxBandwidthIn = new InstanceSearchField("公网入带宽最大值", "internetMaxBandwidthIn", InstanceFieldType.Number)
+        InstanceSearchField internetMaxBandwidthIn = new InstanceSearchField("公网入带宽最大值,单位为Mbit/s", "internetMaxBandwidthIn", InstanceFieldType.Number)
                 .resetInstanceField(PlatformConstants.fit2cloud_ali_platform, ResourceTypeConstants.ECS);
 
         InstanceSearchField instanceChargeType = new InstanceSearchField("计费方式", "instanceChargeType", InstanceFieldType.Enum,
@@ -295,7 +295,7 @@ public class AliInstanceSearchFieldApi {
                         new DefaultKeyValue<>("否", false)))
                 .resetInstanceField(PlatformConstants.fit2cloud_ali_platform, ResourceTypeConstants.PUBLIC_IP);
 
-        InstanceSearchField bandwidth = new InstanceSearchField("带宽峰值", "bandwidth", InstanceFieldType.Number)
+        InstanceSearchField bandwidth = new InstanceSearchField("带宽峰值,单位：Mbps", "bandwidth", InstanceFieldType.Number)
                 .resetInstanceField(PlatformConstants.fit2cloud_ali_platform, ResourceTypeConstants.PUBLIC_IP);
 
         InstanceSearchField tagKey = new InstanceSearchField("标签键", "key", InstanceFieldType.NestedArrayString)
@@ -345,10 +345,10 @@ public class AliInstanceSearchFieldApi {
                         new DefaultKeyValue<>("否", false)))
                 .resetInstanceField(PlatformConstants.fit2cloud_ali_platform, ResourceTypeConstants.DISK);
 
-        InstanceSearchField iops = new InstanceSearchField("每秒读写（I/O）操作的次数上限", "iops", InstanceFieldType.Number)
+        InstanceSearchField iops = new InstanceSearchField("每秒读写（I/O）操作的次数上限,单位：次/s", "iops", InstanceFieldType.Number)
                 .resetInstanceField(PlatformConstants.fit2cloud_ali_platform, ResourceTypeConstants.DISK);
 
-        InstanceSearchField size = new InstanceSearchField("云盘或本地盘大小,单位GiB", "size", InstanceFieldType.Number)
+        InstanceSearchField size = new InstanceSearchField("磁盘大小,单位GiB", "size", InstanceFieldType.Number)
                 .resetInstanceField(PlatformConstants.fit2cloud_ali_platform, ResourceTypeConstants.DISK);
 
         InstanceSearchField diskChargeType = new InstanceSearchField("计费方式", "diskChargeType", InstanceFieldType.Enum,
@@ -442,7 +442,7 @@ public class AliInstanceSearchFieldApi {
                         new DefaultKeyValue<>("6.0", "6.0")))
                 .resetInstanceField(PlatformConstants.fit2cloud_ali_platform, ResourceTypeConstants.REDIS);
 
-        InstanceSearchField bandwidth = new InstanceSearchField("实例带宽", "bandwidth", InstanceFieldType.Number)
+        InstanceSearchField bandwidth = new InstanceSearchField("实例带宽,单位：MB/s", "bandwidth", InstanceFieldType.Number)
                 .resetInstanceField(PlatformConstants.fit2cloud_ali_platform, ResourceTypeConstants.REDIS);
 
         InstanceSearchField capacity = new InstanceSearchField("实例容量,单位：MB", "capacity", InstanceFieldType.Number)

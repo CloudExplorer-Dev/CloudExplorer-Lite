@@ -23,22 +23,27 @@
           </div>
         </div>
       </template>
-      <el-table-column prop="name" label="规则名称" min-width="200">
+      <el-table-column
+        prop="name"
+        label="规则名称"
+        show-overflow-tooltip
+        min-width="250"
+      >
         <template #default="scope">
-          <el-tooltip class="box-item" effect="dark" placement="top-start">
-            <template #content>
-              <div style="max-width: 500px">{{ scope.row.description }}</div>
-            </template>
-            <div class="table_content_ellipsis">
-              {{ scope.row.name }}
-            </div></el-tooltip
+          <div
+            class="table_content_ellipsis"
+            style="cursor: pointer; color: rgba(51, 112, 255, 1)"
+            @click="openUpdateRule(scope.row)"
           >
+            {{ scope.row.name }}
+          </div>
         </template>
       </el-table-column>
       <el-table-column
         prop="resourceTyppe"
-        min-width="175"
+        width="120"
         label="资源类型"
+        show-overflow-tooltip
         :filtered-value="resourceTypeFilters"
         :column-key="'resourceType'"
         :filter-multiple="false"
@@ -60,7 +65,7 @@
       <el-table-column
         prop="platform"
         label="云平台"
-        min-width="150"
+        width="120"
         :column-key="'platform'"
         :filters="
           Object.keys(platformIcon).map((key) => ({
@@ -71,13 +76,13 @@
         :filter-multiple="false"
       >
         <template #default="scope">
-          <div style="display: flex; align-items: center">
-            <PIcon :platform="scope.row.platform" />
+          <div style="display: flex">
+            <PIcon :platform="scope.row.platform" style="margin-right: 8px" />
             <span>{{ platformIcon[scope.row.platform].name }}</span>
           </div>
         </template>
       </el-table-column>
-      <el-table-column prop="riskLevel" label="风险等级" min-width="120">
+      <el-table-column prop="riskLevel" label="风险等级" width="100">
         <template #default="scope">
           <div class="risk_level">
             <el-tag
@@ -101,7 +106,7 @@
           </div>
         </template>
       </el-table-column>
-      <el-table-column label="扫描状态" min-width="120">
+      <el-table-column label="扫描状态" width="100">
         <template #default="scope">
           <div style="cursor: pointer">
             <ScanStatusColumn
@@ -118,7 +123,7 @@
         prop="scanStatus"
         column-key="scanStatus"
         label="检测状态"
-        min-width="100px"
+        width="100px"
         :filter-multiple="false"
         :filters="scanStatusList"
         :filtered-value="scanStatus ? [scanStatus] : []"
@@ -145,7 +150,7 @@
       <el-table-column
         prop="notComplianceCount"
         label="不合规资源"
-        min-width="120px"
+        width="120px"
         sortable
       >
         <template #default="scope">
@@ -162,10 +167,10 @@
       <el-table-column
         prop="updateTime"
         label="最后扫描时间"
-        min-width="170px"
+        width="170px"
         sortable
       />
-      <el-table-column label="操作栏" fixed="right">
+      <el-table-column label="操作栏" fixed="right" width="100px">
         <template #default="scope">
           <span class="row_scan_result" @click="details(scope.row)">
             扫描结果
@@ -176,7 +181,13 @@
         <CeTableColumnSelect :columns="columns" />
       </template>
     </ce-table>
-
+    <UpdateComplianceRule
+      ref="update_compliance_rule_ref"
+      :refresh="() => {}"
+      :compliance-rule-group-list="complianceRuleGroupList"
+      :risk-level-option-list="riskLevelOptionList"
+      :resource-type-option-list="resourceTypes"
+    ></UpdateComplianceRule>
     <JobDetailsView ref="jobDetailsRef" :account-job-record="currentJobRow" />
   </div>
 </template>
@@ -192,20 +203,21 @@ import complianceScanApi from "@/api/compliance_scan";
 import { platformIcon } from "@commons/utils/platform";
 import PIcon from "@commons/components/platform-icon/index.vue";
 import _ from "lodash";
-
+import complianceRuleGroupApi from "@/api/rule_group";
+import type { ComplianceRuleGroup } from "@/api/rule_group/type";
 import {
   PaginationConfig,
   TableConfig,
   TableSearch,
 } from "@commons/components/ce-table/type";
 import { useRouter } from "vue-router";
-
 import type {
   AccountJobRecord,
   CloudAccount,
 } from "@commons/api/cloud_account/type";
 import type { ComplianceRuleGroupCountResponse } from "@/api/compliance_scan_result/type";
 import bus from "@commons/bus";
+import UpdateComplianceRule from "@/views/rule/components/UpdateComplianceRule.vue";
 import { useRoute } from "vue-router";
 const route = useRoute();
 let jobInterval: number;
@@ -213,6 +225,12 @@ let jobInterval: number;
 const router = useRouter();
 const complianceRuleGroup = ref<ComplianceRuleGroupCountResponse>();
 const resourceTypeFilters = ref<Array<string>>([]);
+
+// 编辑合规规则对象
+const update_compliance_rule_ref =
+  ref<InstanceType<typeof UpdateComplianceRule>>();
+// 合规规则组
+const complianceRuleGroupList = ref<Array<ComplianceRuleGroup>>([]);
 
 // 轮询时间
 const pollTime = 10000;
@@ -238,6 +256,9 @@ onMounted(() => {
     }
   });
 
+  complianceRuleGroupApi.list().then((ok) => {
+    complianceRuleGroupList.value = ok.data;
+  });
   if (route.query.resourceType) {
     resourceTypeFilters.value = [route.query.resourceType as string];
   }
@@ -268,6 +289,14 @@ onMounted(() => {
   }, pollTime);
 });
 
+/**
+ * 打开编辑规则抽屉
+ * @param row
+ */
+const openUpdateRule = (row: ComplianceScanResultResponse) => {
+  update_compliance_rule_ref.value?.open();
+  update_compliance_rule_ref.value?.echo(row.id);
+};
 /**
  * 获取扫描状态
  */
@@ -305,6 +334,14 @@ onBeforeUnmount(() => {
   }
 });
 
+/**
+ * 风险等级OptionList
+ */
+const riskLevelOptionList: Array<KeyValue<string, string>> = [
+  { key: "高风险", value: "HIGH" },
+  { key: "中风险", value: "MIDDLE" },
+  { key: "低风险", value: "LOW" },
+];
 // 风险等级数据
 const riskLevelOptions = ref<Array<{ label: string; value: number }>>([
   {
@@ -479,11 +516,9 @@ const tableConfig = ref<TableConfig>({
 });
 </script>
 <style lang="scss" scoped>
-:deep(tbody) {
-  .el-table__cell {
-    .cell {
-      color: rgb(31, 35, 41);
-    }
+:deep(.el-table__cell) {
+  .cell {
+    white-space: nowrap;
   }
 }
 .active {
@@ -549,6 +584,11 @@ const tableConfig = ref<TableConfig>({
       color: rgba(46, 161, 33, 1);
       border: none;
     }
+  }
+}
+:deep(.table_cell) {
+  .cell {
+    white-space: nowrap;
   }
 }
 </style>

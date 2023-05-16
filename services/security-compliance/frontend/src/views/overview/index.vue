@@ -273,6 +273,9 @@ const getResourceTypeOptions = (
 const getRuleGroupOptions = (
   groupDatas: Array<ComplianceViewGroupResponse>
 ) => {
+  if (!groupDatas || groupDatas.length === 0) {
+    return BarTemplate.ofEmpty("不合规资源-按规则组分布").option;
+  }
   const barTemplate = BarTemplate.of(
     groupDatas.map((item) => ({
       ...item,
@@ -298,6 +301,9 @@ const getRuleGroupOptions = (
  * @param groupDatas 按规则分组的数据
  */
 const getRuleOptions = (groupDatas: Array<ComplianceViewGroupResponse>) => {
+  if (!groupDatas || groupDatas.length === 0) {
+    return BarTemplate.ofEmpty("不合规资源-按规则组分布").option;
+  }
   const ruleDataList = groupDatas.map((item) => ({
     ...item,
     name: item.groupName,
