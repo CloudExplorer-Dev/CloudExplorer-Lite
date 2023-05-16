@@ -2,8 +2,11 @@
   <el-container class="operation-wrapper">
     <el-header class="el-header">
       <el-steps :active="active" finish-status="success" align-centert="true">
-        <el-step v-for="step in stepInfos" :key="step.step" :title="step.name">
-        </el-step>
+        <el-step
+          v-for="step in stepInfos"
+          :key="step.step"
+          :title="step.name"
+        />
       </el-steps>
     </el-header>
     <el-main ref="catalog_container" class="el-main">

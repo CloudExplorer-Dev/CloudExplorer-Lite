@@ -1,6 +1,5 @@
 <template>
   <base-container
-    v-loading="loading"
     style="
       --ce-base-container-height: auto;
       margin-bottom: 0;

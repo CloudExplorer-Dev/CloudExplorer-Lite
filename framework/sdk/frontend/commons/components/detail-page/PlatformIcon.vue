@@ -3,7 +3,7 @@ import { platformIcon } from "@commons/utils/platform";
 const props = withDefaults(
   defineProps<{
     platform: string;
-    style?: string;
+    style?: string | object;
     size?: string;
   }>(),
   { style: "margin-right: 5px; width: 16px; height: 16px", size: "16px" }
