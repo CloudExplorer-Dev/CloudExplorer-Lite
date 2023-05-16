@@ -61,6 +61,7 @@ function getOrgTree() {
     orgTreeData.value = res.data;
   });
 }
+
 function getWorkspaceTree() {
   workspaceTree().then((res) => {
     workspaceTreeData.value = res.data;
@@ -247,10 +248,26 @@ function open() {
 
 function refreshUser() {
   if (props.id) {
-    getUser(props.id, loading).then((res) => {
-      user.value = res.data;
-      form.value = new UpdateUserRequest(user.value);
-    });
+    loading.value = true;
+    getUser(props.id)
+      .then((res) => {
+        listRoles()
+          .then((res2) => {
+            user.value = res.data;
+            const _user = new UpdateUserRequest(user.value);
+            const roleIds = _.map(res2.data, (r) => r.id);
+            _user.roleInfoList = _.filter(_user.roleInfoList, (r) =>
+              _.includes(roleIds, r.roleId)
+            );
+            form.value = _user;
+          })
+          .finally(() => {
+            loading.value = false;
+          });
+      })
+      .catch((err) => {
+        loading.value = false;
+      });
   } else {
     form.value = {
       username: "",
@@ -452,17 +469,21 @@ defineExpose({ open, refreshUser });
   color: #1f2329;
   margin-top: 16px;
 }
+
 .role-title:after {
   content: "*";
   color: var(--el-color-danger);
   margin-left: 4px;
 }
+
 .role-title:first-child {
   margin-top: 16px;
 }
+
 .margin-top {
   margin-top: 32px;
 }
+
 .el-form-item {
   margin-bottom: 28px;
 }
