@@ -23,18 +23,18 @@
         prop="name"
         show-overflow-tooltip
         label="规则名称"
-        min-width="120"
+        min-width="200"
       />
       <el-table-column
         prop="ruleGroupName"
         show-overflow-tooltip
-        min-width="120"
+        width="120"
         label="规则组"
       />
       <el-table-column
         prop="platform"
         label="云平台"
-        min-width="120"
+        width="100"
         :column-key="'platform'"
         :filters="
           Object.keys(platformIcon).map((key) => ({
@@ -64,7 +64,7 @@
           {{ getResourceTypeLebel(scope.row) }}
         </template>
       </el-table-column>
-      <el-table-column prop="rules" label="合规判断条件" min-width="250">
+      <el-table-column prop="rules" label="合规判断条件" min-width="150">
         <template #default="scope">
           <ComplianceRuleView
             :platform="scope.row.platform"
@@ -73,10 +73,19 @@
           ></ComplianceRuleView>
         </template>
       </el-table-column>
+      <el-table-column prop="rules" show-overflow-tooltip label="规则类型">
+        <template #default="scope">
+          {{
+            scope.row.rules.scanRule === "COMPLIANCE"
+              ? "视为合规"
+              : "视为不合规"
+          }}
+        </template>
+      </el-table-column>
       <el-table-column
         prop="riskLevel"
         label="风险等级"
-        min-width="120"
+        width="100"
         :column-key="'riskLevel'"
         :filters="riskLevelFilterList"
         :filter-multiple="false"
@@ -108,7 +117,7 @@
         prop="description"
         show-overflow-tooltip
         label="规则描述"
-        width="200px"
+        min-width="200px"
       >
         <template #default="scope">
           {{ scope.row.description }}

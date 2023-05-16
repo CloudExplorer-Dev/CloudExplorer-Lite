@@ -5,12 +5,14 @@
     :close-on-click-modal="false"
     v-model="createComplianceRuleVisible"
     size="840px"
+    destroy-on-close
     :before-close="close"
   >
     <template #header>
-      <span class="title">修改规则</span>
+      <span class="title">编辑规则</span>
     </template>
     <el-form
+      v-loading="loading"
       label-position="top"
       :inline="true"
       require-asterisk-position="right"
@@ -26,7 +28,7 @@
             <el-form-item prop="name" style="width: 100%" label="规则名称">
               <el-input
                 v-model="updateComplianceRuleForm.name"
-                maxlength="64"
+                maxlength="128"
                 show-word-limit
               />
             </el-form-item>
@@ -37,6 +39,17 @@
                 show-word-limit
               />
             </el-form-item>
+            <el-form-item prop="riskLevel" style="width: 100%" label="风险等级">
+              <el-radio-group v-model="updateComplianceRuleForm.riskLevel">
+                <el-radio
+                  v-for="level in riskLevelOptionList"
+                  :key="level.key"
+                  :label="level.value"
+                  >{{ level.key }}</el-radio
+                >
+              </el-radio-group>
+            </el-form-item>
+
             <el-form-item prop="ruleGroupId" style="width: 100%" label="规则组">
               <el-select
                 style="width: 100%"
@@ -53,16 +66,6 @@
               </el-select>
             </el-form-item>
 
-            <el-form-item prop="riskLevel" style="width: 100%" label="风险等级">
-              <el-radio-group v-model="updateComplianceRuleForm.riskLevel">
-                <el-radio
-                  v-for="level in riskLevelOptionList"
-                  :key="level.key"
-                  :label="level.value"
-                  >{{ level.key }}</el-radio
-                >
-              </el-radio-group>
-            </el-form-item>
             <el-form-item
               style="width: 100%"
               prop="insuranceStatuteIds"
@@ -396,6 +399,7 @@ onMounted(() => {
     supportPlatformResourceList.value = ok.data;
   });
 });
+const loading = ref<boolean>(false);
 /**
  * 打开弹出框
  */
@@ -427,8 +431,15 @@ const echoData = (complianceRule: ComplianceRule) => {
     rulesRef.value?.echo(complianceRule.rules);
   });
 };
+const echo = (complianceRuleId: string) => {
+  complianceRuleApi
+    .getComplianceRuleById(complianceRuleId, loading)
+    .then((ok) => {
+      echoData(ok.data);
+    });
+};
 const rulesRef = ref<InstanceType<typeof compliance_rules>>();
-defineExpose({ open, close, echoData });
+defineExpose({ open, close, echoData, echo });
 </script>
 <style lang="scss">
 .title {

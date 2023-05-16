@@ -44,7 +44,7 @@ public class TencentInstanceSearchFieldApi {
         InstanceSearchField cpu = new InstanceSearchField("CPU", "cpu", InstanceFieldType.Number)
                 .resetInstanceField(PlatformConstants.fit2cloud_tencent_platform, ResourceTypeConstants.ECS);
 
-        InstanceSearchField memory = new InstanceSearchField("内存", "memory", InstanceFieldType.Number)
+        InstanceSearchField memory = new InstanceSearchField("内存,单位：GB", "memory", InstanceFieldType.Number)
                 .resetInstanceField(PlatformConstants.fit2cloud_tencent_platform, ResourceTypeConstants.ECS);
 
         InstanceSearchField restrictState = new InstanceSearchField("实例业务状态", "RestrictState", InstanceFieldType.Enum,
@@ -87,10 +87,10 @@ public class TencentInstanceSearchFieldApi {
                         new DefaultKeyValue<>("通用性SSD云硬盘", "CLOUD_BSSD")))
                 .resetInstanceField(PlatformConstants.fit2cloud_tencent_platform, ResourceTypeConstants.ECS);
 
-        InstanceSearchField systemDiskSize = new InstanceSearchField("系统盘大小", "systemDisk.diskSize", InstanceFieldType.Number)
+        InstanceSearchField systemDiskSize = new InstanceSearchField("系统盘大小,单位：GB", "systemDisk.diskSize", InstanceFieldType.Number)
                 .resetInstanceField(PlatformConstants.fit2cloud_tencent_platform, ResourceTypeConstants.ECS);
 
-        InstanceSearchField dataDiskSize = new InstanceSearchField("数据盘大小", "dataDisks.diskSize", InstanceFieldType.ArrayNumber)
+        InstanceSearchField dataDiskSize = new InstanceSearchField("数据盘大小,单位：GB", "dataDisks.diskSize", InstanceFieldType.ArrayNumber)
                 .resetInstanceField(PlatformConstants.fit2cloud_tencent_platform, ResourceTypeConstants.ECS);
 
         InstanceSearchField dataDiskDeleteWithInstance = new InstanceSearchField("数据盘是否随实例删除", "dataDisks.deleteWithInstance", InstanceFieldType.ArrayEnum,
@@ -126,7 +126,7 @@ public class TencentInstanceSearchFieldApi {
         InstanceSearchField internetAccessiblePublicIpAssigned = new InstanceSearchField("实例主网卡的公网IP列表", "publicIpAddresses", InstanceFieldType.ArrayString)
                 .resetInstanceField(PlatformConstants.fit2cloud_tencent_platform, ResourceTypeConstants.ECS);
 
-        InstanceSearchField internetAccessibleInternetAccessible = new InstanceSearchField("公网出带宽上限", "internetAccessible.internetMaxBandwidthOut", InstanceFieldType.Number)
+        InstanceSearchField internetAccessibleInternetAccessible = new InstanceSearchField("公网出带宽上限,单位：Mbps", "internetAccessible.internetMaxBandwidthOut", InstanceFieldType.Number)
                 .resetInstanceField(PlatformConstants.fit2cloud_tencent_platform, ResourceTypeConstants.ECS);
 
         InstanceSearchField tagKey = new InstanceSearchField("标签键", "key", InstanceFieldType.NestedArrayString)
@@ -406,7 +406,7 @@ public class TencentInstanceSearchFieldApi {
                         new DefaultKeyValue<>("解绑后不会自动释放", false)))
                 .resetInstanceField(PlatformConstants.fit2cloud_tencent_platform, ResourceTypeConstants.PUBLIC_IP);
 
-        InstanceSearchField bandwidth = new InstanceSearchField("带宽", "bandwidth", InstanceFieldType.Number)
+        InstanceSearchField bandwidth = new InstanceSearchField("带宽,单位：Mbps", "bandwidth", InstanceFieldType.Number)
                 .resetInstanceField(PlatformConstants.fit2cloud_tencent_platform, ResourceTypeConstants.PUBLIC_IP);
 
         InstanceSearchField internetChargeType = new InstanceSearchField("网络计费模式", "internetChargeType", InstanceFieldType.Enum,
@@ -627,10 +627,10 @@ public class TencentInstanceSearchFieldApi {
         InstanceSearchField vport = new InstanceSearchField("实例访问端口", "vport", InstanceFieldType.Number)
                 .resetInstanceField(PlatformConstants.fit2cloud_tencent_platform, ResourceTypeConstants.SQL_SERVER);
 
-        InstanceSearchField memory = new InstanceSearchField("实例内存大小,单位G", "memory", InstanceFieldType.Number)
+        InstanceSearchField memory = new InstanceSearchField("实例内存大小,单位GB", "memory", InstanceFieldType.Number)
                 .resetInstanceField(PlatformConstants.fit2cloud_tencent_platform, ResourceTypeConstants.SQL_SERVER);
 
-        InstanceSearchField usedStorage = new InstanceSearchField("实例已经使用存储空间大小,单位G", "usedStorage", InstanceFieldType.Number)
+        InstanceSearchField usedStorage = new InstanceSearchField("实例已经使用存储空间大小,单位GB", "usedStorage", InstanceFieldType.Number)
                 .resetInstanceField(PlatformConstants.fit2cloud_tencent_platform, ResourceTypeConstants.SQL_SERVER);
 
         InstanceSearchField storage = new InstanceSearchField("实例存储空间大小,单位G", "storage", InstanceFieldType.Number)
@@ -1255,7 +1255,6 @@ public class TencentInstanceSearchFieldApi {
                 .resetFilterArrayField(PlatformConstants.fit2cloud_tencent_platform, ResourceTypeConstants.LOAD_BALANCER, "tags");
         InstanceSearchField tagValue = new InstanceSearchField("标签值", "tagValue", InstanceFieldType.NestedArrayString)
                 .resetFilterArrayField(PlatformConstants.fit2cloud_tencent_platform, ResourceTypeConstants.LOAD_BALANCER, "tags");
-
         return List.of(status, chargeType, loadBalancerType, forward, openBgp, isolation, isDDos, snatPro, isBlock, localBgp,
                 mixIpTarget, tagKey, tagValue);
     }

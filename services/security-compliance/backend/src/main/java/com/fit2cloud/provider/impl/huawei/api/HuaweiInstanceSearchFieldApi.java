@@ -160,7 +160,7 @@ public class HuaweiInstanceSearchFieldApi {
                 ))
                 .resetInstanceField(PlatformConstants.fit2cloud_huawei_platform, ResourceTypeConstants.DISK);
 
-        InstanceSearchField size = new InstanceSearchField("云磁盘大小", "size", InstanceFieldType.Number)
+        InstanceSearchField size = new InstanceSearchField("云磁盘大小,单位为GiB", "size", InstanceFieldType.Number)
                 .resetInstanceField(PlatformConstants.fit2cloud_huawei_platform, ResourceTypeConstants.DISK);
 
         InstanceSearchField bootable = new InstanceSearchField("云硬盘类型", "bootable", InstanceFieldType.Enum,
@@ -596,7 +596,7 @@ public class HuaweiInstanceSearchFieldApi {
                         new DefaultKeyValue<>("共享带宽", "WHOLE")))
                 .resetInstanceField(PlatformConstants.fit2cloud_huawei_platform, ResourceTypeConstants.PUBLIC_IP);
 
-        InstanceSearchField bandwidth_size = new InstanceSearchField("带宽大小", "bandwidth.size", InstanceFieldType.Number)
+        InstanceSearchField bandwidth_size = new InstanceSearchField("带宽大小,单位为Mbit/s", "bandwidth.size", InstanceFieldType.Number)
                 .resetInstanceField(PlatformConstants.fit2cloud_huawei_platform, ResourceTypeConstants.PUBLIC_IP);
 
         InstanceSearchField tagKey = new InstanceSearchField("标签键", "key", InstanceFieldType.NestedArrayString)
