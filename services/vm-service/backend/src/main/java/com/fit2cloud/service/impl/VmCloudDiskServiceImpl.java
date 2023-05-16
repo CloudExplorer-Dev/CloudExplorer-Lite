@@ -25,6 +25,7 @@ import com.fit2cloud.common.log.constants.OperatedTypeEnum;
 import com.fit2cloud.common.log.constants.ResourceTypeEnum;
 import com.fit2cloud.common.provider.util.CommonUtil;
 import com.fit2cloud.common.utils.ColumnNameUtil;
+import com.fit2cloud.common.utils.CurrentUserUtils;
 import com.fit2cloud.common.utils.PageUtil;
 import com.fit2cloud.constants.ErrorCodeConstants;
 import com.fit2cloud.controller.request.CreateJobRecordRequest;
@@ -45,10 +46,7 @@ import com.fit2cloud.provider.constants.F2CInstanceStatus;
 import com.fit2cloud.provider.constants.ProviderConstants;
 import com.fit2cloud.provider.entity.F2CDisk;
 import com.fit2cloud.provider.impl.vsphere.util.ResourceConstants;
-import com.fit2cloud.service.IPermissionService;
-import com.fit2cloud.service.IResourceOperateService;
-import com.fit2cloud.service.IVmCloudDiskService;
-import com.fit2cloud.service.WorkspaceCommonService;
+import com.fit2cloud.service.*;
 import com.fit2cloud.utils.ConvertUtils;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -57,10 +55,7 @@ import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
 import java.time.LocalDateTime;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Objects;
-import java.util.UUID;
+import java.util.*;
 
 /**
  * <p>
@@ -88,6 +83,8 @@ public class VmCloudDiskServiceImpl extends ServiceImpl<BaseVmCloudDiskMapper, V
     private IBaseRecycleBinService recycleService;
     @Resource
     private WorkspaceCommonService workspaceCommonService;
+    @Resource
+    private OrganizationCommonService organizationCommonService;
 
     @Override
     public IPage<VmCloudDiskDTO> pageVmCloudDisk(PageVmCloudDiskRequest request) {
@@ -110,6 +107,15 @@ public class VmCloudDiskServiceImpl extends ServiceImpl<BaseVmCloudDiskMapper, V
         return result;
     }
 
+    public List<VmCloudDiskDTO> listVmCloudDisk(PageVmCloudDiskRequest request) {
+        List<String> sourceIds = permissionService.getSourceIds();
+        if (CollectionUtils.isNotEmpty(sourceIds)) {
+            request.setSourceIds(sourceIds);
+        }
+        QueryWrapper<VmCloudDiskDTO> wrapper = addQuery(request);
+        return diskMapper.pageList(wrapper);
+    }
+
     @Override
     public long countDisk() {
         List<String> sourceIds = permissionService.getSourceIds();
@@ -122,6 +128,8 @@ public class VmCloudDiskServiceImpl extends ServiceImpl<BaseVmCloudDiskMapper, V
     private <T extends VmCloudDisk> QueryWrapper<T> addQuery(PageVmCloudDiskRequest request) {
         QueryWrapper<T> wrapper = new QueryWrapper<>();
 
+        wrapper.eq(StringUtils.isNotBlank(request.getId()), ColumnNameUtil.getColumnName(VmCloudDisk::getId, true), request.getId());
+        wrapper.in(CollectionUtils.isNotEmpty(request.getIds()), ColumnNameUtil.getColumnName(VmCloudDisk::getId, true), request.getIds());
         wrapper.like(StringUtils.isNotBlank(request.getWorkspaceId()), ColumnNameUtil.getColumnName(VmCloudDisk::getSourceId, true), request.getWorkspaceId());
         wrapper.like(StringUtils.isNotBlank(request.getDiskName()), ColumnNameUtil.getColumnName(VmCloudDisk::getDiskName, true), request.getDiskName());
         wrapper.like(StringUtils.isNotBlank(request.getAccountName()), ColumnNameUtil.getColumnName(CloudAccount::getName, true), request.getAccountName());
@@ -173,7 +181,12 @@ public class VmCloudDiskServiceImpl extends ServiceImpl<BaseVmCloudDiskMapper, V
 
     @Override
     public VmCloudDiskDTO cloudDisk(String id) {
-        return diskMapper.selectDiskDetailById(id);
+        List<VmCloudDiskDTO> list = this.listVmCloudDisk(new PageVmCloudDiskRequest().setId(id));
+        if (CollectionUtils.isEmpty(list)) {
+            return null;
+        } else {
+            return list.get(0);
+        }
     }
 
     @Override
@@ -258,6 +271,9 @@ public class VmCloudDiskServiceImpl extends ServiceImpl<BaseVmCloudDiskMapper, V
 
     @Override
     public boolean enlarge(String id, long newDiskSize) {
+        if (this.cloudDisk(id) == null) {
+            throw new RuntimeException("找不到ID为[" + id + "]的资源或没有权限操作");
+        }
         try {
             VmCloudDisk vmCloudDisk = baseMapper.selectById(id);
 
@@ -311,6 +327,10 @@ public class VmCloudDiskServiceImpl extends ServiceImpl<BaseVmCloudDiskMapper, V
 
     @Override
     public boolean attach(String id, String instanceUuid, Boolean deleteWithInstance) {
+        if (this.cloudDisk(id) == null) {
+            throw new RuntimeException("找不到ID为[" + id + "]的资源或没有权限操作");
+        }
+        //todo 判断云主机?
         try {
             VmCloudDisk vmCloudDisk = baseMapper.selectById(id);
 
@@ -377,6 +397,9 @@ public class VmCloudDiskServiceImpl extends ServiceImpl<BaseVmCloudDiskMapper, V
 
     @Override
     public boolean detach(String id) {
+        if (this.cloudDisk(id) == null) {
+            throw new RuntimeException("找不到ID为[" + id + "]的资源或没有权限操作");
+        }
         try {
             VmCloudDisk vmCloudDisk = baseMapper.selectById(id);
 
@@ -431,6 +454,9 @@ public class VmCloudDiskServiceImpl extends ServiceImpl<BaseVmCloudDiskMapper, V
 
     @Override
     public boolean delete(String id) {
+        if (this.cloudDisk(id) == null) {
+            throw new RuntimeException("找不到ID为[" + id + "]的资源或没有权限操作");
+        }
         try {
             VmCloudDisk vmCloudDisk = baseMapper.selectById(id);
 
@@ -652,10 +678,25 @@ public class VmCloudDiskServiceImpl extends ServiceImpl<BaseVmCloudDiskMapper, V
      */
     @Override
     public boolean grant(GrantRequest grantRequest) {
-        String sourceId = grantRequest.getGrant() ? grantRequest.getSourceId() : "";
+        //先过滤可操作的
+        List<String> resources = this.listVmCloudDisk(new PageVmCloudDiskRequest().setIds(Arrays.asList(grantRequest.getIds()))).stream().map(VmCloudDiskDTO::getId).toList();
+        if (CollectionUtils.isEmpty(resources)) {
+            throw new RuntimeException("必须指定有效的磁盘ID");
+        }
 
-        UpdateWrapper<VmCloudDisk> updateWrapper = new UpdateWrapper();
-        updateWrapper.lambda().in(VmCloudDisk::getId, grantRequest.getIds())
+        String sourceId = grantRequest.getGrant() ? grantRequest.getSourceId() : (CurrentUserUtils.isAdmin() ? "" : CurrentUserUtils.getOrganizationId()); //组织管理员解除授权就放在自己当前的组织根目录
+
+        if (grantRequest.getGrant() && CurrentUserUtils.isOrgAdmin()) {
+            //判断授权的id是否有权限
+            List<String> sourceIds = organizationCommonService.getOrgIdsByParentId(CurrentUserUtils.getOrganizationId());
+            sourceIds.addAll(workspaceCommonService.getWorkspaceIdsByOrgIds(sourceIds));
+            if (!sourceIds.contains(sourceId)) {
+                throw new RuntimeException("没有权限授权到目标组织或工作空间");
+            }
+        }
+
+        UpdateWrapper<VmCloudDisk> updateWrapper = new UpdateWrapper<>();
+        updateWrapper.lambda().in(VmCloudDisk::getId, resources)
                 .set(VmCloudDisk::getSourceId, sourceId);
         return update(updateWrapper);
     }
@@ -670,6 +711,9 @@ public class VmCloudDiskServiceImpl extends ServiceImpl<BaseVmCloudDiskMapper, V
 
     @Override
     public boolean recycleDisk(String id) {
+        if (this.cloudDisk(id) == null) {
+            throw new RuntimeException("找不到ID为[" + id + "]的资源或没有权限操作");
+        }
         recycleService.insertRecycleRecord(id, ResourceTypeConstants.DISK);
         return true;
     }

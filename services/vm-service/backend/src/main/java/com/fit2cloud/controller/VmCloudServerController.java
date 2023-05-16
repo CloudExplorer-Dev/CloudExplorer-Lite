@@ -1,7 +1,6 @@
 package com.fit2cloud.controller;
 
 import com.baomidou.mybatisplus.core.metadata.IPage;
-import com.fit2cloud.base.entity.VmCloudServer;
 import com.fit2cloud.common.form.vo.FormObject;
 import com.fit2cloud.common.log.annotation.OperatedLog;
 import com.fit2cloud.common.log.constants.OperatedTypeEnum;
@@ -49,7 +48,7 @@ public class VmCloudServerController {
     @ApiOperation(value = "查询云主机", notes = "查询云主机")
     @GetMapping("/list")
     @PreAuthorize("hasAnyCePermission('CLOUD_SERVER:READ')")
-    public ResultHolder<List<VmCloudServer>> list(PageVmCloudServerRequest pageVmCloudServerRequest) {
+    public ResultHolder<List<VmCloudServerDTO>> list(PageVmCloudServerRequest pageVmCloudServerRequest) {
         return ResultHolder.success(iVmCloudServerService.listVmCloudServer(pageVmCloudServerRequest));
     }
 

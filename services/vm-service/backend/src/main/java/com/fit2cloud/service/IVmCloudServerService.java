@@ -27,7 +27,7 @@ public interface IVmCloudServerService extends IService<VmCloudServer> {
 
     IPage<VmCloudServerDTO> pageVmCloudServer(PageVmCloudServerRequest request);
 
-    List<VmCloudServer> listVmCloudServer(PageVmCloudServerRequest request);
+    List<VmCloudServerDTO> listVmCloudServer(PageVmCloudServerRequest request);
 
     boolean powerOff(String vmId);
 
