@@ -42,10 +42,10 @@ public class VsphereInstanceSearchApi {
     }
 
     public static List<InstanceSearchField> listDataStoreInstanceSearchField() {
-        InstanceSearchField capacity = new InstanceSearchField("容量", "capacity", InstanceFieldType.Number)
+        InstanceSearchField capacity = new InstanceSearchField("容量(单位: GB)", "capacity", InstanceFieldType.Number)
                 .resetInstanceField(PlatformConstants.fit2cloud_vsphere_platform, ResourceTypeConstants.DATA_STORE);
 
-        InstanceSearchField freeSpace = new InstanceSearchField("剩余容量", "freeSpace", InstanceFieldType.Number)
+        InstanceSearchField freeSpace = new InstanceSearchField("剩余容量(单位: GB)", "freeSpace", InstanceFieldType.Number)
                 .resetInstanceField(PlatformConstants.fit2cloud_vsphere_platform, ResourceTypeConstants.DATA_STORE);
 
         InstanceSearchField status = new InstanceSearchField("状态", "status", InstanceFieldType.String)
