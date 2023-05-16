@@ -111,7 +111,6 @@ public class AliyunVmCreateRequest extends AliyunBaseRequest implements ICreateS
     private String zoneId;
 
     @Form(inputType = InputType.TableRadio,
-            label = "实例规格",
             relationTrigger = "zoneId",
             textField = "instanceType",
             valueField = "instanceType",
@@ -120,7 +119,7 @@ public class AliyunVmCreateRequest extends AliyunBaseRequest implements ICreateS
             group = 3,
             confirmGroup = 1,
             clazz = AliyunCloudProvider.class,
-            propsInfo = "{\"rules\":[{\"message\":\"实例规格不能为空\",\"trigger\":\"change\",\"required\":true}],\"style\":{\"width\":\"100%\",\"height\":\"300px\"},\"showLabel\":false,\"activeMsg\":\"已选实例\",\"title\":\"选择实例规格\",\"tableColumns\":[{\"property\":\"instanceTypeFamilyName\",\"label\":\"规格类型\",\"min-width\":\"120px\"},{\"property\":\"instanceType\",\"label\":\"规格名称\"},{\"property\":\"cpuMemory\",\"label\":\"实例规格\"}]}"
+            propsInfo = "{\"rules\":[{\"message\":\"实例规格不能为空\",\"trigger\":\"change\",\"required\":true}],\"style\":{\"width\":\"100%\",\"height\":\"400px\"},\"showLabel\":false,\"activeMsg\":\"已选实例\",\"title\":\"选择实例规格\",\"tableColumns\":[{\"property\":\"instanceTypeFamilyName\",\"label\":\"规格类型\",\"min-width\":\"120px\"},{\"property\":\"instanceType\",\"label\":\"规格名称\"},{\"property\":\"cpuMemory\",\"label\":\"实例规格\"}]}"
     )
     private String instanceType;
 
@@ -166,7 +165,6 @@ public class AliyunVmCreateRequest extends AliyunBaseRequest implements ICreateS
     private List<AliyunCreateDiskForm> disks;
 
     @Form(inputType = InputType.TableRadio,
-            label = "网络",
             relationTrigger = "zoneId",
             textField = "networkName",
             valueField = "networkId",
@@ -175,12 +173,11 @@ public class AliyunVmCreateRequest extends AliyunBaseRequest implements ICreateS
             group = 6,
             confirmGroup = 2,
             clazz = AliyunCloudProvider.class,
-            propsInfo = "{\"rules\":[{\"message\":\"网络不能为空\",\"trigger\":\"change\",\"required\":true}],\"style\":{\"width\":\"100%\",\"height\":\"300px\"},\"showLabel\":false,\"activeMsg\":\"已选网络\",\"title\":\"选择网络\",\"tableColumns\":[{\"property\":\"networkName\",\"label\":\"网络名称\",\"min-width\":\"120px\"},{\"property\":\"vpcName\",\"label\":\"所属VPC\"},{\"property\":\"ipSegment\",\"label\":\"IPV4网段\"}]}"
+            propsInfo = "{\"rules\":[{\"message\":\"网络不能为空\",\"trigger\":\"change\",\"required\":true}],\"style\":{\"width\":\"100%\",\"height\":\"400px\"},\"showLabel\":false,\"activeMsg\":\"已选网络\",\"title\":\"选择网络\",\"tableColumns\":[{\"property\":\"networkName\",\"label\":\"网络名称\",\"min-width\":\"120px\"},{\"property\":\"vpcName\",\"label\":\"所属VPC\"},{\"property\":\"ipSegment\",\"label\":\"IPV4网段\"}]}"
     )
     private String networkId;
 
     @Form(inputType = InputType.TableRadio,
-            label = "安全组",
             relationTrigger = {"regionId", "networkId"},
             textField = "securityGroupName",
             valueField = "securityGroupId",
@@ -189,7 +186,7 @@ public class AliyunVmCreateRequest extends AliyunBaseRequest implements ICreateS
             group = 6,
             confirmGroup = 2,
             clazz = AliyunCloudProvider.class,
-            propsInfo = "{\"rules\":[{\"message\":\"安全组不能为空\",\"trigger\":\"change\",\"required\":true}],\"style\":{\"width\":\"100%\",\"height\":\"300px\"},\"showLabel\":false,\"activeMsg\":\"已选安全组\",\"title\":\"选择安全组\",\"tableColumns\":[{\"property\":\"securityGroupName\",\"label\":\"安全组名称\",\"min-width\":\"120px\"},{\"property\":\"Description\",\"label\":\"描述\"}]}"
+            propsInfo = "{\"rules\":[{\"message\":\"安全组不能为空\",\"trigger\":\"change\",\"required\":true}],\"style\":{\"width\":\"100%\",\"height\":\"400px\"},\"showLabel\":false,\"activeMsg\":\"已选安全组\",\"title\":\"选择安全组\",\"tableColumns\":[{\"property\":\"securityGroupName\",\"label\":\"安全组名称\",\"min-width\":\"120px\"},{\"property\":\"Description\",\"label\":\"描述\"}]}"
     )
     private String securityGroupId;
 

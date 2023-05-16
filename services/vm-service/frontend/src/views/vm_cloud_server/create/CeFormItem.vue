@@ -56,6 +56,7 @@
           :all-form-view-data="allFormViewData"
           :field="item.field"
           :form-item="item"
+          :set-default-value="true"
           :otherParams="otherParams"
           v-bind="{ ...JSON.parse(item.attrs) }"
           @change="change(item)"
