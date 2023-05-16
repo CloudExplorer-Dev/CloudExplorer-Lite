@@ -85,8 +85,8 @@ onMounted(() => {
     <div class="main-center">
       <el-form-item>
         <el-select style="width: 230px" v-model="formData.cpuComparisonValue">
-          <el-option label="CPU平均使用率" value="MAX" />
-          <el-option label="CPU最大使用率" value="AVG" />
+          <el-option label="CPU平均使用率" value="AVG" />
+          <el-option label="CPU最大使用率" value="MAX" />
         </el-select>
         <span style="padding: 0 8px 0 8px">{{ comparisonSymbol }}</span>
         <el-form-item>
@@ -111,8 +111,8 @@ onMounted(() => {
           style="width: 230px"
           v-model="formData.memoryComparisonValue"
         >
-          <el-option label="内存平均使用率" value="MAX" />
-          <el-option label="内存最大使用率" value="AVG" />
+          <el-option label="内存平均使用率" value="AVG" />
+          <el-option label="内存最大使用率" value="MAX" />
         </el-select>
         <span style="padding: 0 8px 0 8px">{{ comparisonSymbol }}</span>
         <el-form-item>

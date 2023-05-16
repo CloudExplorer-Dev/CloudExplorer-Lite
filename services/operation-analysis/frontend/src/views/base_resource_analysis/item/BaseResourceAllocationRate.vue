@@ -106,8 +106,8 @@ const data = computed<Array<EchartsObj>>(() => {
     });
   }
   result.forEach((param) => {
-    const total = param.obj.total;
-    const allocated = param.obj.allocated;
+    const total = param.obj?.total;
+    const allocated = param.obj?.allocated;
     const free = total - allocated;
     const unit = param.code === "cpu" ? " 核" : " GB";
     const tooltip = {
