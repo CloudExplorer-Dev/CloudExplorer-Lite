@@ -742,7 +742,7 @@ const getFirstIp = (list: Array<any>) => {
       prop="ipArray"
       column-key="ipArray"
       :label="$t('vm_cloud_server.label.ip_address')"
-      min-width="180px"
+      min-width="210px"
     >
       <template #default="scope">
         <div
@@ -1030,7 +1030,6 @@ const getFirstIp = (list: Array<any>) => {
     :title="$t('commons.grant')"
     width="35%"
     destroy-on-close
-    :close-on-click-modal="false"
   >
     <Grant
       :ids="selectedServerIds || []"

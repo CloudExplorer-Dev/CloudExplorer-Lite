@@ -55,13 +55,13 @@
           </div>
         </el-form-item>
         <el-form-item :prop="obj.deleteWithInstance + ''">
-          <div style="width: 100%; margin-left: 8px; text-align: center">
-            <el-switch
-              v-model="obj.deleteWithInstance"
-              :disabled="obj.readonly"
-              active-text="随实例删除"
-            />
-          </div>
+          <!--          <div style="width: 100%; margin-left: 8px; text-align: center">-->
+          <!--            <el-switch-->
+          <!--              v-model="obj.deleteWithInstance"-->
+          <!--              :disabled="obj.readonly"-->
+          <!--              active-text="随实例删除"-->
+          <!--            />-->
+          <!--          </div>-->
         </el-form-item>
         <el-icon
           v-if="index > 0"
@@ -305,7 +305,7 @@ defineExpose({
 
 const loading = ref<boolean>(false);
 onMounted(() => {
-  if (data.value.length == 0) {
+  if (data.value?.length == 0) {
     data.value = defaultDisks.value;
   }
 });

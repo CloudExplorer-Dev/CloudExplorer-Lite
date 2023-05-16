@@ -13,7 +13,7 @@ const props = defineProps<{
   dialogVisible: boolean;
   resourceType: string;
 }>();
-const emits = defineEmits(["update:visible", "refresh"]);
+const emits = defineEmits(["update:dialogVisible", "refresh"]);
 
 const { t } = useI18n();
 const loading = ref();
@@ -34,7 +34,7 @@ const rules: FormRules = {
 };
 
 const handleCancel = () => {
-  emits("update:visible", false);
+  emits("update:dialogVisible", false);
   formRef.value?.resetFields();
 };
 
@@ -50,7 +50,7 @@ const handleSave = () => {
       if (props.resourceType === "vm") {
         grantVmCloudServer(param, loading)
           .then(() => {
-            emits("update:visible", false);
+            emits("update:dialogVisible", false);
             emits("refresh");
             ElMessage.success(t("commons.msg.save_success"));
           })
@@ -60,7 +60,7 @@ const handleSave = () => {
       } else {
         grantVmCloudDisk(param, loading)
           .then(() => {
-            emits("update:visible", false);
+            emits("update:dialogVisible", false);
             emits("refresh");
             ElMessage.success(t("commons.msg.save_success"));
           })
@@ -92,6 +92,7 @@ onMounted(() => {
       :rules="rules"
       ref="formRef"
       label-width="auto"
+      v-loading="loading"
       label-position="right"
     >
       <el-form-item :label="$t('commons.operation', '操作')" prop="grant">
