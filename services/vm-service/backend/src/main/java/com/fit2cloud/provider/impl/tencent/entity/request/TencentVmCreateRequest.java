@@ -58,6 +58,17 @@ public class TencentVmCreateRequest extends TencentBaseRequest implements ICreat
     )
     private String instanceChargeType;
 
+    @Form(inputType = InputType.Number,
+            label = "购买数量",
+            unit = "台",
+            defaultValue = "1",
+            defaultJsonValue = true,
+            attrs = "{\"min\":1,\"max\":10,\"step\":1}",
+            confirmGroup = 1
+
+    )
+    private int count;
+
     @Form(inputType = InputType.SingleSelect,
             label = "购买时长",
             clazz = TencentCloudProvider.class,
@@ -72,17 +83,6 @@ public class TencentVmCreateRequest extends TencentBaseRequest implements ICreat
             relationShowValues = "PREPAID"
     )
     private String periodNum;
-
-    @Form(inputType = InputType.Number,
-            label = "购买数量",
-            unit = "台",
-            defaultValue = "1",
-            defaultJsonValue = true,
-            attrs = "{\"min\":1,\"max\":10,\"step\":1}",
-            confirmGroup = 1
-
-    )
-    private int count;
 
     @Form(inputType = InputType.SingleSelect,
             label = "区域",

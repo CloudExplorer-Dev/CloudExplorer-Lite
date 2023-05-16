@@ -60,6 +60,11 @@ public enum InputType {
      */
     RegexInput(RegexInputForm.class),
 
+    /**
+     * label与单位同一行的数字框
+     */
+    LineNumber(LineInputNumberForm.class),
+
     AliyunInstanceTypeForm(com.fit2cloud.common.form.vo.aliyun.AliyunInstanceType.class),
     AliyunDiskConfigForm(com.fit2cloud.common.form.vo.aliyun.AliyunDiskConfig.class),
     AliyunNetConfigForm(com.fit2cloud.common.form.vo.aliyun.AliyunNetConfig.class),

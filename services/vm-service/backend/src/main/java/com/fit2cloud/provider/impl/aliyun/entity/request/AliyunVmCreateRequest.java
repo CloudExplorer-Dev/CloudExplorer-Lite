@@ -55,27 +55,28 @@ public class AliyunVmCreateRequest extends AliyunBaseRequest implements ICreateS
     )
     private String instanceChargeType;
 
-    @Form(inputType = InputType.Number,
+    @Form(inputType = InputType.LineNumber,
             label = "购买数量",
             unit = "台",
             defaultValue = "1",
             defaultJsonValue = true,
-            attrs = "{\"min\":1,\"max\":10,\"step\":1}",
+            attrs = "{\"min\":1,\"max\":10,\"step\":1,\"style\":\"width:75px\"}",
+            confirmSpecial = true,
             confirmGroup = 1
-
     )
     private int count;
 
     @Form(inputType = InputType.SingleSelect,
-            label = "购买时长",
+            label = "时长",
             clazz = AliyunCloudProvider.class,
             method = "getPeriodOption",
-            attrs = "{\"style\":\"width:120px\"}",
+            attrs = "{\"style\":\"width:75px\"}",
             textField = "periodDisplayName",
             valueField = "period",
             defaultValue = "1",
             confirmGroup = 1,
             relationShows = "instanceChargeType",
+            confirmSpecial = true,
             relationShowValues = "PrePaid"
     )
     private String periodNum;
