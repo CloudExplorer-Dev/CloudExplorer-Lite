@@ -30,6 +30,8 @@ public interface VmCloudServerMapper extends BaseMapper<VmCloudServerDTO> {
      */
     IPage<VmCloudServerDTO> pageVmCloudServer(Page page, @Param("ew") Wrapper queryWrapper);
 
+    List<VmCloudServerDTO> pageVmCloudServer(@Param("ew") Wrapper queryWrapper);
+
     /**
      * 根据条件查询云主机列表
      *

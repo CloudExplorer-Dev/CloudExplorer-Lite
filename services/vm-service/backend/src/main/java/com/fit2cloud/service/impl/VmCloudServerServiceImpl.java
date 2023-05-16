@@ -122,11 +122,17 @@ public class VmCloudServerServiceImpl extends ServiceImpl<BaseVmCloudServerMappe
 
     private void setCurrentInfos(PageVmCloudServerRequest request) {
         // 普通用户
-        if (CurrentUserUtils.isUser() && StringUtils.isNotBlank(CurrentUserUtils.getWorkspaceId())) {
+        if (CurrentUserUtils.isUser()) {
+            if (StringUtils.isBlank(CurrentUserUtils.getWorkspaceId())) {
+                throw new RuntimeException("工作空间ID不能为空");
+            }
             request.setSourceIds(Collections.singletonList(CurrentUserUtils.getWorkspaceId()));
         }
         // 组织管理员
         if (CurrentUserUtils.isOrgAdmin()) {
+            if (StringUtils.isBlank(CurrentUserUtils.getOrganizationId())) {
+                throw new RuntimeException("组织ID不能为空");
+            }
             List<String> orgWorkspaceList = new ArrayList<>();
             orgWorkspaceList.add(CurrentUserUtils.getOrganizationId());
             orgWorkspaceList.addAll(organizationCommonService.getOrgIdsByParentId(CurrentUserUtils.getOrganizationId()));
@@ -154,14 +160,14 @@ public class VmCloudServerServiceImpl extends ServiceImpl<BaseVmCloudServerMappe
     }
 
     @Override
-    public List<VmCloudServer> listVmCloudServer(PageVmCloudServerRequest request) {
+    public List<VmCloudServerDTO> listVmCloudServer(PageVmCloudServerRequest request) {
         setCurrentInfos(request);
         QueryWrapper<VmCloudServer> wrapper = addQuery(request);
         wrapper.lambda()
                 .ne(VmCloudServer::getInstanceStatus, F2CInstanceStatus.Creating.name())
                 .ne(VmCloudServer::getInstanceStatus, F2CInstanceStatus.WaitCreating.name())
                 .ne(VmCloudServer::getInstanceStatus, F2CInstanceStatus.Failed.name());
-        return this.list(wrapper);
+        return vmCloudServerMapper.pageVmCloudServer(wrapper);
     }
 
     @Override
@@ -233,6 +239,9 @@ public class VmCloudServerServiceImpl extends ServiceImpl<BaseVmCloudServerMappe
 
     @Override
     public boolean powerOff(String vmId) {
+        if (this.getById(vmId) == null) {
+            throw new RuntimeException("找不到ID为[" + vmId + "]的资源或没有权限操作");
+        }
         operate(vmId, OperatedTypeEnum.POWER_OFF.getDescription(), ICloudProvider::powerOff,
                 F2CInstanceStatus.Stopping.name(), F2CInstanceStatus.Stopped.name(), this::modifyResource,
                 jobRecordCommonService::initJobRecord, jobRecordCommonService::modifyJobRecord, JobTypeConstants.CLOUD_SERVER_STOP_JOB);
@@ -241,6 +250,9 @@ public class VmCloudServerServiceImpl extends ServiceImpl<BaseVmCloudServerMappe
 
     @Override
     public boolean powerOn(String vmId) {
+        if (this.getById(vmId) == null) {
+            throw new RuntimeException("找不到ID为[" + vmId + "]的资源或没有权限操作");
+        }
         operate(vmId, OperatedTypeEnum.POWER_ON.getDescription(), ICloudProvider::powerOn,
                 F2CInstanceStatus.Starting.name(), F2CInstanceStatus.Running.name(), this::modifyResource,
                 jobRecordCommonService::initJobRecord, jobRecordCommonService::modifyJobRecord, JobTypeConstants.CLOUD_SERVER_START_JOB);
@@ -249,6 +261,9 @@ public class VmCloudServerServiceImpl extends ServiceImpl<BaseVmCloudServerMappe
 
     @Override
     public boolean shutdownInstance(String vmId) {
+        if (this.getById(vmId) == null) {
+            throw new RuntimeException("找不到ID为[" + vmId + "]的资源或没有权限操作");
+        }
         operate(vmId, OperatedTypeEnum.SHUTDOWN.getDescription(), ICloudProvider::shutdownInstance,
                 F2CInstanceStatus.Stopping.name(), F2CInstanceStatus.Stopped.name(), this::modifyResource,
                 jobRecordCommonService::initJobRecord, jobRecordCommonService::modifyJobRecord, JobTypeConstants.CLOUD_SERVER_STOP_JOB);
@@ -257,6 +272,9 @@ public class VmCloudServerServiceImpl extends ServiceImpl<BaseVmCloudServerMappe
 
     @Override
     public boolean rebootInstance(String vmId) {
+        if (this.getById(vmId) == null) {
+            throw new RuntimeException("找不到ID为[" + vmId + "]的资源或没有权限操作");
+        }
         operate(vmId, OperatedTypeEnum.REBOOT.getDescription(), ICloudProvider::rebootInstance,
                 F2CInstanceStatus.Rebooting.name(), F2CInstanceStatus.Running.name(), this::modifyResource,
                 jobRecordCommonService::initJobRecord, jobRecordCommonService::modifyJobRecord, JobTypeConstants.CLOUD_SERVER_RESTART_JOB);
@@ -265,6 +283,9 @@ public class VmCloudServerServiceImpl extends ServiceImpl<BaseVmCloudServerMappe
 
     @Override
     public boolean deleteInstance(String vmId) {
+        if (this.getById(vmId) == null) {
+            throw new RuntimeException("找不到ID为[" + vmId + "]的资源或没有权限操作");
+        }
         operate(vmId, OperatedTypeEnum.DELETE.getDescription(), ICloudProvider::deleteInstance,
                 F2CInstanceStatus.Deleting.name(), F2CInstanceStatus.Deleted.name(), this::modifyResource,
                 jobRecordCommonService::initJobRecord, jobRecordCommonService::modifyJobRecord, JobTypeConstants.CLOUD_SERVER_DELETE_JOB);
@@ -279,6 +300,9 @@ public class VmCloudServerServiceImpl extends ServiceImpl<BaseVmCloudServerMappe
 
     @Override
     public boolean recycleInstance(String vmId) {
+        if (this.getById(vmId) == null) {
+            throw new RuntimeException("找不到ID为[" + vmId + "]的资源或没有权限操作");
+        }
         QueryWrapper<VmCloudServer> wrapper = new QueryWrapper<VmCloudServer>()
                 .eq(ColumnNameUtil.getColumnName(VmCloudServer::getId, true), vmId)
                 .ne(ColumnNameUtil.getColumnName(VmCloudServer::getInstanceStatus, true), F2CInstanceStatus.Deleted.name());
@@ -340,17 +364,29 @@ public class VmCloudServerServiceImpl extends ServiceImpl<BaseVmCloudServerMappe
 
     @Override
     public VmCloudServerDTO getById(String vmId) {
-        QueryWrapper<VmCloudServerDTO> wrapper = new QueryWrapper<>();
-        wrapper.eq("vm_cloud_server.id", vmId);
-        VmCloudServerDTO vo = vmCloudServerMapper.getById(wrapper);
-        return vo;
+        PageVmCloudServerRequest request = new PageVmCloudServerRequest();
+        setCurrentInfos(request);
+        QueryWrapper<VmCloudServer> wrapper = addQuery(request);
+        wrapper.eq(ColumnNameUtil.getColumnName(VmCloudServer::getId, true), vmId);
+
+        List<VmCloudServerDTO> list = vmCloudServerMapper.pageVmCloudServer(wrapper);
+        if (CollectionUtils.isEmpty(list)) {
+            return null;
+        }
+        return list.get(0);
     }
 
     @Override
     public List<VmCloudServerDTO> getByIds(List<String> vmIds) {
-        QueryWrapper<VmCloudServerDTO> wrapper = new QueryWrapper<>();
-        wrapper.in("vm_cloud_server.id", vmIds);
-        return vmCloudServerMapper.getByIds(wrapper);
+        if (CollectionUtils.isEmpty(vmIds)) {
+            return new ArrayList<>();
+        }
+        PageVmCloudServerRequest request = new PageVmCloudServerRequest();
+        setCurrentInfos(request);
+        QueryWrapper<VmCloudServer> wrapper = addQuery(request);
+        wrapper.in(ColumnNameUtil.getColumnName(VmCloudServer::getId, true), vmIds);
+
+        return vmCloudServerMapper.pageVmCloudServer(wrapper);
     }
 
 
@@ -685,6 +721,10 @@ public class VmCloudServerServiceImpl extends ServiceImpl<BaseVmCloudServerMappe
     @Override
     public boolean changeConfig(ChangeServerConfigRequest request) {
         try {
+            if (this.getById(request.getId()) == null) {
+                throw new RuntimeException("找不到ID为[" + request.getId() + "]的资源或没有权限操作");
+            }
+
             VmCloudServer vmCloudServer = baseMapper.selectById(request.getId());
 
             // 配置变更前状态
@@ -783,16 +823,31 @@ public class VmCloudServerServiceImpl extends ServiceImpl<BaseVmCloudServerMappe
 
     @Override
     public boolean grant(GrantRequest grantServerRequest) {
-        String sourceId = grantServerRequest.getGrant() ? grantServerRequest.getSourceId() : "";
+        //先过滤可操作的
+        List<String> resources = this.getByIds(Arrays.asList(grantServerRequest.getIds())).stream().map(VmCloudServerDTO::getId).toList();
+        if (CollectionUtils.isEmpty(resources)) {
+            throw new RuntimeException("必须指定有效的云主机ID");
+        }
 
-        UpdateWrapper<VmCloudServer> updateWrapper = new UpdateWrapper();
-        updateWrapper.lambda().in(VmCloudServer::getId, grantServerRequest.getIds())
+        String sourceId = grantServerRequest.getGrant() ? grantServerRequest.getSourceId() : (CurrentUserUtils.isAdmin() ? "" : CurrentUserUtils.getOrganizationId()); //组织管理员解除授权就放在自己当前的组织根目录
+
+        if (grantServerRequest.getGrant() && CurrentUserUtils.isOrgAdmin()) {
+            //判断授权的id是否有权限
+            List<String> sourceIds = organizationCommonService.getOrgIdsByParentId(CurrentUserUtils.getOrganizationId());
+            sourceIds.addAll(workspaceCommonService.getWorkspaceIdsByOrgIds(sourceIds));
+            if (!sourceIds.contains(sourceId)) {
+                throw new RuntimeException("没有权限授权到目标组织或工作空间");
+            }
+        }
+
+        UpdateWrapper<VmCloudServer> updateWrapper = new UpdateWrapper<>();
+        updateWrapper.lambda().in(VmCloudServer::getId, resources)
                 .set(VmCloudServer::getSourceId, sourceId);
         update(updateWrapper);
 
         // 更新云主机关联的云磁盘
-        List<String> instanceUuids = listByIds(Arrays.asList(grantServerRequest.getIds())).stream().map(vmCloudServer -> vmCloudServer.getInstanceUuid()).collect(Collectors.toList());
-        UpdateWrapper<VmCloudDisk> updateDiskWrapper = new UpdateWrapper();
+        List<String> instanceUuids = listByIds(resources).stream().map(VmCloudServer::getInstanceUuid).collect(Collectors.toList());
+        UpdateWrapper<VmCloudDisk> updateDiskWrapper = new UpdateWrapper<>();
         updateDiskWrapper.lambda().in(VmCloudDisk::getInstanceUuid, instanceUuids)
                 .set(VmCloudDisk::getSourceId, sourceId);
         vmCloudDiskService.update(updateDiskWrapper);

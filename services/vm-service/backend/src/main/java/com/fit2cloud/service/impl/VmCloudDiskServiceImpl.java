@@ -654,7 +654,7 @@ public class VmCloudDiskServiceImpl extends ServiceImpl<BaseVmCloudDiskMapper, V
     public boolean grant(GrantRequest grantRequest) {
         String sourceId = grantRequest.getGrant() ? grantRequest.getSourceId() : "";
 
-        UpdateWrapper<VmCloudDisk> updateWrapper = new UpdateWrapper();
+        UpdateWrapper<VmCloudDisk> updateWrapper = new UpdateWrapper<>();
         updateWrapper.lambda().in(VmCloudDisk::getId, grantRequest.getIds())
                 .set(VmCloudDisk::getSourceId, sourceId);
         return update(updateWrapper);
