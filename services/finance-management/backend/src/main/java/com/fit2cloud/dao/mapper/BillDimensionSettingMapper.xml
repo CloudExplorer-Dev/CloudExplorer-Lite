@@ -2,4 +2,20 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.fit2cloud.dao.mapper.BillDimensionSettingMapper">
 
+    <resultMap id="oldResultMap" type="com.fit2cloud.db_convert.entity.OldBillDimensionSetting">
+        <id property="id" jdbcType="VARCHAR" column="id"/>
+        <result column="authorize_id" jdbcType="VARCHAR" property="authorizeId"/>
+        <result column="authorize_rule" jdbcType="VARCHAR" property="authorizeRule"
+                typeHandler="com.fit2cloud.db_convert.handler.OldAuthorizeRuleHandler"/>
+        <result column="authorize_rule" jdbcType="VARCHAR" property="currentAuthorizeRule"
+                typeHandler="com.fit2cloud.base.handler.MapTypeHandler"></result>
+        <result column="type" jdbcType="INTEGER" property="type"/>
+        <result column="update_flag" jdbcType="TINYINT" property="updateFlag"/>
+        <result column="update_time" jdbcType="DATE" property="updateTime"/>
+        <result column="create_time" jdbcType="DATE" property="createTime"/>
+    </resultMap>
+    <select id="listOldData" resultMap="oldResultMap">
+        select *
+        from bill_dimension_setting;
+    </select>
 </mapper>

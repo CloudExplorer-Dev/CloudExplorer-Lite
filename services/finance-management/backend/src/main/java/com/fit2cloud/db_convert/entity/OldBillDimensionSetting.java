@@ -1,4 +1,4 @@
-package com.fit2cloud.dao.entity;
+package com.fit2cloud.db_convert.entity;
 
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
@@ -10,8 +10,8 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.fasterxml.jackson.datatype.jsr310.deser.LocalDateTimeDeserializer;
 import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateTimeSerializer;
 import com.fit2cloud.constants.AuthorizeTypeConstants;
-import com.fit2cloud.dao.handler.AuthorizeRuleHandler;
-import com.fit2cloud.dao.jentity.BillAuthorizeRule;
+import com.fit2cloud.db_convert.entity.json_entity.OldBillAuthorizeRule;
+import com.fit2cloud.db_convert.handler.OldAuthorizeRuleHandler;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.Accessors;
@@ -19,6 +19,7 @@ import lombok.experimental.Accessors;
 import java.io.Serial;
 import java.io.Serializable;
 import java.time.LocalDateTime;
+import java.util.HashMap;
 
 /**
  * <p>
@@ -28,8 +29,8 @@ import java.time.LocalDateTime;
 @Getter
 @Setter
 @Accessors(chain = true)
-@TableName(value = "bill_dimension_setting", autoResultMap = true)
-public class BillDimensionSetting implements Serializable {
+@TableName(value = "bill_dimension_setting")
+public class OldBillDimensionSetting implements Serializable {
 
     @Serial
     private static final long serialVersionUID = 1L;
@@ -43,8 +44,11 @@ public class BillDimensionSetting implements Serializable {
     /**
      * 账单规则组
      */
-    @TableField(value = "authorize_rule", typeHandler = AuthorizeRuleHandler.class)
-    private BillAuthorizeRule authorizeRule;
+    @TableField(value = "authorize_rule", typeHandler = OldAuthorizeRuleHandler.class)
+    private OldBillAuthorizeRule authorizeRule;
+
+    @TableField(value = "authorize_rule", typeHandler = OldAuthorizeRuleHandler.class)
+    private HashMap<String, Object> currentAuthorizeRule;
 
     /**
      * 组织或者工作空间id
