@@ -229,12 +229,15 @@ defineExpose({ validate });
   margin-bottom: 0;
 }
 .item_rule {
+  &:first-child {
+    margin-top: 0;
+  }
   display: flex;
   align-items: center;
-  height: 40px;
+  height: 56px;
   width: 100%;
-  margin-top: 5px;
-  background: #edf2f5;
+  margin-top: 28px;
+  background: #f7f9fc;
   border-radius: 4px;
 }
 .delete_icon {

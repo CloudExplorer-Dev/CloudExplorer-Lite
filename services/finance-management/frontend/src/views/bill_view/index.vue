@@ -91,7 +91,7 @@
             <div class="title">费用明细</div>
             <div class="table">
               <ViewTable
-                :bill-rule="billRules.find((b) => b.id === activeBillRule)"
+                :bill-rule="activeBillRuleObj"
                 :view-data="viewData"
                 :groups="groups"
               ></ViewTable>
@@ -104,7 +104,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, watch } from "vue";
+import { ref, onMounted, watch, computed } from "vue";
 import type { BillSummary } from "@/echarts/bill_view/type";
 import billViewAPi from "@/api/bill_view/index";
 import billRuleApi from "@/api/bill_rule/index";
@@ -130,6 +130,9 @@ watch(activeBillRule, () => {
 const reSize = () => {
   viewPieChart.value?.reSize();
 };
+const activeBillRuleObj = computed(() => {
+  return billRules.value.find((b) => b.id === activeBillRule.value);
+});
 // 账单规则接口获取加载器
 const bullRuleViewDataLoading = ref<boolean>(false);
 /**
