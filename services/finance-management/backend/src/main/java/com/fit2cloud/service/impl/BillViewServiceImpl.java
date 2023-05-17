@@ -10,6 +10,7 @@ import co.elastic.clients.util.ObjectBuilder;
 import com.fit2cloud.base.service.IBaseOrganizationService;
 import com.fit2cloud.common.cache.OrganizationCache;
 import com.fit2cloud.common.cache.WorkSpaceCache;
+import com.fit2cloud.common.exception.Fit2cloudException;
 import com.fit2cloud.common.util.AuthUtil;
 import com.fit2cloud.common.util.EsFieldUtil;
 import com.fit2cloud.common.util.MappingUtil;
@@ -30,6 +31,7 @@ import com.fit2cloud.service.IBillRuleService;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.keyvalue.DefaultKeyValue;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.dao.DataAccessResourceFailureException;
 import org.springframework.data.elasticsearch.client.elc.ElasticsearchAggregations;
 import org.springframework.data.elasticsearch.client.elc.ElasticsearchTemplate;
 import org.springframework.data.elasticsearch.client.elc.NativeQuery;
@@ -79,7 +81,15 @@ public class BillViewServiceImpl implements BillViewService {
     @Override
     public Map<String, List<BillView>> billViewByRuleId(String ruleId, String month) {
         BillRule billRule = billRuleService.getById(ruleId);
-        return searchBillView(billRule, month, 6, "realTotalCost");
+        try {
+            return searchBillView(billRule, month, 6, "realTotalCost");
+        } catch (DataAccessResourceFailureException dataAccessResourceFailureException) {
+            if (Objects.nonNull(dataAccessResourceFailureException.getMessage()) && dataAccessResourceFailureException.getMessage().contains("search.max_buckets")) {
+                throw new Fit2cloudException(10000, "ElasticSearch[search.max_buckets]不能支持业务,请修改search.max_buckets【PUT /_cluster/settings\n" +
+                        "{\"transient\": {\"search.max_buckets\": max_buckets_num}}】");
+            }
+            throw new Fit2cloudException(10001, dataAccessResourceFailureException.getMessage());
+        }
     }
 
     @Override

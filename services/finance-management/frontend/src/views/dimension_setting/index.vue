@@ -66,7 +66,12 @@
               >
                 <template #toolbar>
                   <div class="title">
-                    <span>{{ activeTreeNode.name }}</span>
+                    <span v-if="activeTreeNode.type !== 'NOT_AUTH'"
+                      >已分配资源 &nbsp;&nbsp;<span
+                        >({{ activeTreeNode.name }})</span
+                      ></span
+                    >
+                    <span v-else>{{ activeTreeNode.name }}</span>
                   </div>
                 </template>
                 <template #buttons v-if="activeTreeNode.type !== 'NOT_AUTH'">
@@ -76,7 +81,7 @@
                 </template>
                 <el-table-column
                   prop="resourceName"
-                  label="资源名称"
+                  label="资源ID/名称"
                   show-overflow-tooltip
                   min-width="100"
                 >
@@ -263,17 +268,24 @@ const tableConfig = ref<TableConfig>({
       height: 100%;
       box-sizing: border-box;
       overflow: hidden;
+      font-weight: 500;
+      font-size: 14px;
+      line-height: 22px;
       .title {
         height: 32px;
         display: flex;
         align-items: center;
         width: 100%;
+
         span {
-          width: 100%;
           overflow: hidden;
           white-space: nowrap;
           text-overflow: ellipsis;
           margin-right: 10px;
+          color: #1f2329;
+          > span {
+            color: rgba(100, 106, 115, 1);
+          }
         }
       }
       .content {

@@ -65,7 +65,7 @@
           required: true,
         }"
       >
-        <el-input v-model="billRuleForm.name" />
+        <el-input v-model="billRuleForm.name" placeholder="请输入账单名称" />
       </el-form-item>
       <el-form-item
         label="统计字段"
@@ -93,7 +93,7 @@
           取消
         </el-button>
         <el-button type="primary" @click="saveOrUpdate(billRuleFormType)">
-          {{ billRuleFormType === "ADD" ? "创建" : "修改" }}
+          {{ billRuleFormType === "ADD" ? "创建" : "保存" }}
         </el-button>
       </span>
     </template>
@@ -205,7 +205,7 @@ const saveOrUpdate = (billRuleFormType: "ADD" | "EDIT") => {
             id: editBillRuleRow.value?.id as string,
           })
       ).then(() => {
-        ElMessage.success(billRuleFormType === "ADD" ? "添加成功" : "修改成功");
+        ElMessage.success(billRuleFormType === "ADD" ? "添加成功" : "保存成功");
         table.value?.search();
         billRuleDialogVisible.value = false;
       });

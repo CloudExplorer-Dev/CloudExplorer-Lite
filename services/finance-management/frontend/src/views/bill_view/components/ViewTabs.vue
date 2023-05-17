@@ -138,7 +138,7 @@ const dropdownChange = (event: string) => {
         }
         return null;
       })
-      .find((i) => i) as number;
+      .find((i) => i !== null && i !== undefined) as number;
     resetData(props.tabs, end);
   }
   emit("update:active", event);
@@ -228,6 +228,10 @@ let initSortLoacl = false;
 watch(props, () => {
   if (props.tabs && props.tabs.length > 0 && !initSortLoacl) {
     sortLocal();
+    if (props.active) {
+      dropdownChange(props.active);
+    }
+
     initSortLoacl = true;
   }
 });

@@ -1,16 +1,18 @@
 <template>
-  <BillRuleItem
-    v-for="item in groups"
-    ref="billRuleItem"
-    :key="item.id"
-    :item="item"
-    :bill-rule-group-keys="billRuleGroupKeys"
-    :delete-rule="deleteRuleGroup"
-    :update-rule="updateRuleGroup"
-    :selected-group-fields="groups"
-  ></BillRuleItem>
-  <div @click="addRuleGroup" class="add">
-    <ce-icon code="icon_add_outlined" size="12px"></ce-icon>添加统计字段
+  <div class="bill-rule-content">
+    <BillRuleItem
+      v-for="item in groups"
+      ref="billRuleItem"
+      :key="item.id"
+      :item="item"
+      :bill-rule-group-keys="billRuleGroupKeys"
+      :delete-rule="deleteRuleGroup"
+      :update-rule="updateRuleGroup"
+      :selected-group-fields="groups"
+    ></BillRuleItem>
+    <div @click="addRuleGroup" class="add">
+      <ce-icon code="icon_add_outlined" size="12px"></ce-icon>添加统计字段
+    </div>
   </div>
 </template>
 <script setup lang="ts">
@@ -74,8 +76,13 @@ const validate = () => {
 defineExpose({ validate });
 </script>
 <style lang="scss" scoped>
-.add {
-  cursor: pointer;
-  color: rgba(51, 112, 255, 1);
+.bill-rule-content {
+  overflow: auto;
+  max-height: 40vh;
+  width: 100%;
+  .add {
+    cursor: pointer;
+    color: rgba(51, 112, 255, 1);
+  }
 }
 </style>

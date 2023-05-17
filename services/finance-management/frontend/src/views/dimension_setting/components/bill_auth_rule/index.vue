@@ -7,7 +7,9 @@
     :before-close="close"
   >
     <template #header>
-      <div>分账规则设置 (实施)</div>
+      <div class="title">
+        分账规则设置 &nbsp;&nbsp;<span>({{ organizationWorkspace.name }})</span>
+      </div>
     </template>
     <el-alert
       style="--el-alert-bg-color: rgba(51, 112, 255, 0.15)"
@@ -18,6 +20,7 @@
     />
     <div class="rule_tree_content" v-loading="loading">
       <ce-rule-tree
+        :store="{}"
         :left-height="48"
         :component="AuthRuleItem"
         ref="ruleTreeRef"
@@ -171,5 +174,14 @@ defineExpose({ open, close });
   box-sizing: border-box;
   padding: 8px 16px 8px 16px;
   margin-top: 24px;
+}
+.title {
+  font-weight: 500;
+  font-size: 16px;
+  line-height: 24px;
+  color: #1f2329;
+  span {
+    color: rgba(100, 106, 115, 1);
+  }
 }
 </style>
