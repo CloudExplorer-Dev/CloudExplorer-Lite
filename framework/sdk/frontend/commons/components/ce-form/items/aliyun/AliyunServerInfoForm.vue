@@ -19,7 +19,7 @@
           <el-form-item :rules="nameRules" :prop="'[' + index + '].name'">
             <ce-regex-tooltip
               :ref="'nameInputRef' + index"
-              :description="'主机名必须同时符合,仅支持一下规则'"
+              :description="'主机名必须同时符合,仅支持以下规则'"
               :model-value="item.name"
               :rules="nameRules"
             >
@@ -32,7 +32,7 @@
           >
             <tooltip
               :ref="'hostNameInputRef' + index"
-              :description="'Hostname必须同时符合,仅支持一下规则'"
+              :description="'Hostname必须同时符合,仅支持以下规则'"
               :model-value="item.hostname"
               :rules="hostNameRules"
             >

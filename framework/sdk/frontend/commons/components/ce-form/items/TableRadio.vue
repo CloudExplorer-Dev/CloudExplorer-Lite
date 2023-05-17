@@ -158,7 +158,7 @@ const activeText = computed(() => {
   }
 }
 .msg {
-  margin-top: 12px;
+  margin-top: 5px;
   color: rgba(100, 106, 115, 1);
   .active {
     margin-left: 3px;

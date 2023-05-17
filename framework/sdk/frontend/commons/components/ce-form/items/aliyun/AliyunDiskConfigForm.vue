@@ -48,7 +48,7 @@
               style="width: 200px"
               :min="minSize(defaultDisks[index], index)"
               :max="maxSize(defaultDisks[index], index)"
-              :step="1"
+              :step="10"
               controls-position="right"
               autocomplete="off"
             />
