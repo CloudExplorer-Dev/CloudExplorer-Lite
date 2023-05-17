@@ -28,6 +28,8 @@ public class Form {
      * 提示
      */
     private String label;
+
+    private boolean leftLabel;
     /**
      * 数据
      */

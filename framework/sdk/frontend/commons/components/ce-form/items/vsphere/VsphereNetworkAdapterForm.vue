@@ -14,115 +14,118 @@
           :label="'主机' + (index + 1)"
           :name="index"
         >
-          <el-button
-            class="el-button--primary add-button"
-            @click="addAdapter(item.adapters)"
-          >
-            添加网卡
-          </el-button>
           <div class="adapter-container">
-            <el-card
-              :body-style="{ position: 'relative' }"
-              v-for="(adapter, i) in item.adapters"
-              :key="i"
-              class="card"
-            >
+            <div v-for="(adapter, i) in item.adapters" :key="i" class="card">
               <div class="title">
                 {{ "网卡" + (i + 1) }}
+
+                <el-icon
+                  style="cursor: pointer"
+                  v-if="item.adapters.length > 1 || i > 0"
+                  @click="removeAdapter(item.adapters, i)"
+                >
+                  <CloseBold />
+                </el-icon>
               </div>
 
-              <el-form-item
-                :rules="{
-                  message: '网络' + '不能为空',
-                  trigger: ['blur', 'change'],
-                  required: true,
-                }"
-                label="网络"
-                :prop="'[' + index + '].adapters[' + i + '].vlan'"
-              >
-                <el-select class="m-2" filterable v-model="adapter.vlan">
-                  <el-option
-                    v-for="(o, j) in formItem?.ext?.network?.optionList"
-                    :key="j"
-                    :label="o.name"
-                    :value="o.mor"
-                  />
-                </el-select>
-              </el-form-item>
-
-              <el-form-item
-                :rules="{
-                  message: 'IP分配类型' + '不能为空',
-                  trigger: 'blur',
-                  required: true,
-                }"
-                label="IP分配类型"
-                :prop="'[' + index + '].adapters[' + i + '].dhcp'"
-              >
-                <el-radio-group
-                  v-model="adapter.dhcp"
-                  @change="dhcpChange(adapter, adapter.dhcp)"
-                >
-                  <el-radio-button :label="true">
-                    DHCP自动分配
-                  </el-radio-button>
-                  <el-radio-button :label="false"> 手动分配 </el-radio-button>
-                </el-radio-group>
-              </el-form-item>
-
-              <template v-if="!adapter.dhcp">
-                <!--   //todo ipv6           -->
+              <div style="padding: 16px">
                 <el-form-item
-                  :rules="getIpCheckRules('IP地址')"
-                  label="IP地址"
-                  :prop="'[' + index + '].adapters[' + i + '].ipAddr'"
+                  :rules="{
+                    message: '网络' + '不能为空',
+                    trigger: ['blur', 'change'],
+                    required: true,
+                  }"
+                  label="网络"
+                  :prop="'[' + index + '].adapters[' + i + '].vlan'"
                 >
-                  <el-input v-model="adapter.ipAddr" />
+                  <el-select
+                    class="m-2"
+                    filterable
+                    v-model="adapter.vlan"
+                    style="width: 100%"
+                  >
+                    <el-option
+                      v-for="(o, j) in formItem?.ext?.network?.optionList"
+                      :key="j"
+                      :label="o.name"
+                      :value="o.mor"
+                    />
+                  </el-select>
                 </el-form-item>
 
                 <el-form-item
-                  :rules="getIpCheckRules('默认网关')"
-                  label="默认网关"
-                  :prop="'[' + index + '].adapters[' + i + '].gateway'"
+                  :rules="{
+                    message: 'IP分配类型' + '不能为空',
+                    trigger: 'blur',
+                    required: true,
+                  }"
+                  label="IP分配类型"
+                  :prop="'[' + index + '].adapters[' + i + '].dhcp'"
                 >
-                  <el-input v-model="adapter.gateway" />
+                  <el-radio-group
+                    v-model="adapter.dhcp"
+                    @change="dhcpChange(adapter, adapter.dhcp)"
+                  >
+                    <el-radio-button :label="true">
+                      DHCP自动分配
+                    </el-radio-button>
+                    <el-radio-button :label="false"> 手动分配 </el-radio-button>
+                  </el-radio-group>
                 </el-form-item>
 
-                <el-form-item
-                  :rules="getMaskCheckRules('子网掩码')"
-                  label="子网掩码"
-                  :prop="'[' + index + '].adapters[' + i + '].netmask'"
-                >
-                  <el-input v-model="adapter.netmask" />
-                </el-form-item>
-              </template>
+                <template v-if="!adapter.dhcp">
+                  <!--   //todo ipv6           -->
+                  <el-form-item
+                    :rules="getIpCheckRules('IP地址')"
+                    label="IP地址"
+                    :prop="'[' + index + '].adapters[' + i + '].ipAddr'"
+                  >
+                    <el-input v-model="adapter.ipAddr" />
+                  </el-form-item>
 
-              <el-button
-                v-if="item.adapters.length > 1 || i > 0"
-                class="remove-button"
-                @click="removeAdapter(item.adapters, i)"
-                :icon="CloseBold"
-                type="info"
-                text
-              ></el-button>
-            </el-card>
+                  <el-form-item
+                    :rules="getIpCheckRules('默认网关')"
+                    label="默认网关"
+                    :prop="'[' + index + '].adapters[' + i + '].gateway'"
+                  >
+                    <el-input v-model="adapter.gateway" />
+                  </el-form-item>
+
+                  <el-form-item
+                    :rules="getMaskCheckRules('子网掩码')"
+                    label="子网掩码"
+                    :prop="'[' + index + '].adapters[' + i + '].netmask'"
+                  >
+                    <el-input v-model="adapter.netmask" />
+                  </el-form-item>
+                </template>
+              </div>
+            </div>
+
+            <div class="add-card" @click="addAdapter(item.adapters)">
+              + 添加网卡
+            </div>
           </div>
-
-          <el-form-item
-            :rules="getIpCheckRules('DNS1', false)"
-            label="DNS1"
-            :prop="'[' + index + '].dns1'"
-          >
-            <el-input v-model="item.dns1" />
-          </el-form-item>
-
-          <el-form-item
-            :rules="getIpCheckRules('DNS2', false)"
-            label="DNS2"
-            :prop="'[' + index + '].dns2'"
-          >
-            <el-input v-model="item.dns2" />
-          </el-form-item>
+          <el-row :gutter="12">
+            <el-col :span="12">
+              <el-form-item
+                :rules="getIpCheckRules('DNS1', false)"
+                label="DNS1"
+                :prop="'[' + index + '].dns1'"
+              >
+                <el-input v-model="item.dns1" />
+              </el-form-item>
+            </el-col>
+            <el-col :span="12">
+              <el-form-item
+                :rules="getIpCheckRules('DNS2', false)"
+                label="DNS2"
+                :prop="'[' + index + '].dns2'"
+              >
+                <el-input v-model="item.dns2" />
+              </el-form-item>
+            </el-col>
+          </el-row>
         </el-tab-pane>
       </el-tabs>
     </el-form>
@@ -379,22 +382,51 @@ defineExpose({
   }
 
   .card {
-    min-height: 100px;
-    width: 446px;
+    min-height: 240px;
+    width: 334px;
     margin: 10px;
+    padding: 0;
+
+    background: linear-gradient(
+      180deg,
+      #f7f9fc 0%,
+      rgba(247, 249, 252, 0) 100%
+    );
+    border: 1px solid #ffffff;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.04);
+    border-radius: 4px;
+
     .title {
       font-size: 14px;
       font-weight: bold;
-      line-height: 44px;
+      line-height: 22px;
       vertical-align: center;
-      height: 44px;
-      margin-bottom: 20px;
+      height: 22px;
+      background: #f5f8ff;
+      color: #3370ff;
+      padding: 12px;
+      display: flex;
+      flex-direction: row;
+      flex-wrap: nowrap;
+      justify-content: space-between;
+      align-items: center;
     }
-    .remove-button {
-      position: absolute;
-      top: 20px;
-      right: 20px;
-    }
+  }
+
+  .add-card {
+    min-height: 240px;
+    width: 334px;
+    margin: 10px;
+    padding: 0;
+    background: #ffffff;
+    border: 1px dashed #3370ff;
+    border-radius: 4px;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    color: #3370ff;
+    cursor: pointer;
   }
 }
 .add-button {

@@ -1,69 +1,60 @@
 <template>
   <template v-if="!confirm">
     <div style="display: flex; flex-direction: row; flex-wrap: wrap">
-      <div
-        v-for="(obj, index) in data"
-        :key="index"
-        class="vs-disk-config-card"
-      >
-        <el-card
-          class="card"
-          :body-style="{
-            padding: 0,
-            'text-align': 'center',
-            display: 'flex',
-            'flex-direction': 'column',
-            'flex-wrap': 'nowrap',
-            'align-items': 'center',
-            'justify-content': 'space-evenly',
-            height: '100%',
-            position: 'relative',
-          }"
+      <div v-for="(obj, index) in data" :key="index" class="row">
+        <el-form-item
+          :data-var="(_minValue = _.defaultTo(defaultDisks[index]?.size, 1))"
+          :prop="`disks[${index}].size`"
+          :rules="[
+            {
+              message: '磁盘大小必填',
+              trigger: 'blur',
+              required: true,
+            },
+            {
+              message: `磁盘大小最小值为${_minValue}`,
+              trigger: 'change',
+              type: 'number',
+              min: _minValue,
+            },
+          ]"
         >
-          <span class="title">
-            {{ index === 0 ? "系统盘" : "数据盘 " + index }}
+          <template #label v-if="index <= 1">
+            {{ index === 0 ? "系统盘" : "数据盘 " }}
             <span
               style="font-size: smaller; color: var(--el-text-color-secondary)"
             >
               (GB)
             </span>
-          </span>
+          </template>
+          <div class="disk-row">
+            <LineNumber
+              special-step="10"
+              v-model="obj.size"
+              :min="_minValue"
+              :step="1"
+              :readonly="obj.readonly"
+              required
+              style="width: 200px"
+            >
+              <template #perfix>
+                <div>磁盘大小</div>
+              </template>
+            </LineNumber>
 
-          <el-input-number
-            v-model="obj.size"
-            :min="_.defaultTo(defaultDisks[index]?.size, 1)"
-            :step="1"
-            :disabled="obj.readonly"
-            required
-          />
-
-          <el-button
-            v-if="!defaultDisks[index]"
-            class="remove-button"
-            @click="remove(index)"
-            :icon="CloseBold"
-            type="info"
-            text
-          ></el-button>
-        </el-card>
-
-        <div
-          style="width: 100%; height: 30px; text-align: center"
-          v-show="false"
-        >
-          <el-checkbox v-model="obj.deleteWithInstance">随实例删除</el-checkbox>
-        </div>
+            <CeIcon
+              style="cursor: pointer; margin-left: 9px"
+              size="16px"
+              code="icon_delete-trash_outlined1"
+              v-if="!defaultDisks[index]"
+              @click="remove(index)"
+              color="#6E748E"
+            />
+          </div>
+        </el-form-item>
       </div>
-      <div class="vs-disk-config-card">
-        <el-card class="card add-card">
-          <el-button
-            style="margin: auto"
-            class="el-button--primary"
-            @click="add"
-            >添加磁盘</el-button
-          >
-        </el-card>
-      </div>
+
+      <el-button link type="primary" @click="add">+ 添加磁盘 </el-button>
     </div>
   </template>
   <template v-else>
@@ -94,7 +85,8 @@ const emit = defineEmits(["update:modelValue", "change"]);
 import { computed, watch, onMounted } from "vue";
 import _ from "lodash";
 import type { FormView } from "@commons/components/ce-form/type";
-import { CloseBold } from "@element-plus/icons-vue";
+import LineNumber from "@commons/components/ce-form/items/LineNumber.vue";
+import CeIcon from "@commons/components/ce-icon/index.vue";
 
 /**
  * 模板默认应该有的盘
@@ -197,28 +189,25 @@ defineExpose({
 });
 </script>
 <style lang="scss" scoped>
-.vs-disk-config-card {
-  height: 130px;
-  width: 200px;
-  margin-right: 20px;
-  margin-bottom: 20px;
+:deep(.el-form-item--default) {
+  margin-bottom: 0;
+}
 
-  .card {
-    height: 100px;
-    .title {
-      font-size: 14px;
-      font-weight: bold;
-    }
-    .remove-button {
-      position: absolute;
-      top: 0;
-      right: 0;
-    }
-  }
-  .add-card {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
+.row {
+  width: 100%;
+}
+
+.disk-row {
+  width: 100%;
+  background: #f7f9fc;
+  border-radius: 4px;
+  display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  align-items: center;
+  height: 46px;
+  padding-left: 12px;
+  padding-right: 12px;
+  margin-bottom: 6px;
 }
 </style>

@@ -39,7 +39,7 @@ import java.util.List;
 @FormGroupInfo(group = 9, name = "主机命名")
 public class VsphereVmCreateRequest extends VsphereVmBaseRequest implements ICreateServerRequest {
 
-    @Form(inputType = InputType.Number,
+    @Form(inputType = InputType.LineNumber,
             label = "购买数量",
             unit = "台",
             defaultValue = "1",
@@ -72,21 +72,10 @@ public class VsphereVmCreateRequest extends VsphereVmBaseRequest implements ICre
     private String region;
 
     //集群
-    @Form(inputType = InputType.Radio,
+    @Form(inputType = InputType.VsphereClusterForm,
             label = "集群",
             clazz = VsphereCloudProvider.class,
             method = "getClusters",
-//            textField = "${info} <span\n" +
-//                    "        style=\"\n" +
-//                    "          float: right;\n" +
-//                    "          color: var(--el-text-color-secondary);\n" +
-//                    "          font-size: 13px;\n" +
-//                    "        \"\n" +
-//                    "        >${description}</span>",
-            textField = "<div>${info}</div>\n" +
-                    "      <div style=\"color: var(--el-text-color-secondary); font-size: smaller\">\n" +
-                    "        ${description}\n" +
-                    "      </div>",
             formatTextField = true,
             valueField = "name",
             relationTrigger = "region",
@@ -105,6 +94,8 @@ public class VsphereVmCreateRequest extends VsphereVmBaseRequest implements ICre
             textField = "imageName",
             valueField = "imageName", //由于vc还是拿name作为快速索引，所以不用mor作为查询值
             relationTrigger = "region",
+            propsInfo = "{\"style\":{\"width\":\"100%\",\"height\":\"32px\"}}",
+            attrs = "{\"placeholder\":\"请选择一个模板\"}",
             group = 2,
             step = 1,
             confirmGroup = 1
@@ -114,6 +105,7 @@ public class VsphereVmCreateRequest extends VsphereVmBaseRequest implements ICre
     //cpu核数
     @Form(inputType = InputType.Number,
             label = "CPU",
+            leftLabel = true,
             unit = "核",
             group = 3,
             step = 1,
@@ -127,6 +119,7 @@ public class VsphereVmCreateRequest extends VsphereVmBaseRequest implements ICre
     //内存GB
     @Form(inputType = InputType.Number,
             label = "内存",
+            leftLabel = true,
             unit = "GB",
             group = 3,
             step = 1,
@@ -165,6 +158,7 @@ public class VsphereVmCreateRequest extends VsphereVmBaseRequest implements ICre
     //
     @Form(inputType = InputType.Radio,
             label = "磁盘格式",
+            propsInfo = "{\"radioType\":\"radio\",\"style\":{\"width\":\"100%\"}}",
             clazz = VsphereCloudProvider.class,
             method = "getDiskTypes",
             textField = "info",
@@ -197,6 +191,8 @@ public class VsphereVmCreateRequest extends VsphereVmBaseRequest implements ICre
             textField = "name",
             valueField = "name", //由于vc还是拿name作为快速索引，所以不用mor作为查询值
             relationTrigger = "cluster",
+            propsInfo = "{\"style\":{\"width\":\"100%\",\"height\":\"32px\"}}",
+            attrs = "{\"placeholder\":\"请选择主机存放文件夹\"}",
             group = 7,
             step = 2,
             confirmGroup = 2

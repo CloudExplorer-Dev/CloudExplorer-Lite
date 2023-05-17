@@ -2,6 +2,7 @@
   <!--  data: {{ _data }}
   <br />-->
   <el-form
+    class="custom-form"
     ref="ruleFormRef"
     label-width="130px"
     require-asterisk-position="right"
@@ -21,10 +22,11 @@
       <template v-if="item.label">
         <el-form-item
           v-if="checkShow(item)"
-          :label="item.label"
+          :label="item.leftLabel ? '' : item.label"
           :prop="item.field"
           :rules="rules(item)"
         >
+          <span class="left-label" v-if="item.leftLabel">{{ item.label }}</span>
           <component
             ref="formItemRef"
             :is="item.inputType"
@@ -39,11 +41,9 @@
             v-bind="{ ...JSON.parse(item.attrs) }"
             @change="change(item)"
           ></component>
-          <span
-            v-if="item.unit && props.groupId != '0'"
-            style="padding-left: 15px"
-            >{{ item.unit }}</span
-          >
+          <span v-if="item.unit && props.groupId != '0'" class="unit">
+            {{ item.unit }}
+          </span>
         </el-form-item>
       </template>
       <template v-else>
@@ -334,4 +334,33 @@ defineExpose({
 });
 </script>
 
-<style lang="scss" scoped></style>
+<style lang="scss" scoped>
+.custom-form {
+  .left-label {
+    font-style: normal;
+    font-weight: 400;
+    font-size: 14px;
+    line-height: 22px;
+    color: #1f2329;
+    margin-right: 8px;
+  }
+
+  .unit {
+    font-style: normal;
+    font-weight: 400;
+    font-size: 14px;
+    line-height: 22px;
+    color: #1f2329;
+    padding-left: 8px;
+  }
+
+  :deep(.el-form-item) {
+    .el-form-item__label {
+      font-style: normal;
+      font-weight: 400;
+      font-size: 14px;
+      color: #1f2329;
+    }
+  }
+}
+</style>

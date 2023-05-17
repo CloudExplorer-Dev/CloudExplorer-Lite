@@ -81,6 +81,7 @@ public enum InputType {
     HuaweiNetworkConfigForm(com.fit2cloud.common.form.vo.huawei.NetworkConfigForm.class),
     HuaweiNameConfigForm(com.fit2cloud.common.form.vo.huawei.NameConfigForm.class),
 
+    VsphereClusterForm(com.fit2cloud.common.form.vo.vsphere.ClusterForm.class),
     VsphereDiskConfigForm(com.fit2cloud.common.form.vo.vsphere.DiskConfigForm.class),
     VsphereComputeConfigForm(com.fit2cloud.common.form.vo.vsphere.ComputeConfigForm.class),
     VsphereDatastoreForm(com.fit2cloud.common.form.vo.vsphere.DatastoreForm.class),

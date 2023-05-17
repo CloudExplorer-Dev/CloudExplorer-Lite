@@ -73,6 +73,7 @@ public class FormUtil {
             map.put("inputType", annotation.inputType());
             map.put("attrs", annotation.attrs());
             map.put("label", annotation.label());
+            map.put("leftLabel", annotation.leftLabel());
             map.put("required", annotation.required());
             map.put("description", annotation.description());
             map.put("valueField", annotation.valueField());
