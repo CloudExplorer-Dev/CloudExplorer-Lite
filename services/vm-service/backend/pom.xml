@@ -191,8 +191,7 @@
             <id>Default package</id>
             <activation>
                 <property>
-                    <name>activeProfile</name>
-                    <value>default</value>
+                    <name>!prd</name>
                 </property>
             </activation>
             <build>
