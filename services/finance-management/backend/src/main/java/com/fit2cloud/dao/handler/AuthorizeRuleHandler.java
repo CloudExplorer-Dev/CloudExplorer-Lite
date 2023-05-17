@@ -16,7 +16,7 @@ import java.sql.SQLException;
  * {@code @Version 1.0}
  * {@code @注释: }
  */
-public class AuthorizeRuleGrouHandler implements TypeHandler<BillAuthorizeRule> {
+public class AuthorizeRuleHandler implements TypeHandler<BillAuthorizeRule> {
 
 
     @Override
