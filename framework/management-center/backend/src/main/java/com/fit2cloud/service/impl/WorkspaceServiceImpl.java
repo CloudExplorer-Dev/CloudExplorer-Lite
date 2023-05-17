@@ -71,7 +71,7 @@ public class WorkspaceServiceImpl extends ServiceImpl<WorkspaceMapper, Workspace
         if (CurrentUserUtils.isOrgAdmin()) {
             List<String> orgIds = baseOrganizationService.getOrgAdminOrgIds();
             if (!orgIds.contains(request.getOrganizationId())) {
-                throw new RuntimeException("没有权限在组织[" + this.getById(request.getOrganizationId()).getName() + "]下创建工作空间");
+                throw new RuntimeException("没有权限在组织[" + baseOrganizationService.getById(request.getOrganizationId()).getName() + "]下创建工作空间");
             }
         }
 
@@ -84,7 +84,7 @@ public class WorkspaceServiceImpl extends ServiceImpl<WorkspaceMapper, Workspace
         if (CurrentUserUtils.isOrgAdmin()) {
             List<String> orgIds = baseOrganizationService.getOrgAdminOrgIds();
             if (!orgIds.contains(request.getOrganizationId())) {
-                throw new RuntimeException("没有权限在将工作空间移动到组织[" + this.getById(request.getOrganizationId()).getName() + "]下");
+                throw new RuntimeException("没有权限在将工作空间移动到组织[" + baseOrganizationService.getById(request.getOrganizationId()).getName() + "]下");
             }
             if (CollectionUtils.isNotEmpty(orgIds)) {
                 if (!list(new LambdaQueryWrapper<Workspace>().in(Workspace::getOrganizationId, orgIds))
@@ -205,7 +205,7 @@ public class WorkspaceServiceImpl extends ServiceImpl<WorkspaceMapper, Workspace
         if (CurrentUserUtils.isOrgAdmin()) {
             List<String> orgIds = baseOrganizationService.getOrgAdminOrgIds();
             if (!orgIds.contains(request.getOrganizationId())) {
-                throw new RuntimeException("没有权限在组织[" + this.getById(request.getOrganizationId()).getName() + "]下创建工作空间");
+                throw new RuntimeException("没有权限在组织[" + baseOrganizationService.getById(request.getOrganizationId()).getName() + "]下创建工作空间");
             }
         }
 
