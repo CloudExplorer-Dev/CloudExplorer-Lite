@@ -41,11 +41,69 @@
             </template>
           </template>
           <!--暂时支持阿里云新的UI-->
-          <detail-page
-            :content="getGroupFormDetail(group)"
-            :item-width="'33.33%'"
-            :item-bottom="'28px'"
-          ></detail-page>
+          <template
+            v-if="
+              props.cloudAccount?.platform !== 'fit2cloud_vsphere_platform' &&
+              props.cloudAccount?.platform !== 'fit2cloud_openstack_platform'
+            "
+          >
+            <detail-page
+              :content="getGroupFormDetail(group)"
+              :item-width="'33.33%'"
+              :item-bottom="'28px'"
+            ></detail-page>
+          </template>
+          <template v-else>
+            <el-descriptions :column="group.items" direction="vertical">
+              <el-descriptions-item
+                label="云账号"
+                v-if="group.group === 0"
+                :width="100 / group.items + '%'"
+              >
+                <component
+                  style="margin-top: 3px; width: 16px; height: 16px"
+                  :is="platformIcon[cloudAccount?.platform]?.component"
+                  v-bind="platformIcon[cloudAccount?.platform]?.icon"
+                  :color="platformIcon[cloudAccount?.platform]?.color"
+                  size="16px"
+                  v-if="cloudAccount?.platform"
+                ></component>
+                <span style="margin-left: 10px">{{ cloudAccount?.name }}</span>
+              </el-descriptions-item>
+              <template v-for="form in group.forms" :key="form.index">
+                <template v-if="form.label && checkShow(form)">
+                  <el-descriptions-item
+                    :label="form.label"
+                    :span="form.confirmItemSpan"
+                    :width="(100 / group.items) * form.confirmItemSpan + '%'"
+                  >
+                    <template v-if="!form.confirmSpecial">
+                      <div class="description-inline">
+                        <span
+                          v-html="getDisplayValue(form)"
+                          :title="fieldValueMap[form.field]"
+                        />
+                      </div>
+                      <span v-if="form.unit">{{ form.unit }}</span>
+                    </template>
+                    <template v-else>
+                      <!--   有label的特殊组件           -->
+                      <component
+                        ref="formItemRef"
+                        :is="form.inputType"
+                        :model-value="getDisplayValue(form)"
+                        :all-data="allData"
+                        :field="form.field"
+                        :form-item="form"
+                        :otherParams="{}"
+                        :confirm="true"
+                      />
+                    </template>
+                  </el-descriptions-item>
+                </template>
+              </template>
+            </el-descriptions>
+          </template>
           <template v-for="form in group.forms" :key="form.index">
             <template
               v-if="
