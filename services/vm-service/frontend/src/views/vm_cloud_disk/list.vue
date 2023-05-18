@@ -21,6 +21,7 @@ import BaseCloudAccountApi from "@commons/api/cloud_account";
 import OrgTreeFilter from "@commons/components/table-filter/OrgTreeFilter.vue";
 import { DISK_TYPE, DISK_STATUS, getTextByValue } from "@/utils/constants";
 import Enlarge from "@/views/vm_cloud_disk/enlarge.vue";
+import DiskStatusIcon from "@/views/vm_cloud_disk/DiskStatusIcon.vue";
 const { t } = useI18n();
 const permissionStore = usePermissionStore();
 const columns = ref([]);
@@ -826,7 +827,9 @@ const buttons = ref([
     >
       <template #default="scope">
         <div style="display: flex; align-items: center">
+          <DiskStatusIcon :status="scope.row.status"></DiskStatusIcon>
           <span
+            style="margin-left: 5px"
             :style="{
               color: scope.row.status === 'deleted' ? 'red' : '',
             }"
