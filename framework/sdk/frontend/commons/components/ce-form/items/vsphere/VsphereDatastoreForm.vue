@@ -1,10 +1,26 @@
 <template>
-  <div>
+  <div style="width: 100%">
     <template v-if="!confirm">
+      <div
+        style="
+          width: 100%;
+          display: flex;
+          flex-direction: row;
+          justify-content: space-between;
+        "
+      >
+        选择存储器
+        <el-input
+          style="width: 240px; margin-bottom: 16px"
+          v-model="searchValue"
+          placeholder="请输入关键字搜索"
+          prefix-icon="Search"
+        />
+      </div>
       <el-radio-group v-model="_data" style="width: 100%">
         <el-table
           ref="singleTableRef"
-          :data="formItem?.optionList"
+          :data="filterList(formItem?.optionList)"
           highlight-current-row
           style="width: 100%"
           @current-change="handleCurrentChange"
@@ -39,7 +55,6 @@
                         )
                       "
                       :stroke-width="7"
-                      width="120px"
                       striped
                     />
                   </template>
@@ -139,6 +154,18 @@ const _data = computed({
   },
 });
 
+const searchValue = ref<string>("");
+
+function filterList(list: Array<any>) {
+  if (searchValue.value == undefined || searchValue.value === "") {
+    return list;
+  } else {
+    return _.filter(list, (o) => {
+      return _.includes(_.lowerCase(o.name), searchValue.value);
+    });
+  }
+}
+
 /**
  * 列表选中
  */
@@ -194,5 +221,9 @@ const customColors = [
   .active {
     color: rgba(51, 112, 255, 1);
   }
+}
+
+:deep(.el-table th.el-table__cell) {
+  background-color: #f5f6f7;
 }
 </style>

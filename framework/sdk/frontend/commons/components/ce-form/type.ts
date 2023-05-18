@@ -15,6 +15,8 @@ export interface FormView {
    * 提示
    */
   label: string;
+
+  leftLabel: boolean;
   /**
    * 值
    */

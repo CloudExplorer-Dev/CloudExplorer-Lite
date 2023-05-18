@@ -1,5 +1,5 @@
 <template>
-  <el-select class="m-2" filterable clearable>
+  <el-select class="m-2" filterable clearable v-bind="$attrs">
     <el-option
       v-for="(item, index) in optionList"
       :key="index"

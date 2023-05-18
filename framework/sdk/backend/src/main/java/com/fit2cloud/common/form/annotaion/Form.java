@@ -36,6 +36,8 @@ public @interface Form {
      */
     String label() default "";
 
+    boolean leftLabel() default false;
+
     /**
      * 单位
      *

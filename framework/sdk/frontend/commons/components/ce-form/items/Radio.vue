@@ -15,8 +15,9 @@
         :key="index"
         :label="item[formItem.valueField ? formItem.valueField : 'value']"
       >
-        <div v-html="formatTextField(formItem, item)"></div> </el-radio-button
-    ></template>
+        <div v-html="formatTextField(formItem, item)"></div>
+      </el-radio-button>
+    </template>
   </el-radio-group>
 </template>
 <script setup lang="ts">
