@@ -8,11 +8,8 @@
         placeholder="请输入关键字搜索"
         class="input-with-select"
         style="--el-color-danger: #c0c4cc"
-      >
-        <template #prepend>
-          <el-button :icon="Search" />
-        </template>
-      </el-input>
+        prefix-icon="Search"
+      />
     </div>
     <el-checkbox-group
       v-model="_data"
@@ -53,7 +50,7 @@
         </el-table-column>
       </el-table>
     </el-checkbox-group>
-    <div class="msg" v-show="props.modelValue?.length>0">
+    <div class="msg" v-show="props.modelValue?.length > 0">
       {{ formItem.propsInfo.activeMsg }}
       <span class="active">
         {{ _.join(activeText, ",") }}
@@ -155,7 +152,7 @@ const activeText = computed(() => {
     line-height: 22px;
   }
   .input-with-select {
-    width: 45%;
+    width: 240px;
   }
 }
 .msg {

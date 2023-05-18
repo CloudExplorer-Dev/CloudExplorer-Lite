@@ -74,6 +74,7 @@ public class FormUtil {
             map.put("attrs", annotation.attrs());
             map.put("label", annotation.label());
             map.put("leftLabel", annotation.leftLabel());
+            map.put("hideLabel", annotation.hideLabel());
             map.put("required", annotation.required());
             map.put("description", annotation.description());
             map.put("valueField", annotation.valueField());

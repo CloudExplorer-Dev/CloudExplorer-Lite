@@ -1,6 +1,4 @@
 <template>
-  <!--  data: {{ _data }}
-  <br />-->
   <el-form
     class="custom-form"
     ref="ruleFormRef"
@@ -11,7 +9,7 @@
     v-loading="_loading"
     :inline="props.inline"
     @submit.prevent
-    :scroll-to-error="true"
+    scroll-to-error
     :size="props.size"
     :disabled="props.disabled"
   >
@@ -23,11 +21,15 @@
       <template v-if="item.label">
         <el-form-item
           v-if="checkShow(item)"
-          :label="item.leftLabel ? '' : getLabel(item)"
+          :label="
+            item.hideLabel ? undefined : item.leftLabel ? '' : getLabel(item)
+          "
           :prop="item.field"
           :rules="rules(item)"
         >
-          <span class="left-label" v-if="item.leftLabel">{{ item.label }}</span>
+          <span class="left-label" v-if="item.leftLabel && !item.hideLabel">
+            {{ getLabel(item) }}
+          </span>
           <component
             ref="formItemRef"
             :is="item.inputType"
@@ -42,9 +44,9 @@
             v-bind="{ ...JSON.parse(item.attrs) }"
             @change="change(item)"
           ></component>
-<!--          <span v-if="item.unit && props.groupId != '0'" class="unit">-->
-<!--            {{ item.unit }}-->
-<!--          </span>-->
+          <!--          <span v-if="item.unit && props.groupId != '0'" class="unit">-->
+          <!--            {{ item.unit }}-->
+          <!--          </span>-->
         </el-form-item>
       </template>
       <template v-else>
@@ -80,13 +82,13 @@ const props = withDefaults(
     groupId: string;
     inline: boolean;
     size?: string;
-    disabled?: boolean
+    disabled?: boolean;
   }>(),
   {
     modelValue: {},
     inline: false,
     size: "default",
-    disabled: false
+    disabled: false,
   }
 );
 const emit = defineEmits([
@@ -116,9 +118,9 @@ function getComponentStyle(formItem: FormView): any {
 
 function getLabel(item: FormView): any {
   return item.propsInfo.showLabel !== undefined &&
-  item.propsInfo.showLabel === false
-      ? ""
-      : item.label;
+    item.propsInfo.showLabel === false
+    ? ""
+    : item.label;
 }
 
 /**

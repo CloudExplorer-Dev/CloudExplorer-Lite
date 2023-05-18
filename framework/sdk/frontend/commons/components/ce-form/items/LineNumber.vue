@@ -141,6 +141,7 @@ function minus() {
   width: 30px;
   height: 15px;
   padding: 0;
+  font-size: 12px;
 }
 
 .unit-label {

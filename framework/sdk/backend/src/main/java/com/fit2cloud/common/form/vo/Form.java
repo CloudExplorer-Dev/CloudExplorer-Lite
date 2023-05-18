@@ -30,6 +30,8 @@ public class Form {
     private String label;
 
     private boolean leftLabel;
+
+    private boolean hideLabel;
     /**
      * 数据
      */

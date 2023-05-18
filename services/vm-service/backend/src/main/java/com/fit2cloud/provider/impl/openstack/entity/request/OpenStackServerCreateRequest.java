@@ -22,7 +22,7 @@ import java.util.List;
 @FormStepInfo(step = 2, name = "网络配置")
 @FormStepInfo(step = 3, name = "系统配置")
 @FormConfirmInfo(group = 0, name = "云账号")
-@FormConfirmInfo(group = 1, name = "基础配置", items = 2)
+@FormConfirmInfo(group = 1, name = "基础配置")
 @FormConfirmInfo(group = 2, name = "网络配置")
 @FormConfirmInfo(group = 3, name = "系统配置")
 @FormGroupInfo(group = 1, name = "区域")
@@ -35,7 +35,7 @@ import java.util.List;
 @FormGroupInfo(group = 8, name = "主机命名")
 public class OpenStackServerCreateRequest extends OpenStackBaseRequest implements ICreateServerRequest {
 
-    @Form(inputType = InputType.Number,
+    @Form(inputType = InputType.LineNumber,
             label = "购买数量",
             unit = "台",
             defaultValue = "1",
@@ -89,6 +89,8 @@ public class OpenStackServerCreateRequest extends OpenStackBaseRequest implement
             textField = "imageName",
             valueField = "imageId",
             relationTrigger = {"region"},
+            propsInfo = "{\"style\":{\"width\":\"100%\",\"height\":\"32px\"}}",
+            attrs = "{\"placeholder\":\"请选择一个镜像\"}",
             group = 2,
             step = 1,
             confirmGroup = 1
@@ -101,6 +103,7 @@ public class OpenStackServerCreateRequest extends OpenStackBaseRequest implement
             clazz = OpenStackCloudProvider.class,
             method = "getFlavors",
             relationTrigger = {"region", "imageId"},
+            hideLabel = true,
             group = 3,
             step = 1,
             confirmGroup = 1
@@ -136,6 +139,7 @@ public class OpenStackServerCreateRequest extends OpenStackBaseRequest implement
             label = "网络",
             step = 2,
             group = 5,
+            hideLabel = true,
             defaultValue = "[]",
             defaultJsonValue = true,
             relationTrigger = {"region"},
@@ -147,17 +151,17 @@ public class OpenStackServerCreateRequest extends OpenStackBaseRequest implement
     private List<String> networks;
 
 
-    @Form(inputType = InputType.OpenStackSecurityGroupConfigForm,
+    @Form(inputType = InputType.TableCheckbox,
             label = "安全组",
             step = 2,
             group = 6,
-            defaultValue = "[]",
-            defaultJsonValue = true,
             relationTrigger = {"region"},
             clazz = OpenStackCloudProvider.class,
             method = "getSecurityGroups",
-            confirmGroup = 2,
-            confirmSpecial = true
+            textField = "name",
+            valueField = "id",
+            propsInfo = "{\"style\":{\"width\":\"100%\",\"height\":\"400px\"},\"showLabel\":false,\"activeMsg\":\"已选安全组\",\"title\":\"选择安全组\",\"tableColumns\":[{\"property\":\"name\",\"label\":\"安全组名称\",\"min-width\":\"120px\"},{\"property\":\"description\",\"label\":\"描述\"}]}",
+            confirmGroup = 2
     )
     private List<String> securityGroups;
 

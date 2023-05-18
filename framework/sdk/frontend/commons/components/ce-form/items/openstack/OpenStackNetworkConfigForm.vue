@@ -1,9 +1,25 @@
 <template>
   <template v-if="!confirm">
+    <div
+      style="
+        width: 100%;
+        display: flex;
+        flex-direction: row;
+        justify-content: space-between;
+      "
+    >
+      选择网络
+      <el-input
+        style="width: 240px; margin-bottom: 16px"
+        v-model="searchValue"
+        placeholder="请输入关键字搜索"
+        prefix-icon="Search"
+      />
+    </div>
     <el-checkbox-group v-model="_data" style="width: 100%">
       <el-table
         ref="multipleTableRef"
-        :data="formItem?.optionList"
+        :data="filterList(formItem?.optionList)"
         highlight-current-row
         style="width: 100%"
         @row-click="handleRowClick"
@@ -37,6 +53,24 @@
         </el-table-column>
       </el-table>
     </el-checkbox-group>
+
+    <div class="msg" v-show="modelValue?.length > 0">
+      已选择:
+      <span class="active">
+        {{
+          _.join(
+            _.map(modelValue, (v) =>
+              _.get(
+                _.find(formItem?.optionList, (o) => o.id === v),
+                "name",
+                modelValue
+              )
+            ),
+            ","
+          )
+        }}
+      </span>
+    </div>
   </template>
   <template v-else>
     {{
@@ -109,6 +143,28 @@ function handleRowClick(row: Network, column: any) {
   );
 }
 
+const searchValue = ref<string>("");
+
+function filterList(list: Array<any>) {
+  if (searchValue.value == undefined || searchValue.value === "") {
+    return list;
+  } else {
+    return _.filter(list, (o) => {
+      return (
+        _.includes(_.lowerCase(o?.name), _.lowerCase(searchValue?.value)) ||
+        _.some(o.neutronSubnets, (subnet) => {
+          return (
+            _.includes(
+              _.lowerCase(subnet?.name),
+              _.lowerCase(searchValue?.value)
+            ) || _.includes(subnet?.cidr, searchValue.value)
+          );
+        })
+      );
+    });
+  }
+}
+
 watch(
   () => _data.value,
   (value) => {
@@ -116,4 +172,16 @@ watch(
   }
 );
 </script>
-<style lang="scss" scoped></style>
+<style lang="scss" scoped>
+:deep(.el-table th.el-table__cell) {
+  background-color: #f5f6f7;
+}
+.msg {
+  margin-top: 5px;
+  color: rgba(100, 106, 115, 1);
+  .active {
+    margin-left: 3px;
+    color: rgba(51, 112, 255, 1);
+  }
+}
+</style>
