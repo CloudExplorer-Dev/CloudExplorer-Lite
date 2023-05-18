@@ -406,6 +406,7 @@ onMounted(() => {
     z-index: 2000;
     height: 95px;
     width: 100%;
+    min-width: 1000px;
     .footer {
       margin-top: 10px;
       display: flex;
@@ -415,7 +416,7 @@ onMounted(() => {
       flex-wrap: wrap;
       .footer-form {
         min-width: 200px;
-        width: 21.33%;
+        width: 25.33%;
       }
       .footer-center {
         display: flex;
@@ -429,7 +430,7 @@ onMounted(() => {
         flex-direction: row;
         flex-wrap: wrap;
         justify-content: flex-end;
-        width: 45.33%;
+        width: 41.33%;
       }
     }
   }
