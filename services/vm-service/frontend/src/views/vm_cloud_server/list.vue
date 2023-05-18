@@ -705,6 +705,99 @@ const getFirstIp = (list: Array<any>) => {
     return "";
   }
 };
+/**
+ * 操作按钮
+ */
+const buttons = ref([
+  {
+    label: t("vm_cloud_server.btn.power_on", "启动"),
+    icon: "",
+    click: (row: VmCloudServerVO) => {
+      powerOn(row);
+    },
+    show: permissionStore.hasPermission("[vm-service]CLOUD_SERVER:START"),
+    disabled: (row: { instanceStatus: string }) => {
+      return row.instanceStatus !== "Stopped";
+    },
+  },
+  {
+    label: t("vm_cloud_server.btn.shutdown", "关机"),
+    icon: "",
+    click: (row: VmCloudServerVO) => {
+      shutdown(row);
+    },
+    show: permissionStore.hasPermission("[vm-service]CLOUD_SERVER:STOP"),
+    disabled: (row: { instanceStatus: string }) => {
+      return row.instanceStatus !== "Running";
+    },
+  },
+  {
+    label: t("vm_cloud_server.btn.power_off", "关闭电源"),
+    icon: "",
+    click: (row: VmCloudServerVO) => {
+      powerOff(row);
+    },
+    show: permissionStore.hasPermission("[vm-service]CLOUD_SERVER:STOP"),
+    disabled: (row: { instanceStatus: string }) => {
+      return row.instanceStatus !== "Running";
+    },
+  },
+  {
+    label: t("vm_cloud_server.btn.reboot", "重启"),
+    icon: "",
+    click: (row: VmCloudServerVO) => {
+      reboot(row);
+    },
+    show: permissionStore.hasPermission("[vm-service]CLOUD_SERVER:RESTART"),
+    disabled: (row: { instanceStatus: string }) => {
+      return row.instanceStatus !== "Running";
+    },
+  },
+  {
+    label: t("commons.btn.delete", "删除"),
+    icon: "",
+    click: (row: VmCloudServerVO) => {
+      deleteInstance(row);
+    },
+    show: permissionStore.hasPermission("[vm-service]CLOUD_SERVER:DELETE"),
+    disabled: (row: { instanceStatus: string }) => {
+      return (
+        row.instanceStatus.toUpperCase() === "ToBeRecycled".toUpperCase() ||
+        row.instanceStatus.toUpperCase() === "Deleted".toUpperCase() ||
+        (row.instanceStatus.toUpperCase() !== "Running".toUpperCase() &&
+          row.instanceStatus.toUpperCase().indexOf("ING") > -1)
+      );
+    },
+  },
+  {
+    label: t("vm_cloud_disk.btn.create", "添加磁盘"),
+    icon: "",
+    click: createDisk,
+    show: permissionStore.hasPermission("[vm-service]CLOUD_DISK:CREATE"),
+    disabled: (row: { instanceStatus: string }) => {
+      return (
+        row.instanceStatus.toUpperCase() === "ToBeRecycled".toUpperCase() ||
+        row.instanceStatus.toUpperCase() === "Deleted".toUpperCase() ||
+        (row.instanceStatus.toUpperCase() !== "Running".toUpperCase() &&
+          row.instanceStatus.toUpperCase().indexOf("ING") > -1)
+      );
+    },
+  },
+  {
+    label: t("vm_cloud_server.btn.change_config", "配置变更"),
+    icon: "",
+    click: changeVmConfig,
+    show: permissionStore.hasPermission("[vm-service]CLOUD_SERVER:RESIZE"),
+    disabled: (row: { instanceStatus: string }) => {
+      return (
+        row.instanceStatus === "ToBeRecycled" ||
+        row.instanceStatus === "Deleted" ||
+        (row.instanceStatus.toLowerCase() != "running" &&
+          row.instanceStatus.toLowerCase().indexOf("ing") > -1)
+      );
+    },
+  },
+]);
 </script>
 <template>
   <ce-table
@@ -722,6 +815,7 @@ const getFirstIp = (list: Array<any>) => {
   >
     <template #toolbar>
       <ButtonToolBar :actions="createAction || []" :ellipsis="4" />
+      <ButtonToolBar :actions="moreActions || []" :ellipsis="2" />
     </template>
     <el-table-column type="selection" />
     <el-table-column
@@ -994,34 +1088,34 @@ const getFirstIp = (list: Array<any>) => {
       min-width="120px"
       :show="false"
     ></el-table-column>
-    <!--    <fu-table-operations-->
-    <!--      :ellipsis="2"-->
-    <!--      :columns="columns"-->
-    <!--      :buttons="buttons"-->
-    <!--      :label="$t('commons.operation')"-->
-    <!--      fixed="right"-->
-    <!--    />-->
-    <el-table-column min-width="110px" label="操作" fixed="right">
-      <template #default="scope">
-        <el-space wrap>
-          <EnableStatusSwitch
-            :instance-status="scope.row.instanceStatus"
-            :final-function="refresh"
-            :function-props="scope.row"
-          />
-          <MoreOptionsButton
-            :buttons="tableConfig.tableOperations.buttons"
-            :row="scope.row"
-          />
-        </el-space>
-      </template>
-    </el-table-column>
+    <fu-table-operations
+      :ellipsis="2"
+      :columns="columns"
+      :buttons="buttons"
+      :label="$t('commons.operation')"
+      fixed="right"
+    />
+    <!--    <el-table-column min-width="110px" label="操作" fixed="right">-->
+    <!--      <template #default="scope">-->
+    <!--        <el-space wrap>-->
+    <!--          <EnableStatusSwitch-->
+    <!--            :instance-status="scope.row.instanceStatus"-->
+    <!--            :final-function="refresh"-->
+    <!--            :function-props="scope.row"-->
+    <!--          />-->
+    <!--          <MoreOptionsButton-->
+    <!--            :buttons="tableConfig.tableOperations.buttons"-->
+    <!--            :row="scope.row"-->
+    <!--          />-->
+    <!--        </el-space>-->
+    <!--      </template>-->
+    <!--    </el-table-column>-->
     <template #buttons>
       <CeTableColumnSelect :columns="columns" />
     </template>
-    <template #bottomToolBar>
-      <ButtonToolBar :actions="moreActions || []" :ellipsis="2" />
-    </template>
+    <!--    <template #bottomToolBar>-->
+    <!--      <ButtonToolBar :actions="moreActions || []" :ellipsis="2" />-->
+    <!--    </template>-->
   </ce-table>
 
   <!-- 授权页面弹出框 -->

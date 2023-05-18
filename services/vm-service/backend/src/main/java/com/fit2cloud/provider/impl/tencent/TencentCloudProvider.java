@@ -19,6 +19,7 @@ import com.fit2cloud.provider.impl.tencent.constants.TencentChargeType;
 import com.fit2cloud.provider.impl.tencent.constants.TencentLoginType;
 import com.fit2cloud.provider.impl.tencent.constants.TencentOSType;
 import com.fit2cloud.provider.impl.tencent.constants.TencentPeriodOption;
+import com.fit2cloud.provider.impl.tencent.entity.SecurityGroupDTO;
 import com.fit2cloud.provider.impl.tencent.entity.TencentDiskTypeDTO;
 import com.fit2cloud.provider.impl.tencent.entity.TencentInstanceType;
 import com.fit2cloud.provider.impl.tencent.entity.request.*;
@@ -158,6 +159,16 @@ public class TencentCloudProvider extends AbstractCloudProvider<TencentCredentia
      */
     public List<Map<String, String>> getSecurityGroups(String req) {
         return TencentSyncCloudApi.getSecurityGroups(JsonUtil.parseObject(req, TencentBaseRequest.class));
+    }
+
+    /**
+     * 获取安全组
+     *
+     * @param req
+     * @return
+     */
+    public List<SecurityGroupDTO> getSecurityGroupsForCreateVm(String req) {
+        return TencentSyncCloudApi.getSecurityGroupsForCreateVm(JsonUtil.parseObject(req, TencentBaseRequest.class));
     }
 
     /**

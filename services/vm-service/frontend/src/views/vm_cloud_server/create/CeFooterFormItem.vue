@@ -58,11 +58,11 @@ const props = withDefaults(
     modelValue: any;
     allData: any;
     groupId: string;
-    disabled: boolean;
+    disabled?: boolean;
   }>(),
   {
     modelValue: {},
-    disabled: false
+    disabled: false,
   }
 );
 const emit = defineEmits([

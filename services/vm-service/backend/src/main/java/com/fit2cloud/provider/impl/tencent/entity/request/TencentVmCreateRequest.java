@@ -6,11 +6,9 @@ import com.fit2cloud.common.form.annotaion.FormGroupInfo;
 import com.fit2cloud.common.form.annotaion.FormStepInfo;
 import com.fit2cloud.common.form.constants.InputType;
 import com.fit2cloud.provider.ICreateServerRequest;
-import com.fit2cloud.provider.entity.F2CNetwork;
 import com.fit2cloud.provider.impl.tencent.TencentCloudProvider;
 import com.fit2cloud.provider.impl.tencent.constants.TencentBandwidthType;
 import com.fit2cloud.provider.impl.tencent.constants.TencentChargeType;
-import com.fit2cloud.provider.impl.tencent.entity.TencentInstanceType;
 import com.tencentcloudapi.cvm.v20170312.models.*;
 import lombok.Data;
 import lombok.experimental.Accessors;
@@ -31,7 +29,7 @@ import java.util.List;
 @FormGroupInfo(group = 1, name = "付费方式")
 @FormGroupInfo(group = 2, name = "区域")
 @FormGroupInfo(group = 3, name = "实例规格", description = "购买数量为多台时，实例规格一样，若想要不同实例规格需要分多次申请。")
-@FormGroupInfo(group = 4, name = "操作系统")
+@FormGroupInfo(group = 4, name = "操作系统", inline = true)
 @FormGroupInfo(group = 5, name = "磁盘配置", description = "若需要新增数据盘，申请后需要挂载和初始化后才能正常使用。")
 @FormGroupInfo(group = 6, name = "网络与安全")
 @FormGroupInfo(group = 7, name = "公网IP")
@@ -58,22 +56,20 @@ public class TencentVmCreateRequest extends TencentBaseRequest implements ICreat
     )
     private String instanceChargeType;
 
-    @Form(inputType = InputType.Number,
+    @Form(inputType = InputType.LineNumber,
             label = "购买数量",
             unit = "台",
             defaultValue = "1",
             defaultJsonValue = true,
             attrs = "{\"min\":1,\"max\":10,\"step\":1}",
             confirmGroup = 1
-
     )
     private int count;
 
     @Form(inputType = InputType.SingleSelect,
-            label = "购买时长",
+            label = "时长",
             clazz = TencentCloudProvider.class,
             method = "getPeriodOption",
-            attrs = "{\"style\":\"width:120px\"}",
             textField = "periodDisplayName",
             valueField = "period",
             defaultValue = "1",
@@ -91,6 +87,7 @@ public class TencentVmCreateRequest extends TencentBaseRequest implements ICreat
             textField = "name",
             valueField = "id",
             defaultValue = "ap-guangzhou",
+            propsInfo = "{\"style\":{\"width\":\"100%\",\"height\":\"32px\"}}",
             step = 1,
             group = 2,
             confirmGroup = 0
@@ -111,17 +108,19 @@ public class TencentVmCreateRequest extends TencentBaseRequest implements ICreat
     )
     private String zoneId;
 
-    @Form(inputType = InputType.TencentInstanceTypeForm,
+    @Form(inputType = InputType.TableRadio,
+            label = "实例规格",
             clazz = TencentCloudProvider.class,
             method = "getInstanceTypes",
-            label = "",
+            textField = "instanceType",
+            valueField = "instanceType",
             relationTrigger = {"instanceChargeType", "zoneId"},
+            propsInfo = "{\"rules\":[{\"message\":\"实例规格不能为空\",\"trigger\":\"change\",\"required\":true}],\"style\":{\"width\":\"100%\",\"height\":\"400px\"},\"showLabel\":false,\"activeMsg\":\"已选实例\",\"title\":\"选择实例规格\",\"tableColumns\":[{\"property\":\"instanceTypeFamilyName\",\"label\":\"规格类型\",\"min-width\":\"120px\"},{\"property\":\"instanceType\",\"label\":\"规格名称\"},{\"property\":\"cpuMemory\",\"label\":\"实例规格\"}]}",
             step = 1,
             group = 3,
-            confirmGroup = 1,
-            confirmSpecial = true
+            confirmGroup = 1
     )
-    private TencentInstanceType instanceTypeDTO;
+    private String instanceType;
 
     @Form(inputType = InputType.SingleSelect,
             label = "操作系统",
@@ -130,6 +129,7 @@ public class TencentVmCreateRequest extends TencentBaseRequest implements ICreat
             textField = "name",
             valueField = "id",
             defaultValue = "TencentOS",
+            propsInfo = "{\"style\":{\"width\":\"100%\"}}",
             step = 1,
             group = 4,
             confirmGroup = 1
@@ -142,20 +142,23 @@ public class TencentVmCreateRequest extends TencentBaseRequest implements ICreat
             method = "getImages",
             textField = "name",
             valueField = "id",
-            relationTrigger = {"instanceTypeDTO", "os"},
+            relationTrigger = {"instanceType", "os"},
+            propsInfo = "{\"style\":{\"width\":\"100%\"}}",
             step = 1,
             group = 4,
             confirmGroup = 1
     )
     private String osVersion;
 
+    /**
+     * 磁盘
+     */
     @Form(inputType = InputType.TencentDiskConfigForm,
             clazz = TencentCloudProvider.class,
             method = "getDiskTypesForCreateVm",
-            label = "",
             defaultValue = "[]",
             defaultJsonValue = true,
-            relationTrigger = {"instanceChargeType", "zoneId", "instanceTypeDTO"},
+            relationTrigger = {"instanceChargeType", "zoneId", "instanceType"},
             step = 1,
             group = 5,
             confirmGroup = 1,
@@ -163,27 +166,28 @@ public class TencentVmCreateRequest extends TencentBaseRequest implements ICreat
     )
     private List<TencentCreateDiskForm> disks;
 
-    @Form(inputType = InputType.TencentNetConfigForm,
+    @Form(inputType = InputType.TableRadio,
+            label = "网络",
             clazz = TencentCloudProvider.class,
             method = "getNetworks",
-            label = "网络",
-            textField = "name",
+            textField = "networkName",
             valueField = "networkId",
             relationTrigger = "zoneId",
+            propsInfo = "{\"rules\":[{\"message\":\"网络不能为空\",\"trigger\":\"change\",\"required\":true}],\"style\":{\"width\":\"100%\",\"height\":\"400px\"},\"showLabel\":false,\"activeMsg\":\"已选网络\",\"title\":\"选择网络\",\"tableColumns\":[{\"property\":\"networkName\",\"label\":\"子网\",\"min-width\":\"120px\"},{\"property\":\"vpcName\",\"label\":\"所属VPC\"},{\"property\":\"ipSegment\",\"label\":\"IPV4网段\"}]}",
             step = 2,
             group = 6,
-            confirmGroup = 2,
-            confirmSpecial = true
+            confirmGroup = 2
     )
-    private F2CNetwork f2CNetwork;
+    private String networkId;
 
-    @Form(inputType = InputType.MultiSelect,
+    @Form(inputType = InputType.TableCheckbox,
             label = "安全组",
             clazz = TencentCloudProvider.class,
-            method = "getSecurityGroups",
+            method = "getSecurityGroupsForCreateVm",
             textField = "name",
             valueField = "id",
             relationTrigger = "regionId",
+            propsInfo = "{\"style\":{\"width\":\"100%\",\"height\":\"400px\"},\"showLabel\":false,\"activeMsg\":\"已选安全组\",\"title\":\"选择安全组\",\"tableColumns\":[{\"property\":\"name\",\"label\":\"安全组名称\",\"min-width\":\"120px\"},{\"property\":\"desc\",\"label\":\"描述\"}]}",
             step = 2,
             group = 6,
             confirmGroup = 2
@@ -215,13 +219,13 @@ public class TencentVmCreateRequest extends TencentBaseRequest implements ICreat
     )
     private String bandwidthChargeType;
 
-    @Form(inputType = InputType.Number,
+    @Form(inputType = InputType.LineNumber,
             label = "带宽值",
+            unit = "Mbps",
             clazz = TencentCloudProvider.class,
-            defaultValue = "1", attrs = "{\"min\":1,\"max\":100,\"step\":1}",
+            defaultValue = "1", attrs = "{\"min\":1,\"max\":100,\"step\":1,\"style\":\"width:223px\"}",
             relationShows = "hasPublicIp",
             relationShowValues = "true",
-            unit = "Mbps",
             step = 2,
             group = 7,
             confirmGroup = 2
@@ -232,9 +236,9 @@ public class TencentVmCreateRequest extends TencentBaseRequest implements ICreat
             label = "登录方式",
             clazz = TencentCloudProvider.class,
             method = "getLoginTypes",
-            defaultValue = "password",
             textField = "name",
             valueField = "id",
+            defaultValue = "password",
             step = 3,
             group = 8,
             confirmGroup = 3
@@ -245,22 +249,24 @@ public class TencentVmCreateRequest extends TencentBaseRequest implements ICreat
             label = "登录名",
             clazz = TencentCloudProvider.class,
             method = "getLoginUser",
+            relationTrigger = "os",
             relationShows = "loginType",
             relationShowValues = "password",
-            relationTrigger = "os",
-            required = false,
             step = 3,
             group = 8,
-            confirmGroup = 3
+            confirmGroup = 3,
+            required = false
     )
     private String user;
 
-    @Form(inputType = InputType.Password,
+    @Form(inputType = InputType.RegexInput,
             label = "登录密码",
+            description = "密码须同时符合，仅支持以下规则",
             relationShows = "loginType",
             relationShowValues = "password",
-            regexp = "^(?!/)(?![\\da-z]+$)(?![\\dA-Z]+$)(?![\\d\\(\\)`~!@#\\$%\\^&\\*\\-\\+=_\\|\\{\\}\\[\\]:;'<>,\\.\\?/]+$)(?![a-zA-Z]+$)(?![a-z\\(\\)`~!@#\\$%\\^&\\*\\-\\+=_\\|\\{\\}\\[\\]:;'<>,\\.\\?/]+$)(?![A-Z\\(\\)`~!@#\\$%\\^&\\*\\-\\+=_\\|\\{\\}\\[\\]:;'<>,\\.\\?/]+$)[\\da-zA-z\\(\\)`~!@#\\$%\\^&\\*\\-\\+=_\\|\\{\\}\\[\\]:;'<>,\\.\\?/]{12,30}$",
-            regexpDescription = "在 12 ～ 30 位字符数以内，不能以\" / \"开头，至少包含其中三项(小写字母 a ~ z、大写字母 A ～ Z、数字 0 ～ 9、()`~!@#$%^&*-+=_|{}[]:;'<>,.?/)\n",
+            regexList = "[{\"regex\":\"^(?!/)(?![\\\\da-z]+$)(?![\\\\dA-Z]+$)(?![\\\\d\\\\(\\\\)`~!@#\\\\$%\\\\^&\\\\*\\\\-\\\\+=_\\\\|\\\\{\\\\}\\\\[\\\\]:;'<>,\\\\.\\\\?/]+$)(?![a-zA-Z]+$)(?![a-z\\\\(\\\\)`~!@#\\\\$%\\\\^&\\\\*\\\\-\\\\+=_\\\\|\\\\{\\\\}\\\\[\\\\]:;'<>,\\\\.\\\\?/]+$)(?![A-Z\\\\(\\\\)`~!@#\\\\$%\\\\^&\\\\*\\\\-\\\\+=_\\\\|\\\\{\\\\}\\\\[\\\\]:;'<>,\\\\.\\\\?/]+$)[\\\\da-zA-z\\\\(\\\\)`~!@#\\\\$%\\\\^&\\\\*\\\\-\\\\+=_\\\\|\\\\{\\\\}\\\\[\\\\]:;'<>,\\\\.\\\\?/]{12,30}$\",\"message\":\"在 12 ～ 30 位字符数以内，不能以' / '开头，至少包含其中三项(小写字母 a ~ z、大写字母 A ～ Z、数字 0 ～ 9、()`~!@#$%^&*-+=_|{}[]:;'<>,.?/)\"}]",
+            propsInfo = "{\"style\":{\"width\":\"100%\"}}",
+            encrypted = true,
             step = 3,
             group = 8
     )
@@ -283,7 +289,7 @@ public class TencentVmCreateRequest extends TencentBaseRequest implements ICreat
             attrs = "{\"style\":\"color: red; font-size: large\"}",
             confirmGroup = 1,
             footerLocation = 1,
-            relationTrigger = {"hasPublicIp", "bandwidth", "bandwidthChargeType", "count", "instanceChargeType", "periodNum", "instanceTypeDTO", "osVersion", "disks"},
+            relationTrigger = {"hasPublicIp", "bandwidth", "bandwidthChargeType", "count", "instanceChargeType", "periodNum", "instanceType", "osVersion", "disks"},
             confirmSpecial = true,
             required = false
     )
@@ -326,8 +332,8 @@ public class TencentVmCreateRequest extends TencentBaseRequest implements ICreat
         placement.setZone(this.zoneId);
         runInstancesRequest.setPlacement(placement);
         runInstancesRequest.setImageId(this.osVersion);
-        if (this.instanceTypeDTO != null) {
-            runInstancesRequest.setInstanceType(this.instanceTypeDTO.getInstanceType());
+        if (StringUtils.isNotEmpty(this.getInstanceType())) {
+            runInstancesRequest.setInstanceType(this.getInstanceType());
         }
 
         // 设置机器收费类型:按需或者包周期
@@ -366,8 +372,9 @@ public class TencentVmCreateRequest extends TencentBaseRequest implements ICreat
 
         // 设置子网和安全组
         VirtualPrivateCloud virtualPrivateCloud = new VirtualPrivateCloud();
-        virtualPrivateCloud.setVpcId(this.f2CNetwork.getVpcId());
-        virtualPrivateCloud.setSubnetId(this.f2CNetwork.getNetworkId());
+        /// TODO 在需要的地方通过网络查询
+        //virtualPrivateCloud.setVpcId(this.f2CNetwork.getVpcId());
+        virtualPrivateCloud.setSubnetId(this.getNetworkId());
         runInstancesRequest.setVirtualPrivateCloud(virtualPrivateCloud);
         runInstancesRequest.setInstanceCount(1l);
         if (CollectionUtils.isNotEmpty(this.securityGroupIds)) {
@@ -389,8 +396,8 @@ public class TencentVmCreateRequest extends TencentBaseRequest implements ICreat
         placement.setZone(this.zoneId);
         req.setPlacement(placement);
         req.setImageId(this.osVersion);
-        if (this.instanceTypeDTO != null) {
-            req.setInstanceType(this.instanceTypeDTO.getInstanceType());
+        if (StringUtils.isNotEmpty(this.getInstanceType())) {
+            req.setInstanceType(this.getInstanceType());
         }
         req.setInstanceChargeType(this.instanceChargeType);
         if (TencentChargeType.PREPAID.getId().equalsIgnoreCase(this.instanceChargeType)) {

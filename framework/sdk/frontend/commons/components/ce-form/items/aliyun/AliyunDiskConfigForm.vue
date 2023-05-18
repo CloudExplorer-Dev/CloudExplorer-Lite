@@ -42,14 +42,14 @@
 
         <el-form-item :prop="obj.size + ''">
           <LineNumber
-              special-step="10"
-              v-model="obj.size"
-              :min="minSize(defaultDisks[index], index)"
-              :max="maxSize(defaultDisks[index], index)"
-              :step="10"
-              :readonly="index === 0 ?obj.readonly:false"
-              required
-              style="width: 200px;margin-left: 8px;"
+            special-step="10"
+            v-model="obj.size"
+            :min="minSize(defaultDisks[index], index)"
+            :max="maxSize(defaultDisks[index], index)"
+            :step="10"
+            :readonly="index === 0 ? obj.readonly : false"
+            required
+            style="width: 200px; margin-left: 8px"
           >
             <template #perfix>
               <div>磁盘大小</div>
