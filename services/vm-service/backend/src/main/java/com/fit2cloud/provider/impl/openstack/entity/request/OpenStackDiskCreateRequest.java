@@ -27,7 +27,7 @@ public class OpenStackDiskCreateRequest extends OpenStackBaseRequest {
             clazz = OpenStackCloudProvider.class)
     private String diskType;
 
-    @Form(inputType = InputType.Number,
+    @Form(inputType = InputType.IntNumber,
             label = "磁盘大小",
             defaultValue = "20",
             defaultJsonValue = true,

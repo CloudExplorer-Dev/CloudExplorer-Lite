@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, h } from "vue";
+import { ref, h, computed } from "vue";
 import { useRouter } from "vue-router";
 import VmCloudDiskApi from "@/api/vm_cloud_disk";
 import type {
@@ -84,6 +84,11 @@ const open = (diskId: string) => {
     ];
   });
 };
+
+const diskMin = computed(() => {
+  return diskInfo.value?.size || 10;
+});
+
 const close = () => {
   drawer.value = false;
 };
@@ -129,18 +134,24 @@ defineExpose({ open, close });
                 </div>
 
                 <el-form-item class="disk-size-content">
-                  <el-input-number
-                    v-model.number="newDiskSize"
-                    :min="diskInfo.size"
+                  <LineNumber
+                    v-number="{ min: diskMin }"
                     style="width: 200px"
-                    controls-position="right"
-                    placeholder="磁盘大小"
+                    special-step="10"
+                    v-model.number="newDiskSize"
+                    :readonly="diskInfo.value"
+                    :min="diskMin"
+                    :step="10"
+                    required
                   >
-                  </el-input-number>
+                    <template #perfix>
+                      <div>磁盘大小</div>
+                    </template>
+                  </LineNumber>
                 </el-form-item>
               </el-form>
               <div class="active">
-                当前数据盘大小
+                配置变更后磁盘大小:
                 <span class="active-value">{{ newDiskSize }}GB</span>
               </div>
             </template>

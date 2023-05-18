@@ -16,7 +16,7 @@ public class HuaweiCreateDiskForm {
             propsInfo = "{\"style\":{\"width\":\"100%\"}}")
     private String diskName;
 
-    @Form(inputType = InputType.Number,
+    @Form(inputType = InputType.IntNumber,
             label = "磁盘大小",
             defaultValue = "20",
             defaultJsonValue = true,
@@ -39,8 +39,9 @@ public class HuaweiCreateDiskForm {
             label = "随实例删除",
             defaultValue = "YES",
             textField = "name",
-            valueField = "id",
-            method = "getDeleteWithInstance",
-            clazz = HuaweiCloudProvider.class)
+            propsInfo = "{\"style\":{\"width\":\"40px\"}}",
+            attrs = "{\"inactive-value\":\"NO\",\"active-value\":\"YES\"}",
+            valueField = "id"
+    )
     private String deleteWithInstance;
 }

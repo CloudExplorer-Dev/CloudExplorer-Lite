@@ -198,12 +198,18 @@ defineExpose({ open, close });
       :before-close="close"
     >
       <el-alert
-        title="配置变更将会对实例执行 关机 操作"
+        title=""
         type="warning"
         :closable="false"
         style="height: 40px"
         show-icon="true"
-      />
+      >
+        <template #title>
+          <span style="color: #1f2329; font-size: 14px"
+            >配置变更将会对实例执行 [关机] 操作</span
+          >
+        </template>
+      </el-alert>
 
       <base-container
         v-loading="loading"

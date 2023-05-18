@@ -24,7 +24,7 @@ public class AliyunCreateDiskForm {
     )
     private String description;
 
-    @Form(inputType = InputType.Number,
+    @Form(inputType = InputType.IntNumber,
             label = "磁盘大小",
             defaultValue = "20",
             defaultJsonValue = true,
@@ -50,8 +50,8 @@ public class AliyunCreateDiskForm {
             defaultValue = "YES",
             textField = "name",
             valueField = "id",
-            method = "getDeleteWithInstance",
-            clazz = AliyunCloudProvider.class
+            attrs = "{\"inactive-value\":\"NO\",\"active-value\":\"YES\"}",
+            propsInfo = "{\"style\":{\"width\":\"40px\"}}"
     )
     private String deleteWithInstance;
 

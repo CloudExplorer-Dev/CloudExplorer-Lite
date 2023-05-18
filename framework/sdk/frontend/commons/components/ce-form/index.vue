@@ -146,6 +146,7 @@ defineExpose({
 </script>
 <template>
   <el-form
+    @submit.prevent
     ref="ruleFormRef"
     label-width="130px"
     label-suffix=":"
@@ -156,7 +157,7 @@ defineExpose({
     <div v-for="item in formViewData" :key="item.field" style="width: 100%">
       <CeFormItem
         :key="item.field"
-        v-if="item.relationShowValues? item.relationShows.every((i:string) => item.relationShowValues.includes(modelValue[i])):item.relationShows.every((i:string) => formData[i])"
+        v-if="item.relationShowValues? item.relationShows.every((i:string) => item.relationShowValues.includes(modelValue[i])):item.relationShows.every((i:string) => modelValue[i])"
         @change="change(item, $event)"
         v-bind:modelValue="modelValue[item.field]"
         :formItem="item"
