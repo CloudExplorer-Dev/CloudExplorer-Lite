@@ -4,6 +4,7 @@ import com.tencentcloudapi.cvm.v20170312.models.DescribeImagesRequest;
 import com.tencentcloudapi.cvm.v20170312.models.Filter;
 import lombok.Data;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -40,11 +41,9 @@ public class TencentGetImageRequest extends TencentVmCreateRequest {
         if (CollectionUtils.isNotEmpty(filters)) {
             describeImagesRequest.setFilters(filters.toArray(new Filter[]{}));
         }
-
-        Optional.ofNullable(this.getInstanceTypeDTO()).ifPresent((instanceTypeDTO) ->
-                describeImagesRequest.setInstanceType(instanceTypeDTO.getInstanceType())
-        );
-
+        if (StringUtils.isNotEmpty(this.getInstanceType())) {
+            describeImagesRequest.setInstanceType(this.getInstanceType());
+        }
         return describeImagesRequest;
     }
 

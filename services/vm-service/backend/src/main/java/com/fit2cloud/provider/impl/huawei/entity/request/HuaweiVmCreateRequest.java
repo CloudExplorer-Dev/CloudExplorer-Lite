@@ -70,10 +70,10 @@ public class HuaweiVmCreateRequest extends HuaweiBaseRequest implements ICreateS
             textField = "periodDisplayName",
             valueField = "period",
             defaultValue = "1",
+            defaultJsonValue = true,
             relationShows = "billingMode",
             relationShowValues = "prePaid",
-            confirmGroup = 1,
-            confirmSpecial = true
+            confirmGroup = 1
     )
     private String periodNum;
 

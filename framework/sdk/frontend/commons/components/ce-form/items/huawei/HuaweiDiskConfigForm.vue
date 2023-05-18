@@ -21,14 +21,14 @@
 
         <el-form-item :prop="obj.size + ''">
           <LineNumber
-              special-step="10"
-              v-model="obj.size"
-              :min="index === 0 ? imageDiskMinSize : 10"
-              :max="index === 0 ? 1024 : 32768"
-              :step="10"
-              :readonly="index === 0 ?obj.readonly:false"
-              required
-              style="width: 200px;margin-left: 8px;"
+            special-step="10"
+            v-model="obj.size"
+            :min="index === 0 ? imageDiskMinSize : 10"
+            :max="index === 0 ? 1024 : 32768"
+            :step="10"
+            :readonly="index === 0 ? obj.readonly : false"
+            required
+            style="width: 200px; margin-left: 8px"
           >
             <template #perfix>
               <div>磁盘大小</div>

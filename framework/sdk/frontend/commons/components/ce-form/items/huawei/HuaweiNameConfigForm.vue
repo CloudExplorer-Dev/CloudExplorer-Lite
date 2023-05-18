@@ -89,34 +89,22 @@ const _loading = ref<boolean>(false);
 
 const nameRules = [
   {
-    message: "云主机名称不能为空",
-    trigger: "blur",
-    pattern: "\\S",
-    regex: "\\S",
-    required: true,
-  },
-  {
     message:
       "只能由中文字符、英文字母、数字及“_”、“-”、“.”组成,且长度为[1-64]个字符。",
     trigger: "blur",
     pattern: "^[\u4E00-\u9FA5\\w.-]{1,64}$",
     regex: "^[\u4E00-\u9FA5\\w.-]{1,64}$",
+    required: true,
   },
 ];
 const hostNameRules = [
-  {
-    message: "Hostname" + "不能为空",
-    trigger: "blur",
-    pattern: "\\S",
-    regex: "\\S",
-    required: true,
-  },
   {
     message:
       "长度为 [1-64] 个字符,允许使用点号(.)分隔字符成多段,每段允许使用大小写字母、数字或连字符(-),但不能连续使用点号(.)或连字符(-),不能以点号(.)或连字符(-)开头或结尾,不能出现(.-)和(-.)。",
     trigger: "blur",
     pattern: "^(?!.*(?:\\.\\.|--))[a-zA-Z0-9]+(?:[-.][a-zA-Z0-9]+)*$",
     regex: "^(?!.*(?:\\.\\.|--))[a-zA-Z0-9]+(?:[-.][a-zA-Z0-9]+)*$",
+    required: true,
   },
 ];
 

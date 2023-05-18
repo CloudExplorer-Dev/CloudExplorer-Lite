@@ -22,6 +22,7 @@ import com.fit2cloud.provider.entity.request.GetMetricsRequest;
 import com.fit2cloud.provider.impl.tencent.constants.TencentChargeType;
 import com.fit2cloud.provider.impl.tencent.constants.TencentDiskType;
 import com.fit2cloud.provider.impl.tencent.constants.TencentPerfMetricConstants;
+import com.fit2cloud.provider.impl.tencent.entity.SecurityGroupDTO;
 import com.fit2cloud.provider.impl.tencent.entity.TencentDiskTypeDTO;
 import com.fit2cloud.provider.impl.tencent.entity.TencentInstanceType;
 import com.fit2cloud.provider.impl.tencent.entity.credential.TencentVmCredential;
@@ -44,6 +45,7 @@ import com.tencentcloudapi.monitor.v20180724.models.GetMonitorDataRequest;
 import com.tencentcloudapi.monitor.v20180724.models.GetMonitorDataResponse;
 import com.tencentcloudapi.vpc.v20170312.VpcClient;
 import com.tencentcloudapi.vpc.v20170312.models.*;
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
@@ -71,6 +73,18 @@ public class TencentSyncCloudApi {
         CvmClient cvmClient = tencentVmCredential.getCvmClient(req.getRegionId());
 
         RunInstancesRequest runInstancesRequest = req.toRunInstancesRequest();
+        // 通过网络获取VPC
+        TencentGetSubnetRequest getSubnetRequest = new TencentGetSubnetRequest();
+        getSubnetRequest.setCredential(req.getCredential());
+        getSubnetRequest.setRegionId(req.getRegionId());
+        getSubnetRequest.setZoneId(req.getZoneId());
+        List<F2CNetwork> networks = getNetworks(getSubnetRequest);
+        if (CollectionUtils.isNotEmpty(networks)) {
+            List<F2CNetwork> createVmNetworks = networks.stream().filter(v -> StringUtils.equalsIgnoreCase(v.getNetworkId(), req.getNetworkId())).toList();
+            if (CollectionUtils.isNotEmpty(createVmNetworks)) {
+                runInstancesRequest.getVirtualPrivateCloud().setVpcId(createVmNetworks.get(0).getVpcId());
+            }
+        }
         RunInstancesResponse runInstancesResponse;
         try {
             runInstancesResponse = cvmClient.RunInstances(runInstancesRequest);
@@ -174,8 +188,7 @@ public class TencentSyncCloudApi {
                 .setId(request.getId())
                 .setName(request.getServerInfos().get(index).getName())
                 .setIpArray(new ArrayList<>())
-                .setInstanceType(request.getInstanceTypeDTO() == null ? "" : request.getInstanceTypeDTO().getInstanceType())
-                .setInstanceTypeDescription(request.getInstanceTypeDTO() == null ? "" : request.getInstanceTypeDTO().getCpuMemory());
+                .setInstanceType(StringUtils.isEmpty(request.getInstanceType()) ? "" : request.getInstanceType());
 
         return virtualMachine;
     }
@@ -497,6 +510,46 @@ public class TencentSyncCloudApi {
             map.put("id", securityGroup.getSecurityGroupId());
             map.put("name", name);
             return map;
+        }).toList();
+    }
+
+    /**
+     * 获取安全组
+     *
+     * @param req
+     * @return
+     */
+    public static List<SecurityGroupDTO> getSecurityGroupsForCreateVm(TencentBaseRequest req) {
+        TencentVmCredential tencentVmCredential = JsonUtil.parseObject(req.getCredential(), TencentVmCredential.class);
+        VpcClient client = tencentVmCredential.getVpcClient(req.getRegionId());
+
+        DescribeSecurityGroupsRequest describeSecurityGroupsRequest = new DescribeSecurityGroupsRequest();
+        String offset = "0";
+        String limit = "100";
+        describeSecurityGroupsRequest.setLimit(limit);
+        List<SecurityGroup> securityGroups = new ArrayList<>();
+        while (true) {
+            describeSecurityGroupsRequest.setOffset(offset);
+            try {
+                DescribeSecurityGroupsResponse describeSecurityGroupsResponse = client.DescribeSecurityGroups(describeSecurityGroupsRequest);
+                securityGroups.addAll(Arrays.asList(describeSecurityGroupsResponse.getSecurityGroupSet()));
+                if (describeSecurityGroupsResponse.getTotalCount() <= Integer.parseInt(offset) + Integer.parseInt(limit)) {
+                    break;
+                } else {
+                    offset = String.valueOf(Integer.parseInt(offset) + Integer.parseInt(limit));
+                }
+            } catch (TencentCloudSDKException e) {
+                logger.error("Failed to get security group!", e.getMessage());
+                throw new RuntimeException(e.getMessage(), e);
+            }
+        }
+        return securityGroups.stream().map(securityGroup -> {
+            SecurityGroupDTO securityGroupDTO = new SecurityGroupDTO();
+            String name = securityGroup.getSecurityGroupName() == null ? securityGroup.getSecurityGroupId() : securityGroup.getSecurityGroupId() + " (" + securityGroup.getSecurityGroupName() + ")";
+            securityGroupDTO.setId(securityGroup.getSecurityGroupId());
+            securityGroupDTO.setName(name);
+            securityGroupDTO.setDesc(securityGroup.getSecurityGroupDesc());
+            return securityGroupDTO;
         }).toList();
     }
 
@@ -1145,7 +1198,7 @@ public class TencentSyncCloudApi {
         //设置时间，根据syncTimeStampStr,默认一个小时
         Long startTime = DateUtil.beforeOneHourToTimestamp(Long.valueOf(getMetricsRequest.getSyncTimeStampStr()));
         //多获取过去30分钟的数据，防止同步线程时间不固定，导致数据不全的问题
-        getMetricsRequest.setStartTime(String.valueOf(startTime-1800000L));
+        getMetricsRequest.setStartTime(String.valueOf(startTime - 1800000L));
         getMetricsRequest.setEndTime(getMetricsRequest.getSyncTimeStampStr());
         try {
             getMetricsRequest.setRegionId(getMetricsRequest.getRegionId());
