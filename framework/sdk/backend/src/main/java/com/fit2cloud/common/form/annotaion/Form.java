@@ -38,6 +38,8 @@ public @interface Form {
 
     boolean leftLabel() default false;
 
+    boolean hideLabel() default false;
+
     /**
      * 单位
      *

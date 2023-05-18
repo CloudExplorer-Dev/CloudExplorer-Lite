@@ -13,7 +13,7 @@
             },
             {
               message: `磁盘大小最小值为${_minValue}`,
-              trigger: 'change',
+              trigger: ['change', 'blur'],
               type: 'number',
               min: _minValue,
             },
@@ -88,7 +88,7 @@ const props = defineProps<{
 
 const emit = defineEmits(["update:modelValue", "change"]);
 
-import { computed, watch, onMounted } from "vue";
+import { computed, watch } from "vue";
 import _ from "lodash";
 import type { FormView } from "@commons/components/ce-form/type";
 import LineNumber from "@commons/components/ce-form/items/LineNumber.vue";

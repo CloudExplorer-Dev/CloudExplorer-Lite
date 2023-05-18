@@ -1,18 +1,25 @@
 <template>
   <template v-if="!confirm">
-    已选择:
-    <template v-if="currentRow">
-      {{ currentRow.name }}
-      <span style="margin-left: 20px">
-        cpu: {{ currentRow.vcpus }}核, 内存: {{ currentRow.ram / 1024 }}GB,
-        硬盘: {{ currentRow.disk }}GB
-      </span>
-    </template>
-
+    <div
+      style="
+        width: 100%;
+        display: flex;
+        flex-direction: row;
+        justify-content: space-between;
+      "
+    >
+      选择实例规格
+      <el-input
+        style="width: 240px; margin-bottom: 16px"
+        v-model="searchValue"
+        placeholder="请输入关键字搜索"
+        prefix-icon="Search"
+      />
+    </div>
     <el-radio-group v-model="_data" style="width: 100%">
       <el-table
         ref="singleTableRef"
-        :data="formItem?.optionList"
+        :data="filterList(formItem?.optionList)"
         highlight-current-row
         style="width: 100%"
         @current-change="handleCurrentChange"
@@ -52,6 +59,16 @@
         </el-table-column>
       </el-table>
     </el-radio-group>
+    <span class="msg" v-show="currentRow">
+      已选择:
+      <span style="color: rgba(51, 112, 255, 1)" v-if="currentRow">
+        {{ currentRow.name }}
+        <span style="margin-left: 20px">
+          cpu: {{ currentRow.vcpus }}核, 内存: {{ currentRow.ram / 1024 }}GB,
+          硬盘: {{ currentRow.disk }}GB
+        </span>
+      </span>
+    </span>
   </template>
   <template v-else>
     {{
@@ -153,6 +170,18 @@ function handleCurrentChange(val: Flavor | undefined) {
   currentRow.value = val;
 }
 
+const searchValue = ref<string>("");
+
+function filterList(list: Array<any>) {
+  if (searchValue.value == undefined || searchValue.value === "") {
+    return list;
+  } else {
+    return _.filter(list, (o) => {
+      return _.includes(_.lowerCase(o.name), searchValue.value);
+    });
+  }
+}
+
 watch(
   () => _data.value,
   (value) => {
@@ -160,4 +189,8 @@ watch(
   }
 );
 </script>
-<style lang="scss" scoped></style>
+<style lang="scss" scoped>
+:deep(.el-table th.el-table__cell) {
+  background-color: #f5f6f7;
+}
+</style>

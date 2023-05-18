@@ -7,128 +7,118 @@
       label-position="left"
       style="margin-bottom: 18px"
       :model="data"
+      :data-var="(_hasRoot = _.find(data, (a) => a.boot) !== undefined)"
     >
-      <div style="display: flex; flex-direction: row; flex-wrap: wrap">
-        <div
-          v-for="(obj, index) in data"
-          :key="index"
-          class="vs-disk-config-card"
-        >
-          <el-card
-            class="card"
-            :body-style="{
-              padding: 0,
-              'text-align': 'center',
-              display: 'flex',
-              'flex-direction': 'column',
-              'flex-wrap': 'nowrap',
-              'align-items': 'center',
-              'justify-content': 'space-evenly',
-              height: '100%',
-              position: 'relative',
-            }"
+      <div v-for="(obj, index) in data" :key="index">
+        <div class="disk-title">
+          <span v-if="obj.boot"> 系统盘 <span class="unit"> (GB) </span></span>
+          <span
+            v-else-if="(_hasRoot && index === 1) || (!_hasRoot && index === 0)"
           >
-            <span class="title">
-              {{ "磁盘 " + (index + 1) }}
-              <span
-                v-if="obj.boot"
-                style="font-size: small; color: var(--el-text-color-secondary)"
-              >
-                系统盘
-              </span>
-              <span
-                style="
-                  font-size: smaller;
-                  color: var(--el-text-color-secondary);
-                "
-              >
-                (GB)
-              </span>
-            </span>
-
-            <el-form-item
-              label="磁盘类型"
-              size="small"
-              :prop="'[' + index + '].volumeType'"
+            数据盘 <span class="unit"> (GB) </span>
+          </span>
+        </div>
+        <div class="disk-row">
+          <el-form-item label-width="0" :prop="'[' + index + '].volumeType'">
+            <template #prefix>
+              <div>磁盘类型</div>
+            </template>
+            <el-select
+              filterable
+              v-model="obj.volumeType"
+              placeholder="磁盘类型"
+              clearable
+              style="width: 260px"
             >
-              <el-select
-                filterable
-                v-model="obj.volumeType"
-                placeholder="磁盘类型"
-                clearable
-                style="width: 120px"
-              >
-                <el-option
-                  v-for="(item, index) in formItem?.ext?.volumeType?.optionList"
-                  :key="index"
-                  :label="item.name"
-                  :value="item.name"
-                />
-              </el-select>
-            </el-form-item>
+              <el-option
+                v-for="(item, index) in formItem?.ext?.volumeType?.optionList"
+                :key="index"
+                :label="item.name"
+                :value="item.name"
+              />
+            </el-select>
+          </el-form-item>
 
-            <el-form-item
-              :rules="{
+          <el-form-item
+            style="margin-left: 12px"
+            label-width="0"
+            :data-var="(_minValue = obj.minSize < 1 ? 1 : obj.minSize)"
+            :rules="[
+              {
                 message: '磁盘大小' + '不能为空',
                 trigger: 'blur',
                 required: true,
-              }"
-              label="磁盘大小"
-              size="small"
-              :prop="'[' + index + '].size'"
-            >
-              <el-input-number
-                v-model="obj.size"
-                :min="obj.minSize"
-                :step="1"
-                style="width: 120px"
-              />
-            </el-form-item>
-
-            <el-button
-              v-if="!obj.boot"
-              class="remove-button"
-              @click="remove(index)"
-              :icon="CloseBold"
-              type="info"
-              text
-            ></el-button>
-          </el-card>
-
-          <!--        <div style="width: 100%; height: 30px; text-align: center">
-          <el-checkbox v-model="obj.deleteWithInstance" v-if="obj.boot"
-            >随实例删除</el-checkbox
+              },
+              {
+                message: `磁盘大小最小值为${_minValue}`,
+                trigger: ['change', 'blur'],
+                type: 'number',
+                min: _minValue,
+              },
+            ]"
+            :prop="'[' + index + '].size'"
           >
-        </div>-->
-        </div>
-        <div class="vs-disk-config-card">
-          <el-card class="card add-card">
-            <el-button
-              style="margin: auto"
-              class="el-button--primary"
-              @click="add"
-              >添加磁盘</el-button
+            <LineNumber
+              special-step="10"
+              v-model="obj.size"
+              :min="_minValue"
+              :step="1"
+              required
+              style="width: 200px"
             >
-          </el-card>
+              <template #perfix>
+                <div>磁盘大小</div>
+              </template>
+            </LineNumber>
+          </el-form-item>
+
+          <CeIcon
+            style="cursor: pointer; margin-left: 9px"
+            size="16px"
+            code="icon_delete-trash_outlined1"
+            v-if="!obj.boot"
+            @click="remove(index)"
+            color="#6E748E"
+          />
         </div>
       </div>
+      <el-button link type="primary" @click="add">+ 添加磁盘 </el-button>
     </el-form>
   </template>
   <template v-else>
-    <el-descriptions>
+    <el-descriptions
+      :column="3"
+      direction="vertical"
+      :data-var="(_hasRoot = _.find(data, (a) => a.boot) !== undefined)"
+    >
       <el-descriptions-item
-        :label="'磁盘' + (i + 1)"
+        :label="
+          _hasRoot ? (i === 0 ? '系统盘' : '数据盘' + i) : '数据盘' + (i + 1)
+        "
         v-for="(disk, i) in modelValue"
         :key="i"
+        width="33.33%"
       >
-        {{ disk.size }}GB [磁盘类型: {{ disk.volumeType }}]
-        <!--{{ disk.deleteWithInstance ? " (随实例删除)" : "" }}-->
+        {{ disk.size }}GB [磁盘类型:
+        {{ disk.volumeType ? disk.volumeType : "默认" }}]
       </el-descriptions-item>
+      <el-descriptions-item
+        width="33.33%"
+        v-for="x in modelValue.length % 3"
+        :key="x"
+      />
     </el-descriptions>
   </template>
 </template>
 <script setup lang="ts">
+import { computed, onMounted, ref, watch } from "vue";
+import _ from "lodash";
+import type { FormView } from "@commons/components/ce-form/type";
+import { CloseBold } from "@element-plus/icons-vue";
+import { type FormInstance } from "element-plus";
 import formApi from "@commons/api/form_resource_api";
+import LineNumber from "@commons/components/ce-form/items/LineNumber.vue";
+import CeIcon from "@commons/components/ce-icon/index.vue";
 
 const props = defineProps<{
   modelValue: any;
@@ -141,12 +131,6 @@ const props = defineProps<{
 }>();
 
 const emit = defineEmits(["update:modelValue", "change"]);
-
-import { computed, onMounted, ref, watch } from "vue";
-import _ from "lodash";
-import type { FormView } from "@commons/components/ce-form/type";
-import { CloseBold } from "@element-plus/icons-vue";
-import { type FormInstance } from "element-plus";
 
 interface Disk {
   minSize: number;
@@ -331,6 +315,33 @@ defineExpose({
     display: flex;
     align-items: center;
     justify-content: center;
+  }
+}
+
+.disk-title {
+  padding-top: 6px;
+  padding-bottom: 6px;
+  .unit {
+    font-size: smaller;
+    color: var(--el-text-color-secondary);
+  }
+}
+
+.disk-row {
+  width: 100%;
+  background: #f7f9fc;
+  border-radius: 4px;
+  display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  align-items: center;
+  height: 46px;
+  padding-left: 12px;
+  padding-right: 12px;
+  margin-bottom: 6px;
+
+  :deep(.el-form-item) {
+    margin-bottom: 0;
   }
 }
 </style>
