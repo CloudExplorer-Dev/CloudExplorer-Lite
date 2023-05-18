@@ -10,10 +10,11 @@
     >
       选择网络
       <el-input
-        style="width: 240px; margin-bottom: 16px"
+        style="width: 240px; margin-bottom: 16px--el-color-danger: #c0c4cc"
         v-model="searchValue"
         placeholder="请输入关键字搜索"
         prefix-icon="Search"
+        :validate-event="false"
       />
     </div>
     <el-checkbox-group v-model="_data" style="width: 100%">

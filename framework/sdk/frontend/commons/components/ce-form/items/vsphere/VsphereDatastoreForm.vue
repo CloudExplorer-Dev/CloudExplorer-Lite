@@ -11,10 +11,11 @@
       >
         选择存储器
         <el-input
-          style="width: 240px; margin-bottom: 16px"
+          style="width: 240px; margin-bottom: 16px; --el-color-danger: #c0c4cc"
           v-model="searchValue"
           placeholder="请输入关键字搜索"
           prefix-icon="Search"
+          :validate-event="false"
         />
       </div>
       <el-radio-group v-model="_data" style="width: 100%">
@@ -161,7 +162,7 @@ function filterList(list: Array<any>) {
     return list;
   } else {
     return _.filter(list, (o) => {
-      return _.includes(_.lowerCase(o.name), searchValue.value);
+      return _.includes(_.lowerCase(o.name), _.lowerCase(searchValue.value));
     });
   }
 }

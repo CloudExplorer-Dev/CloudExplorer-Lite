@@ -42,10 +42,11 @@
 
           <el-input
             v-if="label"
-            style="width: 240px"
+            style="width: 240px; --el-color-danger: #c0c4cc"
             v-model="searchValue"
             placeholder="请输入关键字搜索"
             prefix-icon="Search"
+            :validate-event="false"
           />
         </div>
 
@@ -401,7 +402,7 @@ function filterList(list: Array<any>) {
     return list;
   } else {
     return _.filter(list, (o) => {
-      return _.includes(_.lowerCase(o.name), searchValue.value);
+      return _.includes(_.lowerCase(o.name), _.lowerCase(searchValue.value));
     });
   }
 }
