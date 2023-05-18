@@ -51,8 +51,12 @@
             ></detail-page>
           </template>
           <template v-else>
-            <el-descriptions :column="group.items">
-              <el-descriptions-item label="云账号" v-if="group.group === 0">
+            <el-descriptions :column="group.items" direction="vertical">
+              <el-descriptions-item
+                label="云账号"
+                v-if="group.group === 0"
+                :width="100 / group.items + '%'"
+              >
                 <!--          <el-image
                   style="margin-top: 3px; width: 16px; height: 16px"
                   :src="platformIcon[cloudAccount?.platform].icon"
@@ -66,7 +70,6 @@
                   size="16px"
                   v-if="cloudAccount?.platform"
                 ></component>
-                <ce-ico> </ce-ico>
                 <span style="margin-left: 10px">{{ cloudAccount?.name }}</span>
               </el-descriptions-item>
               <template v-for="form in group.forms" :key="form.index">
@@ -74,6 +77,7 @@
                   <el-descriptions-item
                     :label="form.label"
                     :span="form.confirmItemSpan"
+                    :width="(100 / group.items) * form.confirmItemSpan + '%'"
                   >
                     <template v-if="!form.confirmSpecial">
                       <div class="description-inline">
@@ -290,6 +294,10 @@ function getGroupFormDetail(group: any) {
 </script>
 
 <style lang="scss" scoped>
+:deep(.el-descriptions__label) {
+  color: #8f959e;
+}
+
 .description-inline {
   display: inline-flex;
   flex-direction: row;
