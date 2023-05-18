@@ -11,7 +11,7 @@ import lombok.Data;
 @Data
 public class VsphereConfigUpdateForm {
     // cpu核数
-    @Form(inputType = InputType.Number,
+    @Form(inputType = InputType.IntNumber,
             label = "CPU",
             unit = "核",
             group = 3,
@@ -19,13 +19,13 @@ public class VsphereConfigUpdateForm {
             defaultValue = "1",
             defaultJsonValue = true,
             attrs = "{\"min\":1,\"max\":128,\"step\":1}",
-            propsInfo = "{\"style\":{\"width\":\"120px\"}}",
+            propsInfo = "{\"style\":{\"width\":\"140px\"}}",
             confirmGroup = 1
     )
     private int cpu;
 
     // 内存GB
-    @Form(inputType = InputType.Number,
+    @Form(inputType = InputType.IntNumber,
             label = "内存",
             unit = "GB",
             group = 3,
@@ -33,7 +33,7 @@ public class VsphereConfigUpdateForm {
             defaultValue = "1",
             defaultJsonValue = true,
             attrs = "{\"min\":1,\"max\":512,\"step\":1}",
-            propsInfo = "{\"style\":{\"width\":\"120px\"}}",
+            propsInfo = "{\"style\":{\"width\":\"140px\"}}",
             confirmGroup = 1
     )
     private int memory;

@@ -86,7 +86,7 @@ const rules = computed(() => {
   return props.formItem.propsInfo.rules
     ? props.formItem.propsInfo.rules
     : {
-        message: errMsg,
+        message: errMsg.value,
         trigger: "blur",
         required: props.formItem.required,
       };

@@ -13,6 +13,8 @@ public enum InputType {
      * 数字类型
      */
     Number(InputNumberForm.class),
+
+    IntNumber(InputNumberForm.class),
     /**
      * 密码输入框
      */

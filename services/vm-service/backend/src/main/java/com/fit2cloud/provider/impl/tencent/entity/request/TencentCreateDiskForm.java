@@ -17,7 +17,7 @@ public class TencentCreateDiskForm {
             propsInfo = "{\"style\":{\"width\":\"100%\"}}")
     private String diskName;
 
-    @Form(inputType = InputType.Number,
+    @Form(inputType = InputType.IntNumber,
             label = "磁盘大小",
             defaultValue = "20",
             defaultJsonValue = true,
@@ -41,7 +41,8 @@ public class TencentCreateDiskForm {
             defaultValue = "YES",
             textField = "name",
             valueField = "id",
-            method = "getDeleteWithInstance",
-            clazz = TencentCloudProvider.class)
+            attrs = "{\"inactive-value\":\"NO\",\"active-value\":\"YES\"}",
+            propsInfo = "{\"style\":{\"width\":\"40px\"}}"
+    )
     private String deleteWithInstance;
 }
