@@ -2,7 +2,6 @@
   <div>
     <div class="header">
       <div class="title">{{ formItem.propsInfo.title }}</div>
-
       <el-input
         v-model="filterText"
         :validate-event="false"
@@ -15,7 +14,7 @@
         </template>
       </el-input>
     </div>
-    <el-radio-group
+    <el-checkbox-group
       v-model="_data"
       style="width: 100%; height: calc(100% - 48px - 22px)"
     >
@@ -24,13 +23,10 @@
         :data="tableData"
         highlight-current-row
         style="width: 100%; height: 100%; --el-bg-color: #f5f6f7"
-        @current-change="
-          _data = $event[formItem.valueField ? formItem.valueField : 'name']
-        "
       >
         <el-table-column width="50px">
           <template #default="scope">
-            <el-radio
+            <el-checkbox
               :label="
                 scope.row[formItem.valueField ? formItem.valueField : 'name']
               "
@@ -38,7 +34,7 @@
               <span v-show="false">{{
                 scope.row[formItem.valueField ? formItem.valueField : "name"]
               }}</span>
-            </el-radio>
+            </el-checkbox>
           </template>
         </el-table-column>
         <el-table-column
@@ -56,11 +52,11 @@
           </template>
         </el-table-column>
       </el-table>
-    </el-radio-group>
-    <div class="msg" v-show="props.modelValue">
+    </el-checkbox-group>
+    <div class="msg" v-show="props.modelValue?.length>0">
       {{ formItem.propsInfo.activeMsg }}
       <span class="active">
-        {{ activeText }}
+        {{ _.join(activeText, ",") }}
       </span>
     </div>
   </div>
@@ -70,9 +66,10 @@ import type { FormView } from "@commons/components/ce-form/type";
 import { computed, ref } from "vue";
 import { Search } from "@element-plus/icons-vue";
 import type { ElTable } from "element-plus";
+import _ from "lodash";
 const filterText = ref<string>("");
 const props = defineProps<{
-  modelValue?: string;
+  modelValue?: Array<string>;
   formItem: FormView;
   setDefaultValue?: boolean;
 }>();
@@ -85,13 +82,16 @@ const singleTableRef = ref<InstanceType<typeof ElTable>>();
 
 const _data = computed({
   get() {
+    if (!props.modelValue) {
+      return [];
+    }
     return props.modelValue;
   },
   set(value) {
     emit("update:modelValue", value);
-    emit("change", props.formItem);
   },
 });
+
 const tableColumns = computed(() => {
   if (props.formItem.propsInfo.tableColumns) {
     return props.formItem.propsInfo.tableColumns;
@@ -118,36 +118,27 @@ const tableData = computed(() => {
 
 const activeText = computed(() => {
   if (props.modelValue) {
-    const row = props.formItem.optionList.find(
-      (f: any) =>
-        f[props.formItem.valueField ? props.formItem.valueField : "value"] ===
-        props.modelValue
+    const rows: Array<any> = props.formItem.optionList.filter((f: any) =>
+      props.modelValue?.includes(
+        f[props.formItem.valueField ? props.formItem.valueField : "value"]
+      )
     );
-    if (!row) {
-      emit("update:modelValue", null);
-      emit("change", props.formItem);
-      return null;
-    }
     if (props.formItem.propsInfo.activeTextEval) {
-      return evalF(props.formItem.propsInfo.activeTextEval, row);
+      return rows.map((row) =>
+        evalF(props.formItem.propsInfo.activeTextEval, row)
+      );
     } else if (props.formItem.textField) {
-      return row[props.formItem.textField];
+      return rows.map((row) => row[props.formItem.textField || "value"]);
     }
   }
   // 设置默认值
-  if (
-    !props.modelValue &&
-    props.setDefaultValue &&
-    props.formItem.optionList &&
-    props.formItem.optionList.length > 0
-  ) {
+  if (!props.modelValue && props.setDefaultValue && props.formItem.optionList) {
     const defaultValue =
       props.formItem.optionList[0][
         props.formItem.valueField ? props.formItem.valueField : "value"
       ];
-    emit("update:modelValue", defaultValue);
-    emit("change", props.formItem);
-    return defaultValue;
+    emit("update:modelValue", [defaultValue]);
+    return [defaultValue];
   }
   return props.modelValue;
 });
@@ -168,7 +159,7 @@ const activeText = computed(() => {
   }
 }
 .msg {
-  margin-top: 12px;
+  margin-top: 5px;
   color: rgba(100, 106, 115, 1);
   .active {
     margin-left: 3px;

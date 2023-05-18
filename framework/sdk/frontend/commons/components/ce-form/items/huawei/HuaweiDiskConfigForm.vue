@@ -1,132 +1,145 @@
 <template>
   <template v-if="!confirm">
-    <div style="display: flex; flex-direction: row; flex-wrap: wrap">
-      <div
-        v-for="(obj, index) in _data"
-        :key="index"
-        class="vs-disk-config-card"
-      >
-        <el-card
-          class="card"
-          :body-style="{
-            padding: 0,
-            'text-align': 'center',
-            display: 'flex',
-            'flex-direction': 'column',
-            'flex-wrap': 'nowrap',
-            'align-items': 'center',
-            'justify-content': 'space-evenly',
-            height: '100%',
-            position: 'relative',
-          }"
+    <template v-for="(obj, index) in data" :key="index">
+      <div class="disk-title" v-if="index <= 1">
+        {{ index === 0 ? "系统盘(GB)" : "数据盘(GB)" }}
+      </div>
+      <div class="disk-content" :style="{ 'margin-bottom': '10px' }">
+        <el-form-item :prop="obj.diskType + ''">
+          <el-select style="width: 100%" v-model="obj.diskType" filterable>
+            <template v-slot:prefix>
+              <span> 磁盘类型 </span>
+            </template>
+            <el-option
+              v-for="item in diskTypeOptions"
+              :key="item.id"
+              :label="item.name"
+              :value="item.id"
+            />
+          </el-select>
+        </el-form-item>
+
+        <el-form-item :prop="obj.size + ''">
+          <LineNumber
+              special-step="10"
+              v-model="obj.size"
+              :min="index === 0 ? imageDiskMinSize : 10"
+              :max="index === 0 ? 1024 : 32768"
+              :step="10"
+              :readonly="index === 0 ?obj.readonly:false"
+              required
+              style="width: 200px;margin-left: 8px;"
+          >
+            <template #perfix>
+              <div>磁盘大小</div>
+            </template>
+          </LineNumber>
+        </el-form-item>
+        <el-form-item :prop="obj.deleteWithInstance + ''">
+          <!--          <div style="width: 100%; margin-left: 8px; text-align: center">-->
+          <!--            <el-switch-->
+          <!--              v-model="obj.deleteWithInstance"-->
+          <!--              :disabled="obj.readonly"-->
+          <!--              active-text="随实例删除"-->
+          <!--            />-->
+          <!--          </div>-->
+        </el-form-item>
+        <el-icon
+          v-if="index > 0"
+          size="17px"
+          color="#646A73"
+          class="delete-icon"
+          @click="remove(index)"
         >
-          <span class="title">
-            {{ index === 0 ? "系统盘" : "数据盘 " + index }}
-            <span
-              style="font-size: smaller; color: var(--el-text-color-secondary)"
-            >
-              (GB)
-            </span>
-          </span>
-
-          <el-form
-            ref="ruleFormRef"
-            label-suffix=":"
-            label-position="left"
-            :model="_data"
-            size="small"
-          >
-            <el-form-item label="磁盘类型" prop="diskType">
-              <el-select
-                filterable
-                v-model="obj.diskType"
-                style="width: 150px"
-                @change="change()"
-              >
-                <el-option
-                  v-for="(item, id) in props.formItem?.ext?.diskConfig
-                    ?.diskTypes"
-                  :key="id"
-                  :label="item.name"
-                  :value="item.id"
-                >
-                </el-option>
-              </el-select>
-            </el-form-item>
-            <el-form-item label="磁盘大小" prop="size">
-              <el-input-number
-                v-model="obj.size"
-                :min="
-                  index === 0
-                    ? (_.defaultTo(defaultDisks[index]?.size < 40), 40)
-                    : 10
-                "
-                :max="index === 0 ? 1024 : 32768"
-                :step="1"
-                required
-                @change="change()"
-              />
-            </el-form-item>
-          </el-form>
-          <el-button
-            v-if="index != 0"
-            class="remove-button"
-            @click="remove(index)"
-            :icon="CloseBold"
-            type="info"
-            text
-          ></el-button>
-        </el-card>
-
-        <div v-if="false" style="width: 100%; height: 30px; text-align: center">
-          <el-checkbox v-model="obj.deleteWithInstance" :disabled="obj.readonly"
-            >随实例删除</el-checkbox
-          >
-        </div>
+          <Delete />
+        </el-icon>
       </div>
-      <div class="vs-disk-config-card">
-        <el-card class="card add-card">
-          <el-button
-            style="margin: auto"
-            class="el-button--primary"
-            @click="add"
-            >添加磁盘</el-button
-          >
-        </el-card>
-      </div>
-    </div>
+    </template>
+    <span class="add-btn" @click="add">+ 添加数据盘</span>
   </template>
   <template v-else>
-    <el-descriptions>
-      <el-descriptions-item
-        :label="i === 0 ? '系统盘' : '数据盘' + i"
-        v-for="(disk, i) in modelValue"
-        :key="i"
-      >
-        {{ findDiskTypeById(disk) }}， {{ disk.size }}GB{{
-          disk.deleteWithInstance ? " (随实例删除)" : ""
-        }}
-      </el-descriptions-item>
-    </el-descriptions>
+    <detail-page
+      :content="getModelValueDetail(modelValue)"
+      :item-width="'33.33%'"
+      :item-bottom="'28px'"
+    ></detail-page>
   </template>
 </template>
 <script setup lang="ts">
-import type { FormInstance } from "element-plus";
-import { computed, watch, ref, onMounted } from "vue";
+import { computed, watch, onMounted, ref } from "vue";
 import _ from "lodash";
 import type { FormView } from "@commons/components/ce-form/type";
-import { CloseBold } from "@element-plus/icons-vue";
-import formApi from "@commons/api/form_resource_api";
+import { ElMessage } from "element-plus";
+
+interface DiskTypeOption {
+  id: string;
+  name: string;
+}
+
 const props = defineProps<{
   modelValue: any;
   allData?: any;
   allFormViewData?: Array<FormView>;
   field: string;
-  formItem: FormView;
+  formItem?: FormView;
   otherParams: any;
   confirm?: boolean;
 }>();
-const _data = computed({
+const emit = defineEmits(["update:modelValue", "change"]);
+
+/**
+ * 盘类型下拉选
+ */
+const diskTypeOptions = computed<DiskTypeOption[]>(() => {
+  if (props.formItem?.optionList) {
+    return props.formItem.optionList;
+  }
+  return [];
+});
+/**
+ * 系统盘最小值
+ */
+const imageDiskMinSize = computed(() => {
+  return defaultDisks.value[0].size;
+});
+/**
+ * 监听系统版本变化，获取镜像最小磁盘
+ */
+if (!props.confirm) {
+  watch(
+    () => props.allData.osVersion,
+    (_data) => {
+      const osVersion = _.find(
+        _.find(props.allFormViewData, (formViewData) => {
+          return formViewData.field === "osVersion";
+        })?.optionList,
+        (osConfig) => {
+          return osConfig.imageId === _data;
+        }
+      );
+      if (osVersion) {
+        defaultDisks.value[0].size = osVersion.imageDiskMinSize;
+      }
+    }
+  );
+}
+
+/**
+ * 默认展示的盘:系统盘
+ */
+const defaultDisks = computed(() => [
+  {
+    diskType: "GPSSD",
+    size: 40,
+    deleteWithInstance: true,
+    readonly: true,
+  },
+]);
+
+/**
+ * 双向绑定更新到外面
+ */
+const data = computed<Array<any>>({
   get() {
     return props.modelValue;
   },
@@ -134,121 +147,135 @@ const _data = computed({
     emit("update:modelValue", value);
   },
 });
-// 校验实例对象
-const ruleFormRef = ref<FormInstance>();
-/**
- * 默认展示的盘
- */
-const defaultDisks = computed(() => {
-  return [{ size: 1, deleteWithInstance: true, readonly: true }];
-});
-const emit = defineEmits(["update:modelValue", "change"]);
-function add() {
-  _data.value?.push({
-    size: 10,
-    diskType: defaultType.value ? defaultType.value : getDefaultType(),
-    amountText: "",
-    deleteWithInstance: false,
-  });
-  change();
-}
-function getDefaultType() {
-  if (_.find(props.formItem?.ext?.diskConfig?.diskTypes, { id: "GPSSD" })) {
-    return "GPSSD";
-  }
-}
-function findDiskTypeById(disk: any) {
-  const diskType = _.find(props.formItem?.ext?.diskConfig?.diskTypes, {
-    id: disk.diskType,
-  });
-  if (diskType) {
-    return diskType.name;
-  }
-  return disk.diskType;
-}
-function remove(index: number) {
-  _.remove(_data.value, (n, i) => index === i);
-  change();
-}
 
-function change() {
-  emit("change");
-}
-function getTempRequest() {
-  return _.assignWith(
-    {},
-    {},
-    props.otherParams,
-    props.allData,
-    (objValue, srcValue) => {
-      return _.isUndefined(objValue) ? srcValue : objValue;
-    }
-  );
-}
+/**
+ * 触发change事件
+ */
 watch(
-  () => props.allData.availabilityZone,
-  (n, o) => {
-    _data.value.length = 0;
-    getDiskType();
-  }
+  () => data.value,
+  (data) => {
+    emit("change");
+  },
+  { deep: true }
 );
 
-onMounted(() => {
-  if (_data.value.length === 0) {
-    getDiskType();
+function add() {
+  if (diskTypeOptions.value.length > 0) {
+    const dataDiskItem = diskTypeOptions.value[0];
+    data.value?.push({
+      size: 10,
+      diskType: dataDiskItem.id,
+      deleteWithInstance: false,
+      readonly: true,
+    });
+  } else {
+    ElMessage.warning("可选择的数据盘类型为空");
   }
+}
+
+function remove(index: number) {
+  _.remove(data.value, (n, i) => index === i);
+}
+
+/**
+ * 校验方法
+ */
+function validate(): Promise<boolean> {
+  return new Promise((resolve, reject) => {
+    if (props.confirm || data.value.length === 0) {
+      return reject(false);
+    }
+    return _.every(data.value, (disk) => disk.size > 0)
+      ? resolve(true)
+      : reject(false);
+  });
+}
+
+defineExpose({
+  validate,
+  field: props.field,
 });
 
-const defaultType = ref<string>("");
-
-function getDiskType() {
-  const _temp = getTempRequest();
-  const clazz = "com.fit2cloud.provider.impl.huawei.HuaweiCloudProvider";
-  const method = "getAllDiskTypes";
-  if (_data.value.length === 0) {
-    formApi.getResourceMethod(false, clazz, method, _temp).then((ok) => {
-      _.set(props.formItem, "ext.diskConfig.diskTypes", ok.data);
-      const diskTypes = ref<any>([]);
-      diskTypes.value = ok.data;
-      let defaultSize = props.allData.osVersion?.imageMinDiskSize;
-      if (!defaultSize) {
-        defaultSize = 0;
-      }
-      _data.value?.push({
-        size: defaultSize < 40 ? 40 : defaultSize,
-        diskType: defaultType.value
-          ? defaultType.value
-          : diskTypes.value?.[0]?.id,
-        amountText: "",
-        readonly: true,
-        deleteWithInstance: true,
-      });
-    });
+const loading = ref<boolean>(false);
+onMounted(() => {
+  if (data.value?.length == 0) {
+    data.value = defaultDisks.value;
   }
+});
+function getModelValueDetail(modelValue: any) {
+  const result: Array<any> = [];
+  if (modelValue) {
+    for (let i = 0; i < modelValue.length; i++) {
+      result.push({
+        label: i === 0 ? "系统盘" : "数据盘" + i,
+        value:
+          modelValue[i].size +
+          "GB" +
+          (modelValue[i].deleteWithInstance ? " (随实例删除)" : ""),
+      });
+    }
+  }
+  return result;
 }
 </script>
 <style lang="scss" scoped>
-.vs-disk-config-card {
-  height: 180px;
-  width: 250px;
-  margin-right: 20px;
-  margin-bottom: 40px;
-  .card {
-    height: 180px;
-    .title {
-      font-size: 14px;
-      font-weight: bold;
-    }
-    .remove-button {
-      position: absolute;
-      top: 0;
-      right: 0;
-    }
+.disk-title {
+  font-style: normal;
+  font-weight: 500;
+  font-size: 14px;
+  line-height: 22px;
+  color: #1f2329;
+  margin-top: 16px;
+}
+.disk-title:after {
+  content: "*";
+  color: var(--el-color-danger);
+  margin-left: 4px;
+}
+.disk-title:first-child {
+  margin-top: 16px;
+}
+.margin-top {
+  margin-top: 32px;
+}
+.el-form-item {
+  margin-bottom: 28px;
+}
+
+.disk-content {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  align-items: center;
+  padding: 12px;
+  background-color: #f7f9fc;
+  border-radius: 4px;
+  margin-bottom: 28px;
+
+  .el-form-item {
+    margin-bottom: 0;
   }
-  .add-card {
-    display: flex;
-    align-items: center;
-    justify-content: center;
+
+  .delete-icon {
+    cursor: pointer;
+    margin-left: 8px;
+  }
+}
+
+.add-btn {
+  cursor: pointer;
+  font-style: normal;
+  font-weight: 400;
+  font-size: 14px;
+  line-height: 32px;
+
+  color: #3370ff;
+}
+
+.detail-box {
+  margin-top: 8px;
+  :deep(.el-descriptions__header) {
+    margin-bottom: 0 !important;
   }
 }
 </style>

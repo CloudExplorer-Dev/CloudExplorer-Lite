@@ -1,10 +1,10 @@
 <template>
   <template v-if="!confirm">
     <template v-for="(obj, index) in data" :key="index">
-      <div class="disk-title">
-        {{ index === 0 ? "系统盘" : "数据盘 " + index }}
+      <div class="disk-title" v-if="index <= 1">
+        {{ index === 0 ? "系统盘(GB)" : "数据盘(GB)" }}
       </div>
-      <div class="disk-content">
+      <div class="disk-content" :style="{ 'margin-bottom': '10px' }">
         <el-form-item :prop="obj.diskType + ''">
           <el-select
             style="width: 100%"
@@ -41,18 +41,20 @@
         </el-form-item>
 
         <el-form-item :prop="obj.size + ''">
-          <div class="mo-input--number">
-            <span class="label">磁盘大小</span>
-            <el-input-number
+          <LineNumber
+              special-step="10"
               v-model="obj.size"
-              style="width: 200px"
               :min="minSize(defaultDisks[index], index)"
               :max="maxSize(defaultDisks[index], index)"
               :step="10"
-              controls-position="right"
-              autocomplete="off"
-            />
-          </div>
+              :readonly="index === 0 ?obj.readonly:false"
+              required
+              style="width: 200px;margin-left: 8px;"
+          >
+            <template #perfix>
+              <div>磁盘大小</div>
+            </template>
+          </LineNumber>
         </el-form-item>
         <el-form-item :prop="obj.deleteWithInstance + ''">
           <!--          <div style="width: 100%; margin-left: 8px; text-align: center">-->
@@ -379,33 +381,6 @@ function getModelValueDetail(modelValue: any) {
   color: #3370ff;
 }
 
-/* 自定义数字输入框append  */
-.mo-input--number {
-  display: flex;
-  height: 32px;
-  margin-left: 8px;
-  :deep(.el-input__wrapper) {
-    border-radius: 4px 4px 4px 4px;
-  }
-  :deep(.el-input-number__decrease) {
-    background-color: #ffffff;
-    --el-input-number-controls-height: 15px !important;
-  }
-  :deep(.el-input-number__increase) {
-    background-color: #ffffff;
-    --el-input-number-controls-height: 16px !important;
-    margin-bottom: -2px;
-  }
-  .label {
-    position: absolute;
-    text-align: center;
-    color: var(--el-input-icon-color, var(--el-text-color-placeholder));
-    padding: 0 8px 0 8px;
-    border-left: 0;
-    border-radius: 0 4px 4px 0;
-    z-index: 1000;
-  }
-}
 .detail-box {
   margin-top: 8px;
   :deep(.el-descriptions__header) {

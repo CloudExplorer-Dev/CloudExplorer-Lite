@@ -35,12 +35,12 @@ const props = withDefaults(defineProps<{ style?: any }>(), {
   position: relative;
   margin: var(--ce-main-content-margin-top, 10px)
     var(--ce-main-content-margin-left, 24px)
-    var(--ce-main-content-margin-right, 24px)
-    var(--ce-main-content-margin-bottom, 24px);
+    var(--ce-main-content-margin-bottom, 24px)
+    var(--ce-main-content-margin-right, 24px);
   padding: var(--ce-main-content-padding-top, 24px)
     var(--ce-main-content-padding-left, 24px)
-    var(--ce-main-content-padding-right, 24px)
-    var(--ce-main-content-padding-bottom, 24px);
+    var(--ce-main-content-padding-bottom, 24px)
+    var(--ce-main-content-padding-right, 24px);
   height: calc(
     100% - var(--ce-main-breadcrumb-height, 50px) -
       var(--ce-main-content-margin-top, 10px) -

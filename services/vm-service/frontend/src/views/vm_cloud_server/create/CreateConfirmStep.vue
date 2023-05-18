@@ -42,7 +42,10 @@
           </template>
           <!--暂时支持阿里云新的UI-->
           <template
-            v-if="props.cloudAccount?.platform === 'fit2cloud_ali_platform'"
+            v-if="
+              props.cloudAccount?.platform !== 'fit2cloud_vsphere_platform' &&
+              props.cloudAccount?.platform !== 'fit2cloud_openstack_platform'
+            "
           >
             <detail-page
               :content="getGroupFormDetail(group)"
@@ -57,11 +60,6 @@
                 v-if="group.group === 0"
                 :width="100 / group.items + '%'"
               >
-                <!--          <el-image
-                  style="margin-top: 3px; width: 16px; height: 16px"
-                  :src="platformIcon[cloudAccount?.platform].icon"
-                  v-if="cloudAccount?.platform"
-                />-->
                 <component
                   style="margin-top: 3px; width: 16px; height: 16px"
                   :is="platformIcon[cloudAccount?.platform]?.component"
@@ -261,7 +259,7 @@ function getDisplayValue(form: FormView) {
       return `<span style="color: var(--el-text-color-secondary)">空</span>`;
     }
   } else if (typeof result === "boolean") {
-    return result ? "是" : "否";
+    return result ? "开启" : "关闭";
   } else {
     return result;
   }

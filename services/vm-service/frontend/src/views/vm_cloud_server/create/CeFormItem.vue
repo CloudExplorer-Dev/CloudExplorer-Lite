@@ -13,6 +13,7 @@
     @submit.prevent
     :scroll-to-error="true"
     :size="props.size"
+    :disabled="props.disabled"
   >
     <div
       v-for="item in formViewData"
@@ -22,7 +23,7 @@
       <template v-if="item.label">
         <el-form-item
           v-if="checkShow(item)"
-          :label="item.leftLabel ? '' : item.label"
+          :label="item.leftLabel ? '' : getLabel(item)"
           :prop="item.field"
           :rules="rules(item)"
         >
@@ -41,9 +42,9 @@
             v-bind="{ ...JSON.parse(item.attrs) }"
             @change="change(item)"
           ></component>
-          <span v-if="item.unit && props.groupId != '0'" class="unit">
-            {{ item.unit }}
-          </span>
+<!--          <span v-if="item.unit && props.groupId != '0'" class="unit">-->
+<!--            {{ item.unit }}-->
+<!--          </span>-->
         </el-form-item>
       </template>
       <template v-else>
@@ -79,11 +80,13 @@ const props = withDefaults(
     groupId: string;
     inline: boolean;
     size?: string;
+    disabled?: boolean
   }>(),
   {
     modelValue: {},
     inline: false,
     size: "default",
+    disabled: false
   }
 );
 const emit = defineEmits([
@@ -109,6 +112,13 @@ const formItemRef = ref<InstanceType<any> | null>(null);
  */
 function getComponentStyle(formItem: FormView): any {
   return formItem.propsInfo?.style ? formItem.propsInfo?.style : {};
+}
+
+function getLabel(item: FormView): any {
+  return item.propsInfo.showLabel !== undefined &&
+  item.propsInfo.showLabel === false
+      ? ""
+      : item.label;
 }
 
 /**
@@ -151,46 +161,16 @@ function checkShow(currentItem: any): any {
   return isShow;
 }
 function rules(currentItem: any) {
-  const rules = [
-    {
+  const rules = [];
+  if (currentItem.required) {
+    rules.push({
       message: currentItem.label + "不能为空",
       trigger: "change",
       required: currentItem.required,
-    },
-  ];
+    });
+  }
   if (currentItem.propsInfo.rules) {
     rules.push(currentItem.propsInfo.rules);
-  }
-  if (currentItem.regexp) {
-    //华为特殊处理,密码规则不通操作系统不一样
-    if (
-      currentItem.field === "pwd" &&
-      props.otherParams.platform === "fit2cloud_huawei_platform"
-    ) {
-      let regexp = "";
-      if (props.allData.os?.toLowerCase().indexOf("windows") > -1) {
-        regexp =
-          "^((?=.*\\d)(?=.*[a-z])(?=.*[A-Z])(?!.*Adm)(?!.*dmi)(?!.*min)(?!.*ini)(?!.*nis)(?!.*ist)(?!.*str)(?!.*tra)(?!.*rat)(?!.*ato)(?!.*tor)(?!.*rotartsinimd[A|a]).{8,25})$";
-      } else {
-        regexp =
-          "^((?=.*\\d)(?=.*[a-z])(?=.*[A-Z])(?!.*roo)(?!.*oot)(?!.*toor).{8,25})$";
-      }
-      const regexpObj = {
-        message: currentItem.regexpDescription,
-        trigger: "blur",
-        required: currentItem.required,
-      };
-      _.set(regexpObj, "pattern", regexp);
-      rules.push(regexpObj);
-    } else {
-      const regexpObj = {
-        message: currentItem.regexpDescription,
-        trigger: "blur",
-        required: currentItem.required,
-      };
-      _.set(regexpObj, "pattern", currentItem.regexp);
-      rules.push(regexpObj);
-    }
   }
   return rules;
 }

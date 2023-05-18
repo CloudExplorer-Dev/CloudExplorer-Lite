@@ -65,6 +65,11 @@ public enum InputType {
      */
     LineNumber(LineInputNumberForm.class),
 
+    /**
+     * 表格单选
+     */
+    TableCheckbox(TableCheckboxForm.class),
+
     AliyunInstanceTypeForm(com.fit2cloud.common.form.vo.aliyun.AliyunInstanceType.class),
     AliyunDiskConfigForm(com.fit2cloud.common.form.vo.aliyun.AliyunDiskConfig.class),
     AliyunNetConfigForm(com.fit2cloud.common.form.vo.aliyun.AliyunNetConfig.class),

@@ -217,7 +217,7 @@ public class HuaweiCloudProvider extends AbstractCloudProvider<HuaweiVmCredentia
         return loginMethod;
     }
 
-    public InstanceSpecConfig getInstanceSpecTypes(String req) {
+    public List<InstanceSpecType> getInstanceSpecTypes(String req) {
         return HuaweiSyncCloudApi.getInstanceSpecTypes(JsonUtil.parseObject(req, HuaweiVmCreateRequest.class));
     }
 
