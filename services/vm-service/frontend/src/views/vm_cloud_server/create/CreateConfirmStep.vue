@@ -234,6 +234,10 @@ function getGroupFormDetail(group: any) {
 </script>
 
 <style lang="scss" scoped>
+:deep(.el-descriptions__label) {
+  color: #8f959e;
+}
+
 .description-inline {
   display: inline-flex;
   flex-direction: row;

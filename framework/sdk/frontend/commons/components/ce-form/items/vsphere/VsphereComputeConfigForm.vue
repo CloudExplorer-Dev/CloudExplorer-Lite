@@ -200,8 +200,8 @@
       </span>
     </template>
     <template v-else>
-      <el-descriptions>
-        <el-descriptions-item label="计算资源类型">
+      <el-descriptions direction="vertical" :column="3">
+        <el-descriptions-item label="计算资源类型" width="33.33%">
           {{
             _.get(
               _.find(
@@ -216,6 +216,7 @@
         <el-descriptions-item
           :label="label"
           v-if="_data.location === 'host' || _data.location === 'pool'"
+          width="33.33%"
         >
           {{
             _.get(
@@ -228,6 +229,8 @@
             )
           }}
         </el-descriptions-item>
+        <el-descriptions-item width="33.33%" v-else />
+        <el-descriptions-item width="33.33%" />
       </el-descriptions>
     </template>
   </div>

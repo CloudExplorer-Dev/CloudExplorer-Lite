@@ -24,7 +24,7 @@ import java.util.List;
 @FormStepInfo(step = 3, name = "网络配置")
 @FormStepInfo(step = 4, name = "系统配置")
 @FormConfirmInfo(group = 0, name = "云账号")
-@FormConfirmInfo(group = 1, name = "基础配置", items = 2)
+@FormConfirmInfo(group = 1, name = "基础配置")
 @FormConfirmInfo(group = 2, name = "资源配置")
 @FormConfirmInfo(group = 3, name = "网络配置")
 @FormConfirmInfo(group = 4, name = "系统配置")
@@ -36,7 +36,8 @@ import java.util.List;
 @FormGroupInfo(group = 6, name = "存储资源", description = "配置该资源池可用的存储资源")
 @FormGroupInfo(group = 7, name = "主机存放位置")
 @FormGroupInfo(group = 8, name = "网络")
-@FormGroupInfo(group = 9, name = "主机命名")
+@FormGroupInfo(group = 9, name = "登录凭证")
+@FormGroupInfo(group = 10, name = "主机命名")
 public class VsphereVmCreateRequest extends VsphereVmBaseRequest implements ICreateServerRequest {
 
     @Form(inputType = InputType.LineNumber,
@@ -81,7 +82,11 @@ public class VsphereVmCreateRequest extends VsphereVmBaseRequest implements ICre
             relationTrigger = "region",
             group = 1,
             step = 1,
-            confirmGroup = 0
+            confirmGroup = 0,
+            textField = "${info}\n" +
+            "      <span style=\"color: var(--el-text-color-secondary); font-size: smaller\">\n" +
+            "        ${description}\n" +
+            "      </span>"
     )
     private String cluster;
 
@@ -216,10 +221,24 @@ public class VsphereVmCreateRequest extends VsphereVmBaseRequest implements ICre
 
 
     //step 4
+    //云主机密码
+    //todo
+    @Form(inputType = InputType.VspherePasswordInfoForm,
+            step = 4,
+            group = 9,
+            defaultValue = "",
+            defaultJsonValue = true,
+            confirmGroup = 4,
+            confirmSpecial = true,
+            confirmPosition = Form.Position.TOP
+    )
+    private String defaultPassword;
+
+    //step 4
     //云主机名称
     @Form(inputType = InputType.VsphereServerInfoForm,
             step = 4,
-            group = 9,
+            group = 10,
             defaultValue = "[]",
             defaultJsonValue = true,
             confirmGroup = 4,

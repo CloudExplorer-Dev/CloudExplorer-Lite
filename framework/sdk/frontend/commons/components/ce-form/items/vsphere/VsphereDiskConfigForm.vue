@@ -58,14 +58,20 @@
     </div>
   </template>
   <template v-else>
-    <el-descriptions>
+    <el-descriptions :column="3" direction="vertical">
       <el-descriptions-item
         :label="i === 0 ? '系统盘' : '数据盘' + i"
         v-for="(disk, i) in modelValue"
         :key="i"
+        width="33.33%"
       >
         {{ disk.size }}GB
       </el-descriptions-item>
+      <el-descriptions-item
+        width="33.33%"
+        v-for="x in modelValue.length % 3"
+        :key="x"
+      />
     </el-descriptions>
   </template>
 </template>
