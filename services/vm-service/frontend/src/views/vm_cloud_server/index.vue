@@ -1,7 +1,16 @@
-<script setup lang="ts"></script>
+<script setup lang="ts">
+import bus from "@commons/bus";
+import { onBeforeMount, ref } from "vue";
+const style = ref<any>();
+onBeforeMount(() => {
+  bus.on("update::style", (styleObj: any) => {
+    style.value = styleObj;
+  });
+});
+</script>
 
 <template>
-  <layout-content>
+  <layout-content :style="style">
     <template #breadcrumb>
       <breadcrumb :auto="true"></breadcrumb>
     </template>

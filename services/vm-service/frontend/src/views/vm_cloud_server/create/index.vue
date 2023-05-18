@@ -76,7 +76,6 @@
               ref="ceForms_0"
               :other-params="otherParams"
               :inline="true"
-              :size="'small'"
               group-id="0"
               v-model:form-view-data="steps[0].groups[0].forms"
               v-model:all-form-view-data="formData.forms"
@@ -84,6 +83,7 @@
               :all-data="formatData"
               footer-location-center="false"
               @optionListRefresh="optionListRefresh"
+              :disabled="active + 1 === steps.length - 1"
             ></CeFormItem>
           </template>
         </div>
@@ -150,12 +150,20 @@ import CeFormItem from "./CeFormItem.vue";
 import CreateConfirmStep from "./CreateConfirmStep.vue";
 import type { CloudAccount } from "@commons/api/cloud_account/type";
 
-import { computed, onMounted, ref, type Ref, watch } from "vue";
+import {
+  computed,
+  onBeforeUnmount,
+  onMounted,
+  ref,
+  type Ref,
+  watch,
+} from "vue";
 import { useRouter } from "vue-router";
 import type { CreateServerRequest } from "@/api/vm_cloud_server/type";
 import { createServer } from "@/api/vm_cloud_server";
 import { useI18n } from "vue-i18n";
 import CeFooterFormItem from "@/views/vm_cloud_server/create/CeFooterFormItem.vue";
+import bus from "@commons/bus";
 
 const { t } = useI18n();
 const useRoute = useRouter();
@@ -336,7 +344,15 @@ interface GroupObj extends GroupAnnotation {
   forms: Array<FormView>;
 }
 
+onBeforeUnmount(() => {
+  bus.emit("update::style", {});
+});
+
 onMounted(() => {
+  bus.emit("update::style", {
+    "--ce-main-content-padding-bottom": "0px",
+    "--ce-main-content-margin-bottom": "0px",
+  });
   BaseCloudAccountApi.getCloudAccount(props.accountId, loading).then(
     (result) => {
       cloudAccount.value = result.data;
@@ -380,38 +396,40 @@ onMounted(() => {
   }
   .el-main {
     padding: 24px 24px !important;
-    height: calc(100vh - 120px); //61px为顶部header盒子高度
+    height: calc(100vh - 155px);
     overflow-y: auto;
     position: relative;
   }
   .el-footer {
     border-top: 1px solid var(--el-border-color);
     box-shadow: 0 -3px 4px rgba(30, 35, 41, 0.1);
-    z-index: 1000;
-    height: 65px;
+    z-index: 2000;
+    height: 95px;
     width: 100%;
     .footer {
-      padding-top: 10px;
+      margin-top: 10px;
       display: flex;
-      justify-content: space-between;
+      justify-content: start;
       flex-direction: row;
       align-items: center;
       flex-wrap: wrap;
       .footer-form {
-        min-width: 400px;
+        min-width: 200px;
+        width: 21.33%;
       }
       .footer-center {
         display: flex;
         flex-direction: row;
         flex-wrap: wrap;
-        justify-content: center;
+        justify-content: start;
+        width: 33.33%;
       }
       .footer-btn {
-        width: 375px;
         display: flex;
         flex-direction: row;
         flex-wrap: wrap;
         justify-content: flex-end;
+        width: 45.33%;
       }
     }
   }

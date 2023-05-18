@@ -17,5 +17,5 @@ public class OsConfig {
     private String osVersion;
     private String imageId;
     private String imageName;
-    private Long imageMinDiskSize;
+    private Long imageDiskMinSize;
 }

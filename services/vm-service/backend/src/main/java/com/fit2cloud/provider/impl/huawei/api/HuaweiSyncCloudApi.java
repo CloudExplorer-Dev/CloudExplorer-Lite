@@ -859,16 +859,11 @@ public class HuaweiSyncCloudApi {
         F2CVirtualMachine virtualMachine = new F2CVirtualMachine();
 
         int index = request.getIndex();
-        InstanceSpecType instanceType = request.getInstanceSpecConfig();
-
         virtualMachine
                 .setId(request.getId())
                 .setName(request.getServerNameInfos().get(index).getName())
                 .setIpArray(new ArrayList<>())
-                .setInstanceType(instanceType.getSpecName())
-                .setCpu(Integer.valueOf(instanceType.getVcpus()))
-                .setMemory(instanceType.getRam() / 1024)
-                .setInstanceTypeDescription(instanceType.getInstanceSpec());
+                .setInstanceType(request.getInstanceType());
 
         return virtualMachine;
 
@@ -958,10 +953,15 @@ public class HuaweiSyncCloudApi {
             }
 
             // TODO 网卡 目前仅支持一个网卡，官方支持最多两个
+            List<F2CHuaweiSubnet> networks = listSubnet(request);
+            if (CollectionUtils.isEmpty(networks)) {
+                throw new RuntimeException("No suitable network found!");
+            }
+            F2CHuaweiSubnet network = networks.get(0);
             List<PrePaidServerNic> listServerNics = new ArrayList<>();
             listServerNics.add(
                     new PrePaidServerNic()
-                            .withSubnetId(request.getNetworkConfigs().getUuid())
+                            .withSubnetId(network.getUuid())
                             .withIpAddress("")
             );
             PrePaidServer serverbody = new PrePaidServer();
@@ -971,9 +971,9 @@ public class HuaweiSyncCloudApi {
                 throw new RuntimeException("No suitable image found!");
             }
             serverbody.withImageRef(images.get(0).getId())
-                    .withFlavorRef(request.getInstanceSpecConfig().getSpecName())
+                    .withFlavorRef(request.getInstanceType())
                     .withName(request.getServerNameInfos().get(request.getIndex()).getName())
-                    .withVpcid(request.getNetworkConfigs().getVpcId())
+                    .withVpcid(network.getVpcId())
                     .withNics(listServerNics)
                     .withCount(1)
                     .withIsAutoRename(false)
@@ -1052,7 +1052,7 @@ public class HuaweiSyncCloudApi {
         ListImageRequest request = new ListImageRequest();
         request.setRegionId(createRequest.getRegionId());
         request.setCredential(createRequest.getCredential());
-        request.setFlavorId(createRequest.getInstanceSpecConfig().getSpecName());
+        request.setFlavorId(createRequest.getInstanceType());
         request.setPlatform(ListImagesRequest.PlatformEnum.valueOf(createRequest.getOs()));
         request.setStatus(ListImagesRequest.StatusEnum.ACTIVE);
         if (StringUtils.isNotEmpty(request.getCredential())) {
@@ -1062,9 +1062,13 @@ public class HuaweiSyncCloudApi {
             ListImagesResponse listImagesResponse = imsClient.listImages(request);
             List<ImageInfo> images = listImagesResponse.getImages();
             //根据用户输入的操作系统版本过滤
-            return images.stream().filter(v -> StringUtils.equalsIgnoreCase(v.getId(), createRequest.getOsVersion().getImageId())).map(imageInfo -> HuaweiMappingUtil.toF2CImage(imageInfo, request.getRegionId())).filter(Objects::nonNull).toList();
+            return images.stream().filter(v -> filterImageByOsAndOsVersion(v, createRequest)).map(imageInfo -> HuaweiMappingUtil.toF2CImage(imageInfo, request.getRegionId())).filter(Objects::nonNull).toList();
         }
         return new ArrayList<>();
+    }
+
+    private static boolean filterImageByOsAndOsVersion(ImageInfo imageInfo, HuaweiVmCreateRequest createRequest) {
+        return StringUtils.equalsIgnoreCase(imageInfo.getPlatform().getValue(), createRequest.getOs()) && StringUtils.equalsIgnoreCase(imageInfo.getOsVersion(), createRequest.getOsVersion());
     }
 
 
@@ -1102,13 +1106,12 @@ public class HuaweiSyncCloudApi {
     }
 
 
-    public static InstanceSpecConfig getInstanceSpecTypes(HuaweiVmCreateRequest request) {
-        InstanceSpecConfig instanceSpecConfig = new InstanceSpecConfig();
+    public static List<InstanceSpecType> getInstanceSpecTypes(HuaweiVmCreateRequest request) {
+        List<InstanceSpecType> instanceSpecTypes = new ArrayList<>();
         if (StringUtils.isEmpty(request.getRegionId()) || StringUtils.isEmpty(request.getAvailabilityZone())) {
-            return instanceSpecConfig;
+            return instanceSpecTypes;
         }
         try {
-            List<InstanceSpecType> instanceSpecTypes = new ArrayList<>();
             HuaweiVmCredential credential = JsonUtil.parseObject(request.getCredential(), HuaweiVmCredential.class);
             EcsClient client = credential.getEcsClient(request.getRegionId());
             ListFlavorsResponse response = client.listFlavors(new ListFlavorsRequest()
@@ -1119,11 +1122,10 @@ public class HuaweiSyncCloudApi {
                     instanceSpecTypes.add(instanceSpecType);
                 }
             }
-            instanceSpecConfig.setTableData(instanceSpecTypes);
         } catch (Exception e) {
             e.printStackTrace();
         }
-        return instanceSpecConfig;
+        return instanceSpecTypes;
     }
 
     public static List<Map<String, String>> getAllDiskTypes(HuaweiVmCreateRequest request) {
@@ -1163,6 +1165,9 @@ public class HuaweiSyncCloudApi {
         }
         if (!StringUtils.equalsIgnoreCase("random", request.getAvailabilityZone())) {
             return result.stream().filter(v -> StringUtils.equalsIgnoreCase(request.getAvailabilityZone(), v.getAvailabilityZone())).collect(Collectors.toList());
+        }
+        if (StringUtils.isNotEmpty(request.getNetworkId())) {
+            return result.stream().filter(v -> StringUtils.equalsIgnoreCase(v.getUuid(), request.getNetworkId())).toList();
         }
         return result;
     }
@@ -1304,12 +1309,12 @@ public class HuaweiSyncCloudApi {
         List<PeriodProductInfo> listPeriodProductInfo = new ArrayList<>();
         listPeriodProductInfo.add(new PeriodProductInfo()
                 //唯一标识
-                .withId(createRequest.getInstanceSpecConfig().getSpecName())
+                .withId(createRequest.getInstanceType())
                 //云主机询价固定
                 .withCloudServiceType("hws.service.type.ec2")
                 .withResourceType("hws.resource.type.vm")
                 //区分linux\win，目前查询结果价格一致，官网这个价格，不根据操作系统的不同而改变价格，所以这里不做区分
-                .withResourceSpec(createRequest.getInstanceSpecConfig().getSpecName() + ".linux")
+                .withResourceSpec(createRequest.getInstanceType() + ".linux")
                 .withRegion(createRequest.getRegionId())
                 //周期类型0:天2:月3:年4:小时
                 .withPeriodType(StringUtils.equalsIgnoreCase(getPeriodType(createRequest.getPeriodNum()), "month") ? 2 : 3)
@@ -1343,17 +1348,17 @@ public class HuaweiSyncCloudApi {
         ListOnDemandResourceRatingsRequest request = new ListOnDemandResourceRatingsRequest();
         RateOnDemandReq body = new RateOnDemandReq();
         List<DemandProductInfo> listBodyProductInfos = new ArrayList<>();
-        if (Objects.isNull(createRequest.getInstanceSpecConfig()) || StringUtils.isEmpty(createRequest.getInstanceSpecConfig().getSpecName())) {
+        if (Objects.isNull(createRequest.getInstanceType())) {
             return 0D;
         }
         listBodyProductInfos.add(new DemandProductInfo()
                 //唯一标识
-                .withId(createRequest.getInstanceSpecConfig().getSpecName())
+                .withId(createRequest.getInstanceType())
                 //云主机询价固定
                 .withCloudServiceType("hws.service.type.ec2")
                 .withResourceType("hws.resource.type.vm")
                 //区分linux\win，目前查询结果价格一致，官网这个价格，不根据操作系统的不同而改变价格，所以这里不做区分
-                .withResourceSpec(createRequest.getInstanceSpecConfig().getSpecName() + ".linux")
+                .withResourceSpec(createRequest.getInstanceType() + ".linux")
                 .withRegion(createRequest.getRegionId())
                 //云服务器：Duration
                 //云硬盘：Duration
@@ -1572,14 +1577,14 @@ public class HuaweiSyncCloudApi {
     public static List<OsConfig> listOsVersion(HuaweiVmCreateRequest createRequest) {
         List<OsConfig> result = new ArrayList<>();
         if (StringUtils.isEmpty(createRequest.getOs())
-                || (Objects.isNull(createRequest.getInstanceSpecConfig()) || StringUtils.isEmpty(createRequest.getInstanceSpecConfig().getSpecName()))) {
+                || (Objects.isNull(createRequest.getInstanceType()))) {
             return result;
         }
         try {
             ListImageRequest request = new ListImageRequest();
             request.setRegionId(createRequest.getRegionId());
             request.setCredential(createRequest.getCredential());
-            request.setFlavorId(createRequest.getInstanceSpecConfig().getSpecName());
+            request.setFlavorId(createRequest.getInstanceType());
             request.setPlatform(ListImagesRequest.PlatformEnum.valueOf(createRequest.getOs()));
             request.setStatus(ListImagesRequest.StatusEnum.ACTIVE);
             List<ImageInfo> osImages = new ArrayList<>();
@@ -1597,7 +1602,7 @@ public class HuaweiSyncCloudApi {
                 osConfig.setOsVersion(v.getOsVersion());
                 osConfig.setImageName(v.getName());
                 osConfig.setImageId(v.getId());
-                osConfig.setImageMinDiskSize(Long.valueOf(String.valueOf(v.getMinDisk())));
+                osConfig.setImageDiskMinSize(Long.valueOf(String.valueOf(v.getMinDisk())));
                 result.add(osConfig);
             });
             return result.stream().sorted(Comparator.comparing(OsConfig::getOsVersion)).collect(Collectors.toList());
@@ -1704,9 +1709,7 @@ public class HuaweiSyncCloudApi {
 
         HuaweiVmCreateRequest createRequest = new HuaweiVmCreateRequest();
         BeanUtils.copyProperties(request, createRequest);
-        InstanceSpecType instanceSpecType = new InstanceSpecType();
-        instanceSpecType.setSpecName(request.getNewInstanceType());
-        createRequest.setInstanceSpecConfig(instanceSpecType);
+        createRequest.setInstanceType(request.getNewInstanceType());
         createRequest.setCount(1);
         String projectId = server.getTenantId();
 

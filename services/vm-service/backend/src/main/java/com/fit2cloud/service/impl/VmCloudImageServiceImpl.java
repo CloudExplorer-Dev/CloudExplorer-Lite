@@ -16,15 +16,12 @@ import com.fit2cloud.controller.request.images.PageVmCloudImageRequest;
 import com.fit2cloud.controller.request.images.VmCloudImageRequest;
 import com.fit2cloud.dao.mapper.VmCloudImageMapper;
 import com.fit2cloud.dto.VmCloudImageDTO;
-import com.fit2cloud.provider.impl.huawei.entity.OsConfig;
-import com.fit2cloud.provider.impl.huawei.entity.request.HuaweiBaseRequest;
 import com.fit2cloud.service.IVmCloudImageService;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
-import java.util.*;
-import java.util.stream.Collectors;
+import java.util.List;
 
 /**
  * <p>
@@ -70,52 +67,6 @@ public class VmCloudImageServiceImpl extends ServiceImpl<BaseVmCloudImageMapper,
                 .ne(VmCloudImage::getStatus, "DELETED");
         queryWrapper.orderByAsc(VmCloudImage::getImageName);
         return list(queryWrapper);
-    }
-
-    /**
-     * 返回操作系统版本
-     *
-     * @param request
-     * @return
-     */
-    public List<OsConfig> listOsVersion(String request) {
-        HuaweiBaseRequest baseRequest = JsonUtil.parseObject(request, HuaweiBaseRequest.class);
-        VmCloudImageRequest req = JsonUtil.parseObject(request, VmCloudImageRequest.class);
-        req.setRegion(baseRequest.getRegionId());
-        List<OsConfig> result = new ArrayList<>();
-        if (StringUtils.isEmpty(req.getRegion()) || StringUtils.isEmpty(req.getOs())) {
-            return result;
-        }
-        List<VmCloudImage> imagesTmp = listVmCloudImage(req);
-        //只取公共镜像
-        List<VmCloudImage> images = imagesTmp.stream()
-                .filter(v -> StringUtils.equalsIgnoreCase("gold", v.getImageType()))
-                .toList();
-        //操作系统去重复
-        Map<String, VmCloudImage> osMap = images.stream().collect(Collectors.toMap(VmCloudImage::getOs, a -> a, (k1, k2) -> k1));
-        //转换对象，这里存储的镜像镜像理论上不会用到了，因为创建虚拟机的时候，重新查询可用镜像
-        osMap.values().forEach(v -> {
-            OsConfig osConfig = new OsConfig();
-            osConfig.setOs(req.getOs());
-            osConfig.setOsVersion(v.getOs());
-            osConfig.setImageName(v.getImageName());
-            osConfig.setImageId(v.getImageId());
-            osConfig.setImageMinDiskSize(v.getDiskSize());
-            result.add(osConfig);
-        });
-        return result.stream().sorted(Comparator.comparing(OsConfig::getOsVersion)).collect(Collectors.toList());
-    }
-
-    public List<Map<String, String>> listOs(String request) {
-        List<Map<String, String>> result = new ArrayList<>();
-        List<String> osList = Arrays.asList("Windows", "RedHat", "CentOS", "SUSE", "Debian", "OpenSUSE", "Oracle Linux", "Fedora", "Ubuntu", "EulerOS", "CoreOS", "ESXi", "Other", "openEuler");
-        osList.stream().sorted().forEach(v -> {
-            Map<String, String> m = new HashMap<>();
-            m.put("id", v);
-            m.put("name", v);
-            result.add(m);
-        });
-        return result;
     }
 
 }

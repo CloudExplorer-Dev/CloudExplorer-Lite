@@ -60,9 +60,9 @@ public class AliyunVmCreateRequest extends AliyunBaseRequest implements ICreateS
             unit = "台",
             defaultValue = "1",
             defaultJsonValue = true,
-            attrs = "{\"min\":1,\"max\":10,\"step\":1,\"style\":\"width:75px\"}",
-            confirmSpecial = true,
-            confirmGroup = 1
+            attrs = "{\"min\":1,\"max\":10,\"step\":1}",
+            confirmGroup = 1,
+            confirmSpecial = true
     )
     private int count;
 
@@ -70,14 +70,14 @@ public class AliyunVmCreateRequest extends AliyunBaseRequest implements ICreateS
             label = "时长",
             clazz = AliyunCloudProvider.class,
             method = "getPeriodOption",
-            attrs = "{\"style\":\"width:75px\"}",
             textField = "periodDisplayName",
             valueField = "period",
             defaultValue = "1",
-            confirmGroup = 1,
+            relationShowValues = "PrePaid",
             relationShows = "instanceChargeType",
-            confirmSpecial = true,
-            relationShowValues = "PrePaid"
+            propsInfo = "{\"style\":{\"height\":\"30px\"}}",
+            confirmGroup = 1,
+            confirmSpecial = true
     )
     private String periodNum;
 
@@ -92,7 +92,6 @@ public class AliyunVmCreateRequest extends AliyunBaseRequest implements ICreateS
             step = 1,
             group = 2,
             confirmGroup = 0
-
     )
     private String regionId;
 
@@ -111,15 +110,16 @@ public class AliyunVmCreateRequest extends AliyunBaseRequest implements ICreateS
     private String zoneId;
 
     @Form(inputType = InputType.TableRadio,
-            relationTrigger = "zoneId",
+            label = "实例规格",
+            clazz = AliyunCloudProvider.class,
+            method = "getInstanceTypes",
             textField = "instanceType",
             valueField = "instanceType",
-            method = "getInstanceTypes",
+            relationTrigger = "zoneId",
+            propsInfo = "{\"rules\":[{\"message\":\"实例规格不能为空\",\"trigger\":\"change\",\"required\":true}],\"style\":{\"width\":\"100%\",\"height\":\"400px\"},\"showLabel\":false,\"activeMsg\":\"已选实例\",\"title\":\"选择实例规格\",\"tableColumns\":[{\"property\":\"instanceTypeFamilyName\",\"label\":\"规格类型\",\"min-width\":\"120px\"},{\"property\":\"instanceType\",\"label\":\"规格名称\"},{\"property\":\"cpuMemory\",\"label\":\"实例规格\"}]}",
             step = 1,
             group = 3,
-            confirmGroup = 1,
-            clazz = AliyunCloudProvider.class,
-            propsInfo = "{\"rules\":[{\"message\":\"实例规格不能为空\",\"trigger\":\"change\",\"required\":true}],\"style\":{\"width\":\"100%\",\"height\":\"400px\"},\"showLabel\":false,\"activeMsg\":\"已选实例\",\"title\":\"选择实例规格\",\"tableColumns\":[{\"property\":\"instanceTypeFamilyName\",\"label\":\"规格类型\",\"min-width\":\"120px\"},{\"property\":\"instanceType\",\"label\":\"规格名称\"},{\"property\":\"cpuMemory\",\"label\":\"实例规格\"}]}"
+            confirmGroup = 1
     )
     private String instanceType;
 
@@ -130,10 +130,10 @@ public class AliyunVmCreateRequest extends AliyunBaseRequest implements ICreateS
             textField = "name",
             valueField = "id",
             defaultValue = "CentOS",
+            propsInfo = "{\"style\":{\"width\":\"100%\"}}",
             step = 1,
             group = 4,
-            confirmGroup = 1,
-            propsInfo = "{\"style\":{\"width\":\"100%\"}}"
+            confirmGroup = 1
     )
     private String os;
 
@@ -144,13 +144,16 @@ public class AliyunVmCreateRequest extends AliyunBaseRequest implements ICreateS
             textField = "os",
             valueField = "id",
             relationTrigger = {"instanceType", "os"},
+            propsInfo = "{\"style\":{\"width\":\"100%\"}}",
             step = 1,
             group = 4,
-            confirmGroup = 1,
-            propsInfo = "{\"style\":{\"width\":\"100%\"}}"
+            confirmGroup = 1
     )
     private String osVersion;
 
+    /**
+     * 磁盘
+     */
     @Form(inputType = InputType.AliyunDiskConfigForm,
             clazz = AliyunCloudProvider.class,
             method = "getDiskTypesForCreateVm",
@@ -165,28 +168,30 @@ public class AliyunVmCreateRequest extends AliyunBaseRequest implements ICreateS
     private List<AliyunCreateDiskForm> disks;
 
     @Form(inputType = InputType.TableRadio,
-            relationTrigger = "zoneId",
+            label = "网络",
+            clazz = AliyunCloudProvider.class,
+            method = "getNetworks",
             textField = "networkName",
             valueField = "networkId",
-            method = "getNetworks",
+            relationTrigger = "zoneId",
+            propsInfo = "{\"rules\":[{\"message\":\"网络不能为空\",\"trigger\":\"change\",\"required\":true}],\"style\":{\"width\":\"100%\",\"height\":\"400px\"},\"showLabel\":false,\"activeMsg\":\"已选网络\",\"title\":\"选择网络\",\"tableColumns\":[{\"property\":\"networkName\",\"label\":\"网络名称\",\"min-width\":\"120px\"},{\"property\":\"vpcName\",\"label\":\"所属VPC\"},{\"property\":\"ipSegment\",\"label\":\"IPV4网段\"}]}",
             step = 2,
             group = 6,
-            confirmGroup = 2,
-            clazz = AliyunCloudProvider.class,
-            propsInfo = "{\"rules\":[{\"message\":\"网络不能为空\",\"trigger\":\"change\",\"required\":true}],\"style\":{\"width\":\"100%\",\"height\":\"400px\"},\"showLabel\":false,\"activeMsg\":\"已选网络\",\"title\":\"选择网络\",\"tableColumns\":[{\"property\":\"networkName\",\"label\":\"网络名称\",\"min-width\":\"120px\"},{\"property\":\"vpcName\",\"label\":\"所属VPC\"},{\"property\":\"ipSegment\",\"label\":\"IPV4网段\"}]}"
+            confirmGroup = 2
     )
     private String networkId;
 
     @Form(inputType = InputType.TableRadio,
-            relationTrigger = {"regionId", "networkId"},
+            label = "安全组",
+            clazz = AliyunCloudProvider.class,
+            method = "getSecurityGroups",
             textField = "securityGroupName",
             valueField = "securityGroupId",
-            method = "getSecurityGroups",
+            relationTrigger = {"regionId", "networkId"},
+            propsInfo = "{\"rules\":[{\"message\":\"安全组不能为空\",\"trigger\":\"change\",\"required\":true}],\"style\":{\"width\":\"100%\",\"height\":\"400px\"},\"showLabel\":false,\"activeMsg\":\"已选安全组\",\"title\":\"选择安全组\",\"tableColumns\":[{\"property\":\"securityGroupName\",\"label\":\"安全组名称\",\"min-width\":\"120px\"},{\"property\":\"Description\",\"label\":\"描述\"}]}",
             step = 2,
             group = 6,
-            confirmGroup = 2,
-            clazz = AliyunCloudProvider.class,
-            propsInfo = "{\"rules\":[{\"message\":\"安全组不能为空\",\"trigger\":\"change\",\"required\":true}],\"style\":{\"width\":\"100%\",\"height\":\"400px\"},\"showLabel\":false,\"activeMsg\":\"已选安全组\",\"title\":\"选择安全组\",\"tableColumns\":[{\"property\":\"securityGroupName\",\"label\":\"安全组名称\",\"min-width\":\"120px\"},{\"property\":\"Description\",\"label\":\"描述\"}]}"
+            confirmGroup = 2
     )
     private String securityGroupId;
 
@@ -203,24 +208,24 @@ public class AliyunVmCreateRequest extends AliyunBaseRequest implements ICreateS
             label = "带宽计费模式",
             clazz = AliyunCloudProvider.class,
             method = "getBandwidthChargeTypes",
+            textField = "name",
+            valueField = "id",
             defaultValue = "PayByBandwidth",
             relationShows = "hasPublicIp",
             relationShowValues = "true",
-            textField = "name",
-            valueField = "id",
             step = 2,
             group = 7,
             confirmGroup = 2
     )
     private String bandwidthChargeType;
 
-    @Form(inputType = InputType.Number,
+    @Form(inputType = InputType.LineNumber,
             label = "带宽(峰)值",
-            clazz = AliyunCloudProvider.class,
-            defaultValue = "1", attrs = "{\"min\":1,\"max\":100,\"step\":1}",
+            unit = "Mbps",
+            defaultValue = "1",
+            attrs = "{\"min\":1,\"max\":100,\"step\":1,\"style\":\"width:223px\"}",
             relationShows = "hasPublicIp",
             relationShowValues = "true",
-            unit = "Mbps",
             step = 2,
             group = 7,
             confirmGroup = 2
@@ -231,9 +236,9 @@ public class AliyunVmCreateRequest extends AliyunBaseRequest implements ICreateS
             label = "登录方式",
             clazz = AliyunCloudProvider.class,
             method = "getLoginTypes",
-            defaultValue = "password",
             textField = "name",
             valueField = "id",
+            defaultValue = "password",
             step = 3,
             group = 8,
             confirmGroup = 3
@@ -244,28 +249,28 @@ public class AliyunVmCreateRequest extends AliyunBaseRequest implements ICreateS
             label = "登录名",
             clazz = AliyunCloudProvider.class,
             method = "getLoginUser",
+            relationTrigger = "os",
             relationShows = "loginType",
             relationShowValues = "password",
-            relationTrigger = "os",
-            required = false,
             step = 3,
             group = 8,
-            confirmGroup = 3
+            confirmGroup = 3,
+            required = false
     )
     private String user;
 
     @Form(inputType = InputType.RegexInput,
             label = "登录密码",
+            description = "密码须同时符合，仅支持以下规则",
             relationShows = "loginType",
             relationShowValues = "password",
-            description = "密码须同时符合，仅支持以下规则",
             regexList = "[" +
                     "{\"regex\":\"^(?!/)(?![\\\\da-z]+$)(?![\\\\dA-Z]+$)(?![\\\\d\\\\(\\\\)`~!@#\\\\$%\\\\^&\\\\*\\\\-\\\\+=_\\\\|\\\\{\\\\}\\\\[\\\\]:;'<>,\\\\.\\\\?/]+$)(?![a-zA-Z]+$)(?![a-z\\\\(\\\\)`~!@#\\\\$%\\\\^&\\\\*\\\\-\\\\+=_\\\\|\\\\{\\\\}\\\\[\\\\]:;'<>,\\\\.\\\\?/]+$)(?![A-Z\\\\(\\\\)`~!@#\\\\$%\\\\^&\\\\*\\\\-\\\\+=_\\\\|\\\\{\\\\}\\\\[\\\\]:;'<>,\\\\.\\\\?/]+$)[\\\\da-zA-z\\\\(\\\\)`~!@#\\\\$%\\\\^&\\\\*\\\\-\\\\+=_\\\\|\\\\{\\\\}\\\\[\\\\]:;'<>,\\\\.\\\\?/]{8,30}$\"" +
                     ",\"message\":\"在 8 ～ 30 位字符数以内，不能以\\\" / \\\"开头，至少包含其中三项(小写字母 a ~ z、大写字母 A ～ Z、数字 0 ～ 9、()`~!@#$%^&*-+=_|{}[]:;'<>,.?/)\"}]",
             propsInfo = "{\"style\":{\"width\":\"100%\"}}",
-            encrypted = true,
             step = 3,
-            group = 8
+            group = 8,
+            encrypted = true
     )
     private String password;
 
@@ -298,10 +303,10 @@ public class AliyunVmCreateRequest extends AliyunBaseRequest implements ICreateS
             label = "配置费用",
             clazz = AliyunCloudProvider.class,
             method = "calculateConfigPrice",
+            relationTrigger = {"hasPublicIp", "bandwidth", "bandwidthChargeType", "count", "instanceChargeType", "periodNum", "instanceType", "osVersion", "disks"},
             attrs = "{\"style\":\"color: red; font-size: large\"}",
             confirmGroup = 1,
             footerLocation = 1,
-            relationTrigger = {"hasPublicIp", "bandwidth", "bandwidthChargeType", "count", "instanceChargeType", "periodNum", "instanceType", "osVersion", "disks"},
             confirmSpecial = true,
             required = false
     )
@@ -311,12 +316,12 @@ public class AliyunVmCreateRequest extends AliyunBaseRequest implements ICreateS
             label = "公网IP流量费用",
             clazz = AliyunCloudProvider.class,
             method = "calculateTrafficPrice",
-            attrs = "{\"style\":\"color: red; font-size: large\"}",
-            confirmGroup = 1,
-            footerLocation = 1,
             relationShows = "bandwidthChargeType",
             relationShowValues = "PayByTraffic",
             relationTrigger = {"regionId", "bandwidthChargeType", "hasPublicIp"},
+            attrs = "{\"style\":\"color: red; font-size: large\"}",
+            confirmGroup = 1,
+            footerLocation = 1,
             confirmSpecial = true,
             required = false
     )
