@@ -1068,7 +1068,7 @@ public class HuaweiSyncCloudApi {
     }
 
     private static boolean filterImageByOsAndOsVersion(ImageInfo imageInfo, HuaweiVmCreateRequest createRequest) {
-        return StringUtils.equalsIgnoreCase(imageInfo.getPlatform().getValue(), createRequest.getOs()) && StringUtils.equalsIgnoreCase(imageInfo.getOsVersion(), createRequest.getOsVersion());
+        return StringUtils.equalsIgnoreCase(imageInfo.getPlatform().getValue(), createRequest.getOs()) && StringUtils.equalsIgnoreCase(imageInfo.getId(), createRequest.getOsVersion());
     }
 
 
