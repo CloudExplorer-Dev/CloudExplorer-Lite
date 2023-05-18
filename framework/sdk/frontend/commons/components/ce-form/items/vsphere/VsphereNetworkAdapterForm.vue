@@ -131,14 +131,46 @@
     </el-form>
   </template>
   <template v-else>
-    <div class="network-confirm-view">
-      <el-card v-for="(s, i) in modelValue" :key="i">
-        <div style="font-weight: bold; padding-bottom: 14px">
-          {{ "主机" + (i + 1) }}
-        </div>
-        <div class="card-container">
-          <el-card v-for="(p, j) in s.adapters" :key="j" class="card">
-            <el-descriptions :title="'网卡' + (j + 1)" :column="1">
+    <el-tabs v-model="activeTab" type="card">
+      <el-tab-pane
+        v-for="(item, index) in _data"
+        :key="index"
+        :label="'主机' + (index + 1)"
+        :name="index"
+      >
+        <div class="adapter-container">
+          <div
+            style="
+              width: 239px;
+              background: #ffffff;
+              border: 1px solid #bbbfc4;
+              border-radius: 4px;
+              padding: 16px;
+              position: relative;
+              margin: 10px;
+            "
+            v-for="(p, j) in item.adapters"
+            :key="j"
+          >
+            <div
+              style="
+                position: absolute;
+                right: 0;
+                top: 0;
+                padding: 1px 6px;
+                height: 24px;
+                background: #ebf1ff;
+                border-radius: 2px 4px 0px 2px;
+                font-style: normal;
+                font-weight: 400;
+                font-size: 14px;
+                line-height: 22px;
+                color: #3370ff;
+              "
+            >
+              {{ "网卡" + (j + 1) }}
+            </div>
+            <el-descriptions :column="1" direction="vertical">
               <el-descriptions-item label="网络">
                 {{
                   _.get(
@@ -166,24 +198,25 @@
                 </el-descriptions-item>
               </template>
             </el-descriptions>
-          </el-card>
+          </div>
         </div>
-        <el-descriptions :column="1">
-          <el-descriptions-item label="DNS1">
-            {{ s.dns1 }}
-            <span v-if="!s.dns1" style="color: var(--el-text-color-secondary)">
-              无
-            </span>
+        <el-descriptions
+          :column="3"
+          direction="vertical"
+          style="margin-top: 20px"
+        >
+          <el-descriptions-item label="DNS1" width="33.33%">
+            {{ item?.dns1 }}
+            <span v-if="!item?.dns1"> - </span>
           </el-descriptions-item>
-          <el-descriptions-item label="DNS2">
-            {{ s.dns2 }}
-            <span v-if="!s.dns2" style="color: var(--el-text-color-secondary)">
-              无
-            </span>
+          <el-descriptions-item label="DNS2" width="33.33%">
+            {{ item?.dns2 }}
+            <span v-if="!item?.dns2"> - </span>
           </el-descriptions-item>
+          <el-descriptions-item width="33.33%" />
         </el-descriptions>
-      </el-card>
-    </div>
+      </el-tab-pane>
+    </el-tabs>
   </template>
 </template>
 <script setup lang="ts">

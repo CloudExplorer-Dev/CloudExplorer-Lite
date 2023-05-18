@@ -86,6 +86,7 @@ public enum InputType {
     VsphereComputeConfigForm(com.fit2cloud.common.form.vo.vsphere.ComputeConfigForm.class),
     VsphereDatastoreForm(com.fit2cloud.common.form.vo.vsphere.DatastoreForm.class),
     VsphereNetworkAdapterForm(com.fit2cloud.common.form.vo.vsphere.NetworkAdapterForm.class),
+    VspherePasswordInfoForm(com.fit2cloud.common.form.vo.vsphere.PasswordInfoForm.class),
     VsphereServerInfoForm(com.fit2cloud.common.form.vo.vsphere.ServerInfoForm.class),
 
     OpenStackFlavorForm(com.fit2cloud.common.form.vo.openstack.FlavorForm.class),
