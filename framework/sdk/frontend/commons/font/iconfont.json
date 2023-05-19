@@ -6,6 +6,62 @@
   "description": "",
   "glyphs": [
     {
+      "icon_id": "7312902",
+      "name": "关机",
+      "font_class": "guanji-",
+      "unicode": "e777",
+      "unicode_decimal": 59255
+    },
+    {
+      "icon_id": "35464416",
+      "name": "icon_more-close_outlined",
+      "font_class": "icon_more-close_outlined",
+      "unicode": "e776",
+      "unicode_decimal": 59254
+    },
+    {
+      "icon_id": "35417376",
+      "name": "icon_expanding_capacity",
+      "font_class": "icon_expanding_capacity",
+      "unicode": "e775",
+      "unicode_decimal": 59253
+    },
+    {
+      "icon_id": "35417218",
+      "name": "icon_expansion",
+      "font_class": "icon_expansion",
+      "unicode": "e774",
+      "unicode_decimal": 59252
+    },
+    {
+      "icon_id": "35324775",
+      "name": "icon_logout",
+      "font_class": "icon_logout",
+      "unicode": "e773",
+      "unicode_decimal": 59251
+    },
+    {
+      "icon_id": "35323187",
+      "name": "icon_api",
+      "font_class": "icon_api",
+      "unicode": "e772",
+      "unicode_decimal": 59250
+    },
+    {
+      "icon_id": "35272211",
+      "name": "icon_mount",
+      "font_class": "icon_mount",
+      "unicode": "e771",
+      "unicode_decimal": 59249
+    },
+    {
+      "icon_id": "35242788",
+      "name": "icon_bill_allocation",
+      "font_class": "icon_bill_allocation",
+      "unicode": "e770",
+      "unicode_decimal": 59248
+    },
+    {
       "icon_id": "35207064",
       "name": "icon_disable",
       "font_class": "icon_disable",
