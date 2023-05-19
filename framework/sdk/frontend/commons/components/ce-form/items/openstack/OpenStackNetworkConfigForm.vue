@@ -10,7 +10,7 @@
     >
       选择网络
       <el-input
-        style="width: 240px; margin-bottom: 16px--el-color-danger: #c0c4cc"
+        style="width: 240px; margin-bottom: 16px; --el-color-danger: #c0c4cc"
         v-model="searchValue"
         placeholder="请输入关键字搜索"
         prefix-icon="Search"

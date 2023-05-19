@@ -3,8 +3,8 @@
     <template v-if="!confirm">
       <el-form
         ref="ruleFormRef"
-        label-suffix=":"
         label-position="left"
+        require-asterisk-position="right"
         :model="_data"
         v-loading="_loading"
       >
@@ -13,7 +13,7 @@
             display: flex;
             flex-direction: row;
             flex-wrap: nowrap;
-            align-items: center;
+            align-items: flex-end;
             justify-content: space-between;
           "
         >
@@ -42,7 +42,11 @@
 
           <el-input
             v-if="label"
-            style="width: 240px; --el-color-danger: #c0c4cc"
+            style="
+              width: 240px;
+              --el-color-danger: #c0c4cc;
+              margin-bottom: 18px;
+            "
             v-model="searchValue"
             placeholder="请输入关键字搜索"
             prefix-icon="Search"

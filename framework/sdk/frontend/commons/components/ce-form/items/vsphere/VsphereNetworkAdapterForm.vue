@@ -3,8 +3,8 @@
     <el-form
       ref="ruleFormRef"
       label-width="130px"
-      label-suffix=":"
       label-position="left"
+      require-asterisk-position="right"
       :model="_data"
     >
       <el-tabs v-model="activeTab" type="card">
