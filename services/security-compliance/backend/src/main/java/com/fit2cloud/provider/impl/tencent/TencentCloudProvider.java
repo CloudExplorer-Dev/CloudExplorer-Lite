@@ -272,7 +272,7 @@ public class TencentCloudProvider extends AbstractCloudProvider<TencentBaseCrede
                 .stream()
                 .map(instance -> ResourceUtil.toResourceInstance(PlatformConstants.fit2cloud_tencent_platform.name(),
                         ResourceTypeConstants.PUBLIC_IP,
-                        instance.getInstanceId(),
+                        instance.getAddressId(),
                         instance.getAddressName(),
                         Map.of("tags", Arrays.stream(Objects.isNull(instance.getTagSet()) ? new Tag[]{} : instance.getTagSet()).toList()),
                         instance))

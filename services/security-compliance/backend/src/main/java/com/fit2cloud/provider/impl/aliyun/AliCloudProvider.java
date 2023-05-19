@@ -20,10 +20,12 @@ import com.fit2cloud.provider.impl.aliyun.entity.credential.AliSecurityComplianc
 import com.fit2cloud.provider.impl.aliyun.entity.request.*;
 import com.fit2cloud.provider.impl.aliyun.entity.response.*;
 import com.fit2cloud.provider.util.ResourceUtil;
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.keyvalue.DefaultKeyValue;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 /**
  * {@code @Author:张少虎}
@@ -66,7 +68,7 @@ public class AliCloudProvider extends AbstractCloudProvider<AliSecurityComplianc
                         Map.of(
                                 "disks", instance.getDisks(),
                                 "securityGroupRules", instance.getSecurityGroupRules(),
-                                "tags", instance.getTags().tag
+                                "tags", Objects.nonNull(instance.getTags()) ? instance.getTags().tag : List.of()
                         ),
                         instance))
                 .toList();
@@ -87,7 +89,7 @@ public class AliCloudProvider extends AbstractCloudProvider<AliSecurityComplianc
                         ResourceTypeConstants.REDIS,
                         instance.getInstanceId(),
                         instance.getInstanceName(),
-                        Map.of("tags", instance.getTags().tag),
+                        Map.of("tags", Objects.nonNull(instance.getTags()) ? instance.getTags().tag : List.of()),
                         instance))
                 .toList();
     }
@@ -104,7 +106,7 @@ public class AliCloudProvider extends AbstractCloudProvider<AliSecurityComplianc
         return instances
                 .stream()
                 .map(instance -> ResourceUtil.toResourceInstance(PlatformConstants.fit2cloud_ali_platform.name(), ResourceTypeConstants.MONGO_DB, instance.getDBInstanceId(), instance.getDBInstanceDescription(),
-                        Map.of("tags", instance.getTags().tag), instance))
+                        Map.of("tags", Objects.nonNull(instance.getTags()) ? instance.getTags().tag : List.of()), instance))
                 .toList();
     }
 
@@ -123,7 +125,7 @@ public class AliCloudProvider extends AbstractCloudProvider<AliSecurityComplianc
                         ResourceTypeConstants.MYSQL,
                         instance.getDBInstanceId(),
                         instance.getDBInstanceDescription(),
-                        Map.of("tags", instance.getTags()),
+                        Map.of("tags", CollectionUtils.isNotEmpty(instance.getTags()) ? instance.getTags() : List.of()),
                         instance))
                 .toList();
     }
@@ -143,7 +145,7 @@ public class AliCloudProvider extends AbstractCloudProvider<AliSecurityComplianc
                         ResourceTypeConstants.SQL_SERVER,
                         instance.getDBInstanceId(),
                         instance.getDBInstanceDescription(),
-                        Map.of("tags", instance.getTags()),
+                        Map.of("tags", CollectionUtils.isNotEmpty(instance.getTags()) ? instance.getTags() : List.of()),
                         instance))
                 .toList();
     }
@@ -163,7 +165,7 @@ public class AliCloudProvider extends AbstractCloudProvider<AliSecurityComplianc
                         ResourceTypeConstants.POST_GRE_SQL,
                         instance.getDBInstanceId(),
                         instance.getDBInstanceDescription(),
-                        Map.of("tags", instance.getTags()),
+                        Map.of("tags", CollectionUtils.isNotEmpty(instance.getTags()) ? instance.getTags() : List.of()),
                         instance))
                 .toList();
     }
@@ -183,7 +185,7 @@ public class AliCloudProvider extends AbstractCloudProvider<AliSecurityComplianc
                         ResourceTypeConstants.MARIA_DB,
                         instance.getDBInstanceId(),
                         instance.getDBInstanceDescription(),
-                        Map.of("tags", instance.getTags()),
+                        Map.of("tags", CollectionUtils.isNotEmpty(instance.getTags()) ? instance.getTags() : List.of()),
                         instance))
                 .toList();
     }
@@ -203,7 +205,7 @@ public class AliCloudProvider extends AbstractCloudProvider<AliSecurityComplianc
                         ResourceTypeConstants.ELASTIC_SEARCH,
                         instance.getInstanceId(),
                         instance.getDescription(),
-                        Map.of("tags", instance.getTags()),
+                        Map.of("tags", CollectionUtils.isNotEmpty(instance.getTags()) ? instance.getTags() : List.of()),
                         instance))
                 .toList();
     }
@@ -221,7 +223,7 @@ public class AliCloudProvider extends AbstractCloudProvider<AliSecurityComplianc
                 .stream()
                 .map(instance -> ResourceUtil.toResourceInstance(PlatformConstants.fit2cloud_ali_platform.name(),
                         ResourceTypeConstants.DISK, instance.getDiskId(), instance.getDiskName()
-                        , Map.of("tags", instance.getTags().tag), instance))
+                        , Map.of("tags", Objects.nonNull(instance.getTags()) ? instance.getTags().tag : List.of()), instance))
                 .toList();
     }
 
@@ -239,7 +241,7 @@ public class AliCloudProvider extends AbstractCloudProvider<AliSecurityComplianc
                 .map(instance -> ResourceUtil.toResourceInstance(PlatformConstants.fit2cloud_ali_platform.name(), ResourceTypeConstants.LOAD_BALANCER,
                         instance.getLoadBalancerId(),
                         instance.getLoadBalancerName(),
-                        Map.of("tags", instance.getTags().tag),
+                        Map.of("tags", Objects.nonNull(instance.getTags()) ? instance.getTags().tag : List.of()),
                         instance))
                 .toList();
     }
@@ -259,7 +261,7 @@ public class AliCloudProvider extends AbstractCloudProvider<AliSecurityComplianc
                         ResourceTypeConstants.PUBLIC_IP,
                         instance.getAllocationId(),
                         instance.getName(),
-                        Map.of("tags", instance.getTags().tag),
+                        Map.of("tags", Objects.nonNull(instance.getTags()) ? instance.getTags().tag : List.of()),
                         instance))
                 .toList();
     }
@@ -279,7 +281,7 @@ public class AliCloudProvider extends AbstractCloudProvider<AliSecurityComplianc
                         ResourceTypeConstants.VPC,
                         instance.vpcId,
                         instance.vpcName,
-                        Map.of("switchesList", instance.getSwitchesList(), "tags", instance.getTags().tag),
+                        Map.of("switchesList", instance.getSwitchesList(), "tags", Objects.nonNull(instance.getTags()) ? instance.getTags().tag : List.of()),
                         instance))
                 .toList();
     }
@@ -335,7 +337,7 @@ public class AliCloudProvider extends AbstractCloudProvider<AliSecurityComplianc
                         ResourceTypeConstants.SECURITY_GROUP,
                         instance.getSecurityGroupId(),
                         instance.getSecurityGroupName(),
-                        Map.of("tags", instance.getTags().tag),
+                        Map.of("tags", Objects.nonNull(instance.getTags()) ? instance.getTags().tag : List.of()),
                         instance))
                 .toList();
     }
