@@ -3,7 +3,7 @@ import { ref } from "vue";
 
 const props = withDefaults(
   defineProps<{
-    content: Array<string>;
+    content?: Array<string>;
     itemWidth?: string | number;
     itemBottom?: string | number;
     label?: string;
@@ -23,7 +23,7 @@ const showTips = (index: number, e: Event) => {
   if (spanTextWidth > spanWidth) {
     visible.value = true;
   }
-  currentItem.value = props.content[index];
+  currentItem.value = props.content ? props.content[index] : undefined;
 };
 </script>
 <template>

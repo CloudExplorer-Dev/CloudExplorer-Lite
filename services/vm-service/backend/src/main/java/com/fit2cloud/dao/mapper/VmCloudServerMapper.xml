@@ -9,6 +9,7 @@
         <result column="workspace_id" jdbcType="VARCHAR" property="workspaceId"/>
         <result column="workspace_name" jdbcType="VARCHAR" property="workspaceName"/>
         <result column="create_time" jdbcType="BIGINT" property="createTime"/>
+        <result column="applyUserName" jdbcType="VARCHAR" property="applyUserName"/>
     </resultMap>
 
     <select id="pageVmCloudServer" resultMap="serverResultMap">
@@ -63,7 +64,8 @@
             vm_cloud_server.`vm_tools_status`,
             vm_cloud_server.`instance_charge_type`,
             vm_cloud_server.`security_group_ids`,
-            user._name as apply_user,
+            vm_cloud_server.apply_user,
+            user._name as applyUserName,
             cloud_account.NAME AS account_name,
             cloud_account.platform AS platform,
             IF(orgWorkspace.type = "workspace",orgWorkspace.id,NULL) as workspace_id,

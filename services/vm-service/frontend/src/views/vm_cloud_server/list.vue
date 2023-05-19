@@ -851,11 +851,14 @@ const buttons = ref([
           <span v-if="JSON.parse(scope.row.ipArray)?.length === 1">
             {{ getFirstIp(scope._list) }}
           </span>
-          <el-popover placement="right" :width="200" trigger="hover">
+          <el-popover
+            placement="right"
+            :width="200"
+            trigger="hover"
+            v-if="scope._list?.length > 1"
+          >
             <template #reference>
-              <span class="role_numbers" v-if="scope._list?.length > 1">
-                +{{ scope._list?.length - 1 }}
-              </span>
+              <span class="role_numbers"> +{{ scope._list?.length - 1 }} </span>
             </template>
             <div v-for="(item, index) in scope._list" :key="index">
               <span>{{ item.ip }}</span>

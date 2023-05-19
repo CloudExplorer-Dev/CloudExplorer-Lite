@@ -36,6 +36,8 @@ public class VmCloudServerDTO extends VmCloudServer {
     private String cloudProjectName;
     @ApiModelProperty("云平台")
     private String platform;
+    @ApiModelProperty("申请用户名")
+    private String applyUserName;
     @ApiModelProperty("删除时间")
     @JsonDeserialize(using = LocalDateTimeDeserializer.class)
     @JsonSerialize(using = LocalDateTimeSerializer.class)

@@ -48,7 +48,8 @@ interface VmCloudServerVO {
   showLoading?: boolean;
   securityGroupIds?: [];
   instanceChargeType?: string;
-  applyUser: string;
+  applyUser?: string;
+  applyUserName?: string;
 }
 
 /**
