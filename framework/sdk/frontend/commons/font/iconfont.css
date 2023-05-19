@@ -1,8 +1,8 @@
 @font-face {
   font-family: "iconfont"; /* Project id 3519945 */
-  src: url('iconfont.woff2?t=1682240606512') format('woff2'),
-       url('iconfont.woff?t=1682240606512') format('woff'),
-       url('iconfont.ttf?t=1682240606512') format('truetype');
+  src: url('iconfont.woff2?t=1684488046054') format('woff2'),
+       url('iconfont.woff?t=1684488046054') format('woff'),
+       url('iconfont.ttf?t=1684488046054') format('truetype');
 }
 
 .iconfont {
@@ -11,6 +11,38 @@
   font-style: normal;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+}
+
+.ali-icon-guanji-:before {
+  content: "\e777";
+}
+
+.ali-icon-icon_more-close_outlined:before {
+  content: "\e776";
+}
+
+.ali-icon-icon_expanding_capacity:before {
+  content: "\e775";
+}
+
+.ali-icon-icon_expansion:before {
+  content: "\e774";
+}
+
+.ali-icon-icon_logout:before {
+  content: "\e773";
+}
+
+.ali-icon-icon_api:before {
+  content: "\e772";
+}
+
+.ali-icon-icon_mount:before {
+  content: "\e771";
+}
+
+.ali-icon-icon_bill_allocation:before {
+  content: "\e770";
 }
 
 .ali-icon-icon_disable:before {

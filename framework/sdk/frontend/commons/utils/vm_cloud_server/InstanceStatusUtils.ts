@@ -36,7 +36,7 @@ class InstanceStatus {
 const instanceStatusList = computed<Array<InstanceStatus>>(() => [
   new InstanceStatus("Running", true, 2, "icon_skip_outlined", "#34C724"),
   new InstanceStatus("Deleted", true, 6, "icon_deleting", "#6E748E"),
-  new InstanceStatus("Stopped", true, 3, "icon_cease", "#000000"),
+  new InstanceStatus("Stopped", true, 3, "guanji-", "#000000"),
   new InstanceStatus("Starting", false, -1, "shuaxin4", "#34C724"),
   new InstanceStatus("Stopping", false, -1, "shuaxin4", "#000000"),
   new InstanceStatus("Rebooting", true, 4, "shuaxin4", "#34C724"),

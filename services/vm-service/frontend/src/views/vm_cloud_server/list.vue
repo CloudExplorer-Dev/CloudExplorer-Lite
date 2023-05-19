@@ -20,7 +20,7 @@ import RecycleBinsApi from "@/api/recycle_bin";
 import Grant from "@/views/vm_cloud_server/grant.vue";
 import { usePermissionStore } from "@commons/stores/modules/permission";
 import ButtonToolBar from "@commons/components/button-tool-bar/ButtonToolBar.vue";
-import MoreOptionsButton from "@commons/components/ce-table/MoreOptionsButton.vue";
+import VmServerStatusIcon from "@/views/vm_cloud_server/VmServerStatusIcon.vue";
 import {
   ButtonAction,
   type ButtonActionType,
@@ -878,26 +878,9 @@ const buttons = ref([
     >
       <template #default="scope">
         <div style="display: flex; align-items: center">
-          <CeIcon
-            :code="
-              InstanceStatusUtils.getInstanceStatus(scope.row.instanceStatus)
-                ?.icon
-            "
-            :color="
-              InstanceStatusUtils.getInstanceStatus(scope.row.instanceStatus)
-                ?.color
-            "
-            size="1em"
-            :is-loading="
-              scope.row.instanceStatus === 'Starting' ||
-              scope.row.instanceStatus === 'Stopping' ||
-              scope.row.instanceStatus === 'Rebooting' ||
-              scope.row.instanceStatus === 'Deleting' ||
-              scope.row.instanceStatus === 'Creating' ||
-              scope.row.instanceStatus === 'ConfigChanging'
-            "
-          >
-          </CeIcon>
+          <VmServerStatusIcon
+            :status="scope.row.instanceStatus"
+          ></VmServerStatusIcon>
           <span style="margin-left: 7px"
             >{{ InstanceStatusUtils.getStatusName(scope.row.instanceStatus) }}
           </span>
