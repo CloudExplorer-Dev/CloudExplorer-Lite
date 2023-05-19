@@ -1,5 +1,11 @@
 <template>
-  <el-select class="m-2" filterable clearable v-bind="$attrs">
+  <el-select
+    class="m-2"
+    filterable
+    clearable
+    v-bind="$attrs"
+    v-model="_modelValue"
+  >
     <el-option
       v-for="(item, index) in optionList"
       :key="index"
@@ -15,15 +21,36 @@ import type { FormView } from "@commons/components/ce-form/type";
 import { computed } from "vue";
 import _ from "lodash";
 
-const props = defineProps<{ formItem: FormView }>();
+const props = defineProps<{ modelValue?: string; formItem: FormView }>();
 const optionList = computed(() => {
   if (props.formItem.optionList) {
     return props.formItem.optionList;
   }
   return [];
 });
+const emit = defineEmits(["update:modelValue", "change"]);
+const _modelValue = computed({
+  get() {
+    return props.modelValue;
+  },
+  set(value) {
+    emit("update:modelValue", value);
+    emit("change", props.formItem);
+  },
+});
 
 function baseTextField(formItem: FormView, item: any) {
+  //置空
+  if (props.modelValue) {
+    const oldItem = _.find(formItem.optionList, [
+      props.formItem.valueField,
+      props.modelValue,
+    ]);
+    if (!oldItem) {
+      emit("update:modelValue", undefined);
+      emit("change", formItem);
+    }
+  }
   if (formItem.formatTextField) {
     if (formItem.baseTextField && formItem.baseTextField !== "") {
       return item[formItem.baseTextField];
