@@ -261,7 +261,7 @@ public class AliyunVmCreateRequest extends AliyunBaseRequest implements ICreateS
 
     @Form(inputType = InputType.RegexInput,
             label = "登录密码",
-            description = "密码须同时符合，仅支持以下规则",
+            description = "密码须同时符合以下规则",
             relationShows = "loginType",
             relationShowValues = "password",
             regexList = "[" +

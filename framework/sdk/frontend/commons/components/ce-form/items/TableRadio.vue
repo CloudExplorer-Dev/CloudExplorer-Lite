@@ -128,8 +128,6 @@ const activeText = computed(() => {
       emit("change", props.formItem);
       return undefined;
     }
-    emit("update:modelValue", props.modelValue);
-    emit("change", props.formItem);
     if (props.formItem.propsInfo.activeTextEval) {
       return evalF(props.formItem.propsInfo.activeTextEval, row);
     } else if (props.formItem.textField) {

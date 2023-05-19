@@ -329,7 +329,7 @@ public class HuaweiVmCreateRequest extends HuaweiBaseRequest implements ICreateS
             label = "配置费用",
             clazz = HuaweiCloudProvider.class,
             method = "calculateConfigPrice",
-            relationTrigger = {"billingMode", "periodNum", "availabilityZone", "instanceType", "disks", "count"},
+            relationTrigger = {"billingMode", "periodNum", "availabilityZone", "instanceType", "disks", "count","trafficBandwidthSize", "bandwidthSize","chargeMode","usePublicIp"},
             attrs = "{\"style\":\"color: red; font-size: large\"}",
             confirmGroup = 1,
             required = false,
