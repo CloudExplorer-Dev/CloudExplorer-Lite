@@ -135,7 +135,7 @@ public class UserController {
         return ResultHolder.success(userService.changeUserStatus(user));
     }
 
-    @PreAuthorize("hasAnyCePermission('USER:EDIT')")
+    @PreAuthorize("hasAnyCePermission('USER:NOTIFICATION_SETTING')")
     @PostMapping(value = "/notificationSetting")
     @OperatedLog(resourceType = ResourceTypeEnum.USER, operated = OperatedTypeEnum.MODIFY,
             resourceId = "#userNotificationSetting.id",
@@ -145,7 +145,7 @@ public class UserController {
         return ResultHolder.success(userService.updateUserNotification(userNotificationSetting));
     }
 
-    @PreAuthorize("hasAnyCePermission('USER:EDIT')")
+    @PreAuthorize("hasAnyCePermission('USER:NOTIFICATION_SETTING')")
     @GetMapping(value = "/findUserNotification/{userId}")
     public ResultHolder<UserNotifySettingDTO> findUserNotification(@PathVariable String userId) {
         return ResultHolder.success(userService.findUserNotification(userId));

@@ -136,7 +136,7 @@ public class PermissionConstants {
                                             .role(RoleConstants.ROLE.ORGADMIN)
                             )
                             .permission(
-                                    //删除用户
+                                    //用户通知设置
                                     new Permission.Builder()
                                             .require(OPERATE.READ)
                                             .operate(OPERATE.NOTIFICATION_SETTING)
