@@ -187,7 +187,7 @@ watch(
 function add() {
   data.value?.push({
     minSize: 1,
-    size: 1,
+    size: 20,
     deleteWithInstance: false,
     boot: false,
   });
