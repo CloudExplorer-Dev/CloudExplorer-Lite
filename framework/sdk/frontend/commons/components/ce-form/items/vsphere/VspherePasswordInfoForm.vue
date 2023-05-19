@@ -10,7 +10,19 @@
       <el-form-item label="密码"> 默认为模板的密码 </el-form-item>
     </div>
   </template>
-  <template v-else><div></div></template>
+  <template v-else>
+    <el-descriptions direction="vertical" :column="3">
+      <el-descriptions-item label="登录方式" width="33.33%">
+        默认密码
+      </el-descriptions-item>
+      <el-descriptions-item label="登录名" width="33.33%">
+        默认为模板的用户名
+      </el-descriptions-item>
+      <el-descriptions-item label="密码" width="33.33%">
+        默认为模板的密码
+      </el-descriptions-item>
+    </el-descriptions>
+  </template>
 </template>
 <script setup lang="ts">
 import type { FormView } from "@commons/components/ce-form/type";
