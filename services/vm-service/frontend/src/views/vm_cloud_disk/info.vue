@@ -119,8 +119,8 @@ onMounted(() => {
         hideValue: true,
         render: () => {
           return h(VmLink, {
-            serverId: vmCloudDiskDetail.value?.serverId,
-            serverName: vmCloudDiskDetail.value?.vmInstanceName,
+            serverId: vmCloudDiskDetail.value?.serverId as string,
+            serverName: vmCloudDiskDetail.value?.vmInstanceName as string,
           });
         },
       },

@@ -22,6 +22,7 @@
             cloud_account.NAME AS account_name,
             cloud_account.platform AS platform,
             vm_cloud_server.instance_name AS instance_name,
+            vm_cloud_server.id as serverId,
             IF(org_workspace.type = "workspace",org_workspace.id,NULL) as workspace_id,
             IF(org_workspace.type = "workspace",org_workspace.NAME,NULL) as workspace_name,
             org_workspace.organization_id,
