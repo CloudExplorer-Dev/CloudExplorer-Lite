@@ -120,6 +120,11 @@ const activeText = computed(() => {
         f[props.formItem.valueField ? props.formItem.valueField : "value"]
       )
     );
+    if (rows.length === 0) {
+      emit("update:modelValue", undefined);
+      emit("change", props.formItem);
+      return undefined;
+    }
     if (props.formItem.propsInfo.activeTextEval) {
       return rows.map((row) =>
         evalF(props.formItem.propsInfo.activeTextEval, row)
@@ -127,15 +132,6 @@ const activeText = computed(() => {
     } else if (props.formItem.textField) {
       return rows.map((row) => row[props.formItem.textField || "value"]);
     }
-  }
-  // 设置默认值
-  if (!props.modelValue && props.setDefaultValue && props.formItem.optionList) {
-    const defaultValue =
-      props.formItem.optionList[0][
-        props.formItem.valueField ? props.formItem.valueField : "value"
-      ];
-    emit("update:modelValue", [defaultValue]);
-    return [defaultValue];
   }
   return props.modelValue;
 });

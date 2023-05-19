@@ -69,6 +69,12 @@ const _value = computed<number | undefined>({
     if (props.modelValue === undefined) {
       return undefined;
     } else {
+      if (Number(props.modelValue) < Number(_min.value)) {
+        return Number(_min.value);
+      }
+      if (Number(props.modelValue) > Number(_max.value)) {
+        return Number(_max.value);
+      }
       return Number(props.modelValue);
     }
   },
