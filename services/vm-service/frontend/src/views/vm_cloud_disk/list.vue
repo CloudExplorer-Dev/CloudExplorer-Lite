@@ -835,12 +835,6 @@ const buttons = ref([
             }"
             >{{ filterStatus(scope.row.status) }}</span
           >
-          <ce-icon
-            v-if="scope.row.status.toUpperCase().includes('ING')"
-            code="Loading"
-            class="is-loading"
-            style="margin-left: 5px; color: var(--el-color-primary)"
-          ></ce-icon>
         </div>
       </template>
     </el-table-column>
