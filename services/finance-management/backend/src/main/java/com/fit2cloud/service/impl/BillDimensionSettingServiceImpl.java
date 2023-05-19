@@ -83,7 +83,7 @@ public class BillDimensionSettingServiceImpl extends ServiceImpl<BillDimensionSe
     public List<DefaultKeyValue<String, String>> authorizeValues(String groupField) {
         String groupKeyByField;
         if (groupField.startsWith("tags")) {
-            if (groupField.equals("tags")) {
+            if ("tags".equals(groupField)) {
                 return findTags();
             } else {
                 groupKeyByField = groupField + "." + FieldType.Keyword.jsonValue();
@@ -671,6 +671,9 @@ public class BillDimensionSettingServiceImpl extends ServiceImpl<BillDimensionSe
      * @return Query对象
      */
     public List<Query> groupToQuery(List<BillAuthorizeRuleCondition> billAuthorizeRuleConditionList) {
+        if (CollectionUtils.isNotEmpty(billAuthorizeRuleConditionList)) {
+            return List.of();
+        }
         return billAuthorizeRuleConditionList
                 .stream().map(billAuthorizeRuleCondition -> new Query.Builder().terms(new TermsQuery.Builder().field(billAuthorizeRuleCondition.getField().startsWith("tags") ? billAuthorizeRuleCondition.getField() + "." + FieldType.Keyword.jsonValue() : EsFieldUtil.getGroupKeyByField(billAuthorizeRuleCondition.getField())).terms(TermsQueryField.of(s -> s.value(billAuthorizeRuleCondition.getValue().stream().map(FieldValue::of).toList()))).build()).build()).toList();
 
