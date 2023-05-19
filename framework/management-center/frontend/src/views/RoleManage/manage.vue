@@ -492,7 +492,7 @@ onMounted(() => {
       <div class="role-btn title">
         自定义角色
         <el-icon
-          v-hasPermission="'[management-center]ROLE:EDIT'"
+          v-hasPermission="'[management-center]ROLE:CREATE'"
           style="color: #3370ff; font-size: 20px; cursor: pointer"
           @click="addRole"
         >

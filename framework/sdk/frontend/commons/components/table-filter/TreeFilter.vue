@@ -9,7 +9,7 @@ const props = defineProps<{
   /**
    * 树形结构数据
    */
-  treeData: Array<WorkspaceTree>;
+  treeData?: Array<WorkspaceTree>;
   /**
    * 筛选按钮触发事件
    */
@@ -65,35 +65,37 @@ defineExpose({
 </script>
 
 <template>
-  <el-input
-    v-model="filterText"
-    :placeholder="$t('commons.btn.grope', '搜索')"
-    size="small"
-  />
-  <el-tree
-    class="filter-tree"
-    ref="treeRef"
-    node-key="id"
-    :props="{ label: 'name' }"
-    :data="treeData"
-    :filter-node-method="filterNode"
-    multiple
-    show-checkbox
-    style="width: 100%"
-  />
-  <div class="line" />
-  <el-button
-    @click="handleSelect()"
-    :disabled="treeRef?.getCheckedKeys().length === 0"
-    link
-    class="btn"
-    :class="{ active: treeRef?.getCheckedKeys().length !== 0 }"
-  >
-    {{ t("commons.btn.filter", "筛选") }}
-  </el-button>
-  <el-button @click="handleReset()" link class="btn active">
-    {{ t("commons.btn.reset", "重置") }}
-  </el-button>
+  <div>
+    <el-input
+      v-model="filterText"
+      :placeholder="$t('commons.btn.grope', '搜索')"
+      size="small"
+    />
+    <el-tree
+      class="filter-tree"
+      ref="treeRef"
+      node-key="id"
+      :props="{ label: 'name' }"
+      :data="treeData"
+      :filter-node-method="filterNode"
+      multiple
+      show-checkbox
+      style="width: 100%"
+    />
+    <div class="line" />
+    <el-button
+      @click="handleSelect()"
+      :disabled="treeRef?.getCheckedKeys().length === 0"
+      link
+      class="btn"
+      :class="{ active: treeRef?.getCheckedKeys().length !== 0 }"
+    >
+      {{ t("commons.btn.filter", "筛选") }}
+    </el-button>
+    <el-button @click="handleReset()" link class="btn active">
+      {{ t("commons.btn.reset", "重置") }}
+    </el-button>
+  </div>
 </template>
 
 <style lang="scss" scoped>

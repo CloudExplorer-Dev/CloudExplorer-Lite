@@ -156,7 +156,7 @@ watch(
 );
 
 function add() {
-  data.value?.push({ size: 1, deleteWithInstance: true });
+  data.value?.push({ size: 20, deleteWithInstance: true });
 }
 function remove(index: number) {
   _.remove(data.value, (n, i) => index === i);

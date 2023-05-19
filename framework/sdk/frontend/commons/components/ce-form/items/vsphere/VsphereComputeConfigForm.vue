@@ -3,8 +3,8 @@
     <template v-if="!confirm">
       <el-form
         ref="ruleFormRef"
-        label-suffix=":"
         label-position="left"
+        require-asterisk-position="right"
         :model="_data"
         v-loading="_loading"
       >
@@ -13,7 +13,7 @@
             display: flex;
             flex-direction: row;
             flex-wrap: nowrap;
-            align-items: center;
+            align-items: flex-end;
             justify-content: space-between;
           "
         >
@@ -42,7 +42,11 @@
 
           <el-input
             v-if="label"
-            style="width: 240px; --el-color-danger: #c0c4cc"
+            style="
+              width: 240px;
+              --el-color-danger: #c0c4cc;
+              margin-bottom: 18px;
+            "
             v-model="searchValue"
             placeholder="请输入关键字搜索"
             prefix-icon="Search"
@@ -316,11 +320,9 @@ function handleCurrentChange(val: HostOrResourcePool | undefined) {
  * 自定义进度条颜色
  */
 const customColors = [
-  { color: "#37ff00", percentage: 20 },
-  { color: "#049638", percentage: 40 },
-  { color: "#efa400", percentage: 60 },
-  { color: "#ff4400", percentage: 80 },
-  { color: "#ff0000", percentage: 100 },
+  { color: "rgba(52, 199, 36, 1)", percentage: 60 },
+  { color: "rgba(255, 136, 0, 1)", percentage: 80 },
+  { color: "rgba(245, 74, 69, 1)", percentage: 100 },
 ];
 
 const _loading = ref<boolean>(false);

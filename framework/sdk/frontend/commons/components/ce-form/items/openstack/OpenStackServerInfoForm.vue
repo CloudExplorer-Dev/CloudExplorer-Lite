@@ -107,7 +107,6 @@ watch(
 );
 
 function setServers(count: number | undefined) {
-  console.log(count);
   if (count !== undefined) {
     if (_data.value) {
       if (_data.value.length > count) {

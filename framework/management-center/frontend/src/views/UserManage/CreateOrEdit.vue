@@ -421,6 +421,9 @@ defineExpose({ open, refreshUser });
                 multiple
                 show-checkbox
                 check-strictly
+                collapse-tags
+                collapse-tags-tooltip
+                :max-collapse-tags="3"
                 style="width: 512px; margin-right: 8px"
               />
             </el-form-item>
@@ -439,6 +442,9 @@ defineExpose({ open, refreshUser });
                 filterable
                 multiple
                 show-checkbox
+                collapse-tags
+                collapse-tags-tooltip
+                :max-collapse-tags="3"
                 style="width: 512px; margin-right: 8px"
               />
             </el-form-item>

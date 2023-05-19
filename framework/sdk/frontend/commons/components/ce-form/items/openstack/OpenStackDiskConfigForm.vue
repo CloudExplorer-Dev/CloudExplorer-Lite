@@ -7,7 +7,6 @@
       label-position="left"
       style="margin-bottom: 18px"
       :model="data"
-      :data-var="(_hasRoot = _.find(data, (a) => a.boot) !== undefined)"
     >
       <div v-for="(obj, index) in data" :key="index">
         <div class="disk-title">
@@ -42,7 +41,6 @@
           <el-form-item
             style="margin-left: 12px"
             label-width="0"
-            :data-var="(_minValue = obj.minSize < 1 ? 1 : obj.minSize)"
             :rules="[
               {
                 message: '磁盘大小' + '不能为空',
@@ -50,10 +48,10 @@
                 required: true,
               },
               {
-                message: `磁盘大小最小值为${_minValue}`,
+                message: `磁盘大小最小值为${obj.minSize}`,
                 trigger: ['change', 'blur'],
                 type: 'number',
-                min: _minValue,
+                min: obj.minSize,
               },
             ]"
             :prop="'[' + index + '].size'"
@@ -61,7 +59,7 @@
             <LineNumber
               special-step="10"
               v-model="obj.size"
-              :min="_minValue"
+              :min="obj.minSize"
               :step="1"
               required
               style="width: 200px"
@@ -86,11 +84,7 @@
     </el-form>
   </template>
   <template v-else>
-    <el-descriptions
-      :column="3"
-      direction="vertical"
-      :data-var="(_hasRoot = _.find(data, (a) => a.boot) !== undefined)"
-    >
+    <el-descriptions :column="3" direction="vertical">
       <el-descriptions-item
         :label="
           _hasRoot ? (i === 0 ? '系统盘' : '数据盘' + i) : '数据盘' + (i + 1)
@@ -142,6 +136,10 @@ interface Disk {
 
 const _loading = ref<boolean>(false);
 
+const _hasRoot = computed<boolean>(() => {
+  return _.find(data, (a: any) => !!a.boot) !== undefined;
+});
+
 /**
  * 默认系统盘
  */
@@ -187,7 +185,7 @@ watch(
 function add() {
   data.value?.push({
     minSize: 1,
-    size: 1,
+    size: 20,
     deleteWithInstance: false,
     boot: false,
   });
