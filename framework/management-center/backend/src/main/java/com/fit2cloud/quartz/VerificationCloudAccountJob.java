@@ -35,6 +35,8 @@ public class VerificationCloudAccountJob extends AsyncJob implements Job {
             Credential verification = platformConstants.getCredentialClass().getConstructor().newInstance().deCode(cloudAccount.getCredential());
             try {
                 verification.verification();
+                cloudAccount.setState(true);
+                cloudAccountService.updateById(cloudAccount);
             } catch (Exception e) {
                 cloudAccount.setState(false);
                 cloudAccountService.updateById(cloudAccount);
