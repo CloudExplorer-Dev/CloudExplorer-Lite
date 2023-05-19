@@ -1,5 +1,5 @@
 <template>
-  <template v-if="!confirm">
+  <div style="width: 100%">
     <div
       style="
         width: 100%;
@@ -70,16 +70,7 @@
         </span>
       </span>
     </span>
-  </template>
-  <template v-else>
-    {{
-      _.get(
-        _.find(formItem?.optionList, (o) => o.id === modelValue),
-        "name",
-        modelValue
-      )
-    }}
-  </template>
+  </div>
 </template>
 <script setup lang="ts">
 import type { FormView } from "@commons/components/ce-form/type";

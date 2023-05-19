@@ -54,11 +54,15 @@
             ></detail-page>
           </template>
           <template v-else>
-            <el-descriptions :column="group.items" direction="vertical">
+            <el-descriptions
+              :column="group.items"
+              direction="vertical"
+              :data-var="(_width = 100 / group.items)"
+            >
               <el-descriptions-item
                 label="云账号"
                 v-if="group.group === 0"
-                :width="100 / group.items + '%'"
+                :width="_width + '%'"
               >
                 <component
                   style="margin-top: 3px; width: 16px; height: 16px"
@@ -75,12 +79,13 @@
                   <el-descriptions-item
                     :label="form.label"
                     :span="form.confirmItemSpan"
-                    :width="(100 / group.items) * form.confirmItemSpan + '%'"
+                    :width="_width * form.confirmItemSpan + '%'"
+                    :data-var="(form._display = getDisplayValue(form))"
                   >
                     <template v-if="!form.confirmSpecial">
                       <div class="description-inline">
                         <span
-                          v-html="getDisplayValue(form)"
+                          v-html="form._display"
                           :title="fieldValueMap[form.field]"
                         />
                       </div>
@@ -91,7 +96,7 @@
                       <component
                         ref="formItemRef"
                         :is="form.inputType"
-                        :model-value="getDisplayValue(form)"
+                        :model-value="form._display"
                         :all-data="allData"
                         :field="form.field"
                         :form-item="form"
@@ -215,7 +220,10 @@ function getDisplayValue(form: FormView) {
     ) {
       if (value instanceof Array) {
         form.valueItem = form.optionList.filter((o) =>
-          value.includes(_.get(o, form.valueField ? form.valueField : "value"))
+          _.includes(
+            value,
+            _.get(o, form.valueField ? form.valueField : "value")
+          )
         );
       } else {
         form.valueItem = _.find(
@@ -231,11 +239,12 @@ function getDisplayValue(form: FormView) {
       } else {
         if (value instanceof Array) {
           result = "";
-          form.valueItem.forEach((item: any) => {
-            result =
-              result + "," + item[form.textField ? form.textField : "label"];
-          });
-          result = result.replace(",", "");
+          result = _.join(
+            _.map(form.valueItem, (v) =>
+              _.get(v, form.textField ? form.textField : "label")
+            ),
+            ","
+          );
         } else {
           result = _.get(
             form.valueItem,

@@ -99,13 +99,14 @@ public class OpenStackServerCreateRequest extends OpenStackBaseRequest implement
 
     @Form(inputType = InputType.OpenStackFlavorForm,
             label = "实例规格",
-            confirmSpecial = true,
             clazz = OpenStackCloudProvider.class,
             method = "getFlavors",
             relationTrigger = {"region", "imageId"},
             hideLabel = true,
             group = 3,
             step = 1,
+            textField = "name",
+            valueField = "id",
             confirmGroup = 1
     )
     private String flavorId;
@@ -145,8 +146,9 @@ public class OpenStackServerCreateRequest extends OpenStackBaseRequest implement
             relationTrigger = {"region"},
             clazz = OpenStackCloudProvider.class,
             method = "getNetworks",
-            confirmGroup = 2,
-            confirmSpecial = true
+            textField = "name",
+            valueField = "id",
+            confirmGroup = 2
     )
     private List<String> networks;
 
