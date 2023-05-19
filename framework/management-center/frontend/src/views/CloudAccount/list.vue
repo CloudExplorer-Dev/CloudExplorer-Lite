@@ -629,7 +629,7 @@ const tableConfig = ref<TableConfig>({
       ),
       SearchConfig.buildComponent().DateComponent.newInstance(
         "updateTime",
-        t("commons.update_time", "修改时间")
+        t("commons.update_time", "编辑时间")
       ),
     ],
     searchOptions: [{ label: t("commons.name", "名称"), value: "name" }],

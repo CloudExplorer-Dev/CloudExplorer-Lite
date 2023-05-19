@@ -2,7 +2,7 @@ const message = {
   demo: {
     label: {
       text: "獲取到Demo對象",
-      edit: "修改",
+      edit: "編輯",
     },
   },
 };

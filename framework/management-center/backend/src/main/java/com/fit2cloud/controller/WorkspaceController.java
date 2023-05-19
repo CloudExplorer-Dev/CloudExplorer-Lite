@@ -67,7 +67,7 @@ public class WorkspaceController {
         return ResultHolder.success(result);
     }
 
-    @ApiOperation(value = "修改工作空间", notes = "修改工作空间")
+    @ApiOperation(value = "编辑工作空间", notes = "编辑工作空间")
     @PutMapping("/update")
     @PreAuthorize("hasAnyCePermission('WORKSPACE:EDIT')")
     @OperatedLog(resourceType = ResourceTypeEnum.WORKSPACE, operated = OperatedTypeEnum.MODIFY,

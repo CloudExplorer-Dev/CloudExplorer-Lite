@@ -15,7 +15,7 @@ import javax.validation.constraints.Null;
 @Data
 public class WorkspaceRequest {
 
-    @ApiModelProperty("主键id,修改的时候必填")
+    @ApiModelProperty("主键id,编辑的时候必填")
     @NotNull(groups = ValidationGroup.UPDATE.class, message = "{i18n.workspace.id.is.not.empty}")
     @Null(groups = ValidationGroup.SAVE.class, message = "{i18n.workspace.id.is.null}")
     private String id;

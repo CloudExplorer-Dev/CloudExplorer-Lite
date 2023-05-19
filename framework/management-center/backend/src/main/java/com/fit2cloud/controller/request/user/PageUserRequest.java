@@ -46,7 +46,7 @@ public class PageUserRequest extends PageRequest implements PageOrderRequestInte
     private List<Long> createTime;
 
     @Size(min = 2, max = 2, message = "{i18n.request.date.message}")
-    @ApiModelProperty(value = "修改时间", example = "updateTime[]=2121&updateTime[]=21212")
+    @ApiModelProperty(value = "编辑时间", example = "updateTime[]=2121&updateTime[]=21212")
     private List<Long> updateTime;
 
     @ApiModelProperty(value = "排序", example = " {\"column\":\"createTime\",\"asc\":false}")

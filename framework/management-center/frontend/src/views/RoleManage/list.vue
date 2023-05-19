@@ -232,7 +232,7 @@ const tableConfig = ref<TableConfig>({
       ),
       SearchConfig.buildComponent().DateComponent.newInstance(
         "updateTime",
-        "修改时间"
+        "编辑时间"
       ),
     ],
     searchOptions: [{ label: "角色", value: "name" }],
@@ -328,7 +328,7 @@ const tableConfig = ref<TableConfig>({
     <el-table-column prop="description" label="描述" sortable />
     <el-table-column
       prop="updateTime"
-      label="修改时间"
+      label="编辑时间"
       sortable
       :show="false"
     />

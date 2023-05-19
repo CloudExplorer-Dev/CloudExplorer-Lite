@@ -696,7 +696,7 @@ onMounted(() => {
             v-if="!editPermission && selectedRole?.type === 'inherit'"
             v-hasPermission="'[management-center]ROLE:EDIT'"
           >
-            修改
+            编辑
           </el-button>
           <el-button
             class="cancel-btn"

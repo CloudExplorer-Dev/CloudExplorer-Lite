@@ -40,12 +40,12 @@ onMounted(() => {
     <template #content>
       <div>{{ $t("demo.label.text", "获取到Demo对象") }}：{{ demoObject }}</div>
       <el-button @click="openEdit">{{
-        $t("demo.label.edit", "修改")
+        $t("demo.label.edit", "编辑")
       }}</el-button>
 
       <el-dialog
         v-model="dialogFormVisible"
-        :title="$t('demo.label.edit', '修改')"
+        :title="$t('demo.label.edit', '编辑')"
       >
         <el-form :model="form">
           <el-form-item label="Value">

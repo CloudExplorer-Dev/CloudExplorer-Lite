@@ -15,7 +15,7 @@
               v-if="showEditInfoButton"
               v-hasPermission="'[management-center]ROLE:EDIT'"
             >
-              修改
+              编辑
             </el-button>
             <el-button
               class="cancel-btn"
@@ -57,7 +57,7 @@
               v-if="showEditPermissionButton"
               v-hasPermission="'[management-center]ROLE:EDIT'"
             >
-              修改
+              编辑
             </el-button>
 
             <el-button

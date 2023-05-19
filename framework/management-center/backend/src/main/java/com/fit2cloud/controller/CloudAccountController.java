@@ -197,11 +197,11 @@ public class CloudAccountController {
     }
 
     @PutMapping("/jobs")
-    @ApiOperation(value = "修改云账号定时任务", notes = "修改云账号定时任务")
+    @ApiOperation(value = "编辑云账号定时任务", notes = "编辑云账号定时任务")
     @PreAuthorize("hasAnyCePermission('CLOUD_ACCOUNT:SYNC_SETTING')")
     @OperatedLog(resourceType = ResourceTypeEnum.CLOUD_ACCOUNT, operated = OperatedTypeEnum.MODIFY,
             resourceId = "#updateJobsRequest.cloudAccountId",
-            content = "'修改云账号定时任务'",
+            content = "'编辑云账号定时任务'",
             param = "#updateJobsRequest")
     public ResultHolder<CloudAccountJobDetailsResponse> updateJobs(@RequestBody UpdateJobsRequest updateJobsRequest) {
         return ResultHolder.success(cloudAccountService.updateJob(updateJobsRequest));
@@ -228,11 +228,11 @@ public class CloudAccountController {
 
 
     @PutMapping("/updateName")
-    @ApiOperation(value = "修改云账号名称")
+    @ApiOperation(value = "编辑云账号名称")
     @PreAuthorize("hasAnyCePermission('CLOUD_ACCOUNT:EDIT')")
     @OperatedLog(resourceType = ResourceTypeEnum.CLOUD_ACCOUNT, operated = OperatedTypeEnum.MODIFY,
             resourceId = "#updateAccountNameRequest.id",
-            content = "'修改云账号名称为['+#updateAccountNameRequest.name+']'",
+            content = "'编辑云账号名称为['+#updateAccountNameRequest.name+']'",
             param = "#updateAccountNameRequest")
     public ResultHolder<Boolean> updateAccountName(@RequestBody UpdateAccountNameRequest updateAccountNameRequest) {
         return ResultHolder.success(cloudAccountService.updateAccountName(updateAccountNameRequest));

@@ -3,7 +3,7 @@
     :close-on-press-escape="false"
     :close-on-click-modal="false"
     v-model="updateComplianceRuleGroupVisible"
-    title="修改规则组"
+    title="编辑规则组"
     width="60%"
     :before-close="close"
   >
@@ -104,7 +104,7 @@ const submit = () => {
       complianceRuleGroupApi
         .update(updateComplianceRuleGroupForm.value)
         .then(() => {
-          ElMessage.success("修改成功成功");
+          ElMessage.success("编辑成功");
           // 刷新列表
           props.refresh();
           close();

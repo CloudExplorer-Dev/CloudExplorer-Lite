@@ -13,7 +13,7 @@
     </template>
     <el-alert
       style="--el-alert-bg-color: rgba(51, 112, 255, 0.15)"
-      title="设置分账规则或修改分账规则,自变更时刻后延迟24小时更新已分账资源"
+      title="设置分账规则或编辑分账规则,自变更时刻后延迟24小时更新已分账资源"
       type="info"
       :closable="false"
       show-icon

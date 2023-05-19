@@ -273,7 +273,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
         if (CurrentUserUtils.isOrgAdmin()) {
             List<String> filteredUserIds = this.getManageUserSimpleList(List.of(userDto.getId())).stream().map(User::getId).toList();
             if (CollectionUtils.isEmpty(filteredUserIds)) {
-                throw new RuntimeException("没有权限修改该用户");
+                throw new RuntimeException("没有权限编辑该用户");
             }
         }
 

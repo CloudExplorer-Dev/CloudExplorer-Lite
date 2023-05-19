@@ -71,7 +71,7 @@ public class MenuConstants {
                     .childOperationRoute(new Menu.Builder()
                             .name("cloud_account_update")
                             .path("/update/:id")
-                            .title("修改")
+                            .title("编辑")
                             .componentPath("/src/views/CloudAccount/edit.vue")
                             .requiredPermission(new MenuPermission.Builder()
                                     .role(RoleConstants.ROLE.ADMIN)

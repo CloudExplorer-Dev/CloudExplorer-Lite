@@ -380,7 +380,7 @@ const submit = () => {
         complianceRuleApi
           .updateComplianceRule(updateComplianceRuleForm.value)
           .then(() => {
-            ElMessage.success("修改成功");
+            ElMessage.success("编辑成功");
             props.refresh();
             close();
           });

@@ -50,7 +50,7 @@ public class CloudAccountResponse {
     private LocalDateTime createTime;
 
     @TableField("update_time")
-    @ApiModelProperty(value = "修改时间", notes = "修改时间")
+    @ApiModelProperty(value = "编辑时间", notes = "编辑时间")
     @JsonDeserialize(using = LocalDateTimeDeserializer.class)
     @JsonSerialize(using = LocalDateTimeSerializer.class)
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")

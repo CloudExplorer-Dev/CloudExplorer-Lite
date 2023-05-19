@@ -90,7 +90,7 @@ public class WorkspaceServiceImpl extends ServiceImpl<WorkspaceMapper, Workspace
                 if (!list(new LambdaQueryWrapper<Workspace>().in(Workspace::getOrganizationId, orgIds))
                         .stream().map(Workspace::getId).toList()
                         .contains(request.getId())) {
-                    throw new RuntimeException("没有权限修改该工作空间");
+                    throw new RuntimeException("没有权限编辑该工作空间");
                 }
             }
         }

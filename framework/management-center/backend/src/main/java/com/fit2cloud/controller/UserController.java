@@ -139,7 +139,7 @@ public class UserController {
     @PostMapping(value = "/notificationSetting")
     @OperatedLog(resourceType = ResourceTypeEnum.USER, operated = OperatedTypeEnum.MODIFY,
             resourceId = "#userNotificationSetting.id",
-            content = "'修改用户通知设置'",
+            content = "'编辑用户通知设置'",
             param = "#userNotificationSetting")
     public ResultHolder<Boolean> userNotificationSetting(@RequestBody UserNotifySettingDTO userNotificationSetting) {
         return ResultHolder.success(userService.updateUserNotification(userNotificationSetting));

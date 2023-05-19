@@ -26,7 +26,7 @@ import javax.validation.constraints.Null;
         mapper = BaseOrganizationMapper.class)
 public class OrganizationRequest {
 
-    @ApiModelProperty("主键id,修改的时候必填")
+    @ApiModelProperty("主键id,编辑的时候必填")
     @NotNull(groups = ValidationGroup.UPDATE.class, message = "{i18n.organization.id.is.not.empty}")
     @Null(groups = ValidationGroup.SAVE.class, message = "{i18n.organization.id.is.null}")
     @CustomValidated(groups = {ValidationGroup.UPDATE.class}, mapper = BaseOrganizationMapper.class, handler = ExistHandler.class, message = "{i18n.organization.id.is.not.existent}", exist = false)

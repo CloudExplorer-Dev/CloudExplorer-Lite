@@ -94,12 +94,12 @@ public class OrganizationController {
         return ResultHolder.success(organizations);
     }
 
-    @ApiOperation(value = "修改组织", notes = "修改组织")
+    @ApiOperation(value = "编辑组织", notes = "编辑组织")
     @PutMapping
     @PreAuthorize("hasAnyCePermission('ORGANIZATION:EDIT')")
     @OperatedLog(resourceType = ResourceTypeEnum.ORGANIZATION, operated = OperatedTypeEnum.MODIFY,
             resourceId = "#request.id",
-            content = "'修改组织['+#request.name+']'",
+            content = "'编辑组织['+#request.name+']'",
             param = "#request")
     @Emit(value = "UPDATE::ORGANIZATION", el = "#request.id")
     public ResultHolder<Organization> update(@RequestBody
