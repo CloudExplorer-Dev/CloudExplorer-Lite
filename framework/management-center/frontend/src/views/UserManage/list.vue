@@ -427,6 +427,7 @@ const tableConfig = ref<TableConfig>({
     class="custom-dialog"
     destroy-on-close
     style="min-width: 600px"
+    :close-on-click-modal="false"
   >
     <AddRole
       :userIds="selectedUserIds"
