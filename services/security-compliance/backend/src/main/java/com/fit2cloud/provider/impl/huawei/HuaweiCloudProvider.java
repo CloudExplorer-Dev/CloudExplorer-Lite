@@ -269,7 +269,7 @@ public class HuaweiCloudProvider extends AbstractCloudProvider<HuaweiBaseCredent
                 .map(instance -> ResourceUtil.toResourceInstance(PlatformConstants.fit2cloud_huawei_platform.name(),
                         ResourceTypeConstants.PUBLIC_IP,
                         instance.getId(),
-                        instance.getPublicipPoolName(),
+                        instance.getAlias(),
                         Map.of("tags", instance.getTags().stream().map(this::mapTag).filter(Objects::nonNull).toList()),
                         instance))
                 .toList();

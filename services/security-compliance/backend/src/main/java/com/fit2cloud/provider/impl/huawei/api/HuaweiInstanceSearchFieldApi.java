@@ -39,7 +39,7 @@ public class HuaweiInstanceSearchFieldApi {
                 ))
                 .resetInstanceField(PlatformConstants.fit2cloud_huawei_platform, ResourceTypeConstants.ECS);
 
-        InstanceSearchField disk = new InstanceSearchField("云服务器规格对应要求系统盘大小,0为不限制", "flavor.disk", InstanceFieldType.Number)
+        InstanceSearchField disk = new InstanceSearchField("云服务器规格对应要求系统盘大小,0为不限制,单位为GiB", "flavor.disk", InstanceFieldType.Number)
                 .resetInstanceField(PlatformConstants.fit2cloud_huawei_platform, ResourceTypeConstants.ECS);
 
         InstanceSearchField vcpus = new InstanceSearchField("云服务器规格对应的CPU核数", "flavor.vcpus", InstanceFieldType.Number)
@@ -441,7 +441,7 @@ public class HuaweiInstanceSearchFieldApi {
                         new DefaultKeyValue<>("不可用", "303")))
                 .resetInstanceField(PlatformConstants.fit2cloud_huawei_platform, ResourceTypeConstants.ELASTIC_SEARCH);
 
-        InstanceSearchField bandwidthSize = new InstanceSearchField("公网带宽大小", "bandwidthSize", InstanceFieldType.Number)
+        InstanceSearchField bandwidthSize = new InstanceSearchField("公网带宽大小(单位:Mbit/s)", "bandwidthSize", InstanceFieldType.Number)
                 .resetInstanceField(PlatformConstants.fit2cloud_huawei_platform, ResourceTypeConstants.ELASTIC_SEARCH);
 
         InstanceSearchField httpsEnable = new InstanceSearchField("通信加密状态", "httpsEnable", InstanceFieldType.Enum,
