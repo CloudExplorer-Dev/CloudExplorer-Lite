@@ -9,7 +9,7 @@ import { workspaceTree } from "@commons/api/workspace";
 const props = withDefaults(
   defineProps<{
     treeType: string;
-    leafOnly: boolean;
+    leafOnly?: boolean;
     field: string;
     label: string;
     popoverRef: any;

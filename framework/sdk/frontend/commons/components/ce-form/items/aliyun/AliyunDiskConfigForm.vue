@@ -1,82 +1,84 @@
 <template>
   <template v-if="!confirm">
-    <template v-for="(obj, index) in data" :key="index">
-      <div class="disk-title" v-if="index <= 1">
-        {{ index === 0 ? "系统盘(GB)" : "数据盘(GB)" }}
-      </div>
-      <div class="disk-content" :style="{ 'margin-bottom': '10px' }">
-        <el-form-item :prop="obj.diskType + ''">
-          <el-select
-            style="width: 100%"
-            v-model="obj.diskType"
-            filterable
-            v-if="index === 0"
-          >
-            <template v-slot:prefix>
-              <span> 磁盘类型 </span>
-            </template>
-            <el-option
-              v-for="item in systemDiskTypeOptions"
-              :key="item.diskType"
-              :label="item.diskTypeName"
-              :value="item.diskType"
-            />
-          </el-select>
-          <el-select
-            style="width: 100%"
-            v-model="obj.diskType"
-            filterable
-            v-else
-          >
-            <template v-slot:prefix>
-              <span> 磁盘类型 </span>
-            </template>
-            <el-option
-              v-for="item in dataDiskTypeOptions"
-              :key="item.diskType"
-              :label="item.diskTypeName"
-              :value="item.diskType"
-            />
-          </el-select>
-        </el-form-item>
+    <div style="width: 100%">
+      <template v-for="(obj, index) in data" :key="index">
+        <div class="disk-title" v-if="index <= 1">
+          {{ index === 0 ? "系统盘(GB)" : "数据盘(GB)" }}
+        </div>
+        <div class="disk-content" :style="{ 'margin-bottom': '10px' }">
+          <el-form-item :prop="obj.diskType + ''">
+            <el-select
+              style="width: 100%"
+              v-model="obj.diskType"
+              filterable
+              v-if="index === 0"
+            >
+              <template v-slot:prefix>
+                <span> 磁盘类型 </span>
+              </template>
+              <el-option
+                v-for="item in systemDiskTypeOptions"
+                :key="item.diskType"
+                :label="item.diskTypeName"
+                :value="item.diskType"
+              />
+            </el-select>
+            <el-select
+              style="width: 100%"
+              v-model="obj.diskType"
+              filterable
+              v-else
+            >
+              <template v-slot:prefix>
+                <span> 磁盘类型 </span>
+              </template>
+              <el-option
+                v-for="item in dataDiskTypeOptions"
+                :key="item.diskType"
+                :label="item.diskTypeName"
+                :value="item.diskType"
+              />
+            </el-select>
+          </el-form-item>
 
-        <el-form-item :prop="obj.size + ''">
-          <LineNumber
-            special-step="10"
-            v-model="obj.size"
-            :min="minSize(defaultDisks[index], index)"
-            :max="maxSize(defaultDisks[index], index)"
-            :step="10"
-            :readonly="index === 0 ? obj.readonly : false"
-            required
-            style="width: 200px; margin-left: 8px"
+          <el-form-item :prop="obj.size + ''">
+            <LineNumber
+              special-step="10"
+              v-model="obj.size"
+              :min="minSize(defaultDisks[index], index)"
+              :max="maxSize(defaultDisks[index], index)"
+              :step="10"
+              :readonly="index === 0 ? obj.readonly : false"
+              required
+              style="width: 200px; margin-left: 8px"
+            >
+              <template #perfix>
+                <div>磁盘大小</div>
+              </template>
+            </LineNumber>
+          </el-form-item>
+          <el-form-item :prop="obj.deleteWithInstance + ''">
+            <!--          <div style="width: 100%; margin-left: 8px; text-align: center">-->
+            <!--            <el-switch-->
+            <!--              v-model="obj.deleteWithInstance"-->
+            <!--              :disabled="obj.readonly"-->
+            <!--              active-text="随实例删除"-->
+            <!--            />-->
+            <!--          </div>-->
+          </el-form-item>
+          <el-icon
+            v-if="index > 0"
+            size="17px"
+            color="#646A73"
+            class="delete-icon"
+            @click="remove(index)"
           >
-            <template #perfix>
-              <div>磁盘大小</div>
-            </template>
-          </LineNumber>
-        </el-form-item>
-        <el-form-item :prop="obj.deleteWithInstance + ''">
-          <!--          <div style="width: 100%; margin-left: 8px; text-align: center">-->
-          <!--            <el-switch-->
-          <!--              v-model="obj.deleteWithInstance"-->
-          <!--              :disabled="obj.readonly"-->
-          <!--              active-text="随实例删除"-->
-          <!--            />-->
-          <!--          </div>-->
-        </el-form-item>
-        <el-icon
-          v-if="index > 0"
-          size="17px"
-          color="#646A73"
-          class="delete-icon"
-          @click="remove(index)"
-        >
-          <Delete />
-        </el-icon>
-      </div>
-    </template>
-    <span class="add-btn" @click="add">+ 添加数据盘</span>
+            <Delete />
+          </el-icon>
+        </div>
+      </template>
+      <span class="add-btn" @click="add">+ 添加数据盘</span>
+    </div>
   </template>
   <template v-else>
     <detail-page

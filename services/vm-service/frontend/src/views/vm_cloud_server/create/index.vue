@@ -34,9 +34,11 @@
                 </span>
               </template>
               <template #header_content>
-                <el-tooltip :content="group.description">
+                <el-tooltip
+                  :content="group.description"
+                  v-if="group.description"
+                >
                   <ce-icon
-                    v-if="group.description"
                     class="maybe-icon"
                     size="14px"
                     code="icon-maybe_outlined"
