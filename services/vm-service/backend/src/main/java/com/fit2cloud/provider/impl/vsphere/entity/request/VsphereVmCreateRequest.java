@@ -33,7 +33,7 @@ import java.util.List;
 @FormGroupInfo(group = 3, name = "实例规格")
 @FormGroupInfo(group = 4, name = "磁盘配置")
 @FormGroupInfo(group = 5, name = "计算资源")
-@FormGroupInfo(group = 6, name = "存储资源", description = "配置该资源池可用的存储资源")
+@FormGroupInfo(group = 6, name = "存储资源")
 @FormGroupInfo(group = 7, name = "主机存放位置")
 @FormGroupInfo(group = 8, name = "网络")
 @FormGroupInfo(group = 9, name = "登录凭证")

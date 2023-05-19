@@ -175,7 +175,7 @@ public class OpenStackServerCreateRequest extends OpenStackBaseRequest implement
             method = "getLoginModes",
             textField = "name",
             valueField = "id",
-            confirmGroup = 2,
+            confirmGroup = 3,
             defaultValue = "password"
     )
     private String loginMode;
