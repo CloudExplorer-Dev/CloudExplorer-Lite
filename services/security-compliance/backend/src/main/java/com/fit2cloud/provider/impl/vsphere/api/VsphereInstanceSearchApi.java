@@ -24,9 +24,8 @@ public class VsphereInstanceSearchApi {
         InstanceSearchField cpu = new InstanceSearchField("cpu", "cpu", InstanceFieldType.Number)
                 .resetInstanceField(PlatformConstants.fit2cloud_vsphere_platform, ResourceTypeConstants.ECS);
 
-        InstanceSearchField memory = new InstanceSearchField("内存", "memory", InstanceFieldType.Number)
+        InstanceSearchField memory = new InstanceSearchField("内存(单位: GB)", "memory", InstanceFieldType.Number)
                 .resetInstanceField(PlatformConstants.fit2cloud_vsphere_platform, ResourceTypeConstants.ECS);
-        ;
 
         InstanceSearchField status = new InstanceSearchField("实例状态", "instanceStatus", InstanceFieldType.Enum,
                 List.of(new DefaultKeyValue<>("运行中", "Running"),
@@ -36,7 +35,6 @@ public class VsphereInstanceSearchApi {
 
         InstanceSearchField osInfo = new InstanceSearchField("操作系统", "osInfo", InstanceFieldType.String)
                 .resetInstanceField(PlatformConstants.fit2cloud_vsphere_platform, ResourceTypeConstants.ECS);
-        ;
 
         return List.of(cpu, memory, status, osInfo);
     }
