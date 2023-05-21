@@ -164,7 +164,7 @@ function checkShow(currentItem: any): any {
 }
 function rules(currentItem: any) {
   const rules = [];
-  if (currentItem.required) {
+  if (currentItem.required && !currentItem.propsInfo?.rules) {
     rules.push({
       message: currentItem.label + "不能为空",
       trigger: "change",
@@ -261,11 +261,12 @@ function initForms(): void {
  * @param formItem
  */
 const change = (formItem: FormView) => {
-  //console.log(formItem.field);
+  console.log(formItem.field);
   _.forEach(props.allFormViewData, (item) => {
     if (_.includes(item.relationTrigger, formItem.field)) {
       //console.log(formItem.field, "in", item.field);
       //设置空值
+
       _.set(_data.value, item.field, undefined);
       if (item.method === "calculateConfigPrice") {
         emit("optionListRefresh", item.field);

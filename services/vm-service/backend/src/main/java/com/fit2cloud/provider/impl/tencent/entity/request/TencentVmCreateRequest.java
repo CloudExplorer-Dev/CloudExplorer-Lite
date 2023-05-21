@@ -9,6 +9,7 @@ import com.fit2cloud.provider.ICreateServerRequest;
 import com.fit2cloud.provider.impl.tencent.TencentCloudProvider;
 import com.fit2cloud.provider.impl.tencent.constants.TencentBandwidthType;
 import com.fit2cloud.provider.impl.tencent.constants.TencentChargeType;
+import com.fit2cloud.provider.impl.tencent.entity.TencentInstanceType;
 import com.tencentcloudapi.cvm.v20170312.models.*;
 import lombok.Data;
 import lombok.experimental.Accessors;
@@ -108,19 +109,18 @@ public class TencentVmCreateRequest extends TencentBaseRequest implements ICreat
     )
     private String zoneId;
 
-    @Form(inputType = InputType.TableRadio,
+    @Form(inputType = InputType.TencentInstanceTypeForm,
             label = "实例规格",
             clazz = TencentCloudProvider.class,
             method = "getInstanceTypes",
-            textField = "instanceType",
-            valueField = "instanceType",
             relationTrigger = {"instanceChargeType", "zoneId"},
-            propsInfo = "{\"rules\":[{\"message\":\"实例规格不能为空\",\"trigger\":\"change\",\"required\":true}],\"style\":{\"width\":\"100%\",\"height\":\"400px\"},\"showLabel\":false,\"activeMsg\":\"已选实例\",\"title\":\"选择实例规格\",\"tableColumns\":[{\"property\":\"instanceTypeFamilyName\",\"label\":\"规格类型\",\"min-width\":\"120px\"},{\"property\":\"instanceType\",\"label\":\"规格名称\"},{\"property\":\"cpuMemory\",\"label\":\"实例规格\"}]}",
+            propsInfo = "{\"showLabel\":false}",
             step = 1,
             group = 3,
-            confirmGroup = 1
+            confirmGroup = 1,
+            confirmSpecial = true
     )
-    private String instanceType;
+    TencentInstanceType instanceTypeDTO;
 
     @Form(inputType = InputType.SingleSelect,
             label = "操作系统",
@@ -142,7 +142,7 @@ public class TencentVmCreateRequest extends TencentBaseRequest implements ICreat
             method = "getImages",
             textField = "name",
             valueField = "id",
-            relationTrigger = {"instanceType", "os"},
+            relationTrigger = {"instanceTypeDTO", "os"},
             propsInfo = "{\"style\":{\"width\":\"100%\"}}",
             step = 1,
             group = 4,
@@ -158,7 +158,7 @@ public class TencentVmCreateRequest extends TencentBaseRequest implements ICreat
             method = "getDiskTypesForCreateVm",
             defaultValue = "[]",
             defaultJsonValue = true,
-            relationTrigger = {"instanceChargeType", "zoneId", "instanceType"},
+            relationTrigger = {"instanceChargeType", "zoneId", "instanceTypeDTO"},
             step = 1,
             group = 5,
             confirmGroup = 1,
@@ -173,7 +173,7 @@ public class TencentVmCreateRequest extends TencentBaseRequest implements ICreat
             textField = "networkName",
             valueField = "networkId",
             relationTrigger = "zoneId",
-            propsInfo = "{\"rules\":[{\"message\":\"网络不能为空\",\"trigger\":\"change\",\"required\":true}],\"style\":{\"width\":\"100%\",\"height\":\"400px\"},\"showLabel\":false,\"activeMsg\":\"已选网络\",\"title\":\"选择网络\",\"tableColumns\":[{\"property\":\"networkName\",\"label\":\"子网\",\"min-width\":\"120px\"},{\"property\":\"vpcName\",\"label\":\"所属VPC\"},{\"property\":\"ipSegment\",\"label\":\"IPV4网段\"}]}",
+            propsInfo = "{\"style\":{\"width\":\"100%\",\"height\":\"400px\"},\"showLabel\":false,\"activeMsg\":\"已选网络\",\"title\":\"选择网络\",\"tableColumns\":[{\"property\":\"networkName\",\"label\":\"子网\",\"min-width\":\"120px\"},{\"property\":\"vpcName\",\"label\":\"所属VPC\"},{\"property\":\"ipSegment\",\"label\":\"IPV4网段\"}]}",
             step = 2,
             group = 6,
             confirmGroup = 2
@@ -264,11 +264,12 @@ public class TencentVmCreateRequest extends TencentBaseRequest implements ICreat
             description = "密码须同时符合以下规则",
             relationShows = "loginType",
             relationShowValues = "password",
-            regexList = "[{\"regex\":\"^(?!/)(?![\\\\da-z]+$)(?![\\\\dA-Z]+$)(?![\\\\d\\\\(\\\\)`~!@#\\\\$%\\\\^&\\\\*\\\\-\\\\+=_\\\\|\\\\{\\\\}\\\\[\\\\]:;'<>,\\\\.\\\\?/]+$)(?![a-zA-Z]+$)(?![a-z\\\\(\\\\)`~!@#\\\\$%\\\\^&\\\\*\\\\-\\\\+=_\\\\|\\\\{\\\\}\\\\[\\\\]:;'<>,\\\\.\\\\?/]+$)(?![A-Z\\\\(\\\\)`~!@#\\\\$%\\\\^&\\\\*\\\\-\\\\+=_\\\\|\\\\{\\\\}\\\\[\\\\]:;'<>,\\\\.\\\\?/]+$)[\\\\da-zA-z\\\\(\\\\)`~!@#\\\\$%\\\\^&\\\\*\\\\-\\\\+=_\\\\|\\\\{\\\\}\\\\[\\\\]:;'<>,\\\\.\\\\?/]{12,30}$\",\"message\":\"在 12 ～ 30 位字符数以内，不能以' / '开头，至少包含其中三项(小写字母 a ~ z、大写字母 A ～ Z、数字 0 ～ 9、()`~!@#$%^&*-+=_|{}[]:;'<>,.?/)\"}]",
-            propsInfo = "{\"style\":{\"width\":\"100%\"}}",
-            encrypted = true,
+            propsInfo = "{\"rules\":[{\"message\":\"登录密码不符合规则\",\"trigger\":\"blur\",\"required\":true,\"pattern\":\"^(?!/)(?![\\\\da-z]+$)(?![\\\\dA-Z]+$)(?![\\\\d\\\\(\\\\)`~!@#\\\\$%\\\\^&\\\\*\\\\-\\\\+=_\\\\|\\\\{\\\\}\\\\[\\\\]:;'<>,\\\\.\\\\?/]+$)(?![a-zA-Z]+$)(?![a-z\\\\(\\\\)`~!@#\\\\$%\\\\^&\\\\*\\\\-\\\\+=_\\\\|\\\\{\\\\}\\\\[\\\\]:;'<>,\\\\.\\\\?/]+$)(?![A-Z\\\\(\\\\)`~!@#\\\\$%\\\\^&\\\\*\\\\-\\\\+=_\\\\|\\\\{\\\\}\\\\[\\\\]:;'<>,\\\\.\\\\?/]+$)[\\\\da-zA-z\\\\(\\\\)`~!@#\\\\$%\\\\^&\\\\*\\\\-\\\\+=_\\\\|\\\\{\\\\}\\\\[\\\\]:;'<>,\\\\.\\\\?/]{12,30}$\",\"regexMessage\":\"在 12 ～ 30 位字符数以内，不能以' / '开头，至少包含其中三项(小写字母 a ~ z、大写字母 A ～ Z、数字 0 ～ 9、()`~!@#$%^&*-+=_|{}[]:;'<>,.?/)\"}],\"style\":{\"width\":\"100%\"}}",
             step = 3,
-            group = 8
+            group = 8,
+            confirmGroup = 3,
+            encrypted = true,
+            confirmSpecial = true
     )
     private String password;
 
@@ -289,7 +290,7 @@ public class TencentVmCreateRequest extends TencentBaseRequest implements ICreat
             attrs = "{\"style\":\"color: red; font-size: large\"}",
             confirmGroup = 1,
             footerLocation = 1,
-            relationTrigger = {"hasPublicIp", "bandwidth", "bandwidthChargeType", "count", "instanceChargeType", "periodNum", "instanceType", "osVersion", "disks"},
+            relationTrigger = {"hasPublicIp", "bandwidth", "bandwidthChargeType", "count", "instanceChargeType", "periodNum", "instanceTypeDTO", "osVersion", "disks"},
             confirmSpecial = true,
             required = false
     )
@@ -332,8 +333,8 @@ public class TencentVmCreateRequest extends TencentBaseRequest implements ICreat
         placement.setZone(this.zoneId);
         runInstancesRequest.setPlacement(placement);
         runInstancesRequest.setImageId(this.osVersion);
-        if (StringUtils.isNotEmpty(this.getInstanceType())) {
-            runInstancesRequest.setInstanceType(this.getInstanceType());
+        if (this.instanceTypeDTO != null && StringUtils.isNotEmpty(this.instanceTypeDTO.getInstanceType())) {
+            runInstancesRequest.setInstanceType(this.instanceTypeDTO.getInstanceType());
         }
 
         // 设置机器收费类型:按需或者包周期
@@ -396,8 +397,8 @@ public class TencentVmCreateRequest extends TencentBaseRequest implements ICreat
         placement.setZone(this.zoneId);
         req.setPlacement(placement);
         req.setImageId(this.osVersion);
-        if (StringUtils.isNotEmpty(this.getInstanceType())) {
-            req.setInstanceType(this.getInstanceType());
+        if (this.instanceTypeDTO != null && StringUtils.isNotEmpty(this.instanceTypeDTO.getInstanceType())) {
+            req.setInstanceType(this.instanceTypeDTO.getInstanceType());
         }
         req.setInstanceChargeType(this.instanceChargeType);
         if (TencentChargeType.PREPAID.getId().equalsIgnoreCase(this.instanceChargeType)) {

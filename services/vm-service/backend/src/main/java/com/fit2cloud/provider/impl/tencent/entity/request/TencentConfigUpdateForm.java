@@ -16,7 +16,7 @@ public class TencentConfigUpdateForm {
             textField = "instanceTypeDesc",
             valueField = "instanceType",
             method = "getInstanceTypesForConfigUpdate",
-            propsInfo = "{\"rules\":[{\"message\":\"实例规格不能为空\",\"trigger\":\"change\",\"required\":true}],\"style\":{\"width\":\"100%\",\"height\":\"450px\"},\"showLabel\":false,\"activeMsg\":\"已选实例\",\"title\":\"选择变更实例\",\"tableColumns\":[{\"property\":\"instanceType\",\"label\":\"规格类型\"},{\"property\":\"cpuMemory\",\"label\":\"实例规格\"},{\"property\":\"instanceTypeDesc\",\"label\":\"规格详情\",\"min-width\":\"120px\"}]}",
+            propsInfo = "{\"style\":{\"width\":\"100%\",\"height\":\"450px\"},\"showLabel\":false,\"activeMsg\":\"已选实例\",\"title\":\"选择变更实例\",\"tableColumns\":[{\"property\":\"instanceType\",\"label\":\"规格类型\"},{\"property\":\"cpuMemory\",\"label\":\"实例规格\"},{\"property\":\"instanceTypeDesc\",\"label\":\"规格详情\",\"min-width\":\"120px\"}]}",
             clazz = TencentCloudProvider.class)
     private String newInstanceType;
 }

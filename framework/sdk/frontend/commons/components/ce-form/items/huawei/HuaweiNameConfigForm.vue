@@ -1,63 +1,67 @@
 <template v-loading="_loading">
-  <template v-if="!confirm">
-    <el-form
-      ref="ruleFormRef"
-      label-width="130px"
-      label-suffix=":"
-      label-position="top"
-      style="width: 100%"
-      :model="_data"
-      :show-message="false"
-      :size="''"
-      :scroll-to-error="true"
-    >
-      <template v-for="(item, index) in _data" :key="index">
-        <div class="box-title">
-          {{ index === 0 ? "主机" : "主机 " + index }}
-        </div>
-        <div class="box-content">
-          <el-form-item :rules="nameRules" :prop="'[' + index + '].name'">
-            <ce-regex-tooltip
-              :ref="'nameInputRef' + index"
-              :description="'主机名称必须同时符合以下规则'"
-              :model-value="item.name"
-              :rules="nameRules"
-            >
-              <el-input placeholder="请输入云主机名称" v-model="item.name" />
-            </ce-regex-tooltip>
-          </el-form-item>
-          <el-form-item
-            :rules="hostNameRules"
-            :prop="'[' + index + '].hostname'"
-          >
-            <tooltip
-              :ref="'hostNameInputRef' + index"
-              :description="'Hostname必须同时符合以下规则'"
-              :model-value="item.hostname"
+  <div style="width: 100%">
+    <template v-if="!confirm">
+      <el-form
+        ref="ruleFormRef"
+        label-suffix=":"
+        label-position="left"
+        style="margin-bottom: 18px"
+        :model="_data"
+        :scroll-to-error="true"
+      >
+        <template v-for="(item, index) in _data" :key="index">
+          <div class="box-title">
+            {{ index === 0 ? "主机" : "主机 " + index }}
+          </div>
+          <div class="box-content">
+            <el-form-item :rules="nameRules" :prop="'[' + index + '].name'">
+              <ce-regex-tooltip
+                :ref="'nameInputRef' + index"
+                :description="'主机名称必须同时符合以下规则'"
+                :model-value="item.name"
+                :rules="nameRules"
+                :width="'50%'"
+              >
+                <el-input placeholder="请输入云主机名称" v-model="item.name" />
+              </ce-regex-tooltip>
+            </el-form-item>
+            <el-form-item
               :rules="hostNameRules"
+              :prop="'[' + index + '].hostname'"
             >
-              <el-input placeholder="请输入Hostname" v-model="item.hostname" />
-            </tooltip>
-          </el-form-item>
-        </div>
-      </template>
-    </el-form>
-  </template>
-  <template v-else>
-    <div class="detail-box">
-      <template v-for="(o, i) in modelValue" :key="i">
-        <el-descriptions :title="'主机' + (i + 1)">
-          <el-descriptions-item>
-            <detail-page
-              :content="getModelValueDetail(o)"
-              :item-width="'33.33%'"
-              :item-bottom="'28px'"
-            ></detail-page>
-          </el-descriptions-item>
-        </el-descriptions>
-      </template>
-    </div>
-  </template>
+              <tooltip
+                :ref="'hostNameInputRef' + index"
+                :description="'Hostname必须同时符合以下规则'"
+                :model-value="item.hostname"
+                :rules="hostNameRules"
+                :width="'50%'"
+              >
+                <el-input
+                  placeholder="请输入Hostname"
+                  v-model="item.hostname"
+                />
+              </tooltip>
+            </el-form-item>
+          </div>
+        </template>
+      </el-form>
+    </template>
+    <template v-else>
+      <div class="detail-box">
+        <template v-for="(o, i) in modelValue" :key="i">
+          <el-descriptions :title="'主机' + (i + 1)">
+            <el-descriptions-item>
+              <detail-page
+                :content="getModelValueDetail(o)"
+                :item-width="'33.33%'"
+                :item-bottom="'28px'"
+              ></detail-page>
+            </el-descriptions-item>
+          </el-descriptions>
+        </template>
+      </div>
+    </template>
+  </div>
 </template>
 <script setup lang="ts">
 import { computed, onMounted, ref, watch } from "vue";
@@ -89,18 +93,20 @@ const _loading = ref<boolean>(false);
 
 const nameRules = [
   {
-    message:
+    regexMessage:
       "只能由中文字符、英文字母、数字及“_”、“-”、“.”组成,且长度为[1-64]个字符。",
+    message: "云主机名称不符合规则要求",
     trigger: "blur",
-    pattern: "^[\u4E00-\u9FA5\\w.-]{1,64}$",
-    regex: "^[\u4E00-\u9FA5\\w.-]{1,64}$",
+    pattern: "^[\u4E00-\u9FFFa-zA-Z0-9_.-]{1,64}$",
+    regex: "^[\u4E00-\u9FFFa-zA-Z0-9_.-]{1,64}$",
     required: true,
   },
 ];
 const hostNameRules = [
   {
-    message:
+    regexMessage:
       "长度为 [1-64] 个字符,允许使用点号(.)分隔字符成多段,每段允许使用大小写字母、数字或连字符(-),但不能连续使用点号(.)或连字符(-),不能以点号(.)或连字符(-)开头或结尾,不能出现(.-)和(-.)。",
+    message: "Hostname不符合规则要求",
     trigger: "blur",
     pattern: "^(?!.*(?:\\.\\.|--))[a-zA-Z0-9]+(?:[-.][a-zA-Z0-9]+)*$",
     regex: "^(?!.*(?:\\.\\.|--))[a-zA-Z0-9]+(?:[-.][a-zA-Z0-9]+)*$",
@@ -117,15 +123,12 @@ const _data = computed({
   },
 });
 
-const activeTab = ref(0);
-
 /**
  * 监听数量变化，获取值
  */
 watch(
   () => props.allData.count,
   (count) => {
-    activeTab.value = count - 1;
     setServers(count);
   }
 );

@@ -188,7 +188,7 @@ public class TencentSyncCloudApi {
                 .setId(request.getId())
                 .setName(request.getServerInfos().get(index).getName())
                 .setIpArray(new ArrayList<>())
-                .setInstanceType(StringUtils.isEmpty(request.getInstanceType()) ? "" : request.getInstanceType());
+                .setInstanceType(request.getInstanceTypeDTO() != null ? StringUtils.isEmpty(request.getInstanceTypeDTO().getInstanceType()) ? "" : request.getInstanceTypeDTO().getInstanceType() : "");
 
         return virtualMachine;
     }

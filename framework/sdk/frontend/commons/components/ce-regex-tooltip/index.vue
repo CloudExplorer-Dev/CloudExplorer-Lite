@@ -10,7 +10,7 @@
       :show-arrow="false"
     >
       <template #reference>
-        <div>
+        <div style="width: 100%">
           <slot></slot>
         </div>
       </template>
@@ -41,7 +41,7 @@ const props = withDefaults(
     trigger?: string;
     disabled?: boolean;
     width?: string;
-    modelValue: string;
+    modelValue?: string;
     offset?: number;
     description?: string;
     rules: any;
@@ -53,6 +53,7 @@ const props = withDefaults(
     width: "auto",
     offset: 0,
     rules: [{ regex: /\S/, message: "不能为空" }],
+    modelValue: "",
   }
 );
 const _rules = computed(() => {
@@ -62,14 +63,14 @@ const _rules = computed(() => {
       if (rule?.regex) {
         result.push({
           regex: rule?.regex,
-          message: rule?.message,
+          message: rule?.regexMessage,
           status: isMatch(rule?.regex),
         });
       } else if (rule?.pattern) {
         result.push({
           regex: rule?.pattern,
-          message: rule?.message,
-          status: isMatch(rule?.regex),
+          message: rule?.regexMessage,
+          status: isMatch(rule?.pattern),
         });
       }
     });
@@ -88,6 +89,7 @@ const isMatch = (regex: string) => {
   display: inline-block;
   margin-right: 5px;
   margin-bottom: 5px;
+  width: 100%;
 }
 .tooltip {
   width: 100%;

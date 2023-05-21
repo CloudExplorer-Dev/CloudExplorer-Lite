@@ -61,8 +61,7 @@ public class AliyunVmCreateRequest extends AliyunBaseRequest implements ICreateS
             defaultValue = "1",
             defaultJsonValue = true,
             attrs = "{\"min\":1,\"max\":10,\"step\":1}",
-            confirmGroup = 1,
-            confirmSpecial = true
+            confirmGroup = 1
     )
     private int count;
 
@@ -76,8 +75,7 @@ public class AliyunVmCreateRequest extends AliyunBaseRequest implements ICreateS
             relationShowValues = "PrePaid",
             relationShows = "instanceChargeType",
             propsInfo = "{\"style\":{\"height\":\"30px\"}}",
-            confirmGroup = 1,
-            confirmSpecial = true
+            confirmGroup = 1
     )
     private String periodNum;
 
@@ -116,7 +114,7 @@ public class AliyunVmCreateRequest extends AliyunBaseRequest implements ICreateS
             textField = "instanceType",
             valueField = "instanceType",
             relationTrigger = "zoneId",
-            propsInfo = "{\"rules\":[{\"message\":\"实例规格不能为空\",\"trigger\":\"change\",\"required\":true}],\"style\":{\"width\":\"100%\",\"height\":\"400px\"},\"showLabel\":false,\"activeMsg\":\"已选实例\",\"title\":\"选择实例规格\",\"tableColumns\":[{\"property\":\"instanceTypeFamilyName\",\"label\":\"规格类型\",\"min-width\":\"120px\"},{\"property\":\"instanceType\",\"label\":\"规格名称\"},{\"property\":\"cpuMemory\",\"label\":\"实例规格\"}]}",
+            propsInfo = "{\"style\":{\"width\":\"100%\",\"height\":\"400px\"},\"showLabel\":false,\"activeMsg\":\"已选实例\",\"title\":\"选择实例规格\",\"tableColumns\":[{\"property\":\"instanceTypeFamilyName\",\"label\":\"规格类型\",\"min-width\":\"120px\"},{\"property\":\"instanceType\",\"label\":\"规格名称\"},{\"property\":\"cpuMemory\",\"label\":\"实例规格\"}]}",
             step = 1,
             group = 3,
             confirmGroup = 1
@@ -264,13 +262,12 @@ public class AliyunVmCreateRequest extends AliyunBaseRequest implements ICreateS
             description = "密码须同时符合以下规则",
             relationShows = "loginType",
             relationShowValues = "password",
-            regexList = "[" +
-                    "{\"regex\":\"^(?!/)(?![\\\\da-z]+$)(?![\\\\dA-Z]+$)(?![\\\\d\\\\(\\\\)`~!@#\\\\$%\\\\^&\\\\*\\\\-\\\\+=_\\\\|\\\\{\\\\}\\\\[\\\\]:;'<>,\\\\.\\\\?/]+$)(?![a-zA-Z]+$)(?![a-z\\\\(\\\\)`~!@#\\\\$%\\\\^&\\\\*\\\\-\\\\+=_\\\\|\\\\{\\\\}\\\\[\\\\]:;'<>,\\\\.\\\\?/]+$)(?![A-Z\\\\(\\\\)`~!@#\\\\$%\\\\^&\\\\*\\\\-\\\\+=_\\\\|\\\\{\\\\}\\\\[\\\\]:;'<>,\\\\.\\\\?/]+$)[\\\\da-zA-z\\\\(\\\\)`~!@#\\\\$%\\\\^&\\\\*\\\\-\\\\+=_\\\\|\\\\{\\\\}\\\\[\\\\]:;'<>,\\\\.\\\\?/]{8,30}$\"" +
-                    ",\"message\":\"在 8 ～ 30 位字符数以内，不能以\\\" / \\\"开头，至少包含其中三项(小写字母 a ~ z、大写字母 A ～ Z、数字 0 ～ 9、()`~!@#$%^&*-+=_|{}[]:;'<>,.?/)\"}]",
-            propsInfo = "{\"style\":{\"width\":\"100%\"}}",
+            propsInfo = "{\"rules\":[{\"message\":\"登录密码不符合规则\",\"trigger\":\"blur\",\"required\":true,\"pattern\":\"^(?!/)(?![\\\\da-z]+$)(?![\\\\dA-Z]+$)(?![\\\\d\\\\(\\\\)`~!@#\\\\$%\\\\^&\\\\*\\\\-\\\\+=_\\\\|\\\\{\\\\}\\\\[\\\\]:;'<>,\\\\.\\\\?/]+$)(?![a-zA-Z]+$)(?![a-z\\\\(\\\\)`~!@#\\\\$%\\\\^&\\\\*\\\\-\\\\+=_\\\\|\\\\{\\\\}\\\\[\\\\]:;'<>,\\\\.\\\\?/]+$)(?![A-Z\\\\(\\\\)`~!@#\\\\$%\\\\^&\\\\*\\\\-\\\\+=_\\\\|\\\\{\\\\}\\\\[\\\\]:;'<>,\\\\.\\\\?/]+$)[\\\\da-zA-z\\\\(\\\\)`~!@#\\\\$%\\\\^&\\\\*\\\\-\\\\+=_\\\\|\\\\{\\\\}\\\\[\\\\]:;'<>,\\\\.\\\\?/]{8,30}$\",\"regexMessage\":\"在 8 ～ 30 位字符数以内，不能以\\\" / \\\"开头，至少包含其中三项(小写字母 a ~ z、大写字母 A ～ Z、数字 0 ～ 9、()`~!@#$%^&*-+=_|{}[]:;'<>,.?/)\"}],\"style\":{\"width\":\"100%\"}}",
             step = 3,
             group = 8,
-            encrypted = true
+            confirmGroup = 3,
+            encrypted = true,
+            confirmSpecial = true
     )
     private String password;
 

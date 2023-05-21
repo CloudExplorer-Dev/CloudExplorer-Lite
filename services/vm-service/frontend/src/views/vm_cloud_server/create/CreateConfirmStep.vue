@@ -41,12 +41,7 @@
             </template>
           </template>
           <!--暂时支持阿里云新的UI-->
-          <template
-            v-if="
-              props.cloudAccount?.platform !== 'fit2cloud_vsphere_platform' &&
-              props.cloudAccount?.platform !== 'fit2cloud_openstack_platform'
-            "
-          >
+          <template v-if="false">
             <detail-page
               :content="getGroupFormDetail(group)"
               :item-width="'33.33%'"
@@ -77,7 +72,7 @@
               <template v-for="form in group.forms" :key="form.index">
                 <template v-if="form.label && checkShow(form)">
                   <el-descriptions-item
-                    :label="form.label"
+                    :label="getLabel(form)"
                     :span="form.confirmItemSpan"
                     :width="_width * form.confirmItemSpan + '%'"
                     :data-var="(form._display = getDisplayValue(form))"
@@ -206,10 +201,22 @@ function checkShow(currentItem: any) {
 }
 
 /**
+ * 加密字段特殊处理，可以理解为加密字段不显示，但是占用位置
+ * 加密字段不显示label,但是需要它占用一个位置，因为1个groups中有3个form,有一个form不显示的话，只显示两个form页面上就不对称
+ * @param form
+ */
+function getLabel(form: FormView) {
+  return form.encrypted ? "" : form.label;
+}
+/**
  * 处理列表中取值展示
  * @param form
  */
 function getDisplayValue(form: FormView) {
+  //加密字段不显示内容
+  if (form.encrypted) {
+    return "";
+  }
   const value = _.get(props.allData, form.field);
   let result: any = _.clone(value);
   if (!form.confirmSpecial) {

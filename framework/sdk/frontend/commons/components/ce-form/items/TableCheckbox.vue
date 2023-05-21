@@ -3,11 +3,11 @@
     <div class="header">
       <div class="title">{{ formItem.propsInfo.title }}</div>
       <el-input
-          v-model="filterText"
-          :validate-event="false"
-          placeholder="请输入关键字搜索"
-          class="input-with-select"
-          style="--el-color-danger: #c0c4cc"
+        v-model="filterText"
+        :validate-event="false"
+        placeholder="请输入关键字搜索"
+        class="input-with-select"
+        style="--el-color-danger: #c0c4cc"
       >
         <template #prepend>
           <el-button :icon="Search" />
