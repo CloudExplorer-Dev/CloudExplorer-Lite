@@ -28,9 +28,7 @@ import com.google.gson.Gson;
 import com.huaweicloud.sdk.bss.v2.BssClient;
 import com.huaweicloud.sdk.bss.v2.model.*;
 import com.huaweicloud.sdk.ces.v1.CesClient;
-import com.huaweicloud.sdk.ces.v1.model.Datapoint;
-import com.huaweicloud.sdk.ces.v1.model.ShowMetricDataRequest;
-import com.huaweicloud.sdk.ces.v1.model.ShowMetricDataResponse;
+import com.huaweicloud.sdk.ces.v1.model.*;
 import com.huaweicloud.sdk.ecs.v2.EcsClient;
 import com.huaweicloud.sdk.ecs.v2.model.*;
 import com.huaweicloud.sdk.evs.v2.EvsClient;
@@ -729,22 +727,46 @@ public class HuaweiSyncCloudApi {
         if (vms.size() == 0) {
             return result;
         }
-        ShowMetricDataRequest request = getShowMetricDataRequest(getMetricsRequest);
         CesClient cesClient = credential.getCesClient(getMetricsRequest.getRegionId());
+        // 循环云主机
         vms.forEach(vm -> {
-            request.setDim0("instance_id," + vm.getInstanceUUID());
-            //监控指标
-            Arrays.stream(HuaweiPerfMetricConstants.CloudServerPerfMetricEnum.values()).sorted().toList().forEach(perfMetric -> {
-                try {
-                    request.setNamespace("AGT.ECS");
-                    request.setMetricName(perfMetric.getAgentMetricName());
-                    Map<Long, Datapoint> datapointMap = getVmMonitoringData(cesClient, vm, perfMetric, request);
-                    // Agent监控无数据，则查询基本监控数据
-                    if (datapointMap.size() == 0) {
-                        request.setNamespace("SYS.ECS");
-                        request.setMetricName(perfMetric.getBaseMetricName());
-                        datapointMap = getVmMonitoringData(cesClient, vm, perfMetric, request);
+            try {
+                // 存储接口返回的数据
+                Map<String, List<BatchMetricData>> apiResult = new HashMap<>(3);
+                // 数据聚合查询接口
+                List.of("average", "max", "min").forEach(filter -> {
+                    try {
+                        BatchListMetricDataRequest request = batchListMetricRequest(getMetricsRequest, vm.getInstanceUUID(), filter);
+                        BatchListMetricDataResponse response = cesClient.batchListMetricData(request);
+                        apiResult.put(filter, response.getMetrics());
+                    } catch (Exception e) {
+                        LogUtil.error("华为云查询云主机 " + vm.getName() + "聚合值-" + filter + "- 监控数据失败:" + e.getMessage());
                     }
+                });
+                // 处理结果，映射数据到平台需要查询的指标
+                Arrays.stream(HuaweiPerfMetricConstants.CloudServerPerfMetricEnum.values()).sorted().toList().forEach(perfMetric -> {
+                    // 存储时间节点数据，5分钟间隔，1个半小时，最多18条数据
+                    Map<Long, DatapointForBatchMetric> datapointMap = new HashMap<>(18);
+                    // 处理结果数据
+                    apiResult.keySet().forEach(key -> {
+                        // 过滤监控数据
+                        List<DatapointForBatchMetric> datapointList = new ArrayList<>();
+                        datapointList = getDatapointForBaseOrAgent(apiResult.get(key), perfMetric);
+                        datapointList.forEach(v -> {
+                            if (!datapointMap.containsKey(v.getTimestamp())) {
+                                datapointMap.put(v.getTimestamp(), v);
+                            }
+                            if (StringUtils.equalsIgnoreCase(key, "average")) {
+                                datapointMap.get(v.getTimestamp()).setAverage(v.getAverage());
+                            }
+                            if (StringUtils.equalsIgnoreCase(key, "max")) {
+                                datapointMap.get(v.getTimestamp()).setMax(v.getMax());
+                            }
+                            if (StringUtils.equalsIgnoreCase(key, "min")) {
+                                datapointMap.get(v.getTimestamp()).setMin(v.getMin());
+                            }
+                        });
+                    });
                     datapointMap.forEach((k, v) -> {
                         F2CPerfMetricMonitorData f2CEntityPerfMetric = HuaweiMappingUtil.toF2CPerfMetricMonitorData(v);
                         f2CEntityPerfMetric.setEntityType(F2CEntityType.VIRTUAL_MACHINE.name());
@@ -754,13 +776,95 @@ public class HuaweiSyncCloudApi {
                         f2CEntityPerfMetric.setUnit(perfMetric.getUnit());
                         result.add(f2CEntityPerfMetric);
                     });
-                } catch (Exception e) {
-                    LogUtil.error("同步 华为 云主机 " + vm.getName() + " 监控指标 " + perfMetric.getDescription() + " 失败:" + e.getMessage());
-                }
-            });
-
+                });
+            } catch (Exception e) {
+                LogUtil.error("同步 华为 云主机 " + vm.getName() + " 监控失败:" + e.getMessage());
+            }
         });
         return result;
+    }
+
+    /**
+     * 过滤监控数据
+     *
+     * @param response   结果
+     * @param perfMetric 指标
+     * @return 监控数据
+     */
+    private static List<DatapointForBatchMetric> getDatapointForBaseOrAgent(List<BatchMetricData> response, HuaweiPerfMetricConstants.CloudServerPerfMetricEnum perfMetric) {
+        List<DatapointForBatchMetric> agentData = getDatapointForBaseOrAgent(response, perfMetric, true);
+        return CollectionUtils.isNotEmpty(agentData) ? agentData : getDatapointForBaseOrAgent(response, perfMetric, false);
+    }
+
+    /**
+     * 获取 基础监控数据活着agent的监控数据datapoint
+     *
+     * @param response   数据结果
+     * @param perfMetric 指标
+     * @param agent      是否是agent
+     * @return 数据
+     */
+    private static List<DatapointForBatchMetric> getDatapointForBaseOrAgent(List<BatchMetricData> response, HuaweiPerfMetricConstants.CloudServerPerfMetricEnum perfMetric, boolean agent) {
+        List<BatchMetricData> agentMetricData = response.stream()
+                .filter(v -> StringUtils.equalsIgnoreCase(agent ? "AGT.ECS" : "SYS.ECS", v.getNamespace()))
+                .filter(v -> StringUtils.equalsIgnoreCase(agent ? perfMetric.getAgentMetricName() : perfMetric.getBaseMetricName(), v.getMetricName()))
+                .filter(v -> v.getDatapoints().size() > 0).toList();
+        return CollectionUtils.isNotEmpty(agentMetricData) ? agentMetricData.get(0).getDatapoints() : new ArrayList<>();
+    }
+
+
+    /**
+     * 批量指标获取监控数据
+     *
+     * @param getMetricsRequest 参数来源
+     * @param instanceId        云主机ID
+     * @param filter            数据聚合方式,max为最大值,min为最小值,average为平均值
+     * @return 批量查询参数
+     */
+    private static BatchListMetricDataRequest batchListMetricRequest(GetMetricsRequest getMetricsRequest, String instanceId, String filter) {
+        BatchListMetricDataRequest request = new BatchListMetricDataRequest();
+        BatchListMetricDataRequestBody body = new BatchListMetricDataRequestBody();
+        List<MetricsDimension> listMetricsDimensions = new ArrayList<>();
+        listMetricsDimensions.add(
+                new MetricsDimension()
+                        .withName("instance_id")
+                        .withValue(instanceId)
+        );
+        List<MetricInfo> listBodyMetrics = listMetricInfo(listMetricsDimensions);
+        body.withTo(Long.valueOf(getMetricsRequest.getEndTime()));
+        body.withFrom(Long.valueOf(getMetricsRequest.getStartTime()));
+        body.withFilter(filter);
+        body.withPeriod("300");
+        body.withMetrics(listBodyMetrics);
+        request.withBody(body);
+        return request;
+    }
+
+    /**
+     * 获取所有指标两个namespace的数据（基础、agent）
+     * listBodyMetrics最大支持500个
+     * 目前10*2
+     *
+     * @param listMetricsDimensions 对象参数
+     * @return 所有指标参数
+     */
+    private static List<MetricInfo> listMetricInfo(List<MetricsDimension> listMetricsDimensions) {
+        List<MetricInfo> listBodyMetrics = new ArrayList<>();
+        Arrays.stream(HuaweiPerfMetricConstants.CloudServerPerfMetricEnum.values()).sorted().toList().forEach(perfMetric -> {
+            listBodyMetrics.add(
+                    new MetricInfo()
+                            .withNamespace("AGT.ECS")
+                            .withMetricName(perfMetric.getAgentMetricName())
+                            .withDimensions(listMetricsDimensions)
+            );
+            listBodyMetrics.add(
+                    new MetricInfo()
+                            .withNamespace("SYS.ECS")
+                            .withMetricName(perfMetric.getBaseMetricName())
+                            .withDimensions(listMetricsDimensions)
+            );
+        });
+        return listBodyMetrics;
     }
 
     /**

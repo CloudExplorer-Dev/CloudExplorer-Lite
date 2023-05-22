@@ -12,7 +12,7 @@ import com.fit2cloud.provider.impl.huawei.entity.F2CHuaweiSecurityGroups;
 import com.fit2cloud.provider.impl.huawei.entity.F2CHuaweiSubnet;
 import com.fit2cloud.provider.impl.huawei.entity.F2CHuaweiVpc;
 import com.fit2cloud.provider.impl.huawei.entity.InstanceSpecType;
-import com.huaweicloud.sdk.ces.v1.model.Datapoint;
+import com.huaweicloud.sdk.ces.v1.model.DatapointForBatchMetric;
 import com.huaweicloud.sdk.ecs.v2.model.*;
 import com.huaweicloud.sdk.evs.v2.model.VolumeDetail;
 import com.huaweicloud.sdk.ims.v2.model.ImageInfo;
@@ -242,7 +242,7 @@ public class HuaweiMappingUtil {
      * @param v
      * @return
      */
-    public static F2CPerfMetricMonitorData toF2CPerfMetricMonitorData(Datapoint v) {
+    public static F2CPerfMetricMonitorData toF2CPerfMetricMonitorData(DatapointForBatchMetric v) {
         F2CPerfMetricMonitorData f2CEntityPerfMetric = new F2CPerfMetricMonitorData();
         f2CEntityPerfMetric.setTimestamp(v.getTimestamp());
         if (Objects.nonNull(v.getAverage())) {
