@@ -89,7 +89,8 @@ const _loading = ref<boolean>(false);
 
 const nameRules = [
   {
-    message: "2～128个字符",
+    regexMessage: "2～128个字符",
+    message: "云主机名称不符合规则要求",
     trigger: "blur",
     pattern: "^(?!\\s*$).{2,128}$",
     regex: "^(?!\\s*$).{2,128}$",
@@ -98,7 +99,8 @@ const nameRules = [
 ];
 const hostNameRules = [
   {
-    message: "只能包含小写字母、大写字母、数字、点或横线且是合法的FQDN",
+    regexMessage: "只能包含小写字母、大写字母、数字、点或横线且是合法的FQDN",
+    message: "云主机名称不符合规则要求",
     trigger: "blur",
     pattern: "^[A-Za-z]+[A-Za-z0-9\\.\\-]*[A-Za-z0-9]$",
     regex: "^[A-Za-z]+[A-Za-z0-9\\.\\-]*[A-Za-z0-9]$",

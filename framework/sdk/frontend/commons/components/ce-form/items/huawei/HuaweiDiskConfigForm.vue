@@ -27,7 +27,6 @@
               :min="index === 0 ? imageDiskMinSize : 10"
               :max="index === 0 ? 1024 : 32768"
               :step="10"
-              :readonly="index === 0 ? obj.readonly : false"
               required
               style="width: 200px; margin-left: 8px"
             >
@@ -98,6 +97,21 @@ const diskTypeOptions = computed<DiskTypeOption[]>(() => {
   }
   return [];
 });
+/**
+ * 监听盘类型变化
+ * 如果已选类型不在盘类型中默认选第一个磁盘类型
+ */
+watch(
+  () => diskTypeOptions.value,
+  () => {
+    const first = _.head(diskTypeOptions.value!);
+    _.forEach(props.modelValue, (item) => {
+      if (!_.includes(diskTypeOptions.value, item.id)) {
+        item.diskType = _.get(first, "id");
+      }
+    });
+  }
+);
 /**
  * 系统盘最小值
  */

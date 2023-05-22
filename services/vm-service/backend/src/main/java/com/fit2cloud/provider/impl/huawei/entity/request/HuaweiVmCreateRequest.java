@@ -112,7 +112,7 @@ public class HuaweiVmCreateRequest extends HuaweiBaseRequest implements ICreateS
             textField = "instanceSpec",
             valueField = "specName",
             relationTrigger = {"availabilityZone", "billingMode"},
-            propsInfo = "{\"rules\":[{\"message\":\"实例规格不能为空\",\"trigger\":\"change\",\"required\":true}],\"style\":{\"width\":\"100%\",\"height\":\"400px\"},\"showLabel\":false,\"activeMsg\":\"已选实例\",\"title\":\"选择实例规格\",\"tableColumns\":[{\"property\":\"specType\",\"label\":\"规格类型\",\"min-width\":\"120px\"},{\"property\":\"specName\",\"label\":\"规格名称\"},{\"property\":\"instanceSpec\",\"label\":\"实例规格\"}]}",
+            propsInfo = "{\"style\":{\"width\":\"100%\",\"height\":\"400px\"},\"showLabel\":false,\"activeMsg\":\"已选实例\",\"title\":\"选择实例规格\",\"tableColumns\":[{\"property\":\"specType\",\"label\":\"规格类型\",\"min-width\":\"120px\"},{\"property\":\"specName\",\"label\":\"规格名称\"},{\"property\":\"instanceSpec\",\"label\":\"实例规格\"}]}",
             step = 1,
             group = 3,
             confirmGroup = 1
@@ -170,8 +170,8 @@ public class HuaweiVmCreateRequest extends HuaweiBaseRequest implements ICreateS
             method = "listSubnet",
             textField = "name",
             valueField = "uuid",
-            relationTrigger = {"regionId","availabilityZone"},
-            propsInfo = "{\"rules\":[{\"message\":\"网络不能为空\",\"trigger\":\"change\",\"required\":true}],\"style\":{\"width\":\"100%\",\"height\":\"400px\"},\"showLabel\":false,\"activeMsg\":\"已选网络\",\"title\":\"选择网络\",\"tableColumns\":[{\"property\":\"name\",\"label\":\"子网名称\",\"min-width\":\"120px\"},{\"property\":\"vpcName\",\"label\":\"所属VPC\"},{\"property\":\"cidr\",\"label\":\"IPV4网段\"}]}",
+            relationTrigger = {"regionId", "availabilityZone"},
+            propsInfo = "{\"style\":{\"width\":\"100%\",\"height\":\"400px\"},\"showLabel\":false,\"activeMsg\":\"已选网络\",\"title\":\"选择网络\",\"tableColumns\":[{\"property\":\"name\",\"label\":\"子网名称\",\"min-width\":\"120px\"},{\"property\":\"vpcName\",\"label\":\"所属VPC\"},{\"property\":\"cidr\",\"label\":\"IPV4网段\"}]}",
             step = 2,
             group = 6,
             confirmGroup = 2
@@ -282,18 +282,16 @@ public class HuaweiVmCreateRequest extends HuaweiBaseRequest implements ICreateS
     )
     private String loginName;
 
-    @Form(inputType = InputType.RegexInput,
+    @Form(inputType = InputType.HuaweiPasswordInfoForm,
             label = "登录密码",
-            description = "密码须同时符合以下规则",
             relationShows = "loginMethod",
             relationShowValues = "pwd",
-            regexList = "[" +
-                    "{\"regex\":\"^((?=.*\\\\d)(?=.*[a-z])(?=.*[A-Z])(?!.*root)(?!.*toor)(?!.*[A|a]dministrator)(?!.*rotartsinimd[A|a]).{8,25})$\"" +
-                    ",\"message\":\"必须包含大小写字母和数字的组合，可以使用特殊字符，不能包含用户名或逆向用户名，长度在8-26之间\"}]",
-            propsInfo = "{\"style\":{\"width\":\"100%\"}}",
+            propsInfo = "{\"rules\":[{\"message\":\"登录密码不符合规则\",\"trigger\":\"blur\",\"required\":true}]}",
             step = 3,
             group = 8,
-            encrypted = true
+            confirmGroup = 3,
+            encrypted = true,
+            confirmSpecial = true
     )
     private String pwd;
 
@@ -329,7 +327,7 @@ public class HuaweiVmCreateRequest extends HuaweiBaseRequest implements ICreateS
             label = "配置费用",
             clazz = HuaweiCloudProvider.class,
             method = "calculateConfigPrice",
-            relationTrigger = {"billingMode", "periodNum", "availabilityZone", "instanceType", "disks", "count","trafficBandwidthSize", "bandwidthSize","chargeMode","usePublicIp"},
+            relationTrigger = {"billingMode", "periodNum", "availabilityZone", "instanceType", "disks", "count", "trafficBandwidthSize", "bandwidthSize", "chargeMode", "usePublicIp"},
             attrs = "{\"style\":\"color: red; font-size: large\"}",
             confirmGroup = 1,
             required = false,

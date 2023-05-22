@@ -48,7 +48,6 @@
               :min="minSize(defaultDisks[index], index)"
               :max="maxSize(defaultDisks[index], index)"
               :step="10"
-              :readonly="index === 0 ? obj.readonly : false"
               required
               style="width: 200px; margin-left: 8px"
             >

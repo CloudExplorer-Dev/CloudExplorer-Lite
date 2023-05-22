@@ -41,8 +41,8 @@ public class TencentGetImageRequest extends TencentVmCreateRequest {
         if (CollectionUtils.isNotEmpty(filters)) {
             describeImagesRequest.setFilters(filters.toArray(new Filter[]{}));
         }
-        if (StringUtils.isNotEmpty(this.getInstanceType())) {
-            describeImagesRequest.setInstanceType(this.getInstanceType());
+        if (this.getInstanceTypeDTO() != null && StringUtils.isNotEmpty(this.getInstanceTypeDTO().getInstanceType())) {
+            describeImagesRequest.setInstanceType(this.getInstanceTypeDTO().getInstanceType());
         }
         return describeImagesRequest;
     }

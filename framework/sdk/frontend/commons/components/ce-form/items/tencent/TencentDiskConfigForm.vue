@@ -27,6 +27,7 @@
               style="width: 100%"
               v-model="obj.diskType"
               filterable
+              clearable
               v-else
             >
               <template v-slot:prefix>
@@ -48,7 +49,6 @@
               :min="minSize(defaultDisks[index], index)"
               :max="maxSize(defaultDisks[index], index)"
               :step="10"
-              :readonly="obj.readonly"
               required
               style="width: 200px; margin-left: 8px"
             >
@@ -58,13 +58,13 @@
             </LineNumber>
           </el-form-item>
           <el-form-item :prop="obj.deleteWithInstance + ''">
-            <!--          <div style="width: 100%; margin-left: 8px; text-align: center">-->
-            <!--            <el-switch-->
-            <!--              v-model="obj.deleteWithInstance"-->
-            <!--              :disabled="obj.readonly"-->
-            <!--              active-text="随实例删除"-->
-            <!--            />-->
-            <!--          </div>-->
+            <div style="width: 100%; margin-left: 8px; text-align: center">
+              <el-switch
+                v-model="obj.deleteWithInstance"
+                :disabled="obj.readonly"
+                active-text="随实例删除"
+              />
+            </div>
           </el-form-item>
           <el-icon
             v-if="index > 0"
@@ -81,14 +81,20 @@
     </div>
   </template>
   <template v-else>
-    <el-descriptions>
+    <el-descriptions :column="3" direction="vertical">
       <el-descriptions-item
+        width="33.33%"
         :label="i === 0 ? '系统盘' : '数据盘' + i"
         v-for="(disk, i) in modelValue"
         :key="i"
       >
         {{ disk.size }}GB{{ disk.deleteWithInstance ? " (随实例删除)" : "" }}
       </el-descriptions-item>
+      <el-descriptions-item
+        width="33.33%"
+        v-for="x in modelValue.length % 3"
+        :key="x"
+      />
     </el-descriptions>
   </template>
 </template>
@@ -131,6 +137,23 @@ const systemDiskTypeOptions = computed(() => {
 });
 
 /**
+ * 监听系统盘类型变化
+ * 如果已选类型不在系统盘类型中默认选第一个磁盘类型
+ */
+watch(
+  () => systemDiskTypeOptions.value,
+  () => {
+    const first = _.head(systemDiskTypeOptions.value!);
+    _.forEach(props.modelValue, (item) => {
+      if (item.boot) {
+        if (!_.includes(systemDiskTypeOptions.value, item.diskType)) {
+          item.diskType = _.get(first, "diskType");
+        }
+      }
+    });
+  }
+);
+/**
  * 数据盘类型下拉选
  */
 const dataDiskTypeOptions = computed(() => {
@@ -141,6 +164,24 @@ const dataDiskTypeOptions = computed(() => {
 });
 
 /**
+ * 监听数据盘类型变化
+ * 如果已选类型不在数据盘类型中默认选第一个磁盘类型
+ */
+watch(
+  () => dataDiskTypeOptions.value,
+  () => {
+    const first = _.head(dataDiskTypeOptions.value!);
+    _.forEach(props.modelValue, (item) => {
+      if (!item.boot) {
+        if (!_.includes(dataDiskTypeOptions.value, item.diskType)) {
+          item.diskType = _.get(first, "diskType");
+        }
+      }
+    });
+  }
+);
+
+/**
  * 默认展示的盘:系统盘
  */
 const defaultDisks = computed(() => {
@@ -148,6 +189,7 @@ const defaultDisks = computed(() => {
     {
       diskType: "CLOUD_PREMIUM",
       size: 50,
+      boot: true,
       deleteWithInstance: true,
       readonly: true,
     },
@@ -230,6 +272,7 @@ function add() {
     const dataDiskItem = dataDiskTypeOptions.value[0];
     data.value?.push({
       size: dataDiskItem.minDiskSize,
+      boot: false,
       diskType: dataDiskItem.diskType,
       deleteWithInstance: true,
       readonly: false,

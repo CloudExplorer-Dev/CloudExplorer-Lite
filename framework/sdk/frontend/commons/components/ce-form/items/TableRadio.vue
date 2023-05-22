@@ -67,9 +67,10 @@
 </template>
 <script setup lang="ts">
 import type { FormView } from "@commons/components/ce-form/type";
-import { computed, ref } from "vue";
+import { computed, ref, watch } from "vue";
 import { Search } from "@element-plus/icons-vue";
 import type { ElTable } from "element-plus";
+import _ from "lodash";
 const filterText = ref<string>("");
 const props = defineProps<{
   modelValue?: string;
@@ -116,6 +117,40 @@ const tableData = computed(() => {
   return [];
 });
 
+/**
+ * 监听表格数据，设置默认值
+ */
+watch(
+  () => tableData.value,
+  () => {
+    if (tableData.value && tableData.value.length > 0) {
+      const defaultItem = _.head(tableData.value);
+      let defaultItemValue = _.get(
+        defaultItem,
+        props.formItem.valueField ? props.formItem.valueField : "value"
+      );
+      if (props.modelValue) {
+        const row = props.formItem.optionList.find(
+          (f: any) =>
+            f[
+              props.formItem.valueField ? props.formItem.valueField : "value"
+            ] === props.modelValue
+        );
+        if (row) {
+          defaultItemValue =
+            row[
+              props.formItem.valueField ? props.formItem.valueField : "value"
+            ];
+        }
+      }
+      emit("update:modelValue", defaultItemValue);
+    } else {
+      emit("update:modelValue", undefined);
+    }
+    emit("change", props.formItem);
+  }
+);
+
 const activeText = computed(() => {
   if (props.modelValue) {
     const row = props.formItem.optionList.find(
@@ -123,11 +158,6 @@ const activeText = computed(() => {
         f[props.formItem.valueField ? props.formItem.valueField : "value"] ===
         props.modelValue
     );
-    if (!row) {
-      emit("update:modelValue", undefined);
-      emit("change", props.formItem);
-      return undefined;
-    }
     if (props.formItem.propsInfo.activeTextEval) {
       return evalF(props.formItem.propsInfo.activeTextEval, row);
     } else if (props.formItem.textField) {

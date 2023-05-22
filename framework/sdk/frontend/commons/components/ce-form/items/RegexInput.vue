@@ -1,31 +1,58 @@
-<template>
-  <ce-regex-tooltip
-    :description="props.formItem.description"
-    :model-value="_modelValue"
-    :rules="rules"
-  >
-    <el-input
-      ref="regexInputRef"
-      v-bind="$attrs"
-      :show-password="props.formItem.encrypted"
-      :placeholder="props.placeholder ? props.placeholder : ''"
-      v-model="_modelValue"
-    />
-  </ce-regex-tooltip>
+<template v-loading="_loading">
+  <div style="width: 100%">
+    <template v-if="!confirm">
+      <el-form-item :rules="rules" :prop="props.field">
+        <ce-regex-tooltip
+          :description="props.formItem.description"
+          :model-value="_data"
+          :rules="rules"
+        >
+          <el-input
+            v-bind="$attrs"
+            :show-password="props.formItem.encrypted"
+            v-model="_data"
+          />
+        </ce-regex-tooltip>
+      </el-form-item>
+    </template>
+    <template v-else>
+      <div class="detail-box">
+        <el-descriptions :column="3" direction="vertical">
+          <el-descriptions-item width="33.33%" />
+        </el-descriptions>
+      </div>
+    </template>
+  </div>
 </template>
-
 <script setup lang="ts">
 import { computed, ref } from "vue";
+import { type FormInstance } from "element-plus";
 import type { FormView } from "@commons/components/ce-form/type";
 const props = defineProps<{
   modelValue?: string;
-  placeholder?: string;
+  allData?: any;
+  allFormViewData?: Array<FormView>;
+  field: string;
+  otherParams: any;
   formItem: FormView;
-  setDefaultValue?: boolean;
+  confirm?: boolean;
 }>();
-const showTooltip = ref<boolean>(false);
+
 const emit = defineEmits(["update:modelValue", "change"]);
-const _modelValue = computed({
+
+// 校验实例对象
+const ruleFormRef = ref<FormInstance>();
+const _loading = ref<boolean>(false);
+const defaultRules = ref<Array<any>>([{ regex: /\S/, message: "不能为空" }]);
+const rules = computed<Array<any>>(() => {
+  if (props.formItem.propsInfo?.rules) {
+    return props.formItem.propsInfo?.rules;
+  } else {
+    return defaultRules;
+  }
+});
+
+const _data = computed({
   get() {
     return props.modelValue;
   },
@@ -33,35 +60,38 @@ const _modelValue = computed({
     emit("update:modelValue", value);
   },
 });
-const defaultRules = ref<Array<any>>([{ regex: /\S/, message: "不能为空" }]);
-const rules = computed<Array<any>>(() => {
-  if (props.formItem.regexList) {
-    return props.formItem.regexList;
-  } else {
-    return defaultRules;
-  }
-});
-const valid = computed(() => {
-  return rules?.value?.every((regex) => {
-    return new RegExp(regex.regex).test(_modelValue.value as string);
-  });
-});
-const regexInputRef = ref<any>();
-
-function validate(): Promise<boolean> {
-  if (!valid.value) {
-    regexInputRef.value.focus();
-    showTooltip.value = true;
-    return new Promise((resolve, reject) => {
-      return reject(props.formItem.label + "输入有误！");
-    });
-  }
-  return regexInputRef.value.pending;
-}
-
-defineExpose({
-  validate,
-});
 </script>
+<style lang="scss" scoped>
+.box-content {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  align-items: center;
+  padding: 18px;
+  background-color: #f7f9fc;
+  border-radius: 4px;
+  .el-form-item {
+    margin-bottom: 0;
+    margin-right: 0;
+    padding: 0px 2px 0px 8px;
+    width: 100%;
+    .el-form-item__content .custom-popover {
+      width: 100%;
+    }
+  }
 
-<style lang="scss" scoped></style>
+  .delete-icon {
+    cursor: pointer;
+    margin-left: 8px;
+  }
+}
+.add-button {
+  margin: 10px;
+}
+.detail-box {
+  margin-top: 8px;
+  :deep(.el-descriptions__header) {
+    margin-bottom: 0 !important;
+  }
+}
+</style>
