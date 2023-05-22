@@ -7,6 +7,7 @@ import com.fit2cloud.es.entity.OperatedLog;
 import com.fit2cloud.es.entity.SystemLog;
 import com.fit2cloud.service.ILogService;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
@@ -17,6 +18,7 @@ import javax.annotation.Resource;
  * @date 2022/12/11 17:25
  **/
 @Component
+@EnableScheduling
 public class LogCleanJob {
     @Resource
     private IBaseSystemParameterService baseSystemParameterService;
@@ -34,22 +36,26 @@ public class LogCleanJob {
     }
 
     private void cleanOperatedLog(String m, String logType, String index, Class<?> clazz) {
-        int months = 3;
-        if (StringUtils.isBlank(m)) {
-            LogUtil.info("未设置{}日志保存月数，使用默认值: {}", logType, months);
-        } else {
-            months = Integer.valueOf(m);
-        }
-        if (months < 1) {
-            // if 0
-            months = 3;
-        }
-        if (LogUtil.getLogger().isDebugEnabled()) {
-            LogUtil.getLogger().debug("开始清理{}个月前的{}日志.", months, logType);
-        }
-        logService.deleteEsData(index, months, clazz);
-        if (LogUtil.getLogger().isDebugEnabled()) {
-            LogUtil.getLogger().debug("{}日志清理完成.", logType);
+        try {
+            int months = 3;
+            if (StringUtils.isBlank(m)) {
+                LogUtil.info("未设置{}日志保存月数，使用默认值: {}", logType, months);
+            } else {
+                months = Integer.valueOf(m);
+            }
+            if (months < 1) {
+                // if 0
+                months = 3;
+            }
+            if (LogUtil.getLogger().isDebugEnabled()) {
+                LogUtil.getLogger().debug("开始清理{}个月前的{}日志.", months, logType);
+            }
+            logService.deleteEsData(index, months, clazz);
+            if (LogUtil.getLogger().isDebugEnabled()) {
+                LogUtil.getLogger().debug("{}日志清理完成.", logType);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 
