@@ -155,7 +155,8 @@ const currentRow = computed<InstanceTypeConfig | undefined>({
   get() {
     return _.find(
       props.formItem?.optionList,
-      (o: InstanceTypeConfig) => o.instanceType === _.get(_data.value,"instanceType")
+      (o: InstanceTypeConfig) =>
+        o.instanceType === _.get(_data.value, "instanceType")
     );
   },
   set(value) {
