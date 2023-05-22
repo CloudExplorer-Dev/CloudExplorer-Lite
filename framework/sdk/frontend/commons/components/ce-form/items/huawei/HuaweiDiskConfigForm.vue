@@ -179,7 +179,7 @@ function add() {
   if (diskTypeOptions.value.length > 0) {
     const dataDiskItem = diskTypeOptions.value[0];
     data.value?.push({
-      size: 10,
+      size: 20,
       diskType: dataDiskItem.id,
       deleteWithInstance: false,
       readonly: true,

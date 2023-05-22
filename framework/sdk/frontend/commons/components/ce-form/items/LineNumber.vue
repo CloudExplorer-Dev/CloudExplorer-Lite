@@ -62,7 +62,7 @@ const props = withDefaults(
 );
 import type { FormView } from "@commons/components/ce-form/type";
 
-const emit = defineEmits(["update:modelValue"]);
+const emit = defineEmits(["update:modelValue", "change"]);
 
 const _value = computed<number | undefined>({
   get() {
@@ -80,6 +80,7 @@ const _value = computed<number | undefined>({
   },
   set(value) {
     emit("update:modelValue", value);
+    emit("change");
   },
 });
 
