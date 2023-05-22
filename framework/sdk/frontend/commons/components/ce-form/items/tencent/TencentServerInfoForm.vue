@@ -7,7 +7,7 @@
       label-position="top"
       style="width: 100%"
       :model="_data"
-      :show-message="false"
+      :show-message="true"
       :size="''"
       :scroll-to-error="true"
     >
@@ -100,7 +100,7 @@ const nameRules = [
 const hostNameRules = [
   {
     regexMessage: "只能包含小写字母、大写字母、数字、点或横线且是合法的FQDN",
-    message: "云主机名称不符合规则要求",
+    message: "Hostname不符合规则要求",
     trigger: "blur",
     pattern: "^[A-Za-z]+[A-Za-z0-9\\.\\-]*[A-Za-z0-9]$",
     regex: "^[A-Za-z]+[A-Za-z0-9\\.\\-]*[A-Za-z0-9]$",
