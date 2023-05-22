@@ -515,10 +515,13 @@ public class ComplianceScanServiceImpl implements IComplianceScanService {
         List<Query> queries = rules.stream().filter(this::isNotNestedQuery)
                 .map(this::getScriptQuery).collect(Collectors.toCollection(ArrayList::new));
         // 获取使用嵌套查询的Query
-        List<Query> nestedQuery = listNestedQuery(rules);
+        List<Query> nestedQuery = listNestedQuery(rules, conditionType);
         queries.addAll(nestedQuery);
 
-        Query query = conditionType.equals(ConditionTypeConstants.AND) ? new BoolQuery.Builder().must(queries).build()._toQuery() : new BoolQuery.Builder().should(queries).build()._toQuery();
+        Query query = conditionType.equals(ConditionTypeConstants.AND) ?
+                new BoolQuery.Builder().must(queries).build()._toQuery() :
+                new BoolQuery.Builder().should(queries).build()._toQuery();
+
         Query not = new BoolQuery.Builder().mustNot(query).build()._toQuery();
         List<Query> all = new ArrayList<>(mustQueryList);
         all.add(not);
@@ -554,7 +557,7 @@ public class ComplianceScanServiceImpl implements IComplianceScanService {
     private Query getQueryByRule(List<Rule> rules, List<Query> mustQueryList, ConditionTypeConstants conditionType) {
         List<Query> queries = rules.stream().filter(this::isNotNestedQuery).map(this::getScriptQuery).collect(Collectors.toCollection(ArrayList::new));
         // 获取嵌套查询
-        List<Query> nestedQuery = listNestedQuery(rules);
+        List<Query> nestedQuery = listNestedQuery(rules, conditionType);
         queries.addAll(nestedQuery);
         BoolQuery.Builder bool = new BoolQuery.Builder();
         Query query = conditionType.equals(ConditionTypeConstants.AND) ? new BoolQuery.Builder().must(queries).build()._toQuery() : new BoolQuery.Builder().should(queries).build()._toQuery();
@@ -571,12 +574,19 @@ public class ComplianceScanServiceImpl implements IComplianceScanService {
      * @param rules 规则
      * @return 查询对象
      */
-    private List<Query> listNestedQuery(List<Rule> rules) {
+    private List<Query> listNestedQuery(List<Rule> rules, ConditionTypeConstants conditionType) {
         // todo filterArray 字段需要使用nested查询
         List<Rule> filterArray = rules.stream().filter(this::isNestedQuery).toList();
         Map<String, List<Query>> nestPathScriptQueryMap = filterArray.stream().collect(Collectors.groupingBy(s -> getNestedPath(s.getField()), Collectors.mapping(this::getScriptQuery, Collectors.toList())));
-        List<Query> queries = nestPathScriptQueryMap.entrySet().stream().map(n -> new Query.Builder().nested(new NestedQuery.Builder().path(n.getKey())
-                .query(new Query.Builder().bool(new BoolQuery.Builder().must(n.getValue()).build()).build()).build()).build()).toList();
+        List<Query> queries = nestPathScriptQueryMap.entrySet()
+                .stream()
+                .map(n -> new Query.Builder()
+                        .nested(new NestedQuery.Builder().path(n.getKey())
+                                .query(conditionType.equals(ConditionTypeConstants.AND) ?
+                                        new Query.Builder().bool(new BoolQuery.Builder().must(n.getValue()).build()).build() :
+                                        new BoolQuery.Builder().should(n.getValue()).build()._toQuery())
+                                .build()).build())
+                .toList();
         return queries;
 
     }
