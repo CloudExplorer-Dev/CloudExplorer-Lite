@@ -17,10 +17,7 @@ import org.springframework.data.elasticsearch.core.query.FetchSourceFilter;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -41,8 +38,9 @@ public class PerfMonitorService {
         if (esList.size() > 0) {
             Long startTime = request.getStartTime();
             Long endTime = request.getEndTime();
-            //对没有数据的时间点进行补全
-            Integer period = esList.get(0).getPeriod() * 1000;
+            // 对没有数据的时间点进行补全
+            // 获取最新一条监控数据的period
+            Integer period = esList.stream().sorted(Comparator.comparing(PerfMetricMonitorData::getTimestamp).reversed()).toList().get(0).getPeriod() * 1000;
             Long statPeriodTime = startTime % period;
             startTime = startTime - statPeriodTime;
             List<Long> timeList = new ArrayList<>();
@@ -61,7 +59,7 @@ public class PerfMonitorService {
                     if (CollectionUtils.isNotEmpty(diskDeviceList)) {
                         v.addAll(diskDeviceList);
                     }
-                    resultMap.put(k, getObjetData(request, v.stream().sorted((u1, u2) -> u1.getTimestamp().compareTo(u2.getTimestamp())).collect(Collectors.toList())));
+                    resultMap.put(k, getObjetData(request, v.stream().sorted(Comparator.comparing(PerfMetricMonitorData::getTimestamp)).collect(Collectors.toList())));
                 });
             } else {
                 // 补全
@@ -79,7 +77,7 @@ public class PerfMonitorService {
                     }
                 });
                 resultList.addAll(completionList);
-                List<PerfMetricMonitorData> list = resultList.stream().sorted((u1, u2) -> u1.getTimestamp().compareTo(u2.getTimestamp())).collect(Collectors.toList());
+                List<PerfMetricMonitorData> list = resultList.stream().sorted(Comparator.comparing(PerfMetricMonitorData::getTimestamp)).collect(Collectors.toList());
                 resultMap.put("other", getObjetData(request, list));
             }
         }
