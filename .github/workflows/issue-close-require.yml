@@ -13,7 +13,7 @@ jobs:
         with:
           actions: 'close-issues'
           labels: '状态:待用户反馈'
-          inactive-day: 30
+          inactive-day: 90
           body: |
-            您超过 30 天未反馈信息，我们将关闭该 issue，如有需求您可以重新打开或者提交新的 issue。
+            您超过 90 天未反馈信息，我们将关闭该 issue，如有需求您可以重新打开或者提交新的 issue。
       
