@@ -174,7 +174,7 @@ public class LogServiceImpl implements ILogService {
         //provide.delete(5,"ce-file-system-logs", SystemLog.class);
         RangeQuery.Builder rangeQuery = new RangeQuery.Builder();
         rangeQuery.field("@timestamp");
-        rangeQuery.lt(JsonData.of("now-" + m + "m"));
+        rangeQuery.lt(JsonData.of("now-" + m + "M"));
         rangeQuery.format("epoch_millis");
         Query query = new Query.Builder().range(rangeQuery.build()).build();
         NativeQueryBuilder builder = new NativeQueryBuilder();
