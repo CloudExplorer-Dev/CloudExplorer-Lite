@@ -292,7 +292,7 @@ defineExpose({ open, refreshUser });
   <CeDrawer
     ref="ceDrawerRef"
     :title="(operationType === 'edit' ? '编辑' : '创建') + $t('user.user')"
-    :confirm-btn-name="operationType === 'edit' ? '编辑' : '创建'"
+    :confirm-btn-name="operationType === 'edit' ? '保存' : '创建'"
     @confirm="confirmEdit"
     @cancel="cancel"
     :disable-btn="loading"
