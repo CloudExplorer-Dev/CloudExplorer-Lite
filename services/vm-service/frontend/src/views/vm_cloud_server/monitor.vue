@@ -97,9 +97,11 @@ const getData = () => {
       const xData = ref<any>([]);
       const yData = ref<any>([]);
       const deviceList = ref<any>([]);
+      let yUnit = undefined;
       if (_.keys(res.data).length > 0 && _.has(res.data, "other")) {
         yData.value = res.data["other"][0].values;
         xData.value = res.data["other"][0].timestamps;
+        yUnit = res.data["other"][0].unit;
       }
       if (
         metricName === PerfMetricConst.DISK_READ_BPS.metricName ||
@@ -114,7 +116,8 @@ const getData = () => {
           PerfMetricConst.DISK_READ_BPS.metricName,
           metricNameParam,
           xData.value,
-          yData.value
+          yData.value,
+          yUnit
         );
       } else if (
         metricName === PerfMetricConst.DISK_READ_IOPS.metricName ||
@@ -129,7 +132,8 @@ const getData = () => {
           PerfMetricConst.DISK_READ_IOPS.metricName,
           metricNameParam,
           xData.value,
-          yData.value
+          yData.value,
+          yUnit
         );
       } else if (
         metricName === PerfMetricConst.INTERNET_IN_RATE.metricName ||
@@ -144,7 +148,8 @@ const getData = () => {
           PerfMetricConst.INTERNET_IN_RATE.metricName,
           metricNameParam,
           xData.value,
-          yData.value
+          yData.value,
+          yUnit
         );
       } else if (
         metricName === PerfMetricConst.INTRANET_IN_RATE.metricName ||
@@ -159,7 +164,8 @@ const getData = () => {
           PerfMetricConst.INTRANET_IN_RATE.metricName,
           metricNameParam,
           xData.value,
-          yData.value
+          yData.value,
+          yUnit
         );
       } else if (
         metricName === PerfMetricConst.DISK_USED_UTILIZATION.metricName
@@ -204,17 +210,25 @@ const getData = () => {
  * @param metricName
  * @param res
  * @param yData
+ * @param yUnit
  */
 const setXData = (
   mapMetricName: string,
   metricName: string,
   res: any,
-  yData: any
+  yData: any,
+  yUnit: any
 ) => {
   const d = echartsData.value.filter((i) => {
     return mapMetricName == i.metricName;
   });
   if (d[0]) {
+    if (yUnit) {
+      d[0].yUnit = yUnit;
+    }
+    if (d[0].title.indexOf(d[0].yUnit) === -1) {
+      d[0].title = d[0].title + "(" + d[0].yUnit + ")";
+    }
     d[0].xData = res;
     d[0].series[0].connectNulls = true;
     d[0].series.forEach(function (s: any) {

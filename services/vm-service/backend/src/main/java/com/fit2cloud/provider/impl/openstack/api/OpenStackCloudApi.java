@@ -730,8 +730,8 @@ public class OpenStackCloudApi {
         List<F2CPerfMetricMonitorData> result = new ArrayList<>();
         try {
             //设置时间，根据syncTimeStampStr,默认一个小时
-            request.setStartTime(String.valueOf(DateUtil.beforeOneHourToTimestamp(Long.valueOf(request.getSyncTimeStampStr()))));
-            request.setEndTime(request.getSyncTimeStampStr());
+            request.setStartTime(DateUtil.beforeOneHourToTimestamp(Long.valueOf(request.getSyncTimeStampStr())));
+            request.setEndTime(Long.parseLong(request.getSyncTimeStampStr()));
             OSClient.OSClientV3 osClient = JsonUtil.parseObject(JsonUtil.toJSONString(request), OpenStackBaseRequest.class).getOSClient();
 
             List<String> regions = OpenStackUtils.getRegionList(osClient);
@@ -746,14 +746,14 @@ public class OpenStackCloudApi {
 
                 SampleCriteria sc = new SampleCriteria();
                 Date start, end;
-                if (StringUtils.isBlank(request.getStartTime()) || StringUtils.isBlank(request.getEndTime())) {
+                if (Objects.isNull(request.getStartTime()) || Objects.isNull(request.getEndTime())) {
                     Calendar calendar = Calendar.getInstance();
                     end = calendar.getTime();
                     calendar.set(Calendar.MINUTE, calendar.get(Calendar.MINUTE) - 40);
                     start = calendar.getTime();
                 } else {
-                    start = new Date(Long.parseLong(request.getStartTime()));
-                    end = new Date(Long.parseLong(request.getEndTime()));
+                    start = new Date(request.getStartTime());
+                    end = new Date(request.getEndTime());
                 }
                 sc.timestamp(SampleCriteria.Oper.LTE, end);
                 sc.timestamp(SampleCriteria.Oper.GTE, start);
@@ -982,8 +982,8 @@ public class OpenStackCloudApi {
     public static List<F2CPerfMetricMonitorData> getF2CHostPerfMetricList(String req, GetMetricsRequest request) {
         List<F2CPerfMetricMonitorData> result = new ArrayList<>();
         //设置时间，根据syncTimeStampStr,默认一个小时
-        request.setStartTime(String.valueOf(DateUtil.beforeOneHourToTimestamp(Long.valueOf(request.getSyncTimeStampStr()))));
-        request.setEndTime(request.getSyncTimeStampStr());
+        request.setStartTime(DateUtil.beforeOneHourToTimestamp(Long.valueOf(request.getSyncTimeStampStr())));
+        request.setEndTime(Long.parseLong(request.getSyncTimeStampStr()));
         try {
             List<F2CHost> f2CHosts = listHost(JsonUtil.parseObject(req, OpenStackBaseRequest.class));
             for (F2CHost f2CHost : f2CHosts) {
@@ -994,7 +994,7 @@ public class OpenStackCloudApi {
                                 .divide(BigDecimal.valueOf(f2CHost.getCpuMHzTotal()), 2, RoundingMode.HALF_UP)
                                 .multiply(BigDecimal.valueOf(OpenStackPerfMetricConstants.CloudServerPerfMetricEnum.CPU_USED_UTILIZATION.getDivisor()))
                 );
-                cpuData.setTimestamp(Long.valueOf(request.getEndTime()));
+                cpuData.setTimestamp(request.getEndTime());
                 cpuData.setEntityType(F2CEntityType.HOST.name());
                 cpuData.setMetricName(OpenStackPerfMetricConstants.CloudServerPerfMetricEnum.CPU_USED_UTILIZATION.name());
                 cpuData.setPeriod(request.getPeriod());
@@ -1009,7 +1009,7 @@ public class OpenStackCloudApi {
                                 .divide(BigDecimal.valueOf(f2CHost.getMemoryTotal()), 2, RoundingMode.HALF_UP)
                                 .multiply(BigDecimal.valueOf(OpenStackPerfMetricConstants.CloudServerPerfMetricEnum.MEMORY_USED_UTILIZATION.getDivisor()))
                 );
-                memData.setTimestamp(Long.valueOf(request.getEndTime()));
+                memData.setTimestamp(request.getEndTime());
                 memData.setEntityType(F2CEntityType.HOST.name());
                 memData.setMetricName(OpenStackPerfMetricConstants.CloudServerPerfMetricEnum.MEMORY_USED_UTILIZATION.name());
                 memData.setPeriod(request.getPeriod());
@@ -1029,8 +1029,8 @@ public class OpenStackCloudApi {
     public static List<F2CPerfMetricMonitorData> getF2CDatastorePerfMetricList(String req, GetMetricsRequest request) {
         List<F2CPerfMetricMonitorData> result = new ArrayList<>();
         //设置时间，根据syncTimeStampStr,默认一个小时
-        request.setStartTime(String.valueOf(DateUtil.beforeOneHourToTimestamp(Long.valueOf(request.getSyncTimeStampStr()))));
-        request.setEndTime(request.getSyncTimeStampStr());
+        request.setStartTime(DateUtil.beforeOneHourToTimestamp(Long.valueOf(request.getSyncTimeStampStr())));
+        request.setEndTime(Long.parseLong(request.getSyncTimeStampStr()));
         try {
             List<F2CDatastore> f2CDataStores = listDataStore(JsonUtil.parseObject(req, OpenStackBaseRequest.class));
             for (F2CDatastore datastore : f2CDataStores) {

@@ -1,6 +1,5 @@
 package com.fit2cloud.provider.impl.vsphere.api;
 
-import com.fit2cloud.common.exception.Fit2cloudException;
 import com.fit2cloud.common.log.utils.LogUtil;
 import com.fit2cloud.common.platform.credential.impl.VsphereCredential;
 import com.fit2cloud.common.provider.entity.F2CEntityType;
@@ -27,11 +26,15 @@ import org.springframework.beans.BeanUtils;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
+import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 /**
  * Author: LiuDi
@@ -1066,292 +1069,209 @@ public class VsphereSyncCloudApi {
     }
 
 
+    /**
+     * 得到vsphere客户
+     *
+     * @param getMetricsRequest 获取监控数据参数
+     * @return {@link VsphereClient }
+     */
+    private static VsphereVmClient getVsphereClientByGetMetricsRequest(GetMetricsRequest getMetricsRequest) {
+        VsphereVmBaseRequest vsphereVmBaseRequest = JsonUtil.parseObject(JsonUtil.toJSONString(getMetricsRequest), VsphereVmBaseRequest.class);
+        return vsphereVmBaseRequest.getVsphereVmClient();
+    }
+
+    /**
+     * 获取vSphere查询监控数据的时间格式
+     *
+     * @param time 时间戳
+     * @return {@link Calendar }
+     */
+    private static Calendar getCalendarTime(Long time) {
+        Calendar calBegin = Calendar.getInstance();
+        calBegin.setTime(new Date(time));
+        return calBegin;
+    }
+
+    /**
+     * 获取云主机监控指标数据
+     * 开始时间跟结束时间
+     * syncTimeStampStr 开始触发监控数据同步的时间点
+     * 根据syncTimeStampStr获取过去一个小时
+     * 开始时间:syncTimeStampStr过去一个小时的时间点
+     * 结束时间:syncTimeStampStr
+     * 注：vmware没办法获取大于一个小时的
+     *
+     * @param getMetricsRequest 参数
+     * @return {@link List }<{@link F2CPerfMetricMonitorData }>
+     */
     public static List<F2CPerfMetricMonitorData> getF2CPerfMetricList(GetMetricsRequest getMetricsRequest) {
-        if (StringUtils.isEmpty(getMetricsRequest.getRegionId())) {
-            throw new Fit2cloudException(10002, "区域为必填参数");
-        }
-        List<F2CPerfMetricMonitorData> result = new ArrayList<>();
-        //设置时间，根据syncTimeStampStr,默认一个小时
-        getMetricsRequest.setStartTime(String.valueOf(DateUtil.beforeOneHourToTimestamp(Long.valueOf(getMetricsRequest.getSyncTimeStampStr()))));
-        getMetricsRequest.setEndTime(getMetricsRequest.getSyncTimeStampStr());
+        getMetricsRequest.setStartTime(DateUtil.beforeOneHourToTimestamp(Long.valueOf(getMetricsRequest.getSyncTimeStampStr())));
+        getMetricsRequest.setEndTime(Long.parseLong(getMetricsRequest.getSyncTimeStampStr()));
         try {
-            getMetricsRequest.setRegionId(getMetricsRequest.getRegionId());
-            result.addAll(getVmPerfMetric(getMetricsRequest));
+            return getVmMetricsData(getMetricsRequest, getVsphereClientByGetMetricsRequest(getMetricsRequest));
         } catch (Exception e) {
-            throw new SkipPageException(100021, "获取监控数据失败-" + getMetricsRequest.getRegionId() + "-" + e.getMessage());
+            throw new SkipPageException(100021, "获取云主机监控数据失败-" + getMetricsRequest.getRegionId() + "-" + e.getMessage());
         }
-        return result;
-    }
-
-    public static List<F2CPerfMetricMonitorData> getF2CHostPerfMetricList(GetMetricsRequest getMetricsRequest) {
-        if (StringUtils.isEmpty(getMetricsRequest.getRegionId())) {
-            throw new Fit2cloudException(10002, "区域为必填参数");
-        }
-        List<F2CPerfMetricMonitorData> result = new ArrayList<>();
-        //设置时间，根据syncTimeStampStr,默认一个小时
-        getMetricsRequest.setStartTime(String.valueOf(DateUtil.beforeOneHourToTimestamp(Long.valueOf(getMetricsRequest.getSyncTimeStampStr()))));
-        getMetricsRequest.setEndTime(getMetricsRequest.getSyncTimeStampStr());
-        try {
-            getMetricsRequest.setRegionId(getMetricsRequest.getRegionId());
-            result.addAll(getHostPerfMetric(getMetricsRequest));
-        } catch (Exception e) {
-            SkipPageException.throwSkipPageException(e);
-            throw new Fit2cloudException(100021, "获取监控数据失败-" + getMetricsRequest.getRegionId() + "-" + e.getMessage());
-        }
-        return result;
     }
 
     /**
-     * TODO 磁盘监控未实现
+     * 虚拟机指标监控数据
+     * 批量获取虚拟机指标的数据
+     * 虚拟机查询监控数据时
+     * 查询数据时的interval为20秒
      *
-     * @param getMetricsRequest
-     * @return
+     * @param getMetricsRequest 请求参数
+     * @return 监控数据
      */
-    public static List<F2CPerfMetricMonitorData> getF2CDiskPerfMetricList(GetMetricsRequest getMetricsRequest) {
-        if (StringUtils.isEmpty(getMetricsRequest.getRegionId())) {
-            throw new Fit2cloudException(10002, "区域为必填参数");
-        }
+    private static List<F2CPerfMetricMonitorData> getVmMetricsData(GetMetricsRequest getMetricsRequest, VsphereVmClient client) {
         List<F2CPerfMetricMonitorData> result = new ArrayList<>();
-        //设置时间，根据syncTimeStampStr,默认一个小时
-        getMetricsRequest.setStartTime(String.valueOf(DateUtil.beforeOneHourToTimestamp(Long.valueOf(getMetricsRequest.getSyncTimeStampStr()))));
-        getMetricsRequest.setEndTime(getMetricsRequest.getSyncTimeStampStr());
-        try {
-            getMetricsRequest.setRegionId(getMetricsRequest.getRegionId());
-        } catch (Exception e) {
-            SkipPageException.throwSkipPageException(e);
-            throw new Fit2cloudException(100021, "获取监控数据失败-" + getMetricsRequest.getRegionId() + "-" + e.getMessage());
-        }
-        return result;
-    }
-
-    public static List<F2CPerfMetricMonitorData> getF2CDatastorePerfMetricList(GetMetricsRequest getMetricsRequest) {
-        if (StringUtils.isEmpty(getMetricsRequest.getRegionId())) {
-            throw new Fit2cloudException(10002, "区域为必填参数");
-        }
-        List<F2CPerfMetricMonitorData> result = new ArrayList<>();
-        //设置时间，根据syncTimeStampStr,默认一个小时
-        getMetricsRequest.setStartTime(String.valueOf(DateUtil.beforeOneHourToTimestamp(Long.valueOf(getMetricsRequest.getSyncTimeStampStr()))));
-        getMetricsRequest.setEndTime(getMetricsRequest.getSyncTimeStampStr());
-        try {
-            getMetricsRequest.setRegionId(getMetricsRequest.getRegionId());
-            result.addAll(getDatastorePerfMetric(getMetricsRequest));
-
-        } catch (Exception e) {
-            SkipPageException.throwSkipPageException(e);
-            throw new Fit2cloudException(100021, "获取监控数据失败-" + getMetricsRequest.getRegionId() + "-" + e.getMessage());
-        }
-        return result;
-    }
-
-    /**
-     * 获取虚拟机监控指标数据
-     *
-     * @param getMetricsRequest
-     * @return
-     */
-    private static List<F2CPerfMetricMonitorData> getVmPerfMetric(GetMetricsRequest getMetricsRequest) {
-        //vmware默认监控间隔时间最小是300秒(5分钟)
-        //理论上我们查询一个小时，最多也只会返回12条数据
-        //TODO 磁盘读写数据对应的是VC上的虚拟磁盘，对象是云主机
-        getMetricsRequest.setInterval(300);
-        VsphereVmBaseRequest vsphereVmBaseRequest = JsonUtil.parseObject(JsonUtil.toJSONString(getMetricsRequest), VsphereVmBaseRequest.class);
-        List<F2CPerfMetricMonitorData> result = new ArrayList<>();
-        VsphereVmClient client = vsphereVmBaseRequest.getVsphereVmClient();
-        //查询所有虚拟机
+        // 查询所有虚拟机
         List<VirtualMachine> vms = client.listVirtualMachines();
-        if (vms.size() != 0) {
-            vms.forEach(vm -> {
-                VirtualMachineRuntimeInfo runtime = vm.getRuntime();
-                Arrays.stream(VspherePerfMetricConstants.CloudServerPerfMetricEnum.values()).sorted().toList().forEach(perfMetric -> {
-                    Map<String, Map<String, Long>> dataMap = getPerfData(vm.getMOR(), client, getMetricsRequest, perfMetric.getMetricName(), getMetricsRequest.getInterval());
-                    /// TODO 没有最大最小值，可能需要自己算？
-                    //最大最小值去时间段内的，因为接口拿不到
-                    Long max = dataMap.values().stream().toList().stream().map(map -> map.get("Average"))
-                            .filter(Objects::nonNull)
-                            .mapToLong(Long::longValue)
-                            .max().orElse(0L);
-                    Long min = dataMap.values().stream().toList().stream().map(map -> map.get("Average"))
-                            .filter(Objects::nonNull)
-                            .mapToLong(Long::longValue)
-                            .min().orElse(0L);
-                    dataMap.values().forEach(data -> {
-                        F2CPerfMetricMonitorData f2CEntityPerfMetric = new F2CPerfMetricMonitorData();
-                        f2CEntityPerfMetric.setTimestamp(data.get("timestamp"));
-                        f2CEntityPerfMetric.setAverage(new BigDecimal(data.get("Average")).divide(new BigDecimal(perfMetric.getDivisor())));
-                        f2CEntityPerfMetric.setMinimum(new BigDecimal(min).divide(new BigDecimal(perfMetric.getDivisor())).setScale(3, RoundingMode.HALF_UP));
-                        f2CEntityPerfMetric.setMaximum(new BigDecimal(max).divide(new BigDecimal(perfMetric.getDivisor())).setScale(3, RoundingMode.HALF_UP));
-                        f2CEntityPerfMetric.setEntityType(F2CEntityType.VIRTUAL_MACHINE.name());
-                        f2CEntityPerfMetric.setMetricName(perfMetric.name());
-                        f2CEntityPerfMetric.setPeriod(getMetricsRequest.getInterval());
-                        f2CEntityPerfMetric.setInstanceId(vm.getConfig().getInstanceUuid());
-                        f2CEntityPerfMetric.setUnit(perfMetric.getUnit());
-                        f2CEntityPerfMetric.setHostId(runtime.getHost().getVal());
-                        result.add(f2CEntityPerfMetric);
-                    });
-                });
-            });
+        if (CollectionUtils.isEmpty(vms)) {
+            return result;
         }
+        vms.forEach(vm -> {
+            // 这个间隔是查询数据时参数
+            int interval = 20;
+            // 获取要查询的监控指标
+            List<PerfMetricId> metricIds = getMetricIds(client);
+            // 查询结果
+            List<PerfEntityMetricBase> response = getMetricsData(client, vm.getMOR(), metricIds, getCalendarTime(getMetricsRequest.getStartTime()), getCalendarTime(getMetricsRequest.getEndTime()), interval);
+            if (CollectionUtils.isNotEmpty(response)) {
+                ConvertToPerfMetricDataVO convertToPerfMetricDataVO = new ConvertToPerfMetricDataVO();
+                convertToPerfMetricDataVO.setEntityType(F2CEntityType.VIRTUAL_MACHINE);
+                convertToPerfMetricDataVO.setInstanceId(vm.getConfig().getInstanceUuid());
+                convertToPerfMetricDataVO.setHostId(vm.getRuntime().getHost().getVal());
+                // convertApiResponse 会将间隔20秒的数据转为60秒，所以这里直接设置为60
+                convertToPerfMetricDataVO.setPeriod(60);
+                // 处理结果
+                handleData(convertToPerfMetricDataVO, client, convertApiResponse(response, interval), result);
+            }
+        });
         return result;
     }
 
-    private static List<F2CPerfMetricMonitorData> getHostPerfMetric(GetMetricsRequest getMetricsRequest) {
-        //vmware默认监控间隔时间最小是300秒(5分钟)
-        getMetricsRequest.setInterval(300);
-        VsphereVmBaseRequest vsphereVmBaseRequest = JsonUtil.parseObject(JsonUtil.toJSONString(getMetricsRequest), VsphereVmBaseRequest.class);
+
+    /**
+     * 获得宿主机性能指标监控数据
+     *
+     * @param getMetricsRequest 得到指标要求
+     * @return {@link List }<{@link F2CPerfMetricMonitorData }>
+     */
+    public static List<F2CPerfMetricMonitorData> getF2CHostPerfMetricList(GetMetricsRequest getMetricsRequest) {
+        getMetricsRequest.setStartTime(DateUtil.beforeOneHourToTimestamp(Long.valueOf(getMetricsRequest.getSyncTimeStampStr())));
+        getMetricsRequest.setEndTime(Long.parseLong(getMetricsRequest.getSyncTimeStampStr()));
+        try {
+            return getHostMetricData(getMetricsRequest, getVsphereClientByGetMetricsRequest(getMetricsRequest));
+        } catch (Exception e) {
+            throw new SkipPageException(100021, "获取宿主机监控数据失败-" + getMetricsRequest.getRegionId() + "-" + e.getMessage());
+        }
+    }
+
+
+    /**
+     * 获得宿主机监控数据
+     *
+     * @param getMetricsRequest 查询宿主机指标监控数据参数
+     * @param client            客户端
+     * @return {@link List }<{@link F2CPerfMetricMonitorData }>
+     */
+    private static List<F2CPerfMetricMonitorData> getHostMetricData(GetMetricsRequest getMetricsRequest, VsphereVmClient client) {
         List<F2CPerfMetricMonitorData> result = new ArrayList<>();
-        VsphereVmClient client = vsphereVmBaseRequest.getVsphereVmClient();
+        // 查询所有宿主机
         List<HostSystem> hosts = client.listHosts();
         if (hosts.size() != 0) {
+            int interval = 300;
             hosts.forEach(host -> {
-                ComputeResource clusterResource = client.getComputeResource(host);
-                Arrays.stream(VspherePerfMetricConstants.CloudServerPerfMetricEnum.values()).sorted().toList().forEach(perfMetric -> {
-                    Map<String, Map<String, Long>> dataMap = getPerfData(host.getMOR(), client, getMetricsRequest, perfMetric.getMetricName(), getMetricsRequest.getInterval());
-                    dataMap.values().forEach((data) -> {
-                        F2CPerfMetricMonitorData f2CEntityPerfMetric = new F2CPerfMetricMonitorData();
-                        f2CEntityPerfMetric.setTimestamp(data.get("timestamp"));
-                        f2CEntityPerfMetric.setAverage(new BigDecimal(data.get("Average")).divide(new BigDecimal(perfMetric.getDivisor())));
-                        f2CEntityPerfMetric.setEntityType(F2CEntityType.HOST.name());
-                        f2CEntityPerfMetric.setMetricName(perfMetric.name());
-                        f2CEntityPerfMetric.setPeriod(getMetricsRequest.getPeriod());
-                        f2CEntityPerfMetric.setInstanceId(host.getMOR().getVal());
-                        f2CEntityPerfMetric.setUnit(perfMetric.getUnit());
-                        //设置集群名称
-                        if (clusterResource instanceof ClusterComputeResource) {
-                            ClusterComputeResource cluster = (ClusterComputeResource) clusterResource;
-                            f2CEntityPerfMetric.setClusterName(cluster.getName());
-                        }
-                        result.add(f2CEntityPerfMetric);
-                    });
-                });
+                // 指标数据
+                List<PerfMetricId> metricIds = getMetricIds(client);
+                // 查询结果
+                List<PerfEntityMetricBase> response = getMetricsData(client, host.getMOR(), metricIds, getCalendarTime(getMetricsRequest.getStartTime()), getCalendarTime(getMetricsRequest.getEndTime()), interval);
+                if (CollectionUtils.isNotEmpty(response)) {
+                    ConvertToPerfMetricDataVO convertToPerfMetricDataVO = new ConvertToPerfMetricDataVO();
+                    convertToPerfMetricDataVO.setEntityType(F2CEntityType.HOST);
+                    convertToPerfMetricDataVO.setInstanceId(host.getMOR().getVal());
+                    convertToPerfMetricDataVO.setPeriod(interval);
+                    ComputeResource clusterResource = client.getComputeResource(host);
+                    //设置集群名称
+                    if (clusterResource instanceof ClusterComputeResource) {
+                        ClusterComputeResource cluster = (ClusterComputeResource) clusterResource;
+                        convertToPerfMetricDataVO.setClusterName(cluster.getName());
+                    }
+                    // 处理结果
+                    handleData(convertToPerfMetricDataVO, client, convertApiResponse(response, interval), result);
+                }
             });
         }
         return result;
     }
 
+
     /**
-     * 根据指标获取监控数据
+     * 获得存储器性能指标监控数据
      *
-     * @param managedObjectReference
-     * @param client
-     * @param request
-     * @param metricName
-     * @param interval
-     * @return
+     * @param getMetricsRequest 参数
+     * @return {@link List }<{@link F2CPerfMetricMonitorData }>
      */
-    public static Map<String, Map<String, Long>> getPerfData(ManagedObjectReference managedObjectReference, VsphereVmClient client,
-                                                             GetMetricsRequest request, String metricName, Integer interval) {
-        Calendar calBegin = Calendar.getInstance();
-        calBegin.setTime(new Date(Long.valueOf(request.getStartTime())));
-        //请求参数
-        PerformanceManager performanceManager = client.getSi().getPerformanceManager();
-        PerfQuerySpec qSpec = new PerfQuerySpec();
-        qSpec.setEntity(managedObjectReference);
-        PerfMetricId perfMetricId = new PerfMetricId();
-        //这个是必须的，不然查询会报错
-        perfMetricId.setInstance("");
-        //CPU内存，多获取过去30分钟的，不然当30分钟同步的时候，无法获取25 30 分的数据，因为API没有返回这两个点的数据
-        if (StringUtils.equalsIgnoreCase(metricName, "2") || StringUtils.equalsIgnoreCase(metricName, "24")) {
-            calBegin.setTime(new Date((Long.valueOf(request.getStartTime()) - 1800000)));
-        }
-        if (StringUtils.equalsIgnoreCase(managedObjectReference.getType(), "VirtualMachine")) {
-            //磁盘的，只能获取过去40分钟内的数据
-            if (StringUtils.equalsIgnoreCase(metricName, "181") || StringUtils.equalsIgnoreCase(metricName, "180") ||
-                    StringUtils.equalsIgnoreCase(metricName, "178") || StringUtils.equalsIgnoreCase(metricName, "179")) {
-                // 磁盘相关的直接取第一个磁盘
-                perfMetricId.setInstance("scsi0:0");
-                calBegin.setTime(new Date(Long.valueOf(request.getStartTime()) + 2400000));
-            }
-            //网络的，只能获取过去30分钟内的数据，小于30分
-            if (StringUtils.equalsIgnoreCase(metricName, "494") || StringUtils.equalsIgnoreCase(metricName, "495")) {
-                calBegin.setTime(new Date((Long.valueOf(request.getStartTime()) + 1920000)));
-            }
-        }
-        Calendar calEnd = Calendar.getInstance();
-        calEnd.setTime(new Date(Long.valueOf(request.getEndTime())));
+    public static List<F2CPerfMetricMonitorData> getF2CDatastorePerfMetricList(GetMetricsRequest getMetricsRequest) {
+        getMetricsRequest.setStartTime(DateUtil.beforeOneHourToTimestamp(Long.valueOf(getMetricsRequest.getSyncTimeStampStr())));
+        getMetricsRequest.setEndTime(Long.parseLong(getMetricsRequest.getSyncTimeStampStr()));
         try {
-            perfMetricId.setCounterId(Integer.parseInt(metricName));
-            PerfMetricId[] perfMetricIds = new PerfMetricId[1];
-            perfMetricIds[0] = perfMetricId;
-            qSpec.setStartTime(calBegin);
-            qSpec.setEndTime(calEnd);
-            qSpec.setMetricId(perfMetricIds);
-            qSpec.setIntervalId(interval);
-            qSpec.setFormat("normal");
-            PerfQuerySpec[] querySpecs = {qSpec};
-            PerfEntityMetricBase[] pValues = performanceManager.queryPerf(querySpecs);
-            if (pValues != null) {
-                return printPerfMetric(pValues[0]);
-            }
+            return getDatastoreMetricData(getMetricsRequest, getVsphereClientByGetMetricsRequest(getMetricsRequest));
         } catch (Exception e) {
-            e.printStackTrace();
+            throw new SkipPageException(100021, "获取存储器监控数据失败-" + getMetricsRequest.getRegionId() + "-" + e.getMessage());
         }
-        return new HashMap<>();
     }
 
-    /**
-     * 组数据，key:时间，value:数据
-     * 因为vmware时间与数据分开两个数组返回，我们处理方式就是按照两个数组的下标对应关系
-     *
-     * @param pemBase
-     * @return
-     */
-    static Map<String, Map<String, Long>> printPerfMetric(PerfEntityMetricBase pemBase) {
-        Map<String, Map<String, Long>> perfEntityMetric = new LinkedHashMap<>();
-        if (pemBase instanceof PerfEntityMetric) {
-            PerfEntityMetric pem = (PerfEntityMetric) pemBase;
-            //时间数据
-            PerfSampleInfo[] infos = pem.getSampleInfo();
-            if (!ObjectUtils.isEmpty(infos)) {
-                //数据值
-                long[] values = ((PerfMetricIntSeries) pem.getValue()[0]).getValue();
-                F2CPerfMetricMonitorData data = new F2CPerfMetricMonitorData();
-                for (int j = 0; values != null && j < values.length; ++j) {
-                    Map<String, Long> map = new HashMap<>();
-                    map.put("timestamp", infos[j].getTimestamp().getTimeInMillis());
-                    map.put("Average", values[j] < 0 ? 0 : values[j]);
-                    perfEntityMetric.put(String.valueOf(infos[j].getTimestamp().getTimeInMillis()), map);
-                }
-            }
-        }
-        return perfEntityMetric;
-    }
 
     /**
-     * 存储器特殊处理，由于无监控指标，这里查询实际使用量来计算使用率
+     * 获取存储器监控数据
      *
-     * @param getMetricsRequest
-     * @return
+     * @param getMetricsRequest 查询主机参数指标监测数据
+     * @param client            客户端
+     * @return {@link List }<{@link F2CPerfMetricMonitorData }>
+     * @author jianneng
+     * @date 2023/05/25
      */
-    private static List<F2CPerfMetricMonitorData> getDatastorePerfMetric(GetMetricsRequest getMetricsRequest) {
-        //vmware默认监控间隔时间最小是300秒(5分钟)
-        getMetricsRequest.setInterval(300);
-        VsphereVmBaseRequest vsphereVmBaseRequest = JsonUtil.parseObject(JsonUtil.toJSONString(getMetricsRequest), VsphereVmBaseRequest.class);
+    private static List<F2CPerfMetricMonitorData> getDatastoreMetricData(GetMetricsRequest getMetricsRequest, VsphereVmClient client) {
         List<F2CPerfMetricMonitorData> result = new ArrayList<>();
-        VsphereVmClient client = vsphereVmBaseRequest.getVsphereVmClient();
+        VsphereVmBaseRequest vsphereVmBaseRequest = JsonUtil.parseObject(JsonUtil.toJSONString(getMetricsRequest), VsphereVmBaseRequest.class);
         //查询数据中心下所有存储器
         List<DatastoreMor> datastores = listDataStoreMor(vsphereVmBaseRequest);
         if (datastores.size() != 0) {
-            datastores.forEach(datastore -> {
-                VspherePerfMetricConstants.CloudServerPerfMetricEnum perfMetric = VspherePerfMetricConstants.CloudServerPerfMetricEnum.DATASTORE_USED_UTILIZATION;
-                Map<String, Map<String, Long>> dataMap = getPerfData(datastore.getMor(), client, getMetricsRequest, perfMetric.getMetricName(), getMetricsRequest.getInterval());
-                dataMap.values().forEach((data) -> {
-                    F2CPerfMetricMonitorData f2CEntityPerfMetric = new F2CPerfMetricMonitorData();
-                    f2CEntityPerfMetric.setTimestamp(data.get("timestamp"));
-                    BigDecimal useAvg = new BigDecimal(data.get("Average")).divide(new BigDecimal(1024)).divide(new BigDecimal(1024)).setScale(2, RoundingMode.HALF_UP);
-                    BigDecimal totalBig = new BigDecimal(datastore.getCapacity());
-                    f2CEntityPerfMetric.setAverage(useAvg.multiply(new BigDecimal(100)).divide(totalBig, 2, RoundingMode.HALF_UP));
-                    f2CEntityPerfMetric.setEntityType(F2CEntityType.DATASTORE.name());
-                    f2CEntityPerfMetric.setMetricName(perfMetric.name());
-                    f2CEntityPerfMetric.setPeriod(getMetricsRequest.getPeriod());
-                    f2CEntityPerfMetric.setInstanceId(datastore.getDataStoreId());
-                    f2CEntityPerfMetric.setUnit(perfMetric.getUnit());
-                    result.add(f2CEntityPerfMetric);
-                });
+            int interval = 300;
+            datastores.forEach(datastoreMor -> {
+                // 指标数据
+                List<PerfMetricId> metricIds = getMetricIds(client);
+                // 查询结果
+                List<PerfEntityMetricBase> response = getMetricsData(client, datastoreMor.getMor(), metricIds, getCalendarTime(getMetricsRequest.getStartTime()), getCalendarTime(getMetricsRequest.getEndTime()), interval);
+                if (CollectionUtils.isNotEmpty(response)) {
+                    // 存储的结果需要单位换算，因为查询到的是实际使用的容量，而不是具体的比例值
+                    List<MetricTimeValue> metricTimeValueList = convertApiResponse(response, interval);
+                    metricTimeValueList.forEach(metricTimeValue -> {
+                        BigDecimal useAvg = metricTimeValue.getAverage().divide(new BigDecimal(1024), 2, RoundingMode.HALF_UP).divide(new BigDecimal(1024), 2, RoundingMode.HALF_UP);
+                        BigDecimal totalBig = new BigDecimal(datastoreMor.getCapacity());
+                        metricTimeValue.setAverage(useAvg.multiply(new BigDecimal(100)).divide(totalBig, 2, RoundingMode.HALF_UP));
+                    });
+                    ConvertToPerfMetricDataVO convertToPerfMetricDataVO = new ConvertToPerfMetricDataVO();
+                    convertToPerfMetricDataVO.setEntityType(F2CEntityType.DATASTORE);
+                    convertToPerfMetricDataVO.setInstanceId(datastoreMor.getDataStoreId());
+                    convertToPerfMetricDataVO.setPeriod(interval);
+                    // 处理结果
+                    handleData(convertToPerfMetricDataVO, client, metricTimeValueList, result);
+                }
             });
         }
         return result;
     }
 
+
+    /**
+     * 数据存储列表铁道部
+     *
+     * @param req 获取存储器信息参数
+     * @return {@link List }<{@link DatastoreMor }>
+     */
     public static List<DatastoreMor> listDataStoreMor(VsphereVmBaseRequest req) {
         List<DatastoreMor> datastoreList = new ArrayList<>();
         VsphereClient client = null;
@@ -1420,6 +1340,209 @@ public class VsphereSyncCloudApi {
         }
         return datastoreList;
     }
+
+    /**
+     * 根据vSphere版本处理数据
+     * 处理了两个版本的，如果不是6.x,那么就使用7.x 8.x的
+     * 版本不一样，使用的指标不一样
+     *
+     * @param convertToPerfMetricDataVO {@link ConvertToPerfMetricDataVO} 统一的转换参数
+     * @param client                    客户端
+     * @param metricTimeValues          监控数据对象集合
+     * @param result                    结果集
+     */
+    private static void handleData(ConvertToPerfMetricDataVO convertToPerfMetricDataVO, VsphereVmClient client, List<MetricTimeValue> metricTimeValues, List<F2CPerfMetricMonitorData> result) {
+        String vSphereVersion = client.getSi().getAboutInfo().getVersion();
+        if (vSphereVersion.startsWith("6")) {
+            Arrays.stream(VspherePerfMetricConstants.PerfMetricForSixEnum.values()).forEach(perfMetric -> {
+                convertToPerfMetricDataVO.setName(perfMetric.name());
+                convertToPerfMetricDataVO.setUnit(perfMetric.getUnit());
+                convertToPerfMetricDataVO.setMetricName(perfMetric.getMetricName());
+                convertToPerfMetricDataVO.setDivisor(perfMetric.getDivisor());
+                tof2CPerfMetricMonitorData(convertToPerfMetricDataVO, metricTimeValues, result);
+            });
+        } else {
+            Arrays.stream(VspherePerfMetricConstants.PerfMetricForSevenAndEightEnum.values()).forEach(perfMetric -> {
+                convertToPerfMetricDataVO.setName(perfMetric.name());
+                convertToPerfMetricDataVO.setUnit(perfMetric.getUnit());
+                convertToPerfMetricDataVO.setMetricName(perfMetric.getMetricName());
+                convertToPerfMetricDataVO.setDivisor(perfMetric.getDivisor());
+                tof2CPerfMetricMonitorData(convertToPerfMetricDataVO, metricTimeValues, result);
+            });
+        }
+    }
+
+
+    /**
+     * 将数据转为平台数据结构并设置到返回结果中
+     *
+     * @param convertToPerfMetricDataVO {@link ConvertToPerfMetricDataVO} 统一的转换参数
+     * @param metricTimeValues          监控数据
+     * @param result                    结果
+     */
+    private static void tof2CPerfMetricMonitorData(ConvertToPerfMetricDataVO convertToPerfMetricDataVO, List<MetricTimeValue> metricTimeValues, List<F2CPerfMetricMonitorData> result) {
+        List<MetricTimeValue> metricDataList = metricTimeValues.stream().filter(metricTimeValue -> StringUtils.equalsIgnoreCase(convertToPerfMetricDataVO.getMetricName(), metricTimeValue.getMetric())).toList();
+        if (CollectionUtils.isNotEmpty(metricDataList)) {
+            // 最大最小值去时间段内的，因为接口拿不到
+            BigDecimal max = metricDataList.stream().toList().stream().map(MetricTimeValue::getAverage)
+                    .max(BigDecimal::compareTo).orElse(BigDecimal.ZERO);
+            BigDecimal min = metricDataList.stream().toList().stream().map(MetricTimeValue::getAverage)
+                    .min(BigDecimal::compareTo).orElse(BigDecimal.ZERO);
+            metricDataList.forEach(metricData -> {
+                F2CPerfMetricMonitorData f2CEntityPerfMetric = new F2CPerfMetricMonitorData();
+                f2CEntityPerfMetric.setTimestamp(metricData.getTimestamp());
+                f2CEntityPerfMetric.setAverage(metricData.getAverage().divide(new BigDecimal(convertToPerfMetricDataVO.getDivisor()), 2, RoundingMode.HALF_UP));
+                f2CEntityPerfMetric.setMinimum(min.divide(new BigDecimal(convertToPerfMetricDataVO.getDivisor()), 2, RoundingMode.HALF_UP));
+                f2CEntityPerfMetric.setMaximum(max.divide(new BigDecimal(convertToPerfMetricDataVO.getDivisor()), 2, RoundingMode.HALF_UP));
+                f2CEntityPerfMetric.setEntityType(convertToPerfMetricDataVO.getEntityType().name());
+                f2CEntityPerfMetric.setMetricName(convertToPerfMetricDataVO.getName());
+                f2CEntityPerfMetric.setPeriod(convertToPerfMetricDataVO.getPeriod());
+                f2CEntityPerfMetric.setInstanceId(convertToPerfMetricDataVO.getInstanceId());
+                f2CEntityPerfMetric.setUnit(convertToPerfMetricDataVO.getUnit());
+                f2CEntityPerfMetric.setHostId(convertToPerfMetricDataVO.getHostId());
+                f2CEntityPerfMetric.setClusterName(convertToPerfMetricDataVO.getClusterName());
+                result.add(f2CEntityPerfMetric);
+            });
+        }
+    }
+
+
+    /**
+     * 转换数据
+     * 将时间数据数组与指标值数据数组中相同下标的元素组合成新对象的集合
+     * 如果interval为20时，数据间隔是20秒一条数据，会将数据转为一分钟一条数据，然后计算同一分钟的数据的平均值作为当前分钟的值
+     * 如果interval大于20时，直接返回新的对象数据
+     *
+     * @param response API接口数据
+     * @param interval 数据间隔
+     * @return 返回每分钟一条数据
+     */
+    private static List<MetricTimeValue> convertApiResponse(List<PerfEntityMetricBase> response, int interval) {
+        List<MetricTimeValue> result = new ArrayList<>();
+        PerfEntityMetricBase perfEntityMetricBase = response.get(0);
+        if (perfEntityMetricBase instanceof PerfEntityMetric) {
+            PerfEntityMetric pem = (PerfEntityMetric) perfEntityMetricBase;
+            // 时间数据
+            PerfSampleInfo[] sampleInfo = pem.getSampleInfo();
+            // 指标数据值
+            PerfMetricSeries[] metricsValues = pem.getValue();
+            for (PerfMetricSeries perfMetricSeries : metricsValues) {
+                PerfMetricIntSeries perfMetricIntSeries = (PerfMetricIntSeries) perfMetricSeries;
+                long[] values = perfMetricIntSeries.getValue();
+                // 将时间数据数组与指标值数据数组中相同下标的元素组合成新对象的集合
+                List<MetricTimeValue> metricTimeValues = IntStream.range(0, Math.min(sampleInfo.length, values.length)).mapToObj((index) -> new MetricTimeValue(String.valueOf(perfMetricIntSeries.getId().getCounterId()), sampleInfo[index].getTimestamp().getTimeInMillis(), BigDecimal.valueOf(values[index]))).collect(Collectors.toList());
+                // 如果查询数据的数据间隔大于20秒，就直接返回数据，默认除了虚拟机查询时时20秒的间隔外，其他都是300
+                if (interval > 20) {
+                    result.addAll(metricTimeValues);
+                } else {
+                    // 根据时间戳以分钟分组，并计算每组数据值的平均值
+                    List<MetricTimeValue> computerValueList = metricTimeValues.stream()
+                            .collect(Collectors.groupingBy(mtv -> LocalDateTime.ofEpochSecond(mtv.getTimestamp() / 1000, 0, ZoneOffset.UTC).truncatedTo(ChronoUnit.MINUTES)))
+                            .entrySet().stream()
+                            .map(entry -> new MetricTimeValue(String.valueOf(perfMetricIntSeries.getId().getCounterId()), entry.getKey().toEpochSecond(ZoneOffset.UTC) * 1000, calculateAverageValue(entry.getValue()))).collect(Collectors.toList());
+                    if (CollectionUtils.isNotEmpty(computerValueList)) {
+                        result.addAll(computerValueList.stream().sorted(Comparator.comparing(MetricTimeValue::getTimestamp)).collect(Collectors.toList()));
+                    }
+                }
+            }
+        }
+        return result;
+    }
+
+    /**
+     * 计算同一分钟的平均值
+     *
+     * @param metricTimeValues 同一分钟的数据集合
+     * @return 集合平均值的平均值 取证
+     */
+    private static BigDecimal calculateAverageValue(List<MetricTimeValue> metricTimeValues) {
+        BigDecimal total = metricTimeValues.stream().map(MetricTimeValue::getAverage).reduce(BigDecimal.ZERO, BigDecimal::add);
+        return total.divide(BigDecimal.valueOf(metricTimeValues.size()), 4, RoundingMode.HALF_UP);
+    }
+
+
+    /**
+     * 根据vSphere版本获取指标
+     * 目前6.x与7.x、8.x,有部分指标ID不一样
+     * 6.x的虚拟磁盘读写速率的指标分别为173、174 而7.x 8.x的是180、181
+     * 其他指标暂定是一样的，如果有发现获取不到数据的，检查一下指标是否一样，不一样就得修改对应版本的指标
+     *
+     * @param client 客户端
+     * @return 监控指标集合
+     */
+    private static List<PerfMetricId> getMetricIds(VsphereVmClient client) {
+        List<PerfMetricId> metricIds = new ArrayList<>();
+        String vSphereVersion = client.getSi().getAboutInfo().getVersion();
+        if (vSphereVersion.startsWith("6")) {
+            Arrays.stream(VspherePerfMetricConstants.PerfMetricForSixEnum.values()).forEach(v -> {
+                metricIds.add(createMetricId(v.getMetricName(), v.name()));
+            });
+        } else {
+            Arrays.stream(VspherePerfMetricConstants.PerfMetricForSevenAndEightEnum.values()).forEach(v -> {
+                metricIds.add(createMetricId(v.getMetricName(), v.name()));
+            });
+        }
+        return metricIds;
+    }
+
+    /**
+     * 创建查询指标对象
+     *
+     * @param metricName 指标
+     * @param name       枚举名称
+     * @return PerfMetricId
+     */
+    private static PerfMetricId createMetricId(String metricName, String name) {
+        PerfMetricId metricId = new PerfMetricId();
+        metricId.setCounterId(Integer.parseInt(metricName));
+        metricId.setInstance("");
+        // 磁盘指标枚举的话，只获取第一个盘的指标，冒号后面的0为系统盘，标识硬盘1
+        if (name.startsWith("DISK_")) {
+            metricId.setInstance("scsi0:0");
+        }
+        return metricId;
+    }
+
+
+    /**
+     * 批量查询指标监控数据
+     *
+     * @param client    客户端
+     * @param entities  查询对象
+     * @param metricIds 指标集合
+     * @param startTime 开始时间
+     * @param endTime   结束时间
+     * @return 指标数据集合
+     */
+    private static List<PerfEntityMetricBase> getMetricsData(VsphereVmClient client, ManagedObjectReference entities, List<PerfMetricId> metricIds,
+                                                             Calendar startTime, Calendar endTime, int interval) {
+        List<PerfEntityMetricBase> metricsData = new ArrayList<>();
+        if (ObjectUtils.isEmpty(entities) || metricIds.isEmpty()) {
+            return metricsData;
+        }
+        try {
+            PerfQuerySpec querySpec = new PerfQuerySpec();
+            // 开始时间
+            querySpec.setStartTime(startTime);
+            // 结束时间
+            querySpec.setEndTime(endTime);
+            // 时间间隔
+            querySpec.setIntervalId(interval);
+            // 查询对象
+            querySpec.setEntity(entities);
+            // 指标集合
+            querySpec.setMetricId(metricIds.toArray(new PerfMetricId[0]));
+            PerfEntityMetricBase[] entityMetrics = client.getSi().getPerformanceManager().queryPerf(new PerfQuerySpec[]{querySpec});
+            if (entityMetrics != null) {
+                metricsData.addAll(Arrays.asList(entityMetrics));
+            }
+        } catch (Exception e) {
+            LogUtil.error("查询vSphere - " + entities.getType() + "-" + entities.getVal() + " - 指标监控失败:" + e.getMessage());
+            e.printStackTrace();
+        }
+        return metricsData;
+    }
+
 
     public static CheckCreateServerResult validateServerCreateRequest(VsphereVmCreateRequest request) {
         VsphereVmClient client = null;
@@ -1611,75 +1734,6 @@ public class VsphereSyncCloudApi {
             return VsphereUtil.toF2CInstance(client.getVirtualMachineById(instanceId), client);
         } catch (Exception e) {
             throw new RuntimeException(e.getMessage(), e);
-        }
-    }
-
-    public static List<VsphereHost> getHostCurrentResourceUsedInfo(VsphereHostRequest request) {
-        VsphereVmClient client = null;
-        try {
-            List<VsphereHost> result = new ArrayList<>();
-            List<HostSystem> list;
-            client = request.getVsphereVmClient();
-            if (StringUtils.isNotBlank(request.getClusterName())) {
-                ClusterComputeResource cluster = client.getCluster(request.getClusterName());
-                list = List.of(cluster.getHosts());
-            } else {
-                list = client.listHosts();
-            }
-            if (StringUtils.isNotBlank(request.getHostId())) {
-                list = list.stream().filter(v -> StringUtils.equalsIgnoreCase(v.getMOR().getVal(), request.getHostId())).toList();
-            }
-            for (HostSystem hostSystem : list) {
-                VsphereHost host = new VsphereHost(hostSystem.getMOR().getVal(), hostSystem.getName());
-                //使用情况
-                HostListSummary summary = hostSystem.getSummary();
-                HostHardwareSummary hostHw = summary.getHardware();
-
-                BigDecimal totalCpu = BigDecimal.valueOf(hostHw.getCpuMhz()).multiply(BigDecimal.valueOf(hostHw.getNumCpuCores())).divide(BigDecimal.valueOf(1000), 2, RoundingMode.HALF_UP); //GHz
-                BigDecimal totalUsedCpu = BigDecimal.valueOf(summary.getQuickStats().getOverallCpuUsage()).divide(BigDecimal.valueOf(1000), 2, RoundingMode.HALF_UP); //GHz
-                BigDecimal totalMemory = BigDecimal.valueOf(hostHw.getMemorySize()).divide(BigDecimal.valueOf(GB), 2, RoundingMode.HALF_UP);
-                BigDecimal totalUsedMemory = BigDecimal.valueOf(summary.getQuickStats().getOverallMemoryUsage()).divide(BigDecimal.valueOf(1024), 2, RoundingMode.HALF_UP); //直接拿到是MB还要再除1024
-
-                host.setTotalCpu(totalCpu)
-                        .setTotalMemory(totalMemory)
-                        .setUsedCpu(totalUsedCpu)
-                        .setUsedMemory(totalUsedMemory);
-
-                result.add(host);
-            }
-            result.sort(Comparator.comparing(VsphereHost::getName));
-            return result;
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        } finally {
-            closeConnection(client);
-        }
-    }
-
-    public static List<VsphereDatastore> getDatastoreCurrentResourceUsedInfo(VsphereDatastoreRequest request) {
-        VsphereVmClient client = null;
-        try {
-            List<VsphereDatastore> result = new ArrayList<>();
-            List<Datastore> list;
-            client = request.getVsphereVmClient();
-            if (StringUtils.isNotBlank(request.getClusterName())) {
-                ClusterComputeResource cluster = client.getCluster(request.getClusterName());
-                list = List.of(cluster.getDatastores());
-            } else {
-                list = client.listDataStores();
-            }
-            if (StringUtils.isNotBlank(request.getDatastoreId())) {
-                list = list.stream().filter(v -> StringUtils.equalsIgnoreCase(v.getMOR().getVal(), request.getDatastoreId())).toList();
-            }
-            for (Datastore datastore : list) {
-                result.add(convertToVsphereDatastore(datastore));
-            }
-            result.sort(Comparator.comparing(VsphereDatastore::getName));
-            return result;
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        } finally {
-            closeConnection(client);
         }
     }
 

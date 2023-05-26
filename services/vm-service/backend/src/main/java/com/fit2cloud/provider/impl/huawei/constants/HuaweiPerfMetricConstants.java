@@ -27,11 +27,11 @@ public class HuaweiPerfMetricConstants {
         /**
          * 所有磁盘读取BPS
          */
-        DISK_READ_BPS("disk_read_bytes_rate", "mountPointPrefix_disk_agt_read_bytes_rate", "所有磁盘读取BPS", "byte/s"),
+        DISK_READ_BPS("disk_read_bytes_rate", "mountPointPrefix_disk_agt_read_bytes_rate", "所有磁盘读取BPS", "Byte/s"),
         /**
          * 所有磁盘写入BPS
          */
-        DISK_WRITE_BPS("disk_write_bytes_rate", "mountPointPrefix_disk_agt_write_bytes_rate", "所有磁盘写入BPS", "byte/s"),
+        DISK_WRITE_BPS("disk_write_bytes_rate", "mountPointPrefix_disk_agt_write_bytes_rate", "所有磁盘写入BPS", "Byte/s"),
         /**
          * 所有磁盘每秒读取次数
          */
@@ -51,11 +51,11 @@ public class HuaweiPerfMetricConstants {
         /**
          * 内网流入带宽
          */
-        INTRANET_IN_RATE("network_vm_bandwidth_in", "network_vm_bandwidth_in", "内网流入带宽", "KB/s"),
+        INTRANET_IN_RATE("network_vm_bandwidth_in", "network_vm_bandwidth_in", "内网流入带宽", "Byte/s"),
         /**
          * 内网流出带宽
          */
-        INTRANET_OUT_RATE("network_vm_bandwidth_out", "network_vm_bandwidth_out", "内网流出带宽", "KB/s"),
+        INTRANET_OUT_RATE("network_vm_bandwidth_out", "network_vm_bandwidth_out", "内网流出带宽", "Byte/s"),
 //        /**
 //         * 磁盘使用率
 //         * 暂无法使用该指标

@@ -1193,8 +1193,8 @@ public class AliyunSyncCloudApi {
         //设置时间，根据syncTimeStampStr,默认一个小时
         Long startTime = DateUtil.beforeOneHourToTimestamp(Long.valueOf(getMetricsRequest.getSyncTimeStampStr()));
         //多获取过去30分钟的数据，防止同步线程时间不固定，导致数据不全的问题
-        getMetricsRequest.setStartTime(String.valueOf(startTime - 1800000L));
-        getMetricsRequest.setEndTime(getMetricsRequest.getSyncTimeStampStr());
+        getMetricsRequest.setStartTime((startTime - 1800000L));
+        getMetricsRequest.setEndTime(Long.parseLong(getMetricsRequest.getSyncTimeStampStr()));
         try {
             getMetricsRequest.setRegionId(getMetricsRequest.getRegionId());
             result.addAll(getVmPerfMetricMonitorData(getMetricsRequest));
@@ -1221,8 +1221,8 @@ public class AliyunSyncCloudApi {
         DescribeMetricListRequest describeMetricListRequest = new DescribeMetricListRequest()
                 .setNamespace("acs_ecs_dashboard")
                 .setPeriod(String.valueOf(getMetricsRequest.getPeriod()))
-                .setEndTime(getMetricsRequest.getEndTime())
-                .setStartTime(getMetricsRequest.getStartTime())
+                .setEndTime(String.valueOf(getMetricsRequest.getEndTime()))
+                .setStartTime(String.valueOf(getMetricsRequest.getStartTime()))
                 .setRegionId(getMetricsRequest.getRegionId());
         AliyunVmCredential credential = JsonUtil.parseObject(getMetricsRequest.getCredential(), AliyunVmCredential.class);
         com.aliyun.cms20190101.Client cmsClient = credential.getCmsClientByRegion(getMetricsRequest.getRegionId());
