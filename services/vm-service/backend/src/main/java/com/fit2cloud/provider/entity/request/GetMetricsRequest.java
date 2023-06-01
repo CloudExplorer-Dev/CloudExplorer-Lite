@@ -10,7 +10,7 @@ import lombok.EqualsAndHashCode;
  **/
 @EqualsAndHashCode(callSuper = true)
 @Data
-public class GetMetricsRequest extends BaseRequest{
+public class GetMetricsRequest extends BaseRequest {
 
     /**
      * 监控数据间隔 s
@@ -23,11 +23,11 @@ public class GetMetricsRequest extends BaseRequest{
     /**
      * 开始时间
      */
-    private String startTime;
+    private Long startTime;
     /**
      * 结束时间
      */
-    private String endTime;
+    private Long endTime;
 
     /**
      * 开始同步的时间

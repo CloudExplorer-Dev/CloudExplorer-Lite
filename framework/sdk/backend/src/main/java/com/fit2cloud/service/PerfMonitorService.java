@@ -106,7 +106,11 @@ public class PerfMonitorService {
         PerfMonitorEchartsDTO perfMonitorEchartsDTO = new PerfMonitorEchartsDTO();
         perfMonitorEchartsDTO.setMetricName(request.getMetricName());
         perfMonitorEchartsDTO.setResourceId(request.getInstanceId());
-        perfMonitorEchartsDTO.setUnit(v.get(0).getUnit());
+        // 从数据中获取单位
+        List<PerfMetricMonitorData> unitList = v.stream().filter(d -> StringUtils.isNotEmpty(d.getUnit())).collect(Collectors.toList());
+        if (CollectionUtils.isNotEmpty(unitList)) {
+            perfMonitorEchartsDTO.setUnit(unitList.get(0).getUnit());
+        }
         //获取值集合
         List<Object> avgList = v.stream()
                 .map(PerfMetricMonitorData::getAverage)

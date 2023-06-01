@@ -187,7 +187,10 @@ const setEchartsData = (seriesData: any) => {
         params.forEach(function (v: any) {
           if (
             v.value != undefined &&
-            (props.yUnit === "Byte/s" || props.yUnit === "bit/s")
+            (props.yUnit === "Byte/s" ||
+              props.yUnit === "bit/s" ||
+              props.yUnit === "bytes/s" ||
+              props.yUnit === "byte/s")
           ) {
             unit.value = changeByte(v.value);
           } else {
@@ -214,7 +217,10 @@ const setEchartsData = (seriesData: any) => {
 const yUnitConversion = (val: any) => {
   if (
     val != undefined &&
-    (props.yUnit === "Byte/s" || props.yUnit === "bit/s")
+    (props.yUnit === "Byte/s" ||
+      props.yUnit === "bit/s" ||
+      props.yUnit === "bytes/s" ||
+      props.yUnit === "byte/s")
   ) {
     return changeByte(val);
   } else {
@@ -247,7 +253,7 @@ const timestampToTime = (timestamp: any) => {
 const changeByte = (byte: number) => {
   let size: string;
   if (byte < 1024) {
-    size = `${DecimalFormat.format(byte, 2)}Byte`;
+    size = `${DecimalFormat.format(byte, 2)}B`;
   } else if (byte < 1024 * 1024) {
     size = `${DecimalFormat.format(byte / 1024, 2)}KB`;
   } else if (byte < 1024 * 1024 * 1024) {

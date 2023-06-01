@@ -1198,8 +1198,8 @@ public class TencentSyncCloudApi {
         //设置时间，根据syncTimeStampStr,默认一个小时
         Long startTime = DateUtil.beforeOneHourToTimestamp(Long.valueOf(getMetricsRequest.getSyncTimeStampStr()));
         //多获取过去30分钟的数据，防止同步线程时间不固定，导致数据不全的问题
-        getMetricsRequest.setStartTime(String.valueOf(startTime - 1800000L));
-        getMetricsRequest.setEndTime(getMetricsRequest.getSyncTimeStampStr());
+        getMetricsRequest.setStartTime((startTime - 1800000L));
+        getMetricsRequest.setEndTime(Long.parseLong(getMetricsRequest.getSyncTimeStampStr()));
         try {
             getMetricsRequest.setRegionId(getMetricsRequest.getRegionId());
             TencentVmCredential credential = JsonUtil.parseObject(getMetricsRequest.getCredential(), TencentVmCredential.class);
