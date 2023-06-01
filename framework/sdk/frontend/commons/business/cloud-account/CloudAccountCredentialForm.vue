@@ -163,7 +163,7 @@ function jumpTo(url: string) {
 .model-form {
   text-align: center;
   margin: 0 auto;
-  width: 80%;
+  width: 100%;
   min-width: 300px;
 }
 .tooltip-title {

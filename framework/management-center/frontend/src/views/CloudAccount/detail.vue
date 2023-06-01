@@ -5,7 +5,7 @@ import { useI18n } from "vue-i18n";
 import cloudAccountApi from "@/api/cloud_account";
 import { useRouter } from "vue-router";
 import { platformIcon } from "@commons/utils/platform";
-import { ElMessage } from "element-plus";
+import { ElMessage, ElMessageBox } from "element-plus";
 import _ from "lodash";
 import {
   getStatusIcon,
@@ -25,6 +25,7 @@ import DetailFormValue from "@/componnets/DetailFormValue.vue";
 import DetailFormTitle from "@/componnets/DetailFormTitle.vue";
 import CurrencyFormat from "@commons/utils/currencyFormat";
 import type { CloudAccount } from "@/api/cloud_account/type";
+import EditAccount from "./edit.vue";
 
 const props = defineProps<{
   id: string;
@@ -383,11 +384,35 @@ onMounted(() => {
   });
 });
 
+const check = () => {
+  cloudAccountApi.verificationCloudAccount(props.id, loading).then(() => {
+    ElMessage.success(t("native_state_valid_message", "云账号有效"));
+    init();
+  });
+};
+
+const deleteItem = () => {
+  ElMessageBox.confirm(
+    t("commons.message_box.confirm_delete", "确认删除"),
+    t("commons.message_box.prompt", "提示"),
+    {
+      confirmButtonText: t("commons.btn.delete", "删除"),
+      cancelButtonText: t("commons.btn.cancel", "取消"),
+      type: "warning",
+    }
+  ).then(() => {
+    cloudAccountApi.deleteCloudAccount(props.id).then(() => {
+      ElMessage.success("删除成功");
+      router.push({ name: "cloud_account_list" });
+    });
+  });
+};
+
 const buttonOperations = new TableOperations([
   TableOperations.buildButtons().newInstance(
     t("commons.btn.edit", "编辑"),
     "primary",
-    edit,
+    openEditDialog,
     undefined,
     undefined,
     permissionStore.hasPermission("[management-center]CLOUD_ACCOUNT:EDIT")
@@ -395,7 +420,7 @@ const buttonOperations = new TableOperations([
   TableOperations.buildButtons().newInstance(
     t("cloud_account.verification", "连接校验"),
     "primary",
-    edit
+    check
   ),
   TableOperations.buildButtons().newInstance(
     "同步资源/账单",
@@ -418,13 +443,23 @@ const buttonOperations = new TableOperations([
   TableOperations.buildButtons().newInstance(
     t("commons.btn.delete", "删除"),
     "danger",
-    edit,
+    deleteItem,
     undefined,
     undefined,
     permissionStore.hasPermission("[management-center]CLOUD_ACCOUNT:DELETE"),
     "#F54A45"
   ),
 ]);
+
+const accountDrawerRef = ref<InstanceType<typeof EditAccount>>();
+
+function openEditDialog() {
+  accountDrawerRef.value?.open(props.id);
+}
+
+function afterSubmit() {
+  init();
+}
 
 onBeforeUnmount(() => {
   closeInterval();
@@ -897,6 +932,8 @@ onBeforeUnmount(() => {
         </el-container>
       </el-main>
     </el-scrollbar>
+
+    <EditAccount ref="accountDrawerRef" @submit="afterSubmit" />
   </el-container>
 </template>
 

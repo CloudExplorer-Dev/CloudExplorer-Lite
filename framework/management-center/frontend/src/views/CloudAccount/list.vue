@@ -29,6 +29,7 @@ import {
   getStatusIcon,
   getColorByAccountStatus,
 } from "@/componnets/StatusIconConstant";
+import EditAccount from "@/views/CloudAccount/edit.vue";
 
 const moduleStore = useModuleStore();
 const permissionStore = usePermissionStore();
@@ -50,13 +51,18 @@ const platformFilters = Object.keys(platformIcon).map((platform: string) => {
   return { text: platformIcon[platform].name, value: platform };
 });
 
+const accountDrawerRef = ref<InstanceType<typeof EditAccount>>();
+
 /**
  * 去修改页面
  * @param row 当前这一行数据
  */
 const edit = (row: CloudAccount) => {
-  router.push({ name: "cloud_account_update", params: { id: row.id } });
+  accountDrawerRef.value?.open(row.id);
 };
+function afterSubmit() {
+  search(new TableSearch());
+}
 
 /**
  * 展示云账号详情
@@ -1041,6 +1047,8 @@ const syncAll = () => {
       </span>
     </template>
   </el-dialog>
+
+  <EditAccount ref="accountDrawerRef" @submit="afterSubmit" />
 </template>
 
 <style lang="scss" scoped>
