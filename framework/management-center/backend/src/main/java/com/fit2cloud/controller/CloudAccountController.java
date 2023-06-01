@@ -254,4 +254,11 @@ public class CloudAccountController {
     public ResultHolder<IPage<JobRecordResourceResponse>> pageSyncRecord(@Validated SyncRecordRequest syncRecordRequest) {
         return ResultHolder.success(cloudAccountService.pageSyncRecord(syncRecordRequest));
     }
+
+    @GetMapping("/record/types")
+    @ApiOperation(value = "获取同步记录类型")
+    @PreAuthorize("hasAnyCePermission('CLOUD_ACCOUNT:READ')")
+    public ResultHolder<List<String>> listRecordTypes() {
+        return ResultHolder.success(cloudAccountService.listTypes());
+    }
 }

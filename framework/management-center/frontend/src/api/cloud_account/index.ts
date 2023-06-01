@@ -174,10 +174,15 @@ const getResourceCount: (
  * @returns
  */
 const pageSyncRecord: (
-  request: ListSyncRecordRequest
-) => Promise<Result<Page<AccountJobRecord>>> = (request) => {
+  request: ListSyncRecordRequest,
+  loading?: Ref<boolean>
+) => Promise<Result<Page<AccountJobRecord>>> = (request, loading) => {
   return get("/api/cloud_account/pageSyncRecord", request);
 };
+
+function listRecordTypes(): Promise<Result<Array<string>>> {
+  return get("/api/cloud_account/record/types");
+}
 
 /**
  * 获取云账户最新同步账号
@@ -254,6 +259,7 @@ const CloudAccountApi = {
   getBillFormByPlatform,
   saveOrUpdateBillSetting,
   pageSyncRecord,
+  listRecordTypes,
 };
 
 export default CloudAccountApi;

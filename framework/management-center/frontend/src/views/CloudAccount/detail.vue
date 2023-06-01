@@ -7,13 +7,30 @@ import { useRouter } from "vue-router";
 import { platformIcon } from "@commons/utils/platform";
 import { ElMessage } from "element-plus";
 import _ from "lodash";
-import Job from "@/componnets/job/Job.vue";
+import {
+  getStatusIcon,
+  getColorByAccountStatus,
+} from "@/componnets/StatusIconConstant";
+
+import SyncJobTabView from "@/componnets/job/SyncJobTabView.vue";
 import type { AccountJobRecord, ResourceCount } from "@/api/cloud_account/type";
-import { PaginationConfig } from "@commons/components/ce-table/type";
+import {
+  PaginationConfig,
+  TableOperations,
+} from "@commons/components/ce-table/type";
+import MoreOptionsButton from "@commons/components/ce-table/MoreOptionsButton.vue";
+import { usePermissionStore } from "@commons/stores/modules/permission";
+import DetailFormLabel from "@/componnets/DetailFormLabel.vue";
+import DetailFormValue from "@/componnets/DetailFormValue.vue";
+import DetailFormTitle from "@/componnets/DetailFormTitle.vue";
+import CurrencyFormat from "@commons/utils/currencyFormat";
+import type { CloudAccount } from "@/api/cloud_account/type";
 
 const props = defineProps<{
   id: string;
 }>();
+
+const permissionStore = usePermissionStore();
 
 const { t } = useI18n();
 const router = useRouter();
@@ -30,43 +47,59 @@ const loadingSyncRecord = ref(false); // 同步记录加载标识
 const syncRecords = ref<Array<AccountJobRecord>>([]); // 同步记录列表
 const syncRecordTotal = ref(0); // 同步记录总数
 const selectedSyncRecord = ref<AccountJobRecord>(); // 同步记录详情
+
 const syncRecordConfig = new PaginationConfig(1, 10); // 同步记录列表分页查询配置
 
+// 云账号基本信息表单
+const accountForm = ref<CloudAccount>();
+
 const init = () => {
-  if (router.currentRoute.value.params.id) {
-    // 获取云账号信息
-    cloudAccountApi.getCloudAccount(props.id, loading).then((ok) => {
-      accountForm.value = _.cloneDeep(ok.data);
-      originAccountName.value = _.cloneDeep(ok.data.name);
-    });
+  // 获取云账号信息
+  cloudAccountApi.getCloudAccount(props.id, loading).then((ok) => {
+    accountForm.value = ok.data;
+  });
 
-    // 获取账户余额
-    cloudAccountApi.getAccountBalance(props.id, loading).then((ok) => {
-      accountBalance.value = ok.data;
-    });
+  // 获取账户余额
+  cloudAccountApi.getAccountBalance(props.id, loading).then((ok) => {
+    accountBalance.value = ok.data;
+  });
 
-    // 获取资源计数
-    cloudAccountApi.getResourceCount(props.id, loading).then((ok) => {
-      resourceCountArray.value = ok.data;
-    });
+  // 获取资源计数
+  cloudAccountApi.getResourceCount(props.id, loading).then((ok) => {
+    resourceCountArray.value = ok.data;
+  });
 
-    // 分页获取云账号同步日志
-    cloudAccountApi
-      .pageSyncRecord({
+  initGetRecord();
+};
+
+const recordLoading = ref<boolean>(false);
+
+function initGetRecord() {
+  syncRecordConfig.currentPage = 1;
+  // 分页获取云账号同步日志
+  cloudAccountApi
+    .pageSyncRecord(
+      {
         currentPage: syncRecordConfig.currentPage,
         pageSize: syncRecordConfig.pageSize,
         cloudAccountId: props.id,
-      })
-      .then((ok) => {
-        syncRecords.value = _.cloneDeep(ok.data.records);
-        syncRecordTotal.value = _.cloneDeep(ok.data.total);
-        syncRecordConfig.currentPage = syncRecordConfig.currentPage + 1;
-        if (syncRecords.value.length > 0) {
-          showSyncRecordDetail(syncRecords.value[0]);
-        }
-      });
-  }
-};
+        createTime: currentDate.value?.toLocaleDateString(),
+        status: searchStatus.value,
+        description: searchDescription.value,
+      },
+      recordLoading
+    )
+    .then((ok) => {
+      syncRecords.value = _.cloneDeep(ok.data.records);
+      syncRecordTotal.value = _.cloneDeep(ok.data.total);
+      syncRecordConfig.currentPage = syncRecordConfig.currentPage + 1;
+      if (syncRecords.value.length > 0) {
+        showSyncRecordDetail(syncRecords.value[0]);
+      } else {
+        selectedSyncRecord.value = undefined;
+      }
+    });
+}
 
 // 已同步多少区域
 const recordRegionDescription = computed(() => {
@@ -176,6 +209,21 @@ const statusFilter = (status: string) => {
   return status;
 };
 
+const currentDate = ref(new Date());
+const searchDescription = ref<string>("");
+const searchStatus = ref<string>("");
+
+const searchTypes = ref<Array<{ label: string; value: string }>>([
+  { label: "全部", value: "" },
+]);
+const searchStatusList = ref<Array<{ label: string; value: string }>>([
+  { label: "全部", value: "" },
+  { label: "成功", value: "SUCCESS" },
+  { label: "失败", value: "FAILED" },
+  { label: "同步中", value: "SYNCING" },
+  { label: "超时", value: "TIME_OUT" },
+]);
+
 /**
  * 动态加载同步记录
  */
@@ -187,6 +235,9 @@ const load = () => {
       currentPage: syncRecordConfig.currentPage,
       pageSize: syncRecordConfig.pageSize,
       cloudAccountId: props.id,
+      createTime: currentDate.value?.toLocaleDateString(),
+      status: searchStatus.value,
+      description: searchDescription.value,
     })
     .then((ok) => {
       syncRecordConfig.currentPage = ok.data.current + 1;
@@ -225,15 +276,6 @@ const resourceConst = {
   sync: "SYNC",
 };
 
-// 云账号基本信息表单
-const accountForm = ref({
-  id: "",
-  name: "",
-  platform: "",
-  state: true,
-  createTime: "",
-});
-
 // 云账号基本信息校验
 const accountFormRules = reactive<FormRules>({
   name: [
@@ -254,37 +296,34 @@ const edit = (resource: string) => {
   }
 };
 
-const cancel = (resource: string) => {
-  if (resource === resourceConst.basic) {
-    basicEditable.value = false;
-    accountForm.value.name = _.cloneDeep(originAccountName.value);
-  } else {
-    syncEditable.value = false;
-    job.value.rollBack();
-  }
+const simpleFormRef = ref<FormInstance>();
+const simpleForm = ref<{ name?: string }>({});
+const nameEditable = ref<boolean>(false);
+function editName() {
+  simpleForm.value.name = accountForm.value?.name;
+  nameEditable.value = true;
+}
+
+const cancel = () => {
+  nameEditable.value = false;
 };
 
-const save = (resource: string, formEl: FormInstance | undefined) => {
-  // 修改基本信息
-  if (resource === resourceConst.basic) {
-    if (!formEl) return;
-    formEl.validate((valid) => {
-      if (valid) {
-        const param = _.cloneDeep(accountForm.value);
-        cloudAccountApi.updateAccountName(param).then(() => {
-          ElMessage.success(t("commons.msg.save_success"));
-          basicEditable.value = false;
-          originAccountName.value = _.cloneDeep(accountForm.value.name);
+const saveName = () => {
+  simpleFormRef.value?.validate().then((valid) => {
+    if (valid && simpleForm.value?.name) {
+      cloudAccountApi
+        .updateAccountName(
+          { id: props.id, name: simpleForm.value.name },
+          loading
+        )
+        .then((res) => {
+          cloudAccountApi.getCloudAccount(props.id, loading).then((ok) => {
+            accountForm.value = ok.data;
+            cancel();
+          });
         });
-      } else {
-        return false;
-      }
-    });
-  } else {
-    job.value.submitForm(false).then(() => {
-      syncEditable.value = false;
-    });
-  }
+    }
+  });
 };
 
 /**
@@ -305,6 +344,9 @@ onMounted(() => {
           currentPage: 0,
           pageSize: syncRecordConfig.pageSize,
           cloudAccountId: props.id,
+          createTime: currentDate.value?.toLocaleDateString(),
+          status: searchStatus.value,
+          description: searchDescription.value,
         })
         .then((ok) => {
           syncRecords.value.forEach((item) => {
@@ -327,10 +369,62 @@ onMounted(() => {
     const toElement: any = document.getElementById("record-main");
     //锚点存在跳转
     if (toElement) {
-      toElement.scrollIntoView();
+      //toElement.scrollIntoView();
     }
   }
+
+  cloudAccountApi.listRecordTypes().then((res) => {
+    _.forEach(res.data, (t) => {
+      searchTypes.value.push({
+        value: t,
+        label: t,
+      });
+    });
+  });
 });
+
+const buttonOperations = new TableOperations([
+  TableOperations.buildButtons().newInstance(
+    t("commons.btn.edit", "编辑"),
+    "primary",
+    edit,
+    undefined,
+    undefined,
+    permissionStore.hasPermission("[management-center]CLOUD_ACCOUNT:EDIT")
+  ),
+  TableOperations.buildButtons().newInstance(
+    t("cloud_account.verification", "连接校验"),
+    "primary",
+    edit
+  ),
+  TableOperations.buildButtons().newInstance(
+    "同步资源/账单",
+    "primary",
+    edit,
+    undefined,
+    undefined,
+    permissionStore.hasPermission("[management-center]CLOUD_ACCOUNT:EDIT")
+  ),
+  TableOperations.buildButtons().newInstance(
+    t("cloud_account.edit_job_message", "数据同步设置"),
+    "primary",
+    edit,
+    undefined,
+    undefined,
+    permissionStore.hasPermission(
+      "[management-center]CLOUD_ACCOUNT:SYNC_SETTING"
+    )
+  ),
+  TableOperations.buildButtons().newInstance(
+    t("commons.btn.delete", "删除"),
+    "danger",
+    edit,
+    undefined,
+    undefined,
+    permissionStore.hasPermission("[management-center]CLOUD_ACCOUNT:DELETE"),
+    "#F54A45"
+  ),
+]);
 
 onBeforeUnmount(() => {
   closeInterval();
@@ -338,445 +432,550 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-  <base-container>
-    <template #header>
-      <span>{{ $t("commons.basic_info", "基本信息") }}</span>
-    </template>
-    <template #btn>
-      <el-button
-        v-if="!basicEditable"
-        @click="edit(resourceConst.basic)"
-        v-hasPermission="'[management-center]CLOUD_ACCOUNT:EDIT'"
-        type="primary"
-        plain
-      >
-        {{ $t("commons.btn.edit") }}
-      </el-button>
-      <el-button
-        v-if="basicEditable"
-        @click="cancel(resourceConst.basic)"
-        plain
-      >
-        {{ $t("commons.btn.cancel") }}
-      </el-button>
-      <el-button
-        v-if="basicEditable"
-        @click="save(resourceConst.basic, accountFormRef)"
-        type="primary"
-        plain
-      >
-        {{ $t("commons.btn.save") }}
-      </el-button>
-    </template>
-    <template #content>
-      <el-form
-        :model="accountForm"
-        :rules="accountFormRules"
-        ref="accountFormRef"
-        label-position="top"
-        style="height: 70px"
-      >
-        <el-row>
-          <el-col :span="6">
-            <el-form-item
-              :label="t('cloud_account.name', '云账号名称')"
-              prop="name"
-              style="margin-right: 12px"
-            >
-              <el-input
-                v-model="accountForm.name"
-                :placeholder="
-                  t('cloud_account.name_placeholder', '请输入云账号名称')
-                "
-                v-if="basicEditable"
-                clearable
-              />
-              <span v-if="!basicEditable">{{ accountForm.name }}</span>
-            </el-form-item>
-          </el-col>
-
-          <el-col :span="6">
-            <el-form-item
-              :label="t('cloud_account.platform', '云平台')"
-              prop="platform"
-            >
-              <span v-if="accountForm.platform">
-                {{ platformIcon[accountForm.platform].name }}</span
-              >
-              <component
-                style="margin-left: 10px; display: flex"
-                :is="platformIcon[accountForm?.platform]?.component"
-                v-bind="platformIcon[accountForm?.platform]?.icon"
-                :color="platformIcon[accountForm?.platform]?.color"
-                size="16px"
-                v-if="accountForm.platform"
-              ></component>
-            </el-form-item>
-          </el-col>
-
-          <el-col :span="6">
-            <el-form-item :label="t('commons.status', '状态')" prop="state">
-              <div
-                v-if="accountForm.state"
-                style="display: flex; align-items: center"
-              >
-                <span>{{ t("cloud_account.native_state_valid", "有效") }}</span>
-                <el-icon color="green" style="margin-left: 5px"
-                  ><SuccessFilled
-                /></el-icon>
-              </div>
-              <div
-                v-if="!accountForm.state"
-                style="display: flex; align-items: center"
-              >
-                <span>{{
-                  t("cloud_account.native_state_invalid", "无效")
-                }}</span>
-                <el-icon color="red" style="margin-left: 5px"
-                  ><CircleCloseFilled
-                /></el-icon>
-              </div>
-            </el-form-item>
-          </el-col>
-
-          <el-col :span="6">
-            <el-form-item
-              :label="t('cloud_account.balance.money', '账户余额')"
-              prop="balance"
-            >
-              <span
-                style="line-height: 30px; font-size: 16px; font-weight: 700"
-                >{{ accountBalance }}</span
-              >
-              <span style="padding-left: 10px" v-if="accountBalance != '--'">{{
-                $t("cloud_account.balance.unit", "元")
-              }}</span>
-            </el-form-item>
-          </el-col>
-        </el-row>
-      </el-form>
-    </template>
-  </base-container>
-
-  <base-container>
-    <template #header>
-      <span>{{ $t("cloud_account.resource", "账户资源") }}</span>
-    </template>
-    <template #content>
-      <el-row>
-        <el-col
-          v-for="resourceCount in resourceCountArray"
-          :key="resourceCount.icon"
-          :span="6"
-        >
-          <div>
-            <div id="name" class="nameContent">{{ resourceCount.name }}</div>
-            <div id="count" class="valueContent">{{ resourceCount.count }}</div>
-          </div>
-        </el-col>
-      </el-row>
-    </template>
-  </base-container>
-
-  <base-container :contentBorder="true">
-    <template #header>
-      <span>{{ $t("cloud_account.sync.setting", "数据同步设置") }}</span>
-    </template>
-    <template #btn>
-      <el-button
-        v-if="!syncEditable"
-        @click="edit(resourceConst.sync)"
-        v-hasPermission="'[management-center]CLOUD_ACCOUNT:SYNC_SETTING'"
-        type="primary"
-        plain
-      >
-        {{ $t("commons.btn.edit") }}
-      </el-button>
-      <el-button v-if="syncEditable" @click="cancel(resourceConst.sync)" plain>
-        {{ $t("commons.btn.cancel") }}
-      </el-button>
-      <el-button
-        v-if="syncEditable"
-        @click="save(resourceConst.sync, undefined)"
-        type="primary"
-        plain
-      >
-        {{ $t("commons.btn.save") }}
-      </el-button>
-    </template>
-    <template #content>
-      <div style="padding: 12px var(--ce-main-content-padding-left, 24px)">
-        <Job
-          :read-only="!syncEditable"
-          :border="false"
-          ref="job"
-          :account-id="id"
-          :operation="false"
-        ></Job>
+  <el-container style="height: 100%">
+    <el-header>
+      <div class="header">
+        {{ accountForm?.name }} - 详情
+        <MoreOptionsButton
+          style="float: right"
+          name="操作"
+          border
+          :buttons="buttonOperations.buttons"
+          :row="accountForm"
+        />
       </div>
-    </template>
-  </base-container>
+    </el-header>
 
-  <base-container :contentBorder="true">
-    <template #header>
-      <span>{{ $t("cloud_account.sync.record", "同步记录") }}</span>
-    </template>
-    <template #content>
-      <div class="record-main" id="record-main">
-        <div class="record-left">
-          <div
-            class="content"
-            v-infinite-scroll="load"
-            :infinite-scroll-disabled="scrollDisabled"
-            infinite-scroll-immediate="false"
-            infinite-scroll-distance="1"
-          >
-            <div class="container">
-              <span class="label">{{
-                $t("cloud_account.sync.time", "同步时间")
-              }}</span>
-              <span class="label">{{
-                $t("cloud_account.sync.resource", "同步资源")
-              }}</span>
-              <span class="label">{{
-                $t("cloud_account.sync.status", "同步状态")
-              }}</span>
-            </div>
-            <div
-              @click="showSyncRecordDetail(item)"
-              :class="
-                item.jobRecordId === selectedSyncRecord?.jobRecordId
-                  ? 'container-details-active'
-                  : ''
-              "
-              class="container container-details"
-              v-for="(item, index) in syncRecords"
-              :key="index"
-            >
-              <span class="label">{{ item.createTime }}</span>
-              <span class="label">{{ item.description }}</span>
-              <span class="label"
-                >{{ statusFilter(item.status) }}
-                <el-icon
-                  v-if="item.status === 'SUCCESS'"
-                  style="margin-left: 5px; color: green"
-                  ><SuccessFilled
-                /></el-icon>
-                <el-icon
-                  v-if="item.status === 'FAILED'"
-                  style="margin-left: 5px; color: red"
-                  ><CircleCloseFilled
-                /></el-icon>
-                <ce-icon
-                  v-if="item.status === 'SYNCING'"
-                  code="Loading"
-                  class="is-loading"
-                  style="margin-left: 5px; color: var(--el-color-primary)"
-                ></ce-icon>
-              </span>
-            </div>
-            <p v-if="loadingSyncRecord" style="text-align: center">
-              Loading...
-            </p>
-            <p v-if="noMoreSyncRecord" style="text-align: center">No more</p>
-          </div>
-        </div>
-        <div class="record-right" v-if="selectedSyncRecord">
-          <div
-            class="header"
-            v-if="
-              selectedSyncRecord &&
-              selectedSyncRecord.type === 'CLOUD_ACCOUNT_SYNC_JOB'
-            "
-          >
-            <span>{{ selectedSyncRecord.createTime }}</span>
-            <span>{{ $t("cloud_account.sync.detail", "详情") }}：</span>
-            <span>{{ recordRegionDescription }}；</span>
-            <span>{{ recordResourceDescription }}；</span>
-          </div>
-          <div
-            class="header"
-            v-if="
-              selectedSyncRecord &&
-              selectedSyncRecord.type === 'CLOUD_ACCOUNT_SYNC_BILL_JOB'
-            "
-          >
-            <span>{{ selectedSyncRecord.createTime }}</span>
-            <span>{{ $t("cloud_account.sync.detail", "详情") }}：</span>
-            <span>{{ recordBillDescription }}</span>
-          </div>
-          <div class="line"></div>
-          <div class="content">
-            <div class="container">
-              <div class="start">
-                <div class="split-left">
-                  {{ selectedSyncRecord.createTime }}：
-                </div>
-                <div>{{ $t("cloud_account.sync.start", "开始同步") }}</div>
-              </div>
-
+    <el-scrollbar style="height: calc(100% - var(--el-header-height))">
+      <el-main>
+        <el-descriptions direction="vertical" :column="3">
+          <template #title>
+            <DetailFormTitle :title="t('commons.basic_info', '基本信息')" />
+          </template>
+          <el-descriptions-item width="33.33%">
+            <template #label>
+              <DetailFormLabel :label="t('cloud_account.name', '云账号名称')" />
+            </template>
+            <DetailFormValue v-if="!nameEditable">
               <div
-                class="middle"
-                v-for="(item, index) in selectedSyncRecord.params[
-                  selectedSyncRecord.type
-                ]"
+                style="display: flex; flex-direction: row; align-items: center"
+              >
+                {{ accountForm?.name }}
+                <el-icon
+                  style="cursor: pointer; color: #3370ff; margin-left: 10px"
+                  @click="editName"
+                >
+                  <EditPen />
+                </el-icon>
+              </div>
+            </DetailFormValue>
+
+            <div v-if="nameEditable">
+              <div
+                style="display: flex; flex-direction: row; align-items: center"
+              >
+                <el-form :inline="true" :model="simpleForm" ref="simpleFormRef">
+                  <el-form-item
+                    :rules="{
+                      message: '云账号名称不能为空',
+                      trigger: 'blur',
+                      required: true,
+                    }"
+                    prop="name"
+                  >
+                    <el-input v-model="simpleForm.name" />
+                  </el-form-item>
+                  <el-form-item>
+                    <el-icon
+                      style="cursor: pointer; color: #34c724"
+                      @click="saveName"
+                    >
+                      <Check />
+                    </el-icon>
+
+                    <el-icon
+                      style="cursor: pointer; margin-left: 10px"
+                      @click="cancel"
+                    >
+                      <Close />
+                    </el-icon>
+                  </el-form-item>
+                </el-form>
+              </div>
+            </div>
+          </el-descriptions-item>
+          <el-descriptions-item width="33.33%">
+            <template #label>
+              <DetailFormLabel :label="t('cloud_account.platform', '云平台')" />
+            </template>
+            <DetailFormValue>
+              <div
+                style="
+                  display: flex;
+                  flex-direction: row;
+                  flex-wrap: nowrap;
+                  align-items: center;
+                "
+                v-if="accountForm?.platform"
+              >
+                <component
+                  style="margin-right: 8px"
+                  :is="platformIcon[accountForm?.platform]?.component"
+                  v-bind="platformIcon[accountForm?.platform]?.icon"
+                  :color="platformIcon[accountForm?.platform]?.color"
+                  size="16px"
+                />
+                {{ platformIcon[accountForm.platform].name }}
+              </div>
+            </DetailFormValue>
+          </el-descriptions-item>
+          <el-descriptions-item width="33.33%">
+            <template #label>
+              <DetailFormLabel :label="t('commons.status', '状态')" />
+            </template>
+            <DetailFormValue>
+              <div
+                v-if="accountForm?.state"
+                style="display: flex; align-items: center"
+              >
+                <el-icon color="green" style="margin-right: 8px">
+                  <SuccessFilled />
+                </el-icon>
+                {{ t("cloud_account.native_state_valid", "有效") }}
+              </div>
+              <div v-else style="display: flex; align-items: center">
+                <el-icon color="red" style="margin-right: 8px">
+                  <CircleCloseFilled />
+                </el-icon>
+                {{ t("cloud_account.native_state_invalid", "无效") }}
+              </div>
+            </DetailFormValue>
+          </el-descriptions-item>
+          <el-descriptions-item width="33.33%">
+            <template #label>
+              <DetailFormLabel
+                :label="t('cloud_account.balance.money', '账户余额')"
+              />
+            </template>
+            <DetailFormValue>
+              <span v-if="accountBalance != '--'">
+                {{ CurrencyFormat.format(Number(accountBalance)) }}
+              </span>
+              <span v-else>
+                {{ accountBalance }}
+              </span>
+            </DetailFormValue>
+          </el-descriptions-item>
+          <el-descriptions-item width="33.33%">
+            <template #label>
+              <DetailFormLabel :label="t('commons.create_time', '创建时间')" />
+            </template>
+            <DetailFormValue>{{ accountForm?.createTime }}</DetailFormValue>
+          </el-descriptions-item>
+        </el-descriptions>
+
+        <el-descriptions direction="vertical" :column="3">
+          <template #title>
+            <DetailFormTitle :title="t('cloud_account.resource', '账户资源')" />
+          </template>
+          <el-descriptions-item
+            width="33.33%"
+            v-for="resourceCount in resourceCountArray"
+            :key="resourceCount.icon"
+          >
+            <template #label>
+              <DetailFormLabel>
+                {{ resourceCount.name }}
+                <span v-if="resourceCount.unit">
+                  ({{ resourceCount.unit }})
+                </span>
+              </DetailFormLabel>
+            </template>
+            <DetailFormValue :value="resourceCount.count" />
+          </el-descriptions-item>
+        </el-descriptions>
+
+        <DetailFormTitle
+          style="margin-bottom: 16px"
+          :title="t('cloud_account.sync.setting', '数据同步设置')"
+        />
+
+        <SyncJobTabView :id="id" />
+
+        <DetailFormTitle
+          style="margin-bottom: 16px"
+          :title="t('cloud_account.sync.record', '同步记录')"
+        />
+
+        <div style="margin-bottom: 8px">
+          <el-date-picker
+            v-model="currentDate"
+            type="date"
+            :default-value="new Date()"
+            format="YYYY-MM-DD"
+            @change="initGetRecord"
+          />
+
+          <el-select
+            v-model="searchDescription"
+            @change="initGetRecord"
+            style="margin-left: 6px; width: 180px"
+          >
+            <template #prefix>资源类型</template>
+            <el-option
+              v-for="(t, i) in searchTypes"
+              :key="i"
+              :label="t.label"
+              :value="t.value"
+            />
+          </el-select>
+          <el-select
+            v-model="searchStatus"
+            @change="initGetRecord"
+            style="margin-left: 6px; width: 130px"
+          >
+            <template #prefix>状态</template>
+            <el-option
+              v-for="(t, i) in searchStatusList"
+              :key="i"
+              :label="t.label"
+              :value="t.value"
+            />
+          </el-select>
+        </div>
+
+        <el-container style="height: 440px" v-loading="recordLoading">
+          <el-aside width="210px">
+            <div style="height: 10px"></div>
+            <el-timeline
+              class="infinite-list"
+              v-infinite-scroll="load"
+              :infinite-scroll-disabled="scrollDisabled"
+              infinite-scroll-immediate="false"
+              infinite-scroll-distance="1"
+            >
+              <el-timeline-item
+                v-for="(item, index) in syncRecords"
                 :key="index"
               >
-                <template
-                  v-if="selectedSyncRecord.type === 'CLOUD_ACCOUNT_SYNC_JOB'"
-                >
-                  <div class="layout">
-                    <div class="split-left">
-                      {{ $t("cloud_account.sync.area", "数据中心/区域") }}：
-                    </div>
-                    <div>{{ item.region.name }}</div>
-                  </div>
-                  <div class="layout">
-                    <div class="split-left">
-                      已{{ selectedSyncRecord.description }}：
-                    </div>
-                    <div>{{ item.size }} 个</div>
-                  </div>
-                </template>
-                <template
-                  v-if="
-                    selectedSyncRecord.type === 'CLOUD_ACCOUNT_SYNC_BILL_JOB'
+                <div
+                  class="infinite-list-item"
+                  :class="
+                    item.jobRecordId === selectedSyncRecord?.jobRecordId
+                      ? item.status === 'SUCCESS'
+                        ? 'success'
+                        : item.status === 'FAILED'
+                        ? 'failed'
+                        : item.status === 'SYNCING'
+                        ? 'syncing'
+                        : 'failed'
+                      : undefined
                   "
+                  @click="showSyncRecordDetail(item)"
                 >
-                  <div class="layout">
-                    <div class="split-left">月份：</div>
-                    <div>{{ JSON.parse(item.month) }}</div>
+                  <div class="timestamp">
+                    {{ item.createTime }}
                   </div>
-                  <div class="layout">
-                    <div class="split-left">
-                      已{{ selectedSyncRecord.description }}：
-                    </div>
-                    <div>{{ item.size }} 个</div>
+                  <div class="description">
+                    <el-icon
+                      size="14.67px"
+                      :color="getColorByAccountStatus(item.status)"
+                      :class="item.status === 'SYNCING' ? 'is-loading' : ''"
+                    >
+                      <component :is="getStatusIcon(item.status)" />
+                    </el-icon>
+
+                    {{ item.description }}
                   </div>
-                  <div class="layout">
-                    <div class="split-left">累计：</div>
-                    <div>{{ item.sum }}元</div>
-                  </div>
-                </template>
+                </div>
+              </el-timeline-item>
+              <el-timeline-item
+                v-if="loadingSyncRecord"
+                style="text-align: center"
+              >
+                Loading...
+              </el-timeline-item>
+              <el-timeline-item
+                v-if="noMoreSyncRecord"
+                style="text-align: center"
+              >
+                No more
+              </el-timeline-item>
+            </el-timeline>
+          </el-aside>
+          <el-main style="padding: 0 24px">
+            <el-scrollbar
+              v-if="selectedSyncRecord"
+              style="background: #f7f9fc; border-radius: 2px; padding: 0 16px"
+            >
+              <div style="height: 16px"></div>
+              <div
+                class="header"
+                v-if="
+                  selectedSyncRecord &&
+                  selectedSyncRecord.type === 'CLOUD_ACCOUNT_SYNC_JOB'
+                "
+              >
+                <span>{{ recordRegionDescription }}</span>
+                &nbsp;&nbsp;&nbsp;
+                <span>{{ recordResourceDescription }}</span>
               </div>
               <div
-                v-if="selectedSyncRecord.status === 'SYNCING'"
-                style="display: flex; color: var(--el-color-primary)"
+                class="header"
+                v-if="
+                  selectedSyncRecord &&
+                  selectedSyncRecord.type === 'CLOUD_ACCOUNT_SYNC_BILL_JOB'
+                "
               >
-                <div class="split-left">
-                  {{ $t("cloud_account.sync.synchronizing", "同步中") }}
-                </div>
-                <div style="margin-left: 5px">
-                  <ce-icon code="Loading" class="is-loading"></ce-icon>
-                </div>
+                <span>{{ recordBillDescription }}</span>
               </div>
-              <div class="end" v-if="selectedSyncRecord.status !== 'SYNCING'">
-                <div class="split-left">
-                  {{ selectedSyncRecord.updateTime }}：
-                </div>
-                <div>{{ $t("cloud_account.sync.end", "结束同步") }}</div>
+              <div class="container" v-if="selectedSyncRecord">
+                <table>
+                  <tr>
+                    <td align="right">
+                      <DetailFormLabel :label="selectedSyncRecord.createTime" />
+                    </td>
+                    <td width="20px"></td>
+                    <td>
+                      <DetailFormValue padding-bottom="0">
+                        {{ t("cloud_account.sync.start", "开始同步") }}
+                      </DetailFormValue>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td height="16px"></td>
+                  </tr>
+
+                  <template
+                    v-for="(item, index) in selectedSyncRecord.params[
+                      selectedSyncRecord.type
+                    ]"
+                    :key="index"
+                  >
+                    <template
+                      v-if="
+                        selectedSyncRecord.type === 'CLOUD_ACCOUNT_SYNC_JOB'
+                      "
+                    >
+                      <tr>
+                        <td align="right">
+                          <DetailFormLabel
+                            :label="
+                              t('cloud_account.sync.area', '数据中心/区域')
+                            "
+                          />
+                        </td>
+                        <td width="20px"></td>
+                        <td>
+                          <DetailFormValue
+                            padding-bottom="0"
+                            :value="item.region.name"
+                          />
+                        </td>
+                      </tr>
+
+                      <tr>
+                        <td align="right">
+                          <DetailFormLabel>
+                            已{{ selectedSyncRecord.description }}
+                          </DetailFormLabel>
+                        </td>
+                        <td width="20px"></td>
+                        <td>
+                          <DetailFormValue padding-bottom="0">
+                            {{ item.size }} 个
+                          </DetailFormValue>
+                        </td>
+                      </tr>
+                      <tr>
+                        <td height="16px"></td>
+                      </tr>
+                    </template>
+
+                    <template
+                      v-if="
+                        selectedSyncRecord.type ===
+                        'CLOUD_ACCOUNT_SYNC_BILL_JOB'
+                      "
+                    >
+                      <tr>
+                        <td align="right">
+                          <DetailFormLabel label="月份" />
+                        </td>
+                        <td width="20px"></td>
+                        <td>
+                          <DetailFormValue
+                            padding-bottom="0"
+                            :value="JSON.parse(item.month)"
+                          />
+                        </td>
+                      </tr>
+
+                      <tr>
+                        <td align="right">
+                          <DetailFormLabel>
+                            已{{ selectedSyncRecord.description }}
+                          </DetailFormLabel>
+                        </td>
+                        <td width="20px"></td>
+                        <td>
+                          <DetailFormValue padding-bottom="0">
+                            {{ item.size }} 个
+                          </DetailFormValue>
+                        </td>
+                      </tr>
+
+                      <tr>
+                        <td align="right">
+                          <DetailFormLabel> 累计 </DetailFormLabel>
+                        </td>
+                        <td width="20px"></td>
+                        <td>
+                          <DetailFormValue padding-bottom="0">
+                            {{ item.sum }}元
+                          </DetailFormValue>
+                        </td>
+                      </tr>
+
+                      <tr>
+                        <td height="16px"></td>
+                      </tr>
+                    </template>
+                  </template>
+
+                  <template v-if="selectedSyncRecord.status === 'SYNCING'">
+                    <tr>
+                      <td align="right">
+                        <DetailFormLabel>
+                          {{ t("cloud_account.sync.synchronizing", "同步中") }}
+                        </DetailFormLabel>
+                      </td>
+                      <td width="20px"></td>
+                      <td>
+                        <el-icon
+                          size="14.67px"
+                          :color="
+                            getColorByAccountStatus(selectedSyncRecord.status)
+                          "
+                          :class="
+                            selectedSyncRecord.status === 'SYNCING'
+                              ? 'is-loading'
+                              : ''
+                          "
+                        >
+                          <component
+                            :is="getStatusIcon(selectedSyncRecord.status)"
+                          />
+                        </el-icon>
+                      </td>
+                    </tr>
+                  </template>
+
+                  <template v-else-if="selectedSyncRecord.status !== 'SYNCING'">
+                    <tr>
+                      <td align="right">
+                        <DetailFormLabel>
+                          {{ selectedSyncRecord.updateTime }}
+                        </DetailFormLabel>
+                      </td>
+                      <td width="20px"></td>
+                      <td>
+                        {{ t("cloud_account.sync.end", "结束同步") }}
+                      </td>
+                    </tr>
+                  </template>
+                </table>
               </div>
-            </div>
-            <span v-if="!selectedSyncRecord">{{
-              $t("cloud_account.sync.noDetail", "没有同步信息")
-            }}</span>
-          </div>
-        </div>
-      </div>
-    </template>
-  </base-container>
+
+              <span v-else>
+                {{ t("cloud_account.sync.noDetail", "没有同步信息") }}
+              </span>
+
+              <div style="height: 16px"></div>
+            </el-scrollbar>
+          </el-main>
+        </el-container>
+      </el-main>
+    </el-scrollbar>
+  </el-container>
 </template>
 
-<style lang="scss">
-.base-container {
-  height: auto !important;
+<style lang="scss" scoped>
+.el-header {
+  --el-header-padding: 0;
+  --el-header-height: 44px;
+  border-bottom: var(--el-border-color) 1px solid;
+  color: #1f2329;
+
+  .header {
+    font-style: normal;
+    font-weight: 500;
+    font-size: 16px;
+    line-height: 24px;
+    padding: 0 0 20px 0;
+  }
 }
-.el-tabs__content {
-  height: auto !important;
+
+.el-main {
+  --el-main-padding: 20px 0;
 }
-.nameContent {
-  color: var(--el-text-color-regular);
-  margin-bottom: 12px;
+.el-aside {
+  border-right: 1px solid #dee0e3;
 }
-.valueContent {
-  font-size: 16px;
-  font-weight: 700;
-  margin-bottom: 6px;
-}
-.record-main {
+
+.infinite-list {
   width: 100%;
-  height: 100%;
-  display: flex;
-  .record-left {
-    width: 50%;
-    border-right: 1px solid var(--el-border-color);
-    .content {
-      height: 400px;
-      padding-top: 20px;
-      overflow: auto;
-      .container {
-        display: flex;
-        width: 100%;
-        padding: 10px 0 10px 0;
-        .label {
-          width: 50%;
-          float: left;
-          text-align: center;
-        }
-      }
-    }
-  }
-  .record-right {
-    width: 50%;
-    .header {
-      height: 50px;
-      align-items: center;
-      font-size: 15px;
-      display: flex;
-      padding-left: 20px;
-    }
-    .line {
-      height: 1px;
-      background-color: var(--el-border-color);
-    }
-    .content {
-      height: 400px;
-      overflow: auto;
-      .container {
-        padding: 20px 0px 0px 20px;
-        .start {
-          display: flex;
-          margin-bottom: 20px;
-          width: 100%;
-        }
-        .middle {
-          margin-bottom: 20px;
-          width: 100%;
-          .layout {
-            display: flex;
-            width: 100%;
-          }
-        }
-        .end {
-          display: flex;
-          width: 100%;
-        }
-      }
-    }
-  }
-}
-.split-left {
-  min-width: 150px;
-  text-align: right;
-}
-.container-details {
-  &:hover {
-    background-color: var(--el-menu-hover-bg-color);
+
+  .infinite-list-item {
+    width: 148px;
+    height: 58px;
+    border-radius: 4px;
     cursor: pointer;
-    color: inherit;
+    padding: 8px;
+
+    &.success {
+      background: #effbed;
+    }
+    &.failed {
+      background: #fef1f0;
+    }
+    &.syncing {
+      background: #ebf1ff;
+    }
+
+    .timestamp {
+      font-style: normal;
+      font-weight: 400;
+      font-size: 14px;
+      line-height: 22px;
+      height: 22px;
+      color: #8f959e;
+    }
+
+    .description {
+      font-style: normal;
+      font-weight: 400;
+      font-size: 14px;
+      line-height: 22px;
+      height: 22px;
+      color: #1f2329;
+      margin-top: 4px;
+    }
   }
 }
-.container-details-active {
-  background-color: var(--el-menu-hover-bg-color);
+
+ul {
+  padding-inline-start: 0;
+}
+
+.header {
+  font-style: normal;
+  font-weight: 500;
+  font-size: 12px;
+  line-height: 22px;
+
+  color: #1f2329;
+
+  padding-bottom: 16px;
 }
 </style>

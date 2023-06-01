@@ -163,4 +163,6 @@ public interface ICloudAccountService extends IService<CloudAccount> {
      */
     IPage<JobRecordResourceResponse> pageSyncRecord(SyncRecordRequest syncRecordRequest);
 
+    List<String> listTypes();
+
 }

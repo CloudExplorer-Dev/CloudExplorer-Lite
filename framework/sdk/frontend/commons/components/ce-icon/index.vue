@@ -45,7 +45,8 @@ const getCode = computed(() => {
       v-if="props.code && props.type === 'svg'"
       class="icon svg-icon"
       preserveAspectRatio="none"
-      style="height: 100%; width: 100%; full: red"
+      style="height: 100%; width: 100%"
+      :style="{ color: color }"
     >
       <use :xlink:href="'#' + getCode"></use>
     </svg>
@@ -82,6 +83,7 @@ const getCode = computed(() => {
   vertical-align: -0.15em;
   /* 通过设置 color 来改变 SVG 的颜色/fill */
   fill: currentColor;
+  stroke: currentColor;
   /* path 和 stroke 溢出 viewBox 部分在 IE 下会显示
       normalize.css 中也包含这行 */
   overflow: hidden;

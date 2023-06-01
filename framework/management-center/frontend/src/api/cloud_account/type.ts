@@ -32,6 +32,12 @@ interface ListSyncRecordRequest {
    *当前页
    */
   currentPage: number;
+
+  createTime?: string;
+
+  status?: string;
+
+  description?: string;
 }
 
 interface Region {
@@ -210,6 +216,8 @@ interface ResourceCount {
    * 资源计数
    */
   count: number;
+
+  unit?: string;
 }
 /**
  *云账户任务记录

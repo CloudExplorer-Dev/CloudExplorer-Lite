@@ -51,7 +51,7 @@ const message = {
     base_setting: "基本设置",
     sync_setting: "同步设置",
     cloud_account_size: "云账号必须选择一条",
-    verification: "校验",
+    verification: "连接校验",
     sync_message: "同步",
     edit_job_message: "数据同步设置",
     platform: "云平台",
@@ -63,8 +63,8 @@ const message = {
     native_sync_status: "同步状态",
     native_sync: {
       init: "初始化",
-      success: "成功",
-      failed: "失败",
+      success: "同步成功",
+      failed: "同步失败",
       syncing: "同步中",
       unknown: "未知",
     },
@@ -80,6 +80,7 @@ const message = {
     },
     resource: "我的资源",
     sync: {
+      sync: "同步",
       syncBill: "同步账单",
       syncResource: "同步资源",
       synchronizing: "同步中",

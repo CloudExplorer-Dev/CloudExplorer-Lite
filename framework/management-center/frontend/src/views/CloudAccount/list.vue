@@ -23,6 +23,12 @@ import type { FormInstance, FormRules } from "element-plus";
 import type { SimpleMap } from "@commons/api/base/type";
 import { useModuleStore } from "@commons/stores/modules/module";
 import { usePermissionStore } from "@commons/stores/modules/permission";
+import MoreOptionsButton from "@commons/components/ce-table/MoreOptionsButton.vue";
+
+import {
+  getStatusIcon,
+  getColorByAccountStatus,
+} from "@/componnets/StatusIconConstant";
 
 const moduleStore = useModuleStore();
 const permissionStore = usePermissionStore();
@@ -96,7 +102,7 @@ const deleteItem = (row: CloudAccount) => {
  * @param row 当前这一行数据
  */
 const check = (row: CloudAccount) => {
-  cloudAccountApi.verificationCloudAccount(row.id).then(() => {
+  cloudAccountApi.verificationCloudAccount(row.id, loading).then(() => {
     ElMessage.success(t("native_state_valid_message", "云账号有效"));
     table.value?.search();
   });
@@ -224,6 +230,9 @@ const resourceLoading = ref<boolean>(false);
 /**
  * 打开同步弹出框
  */
+
+function openSyncDialog(row: CloudAccount) {}
+
 const openSync = (row: CloudAccount) => {
   // 打开弹出框
   syncVisible.value = true;
@@ -373,20 +382,6 @@ const getStatusByAccountId = (cloudAccountId: string) => {
   return "INIT";
 };
 
-const getStatusIcone = (status: string) => {
-  return status === "FAILED"
-    ? "Warning"
-    : status === "INIT"
-    ? "Sunrise"
-    : status === "SUCCESS"
-    ? "CircleCheck"
-    : status === "SYNCING"
-    ? "Loading"
-    : status === "TIME_OUT"
-    ? "Timer"
-    : "InfoFilled";
-};
-
 const mapStatus = (status: string) => {
   return status === "FAILED"
     ? t("cloud_account.native_sync.failed", "同步失败")
@@ -401,19 +396,6 @@ const mapStatus = (status: string) => {
     : t("cloud_account.native_sync.unknown", "未知");
 };
 
-const getColorByAccountStatus = (status: string) => {
-  return status === "FAILED"
-    ? "var(--el-color-error)"
-    : status === "INIT"
-    ? "var(--el-color-warning)"
-    : status === "SUCCESS"
-    ? "var(--el-color-success)"
-    : status === "SYNCING"
-    ? "var(--el-color-primary)"
-    : status === "TIME_OUT"
-    ? "var(--el-color-danger-dark-2)"
-    : "var(--el-color-info)";
-};
 /**
  * 全选改变触发函数
  * @param val 改变的值
@@ -640,17 +622,17 @@ const tableConfig = ref<TableConfig>({
       t("commons.btn.edit", "编辑"),
       "primary",
       edit,
-      "EditPen",
+      undefined,
       undefined,
       permissionStore.hasPermission("[management-center]CLOUD_ACCOUNT:EDIT")
     ),
-    TableOperations.buildButtons().newInstance(
-      t("cloud_account.verification", "校验"),
+    /*TableOperations.buildButtons().newInstance(
+      t("cloud_account.verification", "连接校验"),
       "primary",
       check,
       "Search"
-    ),
-    TableOperations.buildButtons().newInstance(
+    ),*/
+    /*TableOperations.buildButtons().newInstance(
       t("cloud_account.sync.syncResource", "同步资源"),
       "primary",
       openSync,
@@ -667,12 +649,12 @@ const tableConfig = ref<TableConfig>({
       "Refresh",
       undefined,
       billSyncShow
-    ),
+    ),*/
     TableOperations.buildButtons().newInstance(
       t("cloud_account.edit_job_message", "数据同步设置"),
       "primary",
       updateJob,
-      "Document",
+      undefined,
       undefined,
       permissionStore.hasPermission(
         "[management-center]CLOUD_ACCOUNT:SYNC_SETTING"
@@ -680,11 +662,12 @@ const tableConfig = ref<TableConfig>({
     ),
     TableOperations.buildButtons().newInstance(
       t("commons.btn.delete", "删除"),
-      "primary",
+      "danger",
       deleteItem,
-      "Delete",
       undefined,
-      permissionStore.hasPermission("[management-center]CLOUD_ACCOUNT:DELETE")
+      undefined,
+      permissionStore.hasPermission("[management-center]CLOUD_ACCOUNT:DELETE"),
+      "#F54A45"
     ),
   ]),
 });
@@ -710,6 +693,7 @@ const syncAll = () => {
     :columns="columns"
     :data="cloudAccountList"
     :tableConfig="tableConfig"
+    show-selected-count
     v-loading="loading"
     @selection-change="handleSelectionChange"
     row-key="id"
@@ -723,76 +707,59 @@ const syncAll = () => {
         {{ t("commons.btn.add", "添加") }}
       </el-button>
       <el-button
+        @click="syncAll"
+        v-hasPermission="'[management-center]CLOUD_ACCOUNT:SYNC_RESOURCE'"
+      >
+        {{ t("commons.btn.full_sync", "全量同步") }}
+      </el-button>
+      <el-button
         @click="batchDelete"
         v-hasPermission="'[management-center]CLOUD_ACCOUNT:DELETE'"
       >
         {{ t("commons.btn.delete", "删除") }}
       </el-button>
-      <el-button
-        @click="syncAll"
-        v-hasPermission="'[management-center]CLOUD_ACCOUNT:SYNC_RESOURCE'"
-      >
-        {{ t("commons.btn.sync", "同步") }}
-      </el-button>
     </template>
     <el-table-column type="selection" />
     <el-table-column
       min-width="150"
-      prop="name"
       :label="t('commons.name', '名称')"
-      sortable
-    >
-      <template #default="scope">
-        <span
-          style="cursor: pointer; color: var(--el-color-primary)"
-          @click="showAccountDetail(scope.row)"
-        >
-          {{ scope.row.name }}
-        </span>
-      </template>
-    </el-table-column>
-    <el-table-column
-      min-width="120"
       column-key="platform"
       :filters="platformFilters"
       prop="platform"
-      :label="t('cloud_account.platform', '云平台')"
-      sortable
+      fixed
     >
       <template #default="scope">
         <div style="display: flex; align-items: center">
           <component
-            style="margin-right: 20%; display: flex"
+            style="margin-right: 8px"
             :is="platformIcon[scope.row.platform]?.component"
             v-bind="platformIcon[scope.row.platform]?.icon"
             :color="platformIcon[scope.row.platform]?.color"
             size="16px"
           ></component>
-          <span>{{ platformIcon[scope.row.platform].name }}</span>
+          <span
+            style="cursor: pointer; color: var(--el-color-primary)"
+            @click="showAccountDetail(scope.row, 'detail')"
+          >
+            {{ scope.row.name }}
+          </span>
         </div>
       </template>
     </el-table-column>
     <el-table-column
-      min-width="100"
+      min-width="150"
       prop="state"
-      :label="t('cloud_account.native_state', '状态')"
+      :label="t('cloud_account.native_state', '连接状态')"
       column-key="state"
       sortable
       :filters="[
-        { text: t('cloud_account.native_state_valid', '有效'), value: true },
-        { text: t('cloud_account.native_state_invalid', '无效'), value: false },
+        { text: '连接成功', value: true },
+        { text: '连接失败', value: false },
       ]"
     >
       <template #default="scope">
-        <div
-          style="display: flex; align-items: center"
-          :style="{ color: scope.row.state ? '' : 'red' }"
-        >
-          <span>{{
-            scope.row.state
-              ? t("cloud_account.native_state_valid", "有效")
-              : t("cloud_account.native_state_invalid", "无效")
-          }}</span>
+        <div class="status-tip" :class="scope.row.state ? 'valid' : 'invalid'">
+          {{ scope.row.state ? "连接成功" : "连接失败" }}
         </div>
       </template>
     </el-table-column>
@@ -838,23 +805,31 @@ const syncAll = () => {
             </template>
             <div
               @click="showAccountDetail(scope.row)"
-              style="display: flex; width: 60%; justify-content: space-between"
-              :style="{
-                color: getColorByAccountStatus(
-                  getStatusByAccountId(scope.row.id)
-                ),
-              }"
+              style="
+                display: flex;
+                cursor: pointer;
+                flex-flow: row nowrap;
+                align-items: center;
+              "
             >
-              <span>{{ mapStatus(getStatusByAccountId(scope.row.id)) }}</span>
-              <ce-icon
-                style="cursor: pointer; font-size: 20px"
-                :code="getStatusIcone(getStatusByAccountId(scope.row.id))"
+              <el-icon
+                size="14.67px"
+                :color="
+                  getColorByAccountStatus(getStatusByAccountId(scope.row.id))
+                "
                 :class="
                   getStatusByAccountId(scope.row.id) === 'SYNCING'
                     ? 'is-loading'
                     : ''
                 "
-              ></ce-icon>
+              >
+                <component
+                  :is="getStatusIcon(getStatusByAccountId(scope.row.id))"
+                />
+              </el-icon>
+              <span style="margin-left: 6px">
+                {{ mapStatus(getStatusByAccountId(scope.row.id)) }}
+              </span>
             </div>
           </el-tooltip>
         </div>
@@ -872,11 +847,43 @@ const syncAll = () => {
       :label="t('commons.create_time', '创建时间')"
       sortable
     />
-    <fu-table-operations
-      fixed="right"
-      v-bind="tableConfig.tableOperations"
-      fix
-    />
+
+    <el-table-column min-width="165" label="操作" fixed="right">
+      <template #default="scope">
+        <div
+          style="
+            padding: 0 9px;
+            width: auto;
+            display: inline-flex;
+            flex-direction: row;
+            flex-wrap: nowrap;
+            align-items: center;
+          "
+        >
+          <el-button
+            link
+            @click="openSyncDialog(scope.row)"
+            type="primary"
+            v-if="
+              permissionStore.hasPermission(
+                '[management-center]CLOUD_ACCOUNT:SYNC_RESOURCE'
+              ) || billSyncShow(scope.row)
+            "
+          >
+            {{ t("cloud_account.sync.sync", "同步") }}
+          </el-button>
+          <el-button link @click="check(scope.row)" type="primary">
+            {{ t("cloud_account.verification", "连接校验") }}
+          </el-button>
+          <MoreOptionsButton
+            style="margin-left: 5px"
+            :buttons="tableConfig.tableOperations.buttons"
+            :row="scope.row"
+          />
+        </div>
+      </template>
+    </el-table-column>
+
     <template #buttons>
       <CeTableColumnSelect :columns="columns" />
     </template>
@@ -1036,4 +1043,28 @@ const syncAll = () => {
   </el-dialog>
 </template>
 
-<style lang="scss"></style>
+<style lang="scss" scoped>
+.status-tip {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+  padding: 1px 6px;
+  width: 68px;
+  height: 24px;
+  border-radius: 2px;
+  font-style: normal;
+  font-weight: 400;
+  font-size: 14px;
+  line-height: 22px;
+
+  &.valid {
+    background: rgba(52, 199, 36, 0.2);
+    color: #2ea121;
+  }
+  &.invalid {
+    background: rgba(245, 74, 69, 0.2);
+    color: #d83931;
+  }
+}
+</style>

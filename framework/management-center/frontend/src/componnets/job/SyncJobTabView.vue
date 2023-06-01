@@ -1,54 +1,50 @@
 <template>
-  <el-empty description="不存在定时任务" v-if="empty" />
-  <el-tabs
-    v-loading="jobLoading"
-    v-model="activeModuleName"
-    :before-leave="beforeLeave"
-  >
-    <template v-for="mod in moduleJobs" :key="mod.name">
-      <el-tab-pane
-        :label="mod.name"
-        v-if="
-          mod.jobDetailsList.some((job) =>
-            supportJobGroups.includes(job.jobGroup)
-          )
-        "
-        :name="mod.module"
-      >
-        <base-container>
-          <template #content>
-            <JobModuleItem
-              ref="jobModule"
-              :module="mod"
-              :regions="regions"
-              :cloudAccount="cloudAccount"
-              :readOnly="readOnly"
-              :border="border"
-            >
-            </JobModuleItem>
-          </template>
-          <template #formFooter v-if="operation">
-            <el-button @click="clear">{{
-              t("commons.btn.cancel", "取消")
-            }}</el-button>
-            <el-button type="primary" @click="submitForm">{{
-              t("commons.btn.save", "保存")
-            }}</el-button>
-          </template>
-        </base-container>
-      </el-tab-pane>
-    </template>
-  </el-tabs>
+  <div style="width: 100%" v-loading="jobLoading">
+    <el-empty description="不存在定时任务" v-if="validModuleJobs.length == 0" />
+    <el-tabs v-model="activeModule" v-if="validModuleJobs.length > 0">
+      <template v-for="mod in validModuleJobs" :key="mod.name">
+        <el-tab-pane :label="mod.name" :name="mod.module"></el-tab-pane>
+      </template>
+    </el-tabs>
+    <el-main>
+      <SyncBillSettingView
+        v-if="billJob.length > 0 && cloudAccount"
+        :job-details="billJob"
+        :cloud-account="cloudAccount"
+      />
+      <SyncResourceSettingView
+        v-if="resourceJob.length > 0 && cloudAccount"
+        :job-details="resourceJob"
+        :regions="regions"
+        :cloud-account="cloudAccount"
+      />
+      <SyncComplianceSettingView
+        v-if="complianceJob.length > 0 && cloudAccount"
+        :job-details="complianceJob"
+        :cloud-account="cloudAccount"
+      />
+    </el-main>
+  </div>
 </template>
 <script setup lang="ts">
-import { ref, onMounted } from "vue";
-import type { CloudAccount, ModuleJob, Region } from "@/api/cloud_account/type";
+import { ref, onMounted, computed } from "vue";
+import type {
+  CloudAccount,
+  JobDetails,
+  ModuleJob,
+  Region,
+} from "@/api/cloud_account/type";
 import JobModuleItem from "@/componnets/job/JobModuleItem.vue";
 import { ElMessage } from "element-plus";
 import cloudAccountApi from "@/api/cloud_account";
 import { useRouter } from "vue-router";
 import { useI18n } from "vue-i18n";
 import _ from "lodash";
+
+import SyncBillSettingView from "./view/SyncBillSettingView.vue";
+import SyncComplianceSettingView from "./view/SyncComplianceSettingView.vue";
+import SyncResourceSettingView from "./view/SyncResourceSettingView.vue";
+
 const { t } = useI18n();
 const router = useRouter();
 
@@ -59,14 +55,9 @@ const jobModule = ref<Array<InstanceType<typeof JobModuleItem>> | null>(null);
 const jobLoading = ref<boolean>(false);
 
 /**
- * 没有定时任务的时候 显示空页面
- */
-const empty = ref<boolean>(false);
-
-/**
  * 选中的模块
  */
-const activeModuleName = ref<string>();
+const activeModule = ref<string>();
 
 /**
  * 当前云账号区域
@@ -87,7 +78,7 @@ const submitForm: (isRouter: boolean) => void = (isRouter = true) => {
           .updateJobs(
             {
               cloudAccountModuleJobs: moduleJobs.value,
-              cloudAccountId: props.accountId as string,
+              cloudAccountId: props.id as string,
             },
             jobLoading
           )
@@ -123,25 +114,9 @@ const moduleJobs = ref<Array<ModuleJob>>([]);
  */
 const cloneModuleJobs = ref<Array<ModuleJob>>([]);
 
-const props = defineProps({
-  accountId: {
-    type: String,
-    requerid: true,
-  },
-  readOnly: {
-    type: Boolean,
-    default: false,
-  },
-  border: {
-    required: false,
-    type: Boolean,
-    default: true,
-  },
-  operation: {
-    type: Boolean,
-    default: true,
-  },
-});
+const props = defineProps<{
+  id: string;
+}>();
 
 /**
  *回滚
@@ -151,9 +126,7 @@ const rollBack = () => {
 };
 
 onMounted(() => {
-  if (props.accountId) {
-    init(props.accountId);
-  }
+  init(props.id);
 });
 /**
  * 支持的 任务组
@@ -163,6 +136,50 @@ const supportJobGroups = [
   "CLOUD_ACCOUNT_BILL_SYNC_GROUP",
   "CLOUD_COMPLIANCE_RESOURCE_SYNC_GROUP",
 ];
+
+const validModuleJobs = computed<Array<ModuleJob>>(() => {
+  return _.filter(moduleJobs.value, (mod) => {
+    return mod.jobDetailsList.some((job) =>
+      supportJobGroups.includes(job.jobGroup)
+    );
+  });
+});
+
+const selectedModuleJob = computed<ModuleJob | undefined>(() => {
+  return _.find(
+    validModuleJobs.value,
+    (mod) => mod.module === activeModule.value
+  );
+});
+
+/**
+ * 区域定时任务
+ */
+
+const resourceJob = computed<Array<JobDetails>>(() =>
+  _.filter(
+    selectedModuleJob.value?.jobDetailsList,
+    (j) => j.jobGroup === "CLOUD_ACCOUNT_RESOURCE_SYNC_GROUP"
+  )
+);
+
+/**
+ * 账单设置定时任务
+ */
+const billJob = computed<Array<JobDetails>>(() =>
+  _.filter(
+    selectedModuleJob.value?.jobDetailsList,
+    (j) => j.jobGroup === "CLOUD_ACCOUNT_BILL_SYNC_GROUP"
+  )
+);
+
+const complianceJob = computed<Array<JobDetails>>(() =>
+  _.filter(
+    selectedModuleJob.value?.jobDetailsList,
+    (j) => j.jobGroup === "CLOUD_COMPLIANCE_RESOURCE_SYNC_GROUP"
+  )
+);
+
 /**
  * 初始化定时任务数据
  */
@@ -171,14 +188,10 @@ const init = (cloud_account_id: string) => {
   // 获取所有模块的定时任务
   const p1 = cloudAccountApi.getJobs(cloud_account_id).then((ok) => {
     moduleJobs.value = ok.data.cloudAccountModuleJobs;
-    empty.value =
-      !ok.data.cloudAccountModuleJobs ||
-      (ok.data.cloudAccountModuleJobs &&
-        ok.data.cloudAccountModuleJobs.length === 0);
     cloneModuleJobs.value = _.cloneDeep(ok.data.cloudAccountModuleJobs);
     if (moduleJobs.value.length > 0) {
       // 设置第一个为选中的
-      activeModuleName.value = moduleJobs.value[0].module;
+      activeModule.value = moduleJobs.value[0].module;
     }
   });
   // 获取区域
@@ -201,9 +214,7 @@ defineExpose({
 });
 </script>
 <style lang="scss" scoped>
-.el-tabs__content {
-  position: inherit !important;
-  overflow-y: auto !important;
-  height: calc(100vh - 310px) !important;
+.el-main {
+  padding: 0 0 var(--el-main-padding) 0;
 }
 </style>
