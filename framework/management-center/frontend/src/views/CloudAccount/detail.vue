@@ -26,6 +26,7 @@ import DetailFormTitle from "@/componnets/DetailFormTitle.vue";
 import CurrencyFormat from "@commons/utils/currencyFormat";
 import type { CloudAccount } from "@/api/cloud_account/type";
 import EditAccount from "./edit.vue";
+import SyncAccountDialog from "@/views/CloudAccount/SyncAccountDialog.vue";
 
 const props = defineProps<{
   id: string;
@@ -33,17 +34,20 @@ const props = defineProps<{
 
 const permissionStore = usePermissionStore();
 
+const syncAccountDialogRef = ref<InstanceType<typeof SyncAccountDialog>>();
+
+function openSyncDialog(row: CloudAccount) {
+  syncAccountDialogRef.value?.open(row);
+}
+
 const { t } = useI18n();
 const router = useRouter();
 const basicEditable = ref(false);
 const syncEditable = ref(false);
 const loading = ref(false);
-const accountFormRef = ref<FormInstance>();
 const accountBalance = ref<number | string>();
-const originAccountName = ref();
 
 const resourceCountArray = ref<ResourceCount[]>();
-const job = ref<any>(null);
 const loadingSyncRecord = ref(false); // 同步记录加载标识
 const syncRecords = ref<Array<AccountJobRecord>>([]); // 同步记录列表
 const syncRecordTotal = ref(0); // 同步记录总数
@@ -425,7 +429,7 @@ const buttonOperations = new TableOperations([
   TableOperations.buildButtons().newInstance(
     "同步资源/账单",
     "primary",
-    edit,
+    openSyncDialog,
     undefined,
     undefined,
     permissionStore.hasPermission("[management-center]CLOUD_ACCOUNT:EDIT")
@@ -932,6 +936,8 @@ onBeforeUnmount(() => {
         </el-container>
       </el-main>
     </el-scrollbar>
+
+    <SyncAccountDialog ref="syncAccountDialogRef" />
 
     <EditAccount ref="accountDrawerRef" @submit="afterSubmit" />
   </el-container>
