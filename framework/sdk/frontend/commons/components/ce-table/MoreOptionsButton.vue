@@ -11,8 +11,9 @@ const props = withDefaults(
     name?: string;
     row?: any;
     trigger?: "hover" | "click";
+    border?: boolean;
   }>(),
-  { trigger: "hover" }
+  { trigger: "hover", border: false }
 );
 
 const _buttons = computed(() => {
@@ -35,6 +36,13 @@ const dropdownDisabled = computed(() => {
     return _.isFunction(btn.disabled) ? btn.disabled(props.row) : btn.disabled;
   });
 });
+
+const show = computed<boolean>(() => {
+  return _buttons.value && _buttons.value.length > 0;
+});
+
+defineExpose({ show });
+
 function handleCommand(btn: any) {
   btn.click(props.row);
 }
@@ -45,16 +53,20 @@ function handleCommand(btn: any) {
     :disabled="dropdownDisabled"
     :trigger="trigger"
     @command="handleCommand"
-    v-if="_buttons && _buttons.length > 0"
+    v-if="show"
   >
-    <div class="more-operation" v-if="!name">
+    <div class="more-operation" :class="border ? 'border' : ''" v-if="!name">
       <slot name="icon">
         <el-icon>
           <MoreFilled />
         </el-icon>
       </slot>
     </div>
-    <div class="more-operation-text" v-if="name">
+    <div
+      class="more-operation-text"
+      :class="border ? 'border' : ''"
+      v-if="name"
+    >
       {{ name }}&nbsp;
       <el-icon><ArrowDown /></el-icon>
     </div>
@@ -88,11 +100,16 @@ function handleCommand(btn: any) {
   flex-wrap: nowrap;
   align-items: center;
   justify-content: center;
+
+  &.border {
+    border: 1px solid #3370ff;
+  }
+
+  &:hover {
+    background-color: rgba(51, 112, 255, 0.1);
+  }
 }
 
-.more-operation:hover {
-  background-color: rgba(51, 112, 255, 0.1);
-}
 .more-operation-text {
   display: flex;
   cursor: pointer;
@@ -109,13 +126,17 @@ function handleCommand(btn: any) {
   flex-direction: row;
   flex-wrap: nowrap;
   align-items: center;
-}
-.more-operation-text:hover {
-  background: linear-gradient(
-      0deg,
-      rgba(51, 112, 255, 0.15),
-      rgba(51, 112, 255, 0.15)
-    ),
-    #ffffff;
+
+  &.border {
+    border: 1px solid #3370ff;
+  }
+  &:hover {
+    background: linear-gradient(
+        0deg,
+        rgba(51, 112, 255, 0.15),
+        rgba(51, 112, 255, 0.15)
+      ),
+      #ffffff;
+  }
 }
 </style>

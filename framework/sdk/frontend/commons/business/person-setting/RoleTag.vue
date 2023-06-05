@@ -3,7 +3,7 @@ import type { Role } from "@commons/api/role/type";
 
 const props = withDefaults(
   defineProps<{
-    role: Role;
+    role?: Role;
     defaultTag?: boolean;
     clickable?: boolean;
   }>(),

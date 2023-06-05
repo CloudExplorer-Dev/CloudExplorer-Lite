@@ -46,8 +46,6 @@ const message = {
   },
   // 雲賬號相關國際化
   cloud_account: {
-    syncBill: "同步帳單",
-    syncResource: "同步資源",
     name: "雲賬號名稱",
     name_placeholder: "請輸入雲賬號名稱",
     base_setting: "基本設置",
@@ -82,6 +80,9 @@ const message = {
     },
     resource: "我的資源",
     sync: {
+      sync: "同步",
+      syncBill: "同步帳單",
+      syncResource: "同步資源",
       synchronizing: "同步中",
       unit: "個",
       detail: "詳情",

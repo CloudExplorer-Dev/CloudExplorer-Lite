@@ -1,48 +1,42 @@
 <template>
-  <base-container>
-    <template #header>
-      <span>
-        {{ jobTypeDescription + "频率" }}
-      </span>
-    </template>
-    <template #content>
-      <div
-        class="corn_item_wapper"
-        v-for="details in jobDetails"
-        :key="details.jobName"
-      >
-        <el-checkbox
-          :checked="details.active"
-          :label="details.active"
-          v-model="details.active"
-          :disabled="readOnly || details.activeReadOnly"
-        >
-          <div style="display: flex; align-items: center">
-            <span style="width: 120px; white-space: NORMAL"
-              >{{ details.description.replace("同步", "") }}:</span
-            >
-            <div style="width: 550px">
-              <cron-interval-view
-                ref="cronIntervalViewRef"
-                :readOnly="readOnly || details.cronReadOnly"
-                v-if="details.jobType === 'INTERVAL'"
-                v-model:unit="details.unit"
-                v-model:job-type="details.jobType"
-                v-model:interval="details.interval"
-              ></cron-interval-view>
-              <cron-in-view
-                :readOnly="readOnly || details.cronReadOnly"
-                v-else
-                v-model:job-type="details.jobType"
-                ref="cronInViewRef"
-                v-model="details.cronExpression"
-              ></cron-in-view>
-            </div>
-          </div>
-        </el-checkbox>
+  <el-main>
+    <DetailFormTitle style="margin-bottom: 16px">
+      {{ jobTypeDescription + "频率" }}
+    </DetailFormTitle>
+
+    <div
+      class="corn_item_wrapper"
+      v-for="details in jobDetails"
+      :key="details.jobName"
+    >
+      <div>{{ details.description }}</div>
+
+      <el-switch
+        v-model="details.active"
+        :disabled="readOnly || details.activeReadOnly"
+      />
+
+      <div style="display: flex; align-items: center" v-if="details.active">
+        <div style="width: 550px">
+          <cron-interval-view
+            ref="cronIntervalViewRef"
+            :readOnly="readOnly || details.cronReadOnly"
+            v-if="details.jobType === 'INTERVAL'"
+            v-model:unit="details.unit"
+            v-model:job-type="details.jobType"
+            v-model:interval="details.interval"
+          />
+          <cron-in-view
+            :readOnly="readOnly || details.cronReadOnly"
+            v-else
+            v-model:job-type="details.jobType"
+            ref="cronInViewRef"
+            v-model="details.cronExpression"
+          />
+        </div>
       </div>
-    </template>
-  </base-container>
+    </div>
+  </el-main>
 </template>
 <script setup lang="ts">
 import { ref, watch } from "vue";
@@ -51,6 +45,7 @@ import type { JobDetails } from "@/api/cloud_account/type";
 import CronInView from "@/componnets/job/job_setting/CronInView.vue";
 import CronIntervalView from "@/componnets/job/job_setting/CronIntervalView.vue";
 import _ from "lodash";
+import DetailFormTitle from "@/componnets/DetailFormTitle.vue";
 
 const { t } = useI18n();
 // 校验实例对象
@@ -124,9 +119,7 @@ const validate = () => {
 defineExpose({ validate });
 </script>
 <style lang="scss" scoped>
-.corn_item_wapper {
-  height: 50px;
-  margin: 3px 0;
-  border-radius: 3px;
+.corn_item_wrapper {
+  margin-bottom: 12px;
 }
 </style>

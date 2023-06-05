@@ -1,18 +1,16 @@
 <template>
-  <base-container>
-    <template #header> <span>账单获取方式</span></template>
-    <template #content>
-      <CeForm
-        require-asterisk-position="right"
-        label-position="top"
-        :readOnly="readOnly"
-        :formViewData="BillFrom"
-        ref="ceform"
-        :otherParams="cloudAccount"
-        v-model="billData"
-      ></CeForm>
-    </template>
-  </base-container>
+  <el-main>
+    <DetailFormTitle title="账单获取方式" style="margin-bottom: 16px" />
+    <CeForm
+      require-asterisk-position="right"
+      label-position="top"
+      :readOnly="readOnly"
+      :formViewData="BillFrom"
+      ref="ceform"
+      :otherParams="cloudAccount"
+      v-model="billData"
+    ></CeForm>
+  </el-main>
 </template>
 <script setup lang="ts">
 import type { JobDetails } from "@/api/cloud_account/type";
@@ -20,7 +18,8 @@ import cloudAccountApi from "@/api/cloud_account";
 import { ref, watch } from "vue";
 import type { CloudAccount } from "@/api/cloud_account/type";
 import type { FormView } from "@commons/components/ce-form/type";
-import type { SimpleMap } from "../../../../../../sdk/frontend/commons/api/base/type";
+import type { SimpleMap } from "@commons/api/base/type";
+import DetailFormTitle from "@/componnets/DetailFormTitle.vue";
 /**
  * 账单设置form表单
  */

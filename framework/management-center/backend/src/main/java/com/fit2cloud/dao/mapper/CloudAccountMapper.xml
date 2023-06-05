@@ -119,4 +119,9 @@
           job_record_info
         ${ew.customSqlSegment}
     </select>
+
+    <select id="listTypes" resultType="string">
+        SELECT distinct description from job_record
+        ${ew.customSqlSegment}
+    </select>
 </mapper>

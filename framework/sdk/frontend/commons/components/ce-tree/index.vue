@@ -130,7 +130,7 @@ const props = withDefaults(
     /**
      * 选中的数据
      */
-    modelValue: TreeNode;
+    modelValue?: TreeNode;
     /**
      * 树形数据
      */

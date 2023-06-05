@@ -1,54 +1,53 @@
 <template>
-  <base-container>
-    <template #header>
-      <span>
-        {{ t("cloud_account.sync.range", "同步范围") }}
-      </span>
-    </template>
-    <template #content>
-      <el-form
-        v-if="jobDetails"
-        :inline="true"
-        status-icon
-        label-width="120px"
-        label-suffix=":"
-        label-position="left"
+  <el-main>
+    <DetailFormTitle
+      :title="t('cloud_account.sync.range', '同步范围')"
+      style="margin-bottom: 16px"
+    />
+    <el-form
+      v-if="jobDetails"
+      :inline="true"
+      status-icon
+      label-width="120px"
+      label-suffix=":"
+      label-position="left"
+    >
+      <el-checkbox
+        style="margin-bottom: 10px"
+        v-model="checkAll"
+        :disabled="readOnly"
+        @change="handleCheckAllChange"
       >
+        已选区域({{ checkedRegionIds.length }})
+      </el-checkbox>
+      <el-checkbox-group v-model="checkedRegionIds">
         <el-checkbox
-          style="margin-bottom: 10px"
-          v-model="checkAll"
+          :title="region.name"
+          v-for="region in regions"
+          :key="region.regionId"
+          :label="region.regionId"
+          size="large"
           :disabled="readOnly"
-          @change="handleCheckAllChange"
-          >全选</el-checkbox
-        >
-        <el-checkbox-group v-model="checkedRegionIds">
-          <el-checkbox
-            :title="region.name"
-            v-for="region in regions"
-            :key="region.regionId"
-            :label="region.regionId"
-            size="large"
-            :disabled="readOnly"
-            ><span
-              style="
-                display: inline-block;
-                width: 120px;
-                overflow: hidden;
-                text-overflow: ellipsis;
-              "
-            >
-              {{ region.name }}
-            </span>
-          </el-checkbox>
-        </el-checkbox-group>
-      </el-form>
-    </template>
-  </base-container>
+          ><span
+            style="
+              display: inline-block;
+              width: 120px;
+              overflow: hidden;
+              text-overflow: ellipsis;
+            "
+          >
+            {{ region.name }}
+          </span>
+        </el-checkbox>
+      </el-checkbox-group>
+    </el-form>
+  </el-main>
 </template>
 <script setup lang="ts">
 import type { JobDetails, Region } from "@/api/cloud_account/type";
 import { computed } from "vue";
 import { useI18n } from "vue-i18n";
+import DetailFormTitle from "@/componnets/DetailFormTitle.vue";
 const { t } = useI18n();
 const props = defineProps<{
   /**

@@ -87,6 +87,7 @@ const message = {
       disable: "禁用",
       copy: "复制",
       sync: "同步",
+      full_sync: "全量同步",
       view_api: "查看 API",
       prev: "上一步",
       next: "下一步",

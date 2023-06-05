@@ -18,7 +18,7 @@ import java.util.Map;
  */
 public class CloudAccountSyncJob {
 
-    @Name("同步扫描合规资源")
+    @Name("扫描合规资源")
     public static class SyncScanJob extends AsyncJob implements Job {
         @Override
         protected void run(Map<String, Object> map) {

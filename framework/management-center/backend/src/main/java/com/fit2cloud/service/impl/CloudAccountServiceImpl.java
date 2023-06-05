@@ -1,5 +1,6 @@
 package com.fit2cloud.service.impl;
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.core.metadata.OrderItem;
@@ -77,6 +78,7 @@ public class CloudAccountServiceImpl extends ServiceImpl<CloudAccountMapper, Clo
     @Resource
     private RestTemplate restTemplate;
     SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+    SimpleDateFormat simpleDateFormat2 = new SimpleDateFormat("yyyy/MM/dd");
     @Resource
     private IBaseCloudAccountService baseCloudAccountService;
     @Resource
@@ -419,17 +421,17 @@ public class CloudAccountServiceImpl extends ServiceImpl<CloudAccountMapper, Clo
         // 虚拟机
         QueryWrapper<VmCloudServer> vmQueryWrapper = Wrappers.query();
         vmQueryWrapper.lambda().ne(VmCloudServer::getInstanceStatus, "deleted").eq(VmCloudServer::getAccountId, accountId);
-        ResourceCountResponse vm = new ResourceCountResponse("xuniyunzhuji", "云主机", cloudServerService.count(vmQueryWrapper));
+        ResourceCountResponse vm = new ResourceCountResponse("xuniyunzhuji", "云主机", cloudServerService.count(vmQueryWrapper), "台");
         list.add(vm);
         // 磁盘
         QueryWrapper<VmCloudDisk> diskQueryWrapper = Wrappers.query();
         diskQueryWrapper.lambda().ne(VmCloudDisk::getStatus, "deleted").eq(VmCloudDisk::getAccountId, accountId);
-        ResourceCountResponse disk = new ResourceCountResponse("yuncunchu", "磁盘", cloudDiskService.count(diskQueryWrapper));
+        ResourceCountResponse disk = new ResourceCountResponse("yuncunchu", "磁盘", cloudDiskService.count(diskQueryWrapper), "个");
         list.add(disk);
         // 镜像
         QueryWrapper<VmCloudImage> imageQueryWrapper = Wrappers.query();
         imageQueryWrapper.lambda().ne(VmCloudImage::getStatus, "deleted").eq(VmCloudImage::getAccountId, accountId);
-        ResourceCountResponse image = new ResourceCountResponse("jingxiang", "镜像", cloudImageService.count(imageQueryWrapper));
+        ResourceCountResponse image = new ResourceCountResponse("jingxiang", "镜像", cloudImageService.count(imageQueryWrapper), "个");
         list.add(image);
         return list;
     }
@@ -508,8 +510,39 @@ public class CloudAccountServiceImpl extends ServiceImpl<CloudAccountMapper, Clo
     @Override
     public IPage<JobRecordResourceResponse> pageSyncRecord(SyncRecordRequest syncRecordRequest) {
         Page<JobRecordResourceResponse> syncRecordPage = PageUtil.of(syncRecordRequest, JobRecordResourceResponse.class);
-        QueryWrapper wrapper = Wrappers.query().in(ColumnNameUtil.getColumnName(JobRecord::getType, false), List.of(JobTypeConstants.CLOUD_ACCOUNT_SYNC_JOB, JobTypeConstants.CLOUD_ACCOUNT_SYNC_BILL_JOB));
+        QueryWrapper wrapper = Wrappers.query().in(ColumnNameUtil.getColumnName(JobRecord::getType, false), List.of(JobTypeConstants.CLOUD_ACCOUNT_SYNC_JOB, JobTypeConstants.CLOUD_ACCOUNT_SYNC_BILL_JOB, JobTypeConstants.CLOUD_ACCOUNT_SYNC_METRIC_MONITOR));
         wrapper.eq("resource_id", syncRecordRequest.getCloudAccountId());
+
+        wrapper.eq(StringUtils.isNotBlank(syncRecordRequest.getDescription()), ColumnNameUtil.getColumnName(JobRecord::getDescription, false), syncRecordRequest.getDescription());
+
+        wrapper.eq(syncRecordRequest.getStatus() != null, ColumnNameUtil.getColumnName(JobRecord::getStatus, false), syncRecordRequest.getStatus());
+
+        if (syncRecordRequest.getCreateTime() != null) {
+            Calendar cal1 = Calendar.getInstance();
+            cal1.setTime(syncRecordRequest.getCreateTime());
+            cal1.set(Calendar.HOUR_OF_DAY, 0);
+            cal1.set(Calendar.SECOND, 0);
+            cal1.set(Calendar.MINUTE, 0);
+            cal1.set(Calendar.MILLISECOND, 0);
+
+            Calendar cal2 = Calendar.getInstance();
+            cal2.setTime(syncRecordRequest.getCreateTime());
+            cal2.set(Calendar.HOUR_OF_DAY, 24);
+            cal2.set(Calendar.SECOND, 0);
+            cal2.set(Calendar.MINUTE, 0);
+            cal2.set(Calendar.MILLISECOND, 0);
+
+            wrapper.between(ColumnNameUtil.getColumnName(JobRecord::getCreateTime, false), cal1.getTime(), cal2.getTime());
+        }
+
         return baseMapper.pageSyncRecord(syncRecordPage, wrapper);
+    }
+
+    @Override
+    public List<String> listTypes() {
+        LambdaQueryWrapper<JobRecord> wrapper = new LambdaQueryWrapper<>();
+        wrapper.in(JobRecord::getType, List.of(JobTypeConstants.CLOUD_ACCOUNT_SYNC_JOB, JobTypeConstants.CLOUD_ACCOUNT_SYNC_BILL_JOB));
+
+        return baseMapper.listTypes(wrapper);
     }
 }

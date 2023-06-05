@@ -1,23 +1,22 @@
 <script setup lang="ts">
-import { ref, onMounted, computed } from "vue";
+import { ref, computed } from "vue";
 import { ElMessage } from "element-plus";
 import cloudAccountApi from "@/api/cloud_account";
 import type { Platform, UpdateAccount } from "@/api/cloud_account/type";
-import { useRouter } from "vue-router";
 import { useI18n } from "vue-i18n";
 import type { FormInstance } from "element-plus";
 import CloudAccountCredentialForm from "@commons/business/cloud-account/CloudAccountCredentialForm.vue";
+import CeDrawer from "@commons/components/ce-drawer/index.vue";
 
-const props = defineProps<{
-  id: string;
-}>();
+const id = ref<string>("");
 
-const router = useRouter();
 const { t } = useI18n();
 const loading = ref<boolean>(false);
 
+const accountDrawerRef = ref<InstanceType<typeof CeDrawer>>();
+
 const form = ref<UpdateAccount>({
-  id: props.id,
+  id: id.value,
   platform: "",
   name: "",
   credential: {},
@@ -32,6 +31,8 @@ const activePlatform = computed(() => {
   );
 });
 
+const emit = defineEmits(["submit"]);
+
 /**
  * 更新云账号
  */
@@ -41,8 +42,9 @@ const update = () => {
       cloudAccountApi
         .updateCloudAccount(form.value as UpdateAccount, loading)
         .then(() => {
-          router.push({ name: "cloud_account_list" });
           ElMessage.success(t("commons.msg.op_success", "操作成功"));
+          clear();
+          emit("submit");
         });
     }
   });
@@ -53,13 +55,6 @@ const credentialFormRef = ref<InstanceType<
 > | null>();
 
 /**
- * 组建挂载
- */
-onMounted(() => {
-  init();
-});
-
-/**
  * 初始化对象
  */
 const init = () => {
@@ -68,7 +63,8 @@ const init = () => {
     platforms.value = ok.data;
   });
   // 云账号id
-  cloudAccountApi.getCloudAccount(props.id, loading).then((ok) => {
+  cloudAccountApi.getCloudAccount(id.value, loading).then((ok) => {
+    form.value.id = id.value;
     form.value.name = ok.data.name;
     form.value.platform = ok.data.platform;
     form.value.credential = JSON.parse(ok.data.credential);
@@ -78,35 +74,39 @@ const init = () => {
  * 取消,去列表页面
  */
 const clear = () => {
-  router.push({ name: "cloud_account_list" });
+  accountDrawerRef.value?.close();
+  form.value = {
+    id: id.value,
+    platform: "",
+    name: "",
+    credential: {},
+  };
 };
+
+function open(_id: string) {
+  id.value = _id;
+  accountDrawerRef.value?.open();
+  init();
+}
+
+defineExpose({ open, clear });
 </script>
 <template>
-  <el-container class="create-catalog-container" v-loading="loading">
-    <el-main ref="create-catalog-container">
-      <div class="form-div">
-        <CloudAccountCredentialForm
-          v-model="form"
-          :active-platform="activePlatform"
-          ref="credentialFormRef"
-        />
-      </div>
-    </el-main>
-    <el-footer>
-      <div class="footer">
-        <div class="form-div">
-          <div class="footer-btn">
-            <el-button class="cancel-btn" @click="clear">{{
-              $t("commons.btn.cancel")
-            }}</el-button>
-            <el-button class="save-btn" type="primary" @click="update()">{{
-              $t("commons.btn.save")
-            }}</el-button>
-          </div>
-        </div>
-      </div>
-    </el-footer>
-  </el-container>
+  <CeDrawer
+    ref="accountDrawerRef"
+    title="编辑云账号信息"
+    confirm-btn-name="保存"
+    @confirm="update"
+    @cancel="clear"
+    :disable-btn="loading"
+  >
+    <CloudAccountCredentialForm
+      v-if="activePlatform"
+      v-model="form"
+      :active-platform="activePlatform"
+      ref="credentialFormRef"
+    />
+  </CeDrawer>
 </template>
 
-<style lang="scss"></style>
+<style lang="scss" scoped></style>

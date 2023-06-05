@@ -19,4 +19,6 @@ public class ResourceCountResponse {
     private String name;
     @ApiModelProperty(value = "资源计数")
     private long count;
+    @ApiModelProperty(value = "单位")
+    private String unit;
 }
