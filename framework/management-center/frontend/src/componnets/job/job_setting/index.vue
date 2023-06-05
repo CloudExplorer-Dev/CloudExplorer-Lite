@@ -13,6 +13,7 @@
 
       <el-switch
         v-model="details.active"
+        size="small"
         :disabled="readOnly || details.activeReadOnly"
       />
 
