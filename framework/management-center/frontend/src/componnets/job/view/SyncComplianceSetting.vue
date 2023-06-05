@@ -1,10 +1,18 @@
 <template>
-  <JobSetting
-    ref="settingRef"
-    :jobDetails="jobDetails"
-    jobTypeDescription="扫描"
-    :readOnly="false"
-  />
+  <div
+    style="
+      background-color: var(--ce-main-content-bg-color, #fff);
+      border-top-left-radius: var(--ce-main-content-border-radius);
+      border-top-right-radius: var(--ce-main-content-border-radius);
+    "
+  >
+    <JobSetting
+      ref="settingRef"
+      :jobDetails="jobDetails"
+      jobTypeDescription="扫描"
+      :readOnly="false"
+    />
+  </div>
 </template>
 <script setup lang="ts">
 import type { JobDetails } from "@/api/cloud_account/type";

@@ -15,6 +15,7 @@
       <SyncResourceSettingView
         v-if="resourceJob.length > 0 && cloudAccount"
         :job-details="resourceJob"
+        :metric-job-details="metricResourceJob"
         :regions="regions"
         :cloud-account="cloudAccount"
       />
@@ -135,6 +136,7 @@ const supportJobGroups = [
   "CLOUD_ACCOUNT_RESOURCE_SYNC_GROUP",
   "CLOUD_ACCOUNT_BILL_SYNC_GROUP",
   "CLOUD_COMPLIANCE_RESOURCE_SYNC_GROUP",
+  "CLOUD_RESOURCE_METRIC_SYNC_GROUP",
 ];
 
 const validModuleJobs = computed<Array<ModuleJob>>(() => {
@@ -160,6 +162,13 @@ const resourceJob = computed<Array<JobDetails>>(() =>
   _.filter(
     selectedModuleJob.value?.jobDetailsList,
     (j) => j.jobGroup === "CLOUD_ACCOUNT_RESOURCE_SYNC_GROUP"
+  )
+);
+
+const metricResourceJob = computed<Array<JobDetails>>(() =>
+  _.filter(
+    selectedModuleJob.value?.jobDetailsList,
+    (j) => j.jobGroup === "CLOUD_RESOURCE_METRIC_SYNC_GROUP"
   )
 );
 

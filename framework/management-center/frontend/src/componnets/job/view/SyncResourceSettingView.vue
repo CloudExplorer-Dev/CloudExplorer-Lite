@@ -25,6 +25,21 @@
         </DetailFormValue>
       </el-descriptions-item>
     </template>
+    <template v-for="(item, index) in metricJobDetails" :key="index">
+      <el-descriptions-item width="33.33%">
+        <template #label>
+          <DetailFormLabel :label="item.description + '频率'" />
+        </template>
+        <DetailFormValue>
+          <IntervalView
+            v-if="item.jobType === 'INTERVAL'"
+            :unit="item.unit"
+            :interval="item.interval"
+          />
+          <CronView v-else :cron="item.cronExpression" />
+        </DetailFormValue>
+      </el-descriptions-item>
+    </template>
   </el-descriptions>
 </template>
 <script setup lang="ts">
@@ -42,6 +57,7 @@ import _ from "lodash";
 
 const props = defineProps<{
   jobDetails: Array<JobDetails>;
+  metricJobDetails: Array<JobDetails>;
   cloudAccount: CloudAccount;
   regions: Array<Region>;
 }>();

@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { computed, onMounted, onBeforeUnmount, reactive, ref } from "vue";
-import type { FormRules, FormInstance } from "element-plus";
+import { computed, onMounted, onBeforeUnmount, ref } from "vue";
+import type { FormInstance } from "element-plus";
 import { useI18n } from "vue-i18n";
 import cloudAccountApi from "@/api/cloud_account";
 import { useRouter } from "vue-router";
@@ -42,8 +42,6 @@ function openSyncDialog(row: CloudAccount) {
 
 const { t } = useI18n();
 const router = useRouter();
-const basicEditable = ref(false);
-const syncEditable = ref(false);
 const loading = ref(false);
 const accountBalance = ref<number | string>();
 
@@ -201,19 +199,6 @@ const scrollDisabled = computed(
   () => loadingSyncRecord.value || noMoreSyncRecord.value
 );
 
-const statusFilter = (status: string) => {
-  if (status.toUpperCase() === "SUCCESS") {
-    return t("cloud_account.native_sync.success", "同步成功");
-  }
-  if (status.toUpperCase() === "FAILED") {
-    return t("cloud_account.native_sync.failed", "同步失败");
-  }
-  if (status.toUpperCase() === "SYNCING") {
-    return t("cloud_account.native_sync.syncing", "同步中");
-  }
-  return status;
-};
-
 const currentDate = ref(new Date());
 const searchDescription = ref<string>("");
 const searchStatus = ref<string>("");
@@ -274,24 +259,6 @@ const load = () => {
 const showSyncRecordDetail = (syncRecord: AccountJobRecord) => {
   selectedSyncRecord.value = syncRecord;
 };
-
-// 资源分类：基本信息/定时同步设置
-const resourceConst = {
-  basic: "BASIC",
-  sync: "SYNC",
-};
-
-// 云账号基本信息校验
-const accountFormRules = reactive<FormRules>({
-  name: [
-    {
-      message: t("cloud_account.name_is_not_empty", "云账号名称不为空"),
-      trigger: "blur",
-      type: "string",
-      required: true,
-    },
-  ],
-});
 
 function editSyncSetting() {
   router.push({ name: "cloud_account_sync_job", params: { id: props.id } });

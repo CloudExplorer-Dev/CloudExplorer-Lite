@@ -510,7 +510,7 @@ public class CloudAccountServiceImpl extends ServiceImpl<CloudAccountMapper, Clo
     @Override
     public IPage<JobRecordResourceResponse> pageSyncRecord(SyncRecordRequest syncRecordRequest) {
         Page<JobRecordResourceResponse> syncRecordPage = PageUtil.of(syncRecordRequest, JobRecordResourceResponse.class);
-        QueryWrapper wrapper = Wrappers.query().in(ColumnNameUtil.getColumnName(JobRecord::getType, false), List.of(JobTypeConstants.CLOUD_ACCOUNT_SYNC_JOB, JobTypeConstants.CLOUD_ACCOUNT_SYNC_BILL_JOB));
+        QueryWrapper wrapper = Wrappers.query().in(ColumnNameUtil.getColumnName(JobRecord::getType, false), List.of(JobTypeConstants.CLOUD_ACCOUNT_SYNC_JOB, JobTypeConstants.CLOUD_ACCOUNT_SYNC_BILL_JOB, JobTypeConstants.CLOUD_ACCOUNT_SYNC_METRIC_MONITOR));
         wrapper.eq("resource_id", syncRecordRequest.getCloudAccountId());
 
         wrapper.eq(StringUtils.isNotBlank(syncRecordRequest.getDescription()), ColumnNameUtil.getColumnName(JobRecord::getDescription, false), syncRecordRequest.getDescription());

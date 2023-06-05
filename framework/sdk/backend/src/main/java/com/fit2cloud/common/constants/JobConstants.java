@@ -56,6 +56,11 @@ public enum JobConstants {
         CLOUD_COMPLIANCE_RESOURCE_SYNC_GROUP((jobName, cloudAccountId) -> jobName + "_" + cloudAccountId,
                 cloudAccount -> Map.of(CloudAccount.CLOUD_ACCOUNT_ID.name(), cloudAccount.getId())),
         /**
+         * 监控分组
+         */
+        CLOUD_RESOURCE_METRIC_SYNC_GROUP((jobName, cloudAccountId) -> jobName + "_" + cloudAccountId,
+                cloudAccount -> Map.of(CloudAccount.CLOUD_ACCOUNT_ID.name(), cloudAccount.getId())),
+        /**
          * 系统定时任务
          */
         SYSTEM_GROUP((jobName, cloudAccountId) -> jobName, cloudAccount -> new HashMap<>());

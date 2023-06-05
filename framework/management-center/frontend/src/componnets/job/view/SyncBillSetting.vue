@@ -1,5 +1,11 @@
 <template>
-  <div>
+  <div
+    style="
+      background-color: var(--ce-main-content-bg-color, #fff);
+      border-top-left-radius: var(--ce-main-content-border-radius);
+      border-top-right-radius: var(--ce-main-content-border-radius);
+    "
+  >
     <BillSettingView
       :jobDetails="jobDetails"
       :cloudAccount="cloudAccount"

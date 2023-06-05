@@ -1,10 +1,10 @@
 <template>
   <el-container
     direction="vertical"
-    style="height: 100%; width: 100%"
+    style="height: 100%; width: 100%; background-color: #f2f2f2"
     v-loading="jobLoading"
   >
-    <el-main style="padding: 24px">
+    <el-main style="padding: 0">
       <el-empty
         description="不存在定时任务"
         v-if="validModuleJobs.length == 0"
@@ -18,21 +18,25 @@
           <el-tab-pane :label="mod.name" :name="mod.module"></el-tab-pane>
         </template>
       </el-tabs>
-      <el-main>
+      <el-main style="padding: 0; height: calc(100% - 54px)">
         <SyncBillSetting
+          style="height: 100%"
           v-if="billJob.length > 0 && cloudAccount"
           :job-details="billJob"
           :cloud-account="cloudAccount"
           ref="jobModule"
         />
         <SyncResourceSetting
+          style="height: 100%"
           v-if="resourceJob.length > 0 && cloudAccount"
           :job-details="resourceJob"
+          :metric-job-details="metricResourceJob"
           :regions="regions"
           :cloud-account="cloudAccount"
           ref="jobModule"
         />
         <SyncComplianceSetting
+          style="height: 100%"
           v-if="complianceJob.length > 0 && cloudAccount"
           :job-details="complianceJob"
           :cloud-account="cloudAccount"
@@ -42,6 +46,7 @@
     </el-main>
 
     <el-footer
+      v-if="validModuleJobs.length > 0"
       style="
         display: flex;
         flex-direction: row;
@@ -49,6 +54,7 @@
         align-items: center;
         height: 80px;
         box-shadow: 0 -1px 4px rgba(31, 35, 41, 0.1);
+        background-color: var(--ce-main-content-bg-color, #fff);
       "
     >
       <el-button @click="close"> 取消 </el-button>
@@ -109,6 +115,7 @@ const supportJobGroups = [
   "CLOUD_ACCOUNT_RESOURCE_SYNC_GROUP",
   "CLOUD_ACCOUNT_BILL_SYNC_GROUP",
   "CLOUD_COMPLIANCE_RESOURCE_SYNC_GROUP",
+  "CLOUD_RESOURCE_METRIC_SYNC_GROUP",
 ];
 
 const validModuleJobs = computed<Array<ModuleJob>>(() => {
@@ -134,6 +141,13 @@ const resourceJob = computed<Array<JobDetails>>(() =>
   _.filter(
     selectedModuleJob.value?.jobDetailsList,
     (j) => j.jobGroup === "CLOUD_ACCOUNT_RESOURCE_SYNC_GROUP"
+  )
+);
+
+const metricResourceJob = computed<Array<JobDetails>>(() =>
+  _.filter(
+    selectedModuleJob.value?.jobDetailsList,
+    (j) => j.jobGroup === "CLOUD_RESOURCE_METRIC_SYNC_GROUP"
   )
 );
 
