@@ -19,8 +19,9 @@
           v-model="checkAll"
           :disabled="readOnly"
           @change="handleCheckAllChange"
-          >全选</el-checkbox
         >
+          已选区域({{ checkedRegionIds.length }})
+        </el-checkbox>
         <el-checkbox-group v-model="checkedRegionIds">
           <el-checkbox
             :title="region.name"

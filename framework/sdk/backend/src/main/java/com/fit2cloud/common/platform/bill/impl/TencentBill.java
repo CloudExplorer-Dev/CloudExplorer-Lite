@@ -20,7 +20,7 @@ import java.util.Map;
 @Data
 public class TencentBill implements Bill {
 
-    @Form(inputType = InputType.RadioRaw, label = "", defaultValue = "api", textField = "key", valueField = "value", method = "getSyncModes", clazz = TencentBaseCloudProvider.class, attrs = "{\"style\":\"width:200px\"}")
+    @Form(inputType = InputType.Radio, label = "", defaultValue = "api", textField = "key", valueField = "value", method = "getSyncModes", clazz = TencentBaseCloudProvider.class, attrs = "{\"style\":\"width:100%\"}")
     private String syncMode;
 
     @Form(inputType = InputType.SingleSelect, label = "区域", relationShows = {"syncMode"}, relationShowValues = "bucket", textField = "name", valueField = "regionId", method = "getRegions", relationTrigger = "syncMode", clazz = TencentBaseCloudProvider.class)

@@ -293,13 +293,9 @@ const accountFormRules = reactive<FormRules>({
   ],
 });
 
-const edit = (resource: string) => {
-  if (resource === resourceConst.basic) {
-    basicEditable.value = true;
-  } else {
-    syncEditable.value = true;
-  }
-};
+function editSyncSetting() {
+  router.push({ name: "cloud_account_sync_job", params: { id: props.id } });
+}
 
 const simpleFormRef = ref<FormInstance>();
 const simpleForm = ref<{ name?: string }>({});
@@ -437,7 +433,7 @@ const buttonOperations = new TableOperations([
   TableOperations.buildButtons().newInstance(
     t("cloud_account.edit_job_message", "数据同步设置"),
     "primary",
-    edit,
+    editSyncSetting,
     undefined,
     undefined,
     permissionStore.hasPermission(
@@ -471,7 +467,7 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-  <el-container style="height: 100%">
+  <el-container style="padding: 24px; height: 100%">
     <el-header>
       <div class="header">
         {{ accountForm?.name }} - 详情

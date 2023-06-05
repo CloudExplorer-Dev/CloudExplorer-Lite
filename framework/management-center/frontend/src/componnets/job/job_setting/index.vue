@@ -11,35 +11,32 @@
         v-for="details in jobDetails"
         :key="details.jobName"
       >
-        <el-checkbox
-          :checked="details.active"
-          :label="details.active"
+        <div>{{ details.description }}</div>
+
+        <el-switch
           v-model="details.active"
           :disabled="readOnly || details.activeReadOnly"
-        >
-          <div style="display: flex; align-items: center">
-            <span style="width: 120px; white-space: NORMAL"
-              >{{ details.description.replace("同步", "") }}:</span
-            >
-            <div style="width: 550px">
-              <cron-interval-view
-                ref="cronIntervalViewRef"
-                :readOnly="readOnly || details.cronReadOnly"
-                v-if="details.jobType === 'INTERVAL'"
-                v-model:unit="details.unit"
-                v-model:job-type="details.jobType"
-                v-model:interval="details.interval"
-              ></cron-interval-view>
-              <cron-in-view
-                :readOnly="readOnly || details.cronReadOnly"
-                v-else
-                v-model:job-type="details.jobType"
-                ref="cronInViewRef"
-                v-model="details.cronExpression"
-              ></cron-in-view>
-            </div>
+        />
+
+        <div style="display: flex; align-items: center" v-if="details.active">
+          <div style="width: 550px">
+            <cron-interval-view
+              ref="cronIntervalViewRef"
+              :readOnly="readOnly || details.cronReadOnly"
+              v-if="details.jobType === 'INTERVAL'"
+              v-model:unit="details.unit"
+              v-model:job-type="details.jobType"
+              v-model:interval="details.interval"
+            />
+            <cron-in-view
+              :readOnly="readOnly || details.cronReadOnly"
+              v-else
+              v-model:job-type="details.jobType"
+              ref="cronInViewRef"
+              v-model="details.cronExpression"
+            />
           </div>
-        </el-checkbox>
+        </div>
       </div>
     </template>
   </base-container>
@@ -125,8 +122,6 @@ defineExpose({ validate });
 </script>
 <style lang="scss" scoped>
 .corn_item_wapper {
-  height: 50px;
-  margin: 3px 0;
-  border-radius: 3px;
+  margin-bottom: 12px;
 }
 </style>

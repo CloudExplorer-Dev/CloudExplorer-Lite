@@ -366,212 +366,220 @@ const syncAll = () => {
 };
 </script>
 <template>
-  <ce-table
-    localKey="cloudAccountTable"
-    height="100%"
-    ref="table"
-    :columns="columns"
-    :data="cloudAccountList"
-    :tableConfig="tableConfig"
-    show-selected-count
-    v-loading="loading"
-    @selection-change="handleSelectionChange"
-    row-key="id"
-  >
-    <template #toolbar>
-      <el-button
-        type="primary"
-        @click="create"
-        v-hasPermission="'[management-center]CLOUD_ACCOUNT:CREATE'"
-      >
-        {{ t("commons.btn.add", "添加") }}
-      </el-button>
-      <el-button
-        @click="syncAll"
-        v-hasPermission="'[management-center]CLOUD_ACCOUNT:SYNC_RESOURCE'"
-      >
-        {{ t("commons.btn.full_sync", "全量同步") }}
-      </el-button>
-      <el-button
-        @click="batchDelete"
-        v-hasPermission="'[management-center]CLOUD_ACCOUNT:DELETE'"
-      >
-        {{ t("commons.btn.delete", "删除") }}
-      </el-button>
-    </template>
-    <el-table-column type="selection" />
-    <el-table-column
-      min-width="150"
-      :label="t('commons.name', '名称')"
-      column-key="platform"
-      :filters="platformFilters"
-      prop="platform"
-      fixed
+  <el-container style="padding: 24px; height: 100%">
+    <ce-table
+      localKey="cloudAccountTable"
+      height="100%"
+      ref="table"
+      :columns="columns"
+      :data="cloudAccountList"
+      :tableConfig="tableConfig"
+      show-selected-count
+      v-loading="loading"
+      @selection-change="handleSelectionChange"
+      row-key="id"
     >
-      <template #default="scope">
-        <div style="display: flex; align-items: center">
-          <component
-            style="margin-right: 8px"
-            :is="platformIcon[scope.row.platform]?.component"
-            v-bind="platformIcon[scope.row.platform]?.icon"
-            :color="platformIcon[scope.row.platform]?.color"
-            size="16px"
-          ></component>
-          <span
-            style="cursor: pointer; color: var(--el-color-primary)"
-            @click="showAccountDetail(scope.row, 'detail')"
+      <template #toolbar>
+        <el-button
+          type="primary"
+          @click="create"
+          v-hasPermission="'[management-center]CLOUD_ACCOUNT:CREATE'"
+        >
+          {{ t("commons.btn.add", "添加") }}
+        </el-button>
+        <el-button
+          @click="syncAll"
+          v-hasPermission="'[management-center]CLOUD_ACCOUNT:SYNC_RESOURCE'"
+        >
+          {{ t("commons.btn.full_sync", "全量同步") }}
+        </el-button>
+        <el-button
+          @click="batchDelete"
+          v-hasPermission="'[management-center]CLOUD_ACCOUNT:DELETE'"
+        >
+          {{ t("commons.btn.delete", "删除") }}
+        </el-button>
+      </template>
+      <el-table-column type="selection" />
+      <el-table-column
+        min-width="150"
+        :label="t('commons.name', '名称')"
+        column-key="platform"
+        :filters="platformFilters"
+        prop="platform"
+        fixed
+      >
+        <template #default="scope">
+          <div style="display: flex; align-items: center">
+            <component
+              style="margin-right: 8px"
+              :is="platformIcon[scope.row.platform]?.component"
+              v-bind="platformIcon[scope.row.platform]?.icon"
+              :color="platformIcon[scope.row.platform]?.color"
+              size="16px"
+            ></component>
+            <span
+              style="cursor: pointer; color: var(--el-color-primary)"
+              @click="showAccountDetail(scope.row, 'detail')"
+            >
+              {{ scope.row.name }}
+            </span>
+          </div>
+        </template>
+      </el-table-column>
+      <el-table-column
+        min-width="150"
+        prop="state"
+        :label="t('cloud_account.native_state', '连接状态')"
+        column-key="state"
+        sortable
+        :filters="[
+          { text: '连接成功', value: true },
+          { text: '连接失败', value: false },
+        ]"
+      >
+        <template #default="scope">
+          <div
+            class="status-tip"
+            :class="scope.row.state ? 'valid' : 'invalid'"
           >
-            {{ scope.row.name }}
-          </span>
-        </div>
-      </template>
-    </el-table-column>
-    <el-table-column
-      min-width="150"
-      prop="state"
-      :label="t('cloud_account.native_state', '连接状态')"
-      column-key="state"
-      sortable
-      :filters="[
-        { text: '连接成功', value: true },
-        { text: '连接失败', value: false },
-      ]"
-    >
-      <template #default="scope">
-        <div class="status-tip" :class="scope.row.state ? 'valid' : 'invalid'">
-          {{ scope.row.state ? "连接成功" : "连接失败" }}
-        </div>
-      </template>
-    </el-table-column>
-    <el-table-column
-      min-width="150"
-      column-key="status"
-      prop="status"
-      :label="t('cloud_account.native_sync_status', '同步状态')"
-      :filters="[
-        { text: t('cloud_account.native_sync.init', '初始化'), value: 'INIT' },
-        {
-          text: t('cloud_account.native_sync.success', '同步成功'),
-          value: 'SUCCESS',
-        },
-        {
-          text: t('cloud_account.native_sync.failed', '同步失败'),
-          value: 'FAILED',
-        },
-        {
-          text: t('cloud_account.native_sync.syncing', '同步中'),
-          value: 'SYNCING',
-        },
-      ]"
-      sortable
-    >
-      <template #default="scope">
-        <div style="display: flex; align-items: center">
-          <el-tooltip class="box-item" effect="dark" placement="top-start">
-            <template #content>
+            {{ scope.row.state ? "连接成功" : "连接失败" }}
+          </div>
+        </template>
+      </el-table-column>
+      <el-table-column
+        min-width="150"
+        column-key="status"
+        prop="status"
+        :label="t('cloud_account.native_sync_status', '同步状态')"
+        :filters="[
+          {
+            text: t('cloud_account.native_sync.init', '初始化'),
+            value: 'INIT',
+          },
+          {
+            text: t('cloud_account.native_sync.success', '同步成功'),
+            value: 'SUCCESS',
+          },
+          {
+            text: t('cloud_account.native_sync.failed', '同步失败'),
+            value: 'FAILED',
+          },
+          {
+            text: t('cloud_account.native_sync.syncing', '同步中'),
+            value: 'SYNCING',
+          },
+        ]"
+        sortable
+      >
+        <template #default="scope">
+          <div style="display: flex; align-items: center">
+            <el-tooltip class="box-item" effect="dark" placement="top-start">
+              <template #content>
+                <div
+                  v-for="j in cloudAccountJobRecord[scope.row.id] || []"
+                  :key="j.jobRecordId"
+                  style="
+                    display: flex;
+                    justify-content: space-between;
+                    width: 300px;
+                  "
+                >
+                  <div style="width: 120px">{{ j.description }}</div>
+                  <div>{{ mapStatus(j.status) }}</div>
+                  <div>{{ j.createTime }}</div>
+                </div>
+              </template>
               <div
-                v-for="j in cloudAccountJobRecord[scope.row.id] || []"
-                :key="j.jobRecordId"
+                @click="showAccountDetail(scope.row)"
                 style="
                   display: flex;
-                  justify-content: space-between;
-                  width: 300px;
+                  cursor: pointer;
+                  flex-flow: row nowrap;
+                  align-items: center;
                 "
               >
-                <div style="width: 120px">{{ j.description }}</div>
-                <div>{{ mapStatus(j.status) }}</div>
-                <div>{{ j.createTime }}</div>
+                <el-icon
+                  size="14.67px"
+                  :color="
+                    getColorByAccountStatus(getStatusByAccountId(scope.row.id))
+                  "
+                  :class="
+                    getStatusByAccountId(scope.row.id) === 'SYNCING'
+                      ? 'is-loading'
+                      : ''
+                  "
+                >
+                  <component
+                    :is="getStatusIcon(getStatusByAccountId(scope.row.id))"
+                  />
+                </el-icon>
+                <span style="margin-left: 6px">
+                  {{ mapStatus(getStatusByAccountId(scope.row.id)) }}
+                </span>
               </div>
-            </template>
-            <div
-              @click="showAccountDetail(scope.row)"
-              style="
-                display: flex;
-                cursor: pointer;
-                flex-flow: row nowrap;
-                align-items: center;
-              "
-            >
-              <el-icon
-                size="14.67px"
-                :color="
-                  getColorByAccountStatus(getStatusByAccountId(scope.row.id))
-                "
-                :class="
-                  getStatusByAccountId(scope.row.id) === 'SYNCING'
-                    ? 'is-loading'
-                    : ''
-                "
-              >
-                <component
-                  :is="getStatusIcon(getStatusByAccountId(scope.row.id))"
-                />
-              </el-icon>
-              <span style="margin-left: 6px">
-                {{ mapStatus(getStatusByAccountId(scope.row.id)) }}
-              </span>
-            </div>
-          </el-tooltip>
-        </div>
-      </template>
-    </el-table-column>
-    <el-table-column
-      min-width="155"
-      prop="updateTime"
-      :label="t('cloud_account.last_sync_time', '最近同步时间')"
-      sortable
-    />
-    <el-table-column
-      min-width="155"
-      prop="createTime"
-      :label="t('commons.create_time', '创建时间')"
-      sortable
-    />
+            </el-tooltip>
+          </div>
+        </template>
+      </el-table-column>
+      <el-table-column
+        min-width="155"
+        prop="updateTime"
+        :label="t('cloud_account.last_sync_time', '最近同步时间')"
+        sortable
+      />
+      <el-table-column
+        min-width="155"
+        prop="createTime"
+        :label="t('commons.create_time', '创建时间')"
+        sortable
+      />
 
-    <el-table-column min-width="165" label="操作" fixed="right">
-      <template #default="scope">
-        <div
-          style="
-            padding: 0 9px;
-            width: auto;
-            display: inline-flex;
-            flex-direction: row;
-            flex-wrap: nowrap;
-            align-items: center;
-          "
-        >
-          <el-button
-            link
-            @click="openSyncDialog(scope.row)"
-            type="primary"
-            v-if="
-              permissionStore.hasPermission(
-                '[management-center]CLOUD_ACCOUNT:SYNC_RESOURCE'
-              ) || billSyncShow(scope.row)
+      <el-table-column min-width="165" label="操作" fixed="right">
+        <template #default="scope">
+          <div
+            style="
+              padding: 0 9px;
+              width: auto;
+              display: inline-flex;
+              flex-direction: row;
+              flex-wrap: nowrap;
+              align-items: center;
             "
           >
-            {{ t("cloud_account.sync.sync", "同步") }}
-          </el-button>
-          <el-button link @click="check(scope.row)" type="primary">
-            {{ t("cloud_account.verification", "连接校验") }}
-          </el-button>
-          <MoreOptionsButton
-            style="margin-left: 5px"
-            :buttons="tableConfig.tableOperations.buttons"
-            :row="scope.row"
-          />
-        </div>
+            <el-button
+              link
+              @click="openSyncDialog(scope.row)"
+              type="primary"
+              v-if="
+                permissionStore.hasPermission(
+                  '[management-center]CLOUD_ACCOUNT:SYNC_RESOURCE'
+                ) || billSyncShow(scope.row)
+              "
+            >
+              {{ t("cloud_account.sync.sync", "同步") }}
+            </el-button>
+            <el-button link @click="check(scope.row)" type="primary">
+              {{ t("cloud_account.verification", "连接校验") }}
+            </el-button>
+            <MoreOptionsButton
+              style="margin-left: 5px"
+              :buttons="tableConfig.tableOperations.buttons"
+              :row="scope.row"
+            />
+          </div>
+        </template>
+      </el-table-column>
+
+      <template #buttons>
+        <CeTableColumnSelect :columns="columns" />
       </template>
-    </el-table-column>
+    </ce-table>
 
-    <template #buttons>
-      <CeTableColumnSelect :columns="columns" />
-    </template>
-  </ce-table>
+    <SyncAccountDialog ref="syncAccountDialogRef" />
 
-  <SyncAccountDialog ref="syncAccountDialogRef" />
-
-  <EditAccount ref="accountDrawerRef" @submit="afterSubmit" />
+    <EditAccount ref="accountDrawerRef" @submit="afterSubmit" />
+  </el-container>
 </template>
 
 <style lang="scss" scoped>

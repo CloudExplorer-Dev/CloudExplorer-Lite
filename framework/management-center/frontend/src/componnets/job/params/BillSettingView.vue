@@ -20,7 +20,7 @@ import cloudAccountApi from "@/api/cloud_account";
 import { ref, watch } from "vue";
 import type { CloudAccount } from "@/api/cloud_account/type";
 import type { FormView } from "@commons/components/ce-form/type";
-import type { SimpleMap } from "../../../../../../sdk/frontend/commons/api/base/type";
+import type { SimpleMap } from "@commons/api/base/type";
 /**
  * 账单设置form表单
  */

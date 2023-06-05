@@ -117,7 +117,7 @@ interface JobDetails {
   /**
    * 是否活跃
    */
-  active: string;
+  active: boolean;
 
   /**
    * 任务参数
