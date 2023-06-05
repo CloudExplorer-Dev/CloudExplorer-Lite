@@ -48,4 +48,6 @@ public class RecycleBinParamsController {
             throw new RuntimeException("参数错误");
         }
     }
+
+
 }

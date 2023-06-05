@@ -10,13 +10,13 @@
     height="100%"
   >
     <template #toolbar>
-      <el-button
+      <!--      <el-button
         type="primary"
         @click="clearPolicy"
         v-hasPermission="'[management-center]SYS_LOG:CLEAR_POLICY'"
       >
         清空策略
-      </el-button>
+      </el-button>-->
     </template>
     <el-table-column prop="module" label="模块"></el-table-column>
     <el-table-column

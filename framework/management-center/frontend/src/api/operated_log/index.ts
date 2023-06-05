@@ -21,12 +21,20 @@ export function saveLogClearConfig(
   req: any,
   loading?: Ref<boolean>
 ): Promise<Result<null>> {
-  return post("api/log/keep/months", req, loading);
+  return post("api/log/keep/months", undefined, req, loading);
+}
+export function batchSaveLogClearConfig(
+  req: any,
+  loading?: Ref<boolean>
+): Promise<Result<null>> {
+  return post("api/log/keep/months/batch", undefined, req, loading);
 }
 
 const OperatedLogApi = {
   listOperatedLog,
   getLogClearConfig,
+  saveLogClearConfig,
+  batchSaveLogClearConfig,
 };
 
 export default OperatedLogApi;

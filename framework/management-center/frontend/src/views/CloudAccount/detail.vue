@@ -26,7 +26,7 @@ import DetailFormTitle from "@/componnets/DetailFormTitle.vue";
 import CurrencyFormat from "@commons/utils/currencyFormat";
 import type { CloudAccount } from "@/api/cloud_account/type";
 import EditAccount from "./edit.vue";
-import SyncAccountDialog from "@/views/CloudAccount/SyncAccountDialog.vue";
+import SyncAccountDialog from "./SyncAccountDialog.vue";
 
 const props = defineProps<{
   id: string;

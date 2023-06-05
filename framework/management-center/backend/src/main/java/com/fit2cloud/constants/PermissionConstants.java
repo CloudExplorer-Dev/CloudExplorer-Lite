@@ -266,14 +266,7 @@ public class PermissionConstants {
                                             .name("permission.manage.sys_log.read")
                                             .role(RoleConstants.ROLE.ADMIN)
                             )
-                            .permission(
-                                    //系统日志清空策略
-                                    new Permission.Builder()
-                                            .require(OPERATE.READ)
-                                            .operate(OPERATE.CLEAR_POLICY)
-                                            .name("permission.manage.sys_log.clear_policy")
-                                            .role(RoleConstants.ROLE.ADMIN)
-                            )
+
                     //...
             ).group(
                     new PermissionGroup.Builder()
@@ -286,15 +279,7 @@ public class PermissionConstants {
                                             .name("permission.manage.operated_log.read")
                                             .role(RoleConstants.ROLE.ADMIN)
                             )
-                            .permission(
-                                    //操作日志清空策略
-                                    new Permission.Builder()
-                                            .require(OPERATE.READ)
-                                            .operate(OPERATE.CLEAR_POLICY)
-                                            .name("permission.manage.operated_log.clear_policy")
-                                            .role(RoleConstants.ROLE.ADMIN)
 
-                            )
                     //...
             )
             // 云账号相关权限

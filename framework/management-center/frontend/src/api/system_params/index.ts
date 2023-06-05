@@ -1,4 +1,5 @@
 import { get, post } from "@commons/request";
+import type { Ref } from "vue";
 
 /**
  * 变更回收站状态
@@ -14,8 +15,11 @@ export const changeRecycleBinStatus = (req: any) => {
 
 /**
  * 获取回收站状态
- * @param req
  */
-export const getRecycleBinStatus = () => {
-  return get("api/system-setting/recycle-setting/getRecycleBinStatus", "");
+export const getRecycleBinStatus = (loading?: Ref<boolean>) => {
+  return get(
+    "api/system-setting/recycle-setting/getRecycleBinStatus",
+    "",
+    loading
+  );
 };

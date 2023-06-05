@@ -14,12 +14,10 @@ import io.swagger.annotations.ApiOperation;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
+import java.util.List;
 
 /**
  * @author jianneng
@@ -50,7 +48,7 @@ public class LogController {
     }
 
     @GetMapping("keep/months")
-    @PreAuthorize("hasAnyCePermission('SYS_LOG:CLEAR_POLICY')")
+    @PreAuthorize("hasAnyCePermission('PARAMS_SETTING:EDIT')")
     public ResultHolder<String> getKeepMonths(SystemParameter systemParameter) {
         String value = baseSystemParameterService.getValue(systemParameter.getParamKey());
         if (StringUtils.isNotBlank(value)) {
@@ -61,13 +59,26 @@ public class LogController {
     }
 
     @PostMapping("keep/months")
-    @PreAuthorize("hasAnyCePermission('OPERATED_LOG:CLEAR_POLICY')")
+    @PreAuthorize("hasAnyCePermission('PARAMS_SETTING:EDIT')")
     @OperatedLog(resourceType = ResourceTypeEnum.LOG, operated = OperatedTypeEnum.MODIFY,
-            content = "'更新日志清理策略为['+#systemParameter.paramValue+']天'",
+            content = "'更新日志['+#systemParameter.paramKey+']清理策略为['+#systemParameter.paramValue+']天'",
             param = "#systemParameter")
-    public ResultHolder<Boolean> saveKeepMonths(SystemParameter systemParameter) {
+    public ResultHolder<Boolean> saveKeepMonths(@RequestBody SystemParameter systemParameter) {
         systemParameter.setParamKey(systemParameter.getParamKey());
         baseSystemParameterService.saveValue(systemParameter);
+        return ResultHolder.success(true);
+    }
+
+    @PostMapping("keep/months/batch")
+    @PreAuthorize("hasAnyCePermission('PARAMS_SETTING:EDIT')")
+    @OperatedLog(resourceType = ResourceTypeEnum.LOG, operated = OperatedTypeEnum.MODIFY,
+            content = "'更新日志清理策略'",
+            param = "#systemParameters")
+    public ResultHolder<Boolean> saveKeepMonths(@RequestBody List<SystemParameter> systemParameters) {
+        for (SystemParameter systemParameter : systemParameters) {
+            systemParameter.setParamKey(systemParameter.getParamKey());
+            baseSystemParameterService.saveValue(systemParameter);
+        }
         return ResultHolder.success(true);
     }
 }

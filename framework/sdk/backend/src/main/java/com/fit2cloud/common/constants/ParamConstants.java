@@ -11,7 +11,8 @@ public interface ParamConstants {
         KEEP_LOGIN_MONTHS("log.keep.login.months"),
         KEEP_PERF_MONTHS("log.keep.perf.months"),
         KEEP_SYSTEM_MONTHS("log.keep.system.months"),
-        KEEP_API_MONTHS("log.keep.api.months");
+        KEEP_API_MONTHS("log.keep.api.months"),
+        KEEP_METRIC_MONTHS("log.keep.metric.months");
 
         private String value;
 

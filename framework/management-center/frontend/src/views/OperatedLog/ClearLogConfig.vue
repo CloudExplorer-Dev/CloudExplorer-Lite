@@ -61,7 +61,7 @@ const handleSave = (formEl: FormInstance) => {
         paramKey: props.paramKey,
         paramValue: form.paramValue,
       };
-      saveLogClearConfig(param)
+      OperatedLogApi.saveLogClearConfig(param)
         .then(() => {
           emits("update:visible", false);
           ElMessage.success("保存成功");

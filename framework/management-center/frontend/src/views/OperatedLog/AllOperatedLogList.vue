@@ -10,13 +10,13 @@
     height="100%"
   >
     <template #toolbar>
-      <el-button
+      <!--      <el-button
         type="primary"
         @click="clearPolicy"
         v-hasPermission="'[management-center]OPERATED_LOG:CLEAR_POLICY'"
       >
         {{ t("log_manage.btn.clear_policy") }}
-      </el-button>
+      </el-button>-->
     </template>
     <el-table-column
       prop="user"
