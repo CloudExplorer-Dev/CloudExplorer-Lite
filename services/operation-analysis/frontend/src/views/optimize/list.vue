@@ -109,25 +109,57 @@
       <el-table-column
         min-width="150"
         prop="cpuAverage"
-        label="CPU平均使用率(%)"
-      ></el-table-column>
+        label="CPU平均使用率"
+      >
+        <template #default="scope">
+          {{
+            scope.row.cpuAverage
+                ? PercentFormat.format(scope.row.cpuAverage / 100)
+                : "-"
+          }}
+        </template>
+      </el-table-column>
       <el-table-column
         min-width="150"
         prop="cpuMaximum"
-        label="CPU最大使用率(%)"
+        label="CPU最大使用率"
         :show="false"
-      ></el-table-column>
+      >
+        <template #default="scope">
+          {{
+            scope.row.cpuMaximum
+                ? PercentFormat.format(scope.row.cpuMaximum / 100)
+                : "-"
+          }}
+        </template>
+      </el-table-column>
       <el-table-column
         min-width="150"
         prop="memoryAverage"
-        label="内存平均使用率(%)"
-      ></el-table-column>
+        label="内存平均使用率"
+      >
+        <template #default="scope">
+          {{
+            scope.row.memoryAverage
+                ? PercentFormat.format(scope.row.memoryAverage / 100)
+                : "-"
+          }}
+        </template>
+      </el-table-column>
       <el-table-column
         min-width="150"
         prop="memoryMaximum"
-        label="内存最大使用率(%)"
+        label="内存最大使用率"
         :show="false"
-      ></el-table-column>
+      >
+        <template #default="scope">
+          {{
+            scope.row.memoryMaximum
+                ? PercentFormat.format(scope.row.memoryMaximum / 100)
+                : "-"
+          }}
+        </template>
+      </el-table-column>
       <template #buttons>
         <CeTableColumnSelect :columns="columns" />
       </template>
@@ -157,6 +189,7 @@ import ServerOptimization from "@commons/business/base-layout/home-page/items/op
 import _ from "lodash";
 import MicroAppRouterUtil from "@commons/router/MicroAppRouterUtil";
 import { useUserStore } from "@commons/stores/modules/user";
+import PercentFormat from "@commons/utils/percentFormat";
 const userStore = useUserStore();
 
 const optimizeDivRef = ref<InstanceType<typeof ServerOptimization> | null>();
