@@ -1,35 +1,35 @@
 <template>
   <ServerOptimization
-    no-title
-    no-padding
-    v-model:check-id="checkedId"
-    checkable
-    :show-setting-icon="showSettingIcon"
-    @change="selectChange"
-    :table-search-params="tableSearchParams"
-    ref="optimizeDivRef"
-    :table-loading="tableLoading"
-    :cloud-account-ids="checkedAccountIds"
+      no-title
+      no-padding
+      v-model:check-id="checkedId"
+      checkable
+      :show-setting-icon="showSettingIcon"
+      @change="selectChange"
+      :table-search-params="tableSearchParams"
+      ref="optimizeDivRef"
+      :table-loading="tableLoading"
+      :cloud-account-ids="checkedAccountIds"
   />
 
   <div class="log-table">
     <ce-table
-      localKey="resourceOptimizationTable"
-      v-loading="tableLoading"
-      :columns="columns"
-      :data="tableData"
-      :tableConfig="tableConfig"
-      row-key="id"
-      height="100%"
-      ref="table"
+        localKey="resourceOptimizationTable"
+        v-loading="tableLoading"
+        :columns="columns"
+        :data="tableData"
+        :tableConfig="tableConfig"
+        row-key="id"
+        height="100%"
+        ref="table"
     >
       <el-table-column
-        :show-overflow-tooltip="true"
-        prop="instanceName"
-        column-key="instanceName"
-        :label="$t('commons.name')"
-        fixed
-        min-width="120px"
+          :show-overflow-tooltip="true"
+          prop="instanceName"
+          column-key="instanceName"
+          :label="$t('commons.name')"
+          fixed
+          min-width="120px"
       >
         <template #default="scope">
           <span @click="showDetail(scope.row)" class="name-span-class">
@@ -38,42 +38,42 @@
         </template>
       </el-table-column>
       <el-table-column
-        min-width="150px"
-        prop="accountName"
-        column-key="accountIds"
-        :label="$t('commons.cloud_account.native')"
-        :filters="cloudAccount"
-        :filtered-value="checkedAccountIds"
+          min-width="150px"
+          prop="accountName"
+          column-key="accountIds"
+          :label="$t('commons.cloud_account.native')"
+          :filters="cloudAccount"
+          :filtered-value="checkedAccountIds"
       >
         <template #default="scope">
           <div style="display: flex">
             <component
-              style="margin-top: 3px; width: 16px; height: 16px"
-              :is="platformIcon[scope.row.platform]?.component"
-              v-bind="platformIcon[scope.row.platform]?.icon"
-              :color="platformIcon[scope.row.platform]?.color"
-              size="16px"
-              v-if="scope.row.platform"
+                style="margin-top: 3px; width: 16px; height: 16px"
+                :is="platformIcon[scope.row.platform]?.component"
+                v-bind="platformIcon[scope.row.platform]?.icon"
+                :color="platformIcon[scope.row.platform]?.color"
+                size="16px"
+                v-if="scope.row.platform"
             ></component>
             <span style="margin-left: 10px">{{ scope.row.accountName }}</span>
           </div>
         </template>
       </el-table-column>
       <el-table-column
-        prop="ipArray"
-        column-key="ipArray"
-        label="IP地址"
-        min-width="180px"
+          prop="ipArray"
+          column-key="ipArray"
+          label="IP地址"
+          min-width="180px"
       >
         <template #default="scope">
           <span v-show="scope.row.ipArray?.length > 2">{{
-            JSON.parse(scope.row.ipArray)[0]
-          }}</span>
+              JSON.parse(scope.row.ipArray)[0]
+            }}</span>
           <el-dropdown
-            class="dropdown_box"
-            :hide-on-click="false"
-            v-if="scope.row.ipArray.length > 2"
-            max-height="100px"
+              class="dropdown_box"
+              :hide-on-click="false"
+              v-if="scope.row.ipArray.length > 2"
+              max-height="100px"
           >
             <span>
               {{ t("commons.cloud_server.more", "更多")
@@ -82,9 +82,9 @@
             <template #dropdown>
               <el-dropdown-menu>
                 <el-dropdown-item
-                  v-for="(item, index) in JSON.parse(scope.row.ipArray)"
-                  :key="index"
-                  >{{ item }}</el-dropdown-item
+                    v-for="(item, index) in JSON.parse(scope.row.ipArray)"
+                    :key="index"
+                >{{ item }}</el-dropdown-item
                 >
               </el-dropdown-menu>
             </template>
@@ -92,42 +92,74 @@
         </template>
       </el-table-column>
       <el-table-column
-        min-width="100"
-        prop="optimizeSuggest"
-        label="优化建议"
+          min-width="100"
+          prop="optimizeSuggest"
+          label="优化建议"
       ></el-table-column>
       <el-table-column
-        min-width="150"
-        prop="content"
-        label="建议原因"
+          min-width="150"
+          prop="content"
+          label="建议原因"
       ></el-table-column>
       <el-table-column
-        min-width="150"
-        prop="instanceTypeDescription"
-        :label="$t('commons.cloud_server.instance_type')"
+          min-width="150"
+          prop="instanceTypeDescription"
+          :label="$t('commons.cloud_server.instance_type')"
       ></el-table-column>
       <el-table-column
-        min-width="150"
-        prop="cpuAverage"
-        label="CPU平均使用率(%)"
-      ></el-table-column>
+          min-width="150"
+          prop="cpuAverage"
+          label="CPU平均使用率"
+      >
+        <template #default="scope">
+          {{
+            scope.row.cpuAverage
+                ? PercentFormat.format(scope.row.cpuAverage / 100)
+                : "-"
+          }}
+        </template>
+      </el-table-column>
       <el-table-column
-        min-width="150"
-        prop="cpuMaximum"
-        label="CPU最大使用率(%)"
-        :show="false"
-      ></el-table-column>
+          min-width="150"
+          prop="cpuMaximum"
+          label="CPU最大使用率"
+          :show="false"
+      >
+        <template #default="scope">
+          {{
+            scope.row.cpuMaximum
+                ? PercentFormat.format(scope.row.cpuMaximum / 100)
+                : "-"
+          }}
+        </template>
+      </el-table-column>
       <el-table-column
-        min-width="150"
-        prop="memoryAverage"
-        label="内存平均使用率(%)"
-      ></el-table-column>
+          min-width="150"
+          prop="memoryAverage"
+          label="内存平均使用率"
+      >
+        <template #default="scope">
+          {{
+            scope.row.memoryAverage
+                ? PercentFormat.format(scope.row.memoryAverage / 100)
+                : "-"
+          }}
+        </template>
+      </el-table-column>
       <el-table-column
-        min-width="150"
-        prop="memoryMaximum"
-        label="内存最大使用率(%)"
-        :show="false"
-      ></el-table-column>
+          min-width="150"
+          prop="memoryMaximum"
+          label="内存最大使用率"
+          :show="false"
+      >
+        <template #default="scope">
+          {{
+            scope.row.memoryMaximum
+                ? PercentFormat.format(scope.row.memoryMaximum / 100)
+                : "-"
+          }}
+        </template>
+      </el-table-column>
       <template #buttons>
         <CeTableColumnSelect :columns="columns" />
       </template>
@@ -157,6 +189,7 @@ import ServerOptimization from "@commons/business/base-layout/home-page/items/op
 import _ from "lodash";
 import MicroAppRouterUtil from "@commons/router/MicroAppRouterUtil";
 import { useUserStore } from "@commons/stores/modules/user";
+import PercentFormat from "@commons/utils/percentFormat";
 const userStore = useUserStore();
 
 const optimizeDivRef = ref<InstanceType<typeof ServerOptimization> | null>();
@@ -164,21 +197,21 @@ const optimizeDivRef = ref<InstanceType<typeof ServerOptimization> | null>();
 const router = useRouter();
 
 const checkedId = ref(
-  _.defaultTo(_.parseInt(router.currentRoute.value.query?.checked as string), 1)
+    _.defaultTo(_.parseInt(router.currentRoute.value.query?.checked as string), 1)
 );
 const optimizeSuggestCode = ref(
-  _.defaultTo(
-    _.parseInt(router.currentRoute.value.query?.optimizeSuggestCode as string),
-    "derating"
-  )
+    _.defaultTo(
+        _.parseInt(router.currentRoute.value.query?.optimizeSuggestCode as string),
+        "derating"
+    )
 );
 
 const checkedAccountIds = ref(
-  router.currentRoute.value.query?.accountIds
-    ? JSON.parse(
-        decodeURI(router.currentRoute.value.query?.accountIds as string)
-      )
-    : undefined
+    router.currentRoute.value.query?.accountIds
+        ? JSON.parse(
+            decodeURI(router.currentRoute.value.query?.accountIds as string)
+        )
+        : undefined
 );
 
 const { t } = useI18n();
@@ -194,8 +227,8 @@ function selectChange() {
 
 const tableSearchParams = computed(() => {
   return table?.value
-    ? TableSearch.toSearchParams(table?.value?.getTableSearch())
-    : {};
+      ? TableSearch.toSearchParams(table?.value?.getTableSearch())
+      : {};
 });
 
 /**
@@ -204,10 +237,10 @@ const tableSearchParams = computed(() => {
  */
 const search = (condition: TableSearch) => {
   const params: PageOptimizeBaseRequest =
-    optimizeDivRef.value?.getCheckedSearchParams(
-      checkedId.value,
-      TableSearch.toSearchParams(condition)
-    );
+      optimizeDivRef.value?.getCheckedSearchParams(
+          checkedId.value,
+          TableSearch.toSearchParams(condition)
+      );
   //默认降配
   if (!_.has(params, "optimizeSuggestCode")) {
     _.set(params, "optimizeSuggestCode", optimizeSuggestCode.value);
@@ -220,21 +253,21 @@ const search = (condition: TableSearch) => {
     checkedAccountIds.value = [];
   }
   OptimizeViewApi.listOptimizeServer(
-    {
-      ...params,
-      currentPage: tableConfig.value.paginationConfig.currentPage,
-      pageSize: tableConfig.value.paginationConfig.pageSize,
-    },
-    tableLoading
+      {
+        ...params,
+        currentPage: tableConfig.value.paginationConfig.currentPage,
+        pageSize: tableConfig.value.paginationConfig.pageSize,
+      },
+      tableLoading
   ).then((res) => {
     tableData.value = res.data.records;
     tableConfig.value.paginationConfig?.setTotal(
-      res.data.total,
-      tableConfig.value.paginationConfig
+        res.data.total,
+        tableConfig.value.paginationConfig
     );
     tableConfig.value.paginationConfig?.setCurrentPage(
-      res.data.current,
-      tableConfig.value.paginationConfig
+        res.data.current,
+        tableConfig.value.paginationConfig
     );
   });
 };
@@ -290,14 +323,14 @@ const tableConfig = ref<TableConfig>({
  */
 const showDetail = (row: VmCloudServerVO) => {
   MicroAppRouterUtil.jumpToChildrenPath(
-    "vm-service",
-    "/vm-service/vm_cloud_server/detail/" + row.id,
-    router
+      "vm-service",
+      "/vm-service/vm_cloud_server/detail/" + row.id,
+      router
   );
 };
 const needRoles = ref<Array<string>>(["ADMIN"]);
 const showSettingIcon = computed<boolean>(() =>
-  _.includes(needRoles.value, userStore.currentRole)
+    _.includes(needRoles.value, userStore.currentRole)
 );
 </script>
 
