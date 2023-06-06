@@ -58,8 +58,8 @@ public class EventListenerTemplate implements EventListener {
             CompletableFuture.runAsync(() -> {
                 try {
                     Type[] genericParameterTypes = e.getValue().getGenericParameterTypes();
-                    Object[] arg = new Object[args.length];
-                    for (int i = 0; i < args.length && i < genericParameterTypes.length; i++) {
+                    Object[] arg = new Object[Math.min(args.length, genericParameterTypes.length)];
+                    for (int i = 0; i < Math.min(args.length, genericParameterTypes.length); i++) {
                         String s = JsonUtil.toJSONString(args[i]);
                         JavaType javaType = JsonUtil.mapper.getTypeFactory().constructType(genericParameterTypes[i]);
                         arg[i] = JsonUtil.mapper.readValue(s, javaType);
