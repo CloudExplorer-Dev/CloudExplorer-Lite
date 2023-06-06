@@ -31,13 +31,13 @@
         },
       ]"
     >
-      <el-input-number
-        :disabled="readOnly"
-        v-model="cronFrom.intervalF"
-        :step="1"
-        :precision="0"
-        :value-on-clear="null"
+      <LineNumber
+        :special-step="unit === 'MINUTE' ? 5 : 1"
+        v-model.number="cronFrom.intervalF"
         :min="unit === 'MINUTE' ? 15 : 1"
+        :step="1"
+        required
+        @change="formatNumber(cronFrom.intervalF, 'intervalF')"
       />
     </el-form-item>
     <el-form-item prop="unitF">
@@ -72,6 +72,8 @@
 import { onMounted, ref, watch, computed } from "vue";
 import type { FormInstance } from "element-plus";
 import type { KeyValue } from "@commons/api/base/type";
+import LineNumber from "@commons/components/ce-form/items/LineNumber.vue";
+
 const props = withDefaults(
   defineProps<{
     /**
@@ -100,6 +102,11 @@ const props = withDefaults(
     usableUnits: () => ["MINUTE", "HOUR", "DAY", "WEEK", "MONTH"],
   }
 );
+
+function formatNumber(v: number, key: "intervalF") {
+  console.log(v, key);
+  cronFrom.value[key] = parseInt(`${v}`);
+}
 
 const unitList: Array<KeyValue<string, string>> = [
   { key: "分钟", value: "MINUTE" },
