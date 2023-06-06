@@ -162,7 +162,7 @@ watch(
     if (_unit !== "MINUTE") {
       cronFrom.value.intervalF = 1;
     } else {
-      cronFrom.value.intervalF = 15;
+      cronFrom.value.intervalF = 30;
     }
     emit("update:interval", cronFrom.value.intervalF);
   }
