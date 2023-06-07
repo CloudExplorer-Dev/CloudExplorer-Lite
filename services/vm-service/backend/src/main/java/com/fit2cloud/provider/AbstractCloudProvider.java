@@ -247,4 +247,14 @@ public abstract class AbstractCloudProvider<C extends Credential> implements ICl
     public List<F2CDisk> getVmF2CDisks(String req) {
         return new ArrayList<>();
     }
+
+    @Override
+    public boolean supportResetPassword() {
+        return false;
+    }
+
+    @Override
+    public boolean resetPassword(String req) {
+        return false;
+    }
 }

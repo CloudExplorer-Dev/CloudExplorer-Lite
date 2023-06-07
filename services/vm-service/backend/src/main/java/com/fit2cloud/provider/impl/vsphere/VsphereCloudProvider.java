@@ -291,4 +291,13 @@ public class VsphereCloudProvider extends AbstractCloudProvider<VsphereCredentia
         return VsphereSyncCloudApi.getVmF2CDisks(JsonUtil.parseObject(req, VsphereDiskRequest.class));
     }
 
+    @Override
+    public boolean supportResetPassword() {
+        return true;
+    }
+
+    @Override
+    public boolean resetPassword(String req) {
+        return VsphereSyncCloudApi.resetPassword(JsonUtil.parseObject(req, VsphereVmResetPasswordRequest.class));
+    }
 }

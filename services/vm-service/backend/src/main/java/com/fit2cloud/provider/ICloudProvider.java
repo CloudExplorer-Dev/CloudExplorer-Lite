@@ -269,4 +269,8 @@ public interface ICloudProvider {
      * @return
      */
     List<F2CDisk> getVmF2CDisks(String req);
+
+    boolean supportResetPassword();
+
+    boolean resetPassword(String req);
 }

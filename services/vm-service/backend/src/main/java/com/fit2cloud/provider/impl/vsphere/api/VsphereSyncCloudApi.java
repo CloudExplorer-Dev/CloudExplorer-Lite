@@ -36,6 +36,7 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
+
 /**
  * Author: LiuDi
  * Date: 2022/9/21 2:39 PM
@@ -1068,6 +1069,68 @@ public class VsphereSyncCloudApi {
         return f2CVirtualMachine;
     }
 
+    public static boolean resetPassword(VsphereVmResetPasswordRequest request) {
+
+        if (request.getPasswordSetting() == null || !request.getPasswordSetting().getType().equals(VsphereVmCreateRequest.PasswordObject.TYPE.LINUX)) {
+            log.info("skip reset password");
+            return false;
+        }
+
+        if (StringUtils.isBlank(request.getPasswordSetting().getLoginUser()) || StringUtils.isBlank(request.getPasswordSetting().getLoginPassword()) || StringUtils.isBlank(request.getPasswordSetting().getImageUser()) || StringUtils.isBlank(request.getPasswordSetting().getImagePassword())) {
+            throw new RuntimeException("用户名或密码不能为空");
+        }
+        if (StringUtils.isBlank(request.getPasswordSetting().getProgramPath()) || StringUtils.isBlank(request.getPasswordSetting().getScript())) {
+            throw new RuntimeException("脚本执行路径或脚本参数不能为空");
+        }
+
+        VsphereVmClient client = request.getVsphereVmClient();
+        try {
+            VirtualMachine vm = client.getVirtualMachineById(request.getServerId());
+            if (vm == null) {
+                throw new RuntimeException("ID为[" + request.getServerId() + "]的vm不存在");
+            }
+
+            //先校验原密码是否正确
+            int count = 160;
+            while (count-- > 0) {
+                try {
+                    boolean validLoginInfo;
+                    log.debug("validate OS username and password ::: user :: " + request.getPasswordSetting().getImageUser() + ", vmName: " + vm.getName());
+                    validLoginInfo = client.validateOsUserAndPassword(vm, request.getPasswordSetting().getImageUser(), request.getPasswordSetting().getImagePassword());
+                    if (validLoginInfo) {
+                        break;
+                    }
+                } catch (Exception e) {
+                    log.info(e.toString());
+                } finally {
+                    Thread.sleep(3000);
+                }
+            }
+
+            String script = request.getPasswordSetting().getScript();
+
+            script = script.replace(VsphereVmCreateRequest.PasswordObject.LOGIN_USER_PLACEHOLDER, request.getPasswordSetting().getLoginUser());
+            script = script.replace(VsphereVmCreateRequest.PasswordObject.NEW_PASSWORD_PLACEHOLDER, request.getPasswordSetting().getLoginPassword());
+            client.startProgramInGuest(request.getServerId(), request.getPasswordSetting().getProgramPath(), script, request.getPasswordSetting().getImageUser(), request.getPasswordSetting().getImagePassword(), 300);
+        } catch (Exception e) {
+            boolean valid = false;
+            try {
+                //抛出异常前再判断一次密码是否设置上了
+                if (client != null) {
+                    valid = client.validateOsUserAndPassword(client.getVirtualMachineById(request.getServerId()), request.getPasswordSetting().getLoginUser(), request.getPasswordSetting().getLoginPassword());
+                }
+            } catch (Exception ignore) {
+            }
+            if (!valid) {
+                throw new RuntimeException(e);
+            }
+        } finally {
+            if (client != null) {
+                client.closeConnection();
+            }
+        }
+        return true;
+    }
 
     /**
      * 得到vsphere客户

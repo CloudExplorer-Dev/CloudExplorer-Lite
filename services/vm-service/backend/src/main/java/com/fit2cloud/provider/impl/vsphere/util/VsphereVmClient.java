@@ -1190,13 +1190,14 @@ public class VsphereVmClient extends VsphereClient {
         } else {
             ci.setJoinWorkgroup("WORKGROUP");
         }
-        CustomizationPassword customizationPassword = new CustomizationPassword();
-        customizationPassword.setPlainText(true);
 
-        //todo windows 设置密码
-        customizationPassword.setValue("password");
-
-        //cgu.setPassword(customizationPassword);
+        //windows 设置密码
+        if (request.getPasswordSetting() != null && request.getPasswordSetting().getType().equals(VsphereVmCreateRequest.PasswordObject.TYPE.WINDOWS) && StringUtils.isNotBlank(request.getPasswordSetting().getLoginPassword())) {
+            CustomizationPassword customizationPassword = new CustomizationPassword();
+            customizationPassword.setPlainText(true);
+            customizationPassword.setValue(request.getPasswordSetting().getLoginPassword());
+            cgu.setPassword(customizationPassword);
+        }
         sysprep.setGuiUnattended(cgu);
         sysprep.setIdentification(ci);
         sysprep.setUserData(customizationUserData);
@@ -1418,6 +1419,157 @@ public class VsphereVmClient extends VsphereClient {
             task.waitForTask();
         } catch (Exception e) {
             log.error("Error connecting the network manually after creating the machine: " + ExceptionUtils.getStackTrace(e));
+        }
+    }
+
+    public void startProgramInGuest(String instanceId, String programPath, String arguments, String vmUserName, String vmPassword, int timeoutSeconds) throws Exception {
+        int RETRY_COUNT = 20;
+
+        try {
+            log.info("vm: " + instanceId + ", vmUserName: " + vmUserName + "vmPassword: " + vmPassword + ", program script: " + arguments);
+            GuestOperationsManager gom = getGuestOperationsManager();
+            VirtualMachine vm = getVirtualMachineById(instanceId);
+            if (vm == null) {
+                throw new RuntimeException("virtual machine [" + instanceId + "] not found!");
+            }
+            VirtualMachinePowerState vmStatus = vm.getRuntime().getPowerState();
+            if (!VirtualMachinePowerState.poweredOn.equals(vmStatus)) {
+                throw new RuntimeException("virtual machine [" + instanceId + "] not open!");
+            }
+            GuestInfo guest = vm.getGuest();
+            if (guest == null || VirtualMachineToolsStatus.toolsNotInstalled.equals(guest.getToolsStatus())) {
+                throw new RuntimeException("virtual machine [" + instanceId + "] vmtools uninstalled");
+            }
+            int count = 0, limit = 12;
+            while (count++ <= limit) {
+                guest = vm.getGuest();
+                if ("guestToolsRunning".equalsIgnoreCase(guest.getToolsRunningStatus())) {
+                    break;
+                }
+                Thread.sleep(1000 * 10); // 10s
+            }
+            if (count > limit) {
+                throw new RuntimeException("virtual machine [" + instanceId + "]vmtools not running!");
+            }
+            GuestProgramSpec spec = new GuestProgramSpec();
+            spec.programPath = programPath;
+            spec.arguments = arguments;
+
+            NamePasswordAuthentication creds = new NamePasswordAuthentication();
+            if (vmUserName == null || vmUserName.trim().length() == 0) {
+                throw new RuntimeException("The virtual machine login user name cannot be empty.！");
+            }
+            if (vmPassword == null || vmPassword.trim().length() == 0) {
+                throw new RuntimeException("The virtual machine login password cannot be empty.！");
+            }
+            creds.username = vmUserName;
+            creds.password = vmPassword;
+
+            GuestProcessManager gpm = gom.getProcessManager(vm);
+            if (timeoutSeconds < 60) {
+                timeoutSeconds = 60;
+            }
+            if (timeoutSeconds > 3600) {
+                timeoutSeconds = 3600;
+            }
+            long timeoutMilliseconds = timeoutSeconds * 1000;
+            long pid = -1;
+            //碰到GuestOperationsUnavailable异常时的retry次数
+            int retryCount = RETRY_COUNT;
+            try {
+                while (retryCount-- > 0) {
+                    try {
+                        pid = gpm.startProgramInGuest(creds, spec);
+                    } catch (GuestOperationsUnavailable e) {
+                        if (retryCount == -1) {
+                            throw new RuntimeException("task execute error: GuestOperationsUnavailable");
+                        } else {
+                            Thread.sleep(5000);
+                            log.info("GuestOperationsUnavailable error，retry " + (RETRY_COUNT - retryCount) + " times");
+                        }
+                        continue;
+                    }
+                    break;
+                }
+                log.info("pid: " + pid);
+                long startTime = System.currentTimeMillis();
+                String errorMessage = StringUtils.EMPTY;
+                retryCount = 1;
+                while (true) {
+                    if ((System.currentTimeMillis() - startTime) > timeoutMilliseconds) {
+                        throw new RuntimeException("execute timeout! " + errorMessage);
+                    }
+                    Thread.sleep(5000);
+                    GuestProcessInfo[] infoList;
+                    try {
+                        infoList = gpm.listProcessesInGuest(creds, new long[]{pid});
+                        if (infoList == null) {
+                            errorMessage = "listProcessesInGuest return null";
+                            log.info(errorMessage + "，retry " + retryCount++ + " times");
+                            continue;
+                        }
+                    } catch (GuestOperationsUnavailable guestOperationsUnavailable) {
+                        errorMessage = "listProcessesInGuest occur GuestOperationsUnavailable error";
+                        log.info(errorMessage + "，retry " + retryCount++ + " times");
+                        continue;
+                    } catch (InvalidState invalidState) {
+                        errorMessage = "listProcessesInGuest occur invalidState error";
+                        log.info(errorMessage + "，retry " + retryCount++ + " times");
+                        continue;
+                    } catch (TaskInProgress taskInProgress) {
+                        errorMessage = "listProcessesInGuest occur taskInProgress error";
+                        log.info(errorMessage + "，retry " + retryCount++ + " times");
+                        continue;
+                    } finally {
+                        log.info("getGuestState: " + vm.getGuest().getGuestState());
+                        log.info("getGuestOperationsReady: " + vm.getGuest().getGuestOperationsReady().toString());
+                        log.info("getToolsRunningStatus: " + vm.getGuest().getToolsRunningStatus());
+                        log.info("getToolsStatus: " + vm.getGuest().getToolsStatus());
+                        log.info("getAppState: " + vm.getGuest().getAppState());
+                    }
+                    GuestProcessInfo info = infoList[0];
+                    Integer exitCode = info.getExitCode();
+                    if (exitCode == null) {
+                        log.info("Waiting for the process to exit ... ");
+                    } else {
+                        log.info("exit code: " + exitCode);
+                        if (exitCode != 0) {
+                            throw new RuntimeException("task execute error！return code: " + exitCode);
+                        }
+                        break;
+                    }
+                    if ((System.currentTimeMillis() - startTime) > timeoutMilliseconds) {
+                        throw new RuntimeException("execute timeout! ");
+                    }
+                }
+            } catch (Exception e) {
+                if (pid == -1 && e instanceof InvalidGuestLogin) {
+                    throw new RuntimeException("Virtual machine login password is incorrect!", e);
+                }
+                throw e;
+            }
+        } catch (Exception e) {
+            log.error(ExceptionUtils.getStackTrace(e));
+            throw e;
+        }
+    }
+
+    public boolean validateOsUserAndPassword(VirtualMachine vm, String vmUserName, String vmPassword) {
+        try {
+            GuestOperationsManager gom = getGuestOperationsManager();
+
+            NamePasswordAuthentication creds = new NamePasswordAuthentication();
+            creds.username = vmUserName;
+            creds.password = vmPassword;
+            GuestFileManager fileMgr = gom.getFileManager(vm);
+            fileMgr.listFilesInGuest(creds, ".", 1, 1, null);
+            return true;
+        } catch (Exception e) {
+            String msg = e.toString();
+            if (msg != null && msg.contains("InvalidGuestLogin")) {
+                return false;
+            }
+            throw new RuntimeException(e);
         }
     }
 
