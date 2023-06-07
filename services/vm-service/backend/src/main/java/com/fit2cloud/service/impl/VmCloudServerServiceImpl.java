@@ -8,6 +8,7 @@ import com.baomidou.mybatisplus.core.metadata.OrderItem;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fit2cloud.autoconfigure.ThreadPoolConfig;
 import com.fit2cloud.base.entity.*;
 import com.fit2cloud.base.mapper.BaseJobRecordResourceMappingMapper;
@@ -620,7 +621,23 @@ public class VmCloudServerServiceImpl extends ServiceImpl<BaseVmCloudServerMappe
                     vmCloudServer.setInstanceStatus(F2CInstanceStatus.Failed.name());
                     jobRecord.setStatus(JobStatusConstants.FAILED);
                     jobRecord.setResult(e.getMessage());
-                    LogUtil.error("Create Cloud server fail - {}", e.getMessage());
+                    LogUtil.error("Create Cloud server fail - " + e.getMessage(), e);
+                    e.printStackTrace();
+                }
+
+                //设置密码
+                try {
+                    if (cloudProvider.getConstructor().newInstance().supportResetPassword()) {
+                        Map<String, Object> map = JsonUtil.parseObject(createRequest, new TypeReference<>() {
+                        });
+                        map.put("serverId", vmCloudServer.getInstanceName());
+                        boolean reset = CommonUtil.exec(cloudProvider, JsonUtil.toJSONString(map), ICloudProvider::resetPassword);
+                    }
+                } catch (Exception e) {
+                    //设置密码失败的话仅将任务置为失败
+                    jobRecord.setStatus(JobStatusConstants.FAILED);
+                    jobRecord.setResult(e.getMessage());
+                    LogUtil.error("reset password fail - " + e.getMessage(), e);
                     e.printStackTrace();
                 }
 
@@ -635,8 +652,8 @@ public class VmCloudServerServiceImpl extends ServiceImpl<BaseVmCloudServerMappe
                     saveCloudServerDisks(vmCloudServer);
                 } catch (Exception e) {
                     //更新磁盘信息不影响创建任务
-                    //todo 后续如何加日志
                     e.printStackTrace();
+                    LogUtil.error("Save Disk Info Error - " + e.getMessage(), e);
                 }
 
                 try {
@@ -645,14 +662,14 @@ public class VmCloudServerServiceImpl extends ServiceImpl<BaseVmCloudServerMappe
                 } catch (Exception e) {
                     jobRecord.setStatus(JobStatusConstants.FAILED);
                     jobRecord.setResult(e.getMessage());
-                    LogUtil.error("Create Cloud server fail - {}", e.getMessage());
+                    LogUtil.error("Create Cloud server fail - " + e.getMessage(), e);
                     e.printStackTrace();
                 }
 
                 jobRecord.setFinishTime(DateUtil.getSyncTime());
                 modifyJobRecord.accept(jobRecord);
             } catch (Throwable e) {
-                LogUtil.error("Create Cloud server fail - {}", e.getMessage());
+                LogUtil.error("Create Cloud server fail - " + e.getMessage(), e);
                 e.printStackTrace();
                 throw new RuntimeException(e);
             }

@@ -74,6 +74,10 @@ public class VsphereClient {
         si.getServerConnection().logout();
     }
 
+    public GuestOperationsManager getGuestOperationsManager() {
+        return si.getGuestOperationsManager();
+    }
+
     private void updateRootEntity(String dataCenterId) {
         if (dataCenterId != null && dataCenterId.trim().length() > 0) {
             List<Datacenter> dcList = listDataCenters();

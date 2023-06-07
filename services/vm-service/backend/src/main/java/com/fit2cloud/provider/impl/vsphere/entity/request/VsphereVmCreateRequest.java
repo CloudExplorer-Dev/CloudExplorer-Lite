@@ -84,9 +84,9 @@ public class VsphereVmCreateRequest extends VsphereVmBaseRequest implements ICre
             step = 1,
             confirmGroup = 0,
             textField = "${info}\n" +
-            "      <span style=\"color: var(--el-text-color-secondary); font-size: smaller\">\n" +
-            "        ${description}\n" +
-            "      </span>"
+                    "      <span style=\"color: var(--el-text-color-secondary); font-size: smaller\">\n" +
+                    "        ${description}\n" +
+                    "      </span>"
     )
     private String cluster;
 
@@ -232,7 +232,7 @@ public class VsphereVmCreateRequest extends VsphereVmBaseRequest implements ICre
             confirmSpecial = true,
             confirmPosition = Form.Position.TOP
     )
-    private String defaultPassword;
+    private PasswordObject passwordSetting;
 
     //step 4
     //云主机名称
@@ -322,6 +322,34 @@ public class VsphereVmCreateRequest extends VsphereVmBaseRequest implements ICre
         private String domain;
         private String domainAdmin;
         private String domainPassword;
+
+    }
+
+    @Data
+    @Accessors(chain = true)
+    public static class PasswordObject {
+
+        public enum TYPE {
+            NONE, LINUX, WINDOWS
+        }
+
+        public static final String NEW_PASSWORD_PLACEHOLDER = "@[NEW_PASSWORD]";
+
+        public static final String LOGIN_USER_PLACEHOLDER = "@[LOGIN_USER]";
+
+        private TYPE type;
+
+        private String imagePassword;
+
+        private String imageUser;
+
+        private String loginUser;
+
+        private String loginPassword;
+
+        private String script;
+
+        private String programPath;
 
     }
 
