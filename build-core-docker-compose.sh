@@ -31,6 +31,10 @@ services:
       - \${CE_BASE}/cloudexplorer/data:/opt/cloudexplorer/data
     networks:
       - ce-network
+    deploy:
+      resources:
+        limits:
+          memory: \${CE_CORE_MEMORY_LIMIT:-8G}
 
 EOF
 }
