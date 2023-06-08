@@ -159,7 +159,7 @@ export function batchDeleteDisk(
 }
 
 /**
- * 查询可以挂载的虚拟机列表
+ * 查询可以挂载的云主机列表
  */
 export function listVm(
   req: ListVmRequest,

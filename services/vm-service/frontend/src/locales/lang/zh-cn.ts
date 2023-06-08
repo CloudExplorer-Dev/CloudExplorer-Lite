@@ -46,7 +46,7 @@ const message = {
       confirm_delete: "确认删除",
       confirm_batch_operate: "确认执行批量{0}操作",
       check_vm_tools_status_confirm_shutdown:
-        "当前虚拟机未安装VmTools或VmTools未运行，无法软关机，若继续操作则关闭电源，是否继续？",
+        "当前云主机未安装VmTools或VmTools未运行，无法软关机，若继续操作则关闭电源，是否继续？",
       confirm_config_update: "配置变更将会对实例执行关机操作，确认继续?",
       confirm_delete_record: "确认删除失败记录",
       confirm_batch_delete_record: "确认批量删除失败记录",

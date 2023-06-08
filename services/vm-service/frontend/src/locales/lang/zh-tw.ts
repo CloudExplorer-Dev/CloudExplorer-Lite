@@ -46,7 +46,7 @@ const message = {
       confirm_delete: "確認刪除",
       confirm_batch_operate: "確認執行批量{0}操作",
       check_vm_tools_status_confirm_shutdown:
-        "當前虛擬機器未安裝VmTools或VmTools未運行，無法軟關機，若繼續操作則關閉電源，是否繼續？",
+        "當前云主機器未安裝VmTools或VmTools未運行，無法軟關機，若繼續操作則關閉電源，是否繼續？",
       confirm_config_update: "配置變更將會對實例執行關機操作，確認繼續?",
       confirm_delete_record: "確認刪除失敗記錄",
       confirm_batch_delete_record: "確認批量刪除失敗記錄",
@@ -64,7 +64,7 @@ const message = {
   },
   vm_cloud_disk: {
     label: {
-      vm: "所屬虛擬機器",
+      vm: "所屬云主機器",
       size: "磁盤大小",
       disk_category: "磁片種類",
       disk_attribute: "磁片屬性",

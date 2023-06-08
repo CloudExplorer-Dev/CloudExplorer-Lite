@@ -25,10 +25,10 @@ public class VsphereUtil {
     /**
      * 将 vsphere 云主机对象转换为 F2C 云管云主机对象
      *
-     * @param vm        虚拟机对象
+     * @param vm        云主机对象
      * @param client    vm客户端
      * @param hostCache 用于存储host宿主机信息
-     * @return 虚拟机信息
+     * @return 云主机信息
      */
     public static F2CVirtualMachine toF2CInstance(VirtualMachine vm, VsphereVmClient client, Map<String, F2CVsphereHost> hostCache) {
         if (Objects.isNull(vm)) {
@@ -302,11 +302,11 @@ public class VsphereUtil {
 
 
     /**
-     * 获取虚拟机的宿主机
+     * 获取云主机的宿主机
      *
      * @param client 客户端
-     * @param vm     虚拟机
-     * @return 虚拟机对应的客户端
+     * @param vm     云主机
+     * @return 云主机对应的客户端
      */
     public static F2CVsphereHost getF2CVsphereHost(VsphereClient client, VirtualMachine vm) {
         HostSystem host = client.getHost(vm);
@@ -372,7 +372,7 @@ public class VsphereUtil {
     /**
      * 计算云主机磁盘大小
      *
-     * @param vmConfig 虚拟机Config
+     * @param vmConfig 云主机Config
      * @return 单位（GB）
      */
     public static int getDiskSizeInGB(VirtualMachineConfigInfo vmConfig) {
@@ -396,7 +396,7 @@ public class VsphereUtil {
     /**
      * 计算磁盘使用量
      *
-     * @param vmSummary 虚拟机存储数据
+     * @param vmSummary 云主机存储数据
      * @return 单位（GB）
      */
     public static long getDiskUsed(VirtualMachineSummary vmSummary) {

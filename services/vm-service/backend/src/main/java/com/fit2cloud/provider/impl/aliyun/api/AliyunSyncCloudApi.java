@@ -251,7 +251,7 @@ public class AliyunSyncCloudApi {
     }
 
     /**
-     * 获取虚拟机交换机
+     * 获取云主机交换机
      *
      * @param req
      * @return
@@ -1207,7 +1207,7 @@ public class AliyunSyncCloudApi {
 
 
     /**
-     * 获取虚拟机监控指标数据
+     * 获取云主机监控指标数据
      *
      * @param getMetricsRequest
      * @return
@@ -1469,7 +1469,7 @@ public class AliyunSyncCloudApi {
     }
 
     /**
-     * 虚拟机配置变更
+     * 云主机配置变更
      *
      * @param request
      * @return

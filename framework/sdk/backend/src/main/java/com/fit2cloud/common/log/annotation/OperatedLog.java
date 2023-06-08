@@ -38,7 +38,7 @@ public @interface OperatedLog {
 
 
     /**
-     * 关联资源ID,磁盘挂载到虚拟机，虚拟机卸载磁盘
+     * 关联资源ID,磁盘挂载到云主机，云主机卸载磁盘
      *
      * @return
      */

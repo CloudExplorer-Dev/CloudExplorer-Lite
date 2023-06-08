@@ -418,7 +418,7 @@ public class CloudAccountServiceImpl extends ServiceImpl<CloudAccountMapper, Clo
     @Override
     public List<ResourceCountResponse> resourceCount(String accountId) {
         List<ResourceCountResponse> list = new ArrayList<>();
-        // 虚拟机
+        // 云主机
         QueryWrapper<VmCloudServer> vmQueryWrapper = Wrappers.query();
         vmQueryWrapper.lambda().ne(VmCloudServer::getInstanceStatus, "deleted").eq(VmCloudServer::getAccountId, accountId);
         ResourceCountResponse vm = new ResourceCountResponse("xuniyunzhuji", "云主机", cloudServerService.count(vmQueryWrapper), "台");

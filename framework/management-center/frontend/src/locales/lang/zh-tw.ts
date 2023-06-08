@@ -129,7 +129,7 @@ const message = {
     ip: "操作IP",
     status: "操作狀態",
     view_details: "查看詳情",
-    belong_vm: "所屬虛擬機器",
+    belong_vm: "所屬云主機器",
     content: "操作詳情",
     login_time: "登入時間",
     op_time: "操作時間",

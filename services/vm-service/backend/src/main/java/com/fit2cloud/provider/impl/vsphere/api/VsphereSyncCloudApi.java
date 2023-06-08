@@ -1178,9 +1178,9 @@ public class VsphereSyncCloudApi {
     }
 
     /**
-     * 虚拟机指标监控数据
-     * 批量获取虚拟机指标的数据
-     * 虚拟机查询监控数据时
+     * 云主机指标监控数据
+     * 批量获取云主机指标的数据
+     * 云主机查询监控数据时
      * 查询数据时的interval为20秒
      *
      * @param getMetricsRequest 请求参数
@@ -1188,7 +1188,7 @@ public class VsphereSyncCloudApi {
      */
     private static List<F2CPerfMetricMonitorData> getVmMetricsData(GetMetricsRequest getMetricsRequest, VsphereVmClient client) {
         List<F2CPerfMetricMonitorData> result = new ArrayList<>();
-        // 查询所有虚拟机
+        // 查询所有云主机
         List<VirtualMachine> vms = client.listVirtualMachines();
         if (CollectionUtils.isEmpty(vms)) {
             return result;
@@ -1494,7 +1494,7 @@ public class VsphereSyncCloudApi {
                 long[] values = perfMetricIntSeries.getValue();
                 // 将时间数据数组与指标值数据数组中相同下标的元素组合成新对象的集合
                 List<MetricTimeValue> metricTimeValues = IntStream.range(0, Math.min(sampleInfo.length, values.length)).mapToObj((index) -> new MetricTimeValue(String.valueOf(perfMetricIntSeries.getId().getCounterId()), sampleInfo[index].getTimestamp().getTimeInMillis(), BigDecimal.valueOf(values[index]))).collect(Collectors.toList());
-                // 如果查询数据的数据间隔大于20秒，就直接返回数据，默认除了虚拟机查询时时20秒的间隔外，其他都是300
+                // 如果查询数据的数据间隔大于20秒，就直接返回数据，默认除了云主机查询时时20秒的间隔外，其他都是300
                 if (interval > 20) {
                     result.addAll(metricTimeValues);
                 } else {

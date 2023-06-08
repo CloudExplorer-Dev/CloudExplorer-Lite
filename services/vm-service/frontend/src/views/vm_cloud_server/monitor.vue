@@ -61,7 +61,7 @@ const useRoute = useRouter();
 //初始化图表数据，固定指标图表
 const echartsData = ref<Array<any>>([]);
 const request = ref<any>({});
-// 虚拟机CPU使用率、内存使用率、磁盘BPS、磁盘IOPS、磁盘使用率、内网带宽、外网带宽
+// 云主机CPU使用率、内存使用率、磁盘BPS、磁盘IOPS、磁盘使用率、内网带宽、外网带宽
 const echarts: Map<string, any> = new Map();
 // 所有图表集合
 const childRefMap: Map<string, any> = new Map();

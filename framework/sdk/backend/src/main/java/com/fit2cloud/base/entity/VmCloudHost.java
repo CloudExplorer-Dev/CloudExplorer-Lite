@@ -91,19 +91,19 @@ public class VmCloudHost implements Serializable {
     private Long memoryAllocated;
 
     /**
-     * 虚拟机总数
+     * 云主机总数
      */
     @TableField("vm_total")
     private Long vmTotal;
 
     /**
-     * 运行中虚拟机数
+     * 运行中云主机数
      */
     @TableField("vm_running")
     private Long vmRunning;
 
     /**
-     * 已停止虚拟机数
+     * 已停止云主机数
      */
     @TableField("vm_stopped")
     private Long vmStopped;

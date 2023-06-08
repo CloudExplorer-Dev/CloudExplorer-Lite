@@ -14,7 +14,7 @@ import lombok.Data;
 public class PageOperatedLogRequest extends PageRequest implements PageOrderRequestInterface {
 
     /**
-     * 类型，0登录日志、1虚拟机操作日志、2磁盘操作日志、3平台管理日志
+     * 类型，0登录日志、1云主机操作日志、2磁盘操作日志、3平台管理日志
      */
     private String type;
 

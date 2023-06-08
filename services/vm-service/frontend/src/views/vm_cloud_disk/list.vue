@@ -201,7 +201,7 @@ const tableConfig = ref<TableConfig>({
         value: "accountName",
       },
       {
-        label: t("vm_cloud_disk.label.vm", "所属虚拟机"),
+        label: t("vm_cloud_disk.label.vm", "所属云主机"),
         value: "vmInstanceName",
       },
     ],

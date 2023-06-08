@@ -101,7 +101,7 @@ const open = (cloudServerId: string) => {
   cloudAccount.value = undefined;
   // 打开抽屉
   drawer.value = true;
-  // 保存虚拟机id
+  // 保存云主机id
   id.value = cloudServerId;
   // 打开转圈
   loading.value = true;

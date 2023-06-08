@@ -22,7 +22,7 @@ import java.util.stream.Collectors;
  */
 public class OrganizationCache {
     /**
-     * 组织id -> name的缓存 使用软引用,在虚拟机内存不足的情况下会被清除
+     * 组织id -> name的缓存 使用软引用,在云主机内存不足的情况下会被清除
      */
     private static SoftReference<Map<String, String>> organizationCache = new SoftReference<>(new HashMap<>());
 

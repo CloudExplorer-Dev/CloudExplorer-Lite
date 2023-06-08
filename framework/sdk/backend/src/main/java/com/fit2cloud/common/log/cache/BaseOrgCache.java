@@ -23,7 +23,7 @@ import java.util.stream.Collectors;
  */
 public class BaseOrgCache {
     /**
-     * 云账号id -> name的缓存 使用软引用,在虚拟机内存不足的情况下会被清除
+     * 云账号id -> name的缓存 使用软引用,在云主机内存不足的情况下会被清除
      */
     private static SoftReference<Map<String, String>> orgCache = new SoftReference<>(new HashMap<>());
 

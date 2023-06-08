@@ -80,7 +80,7 @@ public class JobConstants implements JobSettingConfig.JobConfig {
 
     @Override
     public List<JobSetting> listJobInitSetting() {
-        // 同步虚拟机
+        // 同步云主机
         JobSetting syncVirtual = new JobSetting(CloudAccountSyncJob.SyncVirtualMachineJob.class, SYNC_VIRTUAL_MACHINE, com.fit2cloud.common.constants.JobConstants.Group.CLOUD_ACCOUNT_RESOURCE_SYNC_GROUP.name(), "同步云主机", null, p -> true);
         // 同步磁盘
         JobSetting syncDisk = new JobSetting(CloudAccountSyncJob.SyncDiskJob.class, SYNC_DISK, com.fit2cloud.common.constants.JobConstants.Group.CLOUD_ACCOUNT_RESOURCE_SYNC_GROUP.name(), "同步磁盘", null, p -> true);

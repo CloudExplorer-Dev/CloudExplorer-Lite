@@ -519,7 +519,7 @@ public class VsphereVmClient extends VsphereClient {
 
 
             // 网络设置
-            //当在存储群集中创建虚拟机时，网络选择为模板的网络时需注意，当网络不合法时，创建虚拟机将会失败，错误提示形如：无法访问虚拟机配置，无法访问文件[datastore1 (35)]
+            //当在存储群集中创建云主机时，网络选择为模板的网络时需注意，当网络不合法时，创建云主机将会失败，错误提示形如：无法访问云主机配置，无法访问文件[datastore1 (35)]
             //当时出现该错误提示时使用的模板的网络为vCenter的管理网络，不知道这个网络和datastore1 (35)有啥关系
             VirtualDevice[] virtualDevices = templateConfig.getHardware().getDevice();
             List<VirtualEthernetCard> virtualEthernetCards = new ArrayList<>();
@@ -772,15 +772,15 @@ public class VsphereVmClient extends VsphereClient {
                 }
                 if (isPowerOn) {
                     if (!startVm(instanceId)) {
-                        throw new RuntimeException("启动虚拟机失败! instanceId: " + instanceId);
+                        throw new RuntimeException("启动云主机失败! instanceId: " + instanceId);
                     }
                 }
                 return getVirtualMachineById(instanceId);
             } else {
-                throw new RuntimeException("停止虚拟机失败! instanceId: " + instanceId);
+                throw new RuntimeException("停止云主机失败! instanceId: " + instanceId);
             }
         } else {
-            throw new RuntimeException("关闭虚拟机系统失败! instanceId: " + instanceId);
+            throw new RuntimeException("关闭云主机系统失败! instanceId: " + instanceId);
         }
     }
 
@@ -1025,7 +1025,7 @@ public class VsphereVmClient extends VsphereClient {
 
     /**
      * 网络设置
-     * //当在存储群集中创建虚拟机时，网络选择为模板的网络时需注意，当网络不合法时，创建虚拟机将会失败，错误提示形如：无法访问虚拟机配置，无法访问文件[datastore1 (35)]
+     * //当在存储群集中创建云主机时，网络选择为模板的网络时需注意，当网络不合法时，创建云主机将会失败，错误提示形如：无法访问云主机配置，无法访问文件[datastore1 (35)]
      * //当时出现该错误提示时使用的模板的网络为vCenter的管理网络，不知道这个网络和datastore1 (35)有啥关系
      *
      * @param machineSpecs
@@ -1289,7 +1289,7 @@ public class VsphereVmClient extends VsphereClient {
      * @param hostSystem                   宿主机
      * @param resourcePool                 资源池
      * @param cluster                      集群
-     * @return 创建虚拟机需要的网卡
+     * @return 创建云主机需要的网卡
      */
     private List<VirtualDeviceConfigSpec> getVirtualDeviceConfigSpecs(List<VirtualEthernetCard> templateVirtualEthernetCards, List<VsphereVmCreateRequest.NetworkAdapter> adapters, String computeType, HostSystem hostSystem, ResourcePool resourcePool, ComputeResource cluster) throws Exception {
         // 网卡去重 注意这个地方不能去重

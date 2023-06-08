@@ -396,7 +396,7 @@ public class SyncProviderServiceImpl extends BaseSyncService implements ISyncPro
 
     @Override
     public void deleteDataSource(List<String> cloudAccountIds) {
-        // 删除虚拟机数据
+        // 删除云主机数据
         AsyncJob.run(() -> vmCloudServerService.remove(new LambdaUpdateWrapper<VmCloudServer>().in(VmCloudServer::getAccountId, cloudAccountIds)));
         // 删除磁盘
         AsyncJob.run(() -> vmCloudDiskService.remove(new LambdaUpdateWrapper<VmCloudDisk>().in(VmCloudDisk::getAccountId, cloudAccountIds)));

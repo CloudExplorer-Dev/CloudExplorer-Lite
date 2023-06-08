@@ -182,9 +182,9 @@ public class VsphereClient {
     }
 
     /**
-     * 根据虚拟机获取数据中心
+     * 根据云主机获取数据中心
      *
-     * @param vm 虚拟机实例
+     * @param vm 云主机实例
      * @return 数据中心实例
      */
     public Datacenter getDataCenter(VirtualMachine vm) {
@@ -232,9 +232,9 @@ public class VsphereClient {
     }
 
     /**
-     * 根据虚拟机获取宿主机
+     * 根据云主机获取宿主机
      *
-     * @param vm 虚拟机实例
+     * @param vm 云主机实例
      * @return 宿主机实例
      */
     public HostSystem getHost(VirtualMachine vm) {
@@ -376,7 +376,7 @@ public class VsphereClient {
     }
 
     public VirtualMachine getVirtualMachineById(String instanceId) throws Exception {
-        // 正则判断虚拟机的ID是不是uuid
+        // 正则判断云主机的ID是不是uuid
         if (!instanceId.matches("([0-9a-f]{8}(-?[0-9a-f]{4}){3}-?[0-9a-f]{12}?)")) {
             return getVirtualMachine(instanceId);
         }

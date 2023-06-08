@@ -115,7 +115,7 @@ public class VmCloudDisk implements Serializable {
     private String datastoreId;
 
     /**
-     * 关联虚拟机UUID
+     * 关联云主机UUID
      */
     @TableField("instance_uuid")
     private String instanceUuid;

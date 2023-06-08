@@ -715,7 +715,7 @@ public class HuaweiSyncCloudApi {
     }
 
     /**
-     * 获取虚拟机监控指标数据
+     * 获取云主机监控指标数据
      * 除了CPU,内存，磁盘与网络都是基础指标的数据，因为API无法获取
      *
      * @param getMetricsRequest 监控查询参数
@@ -925,7 +925,7 @@ public class HuaweiSyncCloudApi {
     }
 
     /**
-     * 查询所有虚拟机参数
+     * 查询所有云主机参数
      *
      * @param getMetricsRequest
      * @return
@@ -1401,7 +1401,7 @@ public class HuaweiSyncCloudApi {
 
 
     /**
-     * 虚拟机包年包月询价
+     * 云主机包年包月询价
      *
      * @param createRequest
      * @param credential
@@ -1442,7 +1442,7 @@ public class HuaweiSyncCloudApi {
     }
 
     /**
-     * 虚拟机按需询价
+     * 云主机按需询价
      *
      * @param createRequest
      * @param credential

@@ -36,7 +36,7 @@ public class EventListener {
         AsyncJob.run(() -> syncService.syncCloudDisk(cloudAccountId));
         // 同步镜像
         AsyncJob.run(() -> syncService.syncCloudImage(cloudAccountId));
-        // 同步虚拟机
+        // 同步云主机
         AsyncJob.run(() -> syncService.syncCloudServer(cloudAccountId));
         // 同步磁盘监控
         AsyncJob.run(() -> syncService.syncCloudDiskPerfMetricMonitor(cloudAccountId));

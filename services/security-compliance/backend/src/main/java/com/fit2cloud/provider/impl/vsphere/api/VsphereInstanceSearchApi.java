@@ -98,13 +98,13 @@ public class VsphereInstanceSearchApi {
         InstanceSearchField memoryAllocated = new InstanceSearchField("内存已分配 (单位:MB)", "memoryAllocated", InstanceFieldType.Number)
                 .resetInstanceField(PlatformConstants.fit2cloud_vsphere_platform, ResourceTypeConstants.HOST);
 
-        InstanceSearchField vmTotal = new InstanceSearchField("虚拟机总数", "vmTotal", InstanceFieldType.Number)
+        InstanceSearchField vmTotal = new InstanceSearchField("云主机总数", "vmTotal", InstanceFieldType.Number)
                 .resetInstanceField(PlatformConstants.fit2cloud_vsphere_platform, ResourceTypeConstants.HOST);
 
-        InstanceSearchField vmRunning = new InstanceSearchField("运行中虚拟机数", "vmRunning", InstanceFieldType.Number)
+        InstanceSearchField vmRunning = new InstanceSearchField("运行中云主机数", "vmRunning", InstanceFieldType.Number)
                 .resetInstanceField(PlatformConstants.fit2cloud_vsphere_platform, ResourceTypeConstants.HOST);
 
-        InstanceSearchField vmStopped = new InstanceSearchField("已停止虚拟机数", "vmStopped", InstanceFieldType.Number)
+        InstanceSearchField vmStopped = new InstanceSearchField("已停止云主机数", "vmStopped", InstanceFieldType.Number)
                 .resetInstanceField(PlatformConstants.fit2cloud_vsphere_platform, ResourceTypeConstants.HOST);
 
         InstanceSearchField vmCpuCores = new InstanceSearchField("虚拟核数", "vmCpuCores", InstanceFieldType.Number)

@@ -1215,7 +1215,7 @@ public class TencentSyncCloudApi {
     }
 
     /**
-     * 获取虚拟机监控指标数据
+     * 获取云主机监控指标数据
      *
      * @param getMetricsRequest
      * @return

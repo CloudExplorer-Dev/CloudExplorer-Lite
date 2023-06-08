@@ -319,7 +319,7 @@ const shutdown = (row: VmCloudServerVO) => {
   if (!checkVmToolsStatus(row)) {
     label = t(
       "vm_cloud_server.message_box.check_vm_tools_status_confirm_shutdown",
-      "当前虚拟机未安装VmTools或VmTools未运行，无法软关机，若继续操作则关闭电源，是否继续？"
+      "当前云主机未安装VmTools或VmTools未运行，无法软关机，若继续操作则关闭电源，是否继续？"
     );
     powerOff = true;
   }

@@ -84,7 +84,7 @@ public class RecycleBinServiceImpl extends ServiceImpl<BaseRecycleBinMapper, Rec
         RecycleBin recycleBin = baseMapper.selectById(recycleId);
         if (recycleBin != null && StringUtils.isNotEmpty(recycleBin.getResourceId())) {
             ResourceTypeConstants resourceType = recycleBin.getResourceType();
-            // 删除虚拟机
+            // 删除云主机
             if (resourceType.equals(ResourceTypeConstants.VM)) {
                 iVmCloudServerService.deleteInstance(recycleBin.getResourceId());
             }

@@ -310,9 +310,9 @@ public class ServerAnalysisServiceImpl implements IServerAnalysisService {
     }
 
     /**
-     * 获取虚拟机最近一次的监控数据 CPU、内存
+     * 获取云主机最近一次的监控数据 CPU、内存
      *
-     * @param list 每页查询的虚拟机数据
+     * @param list 每页查询的云主机数据
      */
     @Override
     public void getVmPerfMetric(List<AnalysisServerDTO> list) {

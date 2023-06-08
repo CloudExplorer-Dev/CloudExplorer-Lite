@@ -146,7 +146,7 @@
               v-model="_data.script"
               type="textarea"
               :rows="5"
-              placeholder="Linux虚拟机会通过此脚本设置密码"
+              placeholder="Linux云主机会通过此脚本设置密码"
             />
           </el-form-item>
         </template>

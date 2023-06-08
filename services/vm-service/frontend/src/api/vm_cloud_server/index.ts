@@ -15,7 +15,7 @@ import type { Ref } from "vue";
 import type { SimpleMap } from "@commons/api/base/type";
 
 /**
- * 虚拟机列表
+ * 云主机列表
  * @param req
  * @param loading
  */

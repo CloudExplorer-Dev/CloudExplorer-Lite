@@ -69,15 +69,15 @@ public class F2CHost {
      */
     private long memoryAllocated;
     /**
-     * 虚拟机总数
+     * 云主机总数
      */
     private long vmTotal;
     /**
-     * 运行中虚拟机数
+     * 运行中云主机数
      */
     private long vmRunning;
     /**
-     * 已停止虚拟机数
+     * 已停止云主机数
      */
     private long vmStopped;
     /**

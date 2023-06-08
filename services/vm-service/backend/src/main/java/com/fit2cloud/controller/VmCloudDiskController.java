@@ -51,7 +51,7 @@ public class VmCloudDiskController {
         return ResultHolder.success(diskService.countDisk());
     }
 
-    @ApiOperation(value = "查询可以挂载磁盘的虚拟机")
+    @ApiOperation(value = "查询可以挂载磁盘的云主机")
     @GetMapping("/listVm")
     @PreAuthorize("hasAnyCePermission('CLOUD_DISK:READ')")
     public ResultHolder<List<VmCloudServerDTO>> cloudServerList(ListVmRequest req) {

@@ -26,7 +26,7 @@ public interface IVmCloudDiskService extends IService<VmCloudDisk> {
     IPage<VmCloudDiskDTO> pageVmCloudDisk(PageVmCloudDiskRequest request);
 
     /**
-     * 根据云账号ID获取虚拟机列表
+     * 根据云账号ID获取云主机列表
      *
      * @param req
      * @return

@@ -83,7 +83,7 @@ public class BaseRecycleBinServiceImpl extends ServiceImpl<BaseRecycleBinMapper,
         recycleBin.setUserId(userId);
         updateById(recycleBin);
 
-        // 如果是虚拟机 则随实例删除的磁盘也从回收站恢复
+        // 如果是云主机 则随实例删除的磁盘也从回收站恢复
         String resourceId = recycleBin.getResourceId();
         ResourceTypeConstants resourceType = recycleBin.getResourceType();
         if (ResourceTypeConstants.VM.equals(resourceType)) {
