@@ -10,4 +10,5 @@ org.springframework.boot.autoconfigure.EnableAutoConfiguration=\
   com.fit2cloud.autoconfigure.SwaggerConfig,\
   com.fit2cloud.autoconfigure.ThreadPoolConfig,\
   com.fit2cloud.autoconfigure.RedisConfig,\
-  com.fit2cloud.autoconfigure.MyBatisPlusConfig
+  com.fit2cloud.autoconfigure.MyBatisPlusConfig,\
+  com.fit2cloud.autoconfigure.ChargingConfig

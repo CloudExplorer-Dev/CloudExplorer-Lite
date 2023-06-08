@@ -32,6 +32,7 @@ public class PermissionConstants {
 
         public static final String DIMENSION_SETTING = "DIMENSION_SETTING";
 
+        public static final String BILLING_POLICY = "BILLING_POLICY";
         //...
     }
 
@@ -137,6 +138,28 @@ public class PermissionConstants {
                             .permission(new Permission.Builder()
                                     .operate(OPERATE.DELETE)
                                     .name("permission.bill.dimension_setting.delete")
+                                    .role(RoleConstants.ROLE.ADMIN))
+            )
+            .group(
+                    new PermissionGroup.Builder()
+                            .id(GROUP.BILLING_POLICY)
+                            .name("permission.bill.billing_policy.base")
+                            .permission(
+                                    new Permission.Builder()
+                                            .operate(OPERATE.READ)
+                                            .name("permission.bill.billing_policy.read")
+                                            .role(RoleConstants.ROLE.ADMIN))
+                            .permission(new Permission.Builder()
+                                    .operate(OPERATE.CREATE)
+                                    .name("permission.bill.billing_policy.create")
+                                    .role(RoleConstants.ROLE.ADMIN))
+                            .permission(new Permission.Builder()
+                                    .operate(OPERATE.EDIT)
+                                    .name("permission.bill.billing_policy.edit")
+                                    .role(RoleConstants.ROLE.ADMIN))
+                            .permission(new Permission.Builder()
+                                    .operate(OPERATE.DELETE)
+                                    .name("permission.bill.billing_policy.delete")
                                     .role(RoleConstants.ROLE.ADMIN))
             );
 

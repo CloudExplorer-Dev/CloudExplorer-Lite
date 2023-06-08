@@ -2,6 +2,7 @@ package com.fit2cloud.base.handler;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fit2cloud.common.utils.JsonUtil;
+import jodd.util.StringUtil;
 import org.apache.ibatis.type.JdbcType;
 import org.apache.ibatis.type.TypeHandler;
 
@@ -25,19 +26,19 @@ public class MapTypeHandler implements TypeHandler<Map<String, Object>> {
 
     @Override
     public Map<String, Object> getResult(ResultSet resultSet, String s) throws SQLException {
-        return JsonUtil.parseObject(resultSet.getString(s), new TypeReference<Map<String, Object>>() {
+        return StringUtil.isEmpty(resultSet.getString(s)) ? Map.of() : JsonUtil.parseObject(resultSet.getString(s), new TypeReference<Map<String, Object>>() {
         });
     }
 
     @Override
     public Map<String, Object> getResult(ResultSet resultSet, int i) throws SQLException {
-        return JsonUtil.parseObject(resultSet.getString(i), new TypeReference<Map<String, Object>>() {
+        return StringUtil.isEmpty(resultSet.getString(i)) ? Map.of() : JsonUtil.parseObject(resultSet.getString(i), new TypeReference<Map<String, Object>>() {
         });
     }
 
     @Override
     public Map<String, Object> getResult(CallableStatement callableStatement, int i) throws SQLException {
-        return JsonUtil.parseObject(callableStatement.getString(i), new TypeReference<Map<String, Object>>() {
+        return StringUtil.isEmpty(callableStatement.getString(i)) ? Map.of() : JsonUtil.parseObject(callableStatement.getString(i), new TypeReference<Map<String, Object>>() {
         });
     }
 }

@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.fit2cloud.base.mapper.BaseResourceInstanceMapper">
+    <resultMap id="ResourceInstanceMap" type="com.fit2cloud.base.entity.ResourceInstance">
+        <id column="id" jdbcType="VARCHAR" property="id"/>
+        <result column="resource_id" jdbcType="VARCHAR" property="resourceId"/>
+        <result column="resource_name" jdbcType="INTEGER" property="resourceName"/>
+        <result column="resource_type" jdbcType="VARCHAR" property="resourceType"/>
+        <result column="cloud_account_id" jdbcType="VARCHAR" property="cloudAccountId"/>
+        <result column="product_id" jdbcType="VARCHAR" property="productId"/>
+        <result column="product_name" jdbcType="VARCHAR" property="productName"/>
+        <result column="product_detail" jdbcType="VARCHAR" property="productDetail"/>
+        <result column="region" jdbcType="VARCHAR" property="region"/>
+        <result column="zone" jdbcType="VARCHAR" property="zone"/>
+        <result column="workspace_id" jdbcType="VARCHAR" property="workspaceId"/>
+        <result column="workspace_name" jdbcType="VARCHAR" property="workspaceName"/>
+        <result column="organization_id" jdbcType="VARCHAR" property="organizationId"/>
+        <result column="organization_name" jdbcType="VARCHAR" property="organizationName"/>
+        <result column="bill_mode" jdbcType="VARCHAR" property="billMode"/>
+        <result column="meta" jdbcType="VARCHAR" property="meta"
+                typeHandler="com.fit2cloud.base.handler.MapTypeHandler"/>
+        <result column="create_time" jdbcType="DATE" property="createTime"/>
+        <result column="update_time" jdbcType="DATE" property="updateTime"/>
+    </resultMap>
+    <select id="listLastResourceInstance" resultMap="ResourceInstanceMap">
+        SELECT *
+        FROM resource_instance resource_instance
+                 RIGHT JOIN (SELECT resource_id,
+                                    MAX(create_time) AS create_time
+                             FROM resource_instance ${ew.customSqlSegment}
+                             GROUP BY resource_id) t1 ON t1.create_time = resource_instance.create_time
+            AND t1.resource_id = resource_instance.resource_id
+    </select>
+</mapper>

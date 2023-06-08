@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.fit2cloud.base.mapper.BaseBillPolicyMapper">
+
+    <resultMap id="BillPolicyCloudAccount" type="com.fit2cloud.base.entity.BillPolicyAccount">
+        <id column="id" jdbcType="VARCHAR" property="id"/>
+        <result column="name" jdbcType="VARCHAR" property="name"/>
+        <result column="cloud_account_name" jdbcType="VARCHAR" property="cloudAccountName"/>
+        <result column="cloud_account_id" jdbcType="VARCHAR" property="cloudAccountId"/>
+        <result column="create_time" jdbcType="DATE" property="createTime"/>
+        <result column="update_time" jdbcType="DATE" property="updateTime"/>
+    </resultMap>
+
+    <select id="listBillPolicy" resultMap="BillPolicyCloudAccount">
+        SELECT
+        bill_policy.id as id,
+        bill_policy.name as name,
+        bill_policy.create_time as create_time,
+        bill_policy.update_time as update_time,
+        bill_policy_cloud_account_mapping.cloud_account_id as cloud_account_id,
+        bill_policy_cloud_account_mapping.`cloud_account_name` as cloud_account_name,
+        bill_policy_cloud_account_mapping.platform as platform
+        FROM bill_policy bill_policy
+        LEFT JOIN (select cloud_account.id as cloud_account_id,
+        cloud_account.`name` as cloud_account_name,
+        cloud_account.platform as platform,
+        bill_policy_cloud_account_mapping.bill_policy_id as bill_policy_id FROM bill_policy_cloud_account_mapping
+        bill_policy_cloud_account_mapping
+        RIGHT JOIN cloud_account cloud_account
+        ON cloud_account.id =bill_policy_cloud_account_mapping.cloud_account_id
+        WHERE cloud_account.id IS NOT NULL) bill_policy_cloud_account_mapping
+        ON bill_policy.id = bill_policy_cloud_account_mapping.bill_policy_id
+        <where>
+            <if test="cloudAccountIdList!=null and cloudAccountIdList.size >0">
+                bill_policy_cloud_account_mapping.cloud_account_id IN
+                <foreach collection="cloudAccountIdList" index="index" item="cloud_account_id" separator="," close=")"
+                         open="(">
+                    #{cloud_account_id}
+                </foreach>
+            </if>
+        </where>
+    </select>
+    <select id="listLastBillPolicy" resultType="com.fit2cloud.base.entity.BillPolicy">
+        SELECT *
+        FROM bill_policy bill_policy
+                 RIGHT JOIN (SELECT id,
+                                    MAX(create_time) AS create_time
+                             FROM bill_policy ${ew.customSqlSegment}
+                             GROUP BY id) t1 ON t1.create_time = bill_policy.create_time
+            AND t1.id = bill_policy.id
+
+    </select>
+    <select id="listCloudAccountByPolicy" resultType="com.fit2cloud.base.entity.CloudAccount">
+        SELECT *
+        FROM cloud_account cloud_account
+        WHERE cloud_account.id NOT IN (SELECT cloud_account_id
+                                       FROM bill_policy_cloud_account_mapping bill_policy_cloud_account_mapping
+                                                LEFT JOIN bill_policy bill_policy
+                                                          ON bill_policy.id = bill_policy_cloud_account_mapping.bill_policy_id
+                                       WHERE bill_policy.id IS NOT NULL
+                                         <if test="billingPolicyId!=null">
+                                             AND bill_policy.id != #{billingPolicyId}
+                                         </if>
+
+        GROUP BY
+            cloud_account_id
+            )
+    </select>
+</mapper>

@@ -118,7 +118,11 @@ const listOptions = (formItem: FormView, loading: Ref<boolean>) => {
  * @param formItem 指定需要初始化的表单Item
  */
 const initDefaultData = (formItem: FormView) => {
-  if (formItem.defaultValue && !props.modelValue[formItem.field]) {
+  if (
+    formItem.defaultValue &&
+    (props.modelValue[formItem.field] === undefined ||
+      props.modelValue[formItem.field] === null)
+  ) {
     cacheModelValue.value = {
       ...cacheModelValue.value,
       [formItem.field]: formItem.defaultJsonValue
