@@ -4,7 +4,9 @@ package com.fit2cloud.provider.constants;
 import com.fit2cloud.provider.ICloudProvider;
 import com.fit2cloud.provider.impl.aliyun.AliyunCloudProvider;
 import com.fit2cloud.provider.impl.huawei.HuaweiCloudProvider;
+import com.fit2cloud.provider.impl.openstack.OpenstackBillProvider;
 import com.fit2cloud.provider.impl.tencent.TencentCloudProvider;
+import com.fit2cloud.provider.impl.vsphere.VsphereBillProvider;
 
 /**
  * {@code @Author:张少虎}
@@ -24,7 +26,15 @@ public enum ProviderConstants {
     /**
      * 腾讯云平台
      */
-    fit2cloud_tencent_platform("腾讯云", TencentCloudProvider.class);
+    fit2cloud_tencent_platform("腾讯云", TencentCloudProvider.class),
+    /**
+     * vc 云平台
+     */
+    fit2cloud_vsphere_platform("VMWare vSphere", VsphereBillProvider.class),
+    /**
+     * openstack 云平台
+     */
+    fit2cloud_openstack_platform("OpenStack", OpenstackBillProvider.class);
     private final String message;
     private final Class<? extends ICloudProvider> cloudProvider;
 

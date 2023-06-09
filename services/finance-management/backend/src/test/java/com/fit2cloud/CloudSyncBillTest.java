@@ -58,6 +58,10 @@ public class CloudSyncBillTest {
     }
 
     @Test
+    public void testV(){
+        syncService.syncBill("0b83dde0a2b4db15e380a57aef7dd63c","2023-06");
+    }
+    @Test
     public void sync() {
         CompletableFuture<Void> jobhw = CompletableFuture.runAsync(() -> {
             syncService.syncBill("1ee96fe1a53705d20913cde12defab31", "2022-09", "2022-08", "2022-07", "2022-06", "2022-05", "2022-04", "2022-03");

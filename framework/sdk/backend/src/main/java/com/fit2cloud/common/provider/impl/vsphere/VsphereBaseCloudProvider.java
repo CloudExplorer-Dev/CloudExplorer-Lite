@@ -7,7 +7,9 @@ import com.fit2cloud.common.provider.entity.F2CBalance;
 import com.fit2cloud.common.provider.impl.vsphere.api.VsphereBaseMethodApi;
 import com.fit2cloud.common.provider.impl.vsphere.entity.request.GetRegionsRequest;
 import com.fit2cloud.common.utils.JsonUtil;
+import org.apache.commons.collections4.keyvalue.DefaultKeyValue;
 
+import java.util.ArrayList;
 import java.util.List;
 
 
@@ -21,5 +23,17 @@ public class VsphereBaseCloudProvider extends AbstractBaseCloudProvider<VsphereC
     @Override
     public F2CBalance getAccountBalance(String getAccountBalanceRequest) {
         return null;
+    }
+
+    /**
+     * 获取账单同步方式
+     *
+     * @param req 请求字符串
+     * @return 账单所有同步方式
+     */
+    public List<DefaultKeyValue<String, String>> getSyncModes(String req) {
+        return new ArrayList<>() {{
+            add(new DefaultKeyValue<>("从API获取", "api"));
+        }};
     }
 }

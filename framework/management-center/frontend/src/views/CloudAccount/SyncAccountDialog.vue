@@ -46,6 +46,8 @@ function billSyncShow(row?: CloudAccount) {
     "fit2cloud_ali_platform",
     "fit2cloud_huawei_platform",
     "fit2cloud_tencent_platform",
+    "fit2cloud_openstack_platform",
+    "fit2cloud_vsphere_platform",
   ];
   return (
     showPlatforms.includes(row.platform) &&

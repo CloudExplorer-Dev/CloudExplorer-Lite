@@ -112,7 +112,13 @@
         show-overflow-tooltip
         label="付款账号"
         width="200px"
-      />
+      >
+        <template #default="scope">
+          <span class="table_overflow">
+            {{ scope.row.payAccountId }}
+          </span></template
+        >
+      </el-table-column>
       <el-table-column prop="organizationName" label="组织">
         <template #default="scope">
           <span>{{

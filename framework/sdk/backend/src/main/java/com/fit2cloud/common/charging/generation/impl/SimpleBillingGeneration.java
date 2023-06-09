@@ -1,16 +1,15 @@
 package com.fit2cloud.common.charging.generation.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.fit2cloud.base.entity.BillPolicyCloudAccountMapping;
-import com.fit2cloud.base.entity.BillPolicyDetails;
-import com.fit2cloud.base.entity.ResourceInstance;
-import com.fit2cloud.base.entity.ResourceInstanceState;
+import com.fit2cloud.base.entity.*;
 import com.fit2cloud.base.entity.json_entity.BillingField;
 import com.fit2cloud.base.entity.json_entity.PackagePriceBillingPolicy;
 import com.fit2cloud.base.mapper.BaseResourceInstanceMapper;
 import com.fit2cloud.base.mapper.BaseResourceInstanceStateMapper;
 import com.fit2cloud.base.service.IBaseBillPolicyCloudAccountMappingService;
 import com.fit2cloud.base.service.IBaseBillPolicyDetailsService;
+import com.fit2cloud.base.service.IBaseOrganizationService;
+import com.fit2cloud.base.service.IBaseWorkspaceService;
 import com.fit2cloud.common.charging.constants.BillModeConstants;
 import com.fit2cloud.common.charging.constants.BillingGranularityConstants;
 import com.fit2cloud.common.charging.constants.UnitPriceConstants;
@@ -42,10 +41,16 @@ import java.util.function.BiPredicate;
 public class SimpleBillingGeneration implements BillingGeneration {
     private final BillSetting setting;
 
+    private final List<Workspace> workspaces;
+
+    private final List<Organization> organizations;
 
     private SimpleBillingGeneration(BillSetting billSetting) {
         this.setting = billSetting;
-
+        IBaseOrganizationService organizationService = SpringUtil.getBean(IBaseOrganizationService.class);
+        IBaseWorkspaceService workspaceService = SpringUtil.getBean(IBaseWorkspaceService.class);
+        organizations = organizationService.list();
+        workspaces = workspaceService.list();
     }
 
     public static SimpleBillingGeneration of(BillSetting setting) {
@@ -174,10 +179,32 @@ public class SimpleBillingGeneration implements BillingGeneration {
     private InstanceBill toInstanceBill(DefaultKeyValue<String, BigDecimal> defaultKeyValue, ResourceInstance resourceInstance) {
         InstanceBill instanceBill = new InstanceBill();
         BeanUtils.copyProperties(resourceInstance, instanceBill);
+        // 付款账号就是当前云账号
+        instanceBill.setPayAccountId(resourceInstance.getCloudAccountId());
         instanceBill.setBillingCycle(defaultKeyValue.getKey().substring(0, 7));
         instanceBill.setTotalPrice(defaultKeyValue.getValue());
         instanceBill.setDeductionTime(defaultKeyValue.getKey());
+        updateWorkspaceOrOrganization(instanceBill);
         return instanceBill;
+    }
+
+    /**
+     * 更新组织或者工作空间
+     *
+     * @param instanceBill 实例账单
+     */
+    private void updateWorkspaceOrOrganization(InstanceBill instanceBill) {
+        String workspaceId = instanceBill.getWorkspaceId();
+        if (StringUtils.isNotEmpty(workspaceId)) {
+            workspaces.stream().filter(workspace -> StringUtils.equals(workspace.getId(), workspaceId))
+                    .findFirst().ifPresent(workspace -> {
+                        instanceBill.setWorkspaceName(workspace.getName());
+                    });
+        }
+        if (StringUtils.isNotEmpty(instanceBill.getOrganizationId())) {
+            organizations.stream().filter(organization -> StringUtils.equals(organization.getId(), instanceBill.getOrganizationId()))
+                    .findFirst().ifPresent(organization -> instanceBill.setOrganizationName(instanceBill.getOrganizationName()));
+        }
     }
 
     /***
@@ -210,6 +237,13 @@ public class SimpleBillingGeneration implements BillingGeneration {
                 )).findFirst();
     }
 
+    /**
+     * 资源实例和历史策略生产区域对应的 实例和策略
+     *
+     * @param resourceInstances 资源实例列表
+     * @param billPolicies      策略列表
+     * @return 区域
+     */
     private static List<Region> getRegion(
             List<ResourceInstance> resourceInstances,
             List<BillPolicyDetails> billPolicies) {

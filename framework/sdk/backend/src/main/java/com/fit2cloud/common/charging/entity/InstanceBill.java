@@ -1,5 +1,6 @@
 package com.fit2cloud.common.charging.entity;
 
+import com.fit2cloud.common.charging.constants.BillModeConstants;
 import lombok.Data;
 
 import java.math.BigDecimal;
@@ -71,4 +72,34 @@ public class InstanceBill {
      * 扣费时间
      */
     private String deductionTime;
+
+    /**
+     * 付费id
+     */
+    private String payAccountId;
+
+    /**
+     * 组织id
+     */
+    private String organizationId;
+
+    /**
+     * 组织名称
+     */
+    private String organizationName;
+
+    /**
+     * 工作空间id
+     */
+    private String workspaceId;
+
+    /**
+     * 工作空间名称
+     */
+    private String workspaceName;
+
+    /**
+     * 付费类型
+     */
+    private BillModeConstants billMode;
 }
