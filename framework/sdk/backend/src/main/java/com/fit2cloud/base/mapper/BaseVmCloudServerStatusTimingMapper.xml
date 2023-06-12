@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.fit2cloud.base.mapper.BaseVmCloudServerStatusTimingMapper">
+    <resultMap id="resultMap" type="com.fit2cloud.dto.operation.VmCloudServerStatusTimingDTO">
+        <id column="id" jdbcType="VARCHAR" property="id"/>
+        <result column="last_running_duration" jdbcType="VARCHAR" property="lastRunningDuration"/>
+        <result column="last_shutdown_duration" jdbcType="VARCHAR" property="lastShutdownDuration"/>
+    </resultMap>
+
+    <select id="listVmCloudServerStatusTiming" resultMap="resultMap">
+        SELECT
+            *,
+            IF
+                ( vm_cloud_server_status_timing.on_time IS NOT NULL, ( UNIX_TIMESTAMP( NOW()) - UNIX_TIMESTAMP( vm_cloud_server_status_timing.on_time ))+( vm_cloud_server_status_timing.running_duration ), vm_cloud_server_status_timing.running_duration ) AS last_running_duration,
+            IF
+                ( vm_cloud_server_status_timing.off_time IS NOT NULL, ( UNIX_TIMESTAMP( NOW()) - UNIX_TIMESTAMP( vm_cloud_server_status_timing.off_time ))+( vm_cloud_server_status_timing.shutdown_duration ), vm_cloud_server_status_timing.shutdown_duration ) AS last_shutdown_duration
+        FROM
+            vm_cloud_server_status_timing
+        <if test="ew!=null">
+            ${ew.customSqlSegment}
+        </if>
+    </select>
+</mapper>

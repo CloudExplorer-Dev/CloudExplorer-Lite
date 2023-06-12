@@ -81,7 +81,7 @@ const tableConfig = ref<TableConfig>({
     searchOptions: [
       {
         label: t("commons.name", "名称"),
-        value: "name",
+        value: "instanceName",
       },
     ],
   },

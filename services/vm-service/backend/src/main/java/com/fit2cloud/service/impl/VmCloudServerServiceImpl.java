@@ -110,6 +110,9 @@ public class VmCloudServerServiceImpl extends ServiceImpl<BaseVmCloudServerMappe
     @Resource
     private VmCloudDiskServiceImpl vmCloudDiskServiceImpl;
 
+    @Resource
+    private IVmCloudServerStatusTimingService vmCloudServerStatusTimingService;
+
     @PostConstruct
     private void init() {
         batchOperationMap = new HashMap<>();
@@ -451,6 +454,8 @@ public class VmCloudServerServiceImpl extends ServiceImpl<BaseVmCloudServerMappe
                             default -> {
                             }
                         }
+                        // 记录状态时长
+                        vmCloudServerStatusTimingService.singleInsertVmCloudServerStatusEvent(vmCloudServer, vmCloudServer.getLastOperateTime());
                     } else {
                         vmCloudServer.setInstanceStatus(instanceStatus);
                         jobRecord.setStatus(JobStatusConstants.FAILED);

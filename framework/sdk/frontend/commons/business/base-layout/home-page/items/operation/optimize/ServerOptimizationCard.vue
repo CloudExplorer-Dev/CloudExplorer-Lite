@@ -1,18 +1,46 @@
+<template>
+  <div class="div-card" :class="{ checked: checked }" v-loading="loading">
+    <div class="text">
+      <div class="card-header">
+        <span class="left">
+          {{ props.optimizationStrategy.name }}
+        </span>
+        <el-tooltip class="box-item" effect="dark" content="查询策略">
+          <span class="right" v-show="props.showSettingIcon">
+            <CeIcon
+              size="14px"
+              color="#646A73"
+              code="icon-setting"
+              @click.stop="
+                showOptimizeStrategyDialog(props.optimizationStrategy)
+              "
+            />
+          </span>
+        </el-tooltip>
+      </div>
+    </div>
+    <div class="text">
+      <span class="main">
+        {{ value }}
+      </span>
+      台
+    </div>
+  </div>
+</template>
 <script lang="ts" setup>
 import { ref, watch } from "vue";
-import OptimizeViewApi from "@commons/api/optimize";
+import OptimizationStrategyViewApi from "@commons/api/optimize";
 import type {
-  OptimizeSuggest,
-  PageOptimizeBaseRequest,
+  OptimizationStrategy,
+  PageOptimizationStrategyResourceRequest,
 } from "@commons/api/optimize/type";
 import CeIcon from "@commons/components/ce-icon/index.vue";
 import _ from "lodash";
-import type { OptimizeBaseRequest } from "@commons/api/optimize/type";
 
 const props = withDefaults(
   defineProps<{
-    optimizeSuggest: OptimizeSuggest;
-    tableSearchParams?: OptimizeBaseRequest;
+    optimizationStrategy: OptimizationStrategy;
+    tableSearchParams?: any;
     show?: boolean;
     checked?: boolean;
     showSettingIcon?: boolean;
@@ -27,15 +55,27 @@ const props = withDefaults(
 const loading = ref(false);
 
 const value = ref(0);
-
+function getCurrentOptimizationStrategyId() {
+  return props.optimizationStrategy.id;
+}
 function getOptimizeServerList() {
   if (!props.show) {
     return;
   }
-  const params: PageOptimizeBaseRequest = { pageSize: 10, currentPage: 1 };
-  _.assign(params, props.optimizeSuggest);
+  const params: PageOptimizationStrategyResourceRequest = {
+    pageSize: 10,
+    currentPage: 1,
+  };
   _.assign(params, props.tableSearchParams);
-  OptimizeViewApi.listOptimizeServer(params, loading).then((res) => {
+  _.assign(params, props.optimizationStrategy);
+  _.assign(params, {
+    optimizationStrategyId: props.optimizationStrategy.id,
+    ignore: false,
+  });
+  OptimizationStrategyViewApi.pageOptimizationStrategyServerResourceList(
+    params,
+    loading
+  ).then((res) => {
     value.value = res.data.total;
   });
 }
@@ -43,7 +83,7 @@ function getOptimizeServerList() {
 watch(
   () => {
     return {
-      optimizeSuggest: props.optimizeSuggest,
+      optimizeSuggest: props.optimizationStrategy,
       show: props.show,
       tableSearchParams: props.tableSearchParams,
     };
@@ -68,39 +108,11 @@ watch(
   { immediate: true, deep: true }
 );
 const emit = defineEmits(["showStrategyDialog"]);
-const showOptimizeStrategyDialog = (o: OptimizeSuggest) => {
+const showOptimizeStrategyDialog = (o: OptimizationStrategy) => {
   emit("showStrategyDialog", o);
 };
-
-defineExpose({ getOptimizeServerList });
+defineExpose({ getOptimizeServerList, getCurrentOptimizationStrategyId });
 </script>
-<template>
-  <div class="div-card" :class="{ checked: checked }" v-loading="loading">
-    <div class="text">
-      <div class="card-header">
-        <span class="left">
-          {{ props.optimizeSuggest.name }}
-        </span>
-        <el-tooltip class="box-item" effect="dark" content="查询策略">
-          <span class="right" v-show="props.showSettingIcon">
-            <CeIcon
-              size="14px"
-              color="#646A73"
-              code="icon-setting"
-              @click.stop="showOptimizeStrategyDialog(props.optimizeSuggest)"
-            />
-          </span>
-        </el-tooltip>
-      </div>
-    </div>
-    <div class="text">
-      <span class="main">
-        {{ value }}
-      </span>
-      台
-    </div>
-  </div>
-</template>
 
 <style scoped lang="scss">
 .div-card {

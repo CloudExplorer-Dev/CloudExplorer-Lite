@@ -16,10 +16,15 @@ import com.fit2cloud.common.utils.LocaleUtil;
  * - 资源优化:          500300000
  */
 public enum ErrorCodeConstants {
+    /**
+     *
+     */
     GET_OPTIMIZE_SUGGEST_STRATEGY_ERROR(500300110, "获取优化策略失败"),
     NOT_EXISTS_OPTIMIZE_SUGGEST_STRATEGY(500300112, "不存在优化策略"),
     UNSUPPORTED_STRATEGY(500300111, "不支持的优化策略{0}"),
     INVALID_PARAMETER(500300113, "无效参数"),
+    DELETE_OPTIMIZE_STRATEGY_IGNORE_ERROR(500300114, "优化策略移除忽略资源失败{0}"),
+    RESOURCE_REQUIRED(500300115, "至少选择一项资源"),
     ;
     /**
      * 提示

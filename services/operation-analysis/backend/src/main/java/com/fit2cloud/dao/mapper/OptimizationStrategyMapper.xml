@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.fit2cloud.dao.mapper.OptimizationStrategyMapper">
+<resultMap id="baseResultMap" type="com.fit2cloud.dto.optimization.OptimizationStrategyDTO">
+    <id column="id" jdbcType="VARCHAR" property="id" />
+    <result column="name" jdbcType="VARCHAR" property="name" />
+    <result column="enabled" jdbcType="BIT" property="enabled"/>
+    <result column="days" jdbcType="BIT" property="days"/>
+    <result column="update_flag" jdbcType="BIT" property="updateFlag"/>
+    <result column="optimization_rules" property="optimizationRules" typeHandler="com.fit2cloud.dao.handler.OptimizationRuleHandler"/>
+    <result column="ignore_number" jdbcType="BIGINT" property="ignoreNumber" />
+</resultMap>
+    <select id="pageList" resultMap="baseResultMap">
+        SELECT
+            operation_analysis_optimization_strategy.*,
+            ( SELECT count( DISTINCT operation_analysis_optimization_strategy_ignore_resource.id ) FROM operation_analysis_optimization_strategy_ignore_resource WHERE operation_analysis_optimization_strategy_ignore_resource.optimization_strategy_id = operation_analysis_optimization_strategy.id ) AS ignore_number
+        FROM
+            operation_analysis_optimization_strategy
+    </select>
+</mapper>
